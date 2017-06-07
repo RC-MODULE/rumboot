@@ -1,12 +1,8 @@
 #include <rumboot/testsuite.h>
 #include <rumboot/printf.h>
+#include <rumboot/platform.h>
 
 
-/**
- * Initialize the test result structure
- * @param  out [description]
- * @return     [description]
- */
 void test_suite_init(struct rumboot_testsuite_results *out)
 {
 	if (!out)
@@ -52,14 +48,8 @@ int test_suite_run_single(struct rumboot_testsuite_results *out, const struct ru
 	}
 	return ret;
 }
-/**
- * Run the testlist
- * If out is specified, results will be logged to this structure
- *
- * @param  out  If not NULL, test results will be appended to this structure
- * @param  list [description]
- * @return      the number of failed tests.
- */
+
+
 int test_suite_run(struct rumboot_testsuite_results *out, const struct rumboot_test_suite *suite)
 {
 	int total   = 0;

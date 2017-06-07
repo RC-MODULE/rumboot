@@ -1,29 +1,54 @@
 #ifndef PRINTF_H
 #define PRINTF_H
 #include <stdint.h>
+#include <stdarg.h>
+
+/**
+ *
+ * \defgroup stdio standard io routines
+ *
+ * Functions and macros in this group implement reading and writing
+ *
+ * \addtogroup stdio
+ *  @{
+ */
+
+
+/**
+ * Rumboot's printf implementation. The user-formatted text is sent to
+ * the currently active stout device
+ * _WARNING:_ Floats are not supported. Open a JIRA issue if you really need them
+ *
+ * @param fmt     format
+ * @param VARARGS arguments
+ */
 
 void rumboot_printf(const char *fmt, ...);
+
+/**
+ * Rumboot's vprintf implementation. The same as printf, but with va_list
+ * as the argument
+ *
+ * @param  fmt  [description]
+ * @param  args [description]
+ * @return      [description]
+ */
+int rumboot_vprintf(const char *fmt, va_list args);
+
+
+/**
+ * Outputs a string to the currently active stdout device
+ *
+ * @param string [description]
+ */
+void rumboot_putstring(const char *string);
+
+/**
+ * Prints The Rumboot logo, current git branch and commit version
+ */
 void rumboot_print_logo();
 
 
-
-
-
-/*
-size_t strlen(const char *str);
-
-void rumboot_putnumber(uint32_t num);
-void rumboot_init_io();
-*/
-
-/* Serial routines */
-/*
-void rumboot_init_io_serial();
-void rumboot_putnumber_serial(uint32_t num);
-void rumboot_putstring_real_serial(const char *str, int len);
-
-void uint32_to_hex_string_uppercase(uint32_t hex, char* hex_string);
-void uint32_to_hex_string_lowercase(uint32_t hex, char* hex_string);
-*/
+/** @}*/
 
 #endif

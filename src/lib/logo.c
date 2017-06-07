@@ -1,3 +1,4 @@
+#include <rumboot/printf.h>
 static const char rumboot_logo[] =
 "\n\n\n"
 "RC Module's           _                 _ \n"

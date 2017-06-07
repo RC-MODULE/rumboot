@@ -1,24 +1,36 @@
 /**
  *
  * \defgroup platform_glue Platform-specific glue functions
+ * These functions should be implemented in the platform support code.
+ * Rumboot core modules depend on these for proper operation
+ *
+ *
  * \addtogroup platform_glue
  *  @{
  */
 
+
 enum rumboot_simulation_event {
-    EVENT_FINISH = 0,
-    EVENT_CRASH,
-    EVENT_WARN
+    EVENT_NOP = 0, /** No-op event */
+    EVENT_FINISH, /** Successfull completion */
+    EVENT_CRASH, /** Fatal error */
+    EVENT_WARN, /** Software-generated warning */
+    EVENT_PERF, /** Performance checkpoint */
+    EVENT_STDOUT, /** A character is ready for output */
+    EVENT_STDIN, /** A character is requested */
 };
 
 /**
- * [rumboot_platform_get_uptime description]
- * @return [description]
+ * Returns the current system uptime (useconds)
+ * @return useconds
  */
 uint32_t rumboot_platform_get_uptime();
 
 /**
- * Raise a specific event to notify the environment
+ * Raise an event to notify the environment. The EVENT_FINISH and EVENT_CRASH
+ * can be used to terminate the simulation
+ *
+ *
  * @param event
  */
 void rumboot_platform_raise_event(enum rumboot_simulation_event event);

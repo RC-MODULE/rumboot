@@ -2,6 +2,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8.8)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
 
 INCLUDE(cmake/RumBoot.cmake)
+find_package(Doxygen)
 
 SET(RUMBOOT_PLATFORM "native" CACHE STRING "RumBoot platform to compile for")
 
@@ -15,8 +16,7 @@ if (CROSS_COMPILE)
   SET(CMAKE_TOOLCHAIN_FILE "${CMAKE_SOURCE_DIR}/cmake/cross-compile.cmake")
 endif()
 
-PROJECT(rumboot C)
-enable_language(ASM)
+PROJECT(rumboot C ASM)
 SET(PROJECT_VERSION   0.3)
 enable_testing()
 
@@ -60,6 +60,12 @@ if (CROSS_COMPILE)
 endif()
 
 message("BuildType:        ${CMAKE_BUILD_TYPE}")
+
+if (DOXYGEN_FOUND)
+  message("Doxygen Docs:     enabled")
+else()
+  message("Doxygen Docs:     disabled")
+endif()
 
 if (${RUMBOOT_DEBUG})
   SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DROMBOOT_DEBUG")
@@ -108,6 +114,19 @@ endif()
 
 
 RUMBOOT_PLATFORM_ADD_COMPONENTS()
+
+
+if (DOXYGEN_FOUND)
+  CONFIGURE_FILE(
+    "${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/Doxyfile"
+  )
+
+  add_custom_target(docs ALL COMMAND doxygen > doxygen.log
+  )
+
+endif()
+
 
 SET(CPACK_GENERATOR "TGZ")
 SET(CPACK_PACKAGE_FILE_NAME "rumboot-${CMAKE_BUILD_TYPE}")

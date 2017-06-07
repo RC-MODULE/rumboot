@@ -32,6 +32,7 @@
 #include <stdarg.h>
 #include <stdint.h>
 #include <rumboot/printf.h>
+#include <rumboot/platform.h>
 
 #define ZEROPAD         (1 << 0)        /* Pad with zero */
 #define SIGN            (1 << 1)        /* Unsigned/signed long */
@@ -127,7 +128,7 @@ static void rumboot_number(long num, int base, int size, int precision, int type
 
 }
 
-static char *eaddr(unsigned char *addr, int size, int precision, int type)
+void eaddr(unsigned char *addr, int size, int precision, int type)
 {
 	char tmp[24];
 	const char *dig = lower_digits;
@@ -147,7 +148,7 @@ static char *eaddr(unsigned char *addr, int size, int precision, int type)
 
 }
 
-static char *iaddr(unsigned char *addr, int size, int precision, int type)
+static void iaddr(unsigned char *addr, int size, int precision, int type)
 {
 	char tmp[24];
 	int i, n, len;
@@ -367,7 +368,7 @@ static char *flt(char *str, double num, int size, int precision, char fmt, int f
 
 #endif
 
-static int rumboot_vprintf(const char *fmt, va_list args)
+int rumboot_vprintf(const char *fmt, va_list args)
 {
 	int len;
 	unsigned long num;
