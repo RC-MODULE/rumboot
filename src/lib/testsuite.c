@@ -1,0 +1,76 @@
+#include <rumboot/testsuite.h>
+#include <rumboot/printf.h>
+
+
+/**
+ * Initialize the test result structure
+ * @param  out [description]
+ * @return     [description]
+ */
+void test_suite_init(struct rumboot_testsuite_results *out)
+{
+	if (!out)
+		return;
+	out->magic = TESTSUITE_RESULTSTRUCT_MAGIC;
+	out->num_tests = 0;
+}
+
+int test_suite_run_single(struct rumboot_testsuite_results *out, const struct rumboot_test *test,
+		const char *subsystem, int subsysnamelen)
+{
+	int ret;
+	uint32_t tstart;
+	rumboot_putstring("Running test: ");
+	rumboot_putstring(subsystem);
+	rumboot_putstring(test->name);
+	rumboot_putstring(" ... ");
+
+	if (test->should_skip && test->should_skip(test->baseaddr)) {
+		rumboot_putstring("SKIP\n");
+		return 1;
+	}
+
+	tstart = rumboot_platform_get_uptime();
+
+	bool result = test->check_func(test->baseaddr);
+
+	if (result) {
+		ret = 1;
+		rumboot_putstring("OK\n");
+	} else {
+		ret = 0;
+		rumboot_putstring("FAIL\n");
+	}
+
+	if (out) {
+		/* Log results to our structure */
+		struct rumboot_test_result *res = &out->results[out->num_tests];
+		res->name = test->name;
+		res->result = result;
+		res->ticks = rumboot_platform_get_uptime() - tstart;
+		out->num_tests++;
+	}
+	return ret;
+}
+/**
+ * Run the testlist
+ * If out is specified, results will be logged to this structure
+ *
+ * @param  out  If not NULL, test results will be appended to this structure
+ * @param  list [description]
+ * @return      the number of failed tests.
+ */
+int test_suite_run(struct rumboot_testsuite_results *out, const struct rumboot_test_suite *suite)
+{
+	int total   = 0;
+	int num_passed = 0;
+	const struct rumboot_test *list = suite->tests;
+
+	/* Cache strlen to save time */
+	while (list->name) {
+		total++;
+		num_passed += test_suite_run_single(out, list, suite->name, suite->namelen);
+		list++;
+	}
+	return total - num_passed;
+}
