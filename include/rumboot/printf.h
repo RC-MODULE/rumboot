@@ -5,9 +5,13 @@
 
 /**
  *
- * \defgroup stdio standard io routines
+ * \defgroup stdio Standard input/output
  *
  * Functions and macros in this group implement reading and writing
+ *
+ * \code{.c}
+ * #include <rumboot/printf.h>
+ * \endcode
  *
  * \addtogroup stdio
  *  @{

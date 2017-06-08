@@ -11,6 +11,7 @@ void test_suite_init(struct rumboot_testsuite_results *out)
 	out->num_tests = 0;
 }
 
+
 int test_suite_run_single(struct rumboot_testsuite_results *out, const struct rumboot_test *test,
 		const char *subsystem, int subsysnamelen)
 {

@@ -33,7 +33,7 @@ macro(generate_stuff_for_target product)
 
   add_custom_command(
     OUTPUT ${product}.bin
-    COMMAND ${CROSS_COMPILE}-objcopy -O binary ${product} ${product}.bin
+    COMMAND ${CROSS_COMPILE}-objcopy ${CMAKE_OBJCOPY_FLAGS} -O binary ${product} ${product}.bin
     COMMENT "Generating binary image ${product}.bin"
     DEPENDS ${product}
   )
@@ -57,19 +57,8 @@ macro(add_rumboot_target target)
     install(FILES ${CMAKE_BINARY_DIR}/${product}.bin DESTINATION rumboot)
     install(FILES ${CMAKE_BINARY_DIR}/${product}.map DESTINATION rumboot)
 
-    if(${f} MATCHES "loader" AND ${CMAKE_BUILD_TYPE} MATCHES "Production")
-      add_custom_command(
-        OUTPUT ${product}.rcf
-        COMMAND mkdir -p ${product}.rcf && rcfgen -i ${product}.bin -o ${product}.rcf
-        COMMENT "Generating RCF memory files for ${product}.bin"
-        DEPENDS ${product}.bin
-      )
-      add_custom_target(
-        rcf ALL
-        DEPENDS ${product}.rcf
-      )
-      install(DIRECTORY ${CMAKE_BINARY_DIR}/${product}.rcf DESTINATION rumboot/rcf)
-    endif()
+    rumboot_platform_generate_stuff_for_taget(${product})
+
     # Native platform is special - we do unit-testing!
     if (${RUMBOOT_PLATFORM} MATCHES "native")
       add_test(${product} ${product})

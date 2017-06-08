@@ -16,6 +16,10 @@ if (CROSS_COMPILE)
   SET(CMAKE_TOOLCHAIN_FILE "${CMAKE_SOURCE_DIR}/cmake/cross-compile.cmake")
 endif()
 
+# HACK: Bare metal compiler confuses cmake
+set(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "")
+set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "")
+
 PROJECT(rumboot C ASM)
 SET(PROJECT_VERSION   0.3)
 enable_testing()
@@ -96,6 +100,10 @@ ADD_SOURCE("src/lib/logo.c")
 ADD_SOURCE("src/lib/stdio.c")
 ADD_SOURCE("src/lib/printf.c")
 ADD_SOURCE("src/lib/testsuite.c")
+if (NOT RUMBOOT_PLATFORM MATCHES native)
+    ADD_SOURCE(src/rumboot_main.c)
+endif()
+
 ADD_LIBRARY(rumboot OBJECT ${PLATFORM_SOURCES})
 
 if (${RUMBOOT_PLATFORM_HAS_LDS})
@@ -127,6 +135,14 @@ if (DOXYGEN_FOUND)
 
 endif()
 
+include(ExternalProject)
+ExternalProject_Add(utils
+    SOURCE_DIR        "${CMAKE_SOURCE_DIR}/utils"
+    BINARY_DIR        "${CMAKE_BINARY_DIR}/utils"
+    CONFIGURE_COMMAND ${CMAKE_COMMAND} ${CMAKE_SOURCE_DIR}/utils
+    BUILD_COMMAND     "make"
+    INSTALL_COMMAND   ""
+  )
 
 SET(CPACK_GENERATOR "TGZ")
 SET(CPACK_PACKAGE_FILE_NAME "rumboot-${CMAKE_BUILD_TYPE}")

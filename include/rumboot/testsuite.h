@@ -9,8 +9,11 @@
 
 /**
  *
- * \defgroup testsuite TestSuite module
+ * \defgroup testsuite TestSuite library
  *
+ * \code{.c}
+ * #include <rumboot/testsuite.h>
+ * \endcode
  * Functions and macros in this group implement a simple infrastructure for
  * implementing selftest components.
  *
@@ -19,16 +22,48 @@
  */
 
 
+/**
+ * Declares the start of a testsuite structure. See example below
+ *
+ * \include src/platform/native/targets/testsuite-test.c
+ *
+ * @param  var       The unique name of the structure that will contain the testlist
+ * @param  subsystem The subsystem name that this structure describes
+ */
 #define TEST_SUITE_BEGIN(var, subsystem) \
 	static const struct rumboot_test_suite var = { \
 	subsystem "-", ARRAY_SIZE(subsystem)+1, { \
 
+/**
+ * Declares a single test entry. This macro should be incapsulated between TEST_SUITE_BEGIN and TEST_SUITE_END
+ * For a complete example see \see TEST_SUITE_BEGIN
+ *
+ * @param  name Test name (const char *)
+ * @param  func Test function (bool func(uint32_t arg))
+ * @param  base [description]
+ * @return      [description]
+ */
 #define TEST_ENTRY(name, func, base) \
 	{ name, ARRAY_SIZE(name), func, (uint32_t) base, NULL }
 
+/**
+ * Declares a conditional test. This test will be skipped if skipfunc is evaluated to true
+ * For a complete example see \see TEST_SUITE_BEGIN
+ *
+ * @param  name     [description]
+ * @param  func     [description]
+ * @param  base     [description]
+ * @param  skipfunc [description]
+ * @return          [description]
+ */
 #define TEST_ENTRY_COND(name, func, base, skipfunc) \
 	{ name, ARRAY_SIZE(name), func, (uint32_t) base, skipfunc }
 
+/**
+ * Should be the last entry in a test list.
+ * \see TEST_SUITE_BEGIN for a complete example
+ * @return [description]
+ */
 #define TEST_SUITE_END() \
 	{ /*Sentinel */ } \
 	} }

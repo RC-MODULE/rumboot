@@ -38,7 +38,7 @@ PROJECT_NUMBER = ${PROJECT_DOC_VERSION}
 # for a project that appears at the top of each page and should give viewer
 # a quick idea about the purpose of the project. Keep the description short.
 
-PROJECT_BRIEF = "The ultimate rom bootloader"
+PROJECT_BRIEF = "One Ultimate ROM Loader To Load Them All"
 
 # With the PROJECT_LOGO tag one can specify an logo or icon that is
 # included in the documentation. The maximum height of the logo should not
@@ -655,7 +655,7 @@ WARN_LOGFILE =
 # directories like "/usr/src/myproject". Separate the files or directories
 # with spaces.
 
-INPUT = ${CMAKE_SOURCE_DIR}
+INPUT = ${CMAKE_SOURCE_DIR}/src ${CMAKE_SOURCE_DIR}/include
 
 # This tag can be used to specify the character encoding of the source files
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding, which is
@@ -715,7 +715,7 @@ EXCLUDE_SYMBOLS =
 # directories that contain example code fragments that are included (see
 # the \include command).
 
-EXAMPLE_PATH =
+EXAMPLE_PATH = ${CMAKE_SOURCE_DIR}
 
 # If the value of the EXAMPLE_PATH tag contains directories, you can use the
 # EXAMPLE_PATTERNS tag to specify one or more wildcard pattern (like *.cpp
@@ -1475,7 +1475,7 @@ ENABLE_PREPROCESSING = YES
 # compilation will be performed. Macro expansion can be done in a controlled
 # way by setting EXPAND_ONLY_PREDEF to YES.
 
-MACRO_EXPANSION = NO
+MACRO_EXPANSION = YES
 
 # If the EXPAND_ONLY_PREDEF and MACRO_EXPANSION tags are both set to YES
 # then the macro expansion is limited to the macros specified with the
@@ -1492,7 +1492,7 @@ SEARCH_INCLUDES = YES
 # contain include files that are not input files but should be processed by
 # the preprocessor.
 
-INCLUDE_PATH =
+INCLUDE_PATH = include/
 
 # You can use the INCLUDE_FILE_PATTERNS tag to specify one or more wildcard
 # patterns (like *.h and *.hpp) to filter out the header-files in the
