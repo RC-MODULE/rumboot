@@ -8,7 +8,7 @@ file(GLOB PLATFORM_SOURCES
 SET(RUMBOOT_PRIMARY_LD_FLAGS "-T${CMAKE_SOURCE_DIR}/lds/basis/rom.lds")
 
 macro(RUMBOOT_PLATFORM_SET_COMPILER_FLAGS)
-    SET(RUMBOOT_COMMON_FLAGS "-mcpu=cortex-a5 -ffreestanding -Os")
+    SET(RUMBOOT_COMMON_FLAGS "-mcpu=cortex-a5 -marm -ffreestanding -Os")
     SET(CMAKE_C_FLAGS "${RUMBOOT_COMMON_FLAGS} -Wall -fdata-sections -ffunction-sections")
     SET(CMAKE_ASM_FLAGS ${RUMBOOT_COMMON_FLAGS})
     SET(CMAKE_OBJCOPY_FLAGS --gap-fill 0xFF --pad-to 0x40000)

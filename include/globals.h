@@ -3,7 +3,7 @@
 
 /**
  *
- * \defgroup globals Platform-specific glue functions
+ * \defgroup globals Global variables
  * These global variables and structures are defined by the linker script
  * Among those the rumboot_runtime_info struct holds the internal rumboot state
  * information

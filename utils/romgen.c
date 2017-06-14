@@ -3,6 +3,13 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <getopt.h>
+#include <stdint.h>
+
+#define __swap32(value)                                 \
+        ((((uint32_t)((value) & 0x000000FF)) << 24) |   \
+         (((uint32_t)((value) & 0x0000FF00)) << 8) |    \
+         (((uint32_t)((value) & 0x00FF0000)) >> 8) |    \
+         (((uint32_t)((value) & 0xFF000000)) >> 24))
 
 
 struct mem_layout {
@@ -87,24 +94,19 @@ int write_line_mm7705(struct mem_layout *layout, FILE *ifd, FILE *ofd)
 
 int write_line_basis(struct mem_layout *layout, FILE *ifd, FILE *ofd)
 {
-	int num_bytes = layout->line_length / 8; /* 8 bit data */
-	char *srcbuf = alloca(num_bytes);
+	int num_bytes = layout->line_length / 8;
+	unsigned char *srcbuf = alloca(num_bytes);
 	int i;
 
-	i = fread(srcbuf, 1, 8, ifd);
+	i = fread(srcbuf, 1, 4, ifd);
 
 	if (num_bytes != i) {
 			fprintf(stderr, "Expected to read %d, only got %d\n", num_bytes, i);
 			exit(1);
 	}
 
-//	for (i = 0; i < num_bytes; i++) {
-	for (i = 7; i >= 0; i--) {
-		char tmp = srcbuf[i];
-	}
-
-	for (i = 0; i < num_bytes; i++)
-		dump_byte_inv(ofd, srcbuf[i]);
+	for (i = num_bytes-1; i >=0 ; i--)
+		fprintf(ofd, "%02X", srcbuf[i]);
 
 	fputc('\n', ofd);
 
@@ -137,10 +139,10 @@ struct mem_layout mm7705_rom = {
 };
 
 struct mem_layout basis_rom = {
-	.line_count		    = 32768,
-	.line_length		= 64,
+	.line_count		    = 131072,
+	.line_length		= 32,
 	.adjacement_banks	= 2,
-	.inverse_order		= 1,
+	.inverse_order		= 0,
 	.gen_filename		= gen_basis_filename,
 	.write_line         = write_line_basis,
 };
@@ -192,7 +194,7 @@ int dump_rcf(const char *inputfile, const char *outdir, struct mem_layout *layou
 	}
 
 	/* We take extra parity bit into account here */
-	int bytes_per_rcf_line = layout->line_length / 9;
+	int bytes_per_rcf_line = layout->line_length / 8;
 	int per_iteration = layout->adjacement_banks * bytes_per_rcf_line;
 
 	printf("Writing rcf files: %d bytes per iteration, %d bytes per rcf line\n", per_iteration, bytes_per_rcf_line);
