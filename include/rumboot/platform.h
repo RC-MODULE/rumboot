@@ -16,6 +16,11 @@
  */
 
 
+/**
+ * This enumeration represents common events from rumboot to
+ * simulation environment. Platfoms should implement their
+ * specific ways of delivering these events.
+ */
 enum rumboot_simulation_event {
     EVENT_NOP = 0, /** No-op event */
     EVENT_FINISH, /** Successfull completion */

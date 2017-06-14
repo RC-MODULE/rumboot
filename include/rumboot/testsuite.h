@@ -108,11 +108,11 @@ struct rumboot_testsuite_results {
 void test_suite_init(struct rumboot_testsuite_results *out);
 
 /**
- * Run the testlist
- * If out is specified, results will be logged to this structure
+ * Run the testlist described in suite structure.
+ * If out is not NULL, results will be logged to this structure
  *
  * @param  out  If not NULL, test results will be appended to this structure
- * @param  list [description]
+ * @param  suite [description]
  * @return      the number of failed tests.
  */
 int test_suite_run(struct rumboot_testsuite_results *out, const struct rumboot_test_suite *suite);

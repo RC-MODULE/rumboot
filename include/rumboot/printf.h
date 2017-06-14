@@ -24,7 +24,7 @@
  * _WARNING:_ Floats are not supported. Open a JIRA issue if you really need them
  *
  * @param fmt     format
- * @param VARARGS arguments
+ * @param ... arguments
  */
 
 void rumboot_printf(const char *fmt, ...);
