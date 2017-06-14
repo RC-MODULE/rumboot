@@ -32,7 +32,7 @@ macro(rumboot_platform_generate_stuff_for_taget product)
     COMMAND mkdir -p ${product}.hex
     COMMAND ${CMAKE_BINARY_DIR}/utils/romgen -i ${product}.bin -o ${product}.hex
     COMMENT "Generating RCF memory files for ${product}.bin"
-    DEPENDS ${product}.bin
+    DEPENDS ${product}.bin utils
   )
   add_custom_target(
     rcf ALL
