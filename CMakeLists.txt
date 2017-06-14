@@ -128,15 +128,14 @@ foreach(idir ${idirs})
   set(RUMBOOT_INCLUDE_DIRS "${RUMBOOT_INCLUDE_DIRS} ${idir}")
 endforeach()
 
-if (DOXYGEN_FOUND)
   CONFIGURE_FILE(
     "${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.cmake"
     "${CMAKE_CURRENT_BINARY_DIR}/Doxyfile"
   )
 
-  add_custom_target(docs ALL COMMAND doxygen > doxygen.log
-  )
 
+if (DOXYGEN_FOUND)
+  add_custom_target(docs COMMAND doxygen > doxygen.log)
 endif()
 
 include(ExternalProject)
