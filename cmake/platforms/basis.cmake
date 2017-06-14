@@ -46,7 +46,7 @@ if (NOT CROSS_COMPILE)
   SET(CROSS_COMPILE arm-rcm-eabihf)
   message(STATUS "No -DCROSS_COMPILE passed to cmake, attempting to detect ${CROSS_COMPILE}")
   if (EXISTS /opt/r42/toolchains/arm-rcm-eabihf/bin/arm-rcm-eabihf-gcc)
-    set(ENV{PATH} "$ENV{PATH}:/opt/r42/toolchains/arm-rcm-eabihf/bin/")
+    set(CROSS_COMPILE "/opt/r42/toolchains/arm-rcm-eabihf/bin/${CROSS_COMPILE}")
   endif()
 endif()
 
