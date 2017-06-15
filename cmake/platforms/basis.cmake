@@ -1,4 +1,18 @@
-SET(RUMBOOT_ARCH native)
+SET(RUMBOOT_ARCH basis)
+SET(RUMBOOT_PLATFORM basis)
+
+macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
+  file(GLOB RUMBOOT_TARGETS ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/targets/*.c)
+  foreach(target ${RUMBOOT_TARGETS})
+    add_rumboot_target(default ${target})
+  endforeach()
+endmacro()
+
+if (CMAKE_VERILOG_RULES_LOADED)
+    return()
+endif()
+
+
 
 file(GLOB PLATFORM_SOURCES
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/*.c
@@ -18,13 +32,6 @@ endmacro()
 
 function(RUMBOOT_PLATFORM_PRINT_SUMMARY)
 endfunction()
-
-macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
-  file(GLOB RUMBOOT_TARGETS ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/targets/*.c)
-  foreach(target ${RUMBOOT_TARGETS})
-    add_rumboot_target(${target})
-  endforeach()
-endmacro()
 
 macro(rumboot_platform_generate_stuff_for_taget product)
   add_custom_command(

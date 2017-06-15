@@ -45,7 +45,7 @@ macro(generate_stuff_for_target product)
 
 endmacro()
 
-macro(add_rumboot_target target)
+macro(add_rumboot_target snapshot target)
     GET_FILENAME_COMPONENT(f ${target} NAME_WE)
     SET(product rumboot-${RUMBOOT_PLATFORM}-${CMAKE_BUILD_TYPE}-${f})
     add_executable(${product} ${target} $<TARGET_OBJECTS:rumboot>)
