@@ -98,7 +98,7 @@ int write_line_basis(struct mem_layout *layout, FILE *ifd, FILE *ofd)
 	unsigned char *srcbuf = alloca(num_bytes);
 	int i;
 
-	i = fread(srcbuf, 1, 4, ifd);
+	i = fread(srcbuf, 1, 8, ifd);
 
 	if (num_bytes != i) {
 			fprintf(stderr, "Expected to read %d, only got %d\n", num_bytes, i);
@@ -138,10 +138,19 @@ struct mem_layout mm7705_rom = {
 	.write_line         = write_line_mm7705,
 };
 
-struct mem_layout basis_rom = {
+struct mem_layout basis_rom_generic = {
 	.line_count		    = 131072,
 	.line_length		= 32,
 	.adjacement_banks	= 2,
+	.inverse_order		= 0,
+	.gen_filename		= gen_basis_filename,
+	.write_line         = write_line_basis,
+};
+
+struct mem_layout basis_rom = {
+	.line_count		    = 262144,
+	.line_length		= 64,
+	.adjacement_banks	= 1,
 	.inverse_order		= 0,
 	.gen_filename		= gen_basis_filename,
 	.write_line         = write_line_basis,
