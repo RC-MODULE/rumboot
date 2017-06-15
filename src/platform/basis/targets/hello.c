@@ -7,4 +7,5 @@ int main()
     rumboot_printf("rumboot: spl start: 0x%x end:0x%x\n",
         rumboot_platform_spl_start,
         rumboot_platform_spl_end);
+    return 0;
 }

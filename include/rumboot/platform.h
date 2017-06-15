@@ -69,8 +69,13 @@ int rumboot_platform_getchar(uint32_t timeout_us);
  */
 struct rumboot_runtime_info {
     uint32_t magic; /** Magic value. Indicates that this structure contains valid data */
-    void *current_heap_end; /** Current heap end pointer, used by _sbrk */
+    void *current_max_heap; /** Current heap end pointer, used by _sbrk */
 };
+
+/**
+ * Global instance of struct rumboot_runtime_info.
+ */
+extern struct rumboot_runtime_info rumboot_platform_runtime_info;
 
 /**
  * This global variable defined by the linker points to the start of SPL
