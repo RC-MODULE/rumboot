@@ -9,9 +9,9 @@ uint32_t rumboot_platform_get_uptime()
     return 0;
 }
 
-void rumboot_platform_raise_event(enum rumboot_simulation_event event)
+void rumboot_platform_raise_event(enum rumboot_simulation_event event, uint8_t arg)
 {
-    printf("[EVENT] %d \n", event);
+    printf("[EVENT] %d arg %d\n", event);
     exit(event);
 }
 

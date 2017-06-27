@@ -22,7 +22,7 @@
  * specific ways of delivering these events.
  */
 enum rumboot_simulation_event {
-    EVENT_NOP = 0, /** No-op event */
+    EVENT_NOP, /** No-op event */
     EVENT_FINISH, /** Successfull completion */
     EVENT_CRASH, /** Fatal error */
     EVENT_WARN, /** Software-generated warning */
@@ -30,6 +30,16 @@ enum rumboot_simulation_event {
     EVENT_STDOUT, /** A character is ready for output */
     EVENT_STDIN, /** A character is requested */
 };
+
+
+/**
+ * This function will be called before main(). This function should contains
+ * platform-specific initialization. This should initilize at lest:
+ * - A timer for rumboot_platform_get_uptime()
+ * - The event system for rumboot_platform_raise_event()
+ *
+ */
+void rumboot_platform_setup();
 
 /**
  * Returns the current system uptime (useconds)
@@ -44,7 +54,7 @@ uint32_t rumboot_platform_get_uptime();
  *
  * @param event
  */
-void rumboot_platform_raise_event(enum rumboot_simulation_event event);
+void rumboot_platform_raise_event(enum rumboot_simulation_event event, uint8_t arg);
 
 /**
  * Send a character to stdout.

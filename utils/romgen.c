@@ -87,7 +87,7 @@ int write_line_mm7705(struct mem_layout *layout, FILE *ifd, FILE *ofd)
 
 	dump_byte(ofd, parbyte);
 
-	fputc('\n', ofd);
+//	fputc('\n', ofd);
 
 	return num_bytes;
 }
@@ -108,7 +108,7 @@ int write_line_basis(struct mem_layout *layout, FILE *ifd, FILE *ofd)
 	for (i = num_bytes-1; i >=0 ; i--)
 		fprintf(ofd, "%02X", srcbuf[i]);
 
-	fputc('\n', ofd);
+//	fputc('\n', ofd);
 
 	return num_bytes;
 }
@@ -209,13 +209,19 @@ int dump_rcf(const char *inputfile, const char *outdir, struct mem_layout *layou
 	printf("Writing rcf files: %d bytes per iteration, %d bytes per rcf line\n", per_iteration, bytes_per_rcf_line);
 	int n = 0;
 	int fd_offset = 0;
+	int *output_started = calloc(rcf_file_count, sizeof(int));
+
 	while (n < file_size) {
 		int k;
 		for (k = 0; k < layout->adjacement_banks; k++) {
 			int dsc = k + fd_offset;
 			if (layout->inverse_order)
 				dsc = fd_offset + layout->adjacement_banks - k - 1;
+
+			if (output_started[dsc]) /* \n only for first line */
+				fputc('\n', ofd[dsc]);
 			n += layout->write_line(layout, ifd, ofd[dsc]);
+			output_started[dsc] = 1;
 		}
 
 		int next = (fd_offset + layout->adjacement_banks) * (bytes_per_rcf_line * layout->line_count);
@@ -225,7 +231,7 @@ int dump_rcf(const char *inputfile, const char *outdir, struct mem_layout *layou
 			printf("Selecting next descriptor batch @ offset %d, next %d\n", fd_offset, next);
 		}
 	}
-
+	free(output_started);
 	printf("Total %d bytes processed\n", n);
 	for (i = 0; i < rcf_file_count; i++)
 		fclose(ofd[i]);

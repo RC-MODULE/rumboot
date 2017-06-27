@@ -10,27 +10,29 @@ void rumboot_main()
      * 2. Initialize bss section with zeroes (if we're using the BSS)
      * 3. Calls main() function
      */
+
      /* Initialize the runtime info */
      rumboot_platform_runtime_info.magic = 0xb00bc0de;
      rumboot_platform_runtime_info.current_max_heap = rumboot_platform_heap_start;
 
+     /* Zero-out BSS, if any */
      #ifdef RUMBOOT_HAS_BSS
           memset(rumboot_platform_bss_start, 0x0, rumboot_platform_bss_end - rumboot_platform_bss_start);
      #endif
 
-      // Remove this when correct finish done
-     /* TODO */
-     uint32_t volatile *ptr_gpio0_data = 0x010403FC;
-     uint32_t volatile *ptr_gpio0_dir  = 0x01040400;
-     uint32_t volatile *ptr_gpio1_data = 0x010413FC;
-     uint32_t volatile *ptr_gpio1_dir  = 0x01041400;
-       // Init GPIO
-     *ptr_gpio1_dir  = 0x000000FF;
-     *ptr_gpio1_data = 0x00000000;
-     *ptr_gpio0_dir  = 0x000000FF;
-     *ptr_gpio0_data = 0x00000000;
-     
-     *ptr_gpio1_data = 0x000000FF;   // Write Tube Command PRINTFINISH
-     *ptr_gpio0_data = 0x00000007;   //   With Data 0xFF
-     main();
+     /* Call Platform-specific setup code (e.g. init the event system) */
+     rumboot_platform_setup();
+
+     /* call main() */
+     int ret = main();
+
+     /* Now, let's handle the exit code from main */
+     if (ret)
+          rumboot_platform_raise_event(EVENT_CRASH, ret);
+     else
+          rumboot_platform_raise_event(EVENT_FINISH, ret);
+
+     /* Finally, if we're here - something didn't work out, loop forever */
+     while(1);;
+
 }
