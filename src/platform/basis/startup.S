@@ -63,96 +63,96 @@ rumboot_fiq_handler:
 .global rumboot_reset_handler
 
 rumboot_reset_handler:
-    MOV R0,  #0
-    MOV R1,  #0
-    MOV R2,  #0
-    MOV R3,  #0
-    MOV R4,  #0
-    MOV R5,  #0
-    MOV R6,  #0
-    MOV R7,  #0
-    MOV R8,  #0
-    MOV R9,  #0
-    MOV R10, #0
-    MOV R11, #0
-    MOV R12, #0
-    MOV R13, #0
-    MOV R14, #0
+    mov r0,  #0
+    mov r1,  #0
+    mov r2,  #0
+    mov r3,  #0
+    mov r4,  #0
+    mov r5,  #0
+    mov r6,  #0
+    mov r7,  #0
+    mov r8,  #0
+    mov r9,  #0
+    mov r10, #0
+    mov r11, #0
+    mov r12, #0
+    mov r13, #0
+    mov r14, #0
 
     /*
-     *  Enter each mode in turn and
+     *  enter each mode in turn and
      *  initialize the registers specific to it
      */
-    MSR  CPSR_c, #Mode_FIQ | I_Bit | F_Bit
-    MOV R8,  #0
-    MOV R9,  #0
-    MOV R10, #0
-    MOV R11, #0
-    MOV R12, #0
-    MOV R13, #0
-    MOV R14, #0
+    msr  cpsr_c, #Mode_FIQ | I_Bit | F_Bit
+    mov r8,  #0
+    mov r9,  #0
+    mov r10, #0
+    mov r11, #0
+    mov r12, #0
+    mov r13, #0
+    mov r14, #0
 
-    MSR  CPSR_c, #Mode_IRQ | I_Bit | F_Bit
-    MOV R13, #0
-    MOV R14, #0
+    msr  cpsr_c, #Mode_IRQ | I_Bit | F_Bit
+    mov r13, #0
+    mov r14, #0
 
-    MSR  CPSR_c, #Mode_ABT | I_Bit | F_Bit
-    MOV R13, #0
-    MOV R14, #0
+    msr  cpsr_c, #Mode_ABT | I_Bit | F_Bit
+    mov r13, #0
+    mov r14, #0
 
-    MSR  CPSR_c, #Mode_UND | I_Bit | F_Bit
-    MOV R13, #0
-    MOV R14, #0
+    msr  cpsr_c, #Mode_UND | I_Bit | F_Bit
+    mov r13, #0
+    mov r14, #0
 
     /*
      * System mode shares user mode registers
      */
-    MSR  CPSR_c, #Mode_SYS | I_Bit | F_Bit
-    MOV R13, #0
-    MOV R14, #0
+    msr  cpsr_c, #Mode_SYS | I_Bit | F_Bit
+    mov r13, #0
+    mov r14, #0
 
-    MSR  CPSR_c, #Mode_MON | I_Bit | F_Bit
-    MOV R13, #0
-    MOV R14, #0
+    msr  cpsr_c, #Mode_MON | I_Bit | F_Bit
+    mov r13, #0
+    mov r14, #0
 
     /*
      * Initialize ALU paths
      */
 
-    ADDS R0, R1, R2
+    adds r0, r1, r2
 
     /*
-     * Initialize return stack
-     * Requires brunch prediction enabled (Z=1)
+     * initialize return stack
+     * requires brunch prediction enabled (z=1)
      */
 
-    MRC  p15, 0, R0, c1, c0, 0 /* read control reg */
-    ORR  R0, R0, #0x800        /* set Z bit */
-    MCR  p15, 0, R0, c1, c0, 0 /* write control reg */
-    BL   call_1
+    mrc  p15, 0, r0, c1, c0, 0 /* read control reg */
+    orr  r0, r0, #0x800        /* set z bit */
+    mcr  p15, 0, r0, c1, c0, 0 /* write control reg */
+    bl   call_1
 call_1:
-    BL   call_2
+    bl   call_2
 call_2:
-    BL   call_3
+    bl   call_3
 call_3:
 
   /*
    *  Restore Z bit (if necessary)
    */
-  BIC R0, R0, #0x800
-  MCR  p15, 0, R0, c1, c0, 0 /* write control reg */
+  bic r0, r0, #0x800
+  mcr  p15, 0, r0, c1, c0, 0 /* write control reg */
 
-  /* --- Set IRQ Stack*/
-  MSR  CPSR_c, #Mode_IRQ | I_Bit | F_Bit /* No interrupts*/
-  LDR  SP, =rumboot_platform_irq_stack_top
+  /* --- set irq stack*/
+  msr  cpsr_c, #Mode_IRQ | I_Bit | F_Bit /* No interrupts*/
+  ldr  sp, =rumboot_platform_irq_stack_top
 
   /*--- Set USR Stack*/
-  MSR  CPSR_c, #Mode_SYS | I_Bit | F_Bit /* No interrupts*/
-  LDR  SP, =rumboot_platform_usr_stack_top
+  msr  cpsr_c, #Mode_SYS | I_Bit | F_Bit /* No interrupts*/
+  ldr  sp, =rumboot_platform_usr_stack_top
 
   /*--- Set SVC Stack*/
-  MSR  CPSR_c, #Mode_SVC | I_Bit | F_Bit /* No interrupts*/
-  LDR  SP, =rumboot_platform_svc_stack_top
+  msr  cpsr_c, #Mode_SVC | I_Bit | F_Bit /* No interrupts*/
+  ldr  sp, =rumboot_platform_svc_stack_top
 
   bl rumboot_main
   b endless_loop
