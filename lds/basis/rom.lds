@@ -29,9 +29,15 @@ SECTIONS
   . = . + 0xf000; /* 60k heap */
   rumboot_platform_heap_end = .;
 
-  . = . + 0x10000; /* 64k stack */
-  rumboot_platform_stack_top = .;
+  . = . + 0x1000; /* 4k SVC stack */
+  rumboot_platform_svc_stack_top = .;
 
+  . = . + 0x1000; /* 4k SVC stack */
+  rumboot_platform_irq_stack_top = .;
+
+  . = . + 0xe000; /* 56k svc stack */
+  rumboot_platform_usr_stack_top = .;
+  rumboot_platform_stack_top = .;
  } > IM0
 
 }

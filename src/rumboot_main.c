@@ -12,6 +12,7 @@ void rumboot_main()
      */
 
      /* Initialize the runtime info */
+     memset(&rumboot_platform_runtime_info, 0x0, sizeof(rumboot_platform_runtime_info));
      rumboot_platform_runtime_info.magic = 0xb00bc0de;
      rumboot_platform_runtime_info.current_max_heap = rumboot_platform_heap_start;
 
