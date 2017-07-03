@@ -42,7 +42,7 @@ macro(rumboot_platform_generate_stuff_for_taget product)
     DEPENDS ${product}.bin utils
   )
   add_custom_target(
-    rcf ALL
+    rcf_${product} ALL
     DEPENDS ${product}.hex
   )
   install(DIRECTORY ${CMAKE_BINARY_DIR}/${product}.rcf DESTINATION rumboot/rcf)
