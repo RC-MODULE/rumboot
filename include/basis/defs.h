@@ -8,9 +8,9 @@
 
 #define TSNS_BASE      0x01019000
 
-#define GPIO0_BASE     0x01040000
-#define GPIO1_BASE     0x01041000
-#define GPIO2_BASE     0x01042000
+#define GPIO0_BASE     0x01044000
+#define GPIO1_BASE     0x01045000
+#define GPIO2_BASE     0x01046000
 
 
 

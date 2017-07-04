@@ -10,8 +10,8 @@ uint32_t rumboot_platform_get_uptime()
     return 0;
 }
 
-#define DGPIO_LOW_BASE      0x01040000
-#define DGPIO_HIGH_BASE     0x01041000
+#define DGPIO_LOW_BASE      0x01044000
+#define DGPIO_HIGH_BASE     0x01045000
 #define DIR                 0x0400
 #define DATA                0x03FC
 
