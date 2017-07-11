@@ -52,7 +52,7 @@ macro(rumboot_platform_generate_stuff_for_taget product)
 
   add_custom_target(
     ${product}.hex ALL
-    DEPENDS ${product}.hex
+    DEPENDS ${product}.hex/image_mem64_0.hex
   )
 
   install(DIRECTORY ${CMAKE_BINARY_DIR}/${product}.rcf DESTINATION rumboot/rcf)
