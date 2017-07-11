@@ -17,3 +17,9 @@ void rumboot_print_logo()
     rumboot_putstring(rumboot_logo);
     rumboot_putstring(version);
 }
+
+void rumboot_print_host_logo()
+{
+    rumboot_putstring(rumboot_host_logo);
+    rumboot_putstring("Host mode\n");
+}
