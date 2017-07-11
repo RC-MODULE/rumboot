@@ -16,10 +16,10 @@
 
 #define PCIE_BASE      0x40000000
 
-#define ADDR_TRANS_SLV_BASE      0x01047000
-#define ADDR_TRANS_MST_BASE      0x01048000
-#define PCIE_CORE_BASE           0x0104A000
-#define PCIE_PHY_BASE            0x01052000
+#define ADDR_TRANS_SLV_BASE      0x01034000
+#define ADDR_TRANS_MST_BASE      0x01035000
+#define PCIE_CORE_BASE           0x01058000
+#define PCIE_PHY_BASE            0x01060000
 
 
 
