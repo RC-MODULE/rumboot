@@ -7,6 +7,8 @@
 //    - checking that bits are correct
 //    - 
 //
+//  Test duration (RTL): < 0.6 ms
+//
 //-----------------------------------------------------------------------------
 #include <basis/defs_c.h>
 
