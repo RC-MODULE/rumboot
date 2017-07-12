@@ -45,17 +45,29 @@ macro(generate_stuff_for_target product)
 
 endmacro()
 
-macro(add_rumboot_target snapshot lds prefix target)
+function(add_rumboot_target snapshot lds prefix target)
     GET_FILENAME_COMPONENT(f ${target} NAME_WE)
     SET(product rumboot-${RUMBOOT_PLATFORM}-${CMAKE_BUILD_TYPE}-${prefix}-${f})
-    add_executable(${product} ${target} ${ARGN} $<TARGET_OBJECTS:rumboot>)
+
+    if (TARGET ${product})
+      return()
+    endif()
+
+    foreach(f ${target} ${ARGN})
+      if (NOT EXISTS ${f})
+        LIST(APPEND trg ${RUMBOOT_PLATFORM_TARGET_DIR}/${target})
+      else()
+        LIST(APPEND trg ${target})
+      endif()
+    endforeach()
+
+    add_executable(${product} ${trg} $<TARGET_OBJECTS:rumboot>)
 
     if (EXISTS ${CMAKE_SOURCE_DIR}/lds/${lds})
       set(ldf -T${CMAKE_SOURCE_DIR}/lds/${lds})
     else()
       set(ldf "")
     endif()
-
 
     target_link_libraries(${product} ${ldf} -Wl,-Map,${product}.map)
     install(TARGETS ${product} RUNTIME DESTINATION rumboot)
@@ -71,6 +83,4 @@ macro(add_rumboot_target snapshot lds prefix target)
     if (${RUMBOOT_PLATFORM} MATCHES "native")
       add_test(${product} ${product})
     endif()
-
-    set(LAST_PRODUCT_NAME "${product}")
-endmacro()
+endfunction()

@@ -1,8 +1,10 @@
 SET(RUMBOOT_ARCH basis)
 SET(RUMBOOT_PLATFORM basis)
 
+set(RUMBOOT_PLATFORM_TARGET_DIR ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/targets/)
+
 macro(add_directory_with_targets prefix lds dir)
-  file(GLOB RUMBOOT_TARGETS ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/targets/${dir}/*.c)
+  file(GLOB RUMBOOT_TARGETS ${RUMBOOT_PLATFORM_TARGET_DIR}/${dir}/*.c)
   foreach(target ${RUMBOOT_TARGETS})
     add_rumboot_target(default ${lds} ${prefix} ${target})
   endforeach()
@@ -12,22 +14,27 @@ macro(add_directory_with_targets prefix lds dir)
   endforeach()
 endmacro()
 
+### Add tests here ###
+#WARNING! Do not add tests twice into short and full regression lists.
+#WARNING! Full regression automatically includes all tests from the short ones
 macro(RUMBOOT_FULL_REGESSION_LIST)
   add_directory_with_targets(simple-rom basis/rom.lds simple-rom/)
 endmacro()
 
+#WARNING! Do not add tests twice into short and full regression lists.
+#WARNING! Full regression automatically includes all tests from the short ones
 macro(RUMBOOT_SHORT_REGESSION_LIST)
-  add_rumboot_target(default basis/rom.lds simple-rom simple-rom/hello-asm.c)
+  add_rumboot_target(default basis/rom.lds simple-rom simple-rom/hello-asm.S)
   add_rumboot_target(default basis/rom.lds simple-rom simple-rom/sp804-periph-id.c)
 endmacro()
 
 macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
   ### Tests are automatically added from directories when we are NOT running the
   ### jenkins test list (They are always build nevertheless)
+  ###
+  RUMBOOT_SHORT_REGESSION_LIST()
   if (NOT CMAKE_VERILOG_RULES_LOADED OR NOT HDL_REGRESSION_LIST MATCHES "short")
     RUMBOOT_FULL_REGESSION_LIST()
-  else()
-    RUMBOOT_SHORT_REGESSION_LIST()
   endif()
 
   ### ADD NEW TESTS HERE ###
@@ -37,8 +44,6 @@ endmacro()
 if (CMAKE_VERILOG_RULES_LOADED)
     return()
 endif()
-
-
 
 file(GLOB PLATFORM_SOURCES
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/*.c
