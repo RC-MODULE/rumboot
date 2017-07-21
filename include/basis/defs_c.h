@@ -115,6 +115,31 @@
 #define rgPCIe_Phy_MASSWR_RX_SLC_RUN_TMR                    (*(volatile int*)(PCIE_PHY_BASE + PCIe_Phy_MASSWR_RX_SLC_RUN_TMR                ))
 // #define rgPCIe_Phy_CMN_PRPLL_LOCK_CNT_START                 (*(volatile int*)(PCIE_PHY_BASE + PCIe_Phy_CMN_PRPLL_LOCK_CNT_START             ))  register wasn`t found */
 
+#define rgPCIe_Phy_PMA_CMN_PID_TYPE                     (*(volatile int*)(PCIE_PHY_BASE + PCIe_Phy_PMA_CMN_PID_TYPE                         ))
+#define rgPCIe_Phy_PMA_CMN_PID_NUM                      (*(volatile int*)(PCIE_PHY_BASE + PCIe_Phy_PMA_CMN_PID_NUM                          ))
+#define rgPCIe_Phy_PMA_CMN_PID_REV                      (*(volatile int*)(PCIE_PHY_BASE + PCIe_Phy_PMA_CMN_PID_REV                          ))
+#define rgPCIe_Phy_PMA_CMN_PID_MFG                      (*(volatile int*)(PCIE_PHY_BASE + PCIe_Phy_PMA_CMN_PID_MFG                          ))
+#define rgPCIe_Phy_PMA_CMN_PID_NODE                     (*(volatile int*)(PCIE_PHY_BASE + PCIe_Phy_PMA_CMN_PID_NODE                         ))
+#define rgPCIe_Phy_PMA_CMN_PID_FLV                      (*(volatile int*)(PCIE_PHY_BASE + PCIe_Phy_PMA_CMN_PID_FLV                          ))
+#define rgPCIe_Phy_PMA_CMN_PID_IOV                      (*(volatile int*)(PCIE_PHY_BASE + PCIe_Phy_PMA_CMN_PID_IOV                          ))
+#define rgPCIe_Phy_PMA_CMN_PID_METAL                    (*(volatile int*)(PCIE_PHY_BASE + PCIe_Phy_PMA_CMN_PID_METAL                        ))
+#define rgPCIe_Phy_PMA_CMN_PID_LANES                    (*(volatile int*)(PCIE_PHY_BASE + PCIe_Phy_PMA_CMN_PID_LANES                        ))
+#define rgPCIe_Phy_PMA_CMN_SSM_BANDGAP_TMR              (*(volatile int*)(PCIE_PHY_BASE + PCIe_Phy_PMA_CMN_SSM_BANDGAP_TMR                  ))
+#define rgPCIe_Phy_PMA_CMN_SSM_BIAS_TMR                 (*(volatile int*)(PCIE_PHY_BASE + PCIe_Phy_PMA_CMN_SSM_BIAS_TMR                     ))
+#define rgPCIe_Phy_PMA_CMN_SSM_PLLEN_TMR                (*(volatile int*)(PCIE_PHY_BASE + PCIe_Phy_PMA_CMN_SSM_PLLEN_TMR                    ))
+#define rgPCIe_Phy_PMA_CMN_SSM_PLLVREF_TMR              (*(volatile int*)(PCIE_PHY_BASE + PCIe_Phy_PMA_CMN_SSM_PLLVREF_TMR                  ))
+#define rgPCIe_Phy_PMA_CMN_SSM_LANECAL_TMR              (*(volatile int*)(PCIE_PHY_BASE + PCIe_Phy_PMA_CMN_SSM_LANECAL_TMR                  ))
+#define rgPCIe_Phy_PMA_CMN_SSM_A1OUT_TMR                (*(volatile int*)(PCIE_PHY_BASE + PCIe_Phy_PMA_CMN_SSM_A1OUT_TMR                    ))
+#define rgPCIe_Phy_PMA_CMN_PSC_A0                       (*(volatile int*)(PCIE_PHY_BASE + PCIe_Phy_PMA_CMN_PSC_A0                           ))
+#define rgPCIe_Phy_PMA_CMN_PSC_A1                       (*(volatile int*)(PCIE_PHY_BASE + PCIe_Phy_PMA_CMN_PSC_A1                           ))
+#define rgPCIe_Phy_PMA_CMN_PSC_A2                       (*(volatile int*)(PCIE_PHY_BASE + PCIe_Phy_PMA_CMN_PSC_A2                           ))
+#define rgPCIe_Phy_PMA_CMN_PSC_A4                       (*(volatile int*)(PCIE_PHY_BASE + PCIe_Phy_PMA_CMN_PSC_A4                           ))
+
+
+
+
+
+
 /* --- PCIe --- */
 #define rgPCIe_EP_i_vendor_id_device_id                    (*(volatile int*)(PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_EP_i_vendor_id_device_id            ))
 #define rgPCIe_EP_i_command_status                         (*(volatile int*)(PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_EP_i_command_status                 ))

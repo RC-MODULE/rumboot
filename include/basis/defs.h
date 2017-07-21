@@ -204,6 +204,30 @@
 #define PCIe_Phy_MASSWR_RX_SLC_RUN_TMR                    0xA000*2 + 0x14E*4
 /* #define PCIe_Phy_CMN_PRPLL_LOCK_CNT_START             register wasn`t found */
 
+#define PCIe_Phy_PMA_CMN_PID_TYPE                     0x0000*2 + 0x000*4
+#define PCIe_Phy_PMA_CMN_PID_NUM                      0x0000*2 + 0x003*4
+#define PCIe_Phy_PMA_CMN_PID_REV                      0x0000*2 + 0x004*4
+#define PCIe_Phy_PMA_CMN_PID_MFG                      0x0000*2 + 0x008*4
+#define PCIe_Phy_PMA_CMN_PID_NODE                     0x0000*2 + 0x009*4
+#define PCIe_Phy_PMA_CMN_PID_FLV                      0x0000*2 + 0x00A*4
+#define PCIe_Phy_PMA_CMN_PID_IOV                      0x0000*2 + 0x00C*4
+#define PCIe_Phy_PMA_CMN_PID_METAL                    0x0000*2 + 0x00D*4
+#define PCIe_Phy_PMA_CMN_PID_LANES                    0x0000*2 + 0x010*4
+#define PCIe_Phy_PMA_CMN_SSM_BANDGAP_TMR              0x0000*2 + 0x020*4
+#define PCIe_Phy_PMA_CMN_SSM_BIAS_TMR                 0x0000*2 + 0x021*4
+#define PCIe_Phy_PMA_CMN_SSM_PLLEN_TMR                0x0000*2 + 0x022*4
+#define PCIe_Phy_PMA_CMN_SSM_PLLVREF_TMR              0x0000*2 + 0x024*4
+#define PCIe_Phy_PMA_CMN_SSM_LANECAL_TMR              0x0000*2 + 0x028*4
+#define PCIe_Phy_PMA_CMN_SSM_A1OUT_TMR                0x0000*2 + 0x021*4
+#define PCIe_Phy_PMA_CMN_PSC_A0                       0x0000*2 + 0x040*4
+#define PCIe_Phy_PMA_CMN_PSC_A1                       0x0000*2 + 0x041*4
+#define PCIe_Phy_PMA_CMN_PSC_A2                       0x0000*2 + 0x042*4
+#define PCIe_Phy_PMA_CMN_PSC_A4                       0x0000*2 + 0x044*4
+#define PCIe_Phy_PMA_
+#define PCIe_Phy_PMA_
+#define PCIe_Phy_PMA_
+#define PCIe_Phy_PMA_
+#define PCIe_Phy_PMA_
 /* --- PCIe Core --- */
 
 #define PCIe_Core_FuncRPConfig  0x00000000
