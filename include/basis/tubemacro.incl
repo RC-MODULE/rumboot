@@ -1,0 +1,48 @@
+.macro tube_msg msg
+
+        PUSH {R0,LR}
+        B   tube_msg_1_\@
+
+tube_msg_\@:
+        .ascii "\msg\x0a\x00"
+        .align 4
+
+tube_msg_1_\@:
+        LDR R0, =tube_msg_\@
+        BL rumboot_printf
+        POP  {R0,LR}
+.endm
+
+.macro tube_hex reg
+
+        PUSH {R0-R1,LR}
+        B   tube_hex_1_\@
+
+tube_hex_\@:
+        .ascii "  0x%08x\x0a\x00"
+        .align 4
+
+tube_hex_1_\@:
+        MOV R1, \reg
+        LDR R0, =tube_hex_\@
+        BL rumboot_printf
+        POP  {R0-R1,LR}
+.endm
+
+.macro tube_dec reg
+
+        PUSH {R0-R1,LR}
+        B   tube_dec_1_\@
+
+tube_dec_\@:
+        .ascii "  %d\x0a\x00"
+        .align 4
+
+tube_dec_1_\@:
+        MOV R1, \reg
+        LDR R0, =tube_dec_\@
+        BL rumboot_printf
+        POP  {R0-R1,LR}
+.endm
+
+
