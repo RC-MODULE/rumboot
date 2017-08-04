@@ -52,7 +52,7 @@ int check_reg_addr ()
         if (*pointer != (((int) pointer << 12) & 0xFFFFF001))
             return -1;
         pointer++;
-        if (*pointer != (((int) pointer << 12) & 0xFFFFF000))
+        if (*pointer != ((((int) pointer << 12) & 0xFFFFF000) | 0x00000FFF))
             return -1;
         pointer++;
         if (*pointer != (((int) pointer << 12) & 0xFFFFF000))
@@ -98,16 +98,16 @@ int check_reg_bits ()
         
         pointer++;
         *pointer = 0x00000000;
-        if (*pointer != 0x00000000)
+        if (*pointer != 0x00000FFF)
             return -1;
         *pointer = 0x55555555;
-        if (*pointer != 0x55555000)
+        if (*pointer != 0x55555FFF)
             return -1;
         *pointer = 0xAAAAAAAA;
-        if (*pointer != 0xAAAAA000)
+        if (*pointer != 0xAAAAAFFF)
             return -1;
         *pointer = 0xFFFFFFFF;
-        if (*pointer != 0xFFFFF000)
+        if (*pointer != 0xFFFFFFFF)
             return -1;
         
         pointer++;
