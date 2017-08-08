@@ -55,12 +55,13 @@ function(add_rumboot_target snapshot lds prefix target)
 
     foreach(f ${target} ${ARGN})
       if (NOT EXISTS ${f})
-        LIST(APPEND trg ${RUMBOOT_PLATFORM_TARGET_DIR}/${target})
+        LIST(APPEND trg ${RUMBOOT_PLATFORM_TARGET_DIR}/${f})
       else()
-        LIST(APPEND trg ${target})
+        LIST(APPEND trg ${f})
       endif()
     endforeach()
 
+    message(=====> ${trg})
     add_executable(${product} ${trg} $<TARGET_OBJECTS:rumboot>)
 
     if (EXISTS ${CMAKE_SOURCE_DIR}/lds/${lds})
