@@ -26,6 +26,8 @@ endmacro()
 macro(RUMBOOT_SHORT_REGESSION_LIST)
   add_rumboot_target(default basis/rom.lds simple-rom simple-rom/hello-asm.S)
   add_rumboot_target(default basis/rom.lds simple-rom simple-rom/sp804-periph-id.c)
+  add_rumboot_target(default basis/rom.lds can
+      can/can-loopback.c can/loopback.S)
 endmacro()
 
 macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
