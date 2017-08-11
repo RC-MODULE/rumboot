@@ -19,6 +19,8 @@ endmacro()
 #WARNING! Full regression automatically includes all tests from the short ones
 macro(RUMBOOT_FULL_REGESSION_LIST)
   add_directory_with_targets(simple-rom basis/rom.lds simple-rom/)
+  add_rumboot_target(default basis/rom.lds can
+      can/can-loopback.c can/loopback.S)
 endmacro()
 
 #WARNING! Do not add tests twice into short and full regression lists.
@@ -26,8 +28,6 @@ endmacro()
 macro(RUMBOOT_SHORT_REGESSION_LIST)
   add_rumboot_target(default basis/rom.lds simple-rom simple-rom/hello-asm.S)
   add_rumboot_target(default basis/rom.lds simple-rom simple-rom/sp804-periph-id.c)
-  add_rumboot_target(default basis/rom.lds can
-      can/can-loopback.c can/loopback.S)
 endmacro()
 
 macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
