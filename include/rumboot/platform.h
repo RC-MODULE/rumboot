@@ -34,6 +34,17 @@ enum rumboot_simulation_event {
 
 
 /**
+ * Emergency exit, optionally printing out a reason why
+ * This will terminate the simulation or cause an infinite loop
+ * in production builds.
+ *
+ * WARNING! Use with exterme care for production code!
+ *
+ * @param fmt format for description message. Can be NULL
+ */
+void rumboot_platform_panic(const char *fmt, ...);
+
+/**
  * This function will be called before main(). This function should contains
  * platform-specific initialization. This should initilize at lest:
  * - A timer for rumboot_platform_get_uptime()

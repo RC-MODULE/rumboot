@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <rumboot/platform.h>
+#include <rumboot/printf.h>
 #include <rumboot/io.h>
 
 /* Platform-specific glue */
@@ -27,6 +28,30 @@ union u32 {
     uint32_t u;
     char byte[4];
 };
+
+void rumboot_platform_panic(const char *why, ...)
+{
+	uint32_t *fp = __builtin_frame_address(0);
+	int depth = 32;
+
+	if (why) {
+        va_list ap;
+        rumboot_printf("PANIC: ");
+    	va_start(ap, why);
+        rumboot_vprintf(why, ap);
+    	va_end(ap);
+    }
+    /* Let's walk the stack all the way down */
+	while (depth--) {
+		uint32_t pc = *(((uint32_t*)fp) + 0);
+		uint32_t lr = *(((uint32_t*)fp) + 1);
+	 	fp = (uint32_t *) (lr);
+        rumboot_platform_trace((void *) (pc - 4 ));
+		if (fp == 0)
+			break;
+	}
+	rumboot_platform_raise_event(EVENT_CRASH, 0);
+}
 
 void rumboot_platform_trace(void *pc)
 {

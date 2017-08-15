@@ -48,7 +48,7 @@ undefined_handler:
 
 swi_handler:
   mov r0, #RUMBOOT_IRQ_TYPE_EXCEPTION
-  mov r1, #RUMBOOT_IRQ_UNDEFINED_INSTRUCTION
+  mov r1, #RUMBOOT_IRQ_SOFTWARE_EXCEPTION
   b rumboot_irq_core_dispatch
 
 prefetch_handler:

@@ -50,6 +50,7 @@ endif()
 file(GLOB PLATFORM_SOURCES
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/*.c
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/startup.S
+    ${CMAKE_SOURCE_DIR}/src/lib/drivers/*.c
 )
 
 macro(RUMBOOT_PLATFORM_SET_COMPILER_FLAGS)
