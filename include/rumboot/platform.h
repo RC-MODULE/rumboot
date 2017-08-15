@@ -29,6 +29,7 @@ enum rumboot_simulation_event {
     EVENT_PERF, /** Performance checkpoint */
     EVENT_STDOUT, /** A character is ready for output */
     EVENT_STDIN, /** A character is requested */
+    EVENT_TRACE, /** A function call trace */
 };
 
 
@@ -46,6 +47,13 @@ void rumboot_platform_setup();
  * @return useconds
  */
 uint32_t rumboot_platform_get_uptime();
+
+
+/**
+ * This function is called to trace a function call with a pc value
+ * @param pc register value
+ */
+void rumboot_platform_trace(void *pc);
 
 /**
  * Raise an event to notify the environment. The EVENT_FINISH and EVENT_CRASH

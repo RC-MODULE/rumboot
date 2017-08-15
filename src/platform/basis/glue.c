@@ -23,6 +23,21 @@ void rumboot_platform_setup() {
     rumboot_platform_raise_event(EVENT_PERF, 0);
 }
 
+union u32 {
+    uint32_t u;
+    char byte[4];
+};
+
+void rumboot_platform_trace(void *pc)
+{
+    union u32 u;
+    u.u = (uint32_t) pc;
+    rumboot_platform_raise_event(EVENT_TRACE, u.byte[3]);
+    rumboot_platform_raise_event(EVENT_TRACE, u.byte[2]);
+    rumboot_platform_raise_event(EVENT_TRACE, u.byte[1]);
+    rumboot_platform_raise_event(EVENT_TRACE, u.byte[0]);
+}
+
 void rumboot_platform_raise_event(enum rumboot_simulation_event event, uint8_t arg)
 {
     iowrite32(arg, DGPIO_HIGH_BASE + DATA);

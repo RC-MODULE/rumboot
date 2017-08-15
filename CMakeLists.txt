@@ -50,7 +50,7 @@ execute_process(COMMAND
   OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
-SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Os -Wall")
+SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Os -Wall -fno-omit-frame-pointer")
 SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DROMBOOT_VERSION=\\\"${GIT_BRANCH}-${GIT_REVISION}\\\"")
 SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DROMBOOT_BUILD_TYPE=\\\"${CMAKE_BUILD_TYPE}\\\"")
 SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DROMBOOT_PLATFORM=\\\"${RUMBOOT_PLATFORM}\\\"")
@@ -100,6 +100,7 @@ ADD_SOURCE("src/lib/logo.c")
 ADD_SOURCE("src/lib/stdio.c")
 ADD_SOURCE("src/lib/printf.c")
 ADD_SOURCE("src/lib/testsuite.c")
+ADD_SOURCE("src/irq.c")
 if (NOT RUMBOOT_PLATFORM MATCHES native)
     ADD_SOURCE(src/rumboot_main.c)
 endif()

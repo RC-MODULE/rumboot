@@ -1,3 +1,4 @@
+#include <rumboot/irq.h>
 .section .text.startup
 
 /* --- Mode bits in PSRs --- */
@@ -30,35 +31,52 @@
 .global rumboot_default_irq_vectors
 rumboot_default_irq_vectors:
   b      rumboot_reset_handler
-  b      rumboot_undefined_handler
-  b      rumboot_swi_handler
-  b      rumboot_prefetch_handler
-  b      rumboot_abort_handler
+  b      undefined_handler
+  b      swi_handler
+  b      prefetch_handler
+  b      abort_handler
   nop
-  b      rumboot_irq_handler
-  b      rumboot_fiq_handler
+  b      irq_handler
+  b      fiq_handler
 
 
-rumboot_undefined_handler:
-  b endless_loop
+undefined_handler:
+    mov r0, #RUMBOOT_IRQ_TYPE_EXCEPTION
+    mov r1, #RUMBOOT_IRQ_UNDEFINED_INSTRUCTION
+    b rumboot_irq_core_dispatch
 
-rumboot_swi_handler:
-  b endless_loop
 
-rumboot_prefetch_handler:
-  b endless_loop
+swi_handler:
+  mov r0, #RUMBOOT_IRQ_TYPE_EXCEPTION
+  mov r1, #RUMBOOT_IRQ_UNDEFINED_INSTRUCTION
+  b rumboot_irq_core_dispatch
 
-rumboot_abort_handler:
-  b endless_loop
+prefetch_handler:
+  mov r0, #RUMBOOT_IRQ_TYPE_EXCEPTION
+  mov r1, #RUMBOOT_IRQ_PREFETCH_ABORT
+  b rumboot_irq_core_dispatch
+
+
+abort_handler:
+  mov r0, #RUMBOOT_IRQ_TYPE_EXCEPTION
+  mov r1, #RUMBOOT_IRQ_DATA_ABORT
+  b rumboot_irq_core_dispatch
+
+irq_handler:
+  mov r0, #RUMBOOT_IRQ_TYPE_NORMAL
+  mov r1, #RUMBOOT_IRQ_IRQ
+  b rumboot_irq_core_dispatch
+
+
+fiq_handler:
+  mov r0, #RUMBOOT_IRQ_TYPE_NORMAL
+  mov r1, #RUMBOOT_IRQ_FIQ
+  b rumboot_irq_core_dispatch
+
 
 endless_loop:
   b endless_loop;
 
-rumboot_irq_handler:
-  b endless_loop
-
-rumboot_fiq_handler:
-  b endless_loop
 
 .global rumboot_reset_handler
 
