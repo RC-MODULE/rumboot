@@ -37,12 +37,12 @@ struct rumboot_irq_entry
 };
 
 
-void rumboot_irq_free(struct rumboot_irq_table *tbl)
+void rumboot_irq_free(struct rumboot_irq_entry *tbl)
 {
 	free(tbl);
 }
 
-struct rumboot_irq_entry *rumboot_irq_create(struct rumboot_irq_table *copyfrom)
+struct rumboot_irq_entry *rumboot_irq_create(struct rumboot_irq_entry *copyfrom)
 {
 
     struct rumboot_irq_entry *tbl = calloc(sizeof(*tbl), RUMBOOT_PLATFORM_NUM_IRQS + 1);

@@ -60,13 +60,13 @@
      * @param  copyfrom [description]
      * @return          [description]
      */
-    struct rumboot_irq_entry *rumboot_irq_create(struct rumboot_irq_table *copyfrom);
+    struct rumboot_irq_entry *rumboot_irq_create(struct rumboot_irq_entry *copyfrom);
 
     /**
      * Release an irq table. The table should NOT be active.
      * @param tbl [description]
      */
-    void rumboot_irq_free(struct rumboot_irq_table *tbl);
+    void rumboot_irq_free(struct rumboot_irq_entry *tbl);
     /**
      * Set an irq handler in the user-supplied irq table. An optional arg will
      * be passed by the subsystem code to the handler function
@@ -105,7 +105,7 @@
 
     /**
     *
-    * \defgroup irq_platform Platfrom bindings: Interrupt subsystem 
+    * \defgroup irq_platform Platfrom bindings: Interrupt subsystem
     * These functions should be implemented by platform code.
     *
     * For people writing tests: YOU DO NOT NEED THESE FUNCTIONS!
