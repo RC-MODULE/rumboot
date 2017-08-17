@@ -34,6 +34,6 @@ void rumboot_main()
           rumboot_platform_raise_event(EVENT_FINISH, ret);
 
      /* Finally, if we're here - something didn't work out, loop forever */
-     while(1);;
+     while(1) {}
 
 }
