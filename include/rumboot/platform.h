@@ -42,7 +42,7 @@ enum rumboot_simulation_event {
  *
  * @param fmt format for description message. Can be NULL
  */
-void rumboot_platform_panic(const char *fmt, ...);
+void __attribute__((noreturn)) rumboot_platform_panic(const char *fmt, ...);
 
 /**
  * This function will be called before main(). This function should contains

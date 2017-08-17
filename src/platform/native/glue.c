@@ -10,7 +10,7 @@ uint32_t rumboot_platform_get_uptime()
     return 0;
 }
 
-void rumboot_platform_panic(const char *why, ...)
+void void __attribute__((noreturn)) rumboot_platform_panic(const char *why, ...)
 {
     va_list ap;
     va_start(ap, why);
