@@ -29,7 +29,7 @@ union u32 {
     char byte[4];
 };
 
-void void __attribute__((noreturn)) rumboot_platform_panic(const char *why, ...)
+void __attribute__((noreturn)) rumboot_platform_panic(const char *why, ...)
 {
 	uint32_t *fp = __builtin_frame_address(0);
 	int depth = 32;
