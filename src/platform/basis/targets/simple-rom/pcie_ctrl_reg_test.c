@@ -26,12 +26,12 @@ int check_registers ()
         
     rgSCTL_PCIE_REG_1 = 0xFFFFFFFF ;
     rgSCTL_PCIE_REG_0 = 0xFFFFFFFF ;
-    if ((rgSCTL_PCIE_REG_0 != 0x04C03FFF) | (rgSCTL_PCIE_REG_1 != 0x00000004))
+    if ((rgSCTL_PCIE_REG_0 != 0x04C03EFF) | (rgSCTL_PCIE_REG_1 != 0x00000004))
         return -1;
         
     rgSCTL_PCIE_REG_1 = 0x55555555 ;
     rgSCTL_PCIE_REG_0 = 0x55555555 ;
-    if ((rgSCTL_PCIE_REG_1 != 0x00000004) | (rgSCTL_PCIE_REG_0 != 0x04401555))
+    if ((rgSCTL_PCIE_REG_1 != 0x00000004) | (rgSCTL_PCIE_REG_0 != 0x04401455))
         return -1;
         
     rgSCTL_PCIE_REG_0 = 0xAAAAAAAA ;
