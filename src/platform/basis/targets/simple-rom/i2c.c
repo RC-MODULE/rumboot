@@ -3,18 +3,10 @@
 #include <rumboot/io.h>
 #include <basis/defs.h>
 
-#define I2C0_BASE      0x0102A000
-#define I2C_SYS_FREQ_HZ   	0xBEBC200  //200 MHz
 
-#define I2C_PRESCALE		0x00
-#define I2C_CTRL			0x04
-#define I2C_TRANSMIT		0x08
-#define I2C_RECEIVE			0x08
-#define I2C_COMMAND			0x0C
-#define I2C_STATUS			0x0C
+#define I2C_SYS_FREQ_HZ   	0x5F5E100  //100 MHz
 
-
-#define SCL_FREQ 			0x186a0   //100 kHz  //400kHz //3.4 MHz
+#define SCL_FREQ 			0x186A0   //100 kHz  0x186A0//400kHz //3.4 MHz //1MHz 0xF4240 
 #define EN					0x0080
 #define IEN 				0x0040
 //transfer reg
@@ -43,9 +35,10 @@
 #define I2C_TIMEOUT			100000
 #define I2C_ATTEMPT			1000
 
-#define I2C0_DEV_ADDR       0xA0
-#define I2C0_DEV_SUBADDR	0x08	// write subaddress
+#define I2C_DEV_ADDR       0xA0
+#define I2C_DEV_SUBADDR	0x08	// write subaddress
 
+#define I2C_BASE I2C0_BASE
 
    // unsigned prescale = 0x41;       // prescale for 33 MHz
    // unsigned data = 0x8d;           // write data
@@ -67,11 +60,11 @@
    }
 
 int i2c_set_prescale(uint32_t i2c_base_addr, uint32_t scl_freq){
-	uint32_t ps = (I2C_SYS_FREQ_HZ / (5 * scl_freq)) - 1; //0x41
+	uint32_t ps = (I2C_SYS_FREQ_HZ / (5 * scl_freq)) - 1;
 	uint32_t tmp_ps;
-	iowrite32(ps, I2C0_BASE + I2C_PRESCALE );
+	iowrite32(ps, I2C_BASE + I2C_PRESCALE );
 	rumboot_printf("I2C0_WR=0x%x\n",ps);
-	tmp_ps = ioread32(I2C0_BASE + I2C_PRESCALE );
+	tmp_ps = ioread32(I2C_BASE + I2C_PRESCALE );
 	rumboot_printf("I2C0_RD=0x%x\n", tmp_ps);
 	if (tmp_ps == ps )
 	return I2C_OK;
@@ -82,10 +75,10 @@ int i2c_set_prescale(uint32_t i2c_base_addr, uint32_t scl_freq){
 int i2c_init(uint32_t i2c_base_addr, uint32_t scl_freq){
 	uint32_t tmp_ctrl;
 
-	i2c_set_prescale(I2C0_BASE,scl_freq);
-	iowrite32((EN | IEN),( I2C0_BASE + I2C_CTRL));//EN and IEN
+	i2c_set_prescale(I2C_BASE,scl_freq);
+	iowrite32((EN | IEN),( I2C_BASE + I2C_CTRL));//EN and IEN
 	rumboot_printf("ENABLE=0x%x\n",(EN | IEN));
-	tmp_ctrl = ioread32( I2C0_BASE + I2C_CTRL);
+	tmp_ctrl = ioread32( I2C_BASE + I2C_CTRL);
 
 	rumboot_printf("CTRL_REG=0x%x\n",tmp_ctrl);
 	if (tmp_ctrl == (EN | IEN) )
@@ -102,11 +95,11 @@ int i2c_wait(uint32_t i2c_base_addr) {
     rumboot_printf ("I2C wait\n");
     int cnt = 0;
 
-	   tmp = ioread32(i2c_base_addr + I2C_STATUS);		//!!!
-		rumboot_printf("I2C_STATUS=0x%x\n",tmp);       //!!!
+	   tmp = ioread32(i2c_base_addr + I2C_STATUS);	
+		rumboot_printf("I2C_STATUS=0x%x\n",tmp);   
     while ((tmp & I2C_TIP) != 0) {
-        tmp = ioread32(i2c_base_addr + I2C_STATUS);  //!!!
-	//	rumboot_printf("I2C_TIMEOUT=0x%x\n",tmp);    //!!!
+        tmp = ioread32(i2c_base_addr + I2C_STATUS); 
+	//	rumboot_printf("I2C_TIMEOUT=0x%x\n",tmp);  
 
         if (++cnt == I2C_TIMEOUT) {
             rumboot_printf("I2C timeout!\n");
@@ -123,7 +116,7 @@ int i2c_trans(uint32_t i2c_base_addr, uint32_t data, uint32_t condition) {
     int tmp = -1;
     uint32_t tmp_addr_dev;
     iowrite32(data,(i2c_base_addr + I2C_TRANSMIT));
-	tmp_addr_dev = ioread32( I2C0_BASE + I2C_TRANSMIT);
+	tmp_addr_dev = ioread32( I2C_BASE + I2C_TRANSMIT);
 	rumboot_printf("ADDR_DEV_REG=0x%x\n",tmp_addr_dev);
     iowrite32(condition,(i2c_base_addr + I2C_COMMAND));
 
@@ -224,9 +217,9 @@ int main()
 	uint32_t data	 = 0x8d;   	//write data
 	unsigned result;          	//read data
 
-	i2c_init(I2C0_BASE,SCL_FREQ);
-	i2c_write(I2C0_BASE, I2C0_DEV_ADDR,addr_h,addr_l, data);
-	result = i2c_read (I2C0_BASE, I2C0_DEV_ADDR, addr_h,addr_l);
+	i2c_init(I2C_BASE,SCL_FREQ);
+	i2c_write(I2C_BASE, I2C_DEV_ADDR,addr_h,addr_l, data);
+	result = i2c_read (I2C_BASE, I2C_DEV_ADDR, addr_h,addr_l);
 
 	rumboot_printf ("Read result:");
     rumboot_printf("i2c_read_data =0x%x\n",result);

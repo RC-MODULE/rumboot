@@ -20,8 +20,16 @@
 #define ADDR_TRANS_MST_BASE      0x01035000
 #define PCIE_CORE_BASE           0x01058000
 #define PCIE_PHY_BASE            0x01060000
+/* --- I2C ------) --- */
+#define I2C0_BASE      0x0102A000
+#define I2C1_BASE      0x0102B000
 
-
+#define I2C_PRESCALE		0x00
+#define I2C_CTRL			0x04
+#define I2C_TRANSMIT		0x08
+#define I2C_RECEIVE			0x08
+#define I2C_COMMAND			0x0C
+#define I2C_STATUS			0x0C
 
 /* --- GPIO (PL061) --- */
 
