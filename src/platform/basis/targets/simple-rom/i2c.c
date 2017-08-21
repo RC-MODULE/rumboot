@@ -6,7 +6,7 @@
 
 #define I2C_SYS_FREQ_HZ   	0x5F5E100  //100 MHz
 
-#define SCL_FREQ 			0x186A0   //100 kHz  0x186A0//400kHz //3.4 MHz //1MHz 0xF4240 
+#define SCL_FREQ 			0xF4240   //100 kHz  0x186A0//400kHz //3.4 MHz //1MHz 0xF4240 
 #define EN					0x0080
 #define IEN 				0x0040
 //transfer reg
