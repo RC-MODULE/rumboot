@@ -6,7 +6,7 @@
 
 #define I2C_SYS_FREQ_HZ   	0x5F5E100  //100 MHz
 
-#define SCL_FREQ 			0xF4240   //100 kHz  0x186A0//400kHz //3.4 MHz //1MHz 0xF4240 
+#define SCL_FREQ 			0xF4240   //100 kHz = 0x186A0//400kHz = 0x61A80//3.4 MHz //1MHz = 0xF4240 //5 MHz = 0x4C4B40
 #define EN					0x0080
 #define IEN 				0x0040
 //transfer reg
@@ -47,14 +47,14 @@
 
    int i2c_ack (uint32_t i2c_base_addr) {
        unsigned ack = 0xffff;
-   	  rumboot_printf("  write acknowledge\n");
+   	//  rumboot_printf("  write acknowledge\n");
        // test acknoledge
        ack = ioread32(i2c_base_addr + I2C_STATUS);
-       rumboot_printf("read i2c_write_result =0x%x\n",ack);
+     //  rumboot_printf("read ack =0x%x\n",ack);
        if ((ack & RxACK) == 0)
            return I2C_OK;
        else {
-           rumboot_printf("I2C no acknolege!\n");
+           rumboot_printf(" no ack\n");
            return I2C_FAILED;
        }
    }
@@ -63,9 +63,9 @@ int i2c_set_prescale(uint32_t i2c_base_addr, uint32_t scl_freq){
 	uint32_t ps = (I2C_SYS_FREQ_HZ / (5 * scl_freq)) - 1;
 	uint32_t tmp_ps;
 	iowrite32(ps, I2C_BASE + I2C_PRESCALE );
-	rumboot_printf("I2C0_WR=0x%x\n",ps);
+	//rumboot_printf("I2C0_WR=0x%x\n",ps);
 	tmp_ps = ioread32(I2C_BASE + I2C_PRESCALE );
-	rumboot_printf("I2C0_RD=0x%x\n", tmp_ps);
+	//rumboot_printf("I2C0_RD=0x%x\n", tmp_ps);
 	if (tmp_ps == ps )
 	return I2C_OK;
     else
@@ -211,18 +211,24 @@ unsigned  i2c_read (uint32_t i2c_base_addr,uint32_t i2c_addr, uint32_t i2c_addr_
 }
 int main()
 {
-
+    int tmp = -1;
 	uint32_t addr_h = 0x00;// 0x08;		//write subaddress
 	uint32_t addr_l = 0x00;
 	uint32_t data	 = 0x8d;   	//write data
 	unsigned result;          	//read data
 
-	i2c_init(I2C_BASE,SCL_FREQ);
-	i2c_write(I2C_BASE, I2C_DEV_ADDR,addr_h,addr_l, data);
+	tmp =i2c_init(I2C_BASE,SCL_FREQ);
+	if (tmp == I2C_FAILED)
+		//rumboot_printf("I2C init test ERROR!\n");
+        return TEST_ERROR;
+	tmp = i2c_write(I2C_BASE, I2C_DEV_ADDR,addr_h,addr_l, data);
+		if (tmp == I2C_FAILED)
+		//rumboot_printf("I2C write test ERROR!\n");
+        return TEST_ERROR;
 	result = i2c_read (I2C_BASE, I2C_DEV_ADDR, addr_h,addr_l);
 
 	rumboot_printf ("Read result:");
-    rumboot_printf("i2c_read_data =0x%x\n",result);
+  //  rumboot_printf("i2c_read_data =0x%x\n",result);
     if (result == I2C_FAILED) {
         rumboot_printf("I2C read failed!\n");
         return TEST_ERROR;
