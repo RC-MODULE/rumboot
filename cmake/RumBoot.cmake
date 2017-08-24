@@ -45,42 +45,67 @@ macro(generate_stuff_for_target product)
 
 endmacro()
 
-function(add_rumboot_target snapshot lds prefix target)
-    GET_FILENAME_COMPONENT(f ${target} NAME_WE)
-    SET(product rumboot-${RUMBOOT_PLATFORM}-${CMAKE_BUILD_TYPE}-${prefix}-${f})
 
-    if (TARGET ${product})
-      return()
-    endif()
+function(add_rumboot_target)
+  set(optons SECONDARY)
+  set(oneValueArgs SNAPSHOT LDS NAME PREFIX)
+  set(multiValueArgs FILES IRUN_FLAGS CFLAGS)
 
-    foreach(f ${target} ${ARGN})
-      if (NOT EXISTS ${f})
-        LIST(APPEND trg ${RUMBOOT_PLATFORM_TARGET_DIR}/${f})
-      else()
-        LIST(APPEND trg ${f})
-      endif()
-    endforeach()
+  cmake_parse_arguments(TARGET "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
-    add_executable(${product} ${trg} $<TARGET_OBJECTS:rumboot>)
+  if (NOT TARGET_NAME)
+    list(GET TARGET_FILES 0 TARGET_NAME)
+    GET_FILENAME_COMPONENT(TARGET_NAME ${TARGET_NAME} NAME_WE)
+  endif()
 
-    if (EXISTS ${CMAKE_SOURCE_DIR}/lds/${lds})
-      set(ldf -T${CMAKE_SOURCE_DIR}/lds/${lds})
+  if (NOT TARGET_FILES)
+    message(FATAL_ERROR "add_rumboot_target() requires TARGET_FILES to contain at least one file")
+  endif()
+
+  SET(product rumboot-${RUMBOOT_PLATFORM}-${CMAKE_BUILD_TYPE}-${TARGET_PREFIX}-${TARGET_NAME})
+  set(name rumboot-${TARGET_SNAPSHOT}-${product})
+
+  if (${name})
+    message(STATUS "NOT Adding rumboot target: ${name} - already exists")
+    return()
+  endif()
+
+  message(STATUS "Adding rumboot test: ${product}")
+  set(${name} TRUE PARENT_SCOPE)
+
+  foreach(f ${TARGET_FILES})
+    if (NOT EXISTS ${f})
+      LIST(APPEND trg ${RUMBOOT_PLATFORM_TARGET_DIR}/${f})
     else()
-      set(ldf "")
+      LIST(APPEND trg ${f})
     endif()
+  endforeach()
 
-    target_link_libraries(${product} ${ldf} -Wl,-Map,${product}.map)
-    install(TARGETS ${product} RUNTIME DESTINATION rumboot)
+  add_executable(${product} ${trg} $<TARGET_OBJECTS:rumboot>)
+  target_compile_definitions(${product} PRIVATE ${CFLAGS})
 
-    generate_stuff_for_target(${product})
-    install(FILES ${CMAKE_BINARY_DIR}/${product}.dmp DESTINATION rumboot)
-    install(FILES ${CMAKE_BINARY_DIR}/${product}.bin DESTINATION rumboot)
-    install(FILES ${CMAKE_BINARY_DIR}/${product}.map DESTINATION rumboot)
+  if (NOT TARGET_LDS)
+    set(TARGET_LDS ${RUMBOOT_PLATFORM_DEFAULT_LDS})
+  endif()
 
-    rumboot_platform_generate_stuff_for_taget(${product})
+  if (TARGET_LDS AND EXISTS ${CMAKE_SOURCE_DIR}/lds/${TARGET_LDS})
+    set(ldf -T${CMAKE_SOURCE_DIR}/lds/${TARGET_LDS})
+  else()
+    set(ldf "")
+  endif()
 
-    # Native platform is special - we do unit-testing!
-    if (${RUMBOOT_PLATFORM} MATCHES "native")
-      add_test(${product} ${product})
-    endif()
+  target_link_libraries(${product} ${ldf} -Wl,-Map,${product}.map)
+  install(TARGETS ${product} RUNTIME DESTINATION rumboot)
+
+  generate_stuff_for_target(${product})
+  install(FILES ${CMAKE_BINARY_DIR}/${product}.dmp DESTINATION rumboot)
+  install(FILES ${CMAKE_BINARY_DIR}/${product}.bin DESTINATION rumboot)
+  install(FILES ${CMAKE_BINARY_DIR}/${product}.map DESTINATION rumboot)
+
+  rumboot_platform_generate_stuff_for_taget(${product})
+
+  # Native platform is special - we do unit-testing!
+  if (${RUMBOOT_PLATFORM} MATCHES "native")
+    add_test(${product} ${product})
+  endif()
 endfunction()

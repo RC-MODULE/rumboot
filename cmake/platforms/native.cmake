@@ -17,6 +17,10 @@ endmacro()
 macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
   file(GLOB RUMBOOT_TARGETS ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/targets/*.c)
   foreach(target ${RUMBOOT_TARGETS})
-    add_rumboot_target(default NULL "test" ${target})
+    add_rumboot_target(
+        SNAPSHOT "null"
+        PREFIX "test"
+        FILES ${target}
+    )
   endforeach()
 endmacro()

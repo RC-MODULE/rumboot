@@ -3,14 +3,27 @@ SET(RUMBOOT_PLATFORM basis)
 
 set(RUMBOOT_PLATFORM_TARGET_DIR ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/targets/)
 
-macro(add_directory_with_targets prefix lds dir)
+set(RUMBOOT_PLATFORM_DEFAULT_LDS basis/rom.lds)
+set(RUMBOOT_PLATFORM_DEFAULT_SNAPSHOT default)
+
+macro(add_directory_with_targets snapshot prefix lds dir)
   file(GLOB RUMBOOT_TARGETS ${RUMBOOT_PLATFORM_TARGET_DIR}/${dir}/*.c)
   foreach(target ${RUMBOOT_TARGETS})
-    add_rumboot_target(default ${lds} ${prefix} ${target})
+    add_rumboot_target(
+        SNAPSHOT ${snapshot}
+        PREFIX ${prefix}
+        LDS ${lds}
+        FILES ${target}
+    )
   endforeach()
   file(GLOB RUMBOOT_TARGETS ${CMAKE_SOURCE_DIR}/${dir}/*.S)
   foreach(target ${RUMBOOT_TARGETS})
-    add_rumboot_target(default ${lds} ${prefix} ${target})
+    add_rumboot_target(
+        SNAPSHOT ${snapshot}
+        PREFIX ${prefix}
+        LDS ${lds}
+        FILES ${target}
+    )
   endforeach()
 endmacro()
 
@@ -18,16 +31,33 @@ endmacro()
 #WARNING! Do not add tests twice into short and full regression lists.
 #WARNING! Full regression automatically includes all tests from the short ones
 macro(RUMBOOT_FULL_REGESSION_LIST)
-  add_directory_with_targets(simple-rom basis/rom.lds simple-rom/)
-  add_rumboot_target(default basis/rom.lds can
-      can/can-loopback.c can/loopback.S)
+
+  add_directory_with_targets(default simple-rom basis/rom.lds simple-rom/)
+
+  add_rumboot_target(
+      SNAPSHOT default
+      PREFIX simple-rom
+      FILES can/can-loopback.c can/loopback.S
+      NAME can-loopback
+    )
+
 endmacro()
 
 #WARNING! Do not add tests twice into short and full regression lists.
 #WARNING! Full regression automatically includes all tests from the short ones
 macro(RUMBOOT_SHORT_REGESSION_LIST)
-  add_rumboot_target(default basis/rom.lds simple-rom simple-rom/hello-asm.S)
-  add_rumboot_target(default basis/rom.lds simple-rom simple-rom/sp804-periph-id.c)
+  add_rumboot_target(
+      SNAPSHOT default
+      PREFIX simple-rom
+      LDS basis/rom.lds
+      FILES simple-rom/hello-asm.S
+    )
+    add_rumboot_target(
+        SNAPSHOT default
+        PREFIX simple-rom
+        LDS basis/rom.lds
+        FILES simple-rom/sp804-periph-id.c
+      )
 endmacro()
 
 macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
@@ -40,7 +70,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
   endif()
 
   ### ADD NEW TESTS HERE ###
-  #add_rumboot_target(default basis/rom.lds simple-rom simple-rom/sp804-periph-id.c)
+
 endmacro()
 
 if (CMAKE_VERILOG_RULES_LOADED)
