@@ -2,10 +2,11 @@
 //-----------------------------------------------------------------------------
 //  This program is for testing PCIe Phy registers.
 //  It must show, that Phy APB bus works correctly.
+//  Nothing writes to registers, because it can make bad things.
 //  It includes:
 //    - checking default values of some registers
-//    - 
 //
+//    Test duration (RTL): < 150us
 //-----------------------------------------------------------------------------
 #include <basis/defs_c.h>
 
@@ -199,6 +200,13 @@ int check_read_default_value ()
         // (rgPCIe_Phy_PMA_CMN_TXPDCAL_CTRL        != def_PCIe_Phy_PMA_CMN_TXPDCAL_CTRL         ) ||
         // (rgPCIe_Phy_PMA_CMN_TXPDCAL_OVRD        != def_PCIe_Phy_PMA_CMN_TXPDCAL_OVRD         ) ||
         (rgPCIe_Phy_PMA_CMN_TXPDCAL_INIT_TMR    != def_PCIe_Phy_PMA_CMN_TXPDCAL_INIT_TMR     ) ||
+        
+        
+        //-------------------------------------------------------------------
+        //  Group: PMA Tx
+        //    Not all registers are used (and described here too)
+        //-------------------------------------------------------------------
+        
         (*(volatile int*)(PCIe_Phy_PMA_TX_HBDC_PRE_OVRD        + 0x0000 + PCIE_PHY_BASE) != def_PCIe_Phy_PMA_TX_HBDC_PRE_OVRD         ) ||
         (*(volatile int*)(PCIe_Phy_PMA_TX_HBDC_MAIN_OVRD       + 0x0000 + PCIE_PHY_BASE) != def_PCIe_Phy_PMA_TX_HBDC_MAIN_OVRD        ) ||
         (*(volatile int*)(PCIe_Phy_PMA_TX_HBDC_POST_OVRD       + 0x0000 + PCIE_PHY_BASE) != def_PCIe_Phy_PMA_TX_HBDC_POST_OVRD        ) ||
@@ -231,6 +239,13 @@ int check_read_default_value ()
         (*(volatile int*)(PCIe_Phy_PMA_TX_RCVDET_CTRL          + 0x1800 + PCIE_PHY_BASE) != def_PCIe_Phy_PMA_TX_RCVDET_CTRL           ) ||
         (*(volatile int*)(PCIe_Phy_PMA_TX_BIST_CTRL            + 0x1800 + PCIE_PHY_BASE) != def_PCIe_Phy_PMA_TX_BIST_CTRL             ) ||
         (*(volatile int*)(PCIe_Phy_PMA_TX_BIST_UDDWR           + 0x1800 + PCIE_PHY_BASE) != def_PCIe_Phy_PMA_TX_BIST_UDDWR            ) ||
+        
+        
+        //-------------------------------------------------------------------
+        //  Group: PMA Rx
+        //    Not all registers are used (and described here too)
+        //-------------------------------------------------------------------
+        
         (*(volatile int*)(PCIe_Phy_PMA_RX_IQPI_ILL_CAL_CTRL            + 0x0000 + PCIE_PHY_BASE) != def_PCIe_Phy_PMA_RX_IQPI_ILL_CAL_CTRL            ) ||
         (*(volatile int*)(PCIe_Phy_PMA_RX_IQPI_ILL_CAL_START           + 0x0000 + PCIE_PHY_BASE) != def_PCIe_Phy_PMA_RX_IQPI_ILL_CAL_START           ) ||
         (*(volatile int*)(PCIe_Phy_PMA_RX_IQPI_ILL_CAL_INIT_TMR        + 0x0000 + PCIE_PHY_BASE) != def_PCIe_Phy_PMA_RX_IQPI_ILL_CAL_INIT_TMR        ) ||

@@ -295,6 +295,9 @@
 #define PCIe_EP_i_msi_msg_data                           0x009C
 #define PCIe_EP_i_msi_mask                               0x00A0
 #define PCIe_EP_i_msi_pending_bits                       0x00A4
+#define PCIe_EP_i_msix_ctrl                              0x00B0
+#define PCIe_EP_i_msix_tbl_offset                        0x00B4
+#define PCIe_EP_i_msix_pending_intrpt                    0x00B8
 #define PCIe_EP_i_pcie_cap_list                          0x00C0
 #define PCIe_EP_i_pcie_dev_cap                           0x00C4
 #define PCIe_EP_i_pcie_dev_ctrl_status                   0x00C8
@@ -339,6 +342,9 @@
 #define PCIe_RP_i_msi_msg_data                           0x009C
 #define PCIe_RP_i_msi_mask                               0x00A0
 #define PCIe_RP_i_msi_pending_bits                       0x00A4
+#define PCIe_RP_i_msix_ctrl                              0x00B0
+#define PCIe_RP_i_msix_tbl_offset                        0x00B4
+#define PCIe_RP_i_msix_pending_intrpt                    0x00B8
 #define PCIe_RP_i_pcie_cap_list                          0x00C0
 #define PCIe_RP_i_pcie_cap                               0x00C4
 #define PCIe_RP_i_pcie_dev_ctrl_status                   0x00C8
@@ -412,6 +418,11 @@
 #define PCIe_LocMgmt_i_pf_config_reg                           0x02C0
 #define PCIe_LocMgmt_i_rc_BAR_config_reg                       0x0300
 #define PCIe_LocMgmt_i_ecc_corr_err_count_reg_axi              0x0C80
+#define PCIe_LocMgmt_low_power_debug_and_control0              0x0C88
+#define PCIe_LocMgmt_low_power_debug_and_control1              0x0C8C
+#define PCIe_LocMgmt_tl_internal_control                       0x0C94
+#define PCIe_LocMgmt_i_ld_ctrl                                 0x0DA0
+#define PCIe_LocMgmt_rx_elec_idle_filter_control               0x0DA4
 
 #define PCIe_AXI_outregion_0_addr_translation_0                0x0000
 #define PCIe_AXI_outregion_0_addr_translation_1                0x0004

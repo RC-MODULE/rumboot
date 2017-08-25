@@ -52,6 +52,18 @@ macro(RUMBOOT_SHORT_REGESSION_LIST)
       LDS basis/rom.lds
       FILES simple-rom/hello-asm.S
     )
+  add_rumboot_target(
+      SNAPSHOT default
+      PREFIX simple-rom
+      LDS basis/rom.lds
+      FILES simple-rom/esram0_simple_test.S
+    )
+  add_rumboot_target(
+      SNAPSHOT default
+      PREFIX simple-rom
+      LDS basis/rom.lds
+      FILES simple-rom/esram1_simple_test.S
+    )
     add_rumboot_target(
         SNAPSHOT default
         PREFIX simple-rom
