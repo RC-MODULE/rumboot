@@ -9,7 +9,7 @@
 //    - read 0xAAAAAAAA from eSRAM0
 //    - compare read data with etalon
 //
-//    Test duration (RTL): 
+//    Test duration (RTL): < 1.9ms
 //-----------------------------------------------------------------------------
 
 #include <basis/defs.h>

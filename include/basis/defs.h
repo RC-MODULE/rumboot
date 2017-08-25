@@ -231,11 +231,42 @@
 #define PCIe_Phy_PMA_CMN_PSC_A1                       0x0000*2 + 0x041*4
 #define PCIe_Phy_PMA_CMN_PSC_A2                       0x0000*2 + 0x042*4
 #define PCIe_Phy_PMA_CMN_PSC_A4                       0x0000*2 + 0x044*4
-#define PCIe_Phy_PMA_
-#define PCIe_Phy_PMA_
-#define PCIe_Phy_PMA_
-#define PCIe_Phy_PMA_
-#define PCIe_Phy_PMA_
+#define PCIe_Phy_PMA_CMN_PLLCPICAL_CTRL               0x0000*2 + 0x080*4
+#define PCIe_Phy_PMA_CMN_PLLCPICAL_OVRD               0x0000*2 + 0x081*4
+#define PCIe_Phy_PMA_CMN_PLLCPICAL_INIT_TMR           0x0000*2 + 0x082*4
+#define PCIe_Phy_PMA_CMN_RXCAL_CTRL                   0x0000*2 + 0x100*4
+#define PCIe_Phy_PMA_CMN_RXCAL_OVRD                   0x0000*2 + 0x101*4
+#define PCIe_Phy_PMA_CMN_RXCAL_INIT_TMR               0x0000*2 + 0x102*4
+#define PCIe_Phy_PMA_CMN_TXPUCAL_CTRL                 0x0000*2 + 0x0C0*4
+#define PCIe_Phy_PMA_CMN_TXPUCAL_OVRD                 0x0000*2 + 0x0C1*4
+#define PCIe_Phy_PMA_CMN_TXPUCAL_INIT_TMR             0x0000*2 + 0x0C2*4
+#define PCIe_Phy_PMA_CMN_TXPDCAL_CTRL                 0x0000*2 + 0x0E0*4
+#define PCIe_Phy_PMA_CMN_TXPDCAL_OVRD                 0x0000*2 + 0x0E1*4
+#define PCIe_Phy_PMA_CMN_TXPDCAL_INIT_TMR             0x0000*2 + 0x0E2*4
+#define PCIe_Phy_PMA_TX_HBDC_PRE_OVRD                 0x4000*2 + 0x000*4
+#define PCIe_Phy_PMA_TX_HBDC_MAIN_OVRD                0x4000*2 + 0x001*4
+#define PCIe_Phy_PMA_TX_HBDC_POST_OVRD                0x4000*2 + 0x002*4
+#define PCIe_Phy_PMA_TX_HBDC_PRE_PREM_OVRD            0x4000*2 + 0x004*4
+#define PCIe_Phy_PMA_TX_HBDC_MAIN_INITM_OVRD          0x4000*2 + 0x008*4
+#define PCIe_Phy_PMA_TX_RCVDET_CTRL                   0x4000*2 + 0x020*4
+#define PCIe_Phy_PMA_TX_BIST_CTRL                     0x4000*2 + 0x040*4
+#define PCIe_Phy_PMA_TX_BIST_UDDWR                    0x4000*2 + 0x041*4
+#define PCIe_Phy_PMA_RX_IQPI_ILL_CAL_CTRL             0x8000*2 + 0x020*4
+#define PCIe_Phy_PMA_RX_IQPI_ILL_CAL_START            0x8000*2 + 0x021*4
+#define PCIe_Phy_PMA_RX_IQPI_ILL_CAL_INIT_TMR         0x8000*2 + 0x023*4
+#define PCIe_Phy_PMA_RX_IQPI_ILL_CAL_ITER_TMR         0x8000*2 + 0x024*4
+#define PCIe_Phy_PMA_RX_IQPI_ILL_LOCK_CALCNT_START0   0x8000*2 + 0x026*4
+#define PCIe_Phy_PMA_RX_EPI_ILL_CAL_CTRL              0x8000*2 + 0x040*4
+#define PCIe_Phy_PMA_RX_EPI_ILL_CAL_START             0x8000*2 + 0x041*4
+#define PCIe_Phy_PMA_RX_EPI_ILL_CAL_INIT_TMR          0x8000*2 + 0x043*4
+#define PCIe_Phy_PMA_RX_EPI_ILL_CAL_ITER_TMR          0x8000*2 + 0x044*4
+#define PCIe_Phy_PMA_RX_EPI_ILL_LOCK_CALCNT_START0    0x8000*2 + 0x046*4
+#define PCIe_Phy_PMA_RX_CDRLF_CNFG                    0x8000*2 + 0x080*4
+#define PCIe_Phy_PMA_RX_CDRLF_CNFG2                   0x8000*2 + 0x081*4
+#define PCIe_Phy_PMA_RX_CDRLF_MGN_DIAG                0x8000*2 + 0x082*4
+#define PCIe_Phy_PMA_RX_SIGDET_FILT_TMR               0x8000*2 + 0x160*4
+#define PCIe_Phy_PMA_RX_SIGDET_DLY_TMR                0x8000*2 + 0x161*4
+#define PCIe_Phy_PMA_RX_SIGDET_MIN_TMR                0x8000*2 + 0x162*4
 /* --- PCIe Core --- */
 
 #define PCIe_Core_FuncRPConfig  0x00000000
