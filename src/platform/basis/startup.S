@@ -164,6 +164,18 @@ call_3:
   msr  cpsr_c, #Mode_IRQ | I_Bit | F_Bit /* No interrupts*/
   ldr  sp, =rumboot_platform_irq_stack_top
 
+  /* --- set abort stack*/
+  msr  cpsr_c, #Mode_ABT | I_Bit | F_Bit /* No interrupts*/
+  ldr  sp, =rumboot_platform_abt_stack_top
+
+  /* --- set und stack*/
+  msr  cpsr_c, #Mode_UND | I_Bit | F_Bit /* No interrupts*/
+  ldr  sp, =rumboot_platform_und_stack_top
+
+  /* --- set fiq stack*/
+  msr  cpsr_c, #Mode_FIQ | I_Bit | F_Bit /* No interrupts*/
+  ldr  sp, =rumboot_platform_fiq_stack_top
+
   /*--- Set USR Stack*/
   msr  cpsr_c, #Mode_SYS | I_Bit | F_Bit /* No interrupts*/
   ldr  sp, =rumboot_platform_usr_stack_top
@@ -171,6 +183,7 @@ call_3:
   /*--- Set SVC Stack*/
   msr  cpsr_c, #Mode_SVC | I_Bit | F_Bit /* No interrupts*/
   ldr  sp, =rumboot_platform_svc_stack_top
+
 
   bl rumboot_main
   b endless_loop
