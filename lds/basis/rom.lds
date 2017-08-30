@@ -8,6 +8,8 @@ MEMORY
 SECTIONS
 {
 
+. = 0x0;
+
  .ro : {
   *(.text.startup)
   *(.text)
@@ -25,9 +27,12 @@ SECTIONS
   *(.rumboot_platform_runtime_info);
   . = ALIGN(8);
 
-  rumboot_platform_heap_start = .;
+  rumboot_platform_heap_start = ABSOLUTE(.);
   . = . + 0xf000; /* 60k heap */
-  rumboot_platform_heap_end = .;
+  rumboot_platform_heap_end = ABSOLUTE(.);
+
+  /* This is where stacks start */
+  rumboot_platform_stack_area_start = .;
 
   . = . + 0x400; /* 1k FIQ stack */
   rumboot_platform_fiq_stack_top = .;
@@ -46,7 +51,22 @@ SECTIONS
 
   . = . + 0xe000; /* 56k svc stack */
   rumboot_platform_svc_stack_top = .;
-  rumboot_platform_stack_top = .;
+
+  /* This is where stacks end */
+  rumboot_platform_stack_area_end = .;
  } > IM0
+
+
+ /DISCARD/ :
+ {
+     libc.a ( * )
+     libm.a ( * )
+     libgcc.a ( * )
+     /* Make sure data & bss go to hell */
+     *(.bss)
+     *(.data)
+     *(.bss.*)
+     *(.data.*)
+ }
 
 }

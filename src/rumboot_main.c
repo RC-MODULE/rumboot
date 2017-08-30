@@ -14,10 +14,10 @@ void rumboot_main()
      /* Initialize the runtime info */
      memset(&rumboot_platform_runtime_info, 0x0, sizeof(rumboot_platform_runtime_info));
      rumboot_platform_runtime_info.magic = 0xb00bc0de;
-     rumboot_platform_runtime_info.current_max_heap = rumboot_platform_heap_start;
+     rumboot_platform_runtime_info.current_heap_end = &rumboot_platform_heap_start;
 
      /* Zero-out BSS, if any */
-     #ifdef RUMBOOT_HAS_BSS
+     #ifndef RUMBOOT_ONLY_STACK
           memset(rumboot_platform_bss_start, 0x0, rumboot_platform_bss_end - rumboot_platform_bss_start);
      #endif
 

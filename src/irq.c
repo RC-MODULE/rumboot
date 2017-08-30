@@ -10,7 +10,7 @@
 
 #define RUMBOOT_PLATFORM_NUM_IRQS 32
 
-const char *exception_names[] = {
+const char * const exception_names[] = {
 	[RUMBOOT_IRQ_UNDEFINED_INSTRUCTION] = "Undefined Instruction",
 	[RUMBOOT_IRQ_PREFETCH_ABORT] = "Prefetch Abort",
 	[RUMBOOT_IRQ_DATA_ABORT] = "Data Abort",
@@ -24,8 +24,7 @@ void rumboot_irq_core_dispatch(uint32_t type, uint32_t id)
 		/* Route IRQ to controller driver */
 		break;
 	case RUMBOOT_IRQ_TYPE_EXCEPTION:
-		rumboot_printf("FATAL: %s\n", exception_names[id]);
-		rumboot_platform_panic("Tracing the stack...\n");
+		rumboot_platform_panic("%s \n", exception_names[id]);
 		break;
 	}
 }

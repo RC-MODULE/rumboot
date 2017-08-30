@@ -98,7 +98,7 @@ int rumboot_platform_getchar(uint32_t timeout_us);
  */
 struct rumboot_runtime_info {
     uint32_t magic; /** Magic value. Indicates that this structure contains valid data */
-    void *current_max_heap; /** Current heap end pointer, used by _sbrk */
+    char *current_heap_end; /** Current heap end pointer, used by _sbrk */
 };
 
 /**
@@ -108,30 +108,45 @@ extern struct rumboot_runtime_info rumboot_platform_runtime_info;
 
 /**
  * This global variable defined by the linker points to the start of SPL
- * area
+ * area. Use &reference to this variable to get the desired address.
  */
-extern void *rumboot_platform_spl_start;
+extern char rumboot_platform_spl_start;
 
 /**
  * This global variable defined by the linker points to the end of SPL
- * area
+ * area. Use &reference to this variable to get the desired address.
  */
-extern void *rumboot_platform_spl_end;
+extern char rumboot_platform_spl_end;
 
 /**
-* This global variable defined by the linker points to the top of the stack
+* This global variable defined by the linker points to the top of the stack.
+* Use &reference to this variable to get the desired address.
 */
 extern void *rumboot_platform_stack_top;
 
 /**
- * This global variable defined by the linker points to the beginning of the heap area
+ * This global variable defined by the linker points to the beginning of the heap area.
+ * Use &reference to this variable to get the desired address.
  */
-extern void *rumboot_platform_heap_start;
+extern char rumboot_platform_heap_start;
 
 /**
- * This global variable defined by the linker points to the end of the heap area
+ * This global variable defined by the linker points to the end of the heap area.
+ * Use &reference to this variable to get the desired address.
  */
-extern void *rumboot_platform_heap_end;
+extern char rumboot_platform_heap_end;
+
+/**
+ * This global variable defined by the linker points to the lowest address where
+ * stack(s) are stored. Use &reference to this variable to get the desired address.
+ */
+extern char rumboot_platform_stack_area_start;
+
+/**
+ * This global variable defined by the linker points to the highest address where
+ * stack(s) are stored. Use &reference to this variable to get the desired address.
+ */
+extern char rumboot_platform_stack_area_end;
 
 /** @}*/
 

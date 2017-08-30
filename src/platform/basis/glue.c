@@ -41,8 +41,16 @@ void __attribute__((noreturn)) rumboot_platform_panic(const char *why, ...)
         rumboot_vprintf(why, ap);
     	va_end(ap);
     }
-    /* Let's walk the stack all the way down */
+    
 	while (depth--) {
+        /* All the stack frames should be in the stack area and we should check it
+         * unless we want to be trappe in a recursive fault
+         */
+        if ((fp < (uint32_t *) &rumboot_platform_stack_area_start) ||
+            (fp > (uint32_t *) &rumboot_platform_stack_area_end)) {
+                rumboot_printf("PANIC: No more valid frames\n");
+                break;
+            }
 		uint32_t pc = *(((uint32_t*)fp) + 0);
 		uint32_t lr = *(((uint32_t*)fp) + 1);
 	 	fp = (uint32_t *) (lr);
