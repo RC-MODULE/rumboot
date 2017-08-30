@@ -62,7 +62,7 @@ endmacro()
 
 macro(config_load_param conf param)
   if (NOT TARGET_${param})
-    set(TARGET_${param} ${${conf}_${param}})
+    set(TARGET_${param} ${CONFIGURATION_${conf}_${param}})
   endif()
 endmacro()
 

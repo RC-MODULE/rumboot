@@ -13,6 +13,7 @@ rumboot_add_configuration(
   SNAPSHOT default
   LDS basis/rom.lds
   CFLAGS -DRUMBOOT_ONLY_STACK
+  PREFIX ROM
 )
 
 #These are configurations for im0 binaries
@@ -20,6 +21,7 @@ rumboot_add_configuration(
   SECONDARY
   LDS basis/rom.lds
   #TODO
+  CFLAGS -DRUMBOOT_ONLY_STACK
 )
 
 macro(add_directory_with_targets dir)
@@ -42,7 +44,9 @@ endmacro()
 ### Add tests here ###
 #WARNING! Full regression automatically includes all tests from the short ones
 macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
-  add_directory_with_targets(simple-rom/ CONFIGURATION ROM)
+  add_directory_with_targets(simple-rom/
+    CONFIGURATION ROM
+    PREFIX simple-rom)
 
   add_rumboot_target(
       CONFIGURATION ROM
