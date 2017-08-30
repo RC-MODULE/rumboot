@@ -3,6 +3,7 @@
 #include <sys/times.h>
 #include <sys/unistd.h>
 #include <rumboot/printf.h>
+#include <rumboot/platform.h>
 
 #undef errno
 extern int errno;
@@ -78,30 +79,33 @@ int _lseek(int file, int ptr, int dir)
 }
 
 
+
 #if 1
 caddr_t _sbrk(int incr)
 {
-    rumboot_printf("FATAL: malloc() not allowed in ROM code\n");
+    rumboot_platform_panic("malloc() not allowed in ROM code\n");
 	return (caddr_t)0;
 }
 #else
+#include <rumboot/platform.h>
 caddr_t _sbrk(int incr)
 {
-	extern char *heap_low;   /* Defined by the linker */
-	extern char *heap_top;   /* Defined by the linker */
+	rumboot_platform_raise_event(EVENT_PERF, 3);
 	char *prev_heap_end;
 
-	if (heap_end == 0)
-		heap_end = &heap_low;
-	prev_heap_end = heap_end;
+	if (rumboot_platform_runtime_info.current_heap_end == 0)
+		rumboot_platform_runtime_info.current_heap_end = &rumboot_platform_heap_start;
 
-	if (heap_end + incr > &heap_top) {
+	prev_heap_end = rumboot_platform_runtime_info.current_heap_end;
+
+	if ((rumboot_platform_runtime_info.current_heap_end + incr) > &rumboot_platform_heap_end) {
 		rumboot_printf("FATAL: heap and stack collision\n");
 		/* Heap and stack collision */
 		return (caddr_t)0;
 	}
 
-	heap_end += incr;
+	rumboot_platform_runtime_info.current_heap_end += incr;
+	rumboot_platform_raise_event(EVENT_PERF, 4);
 	return (caddr_t)prev_heap_end;
 }
 #endif
