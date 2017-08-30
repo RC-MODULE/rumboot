@@ -8,6 +8,11 @@ macro(RUMBOOT_PLATFORM_SET_COMPILER_FLAGS)
     SET(CMAKE_DUMP_FLAGS     "-EL")
 endmacro()
 
+rumboot_add_configuration(
+  NATIVE
+  DEFAULT
+)
+
 function(RUMBOOT_PLATFORM_PRINT_SUMMARY)
 endfunction()
 
@@ -23,4 +28,8 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         FILES ${target}
     )
   endforeach()
+endmacro()
+
+macro(rumboot_platform_setup_configuration)
+
 endmacro()

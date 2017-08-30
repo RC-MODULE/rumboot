@@ -6,83 +6,73 @@ set(RUMBOOT_PLATFORM_TARGET_DIR ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATF
 set(RUMBOOT_PLATFORM_DEFAULT_LDS basis/rom.lds)
 set(RUMBOOT_PLATFORM_DEFAULT_SNAPSHOT default)
 
-macro(add_directory_with_targets snapshot prefix lds dir)
+#These are configurations for our binaries
+rumboot_add_configuration(
+  ROM
+  DEFAULT
+  SNAPSHOT default
+  LDS basis/rom.lds
+  CFLAGS -DRUMBOOT_ONLY_STACK
+)
+
+#These are configurations for im0 binaries
+rumboot_add_configuration(
+  SECONDARY
+  LDS basis/rom.lds
+  #TODO
+)
+
+macro(add_directory_with_targets dir)
   file(GLOB RUMBOOT_TARGETS ${RUMBOOT_PLATFORM_TARGET_DIR}/${dir}/*.c)
   foreach(target ${RUMBOOT_TARGETS})
     add_rumboot_target(
-        SNAPSHOT ${snapshot}
-        PREFIX ${prefix}
-        LDS ${lds}
+        ${ARGN}
         FILES ${target}
     )
   endforeach()
   file(GLOB RUMBOOT_TARGETS ${CMAKE_SOURCE_DIR}/${dir}/*.S)
   foreach(target ${RUMBOOT_TARGETS})
     add_rumboot_target(
-        SNAPSHOT ${snapshot}
-        PREFIX ${prefix}
-        LDS ${lds}
+        ${ARGN}
         FILES ${target}
     )
   endforeach()
 endmacro()
 
 ### Add tests here ###
-#WARNING! Do not add tests twice into short and full regression lists.
 #WARNING! Full regression automatically includes all tests from the short ones
-macro(RUMBOOT_FULL_REGESSION_LIST)
-
-  add_directory_with_targets(default simple-rom basis/rom.lds simple-rom/)
+macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
+  add_directory_with_targets(simple-rom/ CONFIGURATION ROM)
 
   add_rumboot_target(
-      SNAPSHOT default
-      PREFIX simple-rom
+      CONFIGURATION ROM
       FILES can/can-loopback.c can/loopback.S
       NAME can-loopback
     )
+
   add_rumboot_target(
-      SNAPSHOT default
-      PREFIX simple-rom
+      CONFIGURATION ROM
       FILES simple-rom/esram0_simple_test.S
       NAME esram0_simple_test
     )
+
   add_rumboot_target(
-      SNAPSHOT default
-      PREFIX simple-rom
+      CONFIGURATION ROM
       FILES simple-rom/esram1_simple_test.S
       NAME esram1_simple_test
     )
 
-endmacro()
-
-#WARNING! Do not add tests twice into short and full regression lists.
-#WARNING! Full regression automatically includes all tests from the short ones
-macro(RUMBOOT_SHORT_REGESSION_LIST)
   add_rumboot_target(
-      SNAPSHOT default
-      PREFIX simple-rom
-      LDS basis/rom.lds
+      CONFIGURATION ROM
       FILES simple-rom/hello-asm.S
+      TESTGROUP short
     )
-    add_rumboot_target(
-        SNAPSHOT default
-        PREFIX simple-rom
-        LDS basis/rom.lds
-        FILES simple-rom/sp804-periph-id.c
-      )
-endmacro()
 
-macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
-  ### Tests are automatically added from directories when we are NOT running the
-  ### jenkins test list (They are always build nevertheless)
-  ###
-  RUMBOOT_SHORT_REGESSION_LIST()
-  if (NOT CMAKE_VERILOG_RULES_LOADED OR NOT HDL_REGRESSION_LIST MATCHES "short")
-    RUMBOOT_FULL_REGESSION_LIST()
-  endif()
-
-  ### ADD NEW TESTS HERE ###
-
+  add_rumboot_target(
+      CONFIGURATION ROM
+      FILES simple-rom/sp804-periph-id.c
+      TESTGROUP short
+    )
 endmacro()
 
 if (CMAKE_VERILOG_RULES_LOADED)
@@ -100,15 +90,15 @@ macro(RUMBOOT_PLATFORM_SET_COMPILER_FLAGS)
     SET(CMAKE_C_FLAGS "${RUMBOOT_COMMON_FLAGS} -Wall -fdata-sections -ffunction-sections")
     SET(CMAKE_ASM_FLAGS ${RUMBOOT_COMMON_FLAGS})
     SET(CMAKE_OBJCOPY_FLAGS --gap-fill 0xFF --pad-to 0x40000)
-    SET(CMAKE_EXE_LINKER_FLAGS "-e rumboot_reset_handler -nostartfiles -Wl,--gc-sections")
+    SET(CMAKE_EXE_LINKER_FLAGS "-e rumboot_reset_handler -nostartfiles -static -Wl,--gc-sections")
     SET(CMAKE_DUMP_FLAGS     "-EL")
 endmacro()
 
 function(RUMBOOT_PLATFORM_PRINT_SUMMARY)
+
 endfunction()
 
 macro(rumboot_platform_generate_stuff_for_taget product)
-
   add_custom_command(
     OUTPUT ${product}.hex/image_mem64_0.hex
     COMMAND mkdir -p ${product}.hex

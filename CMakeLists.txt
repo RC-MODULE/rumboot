@@ -16,17 +16,12 @@ if (CROSS_COMPILE)
   SET(CMAKE_TOOLCHAIN_FILE "${CMAKE_SOURCE_DIR}/cmake/cross-compile.cmake")
 endif()
 
-# HACK: Bare metal compiler confuses cmake
 set(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "")
 set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "")
 
 PROJECT(rumboot C ASM)
 SET(PROJECT_VERSION   0.3)
 enable_testing()
-
-SET(RUMBOOT_MANIFEST "${CMAKE_BINARY_DIR}/rumboot-manifest-${CMAKE_BUILD_TYPE}.txt")
-file(WRITE ${RUMBOOT_MANIFEST} "")
-install(FILES ${RUMBOOT_MANIFEST} DESTINATION rumboot)
 
 if (CROSS_COMPILE)
   CROSS_COMPILE_DETECT_SYSROOT()
@@ -42,12 +37,14 @@ execute_process(COMMAND
   git rev-parse --short HEAD
   OUTPUT_VARIABLE GIT_REVISION
   OUTPUT_STRIP_TRAILING_WHITESPACE
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 )
 
 execute_process(COMMAND
   git rev-parse --abbrev-ref HEAD
   OUTPUT_VARIABLE GIT_BRANCH
   OUTPUT_STRIP_TRAILING_WHITESPACE
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 )
 
 SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Os -Wall -fno-omit-frame-pointer")
@@ -105,22 +102,10 @@ if (NOT RUMBOOT_PLATFORM MATCHES native)
     ADD_SOURCE(src/rumboot_main.c)
 endif()
 
-ADD_LIBRARY(rumboot OBJECT ${PLATFORM_SOURCES})
-
-if (${RUMBOOT_PLATFORM_HAS_LDS})
-  string(REPLACE " " ";" CMAKE_C_FLAGS_SPLIT ${CMAKE_C_FLAGS})
-  get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
-  foreach(dir ${dirs})
-    SET(CMAKE_C_FLAGS_SPLIT "${CMAKE_C_FLAGS_SPLIT};-I${dir}")
-  endforeach()
-  add_custom_target(
-      lds
-      COMMAND ${CMAKE_C_COMPILER} -P -E ${CMAKE_C_FLAGS_SPLIT} -o lds/linker.lds  ${CMAKE_SOURCE_DIR}/lds/${RUMBOOT_PLATFORM}.lds.c
-      COMMENT "Generating Platform LD Script"
-    )
-    add_dependencies(rumboot lds)
-endif()
-
+foreach(c ${RUMBOOT_CONFIGURATIONS})
+  ADD_LIBRARY(rumboot-${c} OBJECT ${PLATFORM_SOURCES})
+  target_compile_options(rumboot-${c} PUBLIC ${CONFIGURATION_${c}_CFLAGS})
+endforeach()
 
 RUMBOOT_PLATFORM_ADD_COMPONENTS()
 

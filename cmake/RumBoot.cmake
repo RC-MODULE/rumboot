@@ -46,12 +46,40 @@ macro(generate_stuff_for_target product)
 endmacro()
 
 
-function(add_rumboot_target)
-  set(optons SECONDARY)
-  set(oneValueArgs SNAPSHOT LDS NAME PREFIX)
+macro(rumboot_add_configuration name)
+  message(STATUS "Adding configuration ${name}")
+  set(options DEFAULT)
+  set(oneValueArgs SNAPSHOT LDS PREFIX NAME)
   set(multiValueArgs FILES IRUN_FLAGS CFLAGS)
 
+  cmake_parse_arguments(CONFIGURATION_${name} "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+  LIST(APPEND RUMBOOT_CONFIGURATIONS ${name})
+  if (CONFIGURATION_${name}_DEFAULT)
+    set(RUMBOOT_PLATFORM_DEFAULT_CONFIGURATION ${name})
+    message(STATUS "Default configuration set to: ${RUMBOOT_PLATFORM_DEFAULT_CONFIGURATION}")
+  endif()
+endmacro()
+
+macro(config_load_param conf param)
+  if (NOT TARGET_${param})
+    set(TARGET_${param} ${${conf}_${param}})
+  endif()
+endmacro()
+
+function(add_rumboot_target)
+  set(options )
+  set(oneValueArgs SNAPSHOT LDS NAME PREFIX CONFIGURATION)
+  set(multiValueArgs FILES IRUN_FLAGS CFLAGS TESTGROUP)
+
   cmake_parse_arguments(TARGET "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+  if (NOT TARGET_CONFIGURATION)
+    set(TARGET_CONFIGURATION ${RUMBOOT_PLATFORM_DEFAULT_CONFIGURATION})
+  endif()
+
+  foreach(c ${oneValueArgs} ${multiValueArgs})
+    config_load_param(${TARGET_CONFIGURATION} ${c})
+  endforeach()
 
   if (NOT TARGET_NAME)
     list(GET TARGET_FILES 0 TARGET_NAME)
@@ -81,8 +109,8 @@ function(add_rumboot_target)
     endif()
   endforeach()
 
-  add_executable(${product} ${trg} $<TARGET_OBJECTS:rumboot>)
-  target_compile_definitions(${product} PRIVATE ${CFLAGS})
+  add_executable(${product} ${trg} $<TARGET_OBJECTS:rumboot-${TARGET_CONFIGURATION}>)
+  target_compile_definitions(${product} PUBLIC ${CFLAGS})
 
   if (NOT TARGET_LDS)
     set(TARGET_LDS ${RUMBOOT_PLATFORM_DEFAULT_LDS})
