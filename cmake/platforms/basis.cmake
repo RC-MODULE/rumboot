@@ -65,6 +65,12 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       FILES simple-rom/esram1_simple_test.S
       NAME esram1_simple_test
     )
+  add_rumboot_target(
+      SNAPSHOT default
+      PREFIX simple-rom
+      FILES simple-rom/pcie_phy_bist_prbs31.S
+      NAME pcie_phy_bist_prbs31
+    )
 
   add_rumboot_target(
       CONFIGURATION ROM

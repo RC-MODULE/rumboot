@@ -15,6 +15,8 @@
 //      !!!         It must be removed in real program          !!!
 //
 //-----------------------------------------------------------------------------
+#include <stdint.h>
+
 #include <basis/defs_c.h>
 
 //-----------------------------------------------------------------------------
@@ -53,9 +55,12 @@ void pcie_soft_reset ()
 //  
 //  
 //-----------------------------------------------------------------------------
-void pcie_loopback_mode_on (int loopback_mode)
+void pcie_loopback_mode_on (uint32_t loopback_mode)
 {
-    rgPCIe_Phy_PMA_XCVR_LPBK = loopback_mode;
+    (*(uint32_t*) (PCIe_Phy_PMA_XCVR_LPBK + 0x000 + PCIE_PHY_BASE)) = loopback_mode;
+    (*(uint32_t*) (PCIe_Phy_PMA_XCVR_LPBK + 0x400 + PCIE_PHY_BASE)) = loopback_mode;
+    (*(uint32_t*) (PCIe_Phy_PMA_XCVR_LPBK + 0x800 + PCIE_PHY_BASE)) = loopback_mode;
+    (*(uint32_t*) (PCIe_Phy_PMA_XCVR_LPBK + 0xC00 + PCIE_PHY_BASE)) = loopback_mode;
 }
 
 //-----------------------------------------------------------------------------
@@ -66,9 +71,9 @@ void pcie_loopback_mode_on (int loopback_mode)
 //      - Wait until training complete
 //        - Exit with error if emergency timer overflow
 //-----------------------------------------------------------------------------
-int pcie_simple_turn_on ()
+uint32_t pcie_simple_turn_on ()
 {
-    int timer_cntr;
+    uint32_t timer_cntr;
 #ifndef PCIE_TEST_LIB_SIMSPEEDUP_OFF
     /***************************************************/
     /*    this PHY settings are only for simulation    */
@@ -157,29 +162,29 @@ int pcie_simple_turn_on ()
 //        parameters for inbound address translation
 //      
 //-----------------------------------------------------------------------------
-int pcie_turn_on_with_options_ep
+uint32_t pcie_turn_on_with_options_ep
 (
-    char usual_settings             ,
-    int  sctl_base_opt              ,
-    int  i_command_status           ,
-    int  i_base_addr_0              ,
-    int  i_base_addr_1              ,
-    int  i_base_addr_2              ,
-    int  i_base_addr_3              ,
-    int  i_base_addr_4              ,
-    int  i_base_addr_5              ,
-    int  i_pf_0_BAR_config_0_reg    ,
-    int  i_pf_0_BAR_config_1_reg    ,
-    int  ep_bar_0_addr_translation  ,
-    int  ep_bar_1_addr_translation  ,
-    int  ep_bar_2_addr_translation  ,
-    int  ep_bar_3_addr_translation  ,
-    int  ep_bar_4_addr_translation  ,
-    int  ep_bar_5_addr_translation
+    uint8_t usual_settings             ,
+    uint32_t  sctl_base_opt              ,
+    uint32_t  i_command_status           ,
+    uint32_t  i_base_addr_0              ,
+    uint32_t  i_base_addr_1              ,
+    uint32_t  i_base_addr_2              ,
+    uint32_t  i_base_addr_3              ,
+    uint32_t  i_base_addr_4              ,
+    uint32_t  i_base_addr_5              ,
+    uint32_t  i_pf_0_BAR_config_0_reg    ,
+    uint32_t  i_pf_0_BAR_config_1_reg    ,
+    uint32_t  ep_bar_0_addr_translation  ,
+    uint32_t  ep_bar_1_addr_translation  ,
+    uint32_t  ep_bar_2_addr_translation  ,
+    uint32_t  ep_bar_3_addr_translation  ,
+    uint32_t  ep_bar_4_addr_translation  ,
+    uint32_t  ep_bar_5_addr_translation
 
 )
 {
-    int timer_cntr;
+    uint32_t timer_cntr;
     
     
 #ifndef PCIE_TEST_LIB_SIMSPEEDUP_OFF
@@ -369,21 +374,21 @@ int pcie_turn_on_with_options_ep
 //        parameters for inbound address translation
 //      
 //-----------------------------------------------------------------------------
-int pcie_turn_on_with_options_rc
+uint32_t pcie_turn_on_with_options_rc
 (
-    char usual_settings             ,
-    char high_lvl_loopback_mode     ,
-    int  sctl_base_opt              ,
-    int  i_command_status           ,
-    int  i_RC_BAR_0                 ,
-    int  i_RC_BAR_1                 ,
-    int  i_rc_BAR_config_reg        ,
-    int  rc_bar_0_addr_translation  ,
-    int  rc_bar_1_addr_translation
+    uint8_t usual_settings             ,
+    uint8_t high_lvl_loopback_mode     ,
+    uint32_t  sctl_base_opt              ,
+    uint32_t  i_command_status           ,
+    uint32_t  i_RC_BAR_0                 ,
+    uint32_t  i_RC_BAR_1                 ,
+    uint32_t  i_rc_BAR_config_reg        ,
+    uint32_t  rc_bar_0_addr_translation  ,
+    uint32_t  rc_bar_1_addr_translation
 
 )
 {
-    int timer_cntr;
+    uint32_t timer_cntr;
     
     
 #ifndef PCIE_TEST_LIB_SIMSPEEDUP_OFF
@@ -409,6 +414,8 @@ int pcie_turn_on_with_options_rc
     //---------------------------------------------------------------
     if (usual_settings == 0)
         rgSCTL_PCIE_REG_0 = (rgSCTL_PCIE_REG_0 & 0xFFFFFFF0) | (sctl_base_opt & 0x0000000F) | 0x2;
+    else
+        rgSCTL_PCIE_REG_0 |= 0x2;
     
     //---------------------------------------------------------------
     //  PCIe reset Off
@@ -429,12 +436,15 @@ int pcie_turn_on_with_options_rc
     
     
     //---------------------------------------------------------------
+    //  Turning high level loopback, if required
+    //---------------------------------------------------------------
+    if (high_lvl_loopback_mode != 0)
+        rgPCIe_LocMgmt_i_pl_config_0_reg |= 0x80000000;
+    //---------------------------------------------------------------
     //  Set options in PCIe controller
     //---------------------------------------------------------------
     if (usual_settings == 0)
     {
-        if (high_lvl_loopback_mode != 0)
-            rgPCIe_LocMgmt_i_pl_config_0_reg |= 0x80000000;
         //------------------------------------------------------
         //  Enable access through controller
         //------------------------------------------------------
