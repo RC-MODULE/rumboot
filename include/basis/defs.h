@@ -1,10 +1,10 @@
 
 /* --- Peripheral Base Addresses --- */
 
-#define DIT0_BASE      0x01012000
-#define DIT1_BASE      0x01013000
-#define DIT2_BASE      0x01014000
-#define DIT3_BASE      0x01015000
+#define DIT0_BASE      0x0102A000
+#define DIT1_BASE      0x0102B000
+#define DIT2_BASE      0x0102C000
+#define DIT3_BASE      0x0102D000
 
 #define TSNS_BASE      0x01019000
 
@@ -615,5 +615,3 @@
 #define PCIe_DMA_common_udma_ob_ecc_correctable_errors         0x00B8
 #define PCIe_DMA_common_udma_cap_ver                           0x00F8
 #define PCIe_DMA_common_udma_config                            0x00FC
-
-
