@@ -98,7 +98,7 @@ int write_line_basis(struct mem_layout *layout, FILE *ifd, FILE *ofd)
 	unsigned char *srcbuf = alloca(num_bytes);
 	int i;
 
-	i = fread(srcbuf, 1, 8, ifd);
+	i = fread(srcbuf, 1, 4, ifd);
 
 	if (num_bytes != i) {
 			fprintf(stderr, "Expected to read %d, only got %d\n", num_bytes, i);
