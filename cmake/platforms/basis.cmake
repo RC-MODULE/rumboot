@@ -51,7 +51,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
   add_directory_with_targets(jenkins/
       CONFIGURATION ROM
-      PREFIX simple-rom
+      PREFIX jenkins
       TESTGROUP short
     )
 
