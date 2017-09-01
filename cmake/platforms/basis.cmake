@@ -32,7 +32,7 @@ macro(add_directory_with_targets dir)
         FILES ${target}
     )
   endforeach()
-  file(GLOB RUMBOOT_TARGETS ${CMAKE_SOURCE_DIR}/${dir}/*.S)
+  file(GLOB RUMBOOT_TARGETS ${RUMBOOT_PLATFORM_TARGET_DIR}/${dir}/*.S)
   foreach(target ${RUMBOOT_TARGETS})
     add_rumboot_target(
         ${ARGN}
