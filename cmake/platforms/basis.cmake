@@ -78,13 +78,6 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       TESTGROUP short
     )
 
-  add_rumboot_target(
-      CONFIGURATION ROM
-      FILES simple-rom/sp804-periph-id.c
-      CFLAGS -DSOMESHIT=1
-      NAME TESTXXX
-      TESTGROUP short
-    )
 endmacro()
 
 if (CMAKE_VERILOG_RULES_LOADED)
