@@ -44,40 +44,22 @@ endmacro()
 ### Add tests here ###
 #WARNING! Full regression automatically includes all tests from the short ones
 macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
+
   add_directory_with_targets(simple-rom/
     CONFIGURATION ROM
     PREFIX simple-rom)
+
+  add_directory_with_targets(jenkins/
+      CONFIGURATION ROM
+      PREFIX simple-rom
+      TESTGROUP short
+    )
 
   add_rumboot_target(
       CONFIGURATION ROM
       FILES can/can-loopback.c can/loopback.S
       NAME can-loopback
     )
-
-  add_rumboot_target(
-      CONFIGURATION ROM
-      FILES simple-rom/esram0_simple_test.S
-      NAME esram0_simple_test
-    )
-
-  add_rumboot_target(
-      CONFIGURATION ROM
-      FILES simple-rom/esram1_simple_test.S
-      NAME esram1_simple_test
-    )
-
-  add_rumboot_target(
-      CONFIGURATION ROM
-      FILES simple-rom/pcie_phy_bist_prbs31.S
-      NAME pcie_phy_bist_prbs31
-    )
-
-  add_rumboot_target(
-      CONFIGURATION ROM
-      FILES simple-rom/hello-asm.S
-      TESTGROUP short
-    )
-
 endmacro()
 
 if (CMAKE_VERILOG_RULES_LOADED)
