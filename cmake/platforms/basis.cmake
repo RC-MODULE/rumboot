@@ -113,7 +113,6 @@ macro(rumboot_platform_generate_stuff_for_taget product)
     OUTPUT ${product}.hex/image_mem64_0.hex
     COMMAND mkdir -p ${product}.hex
     COMMAND ${CMAKE_BINARY_DIR}/utils/romgen -i ${product}.bin -o ${product}.hex
-    COMMAND ${CMAKE_SOURCE_DIR}/utils/scatter_hex.pl ${product}.hex/image_mem64_0.hex  ${product}.hex/image_mem64_0.hex32
     COMMENT "Generating HEX memory files for ${product}.bin"
     DEPENDS ${product}.bin utils
   )
