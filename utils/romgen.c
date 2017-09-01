@@ -156,6 +156,15 @@ struct mem_layout basis_rom = {
 	.write_line         = write_line_basis,
 };
 
+struct mem_layout basis_rom_new = {
+	.line_count		    = 262144*2,
+	.line_length		= 32,
+	.adjacement_banks	= 1,
+	.inverse_order		= 0,
+	.gen_filename		= gen_basis_filename,
+	.write_line         = write_line_basis,
+};
+
 
 #define DIV_ROUND_UP(n, d) (((n) + (d) - 1) / (d))
 
@@ -288,5 +297,5 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
-	dump_rcf(input_file, outdir, &basis_rom);
+	dump_rcf(input_file, outdir, &basis_rom_new);
 }
