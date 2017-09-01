@@ -66,6 +66,10 @@ macro(config_load_param conf param)
   endif()
 endmacro()
 
+macro(config_load_param_append conf param)
+    set(TARGET_${param} ${CONFIGURATION_${conf}_${param}} ${TARGET_${param}})
+endmacro()
+
 function(add_rumboot_target)
   set(options )
   set(oneValueArgs SNAPSHOT LDS NAME PREFIX CONFIGURATION)
@@ -77,8 +81,12 @@ function(add_rumboot_target)
     set(TARGET_CONFIGURATION ${RUMBOOT_PLATFORM_DEFAULT_CONFIGURATION})
   endif()
 
-  foreach(c ${oneValueArgs} ${multiValueArgs})
+  foreach(c ${oneValueArgs})
     config_load_param(${TARGET_CONFIGURATION} ${c})
+  endforeach()
+
+  foreach(c ${multiValueArgs})
+    config_load_param_append(${TARGET_CONFIGURATION} ${c})
   endforeach()
 
   if (NOT TARGET_NAME)
@@ -110,7 +118,7 @@ function(add_rumboot_target)
   endforeach()
 
   add_executable(${product} ${trg} $<TARGET_OBJECTS:rumboot-${TARGET_CONFIGURATION}>)
-  target_compile_definitions(${product} PUBLIC ${CFLAGS})
+  target_compile_definitions(${product} PUBLIC ${TARGET_CFLAGS})
 
   if (NOT TARGET_LDS)
     set(TARGET_LDS ${RUMBOOT_PLATFORM_DEFAULT_LDS})
