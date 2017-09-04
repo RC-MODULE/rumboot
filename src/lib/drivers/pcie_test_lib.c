@@ -164,7 +164,7 @@ uint32_t pcie_simple_turn_on ()
 //-----------------------------------------------------------------------------
 uint32_t pcie_turn_on_with_options_ep
 (
-    uint8_t usual_settings             ,
+    uint8_t usual_settings               ,
     uint32_t  sctl_base_opt              ,
     uint32_t  i_command_status           ,
     uint32_t  i_base_addr_0              ,
@@ -376,8 +376,8 @@ uint32_t pcie_turn_on_with_options_ep
 //-----------------------------------------------------------------------------
 uint32_t pcie_turn_on_with_options_rc
 (
-    uint8_t usual_settings             ,
-    uint8_t high_lvl_loopback_mode     ,
+    uint8_t usual_settings               ,
+    uint8_t high_lvl_loopback_mode       ,
     uint32_t  sctl_base_opt              ,
     uint32_t  i_command_status           ,
     uint32_t  i_RC_BAR_0                 ,
@@ -517,6 +517,139 @@ uint32_t pcie_turn_on_with_options_rc
         timer_cntr++;
         if (timer_cntr == PCIE_TEST_LIB_TRAINING_DURATION)
             return -1;
+    }
+    
+    return 0;
+}
+
+//-----------------------------------------------------------------------------
+//  This function is for Outbound Address Translator simple configuration
+//    It includes:
+//      - 
+//
+//  Arguments:
+//    - config_type
+//        0:
+//          bypass disable, interrupts enable, no other settings
+//          all transactions should be error
+//        1:
+//           bypass disable, interrupts enable, 
+//           devide all 32 bit space to equal regions, no address change
+//      
+//-----------------------------------------------------------------------------
+uint32_t addr_trans_slv_config
+(
+    uint8_t config_type
+)
+{
+    volatile uint32_t* addr_pointer = (uint32_t*) (ADDR_TRANS_SLV_BASE + ADDR_TRANS_SLV_region0_base);
+    
+    switch (config_type)
+    {
+        case 0 : rgADDR_TRANS_SLV_ctrl = 0; break;
+        case 1 : 
+        {
+            rgADDR_TRANS_SLV_ctrl = 0;
+            for (uint32_t i = 0; i < 128; i++)
+            {
+                *(addr_pointer++)  = (uint32_t) 0x02000000*i | 0x1;
+                *(addr_pointer+=2) = (uint32_t) 0x02000000*i + 0x01FFF000;
+            }
+            break;
+        }
+    }
+    
+    return 0;
+}
+
+//-----------------------------------------------------------------------------
+//  This function is for Inbound Address Translator simple configuration
+//    It includes:
+//      - 
+//
+//  Arguments:
+//    - config_type
+//        0:
+//          bypass disable, interrupts enable, no other settings
+//          all transactions should be error
+//        1:
+//          bypass disable, interrupts enable, 
+//          first 2 Gb to region 0
+//          second 2 Gb to (region 1 .. region 8) equal size
+//          no address change
+//      
+//-----------------------------------------------------------------------------
+uint32_t addr_trans_mst_config
+(
+    uint8_t config_type
+)
+{
+    volatile uint32_t* addr_pointer = (uint32_t*) (ADDR_TRANS_MST_BASE + ADDR_TRANS_MST_region1_base);
+    
+    switch (config_type)
+    {
+        case 0 : rgADDR_TRANS_MST_ctrl = 0; break;
+        case 1 : 
+        {
+            rgADDR_TRANS_MST_region0_base = (uint32_t) 0x00000000 | 0x1; 
+            rgADDR_TRANS_MST_region0_end =  (uint32_t) 0x3FFFF000;
+            
+            rgADDR_TRANS_MST_ctrl = 0;
+            for (uint32_t i = 0; i < 8; i++)
+            {
+                *(addr_pointer++)  = (uint32_t) 0x02000000*i | 0x1;
+                *(addr_pointer+=2) = (uint32_t) 0x02000000*i + 0x01FFF000;
+            }
+            break;
+        }
+    }
+    
+    return 0;
+}
+
+//-----------------------------------------------------------------------------
+//  This function is for External IRQ Generator configuration
+//  Now this function realise only default MSIX mapping
+//  Now this function realise only hardcoded MSIX vectors
+//
+//  Arguments:
+//    - Ctrl
+//        [0]    Ext_Int_En 
+//        [1]    MSIX_Int_En
+//        [2]    MSIX_Int_Mask
+//        [3]    Legacy_Int_En 
+//        [4]    Legacy_Int_Mask 
+//        [5]    Legacy_Int_Ack 
+//        [31:6] Reserved
+//        
+//    - Global_IRQ_Mask_h
+//    - Global_IRQ_Mask_l
+//      
+//-----------------------------------------------------------------------------
+uint32_t ext_irq_gen_config
+(
+    uint32_t Ctrl                  ,
+    uint32_t Global_IRQ_Mask_h     ,
+    uint32_t Global_IRQ_Mask_l
+)
+{
+    rgEXT_IRQ_GEN_Ctrl              = Ctrl              ;
+    rgEXT_IRQ_GEN_Global_IRQ_Mask_l = Global_IRQ_Mask_h ;
+    rgEXT_IRQ_GEN_Global_IRQ_Mask_h = Global_IRQ_Mask_l ;
+    if (Ctrl & 0x2)
+        rgPCIe_EP_i_msix_ctrl |= 0x80000000;
+    else
+        rgPCIe_EP_i_msix_ctrl &= ~0x80000000;
+    if (Ctrl & 0x4)
+        rgPCIe_EP_i_msix_ctrl |= 0x40000000;
+    else
+        rgPCIe_EP_i_msix_ctrl &= ~0x40000000;
+    
+    volatile uint32_t* addr_pointer = (uint32_t*) (EXT_IRQ_GEN_BASE + EXT_IRQ_GEN_v0_Message_Address);
+    for (int i = 0; i < 64; i++)
+    {
+        *(addr_pointer+=2) = (i << 4);
+        *(addr_pointer+=2) = (i << 8);
     }
     
     return 0;

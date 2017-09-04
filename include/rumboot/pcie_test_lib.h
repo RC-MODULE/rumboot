@@ -65,7 +65,7 @@
      */
     uint32_t pcie_turn_on_with_options_ep
     (
-        uint8_t usual_settings            ,
+        uint8_t usual_settings              ,
         uint32_t sctl_base_opt              ,
         uint32_t i_command_status           ,
         uint32_t i_base_addr_0              ,
@@ -100,8 +100,8 @@
      */
     uint32_t pcie_turn_on_with_options_rc
     (
-        uint8_t usual_settings            ,
-        uint8_t high_lvl_loopback_mode    ,
+        uint8_t usual_settings              ,
+        uint8_t high_lvl_loopback_mode      ,
         uint32_t sctl_base_opt              ,
         uint32_t i_command_status           ,
         uint32_t i_RC_BAR_0                 ,
@@ -109,6 +109,43 @@
         uint32_t i_rc_BAR_config_reg        ,
         uint32_t rc_bar_0_addr_translation  ,
         uint32_t rc_bar_1_addr_translation
+    );
+
+    /**
+     * This function is for Outbound Address Translator simple configuration
+     *   Very few options are used here. Look documentation for full list.
+     *
+     * @param config_type            [description]
+     */
+    uint32_t addr_trans_slv_config
+    (
+        uint8_t config_type
+    );
+
+    /**
+     * This function is for Inbound Address Translator simple configuration
+     *   Very few options are used here. Look documentation for full list.
+     *
+     * @param config_type            [description]
+     */
+    uint32_t addr_trans_mst_config
+    (
+        uint8_t config_type
+    );
+
+    /**
+     * This function is for External IRQ Generator configuration
+     *   Very few options are used here. Look documentation for full list.
+     *
+     * @param Ctrl            [description]
+     * @param Global_IRQ_Mask_h            [description]
+     * @param Global_IRQ_Mask_l            [description]
+     */
+    uint32_t ext_irq_gen_config
+    (
+        uint32_t Ctrl                  ,
+        uint32_t Global_IRQ_Mask_h     ,
+        uint32_t Global_IRQ_Mask_l
     );
 
 /** @}*/
@@ -130,7 +167,7 @@ typedef volatile struct __attribute__ ((__packed__))
     //-----------------------------------------------------
     //      [63:0] PCIe Base Address
     //-----------------------------------------------------
-    uint64_t   pcie_base_addr  : 64;
+    uint64_t   pcie_base_addr        : 64;
     //-----------------------------------------------------
     //  PCIe TLP Header Attributes
     //      [31:26]  Reserved
@@ -156,14 +193,14 @@ typedef volatile struct __attribute__ ((__packed__))
     //      [2:1]    Continuity (bulk | scatter/gather)
     //      [0]      Interrupt after execution of descriptor
     //-----------------------------------------------------
-    uint8_t    control_byte        :  8;
+    uint8_t    control_byte          :  8;
     //-----------------------------------------------------
     //  AXI Bus Status
     //      [7:3]    Reserved
     //      [2]      Internal data integrity error detected
     //      [1:0]    BRESP[1:0] or RRESP[1:0]
     //-----------------------------------------------------
-    uint8_t    axi_bus_status      :  8;
+    uint8_t    axi_bus_status        :  8;
     //-----------------------------------------------------
     //  PCIe Bus Status
     //      [7:4]    Reserved
@@ -171,7 +208,7 @@ typedef volatile struct __attribute__ ((__packed__))
     //        0x0      Normal completion
     //        !=0      Completion with error (look spec)
     //-----------------------------------------------------
-    uint8_t    pcie_bus_status     :  8;
+    uint8_t    pcie_bus_status       :  8;
     //-----------------------------------------------------
     //  Channel Status
     //      [7]      Buffer Not Empty
@@ -183,11 +220,11 @@ typedef volatile struct __attribute__ ((__packed__))
     //      [1]      PCIe transfer completed early with incomplete data
     //      [0]      Descriptor action completed
     //-----------------------------------------------------
-    uint8_t    channel_status      :  8;
+    uint8_t    channel_status        :  8;
     //-----------------------------------------------------
     //      [7:0] Reserved
     //-----------------------------------------------------
-    uint8_t    reserved            :  8;
+    uint8_t    reserved              :  8;
     //-----------------------------------------------------
     //      [31:0] Pointer to Next Descriptor in linked-list
     //-----------------------------------------------------

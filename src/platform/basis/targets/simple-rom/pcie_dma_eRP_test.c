@@ -1,16 +1,35 @@
 
 //-----------------------------------------------------------------------------
-//  This program is for PCIe testing
+//  This program is for PCIe DMA simple testing
 //    It uses external PCIe module with mirror AXI buses.
 //    Test includes:
 //    - creation of etalon array in esram0
-//    - creation of PCIe internal DMA descriptors
-//    - GIC configuration to check interruption
+//    - clearing data_mid and data_dst space (you can rerun program without SoC reset)
+//    - PCIe turning ON
+//    - creation of PCIe internal DMA descriptors for write
 //    - write data data_src -> ext PCIe -> data_mid
+//    - creation of PCIe internal DMA descriptors for read
 //    - reading data data_mid -> ext PCIe -> data_dst
+//    - check that data_src == data_dst
+//    
+//    Test duration (RTL): < 300us
 //-----------------------------------------------------------------------------
 
 #include <rumboot/pcie_test_lib.h>
+
+#ifndef increase_test_duration
+#define increase_test_duration 0
+#endif
+
+
+#if increase_test_duration == 1
+#define write_duration 13*2
+#define read_duration 20*2
+#else
+#define write_duration 13
+#define read_duration 20
+#endif
+
 
     uint32_t data_dst [256];
     uint32_t data_mid [256];
@@ -68,7 +87,7 @@ uint32_t pcie_dma_transaction ()
     //-------------------------------------------------------------
     //  Wait while transaction complete in our side
     //-------------------------------------------------------------
-    for (volatile uint32_t i = 0; i <= 13; i++)
+    for (volatile uint32_t i = 0; i <= write_duration; i++)
     {
     }
     if (data_mid [255] != data_src [255])
@@ -94,7 +113,7 @@ uint32_t pcie_dma_transaction ()
     //-------------------------------------------------------------
     //  Wait while transaction complete in our side
     //-------------------------------------------------------------
-    for (volatile uint32_t i = 0; i <= 20; i++)
+    for (volatile uint32_t i = 0; i <= read_duration; i++)
     {
     }
     if (data_dst [255] != data_src [255])
@@ -137,4 +156,3 @@ uint32_t main ()
         return -3;
     return 0;
 }
-
