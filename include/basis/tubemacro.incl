@@ -1,6 +1,6 @@
 .macro tube_msg msg
 
-        PUSH {R0,LR}
+        PUSH {R0-R3,LR}
         B   tube_msg_1_\@
 
 tube_msg_\@:
@@ -10,12 +10,12 @@ tube_msg_\@:
 tube_msg_1_\@:
         LDR R0, =tube_msg_\@
         BL rumboot_printf
-        POP  {R0,LR}
+        POP  {R0-R3,LR}
 .endm
 
 .macro tube_hex reg
 
-        PUSH {R0-R1,LR}
+        PUSH {R0-R3,LR}
         B   tube_hex_1_\@
 
 tube_hex_\@:
@@ -26,12 +26,12 @@ tube_hex_1_\@:
         MOV R1, \reg
         LDR R0, =tube_hex_\@
         BL rumboot_printf
-        POP  {R0-R1,LR}
+        POP  {R0-R3,LR}
 .endm
 
 .macro tube_dec reg
 
-        PUSH {R0-R1,LR}
+        PUSH {R0-R3,LR}
         B   tube_dec_1_\@
 
 tube_dec_\@:
@@ -42,7 +42,7 @@ tube_dec_1_\@:
         MOV R1, \reg
         LDR R0, =tube_dec_\@
         BL rumboot_printf
-        POP  {R0-R1,LR}
+        POP  {R0-R3,LR}
 .endm
 
 
