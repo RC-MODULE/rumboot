@@ -23,13 +23,11 @@
  */
 enum rumboot_simulation_event {
     EVENT_NOP, /** No-op event */
-    EVENT_FINISH, /** Successfull completion */
-    EVENT_CRASH, /** Fatal error */
-    EVENT_WARN, /** Software-generated warning */
-    EVENT_PERF, /** Performance checkpoint */
+    EVENT_TERM, /** Termination request */
     EVENT_STDOUT, /** A character is ready for output */
-    EVENT_STDIN, /** A character is requested */
+    EVENT_STDIN, /** Request for next character input */
     EVENT_TRACE, /** A function call trace */
+    EVENT_PRINTF, /** Simulator printf */
 };
 
 
@@ -99,6 +97,8 @@ int rumboot_platform_getchar(uint32_t timeout_us);
 struct rumboot_runtime_info {
     uint32_t magic; /** Magic value. Indicates that this structure contains valid data */
     char *current_heap_end; /** Current heap end pointer, used by _sbrk */
+    void *irq_handler_table;
+    uint32_t irq_lock_count;
 };
 
 /**

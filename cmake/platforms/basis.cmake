@@ -12,7 +12,7 @@ rumboot_add_configuration(
   DEFAULT
   SNAPSHOT default
   LDS basis/rom.lds
-  CFLAGS -DRUMBOOT_ONLY_STACK
+  CFLAGS -DRUMBOOT_ONLY_STACK -DRUMBOOT_PRINTF_ACCEL
   PREFIX ROM
 )
 
@@ -79,6 +79,7 @@ file(GLOB PLATFORM_SOURCES
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/*.c
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/startup.S
     ${CMAKE_SOURCE_DIR}/src/lib/drivers/*.c
+    ${CMAKE_SOURCE_DIR}/src/arch/arm.c
 )
 
 macro(RUMBOOT_PLATFORM_SET_COMPILER_FLAGS)

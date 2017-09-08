@@ -518,6 +518,8 @@ repeat:
 	return 0;
 }
 
+
+#ifndef RUMBOOT_PRINTF_ACCEL
 void rumboot_printf(const char *fmt, ...)
 {
 	va_list args;
@@ -525,5 +527,5 @@ void rumboot_printf(const char *fmt, ...)
 	va_start(args, fmt);
 	rumboot_vprintf(fmt, args);
 	va_end(args);
-
 }
+#endif

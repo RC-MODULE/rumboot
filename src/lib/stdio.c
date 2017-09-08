@@ -2,11 +2,16 @@
 #include <stdint.h>
 #include <rumboot/rumboot.h>
 #include <rumboot/platform.h>
+#include <rumboot/printf.h>
 
 void rumboot_putstring(const char *string)
 {
+    #ifndef RUMBOOT_PRINTF_ACCEL
     while(*string)
         rumboot_platform_putchar(*string++);
+    #else
+    rumboot_printf(string);
+    #endif
 }
 
 

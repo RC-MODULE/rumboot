@@ -21,7 +21,6 @@ void rumboot_platform_setup() {
     iowrite32(0x00, DGPIO_LOW_BASE + DATA);
     iowrite32(0xff, DGPIO_HIGH_BASE + DIR);
     iowrite32(0x00, DGPIO_HIGH_BASE + DATA);
-    rumboot_platform_raise_event(EVENT_PERF, 0);
 }
 
 union u32 {
@@ -41,7 +40,7 @@ void __attribute__((noreturn)) rumboot_platform_panic(const char *why, ...)
         rumboot_vprintf(why, ap);
     	va_end(ap);
     }
-    
+
 	while (depth--) {
         /* All the stack frames should be in the stack area and we should check it
          * unless we want to be trappe in a recursive fault
@@ -59,18 +58,24 @@ void __attribute__((noreturn)) rumboot_platform_panic(const char *why, ...)
 			break;
 	}
 
-	rumboot_platform_raise_event(EVENT_CRASH, 0);
+	rumboot_platform_raise_event(EVENT_TERM, 1);
     while (1) { };
+}
+
+static void dump32(enum rumboot_simulation_event event, void *pc)
+{
+	union u32 u;
+
+	u.u = (uint32_t)pc;
+	rumboot_platform_raise_event(event, u.byte[3]);
+	rumboot_platform_raise_event(event, u.byte[2]);
+	rumboot_platform_raise_event(event, u.byte[1]);
+	rumboot_platform_raise_event(event, u.byte[0]);
 }
 
 void rumboot_platform_trace(void *pc)
 {
-    union u32 u;
-    u.u = (uint32_t) pc;
-    rumboot_platform_raise_event(EVENT_TRACE, u.byte[3]);
-    rumboot_platform_raise_event(EVENT_TRACE, u.byte[2]);
-    rumboot_platform_raise_event(EVENT_TRACE, u.byte[1]);
-    rumboot_platform_raise_event(EVENT_TRACE, u.byte[0]);
+    dump32(EVENT_TRACE, pc);
 }
 
 void rumboot_platform_raise_event(enum rumboot_simulation_event event, uint8_t arg)
@@ -83,6 +88,18 @@ void rumboot_platform_raise_event(enum rumboot_simulation_event event, uint8_t a
 void rumboot_platform_putchar(uint8_t c)
 {
     rumboot_platform_raise_event(EVENT_STDOUT, c);
+}
+
+
+void __attribute__((optimize("-O0"))) rumboot_printf(const char *fmt, ...)
+{
+	/* va-arg func sends r0-r3 registers to stack in prologue
+	 * 00000384 <rumboot_sim_printf>:
+	 *  384:	e92d000f 	push	{r0, r1, r2, r3}
+	 *  388:	e92d4800 	push	{fp, lr}
+	 *  38c:	e28db004 	add	fp, sp, #4
+	 */
+	dump32(EVENT_PRINTF, __builtin_frame_address(0));
 }
 
 int rumboot_platform_getchar(uint32_t timeout_us)
