@@ -40,3 +40,16 @@ int rumboot_platform_getchar(uint32_t timeout_us)
 {
     return (uint8_t) getc(stdin);
 }
+
+struct rumboot_runtime_info rumboot_platform_runtime_info;
+
+
+void rumboot_arch_irq_disable()
+{
+
+}
+
+void rumboot_arch_irq_enable()
+{
+    
+}

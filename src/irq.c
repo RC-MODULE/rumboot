@@ -35,16 +35,18 @@ struct rumboot_irq_entry
     void *arg;
 };
 
+void *rumboot_malloc(uint32_t size);
+void rumboot_free(void *ptr);
 
 void rumboot_irq_free(struct rumboot_irq_entry *tbl)
 {
-	free(tbl);
+	rumboot_free(tbl);
 }
 
 struct rumboot_irq_entry *rumboot_irq_create(struct rumboot_irq_entry *copyfrom)
 {
 
-    struct rumboot_irq_entry *tbl = calloc(sizeof(*tbl), RUMBOOT_PLATFORM_NUM_IRQS + 1);
+    struct rumboot_irq_entry *tbl = rumboot_malloc(sizeof(*tbl) * (RUMBOOT_PLATFORM_NUM_IRQS + 1));
     if (!tbl){
         rumboot_platform_panic("IRQ Table alloc failed!\n");
 	}
@@ -65,13 +67,17 @@ void rumboot_irq_set_handler(struct rumboot_irq_entry *tbl, int irq, void (*hand
 
 void rumboot_irq_activate_table(struct rumboot_irq_entry *tbl)
 {
-	/* TODO */
+    rumboot_platform_runtime_info.irq_handler_table = tbl;
 }
 
-
-void rumboot_irq_enable(int irq)
+void rumboot_irq_cli()
 {
+	rumboot_arch_irq_disable();
+}
 
+void rumboot_irq_sei()
+{
+	rumboot_arch_irq_enable();
 }
 
 void rumboot_irq_disable(int irq)

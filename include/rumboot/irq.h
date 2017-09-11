@@ -130,10 +130,31 @@
     void rumboot_irq_core_dispatch(uint32_t type, uint32_t id);
 
 
+    /**
+     * Disable interrupt handling by current CPU core
+     */
+    void rumboot_irq_cli();
+
+    /**
+     * Enable interrupt handling by current CPU core
+     */
+    void rumboot_irq_sei();
 
     /**
     *  @}
     */
+
+    /**
+     * ARCH-specific glue: Disable CPU IRQ handling.
+     * DO NOT USE DIRECTLY - USE rumboot_irq_cli()
+     */
+    void rumboot_arch_irq_disable();
+
+    /**
+     * ARCH-specific glue: Enable CPU IRQ handling.
+     * DO NOT USE DIRECTLY - USE rumboot_irq_sei()
+     */
+    void rumboot_arch_irq_enable();
 
 #endif
 
