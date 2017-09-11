@@ -66,8 +66,8 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
   add_rumboot_target(
       CONFIGURATION ROM
-      FILES can/can-loopback.c can/loopback.S
-      NAME can-loopback
+      FILES can/can-v.c can/can-loopback.S can/ccan_request.S can/ccan_fifo.S can/ccan_full.S can/ccan_mask_filter.S can/int_send.S can/int_receive.S can/mem_config.S can/test_config.S
+      NAME can-v
     )
 endmacro()
 
