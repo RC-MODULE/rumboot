@@ -2,6 +2,7 @@
 #include "can_defs.h"
 
 .global CCAN_MASK_FILTER
+.global warning
 
 @ ***arm calling convention***
 @ there is CAN_BASE in the R0
@@ -204,6 +205,7 @@ CCAN_MASK_FILTER:
 
     tube_msg "-- Wait for transaction"
     LDR R3, =0x0001
+
 repeat_loop:
     BL INT_SEND
     ADDS R3, R3, #1
@@ -215,7 +217,15 @@ repeat_loop:
 
     MOV R0, #0    
     tube_msg "- CCAN_MASK_FILTER_TRANSACTION finished"
-    
+    B exit
+
+warning:
+    tube_msg "---- MISMATCH :("
+    MOV R0, #1                          @ error
+    MOV LR, R7
+    tube_msg "go to exit"
+
+exit:
     POP {R1-R7, LR}
     BX  LR @ return
 

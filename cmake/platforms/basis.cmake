@@ -66,9 +66,34 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
   add_rumboot_target(
       CONFIGURATION ROM
-      FILES can/can-v.c can/can-loopback.S can/ccan_request.S can/ccan_fifo.S can/ccan_full.S can/ccan_mask_filter.S can/int_send.S can/int_receive.S can/mem_config.S can/test_config.S
-      NAME can-v
+      FILES can/can_loopback.c can/can_loopback.S can/int_send.S can/int_receive.S can/mem_config.S can/test_config.S
+      NAME can_loopback
     )
+
+  add_rumboot_target(
+      CONFIGURATION ROM
+      FILES can/can_request.c can/ccan_request.S can/int_send.S can/int_receive.S can/mem_config.S can/test_config.S
+      NAME can_request
+    )
+
+  add_rumboot_target(
+      CONFIGURATION ROM
+      FILES can/can_fifo.c can/ccan_fifo.S can/int_send.S can/int_receive.S can/mem_config.S can/test_config.S
+      NAME can_fifo
+    )
+
+  add_rumboot_target(
+      CONFIGURATION ROM
+      FILES can/can_full.c can/ccan_full.S can/int_send.S can/int_receive.S can/mem_config.S can/test_config.S
+      NAME can_full
+    )
+
+  add_rumboot_target(
+      CONFIGURATION ROM
+      FILES can/can_maskfilter.c can/ccan_mask_filter.S can/int_send.S can/int_receive.S can/mem_config.S can/test_config.S
+      NAME can_maskfilter
+    )
+
 endmacro()
 
 if (CMAKE_VERILOG_RULES_LOADED)

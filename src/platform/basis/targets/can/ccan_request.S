@@ -74,7 +74,7 @@ CCAN_REQUEST:
     @ LDR R2, =0x8002
     @ STR R2, [R1, #CCAN_IF2_Com_Req]
 
-    tube_msg "-- Request OK280817"
+    tube_msg "-- Request OK"
     
     tube_msg "-"
     
@@ -139,15 +139,6 @@ a_repeat_loop:
     tube_msg "--- DATA B2 OK"
     tube_msg "--- NICE :)"
 
-    B cmp_final
-
-@warning: defined in can-loopback.S
-@    tube_msg "---- MISMATCH :("
-@    MOV R0, #1                          @ error
-@    MOV LR, R7
-@    tube_msg "go to exit"
-@    B exit
-
 cmp_final:
     tube_msg "-- Read and Compare OK"
     MOV R0, #0
@@ -155,6 +146,13 @@ cmp_final:
     tube_msg "-"
     
     tube_msg "- CCAN_REQUEST_TRANSACTION finished"
+    B exit
+
+warning:
+    tube_msg "---- MISMATCH :("
+    MOV R0, #1                          @ error
+    MOV LR, R7
+    tube_msg "go to exit"
 
 exit:
     POP {R1-R7, LR}

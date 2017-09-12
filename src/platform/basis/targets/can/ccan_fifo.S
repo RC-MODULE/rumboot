@@ -210,6 +210,14 @@ repeat_loop:
     tube_msg "-"
     
     tube_msg "- CCAN_FIFO_TRANSACTION finished"
-    
+    B exit
+
+warning:
+    tube_msg "---- MISMATCH :("
+    MOV R0, #1                          @ error
+    MOV LR, R7
+    tube_msg "go to exit"
+
+exit:
     POP {R1-R7, LR}
     BX  LR      @return
