@@ -62,6 +62,7 @@
      * @param ep_bar_3_addr_translation [description]
      * @param ep_bar_4_addr_translation [description]
      * @param ep_bar_5_addr_translation [description]
+     * @return pass
      */
     uint32_t pcie_turn_on_with_options_ep
     (
@@ -97,6 +98,7 @@
      * @param i_rc_BAR_config_reg       [description]
      * @param rc_bar_0_addr_translation [description]
      * @param rc_bar_1_addr_translation [description]
+     * @return pass
      */
     uint32_t pcie_turn_on_with_options_rc
     (
@@ -117,7 +119,7 @@
      *
      * @param config_type            [description]
      */
-    uint32_t addr_trans_slv_config
+    void addr_trans_slv_config
     (
         uint8_t config_type
     );
@@ -128,7 +130,7 @@
      *
      * @param config_type            [description]
      */
-    uint32_t addr_trans_mst_config
+    void addr_trans_mst_config
     (
         uint8_t config_type
     );
@@ -141,7 +143,7 @@
      * @param Global_IRQ_Mask_h            [description]
      * @param Global_IRQ_Mask_l            [description]
      */
-    uint32_t ext_irq_gen_config
+    void ext_irq_gen_config
     (
         uint32_t Ctrl                  ,
         uint32_t Global_IRQ_Mask_h     ,

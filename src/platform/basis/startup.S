@@ -97,6 +97,19 @@ rumboot_reset_handler:
     mov r13, #0
     mov r14, #0
 
+    MOV     R0,#0xf00000              @ Write CPACR (Coprocessor Access Control Register)
+    MCR     p15,0,R0,c1,c0,2          @ to enable coprocessors cp10 & cp11
+    MRC     p15,0,R0,c1,c0,2          @ Read CPACR
+    UBFX    R0, R0, #20, #1           @ if bit 20 is zero then so the bits 23:21 so FPU present
+    
+    MOV r0,#1<<30
+    MCR     p10, #7, r0, c8, c0, 0    @ enable FPU by writing FPEXC
+    MOV r0,#0
+    MCR     p10, #7, r0, c1, c0, 0    @ init FPSR
+    LDC p11, c0, [r0], {32}           @ init registers d0-d15
+    
+    @VMOV.F32 S0, R0     @ command to test FPU turn On.
+    
     /*
      *  enter each mode in turn and
      *  initialize the registers specific to it

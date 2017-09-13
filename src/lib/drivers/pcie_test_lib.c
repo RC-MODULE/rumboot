@@ -8,8 +8,9 @@
 //    - turn On with options (EndPoint mode)
 //    - turn On with options (RootPort mode)
 //    - switch freq ???
-//    - ext_irq_gen settings TODO
-//    - AT settings TODO
+//    - slave AT settings
+//    - master AT settings
+//    - ext_irq_gen settings
 //
 //      !!! Some functions includes PCIe Speedup for simulation !!!
 //      !!!         It must be removed in real program          !!!
@@ -22,8 +23,8 @@
 //-----------------------------------------------------------------------------
 //  These defines must be changed for real program
 //-----------------------------------------------------------------------------
-#define PCIE_TEST_LIB_PLL_LOCK_DURATION    0x1000
-#define PCIE_TEST_LIB_TRAINING_DURATION    0x1000
+#define PCIE_TEST_LIB_PLL_LOCK_TIMEOUT    0x1000
+#define PCIE_TEST_LIB_TRAINING_TIMEOUT    0x1000
 
 
 //-----------------------------------------------------------------------------
@@ -97,7 +98,7 @@ uint32_t pcie_simple_turn_on ()
     while ((rgSCTL_PCIE_RST & 0x1) == 0)
     {
         timer_cntr++;
-        if (timer_cntr == PCIE_TEST_LIB_PLL_LOCK_DURATION)
+        if (timer_cntr == PCIE_TEST_LIB_PLL_LOCK_TIMEOUT)
             return -1;
     }
     
@@ -109,7 +110,7 @@ uint32_t pcie_simple_turn_on ()
     while ((rgPCIe_LocMgmt_i_pl_config_0_reg & 0x1) == 0)
     {
         timer_cntr++;
-        if (timer_cntr == PCIE_TEST_LIB_TRAINING_DURATION)
+        if (timer_cntr == PCIE_TEST_LIB_TRAINING_TIMEOUT)
             return -2;
     }
     
@@ -224,7 +225,7 @@ uint32_t pcie_turn_on_with_options_ep
     while ((rgSCTL_PCIE_RST & 0x1) == 0)
     {
         timer_cntr++;
-        if (timer_cntr == PCIE_TEST_LIB_PLL_LOCK_DURATION)
+        if (timer_cntr == PCIE_TEST_LIB_PLL_LOCK_TIMEOUT)
             return -1;
     }
     
@@ -321,7 +322,7 @@ uint32_t pcie_turn_on_with_options_ep
     while ((rgPCIe_LocMgmt_i_pl_config_0_reg & 0x1) == 0)
     {
         timer_cntr++;
-        if (timer_cntr == PCIE_TEST_LIB_TRAINING_DURATION)
+        if (timer_cntr == PCIE_TEST_LIB_TRAINING_TIMEOUT)
             return -1;
     }
     
@@ -430,7 +431,7 @@ uint32_t pcie_turn_on_with_options_rc
     while ((rgSCTL_PCIE_RST & 0x1) == 0)
     {
         timer_cntr++;
-        if (timer_cntr == PCIE_TEST_LIB_PLL_LOCK_DURATION)
+        if (timer_cntr == PCIE_TEST_LIB_PLL_LOCK_TIMEOUT)
             return -1;
     }
     
@@ -515,7 +516,7 @@ uint32_t pcie_turn_on_with_options_rc
     while ((rgPCIe_LocMgmt_i_pl_config_0_reg & 0x1) == 0)
     {
         timer_cntr++;
-        if (timer_cntr == PCIE_TEST_LIB_TRAINING_DURATION)
+        if (timer_cntr == PCIE_TEST_LIB_TRAINING_TIMEOUT)
             return -1;
     }
     
@@ -533,11 +534,16 @@ uint32_t pcie_turn_on_with_options_rc
 //          bypass disable, interrupts enable, no other settings
 //          all transactions should be error
 //        1:
-//           bypass disable, interrupts enable, 
-//           devide all 32 bit space to equal regions, no address change
+//          bypass disable, interrupts enable, 
+//          devide all 32 bit space to equal regions, no address change
+//        2:
+//          bypass disable, interrupts enable
+//          0 region cover all space, except last 4K, that could be used to
+//          generate interruptions. Address -= 1G (to have access to eSRAM).
+//          Usefull mode for debug purposes.
 //      
 //-----------------------------------------------------------------------------
-uint32_t addr_trans_slv_config
+void addr_trans_slv_config
 (
     uint8_t config_type
 )
@@ -557,9 +563,14 @@ uint32_t addr_trans_slv_config
             }
             break;
         }
+        case 2 : 
+        {
+            rgADDR_TRANS_SLV_ctrl = 0;
+            *(addr_pointer++) = (uint32_t) 0x40000000 | 0x1;
+            *(addr_pointer++) = (uint32_t) 0x7FFFE000;
+            *(addr_pointer++) = (uint32_t) 0xC0000000;
+        }
     }
-    
-    return 0;
 }
 
 //-----------------------------------------------------------------------------
@@ -579,7 +590,7 @@ uint32_t addr_trans_slv_config
 //          no address change
 //      
 //-----------------------------------------------------------------------------
-uint32_t addr_trans_mst_config
+void addr_trans_mst_config
 (
     uint8_t config_type
 )
@@ -603,15 +614,20 @@ uint32_t addr_trans_mst_config
             break;
         }
     }
-    
-    return 0;
 }
 
 //-----------------------------------------------------------------------------
 //  This function is for External IRQ Generator configuration
 //  Now this function realise only default MSIX mapping
 //  Now this function realise only hardcoded MSIX vectors
-//
+//    MSIX vectors: addr           data
+//                  0x4005_0000    1
+//                  0x4005_0004    2
+//                      ...
+//                  0x4005_0100    64
+//      Such addresses make access to eSRAM through PCIe with mirrored
+//      external Root Port
+//      
 //  Arguments:
 //    - Ctrl
 //        [0]    Ext_Int_En 
@@ -626,7 +642,7 @@ uint32_t addr_trans_mst_config
 //    - Global_IRQ_Mask_l
 //      
 //-----------------------------------------------------------------------------
-uint32_t ext_irq_gen_config
+void ext_irq_gen_config
 (
     uint32_t Ctrl                  ,
     uint32_t Global_IRQ_Mask_h     ,
@@ -648,11 +664,13 @@ uint32_t ext_irq_gen_config
     volatile uint32_t* addr_pointer = (uint32_t*) (EXT_IRQ_GEN_BASE + EXT_IRQ_GEN_v0_Message_Address);
     for (int i = 0; i < 64; i++)
     {
-        *(addr_pointer+=2) = (i << 4);
-        *(addr_pointer+=2) = (i << 8);
+        *addr_pointer = 0x40050000 + (i << 2);
+        addr_pointer+=2;
+        *addr_pointer = i;
+        addr_pointer++;
+        *addr_pointer = 0;
+        addr_pointer++;
     }
-    
-    return 0;
 }
 
 
