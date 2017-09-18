@@ -1,7 +1,7 @@
 
 //-----------------------------------------------------------------------------
 //  This program is for checking all bits of AXI bus address, that are used by
-//    DDR0 controller.
+//    DDR1 controller.
 //  Also, it checks, that space are not mirror.
 //  
 //  Test includes:
@@ -24,35 +24,35 @@ uint32_t ddr_addr_shift1_test ()
     
     volatile uint64_t *DDR3_cell [29] =
     {
-        (uint64_t*) 0x80000000 ,
-        (uint64_t*) 0x80000008 ,
-        (uint64_t*) 0x80000010 ,
-        (uint64_t*) 0x80000020 ,
-        (uint64_t*) 0x80000040 ,
-        (uint64_t*) 0x80000080 ,
-        (uint64_t*) 0x80000100 ,
-        (uint64_t*) 0x80000200 ,
-        (uint64_t*) 0x80000400 ,
-        (uint64_t*) 0x80000800 ,
-        (uint64_t*) 0x80001000 ,
-        (uint64_t*) 0x80002000 ,
-        (uint64_t*) 0x80004000 ,
-        (uint64_t*) 0x80008000 ,
-        (uint64_t*) 0x80010000 ,
-        (uint64_t*) 0x80020000 ,
-        (uint64_t*) 0x80040000 ,
-        (uint64_t*) 0x80080000 ,
-        (uint64_t*) 0x80100000 ,
-        (uint64_t*) 0x80200000 ,
-        (uint64_t*) 0x80400000 ,
-        (uint64_t*) 0x80800000 ,
-        (uint64_t*) 0x81000000 ,
-        (uint64_t*) 0x82000000 ,
-        (uint64_t*) 0x84000000 ,
-        (uint64_t*) 0x88000000 ,
-        (uint64_t*) 0x90000000 ,
-        (uint64_t*) 0xA0000000 ,
-        (uint64_t*) 0xBFFFFFF8
+        (uint64_t*) 0xC0000000 ,
+        (uint64_t*) 0xC0000008 ,
+        (uint64_t*) 0xC0000010 ,
+        (uint64_t*) 0xC0000020 ,
+        (uint64_t*) 0xC0000040 ,
+        (uint64_t*) 0xC0000080 ,
+        (uint64_t*) 0xC0000100 ,
+        (uint64_t*) 0xC0000200 ,
+        (uint64_t*) 0xC0000400 ,
+        (uint64_t*) 0xC0000800 ,
+        (uint64_t*) 0xC0001000 ,
+        (uint64_t*) 0xC0002000 ,
+        (uint64_t*) 0xC0004000 ,
+        (uint64_t*) 0xC0008000 ,
+        (uint64_t*) 0xC0010000 ,
+        (uint64_t*) 0xC0020000 ,
+        (uint64_t*) 0xC0040000 ,
+        (uint64_t*) 0xC0080000 ,
+        (uint64_t*) 0xC0100000 ,
+        (uint64_t*) 0xC0200000 ,
+        (uint64_t*) 0xC0400000 ,
+        (uint64_t*) 0xC0800000 ,
+        (uint64_t*) 0xC1000000 ,
+        (uint64_t*) 0xC2000000 ,
+        (uint64_t*) 0xC4000000 ,
+        (uint64_t*) 0xC8000000 ,
+        (uint64_t*) 0xD0000000 ,
+        (uint64_t*) 0xE0000000 ,
+        (uint64_t*) 0xFFFFFFF8
     };
     
     
@@ -89,7 +89,7 @@ uint32_t ddr_addr_shift1_test ()
 int main ()
 {
     crg_ddr_init (0x63 ,0x0);
-    if (ddr_init (DDR0_BASE) != 0)
+    if (ddr_init (DDR1_BASE) != 0)
         return -1;
     if (ddr_addr_shift1_test () != 0)
         return -2;

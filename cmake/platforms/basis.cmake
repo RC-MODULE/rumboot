@@ -65,6 +65,14 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     )
 
   add_rumboot_target(
+      SNAPSHOT default
+      LDS basis/rom.lds
+      FILES simple-rom/pcie_legacy_eRP_test.c
+      NAME pcie_legacy_eRP_test
+      IRUN_FLAGS +pcie_legacy_int_elab
+    )
+
+  add_rumboot_target(
       CONFIGURATION ROM
       FILES can/can_loopback.c can/can_loopback.S can/int_send.S can/int_receive.S can/mem_config.S can/test_config.S
       NAME can_loopback

@@ -1103,12 +1103,14 @@
 #define RMACE_RDMA_TBL_SIZE             0x090C
 #define RMACE_RDMA_ADDR                 0x0910
 #define RMACE_RDMA_LEN                  0x0914
+#define RMACE_RDMA_DESC_ADDR            0x0918
 #define RMACE_WDMA_SETTINGS             0x0A00
 #define RMACE_WDMA_STATUS               0x0A04
 #define RMACE_WDMA_SYS_ADDR             0x0A08
 #define RMACE_WDMA_TBL_SIZE             0x0A0C
 #define RMACE_WDMA_ADDR                 0x0A10
 #define RMACE_WDMA_LEN                  0x0A14
+#define RMACE_WDMA_DESC_ADDR            0x0A18
 
 /* --- DDRx --- */
 #define DENALI_CTL_00     0x0000

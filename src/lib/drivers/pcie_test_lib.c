@@ -650,8 +650,8 @@ void ext_irq_gen_config
 )
 {
     rgEXT_IRQ_GEN_Ctrl              = Ctrl              ;
-    rgEXT_IRQ_GEN_Global_IRQ_Mask_l = Global_IRQ_Mask_h ;
-    rgEXT_IRQ_GEN_Global_IRQ_Mask_h = Global_IRQ_Mask_l ;
+    rgEXT_IRQ_GEN_Global_IRQ_Mask_l = Global_IRQ_Mask_l ;
+    rgEXT_IRQ_GEN_Global_IRQ_Mask_h = Global_IRQ_Mask_h ;
     if (Ctrl & 0x2)
         rgPCIe_EP_i_msix_ctrl |= 0x80000000;
     else
