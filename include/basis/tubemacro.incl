@@ -19,7 +19,7 @@ tube_msg_1_\@:
         B   tube_hex_1_\@
 
 tube_hex_\@:
-        .ascii "  0x%08x\x0a\x00"
+        .ascii "  0x%x\x0a\x00"
         .align 4
 
 tube_hex_1_\@:
