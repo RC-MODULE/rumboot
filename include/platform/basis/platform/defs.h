@@ -4,7 +4,7 @@
 #warning "This file is deprecated!"
 #warning "Please use devices.h"
 
-#include <basis/devices.h>
+#include <platform/devices.h>
 
 #define I2C_PRESCALE		0x00
 #define I2C_CTRL			0x04
