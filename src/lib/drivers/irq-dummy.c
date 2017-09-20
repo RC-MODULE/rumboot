@@ -3,7 +3,6 @@
 #include <string.h>
 #include <rumboot/platform.h>
 #include <devices/gic.h>
-#include <rumboot/io.h>
 #include <rumboot/printf.h>
 
 void rumboot_platform_irq_dispatch()
