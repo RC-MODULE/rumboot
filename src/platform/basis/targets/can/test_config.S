@@ -1,15 +1,15 @@
-#include "basis/tubemacro.incl"
+#include <platform/tubemacro.incl>
 #include "can_defs.h"
 
 .global TEST_CONFIG
-    
+
 TEST_CONFIG:
 
     PUSH {R1-R5, LR}
 
     @ R1 - there is can_base_addr
     @ R3 - ther is test_state number
-    
+
     tube_msg "-- Send Test Configuration Message"
     LDR R2, =0xffff
     STR R2, [R1, #CCAN_IF1_Arb_2]
@@ -67,6 +67,6 @@ s_cmp_fin:
     LDR R5, =0x0007             @ interrupt
     STR R5, [R1, #CCAN_St_R]    @ interrupt
     tube_msg "-- Test Configuration Message was sent"
-    
+
     POP {R1-R5, LR}
     BX  LR

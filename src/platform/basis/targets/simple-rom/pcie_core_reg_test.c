@@ -8,7 +8,7 @@
 //
 //    Test duration (RTL): < 310us
 //-----------------------------------------------------------------------------
-#include <basis/defs_c.h>
+#include <platform/defs_c.h>
 
 #define def_PCIe_EP_i_vendor_id_device_id                  0x010017CD
 #define def_PCIe_EP_i_command_status                       0x00100007
@@ -41,9 +41,9 @@ int PCIe_setting_ ()
     rgPCIe_Phy_PCS_GEN3_EIE_LOCK_CFG    = 0x0101;
     rgPCIe_Phy_PCS_RCV_DET_INH          = 0x000A;
     /***************************************************/
-    
+
     rgSCTL_PCIE_RST = 0x1;
-    
+
     timer_cntr = 0;
     while ((rgSCTL_PCIE_RST & 0x1) == 0)
     {
@@ -51,7 +51,7 @@ int PCIe_setting_ ()
         if (timer_cntr == PLL_LOCK_DURATION)
             return -1;
     }
-    
+
     /***************************************************************/
     /*     Enable access through controller                        */
     /***************************************************************/
@@ -85,7 +85,7 @@ int PCIe_setting_ ()
     /*       - none of bits choose region                          */
     /***************************************************************/
     rgPCIe_AXI_outregion_0_region_base_addr = 0x0000001F;
-        
+
     timer_cntr = 0;
     while ((rgPCIe_LocMgmt_i_pl_config_0_reg & 0x1) == 0)
     {
@@ -93,7 +93,7 @@ int PCIe_setting_ ()
         if (timer_cntr == TRAINING_DURATION)
             return -1;
     }
-    
+
     return 0;
 }
 
@@ -195,6 +195,6 @@ int main ()
         return -1;
     if (check_write_read_value () != 0)
         return -1;
-        
+
     return 0;
 }

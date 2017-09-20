@@ -12,9 +12,12 @@
 #define RUMBOOT_IRQ_UNDEFINED_INSTRUCTION   2
 #define RUMBOOT_IRQ_SOFTWARE_EXCEPTION      3
 
-/* IRQ & FIQ */
+/* IRQ Types */
 #define RUMBOOT_IRQ_IRQ  0
 #define RUMBOOT_IRQ_FIQ  1
+
+#define RUMBOOT_IRQ_EDGE  (1 << 1)
+#define RUMBOOT_IRQ_LEVEL (0 << 1)
 
 #ifndef __ASSEMBLER__
 
@@ -34,12 +37,12 @@
     * {
     * struct rumboot_irq_entry *tbl = rumboot_irq_create(NULL);
     * rumboot_irq_set_handler(tbl, 3, handler, 123);
-    * rumboot_irq_activate_table(tbl);
+    * rumboot_irq_table_activate(tbl);
     *
     * // at this point irqs are active
     * // Call the following to disable interrupts
     *
-    * rumboot_irq_activate_table(NULL);
+    * rumboot_irq_table_activate(tbl);
     * rumboot_irq_free(tbl);
     * \endcode
     *
@@ -71,18 +74,21 @@
      * Set an irq handler in the user-supplied irq table. An optional arg will
      * be passed by the subsystem code to the handler function
      *
-     * @param tbl     [description]
-     * @param irq     [description]
-     * @param handler [description]
+     * @param tbl     IRQ table instance
+     * @param irq     IRQ Line number
+     * @param flags   Bitmask of RUMBOOT_IRQ_FIQ, RUMBOOT_IRQ_EDGE...
+     * @param handler Pointer to handler function
+     * @param arg     Optional arg to be passed to handler function
      */
-    void rumboot_irq_set_handler(struct rumboot_irq_entry *tbl, int irq, void (*handler)(), void *arg);
+     void rumboot_irq_set_handler(struct rumboot_irq_entry *tbl, int irq, uint32_t flags,
+        void (*handler)(int irq, void *args), void *arg);
 
     /**
      * Make the specified irq table active. NULL to deactivate any existing table
      *
      * @param tbl [description]
      */
-    void rumboot_irq_activate_table(struct rumboot_irq_entry *tbl);
+     void rumboot_irq_table_activate(struct rumboot_irq_entry *tbl);
 
     /**
      * Enable IRQ line
@@ -156,6 +162,8 @@
      */
     void rumboot_arch_irq_enable();
 
+    void rumboot_platform_irq_dispatch();
+    void rumboot_platform_irq_configure(int irq, uint32_t flags, int enable);
 #endif
 
 

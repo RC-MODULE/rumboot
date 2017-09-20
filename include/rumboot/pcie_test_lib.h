@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#include <basis/defs_c.h>
+#include <platform/defs_c.h>
 
 /**
  *
@@ -24,7 +24,7 @@
      *   Doesnt send any reset-related messages by PCIe link.
      */
     void pcie_soft_reset ();
-    
+
     /**
      * This function is for turning ON one of PCIe subsystem loopback modes
      *   It influence only on Phy.
@@ -34,13 +34,13 @@
      * @param loopback_mode [description]
      */
     void pcie_loopback_mode_on (uint32_t loopback_mode);
-    
+
     /**
      * This function is for PCIe simple turn On.
      * All settings are default.
      */
     uint32_t pcie_simple_turn_on ();
-    
+
     /**
      * This function is for PCIe turn On in EndPoint mode with options
      *   Very few options are used here. Look documentation for full list.
@@ -84,7 +84,7 @@
         uint32_t ep_bar_4_addr_translation  ,
         uint32_t ep_bar_5_addr_translation
     );
-    
+
     /**
      * This function is for PCIe turn On in RootPort mode with options
      *   Very few options are used here. Look documentation for full list.
@@ -176,10 +176,10 @@ typedef volatile struct __attribute__ ((__packed__))
     //      [25:10]  Requester ID
     //      [9]      Use 25:10 as Requester ID
     //      [8:6]    Reserved
-    //      [5:3]    PCIe Transfer Class 
-    //      [2]      ID-Based Ordering 
-    //      [1]      Relaxed Ordering 
-    //      [0]      No Snoop 
+    //      [5:3]    PCIe Transfer Class
+    //      [2]      ID-Based Ordering
+    //      [1]      Relaxed Ordering
+    //      [0]      No Snoop
     //-----------------------------------------------------
     uint32_t   tlp_header_att        : 32;
     //-----------------------------------------------------

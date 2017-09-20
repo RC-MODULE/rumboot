@@ -1,11 +1,11 @@
-#include "basis/tubemacro.incl"
+#include <platform/tubemacro.incl>
 #include "can_defs.h"
 
 .global CCAN_FULL
 .global warning
 
 @ ***arm calling convention***
-@ there is CAN_BASE in the R0    
+@ there is CAN_BASE in the R0
 @ there is LR in R7 to exit to main.c program after warning
 @ there is test_state number in the R3
 
@@ -13,15 +13,15 @@ CCAN_FULL:
     PUSH {R1-R7, LR}
 
     MOV R7, LR  @ some crunch
-    
+
     tube_msg "- CCAN_FULL_TRANSACTION started"
-    
+
     MOV R1, R0
-    
+
     BL MEM_CONFIG
-    
+
     tube_msg "-"
-    
+
     tube_msg "-- Start FIFO"
     LDR R2, =0xa008                 @ Dir==1 ID==0x8 First Mes
     STR R2, [R1, #CCAN_IF1_Arb_2]
@@ -165,7 +165,7 @@ CCAN_FULL:
     BL TEST_CONFIG
 
     tube_msg "-- FIFO OK"
-    
+
     tube_msg "-"
 
     tube_msg "-- Wait for transaction"      @ INTERRUPT TRACKING ONLY FOR THIS TEST!!
@@ -231,9 +231,9 @@ l_repeat_loop:
     CMP R3, #0x0002
     BNE l_repeat_loop
     tube_msg "-- Transaction OK"
-    
+
     tube_msg "-"
-    
+
     tube_msg "-- Checking"
     LDR R2, =0x0073
     STR R2, [R1, #CCAN_IF2_Com_M]
@@ -277,7 +277,7 @@ cmp4:
     MOV R0, #0
 @    MOV LR, R7
     tube_msg "-"
-    
+
     tube_msg "- CCAN_FULL_TRANSACTION finished"
     B exit
 
@@ -287,6 +287,6 @@ warning:
     MOV LR, R7
     tube_msg "go to exit"
 
-exit:    
+exit:
     POP {R1-R7, LR}
     BX  LR @ return

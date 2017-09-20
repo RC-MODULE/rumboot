@@ -8,7 +8,7 @@
 //
 //    Test duration (RTL): < 150us
 //-----------------------------------------------------------------------------
-#include <basis/defs_c.h>
+#include <platform/defs_c.h>
 
 //-------------------------------------------------------------------
 //  Group: Phy Macro Top Level
@@ -122,7 +122,7 @@ int check_read_default_value ()
         (rgPCIe_Phy_PCS_COM_LOCK_CFG1          != def_PCIe_Phy_PCS_COM_LOCK_CFG1     ) ||
         (rgPCIe_Phy_PCS_GEN3_EIE_LOCK_CFG      != def_PCIe_Phy_PCS_GEN3_EIE_LOCK_CFG ) ||
         (rgPCIe_Phy_PCS_ISO_CMN_CTRL           != def_PCIe_Phy_PCS_ISO_CMN_CTRL      ) ||
-        
+
         (*(volatile int*)(PCIe_Phy_PCS_ISO_TX_CTRL     + 0x000 + PCIE_PHY_BASE) != def_PCIe_Phy_PCS_ISO_TX_CTRL       ) ||
         (*(volatile int*)(PCIe_Phy_PCS_ISO_TX_LPC_LO   + 0x000 + PCIE_PHY_BASE) != def_PCIe_Phy_PCS_ISO_TX_LPC_LO     ) ||
         (*(volatile int*)(PCIe_Phy_PCS_ISO_TX_LPC_HI   + 0x000 + PCIE_PHY_BASE) != def_PCIe_Phy_PCS_ISO_TX_LPC_HI     ) ||
@@ -160,8 +160,8 @@ int check_read_default_value ()
         (rgPCIe_Phy_PMA_ISO_TX_LPC_LO          != def_PCIe_Phy_PMA_ISO_TX_LPC_LO     ) ||
         // (rgPCIe_Phy_PMA_ISO_TX_FSLF            != def_PCIe_Phy_PMA_ISO_TX_FSLF       ) ||  default value not correspond spec
         (rgPCIe_Phy_PMA_ISO_DATA_HI            != def_PCIe_Phy_PMA_ISO_DATA_HI       ) ||
-        
-        
+
+
         //-------------------------------------------------------------------
         //  Group: PMA common
         //    Not all registers are used (and described here too)
@@ -187,7 +187,7 @@ int check_read_default_value ()
         (rgPCIe_Phy_PMA_CMN_PSC_A1             != def_PCIe_Phy_PMA_CMN_PSC_A1               ) ||
         (rgPCIe_Phy_PMA_CMN_PSC_A2             != def_PCIe_Phy_PMA_CMN_PSC_A2               ) ||
         (rgPCIe_Phy_PMA_CMN_PSC_A4             != def_PCIe_Phy_PMA_CMN_PSC_A4               ) ||
-        
+
         // (rgPCIe_Phy_PMA_CMN_PLLCPICAL_CTRL      != def_PCIe_Phy_PMA_CMN_PLLCPICAL_CTRL       ) ||
         // (rgPCIe_Phy_PMA_CMN_PLLCPICAL_OVRD      != def_PCIe_Phy_PMA_CMN_PLLCPICAL_OVRD       ) ||
         (rgPCIe_Phy_PMA_CMN_PLLCPICAL_INIT_TMR  != def_PCIe_Phy_PMA_CMN_PLLCPICAL_INIT_TMR   ) ||
@@ -200,13 +200,13 @@ int check_read_default_value ()
         // (rgPCIe_Phy_PMA_CMN_TXPDCAL_CTRL        != def_PCIe_Phy_PMA_CMN_TXPDCAL_CTRL         ) ||
         // (rgPCIe_Phy_PMA_CMN_TXPDCAL_OVRD        != def_PCIe_Phy_PMA_CMN_TXPDCAL_OVRD         ) ||
         (rgPCIe_Phy_PMA_CMN_TXPDCAL_INIT_TMR    != def_PCIe_Phy_PMA_CMN_TXPDCAL_INIT_TMR     ) ||
-        
-        
+
+
         //-------------------------------------------------------------------
         //  Group: PMA Tx
         //    Not all registers are used (and described here too)
         //-------------------------------------------------------------------
-        
+
         (*(volatile int*)(PCIe_Phy_PMA_TX_HBDC_PRE_OVRD        + 0x0000 + PCIE_PHY_BASE) != def_PCIe_Phy_PMA_TX_HBDC_PRE_OVRD         ) ||
         (*(volatile int*)(PCIe_Phy_PMA_TX_HBDC_MAIN_OVRD       + 0x0000 + PCIE_PHY_BASE) != def_PCIe_Phy_PMA_TX_HBDC_MAIN_OVRD        ) ||
         (*(volatile int*)(PCIe_Phy_PMA_TX_HBDC_POST_OVRD       + 0x0000 + PCIE_PHY_BASE) != def_PCIe_Phy_PMA_TX_HBDC_POST_OVRD        ) ||
@@ -239,13 +239,13 @@ int check_read_default_value ()
         (*(volatile int*)(PCIe_Phy_PMA_TX_RCVDET_CTRL          + 0x1800 + PCIE_PHY_BASE) != def_PCIe_Phy_PMA_TX_RCVDET_CTRL           ) ||
         (*(volatile int*)(PCIe_Phy_PMA_TX_BIST_CTRL            + 0x1800 + PCIE_PHY_BASE) != def_PCIe_Phy_PMA_TX_BIST_CTRL             ) ||
         (*(volatile int*)(PCIe_Phy_PMA_TX_BIST_UDDWR           + 0x1800 + PCIE_PHY_BASE) != def_PCIe_Phy_PMA_TX_BIST_UDDWR            ) ||
-        
-        
+
+
         //-------------------------------------------------------------------
         //  Group: PMA Rx
         //    Not all registers are used (and described here too)
         //-------------------------------------------------------------------
-        
+
         (*(volatile int*)(PCIe_Phy_PMA_RX_IQPI_ILL_CAL_CTRL            + 0x0000 + PCIE_PHY_BASE) != def_PCIe_Phy_PMA_RX_IQPI_ILL_CAL_CTRL            ) ||
         (*(volatile int*)(PCIe_Phy_PMA_RX_IQPI_ILL_CAL_START           + 0x0000 + PCIE_PHY_BASE) != def_PCIe_Phy_PMA_RX_IQPI_ILL_CAL_START           ) ||
         (*(volatile int*)(PCIe_Phy_PMA_RX_IQPI_ILL_CAL_INIT_TMR        + 0x0000 + PCIE_PHY_BASE) != def_PCIe_Phy_PMA_RX_IQPI_ILL_CAL_INIT_TMR        ) ||
@@ -309,7 +309,7 @@ int check_read_default_value ()
         (*(volatile int*)(PCIe_Phy_PMA_RX_CDRLF_MGN_DIAG               + 0x1800 + PCIE_PHY_BASE) != def_PCIe_Phy_PMA_RX_CDRLF_MGN_DIAG               ) ||
         (*(volatile int*)(PCIe_Phy_PMA_RX_SIGDET_FILT_TMR              + 0x1800 + PCIE_PHY_BASE) != def_PCIe_Phy_PMA_RX_SIGDET_FILT_TMR              ) ||
         (*(volatile int*)(PCIe_Phy_PMA_RX_SIGDET_DLY_TMR               + 0x1800 + PCIE_PHY_BASE) != def_PCIe_Phy_PMA_RX_SIGDET_DLY_TMR               ) ||
-        (*(volatile int*)(PCIe_Phy_PMA_RX_SIGDET_MIN_TMR               + 0x1800 + PCIE_PHY_BASE) != def_PCIe_Phy_PMA_RX_SIGDET_MIN_TMR               ) 
+        (*(volatile int*)(PCIe_Phy_PMA_RX_SIGDET_MIN_TMR               + 0x1800 + PCIE_PHY_BASE) != def_PCIe_Phy_PMA_RX_SIGDET_MIN_TMR               )
     )
         return -1;
 
@@ -321,6 +321,6 @@ int main ()
 {
     if (check_read_default_value () != 0)
         return -1;
-        
+
     return 0;
 }

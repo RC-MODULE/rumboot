@@ -1,4 +1,4 @@
-#include "basis/tubemacro.incl"
+#include <platform/tubemacro.incl>
 #include "can_defs.h"
 
 .global CCAN_FIFO
@@ -6,10 +6,10 @@
 
 @ there is CAN_BASE in the R0
 @ there is test_state number in the R3
- 
+
 CCAN_FIFO:
     PUSH {R1-R7, LR}
-    
+
     MOV R7, LR  @ some crunch
 
     tube_msg "- CCAN_FIFO_TRANSACTION started"
@@ -17,13 +17,13 @@ CCAN_FIFO:
     MOV R1, R0
 
     BL MEM_CONFIG
-    
+
     tube_msg "-"
-    
+
     BL TEST_CONFIG
-    
+
     tube_msg "-"
-    
+
     tube_msg "-- Start FIFO Transaction"
     LDR R2, =0xa008                 @First Mes
     STR R2, [R1, #CCAN_IF1_Arb_2]
@@ -195,9 +195,9 @@ CCAN_FIFO:
     tube_msg "--- All Messages are stored"
 
     tube_msg "-- FIFO OK"
-    
+
     tube_msg "-"
-  
+
     tube_msg "-- Wait for transaction"
     LDR R3, =0x0001
 repeat_loop:
@@ -206,9 +206,9 @@ repeat_loop:
     CMP R3, #0x0008
     BNE repeat_loop
     tube_msg "-- Transaction OK"
-    MOV R0, #0   
+    MOV R0, #0
     tube_msg "-"
-    
+
     tube_msg "- CCAN_FIFO_TRANSACTION finished"
     B exit
 

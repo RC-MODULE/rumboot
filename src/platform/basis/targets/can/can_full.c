@@ -3,7 +3,7 @@
 #include <rumboot/testsuite.h>
 #include <rumboot/printf.h>
 #include <rumboot/io.h>
-#include <basis/defs.h>
+#include <platform/defs.h>
 
 extern int CCAN_FULL(uint32_t r0, uint32_t r1, uint32_t r2, uint32_t r3);
 
@@ -27,7 +27,7 @@ int main()
 
     int ret = run_can_full(can0_base_addr); // 0xcan_base_addr
     rumboot_printf("main run_can_full end\n");
-    
+
     return ret;
 }
 

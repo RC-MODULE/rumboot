@@ -1,7 +1,7 @@
 #include <rumboot/printf.h>
 #include <rumboot/platform.h>
 #include <rumboot/io.h>
-#include <basis/defs.h>
+#include <platform/defs.h>
 
 
 #define I2C_SYS_FREQ_HZ   	0x5F5E100  //100 MHz
@@ -40,7 +40,7 @@
 
 #define I2C_BASE I2C0_BASE
 
- 
+
 
    int i2c_ack (uint32_t i2c_base_addr) {
        unsigned ack = 0xffff;
@@ -75,8 +75,8 @@ int i2c_init(uint32_t i2c_base_addr, uint32_t scl_freq){
 	i2c_set_prescale(I2C_BASE,scl_freq);
 	iowrite32((EN | IEN),( I2C_BASE + I2C_CTRL));//EN and IEN	 //!!!!!!
 	//rumboot_printf("ENABLE=0x%x\n",(EN | IEN));
-	rumboot_printf("TEST I2C ARRAY\n");	
-	
+	rumboot_printf("TEST I2C ARRAY\n");
+
 	tmp_ctrl = ioread32( I2C_BASE + I2C_CTRL);
 
 //	rumboot_printf("CTRL_REG=0x%x\n",tmp_ctrl);
@@ -94,11 +94,11 @@ int i2c_wait(uint32_t i2c_base_addr) {
   //  rumboot_printf ("I2C wait\n");
     int cnt = 0;
 
-	   tmp = ioread32(i2c_base_addr + I2C_STATUS);	
-	//	rumboot_printf("I2C_STATUS=0x%x\n",tmp);   
+	   tmp = ioread32(i2c_base_addr + I2C_STATUS);
+	//	rumboot_printf("I2C_STATUS=0x%x\n",tmp);
     while ((tmp & I2C_TIP) != 0) {
-        tmp = ioread32(i2c_base_addr + I2C_STATUS); 
-	//	rumboot_printf("I2C_TIMEOUT=0x%x\n",tmp);  
+        tmp = ioread32(i2c_base_addr + I2C_STATUS);
+	//	rumboot_printf("I2C_TIMEOUT=0x%x\n",tmp);
 
         if (++cnt == I2C_TIMEOUT) {
          //   rumboot_printf("I2C timeout!\n");
@@ -162,7 +162,7 @@ int i2c_write(uint32_t i2c_base_addr, uint32_t i2c_addr, uint32_t addr_h,uint32_
 
 unsigned  i2c_check_value (uint32_t i2c_base_addr,uint32_t i2c_addr, uint32_t i2c_addr_h,uint32_t i2c_addr_l,uint32_t data) {
     int tmp = -1;
-    int cnt = 0;	
+    int cnt = 0;
     unsigned result;    // read data
   //  rumboot_printf ("I2C READ OPERATION\n");
     // Write device address
@@ -195,10 +195,10 @@ unsigned  i2c_check_value (uint32_t i2c_base_addr,uint32_t i2c_addr, uint32_t i2
     if (tmp == I2C_FAILED) return I2C_FAILED;
 
     tmp = ioread32(i2c_base_addr + I2C_RECEIVE);
-  //  rumboot_printf("i2c_read_result =0x%x\n",tmp);	
+  //  rumboot_printf("i2c_read_result =0x%x\n",tmp);
     result = data - tmp;
- //   rumboot_printf("i2c_read_result =0x%x\n",result);	
-    
+ //   rumboot_printf("i2c_read_result =0x%x\n",result);
+
     return result;
 }
 int main()
@@ -209,7 +209,7 @@ int main()
 	uint32_t addr_l[i];
 	//uint32_t data	 = 0x8d;   	//write data
 	unsigned result;          	//read data
-	
+
 	static int32_t check_array32[] = {
         0x80,
         0x40,
@@ -230,52 +230,52 @@ int main()
         0xFE,
 		0xFF
 };
-	
+
 //4 interrupts for last READ, 4 interrupt for last write
-	
+
 	tmp =i2c_init(I2C_BASE,SCL_FREQ);
 	if (tmp == I2C_FAILED)
 		//rumboot_printf("I2C init test ERROR!\n");
         return TEST_ERROR;
-	iowrite32((EN),( I2C_BASE + I2C_CTRL));//EN and IEN   // mask the interrupt 		
-	for (i = 0; i< (sizeof(check_array32) / 4); i++)		
+	iowrite32((EN),( I2C_BASE + I2C_CTRL));//EN and IEN   // mask the interrupt
+	for (i = 0; i< (sizeof(check_array32) / 4); i++)
 	{
 	addr_l[i] =	i;
 	 if (i ==  (sizeof(check_array32) / 4) -1) {
-	iowrite32((EN | IEN),( I2C_BASE + I2C_CTRL));//EN and IEN   // mask the interrupt		 
+	iowrite32((EN | IEN),( I2C_BASE + I2C_CTRL));//EN and IEN   // mask the interrupt
 	i2c_write(I2C_BASE, I2C_DEV_ADDR,addr_h,addr_l[i], check_array32[i]);
 	iowrite32((EN),( I2C_BASE + I2C_CTRL));//EN
 	}
     else {
-	iowrite32((EN),( I2C_BASE + I2C_CTRL));//EN	
+	iowrite32((EN),( I2C_BASE + I2C_CTRL));//EN
 	i2c_write(I2C_BASE, I2C_DEV_ADDR,addr_h,addr_l[i], check_array32[i]);}
-	
+
 	if (i == (sizeof(check_array32) / 4) -1) {
-	iowrite32((EN | IEN),( I2C_BASE + I2C_CTRL));	
+	iowrite32((EN | IEN),( I2C_BASE + I2C_CTRL));
 	result = i2c_check_value(I2C_BASE, I2C_DEV_ADDR, addr_h,addr_l[i],check_array32[i]);
 	iowrite32((EN),( I2C_BASE + I2C_CTRL));//EN
-	}	
+	}
 	else
 	{
-	iowrite32((EN ),( I2C_BASE + I2C_CTRL)); 	
+	iowrite32((EN ),( I2C_BASE + I2C_CTRL));
 	result = i2c_check_value(I2C_BASE, I2C_DEV_ADDR, addr_h,addr_l[i],check_array32[i]);
-	}	
+	}
 	//rumboot_printf("Read result:");
-//    rumboot_printf("i2c_check_data =0x%x\n",result);  	
+//    rumboot_printf("i2c_check_data =0x%x\n",result);
 	}
 	rumboot_printf("Last intrpt\n");
-	
 
-	 
+
+
 	//rumboot_printf("ENABLE=0x%x\n",(EN | IEN));
 //return result;
    // compare results
     if (result  == 0) {
-		// Reset interrupt 
-    iowrite32((0x1),( I2C_BASE + I2C_COMMAND));//set IACK =1 to clear int reg 
-	tmp = ioread32(I2C_BASE + I2C_STATUS); 
+		// Reset interrupt
+    iowrite32((0x1),( I2C_BASE + I2C_COMMAND));//set IACK =1 to clear int reg
+	tmp = ioread32(I2C_BASE + I2C_STATUS);
 	tmp = 0x0001 & tmp;
-	if (tmp == I2C_FAILED) return TEST_ERROR; 						
+	if (tmp == I2C_FAILED) return TEST_ERROR;
         rumboot_printf("I2C test OK \n");
         return TEST_OK;
 		}   // if (result == data)

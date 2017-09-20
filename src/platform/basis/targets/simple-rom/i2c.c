@@ -1,7 +1,7 @@
 #include <rumboot/printf.h>
 #include <rumboot/platform.h>
 #include <rumboot/io.h>
-#include <basis/defs.h>
+#include <platform/defs.h>
 
 
 #define I2C_SYS_FREQ_HZ   	0x5F5E100  //100 MHz
@@ -95,11 +95,11 @@ int i2c_wait(uint32_t i2c_base_addr) {
     rumboot_printf ("I2C wait\n");
     int cnt = 0;
 
-	   tmp = ioread32(i2c_base_addr + I2C_STATUS);	
-		rumboot_printf("I2C_STATUS=0x%x\n",tmp);   
+	   tmp = ioread32(i2c_base_addr + I2C_STATUS);
+		rumboot_printf("I2C_STATUS=0x%x\n",tmp);
     while ((tmp & I2C_TIP) != 0) {
-        tmp = ioread32(i2c_base_addr + I2C_STATUS); 
-	//	rumboot_printf("I2C_TIMEOUT=0x%x\n",tmp);  
+        tmp = ioread32(i2c_base_addr + I2C_STATUS);
+	//	rumboot_printf("I2C_TIMEOUT=0x%x\n",tmp);
 
         if (++cnt == I2C_TIMEOUT) {
             rumboot_printf("I2C timeout!\n");

@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#include <basis/defs_c.h>
+#include <platform/defs_c.h>
 
 /**
  *
@@ -16,7 +16,7 @@
  *
  *  @{
  */
- 
+
     /**
      * This function is for creating descriptor, used by RMACE DMA block.
      * More description in .c file.
@@ -40,7 +40,7 @@
         uint8_t  valid        ,
         uint8_t  endian
     );
-    
+
     /** @}*/
 
 
@@ -72,14 +72,14 @@ typedef volatile struct __attribute__ ((__packed__))
     //      [0]      Valid
     //-----------------------------------------------------
     uint32_t   Desc0_Length_and_Ctrl        : 32;
-    
+
     // uint32_t   Desc1_Address                : 32;
     // uint32_t   Desc1_Length_and_Ctrl        : 32;
     // uint32_t   Desc2_Address                : 32;
     // uint32_t   Desc2_Length_and_Ctrl        : 32;
     // uint32_t   Desc3_Address                : 32;
     // uint32_t   Desc3_Length_and_Ctrl        : 32;
-    
+
     //---------------------------------------------------------------
     //  This is End descriptor.
     //---------------------------------------------------------------

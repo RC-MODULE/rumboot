@@ -1,4 +1,4 @@
-#include "basis/tubemacro.incl"
+#include <platform/tubemacro.incl>
 #include "can_defs.h"
 
 .global CCAN_REQUEST
@@ -15,17 +15,17 @@ CCAN_REQUEST:
     MOV R7, LR  @ some crunch
 
     tube_msg "- CCAN_REQUEST_TRANSACTION started"
-    
+
     MOV R1, R0
-    
+
     BL MEM_CONFIG
-    
+
     tube_msg "-"
-    
+
     BL TEST_CONFIG
-    
+
     tube_msg "-"
-    
+
     tube_msg "-- Transmit Remote Frame"
     LDR R2, =0x8008     @ Dir == 0 receive; transmit Rem Frame
     STR R2, [R1, #CCAN_IF1_Arb_2]
@@ -75,9 +75,9 @@ CCAN_REQUEST:
     @ STR R2, [R1, #CCAN_IF2_Com_Req]
 
     tube_msg "-- Request OK"
-    
+
     tube_msg "-"
-    
+
     tube_msg "-- Wait for transaction"
     LDR R3, =0x0001
 
@@ -87,9 +87,9 @@ repeat_loop:
     CMP R3, #0x0002     @ number of parcel to send
     BNE repeat_loop
     tube_msg "-- Transaction OK"
-    
+
     tube_msg "-"
-    
+
     tube_msg "-- Wait for answer"
     LDR R3, =0x0001
 a_repeat_loop:
@@ -98,9 +98,9 @@ a_repeat_loop:
     CMP R3, #0x0002
     BNE a_repeat_loop
     tube_msg "-- Answer OK"
-    
+
     tube_msg "-"
-    
+
     tube_msg "-- Read and Compare"
     LDR R2, =0x0073
     STR R2, [R1, #CCAN_IF1_Com_M]
@@ -112,7 +112,7 @@ a_repeat_loop:
     CMP R3, R4
     BNE warning
     tube_msg "--- DATA A1 OK"
-    
+
     LDR R2, =0x8002
     STR R2, [R1, #CCAN_IF1_Com_Req]
     LDR R3, [R1, #CCAN_IF1_Dat_A_2]
@@ -120,7 +120,7 @@ a_repeat_loop:
     CMP R3, R4
     BNE warning
     tube_msg "--- DATA A2 OK"
-    
+
     LDR R2, =0x8002
     STR R2, [R1, #CCAN_IF1_Com_Req]
     LDR R3, [R1, #CCAN_IF1_Dat_B_1]
@@ -128,7 +128,7 @@ a_repeat_loop:
     CMP R3, R4
     BNE warning
     tube_msg "--- DATA B1 OK"
-    
+
     LDR R2, =0x8002
     STR R2, [R1, #CCAN_IF1_Com_Req]
     LDR R3, [R1, #CCAN_IF1_Dat_B_2]
@@ -144,7 +144,7 @@ cmp_final:
     MOV R0, #0
 @    MOV LR, R7
     tube_msg "-"
-    
+
     tube_msg "- CCAN_REQUEST_TRANSACTION finished"
     B exit
 

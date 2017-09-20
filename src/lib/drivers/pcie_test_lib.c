@@ -18,7 +18,7 @@
 //-----------------------------------------------------------------------------
 #include <stdint.h>
 
-#include <basis/defs_c.h>
+#include <platform/defs_c.h>
 
 //-----------------------------------------------------------------------------
 //  These defines must be changed for real program
@@ -42,7 +42,7 @@ void pcie_soft_reset ()
 //    It influence only on Phy.
 //    To make controller to finish training in loopback choose this option
 //      in turn ON function (or set neccessasry parameter manually)
-//  
+//
 //  Arguments:
 //    - loopback type
 //        only one mode must be chosen
@@ -53,8 +53,8 @@ void pcie_soft_reset ()
 //               0x10 - Near End Parallel Loopback Mode       Our    after before SERDES
 //               0x20 - Far End Parallel Loopback Mode        Their  after SERDES
 //        [31:6] *not used*
-//  
-//  
+//
+//
 //-----------------------------------------------------------------------------
 void pcie_loopback_mode_on (uint32_t loopback_mode)
 {
@@ -86,10 +86,10 @@ uint32_t pcie_simple_turn_on ()
     rgPCIe_Phy_PCS_RCV_DET_INH          = 0x000A;
     /***************************************************/
 #endif
-    
+
     rgSCTL_PCIE_RST = 0x1;
-        
-    
+
+
     //---------------------------------------------------------------
     //  Wait until PLL locked
     //   Exit with error if emergency timer overflow
@@ -101,7 +101,7 @@ uint32_t pcie_simple_turn_on ()
         if (timer_cntr == PCIE_TEST_LIB_PLL_LOCK_TIMEOUT)
             return -1;
     }
-    
+
     //---------------------------------------------------------------
     //  Wait until training complete
     //   Exit with error if emergency timer overflow
@@ -113,7 +113,7 @@ uint32_t pcie_simple_turn_on ()
         if (timer_cntr == PCIE_TEST_LIB_TRAINING_TIMEOUT)
             return -2;
     }
-    
+
     return 0;
 }
 
@@ -146,22 +146,22 @@ uint32_t pcie_simple_turn_on ()
 //        [1]     *value not used here, always EP*
 //        [3:2]   lane_count_in
 //        [31:4]  *value not used here*
-//      
+//
 //    - i_command_status
 //        [0]    IO-Space Enable
 //        [1]    Mem-Space Enable
 //        [2]    Bus-Master Enable
 //        [31:3] *not used here*
-//      
+//
 //    - i_base_addr_{x}
 //        standard PCIe base address registers
-//      
+//
 //    - i_pf_0_BAR_config_{x}_reg
 //        types and sizes of different BARs
-//      
+//
 //    - bar_{x}_addr_translation
 //        parameters for inbound address translation
-//      
+//
 //-----------------------------------------------------------------------------
 uint32_t pcie_turn_on_with_options_ep
 (
@@ -186,8 +186,8 @@ uint32_t pcie_turn_on_with_options_ep
 )
 {
     uint32_t timer_cntr;
-    
-    
+
+
 #ifndef PCIE_TEST_LIB_SIMSPEEDUP_OFF
     /***************************************************/
     /*    this PHY settings are only for simulation    */
@@ -199,24 +199,24 @@ uint32_t pcie_turn_on_with_options_ep
     rgPCIe_Phy_PCS_RCV_DET_INH          = 0x000A;
     /***************************************************/
 #endif
-    
-    
+
+
     //---------------------------------------------------------------
     //  Disable Link Training
     //---------------------------------------------------------------
     rgSCTL_PCIE_REG_0 &= 0xFFFFFFEF;
-    
+
     //---------------------------------------------------------------
     //  Set base options in SCTL
     //---------------------------------------------------------------
     if (usual_settings == 0)
         rgSCTL_PCIE_REG_0 = (rgSCTL_PCIE_REG_0 & 0xFFFFFFF0) | (sctl_base_opt & 0x0000000D);
-    
+
     //---------------------------------------------------------------
     //  PCIe reset Off
     //---------------------------------------------------------------
     rgSCTL_PCIE_RST = 0x1;
-    
+
     //---------------------------------------------------------------
     //  Wait until PLL locked
     //   Exit with error if emergency timer overflow
@@ -228,8 +228,8 @@ uint32_t pcie_turn_on_with_options_ep
         if (timer_cntr == PCIE_TEST_LIB_PLL_LOCK_TIMEOUT)
             return -1;
     }
-    
-    
+
+
     //---------------------------------------------------------------
     //  Set options in PCIe controller
     //---------------------------------------------------------------
@@ -285,8 +285,8 @@ uint32_t pcie_turn_on_with_options_ep
         //------------------------------------------------------
         rgPCIe_AXI_inregion_ep_bar_1_addr_translation = 0x80000000;
     }
-    
-    
+
+
     //---------------------------------------------------------------
     //  Probably, it will be better to make outbound address
     //    translation parameters as function arguments too.
@@ -307,13 +307,13 @@ uint32_t pcie_turn_on_with_options_ep
     //       - none of bits choose region
     //------------------------------------------------------
     rgPCIe_AXI_outregion_0_region_base_addr = 0x0000001F;
-    
-    
+
+
     //---------------------------------------------------------------
     //  Enable Link Training
     //---------------------------------------------------------------
     rgSCTL_PCIE_REG_0 |= 0x00000010;
-    
+
     //---------------------------------------------------------------
     //  Wait until training complete
     //   Exit with error if emergency timer overflow
@@ -325,7 +325,7 @@ uint32_t pcie_turn_on_with_options_ep
         if (timer_cntr == PCIE_TEST_LIB_TRAINING_TIMEOUT)
             return -1;
     }
-    
+
     return 0;
 }
 
@@ -358,22 +358,22 @@ uint32_t pcie_turn_on_with_options_ep
 //        [1]     *value not used here, always RC*
 //        [3:2]   lane_count_in
 //        [31:4]  *value not used here*
-//      
+//
 //    - i_command_status
 //        [0]    IO-Space Enable
 //        [1]    Mem-Space Enable
 //        [2]    Bus-Master Enable
 //        [31:3] *not used here*
-//      
+//
 //    - i_base_addr_{x}
 //        standard PCIe base address registers
-//      
+//
 //    - i_pf_0_BAR_config_{x}_reg
 //        types and sizes of different BARs
-//      
+//
 //    - bar_{x}_addr_translation
 //        parameters for inbound address translation
-//      
+//
 //-----------------------------------------------------------------------------
 uint32_t pcie_turn_on_with_options_rc
 (
@@ -390,8 +390,8 @@ uint32_t pcie_turn_on_with_options_rc
 )
 {
     uint32_t timer_cntr;
-    
-    
+
+
 #ifndef PCIE_TEST_LIB_SIMSPEEDUP_OFF
     /***************************************************/
     /*    this PHY settings are only for simulation    */
@@ -403,13 +403,13 @@ uint32_t pcie_turn_on_with_options_rc
     rgPCIe_Phy_PCS_RCV_DET_INH          = 0x000A;
     /***************************************************/
 #endif
-    
-    
+
+
     //---------------------------------------------------------------
     //  Disable Link Training
     //---------------------------------------------------------------
     rgSCTL_PCIE_REG_0 &= 0xFFFFFFEF;
-    
+
     //---------------------------------------------------------------
     //  Set base options in SCTL
     //---------------------------------------------------------------
@@ -417,12 +417,12 @@ uint32_t pcie_turn_on_with_options_rc
         rgSCTL_PCIE_REG_0 = (rgSCTL_PCIE_REG_0 & 0xFFFFFFF0) | (sctl_base_opt & 0x0000000F) | 0x2;
     else
         rgSCTL_PCIE_REG_0 |= 0x2;
-    
+
     //---------------------------------------------------------------
     //  PCIe reset Off
     //---------------------------------------------------------------
     rgSCTL_PCIE_RST = 0x1;
-    
+
     //---------------------------------------------------------------
     //  Wait until PLL locked
     //   Exit with error if emergency timer overflow
@@ -434,8 +434,8 @@ uint32_t pcie_turn_on_with_options_rc
         if (timer_cntr == PCIE_TEST_LIB_PLL_LOCK_TIMEOUT)
             return -1;
     }
-    
-    
+
+
     //---------------------------------------------------------------
     //  Turning high level loopback, if required
     //---------------------------------------------------------------
@@ -479,8 +479,8 @@ uint32_t pcie_turn_on_with_options_rc
         //------------------------------------------------------
         rgPCIe_LocMgmt_i_rc_BAR_config_reg = 0x0000011E;
     }
-    
-    
+
+
     //---------------------------------------------------------------
     //  Probably, it will be better to make outbound address
     //    translation parameters as function arguments too.
@@ -501,13 +501,13 @@ uint32_t pcie_turn_on_with_options_rc
     //       - none of bits choose region
     //------------------------------------------------------
     rgPCIe_AXI_outregion_0_region_base_addr = 0x0000001F;
-    
-    
+
+
     //---------------------------------------------------------------
     //  Enable Link Training
     //---------------------------------------------------------------
     rgSCTL_PCIE_REG_0 |= 0x00000010;
-    
+
     //---------------------------------------------------------------
     //  Wait until training complete
     //   Exit with error if emergency timer overflow
@@ -519,14 +519,14 @@ uint32_t pcie_turn_on_with_options_rc
         if (timer_cntr == PCIE_TEST_LIB_TRAINING_TIMEOUT)
             return -1;
     }
-    
+
     return 0;
 }
 
 //-----------------------------------------------------------------------------
 //  This function is for Outbound Address Translator simple configuration
 //    It includes:
-//      - 
+//      -
 //
 //  Arguments:
 //    - config_type
@@ -534,14 +534,14 @@ uint32_t pcie_turn_on_with_options_rc
 //          bypass disable, interrupts enable, no other settings
 //          all transactions should be error
 //        1:
-//          bypass disable, interrupts enable, 
+//          bypass disable, interrupts enable,
 //          devide all 32 bit space to equal regions, no address change
 //        2:
 //          bypass disable, interrupts enable
 //          0 region cover all space, except last 4K, that could be used to
 //          generate interruptions. Address -= 1G (to have access to eSRAM).
 //          Usefull mode for debug purposes.
-//      
+//
 //-----------------------------------------------------------------------------
 void addr_trans_slv_config
 (
@@ -549,11 +549,11 @@ void addr_trans_slv_config
 )
 {
     volatile uint32_t* addr_pointer = (uint32_t*) (ADDR_TRANS_SLV_BASE + ADDR_TRANS_SLV_region0_base);
-    
+
     switch (config_type)
     {
         case 0 : rgADDR_TRANS_SLV_ctrl = 0; break;
-        case 1 : 
+        case 1 :
         {
             rgADDR_TRANS_SLV_ctrl = 0;
             for (uint32_t i = 0; i < 128; i++)
@@ -563,7 +563,7 @@ void addr_trans_slv_config
             }
             break;
         }
-        case 2 : 
+        case 2 :
         {
             rgADDR_TRANS_SLV_ctrl = 0;
             *(addr_pointer++) = (uint32_t) 0x40000000 | 0x1;
@@ -576,7 +576,7 @@ void addr_trans_slv_config
 //-----------------------------------------------------------------------------
 //  This function is for Inbound Address Translator simple configuration
 //    It includes:
-//      - 
+//      -
 //
 //  Arguments:
 //    - config_type
@@ -584,11 +584,11 @@ void addr_trans_slv_config
 //          bypass disable, interrupts enable, no other settings
 //          all transactions should be error
 //        1:
-//          bypass disable, interrupts enable, 
+//          bypass disable, interrupts enable,
 //          first 2 Gb to region 0
 //          second 2 Gb to (region 1 .. region 8) equal size
 //          no address change
-//      
+//
 //-----------------------------------------------------------------------------
 void addr_trans_mst_config
 (
@@ -596,15 +596,15 @@ void addr_trans_mst_config
 )
 {
     volatile uint32_t* addr_pointer = (uint32_t*) (ADDR_TRANS_MST_BASE + ADDR_TRANS_MST_region1_base);
-    
+
     switch (config_type)
     {
         case 0 : rgADDR_TRANS_MST_ctrl = 0; break;
-        case 1 : 
+        case 1 :
         {
-            rgADDR_TRANS_MST_region0_base = (uint32_t) 0x00000000 | 0x1; 
+            rgADDR_TRANS_MST_region0_base = (uint32_t) 0x00000000 | 0x1;
             rgADDR_TRANS_MST_region0_end =  (uint32_t) 0x3FFFF000;
-            
+
             rgADDR_TRANS_MST_ctrl = 0;
             for (uint32_t i = 0; i < 8; i++)
             {
@@ -627,20 +627,20 @@ void addr_trans_mst_config
 //                  0x4005_0100    64
 //      Such addresses make access to eSRAM through PCIe with mirrored
 //      external Root Port
-//      
+//
 //  Arguments:
 //    - Ctrl
-//        [0]    Ext_Int_En 
+//        [0]    Ext_Int_En
 //        [1]    MSIX_Int_En
 //        [2]    MSIX_Int_Mask
-//        [3]    Legacy_Int_En 
-//        [4]    Legacy_Int_Mask 
-//        [5]    Legacy_Int_Ack 
+//        [3]    Legacy_Int_En
+//        [4]    Legacy_Int_Mask
+//        [5]    Legacy_Int_Ack
 //        [31:6] Reserved
-//        
+//
 //    - Global_IRQ_Mask_h
 //    - Global_IRQ_Mask_l
-//      
+//
 //-----------------------------------------------------------------------------
 void ext_irq_gen_config
 (
@@ -660,7 +660,7 @@ void ext_irq_gen_config
         rgPCIe_EP_i_msix_ctrl |= 0x40000000;
     else
         rgPCIe_EP_i_msix_ctrl &= ~0x40000000;
-    
+
     volatile uint32_t* addr_pointer = (uint32_t*) (EXT_IRQ_GEN_BASE + EXT_IRQ_GEN_v0_Message_Address);
     for (int i = 0; i < 64; i++)
     {
@@ -672,6 +672,3 @@ void ext_irq_gen_config
         addr_pointer++;
     }
 }
-
-
-

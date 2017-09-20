@@ -1,4 +1,4 @@
-#include "basis/tubemacro.incl"
+#include <platform/tubemacro.incl>
 #include "can_defs.h"
 
 .global CCAN_MASK_FILTER
@@ -16,19 +16,19 @@ CCAN_MASK_FILTER:
     tube_hex R0
 
     tube_msg "- CCAN_MASK_FILTER_TRANSACTION started"
-    
+
     MOV R1, R0
-    
+
     tube_hex R1
 
     BL MEM_CONFIG
-    
+
     tube_msg "-"
-    
+
     BL TEST_CONFIG
 
     tube_msg "-"
-    
+
     tube_msg "-- Start Storing"
     LDR R2, =0xa008                 @First Mes
     STR R2, [R1, #CCAN_IF1_Arb_2]
@@ -198,9 +198,9 @@ CCAN_MASK_FILTER:
     LDR R2, =0x8007
     STR R2, [R1, #CCAN_IF1_Com_Req]
 @    tube_msg "--- Message 7 stored"
-    
+
     tube_msg "-- Storing all is OK"
-    
+
     tube_msg "-"
 
     tube_msg "-- Wait for transaction"
@@ -212,10 +212,10 @@ repeat_loop:
     CMP R3, #0x0008
     BNE repeat_loop
     tube_msg "-- Transaction OK"
-    
+
     tube_msg "-"
 
-    MOV R0, #0    
+    MOV R0, #0
     tube_msg "- CCAN_MASK_FILTER_TRANSACTION finished"
     B exit
 
@@ -228,5 +228,3 @@ warning:
 exit:
     POP {R1-R7, LR}
     BX  LR @ return
-
-    

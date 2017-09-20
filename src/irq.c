@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <rumboot/rumboot.h>
 #include <rumboot/platform.h>
 #include <rumboot/printf.h>
 #include <rumboot/irq.h>
@@ -21,7 +22,7 @@ void rumboot_irq_core_dispatch(uint32_t type, uint32_t id)
 {
 	switch (type) {
 	case RUMBOOT_IRQ_TYPE_NORMAL:
-		/* Route IRQ to controller driver */
+        rumboot_platform_irq_dispatch();
 		break;
 	case RUMBOOT_IRQ_TYPE_EXCEPTION:
 		rumboot_platform_panic("%s \n", exception_names[id]);
@@ -31,12 +32,11 @@ void rumboot_irq_core_dispatch(uint32_t type, uint32_t id)
 
 struct rumboot_irq_entry
 {
-    void (*handler)(void *arg);
+    void (*handler)(int irq, void *arg);
     void *arg;
+	uint32_t flags;
 };
 
-void *rumboot_malloc(uint32_t size);
-void rumboot_free(void *ptr);
 
 void rumboot_irq_free(struct rumboot_irq_entry *tbl)
 {
@@ -57,17 +57,37 @@ struct rumboot_irq_entry *rumboot_irq_create(struct rumboot_irq_entry *copyfrom)
 	return tbl;
 }
 
-void rumboot_irq_set_handler(struct rumboot_irq_entry *tbl, int irq, void (*handler)(), void *arg)
+void rumboot_irq_set_handler(struct rumboot_irq_entry *tbl, int irq, uint32_t flags,
+		void (*handler)(int irq, void *args), void *arg)
 {
 	if (irq > (RUMBOOT_PLATFORM_NUM_IRQS - 1))
 		rumboot_platform_panic("IRQ %d is too big\n", irq);
+
 	tbl[irq].handler = handler;
 	tbl[irq].arg=arg;
+	tbl[irq].flags=flags;
 }
 
-void rumboot_irq_activate_table(struct rumboot_irq_entry *tbl)
+void rumboot_irq_table_activate(struct rumboot_irq_entry *tbl)
 {
     rumboot_platform_runtime_info.irq_handler_table = tbl;
+}
+
+void *rumboot_irq_table_get()
+{
+    return rumboot_platform_runtime_info.irq_handler_table;
+}
+
+void rumboot_irq_enable(int irq)
+{
+	struct rumboot_irq_entry *tbl = rumboot_irq_table_get();
+	rumboot_platform_irq_configure(irq, tbl[irq].flags, 1);
+}
+
+void rumboot_irq_disable(int irq)
+{
+	struct rumboot_irq_entry *tbl = rumboot_irq_table_get();
+	rumboot_platform_irq_configure(irq, tbl[irq].flags, 0);
 }
 
 void rumboot_irq_cli()
@@ -78,9 +98,4 @@ void rumboot_irq_cli()
 void rumboot_irq_sei()
 {
 	rumboot_arch_irq_enable();
-}
-
-void rumboot_irq_disable(int irq)
-{
-
 }

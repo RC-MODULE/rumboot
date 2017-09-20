@@ -3,7 +3,7 @@
 #include <rumboot/testsuite.h>
 #include <rumboot/printf.h>
 #include <rumboot/io.h>
-#include <basis/defs.h>
+#include <platform/defs.h>
 
 
 /* The actual workhorse */

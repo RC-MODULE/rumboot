@@ -3,7 +3,7 @@
 #include <rumboot/testsuite.h>
 #include <rumboot/printf.h>
 #include <rumboot/io.h>
-#include <basis/defs.h>
+#include <platform/defs.h>
 
 extern int CCAN_REQUEST(uint32_t r0, uint32_t r1, uint32_t r2, uint32_t r3);
 

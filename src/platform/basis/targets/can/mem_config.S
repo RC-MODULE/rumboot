@@ -1,8 +1,8 @@
-#include "basis/tubemacro.incl"
+#include <platform/tubemacro.incl>
 #include "can_defs.h"
 
 .global MEM_CONFIG
-    
+
 MEM_CONFIG:
 
     PUSH {R1-R2, LR}
@@ -21,9 +21,9 @@ init_loop:
     CMP R2, #0x0021
     BNE init_loop
     tube_msg "-- Initialize OK"
-    
+
     tube_msg "-"
-    
+
     tube_msg "-- Set Configuration"
     LDR R2, =0x0041
     STR R2, [R1, #CCAN_CAN_Contr_R]
@@ -36,6 +36,6 @@ init_loop:
     LDRNE R2, =0x000e
     STR R2, [R1, #CCAN_CAN_Contr_R]
     tube_msg "-- Configuration OK"
-    
+
     POP {R1-R2, LR}
     BX  LR

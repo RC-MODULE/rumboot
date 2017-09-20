@@ -12,7 +12,7 @@
 //-----------------------------------------------------------------------------
 #include <stdint.h>
 
-#include <basis/defs_c.h>
+#include <platform/defs_c.h>
 
 //-----------------------------------------------------------------------------
 //  These defines must be changed for real program
@@ -47,7 +47,7 @@
 //      Option: RSV3  : Reserved                  (0) = 0
 //      Option: BOF   : Burst On the Fly        (0/1) = 0
 //      Option: WLS   : Write Latency Set       (0/1) = 0
-//      Option: TCK   : Simulation period in ns       = 
+//      Option: TCK   : Simulation period in ns       =
 //      Option: WRDBIEN : Write DBI Enable       (0/1) = 0
 //      Option: RDDBIEN : Read DBI Enable       (0/1) = 0
 //      Option: RDPSTMBLE : RD Postamble En      (0/1) = 0
@@ -58,13 +58,13 @@
 //      ********************************************************************
 //      Memory: jedec_ddr3_1g_x16_1600g
 //      ********************************************************************
-//  
+//
 //  Arguments:
 //    - DDRx_BASE
 //        posible values for Basis are:
 //          0x0108_0000 DDR0_BASE
 //          0x0108_2000 DDR1_BASE
-//  
+//
 //-----------------------------------------------------------------------------
 void config_jedec_ddr3_1g_x16_1600g_cl8_bl8 (uint32_t DDRx_BASE)
 {
@@ -114,8 +114,8 @@ void config_jedec_ddr3_1g_x16_1600g_cl8_bl8 (uint32_t DDRx_BASE)
     (*(volatile int*)(DDRx_BASE + DENALI_CTL_43)) = 0b00000001000000000000000000000000 ;  //  CTRLUPD_REQ_PER_AREF_EN:RW:24:1:=0x01 CTRLUPD_REQ:WR:16:1:=0x00 CONTROLLER_BUSY:RD:8:1:=0x00 IN_ORDER_ACCEPT:RW:0:1:=0x00
     (*(volatile int*)(DDRx_BASE + DENALI_CTL_44)) = 0b00000000000000000000000000000000 ;  //  DFI_ERROR_INFO:RD:8:16:=0x0000 DFI_ERROR:RD:0:4:=0x00
     (*(volatile int*)(DDRx_BASE + DENALI_CTL_45)) = 0b00000000000000000000000000000000 ;  //  RESERVED:RW+:0:1:=0x00
-    (*(volatile int*)(DDRx_BASE + DENALI_CTL_46)) = 0b00000000000000000000000000000000 ;  // 
-    (*(volatile int*)(DDRx_BASE + DENALI_CTL_47)) = 0b00000000000000000000000000000000 ;  // 
+    (*(volatile int*)(DDRx_BASE + DENALI_CTL_46)) = 0b00000000000000000000000000000000 ;  //
+    (*(volatile int*)(DDRx_BASE + DENALI_CTL_47)) = 0b00000000000000000000000000000000 ;  //
     (*(volatile int*)(DDRx_BASE + DENALI_CTL_48)) = 0b00000000000000000000000000000000 ;  //  OUT_OF_RANGE_ADDR:RD:0:30:=0x00000000
     (*(volatile int*)(DDRx_BASE + DENALI_CTL_49)) = 0b00000000000000000000000000000000 ;  //  OUT_OF_RANGE_SOURCE_ID:RD:16:16:=0x0000 OUT_OF_RANGE_TYPE:RD:8:7:=0x00 OUT_OF_RANGE_LENGTH:RD:0:7:=0x00
     (*(volatile int*)(DDRx_BASE + DENALI_CTL_50)) = 0b00000000000000000000000000000000 ;  //  PORT_CMD_ERROR_ADDR:RD:0:30:=0x00000000
@@ -165,7 +165,7 @@ void config_jedec_ddr3_1g_x16_1600g_cl8_bl8 (uint32_t DDRx_BASE)
     (*(volatile int*)(DDRx_BASE + DENALI_CTL_94)) = 0b00000000000000000000000000000000 ;  //  INT_STATUS:RD:0:30:=0x00000000
     (*(volatile int*)(DDRx_BASE + DENALI_CTL_95)) = 0b00000000000000000000000000000000 ;  //  INT_ACK:WR:0:29:=0x00000000
     (*(volatile int*)(DDRx_BASE + DENALI_CTL_96)) = 0b00000000000000000000000000000000 ;  //  INT_MASK:RW:0:30:=0x00000000
-    
+
     (*(volatile int*)(DDRx_BASE + DENALI_PHY_BASE + DENALI_PHY_00 )) = 0b01110110010101000011001000010000 ;  //  PHY_DQ_DM_SWIZZLE0_0:RW:0:32:=0x76543210
     (*(volatile int*)(DDRx_BASE + DENALI_PHY_BASE + DENALI_PHY_01 )) = 0b00000000000001001100000000001000 ;  //  PHY_CLK_WR_BYPASS_SLAVE_DELAY_0:RW:8:11:=0x04c0 PHY_DQ_DM_SWIZZLE1_0:RW:0:4:=0x08
     (*(volatile int*)(DDRx_BASE + DENALI_PHY_BASE + DENALI_PHY_02 )) = 0b00000000000000000000000010011001 ;  //  PHY_SW_WRDQ0_SHIFT_0:RW:24:5:=0x00 PHY_CLK_BYPASS_OVERRIDE_0:RW:16:1:=0x00 PHY_RDDQS_GATE_BYPASS_SLAVE_DELAY_0:RW:0:10:=0x0099
@@ -239,7 +239,7 @@ void config_jedec_ddr3_1g_x16_1600g_cl8_bl8 (uint32_t DDRx_BASE)
     (*(volatile int*)(DDRx_BASE + DENALI_PHY_BASE + DENALI_PHY_70 )) = 0b00000000000011110000110000001111 ;  //  PHY_GTLVL_RESP_WAIT_CNT_0:RW:16:5:=0x0f PHY_GTLVL_DLY_STEP_0:RW:8:4:=0x0c PHY_WRLVL_RESP_WAIT_CNT_0:RW:0:5:=0x0f
     (*(volatile int*)(DDRx_BASE + DENALI_PHY_BASE + DENALI_PHY_71 )) = 0b00000001000000000000000101000000 ;  //  PHY_GTLVL_FINAL_STEP_0:RW:16:10:=0x0100 PHY_GTLVL_BACK_STEP_0:RW:0:10:=0x0140
     (*(volatile int*)(DDRx_BASE + DENALI_PHY_BASE + DENALI_PHY_72 )) = 0b00000000000000000000000000001100 ;  //  PHY_RDLVL_DLY_STEP_0:RW:0:4:=0x0c
-    
+
     (*(volatile int*)(DDRx_BASE + DENALI_PHY_BASE + DENALI_PHY_128)) = 0b01110110010101000011001000010000 ;  //  PHY_DQ_DM_SWIZZLE0_1:RW:0:32:=0x76543210
     (*(volatile int*)(DDRx_BASE + DENALI_PHY_BASE + DENALI_PHY_129)) = 0b00000000000001001100000000001000 ;  //  PHY_CLK_WR_BYPASS_SLAVE_DELAY_1:RW:8:11:=0x04c0 PHY_DQ_DM_SWIZZLE1_1:RW:0:4:=0x08
     (*(volatile int*)(DDRx_BASE + DENALI_PHY_BASE + DENALI_PHY_130)) = 0b00000000000000000000000010011001 ;  //  PHY_SW_WRDQ0_SHIFT_1:RW:24:5:=0x00 PHY_CLK_BYPASS_OVERRIDE_1:RW:16:1:=0x00 PHY_RDDQS_GATE_BYPASS_SLAVE_DELAY_1:RW:0:10:=0x0099
@@ -456,7 +456,7 @@ void config_jedec_ddr3_1g_x16_1600g_cl8_bl8 (uint32_t DDRx_BASE)
     (*(volatile int*)(DDRx_BASE + DENALI_PHY_BASE + DENALI_PHY_449)) = 0b00000100000001110000000100000000 ;  //  PHY_DDL_TRACK_UPD_THRESHOLD_AC:RW:24:8:=0x04 PHY_INIT_UPDATE_CONFIG:RW:16:3:=0x07 PHY_PAD_BACKGROUND_CAL:RW:8:1:=0x01 PHY_DDL_AC_TEST_INDEX:RW:0:2:=0x00
     (*(volatile int*)(DDRx_BASE + DENALI_PHY_BASE + DENALI_PHY_450)) = 0b00000000000000000000000000000010 ;  //  PHY_DS_INIT_COMPLETE_OBS:RD:24:3:=0x00 PHY_AC_INIT_COMPLETE_OBS:RD:8:15:=0x0000 PHY_DLL_RST_EN:RW_D:0:2:=0x02
     (*(volatile int*)(DDRx_BASE + DENALI_PHY_BASE + DENALI_PHY_451)) = 0b00000000000000000000000000000000 ;  //  PHY_UPDATE_MASK:RW:0:1:=0x00
-    
+
     (*(volatile int*)(DDRx_BASE + DENALI_CTL_00)) = 0b00000000000000000000011000000001 ; // start EMIC
 }
 
@@ -478,7 +478,7 @@ void config_jedec_ddr3_1g_x16_1600g_cl8_bl8 (uint32_t DDRx_BASE)
 //      Option: RSV3  : Reserved                  (0) = 0
 //      Option: BOF   : Burst On the Fly        (0/1) = 0
 //      Option: WLS   : Write Latency Set       (0/1) = 0
-//      Option: TCK   : Simulation period in ns       = 
+//      Option: TCK   : Simulation period in ns       =
 //      Option: WRDBIEN : Write DBI Enable       (0/1) = 0
 //      Option: RDDBIEN : Read DBI Enable       (0/1) = 0
 //      Option: RDPSTMBLE : RD Postamble En      (0/1) = 0
@@ -489,13 +489,13 @@ void config_jedec_ddr3_1g_x16_1600g_cl8_bl8 (uint32_t DDRx_BASE)
 //      ********************************************************************
 //      Memory: jedec_ddr3_1g_x16_1600g
 //      ********************************************************************
-//  
+//
 //  Arguments:
 //    - DDRx_BASE
 //        posible values for Basis are:
 //          0x0108_0000 DDR0_BASE
 //          0x0108_2000 DDR1_BASE
-//  
+//
 //-----------------------------------------------------------------------------
 void config_jedec_ddr3_1g_x16_1600g_cl11_bl8 (uint32_t DDRx_BASE)
 {
@@ -545,8 +545,8 @@ void config_jedec_ddr3_1g_x16_1600g_cl11_bl8 (uint32_t DDRx_BASE)
     (*(volatile int*)(DDRx_BASE + DENALI_CTL_43)) = 0b00000001000000000000000000000000 ;  //  CTRLUPD_REQ_PER_AREF_EN:RW:24:1:=0x01 CTRLUPD_REQ:WR:16:1:=0x00 CONTROLLER_BUSY:RD:8:1:=0x00 IN_ORDER_ACCEPT:RW:0:1:=0x00
     (*(volatile int*)(DDRx_BASE + DENALI_CTL_44)) = 0b00000000000000000000000000000000 ;  //  DFI_ERROR_INFO:RD:8:16:=0x0000 DFI_ERROR:RD:0:4:=0x00
     (*(volatile int*)(DDRx_BASE + DENALI_CTL_45)) = 0b00000000000000000000000000000000 ;  //  RESERVED:RW+:0:1:=0x00
-    (*(volatile int*)(DDRx_BASE + DENALI_CTL_46)) = 0b00000000000000000000000000000000 ;  // 
-    (*(volatile int*)(DDRx_BASE + DENALI_CTL_47)) = 0b00000000000000000000000000000000 ;  // 
+    (*(volatile int*)(DDRx_BASE + DENALI_CTL_46)) = 0b00000000000000000000000000000000 ;  //
+    (*(volatile int*)(DDRx_BASE + DENALI_CTL_47)) = 0b00000000000000000000000000000000 ;  //
     (*(volatile int*)(DDRx_BASE + DENALI_CTL_48)) = 0b00000000000000000000000000000000 ;  //  OUT_OF_RANGE_ADDR:RD:0:30:=0x00000000
     (*(volatile int*)(DDRx_BASE + DENALI_CTL_49)) = 0b00000000000000000000000000000000 ;  //  OUT_OF_RANGE_SOURCE_ID:RD:16:16:=0x0000 OUT_OF_RANGE_TYPE:RD:8:7:=0x00 OUT_OF_RANGE_LENGTH:RD:0:7:=0x00
     (*(volatile int*)(DDRx_BASE + DENALI_CTL_50)) = 0b00000000000000000000000000000000 ;  //  PORT_CMD_ERROR_ADDR:RD:0:30:=0x00000000
@@ -908,7 +908,7 @@ void config_jedec_ddr3_1g_x16_1600g_cl11_bl8 (uint32_t DDRx_BASE)
 //      Option: RSV3  : Reserved                  (0) = 0
 //      Option: BOF   : Burst On the Fly        (0/1) = 0
 //      Option: WLS   : Write Latency Set       (0/1) = 0
-//      Option: TCK   : Simulation period in ns       = 
+//      Option: TCK   : Simulation period in ns       =
 //      Option: WRDBIEN : Write DBI Enable       (0/1) = 0
 //      Option: RDDBIEN : Read DBI Enable       (0/1) = 0
 //      Option: RDPSTMBLE : RD Postamble En      (0/1) = 0
@@ -919,13 +919,13 @@ void config_jedec_ddr3_1g_x16_1600g_cl11_bl8 (uint32_t DDRx_BASE)
 //      ********************************************************************
 //      Memory: mt41k128m8_107
 //      ********************************************************************
-//  
+//
 //  Arguments:
 //    - DDRx_BASE
 //        posible values for Basis are:
 //          0x0108_0000 DDR0_BASE
 //          0x0108_2000 DDR1_BASE
-//  
+//
 //-----------------------------------------------------------------------------
 void config_my_mt41k512m8_107_cl11_bl8 (uint32_t DDRx_BASE)
 {
@@ -975,8 +975,8 @@ void config_my_mt41k512m8_107_cl11_bl8 (uint32_t DDRx_BASE)
     (*(volatile int*)(DDRx_BASE + DENALI_CTL_43)) = 0b00000001000000000000000000000000 ;  //  CTRLUPD_REQ_PER_AREF_EN:RW:24:1:=0x01 CTRLUPD_REQ:WR:16:1:=0x00 CONTROLLER_BUSY:RD:8:1:=0x00 IN_ORDER_ACCEPT:RW:0:1:=0x00
     (*(volatile int*)(DDRx_BASE + DENALI_CTL_44)) = 0b00000000000000000000000000000000 ;  //  DFI_ERROR_INFO:RD:8:16:=0x0000 DFI_ERROR:RD:0:4:=0x00
     (*(volatile int*)(DDRx_BASE + DENALI_CTL_45)) = 0b00000000000000000000000000000000 ;  //  RESERVED:RW+:0:1:=0x00
-    (*(volatile int*)(DDRx_BASE + DENALI_CTL_46)) = 0b00000000000000000000000000000000 ;  // 
-    (*(volatile int*)(DDRx_BASE + DENALI_CTL_47)) = 0b00000000000000000000000000000000 ;  // 
+    (*(volatile int*)(DDRx_BASE + DENALI_CTL_46)) = 0b00000000000000000000000000000000 ;  //
+    (*(volatile int*)(DDRx_BASE + DENALI_CTL_47)) = 0b00000000000000000000000000000000 ;  //
     (*(volatile int*)(DDRx_BASE + DENALI_CTL_48)) = 0b00000000000000000000000000000000 ;  //  OUT_OF_RANGE_ADDR:RD:0:30:=0x00000000
     (*(volatile int*)(DDRx_BASE + DENALI_CTL_49)) = 0b00000000000000000000000000000000 ;  //  OUT_OF_RANGE_SOURCE_ID:RD:16:16:=0x0000 OUT_OF_RANGE_TYPE:RD:8:7:=0x00 OUT_OF_RANGE_LENGTH:RD:0:7:=0x00
     (*(volatile int*)(DDRx_BASE + DENALI_CTL_50)) = 0b00000000000000000000000000000000 ;  //  PORT_CMD_ERROR_ADDR:RD:0:30:=0x00000000
@@ -1321,18 +1321,18 @@ void config_my_mt41k512m8_107_cl11_bl8 (uint32_t DDRx_BASE)
 
 //-----------------------------------------------------------------------------
 //  This function is for turning On one of DDR subsystem
-//  
+//
 //  Arguments:
 //    - DDRx_BASE
 //        posible values for Basis are:
 //          0x0108_0000 DDR0_BASE
 //          0x0108_2000 DDR1_BASE
-//  
+//
 //-----------------------------------------------------------------------------
 uint32_t ddr_init (uint32_t DDRx_BASE)
 {
     uint32_t timer_cntr = 0;
-    
+
 #ifdef jedec_ddr3_1g_x16_1600g_cl8_bl8
     config_jedec_ddr3_1g_x16_1600g_cl8_bl8 (DDRx_BASE);
 #else
@@ -1344,7 +1344,7 @@ uint32_t ddr_init (uint32_t DDRx_BASE)
 #endif
 #endif
 #endif
-    
+
     while (((*(volatile int*)(DDRx_BASE + DENALI_CTL_94)) & 0x00000800) == 0)
     {
         timer_cntr++;
@@ -1352,7 +1352,7 @@ uint32_t ddr_init (uint32_t DDRx_BASE)
             return -1;
     }
     (*(volatile int*)(DDRx_BASE + DENALI_CTL_95)) = 0b00000000000000000000100000000000 ; // clear interruption flag
-    
+
     return 0;
 }
 
@@ -1363,7 +1363,7 @@ uint32_t ddr_init (uint32_t DDRx_BASE)
 uint32_t ddr0_ddr1_init ()
 {
     uint32_t timer_cntr = 0;
-    
+
 #ifdef jedec_ddr3_1g_x16_1600g_cl8_bl8
     config_jedec_ddr3_1g_x16_1600g_cl8_bl8 (DDR0_BASE);
     config_jedec_ddr3_1g_x16_1600g_cl8_bl8 (DDR1_BASE);
@@ -1378,7 +1378,7 @@ uint32_t ddr0_ddr1_init ()
 #endif
 #endif
 #endif
-    
+
     while (((*(volatile int*)(DDR0_BASE + DENALI_CTL_94)) & (*(volatile int*)(DDR1_BASE + DENALI_CTL_94)) & 0x00000800) == 0)
     {
         timer_cntr++;
@@ -1387,26 +1387,26 @@ uint32_t ddr0_ddr1_init ()
     }
     (*(volatile int*)(DDR0_BASE + DENALI_CTL_95)) = 0b00000000000000000000100000000000 ; // clear interruption flag
     (*(volatile int*)(DDR1_BASE + DENALI_CTL_95)) = 0b00000000000000000000100000000000 ; // clear interruption flag
-    
+
     return 0;
 }
 
 //-----------------------------------------------------------------------------
 //  This function is for changing DDR external CRG frequency
-//  
+//
 //  Arguments:
-//               
+//
 //    - pll_fbdiv    frequency multiplier coefficient
 //    - pll_psdiv    frequency post divider coefficient
-//    
+//
 //    FREF = 16MHz
-//    
+//
 //                      DDR3-800      DDR3-1066     DDR3-1333      DDR3-1600
-//        pll_fbdiv     0x63 (*99)    0x84 (*132)   0x52 (*82)     0x63 (*99)    
-//        pll_psdiv     0x1  (/4)     0x1  (/4)     0x0  (/2)      0x0  (/2)    
-//    
+//        pll_fbdiv     0x63 (*99)    0x84 (*132)   0x52 (*82)     0x63 (*99)
+//        pll_psdiv     0x1  (/4)     0x1  (/4)     0x0  (/2)      0x0  (/2)
+//
 //    FOUT =            396MHz        528MHz        656MHz         792MHz
-//        
+//
 //    So, frequency is a bit less, than maximum for corresponding settings.
 //    It can be helpfull for simulation and save from freq problems later.
 //-----------------------------------------------------------------------------
@@ -1417,19 +1417,19 @@ uint32_t crg_ddr_init
 )
 {
     uint32_t timer_cntr = 0;
-    
+
     rgCRG_DDR_WR_LOCK   = 0x1ACCE551 ;
     rgCRG_DDR_PLL_CTRL  = 0x3        ;
     rgCRG_DDR_PLL_FBDIV = pll_fbdiv  ;
     rgCRG_DDR_PLL_PSDIV = pll_psdiv  ;
-    
+
     while ((rgCRG_DDR_PLL_STAT & 0x00000010) == 0)
     {
         timer_cntr++;
         if (timer_cntr == CRG_DDR_TEST_LIB_PLL_LOCK_TIMEOUT)
             return -1;
     }
-    
+
     rgCRG_DDR_PLL_CTRL  = 0x0        ;
     while ((rgCRG_DDR_PLL_STAT & 0x00000011) == 0)
     {
@@ -1437,7 +1437,6 @@ uint32_t crg_ddr_init
         if (timer_cntr == CRG_DDR_TEST_LIB_PLL_LOCK_TIMEOUT)
             return -1;
     }
-    
+
     return 0;
 }
-

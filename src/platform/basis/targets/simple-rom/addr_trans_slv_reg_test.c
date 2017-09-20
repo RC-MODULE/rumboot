@@ -5,12 +5,12 @@
 //    - checking number of accessable registers
 //    - checking region registers address crossing
 //    - checking that bits are correct
-//    - 
+//    -
 //
 //  Test duration (RTL): < 1.2 ms
 //
 //-----------------------------------------------------------------------------
-#include <basis/defs_c.h>
+#include <platform/defs_c.h>
 
 #define regions_number         128
 #define registers_number       (regions_number * 3 + 1)
@@ -18,7 +18,7 @@
 int check_reg_number ()
 {
     volatile int *pointer;
-    
+
     pointer = (int *)(ADDR_TRANS_SLV_BASE);
     for (int i = 0; i < 1024; i++)
     {
@@ -33,7 +33,7 @@ int check_reg_number ()
 int check_reg_addr ()
 {
     volatile int *pointer;
-    
+
     pointer = (int *)(ADDR_TRANS_SLV_BASE);
     pointer++;
     for (int i = 0; i < regions_number; i++)
@@ -65,7 +65,7 @@ int check_reg_addr ()
 int check_reg_bits ()
 {
     volatile int *pointer;
-    
+
     pointer = (int *)(ADDR_TRANS_SLV_BASE);
     *pointer = 0x00000000;
     if (*pointer != 0x00000000)
@@ -79,7 +79,7 @@ int check_reg_bits ()
     *pointer = 0xFFFFFFFF;
     if (*pointer != 0x00000006)
         return -1;
-        
+
     for (int i = 0; i < regions_number; i++)
     {
         pointer++;
@@ -95,7 +95,7 @@ int check_reg_bits ()
         *pointer = 0xFFFFFFFF;
         if (*pointer != 0xFFFFF001)
             return -1;
-        
+
         pointer++;
         *pointer = 0x00000000;
         if (*pointer != 0x00000FFF)
@@ -109,7 +109,7 @@ int check_reg_bits ()
         *pointer = 0xFFFFFFFF;
         if (*pointer != 0xFFFFFFFF)
             return -1;
-        
+
         pointer++;
         *pointer = 0x00000000;
         if (*pointer != 0x00000000)
@@ -131,13 +131,12 @@ int main ()
 {
     if (check_reg_number () != 0)
         return -1;
-        
+
     if (check_reg_addr () != 0)
         return -1;
-        
+
     if (check_reg_bits () != 0)
         return -1;
-    
+
     return 0;
 }
-

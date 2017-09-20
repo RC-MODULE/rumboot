@@ -1,5 +1,9 @@
+#include <stdio.h>
+#include <stdint.h>
+#include <string.h>
 #include <rumboot/printf.h>
 #include <rumboot/platform.h>
+#include <rumboot/macros.h>
 
 int main()
 {

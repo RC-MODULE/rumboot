@@ -1,41 +1,10 @@
 
 /* --- Peripheral Base Addresses --- */
 
-#define DIT0_BASE      0x0102A000
-#define DIT1_BASE      0x0102B000
-#define DIT2_BASE      0x0102C000
-#define DIT3_BASE      0x0102D000
+#warning "This file is deprecated!"
+#warning "Please use devices.h"
 
-#define TSNS_BASE      0x01019000
-
-#define GPIO0_BASE     0x01036000
-#define GPIO1_BASE     0x01037000
-#define GPIO2_BASE     0x01038000
-
-#define SCTL_BASE      0x01028000
-
-#define PCIE_BASE      0x40000000
-
-#define ADDR_TRANS_SLV_BASE      0x01034000
-#define ADDR_TRANS_MST_BASE      0x01035000
-#define PCIE_CORE_BASE           0x01058000
-#define PCIE_PHY_BASE            0x01060000
-
-#define EXT_IRQ_GEN_BASE         0x01018000
-
-#define CRG_DDR_BASE  0x0102F000
-
-#define MDMA0_BASE    0x01010000
-#define MDMA1_BASE    0x01011000
-#define MDMA2_BASE    0x01012000
-#define MDMA3_BASE    0x01013000
-
-#define DDR0_BASE    0x01080000
-#define DDR1_BASE    0x01082000
-
-/* --- I2C ------) --- */
-#define I2C0_BASE      0x01023000
-#define I2C1_BASE      0x01024000
+#include <basis/devices.h>
 
 #define I2C_PRESCALE		0x00
 #define I2C_CTRL			0x04
@@ -1069,10 +1038,10 @@
 #define EXT_IRQ_GEN_Global_IRQ_Map_13        0x0048
 #define EXT_IRQ_GEN_Global_IRQ_Map_14        0x004C
 #define EXT_IRQ_GEN_Global_IRQ_Map_15        0x0050
-#define EXT_IRQ_GEN_v0_Message_Address       0x0800 
-#define EXT_IRQ_GEN_v0_Message_Upper_Address 0x0804 
-#define EXT_IRQ_GEN_v0_Message_Data          0x0808 
-#define EXT_IRQ_GEN_v0_Vector_Control        0x080C 
+#define EXT_IRQ_GEN_v0_Message_Address       0x0800
+#define EXT_IRQ_GEN_v0_Message_Upper_Address 0x0804
+#define EXT_IRQ_GEN_v0_Message_Data          0x0808
+#define EXT_IRQ_GEN_v0_Vector_Control        0x080C
 #define EXT_IRQ_GEN_Global_PBA_Entries_l     0x0C00
 #define EXT_IRQ_GEN_Global_PBA_Entries_h     0x0C04
 #define EXT_IRQ_GEN_Global_AXI_param         0x0C08
@@ -1212,7 +1181,7 @@
 #define DENALI_CTL_96     0x0180
 
   /*Phy is a part of address spase of EMIC*/
-  
+
 #define DENALI_PHY_BASE  0x800
 
 #define DENALI_PHY_00  0x000
@@ -1558,5 +1527,3 @@
 #define CRG_DDR_CKEN15        0x1F4
 #define CRG_DDR_INTMASK       0x400
 #define CRG_DDR_INTCLR        0x404
-
-

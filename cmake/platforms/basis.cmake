@@ -111,12 +111,15 @@ endif()
 file(GLOB PLATFORM_SOURCES
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/*.c
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/startup.S
-    ${CMAKE_SOURCE_DIR}/src/lib/drivers/*.c
+    ${CMAKE_SOURCE_DIR}/src/lib/drivers/irq-gic.c
+    ${CMAKE_SOURCE_DIR}/src/lib/drivers/ddr_test_lib.c
+    ${CMAKE_SOURCE_DIR}/src/lib/drivers/pcie_test_lib.c
+    ${CMAKE_SOURCE_DIR}/src/lib/drivers/dma_test_lib.c
     ${CMAKE_SOURCE_DIR}/src/arch/arm.c
 )
 
 macro(RUMBOOT_PLATFORM_SET_COMPILER_FLAGS)
-    SET(RUMBOOT_COMMON_FLAGS "-mcpu=cortex-a5 -marm -ffreestanding -Os -Werror")
+    SET(RUMBOOT_COMMON_FLAGS "-mcpu=cortex-a5 -marm -ffreestanding -Os -Werror -Wno-error=cpp")
     SET(CMAKE_C_FLAGS "${RUMBOOT_COMMON_FLAGS} -Wall -fdata-sections -ffunction-sections")
     SET(CMAKE_ASM_FLAGS ${RUMBOOT_COMMON_FLAGS})
     SET(CMAKE_OBJCOPY_FLAGS --gap-fill 0xFF --pad-to 0x40000)

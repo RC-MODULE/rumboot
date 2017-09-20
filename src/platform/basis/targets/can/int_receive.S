@@ -1,14 +1,14 @@
-#include "basis/tubemacro.incl"
+#include <platform/tubemacro.incl>
 #include "can_defs.h"
-    
+
 .global INT_RECEIVE
-    
+
 INT_RECEIVE:
 
     PUSH {R1-R5, LR}
 
     @ R1 - here is can_base_addr
-    
+
 repeat_loop:
     LDR R4, =0x255
 wait_loop:
@@ -47,6 +47,6 @@ cmp_fin:
     LDR R5, =0x0007             @interrupt
     STR R5, [R1, #CCAN_St_R]    @interrupt
     tube_msg "--- Message/Request was received"
-    
+
     POP {R1-R5, LR}
     BX  LR @ return
