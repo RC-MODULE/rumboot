@@ -4,7 +4,7 @@
 
 #define RUMBOOT_IRQ_TYPE_NORMAL       0
 #define RUMBOOT_IRQ_TYPE_EXCEPTION    1
-
+#define RUMBOOT_IRQ_TYPE_SOFT        2
 
 /* ARM Exception names */
 #define RUMBOOT_IRQ_PREFETCH_ABORT          0
@@ -162,7 +162,9 @@
      */
     void rumboot_arch_irq_enable();
 
-    void rumboot_platform_irq_dispatch();
+    uint32_t rumboot_platform_irq_begin();
+    void rumboot_platform_irq_end();
+
     void rumboot_platform_irq_configure(int irq, uint32_t flags, int enable);
 #endif
 

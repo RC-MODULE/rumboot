@@ -5,9 +5,7 @@
 #include <devices/gic.h>
 #include <rumboot/io.h>
 #include <rumboot/printf.h>
-
-#define GIC_DIST_BASE 0
-#define GIC_CPUIF_BASE 0
+#include <platform/devices.h>
 
 static inline void gic_dist_write(uint32_t reg, uint32_t value)
 {
@@ -30,10 +28,13 @@ static inline uint32_t gic_cpuif_read(uint32_t reg)
 }
 
 
-void rumboot_platform_irq_dispatch()
+uint32_t rumboot_platform_irq_begin()
 {
-    uint32_t id = gic_cpuif_read(GICC_REG_IAR);
-    rumboot_printf("IRQ: ID %d Arrived!\n", id);
+    return gic_cpuif_read(GICC_REG_IAR);
+}
+
+void rumboot_platform_irq_end(uint32_t id)
+{
     gic_cpuif_write(GICC_REG_EOIR, 0);
 }
 

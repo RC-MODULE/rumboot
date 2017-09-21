@@ -43,35 +43,51 @@ rumboot_default_irq_vectors:
 undefined_handler:
     mov r0, #RUMBOOT_IRQ_TYPE_EXCEPTION
     mov r1, #RUMBOOT_IRQ_UNDEFINED_INSTRUCTION
-    b rumboot_irq_core_dispatch
-
+    bl rumboot_irq_core_dispatch
+    movs pc,lr
+    nop
 
 swi_handler:
-  mov r0, #RUMBOOT_IRQ_TYPE_EXCEPTION
-  mov r1, #RUMBOOT_IRQ_SOFTWARE_EXCEPTION
-  b rumboot_irq_core_dispatch
+  push     {lr, r0-r3, r12}
+  subs     r0, lr, #4
+  ldr      r1, [r0]
+  and      r1, r1, #0xff
+  mov      r0, #RUMBOOT_IRQ_TYPE_SOFT
+  bl       rumboot_irq_core_dispatch
+  pop      {lr, r0-r3, r12}
+  movs     pc,lr
+  nop
 
 prefetch_handler:
   mov r0, #RUMBOOT_IRQ_TYPE_EXCEPTION
   mov r1, #RUMBOOT_IRQ_PREFETCH_ABORT
-  b rumboot_irq_core_dispatch
+  bl rumboot_irq_core_dispatch
+  movs pc,lr
+  nop
 
 
 abort_handler:
   mov r0, #RUMBOOT_IRQ_TYPE_EXCEPTION
   mov r1, #RUMBOOT_IRQ_DATA_ABORT
-  b rumboot_irq_core_dispatch
+  bl rumboot_irq_core_dispatch
+  movs pc,lr
+  nop
 
 irq_handler:
+  PUSH    {lr, r0-r3, r12}
   mov r0, #RUMBOOT_IRQ_TYPE_NORMAL
   mov r1, #RUMBOOT_IRQ_IRQ
-  b rumboot_irq_core_dispatch
-
+  bl rumboot_irq_core_dispatch
+  POP     {lr, r0-r3, r12}
+  movs pc,lr
+  nop
 
 fiq_handler:
   mov r0, #RUMBOOT_IRQ_TYPE_NORMAL
   mov r1, #RUMBOOT_IRQ_FIQ
-  b rumboot_irq_core_dispatch
+  bl rumboot_irq_core_dispatch
+  movs pc,lr
+  nop
 
 
 endless_loop:
@@ -101,15 +117,15 @@ rumboot_reset_handler:
     MCR     p15,0,R0,c1,c0,2          @ to enable coprocessors cp10 & cp11
     MRC     p15,0,R0,c1,c0,2          @ Read CPACR
     UBFX    R0, R0, #20, #1           @ if bit 20 is zero then so the bits 23:21 so FPU present
-    
+
     MOV r0,#1<<30
     MCR     p10, #7, r0, c8, c0, 0    @ enable FPU by writing FPEXC
     MOV r0,#0
     MCR     p10, #7, r0, c1, c0, 0    @ init FPSR
     LDC p11, c0, [r0], {32}           @ init registers d0-d15
-    
+
     @VMOV.F32 S0, R0     @ command to test FPU turn On.
-    
+
     /*
      *  enter each mode in turn and
      *  initialize the registers specific to it

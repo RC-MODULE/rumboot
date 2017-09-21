@@ -18,18 +18,6 @@ const char * const exception_names[] = {
 	[RUMBOOT_IRQ_SOFTWARE_EXCEPTION] = "Software Exception"
 };
 
-void rumboot_irq_core_dispatch(uint32_t type, uint32_t id)
-{
-	switch (type) {
-	case RUMBOOT_IRQ_TYPE_NORMAL:
-        rumboot_platform_irq_dispatch();
-		break;
-	case RUMBOOT_IRQ_TYPE_EXCEPTION:
-		rumboot_platform_panic("%s \n", exception_names[id]);
-		break;
-	}
-}
-
 struct rumboot_irq_entry
 {
     void (*handler)(int irq, void *arg);
@@ -98,4 +86,33 @@ void rumboot_irq_cli()
 void rumboot_irq_sei()
 {
 	rumboot_arch_irq_enable();
+}
+
+static void process_irq(int id)
+{
+		struct rumboot_irq_entry *tbl = rumboot_irq_table_get();
+		if (!tbl)
+			rumboot_platform_panic("INTERNAL BUG: IRQ %d arrived when no table active", id);
+		if (!tbl[id].handler)
+			rumboot_platform_panic("FATAL: Unhandled IRQ %d\n", id);
+
+		tbl[id].handler(id, tbl[id].arg);
+}
+
+void rumboot_irq_core_dispatch(uint32_t type, uint32_t id)
+{
+
+	switch (type) {
+	case RUMBOOT_IRQ_TYPE_NORMAL:
+		id = rumboot_platform_irq_begin();
+		process_irq(id);
+		rumboot_platform_irq_end(id);
+		break;
+	case RUMBOOT_IRQ_TYPE_SOFT:
+		process_irq(id);
+		break;
+	case RUMBOOT_IRQ_TYPE_EXCEPTION:
+		rumboot_platform_panic("%s \n", exception_names[id]);
+		break;
+	}
 }

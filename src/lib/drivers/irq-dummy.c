@@ -5,11 +5,15 @@
 #include <devices/gic.h>
 #include <rumboot/printf.h>
 
-void rumboot_platform_irq_dispatch()
+uint32_t rumboot_platform_irq_begin()
+{
+    return 0;
+}
+
+void rumboot_platform_irq_end()
 {
 
 }
-
 
 void rumboot_platform_irq_configure(int irq, uint32_t flags, int enable)
 {
