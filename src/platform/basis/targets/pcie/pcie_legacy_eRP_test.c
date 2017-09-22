@@ -14,7 +14,7 @@
 //      - check INT value
 //    - 
 //    
-//    Test duration (RTL): < 
+//    Test duration (RTL): < 220us
 //-----------------------------------------------------------------------------
 
 #include <rumboot/pcie_test_lib.h>

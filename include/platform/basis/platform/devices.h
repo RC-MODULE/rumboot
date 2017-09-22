@@ -33,5 +33,7 @@
  #define GIC_DIST_BASE            0x01084000
  #define GIC_CPUIF_BASE           0x01085000
  #define PCIE_BASE                0x40000000
+ #define EMI0_BASE                0x80000000
+ #define EMI1_BASE                0xC0000000
 
 #endif /* end of include guard: DEVICES_H */
