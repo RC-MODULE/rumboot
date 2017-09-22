@@ -151,6 +151,11 @@
     */
 
     /**
+    *  \addtogroup platform_glue_irq
+    *  @{
+    */
+
+    /**
      * ARCH-specific glue: Disable CPU IRQ handling.
      * DO NOT USE DIRECTLY - USE rumboot_irq_cli()
      */
@@ -162,10 +167,35 @@
      */
     void rumboot_arch_irq_enable();
 
+    /**
+     * This function is called by the IRQ subsystem when beginning to
+     * service the IRQ routine. The function should return the next pending
+     * irq number
+     *
+     * @return IRQ ID that is currently being serviced
+     */
     uint32_t rumboot_platform_irq_begin();
-    void rumboot_platform_irq_end();
 
+    /**
+     * This function is called by the IRQ subsystem when the subsystem is done
+     * servicing the current interrupt.
+     * @param irq id of the irq that is done being serviced
+     */
+    void rumboot_platform_irq_end(uint32_t irq);
+
+    /**
+     * This function is called by the IRQ subsystem to reconfigure an interrupt
+     * line.
+     * @param irq    The irq number
+     * @param flags  A bitmask of RUMBOOT_IRQ_IRQ/RUMBOOT_IRQ_FIQ,
+     *               RUMBOOT_IRQ_LEVEL/RUMBOOT_IRQ_EDGE. In most cases - just use 0.
+     * @param enable Do we want it enabled
+     */
     void rumboot_platform_irq_configure(int irq, uint32_t flags, int enable);
+    /**
+    *  @}
+    */
+
 #endif
 
 

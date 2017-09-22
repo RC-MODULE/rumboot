@@ -21,7 +21,13 @@
 /**
  * Rumboot's printf implementation. The user-formatted text is sent to
  * the currently active stout device
- * _WARNING:_ Floats are not supported. Open a JIRA issue if you really need them
+ *
+ * _WARNING:_ Floats and uint64_t are not supported. Open a JIRA issue if you
+ * really need an unsupported type.
+ *
+ * If rumboot code is compiled with -DRUMBOOT_PRINTF_ACCEL the internal printf
+ * implementation is disabled. Platform code should provide an accelerated printf
+ * implementation instead (e.g. for simulation speedup).
  *
  * @param fmt     format
  * @param ... arguments

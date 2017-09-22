@@ -11,7 +11,16 @@
  * #include <rumboot/testsuite.h>
  * \endcode
  *
- * \addtogroup platform_glue
+ * \defgroup platform_glue_base Basics
+ * \ingroup platform_glue platform_glue_base
+ *
+ * \defgroup platform_glue_irq IRQ subsystem glue functions
+ * \ingroup platform_glue platform_glue_irq
+ *
+ * \defgroup platform_glue_lds Global variables defined by linker
+ * \ingroup platform_glue platform_glue_lds
+ *
+ * \addtogroup platform_glue_base
  *  @{
  */
 
@@ -90,15 +99,29 @@ void rumboot_platform_putchar(uint8_t c);
 int rumboot_platform_getchar(uint32_t timeout_us);
 
 /**
+*
+*  @}
+*/
+
+/**
+*
+* \addtogroup platform_glue_lds
+*  @{
+*/
+
+
+/**
  * This global structure stores internal romboot state.
  * It stores selftest results for further inspection by secondary
- * loader.
+ * loader. The instance is always available via rumboot_platform_runtime_info
  */
 struct rumboot_runtime_info {
-    uint32_t magic; /** Magic value. Indicates that this structure contains valid data */
-    char *current_heap_end; /** Current heap end pointer, used by _sbrk */
+    /** Magic value. Indicates that this structure contains valid data */
+    uint32_t magic;
+    /** Current heap end pointer, used by _sbrk and rumboot_malloc() */
+    char *current_heap_end;
+    /** Pointer to current active irq table. Do not use directly, use rumboot_irq_table_get() */
     void *irq_handler_table;
-    uint32_t irq_lock_count;
 };
 
 /**
