@@ -1,7 +1,21 @@
 #ifndef DEVICES_GIC_H
 #define DEVICES_GIC_H
 
-
+/**
+ * \defgroup devices_gic PL390 GIC
+ * \ingroup devices
+ *
+ * Register offsets and constants
+ * \code{.c}
+ * #include <devices/gic.h>
+ * \endcode
+ *
+ * \defgroup devices_gic_regs Register offsets
+ * \ingroup devices_gic
+ *
+ * \addtogroup devices_gic_regs
+ * @{
+ */
 #define GICC_REG_IAR     0x00C
 #define GICC_REG_EOIR    0x010
 #define GICD_REG_ISENABLER0 0x100
@@ -25,6 +39,14 @@
 #define GICD_REG_ICFGR4 0xC10
 #define GICD_REG_ICFGR5 0xC14
 
+/**
+ * @}
+ * \defgroup devices_gic_constants Constants
+ * \ingroup devices_gic
+ *
+ * \addtogroup devices_gic_constants
+ * @{
+ */
 
 #define GIC_GENSWINT0 0x00010000
 #define GIC_GENSWINT1 0x00010001
@@ -35,5 +57,8 @@
 #define GIC_GENSWINT6 0x00010006
 #define GIC_GENSWINT7 0x00010007
 
+/**
+ * @}
+ */
 
 #endif /* end of include guard: DEVICES_GIC_H */
