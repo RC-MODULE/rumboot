@@ -18,29 +18,31 @@ int main()
 {
     volatile uint32_t done = 0;
 
-    struct rumboot_irq_entry *tbl = rumboot_irq_create(NULL);
-    rumboot_irq_set_handler(tbl, 0, 0, handler, (void *)&done);
-    rumboot_irq_set_handler(tbl, 1, 0, handler, (void *)&done);
+    /* Disable all interrupts */
+    rumboot_irq_cli();
 
-    rumboot_irq_enable(0);
-    rumboot_irq_enable(1);
-    
+    /* Create an IRQ table */
+    struct rumboot_irq_entry *tbl = rumboot_irq_create(NULL);
+    /* Configure handler */
+    rumboot_irq_set_handler(tbl, 0, 0, handler, (void *)&done);
+
+    /* Activate the table */
     rumboot_irq_table_activate(tbl);
 
-#if 0
-    rumboot_printf("Firing swi IRQ, arg %x\n", &done);
-    asm("swi #3");
-    while (!done) { }
-    rumboot_printf("And we got back...\n");
-    return 0;
-#endif
+    /* Enable IRQ */
+    rumboot_irq_enable(0);
 
+    /* Allow interrupt handling */
     rumboot_irq_sei();
-    iowrite32(GIC_GENSWINT0, (GIC_DIST_BASE + GICD_REG_SGIR));
-    rumboot_printf("FIRE! \n");
-//    iowrite32(GIC_GENSWINT1, GIC_DIST_BASE + GICD_REG_SGIR);
-    /* Wait for the interrupt */
 
+    /* Generate an interrupt */
+    rumboot_printf("Firing GIC_GENSWINT0, arg 0x%x \n", &done);
+    iowrite32(GIC_GENSWINT0, (GIC_DIST_BASE + GICD_REG_SGIR));
+
+    /* Wait for it... */
+    while (!done) { }
+
+    rumboot_printf("We're back! \n");
 
     rumboot_irq_table_activate(NULL);
     rumboot_irq_free(tbl);

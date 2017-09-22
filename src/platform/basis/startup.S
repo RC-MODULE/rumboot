@@ -74,12 +74,12 @@ abort_handler:
   nop
 
 irq_handler:
-  PUSH    {lr, r0-r3, r12}
-  mov r0, #RUMBOOT_IRQ_TYPE_NORMAL
-  mov r1, #RUMBOOT_IRQ_IRQ
-  bl rumboot_irq_core_dispatch
+  push    {lr, r0-r3, r12}
+  mov     r0, #RUMBOOT_IRQ_TYPE_NORMAL
+  mov     r1, #RUMBOOT_IRQ_IRQ
+  blx     rumboot_irq_core_dispatch
   POP     {lr, r0-r3, r12}
-  movs pc,lr
+  subs    pc, lr, #4
   nop
 
 fiq_handler:
