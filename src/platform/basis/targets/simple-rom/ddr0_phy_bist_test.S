@@ -1,5 +1,5 @@
 
-#include <basis/defs.h>
+#include <platform/defs.h>
 
 .global main
 
