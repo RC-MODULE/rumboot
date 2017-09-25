@@ -4,10 +4,12 @@
  
 
 #include <rumboot/printf.h>
-#include <rumboot/platform.h>
 #include <rumboot/io.h>
-#include <basis/defs_c.h>
-#include <rumboot/dit_lib.h>
+
+
+
+#include <platform/devices.h>
+#include <devices/dit.h>
 
 #define SIZE0           4
 #define SIZE1           7
@@ -40,9 +42,7 @@ void oneshot_n_cycles_1(int cycles, int count_to)
     {
         load_value_1(count_to);
         start_1();
-        int h = 1;
-        do{h = check_value_1();}
-        while(h)	;
+        while (check_value_0()) {};
         rumboot_printf("ROUND1 %d\n",i);
     }
 }
@@ -57,7 +57,8 @@ int main ()
 {
     rumboot_printf("Start of test\n");
 
-    oneshot_n_cycles_0(SIZE0,9);
+
+    oneshot_n_cycles_0(SIZE0,66);
 //    oneshot_n_cycles_1(SIZE1,15);
     
     

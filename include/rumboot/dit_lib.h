@@ -1,5 +1,3 @@
-#ifndef DIT_LIB_H
-#define DIT_LIB_H
 
 #include <rumboot/printf.h>
 #include <rumboot/platform.h>

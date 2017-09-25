@@ -1,4 +1,6 @@
-#include <basis/defs_c.h>
+#include <platform/devices.h>
+#include <devices/dit.h>
+#include <rumboot/dit_lib.h>
 
     void clear_int0()
     {
@@ -12,12 +14,12 @@
     
     void mask_int0()
     {
-        rgTIMER0_CONTROL = rgTIMER0_CONTROL&0b11011111;
+        rgTIMER0_CONTROL = rgTIMER0_CONTROL&0b11011111; // 0<<5
     }
     
     void mask_int1()
     {
-        rgTIMER1_CONTROL = rgTIMER1_CONTROL&0b11011111;
+        rgTIMER1_CONTROL = rgTIMER1_CONTROL&0b11011111; // 0<<5
     }
     
     int read_raw_int0()
@@ -42,45 +44,47 @@
     
     void size_32b_0()
     {
-        rgTIMER0_CONTROL = rgTIMER0_CONTROL|0b00000010;
+        rgTIMER0_CONTROL = rgTIMER0_CONTROL|0b00000010; // 1<<1
     }
     
     void size_32b_1()
     {
-        rgTIMER1_CONTROL = rgTIMER1_CONTROL|0b00000010;
+        rgTIMER1_CONTROL = rgTIMER1_CONTROL|0b00000010;// 1<<1
     }
     
     
     void oneshot0()
     {
-        rgTIMER0_CONTROL = rgTIMER0_CONTROL|0b00000001;
+        rgTIMER0_CONTROL = rgTIMER0_CONTROL|0b00100001;// 1
     }
     
     void oneshot1()
     {
-        rgTIMER1_CONTROL = rgTIMER1_CONTROL|0b00000001;
+        rgTIMER1_CONTROL = rgTIMER1_CONTROL|0b00000001;// 1
     }
     
     void periodic0()
     {
         rgTIMER0_CONTROL = rgTIMER0_CONTROL&0b11011110;             // check rtl
     }
-    
+
+    1 << 8
     void periodic1()
     {
-        rgTIMER1_CONTROL = rgTIMER1_CONTROL&0b10111110;             // check rtl
+        rgTIMER1_CONTROL = rgTIMER1_CONTROL&0b10111110;   // 0<<5 , 0   // check rtl
     }
     
     void freerun0()
     {
-        rgTIMER0_CONTROL = rgTIMER0_CONTROL&0b11111110;             // check rtl
-        rgTIMER0_CONTROL = rgTIMER0_CONTROL|0b01000000;
+
+        rgTIMER0_CONTROL = rgTIMER0_CONTROL&0b11111110;// 0             // check rtl
+        rgTIMER0_CONTROL = rgTIMER0_CONTROL|0b01000000;// 0<<6
     }
     
     void freerun1()
     {
-        rgTIMER1_CONTROL = rgTIMER1_CONTROL&0b11111110;             // check rtl
-        rgTIMER1_CONTROL = rgTIMER1_CONTROL|0b01000000;
+        rgTIMER1_CONTROL = rgTIMER1_CONTROL&0b11111110;// 0            // check rtl
+        rgTIMER1_CONTROL = rgTIMER1_CONTROL|0b01000000;// 0<<6
     }
     
     void div1_0()
