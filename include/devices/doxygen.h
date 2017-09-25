@@ -8,7 +8,7 @@
  */
 
  /**
-  * \defgroup platform Platforms
+  * \defgroup platform Platform Documentation
   */
 
 #endif /* end of include guard: DOXYGEN_H */
