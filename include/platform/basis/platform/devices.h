@@ -7,6 +7,14 @@
  * WARNING: DO NOT ADD INDIVIDUAL REGISTER OFFSETS HERE
  */
 
+ /**
+  * \defgroup platform_basis_register_map Register Map
+  * \ingroup platform_basis
+  *
+  * \addtogroup platform_basis_register_map
+  * @{
+  */
+
  #define MDMA0_BASE               0x01010000
  #define MDMA1_BASE               0x01011000
  #define MDMA2_BASE               0x01012000
@@ -35,5 +43,9 @@
  #define PCIE_BASE                0x40000000
  #define EMI0_BASE                0x80000000
  #define EMI1_BASE                0xC0000000
+
+ /**
+ * @}
+ */
 
 #endif /* end of include guard: DEVICES_H */
