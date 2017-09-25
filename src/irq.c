@@ -7,9 +7,7 @@
 #include <rumboot/platform.h>
 #include <rumboot/printf.h>
 #include <rumboot/irq.h>
-
-
-#define RUMBOOT_PLATFORM_NUM_IRQS 32
+#include <platform/interrupts.h>
 
 const char * const exception_names[] = {
 	[RUMBOOT_IRQ_UNDEFINED_INSTRUCTION] = "Undefined Instruction",

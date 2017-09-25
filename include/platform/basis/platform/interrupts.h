@@ -15,13 +15,15 @@
  * WARNING: DO NOT ADD ANYTHING ELSE HERE, ONLY IRQ NUMBERS
  */
 
+#define RUMBOOT_PLATFORM_NUM_IRQS 128
+
 #define IRQN_SW0     0
 #define IRQN_SW1     1
 
 #define DIT0_TIMINT1 42
 #define DIT0_TIMINT2 43
 
-/*
+/**
  * @}
  */
 

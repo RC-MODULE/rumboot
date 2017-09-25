@@ -6,4 +6,9 @@
  * \ingroup platform
  */
 
+ /**
+  * \defgroup platform_native Native (testing only)
+  * \ingroup platform
+  */
+
 #endif /* end of include guard: DOXYGEN_PLAT_BASIS_H */

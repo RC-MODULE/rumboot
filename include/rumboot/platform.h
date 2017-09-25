@@ -12,13 +12,13 @@
  * \endcode
  *
  * \defgroup platform_glue_base Basics
- * \ingroup platform_glue platform_glue_base
+ * \ingroup platform_glue
  *
  * \defgroup platform_glue_irq IRQ subsystem glue functions
- * \ingroup platform_glue platform_glue_irq
+ * \ingroup platform_glue
  *
  * \defgroup platform_glue_lds Global variables defined by linker
- * \ingroup platform_glue platform_glue_lds
+ * \ingroup platform_glue
  *
  * \addtogroup platform_glue_base
  *  @{
@@ -49,7 +49,7 @@ enum rumboot_simulation_event {
  *
  * @param fmt format for description message. Can be NULL
  */
-void __attribute__((noreturn)) rumboot_platform_panic(const char *fmt, ...);
+void rumboot_platform_panic(const char *fmt, ...) __attribute__((noreturn));
 
 /**
  * This function will be called before main(). This function should contains
@@ -78,7 +78,8 @@ void rumboot_platform_trace(void *pc);
  * can be used to terminate the simulation
  *
  *
- * @param event
+ * @param event Event code to send to modelling environment
+ * @param arg Simulation event argument
  */
 void rumboot_platform_raise_event(enum rumboot_simulation_event event, uint8_t arg);
 
