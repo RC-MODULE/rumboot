@@ -1,18 +1,22 @@
 #ifndef DEVICES_H
 #define DEVICES_H
 
-/*
- * This file should contain only base addresses of devices.
- * Keep the list sorted in by device address and formatted.
- * WARNING: DO NOT ADD INDIVIDUAL REGISTER OFFSETS HERE
- */
 
  /**
   * \defgroup platform_basis_register_map Register Map
+  *
   * \ingroup platform_basis
   *
   * \addtogroup platform_basis_register_map
+  *
+  *
   * @{
+  *
+  * This file contains physical addresses of devices present in SoC.
+  * For developers: Please, keep the list sorted by device address
+  * and formatted properly.
+  *
+  * WARNING: DO NOT ADD INDIVIDUAL REGISTER OFFSETS HERE
   */
 
  #define MDMA0_BASE               0x01010000

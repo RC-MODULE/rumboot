@@ -8,6 +8,11 @@
  *
  * \addtogroup platform_basis_irq_map
  * @{
+ * This file contains gic irq numbers present in SoC.
+ * For developers: Please, keep the list sorted by irq number
+ * and formatted properly.
+ *
+ * WARNING: DO NOT ADD ANYTHING ELSE HERE, ONLY IRQ NUMBERS
  */
 
 #define IRQN_SW0     0
