@@ -9,18 +9,17 @@
 #include <rumboot/irq.h>
 #include <platform/interrupts.h>
 
-const char * const exception_names[] = {
+const char *const exception_names[] = {
 	[RUMBOOT_IRQ_UNDEFINED_INSTRUCTION] = "Undefined Instruction",
 	[RUMBOOT_IRQ_PREFETCH_ABORT] = "Prefetch Abort",
 	[RUMBOOT_IRQ_DATA_ABORT] = "Data Abort",
 	[RUMBOOT_IRQ_SOFTWARE_EXCEPTION] = "Software Exception"
 };
 
-struct rumboot_irq_entry
-{
-    void (*handler)(int irq, void *arg);
-    void *arg;
-	uint32_t flags;
+struct rumboot_irq_entry {
+	void		(*handler)(int irq, void *arg);
+	void *		arg;
+	uint32_t	flags;
 };
 
 
@@ -31,11 +30,10 @@ void rumboot_irq_free(struct rumboot_irq_entry *tbl)
 
 struct rumboot_irq_entry *rumboot_irq_create(struct rumboot_irq_entry *copyfrom)
 {
+	struct rumboot_irq_entry *tbl = rumboot_malloc(sizeof(*tbl) * (RUMBOOT_PLATFORM_NUM_IRQS + 1));
 
-    struct rumboot_irq_entry *tbl = rumboot_malloc(sizeof(*tbl) * (RUMBOOT_PLATFORM_NUM_IRQS + 1));
-    if (!tbl){
-        rumboot_platform_panic("IRQ Table alloc failed!\n");
-	}
+	if (!tbl)
+		rumboot_platform_panic("IRQ Table alloc failed!\n");
 
 	if (copyfrom)
 		memcpy(tbl, copyfrom, sizeof(*tbl) + (RUMBOOT_PLATFORM_NUM_IRQS + 1));
@@ -44,59 +42,64 @@ struct rumboot_irq_entry *rumboot_irq_create(struct rumboot_irq_entry *copyfrom)
 }
 
 void rumboot_irq_set_handler(struct rumboot_irq_entry *tbl, int irq, uint32_t flags,
-		void (*handler)(int irq, void *args), void *arg)
+			     void (*handler)(int irq, void *args), void *arg)
 {
-	if (irq > (RUMBOOT_PLATFORM_NUM_IRQS - 1))
-		rumboot_platform_panic("IRQ %d is too big\n", irq);
+	
+	RUMBOOT_ATOMIC_BLOCK() {
+		if (irq > (RUMBOOT_PLATFORM_NUM_IRQS - 1))
+			rumboot_platform_panic("IRQ %d is too big\n", irq);
 
-	if (!tbl)
-		tbl = rumboot_irq_table_get();
+		if (!tbl)
+			tbl = rumboot_irq_table_get();
 
-	if (!tbl)
-		rumboot_platform_panic("FATAL: Attempt to set handler on NULL table with no active table\n");
+		if (!tbl)
+			rumboot_platform_panic("FATAL: Attempt to set handler on NULL table with no active table\n");
 
-	tbl[irq].handler = handler;
-	tbl[irq].arg=arg;
-	tbl[irq].flags=flags;
+		tbl[irq].handler = handler;
+		tbl[irq].arg = arg;
+		tbl[irq].flags = flags;
+	}
 }
 
 void rumboot_irq_table_activate(struct rumboot_irq_entry *tbl)
 {
-    rumboot_platform_runtime_info.irq_handler_table = tbl;
+	rumboot_platform_runtime_info.irq_handler_table = tbl;
 }
 
 void *rumboot_irq_table_get()
 {
-    return rumboot_platform_runtime_info.irq_handler_table;
+	return rumboot_platform_runtime_info.irq_handler_table;
 }
 
 void rumboot_irq_enable(int irq)
 {
 	struct rumboot_irq_entry *tbl = rumboot_irq_table_get();
+
 	rumboot_platform_irq_configure(irq, tbl[irq].flags, 1);
 }
 
 void rumboot_irq_disable(int irq)
 {
 	struct rumboot_irq_entry *tbl = rumboot_irq_table_get();
+
 	rumboot_platform_irq_configure(irq, tbl[irq].flags, 0);
 }
 
 
 static void process_irq(int id)
 {
-		struct rumboot_irq_entry *tbl = rumboot_irq_table_get();
-		if (!tbl)
-			rumboot_platform_panic("INTERNAL BUG: IRQ %d arrived when no table active", id);
-		if (!tbl[id].handler)
-			rumboot_platform_panic("FATAL: Unhandled IRQ %d\n", id);
+	struct rumboot_irq_entry *tbl = rumboot_irq_table_get();
 
-		tbl[id].handler(id, tbl[id].arg);
+	if (!tbl)
+		rumboot_platform_panic("INTERNAL BUG: IRQ %d arrived when no table active", id);
+	if (!tbl[id].handler)
+		rumboot_platform_panic("FATAL: Unhandled IRQ %d\n", id);
+
+	tbl[id].handler(id, tbl[id].arg);
 }
 
 void rumboot_irq_core_dispatch(uint32_t type, uint32_t id)
 {
-
 	switch (type) {
 	case RUMBOOT_IRQ_TYPE_NORMAL:
 		id = rumboot_platform_irq_begin();
