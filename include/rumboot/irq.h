@@ -21,7 +21,23 @@
 
 #ifndef __ASSEMBLER__
 
+#ifdef __arm__
 #include <arch/arm/irq_macros.h>
+#else
+    /* stubs */
+static inline int rumboot_arch_irq_disable(void)
+{
+    return 0;
+}
+
+static inline void rumboot_arch_irq_enable()
+{
+
+}
+
+#define RUMBOOT_ATOMIC_BLOCK()
+#endif
+
 
     /**
     *
