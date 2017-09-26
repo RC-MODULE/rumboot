@@ -17,10 +17,10 @@ int test_suite_run_single(struct rumboot_testsuite_results *out, const struct ru
 {
 	uint32_t tstart;
 
-    rumboot_printf("--- Executing test %s - %s --- \n", subsystem, test->name);
+    rumboot_printf("--- Executing test: %s - %s --- \n", subsystem, test->name);
 
 	if (test->should_skip && test->should_skip(test->baseaddr)) {
-    	rumboot_printf("-- Test %s - %s skipped ---\n", subsystem, test->name);
+    	rumboot_printf("--- SKIPPED ---\n");
 		return 1;
 	}
 
