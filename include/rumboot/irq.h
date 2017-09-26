@@ -21,6 +21,8 @@
 
 #ifndef __ASSEMBLER__
 
+#include <arch/arm/irq_macros.h>
+
     /**
     *
     * \defgroup irq Interrupt subsystem
@@ -104,7 +106,11 @@
      */
     void rumboot_irq_disable(int irq);
 
-
+    /**
+     * Get current active irq table
+     * @return [description]
+     */
+    void *rumboot_irq_table_get();
     /**
     *  @}
     */
@@ -137,14 +143,27 @@
 
 
     /**
-     * Disable interrupt handling by current CPU core
+     * Disable global interrupt handling by current CPU core
+     * Returns previous interrupt status that can be passed to
+     * rumboot_irq_setstate()
      */
-    void rumboot_irq_cli();
+    static inline int rumboot_irq_cli()
+    {
+    	return rumboot_arch_irq_disable();
+    }
 
     /**
      * Enable interrupt handling by current CPU core
      */
-    void rumboot_irq_sei();
+    static inline void rumboot_irq_sei()
+    {
+    	rumboot_arch_irq_enable();
+    }
+
+    static inline void rumboot_irq_setstate(int state)
+    {
+        rumboot_arch_irq_setstate(state);
+    }
 
     /**
     *  @}
@@ -159,13 +178,13 @@
      * ARCH-specific glue: Disable CPU IRQ handling.
      * DO NOT USE DIRECTLY - USE rumboot_irq_cli()
      */
-    void rumboot_arch_irq_disable();
+    static inline int rumboot_arch_irq_disable();
 
     /**
      * ARCH-specific glue: Enable CPU IRQ handling.
      * DO NOT USE DIRECTLY - USE rumboot_irq_sei()
      */
-    void rumboot_arch_irq_enable();
+    static inline void rumboot_arch_irq_enable();
 
     /**
      * This function is called by the IRQ subsystem when beginning to

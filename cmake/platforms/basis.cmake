@@ -131,7 +131,6 @@ file(GLOB PLATFORM_SOURCES
     ${CMAKE_SOURCE_DIR}/src/lib/drivers/ddr_test_lib.c
     ${CMAKE_SOURCE_DIR}/src/lib/drivers/pcie_test_lib.c
     ${CMAKE_SOURCE_DIR}/src/lib/drivers/dma_test_lib.c
-    ${CMAKE_SOURCE_DIR}/src/arch/arm.c
 )
 
 macro(RUMBOOT_PLATFORM_SET_COMPILER_FLAGS)

@@ -35,7 +35,7 @@ uint32_t rumboot_platform_irq_begin()
 
 void rumboot_platform_irq_end(uint32_t id)
 {
-    gic_cpuif_write(GICC_REG_EOIR, 0);
+    gic_cpuif_write(GICC_REG_EOIR, id);
 }
 
 
@@ -44,12 +44,12 @@ void rumboot_platform_irq_configure(int irq, uint32_t flags, int enable)
     gic_dist_write(GICD_REG_CTLR, 0);
     gic_cpuif_write(GICC_REG_CTLR, 0);
 
-    uint32_t reg = enable ? GICD_REG_ISENABLER0 : GICD_REG_ICENABLER0;
+    uint32_t reg = enable ? GICD_REG_ISENABLER1 : GICD_REG_ICENABLER1;
     /* TODO: Edge/Level sensivity */
     if ((irq > 31) && (irq < 64)) {
-        reg = enable ? GICD_REG_ISENABLER1 : GICD_REG_ICENABLER1;
-    } else if ((irq > 63) && (irq < 96)) {
         reg = enable ? GICD_REG_ISENABLER2 : GICD_REG_ICENABLER2;
+    } else if ((irq > 63) && (irq < 96)) {
+        reg = enable ? GICD_REG_ISENABLER3 : GICD_REG_ICENABLER3;
     }
 
     gic_dist_write(reg, 1 << irq);

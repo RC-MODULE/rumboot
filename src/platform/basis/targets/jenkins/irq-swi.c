@@ -23,12 +23,12 @@ int main()
     rumboot_irq_enable(0);
     rumboot_irq_table_activate(tbl);
 
-    rumboot_printf("Firing SWI IRQ, arg %x\n", &done);
-    asm("swi #0");
     while (!done) { }
     rumboot_printf("And we got back...\n");
 
     rumboot_irq_table_activate(NULL);
     rumboot_irq_free(tbl);
+
+
     return 0;
 }
