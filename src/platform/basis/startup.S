@@ -48,13 +48,13 @@ undefined_handler:
     nop
 
 swi_handler:
-  push     {lr, r0-r3, r12}
+  push     {r0-r3, r12, lr}
   subs     r0, lr, #4
   ldr      r1, [r0]
   and      r1, r1, #0xff
   mov      r0, #RUMBOOT_IRQ_TYPE_SOFT
   bl       rumboot_irq_core_dispatch
-  pop      {lr, r0-r3, r12}
+  pop      {r0-r3, r12, lr}
   movs     pc,lr
   nop
 
@@ -74,11 +74,11 @@ abort_handler:
   nop
 
 irq_handler:
-  push    {lr, r0-r3, r12}
+  push    {r0-r3, r12, lr}
   mov     r0, #RUMBOOT_IRQ_TYPE_NORMAL
   mov     r1, #RUMBOOT_IRQ_IRQ
   blx     rumboot_irq_core_dispatch
-  POP     {lr, r0-r3, r12}
+  POP     {r0-r3, r12, lr}
   subs    pc, lr, #4
   nop
 
