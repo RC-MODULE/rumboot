@@ -52,7 +52,6 @@
     *  @{
     */
 
-
     /** This struct should be used as opaque object. All irq functions use it.
      */
     struct rumboot_irq_entry;
@@ -75,6 +74,7 @@
     /**
      * Set an irq handler in the user-supplied irq table. An optional arg will
      * be passed by the subsystem code to the handler function
+     * If tbl is NULL, currently active IRQ table is used
      *
      * @param tbl     IRQ table instance
      * @param irq     IRQ Line number
@@ -87,6 +87,12 @@
 
     /**
      * Make the specified irq table active. NULL to deactivate any existing table
+     * and disable interrupts.
+     *
+     * WARNING: Activating a table will also make any interrupts with configured handlers
+     * enabled.  If this is NOT what you want - activate a table before configuring any of
+     * the interrupt handlers.
+     *
      *
      * @param tbl [description]
      */

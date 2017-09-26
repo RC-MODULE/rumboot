@@ -41,6 +41,19 @@ static inline int rumboot_arch_irq_setstate(int pri_mask)
     return 0;
 }
 
+/**
+ *
+ * Define a critical section. Interrupts (IRQ & FIQ) will be disabled before
+ * entry and restored to their previous state upon exit.
+ *
+ * \code{.c}
+ * RUMBOOT_ATOMIC_BLOCK() {
+ *  this_core_will_not_be_interrupted();
+ * }
+ * \endcode
+ * \ingroup irq
+ *
+ */
 #define RUMBOOT_ATOMIC_BLOCK() \
      for(int mask = rumboot_arch_irq_disable(), flag = 1; \
          flag;\
