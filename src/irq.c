@@ -49,6 +49,12 @@ void rumboot_irq_set_handler(struct rumboot_irq_entry *tbl, int irq, uint32_t fl
 	if (irq > (RUMBOOT_PLATFORM_NUM_IRQS - 1))
 		rumboot_platform_panic("IRQ %d is too big\n", irq);
 
+	if (!tbl)
+		tbl = rumboot_irq_table_get();
+
+	if (!tbl)
+		rumboot_platform_panic("FATAL: Attempt to set handler on NULL table with no active table\n");
+
 	tbl[irq].handler = handler;
 	tbl[irq].arg=arg;
 	tbl[irq].flags=flags;
@@ -76,15 +82,6 @@ void rumboot_irq_disable(int irq)
 	rumboot_platform_irq_configure(irq, tbl[irq].flags, 0);
 }
 
-void rumboot_irq_cli()
-{
-	rumboot_arch_irq_disable();
-}
-
-void rumboot_irq_sei()
-{
-	rumboot_arch_irq_enable();
-}
 
 static void process_irq(int id)
 {
