@@ -1,6 +1,11 @@
 #include <rumboot/platform.h>
 #include <string.h>
 extern int main();
+
+struct rumboot_runtime_info
+     __attribute__((section (".rumboot_platform_runtime_info")))
+     rumboot_platform_runtime_info;
+
 void rumboot_main()
 {
     /*
