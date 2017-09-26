@@ -32,7 +32,7 @@
  */
 #define TEST_SUITE_BEGIN(var, subsystem) \
 	static const struct rumboot_test_suite var = { \
-	subsystem "-", ARRAY_SIZE(subsystem)+1, { \
+	subsystem, ARRAY_SIZE(subsystem)+1, { \
 
 /**
  * Declares a single test entry. This macro should be incapsulated between TEST_SUITE_BEGIN and TEST_SUITE_END

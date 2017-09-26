@@ -15,15 +15,12 @@ void test_suite_init(struct rumboot_testsuite_results *out)
 int test_suite_run_single(struct rumboot_testsuite_results *out, const struct rumboot_test *test,
 		const char *subsystem, int subsysnamelen)
 {
-	int ret;
 	uint32_t tstart;
-	rumboot_putstring("Running test: ");
-	rumboot_putstring(subsystem);
-	rumboot_putstring(test->name);
-	rumboot_putstring(" ... ");
+
+    rumboot_printf("--- Executing test %s - %s --- \n", subsystem, test->name);
 
 	if (test->should_skip && test->should_skip(test->baseaddr)) {
-		rumboot_putstring("SKIP\n");
+    	rumboot_printf("-- Test %s - %s skipped ---\n", subsystem, test->name);
 		return 1;
 	}
 
@@ -31,13 +28,7 @@ int test_suite_run_single(struct rumboot_testsuite_results *out, const struct ru
 
 	bool result = test->check_func(test->baseaddr);
 
-	if (result) {
-		ret = 1;
-		rumboot_putstring("OK\n");
-	} else {
-		ret = 0;
-		rumboot_putstring("FAIL\n");
-	}
+    rumboot_printf("--- %s ---\n", result ? "PASSED" : "FAILED");
 
 	if (out) {
 		/* Log results to our structure */
@@ -47,7 +38,7 @@ int test_suite_run_single(struct rumboot_testsuite_results *out, const struct ru
 		res->ticks = rumboot_platform_get_uptime() - tstart;
 		out->num_tests++;
 	}
-	return ret;
+	return result;
 }
 
 
