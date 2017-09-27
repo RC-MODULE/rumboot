@@ -35,6 +35,9 @@ void rumboot_main()
      /* Now, let's handle the exit code from main */
      rumboot_platform_raise_event(EVENT_TERM, ret);
 
+     /* Make sure IRQs are off */
+     rumboot_irq_cli();
+
      /* Finally, if we're here - something didn't work out, loop forever */
      while(1) {}
 

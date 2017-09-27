@@ -1,6 +1,7 @@
 #ifndef ARM_IRQ_MACROS_H
 #define ARM_IRQ_MACROS_H
 
+#if 0
 static inline void rumboot_arch_irq_dump_cpsr()
 {
     int result = 0;
@@ -8,6 +9,8 @@ static inline void rumboot_arch_irq_dump_cpsr()
     "mrs %0, cpsr\n" : "=r" (result) );
     rumboot_printf("cpsr == 0x%x\n", result);
 }
+
+#endif
 
 static inline void rumboot_arch_irq_enable()
 {
@@ -19,12 +22,12 @@ static inline int rumboot_arch_irq_disable(void)
 {
     int result = 0;
     int tmp = 0;
-    asm volatile (
+s    asm volatile (
         "mrs %0, cpsr\n"
         "orr %1, %0, #0xC0\n"
         "msr cpsr_c, %1\n"
-        : "=r" (result)
-        : "r" (tmp) );
+        : "=r" (result), "+r" (tmp)
+        );
     return result;
 }
 
