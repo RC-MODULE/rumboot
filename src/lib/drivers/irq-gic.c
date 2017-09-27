@@ -45,14 +45,17 @@ void rumboot_platform_irq_configure(int irq, uint32_t flags, int enable)
     gic_cpuif_write(GICC_REG_CTLR, 0);
 
     uint32_t reg = enable ? GICD_REG_ISENABLER1 : GICD_REG_ICENABLER1;
+    uint32_t shift = irq;
     /* TODO: Edge/Level sensivity */
     if ((irq > 31) && (irq < 64)) {
         reg = enable ? GICD_REG_ISENABLER2 : GICD_REG_ICENABLER2;
+        shift = irq - 32;
     } else if ((irq > 63) && (irq < 96)) {
         reg = enable ? GICD_REG_ISENABLER3 : GICD_REG_ICENABLER3;
+        shift = irq - 64;
     }
 
-    gic_dist_write(reg, 1 << irq);
+    gic_dist_write(reg, 1 << shift);
 
     gic_cpuif_write(GICC_REG_PMR, 0xff);
     gic_cpuif_write(GICC_REG_CTLR, 1);
