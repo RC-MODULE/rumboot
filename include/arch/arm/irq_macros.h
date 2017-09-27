@@ -22,7 +22,7 @@ static inline int rumboot_arch_irq_disable(void)
 {
     int result = 0;
     int tmp = 0;
-s    asm volatile (
+    asm volatile (
         "mrs %0, cpsr\n"
         "orr %1, %0, #0xC0\n"
         "msr cpsr_c, %1\n"

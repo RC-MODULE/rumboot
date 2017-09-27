@@ -180,7 +180,7 @@ static inline void rumboot_arch_irq_enable()
     * \code{.c}
     * #include <rumboot/irq.h>
     * \endcode
-    *
+    */
 
     /**
     *  \addtogroup platform_glue_irq
