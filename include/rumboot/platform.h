@@ -4,7 +4,8 @@
 #include <stdint.h>
 /**
  *
- * \defgroup platform_glue Platform-specific glue functions
+ * \defgroup platform_glue Platform bindings
+ * 
  * These functions should be implemented in the platform support code.
  * Rumboot core modules depend on these for proper operation
  * \code{.c}

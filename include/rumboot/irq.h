@@ -53,14 +53,18 @@ static inline void rumboot_arch_irq_enable()
     * #include <rumboot/irq.h>
     * int main()
     * {
+    * // Create an IRQ table
     * struct rumboot_irq_entry *tbl = rumboot_irq_create(NULL);
-    * rumboot_irq_set_handler(tbl, 3, handler, 123);
+    * // Set a handler
+    * rumboot_irq_set_handler(tbl, 3, 0 handler, (void*) arg);
+    * //Activate the table, it will enable configured IRQ lines
     * rumboot_irq_table_activate(tbl);
     *
     * // at this point irqs are active
-    * // Call the following to disable interrupts
     *
-    * rumboot_irq_table_activate(tbl);
+    * //Proper deinitialization
+    * rumboot_irq_table_activate(NULL);
+    * // Free the table
     * rumboot_irq_free(tbl);
     * \endcode
     *
@@ -133,36 +137,6 @@ static inline void rumboot_arch_irq_enable()
      * @return [description]
      */
     void *rumboot_irq_table_get();
-    /**
-    *  @}
-    */
-
-    /**
-    *
-    * \defgroup irq_platform Platfrom bindings: Interrupt subsystem
-    * These functions should be implemented by platform code.
-    *
-    * For people writing tests: YOU DO NOT NEED THESE FUNCTIONS!
-    *
-    * \code{.c}
-    * #include <rumboot/irq.h>
-    * \endcode
-    *
-    * \addtogroup irq_platform
-    *  @{
-    */
-
-    /**
-     * This function is called by the platform assembly code to route all
-     * interrupts to controller driver.
-     *
-     * For people writing tests: YOU DO NOT NEED THIS FUNCTION!
-     *
-     * @param type RUMBOOT_IRQ_TYPE_NORMAL or RUMBOOT_IRQ_TYPE_EXCEPTION
-     * @param id   RUMBOOT_IRQ_IRQ, RUMBOOT_IRQ_FIQ, etc.
-     */
-    void rumboot_irq_core_dispatch(uint32_t type, uint32_t id);
-
 
     /**
      * Disable global interrupt handling by current CPU core
@@ -171,7 +145,7 @@ static inline void rumboot_arch_irq_enable()
      */
     static inline int rumboot_irq_cli()
     {
-    	return rumboot_arch_irq_disable();
+        return rumboot_arch_irq_disable();
     }
 
     /**
@@ -179,9 +153,14 @@ static inline void rumboot_arch_irq_enable()
      */
     static inline void rumboot_irq_sei()
     {
-    	rumboot_arch_irq_enable();
+        rumboot_arch_irq_enable();
     }
 
+    /**
+     * Restore a previous IRQ handling state
+     *
+     * @param state IRQ handling state from rumboot_irq_cli()
+     */
     static inline void rumboot_irq_setstate(int state)
     {
         rumboot_arch_irq_setstate(state);
@@ -192,9 +171,32 @@ static inline void rumboot_arch_irq_enable()
     */
 
     /**
+    *
+    * \defgroup platform_glue_irq Platfrom bindings: Interrupt subsystem
+    * These functions should be implemented by platform code.
+    *
+    * For people writing tests: YOU DO NOT NEED THESE FUNCTIONS!
+    *
+    * \code{.c}
+    * #include <rumboot/irq.h>
+    * \endcode
+    *
+
+    /**
     *  \addtogroup platform_glue_irq
     *  @{
     */
+
+    /**
+     * This function should be called by the platform assembly code to route all
+     * interrupts to controller driver.
+     *
+     * For people writing tests: YOU DO NOT NEED THIS FUNCTION!
+     *
+     * @param type RUMBOOT_IRQ_TYPE_NORMAL or RUMBOOT_IRQ_TYPE_EXCEPTION
+     * @param id   RUMBOOT_IRQ_IRQ, RUMBOOT_IRQ_FIQ, etc.
+     */
+    void rumboot_irq_core_dispatch(uint32_t type, uint32_t id);
 
     /**
      * ARCH-specific glue: Disable CPU IRQ handling.
