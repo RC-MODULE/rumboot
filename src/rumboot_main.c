@@ -1,5 +1,7 @@
-#include <rumboot/platform.h>
+#include <stdint.h>
 #include <string.h>
+#include <rumboot/irq.h>
+#include <rumboot/platform.h>
 extern int main();
 
 struct rumboot_runtime_info
