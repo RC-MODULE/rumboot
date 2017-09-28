@@ -36,7 +36,6 @@ int main ()
 	rumboot_irq_enable(42);
 	rumboot_irq_sei();
 
-
     rumboot_printf("Start of test \n");
     oneshot_n_cycles_0(SIZE0,66);
     oneshot_n_cycles_0(SIZE0,66);
