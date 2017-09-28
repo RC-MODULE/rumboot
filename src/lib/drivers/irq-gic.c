@@ -46,6 +46,12 @@ void rumboot_platform_irq_configure(int irq, uint32_t flags, int enable)
 
     uint32_t reg = enable ? GICD_REG_ISENABLER1 : GICD_REG_ICENABLER1;
     uint32_t shift = irq;
+
+    if (irq < 16) {
+        /* IRQ < 16 can't be configured */
+        return;
+    }
+
     /* TODO: Edge/Level sensivity */
     if ((irq > 31) && (irq < 64)) {
         reg = enable ? GICD_REG_ISENABLER2 : GICD_REG_ICENABLER2;
