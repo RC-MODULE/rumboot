@@ -35,8 +35,10 @@ struct rumboot_irq_entry *rumboot_irq_create(struct rumboot_irq_entry *copyfrom)
 	if (!tbl)
 		rumboot_platform_panic("IRQ Table alloc failed!\n");
 
-	if (copyfrom)
+	if (copyfrom) {
+         rumboot_printf("===> %x\n", copyfrom);
 		memcpy(tbl, copyfrom, sizeof(*tbl) + (RUMBOOT_PLATFORM_NUM_IRQS + 1));
+    }
 
 	return tbl;
 }
