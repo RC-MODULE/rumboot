@@ -37,12 +37,14 @@ int main ()
 
     rumboot_printf("Start of test \n");
     oneshot_n_cycles_0(SIZE0,66);
+
 	int i = 100;
 	while (i--) {
 		asm volatile("nop");
 	}
 
  //   oneshot_n_cycles_1(SIZE0,30);
+
  //   periodic_n_cycles_0(SIZE0,20);
  //   freerun_0(1000);
  //   freerun_0(1000);
