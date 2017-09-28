@@ -64,12 +64,15 @@ void rumboot_irq_table_activate(struct rumboot_irq_entry *tbl)
 {
 	RUMBOOT_ATOMIC_BLOCK() {
 		rumboot_platform_runtime_info.irq_handler_table = tbl;
-		int i = 0;
-		for (i = 0; i < RUMBOOT_PLATFORM_NUM_IRQS; i++)
-			if (tbl[i].handler)
-				rumboot_irq_enable(i);
+		if (tbl) {
+			int i = 0;
+			for (i = 0; i < RUMBOOT_PLATFORM_NUM_IRQS; i++)
+				if (tbl[i].handler)
+					rumboot_irq_enable(i);
+		}
 	}
 }
+
 
 void *rumboot_irq_table_get()
 {
