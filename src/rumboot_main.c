@@ -31,14 +31,17 @@ void rumboot_main()
      /* Call Platform-specific setup code (e.g. init the event system) */
      rumboot_platform_setup();
 
+     /* Make sure IRQs are off */
+     rumboot_irq_cli();
+
+     /* Initialize interrupt controller */
+     rumboot_platform_irq_init();
+
      /* call main() */
      int ret = main();
 
      /* Now, let's handle the exit code from main */
      rumboot_platform_raise_event(EVENT_TERM, ret);
-
-     /* Make sure IRQs are off */
-     rumboot_irq_cli();
 
      /* Finally, if we're here - something didn't work out, loop forever */
      while(1) {}

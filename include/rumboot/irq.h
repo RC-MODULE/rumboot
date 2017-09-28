@@ -211,6 +211,11 @@ static inline void rumboot_arch_irq_enable()
     static inline void rumboot_arch_irq_enable();
 
     /**
+     * This function is called to initialize IRQ controller
+     */
+    void rumboot_platform_irq_init();
+
+    /**
      * This function is called by the IRQ subsystem when beginning to
      * service the IRQ routine. The function should return the next pending
      * irq number
