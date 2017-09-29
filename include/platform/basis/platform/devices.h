@@ -40,10 +40,10 @@
  #define GPIO2_BASE               0x01038000
  #define PCIE_CORE_BASE           0x01058000
  #define PCIE_PHY_BASE            0x01060000
- #define DDR0_BASE                0x01080000
- #define DDR1_BASE                0x01082000
- #define GIC_DIST_BASE            0x01084000
- #define GIC_CPUIF_BASE           0x01085000
+ #define DDR0_BASE                0x01090000
+ #define DDR1_BASE                0x01092000
+ #define GIC_DIST_BASE            0x01094000
+ #define GIC_CPUIF_BASE           0x01095000
  #define PCIE_BASE                0x40000000
  #define EMI0_BASE                0x80000000
  #define EMI1_BASE                0xC0000000
