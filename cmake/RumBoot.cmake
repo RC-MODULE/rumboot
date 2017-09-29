@@ -50,7 +50,7 @@ macro(rumboot_add_configuration name)
   message(STATUS "Adding configuration ${name}")
   set(options DEFAULT)
   set(oneValueArgs SNAPSHOT LDS PREFIX NAME)
-  set(multiValueArgs FILES IRUN_FLAGS CFLAGS)
+  set(multiValueArgs FILES IRUN_FLAGS CFLAGS FEATURES)
 
   cmake_parse_arguments(CONFIGURATION_${name} "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
   LIST(APPEND RUMBOOT_CONFIGURATIONS ${name})

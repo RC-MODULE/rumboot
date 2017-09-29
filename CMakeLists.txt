@@ -103,8 +103,16 @@ if (NOT RUMBOOT_PLATFORM MATCHES native)
     ADD_SOURCE(src/rumboot_main.c)
 endif()
 
+file(GLOB LUA_FILES src/lib/lua-5.3.4/src/*.c)
+
 foreach(c ${RUMBOOT_CONFIGURATIONS})
   ADD_LIBRARY(rumboot-${c} OBJECT ${PLATFORM_SOURCES})
+
+  list (FIND CONFIGURATION_${c}_FEATURES "LUA" _index)
+  if (${_index} GREATER -1)
+    target_sources(rumboot-${c} PUBLIC ${LUA_FILES})
+  endif()
+
   target_compile_options(rumboot-${c} PUBLIC ${CONFIGURATION_${c}_CFLAGS})
 endforeach()
 

@@ -22,6 +22,7 @@ rumboot_add_configuration(
   LDS basis/rom.lds
   #TODO
   CFLAGS -DRUMBOOT_ONLY_STACK
+  FEATURES LUA
 )
 
 macro(add_directory_with_targets dir)
