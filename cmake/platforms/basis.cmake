@@ -18,10 +18,10 @@ rumboot_add_configuration(
 
 #These are configurations for im0 binaries
 rumboot_add_configuration(
-  SECONDARY
-  LDS basis/rom.lds
-  #TODO
+  IRAM
+  LDS basis/iram.lds
   CFLAGS -DRUMBOOT_ONLY_STACK
+  LDFLAGS -e main -Ttext 0x00040018
   FEATURES LUA
 )
 
@@ -118,6 +118,13 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       FILES can/can_maskfilter.c can/ccan_mask_filter.S can/int_send.S can/int_receive.S can/mem_config.S can/test_config.S
       NAME can_maskfilter
     )
+
+    add_rumboot_target(
+        CONFIGURATION IRAM
+        FILES iram/hello-iram.c
+        PREFIX iram
+        NAME hello
+      )
 
 endmacro()
 
