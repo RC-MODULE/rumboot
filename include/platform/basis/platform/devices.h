@@ -38,6 +38,8 @@
  #define GPIO0_BASE               0x01036000
  #define GPIO1_BASE               0x01037000
  #define GPIO2_BASE               0x01038000
+ #define CAN0_BASE                0x01048000
+ #define CAN1_BASE                0x01050000
  #define PCIE_CORE_BASE           0x01058000
  #define PCIE_PHY_BASE            0x01060000
  #define DDR0_BASE                0x01090000

@@ -1,5 +1,5 @@
 #include <platform/tubemacro.incl>
-#include "can_defs.h"
+#include "devices/can.h"
 
 .global CCAN_FIFO
 .global warning
@@ -174,22 +174,16 @@ CCAN_FIFO:
 
     LDR R2, =0x8001
     STR R2, [R1, #CCAN_IF1_Com_Req]
-@    tube_msg "080917 Message 1 stored"
     LDR R2, =0x8002
     STR R2, [R1, #CCAN_IF1_Com_Req]
-@    tube_msg "--- Message 2 stored"
     LDR R2, =0x8003
     STR R2, [R1, #CCAN_IF1_Com_Req]
-@    tube_msg "--- Message 3 stored"
     LDR R2, =0x8004
     STR R2, [R1, #CCAN_IF1_Com_Req]
-@    tube_msg "--- Message 4 stored"
     LDR R2, =0x8005
     STR R2, [R1, #CCAN_IF1_Com_Req]
-@    tube_msg "--- Message 5 stored"
     LDR R2, =0x8006
     STR R2, [R1, #CCAN_IF1_Com_Req]
-@    tube_msg "--- Message 6 stored"
     LDR R2, =0x8007
     STR R2, [R1, #CCAN_IF1_Com_Req]
     tube_msg "--- All Messages are stored"

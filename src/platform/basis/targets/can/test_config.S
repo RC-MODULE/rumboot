@@ -1,5 +1,5 @@
 #include <platform/tubemacro.incl>
-#include "can_defs.h"
+#include "devices/can.h"
 
 .global TEST_CONFIG
 
@@ -34,7 +34,13 @@ TEST_CONFIG:
     STR R2, [R1, #CCAN_IF1_Com_M]
     LDR R2, =0x8020
     STR R2, [R1, #CCAN_IF1_Com_Req]
-    LDR R2, [R1, #CCAN_IF1_Com_Req]
+
+    CMP R3, #0x1                        @ there is test_number in R3
+    LDREQ R2, =0x008e                   @ if it is loop_back test
+    LDRNE R2, =0x000e
+    STR R2, [R1, #CCAN_CAN_Contr_R]
+    tube_msg "-- Configuration OK"
+
     tube_msg "--- Message 32 was stored"
 s_repeat_loop:
     LDR R4, =0x100

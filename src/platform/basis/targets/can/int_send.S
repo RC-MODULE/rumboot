@@ -1,5 +1,5 @@
 #include <platform/tubemacro.incl>
-#include "can_defs.h"
+#include "devices/can.h"
 
 .global INT_SEND
 

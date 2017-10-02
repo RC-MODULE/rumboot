@@ -1,5 +1,5 @@
 #include <platform/tubemacro.incl>
-#include "can_defs.h"
+#include "devices/can.h"
 
 .global MEM_CONFIG
 
@@ -16,6 +16,7 @@ MEM_CONFIG:
     tube_msg "init_loop"
 
 init_loop:
+    STR R2, [R1, #CCAN_IF1_Arb_2]       @ want to reset MsgVal in all Mes. Obj.
     STR R2, [R1, #CCAN_IF1_Com_Req]
     ADDS R2, R2, #1
     CMP R2, #0x0021
@@ -31,11 +32,6 @@ init_loop:
     @LDR R2, =0x2381
     LDR R2, =0x1C03                     @0x1C03 - Bit Rate = 1000 kb/s (Fcan = 64 MHz)
     STR R2, [R1, #CCAN_Bit_Time_R]
-    CMP R3, #0x1                        @ there is test_number in R3
-    LDREQ R2, =0x008e                   @ if it is loop_back test
-    LDRNE R2, =0x000e
-    STR R2, [R1, #CCAN_CAN_Contr_R]
-    tube_msg "-- Configuration OK"
 
     POP {R1-R2, LR}
     BX  LR
