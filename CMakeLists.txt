@@ -111,7 +111,7 @@ foreach(c ${RUMBOOT_CONFIGURATIONS})
 
   list (FIND CONFIGURATION_${c}_FEATURES "LUA" _index)
   if (${_index} GREATER -1)
-    target_sources(rumboot-${c} PUBLIC ${LUA_FILES})
+#      SET(PLATFORM_SOURCES "${PLATFORM_SOURCES};${LUA_FILES}")
   endif()
 
   target_compile_options(rumboot-${c} PUBLIC ${CONFIGURATION_${c}_CFLAGS})
