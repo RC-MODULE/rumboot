@@ -18,10 +18,11 @@ struct __attribute__((packed)) rumboot_bootheader {
 
 /**
  * Validate a header pointed by hdr
- * @param  hdr Pointer to header data
- * @return     Size of data section or a negative error code
+ * @param  hdr     Bootimage header pointer
+ * @param  dataptr Pointer to image data (for a valid header)
+ * @return         Image data length
  */
-int32_t rumboot_bootimage_check_header(struct rumboot_bootheader *hdr);
+int32_t rumboot_bootimage_check_header(struct rumboot_bootheader *hdr, void *dataptr);
 
 /**
  * Validate data section of the bootable image
