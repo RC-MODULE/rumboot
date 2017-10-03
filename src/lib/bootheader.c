@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include <rumboot/bootheader.h>
 
 extern int main();

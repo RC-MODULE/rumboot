@@ -49,7 +49,7 @@ endmacro()
 macro(rumboot_add_configuration name)
   message(STATUS "Adding configuration ${name}")
   set(options DEFAULT)
-  set(oneValueArgs SNAPSHOT LDS PREFIX NAME)
+  set(oneValueArgs SNAPSHOT LDS PREFIX NAME BOOTROM)
   set(multiValueArgs FILES IRUN_FLAGS CFLAGS LDFLAGS FEATURES)
 
   cmake_parse_arguments(CONFIGURATION_${name} "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})

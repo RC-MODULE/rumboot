@@ -21,7 +21,9 @@ rumboot_add_configuration(
   IRAM
   LDS basis/iram.lds
   CFLAGS -DRUMBOOT_ONLY_STACK
-  LDFLAGS -e main -Ttext 0x00040018
+  PREFIX iram
+  FILES ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c
+  BOOTROM jenkins-hello
   FEATURES LUA
 )
 
