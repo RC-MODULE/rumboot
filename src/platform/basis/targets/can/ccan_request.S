@@ -12,8 +12,6 @@
 CCAN_REQUEST:
     PUSH {R1-R7, LR}
 
-    MOV R7, LR  @ some crunch
-
     tube_msg "- CCAN_REQUEST_TRANSACTION started"
 
     MOV R1, R0
@@ -151,7 +149,6 @@ cmp_final:
 warning:
     tube_msg "---- MISMATCH :("
     MOV R0, #1                          @ error
-    MOV LR, R7
     tube_msg "go to exit"
 
 exit:

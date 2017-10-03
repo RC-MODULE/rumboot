@@ -10,8 +10,6 @@
 CCAN_FIFO:
     PUSH {R1-R7, LR}
 
-    MOV R7, LR  @ some crunch
-
     tube_msg "- CCAN_FIFO_TRANSACTION started"
 
     MOV R1, R0
@@ -209,7 +207,6 @@ repeat_loop:
 warning:
     tube_msg "---- MISMATCH :("
     MOV R0, #1                          @ error
-    MOV LR, R7
     tube_msg "go to exit"
 
 exit:

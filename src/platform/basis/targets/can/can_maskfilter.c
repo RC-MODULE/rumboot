@@ -31,6 +31,6 @@ int main()
 
     rumboot_printf("main run_can_mask_filter end\n");
     
-    return ret0&ret1;
+    return ret0|ret1;
 }
 

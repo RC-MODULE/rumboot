@@ -11,7 +11,6 @@
 
 CCAN_MASK_FILTER:
     PUSH {R1-R7, LR}
-    MOV R7, LR  @ some crunch
 
     tube_hex R0
 
@@ -222,7 +221,6 @@ repeat_loop:
 warning:
     tube_msg "---- MISMATCH :("
     MOV R0, #1                          @ error
-    MOV LR, R7
     tube_msg "go to exit"
 
 exit:
