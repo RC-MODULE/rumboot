@@ -23,7 +23,7 @@ rumboot_add_configuration(
   CFLAGS -DRUMBOOT_ONLY_STACK
   PREFIX iram
   FILES ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c
-  BOOTROM jenkins-hello
+  BOOTROM bootrom-stub
   FEATURES LUA
 )
 
@@ -52,10 +52,21 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     CONFIGURATION ROM
     PREFIX simple-rom)
 
+  add_directory_with_targets(simple-iram/
+      CONFIGURATION IRAM
+      PREFIX simple-iram)
+
   add_directory_with_targets(jenkins/
       CONFIGURATION ROM
       PREFIX jenkins
       TESTGROUP short
+    )
+
+  add_rumboot_target(
+        CONFIGURATION ROM
+        FILES bootrom-stub.c
+        PREFIX "bootrom"
+        NAME "stub"
     )
 
   add_rumboot_target(
@@ -120,13 +131,6 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       FILES can/can_maskfilter.c can/ccan_mask_filter.S can/int_send.S can/int_receive.S can/mem_config.S can/test_config.S
       NAME can_maskfilter
     )
-
-    add_rumboot_target(
-        CONFIGURATION IRAM
-        FILES iram/hello-iram.c
-        PREFIX iram
-        NAME hello
-      )
 
 endmacro()
 
