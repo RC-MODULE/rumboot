@@ -104,6 +104,7 @@ if (NOT RUMBOOT_PLATFORM MATCHES native)
 endif()
 
 file(GLOB LUA_FILES src/lib/lua-5.3.4/src/*.c)
+include_directories(src/lib/lua-5.3.4/src/)
 
 foreach(c ${RUMBOOT_CONFIGURATIONS})
   ADD_LIBRARY(rumboot-${c} OBJECT ${PLATFORM_SOURCES})

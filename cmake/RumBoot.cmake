@@ -67,7 +67,7 @@ macro(config_load_param conf param)
 endmacro()
 
 macro(config_load_param_append conf param)
-    set(TARGET_${param} ${CONFIGURATION_${conf}_${param}} ${TARGET_${param}})
+    set(TARGET_${param} ${TARGET_${param}} ${CONFIGURATION_${conf}_${param}})
 endmacro()
 
 function(add_rumboot_target)
