@@ -91,6 +91,7 @@ void rumboot_platform_putchar(uint8_t c)
 }
 
 
+#ifdef RUMBOOT_PRINTF_ACCEL
 void __attribute__((optimize("-O0"))) rumboot_printf(const char *fmt, ...)
 {
 	/* va-arg func sends r0-r3 registers to stack in prologue
@@ -101,6 +102,7 @@ void __attribute__((optimize("-O0"))) rumboot_printf(const char *fmt, ...)
 	 */
 	dump32(EVENT_PRINTF, __builtin_frame_address(0));
 }
+#endif
 
 int rumboot_platform_getchar(uint32_t timeout_us)
 {

@@ -18,10 +18,13 @@ rumboot_add_configuration(
 
 #These are configurations for im0 binaries
 rumboot_add_configuration(
-  SECONDARY
-  LDS basis/rom.lds
-  #TODO
+  IRAM
+  LDS basis/iram.lds
   CFLAGS -DRUMBOOT_ONLY_STACK
+  PREFIX iram
+  FILES ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c
+  BOOTROM bootrom-stub
+  FEATURES LUA
 )
 
 macro(add_directory_with_targets dir)
@@ -49,10 +52,21 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     CONFIGURATION ROM
     PREFIX simple-rom)
 
+  add_directory_with_targets(simple-iram/
+      CONFIGURATION IRAM
+      PREFIX simple-iram)
+
   add_directory_with_targets(jenkins/
       CONFIGURATION ROM
       PREFIX jenkins
       TESTGROUP short
+    )
+
+  add_rumboot_target(
+        CONFIGURATION ROM
+        FILES bootrom-stub.c
+        PREFIX "bootrom"
+        NAME "stub"
     )
 
   add_rumboot_target(
