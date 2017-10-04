@@ -5,7 +5,7 @@
 /**
  *
  * \defgroup platform_glue Platform bindings
- * 
+ *
  * These functions should be implemented in the platform support code.
  * Rumboot core modules depend on these for proper operation
  * \code{.c}
@@ -172,6 +172,16 @@ extern char rumboot_platform_stack_area_start;
  * stack(s) are stored. Use &reference to this variable to get the desired address.
  */
 extern char rumboot_platform_stack_area_end;
+
+/**
+ * Start of the BSS section
+ */
+extern char rumboot_platform_bss_start;
+
+/**
+ * End of bss section
+ */
+extern char rumboot_platform_bss_end;
 
 /** @}*/
 

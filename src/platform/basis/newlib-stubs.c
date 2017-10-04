@@ -85,7 +85,7 @@ int _lseek(int file, int ptr, int dir)
 
 
 
-#if 1
+#ifdef RUMBOOT_ONLY_STACK
 caddr_t _sbrk(int incr)
 {
     rumboot_platform_panic("malloc() not allowed in ROM code\n");
@@ -95,7 +95,6 @@ caddr_t _sbrk(int incr)
 #include <rumboot/platform.h>
 caddr_t _sbrk(int incr)
 {
-	rumboot_platform_raise_event(EVENT_PERF, 3);
 	char *prev_heap_end;
 
 	if (rumboot_platform_runtime_info.current_heap_end == 0)
@@ -110,7 +109,6 @@ caddr_t _sbrk(int incr)
 	}
 
 	rumboot_platform_runtime_info.current_heap_end += incr;
-	rumboot_platform_raise_event(EVENT_PERF, 4);
 	return (caddr_t)prev_heap_end;
 }
 #endif

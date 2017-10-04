@@ -21,9 +21,8 @@ rumboot_add_configuration(
 rumboot_add_configuration(
   IRAM
   LDS basis/iram.lds
-  CFLAGS -DRUMBOOT_ONLY_STACK
   PREFIX iram
-  LDFLAGS -Wl,--start-group -lgcc -lc -lm -Wl,--end-group
+  LDFLAGS -Wl,--start-group -lgcc -lc -lm -Wl,--end-group "-e rumboot_main"
   FILES ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c
   BOOTROM bootrom-stub
   FEATURES LUA
@@ -153,7 +152,7 @@ macro(RUMBOOT_PLATFORM_SET_COMPILER_FLAGS)
     SET(RUMBOOT_COMMON_FLAGS "-mcpu=cortex-a5 -mfpu=vfpv3-d16 -mfloat-abi=hard -marm -ffreestanding -Os -Werror -Wno-error=cpp")
     SET(CMAKE_C_FLAGS "${RUMBOOT_COMMON_FLAGS} -Wall -fdata-sections -ffunction-sections")
     SET(CMAKE_ASM_FLAGS ${RUMBOOT_COMMON_FLAGS})
-    SET(CMAKE_OBJCOPY_FLAGS --gap-fill 0xFF --pad-to 0x40000)
+    SET(CMAKE_OBJCOPY_FLAGS --gap-fill 0x00)
     SET(CMAKE_EXE_LINKER_FLAGS "-nostartfiles -static -Wl,--gc-sections")
     SET(CMAKE_DUMP_FLAGS     "-EL")
 endmacro()

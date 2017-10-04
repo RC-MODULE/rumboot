@@ -14,6 +14,7 @@ SECTIONS
   *(.text.startup)
   *(.text)
   *(.rodata)
+  . = ALIGN(16);
  } > ROM
 
  .rw : {

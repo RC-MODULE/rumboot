@@ -25,7 +25,7 @@ void rumboot_main()
 
      /* Zero-out BSS, if any */
      #ifndef RUMBOOT_ONLY_STACK
-          memset(rumboot_platform_bss_start, 0x0, rumboot_platform_bss_end - rumboot_platform_bss_start);
+          memset(&rumboot_platform_bss_start, 0x0, &rumboot_platform_bss_end - &rumboot_platform_bss_start);
      #endif
 
      /* Call Platform-specific setup code (e.g. init the event system) */
