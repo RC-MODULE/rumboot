@@ -73,7 +73,7 @@ endmacro()
 function(add_rumboot_target)
   set(options )
   set(oneValueArgs SNAPSHOT LDS NAME PREFIX CONFIGURATION)
-  set(multiValueArgs FILES IRUN_FLAGS CFLAGS TESTGROUP)
+  set(multiValueArgs FILES IRUN_FLAGS CFLAGS TESTGROUP LDFLAGS)
 
   cmake_parse_arguments(TARGET "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
