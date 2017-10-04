@@ -106,14 +106,10 @@ endif()
 file(GLOB LUA_FILES src/lib/lua-5.3.4/src/*.c)
 include_directories(src/lib/lua-5.3.4/src/)
 
+ADD_LIBRARY(lua STATIC ${LUA_FILES})
+
 foreach(c ${RUMBOOT_CONFIGURATIONS})
   ADD_LIBRARY(rumboot-${c} OBJECT ${PLATFORM_SOURCES})
-
-  list (FIND CONFIGURATION_${c}_FEATURES "LUA" _index)
-  if (${_index} GREATER -1)
-#      SET(PLATFORM_SOURCES "${PLATFORM_SOURCES};${LUA_FILES}")
-  endif()
-
   target_compile_options(rumboot-${c} PUBLIC ${CONFIGURATION_${c}_CFLAGS})
 endforeach()
 

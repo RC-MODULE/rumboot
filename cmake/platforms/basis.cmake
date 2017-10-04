@@ -12,6 +12,7 @@ rumboot_add_configuration(
   DEFAULT
   SNAPSHOT default
   LDS basis/rom.lds
+  LDFLAGS "-e rumboot_reset_handler"
   CFLAGS -DRUMBOOT_ONLY_STACK -DRUMBOOT_PRINTF_ACCEL
   PREFIX ROM
 )
@@ -22,6 +23,7 @@ rumboot_add_configuration(
   LDS basis/iram.lds
   CFLAGS -DRUMBOOT_ONLY_STACK
   PREFIX iram
+  LDFLAGS -Wl,--start-group -lgcc -lc -lm -Wl,--end-group
   FILES ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c
   BOOTROM bootrom-stub
   FEATURES LUA
@@ -47,7 +49,6 @@ endmacro()
 ### Add tests here ###
 #WARNING! Full regression automatically includes all tests from the short ones
 macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
-
   add_directory_with_targets(simple-rom/
     CONFIGURATION ROM
     PREFIX simple-rom)
@@ -149,11 +150,11 @@ file(GLOB PLATFORM_SOURCES
 )
 
 macro(RUMBOOT_PLATFORM_SET_COMPILER_FLAGS)
-    SET(RUMBOOT_COMMON_FLAGS "-mcpu=cortex-a5 -marm -ffreestanding -Os -Werror -Wno-error=cpp")
+    SET(RUMBOOT_COMMON_FLAGS "-mcpu=cortex-a5 -mfpu=vfpv3-d16 -mfloat-abi=hard -marm -ffreestanding -Os -Werror -Wno-error=cpp")
     SET(CMAKE_C_FLAGS "${RUMBOOT_COMMON_FLAGS} -Wall -fdata-sections -ffunction-sections")
     SET(CMAKE_ASM_FLAGS ${RUMBOOT_COMMON_FLAGS})
     SET(CMAKE_OBJCOPY_FLAGS --gap-fill 0xFF --pad-to 0x40000)
-    SET(CMAKE_EXE_LINKER_FLAGS "-e rumboot_reset_handler -nostartfiles -static -Wl,--gc-sections")
+    SET(CMAKE_EXE_LINKER_FLAGS "-nostartfiles -static -Wl,--gc-sections")
     SET(CMAKE_DUMP_FLAGS     "-EL")
 endmacro()
 
@@ -162,18 +163,21 @@ function(RUMBOOT_PLATFORM_PRINT_SUMMARY)
 endfunction()
 
 macro(rumboot_platform_generate_stuff_for_taget product)
-  add_custom_command(
-    OUTPUT ${product}.hex/image_mem64_0.hex
-    COMMAND mkdir -p ${product}.hex
-    COMMAND ${CMAKE_BINARY_DIR}/utils/romgen -i ${product}.bin -o ${product}.hex
-    COMMENT "Generating HEX memory files for ${product}.bin"
-    DEPENDS ${product}.bin utils
-  )
+  if (TARGET_CONFIGURATION STREQUAL "ROM")
+    add_custom_command(
+      OUTPUT ${product}.hex/image_mem64_0.hex
+      COMMAND mkdir -p ${product}.hex
+      COMMAND ${CMAKE_BINARY_DIR}/utils/romgen -i ${product}.bin -o ${product}.hex
+      COMMENT "Generating HEX memory files for ${product}.bin"
+      DEPENDS ${product}.bin utils
+    )
 
-  add_custom_target(
-    ${product}.hex ALL
-    DEPENDS ${product}.hex/image_mem64_0.hex
-  )
+    add_custom_target(
+      ${product}.hex ALL
+      DEPENDS ${product}.hex/image_mem64_0.hex
+    )
+
+  endif()
 
   install(DIRECTORY ${CMAKE_BINARY_DIR}/${product}.rcf DESTINATION rumboot/rcf)
 endmacro()
@@ -185,10 +189,6 @@ if (NOT CROSS_COMPILE)
   if (EXISTS /opt/r42/toolchains/arm-rcm-eabihf/bin/arm-rcm-eabihf-gcc)
     set(CROSS_COMPILE "/opt/r42/toolchains/arm-rcm-eabihf/bin/${CROSS_COMPILE}")
   endif()
-endif()
-
-if (NOT (${CROSS_COMPILE} MATCHES "arm-rcm-eabihf"))
-  message(FATAL_ERROR "This platform should be built with arm-rcm-eabihf toolchain")
 endif()
 
 set(CMAKE_C_COMPILER_WORKS 1)

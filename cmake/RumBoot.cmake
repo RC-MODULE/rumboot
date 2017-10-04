@@ -120,6 +120,11 @@ function(add_rumboot_target)
   add_executable(${product} ${trg} $<TARGET_OBJECTS:rumboot-${TARGET_CONFIGURATION}>)
   target_compile_definitions(${product} PUBLIC ${TARGET_CFLAGS})
 
+  list (FIND CONFIGURATION_${TARGET_CONFIGURATION}_FEATURES "LUA" _index)
+  if (${_index} GREATER -1)
+    target_link_libraries(${product} lua)
+  endif()
+
   if (NOT TARGET_LDS)
     set(TARGET_LDS ${RUMBOOT_PLATFORM_DEFAULT_LDS})
   endif()
@@ -130,7 +135,7 @@ function(add_rumboot_target)
     set(ldf "")
   endif()
 
-  target_link_libraries(${product} ${ldf} -Wl,-Map,${product}.map)
+  target_link_libraries(${product} ${CONFIGURATION_${TARGET_CONFIGURATION}_LDFLAGS} ${ldf} -Wl,-Map,${product}.map)
   install(TARGETS ${product} RUNTIME DESTINATION rumboot)
 
   generate_stuff_for_target(${product})
