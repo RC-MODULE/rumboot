@@ -13,6 +13,11 @@ char **environ = __env;
 
 int _write(int file, char *ptr, int len);
 
+int _gettimeofday(struct timeval *__tp, void *__tzp)
+{
+	return -1;
+}
+
 void _exit(int status)
 {
 	while (1)
