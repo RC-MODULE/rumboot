@@ -112,3 +112,9 @@ int rumboot_platform_getchar(uint32_t timeout_us)
     iowrite32(0xff, DGPIO_HIGH_BASE + DIR);
     return ret;
 }
+
+void rumboot_platform_request_file(const char *plusarg, uint32_t addr)
+{
+    dump32(EVENT_UPLOAD, (void *) plusarg);
+    dump32(EVENT_UPLOAD, (void *) addr);
+}

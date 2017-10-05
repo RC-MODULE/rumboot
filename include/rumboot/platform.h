@@ -38,6 +38,7 @@ enum rumboot_simulation_event {
     EVENT_STDIN, /** Request for next character input */
     EVENT_TRACE, /** A function call trace */
     EVENT_PRINTF, /** Simulator printf */
+    EVENT_UPLOAD, /** Request file upload */
 };
 
 
@@ -46,7 +47,7 @@ enum rumboot_simulation_event {
  * This will terminate the simulation or cause an infinite loop
  * in production builds.
  *
- * WARNING! Use with exterme care for production code!
+ * WARNING! Use with extreme care for production code!
  *
  * @param fmt format for description message. Can be NULL
  */
@@ -100,6 +101,13 @@ void rumboot_platform_putchar(uint8_t c);
  */
 int rumboot_platform_getchar(uint32_t timeout_us);
 
+/**
+ * Request simulation environment to upload a file from plusarg to address addr
+ *
+ * @param plusarg the name of plusarg that contains the filename or the filename
+ * @param addr   address to load the file to
+ */
+void rumboot_platform_request_file(const char *plusarg, uint32_t addr);
 /**
 *
 *  @}

@@ -138,8 +138,8 @@ int _wait(int *status)
 
 int _write(int file, char *ptr, int len)
 {
-	errno = EBADF;
-	return -1;
+    rumboot_printf(ptr);
+	return len;
 }
 
 int _read(int file, char *ptr, int len)
