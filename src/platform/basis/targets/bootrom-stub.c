@@ -13,8 +13,8 @@ int main()
 
     rumboot_platform_request_file("IM0BIN", (uint32_t) hdr);
 
-	rumboot_printf("ROM STUB: Executing image in IM0 without verification\n");
-	rumboot_printf("ROM STUB: Magic: 0x%x Entry: 0x%x\n", hdr->magic, hdr->entry_point[0]);
+	rumboot_printf("STUB: Executing SPL image. Magic: 0x%x Entry: 0x%x\n",
+		hdr->magic, hdr->entry_point[0]);
 
 	int (*ram_main)();
 	ram_main = (void *) hdr->entry_point[0];
