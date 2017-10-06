@@ -1,6 +1,6 @@
 
 //-----------------------------------------------------------------------------
-//  This program is for PCIe outbound Address Translator testing
+//  This program is for PCIe inbound Address Translator testing
 //    
 //    
 //    Test includes:
@@ -8,7 +8,7 @@
 //    - turn DDR0 On
 //    - repeat for few regions
 //      - repeat for few AT settings:
-//        - setting outbound Address Translator (one region)
+//        - setting inbound Address Translator (one region)
 //        - write data (ARM -> outb AT -> PCIe -> inb AT -> DDR0)
 //        - read and check data (ARM <- outb AT <- PCIe <- inb AT <- DDR0)
 //        - read and check data (ARM <- DDR0)
@@ -36,23 +36,24 @@
     const uint32_t regions_for_test [regions_for_test_number] =
     {
          0 ,
+         1 ,
          2 ,
-         8 ,
-        32
+         4
     };
 #else
-#define regions_for_test_number 8
+#define regions_for_test_number 9
 
     const uint32_t regions_for_test [regions_for_test_number] =
     {
          0 ,
          1 ,
          2 ,
+         3 ,
          4 ,
-         8 ,
-        16 ,
-        32 ,
-        64
+         5 ,
+         6 ,
+         7 ,
+         8
     };
 #endif
     
@@ -165,10 +166,10 @@
         0x50000000
     };
     
-uint32_t at_slv_test_0 ()
+uint32_t at_mst_test_0 ()
 {
     
-    rgADDR_TRANS_SLV_ctrl = 0;
+    rgADDR_TRANS_MST_ctrl = 0;
     
     for (volatile uint32_t j = 0; j < regions_for_test_number; j++)
     {
@@ -182,12 +183,9 @@ uint32_t at_slv_test_0 ()
             volatile uint32_t direct_end_addr  ;
             volatile uint32_t direct_mid_addr  ;
             
-            iowrite32(base_addr_array [i] | 0x1, ADDR_TRANS_SLV_BASE + ((regions_for_test [j] * 3 + 1) << 2)) ;
-            iowrite32(end_addr_array  [i]      , ADDR_TRANS_SLV_BASE + ((regions_for_test [j] * 3 + 2) << 2)) ;
-            iowrite32(tran_addr_array [i]      , ADDR_TRANS_SLV_BASE + ((regions_for_test [j] * 3 + 3) << 2)) ;
-            // iowrite32(base_addr_array [i] | 0x1, ADDR_TRANS_SLV_BASE + 0x4) ;
-            // iowrite32(end_addr_array  [i]      , ADDR_TRANS_SLV_BASE + 0x8) ;
-            // iowrite32(tran_addr_array [i]      , ADDR_TRANS_SLV_BASE + 0xC) ;
+            iowrite32(base_addr_array [i] | 0x1, ADDR_TRANS_MST_BASE + ((regions_for_test [j] * 3 + 1) << 2)) ;
+            iowrite32(end_addr_array  [i]      , ADDR_TRANS_MST_BASE + ((regions_for_test [j] * 3 + 2) << 2)) ;
+            iowrite32(tran_addr_array [i]      , ADDR_TRANS_MST_BASE + ((regions_for_test [j] * 3 + 3) << 2)) ;
             
             base_addr = base_addr_array [i];
             end_addr  = end_addr_array  [i];
@@ -228,9 +226,9 @@ uint32_t at_slv_test_0 ()
             iowrite32(0, direct_mid_addr ) ;
 
         }
-        iowrite32(0, ADDR_TRANS_SLV_BASE + ((regions_for_test [j] * 3 + 1) << 2)) ;
-        iowrite32(0, ADDR_TRANS_SLV_BASE + ((regions_for_test [j] * 3 + 2) << 2)) ;
-        iowrite32(0, ADDR_TRANS_SLV_BASE + ((regions_for_test [j] * 3 + 3) << 2)) ;
+        iowrite32(0, ADDR_TRANS_MST_BASE + ((regions_for_test [j] * 3 + 1) << 2)) ;
+        iowrite32(0, ADDR_TRANS_MST_BASE + ((regions_for_test [j] * 3 + 2) << 2)) ;
+        iowrite32(0, ADDR_TRANS_MST_BASE + ((regions_for_test [j] * 3 + 3) << 2)) ;
     }
 
     return 0;
@@ -244,7 +242,7 @@ uint32_t main ()
     if (pcie_turn_on_with_options_ep (1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) != 0)
         return -2;
     
-    if (at_slv_test_0 () != 0)
+    if (at_mst_test_0 () != 0)
         return -3;
     
     

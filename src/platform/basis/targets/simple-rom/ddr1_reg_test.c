@@ -14,7 +14,7 @@
 //    - write registers with mt41k128m8_107_cl11_bl8 values         (->)
 //    - read and compare with etalon                                (->)
 //    
-//    Test duration (RTL): < 
+//    Test duration (RTL): < 1150us
 //-----------------------------------------------------------------------------
 
 #include <rumboot/ddr_test_lib.h>

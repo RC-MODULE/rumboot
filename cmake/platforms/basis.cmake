@@ -89,6 +89,22 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
   add_rumboot_target(
       SNAPSHOT default
       LDS basis/rom.lds
+      FILES pcie/pcie_at_typical_eRP_test_0.c
+      NAME pcie_at_typical_eRP_test_0
+      CFLAGS -Dshort_test_for_sim=1
+    )
+
+  add_rumboot_target(
+      SNAPSHOT default
+      LDS basis/rom.lds
+      FILES pcie/pcie_at_mst_eRP_test_0.c
+      NAME pcie_at_mst_eRP_test_0
+      CFLAGS -Dshort_test_for_sim=1
+    )
+
+  add_rumboot_target(
+      SNAPSHOT default
+      LDS basis/rom.lds
       FILES pcie/pcie_legacy_eRP_test.c
       NAME pcie_legacy_eRP_test
       IRUN_FLAGS +pcie_legacy_int_elab
