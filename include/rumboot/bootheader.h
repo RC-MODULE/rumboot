@@ -4,15 +4,20 @@
 #define RUMBOOT_HEADER_VERSION 2
 #define RUMBOOT_HEADER_MAGIC 0xb01dface
 
+#include <platform/bootheader.h>
+
+#include <stdint.h>
 struct __attribute__((packed)) rumboot_bootheader {
     uint32_t magic;
     uint8_t  version;
     uint8_t  num_cores;
-    uint8_t  reserved[2];
-    uint32_t header_crc32;
+    uint8_t  chip_id;
+    uint8_t  chip_rev;
     uint32_t data_crc32;
     uint32_t datalen;
-    uint32_t entry_point[];
+    uint32_t entry_point[11];
+    uint32_t header_crc32;
+    char     data[];
 };
 
 
