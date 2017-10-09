@@ -1323,78 +1323,6 @@ void config_my_mt41k512m8_107_cl11_bl8 (uint32_t DDRx_BASE)
 }
 
 //-----------------------------------------------------------------------------
-//  This function is for turning On one of DDR subsystem
-//
-//  Arguments:
-//    - DDRx_BASE
-//        posible values for Basis are:
-//          0x0108_0000 DDR0_BASE
-//          0x0108_2000 DDR1_BASE
-//
-//-----------------------------------------------------------------------------
-uint32_t ddr_init (uint32_t DDRx_BASE)
-{
-    uint32_t timer_cntr = 0;
-
-#ifdef jedec_ddr3_1g_x16_1600g_cl8_bl8
-    config_jedec_ddr3_1g_x16_1600g_cl8_bl8 (DDRx_BASE);
-#else
-#ifdef jedec_ddr3_1g_x16_1600g_cl11_bl8
-    config_jedec_ddr3_1g_x16_1600g_cl11_bl8 (DDRx_BASE);
-#else
-#ifdef my_mt41k128m8_107_cl11_bl8
-    config_my_mt41k512m8_107_cl11_bl8 (DDRx_BASE);
-#endif
-#endif
-#endif
-
-    while (((*(volatile int*)(DDRx_BASE + DENALI_CTL_94)) & 0x00000800) == 0)
-    {
-        timer_cntr++;
-        if (timer_cntr == DDR_TEST_LIB_PLL_LOCK_TIMEOUT)
-            return -1;
-    }
-    (*(volatile int*)(DDRx_BASE + DENALI_CTL_95)) = 0b00000000000000000000100000000000 ; // clear interruption flag
-
-    return 0;
-}
-
-//-----------------------------------------------------------------------------
-//  This function is for turning On both DDR subsystems
-//  It must take less time, than two consequent ddr_init with different args
-//-----------------------------------------------------------------------------
-uint32_t ddr0_ddr1_init ()
-{
-    uint32_t timer_cntr = 0;
-
-#ifdef jedec_ddr3_1g_x16_1600g_cl8_bl8
-    config_jedec_ddr3_1g_x16_1600g_cl8_bl8 (DDR0_BASE);
-    config_jedec_ddr3_1g_x16_1600g_cl8_bl8 (DDR1_BASE);
-#else
-#ifdef jedec_ddr3_1g_x16_1600g_cl11_bl8
-    config_jedec_ddr3_1g_x16_1600g_cl11_bl8 (DDR0_BASE);
-    config_jedec_ddr3_1g_x16_1600g_cl11_bl8 (DDR1_BASE);
-#else
-#ifdef my_mt41k128m8_107_cl11_bl8
-    config_my_mt41k512m8_107_cl11_bl8 (DDR0_BASE);
-    config_my_mt41k512m8_107_cl11_bl8 (DDR1_BASE);
-#endif
-#endif
-#endif
-
-    while (((*(volatile int*)(DDR0_BASE + DENALI_CTL_94)) & (*(volatile int*)(DDR1_BASE + DENALI_CTL_94)) & 0x00000800) == 0)
-    {
-        timer_cntr++;
-        if (timer_cntr == DDR_TEST_LIB_PLL_LOCK_TIMEOUT)
-            return -1;
-    }
-    (*(volatile int*)(DDR0_BASE + DENALI_CTL_95)) = 0b00000000000000000000100000000000 ; // clear interruption flag
-    (*(volatile int*)(DDR1_BASE + DENALI_CTL_95)) = 0b00000000000000000000100000000000 ; // clear interruption flag
-
-    return 0;
-}
-
-//-----------------------------------------------------------------------------
 //  This function is for changing DDR external CRG frequency
 //
 //  Arguments:
@@ -1420,26 +1348,110 @@ uint32_t crg_ddr_init
 )
 {
     uint32_t timer_cntr = 0;
-
-    rgCRG_DDR_WR_LOCK   = 0x1ACCE551 ;
-    rgCRG_DDR_PLL_CTRL  = 0x3        ;
-    rgCRG_DDR_PLL_FBDIV = pll_fbdiv  ;
-    rgCRG_DDR_PLL_PSDIV = pll_psdiv  ;
-
-    while ((rgCRG_DDR_PLL_STAT & 0x00000010) == 0)
+    
+    if (
+        (rgCRG_DDR_PLL_FBDIV != pll_fbdiv) ||
+        (rgCRG_DDR_PLL_PSDIV != pll_psdiv)
+        )
     {
-        timer_cntr++;
-        if (timer_cntr == CRG_DDR_TEST_LIB_PLL_LOCK_TIMEOUT)
-            return -1;
+        rgCRG_DDR_WR_LOCK   = 0x1ACCE551 ;
+        rgCRG_DDR_PLL_CTRL  = 0x3        ;
+        rgCRG_DDR_PLL_FBDIV = pll_fbdiv  ;
+        rgCRG_DDR_PLL_PSDIV = pll_psdiv  ;
+
+        while ((rgCRG_DDR_PLL_STAT & 0x00000010) == 0)
+        {
+            timer_cntr++;
+            if (timer_cntr == CRG_DDR_TEST_LIB_PLL_LOCK_TIMEOUT)
+                return -1;
+        }
+
+        rgCRG_DDR_PLL_CTRL  = 0x0        ;
+        while ((rgCRG_DDR_PLL_STAT & 0x00000011) == 0)
+        {
+            timer_cntr++;
+            if (timer_cntr == CRG_DDR_TEST_LIB_PLL_LOCK_TIMEOUT)
+                return -1;
+        }
     }
 
-    rgCRG_DDR_PLL_CTRL  = 0x0        ;
-    while ((rgCRG_DDR_PLL_STAT & 0x00000011) == 0)
+    return 0;
+}
+
+//-----------------------------------------------------------------------------
+//  This function is for turning On one of DDR subsystem
+//
+//  Arguments:
+//    - DDRx_BASE
+//        posible values for Basis are:
+//          0x0108_0000 DDR0_BASE
+//          0x0108_2000 DDR1_BASE
+//
+//-----------------------------------------------------------------------------
+uint32_t ddr_init (uint32_t DDRx_BASE)
+{
+    uint32_t timer_cntr = 0;
+
+#ifdef jedec_ddr3_1g_x16_1600g_cl8_bl8
+    crg_ddr_init (0x63 ,0x0);
+    config_jedec_ddr3_1g_x16_1600g_cl8_bl8 (DDRx_BASE);
+#else
+#ifdef jedec_ddr3_1g_x16_1600g_cl11_bl8
+    crg_ddr_init (0x63 ,0x0);
+    config_jedec_ddr3_1g_x16_1600g_cl11_bl8 (DDRx_BASE);
+#else
+#ifdef my_mt41k128m8_107_cl11_bl8
+    crg_ddr_init (0x63 ,0x0);
+    config_my_mt41k512m8_107_cl11_bl8 (DDRx_BASE);
+#endif
+#endif
+#endif
+
+    while (((*(volatile int*)(DDRx_BASE + DENALI_CTL_94)) & 0x00000800) == 0)
     {
         timer_cntr++;
-        if (timer_cntr == CRG_DDR_TEST_LIB_PLL_LOCK_TIMEOUT)
+        if (timer_cntr == DDR_TEST_LIB_PLL_LOCK_TIMEOUT)
             return -1;
     }
+    (*(volatile int*)(DDRx_BASE + DENALI_CTL_95)) = 0b00000000000000000000100000000000 ; // clear interruption flag
+
+    return 0;
+}
+
+//-----------------------------------------------------------------------------
+//  This function is for turning On both DDR subsystems
+//  It must take less time, than two consequent ddr_init with different args
+//-----------------------------------------------------------------------------
+uint32_t ddr0_ddr1_init ()
+{
+    uint32_t timer_cntr = 0;
+
+#ifdef jedec_ddr3_1g_x16_1600g_cl8_bl8
+    crg_ddr_init (0x63 ,0x0);
+    config_jedec_ddr3_1g_x16_1600g_cl8_bl8 (DDR0_BASE);
+    config_jedec_ddr3_1g_x16_1600g_cl8_bl8 (DDR1_BASE);
+#else
+#ifdef jedec_ddr3_1g_x16_1600g_cl11_bl8
+    crg_ddr_init (0x63 ,0x0);
+    config_jedec_ddr3_1g_x16_1600g_cl11_bl8 (DDR0_BASE);
+    config_jedec_ddr3_1g_x16_1600g_cl11_bl8 (DDR1_BASE);
+#else
+#ifdef my_mt41k128m8_107_cl11_bl8
+    crg_ddr_init (0x63 ,0x0);
+    config_my_mt41k512m8_107_cl11_bl8 (DDR0_BASE);
+    config_my_mt41k512m8_107_cl11_bl8 (DDR1_BASE);
+#endif
+#endif
+#endif
+
+    while (((*(volatile int*)(DDR0_BASE + DENALI_CTL_94)) & (*(volatile int*)(DDR1_BASE + DENALI_CTL_94)) & 0x00000800) == 0)
+    {
+        timer_cntr++;
+        if (timer_cntr == DDR_TEST_LIB_PLL_LOCK_TIMEOUT)
+            return -1;
+    }
+    (*(volatile int*)(DDR0_BASE + DENALI_CTL_95)) = 0b00000000000000000000100000000000 ; // clear interruption flag
+    (*(volatile int*)(DDR1_BASE + DENALI_CTL_95)) = 0b00000000000000000000100000000000 ; // clear interruption flag
 
     return 0;
 }

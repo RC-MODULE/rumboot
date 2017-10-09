@@ -185,7 +185,6 @@ uint32_t Check_transaction_reverse (uint32_t* address_src, uint32_t* address_dst
 
 int main ()
 {
-    crg_ddr_init (0x63 ,0x0);
     if (ddr_init (DDR0_BASE) != 0)
         return -1;
     create_etalon_array         (data_src_0, data_size);

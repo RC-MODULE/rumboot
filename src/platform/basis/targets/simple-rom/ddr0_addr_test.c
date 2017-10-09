@@ -88,7 +88,6 @@ uint32_t ddr_addr_shift1_test ()
 
 int main ()
 {
-    crg_ddr_init (0x63 ,0x0);
     if (ddr_init (DDR0_BASE) != 0)
         return -1;
     if (ddr_addr_shift1_test () != 0)
