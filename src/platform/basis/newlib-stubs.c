@@ -83,7 +83,10 @@ int _lseek(int file, int ptr, int dir)
 	return 0;
 }
 
-
+int _open( const char *name, int flags, int mode)
+{
+    return -1;
+}
 
 #ifdef RUMBOOT_ONLY_STACK
 caddr_t _sbrk(int incr)
