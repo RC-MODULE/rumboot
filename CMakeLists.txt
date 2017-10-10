@@ -48,6 +48,20 @@ execute_process(COMMAND
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 )
 
+find_program(LUA NAMES lua5.1 lua)
+if (LUA STREQUAL "LUA-NOTFOUND")
+    message(FATAL_ERROR "lua installation not found. Ask admins to install lua 5.1(!)")
+endif()
+
+execute_process(COMMAND
+  ${LUA} -v
+  ERROR_VARIABLE LUA_VERSION
+)
+
+if (NOT LUA_VERSION MATCHES "Lua\ 5.1")
+  message(FATAL_ERROR "We need lua 5.1, you have: ${LUA_VERSION}")
+endif()
+
 SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Os -Wall -fno-omit-frame-pointer")
 SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DROMBOOT_VERSION=\\\"${GIT_BRANCH}-${GIT_REVISION}\\\"")
 SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DROMBOOT_BUILD_TYPE=\\\"${CMAKE_BUILD_TYPE}\\\"")
@@ -103,11 +117,11 @@ if (NOT RUMBOOT_PLATFORM MATCHES native)
     ADD_SOURCE(src/rumboot_main.c)
 endif()
 
-file(GLOB LUA_FILES src/lib/lua-5.3.4/src/*.c)
-include_directories(src/lib/lua-5.3.4/src/)
+file(GLOB LUA_FILES src/lib/lua-5.1.5/src/*.c)
+include_directories(src/lib/lua-5.1.5/src/)
 
 ADD_LIBRARY(lua STATIC ${LUA_FILES})
-
+target_compile_options(lua PRIVATE -Wno-error=misleading-indentation)
 foreach(c ${RUMBOOT_CONFIGURATIONS})
   ADD_LIBRARY(rumboot-${c} OBJECT ${PLATFORM_SOURCES})
   target_compile_options(rumboot-${c} PUBLIC ${CONFIGURATION_${c}_CFLAGS})

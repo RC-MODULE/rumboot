@@ -13,6 +13,8 @@ endmacro()
 rumboot_add_configuration(
   NATIVE
   DEFAULT
+  LDFLAGS -lm
+  FEATURES LUA
 )
 
 function(RUMBOOT_PLATFORM_PRINT_SUMMARY)

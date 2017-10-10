@@ -148,6 +148,13 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       NAME can_maskfilter
     )
 
+  add_rumboot_target(
+        CONFIGURATION IRAM
+        FILES lua/test.lua
+        NAME hello
+        PREFIX lua
+    )
+
 endmacro()
 
 if (CMAKE_VERILOG_RULES_LOADED)

@@ -106,6 +106,24 @@ function(add_rumboot_target)
     return()
   endif()
 
+  set(EXTRA_FILES)
+  foreach(f ${TARGET_FILES})
+    GET_FILENAME_COMPONENT(ext ${f} EXT)
+    if (ext STREQUAL ".lua")
+      add_custom_command(
+        OUTPUT ${product}.c
+        DEPENDS ${RUMBOOT_PLATFORM_TARGET_DIR}/${f}
+        COMMAND ${LUA} -e 'package.path=package.path.."\;${CMAKE_SOURCE_DIR}/lua2c/lib/?.lua"'
+                ${CMAKE_SOURCE_DIR}/lua2c/lua2c.lua
+                ${RUMBOOT_PLATFORM_TARGET_DIR}/${f}
+                > ${product}.c
+        COMMENT "Generating C code from ${f}"
+      )
+    list(REMOVE_ITEM TARGET_FILES ${f})
+    list(APPEND EXTRA_FILES ${product}.c)
+    endif()
+  endforeach()
+
   message(STATUS "Adding rumboot test: ${product}")
   set(${name} TRUE PARENT_SCOPE)
 
@@ -116,6 +134,8 @@ function(add_rumboot_target)
       LIST(APPEND trg ${f})
     endif()
   endforeach()
+
+  LIST(APPEND trg ${EXTRA_FILES})
 
   add_executable(${product} ${trg} $<TARGET_OBJECTS:rumboot-${TARGET_CONFIGURATION}>)
   target_compile_definitions(${product} PUBLIC ${TARGET_CFLAGS})
