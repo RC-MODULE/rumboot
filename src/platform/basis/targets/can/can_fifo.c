@@ -12,7 +12,7 @@ extern int CCAN_FIFO(uint32_t r0, uint32_t r1, uint32_t r2, uint32_t r3);
 int run_can_fifo(uint32_t can_base_addr) {
     int test_state = 3;
     int ret = CCAN_FIFO(can_base_addr, 0, 0, test_state);
-    if (ret) { rumboot_printf("ret %08x test failed\n", ret); }
+    if (ret) { rumboot_printf("return %08x test failed\n", ret); }
     return ret;
 }
 

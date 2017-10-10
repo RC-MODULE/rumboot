@@ -29,7 +29,6 @@ init_loop:
     LDR R2, =0x0041
     STR R2, [R1, #CCAN_CAN_Contr_R]
 
-    @LDR R2, =0x2381
     LDR R2, =0x1C03                     @0x1C03 - Bit Rate = 1000 kb/s (Fcan = 64 MHz)
     STR R2, [R1, #CCAN_Bit_Time_R]
 

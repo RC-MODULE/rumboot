@@ -6,7 +6,6 @@
 
 @ ***arm calling convention***
 @ there is CAN_BASE in the R0
-@ there is LR in R7 to exit to main.c program after warning
 @ there is test_state number in the R3
 
 CCAN_LOOPBACK:

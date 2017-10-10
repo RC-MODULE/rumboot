@@ -6,7 +6,6 @@
 
 @ ***arm calling convention***
 @ there is CAN_BASE in the R0
-@ there is LR in R7 to exit to main.c program after warning
 @ there is test_state number in the R3
 
 CCAN_REQUEST:
@@ -25,6 +24,7 @@ CCAN_REQUEST:
     tube_msg "-"
 
     tube_msg "-- Transmit Remote Frame"
+
     LDR R2, =0x8008     @ Dir == 0 receive; transmit Rem Frame
     STR R2, [R1, #CCAN_IF1_Arb_2]
     LDR R2, =0x0000
@@ -35,6 +35,7 @@ CCAN_REQUEST:
     STR R2, [R1, #CCAN_IF1_Mask_1]
     LDR R2, =0x8188     @ TxRqst == 1
     STR R2, [R1, #CCAN_IF1_Msg_Con]
+
     LDR R2, =0x0000
     STR R2, [R1, #CCAN_IF1_Dat_A_1]
     LDR R2, =0x0000
@@ -43,34 +44,12 @@ CCAN_REQUEST:
     STR R2, [R1, #CCAN_IF1_Dat_B_1]
     LDR R2, =0x0000
     STR R2, [R1, #CCAN_IF1_Dat_B_2]
+
     LDR R2, =0x00f3     @ WR/RD == 1 from Message Buf Regs to Message object
     STR R2, [R1, #CCAN_IF1_Com_M]
-    @ LDR R2, =0x8004
+
     LDR R2, =0x8002
     STR R2, [R1, #CCAN_IF1_Com_Req]
-
-    @ LDR R2, =0x8008     @ Dir == 0 receive; transmit Rem Frame
-    @ STR R2, [R1, #CCAN_IF2_Arb_2]
-    @ LDR R2, =0x0000
-    @ STR R2, [R1, #CCAN_IF2_Arb_1]
-    @ LDR R2, =0xdfff
-    @ STR R2, [R1, #CCAN_IF2_Mask_2]
-    @ LDR R2, =0xffff
-    @ STR R2, [R1, #CCAN_IF2_Mask_1]
-    @ LDR R2, =0x8080     @ TxRqst==0 DLC==0
-    @ STR R2, [R1, #CCAN_IF2_Msg_Con]
-    @ LDR R2, =0x0000
-    @ STR R2, [R1, #CCAN_IF2_Dat_A_1]
-    @ LDR R2, =0x0000
-    @ STR R2, [R1, #CCAN_IF2_Dat_A_2]
-    @ LDR R2, =0x0000
-    @ STR R2, [R1, #CCAN_IF2_Dat_B_1]
-    @ LDR R2, =0x0000
-    @ STR R2, [R1, #CCAN_IF2_Dat_B_2]
-    @ LDR R2, =0x00f3     @ WR/RD == 1 from Message Buf Regs to Message object
-    @ STR R2, [R1, #CCAN_IF2_Com_M]
-    @ LDR R2, =0x8002
-    @ STR R2, [R1, #CCAN_IF2_Com_Req]
 
     tube_msg "-- Request OK"
 
