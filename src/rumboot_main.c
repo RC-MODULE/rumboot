@@ -37,6 +37,9 @@ void rumboot_main()
      /* Initialize interrupt controller */
      rumboot_platform_irq_init();
 
+     /* Tell environment that we're done with startup */
+     rumboot_platform_perf(NULL);
+
      /* call main() */
      int ret = main();
 
