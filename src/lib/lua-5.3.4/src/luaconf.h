@@ -8,6 +8,10 @@
 #ifndef luaconf_h
 #define luaconf_h
 
+#include <rumboot/printf.h>
+#define lua_writestring(s,l) rumboot_printf(s)
+#define lua_writeline() rumboot_printf("\n")
+
 #include <limits.h>
 #include <stddef.h>
 
@@ -780,4 +784,3 @@
 
 
 #endif
-

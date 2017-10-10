@@ -220,6 +220,7 @@ LUALIB_API void (luaL_openlib) (lua_State *L, const char *libname,
 
 /* print a string */
 #if !defined(lua_writestring)
+#error
 #define lua_writestring(s,l)   fwrite((s), sizeof(char), (l), stdout)
 #endif
 
@@ -260,5 +261,3 @@ LUALIB_API void (luaL_openlib) (lua_State *L, const char *libname,
 
 
 #endif
-
-
