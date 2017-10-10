@@ -149,12 +149,6 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       NAME can_maskfilter
     )
 
-  add_rumboot_target(
-      CONFIGURATION ROM
-      FILES can/can0_requests_can1.c can/ccan0_requests_ccan1.S can/int_send.S can/int_receive.S can/mem_config.S
-      NAME can0_requests_can1
-    )
-
 endmacro()
 
 if (CMAKE_VERILOG_RULES_LOADED)
