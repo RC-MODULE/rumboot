@@ -13,7 +13,7 @@
 #include <rumboot/macros.h>
 
 const char luacode[] = "io.write('Hello world, from ',_VERSION,'!\\n')";
-static const unsigned char bytecode[]={
+static const char bytecode[]={
  27, 76,117, 97, 81,  0,  1,  4,  8,  4,  8,  0, 33,  0,  0,  0,  0,  0,  0,  0,
  64, 46, 46, 47,108,117, 97, 50, 99, 47,101,120, 97,109,112,108,101,115, 45,108,
 117, 97, 47,104,101,108,108,111, 46,108,117, 97,  0,  0,  0,  0,  0,  0,  0,  0,
