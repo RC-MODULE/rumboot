@@ -121,7 +121,6 @@ file(GLOB LUA_FILES src/lib/lua-5.1.5/src/*.c)
 include_directories(src/lib/lua-5.1.5/src/)
 
 ADD_LIBRARY(lua STATIC ${LUA_FILES})
-target_compile_options(lua PRIVATE -Wno-error=misleading-indentation)
 foreach(c ${RUMBOOT_CONFIGURATIONS})
   ADD_LIBRARY(rumboot-${c} OBJECT ${PLATFORM_SOURCES})
   target_compile_options(rumboot-${c} PUBLIC ${CONFIGURATION_${c}_CFLAGS})
