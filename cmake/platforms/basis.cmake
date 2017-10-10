@@ -29,20 +29,16 @@ rumboot_add_configuration(
 )
 
 macro(add_directory_with_targets dir)
-  file(GLOB RUMBOOT_TARGETS ${RUMBOOT_PLATFORM_TARGET_DIR}/${dir}/*.c)
-  foreach(target ${RUMBOOT_TARGETS})
+  file(GLOB RUMBOOT_TARGETS_C ${RUMBOOT_PLATFORM_TARGET_DIR}/${dir}/*.c)
+  file(GLOB RUMBOOT_TARGETS_S ${RUMBOOT_PLATFORM_TARGET_DIR}/${dir}/*.S)
+  file(GLOB RUMBOOT_TARGETS_LUA ${RUMBOOT_PLATFORM_TARGET_DIR}/${dir}/*.lua)
+  foreach(target ${RUMBOOT_TARGETS_C} ${RUMBOOT_TARGETS_S} ${RUMBOOT_TARGETS_LUA})
     add_rumboot_target(
         ${ARGN}
         FILES ${target}
     )
   endforeach()
-  file(GLOB RUMBOOT_TARGETS ${RUMBOOT_PLATFORM_TARGET_DIR}/${dir}/*.S)
-  foreach(target ${RUMBOOT_TARGETS})
-    add_rumboot_target(
-        ${ARGN}
-        FILES ${target}
-    )
-  endforeach()
+
 endmacro()
 
 ### Add tests here ###
@@ -60,6 +56,11 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       CONFIGURATION ROM
       PREFIX jenkins
       TESTGROUP short
+    )
+
+    add_directory_with_targets( lua/
+      CONFIGURATION IRAM
+      PREFIX lua
     )
 
   add_rumboot_target(
@@ -146,13 +147,6 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       CONFIGURATION ROM
       FILES can/can_maskfilter.c can/ccan_mask_filter.S can/int_send.S can/int_receive.S can/mem_config.S can/test_config.S
       NAME can_maskfilter
-    )
-
-  add_rumboot_target(
-        CONFIGURATION IRAM
-        FILES lua/test.lua
-        NAME hello
-        PREFIX lua
     )
 
 endmacro()
