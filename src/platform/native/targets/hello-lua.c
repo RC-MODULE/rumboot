@@ -64,7 +64,7 @@ int main()
 	L = luaL_newstate();
 	rumboot_platform_perf(NULL);
 
-	rumboot_platform_perf("luaL_openbase()");
+	rumboot_platform_perf("luaL_openlibs()");
 	luaL_openlibs(L);
 	rumboot_platform_perf(NULL);
 
