@@ -78,6 +78,11 @@ void rumboot_platform_trace(void *pc)
     dump32(EVENT_TRACE, pc);
 }
 
+void rumboot_platform_perf(const char *tag)
+{
+    dump32(EVENT_PERF, (void *) tag);
+}
+
 void rumboot_platform_raise_event(enum rumboot_simulation_event event, uint8_t arg)
 {
     iowrite32(arg, DGPIO_HIGH_BASE + DATA);

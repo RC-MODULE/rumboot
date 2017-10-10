@@ -56,5 +56,11 @@ void rumboot_arch_irq_enable()
 
 void rumboot_platform_request_file(const char *plusarg, uint32_t addr)
 {
-    
+
+}
+
+void rumboot_platform_perf(const char *tag)
+{
+
+
 }

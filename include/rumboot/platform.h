@@ -39,6 +39,7 @@ enum rumboot_simulation_event {
     EVENT_TRACE, /** A function call trace */
     EVENT_PRINTF, /** Simulator printf */
     EVENT_UPLOAD, /** Request file upload */
+    EVENT_PERF, /** Performance metric checkpoint */
 };
 
 
@@ -108,6 +109,13 @@ int rumboot_platform_getchar(uint32_t timeout_us);
  * @param addr   address to load the file to
  */
 void rumboot_platform_request_file(const char *plusarg, uint32_t addr);
+
+/**
+ * Record a performance metric checkpoint with optional name.
+ * @param tag string tag. NULL finishes previous performance metric region.
+ */
+void rumboot_platform_perf(const char *tag);
+
 /**
 *
 *  @}
