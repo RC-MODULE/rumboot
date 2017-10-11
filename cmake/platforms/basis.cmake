@@ -111,6 +111,23 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       IRUN_FLAGS +pcie_legacy_int_elab
     )
 
+if (CMAKE_BUILD_TYPE MATCHES "RTL")
+  add_rumboot_target(
+      SNAPSHOT default
+      LDS basis/rom.lds
+      FILES pcie/pcie_mbist_test.c
+      NAME pcie_mbist_test
+      IRUN_FLAGS +pcie_mbist_model
+    )
+else()
+  add_rumboot_target(
+      SNAPSHOT default
+      LDS basis/rom.lds
+      FILES pcie/pcie_mbist_test.c
+      NAME pcie_mbist_test
+    )
+endif()
+
   add_rumboot_target(
       SNAPSHOT default
       LDS basis/rom.lds

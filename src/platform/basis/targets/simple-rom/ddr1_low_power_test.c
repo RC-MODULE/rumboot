@@ -1,10 +1,10 @@
 
 //-----------------------------------------------------------------------------
-//  This program is for checking DDR0 low power features.
+//  This program is for checking DDR1 low power features.
 //    It also check interruptions.
 //  
 //  Test includes:
-//    - DDR0 turning On function
+//    - DDR1 turning On function
 //    - configure GIC
 //    - repeat few times
 //      - turn On, turn Off Active power-down
@@ -38,16 +38,16 @@
 #define irq_cntr_ptr 0x00050000
 #define irq_flag_ptr 0x00050008
 
-#define ddr0_int 87
+#define ddr1_int 88
 
 #define repeat_number 5
 
-static void DDR0_IRQ_handler (int irq, void *arg)
+static void DDR1_IRQ_handler (int irq, void *arg)
 {
-    rumboot_printf("DDR0 IRQ happened \n");
+    rumboot_printf("DDR1 IRQ happened \n");
     iowrite32 (ioread32 (irq_cntr_ptr) + 1, irq_cntr_ptr);
     iowrite32 (1, irq_flag_ptr);
-    iowrite32 (0xFFFFFFFF, DDR0_BASE + DENALI_CTL_95);
+    iowrite32 (0xFFFFFFFF, DDR1_BASE + DENALI_CTL_95);
 }
 
 uint32_t low_power_test (uint32_t base_address)
@@ -159,7 +159,7 @@ int main ()
     iowrite64 (0, irq_cntr_ptr) ;
     iowrite64 (0, irq_flag_ptr) ;
     
-    if (ddr_init (DDR0_BASE) != 0)
+    if (ddr_init (DDR1_BASE) != 0)
         return -1;
     
     //---------------------------------------------------------------------
@@ -167,14 +167,14 @@ int main ()
     //---------------------------------------------------------------------
     rumboot_irq_cli();
     struct rumboot_irq_entry *tbl = rumboot_irq_create(NULL);
-    rumboot_irq_set_handler(tbl, ddr0_int, 0, DDR0_IRQ_handler, NULL);
+    rumboot_irq_set_handler(tbl, ddr1_int, 0, DDR1_IRQ_handler, NULL);
     /* Activate the table */
     rumboot_irq_table_activate(tbl);
-    rumboot_irq_enable(ddr0_int);
+    rumboot_irq_enable(ddr1_int);
     rumboot_irq_sei();
     //---------------------------------------------------------------------
     
-    if (low_power_test (DDR0_BASE) != 0)
+    if (low_power_test (DDR1_BASE) != 0)
         return -2;
     
     return 0;

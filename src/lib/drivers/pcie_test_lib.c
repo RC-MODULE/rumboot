@@ -618,6 +618,7 @@ void addr_trans_mst_config
 
 //-----------------------------------------------------------------------------
 //  This function is for External IRQ Generator configuration
+//  This function must be used after PCIe turn On, otherwise APB bus will buzz
 //  Now this function realise only default MSIX mapping
 //  Now this function realise only hardcoded MSIX vectors
 //    MSIX vectors: addr           data
