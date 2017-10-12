@@ -32,6 +32,14 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         FILES ${target}
     )
   endforeach()
+
+  add_rumboot_target(
+      SNAPSHOT "null"
+      PREFIX "host"
+      NAME luac
+      FILES ${CMAKE_SOURCE_DIR}/src/lib/lua-5.1.5/src/luac.c
+  )
+
 endmacro()
 
 macro(rumboot_platform_setup_configuration)
