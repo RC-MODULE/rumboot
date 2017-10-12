@@ -62,7 +62,7 @@ static void usage(const char* message)
  "  -v       show version information\n"
  "  --       stop handling options\n",
  progname,Output);
- exit(EXIT_FAILURE);
+ exit(0);
 }
 
 #define	IS(s)	(strcmp(argv[i],s)==0)
