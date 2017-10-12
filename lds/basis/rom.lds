@@ -1,7 +1,7 @@
 OUTPUT_ARCH(ARM)
 MEMORY
 {
-    ROM (rx): ORIGIN = 0x0, LENGTH = 0x40000
+    ROM (rx): ORIGIN = 0x0, LENGTH = 0x8000
     IM0 (rwx): ORIGIN = 0x40000, LENGTH = 0x40000
 }
 
