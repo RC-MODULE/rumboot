@@ -59,6 +59,11 @@ void rumboot_platform_request_file(const char *plusarg, uint32_t addr)
 
 }
 
+void rumboot_platform_dump_region(const char *filename, uint32_t addr, uint32_t len)
+{
+
+}
+
 void rumboot_platform_perf(const char *tag)
 {
 

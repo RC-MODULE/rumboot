@@ -38,8 +38,9 @@ enum rumboot_simulation_event {
     EVENT_STDIN, /** Request for next character input */
     EVENT_TRACE, /** A function call trace */
     EVENT_PRINTF, /** Simulator printf */
-    EVENT_UPLOAD, /** Request file upload */
+    EVENT_UPLOAD, /** Request file upload to memory */
     EVENT_PERF, /** Performance metric checkpoint */
+    EVENT_DOWNLOAD /** Request file download from memory */
 };
 
 
@@ -109,6 +110,16 @@ int rumboot_platform_getchar(uint32_t timeout_us);
  * @param addr   address to load the file to
  */
 void rumboot_platform_request_file(const char *plusarg, uint32_t addr);
+
+
+/**
+ * Request simulation environment to save contents of specified physical memory region
+ * to a file
+ * @param filename filaneme to create
+ * @param addr     physical address of buffer to dump
+ * @param len      length of the buffer to dump
+ */
+void rumboot_platform_dump_region(const char* filename, uint32_t addr, uint32_t len);
 
 /**
  * Record a performance metric checkpoint with optional name.

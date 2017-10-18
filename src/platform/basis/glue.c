@@ -123,3 +123,10 @@ void rumboot_platform_request_file(const char *plusarg, uint32_t addr)
     dump32(EVENT_UPLOAD, (void *) plusarg);
     dump32(EVENT_UPLOAD, (void *) addr);
 }
+
+void rumboot_platform_dump_region(const char* filename, uint32_t addr, uint32_t len)
+{
+    dump32(EVENT_DOWNLOAD, (void *) filename);
+    dump32(EVENT_DOWNLOAD, (void *) addr);
+    dump32(EVENT_DOWNLOAD, (void *) len);        
+}
