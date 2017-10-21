@@ -1954,6 +1954,9 @@ extern "C" {
 #endif
 #include <stdio.h>
 #include <stdlib.h>
+#include <rumboot/platform.h>
+#include <rumboot/printf.h>
+
 ]])
 
   if enable_lua_init then
@@ -2062,8 +2065,13 @@ static void lc_createarg(lua_State * L, const lc_args_t * const args) {
 
   cast:append(C.C([[
 static int lc_pmain(lua_State * L) {
+  rumboot_printf("Opening libs\n");
+  rumboot_platform_perf("luaL_openlibs()");
   luaL_openlibs(L);
+  rumboot_platform_perf(NULL);
 
+  rumboot_printf("Running the rest of the generated code\n");
+  rumboot_platform_perf("generated code");
   const lc_args_t * const args = (lc_args_t*)lua_touserdata(L, 1);
   lc_createarg(L, args);
 
@@ -2094,16 +2102,24 @@ static int lc_pmain(lua_State * L) {
 ]]))
 
   cast:append(C.C [[
-int main(int argc, const char ** argv) {
+
+int main() {
+  int argc = 1;
+  const char *argv[] = { "l", NULL };
   lc_args_t args = {argc, argv};
+  rumboot_printf("Hello, I'm now creating a lua state\n");
+  rumboot_platform_perf("luaL_newstate()");
   lua_State * L = luaL_newstate();
   if (! L) { fputs("Failed creating Lua state.", stderr); exit(1); }
+  rumboot_platform_perf(NULL);
 
+  rumboot_printf("I'm now running a test\n");
+  rumboot_platform_perf("lua_cpcall()");
   int status = lua_cpcall(L, lc_pmain, &args);
   if (status != 0) {
     fputs(lua_tostring(L,-1), stderr);
   }
-
+  rumboot_platform_perf(NULL);
   lua_close(L);
   return 0;
 }
