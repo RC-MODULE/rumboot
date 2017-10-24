@@ -4,6 +4,7 @@
 #include <rumboot/platform.h>
 #include <rumboot/printf.h>
 #include <rumboot/io.h>
+#include <arch/arm/irq_macros.h>
 
 /* Platform-specific glue */
 uint32_t rumboot_platform_get_uptime()
@@ -16,11 +17,20 @@ uint32_t rumboot_platform_get_uptime()
 #define DIR                 0x0400
 #define DATA                0x03FC
 
+
+/* Comes from startup.S */
+extern char rumboot_default_irq_vectors;
 void rumboot_platform_setup() {
     iowrite32(0xff, DGPIO_LOW_BASE + DIR);
     iowrite32(0x00, DGPIO_LOW_BASE + DATA);
     iowrite32(0xff, DGPIO_HIGH_BASE + DIR);
     iowrite32(0x00, DGPIO_HIGH_BASE + DATA);
+
+    /*
+     * Make sure VBAR is where we need it.
+     * Needed for handling IRQs in secondary image
+     */
+    arm_vbar_set((uint32_t) &rumboot_default_irq_vectors);
 }
 
 union u32 {
@@ -128,5 +138,5 @@ void rumboot_platform_dump_region(const char* filename, uint32_t addr, uint32_t 
 {
     dump32(EVENT_DOWNLOAD, (void *) filename);
     dump32(EVENT_DOWNLOAD, (void *) addr);
-    dump32(EVENT_DOWNLOAD, (void *) len);        
+    dump32(EVENT_DOWNLOAD, (void *) len);
 }

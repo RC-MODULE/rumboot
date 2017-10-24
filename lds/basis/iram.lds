@@ -9,6 +9,7 @@ SECTIONS
 {
  .rwx : {
   KEEP(*(.header))
+  KEEP(*(.text.startup))
   *(.text)
   *(.rodata)
   *(.data)
@@ -24,10 +25,27 @@ SECTIONS
 
   /* This is where stacks start */
   rumboot_platform_stack_area_start = .;
-  . = . + 0xf000; /* 60k heap */
+
+  . = . + 0x400; /* 1k FIQ stack */
+  rumboot_platform_fiq_stack_top = .;
+
+  . = . + 0x400; /* 1k ABT stack */
+  rumboot_platform_abt_stack_top = .;
+
+  . = . + 0x400; /* 1k UND stack */
+  rumboot_platform_und_stack_top = .;
+
+  . = . + 0x400; /* 1k USR stack */
+  rumboot_platform_usr_stack_top = .;
+
+  . = . + 0x1000; /* 4k IRQ stack */
+  rumboot_platform_irq_stack_top = .;
+
+  . = . + 0xe000; /* 56k svc stack */
+  rumboot_platform_svc_stack_top = .;
+
   /* This is where stacks end */
   rumboot_platform_stack_area_end = .;
-
  } > IM0
 
  /DISCARD/ :

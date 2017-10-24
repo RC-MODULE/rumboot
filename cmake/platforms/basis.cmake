@@ -58,6 +58,18 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       TESTGROUP short
     )
 
+    add_directory_with_targets(irq/
+      CONFIGURATION ROM
+      PREFIX irq-rom
+      TESTGROUP short
+    )
+
+    add_directory_with_targets(irq/
+      CONFIGURATION IRAM
+      PREFIX irq-iram
+      TESTGROUP short
+    )
+
     add_directory_with_targets( lua/
       CONFIGURATION IRAM
       PREFIX lua

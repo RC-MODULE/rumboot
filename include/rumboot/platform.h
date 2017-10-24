@@ -210,6 +210,11 @@ extern char rumboot_platform_bss_start;
  */
 extern char rumboot_platform_bss_end;
 
+/**
+ * Rumboot's entry point. Usually provided by startup assembly code.
+ * This will be placed as the entry point of the secondary image 
+ */
+extern void rumboot_entry_point();
 /** @}*/
 
 #endif /* end of include guard: RUMBOOT_PLATFORM_H */

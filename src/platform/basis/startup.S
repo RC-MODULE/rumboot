@@ -93,9 +93,9 @@ fiq_handler:
 endless_loop:
   b endless_loop;
 
-
+.global rumboot_entry_point
 .global rumboot_reset_handler
-
+rumboot_entry_point:
 rumboot_reset_handler:
     mov r0,  #0
     mov r1,  #0
