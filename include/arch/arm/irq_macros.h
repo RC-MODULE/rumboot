@@ -45,6 +45,27 @@ static inline int rumboot_arch_irq_setstate(int pri_mask)
     return 0;
 }
 
+
+static inline void arm_vbar_set(uint32_t addr)
+{
+    /* Write Secure or Non-secure Vector Base Address Register */
+    asm("MCR p15, 0, %0, c12, c0, 0\n"
+        :
+        : "r" (addr)
+    );
+}
+
+static inline uint32_t arm_vbar_get()
+{
+    uint32_t ret;
+    /* Read Secure or Non-secure Vector Base Address Register */
+    asm(
+        "MRC p15, 0, %0, c12, c0, 0\n"
+        : "=r" (ret)
+    );
+    return ret;
+}
+
 /**
  *
  * Define a critical section. Interrupts (IRQ & FIQ) will be disabled before
