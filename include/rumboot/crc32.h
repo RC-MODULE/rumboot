@@ -12,6 +12,7 @@
 /**
  *
  * \defgroup algo Algorithms
+ * \ingroup libraries
  *
  * \addtogroup algo
  *  @{

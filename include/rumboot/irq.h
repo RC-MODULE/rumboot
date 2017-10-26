@@ -42,6 +42,8 @@ static inline void rumboot_arch_irq_enable()
     /**
     *
     * \defgroup irq Interrupt subsystem
+    * \ingroup libraries
+    * 
     * These functions implement interrupt handling in rumboot code.
     * \code{.c}
     * #include <rumboot/irq.h>

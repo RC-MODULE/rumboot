@@ -10,7 +10,8 @@
 /**
  *
  * \defgroup testsuite TestSuite library
- *
+ * \ingroup libraries
+ * 
  * \code{.c}
  * #include <rumboot/testsuite.h>
  * \endcode

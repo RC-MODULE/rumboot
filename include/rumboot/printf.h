@@ -6,7 +6,8 @@
 /**
  *
  * \defgroup stdio Standard input/output
- *
+ * \ingroup libraries
+ * 
  * Functions and macros in this group implement reading and writing
  *
  * \code{.c}

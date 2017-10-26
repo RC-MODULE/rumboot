@@ -5,6 +5,8 @@
 /**
  *
  * \defgroup memio Register access functions
+ * \ingroup libraries
+ * 
  * These functions should be used to access device registers.
  * \code{.c}
  * #include <rumboot/io.h>
