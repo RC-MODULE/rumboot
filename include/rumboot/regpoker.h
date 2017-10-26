@@ -1,0 +1,53 @@
+#ifndef REGPOKER_H
+#define REGPOKER_H
+
+/**
+ *
+ * \defgroup regpoker Register Checker Library
+ * \ingroup libraries
+ * 
+ * This library implements a simple way to read/write check an array of registers
+ *
+ * \code{.c}
+ * #include <rumboot/regpoker.h>
+ * \endcode
+ *
+ * \addtogroup regpoker
+ *  @{
+ */
+
+enum checker_type {
+	REGPOKER_EOL = 0,
+	REGPOKER_READ8,
+	REGPOKER_WRITE8,
+	REGPOKER_READ16,
+	REGPOKER_WRITE16,
+	REGPOKER_READ32,
+	REGPOKER_WRITE32,
+	REGPOKER_READ64,
+	REGPOKER_WRITE64,
+};
+
+
+struct regpoker_checker {
+	const char *		name;
+	enum checker_type	tp;
+	uint32_t		base;
+	uint64_t		expected;
+	uint64_t		mask;
+};
+
+
+/**
+ * Checks an array of registers for read and write modes.
+ *
+ * @param  array  Array of struct regpoker_cheker elements to check
+ * @param  offset An offset to apply to all base addresses in array
+ * @return        The number of registers that failed the check
+ */
+int rumboot_regpoker_check_array(struct regpoker_checker *array, uint32_t offset);
+
+/**
+*  @}
+*/
+#endif /* end of include guard: REGPOKER_H */
