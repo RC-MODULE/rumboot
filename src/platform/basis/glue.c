@@ -80,12 +80,13 @@ void __attribute__((noreturn)) rumboot_platform_panic(const char *why, ...)
 static void dump32(enum rumboot_simulation_event event, void *pc)
 {
 	union u32 u;
-
 	u.u = (uint32_t)pc;
-	rumboot_platform_raise_event(event, u.byte[3]);
-	rumboot_platform_raise_event(event, u.byte[2]);
-	rumboot_platform_raise_event(event, u.byte[1]);
-	rumboot_platform_raise_event(event, u.byte[0]);
+    RUMBOOT_ATOMIC_BLOCK() {
+	       rumboot_platform_raise_event(event, u.byte[3]);
+	       rumboot_platform_raise_event(event, u.byte[2]);
+	       rumboot_platform_raise_event(event, u.byte[1]);
+	       rumboot_platform_raise_event(event, u.byte[0]);
+    }
 }
 
 void rumboot_platform_trace(void *pc)
