@@ -18,10 +18,17 @@ int _gettimeofday(struct timeval *__tp, void *__tzp)
 	return -1;
 }
 
+/* Override newlib exit */
+void exit(int status)
+{
+	_exit(status);
+}
+
 void _exit(int status)
 {
-	while (1)
-		;
+    uint32_t code = status;
+    rumboot_platform_raise_event(EVENT_TERM, &code, 1);
+	while(1);;
 }
 
 int _close(int file)

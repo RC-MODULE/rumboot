@@ -40,7 +40,7 @@ enum rumboot_simulation_event {
     EVENT_PRINTF, /** Simulator printf */
     EVENT_UPLOAD, /** Request file upload to memory */
     EVENT_PERF, /** Performance metric checkpoint */
-    EVENT_DOWNLOAD /** Request file download from memory */
+    EVENT_DOWNLOAD, /** Request file download from memory */
 };
 
 
@@ -83,9 +83,11 @@ void rumboot_platform_trace(void *pc);
  *
  *
  * @param event Event code to send to modelling environment
- * @param arg Simulation event argument
+ * @param data  Data to send to modelling environment (up to 8 words)
+ * @param len   Length of data
  */
-void rumboot_platform_raise_event(enum rumboot_simulation_event event, uint8_t arg);
+void rumboot_platform_raise_event(enum rumboot_simulation_event event,
+     uint32_t *data, uint32_t len);
 
 /**
  * Send a character to stdout.
@@ -138,15 +140,33 @@ void rumboot_platform_perf(const char *tag);
 *  @{
 */
 
+#define RUMBOOT_SYNC_MAGIC_IN  0x0001c0de
+#define RUMBOOT_SYNC_MAGIC_OUT 0x0002c0de
 
 /**
- * This global structure stores internal romboot state.
+ * This represents a syncbuffer for ram-based operations
+ * The syncbuffer's directtion is coded with 'magic value'
+ * if opcode field is EVENT_NOP there's nothing there.
+ *
+ */
+struct rumboot_syncbuffer {
+    uint32_t magic;
+    uint32_t opcode;
+    uint32_t data[8];
+};
+
+/**
+ * This global structure stores internal romboot state and some useful variables
  * It stores selftest results for further inspection by secondary
  * loader. The instance is always available via rumboot_platform_runtime_info
  */
 struct rumboot_runtime_info {
     /** Magic value. Indicates that this structure contains valid data */
     uint32_t magic;
+    /** Modelling memory IO buffer. Do not move it inside struct! */
+    struct rumboot_syncbuffer out;
+    /** Modelling memory IO buffer. Do not move it inside struct! */
+    struct rumboot_syncbuffer in;
     /** Current heap end pointer, used by _sbrk and rumboot_malloc() */
     char *current_heap_end;
     /** Pointer to current active irq table. Do not use directly, use rumboot_irq_table_get() */
@@ -212,7 +232,7 @@ extern char rumboot_platform_bss_end;
 
 /**
  * Rumboot's entry point. Usually provided by startup assembly code.
- * This will be placed as the entry point of the secondary image 
+ * This will be placed as the entry point of the secondary image
  */
 extern void rumboot_entry_point();
 /** @}*/

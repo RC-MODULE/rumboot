@@ -24,8 +24,6 @@ SECTIONS
   . = . + 0x20000; /* spl image start */
   rumboot_platform_spl_end = .;
 
-  rumboot_platform_runtime_info = .;
-  *(.rumboot_platform_runtime_info);
   . = ALIGN(8);
 
   rumboot_platform_heap_start = ABSOLUTE(.);
@@ -55,6 +53,10 @@ SECTIONS
 
   /* This is where stacks end */
   rumboot_platform_stack_area_end = .;
+
+  /* Runtime info is at the very top of iram */
+  rumboot_platform_runtime_info = .;
+  *(.rumboot_platform_runtime_info);
  } > IM0
 
 

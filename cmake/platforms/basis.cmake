@@ -188,6 +188,7 @@ file(GLOB PLATFORM_SOURCES
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/*.c
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/startup.S
     ${CMAKE_SOURCE_DIR}/src/lib/drivers/irq-gic.c
+    ${CMAKE_SOURCE_DIR}/src/lib/eventsystem-memory.c
     ${CMAKE_SOURCE_DIR}/src/lib/drivers/ddr_test_lib.c
     ${CMAKE_SOURCE_DIR}/src/lib/drivers/pcie_test_lib.c
     ${CMAKE_SOURCE_DIR}/src/lib/drivers/dma_test_lib.c
