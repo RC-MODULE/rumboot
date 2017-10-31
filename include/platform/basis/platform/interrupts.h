@@ -22,6 +22,12 @@
 
 #define DIT0_TIMINT1 42
 #define DIT0_TIMINT2 43
+#define DIT1_TIMINT1 44
+#define DIT1_TIMINT2 45
+#define DIT2_TIMINT1 46
+#define DIT2_TIMINT2 47
+#define DIT3_TIMINT1 48
+#define DIT3_TIMINT2 49
 
 /**
  * @}
