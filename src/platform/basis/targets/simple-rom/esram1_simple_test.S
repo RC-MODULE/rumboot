@@ -14,8 +14,23 @@
 
 #include <platform/defs.h>
 
-#define ESRAM1_start_addr 0x60000 + 0x10000
-#define ESRAM1_check_size 0x10000
+.global rumboot_platform_heap_start
+.global rumboot_platform_heap_end
+/*
+  rumboot lds is so that actually only heap in ESRAM1 is unused
+  so we use a place between rumboot_platform_heap_start 
+  and rumboot_platform_heap_end
+  this place is also aligned by 256 byte because of our method
+*/
+/*
+#define ESRAM1_start_addr (((rumboot_platform_heap_start - 1) & 0xFFFFFF00) + 0x100)
+#define ESRAM1_end_addr (rumboot_platform_heap_end & 0xFFFFFF00)
+#define ESRAM1_check_size (ESRAM1_end_addr - ESRAM1_start_addr)
+*/
+
+#define ESRAM1_start_addr 0x00060100
+#define ESRAM1_end_addr   0x0007EF00
+#define ESRAM1_check_size (ESRAM1_end_addr - ESRAM1_start_addr)
 
 .global main
 main:
