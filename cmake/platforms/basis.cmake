@@ -24,6 +24,7 @@ rumboot_add_configuration(
   PREFIX iram
   LDFLAGS -Wl,--start-group -lgcc -lc -lm -Wl,--end-group "-e rumboot_main"
   FILES ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c
+  CFLAGS -DRUMBOOT_PRINTF_ACCEL
   BOOTROM bootrom-stub
   FEATURES LUA
 )
