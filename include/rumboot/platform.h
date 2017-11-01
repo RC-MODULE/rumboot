@@ -84,7 +84,7 @@ void rumboot_platform_trace(void *pc);
  *
  * @param event Event code to send to modelling environment
  * @param data  Data to send to modelling environment (up to 8 words)
- * @param len   Length of data
+ * @param len   Length of data (in 32-bit words)
  */
 void rumboot_platform_raise_event(enum rumboot_simulation_event event,
      uint32_t *data, uint32_t len);

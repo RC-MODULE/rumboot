@@ -13,7 +13,7 @@ void rumboot_platform_raise_event(enum rumboot_simulation_event event,
 				  uint32_t *data, uint32_t len)
 {
 	RUMBOOT_ATOMIC_BLOCK() {
-		memcpy(rumboot_platform_runtime_info.out.data, data, len);
+		memcpy(rumboot_platform_runtime_info.out.data, data, len * sizeof(*data));
 		rumboot_platform_runtime_info.out.opcode = event;
 	}
 }
