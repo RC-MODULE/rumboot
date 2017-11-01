@@ -157,7 +157,7 @@ struct mem_layout basis_rom = {
 };
 
 struct mem_layout basis_rom_new = {
-	.line_count		    = 262144*2,
+	.line_count		    = 32768,
 	.line_length		= 32,
 	.adjacement_banks	= 1,
 	.inverse_order		= 0,

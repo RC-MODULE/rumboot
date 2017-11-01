@@ -5,7 +5,7 @@
  *
  * \defgroup regpoker Register Checker Library
  * \ingroup libraries
- * 
+ *
  * This library implements a simple way to read/write check an array of registers
  *
  * \code{.c}
@@ -45,7 +45,7 @@ struct regpoker_checker {
  * @param  offset An offset to apply to all base addresses in array
  * @return        The number of registers that failed the check
  */
-int rumboot_regpoker_check_array(struct regpoker_checker *array, uint32_t offset);
+int rumboot_regpoker_check_array(const struct regpoker_checker *array, uint32_t offset);
 
 /**
 *  @}

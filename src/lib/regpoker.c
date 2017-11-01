@@ -39,7 +39,7 @@ case tag: \
 }
 
 
-int rumboot_regpoker_check_array(struct regpoker_checker *array, uint32_t offset)
+int rumboot_regpoker_check_array(const struct regpoker_checker *array, uint32_t offset)
 {
 	int fails = 0;
 
