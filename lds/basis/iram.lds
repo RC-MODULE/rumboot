@@ -46,12 +46,13 @@ SECTIONS
 
   /* This is where stacks end */
   rumboot_platform_stack_area_end = .;
+ } > IM0
 
+ .runtime 0x7f000 (NOLOAD): {
   /* Runtime info is at the very top of iram */
   rumboot_platform_runtime_info = .;
   *(.rumboot_platform_runtime_info);
-
- } > IM0
+ }
 
  /DISCARD/ :
  {
