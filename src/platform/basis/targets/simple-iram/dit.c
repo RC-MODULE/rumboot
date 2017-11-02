@@ -22,7 +22,7 @@
 #define TIMER0_CYCLES           1
 #define TIMER1_CYCLES           2
 
-struct irq_number{
+struct s804_instance{
     int timer0_irq;
     int timer1_irq;
     int base_addr;
@@ -31,24 +31,21 @@ struct irq_number{
 
 static void handler0(int irq, void *arg)
 {
-
-    struct irq_number *a = (struct irq_number *) arg;
-//    *((int*)arg) +=1;
+    struct s804_instance *a = (struct s804_instance *) arg;
     a->timer0_irq = a->timer0_irq +1 ;
 	rumboot_printf("IRQ 0 arrived  \n");
     
-	rumboot_printf("DIT %d TIMER 0 INT # == %d  \n",a->dit_index,a->timer0_irq);
-    sp804_clrint(0,a->base_addr);
+	rumboot_printf("sp804_%d timer 0 INT # %d  \n",a->dit_index,a->timer0_irq);
+    sp804_clrint(a->base_addr,0);
 }
 
 static void handler1(int irq, void *arg)
 {
-//    *((int*)arg) +=1;
-    struct irq_number *a = (struct irq_number *) arg;
+    struct s804_instance *a = (struct s804_instance *) arg;
     a->timer1_irq = a->timer1_irq+1;
 	rumboot_printf("IRQ 1 arrived  \n");
-	rumboot_printf("DIT %d TIMER 1 INT # == %d  \n",a->dit_index,a->timer1_irq);
-    sp804_clrint(1,a->base_addr);
+	rumboot_printf("sp804_%d timer 0 INT # %d  \n",a->dit_index,a->timer1_irq);
+    sp804_clrint(a->base_addr,1);
 
 }
 
@@ -58,41 +55,41 @@ bool test_dit_4_timers (uint32_t structure)
     int c = 0;
     int d = 0;
    
-    struct irq_number *stru = (struct irq_number *) structure;
+    struct s804_instance *stru = (struct s804_instance *) structure;
     int base_addr = stru->base_addr ;
 
     
-    struct sp804_conf config_0;
-    config_0.mode             = ONESHOT    ;
-    config_0.interrupt_enable = 1          ;
-    config_0.clock_division   = 1          ;
-    config_0.width            = 32         ;
-    config_0.load             = 100        ;
-    config_0.bgload           = 0          ;
+    struct sp804_conf config_0 = {
+    .mode             = ONESHOT,
+    .interrupt_enable = 1      ,
+    .clock_division   = 1      ,
+    .width            = 32     ,
+    .load             = 100    ,
+    .bgload           = 0      
+    };
     
-    struct sp804_conf config_1;
-    config_1.mode             = ONESHOT    ;
-    config_1.interrupt_enable = 1          ;
-    config_1.clock_division   = 1          ;
-    config_1.width            = 32         ;
-    config_1.load             = 200        ;
-    config_1.bgload           = 0          ;
+    struct sp804_conf config_1 = {
+    .mode             = ONESHOT,
+    .interrupt_enable = 1      ,
+    .clock_division   = 1      ,
+    .width            = 32     ,
+    .load             = 200    ,
+    .bgload           = 0      
+    };
 
     for (int i =0; i<TIMER0_CYCLES+stru->dit_index; i++)
     {
-        sp804_config(config_0,0,base_addr);
-        sp804_enable(0,base_addr); 
-        while(sp804_get_value(0,base_addr)){};
-        rumboot_printf("TIMER0 CYCLE # %d \n", i);
+        sp804_config(base_addr,&config_0,0);
+        sp804_enable(base_addr,0); 
+        while(sp804_get_value(base_addr,0)){};
         c++;
     }
     
     for (int i =0; i<TIMER1_CYCLES+stru->dit_index; i++)
     {
-        sp804_config(config_1,1,base_addr);
-        sp804_enable(1,base_addr); 
-        while(sp804_get_value(1,base_addr)){};
-        rumboot_printf("TIMER1 CYCLE # %d \n", i);
+        sp804_config(base_addr,&config_1,1);
+        sp804_enable(base_addr,1); 
+        while(sp804_get_value(base_addr,1)){};
         d++;
     }    
     
@@ -100,22 +97,22 @@ bool test_dit_4_timers (uint32_t structure)
     
     
     if(stru->timer0_irq==TIMER0_CYCLES+stru->dit_index){
-            rumboot_printf("TEST 0 OK \n");
+            rumboot_printf("Timer 0 test OK \n");
     }
     else
     {
-            rumboot_printf("ERROR IN TEST 0 \n");
-            rumboot_printf("INTERRUPTS CAME == %d, SHOULD BE %d \n", stru->timer0_irq,TIMER0_CYCLES+stru->dit_index);
+            rumboot_printf("ERROR in Timer 0 test \n");
+            rumboot_printf("Interrupts came == %d, should be %d \n", stru->timer0_irq,TIMER0_CYCLES+stru->dit_index);
             return false;
     }
 
     if(stru->timer1_irq==TIMER1_CYCLES+stru->dit_index){
-            rumboot_printf("TEST 1 OK \n");
+            rumboot_printf("Timer 1 test OK \n");
     }
     else
     {
-            rumboot_printf("ERROR IN TEST 1 \n");
-            rumboot_printf("INTERRUPTS CAME == %d, SHOULD BE %d \n", stru->timer1_irq,TIMER1_CYCLES+stru->dit_index);
+            rumboot_printf("ERROR in Timer 1 test \n");
+            rumboot_printf("Interrupts came == %d, should be %d \n", stru->timer1_irq,TIMER1_CYCLES+stru->dit_index);
             return false;
     }
  
@@ -123,7 +120,7 @@ bool test_dit_4_timers (uint32_t structure)
 }
 
 
-static struct irq_number in[] = {
+static struct s804_instance in[] = {
     {
         .base_addr = DIT0_BASE,
         .dit_index = 0
@@ -154,8 +151,10 @@ TEST_SUITE_END();
 int main ()
 {
 // Set up interrupt handlers    
+    rumboot_printf("SP804 test START\n");
 	rumboot_irq_cli();
 	struct rumboot_irq_entry *tbl = rumboot_irq_create(NULL);
+    
     rumboot_irq_set_handler(tbl, 42, 0, handler0, &in[0] );
     rumboot_irq_set_handler(tbl, 43, 0, handler1, &in[0] );
     rumboot_irq_set_handler(tbl, 44, 0, handler0, &in[1] );

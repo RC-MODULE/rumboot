@@ -31,7 +31,7 @@
  *  
  *  \details Manualy sets ENABLE bit in CONTROL register of chosen timer.
  */
-void sp804_enable(int index, int base_addr)
+void sp804_enable( int base_addr, int index)
 {
     int cntrl ;
     int control_reg;
@@ -57,7 +57,7 @@ void sp804_enable(int index, int base_addr)
  *  
  *  \details Manualy clears ENABLE bit in CONTROL register of chosen timer.
  */
-void sp804_stop(int index, int base_addr)
+void sp804_stop( int base_addr, int index)
 {
     int cntrl ;
     int control_reg;
@@ -83,7 +83,7 @@ void sp804_stop(int index, int base_addr)
  *  
  *  \details  
  */ 
-int sp804_get_value(int index, int base_addr)
+int sp804_get_value( int base_addr, int index)
 {
     int value_reg;
     if (index){
@@ -105,7 +105,7 @@ int sp804_get_value(int index, int base_addr)
  *  
  *  \details Manualy writes 1 in CLEARINT register of the chosen timer.
  */ 
-void sp804_clrint(int index, int base_addr)
+void sp804_clrint( int base_addr, int index)
 {
     int int_clr_reg;
     if (index){
@@ -118,31 +118,6 @@ void sp804_clrint(int index, int base_addr)
 }
 
 
-///**
-// *  \brief Config timer
-// *  
-// *  \param [in] load Description for load
-// *  \param [in] optional_bgload Description for optional_bgload
-// *  \param [in] cntrl: Input control register value
-// *  \return Return nothing
-// *  
-// *  \details Manualy writes input value to CONTROL1, LOAD1 and BGLOAD1 registers. No need to use with oneshot/periodi/freerun funcs.
-// */
-//void sp804_config_1(int load, int optional_bgload, int cntrl, int base_addr)
-//{
-//    if (load)
-//    {
-//        iowrite32(load,base_addr+DIT0_REG_LOAD1);
-//    }
-//    if (optional_bgload)
-//    {
-//        iowrite32(optional_bgload,base_addr+DIT0_REG_BGLOAD1);
-//    }
-//
-//    iowrite8( cntrl, base_addr+DIT0_REG_CONTROL1);
-//}
-//
-
 /**
  *  \brief Config timer
  *  
@@ -154,25 +129,25 @@ void sp804_clrint(int index, int base_addr)
  *  \details Sets CONTROl register of the chosen timer due to input structure values,
  *   sets LOAD and BgLoad values if they are non-zero.
  */
-void sp804_config( struct sp804_conf config, int index, int base_addr)
+void sp804_config( int base_addr, const struct sp804_conf * config, int index)
 {
     int cntrl = 0;
     // MODE
-    if (config.mode == ONESHOT){
+    if (config->mode == ONESHOT){
     cntrl |= DIT_CTRL_ONESHOT;
     cntrl &= ~DIT_CTRL_PERIODIC;
     }
-    else if (config.mode == PERIODIC){
+    else if (config->mode == PERIODIC){
     cntrl &= ~ DIT_CTRL_ONESHOT;
     cntrl |=DIT_CTRL_PERIODIC;
     }
-    else if (config.mode == FREERUN){
+    else if (config->mode == FREERUN){
     cntrl &= ~ DIT_CTRL_ONESHOT;
     cntrl &= ~ DIT_CTRL_PERIODIC;
     }
     
     // INT EN
-    if (config.interrupt_enable){
+    if (config->interrupt_enable){
         cntrl |= DIT_CTRL_INTEN;
     }
     else{
@@ -180,11 +155,11 @@ void sp804_config( struct sp804_conf config, int index, int base_addr)
     }
     
     // CLK DIV
-    if (config.clock_division==256){
+    if (config->clock_division==256){
         cntrl |=  DIT_CTRL_DIV1;
         cntrl &= ~DIT_CTRL_DIV0;
     }
-    else if (config.clock_division==16){
+    else if (config->clock_division==16){
         cntrl &= ~DIT_CTRL_DIV1;
         cntrl |= DIT_CTRL_DIV0;
     }
@@ -194,7 +169,7 @@ void sp804_config( struct sp804_conf config, int index, int base_addr)
     }
     
     // SIZE 32
-    if (config.width == 32)
+    if (config->width == 32)
     {
         cntrl |= DIT_CTRL_SIZE32;
     }
@@ -208,30 +183,30 @@ void sp804_config( struct sp804_conf config, int index, int base_addr)
         iowrite8( cntrl, base_addr+DIT0_REG_CONTROL1);
         
         // LOAD
-        if (config.load)
+        if (config->load)
         {
-            iowrite32(config.load,base_addr+DIT0_REG_LOAD1);
+            iowrite32(config->load,base_addr+DIT0_REG_LOAD1);
         }
         
         // BG LOAD
-        if (config.bgload)
+        if (config->bgload)
         {
-            iowrite32(config.bgload,base_addr+DIT0_REG_BGLOAD1);
+            iowrite32(config->bgload,base_addr+DIT0_REG_BGLOAD1);
         }
     }
     else{
         iowrite8( cntrl, base_addr+DIT0_REG_CONTROL0);
 
         // LOAD
-        if (config.load)
+        if (config->load)
         {
-            iowrite32(config.load,base_addr+DIT0_REG_LOAD0);
+            iowrite32(config->load,base_addr+DIT0_REG_LOAD0);
         }
         
         // BG LOAD
-        if (config.bgload)
+        if (config->bgload)
         {
-            iowrite32(config.bgload,base_addr+DIT0_REG_BGLOAD0);
+            iowrite32(config->bgload,base_addr+DIT0_REG_BGLOAD0);
         }
     }
 

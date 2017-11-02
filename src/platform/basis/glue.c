@@ -4,14 +4,14 @@
 #include <rumboot/platform.h>
 #include <rumboot/printf.h>
 #include <rumboot/io.h>
-#include <rumboot/dit_lib.h>
 #include <arch/arm/irq_macros.h>
 #include <platform/devices.h>
+#include <rumboot/dit_lib.h>
 
 /* Platform-specific glue */
 uint32_t rumboot_platform_get_uptime()
 {
-    return (0xFFFFFFFF-sp804_get_value(1,0x0104B000))/6.25;
+    return (0xFFFFFFFF-sp804_get_value(DIT3_BASE,1))/6.25;
 }
 
 #define DGPIO_LOW_BASE      0x01098000
@@ -41,8 +41,8 @@ void rumboot_platform_setup() {
   conf_str.load             = 0          ;
   conf_str.bgload           = 0          ;
 //
-  sp804_config(conf_str,1,DIT3_BASE);
-  sp804_enable(1,DIT3_BASE);  
+  sp804_config(DIT3_BASE,&conf_str,1);
+  sp804_enable(DIT3_BASE,1);  
     /*
      * Make sure VBAR is where we need it.
      * Needed for handling IRQs in secondary image
