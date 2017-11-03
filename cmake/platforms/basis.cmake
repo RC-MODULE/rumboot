@@ -13,7 +13,7 @@ rumboot_add_configuration(
   SNAPSHOT default
   LDS basis/rom.lds
   LDFLAGS "-e rumboot_reset_handler"
-  CFLAGS -DRUMBOOT_ONLY_STACK -DRUMBOOT_PRINTF_ACCEL
+  CFLAGS -fno-zero-initialized-in-bss -DRUMBOOT_ONLY_STACK -DRUMBOOT_PRINTF_ACCEL
   PREFIX ROM
 )
 
