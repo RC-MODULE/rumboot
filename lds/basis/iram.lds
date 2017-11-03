@@ -41,7 +41,7 @@ SECTIONS
   . = . + 0x1000; /* 4k IRQ stack */
   rumboot_platform_irq_stack_top = .;
 
-  . = . + 0xe000; /* 56k svc stack */
+  . = . + 0x4000; /* 16k svc stack */
   rumboot_platform_svc_stack_top = .;
 
   /* This is where stacks end */
