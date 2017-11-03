@@ -67,10 +67,10 @@ SECTIONS
      libm.a ( * )
      libgcc.a ( * )
      /* Make sure data & bss go to hell */
-     *(.bss)
      *(.data)
+     *(.bss)
      *(.bss.*)
-     *(.data.*)
+     *(COMMON)
  }
 
 }
