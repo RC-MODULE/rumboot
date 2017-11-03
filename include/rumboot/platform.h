@@ -59,7 +59,7 @@ void rumboot_platform_panic(const char *fmt, ...) __attribute__((noreturn));
  * This function will be called before main(). This function should contains
  * platform-specific initialization. This should initilize at lest:
  * - A timer for rumboot_platform_get_uptime()
- * - The event system for rumboot_platform_raise_event()
+ * - The event system for rumboot_platform_event_raise()
  *
  */
 void rumboot_platform_setup();
@@ -86,8 +86,30 @@ void rumboot_platform_trace(void *pc);
  * @param data  Data to send to modelling environment (up to 8 words)
  * @param len   Length of data (in 32-bit words)
  */
-void rumboot_platform_raise_event(enum rumboot_simulation_event event,
+void rumboot_platform_event_raise(enum rumboot_simulation_event event,
      uint32_t *data, uint32_t len);
+
+/**
+ * Get the next event from the simulation environment.
+ * This function will BLOCK until the next event arrives.
+ * USE WITH EXTREME CAUTION
+ * The pointer to the data associated with event will be placed
+ * in data. When your are done working with the event data call
+ * rumboot_platform_event_clear() to clear pending event status.
+ *
+ * @param  data This variable will be assigned a pointer to the
+ *              event data
+ * @return      The next event code.
+ */
+enum rumboot_simulation_event rumboot_platform_event_get(
+     				  uint32_t **data);
+
+
+/**
+ * Clear inbound event status. Call this function prior to calling next
+ * rumboot_platform_event_get()
+ */
+void rumboot_platform_event_clear();
 
 /**
  * Send a character to stdout.

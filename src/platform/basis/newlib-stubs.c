@@ -27,7 +27,7 @@ void exit(int status)
 void _exit(int status)
 {
     uint32_t code = status;
-    rumboot_platform_raise_event(EVENT_TERM, &code, 1);
+    rumboot_platform_event_raise(EVENT_TERM, &code, 1);
 	while(1);;
 }
 

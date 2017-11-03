@@ -9,13 +9,27 @@
 #include <arch/arm/irq_macros.h>
 
 
-void rumboot_platform_raise_event(enum rumboot_simulation_event event,
+void rumboot_platform_event_raise(enum rumboot_simulation_event event,
 				  uint32_t *data, uint32_t len)
 {
 	RUMBOOT_ATOMIC_BLOCK() {
 		memcpy(rumboot_platform_runtime_info.out.data, data, len * sizeof(*data));
 		rumboot_platform_runtime_info.out.opcode = event;
 	}
+}
+
+enum rumboot_simulation_event rumboot_platform_event_get(
+				  uint32_t **data)
+{
+	while(!rumboot_platform_runtime_info.in.opcode);;
+
+	*data = rumboot_platform_runtime_info.in.data;
+	return rumboot_platform_runtime_info.in.opcode;
+}
+
+void rumboot_platform_event_clear()
+{
+	rumboot_platform_runtime_info.in.opcode = 0;
 }
 
 static inline void raise_event_fast(enum rumboot_simulation_event event, uint32_t data)
@@ -62,11 +76,11 @@ int rumboot_platform_getchar(uint32_t timeout_us)
 void rumboot_platform_request_file(const char *plusarg, uint32_t addr)
 {
 	uint32_t data[] = { (uint32_t) plusarg, addr };
-	rumboot_platform_raise_event(EVENT_UPLOAD, data, ARRAY_SIZE(data));
+	rumboot_platform_event_raise(EVENT_UPLOAD, data, ARRAY_SIZE(data));
 }
 
 void rumboot_platform_dump_region(const char *filename, uint32_t addr, uint32_t len)
 {
 	uint32_t data[] = { (uint32_t) filename, addr, len };
-	rumboot_platform_raise_event(EVENT_DOWNLOAD, data, ARRAY_SIZE(data));
+	rumboot_platform_event_raise(EVENT_DOWNLOAD, data, ARRAY_SIZE(data));
 }
