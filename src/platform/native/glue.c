@@ -25,7 +25,7 @@ void rumboot_platform_trace(void *pc)
     /* stack tracing code here */
 }
 
-void rumboot_platform_raise_event(enum rumboot_simulation_event event, uint32_t *data, uint32_t len)
+void rumboot_platform_event_raise(enum rumboot_simulation_event event, uint32_t *data, uint32_t len)
 {
     exit(event);
 }
