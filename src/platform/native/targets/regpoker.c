@@ -22,9 +22,9 @@ struct regpoker_checker check_array[] = {
 int main()
 {
 	/* Fill in real addresses */
-	check_array[0].base = &virtualregs[0];
-	check_array[1].base = &virtualregs[1];
-	check_array[2].base = &virtualregs[2];
-	check_array[3].base = &virtualregs[3];
+	check_array[0].base = (uint32_t) &virtualregs[0];
+	check_array[1].base = (uint32_t) &virtualregs[1];
+	check_array[2].base = (uint32_t) &virtualregs[2];
+	check_array[3].base = (uint32_t) &virtualregs[3];
 	return rumboot_regpoker_check_array(check_array, 0);
 }
