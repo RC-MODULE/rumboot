@@ -29,6 +29,13 @@ rumboot_add_configuration(
   FEATURES LUA
 )
 
+rumboot_add_configuration(
+  LPROBE_CPU
+  PREFIX lprobe-cpu
+  BOOTROM bootrom-lprobe-stub
+)
+
+
 macro(add_directory_with_targets dir)
   file(GLOB RUMBOOT_TARGETS_C ${RUMBOOT_PLATFORM_TARGET_DIR}/${dir}/*.c)
   file(GLOB RUMBOOT_TARGETS_S ${RUMBOOT_PLATFORM_TARGET_DIR}/${dir}/*.S)
@@ -81,6 +88,13 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         FILES bootrom-stub.c
         PREFIX "bootrom"
         NAME "stub"
+    )
+
+  add_rumboot_target(
+          CONFIGURATION ROM
+          FILES bootrom-lprobe-stub.c
+          PREFIX "bootrom"
+          NAME "lprobe-stub"
     )
 
   add_rumboot_target(
