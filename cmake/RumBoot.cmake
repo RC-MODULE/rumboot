@@ -138,7 +138,7 @@ function(add_rumboot_target)
 
 
   add_executable(${product} ${trg} $<TARGET_OBJECTS:rumboot-${TARGET_CONFIGURATION}>)
-  target_compile_definitions(${product} PUBLIC ${TARGET_CFLAGS})
+  target_compile_options(${product} PUBLIC ${TARGET_CFLAGS})
 
   list (FIND CONFIGURATION_${TARGET_CONFIGURATION}_FEATURES "LUA" _index)
   if (${_index} GREATER -1)
