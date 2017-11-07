@@ -99,8 +99,8 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
   add_rumboot_target(
       SNAPSHOT default
-      LDS basis/rom.lds
-      FILES simple-rom/pcie_dma_eRP_test.c
+      CONFIGURATION IRAM      
+      FILES simple-iram/pcie_dma_eRP_test.c
       NAME pcie_dma_eRP_test
       CFLAGS -Dincrease_test_duration=1
       IRUN_FLAGS +pcie_line_interference
@@ -108,7 +108,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
   add_rumboot_target(
       SNAPSHOT default
-      LDS basis/rom.lds
+      CONFIGURATION ROM
       FILES pcie/pcie_at_slv_eRP_test_0.c
       NAME pcie_at_slv_eRP_test_0
       CFLAGS -Dshort_test_for_sim=1
@@ -116,7 +116,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
   add_rumboot_target(
       SNAPSHOT default
-      LDS basis/rom.lds
+      CONFIGURATION ROM
       FILES pcie/pcie_at_typical_eRP_test_0.c
       NAME pcie_at_typical_eRP_test_0
       CFLAGS -Dshort_test_for_sim=1
@@ -124,7 +124,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
   add_rumboot_target(
       SNAPSHOT default
-      LDS basis/rom.lds
+      CONFIGURATION ROM
       FILES pcie/pcie_at_mst_eRP_test_0.c
       NAME pcie_at_mst_eRP_test_0
       CFLAGS -Dshort_test_for_sim=1
@@ -132,7 +132,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
   add_rumboot_target(
       SNAPSHOT default
-      LDS basis/rom.lds
+      CONFIGURATION ROM
       FILES pcie/pcie_legacy_eRP_test.c
       NAME pcie_legacy_eRP_test
       IRUN_FLAGS +pcie_legacy_int_elab
@@ -141,7 +141,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 if (CMAKE_BUILD_TYPE MATCHES "RTL")
   add_rumboot_target(
       SNAPSHOT default
-      LDS basis/rom.lds
+      CONFIGURATION ROM
       FILES pcie/pcie_mbist_test.c
       NAME pcie_mbist_test
       IRUN_FLAGS +pcie_mbist_model
@@ -149,7 +149,7 @@ if (CMAKE_BUILD_TYPE MATCHES "RTL")
 else()
   add_rumboot_target(
       SNAPSHOT default
-      LDS basis/rom.lds
+      CONFIGURATION ROM
       FILES pcie/pcie_mbist_test.c
       NAME pcie_mbist_test
     )
@@ -157,7 +157,7 @@ endif()
 
   add_rumboot_target(
       SNAPSHOT default
-      LDS basis/rom.lds
+      CONFIGURATION ROM
       FILES pcie/ext_int_test.c
       NAME ext_int_test
       IRUN_FLAGS +ext_int_elab
