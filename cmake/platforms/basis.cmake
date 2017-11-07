@@ -33,6 +33,7 @@ rumboot_add_configuration(
   LPROBE_CPU
   PREFIX lprobe-cpu
   BOOTROM bootrom-lprobe-stub
+  FEATURES LPROBE
 )
 
 
@@ -83,11 +84,17 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       PREFIX lua
     )
 
-  add_rumboot_target(
+    add_directory_with_targets(lua/
+      CONFIGURATION LPROBE_CPU
+      PREFIX lprobe-cpu
+    )
+
+    add_rumboot_target(
         CONFIGURATION ROM
         FILES bootrom-stub.c
         PREFIX "bootrom"
         NAME "stub"
+        FEATURES STUB
     )
 
   add_rumboot_target(
@@ -95,11 +102,12 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
           FILES bootrom-lprobe-stub.c
           PREFIX "bootrom"
           NAME "lprobe-stub"
+          FEATURES STUB
     )
 
   add_rumboot_target(
       SNAPSHOT default
-      CONFIGURATION IRAM      
+      CONFIGURATION IRAM
       FILES simple-iram/pcie_dma_eRP_test.c
       NAME pcie_dma_eRP_test
       CFLAGS -Dincrease_test_duration=1
