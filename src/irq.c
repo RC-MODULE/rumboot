@@ -31,16 +31,21 @@ void rumboot_irq_free(struct rumboot_irq_entry *tbl)
 struct rumboot_irq_entry *rumboot_irq_create(struct rumboot_irq_entry *copyfrom)
 {
 	struct rumboot_irq_entry *tbl = rumboot_malloc(sizeof(*tbl) * (RUMBOOT_PLATFORM_NUM_IRQS + 1));
-
 	if (!tbl)
 		rumboot_platform_panic("IRQ Table alloc failed!\n");
 
 	if (copyfrom) {
-         rumboot_printf("===> %x\n", copyfrom);
 		memcpy(tbl, copyfrom, sizeof(*tbl) + (RUMBOOT_PLATFORM_NUM_IRQS + 1));
     }
 
 	return tbl;
+}
+
+void rumboot_irq_set_default_handler(void (*handler)(int irq))
+{
+	RUMBOOT_ATOMIC_BLOCK() {
+		rumboot_platform_runtime_info.irq_def_hndlr = handler;
+	}
 }
 
 void rumboot_irq_set_handler(struct rumboot_irq_entry *tbl, int irq, uint32_t flags,
@@ -100,12 +105,18 @@ static void process_irq(int id)
 {
 	struct rumboot_irq_entry *tbl = rumboot_irq_table_get();
 
-	if (!tbl)
-		rumboot_platform_panic("INTERNAL BUG: IRQ %d arrived when no table active", id);
-	if (!tbl[id].handler)
-		rumboot_platform_panic("FATAL: Unhandled IRQ %d\n", id);
-
-	tbl[id].handler(id, tbl[id].arg);
+	if (tbl && tbl[id].handler) {
+		tbl[id].handler(id, tbl[id].arg);
+	} else if (rumboot_platform_runtime_info.irq_def_hndlr)
+	{
+		rumboot_platform_runtime_info.irq_def_hndlr(id);
+	} else {
+		if (!tbl)
+			rumboot_platform_panic("FATAL: Unhandled IRQ %d when no active irq table present\n",
+				id);
+		else
+			rumboot_platform_panic("FATAL: Unhandled IRQ %d\n", id);
+	}
 }
 
 void rumboot_irq_core_dispatch(uint32_t type, uint32_t id)
