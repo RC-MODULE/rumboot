@@ -17,7 +17,7 @@
 //    - wait fixed time
 //    - compare data_src_X and data_dst_X
 //    
-//    Test duration (RTL): < TODO
+//    Test duration (RTL): < 800us
 //-----------------------------------------------------------------------------
 
 #include <rumboot/ddr_test_lib.h>
@@ -167,14 +167,14 @@ uint32_t Check_transaction_reverse (uint32_t* address_src, uint32_t* address_dst
     for (volatile uint32_t i = 0; i < (size >> 2); i += 8)
     {
         if (
-            (*(address_src_end - 0) != *(address_dst_end - 0)) ||    //    mass
-            (*(address_src_end - 1) != *(address_dst_end - 1)) ||    //    check
-            (*(address_src_end - 2) != *(address_dst_end - 2)) ||    //    reduce
-            (*(address_src_end - 3) != *(address_dst_end - 3)) ||    //    execution
-            (*(address_src_end - 4) != *(address_dst_end - 4)) ||    //    time
-            (*(address_src_end - 5) != *(address_dst_end - 5)) ||    //    
+            (*(address_src_end - 1) != *(address_dst_end - 1)) ||    //    mass
+            (*(address_src_end - 2) != *(address_dst_end - 2)) ||    //    check
+            (*(address_src_end - 3) != *(address_dst_end - 3)) ||    //    reduce
+            (*(address_src_end - 4) != *(address_dst_end - 4)) ||    //    execution
+            (*(address_src_end - 5) != *(address_dst_end - 5)) ||    //    time
             (*(address_src_end - 6) != *(address_dst_end - 6)) ||    //    
-            (*(address_src_end - 7) != *(address_dst_end - 7))
+            (*(address_src_end - 7) != *(address_dst_end - 7)) ||    //    
+            (*(address_src_end - 8) != *(address_dst_end - 8))
             )
             return -1;
         address_src_end -= 8;
