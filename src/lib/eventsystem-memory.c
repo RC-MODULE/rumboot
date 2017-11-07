@@ -12,14 +12,16 @@
 void rumboot_platform_event_raise(enum rumboot_simulation_event event,
 				  uint32_t *data, uint32_t len)
 {
+	int i;
 	RUMBOOT_ATOMIC_BLOCK() {
-		memcpy(rumboot_platform_runtime_info.out.data, data, len * sizeof(*data));
+		for (i=0; i<len; i++)
+			rumboot_platform_runtime_info.out.data[i] = data[i];
 		rumboot_platform_runtime_info.out.opcode = event;
 	}
 }
 
 enum rumboot_simulation_event rumboot_platform_event_get(
-				  uint32_t **data)
+				  volatile uint32_t **data)
 {
 	while(!rumboot_platform_runtime_info.in.opcode);;
 
