@@ -73,7 +73,7 @@ endmacro()
 function(add_rumboot_target)
   set(options )
   set(oneValueArgs SNAPSHOT LDS NAME PREFIX CONFIGURATION)
-  set(multiValueArgs FILES IRUN_FLAGS CFLAGS TESTGROUP LDFLAGS CHECKCMD)
+  set(multiValueArgs FILES IRUN_FLAGS CFLAGS TESTGROUP LDFLAGS CHECKCMD FEATURES)
 
   cmake_parse_arguments(TARGET "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
@@ -103,6 +103,13 @@ function(add_rumboot_target)
 
   if (${name})
     message(STATUS "NOT Adding rumboot target: ${name} - already exists")
+    return()
+  endif()
+
+  
+  list (FIND CONFIGURATION_${TARGET_CONFIGURATION}_FEATURES "LPROBE" _index)
+  if (${_index} GREATER -1)
+    #Lprobe scripts compile nothing
     return()
   endif()
 
