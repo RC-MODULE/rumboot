@@ -43,7 +43,7 @@ static inline void rumboot_arch_irq_enable()
     *
     * \defgroup irq Interrupt subsystem
     * \ingroup libraries
-    * 
+    *
     * These functions implement interrupt handling in rumboot code.
     * \code{.c}
     * #include <rumboot/irq.h>
@@ -106,6 +106,14 @@ static inline void rumboot_arch_irq_enable()
      */
      void rumboot_irq_set_handler(struct rumboot_irq_entry *tbl, int irq, uint32_t flags,
         void (*handler)(int irq, void *args), void *arg);
+
+    /**
+     * Set a default IRQ handler. This will be called when an interrupt
+     * arrives in the absense of an active IRQ table or with no handler
+     * configured.
+     * @param handler
+     */
+     void rumboot_irq_set_default_handler(void (*handler)(int irq));
 
     /**
      * Make the specified irq table active. NULL to deactivate any existing table

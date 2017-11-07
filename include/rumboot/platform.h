@@ -41,6 +41,7 @@ enum rumboot_simulation_event {
     EVENT_UPLOAD, /** Request file upload to memory */
     EVENT_PERF, /** Performance metric checkpoint */
     EVENT_DOWNLOAD, /** Request file download from memory */
+    EVENT_LPROBE, /** Lprobe data IO event */
 };
 
 
@@ -102,7 +103,7 @@ void rumboot_platform_event_raise(enum rumboot_simulation_event event,
  * @return      The next event code.
  */
 enum rumboot_simulation_event rumboot_platform_event_get(
-     				  uint32_t **data);
+     				  volatile uint32_t **data);
 
 
 /**
@@ -172,10 +173,10 @@ void rumboot_platform_perf(const char *tag);
  *
  */
 struct rumboot_syncbuffer {
-    uint32_t magic;
-    uint32_t opcode;
-    uint32_t data[8];
-};
+    volatile uint32_t magic;
+    volatile uint32_t opcode;
+    volatile uint32_t data[8];
+} __attribute__((packed));
 
 /**
  * This global structure stores internal romboot state and some useful variables
@@ -193,7 +194,9 @@ struct rumboot_runtime_info {
     char *current_heap_end;
     /** Pointer to current active irq table. Do not use directly, use rumboot_irq_table_get() */
     void *irq_handler_table;
-};
+    /** Pointer to irq default handler */
+    void (*irq_def_hndlr)(int irq);
+} __attribute__((packed));
 
 /**
  * Global instance of struct rumboot_runtime_info.
