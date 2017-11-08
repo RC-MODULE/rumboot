@@ -19,7 +19,7 @@
 #define GPIO_DATA                0x03FC
 
 /* --- ARINC429 -------- */
-#define ARINC_BASE      0x01080000
+#define ARINC_BASE      0x01030000
 
 /* --- TIMER (ARM SP804) --- */
 
