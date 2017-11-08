@@ -51,7 +51,7 @@
  #define PCIE_BASE                0x40000000
  #define EMI0_BASE                0x80000000
  #define EMI1_BASE                0xC0000000
-
+ #define ARINC_BASE               0x01030000
  /**
  * @}
  */
