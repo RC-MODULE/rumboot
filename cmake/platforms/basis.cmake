@@ -34,6 +34,7 @@ rumboot_add_configuration(
   PREFIX lprobe-cpu
   BOOTROM bootrom-lprobe-stub
   FEATURES LPROBE
+  IRUN_FLAGS -input ${CMAKE_SOURCE_DIR}/../scripts/lprobe-helper.tcl 
 )
 
 
