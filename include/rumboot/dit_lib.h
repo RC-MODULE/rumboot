@@ -43,7 +43,7 @@ int sp804_get_value( int base_addr, int index);
 
 void sp804_clrint( int base_addr, int index);                                                         
 
-void sp804_config( int base_addr, const struct sp804_conf * config, int index);
+void sp804_config( uint32_t base_addr, const struct sp804_conf * config, int index);
 
 
 #endif

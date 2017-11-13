@@ -16,7 +16,7 @@
 #include <devices/dit.h>
 #include <rumboot/dit_lib.h>
 #include <rumboot/platform.h>
-
+#include <platform/interrupts.h>
 
 
 #define TIMER0_CYCLES           1
@@ -155,27 +155,27 @@ int main ()
 	rumboot_irq_cli();
 	struct rumboot_irq_entry *tbl = rumboot_irq_create(NULL);
     
-    rumboot_irq_set_handler(tbl, 42, 0, handler0, &in[0] );
-    rumboot_irq_set_handler(tbl, 43, 0, handler1, &in[0] );
-    rumboot_irq_set_handler(tbl, 44, 0, handler0, &in[1] );
-    rumboot_irq_set_handler(tbl, 45, 0, handler1, &in[1] );
-    rumboot_irq_set_handler(tbl, 46, 0, handler0, &in[2] );
-    rumboot_irq_set_handler(tbl, 47, 0, handler1, &in[2] );
-    rumboot_irq_set_handler(tbl, 48, 0, handler0, &in[3] );
-    rumboot_irq_set_handler(tbl, 49, 0, handler1, &in[3] );
+    rumboot_irq_set_handler(tbl, DIT0_TIMINT1, 0, handler0, &in[0] );
+    rumboot_irq_set_handler(tbl, DIT0_TIMINT2, 0, handler1, &in[0] );
+    rumboot_irq_set_handler(tbl, DIT1_TIMINT1, 0, handler0, &in[1] );
+    rumboot_irq_set_handler(tbl, DIT1_TIMINT2, 0, handler1, &in[1] );
+    rumboot_irq_set_handler(tbl, DIT2_TIMINT1, 0, handler0, &in[2] );
+    rumboot_irq_set_handler(tbl, DIT2_TIMINT2, 0, handler1, &in[2] );
+    rumboot_irq_set_handler(tbl, DIT3_TIMINT1, 0, handler0, &in[3] );
+    rumboot_irq_set_handler(tbl, DIT3_TIMINT2, 0, handler1, &in[3] );
 
 
 
 	/* Activate the table */
 	rumboot_irq_table_activate(tbl);
-	rumboot_irq_enable(42);
-	rumboot_irq_enable(43);
-	rumboot_irq_enable(44);
-	rumboot_irq_enable(45);
-	rumboot_irq_enable(46);
-	rumboot_irq_enable(47);
-	rumboot_irq_enable(48);
-	rumboot_irq_enable(49);
+	rumboot_irq_enable(DIT0_TIMINT1);
+	rumboot_irq_enable(DIT0_TIMINT2);
+	rumboot_irq_enable(DIT1_TIMINT1);
+	rumboot_irq_enable(DIT1_TIMINT2);
+	rumboot_irq_enable(DIT2_TIMINT1);
+	rumboot_irq_enable(DIT2_TIMINT2);
+	rumboot_irq_enable(DIT3_TIMINT1);
+	rumboot_irq_enable(DIT3_TIMINT2);
 	rumboot_irq_sei();
 
 // Run tests and return failed one    
