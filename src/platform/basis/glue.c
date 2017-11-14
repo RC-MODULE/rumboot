@@ -12,23 +12,9 @@ uint32_t rumboot_platform_get_uptime()
     return 0;
 }
 
-#define DGPIO_LOW_BASE      0x01098000
-#define DGPIO_HIGH_BASE     0x01099000
-
-#define DATA                0x000C
-#define DIR                 0x0008
-#define SOURCE              0x0024
-
-
 /* Comes from startup.S */
 extern char rumboot_default_irq_vectors;
 void rumboot_platform_setup() {
-    iowrite32(0xff, DGPIO_LOW_BASE + DIR);
-    iowrite32(0xff, DGPIO_LOW_BASE + SOURCE);
-    iowrite32(0x00, DGPIO_LOW_BASE + DATA);
-    iowrite32(0xff, DGPIO_HIGH_BASE + DIR);
-    iowrite32(0xff, DGPIO_HIGH_BASE + SOURCE);
-    iowrite32(0x00, DGPIO_HIGH_BASE + DATA);
 
     /*
      * Make sure VBAR is where we need it.
