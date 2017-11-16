@@ -34,7 +34,7 @@ rumboot_add_configuration(
   PREFIX lprobe-cpu
   BOOTROM bootrom-lprobe-stub
   FEATURES LPROBE
-  IRUN_FLAGS -input ${CMAKE_SOURCE_DIR}/../scripts/lprobe-helper.tcl 
+  IRUN_FLAGS -input ${CMAKE_SOURCE_DIR}/../scripts/lprobe-helper.tcl
 )
 
 
@@ -246,6 +246,8 @@ macro(rumboot_platform_generate_stuff_for_taget product)
       ${product}.hex ALL
       DEPENDS ${product}.hex/image_mem64_0.hex
     )
+
+    add_dependencies(${product}.all ${product}.hex)
 
   endif()
 

@@ -39,10 +39,9 @@ macro(generate_stuff_for_target product)
   )
 
   add_custom_target(
-    objcopy-${product} ALL
+    ${product}.all ALL
     DEPENDS ${product}.bin ${product}.dmp
   )
-
 endmacro()
 
 
@@ -106,7 +105,7 @@ function(add_rumboot_target)
     return()
   endif()
 
-  
+
   list (FIND CONFIGURATION_${TARGET_CONFIGURATION}_FEATURES "LPROBE" _index)
   if (${_index} GREATER -1)
     #Lprobe scripts compile nothing
