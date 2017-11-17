@@ -153,14 +153,17 @@ function(add_rumboot_target)
 
   if (NOT TARGET_LDS)
     set(TARGET_LDS ${RUMBOOT_PLATFORM_DEFAULT_LDS})
+  else()
+    set(TARGET_LDS ${CMAKE_SOURCE_DIR}/lds/${TARGET_LDS})
   endif()
 
-  if (TARGET_LDS AND EXISTS ${CMAKE_SOURCE_DIR}/lds/${TARGET_LDS})
-    set(ldf -T${CMAKE_SOURCE_DIR}/lds/${TARGET_LDS})
-    add_dependencies(${product} ${CMAKE_SOURCE_DIR}/lds/${TARGET_LDS})
+  if (TARGET_LDS AND EXISTS ${TARGET_LDS})
+    set(ldf -T${TARGET_LDS})
   else()
     set(ldf "")
   endif()
+
+  set_target_properties(${product} PROPERTIES LINK_DEPENDS ${TARGET_LDS})
 
   target_link_libraries(${product} ${CONFIGURATION_${TARGET_CONFIGURATION}_LDFLAGS} ${ldf} -Wl,-Map,${product}.map)
   install(TARGETS ${product} RUNTIME DESTINATION rumboot)
