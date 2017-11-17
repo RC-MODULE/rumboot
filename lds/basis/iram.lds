@@ -48,6 +48,8 @@ SECTIONS
   rumboot_platform_stack_area_end = .;
  } > IM0
 
+ .data.esram1 0x60000 : {*(data.esram1)} > IM0
+ 
  .runtime 0x7f000 (NOLOAD): {
   /* Runtime info is at the very top of iram */
   rumboot_platform_runtime_info = .;
