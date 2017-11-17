@@ -157,6 +157,7 @@ function(add_rumboot_target)
 
   if (TARGET_LDS AND EXISTS ${CMAKE_SOURCE_DIR}/lds/${TARGET_LDS})
     set(ldf -T${CMAKE_SOURCE_DIR}/lds/${TARGET_LDS})
+    add_dependencies(${product} ${CMAKE_SOURCE_DIR}/lds/${TARGET_LDS})
   else()
     set(ldf "")
   endif()
