@@ -71,42 +71,42 @@ find_program(CCACHE_FOUND ccache)
 
 message("\n\n ==== RumBoot Configuration summary ====")
 
-message("Platform:         ${RUMBOOT_PLATFORM}")
-message("Architecture:     ${RUMBOOT_ARCH}")
+message("Platform:           ${RUMBOOT_PLATFORM}")
+message("Architecture:       ${RUMBOOT_ARCH}")
 if (CROSS_COMPILE)
-  message("Target triplet  :   ${CROSS_COMPILE}")
+  message("Target triplet:     ${CROSS_COMPILE}")
 endif()
 
 if(CCACHE_FOUND)
     set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ccache)
     set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK ccache)
-    message("Compiler Cache:   Yes, using it!")
+    message("Compiler Cache:     Yes, using it!")
 else()
-    message("Compiler Cache:   Not available ;(")
+    message("Compiler Cache:     Not available ;(")
 endif()
 
 
-message("BuildType:        ${CMAKE_BUILD_TYPE}")
+message("BuildType:          ${CMAKE_BUILD_TYPE}")
 
 if (DOXYGEN_FOUND)
-  message("Doxygen Docs    :   enabled")
+  message("Doxygen Docs:       enabled")
 else()
-  message("Doxygen Docs    :   disabled")
+  message("Doxygen Docs:       disabled")
 endif()
 
 if (${RUMBOOT_DEBUG})
   SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DROMBOOT_DEBUG")
   SET(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} -DROMBOOT_DEBUG")
-  message("Debugging:        Enabled")
+  message("Debugging:          Enabled")
 else()
-  message("Debugging:        Disabled")
+  message("Debugging:          Disabled")
 endif()
 
 
 RUMBOOT_PLATFORM_PRINT_SUMMARY()
 
-message("C Flags:          ${CMAKE_C_FLAGS}")
-message("ASM Flags:        ${CMAKE_ASM_FLAGS}")
+message("C Flags:            ${CMAKE_C_FLAGS}")
+message("ASM Flags:          ${CMAKE_ASM_FLAGS}")
 
 message(" ==== ==== ==== ==== ==== ==== ==== ====\n\n")
 
