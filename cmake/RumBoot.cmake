@@ -38,7 +38,10 @@ macro(generate_stuff_for_target product)
     DEPENDS ${product}
   )
 
-  add_dependencies(${product}.all ${product}.bin ${product}.dmp)
+  add_custom_target(
+    ${product}.all ALL
+    DEPENDS ${product}.bin ${product}.dmp
+  )
 endmacro()
 
 
@@ -102,10 +105,6 @@ function(add_rumboot_target)
     return()
   endif()
 
-  add_custom_target(
-    ${product}.all ALL
-  )
-
   list (FIND CONFIGURATION_${TARGET_CONFIGURATION}_FEATURES "LPROBE" _index)
   if (${_index} GREATER -1)
     #Lprobe scripts compile nothing
@@ -114,7 +113,6 @@ function(add_rumboot_target)
 
   set(EXTRA_FILES)
 
-  message(STATUS "Adding rumboot test: ${product}")
   set(${name} TRUE PARENT_SCOPE)
 
   foreach(f ${TARGET_FILES})
