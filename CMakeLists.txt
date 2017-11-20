@@ -117,7 +117,7 @@ if (${CMAKE_BUILD_TYPE} MATCHES "Production")
   endif()
 endif()
 
-
+ADD_SOURCE("src/lib/bootimage.c")
 ADD_SOURCE("src/lib/crc32.c")
 ADD_SOURCE("src/lib/logo.c")
 ADD_SOURCE("src/lib/stdio.c")

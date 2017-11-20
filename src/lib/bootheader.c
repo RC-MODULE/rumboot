@@ -13,3 +13,18 @@ static const __attribute__((used)) __attribute__((section(".header")))
 		(uint32_t) &rumboot_entry_point,
 	}
 };
+
+int32_t rumboot_bootimage_check_header(struct rumboot_bootheader *hdr, void **dataptr) {
+
+	return 0;
+}
+
+int rumboot_bootimage_check_data(struct rumboot_bootheader *hdr) {
+
+	return 0;
+}
+
+int rumboot_bootimage_exec(struct rumboot_bootheader *hdr) {
+
+	return 0;
+}
