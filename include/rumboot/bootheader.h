@@ -1,6 +1,26 @@
 #ifndef BOOTHEADER_H
 #define BOOTHEADER_H
 
+/**
+ *
+ * \defgroup bootheader Boot image handling
+ * \ingroup libraries
+ *
+ * These functions implement checking and executing boot images
+ * Platforms should implement their own bootheader.h with
+ *
+ * RUMBOOT_PLATFORM_CHIPID
+ * RUMBOOT_PLATFORM_CHIPREV
+ * RUMBOOT_PLATFORM_NUMCORES
+ *
+ * \code{.c}
+ * #include <rumboot/bootheader.h>
+ * \endcode
+ *
+ * \addtogroup bootheader
+ * @{
+ */
+
 #define RUMBOOT_HEADER_VERSION 2
 #define RUMBOOT_HEADER_MAGIC 0xb01dface
 
@@ -45,5 +65,8 @@ int32_t rumboot_bootimage_check_data(struct rumboot_bootheader *hdr);
  */
 int32_t rumboot_bootimage_exec(struct rumboot_bootheader *hdr);
 
+/*
+ * @}
+ */
 
 #endif /* end of include guard: BOOTHEADER_H */
