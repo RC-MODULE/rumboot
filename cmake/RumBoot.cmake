@@ -101,7 +101,7 @@ function(add_rumboot_target)
   endif()
 
   set(product rumboot-${RUMBOOT_PLATFORM}-${CMAKE_BUILD_TYPE}-${TARGET_PREFIX}-${TARGET_NAME})
-  set(bootrom rumboot-${RUMBOOT_PLATFORM}-${CMAKE_BUILD_TYPE}-${TARGET_BOOTROM})
+  set(bootrom rumboot-${RUMBOOT_PLATFORM}-${CMAKE_BUILD_TYPE}-${TARGET_BOOTROM}.all)
   set(name rumboot-${TARGET_SNAPSHOT}-${product})
 
   if (${name})
