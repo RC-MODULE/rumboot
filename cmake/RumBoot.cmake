@@ -42,6 +42,9 @@ macro(generate_stuff_for_target product)
     ${product}.all ALL
     DEPENDS ${product}.bin ${product}.dmp
   )
+  if (NOT ${TARGET_BOOTROM} STREQUAL "")
+    add_dependencies(${product}.all ${bootrom})
+  endif()
 endmacro()
 
 
@@ -71,7 +74,7 @@ endmacro()
 
 function(add_rumboot_target)
   set(options )
-  set(oneValueArgs SNAPSHOT LDS NAME PREFIX CONFIGURATION)
+  set(oneValueArgs SNAPSHOT LDS NAME PREFIX CONFIGURATION BOOTROM)
   set(multiValueArgs FILES IRUN_FLAGS CFLAGS TESTGROUP LDFLAGS CHECKCMD FEATURES)
 
   cmake_parse_arguments(TARGET "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
@@ -97,7 +100,8 @@ function(add_rumboot_target)
     message(FATAL_ERROR "add_rumboot_target() requires TARGET_FILES to contain at least one file")
   endif()
 
-  SET(product rumboot-${RUMBOOT_PLATFORM}-${CMAKE_BUILD_TYPE}-${TARGET_PREFIX}-${TARGET_NAME})
+  set(product rumboot-${RUMBOOT_PLATFORM}-${CMAKE_BUILD_TYPE}-${TARGET_PREFIX}-${TARGET_NAME})
+  set(bootrom rumboot-${RUMBOOT_PLATFORM}-${CMAKE_BUILD_TYPE}-${TARGET_BOOTROM})
   set(name rumboot-${TARGET_SNAPSHOT}-${product})
 
   if (${name})
@@ -109,7 +113,7 @@ function(add_rumboot_target)
   if (${_index} GREATER -1)
     #Lprobe scripts compile nothing. Provide a dummy
     #target and return
-    add_custom_target(${product}.all ALL)
+    add_custom_target(${product}.all ALL DEPENDS ${bootrom})
     return()
   endif()
 
