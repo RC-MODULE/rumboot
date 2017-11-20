@@ -1,23 +1,24 @@
 
 //-----------------------------------------------------------------------------
 //  This program is for checking DDR performance.
-//  3 RMACE DMA are used.
+//  4 RMACE DMA are used.
 //  
 //  
 //  Test includes:
 //    - Change DDR CRG frequency to correspond ddr3 1600 data rate
 //    - DDR turning On function
-//    - create etalon arrays for 3 RMACE
+//    - create etalon arrays for 4 RMACE
 //    - clear space in DDR and eSRAM destination
-//    - create 3 RMACE descriptor sets
+//    - create 4 RMACE descriptor sets
 //    - send data {data_src_X -> ddr_data_X}
 //    - wait fixed time
-//    - create 3 RMACE descriptor sets
+//    - create 4 RMACE descriptor sets
 //    - send data {ddr_data_X -> data_dst_X}
 //    - wait fixed time
 //    - compare data_src_X and data_dst_X
+//    - both DDR0 And DDR1 used sequentially
 //    
-//    Test duration (RTL): < 1000us
+//    Test duration (RTL): < 1500us
 //-----------------------------------------------------------------------------
 
 #include <stdio.h>
@@ -36,7 +37,7 @@
 uint32_t data_src_0[DATA_SIZE>>2] __attribute__ ((section("data.esram1")));
 uint32_t data_src_1[DATA_SIZE>>2] __attribute__ ((section("data.esram1")));
 uint32_t data_src_2[DATA_SIZE>>2] __attribute__ ((section("data.esram1")));
-// uint32_t data_src_3[DATA_SIZE>>2] __attribute__ ((section("data.esram1")));
+uint32_t data_src_3[DATA_SIZE>>2] __attribute__ ((section("data.esram1")));
 
 #define ddr_data_0_offset           0
 #define ddr_data_1_offset           DATA_SIZE
@@ -48,21 +49,21 @@ uint32_t data_src_2[DATA_SIZE>>2] __attribute__ ((section("data.esram1")));
 uint64_t tx_descriptor_0[DESCRIPTORS_NUM_NEEDED_FOR_SINGLE_RUN] __attribute__ ((section("data.esram1")));
 uint64_t tx_descriptor_1[DESCRIPTORS_NUM_NEEDED_FOR_SINGLE_RUN] __attribute__ ((section("data.esram1")));
 uint64_t tx_descriptor_2[DESCRIPTORS_NUM_NEEDED_FOR_SINGLE_RUN] __attribute__ ((section("data.esram1")));
-// uint64_t tx_descriptor_3[DESCRIPTORS_NUM_NEEDED_FOR_SINGLE_RUN] __attribute__ ((section("data.esram1")));
+uint64_t tx_descriptor_3[DESCRIPTORS_NUM_NEEDED_FOR_SINGLE_RUN] __attribute__ ((section("data.esram1")));
 uint64_t rx_descriptor_0[DESCRIPTORS_NUM_NEEDED_FOR_SINGLE_RUN] __attribute__ ((section("data.esram1")));
 uint64_t rx_descriptor_1[DESCRIPTORS_NUM_NEEDED_FOR_SINGLE_RUN] __attribute__ ((section("data.esram1")));
 uint64_t rx_descriptor_2[DESCRIPTORS_NUM_NEEDED_FOR_SINGLE_RUN] __attribute__ ((section("data.esram1")));
-// uint64_t rx_descriptor_3[DESCRIPTORS_NUM_NEEDED_FOR_SINGLE_RUN] __attribute__ ((section("data.esram1")));
+uint64_t rx_descriptor_3[DESCRIPTORS_NUM_NEEDED_FOR_SINGLE_RUN] __attribute__ ((section("data.esram1")));
 
 uint32_t data_dst_0[DATA_SIZE>>2] __attribute__ ((section("data.esram1")));
 uint32_t data_dst_1[DATA_SIZE>>2] __attribute__ ((section("data.esram1")));
 uint32_t data_dst_2[DATA_SIZE>>2] __attribute__ ((section("data.esram1")));
-// uint32_t data_dst_3[DATA_SIZE>>2] __attribute__ ((section("data.esram1")));
+uint32_t data_dst_3[DATA_SIZE>>2] __attribute__ ((section("data.esram1")));
 
 
-  // CHECK This After First Run
-#define dma_ddr_write_duration 100
-#define dma_ddr_read_duration  100
+ // 1200 ns
+#define dma_ddr_write_duration 4
+#define dma_ddr_read_duration  4
 
 //------------------------------------------------------------------------
 //  Create reference data array for next transactions
@@ -158,13 +159,14 @@ void rmace_start ()
     rgRMACE0_WDMA_SETTINGS |= 0x10000000;
     rgRMACE1_WDMA_SETTINGS |= 0x10000000;
     rgRMACE2_WDMA_SETTINGS |= 0x10000000;
-//     rgRMACE3_WDMA_SETTINGS |= 0x10000000;
+    rgRMACE3_WDMA_SETTINGS |= 0x10000000;
     rgRMACE0_RDMA_SETTINGS |= 0x10000000;
     rgRMACE1_RDMA_SETTINGS |= 0x10000000;
     rgRMACE2_RDMA_SETTINGS |= 0x10000000;
-//     rgRMACE3_RDMA_SETTINGS |= 0x10000000;
+    rgRMACE3_RDMA_SETTINGS |= 0x10000000;
 }
 
+// 1 duration -> 298 ns
 void wait_cycle (uint32_t duration)
 {
     for (volatile uint32_t i = 0; i < duration; i++)
@@ -217,36 +219,36 @@ int ddr_dma_test(uint32_t emi_base, uint32_t ddrc_base)
     uint32_t* ddr_data_0;
     uint32_t* ddr_data_1;
     uint32_t* ddr_data_2;
-//     uint32_t* ddr_data_3;
+    uint32_t* ddr_data_3;
     uint32_t* tx_descriptor_pointer_0;
     uint32_t* tx_descriptor_pointer_1;
     uint32_t* tx_descriptor_pointer_2;
-//     uint32_t* tx_descriptor_pointer_3;
+    uint32_t* tx_descriptor_pointer_3;
     uint32_t* rx_descriptor_pointer_0;
     uint32_t* rx_descriptor_pointer_1;
     uint32_t* rx_descriptor_pointer_2;
-//     uint32_t* rx_descriptor_pointer_3;
+    uint32_t* rx_descriptor_pointer_3;
 
     ddr_data_0 = (uint32_t*) (emi_base + ddr_data_0_offset);
     ddr_data_1 = (uint32_t*) (emi_base + ddr_data_1_offset);
     ddr_data_2 = (uint32_t*) (emi_base + ddr_data_2_offset);
-//     ddr_data_3 = (uint32_t*) (emi_base + ddr_data_3_offset);
+    ddr_data_3 = (uint32_t*) (emi_base + ddr_data_3_offset);
     
     tx_descriptor_pointer_0 = (uint32_t*) tx_descriptor_0;
     tx_descriptor_pointer_1 = (uint32_t*) tx_descriptor_1;
     tx_descriptor_pointer_2 = (uint32_t*) tx_descriptor_2;
-//     tx_descriptor_pointer_3 = (uint32_t*) tx_descriptor_3;
+    tx_descriptor_pointer_3 = (uint32_t*) tx_descriptor_3;
     rx_descriptor_pointer_0 = (uint32_t*) rx_descriptor_0;
     rx_descriptor_pointer_1 = (uint32_t*) rx_descriptor_1;
     rx_descriptor_pointer_2 = (uint32_t*) rx_descriptor_2;
-//     rx_descriptor_pointer_3 = (uint32_t*) rx_descriptor_3;
+    rx_descriptor_pointer_3 = (uint32_t*) rx_descriptor_3;
     
     if (ddr_init (ddrc_base) != 0)
         return -1;
     create_etalon_array         (data_src_0, DATA_SIZE);
     create_etalon_array         (data_src_1, DATA_SIZE);
     create_etalon_array         (data_src_2, DATA_SIZE);
-//     create_etalon_array         (data_src_3, DATA_SIZE);
+    create_etalon_array         (data_src_3, DATA_SIZE);
     
     // Dont Clear Destination Yet - It Is Boring
 //     clear_destination_space     (data_dst_0, DATA_SIZE);
@@ -285,19 +287,19 @@ int ddr_dma_test(uint32_t emi_base, uint32_t ddrc_base)
         rx_descriptor_pointer_2    ,
         DATA_SIZE
     );
-//     rmace_create_descriptors
-//     (
-//         MDMA3_BASE                 ,
-//         data_src_3                 ,
-//         ddr_data_3                 ,
-//         tx_descriptor_pointer_3    ,
-//         rx_descriptor_pointer_3    ,
-//         DATA_SIZE
-//     );
+    rmace_create_descriptors
+    (
+        MDMA3_BASE                 ,
+        data_src_3                 ,
+        ddr_data_3                 ,
+        tx_descriptor_pointer_3    ,
+        rx_descriptor_pointer_3    ,
+        DATA_SIZE
+    );
     rmace_start                 ();
     wait_cycle                  (dma_ddr_write_duration);
     
-//     if (Check_last_cell(data_src_3,ddr_data_3,DATA_SIZE) != 0) return -1;
+    if (Check_last_cell(data_src_3,ddr_data_3,DATA_SIZE) != 0) return -1;
     if (Check_last_cell(data_src_2,ddr_data_2,DATA_SIZE) != 0) return -1;
     if (Check_last_cell(data_src_1,ddr_data_1,DATA_SIZE) != 0) return -1;
     if (Check_last_cell(data_src_0,ddr_data_0,DATA_SIZE) != 0) return -1;
@@ -308,8 +310,8 @@ int ddr_dma_test(uint32_t emi_base, uint32_t ddrc_base)
         return -1;
     if (Check_transaction_reverse (data_src_2, ddr_data_2, DATA_SIZE) != 0)
         return -1;
-//     if (Check_transaction_reverse (data_src_3, ddr_data_3, DATA_SIZE) != 0)
-//         return -1;
+    if (Check_transaction_reverse (data_src_3, ddr_data_3, DATA_SIZE) != 0)
+        return -1;
     
     rmace_create_descriptors
     (
@@ -338,15 +340,15 @@ int ddr_dma_test(uint32_t emi_base, uint32_t ddrc_base)
         rx_descriptor_pointer_2    ,
         DATA_SIZE
     );
-//     rmace_create_descriptors
-//     (
-//         MDMA3_BASE                 ,
-//         ddr_data_3                 ,
-//         data_dst_3                 ,
-//         tx_descriptor_pointer_3    ,
-//         rx_descriptor_pointer_3    ,
-//         DATA_SIZE
-//     );
+    rmace_create_descriptors
+    (
+        MDMA3_BASE                 ,
+        ddr_data_3                 ,
+        data_dst_3                 ,
+        tx_descriptor_pointer_3    ,
+        rx_descriptor_pointer_3    ,
+        DATA_SIZE
+    );
     rmace_start                 ();
     wait_cycle                  (dma_ddr_read_duration);
     
@@ -356,8 +358,8 @@ int ddr_dma_test(uint32_t emi_base, uint32_t ddrc_base)
         return -1;
     if (Check_transaction_reverse (data_src_2, data_dst_2, DATA_SIZE) != 0)
         return -1;
-//     if (Check_transaction_reverse (data_src_3, data_dst_3, DATA_SIZE) != 0)
-//         return -1;
+    if (Check_transaction_reverse (data_src_3, data_dst_3, DATA_SIZE) != 0)
+        return -1;
     
     return 0;
 }
