@@ -1,5 +1,4 @@
 #include <rumboot/bootheader.h>
-#include <rumboot/timer.h>
 #include <rumboot/printf.h>
 #include <rumboot/crc32.h>
 
