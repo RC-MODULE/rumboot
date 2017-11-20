@@ -107,7 +107,7 @@ function(add_rumboot_target)
 
   list (FIND CONFIGURATION_${TARGET_CONFIGURATION}_FEATURES "LPROBE" _index)
   if (${_index} GREATER -1)
-    #Lprobe scripts compile nothing. Provide a dummy 
+    #Lprobe scripts compile nothing. Provide a dummy
     #target and return
     add_custom_target(${product}.all ALL)
     return()

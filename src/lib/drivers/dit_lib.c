@@ -9,103 +9,208 @@
 #include <rumboot/printf.h>
 
 
-#define DIT_CTRL_ENABLE     1<<7
-#define DIT_CTRL_PERIODIC   1<<6 
-#define DIT_CTRL_INTEN      1<<5
-#define DIT_CTRL_DIV1       1<<3
-#define DIT_CTRL_DIV0       1<<2
-#define DIT_CTRL_SIZE32     1<<1
-#define DIT_CTRL_ONESHOT    1
+
+/**
+ *  \file dit_lib.c
+ *  \brief Double Timer block function libriary.
+ *  Contains functions such as:
+ *  - Start timer
+ *  - Stop timer
+ *  - Get timer value
+ *  - Clear timer interrupt 
+ *  - Config timer
+ */
 
 
-void oneshot_n_cycles_0(int cycles, int count_to)
+/**
+ *  \brief Start timer
+ *  
+ *  \param [in] index Choose one of two identical timers 
+ *  \param [in] base_addr Choose exact sp804 unit by setting its base address
+ *  \return Return nothing
+ *  
+ *  \details Manualy sets ENABLE bit in CONTROL register of chosen timer.
+ */
+void sp804_enable( int base_addr, int index)
 {
     int cntrl ;
-    cntrl = DIT_CTRL_ENABLE|(DIT_CTRL_INTEN&~DIT_CTRL_DIV1)|DIT_CTRL_DIV0|DIT_CTRL_SIZE32|DIT_CTRL_ONESHOT;
+    int control_reg;
+    if (index){
+        control_reg = DIT0_REG_CONTROL1;
+    }
+    else{
+        control_reg = DIT0_REG_CONTROL0;
+    }
+    cntrl =  ioread8(base_addr+control_reg);
+    cntrl |= DIT_CTRL_ENABLE;
+    iowrite8(cntrl,base_addr+control_reg);
 
-    iowrite8(cntrl,DIT0_BASE+DIT0_REG_CONTROL0);
-    for (int i = 0; i < cycles; i++)
+}
+
+
+/**
+ *  \brief Stop timer
+ *  
+ *  \param [in] index Choose one of two identical timers 
+ *  \param [in] base_addr Choose exact sp804 unit by setting its base address
+ *  \return Return nothing
+ *  
+ *  \details Manualy clears ENABLE bit in CONTROL register of chosen timer.
+ */
+void sp804_stop( int base_addr, int index)
+{
+    int cntrl ;
+    int control_reg;
+    if (index){
+        control_reg = DIT0_REG_CONTROL1;
+    }
+    else{
+        control_reg = DIT0_REG_CONTROL0;
+    }
+    cntrl = ioread8(base_addr+control_reg);
+    cntrl = cntrl & (~(DIT_CTRL_ENABLE));
+    iowrite8(cntrl,base_addr+control_reg);
+
+}
+
+
+/**
+ *  \brief Get timer value
+ *  
+ *  \param [in] index Choose one of two identical timers 
+ *  \param [in] base_addr Choose exact sp804 unit by setting its base address
+ *  \return Return current counter value
+ *  
+ *  \details  
+ */ 
+int sp804_get_value( int base_addr, int index)
+{
+    int value_reg;
+    if (index){
+        value_reg = DIT0_REG_VALUE1;
+    }
+    else{
+        value_reg = DIT0_REG_VALUE0;
+    }
+    return ioread32(base_addr+value_reg);
+}
+
+ 
+/**
+ *  \brief Clear timer interrupt 
+ *  
+ *  \param [in] index Choose one of two identical timers 
+ *  \param [in] base_addr Choose exact sp804 unit by setting its base address
+ *  \return Return nothing
+ *  
+ *  \details Manualy writes 1 in CLEARINT register of the chosen timer.
+ */ 
+void sp804_clrint( int base_addr, int index)
+{
+    int int_clr_reg;
+    if (index){
+        int_clr_reg = DIT0_REG_INTCLR1;
+    }
+    else{
+        int_clr_reg = DIT0_REG_INTCLR0;
+    }
+    iowrite32( 1,base_addr+ int_clr_reg);
+}
+
+
+/**
+ *  \brief Config timer
+ *  
+ *  \param [in] config Input structure, contains config options
+ *  \param [in] index Choose one of two identical timers 
+ *  \param [in] base_addr Choose exact sp804 unit by setting its base address
+ *  \return Return nothing
+ *  
+ *  \details Sets CONTROl register of the chosen timer due to input structure values,
+ *   sets LOAD and BgLoad values if they are non-zero.
+ */
+void sp804_config( uint32_t base_addr, const struct sp804_conf * config, int index)
+{
+    int cntrl = 0;
+    // MODE
+    if (config->mode == ONESHOT){
+    cntrl |= DIT_CTRL_ONESHOT;
+    cntrl &= ~DIT_CTRL_PERIODIC;
+    }
+    else if (config->mode == PERIODIC){
+    cntrl &= ~ DIT_CTRL_ONESHOT;
+    cntrl |=DIT_CTRL_PERIODIC;
+    }
+    else if (config->mode == FREERUN){
+    cntrl &= ~ DIT_CTRL_ONESHOT;
+    cntrl &= ~ DIT_CTRL_PERIODIC;
+    }
+    
+    // INT EN
+    if (config->interrupt_enable){
+        cntrl |= DIT_CTRL_INTEN;
+    }
+    else{
+        cntrl &= ~DIT_CTRL_INTEN;
+    }
+    
+    // CLK DIV
+    if (config->clock_division==256){
+        cntrl |=  DIT_CTRL_DIV1;
+        cntrl &= ~DIT_CTRL_DIV0;
+    }
+    else if (config->clock_division==16){
+        cntrl &= ~DIT_CTRL_DIV1;
+        cntrl |= DIT_CTRL_DIV0;
+    }
+    else{
+        cntrl &= ~DIT_CTRL_DIV1;
+        cntrl &= ~DIT_CTRL_DIV0;
+    }
+    
+    // SIZE 32
+    if (config->width == 32)
     {
-        iowrite32(count_to,DIT0_BASE+DIT0_REG_LOAD0);
-        while (ioread32(DIT0_BASE+DIT0_REG_VALUE0)){};
-        rumboot_printf("Timer 0 Cycle# %d \n",i);
-    };
-    iowrite32(cntrl&~(DIT_CTRL_ENABLE),DIT0_BASE+DIT0_REG_CONTROL0);
-}
-
-void oneshot_n_cycles_1(int cycles, int count_to)
-{
-    int cntrl ;
-    cntrl = DIT_CTRL_ENABLE|(DIT_CTRL_INTEN&~DIT_CTRL_DIV1)|DIT_CTRL_DIV0|DIT_CTRL_SIZE32|DIT_CTRL_ONESHOT;
-
-    iowrite8(cntrl,DIT0_BASE+DIT0_REG_CONTROL1);
-    for (int i = 0; i < cycles; i++)
+        cntrl |= DIT_CTRL_SIZE32;
+    }
+    else
     {
-        iowrite32(count_to,DIT0_BASE+DIT0_REG_LOAD1);
-        while (ioread32(DIT0_BASE+DIT0_REG_VALUE1)){rumboot_printf("Value = %d \n",ioread32(DIT0_BASE+DIT0_REG_VALUE1 ));};
-        rumboot_printf("Timer 1 Cycle# %d \n",i);
-    };
-    iowrite32(cntrl&~(DIT_CTRL_ENABLE),DIT0_BASE+DIT0_REG_CONTROL1);
-}
+        cntrl &=  ~DIT_CTRL_SIZE32;
+    }     
+    
+    
+    if (index){
+        iowrite8( cntrl, base_addr+DIT0_REG_CONTROL1);
+        
+        // LOAD
+        if (config->load)
+        {
+            iowrite32(config->load,base_addr+DIT0_REG_LOAD1);
+        }
+        
+        // BG LOAD
+        if (config->bgload)
+        {
+            iowrite32(config->bgload,base_addr+DIT0_REG_BGLOAD1);
+        }
+    }
+    else{
+        iowrite8( cntrl, base_addr+DIT0_REG_CONTROL0);
 
-
-void freerun_0(int optional_load)
-{
-    int cntrl ;
-    cntrl = (DIT_CTRL_ENABLE&~DIT_CTRL_PERIODIC)|((DIT_CTRL_INTEN&~DIT_CTRL_DIV1)&~DIT_CTRL_DIV0)|(DIT_CTRL_SIZE32&~DIT_CTRL_ONESHOT);
-
-    iowrite8(cntrl,DIT0_BASE+DIT0_REG_CONTROL0);
-    if (optional_load)
-        iowrite32(optional_load,DIT0_BASE+DIT0_REG_LOAD0);
-    while (ioread32(DIT0_BASE+DIT0_REG_VALUE0)){rumboot_printf("Value = %d \n",ioread32(DIT0_BASE+DIT0_REG_VALUE0 ));};
-
-}
-
-void freerun_1(int optional_load)
-{
-    int cntrl ;
-    cntrl = (DIT_CTRL_ENABLE&~DIT_CTRL_PERIODIC)|((DIT_CTRL_INTEN&~DIT_CTRL_DIV1)&~DIT_CTRL_DIV0)|(DIT_CTRL_SIZE32&~DIT_CTRL_ONESHOT);
-
-    iowrite8(cntrl,DIT0_BASE+DIT0_REG_CONTROL1);
-    if (optional_load)
-        iowrite32(optional_load,DIT0_BASE+DIT0_REG_LOAD1);
-    while (ioread32(DIT0_BASE+DIT0_REG_VALUE1)){rumboot_printf("Value = %d \n",ioread32(DIT0_BASE+DIT0_REG_VALUE1 ));};
-
-}
-
-
-void periodic_0(int load, int optional_bgload)
-{
-    int cntrl ;
-    cntrl = (DIT_CTRL_ENABLE|DIT_CTRL_PERIODIC)|((DIT_CTRL_INTEN&~DIT_CTRL_DIV1)&~DIT_CTRL_DIV0)|(DIT_CTRL_SIZE32&~DIT_CTRL_ONESHOT);
-
-    iowrite8(cntrl,DIT0_BASE+DIT0_REG_CONTROL0);
-    iowrite32(load,DIT0_BASE+DIT0_REG_LOAD0);
-    if (optional_bgload)
-        iowrite32(optional_bgload,DIT0_BASE+DIT0_REG_BGLOAD0);
-    while (ioread32(DIT0_BASE+DIT0_REG_VALUE0)){rumboot_printf("Value = %d \n",ioread32(DIT0_BASE+DIT0_REG_VALUE0 ));};
+        // LOAD
+        if (config->load)
+        {
+            iowrite32(config->load,base_addr+DIT0_REG_LOAD0);
+        }
+        
+        // BG LOAD
+        if (config->bgload)
+        {
+            iowrite32(config->bgload,base_addr+DIT0_REG_BGLOAD0);
+        }
+    }
 
 }
-
-void periodic_1(int load, int optional_bgload)
-{
-    int cntrl ;
-    cntrl = (DIT_CTRL_ENABLE|DIT_CTRL_PERIODIC)|((DIT_CTRL_INTEN&~DIT_CTRL_DIV1)&~DIT_CTRL_DIV0)|(DIT_CTRL_SIZE32&~DIT_CTRL_ONESHOT);
-
-    iowrite8(cntrl,DIT0_BASE+DIT0_REG_CONTROL1);
-    iowrite32(load,DIT0_BASE+DIT0_REG_LOAD1);
-    if (optional_bgload)
-        iowrite32(optional_bgload,DIT0_BASE+DIT0_REG_BGLOAD1);
-    while (ioread32(DIT0_BASE+DIT0_REG_VALUE1)){rumboot_printf("Value = %d \n",ioread32(DIT0_BASE+DIT0_REG_VALUE1 ));};
-
-}
-
-
-
-
-
-
-
 
 
 
