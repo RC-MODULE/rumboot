@@ -46,7 +46,7 @@ macro(rumboot_platform_generate_stuff_for_taget product)
 
   add_custom_target(
     ${product}.edcl ALL
-    COMMAND ${PACKIMAGE} -t hostimage -i ${product}.bin -o ${product}.img
+    COMMAND ${PACKIMAGE} -t hostimage -i ${product}.bin -o ${product}.edcl
     COMMENT "Packing image ${product}.edcl"
     DEPENDS ${product}.bin
   )
