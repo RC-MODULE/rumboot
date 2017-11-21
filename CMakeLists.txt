@@ -125,10 +125,10 @@ ADD_SOURCE("src/lib/printf.c")
 ADD_SOURCE("src/lib/testsuite.c")
 ADD_SOURCE("src/irq.c")
 ADD_SOURCE("src/lib/regpoker.c")
-ADD_SOURCE("src/lib/newlib-stubs.c")
 
 if (NOT RUMBOOT_PLATFORM MATCHES native)
     ADD_SOURCE(src/rumboot_main.c)
+    ADD_SOURCE("src/lib/newlib-stubs.c")    
 endif()
 
 file(GLOB LUA_FILES src/lib/lua-5.1.5/src/*.c)
