@@ -60,6 +60,9 @@ static int tx_fifo_ready(uint32_t base_addr)
 
 void rumboot_platform_putchar(uint8_t c)
 {
+  if (c == '\n')
+    rumboot_platform_putchar('\r');
+
   if (tx_fifo_ready(UART0__) == 0)
     iowrite32((char)c, UART0__ + PL011_UARTDR);
 }
@@ -104,5 +107,5 @@ void rumboot_platform_perf(const char *tag)
 
 void rumboot_platform_setup()
 {
-  
+
 }

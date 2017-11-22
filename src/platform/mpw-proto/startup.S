@@ -18,7 +18,7 @@
 .global c_start
 .global c_start1
 
-.section ".text.start","ax",@progbits
+.section ".text.startup","ax",@progbits
 .global boot_image_entry0
 boot_image_entry0:
     b rumboot_main

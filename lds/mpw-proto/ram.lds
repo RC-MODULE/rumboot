@@ -5,36 +5,41 @@ MEMORY
 
 SECTIONS
 {
- .rwx : {
-  KEEP(*(.header))
+
+
+.text :
+{
   KEEP(*(.text.startup))
   *(.rumboot_platform_runtime_info);
   *(.text)
+  *(.text.*)
   *(.rodata)
   *(.data)
+
+} > IM0
+
+.bss :
+{
   rumboot_platform_bss_start = .;
   *(.bss)
   *(.bss.*)
   rumboot_platform_bss_end = .;
-  *(.data.*)
-
   rumboot_platform_heap_start = .;
   . = . + 0xf000; /* 60k heap */
   rumboot_platform_heap_end = .;
 
-  /* This is where stacks start */
-  rumboot_platform_stack_area_start = .;
+} > IM0
 
-  . = . + 0x10000; /* 64k stack */
+.data :
+{
+    *(.data)
+} > IM0
 
-  /* This is where stacks end */
-  rumboot_platform_stack_area_end = .;
- } > IM0
+.rodata :
+{
+  *(.rodata)
+  *(.rodata).*
+} > IM0
 
-
- /DISCARD/ :
- {
- /*     *(.text.startup) */
- }
 
 }
