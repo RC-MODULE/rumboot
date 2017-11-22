@@ -7,9 +7,8 @@
 #define SDIO_CLK_POLARITY                     0x310
 
 //BASE 
-#define GSPI_BASE			      0x01030000	
 #define eSRAM1_BASE		              0x00060000
-#define SDIO_BASE		 	      0x01032000
+
 //Test addresses
 #define DMA_SDIO_SRC_IM0                      eSRAM1_BASE + 0x10000
 #define DMA_SDIO_DST_SRAM                     0x30030000
@@ -19,3 +18,15 @@
 #define DMA_SDIO_DST_DDR_HIGH                 0x00000000
 #define DMA_SDIO_DST_DDR1_HIGH                0x3f000000
 #define DMA_SDIO_DST_IM0                      eSRAM1_BASE + 0x30000
+
+#define SPI_DMAWSTART     GSPI_BASE+0x90
+#define SPI_DMAWEND       GSPI_BASE+0x94
+#define SPI_DMAWCNTRL       GSPI_BASE+0x98
+#define SPI_DMAWCUR       GSPI_BASE+0x9c
+#define SPI_AXIW_BRESP      GSPI_BASE+0xa0
+#define SPI_DMARSTART       GSPI_BASE+0xa4
+#define SPI_DMAREND       GSPI_BASE+0xa8
+#define SPI_DMARCNTRL       GSPI_BASE+0xac
+#define SPI_DMARCUR       GSPI_BASE+0xb0
+
+#define Size                      33
