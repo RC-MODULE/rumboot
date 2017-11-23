@@ -11,8 +11,20 @@ extern int errno;
 char *__env[1] = { 0 };
 char **environ = __env;
 
-int _write(int file, char *ptr, int len);
+int _write(int file, const char *ptr, int len)
+{
+#ifndef RUMBOOT_NEWLIB_PRINTF
+    rumboot_printf(ptr);
+#else
+	int i;
+	for (i=0; i<len; i++)
+		rumboot_platform_putchar(ptr[i]);
+#endif
+	return len;
+}
 
+
+struct timeval;
 int _gettimeofday(struct timeval *__tp, void *__tzp)
 {
 	return -1;
@@ -36,7 +48,7 @@ int _close(int file)
 	return -1;
 }
 
-int _execve(char *name, char **argv, char **env)
+int _execve(const char *name, char * const *argv, char * const *env)
 {
 	errno = ENOMEM;
 	return -1;
@@ -146,14 +158,74 @@ int _wait(int *status)
 	return -1;
 }
 
-int _write(int file, char *ptr, int len)
-{
-    rumboot_printf(ptr);
-	return len;
-}
 
 int _read(int file, char *ptr, int len)
 {
 	errno = EBADF;
 	return -1;
 }
+
+
+
+/* reentrant stubs */
+
+int _close_r  (struct _reent *r, int v)
+{
+    return _close(v);
+}
+
+int _execve_r  (struct _reent *r, const char *n, char *const *a, char *const *e)
+{
+	return _execve(n, a, e);
+}
+
+void *_sbrk_r  (struct _reent *r, ptrdiff_t d)
+{
+	return _sbrk(d);
+}
+
+_ssize_t _write_r  (struct _reent *r, int fd, const void * ptr, size_t sz)
+{
+	return _write(fd, ptr, sz);
+}
+
+int _fstat_r  (struct _reent *r, int fd, struct stat *s)
+{
+	return _fstat(fd, s);
+}
+
+int _isatty_r  (struct _reent *r , int fd)
+{
+	return _isatty(fd);
+}
+
+_off_t _lseek_r  (struct _reent *r, int f, _off_t ptr, int dir)
+{
+	return _lseek(f, ptr, dir);
+}
+
+_ssize_t _read_r  (struct _reent *r, int f, void *ptr, size_t sz)
+{
+	return _read(f, ptr, sz);
+}
+
+#if 0
+int _fcntl_r  ((struct _reent *, int, int, int));
+int _fork_r  ((struct _reent *));
+
+int _getpid_r  ((struct _reent *));
+
+int _kill_r  ((struct _reent *, int, int));
+int _link_r  ((struct _reent *, const char *, const char *));
+
+int _mkdir_r  ((struct _reent *, const char *, int));
+int _open_r  ((struct _reent *, const char *, int, int));
+
+int _rename_r  ((struct _reent *, const char *, const char *));
+
+int _stat_r  ((struct _reent *, const char *, struct stat *));
+_CLOCK_T_ _times_r  ((struct _reent *, struct tms *));
+int _unlink_r  ((struct _reent *, const char *));
+int _wait_r  ((struct _reent *, int *));
+
+#endif
