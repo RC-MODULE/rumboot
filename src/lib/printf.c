@@ -519,7 +519,7 @@ repeat:
 }
 
 
-#ifndef RUMBOOT_PRINTF_ACCEL
+#if  !defined(RUMBOOT_PRINTF_ACCEL) && !defined(RUMBOOT_NEWLIB_PRINTF)
 void rumboot_printf(const char *fmt, ...)
 {
 	va_list args;

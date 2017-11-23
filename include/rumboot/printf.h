@@ -7,7 +7,7 @@
  *
  * \defgroup stdio Standard input/output
  * \ingroup libraries
- * 
+ *
  * Functions and macros in this group implement reading and writing
  *
  * \code{.c}
@@ -18,7 +18,7 @@
  *  @{
  */
 
-
+#if !defined(RUMBOOT_NEWLIB_PRINTF)
 /**
  * Rumboot's printf implementation. The user-formatted text is sent to
  * the currently active stout device
@@ -35,7 +35,12 @@
  */
 
 void rumboot_printf(const char *fmt, ...);
+#else
 
+#include <stdio.h>
+#define rumboot_printf(fmt, ...) printf(fmt, ##__VA_ARGS__)
+
+#endif
 /**
  * Rumboot's vprintf implementation. The same as printf, but with va_list
  * as the argument

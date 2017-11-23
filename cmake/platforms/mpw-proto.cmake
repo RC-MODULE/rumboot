@@ -28,6 +28,7 @@ rumboot_add_configuration(
   MPW_PROTO
   DEFAULT
   LDS mpw-proto/ram.lds
+  CFLAGS -DRUMBOOT_NEWLIB_PRINTF
   LDFLAGS -Wl,--start-group -lgcc -lc -lm -Wl,--end-group
   FEATURES LUA
 )
