@@ -52,8 +52,8 @@
  #define EMI0_BASE                0x80000000
  #define EMI1_BASE                0xC0000000
  #define ARINC_BASE               0x01030000
- #define GSPI_BASE                0x01040000  
- #define SDIO_BASE                0x01042000
+ #define GSPI0_BASE                0x01040000  
+ #define SDIO0_BASE                0x01042000
  /**
  * @}
  */
