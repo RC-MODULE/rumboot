@@ -10,15 +10,15 @@
 #include <platform/devices.h>
 
 
-#define SPI_DMAWSTART		  GSPI_BASE+0x90
-#define SPI_DMAWEND 		  GSPI_BASE+0x94
-#define SPI_DMAWCNTRL 		  GSPI_BASE+0x98
-#define SPI_DMAWCUR 		  GSPI_BASE+0x9c
-#define SPI_AXIW_BRESP 		  GSPI_BASE+0xa0
-#define SPI_DMARSTART 		  GSPI_BASE+0xa4
-#define SPI_DMAREND 		  GSPI_BASE+0xa8
-#define SPI_DMARCNTRL 	 	  GSPI_BASE+0xac
-#define SPI_DMARCUR  		  GSPI_BASE+0xb0
+#define SPI_DMAWSTART		  GSPI0_BASE+0x90
+#define SPI_DMAWEND 		  GSPI0_BASE+0x94
+#define SPI_DMAWCNTRL 		  GSPI0_BASE+0x98
+#define SPI_DMAWCUR 		  GSPI0_BASE+0x9c
+#define SPI_AXIW_BRESP 		  GSPI0_BASE+0xa0
+#define SPI_DMARSTART 		  GSPI0_BASE+0xa4
+#define SPI_DMAREND 		  GSPI0_BASE+0xa8
+#define SPI_DMARCNTRL 	 	  GSPI0_BASE+0xac
+#define SPI_DMARCUR  		  GSPI0_BASE+0xb0
 
 #define Size                      33
 
@@ -185,20 +185,21 @@ unsigned int read_data;
 iowrite32(sup,SPI_DMARSTART);
   sup=(int)send + amount-1;
 iowrite32(sup,SPI_DMAREND);
-iowrite32(0x80000000|0x1FFFFFE0 ,(GSPI_BASE + 0x0ac));//DMAR set descriptor 
-iowrite32(0x1,(GSPI_BASE + 0x0b4));//set read axi buffer tipe - single (not circled)
+iowrite32(0x80000000|0x1FFFFFE0 ,(GSPI0_BASE + 0x0ac));//DMAR set descriptor 
+iowrite32(0x1,(GSPI0_BASE + 0x0b4));//set read axi buffer tipe - single (not circled)
   sup=(int)rcv;
 iowrite32(sup,SPI_DMAWSTART);
   sup=(int)rcv + amount-1;
 iowrite32(sup,SPI_DMAWEND);
-iowrite32( 0x80000000|0x1FFFFFE0,(GSPI_BASE + 0x098));;//DMAW set descriptor 
-iowrite32( 0x1ef,(GSPI_BASE + 0x0c4));//set axi params AWLEN=ARLEN=F, all LSB (0 - LSB, 1 - MSB) ??
-iowrite32( 0x1,(GSPI_BASE + 0x0b8));//start AXIR DMA
-  read_data=ioread32(GSPI_BASE + 0x0d4);
+iowrite32( 0x80000000|0x1FFFFFE0,(GSPI0_BASE + 0x098));;//DMAW set descriptor 
+iowrite32( 0x1ef,(GSPI0_BASE + 0x0c4));//set axi params AWLEN=ARLEN=F, all LSB (0 - LSB, 1 - MSB) ??
+iowrite32( 0x1,(GSPI0_BASE + 0x0b8));//start AXIR DMA
+  read_data=ioread32(GSPI0_BASE + 0x0d4);
+  rumboot_printf("example_ok\n");
   while (!(read_data&0x008))
-    {read_data=ioread32(GSPI_BASE + 0x0d4);}
+    {read_data=ioread32(GSPI0_BASE + 0x0d4);}
   while (!(read_data&0x004))
-    {read_data=ioread32(GSPI_BASE + 0x0d4);}
+    {read_data=ioread32(GSPI0_BASE + 0x0d4);}
     
 };
 
@@ -209,15 +210,15 @@ iowrite32( 0x1,(GSPI_BASE + 0x0b8));//start AXIR DMA
 unsigned int sup;
 
    sup=0xc7;
-iowrite32(sup,GSPI_BASE + 0x000);//8-bit data
+iowrite32(sup,GSPI0_BASE + 0x000);//8-bit data
    sup=0x02;
-iowrite32(sup,GSPI_BASE + 0x004); //turn on controller, loop operation
+iowrite32(sup,GSPI0_BASE + 0x004); //turn on controller, loop operation
     sup=10;
-iowrite32(sup,GSPI_BASE + 0x010); //clock prescale (10MHz)
+iowrite32(sup,GSPI0_BASE + 0x010); //clock prescale (10MHz)
     sup=0x00;
-iowrite32(sup,GSPI_BASE + 0x014); //interrupt masks - mask all
+iowrite32(sup,GSPI0_BASE + 0x014); //interrupt masks - mask all
     sup=0x03;
-iowrite32(sup,GSPI_BASE + 0x024); //enable DMA	  
+iowrite32(sup,GSPI0_BASE + 0x024); //enable DMA	  
 	  
 };  
 
