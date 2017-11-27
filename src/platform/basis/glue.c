@@ -6,7 +6,7 @@
 #include <rumboot/io.h>
 #include <arch/arm/irq_macros.h>
 #include <platform/devices.h>
-#include <rumboot/dit_lib.h>
+#include <devices/sp804.h>
 
 /* Platform-specific glue */
 uint32_t rumboot_platform_get_uptime()

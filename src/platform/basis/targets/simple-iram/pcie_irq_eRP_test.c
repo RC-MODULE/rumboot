@@ -13,7 +13,7 @@
 //      - wait until GIC irq handled
 //      - wait a bit and check MSIX irq received
 //    - check GIC irq was handled neccessary amount of times
-//    
+//
 //    Test duration (RTL): < 300us
 //-----------------------------------------------------------------------------
 
@@ -31,8 +31,7 @@
 #include <rumboot/irq.h>
 
 #include <platform/devices.h>
-#include <devices/dit.h>
-#include <rumboot/dit_lib.h>
+#include <devices/sp804.h>
 
 #define irq_cntr_ptr 0x00050000
 #define irq_flag_ptr 0x00050008
@@ -122,7 +121,7 @@ void clear_PCIe_DMA_IRQ_effects ()
 //  Clear all interruption effects:
 //    - status in EXT_IRQ_GEN
 //    - space in eSRAM
-//  
+//
 //  Usefull for repeating interruptions and repeating program
 //------------------------------------------------------------------------
 void clear_msix_PCIe_DMA_IRQ_effects ()
@@ -158,7 +157,7 @@ static void PCIe_DMA_IRQ_handler (int irq, void *arg)
 void pcie_dma_transaction ()
 {
     PCIe_DMA_desc PCIe_DMA_descriptor;
-    
+
     //-------------------------------------------------------------
     //  Create descriptor for PCIe internal DMA controller
     //-------------------------------------------------------------
@@ -182,7 +181,7 @@ uint32_t main ()
 {
     iowrite64 (0, irq_cntr_ptr) ;
     iowrite64 (0, irq_flag_ptr) ;
-    
+
     //---------------------------------------------------------
     //  GIC configuration
     //---------------------------------------------------------
@@ -193,7 +192,7 @@ uint32_t main ()
     rumboot_irq_table_activate(tbl);
     rumboot_irq_enable(pcie_dma_int_gic);
     rumboot_irq_sei();
-    
+
     //---------------------------------------------------------
     //  Turn PCIe On
     //---------------------------------------------------------
@@ -212,16 +211,16 @@ uint32_t main ()
     //  Enable DMA interruptions
     //---------------------------------------------------------
     iowrite32 (0x1, PCIE_CORE_BASE + PCIe_Core_DMAConfig + PCIe_DMA_common_udma_int_ena);
-    
+
     for (volatile uint32_t i = 0; i < repeat_number; i++)
     {
         clear_msix_PCIe_DMA_IRQ_effects ();
-        
+
         //---------------------------------------------------------
         //  Transmit data by internal PCIe DMA
         //---------------------------------------------------------
         pcie_dma_transaction ();
-        
+
         //---------------------------------------------------------
         //  Wait interrupt handled by GIC
         //    It should be made at the beginning of previous cycle.
@@ -255,9 +254,9 @@ uint32_t main ()
         // //---------------------------------------------------------
         // if (pcie_turn_on_with_options_ep (1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) != 0)
             // return -1;
-        
+
     }
-    
+
     //---------------------------------------------------------
     //  Check, that irq handler was called neccessary times
     //---------------------------------------------------------
@@ -265,6 +264,6 @@ uint32_t main ()
     {
         return ioread32 (irq_cntr_ptr);
     }
-    
+
     return 0;
 }
