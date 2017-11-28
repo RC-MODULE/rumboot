@@ -28,6 +28,7 @@
 #define DIT2_TIMINT2 47
 #define DIT3_TIMINT1 48
 #define DIT3_TIMINT2 49
+#define ARINC_INT    85
 
 /**
  * @}
