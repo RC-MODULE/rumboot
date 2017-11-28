@@ -91,7 +91,6 @@ a_repeat_loop:
     tube_msg "--- DATA A1 OK"
 
     LDR R2, =0x8002
-    STR R2, [R1, #CCAN_IF1_Com_Req]
     LDR R3, [R1, #CCAN_IF1_Dat_A_2]
     LDR R4, =0xf4f3
     CMP R3, R4
@@ -99,7 +98,6 @@ a_repeat_loop:
     tube_msg "--- DATA A2 OK"
 
     LDR R2, =0x8002
-    STR R2, [R1, #CCAN_IF1_Com_Req]
     LDR R3, [R1, #CCAN_IF1_Dat_B_1]
     LDR R4, =0xf6f5
     CMP R3, R4
@@ -107,7 +105,6 @@ a_repeat_loop:
     tube_msg "--- DATA B1 OK"
 
     LDR R2, =0x8002
-    STR R2, [R1, #CCAN_IF1_Com_Req]
     LDR R3, [R1, #CCAN_IF1_Dat_B_2]
     LDR R4, =0xf8f7
     CMP R3, R4
