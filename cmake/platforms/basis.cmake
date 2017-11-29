@@ -90,6 +90,12 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       PREFIX lprobe-cpu
     )
 
+    add_directory_with_targets(spl-stubs/
+      CONFIGURATION IRAM
+      PREFIX spl
+      FEATURES STUB
+    )
+
     add_rumboot_target(
         CONFIGURATION ROM
         FILES bootrom-stub.c
