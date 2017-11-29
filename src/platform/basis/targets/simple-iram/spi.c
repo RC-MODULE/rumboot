@@ -158,27 +158,27 @@ unsigned int writeenablecmd        =  0x06;
 unsigned int readstatusregistercmd =  0x05;
 unsigned int writedisablecmd       =  0x04;
 unsigned int sectorerase           =  0xd8;
-  
+
  void go_dmac(unsigned int* send, unsigned int* rcv, unsigned int amount) //
-{   
+{
 unsigned int sup;
 unsigned int read_data;
-//unsigned int x;  
-	
+//unsigned int x;
 
-  
- 
+
+
+
  sup=(int)send;
 iowrite32(sup,SPI_DMARSTART);
   sup=(int)send + amount-1;
 iowrite32(sup,SPI_DMAREND);
-iowrite32(0x80000000|0x1FFFFFE0 ,(GSPI0_BASE + 0x0ac));//DMAR set descriptor 
+iowrite32(0x80000000|0x1FFFFFE0 ,(GSPI0_BASE + 0x0ac));//DMAR set descriptor
 iowrite32(0x1,(GSPI0_BASE + 0x0b4));//set read axi buffer tipe - single (not circled)
   sup=(int)rcv;
 iowrite32(sup,SPI_DMAWSTART);
   sup=(int)rcv + amount-1;
 iowrite32(sup,SPI_DMAWEND);
-iowrite32( 0x80000000|0x1FFFFFE0,(GSPI0_BASE + 0x098));;//DMAW set descriptor 
+iowrite32( 0x80000000|0x1FFFFFE0,(GSPI0_BASE + 0x098));;//DMAW set descriptor
 iowrite32( 0x1ef,(GSPI0_BASE + 0x0c4));//set axi params AWLEN=ARLEN=F, all LSB (0 - LSB, 1 - MSB) ??
 iowrite32( 0x1,(GSPI0_BASE + 0x0b8));//start AXIR DMA
   read_data=ioread32(GSPI0_BASE + 0x0d4);
@@ -187,13 +187,13 @@ iowrite32( 0x1,(GSPI0_BASE + 0x0b8));//start AXIR DMA
     {read_data=ioread32(GSPI0_BASE + 0x0d4);}
   while (!(read_data&0x004))
     {read_data=ioread32(GSPI0_BASE + 0x0d4);}
-    
+
 };
 
 
 
  void init_ssp()
-{   
+{
 unsigned int sup;
 
    sup=0xc7;
@@ -205,17 +205,17 @@ iowrite32(sup,GSPI0_BASE + 0x010); //clock prescale (10MHz)
     sup=0x00;
 iowrite32(sup,GSPI0_BASE + 0x014); //interrupt masks - mask all
     sup=0x03;
-iowrite32(sup,GSPI0_BASE + 0x024); //enable DMA	  
-	  
-};  
+iowrite32(sup,GSPI0_BASE + 0x024); //enable DMA
+
+};
 
 
 
 int main(void){
 
-  unsigned int x;  
+  unsigned int x;
 
-  init_ssp();	
+  init_ssp();
   go_dmac(&writeenablecmd, dummyarray, 1);
   rumboot_printf("WREN Issued for SE\n");
   go_dmac(&sectorerase, dummyarray, 4);
@@ -224,17 +224,17 @@ int main(void){
   // Three Bytes (OPC|DUMMY|DUMMY)/(DUMMY|STREG|STREG)
     go_dmac(&readstatusregistercmd , dummyarray , 3);
     rumboot_printf("status_reg=%x\n",
-    (*dummyarray));  
+    (*dummyarray));
   }while ((x& (*dummyarray)) != 0);
   rumboot_printf("SECTOR ERASE Complete\n");
   for( int i = 0; i < 4; i++){
     rumboot_printf("loop=%x\n",(i));
     //rgSPI_CPSR = SSPDivisor25MHz;
-    unsigned int x;  
+    unsigned int x;
 
 
     //--------- Write Flash (Page Program) -----
-    // -- (1) Issue Write Enable Instruction To Flash    
+    // -- (1) Issue Write Enable Instruction To Flash
     go_dmac(&writeenablecmd, dummyarray, 1);
     rumboot_printf("WREN Issued\n");
 
@@ -248,10 +248,10 @@ int main(void){
     do{
     // Three Bytes (OPC|DUMMY|DUMMY)/(DUMMY|STREG|STREG)
       go_dmac(&readstatusregistercmd , dummyarray , 3);
-      rumboot_printf("status_reg=%x\n",(*dummyarray)); 
+      rumboot_printf("status_reg=%x\n",(*dummyarray));
     }while ((x & (*dummyarray)) != 0);
     rumboot_printf("Write Complete\n");
-    // -- (6) Write Disable Instruction 
+    // -- (6) Write Disable Instruction
     go_dmac(&writedisablecmd , dummyarray , 1);
     rumboot_printf("WRDI Issued\n");
     //--------- Read Flash -----
@@ -259,7 +259,7 @@ int main(void){
     // -- (1) Run KDMAC Both Channels For Simultaneous SPI Transfer
     go_dmac(readcmd , dstarray , 260);
     rumboot_printf("Read Complete\n");
-    //----------- Check Received Array -------- 
+    //----------- Check Received Array --------
     for (int n =0; n < (256/4+1); n++){
       if (dstarray[n] != etalonarray[n]) {
         rumboot_printf("FAILED!etalonarray=%x,dstarray=%x\n",(etalonarray[n]),(dstarray[n]));
@@ -270,11 +270,4 @@ int main(void){
   rumboot_printf( "test on spi has PASSED!!!\n");
 
   return 0;
-}   
-
-
-
-
-
-
-
+}
