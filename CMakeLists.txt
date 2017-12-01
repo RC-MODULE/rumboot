@@ -29,7 +29,7 @@ endif()
 
 RUMBOOT_PLATFORM_SET_COMPILER_FLAGS()
 
-INCLUDE_DIRECTORIES(
+INCLUDE_DIRECTORIES (
     ${CMAKE_SOURCE_DIR}/include/
     ${CMAKE_SOURCE_DIR}/include/platform/${RUMBOOT_PLATFORM}/
 )
@@ -118,17 +118,21 @@ if (${CMAKE_BUILD_TYPE} MATCHES "Production")
 endif()
 
 ADD_SOURCE("src/lib/bootimage.c")
-ADD_SOURCE("src/lib/crc32.c")
+ADD_SOURCE("src/lib/algo/crc32.c")
 ADD_SOURCE("src/lib/logo.c")
 ADD_SOURCE("src/lib/stdio.c")
 ADD_SOURCE("src/lib/printf.c")
 ADD_SOURCE("src/lib/testsuite.c")
 ADD_SOURCE("src/irq.c")
 ADD_SOURCE("src/lib/regpoker.c")
+ADD_SOURCE("src/lib/drivers/sdio.c")
+ADD_SOURCE("src/lib/algo/shrink.c")
+ADD_SOURCE("src/lib/algo/heatshrink_decoder.c")
+ADD_SOURCE("src/lib/algo/heatshrink_encoder.c")
 
 if (NOT RUMBOOT_PLATFORM MATCHES native)
     ADD_SOURCE(src/rumboot_main.c)
-    ADD_SOURCE("src/lib/newlib-stubs.c")    
+    ADD_SOURCE("src/lib/newlib-stubs.c")
 endif()
 
 file(GLOB LUA_FILES src/lib/lua-5.1.5/src/*.c)

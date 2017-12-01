@@ -44,5 +44,3 @@ tube_dec_1_\@:
         BL rumboot_printf
         POP  {R0-R3,LR}
 .endm
-
-

@@ -209,23 +209,36 @@ _ssize_t _read_r  (struct _reent *r, int f, void *ptr, size_t sz)
 	return _read(f, ptr, sz);
 }
 
+int _open_r  (struct _reent *r, const char *path, int a, int b)
+{
+  return _open(path, a, b);
+}
+
+int _unlink_r (struct _reent * r, char *path) {
+
+  return _unlink(path);
+}
 #if 0
+int _getpid_r (struct _reent * r ) {
+
+  return _getpid();
+}
+
+
 int _fcntl_r  ((struct _reent *, int, int, int));
 int _fork_r  ((struct _reent *));
 
-int _getpid_r  ((struct _reent *));
 
 int _kill_r  ((struct _reent *, int, int));
 int _link_r  ((struct _reent *, const char *, const char *));
 
 int _mkdir_r  ((struct _reent *, const char *, int));
-int _open_r  ((struct _reent *, const char *, int, int));
+
 
 int _rename_r  ((struct _reent *, const char *, const char *));
 
 int _stat_r  ((struct _reent *, const char *, struct stat *));
 _CLOCK_T_ _times_r  ((struct _reent *, struct tms *));
-int _unlink_r  ((struct _reent *, const char *));
 int _wait_r  ((struct _reent *, int *));
 
 #endif

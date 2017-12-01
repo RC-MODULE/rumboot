@@ -1,6 +1,6 @@
 #include <rumboot/bootheader.h>
 #include <rumboot/printf.h>
-#include <rumboot/crc32.h>
+#include <algo/crc32.h>
 
 /**
  * [rumboot_bootimage_check_header Check validity of header]
@@ -8,7 +8,7 @@
  * @param  dataptr pointer to the address of image data
  * @return         0 - if header is ok
  *                   -1 - if num_cores equals 0
- *                   -2 - if
+ *                   -2 - if crc don't match
  */
 int32_t rumboot_bootimage_check_header(struct rumboot_bootheader *hdr, void **dataptr) {
 
@@ -18,7 +18,7 @@ int32_t rumboot_bootimage_check_header(struct rumboot_bootheader *hdr, void **da
   if(hdr->num_cores == 0)
     return -2;
 
-  if( crc32(0, hdr, sizeof(*hdr) + sizeof(uint32_t)*hdr->num_cores) != hdr->header_crc32   )
+  if( crc32(0, hdr, sizeof(*hdr) + sizeof(uint32_t)*hdr->num_cores) != hdr->header_crc32 )
     return -3;
 
 	return 0;

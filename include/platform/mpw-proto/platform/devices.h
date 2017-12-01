@@ -19,10 +19,13 @@
  * WARNING: DO NOT ADD INDIVIDUAL REGISTER OFFSETS HERE
  */
 
-#define SDIO__                0x3C06A000
+#define SDIO0_BASE                0x3C06A000
 #define SDIO_SIZE             SDIO_PLB6_SIZE
 
 #define SPI_CTRL0__         0x3C03E000
 #define SPI_CTRL0_SIZE      SPI_CTRL0_PLB6_SIZE
+
+#define LSIF1_GPIO7__       0x3C067000
+
 
 #endif

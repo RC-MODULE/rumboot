@@ -1,6 +1,7 @@
 #ifndef PRINTF_H
 #define PRINTF_H
 #include <stdint.h>
+#include <stdbool.h>
 #include <stdarg.h>
 
 /**
@@ -66,5 +67,6 @@ void rumboot_print_logo();
 
 
 /** @}*/
+
 
 #endif
