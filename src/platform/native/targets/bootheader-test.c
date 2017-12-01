@@ -2,7 +2,7 @@
 
 #include <rumboot/bootheader.h>
 #include <rumboot/printf.h>
-#include <rumboot/crc32.h>
+#include <algo/crc32.h>
 #include <rumboot/rumboot.h>
 
 #define NUM_CORES 1
