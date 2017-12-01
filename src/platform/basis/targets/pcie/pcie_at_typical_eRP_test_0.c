@@ -4,9 +4,9 @@
 //    
 //    
 //    Test includes:
-//    - turn PCIe On
 //    - turn DDR0 On
 //    - turn DDR1 On
+//    - turn PCIe On
 //    - setting outbound Address Translator (all regions)
 //    - setting inbound Address Translator (all regions)
 //    - repeat for few regions combinations
