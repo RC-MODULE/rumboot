@@ -7,7 +7,8 @@
 
 /**
  *
- * \defgroup PCIe test library
+ * \defgroup PCIe Example Functions
+ * \ingroup devices_pcie
  *
  * \code{.c}
  * #include <rumboot/pcie_test_lib.h>

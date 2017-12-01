@@ -7,7 +7,8 @@
 
 /**
  *
- * \defgroup DMA test library
+ * \defgroup devices_rmace RCM RMACE (Basis v0 only)
+ * \ingroup devices
  *
  * \code{.c}
  * #include <rumboot/dma_test_lib.h>
