@@ -12,25 +12,25 @@ const uint32_t get_eeprom_numb() {
   return (const uint32_t) eeprom_numb;
 }
 
-bool eeprom_init(struct bdata* data) {
+bool eeprom_init(const struct rumboot_bootsource* src, struct pdata* pdata) {
 
   /*TO DO!*/
 
   return true;
 }
 
-void eeprom_deinit(struct bdata* data) {
+void eeprom_deinit(struct pdata* pdata) {
 
   /*TO DO!*/
 }
 
-bool eeprom_read(struct bdata* data) {
+bool eeprom_read(struct pdata* pdata) {
 
   /*TO DO!*/
   return true;
 }
 
-bool eeprom_load_failed_should_i_try_again(struct bdata* data/*, uint32_t attempts_numb*/) {
+bool eeprom_load_failed_should_i_try_again(struct pdata* pdata/*, uint32_t attempts_numb*/) {
 
   //Error can be only in loading image step?
 

@@ -194,7 +194,7 @@ struct Event {
  * @param  freq_in_mhz sys clock frequency in MHz
  * @return pointer to configuration structure of sd card
  */
-bool sd_init(struct bdata* cfg);
+bool sd_init(const struct rumboot_bootsource* src, struct pdata* pdata);
 /**
  * [sd_read description]
  * @param  base      base address of SDIO
@@ -202,7 +202,7 @@ bool sd_init(struct bdata* cfg);
  * @param  dest_addr [description]
  * @return           true if read ok
  */
-bool sd_read(struct bdata* cfg);
+bool sd_read(struct pdata* pdata);
 /**
  * [sd_try_read description]
  * @param  base      base address of SDIO
@@ -211,14 +211,14 @@ bool sd_read(struct bdata* cfg);
  * @param  attempts  number of read attempts
  * @return           true if read ok
  */
-bool sd_try_read(struct bdata* cfg, const uint32_t attempts);
+bool sd_try_read(struct pdata* pdata, const uint32_t attempts);
 
 /**
  * [sd_deinit description]
  * @param  base_addr [description]
  * @return           [description]
  */
-void sd_deinit(struct bdata* cfg);
+void sd_deinit(struct pdata* pdata);
 
 /**
  * Find another source for load

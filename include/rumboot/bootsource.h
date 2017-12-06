@@ -14,28 +14,35 @@
     } \
   }
 
-struct bdata {
+#if 0
+struct config {
   uint32_t base;
-  uint32_t freq_in_mhz;
-  uint32_t* to;
-  uint32_t* from;
-  uint32_t out_param[1];
+  uint32_t freq_khz;
+  uint32_t offset;
+  char privdata[];
+};
+#endif
+
+struct pdata {
+  /*Dummy*/
 };
 
 struct rumboot_bootsource {
   const char *name;
+  uint32_t base;
+  uint32_t offset;
+  uint32_t freq_khz;
   int namelen;
-  int bdatalen;
-  bool (*init) (struct bdata* );
-  void (*deinit) (struct bdata* );
-  bool (*load_img) (struct bdata* );
+  int privdatalen;
+  bool (*init) (const struct rumboot_bootsource* src, struct pdata* pdata);
+  void (*deinit) (struct pdata* pdata);
+  bool (*load_img) (struct pdata* pdata);
   bool (*init_gpio_mux) ();
   void (*deinit_gpio_mux) ();
   bool (*should_i_try_again) ();
-
 };
 
 bool bootsource_try_single(const struct rumboot_bootsource *src);
-bool bootsource_try_chain(const struct rumboot_bootsource *src);
+bool bootsource_try_chain(const struct rumboot_bootsource *src, const struct pdata* pdata);
 
 #endif

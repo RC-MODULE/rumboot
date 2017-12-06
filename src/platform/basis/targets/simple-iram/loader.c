@@ -12,6 +12,10 @@
 #include <devices/eeprom.h>
 #include <devices/gpio.h>
 
+#include <platform/sdio.h>
+#include <platform/spi.h>
+#include <platform/eeprom.h>
+
 #include <platform/devices.h>
 
 #if 1
@@ -38,14 +42,16 @@ static void eeprom_deinit_gpio_mux() {
 }
 #endif
 
+
 /*
   Order of array elements are very important!
  */
 const struct rumboot_bootsource arr[] = {
 	{
 	    .name = "SDIO",
-	    .namelen = 4,
-	    .bdatalen = sizeof(struct rumboot_bootsource),
+			.base = SDIO0_BASE,
+			.freq_khz = SDIO_CLK_FREQ,
+	    .privdatalen = 128,
 	    .init = sd_init,
 	    .deinit = sd_deinit ,
 	    .load_img = sd_read,
@@ -54,8 +60,9 @@ const struct rumboot_bootsource arr[] = {
 
 	{
 			.name = "SPI",
-			.namelen = 3,
-			.bdatalen = sizeof(struct rumboot_bootsource),
+			.base = 0,
+			.freq_khz = SPI_CLK_FREQ,
+			.privdatalen = 128,
 			.init = spi_init,
 			.deinit = spi_deinit ,
 			.load_img = spi_read,
@@ -66,8 +73,9 @@ const struct rumboot_bootsource arr[] = {
 
 	{
 			.name = "EEPROM",
-			.namelen = 6,
-			.bdatalen = sizeof(struct rumboot_bootsource),
+			.base = 0,
+			.freq_khz = EEPROM_CLK_FREQ,
+			.privdatalen = 128,
 			.init = eeprom_init,
 			.deinit = eeprom_deinit ,
 			.load_img = eeprom_read,
@@ -81,7 +89,7 @@ const struct rumboot_bootsource arr[] = {
 
 static void selftest() {
 	/*TO DO!*/
-};
+}
 
 static void host_mode() {
 	/*TO DO!*/
@@ -116,6 +124,8 @@ int main()
 	const uint32_t BOOTM0 = read_bootm0();
 	const uint32_t BOOTM1 = read_bootm1();
 
+	struct pdata pdata;
+
   if(BOOTM0 == 1)
     selftest();
 
@@ -126,9 +136,7 @@ int main()
 	}
   else {
 
-//		struct bdata b;
-
-		if( !bootsource_try_chain(arr) ) host_mode();
+		if( !bootsource_try_chain(arr, &pdata) ) host_mode();
 	}
 
 	return 0;

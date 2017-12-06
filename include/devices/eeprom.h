@@ -31,23 +31,23 @@
  * @param  data [description]
  * @return      [description]
  */
-bool eeprom_init(struct bdata* data);
+bool eeprom_init(const struct rumboot_bootsource* src, struct pdata* pdata);
 /**
  * [eeprom_deinit description]
  * @param data [description]
  */
-void eeprom_deinit(struct bdata* data);
+void eeprom_deinit(struct pdata* pdata);
 /**
  * [eeprom_read description]
  * @param  data [description]
  * @return      [description]
  */
-bool eeprom_read(struct bdata* data);
+bool eeprom_read(struct pdata* pdata);
 /**
  * [eeprom_load_failed_should_i_try_again description]
  * @param  data [description]
  * @return      [description]
  */
-bool eeprom_load_failed_should_i_try_again(struct bdata* data) ;
+bool eeprom_load_failed_should_i_try_again(struct pdata* pdata) ;
 
 #endif

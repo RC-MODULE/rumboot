@@ -4,6 +4,10 @@
 #include <stdarg.h>
 #include <rumboot/platform.h>
 
+/* HACK: dummy variables */
+char rumboot_platform_spl_start;
+char rumboot_platform_spl_end;
+
 /* Platform-specific glue */
 uint32_t rumboot_platform_get_uptime()
 {
