@@ -3,7 +3,6 @@
 #include <stdbool.h>
 #include <ctype.h>
 
-
 #include <platform/sdio.h>
 #include <devices/sdio.h>
 
@@ -12,11 +11,12 @@
 #include <rumboot/timer.h>
 #include <rumboot/rumboot.h>
 #include <platform/devices.h>
+#include <rumboot/bootsource.h>
 
-
-#define SDIO_TIMEOUT        2000000 //in microseconds
+#define SDIO_TIMEOUT_US      2000000 //in microseconds
 #define SDIO_ATTEMPTS_NUMBER 5
 #define SDIO_DEBUG
+
 
 static inline uint32_t make_cmd(const uint32_t cmd, const uint32_t resp, const uint32_t crc, const uint32_t idx) {
 
@@ -33,17 +33,17 @@ static bool wait(const uint32_t base, struct Event *event)
 		status = ioread32(base + SDIO_INT_STATUS);
 
 		if (status & SPISDIO_SDIO_INT_STATUS_CAR_ERR) {
-			iowrite32(SDR_TRAN_SDC_ERR, base + SDIO_SDR_BUF_TRAN_RESP_REG);
-			return false;
-		} else if (status & event->flag) {
-			if (event->type == CH1_DMA_DONE_HANDLE)
-				iowrite32(event->response, base + SDIO_DCCR_1);
-			else
-				iowrite32(event->response, base + SDIO_SDR_BUF_TRAN_RESP_REG);
 
+      iowrite32(SDR_TRAN_SDC_ERR, base + SDIO_SDR_BUF_TRAN_RESP_REG);
+			return false;
+
+		} else if (status & event->flag) {
+
+      (event->type == CH1_DMA_DONE_HANDLE) ?
+       iowrite32(event->response, base + SDIO_DCCR_1) : iowrite32(event->response, base + SDIO_SDR_BUF_TRAN_RESP_REG);
 			return true;
 		}
-	} while ((ucurrent() - start) < SDIO_TIMEOUT);
+	} while ((ucurrent() - start) < SDIO_TIMEOUT_US);
 
 	return false;
 }
@@ -126,6 +126,7 @@ static bool SD2buf512(const uint32_t base, int buf_num, const uint32_t idx)
 		rumboot_printf("TIMEOUT:TRANSFER DONE at function SD2buf512.\r\n");
 		return false;
 	}
+
 	return true;
 }
 
@@ -189,112 +190,118 @@ static inline uint32_t calc_divh(const uint32_t freq_in_mhz)
 	return (freq_in_mhz / (10) / 2) - 1;
 }
 
-struct bsrc_sd_card *sd_init(const uint32_t base, const uint32_t freq_in_mhz)
+bool sd_init(struct bdata* cfg)
 {
 	size_t count = SDIO_ATTEMPTS_NUMBER;
-	struct bsrc_sd_card *sd_card = NULL;//HERE MUST BE ADDRESS WHERE WE STORE SDIO CFG!
 	uint32_t resp;
 	uint32_t arg;
-	uint32_t divl = calc_divl(freq_in_mhz);
-	uint32_t divh = calc_divh(freq_in_mhz);
+	uint32_t divl = calc_divl(cfg->freq_in_mhz);
+	uint32_t divh = calc_divh(cfg->freq_in_mhz);
 
 	rumboot_printf("SD: init\r\n");
 
-	iowrite32(divl, base + SPISDIO_SDIO_CLK_DIVIDE);
-	iowrite32(0x1, base + SPISDIO_ENABLE);          //sdio-on, spi-off
-	iowrite32((1 << 7), base + SDIO_SDR_CTRL_REG);  /* Hard reset damned hardware */
+	iowrite32(divl, cfg->base + SPISDIO_SDIO_CLK_DIVIDE);
+	iowrite32(0x1, cfg->base + SPISDIO_ENABLE);          //sdio-on, spi-off
+	iowrite32((1 << 7), cfg->base + SDIO_SDR_CTRL_REG);  /* Hard reset damned hardware */
 
-	while (ioread32(base + SDIO_SDR_CTRL_REG) & (1 << 7)) ;
+	while (ioread32(cfg->base + SDIO_SDR_CTRL_REG) & (1 << 7)) ;
 
-	iowrite32(0x7F, base + SPISDIO_SDIO_INT_MASKS);         //enable  interrupts in SDIO
-	iowrite32(0x16F, base + SDIO_SDR_ERROR_ENABLE_REG);     //enable interrupt and error flag
+	iowrite32(0x7F, cfg->base + SPISDIO_SDIO_INT_MASKS);         //enable  interrupts in SDIO
+	iowrite32(0x16F, cfg->base + SDIO_SDR_ERROR_ENABLE_REG);     //enable interrupt and error flag
 
 	while (count--) {
-		if (send_cmd(base, make_cmd(0, SDIO_RESPONSE_NONE, 0, 0), 0))
+		if (send_cmd(cfg->base, make_cmd(0, SDIO_RESPONSE_NONE, 0, 0), 0))
 			break;
 
 		mdelay(250);
 	}
 
-	if (!send_cmd(base, make_cmd(8, SDIO_RESPONSE_R1367, 1, 1), 0x000001AA))
-		sd_card->type = SDIO_CARD_OLD;
-	else if (ioread32(base + SDIO_SDR_RESPONSE1_REG) != 0x000001AA)
-		sd_card->type = SDIO_CARD_OLD;
+	if (!send_cmd(cfg->base, make_cmd(8, SDIO_RESPONSE_R1367, 1, 1), 0x000001AA))
+		cfg->out_param[0] = SDIO_CARD_OLD;
+	else if (ioread32(cfg->base + SDIO_SDR_RESPONSE1_REG) != 0x000001AA)
+		cfg->out_param[0] = SDIO_CARD_OLD;
 
 	count = SDIO_ATTEMPTS_NUMBER;
 	while (count--) {
-		if (!send_cmd(base, make_cmd(55, SDIO_RESPONSE_R1367, 1, 1), 0x0))              /* CMD55 with RCA == 0 */
+		if (!send_cmd(cfg->base, make_cmd(55, SDIO_RESPONSE_R1367, 1, 1), 0x0))              /* CMD55 with RCA == 0 */
 			continue;
 
 		arg = 0x80100000;
 
-		if (sd_card->type != SDIO_CARD_OLD)             /* Do not set HC bit for old cards, it may confuse them */
+		if (cfg->out_param[0] != SDIO_CARD_OLD)             /* Do not set HC bit for old cards, it may confuse them */
 			arg |= 0x40000000;
 
-		if (!send_cmd(base, make_cmd(41, SDIO_RESPONSE_R1367, 1, 1), arg)) /* ACMD41, Tell the card we support SDHC */
+		if (!send_cmd(cfg->base, make_cmd(41, SDIO_RESPONSE_R1367, 1, 1), arg)) /* ACMD41, Tell the card we support SDHC */
 			continue;
 
-		resp = ioread32(base + SDIO_SDR_RESPONSE1_REG);
+		resp = ioread32(cfg->base + SDIO_SDR_RESPONSE1_REG);
 
 		if ((resp >> 31) != 1)
 			continue; /* Card not ready, yet */
 
-		if (sd_card->type != SDIO_CARD_OLD)
-			sd_card->type = ((resp & 0x40000000) >> 30) ? SDIO_CARD_SDHC : SDIO_CARD_SDSC;
+		if (cfg->out_param[0] != SDIO_CARD_OLD)
+			cfg->out_param[0] = ((resp & 0x40000000) >> 30) ? SDIO_CARD_SDHC : SDIO_CARD_SDSC;
 
 		mdelay(250);
 	}
 
 	if (count == 0)
-		return NULL;
+		return false;
 
-	debug_card_name(sd_card->type);
+#ifdef SDIO_DEBUG
+	debug_card_name(cfg->out_param[0]);
+#endif
 
-	if (!send_cmd(base, make_cmd(2, SDIO_RESPONSE_R2, 1, 1), 0x0)) /* Request CID */
-		return NULL;
+	if (!send_cmd(cfg->base, make_cmd(2, SDIO_RESPONSE_R2, 1, 1), 0x0)) /* Request CID */
+		return false;
 
 	struct sd_cid cid;
-	debug_product_name(base, &cid);
+	debug_product_name(cfg->base, &cid);
 
-	if (!send_cmd(base, make_cmd(3, SDIO_RESPONSE_R1367, 1, 1), 0x0))       /* Request RCA with CMD3 */
-		return NULL;
+	if (!send_cmd(cfg->base, make_cmd(3, SDIO_RESPONSE_R1367, 1, 1), 0x0))       /* Request RCA with CMD3 */
+		return false;
 
-	uint32_t rca = ioread32(base + SDIO_SDR_RESPONSE1_REG) >> 16;
-	if (!send_cmd(base, make_cmd(7, SDIO_RESPONSE_R1367, 1, 1), (rca << 16))) /* Put SD card in transfer mode with CMD7 */
-		return NULL;
+	uint32_t rca = ioread32(cfg->base + SDIO_SDR_RESPONSE1_REG) >> 16;
+	if (!send_cmd(cfg->base, make_cmd(7, SDIO_RESPONSE_R1367, 1, 1), (rca << 16))) /* Put SD card in transfer mode with CMD7 */
+		return false;
 
-	if (!send_cmd(base, make_cmd(55, SDIO_RESPONSE_R1367, 1, 1), (rca << 16))) /* CMD55 with real RCA */
-		return NULL;
+	if (!send_cmd(cfg->base, make_cmd(55, SDIO_RESPONSE_R1367, 1, 1), (rca << 16))) /* CMD55 with real RCA */
+		return false;
 
-	if (!send_cmd(base, make_cmd(6, SDIO_RESPONSE_R1367, 1, 1), 0x2))     /* ACMD6 */
-		return NULL;
+	if (!send_cmd(cfg->base, make_cmd(6, SDIO_RESPONSE_R1367, 1, 1), 0x2))     /* ACMD6 */
+		return false;
 
-	iowrite32(divh, base + SPISDIO_SDIO_CLK_DIVIDE);
+	iowrite32(divh, cfg->base + SPISDIO_SDIO_CLK_DIVIDE);
 	rumboot_printf("SD: Card ready!\n");
 
-	return sd_card;
+	return true;
 }
 
-bool sd_read(const uint32_t base, const uint32_t *src_addr, uint32_t *dest_addr)
+void sd_deinit(struct bdata* cfg)
+{
+  /*Dummy*/
+}
+
+bool sd_read(struct bdata* cfg)
 {
 	rumboot_printf("SD: read block\n");
 
-	if (!SD2buf512(base, 0, (const uint32_t) src_addr))
+	if (!SD2buf512(cfg->base, 0, (const uint32_t) cfg->from))
 		return false;
 
-	if (!buf2axi(base, 0, (uint32_t) dest_addr))
+	if (!buf2axi(cfg->base, 0, (uint32_t) cfg->to))
 		return false;
 
 	return true;
 }
 
-bool sd_try_read(const uint32_t base, const uint32_t *src_addr, uint32_t *dest_addr, uint32_t attempts)
+bool sd_try_read(struct bdata* cfg, uint32_t attempts)
 {
 	while (attempts--)
-		if (sd_read(base, src_addr, dest_addr))
+		if (sd_read(cfg))
 			return true;
 
-	rumboot_printf("SD: Failed to read block: 0x%x dest: 0x%x\r\n", src_addr, dest_addr);
+	rumboot_printf("SD: Failed to read block: 0x%x dest: 0x%x\r\n", cfg->from, cfg->to);
 	return false;
 }
 
@@ -302,16 +309,23 @@ bool test_sdio(uint32_t base_addr)
 {
 	rumboot_printf("TEST SDIO\n");
 
-	//int divl, divh;
-	uint32_t *dest_addr = NULL;
-	uint32_t *src_addr = NULL;
 
 	enable_gpio_for_SDIO();
 
-	if (sd_init(base_addr, 100) == NULL)
+  struct bdata cfg;
+  cfg.base = base_addr;
+  cfg.freq_in_mhz = SDIO_CLK_FREQ;
+  //cfg.out_param[0];
+
+	if (sd_init(&cfg) == false)
 		return false;
 
-	sd_try_read(base_addr, src_addr, dest_addr, 5);
+	sd_try_read(&cfg, 5);
 
 	return true;
+}
+
+bool sd_load_failed_should_i_try_again() {
+
+  return false;
 }

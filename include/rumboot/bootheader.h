@@ -40,7 +40,6 @@ struct __attribute__((packed)) rumboot_bootheader {
     char     data[];
 };
 
-
 /**
  * Validate a header pointed by hdr
  * @param  hdr     Bootimage header pointer

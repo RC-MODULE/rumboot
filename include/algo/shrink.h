@@ -1,8 +1,19 @@
+#ifndef SHRINK__H
+#define SHRINK__H
+
 #include "heatshrink_encoder.h"
 #include "heatshrink_decoder.h"
 #include "heatshrink_common.h"
 #include "heatshrink_config.h"
 
+/**
+ *
+ * \defgroup algo Algorithms
+ * \ingroup libraries
+ *
+ * \addtogroup algo
+ *  @{
+ */
 
 #if HEATSHRINK_DYNAMIC_ALLOC
 #error HEATSHRINK_DYNAMIC_ALLOC must be false for static allocation test suite.
@@ -14,3 +25,5 @@ void unshrink(uint8_t* compbuf, const uint32_t compressed_size, uint8_t* decompb
 bool check_buf_with_random_seq(uint8_t* buf, uint32_t size);
 void fill_buff_with_random_seq(uint8_t* buf, uint32_t size);
 void dump_buf(uint8_t* buf, uint32_t size);
+
+#endif

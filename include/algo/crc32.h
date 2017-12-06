@@ -1,8 +1,3 @@
-/*
- *  Created on: Aug 15, 2015
- *      Author: a.korablinov
- */
-
 #ifndef CRC32_H_
 #define CRC32_H_
 

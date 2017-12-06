@@ -27,7 +27,8 @@ SECTIONS
   rumboot_platform_heap_start = .;
   . = . + 0xf000; /* 60k heap */
   rumboot_platform_heap_end = .;
-
+  rumboot_platform_spl_start = .;
+  rumboot_platform_spl_end = .;
 } > IM0
 
 .data :

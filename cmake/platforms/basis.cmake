@@ -23,7 +23,7 @@ rumboot_add_configuration(
   LDS basis/iram.lds
   PREFIX iram
   LDFLAGS -Wl,--start-group -lgcc -lc -lm -Wl,--end-group "-e rumboot_main"
-  FILES ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c
+  FILES ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c ${CMAKE_SOURCE_DIR}/src/lib/bootsource.c
   CFLAGS -DRUMBOOT_PRINTF_ACCEL
   BOOTROM bootrom-stub
   FEATURES LUA

@@ -7,9 +7,6 @@
 
 #define NUM_CORES 1
 
-/*
-  UNIT TESTING
- */
 
 enum bootheader_err_code {
   BOOTHEADER_OK,

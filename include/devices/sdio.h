@@ -1,6 +1,28 @@
 #ifndef SDIO__
 #define SDIO__
 
+/**
+ * \defgroup devices_sdio SDIO
+ * \ingroup devices
+ *
+ *  SDIO function libriary.
+ *  Contains functions such as:
+ *  - Init SDIO
+ *  - Deinit SDIO
+ *  - Read data from SDIO
+ *
+ * \code{.c}
+ * #include <devices/sdio.h>
+ * \endcode
+ *
+ * TODO: Insert usage example here
+ *
+ * \addtogroup devices_sdio
+ *
+ * @{
+ */
+
+#include <rumboot/bootsource.h>
 
 //REGS
 #define SDIO_INT_STATUS   0x308
@@ -166,18 +188,13 @@ struct Event {
         uint32_t flag;
 };
 
-struct bsrc_sd_card {
-        enum Card_type type;
-        /*Dummy*/
-};
-
 /**
  * SD card initialization
  * @param  base address of SDIO
  * @param  freq_in_mhz sys clock frequency in MHz
  * @return pointer to configuration structure of sd card
  */
-struct bsrc_sd_card* sd_init(const uint32_t base, const uint32_t freq_in_mhz);
+bool sd_init(struct bdata* cfg);
 /**
  * [sd_read description]
  * @param  base      base address of SDIO
@@ -185,7 +202,7 @@ struct bsrc_sd_card* sd_init(const uint32_t base, const uint32_t freq_in_mhz);
  * @param  dest_addr [description]
  * @return           true if read ok
  */
-bool sd_read(const uint32_t base, const uint32_t *src_addr, uint32_t *dest_addr);
+bool sd_read(struct bdata* cfg);
 /**
  * [sd_try_read description]
  * @param  base      base address of SDIO
@@ -194,7 +211,19 @@ bool sd_read(const uint32_t base, const uint32_t *src_addr, uint32_t *dest_addr)
  * @param  attempts  number of read attempts
  * @return           true if read ok
  */
-bool sd_try_read(const uint32_t base, const uint32_t *src_addr, uint32_t *dest_addr, const uint32_t attempts);
+bool sd_try_read(struct bdata* cfg, const uint32_t attempts);
 
+/**
+ * [sd_deinit description]
+ * @param  base_addr [description]
+ * @return           [description]
+ */
+void sd_deinit(struct bdata* cfg);
+
+/**
+ * Find another source for load
+ * @return [description]
+ */
+bool sd_load_failed_should_i_try_again();
 
 #endif

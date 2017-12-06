@@ -1,11 +1,10 @@
 #ifndef PLATFORM_SDIO__
 #define PLATFORM_SDIO__
 
+//offset of afsel reg
 #define PL061_AFSEL 0x420
 
-#define SDIO_CLK_DIV_400KHz   124
-#define SDIO_CLK_DIV_10MHz    4
-#define SDIO_CLK_DIV_50MHz    0
+#define SDIO_CLK_FREQ 100
 
 #include <rumboot/io.h>
 #include <platform/devices.h>
@@ -19,8 +18,5 @@ void enable_gpio_for_SDIO()
 
     iowrite32(afsel, LSIF1_GPIO7__ + PL061_AFSEL);
 }
-
-
-
 
 #endif
