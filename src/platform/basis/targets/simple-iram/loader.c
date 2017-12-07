@@ -7,25 +7,25 @@
 #include <rumboot/io.h>
 #include <rumboot/timer.h>
 
-#include <devices/sdio.h>
-#include <devices/spi.h>
-#include <devices/eeprom.h>
+#include <rumboot/bootsrc/sdio.h>
+#include <rumboot/bootsrc/spiflash.h>
+#include <rumboot/bootsrc/eeprom.h>
 #include <devices/gpio.h>
 
 #include <platform/sdio.h>
-#include <platform/spi.h>
+#include <platform/spiflash.h>
 #include <platform/eeprom.h>
 
 #include <platform/devices.h>
 
 #if 1
-static bool spi_init_gpio_mux() {
+static bool spiflash_init_gpio_mux() {
 
 	/*TO DO!*/
 	return true;
 }
 
-static void spi_deinit_gpio_mux() {
+static void spiflash_deinit_gpio_mux() {
 
 	/*TO DO!*/
 }
@@ -63,12 +63,12 @@ const struct rumboot_bootsource arr[] = {
 			.base = 0,
 			.freq_khz = SPI_CLK_FREQ,
 			.privdatalen = 128,
-			.init = spi_init,
-			.deinit = spi_deinit ,
-			.load_img = spi_read,
-			.init_gpio_mux = spi_init_gpio_mux,
-			.deinit_gpio_mux = spi_deinit_gpio_mux,
-			.should_i_try_again = spi_load_failed_should_i_try_again,
+			.init = spiflash_init,
+			.deinit = spiflash_deinit ,
+			.load_img = spiflash_read,
+			.init_gpio_mux = spiflash_init_gpio_mux,
+			.deinit_gpio_mux = spiflash_deinit_gpio_mux,
+			.should_i_try_again = spiflash_load_failed_should_i_try_again,
 	},
 
 	{
@@ -124,8 +124,6 @@ int main()
 	const uint32_t BOOTM0 = read_bootm0();
 	const uint32_t BOOTM1 = read_bootm1();
 
-	struct pdata pdata;
-
   if(BOOTM0 == 1)
     selftest();
 
@@ -136,7 +134,7 @@ int main()
 	}
   else {
 
-		if( !bootsource_try_chain(arr, &pdata) ) host_mode();
+		if( !bootsource_try_chain(arr) ) host_mode();
 	}
 
 	return 0;

@@ -4,11 +4,6 @@
 #include <stdint.h>
 #include <rumboot/platform.h>
 
-inline uint32_t ucurrent() {
-
-  return rumboot_platform_get_uptime();
-}
-
 inline void udelay(uint32_t udelay) {
 
     uint32_t start = rumboot_platform_get_uptime();

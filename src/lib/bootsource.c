@@ -11,10 +11,10 @@ bool bootsource_try_single(const struct rumboot_bootsource *src)
 {
     bool ret = false;
 
-    rumboot_printf("boot: trying to boot from  \n", src->name, src->namelen);
+    rumboot_printf("boot: trying to boot from  \n", src->name);
 
     char pdata[PRIVDATA_SIZE];
-    DBG_ASSERT(PRIVDATA_SIZE > src->privdatalen, "FATAL: Increase PRIVDATA_SIZE length");
+    DBG_ASSERT(PRIVDATA_SIZE < src->privdatalen, "FATAL: Increase PRIVDATA_SIZE length");
 
     ret = src->init(src, (struct pdata*) pdata);
     if (ret) {
@@ -27,8 +27,9 @@ bool bootsource_try_single(const struct rumboot_bootsource *src)
 
     ret = src->load_img((struct pdata*) pdata);
 
-    if (ret)
-        rumboot_printf("boot: loaded an image from %s, okay\n", src->name);
+    if (ret) {
+      rumboot_printf("boot: loaded an image from %s, okay\n", src->name);
+    }
     else {
         rumboot_printf("boot: no valid image found in %s\n", src->name);
         return ret;
@@ -43,7 +44,7 @@ bool bootsource_try_single(const struct rumboot_bootsource *src)
     return false;
 }
 
-bool bootsource_try_chain(const struct rumboot_bootsource *src, const struct pdata* pdata)
+bool bootsource_try_chain(const struct rumboot_bootsource *src)
 {
     bool ret = false;
 
