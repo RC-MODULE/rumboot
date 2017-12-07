@@ -30,4 +30,36 @@ function regsdemo()
   regs:dump();
 end
 
-regsdemo()
+
+function ramtest()
+  print("I will test all transaction types")
+  local dev=lp:open("memories")
+  local ram=dev:request_mem("IM0")
+  print(ram:u32(0))
+
+  print("8-bit io")
+  for i = 0, 8, 1 do
+    ram:u8(i, i);
+  end
+
+  print("16-bit io")
+  for i = 0, 8, 1 do
+    ram:u16(0x100 + i*2, i);
+  end
+
+  print("32-bit io")
+  for i = 0, 8, 1 do
+    ram:u32(0x200 + i*4, i);
+  end
+
+  print("64-bit io")
+  for i = 0, 8, 1 do
+    ram:u64(0x300 + i*8, i);
+  end
+
+  print("done");
+  ram:hexdump("IM0", true, 0, 0x800)
+end
+
+
+ramtest();

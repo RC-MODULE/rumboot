@@ -34,7 +34,22 @@ rumboot_add_configuration(
   PREFIX lprobe-cpu
   BOOTROM bootrom-lprobe-stub
   FEATURES LPROBE
-  IRUN_FLAGS -input ${CMAKE_SOURCE_DIR}/../scripts/lprobe-helper.tcl
+  IRUN_FLAGS +LPROBE_MODE=CPU -input ${CMAKE_SOURCE_DIR}/../scripts/lprobe-helper.tcl
+)
+
+rumboot_add_configuration(
+  LPROBE_PCIE
+  PREFIX lprobe-pcie
+  BOOTROM bootrom-noop-stub
+  FEATURES LPROBE
+  IRUN_FLAGS +LPROBE_MODE=PCIE -input ${CMAKE_SOURCE_DIR}/../scripts/lprobe-helper.tcl
+)
+
+rumboot_add_configuration(
+  INTEGRATION
+  PREFIX integration
+  BOOTROM bootrom-lprobe-stub
+  DEPENDS spl-ok spl
 )
 
 
@@ -90,6 +105,11 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       PREFIX lprobe-cpu
     )
 
+    add_directory_with_targets(lua/
+      CONFIGURATION LPROBE_PCIE
+      PREFIX lprobe-pcie
+    )
+
     add_directory_with_targets(spl-stubs/
       CONFIGURATION IRAM
       PREFIX spl
@@ -111,6 +131,14 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
           NAME "lprobe-stub"
           FEATURES STUB
     )
+
+    add_rumboot_target(
+            CONFIGURATION ROM
+            FILES bootrom-noop-stub.c
+            PREFIX "bootrom"
+            NAME "noop-stub"
+            FEATURES STUB
+      )
 
   add_rumboot_target(
       SNAPSHOT default
@@ -207,6 +235,30 @@ endif()
       FILES can/can_maskfilter.c can/ccan_mask_filter.S can/int_send.S can/int_receive.S can/mem_config.S can/test_config.S
       NAME can_maskfilter
     )
+
+
+  #RumBoot Integration tests
+#  add_rumboot_target(
+#      CONFIGURATION INTEGRATION
+#      NAME selftest_and_boot_sd
+#      IRUN_FLAGS
+#        +SD_INSERTED
+#        +SD_IMAGE=${rumboot_prefix}spl-ok.bin
+#    )
+
+#  add_rumboot_target(
+#      CONFIGURATION INTEGRATION
+#      NAME selftest_and_boot_spi0
+#      IRUN_FLAGS
+#        +SPI0_0_IMAGE=${rumboot_prefix}spl-ok.bin
+#    )
+
+#  add_rumboot_target(
+#      CONFIGURATION INTEGRATION
+#      NAME selftest_and_boot_spi1
+#      IRUN_FLAGS
+#        +SPI0_1_IMAGE=${rumboot_prefix}spl-ok.bin
+#    )
 
 endmacro()
 
