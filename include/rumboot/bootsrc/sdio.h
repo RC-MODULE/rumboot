@@ -24,16 +24,21 @@
 
 #include <rumboot/bootsource.h>
 
-
+/**
+ * Card_type Type card enumeration
+ */
 enum Card_type {
 
-        SDIO_CARD_UNKNOW,
+        SDIO_CARD_UNKNOW = 0,
         SDIO_CARD_OLD,
         SDIO_CARD_SDHC,
         SDIO_CARD_SDSC,
 
 };
 
+/**
+ * Type_event Type event enumeration
+ */
 enum Type_event {
 
         CH1_DMA_DONE_HANDLE = 0,
@@ -42,41 +47,42 @@ enum Type_event {
         TRAN_FINISH_HANDLE,
 };
 
+/**
+ *  sd_cid            : Structure contains configuration parameters
+ *  mid               - Manufacturer ID
+ *  oid[2]            -OEM/Application ID, byte 1-2
+ *  pnm[5]            - Product name, byte 3-7
+ *  prv_m : 4         - Product revision least significant digit, byte 8
+ *  prv_n  : 4        - Product revision most significant digit
+ *  psn               - Product serial number
+ *  mdt_year_high : 4 - Manufacturing date year low digit
+ *  reserved : 4      - not used
+ *  mdt_month : 4     - Manufacturing date month, byte 14
+ *  mdt_year_low : 4  - Manufacturing date year low digit,
+ *  always1 : 1       - not used always 1, byte 15
+ *  crc : 7           - CRC7 checksum
+ */
 struct sd_cid {
-        // byte 0
-        /** Manufacturer ID */
         unsigned char mid;
-        // byte 1-2
-        /** OEM/Application ID */
         char oid[2];
-        // byte 3-7
-        /** Product name */
         char pnm[5];
-        // byte 8
-        /** Product revision least significant digit */
         unsigned char prv_m : 4;
-        /** Product revision most significant digit */
         unsigned char prv_n : 4;
-        // byte 9-12
-        /** Product serial number */
         uint32_t psn;
-        // byte 13
-        /** Manufacturing date year low digit */
         unsigned char mdt_year_high : 4;
-        /** not used */
         unsigned char reserved : 4;
-        // byte 14
-        /** Manufacturing date month */
         unsigned char mdt_month : 4;
-        /** Manufacturing date year low digit */
         unsigned char mdt_year_low : 4;
-        // byte 15
-        /** not used always 1 */
         unsigned char always1 : 1;
-        /** CRC7 checksum */
         unsigned char crc : 7;
 } __attribute__((packed));
 
+/**
+  *
+  * Event Event type structure
+  * response  type of response
+  * flag      type of flag
+ */
 struct Event {
 
         enum Type_event type;
@@ -87,7 +93,7 @@ struct Event {
 /**
  * SD card initialization
  * @param  base address of SDIO
- * @param  freq_in_mhz sys clock frequency in MHz
+ * @param  freq_in_mhz sys clock frequency in KHz
  * @return pointer to configuration structure of sd card
  */
 bool sd_init(const struct rumboot_bootsource* src, void* pdata);
