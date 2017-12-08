@@ -17,19 +17,14 @@
 #define LAST_WD_TMR			0x003C
 #define INT_TX				0x0040
 #define INT_RX				0x0044
-
-#define AG_E_RX				0x1880
-#define AG_O_RX				0x1900
-#define SZ_E_RX				0x1980
-#define SZ_O_RX				0x1a00
-
-
-#define TRF_E_TX			0x1380
-#define TLF_E_TX			0x1400
-#define TRL_E_TX			0x1480
-#define TRF_O_TX			0x1500
-#define TLF_O_TX			0x1580
-#define TRL_O_TX			0x1600
+#define COMPL_E_RX			0x0048
+#define COMPL_O_RX			0x004c
+#define COMPL_TX			0x0050
+#define INT_DIS				0x0054
+#define INT_LONG			0x0058
+#define STUS_SW_TX			0x005C
+#define STUS_SW_RX			0x0060
+#define TEST_FRC_TS			0x0064
 
 #define AG_E_TX				0x1080
 #define AG_O_TX				0x1100
@@ -38,6 +33,18 @@
 
 #define STAT_E_TX			0x1280
 #define STAT_O_TX			0x1300
+
+#define TRF_E_TX			0x1380
+#define TLF_E_TX			0x1400
+#define TRL_E_TX			0x1480
+#define TRF_O_TX			0x1500
+#define TLF_O_TX			0x1580
+#define TRL_O_TX			0x1600
+
+#define AG_E_RX				0x1880
+#define AG_O_RX				0x1900
+#define SZ_E_RX				0x1980
+#define SZ_O_RX				0x1a00
 
 #define STAT_E_RX			0x1A80
 #define STAT_O_RX			0x1B00
