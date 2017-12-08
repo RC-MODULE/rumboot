@@ -5,6 +5,11 @@
 #include <rumboot/platform.h>
 #include <rumboot/macros.h>
 #include <rumboot/io.h>
+#include <rumboot/bootsrc/sdio.h>
+
+#include <platform/devices.h>
+
+
 
 static void msr_write( uint32_t const wval )
 {
@@ -35,8 +40,7 @@ static void enable_fpu()
     msr_write(msr_read() | (1<<ITRPT_XSR_FP_i));
 }
 
-#if 1
-
+#if 0
 #define CRGCPU__ 0x38006000
 int freq_apply_mpw(uint32_t fbdiv, uint32_t prediv, uint32_t postdiv)
 {
@@ -80,8 +84,6 @@ void perform_mpw(/*struct freq_entry *frq*/)
   }
 }
 
-#endif
-
 void test(int n) {
 
   while(n--) {
@@ -94,21 +96,39 @@ void test(int n) {
   }
 }
 
+#endif
+
+void enable_gpio_for_SDIO()
+{
+    #define PL061_AFSEL 0x420
+    uint8_t afsel = ioread32(LSIF1_GPIO7__ + PL061_AFSEL) | 0b11110;
+
+    iowrite32(afsel, LSIF1_GPIO7__ + PL061_AFSEL);
+}
+
 int main()
 {
-	rumboot_print_logo();
+
   enable_fpu();
+
+	rumboot_print_logo();
+
 	rumboot_printf("rumboot: Yarr! I need moar rum!\n\n");
+
+  #if 0
 	double a = 1.0;
 	double b = 2.0;
 	rumboot_printf("rumboot: %f\n", a + asin(b));
 
-  //test(5);
+  test(5);
   perform_mpw();
 
-	printf("WOOOT\n");
+  #endif
 
-	while (1);;
+  enable_gpio_for_SDIO();
+	test_sdio(SDIO0_BASE);
+
+	while (1);
 	/* Return 0, test passed */
 	return 0;
 }

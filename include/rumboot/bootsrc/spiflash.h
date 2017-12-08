@@ -26,6 +26,36 @@
 
 #include <rumboot/bootsource.h>
 
+/**/
+#define PL022_CR0__SCR_i  0
+#define PL022_CR0__SPH_i  0
+#define PL022_CR0__SPO_i  0
+#define PL022_CR0__FRF_i  0
+#define PL022_CR0__DSS_i  0
+#define PL022_IMSC__TXIM_i  0
+#define PL022_IMSC__RXIM_i  0
+#define PL022_IMSC__RTIM_i  0
+#define PL022_IMSC__RORIM_i 0
+#define PL022_ICR__RTIC_i   0
+#define PL022_ICR__RORIC_i  0
+#define PL022_DMACR__TXDMAE_i   0
+#define PL022_DMACR__RXDMAE_i   0
+#define PL022_CR1__SOD_i  0
+#define PL022_CR1__MS_i   0
+#define PL022_CR1__SSE_i  0
+#define PL022_CR1__LBM_i  0
+
+/*OFFSETS*/
+#define PL022_CPSR        0
+#define PL022_CR0__DSS_i 0
+#define PL022_CR0 0
+#define PL022_IMSC 0x014
+#define PL022_ICR 0
+#define PL022_CR1 0
+#define PL022_DMACR 0
+
+
+
 /**
  * SPI initialization
  * @param  data [description]

@@ -3,6 +3,11 @@
 
 #include <rumboot/bootsource.h>
 
+struct eeprom_private_data {
+    const struct rumboot_bootsource* src;
+
+};
+
 const uint32_t get_eeprom_numb() {
 
   uint32_t eeprom_numb = 0;

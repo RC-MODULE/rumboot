@@ -55,6 +55,8 @@ const struct rumboot_bootsource arr[] = {
 	    .init = sd_init,
 	    .deinit = sd_deinit ,
 	    .load_img = sd_read,
+			.init_gpio_mux = spiflash_init_gpio_mux,
+			.deinit_gpio_mux = spiflash_deinit_gpio_mux,
 	    .should_i_try_again = sd_load_failed_should_i_try_again,
 	},
 
