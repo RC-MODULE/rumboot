@@ -27,34 +27,42 @@
 #include <rumboot/bootsource.h>
 
 /**/
-#define PL022_CR0__SCR_i  0
-#define PL022_CR0__SPH_i  0
-#define PL022_CR0__SPO_i  0
-#define PL022_CR0__FRF_i  0
-#define PL022_CR0__DSS_i  0
-#define PL022_IMSC__TXIM_i  0
-#define PL022_IMSC__RXIM_i  0
-#define PL022_IMSC__RTIM_i  0
-#define PL022_IMSC__RORIM_i 0
-#define PL022_ICR__RTIC_i   0
-#define PL022_ICR__RORIC_i  0
-#define PL022_DMACR__TXDMAE_i   0
-#define PL022_DMACR__RXDMAE_i   0
-#define PL022_CR1__SOD_i  0
-#define PL022_CR1__MS_i   0
-#define PL022_CR1__SSE_i  0
-#define PL022_CR1__LBM_i  0
+#define PL022_SR__RNE_i 2
+#define PL022_SR__TNF_i 1
+#define PL022_SR__TFE_i 0
+#define PL022_CR1__SOD_i 3
+#define PL022_CR1__SSE_i 1
+
+
+/*Constants*/
+#define SPI_READ_CMD_TIMEOUT 500
+#define SPI_READ_TIMEOUT 500
 
 /*OFFSETS*/
-#define PL022_CPSR        0
-#define PL022_CR0__DSS_i 0
-#define PL022_CR0 0
-#define PL022_IMSC 0x014
-#define PL022_ICR 0
-#define PL022_CR1 0
-#define PL022_DMACR 0
+#define PL022_CPSR  0x10
+#define PL022_CR0 0x0
+#define PL022_IMSC 0x14
+#define PL022_ICR 0x20
+#define PL022_CR1 0x4
+#define PL022_DMACR 0x24
+#define PL022_SR 0xc
+#define PL022_DR 0x8
 
-
+enum Data_size {
+  _4_BIT = 0,
+  _5_BIT,
+  _6_BIT,
+  _7_BIT,
+  _8_BIT,
+  _9_BIT,
+  _10_BIT,
+  _11_BIT,
+  _12_BIT,
+  _13_BIT,
+  _14_BIT,
+  _15_BIT,
+  _16_BIT,
+};
 
 /**
  * SPI initialization
