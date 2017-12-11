@@ -52,7 +52,7 @@ macro(rumboot_add_configuration name)
   message(STATUS "Adding configuration ${name}")
   set(options DEFAULT)
   set(oneValueArgs SNAPSHOT LDS PREFIX NAME BOOTROM)
-  set(multiValueArgs FILES IRUN_FLAGS CFLAGS LDFLAGS FEATURES)
+  set(multiValueArgs FILES IRUN_FLAGS CFLAGS LDFLAGS FEATURES TIMEOUT)
 
   cmake_parse_arguments(CONFIGURATION_${name} "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
   LIST(APPEND RUMBOOT_CONFIGURATIONS ${name})
@@ -75,7 +75,7 @@ endmacro()
 function(add_rumboot_target)
   set(options )
   set(oneValueArgs SNAPSHOT LDS NAME PREFIX CONFIGURATION BOOTROM)
-  set(multiValueArgs FILES IRUN_FLAGS CFLAGS TESTGROUP LDFLAGS CHECKCMD FEATURES)
+  set(multiValueArgs FILES IRUN_FLAGS CFLAGS TESTGROUP LDFLAGS CHECKCMD FEATURES TIMEOUT)
 
   cmake_parse_arguments(TARGET "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
