@@ -10,21 +10,26 @@
 #include <rumboot/io.h>
 #include <rumboot/timer.h>
 #include <rumboot/rumboot.h>
-#include <platform/devices.h>
 #include <rumboot/bootsource.h>
+
+
+#define BLOCK_512_DATA_TRANS        0x00000101
+#define BUFER_TRANS_START           0x04
+#define DCDTR_1_VAL_512             0x200
+#define DCCR_1_VAL                  0x00020F01
 
 #define SDIO_TIMEOUT_US      2000000
 #define SDIO_ATTEMPTS_NUMBER 5
 #define SDIO_DEBUG
 
 struct sd_private_data {
-    const struct rumboot_bootsource* src;
-    enum Card_type cardtype;
+	const struct rumboot_bootsource *	src;
+	enum Card_type				cardtype;
 };
 
-static inline uint32_t make_cmd(const uint32_t cmd, const uint32_t resp, const uint32_t crc, const uint32_t idx) {
-
-  return (cmd << 16 | (idx << 12) | (crc << 13) | (resp << 10) | (0x11));
+static inline uint32_t make_cmd(const uint32_t cmd, const uint32_t resp, const uint32_t crc, const uint32_t idx)
+{
+	return cmd << 16 | (idx << 12) | (crc << 13) | (resp << 10) | (0x11);
 }
 
 static bool wait(const uint32_t base, struct Event *event)
@@ -37,14 +42,11 @@ static bool wait(const uint32_t base, struct Event *event)
 		status = ioread32(base + SDIO_INT_STATUS);
 
 		if (status & SPISDIO_SDIO_INT_STATUS_CAR_ERR) {
-
-      iowrite32(SDR_TRAN_SDC_ERR, base + SDIO_SDR_BUF_TRAN_RESP_REG);
+			iowrite32(SDR_TRAN_SDC_ERR, base + SDIO_SDR_BUF_TRAN_RESP_REG);
 			return false;
-
 		} else if (status & event->flag) {
-
-      (event->type == CH1_DMA_DONE_HANDLE) ?
-       iowrite32(event->response, base + SDIO_DCCR_1) : iowrite32(event->response, base + SDIO_SDR_BUF_TRAN_RESP_REG);
+			(event->type == CH1_DMA_DONE_HANDLE) ?
+			iowrite32(event->response, base + SDIO_DCCR_1) : iowrite32(event->response, base + SDIO_SDR_BUF_TRAN_RESP_REG);
 			return true;
 		}
 	} while ((rumboot_platform_get_uptime() - start) < SDIO_TIMEOUT_US);
@@ -184,17 +186,17 @@ static bool send_cmd(const uint32_t base, const uint32_t cmd_ctrl, const uint32_
 	return result;
 }
 
-static inline uint32_t calc_divl(const uint32_t freq_in_mhz)
+static inline uint32_t calc_divl(const uint32_t freq_khz)
 {
-	return (freq_in_mhz / (0.4) / 2) - 1;
+	return (freq_khz / (0.4) / 2) - 1;
 }
 
-static inline uint32_t calc_divh(const uint32_t freq_in_mhz)
+static inline uint32_t calc_divh(const uint32_t freq_khz)
 {
-	return (freq_in_mhz / (10) / 2) - 1;
+	return (freq_khz / (10) / 2) - 1;
 }
 
-bool sd_init(const struct rumboot_bootsource* src, void* pdata)
+bool sd_init(const struct rumboot_bootsource *src, void *pdata)
 {
 	size_t count = SDIO_ATTEMPTS_NUMBER;
 	uint32_t resp;
@@ -205,13 +207,13 @@ bool sd_init(const struct rumboot_bootsource* src, void* pdata)
 	rumboot_printf("SD: init\r\n");
 
 	iowrite32(divl, src->base + SPISDIO_SDIO_CLK_DIVIDE);
-	iowrite32(0x1, src->base + SPISDIO_ENABLE);          //sdio-on, spi-off
-	iowrite32((1 << 7), src->base + SDIO_SDR_CTRL_REG);  /* Hard reset damned hardware */
+	iowrite32(0x1, src->base + SPISDIO_ENABLE);             //sdio-on, spi-off
+	iowrite32((1 << 7), src->base + SDIO_SDR_CTRL_REG);     /* Hard reset damned hardware */
 
-	while (ioread32(src->base + SDIO_SDR_CTRL_REG) & (1 << 7));
+	while (ioread32(src->base + SDIO_SDR_CTRL_REG) & (1 << 7)) ;
 
-	iowrite32(0x7F, src->base + SPISDIO_SDIO_INT_MASKS);         //enable  interrupts in SDIO
-	iowrite32(0x16F, src->base + SDIO_SDR_ERROR_ENABLE_REG);     //enable interrupt and error flag
+	iowrite32(0x7F, src->base + SPISDIO_SDIO_INT_MASKS);            //enable  interrupts in SDIO
+	iowrite32(0x16F, src->base + SDIO_SDR_ERROR_ENABLE_REG);        //enable interrupt and error flag
 
 	while (count--) {
 		if (send_cmd(src->base, make_cmd(0, SDIO_RESPONSE_NONE, 0, 0), 0))
@@ -220,7 +222,7 @@ bool sd_init(const struct rumboot_bootsource* src, void* pdata)
 		mdelay(250);
 	}
 
-  struct sd_private_data* temp = (struct sd_private_data*) pdata;
+	struct sd_private_data *temp = (struct sd_private_data *)pdata;
 
 	if (!send_cmd(src->base, make_cmd(8, SDIO_RESPONSE_R1367, 1, 1), 0x000001AA))
 		temp->cardtype = SDIO_CARD_OLD;
@@ -254,7 +256,7 @@ bool sd_init(const struct rumboot_bootsource* src, void* pdata)
 	if (count == 0)
 		return false;
 
-    temp->src = src;
+	temp->src = src;
 
 #ifdef SDIO_DEBUG
 	debug_card_name(temp->cardtype);
@@ -285,28 +287,28 @@ bool sd_init(const struct rumboot_bootsource* src, void* pdata)
 	return true;
 }
 
-void sd_deinit(void* pdata)
+void sd_deinit(void *pdata)
 {
-  /*Dummy*/
+	/*Dummy*/
 }
 
-bool sd_read(void* pdata)
+bool sd_read(void *pdata)
 {
 	rumboot_printf("SD: read block\n");
 
-  struct sd_private_data* sd_pdata = (struct sd_private_data*) pdata;
-  const struct rumboot_bootsource* src = sd_pdata->src;
+	struct sd_private_data *sd_pdata = (struct sd_private_data *)pdata;
+	const struct rumboot_bootsource *src = sd_pdata->src;
 
-	if (!SD2buf512(src->base, 0, (uint32_t) src->base + src->offset))
+	if (!SD2buf512(src->base, 0, (uint32_t)(src->base + src->offset)))
 		return false;
 
-	if (!buf2axi(src->base, 0, (uint32_t) &rumboot_platform_spl_start))
+	if (!buf2axi(src->base, 0, (uint32_t)&rumboot_platform_spl_start))
 		return false;
 
 	return true;
 }
 
-bool sd_try_read(void* pdata, uint32_t attempts)
+bool sd_try_read(void *pdata, uint32_t attempts)
 {
 	while (attempts--)
 		if (sd_read(pdata))
@@ -323,10 +325,10 @@ bool test_sdio(uint32_t base_addr)
 
 	//enable_gpio_for_SDIO();
 
-  struct rumboot_bootsource src;
-  src.base = base_addr;
-  src.freq_khz = SDIO_CLK_FREQ;
-  char pdata[16];
+	struct rumboot_bootsource src;
+	src.base = base_addr;
+	src.freq_khz = SDIO_CLK_FREQ;
+	char pdata[16];
 
 	if (sd_init(&src, &pdata) == false)
 		return false;
@@ -336,7 +338,7 @@ bool test_sdio(uint32_t base_addr)
 	return true;
 }
 
-bool sd_load_failed_should_i_try_again() {
-
-  return false;
+bool sd_load_failed_should_i_try_again()
+{
+	return false;
 }

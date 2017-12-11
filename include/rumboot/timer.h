@@ -4,15 +4,15 @@
 #include <stdint.h>
 #include <rumboot/platform.h>
 
-inline void udelay(uint32_t udelay) {
+static inline void udelay(uint32_t us) {
 
     uint32_t start = rumboot_platform_get_uptime();
-    while ((rumboot_platform_get_uptime() - start) < udelay);
+    while ((rumboot_platform_get_uptime() - start) < us);
 };
 
-inline void mdelay(uint32_t mdelay) {
+static inline void mdelay(uint32_t ms) {
 
-  udelay(mdelay * 1000);
+  udelay(ms * 1000);
 };
 
 #endif

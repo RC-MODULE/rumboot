@@ -117,7 +117,7 @@ if (${CMAKE_BUILD_TYPE} MATCHES "Production")
   endif()
 endif()
 
-ADD_SOURCE("src/lib/bootimage.c")
+
 ADD_SOURCE("src/lib/algo/crc32.c")
 ADD_SOURCE("src/lib/logo.c")
 ADD_SOURCE("src/lib/stdio.c")
@@ -131,6 +131,8 @@ ADD_SOURCE("src/lib/bootsrc/eeprom.c")
 ADD_SOURCE("src/lib/algo/shrink.c")
 ADD_SOURCE("src/lib/algo/heatshrink_decoder.c")
 ADD_SOURCE("src/lib/algo/heatshrink_encoder.c")
+ADD_SOURCE("src/lib/bootsource.c")
+ADD_SOURCE("src/lib/bootimage.c")
 
 if (NOT RUMBOOT_PLATFORM MATCHES native)
     ADD_SOURCE(src/rumboot_main.c)
