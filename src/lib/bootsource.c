@@ -18,8 +18,6 @@ bool bootsource_try_single(const struct rumboot_bootsource *src)
 
     struct rumboot_bootheader *dst = (struct rumboot_bootheader*) &rumboot_platform_spl_start;
 
-    rumboot_printf("Y1\n");
-
     ret = src->init_gpio_mux((void*) &pdata);
     if(ret) {
       rumboot_printf("boot: %s, gpio initialized, okay\n", src->name);
