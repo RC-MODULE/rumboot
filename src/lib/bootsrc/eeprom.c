@@ -1,6 +1,4 @@
 #include <rumboot/bootsrc/eeprom.h>
-#include <platform/eeprom.h>
-
 #include <rumboot/bootsource.h>
 
 struct eeprom_private_data {
@@ -35,7 +33,7 @@ bool eeprom_read(void* pdata) {
   return true;
 }
 
-bool eeprom_load_failed_should_i_try_again(void* pdata/*, uint32_t attempts_numb*/) {
+bool eeprom_are_load_attempts(void* pdata/*, uint32_t attempts_numb*/) {
 
   //Error can be only in loading image step?
 

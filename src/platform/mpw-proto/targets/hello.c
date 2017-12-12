@@ -6,6 +6,8 @@
 #include <rumboot/macros.h>
 #include <rumboot/io.h>
 #include <rumboot/bootsrc/sdio.h>
+#include <rumboot/bootsrc/spiflash.h>
+#include <rumboot/bootsource.h>
 
 #include <platform/devices.h>
 
@@ -98,7 +100,7 @@ void test(int n) {
 
 #endif
 
-void enable_gpio_for_SDIO()
+static bool enable_gpio_for_SDIO()
 {
     #define PL061_AFSEL 0x420
     uint8_t afsel = ioread32(LSIF1_GPIO7__ + PL061_AFSEL) | 0b11110;
@@ -106,9 +108,72 @@ void enable_gpio_for_SDIO()
     iowrite32(afsel, LSIF1_GPIO7__ + PL061_AFSEL);
 }
 
+static void disable_gpio_for_SDIO() {
+
+  #define PL061_AFSEL 0x420
+  uint8_t afsel = ioread32(LSIF1_GPIO7__ + PL061_AFSEL) & ~(0b11110);
+
+  iowrite32(afsel, LSIF1_GPIO7__ + PL061_AFSEL);
+}
+
+static bool spiflash_init_gpio_mux() {
+
+  return true;
+}
+
+static void spiflash_deinit_gpio_mux() {
+
+}
+
+#define SDIO_CLK_FREQ 100000
+#define SPI_CLK_FREQ 100000
+const struct rumboot_bootsource arr[] = {
+	{
+	    .name = "SDIO",
+			.base = SDIO0_BASE,
+			.freq_khz = SDIO_CLK_FREQ,
+	    .privdatalen = 128,
+	    .init = sd_init,
+	    .deinit = sd_deinit ,
+	    .load_img = sd_read,
+			.init_gpio_mux = enable_gpio_for_SDIO,
+			.deinit_gpio_mux = disable_gpio_for_SDIO,
+	    .are_load_attempts = sd_are_load_attempts,
+	},
+
+	{
+			.name = "SPI",
+			.base = SPI_CTRL0_BASE,
+			.freq_khz = SPI_CLK_FREQ,
+			.privdatalen = 128,
+			.init = spiflash_init,
+			.deinit = spiflash_deinit ,
+			.load_img = spiflash_read,
+			.init_gpio_mux = spiflash_init_gpio_mux,
+			.deinit_gpio_mux = spiflash_deinit_gpio_mux,
+			.are_load_attempts = spiflash_are_load_attempts,
+	},
+  {/*Sentinel*/}
+};
+
+#define PDATA_SIZE 128
+bool test_sdio(uint32_t base_addr)
+{
+	rumboot_printf("TEST SDIO\n");
+
+  char pdata[PDATA_SIZE];
+
+	while(arr->name)
+    if(!arr->init_gpio_mux(&pdata))
+      return false;
+
+	bootsource_try_chain(arr);
+
+	return true;
+}
+
 int main()
 {
-
   enable_fpu();
 
 	rumboot_print_logo();

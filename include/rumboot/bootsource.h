@@ -23,9 +23,9 @@ struct rumboot_bootsource {
   bool (*init) (const struct rumboot_bootsource* src, void* pdata);
   void (*deinit) (void* pdata);
   bool (*load_img) (void* pdata);
-  bool (*init_gpio_mux) ();
-  void (*deinit_gpio_mux) ();
-  bool (*should_i_try_again) ();
+  bool (*init_gpio_mux) (void* pdata);
+  void (*deinit_gpio_mux) (void* pdata);
+  bool (*are_load_attempts) (void* pdata);
 };
 
 bool bootsource_try_single(const struct rumboot_bootsource *src);

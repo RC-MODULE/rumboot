@@ -20,7 +20,7 @@ bool bootsource_try_single(const struct rumboot_bootsource *src)
 
     rumboot_printf("Y1\n");
 
-    ret = src->init_gpio_mux();
+    ret = src->init_gpio_mux((void*) &pdata);
     if(ret) {
       rumboot_printf("boot: %s, gpio initialized, okay\n", src->name);
     }
@@ -29,7 +29,7 @@ bool bootsource_try_single(const struct rumboot_bootsource *src)
       goto gpio_deinit;
     }
 
-    ret = src->init(src, (struct pdata*) &pdata);
+    ret = src->init(src, (void*) &pdata);
     if (ret) {
       rumboot_printf("boot: %s initialized, okay\n", src->name);
     }
@@ -38,7 +38,7 @@ bool bootsource_try_single(const struct rumboot_bootsource *src)
         goto deinit;
     }
 
-    ret = src->load_img((struct pdata*) &pdata);
+    ret = src->load_img((void*) &pdata);
     if (ret) {
       rumboot_printf("boot: loaded an image from %s, okay\n", src->name);
     }
@@ -51,9 +51,9 @@ bool bootsource_try_single(const struct rumboot_bootsource *src)
     rumboot_bootimage_exec(dst);
 
     deinit:
-      src->deinit((struct pdata*) &pdata);
+      src->deinit((void*) &pdata);
     gpio_deinit:
-      src->deinit_gpio_mux();
+      src->deinit_gpio_mux((void*) &pdata);
       return false;
 }
 

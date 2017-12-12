@@ -12,10 +12,6 @@
 #include <rumboot/bootsrc/eeprom.h>
 #include <devices/gpio.h>
 
-#include <platform/sdio.h>
-#include <platform/spiflash.h>
-#include <platform/eeprom.h>
-
 #include <platform/devices.h>
 
 #if 1
@@ -42,7 +38,9 @@ static void eeprom_deinit_gpio_mux() {
 }
 #endif
 
-
+#define SDIO_CLK_FREQ 100000
+#define SPI_CLK_FREQ 100000
+#define EEPROM_CLK_FREQ 100000
 /*
   Order of array elements are very important!
  */
@@ -57,7 +55,7 @@ const struct rumboot_bootsource arr[] = {
 	    .load_img = sd_read,
 			.init_gpio_mux = spiflash_init_gpio_mux,
 			.deinit_gpio_mux = spiflash_deinit_gpio_mux,
-	    .should_i_try_again = sd_load_failed_should_i_try_again,
+	    .are_load_attempts = sd_are_load_attempts,
 	},
 
 	{
@@ -70,7 +68,7 @@ const struct rumboot_bootsource arr[] = {
 			.load_img = spiflash_read,
 			.init_gpio_mux = spiflash_init_gpio_mux,
 			.deinit_gpio_mux = spiflash_deinit_gpio_mux,
-			.should_i_try_again = spiflash_load_failed_should_i_try_again,
+			.are_load_attempts = spiflash_are_load_attempts,
 	},
 
 	{
@@ -83,7 +81,7 @@ const struct rumboot_bootsource arr[] = {
 			.load_img = eeprom_read,
 			.init_gpio_mux = eeprom_init_gpio_mux,
 			.deinit_gpio_mux = eeprom_deinit_gpio_mux,
-			.should_i_try_again = eeprom_load_failed_should_i_try_again,
+			.are_load_attempts = eeprom_are_load_attempts,
 	},
 
 	{/*Sentinel*/}

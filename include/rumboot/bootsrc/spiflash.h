@@ -26,27 +26,6 @@
 
 #include <rumboot/bootsource.h>
 
-/**/
-#define PL022_SR__RNE_i 2
-#define PL022_SR__TNF_i 1
-#define PL022_SR__TFE_i 0
-#define PL022_CR1__SOD_i 3
-#define PL022_CR1__SSE_i 1
-
-
-/*Constants*/
-#define SPI_READ_CMD_TIMEOUT 500
-#define SPI_READ_TIMEOUT 500
-
-/*OFFSETS*/
-#define PL022_CPSR  0x10
-#define PL022_CR0 0x0
-#define PL022_IMSC 0x14
-#define PL022_ICR 0x20
-#define PL022_CR1 0x4
-#define PL022_DMACR 0x24
-#define PL022_SR 0xc
-#define PL022_DR 0x8
 
 enum Data_size {
   _4_BIT = 0,
@@ -89,6 +68,6 @@ bool spiflash_read(void* pdata);
  * @param  data [description]
  * @return      [description]
  */
-bool spiflash_load_failed_should_i_try_again(void* pdata);
+bool spiflash_are_load_attempts(void* pdata);
 
 #endif

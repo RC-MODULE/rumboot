@@ -1,10 +1,10 @@
 #include <rumboot/bootsrc/spiflash.h>
-#include <platform/spiflash.h>
-
 #include <rumboot/bootsource.h>
 #include <rumboot/io.h>
 #include <rumboot/printf.h>
 #include <rumboot/timer.h>
+
+#include <regs/regs_spi.h>
 
 #include <stddef.h>
 
@@ -50,7 +50,7 @@ bool spiflash_init(const struct rumboot_bootsource *src, void *pdata)
 	iowrite32((1 << PL022_CR1__SOD_i) | (1 << PL022_CR1__SSE_i), src->base + PL022_CR1);//enable PL022 SSP
 
 	spi_flash->src = src;
-	/*TO DO!*/
+
 	return true;
 }
 
@@ -72,10 +72,10 @@ bool spiflash_read(void *pdata)
 
 	clear_rx_buf(src->base);
 
-	iowrite32(0x03, src->base + PL022_DR);  // Is it command?
-	iowrite32(((src->base + src->offset) >> 16) & 0xff, src->base + PL022_DR);
-	iowrite32(((src->base + src->offset) >> 8) & 0xff, src->base + PL022_DR);
-	iowrite32(((src->base + src->offset) >> 0) & 0xff, src->base + PL022_DR);
+	iowrite8(0x03, src->base + PL022_DR);  // Is it command?
+	iowrite8(((src->base + src->offset) >> 16) & 0xff, src->base + PL022_DR);
+	iowrite8(((src->base + src->offset) >> 8) & 0xff, src->base + PL022_DR);
+	iowrite8(((src->base + src->offset) >> 0) & 0xff, src->base + PL022_DR);
 
 	uint32_t start;
 	start = rumboot_platform_get_uptime();
@@ -117,7 +117,7 @@ bool spiflash_read(void *pdata)
 	return true;
 }
 
-bool spiflash_load_failed_should_i_try_again(void *pdata)
+bool spiflash_are_load_attempts(void *pdata)
 {
 	return false;
 }

@@ -48,6 +48,6 @@ bool eeprom_read(void* pdata);
  * @param  data [description]
  * @return      [description]
  */
-bool eeprom_load_failed_should_i_try_again(void* pdata) ;
+bool eeprom_are_load_attempts(void* pdata) ;
 
 #endif
