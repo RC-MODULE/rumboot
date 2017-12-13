@@ -42,12 +42,12 @@ void eeprom_deinit(void* pdata);
  * @param  data [description]
  * @return      [description]
  */
-bool eeprom_read(void* pdata);
+bool eeprom_read(uint32_t* dst, uint32_t* src, void* pdata);
 /**
  * [eeprom_load_failed_should_i_try_again description]
  * @param  data [description]
  * @return      [description]
  */
-bool eeprom_are_load_attempts(void* pdata) ;
+bool eeprom_load_again(void* pdata) ;
 
 #endif

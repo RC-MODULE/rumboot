@@ -26,16 +26,6 @@ uint32_t rumboot_platform_get_uptime()
   return value/TIMER_TICKS_PER_US;
 }
 
-#if 0
-/* enable GPIO for SDIO */
-void enable_gpio_for_SDIO()
-{
-    uint8_t afsel = ioread32(LSIF1_GPIO7__ + PL061_AFSEL) | 0b11110;
-
-    iowrite32(afsel, LSIF1_GPIO7__ + PL061_AFSEL);
-}
-#endif
-
 void __attribute__((noreturn)) rumboot_platform_panic(const char *why, ...)
 {
     va_list ap;

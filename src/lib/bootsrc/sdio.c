@@ -12,7 +12,6 @@
 #include <rumboot/rumboot.h>
 #include <rumboot/bootsource.h>
 
-#define BLOCK_512_DATA_TRANS        0x00000101
 #define BUFER_TRANS_START           0x04
 #define DCDTR_1_VAL_512             0x200
 #define DCCR_1_VAL                  0x00020F01
@@ -21,34 +20,43 @@
 #define SDIO_ATTEMPTS_NUMBER 5
 #define DEBUG
 
+/**
+ * Card_type Type card enumeration
+ */
+enum Card_type {
+	SDIO_CARD_UNKNOW = 0,
+	SDIO_CARD_OLD,
+	SDIO_CARD_SDHC,
+	SDIO_CARD_SDSC,
+	SDIO_CARD_SDXC,
+};
+
 struct sd_cid {
-        unsigned char mid;
-        char oid[2];
-        char pnm[5];
-        unsigned char prv_m : 4;
-        unsigned char prv_n : 4;
-        uint32_t psn;
-        unsigned char mdt_year_high : 4;
-        unsigned char reserved : 4;
-        unsigned char mdt_month : 4;
-        unsigned char mdt_year_low : 4;
-        unsigned char always1 : 1;
-        unsigned char crc : 7;
+	unsigned char	mid;
+	char		oid[2];
+	char		pnm[5];
+	unsigned char	prv_m : 4;
+	unsigned char	prv_n : 4;
+	uint32_t	psn;
+	unsigned char	mdt_year_high : 4;
+	unsigned char	reserved : 4;
+	unsigned char	mdt_month : 4;
+	unsigned char	mdt_year_low : 4;
+	unsigned char	always1 : 1;
+	unsigned char	crc : 7;
 } __attribute__((packed));
 
 enum Type_event {
-
-        CH1_DMA_DONE_HANDLE = 0,
-        CMD_DONE_HANDLE,
-        TRAN_DONE_HANDLE,
-        TRAN_FINISH_HANDLE,
+	CH1_DMA_DONE_HANDLE = 0,
+	CMD_DONE_HANDLE,
+	TRAN_DONE_HANDLE,
+	TRAN_FINISH_HANDLE,
 };
 
 struct Event {
-
-        enum Type_event type;
-        uint32_t response;
-        uint32_t flag;
+	enum Type_event type;
+	uint32_t	response;
+	uint32_t	flag;
 };
 
 struct sd_private_data {
@@ -101,11 +109,14 @@ static void debug_card_name(enum Card_type type)
 		break;
 	}
 
-	rumboot_printf(" ");
+	rumboot_printf("\n");
 }
 
+/*FIX THIS FUNC!*/
 static void debug_product_name(const uint32_t base, struct sd_cid *cid)
 {
+	rumboot_printf("debug product name\n");
+
 	uint32_t *cidptr = (uint32_t *)cid;
 
 	cidptr[3] = ioread32(base + SDIO_SDR_RESPONSE1_REG);
@@ -114,6 +125,10 @@ static void debug_product_name(const uint32_t base, struct sd_cid *cid)
 	cidptr[0] = ioread32(base + SDIO_SDR_RESPONSE4_REG);
 
 	size_t i;
+
+	for (i = 0; i < 4; i++)
+		rumboot_printf("%s", (char)cidptr[i]);
+
 	for (i = 0; i < 2; i++)
 		if (isalnum(cid->oid[i]))
 			rumboot_printf("%s", cid->oid[i]);
@@ -135,10 +150,156 @@ static void debug_response(const uint32_t base)
 	rumboot_printf("0x%x\n", ioread32(base + SDIO_SDR_RESPONSE4_REG));
 }
 
-static bool SD2buf512(const uint32_t base, int buf_num, const uint32_t idx)
+static bool send_cmd(const uint32_t base, const uint32_t cmd_ctrl, const uint32_t arg)
+{
+#ifdef DEBUG
+	rumboot_printf("SEND CMD 0x%x 0x%x\n", cmd_ctrl, arg);
+#endif
+
+	iowrite32(arg, base + SDIO_SDR_CMD_ARGUMENT_REG);
+	iowrite32(cmd_ctrl, base + SDIO_SDR_CTRL_REG);
+
+	struct Event cmd_event;
+	cmd_event.type = CMD_DONE_HANDLE;
+	cmd_event.flag = SPISDIO_SDIO_INT_STATUS_CMD_DONE;
+	cmd_event.response = SDR_TRAN_SDC_CMD_DONE;
+
+	bool result = wait(base, &cmd_event);
+
+#ifdef DEBUG
+	debug_response(base);
+#endif
+	return result;
+}
+
+static inline uint32_t calc_divl(const uint32_t freq_khz)
+{
+	return (freq_khz / (0.4) / 2) - 1;
+}
+
+static inline uint32_t calc_divh(const uint32_t freq_khz)
+{
+	return (freq_khz / (10) / 2) - 1;
+}
+
+static inline struct sd_private_data *to_sd_private_data(void *pdata)
+{
+	return (struct sd_private_data *)pdata;
+}
+
+static void enable_interrupt(uint32_t base)
+{
+	iowrite32(0x7F, base + SPISDIO_SDIO_INT_MASKS);
+	iowrite32(0x16F, base + SDIO_SDR_ERROR_ENABLE_REG);
+}
+
+bool sd_init(const struct rumboot_bootsource *src, void *pdata)
+{
+	size_t count = SDIO_ATTEMPTS_NUMBER;
+	uint32_t resp;
+	uint32_t arg;
+	uint32_t divl = calc_divl(src->freq_khz);
+	uint32_t divh = calc_divh(src->freq_khz);
+
+	rumboot_printf("SD: init\n");
+
+	iowrite32(divl, src->base + SPISDIO_SDIO_CLK_DIVIDE);
+	iowrite32(0x1, src->base + SPISDIO_ENABLE);             //sdio-on, spi-off
+	iowrite32((1 << 7), src->base + SDIO_SDR_CTRL_REG);     /* Hard reset damned hardware */
+
+	while (ioread32(src->base + SDIO_SDR_CTRL_REG) & (1 << 7)) ;
+
+	enable_interrupt(src->base);
+
+  while(count--)
+    send_cmd(src->base, make_cmd(0, SDIO_RESPONSE_NONE, 0, 0), 0);
+
+  count = SDIO_ATTEMPTS_NUMBER;
+	while (count--) {
+		if (send_cmd(src->base, make_cmd(0, SDIO_RESPONSE_NONE, 0, 0), 0))
+			break;
+
+		mdelay(250);
+	}
+
+	struct sd_private_data *temp = to_sd_private_data(pdata);
+
+	if (!send_cmd(src->base, make_cmd(8, SDIO_RESPONSE_R1367, 1, 1), 0x000001AA))
+		temp->cardtype = SDIO_CARD_OLD;
+	else if (ioread32(src->base + SDIO_SDR_RESPONSE1_REG) != 0x000001AA)
+		temp->cardtype = SDIO_CARD_OLD;
+
+	count = SDIO_ATTEMPTS_NUMBER;
+	while (count--) {
+		if (!send_cmd(src->base, make_cmd(55, SDIO_RESPONSE_R1367, 1, 1), 0x0))              /* CMD55 with RCA == 0 */
+			continue;
+
+		arg = 0x80100000;
+
+		if (temp->cardtype != SDIO_CARD_OLD)             /* Do not set HC bit for old cards, it may confuse them */
+			arg |= 0x40000000;
+
+		if (!send_cmd(src->base, make_cmd(41, SDIO_RESPONSE_R1367, 1, 1), arg)) /* ACMD41, Tell the card we support SDHC */
+			continue;
+
+		resp = ioread32(src->base + SDIO_SDR_RESPONSE1_REG);
+
+		if (resp & (1 << 31))
+			continue; /* Card not ready, yet */
+
+		if (temp->cardtype != SDIO_CARD_OLD)
+			temp->cardtype = (resp & (1 << 30)) ? SDIO_CARD_SDHC : SDIO_CARD_SDSC;
+
+		mdelay(250);
+	}
+
+	if (count == 0)
+		return false;
+
+	temp->src = src;
+
+#ifdef DEBUG
+	debug_card_name(temp->cardtype);
+#endif
+
+	if (!send_cmd(src->base, make_cmd(2, SDIO_RESPONSE_R2, 1, 1), 0x0)) /* Request CID */
+		return false;
+
+	struct sd_cid cid;
+	debug_product_name(src->base, &cid);
+
+	if (!send_cmd(src->base, make_cmd(3, SDIO_RESPONSE_R1367, 1, 1), 0x0))       /* Request RCA with CMD3 */
+		return false;
+
+	uint32_t rca = ioread32(src->base + SDIO_SDR_RESPONSE1_REG) >> 16;
+	if (!send_cmd(src->base, make_cmd(7, SDIO_RESPONSE_R1367, 1, 1), (rca << 16))) /* Put SD card in transfer mode with CMD7 */
+		return false;
+
+	if (!send_cmd(src->base, make_cmd(55, SDIO_RESPONSE_R1367, 1, 1), (rca << 16))) /* CMD55 with real RCA */
+		return false;
+
+	if (!send_cmd(src->base, make_cmd(6, SDIO_RESPONSE_R1367, 1, 1), 0x2))     /* ACMD6 */
+		return false;
+
+	iowrite32(divh, src->base + SPISDIO_SDIO_CLK_DIVIDE);
+	rumboot_printf("SD: Card ready!\n");
+
+	return true;
+}
+
+void sd_deinit(void *pdata)
+{
+	rumboot_printf("SD: deinit\n");
+
+	struct sd_private_data *sd_pdata = to_sd_private_data(pdata);
+	const struct rumboot_bootsource *src = sd_pdata->src;
+	iowrite32(0x1, src->base + SPISDIO_ENABLE);
+}
+
+static bool SD2buf512(const uint32_t base, const uint32_t buf_num, const uint32_t idx)
 {
 	iowrite32((buf_num << 2), base + SDIO_SDR_ADDRESS_REG);
-	iowrite32(BLOCK_512_DATA_TRANS, base + SDIO_SDR_CARD_BLOCK_SET_REG);
+	iowrite32(((1 << 8) | (1 << 0)), base + SDIO_SDR_CARD_BLOCK_SET_REG);
 	iowrite32(idx, base + SDIO_SDR_CMD_ARGUMENT_REG);
 	iowrite32(CMD17_CTRL, base + SDIO_SDR_CTRL_REG);
 
@@ -190,159 +351,34 @@ static bool buf2axi(const uint32_t base, int buf_num, uint32_t dma_addr)
 		rumboot_printf("TIMEOUT:BUF TRAN FINISH at function buf2axi.\n");
 		return false;
 	}
-	return true;
-}
-
-static bool send_cmd(const uint32_t base, const uint32_t cmd_ctrl, const uint32_t arg)
-{
-#ifdef DEBUG
-	rumboot_printf("SEND CMD 0x%x 0x%x\n", cmd_ctrl, arg);
-#endif
-
-	iowrite32(arg, base + SDIO_SDR_CMD_ARGUMENT_REG);
-	iowrite32(cmd_ctrl, base + SDIO_SDR_CTRL_REG);
-
-	struct Event cmd_event;
-	cmd_event.type = CMD_DONE_HANDLE;
-	cmd_event.flag = SPISDIO_SDIO_INT_STATUS_CMD_DONE;
-	cmd_event.response = SDR_TRAN_SDC_CMD_DONE;
-
-	bool result = wait(base, &cmd_event);
-
-#ifdef DEBUG
-	debug_response(base);
-#endif
-	return result;
-}
-
-static inline uint32_t calc_divl(const uint32_t freq_khz)
-{
-	return (freq_khz / (0.4) / 2) - 1;
-}
-
-static inline uint32_t calc_divh(const uint32_t freq_khz)
-{
-	return (freq_khz / (10) / 2) - 1;
-}
-
-static inline struct sd_private_data* to_sd_private_data(void* pdata) {
-
-	return (struct sd_private_data *)pdata;
-}
-
-bool sd_init(const struct rumboot_bootsource *src, void *pdata)
-{
-	size_t count = SDIO_ATTEMPTS_NUMBER;
-	uint32_t resp;
-	uint32_t arg;
-	uint32_t divl = calc_divl(src->freq_khz);
-	uint32_t divh = calc_divh(src->freq_khz);
-
-	rumboot_printf("SD: init\n");
-
-	iowrite32(divl, src->base + SPISDIO_SDIO_CLK_DIVIDE);
-	iowrite32(0x1, src->base + SPISDIO_ENABLE);             //sdio-on, spi-off
-	iowrite32((1 << 7), src->base + SDIO_SDR_CTRL_REG);     /* Hard reset damned hardware */
-
-	while (ioread32(src->base + SDIO_SDR_CTRL_REG) & (1 << 7)) ;
-
-	iowrite32(0x7F, src->base + SPISDIO_SDIO_INT_MASKS);            //enable  interrupts in SDIO
-	iowrite32(0x16F, src->base + SDIO_SDR_ERROR_ENABLE_REG);        //enable interrupt and error flag
-
-	while (count--) {
-		if (send_cmd(src->base, make_cmd(0, SDIO_RESPONSE_NONE, 0, 0), 0))
-			break;
-
-		mdelay(250);
-	}
-
-	struct sd_private_data *temp = to_sd_private_data(pdata);
-
-	if (!send_cmd(src->base, make_cmd(8, SDIO_RESPONSE_R1367, 1, 1), 0x000001AA))
-		temp->cardtype = SDIO_CARD_OLD;
-	else if (ioread32(src->base + SDIO_SDR_RESPONSE1_REG) != 0x000001AA)
-		temp->cardtype = SDIO_CARD_OLD;
-
-	count = SDIO_ATTEMPTS_NUMBER;
-	while (count--) {
-		if (!send_cmd(src->base, make_cmd(55, SDIO_RESPONSE_R1367, 1, 1), 0x0))              /* CMD55 with RCA == 0 */
-			continue;
-
-		arg = 0x80100000;
-
-		if (temp->cardtype != SDIO_CARD_OLD)             /* Do not set HC bit for old cards, it may confuse them */
-			arg |= 0x40000000;
-
-		if (!send_cmd(src->base, make_cmd(41, SDIO_RESPONSE_R1367, 1, 1), arg)) /* ACMD41, Tell the card we support SDHC */
-			continue;
-
-		resp = ioread32(src->base + SDIO_SDR_RESPONSE1_REG);
-
-		if ((resp >> 31) != 1)
-			continue; /* Card not ready, yet */
-
-		if (temp->cardtype != SDIO_CARD_OLD)
-			temp->cardtype = ((resp & 0x40000000) >> 30) ? SDIO_CARD_SDHC : SDIO_CARD_SDSC;
-
-		mdelay(250);
-	}
-
-	if (count == 0)
-		return false;
-
-	temp->src = src;
-
-#ifdef DEBUG
-	debug_card_name(temp->cardtype);
-#endif
-
-	if (!send_cmd(src->base, make_cmd(2, SDIO_RESPONSE_R2, 1, 1), 0x0)) /* Request CID */
-		return false;
-
-	struct sd_cid cid;
-	debug_product_name(src->base, &cid);
-
-	if (!send_cmd(src->base, make_cmd(3, SDIO_RESPONSE_R1367, 1, 1), 0x0))       /* Request RCA with CMD3 */
-		return false;
-
-	uint32_t rca = ioread32(src->base + SDIO_SDR_RESPONSE1_REG) >> 16;
-	if (!send_cmd(src->base, make_cmd(7, SDIO_RESPONSE_R1367, 1, 1), (rca << 16))) /* Put SD card in transfer mode with CMD7 */
-		return false;
-
-	if (!send_cmd(src->base, make_cmd(55, SDIO_RESPONSE_R1367, 1, 1), (rca << 16))) /* CMD55 with real RCA */
-		return false;
-
-	if (!send_cmd(src->base, make_cmd(6, SDIO_RESPONSE_R1367, 1, 1), 0x2))     /* ACMD6 */
-		return false;
-
-	iowrite32(divh, src->base + SPISDIO_SDIO_CLK_DIVIDE);
-	rumboot_printf("SD: Card ready!\n");
 
 	return true;
 }
 
-void sd_deinit(void *pdata)
-{
-	/*Dummy*/
-}
-
-bool sd_read(void *pdata)
+bool sd_read(uint32_t *to, uint32_t *from, void *pdata)
 {
 	rumboot_printf("SD: read block\n");
 
 	struct sd_private_data *sd_pdata = to_sd_private_data(pdata);
 	const struct rumboot_bootsource *src = sd_pdata->src;
 
-	if (!SD2buf512(src->base, 0, (uint32_t)(src->base + src->offset)))
+	uint32_t idx = 8192;
+
+	if (sd_pdata->cardtype == SDIO_CARD_SDHC)
+		idx /= 512;
+
+	uint32_t buf_num = 0;
+
+	if (!SD2buf512(src->base, buf_num, idx))
 		return false;
 
-	if (!buf2axi(src->base, 0, (uint32_t)&rumboot_platform_spl_start))
+	if (!buf2axi(src->base, buf_num, (uint32_t)to))
 		return false;
 
 	return true;
 }
 
-bool sd_are_load_attempts()
+bool sd_load_again()
 {
 	return false;
 }

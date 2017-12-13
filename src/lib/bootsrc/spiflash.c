@@ -64,7 +64,7 @@ void spiflash_deinit(void *pdata)
 	iowrite32(cr1 & ~(1 << PL022_CR1__SSE_i), src->base + PL022_CR1); //disable PL022 SSP
 }
 
-bool spiflash_read(void *pdata)
+bool spiflash_read(uint32_t* to, uint32_t* dst, void *pdata)
 {
 	/*TO DO!*/
 	struct spiflash_private_data *spiflash_pdata = (struct spiflash_private_data *)pdata;
@@ -96,7 +96,6 @@ bool spiflash_read(void *pdata)
 	size_t tx_len = 512;
 	size_t rx_len = 512;
 #define IM0_BASE 0x0
-	uint32_t *dst = IM0_BASE;
 
 	while (rx_len-- && tx_len--) {
 		if ((rumboot_platform_get_uptime() - start) > SPI_READ_TIMEOUT)
@@ -117,7 +116,7 @@ bool spiflash_read(void *pdata)
 	return true;
 }
 
-bool spiflash_are_load_attempts(void *pdata)
+bool spiflash_load_again(void *pdata)
 {
 	return false;
 }

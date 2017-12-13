@@ -24,17 +24,6 @@
 
 #include <rumboot/bootsource.h>
 
-/**
- * Card_type Type card enumeration
- */
-enum Card_type {
-
-        SDIO_CARD_UNKNOW = 0,
-        SDIO_CARD_OLD,
-        SDIO_CARD_SDHC,
-        SDIO_CARD_SDSC,
-
-};
 
 /**
  * SD card initialization
@@ -48,7 +37,7 @@ bool sd_init(const struct rumboot_bootsource* src, void* pdata);
  * @param  pdata     pointer to private data
  * @return           true if read ok
  */
-bool sd_read(void* pdata);
+bool sd_read(uint32_t* dst, uint32_t* src, void* pdata);
 
 /**
  * [sd_deinit description]
@@ -61,7 +50,7 @@ void sd_deinit(void* pdata);
  * Find another source for load
  * @return [description]
  */
-bool sd_are_load_attempts();
+bool sd_load_again();
 
 
 #endif

@@ -27,16 +27,15 @@ void eeprom_deinit(void* pdata) {
   /*TO DO!*/
 }
 
-bool eeprom_read(void* pdata) {
+bool eeprom_read(uint32_t* dst, uint32_t* src, void* pdata) {
 
   /*TO DO!*/
   return true;
 }
 
-bool eeprom_are_load_attempts(void* pdata/*, uint32_t attempts_numb*/) {
+bool eeprom_load_again(void* pdata/*, uint32_t attempts_numb*/) {
 
   //Error can be only in loading image step?
-
   const uint32_t eeprom_numb = get_eeprom_numb();
 
   //FIX IT. EEPROM DEVICES CAN BE > 2!
