@@ -10,7 +10,7 @@
 
 
 
-void sp804_enable( int base_addr, int index)
+void sp804_enable( uint32_t base_addr, int index)
 {
     int cntrl ;
     int control_reg;

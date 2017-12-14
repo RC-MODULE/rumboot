@@ -66,7 +66,7 @@ struct sp804_conf{
  *
  *  \details Manualy sets ENABLE bit in CONTROL register of chosen timer.
  */
-void sp804_enable( int base_addr, int index);
+void sp804_enable( uint32_t base_addr, int index);
 
 /**
  *  \brief Stop timer

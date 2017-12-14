@@ -24,7 +24,7 @@
 struct s804_instance{
     int timer0_irq;
     int timer1_irq;
-    int base_addr;
+    uint32_t base_addr;
     int dit_index;
 };
 
@@ -55,7 +55,7 @@ bool test_dit_4_timers (uint32_t structure)
     int d = 0;
 
     struct s804_instance *stru = (struct s804_instance *) structure;
-    int base_addr = stru->base_addr ;
+    uint32_t base_addr = stru->base_addr ;
 
 
     struct sp804_conf config_0 = {
