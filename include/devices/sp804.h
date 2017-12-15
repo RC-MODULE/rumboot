@@ -17,7 +17,33 @@
  * #include <devices/dit_lib.h>
  * \endcode
  *
- * TODO: Insert usage example here 
+ *  Usage example:
+ *
+ *  static void handler0(int irq, int base_addr)
+ *  {
+ *  	rumboot_printf("IRQ 0 arrived  \n");
+ *  
+ *      sp804_clrint(base_addr,0);
+ *  }
+ *    int c = 0;
+ *    uint32_t base_addr = BASE_ADDR;
+ *  
+ *    struct sp804_conf config_0 = {
+ *      .mode             = ONESHOT,
+ *      .interrupt_enable = 1      ,
+ *      .clock_division   = 1      ,
+ *      .width            = 32     ,
+ *      .load             = 100    ,
+ *      .bgload           = 0
+ *      };
+ *  
+ *    for (int i =0; i<10; i++)
+ *    {
+ *        sp804_config(base_addr,&config_0,0);
+ *        sp804_enable(base_addr,0);
+ *        while(sp804_get_value(base_addr,0)){};
+ *        c++;
+ *    }
  *
  * \addtogroup devices_sp804
  *

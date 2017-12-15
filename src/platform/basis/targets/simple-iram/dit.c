@@ -43,7 +43,7 @@ static void handler1(int irq, void *arg)
     struct s804_instance *a = (struct s804_instance *) arg;
     a->timer1_irq = a->timer1_irq+1;
 	rumboot_printf("IRQ 1 arrived  \n");
-	rumboot_printf("sp804_%d timer 0 INT # %d  \n",a->dit_index,a->timer1_irq);
+	rumboot_printf("sp804_%d timer 1 INT # %d  \n",a->dit_index,a->timer1_irq);
     sp804_clrint(a->base_addr,1);
 
 }
