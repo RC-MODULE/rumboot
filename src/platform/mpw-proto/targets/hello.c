@@ -69,12 +69,14 @@ static void spiflash_deinit_gpio_mux()
 }
 
 #define SDIO_CLK_FREQ 100000
-#define SPI_CLK_FREQ 100000
+#define SPI_CLK_FREQ 10000
 const struct rumboot_bootsource arr[] = {
-	{
+
+#if 0
+  {
 		.name = "SDIO",
 		.base = SDIO0_BASE,
-		.offset = 0x100,
+		.offset = 8192,//Because at the begining we have descriptors table
 		.freq_khz = SDIO_CLK_FREQ,
 		.privdatalen = 128,
 		.init = sd_init,
@@ -84,10 +86,13 @@ const struct rumboot_bootsource arr[] = {
 		.deinit_gpio_mux = disable_gpio_for_SDIO,
 		.load_again = sd_load_again,
 	},
+#endif
 
+#if 1
 	{
 		.name = "SPI",
-		.base = SPI_CTRL0_BASE,
+		.base = SPI_CTRL1_BASE,
+		.offset = 0x0,
 		.freq_khz = SPI_CLK_FREQ,
 		.privdatalen = 128,
 		.init = spiflash_init,
@@ -97,7 +102,7 @@ const struct rumboot_bootsource arr[] = {
 		.deinit_gpio_mux = spiflash_deinit_gpio_mux,
 		.load_again = spiflash_load_again,
 	},
-
+#endif
 	{ /*Sentinel*/ }
 };
 
@@ -124,6 +129,5 @@ int main()
 
 	while (1) ;
 
-  /* Return 0, test passed */
 	return 0;
 }

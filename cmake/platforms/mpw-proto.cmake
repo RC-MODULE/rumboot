@@ -23,14 +23,23 @@ macro(RUMBOOT_PLATFORM_SET_COMPILER_FLAGS)
     set(CMAKE_DUMP_FLAGS     -S -EB -M476,32)
 endmacro()
 
+rumboot_add_configuration(
+  ROM
+  DEFAULT
+  LDS basis/ram.lds
+  LDFLAGS "-e rumboot_reset_handler"
+  CFLAGS -DRUMBOOT_ONLY_STACK -DRUMBOOT_PRINTF_ACCEL
+  PREFIX ROM
+)
+
 #Add configuration for binaries
 rumboot_add_configuration(
-  MPW_PROTO
+  RAM
   DEFAULT
   LDS mpw-proto/ram.lds
   CFLAGS -DRUMBOOT_NEWLIB_PRINTF
   LDFLAGS -Wl,--start-group -lgcc -lc -lm -Wl,--end-group
-  FEATURES LUA
+  FEATURES RAM
 )
 
 function(RUMBOOT_PLATFORM_PRINT_SUMMARY)

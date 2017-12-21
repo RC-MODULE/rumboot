@@ -22,7 +22,7 @@ struct rumboot_bootsource {
   int privdatalen;
   bool (*init) (const struct rumboot_bootsource* src, void* pdata);
   void (*deinit) (void* pdata);
-  bool (*read) (uint32_t* dest, uint32_t* src, void* pdata);
+  int (*read) (void* pdata, void* dest, void* src);
   bool (*init_gpio_mux) (void* pdata);
   void (*deinit_gpio_mux) (void* pdata);
   bool (*load_again) (void* pdata);

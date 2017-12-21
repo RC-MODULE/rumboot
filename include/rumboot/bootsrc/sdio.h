@@ -37,7 +37,7 @@ bool sd_init(const struct rumboot_bootsource* src, void* pdata);
  * @param  pdata     pointer to private data
  * @return           true if read ok
  */
-bool sd_read(uint32_t* dst, uint32_t* src, void* pdata);
+int sd_read(void* pdata, void* dst, void* src);
 
 /**
  * [sd_deinit description]

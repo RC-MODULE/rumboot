@@ -61,7 +61,7 @@ void spiflash_deinit(void* pdata);
  * @param  data [description]
  * @return      [description]
  */
-bool spiflash_read(uint32_t* to, uint32_t* from, void* pdata);
+int spiflash_read(void* pdata, void* to, void* from);
 
 /**
  * [spi_load_failed_should_i_try_again description]

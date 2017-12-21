@@ -27,7 +27,7 @@ void eeprom_deinit(void* pdata) {
   /*TO DO!*/
 }
 
-bool eeprom_read(uint32_t* dst, uint32_t* src, void* pdata) {
+int eeprom_read(void* pdata, void* dst, void* src) {
 
   /*TO DO!*/
   return true;
