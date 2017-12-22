@@ -23,23 +23,53 @@ macro(RUMBOOT_PLATFORM_SET_COMPILER_FLAGS)
     set(CMAKE_DUMP_FLAGS     -S -EB -M476,32)
 endmacro()
 
+macro(add_directory_with_targets dir)
+  file(GLOB RUMBOOT_TARGETS_C ${RUMBOOT_PLATFORM_TARGET_DIR}/${dir}/*.c)
+  file(GLOB RUMBOOT_TARGETS_S ${RUMBOOT_PLATFORM_TARGET_DIR}/${dir}/*.S)
+  file(GLOB RUMBOOT_TARGETS_LUA ${RUMBOOT_PLATFORM_TARGET_DIR}/${dir}/*.lua)
+  foreach(target ${RUMBOOT_TARGETS_C} ${RUMBOOT_TARGETS_S} ${RUMBOOT_TARGETS_LUA})
+    add_rumboot_target(
+        ${ARGN}
+        FILES ${target}
+    )
+  endforeach()
+
+endmacro()
+
+add_directory_with_targets(primary/
+  CONFIGURATION PRIMARY
+PREFIX primary)
+
+add_directory_with_targets(secondary/
+  CONFIGURATION SECONDARY
+PREFIX secondary)
+
 rumboot_add_configuration(
-  ROM
+  PRIMARY
   DEFAULT
-  LDS basis/ram.lds
+  LDS mpw-proto/primary.lds
   LDFLAGS "-e rumboot_reset_handler"
   CFLAGS -DRUMBOOT_ONLY_STACK -DRUMBOOT_PRINTF_ACCEL
-  PREFIX ROM
+  PREFIX PRIMARY
 )
 
 #Add configuration for binaries
 rumboot_add_configuration(
-  RAM
+  SECONDARY
   DEFAULT
-  LDS mpw-proto/ram.lds
+  LDS mpw-proto/secondary.lds
   CFLAGS -DRUMBOOT_NEWLIB_PRINTF
   LDFLAGS -Wl,--start-group -lgcc -lc -lm -Wl,--end-group
-  FEATURES RAM
+  FEATURES SECONDARY
+)
+
+rumboot_add_configuration(
+  MPW-PROTO
+  DEFAULT
+  LDS mpw-proto/im0.lds
+  CFLAGS -DRUMBOOT_NEWLIB_PRINTF
+  LDFLAGS -Wl,--start-group -lgcc -lc -lm -Wl,--end-group
+  FEATURES MPW-PROTO
 )
 
 function(RUMBOOT_PLATFORM_PRINT_SUMMARY)
@@ -87,7 +117,9 @@ macro(rumboot_platform_generate_stuff_for_taget product)
 endmacro()
 
 macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
-  file(GLOB RUMBOOT_TARGETS ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/targets/*.c)
+  file(GLOB RUMBOOT_TARGETS ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/targets/*.c
+  ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/targets/primary/*.c
+${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/targets/secondary/*.c)
   foreach(target ${RUMBOOT_TARGETS})
     add_rumboot_target(
         SNAPSHOT "null"

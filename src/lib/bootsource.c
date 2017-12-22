@@ -7,13 +7,15 @@
 #include <string.h>
 
 
+#include "rumboot/io.h"
+
 static bool load_img(const struct rumboot_bootsource *src, void *pdata)
 {
 	int ret;
 	char tmp[512];
-	uint32_t *read_from = (uint32_t *) (src->base + src->offset);
-	struct rumboot_bootheader* hdr = (struct rumboot_bootheader*) &tmp;
-	uint32_t *data_ptr = (uint32_t *) &rumboot_platform_spl_start + 66;
+	uint8_t *read_from = (uint8_t *)(src->base + src->offset);
+	uint8_t *write_to = (uint8_t *) &rumboot_platform_spl_start;
+	void *data_ptr = (uint8_t *)&rumboot_platform_spl_start + 66;
 
 	ret = src->read(pdata, &tmp, read_from);
 
@@ -22,19 +24,18 @@ static bool load_img(const struct rumboot_bootsource *src, void *pdata)
 		return false;
 	}
 
-	if (rumboot_bootimage_check_header(hdr, (void **)&data_ptr) < 0) {
+	if (rumboot_bootimage_check_header((struct rumboot_bootheader *)&tmp, &data_ptr) < 0) {
 		rumboot_printf("boot: validation of header failed!\n");
 		return false;
 	}
 
-	//Here i must write IMG to IM0
-	int i;
-	for(i=0; i<hdr->datalen; i++) {
-
+	rumboot_printf("SPL START: %x", &rumboot_platform_spl_start);
+	while (ret > 0) {
+		rumboot_printf("write to %x from %x\n", write_to, read_from);
+		memcpy(write_to, &tmp, ret);
 		ret = src->read(pdata, &tmp, read_from);
-		memcpy((uint32_t*) hdr->entry_point[0], &tmp, ret);
-
-		i += ret;
+		write_to += ret;
+		read_from += ret;
 	}
 
 	return true;
@@ -68,7 +69,6 @@ bool bootsource_try_single(const struct rumboot_bootsource *src, void *pdata)
 
 	ret = load_img(src, pdata);
 	if (ret) {
-
 		rumboot_printf("boot: loaded an image from %s, okay, ", src->name);
 	} else {
 		rumboot_printf("boot: no valid image found in %s\n\n", src->name);

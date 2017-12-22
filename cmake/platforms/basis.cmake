@@ -18,7 +18,7 @@ rumboot_add_configuration(
 )
 
 #These are configurations for im0 binaries
-rumboot_add_configuration(
+rumboot_add_configuration (
   IRAM
   LDS basis/iram.lds
   PREFIX iram
