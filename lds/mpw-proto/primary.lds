@@ -1,46 +1,50 @@
 MEMORY
 {
-    ROM (rx): ORIGIN = 0x40000, LENGTH = 0x100
-    IM0 (rwx): ORIGIN = 0x40100, LENGTH = 0x3FF00
+    ROM (rx): ORIGIN = 0x40000,  LENGTH = 0x20000
+    IM0 (rwx): ORIGIN = 0x60000, LENGTH = 0x20000
 }
 
 SECTIONS
 {
 
-.text :
-{
-  KEEP(*(.text.startup))
-  *(.rumboot_platform_runtime_info);
+. = 0x0;
+.ro : {
+  *(.text.startup)
   *(.text)
-  *(.text.*)
   *(.rodata)
-  *(.data)
+ } > ROM
 
-} > ROM
+ .rw : {
+  . = ALIGN(8);
 
-.bss :
-{
-  rumboot_platform_bss_start = .;
-  *(.bss)
-  *(.bss.*)
-  rumboot_platform_bss_end = .;
-  rumboot_platform_heap_start = .;
-  . = . + 0xf000; /* 60k heap */
-  rumboot_platform_heap_end = .;
   rumboot_platform_spl_start = .;
-  . = . + 0xf00;
+  . = . + 0x10000; /* spl image start */
   rumboot_platform_spl_end = .;
-} > IM0
 
-.data :
-{
-    *(.data)
-} > IM0
+  . = ALIGN(8);
 
-.rodata :
-{
-  *(.rodata)
-  *(.rodata).*
-} > IM0
+  rumboot_platform_heap_start = ABSOLUTE(.);
+  . = . + 0xf000; /* 60k heap */
+  rumboot_platform_heap_end = ABSOLUTE(.);
+
+  /* This is where stacks start */
+  rumboot_platform_stack_area_start = .;
+  . = . + 0xf000; /* 60k stack */
+
+  /* This is where stacks end */
+  rumboot_platform_stack_area_end = .;
+ } > IM0
+
+ /DISCARD/ :
+ {
+     libc.a ( * )
+     libm.a ( * )
+     libgcc.a ( * )
+     /* Make sure data & bss go to hell */
+     *(.data)
+     *(.bss)
+     *(.bss.*)
+     *(COMMON)
+ }
 
 }
