@@ -88,7 +88,6 @@ const struct rumboot_bootsource arr[] = {
 	},
 #endif
 
-#if 0
 	{
 		.name = "SPI",
 		.base = SPI_CTRL1_BASE,
@@ -102,11 +101,11 @@ const struct rumboot_bootsource arr[] = {
 		.deinit_gpio_mux = spiflash_deinit_gpio_mux,
 		.load_again = spiflash_load_again,
 	},
-#endif
+
 	{ /*Sentinel*/ }
 };
 
-#define PDATA_SIZE 128
+#define PDATA_SIZE 64
 int main()
 {
 	enable_fpu();
@@ -127,7 +126,16 @@ int main()
 
 	bootsource_try_chain(arr, (void *)&pdata);
 
-	while (1) ;
+#if 0
+	rumboot_printf("SPL START: %x\n", &rumboot_platform_spl_start);
+	rumboot_printf("SPL END: %x\n", &rumboot_platform_spl_end);
+	rumboot_printf("HEAP START: %x\n", &rumboot_platform_heap_start);
+	rumboot_printf("HEAP END: %x\n", &rumboot_platform_heap_end);
+	rumboot_printf("STACK START: %x\n", &rumboot_platform_stack_area_start);
+	rumboot_printf("STACK END: %x\n", &rumboot_platform_stack_area_end);
+#endif
+
+	while (1);
 
 	return 0;
 }

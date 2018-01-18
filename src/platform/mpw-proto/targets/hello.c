@@ -127,7 +127,7 @@ int main()
 
 	bootsource_try_chain(arr, (void *)&pdata);
 
-	while (1) ;
+	while (1);
 
 	return 0;
 }

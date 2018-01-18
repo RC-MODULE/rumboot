@@ -2,15 +2,9 @@ SET(RUMBOOT_ARCH mpw-proto)
 
 find_program(PACKIMAGE rumboot-packimage REQUIRED)
 
-if (PACKIMAGE-NOTFOUND)
-  message(FATAL_ERROR "Missing rumboot-packimage in your path. This ain't gonna work")
-endif()
-
-
 file(GLOB PLATFORM_SOURCES
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/*.c
     ${CMAKE_SOURCE_DIR}/src/lib/drivers/irq-dummy.c
-    ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/*.S
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/*.S
 )
 
@@ -20,44 +14,22 @@ macro(RUMBOOT_PLATFORM_SET_COMPILER_FLAGS)
     set(CMAKE_C_FLAGS "${RUMBOOT_COMMON_FLAGS} -mstrict-align -Wall -fdata-sections -ffunction-sections ")
     set(CMAKE_ASM_FLAGS ${RUMBOOT_COMMON_FLAGS})
     set(CMAKE_EXE_LINKER_FLAGS "-fno-zero-initialized-in-bss -e boot_image_entry0 -Wl,--oformat=elf32-powerpc -Ttext 0x00040018 -static -nostartfiles -Wl,--gc-sections")
-    set(CMAKE_DUMP_FLAGS     -S -EB -M476,32)
+    set(CMAKE_DUMP_FLAGS -S -EB -M476,32)
 endmacro()
-
-macro(add_directory_with_targets dir)
-  file(GLOB RUMBOOT_TARGETS_C ${RUMBOOT_PLATFORM_TARGET_DIR}/${dir}/*.c)
-  file(GLOB RUMBOOT_TARGETS_S ${RUMBOOT_PLATFORM_TARGET_DIR}/${dir}/*.S)
-  file(GLOB RUMBOOT_TARGETS_LUA ${RUMBOOT_PLATFORM_TARGET_DIR}/${dir}/*.lua)
-  foreach(target ${RUMBOOT_TARGETS_C} ${RUMBOOT_TARGETS_S} ${RUMBOOT_TARGETS_LUA})
-    add_rumboot_target(
-        ${ARGN}
-        FILES ${target}
-    )
-  endforeach()
-
-endmacro()
-
-add_directory_with_targets(primary/
-  CONFIGURATION PRIMARY
-PREFIX primary)
-
-add_directory_with_targets(secondary/
-  CONFIGURATION SECONDARY
-PREFIX secondary)
 
 rumboot_add_configuration(
   PRIMARY
-  DEFAULT
   LDS mpw-proto/primary.lds
-  LDFLAGS "-e rumboot_reset_handler"
-  CFLAGS -DRUMBOOT_ONLY_STACK -DRUMBOOT_PRINTF_ACCEL
+  CFLAGS -DRUMBOOT_ONLY_STACK
+  #LDFLAGS -Wl,--start-group -lgcc -lc -lm -Wl,--end-group
   PREFIX PRIMARY
 )
 
 #Add configuration for binaries
 rumboot_add_configuration(
   SECONDARY
-  DEFAULT
   LDS mpw-proto/secondary.lds
+  FILES ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c
   CFLAGS -DRUMBOOT_NEWLIB_PRINTF
   LDFLAGS -Wl,--start-group -lgcc -lc -lm -Wl,--end-group
   FEATURES SECONDARY
@@ -66,20 +38,29 @@ rumboot_add_configuration(
 rumboot_add_configuration(
   MPW-PROTO
   DEFAULT
-  LDS mpw-proto/im0.lds
+  LDS mpw-proto/ram.lds
   CFLAGS -DRUMBOOT_NEWLIB_PRINTF
   LDFLAGS -Wl,--start-group -lgcc -lc -lm -Wl,--end-group
   FEATURES MPW-PROTO
 )
 
-function(RUMBOOT_PLATFORM_PRINT_SUMMARY)
-endfunction()
 
 macro(rumboot_platform_generate_stuff_for_taget product)
 
+if(${TARGET_CONFIGURATION} STREQUAL "SECONDARY")
   add_custom_target(
     ${product}.img ALL
-    COMMAND ${PACKIMAGE} -t bootimage -i ${product}.bin -o ${product}.img
+    COMMAND python3 ${CMAKE_SOURCE_DIR}/scripts/rumbootpackimage.py -i ${product}.bin
+    COMMENT "Packing image ${product}.img"
+    DEPENDS ${product}.bin
+  )
+
+  add_dependencies(${product}.all ${product}.img)
+else()
+
+  add_custom_target(
+    ${product}.img ALL
+    COMMAND COMMAND ${PACKIMAGE} -t bootimage -i ${product}.bin -o ${product}.img
     COMMENT "Packing image ${product}.img"
     DEPENDS ${product}.bin
   )
@@ -87,40 +68,49 @@ macro(rumboot_platform_generate_stuff_for_taget product)
   add_custom_target(
     ${product}.edcl ALL
     COMMAND ${PACKIMAGE} -t hostimage -i ${product}.bin -o ${product}.edcl
-    COMMENT "Packing image ${product}.edcl"
+    COMMENT "Creating edcl image ${product}.edcl"
     DEPENDS ${product}.bin
   )
+
+  add_dependencies(${product}.all ${product}.img ${product}.edcl)
+endif()
 
   add_custom_target(
     ${product}.sd ALL
     COMMAND dd if=/dev/zero of=${product}.sd bs=1024 count=8;
-    COMMAND dd if=${product}.img of=${product}.sd bs=1024 seek=8
+    COMMAND dd if=${product}.bin of=${product}.sd bs=1024 seek=8
+    # COMMAND dd if=${product}.bin of=${product}.sd
     COMMENT "Creating SD card image ${product}.sd"
-    DEPENDS ${product}.img
+    DEPENDS ${product}.bin
   )
 
-  add_custom_target(
-    ${product}.spi ALL
-    COMMAND dd status=none if=/dev/zero of=${product}.spi bs=1K count=4096
-    COMMAND dd status=none if=${product}.img of=${product}.spi conv=notrunc
-    COMMENT "Creating SPI flash image ${product}.spi"
-    DEPENDS ${product}.img
-  )
-
-  add_dependencies(${product}.all
-        ${product}.sd
-        ${product}.spi
-        ${product}.edcl
-        ${product}.img
-    )
+  add_dependencies(${product}.all ${product}.sd)
 
 endmacro()
 
+
+macro(add_directory_with_targets dir)
+  file(GLOB RUMBOOT_TARGETS_C ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/targets/${dir}/*.c)
+  file(GLOB RUMBOOT_TARGETS_S ${RUMBOOT_PLATFORM}/targets/${dir}/*.S)
+  foreach(target ${RUMBOOT_TARGETS_C} ${RUMBOOT_TARGETS_S} )
+    add_rumboot_target(
+        ${ARGN}
+        FILES ${target}
+    )
+  endforeach()
+endmacro()
+
 macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
-  file(GLOB RUMBOOT_TARGETS ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/targets/*.c
-  ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/targets/primary/*.c
-${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/targets/secondary/*.c)
-  foreach(target ${RUMBOOT_TARGETS})
+
+  add_directory_with_targets(primary/
+    CONFIGURATION PRIMARY
+  PREFIX primary)
+
+  add_directory_with_targets(secondary/
+      CONFIGURATION SECONDARY
+    PREFIX secondary)
+
+  foreach(target ${RUMBOOT_TARGETS_C} ${RUMBOOT_TARGETS_S})
     add_rumboot_target(
         SNAPSHOT "null"
         PREFIX "test"
@@ -128,14 +118,21 @@ ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/targets/secondary/*.c)
     )
   endforeach()
 
-
-
 endmacro()
 
-macro(rumboot_platform_setup_configuration)
+# macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
+#   file(GLOB RUMBOOT_TARGETS ${PROJECT_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/targets/*.c  )
+#   foreach(target ${RUMBOOT_TARGETS})
+#     add_rumboot_target(
+#         SNAPSHOT "null"
+#         PREFIX "test"
+#         FILES ${target}
+#     )
+#   endforeach()
+# endmacro()
 
-endmacro()
-
+function(RUMBOOT_PLATFORM_PRINT_SUMMARY)
+endfunction()
 
 if (NOT CROSS_COMPILE)
   SET(CROSS_COMPILE powerpc-rcm-elf)

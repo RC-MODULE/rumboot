@@ -1,6 +1,5 @@
 MEMORY
 {
-    ROM (rx): ORIGIN = 0x40000,  LENGTH = 0x20000
     IM0 (rwx): ORIGIN = 0x60000, LENGTH = 0x20000
 }
 

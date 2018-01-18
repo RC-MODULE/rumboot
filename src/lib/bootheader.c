@@ -2,6 +2,8 @@
 #include <rumboot/bootheader.h>
 #include <rumboot/platform.h>
 
+extern void rumboot_main();
+
 static const __attribute__((used)) __attribute__((section(".header")))
 struct rumboot_bootheader hdr = {
 	.magic		= RUMBOOT_HEADER_MAGIC,
@@ -10,6 +12,6 @@ struct rumboot_bootheader hdr = {
 	.chip_id	= RUMBOOT_PLATFORM_CHIPID,
 	.chip_rev	= RUMBOOT_PLATFORM_CHIPREV,
 	.entry_point	= {
-		(uint32_t)&rumboot_entry_point,
+		(uint32_t)&rumboot_main,
 	}
 };

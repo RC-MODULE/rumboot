@@ -7,12 +7,12 @@ MEMORY
 SECTIONS
 {
 
-. = 0x0;
-.ro : {
-  *(.text.startup)
-  *(.text)
-  *(.rodata)
- } > ROM
+  .text : {
+    KEEP(*(.text.startup))
+    *(.text)
+    *(.text.*)
+    *(.rodata)
+  } > ROM
 
  .rw : {
   . = ALIGN(8);
@@ -24,12 +24,12 @@ SECTIONS
   . = ALIGN(8);
 
   rumboot_platform_heap_start = ABSOLUTE(.);
-  . = . + 0xf000; /* 60k heap */
+  . = . + 0x8000; /* 60k heap */
   rumboot_platform_heap_end = ABSOLUTE(.);
 
   /* This is where stacks start */
   rumboot_platform_stack_area_start = .;
-  . = . + 0xf000; /* 60k stack */
+  . = . + 0x7fa0; /* 60k stack */
 
   /* This is where stacks end */
   rumboot_platform_stack_area_end = .;

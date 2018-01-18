@@ -11,31 +11,31 @@
 
 static bool load_img(const struct rumboot_bootsource *src, void *pdata)
 {
-	int ret;
-	char tmp[512];
 	uint8_t *read_from = (uint8_t *)(src->base + src->offset);
-	uint8_t *write_to = (uint8_t *) &rumboot_platform_spl_start;
-	void *data_ptr = (uint8_t *)&rumboot_platform_spl_start + 66;
+	uint8_t *write_to = (uint8_t *)&rumboot_platform_spl_start;
+	char tmp[512];
 
-	ret = src->read(pdata, &tmp, read_from);
-
-	if (ret < 0) {
-		rumboot_printf("boot: read from %s failed.\n", src->name);
+	int count = src->read(pdata, &tmp, read_from);
+	if(count < 0)
 		return false;
-	}
 
-	if (rumboot_bootimage_check_header((struct rumboot_bootheader *)&tmp, &data_ptr) < 0) {
-		rumboot_printf("boot: validation of header failed!\n");
-		return false;
-	}
+	struct rumboot_bootheader *hdr = (struct rumboot_bootheader *)&tmp;
+	int32_t img_size = hdr->datalen + 66;
 
-	rumboot_printf("SPL START: %x", &rumboot_platform_spl_start);
-	while (ret > 0) {
-		rumboot_printf("write to %x from %x\n", write_to, read_from);
-		memcpy(write_to, &tmp, ret);
-		ret = src->read(pdata, &tmp, read_from);
-		write_to += ret;
-		read_from += ret;
+	//Reed data image
+	while (img_size > 0) {
+
+		count = src->read(pdata, &tmp, read_from);
+
+		if (count < 0) {
+			rumboot_printf("boot: read from %s failed.\n", src->name);
+			break;
+		}
+		memcpy(write_to, &tmp, count);
+
+		img_size	-= count;
+		write_to	+= count;
+		read_from	+= count;
 	}
 
 	return true;

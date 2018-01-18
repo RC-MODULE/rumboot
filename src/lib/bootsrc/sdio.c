@@ -160,9 +160,9 @@ static bool send_cmd(const uint32_t base, const uint32_t cmd_ctrl, const uint32_
 	iowrite32(cmd_ctrl, base + SDIO_SDR_CTRL_REG);
 
 	struct Event cmd_event = {
-		.type = CMD_DONE_HANDLE,
-		.flag = SPISDIO_SDIO_INT_STATUS_CMD_DONE,
-		.response = SDR_TRAN_SDC_CMD_DONE
+		.type		= CMD_DONE_HANDLE,
+		.flag		= SPISDIO_SDIO_INT_STATUS_CMD_DONE,
+		.response	= SDR_TRAN_SDC_CMD_DONE
 	};
 
 	bool result = wait(base, &cmd_event);
@@ -377,7 +377,7 @@ int sd_read(void *pdata, void *ram, void *sd_addr)
 	uint32_t full_addr = (uint32_t)sd_addr;
 	uint32_t offset = full_addr - src->base;
 
-	if ((offset % 512 != 0) || (offset < 8192))
+	if (offset % 512 != 0)
 		return -1;
 
 	if (sd_pdata->cardtype == SDIO_CARD_SDHC)

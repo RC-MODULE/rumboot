@@ -15,7 +15,6 @@ SECTIONS
   *(.text.*)
   *(.rodata)
   *(.data)
-
 } > IM0
 
 .bss :

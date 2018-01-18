@@ -41,13 +41,23 @@ int32_t rumboot_bootimage_check_data(struct rumboot_bootheader *hdr)
 
 int32_t rumboot_bootimage_exec(struct rumboot_bootheader *hdr)
 {
+	int32_t ret;
+
+	//Cover with unit tests
 	rumboot_printf("STUB: Executing SPL image. Magic: 0x%x Entry: 0x%x\n",
 		       hdr->magic, hdr->entry_point[0]);
 
+	void* ptr_to_data = hdr->data;
+
+	ret = rumboot_bootimage_check_header(hdr, &ptr_to_data);
+
+	if (ret < 0)
+		return ret;
+
 	int (*ram_main)();
 	ram_main = (void *)hdr->entry_point[0];
-	rumboot_platform_perf("IM0 startup");
 	ram_main();
 
-	return 0;
+	//It must not be!
+	return -1;
 }
