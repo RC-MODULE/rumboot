@@ -118,12 +118,12 @@ int main()
 	rumboot_printf("ARINC START \n");
 	//check setting of the end of transaction delivery
 	for (i = 0; i< 16 ; i++)
-	{
+	{tmp_r =-1;
 	rumboot_printf("ARINC CH_TR=0x%x\n", i); 	
 
-       while (tmp != 0x00000002) {
+       while (tmp_r != 0x00000002) {
 	tmp = ioread32(ARINC_BASE + STAT_E_TX + i*4);
-	tmp = 0x07FFFFFF & tmp;
+	tmp_r = 0x07FFFFFF & tmp;
     //rumboot_printf("ARINC SIZE=0x%x\n", tmp); //check status
 		}   
  	//rumboot_printf("rcv_channel_num=0x%x\n", (1 << i));
@@ -134,14 +134,16 @@ int main()
 	 
 	for (i = 0; i< 16 ; i++) 
 	{
-	//rumboot_printf("ARINC number=0x%x\n", i); 	
+	rumboot_printf("ARINC number=0x%x\n", i); 
+	tmp_r = -1;
 	while (tmp_r != status_success_bit) {
 	tmp = ioread32(ARINC_BASE + STAT_E_RX +i*4);
 	//rumboot_printf("ARINC STATUS=0x%x\n", tmp); //check status
 	tmp_r = tmp & status_success_bit;
 	if (++cnt == ARINC_ATTEMPT) {
             rumboot_printf("No end exchange!\n");
-           // return ARINC_FAILED;
+			rumboot_printf("ARINC test ERROR!\n");
+           return TEST_ERROR;
 			}
 		}
 	}
