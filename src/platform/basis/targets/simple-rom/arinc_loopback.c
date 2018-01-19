@@ -46,15 +46,12 @@ static const int32_t tx_array32[] = {
 
 void arinc_init (uint32_t arinc_base_addr){
 	uint32_t receiver_number;
-	//uint32_t tx_mem;
-	//uint32_t rx_mem;
-	//uint32_t rx_data;
 
 	uint32_t  init_axi_mst;
 	uint32_t size;
 
 	init_axi_mst =0x0;
-	size   = 0x2;//0x10;
+	size   = 0x2;
 
 	//void *tx_mem =rumboot_malloc(8192);
 	receiver_number = 0x0;
@@ -100,16 +97,17 @@ int main()
 
 	arinc_init(ARINC_BASE);
     iowrite32(enable,ARINC_BASE + CHANNEL_EN); // run transaction
+	iowrite32(enable,ARINC_BASE + CHANNEL_DIS); // stop transmitter
 	rumboot_printf("ARINC START CH0\n");
-	//iowrite32(enable,ARINC_BASE + CHANNEL_DIS); // stop transaction
 	//check setting of the end of transaction delivery
+	tmp_r = -1;
 	while (tmp_r != 0x00000002) {
 
 	tmp = ioread32(ARINC_BASE + STAT_E_TX);
 	tmp_r = 0x07FFFFFF & tmp;
-   // rumboot_printf("ARINC SIZE=0x%x\n", tmp); //check status
+  // rumboot_printf("ARINC SIZE=0x%x\n", tmp); //check status
 	}
-	iowrite32(enable,ARINC_BASE + CHANNEL_DIS); // stop transmitter !!!!
+	//iowrite32(enable,ARINC_BASE + CHANNEL_DIS); // stop transmitter
 
 
 	while (tmp_r != status_success_bit) {
@@ -118,7 +116,7 @@ int main()
 	tmp_r = tmp & status_success_bit;
 	if (++cnt == ARINC_ATTEMPT) {
             rumboot_printf("No end exchange!\n");
-           // return ARINC_FAILED;
+            return TEST_ERROR;
 		}
 	}
 
