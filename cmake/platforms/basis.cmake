@@ -146,6 +146,14 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
           PREFIX "bootrom"
           NAME "production"
   )
+  
+  add_rumboot_target(
+    SNAPSHOT default
+    CONFIGURATION IRAM
+    FILES simple-iram/can_adapter_0_test.c
+    NAME can_adapter_0_test
+    IRUN_FLAGS +can_plus_adapter
+  )
 
   add_rumboot_target(
       SNAPSHOT default
