@@ -85,6 +85,7 @@ void arinc_init (uint32_t arinc_base_addr){
 	iowrite32(init_axi_mst,(arinc_base_addr + AXI_CTRL)); 			// AXI parameters	
 	iowrite32(0xffff,(arinc_base_addr + WAIT_TMR_TX));   			// wait  delayed switch after the transmitter start
 	iowrite32(0xffff,(arinc_base_addr + WAIT_SIG_RX));   			// wait delayed switch after the receiver start
+	iowrite32(0xffff,(arinc_base_addr + SW_SIG_RX));   			    // wait delayed switch after the receiver start
 //--------------------------------------------------------------------------------------
 }
 
