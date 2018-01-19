@@ -117,12 +117,11 @@ int main()
 	rumboot_printf("ARINC START \n");
 	//check setting of the end of transaction delivery
 	for (i = 0; i< 16 ; i++)
-	{
+	{tmp_r =-1;
 	rumboot_printf("ARINC CH=0x%x\n", i); 	
-	//while (tmp != 0x00000001) {
-       while (tmp != 0x00000002) {
+       while (tmp_r != 0x00000002) {
 	tmp = ioread32(ARINC_BASE + STAT_E_TX + i*4);
-	tmp = 0x07FFFFFF & tmp;
+	tmp_r = 0x07FFFFFF & tmp;
     //rumboot_printf("ARINC SIZE=0x%x\n", tmp); //check status
 		}   
  	//rumboot_printf("rcv_channel_num=0x%x\n", (1 << i));
