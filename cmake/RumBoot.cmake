@@ -45,6 +45,8 @@ macro(generate_stuff_for_target product)
   if (NOT ${TARGET_BOOTROM} STREQUAL "")
     add_dependencies(${product}.all ${bootrom})
   endif()
+
+  populate_dependencies(${product}.all)
 endmacro()
 
 
@@ -52,7 +54,7 @@ macro(rumboot_add_configuration name)
   message(STATUS "Adding configuration ${name}")
   set(options DEFAULT)
   set(oneValueArgs SNAPSHOT LDS PREFIX NAME BOOTROM)
-  set(multiValueArgs FILES IRUN_FLAGS CFLAGS LDFLAGS FEATURES TIMEOUT)
+  set(multiValueArgs FILES IRUN_FLAGS CFLAGS LDFLAGS FEATURES TIMEOUT DEPENDS)
 
   cmake_parse_arguments(CONFIGURATION_${name} "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
   LIST(APPEND RUMBOOT_CONFIGURATIONS ${name})
@@ -72,10 +74,21 @@ macro(config_load_param_append conf param)
     set(TARGET_${param} ${TARGET_${param}} ${CONFIGURATION_${conf}_${param}})
 endmacro()
 
+macro(generate_product_name outvar name)
+  set(${outvar} rumboot-${RUMBOOT_PLATFORM}-${CMAKE_BUILD_TYPE}-${name})
+endmacro()
+
+macro(populate_dependencies target)
+    foreach(dep ${TARGET_DEPENDS})
+      generate_product_name(dep ${dep})
+      add_dependencies(${target} ${dep}.all)
+    endforeach()
+endmacro()
+
 function(add_rumboot_target)
   set(options )
   set(oneValueArgs SNAPSHOT LDS NAME PREFIX CONFIGURATION BOOTROM)
-  set(multiValueArgs FILES IRUN_FLAGS CFLAGS TESTGROUP LDFLAGS CHECKCMD FEATURES TIMEOUT)
+  set(multiValueArgs FILES IRUN_FLAGS CFLAGS TESTGROUP LDFLAGS CHECKCMD FEATURES TIMEOUT DEPENDS)
 
   cmake_parse_arguments(TARGET "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
@@ -100,8 +113,11 @@ function(add_rumboot_target)
     message(FATAL_ERROR "add_rumboot_target() requires TARGET_FILES to contain at least one file")
   endif()
 
-  set(product rumboot-${RUMBOOT_PLATFORM}-${CMAKE_BUILD_TYPE}-${TARGET_PREFIX}-${TARGET_NAME})
-  set(bootrom rumboot-${RUMBOOT_PLATFORM}-${CMAKE_BUILD_TYPE}-${TARGET_BOOTROM}.all)
+  generate_product_name(product ${TARGET_PREFIX}-${TARGET_NAME})
+  generate_product_name(bootrom ${TARGET_BOOTROM}.all)
+
+#  set(product rumboot-${RUMBOOT_PLATFORM}-${CMAKE_BUILD_TYPE}-${TARGET_PREFIX}-${TARGET_NAME})
+#  set(bootrom rumboot-${RUMBOOT_PLATFORM}-${CMAKE_BUILD_TYPE}-${TARGET_BOOTROM}.all)
   set(name rumboot-${TARGET_SNAPSHOT}-${product})
 
   if (${name})
@@ -114,6 +130,7 @@ function(add_rumboot_target)
     #Lprobe scripts compile nothing. Provide a dummy
     #target and return
     add_custom_target(${product}.all ALL DEPENDS ${bootrom})
+    populate_dependencies(${product}.all)
     return()
   endif()
 
