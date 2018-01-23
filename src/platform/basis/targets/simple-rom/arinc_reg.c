@@ -365,10 +365,11 @@ int arinc_wr_rd (uint32_t arinc_base_addr){
 	{rumboot_printf("AXI_CTRL=0x%x\n", tmp);
 	return ARINC_FAILED;}
 
-	tmp_en = 0xE52B3C4D;
+	tmp_en = 0xFC4D;
 	iowrite32(tmp_en, arinc_base_addr + LAST_WD_TMR );
 	//rumboot_printf("LAST_WD_TMR=0x%x\n",tmp_en);
 	tmp = ioread32(ARINC_BASE + LAST_WD_TMR );
+	tmp = 0xffff & tmp;
 	//rumboot_printf("LAST_WD_TMR=0x%x\n", tmp);
 	if (tmp_en !=tmp )
 	{rumboot_printf("LAST_WD_TMR=0x%x\n", tmp);
