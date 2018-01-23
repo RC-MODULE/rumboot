@@ -1,3 +1,5 @@
+lp=require("lprobe")
+
 function dumpv(ram, accfunc, sz, size)
   for i=0,size,sz do
     local v = ram[accfunc](ram, i);
