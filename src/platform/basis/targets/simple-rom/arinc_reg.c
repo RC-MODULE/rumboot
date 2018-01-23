@@ -1,67 +1,26 @@
+//-----------------------------------------------------------------------------
+//  This program is for checking ARINC429 registers.
+// 
+//    Test duration (RTL): < 
+//-----------------------------------------------------------------------------
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <string.h>
+
 #include <rumboot/printf.h>
-#include <rumboot/platform.h>
 #include <rumboot/io.h>
-#include <platform/defs.h>
-
-#define CHANNEL_EN			0x0004
-#define CHANNEL_DIS			0x0008
-#define CHANNEL_RST			0x000C
-#define PARITY_BIT			0x0010
-#define PARITY_ODD			0x0014
-#define TEST_EN				0x0018
-
-#define WAIT_SIG_RX			0x001C
-#define TMR_MASK_RX			0x0020
-#define SW_SIG_RX			0x0024
-#define WAIT_TMR_TX			0x0028
-#define SW_SIG_TX			0x002C
-#define LABEL_EN_RX			0x0030
-#define AXI_CTRL			0x0034
-#define FIFO_EN_RX			0x0038
-#define LAST_WD_TMR			0x003C
-#define INT_TX				0x0040
-#define INT_RX				0x0044
-
-#define STAT_E_TX			0x1280
-#define STAT_O_TX			0x1300
-#define TRF_E_TX			0x1380
-#define TLF_E_TX			0x1400
-#define TRL_E_TX			0x1480
-#define TRF_O_TX			0x1500
-#define TLF_O_TX			0x1580
-#define TRL_O_TX			0x1600
-
-#define STAT_E_RX			0x1A80
-#define STAT_O_RX			0x1B00
-#define TRF_E_RX			0x1B80
-#define TLF_E_RX			0x1C00
-#define TRL_E_RX			0x1C80
-#define TRF_O_RX			0x1D00
-#define TLF_O_RX			0x1D80
-#define TRL_O_RX			0x1E00
-#define LABEL_RX			0x1E80
-#define RNUM_RX				0x1F00
-
-#define FREQ_TX				0x0440
-#define FREQ_RX				0x0c40
-#define SELF_RX				0x0C80
-
-
-#define ARINC_OK			0
-#define ARINC_FAILED		1
-
-#define TEST_OK				0
-#define TEST_ERROR			1
-
-#define ARINC_IRQ			0
-#define ARINC_TIMEOUT		100000
-
+#include <devices/arinc.h>
+#include <rumboot/irq.h>
+#include <platform/devices.h>
 
 int arinc_rst (uint32_t arinc_base_addr){
 	uint32_t tmp_en ;
 	uint32_t tmp;
 	uint32_t tmp_e;
+	uint32_t tmp_en_p;	
 	tmp_en = 0x0;
+	tmp_en_p=0xffffffff;
     int i;
 	rumboot_printf ("TEST ARINC429 REG \n");
 	rumboot_printf (" CHECK REG RST ARINC \n");
@@ -84,7 +43,7 @@ int arinc_rst (uint32_t arinc_base_addr){
 
 	tmp = ioread32(ARINC_BASE + PARITY_ODD );
 	//rumboot_printf("PARITY_ODD=0x%x\n", tmp);
-	if (tmp_en !=tmp ){
+	if (tmp_en_p !=tmp ){
 	rumboot_printf("PARITY_ODD=0x%x\n", tmp);
 	return ARINC_FAILED; }
 
@@ -119,10 +78,11 @@ int arinc_rst (uint32_t arinc_base_addr){
 	if (tmp_en !=tmp ){
 	rumboot_printf("LABEL_EN_RX=0x%x\n", tmp);
 	return ARINC_FAILED;}
-
+	
+    tmp_en_p = 0x0c060;
 	tmp_e = ioread32(ARINC_BASE + AXI_CTRL );
 	tmp = 0x3ffff & tmp_e;
-	if (tmp_en !=tmp ){
+	if (tmp_en_p !=tmp ){
 	rumboot_printf("AXI_CTRL=0x%x\n", tmp);
 	return ARINC_FAILED;}
 
