@@ -148,10 +148,9 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
   )
   
   add_rumboot_target(
-    SNAPSHOT default
     CONFIGURATION IRAM
-    FILES simple-iram/can_adapter_0_test.c
-    NAME can_adapter_0_test
+    FILES can-adapter/can_adapter_0_test.c
+    TIMEOUT 300 us
     IRUN_FLAGS +can_plus_adapter
   )
 
