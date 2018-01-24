@@ -153,6 +153,13 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     TIMEOUT 300 us
     IRUN_FLAGS +can_plus_adapter
   )
+  
+ add_rumboot_target(
+   CONFIGURATION IRAM
+   FILES can-adapter/can_adapter_1_test.c
+   TIMEOUT 150 us
+   IRUN_FLAGS +can_plus_adapter
+  )
 
   add_rumboot_target(
       SNAPSHOT default
