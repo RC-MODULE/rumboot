@@ -146,7 +146,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
           PREFIX "bootrom"
           NAME "production"
   )
-  
+
   add_rumboot_target(
     CONFIGURATION IRAM
     FILES can-adapter/can_adapter_0_test.c
@@ -162,6 +162,15 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       CFLAGS -Dincrease_test_duration=1
       IRUN_FLAGS +pcie_line_interference
     )
+
+    add_rumboot_target(
+        SNAPSHOT default
+        CONFIGURATION IRAM
+        FILES simple-iram/muart_test.c
+        NAME muart_test
+        CFLAGS -Dincrease_test_duration=1
+        #IRUN_FLAGS +pcie_line_interference
+      )
 
   add_rumboot_target(
       SNAPSHOT default
@@ -289,6 +298,7 @@ file(GLOB PLATFORM_SOURCES
     ${CMAKE_SOURCE_DIR}/src/lib/drivers/pcie_test_lib.c
     ${CMAKE_SOURCE_DIR}/src/lib/drivers/dma_test_lib.c
     ${CMAKE_SOURCE_DIR}/src/lib/drivers/dit_lib.c
+    ${CMAKE_SOURCE_DIR}/src/lib/drivers/muart.c
 )
 
 macro(RUMBOOT_PLATFORM_SET_COMPILER_FLAGS)

@@ -29,6 +29,8 @@
  #define CAN0_BASE                0x01020000
  #define CAN1_BASE                0x01028000
  #define TSNS_BASE                0x01032000
+ #define UART0_BASE               0x01044000
+ #define UART1_BASE               0x01045000
  #define I2C0_BASE                0x01046000
  #define I2C1_BASE                0x01047000
  #define DIT0_BASE                0x01048000
@@ -59,6 +61,7 @@
  #define GPIO2_BASE               0x0109A000
  #define GPIO3_BASE               0x0109B000
  #define GPIO4_BASE               0x0109C000
+
 /**
  * @}
  */
