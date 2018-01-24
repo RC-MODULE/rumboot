@@ -62,7 +62,9 @@ if (NOT LUA_VERSION MATCHES "Lua\ 5.1")
   message(FATAL_ERROR "We need lua 5.1, you have: ${LUA_VERSION}")
 endif()
 
-SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Os -Wall -fno-omit-frame-pointer")
+
+
+SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Os -g -Wall -mapcs-frame -fno-omit-frame-pointer")
 SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DROMBOOT_VERSION=\\\"${GIT_BRANCH}-${GIT_REVISION}\\\"")
 SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DROMBOOT_BUILD_TYPE=\\\"${CMAKE_BUILD_TYPE}\\\"")
 SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DROMBOOT_PLATFORM=\\\"${RUMBOOT_PLATFORM}\\\"")
@@ -102,6 +104,13 @@ else()
   message("Debugging:          Disabled")
 endif()
 
+if (RUMBOOT_TRACE)
+  SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -finstrument-functions")
+  ADD_SOURCE("src/lib/trace.c")
+  message("Function tracing:   Enabled")
+else()
+  message("Function tracing:   Disabled")
+endif()
 
 RUMBOOT_PLATFORM_PRINT_SUMMARY()
 
@@ -133,6 +142,7 @@ ADD_SOURCE("src/lib/algo/heatshrink_decoder.c")
 ADD_SOURCE("src/lib/algo/heatshrink_encoder.c")
 ADD_SOURCE("src/lib/bootsource.c")
 ADD_SOURCE("src/lib/bootimage.c")
+
 
 if (NOT RUMBOOT_PLATFORM MATCHES native)
     ADD_SOURCE(src/rumboot_main.c)

@@ -9,7 +9,7 @@
 #include <arch/arm/irq_macros.h>
 
 
-void rumboot_platform_event_raise(enum rumboot_simulation_event event,
+__attribute__((no_instrument_function)) void rumboot_platform_event_raise(enum rumboot_simulation_event event,
 				  uint32_t *data, uint32_t len)
 {
 	int i;
@@ -20,7 +20,8 @@ void rumboot_platform_event_raise(enum rumboot_simulation_event event,
 	}
 }
 
-enum rumboot_simulation_event rumboot_platform_event_get(
+ __attribute__((no_instrument_function)) enum rumboot_simulation_event
+	rumboot_platform_event_get(
 				  volatile uint32_t **data)
 {
 	while(!rumboot_platform_runtime_info.in.opcode);;
@@ -29,36 +30,49 @@ enum rumboot_simulation_event rumboot_platform_event_get(
 	return rumboot_platform_runtime_info.in.opcode;
 }
 
-void rumboot_platform_event_clear()
+__attribute__((no_instrument_function)) void rumboot_platform_event_clear()
 {
 	rumboot_platform_runtime_info.in.opcode = 0;
 }
 
-static inline void raise_event_fast(enum rumboot_simulation_event event, uint32_t data)
+__attribute__((no_instrument_function)) static inline void raise_event_fast(enum rumboot_simulation_event event, uint32_t data)
 {
 	rumboot_platform_runtime_info.out.data[0] = data;
 	rumboot_platform_runtime_info.out.opcode = event;
 }
 
-void rumboot_platform_trace(void *pc)
+__attribute__((no_instrument_function)) void rumboot_platform_trace(void *pc)
 {
 	raise_event_fast(EVENT_TRACE, (uint32_t) pc);
 }
 
-void rumboot_platform_perf(const char *tag)
+__attribute__((no_instrument_function)) void rumboot_platform_perf(const char *tag)
 {
 	raise_event_fast(EVENT_PERF, (uint32_t) tag);
 }
 
 
-void rumboot_platform_putchar(uint8_t c)
+void __attribute__((no_instrument_function)) rumboot_platform_putchar(uint8_t c)
 {
 	raise_event_fast(EVENT_STDOUT, c);
 }
 
 
 #ifdef RUMBOOT_PRINTF_ACCEL
-void __attribute__((optimize("-O0"))) rumboot_printf(const char *fmt, ...)
+
+
+ __attribute__((no_instrument_function)) __attribute__((optimize("-O0"))) void do_memset(void *ptr, ...)
+{
+	raise_event_fast(EVENT_MEMSET, (uint32_t) __builtin_frame_address(0));
+}
+
+__attribute__((no_instrument_function)) void *memset(void *s, int c, size_t n)
+{
+	do_memset(s, c, n);
+	return s;
+}
+
+ __attribute__((no_instrument_function)) __attribute__((optimize("-O0"))) void rumboot_printf(const char *fmt, ...)
 {
 	/* va-arg func sends r0-r3 registers to stack in prologue
 	 * 00000384 <rumboot_sim_printf>:
@@ -85,4 +99,21 @@ void rumboot_platform_dump_region(const char *filename, uint32_t addr, uint32_t 
 {
 	uint32_t data[] = { (uint32_t) filename, addr, len };
 	rumboot_platform_event_raise(EVENT_DOWNLOAD, data, ARRAY_SIZE(data));
+}
+
+
+void __attribute__((noreturn)) rumboot_platform_panic(const char *why, ...)
+{
+	uint32_t *fp = __builtin_frame_address(0);
+
+	if (why) {
+        va_list ap;
+        rumboot_printf("PANIC: ");
+    	va_start(ap, why);
+        rumboot_vprintf(why, ap);
+    	va_end(ap);
+    }
+
+    raise_event_fast(EVENT_STACKTRACE, (uint32_t) fp);
+	exit(1);
 }

@@ -42,6 +42,8 @@ enum rumboot_simulation_event {
     EVENT_PERF, /** Performance metric checkpoint */
     EVENT_DOWNLOAD, /** Request file download from memory */
     EVENT_LPROBE, /** Lprobe data IO event */
+    EVENT_MEMSET, /** memset substitution */
+    EVENT_STACKTRACE, /** Tells environment to trace the stack */
 };
 
 
