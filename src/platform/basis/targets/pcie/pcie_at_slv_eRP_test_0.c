@@ -196,17 +196,21 @@ uint32_t at_slv_test_0 ()
             //  Write data near bounds of region and in middle
             //  through PCIe, external PCIe and address translators.
             //-------------------------------------------------------------
-            *((uint32_t*) base_addr) = (uint64_t) base_addr ;
-            *((uint32_t*) end_addr ) = (uint64_t) end_addr  ;
-            *((uint32_t*) mid_addr ) = (uint64_t) mid_addr  ;
+            *((uint32_t*) base_addr) = base_addr ;
+            *((uint32_t*) end_addr ) = end_addr  ;
+            *((uint32_t*) mid_addr ) = mid_addr  ;
+            
+            *((uint32_t*) base_addr + 0x1) = 0x0 ;
+            *((uint32_t*) end_addr  + 0x1) = 0x0 ;
+            *((uint32_t*) mid_addr  + 0x1) = 0x0 ;
             //-------------------------------------------------------------
             //  Read data near bounds of region and in middle
             //  through PCIe, external PCIe and address translators.
             //  And check if it is correct.
             //-------------------------------------------------------------
-            if ((*((uint32_t*) base_addr) != (uint64_t) base_addr) ||
-                (*((uint32_t*) end_addr ) != (uint64_t) end_addr ) ||
-                (*((uint32_t*) mid_addr ) != (uint64_t) mid_addr ))
+            if ((*((uint32_t*) base_addr) != base_addr) ||
+                (*((uint32_t*) end_addr ) != end_addr ) ||
+                (*((uint32_t*) mid_addr ) != mid_addr ))
                 return -1;
             //-------------------------------------------------------------
             //  Read data near bounds of region and in middle
@@ -216,9 +220,9 @@ uint32_t at_slv_test_0 ()
             direct_base_addr = (base_addr_array [i] & (~0xFFF)) + (tran_addr_array [i] & (~0xFFF)) + (base_addr_array [i] & 0xFFF);
             direct_end_addr  = (end_addr_array  [i] & (~0xFFF)) + (tran_addr_array [i] & (~0xFFF)) + (end_addr_array  [i] & 0xFFF);
             direct_mid_addr  = ((direct_base_addr >> 1) + (direct_end_addr >> 1)) & (~0x7);
-            if ((*((uint32_t*) direct_base_addr) != (uint64_t) base_addr) ||
-                (*((uint32_t*) direct_end_addr ) != (uint64_t) end_addr ) ||
-                (*((uint32_t*) direct_mid_addr ) != (uint64_t) mid_addr ))
+            if ((*((uint32_t*) direct_base_addr) != base_addr) ||
+                (*((uint32_t*) direct_end_addr ) != end_addr ) ||
+                (*((uint32_t*) direct_mid_addr ) != mid_addr ))
                     return -1;
             //-------------------------------------------------------------
             //  Clear data in DDR

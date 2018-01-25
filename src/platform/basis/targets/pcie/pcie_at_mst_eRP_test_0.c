@@ -194,9 +194,13 @@ uint32_t at_mst_test_0 ()
             //  Write data near bounds of region and in middle
             //  through PCIe, external PCIe and address translators.
             //-------------------------------------------------------------
-            *((uint32_t*) base_addr) = (uint64_t) base_addr ;
-            *((uint32_t*) end_addr ) = (uint64_t) end_addr  ;
-            *((uint32_t*) mid_addr ) = (uint64_t) mid_addr  ;
+            *((uint32_t*) base_addr) = base_addr ;
+            *((uint32_t*) end_addr ) = end_addr  ;
+            *((uint32_t*) mid_addr ) = mid_addr  ;
+            
+            *((uint32_t*) base_addr + 0x1) = 0x0 ;
+            *((uint32_t*) end_addr  + 0x1) = 0x0 ;
+            *((uint32_t*) mid_addr  + 0x1) = 0x0 ;
             //-------------------------------------------------------------
             //  Read data near bounds of region and in middle
             //  through PCIe, external PCIe and address translators.
