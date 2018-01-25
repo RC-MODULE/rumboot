@@ -63,8 +63,10 @@ if (NOT LUA_VERSION MATCHES "Lua\ 5.1")
 endif()
 
 
-
-SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Os -g -Wall -mapcs-frame -fno-omit-frame-pointer")
+if (${RUMBOOT_PLATFORM} STREQUAL "basis")
+   SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mapcs-frame")
+endif()
+SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Os -g -Wall -fno-omit-frame-pointer")
 SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DROMBOOT_VERSION=\\\"${GIT_BRANCH}-${GIT_REVISION}\\\"")
 SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DROMBOOT_BUILD_TYPE=\\\"${CMAKE_BUILD_TYPE}\\\"")
 SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DROMBOOT_PLATFORM=\\\"${RUMBOOT_PLATFORM}\\\"")
