@@ -43,7 +43,11 @@ __attribute__((no_instrument_function)) static inline void raise_event_fast(enum
 
 __attribute__((no_instrument_function)) void rumboot_platform_trace(void *pc)
 {
-	raise_event_fast(EVENT_TRACE, (uint32_t) pc);
+//	RUMBOOT_ATOMIC_BLOCK() {
+    	rumboot_platform_runtime_info.out.data[0] = (uint32_t) (pc);
+    	rumboot_platform_runtime_info.out.data[1] = rumboot_platform_runtime_info.nestlevel;
+		rumboot_platform_runtime_info.out.opcode = EVENT_TRACE;
+//	}
 }
 
 __attribute__((no_instrument_function)) void rumboot_platform_perf(const char *tag)

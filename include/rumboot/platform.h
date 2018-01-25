@@ -198,6 +198,8 @@ struct rumboot_runtime_info {
     void *irq_handler_table;
     /** Pointer to irq default handler */
     void (*irq_def_hndlr)(int irq);
+    /** Level of function nesting (used by function tracing code) */
+    int nestlevel;
 } __attribute__((packed));
 
 /**
