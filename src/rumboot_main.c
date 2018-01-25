@@ -21,10 +21,17 @@ void rumboot_main()
      * 3. Calls main() function
      */
 
-     /* Initialize the runtime info */
-     memset(&rumboot_platform_runtime_info, 0x0, sizeof(rumboot_platform_runtime_info));
+     /* Initialize the runtime info, avoid memset since event system
+        is not up yet
+     */
      rumboot_platform_runtime_info.magic = 0xb00bc0de;
      rumboot_platform_runtime_info.current_heap_end = &rumboot_platform_heap_start;
+     rumboot_platform_runtime_info.in.opcode  = 0;
+     rumboot_platform_runtime_info.out.opcode = 0;
+     rumboot_platform_runtime_info.irq_handler_table = 0;
+     rumboot_platform_runtime_info.irq_def_hndlr = 0;
+     rumboot_platform_runtime_info.nestlevel = 0;
+     /* Start event processing ! */
      rumboot_platform_runtime_info.in.magic  = RUMBOOT_SYNC_MAGIC_IN;
      rumboot_platform_runtime_info.out.magic = RUMBOOT_SYNC_MAGIC_OUT;
 
