@@ -6,25 +6,14 @@
 #include <rumboot/testsuite.h>
 #include <rumboot/io.h>
 
-bool muart_loopback_test(uint32_t base)
-{
-	struct muart_conf cfg = {
-		.wlen			= WL_8,
-		.stp2			= STP2,
-		.is_even		= true,
-		.is_parity_available	= true,
-		.mode			= RS_232,
-    .cts_en = true,
-    .rts_en = true,
-		.is_loopback		= true,
-		.baud_rate		= 921600
-	};
+static bool muart_test_cfg(uint32_t base, const struct muart_conf* cfg) {
 
 	char etalon_ch = 'x';
   int buf_size = 1;
 
 	rumboot_printf("init\n");
-	muart_init(base, &cfg);
+	muart_init(base, cfg);
+
 	rumboot_printf("muart enable\n");
 	muart_enable(base);
 
@@ -32,8 +21,6 @@ bool muart_loopback_test(uint32_t base)
 	int count = buf_size;
 	while (count--)
 		muart_write_char(base, etalon_ch);
-
-	rumboot_printf("FIFO STATE: %x\n", ioread32(base + 0x10));
 
 	rumboot_printf("read char\n");
 	count = buf_size;
@@ -53,12 +40,45 @@ bool muart_loopback_test(uint32_t base)
   return true;
 }
 
+bool muart_loopback_test(uint32_t base)
+{
+	const struct muart_conf cfg = {
+		.wlen			= WL_8,
+		.stp2			= STP2,
+		.is_even		= true,
+		.is_parity_available	= true,
+		.mode			= RS_232,
+    .cts_en = false,
+    .rts_en = false,
+		.is_loopback		= true,
+		.baud_rate		= 921600
+	};
+
+	return muart_test_cfg(base, &cfg);
+}
+
+bool muart_cts_rts_en_test(uint32_t base)
+{
+	const struct muart_conf cfg = {
+		.wlen			= WL_8,
+		.stp2			= STP2,
+		.is_even		= true,
+		.is_parity_available	= true,
+		.mode			= RS_232,
+    .cts_en = true,
+    .rts_en = true,
+		.is_loopback		= true,
+		.baud_rate		= 921600
+	};
+
+	return muart_test_cfg(base, &cfg);
+}
+
 /* Declare the testsuite structure */
 TEST_SUITE_BEGIN(muart_test, "Loopback ")
 TEST_ENTRY("UART_0", muart_loopback_test, UART0_BASE),
 TEST_ENTRY("UART_1", muart_loopback_test, UART1_BASE),
 TEST_SUITE_END();
-
 
 uint32_t main()
 {

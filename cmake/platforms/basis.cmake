@@ -153,7 +153,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     TIMEOUT 300 us
     IRUN_FLAGS +can_plus_adapter
   )
-  
+
  add_rumboot_target(
    CONFIGURATION IRAM
    FILES can-adapter/can_adapter_1_test.c
@@ -309,7 +309,7 @@ file(GLOB PLATFORM_SOURCES
 )
 
 macro(RUMBOOT_PLATFORM_SET_COMPILER_FLAGS)
-    SET(RUMBOOT_COMMON_FLAGS "-mapcs-frame -mcpu=cortex-a5 -mfpu=vfpv3-d16 -mfloat-abi=hard -marm -ffreestanding -Os -Werror -Wno-error=cpp")
+    SET(RUMBOOT_COMMON_FLAGS "-mcpu=cortex-a5 -mfpu=vfpv3-d16 -mfloat-abi=hard -marm -ffreestanding -Os -Werror -Wno-error=cpp")
     SET(CMAKE_C_FLAGS "${RUMBOOT_COMMON_FLAGS} -Wall -fdata-sections -ffunction-sections")
     SET(CMAKE_ASM_FLAGS ${RUMBOOT_COMMON_FLAGS})
     SET(CMAKE_OBJCOPY_FLAGS --gap-fill 0x00 --pad-to 32768)

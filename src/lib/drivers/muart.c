@@ -72,7 +72,7 @@ char muart_read_char(uint32_t base) {
 
   char ch = '\0';
 
-  while( ioread32(base + MUART_STATUS) & (1 << MUART_RERIS_i) ) ;;
+  while( ioread32(base + MUART_STATUS) & (1 << MUART_RERIS_i) );;
 
   ch = ioread8( base + MUART_DREC);
 

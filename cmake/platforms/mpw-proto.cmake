@@ -1,6 +1,7 @@
 SET(RUMBOOT_ARCH mpw-proto)
 
 find_program(PACKIMAGE rumboot-packimage REQUIRED)
+find_program (PYTHON python3 REQUIRED)
 
 file(GLOB PLATFORM_SOURCES
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/*.c
@@ -50,7 +51,7 @@ macro(rumboot_platform_generate_stuff_for_taget product)
 if(${TARGET_CONFIGURATION} STREQUAL "SECONDARY")
   add_custom_target(
     ${product}.img ALL
-    COMMAND python3 ${CMAKE_SOURCE_DIR}/scripts/rumbootpackimage.py -i ${product}.bin
+    COMMAND ${PYTHON} ${CMAKE_SOURCE_DIR}/scripts/rumbootpackimage.py -i ${product}.bin
     COMMENT "Packing image ${product}.img"
     DEPENDS ${product}.bin
   )

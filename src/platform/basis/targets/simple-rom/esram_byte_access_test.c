@@ -27,9 +27,9 @@ int esram_byte_access_test ()
     volatile char            data_8bit   = 0x5A               ;
     volatile short int       data_16bit  = 0x486B             ;
     volatile long long int   data_64bit  = 0x1234567890ABCDEF ;
-    
+
     clear_space (addr_first, addr_last);
-    
+
     (*(char *) 0x00048000) = data_8bit;
     if ((*(volatile char *) 0x00048000) != data_8bit)
         return -1;
@@ -54,7 +54,7 @@ int esram_byte_access_test ()
     (*(char *) 0x00048007) = data_8bit + 7;
     if ((*(volatile char *) 0x00048007) != data_8bit + 7)
         return -1;
-    
+
     (*(short int *) 0x00048000) = data_16bit;
     if ((*(volatile short int *) 0x00048000) != data_16bit)
         return -1;
@@ -67,15 +67,15 @@ int esram_byte_access_test ()
     (*(short int *) 0x00048006) = data_16bit + 3;
     if ((*(volatile short int *) 0x00048006) != data_16bit + 3)
         return -1;
-    
+
     (*(long long int *) 0x00048000) = data_64bit;
     if ((*(volatile long long int *) 0x00048000) != data_64bit)
         return -1;
     (*(long long int *) 0x00048008) = data_64bit + 1;
     if ((*(volatile long long int *) 0x00048008) != data_64bit + 1)
         return -1;
-    
-    
+
+
     return 0;
 }
 
@@ -91,7 +91,6 @@ int main ()
         return -1;
     if (esram_byte_access_test () != 0)
         return -1;
-        
+
     return 0;
 }
-
