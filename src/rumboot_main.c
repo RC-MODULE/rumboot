@@ -8,9 +8,11 @@ extern int main();
 
 #include <rumboot/printf.h>
 struct rumboot_runtime_info
-     __attribute__((section (".rumboot_platform_runtime_info")))
-     rumboot_platform_runtime_info;
+__attribute__((section(".rumboot_platform_runtime_info")))
+rumboot_platform_runtime_info;
 
+
+extern void __libc_init_array (void);
 void rumboot_main()
 {
     /*
@@ -40,14 +42,17 @@ void rumboot_main()
           memset(&rumboot_platform_bss_start, 0x0, &rumboot_platform_bss_end - &rumboot_platform_bss_start);
      #endif
 
-     /* Call Platform-specific setup code (e.g. init the event system) */
-     rumboot_platform_setup();
-
      /* Make sure IRQs are off */
      rumboot_irq_cli();
 
      /* Initialize interrupt controller */
      rumboot_platform_irq_init();
+
+     /* Call Platform-specific setup code (e.g. init the event system) */
+     rumboot_platform_setup();
+
+     /* Run constructors */
+     __libc_init_array();
 
      /* Tell environment that we're done with startup */
      rumboot_platform_perf(NULL);
@@ -55,7 +60,9 @@ void rumboot_main()
      /* call main() */
      int ret = main();
 
-     /* Now, let's handle the exit code from main */
+     /*  Now, let's handle the exit code from main
+      *  This will also call destructors
+      */
      exit(ret);
 
      /* Finally, if we're here - something didn't work out, loop forever */

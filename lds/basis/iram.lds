@@ -7,12 +7,14 @@ MEMORY
 
 SECTIONS
 {
+
  .rwx : {
   KEEP(*(.header))
   KEEP(*(.text.startup))
   *(.text)
   *(.rodata)
   *(.data)
+
   rumboot_platform_bss_start = .;
   *(.bss)
   *(.bss.*)
@@ -50,7 +52,21 @@ SECTIONS
   rumboot_platform_spl_end = .;
  } > IM0
 
- .data.esram1 0x60000 : {*(data.esram1)} > IM0
+ .preinit_array     :
+ {
+   PROVIDE_HIDDEN (__preinit_array_start = .);
+   KEEP (*(.preinit_array*))
+   PROVIDE_HIDDEN (__preinit_array_end = .);
+ } > IM0
+
+ .init_array :
+ {
+   PROVIDE_HIDDEN (__init_array_start = .);
+   KEEP (*(SORT(.init_array.*)))
+   KEEP (*(.init_array*))
+   PROVIDE_HIDDEN (__init_array_end = .);
+ } > IM0
+
 
  .runtime 0x7f000 (NOLOAD): {
   /* Runtime info is at the very top of iram */
