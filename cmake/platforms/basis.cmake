@@ -6,6 +6,8 @@ set(RUMBOOT_PLATFORM_TARGET_DIR ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATF
 set(RUMBOOT_PLATFORM_DEFAULT_LDS basis/rom.lds)
 set(RUMBOOT_PLATFORM_DEFAULT_SNAPSHOT default)
 
+
+
 #These are configurations for our binaries
 rumboot_add_configuration(
   ROM
@@ -26,7 +28,7 @@ rumboot_add_configuration (
   FILES ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c
   CFLAGS -DRUMBOOT_PRINTF_ACCEL
   BOOTROM bootrom-stub
-  FEATURES LUA
+  FEATURES LUA COVERAGE
 )
 
 rumboot_add_configuration(
@@ -93,11 +95,6 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       CONFIGURATION IRAM
       PREFIX irq-iram
       TESTGROUP short
-    )
-
-    add_directory_with_targets( lua/
-      CONFIGURATION IRAM
-      PREFIX lua
     )
 
     add_directory_with_targets(lua/

@@ -141,7 +141,8 @@ ADD_SOURCE("src/lib/algo/heatshrink_decoder.c")
 ADD_SOURCE("src/lib/algo/heatshrink_encoder.c")
 ADD_SOURCE("src/lib/bootsource.c")
 ADD_SOURCE("src/lib/bootimage.c")
-
+ADD_SOURCE("src/lib/gcov.c")
+ADD_SOURCE("src/lib/gcov-gcc-4.7.c")
 
 if (NOT RUMBOOT_PLATFORM MATCHES native)
     ADD_SOURCE(src/rumboot_main.c)
