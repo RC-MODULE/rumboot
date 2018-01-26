@@ -1,7 +1,7 @@
 SET(RUMBOOT_ARCH mpw-proto)
 
 find_program(PACKIMAGE rumboot-packimage REQUIRED)
-find_program (PYTHON python3 REQUIRED)
+find_program (PYTHON NAMES python3 python3.6 REQUIRED)
 
 file(GLOB PLATFORM_SOURCES
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/*.c
