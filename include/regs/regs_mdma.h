@@ -1,0 +1,61 @@
+#ifndef MDMA__
+#define MDMA__
+
+//WRITE CHANNEL
+#define RX_STATUS_W 0x100
+#define RX_IRQ_MASK_W 0x104
+#define RX_STATE_W 0x108
+#define RX_SETTINGS_W 0x10C
+#define RX_SENSE_LIST_W 0x110
+#define RX_IGNORE_EVENTS_W 0x114
+#define RX_SW_RST_W 0x118
+#define RX_ENABLE_W 0x11C
+#define RX_CANCEL_W 0x120
+#define RX_DESC_ADDR_W 0x124
+#define RX_CUR_ADDR_W 0x128
+#define RX_ALEN_W 0x12C
+#define RX_ACACHE_W 0x130
+#define RX_APROT_W 0x134
+#define RX_ALOCK_W 0x138
+#define RX_RRESP_W 0x13C
+#define RX_RAXI_ERR_ADDR_W 0x140
+#define RX_BRESP_W 0x144
+#define RX_WAXI_ERR_ADDR_W 0x148
+#define RX_AWLEN 0x14C
+#define RX_AWCACHE 0x150
+#define RX_AWPROT 0x154
+#define RX_AWLOCK 0x158
+#define RX_BRESP 0x15C
+#define RX_WAXI_ERR_ADDR 0x160
+#define RX_BYTE_PERMUTATION 0x164
+
+//READ CHANNEL
+#define TX_STATUS_R 0x200
+#define TX_IRQ_MASK_R 0x204
+#define TX_STATE_R 0x208
+#define TX_SETTINGS_R 0x20C
+#define TX_SENSE_LIST_R 0x210
+#define TX_IGNORE_EVENTS_R 0x214
+#define TX_SW_RST_R 0x218
+#define TX_ENABLE_R 0x21C
+#define TX_CANCEL_R 0x220
+#define TX_DESC_ADDR_R 0x224
+#define TX_CUR_DESC_ADDR_R 0x228
+#define TX_CUR_ADDR_R 0x22C
+#define TX_ALEN_R 0x230
+#define TX_ACACHE_R 0x234
+#define TX_APROT_R 0x238
+#define TX_ALOCK_R 0x23C
+#define TX_RRESP_R 0x240
+#define TX_RAXI_ERR_ADDR_R 0x244
+#define TX_BRESP_R 0x248
+#define TX_WAXI_ERR_ADDR_R 0x24C
+#define TX_ARLEN 0x250
+#define TX_ARCACHE 0x254
+#define TX_ARPROT 0x258
+#define TX_ARLOCK 0x25C
+#define TX_RRESP 0x260
+#define TX_RAXI_ERR_ADDR 0x264
+#define TX_BYTE_PERMUTATION 0x268
+
+#endif

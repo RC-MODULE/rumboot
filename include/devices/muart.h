@@ -52,6 +52,7 @@ struct muart_conf {
 	bool cts_en;
 	bool			is_loopback;
 	uint32_t	baud_rate;
+	bool dma_en;
 };
 
 /**

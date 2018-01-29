@@ -44,7 +44,7 @@ void muart_init(const uint32_t base, const struct muart_conf *conf)
   //if (conf->cts_en) ctrl |= (1<<MUART_CTSEn_i);
   //if (conf->rts_en) ctrl |= (1<<MUART_RTSEn_i);
 
-  ctrl |= (1 << MUART_APB_ON_i);
+  if(conf->dma_en) ctrl &= ~(1 << MUART_APB_ON_i);
 
 	set_reg(base, MUART_CTRL, ctrl);
 
