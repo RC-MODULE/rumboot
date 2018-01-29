@@ -30,9 +30,11 @@ int _gettimeofday(struct timeval *__tp, void *__tzp)
 	return -1;
 }
 
+extern void __libc_fini_array (void);
 /* Override newlib exit */
 void exit(int status)
 {
+    __libc_fini_array();
 	_exit(status);
 }
 
@@ -104,6 +106,7 @@ int _lseek(int file, int ptr, int dir)
 
 int _open( const char *name, int flags, int mode)
 {
+    rumboot_printf("OPEN: %s\n", name);
     return -1;
 }
 

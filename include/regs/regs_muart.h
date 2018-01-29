@@ -39,5 +39,6 @@
 #define MUART_CTSEn_i 5
 #define MUART_RERIS_i 6
 #define MUART_TERIS_i 7
+#define MUART_APB_ON_i 15
 
 #endif

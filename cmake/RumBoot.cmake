@@ -50,6 +50,9 @@ macro(generate_stuff_for_target product)
 endmacro()
 
 
+set(RUMBOOT_COVER_CFLAGS -DRUMBOOT_COVERAGE=1 -fprofile-arcs -ftest-coverage)
+set(RUMBOOT_COVER_LFLAGS --coverage)
+
 macro(rumboot_add_configuration name)
   message(STATUS "Adding configuration ${name}")
   set(options DEFAULT)
@@ -62,6 +65,17 @@ macro(rumboot_add_configuration name)
     set(RUMBOOT_PLATFORM_DEFAULT_CONFIGURATION ${name})
     message(STATUS "Default configuration set to: ${RUMBOOT_PLATFORM_DEFAULT_CONFIGURATION}")
   endif()
+
+  list (FIND CONFIGURATION_${name}_FEATURES "COVERAGE" _index)
+  if (${_index} GREATER -1 AND RUMBOOT_COVERAGE)
+    message(STATUS "Enabling coverage instrumentation for: ${name}")
+    set(CONFIGURATION_${name}_CFLAGS
+      ${CONFIGURATION_${name}_CFLAGS} ${RUMBOOT_COVER_CFLAGS})
+    set(CONFIGURATION_${name}_LDFLAGS
+    ${CONFIGURATION_${name}_LDFLAGS} ${RUMBOOT_COVER_LFLAGS})
+
+  endif()
+
 endmacro()
 
 macro(config_load_param conf param)
