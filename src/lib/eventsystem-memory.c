@@ -105,6 +105,11 @@ void rumboot_platform_dump_region(const char *filename, uint32_t addr, uint32_t 
 	rumboot_platform_event_raise(EVENT_DOWNLOAD, data, ARRAY_SIZE(data));
 }
 
+void rumboot_platform_store_gcda(const char *filename, uint32_t addr, uint32_t len)
+{
+	uint32_t data[] = { (uint32_t) filename, addr, len };
+	rumboot_platform_event_raise(EVENT_GCDA, data, ARRAY_SIZE(data));
+}
 
 void __attribute__((noreturn)) rumboot_platform_panic(const char *why, ...)
 {

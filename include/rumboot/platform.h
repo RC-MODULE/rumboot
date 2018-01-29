@@ -44,6 +44,7 @@ enum rumboot_simulation_event {
     EVENT_LPROBE, /** Lprobe data IO event */
     EVENT_MEMSET, /** memset substitution */
     EVENT_STACKTRACE, /** Tells environment to trace the stack */
+    EVENT_GCDA, /** Request to store coverage information */
 };
 
 
@@ -147,6 +148,18 @@ void rumboot_platform_request_file(const char *plusarg, uint32_t addr);
  * @param len      length of the buffer to dump
  */
 void rumboot_platform_dump_region(const char* filename, uint32_t addr, uint32_t len);
+
+/**
+ * Request simulation environment to save contents gcda data to a file to a file
+ * The simulation environment should take care of handling paths and copying gcno
+ * file to a relevant location
+ * 
+ * @param filename filaneme to create
+ * @param addr     physical address of buffer to dump
+ * @param len      length of the buffer to dump
+ */
+
+void rumboot_platform_store_gcda(const char *filename, uint32_t addr, uint32_t len);
 
 /**
  * Record a performance metric checkpoint with optional name.

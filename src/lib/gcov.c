@@ -23,24 +23,23 @@ void _fini()
 	while(info) {
 		len = gcov_convert_to_gcda(tmp, info);
 		const char *file = gcov_info_filename(info);
-		rumboot_platform_dump_region(file, (uint32_t) tmp, len);
+		rumboot_platform_store_gcda(file, (uint32_t) tmp, len);
 		info = gcov_info_next(info);
 	}
 #endif
 }
 
 struct gcov_info;
+static unsigned int gcov_version;
 void __gcov_init(struct gcov_info *info)
 {
-	static unsigned int gcov_version;
 	if (gcov_version == 0) {
-			gcov_version = gcov_info_version(info);
 			/*
 			 * Printing gcc's version magic may prove useful for debugging
 			 * incompatibility reports.
 			 */
+			gcov_version = gcov_info_version(info);
 			rumboot_printf("gcov: version magic: 0x%x\n", gcov_version);
 	}
-	rumboot_printf("%s\n", gcov_info_filename(info));
 	gcov_info_link(info);
 }
