@@ -6,14 +6,63 @@
 #include <rumboot/platform.h>
 #include <rumboot/bootheader.h>
 #include <platform/devices.h> 
+#include <platform/interrupts.h>
 
+/*struct adapter_instance{
+      int adapter_index;
+    };*/
+    
+/*static struct adapter_instance in[] = {
+    {
+        .adapter_index = 0
+    },
+    {
+        .adapter_index = 1
+    }
+};*/
+
+static void handler0(int irq, void *arg)
+{
+	volatile uint32_t *done = arg;
+    rumboot_printf("IRQ 0 arrived, arg %x, count %d\n", arg, (*done));
+	ioread32(CAN0_BASE + INTRP_FLAG_REG);
+    *done = 1;	
+}
+
+static void handler1(int irq, void *arg)
+{
+	volatile uint32_t *done = arg;
+	rumboot_printf("IRQ 1 arrived, arg %x, count %d\n", arg, (*done));
+    ioread32(CAN1_BASE + INTRP_FLAG_REG);	
+    *done = 2;
+}
 
 int main()
 {
-    unsigned int read_data;
-	rumboot_printf("This is can_adapter_1_test! It checks interrupt connection.\n");
+    rumboot_printf("This is can_adapter_1_test! It checks interrupt connection.\n");
+    volatile uint32_t *done = 0;
+    // Disable all interrupts
+	rumboot_irq_cli(); 
+    
+    // Create an IRQ table
+    struct rumboot_irq_entry *tbl = rumboot_irq_create(NULL);
 
-    //Interrupt enable reg init
+    // Set handler
+    rumboot_irq_set_handler(tbl, CAN0_INT, 0, handler0, (void*)&done);
+    rumboot_irq_set_handler(tbl, CAN1_INT, 0, handler1, (void*)&done);
+    
+    // Activate the table
+    rumboot_irq_table_activate(tbl);
+    rumboot_irq_enable(CAN0_INT);
+	rumboot_irq_enable(CAN1_INT);
+    
+    // Allow interrupt handling
+    rumboot_irq_sei(); 
+    
+    
+    // TEST
+    unsigned int read_data;
+	//Interrupt enable reg init
     iowrite32(1 <<   GBIE | 1 <<   BIIE, CAN0_BASE + INTRP_EN_REG); // Bus idle interrupt enable for CAN0
     iowrite32(1 <<   GBIE | 1 <<   BIIE, CAN1_BASE + INTRP_EN_REG); // Bus idle interrupt enable for CAN1
     
@@ -40,7 +89,22 @@ int main()
      {read_data=ioread32(CAN1_BASE + STATUS_REG);}
     rumboot_printf("CAN1 Bus Idle!\n");
     
+    //while (*done != 2) {}
+    // End of TEST
     
-    rumboot_printf("Goodbye from can_adapter_1_test!\n");
-	return 0;
+    // Deinit
+	rumboot_irq_table_activate(NULL);
+	rumboot_irq_free(tbl);
+    
+    if (*done==2)
+    {
+        rumboot_printf("TEST OK!\n");
+	    return 0;
+        }
+    else{
+        rumboot_printf("TEST FAIL!\n");
+        return -1;
+    } 
+    
+    
 }
