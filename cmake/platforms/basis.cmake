@@ -17,6 +17,17 @@ rumboot_add_configuration(
   LDFLAGS "-e rumboot_reset_handler"
   CFLAGS -DRUMBOOT_ONLY_STACK -DRUMBOOT_PRINTF_ACCEL
   PREFIX ROM
+  FEATURES ROMGEN
+)
+
+rumboot_add_configuration(
+  DROM
+  SNAPSHOT default
+  LDS basis/rom-with-data.lds
+  LDFLAGS "-e rumboot_reset_handler"
+  CFLAGS -DRUMBOOT_PRINTF_ACCEL -DRUMBOOT_DATA_FROM_ROM
+  PREFIX DROM
+  FEATURES ROMGEN COVERAGE
 )
 
 #These are configurations for im0 binaries
@@ -111,6 +122,12 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       CONFIGURATION IRAM
       PREFIX spl
       FEATURES STUB
+    )
+
+    add_rumboot_target(
+        CONFIGURATION DROM
+        FILES drom-check.c
+        NAME "hello-with-data"
     )
 
     add_rumboot_target(
@@ -320,7 +337,9 @@ function(RUMBOOT_PLATFORM_PRINT_SUMMARY)
 endfunction()
 
 macro(rumboot_platform_generate_stuff_for_taget product)
-  if (TARGET_CONFIGURATION STREQUAL "ROM")
+
+  list (FIND TARGET_FEATURES "ROMGEN" _index)
+  if (${_index} GREATER -1)
     add_custom_command(
       OUTPUT ${product}.hex/image_mem64_0.hex
       COMMAND mkdir -p ${product}.hex
