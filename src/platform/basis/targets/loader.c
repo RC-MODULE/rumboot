@@ -14,7 +14,7 @@
 
 #include <platform/devices.h>
 
-#if 1
+#if 0
 static bool spiflash_init_gpio_mux()
 {
 	/*TO DO!*/
@@ -45,6 +45,8 @@ static void eeprom_deinit_gpio_mux()
  * Order of array elements are very important!
  */
 const struct rumboot_bootsource arr[] = {
+    { /* Remove me */},
+#if 0
 	{
 		.name = "SDIO",
 		.base = SDIO0_BASE,
@@ -83,7 +85,7 @@ const struct rumboot_bootsource arr[] = {
 		.deinit_gpio_mux = eeprom_deinit_gpio_mux,
 		.load_again = eeprom_load_again,
 	},
-
+#endif
 	{ /*Sentinel*/ }
 };
 
