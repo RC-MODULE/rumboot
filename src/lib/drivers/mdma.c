@@ -6,21 +6,45 @@
 #include <regs/regs_mdma.h>
 #include <devices/mdma.h>
 
+static void dump_desc(struct desc_cfg *cfg)
+{
+	struct settings *set = cfg->set;
 
-void init_mdma(uint32_t base)
+	rumboot_printf("Settings. \n");
+	rumboot_printf("ownership: %d\n", set->ownership);
+	rumboot_printf("link: %d\n", set->link);
+	rumboot_printf("interrupt: %d\n", set->interrupt);
+	rumboot_printf("stop: %d\n", set->stop);
+	rumboot_printf("increment: %d\n", set->increment);
+	rumboot_printf("oer: %d\n", set->oer);
+	rumboot_printf("ber: %d\n", set->ber);
+	rumboot_printf("per: %d\n", set->per);
+	rumboot_printf("fer: %d\n", set->fer);
+
+	rumboot_printf("data address: %x\n", cfg->data_addr);
+	rumboot_printf("free run value: %x\n", cfg->free_run_val);
+}
+
+void mdma_init(uint32_t base)
 {
 	iowrite32(0x1, base + RX_ENABLE_W);
 	iowrite32(0x1, base + TX_ENABLE_R);
 }
 
-void set_rdma_table(uint32_t base, uint32_t table_addr)
+void mdma_set_rxtable(uint32_t base, struct table_cfg *cfg)
 {
-	iowrite32(table_addr, base + RX_DESC_ADDR_W);
+	uint32_t settings = 0x0;
+
+	iowrite32(settings | ((int)cfg->type << DESC_TYPE_i) | (cfg->desc_gap << DESC_GAP), base + RX_SETTINGS_W);
+	iowrite32(cfg->table_addr, base + RX_DESC_ADDR_W);
 }
 
-void set_wdma_table(uint32_t base, uint32_t table_addr)
+void mdma_set_wxtable(uint32_t base, struct table_cfg *cfg)
 {
-	iowrite32(table_addr, base + TX_DESC_ADDR_R);
+	uint32_t settings = 0x0;
+
+	iowrite32(settings | ((int)cfg->type << DESC_TYPE_i) | (cfg->desc_gap << DESC_GAP), base + TX_SETTINGS_R);
+	iowrite32(cfg->table_addr, base + TX_DESC_ADDR_R);
 }
 
 #define OWNERSHIP_i 31
@@ -34,7 +58,7 @@ void set_wdma_table(uint32_t base, uint32_t table_addr)
 #define FER_i 23
 #define LENGTH_i 13
 
-enum ERR_CODE set_desc(uint32_t desc_addr, struct desc_cfg *cfg)
+enum ERR_CODE mdma_set_desc(uint32_t desc_addr, struct desc_cfg *cfg)
 {
 	rumboot_printf("Set descriptor.\n");
 
@@ -53,27 +77,29 @@ enum ERR_CODE set_desc(uint32_t desc_addr, struct desc_cfg *cfg)
 	desc_addr += 4;
 	iowrite64(free_run_val, desc_addr);
 
+	dump_desc(cfg);
+
 	return OK;
 }
 
-enum ERR_CODE get_desc(uint32_t desc_addr, struct desc_cfg *cfg)
+enum ERR_CODE mdma_get_desc(uint32_t desc_addr, struct desc_cfg *cfg)
 {
 	rumboot_printf("Get descriptor\n");
 
 	cfg->free_run_val = ioread64(desc_addr);
 	desc_addr += 8;
 
-  cfg->data_addr = ioread32(desc_addr);
+	cfg->data_addr = ioread32(desc_addr);
 	desc_addr += 8;
 
-  uint32_t settings = ioread32(desc_addr);
-  struct settings *set = cfg->set;
+	uint32_t settings = ioread32(desc_addr);
+	struct settings *set = cfg->set;
 
 	set->ownership = settings | (1 << OWNERSHIP_i);
 
 //  if (set->ownership == 1) return NOT_AVAILABLE;
 
-  set->link = settings | (1 << LINK_i);
+	set->link = settings | (1 << LINK_i);
 	set->interrupt = settings | (1 << INTERRUPT_i);
 	set->stop = settings | (1 << STOP_i);
 	set->increment = settings | (1 << INCREMENT_i);
@@ -84,21 +110,18 @@ enum ERR_CODE get_desc(uint32_t desc_addr, struct desc_cfg *cfg)
 	return OK;
 }
 
-void dump_desc(struct desc_cfg *cfg)
+bool mdma_wait_r(uint32_t base, enum EVENT_TYPE event)
 {
-	struct settings *set = cfg->set;
+	if (ioread32(base + RX_STATUS_W) & (1 << event))
+		return true;
+	else
+		return false;
+}
 
-	rumboot_printf("Settings. \n");
-	rumboot_printf("ownership: %d\n", set->ownership);
-	rumboot_printf("link: %d\n", set->link);
-	rumboot_printf("interrupt: %d\n", set->interrupt);
-	rumboot_printf("stop: %d\n", set->stop);
-	rumboot_printf("increment: %d\n", set->increment);
-	rumboot_printf("oer: %d\n", set->oer);
-	rumboot_printf("ber: %d\n", set->ber);
-	rumboot_printf("per: %d\n", set->per);
-	rumboot_printf("fer: %d\n", set->fer);
-
-	rumboot_printf("data address: %x\n", cfg->data_addr);
-	rumboot_printf("free run value: %x\n", cfg->free_run_val);
+bool mdma_wait_w(uint32_t base, enum EVENT_TYPE event)
+{
+	if (ioread32(base + TX_STATUS_R) & (1 << event))
+		return true;
+	else
+		return false;
 }

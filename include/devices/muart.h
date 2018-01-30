@@ -23,31 +23,31 @@
  * @{
  */
 
-enum word_length {
+enum WORD_LENGTH {
 	WL_5 = 0,
 	WL_6,
 	WL_7,
 	WL_8,
 };
 
-enum stop_bits_n {
+enum STOP_BITS_N {
 	STP1 = 0,
 	STP3_2,
 	STP2,
 };
 
-enum muart_mode {
+enum MUART_MODE {
 	RS_232 = 0,
 	RS_422,
 	RS_485
 };
 
 struct muart_conf {
-	enum word_length	wlen;
-	enum stop_bits_n	stp2;
+	enum WORD_LENGTH	wlen;
+	enum STOP_BITS_N	stp2;
 	bool			is_even;
 	bool			is_parity_available;
-	enum muart_mode		mode;
+	enum MUART_MODE mode;
 	bool rts_en;
 	bool cts_en;
 	bool			is_loopback;

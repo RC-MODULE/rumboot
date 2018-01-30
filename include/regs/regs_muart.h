@@ -41,4 +41,7 @@
 #define MUART_TERIS_i 7
 #define MUART_APB_ON_i 15
 
+#define MUART_RXFS_i 0
+#define MUART_TXFS_i 16
+
 #endif

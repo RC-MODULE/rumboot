@@ -58,4 +58,7 @@
 #define TX_RAXI_ERR_ADDR 0x264
 #define TX_BYTE_PERMUTATION 0x268
 
+#define DESC_TYPE_i 0
+#define DESC_GAP 16
+
 #endif

@@ -41,8 +41,8 @@ void muart_init(const uint32_t base, const struct muart_conf *conf)
 	if (conf->is_even) ctrl |= (1 << MUART_EPS);
 	if (conf->is_loopback) ctrl |= (1 << MUART_LBE_i);
 	if (conf->is_parity_available) ctrl |= (1 << MUART_PEN_i);
-  //if (conf->cts_en) ctrl |= (1<<MUART_CTSEn_i);
-  //if (conf->rts_en) ctrl |= (1<<MUART_RTSEn_i);
+  if (conf->cts_en) ctrl |= (1<<MUART_CTSEn_i);
+  if (conf->rts_en) ctrl |= (1<<MUART_RTSEn_i);
 
   if(conf->dma_en) ctrl &= ~(1 << MUART_APB_ON_i);
 
@@ -70,9 +70,9 @@ void muart_write_char(uint32_t base, char ch) {
 
 char muart_read_char(uint32_t base) {
 
-  char ch = '\0';
+  char ch = '1';
 
-  while( ioread32(base + MUART_STATUS) & (1 << MUART_RERIS_i) );;
+  while( (ioread32(base + MUART_FIFO_STATE) & 0xfff) != 0 ) ;;
 
   ch = ioread8( base + MUART_DREC);
 
