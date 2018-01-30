@@ -45,6 +45,7 @@ enum rumboot_simulation_event {
     EVENT_MEMSET, /** memset substitution */
     EVENT_STACKTRACE, /** Tells environment to trace the stack */
     EVENT_GCDA, /** Request to store coverage information */
+    EVENT_MEMCPY /** memcpy acceleration */
 };
 
 
@@ -153,7 +154,7 @@ void rumboot_platform_dump_region(const char* filename, uint32_t addr, uint32_t 
  * Request simulation environment to save contents gcda data to a file to a file
  * The simulation environment should take care of handling paths and copying gcno
  * file to a relevant location
- * 
+ *
  * @param filename filaneme to create
  * @param addr     physical address of buffer to dump
  * @param len      length of the buffer to dump
@@ -271,6 +272,10 @@ extern char rumboot_platform_bss_start;
  * End of bss section
  */
 extern char rumboot_platform_bss_end;
+
+extern char rumboot_data_start;
+extern char rumboot_data_end;
+extern char rumboot_rom_data;
 
 /**
  * Rumboot's entry point. Usually provided by startup assembly code.

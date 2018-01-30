@@ -42,6 +42,12 @@ void rumboot_main()
           memset(&rumboot_platform_bss_start, 0x0, &rumboot_platform_bss_end - &rumboot_platform_bss_start);
      #endif
 
+     #ifdef RUMBOOT_DATA_FROM_ROM
+          uint32_t len = (&rumboot_data_end - &rumboot_data_start);
+          rumboot_printf("Copy %d bytes of .data\n", len);
+          memcpy(&rumboot_data_start, &rumboot_rom_data, len);
+     #endif
+
      /* Make sure IRQs are off */
      rumboot_irq_cli();
 

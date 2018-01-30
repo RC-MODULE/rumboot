@@ -64,7 +64,6 @@ void __attribute__((no_instrument_function)) rumboot_platform_putchar(uint8_t c)
 
 #ifdef RUMBOOT_PRINTF_ACCEL
 
-
  __attribute__((no_instrument_function)) __attribute__((optimize("-O0"))) void do_memset(void *ptr, ...)
 {
 	raise_event_fast(EVENT_MEMSET, (uint32_t) __builtin_frame_address(0));
@@ -74,6 +73,17 @@ __attribute__((no_instrument_function)) void *memset(void *s, int c, size_t n)
 {
 	do_memset(s, c, n);
 	return s;
+}
+
+__attribute__((no_instrument_function)) __attribute__((optimize("-O0"))) void do_memcpy(void *ptr, ...)
+{
+   raise_event_fast(EVENT_MEMCPY, (uint32_t) __builtin_frame_address(0));
+}
+
+__attribute__((no_instrument_function)) void *memcpy(void *d, const void *s, size_t n)
+{
+   do_memcpy(d, s, n);
+   return d;
 }
 
  __attribute__((no_instrument_function)) __attribute__((optimize("-O0"))) void rumboot_printf(const char *fmt, ...)
