@@ -68,6 +68,7 @@ SECTIONS
      libgcc.a ( * )
      /* Make sure data & bss go to hell */
      *(.data)
+     *(.data.*)
      *(.bss)
      *(.bss.*)
      *(COMMON)
