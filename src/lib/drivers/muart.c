@@ -61,18 +61,19 @@ void muart_disable(uint32_t base)
 	reset_field(base, MUART_CTRL, MUART_MEN_i, 0);
 }
 
+#include <rumboot/printf.h>
 void muart_write_char(uint32_t base, char ch) {
 
-  while( ioread32(base + MUART_STATUS) & (1 << MUART_TXRIS_i) );;
+  while( (ioread32(base + MUART_FIFO_STATE) & 0x7ff0000) == 0x400 ) rumboot_printf("fifo state: %x\n", ioread32(base + MUART_FIFO_STATE));;
 
   iowrite8((uint8_t) ch, base + MUART_DTRANS);
 }
 
 char muart_read_char(uint32_t base) {
 
-  char ch = '1';
+  char ch = '\0';
 
-  while( (ioread32(base + MUART_FIFO_STATE) & 0xfff) != 0 ) ;;
+  while( (ioread32(base + MUART_FIFO_STATE) & 0xfff) == 0 ) rumboot_printf("fifo state: %x\n", ioread32(base + MUART_FIFO_STATE));
 
   ch = ioread8( base + MUART_DREC);
 

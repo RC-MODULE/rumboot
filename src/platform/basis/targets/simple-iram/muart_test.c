@@ -47,7 +47,7 @@ static bool transmit_data_throught_apb(struct base_addrs *addrs)
 
 static bool transmit_data_throught_dma(struct base_addrs *addrs)
 {
-	uint32_t mdma_base = MDMA0_BASE;
+	//uint32_t mdma_base = MDMA0_BASE;
 	uint32_t count = 16;
 	int i;
 	uint8_t rx_data[count];
@@ -62,27 +62,28 @@ static bool transmit_data_throught_dma(struct base_addrs *addrs)
 		tx_data[i] = 0x0;
 
 	struct settings set = { .ownership	= 0,.link = 0,
-				.interrupt	= 0,.stop = 1,.increment = 0 };
+				.interrupt	= 1,.stop = 1, .increment = 0, .length = 16 };
 
 	struct desc_cfg rx_desc = {
-		.set	= &set,.data_addr = (uint32_t)&rx_data,
+		.set	= &set,.data_addr = (uint32_t)&rx_data[0], .free_run_val = (int)NULL
 	};
 
 	struct desc_cfg tx_desc = {
-		.set	= &set,.data_addr = (uint32_t)&tx_data,
+		.set	= &set,.data_addr = (uint32_t)&tx_data[0], .free_run_val = (int)NULL,
 	};
 
 	struct table_cfg rx_tbl_cfg = {
-		.type	= NORMAL,.desc_gap = 0,.table_addr = (uint32_t)rx_tbl_addr
+		.type	= NORMAL,.desc_gap = 0, .table_addr = (uint32_t)rx_tbl_addr
 	};
 
 	struct table_cfg tx_tbl_cfg = {
-		.type	= NORMAL,.desc_gap = 0,.table_addr = (uint32_t)tx_tbl_addr
+		.type	= NORMAL,.desc_gap = 0, .table_addr = (uint32_t)tx_tbl_addr
 	};
 
-	mdma_init(mdma_base);
-	mdma_set_rxtable(mdma_base, &rx_tbl_cfg);
-	mdma_set_wxtable(mdma_base, &tx_tbl_cfg);
+	rumboot_printf("Set RX table.\n");
+	mdma_set_rxtable(addrs->base1, &rx_tbl_cfg);
+	rumboot_printf("Set WX table.\n");
+	mdma_set_wxtable(addrs->base2, &tx_tbl_cfg);
 
 	if (mdma_set_desc((uint32_t)rx_tbl_addr, &rx_desc) != OK)
 		return false;
@@ -90,11 +91,22 @@ static bool transmit_data_throught_dma(struct base_addrs *addrs)
 	if (mdma_set_desc((uint32_t)tx_tbl_addr, &tx_desc) != OK)
 		return false;
 
+	rumboot_printf("Init mdma1.\n");
+	mdma_init(addrs->base1);
+	rumboot_printf("Init mdma2.\n");
+	mdma_init(addrs->base2);
+
 	//if(!mdma_wait_r(mdma_base, INT_DESC_DONE) || !mdma_wait_w(mdma_base, INT_DESC_DONE))
-		//return false;
+	//return false;
+
+	//mdma_dump(mdma_base);
 
 	if (mdma_get_desc((uint32_t)tx_tbl_addr, &tx_desc) != OK)
 		return false;
+
+	for (i = 0; i < count; i++)
+		rumboot_printf("%x ", tx_data[i]);
+	rumboot_printf("\n");
 
 	if (memcmp(tx_data, rx_data, count) != 0)
 		return false;
@@ -112,10 +124,13 @@ static bool test_cfg(struct base_addrs *addrs, const struct muart_conf *cfg)
 	muart_enable(addrs->base1);
 	if (addrs->base1 != addrs->base2) muart_enable(addrs->base2);
 
-	if (cfg->dma_en)
-		transmit_data_throught_dma(addrs);
-	else
-		transmit_data_throught_apb(addrs);
+	if (cfg->dma_en) {
+		if (!transmit_data_throught_dma(addrs))
+			return false;
+	} else {
+		if (!transmit_data_throught_apb(addrs))
+			return false;
+	}
 
 	rumboot_printf("OK!\n");
 	return true;
@@ -131,27 +146,27 @@ static const struct muart_conf cfg = {
 	.rts_en			= false,
 	.is_loopback		= false,
 	.baud_rate		= 921600,
-	.dma_en = false
+	.dma_en			= false
 };
 
-static bool muart_loopback_test(uint32_t to_addrs)
-{
-	struct muart_conf muart = cfg;
-
-	muart.is_loopback = true;
-
-	return test_cfg((struct base_addrs *)to_addrs, &muart);
-}
-
-bool muart_cts_rts_en_test(uint32_t to_addrs)
-{
-	struct muart_conf muart = cfg;
-
-	muart.cts_en = true;
-	muart.rts_en = true;
-
-	return test_cfg((struct base_addrs *)to_addrs, &muart);
-}
+// static bool muart_loopback_test(uint32_t to_addrs)
+// {
+//      struct muart_conf muart = cfg;
+//
+//      muart.is_loopback = true;
+//
+//      return test_cfg((struct base_addrs *)to_addrs, &muart);
+// }
+//
+// bool muart_cts_rts_en_test(uint32_t to_addrs)
+// {
+//      struct muart_conf muart = cfg;
+//
+//      muart.cts_en = true;
+//      muart.rts_en = true;
+//
+//      return test_cfg((struct base_addrs *)to_addrs, &muart);
+// }
 
 bool muart_mdma_test(uint32_t to_addrs)
 {
@@ -162,19 +177,19 @@ bool muart_mdma_test(uint32_t to_addrs)
 	return test_cfg((struct base_addrs *)to_addrs, &muart);
 }
 
-static const struct base_addrs loopback_addrs0 = { .base1 = UART0_BASE, .base2 = UART0_BASE };
-static const struct base_addrs loopback_addrs1 = { .base1 = UART1_BASE, .base2 = UART1_BASE };
+// static const struct base_addrs loopback_addrs0 = { .base1 = UART0_BASE, .base2 = UART0_BASE };
+// static const struct base_addrs loopback_addrs1 = { .base1 = UART1_BASE, .base2 = UART1_BASE };
 static const struct base_addrs addrs01 = { .base1 = UART0_BASE, .base2 = UART1_BASE };
-static const struct base_addrs addrs10 = { .base1 = UART1_BASE, .base2 = UART0_BASE };
+//static const struct base_addrs addrs10 = { .base1 = UART1_BASE, .base2 = UART0_BASE };
 
 /* Declare the testsuite structure */
 TEST_SUITE_BEGIN(muart_test, "MUART test")
-TEST_ENTRY("cts/rts enable 01", muart_cts_rts_en_test, (uint32_t)&addrs01),
-TEST_ENTRY("cts/rts enable 10", muart_cts_rts_en_test, (uint32_t)&addrs10),
+// TEST_ENTRY("cts/rts enable 01", muart_cts_rts_en_test, (uint32_t)&addrs01),
+// TEST_ENTRY("cts/rts enable 10", muart_cts_rts_en_test, (uint32_t)&addrs10),
 TEST_ENTRY("dma 01", muart_mdma_test, (uint32_t)&addrs01),
-TEST_ENTRY("dma 10", muart_mdma_test, (uint32_t)&addrs10),
-TEST_ENTRY("UART_0 loopback", muart_loopback_test, (uint32_t)&loopback_addrs0),
-TEST_ENTRY("UART_1 loopback", muart_loopback_test, (uint32_t)&loopback_addrs1),
+//TEST_ENTRY("dma 10", muart_mdma_test, (uint32_t)&addrs10),
+// TEST_ENTRY("UART_0 loopback", muart_loopback_test, (uint32_t)&loopback_addrs0),
+// TEST_ENTRY("UART_1 loopback", muart_loopback_test, (uint32_t)&loopback_addrs1),
 TEST_SUITE_END();
 
 uint32_t main()
