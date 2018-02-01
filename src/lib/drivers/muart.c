@@ -6,24 +6,26 @@
 #include <rumboot/io.h>
 #include <rumboot/timer.h>
 
-static uint32_t calc_bdiv(uint32_t baud_rate, uint8_t n) {
-
-  return (400*1000000/baud_rate)/8;
+static uint32_t calc_bdiv(uint32_t baud_rate, uint8_t n)
+{
+	return (400 * 1000000 / baud_rate) / 8;
 }
 
-static void set_reg(uint32_t base, uint32_t reg_offset, uint32_t value) {
-
-  iowrite32(value, base + reg_offset);
+static void set_reg(uint32_t base, uint32_t reg_offset, uint32_t value)
+{
+	iowrite32(value, base + reg_offset);
 }
 
-static void set_field(uint32_t base, uint32_t reg_offset, uint32_t bit_pos, uint32_t mask) {
+static void set_field(uint32_t base, uint32_t reg_offset, uint32_t bit_pos, uint32_t mask)
+{
 	uint32_t reg = ioread32(base + reg_offset);
 
 	reg |= (mask << bit_pos);
 	iowrite32(reg, base + reg_offset);
 }
 
-static void reset_field(uint32_t base, uint32_t reg_offset, uint32_t bit_pos, uint32_t mask) {
+static void reset_field(uint32_t base, uint32_t reg_offset, uint32_t bit_pos, uint32_t mask)
+{
 	uint32_t reg = ioread32(base + reg_offset);
 
 	reg &= ~(mask << bit_pos);
@@ -38,13 +40,14 @@ void muart_init(const uint32_t base, const struct muart_conf *conf)
 	ctrl |= (conf->wlen << MUART_WLEN_i);
 	ctrl |= (conf->stp2 << MUART_STP2_i);
 
-	if (conf->is_even) ctrl |= (1 << MUART_EPS);
+	if (conf->is_even) ctrl |= (1 << MUART_EPS_i);
 	if (conf->is_loopback) ctrl |= (1 << MUART_LBE_i);
 	if (conf->is_parity_available) ctrl |= (1 << MUART_PEN_i);
-  if (conf->cts_en) ctrl |= (1<<MUART_CTSEn_i);
-  if (conf->rts_en) ctrl |= (1<<MUART_RTSEn_i);
+	if (conf->rts_cts_en) ctrl |= (1 << MUART_CTSen_i) | (1 << MUART_RTSen_i);
+  ctrl |= (conf->mode << MUART_MDS_i);
 
-  if(conf->dma_en) ctrl &= ~(1 << MUART_APB_ON_i);
+	if (conf->dma_en) ctrl &= ~(1 << MUART_APB_MD);
+	else ctrl |= (1 << MUART_APB_MD);
 
 	set_reg(base, MUART_CTRL, ctrl);
 
@@ -62,20 +65,20 @@ void muart_disable(uint32_t base)
 }
 
 #include <rumboot/printf.h>
-void muart_write_char(uint32_t base, char ch) {
+void muart_write_char(uint32_t base, char ch)
+{
+	while ((ioread32(base + MUART_FIFO_STATE) & 0x7ff0000) == 0x400) rumboot_printf("fifo state: %x\n", ioread32(base + MUART_FIFO_STATE)); ;
 
-  while( (ioread32(base + MUART_FIFO_STATE) & 0x7ff0000) == 0x400 ) rumboot_printf("fifo state: %x\n", ioread32(base + MUART_FIFO_STATE));;
-
-  iowrite8((uint8_t) ch, base + MUART_DTRANS);
+	iowrite8((uint8_t)ch, base + MUART_DTRANS);
 }
 
-char muart_read_char(uint32_t base) {
+char muart_read_char(uint32_t base)
+{
+	char ch = '\0';
 
-  char ch = '\0';
+	while ((ioread32(base + MUART_FIFO_STATE) & 0xfff) == 0) rumboot_printf("fifo state: %x\n", ioread32(base + MUART_FIFO_STATE));
 
-  while( (ioread32(base + MUART_FIFO_STATE) & 0xfff) == 0 ) rumboot_printf("fifo state: %x\n", ioread32(base + MUART_FIFO_STATE));
+	ch = ioread8(base + MUART_DREC);
 
-  ch = ioread8( base + MUART_DREC);
-
-  return ch;
+	return ch;
 }

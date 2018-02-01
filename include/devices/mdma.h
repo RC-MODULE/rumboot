@@ -6,6 +6,9 @@ enum ERR_CODE {
 
 };
 
+#define NORMAL_DESC_SIZE 8
+#define PITCH_DESC_SIZE 16
+#define LONG_DESC_SIZE 16
 enum DESC_TYPE {
         NORMAL = 0b00,
         LONG = 0b10,
@@ -25,6 +28,14 @@ enum EVENT_TYPE {
     IGNORE_EVENT
 };
 
+/**
+ * settings     : Structure contains descriptor settings
+ * ownership   :
+ * link        :
+ * interrupt  :
+ * stop       :
+ * increment  :
+ */
 struct settings {
         uint32_t ownership : 1;
         uint32_t link : 1;

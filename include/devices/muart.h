@@ -24,35 +24,45 @@
  */
 
 enum WORD_LENGTH {
-	WL_5 = 0,
-	WL_6,
-	WL_7,
-	WL_8,
+								WL_5 = 0,
+								WL_6,
+								WL_7,
+								WL_8,
 };
 
 enum STOP_BITS_N {
-	STP1 = 0,
-	STP3_2,
-	STP2,
+								STP1 = 0,
+								STP3_2,
+								STP2,
 };
 
 enum MUART_MODE {
-	RS_232 = 0,
-	RS_422,
-	RS_485
+								RS_232 = 0,
+								RS_485
 };
 
+/**
+ * muart_conf						: Structure contains configuration parameters
+ * wlen				  				- word length - 5..8 bit
+ * stp2									- number of stop bits
+ * is_even							- Choose either even or odd parity
+ * is_parity_available	- Choose either parity available or not
+ * mode									- mode of MUART
+ * rts_cts_en						- Choose either rts/cts enable or not?
+ * is_loopback					- Choose either loopback is or not?
+ * baud_rate						- baud rate
+ * dma_en								- Choose either DMA enable or not?
+ */
 struct muart_conf {
-	enum WORD_LENGTH	wlen;
-	enum STOP_BITS_N	stp2;
-	bool			is_even;
-	bool			is_parity_available;
-	enum MUART_MODE mode;
-	bool rts_en;
-	bool cts_en;
-	bool			is_loopback;
-	uint32_t	baud_rate;
-	bool dma_en;
+								enum WORD_LENGTH wlen;
+								enum STOP_BITS_N stp2;
+								bool is_even;
+								bool is_parity_available;
+								enum MUART_MODE mode;
+								bool rts_cts_en;
+								bool is_loopback;
+								uint32_t baud_rate;
+								bool dma_en;
 };
 
 /**

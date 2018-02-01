@@ -184,14 +184,14 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       IRUN_FLAGS +pcie_line_interference
     )
 
-    add_rumboot_target(
-        SNAPSHOT default
-        CONFIGURATION IRAM
-        FILES simple-iram/muart_test.c
-        NAME muart_test
-        CFLAGS -Dincrease_test_duration=1
-        #IRUN_FLAGS +pcie_line_interference
-      )
+  add_rumboot_target(
+      SNAPSHOT default
+      CONFIGURATION IRAM
+      FILES simple-iram/muart_test.c
+      NAME muart_test
+      CFLAGS -Dincrease_test_duration=1
+      #IRUN_FLAGS +pcie_line_interference
+    )
 
   add_rumboot_target(
       SNAPSHOT default

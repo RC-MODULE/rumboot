@@ -43,11 +43,8 @@ void mdma_dump(uint32_t base)
 void mdma_init(uint32_t base)
 {
   iowrite32(0x1, base + MDMA_ENABLE_W);
-  rumboot_printf("X2\n");
 	iowrite32(0x1, base + MDMA_ENABLE_R);
-  rumboot_printf("X1\n");
   iowrite32(ioread32(base + MDMA_IRQ_MASK_W) | (1<<STOP_DESC_i), base + MDMA_IRQ_MASK_W);
-  rumboot_printf("X3\n");
   iowrite32(ioread32(base + MDMA_IRQ_MASK_R) | (1<<STOP_DESC_i), base + MDMA_IRQ_MASK_R);
 }
 
@@ -76,7 +73,7 @@ void mdma_set_wxtable(uint32_t base, struct table_cfg *cfg)
 #define BER_i 25
 #define PER_i 24
 #define FER_i 23
-#define LENGTH_i 13
+#define LENGTH_i 13/*0*/
 
 enum ERR_CODE mdma_set_desc(uint32_t desc_addr, struct desc_cfg *cfg)
 {
