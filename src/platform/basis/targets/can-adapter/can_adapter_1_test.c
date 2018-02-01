@@ -26,7 +26,7 @@ static void handler0(int irq, void *arg)
 	volatile uint32_t *done = arg;
     rumboot_printf("IRQ 0 arrived, arg %x, count %d\n", arg, (*done));
 	ioread32(CAN0_BASE + INTRP_FLAG_REG);
-    *done = 1;	
+    *done = *done + 1;	
 }
 
 static void handler1(int irq, void *arg)
@@ -34,13 +34,13 @@ static void handler1(int irq, void *arg)
 	volatile uint32_t *done = arg;
 	rumboot_printf("IRQ 1 arrived, arg %x, count %d\n", arg, (*done));
     ioread32(CAN1_BASE + INTRP_FLAG_REG);	
-    *done = 2;
+    *done = *done + 1;	
 }
 
 int main()
 {
     rumboot_printf("This is can_adapter_1_test! It checks interrupt connection.\n");
-    volatile uint32_t *done = 0;
+    volatile uint32_t done = 0;
     // Disable all interrupts
 	rumboot_irq_cli(); 
     
@@ -89,14 +89,14 @@ int main()
      {read_data=ioread32(CAN1_BASE + STATUS_REG);}
     rumboot_printf("CAN1 Bus Idle!\n");
     
-    //while (*done != 2) {}
+    rumboot_printf("done = %d\n", done);
     // End of TEST
     
     // Deinit
 	rumboot_irq_table_activate(NULL);
 	rumboot_irq_free(tbl);
     
-    if (*done==2)
+    if (done==2)
     {
         rumboot_printf("TEST OK!\n");
 	    return 0;
@@ -104,7 +104,6 @@ int main()
     else{
         rumboot_printf("TEST FAIL!\n");
         return -1;
-    } 
-    
-    
+    }
+     
 }
