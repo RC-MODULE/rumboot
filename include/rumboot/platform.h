@@ -179,6 +179,26 @@ void rumboot_platform_perf(const char *tag);
 void rumboot_platform_perf_func(void *addr);
 
 /**
+ * Declares a function to be a constructor (will be called before main())
+ * @param  name - function name
+ */
+#define RUMBOOT_CONSTRUCTOR(name) \
+    void __attribute__((constructor)) name()
+
+
+/**
+ * Declares a function to be a constructor (will be called upon returning from
+ * main or when user calls exit()
+ *
+ * @param  name function name
+ * @return      [description]
+ */
+
+#define RUMBOOT_DESTRUCTOR(name) \
+    void __attribute__((constructor)) name()
+
+
+/**
 *
 *  @}
 */
