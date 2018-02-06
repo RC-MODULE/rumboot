@@ -45,7 +45,8 @@ enum rumboot_simulation_event {
     EVENT_MEMSET, /** memset substitution */
     EVENT_STACKTRACE, /** Tells environment to trace the stack */
     EVENT_GCDA, /** Request to store coverage information */
-    EVENT_MEMCPY /** memcpy acceleration */
+    EVENT_MEMCPY, /** memcpy acceleration */
+    EVENT_PERF_FUNC, /** Perf checkpoint via function addr */
 };
 
 
@@ -167,6 +168,15 @@ void rumboot_platform_store_gcda(const char *filename, uint32_t addr, uint32_t l
  * @param tag string tag. NULL finishes previous performance metric region.
  */
 void rumboot_platform_perf(const char *tag);
+
+/**
+ * Record a performance metric checkpoint when entering a function by function adress.
+ * Used internally by auto-profiling code
+ * @param addr Address of a function starting execution.
+ *  NULL tells environment we're exiting the function.
+ */
+
+void rumboot_platform_perf_func(void *addr);
 
 /**
 *

@@ -55,6 +55,11 @@ __attribute__((no_instrument_function)) void rumboot_platform_perf(const char *t
 	raise_event_fast(EVENT_PERF, (uint32_t) tag);
 }
 
+__attribute__((no_instrument_function)) void rumboot_platform_perf_func(void *addr)
+{
+	raise_event_fast(EVENT_PERF_FUNC, (uint32_t) addr);
+}
+
 
 void __attribute__((no_instrument_function)) rumboot_platform_putchar(uint8_t c)
 {
