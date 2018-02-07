@@ -37,14 +37,21 @@ void muart_init(const uint32_t base, const struct muart_conf *conf)
 {
 	uint32_t ctrl = ioread32(base + MUART_CTRL);
 
+	ctrl |= (conf->mode << MUART_MDS_i);
+
 	ctrl |= (conf->wlen << MUART_WLEN_i);
 	ctrl |= (conf->stp2 << MUART_STP2_i);
 
 	if (conf->is_even) ctrl |= (1 << MUART_EPS_i);
 	if (conf->is_loopback) ctrl |= (1 << MUART_LBE_i);
 	if (conf->is_parity_available) ctrl |= (1 << MUART_PEN_i);
-	if (conf->rts_cts_en) ctrl |= (1 << MUART_CTSen_i) | (1 << MUART_RTSen_i);
-  ctrl |= (conf->mode << MUART_MDS_i);
+
+	if( conf->mode == RS_232 ) {
+		ctrl |= (1 << MUART_RTSen_i) | (1 << MUART_CTSen_i);
+	}
+	else if( conf->mode == RS_485) {
+		ctrl |= (1 << MUART_RTSen_i) & ~(1 << MUART_CTSen_i);
+	}
 
 	if (conf->dma_en) ctrl &= ~(1 << MUART_APB_MD);
 	else ctrl |= (1 << MUART_APB_MD);

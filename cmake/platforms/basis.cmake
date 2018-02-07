@@ -320,7 +320,9 @@ file(GLOB PLATFORM_SOURCES
     ${CMAKE_SOURCE_DIR}/src/lib/drivers/dma_test_lib.c
     ${CMAKE_SOURCE_DIR}/src/lib/drivers/dit_lib.c
     ${CMAKE_SOURCE_DIR}/src/lib/drivers/muart.c
-    ${CMAKE_SOURCE_DIR}/src/lib/drivers/mdma.c
+    ${CMAKE_SOURCE_DIR}/src/lib/drivers/mdma/mdma.c
+    ${CMAKE_SOURCE_DIR}/src/lib/drivers/mdma/mdma_transactions.c
+    ${CMAKE_SOURCE_DIR}/src/lib/drivers/mdma/descriptor.c
 )
 
 macro(RUMBOOT_PLATFORM_SET_COMPILER_FLAGS)

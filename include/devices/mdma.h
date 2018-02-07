@@ -1,72 +1,59 @@
+#ifndef MDMA_H
+#define MDMA_H
+
 #include <stdint.h>
+#include <stdbool.h>
+#include <stdlib.h>
 
-enum ERR_CODE {
-        OK = 0,
-        NOT_AVAILABLE = -1,
-
-};
-
-#define NORMAL_DESC_SIZE 8
-#define PITCH_DESC_SIZE 16
-#define LONG_DESC_SIZE 16
 enum DESC_TYPE {
         NORMAL = 0b00,
         LONG = 0b10,
         PITCH = 0b11,
 };
 
-enum EVENT_TYPE {
-    DIS_DONE = 0,
-    CANCEL_DONE ,
-    INT_DESC_DONE,
-    BAD_DESC,
-    STOP_DESC_DONE,
-    DISCARD_DESC,
-    RAXI_ERR,
-    WAXI_ERR,
-    AXI_ERR,
-    IGNORE_EVENT
-};
-
-/**
- * settings     : Structure contains descriptor settings
- * ownership   :
- * link        :
- * interrupt  :
- * stop       :
- * increment  :
- */
-struct settings {
-        uint32_t ownership : 1;
-        uint32_t link : 1;
-        uint32_t interrupt : 1;
-        uint32_t stop : 1;
-        uint32_t increment : 1;
-        uint32_t oer : 1;
-        uint32_t ber : 1;
-        uint32_t per : 1;
-        uint32_t fer : 1;
-        uint32_t length : 14;
-
-};
-
-struct table_cfg {
-        enum DESC_TYPE type;
+struct mdma_config {
+        enum DESC_TYPE desc_type;
         uint32_t desc_gap;
-        uint32_t table_addr;
+        size_t num_descriptors;
 };
 
-struct desc_cfg {
-        struct settings* set;
-        uint32_t data_addr;
-        uint64_t free_run_val;//DEFINE THIS FIELD AS NULL IF YOU WORK WITH NORMAL DSCRIPTORS!
+struct descriptor;
+
+struct mdma_device {
+        uint32_t base;
+        struct mdma_config conf;
+        struct descriptor * rxtbl;
+        struct descriptor * txtbl;
 };
 
+struct mdma_device *mdma_create(uint32_t base, struct mdma_config *cfg);
+void mdma_remove(struct mdma_device *dev);
 void mdma_init(uint32_t base);
-void mdma_set_rxtable(uint32_t base, struct table_cfg* cfg);
-void mdma_set_wxtable(uint32_t base, struct table_cfg* cfg);
-enum ERR_CODE mdma_set_desc(uint32_t desc_addr, struct desc_cfg *cfg);
-enum ERR_CODE mdma_get_desc(uint32_t desc_addr, struct desc_cfg *cfg);
-bool mdma_wait_r(uint32_t base, enum EVENT_TYPE event);
-bool mdma_wait_w(uint32_t base, enum EVENT_TYPE event);
+void mdma_deinit(uint32_t base);
+void mdma_set(struct mdma_device *dev, struct mdma_config *cfg);
+void mdma_transaction(uint32_t base, void* src, void* dst, size_t len, bool is_last);
+bool mdma_is_finished(uint32_t base);
 void mdma_dump(uint32_t base);
+
+enum mdma_transaction_state {
+        IDLE,
+        STARTED,
+        FINISHED
+};
+
+struct mdma_transaction {
+        void *        dest;
+        void *        src;
+        size_t len;
+        enum mdma_transaction_state state;
+        struct mdma_device *    owner;
+        bool is_last;
+};
+
+struct mdma_transaction *mmdma_transaction_create(struct mdma_device *dev, void *dest, void *src, size_t len);
+int mmdma_transaction_remove(struct mdma_transaction *t);
+int mdma_get_transaction_state(struct mdma_transaction *t);
+int mdma_transaction_queue(struct mdma_transaction *t);
+bool mdma_transaction_is_finished(struct mdma_transaction *t);
+
+#endif

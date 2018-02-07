@@ -1,3 +1,6 @@
+#ifndef MUART_H
+#define MUART_H
+
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -38,7 +41,8 @@ enum STOP_BITS_N {
 
 enum MUART_MODE {
 								RS_232 = 0,
-								RS_485
+								RS_422 = 0,
+								RS_485 = 1,
 };
 
 /**
@@ -48,7 +52,6 @@ enum MUART_MODE {
  * is_even							- Choose either even or odd parity
  * is_parity_available	- Choose either parity available or not
  * mode									- mode of MUART
- * rts_cts_en						- Choose either rts/cts enable or not?
  * is_loopback					- Choose either loopback is or not?
  * baud_rate						- baud rate
  * dma_en								- Choose either DMA enable or not?
@@ -59,7 +62,6 @@ struct muart_conf {
 								bool is_even;
 								bool is_parity_available;
 								enum MUART_MODE mode;
-								bool rts_cts_en;
 								bool is_loopback;
 								uint32_t baud_rate;
 								bool dma_en;
@@ -97,3 +99,5 @@ void muart_write_char(const uint32_t base, char ch);
  * @return     read symbol
  */
 char muart_read_char(const uint32_t base);
+
+#endif
