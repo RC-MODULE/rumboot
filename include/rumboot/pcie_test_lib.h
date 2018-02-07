@@ -151,6 +151,29 @@
         uint32_t Global_IRQ_Mask_l
     );
 
+    /**
+     * This function configures PCIe for functional tests "from HOST".
+     *   
+     *  Setup Outbound Address Translator next way:
+     *
+     *    0x4000_0000 .. 0x43FF_FFFF    maps to    0x0000_0000 .. 0x03FF_FFFF
+     *      it covers 64 MByte - eSRAM0, eSRAM1 and Periph registers
+     *    
+     *    0x5000_0000 .. 0x5FFF_FFFF    maps to    0x8000_0000 .. 0x8FFF_FFFF
+     *      it covers 256 MByte - DDR0
+     *
+     *    0x6000_0000 .. 0x6FFF_FFFF    maps to    0xC000_0000 .. 0xCFFF_FFFF
+     *      it covers 256 MByte - DDR1
+     *
+     *  BAR0 and BAR1 cover all 4GByte of address space.
+     *   
+     *  Inbound Address Translator in bypass mode.
+     *   
+     */
+    uint32_t pcie_mirror_tests_setup
+    (
+    );
+
 /** @}*/
 
 typedef volatile struct __attribute__ ((__packed__))

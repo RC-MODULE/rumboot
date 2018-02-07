@@ -19,6 +19,7 @@
 #include <stdint.h>
 
 #include <platform/defs_c.h>
+#include <rumboot/io.h>
 
 //-----------------------------------------------------------------------------
 //  These defines must be changed for real program
@@ -673,3 +674,46 @@ void ext_irq_gen_config
         addr_pointer++;
     }
 }
+
+//-----------------------------------------------------------------------------
+//  This function configures PCIe for functional tests "from HOST".
+//    But here HOST is our SoC and all transactions go through external mirror.
+//-----------------------------------------------------------------------------
+uint32_t pcie_mirror_tests_setup ()
+{
+    if (pcie_turn_on_with_options_ep (1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) != 0)
+        return -1;
+    
+    //-----------------------------------------------------------------
+    //  Setup Outbound Address Translator next way:
+    //
+    //    0x4000_0000 .. 0x43FF_FFFF    maps to    0x0000_0000 .. 0x03FF_FFFF
+    //      it covers 64 MByte - eSRAM0, eSRAM1 and Periph registers
+    //    
+    //    0x5000_0000 .. 0x5FFF_FFFF    maps to    0x8000_0000 .. 0x8FFF_FFFF
+    //      it covers 256 MByte - DDR0
+    //
+    //    0x6000_0000 .. 0x6FFF_FFFF    maps to    0xC000_0000 .. 0xCFFF_FFFF
+    //      it covers 256 MByte - DDR1
+    //
+    //                         !!!  Attention !!!
+    //    transactions to not defined addesses in range 
+    //    0x4000_0000 .. 0x7FFF_FFFF will cause error on AXI bus
+    //-----------------------------------------------------------------
+    iowrite32 (0x40000000 | 0x1, ADDR_TRANS_MST_BASE + ((0 * 3 + 1) << 2)) ;  //  base address, enable
+    iowrite32 (0x43FFFFFF      , ADDR_TRANS_MST_BASE + ((0 * 3 + 2) << 2)) ;  //  end address
+    iowrite32 (0xC0000000      , ADDR_TRANS_MST_BASE + ((0 * 3 + 3) << 2)) ;  //  translate address
+    
+    iowrite32 (0x50000000 | 0x1, ADDR_TRANS_MST_BASE + ((1 * 3 + 1) << 2)) ;  //  base address, enable
+    iowrite32 (0x5FFFFFFF      , ADDR_TRANS_MST_BASE + ((1 * 3 + 2) << 2)) ;  //  end address
+    iowrite32 (0x30000000      , ADDR_TRANS_MST_BASE + ((1 * 3 + 3) << 2)) ;  //  translate address
+    
+    iowrite32 (0x60000000 | 0x1, ADDR_TRANS_MST_BASE + ((2 * 3 + 1) << 2)) ;  //  base address, enable
+    iowrite32 (0x6FFFFFFF      , ADDR_TRANS_MST_BASE + ((2 * 3 + 2) << 2)) ;  //  end address
+    iowrite32 (0x50000000      , ADDR_TRANS_MST_BASE + ((2 * 3 + 3) << 2)) ;  //  translate address
+    
+    iowrite32 (0, ADDR_TRANS_MST_BASE);
+    
+    return 0;
+}
+
