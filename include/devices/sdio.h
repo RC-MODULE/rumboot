@@ -10,6 +10,7 @@
  *  - Init SDIO
  *  - Deinit SDIO
  *  - Read data from SDIO
+ *  - Read data from SDIO n 
  *
  * \code{.c}
  * #include <devices/sdio.h>
@@ -26,39 +27,36 @@
 
 /**
  * SD card initialization
- * @param  base address of SDIO
- * @param  freq_in_mhz sys clock frequency in MHz
- * @return pointer to configuration structure of sd card
+ * src: pointer to rumboot_bootsource structure
+ * pdata: pointer to private sd configuration data
+ * @return true or false
  */
 bool sd_init(const struct rumboot_bootsource* src, struct pdata* pdata);
+
 /**
- * [sd_read description]
- * @param  base      base address of SDIO
- * @param  src_addr  [description]
- * @param  dest_addr [description]
- * @return           true if read ok
+ * sd_read: read data from source
+ * pdata: pointer to private sd configuration data
+ * return: true if read ok
  */
 bool sd_read(struct pdata* pdata);
+
 /**
- * [sd_try_read description]
- * @param  base      base address of SDIO
- * @param  src_addr  [description]
- * @param  dest_addr [description]
- * @param  attempts  number of read attempts
- * @return           true if read ok
+ * sd_try_read: read data from source n attempts
+ * pdata: pointer to private sd configuration data
+ * attempts: number of read attempts
+ * return: true if read ok, else - false
  */
 bool sd_try_read(struct pdata* pdata, const uint32_t attempts);
 
 /**
- * [sd_deinit description]
- * @param  base_addr [description]
- * @return           [description]
+ * sd_deinit: Deinit sd card
+ * pdata: pointer to private sd configuration data
  */
 void sd_deinit(struct pdata* pdata);
 
 /**
- * Find another source for load
- * @return [description]
+ * sd_load_failed_should_i_try_again: Find another source for load
+ * return: true or false
  */
 bool sd_load_failed_should_i_try_again();
 

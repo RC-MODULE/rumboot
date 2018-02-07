@@ -5,6 +5,32 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
+/**
+ * \defgroup devices_mdio MDIO
+ * \ingroup devices
+ *
+ *  MDIO function libriary.
+ *  Contains functions such as:
+ *  - mdma create
+ *  - mdma remove
+ *  - mdma init
+ *  - mdma deinit
+ *  - mdma set
+ *  - 
+ *  - Read data from SDIO
+ *
+ * \code{.c}
+ * #include <devices/mdma.h>
+ * \endcode
+ *
+ * TODO: Insert usage example here
+ *
+ * \addtogroup devices_mdma
+ *
+ * @{
+ */
+
+
 /******************MDMA API***************************/
 
 enum DESC_TYPE {

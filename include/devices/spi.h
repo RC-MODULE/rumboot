@@ -27,29 +27,29 @@
 #include <rumboot/bootsource.h>
 
 /**
- * SPI initialization
- * @param  data [description]
- * @return      [description]
+ * spi_init: init spi
+ * src: pointer to rumboot_bootsource object
+ * pdata: pointer to configuration data of spi
  */
 bool spi_init(const struct rumboot_bootsource* src, struct pdata* pdata);
 
 /**
- * [spi_deinit description]
- * @param data [description]
+ * spi_deinit: deinit spi
+ * pdata: pointer to configuration data of spi
  */
 void spi_deinit(struct pdata* pdata);
 
 /**
- * [spi_read description]
- * @param  data [description]
- * @return      [description]
+ * spi_read: read data from spi
+ * pdata: pointer to configuration data of spi
+ * return: true or false
  */
 bool spi_read(struct pdata* pdata);
 
 /**
- * [spi_load_failed_should_i_try_again description]
- * @param  data [description]
- * @return      [description]
+ * spi_load_failed_should_i_try_agai: Find another source for load
+ * pdata: pointer to configuration data of spi
+ * return: true or false
  */
 bool spi_load_failed_should_i_try_again(struct pdata* pdata);
 
