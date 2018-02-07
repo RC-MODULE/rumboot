@@ -5,12 +5,20 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
+/******************MDMA API***************************/
+
 enum DESC_TYPE {
         NORMAL = 0b00,
         LONG = 0b10,
         PITCH = 0b11,
 };
 
+/**
+ * mdma_config: Structure contains configuration of mdma descriptor table
+ * desc_type: type of descriptors
+ * desc_gap: gap between descriptors
+   // * num_descriptors: number of descriptors in descriptor table. The same for TX and RX tables.
+ */
 struct mdma_config {
         enum DESC_TYPE desc_type;
         uint32_t desc_gap;
@@ -19,6 +27,13 @@ struct mdma_config {
 
 struct descriptor;
 
+/**
+ * mdma_device: Structure contains
+ * base: base address of mdma
+ * cfg: configuration of mdma descriptor table
+ * rxtbl: pointer to first descriptor of rx table
+ * txtbl: pointer to first descriptor of tx table
+ */
 struct mdma_device {
         uint32_t base;
         struct mdma_config conf;
@@ -26,14 +41,62 @@ struct mdma_device {
         struct descriptor * txtbl;
 };
 
+/**
+ * mdma_create: Allocate memory for mdma object and tables.
+ * base: base address of memory
+ * cfg: configuration of mdma descriptor table
+ * return: mdma_device object
+ */
 struct mdma_device *mdma_create(uint32_t base, struct mdma_config *cfg);
+/**
+ * mdma_remove: Free memory from mdma object and tables.
+ * dev: pointer to allocated memory
+ */
 void mdma_remove(struct mdma_device *dev);
+
+/**
+ * mdma_init: Initialization of mdma block
+ * base: base address of mdma
+ */
 void mdma_init(uint32_t base);
+
+/**
+ * mdma_deinit: Deinitialization of mdma block
+ * base: base address of mdma
+ */
 void mdma_deinit(uint32_t base);
+
+/**
+ * mdma_set: Set configuration settings
+ * dev: pointer to mdma_device object
+ * cfg: pointer to mdma configuration settings
+ */
 void mdma_set(struct mdma_device *dev, struct mdma_config *cfg);
-void mdma_transaction(uint32_t base, void* src, void* dst, size_t len, bool is_last);
+
+/**
+ * mdma_transaction: Write descriptors in descriptor tables
+ * base: base address of mdma
+ * dst: address of memory where data should be after transaction
+ * src: address of memory with source data
+ * len: length of transmit data
+ * is_last: flag - whether this transaction last or not?
+ */
+void mdma_write_descriptors(uint32_t base, void* dst, void* src, size_t len, bool is_last);
+
+/**
+ * mdma_is_finished: Find out whether this transaction finished or not?
+ * base: base address of mdma
+ * @return: false or true
+ */
 bool mdma_is_finished(uint32_t base);
+
+/**
+ * mdma_dump: Dump mdma registers
+ * base: base adress of mdma
+ */
 void mdma_dump(uint32_t base);
+
+/******************TRANSACTIONS API***************************/
 
 enum mdma_transaction_state {
         IDLE,
@@ -41,6 +104,15 @@ enum mdma_transaction_state {
         FINISHED
 };
 
+/**
+ * mdma_transaction: Structure contains mdma transaction parameter
+ * dest: address of memory where data should be after transaction
+ * src: address of memory with source data
+ * len: length of transmit memory
+ * state: state of transaction
+ * owner: mdma_device object which initiate transaction
+ * is_last: flag - whether this transaction last or not?
+ */
 struct mdma_transaction {
         void *        dest;
         void *        src;
@@ -50,10 +122,42 @@ struct mdma_transaction {
         bool is_last;
 };
 
+/**
+ * mmdma_transaction_create: Allocate memory for mdma_transaction oblect
+ * dev: mdma_device object which initiate transaction
+ * dest: address of memory where data should be after transaction
+ * src: address of memory with source data
+ * len: length of transmit memory
+ * return: structure contains mdma transaction parameter
+ */
 struct mdma_transaction *mmdma_transaction_create(struct mdma_device *dev, void *dest, void *src, size_t len);
+
+/**
+ * mmdma_transaction_remove: Free memory from mdma_transaction object
+ * t: structure contains mdma transaction parameter
+ * return: error code
+ */
 int mmdma_transaction_remove(struct mdma_transaction *t);
+
+/**
+ * mdma_get_transaction_state: Get transaction state
+ * t: structure contains mdma transaction parameter
+ * @return: state of transaction
+ */
 int mdma_get_transaction_state(struct mdma_transaction *t);
+
+/**
+ * mdma_transaction_queue: Queue transaction
+ * t: structure contains mdma transaction parameter
+ * @return: error code
+ */
 int mdma_transaction_queue(struct mdma_transaction *t);
+
+/**
+ * mdma_transaction_is_finished: Find out whether this transaction finished or not?
+ * t: structure contains mdma transaction parameter
+ * @return: false or true
+ */
 bool mdma_transaction_is_finished(struct mdma_transaction *t);
 
 #endif

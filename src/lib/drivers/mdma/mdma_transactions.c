@@ -50,7 +50,7 @@ int mdma_transaction_queue(struct mdma_transaction *t)
 	if (!t->src || !t->dest || !dev->rxtbl || !dev->txtbl)
 		return -1;
 
-	mdma_transaction(dev->base, t->src, t->dest, t->len, t->is_last);
+	mdma_write_descriptors(dev->base, t->src, t->dest, t->len, t->is_last);
 
 	t->state = STARTED;
 

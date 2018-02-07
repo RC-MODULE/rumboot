@@ -98,7 +98,7 @@ void mdma_set(struct mdma_device *dev, struct mdma_config *cfg)
 	iowrite32((uint32_t) dev->txtbl, dev->base + MDMA_DESC_ADDR_W);
 }
 
-void mdma_transaction(uint32_t base, void* src, void* dst, size_t len, bool is_last)
+void mdma_write_descriptors(uint32_t base, void* dst, void* src, size_t len, bool is_last)
 {
 	struct settings def_set = {
 		.ownership	= 0,
