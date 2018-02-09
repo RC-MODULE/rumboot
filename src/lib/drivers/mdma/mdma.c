@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include <rumboot/io.h>
 #include <rumboot/printf.h>
@@ -130,6 +131,33 @@ bool mdma_is_finished(uint32_t base) {
     return false;
 
   return true;
+}
+
+bool mdma_transmit_data(uint32_t base, void* dest, void* src, size_t len)
+{
+	//CONFIG DMA
+	rumboot_printf("Config DMA.\n");
+	struct mdma_config cfg = { .desc_type = NORMAL, .desc_gap = 0, .num_descriptors = 1 };
+	struct mdma_device *mdma = mdma_create(base, &cfg);
+	mdma_set(mdma, &cfg);
+
+	rumboot_printf("Create transaction.\n");
+	struct mdma_transaction *t = mmdma_transaction_create(mdma, dest, src, len);
+
+	rumboot_printf("Queue transaction.\n");
+	mdma_transaction_queue(t);
+
+	rumboot_printf("Init MDMA.\n");
+	mdma_init(base);
+
+	rumboot_printf("Get transaction state.\n");
+	while (!mdma_transaction_is_finished(t));
+
+	rumboot_printf("Compare arrays.\n");
+	if (memcmp(src, dest, len) != 0)
+		return false;
+	else
+		return true;
 }
 
 #if 0

@@ -89,3 +89,27 @@ char muart_read_char(uint32_t base)
 
 	return ch;
 }
+
+bool muart_transmit_data_throught_apb(uint32_t base1, uint32_t base2, void* data, size_t size)
+{
+	rumboot_printf("write char\n");
+	int count = size;
+	while (count--)
+		muart_write_char(base1, *((char*) data++) );
+
+	rumboot_printf("read char\n");
+	count = size;
+	char read_ch = '\0';
+	while (count--) {
+		read_ch = muart_read_char(base2);
+
+		if (read_ch == *((char*) data++)) {
+			continue;
+		} else {
+			rumboot_printf("read char: %c\n", read_ch);
+			return false;
+		}
+	}
+
+	return true;
+}

@@ -16,7 +16,7 @@
  *  - mdma init
  *  - mdma deinit
  *  - mdma set
- *  - 
+ *  -
  *  - Read data from SDIO
  *
  * \code{.c}
@@ -121,6 +121,16 @@ bool mdma_is_finished(uint32_t base);
  * base: base adress of mdma
  */
 void mdma_dump(uint32_t base);
+
+/**
+ * transmit_data_throught_dma Transmit data throught DMA controller
+ * base: base address of DMA
+ * dst: address of memory where data should be after transaction
+ * src: address of memory with source data
+ * len: length of transmit data
+ * @return      [description]
+ */
+bool mdma_transmit_data(uint32_t base, void* dest, void* src, size_t len);
 
 /******************TRANSACTIONS API***************************/
 

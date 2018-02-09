@@ -29,6 +29,7 @@
  #define CAN0_BASE                0x01020000
  #define CAN1_BASE                0x01028000
  #define TSNS_BASE                0x01032000
+ #define BISR_L2C                 0x0103E000
  #define UART0_BASE               0x01044000
  #define UART1_BASE               0x01045000
  #define I2C0_BASE                0x01046000

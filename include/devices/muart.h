@@ -1,6 +1,7 @@
 #ifndef MUART_H
 #define MUART_H
 
+#include <stdlib.h>
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -99,5 +100,15 @@ void muart_write_char(const uint32_t base, char ch);
  * @return     read symbol
  */
 char muart_read_char(const uint32_t base);
+
+/**
+ * brief Transmit data throught APB
+ * base1: base address of UART
+ * base2: base address of UART
+ * data: poiniter to transmitted data
+ * size: size of transmitted data
+ * return if data was transmitted OK - true, else - false
+ */
+bool muart_transmit_data_throught_apb(uint32_t base1, uint32_t base2, void* data, size_t size);
 
 #endif

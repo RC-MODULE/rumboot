@@ -193,6 +193,15 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       #IRUN_FLAGS +pcie_line_interference
     )
 
+    add_rumboot_target(
+        SNAPSHOT default
+        CONFIGURATION IRAM
+        FILES simple-iram/bisr_test.c
+        NAME bisr_test
+        CFLAGS -Dincrease_test_duration=1
+        #IRUN_FLAGS +pcie_line_interference
+      )
+
   add_rumboot_target(
       SNAPSHOT default
       CONFIGURATION ROM
@@ -323,6 +332,7 @@ file(GLOB PLATFORM_SOURCES
     ${CMAKE_SOURCE_DIR}/src/lib/drivers/mdma/mdma.c
     ${CMAKE_SOURCE_DIR}/src/lib/drivers/mdma/mdma_transactions.c
     ${CMAKE_SOURCE_DIR}/src/lib/drivers/mdma/descriptor.c
+    ${CMAKE_SOURCE_DIR}/src/lib/drivers/bisr.c
 )
 
 macro(RUMBOOT_PLATFORM_SET_COMPILER_FLAGS)
