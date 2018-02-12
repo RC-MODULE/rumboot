@@ -10,7 +10,7 @@
 
 #include <platform/devices.h>
 
-#define BISR_TIMEOUT 500
+#define BISR_TIMEOUT 50000
 
 void bisr_prog_start()
 {
@@ -44,9 +44,12 @@ bool bisr_wait()
 {
 	uint32_t count = 0;
 
-	while (!(ioread32(SCTL_BASE + SCTL_BISR_L2C) & (1 << SCTL_FINISH_i)))
-		if (count++ == BISR_TIMEOUT)
-			return false;
+	while (!(ioread32(SCTL_BASE + SCTL_BISR_L2C) & (1 << SCTL_FINISH_i))) {
+    if (count++ == BISR_TIMEOUT) {
+      rumboot_printf("Timeout ERROR.\n");
+      return false;
+    }
+  }
 
 	return true;
 }
@@ -83,9 +86,7 @@ bool bisr_program_test()
 	udelay(1);
   rumboot_printf("Program stop L2C BISR.\n");
 	bisr_prog_stop();
-  rumboot_printf("Wait L2C BISR.\n");
-	if (!bisr_wait())
-		return false;
+
 
   rumboot_printf("Dump results.\n");
   return bisr_dump_results();
@@ -98,8 +99,10 @@ bool bisr_hard_test()
   udelay(1);
   rumboot_printf("Stop L2C BISR.\n");
   bisr_stop();
-  bisr_wait();
+  rumboot_printf("Wait L2C BISR.\n");
+	if (!bisr_wait())
+		return false;
   bisr_analyze();
 
-  return false;
+  return true;
 }
