@@ -79,6 +79,8 @@ static void bisr_analyze()
 
 bool bisr_program_test()
 {
+  rumboot_printf("Clock enable.\n");
+  iowrite32(0x1 ,SCTL_BASE + SCTL_BISR_CLK_EN);
   rumboot_printf("Set test mode.\n");
 	iowrite32(0, BISR_L2C + BISR_REDUNDANCY_BUS_ARR0);
   rumboot_printf("Program start L2C BISR.\n");
@@ -87,13 +89,17 @@ bool bisr_program_test()
   rumboot_printf("Program stop L2C BISR.\n");
 	bisr_prog_stop();
 
-
   rumboot_printf("Dump results.\n");
-  return bisr_dump_results();
+  bool ret = bisr_dump_results();
+  rumboot_printf("Clock disable.\n");
+  iowrite32(0x0 ,SCTL_BASE + SCTL_BISR_CLK_EN);
+  return ret;
 }
 
 bool bisr_hard_test()
 {
+  rumboot_printf("Clock enable.\n");
+  iowrite32(0x1 ,SCTL_BASE + SCTL_BISR_CLK_EN);
   rumboot_printf("Start L2C BISR.\n");
   bisr_start();
   udelay(1);
@@ -103,6 +109,7 @@ bool bisr_hard_test()
 	if (!bisr_wait())
 		return false;
   bisr_analyze();
-
+  rumboot_printf("Clock disable.\n");
+  iowrite32(0x0 ,SCTL_BASE + SCTL_BISR_CLK_EN);
   return true;
 }
