@@ -72,7 +72,7 @@ int i2c_set_prescale(uint32_t i2c_base_addr, uint32_t scl_freq){
 	return I2C_FAILED;
 	}
 
-int i2c_init(uint32_t i2c_base_addr, uint32_t scl_freq){
+int i2c_initialization(uint32_t i2c_base_addr, uint32_t scl_freq){
 	uint32_t tmp_ctrl;
 
 	i2c_set_prescale(I2C_BASE,scl_freq);
@@ -217,7 +217,7 @@ int main()
 	uint32_t data	 = 0x8d;   	//write data
 	unsigned result;          	//read data
 
-	tmp =i2c_init(I2C_BASE,SCL_FREQ);
+	tmp =i2c_initialization(I2C_BASE,SCL_FREQ);
 	if (tmp == I2C_FAILED)
 		//rumboot_printf("I2C init test ERROR!\n");
         return TEST_ERROR;

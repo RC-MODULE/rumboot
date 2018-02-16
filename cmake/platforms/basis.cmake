@@ -193,14 +193,32 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       #IRUN_FLAGS +pcie_line_interference
     )
 
-    add_rumboot_target(
-        SNAPSHOT default
-        CONFIGURATION IRAM
-        FILES simple-iram/bisr_test.c
-        NAME bisr_test
-        CFLAGS -Dincrease_test_duration=1
-        #IRUN_FLAGS +pcie_line_interference
-      )
+  add_rumboot_target(
+      SNAPSHOT default
+      CONFIGURATION IRAM
+      FILES simple-iram/bisr_hard_test.c
+      NAME bisr_test
+      CFLAGS -Dincrease_test_duration=1
+      #IRUN_FLAGS +pcie_line_interference
+    )
+
+  add_rumboot_target(
+      SNAPSHOT default
+      CONFIGURATION IRAM
+      FILES simple-iram/bisr_program_test.c
+      NAME bisr_program_test
+      CFLAGS -Dincrease_test_duration=1
+      #IRUN_FLAGS +pcie_line_interference
+    )
+
+  add_rumboot_target(
+      SNAPSHOT default
+      CONFIGURATION IRAM
+      FILES simple-iram/i2c_test.c
+      NAME i2c_test
+      CFLAGS -Dincrease_test_duration=1
+      #IRUN_FLAGS +pcie_line_interference
+    )
 
   add_rumboot_target(
       SNAPSHOT default
@@ -333,6 +351,7 @@ file(GLOB PLATFORM_SOURCES
     ${CMAKE_SOURCE_DIR}/src/lib/drivers/mdma/mdma_transactions.c
     ${CMAKE_SOURCE_DIR}/src/lib/drivers/mdma/descriptor.c
     ${CMAKE_SOURCE_DIR}/src/lib/drivers/bisr.c
+    ${CMAKE_SOURCE_DIR}/src/lib/drivers/i2c.c
 )
 
 macro(RUMBOOT_PLATFORM_SET_COMPILER_FLAGS)
