@@ -186,42 +186,6 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
   add_rumboot_target(
       SNAPSHOT default
-      CONFIGURATION IRAM
-      FILES simple-iram/muart_test.c
-      NAME muart_test
-      CFLAGS -Dincrease_test_duration=1
-      #IRUN_FLAGS +pcie_line_interference
-    )
-
-  add_rumboot_target(
-      SNAPSHOT default
-      CONFIGURATION IRAM
-      FILES simple-iram/bisr_hard_test.c
-      NAME bisr_test
-      CFLAGS -Dincrease_test_duration=1
-      #IRUN_FLAGS +pcie_line_interference
-    )
-
-  add_rumboot_target(
-      SNAPSHOT default
-      CONFIGURATION IRAM
-      FILES simple-iram/bisr_program_test.c
-      NAME bisr_program_test
-      CFLAGS -Dincrease_test_duration=1
-      #IRUN_FLAGS +pcie_line_interference
-    )
-
-  add_rumboot_target(
-      SNAPSHOT default
-      CONFIGURATION IRAM
-      FILES simple-iram/i2c_test.c
-      NAME i2c_test
-      CFLAGS -Dincrease_test_duration=1
-      #IRUN_FLAGS +pcie_line_interference
-    )
-
-  add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION ROM
       FILES pcie/pcie_at_slv_eRP_test_0.c
       NAME pcie_at_slv_eRP_test_0

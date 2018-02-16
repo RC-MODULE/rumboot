@@ -138,6 +138,8 @@ int i2c_write_data(uint32_t base, uint8_t slave_dev, uint16_t offset, void *buf,
   if(!wait_tx_fifo_empty(base))
     return -2;
 
+  iowrite32(ioread32(base + I2C_CR) | (1 << STOP_i), base + I2C_CR);
+
   return 0;
 }
 
