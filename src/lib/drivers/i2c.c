@@ -124,7 +124,7 @@ static bool wait_rx_fifo_full(uint32_t base)
 }
 #endif
 
-int i2c_write(uint32_t base, uint8_t slave_dev, uint16_t offset, void *buf, size_t number)
+int i2c_write_data(uint32_t base, uint8_t slave_dev, uint16_t offset, void *buf, size_t number)
 {
   if(send_write_cmd(base, slave_dev, offset) < 0)
     return -1;

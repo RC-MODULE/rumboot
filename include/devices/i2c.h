@@ -25,6 +25,6 @@ void i2c_init(uint32_t base, struct i2c_config *cfg);
 void  i2c_enable(uint32_t base);
 enum i2c_state_cmd i2c_get_state(uint32_t base);
 int i2c_random_read(uint32_t base, uint8_t slave_dev, uint16_t offset, void* buf);
-int i2c_write(uint32_t base, uint8_t slave_dev, uint16_t offset, void* buf, size_t number);
+int i2c_write_data(uint32_t base, uint8_t slave_dev, uint16_t offset, void* buf, size_t number);
 
 #endif

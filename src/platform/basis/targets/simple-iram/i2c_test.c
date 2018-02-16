@@ -36,7 +36,7 @@ int main()
   i2c_enable(base);
 
   rumboot_printf("Write data throught i2c.\n");
-  int ret = i2c_write(base, slave_dev, offset, in_buf, byte_number);
+  int ret = i2c_write_data(base, slave_dev, offset, in_buf, byte_number);
 
   if(ret < 0)
     rumboot_printf("Write failed with error code %i\n", ret);
