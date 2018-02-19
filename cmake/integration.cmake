@@ -163,10 +163,7 @@ function(rumboot_load_build platform buildtype)
     #Suck in target information from rumboot, and play a little with SRC_DIR
     set(CMAKE_SOURCE_DIR_REAL ${CMAKE_SOURCE_DIR})
     set(CMAKE_SOURCE_DIR ${CMAKE_SOURCE_DIR}/rumboot)
-    include(${CMAKE_SOURCE_DIR_REAL}/rumboot/cmake/platforms/basis.cmake)
+    include(${CMAKE_SOURCE_DIR_REAL}/rumboot/cmake/platforms/${platform}.cmake)
     RUMBOOT_PLATFORM_ADD_COMPONENTS()
     set(CMAKE_SOURCE_DIR ${CMAKE_SOURCE_DIR_REAL})
 endfunction()
-
-rumboot_load_build(basis Debug)
-#rumboot_load_build(basis Release)
