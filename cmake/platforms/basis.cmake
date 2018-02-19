@@ -118,6 +118,19 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       PREFIX lprobe-pcie
     )
 
+    add_directory_with_targets(i2c/
+      CONFIGURATION IRAM
+      CFLAGS -DI2C_BASE=I2C0_BASE
+      PREFIX i2c-0
+    )
+
+    add_directory_with_targets(i2c/
+      CONFIGURATION IRAM
+      CFLAGS -DI2C_BASE=I2C1_BASE
+      PREFIX i2c-1
+    )
+
+
     add_directory_with_targets(spl-stubs/
       CONFIGURATION IRAM
       PREFIX spl
