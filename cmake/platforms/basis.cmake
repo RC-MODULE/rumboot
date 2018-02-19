@@ -187,6 +187,22 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
    TIMEOUT 150 us
    IRUN_FLAGS +can_plus_adapter
   )
+  
+ add_rumboot_target(
+    SNAPSHOT default
+    CONFIGURATION IRAM
+    FILES simple-iram/bisr_hard_test_err_rep.c
+    TIMEOUT 400 us
+    IRUN_FLAGS +bisr_error_injection_rep
+  ) 
+  
+ add_rumboot_target(
+    SNAPSHOT default
+    CONFIGURATION IRAM
+    FILES simple-iram/bisr_hard_test_err_nonrep.c
+    TIMEOUT 400 us
+    IRUN_FLAGS +bisr_error_injection_nonrep
+  )  
 
   add_rumboot_target(
       SNAPSHOT default
