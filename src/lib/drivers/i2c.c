@@ -7,31 +7,30 @@
 
 #include <rumboot/io.h>
 #include <rumboot/printf.h>
+#include <rumboot/timer.h>
 
 #define I2C_TIMEOUT 1000
 
 void i2c_init(uint32_t base, struct i2c_config *cfg)
 {
 	//1)
-	iowrite32(cfg->scl_freq, base + I2C_CLKPR);
-
-	//Why 0x00070001 ???
-	iowrite32(cfg->fifofil, (base + I2C_FIFOFIL));
+	iowrite32(cfg->scl_freq, base + I2C_PRESCALE);
 
 	iowrite8(cfg->byte_numb, base + I2C_NUMB);
+	iowrite32(cfg->byte_numb, base + I2C_FIFOFIL);
 }
 
 void  i2c_enable(uint32_t base)
 {
-	uint8_t ctrl = ioread8(base + I2C_CR);
+	uint8_t ctrl = ioread8(base + I2C_CTRL);
 
-	iowrite8(ctrl | (1 << I2C_EN_i), base + I2C_CR);
+	iowrite8(ctrl | (1 << I2C_EN_i), base + I2C_CTRL);
   iowrite8(0xff, base + I2C_IER);
 }
 
 enum i2c_state_cmd i2c_get_state(uint32_t base)
 {
-	return (enum i2c_state_cmd)((ioread32(base + I2C_SR) && 0x3c00) >> 10);
+	return (enum i2c_state_cmd)((ioread32(base + I2C_STATUS) && 0x3c00) >> 10);
 }
 
 #if 0
@@ -65,7 +64,7 @@ static bool wait_tx_fifo_empty(uint32_t base)
 static bool wait_rx_full_almost(uint32_t base)
 {
   int count = 0;
-  while ( !(ioread32(base + I2C_SR) & (1 << IBUSY_i)) ) {
+  while ( !(ioread32(base + I2C_STATUS) & (1 << IBUSY_i)) ) {
 
   //  rumboot_printf("interrupt status register: %x\n", ioread32(base + I2C_ISR));
     if (count++ == I2C_TIMEOUT) {
@@ -92,18 +91,18 @@ static enum err_code send_write_cmd(uint32_t base, uint8_t slave_dev, uint16_t o
   uint8_t offset_l = offset && 0x00ff;
 
   if (i2c_get_state(base) == ST_IDLE)
-    iowrite8(slave_dev + offset, base + I2C_TXBUF);
+    iowrite8(slave_dev + offset, base + I2C_TRANSMIT);
 
   if (ioread32(base + I2C_ISR) & (1 << INT_NADDR_i))
     return NADDR_ERROR;
 
-  iowrite8(offset_h, base + I2C_TXBUF);
-  iowrite8(offset_l, base + I2C_TXBUF);
+  iowrite8(offset_h, base + I2C_TRANSMIT);
+  iowrite8(offset_l, base + I2C_TRANSMIT);
 
   if (ioread32(base + I2C_ISR) & (1 << INT_NACK_i))
     return NACK_ERROR;
 
-  iowrite32(ioread32(base + I2C_CR) | (1 << WR_i) | (1 << START_i), base + I2C_CR);
+  iowrite32(ioread32(base + I2C_CTRL) | (1 << WR_i) | (1 << START_i), base + I2C_CTRL);
 
   if(!wait_tx_fifo_empty(base))
     return TX_FIFO_NOT_EMPTY_ERROR;
@@ -116,7 +115,7 @@ static bool wait_rx_fifo_full(uint32_t base)
 {
   int count = I2C_TIMEOUT;
 
-  while( ioread32(base + I2C_SR) & (1<<RX_FULL_i) ) {
+  while( ioread32(base + I2C_STATUS) & (1<<RX_FULL_i) ) {
 
     if(count--)
       return RX_FIFO_NOT_FULL;
@@ -126,7 +125,7 @@ static bool wait_rx_fifo_full(uint32_t base)
 
 int i2c_write_byte(uint32_t base, uint8_t slave_dev, uint16_t offset, uint8_t byte)
 {
-  
+
 
   return 0;
 }
@@ -137,15 +136,15 @@ int i2c_write_data(uint32_t base, uint8_t slave_dev, uint16_t offset, void *buf,
     return -1;
 
   while(number--) {
-    iowrite8(*( (uint8_t*) buf), base + I2C_TXBUF);
+    iowrite8(*( (uint8_t*) buf), base + I2C_TRANSMIT);
     (uint8_t*) buf++;
   }
 
-  iowrite32(ioread32(base + I2C_CR) | (1 << WR_i) | (1 << START_i) | (1 << REPEAT_i), (base + I2C_CR));
+  iowrite32(ioread32(base + I2C_CTRL) | (1 << WR_i) | (1 << START_i) | (1 << REPEAT_i), (base + I2C_CTRL));
   if(!wait_tx_fifo_empty(base))
     return -2;
 
-  iowrite32(ioread32(base + I2C_CR) | (1 << STOP_i), base + I2C_CR);
+  iowrite32(ioread32(base + I2C_CTRL) | (1 << STOP_i), base + I2C_CTRL);
 
   return 0;
 }
@@ -159,17 +158,19 @@ int i2c_random_read(uint32_t base, uint8_t slave_dev, uint16_t offset, void *buf
     return -1;
 
 	//LA said what need add 1! Ask her about this
-	iowrite8(slave_dev + 1, base + I2C_TXBUF);
+	iowrite8(slave_dev + 1, base + I2C_TRANSMIT);
 
-	iowrite32(ioread32(base + I2C_CR) | (1 << RD_i) | (1 << START_i) | (1 << REPEAT_i), base + I2C_CR);
+	iowrite32(ioread32(base + I2C_CTRL) | (1 << RD_i) | (1 << START_i) | (1 << REPEAT_i), base + I2C_CTRL);
 
 	if(!(wait_rx_full_almost(base)))
     return -2;
 
+	udelay(10);
+
 	while (byte_numb--) {
-    *((uint8_t *)buf) = ioread8(base + I2C_RXBUF);
+    *((uint8_t *)buf) = ioread8(base + I2C_TRANSMIT);
     (uint8_t *) buf++;
-    rumboot_printf("data:%x ", ioread8(base + I2C_RXBUF));
+    rumboot_printf("data:%x ", ioread8(base + I2C_RECEAVE));
   }
   rumboot_printf("\n");
 

@@ -17,7 +17,6 @@ enum i2c_state_cmd {
 struct i2c_config {
 
 								uint32_t scl_freq;
-								uint32_t fifofil;
 								uint8_t byte_numb;
 };
 

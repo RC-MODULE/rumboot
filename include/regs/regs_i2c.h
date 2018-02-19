@@ -7,14 +7,14 @@
 #define I2C_ISR    0x004
 #define I2C_IER    0x008
 #define I2C_SOFTR   0x00C
-#define I2C_TXBUF  0x018
-#define I2C_RXBUF   0x020
-#define I2C_CR   0x010
+#define I2C_TRANSMIT  0x018
+#define I2C_RECEAVE   0x020
+#define I2C_CTRL   0x010
 #define I2C_NUMB   0x01C
-#define I2C_SR   0x014
-#define I2C_CLKPR  0x024
+#define I2C_STATUS   0x014
+#define I2C_PRESCALE  0x024
 #define I2C_FIFOFIL   0x028
-#define I2C_STATRST   0x02C
+#define I2C_STAT_RST   0x02C
 
 //Interrupt status register
 #define INT_TRN_EMPTY 2

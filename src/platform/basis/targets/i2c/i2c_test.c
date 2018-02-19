@@ -19,7 +19,6 @@ int main()
   const uint16_t offset = 0x0;
   struct i2c_config cfg = {
     .scl_freq = 0x13,
-    .fifofil = 0x00070001,
     .byte_numb = byte_number
   };
   char in_buf[byte_number];
