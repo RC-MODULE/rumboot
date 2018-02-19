@@ -1,3 +1,7 @@
+#ifndef REGS_I2C_H
+#define REGS_I2C_H
+
+
 //REGISTERS
 #define I2C_ID    0x0
 #define I2C_ISR    0x004
@@ -19,7 +23,7 @@
 
 //Status register
 #define IBUSY_i 0
-#define RX_FULL_i 5 
+#define RX_FULL_i 5
 
 //Control register
 #define I2C_EN_i 0
@@ -28,3 +32,5 @@
 #define WR_i 4
 #define REPEAT_i 5
 #define STOP_i 6
+
+#endif

@@ -1,3 +1,6 @@
+#ifndef REGS_SPI_H
+#define REGS_SPI_H
+
 /**
  * @}
  * \defgroup SPI
@@ -38,3 +41,5 @@
  */
 #define SPI_READ_CMD_TIMEOUT 500
 #define SPI_READ_TIMEOUT 500
+
+#endif

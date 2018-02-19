@@ -10,7 +10,7 @@
 #include <rumboot/bootsrc/sdio.h>
 #include <rumboot/bootsrc/spiflash.h>
 #include <rumboot/bootsrc/eeprom.h>
-#include <devices/gpio.h>
+#include <regs/regs_gpio.h>
 
 #include <platform/devices.h>
 

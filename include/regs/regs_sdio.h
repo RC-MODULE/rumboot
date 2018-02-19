@@ -1,3 +1,6 @@
+#ifndef REGS_SDIO_H
+#define REGS_SDIO_H
+
 /**
  * @}
  * \defgroup SDIO
@@ -155,3 +158,5 @@
 /**
  * @}
  */
+
+#endif

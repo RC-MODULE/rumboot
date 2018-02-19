@@ -1,3 +1,11 @@
+include/platform/basis/platform/sctl.h
+run_sd.sh
+scripts/outputfile.txt
+scripts/test.lua
+src/platform/basis/targets/simple-iram/muart_loopback_test.c
+src/platform/basis/targets/simple-iram/simple_test.c
+test/
+
 # Object files
 *.o
 *.ko

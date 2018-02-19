@@ -1,5 +1,5 @@
-#ifndef MDMA__
-#define MDMA__
+#ifndef REGS_MDMA_H
+#define REGS_MDMA_H
 
 //WRITE CHANNEL
 #define MDMA_STATUS_W 0x200

@@ -1,5 +1,5 @@
-#ifndef MUART__
-#define MUART__
+#ifndef REGS_MUART_H
+#define REGS_MUART_H
 
 #define MUART_ID 0x000
 #define MUART_VERSION 0x004

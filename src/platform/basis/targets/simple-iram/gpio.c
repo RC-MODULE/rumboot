@@ -1,7 +1,7 @@
 #include <rumboot/printf.h>
 #include <rumboot/platform.h>
 #include <rumboot/io.h>
-#include <devices/gpio.h>
+#include <regs/regs_gpio.h>
 #include <platform/devices.h>
 
 #define GPIO_OK    0
