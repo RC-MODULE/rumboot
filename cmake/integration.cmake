@@ -163,9 +163,11 @@ function(rumboot_load_build platform buildtype)
     #Suck in target information from rumboot, and play a little with SRC_DIR
     set(CMAKE_SOURCE_DIR_REAL ${CMAKE_SOURCE_DIR})
     set(CMAKE_SOURCE_DIR ${CMAKE_SOURCE_DIR}/rumboot)
-    include(${CMAKE_SOURCE_DIR_REAL}/rumboot/cmake/platforms/${platform}.cmake)
+
     set(RUMBOOT_PLATFORM ${platform})
-    set(RUMBOOT_PLATFORM_TARGET_DIR ${CMAKE_SOURCE_DIR_REAL}/rumboot/src/platform/${RUMBOOT_PLATFORM}/targets/)
+    set(RUMBOOT_PLATFORM_TARGET_DIR ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/targets/)
+    include(${CMAKE_SOURCE_DIR}/cmake/platforms/${platform}.cmake)
+
     RUMBOOT_PLATFORM_ADD_COMPONENTS()
     set(CMAKE_SOURCE_DIR ${CMAKE_SOURCE_DIR_REAL})
 endfunction()
