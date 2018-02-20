@@ -40,17 +40,15 @@ void bisr_stop()
 	iowrite32(sctlreg & ~(1 << SCTL_START_i), SCTL_BASE + SCTL_BISR_L2C);
 }
 
-bool bisr_wait()
+bool bisr_wait(uint32_t timeout)
 {
-	uint32_t count = 0;
-
+	uint32_t start = rumboot_platform_get_uptime();
 	while (!(ioread32(SCTL_BASE + SCTL_BISR_L2C) & (1 << SCTL_FINISH_i))) {
-    if (count++ == BISR_TIMEOUT) {
+    if (rumboot_platform_get_uptime() - start > timeout) {
       rumboot_printf("Timeout ERROR.\n");
       return false;
     }
   }
-
 	return true;
 }
 
@@ -206,19 +204,34 @@ static bool bisr_prog_mbist2_analyze() {
     return (err_vector_mem_low || err_vector_mem_high) ? false : true;
 }
 
-static void bisr_hard_analyze()
+int bisr_hard_analyze()
 {
   uint32_t l2cbisr = ioread32(SCTL_BASE + SCTL_BISR_L2C);
 
   bool rslt = l2cbisr & (1 << SCTL_RSLT_i);
   bool redok = l2cbisr & (1 << SCTL_REDOK_i);
 
-  if(!redok && !rslt) rumboot_printf("FAIL.\n");
-  if(!redok && rslt) rumboot_printf("GOOD.\n");
-  if(redok && rslt) rumboot_printf("PERFECT.\n");
+  if(!redok && !rslt){
+      rumboot_printf("MEM FAIL.\n");
+      return BISR_MEM_FAIL;
+  }
+  else {
+      if(!redok && rslt){
+          rumboot_printf("MEM GOOD.\n");
+          return BISR_MEM_GOOD;
+      }
+      else {
+          if(redok && rslt){
+              rumboot_printf("PERFECT.\n");
+              return BISR_MEM_PERFECT;
+          }
+          else return BISR_TEST_TIMEOUT;
+      }
+  }
 }
 
-bool bisr_program_test()
+
+bool bisr_program_test(uint32_t timeout)
 {
   rumboot_printf("Clock enable.\n");
   iowrite32(0x1 ,SCTL_BASE + SCTL_BISR_CLK_EN);
@@ -232,7 +245,7 @@ bool bisr_program_test()
   rumboot_printf("Stop L2C BISR(Prog mode).\n");
 	bisr_prog_stop();
   rumboot_printf("Wait L2C BISR finish, 1st MBIST.\n");
-	if (!bisr_wait())
+	if (!bisr_wait(timeout))
 		return false;
   rumboot_printf("L2C BISR(Prog mode) analyze after 1st MBIST.\n");
   bool ret1 = bisr_prog_mbist1_analyze();
@@ -245,7 +258,7 @@ bool bisr_program_test()
   rumboot_printf("Stop L2C BISR(Prog mode).\n");
 	bisr_prog_stop();
   rumboot_printf("Wait L2C BISR finish, 2nd MBIST.\n");
-	if (!bisr_wait())
+	if (!bisr_wait(timeout))
 		return false;
   rumboot_printf("L2C BISR(Prog mode) analyze after 2nd MBIST.\n");
   bool ret2 = bisr_prog_mbist2_analyze();
@@ -257,7 +270,7 @@ bool bisr_program_test()
   //return ret;
 }
 
-bool bisr_hard_test()
+int bisr_hard_test(uint32_t timeout_us)
 {
   rumboot_printf("Clock enable.\n");
   iowrite32(0x1 ,SCTL_BASE + SCTL_BISR_CLK_EN);
@@ -267,10 +280,10 @@ bool bisr_hard_test()
   rumboot_printf("Stop L2C BISR.\n");
   bisr_stop();
   rumboot_printf("Wait L2C BISR.\n");
-	if (!bisr_wait())
-		return false;
-  bisr_hard_analyze();
+	if (!bisr_wait(timeout_us))
+		return BISR_TEST_TIMEOUT;
+  int bisr_result = bisr_hard_analyze();
   rumboot_printf("Clock disable.\n");
   iowrite32(0x0 ,SCTL_BASE + SCTL_BISR_CLK_EN);
-  return true;
+  return bisr_result;
 }

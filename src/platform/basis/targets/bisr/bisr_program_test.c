@@ -6,7 +6,7 @@ uint32_t main()
 {
   rumboot_printf("Test program BISR.\n");
 
-  if(bisr_program_test())
+  if(bisr_program_test(BISR_TIMEOUT))
     rumboot_printf("Test OK!\n");
   else
     rumboot_printf("Test failed\n");

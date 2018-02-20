@@ -187,20 +187,30 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
   )
   
  add_rumboot_target(
-    SNAPSHOT default
     CONFIGURATION IRAM
-    FILES simple-iram/bisr_hard_test_err_rep.c
+    FILES bisr/bisr_hard_test.c
+    NAME bisr_hard_test_rep
     TIMEOUT 400 us
     IRUN_FLAGS +bisr_error_injection_rep
+    CFLAGS -DBISR_TEST_EXPECTED=BISR_MEM_GOOD
   ) 
   
  add_rumboot_target(
-    SNAPSHOT default
     CONFIGURATION IRAM
-    FILES simple-iram/bisr_hard_test_err_nonrep.c
+    FILES bisr/bisr_hard_test.c
+    NAME bisr_hard_test_nonrep
     TIMEOUT 400 us
     IRUN_FLAGS +bisr_error_injection_nonrep
+    CFLAGS -DBISR_TEST_EXPECTED=BISR_MEM_FAIL
   )  
+  
+ add_rumboot_target(
+    CONFIGURATION IRAM
+    FILES bisr/bisr_hard_test.c
+    NAME bisr_hard_test_clear
+    TIMEOUT 400 us
+    CFLAGS -DBISR_TEST_EXPECTED=BISR_MEM_PERFECT
+  ) 
 
   add_rumboot_target(
       SNAPSHOT default
