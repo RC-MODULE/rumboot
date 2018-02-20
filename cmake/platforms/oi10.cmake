@@ -19,6 +19,7 @@ rumboot_add_configuration(
   ROM
   LDS oi10/rom.lds
   CFLAGS -DRUMBOOT_ONLY_STACK -DRUMBOOT_PRINTF_ACCEL
+  SNAPSHOT default
   PREFIX rom
 )
 
