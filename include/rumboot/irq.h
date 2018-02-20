@@ -35,6 +35,11 @@ static inline void rumboot_arch_irq_enable()
 
 }
 
+static inline int rumboot_arch_irq_setstate(int pri_mask)
+{
+    return 0;
+}
+
 #define RUMBOOT_ATOMIC_BLOCK()
 #endif
 
