@@ -179,15 +179,15 @@ int bisr_prog_mbist1_analyze() {
             
       if (unrepairable_arr) {
           rumboot_printf("Array %x has unrepairable number of errors!\n", a);
-          rumboot_printf("Error vector Low ARR %x: %x\n", a, err_vector_arr_low);
-          rumboot_printf("Error vector High ARR %x: %x\n", a, err_vector_arr_high);
+          rumboot_printf("Error vector Low ARR %x: %x\n", a, err_vector_low);
+          rumboot_printf("Error vector High ARR %x: %x\n", a, err_vector_high);
       }
           
       else{
           if (repairable_arr) {
               rumboot_printf("Array %x has repairable number of errors! RB is generated\n", a);
-              rumboot_printf("Error vector Low ARR %x: %x\n", a, err_vector_arr_low);
-              rumboot_printf("Error vector High ARR %x: %x\n", a, err_vector_arr_high);
+              rumboot_printf("Error vector Low ARR %x: %x\n", a, err_vector_low);
+              rumboot_printf("Error vector High ARR %x: %x\n", a, err_vector_high);
               rb = repairable_high_arr << CRE2 | fca2_gen(err_vector_high) << FCA2 | repairable_low_arr << CRE1 | fca1_gen(err_vector_low) << FCA1;
               iowrite32(rb, BISR_L2C + BISR_REDUNDANCY_BUS_ARR0  + 0x10*a);
               rumboot_printf("for ARR %x RB = %h\n", a, rb);              
