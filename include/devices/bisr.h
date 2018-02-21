@@ -2,11 +2,16 @@
 #define BISR
 
 #define BISR_TIMEOUT 50000
+#define NUM_ARRAYS 4
 
 #define BISR_TEST_TIMEOUT 0
 #define BISR_MEM_PERFECT 1
 #define BISR_MEM_GOOD 2
 #define BISR_MEM_FAIL 3
+
+#define MAIN_MEM_CLEAR 1
+#define MAIN_MEM_REP 2
+#define MAIN_MEM_NONREP 3
 
 #define BISR_STATUS_ARR0 0x00
 #define BISR_REDUNDANCY_BUS_ARR0 0x04
@@ -21,7 +26,7 @@
 
 #include <stdbool.h>
 
-bool bisr_program_test();
+int bisr_program_test();
 int bisr_hard_test();
 
 #endif

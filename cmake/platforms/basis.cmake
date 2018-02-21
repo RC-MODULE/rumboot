@@ -211,6 +211,32 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     TIMEOUT 400 us
     CFLAGS -DBISR_TEST_EXPECTED=BISR_MEM_PERFECT
   ) 
+  
+ add_rumboot_target(
+    CONFIGURATION IRAM
+    FILES bisr/bisr_program_test.c
+    NAME bisr_program_test_rep
+    TIMEOUT 420 us
+    IRUN_FLAGS +bisr_error_injection_rep
+    CFLAGS -DBISR_TEST_EXPECTED=BISR_MEM_GOOD
+  ) 
+  
+ add_rumboot_target(
+    CONFIGURATION IRAM
+    FILES bisr/bisr_program_test.c
+    NAME bisr_program_test_nonrep
+    TIMEOUT 420 us
+    IRUN_FLAGS +bisr_error_injection_nonrep
+    CFLAGS -DBISR_TEST_EXPECTED=BISR_MEM_FAIL
+  )  
+  
+ add_rumboot_target(
+    CONFIGURATION IRAM
+    FILES bisr/bisr_program_test.c
+    NAME bisr_program_clear
+    TIMEOUT 420 us
+    CFLAGS -DBISR_TEST_EXPECTED=BISR_MEM_PERFECT
+  )  
 
   add_rumboot_target(
       SNAPSHOT default
