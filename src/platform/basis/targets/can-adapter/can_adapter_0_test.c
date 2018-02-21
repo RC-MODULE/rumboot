@@ -58,19 +58,19 @@ int main()
     //Read from EQ0
     if (ioread32(CAN1_BASE + DATA_EQ0) != BUS_STATUS_ID)
     {
-        rumboot_printf("EQ0 element has wrong EventID!\n");
+        rumboot_printf("EQ0 in CAN1 element has wrong EventID!\n");
         return -1;
     }
     else
-    {rumboot_printf("EQ0 has Bus Status element:\n");}
+    {rumboot_printf("EQ0 in CAN1 has Bus Status element:\n");}
 
     if ((ioread32(CAN1_BASE + DATA_EQ0)&0x0000000F) != BUS_IDLE)
     {
-        rumboot_printf("EQ0 Bus status has wrong BSC!\n");
+        rumboot_printf("EQ0 in CAN1 Bus status has wrong BSC!\n");
         return -1;
     }
     else
-    {rumboot_printf("EQ0 has BSC == BUS_IDLE\n");}
+    {rumboot_printf("EQ0 in CAN1 has BSC == BUS_IDLE\n");}
 
     for (int i = 0; i<6; i=i+1)
     {
@@ -90,6 +90,26 @@ int main()
      //while (!(read_data & 1 << RXOK))
      while (!(read_data == (1 << BI | 1 << RXOK)))
      {read_data=ioread32(CAN1_BASE + STATUS_REG);}
+ 
+    //Read Received Message from CAN1
+    if (ioread32(CAN1_BASE + DATA_EQ0) != REC_MSG_ID)
+    {
+        rumboot_printf("EQ0 in CAN1 element has wrong EventID!\n");
+        return -1;
+    }
+    else
+    {rumboot_printf("EQ0 in CAN1 has Rec Msg element:\n");}
+
+    ioread32(CAN1_BASE + DATA_EQ0);
+    
+    if (ioread32(CAN1_BASE + DATA_EQ0) != 0x0FA00000)
+    {
+        rumboot_printf("Rec Msg in CAN1 element has wrong baseID!\n");
+        return -1;
+    }
+    else
+    {rumboot_printf("Rec Msg in CAN1 has correct baseID.\n");}
+    
     rumboot_printf("CAN1 Rx Ok!\n");
     
 //read_data=ioread32(GSPI0_BASE + 0x0d4);
