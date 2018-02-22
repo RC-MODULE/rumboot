@@ -4,27 +4,40 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-enum i2c_state_cmd {
 
-								ST_IDLE = 0b0000,
-								ST_START = 0b0001,
-								ST_READ = 0b0010,
-								ST_WRITE = 0b0011,
-								ST_ACK = 0b0100,
-								ST_STOP = 0b0101,
-};
 
 struct i2c_config {
 
+								volatile uint32_t base;
+								bool irq_en;
 								uint32_t scl_freq;
 								uint8_t byte_numb;
+
+								/*PRIVATE DATA*/
+								uint32_t irqstat;
 };
 
-void i2c_init(uint32_t base, struct i2c_config *cfg);
-void  i2c_enable(uint32_t base);
-enum i2c_state_cmd i2c_get_state(uint32_t base);
-int i2c_random_read(uint32_t base, uint8_t slave_dev, uint16_t offset, void* buf);
-int i2c_write_data(uint32_t base, uint8_t slave_dev, uint16_t offset, void* buf, size_t number);
-int i2c_write_byte(uint32_t base, uint8_t slave_dev, uint16_t offset, uint8_t byte);
+/*I2C API*/
+void i2c_init(struct i2c_config *cfg);
+int i2c_start_transaction(struct i2c_config *cfg,
+        uint8_t devaddr,
+        void *txbuf, int txlen,
+        void *rxbuf, int rxlen
+);
+
+enum waited_event {
+	RX_FULL_ALM,
+	TX_EMPTY
+};
+
+int i2c_check_transaction(struct i2c_config *cfg, enum waited_event e);
+int i2c_wait_transaction(struct i2c_config *cfg, enum waited_event e);
+int i2c_wait_transaction_timeout(struct i2c_config *cfg, enum waited_event e, uint32_t us);
+void i2c_irq_handler(int irq, void *arg);
+
+/* EEPROM FUNCTIONS*/
+int eeprom_random_read(struct i2c_config *cfg, uint8_t slave_dev, uint16_t offset, void* buf);
+int eeprom_write(struct i2c_config *cfg, uint8_t slave_dev, uint16_t offset, void* buf, size_t number);
+
 
 #endif

@@ -32,6 +32,8 @@
 #define MDMA1_IRQ    65
 #define MDMA2_IRQ    66
 #define MDMA3_IRQ    67
+#define I2C0_IRQ     72
+#define I2C1_IRQ     73
 #define UART0_INTR   74
 #define UART1_INTR   75
 #define ARINC_INT    85
