@@ -47,7 +47,7 @@ int main()
   //udelay(10);
 
   rumboot_printf("Read eeprom data throught i2c.\n");
-  ret = eeprom_random_read(&cfg, eeprom_dev, offset, out_buf);
+  ret = eeprom_random_read(&cfg, eeprom_dev, offset, out_buf, byte_number);
 
   if(ret < 0)
     rumboot_printf("Read failed with error code %i\n", ret);

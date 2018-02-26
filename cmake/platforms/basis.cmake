@@ -185,7 +185,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
    TIMEOUT 150 us
    IRUN_FLAGS +can_plus_adapter
   )
-  
+
  add_rumboot_target(
     CONFIGURATION IRAM
     FILES bisr/bisr_hard_test.c
@@ -193,8 +193,8 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     TIMEOUT 400 us
     IRUN_FLAGS +bisr_error_injection_rep
     CFLAGS -DBISR_TEST_EXPECTED=BISR_MEM_GOOD
-  ) 
-  
+  )
+
  add_rumboot_target(
     CONFIGURATION IRAM
     FILES bisr/bisr_hard_test.c
@@ -202,16 +202,16 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     TIMEOUT 400 us
     IRUN_FLAGS +bisr_error_injection_nonrep
     CFLAGS -DBISR_TEST_EXPECTED=BISR_MEM_FAIL
-  )  
-  
+  )
+
  add_rumboot_target(
     CONFIGURATION IRAM
     FILES bisr/bisr_hard_test.c
     NAME bisr_hard_test_clear
     TIMEOUT 400 us
     CFLAGS -DBISR_TEST_EXPECTED=BISR_MEM_PERFECT
-  ) 
-  
+  )
+
  add_rumboot_target(
     CONFIGURATION IRAM
     FILES bisr/bisr_program_test.c
@@ -219,8 +219,8 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     TIMEOUT 420 us
     IRUN_FLAGS +bisr_error_injection_rep
     CFLAGS -DBISR_TEST_EXPECTED=BISR_MEM_GOOD
-  ) 
-  
+  )
+
  add_rumboot_target(
     CONFIGURATION IRAM
     FILES bisr/bisr_program_test.c
@@ -228,15 +228,15 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     TIMEOUT 420 us
     IRUN_FLAGS +bisr_error_injection_nonrep
     CFLAGS -DBISR_TEST_EXPECTED=BISR_MEM_FAIL
-  )  
-  
+  )
+
  add_rumboot_target(
     CONFIGURATION IRAM
     FILES bisr/bisr_program_test.c
     NAME bisr_program_clear
     TIMEOUT 420 us
     CFLAGS -DBISR_TEST_EXPECTED=BISR_MEM_PERFECT
-  )  
+  )
 
   add_rumboot_target(
       SNAPSHOT default
@@ -373,12 +373,7 @@ file(GLOB PLATFORM_SOURCES
     ${CMAKE_SOURCE_DIR}/src/lib/drivers/pcie_test_lib.c
     ${CMAKE_SOURCE_DIR}/src/lib/drivers/dma_test_lib.c
     ${CMAKE_SOURCE_DIR}/src/lib/drivers/dit_lib.c
-    ${CMAKE_SOURCE_DIR}/src/lib/drivers/muart.c
-    ${CMAKE_SOURCE_DIR}/src/lib/drivers/mdma/mdma.c
-    ${CMAKE_SOURCE_DIR}/src/lib/drivers/mdma/mdma_transactions.c
-    ${CMAKE_SOURCE_DIR}/src/lib/drivers/mdma/descriptor.c
     ${CMAKE_SOURCE_DIR}/src/lib/drivers/bisr.c
-    ${CMAKE_SOURCE_DIR}/src/lib/drivers/i2c.c
 )
 
 macro(RUMBOOT_PLATFORM_SET_COMPILER_FLAGS)
