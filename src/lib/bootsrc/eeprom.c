@@ -55,7 +55,7 @@ int eeprom_write(struct i2c_config *cfg, uint8_t slave_dev, uint16_t offset, voi
     .devaddr = slave_dev,
     .rxbuf = buf,
     .rxlen = number,
-    .type = WRITE_CMD
+    .type = WRITE_DEV
   };
 
   i2c_start_transaction(cfg, &t);
@@ -66,6 +66,9 @@ int eeprom_write(struct i2c_config *cfg, uint8_t slave_dev, uint16_t offset, voi
   t.type = WRITE_DATA;
 
   i2c_start_transaction(cfg, &t);
+
+  if (i2c_wait_transaction_timeout(cfg, &t, EEPROM_TIMEOUT) < 0)
+    return -2;
 
   i2c_stop_transaction(cfg, &t);
 
@@ -78,17 +81,22 @@ int eeprom_random_read(struct i2c_config *cfg, uint8_t slave_dev, uint16_t offse
     .devaddr = slave_dev,
     .txbuf = buf,
     .txlen = number,
-    .type = WRITE_CMD
+    .type = WRITE_DEV
   };
 
 	i2c_start_transaction(cfg, &t);
 
-  t.type = READ_DATA;
+  if (i2c_wait_transaction_timeout(cfg, &t, EEPROM_TIMEOUT) < 0)
+    return -1;
 
+  t.type = READ_DATA_CMD;
   i2c_start_transaction(cfg, &t);
 
-	if (i2c_wait_transaction_timeout(cfg, &t, EEPROM_TIMEOUT) < 0)
-		return -1;
+  if(i2c_wait_transaction_timeout(cfg, &t, EEPROM_TIMEOUT) < 0)
+    return -2;
+
+  t.type = READ_DATA;
+  i2c_start_transaction(cfg, &t);
 
 	return 0;
 }

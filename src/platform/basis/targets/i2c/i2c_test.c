@@ -52,11 +52,11 @@ int main()
   if(ret < 0)
     rumboot_printf("Read failed with error code %i\n", ret);
 
-  // uint count = byte_number;
-  // while(count)
-  //   rumboot_printf("%x ", out_buf[byte_number - count--]);
-  //
-  // rumboot_printf("\n");
+  uint count = byte_number;
+  while(count)
+    rumboot_printf("%x ", out_buf[byte_number - count--]);
+
+  rumboot_printf("\n");
 
 	if(memcmp(in_buf, out_buf, byte_number) != 0) {
 

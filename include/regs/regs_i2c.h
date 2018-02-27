@@ -8,9 +8,9 @@
 #define I2C_IER    0x008
 #define I2C_SOFTR   0x00C
 #define I2C_TRANSMIT  0x018
-#define I2C_RECEAVE   0x020
+#define I2C_RECEIVE   0x020
 #define I2C_CTRL   0x010
-#define I2C_NUMB   0x01C
+#define I2C_NUMBER   0x01C
 #define I2C_STATUS   0x014
 #define I2C_PRESCALE  0x024
 #define I2C_FIFOFIL   0x028

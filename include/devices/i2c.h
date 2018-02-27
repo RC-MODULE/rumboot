@@ -17,8 +17,9 @@ struct i2c_config {
 };
 
 enum transaction_type {
-	WRITE_CMD,
+	WRITE_DEV,
 	WRITE_DATA,
+	READ_DATA_CMD,
 	READ_DATA
 };
 
