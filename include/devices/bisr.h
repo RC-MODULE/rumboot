@@ -1,8 +1,9 @@
 #ifndef BISR
 #define BISR
 
-#define BISR_TIMEOUT 50000
-#define NUM_ARRAYS 4
+#define BISR_TIMEOUT  50000
+#define NUM_ARRAYS        4
+#define ERR_VEC_WIDTH    32
 
 #define BISR_TEST_TIMEOUT 0
 #define BISR_MEM_PERFECT  1

@@ -216,7 +216,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     CONFIGURATION IRAM
     FILES bisr/bisr_program_test.c
     NAME bisr_program_test_rep
-    TIMEOUT 450 us
+    TIMEOUT 500 us
     IRUN_FLAGS +bisr_error_injection_rep
     CFLAGS -DBISR_TEST_EXPECTED=BISR_MEM_GOOD
   )
@@ -225,7 +225,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     CONFIGURATION IRAM
     FILES bisr/bisr_program_test.c
     NAME bisr_program_test_nonrep
-    TIMEOUT 450 us
+    TIMEOUT 500 us
     IRUN_FLAGS +bisr_error_injection_nonrep
     CFLAGS -DBISR_TEST_EXPECTED=BISR_MEM_FAIL
   )
@@ -234,7 +234,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     CONFIGURATION IRAM
     FILES bisr/bisr_program_test.c
     NAME bisr_program_clear
-    TIMEOUT 450 us
+    TIMEOUT 500 us
     CFLAGS -DBISR_TEST_EXPECTED=BISR_MEM_PERFECT
   )
 
