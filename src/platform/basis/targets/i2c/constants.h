@@ -7,7 +7,7 @@
 #define I2C_CR_RD_RUN_EN    0x13
 #define I2C_CR_RPT_RD_RUN_EN 0x33
 #define I2C_CR_STAT_RST     0x08
-#define I2C_STAT_RST     0x01
+#define I2C_STATRST     0x01
 #define I2C_CR_WR_RUN_EN    0x3
 #define I2C_CR_WR_STAT_RST   0xB
 
