@@ -138,7 +138,6 @@ function(add_rumboot_target)
         ${lprobe_flags}
         ${timeout_flags}
         +BOOTMAP=${rumboot_fulldir}/${product}.dmp
-        +SOURCE_DIR=${CMAKE_SOURCE_DIR_REAL}
         ${TARGET_IRUN_FLAGS}
     )
   endif()
@@ -158,6 +157,8 @@ function(rumboot_load_build platform buildtype)
         -DRUMBOOT_COVERAGE=${RUMBOOT_COVERAGE}
         -DRUMBOOT_PROFILE=${RUMBOOT_PROFILE}
     )
+
+    set(RUMBOOT_UTILS_DIR ${CMAKE_BINARY_DIR}/${rumboot_dirname}/utils PARENT_SCOPE)
 
     add_dependencies(rumboot ${rumboot_dirname})
     #Suck in target information from rumboot, and play a little with SRC_DIR
