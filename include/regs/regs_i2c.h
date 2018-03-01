@@ -30,7 +30,7 @@
 #define INT_DONE 0
 #define INT_AL 1
 #define INT_TRN_EMPTY_i 2
-#define INT_RCV_FULL 3
+#define INT_RCV_FULL_i 3
 #define INT_TRN_EMPTY_ALM_i 4
 #define INT_RCV_FULL_ALM_i 5
 #define INT_NADDR_i 6
@@ -39,7 +39,7 @@
 //Status register
 #define IBUSY_i 0
 #define AL_i 1
-#define DONE_i 2
+#define TX_EMPTY_ALMOST_i 2
 #define RX_FULL_ALM_i 3
 #define TX_EMPTY_i 4
 #define RX_FULL_i 5
@@ -47,6 +47,7 @@
 #define RX_EMPTY_i 7
 #define NADDR_i 8
 #define NACK_i 9
+#define DONE_i 10
 
 //Control register
 #define I2C_EN_i 0
