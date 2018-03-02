@@ -19,14 +19,14 @@
 #define DMA_SDIO_DST_DDR1_HIGH                0x3f000000
 #define DMA_SDIO_DST_IM0                      eSRAM1_BASE + 0x30000
 
-#define SPI_DMAWSTART     GSPI0_BASE+0x90
-#define SPI_DMAWEND       GSPI0_BASE+0x94
-#define SPI_DMAWCNTRL       GSPI0_BASE+0x98
-#define SPI_DMAWCUR       GSPI0_BASE+0x9c
-#define SPI_AXIW_BRESP      GSPI0_BASE+0xa0
-#define SPI_DMARSTART       GSPI0_BASE+0xa4
-#define SPI_DMAREND       GSPI0_BASE+0xa8
-#define SPI_DMARCNTRL       GSPI0_BASE+0xac
-#define SPI_DMARCUR       GSPI0_BASE+0xb0
+#define SPI_DMAWSTART                         0x90
+#define SPI_DMAWEND                           0x94
+#define SPI_DMAWCNTRL                         0x98
+#define SPI_DMAWCUR                           0x9c
+#define SPI_AXIW_BRESP                        0xa0
+#define SPI_DMARSTART                         0xa4
+#define SPI_DMAREND                           0xa8
+#define SPI_DMARCNTRL                         0xac
+
 
 #define Size                      33

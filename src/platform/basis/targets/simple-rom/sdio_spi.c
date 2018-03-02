@@ -206,7 +206,7 @@ read_data=ioread32 (SDIO0_BASE+ 0x048);
   
  iowrite32(0x00000004,SDIO0_BASE + 0x050);
  iowrite32( 0x00000200,SDIO0_BASE + 0x044);
- iowrite32(dst_addr,SDIO0_BASE + 0x040);
+ iowrite32(dst_addr,SDIO0_BASE + 0x040);    
  iowrite32(0x00020f01,SDIO0_BASE + 0x038);
  // if (!wait_sdio_int_handled(1000)) {trace_msg("SDIO interrupt timeout\n"); return TEST_ERROR;}
  read_data=ioread32 (SDIO0_BASE+ 0x28);

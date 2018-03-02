@@ -56,6 +56,7 @@
  #define EMI1_BASE                0xC0000000
  #define ARINC_BASE               0x01030000
  #define GSPI0_BASE               0x01040000
+ #define GSPI1_BASE               0x01041000
  #define SDIO0_BASE               0x01042000
  #define GPIO0_BASE               0x01098000
  #define GPIO1_BASE               0x01099000
@@ -63,7 +64,8 @@
  #define GPIO3_BASE               0x0109B000
  #define GPIO4_BASE               0x0109C000
 
-/**
+
+ /**
  * @}
  */
 
