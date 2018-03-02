@@ -11,6 +11,7 @@ struct i2c_config {
 								bool irq_en;
 								uint32_t scl_freq;
 								size_t byte_numb;
+								size_t txfifo_count;
 
 								/*PRIVATE DATA*/
 								uint32_t irqstat;
