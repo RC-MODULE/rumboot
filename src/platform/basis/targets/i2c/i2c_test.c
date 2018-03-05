@@ -46,7 +46,7 @@ int main()
 
 	if (ret < 0) {
 		rumboot_printf("Write failed with error code %i\n", ret);
-		return -1;
+		goto test_failed;
 	}
 
 	rumboot_printf("Read eeprom data throught i2c.\n");
@@ -54,6 +54,7 @@ int main()
 
 	if (ret < 0) {
 		rumboot_printf("Read failed with error code %i\n", ret);
+		goto test_failed;
 	}
 
 	uint count = byte_number;
@@ -63,10 +64,13 @@ int main()
 	rumboot_printf("\n");
 
 	if (memcmp(in_buf, out_buf, byte_number) != 0) {
-		rumboot_printf("Test failed.\n");
-		return -1;
+		goto test_failed;
 	}
 
 	rumboot_printf("Test OK.\n");
 	return 0;
+
+	test_failed:
+		rumboot_printf("Test failed.\n");
+		return -1;
 }

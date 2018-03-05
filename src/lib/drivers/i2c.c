@@ -73,7 +73,7 @@ static enum err_code write_data_chunk(uint32_t base, size_t *txfifo_count, void 
 	return 0;
 }
 
-static enum err_code send_write_cmd(uint32_t base, uint32_t fifofil)
+static enum err_code send_write_cmd(uint32_t base/*, uint32_t fifofil*/)
 {
 	//Before - reset old state!
 
@@ -111,7 +111,7 @@ static enum err_code trans_write_data(struct i2c_config *cfg, struct transaction
 			}
 		}
 
-		send_write_cmd(cfg->base, 0);
+		send_write_cmd(cfg->base);
 
 		if (i2c_wait_transaction_timeout(cfg, TX_EMPTY, I2C_TIMEOUT_PER_WR_US * TXBUF_SIZE) < 0) {
 			return -2;
@@ -120,7 +120,7 @@ static enum err_code trans_write_data(struct i2c_config *cfg, struct transaction
 
 	if (rem) {
 		rumboot_printf("Write remainder.\n");
-		iowrite32(rem, cfg->base + I2C_FIFOFIL);
+		//iowrite32(rem | (ioread32(cfg->base + I2C_FIFOFIL) & 0xff), cfg->base + I2C_FIFOFIL);
 
 		ret = write_data_chunk(cfg->base, &cfg->txfifo_count, t->buf, rem);
 
@@ -128,7 +128,7 @@ static enum err_code trans_write_data(struct i2c_config *cfg, struct transaction
 			return -3;
 		}
 
-		send_write_cmd(cfg->base, rem);
+		send_write_cmd(cfg->base);
 
 		if (i2c_wait_transaction_timeout(cfg, TX_EMPTY, I2C_TIMEOUT_PER_WR_US * rem) < 0) {
 			return -4;
@@ -165,11 +165,10 @@ static enum err_code read_data_chunk(uint32_t base, void *buf, size_t len)
 //      read_data_chunk(base, buf, numb);
 // }
 
-static enum err_code send_read_cmd(uint32_t base, uint8_t devaddr, bool do_stop)
+static enum err_code send_read_cmd(uint32_t base, bool do_stop)
 {
 	uint32_t cmd = (do_stop) ? CMD_READ_REPEAT_STOP : CMD_READ_REPEAT_START;
 
-	iowrite8(devaddr + 1, base + I2C_TRANSMIT);
 	iowrite32(0x1, base + I2C_STAT_RST);
 	iowrite32(cmd, base + I2C_CTRL);
 
@@ -192,30 +191,31 @@ static enum err_code trans_read_data(struct i2c_config *cfg, struct transaction 
 		rumboot_printf("n: %d, fifofil: %d\n", n, rem);
 	}
 
-	if (rem != t->len % numb) {
-		return -3;
-	}
-
 	enum waited_event e = (t->len > numb) ? RX_FULL : RX_FULL_ALMOST;
 	bool do_stop = false;
+
 	while (n--) {
-		rumboot_printf("n:%d, rem:%d\n", n, rem);
-		do_stop = (t->len < numb) ? true : false;
-		send_read_cmd(cfg->base, t->devaddr, do_stop);
+
+		iowrite8(t->devaddr + 1, cfg->base + I2C_TRANSMIT);
 
 		if (i2c_wait_transaction_timeout(cfg, e, I2C_TIMEOUT_PER_RD_US * numb) < 0) {
 			return -1;
 		}
 
+		do_stop = (t->len < numb) ? true : false;
+
+		send_read_cmd(cfg->base, do_stop);
+
 		read_data_chunk(cfg->base, t->buf, numb);
 	}
 
 	if (rem) {
-		send_read_cmd(cfg->base, t->devaddr, true);
 
 		if (i2c_wait_transaction_timeout(cfg, RX_FULL_ALMOST, I2C_TIMEOUT_PER_RD_US * rem) < 0) {
 			return -2;
 		}
+
+		send_read_cmd(cfg->base, true);
 
 		read_data_chunk(cfg->base, t->buf, rem);
 	}
