@@ -73,7 +73,7 @@ static enum err_code write_data_chunk(uint32_t base, size_t *txfifo_count, void 
 	return 0;
 }
 
-static enum err_code send_write_cmd(uint32_t base/*, uint32_t fifofil*/)
+static enum err_code send_write_cmd(uint32_t base /*, uint32_t fifofil*/)
 {
 	//Before - reset old state!
 
@@ -165,12 +165,18 @@ static enum err_code read_data_chunk(uint32_t base, void *buf, size_t len)
 //      read_data_chunk(base, buf, numb);
 // }
 
-static enum err_code send_read_cmd(uint32_t base, bool do_stop)
+static enum err_code send_read_cmd(struct i2c_config *cfg, uint8_t devaddr, bool do_stop)
 {
+	iowrite8(devaddr + 1, cfg->base + I2C_TRANSMIT);
+	iowrite32(CMD_WRITE, cfg->base + I2C_CTRL);
+	if (i2c_wait_transaction_timeout(cfg, TX_EMPTY, I2C_TIMEOUT_PER_RD_US * 10) < 0) {
+		return -1;
+	}
+
 	uint32_t cmd = (do_stop) ? CMD_READ_REPEAT_STOP : CMD_READ_REPEAT_START;
 
-	iowrite32(0x1, base + I2C_STAT_RST);
-	iowrite32(cmd, base + I2C_CTRL);
+	iowrite32(0x1, cfg->base + I2C_STAT_RST);
+	iowrite32(cmd, cfg->base + I2C_CTRL);
 
 	return 0;
 }
@@ -195,8 +201,7 @@ static enum err_code trans_read_data(struct i2c_config *cfg, struct transaction 
 	bool do_stop = false;
 
 	while (n--) {
-
-		iowrite8(t->devaddr + 1, cfg->base + I2C_TRANSMIT);
+		send_read_cmd(cfg, t->devaddr, do_stop);
 
 		if (i2c_wait_transaction_timeout(cfg, e, I2C_TIMEOUT_PER_RD_US * numb) < 0) {
 			return -1;
@@ -204,25 +209,22 @@ static enum err_code trans_read_data(struct i2c_config *cfg, struct transaction 
 
 		do_stop = (t->len < numb) ? true : false;
 
-		send_read_cmd(cfg->base, do_stop);
 
 		read_data_chunk(cfg->base, t->buf, numb);
 	}
 
 	if (rem) {
+		send_read_cmd(cfg, t->devaddr, true);
 
 		if (i2c_wait_transaction_timeout(cfg, RX_FULL_ALMOST, I2C_TIMEOUT_PER_RD_US * rem) < 0) {
 			return -2;
 		}
-
-		send_read_cmd(cfg->base, true);
 
 		read_data_chunk(cfg->base, t->buf, rem);
 	}
 
 	return 0;
 }
-
 
 static bool is_tx_empty(uint32_t base, bool is_irq)
 {
@@ -358,7 +360,7 @@ int i2c_execute_transaction(struct i2c_config *cfg, struct transaction *t)
 
 int i2c_stop_transaction(struct i2c_config *cfg)
 {
-	if (i2c_wait_transaction_timeout(cfg, TX_EMPTY, I2C_TIMEOUT*5) < 0) {
+	if (i2c_wait_transaction_timeout(cfg, TX_EMPTY, I2C_TIMEOUT * 5) < 0) {
 		return -1;
 	}
 
