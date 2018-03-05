@@ -50,6 +50,8 @@ static enum err_code trans_write_devaddr(struct i2c_config *cfg, struct transact
 		return -1;
 	}
 
+	iowrite32(0x1, cfg->base + I2C_STAT_RST);
+
 	return 0;
 }
 
@@ -60,11 +62,13 @@ static enum err_code write_data_chunk(uint32_t base, size_t *txfifo_count, void 
 	}
 
 	while (len--) {
-		if (*txfifo_count == 256) {
+
+		if ((*txfifo_count) == 256) {
 			rumboot_printf("TX buffer have overflowed!\n");
 			*txfifo_count = 0;
 			return len + 1;
 		}
+
 		iowrite8(*((uint8_t *)buf), base + I2C_TRANSMIT);
 		(*txfifo_count)++;
 		(uint8_t *)buf++;
@@ -98,7 +102,8 @@ static enum err_code trans_write_data(struct i2c_config *cfg, struct transaction
 	}
 
 	while (n--) {
-		ret = write_data_chunk(cfg->base, &cfg->txfifo_count, t->buf, TXBUF_SIZE);
+		ret = (t->len > TXBUF_SIZE ) ? write_data_chunk(cfg->base, &cfg->txfifo_count, t->buf, TXBUF_SIZE) :
+		write_data_chunk(cfg->base, &cfg->txfifo_count, t->buf, t->len);
 
 		if (ret != 0) {
 			if (ret < 0) {
@@ -175,7 +180,7 @@ static enum err_code send_read_cmd(struct i2c_config *cfg, uint8_t devaddr, bool
 
 	uint32_t cmd = (do_stop) ? CMD_READ_REPEAT_STOP : CMD_READ_REPEAT_START;
 
-	iowrite32(0x1, cfg->base + I2C_STAT_RST);
+	//iowrite32(0x1, cfg->base + I2C_STAT_RST);
 	iowrite32(cmd, cfg->base + I2C_CTRL);
 
 	return 0;
@@ -209,6 +214,7 @@ static enum err_code trans_read_data(struct i2c_config *cfg, struct transaction 
 
 		do_stop = (t->len < numb) ? true : false;
 
+		udelay(I2C_TIMEOUT_PER_RD_US * numb);
 
 		read_data_chunk(cfg->base, t->buf, numb);
 	}
@@ -219,6 +225,8 @@ static enum err_code trans_read_data(struct i2c_config *cfg, struct transaction 
 		if (i2c_wait_transaction_timeout(cfg, RX_FULL_ALMOST, I2C_TIMEOUT_PER_RD_US * rem) < 0) {
 			return -2;
 		}
+
+		udelay(I2C_TIMEOUT_PER_RD_US * rem);
 
 		read_data_chunk(cfg->base, t->buf, rem);
 	}
@@ -318,6 +326,9 @@ static void i2c_irq_enable(uint32_t base)
 
 void i2c_init(struct i2c_config *cfg)
 {
+	//private data
+	cfg->txfifo_count = 0;
+
 	size_t number = (cfg->byte_numb < 256) ? cfg->byte_numb : 255;
 	size_t fifofil = (cfg->byte_numb < 256) ? cfg->byte_numb : cfg->byte_numb % 256;
 

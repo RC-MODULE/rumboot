@@ -16,13 +16,13 @@ int main()
 {
 	rumboot_printf("I2C0 test!\n");
 
-	const size_t byte_number = 257;
+	const size_t byte_number = 2;
 	const uint8_t eeprom_dev = 0xA0;
 	const uint16_t offset = 0x0;
 	struct i2c_config cfg = {
 		.base		= I2C0_BASE,
 		.irq_en		= false,
-		.scl_freq	= 0x3,
+		.scl_freq	= 0x13,
 		.byte_numb	= byte_number
 	};
 	char in_buf[byte_number];
