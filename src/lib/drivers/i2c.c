@@ -44,13 +44,13 @@ static enum err_code trans_write_devaddr(struct i2c_config *cfg, struct transact
 	iowrite8(offset_l, cfg->base + I2C_TRANSMIT);
 	cfg->txfifo_count++;
 
+	iowrite32(0x1, cfg->base + I2C_STAT_RST);
 	iowrite32(CMD_WRITE_START, cfg->base + I2C_CTRL);
 
 	if (i2c_wait_transaction_timeout(cfg, TX_EMPTY, I2C_TIMEOUT) < 0) {
 		return -1;
 	}
 
-	iowrite32(0x1, cfg->base + I2C_STAT_RST);
 
 	return 0;
 }
