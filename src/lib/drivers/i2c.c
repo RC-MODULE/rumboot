@@ -181,7 +181,7 @@ static enum err_code send_read_cmd(struct i2c_config *cfg, uint8_t devaddr, bool
 {
 	uint32_t cmd = (do_stop) ? CMD_READ_REPEAT_STOP : CMD_READ_REPEAT_START;
 
- 	iowrite8(devaddr + 1, cfg->base + I2C_TRANSMIT);
+	iowrite8(devaddr + 1, cfg->base + I2C_TRANSMIT);
 	iowrite32(0x1, cfg->base + I2C_STAT_RST);
 	iowrite32(cmd, cfg->base + I2C_CTRL);
 
@@ -220,6 +220,7 @@ static enum err_code trans_read_data(struct i2c_config *cfg, struct transaction 
 
 	if (rem) {
 		send_read_cmd(cfg, t->devaddr, true);
+
 
 		if (i2c_wait_transaction(cfg, RX_FULL_ALMOST) != 0) {
 			return -2;
@@ -397,11 +398,10 @@ int i2c_wait_transaction(struct i2c_config *cfg, enum waited_event e)
 {
 	size_t n = 0;
 
-	while (i2c_check_transaction(cfg, e) < 0) {
+	while (i2c_check_transaction(cfg, e) < 0)
 		if (!(n % 100)) {
 			rumboot_printf("waiting event %d\n", e);
 		}
-	}
 
 	return 0;
 }
