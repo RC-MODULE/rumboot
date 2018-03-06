@@ -71,7 +71,9 @@ int mdma_set_desc(struct descriptor *desc, uint32_t desc_addr)
 
 struct descriptor mdma_get_desc(uint32_t desc_addr)
 {
-  struct descriptor desc;
+  struct descriptor desc = {
+    .set = NULL,
+  };
 
 	rumboot_printf("Get descriptor, addr: %x\n", desc_addr);
 
