@@ -95,7 +95,8 @@ function(add_rumboot_target)
   endif()
 
   if (NOT TARGET_BOOTROM)
-    set(bootrom_flags +BOOTROM=${rumboot_fulldir}/${product}.hex/image_mem64_0.hex)
+      #image_mem64_0.hex
+    set(bootrom_flags +BOOTROM=${rumboot_fulldir}/${product}.hex)
   else()
       set(bproduct rumboot-${RUMBOOT_PLATFORM}-${buildtype}-${TARGET_BOOTROM})
       set(bootrom_flags
