@@ -21,10 +21,26 @@ rumboot_add_configuration(
   CFLAGS -DRUMBOOT_ONLY_STACK -DRUMBOOT_PRINTF_ACCEL
   SNAPSHOT default
   PREFIX rom
+  FEATURES ROMGEN
 )
 
 
 macro(rumboot_platform_generate_stuff_for_taget product)
+    list (FIND TARGET_FEATURES "ROMGEN" _index)
+    if (${_index} GREATER -1)
+      add_custom_command(
+        OUTPUT ${product}.hex/image_mem64_0.hex
+        COMMAND mkdir -p ${product}.hex
+        COMMAND ${CMAKE_BINARY_DIR}/utils/romgen -l oi10 -i ${product}.bin -o ${product}.hex
+        COMMENT "Generating HEX memory files for ${product}.bin"
+        DEPENDS ${product}.bin utils
+      )
+
+      add_custom_target(
+        ${product}.hex ALL
+        DEPENDS ${product}.hex/image_mem64_0.hex
+      )
+    endif()
 
 endmacro()
 

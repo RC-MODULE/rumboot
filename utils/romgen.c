@@ -166,6 +166,31 @@ struct mem_layout basis_rom_new = {
 };
 
 
+struct mem_layout_lookup {
+    const char *name;
+    struct mem_layout *layout;
+};
+
+struct mem_layout_lookup mem_table[] = {
+	{ "basis",  &basis_rom_new },
+	{ "mm7705", &mm7705_rom },
+	{ "oi10",   &mm7705_rom },
+	{ /* Sentinel */ }
+};
+
+struct mem_layout *layout_by_name(const char *name)
+{
+	struct mem_layout_lookup *pos = mem_table;
+
+	while (pos->name) {
+		if (strcmp(pos->name, name) == 0)
+			return pos->layout;
+		pos++;
+	}
+	return NULL;
+}
+
+
 #define DIV_ROUND_UP(n, d) (((n) + (d) - 1) / (d))
 
 int dump_rcf(const char *inputfile, const char *outdir, struct mem_layout *layout)
@@ -248,6 +273,7 @@ int dump_rcf(const char *inputfile, const char *outdir, struct mem_layout *layou
 }
 
 static struct option long_options[] = {
+	{ "layout", required_argument, 0, 'l' },
 	{ "input",  required_argument, 0, 'i' },
 	{ "outdir", required_argument, 0, 'o' },
 	{ "help",   no_argument,       0, 0   },
@@ -271,9 +297,10 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
+	const char *layoutname = "basis";
 	while (1) {
 		int option_index = 0;
-		int c = getopt_long(argc, argv, "i:o:h",
+		int c = getopt_long(argc, argv, "i:o:l:h",
 				    long_options, &option_index);
 		if (c == -1)
 			break;
@@ -283,6 +310,9 @@ int main(int argc, char **argv)
 			break;
 		case 'o':
 			outdir = optarg;
+			break;
+		case 'l':
+			layoutname = optarg;
 			break;
 		case 'h':
 			usage(argv[0]);
@@ -297,5 +327,11 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
-	dump_rcf(input_file, outdir, &basis_rom_new);
+	struct mem_layout *layout = layout_by_name(layoutname);
+	if (!layout) {
+		fprintf(stderr, "Invalid layout name: %s\n", layoutname);
+		return 1;
+	}
+
+	return dump_rcf(input_file, outdir, layout);
 }
