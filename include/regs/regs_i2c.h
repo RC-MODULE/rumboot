@@ -17,18 +17,18 @@
 #define I2C_STAT_RST   0x02C
 
 //Interrupt enable register
-#define EN_INT_DONE 0
-#define EN_INT_AL 1
-#define EN_INT_TRN_EMPTY 2
-#define EN_INT_RCV_FULL 3
-#define EN_INT_TX_AL_EMPTY 4
-#define EN_INT_RX_AL_FULL 5
-#define EN_INT_NADDR 6
-#define EN_INT_NACK 8
+#define EN_INT_DONE_i 0
+#define EN_INT_AL_i 1
+#define EN_INT_TRN_EMPTY_i 2
+#define EN_INT_RCV_FULL_i 3
+#define EN_INT_TX_AL_EMPTY_i 4
+#define EN_INT_RX_AL_FULL_i 5
+#define EN_INT_NADDR_i 6
+#define EN_INT_NACK_i 8
 
 //Interrupt status register
-#define INT_DONE 0
-#define INT_AL 1
+#define INT_DONE_i 0
+#define INT_AL_i 1
 #define INT_TRN_EMPTY_i 2
 #define INT_RCV_FULL_i 3
 #define INT_TRN_EMPTY_ALM_i 4

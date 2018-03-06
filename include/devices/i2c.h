@@ -27,7 +27,8 @@ enum waited_event {
 	TX_EMPTY = 0,
 	TX_EMPTY_ALMOST = 1,
 	RX_FULL = 2,
-	RX_FULL_ALMOST = 3
+	RX_FULL_ALMOST = 3,
+	DONE = 4
 };
 
 struct transaction {

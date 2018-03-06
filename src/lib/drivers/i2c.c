@@ -43,6 +43,10 @@ static enum err_code trans_write_devaddr(struct i2c_config *cfg, struct transact
 	cfg->txfifo_count++;
 	iowrite8(offset_l, cfg->base + I2C_TRANSMIT);
 	cfg->txfifo_count++;
+	if (t->type == READ_DATA) {
+		iowrite8(t->devaddr, cfg->base + I2C_TRANSMIT);
+		cfg->txfifo_count++;
+	}
 
 	iowrite32(0x1, cfg->base + I2C_STAT_RST);
 	iowrite32(CMD_WRITE_START, cfg->base + I2C_CTRL);
@@ -51,6 +55,9 @@ static enum err_code trans_write_devaddr(struct i2c_config *cfg, struct transact
 		return -1;
 	}
 
+	if (i2c_wait_transaction_timeout(cfg, DONE, I2C_TIMEOUT) < 0) {
+		return -1;
+	}
 
 	return 0;
 }
@@ -62,7 +69,6 @@ static enum err_code write_data_chunk(uint32_t base, size_t *txfifo_count, void 
 	}
 
 	while (len--) {
-
 		if ((*txfifo_count) == 256) {
 			rumboot_printf("TX buffer have overflowed!\n");
 			*txfifo_count = 0;
@@ -102,8 +108,8 @@ static enum err_code trans_write_data(struct i2c_config *cfg, struct transaction
 	}
 
 	while (n--) {
-		ret = (t->len > TXBUF_SIZE ) ? write_data_chunk(cfg->base, &cfg->txfifo_count, t->buf, TXBUF_SIZE) :
-		write_data_chunk(cfg->base, &cfg->txfifo_count, t->buf, t->len);
+		ret = (t->len > TXBUF_SIZE) ? write_data_chunk(cfg->base, &cfg->txfifo_count, t->buf, TXBUF_SIZE) :
+		      write_data_chunk(cfg->base, &cfg->txfifo_count, t->buf, t->len);
 
 		if (ret != 0) {
 			if (ret < 0) {
@@ -170,17 +176,11 @@ static enum err_code read_data_chunk(uint32_t base, void *buf, size_t len)
 //      read_data_chunk(base, buf, numb);
 // }
 
-static enum err_code send_read_cmd(struct i2c_config *cfg, uint8_t devaddr, bool do_stop)
+static enum err_code send_read_cmd(struct i2c_config *cfg, bool do_stop)
 {
-	iowrite8(devaddr + 1, cfg->base + I2C_TRANSMIT);
-	iowrite32(CMD_WRITE, cfg->base + I2C_CTRL);
-	if (i2c_wait_transaction_timeout(cfg, TX_EMPTY, I2C_TIMEOUT_PER_RD_US * 10) < 0) {
-		return -1;
-	}
-
 	uint32_t cmd = (do_stop) ? CMD_READ_REPEAT_STOP : CMD_READ_REPEAT_START;
 
-	//iowrite32(0x1, cfg->base + I2C_STAT_RST);
+	iowrite32(0x1, cfg->base + I2C_STAT_RST);
 	iowrite32(cmd, cfg->base + I2C_CTRL);
 
 	return 0;
@@ -206,27 +206,27 @@ static enum err_code trans_read_data(struct i2c_config *cfg, struct transaction 
 	bool do_stop = false;
 
 	while (n--) {
-		send_read_cmd(cfg, t->devaddr, do_stop);
+		send_read_cmd(cfg, do_stop);
 
-		if (i2c_wait_transaction_timeout(cfg, e, I2C_TIMEOUT_PER_RD_US * numb) < 0) {
+		if (i2c_wait_transaction(cfg, e) != 0) {
 			return -1;
 		}
 
 		do_stop = (t->len < numb) ? true : false;
 
-		udelay(I2C_TIMEOUT_PER_RD_US * numb);
+		udelay(I2C_TIMEOUT_PER_RD_US * 10);
 
 		read_data_chunk(cfg->base, t->buf, numb);
-	}
+
 
 	if (rem) {
-		send_read_cmd(cfg, t->devaddr, true);
+		send_read_cmd(cfg, true);
 
-		if (i2c_wait_transaction_timeout(cfg, RX_FULL_ALMOST, I2C_TIMEOUT_PER_RD_US * rem) < 0) {
+		if (i2c_wait_transaction(cfg, RX_FULL_ALMOST) != 0) {
 			return -2;
 		}
 
-		udelay(I2C_TIMEOUT_PER_RD_US * rem);
+		udelay(I2C_TIMEOUT_PER_RD_US * 10);
 
 		read_data_chunk(cfg->base, t->buf, rem);
 	}
@@ -258,7 +258,6 @@ static bool is_rx_full_almost(uint32_t base, bool is_irq)
 	} else {
 		ret = stat & (1 << RX_FULL_ALM_i);
 	}
-
 
 	return ret;
 }
@@ -292,9 +291,25 @@ static bool is_rx_full(uint32_t base, bool is_irq)
 	return ret;
 }
 
+static bool is_op_done(uint32_t base, bool is_irq)
+{
+	bool ret = false;
+	uint32_t stat = ioread32(base + I2C_STATUS);
+
+	if (is_irq) {
+		ret = stat & (1 << INT_DONE_i);
+	} else {
+		ret = stat & (1 << DONE_i);
+	}
+
+	return ret;
+}
+
 static int i2c_check_transaction(struct i2c_config *cfg, enum waited_event e)
 {
 	switch (e) {
+	case DONE:
+		return is_op_done(cfg->base, cfg->irq_en) ? 0 : -1;
 	case TX_EMPTY:
 		return is_tx_empty(cfg->base, cfg->irq_en) ? 0 : -1;
 	case RX_FULL_ALMOST:
@@ -321,7 +336,7 @@ static void  i2c_enable(uint32_t base)
 
 static void i2c_irq_enable(uint32_t base)
 {
-	iowrite32((1 << EN_INT_TRN_EMPTY) | (1 << EN_INT_RX_AL_FULL), base + I2C_IER);
+	iowrite32((1 << EN_INT_TRN_EMPTY_i) | (1 << EN_INT_RX_AL_FULL_i), base + I2C_IER);
 }
 
 void i2c_init(struct i2c_config *cfg)
@@ -382,7 +397,13 @@ int i2c_stop_transaction(struct i2c_config *cfg)
 
 int i2c_wait_transaction(struct i2c_config *cfg, enum waited_event e)
 {
-	while (i2c_check_transaction(cfg, e) < 0) ; ;
+	size_t n = 0;
+
+	while (i2c_check_transaction(cfg, e) < 0) {
+		if (!(n % 100)) {
+			rumboot_printf("waiting event %d\n", e);
+		}
+	}
 
 	return 0;
 }
