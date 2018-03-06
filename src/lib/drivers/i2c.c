@@ -44,8 +44,8 @@ static enum err_code trans_write_devaddr(struct i2c_config *cfg, struct transact
 	iowrite8(offset_l, cfg->base + I2C_TRANSMIT);
 	cfg->txfifo_count++;
 	if (t->type == READ_DATA) {
-		iowrite8(t->devaddr, cfg->base + I2C_TRANSMIT);
-		cfg->txfifo_count++;
+		// iowrite8(t->devaddr + 1, cfg->base + I2C_TRANSMIT);
+		// cfg->txfifo_count++;
 	}
 
 	iowrite32(0x1, cfg->base + I2C_STAT_RST);
@@ -86,7 +86,6 @@ static enum err_code write_data_chunk(uint32_t base, size_t *txfifo_count, void 
 static enum err_code send_write_cmd(uint32_t base /*, uint32_t fifofil*/)
 {
 	//Before - reset old state!
-
 	iowrite32(0x1, base + I2C_STAT_RST);
 	iowrite32(CMD_WRITE, base + I2C_CTRL);
 
@@ -157,8 +156,10 @@ static enum err_code read_data_chunk(uint32_t base, void *buf, size_t len)
 
 	while (len--) {
 		*((uint8_t *)buf) = ioread8(base + I2C_RECEIVE);
-		(uint8_t *)buf++;
+		rumboot_printf("%x ", *((uint8_t *)buf));
+		//(uint8_t *)buf++;
 	}
+	//rumboot_printf("\n");
 
 	return 0;
 }
@@ -176,10 +177,11 @@ static enum err_code read_data_chunk(uint32_t base, void *buf, size_t len)
 //      read_data_chunk(base, buf, numb);
 // }
 
-static enum err_code send_read_cmd(struct i2c_config *cfg, bool do_stop)
+static enum err_code send_read_cmd(struct i2c_config *cfg, uint8_t devaddr, bool do_stop)
 {
 	uint32_t cmd = (do_stop) ? CMD_READ_REPEAT_STOP : CMD_READ_REPEAT_START;
 
+ 	iowrite8(devaddr + 1, cfg->base + I2C_TRANSMIT);
 	iowrite32(0x1, cfg->base + I2C_STAT_RST);
 	iowrite32(cmd, cfg->base + I2C_CTRL);
 
@@ -191,6 +193,8 @@ static enum err_code trans_read_data(struct i2c_config *cfg, struct transaction 
 	size_t numb = ioread8(cfg->base + I2C_NUMBER);
 	uint32_t rem = 0;
 	size_t n = 1;
+	enum waited_event e = (t->len > numb) ? RX_FULL : RX_FULL_ALMOST;
+	bool do_stop = (t->len > numb) ? false : true;
 
 	if (numb == 255) {
 		numb += 1;
@@ -199,34 +203,27 @@ static enum err_code trans_read_data(struct i2c_config *cfg, struct transaction 
 	if (t->len > numb) {
 		n = t->len / numb;
 		rem = (ioread32(cfg->base + I2C_FIFOFIL) & 0xff0000) >> 16;
-		rumboot_printf("n: %d, fifofil: %d\n", n, rem);
 	}
 
-	enum waited_event e = (t->len > numb) ? RX_FULL : RX_FULL_ALMOST;
-	bool do_stop = false;
-
 	while (n--) {
-		send_read_cmd(cfg, do_stop);
+		if (n == 0 && t->len > numb && rem == 0) {
+			do_stop = true;
+		}
+		send_read_cmd(cfg, t->devaddr, do_stop);
 
 		if (i2c_wait_transaction(cfg, e) != 0) {
 			return -1;
 		}
 
-		do_stop = (t->len < numb) ? true : false;
-
-		udelay(I2C_TIMEOUT_PER_RD_US * 10);
-
 		read_data_chunk(cfg->base, t->buf, numb);
-
+	}
 
 	if (rem) {
-		send_read_cmd(cfg, true);
+		send_read_cmd(cfg, t->devaddr, true);
 
 		if (i2c_wait_transaction(cfg, RX_FULL_ALMOST) != 0) {
 			return -2;
 		}
-
-		udelay(I2C_TIMEOUT_PER_RD_US * 10);
 
 		read_data_chunk(cfg->base, t->buf, rem);
 	}
@@ -258,6 +255,7 @@ static bool is_rx_full_almost(uint32_t base, bool is_irq)
 	} else {
 		ret = stat & (1 << RX_FULL_ALM_i);
 	}
+
 
 	return ret;
 }
