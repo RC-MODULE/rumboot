@@ -12,6 +12,7 @@ SECTIONS
     *(.text)
     *(.text.*)
     *(.rodata)
+    . = ALIGN(32);    
   } > ROM
 
  .rw : {
