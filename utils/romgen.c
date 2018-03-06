@@ -282,8 +282,16 @@ static struct option long_options[] = {
 
 void usage(const char *argv0)
 {
-	printf("BIN2RCF tool. (c) Andrew 'Necromant' Andrianov, RC Module 2016\n");
-	printf("Usage: %s --input file.bin --outdir=./rcfs/\n", argv0);
+	printf("BIN2RCF tool. (c) Andrew 'Necromant' Andrianov, RC Module 2016-2018\n");
+	printf("Usage: %s [--layout basis] --input file.bin --outdir=./rcfs/\n", argv0);
+	printf("Other available rom layouts: \n");
+
+	struct mem_layout_lookup *pos = mem_table;
+	while (pos->name) {
+		printf("\t\t%s\n", pos->name);
+		pos++;
+	}
+
 	printf("This is free, WTFPL-licensed software\n");
 }
 
