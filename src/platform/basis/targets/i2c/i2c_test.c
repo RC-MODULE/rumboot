@@ -16,7 +16,7 @@ int main()
 {
 	rumboot_printf("I2C0 test!\n");
 
-	const size_t byte_number = 4;
+	const size_t byte_number = 253;
 	const uint8_t eeprom_dev = 0xA0;
 	const uint16_t offset = 0x0;
 	struct i2c_config cfg = {
