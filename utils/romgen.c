@@ -165,6 +165,15 @@ struct mem_layout basis_rom_new = {
 	.write_line         = write_line_basis,
 };
 
+struct mem_layout oi10_rom = {
+	.line_count	       	= 1024,
+	.line_length		= 72,
+	.adjacement_banks	= 2,
+	.inverse_order		= 1,
+	.gen_filename		= gen_mm7705_filename,
+	.write_line         = write_line_mm7705,
+};
+
 
 struct mem_layout_lookup {
     const char *name;
@@ -174,7 +183,7 @@ struct mem_layout_lookup {
 struct mem_layout_lookup mem_table[] = {
 	{ "basis",  &basis_rom_new },
 	{ "mm7705", &mm7705_rom },
-	{ "oi10",   &mm7705_rom },
+	{ "oi10",   &oi10_rom },
 	{ /* Sentinel */ }
 };
 
