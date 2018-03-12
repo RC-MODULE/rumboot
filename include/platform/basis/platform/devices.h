@@ -54,6 +54,7 @@
  #define DDR1_BASE                0x01502000
  #define GIC_DIST_BASE            0x01504000
  #define GIC_CPUIF_BASE           0x01505000
+ #define L2C_BASE                 0x01506000
  #define PCIE_BASE                0x40000000
  #define EMI0_BASE                0x80000000
  #define EMI1_BASE                0xC0000000
