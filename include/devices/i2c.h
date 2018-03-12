@@ -41,11 +41,51 @@ struct transaction {
 };
 
 /*I2C API*/
+
+/**
+ * \brief Init i2c
+ * @param [in] cfg configuration of i2c
+ */
 void i2c_init(struct i2c_config *cfg);
+
+/**
+ * \brief Execute i2c transaction
+ * @param [in] cfg configuration of i2c
+ * @param [in] t parameters of transaction, which include type of transaction!
+ * return Return exit code, if value < 0 - error!
+ */
 int i2c_execute_transaction(struct i2c_config *cfg, struct transaction *t);
+
+/**
+ * \brief Wait i2c transaction
+ * @param [in] cfg configuration of i2c
+ * @param [in] e waited event, see enum waited_event!
+ * return Return exit code, if value < 0 - error!
+ */
 int i2c_wait_transaction(struct i2c_config *cfg, enum waited_event e);
+
+/**
+* \brief Wait i2c transaction with timeout
+* @param [in] cfg configuration of i2c
+* @param [in] t parameters of transaction, which include type of transaction!
+* @param [in] us  waited time in us
+* return Return exit code, if value < 0 - error!
+ */
 int i2c_wait_transaction_timeout(struct i2c_config *cfg, enum waited_event e, uint32_t us);
+
+/**
+ * \brief Stop i2c transaction
+ * @param [in] cfg configuration of i2c
+ * return Return exit code, if value < 0 - error!
+ */
 int i2c_stop_transaction(struct i2c_config *cfg);
+
+/**
+ * \brief Handle interrupt request
+ * @param [in] irq number of irq in irq table, see platform/interrupts.h!
+ * @param [in] arg address of transmission argument
+ * return Return nothing!
+ */
 void i2c_irq_handler(int irq, void *arg);
 
 /* EEPROM FUNCTIONS*/

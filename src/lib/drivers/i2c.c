@@ -157,9 +157,9 @@ static enum err_code read_data_chunk(uint32_t base, void *buf, size_t len)
 	while (len--) {
 		*((uint8_t *)buf) = ioread8(base + I2C_RECEIVE);
 		rumboot_printf("%x ", *((uint8_t *)buf));
-		//(uint8_t *)buf++;
+		(uint8_t *)buf++;
 	}
-	//rumboot_printf("\n");
+	rumboot_printf("\n");
 
 	return 0;
 }
@@ -209,6 +209,7 @@ static enum err_code trans_read_data(struct i2c_config *cfg, struct transaction 
 		if (n == 0 && t->len > numb && rem == 0) {
 			do_stop = true;
 		}
+
 		send_read_cmd(cfg, t->devaddr, do_stop);
 
 		if (i2c_wait_transaction(cfg, e) != 0) {
@@ -386,8 +387,11 @@ int i2c_execute_transaction(struct i2c_config *cfg, struct transaction *t)
 int i2c_stop_transaction(struct i2c_config *cfg)
 {
 	if (i2c_wait_transaction_timeout(cfg, TX_EMPTY, I2C_TIMEOUT * 5) < 0) {
-		return -1;
+
+		//return -1;
 	}
+
+	cfg->txfifo_count = 0;
 
 	iowrite32(CMD_STOP, cfg->base + I2C_CTRL);
 
