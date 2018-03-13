@@ -242,7 +242,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     CONFIGURATION IRAM
     FILES mdio/mdio_test.c
     NAME mdio_test_0
-    TIMEOUT 500 us
+    TIMEOUT 150 us
     CFLAGS -DMDIO_NUM=0
   )
   
@@ -250,7 +250,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     CONFIGURATION IRAM
     FILES mdio/mdio_test.c
     NAME mdio_test_1
-    TIMEOUT 500 us
+    TIMEOUT 150 us
     CFLAGS -DMDIO_NUM=1
   )
   
@@ -258,7 +258,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     CONFIGURATION IRAM
     FILES mdio/mdio_test.c
     NAME mdio_test_2
-    TIMEOUT 500 us
+    TIMEOUT 150 us
     CFLAGS -DMDIO_NUM=2
   )
   
@@ -266,7 +266,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     CONFIGURATION IRAM
     FILES mdio/mdio_test.c
     NAME mdio_test_3
-    TIMEOUT 500 us
+    TIMEOUT 150 us
     CFLAGS -DMDIO_NUM=3
   )  
 
