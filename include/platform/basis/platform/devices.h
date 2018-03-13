@@ -44,6 +44,12 @@
  #define CRG_DDR_BASE             0x0104D000
  #define PCIE_CORE_BASE           0x01058000
  #define PCIE_PHY_BASE            0x01060000
+ #define MDIO0_BASE               0x01080000
+ #define MDIO1_BASE               0x01081000
+ #define MDIO2_BASE               0x01082000
+ #define MDIO3_BASE               0x01083000
+ #define MGPIO0_BASE              0x01084000
+ #define MGPIO1_BASE              0x01085000
  #define GPIO0_BASE               0x01088000
  #define GPIO1_BASE               0x01089000
  #define GPIO2_BASE               0x0108A000

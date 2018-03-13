@@ -237,6 +237,38 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     TIMEOUT 500 us
     CFLAGS -DBISR_TEST_EXPECTED=BISR_MEM_PERFECT
   )
+  
+  add_rumboot_target(
+    CONFIGURATION IRAM
+    FILES mdio/mdio_test.c
+    NAME mdio_test_0
+    TIMEOUT 500 us
+    CFLAGS -DMDIO_NUM=0
+  )
+  
+  add_rumboot_target(
+    CONFIGURATION IRAM
+    FILES mdio/mdio_test.c
+    NAME mdio_test_1
+    TIMEOUT 500 us
+    CFLAGS -DMDIO_NUM=1
+  )
+  
+  add_rumboot_target(
+    CONFIGURATION IRAM
+    FILES mdio/mdio_test.c
+    NAME mdio_test_2
+    TIMEOUT 500 us
+    CFLAGS -DMDIO_NUM=2
+  )
+  
+  add_rumboot_target(
+    CONFIGURATION IRAM
+    FILES mdio/mdio_test.c
+    NAME mdio_test_3
+    TIMEOUT 500 us
+    CFLAGS -DMDIO_NUM=3
+  )  
 
   add_rumboot_target(
       SNAPSHOT default
@@ -374,6 +406,7 @@ file(GLOB PLATFORM_SOURCES
     ${CMAKE_SOURCE_DIR}/src/lib/drivers/dma_test_lib.c
     ${CMAKE_SOURCE_DIR}/src/lib/drivers/dit_lib.c
     ${CMAKE_SOURCE_DIR}/src/lib/drivers/bisr.c
+    ${CMAKE_SOURCE_DIR}/src/lib/drivers/mdio.c
 )
 
 macro(RUMBOOT_PLATFORM_SET_COMPILER_FLAGS)
