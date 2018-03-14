@@ -198,7 +198,7 @@ void mdma_write_rxdescriptor(struct mdma_device *mdma, void *mem, size_t len, bo
 
 bool mdma_is_finished(struct mdma_device *mdma)
 {
-	if (!(irqstat_r & (1 << STOP_DESC_i))) {
+	if (!(irqstat_r & (1 << STOP_DESC_i)) && mdma->conf.irq_en) {
 		rumboot_printf("irqstat_r: %x\n", irqstat_r);
 		rumboot_printf("irqstat_w: %x\n", irqstat_w);
 		return false;
