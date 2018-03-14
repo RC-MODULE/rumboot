@@ -4,8 +4,10 @@
 
 #include <devices/mdma.h>
 
+#include <rumboot/printf.h>
 
-struct mdma_transaction *mmdma_transaction_create(struct mdma_device *dev, void *dest, void *src, size_t len)
+
+struct mdma_transaction *mdma_transaction_create(struct mdma_device *dev, void *dest, void *src, size_t len)
 {
 	struct mdma_transaction *ret = malloc(sizeof(*ret));
 
@@ -27,7 +29,7 @@ struct mdma_transaction *mmdma_transaction_create(struct mdma_device *dev, void 
 	return ret;
 }
 
-int mmdma_transaction_remove(struct mdma_transaction *t)
+int mdma_transaction_remove(struct mdma_transaction *t)
 {
 	if (!t) return -1;
 
@@ -50,7 +52,9 @@ int mdma_transaction_queue(struct mdma_transaction *t)
 	if (!t->src || !t->dest || !dev->rxtbl || !dev->txtbl)
 		return -1;
 
-	mdma_write_descriptors(dev->base, t->src, t->dest, t->len, t->is_last);
+	//WE can cut memory and write any number of descriptors!
+	mdma_write_txdescriptor(dev, t->src, t->len, t->is_last);
+	mdma_write_rxdescriptor(dev, t->dest, t->len, t->is_last);
 
 	t->state = STARTED;
 
@@ -59,9 +63,21 @@ int mdma_transaction_queue(struct mdma_transaction *t)
 
 bool mdma_transaction_is_finished(struct mdma_transaction *t)
 {
-	if (!mdma_is_finished(t->owner->base))
+	if (!mdma_is_finished(t->owner)) {
+
+		rumboot_printf("Transaction is not finished yet!\n");
 		return false;
+	}
 
 	t->state = FINISHED;
 	return true;
+}
+
+void mdma_transaction_dump(struct mdma_transaction *t)
+{
+	rumboot_printf("dest: %x\n", (uint32_t) t->dest);
+	rumboot_printf("src: %x\n", (uint32_t) t->src);
+	rumboot_printf("len: %d\n", (uint32_t) t->len);
+	rumboot_printf("state: %d\n", t->state);
+	rumboot_printf("is last? %d\n", t->is_last);
 }

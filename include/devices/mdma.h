@@ -48,7 +48,8 @@ enum DESC_TYPE {
 struct mdma_config {
         enum DESC_TYPE desc_type;
         uint32_t desc_gap;
-        size_t num_descriptors;
+        bool irq_en;
+        size_t num_descriptors; /*for each table!*/
 };
 
 struct descriptor;
@@ -65,6 +66,8 @@ struct mdma_device {
         struct mdma_config conf;
         struct descriptor * rxtbl;
         struct descriptor * txtbl;
+        size_t cur_rxdesc_index;
+        size_t cur_txdesc_index;
 };
 
 /**
@@ -82,39 +85,47 @@ void mdma_remove(struct mdma_device *dev);
 
 /**
  * mdma_init: Initialization of mdma block
- * base: base address of mdma
+ * mdma structure of mdma device
  */
-void mdma_init(uint32_t base);
+void mdma_init(struct mdma_device* mdma);
 
 /**
  * mdma_deinit: Deinitialization of mdma block
- * base: base address of mdma
+ * mdma structure of mdma device
  */
-void mdma_deinit(uint32_t base);
+void mdma_deinit(struct mdma_device* mdma);
 
 /**
- * mdma_set: Set configuration settings
+ * mdma_configure: Set configuration settings
  * dev: pointer to mdma_device object
  * cfg: pointer to mdma configuration settings
  */
-void mdma_set(struct mdma_device *dev, struct mdma_config *cfg);
+void mdma_configure(struct mdma_device *dev, struct mdma_config *cfg);
 
 /**
- * mdma_transaction: Write descriptors in descriptor tables
- * base: base address of mdma
- * dst: address of memory where data should be after transaction
+ * mdma_transaction: Write descriptors in TX descriptor tables
+ * mdma structure of mdma device
  * src: address of memory with source data
  * len: length of transmit data
  * is_last: flag - whether this transaction last or not?
  */
-void mdma_write_descriptors(uint32_t base, void* dst, void* src, size_t len, bool is_last);
+void mdma_write_txdescriptor(struct mdma_device *mdma, void* src, size_t len, bool is_last);
+
+/**
+* mdma_transaction: Write descriptors in RX descriptor tables
+* mdma structure of mdma device
+* dst: address of memory where data should be after transaction
+* len: length of transmit data
+* is_last: flag - whether this transaction last or not?
+ */
+void mdma_write_rxdescriptor(struct mdma_device *mdma, void* dst, size_t len, bool is_last);
 
 /**
  * mdma_is_finished: Find out whether this transaction finished or not?
- * base: base address of mdma
+ * mdma structure of mdma device
  * @return: false or true
  */
-bool mdma_is_finished(uint32_t base);
+bool mdma_is_finished(struct mdma_device* mdma);
 
 /**
  * mdma_dump: Dump mdma registers
@@ -166,14 +177,14 @@ struct mdma_transaction {
  * len: length of transmit memory
  * return: structure contains mdma transaction parameter
  */
-struct mdma_transaction *mmdma_transaction_create(struct mdma_device *dev, void *dest, void *src, size_t len);
+struct mdma_transaction *mdma_transaction_create(struct mdma_device *dev, void *dest, void *src, size_t len);
 
 /**
  * mmdma_transaction_remove: Free memory from mdma_transaction object
  * t: structure contains mdma transaction parameter
  * return: error code
  */
-int mmdma_transaction_remove(struct mdma_transaction *t);
+int mdma_transaction_remove(struct mdma_transaction *t);
 
 /**
  * mdma_get_transaction_state: Get transaction state
@@ -183,7 +194,7 @@ int mmdma_transaction_remove(struct mdma_transaction *t);
 int mdma_get_transaction_state(struct mdma_transaction *t);
 
 /**
- * mdma_transaction_queue: Queue transaction
+ * mdma_transaction_queue: Push transaction to gueue
  * t: structure contains mdma transaction parameter
  * @return: error code
  */
@@ -195,5 +206,11 @@ int mdma_transaction_queue(struct mdma_transaction *t);
  * @return: false or true
  */
 bool mdma_transaction_is_finished(struct mdma_transaction *t);
+
+/**
+ * [mdma_transaction_dump description]
+ * @param t [description]
+ */
+void mdma_transaction_dump(struct mdma_transaction *t);
 
 #endif
