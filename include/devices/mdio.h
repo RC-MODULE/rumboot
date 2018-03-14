@@ -40,5 +40,6 @@
 #include <stdbool.h>
 
 bool mdio_test();
+bool mdio_phy_intrp_test();
 
 #endif

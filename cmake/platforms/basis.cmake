@@ -268,6 +268,42 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     NAME mdio_test_3
     TIMEOUT 170 us
     CFLAGS -DMDIO_NUM=3
+  )
+
+  add_rumboot_target(
+    CONFIGURATION IRAM
+    FILES mdio/mdio_phy_intrp_test.c
+    NAME mdio_phy_intrp_test_0
+    TIMEOUT 100 us
+    CFLAGS -DMDIO_NUM=0
+    IRUN_FLAGS +eth_phy_interrupt
+  ) 
+
+  add_rumboot_target(
+    CONFIGURATION IRAM
+    FILES mdio/mdio_phy_intrp_test.c
+    NAME mdio_phy_intrp_test_1
+    TIMEOUT 100 us
+    CFLAGS -DMDIO_NUM=1
+    IRUN_FLAGS +eth_phy_interrupt
+  )
+
+  add_rumboot_target(
+    CONFIGURATION IRAM
+    FILES mdio/mdio_phy_intrp_test.c
+    NAME mdio_phy_intrp_test_2
+    TIMEOUT 100 us
+    CFLAGS -DMDIO_NUM=2
+    IRUN_FLAGS +eth_phy_interrupt
+  )
+
+  add_rumboot_target(
+    CONFIGURATION IRAM
+    FILES mdio/mdio_phy_intrp_test.c
+    NAME mdio_phy_intrp_test_3
+    TIMEOUT 100 us
+    CFLAGS -DMDIO_NUM=3
+    IRUN_FLAGS +eth_phy_interrupt
   )  
 
   add_rumboot_target(

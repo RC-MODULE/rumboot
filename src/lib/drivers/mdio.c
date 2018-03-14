@@ -24,6 +24,32 @@ static void handler_mdio(int irq, void *arg)
     *done = *done + 1;  
 }
 
+bool mdio_phy_intrp_test(uint32_t num_mdio)
+{
+    //Switch MGPIO PADS to MDIO
+    iowrite32(0x00000000, MGPIO0_BASE + GPIO_SWITCH_SOURCE);
+    iowrite32(0x00000000, MGPIO1_BASE + GPIO_SWITCH_SOURCE);
+    
+    //Read status reg for MDIO_STATUS reset
+    ioread32(MDIO0_BASE + 0x1000*num_mdio + MDIO_STATUS);
+    
+    //non-active rst for PHY
+    iowrite32(1 << ETH_RST_N, MDIO0_BASE + 0x1000*num_mdio + MDIO_ETH_RST_N);
+    
+    //mdc enable
+    iowrite32(1 << MDC_EN, MDIO0_BASE + 0x1000*num_mdio + MDIO_EN);
+    
+       
+    //Wait intrp from PHY
+    uint32_t read_data=ioread32(MDIO0_BASE + 0x1000*num_mdio + MDIO_STATUS);
+    while (!(read_data & 1 << PHY_IRQ))
+     {read_data=ioread32(MDIO0_BASE + 0x1000*num_mdio + MDIO_STATUS);}
+    rumboot_printf("MDIO has detected intrp from PHY!\n");
+    
+    return 1;
+    
+}
+
 
 bool mdio_test(uint32_t num_mdio)
 {
