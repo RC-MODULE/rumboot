@@ -128,7 +128,13 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       PREFIX i2c-1
     )
 
-
+	 add_directory_with_targets(i2c/multimaster
+      CONFIGURATION IRAM
+	  CFLAGS -DI2C_BASE=I2C0_BASE
+	  IRUN_FLAGS +i2c_single_bus
+      PREFIX multimaster
+    )
+	
     add_directory_with_targets(spl-stubs/
       CONFIGURATION IRAM
       PREFIX spl
