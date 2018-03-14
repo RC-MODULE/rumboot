@@ -20,6 +20,10 @@
 #define IRQN_SW0     0
 #define IRQN_SW1     1
 
+#define MDIO0_INT    36
+#define MDIO1_INT    37
+#define MDIO2_INT    38
+#define MDIO3_INT    39
 #define DIT0_TIMINT1 42
 #define DIT0_TIMINT2 43
 #define DIT1_TIMINT1 44

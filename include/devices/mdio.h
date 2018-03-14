@@ -21,6 +21,12 @@
 #define MDIO_FREQ_DIVIDER_RESET   0x13
 #define MDIO_EN_RESET             0x00
 
+#define ETH_RST_N                 0x00
+#define MDC_EN                    0x00
+#define PHY_IRQ                   0x00
+#define RD_IRQ                    0x01
+#define WR_IRQ                    0x02
+
 #define START_WR                  0x00
 #define START_RD                  0x01
 #define BUSY                      0x02
