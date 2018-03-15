@@ -10,6 +10,11 @@ SECTIONS
 
  .rwx : {
   KEEP(*(.header))
+
+  rumboot_im0_heap_start = .;
+  . = . + 0x4000; /* 16k IM0 heap */
+  rumboot_im0_heap_end = .;
+
   KEEP(*(.text.startup))
   *(.text)
   *(.rodata)
@@ -20,10 +25,6 @@ SECTIONS
   *(.bss.*)
   rumboot_platform_bss_end = .;
   *(.data.*)
-
-  rumboot_platform_heap_start = .;
-  . = . + 0xf000; /* 60k heap */
-  rumboot_platform_heap_end = .;
 
   /* This is where stacks start */
   rumboot_platform_stack_area_start = .;
@@ -72,6 +73,12 @@ SECTIONS
   /* Runtime info is at the very top of iram */
   rumboot_platform_runtime_info = .;
   *(.rumboot_platform_runtime_info);
+ }
+
+ .im1_heap 0x7b000 (NOLOAD): {
+  rumboot_im1_heap_start = .;
+  . = . + 0x4000; /* 16k IM1 heap */
+  rumboot_im1_heap_end = .;
  }
 
  /DISCARD/ :

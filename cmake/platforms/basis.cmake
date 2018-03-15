@@ -134,7 +134,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 	  IRUN_FLAGS +i2c_single_bus
       PREFIX multimaster
     )
-	
+
     add_directory_with_targets(spl-stubs/
       CONFIGURATION IRAM
       PREFIX spl
@@ -177,6 +177,17 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
           PREFIX "bootrom"
           NAME "production"
   )
+
+  add_rumboot_target(
+          CONFIGURATION IRAM
+          FILES print-heaps.c
+  )
+
+  add_rumboot_target(
+          CONFIGURATION ROM
+          FILES print-heaps.c
+  )
+
 
   add_rumboot_target(
     CONFIGURATION IRAM
@@ -243,7 +254,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     TIMEOUT 500 us
     CFLAGS -DBISR_TEST_EXPECTED=BISR_MEM_PERFECT
   )
-  
+
   add_rumboot_target(
     CONFIGURATION IRAM
     FILES mdio/mdio_test.c
@@ -251,7 +262,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     TIMEOUT 170 us
     CFLAGS -DMDIO_NUM=0
   )
-  
+
   add_rumboot_target(
     CONFIGURATION IRAM
     FILES mdio/mdio_test.c
@@ -259,7 +270,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     TIMEOUT 170 us
     CFLAGS -DMDIO_NUM=1
   )
-  
+
   add_rumboot_target(
     CONFIGURATION IRAM
     FILES mdio/mdio_test.c
@@ -267,7 +278,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     TIMEOUT 170 us
     CFLAGS -DMDIO_NUM=2
   )
-  
+
   add_rumboot_target(
     CONFIGURATION IRAM
     FILES mdio/mdio_test.c
@@ -283,7 +294,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     TIMEOUT 100 us
     CFLAGS -DMDIO_NUM=0
     IRUN_FLAGS +eth_phy_interrupt
-  ) 
+  )
 
   add_rumboot_target(
     CONFIGURATION IRAM
@@ -310,7 +321,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     TIMEOUT 100 us
     CFLAGS -DMDIO_NUM=3
     IRUN_FLAGS +eth_phy_interrupt
-  )  
+  )
 
   add_rumboot_target(
       SNAPSHOT default

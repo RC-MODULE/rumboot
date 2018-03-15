@@ -40,9 +40,14 @@ SECTIONS
 
   . = ALIGN(8);
 
-  rumboot_platform_heap_start = ABSOLUTE(.);
+  rumboot_im0_heap_start = ABSOLUTE(.);
+    /* empty */
+  rumboot_im0_heap_end = ABSOLUTE(.);
+
+  rumboot_im1_heap_start = .;
   . = . + 0xf000; /* 60k heap */
-  rumboot_platform_heap_end = ABSOLUTE(.);
+  rumboot_im1_heap_end = .;
+
 
   /* This is where stacks start */
   rumboot_platform_stack_area_start = .;

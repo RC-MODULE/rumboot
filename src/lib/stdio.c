@@ -41,10 +41,11 @@ void *rumboot_malloc_from_heap_misaligned(int heap_id, size_t length, int align,
 int rumboot_malloc_heap_by_name(const char *name)
 {
 	int i;
+
 	for (i = 0; i < rumboot_platform_runtime_info.num_heaps; i++) {
 		struct rumboot_heap *hp;
 		hp = &rumboot_platform_runtime_info.heaps[i];
-		if (strcmp(hp->name, name)==0) {
+		if (strcmp(hp->name, name) == 0) {
 			return i;
 		}
 	}
@@ -53,14 +54,15 @@ int rumboot_malloc_heap_by_name(const char *name)
 
 const char *rumboot_malloc_heap_name(int heap_id)
 {
-	if (heap_id < rumboot_platform_runtime_info.num_heaps)
+	if (heap_id < rumboot_platform_runtime_info.num_heaps) {
 		return rumboot_platform_runtime_info.heaps[heap_id].name;
+	}
 	return NULL;
 }
 
 int rumboot_malloc_num_heaps()
 {
-		return rumboot_platform_runtime_info.num_heaps;
+	return rumboot_platform_runtime_info.num_heaps;
 }
 
 void *rumboot_malloc_from_heap(int heap_id, size_t length)
@@ -77,6 +79,11 @@ void *rumboot_malloc_from_heap_aligned(int heap_id, size_t sz, int align)
 int rumboot_malloc_register_heap(const char *name, void *heap_start, void *heap_end)
 {
 	int i;
+
+	/* Ignore empty heaps */
+	if (heap_start == heap_end) {
+		return -1;
+	}
 
 	for (i = 0; i < RUMBOOT_PLATFORM_NUM_HEAPS; i++) {
 		struct rumboot_heap *hp;
