@@ -21,19 +21,46 @@ void *rumboot_malloc_from_heap_misaligned(int heap_id, size_t length, int align,
 	struct rumboot_heap *hp = &rumboot_platform_runtime_info.heaps[heap_id];
 	void *ret;
 
-	size_t pad = align ? (((uint32_t) hp->pos) % align) : 0;
+	size_t pad = align ? (((uint32_t)hp->pos) % align) : 0;
 
-	if (pad)
+	if (pad) {
 		hp->pos += (align - pad);
+	}
 
 	hp->pos += misalign;
 
 	ret = hp->pos;
 	hp->pos += length;
-	if (hp->pos >= hp->end)
+	if (hp->pos >= hp->end) {
 		rumboot_platform_panic("Heap %s: out of memory!", hp->name);
+	}
 
 	return ret;
+}
+
+int rumboot_malloc_heap_by_name(const char *name)
+{
+	int i;
+	for (i = 0; i < rumboot_platform_runtime_info.num_heaps; i++) {
+		struct rumboot_heap *hp;
+		hp = &rumboot_platform_runtime_info.heaps[i];
+		if (strcmp(hp->name, name)==0) {
+			return i;
+		}
+	}
+	return -1;
+}
+
+const char *rumboot_malloc_heap_name(int heap_id)
+{
+	if (heap_id < rumboot_platform_runtime_info.num_heaps)
+		return rumboot_platform_runtime_info.heaps[heap_id].name;
+	return NULL;
+}
+
+int rumboot_malloc_num_heaps()
+{
+		return rumboot_platform_runtime_info.num_heaps;
 }
 
 void *rumboot_malloc_from_heap(int heap_id, size_t length)
@@ -50,6 +77,7 @@ void *rumboot_malloc_from_heap_aligned(int heap_id, size_t sz, int align)
 int rumboot_malloc_register_heap(const char *name, void *heap_start, void *heap_end)
 {
 	int i;
+
 	for (i = 0; i < RUMBOOT_PLATFORM_NUM_HEAPS; i++) {
 		struct rumboot_heap *hp;
 		hp = &rumboot_platform_runtime_info.heaps[i];
@@ -60,11 +88,13 @@ int rumboot_malloc_register_heap(const char *name, void *heap_start, void *heap_
 		hp->start = heap_start;
 		hp->pos = heap_start;
 		hp->end = heap_end;
+		rumboot_platform_runtime_info.num_heaps++;
 		break;
 	}
 
-	if (i == RUMBOOT_PLATFORM_NUM_HEAPS)
+	if (i == RUMBOOT_PLATFORM_NUM_HEAPS) {
 		rumboot_platform_panic("Failed to register heap %s, please increase RUMBOOT_PLATFORM_NUM_HEAPS (current - %d)\n", name, RUMBOOT_PLATFORM_NUM_HEAPS);
+	}
 	return i;
 }
 

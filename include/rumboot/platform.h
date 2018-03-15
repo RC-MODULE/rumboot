@@ -256,8 +256,8 @@ struct rumboot_runtime_info {
     struct rumboot_syncbuffer in;
     /** Dummy. Everything from this point to the very end will be cleaned */
     uint32_t clean_me_marker;
-    /** Current heap end pointer, used by _sbrk and rumboot_malloc() */
-    char *current_heap_end;
+    /** How many heaps are registered ? */
+    int num_heaps;
     /** An array of available memory heaps */
     struct rumboot_heap heaps[RUMBOOT_PLATFORM_NUM_HEAPS];
     /** Pointer to current active irq table. Do not use directly, use rumboot_irq_table_get() */

@@ -102,6 +102,29 @@ void rumboot_free(void *ptr);
 
 
 /**
+ * Find heap id by name.
+ * @param  name heap name
+ * @return  heap id or -1 if it couldn't be found. 0 is a valid heap id.
+ */
+int rumboot_malloc_heap_by_name(const char *name);
+
+/**
+ * Get heap name by it's numeric id
+ *
+ * @param  heap_id heap id
+ * @return   A const char* with heap name
+ */
+const char *rumboot_malloc_heap_name(int heap_id);
+
+
+/**
+ * Get the total count of heaps registered on this platform/configuration
+ * @return
+ */
+int rumboot_malloc_num_heaps();
+
+
+/**
 * @}
 */
 
