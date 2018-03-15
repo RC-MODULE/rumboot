@@ -5,7 +5,6 @@
 
 #include <rumboot/io.h>
 #include <rumboot/printf.h>
-#include <rumboot/irq.h>
 #include <rumboot/timer.h>
 
 #include <regs/regs_mdma.h>
@@ -49,11 +48,11 @@ static volatile uint32_t irqstat_w = 0;
 
 void mdma_irq_handler(int irq, void *arg)
 {
-	struct mdma_device *mdma = (struct mdma_device *)arg;
-	uint32_t gp_status = ioread32(mdma->base + MDMA_GP_STATUS);
+	uint32_t base = *((uint32_t *)arg);
+	uint32_t gp_status = ioread32(base + MDMA_GP_STATUS);
 
-	irqstat_r |= ioread32(mdma->base + MDMA_STATUS_R);
-	irqstat_w |= ioread32(mdma->base + MDMA_STATUS_W);
+	irqstat_r |= ioread32(base + MDMA_STATUS_R);
+	irqstat_w |= ioread32(base + MDMA_STATUS_W);
 
 	if (gp_status & (1 << 0)) {
 		rumboot_printf("IRQ arrived from read channel, irq status %x\n", irqstat_r);
@@ -206,7 +205,7 @@ bool mdma_is_finished(struct mdma_device *mdma)
 	return true;
 }
 
-bool mdma_transmit_data(uint32_t base, void *dest, void *src, size_t len)
+int mdma_transmit_data(uint32_t base, void *dest, void *src, size_t len)
 {
 	//CONFIG DMA
 	rumboot_printf("Config DMA.\n");
@@ -220,12 +219,6 @@ bool mdma_transmit_data(uint32_t base, void *dest, void *src, size_t len)
 				   .num_rxdescriptors	= num_rxdescriptors,.num_txdescriptors = num_txdescriptors };
 	struct mdma_device *mdma = mdma_create(base, &cfg);
 	mdma_configure(mdma, &cfg);
-
-	//Create IRQ
-	struct rumboot_irq_entry *tbl = rumboot_irq_create(NULL);
-	rumboot_irq_set_handler(tbl, MDMA0_IRQ, 0, mdma_irq_handler, (void *)mdma);
-	rumboot_irq_enable(MDMA0_IRQ);
-	rumboot_irq_table_activate(tbl);
 
 	//Create transactions
 	//We can fragment data in junks and transmit in several transactions!
@@ -250,10 +243,15 @@ bool mdma_transmit_data(uint32_t base, void *dest, void *src, size_t len)
 	rumboot_printf("Init MDMA, base addr: %x.\n", mdma->base);
 	mdma_init(mdma);
 
-	//mdma_dump(mdma->base);
-
 	rumboot_printf("Check - if mdma is ready.\n");
-	while (!mdma_is_finished(mdma)) udelay(1);
+	size_t timeout_us = 1000;
+	while (!mdma_is_finished(mdma)) {
+		if (!timeout_us) {
+			return -1;
+		}
+		udelay(1);
+		timeout_us--;
+	}
 
 	//Remove transactions
 	count = num_rxdescriptors;
@@ -265,10 +263,5 @@ bool mdma_transmit_data(uint32_t base, void *dest, void *src, size_t len)
 
 	mdma_remove(mdma);
 
-	rumboot_printf("Compare arrays.\n");
-	if (memcmp(src, dest, len) != 0) {
-		return false;
-	} else {
-		return true;
-	}
+	return 0;
 }

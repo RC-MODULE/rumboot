@@ -44,10 +44,26 @@ static bool test_cfg(struct base_addrs *addrs, const struct muart_conf *cfg)
 		char *output = malloc(data_size);
 		memset(output, 0x0, data_size);
 
-		if (!mdma_transmit_data(MDMA0_BASE, output, buf, data_size)) {
-			free(buf);
-			free(output);
+		uint32_t mdma_base = MDMA0_BASE;
+
+		struct rumboot_irq_entry *tbl = rumboot_irq_create(NULL);
+		rumboot_irq_set_handler(tbl, MDMA0_IRQ, 0, mdma_irq_handler, &mdma_base);
+		rumboot_irq_enable(MDMA0_IRQ);
+		rumboot_irq_table_activate(tbl);
+
+		if (!mdma_transmit_data(mdma_base, output, buf, data_size)) {
+			//What should i do here? If a want to free memory?
+			return false;
 		}
+
+		rumboot_printf("Compare arrays.\n");
+		if (memcmp(buf, output, data_size) != 0) {
+			//the same
+			return false;
+		}
+
+		rumboot_irq_table_activate(NULL);
+		rumboot_irq_free(tbl);
 		free(output);
 	}
 

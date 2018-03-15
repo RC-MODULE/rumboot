@@ -82,7 +82,7 @@ struct mdma_device *mdma_create(uint32_t base, struct mdma_config *cfg);
  * mdma_remove: Free memory from mdma object and tables.
  * dev: pointer to allocated memory
  */
-void mdma_remove(struct mdma_device *dev);
+void mdma_remove( struct mdma_device *dev);
 
 /**
  * mdma_init: Initialization of mdma block
@@ -140,9 +140,16 @@ void mdma_dump(uint32_t base);
  * dst: address of memory where data should be after transaction
  * src: address of memory with source data
  * len: length of transmit data
- * @return      [description]
+ * @return error code, if error code less than 0 - error!
  */
-bool mdma_transmit_data(uint32_t base, void* dest, void* src, size_t len);
+int mdma_transmit_data(uint32_t base, void* dest, void* src, size_t len);
+
+/**
+ * Handle interrupt request
+ * irq number of IRQ in IRQ table
+ * arg pointer to mdma_device structure
+ */
+void mdma_irq_handler(int irq, void *arg);
 
 /******************TRANSACTIONS API***************************/
 
