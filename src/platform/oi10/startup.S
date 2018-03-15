@@ -42,36 +42,17 @@
 .global unexpected_error
 //#endif
 
-.section ".ROM.init.rodata","a",@progbits
+.section ".init.rodata","a",@progbits
 
 .align 2
 boot_tlb_entries:
 //          MMU_TLB_ENTRY(  ERPN,   RPN,        EPN,        DSIZ,                   IL1I,   IL1D,   W,      I,      M,      G,      E,                      UX, UW, UR,     SX, SW, SR      DULXE,  IULXE,      TS,     TID,                WAY,                BID,                V   )
 // Invalidate initial TLB entry
     .long   MMU_TLB_ENTRY(  0x000,  0x00000,    0xFFFFF,    MMU_TLBE_DSIZ_4KB,      0b0,    0b0,    0b0,    0b0,    0b0,    00,     MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b0,0b0,0b0,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b0 )
-// TLB entries to remap 64KB pages BOOTROM from 0xffffffff_fffc0000-0xffffffff_ffffffff to 0xfffc0000-0xffffffff
-    .long   MMU_TLB_ENTRY(  0x3FF,  0xFFFC0,    0xFFFC0,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b0,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
-    .long   MMU_TLB_ENTRY(  0x3FF,  0xFFFD0,    0xFFFD0,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b0,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
-    .long   MMU_TLB_ENTRY(  0x3FF,  0xFFFE0,    0xFFFE0,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b0,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
+// TLB entries to remap 64KB page BOOTROM from 0x000003ff_ffff0000-0x000003ff_ffffffff to 0xffff0000-0xffffffff
     .long   MMU_TLB_ENTRY(  0x3FF,  0xFFFF0,    0xFFFF0,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b0,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
-// TLB entry of 256MB page to remap
-// IFSYS0   from 0x00000010_10000000-0x00000010_37ffffff to 0x10000000-0x37ffffff TODO check if SX bit is needed
-// APB0     from 0x00000010_38000000-0x00000010_3800ffff to 0x38000000-0x3800ffff
-// APB0     from 0x00000010_38010000-0x00000010_3801ffff to 0x38010000-0x3801ffff
-// DSP0_CFG from 0x00000010_38ffc000-0x00000010_38ffdfff to 0x38ffc000-0x38ffdfff
-// DSP1_CFG from 0x00000010_38ffe000-0x00000010_38ffffff to 0x38ffe000-0x38ffffff
-// DSP0_NM0 from 0x00000010_39000000-0x00000010_3901ffff to 0x39000000-0x3901ffff
-// DSP0_NM1 from 0x00000010_39020000-0x00000010_3903ffff to 0x39020000-0x3903ffff
-// DSP1_NM0 from 0x00000010_39040000-0x00000010_3905ffff to 0x39040000-0x3905ffff
-// DSP1_NM1 from 0x00000010_39060000-0x00000010_3907ffff to 0x39060000-0x3907ffff
-// I2S      from 0x00000010_39080000-0x00000010_39080fff to 0x39080000-0x39080fff
-// SPDIF    from 0x00000010_39081000-0x00000010_39081fff to 0x39081000-0x39081fff
-// IFSYS1   from 0x00000010_3c000000-0x00000010_3fffffff to 0x3c000000-0x3fffffff
-    .long   MMU_TLB_ENTRY(  0x010,  0x10000,    0x10000,    MMU_TLBE_DSIZ_256MB,    0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_LITTLE_END,  0b0,0b0,0b0,    0b0,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
-    .long   MMU_TLB_ENTRY(  0x010,  0x20000,    0x20000,    MMU_TLBE_DSIZ_256MB,    0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_LITTLE_END,  0b0,0b0,0b0,    0b0,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
-    .long   MMU_TLB_ENTRY(  0x010,  0x30000,    0x30000,    MMU_TLBE_DSIZ_256MB,    0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_LITTLE_END,  0b0,0b0,0b0,    0b0,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
-//apb_tlb_entry_clear:
-//    .long   MMU_TLB_ENTRY(  0x010,  0x30000,    0x30000,    MMU_TLBE_DSIZ_256MB,    0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_LITTLE_END,  0b0,0b0,0b0,    0b0,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_UND,   0b0 )
+// TLB entry to remap LHSIF (SW Router)
+    .long   MMU_TLB_ENTRY(  0x020,  0xFFFFF,    0x1003F,    MMU_TLBE_DSIZ_256MB,    0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_LITTLE_END,  0b0,0b0,0b0,    0b0,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
 DECLARE_CONST( BOOT_TLB_ENTRIES_N, (.-boot_tlb_entries)/MMU_TLB_ENTRY_SIZE )
 
 
