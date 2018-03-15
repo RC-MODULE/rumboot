@@ -224,6 +224,24 @@ struct rumboot_syncbuffer {
     volatile uint32_t data[8];
 } __attribute__((packed));
 
+#ifndef RUMBOOT_PLATFORM_NUM_HEAPS
+#define RUMBOOT_PLATFORM_NUM_HEAPS 4
+#endif
+
+/**
+ * This represents a memory heap that can be used to
+ * allocate memory using rumboot_malloc_from_heap
+ * A set of these are stored in rumboot_runtime_info
+ * RUMBOOT_PLATFORM_NUM_HEAPS is used specify maximum heap
+ * count
+ */
+struct rumboot_heap {
+    void *start;
+    void *end;
+    void *pos;
+    const char *name;
+};
+
 /**
  * This global structure stores internal romboot state and some useful variables
  * It stores selftest results for further inspection by secondary
@@ -236,8 +254,12 @@ struct rumboot_runtime_info {
     struct rumboot_syncbuffer out;
     /** Modelling memory IO buffer. Do not move it inside struct! */
     struct rumboot_syncbuffer in;
+    /** Dummy. Everything from this point to the very end will be cleaned */
+    uint32_t clean_me_marker;
     /** Current heap end pointer, used by _sbrk and rumboot_malloc() */
     char *current_heap_end;
+    /** An array of available memory heaps */
+    struct rumboot_heap heaps[RUMBOOT_PLATFORM_NUM_HEAPS];
     /** Pointer to current active irq table. Do not use directly, use rumboot_irq_table_get() */
     void *irq_handler_table;
     /** Pointer to irq default handler */
@@ -268,18 +290,6 @@ extern char rumboot_platform_spl_end;
 * Use &reference to this variable to get the desired address.
 */
 extern void *rumboot_platform_stack_top;
-
-/**
- * This global variable defined by the linker points to the beginning of the heap area.
- * Use &reference to this variable to get the desired address.
- */
-extern char rumboot_platform_heap_start;
-
-/**
- * This global variable defined by the linker points to the end of the heap area.
- * Use &reference to this variable to get the desired address.
- */
-extern char rumboot_platform_heap_end;
 
 /**
  * This global variable defined by the linker points to the lowest address where

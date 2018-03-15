@@ -7,12 +7,17 @@
 #include <arch/arm/irq_macros.h>
 #include <platform/devices.h>
 #include <devices/sp804.h>
+#include <rumboot/rumboot.h>
 
 /* Platform-specific glue */
 uint32_t rumboot_platform_get_uptime()
 {
     return (0xFFFFFFFF-sp804_get_value(DIT3_BASE,1))/6.25;
 }
+
+
+extern char rumboot_platform_heap_start;
+extern char rumboot_platform_heap_end;
 
 /* Comes from startup.S */
 extern char rumboot_default_irq_vectors;
@@ -34,4 +39,6 @@ void rumboot_platform_setup()
 	 * Needed for handling IRQs in secondary image
 	 */
 	arm_vbar_set((uint32_t)&rumboot_default_irq_vectors);
+	rumboot_malloc_register_heap("IM0",
+		&rumboot_platform_heap_start, &rumboot_platform_heap_end);
 }

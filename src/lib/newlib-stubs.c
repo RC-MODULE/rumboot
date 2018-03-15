@@ -110,14 +110,13 @@ int _open( const char *name, int flags, int mode)
     return -1;
 }
 
-#ifdef RUMBOOT_ONLY_STACK
 caddr_t _sbrk(int incr)
 {
-    rumboot_platform_panic("malloc() not allowed in ROM code\n");
+    rumboot_platform_panic("libc malloc() disabled\n");
 	return (caddr_t)0;
 }
-#else
-#include <rumboot/platform.h>
+
+#if 0
 caddr_t _sbrk(int incr)
 {
 	char *prev_heap_end;
@@ -136,7 +135,9 @@ caddr_t _sbrk(int incr)
 	rumboot_platform_runtime_info.current_heap_end += incr;
 	return (caddr_t)prev_heap_end;
 }
+
 #endif
+
 
 int _stat(const char *filepath, struct stat *st)
 {
