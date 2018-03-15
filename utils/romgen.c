@@ -15,6 +15,7 @@
 struct mem_layout {
 	int	line_count;
 	int	line_length;
+	int bits_per_byte;
 	int	adjacement_banks;
 	int	inverse_order;
 	int	(*write_line)(struct mem_layout *layout, FILE *ifd, FILE *ofd);
@@ -92,6 +93,38 @@ int write_line_mm7705(struct mem_layout *layout, FILE *ifd, FILE *ofd)
 	return num_bytes;
 }
 
+int write_line_oi10(struct mem_layout *layout, FILE *ifd, FILE *ofd)
+{
+    int num_bytes = layout->line_length / 9; /* 8 bit data + 1 bit parity*/
+    char *srcbuf = alloca(num_bytes);
+    int i;
+
+    i = fread(srcbuf, 1, 8, ifd);
+
+    if (num_bytes != i) {
+            fprintf(stderr, "Expected to read %d, only got %d\n", num_bytes, i);
+            exit(1);
+    }
+
+
+    unsigned char parbyte = 0;
+
+//  for (i = 0; i < num_bytes; i++) {
+    for (i = 7; i >= 0; i--) {
+        char tmp = srcbuf[i];
+        parbyte |= (get_byte_parity(tmp) << i);
+    }
+
+    for (i = 0; i < num_bytes; i++)
+        dump_byte_inv(ofd, srcbuf[i]);
+
+    dump_byte(ofd, parbyte);
+
+//  fputc('\n', ofd);
+
+    return num_bytes;
+}
+
 int write_line_basis(struct mem_layout *layout, FILE *ifd, FILE *ofd)
 {
 	int num_bytes = layout->line_length / 8;
@@ -117,8 +150,16 @@ char *gen_mm7705_filename(struct mem_layout *layout, const char *dir, int nfile)
 {
 	char *ret = NULL;
 
-	asprintf(&ret, "%s/rom_hdd_4096_72_mux8_%d_verilog.rcf", dir, nfile);
-	return ret;
+    asprintf(&ret, "%s/rom_hdd_4096_72_mux8_%d_verilog.rcf", dir, nfile);
+    return ret;
+}
+
+char *gen_oi10_filename(struct mem_layout *layout, const char *dir, int nfile)
+{
+    char *ret = NULL;
+
+    asprintf(&ret, "%s/rom_hdd_1024_72_mux8_%d_verilog.rcf", dir, nfile);
+    return ret;
 }
 
 char *gen_basis_filename(struct mem_layout *layout, const char *dir, int nfile)
@@ -132,6 +173,7 @@ char *gen_basis_filename(struct mem_layout *layout, const char *dir, int nfile)
 struct mem_layout mm7705_rom = {
 	.line_count		= 4096,
 	.line_length		= 72,
+	.bits_per_byte      = 8,
 	.adjacement_banks	= 2,
 	.inverse_order		= 1,
 	.gen_filename		= gen_mm7705_filename,
@@ -141,6 +183,7 @@ struct mem_layout mm7705_rom = {
 struct mem_layout basis_rom_generic = {
 	.line_count		    = 131072,
 	.line_length		= 32,
+    .bits_per_byte      = 8,
 	.adjacement_banks	= 2,
 	.inverse_order		= 0,
 	.gen_filename		= gen_basis_filename,
@@ -150,6 +193,7 @@ struct mem_layout basis_rom_generic = {
 struct mem_layout basis_rom = {
 	.line_count		    = 262144,
 	.line_length		= 64,
+    .bits_per_byte      = 8,
 	.adjacement_banks	= 1,
 	.inverse_order		= 0,
 	.gen_filename		= gen_basis_filename,
@@ -159,6 +203,7 @@ struct mem_layout basis_rom = {
 struct mem_layout basis_rom_new = {
 	.line_count		    = 32768,
 	.line_length		= 32,
+    .bits_per_byte      = 8,
 	.adjacement_banks	= 1,
 	.inverse_order		= 0,
 	.gen_filename		= gen_basis_filename,
@@ -168,10 +213,11 @@ struct mem_layout basis_rom_new = {
 struct mem_layout oi10_rom = {
 	.line_count	       	= 1024,
 	.line_length		= 72,
+    .bits_per_byte      = 9,
 	.adjacement_banks	= 2,
 	.inverse_order		= 1,
-	.gen_filename		= gen_mm7705_filename,
-	.write_line         = write_line_mm7705,
+	.gen_filename		= gen_oi10_filename,
+	.write_line         = write_line_oi10,
 };
 
 
@@ -246,7 +292,7 @@ int dump_rcf(const char *inputfile, const char *outdir, struct mem_layout *layou
 	}
 
 	/* We take extra parity bit into account here */
-	int bytes_per_rcf_line = layout->line_length / 8;
+	int bytes_per_rcf_line = layout->line_length / layout->bits_per_byte;
 	int per_iteration = layout->adjacement_banks * bytes_per_rcf_line;
 
 	printf("Writing rcf files: %d bytes per iteration, %d bytes per rcf line\n", per_iteration, bytes_per_rcf_line);
