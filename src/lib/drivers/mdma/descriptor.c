@@ -85,7 +85,6 @@ int mdma_set_desc(bool interrupt, bool stop, uint32_t data_len, uint32_t data_ad
 	desc_addr += 4;
 	iowrite32(settings, desc_addr);
 
-	//dump_desc(desc);
 	return 0;
 }
 

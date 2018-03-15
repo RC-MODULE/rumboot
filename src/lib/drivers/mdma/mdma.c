@@ -38,8 +38,8 @@ struct descriptor {
 	struct extra *		ex;
 };
 
-int mdma_set_desc(bool interrupt, bool stop, uint32_t data_len, uint32_t data_addr, struct extra* ex
-  , uint32_t desc_addr);
+int mdma_set_desc(bool interrupt, bool stop, uint32_t data_len, uint32_t data_addr, struct extra *ex
+		  , uint32_t desc_addr);
 struct descriptor mdma_get_desc(uint32_t desc_addr, enum DESC_TYPE type);
 void dump_desc(struct descriptor *cfg);
 
@@ -87,7 +87,7 @@ struct mdma_device *mdma_create(uint32_t base, struct mdma_config *cfg)
 	size_t dsc_txtbl_size = num_txdescriptors * (desc_gap);
 	size_t dsc_rxtbl_size = num_rxdescriptors * (desc_gap);
 
-	char *buf = malloc(sizeof(*mdma) + dsc_rxtbl_size + dsc_txtbl_size + 2*sizeof(size_t));
+	char *buf = malloc(sizeof(*mdma) + dsc_rxtbl_size + dsc_txtbl_size + 2 * sizeof(size_t));
 
 	mdma = (struct mdma_device *)buf;
 	mdma->txtbl = (struct descriptor *)&mdma[1];
@@ -110,11 +110,8 @@ void mdma_remove(struct mdma_device *dev)
 
 void mdma_init(struct mdma_device *mdma)
 {
-	iowrite32(0x1, mdma->base + MDMA_ENABLE_W);
-	iowrite32(0x1, mdma->base + MDMA_ENABLE_R);
-
 	uint32_t irqmask = (1 << RAXI_ERR_i) | (1 << WAXI_ERR_i) | (1 << AXI_ERR_i)
-				 | (1 << STOP_DESC_i);
+			   | (1 << STOP_DESC_i);
 
 	if (mdma->conf.irq_en) {
 		iowrite32(irqmask, mdma->base + MDMA_IRQ_MASK_W);
@@ -123,6 +120,9 @@ void mdma_init(struct mdma_device *mdma)
 	if (mdma->conf.irq_en) {
 		iowrite32(irqmask, mdma->base + MDMA_IRQ_MASK_R);
 	}
+
+	iowrite32(0x1, mdma->base + MDMA_ENABLE_W);
+	iowrite32(0x1, mdma->base + MDMA_ENABLE_R);
 }
 
 void mdma_deinit(struct mdma_device *mdma)
@@ -139,27 +139,28 @@ void mdma_configure(struct mdma_device *dev, struct mdma_config *cfg)
 	iowrite32((uint32_t)dev->rxtbl, dev->base + MDMA_DESC_ADDR_W);
 
 	// if (cfg->desc_type == NORMAL) {
-	// 	iowrite32(NORMAL_DESC_SIZE, dev->base + MDMA_MAX_LEN_W);
+	//      iowrite32(NORMAL_DESC_SIZE, dev->base + MDMA_MAX_LEN_W);
 	// } else {
-	// 	iowrite32(PITCH_DESC_SIZE, dev->base + MDMA_MAX_LEN_W);
+	//      iowrite32(PITCH_DESC_SIZE, dev->base + MDMA_MAX_LEN_W);
 	// }
-  //
+	//
 	// iowrite32(cfg->num_descriptors, dev->base + MDMA_ARLEN);
 	// iowrite32(cfg->num_descriptors, dev->base + MDMA_AWLEN);
 }
 
 void mdma_write_txdescriptor(struct mdma_device *mdma, void *mem, size_t len, bool is_last)
 {
-	uint32_t desc_txaddr = (uint32_t) mdma->txtbl +	(mdma->conf.desc_gap * mdma->cur_txdesc_index);
+	uint32_t desc_txaddr = (uint32_t)mdma->txtbl + (mdma->conf.desc_gap * mdma->cur_txdesc_index);
 	bool interrupt = (mdma->conf.irq_en) ? 1 : 0;
-	bool stop		= (is_last) ? 1 : 0;
+	bool stop = (is_last) ? 1 : 0;
 
 	struct extra *to_extra = NULL;
+
 	if (mdma->conf.desc_type != NORMAL) {
-		to_extra = (struct extra*) desc_txaddr;
+		to_extra = (struct extra *)desc_txaddr;
 	}
 
-	mdma_set_desc(interrupt, stop, len, (uint32_t) mem, to_extra, desc_txaddr);
+	mdma_set_desc(interrupt, stop, len, (uint32_t)mem, to_extra, desc_txaddr);
 
 	if (mdma->cur_txdesc_index != 0) {
 		mdma->cur_txdesc_index++;
@@ -168,16 +169,17 @@ void mdma_write_txdescriptor(struct mdma_device *mdma, void *mem, size_t len, bo
 
 void mdma_write_rxdescriptor(struct mdma_device *mdma, void *mem, size_t len, bool is_last)
 {
-	uint32_t desc_rxaddr = (uint32_t) mdma->rxtbl +	(mdma->conf.desc_gap * mdma->cur_rxdesc_index);
+	uint32_t desc_rxaddr = (uint32_t)mdma->rxtbl + (mdma->conf.desc_gap * mdma->cur_rxdesc_index);
 	bool interrupt = (mdma->conf.irq_en) ? 1 : 0;
-	bool stop		= (is_last) ? 1 : 0;
+	bool stop = (is_last) ? 1 : 0;
 
 	struct extra *to_extra = NULL;
+
 	if (mdma->conf.desc_type != NORMAL) {
-		to_extra = (struct extra*) desc_rxaddr;
+		to_extra = (struct extra *)desc_rxaddr;
 	}
 
-	mdma_set_desc(interrupt, stop, len, (uint32_t) mem, to_extra, desc_rxaddr);
+	mdma_set_desc(interrupt, stop, len, (uint32_t)mem, to_extra, desc_rxaddr);
 
 	if (mdma->cur_rxdesc_index != 0) {
 		mdma->cur_rxdesc_index++;
@@ -186,8 +188,7 @@ void mdma_write_rxdescriptor(struct mdma_device *mdma, void *mem, size_t len, bo
 
 bool mdma_is_finished(struct mdma_device *mdma)
 {
-	if(mdma->conf.irq_en) {
-
+	if (mdma->conf.irq_en) {
 		if (!(irqstat_r & (1 << STOP_DESC_i))) {
 			rumboot_printf("irqstat_r: %x\n", irqstat_r);
 			rumboot_printf("irqstat_w: %x\n", irqstat_w);
@@ -212,11 +213,11 @@ bool mdma_transmit_data(uint32_t base, void *dest, void *src, size_t len)
 	uint8_t desc_type = NORMAL;
 	size_t num_rxdescriptors = 1;
 	size_t num_txdescriptors = 1;
-	bool irq_en = false;
+	bool irq_en = true;
 	uint16_t desc_gap = (desc_type == NORMAL) ? NORMAL_DESC_SIZE : PITCH_DESC_SIZE;
 
-	struct mdma_config cfg = { .desc_type = desc_type, .desc_gap = desc_gap, .irq_en = irq_en,
-		 .num_rxdescriptors = num_rxdescriptors, .num_txdescriptors = num_txdescriptors };
+	struct mdma_config cfg = { .desc_type		= desc_type,	   .desc_gap	      = desc_gap, .irq_en = irq_en,
+				   .num_rxdescriptors	= num_rxdescriptors,.num_txdescriptors = num_txdescriptors };
 	struct mdma_device *mdma = mdma_create(base, &cfg);
 	mdma_configure(mdma, &cfg);
 
@@ -228,9 +229,9 @@ bool mdma_transmit_data(uint32_t base, void *dest, void *src, size_t len)
 
 	//Create transactions
 	//We can fragment data in junks and transmit in several transactions!
-	struct mdma_transaction * t = NULL;
+	struct mdma_transaction *t = NULL;
 	size_t count = num_rxdescriptors;
-	while(count--) {
+	while (count--) {
 		rumboot_printf("Create transaction.\n");
 		rumboot_printf("Destination: %x, source: %x, length: %x\n", dest, src, len);
 		t = mdma_transaction_create(mdma, dest, src, len);
@@ -256,7 +257,7 @@ bool mdma_transmit_data(uint32_t base, void *dest, void *src, size_t len)
 
 	//Remove transactions
 	count = num_rxdescriptors;
-	while(count--) {
+	while (count--) {
 		rumboot_printf("Remove transaction.\n");
 		mdma_transaction_remove(t);
 		t++;
