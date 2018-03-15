@@ -49,7 +49,8 @@ struct mdma_config {
         enum DESC_TYPE desc_type;
         uint32_t desc_gap;
         bool irq_en;
-        size_t num_descriptors; /*for each table!*/
+        size_t num_rxdescriptors; /*for each table!*/
+        size_t num_txdescriptors;
 };
 
 struct descriptor;

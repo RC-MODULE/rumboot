@@ -63,20 +63,14 @@ void dump_desc(struct descriptor *cfg)
   rumboot_printf("pitch: %x\n\n", ex->pitch);
 }
 
-int mdma_set_desc(struct descriptor *desc, uint32_t desc_addr)
+int mdma_set_desc(bool interrupt, bool stop, uint32_t data_len, uint32_t data_addr, struct extra* ex
+  , uint32_t desc_addr)
 {
 	rumboot_printf("Set descriptor, addr: %x.\n", desc_addr);
 
-	if (desc->set->ownership == 1) {
-		return -1;
-	}
-
-	struct settings *sett = desc->set;
-	uint32_t settings = sett->ownership << OWNERSHIP_i | sett->link << LINK_i |
-			    sett->interrupt << INTERRUPT_i | sett->stop << STOP_i |
-			    sett->increment << INCREMENT_i | sett->length << LENGTH_i;
-	uint32_t data_addr = (uint32_t)desc->data_addr;
-	struct extra * ex = desc->ex;
+	uint32_t settings = 0 << OWNERSHIP_i | 0 << LINK_i |
+			    interrupt << INTERRUPT_i | stop << STOP_i |
+			    0 << INCREMENT_i | data_len << LENGTH_i | 0 << ERROR_i;
 
 	if (ex != NULL) {
       //What should i write here?
@@ -91,7 +85,7 @@ int mdma_set_desc(struct descriptor *desc, uint32_t desc_addr)
 	desc_addr += 4;
 	iowrite32(settings, desc_addr);
 
-	dump_desc(desc);
+	//dump_desc(desc);
 	return 0;
 }
 
@@ -121,6 +115,9 @@ struct descriptor mdma_get_desc(uint32_t desc_addr, enum DESC_TYPE type)
 	desc.set->stop = (settings & (1 << STOP_i)) >> STOP_i;
 	desc.set->increment = (settings | (1 << INCREMENT_i)) >> INCREMENT_i;
 	desc.set->er = (settings & (1 << ERROR_i)) >> ERROR_i;
+  desc.set->length = (settings & (1 << LENGTH_i)) >> LENGTH_i;
+
+  //dump_desc(&desc);
 
 	return desc;
 }

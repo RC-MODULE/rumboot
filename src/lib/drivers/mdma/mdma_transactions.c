@@ -53,8 +53,15 @@ int mdma_transaction_queue(struct mdma_transaction *t)
 		return -1;
 
 	//WE can cut memory and write any number of descriptors!
-	mdma_write_txdescriptor(dev, t->src, t->len, t->is_last);
+	size_t tx_desc_numb = dev->conf.num_txdescriptors;
+	while(tx_desc_numb--) {
+			mdma_write_txdescriptor(dev, t->src, t->len, t->is_last);
+	}
+
+	size_t rx_desc_numb = dev->conf.num_rxdescriptors;
+	while(rx_desc_numb--) {
 	mdma_write_rxdescriptor(dev, t->dest, t->len, t->is_last);
+	}
 
 	t->state = STARTED;
 
