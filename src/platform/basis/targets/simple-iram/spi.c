@@ -168,6 +168,8 @@ unsigned int gpio5_2 = 0x0;
 int main(void){
   unsigned int x;  
  rumboot_printf("lala\n");
+  iowrite32(0x1010,SCTL_BASE + 0x128);
+  iowrite32(0x1000,SCTL_BASE + 0x12C); 
   ssp_init(gspibase); 
   go_dmac(gspibase,&writeenablecmd, dummyarray, 1);
   rumboot_printf("WREN Issued for SE\n");

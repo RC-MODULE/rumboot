@@ -24,6 +24,6 @@ iowrite32(SSPIMSC,gspibase +  SSPIMSC_ADDR); //interrupt masks - mask all
 iowrite32(SSPDMACR,gspibase + SSPDMACR_ADDR); //enable DMA
 
 iowrite32(0x20,GPIO0_BASE+0x24);//SOURCE
-iowrite32(0x20,GPIO0_BASE+0x1c);//SET1
 iowrite32(0x20,GPIO0_BASE+0x08);//DIRECTION 
+iowrite32(0x20,GPIO0_BASE+0x1c);//SET1
 } ;
