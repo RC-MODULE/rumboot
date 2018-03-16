@@ -48,11 +48,11 @@ SECTIONS
 
   rumboot_im1_heap_start = ABSOLUTE(.);
   . = . + 0xf000; /* 60k heap */
-  rumboot_im1_heap_start = ABSOLUTE(.);
+  rumboot_im1_heap_end = ABSOLUTE(.);
 
   rumboot_im0_heap_start = ABSOLUTE(.);
   /* EMPTY */
-  rumboot_im0_heap_start = ABSOLUTE(.);
+  rumboot_im0_heap_end = ABSOLUTE(.);
 
   /* This is where stacks start */
   rumboot_platform_stack_area_start = .;
