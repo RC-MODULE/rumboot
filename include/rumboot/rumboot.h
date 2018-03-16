@@ -125,6 +125,13 @@ int rumboot_malloc_num_heaps();
 
 
 /**
+ * Get the total size of a heap identified by heap_id
+ * @param  heap_id
+ * @return         heap size in bytes
+ */
+uint32_t rumboot_malloc_heap_length(int heap_id);
+
+/**
 * @}
 */
 

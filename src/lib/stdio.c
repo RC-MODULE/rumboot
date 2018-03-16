@@ -65,6 +65,15 @@ int rumboot_malloc_num_heaps()
 	return rumboot_platform_runtime_info.num_heaps;
 }
 
+uint32_t rumboot_malloc_heap_length(int heap_id)
+{
+    if (heap_id < rumboot_platform_runtime_info.num_heaps) {
+        return rumboot_platform_runtime_info.heaps[heap_id].end -
+            rumboot_platform_runtime_info.heaps[heap_id].start;
+    }
+    return 0;
+}
+
 void *rumboot_malloc_from_heap(int heap_id, size_t length)
 {
 	return rumboot_malloc_from_heap_misaligned(heap_id, length, 0x0, 0x0);

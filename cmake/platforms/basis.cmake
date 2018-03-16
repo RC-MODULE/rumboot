@@ -40,6 +40,17 @@ rumboot_add_configuration (
   FEATURES LUA COVERAGE
 )
 
+rumboot_add_configuration (
+  IRAM_MIRROR
+  LDS basis/iram.lds
+  PREFIX iram-mirror
+  LDFLAGS -Wl,--start-group -lgcc -lc -lm -Wl,--end-group "-e rumboot_main"
+  FILES ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c
+  CFLAGS -DRUMBOOT_PRINTF_ACCEL -DRUMBOOT_BASIS_ENABLE_MIRROR
+  BOOTROM bootrom-stub-mirror
+  FEATURES LUA COVERAGE
+)
+
 rumboot_add_configuration(
   LPROBE_CPU
   PREFIX lprobe-cpu
@@ -88,6 +99,11 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       CONFIGURATION IRAM
       PREFIX simple-iram)
 
+  add_directory_with_targets(simple-iram/
+      CONFIGURATION IRAM_MIRROR
+    PREFIX simple-iram-mirror)
+
+
   add_directory_with_targets(jenkins/
       CONFIGURATION ROM
       PREFIX jenkins
@@ -104,6 +120,11 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       CONFIGURATION IRAM
       PREFIX irq-iram
       TESTGROUP short
+    )
+
+    add_directory_with_targets(irq/
+      CONFIGURATION IRAM_MIRROR
+      PREFIX irq-iram-mirror
     )
 
     add_directory_with_targets(lua/
@@ -155,6 +176,16 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         FEATURES STUB
     )
 
+
+    add_rumboot_target(
+        CONFIGURATION ROM
+        FILES bootrom-stub.c
+        PREFIX "bootrom"
+        NAME "stub-mirror"
+        CFLAGS -DRUMBOOT_MIRROR_STUB
+        FEATURES STUB
+    )
+
   add_rumboot_target(
           CONFIGURATION ROM
           FILES bootrom-lprobe-stub.c
@@ -180,6 +211,11 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
   add_rumboot_target(
           CONFIGURATION IRAM
+          FILES print-heaps.c
+  )
+
+  add_rumboot_target(
+          CONFIGURATION IRAM_MIRROR
           FILES print-heaps.c
   )
 
