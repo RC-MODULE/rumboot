@@ -15,7 +15,7 @@
 #define MDIO_VER_RESET            0x00640101
 #define MDIO_STATUS_RESET         0x00
 #define MDIO_IRQ_MASK_RESET       0x00
-#define MDIO_PHY_IRQ_STATE_RESET  0x00
+#define MDIO_PHY_IRQ_STATE_RESET  0x01
 #define MDIO_CONTROL_RESET        0x00
 #define MDIO_ETH_RST_N_RESET      0x00
 #define MDIO_FREQ_DIVIDER_RESET   0x13
