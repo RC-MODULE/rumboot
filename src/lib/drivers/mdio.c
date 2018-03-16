@@ -12,6 +12,8 @@
 #include <platform/devices.h>
 #include <platform/interrupts.h>
 
+#define TIMEOUT_MDIO_ETH_PHY 12
+
 
 static void handler_mdio(int irq, void *arg)
 {
@@ -42,8 +44,16 @@ bool mdio_phy_intrp_test(uint32_t num_mdio)
        
     //Wait intrp from PHY
     uint32_t read_data=ioread32(MDIO0_BASE + 0x1000*num_mdio + MDIO_STATUS);
+    uint32_t uptime = rumboot_platform_get_uptime();
+    rumboot_printf("uptime = %x\n", uptime);
     while (!(read_data & 1 << PHY_IRQ))
-     {read_data=ioread32(MDIO0_BASE + 0x1000*num_mdio + MDIO_STATUS);}
+    {
+        if (rumboot_platform_get_uptime() - uptime > TIMEOUT_MDIO_ETH_PHY) {
+			rumboot_printf("Timeout! MDIO hasn't detected intrp from PHY! \n");
+			return 0;
+        }
+        read_data=ioread32(MDIO0_BASE + 0x1000*num_mdio + MDIO_STATUS);
+    }
     rumboot_printf("MDIO has detected intrp from PHY!\n");
     
     return 1;
