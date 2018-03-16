@@ -46,9 +46,13 @@ SECTIONS
   *(.bss.*)
   rumboot_platform_bss_end = .;
 
-  rumboot_platform_heap_start = ABSOLUTE(.);
+  rumboot_im1_heap_start = ABSOLUTE(.);
   . = . + 0xf000; /* 60k heap */
-  rumboot_platform_heap_end = ABSOLUTE(.);
+  rumboot_im1_heap_start = ABSOLUTE(.);
+
+  rumboot_im0_heap_start = ABSOLUTE(.);
+  /* EMPTY */
+  rumboot_im0_heap_start = ABSOLUTE(.);
 
   /* This is where stacks start */
   rumboot_platform_stack_area_start = .;
