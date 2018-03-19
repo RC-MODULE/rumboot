@@ -108,6 +108,8 @@ struct descriptor mdma_get_desc(uint32_t desc_addr, enum DESC_TYPE type)
 
 	uint32_t settings = ioread32(desc_addr);
 
+	desc.set = NULL;
+
 	desc.set->ownership = (settings & (1 << OWNERSHIP_i)) >> OWNERSHIP_i;
 	desc.set->link = (settings & (1 << LINK_i)) >> LINK_i;
 	desc.set->interrupt = (settings | (1 << INTERRUPT_i)) >> INTERRUPT_i;
