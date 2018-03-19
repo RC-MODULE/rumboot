@@ -68,6 +68,7 @@
  #define GPIO3_BASE               BASIS_PHYS(0x0108B000)
  #define GPIO4_BASE               BASIS_PHYS(0x0108C000)
  #define SCTL_BASE                BASIS_PHYS(0x0108D000)
+ #define WDT_BASE                 BASIS_PHYS(0x0108F000)
  #define DDR0_BASE                BASIS_PHYS(0x01500000)
  #define DDR1_BASE                BASIS_PHYS(0x01502000)
  #define GIC_DIST_BASE            BASIS_PHYS(0x01504000)

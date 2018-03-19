@@ -32,6 +32,7 @@
 #define DIT2_TIMINT2 47
 #define DIT3_TIMINT1 48
 #define DIT3_TIMINT2 49
+#define WDT_INT      63
 #define MDMA0_IRQ    64
 #define MDMA1_IRQ    65
 #define MDMA2_IRQ    66
