@@ -76,7 +76,7 @@ uint32_t rumboot_malloc_heap_length(int heap_id)
 
 void *rumboot_malloc_from_heap(int heap_id, size_t length)
 {
-	return rumboot_malloc_from_heap_misaligned(heap_id, length, 0x0, 0x0);
+	return rumboot_malloc_from_heap_misaligned(heap_id, length, 0x4, 0x0);
 }
 
 void *rumboot_malloc_from_heap_aligned(int heap_id, size_t sz, int align)
