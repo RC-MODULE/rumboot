@@ -5,6 +5,7 @@
 #include <devices/i2c.h>
 
 #define EEPROM_TIMEOUT 500
+#define EEPROM_PAGE_SIZE 128
 
 struct eeprom_private_data {
 	const struct rumboot_bootsource *src;
@@ -49,113 +50,96 @@ bool eeprom_load_again(void *pdata /*, uint32_t attempts_numb*/)
 	return (eeprom_numb > 1) ? true : false;
 }
 
-int eeprom_write(struct i2c_config *cfg, uint8_t slave_dev, uint16_t offset, void *buf, size_t number)
+int eeprom_chunk_write(struct i2c_config *cfg, uint8_t slave_dev, uint16_t offset, void *buf, size_t len)
 {
-	size_t count = 1;
-	size_t rem = 0;
-
 	//struct eeprom_private_data pdata;
-
 	struct transaction t = {
 		.devaddr	= slave_dev,
 		.offset		= offset,
-		.buf		= buf
+		.buf		= buf,
+		.len		= len,
 	};
 
-	if (number > 128) {
-		count = number / 128;
-		rem = number % 128;
-		t.len = 128;//Write a semi buffer, bacause full buffer is bugged!
-	} else {
-		t.len = number;
+	t.type = WRITE_DEV;
+	if (i2c_execute_transaction(cfg, &t) < 0) {
+		rumboot_printf("Failed to write device address.\n");
+		return -1;
 	}
 
-	while (count--) {
-
-    rumboot_printf("count: %d, rem %d\n", (count + 1), rem);
-
-		if (rem != 0 && count == 0 && number > 128) {
-			t.len = rem;
-		}
-
-		t.type = WRITE_DEV;
-		if (i2c_execute_transaction(cfg, &t) < 0) {
-			rumboot_printf("Failed to write device address.\n");
-			return -1;
-		}
-
-    rumboot_printf("buf address: %x, length: %x\n", t.buf, t.len);
-		t.type = WRITE_DATA;
-
-		if (i2c_execute_transaction(cfg, &t) < 0) {
-			rumboot_printf("Failed to write data.\n");
-			return -2;
-		}
-
-		if( i2c_stop_transaction(cfg) < 0 ) {
-      rumboot_printf("Error! Didn't stop after write transaction.\n");
-      return -3;
-    }
-
-    t.buf += 128;
+	t.type = WRITE_DATA;
+	if (i2c_execute_transaction(cfg, &t) < 0) {
+		rumboot_printf("Failed to read data.\n");
+		return -2;
 	}
 
+	i2c_stop_transaction(cfg);
 
 	return 0;
 }
 
-int eeprom_random_read(struct i2c_config *cfg, uint8_t slave_dev, uint16_t offset, void *buf, size_t number)
+int eeprom_write(struct i2c_config *cfg, uint8_t slave_dev, uint16_t offset, void *buf, size_t len)
 {
-	size_t count = 1;
-	size_t rem = 0;
-	bool have_rem = false;
-	bool is_end = false;
+	size_t count = len/128;
+	size_t rem = len%128;
+
+	while (count--) {
+
+		if( eeprom_chunk_write(cfg, slave_dev, offset, buf, EEPROM_PAGE_SIZE) < 0 )
+			return -1;
+	}
+
+	if( eeprom_chunk_write(cfg, slave_dev, offset, buf, rem) < 0 )
+		return -2;
+
+	return 0;
+}
+
+int eeprom_chunk_read(struct i2c_config *cfg, uint8_t slave_dev, uint16_t offset, void *buf, size_t len)
+{
+
+	if(len > EEPROM_PAGE_SIZE) {
+
+		return -3;
+	}
 
 	//struct eeprom_private_data pdata;
 	struct transaction t = {
 		.devaddr	= slave_dev,
 		.offset		= offset,
 		.buf		= buf,
-		.len		= number,
+		.len		= len,
 	};
 
-	if (number > 128) {
-		count = number / 128;
-		rem = number % 128;
-		t.len = 128;
-
-		if (rem != 0) {
-			have_rem = true;
-		}
+	t.type = WRITE_DEV;
+	if (i2c_execute_transaction(cfg, &t) < 0) {
+		rumboot_printf("Failed to write device address.\n");
+		return -1;
 	}
+
+	t.type = READ_DATA;
+	if (i2c_execute_transaction(cfg, &t) < 0) {
+		rumboot_printf("Failed to read data.\n");
+		return -2;
+	}
+
+	i2c_stop_transaction(cfg);
+
+	return 0;
+}
+
+int eeprom_random_read(struct i2c_config *cfg, uint8_t slave_dev, uint16_t offset, void *buf, size_t len)
+{
+	size_t count = len/128;
+	size_t rem = len%128;
 
 	while (count--) {
-		if (count == 0) {
-			is_end = true;
-		}
 
-		if (have_rem && is_end) {
-			t.len = rem;
-		}
-
-    rumboot_printf("count: %d, rem: %d, len: %d\n", (count + 1), rem, t.len);
-
-		t.type = WRITE_DEV;
-		if (i2c_execute_transaction(cfg, &t) < 0) {
-			rumboot_printf("Failed to write device address.\n");
+		if( eeprom_chunk_read(cfg, slave_dev, offset, buf, EEPROM_PAGE_SIZE) < 0 )
 			return -1;
-		}
-
-		t.type = READ_DATA;
-		if (i2c_execute_transaction(cfg, &t) < 0) {
-			rumboot_printf("Failed to read data.\n");
-			return -2;
-		}
-
-		i2c_stop_transaction(cfg);
-
-    t.buf += 128;
 	}
+
+	if( eeprom_chunk_read(cfg, slave_dev, offset, buf, rem) < 0 )
+		return -2;
 
 	return 0;
 }

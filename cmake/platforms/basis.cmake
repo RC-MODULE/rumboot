@@ -176,7 +176,6 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         FEATURES STUB
     )
 
-
     add_rumboot_target(
         CONFIGURATION ROM
         FILES common/bootrom-stubs/bootrom-stub.c
@@ -455,6 +454,12 @@ endif()
       NAME can_maskfilter
     )
 
+    add_rumboot_target(
+        CONFIGURATION IRAM_MIRROR
+        FILES simple-iram/mdma_test.c
+        PREFIX "bootrom"
+        NAME "mdma"
+    )
 
   #RumBoot Integration tests
 #  add_rumboot_target(

@@ -3,11 +3,11 @@
 #include <rumboot/printf.h>
 #include <rumboot/platform.h>
 #include <rumboot/macros.h>
+#include <rumboot/io.h>
 
 #include <string.h>
 
 
-#include "rumboot/io.h"
 
 static bool load_img(const struct rumboot_bootsource *src, void *pdata)
 {
@@ -15,12 +15,13 @@ static bool load_img(const struct rumboot_bootsource *src, void *pdata)
 	uint8_t *write_to = (uint8_t *)&rumboot_platform_spl_start;
 	char tmp[512];
 
-	int count = src->read(pdata, &tmp, read_from);
+	//Read header!
+	size_t count = src->read(pdata, &tmp, read_from);
 	if(count < 0)
 		return false;
 
 	struct rumboot_bootheader *hdr = (struct rumboot_bootheader *)&tmp;
-	int32_t img_size = hdr->datalen + 66;
+	size_t img_size = hdr->datalen + 66;
 
 	//Reed data image
 	while (img_size > 0) {

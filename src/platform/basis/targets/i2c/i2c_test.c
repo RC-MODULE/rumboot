@@ -6,6 +6,7 @@
 #include <rumboot/platform.h>
 #include <rumboot/bootheader.h>
 #include <rumboot/timer.h>
+#include <rumboot/rumboot.h>
 
 #include <devices/i2c.h>
 
@@ -25,8 +26,8 @@ int main()
 		.scl_freq	= 0x13,
 		.byte_numb	= byte_number
 	};
-	char in_buf[byte_number];
-	char out_buf[byte_number];
+	char *in_buf = rumboot_malloc_from_heap_aligned(0, byte_number, 8);
+	char *out_buf = rumboot_malloc_from_heap_aligned(0, byte_number, 8);
 	memset(out_buf, 0x0, byte_number);
 	size_t i;
 	for (i = 0; i < byte_number; i++)
@@ -34,6 +35,7 @@ int main()
 	memset(out_buf, 0x0, byte_number);
 
 	struct rumboot_irq_entry *tbl = rumboot_irq_create(NULL);
+	rumboot_printf("===> %x\n", tbl);
 	rumboot_irq_set_handler(tbl, I2C0_IRQ, 0, i2c_irq_handler, (void *)&cfg);
 	rumboot_irq_enable(I2C0_IRQ);
 	rumboot_irq_table_activate(tbl);
@@ -68,9 +70,13 @@ int main()
 	}
 
 	rumboot_printf("Test OK.\n");
+	rumboot_free(in_buf);
+	rumboot_free(out_buf);
 	return 0;
 
 	test_failed:
+		rumboot_free(in_buf);
+		rumboot_free(out_buf);
 		rumboot_printf("Test failed.\n");
 		return -1;
 }
