@@ -10,6 +10,7 @@
 #include <rumboot/rumboot.h>
 #include <string.h>
 #include <rumboot/pcie_test_lib.h>
+#include <rumboot/ddr_test_lib.h>
 
 /* Platform-specific glue */
 uint32_t rumboot_platform_get_uptime()
@@ -23,6 +24,11 @@ extern char rumboot_im0_heap_end;
 extern char rumboot_im1_heap_start;
 extern char rumboot_im1_heap_end;
 
+extern char rumboot_ddr1_heap_start;
+extern char rumboot_ddr1_heap_end;
+extern char rumboot_ddr0_heap_start;
+extern char rumboot_ddr0_heap_end;
+
 /* Comes from startup.S */
 extern char rumboot_default_irq_vectors;
 
@@ -31,9 +37,24 @@ void setup_mirrored_heap(int id)
 	uint32_t len = rumboot_malloc_heap_length(id);
 	void *ptr = rumboot_malloc_from_heap(id, len / 2);
 	char *name = rumboot_malloc_from_heap(0, 16);
+
 	strcpy(name, "PCIE-");
 	strcat(name, rumboot_malloc_heap_name(id));
-	rumboot_malloc_register_heap(name, BASIS_PHYS(ptr), BASIS_PHYS(ptr + (len/2)));
+
+	/* Trashy code, but will do for now */
+	if (rumboot_platform_runtime_info.heaps[id].start >= (void *) 0xC0000000) {
+		rumboot_malloc_register_heap(name,
+						 (ptr - 0xC0000000) + 0x60000000,
+						 (ptr + (len / 2) - 0xC0000000) + 0x60000000);
+	} else if ((rumboot_platform_runtime_info.heaps[id].start >= (void *)0x80000000)) {
+		rumboot_malloc_register_heap(name,
+					     ptr - 0x80000000 + 0x50000000,
+					     ptr + (len / 2) - 0x80000000 + 0x50000000);
+	} else {
+		rumboot_malloc_register_heap(name,
+					     BASIS_PHYS(ptr),
+					     BASIS_PHYS(ptr + (len / 2)));
+	}
 };
 
 void rumboot_platform_setup()
@@ -49,13 +70,25 @@ void rumboot_platform_setup()
 	rumboot_malloc_register_heap("IM1",
 				     &rumboot_im1_heap_start, &rumboot_im1_heap_end);
 
-	#ifdef RUMBOOT_BASIS_ENABLE_MIRROR
-		int heaps = rumboot_malloc_num_heaps();
-		int i;
-		for (i=0; i < heaps; i++) {
-			setup_mirrored_heap(i);
-		}
-	#endif
+#ifdef RUMBOOT_BASIS_ENABLE_DDR
+	rumboot_printf("Setting up DDR. Go grab a coffee, this will take a while\n");
+	ddr0_ddr1_init();
+	rumboot_printf("Done!\n");
+	rumboot_malloc_register_heap("DDR0",
+				     &rumboot_ddr0_heap_start, &rumboot_ddr0_heap_end);
+	rumboot_malloc_register_heap("DDR1",
+				     &rumboot_ddr1_heap_start, &rumboot_ddr1_heap_end);
+#endif
+
+
+#ifdef RUMBOOT_BASIS_ENABLE_MIRROR
+	int heaps = rumboot_malloc_num_heaps();
+	int i;
+	for (i = 0; i < heaps; i++) {
+		setup_mirrored_heap(i);
+	}
+
+#endif
 
 	/* Fire timer subsystem */
 	struct sp804_conf conf_str;
@@ -69,5 +102,4 @@ void rumboot_platform_setup()
 
 	sp804_config(DIT3_BASE, &conf_str, 1);
 	sp804_enable(DIT3_BASE, 1);
-
 }

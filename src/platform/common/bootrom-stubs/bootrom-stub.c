@@ -5,7 +5,10 @@
 #include <rumboot/platform.h>
 #include <rumboot/macros.h>
 #include <rumboot/bootheader.h>
-#include <rumboot/pcie_test_lib.h>
+
+#ifdef RUMBOOT_MIRROR_STUB
+	#include <rumboot/pcie_test_lib.h>
+#endif
 
 int main()
 {
