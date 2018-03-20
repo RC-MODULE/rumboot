@@ -113,21 +113,7 @@ struct descriptor mdma_get_desc(volatile uint32_t desc_addr, enum DESC_TYPE type
 	desc.data_addr = *(volatile void **) (desc_addr);
 	desc_addr += 4;
 
-<<<<<<< HEAD
-	uint32_t settings = ioread32(desc_addr);
-
-	desc.set = NULL;
-
-	desc.set->ownership = (settings & (1 << OWNERSHIP_i)) >> OWNERSHIP_i;
-	desc.set->link = (settings & (1 << LINK_i)) >> LINK_i;
-	desc.set->interrupt = (settings | (1 << INTERRUPT_i)) >> INTERRUPT_i;
-	desc.set->stop = (settings & (1 << STOP_i)) >> STOP_i;
-	desc.set->increment = (settings | (1 << INCREMENT_i)) >> INCREMENT_i;
-	desc.set->er = (settings & (1 << ERROR_i)) >> ERROR_i;
-  desc.set->length = (settings & (1 << LENGTH_i)) >> LENGTH_i;
-=======
 	*(desc.set) =  *(volatile struct settings *) (desc_addr);
->>>>>>> Fixed mdma library. Error with misaligned addresses.
 
   //dump_desc(&desc);
 

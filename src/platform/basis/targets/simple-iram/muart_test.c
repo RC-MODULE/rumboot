@@ -60,7 +60,7 @@ static bool test_cfg(struct base_addrs *addrs, const struct muart_conf *cfg)
 
 		rumboot_printf("Compare arrays.\n");
 		if (memcmp((char *) &buf[0], (char *) &output[0], data_size) != 0) {
-			the same
+			//the same
 			size_t j;
 			for(j=0; j<data_size; j++)
 			{
