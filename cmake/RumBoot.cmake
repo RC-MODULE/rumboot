@@ -99,6 +99,26 @@ macro(populate_dependencies target)
     endforeach()
 endmacro()
 
+
+macro(locate_source_file file)
+
+  #Extra seat-belts
+  if (EXISTS ${RUMBOOT_PLATFORM_TARGET_DIR}/${f} AND
+      EXISTS ${RUMBOOT_PLATFORM_COMMON_DIR}/${f})
+      message(FATAL_ERROR "FATAL: Files with the same name: ${RUMBOOT_PLATFORM_TARGET_DIR}/${f} and ${RUMBOOT_PLATFORM_COMMON_DIR}/${f}")
+    endif()
+
+  if (EXISTS ${RUMBOOT_PLATFORM_TARGET_DIR}/${f})
+        LIST(APPEND trg ${RUMBOOT_PLATFORM_TARGET_DIR}/${f})
+  elseif(EXISTS ${RUMBOOT_PLATFORM_COMMON_DIR}/${f})
+        LIST(APPEND trg ${RUMBOOT_PLATFORM_COMMON_DIR}/${f})
+  elseif(EXISTS ${f})
+        LIST(APPEND trg ${f})
+  else()
+    message(FATAL_ERROR "Can't find file ${f} for target ${TARGET_NAME}")
+  endif()
+endmacro()
+
 function(add_rumboot_target)
   set(options )
   set(oneValueArgs SNAPSHOT LDS NAME PREFIX CONFIGURATION BOOTROM)
@@ -153,11 +173,7 @@ function(add_rumboot_target)
   set(${name} TRUE PARENT_SCOPE)
 
   foreach(f ${TARGET_FILES})
-    if (NOT EXISTS ${f})
-      LIST(APPEND trg ${RUMBOOT_PLATFORM_TARGET_DIR}/${f})
-    else()
-      LIST(APPEND trg ${f})
-    endif()
+    locate_source_file(${f})
   endforeach()
 
   foreach(f ${trg})

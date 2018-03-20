@@ -156,7 +156,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       PREFIX multimaster
     )
 
-    add_directory_with_targets(spl-stubs/
+    add_directory_with_targets(common/spl-stubs/
       CONFIGURATION IRAM
       PREFIX spl
       FEATURES STUB
@@ -164,13 +164,13 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
     add_rumboot_target(
         CONFIGURATION DROM
-        FILES drom-check.c
+        FILES common/tools/drom-check.c
         NAME "hello-with-data"
     )
 
     add_rumboot_target(
         CONFIGURATION ROM
-        FILES bootrom-stub.c
+        FILES common/bootrom-stubs/bootrom-stub.c
         PREFIX "bootrom"
         NAME "stub"
         FEATURES STUB
@@ -179,7 +179,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
     add_rumboot_target(
         CONFIGURATION ROM
-        FILES bootrom-stub.c
+        FILES common/bootrom-stubs/bootrom-stub.c
         PREFIX "bootrom"
         NAME "stub-mirror"
         CFLAGS -DRUMBOOT_MIRROR_STUB
@@ -188,7 +188,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
   add_rumboot_target(
           CONFIGURATION ROM
-          FILES bootrom-lprobe-stub.c
+          FILES common/bootrom-stubs/bootrom-lprobe-stub.c
           PREFIX "bootrom"
           NAME "lprobe-stub"
           FEATURES STUB
@@ -196,7 +196,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
     add_rumboot_target(
             CONFIGURATION ROM
-            FILES bootrom-noop-stub.c
+            FILES common/bootrom-stubs/bootrom-noop-stub.c
             PREFIX "bootrom"
             NAME "noop-stub"
             FEATURES STUB
@@ -211,17 +211,17 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
   add_rumboot_target(
           CONFIGURATION IRAM
-          FILES print-heaps.c
+          FILES common/tools/print-heaps.c
   )
 
   add_rumboot_target(
           CONFIGURATION IRAM_MIRROR
-          FILES print-heaps.c
+          FILES common/tools/print-heaps.c
   )
 
   add_rumboot_target(
           CONFIGURATION ROM
-          FILES print-heaps.c
+          FILES common/tools/print-heaps.c
   )
 
 
