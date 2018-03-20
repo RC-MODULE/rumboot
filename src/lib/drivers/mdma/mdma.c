@@ -6,6 +6,7 @@
 #include <rumboot/io.h>
 #include <rumboot/printf.h>
 #include <rumboot/timer.h>
+#include <rumboot/rumboot.h>
 
 #include <regs/regs_mdma.h>
 
@@ -16,13 +17,13 @@
 
 /********DESCRIPTOR ASSIGNMENTS********/
 struct settings {
-	uint32_t	ownership : 1;
-	uint32_t	link : 1;
-	uint32_t	interrupt : 1;
-	uint32_t	stop : 1;
-	uint32_t	increment : 1;
-	uint32_t	er : 1;
 	uint32_t	length : 26;
+  uint32_t	er : 1;
+  uint32_t	increment : 1;
+  uint32_t	stop : 1;
+  uint32_t	interrupt : 1;
+  uint32_t	link : 1;
+	uint32_t	ownership : 1;
 } __attribute__((packed));
 
 struct extra {
@@ -32,17 +33,27 @@ struct extra {
 } __attribute__((packed));
 
 struct descriptor {
-	struct settings *	set;
-	void *			data_addr;
+	volatile struct settings *	set;
+	volatile void *			data_addr;
 	struct extra *		ex;
-};
+} /*__attribute__((packed))*/;
 
-int mdma_set_desc(bool interrupt, bool stop, uint32_t data_len, uint32_t data_addr, struct extra *ex
-		  , uint32_t desc_addr);
-struct descriptor mdma_get_desc(uint32_t desc_addr, enum DESC_TYPE type);
-void dump_desc(struct descriptor *cfg);
+int mdma_set_desc(bool interrupt, bool stop, uint32_t data_len, volatile uint32_t data_addr, struct extra *ex
+		  , volatile uint32_t desc_addr);
+struct descriptor mdma_get_desc(volatile uint32_t desc_addr, enum DESC_TYPE type);
+void dump_desc(volatile struct descriptor *cfg);
 
 /*******************MDMA DEFENITION************************/
+static void debug_err(uint32_t base)
+{
+	rumboot_printf("raxi err addr r: %x\n", ioread32(base + MDMA_RAXI_ERR_ADDR_R));
+	rumboot_printf("raxi err addr w: %x\n", ioread32(base + MDMA_RAXI_ERR_ADDR_W));
+	rumboot_printf("waxi err addr r: %x\n", ioread32(base + MDMA_WAXI_ERR_ADDR_R));
+	rumboot_printf("waxi err addr w: %x\n", ioread32(base + MDMA_WAXI_ERR_ADDR_W));
+	rumboot_printf("waxi err addr: %x\n", ioread32(base + MDMA_WAXI_ERR_ADDR));
+	rumboot_printf("raxi err addr: %x\n", ioread32(base + MDMA_RAXI_ERR_ADDR));
+}
+
 static volatile uint32_t irqstat_r = 0;
 static volatile uint32_t irqstat_w = 0;
 
@@ -53,6 +64,10 @@ void mdma_irq_handler(int irq, void *arg)
 
 	irqstat_r |= ioread32(base + MDMA_STATUS_R);
 	irqstat_w |= ioread32(base + MDMA_STATUS_W);
+
+	if( irqstat_w & (1<<AXI_ERR_i) ) {
+		debug_err(base);
+	}
 
 	if (gp_status & (1 << 0)) {
 		rumboot_printf("IRQ arrived from read channel, irq status %x\n", irqstat_r);
@@ -74,9 +89,11 @@ void mdma_dump(uint32_t base)
 #define NORMAL_DESC_SIZE 8
 #define PITCH_DESC_SIZE 16
 #define LONG_DESC_SIZE 16
-struct mdma_device *mdma_create(uint32_t base, struct mdma_config *cfg)
+
+#define IM0_HEAP_ID 0
+volatile struct mdma_device *mdma_create(uint32_t base, struct mdma_config *cfg)
 {
-	struct mdma_device *mdma;
+	volatile struct mdma_device *mdma;
 	enum DESC_TYPE desc_type = (cfg) ? cfg->desc_type : NORMAL;
 	size_t num_txdescriptors = (cfg) ? cfg->num_txdescriptors : 32;
 	size_t num_rxdescriptors = (cfg) ? cfg->num_rxdescriptors : 32;
@@ -86,91 +103,85 @@ struct mdma_device *mdma_create(uint32_t base, struct mdma_config *cfg)
 	size_t dsc_txtbl_size = num_txdescriptors * (desc_gap);
 	size_t dsc_rxtbl_size = num_rxdescriptors * (desc_gap);
 
-	char *buf = malloc(sizeof(*mdma) + dsc_rxtbl_size + dsc_txtbl_size + 2 * sizeof(size_t));
+	volatile char *buf = rumboot_malloc_from_heap_aligned(IM0_HEAP_ID, sizeof(*mdma) + dsc_rxtbl_size + dsc_txtbl_size, 8);
 
 	mdma = (struct mdma_device *)buf;
 	mdma->txtbl = (struct descriptor *)&mdma[1];
 	mdma->rxtbl = (struct descriptor *)&buf[sizeof(*mdma) + dsc_txtbl_size];
 
-	mdma->cur_txdesc_index = 0;
-	mdma->cur_rxdesc_index = 0;
 	mdma->base = base;
 	mdma->conf = *cfg;
 
 	return mdma;
 }
 
-void mdma_remove(struct mdma_device *dev)
+void mdma_remove(volatile struct mdma_device *dev)
 {
 	if (dev) {
-		free(dev);
+		rumboot_free((struct mdma_dev*) dev);
 	}
 }
 
-void mdma_init(struct mdma_device *mdma)
+void mdma_init(volatile struct mdma_device *mdma)
 {
-	uint32_t irqmask = (1 << RAXI_ERR_i) | (1 << WAXI_ERR_i) | (1 << AXI_ERR_i)
-			   | (1 << STOP_DESC_i);
-
-	if (mdma->conf.irq_en) {
-		iowrite32(irqmask, mdma->base + MDMA_IRQ_MASK_W);
-	}
-
-	if (mdma->conf.irq_en) {
-		iowrite32(irqmask, mdma->base + MDMA_IRQ_MASK_R);
-	}
-
 	iowrite32(0x1, mdma->base + MDMA_ENABLE_W);
 	iowrite32(0x1, mdma->base + MDMA_ENABLE_R);
 }
 
-void mdma_deinit(struct mdma_device *mdma)
+void mdma_deinit(volatile struct mdma_device *mdma)
 {
 	iowrite32(0x0, mdma->base + MDMA_ENABLE_W);
 	iowrite32(0x0, mdma->base + MDMA_ENABLE_R);
 }
 
-void mdma_configure(struct mdma_device *dev, struct mdma_config *cfg)
+void mdma_configure(volatile struct mdma_device *dev, struct mdma_config *cfg)
 {
 	iowrite32(((int)cfg->desc_type << DESC_TYPE_i) | (cfg->desc_gap << DESC_GAP_i), dev->base + MDMA_SETTINGS_R);
-	iowrite32((uint32_t)dev->txtbl, dev->base + MDMA_DESC_ADDR_R);
+	iowrite32((volatile uint32_t) dev->txtbl, dev->base + MDMA_DESC_ADDR_R);
 	iowrite32(((int)cfg->desc_type << DESC_TYPE_i) | (cfg->desc_gap << DESC_GAP_i), dev->base + MDMA_SETTINGS_W);
-	iowrite32((uint32_t)dev->rxtbl, dev->base + MDMA_DESC_ADDR_W);
+	iowrite32((volatile uint32_t) dev->rxtbl, dev->base + MDMA_DESC_ADDR_W);
+
+	uint32_t irqmask = (1 << RAXI_ERR_i) | (1 << WAXI_ERR_i) | (1 << AXI_ERR_i)
+			   | (1 << STOP_DESC_i);
+
+	if (dev->conf.irq_en) {
+		iowrite32(irqmask, dev->base + MDMA_IRQ_MASK_W);
+	}
+
+	if (dev->conf.irq_en) {
+		iowrite32(irqmask, dev->base + MDMA_IRQ_MASK_R);
+	}
 
 	// if (cfg->desc_type == NORMAL) {
 	//      iowrite32(NORMAL_DESC_SIZE, dev->base + MDMA_MAX_LEN_W);
 	// } else {
 	//      iowrite32(PITCH_DESC_SIZE, dev->base + MDMA_MAX_LEN_W);
 	// }
-	//
-	// iowrite32(cfg->num_descriptors, dev->base + MDMA_ARLEN);
-	// iowrite32(cfg->num_descriptors, dev->base + MDMA_AWLEN);
+  //
+	// iowrite32(cfg->num_txdescriptors, dev->base + MDMA_ARLEN);
+	// iowrite32(cfg->num_rxdescriptors, dev->base + MDMA_AWLEN);
 }
 
-void mdma_write_txdescriptor(struct mdma_device *mdma, void *mem, size_t len, bool is_last)
+void mdma_write_txdescriptor(volatile struct mdma_device *mdma, volatile void *mem, size_t len, size_t index)
 {
-	uint32_t desc_txaddr = (uint32_t)mdma->txtbl + (mdma->conf.desc_gap * mdma->cur_txdesc_index);
-	bool interrupt = (mdma->conf.irq_en) ? 1 : 0;
-	bool stop = (is_last) ? 1 : 0;
+	volatile uint32_t desc_txaddr = (volatile uint32_t)mdma->txtbl + (mdma->conf.desc_gap * index);
+	bool interrupt = (mdma->conf.irq_en) ? true : false;
+	bool stop = (mdma->conf.num_txdescriptors == (index + 1)) ? true : false;
 
-	struct extra *to_extra = NULL;
+	struct extra * to_extra = NULL;
 
 	if (mdma->conf.desc_type != NORMAL) {
 		to_extra = (struct extra *)desc_txaddr;
 	}
 
-	mdma_set_desc(interrupt, stop, len, (uint32_t)mem, to_extra, desc_txaddr);
-
-	if (mdma->cur_txdesc_index != 0) {
-		mdma->cur_txdesc_index++;
-	}
+	mdma_set_desc(interrupt, stop, len, (volatile uint32_t)mem, to_extra, desc_txaddr);
 }
 
-void mdma_write_rxdescriptor(struct mdma_device *mdma, void *mem, size_t len, bool is_last)
+void mdma_write_rxdescriptor(volatile struct mdma_device *mdma, volatile void *mem, size_t len, size_t index)
 {
-	uint32_t desc_rxaddr = (uint32_t)mdma->rxtbl + (mdma->conf.desc_gap * mdma->cur_rxdesc_index);
-	bool interrupt = (mdma->conf.irq_en) ? 1 : 0;
-	bool stop = (is_last) ? 1 : 0;
+	volatile uint32_t desc_rxaddr = (volatile uint32_t)mdma->rxtbl + (mdma->conf.desc_gap * index);
+	bool interrupt = (mdma->conf.irq_en) ? true : false;
+	bool stop = (mdma->conf.num_rxdescriptors == (index + 1)) ? true : false;
 
 	struct extra *to_extra = NULL;
 
@@ -178,14 +189,10 @@ void mdma_write_rxdescriptor(struct mdma_device *mdma, void *mem, size_t len, bo
 		to_extra = (struct extra *)desc_rxaddr;
 	}
 
-	mdma_set_desc(interrupt, stop, len, (uint32_t)mem, to_extra, desc_rxaddr);
-
-	if (mdma->cur_rxdesc_index != 0) {
-		mdma->cur_rxdesc_index++;
-	}
+	mdma_set_desc(interrupt, stop, len, (volatile uint32_t)mem, to_extra, desc_rxaddr);
 }
 
-bool mdma_is_finished(struct mdma_device *mdma)
+bool mdma_is_finished(volatile struct mdma_device *mdma)
 {
 	if (mdma->conf.irq_en) {
 		if (!(irqstat_r & (1 << STOP_DESC_i))) {
@@ -193,10 +200,12 @@ bool mdma_is_finished(struct mdma_device *mdma)
 			rumboot_printf("irqstat_w: %x\n", irqstat_w);
 			return false;
 		}
+
+		return  true;
 	}
 
-	uint32_t desc_rxaddr = (uint32_t)mdma->rxtbl + mdma->conf.desc_gap * mdma->cur_rxdesc_index;
-	struct descriptor desc = mdma_get_desc(desc_rxaddr, mdma->conf.desc_type);
+	volatile uint32_t desc_rxaddr = (volatile uint32_t)mdma->rxtbl + mdma->conf.desc_gap * (mdma->conf.num_rxdescriptors-1);
+	volatile struct descriptor desc = mdma_get_desc(desc_rxaddr, mdma->conf.desc_type);
 
 	if (desc.set->ownership != 1) {
 		return false;
@@ -205,37 +214,34 @@ bool mdma_is_finished(struct mdma_device *mdma)
 	return true;
 }
 
-int mdma_transmit_data(uint32_t base, void *dest, void *src, size_t len)
+int mdma_transmit_data(uint32_t base, volatile void *dest, volatile void *src, size_t len)
 {
 	//CONFIG DMA
 	rumboot_printf("Config DMA.\n");
 	uint8_t desc_type = NORMAL;
 	size_t num_rxdescriptors = 1;
 	size_t num_txdescriptors = 1;
-	bool irq_en = true;
-	uint16_t desc_gap = (desc_type == NORMAL) ? NORMAL_DESC_SIZE : PITCH_DESC_SIZE;
+	bool irq_en = false;
 
+	uint16_t desc_gap = (desc_type == NORMAL) ? NORMAL_DESC_SIZE : PITCH_DESC_SIZE;
 	struct mdma_config cfg = { .desc_type		= desc_type,	   .desc_gap	      = desc_gap, .irq_en = irq_en,
 				   .num_rxdescriptors	= num_rxdescriptors,.num_txdescriptors = num_txdescriptors };
-	struct mdma_device *mdma = mdma_create(base, &cfg);
+	volatile struct mdma_device *mdma = mdma_create(base, &cfg);
 	mdma_configure(mdma, &cfg);
 
 	//Create transactions
 	//We can fragment data in junks and transmit in several transactions!
-	struct mdma_transaction *t = NULL;
-	size_t count = num_rxdescriptors;
-	while (count--) {
+	volatile struct mdma_transaction *t = NULL;
+	size_t transaction_count = 1;
+	while (transaction_count--) {
 		rumboot_printf("Create transaction.\n");
 		rumboot_printf("Destination: %x, source: %x, length: %x\n", dest, src, len);
 		t = mdma_transaction_create(mdma, dest, src, len);
 
 		//Push transaction to queue
 		rumboot_printf("Queue transaction.\n");
-		if (count == 0) {
-			t->is_last = true; //!we have 1 transaction!
-		}
 		//mdma_transaction_dump(t);
-		mdma_transaction_queue(t);
+		mdma_transaction_queue((struct mdma_transaction*) t);
 		t++;
 	}
 
@@ -254,10 +260,10 @@ int mdma_transmit_data(uint32_t base, void *dest, void *src, size_t len)
 	}
 
 	//Remove transactions
-	count = num_rxdescriptors;
-	while (count--) {
+	transaction_count = 1;
+	while (transaction_count--) {
 		rumboot_printf("Remove transaction.\n");
-		mdma_transaction_remove(t);
+		mdma_transaction_remove((struct mdma_transaction*) t);
 		t++;
 	}
 

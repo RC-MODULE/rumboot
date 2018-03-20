@@ -65,10 +65,8 @@ struct descriptor;
 struct mdma_device {
         uint32_t base;
         struct mdma_config conf;
-        struct descriptor * rxtbl;
-        struct descriptor * txtbl;
-        size_t cur_rxdesc_index;
-        size_t cur_txdesc_index;
+        volatile struct descriptor * rxtbl;
+        volatile struct descriptor * txtbl;
 };
 
 /**
@@ -77,31 +75,31 @@ struct mdma_device {
  * cfg: configuration of mdma descriptor table
  * return: mdma_device object
  */
-struct mdma_device *mdma_create(uint32_t base, struct mdma_config *cfg);
+volatile struct mdma_device *mdma_create(uint32_t base, struct mdma_config *cfg);
 /**
  * mdma_remove: Free memory from mdma object and tables.
  * dev: pointer to allocated memory
  */
-void mdma_remove( struct mdma_device *dev);
+void mdma_remove(volatile struct mdma_device *dev);
 
 /**
  * mdma_init: Initialization of mdma block
  * mdma structure of mdma device
  */
-void mdma_init(struct mdma_device* mdma);
+void mdma_init(volatile struct mdma_device* mdma);
 
 /**
  * mdma_deinit: Deinitialization of mdma block
  * mdma structure of mdma device
  */
-void mdma_deinit(struct mdma_device* mdma);
+void mdma_deinit(volatile struct mdma_device* mdma);
 
 /**
  * mdma_configure: Set configuration settings
  * dev: pointer to mdma_device object
  * cfg: pointer to mdma configuration settings
  */
-void mdma_configure(struct mdma_device *dev, struct mdma_config *cfg);
+void mdma_configure(volatile struct mdma_device *dev, struct mdma_config *cfg);
 
 /**
  * mdma_transaction: Write descriptors in TX descriptor tables
@@ -110,7 +108,7 @@ void mdma_configure(struct mdma_device *dev, struct mdma_config *cfg);
  * len: length of transmit data
  * is_last: flag - whether this transaction last or not?
  */
-void mdma_write_txdescriptor(struct mdma_device *mdma, void* src, size_t len, bool is_last);
+void mdma_write_txdescriptor(volatile struct mdma_device *mdma, volatile void* src, size_t len, size_t index);
 
 /**
 * mdma_transaction: Write descriptors in RX descriptor tables
@@ -119,14 +117,14 @@ void mdma_write_txdescriptor(struct mdma_device *mdma, void* src, size_t len, bo
 * len: length of transmit data
 * is_last: flag - whether this transaction last or not?
  */
-void mdma_write_rxdescriptor(struct mdma_device *mdma, void* dst, size_t len, bool is_last);
+void mdma_write_rxdescriptor(volatile struct mdma_device *mdma, volatile void* dst, size_t len, size_t index);
 
 /**
  * mdma_is_finished: Find out whether this transaction finished or not?
  * mdma structure of mdma device
  * @return: false or true
  */
-bool mdma_is_finished(struct mdma_device* mdma);
+bool mdma_is_finished(volatile struct mdma_device* mdma);
 
 /**
  * mdma_dump: Dump mdma registers
@@ -142,7 +140,7 @@ void mdma_dump(uint32_t base);
  * len: length of transmit data
  * @return error code, if error code less than 0 - error!
  */
-int mdma_transmit_data(uint32_t base, void* dest, void* src, size_t len);
+int mdma_transmit_data(uint32_t base, volatile void* dest, volatile void* src, size_t len);
 
 /**
  * Handle interrupt request
@@ -169,12 +167,11 @@ enum mdma_transaction_state {
  * is_last: flag - whether this transaction last or not?
  */
 struct mdma_transaction {
-        void *        dest;
-        void *        src;
+        volatile void *        dest;
+        volatile void *        src;
         size_t len;
         enum mdma_transaction_state state;
-        struct mdma_device *    owner;
-        bool is_last;
+        volatile struct mdma_device *    owner;
 };
 
 /**
@@ -185,7 +182,8 @@ struct mdma_transaction {
  * len: length of transmit memory
  * return: structure contains mdma transaction parameter
  */
-struct mdma_transaction *mdma_transaction_create(struct mdma_device *dev, void *dest, void *src, size_t len);
+struct mdma_transaction *mdma_transaction_create(volatile struct mdma_device *dev,
+  volatile void *dest, volatile void *src, size_t len);
 
 /**
  * mmdma_transaction_remove: Free memory from mdma_transaction object

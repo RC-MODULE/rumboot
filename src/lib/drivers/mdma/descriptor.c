@@ -15,26 +15,26 @@
  * increment  :
  */
 struct settings {
+  uint32_t	length : 26;
+  uint32_t	er : 1;
+  uint32_t	increment : 1;
+  uint32_t	stop : 1;
+  uint32_t	interrupt : 1;
+  uint32_t	link : 1;
 	uint32_t	ownership : 1;
-	uint32_t	link : 1;
-	uint32_t	interrupt : 1;
-	uint32_t	stop : 1;
-	uint32_t	increment : 1;
-	uint32_t	er : 1;
-	uint32_t	length : 26;
 } __attribute__((packed));
 
 struct extra {
 	uint64_t	reserve : 32;
-	uint64_t	string_length : 16;
-	uint64_t	pitch : 16;
+  uint64_t	string_length : 16;
+  uint64_t	pitch : 16;
 }__attribute__((packed));
 
 struct descriptor {
-	struct settings *	set;
-	void *			data_addr;
-	struct extra *		ex;//DEFINE THIS FIELD AS NULL IF YOU WORK WITH NORMAL DSCRIPTORS!
-};
+  struct extra *		ex;//DEFINE THIS FIELD AS NULL IF YOU WORK WITH NORMAL DSCRIPTORS!
+  volatile void * data_addr;
+	volatile struct settings *	set;
+}__attribute__((packed));
 
 #define OWNERSHIP_i 31
 #define LINK_i 30
@@ -44,12 +44,12 @@ struct descriptor {
 #define ERROR_i 26
 #define LENGTH_i 0
 
-void dump_desc(struct descriptor *cfg)
+void dump_desc(volatile struct descriptor *cfg)
 {
-	struct settings *set = cfg->set;
-  struct extra * ex = cfg->ex;
+	volatile struct settings *set = cfg->set;
+  volatile struct extra * ex = cfg->ex;
 
-	rumboot_printf("Settings: %x\n", (uint32_t)set);
+	rumboot_printf("Settings: %x\n", *((uint32_t *)set));
 	rumboot_printf("ownership: %d\n", set->ownership);
 	rumboot_printf("link: %d\n", set->link);
 	rumboot_printf("interrupt: %d\n", set->interrupt);
@@ -63,49 +63,57 @@ void dump_desc(struct descriptor *cfg)
   rumboot_printf("pitch: %x\n\n", ex->pitch);
 }
 
-int mdma_set_desc(bool interrupt, bool stop, uint32_t data_len, uint32_t data_addr, struct extra* ex
-  , uint32_t desc_addr)
+int mdma_set_desc(bool interrupt, bool stop, uint32_t data_len, volatile uint32_t data_addr, struct extra* ex,
+   volatile uint32_t desc_addr)
 {
-	rumboot_printf("Set descriptor, addr: %x.\n", desc_addr);
+	rumboot_printf("Set descriptor addr: %x, pointed to %x with length: %x.\n", desc_addr, data_addr, data_len);
 
-	uint32_t settings = 0 << OWNERSHIP_i | 0 << LINK_i |
-			    interrupt << INTERRUPT_i | stop << STOP_i |
-			    0 << INCREMENT_i | data_len << LENGTH_i | 0 << ERROR_i;
+	volatile uint32_t settings = 0;
+
+  settings |= (interrupt) ? (1 << INTERRUPT_i) : 0;
+  settings |= (stop) ? (1 << STOP_i): 0;
+  settings |= (data_len << LENGTH_i);
 
 	if (ex != NULL) {
       //What should i write here?
     iowrite32(ex->reserve, desc_addr);
+    //*((volatile uint32_t*) (desc_addr)) = ex_reserve;
     desc_addr +=4;
     iowrite16(ex->string_length, desc_addr);
+    //*((volatile uint16_t*) (desc_addr)) = ex_reserve;
     desc_addr += 2;
     iowrite16(ex->pitch, desc_addr);
     desc_addr += 2;
 	}
-	iowrite32(data_addr, desc_addr);
+	iowrite32(data_addr, desc_addr); //desc_addr
 	desc_addr += 4;
 	iowrite32(settings, desc_addr);
 
 	return 0;
 }
 
-struct descriptor mdma_get_desc(uint32_t desc_addr, enum DESC_TYPE type)
+  //FixMe: HACK
+struct descriptor mdma_get_desc(volatile uint32_t desc_addr, enum DESC_TYPE type)
 {
-	struct descriptor desc;
+	volatile struct descriptor desc;
 
+  desc.set = NULL;
+  desc.ex = NULL;
 	rumboot_printf("Get descriptor, addr: %x\n", desc_addr);
 
 	if (type == LONG || type == PITCH) {
-		desc.ex->reserve = ioread32(desc_addr);
+		desc.ex->reserve = *(volatile uint64_t *) desc_addr;
     desc_addr += 4;
-    desc.ex->string_length = ioread16(desc_addr);
+    desc.ex->string_length = *(volatile uint16_t*) desc_addr;
 		desc_addr += 2;
-    desc.ex->pitch = ioread16(desc_addr);
+    desc.ex->pitch = *(volatile uint16_t *) desc_addr;
     desc_addr += 2;
 	}
 
-	desc.data_addr = (void *)ioread32(desc_addr);
+	desc.data_addr = *(volatile void **) (desc_addr);
 	desc_addr += 4;
 
+<<<<<<< HEAD
 	uint32_t settings = ioread32(desc_addr);
 
 	desc.set = NULL;
@@ -117,6 +125,9 @@ struct descriptor mdma_get_desc(uint32_t desc_addr, enum DESC_TYPE type)
 	desc.set->increment = (settings | (1 << INCREMENT_i)) >> INCREMENT_i;
 	desc.set->er = (settings & (1 << ERROR_i)) >> ERROR_i;
   desc.set->length = (settings & (1 << LENGTH_i)) >> LENGTH_i;
+=======
+	*(desc.set) =  *(volatile struct settings *) (desc_addr);
+>>>>>>> Fixed mdma library. Error with misaligned addresses.
 
   //dump_desc(&desc);
 

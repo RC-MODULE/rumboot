@@ -5,11 +5,12 @@
 #include <devices/mdma.h>
 
 #include <rumboot/printf.h>
+#include <rumboot/rumboot.h>
 
-
-struct mdma_transaction *mdma_transaction_create(struct mdma_device *dev, void *dest, void *src, size_t len)
+struct mdma_transaction *mdma_transaction_create(volatile struct mdma_device *dev,
+	volatile void *dest, volatile void *src, size_t len)
 {
-	struct mdma_transaction *ret = malloc(sizeof(*ret));
+	struct mdma_transaction *ret = rumboot_malloc(sizeof(*ret));
 
 	if (!ret)
 		return NULL;
@@ -17,7 +18,7 @@ struct mdma_transaction *mdma_transaction_create(struct mdma_device *dev, void *
 	ret->src = src;
 
 	if (!dest)
-		ret->dest = malloc(sizeof(*ret->dest));
+		ret->dest = rumboot_malloc(sizeof(*ret->dest));
 	/* TODO: Err handling */
 	else
 		ret->dest = dest;
@@ -35,7 +36,7 @@ int mdma_transaction_remove(struct mdma_transaction *t)
 
 	t->state = FINISHED;
 
-	free(t);
+	rumboot_free(t);
 
 	return 0;
 }
@@ -47,20 +48,20 @@ int mdma_transaction_get_state(struct mdma_transaction *t)
 
 int mdma_transaction_queue(struct mdma_transaction *t)
 {
-	struct mdma_device *dev = t->owner;
+	volatile struct mdma_device *dev = t->owner;
 
 	if (!t->src || !t->dest || !dev->rxtbl || !dev->txtbl)
 		return -1;
 
 	//WE can cut memory and write any number of descriptors!
 	size_t tx_desc_numb = dev->conf.num_txdescriptors;
-	while(tx_desc_numb--) {
-			mdma_write_txdescriptor(dev, t->src, t->len, t->is_last);
+	while(tx_desc_numb) {
+			mdma_write_txdescriptor(dev, t->src, t->len, dev->conf.num_txdescriptors - tx_desc_numb--);
 	}
 
 	size_t rx_desc_numb = dev->conf.num_rxdescriptors;
-	while(rx_desc_numb--) {
-	mdma_write_rxdescriptor(dev, t->dest, t->len, t->is_last);
+	while(rx_desc_numb) {
+		mdma_write_rxdescriptor(dev, t->dest, t->len, dev->conf.num_rxdescriptors - rx_desc_numb--);
 	}
 
 	t->state = STARTED;
@@ -77,6 +78,7 @@ bool mdma_transaction_is_finished(struct mdma_transaction *t)
 	}
 
 	t->state = FINISHED;
+	
 	return true;
 }
 
@@ -86,5 +88,4 @@ void mdma_transaction_dump(struct mdma_transaction *t)
 	rumboot_printf("src: %x\n", (uint32_t) t->src);
 	rumboot_printf("len: %d\n", (uint32_t) t->len);
 	rumboot_printf("state: %d\n", t->state);
-	rumboot_printf("is last? %d\n", t->is_last);
 }

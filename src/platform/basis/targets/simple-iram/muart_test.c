@@ -12,6 +12,7 @@
 #include <rumboot/testsuite.h>
 #include <rumboot/io.h>
 #include <rumboot/irq.h>
+#include <rumboot/rumboot.h>
 
 #include <regs/regs_muart.h>
 
@@ -22,10 +23,10 @@ struct base_addrs {
 
 static bool test_cfg(struct base_addrs *addrs, const struct muart_conf *cfg)
 {
-	size_t data_size = 4;
-	char *buf = malloc(data_size);
+	size_t data_size = 8;
+	volatile char *buf = rumboot_malloc_from_heap_aligned(0, data_size, 8);
 
-	memset(buf, 0x55, data_size);
+	memset((char *) buf, 0x55, data_size);
 
 	rumboot_printf("init\n");
 	muart_init(addrs->base1, cfg);
@@ -36,13 +37,14 @@ static bool test_cfg(struct base_addrs *addrs, const struct muart_conf *cfg)
 	muart_enable(addrs->base2);
 
 	if (!cfg->dma_en) {
-		if (!muart_transmit_data_throught_apb(addrs->base1, addrs->base2, buf, data_size)) {
-			free(buf);
+		if (!muart_transmit_data_throught_apb(addrs->base1, addrs->base2, (char *) buf, data_size)) {
+			rumboot_free((char *) buf);
 			return false;
 		}
 	} else {
-		char *output = malloc(data_size);
-		memset(output, 0x0, data_size);
+		volatile char *output = rumboot_malloc_from_heap_aligned(0, data_size, 8);
+
+		memset((char *) &output[0], 0x0, data_size);
 
 		uint32_t mdma_base = MDMA0_BASE;
 
@@ -51,24 +53,31 @@ static bool test_cfg(struct base_addrs *addrs, const struct muart_conf *cfg)
 		rumboot_irq_enable(MDMA0_IRQ);
 		rumboot_irq_table_activate(tbl);
 
-		if (!mdma_transmit_data(mdma_base, output, buf, data_size)) {
-			//What should i do here? If a want to free memory?
+		if (mdma_transmit_data(MDMA0_BASE, &output[0], &buf[0], data_size) < 0) {
+			//What should i do here? If a want to rumboot_free memory?
 			return false;
 		}
 
 		rumboot_printf("Compare arrays.\n");
-		if (memcmp(buf, output, data_size) != 0) {
-			//the same
+		if (memcmp((char *) &buf[0], (char *) &output[0], data_size) != 0) {
+			the same
+			size_t j;
+			for(j=0; j<data_size; j++)
+			{
+				rumboot_printf("%x", output[j]);
+			}
+			rumboot_printf("\n");
+			rumboot_printf("failed!\n");
 			return false;
 		}
 
 		rumboot_irq_table_activate(NULL);
 		rumboot_irq_free(tbl);
-		free(output);
+		rumboot_free((char *) output);
 	}
 
 	rumboot_printf("OK!\n");
-	free(buf);
+	rumboot_free((char *) buf);
 	return true;
 }
 
@@ -112,14 +121,14 @@ bool muart_mdma_test(uint32_t to_addrs)
 
 
 static const struct base_addrs addrs01 = { .base1 = UART0_BASE, .base2 = UART1_BASE };
-static const struct base_addrs addrs10 = { .base1 = UART1_BASE, .base2 = UART0_BASE };
+//static const struct base_addrs addrs10 = { .base1 = UART1_BASE, .base2 = UART0_BASE };
 
 /* Declare the testsuite structure */
 TEST_SUITE_BEGIN(muart_test, "MUART test")
 //TEST_ENTRY("rs232 01", muart_rs232_test, (uint32_t)&addrs01),
 // TEST_ENTRY("rs232 10", muart_rs232_test, (uint32_t)&addrs10),
 TEST_ENTRY("dma 01", muart_mdma_test, (uint32_t)&addrs01),
-TEST_ENTRY("dma 10", muart_mdma_test, (uint32_t)&addrs10),
+//TEST_ENTRY("dma 10", muart_mdma_test, (uint32_t)&addrs10),
 // TEST_ENTRY("rs485 01", muart_rs485_test, (uint32_t)&addrs01),
 // TEST_ENTRY("rs485 10", muart_rs485_test, (uint32_t)&addrs10),
 TEST_SUITE_END();
