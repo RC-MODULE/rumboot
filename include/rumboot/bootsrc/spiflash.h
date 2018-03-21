@@ -70,4 +70,8 @@ int spiflash_read(void* pdata, void* to, void* from);
  */
 bool spiflash_load_again(void* pdata);
 
+/**
+ * @}
+ */
+
 #endif

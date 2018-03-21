@@ -156,10 +156,8 @@ static enum err_code read_data_chunk(uint32_t base, void *buf, size_t len)
 
 	while (len--) {
 		*((uint8_t *)buf) = ioread8(base + I2C_RECEIVE);
-		rumboot_printf("%x ", *((uint8_t *)buf));
 		(uint8_t *)buf++;
 	}
-	rumboot_printf("\n");
 
 	return 0;
 }

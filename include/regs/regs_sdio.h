@@ -2,11 +2,11 @@
 #define REGS_SDIO_H
 
 /**
- * @}
- * \defgroup SDIO
- * \ingroup regs
  *
- * \addtogroup SDIO
+ * \defgroup regs_sdio Registers
+ * \ingroup devices_sdio
+ *
+ * \addtogroup regs_sdio
  * @{
  */
 #define SDIO_INT_STATUS   0x308
@@ -49,11 +49,11 @@
  */
 
 /**
- * @}
- * \defgroup commands
- * \ingroup SDIO
  *
- * \addtogroup commands
+ * \defgroup sdio_commands Commands
+ * \ingroup devices_sdio
+ *
+ * \addtogroup sdio_commands
  * @{
  */
  #define CMD0_CTRL             0x00000000
@@ -73,11 +73,11 @@
 
 
 /**
- * @}
- * \defgroup arguments
- * \ingroup SDIO
  *
- * \addtogroup arguments
+ * \defgroup sdio_arguments Arguments
+ * \ingroup devices_sdio
+ *
+ * \addtogroup sdio_arguments
  * @{
  */
    #define CMD0_ARG              0x00000000
@@ -97,10 +97,10 @@
 
 /**
  * @}
- * \defgroup responses
- * \ingroup SDIO
+ * \defgroup sdio_responses Responses
+ * \ingroup devices_sdio
  *
- * \addtogroup responses
+ * \addtogroup sdio_responses Responses
  * @{
  */
  #define SDIO_RESPONSE_NONE  0
@@ -112,11 +112,11 @@
  */
 
 /**
- * @}
- * \defgroup default_values
- * \ingroup SDIO
  *
- * \addtogroup default_values
+ * \defgroup sdio_default_values Default_values
+ * \ingroup devices_sdio
+ *
+ * \addtogroup sdio_default_values Default_values
  * @{
  */
   #define SDIO_SDR_CARD_BLOCK_SET_REG_DFLT      0x0
@@ -134,11 +134,11 @@
  */
 
 /**
- * @}
- * \defgroup flags
- * \ingroup SDIO
  *
- * \addtogroup flags
+ * \defgroup sdio_flags Flags
+ * \ingroup devices_sdio
+ *
+ * \addtogroup sdio_flags Flags
  * @{
  */
  #define SPISDIO_SDIO_INT_STATUS_CAR_ERR     0x40

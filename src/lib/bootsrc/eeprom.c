@@ -79,26 +79,34 @@ int eeprom_chunk_write(struct i2c_config *cfg, uint8_t slave_dev, uint16_t offse
 
 int eeprom_write(struct i2c_config *cfg, uint8_t slave_dev, uint16_t offset, void *buf, size_t len)
 {
-	size_t count = len/128;
-	size_t rem = len%128;
+	size_t count = len / EEPROM_PAGE_SIZE;
+	size_t rem = len % EEPROM_PAGE_SIZE;
+	uint8_t * ptr = (uint8_t *) buf;
 
-	while (count--) {
+	while (count) {
 
-		if( eeprom_chunk_write(cfg, slave_dev, offset, buf, EEPROM_PAGE_SIZE) < 0 )
+		rumboot_printf("write to: %x device offset: %x\n", slave_dev, offset);
+
+		if (eeprom_chunk_write(cfg, slave_dev, offset, &ptr[EEPROM_PAGE_SIZE * (len / EEPROM_PAGE_SIZE - count)], EEPROM_PAGE_SIZE) < 0) {
 			return -1;
+		}
+
+		offset += EEPROM_PAGE_SIZE;
+		count--;
 	}
 
-	if( eeprom_chunk_write(cfg, slave_dev, offset, buf, rem) < 0 )
+	rumboot_printf("write to: %x device offset: %x\n", slave_dev, offset);
+
+	if (eeprom_chunk_write(cfg, slave_dev, offset, &ptr[EEPROM_PAGE_SIZE * count], rem) < 0) {
 		return -2;
+	}
 
 	return 0;
 }
 
 int eeprom_chunk_read(struct i2c_config *cfg, uint8_t slave_dev, uint16_t offset, void *buf, size_t len)
 {
-
-	if(len > EEPROM_PAGE_SIZE) {
-
+	if (len > EEPROM_PAGE_SIZE) {
 		return -3;
 	}
 
@@ -122,24 +130,34 @@ int eeprom_chunk_read(struct i2c_config *cfg, uint8_t slave_dev, uint16_t offset
 		return -2;
 	}
 
-	i2c_stop_transaction(cfg);
+	//i2c_stop_transaction(cfg);
 
 	return 0;
 }
 
 int eeprom_random_read(struct i2c_config *cfg, uint8_t slave_dev, uint16_t offset, void *buf, size_t len)
 {
-	size_t count = len/128;
-	size_t rem = len%128;
+	size_t count = len / EEPROM_PAGE_SIZE;
+	size_t rem = len % EEPROM_PAGE_SIZE;
+	uint8_t * ptr = (uint8_t *) buf;
 
-	while (count--) {
+	while (count) {
 
-		if( eeprom_chunk_read(cfg, slave_dev, offset, buf, EEPROM_PAGE_SIZE) < 0 )
+		rumboot_printf("read from: %x device offset: %x\n", slave_dev, offset);
+
+		if (eeprom_chunk_read(cfg, slave_dev, offset, &ptr[EEPROM_PAGE_SIZE * (len / EEPROM_PAGE_SIZE - count)], EEPROM_PAGE_SIZE) < 0) {
 			return -1;
+		}
+
+		offset += EEPROM_PAGE_SIZE;
+		count --;
 	}
 
-	if( eeprom_chunk_read(cfg, slave_dev, offset, buf, rem) < 0 )
+	rumboot_printf("read from: %x device offset: %x\n", slave_dev, offset);
+
+	if (eeprom_chunk_read(cfg, slave_dev, offset, &ptr[EEPROM_PAGE_SIZE * count], rem) < 0) {
 		return -2;
+	}
 
 	return 0;
 }

@@ -35,7 +35,6 @@ int main()
 	memset(out_buf, 0x0, byte_number);
 
 	struct rumboot_irq_entry *tbl = rumboot_irq_create(NULL);
-	rumboot_printf("===> %x\n", tbl);
 	rumboot_irq_set_handler(tbl, I2C0_IRQ, 0, i2c_irq_handler, (void *)&cfg);
 	rumboot_irq_enable(I2C0_IRQ);
 	rumboot_irq_table_activate(tbl);

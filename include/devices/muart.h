@@ -111,4 +111,8 @@ char muart_read_char(const uint32_t base);
  */
 bool muart_transmit_data_throught_apb(uint32_t base1, uint32_t base2, void* data, size_t size);
 
+/**
+ * @}
+ */
+
 #endif

@@ -6,7 +6,7 @@
 #include <stdlib.h>
 
 /**
- * \defgroup devices_mdio MDIO
+ * \defgroup devices_mdma MDMA
  * \ingroup devices
  *
  *  MDIO function libriary.
@@ -218,5 +218,9 @@ bool mdma_transaction_is_finished(struct mdma_transaction *t);
  * @param t [description]
  */
 void mdma_transaction_dump(struct mdma_transaction *t);
+
+/**
+ * @}
+ */
 
 #endif
