@@ -13,8 +13,8 @@ static void check_malloc(void *start, int heap)
 		int len = i+7;
 		prev = ptr;
 		ptr = rumboot_malloc_from_heap(heap, len);
-		if (prev && (ptr - prev) > prevlen) {
-			printf("Allocation too small!\n");
+		if (prev && ((ptr - prev) < prevlen)) {
+			printf("Allocation too small: Wanted %d got %d (prev %x)!\n", prevlen, (ptr - prev), prev);
 			exit(1);
 		}
 		printf("malloc: ptr 0x%x %d at offset %d \n", ptr, len, ptr-start);
