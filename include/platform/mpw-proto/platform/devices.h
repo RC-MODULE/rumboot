@@ -3,11 +3,11 @@
 
 
 /**
- * \defgroup platform_native_register_map Register Map
+ * \defgroup platform_mpw_proto_register_map Register Map
  *
- * \ingroup platform_native
+ * \ingroup platform_mpw_proto
  *
- * \addtogroup platform_native_register_map
+ * \addtogroup platform_mpw_proto_register_map
  *
  *
  * @{
