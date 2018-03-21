@@ -33,8 +33,8 @@ enum err_code {
 
 static enum err_code trans_write_devaddr(struct i2c_config *cfg, struct transaction *t)
 {
-	uint8_t offset_h = (t->offset && 0xff00) >> 8;
-	uint8_t offset_l = t->offset && 0x00ff;
+	uint8_t offset_h = (t->offset & 0xff00) >> 8;
+	uint8_t offset_l = t->offset & 0x00ff;
 
 	//if (i2c_get_state(cfg->base) == ST_IDLE)
 	iowrite8(t->devaddr, cfg->base + I2C_TRANSMIT);
