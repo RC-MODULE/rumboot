@@ -72,6 +72,8 @@ int eeprom_chunk_write(struct i2c_config *cfg, uint8_t slave_dev, uint16_t offse
 		return -2;
 	}
 
+	cfg->txfifo_count = 0;
+
 	i2c_stop_transaction(cfg);
 
 	return 0;

@@ -24,7 +24,8 @@ int main()
 		.base		= I2C0_BASE,
 		.irq_en		= false,
 		.scl_freq	= 0x13,
-		.byte_numb	= byte_number
+		.byte_numb	= byte_number,
+		.dev_type = EEPROM
 	};
 	char *in_buf = rumboot_malloc_from_heap_aligned(0, byte_number, 8);
 	char *out_buf = rumboot_malloc_from_heap_aligned(0, byte_number, 8);

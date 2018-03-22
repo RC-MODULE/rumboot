@@ -36,17 +36,12 @@ static enum err_code trans_write_devaddr(struct i2c_config *cfg, struct transact
 	uint8_t offset_h = (t->offset & 0xff00) >> 8;
 	uint8_t offset_l = t->offset & 0x00ff;
 
-	//if (i2c_get_state(cfg->base) == ST_IDLE)
 	iowrite8(t->devaddr, cfg->base + I2C_TRANSMIT);
 	cfg->txfifo_count++;
 	iowrite8(offset_h, cfg->base + I2C_TRANSMIT);
 	cfg->txfifo_count++;
 	iowrite8(offset_l, cfg->base + I2C_TRANSMIT);
 	cfg->txfifo_count++;
-	if (t->type == READ_DATA) {
-		// iowrite8(t->devaddr + 1, cfg->base + I2C_TRANSMIT);
-		// cfg->txfifo_count++;
-	}
 
 	iowrite32(0x1, cfg->base + I2C_STAT_RST);
 	iowrite32(CMD_WRITE_START, cfg->base + I2C_CTRL);
@@ -218,8 +213,11 @@ static enum err_code trans_read_data(struct i2c_config *cfg, struct transaction 
 	}
 
 	if (rem) {
-		send_read_cmd(cfg, t->devaddr, true);
 
+		uint32_t tmp = ioread32(cfg->base + I2C_FIFOFIL) & 0x00ff0000;
+		iowrite32(rem | tmp, cfg->base + I2C_FIFOFIL);
+
+		send_read_cmd(cfg, t->devaddr, true);
 
 		if (i2c_wait_transaction(cfg, RX_FULL_ALMOST) != 0) {
 			return -2;

@@ -4,6 +4,10 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+enum device_type {
+	EEPROM = 0,
+	SENSOR = 1
+};
 
 struct i2c_config {
 
@@ -12,6 +16,7 @@ struct i2c_config {
 								uint32_t scl_freq;
 								size_t byte_numb;
 								size_t txfifo_count;
+								enum device_type dev_type;
 
 								/*PRIVATE DATA*/
 								uint32_t irqstat;
