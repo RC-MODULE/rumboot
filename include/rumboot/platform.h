@@ -254,6 +254,8 @@ struct rumboot_runtime_info {
     struct rumboot_syncbuffer out;
     /** Modelling memory IO buffer. Do not move it inside struct! */
     struct rumboot_syncbuffer in;
+    /** This array will be preserved during soft-resets. Needed by watchdog tests */
+    uint32_t persistent[8];
     /** Dummy. Everything from this point to the very end will be cleaned */
     uint32_t clean_me_marker;
     /** How many heaps are registered ? */
