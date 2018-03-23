@@ -6,7 +6,7 @@
 
 #define WDT_UNLOCK_CODE     0x1ACCE551
 #define WDT_INTERVAL        0x00000400
-#define WDT_MAGIC           0x8a61C0DE
+#define WDT_MAGIC           0x8A61C0DE
 
 #define WDT_LOAD            0x000
 #define WDT_VAL             0x004
