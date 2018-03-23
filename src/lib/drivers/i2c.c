@@ -31,7 +31,7 @@ enum err_code {
 #define CMD_STOP ((1 << I2C_EN_i) | (1 << STOP_i))
 #define CMD_READ_REPEAT_STOP ((1 << I2C_EN_i) | (1 << RD_i) | (1 << START_i) | (1 << REPEAT_i) | (1 << STOP_i))
 
-static enum err_code trans_write_devaddr(struct i2c_config *cfg, struct transaction *t)
+static enum err_code trans_write_devaddr(struct i2c_config *cfg, struct i2c_transaction *t)
 {
 	uint8_t offset_h = (t->offset & 0xff00) >> 8;
 	uint8_t offset_l = t->offset & 0x00ff;
@@ -55,6 +55,34 @@ static enum err_code trans_write_devaddr(struct i2c_config *cfg, struct transact
 	}
 
 	return 0;
+}
+
+static void set_number(uint32_t base, enum device_type type, size_t len)
+{
+	uint8_t number;
+
+	if(type == EEPROM) {
+		number = 128;
+	}
+	else {
+		number = 255;
+	}
+
+	iowrite8(number, base + I2C_NUMBER);
+}
+
+static void set_fifofil(uint32_t base, enum device_type type, size_t len)
+{
+	uint8_t fifofil;
+
+	if(type == EEPROM) {
+		fifofil = (len > 128) ? (len%128) : (len);
+	}
+	else {
+		fifofil = (len > 256) ? (len%256) : (len);
+	}
+
+	iowrite32((fifofil << 16) | (fifofil), base + I2C_FIFOFIL);
 }
 
 static enum err_code write_data_chunk(uint32_t base, size_t *txfifo_count, void *buf, uint32_t len)
@@ -88,7 +116,7 @@ static enum err_code send_write_cmd(uint32_t base /*, uint32_t fifofil*/)
 }
 
 #define TXBUF_SIZE 256
-static enum err_code trans_write_data(struct i2c_config *cfg, struct transaction *t)
+static enum err_code trans_write_data(struct i2c_config *cfg, struct i2c_transaction *t)
 {
 	int ret;
 	//usually equals to 256!
@@ -100,6 +128,9 @@ static enum err_code trans_write_data(struct i2c_config *cfg, struct transaction
 		rem = (ioread32(cfg->base + I2C_FIFOFIL) & 0xff);
 		rumboot_printf("n: %d, fifofil: %d\n", n, rem);
 	}
+
+	set_number(cfg->base, cfg->device_type, t->len);
+	set_fifofil(cfg->base, cfg->device_type, t->len);
 
 	while (n--) {
 		ret = (t->len > TXBUF_SIZE) ? write_data_chunk(cfg->base, &cfg->txfifo_count, t->buf, TXBUF_SIZE) :
@@ -125,7 +156,7 @@ static enum err_code trans_write_data(struct i2c_config *cfg, struct transaction
 
 	if (rem) {
 		rumboot_printf("Write remainder.\n");
-		//iowrite32(rem | (ioread32(cfg->base + I2C_FIFOFIL) & 0xff), cfg->base + I2C_FIFOFIL);
+		set_fifofil(cfg->base, cfg->device_type, rem);
 
 		ret = write_data_chunk(cfg->base, &cfg->txfifo_count, t->buf, rem);
 
@@ -181,12 +212,12 @@ static enum err_code send_read_cmd(struct i2c_config *cfg, uint8_t devaddr, bool
 	return 0;
 }
 
-static enum err_code trans_read_data(struct i2c_config *cfg, struct transaction *t)
+static enum err_code trans_read_data(struct i2c_config *cfg, struct i2c_transaction *t)
 {
 	size_t numb = ioread8(cfg->base + I2C_NUMBER);
 	uint32_t rem = 0;
 	size_t n = 1;
-	enum waited_event e = (t->len > numb) ? RX_FULL : RX_FULL_ALMOST;
+	enum i2c_waited_event e = (t->len > numb) ? RX_FULL : RX_FULL_ALMOST;
 	bool do_stop = (t->len > numb) ? false : true;
 
 	if (numb == 255) {
@@ -197,6 +228,9 @@ static enum err_code trans_read_data(struct i2c_config *cfg, struct transaction 
 		n = t->len / numb;
 		rem = (ioread32(cfg->base + I2C_FIFOFIL) & 0xff0000) >> 16;
 	}
+
+	set_number(cfg->base, cfg->device_type, t->len);
+	set_fifofil(cfg->base, cfg->device_type, t->len);
 
 	while (n--) {
 		if (n == 0 && t->len > numb && rem == 0) {
@@ -213,6 +247,11 @@ static enum err_code trans_read_data(struct i2c_config *cfg, struct transaction 
 	}
 
 	if (rem) {
+<<<<<<< HEAD
+=======
+		set_fifofil(cfg->base, cfg->device_type, rem);
+		send_read_cmd(cfg, t->devaddr, true);
+>>>>>>> New architerture for eeprom.
 
 		uint32_t tmp = ioread32(cfg->base + I2C_FIFOFIL) & 0x00ff0000;
 		iowrite32(rem | tmp, cfg->base + I2C_FIFOFIL);
@@ -301,7 +340,7 @@ static bool is_op_done(uint32_t base, bool is_irq)
 	return ret;
 }
 
-static int i2c_check_transaction(struct i2c_config *cfg, enum waited_event e)
+static int i2c_check_transaction(struct i2c_config *cfg, enum i2c_waited_event e)
 {
 	switch (e) {
 	case DONE:
@@ -363,7 +402,7 @@ void i2c_irq_handler(int irq, void *arg)
 	rumboot_printf("IRQ arrived, irq status %x\n", irqstat);
 }
 
-int i2c_execute_transaction(struct i2c_config *cfg, struct transaction *t)
+int i2c_execute_transaction(struct i2c_config *cfg, struct i2c_transaction *t)
 {
 	if (t->type == WRITE_DEV) {
 		return trans_write_devaddr(cfg, t);
@@ -394,7 +433,7 @@ int i2c_stop_transaction(struct i2c_config *cfg)
 	return 0;
 }
 
-int i2c_wait_transaction(struct i2c_config *cfg, enum waited_event e)
+int i2c_wait_transaction(struct i2c_config *cfg, enum i2c_waited_event e)
 {
 	size_t n = 0;
 
@@ -406,7 +445,7 @@ int i2c_wait_transaction(struct i2c_config *cfg, enum waited_event e)
 	return 0;
 }
 
-int i2c_wait_transaction_timeout(struct i2c_config *cfg, enum waited_event e, uint32_t us)
+int i2c_wait_transaction_timeout(struct i2c_config *cfg, enum i2c_waited_event e, uint32_t us)
 {
 	uint32_t uptime = rumboot_platform_get_uptime();
 

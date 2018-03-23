@@ -16,19 +16,19 @@ struct i2c_config {
 								uint32_t scl_freq;
 								size_t byte_numb;
 								size_t txfifo_count;
-								enum device_type dev_type;
+								enum device_type device_type;
 
 								/*PRIVATE DATA*/
 								uint32_t irqstat;
 };
 
-enum transaction_type {
+enum i2c_transaction_type {
 	WRITE_DEV,
 	WRITE_DATA,
 	READ_DATA
 };
 
-enum waited_event {
+enum i2c_waited_event {
 	TX_EMPTY = 0,
 	TX_EMPTY_ALMOST = 1,
 	RX_FULL = 2,
@@ -36,9 +36,9 @@ enum waited_event {
 	DONE = 4
 };
 
-struct transaction {
+struct i2c_transaction {
 
-	enum transaction_type type;
+	enum i2c_transaction_type type;
 	uint8_t devaddr;
 	uint16_t offset;
 	void *buf;
@@ -59,7 +59,7 @@ void i2c_init(struct i2c_config *cfg);
  * @param [in] t parameters of transaction, which include type of transaction!
  * return Return exit code, if value < 0 - error!
  */
-int i2c_execute_transaction(struct i2c_config *cfg, struct transaction *t);
+int i2c_execute_transaction(struct i2c_config *cfg, struct i2c_transaction *t);
 
 /**
  * \brief Wait i2c transaction
@@ -67,7 +67,7 @@ int i2c_execute_transaction(struct i2c_config *cfg, struct transaction *t);
  * @param [in] e waited event, see enum waited_event!
  * return Return exit code, if value < 0 - error!
  */
-int i2c_wait_transaction(struct i2c_config *cfg, enum waited_event e);
+int i2c_wait_transaction(struct i2c_config *cfg, enum i2c_waited_event e);
 
 /**
 * \brief Wait i2c transaction with timeout
@@ -76,7 +76,7 @@ int i2c_wait_transaction(struct i2c_config *cfg, enum waited_event e);
 * @param [in] us  waited time in us
 * return Return exit code, if value < 0 - error!
  */
-int i2c_wait_transaction_timeout(struct i2c_config *cfg, enum waited_event e, uint32_t us);
+int i2c_wait_transaction_timeout(struct i2c_config *cfg, enum i2c_waited_event e, uint32_t us);
 
 /**
  * \brief Stop i2c transaction
@@ -95,7 +95,7 @@ void i2c_irq_handler(int irq, void *arg);
 
 /* EEPROM FUNCTIONS*/
 int eeprom_random_read(struct i2c_config *cfg, uint8_t slave_dev, uint16_t offset, void* buf, size_t number);
-int eeprom_write(struct i2c_config *cfg, uint8_t slave_dev, uint16_t offset, void* buf, size_t number);
+int eeprom_random_write(struct i2c_config *cfg, uint8_t slave_dev, uint16_t offset, void* buf, size_t number);
 
 
 #endif
