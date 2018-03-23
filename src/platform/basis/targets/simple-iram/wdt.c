@@ -14,9 +14,6 @@
 
 
 
-volatile uint32_t magic_var = 0x00000000;
-volatile uint32_t last_irq  = 0x00000000;
-
 static void handler_wdt(int irq, void *arg)
 {
     
@@ -45,23 +42,23 @@ static void wdt_init(int to_ctrl, int interval)
   iowrite32(interval       , WDT_BASE + WDT_LOAD); // Cnt interval
 }
 
-    
+uint32_t *magic_var = &rumboot_platform_runtime_info.persistent[0];    
 
 
 int main()
-{
-    
+{    
   
-  
+  //uint32_t *magic_var = &rumboot_platform_runtime_info.persistent[0];
+
   //WDT_MAGIC check
   
-  if (magic_var == WDT_MAGIC)
+  if (*magic_var == WDT_MAGIC)
   {
       rumboot_printf("magic_var is equal to WDT_MAGIC\n");
       return 0;
   }
   else {
-      if (magic_var != 0)
+      if (*magic_var != 0)
       {
           rumboot_printf("Test WDT FAIL! Init value of magic_var isn't 0\n");
           return 1;
@@ -117,7 +114,7 @@ int main()
   
   
   rumboot_printf("Prepare for WDT_MAGIC writing in memory\n");  
-  magic_var = WDT_MAGIC;
+  *magic_var = WDT_MAGIC;
   rumboot_printf("WDT_MAGIC in memory\n");
   
   //WDT init
