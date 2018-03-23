@@ -247,11 +247,9 @@ static enum err_code trans_read_data(struct i2c_config *cfg, struct i2c_transact
 	}
 
 	if (rem) {
-<<<<<<< HEAD
-=======
+
 		set_fifofil(cfg->base, cfg->device_type, rem);
 		send_read_cmd(cfg, t->devaddr, true);
->>>>>>> New architerture for eeprom.
 
 		uint32_t tmp = ioread32(cfg->base + I2C_FIFOFIL) & 0x00ff0000;
 		iowrite32(rem | tmp, cfg->base + I2C_FIFOFIL);
