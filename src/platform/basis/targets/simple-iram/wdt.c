@@ -42,13 +42,13 @@ static void wdt_init(int to_ctrl, int interval)
   iowrite32(interval       , WDT_BASE + WDT_LOAD); // Cnt interval
 }
 
-uint32_t *magic_var = &rumboot_platform_runtime_info.persistent[0];    
+//uint32_t *magic_var = &rumboot_platform_runtime_info.persistent[0];    
 
 
 int main()
 {    
   
-  //uint32_t *magic_var = &rumboot_platform_runtime_info.persistent[0];
+  uint32_t *magic_var = &rumboot_platform_runtime_info.persistent[0];
 
   //WDT_MAGIC check
   
