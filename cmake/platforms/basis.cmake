@@ -457,7 +457,7 @@ endif()
     add_rumboot_target(
         CONFIGURATION IRAM_MIRROR
         FILES simple-iram/mdma_test.c
-        PREFIX "bootrom"
+        PREFIX "mirror"
         NAME "mdma"
     )
 
