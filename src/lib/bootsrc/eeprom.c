@@ -35,6 +35,8 @@ void eeprom_deinit(void *pdata)
 int eeprom_read(void *pdata, void *dst, void *src)
 {
 	/*TO DO!*/
+	//use here eeprom_random_read
+
 	return true;
 }
 

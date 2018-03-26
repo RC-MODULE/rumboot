@@ -17,6 +17,8 @@ int eeprom_chunk_write(struct i2c_config *cfg, uint8_t slave_dev, uint16_t offse
 		.len		= len,
 	};
 
+  cfg->txfifo_count = 0;
+
 	t.type = WRITE_DEV;
 	if (i2c_execute_transaction(cfg, &t) < 0) {
 		rumboot_printf("Failed to write device address.\n");
@@ -75,6 +77,8 @@ int eeprom_chunk_read(struct i2c_config *cfg, uint8_t slave_dev, uint16_t offset
 		.len		= len,
 	};
 
+  cfg->txfifo_count = 0;
+
 	t.type = WRITE_DEV;
 	if (i2c_execute_transaction(cfg, &t) < 0) {
 		rumboot_printf("Failed to write device address.\n");
@@ -87,7 +91,7 @@ int eeprom_chunk_read(struct i2c_config *cfg, uint8_t slave_dev, uint16_t offset
 		return -2;
 	}
 
-	//i2c_stop_transaction(cfg);
+	i2c_stop_transaction(cfg);
 
 	return 0;
 }

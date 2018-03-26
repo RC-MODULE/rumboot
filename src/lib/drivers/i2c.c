@@ -50,9 +50,9 @@ static enum err_code trans_write_devaddr(struct i2c_config *cfg, struct i2c_tran
 		return -1;
 	}
 
-	if (i2c_wait_transaction_timeout(cfg, DONE, I2C_TIMEOUT) < 0) {
-		return -1;
-	}
+	// if (i2c_wait_transaction_timeout(cfg, DONE, I2C_TIMEOUT) < 0) {
+	// 	return -1;
+	// }
 
 	return 0;
 }
@@ -236,6 +236,9 @@ static enum err_code trans_read_data(struct i2c_config *cfg, struct i2c_transact
 		if (n == 0 && t->len > numb && rem == 0) {
 			do_stop = true;
 		}
+
+		if(cfg->device_type == EEPROM)
+			do_stop = true;
 
 		send_read_cmd(cfg, t->devaddr, do_stop);
 
