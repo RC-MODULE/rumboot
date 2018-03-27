@@ -45,7 +45,7 @@ int main()
 	i2c_init(&cfg);
 
 	rumboot_printf("Write data throught i2c to eeprom.\n");
-	int ret = eeprom_random_write(&cfg, eeprom_dev, offset, in_buf, byte_number);
+	int ret = eeprom_random_write(&cfg, eeprom_dev, offset, &in_buf[0], byte_number);
 
 	if (ret < 0) {
 		rumboot_printf("Write failed with error code %i\n", ret);
@@ -53,7 +53,7 @@ int main()
 	}
 
 	rumboot_printf("Read eeprom data throught i2c.\n");
-	ret = eeprom_random_read(&cfg, eeprom_dev, offset, out_buf, byte_number);
+	ret = eeprom_random_read(&cfg, eeprom_dev, offset, &out_buf[0], byte_number);
 
 	if (ret < 0) {
 		rumboot_printf("Read failed with error code %i\n", ret);
@@ -66,7 +66,7 @@ int main()
 
 	rumboot_printf("\n");
 
-	if (memcmp(in_buf, out_buf, byte_number) != 0) {
+	if (memcmp(&in_buf[0], &out_buf[0], byte_number) != 0) {
 		goto test_failed;
 	}
 

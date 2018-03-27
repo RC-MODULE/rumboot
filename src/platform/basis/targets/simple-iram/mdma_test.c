@@ -57,26 +57,28 @@ int main()
 	}
 
 	bool begin = true;
+	bool end = false;
+	volatile char *begin_addr = NULL;
 	//Ring IT!
 	while (src_heap_id < dst_heap_id) {
 		rumboot_printf("Source memory id: %d, destination memory id: %d\n", src_heap_id, dst_heap_id);
 
-		if (dst_heap_id == num_heaps) {
-			dst_heap_id = heap_ids[1];
-		}
-
-		if(begin) {
+		if (begin) {
 			src = rumboot_malloc_from_heap_aligned(src_heap_id, data_size, 8);
-		}
-		else {
-			src = dst;
-		}
-		dst = rumboot_malloc_from_heap_aligned(dst_heap_id, data_size, 8);
+			begin_addr = src;
 
-		size_t i;
-		if(begin) {
+			size_t i;
 			for (i = 0; i < data_size; i++)
 				*(&src[i]) = 0xff;
+		} else {
+			src = dst;
+		}
+
+		if (end) {
+			dst_heap_id = heap_ids[1];
+			dst = begin_addr;
+		} else {
+			dst = rumboot_malloc_from_heap_aligned(dst_heap_id, data_size, 8);
 		}
 
 		for (i = 0; i < data_size; i++)
@@ -90,11 +92,14 @@ int main()
 
 		src_heap_id++;
 		dst_heap_id++;
+		if (dst_heap_id == num_heaps) {
+			end = true;
+		}
 		begin = false;
 	}
 
 	rumboot_printf("Compare arrays.\n");
-	if (memcmp((char *)src, (char *)dst, data_size) != 0) {
+	if (memcmp((char *)&src[0], (char *)&dst[0], data_size) != 0) {
 		rumboot_printf("Test failed!\n");
 		return -1;
 	}
