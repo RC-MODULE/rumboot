@@ -56,6 +56,7 @@ int main()
 		dst_heap_id = heap_ids[2];
 	}
 
+	bool begin = true;
 	//Ring IT!
 	while (src_heap_id < dst_heap_id) {
 		rumboot_printf("Source memory id: %d, destination memory id: %d\n", src_heap_id, dst_heap_id);
@@ -64,11 +65,16 @@ int main()
 			dst_heap_id = heap_ids[1];
 		}
 
-		src = rumboot_malloc_from_heap_aligned(src_heap_id, data_size, 8);
+		if(begin) {
+			src = rumboot_malloc_from_heap_aligned(src_heap_id, data_size, 8);
+		}
+		else {
+			src = dst;
+		}
 		dst = rumboot_malloc_from_heap_aligned(dst_heap_id, data_size, 8);
 
 		size_t i;
-		if(src_heap_id == 1) {
+		if(begin) {
 			for (i = 0; i < data_size; i++)
 				*(&src[i]) = 0xff;
 		}
@@ -76,6 +82,7 @@ int main()
 		for (i = 0; i < data_size; i++)
 			*(&dst[i]) = 0x0;
 
+		rumboot_printf("dst: %x, src: %x\n", &dst[0], &src[0]);
 		if (mdma_transmit_data(base, &dst[0], &src[0], data_size) != 0) {
 			rumboot_printf("Test failed!\n");
 			return -1;
@@ -83,6 +90,7 @@ int main()
 
 		src_heap_id++;
 		dst_heap_id++;
+		begin = false;
 	}
 
 	rumboot_printf("Compare arrays.\n");

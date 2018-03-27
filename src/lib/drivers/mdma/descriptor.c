@@ -31,7 +31,7 @@ struct extra {
 }__attribute__((packed));
 
 struct descriptor {
-  struct extra *		ex;//DEFINE THIS FIELD AS NULL IF YOU WORK WITH NORMAL DSCRIPTORS!
+  volatile struct extra *		ex;//DEFINE THIS FIELD AS NULL IF YOU WORK WITH NORMAL DSCRIPTORS!
   volatile void * data_addr;
 	volatile struct settings *	set;
 }__attribute__((packed));
@@ -102,6 +102,7 @@ struct descriptor mdma_get_desc(volatile uint32_t desc_addr, enum DESC_TYPE type
 	rumboot_printf("Get descriptor, addr: %x\n", desc_addr);
 
 	if (type == LONG || type == PITCH) {
+    desc.ex = (volatile struct extra *) (desc_addr);
 		desc.ex->reserve = *(volatile uint64_t *) desc_addr;
     desc_addr += 4;
     desc.ex->string_length = *(volatile uint16_t*) desc_addr;
@@ -113,7 +114,7 @@ struct descriptor mdma_get_desc(volatile uint32_t desc_addr, enum DESC_TYPE type
 	desc.data_addr = *(volatile void **) (desc_addr);
 	desc_addr += 4;
 
-	*(desc.set) =  *(volatile struct settings *) (desc_addr);
+  desc.set =  (volatile struct settings *) (desc_addr);
 
   //dump_desc(&desc);
 
