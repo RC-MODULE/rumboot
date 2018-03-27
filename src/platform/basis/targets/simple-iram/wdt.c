@@ -16,23 +16,11 @@
 
 static void handler_wdt(int irq, void *arg)
 {
-
     iowrite32(1 << RST_EN | 0 << INT_EN,         WDT_BASE + WDT_CTRL); // WDINT and WDRES enable
-
-
-    /*// Deinit interrupt handling
-    rumboot_irq_table_activate(NULL);
-    rumboot_printf("after activate(NULL)\n");
-
-    // Disable all interrupts
-    rumboot_irq_cli();
-    rumboot_printf("after rumboot_irq_cli\n");*/
-
     volatile uint32_t *done = arg;
     rumboot_printf("IRQ from WDT arrived, arg %x, count %d\n", arg, (*done));
     *done = *done + 1;
     rumboot_printf("after *done = *done + 1; done = %x\n", *done);
-
 }
 
 static void wdt_init(int to_ctrl, int interval)
@@ -42,25 +30,24 @@ static void wdt_init(int to_ctrl, int interval)
   iowrite32(interval       , WDT_BASE + WDT_LOAD); // Cnt interval
 }
 
-//uint32_t *magic_var = &rumboot_platform_runtime_info.persistent[0];
 
 
 int main()
 {
-
   uint32_t *magic_var = &rumboot_platform_runtime_info.persistent[0];
 
   //WDT_MAGIC check
-
   if (*magic_var == WDT_MAGIC)
   {
       rumboot_printf("magic_var is equal to WDT_MAGIC\n");
+      rumboot_printf("Test WDT OK!\n");
       return 0;
   }
   else {
       if (*magic_var != 0)
       {
           rumboot_printf("Test WDT FAIL! Init value of magic_var isn't 0\n");
+          rumboot_printf("Test WDT FAIL!\n");
           return 1;
       }
   }
