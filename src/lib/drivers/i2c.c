@@ -212,8 +212,12 @@ static enum err_code send_read_cmd(struct i2c_config *cfg, uint8_t devaddr, bool
 	return 0;
 }
 
+#define TXBUF_SIZE 256
 static enum err_code trans_read_data(struct i2c_config *cfg, struct i2c_transaction *t)
 {
+	set_number(cfg->base, cfg->device_type, t->len);
+	set_fifofil(cfg->base, cfg->device_type, t->len);
+
 	size_t numb = ioread8(cfg->base + I2C_NUMBER);
 	uint32_t rem = 0;
 	size_t n = 1;
@@ -229,9 +233,6 @@ static enum err_code trans_read_data(struct i2c_config *cfg, struct i2c_transact
 		rem = (ioread32(cfg->base + I2C_FIFOFIL) & 0xff0000) >> 16;
 	}
 
-	set_number(cfg->base, cfg->device_type, t->len);
-	set_fifofil(cfg->base, cfg->device_type, t->len);
-
 	while (n--) {
 		if (n == 0 && t->len > numb && rem == 0) {
 			do_stop = true;
@@ -246,7 +247,9 @@ static enum err_code trans_read_data(struct i2c_config *cfg, struct i2c_transact
 			return -1;
 		}
 
-		read_data_chunk(cfg->base, t->buf, numb);
+		udelay(I2C_TIMEOUT_PER_WR_US*numb);
+
+		(t->len > 256) ? read_data_chunk(cfg->base, t->buf, TXBUF_SIZE) : read_data_chunk(cfg->base, t->buf, t->len);
 	}
 
 	if (rem) {
@@ -262,6 +265,8 @@ static enum err_code trans_read_data(struct i2c_config *cfg, struct i2c_transact
 		if (i2c_wait_transaction(cfg, RX_FULL_ALMOST) != 0) {
 			return -2;
 		}
+
+		udelay(I2C_TIMEOUT_PER_WR_US*rem*10);
 
 		read_data_chunk(cfg->base, t->buf, rem);
 	}

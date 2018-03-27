@@ -91,7 +91,7 @@ int eeprom_chunk_read(struct i2c_config *cfg, uint8_t slave_dev, uint16_t offset
 		return -2;
 	}
 
-	i2c_stop_transaction(cfg);
+	//i2c_stop_transaction(cfg);
 
 	return 0;
 }
