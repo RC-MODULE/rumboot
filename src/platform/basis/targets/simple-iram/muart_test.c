@@ -46,14 +46,14 @@ static bool test_cfg(struct base_addrs *addrs, const struct muart_conf *cfg)
 
 		memset((char *) &output[0], 0x0, data_size);
 
-		uint32_t mdma_base = MDMA0_BASE;
+		uint32_t mdma_base = UART0_BASE;
 
 		struct rumboot_irq_entry *tbl = rumboot_irq_create(NULL);
 		rumboot_irq_set_handler(tbl, MDMA0_IRQ, 0, mdma_irq_handler, &mdma_base);
 		rumboot_irq_enable(MDMA0_IRQ);
 		rumboot_irq_table_activate(tbl);
 
-		if (mdma_transmit_data(MDMA0_BASE, &output[0], &buf[0], data_size) < 0) {
+		if (mdma_transmit_data(UART0_BASE, &output[0], &buf[0], data_size) < 0) {
 			//What should i do here? If a want to rumboot_free memory?
 			return false;
 		}

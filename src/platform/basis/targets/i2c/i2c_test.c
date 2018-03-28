@@ -61,8 +61,10 @@ int main()
 	}
 
 	uint count = byte_number;
-	while (count)
-		rumboot_printf("%x ", out_buf[byte_number - count--]);
+	while (count) {
+		rumboot_printf("%x, %x  ", out_buf[byte_number - count], in_buf[byte_number - count]);
+		count--;
+	}
 
 	rumboot_printf("\n");
 

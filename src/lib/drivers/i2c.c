@@ -62,7 +62,8 @@ static void set_number(uint32_t base, enum device_type type, size_t len)
 	uint8_t number;
 
 	if(type == EEPROM) {
-		number = 128;
+		//number = 128;
+		number = len;
 	}
 	else {
 		number = 255;

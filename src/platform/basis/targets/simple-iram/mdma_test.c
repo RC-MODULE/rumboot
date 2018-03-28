@@ -18,10 +18,10 @@
 
 int main()
 {
-	rumboot_printf("Test MDMA\n");
-
 	size_t data_size = 8;
-	uint32_t base = MDMA0_BASE;
+	uint32_t base = MDMA3_BASE;
+
+	rumboot_printf("Test MDMA with base: %x\n", base);
 
 	size_t num_heaps = rumboot_malloc_num_heaps();
 	rumboot_printf("We have %d heaps!\n", num_heaps);
