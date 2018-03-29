@@ -178,6 +178,14 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
     add_rumboot_target(
         CONFIGURATION ROM
+        FILES common/bootrom-stubs/bootrom-rvds-stub.c
+        PREFIX "bootrom"
+        NAME "stub-rvds"
+        FEATURES STUB
+    )
+    
+    add_rumboot_target(
+        CONFIGURATION ROM
         FILES common/bootrom-stubs/bootrom-stub.c
         PREFIX "bootrom"
         NAME "stub-mirror"
