@@ -7,9 +7,6 @@
 #include <rumboot/bootheader.h>
 #include <rumboot/irq.h>
 
-#ifdef RUMBOOT_MIRROR_STUB
-	#include <rumboot/pcie_test_lib.h>
-#endif
 
 int main()
 {
