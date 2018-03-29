@@ -51,7 +51,7 @@ static enum err_code trans_write_devaddr(struct i2c_config *cfg, struct i2c_tran
 	}
 
 	// if (i2c_wait_transaction_timeout(cfg, DONE, I2C_TIMEOUT) < 0) {
-	// 	return -1;
+	//      return -1;
 	// }
 
 	return 0;
@@ -61,11 +61,10 @@ static void set_number(uint32_t base, enum device_type type, size_t len)
 {
 	uint8_t number;
 
-	if(type == EEPROM) {
+	if (type == EEPROM) {
 		//number = 128;
 		number = len;
-	}
-	else {
+	} else {
 		number = 255;
 	}
 
@@ -76,11 +75,10 @@ static void set_fifofil(uint32_t base, enum device_type type, size_t len)
 {
 	uint8_t fifofil;
 
-	if(type == EEPROM) {
-		fifofil = (len > 128) ? (len%128) : (len);
-	}
-	else {
-		fifofil = (len > 256) ? (len%256) : (len);
+	if (type == EEPROM) {
+		fifofil = (len > 128) ? (len % 128) : (len);
+	} else {
+		fifofil = (len > 256) ? (len % 256) : (len);
 	}
 
 	iowrite32((fifofil << 16) | (fifofil), base + I2C_FIFOFIL);
@@ -189,19 +187,6 @@ static enum err_code read_data_chunk(uint32_t base, void *buf, size_t len)
 	return 0;
 }
 
-// static enum err_code reading_transaction(uint32_t base, uint8_t t_data, void* buf, uint32_t numb)
-// {
-//      iowrite8(t_data, base + I2C_TRANSMIT);
-//      iowrite32(0x1, base + I2C_STAT_RST);
-//      iowrite32(CMD_READ_REPEAT, base + I2C_CTRL);
-//
-//      if (i2c_wait_transaction_timeout(cfg, e, I2C_BLOCK_TIMEOUT_US) < 0) {
-//              return -1;
-//      }
-//
-//      read_data_chunk(base, buf, numb);
-// }
-
 static enum err_code send_read_cmd(struct i2c_config *cfg, uint8_t devaddr, bool do_stop)
 {
 	uint32_t cmd = (do_stop) ? CMD_READ_REPEAT_STOP : CMD_READ_REPEAT_START;
@@ -213,7 +198,7 @@ static enum err_code send_read_cmd(struct i2c_config *cfg, uint8_t devaddr, bool
 	return 0;
 }
 
-#define TXBUF_SIZE 256
+#define RXBUF_SIZE 256
 static enum err_code trans_read_data(struct i2c_config *cfg, struct i2c_transaction *t)
 {
 	set_number(cfg->base, cfg->device_type, t->len);
@@ -239,8 +224,9 @@ static enum err_code trans_read_data(struct i2c_config *cfg, struct i2c_transact
 			do_stop = true;
 		}
 
-		if(cfg->device_type == EEPROM)
+		if (cfg->device_type == EEPROM) {
 			do_stop = true;
+		}
 
 		send_read_cmd(cfg, t->devaddr, do_stop);
 
@@ -248,18 +234,13 @@ static enum err_code trans_read_data(struct i2c_config *cfg, struct i2c_transact
 			return -1;
 		}
 
-		udelay(I2C_TIMEOUT_PER_WR_US*numb);
+		//udelay(I2C_TIMEOUT_PER_WR_US*numb);
 
 		(t->len > 256) ? read_data_chunk(cfg->base, t->buf, TXBUF_SIZE) : read_data_chunk(cfg->base, t->buf, t->len);
 	}
 
 	if (rem) {
-
 		set_fifofil(cfg->base, cfg->device_type, rem);
-		send_read_cmd(cfg, t->devaddr, true);
-
-		uint32_t tmp = ioread32(cfg->base + I2C_FIFOFIL) & 0x00ff0000;
-		iowrite32(rem | tmp, cfg->base + I2C_FIFOFIL);
 
 		send_read_cmd(cfg, t->devaddr, true);
 
@@ -267,7 +248,7 @@ static enum err_code trans_read_data(struct i2c_config *cfg, struct i2c_transact
 			return -2;
 		}
 
-		udelay(I2C_TIMEOUT_PER_WR_US*rem*10);
+		//udelay(I2C_TIMEOUT_PER_WR_US*rem*10);
 
 		read_data_chunk(cfg->base, t->buf, rem);
 	}
@@ -429,7 +410,6 @@ int i2c_execute_transaction(struct i2c_config *cfg, struct i2c_transaction *t)
 int i2c_stop_transaction(struct i2c_config *cfg)
 {
 	if (i2c_wait_transaction_timeout(cfg, TX_EMPTY, I2C_TIMEOUT * 5) < 0) {
-
 		//return -1;
 	}
 
@@ -444,10 +424,11 @@ int i2c_wait_transaction(struct i2c_config *cfg, enum i2c_waited_event e)
 {
 	size_t n = 0;
 
-	while (i2c_check_transaction(cfg, e) < 0)
+	while (i2c_check_transaction(cfg, e) < 0) {
 		if (!(n % 100)) {
 			rumboot_printf("waiting event %d\n", e);
 		}
+	}
 
 	return 0;
 }
