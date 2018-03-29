@@ -191,8 +191,8 @@ static enum err_code send_read_cmd(struct i2c_config *cfg, uint8_t devaddr, bool
 {
 	uint32_t cmd = (do_stop) ? CMD_READ_REPEAT_STOP : CMD_READ_REPEAT_START;
 
-	iowrite8(devaddr + 1, cfg->base + I2C_TRANSMIT);
 	iowrite32(0x1, cfg->base + I2C_STAT_RST);
+	iowrite8(devaddr + 1, cfg->base + I2C_TRANSMIT);
 	iowrite32(cmd, cfg->base + I2C_CTRL);
 
 	return 0;
@@ -252,6 +252,8 @@ static enum err_code trans_read_data(struct i2c_config *cfg, struct i2c_transact
 
 		read_data_chunk(cfg->base, t->buf, rem);
 	}
+
+	iowrite32(0x0, cfg->base + I2C_STAT_RST);
 
 	return 0;
 }
@@ -416,6 +418,7 @@ int i2c_stop_transaction(struct i2c_config *cfg)
 	cfg->txfifo_count = 0;
 
 	iowrite32(CMD_STOP, cfg->base + I2C_CTRL);
+	iowrite32(0x0, cfg->base + I2C_STAT_RST);
 
 	return 0;
 }
