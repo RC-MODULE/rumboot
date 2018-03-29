@@ -17,7 +17,7 @@ int main()
 
 	int (*ram_main)();
 	ram_main = (void *) vtable;
-	arm_vbar_set(vtable);
+	arm_vbar_set((uint32_t) vtable);
 	rumboot_printf("Now executing RAM reset vector: %x\n", vtable[0]);
 	ram_main();
 	rumboot_platform_panic("ROM STUB: We're back in ROM code, we shouldn't be\n");
