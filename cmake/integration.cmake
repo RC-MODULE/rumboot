@@ -158,7 +158,8 @@ function(rumboot_load_build platform buildtype)
         -DRUMBOOT_PROFILE=${RUMBOOT_PROFILE}
     )
 
-    set(RUMBOOT_UTILS_DIR ${CMAKE_BINARY_DIR}/${rumboot_dirname}/utils PARENT_SCOPE)
+    set(RUMBOOT_UTILS_DIR  ${CMAKE_BINARY_DIR}/${rumboot_dirname}/utils PARENT_SCOPE)
+    set(RUMBOOT_BINARY_DIR ${CMAKE_BINARY_DIR}/${rumboot_dirname} PARENT_SCOPE)
 
     add_dependencies(rumboot ${rumboot_dirname})
     #Suck in target information from rumboot, and play a little with SRC_DIR
