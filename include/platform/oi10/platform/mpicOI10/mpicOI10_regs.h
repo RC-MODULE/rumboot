@@ -2,12 +2,13 @@
 #define __MPIC128_REGS_H__
 
 
+//#include <mivem_types.h>
 #include <platform/oi10/platform/mivem_macro.h>
 #include <platform/oi10/platform/boost/preprocessor/iteration/local.hpp>
 #include <platform/oi10/platform/boost/preprocessor/arithmetic/dec.hpp>
 #include <platform/oi10/platform/boost/preprocessor/cat.hpp>
 
-#include <platform/oi10/platform/mpic128/mpic128_reg_fields.h>
+#include <platform/oi10/platform/mpicOI10/mpicOI10_reg_fields.h>
 
 
 #define MPIC128x_VPx_REGS_COUNT    128

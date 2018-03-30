@@ -4,7 +4,7 @@
 
 #include <platform/oi10/platform/mivem_macro.h>
 #include <platform/oi10/platform/mivem_regs_access.h>
-#include <platform/oi10/platform/mpic128/mpic128_regs.h>
+#include <platform/oi10/platform/mpicOI10/mpicOI10_regs.h>
 
 
 #define SET_NONCR_INT_HANDLER(handler_ptr) \

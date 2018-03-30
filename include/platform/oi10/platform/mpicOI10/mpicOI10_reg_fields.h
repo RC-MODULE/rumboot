@@ -2,6 +2,7 @@
 #define __MPIC128_REG_FIELDS_H__
 
 
+//#include <mivem_types.h>
 #include <platform/oi10/platform/mivem_macro.h>
 
 
@@ -31,21 +32,21 @@ DECLARE_ENUM_VAL( int_pol_neg,  0 )
 DECLARE_ENUM_VAL( int_pol_low,  0 )
 END_ENUM( int_pol_t )
 
-BEGIN_ENUM( mpic128_proc_num )
+BEGIN_ENUM( mpicOI10_proc_num )
 DECLARE_ENUM_VAL( Processor0,   0 )
 DECLARE_ENUM_VAL( Processor1,   1 )
 DECLARE_ENUM_VAL( Processor2,   2 )
 DECLARE_ENUM_VAL( Processor3,   3 )
-END_ENUM( mpic128_proc_num )
+END_ENUM( mpicOI10_proc_num )
 
-BEGIN_ENUM( mpic128_dst_t )
+BEGIN_ENUM( mpicOI10_dst_t )
 DECLARE_ENUM_VAL( MPIC128_DST_P0,   (1 << IBM_BIT_INDEX(32, 31)) )
 DECLARE_ENUM_VAL( MPIC128_DST_P1,   (1 << IBM_BIT_INDEX(32, 30)) )
 DECLARE_ENUM_VAL( MPIC128_DST_P2,   (1 << IBM_BIT_INDEX(32, 29)) )
 DECLARE_ENUM_VAL( MPIC128_DST_P3,   (1 << IBM_BIT_INDEX(32, 28)) )
-END_ENUM( mpic128_dst_t )
+END_ENUM( mpicOI10_dst_t )
 
-BEGIN_ENUM( mpic128_prior_t )
+BEGIN_ENUM( mpicOI10_prior_t )
 DECLARE_ENUM_VAL( MPIC128_PRIOR_0,  0 )
 DECLARE_ENUM_VAL( MPIC128_PRIOR_1,  1 )
 DECLARE_ENUM_VAL( MPIC128_PRIOR_2,  2 )
@@ -62,9 +63,9 @@ DECLARE_ENUM_VAL( MPIC128_PRIOR_12, 12 )
 DECLARE_ENUM_VAL( MPIC128_PRIOR_13, 13 )
 DECLARE_ENUM_VAL( MPIC128_PRIOR_14, 14 )
 DECLARE_ENUM_VAL( MPIC128_PRIOR_15, 15 )
-END_ENUM( mpic128_prior_t )
+END_ENUM( mpicOI10_prior_t )
 
-BEGIN_ENUM( mpic128_vird_t )
+BEGIN_ENUM( mpicOI10_vird_t )
 DECLARE_ENUM_VAL( VRID_0_19,                    0b000 )
 DECLARE_ENUM_VAL( VRID_20_39,                   0b001 )
 DECLARE_ENUM_VAL( VRID_40_59,                   0b010 )
@@ -72,7 +73,7 @@ DECLARE_ENUM_VAL( VRID_60_79,                   0b011 )
 DECLARE_ENUM_VAL( VRID_80_99,                   0b100 )
 DECLARE_ENUM_VAL( VRID_100_119,                 0b101 )
 DECLARE_ENUM_VAL( VRID_120_127_Tmr_IPI_0000,    0b110 )
-END_ENUM( mpic128_vird_t )
+END_ENUM( mpicOI10_vird_t )
 
 
 #define MPIC128_TIMER_MIN_FREQ 0x3D0900
