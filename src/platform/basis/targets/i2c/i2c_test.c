@@ -22,7 +22,7 @@ int main()
 	const uint16_t offset = 0x0;
 	struct i2c_config cfg = {
 		.base		= I2C0_BASE,
-		.irq_en		= false,
+		.irq_en		= true,
 		.scl_freq	= 0x13,
 		.byte_numb	= byte_number,
 		.device_type = EEPROM

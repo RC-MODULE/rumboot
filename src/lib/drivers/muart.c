@@ -32,7 +32,6 @@ static void reset_field(uint32_t base, uint32_t reg_offset, uint32_t bit_pos, ui
 	iowrite32(reg, base + reg_offset);
 }
 
-
 void muart_init(const uint32_t base, const struct muart_conf *conf)
 {
 	uint32_t ctrl = ioread32(base + MUART_CTRL);
