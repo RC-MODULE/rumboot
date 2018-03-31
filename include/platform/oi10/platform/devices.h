@@ -95,10 +95,10 @@
 
 //System Timer (APB)
 #define TIMER_BASE              0x38001000
-
+*/
 //WD
 #define WD_BASE                 0x38002000
-
+/*
 //Sensors
 #define TVSENS_BASE             0x38003000
 
