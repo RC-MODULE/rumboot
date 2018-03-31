@@ -12,7 +12,7 @@ int main()
     rumboot_printf("rumboot: spl start: 0x%x end: 0x%x\n",
                &rumboot_platform_spl_start,
                &rumboot_platform_spl_end);
-    rumboot_printf("test_oi11_plb6_axi\n\n");
+    rumboot_printf("test_oi10_axi_plb6\n\n");
 #endif
     return 0;
 }

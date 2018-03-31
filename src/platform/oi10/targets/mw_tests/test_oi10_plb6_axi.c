@@ -12,7 +12,7 @@ int main()
     rumboot_printf("rumboot: spl start: 0x%x end: 0x%x\n",
                &rumboot_platform_spl_start,
                &rumboot_platform_spl_end);
-    rumboot_printf("test_oi10_cpu_021_cache_states\n\n");
+    rumboot_printf("test_oi10_plb6_axi\n\n");
 #endif
     return 0;
 }
