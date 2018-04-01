@@ -140,6 +140,13 @@ function(add_rumboot_target)
         +BOOTMAP=${rumboot_fulldir}/${product}.dmp
         ${TARGET_IRUN_FLAGS}
     )
+
+    #FixMe: Hack. ARM ModelManager fucks up simulation with a segfault if
+    #No JTAGbsi file is found. That happens even if it's not really running
+    #So we always provide a dummy here to be safe. 
+    hdl_test_provide_file(rumboot-${TARGET_SNAPSHOT}-${product} ${CMAKE_SOURCE_DIR}/scripts/empty.txt JTAGbsi)
+
+
   endif()
 
 endfunction()
