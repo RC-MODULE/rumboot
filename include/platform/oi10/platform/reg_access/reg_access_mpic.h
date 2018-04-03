@@ -2,8 +2,9 @@
 #define __MPIC128_REG_ACCESS_H__
 
 
-#include <platform/oi10/platform/mivem_macro.h>
-#include <platform/oi10/platform/mivem_regs_access.h>
+#include <common_macros/common_macros.h>
+#include <arch/ppc/ibm_bit_ordering_macros.h>
+#include <platform/oi10/platform/reg_access/macros.h>
 #include <platform/oi10/platform/mpicOI10/mpicOI10_regs.h>
 
 

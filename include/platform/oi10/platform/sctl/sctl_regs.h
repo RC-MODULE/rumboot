@@ -2,7 +2,8 @@
 #define __SCTL_REGS_H__
 
 
-#include <platform/oi10/platform/mivem_macro.h>
+#include <common_macros/common_macros.h>
+#include <arch/ppc/ibm_bit_ordering_macros.h>
 #include <platform/oi10/platform/sctl/sctl_reg_fields.h>
 #include <platform/oi10/platform/boost/preprocessor/cat.hpp>
 #include <platform/oi10/platform/boost/preprocessor/iteration/local.hpp>

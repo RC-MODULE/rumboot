@@ -14,7 +14,8 @@
 #include <platform/oi10/platform/ppc_476fp_itrpt.h>
 #include <platform/oi10/platform/ppc_476fp_mmu_fields.h>
 #include <platform/oi10/platform/ppc_476fp_timer_fields.h>
-#include <platform/oi10/platform/mivem_macro.h>
+#include <common_macros/common_macros.h>
+#include <arch/ppc/ibm_bit_ordering_macros.h>
 #include <platform/oi10/platform/test_event_codes.h>
 
 

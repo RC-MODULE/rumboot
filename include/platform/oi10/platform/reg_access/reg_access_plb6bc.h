@@ -3,7 +3,7 @@
 
 
 #include <platform/oi10/platform/plb6bc/reg.h>
-#include <platform/oi10/platform/mivem_regs_access.h>
+#include <platform/oi10/platform/reg_access/macros.h>
 #include <platform/oi10/platform/boost/preprocessor/repetition/repeat_from_to.hpp>
 
 

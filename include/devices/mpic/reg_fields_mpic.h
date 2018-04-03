@@ -3,7 +3,8 @@
 
 
 //#include <mivem_types.h>
-#include <platform/oi10/platform/mivem_macro.h>
+#include <common_macros/common_macros.h>
+#include <arch/ppc/ibm_bit_ordering_macros.h>
 
 
 #define MPIC128x_GCF0_R        0

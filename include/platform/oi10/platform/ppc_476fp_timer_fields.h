@@ -6,7 +6,8 @@
 #define PPC_476FP_TIMER_FIELDS_H
 
 
-#include <platform/oi10/platform/mivem_macro.h>
+#include <common_macros/common_macros.h>
+#include <arch/ppc/ibm_bit_ordering_macros.h>
 
 
 BEGIN_ENUM( TIMER_TBL_FIELD )

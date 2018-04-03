@@ -3,7 +3,8 @@
 
 
 #include <platform/oi10/platform/ppc_476fp_config.h>
-#include <platform/oi10/platform/mivem_macro.h>
+#include <common_macros/common_macros.h>
+#include <arch/ppc/ibm_bit_ordering_macros.h>
 
 
 #define reg_field(field_right_bit_num_from_ppc_user_manual, value)\

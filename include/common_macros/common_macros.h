@@ -647,17 +647,10 @@
 #define bf_(val, msb, lsb)              GET_BITS(val, lsb, msb-lsb+1)
 #define b__(val, bit_index)             bf_(val, bit_index, bit_index)
 
-#define IBM_BIT_INDEX( size, index )    ( ((size)-1) - ((index)%(size)) )
-
 #define BIT_FIELD_SIZE( begin, end )    ((end) - (begin) + 1)
 
 #define REG_FIELD( reg, index, size )\
 CAT( reg, _i ) = (index), CAT( reg, _n ) = (size)
-#define IBM_REG32_FIELD( reg, index, size )\
-REG_FIELD( reg, IBM_BIT_INDEX( 32, (index) + ((size) - 1) ), (size) )
-
-#define reg_field(field_right_bit_num_from_ppc_user_manual, value)\
-    ((value) << IBM_BIT_INDEX( 32, field_right_bit_num_from_ppc_user_manual ))
 
 
 #endif // MIVEM_MACRO_H

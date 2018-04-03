@@ -2,7 +2,8 @@
 #define __SCTL_REG_FIELDS_H__
 
 
-#include <platform/oi10/platform/mivem_macro.h>
+#include <common_macros/common_macros.h>
+#include <arch/ppc/ibm_bit_ordering_macros.h>
 
 
 BEGIN_ENUM( SCTL_PPC_SLP_CTRL_FIELD )

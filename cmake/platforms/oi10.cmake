@@ -77,9 +77,8 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     TESTGROUP short
   )
 
-  add_directory_with_targets(mw_tests/
-    CONFIGURATION ROM
-    PREFIX mw_tests)
+  add_directory_with_targets(tests/
+    CONFIGURATION ROM)
 endmacro()
 
 

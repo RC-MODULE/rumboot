@@ -1,8 +1,9 @@
 #ifndef __SCTL_REG_ACCESS_H__
 #define __SCTL_REG_ACCESS_H__
 
-#include <platform/oi10/platform/mivem_macro.h>
-#include <platform/oi10/platform/mivem_regs_access.h>
+#include <common_macros/common_macros.h>
+#include <arch/ppc/ibm_bit_ordering_macros.h>
+#include <platform/oi10/platform/reg_access/macros.h>
 #include <platform/oi10/platform/sctl/sctl_regs.h>
 #include <platform/oi10/platform/boost/preprocessor/cat.hpp>
 #include <platform/oi10/platform/boost/preprocessor/iteration/local.hpp>
