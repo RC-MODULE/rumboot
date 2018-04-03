@@ -14,10 +14,10 @@
 # ifndef BOOST_PREPROCESSOR_LIST_FOLD_RIGHT_HPP
 # define BOOST_PREPROCESSOR_LIST_FOLD_RIGHT_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/cat.hpp>
-# include <platform/oi10/platform/boost/preprocessor/control/while.hpp>
-# include <platform/oi10/platform/boost/preprocessor/debug/error.hpp>
-# include <platform/oi10/platform/boost/preprocessor/detail/auto_rec.hpp>
+# include <common_macros/boost/preprocessor/cat.hpp>
+# include <common_macros/boost/preprocessor/control/while.hpp>
+# include <common_macros/boost/preprocessor/debug/error.hpp>
+# include <common_macros/boost/preprocessor/detail/auto_rec.hpp>
 #
 # if 0
 #    define BOOST_PP_LIST_FOLD_RIGHT(op, state, list)
@@ -32,9 +32,9 @@
 # define BOOST_PP_LIST_FOLD_RIGHT_2ND_D BOOST_PP_LIST_FOLD_RIGHT_D
 #
 # if BOOST_PP_CONFIG_FLAGS() & BOOST_PP_CONFIG_EDG()
-#    include <platform/oi10/platform/boost/preprocessor/list/detail/edg/fold_right.hpp>
+#    include <common_macros/boost/preprocessor/list/detail/edg/fold_right.hpp>
 # else
-#    include <platform/oi10/platform/boost/preprocessor/list/detail/fold_right.hpp>
+#    include <common_macros/boost/preprocessor/list/detail/fold_right.hpp>
 # endif
 #
 # endif

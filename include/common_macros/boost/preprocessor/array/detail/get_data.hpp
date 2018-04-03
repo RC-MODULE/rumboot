@@ -12,11 +12,11 @@
 # ifndef BOOST_PREPROCESSOR_ARRAY_DETAIL_GET_DATA_HPP
 # define BOOST_PREPROCESSOR_ARRAY_DETAIL_GET_DATA_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/config/config.hpp>
-# include <platform/oi10/platform/boost/preprocessor/tuple/rem.hpp>
-# include <platform/oi10/platform/boost/preprocessor/control/if.hpp>
-# include <platform/oi10/platform/boost/preprocessor/control/iif.hpp>
-# include <platform/oi10/platform/boost/preprocessor/facilities/is_1.hpp>
+# include <common_macros/boost/preprocessor/config/config.hpp>
+# include <common_macros/boost/preprocessor/tuple/rem.hpp>
+# include <common_macros/boost/preprocessor/control/if.hpp>
+# include <common_macros/boost/preprocessor/control/iif.hpp>
+# include <common_macros/boost/preprocessor/facilities/is_1.hpp>
 #
 # /* BOOST_PP_ARRAY_DETAIL_GET_DATA */
 #

@@ -6,12 +6,12 @@
 #define __PLB6BC_REG_H__
 
 
-#include <platform/oi10/platform/plb6bc/reg_field.h>
+#include <devices/plb6bc/reg_field_plb6bc.h>
 #include <common_macros/common_macros.h>
 #include <arch/ppc/ibm_bit_ordering_macros.h>
-#include <platform/oi10/platform/boost/preprocessor/iteration/local.hpp>
-#include <platform/oi10/platform/boost/preprocessor/arithmetic/dec.hpp>
-#include <platform/oi10/platform/boost/preprocessor/cat.hpp>
+#include <common_macros/boost/preprocessor/iteration/local.hpp>
+#include <common_macros/boost/preprocessor/arithmetic/dec.hpp>
+#include <common_macros/boost/preprocessor/cat.hpp>
 
 
 BEGIN_ENUM( PLB6BC_REG )

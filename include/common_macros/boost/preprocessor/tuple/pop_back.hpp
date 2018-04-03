@@ -12,16 +12,16 @@
 # ifndef BOOST_PREPROCESSOR_TUPLE_POP_BACK_HPP
 # define BOOST_PREPROCESSOR_TUPLE_POP_BACK_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/config/config.hpp>
+# include <common_macros/boost/preprocessor/config/config.hpp>
 #
 # if BOOST_PP_VARIADICS
 #
-# include <platform/oi10/platform/boost/preprocessor/array/pop_back.hpp>
-# include <platform/oi10/platform/boost/preprocessor/array/to_tuple.hpp>
-# include <platform/oi10/platform/boost/preprocessor/comparison/greater.hpp>
-# include <platform/oi10/platform/boost/preprocessor/control/iif.hpp>
-# include <platform/oi10/platform/boost/preprocessor/tuple/size.hpp>
-# include <platform/oi10/platform/boost/preprocessor/tuple/to_array.hpp>
+# include <common_macros/boost/preprocessor/array/pop_back.hpp>
+# include <common_macros/boost/preprocessor/array/to_tuple.hpp>
+# include <common_macros/boost/preprocessor/comparison/greater.hpp>
+# include <common_macros/boost/preprocessor/control/iif.hpp>
+# include <common_macros/boost/preprocessor/tuple/size.hpp>
+# include <common_macros/boost/preprocessor/tuple/to_array.hpp>
 #
 # /* BOOST_PP_TUPLE_POP_BACK */
 #

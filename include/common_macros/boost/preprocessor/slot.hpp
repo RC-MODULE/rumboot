@@ -12,6 +12,6 @@
 # ifndef BOOST_PREPROCESSOR_SLOT_HPP
 # define BOOST_PREPROCESSOR_SLOT_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/slot/slot.hpp>
+# include <common_macros/boost/preprocessor/slot/slot.hpp>
 #
 # endif

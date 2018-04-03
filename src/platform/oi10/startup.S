@@ -9,7 +9,7 @@
 #include <platform/oi10/platform/test_event_asm.h>
 #include <platform/oi10/platform/trace.S.h>
 #include <platform/oi10/platform/ppc470s/mmu.S.h>
-#include <platform/oi10/platform/plb6bc/reg.h>
+#include <regs/regs_plb6bc.h>
 #include <platform/oi10/platform/sctl/sctl_regs.h>
 #include <platform/oi10/platform/ppc_476fp_itrpt_fields.h>
 #include <platform/oi10/platform/ppc_476fp_debug_fields.h>

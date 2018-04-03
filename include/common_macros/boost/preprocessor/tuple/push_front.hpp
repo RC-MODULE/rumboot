@@ -12,13 +12,13 @@
 # ifndef BOOST_PREPROCESSOR_TUPLE_PUSH_FRONT_HPP
 # define BOOST_PREPROCESSOR_TUPLE_PUSH_FRONT_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/config/config.hpp>
+# include <common_macros/boost/preprocessor/config/config.hpp>
 #
 # if BOOST_PP_VARIADICS
 #
-# include <platform/oi10/platform/boost/preprocessor/array/push_front.hpp>
-# include <platform/oi10/platform/boost/preprocessor/array/to_tuple.hpp>
-# include <platform/oi10/platform/boost/preprocessor/tuple/to_array.hpp>
+# include <common_macros/boost/preprocessor/array/push_front.hpp>
+# include <common_macros/boost/preprocessor/array/to_tuple.hpp>
+# include <common_macros/boost/preprocessor/tuple/to_array.hpp>
 #
 #
 # /* BOOST_PP_TUPLE_PUSH_FRONT */

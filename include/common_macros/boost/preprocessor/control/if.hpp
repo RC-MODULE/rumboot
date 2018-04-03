@@ -14,9 +14,9 @@
 # ifndef BOOST_PREPROCESSOR_CONTROL_IF_HPP
 # define BOOST_PREPROCESSOR_CONTROL_IF_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/config/config.hpp>
-# include <platform/oi10/platform/boost/preprocessor/control/iif.hpp>
-# include <platform/oi10/platform/boost/preprocessor/logical/bool.hpp>
+# include <common_macros/boost/preprocessor/config/config.hpp>
+# include <common_macros/boost/preprocessor/control/iif.hpp>
+# include <common_macros/boost/preprocessor/logical/bool.hpp>
 #
 # /* BOOST_PP_IF */
 #

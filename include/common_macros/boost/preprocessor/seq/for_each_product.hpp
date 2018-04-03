@@ -12,14 +12,14 @@
 # ifndef BOOST_PREPROCESSOR_SEQ_FOR_EACH_PRODUCT_HPP
 # define BOOST_PREPROCESSOR_SEQ_FOR_EACH_PRODUCT_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/arithmetic/dec.hpp>
-# include <platform/oi10/platform/boost/preprocessor/config/config.hpp>
-# include <platform/oi10/platform/boost/preprocessor/control/if.hpp>
-# include <platform/oi10/platform/boost/preprocessor/repetition/for.hpp>
-# include <platform/oi10/platform/boost/preprocessor/seq/seq.hpp>
-# include <platform/oi10/platform/boost/preprocessor/seq/size.hpp>
-# include <platform/oi10/platform/boost/preprocessor/tuple/elem.hpp>
-# include <platform/oi10/platform/boost/preprocessor/tuple/rem.hpp>
+# include <common_macros/boost/preprocessor/arithmetic/dec.hpp>
+# include <common_macros/boost/preprocessor/config/config.hpp>
+# include <common_macros/boost/preprocessor/control/if.hpp>
+# include <common_macros/boost/preprocessor/repetition/for.hpp>
+# include <common_macros/boost/preprocessor/seq/seq.hpp>
+# include <common_macros/boost/preprocessor/seq/size.hpp>
+# include <common_macros/boost/preprocessor/tuple/elem.hpp>
+# include <common_macros/boost/preprocessor/tuple/rem.hpp>
 #
 # /* BOOST_PP_SEQ_FOR_EACH_PRODUCT */
 #

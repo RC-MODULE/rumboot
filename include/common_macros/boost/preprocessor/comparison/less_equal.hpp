@@ -14,9 +14,9 @@
 # ifndef BOOST_PREPROCESSOR_COMPARISON_LESS_EQUAL_HPP
 # define BOOST_PREPROCESSOR_COMPARISON_LESS_EQUAL_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/arithmetic/sub.hpp>
-# include <platform/oi10/platform/boost/preprocessor/config/config.hpp>
-# include <platform/oi10/platform/boost/preprocessor/logical/not.hpp>
+# include <common_macros/boost/preprocessor/arithmetic/sub.hpp>
+# include <common_macros/boost/preprocessor/config/config.hpp>
+# include <common_macros/boost/preprocessor/logical/not.hpp>
 #
 # /* BOOST_PP_LESS_EQUAL */
 #

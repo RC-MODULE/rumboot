@@ -14,6 +14,6 @@
 #
 # /* BOOST_PP_INCLUDE_SELF */
 #
-# define BOOST_PP_INCLUDE_SELF() <platform/oi10/platform/boost/preprocessor/iteration/detail/self.hpp>
+# define BOOST_PP_INCLUDE_SELF() <common_macros/boost/preprocessor/iteration/detail/self.hpp>
 #
 # endif

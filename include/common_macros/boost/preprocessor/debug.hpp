@@ -12,7 +12,7 @@
 # ifndef BOOST_PREPROCESSOR_DEBUG_HPP
 # define BOOST_PREPROCESSOR_DEBUG_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/debug/assert.hpp>
-# include <platform/oi10/platform/boost/preprocessor/debug/line.hpp>
+# include <common_macros/boost/preprocessor/debug/assert.hpp>
+# include <common_macros/boost/preprocessor/debug/line.hpp>
 #
 # endif

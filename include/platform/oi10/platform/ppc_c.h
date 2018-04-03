@@ -3,8 +3,8 @@
 
 #include <platform/oi10/platform/ppc_476fp_lib_c.h>
 #include <platform/oi10/platform/ppc_476fp_config.h>
-#include <platform/oi10/platform/boost/preprocessor/repetition/repeat_from_to.hpp>
-#include <platform/oi10/platform/boost/preprocessor/cat.hpp>
+#include <common_macros/boost/preprocessor/repetition/repeat_from_to.hpp>
+#include <common_macros/boost/preprocessor/cat.hpp>
 
 
 void usleep(uint32_t usec);

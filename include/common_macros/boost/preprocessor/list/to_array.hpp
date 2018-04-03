@@ -13,15 +13,15 @@
 # ifndef BOOST_PREPROCESSOR_LIST_TO_ARRAY_HPP
 # define BOOST_PREPROCESSOR_LIST_TO_ARRAY_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/arithmetic/dec.hpp>
-# include <platform/oi10/platform/boost/preprocessor/arithmetic/inc.hpp>
-# include <platform/oi10/platform/boost/preprocessor/config/config.hpp>
-# include <platform/oi10/platform/boost/preprocessor/control/while.hpp>
-# include <platform/oi10/platform/boost/preprocessor/list/adt.hpp>
-# include <platform/oi10/platform/boost/preprocessor/tuple/elem.hpp>
-# include <platform/oi10/platform/boost/preprocessor/tuple/rem.hpp>
+# include <common_macros/boost/preprocessor/arithmetic/dec.hpp>
+# include <common_macros/boost/preprocessor/arithmetic/inc.hpp>
+# include <common_macros/boost/preprocessor/config/config.hpp>
+# include <common_macros/boost/preprocessor/control/while.hpp>
+# include <common_macros/boost/preprocessor/list/adt.hpp>
+# include <common_macros/boost/preprocessor/tuple/elem.hpp>
+# include <common_macros/boost/preprocessor/tuple/rem.hpp>
 # if BOOST_PP_VARIADICS && BOOST_PP_VARIADICS_MSVC && (_MSC_VER <= 1400)
-# include <platform/oi10/platform/boost/preprocessor/control/iif.hpp>
+# include <common_macros/boost/preprocessor/control/iif.hpp>
 # endif
 #
 # /* BOOST_PP_LIST_TO_ARRAY */

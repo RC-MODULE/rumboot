@@ -13,11 +13,11 @@
 # ifndef BOOST_PREPROCESSOR_FACILITIES_HPP
 # define BOOST_PREPROCESSOR_FACILITIES_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/facilities/apply.hpp>
-# include <platform/oi10/platform/boost/preprocessor/facilities/empty.hpp>
-# include <platform/oi10/platform/boost/preprocessor/facilities/expand.hpp>
-# include <platform/oi10/platform/boost/preprocessor/facilities/identity.hpp>
-# include <platform/oi10/platform/boost/preprocessor/facilities/intercept.hpp>
-# include <platform/oi10/platform/boost/preprocessor/facilities/overload.hpp>
+# include <common_macros/boost/preprocessor/facilities/apply.hpp>
+# include <common_macros/boost/preprocessor/facilities/empty.hpp>
+# include <common_macros/boost/preprocessor/facilities/expand.hpp>
+# include <common_macros/boost/preprocessor/facilities/identity.hpp>
+# include <common_macros/boost/preprocessor/facilities/intercept.hpp>
+# include <common_macros/boost/preprocessor/facilities/overload.hpp>
 #
 # endif

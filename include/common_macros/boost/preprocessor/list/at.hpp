@@ -14,9 +14,9 @@
 # ifndef BOOST_PREPROCESSOR_LIST_AT_HPP
 # define BOOST_PREPROCESSOR_LIST_AT_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/config/config.hpp>
-# include <platform/oi10/platform/boost/preprocessor/list/adt.hpp>
-# include <platform/oi10/platform/boost/preprocessor/list/rest_n.hpp>
+# include <common_macros/boost/preprocessor/config/config.hpp>
+# include <common_macros/boost/preprocessor/list/adt.hpp>
+# include <common_macros/boost/preprocessor/list/rest_n.hpp>
 #
 # /* BOOST_PP_LIST_AT */
 #

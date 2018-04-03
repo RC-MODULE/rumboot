@@ -12,11 +12,11 @@
 # ifndef BOOST_PREPROCESSOR_CONTROL_HPP
 # define BOOST_PREPROCESSOR_CONTROL_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/control/deduce_d.hpp>
-# include <platform/oi10/platform/boost/preprocessor/control/expr_if.hpp>
-# include <platform/oi10/platform/boost/preprocessor/control/expr_iif.hpp>
-# include <platform/oi10/platform/boost/preprocessor/control/if.hpp>
-# include <platform/oi10/platform/boost/preprocessor/control/iif.hpp>
-# include <platform/oi10/platform/boost/preprocessor/control/while.hpp>
+# include <common_macros/boost/preprocessor/control/deduce_d.hpp>
+# include <common_macros/boost/preprocessor/control/expr_if.hpp>
+# include <common_macros/boost/preprocessor/control/expr_iif.hpp>
+# include <common_macros/boost/preprocessor/control/if.hpp>
+# include <common_macros/boost/preprocessor/control/iif.hpp>
+# include <common_macros/boost/preprocessor/control/while.hpp>
 #
 # endif

@@ -2,9 +2,9 @@
 #define __PLB6BC_REG_ACCESS_H__
 
 
-#include <platform/oi10/platform/plb6bc/reg.h>
+#include <regs/regs_plb6bc.h>
 #include <platform/oi10/platform/reg_access/macros.h>
-#include <platform/oi10/platform/boost/preprocessor/repetition/repeat_from_to.hpp>
+#include <common_macros/boost/preprocessor/repetition/repeat_from_to.hpp>
 
 
 REG_READ_DCR( plb6bc, PLB6BC_CR0, 32 )

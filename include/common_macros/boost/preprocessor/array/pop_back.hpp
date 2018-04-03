@@ -12,11 +12,11 @@
 # ifndef BOOST_PREPROCESSOR_ARRAY_POP_BACK_HPP
 # define BOOST_PREPROCESSOR_ARRAY_POP_BACK_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/arithmetic/dec.hpp>
-# include <platform/oi10/platform/boost/preprocessor/array/elem.hpp>
-# include <platform/oi10/platform/boost/preprocessor/array/size.hpp>
-# include <platform/oi10/platform/boost/preprocessor/repetition/enum.hpp>
-# include <platform/oi10/platform/boost/preprocessor/repetition/deduce_z.hpp>
+# include <common_macros/boost/preprocessor/arithmetic/dec.hpp>
+# include <common_macros/boost/preprocessor/array/elem.hpp>
+# include <common_macros/boost/preprocessor/array/size.hpp>
+# include <common_macros/boost/preprocessor/repetition/enum.hpp>
+# include <common_macros/boost/preprocessor/repetition/deduce_z.hpp>
 #
 # /* BOOST_PP_ARRAY_POP_BACK */
 #

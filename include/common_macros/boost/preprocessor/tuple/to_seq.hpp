@@ -13,11 +13,11 @@
 # ifndef BOOST_PREPROCESSOR_TUPLE_TO_SEQ_HPP
 # define BOOST_PREPROCESSOR_TUPLE_TO_SEQ_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/cat.hpp>
-# include <platform/oi10/platform/boost/preprocessor/config/config.hpp>
-# include <platform/oi10/platform/boost/preprocessor/facilities/overload.hpp>
-# include <platform/oi10/platform/boost/preprocessor/tuple/size.hpp>
-# include <platform/oi10/platform/boost/preprocessor/variadic/size.hpp>
+# include <common_macros/boost/preprocessor/cat.hpp>
+# include <common_macros/boost/preprocessor/config/config.hpp>
+# include <common_macros/boost/preprocessor/facilities/overload.hpp>
+# include <common_macros/boost/preprocessor/tuple/size.hpp>
+# include <common_macros/boost/preprocessor/variadic/size.hpp>
 #
 # /* BOOST_PP_TUPLE_TO_SEQ */
 #

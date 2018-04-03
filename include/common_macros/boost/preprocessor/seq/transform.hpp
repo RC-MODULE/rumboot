@@ -12,11 +12,11 @@
 # ifndef BOOST_PREPROCESSOR_SEQ_TRANSFORM_HPP
 # define BOOST_PREPROCESSOR_SEQ_TRANSFORM_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/config/config.hpp>
-# include <platform/oi10/platform/boost/preprocessor/seq/fold_left.hpp>
-# include <platform/oi10/platform/boost/preprocessor/seq/seq.hpp>
-# include <platform/oi10/platform/boost/preprocessor/tuple/elem.hpp>
-# include <platform/oi10/platform/boost/preprocessor/tuple/rem.hpp>
+# include <common_macros/boost/preprocessor/config/config.hpp>
+# include <common_macros/boost/preprocessor/seq/fold_left.hpp>
+# include <common_macros/boost/preprocessor/seq/seq.hpp>
+# include <common_macros/boost/preprocessor/tuple/elem.hpp>
+# include <common_macros/boost/preprocessor/tuple/rem.hpp>
 #
 # /* BOOST_PP_SEQ_TRANSFORM */
 #

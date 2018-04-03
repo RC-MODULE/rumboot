@@ -12,6 +12,6 @@
 # ifndef BOOST_PREPROCESSOR_MAX_HPP
 # define BOOST_PREPROCESSOR_MAX_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/selection/max.hpp>
+# include <common_macros/boost/preprocessor/selection/max.hpp>
 #
 # endif

@@ -12,14 +12,14 @@
 # ifndef BOOST_PREPROCESSOR_TUPLE_DETAIL_IS_SINGLE_RETURN_HPP
 # define BOOST_PREPROCESSOR_TUPLE_DETAIL_IS_SINGLE_RETURN_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/config/config.hpp>
+# include <common_macros/boost/preprocessor/config/config.hpp>
 #
 # /* BOOST_PP_TUPLE_IS_SINGLE_RETURN */
 #
 # if BOOST_PP_VARIADICS && BOOST_PP_VARIADICS_MSVC
-# include <platform/oi10/platform/boost/preprocessor/control/iif.hpp>
-# include <platform/oi10/platform/boost/preprocessor/facilities/is_1.hpp>
-# include <platform/oi10/platform/boost/preprocessor/tuple/size.hpp>
+# include <common_macros/boost/preprocessor/control/iif.hpp>
+# include <common_macros/boost/preprocessor/facilities/is_1.hpp>
+# include <common_macros/boost/preprocessor/tuple/size.hpp>
 # define BOOST_PP_TUPLE_IS_SINGLE_RETURN(sr,nsr,tuple)	\
 	BOOST_PP_IIF(BOOST_PP_IS_1(BOOST_PP_TUPLE_SIZE(tuple)),sr,nsr) \
 	/**/

@@ -12,10 +12,10 @@
 # ifndef BOOST_PREPROCESSOR_ARRAY_REVERSE_HPP
 # define BOOST_PREPROCESSOR_ARRAY_REVERSE_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/array/data.hpp>
-# include <platform/oi10/platform/boost/preprocessor/array/size.hpp>
-# include <platform/oi10/platform/boost/preprocessor/config/config.hpp>
-# include <platform/oi10/platform/boost/preprocessor/tuple/reverse.hpp>
+# include <common_macros/boost/preprocessor/array/data.hpp>
+# include <common_macros/boost/preprocessor/array/size.hpp>
+# include <common_macros/boost/preprocessor/config/config.hpp>
+# include <common_macros/boost/preprocessor/tuple/reverse.hpp>
 #
 # /* BOOST_PP_ARRAY_REVERSE */
 #

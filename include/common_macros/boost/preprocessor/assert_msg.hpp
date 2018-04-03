@@ -12,6 +12,6 @@
 # ifndef BOOST_PREPROCESSOR_ASSERT_MSG_HPP
 # define BOOST_PREPROCESSOR_ASSERT_MSG_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/debug/assert.hpp>
+# include <common_macros/boost/preprocessor/debug/assert.hpp>
 #
 # endif

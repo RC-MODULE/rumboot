@@ -14,12 +14,12 @@
 # ifndef BOOST_PREPROCESSOR_ARITHMETIC_MUL_HPP
 # define BOOST_PREPROCESSOR_ARITHMETIC_MUL_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/arithmetic/add.hpp>
-# include <platform/oi10/platform/boost/preprocessor/arithmetic/dec.hpp>
-# include <platform/oi10/platform/boost/preprocessor/config/config.hpp>
-# include <platform/oi10/platform/boost/preprocessor/control/while.hpp>
-# include <platform/oi10/platform/boost/preprocessor/tuple/elem.hpp>
-# include <platform/oi10/platform/boost/preprocessor/tuple/rem.hpp>
+# include <common_macros/boost/preprocessor/arithmetic/add.hpp>
+# include <common_macros/boost/preprocessor/arithmetic/dec.hpp>
+# include <common_macros/boost/preprocessor/config/config.hpp>
+# include <common_macros/boost/preprocessor/control/while.hpp>
+# include <common_macros/boost/preprocessor/tuple/elem.hpp>
+# include <common_macros/boost/preprocessor/tuple/rem.hpp>
 #
 # /* BOOST_PP_MUL */
 #

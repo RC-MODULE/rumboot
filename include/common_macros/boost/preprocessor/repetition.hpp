@@ -12,21 +12,21 @@
 # ifndef BOOST_PREPROCESSOR_REPETITION_HPP
 # define BOOST_PREPROCESSOR_REPETITION_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/repetition/deduce_r.hpp>
-# include <platform/oi10/platform/boost/preprocessor/repetition/deduce_z.hpp>
-# include <platform/oi10/platform/boost/preprocessor/repetition/enum.hpp>
-# include <platform/oi10/platform/boost/preprocessor/repetition/enum_binary_params.hpp>
-# include <platform/oi10/platform/boost/preprocessor/repetition/enum_params.hpp>
-# include <platform/oi10/platform/boost/preprocessor/repetition/enum_params_with_a_default.hpp>
-# include <platform/oi10/platform/boost/preprocessor/repetition/enum_params_with_defaults.hpp>
-# include <platform/oi10/platform/boost/preprocessor/repetition/enum_shifted.hpp>
-# include <platform/oi10/platform/boost/preprocessor/repetition/enum_shifted_binary_params.hpp>
-# include <platform/oi10/platform/boost/preprocessor/repetition/enum_shifted_params.hpp>
-# include <platform/oi10/platform/boost/preprocessor/repetition/enum_trailing.hpp>
-# include <platform/oi10/platform/boost/preprocessor/repetition/enum_trailing_binary_params.hpp>
-# include <platform/oi10/platform/boost/preprocessor/repetition/enum_trailing_params.hpp>
-# include <platform/oi10/platform/boost/preprocessor/repetition/for.hpp>
-# include <platform/oi10/platform/boost/preprocessor/repetition/repeat.hpp>
-# include <platform/oi10/platform/boost/preprocessor/repetition/repeat_from_to.hpp>
+# include <common_macros/boost/preprocessor/repetition/deduce_r.hpp>
+# include <common_macros/boost/preprocessor/repetition/deduce_z.hpp>
+# include <common_macros/boost/preprocessor/repetition/enum.hpp>
+# include <common_macros/boost/preprocessor/repetition/enum_binary_params.hpp>
+# include <common_macros/boost/preprocessor/repetition/enum_params.hpp>
+# include <common_macros/boost/preprocessor/repetition/enum_params_with_a_default.hpp>
+# include <common_macros/boost/preprocessor/repetition/enum_params_with_defaults.hpp>
+# include <common_macros/boost/preprocessor/repetition/enum_shifted.hpp>
+# include <common_macros/boost/preprocessor/repetition/enum_shifted_binary_params.hpp>
+# include <common_macros/boost/preprocessor/repetition/enum_shifted_params.hpp>
+# include <common_macros/boost/preprocessor/repetition/enum_trailing.hpp>
+# include <common_macros/boost/preprocessor/repetition/enum_trailing_binary_params.hpp>
+# include <common_macros/boost/preprocessor/repetition/enum_trailing_params.hpp>
+# include <common_macros/boost/preprocessor/repetition/for.hpp>
+# include <common_macros/boost/preprocessor/repetition/repeat.hpp>
+# include <common_macros/boost/preprocessor/repetition/repeat_from_to.hpp>
 #
 # endif

@@ -12,11 +12,11 @@
 # ifndef BOOST_PREPROCESSOR_FACILITIES_IS_EMPTY_OR_1_HPP
 # define BOOST_PREPROCESSOR_FACILITIES_IS_EMPTY_OR_1_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/control/iif.hpp>
-# include <platform/oi10/platform/boost/preprocessor/facilities/empty.hpp>
-# include <platform/oi10/platform/boost/preprocessor/facilities/identity.hpp>
-# include <platform/oi10/platform/boost/preprocessor/facilities/is_1.hpp>
-# include <platform/oi10/platform/boost/preprocessor/facilities/is_empty.hpp>
+# include <common_macros/boost/preprocessor/control/iif.hpp>
+# include <common_macros/boost/preprocessor/facilities/empty.hpp>
+# include <common_macros/boost/preprocessor/facilities/identity.hpp>
+# include <common_macros/boost/preprocessor/facilities/is_1.hpp>
+# include <common_macros/boost/preprocessor/facilities/is_empty.hpp>
 #
 # /* BOOST_PP_IS_EMPTY_OR_1 */
 #

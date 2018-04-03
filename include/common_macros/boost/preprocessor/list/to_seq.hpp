@@ -14,7 +14,7 @@
 # ifndef BOOST_PREPROCESSOR_LIST_TO_SEQ_HPP
 # define BOOST_PREPROCESSOR_LIST_TO_SEQ_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/list/for_each.hpp>
+# include <common_macros/boost/preprocessor/list/for_each.hpp>
 #
 # /* BOOST_PP_LIST_TO_SEQ */
 #

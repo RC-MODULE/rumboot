@@ -12,10 +12,10 @@
 # ifndef BOOST_PREPROCESSOR_SEQ_POP_BACK_HPP
 # define BOOST_PREPROCESSOR_SEQ_POP_BACK_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/arithmetic/dec.hpp>
-# include <platform/oi10/platform/boost/preprocessor/config/config.hpp>
-# include <platform/oi10/platform/boost/preprocessor/seq/first_n.hpp>
-# include <platform/oi10/platform/boost/preprocessor/seq/size.hpp>
+# include <common_macros/boost/preprocessor/arithmetic/dec.hpp>
+# include <common_macros/boost/preprocessor/config/config.hpp>
+# include <common_macros/boost/preprocessor/seq/first_n.hpp>
+# include <common_macros/boost/preprocessor/seq/size.hpp>
 #
 # /* BOOST_PP_SEQ_POP_BACK */
 #

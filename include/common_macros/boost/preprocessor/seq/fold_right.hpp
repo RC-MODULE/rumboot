@@ -12,11 +12,11 @@
 # ifndef BOOST_PREPROCESSOR_SEQ_FOLD_RIGHT_HPP
 # define BOOST_PREPROCESSOR_SEQ_FOLD_RIGHT_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/cat.hpp>
-# include <platform/oi10/platform/boost/preprocessor/detail/auto_rec.hpp>
-# include <platform/oi10/platform/boost/preprocessor/seq/fold_left.hpp>
-# include <platform/oi10/platform/boost/preprocessor/seq/reverse.hpp>
-# include <platform/oi10/platform/boost/preprocessor/seq/seq.hpp>
+# include <common_macros/boost/preprocessor/cat.hpp>
+# include <common_macros/boost/preprocessor/detail/auto_rec.hpp>
+# include <common_macros/boost/preprocessor/seq/fold_left.hpp>
+# include <common_macros/boost/preprocessor/seq/reverse.hpp>
+# include <common_macros/boost/preprocessor/seq/seq.hpp>
 #
 # /* BOOST_PP_SEQ_FOLD_RIGHT */
 #

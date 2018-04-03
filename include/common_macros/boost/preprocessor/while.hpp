@@ -12,6 +12,6 @@
 # ifndef BOOST_PREPROCESSOR_WHILE_HPP
 # define BOOST_PREPROCESSOR_WHILE_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/control/while.hpp>
+# include <common_macros/boost/preprocessor/control/while.hpp>
 #
 # endif

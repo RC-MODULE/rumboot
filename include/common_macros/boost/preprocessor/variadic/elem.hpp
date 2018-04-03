@@ -13,8 +13,8 @@
 # ifndef BOOST_PREPROCESSOR_VARIADIC_ELEM_HPP
 # define BOOST_PREPROCESSOR_VARIADIC_ELEM_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/cat.hpp>
-# include <platform/oi10/platform/boost/preprocessor/config/config.hpp>
+# include <common_macros/boost/preprocessor/cat.hpp>
+# include <common_macros/boost/preprocessor/config/config.hpp>
 #
 # /* BOOST_PP_VARIADIC_ELEM */
 #

@@ -12,6 +12,6 @@
 # ifndef BOOST_PREPROCESSOR_LIMITS_HPP
 # define BOOST_PREPROCESSOR_LIMITS_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/config/limits.hpp>
+# include <common_macros/boost/preprocessor/config/limits.hpp>
 #
 # endif

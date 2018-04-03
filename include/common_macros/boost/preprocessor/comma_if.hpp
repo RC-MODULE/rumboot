@@ -12,6 +12,6 @@
 # ifndef BOOST_PREPROCESSOR_COMMA_IF_HPP
 # define BOOST_PREPROCESSOR_COMMA_IF_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/punctuation/comma_if.hpp>
+# include <common_macros/boost/preprocessor/punctuation/comma_if.hpp>
 #
 # endif

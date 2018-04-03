@@ -12,18 +12,18 @@
 # ifndef BOOST_PREPROCESSOR_SLOT_SLOT_HPP
 # define BOOST_PREPROCESSOR_SLOT_SLOT_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/cat.hpp>
-# include <platform/oi10/platform/boost/preprocessor/slot/detail/def.hpp>
+# include <common_macros/boost/preprocessor/cat.hpp>
+# include <common_macros/boost/preprocessor/slot/detail/def.hpp>
 #
 # /* BOOST_PP_ASSIGN_SLOT */
 #
 # define BOOST_PP_ASSIGN_SLOT(i) BOOST_PP_CAT(BOOST_PP_ASSIGN_SLOT_, i)
 #
-# define BOOST_PP_ASSIGN_SLOT_1 <platform/oi10/platform/boost/preprocessor/slot/detail/slot1.hpp>
-# define BOOST_PP_ASSIGN_SLOT_2 <platform/oi10/platform/boost/preprocessor/slot/detail/slot2.hpp>
-# define BOOST_PP_ASSIGN_SLOT_3 <platform/oi10/platform/boost/preprocessor/slot/detail/slot3.hpp>
-# define BOOST_PP_ASSIGN_SLOT_4 <platform/oi10/platform/boost/preprocessor/slot/detail/slot4.hpp>
-# define BOOST_PP_ASSIGN_SLOT_5 <platform/oi10/platform/boost/preprocessor/slot/detail/slot5.hpp>
+# define BOOST_PP_ASSIGN_SLOT_1 <common_macros/boost/preprocessor/slot/detail/slot1.hpp>
+# define BOOST_PP_ASSIGN_SLOT_2 <common_macros/boost/preprocessor/slot/detail/slot2.hpp>
+# define BOOST_PP_ASSIGN_SLOT_3 <common_macros/boost/preprocessor/slot/detail/slot3.hpp>
+# define BOOST_PP_ASSIGN_SLOT_4 <common_macros/boost/preprocessor/slot/detail/slot4.hpp>
+# define BOOST_PP_ASSIGN_SLOT_5 <common_macros/boost/preprocessor/slot/detail/slot5.hpp>
 #
 # /* BOOST_PP_SLOT */
 #

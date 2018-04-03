@@ -13,20 +13,20 @@
 # ifndef BOOST_PREPROCESSOR_ARRAY_HPP
 # define BOOST_PREPROCESSOR_ARRAY_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/array/data.hpp>
-# include <platform/oi10/platform/boost/preprocessor/array/elem.hpp>
-# include <platform/oi10/platform/boost/preprocessor/array/enum.hpp>
-# include <platform/oi10/platform/boost/preprocessor/array/insert.hpp>
-# include <platform/oi10/platform/boost/preprocessor/array/pop_back.hpp>
-# include <platform/oi10/platform/boost/preprocessor/array/pop_front.hpp>
-# include <platform/oi10/platform/boost/preprocessor/array/push_back.hpp>
-# include <platform/oi10/platform/boost/preprocessor/array/push_front.hpp>
-# include <platform/oi10/platform/boost/preprocessor/array/remove.hpp>
-# include <platform/oi10/platform/boost/preprocessor/array/replace.hpp>
-# include <platform/oi10/platform/boost/preprocessor/array/reverse.hpp>
-# include <platform/oi10/platform/boost/preprocessor/array/size.hpp>
-# include <platform/oi10/platform/boost/preprocessor/array/to_list.hpp>
-# include <platform/oi10/platform/boost/preprocessor/array/to_seq.hpp>
-# include <platform/oi10/platform/boost/preprocessor/array/to_tuple.hpp>
+# include <common_macros/boost/preprocessor/array/data.hpp>
+# include <common_macros/boost/preprocessor/array/elem.hpp>
+# include <common_macros/boost/preprocessor/array/enum.hpp>
+# include <common_macros/boost/preprocessor/array/insert.hpp>
+# include <common_macros/boost/preprocessor/array/pop_back.hpp>
+# include <common_macros/boost/preprocessor/array/pop_front.hpp>
+# include <common_macros/boost/preprocessor/array/push_back.hpp>
+# include <common_macros/boost/preprocessor/array/push_front.hpp>
+# include <common_macros/boost/preprocessor/array/remove.hpp>
+# include <common_macros/boost/preprocessor/array/replace.hpp>
+# include <common_macros/boost/preprocessor/array/reverse.hpp>
+# include <common_macros/boost/preprocessor/array/size.hpp>
+# include <common_macros/boost/preprocessor/array/to_list.hpp>
+# include <common_macros/boost/preprocessor/array/to_seq.hpp>
+# include <common_macros/boost/preprocessor/array/to_tuple.hpp>
 #
 # endif

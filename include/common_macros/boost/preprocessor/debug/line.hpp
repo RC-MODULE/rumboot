@@ -12,10 +12,10 @@
 # ifndef BOOST_PREPROCESSOR_DEBUG_LINE_HPP
 # define BOOST_PREPROCESSOR_DEBUG_LINE_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/cat.hpp>
-# include <platform/oi10/platform/boost/preprocessor/config/config.hpp>
-# include <platform/oi10/platform/boost/preprocessor/iteration/iterate.hpp>
-# include <platform/oi10/platform/boost/preprocessor/stringize.hpp>
+# include <common_macros/boost/preprocessor/cat.hpp>
+# include <common_macros/boost/preprocessor/config/config.hpp>
+# include <common_macros/boost/preprocessor/iteration/iterate.hpp>
+# include <common_macros/boost/preprocessor/stringize.hpp>
 #
 # /* BOOST_PP_LINE */
 #

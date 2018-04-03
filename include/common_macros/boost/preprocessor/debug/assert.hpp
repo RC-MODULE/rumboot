@@ -14,11 +14,11 @@
 # ifndef BOOST_PREPROCESSOR_DEBUG_ASSERT_HPP
 # define BOOST_PREPROCESSOR_DEBUG_ASSERT_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/config/config.hpp>
-# include <platform/oi10/platform/boost/preprocessor/control/expr_iif.hpp>
-# include <platform/oi10/platform/boost/preprocessor/control/iif.hpp>
-# include <platform/oi10/platform/boost/preprocessor/logical/not.hpp>
-# include <platform/oi10/platform/boost/preprocessor/tuple/eat.hpp>
+# include <common_macros/boost/preprocessor/config/config.hpp>
+# include <common_macros/boost/preprocessor/control/expr_iif.hpp>
+# include <common_macros/boost/preprocessor/control/iif.hpp>
+# include <common_macros/boost/preprocessor/logical/not.hpp>
+# include <common_macros/boost/preprocessor/tuple/eat.hpp>
 #
 # /* BOOST_PP_ASSERT */
 #

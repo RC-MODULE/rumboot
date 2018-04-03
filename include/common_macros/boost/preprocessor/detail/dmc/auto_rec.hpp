@@ -12,7 +12,7 @@
 # ifndef BOOST_PREPROCESSOR_DETAIL_AUTO_REC_HPP
 # define BOOST_PREPROCESSOR_DETAIL_AUTO_REC_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/control/iif.hpp>
+# include <common_macros/boost/preprocessor/control/iif.hpp>
 #
 # /* BOOST_PP_AUTO_REC */
 #

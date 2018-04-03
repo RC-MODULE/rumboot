@@ -12,11 +12,11 @@
 # ifndef BOOST_PREPROCESSOR_SEQ_REST_N_HPP
 # define BOOST_PREPROCESSOR_SEQ_REST_N_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/arithmetic/inc.hpp>
-# include <platform/oi10/platform/boost/preprocessor/config/config.hpp>
-# include <platform/oi10/platform/boost/preprocessor/facilities/identity.hpp>
-# include <platform/oi10/platform/boost/preprocessor/seq/detail/split.hpp>
-# include <platform/oi10/platform/boost/preprocessor/tuple/elem.hpp>
+# include <common_macros/boost/preprocessor/arithmetic/inc.hpp>
+# include <common_macros/boost/preprocessor/config/config.hpp>
+# include <common_macros/boost/preprocessor/facilities/identity.hpp>
+# include <common_macros/boost/preprocessor/seq/detail/split.hpp>
+# include <common_macros/boost/preprocessor/tuple/elem.hpp>
 #
 # /* BOOST_PP_SEQ_REST_N */
 #

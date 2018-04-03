@@ -14,8 +14,8 @@
 # ifndef BOOST_PREPROCESSOR_REPETITION_DETAIL_EDG_FOR_HPP
 # define BOOST_PREPROCESSOR_REPETITION_DETAIL_EDG_FOR_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/control/if.hpp>
-# include <platform/oi10/platform/boost/preprocessor/tuple/eat.hpp>
+# include <common_macros/boost/preprocessor/control/if.hpp>
+# include <common_macros/boost/preprocessor/tuple/eat.hpp>
 #
 # define BOOST_PP_FOR_1(s, p, o, m) BOOST_PP_FOR_1_I(s, p, o, m)
 # define BOOST_PP_FOR_2(s, p, o, m) BOOST_PP_FOR_2_I(s, p, o, m)

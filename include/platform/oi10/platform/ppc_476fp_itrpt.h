@@ -5,8 +5,8 @@
 #include <platform/oi10/platform/ppc_476fp_config.h>
 #include <common_macros/common_macros.h>
 #include <arch/ppc/ibm_bit_ordering_macros.h>
-#include <platform/oi10/platform/boost/preprocessor/tuple/elem.hpp>
-#include <platform/oi10/platform/boost/preprocessor/stringize.hpp>
+#include <common_macros/boost/preprocessor/tuple/elem.hpp>
+#include <common_macros/boost/preprocessor/stringize.hpp>
 
 
 #define ITRPT_N             16

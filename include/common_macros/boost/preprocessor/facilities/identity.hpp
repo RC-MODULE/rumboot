@@ -14,7 +14,7 @@
 # ifndef BOOST_PREPROCESSOR_FACILITIES_IDENTITY_HPP
 # define BOOST_PREPROCESSOR_FACILITIES_IDENTITY_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/facilities/empty.hpp>
+# include <common_macros/boost/preprocessor/facilities/empty.hpp>
 #
 # /* BOOST_PP_IDENTITY */
 #

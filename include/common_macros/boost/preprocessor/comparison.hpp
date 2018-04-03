@@ -14,11 +14,11 @@
 # ifndef BOOST_PREPROCESSOR_COMPARISON_HPP
 # define BOOST_PREPROCESSOR_COMPARISON_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/comparison/equal.hpp>
-# include <platform/oi10/platform/boost/preprocessor/comparison/greater.hpp>
-# include <platform/oi10/platform/boost/preprocessor/comparison/greater_equal.hpp>
-# include <platform/oi10/platform/boost/preprocessor/comparison/less.hpp>
-# include <platform/oi10/platform/boost/preprocessor/comparison/less_equal.hpp>
-# include <platform/oi10/platform/boost/preprocessor/comparison/not_equal.hpp>
+# include <common_macros/boost/preprocessor/comparison/equal.hpp>
+# include <common_macros/boost/preprocessor/comparison/greater.hpp>
+# include <common_macros/boost/preprocessor/comparison/greater_equal.hpp>
+# include <common_macros/boost/preprocessor/comparison/less.hpp>
+# include <common_macros/boost/preprocessor/comparison/less_equal.hpp>
+# include <common_macros/boost/preprocessor/comparison/not_equal.hpp>
 #
 # endif

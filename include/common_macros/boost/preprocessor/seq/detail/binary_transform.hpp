@@ -12,11 +12,11 @@
 # ifndef BOOST_PREPROCESSOR_SEQ_DETAIL_BINARY_TRANSFORM_HPP
 # define BOOST_PREPROCESSOR_SEQ_DETAIL_BINARY_TRANSFORM_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/cat.hpp>
-# include <platform/oi10/platform/boost/preprocessor/config/config.hpp>
-# include <platform/oi10/platform/boost/preprocessor/tuple/eat.hpp>
-# include <platform/oi10/platform/boost/preprocessor/tuple/rem.hpp>
-# include <platform/oi10/platform/boost/preprocessor/variadic/detail/is_single_return.hpp>
+# include <common_macros/boost/preprocessor/cat.hpp>
+# include <common_macros/boost/preprocessor/config/config.hpp>
+# include <common_macros/boost/preprocessor/tuple/eat.hpp>
+# include <common_macros/boost/preprocessor/tuple/rem.hpp>
+# include <common_macros/boost/preprocessor/variadic/detail/is_single_return.hpp>
 #
 # /* BOOST_PP_SEQ_BINARY_TRANSFORM */
 #

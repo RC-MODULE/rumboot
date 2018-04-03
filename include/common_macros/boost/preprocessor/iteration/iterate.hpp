@@ -12,13 +12,13 @@
 # ifndef BOOST_PREPROCESSOR_ITERATION_ITERATE_HPP
 # define BOOST_PREPROCESSOR_ITERATION_ITERATE_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/arithmetic/dec.hpp>
-# include <platform/oi10/platform/boost/preprocessor/arithmetic/inc.hpp>
-# include <platform/oi10/platform/boost/preprocessor/array/elem.hpp>
-# include <platform/oi10/platform/boost/preprocessor/array/size.hpp>
-# include <platform/oi10/platform/boost/preprocessor/cat.hpp>
-# include <platform/oi10/platform/boost/preprocessor/slot/slot.hpp>
-# include <platform/oi10/platform/boost/preprocessor/tuple/elem.hpp>
+# include <common_macros/boost/preprocessor/arithmetic/dec.hpp>
+# include <common_macros/boost/preprocessor/arithmetic/inc.hpp>
+# include <common_macros/boost/preprocessor/array/elem.hpp>
+# include <common_macros/boost/preprocessor/array/size.hpp>
+# include <common_macros/boost/preprocessor/cat.hpp>
+# include <common_macros/boost/preprocessor/slot/slot.hpp>
+# include <common_macros/boost/preprocessor/tuple/elem.hpp>
 #
 # /* BOOST_PP_ITERATION_DEPTH */
 #
@@ -73,10 +73,10 @@
 #
 # define BOOST_PP_ITERATE() BOOST_PP_CAT(BOOST_PP_ITERATE_, BOOST_PP_INC(BOOST_PP_ITERATION_DEPTH()))
 #
-# define BOOST_PP_ITERATE_1 <platform/oi10/platform/boost/preprocessor/iteration/detail/iter/forward1.hpp>
-# define BOOST_PP_ITERATE_2 <platform/oi10/platform/boost/preprocessor/iteration/detail/iter/forward2.hpp>
-# define BOOST_PP_ITERATE_3 <platform/oi10/platform/boost/preprocessor/iteration/detail/iter/forward3.hpp>
-# define BOOST_PP_ITERATE_4 <platform/oi10/platform/boost/preprocessor/iteration/detail/iter/forward4.hpp>
-# define BOOST_PP_ITERATE_5 <platform/oi10/platform/boost/preprocessor/iteration/detail/iter/forward5.hpp>
+# define BOOST_PP_ITERATE_1 <common_macros/boost/preprocessor/iteration/detail/iter/forward1.hpp>
+# define BOOST_PP_ITERATE_2 <common_macros/boost/preprocessor/iteration/detail/iter/forward2.hpp>
+# define BOOST_PP_ITERATE_3 <common_macros/boost/preprocessor/iteration/detail/iter/forward3.hpp>
+# define BOOST_PP_ITERATE_4 <common_macros/boost/preprocessor/iteration/detail/iter/forward4.hpp>
+# define BOOST_PP_ITERATE_5 <common_macros/boost/preprocessor/iteration/detail/iter/forward5.hpp>
 #
 # endif

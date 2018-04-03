@@ -12,13 +12,13 @@
 # ifndef BOOST_PREPROCESSOR_SEQ_FOLD_LEFT_HPP
 # define BOOST_PREPROCESSOR_SEQ_FOLD_LEFT_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/arithmetic/dec.hpp>
-# include <platform/oi10/platform/boost/preprocessor/cat.hpp>
-# include <platform/oi10/platform/boost/preprocessor/control/if.hpp>
-# include <platform/oi10/platform/boost/preprocessor/debug/error.hpp>
-# include <platform/oi10/platform/boost/preprocessor/detail/auto_rec.hpp>
-# include <platform/oi10/platform/boost/preprocessor/seq/seq.hpp>
-# include <platform/oi10/platform/boost/preprocessor/seq/size.hpp>
+# include <common_macros/boost/preprocessor/arithmetic/dec.hpp>
+# include <common_macros/boost/preprocessor/cat.hpp>
+# include <common_macros/boost/preprocessor/control/if.hpp>
+# include <common_macros/boost/preprocessor/debug/error.hpp>
+# include <common_macros/boost/preprocessor/detail/auto_rec.hpp>
+# include <common_macros/boost/preprocessor/seq/seq.hpp>
+# include <common_macros/boost/preprocessor/seq/size.hpp>
 #
 # /* BOOST_PP_SEQ_FOLD_LEFT */
 #

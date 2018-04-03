@@ -12,6 +12,6 @@
 # ifndef BOOST_PREPROCESSOR_IF_HPP
 # define BOOST_PREPROCESSOR_IF_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/control/if.hpp>
+# include <common_macros/boost/preprocessor/control/if.hpp>
 #
 # endif

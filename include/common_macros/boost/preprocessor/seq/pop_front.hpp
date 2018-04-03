@@ -12,8 +12,8 @@
 # ifndef BOOST_PREPROCESSOR_SEQ_POP_FRONT_HPP
 # define BOOST_PREPROCESSOR_SEQ_POP_FRONT_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/config/config.hpp>
-# include <platform/oi10/platform/boost/preprocessor/seq/seq.hpp>
+# include <common_macros/boost/preprocessor/config/config.hpp>
+# include <common_macros/boost/preprocessor/seq/seq.hpp>
 #
 # /* BOOST_PP_SEQ_POP_FRONT */
 #

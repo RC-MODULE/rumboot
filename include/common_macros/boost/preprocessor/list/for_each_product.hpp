@@ -14,15 +14,15 @@
 # ifndef BOOST_PREPROCESSOR_LIST_FOR_EACH_PRODUCT_HPP
 # define BOOST_PREPROCESSOR_LIST_FOR_EACH_PRODUCT_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/config/config.hpp>
-# include <platform/oi10/platform/boost/preprocessor/control/if.hpp>
-# include <platform/oi10/platform/boost/preprocessor/list/adt.hpp>
-# include <platform/oi10/platform/boost/preprocessor/list/to_tuple.hpp>
-# include <platform/oi10/platform/boost/preprocessor/repetition/for.hpp>
-# include <platform/oi10/platform/boost/preprocessor/tuple/elem.hpp>
-# include <platform/oi10/platform/boost/preprocessor/tuple/to_list.hpp>
-# include <platform/oi10/platform/boost/preprocessor/tuple/rem.hpp>
-# include <platform/oi10/platform/boost/preprocessor/tuple/reverse.hpp>
+# include <common_macros/boost/preprocessor/config/config.hpp>
+# include <common_macros/boost/preprocessor/control/if.hpp>
+# include <common_macros/boost/preprocessor/list/adt.hpp>
+# include <common_macros/boost/preprocessor/list/to_tuple.hpp>
+# include <common_macros/boost/preprocessor/repetition/for.hpp>
+# include <common_macros/boost/preprocessor/tuple/elem.hpp>
+# include <common_macros/boost/preprocessor/tuple/to_list.hpp>
+# include <common_macros/boost/preprocessor/tuple/rem.hpp>
+# include <common_macros/boost/preprocessor/tuple/reverse.hpp>
 #
 # /* BOOST_PP_LIST_FOR_EACH_PRODUCT */
 #

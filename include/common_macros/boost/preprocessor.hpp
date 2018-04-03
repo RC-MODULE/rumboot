@@ -14,6 +14,6 @@
 # ifndef BOOST_PREPROCESSOR_HPP
 # define BOOST_PREPROCESSOR_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/library.hpp>
+# include <common_macros/boost/preprocessor/library.hpp>
 #
 # endif

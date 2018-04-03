@@ -14,10 +14,10 @@
 # ifndef BOOST_PREPROCESSOR_PUNCTUATION_COMMA_IF_HPP
 # define BOOST_PREPROCESSOR_PUNCTUATION_COMMA_IF_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/config/config.hpp>
-# include <platform/oi10/platform/boost/preprocessor/control/if.hpp>
-# include <platform/oi10/platform/boost/preprocessor/facilities/empty.hpp>
-# include <platform/oi10/platform/boost/preprocessor/punctuation/comma.hpp>
+# include <common_macros/boost/preprocessor/config/config.hpp>
+# include <common_macros/boost/preprocessor/control/if.hpp>
+# include <common_macros/boost/preprocessor/facilities/empty.hpp>
+# include <common_macros/boost/preprocessor/punctuation/comma.hpp>
 #
 # /* BOOST_PP_COMMA_IF */
 #

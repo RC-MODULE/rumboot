@@ -12,6 +12,6 @@
 # ifndef BOOST_PREPROCESSOR_ENUM_PARAMS_WITH_DEFAULTS_HPP
 # define BOOST_PREPROCESSOR_ENUM_PARAMS_WITH_DEFAULTS_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/repetition/enum_params_with_defaults.hpp>
+# include <common_macros/boost/preprocessor/repetition/enum_params_with_defaults.hpp>
 #
 # endif

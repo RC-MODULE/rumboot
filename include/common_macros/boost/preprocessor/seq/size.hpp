@@ -12,8 +12,8 @@
 # ifndef BOOST_PREPROCESSOR_SEQ_SIZE_HPP
 # define BOOST_PREPROCESSOR_SEQ_SIZE_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/cat.hpp>
-# include <platform/oi10/platform/boost/preprocessor/config/config.hpp>
+# include <common_macros/boost/preprocessor/cat.hpp>
+# include <common_macros/boost/preprocessor/config/config.hpp>
 #
 # if BOOST_PP_CONFIG_FLAGS() & BOOST_PP_CONFIG_MWCC()
 #    define BOOST_PP_SEQ_SIZE(seq) BOOST_PP_SEQ_SIZE_I((seq))

@@ -12,10 +12,10 @@
 # ifndef BOOST_PREPROCESSOR_FACILITIES_APPLY_HPP
 # define BOOST_PREPROCESSOR_FACILITIES_APPLY_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/config/config.hpp>
-# include <platform/oi10/platform/boost/preprocessor/control/expr_iif.hpp>
-# include <platform/oi10/platform/boost/preprocessor/detail/is_unary.hpp>
-# include <platform/oi10/platform/boost/preprocessor/tuple/rem.hpp>
+# include <common_macros/boost/preprocessor/config/config.hpp>
+# include <common_macros/boost/preprocessor/control/expr_iif.hpp>
+# include <common_macros/boost/preprocessor/detail/is_unary.hpp>
+# include <common_macros/boost/preprocessor/tuple/rem.hpp>
 #
 # /* BOOST_PP_APPLY */
 #

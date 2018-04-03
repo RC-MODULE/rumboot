@@ -12,7 +12,7 @@
 # ifndef BOOST_PREPROCESSOR_SELECTION_HPP
 # define BOOST_PREPROCESSOR_SELECTION_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/selection/max.hpp>
-# include <platform/oi10/platform/boost/preprocessor/selection/min.hpp>
+# include <common_macros/boost/preprocessor/selection/max.hpp>
+# include <common_macros/boost/preprocessor/selection/min.hpp>
 #
 # endif

@@ -14,24 +14,24 @@
 # ifndef BOOST_PREPROCESSOR_LIST_HPP
 # define BOOST_PREPROCESSOR_LIST_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/list/adt.hpp>
-# include <platform/oi10/platform/boost/preprocessor/list/append.hpp>
-# include <platform/oi10/platform/boost/preprocessor/list/at.hpp>
-# include <platform/oi10/platform/boost/preprocessor/list/cat.hpp>
-# include <platform/oi10/platform/boost/preprocessor/list/enum.hpp>
-# include <platform/oi10/platform/boost/preprocessor/list/filter.hpp>
-# include <platform/oi10/platform/boost/preprocessor/list/first_n.hpp>
-# include <platform/oi10/platform/boost/preprocessor/list/fold_left.hpp>
-# include <platform/oi10/platform/boost/preprocessor/list/fold_right.hpp>
-# include <platform/oi10/platform/boost/preprocessor/list/for_each.hpp>
-# include <platform/oi10/platform/boost/preprocessor/list/for_each_i.hpp>
-# include <platform/oi10/platform/boost/preprocessor/list/for_each_product.hpp>
-# include <platform/oi10/platform/boost/preprocessor/list/rest_n.hpp>
-# include <platform/oi10/platform/boost/preprocessor/list/reverse.hpp>
-# include <platform/oi10/platform/boost/preprocessor/list/size.hpp>
-# include <platform/oi10/platform/boost/preprocessor/list/to_array.hpp>
-# include <platform/oi10/platform/boost/preprocessor/list/to_seq.hpp>
-# include <platform/oi10/platform/boost/preprocessor/list/to_tuple.hpp>
-# include <platform/oi10/platform/boost/preprocessor/list/transform.hpp>
+# include <common_macros/boost/preprocessor/list/adt.hpp>
+# include <common_macros/boost/preprocessor/list/append.hpp>
+# include <common_macros/boost/preprocessor/list/at.hpp>
+# include <common_macros/boost/preprocessor/list/cat.hpp>
+# include <common_macros/boost/preprocessor/list/enum.hpp>
+# include <common_macros/boost/preprocessor/list/filter.hpp>
+# include <common_macros/boost/preprocessor/list/first_n.hpp>
+# include <common_macros/boost/preprocessor/list/fold_left.hpp>
+# include <common_macros/boost/preprocessor/list/fold_right.hpp>
+# include <common_macros/boost/preprocessor/list/for_each.hpp>
+# include <common_macros/boost/preprocessor/list/for_each_i.hpp>
+# include <common_macros/boost/preprocessor/list/for_each_product.hpp>
+# include <common_macros/boost/preprocessor/list/rest_n.hpp>
+# include <common_macros/boost/preprocessor/list/reverse.hpp>
+# include <common_macros/boost/preprocessor/list/size.hpp>
+# include <common_macros/boost/preprocessor/list/to_array.hpp>
+# include <common_macros/boost/preprocessor/list/to_seq.hpp>
+# include <common_macros/boost/preprocessor/list/to_tuple.hpp>
+# include <common_macros/boost/preprocessor/list/transform.hpp>
 #
 # endif

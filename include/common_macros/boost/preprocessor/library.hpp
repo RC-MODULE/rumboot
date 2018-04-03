@@ -13,24 +13,24 @@
 # ifndef BOOST_PREPROCESSOR_LIBRARY_HPP
 # define BOOST_PREPROCESSOR_LIBRARY_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/arithmetic.hpp>
-# include <platform/oi10/platform/boost/preprocessor/array.hpp>
-# include <platform/oi10/platform/boost/preprocessor/cat.hpp>
-# include <platform/oi10/platform/boost/preprocessor/comparison.hpp>
-# include <platform/oi10/platform/boost/preprocessor/config/limits.hpp>
-# include <platform/oi10/platform/boost/preprocessor/control.hpp>
-# include <platform/oi10/platform/boost/preprocessor/debug.hpp>
-# include <platform/oi10/platform/boost/preprocessor/facilities.hpp>
-# include <platform/oi10/platform/boost/preprocessor/iteration.hpp>
-# include <platform/oi10/platform/boost/preprocessor/list.hpp>
-# include <platform/oi10/platform/boost/preprocessor/logical.hpp>
-# include <platform/oi10/platform/boost/preprocessor/punctuation.hpp>
-# include <platform/oi10/platform/boost/preprocessor/repetition.hpp>
-# include <platform/oi10/platform/boost/preprocessor/selection.hpp>
-# include <platform/oi10/platform/boost/preprocessor/seq.hpp>
-# include <platform/oi10/platform/boost/preprocessor/slot.hpp>
-# include <platform/oi10/platform/boost/preprocessor/stringize.hpp>
-# include <platform/oi10/platform/boost/preprocessor/tuple.hpp>
-# include <platform/oi10/platform/boost/preprocessor/variadic.hpp>
+# include <common_macros/boost/preprocessor/arithmetic.hpp>
+# include <common_macros/boost/preprocessor/array.hpp>
+# include <common_macros/boost/preprocessor/cat.hpp>
+# include <common_macros/boost/preprocessor/comparison.hpp>
+# include <common_macros/boost/preprocessor/config/limits.hpp>
+# include <common_macros/boost/preprocessor/control.hpp>
+# include <common_macros/boost/preprocessor/debug.hpp>
+# include <common_macros/boost/preprocessor/facilities.hpp>
+# include <common_macros/boost/preprocessor/iteration.hpp>
+# include <common_macros/boost/preprocessor/list.hpp>
+# include <common_macros/boost/preprocessor/logical.hpp>
+# include <common_macros/boost/preprocessor/punctuation.hpp>
+# include <common_macros/boost/preprocessor/repetition.hpp>
+# include <common_macros/boost/preprocessor/selection.hpp>
+# include <common_macros/boost/preprocessor/seq.hpp>
+# include <common_macros/boost/preprocessor/slot.hpp>
+# include <common_macros/boost/preprocessor/stringize.hpp>
+# include <common_macros/boost/preprocessor/tuple.hpp>
+# include <common_macros/boost/preprocessor/variadic.hpp>
 #
 # endif

@@ -14,10 +14,10 @@
 # ifndef BOOST_PREPROCESSOR_LIST_DETAIL_FOLD_LEFT_HPP
 # define BOOST_PREPROCESSOR_LIST_DETAIL_FOLD_LEFT_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/control/expr_iif.hpp>
-# include <platform/oi10/platform/boost/preprocessor/control/iif.hpp>
-# include <platform/oi10/platform/boost/preprocessor/list/adt.hpp>
-# include <platform/oi10/platform/boost/preprocessor/tuple/elem.hpp>
+# include <common_macros/boost/preprocessor/control/expr_iif.hpp>
+# include <common_macros/boost/preprocessor/control/iif.hpp>
+# include <common_macros/boost/preprocessor/list/adt.hpp>
+# include <common_macros/boost/preprocessor/tuple/elem.hpp>
 #
 # define BOOST_PP_LIST_FOLD_LEFT_1(o, s, l) BOOST_PP_IIF(BOOST_PP_LIST_IS_CONS(l), BOOST_PP_LIST_FOLD_LEFT_2, BOOST_PP_TUPLE_ELEM_3_1)(o, BOOST_PP_IIF(BOOST_PP_LIST_IS_CONS(l), o, BOOST_PP_TUPLE_ELEM_3_1)(2, s, BOOST_PP_LIST_FIRST(l)), BOOST_PP_LIST_REST(l))
 # define BOOST_PP_LIST_FOLD_LEFT_2(o, s, l) BOOST_PP_IIF(BOOST_PP_LIST_IS_CONS(l), BOOST_PP_LIST_FOLD_LEFT_3, BOOST_PP_TUPLE_ELEM_3_1)(o, BOOST_PP_IIF(BOOST_PP_LIST_IS_CONS(l), o, BOOST_PP_TUPLE_ELEM_3_1)(3, s, BOOST_PP_LIST_FIRST(l)), BOOST_PP_LIST_REST(l))

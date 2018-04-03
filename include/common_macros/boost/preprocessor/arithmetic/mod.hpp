@@ -14,9 +14,9 @@
 # ifndef BOOST_PREPROCESSOR_ARITHMETIC_MOD_HPP
 # define BOOST_PREPROCESSOR_ARITHMETIC_MOD_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/arithmetic/detail/div_base.hpp>
-# include <platform/oi10/platform/boost/preprocessor/config/config.hpp>
-# include <platform/oi10/platform/boost/preprocessor/tuple/elem.hpp>
+# include <common_macros/boost/preprocessor/arithmetic/detail/div_base.hpp>
+# include <common_macros/boost/preprocessor/config/config.hpp>
+# include <common_macros/boost/preprocessor/tuple/elem.hpp>
 #
 # /* BOOST_PP_MOD */
 #

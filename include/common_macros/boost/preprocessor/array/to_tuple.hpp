@@ -13,9 +13,9 @@
 # ifndef BOOST_PREPROCESSOR_ARRAY_TO_TUPLE_HPP
 # define BOOST_PREPROCESSOR_ARRAY_TO_TUPLE_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/array/data.hpp>
-# include <platform/oi10/platform/boost/preprocessor/array/size.hpp>
-# include <platform/oi10/platform/boost/preprocessor/control/if.hpp>
+# include <common_macros/boost/preprocessor/array/data.hpp>
+# include <common_macros/boost/preprocessor/array/size.hpp>
+# include <common_macros/boost/preprocessor/control/if.hpp>
 #
 # /* BOOST_PP_ARRAY_TO_TUPLE */
 #

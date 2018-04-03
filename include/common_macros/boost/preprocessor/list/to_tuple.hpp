@@ -14,9 +14,9 @@
 # ifndef BOOST_PREPROCESSOR_LIST_TO_TUPLE_HPP
 # define BOOST_PREPROCESSOR_LIST_TO_TUPLE_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/config/config.hpp>
-# include <platform/oi10/platform/boost/preprocessor/list/enum.hpp>
-# include <platform/oi10/platform/boost/preprocessor/control/iif.hpp>
+# include <common_macros/boost/preprocessor/config/config.hpp>
+# include <common_macros/boost/preprocessor/list/enum.hpp>
+# include <common_macros/boost/preprocessor/control/iif.hpp>
 #
 # /* BOOST_PP_LIST_TO_TUPLE */
 #

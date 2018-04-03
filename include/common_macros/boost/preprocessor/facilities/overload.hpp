@@ -13,8 +13,8 @@
 # ifndef BOOST_PREPROCESSOR_FACILITIES_OVERLOAD_HPP
 # define BOOST_PREPROCESSOR_FACILITIES_OVERLOAD_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/cat.hpp>
-# include <platform/oi10/platform/boost/preprocessor/variadic/size.hpp>
+# include <common_macros/boost/preprocessor/cat.hpp>
+# include <common_macros/boost/preprocessor/variadic/size.hpp>
 #
 # /* BOOST_PP_OVERLOAD */
 #

@@ -14,16 +14,16 @@
 # ifndef BOOST_PREPROCESSOR_REPETITION_ENUM_SHIFTED_HPP
 # define BOOST_PREPROCESSOR_REPETITION_ENUM_SHIFTED_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/cat.hpp>
-# include <platform/oi10/platform/boost/preprocessor/arithmetic/dec.hpp>
-# include <platform/oi10/platform/boost/preprocessor/arithmetic/inc.hpp>
-# include <platform/oi10/platform/boost/preprocessor/config/config.hpp>
-# include <platform/oi10/platform/boost/preprocessor/debug/error.hpp>
-# include <platform/oi10/platform/boost/preprocessor/detail/auto_rec.hpp>
-# include <platform/oi10/platform/boost/preprocessor/punctuation/comma_if.hpp>
-# include <platform/oi10/platform/boost/preprocessor/repetition/repeat.hpp>
-# include <platform/oi10/platform/boost/preprocessor/tuple/elem.hpp>
-# include <platform/oi10/platform/boost/preprocessor/tuple/rem.hpp>
+# include <common_macros/boost/preprocessor/cat.hpp>
+# include <common_macros/boost/preprocessor/arithmetic/dec.hpp>
+# include <common_macros/boost/preprocessor/arithmetic/inc.hpp>
+# include <common_macros/boost/preprocessor/config/config.hpp>
+# include <common_macros/boost/preprocessor/debug/error.hpp>
+# include <common_macros/boost/preprocessor/detail/auto_rec.hpp>
+# include <common_macros/boost/preprocessor/punctuation/comma_if.hpp>
+# include <common_macros/boost/preprocessor/repetition/repeat.hpp>
+# include <common_macros/boost/preprocessor/tuple/elem.hpp>
+# include <common_macros/boost/preprocessor/tuple/rem.hpp>
 #
 # /* BOOST_PP_ENUM_SHIFTED */
 #

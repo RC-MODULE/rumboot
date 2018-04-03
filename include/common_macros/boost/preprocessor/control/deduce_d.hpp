@@ -12,8 +12,8 @@
 # ifndef BOOST_PREPROCESSOR_CONTROL_DEDUCE_D_HPP
 # define BOOST_PREPROCESSOR_CONTROL_DEDUCE_D_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/control/while.hpp>
-# include <platform/oi10/platform/boost/preprocessor/detail/auto_rec.hpp>
+# include <common_macros/boost/preprocessor/control/while.hpp>
+# include <common_macros/boost/preprocessor/detail/auto_rec.hpp>
 #
 # /* BOOST_PP_DEDUCE_D */
 #

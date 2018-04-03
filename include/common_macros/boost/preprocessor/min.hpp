@@ -12,6 +12,6 @@
 # ifndef BOOST_PREPROCESSOR_MIN_HPP
 # define BOOST_PREPROCESSOR_MIN_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/selection/min.hpp>
+# include <common_macros/boost/preprocessor/selection/min.hpp>
 #
 # endif

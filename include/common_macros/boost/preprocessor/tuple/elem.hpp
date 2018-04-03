@@ -15,13 +15,13 @@
 # ifndef BOOST_PREPROCESSOR_TUPLE_ELEM_HPP
 # define BOOST_PREPROCESSOR_TUPLE_ELEM_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/cat.hpp>
-# include <platform/oi10/platform/boost/preprocessor/config/config.hpp>
-# include <platform/oi10/platform/boost/preprocessor/facilities/expand.hpp>
-# include <platform/oi10/platform/boost/preprocessor/facilities/overload.hpp>
-# include <platform/oi10/platform/boost/preprocessor/tuple/rem.hpp>
-# include <platform/oi10/platform/boost/preprocessor/variadic/elem.hpp>
-# include <platform/oi10/platform/boost/preprocessor/tuple/detail/is_single_return.hpp>
+# include <common_macros/boost/preprocessor/cat.hpp>
+# include <common_macros/boost/preprocessor/config/config.hpp>
+# include <common_macros/boost/preprocessor/facilities/expand.hpp>
+# include <common_macros/boost/preprocessor/facilities/overload.hpp>
+# include <common_macros/boost/preprocessor/tuple/rem.hpp>
+# include <common_macros/boost/preprocessor/variadic/elem.hpp>
+# include <common_macros/boost/preprocessor/tuple/detail/is_single_return.hpp>
 #
 # if BOOST_PP_VARIADICS
 #    if BOOST_PP_VARIADICS_MSVC

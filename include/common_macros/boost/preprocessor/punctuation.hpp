@@ -12,11 +12,11 @@
 # ifndef BOOST_PREPROCESSOR_PUNCTUATION_HPP
 # define BOOST_PREPROCESSOR_PUNCTUATION_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/punctuation/comma.hpp>
-# include <platform/oi10/platform/boost/preprocessor/punctuation/comma_if.hpp>
-# include <platform/oi10/platform/boost/preprocessor/punctuation/is_begin_parens.hpp>
-# include <platform/oi10/platform/boost/preprocessor/punctuation/paren.hpp>
-# include <platform/oi10/platform/boost/preprocessor/punctuation/paren_if.hpp>
-# include <platform/oi10/platform/boost/preprocessor/punctuation/remove_parens.hpp>
+# include <common_macros/boost/preprocessor/punctuation/comma.hpp>
+# include <common_macros/boost/preprocessor/punctuation/comma_if.hpp>
+# include <common_macros/boost/preprocessor/punctuation/is_begin_parens.hpp>
+# include <common_macros/boost/preprocessor/punctuation/paren.hpp>
+# include <common_macros/boost/preprocessor/punctuation/paren_if.hpp>
+# include <common_macros/boost/preprocessor/punctuation/remove_parens.hpp>
 #
 # endif

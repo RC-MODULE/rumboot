@@ -2,8 +2,8 @@
 #define _MPIC128_H_
 
 #include <platform/oi10/platform/mpicOI10/mpicOI10_reg_access.h>
-#include <platform/oi10/platform/boost/preprocessor/arithmetic/add.hpp>
-#include <platform/oi10/platform/boost/preprocessor/arithmetic/mul.hpp>
+#include <common_macros/boost/preprocessor/arithmetic/add.hpp>
+#include <common_macros/boost/preprocessor/arithmetic/mul.hpp>
 #include <stdbool.h>
 
 

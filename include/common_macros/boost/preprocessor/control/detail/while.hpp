@@ -14,9 +14,9 @@
 # ifndef BOOST_PREPROCESSOR_CONTROL_DETAIL_WHILE_HPP
 # define BOOST_PREPROCESSOR_CONTROL_DETAIL_WHILE_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/control/iif.hpp>
-# include <platform/oi10/platform/boost/preprocessor/logical/bool.hpp>
-# include <platform/oi10/platform/boost/preprocessor/tuple/eat.hpp>
+# include <common_macros/boost/preprocessor/control/iif.hpp>
+# include <common_macros/boost/preprocessor/logical/bool.hpp>
+# include <common_macros/boost/preprocessor/tuple/eat.hpp>
 #
 # define BOOST_PP_WHILE_1(p, o, s) BOOST_PP_WHILE_1_C(BOOST_PP_BOOL(p(2, s)), p, o, s)
 # define BOOST_PP_WHILE_2(p, o, s) BOOST_PP_WHILE_2_C(BOOST_PP_BOOL(p(3, s)), p, o, s)

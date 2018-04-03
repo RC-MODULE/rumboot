@@ -14,9 +14,9 @@
 # ifndef BOOST_PREPROCESSOR_REPETITION_FOR_HPP
 # define BOOST_PREPROCESSOR_REPETITION_FOR_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/cat.hpp>
-# include <platform/oi10/platform/boost/preprocessor/debug/error.hpp>
-# include <platform/oi10/platform/boost/preprocessor/detail/auto_rec.hpp>
+# include <common_macros/boost/preprocessor/cat.hpp>
+# include <common_macros/boost/preprocessor/debug/error.hpp>
+# include <common_macros/boost/preprocessor/detail/auto_rec.hpp>
 #
 # /* BOOST_PP_FOR */
 #
@@ -33,13 +33,13 @@
 # define BOOST_PP_FOR_SR_M(r, s) BOOST_PP_NIL
 #
 # if BOOST_PP_CONFIG_FLAGS() & BOOST_PP_CONFIG_EDG()
-#    include <platform/oi10/platform/boost/preprocessor/repetition/detail/edg/for.hpp>
+#    include <common_macros/boost/preprocessor/repetition/detail/edg/for.hpp>
 # elif BOOST_PP_CONFIG_FLAGS() & BOOST_PP_CONFIG_MSVC()
-#    include <platform/oi10/platform/boost/preprocessor/repetition/detail/msvc/for.hpp>
+#    include <common_macros/boost/preprocessor/repetition/detail/msvc/for.hpp>
 # elif BOOST_PP_CONFIG_FLAGS() & BOOST_PP_CONFIG_DMC()
-#    include <platform/oi10/platform/boost/preprocessor/repetition/detail/dmc/for.hpp>
+#    include <common_macros/boost/preprocessor/repetition/detail/dmc/for.hpp>
 # else
-#    include <platform/oi10/platform/boost/preprocessor/repetition/detail/for.hpp>
+#    include <common_macros/boost/preprocessor/repetition/detail/for.hpp>
 # endif
 #
 # define BOOST_PP_FOR_257(s, p, o, m) BOOST_PP_ERROR(0x0002)

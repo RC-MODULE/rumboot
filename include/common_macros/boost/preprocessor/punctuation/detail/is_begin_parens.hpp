@@ -14,7 +14,7 @@
 
 #if BOOST_PP_VARIADICS_MSVC
 
-#include <platform/oi10/platform/boost/preprocessor/facilities/empty.hpp>
+#include <common_macros/boost/preprocessor/facilities/empty.hpp>
 
 #define BOOST_PP_DETAIL_VD_IBP_CAT(a, b) BOOST_PP_DETAIL_VD_IBP_CAT_I(a, b)
 #define BOOST_PP_DETAIL_VD_IBP_CAT_I(a, b) BOOST_PP_DETAIL_VD_IBP_CAT_II(a ## b)

@@ -12,8 +12,8 @@
 # ifndef BOOST_PREPROCESSOR_DEBUG_ERROR_HPP
 # define BOOST_PREPROCESSOR_DEBUG_ERROR_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/cat.hpp>
-# include <platform/oi10/platform/boost/preprocessor/config/config.hpp>
+# include <common_macros/boost/preprocessor/cat.hpp>
+# include <common_macros/boost/preprocessor/config/config.hpp>
 #
 # /* BOOST_PP_ERROR */
 #

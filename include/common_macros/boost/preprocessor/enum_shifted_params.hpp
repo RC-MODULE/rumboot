@@ -12,6 +12,6 @@
 # ifndef BOOST_PREPROCESSOR_ENUM_SHIFTED_PARAMS_HPP
 # define BOOST_PREPROCESSOR_ENUM_SHIFTED_PARAMS_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/repetition/enum_shifted_params.hpp>
+# include <common_macros/boost/preprocessor/repetition/enum_shifted_params.hpp>
 #
 # endif

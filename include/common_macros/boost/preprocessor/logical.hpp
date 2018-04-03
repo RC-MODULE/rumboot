@@ -14,16 +14,16 @@
 # ifndef BOOST_PREPROCESSOR_LOGICAL_HPP
 # define BOOST_PREPROCESSOR_LOGICAL_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/logical/and.hpp>
-# include <platform/oi10/platform/boost/preprocessor/logical/bitand.hpp>
-# include <platform/oi10/platform/boost/preprocessor/logical/bitnor.hpp>
-# include <platform/oi10/platform/boost/preprocessor/logical/bitor.hpp>
-# include <platform/oi10/platform/boost/preprocessor/logical/bitxor.hpp>
-# include <platform/oi10/platform/boost/preprocessor/logical/bool.hpp>
-# include <platform/oi10/platform/boost/preprocessor/logical/compl.hpp>
-# include <platform/oi10/platform/boost/preprocessor/logical/nor.hpp>
-# include <platform/oi10/platform/boost/preprocessor/logical/not.hpp>
-# include <platform/oi10/platform/boost/preprocessor/logical/or.hpp>
-# include <platform/oi10/platform/boost/preprocessor/logical/xor.hpp>
+# include <common_macros/boost/preprocessor/logical/and.hpp>
+# include <common_macros/boost/preprocessor/logical/bitand.hpp>
+# include <common_macros/boost/preprocessor/logical/bitnor.hpp>
+# include <common_macros/boost/preprocessor/logical/bitor.hpp>
+# include <common_macros/boost/preprocessor/logical/bitxor.hpp>
+# include <common_macros/boost/preprocessor/logical/bool.hpp>
+# include <common_macros/boost/preprocessor/logical/compl.hpp>
+# include <common_macros/boost/preprocessor/logical/nor.hpp>
+# include <common_macros/boost/preprocessor/logical/not.hpp>
+# include <common_macros/boost/preprocessor/logical/or.hpp>
+# include <common_macros/boost/preprocessor/logical/xor.hpp>
 #
 # endif

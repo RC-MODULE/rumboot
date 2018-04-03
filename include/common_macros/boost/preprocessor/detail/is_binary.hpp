@@ -12,8 +12,8 @@
 # ifndef BOOST_PREPROCESSOR_DETAIL_IS_BINARY_HPP
 # define BOOST_PREPROCESSOR_DETAIL_IS_BINARY_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/config/config.hpp>
-# include <platform/oi10/platform/boost/preprocessor/detail/check.hpp>
+# include <common_macros/boost/preprocessor/config/config.hpp>
+# include <common_macros/boost/preprocessor/detail/check.hpp>
 #
 # /* BOOST_PP_IS_BINARY */
 #

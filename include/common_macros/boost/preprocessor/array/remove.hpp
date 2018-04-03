@@ -12,16 +12,16 @@
 # ifndef BOOST_PREPROCESSOR_ARRAY_REMOVE_HPP
 # define BOOST_PREPROCESSOR_ARRAY_REMOVE_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/arithmetic/inc.hpp>
-# include <platform/oi10/platform/boost/preprocessor/array/elem.hpp>
-# include <platform/oi10/platform/boost/preprocessor/array/push_back.hpp>
-# include <platform/oi10/platform/boost/preprocessor/array/size.hpp>
-# include <platform/oi10/platform/boost/preprocessor/comparison/not_equal.hpp>
-# include <platform/oi10/platform/boost/preprocessor/control/deduce_d.hpp>
-# include <platform/oi10/platform/boost/preprocessor/control/iif.hpp>
-# include <platform/oi10/platform/boost/preprocessor/control/while.hpp>
-# include <platform/oi10/platform/boost/preprocessor/tuple/eat.hpp>
-# include <platform/oi10/platform/boost/preprocessor/tuple/elem.hpp>
+# include <common_macros/boost/preprocessor/arithmetic/inc.hpp>
+# include <common_macros/boost/preprocessor/array/elem.hpp>
+# include <common_macros/boost/preprocessor/array/push_back.hpp>
+# include <common_macros/boost/preprocessor/array/size.hpp>
+# include <common_macros/boost/preprocessor/comparison/not_equal.hpp>
+# include <common_macros/boost/preprocessor/control/deduce_d.hpp>
+# include <common_macros/boost/preprocessor/control/iif.hpp>
+# include <common_macros/boost/preprocessor/control/while.hpp>
+# include <common_macros/boost/preprocessor/tuple/eat.hpp>
+# include <common_macros/boost/preprocessor/tuple/elem.hpp>
 #
 # /* BOOST_PP_ARRAY_REMOVE */
 #

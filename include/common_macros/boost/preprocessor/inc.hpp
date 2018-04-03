@@ -12,6 +12,6 @@
 # ifndef BOOST_PREPROCESSOR_INC_HPP
 # define BOOST_PREPROCESSOR_INC_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/arithmetic/inc.hpp>
+# include <common_macros/boost/preprocessor/arithmetic/inc.hpp>
 #
 # endif

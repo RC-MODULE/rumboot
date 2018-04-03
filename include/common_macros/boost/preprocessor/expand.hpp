@@ -12,6 +12,6 @@
 # ifndef BOOST_PREPROCESSOR_EXPAND_HPP
 # define BOOST_PREPROCESSOR_EXPAND_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/facilities/expand.hpp>
+# include <common_macros/boost/preprocessor/facilities/expand.hpp>
 #
 # endif

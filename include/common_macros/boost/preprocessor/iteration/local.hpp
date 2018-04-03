@@ -12,13 +12,13 @@
 # ifndef BOOST_PREPROCESSOR_ITERATION_LOCAL_HPP
 # define BOOST_PREPROCESSOR_ITERATION_LOCAL_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/config/config.hpp>
-# include <platform/oi10/platform/boost/preprocessor/slot/slot.hpp>
-# include <platform/oi10/platform/boost/preprocessor/tuple/elem.hpp>
+# include <common_macros/boost/preprocessor/config/config.hpp>
+# include <common_macros/boost/preprocessor/slot/slot.hpp>
+# include <common_macros/boost/preprocessor/tuple/elem.hpp>
 #
 # /* BOOST_PP_LOCAL_ITERATE */
 #
-# define BOOST_PP_LOCAL_ITERATE() <platform/oi10/platform/boost/preprocessor/iteration/detail/local.hpp>
+# define BOOST_PP_LOCAL_ITERATE() <common_macros/boost/preprocessor/iteration/detail/local.hpp>
 #
 # define BOOST_PP_LOCAL_C(n) (BOOST_PP_LOCAL_S) <= n && (BOOST_PP_LOCAL_F) >= n
 # define BOOST_PP_LOCAL_R(n) (BOOST_PP_LOCAL_F) <= n && (BOOST_PP_LOCAL_S) >= n

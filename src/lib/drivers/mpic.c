@@ -4,10 +4,10 @@
 #include <platform/oi10/platform/mpicOI10/mpicOI10_reg_fields.h>
 #include <platform/oi10/platform/mpicOI10/mpicOI10_regs.h>
 #include <platform/oi10/platform/mpicOI10/mpicOI10_reg_access.h>
-#include <platform/oi10/platform/boost/preprocessor/punctuation/comma_if.hpp>
-#include <platform/oi10/platform/boost/preprocessor/repetition/repeat.hpp>
-#include <platform/oi10/platform/boost/preprocessor/arithmetic/add.hpp>
-#include <platform/oi10/platform/boost/preprocessor/arithmetic/sub.hpp>
+#include <common_macros/boost/preprocessor/punctuation/comma_if.hpp>
+#include <common_macros/boost/preprocessor/repetition/repeat.hpp>
+#include <common_macros/boost/preprocessor/arithmetic/add.hpp>
+#include <common_macros/boost/preprocessor/arithmetic/sub.hpp>
 //#include <test_macro.h>
 //#include <mivem_assert.h>
 //#include <platform/oi10/platform/sctl.h>

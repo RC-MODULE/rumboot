@@ -5,9 +5,9 @@
 //#include <mivem_types.h>
 #include <common_macros/common_macros.h>
 #include <arch/ppc/ibm_bit_ordering_macros.h>
-#include <platform/oi10/platform/boost/preprocessor/iteration/local.hpp>
-#include <platform/oi10/platform/boost/preprocessor/arithmetic/dec.hpp>
-#include <platform/oi10/platform/boost/preprocessor/cat.hpp>
+#include <common_macros/boost/preprocessor/iteration/local.hpp>
+#include <common_macros/boost/preprocessor/arithmetic/dec.hpp>
+#include <common_macros/boost/preprocessor/cat.hpp>
 
 #include <platform/oi10/platform/mpicOI10/mpicOI10_reg_fields.h>
 

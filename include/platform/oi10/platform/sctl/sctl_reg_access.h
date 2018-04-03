@@ -5,8 +5,8 @@
 #include <arch/ppc/ibm_bit_ordering_macros.h>
 #include <platform/oi10/platform/reg_access/macros.h>
 #include <platform/oi10/platform/sctl/sctl_regs.h>
-#include <platform/oi10/platform/boost/preprocessor/cat.hpp>
-#include <platform/oi10/platform/boost/preprocessor/iteration/local.hpp>
+#include <common_macros/boost/preprocessor/cat.hpp>
+#include <common_macros/boost/preprocessor/iteration/local.hpp>
 
 
 #define SCTLx_IFSYS_IO_CONF(INDEX) \

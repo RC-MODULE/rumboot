@@ -12,9 +12,9 @@
 # ifndef BOOST_PREPROCESSOR_SEQ_ELEM_HPP
 # define BOOST_PREPROCESSOR_SEQ_ELEM_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/cat.hpp>
-# include <platform/oi10/platform/boost/preprocessor/config/config.hpp>
-# include <platform/oi10/platform/boost/preprocessor/facilities/empty.hpp>
+# include <common_macros/boost/preprocessor/cat.hpp>
+# include <common_macros/boost/preprocessor/config/config.hpp>
+# include <common_macros/boost/preprocessor/facilities/empty.hpp>
 #
 # /* BOOST_PP_SEQ_ELEM */
 #

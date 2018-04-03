@@ -12,6 +12,6 @@
 # ifndef BOOST_PREPROCESSOR_FOR_HPP
 # define BOOST_PREPROCESSOR_FOR_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/repetition/for.hpp>
+# include <common_macros/boost/preprocessor/repetition/for.hpp>
 #
 # endif

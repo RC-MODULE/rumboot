@@ -14,8 +14,8 @@
 # ifndef BOOST_PREPROCESSOR_CONTROL_DETAIL_EDG_WHILE_HPP
 # define BOOST_PREPROCESSOR_CONTROL_DETAIL_EDG_WHILE_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/control/if.hpp>
-# include <platform/oi10/platform/boost/preprocessor/tuple/eat.hpp>
+# include <common_macros/boost/preprocessor/control/if.hpp>
+# include <common_macros/boost/preprocessor/tuple/eat.hpp>
 #
 # define BOOST_PP_WHILE_1(p, o, s) BOOST_PP_WHILE_1_I(p, o, s)
 # define BOOST_PP_WHILE_2(p, o, s) BOOST_PP_WHILE_2_I(p, o, s)

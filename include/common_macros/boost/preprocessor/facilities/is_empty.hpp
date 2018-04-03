@@ -13,20 +13,20 @@
 # ifndef BOOST_PREPROCESSOR_FACILITIES_IS_EMPTY_HPP
 # define BOOST_PREPROCESSOR_FACILITIES_IS_EMPTY_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/config/config.hpp>
+# include <common_macros/boost/preprocessor/config/config.hpp>
 #
 # if BOOST_PP_VARIADICS
 #
-# include <platform/oi10/platform/boost/preprocessor/facilities/is_empty_variadic.hpp>
+# include <common_macros/boost/preprocessor/facilities/is_empty_variadic.hpp>
 #
 # else
 #
 # if ~BOOST_PP_CONFIG_FLAGS() & BOOST_PP_CONFIG_MSVC() && ~BOOST_PP_CONFIG_FLAGS() & BOOST_PP_CONFIG_MWCC()
-# include <platform/oi10/platform/boost/preprocessor/tuple/elem.hpp>
-# include <platform/oi10/platform/boost/preprocessor/facilities/identity.hpp>
+# include <common_macros/boost/preprocessor/tuple/elem.hpp>
+# include <common_macros/boost/preprocessor/facilities/identity.hpp>
 # else
-# include <platform/oi10/platform/boost/preprocessor/cat.hpp>
-# include <platform/oi10/platform/boost/preprocessor/detail/split.hpp>
+# include <common_macros/boost/preprocessor/cat.hpp>
+# include <common_macros/boost/preprocessor/detail/split.hpp>
 # endif
 #
 # /* BOOST_PP_IS_EMPTY */

@@ -14,7 +14,7 @@
 # ifndef BOOST_PREPROCESSOR_ARITHMETIC_INC_HPP
 # define BOOST_PREPROCESSOR_ARITHMETIC_INC_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/config/config.hpp>
+# include <common_macros/boost/preprocessor/config/config.hpp>
 #
 # /* BOOST_PP_INC */
 #

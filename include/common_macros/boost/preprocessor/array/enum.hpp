@@ -13,9 +13,9 @@
 # ifndef BOOST_PREPROCESSOR_ARRAY_ENUM_HPP
 # define BOOST_PREPROCESSOR_ARRAY_ENUM_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/cat.hpp>
-# include <platform/oi10/platform/boost/preprocessor/config/config.hpp>
-# include <platform/oi10/platform/boost/preprocessor/tuple/rem.hpp>
+# include <common_macros/boost/preprocessor/cat.hpp>
+# include <common_macros/boost/preprocessor/config/config.hpp>
+# include <common_macros/boost/preprocessor/tuple/rem.hpp>
 #
 # /* BOOST_PP_ARRAY_ENUM */
 #

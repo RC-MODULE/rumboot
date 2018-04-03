@@ -12,7 +12,7 @@
 # ifndef BOOST_PREPROCESSOR_LOGICAL_BITOR_HPP
 # define BOOST_PREPROCESSOR_LOGICAL_BITOR_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/config/config.hpp>
+# include <common_macros/boost/preprocessor/config/config.hpp>
 #
 # /* BOOST_PP_BITOR */
 #

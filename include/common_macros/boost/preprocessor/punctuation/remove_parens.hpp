@@ -12,14 +12,14 @@
 #ifndef BOOST_PREPROCESSOR_REMOVE_PARENS_HPP
 #define BOOST_PREPROCESSOR_REMOVE_PARENS_HPP
 
-#include <platform/oi10/platform/boost/preprocessor/config/config.hpp>
+#include <common_macros/boost/preprocessor/config/config.hpp>
 
 #if BOOST_PP_VARIADICS
 
-#include <platform/oi10/platform/boost/preprocessor/control/iif.hpp>
-#include <platform/oi10/platform/boost/preprocessor/facilities/identity.hpp>
-#include <platform/oi10/platform/boost/preprocessor/punctuation/is_begin_parens.hpp>
-#include <platform/oi10/platform/boost/preprocessor/tuple/enum.hpp>
+#include <common_macros/boost/preprocessor/control/iif.hpp>
+#include <common_macros/boost/preprocessor/facilities/identity.hpp>
+#include <common_macros/boost/preprocessor/punctuation/is_begin_parens.hpp>
+#include <common_macros/boost/preprocessor/tuple/enum.hpp>
 
 #define BOOST_PP_REMOVE_PARENS(param) \
     BOOST_PP_IIF \

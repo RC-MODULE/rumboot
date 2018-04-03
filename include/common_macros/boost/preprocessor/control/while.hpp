@@ -14,13 +14,13 @@
 # ifndef BOOST_PREPROCESSOR_CONTROL_WHILE_HPP
 # define BOOST_PREPROCESSOR_CONTROL_WHILE_HPP
 #
-# include <platform/oi10/platform/boost/preprocessor/cat.hpp>
-# include <platform/oi10/platform/boost/preprocessor/config/config.hpp>
-# include <platform/oi10/platform/boost/preprocessor/debug/error.hpp>
-# include <platform/oi10/platform/boost/preprocessor/detail/auto_rec.hpp>
-# include <platform/oi10/platform/boost/preprocessor/list/fold_left.hpp>
-# include <platform/oi10/platform/boost/preprocessor/list/fold_right.hpp>
-# include <platform/oi10/platform/boost/preprocessor/logical/bitand.hpp>
+# include <common_macros/boost/preprocessor/cat.hpp>
+# include <common_macros/boost/preprocessor/config/config.hpp>
+# include <common_macros/boost/preprocessor/debug/error.hpp>
+# include <common_macros/boost/preprocessor/detail/auto_rec.hpp>
+# include <common_macros/boost/preprocessor/list/fold_left.hpp>
+# include <common_macros/boost/preprocessor/list/fold_right.hpp>
+# include <common_macros/boost/preprocessor/logical/bitand.hpp>
 #
 # /* BOOST_PP_WHILE */
 #
@@ -39,13 +39,13 @@
 # define BOOST_PP_WHILE_F(d, _) 0
 #
 # if BOOST_PP_CONFIG_FLAGS() & BOOST_PP_CONFIG_EDG()
-#    include <platform/oi10/platform/boost/preprocessor/control/detail/edg/while.hpp>
+#    include <common_macros/boost/preprocessor/control/detail/edg/while.hpp>
 # elif BOOST_PP_CONFIG_FLAGS() & BOOST_PP_CONFIG_MSVC()
-#    include <platform/oi10/platform/boost/preprocessor/control/detail/msvc/while.hpp>
+#    include <common_macros/boost/preprocessor/control/detail/msvc/while.hpp>
 # elif BOOST_PP_CONFIG_FLAGS() & BOOST_PP_CONFIG_DMC()
-#    include <platform/oi10/platform/boost/preprocessor/control/detail/dmc/while.hpp>
+#    include <common_macros/boost/preprocessor/control/detail/dmc/while.hpp>
 # else
-#    include <platform/oi10/platform/boost/preprocessor/control/detail/while.hpp>
+#    include <common_macros/boost/preprocessor/control/detail/while.hpp>
 # endif
 #
 # define BOOST_PP_WHILE_257(p, o, s) BOOST_PP_ERROR(0x0001)
