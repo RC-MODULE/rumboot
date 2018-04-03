@@ -1,7 +1,7 @@
 #ifndef __WD_H__
 #define __WD_H__
 
-#include <platform/oi10/platform/wdOI10/wdOI10_regs.h>
+#include <devices/wdt/wdt_regs.h>
 
 //uint32_t inline wd_get_value();
 //uint32_t inline wd_get_int_status();
