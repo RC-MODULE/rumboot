@@ -442,25 +442,20 @@ setup_tlb:
     bl          ppc470s_write_tlb_entries //(r3, r4) - are parameters
 
     ppc470s_set_mem_window  r3, MEM_WINDOW_0
-/*
-TODO
+
+
+//TODO
 setup_stack: //stack is growing down
-    load_const  r3, MPICx_BASE+MPIC128x_WAI_PR
-    mfdcrx      r3, r3                          //read Who Am I Register
-    cmpwi       r3, PPC0_CORE_ID                //if Processor ID Register is 0
-    beq         setup_cpu0_stack
-    //else                                           Processor ID Register is 1
-    load_addr   r1, cpu1_stack_top
-    b           setup_cpu1_stack
 setup_cpu0_stack:
-    load_addr   r1, cpu0_stack_top
-setup_cpu1_stack:
+    load_addr   r1, rumboot_platform_stack_area_end
     stwu        r0, -8(r1) //allocate LR and save SP of first stack frame according to ABI rules
-*/
-#if 0
+    b setup_plb6plb4
+
+
 setup_plb6plb4:
-    bl          p64_init_simple
-#endif
+//    bl          p64_init_simple
+    b goto_boot_main
+
 .section "ROM.text","ax",@progbits
 goto_boot_main:
     bl          rumboot_main // never returns
