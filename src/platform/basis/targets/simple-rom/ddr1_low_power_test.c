@@ -28,7 +28,6 @@
 
 #include <rumboot/printf.h>
 #include <rumboot/io.h>
-#include <devices/gic.h>
 #include <rumboot/irq.h>
 
 #include <platform/devices.h>

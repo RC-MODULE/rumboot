@@ -4,15 +4,14 @@
 
 #include <rumboot/printf.h>
 #include <rumboot/io.h>
-#include <devices/gic.h>
 #include <rumboot/irq.h>
 #include <rumboot/timer.h>
 
 #include <platform/basis/platform/devices.h>
 
-#include <regs/regs_crg.h> 
-	 
-void read_APB_CLKDIV() 
+#include <regs/regs_crg.h>
+
+void read_APB_CLKDIV()
 {
 	int a;
 	rumboot_printf("Checking read PLL PRDIV");
@@ -35,29 +34,31 @@ void change_mode_pll(int mode)
 	rumboot_printf("Change mode of PLL\n");
 	iowrite32(mode, CRG_SYS_BASE + CRG_PLL_CTRL);
 	rumboot_printf("Mode of PLL was changed\n");
-	
+
 }
 
 int main(void)
 {
 	read_APB_CLKDIV();
-	rumboot_printf("Start CRG PLL reconfiguration test\n"); 
+	rumboot_printf("Start CRG PLL reconfiguration test\n");
 	int fbdiv_ch;
+	/* NOTE: Plz test your code before commiting & pushing. Andy! */ 
+	uint32_t pll_r, pll_ch;
 	//read_APB_CLKDIV();
 	iowrite32(0x1ACCE551, CRG_SYS_BASE + CRG_WR_LOCK);
 	rumboot_printf("Changing FBDIV");
 	for(int i=0; i<10; i++){
 		fbdiv_ch = 99 + 5*i;
 		change_mode_pll(0x3);
-		change_pll(fbdiv_ch, 0,0);	
+		change_pll(fbdiv_ch, 0,0);
 		change_mode_pll(0x0);
 		do{
 			pll_r = ioread32(CRG_SYS_BASE + CRG_PLL_STAT);
 			pll_ch = pll_r  & 0xFFFFFFEF;
 			rumboot_printf("reg pll_r= %x\n", pll_ch);
-			if(pll_ch == 0x0) 
+			if(pll_ch == 0x0)
 				rumboot_printf("Wait ready from PLL\n");
-			else 
+			else
 			if(pll_ch == 0x1){
 				break;
 			}
@@ -65,6 +66,6 @@ int main(void)
 		rumboot_printf("PLL is ready, next iteration\n");
 	}
 	rumboot_printf("Stop changing FBDIV");
-	
+
 	return 0;
 }
