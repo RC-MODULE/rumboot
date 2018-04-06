@@ -70,6 +70,21 @@ void rumboot_platform_panic(const char *fmt, ...) __attribute__((noreturn));
  */
 void rumboot_platform_setup();
 
+
+/**
+  * This is common initialization code needed to bring up proper C environment.
+  * It does the following:
+  * 1. Initializes the global runtime table with sane initial values
+  * 2. Initializes bss section with zeroes (if we're using the BSS)
+  * 3. Calls main() function
+  * 4. Collects return code and passes it to exit()
+  *
+  * This function should be called from platform-specific assembly startup file.
+  *
+  * \callgraph
+  */
+ void rumboot_main();
+
 /**
  * Returns the current system uptime (useconds)
  * @return useconds
