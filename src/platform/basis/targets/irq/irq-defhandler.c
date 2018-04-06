@@ -3,7 +3,6 @@
 #include <rumboot/irq.h>
 #include <rumboot/platform.h>
 #include <platform/devices.h>
-#include <devices/gic.h>
 #include <rumboot/io.h>
 #include <stdlib.h>
 
