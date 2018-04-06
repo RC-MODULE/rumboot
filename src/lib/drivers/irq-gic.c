@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <rumboot/platform.h>
-#include <devices/gic.h>
+#include <regs/regs_gic.h>
 #include <rumboot/io.h>
 #include <rumboot/printf.h>
 #include <platform/devices.h>
