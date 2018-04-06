@@ -53,6 +53,7 @@
  #define DIT1_BASE                BASIS_PHYS(0x01049000)
  #define DIT2_BASE                BASIS_PHYS(0x0104A000)
  #define DIT3_BASE                BASIS_PHYS(0x0104B000)
+ #define CRG_SYS_BASE             BASIS_PHYS(0x0104C000)
  #define CRG_DDR_BASE             BASIS_PHYS(0x0104D000)
  #define PCIE_CORE_BASE           BASIS_PHYS(0x01058000)
  #define PCIE_PHY_BASE            BASIS_PHYS(0x01060000)
