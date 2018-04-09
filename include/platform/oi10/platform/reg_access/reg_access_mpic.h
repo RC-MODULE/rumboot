@@ -5,7 +5,7 @@
 #include <common_macros/common_macros.h>
 #include <arch/ppc/ibm_bit_ordering_macros.h>
 #include <platform/oi10/platform/reg_access/macros.h>
-#include <platform/oi10/platform/mpicOI10/mpicOI10_regs.h>
+#include <regs/regs_mpic.h>
 
 
 #define SET_NONCR_INT_HANDLER(handler_ptr) \

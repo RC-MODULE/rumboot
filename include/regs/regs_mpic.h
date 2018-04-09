@@ -9,7 +9,7 @@
 #include <common_macros/boost/preprocessor/arithmetic/dec.hpp>
 #include <common_macros/boost/preprocessor/cat.hpp>
 
-#include <platform/oi10/platform/mpicOI10/mpicOI10_reg_fields.h>
+#include <devices/mpic/reg_fields_mpic.h>
 
 
 #define MPIC128x_VPx_REGS_COUNT    128
