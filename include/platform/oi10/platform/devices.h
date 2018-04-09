@@ -132,8 +132,9 @@
 #define PMU1_DCR_BASE           0x80000700 //need to set
 
 #define MPICx_BASE              0xFFC00000
-
+*/
 #define PLB6PLB4_0_BASE         0x80000300
+/*
 #define PLB6PLB4_1_BASE         0x80000400
 #define PLB6PLB4_2_BASE         0x80000E00
 #define PLB6PLB4_3_BASE         0x80000F00
