@@ -110,30 +110,29 @@ int _open( const char *name, int flags, int mode)
     return -1;
 }
 
+
+#if 1
 caddr_t _sbrk(int incr)
 {
     rumboot_platform_panic("libc malloc() disabled\n");
 	return (caddr_t)0;
 }
 
-#if 0
+#else
 caddr_t _sbrk(int incr)
 {
 	char *prev_heap_end;
+	struct rumboot_heap *hp = &rumboot_platform_runtime_info.heaps[0];
 
-	if (rumboot_platform_runtime_info.current_heap_end == 0)
-		rumboot_platform_runtime_info.current_heap_end = &rumboot_platform_heap_start;
 
-	prev_heap_end = rumboot_platform_runtime_info.current_heap_end;
-
-	if ((rumboot_platform_runtime_info.current_heap_end + incr) > &rumboot_platform_heap_end) {
-		rumboot_printf("FATAL: heap and stack collision\n");
+	if ((hp->pos + incr) > hp->end) {
+		rumboot_printf("FATAL: heap overflow\n");
 		/* Heap and stack collision */
 		return (caddr_t)0;
 	}
-
-	rumboot_platform_runtime_info.current_heap_end += incr;
-	return (caddr_t)prev_heap_end;
+	prev_heap_end = hp->pos;
+	hp->pos += incr;
+	return (caddr_t) prev_heap_end;
 }
 
 #endif
