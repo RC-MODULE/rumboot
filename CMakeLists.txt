@@ -160,6 +160,7 @@ ADD_SOURCE("src/lib/drivers/mdma/mdma_transactions.c")
 ADD_SOURCE("src/lib/drivers/mdma/descriptor.c")
 ADD_SOURCE("src/lib/drivers/muart.c")
 ADD_SOURCE("src/lib/drivers/eeprom.c")
+ADD_SOURCE("src/lib/drivers/mgeth.c")
 # ADD_SOURCE("src/lib/drivers/bisr.c")
 
 if (RUMBOOT_PLATFORM MATCHES native)

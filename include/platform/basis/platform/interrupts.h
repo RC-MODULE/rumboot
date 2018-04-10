@@ -19,7 +19,6 @@
 
 #define IRQN_SW0     0
 #define IRQN_SW1     1
-
 #define MDIO0_INT    36
 #define MDIO1_INT    37
 #define MDIO2_INT    38
@@ -32,6 +31,10 @@
 #define DIT2_TIMINT2 47
 #define DIT3_TIMINT1 48
 #define DIT3_TIMINT2 49
+#define MGETH0_IRQ   51
+#define MGETH1_IRQ   52
+#define MGETH2_IRQ   53
+#define MGETH3_IRQ   54
 #define WDT_INT      63
 #define MDMA0_IRQ    64
 #define MDMA1_IRQ    65

@@ -55,6 +55,12 @@ struct mdma_config {
 
 struct descriptor;
 
+enum MDMA_TYPE {
+  MDMA_MDMA,
+  MDMA_MUART,
+  MDMA_MGETH
+};
+
 /**
  * mdma_device: Structure contains
  * base: base address of mdma
@@ -64,6 +70,7 @@ struct descriptor;
  */
 struct mdma_device {
         uint32_t base;
+        enum MDMA_TYPE type;
         struct mdma_config conf;
         volatile struct descriptor * rxtbl;
         volatile struct descriptor * txtbl;
