@@ -50,8 +50,8 @@ int mdma_transaction_queue(struct mdma_transaction *t)
 {
 	volatile struct mdma_device *dev = t->owner;
 
-	if (!t->src || !t->dest || !dev->rxtbl || !dev->txtbl)
-		return -1;
+	// if (!t->src || !t->dest || !dev->rxtbl || !dev->txtbl)
+	// 	return -1;
 
 	//WE can cut memory and write any number of descriptors!
 	size_t tx_desc_numb = dev->conf.num_txdescriptors;
@@ -78,7 +78,7 @@ bool mdma_transaction_is_finished(struct mdma_transaction *t)
 	}
 
 	t->state = FINISHED;
-	
+
 	return true;
 }
 

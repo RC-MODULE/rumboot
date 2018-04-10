@@ -109,10 +109,11 @@ char muart_read_char(const uint32_t base);
  * size: size of transmitted data
  * return if data was transmitted OK - true, else - false
  */
-bool muart_transmit_data_throught_apb(uint32_t base1, uint32_t base2, void* data, size_t size);
+int muart_transmit_data_throught_apb(uint32_t base1, uint32_t base2, void* data, size_t size);
 
 /**
  * @}
  */
+int muart_transmit_data_throught_mdma(uint32_t base1, uint32_t base2, volatile void *dest, volatile void *src, size_t len);
 
 #endif

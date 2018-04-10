@@ -32,6 +32,7 @@ static void reset_field(uint32_t base, uint32_t reg_offset, uint32_t bit_pos, ui
 	iowrite32(reg, base + reg_offset);
 }
 
+
 void muart_init(const uint32_t base, const struct muart_conf *conf)
 {
 	uint32_t ctrl = ioread32(base + MUART_CTRL);
@@ -89,7 +90,7 @@ char muart_read_char(uint32_t base)
 	return ch;
 }
 
-bool muart_transmit_data_throught_apb(uint32_t base1, uint32_t base2, void* data, size_t size)
+int muart_transmit_data_throught_apb(uint32_t base1, uint32_t base2, void* data, size_t size)
 {
 	rumboot_printf("write char\n");
 	int count = size;
@@ -106,9 +107,86 @@ bool muart_transmit_data_throught_apb(uint32_t base1, uint32_t base2, void* data
 			continue;
 		} else {
 			rumboot_printf("read char: %c\n", read_ch);
-			return false;
+			return -1;
 		}
 	}
 
-	return true;
+	return 0;
+}
+
+#include <devices/mdma.h>
+#define NORMAL_DESC_SIZE 8
+#define PITCH_DESC_SIZE 16
+int muart_transmit_data_throught_mdma(uint32_t base1, uint32_t base2, volatile void *dest, volatile void *src, size_t len)
+{
+	//CONFIG DMA
+	uint8_t desc_type = NORMAL;
+	bool irq_en = false;
+	uint16_t desc_gap = (desc_type == NORMAL) ? NORMAL_DESC_SIZE : PITCH_DESC_SIZE;
+
+	rumboot_printf("Config MUART0.\n");
+	size_t num_txdescriptors = 1;
+	struct mdma_config cfg0 = { .desc_type		= desc_type, .desc_gap = desc_gap, .irq_en = irq_en,
+				   .num_rxdescriptors	= 0,.num_txdescriptors = num_txdescriptors };
+	volatile struct mdma_device *muart0 = mdma_create(base1, &cfg0);
+	mdma_configure(muart0, &cfg0);
+
+	rumboot_printf("Config MUART1.\n");
+	size_t num_rxdescriptors = 1;
+	struct mdma_config cfg1 = { .desc_type		= desc_type,	   .desc_gap	      = desc_gap, .irq_en = irq_en,
+				   .num_rxdescriptors	= num_rxdescriptors,.num_txdescriptors = 0 };
+	volatile struct mdma_device *muart1 = mdma_create(base2, &cfg1);
+	mdma_configure(muart1, &cfg1);
+
+	//Create transactions
+	//We can fragment data in junks and transmit in several transactions!
+	volatile struct mdma_transaction *t0 = NULL;
+	volatile struct mdma_transaction *t1 = NULL;
+	size_t transaction_count = 1;
+	while (transaction_count--) {
+		rumboot_printf("Create transaction.\n");
+		rumboot_printf("Destination: %x, source: %x, length: %x\n", dest, src, len);
+		t0 = mdma_transaction_create(muart0, dest, src, len);
+		t1 = mdma_transaction_create(muart1, dest, src, len*2);
+
+		//Push transaction to queue
+		rumboot_printf("Queue transaction.\n");
+		//mdma_transaction_dump(t);
+		if( mdma_transaction_queue((struct mdma_transaction*) t0) < 0) return -1;
+		if( mdma_transaction_queue((struct mdma_transaction*) t1) < 0) return -1;
+		t0++;
+		t1++;
+	}
+
+	//Init DMA
+	rumboot_printf("Init MDMA1, base addr: %x.\n", muart1->base);
+	mdma_init(muart1);
+
+	rumboot_printf("Init MDMA0, base addr: %x.\n", muart0->base);
+	mdma_init(muart0);
+
+	rumboot_printf("Check - if mdma is ready.\n");
+	size_t timeout_us = 1000;
+	while (!mdma_is_finished(muart1)) {
+		if (!timeout_us) {
+			return -1;
+		}
+		udelay(1);
+		timeout_us--;
+	}
+
+	//Remove transactions
+	transaction_count = 1;
+	while (transaction_count--) {
+		rumboot_printf("Remove transaction.\n");
+		mdma_transaction_remove((struct mdma_transaction*) t0);
+		mdma_transaction_remove((struct mdma_transaction*) t1);
+		t0++;
+		t1++;
+	}
+
+	mdma_remove(muart0);
+	mdma_remove(muart1);
+
+	return 0;
 }

@@ -37,7 +37,7 @@ static bool test_cfg(struct base_addrs *addrs, const struct muart_conf *cfg)
 	muart_enable(addrs->base2);
 
 	if (!cfg->dma_en) {
-		if (!muart_transmit_data_throught_apb(addrs->base1, addrs->base2, (char *) buf, data_size)) {
+		if (muart_transmit_data_throught_apb(addrs->base1, addrs->base2, (char *) buf, data_size) < 0) {
 			rumboot_free((char *) buf);
 			return false;
 		}
@@ -50,10 +50,10 @@ static bool test_cfg(struct base_addrs *addrs, const struct muart_conf *cfg)
 
 		struct rumboot_irq_entry *tbl = rumboot_irq_create(NULL);
 		rumboot_irq_set_handler(tbl, MDMA0_IRQ, 0, mdma_irq_handler, &mdma_base);
-		rumboot_irq_enable(MDMA0_IRQ);
+		rumboot_irq_enable(UART0_INTR);
 		rumboot_irq_table_activate(tbl);
 
-		if (mdma_transmit_data(UART0_BASE, &output[0], &buf[0], data_size) < 0) {
+		if (muart_transmit_data_throught_mdma(UART0_BASE, UART1_BASE, &output[0], &buf[0], data_size) < 0) {
 			//What should i do here? If a want to rumboot_free memory?
 			return false;
 		}
@@ -88,7 +88,7 @@ static const struct muart_conf cfg = {
 	.is_parity_available	= true,
 	.mode			= RS_422,
 	.is_loopback		= false,
-	.baud_rate		= 921600,
+	.baud_rate		= 12500000,
 	.dma_en			= false
 };
 

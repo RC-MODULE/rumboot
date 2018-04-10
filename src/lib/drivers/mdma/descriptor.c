@@ -120,3 +120,23 @@ struct descriptor mdma_get_desc(volatile uint32_t desc_addr, enum DESC_TYPE type
 
 	return desc;
 }
+
+bool is_valid_for_mdma(volatile struct descriptor * desc, enum DESC_TYPE type) {
+
+  bool ret = false;
+
+  if( type == NORMAL)  {
+
+    //uint64_t d = *(uint64_t *) desc;
+
+    //rumboot_printf("size of desc: %d\n", sizeof());
+
+    //ret = (d & (1UL << 63)) ? true : false;
+  }
+  else {
+    /*TO DO!*/
+
+  }
+
+  return ret;
+}
