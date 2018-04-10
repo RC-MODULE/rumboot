@@ -453,7 +453,7 @@ setup_cpu0_stack:
 
 
 setup_plb6plb4:
-//    bl          p64_init_simple
+    bl          p64_init_simple
     b goto_boot_main
 
 .section "ROM.text","ax",@progbits

@@ -39,10 +39,10 @@ void p64_set_configuration(uint32_t const base_addr, p64_cfg * cfg)
 void __attribute__((section(".ROM.text"))) p64_init_simple()
 {
     #include <platform/oi10/platform/devices.h>
-    //enable requests to boot rom mirror (0x00000011_00000000 - 0x00000011_0003FFF)
+    //enable requests to boot rom mirror (0x00000010_00000000 - 0x00000010_0000FFF)
     uint32_t reg_value;
-    p64_dcr_write_P64_ADDRL1(PLB6PLB4_0_BASE, 0x11);
-    p64_dcr_write_P64_ADDRH1(PLB6PLB4_0_BASE, 0x11);
+    p64_dcr_write_P64_ADDRL1(PLB6PLB4_0_BASE, 0x10);
+    p64_dcr_write_P64_ADDRH1(PLB6PLB4_0_BASE, 0x10);
     reg_value = p64_dcr_read_P64_P64CR(PLB6PLB4_0_BASE);
     reg_value |= (1 << P64CR_SPEN);
     p64_dcr_write_P64_P64CR(PLB6PLB4_0_BASE, reg_value);
