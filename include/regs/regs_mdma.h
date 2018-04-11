@@ -101,6 +101,7 @@
 
 #define DESC_TYPE_i 0
 #define DESC_GAP_i 16
+#define ADD_INFO_i 4
 
 /*IRQ MASK*/
 #define DIS_DONE_i 0

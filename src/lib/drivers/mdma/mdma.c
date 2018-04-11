@@ -144,23 +144,36 @@ void mdma_deinit(volatile struct mdma_device *mdma)
 	iowrite32(0x0, mdma->base + MDMA_ENABLE_R);
 }
 
+#include <platform/devices.h>
 void mdma_configure(volatile struct mdma_device *dev, struct mdma_config *cfg)
 {
-	rumboot_printf("Address of TX Table: %x\n", dev->txtbl);
+	bool is_add_info = false;
+	uint32_t settings_r = 0;
+	uint32_t settings_w = 0;
+
+	if(dev->type == MDMA_MUART || dev->type == MDMA_MGETH) {
+		is_add_info = true;
+	}
+
 	if (dev->txtbl != NULL) {
-		iowrite32(((int)cfg->desc_type << DESC_TYPE_i) | (cfg->desc_gap << DESC_GAP_i), dev->base + MDMA_SETTINGS_R);
+		settings_r = ((int)cfg->desc_type << DESC_TYPE_i) | (cfg->desc_gap << DESC_GAP_i);
 	}
 	if (dev->txtbl != NULL) {
 		iowrite32((volatile uint32_t)dev->txtbl, dev->base + MDMA_DESC_ADDR_R);
 	}
 
-	rumboot_printf("Address of RX Table: %x\n", dev->rxtbl);
+	if(is_add_info) settings_r |= (1 << ADD_INFO_i);
+	iowrite32(settings_r, dev->base + MDMA_SETTINGS_R);
+
 	if (dev->rxtbl != NULL) {
-		iowrite32(((int)cfg->desc_type << DESC_TYPE_i) | (cfg->desc_gap << DESC_GAP_i), dev->base + MDMA_SETTINGS_W);
+		settings_w = ((int)cfg->desc_type << DESC_TYPE_i) | (cfg->desc_gap << DESC_GAP_i);
 	}
 	if (dev->rxtbl != NULL) {
 		iowrite32((volatile uint32_t)dev->rxtbl, dev->base + MDMA_DESC_ADDR_W);
 	}
+
+	if(is_add_info) settings_w |= (1 << ADD_INFO_i);
+	iowrite32(settings_w, dev->base + MDMA_SETTINGS_W);
 
 	uint32_t irqmask = (1 << RAXI_ERR_i) | (1 << WAXI_ERR_i) | (1 << AXI_ERR_i)
 			   | (1 << STOP_DESC_i);
@@ -187,6 +200,7 @@ void mdma_write_txdescriptor(volatile struct mdma_device *mdma, volatile void *m
 	struct extra *to_extra = NULL;
 
 	if (mdma->conf.desc_type != NORMAL) {
+		rumboot_printf("we have no normal descriptor!\n");
 		to_extra = (struct extra *)desc_txaddr;
 	}
 
@@ -237,7 +251,7 @@ int mdma_transmit_data(uint32_t base, volatile void *dest, volatile void *src, s
 {
 	//CONFIG DMA
 	rumboot_printf("Config DMA.\n");
-	uint8_t desc_type = NORMAL;
+	uint8_t desc_type = LONG;
 	size_t num_rxdescriptors = 1;
 	size_t num_txdescriptors = 1;
 	bool irq_en = false;
