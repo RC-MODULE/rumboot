@@ -36,3 +36,12 @@ void mgeth_init(const uint32_t base, const struct mgeth_conf *conf);
 * return if data was transmitted OK - 0, else - value less than 0
  */
 int mgeth_transmit_data_throught_mdma(uint32_t base1, uint32_t base2, volatile void *dest, volatile void *src, size_t len);
+
+/**
+ * return if data was transmitted OK - 0, else - value less than 0
+ */
+int mgeth_init_sgmii();
+
+/**
+ * @}
+ */

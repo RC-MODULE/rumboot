@@ -33,9 +33,9 @@ struct extra {
 } __attribute__((packed));
 
 struct descriptor {
-	volatile struct settings *	set;
-	volatile void *			data_addr;
-	struct extra *			ex;
+	volatile struct extra	ex;//DEFINE THIS FIELD AS NULL IF YOU WORK WITH NORMAL DSCRIPTORS!
+  volatile uint32_t data_addr;
+	volatile struct settings set;
 } /*__attribute__((packed))*/;
 
 int mdma_set_desc(bool interrupt, bool stop, uint32_t data_len, volatile uint32_t data_addr, struct extra *ex
@@ -238,7 +238,8 @@ bool mdma_is_finished(volatile struct mdma_device *mdma)
 	volatile struct descriptor desc = mdma_get_desc(desc_rxaddr, mdma->conf.desc_type);
 
 	//dump_desc(&desc);
-	bool is_valid_for_mdma = desc.set->ownership;
+
+	bool is_valid_for_mdma = desc.set.ownership;
 
 	if (is_valid_for_mdma) {
 		return false;

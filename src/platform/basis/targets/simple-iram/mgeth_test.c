@@ -30,13 +30,25 @@ static bool mgeth_mdma_test(uint32_t to_addrs)
   memset(in_buf, 0x55, byte_number);
   memset(out_buf, 0x0, byte_number);
 
+  mgeth_init_sgmii();
+
   mgeth_init( addrs->base1, &cfg);
   mgeth_init( addrs->base2, &cfg);
 
-  if( mgeth_transmit_data_throught_mdma( addrs->base1,  addrs->base2, &out_buf[0], &in_buf[0], byte_number) < 0)
-    return false;
+  if( mgeth_transmit_data_throught_mdma(addrs->base1,  addrs->base2, &out_buf[0], &in_buf[0], byte_number) < 0 ) {
+    goto test_failed;
+  }
+
+  if (memcmp(&in_buf[0], &out_buf[0], byte_number) != 0) {
+  	goto test_failed;
+  }
 
   return true;
+
+  test_failed:
+    rumboot_free(in_buf);
+    rumboot_free(out_buf);
+    return false;
 }
 
 void handler_eth()

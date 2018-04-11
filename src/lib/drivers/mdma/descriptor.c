@@ -31,10 +31,10 @@ struct extra {
 }__attribute__((packed));
 
 struct descriptor {
-  volatile struct extra *		ex;//DEFINE THIS FIELD AS NULL IF YOU WORK WITH NORMAL DSCRIPTORS!
-  volatile void * data_addr;
-	volatile struct settings *	set;
-}__attribute__((packed));
+  volatile struct extra	ex;//DEFINE THIS FIELD AS NULL IF YOU WORK WITH NORMAL DSCRIPTORS!
+  volatile uint32_t data_addr;
+	volatile struct settings set;
+} __attribute__((packed));
 
 #define OWNERSHIP_i 31
 #define LINK_i 30
@@ -46,21 +46,20 @@ struct descriptor {
 
 void dump_desc(volatile struct descriptor *cfg)
 {
-	volatile struct settings *set = cfg->set;
-  volatile struct extra * ex = cfg->ex;
+	volatile struct settings set = cfg->set;
+  volatile struct extra ex = cfg->ex;
 
-	rumboot_printf("Settings: %x\n", *((uint32_t *)set));
-	rumboot_printf("ownership: %d\n", set->ownership);
-	rumboot_printf("link: %d\n", set->link);
-	rumboot_printf("interrupt: %d\n", set->interrupt);
-	rumboot_printf("stop: %d\n", set->stop);
-	rumboot_printf("increment: %d\n", set->increment);
-	rumboot_printf("error: %d\n", set->er);
-  rumboot_printf("length: %d\n", set->length);
+	rumboot_printf("ownership: %d\n", set.ownership);
+	rumboot_printf("link: %d\n", set.link);
+	rumboot_printf("interrupt: %d\n", set.interrupt);
+	rumboot_printf("stop: %d\n", set.stop);
+	rumboot_printf("increment: %d\n", set.increment);
+	rumboot_printf("error: %d\n", set.er);
+  rumboot_printf("length: %d\n", set.length);
 
 	rumboot_printf("data address: %x\n", cfg->data_addr);
-	rumboot_printf("string length: %x\n", ex->string_length);
-  rumboot_printf("pitch: %x\n\n", ex->pitch);
+	rumboot_printf("string length: %x\n", ex.string_length);
+  rumboot_printf("pitch: %x\n\n", ex.pitch);
 }
 
 int mdma_set_desc(bool interrupt, bool stop, uint32_t data_len, volatile uint32_t data_addr, struct extra* ex,
@@ -97,25 +96,22 @@ struct descriptor mdma_get_desc(volatile uint32_t desc_addr, enum DESC_TYPE type
 {
 	volatile struct descriptor desc;
 
-  desc.set = NULL;
-  desc.ex = NULL;
 	rumboot_printf("Get descriptor, addr: %x\n", desc_addr);
 
 	if (type == LONG || type == PITCH) {
-    desc.ex = (volatile struct extra *) (desc_addr);
-		desc.ex->reserve = *(volatile uint64_t *) desc_addr;
+    desc.ex = *(volatile struct extra *) (desc_addr);
+		desc.ex.reserve = *(volatile uint64_t *) desc_addr;
     desc_addr += 4;
-    desc.ex->string_length = *(volatile uint16_t*) desc_addr;
+    desc.ex.string_length = *(volatile uint16_t*) desc_addr;
 		desc_addr += 2;
-    desc.ex->pitch = *(volatile uint16_t *) desc_addr;
+    desc.ex.pitch = *(volatile uint16_t *) desc_addr;
     desc_addr += 2;
 	}
 
-	desc.data_addr = *(volatile void **) (desc_addr);
+	desc.data_addr = *(volatile uint32_t *) (desc_addr);
 	desc_addr += 4;
 
-  desc.set =  (volatile struct settings *) (desc_addr);
-
+  desc.set =  *(volatile struct settings *) (desc_addr);
   //dump_desc(&desc);
 
 	return desc;
