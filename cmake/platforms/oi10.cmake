@@ -40,6 +40,7 @@ macro(rumboot_platform_generate_stuff_for_taget product)
         ${product}.hex ALL
         DEPENDS ${product}.hex/image_mem64_0.hex
       )
+      add_dependencies(${product}.all ${product}.hex)
     endif()
 
 endmacro()
