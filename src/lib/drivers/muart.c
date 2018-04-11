@@ -144,13 +144,13 @@ int muart_transmit_data_throught_mdma(uint32_t base1, uint32_t base2, volatile v
 	volatile struct mdma_transaction *t1 = NULL;
 	size_t transaction_count = 1;
 	while (transaction_count--) {
-		rumboot_printf("Create transaction.\n");
+		rumboot_printf("Create transactions.\n");
 		rumboot_printf("Destination: %x, source: %x, length: %x\n", dest, src, len);
 		t0 = mdma_transaction_create(muart0, dest, src, len);
 		t1 = mdma_transaction_create(muart1, dest, src, len*2);
 
 		//Push transaction to queue
-		rumboot_printf("Queue transaction.\n");
+		rumboot_printf("Queue transactions.\n");
 		//mdma_transaction_dump(t);
 		if( mdma_transaction_queue((struct mdma_transaction*) t0) < 0) return -1;
 		if( mdma_transaction_queue((struct mdma_transaction*) t1) < 0) return -1;
@@ -178,7 +178,7 @@ int muart_transmit_data_throught_mdma(uint32_t base1, uint32_t base2, volatile v
 	//Remove transactions
 	transaction_count = 1;
 	while (transaction_count--) {
-		rumboot_printf("Remove transaction.\n");
+		rumboot_printf("Remove transactions.\n");
 		mdma_transaction_remove((struct mdma_transaction*) t0);
 		mdma_transaction_remove((struct mdma_transaction*) t1);
 		t0++;

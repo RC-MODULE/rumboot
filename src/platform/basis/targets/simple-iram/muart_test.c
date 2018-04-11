@@ -21,6 +21,24 @@ struct base_addrs {
 	uint32_t	base2;
 };
 
+static int mem_cmp_odd_numbs(char * src, char * dest, size_t len)
+{
+	size_t i;
+	for(i = 0; i < len; i++) {
+		if( *src != *dest )
+		{
+			rumboot_printf("src byte: %x, dest byte: %x\n", *src, *dest);
+			return -1;
+		}
+		else {
+			src ++;
+			dest += 2;
+		}
+	}
+
+	return 0;
+}
+
 static bool test_cfg(struct base_addrs *addrs, const struct muart_conf *cfg)
 {
 	size_t data_size = 8;
@@ -59,12 +77,12 @@ static bool test_cfg(struct base_addrs *addrs, const struct muart_conf *cfg)
 		}
 
 		rumboot_printf("Compare arrays.\n");
-		if (memcmp((char *) &buf[0], (char *) &output[0], data_size) != 0) {
+		if (mem_cmp_odd_numbs((char *) &buf[0], (char *) &output[0], data_size) != 0) {
 			//the same
 			size_t j;
 			for(j=0; j<data_size; j++)
 			{
-				rumboot_printf("%x", output[j]);
+				rumboot_printf("%x ", output[j]);
 			}
 			rumboot_printf("\n");
 			rumboot_printf("failed!\n");
