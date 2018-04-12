@@ -245,6 +245,14 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
    TIMEOUT 300 us
    IRUN_FLAGS +can_plus_adapter
   ) 
+  
+  add_rumboot_target(
+   CONFIGURATION IRAM_MIRROR
+   FILES can-adapter/can_adapter_0_test.c
+   TIMEOUT 600 us
+   IRUN_FLAGS +can_plus_adapter
+  )  
+  
 
  add_rumboot_target(
    CONFIGURATION IRAM
@@ -252,6 +260,13 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
    TIMEOUT 150 us
    IRUN_FLAGS +can_plus_adapter
   )
+ 
+ add_rumboot_target(
+   CONFIGURATION IRAM_MIRROR
+   FILES can-adapter/can_adapter_1_test.c
+   TIMEOUT 500 us
+   IRUN_FLAGS +can_plus_adapter
+  ) 
 
  add_rumboot_target(
     CONFIGURATION IRAM
@@ -261,6 +276,15 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     IRUN_FLAGS +bisr_error_injection_rep
     CFLAGS -DBISR_TEST_EXPECTED=BISR_MEM_GOOD
   )
+  
+ add_rumboot_target(
+    CONFIGURATION IRAM_MIRROR
+    FILES bisr/bisr_hard_test.c
+    NAME bisr_hard_test_rep
+    TIMEOUT 700 us
+    IRUN_FLAGS +bisr_error_injection_rep
+    CFLAGS -DBISR_TEST_EXPECTED=BISR_MEM_GOOD
+  )  
 
  add_rumboot_target(
     CONFIGURATION IRAM
@@ -270,6 +294,15 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     IRUN_FLAGS +bisr_error_injection_nonrep
     CFLAGS -DBISR_TEST_EXPECTED=BISR_MEM_FAIL
   )
+  
+ add_rumboot_target(
+    CONFIGURATION IRAM_MIRROR
+    FILES bisr/bisr_hard_test.c
+    NAME bisr_hard_test_nonrep
+    TIMEOUT 700 us
+    IRUN_FLAGS +bisr_error_injection_nonrep
+    CFLAGS -DBISR_TEST_EXPECTED=BISR_MEM_FAIL
+  )  
 
  add_rumboot_target(
     CONFIGURATION IRAM
@@ -278,6 +311,14 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     TIMEOUT 400 us
     CFLAGS -DBISR_TEST_EXPECTED=BISR_MEM_PERFECT
   )
+  
+ add_rumboot_target(
+    CONFIGURATION IRAM_MIRROR
+    FILES bisr/bisr_hard_test.c
+    NAME bisr_hard_test_clear
+    TIMEOUT 700 us
+    CFLAGS -DBISR_TEST_EXPECTED=BISR_MEM_PERFECT
+  )  
 
  add_rumboot_target(
     CONFIGURATION IRAM
@@ -287,6 +328,15 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     IRUN_FLAGS +bisr_error_injection_rep
     CFLAGS -DBISR_TEST_EXPECTED=BISR_MEM_GOOD
   )
+  
+ add_rumboot_target(
+    CONFIGURATION IRAM_MIRROR
+    FILES bisr/bisr_program_test.c
+    NAME bisr_program_test_rep
+    TIMEOUT 800 us
+    IRUN_FLAGS +bisr_error_injection_rep
+    CFLAGS -DBISR_TEST_EXPECTED=BISR_MEM_GOOD
+  )  
 
  add_rumboot_target(
     CONFIGURATION IRAM
@@ -296,6 +346,15 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     IRUN_FLAGS +bisr_error_injection_nonrep
     CFLAGS -DBISR_TEST_EXPECTED=BISR_MEM_FAIL
   )
+  
+ add_rumboot_target(
+    CONFIGURATION IRAM_MIRROR
+    FILES bisr/bisr_program_test.c
+    NAME bisr_program_test_nonrep
+    TIMEOUT 800 us
+    IRUN_FLAGS +bisr_error_injection_nonrep
+    CFLAGS -DBISR_TEST_EXPECTED=BISR_MEM_FAIL
+  )  
 
  add_rumboot_target(
     CONFIGURATION IRAM
@@ -304,6 +363,14 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     TIMEOUT 500 us
     CFLAGS -DBISR_TEST_EXPECTED=BISR_MEM_PERFECT
   )
+  
+ add_rumboot_target(
+    CONFIGURATION IRAM_MIRROR
+    FILES bisr/bisr_program_test.c
+    NAME bisr_program_clear
+    TIMEOUT 800 us
+    CFLAGS -DBISR_TEST_EXPECTED=BISR_MEM_PERFECT
+  )  
 
   add_rumboot_target(
     CONFIGURATION IRAM
