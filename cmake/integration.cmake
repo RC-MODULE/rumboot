@@ -14,11 +14,14 @@ if(RUMBOOT_COVERAGE)
 endif()
 
 #TODO: CLEAN UN INTEGRATION STUFF BY INCLUDING RumBoot.cmake
-#TODO: RIGHT HERE. 
-
+#TODO: RIGHT HERE.
 macro(add_rumboot_target_dir dir)
+  #TODO: Use RUMBOOT_PLATFORM_TARGET_DIR
+  #TODO: Search and resolve directories in common/ dir
   file(GLOB RUMBOOT_TARGETS_C ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/targets/${dir}/*.c)
-  file(GLOB RUMBOOT_TARGETS_S ${RUMBOOT_PLATFORM}/targets/${dir}/*.S)
+  file(GLOB RUMBOOT_TARGETS_S ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/targets/${dir}/*.S)
+  file(GLOB RUMBOOT_TARGETS_LUA ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/${dir}/*.lua)
+
   foreach(target ${RUMBOOT_TARGETS_C} ${RUMBOOT_TARGETS_S} )
     add_rumboot_target(
         ${ARGN}
