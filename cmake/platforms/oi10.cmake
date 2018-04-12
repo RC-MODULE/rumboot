@@ -3,7 +3,6 @@ SET(RUMBOOT_ARCH ppc)
 file(GLOB PLATFORM_SOURCES
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/*.c
     ${CMAKE_SOURCE_DIR}/src/lib/drivers/irq-dummy.c
-    ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/*.S
 )
 
 #Flags for Power PC
@@ -18,11 +17,22 @@ endmacro()
 rumboot_add_configuration(
   ROM
   LDS oi10/rom.lds
-  CFLAGS -DRUMBOOT_ONLY_STACK -DRUMBOOT_PRINTF_ACCEL
+  CFLAGS -DRUMBOOT_ONLY_STACK
+  SNAPSHOT default
+  PREFIX rom
+  FEATURES ROMGEN
+  FILES ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/startup.S
+)
+
+rumboot_add_configuration(
+  BAREROM
+  LDS oi10/rom.lds
+  CFLAGS -DRUMBOOT_ONLY_STACK
   SNAPSHOT default
   PREFIX rom
   FEATURES ROMGEN
 )
+
 
 
 macro(rumboot_platform_generate_stuff_for_taget product)
@@ -46,22 +56,25 @@ macro(rumboot_platform_generate_stuff_for_taget product)
 endmacro()
 
 
-macro(add_directory_with_targets dir)
-  file(GLOB RUMBOOT_TARGETS_C ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/targets/${dir}/*.c)
-  file(GLOB RUMBOOT_TARGETS_S ${RUMBOOT_PLATFORM}/targets/${dir}/*.S)
-  foreach(target ${RUMBOOT_TARGETS_C} ${RUMBOOT_TARGETS_S} )
-    add_rumboot_target(
-        ${ARGN}
-        FILES ${target}
-    )
-  endforeach()
-endmacro()
 
 macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
   add_rumboot_target(
       CONFIGURATION ROM
       FILES hello.c
   )
+
+
+
+# Example for adding a single bare-rom test
+#  add_rumboot_target(
+#    CONFIGURATION BAREROM
+#    FILES bare-rom/gtube-spr-check.S
+#  )
+
+  add_rumboot_target_dir(bare-rom/
+    CONFIGURATION BAREROM
+  )
+
 endmacro()
 
 

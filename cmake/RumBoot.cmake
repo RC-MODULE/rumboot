@@ -119,6 +119,17 @@ macro(locate_source_file file)
   endif()
 endmacro()
 
+macro(add_rumboot_target_dir dir)
+  file(GLOB RUMBOOT_TARGETS_C ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/targets/${dir}/*.c)
+  file(GLOB RUMBOOT_TARGETS_S ${RUMBOOT_PLATFORM}/targets/${dir}/*.S)
+  foreach(target ${RUMBOOT_TARGETS_C} ${RUMBOOT_TARGETS_S} )
+    add_rumboot_target(
+        ${ARGN}
+        FILES ${target}
+    )
+  endforeach()
+endmacro()
+
 function(add_rumboot_target)
   set(options )
   set(oneValueArgs SNAPSHOT LDS NAME PREFIX CONFIGURATION BOOTROM)

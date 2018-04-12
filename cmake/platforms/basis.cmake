@@ -75,88 +75,75 @@ rumboot_add_configuration(
 )
 
 
-macro(add_directory_with_targets dir)
-  file(GLOB RUMBOOT_TARGETS_C ${RUMBOOT_PLATFORM_TARGET_DIR}/${dir}/*.c)
-  file(GLOB RUMBOOT_TARGETS_S ${RUMBOOT_PLATFORM_TARGET_DIR}/${dir}/*.S)
-  file(GLOB RUMBOOT_TARGETS_LUA ${RUMBOOT_PLATFORM_TARGET_DIR}/${dir}/*.lua)
-  foreach(target ${RUMBOOT_TARGETS_C} ${RUMBOOT_TARGETS_S} ${RUMBOOT_TARGETS_LUA})
-    add_rumboot_target(
-        ${ARGN}
-        FILES ${target}
-    )
-  endforeach()
-
-endmacro()
-
 ### Add tests here ###
 #WARNING! Full regression automatically includes all tests from the short ones
 macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
-  add_directory_with_targets(simple-rom/
+  add_rumboot_target_dir(simple-rom/
     CONFIGURATION ROM
     PREFIX simple-rom)
 
-  add_directory_with_targets(simple-iram/
+  add_rumboot_target_dir(simple-iram/
       CONFIGURATION IRAM
       PREFIX simple-iram)
 
-  add_directory_with_targets(simple-iram/
+  add_rumboot_target_dir(simple-iram/
       CONFIGURATION IRAM_MIRROR
     PREFIX simple-iram-mirror)
 
 
-  add_directory_with_targets(jenkins/
+  add_rumboot_target_dir(jenkins/
       CONFIGURATION ROM
       PREFIX jenkins
       TESTGROUP short
     )
 
-    add_directory_with_targets(irq/
+    add_rumboot_target_dir(irq/
       CONFIGURATION ROM
       PREFIX irq-rom
       TESTGROUP short
     )
 
-    add_directory_with_targets(irq/
+    add_rumboot_target_dir(irq/
       CONFIGURATION IRAM
       PREFIX irq-iram
       TESTGROUP short
     )
 
-    add_directory_with_targets(irq/
+    add_rumboot_target_dir(irq/
       CONFIGURATION IRAM_MIRROR
       PREFIX irq-iram-mirror
     )
 
-    add_directory_with_targets(lua/
+    add_rumboot_target_dir(lua/
       CONFIGURATION LPROBE_CPU
       PREFIX lprobe-cpu
     )
 
-    add_directory_with_targets(lua/
+    add_rumboot_target_dir(lua/
       CONFIGURATION LPROBE_PCIE
       PREFIX lprobe-pcie
     )
 
-    add_directory_with_targets(i2c/
+    add_rumboot_target_dir(i2c/
       CONFIGURATION IRAM
       CFLAGS -DI2C_BASE=I2C0_BASE
       PREFIX i2c-0
     )
 
-    add_directory_with_targets(i2c/
+    add_rumboot_target_dir(i2c/
       CONFIGURATION IRAM
       CFLAGS -DI2C_BASE=I2C1_BASE
       PREFIX i2c-1
     )
 
-	 add_directory_with_targets(i2c/multimaster
+	 add_rumboot_target_dir(i2c/multimaster
       CONFIGURATION IRAM
 	  CFLAGS -DI2C_BASE=I2C0_BASE
 	  IRUN_FLAGS +i2c_single_bus
       PREFIX multimaster
     )
 
-    add_directory_with_targets(common/spl-stubs/
+    add_rumboot_target_dir(common/spl-stubs/
       CONFIGURATION IRAM
       PREFIX spl
       FEATURES STUB
@@ -183,7 +170,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         NAME "stub-rvds"
         FEATURES STUB
     )
-    
+
     add_rumboot_target(
         CONFIGURATION ROM
         FILES common/bootrom-stubs/bootrom-stub.c
@@ -238,21 +225,21 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     TIMEOUT 200 us
     IRUN_FLAGS +select_sdio0
   )
- 
+
   add_rumboot_target(
    CONFIGURATION IRAM
    FILES can-adapter/can_adapter_0_test.c
    TIMEOUT 300 us
    IRUN_FLAGS +can_plus_adapter
-  ) 
-  
+  )
+
   add_rumboot_target(
    CONFIGURATION IRAM_MIRROR
    FILES can-adapter/can_adapter_0_test.c
    TIMEOUT 600 us
    IRUN_FLAGS +can_plus_adapter
-  )  
-  
+  )
+
 
  add_rumboot_target(
    CONFIGURATION IRAM
@@ -260,13 +247,13 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
    TIMEOUT 150 us
    IRUN_FLAGS +can_plus_adapter
   )
- 
+
  add_rumboot_target(
    CONFIGURATION IRAM_MIRROR
    FILES can-adapter/can_adapter_1_test.c
    TIMEOUT 500 us
    IRUN_FLAGS +can_plus_adapter
-  ) 
+  )
 
  add_rumboot_target(
     CONFIGURATION IRAM
@@ -276,7 +263,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     IRUN_FLAGS +bisr_error_injection_rep
     CFLAGS -DBISR_TEST_EXPECTED=BISR_MEM_GOOD
   )
-  
+
  add_rumboot_target(
     CONFIGURATION IRAM_MIRROR
     FILES bisr/bisr_hard_test.c
@@ -284,7 +271,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     TIMEOUT 700 us
     IRUN_FLAGS +bisr_error_injection_rep
     CFLAGS -DBISR_TEST_EXPECTED=BISR_MEM_GOOD
-  )  
+  )
 
  add_rumboot_target(
     CONFIGURATION IRAM
@@ -294,7 +281,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     IRUN_FLAGS +bisr_error_injection_nonrep
     CFLAGS -DBISR_TEST_EXPECTED=BISR_MEM_FAIL
   )
-  
+
  add_rumboot_target(
     CONFIGURATION IRAM_MIRROR
     FILES bisr/bisr_hard_test.c
@@ -302,7 +289,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     TIMEOUT 700 us
     IRUN_FLAGS +bisr_error_injection_nonrep
     CFLAGS -DBISR_TEST_EXPECTED=BISR_MEM_FAIL
-  )  
+  )
 
  add_rumboot_target(
     CONFIGURATION IRAM
@@ -311,14 +298,14 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     TIMEOUT 400 us
     CFLAGS -DBISR_TEST_EXPECTED=BISR_MEM_PERFECT
   )
-  
+
  add_rumboot_target(
     CONFIGURATION IRAM_MIRROR
     FILES bisr/bisr_hard_test.c
     NAME bisr_hard_test_clear
     TIMEOUT 700 us
     CFLAGS -DBISR_TEST_EXPECTED=BISR_MEM_PERFECT
-  )  
+  )
 
  add_rumboot_target(
     CONFIGURATION IRAM
@@ -328,7 +315,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     IRUN_FLAGS +bisr_error_injection_rep
     CFLAGS -DBISR_TEST_EXPECTED=BISR_MEM_GOOD
   )
-  
+
  add_rumboot_target(
     CONFIGURATION IRAM_MIRROR
     FILES bisr/bisr_program_test.c
@@ -336,7 +323,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     TIMEOUT 800 us
     IRUN_FLAGS +bisr_error_injection_rep
     CFLAGS -DBISR_TEST_EXPECTED=BISR_MEM_GOOD
-  )  
+  )
 
  add_rumboot_target(
     CONFIGURATION IRAM
@@ -346,7 +333,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     IRUN_FLAGS +bisr_error_injection_nonrep
     CFLAGS -DBISR_TEST_EXPECTED=BISR_MEM_FAIL
   )
-  
+
  add_rumboot_target(
     CONFIGURATION IRAM_MIRROR
     FILES bisr/bisr_program_test.c
@@ -354,7 +341,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     TIMEOUT 800 us
     IRUN_FLAGS +bisr_error_injection_nonrep
     CFLAGS -DBISR_TEST_EXPECTED=BISR_MEM_FAIL
-  )  
+  )
 
  add_rumboot_target(
     CONFIGURATION IRAM
@@ -363,14 +350,14 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     TIMEOUT 500 us
     CFLAGS -DBISR_TEST_EXPECTED=BISR_MEM_PERFECT
   )
-  
+
  add_rumboot_target(
     CONFIGURATION IRAM_MIRROR
     FILES bisr/bisr_program_test.c
     NAME bisr_program_clear
     TIMEOUT 800 us
     CFLAGS -DBISR_TEST_EXPECTED=BISR_MEM_PERFECT
-  )  
+  )
 
   add_rumboot_target(
     CONFIGURATION IRAM

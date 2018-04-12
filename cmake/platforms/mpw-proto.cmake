@@ -90,24 +90,13 @@ endif()
 endmacro()
 
 
-macro(add_directory_with_targets dir)
-  file(GLOB RUMBOOT_TARGETS_C ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/targets/${dir}/*.c)
-  file(GLOB RUMBOOT_TARGETS_S ${RUMBOOT_PLATFORM}/targets/${dir}/*.S)
-  foreach(target ${RUMBOOT_TARGETS_C} ${RUMBOOT_TARGETS_S} )
-    add_rumboot_target(
-        ${ARGN}
-        FILES ${target}
-    )
-  endforeach()
-endmacro()
-
 macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
-  add_directory_with_targets(primary/
+  add_rumboot_target_dir(primary/
     CONFIGURATION PRIMARY
   PREFIX primary)
 
-  add_directory_with_targets(secondary/
+  add_rumboot_target_dir(secondary/
       CONFIGURATION SECONDARY
     PREFIX secondary)
 

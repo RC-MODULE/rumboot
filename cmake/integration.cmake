@@ -12,6 +12,21 @@ if(RUMBOOT_COVERAGE)
       ${PROJECT_BINARY_DIR}/view_rumboot_coverage
   )
 endif()
+
+#TODO: CLEAN UN INTEGRATION STUFF BY INCLUDING RumBoot.cmake
+#TODO: RIGHT HERE. 
+
+macro(add_rumboot_target_dir dir)
+  file(GLOB RUMBOOT_TARGETS_C ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/targets/${dir}/*.c)
+  file(GLOB RUMBOOT_TARGETS_S ${RUMBOOT_PLATFORM}/targets/${dir}/*.S)
+  foreach(target ${RUMBOOT_TARGETS_C} ${RUMBOOT_TARGETS_S} )
+    add_rumboot_target(
+        ${ARGN}
+        FILES ${target}
+    )
+  endforeach()
+endmacro()
+
 # This one builds our rumboot that we're gonna use for the SoC
 # Disabled until the rumboot builds for target are actually supported
 #add_external_component(rumboot rumboot -DRUMBOOT_PLATFORM=basis)
@@ -143,7 +158,7 @@ function(add_rumboot_target)
 
     #FixMe: Hack. ARM ModelManager fucks up simulation with a segfault if
     #No JTAGbsi file is found. That happens even if it's not really running
-    #So we always provide a dummy here to be safe. 
+    #So we always provide a dummy here to be safe.
     hdl_test_provide_file(rumboot-${TARGET_SNAPSHOT}-${product} ${CMAKE_SOURCE_DIR}/scripts/empty.txt JTAGbsi)
 
 
