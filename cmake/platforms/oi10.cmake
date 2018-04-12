@@ -73,6 +73,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
   add_rumboot_target_dir(bare-rom/
     CONFIGURATION BAREROM
+    TESTGROUP short
   )
 
 endmacro()
