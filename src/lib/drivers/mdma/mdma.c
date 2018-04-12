@@ -178,16 +178,16 @@ void mdma_configure(volatile struct mdma_device *dev, struct mdma_config *cfg)
 	uint32_t irqmask = (1 << RAXI_ERR_i) | (1 << WAXI_ERR_i) | (1 << AXI_ERR_i)
 			   | (1 << STOP_DESC_i);
 
-	if (dev->conf.irq_en) {
-		if (dev->rxtbl != NULL) {
+	if (dev->conf.irq_en && dev->rxtbl != NULL) {
+
+			rumboot_printf("Set IRQ mask for W channel.\n");
 			iowrite32(irqmask, dev->base + MDMA_IRQ_MASK_W);
-		}
 	}
 
-	if (dev->conf.irq_en) {
-		if (dev->txtbl != NULL) {
+	if (dev->conf.irq_en && dev->txtbl != NULL) {
+
+			rumboot_printf("Set IRQ mask for R channel.\n");
 			iowrite32(irqmask, dev->base + MDMA_IRQ_MASK_R);
-		}
 	}
 }
 
@@ -225,7 +225,7 @@ void mdma_write_rxdescriptor(volatile struct mdma_device *mdma, volatile void *m
 bool mdma_is_finished(volatile struct mdma_device *mdma)
 {
 	if (mdma->conf.irq_en) {
-		if (!(irqstat_r & (1 << STOP_DESC_i))) {
+		if (!(irqstat_w & (1 << STOP_DESC_i))) {
 			rumboot_printf("irqstat_r: %x\n", irqstat_r);
 			rumboot_printf("irqstat_w: %x\n", irqstat_w);
 			return false;
@@ -236,8 +236,6 @@ bool mdma_is_finished(volatile struct mdma_device *mdma)
 
 	volatile uint32_t desc_rxaddr = (volatile uint32_t)mdma->rxtbl + mdma->conf.desc_gap * (mdma->conf.num_rxdescriptors - 1);
 	volatile struct descriptor desc = mdma_get_desc(desc_rxaddr, mdma->conf.desc_type);
-
-	//dump_desc(&desc);
 
 	bool is_valid_for_mdma = desc.set.ownership;
 

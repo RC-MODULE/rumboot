@@ -64,14 +64,7 @@ static bool test_cfg(struct base_addrs *addrs, const struct muart_conf *cfg)
 
 		memset((char *) &output[0], 0x0, data_size);
 
-		uint32_t mdma_base = UART0_BASE;
-
-		struct rumboot_irq_entry *tbl = rumboot_irq_create(NULL);
-		rumboot_irq_set_handler(tbl, MDMA0_IRQ, 0, mdma_irq_handler, &mdma_base);
-		rumboot_irq_enable(UART0_INTR);
-		rumboot_irq_table_activate(tbl);
-
-		if (muart_transmit_data_throught_mdma(UART0_BASE, UART1_BASE, &output[0], &buf[0], data_size) < 0) {
+		if (muart_transmit_data_throught_mdma(addrs->base1, addrs->base2, &output[0], &buf[0], data_size) < 0) {
 			//What should i do here? If a want to rumboot_free memory?
 			return false;
 		}
@@ -89,8 +82,6 @@ static bool test_cfg(struct base_addrs *addrs, const struct muart_conf *cfg)
 			return false;
 		}
 
-		rumboot_irq_table_activate(NULL);
-		rumboot_irq_free(tbl);
 		rumboot_free((char *) output);
 	}
 
@@ -151,27 +142,28 @@ TEST_ENTRY("dma 01", muart_mdma_test, (uint32_t)&addrs01),
 // TEST_ENTRY("rs485 10", muart_rs485_test, (uint32_t)&addrs10),
 TEST_SUITE_END();
 
-void handler_uart0(int irq, void *arg)
-{
-	uint32_t *done = arg;
-
-	*done = ioread32(UART0_BASE + MUART_STATUS);
-	rumboot_printf("IRQ arrived, arg %x\n", *((uint32_t *)arg));
-	rumboot_printf("done\n");
-}
+// static void handler_uart1(int irq, void *arg)
+// {
+// 	uint32_t *done = arg;
+//
+// 	*done = ioread32(UART1_BASE + MUART_STATUS);
+// 	rumboot_printf("IRQ arrived, arg %x\n", *((uint32_t *)arg));
+// 	rumboot_printf("done\n");
+// }
 
 uint32_t main()
 {
 	volatile uint32_t done = 0;
 	struct rumboot_irq_entry *tbl = rumboot_irq_create(NULL);
 
-	rumboot_irq_set_handler(tbl, UART0_INTR, 0, handler_uart0, (void *)&done);
-	rumboot_irq_enable(UART0_INTR);
+	uint32_t base = UART1_BASE;
+	rumboot_irq_set_handler(tbl, UART1_INTR, 0, mdma_irq_handler, (void *)&base);
+	rumboot_irq_enable(UART1_INTR);
 	rumboot_irq_table_activate(tbl);
 
 	int ret = test_suite_run(NULL, &muart_test);
 
-	asm volatile ("swi #74");
+	asm volatile ("swi #77");
 
 	rumboot_printf("%d tests from suite failed\n", ret);
 

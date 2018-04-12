@@ -103,62 +103,70 @@ int mgeth_transmit_data_throught_mdma(uint32_t base1, uint32_t base2, volatile v
 
 int mgeth_init_sgmii()
 {
-	uint32_t read_data,
-		 OFFSET_SGMII,
-		 OFFSET_SPCS_0,
-		 OFFSET_TXS_0,
-		 OFFSET_TXS_1,
-		 OFFSET_TXS_2,
-		 OFFSET_TXS_3,
-		 OFFSET_CM,
-		 OFFSET_RXS_0,
-		 OFFSET_RXS_1,
-		 OFFSET_RXS_2,
-		 OFFSET_RXS_3
-	;
+	uint32_t	read_data,
+							OFFSET_SGMII,
+							OFFSET_SPCS_0,
+							OFFSET_SPCS_1,
+							OFFSET_SPCS_2,
+							OFFSET_SPCS_3,
+							OFFSET_TXS_0,
+							OFFSET_TXS_1,
+							OFFSET_TXS_2,
+							OFFSET_TXS_3,
+							OFFSET_CM,
+							OFFSET_RXS_0,
+							OFFSET_RXS_1,
+							OFFSET_RXS_2,
+							OFFSET_RXS_3
+							;
+	 OFFSET_SGMII   = 0x01086000;
 
-	OFFSET_SGMII = 0x01086000;
-
-	OFFSET_SPCS_0 = OFFSET_SGMII + 0x0200;
-	OFFSET_TXS_0 = OFFSET_SGMII + 0x0000;
-	OFFSET_TXS_1 = OFFSET_SGMII + 0x0400;
-	OFFSET_TXS_2 = OFFSET_SGMII + 0x0800;
-	OFFSET_TXS_3 = OFFSET_SGMII + 0x0C00;
-	OFFSET_CM = OFFSET_SGMII + 0x1000;
-	OFFSET_RXS_0 = OFFSET_SGMII + 0x0100;
-	OFFSET_RXS_1 = OFFSET_SGMII + 0x0500;
-	OFFSET_RXS_2 = OFFSET_SGMII + 0x0900;
-	OFFSET_RXS_3 = OFFSET_SGMII + 0x0D00;
+	 OFFSET_SPCS_0  = OFFSET_SGMII + 0x0200;
+	 OFFSET_SPCS_1  = OFFSET_SGMII + 0x0600;
+	 OFFSET_SPCS_2  = OFFSET_SGMII + 0x0A00;
+	 OFFSET_SPCS_3  = OFFSET_SGMII + 0x0E00;
+	 OFFSET_TXS_0   = OFFSET_SGMII + 0x0000;
+	 OFFSET_TXS_1   = OFFSET_SGMII + 0x0400;
+	 OFFSET_TXS_2   = OFFSET_SGMII + 0x0800;
+	 OFFSET_TXS_3   = OFFSET_SGMII + 0x0C00;
+	 OFFSET_CM      = OFFSET_SGMII + 0x1000;
+	 OFFSET_RXS_0   = OFFSET_SGMII + 0x0100;
+	 OFFSET_RXS_1   = OFFSET_SGMII + 0x0500;
+	 OFFSET_RXS_2   = OFFSET_SGMII + 0x0900;
+	 OFFSET_RXS_3   = OFFSET_SGMII + 0x0D00;
 
 	rumboot_printf("=== config SGMII_PHY ===\n");
-	rumboot_printf("=== config SGMII_PHY OFFSET_SPCS_0 ===\n");
-	iowrite32(0x00000140, OFFSET_SPCS_0 + 0x00);
+	rumboot_printf("=== config SGMII_PHY OFFSET_SPCS ===\n");
+	iowrite32(0x00000140,OFFSET_SPCS_0 + 0x00);
+	iowrite32(0x00000140,OFFSET_SPCS_1 + 0x00);
+	iowrite32(0x00000140,OFFSET_SPCS_2 + 0x00);
+	iowrite32(0x00000140,OFFSET_SPCS_3 + 0x00);
 
 	rumboot_printf("=== config SGMII_PHY OFFSET_TXS ===\n");
-	iowrite32(0x40803004, OFFSET_TXS_0 + 0x00);
-	iowrite32(0x40803004, OFFSET_TXS_1 + 0x00);
-	iowrite32(0x40803004, OFFSET_TXS_2 + 0x00);
-	iowrite32(0x40803004, OFFSET_TXS_3 + 0x00);
+	iowrite32(0x40803004,OFFSET_TXS_0 + 0x00);
+	iowrite32(0x40803004,OFFSET_TXS_1 + 0x00);
+	iowrite32(0x40803004,OFFSET_TXS_2 + 0x00);
+	iowrite32(0x40803004,OFFSET_TXS_3 + 0x00);
 
 	rumboot_printf("=== config SGMII_PHY OFFSET_CM ===\n");
-	iowrite32(0x00130000, OFFSET_CM + 0x04);
-	iowrite32(0x710001f0, OFFSET_CM + 0x08);
-	iowrite32(0x00000002, OFFSET_CM + 0x0C);
-	iowrite32(0x07000000, OFFSET_CM + 0x20);
+	iowrite32(0x00130000,OFFSET_CM + 0x04);
+	iowrite32(0x710001f0,OFFSET_CM + 0x08);
+	iowrite32(0x00000002,OFFSET_CM + 0x0C);
+	iowrite32(0x07000000,OFFSET_CM + 0x20);
 
 	rumboot_printf("=== config SGMII_PHY OFFSET_RXS ===\n");
-	iowrite32(0x0000CEA6, OFFSET_RXS_0 + 0x08);
-	iowrite32(0x0000CEA6, OFFSET_RXS_1 + 0x08);
-	iowrite32(0x0000CEA6, OFFSET_RXS_2 + 0x08);
-	iowrite32(0x0000CEA6, OFFSET_RXS_3 + 0x08);
+	iowrite32(0x0000CEA6,OFFSET_RXS_0 + 0x08);
+	iowrite32(0x0000CEA6,OFFSET_RXS_1 + 0x08);
+	iowrite32(0x0000CEA6,OFFSET_RXS_2 + 0x08);
+	iowrite32(0x0000CEA6,OFFSET_RXS_3 + 0x08);
 
 	rumboot_printf("=== SGMII_PHY enable ===\n");
 	iowrite32(0x1, 0x0108D014);
 	read_data = 0x0;
 	rumboot_printf("=== wait SGMII PLL_LOCK & SGMII PHY_RDY  ===");
 	while (read_data != 0x000001F1) {
-		read_data = ioread32(0x0108D014);
-		rumboot_printf("SCTL register SGMII_CTRL_STAT: %x\n", read_data);
+			read_data = ioread32(0x0108D014);
+			rumboot_printf("SCTL register SGMII_CTRL_STAT: %x\n", read_data);
 	}
 
   return 0;
