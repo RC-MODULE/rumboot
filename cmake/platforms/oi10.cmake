@@ -5,7 +5,8 @@ file(GLOB PLATFORM_SOURCES
     ${CMAKE_SOURCE_DIR}/src/lib/drivers/irq-dummy.c
     ${CMAKE_SOURCE_DIR}/src/lib/eventsystem-memory.c
     ${CMAKE_SOURCE_DIR}/src/lib/drivers/p64.c
-    ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/*.S
+    ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/ppc_mmu_impl.S
+    ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/utlb_entries.S
 )
 
 #Flags for Power PC
