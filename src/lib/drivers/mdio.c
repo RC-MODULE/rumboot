@@ -12,7 +12,7 @@
 #include <platform/devices.h>
 #include <platform/interrupts.h>
 
-#define TIMEOUT_MDIO_ETH_PHY 12
+#define TIMEOUT_MDIO_ETH_PHY 24
 
 
 static void handler_mdio(int irq, void *arg)

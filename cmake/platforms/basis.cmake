@@ -317,15 +317,6 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
   )
 
  add_rumboot_target(
-    CONFIGURATION IRAM_MIRROR
-    FILES bisr/bisr_program_test.c
-    NAME bisr_program_test_rep
-    TIMEOUT 800 us
-    IRUN_FLAGS +bisr_error_injection_rep
-    CFLAGS -DBISR_TEST_EXPECTED=BISR_MEM_GOOD
-  )
-
- add_rumboot_target(
     CONFIGURATION IRAM
     FILES bisr/bisr_program_test.c
     NAME bisr_program_test_nonrep
@@ -335,27 +326,10 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
   )
 
  add_rumboot_target(
-    CONFIGURATION IRAM_MIRROR
-    FILES bisr/bisr_program_test.c
-    NAME bisr_program_test_nonrep
-    TIMEOUT 800 us
-    IRUN_FLAGS +bisr_error_injection_nonrep
-    CFLAGS -DBISR_TEST_EXPECTED=BISR_MEM_FAIL
-  )
-
- add_rumboot_target(
     CONFIGURATION IRAM
     FILES bisr/bisr_program_test.c
     NAME bisr_program_clear
     TIMEOUT 500 us
-    CFLAGS -DBISR_TEST_EXPECTED=BISR_MEM_PERFECT
-  )
-
- add_rumboot_target(
-    CONFIGURATION IRAM_MIRROR
-    FILES bisr/bisr_program_test.c
-    NAME bisr_program_clear
-    TIMEOUT 800 us
     CFLAGS -DBISR_TEST_EXPECTED=BISR_MEM_PERFECT
   )
 
@@ -390,6 +364,38 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     TIMEOUT 170 us
     CFLAGS -DMDIO_NUM=3
   )
+  
+  add_rumboot_target(
+    CONFIGURATION IRAM_MIRROR
+    FILES mdio/mdio_test.c
+    NAME mdio_test_0
+    TIMEOUT 500 us
+    CFLAGS -DMDIO_NUM=0
+  )
+
+  add_rumboot_target(
+    CONFIGURATION IRAM_MIRROR
+    FILES mdio/mdio_test.c
+    NAME mdio_test_1
+    TIMEOUT 500 us
+    CFLAGS -DMDIO_NUM=1
+  )
+
+  add_rumboot_target(
+    CONFIGURATION IRAM_MIRROR
+    FILES mdio/mdio_test.c
+    NAME mdio_test_2
+    TIMEOUT 500 us
+    CFLAGS -DMDIO_NUM=2
+  )
+
+  add_rumboot_target(
+    CONFIGURATION IRAM_MIRROR
+    FILES mdio/mdio_test.c
+    NAME mdio_test_3
+    TIMEOUT 500 us
+    CFLAGS -DMDIO_NUM=3
+  )  
 
   add_rumboot_target(
     CONFIGURATION IRAM
@@ -426,6 +432,42 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     CFLAGS -DMDIO_NUM=3
     IRUN_FLAGS +eth_phy_interrupt
   )
+  
+  add_rumboot_target(
+    CONFIGURATION IRAM_MIRROR
+    FILES mdio/mdio_phy_intrp_test.c
+    NAME mdio_phy_intrp_test_0
+    TIMEOUT 400 us
+    CFLAGS -DMDIO_NUM=0
+    IRUN_FLAGS +mirror_eth_phy_interrupt
+  )
+
+  add_rumboot_target(
+    CONFIGURATION IRAM_MIRROR
+    FILES mdio/mdio_phy_intrp_test.c
+    NAME mdio_phy_intrp_test_1
+    TIMEOUT 400 us
+    CFLAGS -DMDIO_NUM=1
+    IRUN_FLAGS +mirror_eth_phy_interrupt
+  )
+
+  add_rumboot_target(
+    CONFIGURATION IRAM_MIRROR
+    FILES mdio/mdio_phy_intrp_test.c
+    NAME mdio_phy_intrp_test_2
+    TIMEOUT 400 us
+    CFLAGS -DMDIO_NUM=2
+    IRUN_FLAGS +mirror_eth_phy_interrupt
+  )
+
+  add_rumboot_target(
+    CONFIGURATION IRAM_MIRROR
+    FILES mdio/mdio_phy_intrp_test.c
+    NAME mdio_phy_intrp_test_3
+    TIMEOUT 400 us
+    CFLAGS -DMDIO_NUM=3
+    IRUN_FLAGS +mirror_eth_phy_interrupt
+  )  
 
   add_rumboot_target(
       SNAPSHOT default
