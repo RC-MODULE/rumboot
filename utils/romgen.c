@@ -242,6 +242,7 @@ struct mem_layout_lookup mem_table[] = {
 	{ "basis",  &basis_rom_new },
 	{ "mm7705", &mm7705_rom },
 	{ "oi10",   &oi10_rom },
+	{ "oi10_gen",   &oi10_rom_gen },
 	{ /* Sentinel */ }
 };
 
