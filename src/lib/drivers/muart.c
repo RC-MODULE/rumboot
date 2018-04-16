@@ -90,12 +90,18 @@ char muart_read_char(uint32_t base)
 	return ch;
 }
 
-int muart_transmit_data_throught_apb(uint32_t base1, uint32_t base2, void* data, size_t size)
+int muart_transmit_data_throught_apb(uint32_t base1, uint32_t base2, volatile void* data, size_t size)
 {
-	rumboot_printf("write char\n");
+	char * ptr = (char *) data;
+
+	rumboot_printf("write char: %x\n", *(char*) data);
 	int count = size;
-	while (count--)
-		muart_write_char(base1, *((char*) data++) );
+	while (count--) {
+		muart_write_char(base1, *(char*)data );
+		(char*) data++;
+	}
+
+	data = (volatile void *) ptr;
 
 	rumboot_printf("read char\n");
 	count = size;
@@ -103,10 +109,11 @@ int muart_transmit_data_throught_apb(uint32_t base1, uint32_t base2, void* data,
 	while (count--) {
 		read_ch = muart_read_char(base2);
 
-		if (read_ch == *((char*) data++)) {
+		if (read_ch == *(char*) data) {
+			(char*) data++;
 			continue;
 		} else {
-			rumboot_printf("read char: %c\n", read_ch);
+			rumboot_printf("read char: %x\n", read_ch);
 			return -1;
 		}
 	}

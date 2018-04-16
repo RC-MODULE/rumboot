@@ -44,7 +44,12 @@ static bool test_cfg(struct base_addrs *addrs, const struct muart_conf *cfg)
 	size_t data_size = 8;
 	volatile char *buf = rumboot_malloc_from_heap_aligned(0, data_size, 8);
 
-	memset((char *) buf, 0x55, data_size);
+	volatile uint64_t * cur_ptr = (volatile uint64_t *) buf;
+	volatile uint64_t * end_ptr = (volatile uint64_t *) buf + data_size;
+	while (cur_ptr < end_ptr) {
+		*cur_ptr = 0x55555555aaaaaaaa;
+		cur_ptr++;
+	}
 
 	rumboot_printf("init\n");
 	muart_init(addrs->base1, cfg);
@@ -55,8 +60,9 @@ static bool test_cfg(struct base_addrs *addrs, const struct muart_conf *cfg)
 	muart_enable(addrs->base2);
 
 	if (!cfg->dma_en) {
-		if (muart_transmit_data_throught_apb(addrs->base1, addrs->base2, (char *) buf, data_size) < 0) {
-			rumboot_free((char *) buf);
+
+		if (muart_transmit_data_throught_apb(addrs->base1, addrs->base2, &buf[0], data_size) < 0) {
+			//rumboot_free((char *) buf);
 			return false;
 		}
 	} else {
@@ -95,7 +101,7 @@ static const struct muart_conf cfg = {
 	.stp2			= STP2,
 	.is_even		= true,
 	.is_parity_available	= true,
-	.mode			= RS_422,
+	.mode			= RS_485,
 	.is_loopback		= false,
 	.baud_rate		= 12500000,
 	.dma_en			= false

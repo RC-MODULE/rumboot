@@ -59,6 +59,10 @@ int main()
 	bool begin = true;
 	bool end = false;
 	volatile char *begin_addr = NULL;
+
+	volatile uint64_t *cur_ptr = NULL;
+	volatile uint64_t *end_ptr = NULL;
+
 	//Ring IT!
 	while (src_heap_id < dst_heap_id) {
 		rumboot_printf("Source memory id: %d, destination memory id: %d\n", src_heap_id, dst_heap_id);
@@ -67,9 +71,14 @@ int main()
 			src = rumboot_malloc_from_heap_aligned(src_heap_id, data_size, 8);
 			begin_addr = src;
 
-			size_t i;
-			for (i = 0; i < data_size; i++)
-				*(&src[i]) = 0xff;
+			cur_ptr = (volatile uint64_t *)src;
+			end_ptr = (volatile uint64_t *)src + data_size;
+
+			//Fill memory with data
+			while (cur_ptr < end_ptr) {
+				*cur_ptr = 0x55555555aaaaaaaa;
+				cur_ptr++;
+			}
 		} else {
 			src = dst;
 		}

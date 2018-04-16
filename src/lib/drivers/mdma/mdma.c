@@ -38,11 +38,11 @@ struct descriptor {
 	volatile struct settings set;
 } /*__attribute__((packed))*/;
 
-int mdma_set_desc(bool interrupt, bool stop, uint32_t data_len, volatile uint32_t data_addr, struct extra *ex
+int mdma_set_desc(bool interrupt, bool stop, uint32_t data_len, volatile uint32_t data_addr, enum DESC_TYPE type
 		  , volatile uint32_t desc_addr);
 struct descriptor mdma_get_desc(volatile uint32_t desc_addr, enum DESC_TYPE type);
-bool is_valid_for_mdma(volatile struct descriptor * desc, enum DESC_TYPE type);
 void dump_desc(volatile struct descriptor *cfg);
+bool is_extra_empty(volatile struct descriptor *cfg);
 
 /*******************MDMA DEFENITION************************/
 static void debug_err(uint32_t base)
@@ -153,6 +153,7 @@ void mdma_configure(volatile struct mdma_device *dev, struct mdma_config *cfg)
 
 	if(dev->type == MDMA_MUART || dev->type == MDMA_MGETH) {
 		is_add_info = true;
+		//iowrite32(0x1, GLOBAL_TIMERS);
 	}
 
 	if (dev->txtbl != NULL) {
@@ -197,14 +198,7 @@ void mdma_write_txdescriptor(volatile struct mdma_device *mdma, volatile void *m
 	bool interrupt = (mdma->conf.irq_en) ? true : false;
 	bool stop = (mdma->conf.num_txdescriptors == (index + 1)) ? true : false;
 
-	struct extra *to_extra = NULL;
-
-	if (mdma->conf.desc_type != NORMAL) {
-		rumboot_printf("we have no normal descriptor!\n");
-		to_extra = (struct extra *)desc_txaddr;
-	}
-
-	mdma_set_desc(interrupt, stop, len, (volatile uint32_t)mem, to_extra, desc_txaddr);
+	mdma_set_desc(interrupt, stop, len, (volatile uint32_t)mem, mdma->conf.desc_type, desc_txaddr);
 }
 
 void mdma_write_rxdescriptor(volatile struct mdma_device *mdma, volatile void *mem, size_t len, size_t index)
@@ -213,13 +207,7 @@ void mdma_write_rxdescriptor(volatile struct mdma_device *mdma, volatile void *m
 	bool interrupt = (mdma->conf.irq_en) ? true : false;
 	bool stop = (mdma->conf.num_rxdescriptors == (index + 1)) ? true : false;
 
-	struct extra *to_extra = NULL;
-
-	if (mdma->conf.desc_type != NORMAL) {
-		to_extra = (struct extra *)desc_rxaddr;
-	}
-
-	mdma_set_desc(interrupt, stop, len, (volatile uint32_t)mem, to_extra, desc_rxaddr);
+	mdma_set_desc(interrupt, stop, len, (volatile uint32_t)mem,  mdma->conf.desc_type, desc_rxaddr);
 }
 
 bool mdma_is_finished(volatile struct mdma_device *mdma)

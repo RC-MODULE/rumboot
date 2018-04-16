@@ -28,7 +28,14 @@ static bool mgeth_mdma_test(uint32_t to_addrs)
   size_t byte_number = 64;
   char *in_buf = rumboot_malloc_from_heap_aligned(0, byte_number, 8);
   char *out_buf = rumboot_malloc_from_heap_aligned(0, byte_number, 8);
-  memset(in_buf, 0x55, byte_number);
+
+	volatile uint64_t * cur_ptr = (volatile uint64_t *) in_buf;
+	volatile uint64_t * end_ptr = (volatile uint64_t *) in_buf + data_size;
+	while (cur_ptr < end_ptr) {
+		*cur_ptr = 0x55555555aaaaaaaa;
+		cur_ptr++;
+	}
+
   memset(out_buf, 0x0, byte_number);
 
   mgeth_init_sgmii();
@@ -59,9 +66,12 @@ static bool mgeth_mdma_test(uint32_t to_addrs)
 
 
 static const struct base_addrs addrs01 = { .base1 = ETH0_BASE, .base2 = ETH1_BASE };
+static const struct base_addrs addrs23 = { .base1 = ETH2_BASE, .base2 = ETH3_BASE };
 
 TEST_SUITE_BEGIN(mgeth_test, "MGETH test")
 TEST_ENTRY("mgeth", mgeth_mdma_test, (uint32_t)&addrs01),
+//if you turn it! Please change IRQ vector in main. Change MGETH1_IRQ on MGETH3_IRQ!
+TEST_ENTRY("mgeth", mgeth_mdma_test, (uint32_t)&addrs23),
 TEST_SUITE_END();
 
 uint32_t main()

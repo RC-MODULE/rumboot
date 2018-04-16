@@ -62,7 +62,7 @@ void dump_desc(volatile struct descriptor *cfg)
   rumboot_printf("pitch: %x\n\n", ex.pitch);
 }
 
-int mdma_set_desc(bool interrupt, bool stop, uint32_t data_len, volatile uint32_t data_addr, struct extra* ex,
+int mdma_set_desc(bool interrupt, bool stop, uint32_t data_len, volatile uint32_t data_addr, enum DESC_TYPE type,
    volatile uint32_t desc_addr)
 {
 	rumboot_printf("Set descriptor addr: %x, pointed to %x with length: %x.\n", desc_addr, data_addr, data_len);
@@ -73,15 +73,15 @@ int mdma_set_desc(bool interrupt, bool stop, uint32_t data_len, volatile uint32_
   settings |= (stop) ? (1 << STOP_i): 0;
   settings |= (data_len << LENGTH_i);
 
-	if (ex != NULL) {
+	if (type != NORMAL) {
       //What should i write here?
-    iowrite32(ex->reserve, desc_addr);
+    iowrite32(0, desc_addr);
     //*((volatile uint32_t*) (desc_addr)) = ex_reserve;
     desc_addr +=4;
-    iowrite16(ex->string_length, desc_addr);
+    iowrite16(0, desc_addr);
     //*((volatile uint16_t*) (desc_addr)) = ex_reserve;
     desc_addr += 2;
-    iowrite16(ex->pitch, desc_addr);
+    iowrite16(0, desc_addr);
     desc_addr += 2;
 	}
 	iowrite32(data_addr, desc_addr); //desc_addr
@@ -98,7 +98,7 @@ struct descriptor mdma_get_desc(volatile uint32_t desc_addr, enum DESC_TYPE type
 
 	rumboot_printf("Get descriptor, addr: %x\n", desc_addr);
 
-	if (type == LONG || type == PITCH) {
+	if (type != NORMAL) {
     desc.ex = *(volatile struct extra *) (desc_addr);
 		desc.ex.reserve = *(volatile uint64_t *) desc_addr;
     desc_addr += 4;
@@ -108,31 +108,19 @@ struct descriptor mdma_get_desc(volatile uint32_t desc_addr, enum DESC_TYPE type
     desc_addr += 2;
 	}
 
+  if(type != NORMAL) {
+      if(desc.ex.reserve == 0 && desc.ex.string_length == 0 && desc.ex.pitch == 0) {
+        rumboot_printf("Error! Extra part of descriptor equals 0!\n");
+      }
+      else
+        rumboot_printf("Success.\n");
+  }
+
 	desc.data_addr = *(volatile uint32_t *) (desc_addr);
 	desc_addr += 4;
 
   desc.set =  *(volatile struct settings *) (desc_addr);
-  //dump_desc(&desc);
+  dump_desc(&desc);
 
 	return desc;
-}
-
-bool is_valid_for_mdma(volatile struct descriptor * desc, enum DESC_TYPE type) {
-
-  bool ret = false;
-
-  if( type == NORMAL)  {
-
-    //uint64_t d = *(uint64_t *) desc;
-
-    //rumboot_printf("size of desc: %d\n", sizeof());
-
-    //ret = (d & (1UL << 63)) ? true : false;
-  }
-  else {
-    /*TO DO!*/
-
-  }
-
-  return ret;
 }
