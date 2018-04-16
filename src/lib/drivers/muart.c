@@ -121,7 +121,7 @@ int muart_transmit_data_throught_mdma(uint32_t base1, uint32_t base2, volatile v
 {
 	//CONFIG DMA
 	uint8_t desc_type = NORMAL;
-	bool irq_en = true;
+	bool irq_en = false;
 	uint16_t desc_gap = (desc_type == NORMAL) ? NORMAL_DESC_SIZE : PITCH_DESC_SIZE;
 
 	rumboot_printf("Config MUART0.\n");
@@ -159,11 +159,13 @@ int muart_transmit_data_throught_mdma(uint32_t base1, uint32_t base2, volatile v
 	}
 
 	//Init DMA
-	rumboot_printf("Init MDMA1, base addr: %x.\n", muart1->base);
-	mdma_init(muart1);
-
 	rumboot_printf("Init MDMA0, base addr: %x.\n", muart0->base);
 	mdma_init(muart0);
+
+	udelay(100);
+
+	rumboot_printf("Init MDMA1, base addr: %x.\n", muart1->base);
+	mdma_init(muart1);
 
 	rumboot_printf("Check - if mdma is ready.\n");
 	size_t timeout_us = 1000;

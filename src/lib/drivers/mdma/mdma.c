@@ -238,8 +238,9 @@ bool mdma_is_finished(volatile struct mdma_device *mdma)
 	volatile struct descriptor desc = mdma_get_desc(desc_rxaddr, mdma->conf.desc_type);
 
 	bool is_valid_for_mdma = desc.set.ownership;
+	rumboot_printf("ownership: %d\n", is_valid_for_mdma);
 
-	if (is_valid_for_mdma) {
+	if (!is_valid_for_mdma) {
 		return false;
 	}
 

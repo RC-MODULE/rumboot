@@ -1,4 +1,5 @@
 #include <devices/mgeth.h>
+#include <devices/mdma.h>
 
 #include <rumboot/rumboot.h>
 #include <rumboot/printf.h>
@@ -51,10 +52,10 @@ static bool mgeth_mdma_test(uint32_t to_addrs)
     return false;
 }
 
-void handler_eth()
-{
-
-}
+// void handler_eth()
+// {
+//
+// }
 
 
 static const struct base_addrs addrs01 = { .base1 = ETH0_BASE, .base2 = ETH1_BASE };
@@ -65,20 +66,18 @@ TEST_SUITE_END();
 
 uint32_t main()
 {
-	volatile uint32_t done = 0;
+	volatile uint32_t base = ETH1_BASE;
 	struct rumboot_irq_entry *tbl = rumboot_irq_create(NULL);
 
-	rumboot_irq_set_handler(tbl, MGETH0_IRQ, 0, handler_eth, (void *)&done);
-	rumboot_irq_enable(MGETH0_IRQ);
+	rumboot_irq_set_handler(tbl, MGETH1_IRQ, 0, mdma_irq_handler, (void *)&base);
+	rumboot_irq_enable(MGETH1_IRQ);
 	rumboot_irq_table_activate(tbl);
 
 	int ret = test_suite_run(NULL, &mgeth_test);
 
-	asm volatile ("swi #74");
+	asm volatile ("swi #52");
 
 	rumboot_printf("%d tests from suite failed\n", ret);
-
-	rumboot_printf("mgeth status: %x\n", done);
 
 	rumboot_irq_table_activate(NULL);
 	rumboot_irq_free(tbl);

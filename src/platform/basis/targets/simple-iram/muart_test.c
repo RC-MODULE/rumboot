@@ -134,9 +134,9 @@ static const struct base_addrs addrs01 = { .base1 = UART0_BASE, .base2 = UART1_B
 
 /* Declare the testsuite structure */
 TEST_SUITE_BEGIN(muart_test, "MUART test")
-//TEST_ENTRY("rs232 01", muart_rs232_test, (uint32_t)&addrs01),
+TEST_ENTRY("rs232 01", muart_rs232_test, (uint32_t)&addrs01),
 // TEST_ENTRY("rs232 10", muart_rs232_test, (uint32_t)&addrs10),
-TEST_ENTRY("dma 01", muart_mdma_test, (uint32_t)&addrs01),
+//TEST_ENTRY("dma 01", muart_mdma_test, (uint32_t)&addrs01),
 //TEST_ENTRY("dma 10", muart_mdma_test, (uint32_t)&addrs10),
 // TEST_ENTRY("rs485 01", muart_rs485_test, (uint32_t)&addrs01),
 // TEST_ENTRY("rs485 10", muart_rs485_test, (uint32_t)&addrs10),
