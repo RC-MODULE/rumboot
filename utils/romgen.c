@@ -95,7 +95,7 @@ int write_line_mm7705(struct mem_layout *layout, FILE *ifd, FILE *ofd)
 
 int write_line_oi10(struct mem_layout *layout, FILE *ifd, FILE *ofd)
 {
-    int num_bytes = layout->line_length / 8; /* 8 bit data + 1 bit parity*/
+    int num_bytes = layout->line_length / layout->bits_per_byte; /* 8 bit data + 1 bit parity*/
     char *srcbuf = alloca(num_bytes);
     int i;
 
@@ -118,7 +118,9 @@ int write_line_oi10(struct mem_layout *layout, FILE *ifd, FILE *ofd)
     for (i = 0; i < num_bytes; i++)
         dump_byte_inv(ofd, srcbuf[i]);
 
-//    dump_byte(ofd, parbyte);
+    if (layout->bits_per_byte == 9) {
+        dump_byte(ofd, parbyte);
+    }
 
 //  fputc('\n', ofd);
 
@@ -211,6 +213,16 @@ struct mem_layout basis_rom_new = {
 };
 
 struct mem_layout oi10_rom = {
+	.line_count	       	= 1024,
+	.line_length		= 72,
+    .bits_per_byte      = 9,
+	.adjacement_banks	= 2,
+	.inverse_order		= 1,
+	.gen_filename		= gen_oi10_filename,
+	.write_line         = write_line_oi10,
+};
+
+struct mem_layout oi10_rom_gen = {
 	.line_count	       	= 1024,
 	.line_length		= 128,
     .bits_per_byte      = 8,
