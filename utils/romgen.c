@@ -95,11 +95,11 @@ int write_line_mm7705(struct mem_layout *layout, FILE *ifd, FILE *ofd)
 
 int write_line_oi10(struct mem_layout *layout, FILE *ifd, FILE *ofd)
 {
-    int num_bytes = layout->line_length / 9; /* 8 bit data + 1 bit parity*/
+    int num_bytes = layout->line_length / layout->bits_per_byte; /* 8 bit data + 1 bit parity*/
     char *srcbuf = alloca(num_bytes);
     int i;
 
-    i = fread(srcbuf, 1, 8, ifd);
+    i = fread(srcbuf, 1, num_bytes, ifd);
 
     if (num_bytes != i) {
             fprintf(stderr, "Expected to read %d, only got %d\n", num_bytes, i);
@@ -118,7 +118,9 @@ int write_line_oi10(struct mem_layout *layout, FILE *ifd, FILE *ofd)
     for (i = 0; i < num_bytes; i++)
         dump_byte_inv(ofd, srcbuf[i]);
 
-    dump_byte(ofd, parbyte);
+    if (layout->bits_per_byte == 9) {
+        dump_byte(ofd, parbyte);
+    }
 
 //  fputc('\n', ofd);
 
@@ -157,8 +159,12 @@ char *gen_mm7705_filename(struct mem_layout *layout, const char *dir, int nfile)
 char *gen_oi10_filename(struct mem_layout *layout, const char *dir, int nfile)
 {
     char *ret = NULL;
-
-    asprintf(&ret, "%s/rom_hdd_1024_72_mux8_%d_verilog.rcf", dir, nfile);
+    if (layout->bits_per_byte == 9) {
+        asprintf(&ret, "%s/rom_hdd_1024_72_mux8_%d_verilog.rcf", dir, nfile);
+    }
+    else if (layout->bits_per_byte == 8) {
+        asprintf(&ret, "%s/rom_hdd_1024_128_mux8_%d_verilog.rcf", dir, nfile);
+    }
     return ret;
 }
 
@@ -220,6 +226,16 @@ struct mem_layout oi10_rom = {
 	.write_line         = write_line_oi10,
 };
 
+struct mem_layout oi10_rom_gen = {
+	.line_count	       	= 1024,
+	.line_length		= 128,
+    .bits_per_byte      = 8,
+	.adjacement_banks	= 1,
+	.inverse_order		= 0,
+	.gen_filename		= gen_oi10_filename,
+	.write_line         = write_line_oi10,
+};
+
 
 struct mem_layout_lookup {
     const char *name;
@@ -230,6 +246,7 @@ struct mem_layout_lookup mem_table[] = {
 	{ "basis",  &basis_rom_new },
 	{ "mm7705", &mm7705_rom },
 	{ "oi10",   &oi10_rom },
+	{ "oi10_gen",   &oi10_rom_gen },
 	{ /* Sentinel */ }
 };
 
