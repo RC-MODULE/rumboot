@@ -99,7 +99,7 @@ int write_line_oi10(struct mem_layout *layout, FILE *ifd, FILE *ofd)
     char *srcbuf = alloca(num_bytes);
     int i;
 
-    i = fread(srcbuf, 1, 16, ifd);
+    i = fread(srcbuf, 1, num_bytes, ifd);
 
     if (num_bytes != i) {
             fprintf(stderr, "Expected to read %d, only got %d\n", num_bytes, i);
@@ -159,8 +159,12 @@ char *gen_mm7705_filename(struct mem_layout *layout, const char *dir, int nfile)
 char *gen_oi10_filename(struct mem_layout *layout, const char *dir, int nfile)
 {
     char *ret = NULL;
-
-    asprintf(&ret, "%s/rom_hdd_1024_128_mux8_%d_verilog.rcf", dir, nfile);
+    if (layout->bits_per_byte == 9) {
+        asprintf(&ret, "%s/rom_hdd_1024_72_mux8_%d_verilog.rcf", dir, nfile);
+    }
+    else if (layout->bits_per_byte == 8) {
+        asprintf(&ret, "%s/rom_hdd_1024_128_mux8_%d_verilog.rcf", dir, nfile);
+    }
     return ret;
 }
 
