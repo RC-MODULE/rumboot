@@ -41,7 +41,7 @@ macro(rumboot_platform_generate_stuff_for_taget product)
       add_custom_command(
         OUTPUT ${product}.hex/image_mem64_0.hex
         COMMAND mkdir -p ${product}.hex
-        COMMAND ${CMAKE_BINARY_DIR}/utils/romgen -l oi10_gen -i ${product}.bin -o ${product}.hex
+        COMMAND ${CMAKE_BINARY_DIR}/utils/romgen -l oi10 -i ${product}.bin -o ${product}.hex
         COMMENT "Generating HEX memory files for ${product}.bin"
         DEPENDS ${product}.bin utils
       )
