@@ -44,9 +44,13 @@
 #define I2C1_IRQ     75
 #define UART0_INTR   76
 #define UART1_INTR   77
-#define ARINC_INT    85
+#define GPIO1_INTR   79
+#define GPIO2_INTR   80
+#define GPIO3_INTR   81
+#define GPIO4_INTR   82
 #define CAN0_INT     83
 #define CAN1_INT     84
+#define ARINC_INT    85
 
 /**
  * @}
