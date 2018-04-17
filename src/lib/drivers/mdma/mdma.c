@@ -239,7 +239,7 @@ int mdma_transmit_data(uint32_t base, volatile void *dest, volatile void *src, s
 {
 	//CONFIG DMA
 	rumboot_printf("Config DMA.\n");
-	uint8_t desc_type = LONG;
+	uint8_t desc_type = NORMAL;
 	size_t num_rxdescriptors = 1;
 	size_t num_txdescriptors = 1;
 	bool irq_en = false;
