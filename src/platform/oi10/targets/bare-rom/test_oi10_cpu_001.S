@@ -9,31 +9,6 @@
 #include <platform/oi10/platform/ppc_476fp_timer_fields.h>
 #include <platform/oi10/platform/devices.h>
 
-
-.macro gtube_init
-    load_const  r1, 0x0003c0de;
-    mtspr       SPR_SPRG0, r1
-.endm
-
-.macro putchar char
-    load_const  r2, 2;
-    load_const  r1, \char; /* test stdout */
-    mtspr       SPR_SPRG2, r1
-
-    mtspr       SPR_SPRG1, r2
-    mtspr       SPR_SPRG1, r0
-.endm
-
-.macro exit code
-    load_const  r2, 1;
-    load_const  r1, \code; /* test stdout */
-    mtspr       SPR_SPRG2, r1
-
-    mtspr       SPR_SPRG1, r2
-    mtspr       SPR_SPRG1, r0
-.endm
-
-
 .section ".init.start","ax",@progbits
 
 boot_start:
@@ -572,6 +547,8 @@ test_ok:
     putchar 'K'
     putchar '\n'
     exit 0
+stop:
+    b stop
 
 error:
 
