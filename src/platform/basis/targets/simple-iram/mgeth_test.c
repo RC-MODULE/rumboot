@@ -30,7 +30,7 @@ static bool mgeth_mdma_test(uint32_t to_addrs)
   char *out_buf = rumboot_malloc_from_heap_aligned(0, byte_number, 8);
 
 	volatile uint64_t * cur_ptr = (volatile uint64_t *) in_buf;
-	volatile uint64_t * end_ptr = (volatile uint64_t *) in_buf + data_size;
+	volatile uint64_t * end_ptr = (volatile uint64_t *) in_buf + byte_number;
 	while (cur_ptr < end_ptr) {
 		*cur_ptr = 0x55555555aaaaaaaa;
 		cur_ptr++;
