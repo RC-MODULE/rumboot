@@ -1,20 +1,111 @@
-/*
-#include <stdio.h>
-#include <stdint.h>
-#include <string.h>
-#include <rumboot/printf.h>
-#include <rumboot/platform.h>
-#include <rumboot/macros.h>
+#undef __linux__
+#include <ppc-asm.h>
+#define SPR_SPRG0       272
+#define SPR_SPRG1       273
+#define SPR_SPRG2       274
+#define SPR_SPRG3       275
+#define SPR_SPRG4       276
+#define SPR_SPRG5       277
+#define SPR_SPRG6       278
+#define SPR_SPRG7       279
+#define SPR_SPRG8       604
+#define r1  1
+#define r2  2
 
-int main()
-{
-#if 0
-    rumboot_print_logo();
-    rumboot_printf("rumboot: spl start: 0x%x end: 0x%x\n",
-               &rumboot_platform_spl_start,
-               &rumboot_platform_spl_end);
-    rumboot_printf("test_oi10_cpu_000\n\n");
-#endif
-    return 0;
-}
-*/
+
+.macro  load_const rD, constant
+.if ((\constant & 0xFFFF8000) == 0xFFFF8000) || ((\constant & 0xFFFF8000) == 0x00000000)
+    li      \rD, \constant
+.else
+    lis     \rD, \constant@h
+.if ((\constant & 0x0000FFFF) != 0x00000000)
+    ori     \rD, \rD, \constant@l
+.endif
+.endif
+.endm
+
+.macro gtube_init
+    load_const  r1, 0x0003c0de;
+    mtspr       SPR_SPRG0, r1
+.endm
+
+.macro putchar char
+    load_const  r2, 2;
+    load_const  r1, \char; /* test stdout */
+    mtspr       SPR_SPRG2, r1
+
+    mtspr       SPR_SPRG1, r2
+    mtspr       SPR_SPRG1, r0
+.endm
+
+.macro exit code
+    load_const  r2, 1;
+    load_const  r1, \code; /* test stdout */
+    mtspr       SPR_SPRG2, r1
+
+    mtspr       SPR_SPRG1, r2
+    mtspr       SPR_SPRG1, r0
+.endm
+
+
+.section ".init.start","ax",@progbits
+
+boot_start:
+    b           rumboot_entry_point
+
+.section ".init.text","ax",@progbits
+
+rumboot_entry_point:
+    load_const r0, 0x00
+    load_const r1, 0x01
+    load_const r2, 0x02
+    load_const r3, 0x03
+    load_const r4, 0x04
+    load_const r5, 0x05
+    load_const r6, 0x06
+    load_const r7, 0x07
+    load_const r8, 0x08
+    load_const r9, 0x09
+    load_const r10, 0x0A
+    load_const r11, 0x0B
+    load_const r12, 0x0C
+    load_const r13, 0x0D
+    load_const r14, 0x0E
+    load_const r15, 0x0F
+    load_const r16, 0x10
+    load_const r17, 0x11
+    load_const r18, 0x12
+    load_const r19, 0x13
+    load_const r20, 0x14
+    load_const r21, 0x15
+    load_const r22, 0x16
+    load_const r23, 0x17
+    load_const r24, 0x18
+    load_const r25, 0x19
+    load_const r26, 0x1A
+    load_const r27, 0x1B
+    load_const r28, 0x1C
+    load_const r29, 0x1D
+    load_const r30, 0x1E
+    load_const r31, 0x1F
+
+    load_const  r0, 0x00000000  // make r0 "all zeros" source
+    mtspr       SPR_SPRG0, r0
+    mtspr       SPR_SPRG1, r0
+    mtspr       SPR_SPRG2, r0
+    mtspr       SPR_SPRG3, r0
+    mtspr       SPR_SPRG4, r0
+    mtspr       SPR_SPRG5, r0
+    mtspr       SPR_SPRG6, r0
+    mtspr       SPR_SPRG7, r0
+    mtspr       SPR_SPRG8, r0
+
+    gtube_init
+    putchar 'Y'
+    putchar 'a'
+    putchar 'r'
+    putchar 'r'
+    putchar '!'
+    putchar '!'
+    putchar '\n'
+    exit 0
