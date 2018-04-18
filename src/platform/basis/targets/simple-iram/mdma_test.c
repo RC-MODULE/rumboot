@@ -39,8 +39,15 @@ int main()
 	}
 
 	//Create IRQ
+	volatile uint32_t * addrs = rumboot_malloc_from_heap_aligned(0, 12, 8);
+	*addrs = base;
+	addrs++;
+	*adddrs = 0x0;
+	addrs++;
+	*addrs = 0x0;
+
 	struct rumboot_irq_entry *tbl = rumboot_irq_create(NULL);
-	rumboot_irq_set_handler(tbl, MDMA0_IRQ, 0, mdma_irq_handler, (void *)&base);
+	rumboot_irq_set_handler(tbl, MDMA0_IRQ, 0, mdma_irq_handler, (void *)&addrs[0]);
 	rumboot_irq_enable(MDMA0_IRQ);
 	rumboot_irq_table_activate(tbl);
 
@@ -93,8 +100,8 @@ int main()
 		for (i = 0; i < data_size; i++)
 			*(&dst[i]) = 0x0;
 
-		rumboot_printf("dst: %x, src: %x\n", &dst[0], &src[0]);
-		if (mdma_transmit_data(base, &dst[0], &src[0], data_size) != 0) {
+		rumboot_printf("dst: %x, src: %x\n", dst, src);
+		if (mdma_transmit_data(base, dst, src, data_size) != 0) {
 			rumboot_printf("Test failed!\n");
 			return -1;
 		}
@@ -108,7 +115,7 @@ int main()
 	}
 
 	rumboot_printf("Compare arrays.\n");
-	if (memcmp((char *)&src[0], (char *)&dst[0], data_size) != 0) {
+	if (memcmp((char *)src, (char *)dst, data_size) != 0) {
 		rumboot_printf("Test failed!\n");
 		return -1;
 	}

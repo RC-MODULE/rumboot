@@ -12,9 +12,6 @@
 
 #include <devices/mdma.h>
 
-#include <platform/interrupts.h>
-
-
 /********DESCRIPTOR ASSIGNMENTS********/
 struct settings {
 	uint32_t	length : 26;
@@ -45,29 +42,36 @@ void dump_desc(volatile struct descriptor *cfg);
 bool is_extra_empty(volatile struct descriptor *cfg);
 
 /*******************MDMA DEFENITION************************/
-static void debug_err(uint32_t base)
-{
-	rumboot_printf("raxi err addr r: %x\n", ioread32(base + MDMA_RAXI_ERR_ADDR_R));
-	rumboot_printf("raxi err addr w: %x\n", ioread32(base + MDMA_RAXI_ERR_ADDR_W));
-	rumboot_printf("waxi err addr r: %x\n", ioread32(base + MDMA_WAXI_ERR_ADDR_R));
-	rumboot_printf("waxi err addr w: %x\n", ioread32(base + MDMA_WAXI_ERR_ADDR_W));
-	rumboot_printf("waxi err addr: %x\n", ioread32(base + MDMA_WAXI_ERR_ADDR));
-	rumboot_printf("raxi err addr: %x\n", ioread32(base + MDMA_RAXI_ERR_ADDR));
-}
+// static void debug_err(uint32_t base)
+// {
+// 	rumboot_printf("raxi err addr r: %x\n", ioread32(base + MDMA_RAXI_ERR_ADDR_R));
+// 	rumboot_printf("raxi err addr w: %x\n", ioread32(base + MDMA_RAXI_ERR_ADDR_W));
+// 	rumboot_printf("waxi err addr r: %x\n", ioread32(base + MDMA_WAXI_ERR_ADDR_R));
+// 	rumboot_printf("waxi err addr w: %x\n", ioread32(base + MDMA_WAXI_ERR_ADDR_W));
+// 	rumboot_printf("waxi err addr: %x\n", ioread32(base + MDMA_WAXI_ERR_ADDR));
+// 	rumboot_printf("raxi err addr: %x\n", ioread32(base + MDMA_RAXI_ERR_ADDR));
+// }
 
 static volatile uint32_t irqstat_r = 0;
 static volatile uint32_t irqstat_w = 0;
 
+
 void mdma_irq_handler(int irq, void *arg)
 {
-	uint32_t base = *((uint32_t *)arg);
+	uint32_t * ptr = (uint32_t *) arg;
+	uint32_t base = *ptr;
+	ptr++;
+	uint32_t offset_r = *ptr;
+	ptr++;
+	uint32_t offset_w = *ptr;
+
 	uint32_t gp_status = ioread32(base + MDMA_GP_STATUS);
 
-	irqstat_r |= ioread32(base + MDMA_STATUS_R);
-	irqstat_w |= ioread32(base + MDMA_STATUS_W);
+	irqstat_r |= ioread32(base + MDMA_STATUS_R + offset_r);
+	irqstat_w |= ioread32(base + MDMA_STATUS_W + offset_w);
 
 	if (irqstat_w & (1 << AXI_ERR_i)) {
-		debug_err(base);
+		//debug_err(base);
 	}
 
 	if (gp_status & (1 << 0)) {
@@ -144,16 +148,15 @@ void mdma_deinit(volatile struct mdma_device *mdma)
 	iowrite32(0x0, mdma->base + MDMA_ENABLE_R);
 }
 
-#include <platform/devices.h>
+
 void mdma_configure(volatile struct mdma_device *dev, struct mdma_config *cfg)
 {
 	bool is_add_info = false;
 	uint32_t settings_r = 0;
 	uint32_t settings_w = 0;
 
-	if(dev->type == MDMA_MUART || dev->type == MDMA_MGETH) {
+	if(cfg->desc_type == LONG || cfg->desc_type == PITCH) {
 		is_add_info = true;
-		//iowrite32(0x1, GLOBAL_TIMERS);
 	}
 
 	if (dev->txtbl != NULL) {

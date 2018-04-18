@@ -5,6 +5,7 @@
 #include <rumboot/printf.h>
 #include <rumboot/irq.h>
 #include <rumboot/testsuite.h>
+#include <rumboot/io.h>
 
 #include <platform/devices.h>
 #include <platform/interrupts.h>
@@ -43,11 +44,11 @@ static bool mgeth_mdma_test(uint32_t to_addrs)
   mgeth_init( addrs->base1, &cfg);
   mgeth_init( addrs->base2, &cfg);
 
-  if( mgeth_transmit_data_throught_mdma(addrs->base1,  addrs->base2, &out_buf[0], &in_buf[0], byte_number) < 0 ) {
+  if( mgeth_transmit_data_throught_mdma(addrs->base1,  addrs->base2, out_buf, in_buf, byte_number) < 0 ) {
     goto test_failed;
   }
 
-  if (memcmp(&in_buf[0], &out_buf[0], byte_number) != 0) {
+  if (memcmp(in_buf, out_buf, byte_number) != 0) {
   	goto test_failed;
   }
 
@@ -76,13 +77,20 @@ TEST_SUITE_END();
 
 uint32_t main()
 {
-	volatile uint32_t base = ETH1_BASE;
+	volatile uint32_t * addrs = rumboot_malloc_from_heap_aligned(0, 12, 8);
+	void * start_ptr = (void *) addrs;
+	*addrs = ETH1_BASE;
+	addrs++;
+	*addrs = 0x900;
+	addrs++;
+	*addrs = 0x100; // we turn on interrupts from read channel
 	struct rumboot_irq_entry *tbl = rumboot_irq_create(NULL);
 
-	rumboot_irq_set_handler(tbl, MGETH1_IRQ, 0, mdma_irq_handler, (void *)&base);
+	rumboot_irq_set_handler(tbl, MGETH1_IRQ, 0, mdma_irq_handler, start_ptr);
 	rumboot_irq_enable(MGETH1_IRQ);
 	rumboot_irq_table_activate(tbl);
 
+	iowrite32(0x1, GLOBAL_TIMERS);
 	int ret = test_suite_run(NULL, &mgeth_test);
 
 	asm volatile ("swi #52");

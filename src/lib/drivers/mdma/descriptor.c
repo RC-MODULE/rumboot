@@ -120,7 +120,7 @@ struct descriptor mdma_get_desc(volatile uint32_t desc_addr, enum DESC_TYPE type
 	desc_addr += 4;
 
   desc.set =  *(volatile struct settings *) (desc_addr);
-  dump_desc(&desc);
+  //dump_desc(&desc);
 
 	return desc;
 }

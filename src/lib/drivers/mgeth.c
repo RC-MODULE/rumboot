@@ -25,7 +25,7 @@ int mgeth_transmit_data_throught_mdma(uint32_t base1, uint32_t base2, volatile v
 {
 	//CONFIG DMA
 	uint8_t desc_type = LONG;
-	bool irq_en = false;
+	bool irq_en = true;
 	uint16_t desc_gap = (desc_type == NORMAL) ? NORMAL_DESC_SIZE : PITCH_DESC_SIZE;
 
 	rumboot_printf("Config mgeth0.\n");

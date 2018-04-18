@@ -68,15 +68,17 @@ static bool test_cfg(struct base_addrs *addrs, const struct muart_conf *cfg)
 	} else {
 		volatile char *output = rumboot_malloc_from_heap_aligned(0, data_size, 8);
 
-		memset((char *) &output[0], 0x0, data_size);
+		memset((char *) output, 0x0, data_size);
 
-		if (muart_transmit_data_throught_mdma(addrs->base1, addrs->base2, &output[0], &buf[0], data_size) < 0) {
+		iowrite32(0x1, GLOBAL_TIMERS);
+
+		if (muart_transmit_data_throught_mdma(addrs->base1, addrs->base2, output, buf, data_size) < 0) {
 			//What should i do here? If a want to rumboot_free memory?
 			return false;
 		}
 
 		rumboot_printf("Compare arrays.\n");
-		if (mem_cmp_odd_numbs((char *) &buf[0], (char *) &output[0], data_size) != 0) {
+		if (mem_cmp_odd_numbs((char *) buf, (char *) output, data_size) != 0) {
 			//the same
 			size_t j;
 			for(j=0; j<data_size; j++)
@@ -104,7 +106,7 @@ static const struct muart_conf cfg = {
 	.mode			= RS_485,
 	.is_loopback		= false,
 	.baud_rate		= 12500000,
-	.dma_en			= false
+	.dma_en			= true
 };
 
 bool muart_rs232_test(uint32_t to_addrs)
@@ -159,11 +161,15 @@ TEST_SUITE_END();
 
 uint32_t main()
 {
-	volatile uint32_t done = 0;
+	volatile uint32_t * addrs = rumboot_malloc_from_heap_aligned(0, 12, 8);
+	void * start_ptr = (void *) addrs;
+	*addrs = UART1_BASE;
+	addrs++;
+	*addrs = 0x0;
+	addrs++;
+	*addrs = 0x0;
 	struct rumboot_irq_entry *tbl = rumboot_irq_create(NULL);
-
-	uint32_t base = UART1_BASE;
-	rumboot_irq_set_handler(tbl, UART1_INTR, 0, mdma_irq_handler, (void *)&base);
+	rumboot_irq_set_handler(tbl, UART1_INTR, 0, mdma_irq_handler, start_ptr);
 	rumboot_irq_enable(UART1_INTR);
 	rumboot_irq_table_activate(tbl);
 
@@ -172,8 +178,6 @@ uint32_t main()
 	asm volatile ("swi #77");
 
 	rumboot_printf("%d tests from suite failed\n", ret);
-
-	rumboot_printf("muart status: %x\n", done);
 
 	rumboot_irq_table_activate(NULL);
 	rumboot_irq_free(tbl);
