@@ -81,9 +81,9 @@ uint32_t main()
 	void * start_ptr = (void *) addrs;
 	*addrs = ETH1_BASE;
 	addrs++;
-	*addrs = 0x900;
+	*addrs = 0x900;//read channel
 	addrs++;
-	*addrs = 0x100; // we turn on interrupts from read channel
+	*addrs = 0x100; //write channel
 	struct rumboot_irq_entry *tbl = rumboot_irq_create(NULL);
 
 	rumboot_irq_set_handler(tbl, MGETH1_IRQ, 0, mdma_irq_handler, start_ptr);

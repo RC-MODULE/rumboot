@@ -40,14 +40,15 @@ int main()
 
 	//Create IRQ
 	volatile uint32_t * addrs = rumboot_malloc_from_heap_aligned(0, 12, 8);
+	void * start_ptr = (void *) addrs;
 	*addrs = base;
 	addrs++;
-	*adddrs = 0x0;
+	*addrs = 0x0;
 	addrs++;
 	*addrs = 0x0;
 
 	struct rumboot_irq_entry *tbl = rumboot_irq_create(NULL);
-	rumboot_irq_set_handler(tbl, MDMA0_IRQ, 0, mdma_irq_handler, (void *)&addrs[0]);
+	rumboot_irq_set_handler(tbl, MDMA0_IRQ, 0, mdma_irq_handler, start_ptr);
 	rumboot_irq_enable(MDMA0_IRQ);
 	rumboot_irq_table_activate(tbl);
 
