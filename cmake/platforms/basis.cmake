@@ -480,6 +480,13 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
   add_rumboot_target(
       SNAPSHOT default
+      CONFIGURATION IRAM
+      FILES pcie/pcie_int_msix_for_mirror.c
+      NAME pcie_int_msix_for_mirror
+    )
+
+  add_rumboot_target(
+      SNAPSHOT default
       CONFIGURATION ROM
       FILES pcie/pcie_at_slv_eRP_test_0.c
       NAME pcie_at_slv_eRP_test_0

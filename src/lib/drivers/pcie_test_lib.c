@@ -697,8 +697,8 @@ uint32_t pcie_mirror_tests_setup ()
     //      it covers 256 MByte - DDR1
     //
     //                         !!!  Attention !!!
-    //    transactions to not defined addesses in range 
-    //    0x4000_0000 .. 0x7FFF_FFFF will cause error on AXI bus
+    //    transactions to not defined addresses in range 
+    //    0x4000_0000 .. 0x7FFF_FFFF will cause interruption
     //-----------------------------------------------------------------
     iowrite32 (0x40000000 | 0x1, ADDR_TRANS_MST_BASE + ((0 * 3 + 1) << 2)) ;  //  base address, enable
     iowrite32 (0x43FFFFFF      , ADDR_TRANS_MST_BASE + ((0 * 3 + 2) << 2)) ;  //  end address
