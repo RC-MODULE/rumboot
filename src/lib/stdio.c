@@ -35,6 +35,7 @@ void *rumboot_malloc_from_heap_misaligned(int heap_id, size_t length, int align,
 		rumboot_platform_panic("Heap %s: out of memory!", hp->name);
 	}
 
+	rumboot_printf("Allocated %d bytes at 0x%x\n", length, ret);
 	return ret;
 }
 

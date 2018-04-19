@@ -22,7 +22,7 @@ static bool mgeth_mdma_test(uint32_t to_addrs)
   struct base_addrs * addrs = (struct base_addrs *) to_addrs;
 
   struct mgeth_conf cfg = {
-    .is_full_duplex = true,
+    .is_full_duplex = false,
     .speed = SPEED_1000,
   };
 

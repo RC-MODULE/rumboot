@@ -166,13 +166,11 @@ int muart_transmit_data_throught_mdma(uint32_t base1, uint32_t base2, volatile v
 	}
 
 	//Init DMA
-	rumboot_printf("Init MDMA0, base addr: %x.\n", muart0->base);
-	mdma_init(muart0);
-
-	udelay(20);
-
 	rumboot_printf("Init MDMA1, base addr: %x.\n", muart1->base);
 	mdma_init(muart1);
+
+	rumboot_printf("Init MDMA0, base addr: %x.\n", muart0->base);
+	mdma_init(muart0);
 
 	rumboot_printf("Check - if mdma is ready.\n");
 	size_t timeout_us = 1000;

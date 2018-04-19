@@ -66,6 +66,7 @@ int mdma_set_desc(bool interrupt, bool stop, uint32_t data_len, volatile uint32_
    volatile uint32_t desc_addr)
 {
 	rumboot_printf("Set descriptor addr: %x, pointed to %x with length: %x.\n", desc_addr, data_addr, data_len);
+  volatile uint32_t addr = desc_addr;
 
 	volatile uint32_t settings = 0;
 
@@ -87,6 +88,10 @@ int mdma_set_desc(bool interrupt, bool stop, uint32_t data_len, volatile uint32_
 	iowrite32(data_addr, desc_addr); //desc_addr
 	desc_addr += 4;
 	iowrite32(settings, desc_addr);
+
+  rumboot_printf("------------------DESCRIPTOR: ptr %x %x %x-------------\n", addr, ioread32(addr), ioread32(addr+4));
+
+
 
 	return 0;
 }

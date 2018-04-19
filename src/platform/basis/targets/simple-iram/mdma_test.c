@@ -19,7 +19,7 @@
 int main()
 {
 	size_t data_size = 8;
-	uint32_t base = MDMA3_BASE;
+	uint32_t base = MDMA0_BASE;
 
 	rumboot_printf("Test MDMA with base: %x\n", base);
 
@@ -58,9 +58,10 @@ int main()
 		heap_ids[i] = i;
 
 	//Descriptor table we keep in IM0 table.
-	size_t src_heap_id = heap_ids[1];
+	size_t src_heap_id = heap_ids[0];
 	size_t dst_heap_id = heap_ids[1];
 	if (num_heaps > 3) {
+		src_heap_id = heap_ids[1];
 		dst_heap_id = heap_ids[2];
 	}
 

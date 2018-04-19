@@ -21,8 +21,8 @@ struct mgeth_conf {
 
 /**
  * brief Init MGETH
- * @param base base address of mgeth
- * @param conf
+ * base: base address of mgeth
+ * conf: structure contains configuration parameters
  */
 void mgeth_init(const uint32_t base, const struct mgeth_conf *conf);
 
@@ -41,6 +41,7 @@ int mgeth_transmit_data_throught_mdma(uint32_t base1, uint32_t base2, volatile v
  * return if data was transmitted OK - 0, else - value less than 0
  */
 int mgeth_init_sgmii();
+
 
 /**
  * @}

@@ -19,6 +19,11 @@ void mgeth_init(const uint32_t base, const struct mgeth_conf *conf)
 	iowrite32(ctrl, base + MGETH_CONTROL);
 }
 
+void mgeth_deinit(const uint32_t base)
+{
+	iowrite32(0x0, base + MGETH_CONTROL);
+}
+
 #define NORMAL_DESC_SIZE 8
 #define PITCH_DESC_SIZE 16
 int mgeth_transmit_data_throught_mdma(uint32_t base1, uint32_t base2, volatile void *dest, volatile void *src, size_t len)
@@ -28,10 +33,10 @@ int mgeth_transmit_data_throught_mdma(uint32_t base1, uint32_t base2, volatile v
 	bool irq_en = true;
 	uint16_t desc_gap = (desc_type == NORMAL) ? NORMAL_DESC_SIZE : PITCH_DESC_SIZE;
 
-	rumboot_printf("Config mgeth0.\n");
+	rumboot_printf("Config mgeth0 .\n");
 	size_t num_txdescriptors = 1;
 	struct mdma_config cfg0 = { .desc_type		= desc_type,.desc_gap	       = desc_gap, .irq_en = irq_en,
-				    .num_rxdescriptors	= 0,	    .num_txdescriptors = num_txdescriptors };
+				    .num_rxdescriptors	= num_txdescriptors,	    .num_txdescriptors = num_txdescriptors };
 	volatile struct mdma_device *mgeth0 = mdma_create(base1 + 0x900, &cfg0);
 	mgeth0->type = MDMA_MGETH;
 	mdma_configure(mgeth0, &cfg0);
@@ -39,7 +44,7 @@ int mgeth_transmit_data_throught_mdma(uint32_t base1, uint32_t base2, volatile v
 	rumboot_printf("Config mgeth1.\n");
 	size_t num_rxdescriptors = 1;
 	struct mdma_config cfg1 = { .desc_type		= desc_type,	    .desc_gap	       = desc_gap, .irq_en = irq_en,
-				    .num_rxdescriptors	= num_rxdescriptors,.num_txdescriptors = 0 };
+				    .num_rxdescriptors	= num_rxdescriptors,.num_txdescriptors = num_txdescriptors };
 	volatile struct mdma_device *mgeth1 = mdma_create(base2 + 0x100, &cfg1);
 	mgeth1->type = MDMA_MGETH;
 	mdma_configure(mgeth1, &cfg1);
@@ -77,7 +82,7 @@ int mgeth_transmit_data_throught_mdma(uint32_t base1, uint32_t base2, volatile v
 
 	rumboot_printf("Check - if mdma is ready.\n");
 	size_t timeout_us = 1000;
-	while (!mdma_is_finished(mgeth1)) {
+	while (!mdma_is_finished(mgeth1) || !mdma_is_finished(mgeth0)) {
 		if (!timeout_us) {
 			return -1;
 		}
@@ -97,6 +102,7 @@ int mgeth_transmit_data_throught_mdma(uint32_t base1, uint32_t base2, volatile v
 
 	mdma_remove(mgeth0);
 	mdma_remove(mgeth1);
+
 
 	return 0;
 }

@@ -65,6 +65,9 @@ void mdma_irq_handler(int irq, void *arg)
 	ptr++;
 	uint32_t offset_w = *ptr;
 
+	rumboot_printf("offset r: %x\n", offset_r);
+	rumboot_printf("offset w: %x\n", offset_w);
+
 	uint32_t gp_status = ioread32(base + MDMA_GP_STATUS);
 
 	irqstat_r |= ioread32(base + MDMA_STATUS_R + offset_r);
@@ -112,7 +115,6 @@ volatile struct mdma_device *mdma_create(uint32_t base, struct mdma_config *cfg)
 
 	mdma = (struct mdma_device *)buf;
 
-
 	mdma->txtbl = (dsc_txtbl_size == 0) ? NULL : (struct descriptor *)&mdma[1];
 	rumboot_printf("Address of TX Table: %x\n", mdma->txtbl);
 
@@ -134,9 +136,13 @@ void mdma_remove(volatile struct mdma_device *dev)
 
 void mdma_init(volatile struct mdma_device *mdma)
 {
+	rumboot_printf("-------------y1-----------\n");
+
 	if (mdma->rxtbl != NULL) {
 		iowrite32(0x1, mdma->base + MDMA_ENABLE_W);
 	}
+
+	rumboot_printf("-------------y2-----------\n");
 	if (mdma->txtbl != NULL) {
 		iowrite32(0x1, mdma->base + MDMA_ENABLE_R);
 	}
@@ -144,10 +150,9 @@ void mdma_init(volatile struct mdma_device *mdma)
 
 void mdma_deinit(volatile struct mdma_device *mdma)
 {
-	iowrite32(0x0, mdma->base + MDMA_ENABLE_W);
-	iowrite32(0x0, mdma->base + MDMA_ENABLE_R);
+	iowrite32(0x0, mdma->base + MDMA_IRQ_MASK_R);
+	iowrite32(0x0, mdma->base + MDMA_IRQ_MASK_W);
 }
-
 
 void mdma_configure(volatile struct mdma_device *dev, struct mdma_config *cfg)
 {
@@ -164,6 +169,7 @@ void mdma_configure(volatile struct mdma_device *dev, struct mdma_config *cfg)
 	}
 	if (dev->txtbl != NULL) {
 		iowrite32((volatile uint32_t)dev->txtbl, dev->base + MDMA_DESC_ADDR_R);
+		rumboot_printf("desc addr r: %x\n", ioread32(dev->base + MDMA_DESC_ADDR_R));
 	}
 
 	if(is_add_info) settings_r |= (1 << ADD_INFO_i);
@@ -174,6 +180,7 @@ void mdma_configure(volatile struct mdma_device *dev, struct mdma_config *cfg)
 	}
 	if (dev->rxtbl != NULL) {
 		iowrite32((volatile uint32_t)dev->rxtbl, dev->base + MDMA_DESC_ADDR_W);
+		rumboot_printf("desc addr w: %x\n", ioread32(dev->base + MDMA_DESC_ADDR_W));
 	}
 
 	if(is_add_info) settings_w |= (1 << ADD_INFO_i);
@@ -184,8 +191,8 @@ void mdma_configure(volatile struct mdma_device *dev, struct mdma_config *cfg)
 
 	if (dev->conf.irq_en && dev->rxtbl != NULL) {
 
-			rumboot_printf("Set IRQ mask for W channel.\n");
-			iowrite32(irqmask, dev->base + MDMA_IRQ_MASK_W);
+			// rumboot_printf("Set IRQ mask for W channel.\n");
+			// iowrite32(irqmask, dev->base + MDMA_IRQ_MASK_W);
 	}
 
 	if (dev->conf.irq_en && dev->txtbl != NULL) {
@@ -218,7 +225,7 @@ bool mdma_is_finished(volatile struct mdma_device *mdma)
 	if (mdma->conf.irq_en) {
 		if (!(irqstat_w & (1 << STOP_DESC_i))) {
 			rumboot_printf("irqstat_r: %x\n", irqstat_r);
-			rumboot_printf("irqstat_w: %x\n", irqstat_w);
+			//rumboot_printf("irqstat_w: %x\n", irqstat_w);
 			return false;
 		}
 
@@ -230,6 +237,9 @@ bool mdma_is_finished(volatile struct mdma_device *mdma)
 
 	bool is_valid_for_mdma = desc.set.ownership;
 	rumboot_printf("ownership: %d\n", is_valid_for_mdma);
+	dump_desc(&desc);
+
+	rumboot_printf("descriptor: %x\n", ioread64(desc_rxaddr));
 
 	if (!is_valid_for_mdma) {
 		return false;
