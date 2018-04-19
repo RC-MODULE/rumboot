@@ -27,6 +27,8 @@ int main()
 	rumboot_printf("We have %d heaps!\n", num_heaps);
 	volatile char *src = NULL;
 	volatile char *dst = NULL;
+	volatile char *src_begin = NULL;
+	volatile char *dst_begin = NULL;
 
 	if (num_heaps == 0) {
 		rumboot_printf("We have no one heap!\n");
@@ -67,7 +69,6 @@ int main()
 
 	bool begin = true;
 	bool end = false;
-	volatile char *begin_addr = NULL;
 
 	volatile uint64_t *cur_ptr = NULL;
 	volatile uint64_t *end_ptr = NULL;
@@ -78,10 +79,10 @@ int main()
 
 		if (begin) {
 			src = rumboot_malloc_from_heap_aligned(src_heap_id, data_size, 8);
-			begin_addr = src;
+			src_begin = src;
 
-			cur_ptr = (volatile uint64_t *)src;
-			end_ptr = (volatile uint64_t *)src + data_size;
+			cur_ptr = (volatile uint64_t *)src_begin;
+			end_ptr = (volatile uint64_t *)src_begin + data_size;
 
 			//Fill memory with data
 			while (cur_ptr < end_ptr) {
@@ -89,21 +90,22 @@ int main()
 				cur_ptr++;
 			}
 		} else {
-			src = dst;
+			src_begin = dst_begin;
 		}
 
 		if (end) {
 			dst_heap_id = heap_ids[1];
-			dst = begin_addr;
+			dst = src_begin;
 		} else {
 			dst = rumboot_malloc_from_heap_aligned(dst_heap_id, data_size, 8);
+			dst_begin = dst;
 		}
 
 		for (i = 0; i < data_size; i++)
 			*(&dst[i]) = 0x0;
 
-		rumboot_printf("dst: %x, src: %x\n", dst, src);
-		if (mdma_transmit_data(base, dst, src, data_size) != 0) {
+		rumboot_printf("dst: %x, src: %x\n", dst_begin, src_begin);
+		if (mdma_transmit_data(base, dst_begin, src_begin, data_size) != 0) {
 			rumboot_printf("Test failed!\n");
 			return -1;
 		}
@@ -117,13 +119,13 @@ int main()
 	}
 
 	rumboot_printf("Compare arrays.\n");
-	if (memcmp((char *)src, (char *)dst, data_size) != 0) {
+	if (memcmp((char *)src_begin, (char *)dst_begin, data_size) != 0) {
 		rumboot_printf("Test failed!\n");
 		return -1;
 	}
 
-	rumboot_free((char *)src);
-	rumboot_free((char *)dst);
+	rumboot_free((char *)src_begin);
+	rumboot_free((char *)dst_begin);
 
 	//Remove IRQ
 	rumboot_irq_table_activate(NULL);
