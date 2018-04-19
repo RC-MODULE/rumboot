@@ -80,6 +80,10 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     TESTGROUP short
   )
 
+add_rumboot_target_dir(rom/
+    CONFIGURATION ROM
+  )
+  
   add_rumboot_target_dir(tests/
     CONFIGURATION ROM)
 endmacro()
