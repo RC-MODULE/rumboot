@@ -4,7 +4,6 @@
 #include <rumboot/printf.h>
 #include <rumboot/platform.h>
 #include <rumboot/macros.h>
-//#include <platform/oi10/platform/devices.h>
 
 int main()
 {

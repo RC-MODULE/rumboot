@@ -2,9 +2,7 @@
  * PLB6PLB4 bridge implementation
  */
 
-//#include <mivem_assert.h>
 #include <devices/plb6plb4/p64.h>
-//#include <ppc_c.h>
 
 void p64_get_configuration(uint32_t const base_addr, p64_cfg * cfg)
 {
