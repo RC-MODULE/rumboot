@@ -40,15 +40,7 @@ int mgeth_transmit_data_throught_mdma(uint32_t base1, uint32_t base2, volatile v
 	volatile struct mdma_device *mgeth0 = mdma_create(base1 + 0x900, &cfg0);
 	mgeth0->type = MDMA_MGETH;
 	mdma_configure(mgeth0, &cfg0);
-
-
-	struct mdma_config cfg0 = { .desc_type		= desc_type,.desc_gap	       = desc_gap, .irq_en = irq_en,
-						.num_rxdescriptors	= 0,	    .num_txdescriptors = num_txdescriptors };
-	volatile struct mdma_device *mgeth1 = mdma_create(base1 + 0x900, &cfg0);
-	mgeth0->type = MDMA_MGETH;
-	mdma_configure(mgeth1, &cfg0);
-
-
+	
 	rumboot_printf("Config mgeth1.\n");
 	size_t num_rxdescriptors = 1;
 	struct mdma_config cfg1 = { .desc_type		= desc_type,	    .desc_gap	       = desc_gap, .irq_en = irq_en,
