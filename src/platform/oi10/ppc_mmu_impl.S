@@ -1,6 +1,6 @@
-#include <platform/oi10/platform/ppc_476fp_asm.h>
-#include <platform/oi10/platform/ppc_476fp_mmu_fields.h>
-#include <platform/oi10/platform/ppc_476fp_ctrl_fields.h>
+#include <arch/ppc/ppc_476fp_asm.h>
+#include <arch/ppc/ppc_476fp_mmu_fields.h>
+#include <arch/ppc/ppc_476fp_ctrl_fields.h>
 
 
 .section ".init.text","ax",@progbits

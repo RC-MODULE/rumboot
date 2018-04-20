@@ -5,21 +5,18 @@
  *      Author: v.strukov
  */
 //#if 0
-#include <platform/oi10/platform/ppc_476fp_asm.h>
+#include <arch/ppc/ppc_476fp_asm.h>
 #include <platform/oi10/platform/test_event_asm.h>
 #include <platform/oi10/platform/trace.S.h>
 #include <platform/oi10/platform/ppc470s/mmu.S.h>
 #include <regs/regs_plb6bc.h>
-#include <platform/oi10/platform/ppc_476fp_itrpt_fields.h>
-#include <platform/oi10/platform/ppc_476fp_debug_fields.h>
-#include <platform/oi10/platform/ppc_476fp_ctrl_fields.h>
-#include <platform/oi10/platform/ppc_476fp_timer_fields.h>
+#include <arch/ppc/ppc_476fp_itrpt_fields.h>
+#include <arch/ppc/ppc_476fp_debug_fields.h>
+#include <arch/ppc/ppc_476fp_ctrl_fields.h>
+#include <arch/ppc/ppc_476fp_timer_fields.h>
 #include <platform/oi10/platform/devices.h>
 #include <platform/oi10/platform/trace.S.h>
 //#endif
-.global rumboot_entry_point
-.global rumboot_reset_handler
-.global boot_start
 
 //#if 0
 .global unexpected_itrpt_hdr_base
