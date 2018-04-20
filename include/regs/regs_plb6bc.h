@@ -6,7 +6,7 @@
 #define __PLB6BC_REG_H__
 
 
-#include <devices/plb6bc/reg_field_plb6bc.h>
+#include <regs/plb6bc/reg_field_plb6bc.h>
 #include <common_macros/common_macros.h>
 #include <arch/ppc/ibm_bit_ordering_macros.h>
 
