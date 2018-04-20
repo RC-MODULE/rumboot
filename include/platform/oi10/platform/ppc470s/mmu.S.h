@@ -6,7 +6,7 @@
 #ifndef PPC470S_MMU_S_H_
 #define PPC470S_MMU_S_H_
 
-#include <platform/oi10/platform/ppc_476fp_mmu.S.h>
+#include <arch/ppc/ppc_476fp_mmu.S.h>
 
 #define ppc470s_write_tlb_entries    write_tlb_entries
 
