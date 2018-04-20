@@ -111,14 +111,15 @@ volatile struct mdma_device *mdma_create(uint32_t base, struct mdma_config *cfg)
 	size_t dsc_txtbl_size = num_txdescriptors * (desc_gap);
 	size_t dsc_rxtbl_size = num_rxdescriptors * (desc_gap);
 
-	volatile char *buf = rumboot_malloc_from_heap_aligned(IM0_HEAP_ID, sizeof(*mdma) + dsc_rxtbl_size + dsc_txtbl_size, 8);
+	volatile char *buf1 = rumboot_malloc_from_heap_aligned(IM0_HEAP_ID, sizeof(*mdma) , 8);
 
-	mdma = (struct mdma_device *)buf;
+	mdma = (struct mdma_device *)buf1;
 
-	mdma->txtbl = (dsc_txtbl_size == 0) ? NULL : (struct descriptor *)&mdma[1];
+	volatile char *buf2 = rumboot_malloc_from_heap_aligned(IM0_HEAP_ID, dsc_rxtbl_size + dsc_txtbl_size, 8);
+	mdma->txtbl = (dsc_txtbl_size == 0) ? NULL : (struct descriptor *)buf2;
 	rumboot_printf("Address of TX Table: %x\n", mdma->txtbl);
 
-	mdma->rxtbl = (dsc_rxtbl_size == 0) ? NULL : (struct descriptor *)&buf[sizeof(*mdma) + dsc_txtbl_size];
+	mdma->rxtbl = (dsc_rxtbl_size == 0) ? NULL : (struct descriptor *)&buf2[dsc_txtbl_size];
 	rumboot_printf("Address of RX Table: %x\n", mdma->rxtbl);
 
 	mdma->base = base;
