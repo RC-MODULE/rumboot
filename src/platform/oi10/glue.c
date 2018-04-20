@@ -4,6 +4,7 @@
 #include <stdarg.h>
 #include <rumboot/platform.h>
 #include <rumboot/io.h>
+#include <rumboot/printf.h>
 
 /* Platform-specific glue */
 uint32_t rumboot_platform_get_uptime()
