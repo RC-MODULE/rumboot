@@ -1,5 +1,5 @@
 #undef __linux__
-#include <platform/oi10/platform/trace.S.h>
+#include <platform/trace.S.h>
 
 .section ".init.start","ax",@progbits
 
