@@ -2,7 +2,7 @@
 #define PPC_476FP_ASM_H
 
 
-#include <platform/oi10/platform/ppc_476fp_config.h>
+#include <arch/ppc/ppc_476fp_config.h>
 #include <common_macros/common_macros.h>
 #include <arch/ppc/ibm_bit_ordering_macros.h>
 
