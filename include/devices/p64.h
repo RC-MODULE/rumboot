@@ -24,5 +24,5 @@ typedef struct p64_cfg
 
 void p64_get_configuration(uint32_t const base_addr, p64_cfg * cfg);
 void p64_set_configuration(uint32_t const base_addr, p64_cfg * cfg);
-void set_split_range_address(uint32_t const base_addr, uint32_t const addrl1, uint32_t const addrh1);
+void p64_set_split_range_address(uint32_t const base_addr, uint32_t const addrl1, uint32_t const addrh1);
 #endif // P64_H

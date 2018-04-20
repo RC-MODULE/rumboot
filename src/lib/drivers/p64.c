@@ -2,7 +2,7 @@
  * PLB6PLB4 bridge implementation
  */
 
-#include <devices/plb6plb4/p64.h>
+#include <devices/p64.h>
 
 void p64_get_configuration(uint32_t const base_addr, p64_cfg * cfg)
 {
@@ -46,7 +46,7 @@ void __attribute__((section(".ROM.text"))) p64_init_simple()
     p64_dcr_write_P64_P64CR(PLB6PLB4_0_BASE, reg_value);
 }
 
-void set_split_range_address(uint32_t const base_addr, uint32_t const addrl1, uint32_t const addrh1)
+void p64_set_split_range_address(uint32_t const base_addr, uint32_t const addrl1, uint32_t const addrh1)
 {
     p64_dcr_write_P64_ADDRL1(base_addr, addrl1);
 //    TEST_ASSERT(addrl1==p64_dcr_read_P64_ADDRL1(base_addr), "Error setting of ADDRL1 register");
