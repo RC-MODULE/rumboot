@@ -1,7 +1,10 @@
 MEMORY
 {
-    IM0 (rwx)       : ORIGIN = 0x00040000, LENGTH = 0x20000
-    IM1 (rwx)       : ORIGIN = 0x00060000, LENGTH = 0x20000
+    EM2 (rwx)       : ORIGIN = 0x00000000, LENGTH = 0x80000000
+    EM0 (rwx)       : ORIGIN = 0x80000000, LENGTH = 0x20000000
+    EM1 (rwx)       : ORIGIN = 0xA0000000, LENGTH = 0x20000000
+    IM0 (rwx)       : ORIGIN = 0xC0010000, LENGTH = 0x20000
+    IM1 (rwx)       : ORIGIN = 0xD0000000, LENGTH = 0x20000
     ROM (rx)        : ORIGIN = 0xFFFF0000, LENGTH = 0x10000
 }
 
