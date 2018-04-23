@@ -22,7 +22,7 @@ void sp804_enable( uint32_t base_addr, int index)
     }
     cntrl =  ioread8(base_addr+control_reg);
     cntrl |= DIT_CTRL_ENABLE;
-    iowrite8(cntrl,base_addr+control_reg);
+    iowrite32(cntrl,base_addr+control_reg);
 
 }
 
@@ -39,7 +39,7 @@ void sp804_stop( int base_addr, int index)
     }
     cntrl = ioread8(base_addr+control_reg);
     cntrl = cntrl & (~(DIT_CTRL_ENABLE));
-    iowrite8(cntrl,base_addr+control_reg);
+    iowrite32(cntrl,base_addr+control_reg);
 
 }
 
@@ -123,7 +123,7 @@ void sp804_config( uint32_t base_addr, const struct sp804_conf * config, int ind
 
 
     if (index){
-        iowrite8( cntrl, base_addr+DIT0_REG_CONTROL1);
+        iowrite32( cntrl, base_addr+DIT0_REG_CONTROL1);
 
         // LOAD
         if (config->load)
@@ -138,7 +138,7 @@ void sp804_config( uint32_t base_addr, const struct sp804_conf * config, int ind
         }
     }
     else{
-        iowrite8( cntrl, base_addr+DIT0_REG_CONTROL0);
+        iowrite32( cntrl, base_addr+DIT0_REG_CONTROL0);
 
         // LOAD
         if (config->load)
