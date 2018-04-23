@@ -372,10 +372,6 @@ tmp = i2c_write_array((i2c_base_addr +0x1000), i2c_addr,
 	{rumboot_printf("I2C write test ERROR!\n");
 	return TEST_ERROR;}	
 	
-	tmp = i2c_wait_al(I2C_BASE);  //check arlost of the second master
-	if (tmp == I2C_FAILED)
-	{rumboot_printf(" no I2C write arlost0 ERROR!\n");
-	return TEST_ERROR;}		
 	
 	tmp = 	i2c_read_check_array (i2c_base_addr,i2c_addr, addr_h,addr_l,
 			4/*size_array*/,0x6B,  check_array32);
