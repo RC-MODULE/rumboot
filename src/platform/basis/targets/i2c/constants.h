@@ -42,7 +42,7 @@
 #define TEST_OK    0
 #define TEST_ERROR   1
 
-#define I2C_IRQ    0
+// #define I2C_IRQ    0 // Moved To basis.cmake
 #define I2C_TIMEOUT   100000
 #define I2C_ATTEMPT   1000
 

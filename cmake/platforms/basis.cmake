@@ -126,13 +126,13 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
     add_rumboot_target_dir(i2c/
       CONFIGURATION IRAM
-      CFLAGS -DI2C_BASE=I2C0_BASE
+      CFLAGS -DI2C_BASE=I2C0_BASE -DI2C_IRQ=I2C0_IRQ
       PREFIX i2c-0
     )
 
     add_rumboot_target_dir(i2c/
       CONFIGURATION IRAM
-      CFLAGS -DI2C_BASE=I2C1_BASE
+      CFLAGS -DI2C_BASE=I2C1_BASE -DI2C_IRQ=I2C1_IRQ
       PREFIX i2c-1
     )
 

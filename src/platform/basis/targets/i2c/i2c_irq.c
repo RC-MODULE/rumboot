@@ -176,7 +176,7 @@ int main()
 	rumboot_irq_table_activate(tbl);
 
 	/* Enable IRQ */
-	rumboot_irq_enable(0);
+	rumboot_irq_enable(I2C_IRQ);
 
 	/* Allow interrupt handling */
 	rumboot_irq_sei();
