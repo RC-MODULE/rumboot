@@ -44,7 +44,20 @@ static void handler4()
   if ((status!=0x1)&&(status!=0x2))
   rumboot_printf("wrong status!\n"); 
 }
-
+static void handler5()
+{
+  irq_done = 0x1;
+  status=ioread32(GPIO5_BASE+0x14);
+  if ((status!=0x1)&&(status!=0x2))
+  rumboot_printf("wrong status!\n"); 
+}
+static void handler6()
+{
+  irq_done = 0x1;
+  status=ioread32(GPIO6_BASE+0x14);
+  if ((status!=0x1)&&(status!=0x2))
+  rumboot_printf("wrong status!\n"); 
+}
 
 int GPIO_INT( uint32_t base_gpio_addr,  uint32_t GPIO_INTR )
 {
@@ -86,6 +99,8 @@ int main()
   rumboot_irq_set_handler(tbl, GPIO2_INTR, 0, handler2, NULL );
   rumboot_irq_set_handler(tbl, GPIO3_INTR, 0, handler3, NULL );
   rumboot_irq_set_handler(tbl, GPIO4_INTR, 0, handler4, NULL );
+  rumboot_irq_set_handler(tbl, mdio_gpio0_int, 0, handler5, NULL );
+  rumboot_irq_set_handler(tbl, mdio_gpio1_int, 0, handler6, NULL );
   /* Activate the table */
   rumboot_irq_table_activate(tbl);
   rumboot_irq_sei();
@@ -109,5 +124,19 @@ int main()
       rumboot_printf("GPIO4_INT ERROR!\n");
       return 1;
     }
+    
+   if (GPIO_INT(GPIO5_BASE,mdio_gpio0_int))
+    {
+      rumboot_printf("GPIO5_INT ERROR!\n");
+      return 1;
+    }
+   if (GPIO_INT(GPIO6_BASE,mdio_gpio1_int))
+    {
+      rumboot_printf("GPIO6_INT ERROR!\n");
+      return 1;
+    }
+    
+    rumboot_printf("TEST OK!\n");
+  
   return 0;
 }

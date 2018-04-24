@@ -125,13 +125,22 @@ int main()
 
     if  (data_dir(GPIO1_BASE)!= GPIO_OK)
     return GPIO_ERROR;
+    rumboot_printf("gpio1_ok!\n"); 
       if  (data_dir(GPIO2_BASE)!= GPIO_OK)
     return GPIO_ERROR;
+    rumboot_printf("gpio2_ok!\n"); 
       if  (data_dir(GPIO3_BASE)!= GPIO_OK)
     return GPIO_ERROR;
+    rumboot_printf("gpio3_ok!\n"); 
         if  (data_dir(GPIO4_BASE)!= GPIO_OK)
     return GPIO_ERROR;
-
+    rumboot_printf("gpio4_ok!\n"); 
+           if  (data_dir(GPIO5_BASE)!= GPIO_OK)
+    return GPIO_ERROR;
+    rumboot_printf("gpio5_ok!\n"); 
+       if  (data_dir(GPIO6_BASE)!= GPIO_OK)
+    return GPIO_ERROR;
+rumboot_printf("TEST_OK!\n"); 
 	return 0;
 }
 

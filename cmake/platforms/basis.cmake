@@ -227,6 +227,20 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
   )
 
   add_rumboot_target(
+    CONFIGURATION IRAM
+    FILES gpio/gpio.c
+    TIMEOUT 300 us
+    IRUN_FLAGS +gpio_test
+  )
+ 
+   add_rumboot_target(
+    CONFIGURATION IRAM
+    FILES gpio/gpio_irq.c
+    TIMEOUT 300 us
+    IRUN_FLAGS +gpio_test
+  )
+
+  add_rumboot_target(
    CONFIGURATION IRAM
    FILES can-adapter/can_adapter_0_test.c
    TIMEOUT 300 us

@@ -23,6 +23,8 @@
 #define MDIO1_INT                   37
 #define MDIO2_INT                   38
 #define MDIO3_INT                   39
+#define mdio_gpio0_int              40
+#define mdio_gpio1_int              41
 #define DIT0_TIMINT1                42
 #define DIT0_TIMINT2                43
 #define DIT1_TIMINT1                44
