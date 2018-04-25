@@ -11,6 +11,9 @@
 #include <string.h>
 #include <rumboot/pcie_test_lib.h>
 #include <rumboot/ddr_test_lib.h>
+#include <devices/gic.h>
+#include <devices/irq-proxy-gic-cdnpcie.h>
+#include <rumboot/irq.h>
 
 /* Platform-specific glue */
 uint32_t rumboot_platform_get_uptime()
@@ -42,10 +45,10 @@ void setup_mirrored_heap(int id)
 	strcat(name, rumboot_malloc_heap_name(id));
 
 	/* Trashy code, but will do for now */
-	if (rumboot_platform_runtime_info.heaps[id].start >= (void *) 0xC0000000) {
+	if (rumboot_platform_runtime_info.heaps[id].start >= (void *)0xC0000000) {
 		rumboot_malloc_register_heap(name,
-						 (ptr - 0xC0000000) + 0x60000000,
-						 (ptr + (len / 2) - 0xC0000000) + 0x60000000);
+					     (ptr - 0xC0000000) + 0x60000000,
+					     (ptr + (len / 2) - 0xC0000000) + 0x60000000);
 	} else if ((rumboot_platform_runtime_info.heaps[id].start >= (void *)0x80000000)) {
 		rumboot_malloc_register_heap(name,
 					     ptr - 0x80000000 + 0x50000000,
@@ -64,6 +67,7 @@ void rumboot_platform_setup()
 	 * Needed for handling IRQs in secondary image
 	 */
 	arm_vbar_set((uint32_t)&rumboot_default_irq_vectors);
+	rumboot_irq_register_gic();
 
 	rumboot_malloc_register_heap("IM0",
 				     &rumboot_im0_heap_start, &rumboot_im0_heap_end);
@@ -82,11 +86,13 @@ void rumboot_platform_setup()
 
 
 #ifdef RUMBOOT_BASIS_ENABLE_MIRROR
+	struct rumboot_irq_entry *tbl = rumboot_irq_create(NULL);
+	rumboot_irq_table_activate(tbl);
+	rumboot_irq_register_msix_proxy_controller();
 	int heaps = rumboot_malloc_num_heaps();
 	int i;
-	for (i = 0; i < heaps; i++) {
+	for (i = 0; i < heaps; i++)
 		setup_mirrored_heap(i);
-	}
 
 #endif
 

@@ -378,7 +378,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     TIMEOUT 170 us
     CFLAGS -DMDIO_NUM=3
   )
-  
+
   add_rumboot_target(
     CONFIGURATION IRAM_MIRROR
     FILES mdio/mdio_test.c
@@ -409,7 +409,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     NAME mdio_test_3
     TIMEOUT 500 us
     CFLAGS -DMDIO_NUM=3
-  )  
+  )
 
   add_rumboot_target(
     CONFIGURATION IRAM
@@ -446,7 +446,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     CFLAGS -DMDIO_NUM=3
     IRUN_FLAGS +eth_phy_interrupt
   )
-  
+
   add_rumboot_target(
     CONFIGURATION IRAM_MIRROR
     FILES mdio/mdio_phy_intrp_test.c
@@ -481,7 +481,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     TIMEOUT 400 us
     CFLAGS -DMDIO_NUM=3
     IRUN_FLAGS +mirror_eth_phy_interrupt
-  )  
+  )
 
   add_rumboot_target(
       SNAPSHOT default
@@ -626,6 +626,7 @@ file(GLOB PLATFORM_SOURCES
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/*.c
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/startup.S
     ${CMAKE_SOURCE_DIR}/src/lib/drivers/irq-gic.c
+    ${CMAKE_SOURCE_DIR}/src/lib/drivers/irq-proxy-gic-cdnpcie.c
     ${CMAKE_SOURCE_DIR}/src/lib/eventsystem-memory.c
     ${CMAKE_SOURCE_DIR}/src/lib/drivers/ddr_test_lib.c
     ${CMAKE_SOURCE_DIR}/src/lib/drivers/pcie_test_lib.c

@@ -80,15 +80,68 @@ static inline int rumboot_arch_irq_setstate(int pri_mask)
     */
 
     /** This struct should be used as opaque object. All irq functions use it.
+     * Internally it represents an allocated irq table with all configured interrupts
+     * and their respective vectors
      */
     struct rumboot_irq_entry;
 
+    /**
+     * This struct represents an IRQ controller in the system
+     */
+    struct rumboot_irq_controller {
+    	int			first; /** The first IRQ line handled by this controller */
+    	int			last; /** The last IRQ line handled by this controller */
+
+        /**
+         * This function is called to initialize IRQ controller
+         * @param dev irq_controller_device
+         * @param arg user-defined argument (passed from rumboot_irq_register_controller())
+         */
+    	int		    (*init)(const struct rumboot_irq_controller *dev);
+
+        /**
+         * This function is called by the IRQ subsystem to reconfigure an interrupt
+         * line.
+         *
+         * @param dev    The irq controller device
+         * @param irq    The irq number
+         * @param flags  A bitmask of RUMBOOT_IRQ_IRQ/RUMBOOT_IRQ_FIQ,
+         *               RUMBOOT_IRQ_LEVEL/RUMBOOT_IRQ_EDGE. In most cases - just use 0.
+         * @param enable Do we want it enabled
+         */
+    	void		(*configure)(const struct rumboot_irq_controller *dev, int irq, uint32_t flags, int enable);
+        /**
+         * This function is called by the IRQ subsystem when beginning to
+         * service the IRQ routine. The function should return the next pending
+         * irq number
+         *
+         * @param dev    The irq controller device
+         * @return IRQ ID that is currently being serviced
+         */
+    	uint32_t	(*begin)(const struct rumboot_irq_controller *dev);
+        /**
+         * This function is called by the IRQ subsystem when the subsystem is done
+         * servicing the current interrupt.
+         * @param irq id of the irq that is done being serviced
+         */
+    	void		(*end)(const struct rumboot_irq_controller *dev, uint32_t irq);
+        /**
+         * Pointer for implementation-specic data
+         * @return [description]
+         */
+    	void 		*controllerdata;
+    };
 
     /**
      * Create an IRQ handler table. The resulting table should be freed using
      * rumboot_irq_free().
      *
-     * @param  copyfrom [description]
+     * If copyfrom is NOT NULL, it will be copied to the newly allocated IRQ table
+     *
+     * If copyfrom is NULL and there is an active IRQ table, currently active table
+     * will be used as a template when creating a new table
+     *
+     * @param  copyfrom
      * @return          [description]
      */
     struct rumboot_irq_entry *rumboot_irq_create(struct rumboot_irq_entry *copyfrom);
@@ -139,6 +192,13 @@ static inline int rumboot_arch_irq_setstate(int pri_mask)
      * @param irq [description]
      */
     void rumboot_irq_enable(int irq);
+
+
+    /**
+     * Enable all available IRQ lines.
+     * Convenience function used to catch spurious interrupts.
+     */
+    void rumboot_irq_enable_all();
 
     /**
      * Disable IRQ line
@@ -204,14 +264,15 @@ static inline int rumboot_arch_irq_setstate(int pri_mask)
 
     /**
      * This function should be called by the platform assembly code to route all
-     * interrupts to controller driver.
+     * interrupts to controller driver or from C code implementing nested controller.
      *
-     * For people writing tests: YOU DO NOT NEED THIS FUNCTION!
+     * For people writing tests: YOU NORMALLY DO NOT NEED THIS FUNCTION!
      *
+     * @param ctrl interrupt controller id obtained from rumboot_irq_register_controller
      * @param type RUMBOOT_IRQ_TYPE_NORMAL or RUMBOOT_IRQ_TYPE_EXCEPTION
      * @param id   RUMBOOT_IRQ_IRQ, RUMBOOT_IRQ_FIQ, etc.
      */
-    void rumboot_irq_core_dispatch(uint32_t type, uint32_t id);
+    void rumboot_irq_core_dispatch(uint32_t ctrl, uint32_t type, uint32_t id);
 
     /**
      * ARCH-specific glue: Disable CPU IRQ handling.
@@ -226,35 +287,12 @@ static inline int rumboot_arch_irq_setstate(int pri_mask)
     static inline void rumboot_arch_irq_enable();
 
     /**
-     * This function is called to initialize IRQ controller
+     * This function should be called via platform glue code to register
+     * and initilize a new interrupt controller.
+     * @param ctl [description]
      */
-    void rumboot_platform_irq_init();
+    void rumboot_irq_register_controller(const struct rumboot_irq_controller *ctl);
 
-    /**
-     * This function is called by the IRQ subsystem when beginning to
-     * service the IRQ routine. The function should return the next pending
-     * irq number
-     *
-     * @return IRQ ID that is currently being serviced
-     */
-    uint32_t rumboot_platform_irq_begin();
-
-    /**
-     * This function is called by the IRQ subsystem when the subsystem is done
-     * servicing the current interrupt.
-     * @param irq id of the irq that is done being serviced
-     */
-    void rumboot_platform_irq_end(uint32_t irq);
-
-    /**
-     * This function is called by the IRQ subsystem to reconfigure an interrupt
-     * line.
-     * @param irq    The irq number
-     * @param flags  A bitmask of RUMBOOT_IRQ_IRQ/RUMBOOT_IRQ_FIQ,
-     *               RUMBOOT_IRQ_LEVEL/RUMBOOT_IRQ_EDGE. In most cases - just use 0.
-     * @param enable Do we want it enabled
-     */
-    void rumboot_platform_irq_configure(int irq, uint32_t flags, int enable);
     /**
     *  @}
     */

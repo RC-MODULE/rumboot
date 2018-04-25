@@ -2,18 +2,18 @@
 #define DEVICES_GIC_H
 
 /**
- * \defgroup devices_gic PL390 GIC
- * \ingroup devices
+ * \defgroup devices_irq_gic PL390 GIC
+ * \ingroup devices_irq
  *
  * Register offsets and constants
  * \code{.c}
- * #include <devices/gic.h>
+ * #include <regs/regs_gic.h>
  * \endcode
  *
- * \defgroup devices_gic_regs Register offsets
- * \ingroup devices_gic
+ * \defgroup devices_irq_gic_regs Register offsets
+ * \ingroup devices_irq_gic
  *
- * \addtogroup devices_gic_regs
+ * \addtogroup devices_irq_gic_regs
  * @{
  */
 #define GICC_REG_IAR     0x00C
@@ -46,10 +46,10 @@
 
 /**
  * @}
- * \defgroup devices_gic_constants Constants
- * \ingroup devices_gic
+ * \defgroup devices_irq_gic_constants Constants
+ * \ingroup devices_irq_gic
  *
- * \addtogroup devices_gic_constants
+ * \addtogroup devices_irq_gic_constants
  * @{
  */
 

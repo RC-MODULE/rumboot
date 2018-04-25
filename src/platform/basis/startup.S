@@ -41,8 +41,9 @@ rumboot_default_irq_vectors:
 
 
 undefined_handler:
-    mov r0, #RUMBOOT_IRQ_TYPE_EXCEPTION
-    mov r1, #RUMBOOT_IRQ_UNDEFINED_INSTRUCTION
+    mov r0, #0
+    mov r1, #RUMBOOT_IRQ_TYPE_EXCEPTION
+    mov r2, #RUMBOOT_IRQ_UNDEFINED_INSTRUCTION
     bl rumboot_irq_core_dispatch
     movs pc,lr
     nop
@@ -52,39 +53,44 @@ swi_handler:
   subs     r0, lr, #4
   ldr      r1, [r0]
   and      r1, r1, #0xff
-  mov      r0, #RUMBOOT_IRQ_TYPE_SOFT
+  mov      r0, #0
+  mov      r1, #RUMBOOT_IRQ_TYPE_SOFT
   bl       rumboot_irq_core_dispatch
   pop      {r0-r3, r12, lr}
   movs     pc,lr
   nop
 
 prefetch_handler:
-  mov r0, #RUMBOOT_IRQ_TYPE_EXCEPTION
-  mov r1, #RUMBOOT_IRQ_PREFETCH_ABORT
+  mov r0, #0
+  mov r1, #RUMBOOT_IRQ_TYPE_EXCEPTION
+  mov r2, #RUMBOOT_IRQ_PREFETCH_ABORT
   bl rumboot_irq_core_dispatch
   movs pc,lr
   nop
 
 
 abort_handler:
-  mov r0, #RUMBOOT_IRQ_TYPE_EXCEPTION
-  mov r1, #RUMBOOT_IRQ_DATA_ABORT
+  mov r0, #0
+  mov r1, #RUMBOOT_IRQ_TYPE_EXCEPTION
+  mov r2, #RUMBOOT_IRQ_DATA_ABORT
   bl rumboot_irq_core_dispatch
   movs pc,lr
   nop
 
 irq_handler:
   push    {r0-r3, r12, lr}
-  mov     r0, #RUMBOOT_IRQ_TYPE_NORMAL
-  mov     r1, #RUMBOOT_IRQ_IRQ
+  mov     r0, #0
+  mov     r1, #RUMBOOT_IRQ_TYPE_NORMAL
+  mov     r2, #RUMBOOT_IRQ_IRQ
   blx     rumboot_irq_core_dispatch
   POP     {r0-r3, r12, lr}
   subs    pc, lr, #4
   nop
 
 fiq_handler:
-  mov r0, #RUMBOOT_IRQ_TYPE_NORMAL
-  mov r1, #RUMBOOT_IRQ_FIQ
+  mov r0, #0
+  mov r1, #RUMBOOT_IRQ_TYPE_NORMAL
+  mov r2, #RUMBOOT_IRQ_FIQ
   bl rumboot_irq_core_dispatch
   movs pc,lr
   nop

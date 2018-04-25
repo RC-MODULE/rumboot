@@ -56,11 +56,13 @@ void rumboot_main()
      /* Make sure IRQs are off */
      rumboot_irq_cli();
 
-     /* Initialize interrupt controller */
-     rumboot_platform_irq_init();
 
      /* Call Platform-specific setup code (e.g. init the event system) */
      rumboot_platform_setup();
+
+     #ifdef RUMBOOT_ENABLE_ALL_IRQS_ON_START
+     rumboot_irq_enable_all();
+     #endif
 
      /* Run constructors */
      __libc_init_array();

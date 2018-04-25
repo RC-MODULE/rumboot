@@ -243,6 +243,11 @@ struct rumboot_syncbuffer {
 #define RUMBOOT_PLATFORM_NUM_HEAPS 4
 #endif
 
+#ifndef RUMBOOT_PLATFORM_NUM_IRQ_CONTROLLERS
+#define RUMBOOT_PLATFORM_NUM_IRQ_CONTROLLERS 4
+#endif
+
+
 /**
  * This represents a memory heap that can be used to
  * allocate memory using rumboot_malloc_from_heap
@@ -257,6 +262,8 @@ struct rumboot_heap {
     const char *name;
 };
 
+
+struct rumboot_irq_controller;
 /**
  * This global structure stores internal romboot state and some useful variables
  * It stores selftest results for further inspection by secondary
@@ -277,6 +284,10 @@ struct rumboot_runtime_info {
     int num_heaps;
     /** An array of available memory heaps */
     struct rumboot_heap heaps[RUMBOOT_PLATFORM_NUM_HEAPS];
+    /** How many irq controllers are registered */
+    int num_irq_controllers;
+    /** An array of available memory controllers */
+    const struct rumboot_irq_controller * irq_ctl_dev[RUMBOOT_PLATFORM_NUM_IRQ_CONTROLLERS];
     /** Pointer to current active irq table. Do not use directly, use rumboot_irq_table_get() */
     void *irq_handler_table;
     /** Pointer to irq default handler */

@@ -23,6 +23,42 @@ struct rumboot_irq_entry {
 };
 
 
+const struct rumboot_irq_controller *rumboot_irq_controller_by_irq(int irq)
+{
+	int i = 0;
+	do {
+		const struct rumboot_irq_controller *ctl = rumboot_platform_runtime_info.irq_ctl_dev[i];
+
+		if (!ctl)
+			break;
+
+		if ((irq <= ctl->last) && (irq >= ctl->first)) {
+			return ctl;
+		}
+		i++;
+	} while (1);
+	rumboot_platform_panic("irq: Failed to look up controller for IRQ: %d\n", irq);
+	return NULL;
+}
+
+const struct rumboot_irq_controller *rumboot_irq_controller_by_id(int id)
+{
+	if ((id > RUMBOOT_PLATFORM_NUM_IRQ_CONTROLLERS) || (id < 0)) {
+			return NULL;
+	}
+	return rumboot_platform_runtime_info.irq_ctl_dev[id];
+}
+
+void rumboot_irq_register_controller(const struct rumboot_irq_controller *ctl)
+{
+	if (rumboot_platform_runtime_info.num_irq_controllers >= RUMBOOT_PLATFORM_NUM_IRQ_CONTROLLERS) {
+		rumboot_platform_panic("irq: Failed to register irq controller %s: Please increase RUMBOOT_PLATFORM_NUM_IRQ_CONTROLLERS\n");
+	}
+	rumboot_platform_runtime_info.irq_ctl_dev[rumboot_platform_runtime_info.num_irq_controllers++] = ctl;
+	ctl->init(ctl);
+}
+
+
 void rumboot_irq_free(struct rumboot_irq_entry *tbl)
 {
 	rumboot_free(tbl);
@@ -30,13 +66,18 @@ void rumboot_irq_free(struct rumboot_irq_entry *tbl)
 
 struct rumboot_irq_entry *rumboot_irq_create(struct rumboot_irq_entry *copyfrom)
 {
+	if (!copyfrom && rumboot_irq_table_get()) {
+		copyfrom = rumboot_irq_table_get();
+	}
+
 	struct rumboot_irq_entry *tbl = rumboot_malloc(sizeof(*tbl) * (RUMBOOT_PLATFORM_NUM_IRQS + 1));
-	if (!tbl)
+	if (!tbl) {
 		rumboot_platform_panic("IRQ Table alloc failed!\n");
+	}
 
 	if (copyfrom) {
 		memcpy(tbl, copyfrom, sizeof(*tbl) + (RUMBOOT_PLATFORM_NUM_IRQS + 1));
-    }
+	}
 
 	return tbl;
 }
@@ -52,14 +93,17 @@ void rumboot_irq_set_handler(struct rumboot_irq_entry *tbl, int irq, uint32_t fl
 			     void (*handler)(int irq, void *args), void *arg)
 {
 	RUMBOOT_ATOMIC_BLOCK() {
-		if (irq > (RUMBOOT_PLATFORM_NUM_IRQS - 1))
+		if (irq > (RUMBOOT_PLATFORM_NUM_IRQS - 1)) {
 			rumboot_platform_panic("IRQ %d is too big\n", irq);
+		}
 
-		if (!tbl)
+		if (!tbl) {
 			tbl = rumboot_irq_table_get();
+		}
 
-		if (!tbl)
+		if (!tbl) {
 			rumboot_platform_panic("FATAL: Attempt to set handler on NULL table with no active table\n");
+		}
 
 		tbl[irq].handler = handler;
 		tbl[irq].arg = arg;
@@ -74,8 +118,9 @@ void rumboot_irq_table_activate(struct rumboot_irq_entry *tbl)
 		if (tbl) {
 			int i = 0;
 			for (i = 0; i < RUMBOOT_PLATFORM_NUM_IRQS; i++)
-				if (tbl[i].handler)
+				if (tbl[i].handler) {
 					rumboot_irq_enable(i);
+				}
 		}
 	}
 }
@@ -89,15 +134,32 @@ void *rumboot_irq_table_get()
 void rumboot_irq_enable(int irq)
 {
 	struct rumboot_irq_entry *tbl = rumboot_irq_table_get();
+	const struct rumboot_irq_controller *ctl = rumboot_irq_controller_by_irq(irq);
+	ctl->configure(ctl, irq, tbl[irq].flags, 1);
+}
 
-	rumboot_platform_irq_configure(irq, tbl[irq].flags, 1);
+void rumboot_irq_enable_all()
+{
+	int i;
+
+	/* TODO: Iterating over interrupt controllers and their irqs, directly calling
+	 * ctl->configure() will be waaay faster
+	 */
+	for (i = 0; i < RUMBOOT_PLATFORM_NUM_IRQS; i++) {
+		rumboot_irq_enable(i);
+	}
 }
 
 void rumboot_irq_disable(int irq)
 {
+	const struct rumboot_irq_controller *ctl = rumboot_irq_controller_by_irq(irq);
 	struct rumboot_irq_entry *tbl = rumboot_irq_table_get();
+	int flags = 0;
 
-	rumboot_platform_irq_configure(irq, tbl[irq].flags, 0);
+	if (tbl) {
+		flags = tbl[irq].flags;
+	}
+	ctl->configure(ctl, irq, flags, 0);
 }
 
 
@@ -107,31 +169,32 @@ static void process_irq(int id)
 
 	if (tbl && tbl[id].handler) {
 		tbl[id].handler(id, tbl[id].arg);
-	} else if (rumboot_platform_runtime_info.irq_def_hndlr)
-	{
+	} else if (rumboot_platform_runtime_info.irq_def_hndlr) {
 		rumboot_platform_runtime_info.irq_def_hndlr(id);
 	} else {
-		if (!tbl)
+		if (!tbl) {
 			rumboot_platform_panic("FATAL: Unhandled IRQ %d when no active irq table present\n",
-				id);
-		else
+					       id);
+		} else {
 			rumboot_platform_panic("FATAL: Unhandled IRQ %d\n", id);
+		}
 	}
 }
 
-void rumboot_irq_core_dispatch(uint32_t type, uint32_t id)
+void rumboot_irq_core_dispatch(uint32_t ctrl, uint32_t type, uint32_t id)
 {
+	const struct rumboot_irq_controller *ctl = rumboot_irq_controller_by_id(ctrl);
 	switch (type) {
 	case RUMBOOT_IRQ_TYPE_NORMAL:
-		id = rumboot_platform_irq_begin();
+		id = ctl->begin(ctl);
 		process_irq(id);
-		rumboot_platform_irq_end(id);
+		ctl->end(ctl,id);
 		break;
 	case RUMBOOT_IRQ_TYPE_SOFT:
 		process_irq(id);
 		break;
 	case RUMBOOT_IRQ_TYPE_EXCEPTION:
-		rumboot_platform_panic("%s \n", exception_names[id]);
+		rumboot_platform_panic("EXCEPTION: %s \n", exception_names[id]);
 		break;
 	}
 }

@@ -111,4 +111,5 @@ function iotest()
   print("done")
 end
 
-iotest();
+--iotest();
+ramdemo();

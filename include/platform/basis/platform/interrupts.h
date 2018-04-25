@@ -15,45 +15,53 @@
  * WARNING: DO NOT ADD ANYTHING ELSE HERE, ONLY IRQ NUMBERS
  */
 
-#define RUMBOOT_PLATFORM_NUM_IRQS 128
+#define RUMBOOT_PLATFORM_NUM_IRQS 256
 
-#define IRQN_SW0                    0
-#define IRQN_SW1                    1
-#define MDIO0_INT                   36
-#define MDIO1_INT                   37
-#define MDIO2_INT                   38
-#define MDIO3_INT                   39
-#define mdio_gpio0_int              40
-#define mdio_gpio1_int              41
-#define DIT0_TIMINT1                42
-#define DIT0_TIMINT2                43
-#define DIT1_TIMINT1                44
-#define DIT1_TIMINT2                45
-#define DIT2_TIMINT1                46
-#define DIT2_TIMINT2                47
-#define DIT3_TIMINT1                48
-#define DIT3_TIMINT2                49
-#define MGETH0_IRQ                  51
-#define MGETH1_IRQ                  52
-#define MGETH2_IRQ                  53
-#define MGETH3_IRQ                  54
-#define ADTRANS_SLV_IRQ_SPI         61
-#define WDT_INT                     63
-#define MDMA0_IRQ                   64
-#define MDMA1_IRQ                   65
-#define MDMA2_IRQ                   66
-#define MDMA3_IRQ                   67
-#define I2C0_IRQ                    74
-#define I2C1_IRQ                    75
-#define UART0_INTR                  76
-#define UART1_INTR                  77
-#define GPIO1_INTR                  79
-#define GPIO2_INTR                  80
-#define GPIO3_INTR                  81
-#define GPIO4_INTR                  82
-#define CAN0_INT                    83
-#define CAN1_INT                    84
-#define ARINC_INT                   85
+#define IRQN_SW0     0
+#define IRQN_SW1     1
+
+#define IRQ_MIRROR_BASE 128
+
+#ifdef RUMBOOT_BASIS_ENABLE_MIRROR
+        #define IRQ_REAL(n) (IRQ_MIRROR_BASE - 32 + n)
+#else
+        #define IRQ_REAL(n) (n)
+#endif
+
+
+#define MDIO0_INT                   IRQ_REAL(36)
+#define MDIO1_INT                   IRQ_REAL(37)
+#define MDIO2_INT                   IRQ_REAL(38)
+#define MDIO3_INT                   IRQ_REAL(39)
+#define DIT0_TIMINT1                IRQ_REAL(42)
+#define DIT0_TIMINT2                IRQ_REAL(43)
+#define DIT1_TIMINT1                IRQ_REAL(44)
+#define DIT1_TIMINT2                IRQ_REAL(45)
+#define DIT2_TIMINT1                IRQ_REAL(46)
+#define DIT2_TIMINT2                IRQ_REAL(47)
+#define DIT3_TIMINT1                IRQ_REAL(48)
+#define DIT3_TIMINT2                IRQ_REAL(49)
+#define MGETH0_IRQ                  IRQ_REAL(51)
+#define MGETH1_IRQ                  IRQ_REAL(52)
+#define MGETH2_IRQ                  IRQ_REAL(53)
+#define MGETH3_IRQ                  IRQ_REAL(54)
+#define ADTRANS_SLV_IRQ_SPI         IRQ_REAL(61)
+#define WDT_INT                     IRQ_REAL(63)
+#define MDMA0_IRQ                   IRQ_REAL(64)
+#define MDMA1_IRQ                   IRQ_REAL(65)
+#define MDMA2_IRQ                   IRQ_REAL(66)
+#define MDMA3_IRQ                   IRQ_REAL(67)
+#define I2C0_IRQ                    IRQ_REAL(74)
+#define I2C1_IRQ                    IRQ_REAL(75)
+#define UART0_INTR                  IRQ_REAL(76)
+#define UART1_INTR                  IRQ_REAL(77)
+#define GPIO1_INTR                  IRQ_REAL(79)
+#define GPIO2_INTR                  IRQ_REAL(80)
+#define GPIO3_INTR                  IRQ_REAL(81)
+#define GPIO4_INTR                  IRQ_REAL(82)
+#define CAN0_INT                    IRQ_REAL(83)
+#define CAN1_INT                    IRQ_REAL(84)
+#define ARINC_INT                   IRQ_REAL(85)
 
 /**
  * @}

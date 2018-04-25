@@ -8,6 +8,11 @@
  */
 
  /**
+  * \defgroup devices_irq IRQ Controllers
+  * \ingroup devices
+  */
+
+ /**
   * \defgroup platform Platform Documentation
   */
 
