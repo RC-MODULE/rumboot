@@ -33,6 +33,8 @@
 #define MDIO1_INT                   IRQ_REAL(37)
 #define MDIO2_INT                   IRQ_REAL(38)
 #define MDIO3_INT                   IRQ_REAL(39)
+#define MDIO_GPIO0_INT              IRQ_REAL(40)
+#define MDIO_GPIO1_INT              IRQ_REAL(41)
 #define DIT0_TIMINT1                IRQ_REAL(42)
 #define DIT0_TIMINT2                IRQ_REAL(43)
 #define DIT1_TIMINT1                IRQ_REAL(44)
@@ -62,6 +64,7 @@
 #define CAN0_INT                    IRQ_REAL(83)
 #define CAN1_INT                    IRQ_REAL(84)
 #define ARINC_INT                   IRQ_REAL(85)
+
 
 /**
  * @}
