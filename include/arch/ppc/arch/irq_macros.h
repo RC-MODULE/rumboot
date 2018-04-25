@@ -21,7 +21,6 @@ static inline int rumboot_arch_irq_disable(void)
 
 static inline int rumboot_arch_irq_setstate(int pri_mask)
 {
-    uint32_t tmp;
     asm volatile (
         "nop\n"
         );

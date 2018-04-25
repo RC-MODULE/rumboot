@@ -3,6 +3,7 @@ SET(RUMBOOT_ARCH ppc)
 file(GLOB PLATFORM_SOURCES
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/*.c
     ${CMAKE_SOURCE_DIR}/src/lib/drivers/irq-dummy.c
+    ${CMAKE_SOURCE_DIR}/src/lib/eventsystem-memory.c
 )
 
 #Flags for Power PC
