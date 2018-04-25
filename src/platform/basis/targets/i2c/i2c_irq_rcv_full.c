@@ -102,8 +102,11 @@ static void call_write()
 
 static void call_read()
 {
-	iowrite32((0x8),( I2C_BASE + I2C_IER));   // create mask for trn_empty 
-	iowrite32((0xA1),( I2C_BASE + 0x18));//I2C_TRANSMIT  ee -sensor dev. address
+	iowrite32((0x0),( I2C_BASE + I2C_IER));   // create mask 	
+	iowrite32((0x00010001),( I2C_BASE + I2C_FIFOFIL));
+	iowrite32((0x1),( I2C_BASE + 0x1c)); //NUMBR 
+	iowrite32((0x20),( I2C_BASE + I2C_IER));   // create mask for rcv_full_alm 	
+	iowrite32((0xA1),( I2C_BASE + 0x18));//I2C_TRANSMIT  A0 -EEPROM dev. address
 	iowrite32((0x1 ),(I2C_BASE +  0x2c));//reset status	
 	iowrite32((0x6B),( I2C_BASE + 0x10));//I2C_CTRL   start, en, read, rpt
 }
@@ -136,7 +139,7 @@ static bool test_rcv_full_alm(uint32_t arg)
 	call_write();
 	wait_irq();
 	rumboot_printf("expected=0x%x\n" , expected);
-	expected = 0x8;
+	expected = 0x20;
 	call_read();
 	wait_irq();	
 	rumboot_printf("expected=0x%x\n" , expected);
