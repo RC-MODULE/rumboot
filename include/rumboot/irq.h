@@ -22,7 +22,7 @@
 #ifndef __ASSEMBLER__
 
 #ifdef __arm__
-#include <arch/arm/irq_macros.h>
+#include <arch/irq_macros.h>
 #else
     /* stubs */
 static inline int rumboot_arch_irq_disable(void)

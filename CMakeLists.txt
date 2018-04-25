@@ -32,6 +32,7 @@ RUMBOOT_PLATFORM_SET_COMPILER_FLAGS()
 INCLUDE_DIRECTORIES (
     ${CMAKE_SOURCE_DIR}/include/
     ${CMAKE_SOURCE_DIR}/include/platform/${RUMBOOT_PLATFORM}/
+    ${CMAKE_SOURCE_DIR}/include/arch/${RUMBOOT_ARCH}/
 )
 
 execute_process(COMMAND

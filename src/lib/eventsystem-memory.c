@@ -6,8 +6,7 @@
 #include <rumboot/printf.h>
 #include <rumboot/io.h>
 #include <rumboot/macros.h>
-#include <arch/arm/irq_macros.h>
-
+#include <arch/irq_macros.h>
 
 __attribute__((no_instrument_function)) void rumboot_platform_event_raise(enum rumboot_simulation_event event,
 				  uint32_t *data, uint32_t len)

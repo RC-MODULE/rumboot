@@ -1,6 +1,8 @@
 #ifndef ARM_IRQ_MACROS_H
 #define ARM_IRQ_MACROS_H
 
+/* Include doxygen.h to make sure that documentation gets updated  */
+#include "../../doxygen.h"
 #if 0
 static inline void rumboot_arch_irq_dump_cpsr()
 {
@@ -45,7 +47,6 @@ static inline int rumboot_arch_irq_setstate(int pri_mask)
     return 0;
 }
 
-
 static inline void arm_vbar_set(uint32_t addr)
 {
     /* Write Secure or Non-secure Vector Base Address Register */
@@ -66,19 +67,6 @@ static inline uint32_t arm_vbar_get()
     return ret;
 }
 
-/**
- *
- * Define a critical section. Interrupts (IRQ & FIQ) will be disabled before
- * entry and restored to their previous state upon exit.
- *
- * \code{.c}
- * RUMBOOT_ATOMIC_BLOCK() {
- *  this_core_will_not_be_interrupted();
- * }
- * \endcode
- * \ingroup irq
- *
- */
 #define RUMBOOT_ATOMIC_BLOCK() \
      for(int mask = rumboot_arch_irq_disable(), flag = 1; \
          flag;\

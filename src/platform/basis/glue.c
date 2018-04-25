@@ -4,7 +4,7 @@
 #include <rumboot/platform.h>
 #include <rumboot/printf.h>
 #include <rumboot/io.h>
-#include <arch/arm/irq_macros.h>
+#include <arch/irq_macros.h>
 #include <platform/devices.h>
 #include <devices/sp804.h>
 #include <rumboot/rumboot.h>
