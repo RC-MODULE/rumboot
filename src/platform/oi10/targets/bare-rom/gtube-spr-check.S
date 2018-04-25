@@ -10,16 +10,6 @@ boot_start:
 .section ".init.text","ax",@progbits
 
 rumboot_entry_point:
-    load_const  r0, 0x00000000  // make r0 "all zeros" source
-    mtspr       SPR_SPRG0, r0
-    mtspr       SPR_SPRG1, r0
-    mtspr       SPR_SPRG2, r0
-    mtspr       SPR_SPRG3, r0
-    mtspr       SPR_SPRG4, r0
-    mtspr       SPR_SPRG5, r0
-    mtspr       SPR_SPRG6, r0
-    mtspr       SPR_SPRG7, r0
-    mtspr       SPR_SPRG8, r0
 
     gtube_init
     trace_msg "myYarr!!!\n"

@@ -1,13 +1,13 @@
 
 #undef __linux__
 #include <arch/ppc/ppc_476fp_asm.h>
-#include <platform/oi10/platform/test_event_asm.h>
-#include <platform/oi10/platform/trace.S.h>
-#include <platform/oi10/platform/ppc470s/mmu.S.h>
+#include <platform/test_event_asm.h>
+#include <platform/trace.S.h>
+#include <platform/ppc470s/mmu.S.h>
 #include <arch/ppc/ppc_476fp_debug_fields.h>
 #include <arch/ppc/ppc_476fp_ctrl_fields.h>
 #include <arch/ppc/ppc_476fp_timer_fields.h>
-#include <platform/oi10/platform/devices.h>
+#include <platform/devices.h>
 
 .section ".init.start","ax",@progbits
 
@@ -17,16 +17,7 @@ boot_start:
 .section ".init.text","ax",@progbits
 
 rumboot_entry_point:
-    load_const  r0, 0x00000000  // make r0 "all zeros" source
-    mtspr       SPR_SPRG0, r0
-    mtspr       SPR_SPRG1, r0
-    mtspr       SPR_SPRG2, r0
-    mtspr       SPR_SPRG3, r0
-    mtspr       SPR_SPRG4, r0
-    mtspr       SPR_SPRG5, r0
-    mtspr       SPR_SPRG6, r0
-    mtspr       SPR_SPRG7, r0
-    mtspr       SPR_SPRG8, r0
+    gtube_init
 
     lis  r0, 0x00000000  // make r0 "all zeros" source
     load_const  r1, 0xFFFFFFFF  // make r1 "all ones" source
