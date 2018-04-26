@@ -1,7 +1,7 @@
 #ifndef TEST_EVENT_ASM_H_
 #define TEST_EVENT_ASM_H_
 
-#include <arch/ppc/ppc_476fp_asm.h>
+#include <platform/arch/ppc/ppc_476fp_asm.h>
 #include <platform/oi10/platform/test_event_codes.h>
 
 

@@ -3,10 +3,10 @@
 
 
 #include <platform/common_macros/common_macros.h>
-#include <arch/ppc/ibm_bit_ordering_macros.h>
+#include <platform/arch/ppc/ibm_bit_ordering_macros.h>
 #include <platform/oi10/platform/ppc_c.h>
 #include <platform/oi10/platform/ppc470s/mmu/mem_window.h>
-#include <arch/ppc/ppc_476fp_mmu_fields.h>
+#include <platform/arch/ppc/ppc_476fp_mmu_fields.h>
 
 
 inline static void tlbsync() {

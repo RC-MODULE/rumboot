@@ -3,7 +3,7 @@
 #define MIVEM_REGS_ACCESS_H_
 
 #include <stdint.h>
-#include <arch/ppc/ppc_476fp_lib_c.h>
+#include <platform/arch/ppc/ppc_476fp_lib_c.h>
 
 #define REG_READ(DEV_NAME, REG, REG_SIZE)                                                               \
 inline static uint##REG_SIZE##_t DEV_NAME##_read_##REG(uint32_t const base_addr)                        \

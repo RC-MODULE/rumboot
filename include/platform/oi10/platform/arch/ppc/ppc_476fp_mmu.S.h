@@ -2,8 +2,8 @@
 #define PPC_476FP_MMU_S_H
 
 
-#include <arch/ppc/ppc_476fp_asm.h>
-#include <arch/ppc/ppc_476fp_mmu_fields.h>
+#include <platform/arch/ppc/ppc_476fp_asm.h>
+#include <platform/arch/ppc/ppc_476fp_mmu_fields.h>
 #include <platform/oi10/platform/ppc470s/mmu/mem_window.h>
 
 

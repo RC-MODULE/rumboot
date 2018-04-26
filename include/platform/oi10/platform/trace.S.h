@@ -1,7 +1,7 @@
 #ifndef TRACE_S_H_
 #define TRACE_S_H_
 
-#include <arch/ppc/ppc_476fp_asm.h>
+#include <platform/arch/ppc/ppc_476fp_asm.h>
 #include <platform/oi10/platform/test_event_asm.h>
 #include <platform/oi10/platform/test_event_codes.h>
 

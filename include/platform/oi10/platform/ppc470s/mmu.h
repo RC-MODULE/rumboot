@@ -6,7 +6,7 @@
 #ifndef PPC470S_MMU_H_
 #define PPC470S_MMU_H_
 
-#include <arch/ppc/ppc_476fp_mmu.h>
+#include <platform/arch/ppc/ppc_476fp_mmu.h>
 
 /*Invalidate all tlb entries, including bolted. All entries are invalidated locally without broadcasting
 snoop signals through PLB6 to other CPUs.
