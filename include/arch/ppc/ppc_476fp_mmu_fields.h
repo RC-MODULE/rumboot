@@ -107,8 +107,6 @@ END_ENUM( MMU_MMUBE1_FIELD )
 
 
 
-//#define MMU_XSPCR_ORD_N     7
-//
 BEGIN_ENUM( MMU_SSPCR_FIELD )
 DECLARE_ENUM_VAL( MMU_SSPCR_ORDn_n,                                 4 )
 

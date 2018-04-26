@@ -4,7 +4,6 @@
  *  Created on: Mar 8, 2018
  *      Author: v.strukov
  */
-//#if 0
 #include <arch/ppc/ppc_476fp_asm.h>
 #include <platform/oi10/platform/test_event_asm.h>
 #include <platform/oi10/platform/trace.S.h>
@@ -16,9 +15,7 @@
 #include <arch/ppc/ppc_476fp_timer_fields.h>
 #include <platform/oi10/platform/devices.h>
 #include <platform/oi10/platform/trace.S.h>
-//#endif
 
-//#if 0
 .global unexpected_itrpt_hdr_base
 .global unexpected_CI_hdr
 .global unexpected_MC_hdr
@@ -37,19 +34,18 @@
 .global unexpected_ITLBE_hdr
 .global unexpected_D_hdr
 .global unexpected_error
-//#endif
 
 .section ".init.rodata","a",@progbits
 
 .align 2
 boot_tlb_entries:
-//          MMU_TLB_ENTRY(  ERPN,   RPN,        EPN,        DSIZ,                   IL1I,   IL1D,   W,      I,      M,      G,      E,                      UX, UW, UR,     SX, SW, SR      DULXE,  IULXE,      TS,     TID,                WAY,                BID,                V   )
-// Invalidate initial TLB entry
+/*          MMU_TLB_ENTRY(  ERPN,   RPN,        EPN,        DSIZ,                   IL1I,   IL1D,   W,      I,      M,      G,      E,                      UX, UW, UR,     SX, SW, SR      DULXE,  IULXE,      TS,     TID,                WAY,                BID,                V   )*/
+/* Invalidate initial TLB entry*/
     .long   MMU_TLB_ENTRY(  0x000,  0x00000,    0xFFFFF,    MMU_TLBE_DSIZ_4KB,      0b0,    0b0,    0b0,    0b0,    0b0,    00,     MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b0,0b0,0b0,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b0 )
-// TLB entries to remap 64KB page BOOTROM from 0x000003ff_ffff0000-0x000003ff_ffffffff to 0xffff0000-0xffffffff
+/* TLB entries to remap 64KB page BOOTROM from 0x000003ff_ffff0000-0x000003ff_ffffffff to 0xffff0000-0xffffffff*/
     .long   MMU_TLB_ENTRY(  0x3FF,  0xFFFF0,    0xFFFF0,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b0,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
-// TLB entry to remap LHSIF (SW Router) - error in memory map with this entry, please check ranges
-//    .long   MMU_TLB_ENTRY(  0x020,  0xFFFFF,    0xD8000,    MMU_TLBE_DSIZ_256MB,    0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_LITTLE_END,  0b0,0b0,0b0,    0b0,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
+/* TLB entry to remap LHSIF (SW Router) - error in memory map with this entry, please check ranges*/
+/*    .long   MMU_TLB_ENTRY(  0x020,  0xFFFFF,    0xD8000,    MMU_TLBE_DSIZ_256MB,    0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_LITTLE_END,  0b0,0b0,0b0,    0b0,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )*/
 DECLARE_CONST( BOOT_TLB_ENTRIES_N, (.-boot_tlb_entries)/MMU_TLB_ENTRY_SIZE )
 
 
@@ -61,7 +57,6 @@ boot_start:
 
 .section ".init.text","ax",@progbits
 
-//#if 0
 trace_msg_unexpected_itrpt:
     trace_msg   "Unexpected interrupt: "
     blr
@@ -167,15 +162,14 @@ unexpected_D_hdr:
 unexpected_error:
     test_event  EVENT_ERROR
     b endless_loop
-//#endif
 
 rumboot_entry_point:
 rumboot_reset_handler:
 
     gtube_init
-//#if 0
-    load_const  r0, 0x00000000  // make r0 "all zeros" source
-    load_const  r1, 0xFFFFFFFF  // make r1 "all ones" source
+
+    load_const  r0, 0x00000000  /* make r0 "all zeros" source*/
+    load_const  r1, 0xFFFFFFFF  /* make r1 "all ones" source*/
 
     mtspr       SPR_USPGR0, r0
 
@@ -267,8 +261,8 @@ setup_plb6bc:
     b boot_init
 
 boot_init:
-    load_const  r0, 0x00000000  // make r0 "all zeros" source
-    load_const  r1, 0xFFFFFFFF  // make r1 "all ones" source
+    load_const  r0, 0x00000000  /* make r0 "all zeros" source*/
+    load_const  r1, 0xFFFFFFFF  /* make r1 "all ones" source*/
     load_const  r2, 0x00000000
     load_const  r3, 0x00000000
     load_const  r4, 0x00000000
@@ -301,8 +295,8 @@ boot_init:
     load_const  r31,0x00000000
 
 init_spr:
-//according to User's Manual ch. 9.4 Initialization Software Requirements
-    mtspr       SPR_DBCR0, r0       // disable all debug events
+/*according to User's Manual ch. 9.4 Initialization Software Requirements*/
+    mtspr       SPR_DBCR0, r0       /* disable all debug events*/
 
     load_const  r3, (0b1    << DEBUG_DBSR_IDE_i)\
                   | (0b1    << DEBUG_DBSR_UDE_i)\
@@ -321,7 +315,7 @@ init_spr:
                   | (0b1    << DEBUG_DBSR_RET_i)\
                   | (0b1    << DEBUG_DBSR_IAC12ATS_i)\
                   | (0b1    << DEBUG_DBSR_IAC34ATS_i)
-    mtspr       SPR_DBSR_RC, r3     // clear all debug interrupts
+    mtspr       SPR_DBSR_RC, r3     /* clear all debug interrupts*/
 
     load_const  r3, (0b0                            << CTRL_CCR0_ITE_i)\
                   | (0b1                            << CTRL_CCR0_PRE_i)\
@@ -382,8 +376,8 @@ init_spr:
                   | (MMU_XSPCR_ORD_END                              << MMU_USPCR_ORD5_i)
     mtspr       SPR_USPCR, r3
 
-//Before editing TLB let's initialize all SPR registers to default values by the spec
-//Most of them have X-state after reset and therefore CPU model cannot work properly
+/*Before editing TLB let's initialize all SPR registers to default values by the spec*/
+/*Most of them have X-state after reset and therefore CPU model cannot work properly*/
 
     mtspr       SPR_LR, r0
     mtspr       SPR_CTR, r0
@@ -426,28 +420,28 @@ init_spr:
 
 
 setup_tlb:
-// We must put currently used TLB entries into shadow TLB.
-// Simple read would be enough in our case
-//  lwz         r3, 0(r3)
+/* We must put currently used TLB entries into shadow TLB.
+ Simple read would be enough in our case
+  lwz         r3, 0(r3)
 
-// Program invalidation of all TLB entries is very slow. Let's skip it in tests.
-// All entries are invalidated from testbench during core reset.
-//  bl          ppc470s_invalidate_all_tlb_entries_nosnoop
+ TODO Program invalidation of all TLB entries is very slow. Let's skip it in tests.
+ All entries are invalidated from testbench during core reset.*/
+/*  bl          ppc470s_invalidate_all_tlb_entries_nosnoop
 
-//  ppc470s_set_mem_window  r3, MEM_WINDOW_SHARED
+  ppc470s_set_mem_window  r3, MEM_WINDOW_SHARED*/
 
     load_addr   r3, tlb_entries
     load_size   r4, TLB_ENTRIES_N
-    bl          ppc470s_write_tlb_entries //(r3, r4) - are parameters
+    bl          ppc470s_write_tlb_entries /*(r3, r4) - are parameters*/
 
     ppc470s_set_mem_window  r3, MEM_WINDOW_0
 
 
-//TODO
-setup_stack: //stack is growing down
+/*TODO*/
+setup_stack: /*stack is growing down*/
 setup_cpu0_stack:
     load_addr   r1, rumboot_platform_stack_area_end
-    stwu        r0, -8(r1) //allocate LR and save SP of first stack frame according to ABI rules
+    stwu        r0, -8(r1) /*allocate LR and save SP of first stack frame according to ABI rules*/
     b setup_plb6plb4
 
 
@@ -457,7 +451,7 @@ setup_plb6plb4:
 
 .section "ROM.text","ax",@progbits
 goto_boot_main:
-    bl          rumboot_main // never returns
+    bl          rumboot_main /* never returns*/
 
 endless_loop:
     b           endless_loop

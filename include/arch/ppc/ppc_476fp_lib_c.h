@@ -6,7 +6,7 @@
 #define MSR_EE              48
 #define MSR_CE              46
 
-//DCR bus access
+/*DCR bus access*/
 static inline void mtdcrx( uint32_t const addr, uint32_t const wval )
 {
     asm volatile
@@ -28,30 +28,7 @@ static inline uint32_t mfdcrx( uint32_t const addr )
     return rval;
 }
 
-//SPR access
-//Not valid API!!! Do not use
-//static inline void mtspr( uint32_t const addr, uint32_t const wval )
-//{
-//    asm volatile
-//    (
-//        "mtspr %1, %0 \n\t"
-//        ::"r"(wval), "r"(addr)
-//    );
-//}
-//Not valid API!!! Do not use
-//static inline uint32_t mfspr( uint32_t const addr )
-//{
-//    uint32_t rval=0;
-//    asm volatile
-//    (
-//        "mfspr %0, %1 \n\t"
-//        :"=r"(rval)
-//        :"r"(addr)
-//    );
-//    return rval;
-//}
-
-//MSR access
+/*MSR access*/
 static inline void mtmsr( uint32_t const wval )
 {
     asm volatile
@@ -179,4 +156,4 @@ inline static void trap()
 
 
 
-#endif  /* PPC_476FP_LIB_C_H */
+#endif  /* PPC_476FP_LIB_C_H*/

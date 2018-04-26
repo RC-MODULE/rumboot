@@ -19,8 +19,8 @@ boot_start:
 rumboot_entry_point:
     gtube_init
 
-    lis  r0, 0x00000000  // make r0 "all zeros" source
-    load_const  r1, 0xFFFFFFFF  // make r1 "all ones" source
+    lis  r0, 0x00000000  /* make r0 "all zeros" source*/
+    load_const  r1, 0xFFFFFFFF  /* make r1 "all ones" source*/
     lis  r2, 0x00000000
     lis  r3, 0x00000000
     lis  r4, 0x00000000
@@ -53,8 +53,8 @@ rumboot_entry_point:
     lis  r31,0x00000000
 
 init_spr:
-//according to User's Manual ch. 9.4 Initialization Software Requirements
-    mtspr       SPR_DBCR0, r0       // disable all debug events
+/*according to User's Manual ch. 9.4 Initialization Software Requirements*/
+    mtspr       SPR_DBCR0, r0       /* disable all debug events*/
 
     load_const  r3, (0b1    << DEBUG_DBSR_IDE_i)\
                   | (0b1    << DEBUG_DBSR_UDE_i)\
@@ -73,7 +73,7 @@ init_spr:
                   | (0b1    << DEBUG_DBSR_RET_i)\
                   | (0b1    << DEBUG_DBSR_IAC12ATS_i)\
                   | (0b1    << DEBUG_DBSR_IAC34ATS_i)
-    mtspr       SPR_DBSR_RC, r3     // clear all debug interrupts
+    mtspr       SPR_DBSR_RC, r3     /* clear all debug interrupts*/
 
     load_const  r3, (0b0                            << CTRL_CCR0_ITE_i)\
                   | (0b1                            << CTRL_CCR0_PRE_i)\
@@ -134,8 +134,8 @@ init_spr:
                   | (MMU_XSPCR_ORD_END                              << MMU_USPCR_ORD5_i)
     mtspr       SPR_USPCR, r3
 
-//Before editing TLB let's initialize all SPR registers to default values by the spec
-//Most of them have X-state after reset and therefore CPU model cannot work properly
+/*Before editing TLB let's initialize all SPR registers to default values by the spec*/
+/*Most of them have X-state after reset and therefore CPU model cannot work properly*/
 
     mtspr       SPR_LR, r0
     mtspr       SPR_CTR, r0
@@ -153,15 +153,15 @@ init_spr:
                   | (0b1    << TIMER_TSR_FIS_i)
     mtspr       SPR_TSR_RC, r3
 
-//    mtspr       SPR_SPRG0, r0
-//    mtspr       SPR_SPRG1, r0
-//    mtspr       SPR_SPRG2, r0
-//    mtspr       SPR_SPRG3, r0
-//    mtspr       SPR_SPRG4, r0
-//    mtspr       SPR_SPRG5, r0
-//    mtspr       SPR_SPRG6, r0
-//    mtspr       SPR_SPRG7, r0
-//    mtspr       SPR_SPRG8, r0
+/*    mtspr       SPR_SPRG0, r0*/
+/*    mtspr       SPR_SPRG1, r0*/
+/*    mtspr       SPR_SPRG2, r0*/
+/*    mtspr       SPR_SPRG3, r0*/
+/*    mtspr       SPR_SPRG4, r0*/
+/*    mtspr       SPR_SPRG5, r0*/
+/*    mtspr       SPR_SPRG6, r0*/
+/*    mtspr       SPR_SPRG7, r0*/
+/*    mtspr       SPR_SPRG8, r0*/
 
     mtspr       SPR_IAC1, r0
     mtspr       SPR_IAC2, r0
@@ -178,31 +178,31 @@ init_spr:
 
     load_const r0 0x00000000
     mtxer r0
-check_cpu_ppc_prog_model_24:    //check sequential flow
-    //test_event EVENT_CHECK_CPU_PPC_PROG_MODEL_24_SEQ
+check_cpu_ppc_prog_model_24:    /*check sequential flow*/
+    /*test_event EVENT_CHECK_CPU_PPC_PROG_MODEL_24_SEQ*/
 
-check_cpu_ppc_prog_model_25:    //check unconditional branch
-    //trace_msg "check uncond branch (align 3)\n"
+check_cpu_ppc_prog_model_25:    /*check unconditional branch*/
+    /*trace_msg "check uncond branch (align 3)\n"*/
     b bu_b3
-    //test_event EVENT_ERROR
+    /*test_event EVENT_ERROR*/
 b_err:
     b b_err
 
 .align 3
 bu_b3:
-    //trace_msg "check uncond branch (align 4)\n"
+    /*trace_msg "check uncond branch (align 4)\n"*/
     b bu_b4
     b error
 
 .align 4
 bu_b4:
-    //trace_msg "check uncond branch (align 5)\n"
+    /*trace_msg "check uncond branch (align 5)\n"*/
     b bu_b5
     b error
 
 .align 5
 bu_b5:
-    //trace_msg "check uncond branch (align 6)\n"
+    /*trace_msg "check uncond branch (align 6)\n"*/
     b bu_b6
     b error
 
@@ -212,7 +212,7 @@ bu_b6:
     b error
 
 bu_ba:
-    //trace_msg "check bl\n"
+    /*trace_msg "check bl\n"*/
     bl bu_bl
     b bu_bla
 
@@ -221,7 +221,7 @@ bu_bla:
     b check_cpu_ppc_prog_model_26
 
 bu_b:
-    //trace_msg "check ba\n"
+    /*trace_msg "check ba\n"*/
     ba bu_ba
     b error
 
@@ -229,8 +229,8 @@ bu_bl:
     blr
     b error
 
-check_cpu_ppc_prog_model_26:    //check conditional branch
-    //trace_msg "check blt\n"
+check_cpu_ppc_prog_model_26:    /*check conditional branch*/
+    /*trace_msg "check blt\n"*/
     load_const r0, 0
     load_const r1, 1
     cmp 0, 0, r0, r1
@@ -238,12 +238,12 @@ check_cpu_ppc_prog_model_26:    //check conditional branch
     b error
 
 bc_ble:
-    //trace_msg "check ble\n"
+    /*trace_msg "check ble\n"*/
     ble bc_beq
     b error
 
 bc_beq:
-    //trace_msg "check beq\n"
+    /*trace_msg "check beq\n"*/
     load_const r0, 1
     load_const r1, 1
     cmp 0, 0, r0, r1
@@ -251,7 +251,7 @@ bc_beq:
     b error
 
 bc_bgt:
-    //trace_msg "check bgt\n"
+    /*trace_msg "check bgt\n"*/
     load_const r0, 1
     load_const r1, 0
     cmp 0, 0, r0, r1
@@ -259,12 +259,12 @@ bc_bgt:
     b error
 
 bc_bge:
-    //trace_msg "check bge\n"
+    /*trace_msg "check bge\n"*/
     bge bc_bnl
     b error
 
 bc_bnl:
-    //trace_msg "check bnl\n"
+    /*trace_msg "check bnl\n"*/
     load_const r0, 1
     load_const r1, 0
     cmp 0, 0, r0, r1
@@ -272,12 +272,12 @@ bc_bnl:
     b error
 
 bc_bne:
-    //trace_msg "check bne\n"
+    /*trace_msg "check bne\n"*/
     bne bc_bng
     b error
 
 bc_bng:
-    //trace_msg "check bng\n"
+    /*trace_msg "check bng\n"*/
     load_const r0, 0
     load_const r1, 1
     cmp 0, 0, r0, r1
@@ -285,24 +285,24 @@ bc_bng:
     b error
 
 bc_bso:
-    //trace_msg "check bso\n"
+    /*trace_msg "check bso\n"*/
     load_const r0, 0x7FFFFFFF
     load_const r1, 0x00000002
-    addco. r2, r0, r1 //operands considered as signed, see PowerISA, 3.3.7
+    addco. r2, r0, r1 /*operands considered as signed, see PowerISA, 3.3.7*/
     bso bc_bns
     b error
 
 bc_bns:
-    //trace_msg "check bns\n"
+    /*trace_msg "check bns\n"*/
     load_const r0, 0xFFFFFFFF
     load_const r1, 0x00000000
-    mtxer r1            //SO bit of XER is not cleared automatically
+    mtxer r1            /*SO bit of XER is not cleared automatically*/
     addco. r2, r0, r1
     bns check_cpu_ppc_prog_model_27
     b error
 
-check_cpu_ppc_prog_model_27:    //check XL-branch
-    //trace_msg "check bltlr\n"
+check_cpu_ppc_prog_model_27:    /*check XL-branch*/
+    /*trace_msg "check bltlr\n"*/
     lis r0, bic_blelr@h
     ori r0, r0, bic_blelr@l
     mtspr 8, r0
@@ -313,7 +313,7 @@ check_cpu_ppc_prog_model_27:    //check XL-branch
     b error
 
 bic_blelr:
-    //trace_msg "check blelr\n"
+    /*trace_msg "check blelr\n"*/
     lis r0, bic_beqlr@h
     ori r0, r0, bic_beqlr@l
     mtspr 8, r0
@@ -321,7 +321,7 @@ bic_blelr:
     b error
 
 bic_beqlr:
-    //trace_msg "check beqlr\n"
+    /*trace_msg "check beqlr\n"*/
     lis r0, bic_bgtlr@h
     ori r0, r0, bic_bgtlr@l
     mtspr 8, r0
@@ -332,7 +332,7 @@ bic_beqlr:
     b error
 
 bic_bgtlr:
-    //trace_msg "check bgtlr\n"
+    /*trace_msg "check bgtlr\n"*/
     lis r0, bic_bgelr@h
     ori r0, r0, bic_bgelr@l
     mtspr 8, r0
@@ -343,7 +343,7 @@ bic_bgtlr:
     b error
 
 bic_bgelr:
-    //trace_msg "check bgelr\n"
+    /*trace_msg "check bgelr\n"*/
     lis r0, bic_bnllr@h
     ori r0, r0, bic_bnllr@l
     mtspr 8, r0
@@ -351,7 +351,7 @@ bic_bgelr:
     b error
 
 bic_bnllr:
-    //trace_msg "check bnllr\n"
+    /*trace_msg "check bnllr\n"*/
     lis r0, bic_bnelr@h
     ori r0, r0, bic_bnelr@l
     mtspr 8, r0
@@ -362,7 +362,7 @@ bic_bnllr:
     b error
 
 bic_bnelr:
-    //trace_msg "check bnelr\n"
+    /*trace_msg "check bnelr\n"*/
     lis r0, bic_bnglr@h
     ori r0, r0, bic_bnglr@l
     mtspr 8, r0
@@ -370,7 +370,7 @@ bic_bnelr:
     b error
 
 bic_bnglr:
-    //trace_msg "check bnglr\n"
+    /*trace_msg "check bnglr\n"*/
     lis r0, bic_bsolr@h
     ori r0, r0, bic_bsolr@l
     mtspr 8, r0
@@ -381,7 +381,7 @@ bic_bnglr:
     b error
 
 bic_bsolr:
-    //trace_msg "check bsolr\n"
+    /*trace_msg "check bsolr\n"*/
     lis r0, bic_bnslr@h
     ori r0, r0, bic_bnslr@l
     mtspr 8, r0
@@ -392,7 +392,7 @@ bic_bsolr:
     b error
 
 bic_bnslr:
-    //trace_msg "check bnslr\n"
+    /*trace_msg "check bnslr\n"*/
     lis r0, bic_bdz@h
     ori r0, r0, bic_bdz@l
     mtspr 8, r0
@@ -404,19 +404,19 @@ bic_bnslr:
     b error
 
 bic_bdz:
-    //trace_msg "check bdz\n"
+    /*trace_msg "check bdz\n"*/
     load_const r0, 0x1
     mtspr 9, r0
     bdz bic_bdnz
 
 bic_bdnz:
-    //trace_msg "check bdnz\n"
+    /*trace_msg "check bdnz\n"*/
     load_const r0, 0x1
     mtspr 9, r0
     bdnz bic_bltctr
 
 bic_bltctr:
-    //trace_msg "check bltctr\n"
+    /*trace_msg "check bltctr\n"*/
     lis r0, bic_blectr@h
     ori r0, r0, bic_blectr@l
     mtspr 9, r0
@@ -427,7 +427,7 @@ bic_bltctr:
     b error
 
 bic_blectr:
-    //trace_msg "check blectr\n"
+    /*trace_msg "check blectr\n"*/
     lis r0, bic_beqctr@h
     ori r0, r0, bic_beqctr@l
     mtspr 9, r0
@@ -438,7 +438,7 @@ bic_blectr:
     b error
 
 bic_beqctr:
-    //trace_msg "check beqctr\n"
+    /*trace_msg "check beqctr\n"*/
     lis r0, bic_bgtctr@h
     ori r0, r0, bic_bgtctr@l
     mtspr 9, r0
@@ -449,7 +449,7 @@ bic_beqctr:
     b error
 
 bic_bgtctr:
-    //trace_msg "check bgtctr\n"
+    /*trace_msg "check bgtctr\n"*/
     lis r0, bic_bgectr@h
     ori r0, r0, bic_bgectr@l
     mtspr 9, r0
@@ -460,7 +460,7 @@ bic_bgtctr:
     b error
 
 bic_bgectr:
-    //trace_msg "check bgectr\n"
+    /*trace_msg "check bgectr\n"*/
     lis r0, bic_bnlctr@h
     ori r0, r0, bic_bnlctr@l
     mtspr 9, r0
@@ -471,7 +471,7 @@ bic_bgectr:
     b error
 
 bic_bnlctr:
-    //trace_msg "check bnlctr\n"
+    /*trace_msg "check bnlctr\n"*/
     lis r0, bic_bnectr@h
     ori r0, r0, bic_bnectr@l
     mtspr 9, r0
@@ -482,7 +482,7 @@ bic_bnlctr:
     b error
 
 bic_bnectr:
-    //trace_msg "check bnectr\n"
+    /*trace_msg "check bnectr\n"*/
     lis r0, bic_bngctr@h
     ori r0, r0, bic_bngctr@l
     mtspr 9, r0
@@ -493,7 +493,7 @@ bic_bnectr:
     b error
 
 bic_bngctr:
-    //trace_msg "check bngctr\n"
+    /*trace_msg "check bngctr\n"*/
     lis r0, bic_bsoctr@h
     ori r0, r0, bic_bsoctr@l
     mtspr 9, r0
@@ -504,7 +504,7 @@ bic_bngctr:
     b error
 
 bic_bsoctr:
-    //trace_msg "check bsoctr\n"
+    /*trace_msg "check bsoctr\n"*/
     lis r0, bic_bnsctr@h
     ori r0, r0, bic_bnsctr@l
     mtspr 9, r0
@@ -515,7 +515,7 @@ bic_bsoctr:
     b error
 
 bic_bnsctr:
-    //trace_msg "check bnsctr\n"
+    /*trace_msg "check bnsctr\n"*/
     lis r0, test_ok@h
     ori r0, r0, test_ok@l
     mtspr 9, r0
@@ -529,11 +529,11 @@ bic_bnsctr:
 test_ok:
 
     gtube_init
-//    putchar 'T'
-//    putchar 'E'
-//    putchar 'S'
-//    putchar 'T'
-//    putchar ' '
+/*    putchar 'T'*/
+/*    putchar 'E'*/
+/*    putchar 'S'*/
+/*    putchar 'T'*/
+/*    putchar ' '*/
     putchar 'O'
     putchar 'K'
     putchar '\n'
@@ -544,11 +544,11 @@ stop:
 error:
 
     gtube_init
-//    putchar 'T'
-//    putchar 'E'
-//    putchar 'S'
-//    putchar 'T'
-//    putchar ' '
+/*    putchar 'T'*/
+/*    putchar 'E'*/
+/*    putchar 'S'*/
+/*    putchar 'T'*/
+/*    putchar ' '*/
     putchar 'E'
     putchar 'R'
     putchar 'R'

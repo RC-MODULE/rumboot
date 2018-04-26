@@ -25,11 +25,11 @@
 1:
     .ascii "\text"
 2:
-    //end of string
+    /*end of string*/
 .align 2, 0
 3:
-    load_addr   r14, 1b           //load string ptr
-    addi        r14, r14, -1      //because of lbzu
+    load_addr   r14, 1b           /*load string ptr*/
+    addi        r14, r14, -1      /*because of lbzu*/
     load_addr   r15, 2b
     load_const  r12, 2;
 4:
