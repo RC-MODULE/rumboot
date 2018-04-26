@@ -8,7 +8,7 @@
 #include <stdint.h>
 #include <regs/p64/reg_fields_p64.h>
 
-typedef enum P64_REG
+enum P64_REG
 {
     P64_P64CR                           = 0x00,         /* Configuration Register                           0x00000203*/
     P64_ESR                             = 0x01,         /* Error Status Register                            0x00000000*/
@@ -20,6 +20,6 @@ typedef enum P64_REG
     P64_ADDRL1                          = 0x07,         /* Lower Split Range PLB6 Slave Address Register    0x00000000*/
     P64_ADDRH1                          = 0x08,         /* Upper Split Range PLB6 Slave Address Register    0x00000000*/
     P64_TESR                            = 0x09         /* Test Only: Error Status Register                 0x00000000*/
-} P64_REG;
+};
 
 #endif /* P64_REGS_H*/

@@ -11,8 +11,8 @@
 
 #include <common_macros/common_macros.h>
 #include <arch/ppc/ibm_bit_ordering_macros.h>
-#include <platform/oi10/platform/reg_access/macros.h>
-#include <regs/regs_p64.h>
+#include <platform/reg_access/macros.h>
+#include <platform/regs/regs_p64.h>
 
 REG_READ_DCR( p64, P64_P64CR, 32 )
 REG_WRITE_DCR( p64, P64_P64CR, 32 )
