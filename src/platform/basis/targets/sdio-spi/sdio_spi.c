@@ -92,11 +92,11 @@ unsigned read_data;
   while (!(read_data&0x004))
       {read_data=ioread32 (SDIO0_BASE+ 0x048);}
  iowrite32(0x004,SDIO0_BASE + 0x048);
-  //if (!wait_sdio_int_handled(1000)) {rumboot_putstring("SDIO interrupt timeout\n"); return TEST_ERROR;}
+  //if (!wait_sdio_int_handled(1000)) {trace_msg("SDIO interrupt timeout\n"); return TEST_ERROR;}
   
   iowrite32( 0x00000000,SDIO0_BASE + 0x008);// set CMD55 argument  
   iowrite32( 0x00373811,SDIO0_BASE + 0x004);//set CMD55 index and send out the command
-  //if (!wait_sdio_int_handled(1000)) {rumboot_putstring("SDIO interrupt timeout\n"); return TEST_ERROR;}
+  //if (!wait_sdio_int_handled(1000)) {trace_msg("SDIO interrupt timeout\n"); return TEST_ERROR;}
     read_data=ioread32 (SDIO0_BASE+ 0x048);
   while (!(read_data&0x004))
       {read_data=ioread32 (SDIO0_BASE+ 0x048);}
@@ -104,7 +104,7 @@ unsigned read_data;
   
   iowrite32( 0x80ff8000,SDIO0_BASE + 0x008);//set CMD41 argument   
   iowrite32( 0x00293811,SDIO0_BASE + 0x004);//set CMD41 index and send out the command
-  //if (!wait_sdio_int_handled(1000)) {rumboot_putstring("SDIO interrupt timeout\n"); return TEST_ERROR;}
+  //if (!wait_sdio_int_handled(1000)) {trace_msg("SDIO interrupt timeout\n"); return TEST_ERROR;}
     read_data=ioread32 (SDIO0_BASE+ 0x048);
   while (!(read_data&0x004))
       {read_data=ioread32 (SDIO0_BASE+ 0x048);}
@@ -112,7 +112,7 @@ unsigned read_data;
   
   iowrite32( 0x00000000,SDIO0_BASE + 0x008);//set CMD2 argument  
   iowrite32( 0x00023411,SDIO0_BASE + 0x004);//set CMD2 index and send out the command
-  //if (!wait_sdio_int_handled(1000)) {rumboot_putstring("SDIO interrupt timeout\n"); return TEST_ERROR;}
+  //if (!wait_sdio_int_handled(1000)) {trace_msg("SDIO interrupt timeout\n"); return TEST_ERROR;}
     read_data=ioread32 (SDIO0_BASE+ 0x048);
   while (!(read_data&0x004))
       {read_data=ioread32 (SDIO0_BASE+ 0x048);}
@@ -120,7 +120,7 @@ unsigned read_data;
   
   iowrite32( 0x00000000,SDIO0_BASE + 0x008); //set CMD3 argument 
   iowrite32( 0x00033811,SDIO0_BASE + 0x004);//set CMD3 index and send out the command
-  //if (!wait_sdio_int_handled(1000)) {rumboot_putstring("SDIO interrupt timeout\n"); return TEST_ERROR;}
+  //if (!wait_sdio_int_handled(1000)) {trace_msg("SDIO interrupt timeout\n"); return TEST_ERROR;}
     read_data=ioread32 (SDIO0_BASE+ 0x048);
   while (!(read_data&0x004))
       {read_data=ioread32 (SDIO0_BASE+ 0x048);}
@@ -128,7 +128,7 @@ unsigned read_data;
   
   iowrite32( 0x12340000,SDIO0_BASE + 0x008);//set CMD7 argument  
   iowrite32( 0x00073c11,SDIO0_BASE + 0x004);//set CMD7index and send out the command
-  //if (!wait_sdio_int_handled(1000)) {rumboot_putstring("SDIO interrupt timeout\n"); return TEST_ERROR;}
+  //if (!wait_sdio_int_handled(1000)) {trace_msg("SDIO interrupt timeout\n"); return TEST_ERROR;}
     read_data=ioread32 (SDIO0_BASE+ 0x048);
   while (!(read_data&0x004))
       {read_data=ioread32 (SDIO0_BASE+ 0x048);}
@@ -136,7 +136,7 @@ unsigned read_data;
   
   iowrite32( 0x12340000,SDIO0_BASE + 0x008); //set CMD55 argument 
   iowrite32( 0x00373811,SDIO0_BASE + 0x004);//set CMD55 index and send out the command
-  //if (!wait_sdio_int_handled(1000)) {rumboot_putstring("SDIO interrupt timeout\n"); return TEST_ERROR;}
+  //if (!wait_sdio_int_handled(1000)) {trace_msg("SDIO interrupt timeout\n"); return TEST_ERROR;}
     read_data=ioread32 (SDIO0_BASE+ 0x048);
   while (!(read_data&0x004))
       {read_data=ioread32 (SDIO0_BASE+ 0x048);}
@@ -144,7 +144,7 @@ unsigned read_data;
   
   iowrite32( 0x00000002,SDIO0_BASE + 0x008);//set CMD6 argument  
   iowrite32( 0x00063811,SDIO0_BASE + 0x004);//set CMD6 index and send out the command
-  //if (!wait_sdio_int_handled(1000)) {rumboot_putstring("SDIO interrupt timeout\n"); return TEST_ERROR;}
+  //if (!wait_sdio_int_handled(1000)) {trace_msg("SDIO interrupt timeout\n"); return TEST_ERROR;}
    read_data=ioread32 (SDIO0_BASE+ 0x048);
   while (!(read_data&0x004))
       {read_data=ioread32 (SDIO0_BASE+ 0x048);}
@@ -162,7 +162,7 @@ int sdio_dma_tr (unsigned src_addr, unsigned dst_addr)
   iowrite32(0x00000200,SDIO0_BASE + 0x034);//set dma total data 512 byte
   iowrite32(src_addr,SDIO0_BASE + 0x02c);//dma source atart address
   iowrite32(0x000020f1,SDIO0_BASE + 0x028);//ARLEN=16,ARSIZE=2(4bytes)
-  //if (!wait_sdio_int_handled(1000)) {rumboot_putstring("SDIO interrupt timeout\n"); return TEST_ERROR;}
+  //if (!wait_sdio_int_handled(1000)) {trace_msg("SDIO interrupt timeout\n"); return TEST_ERROR;}
 read_data=ioread32 (SDIO0_BASE+ 0x28);
   while (!(read_data&0x00080000))
       {read_data=ioread32 (SDIO0_BASE+ 0x028);}
@@ -178,7 +178,7 @@ read_data=ioread32 (SDIO0_BASE+ 0x28);
   iowrite32(0x00000101,SDIO0_BASE + 0x000);//set data block 512 byte ans send one block 
   iowrite32(0x00000000,SDIO0_BASE + 0x008);//set cmd24 argument 
   iowrite32(0x00187811,SDIO0_BASE + 0x004);//set cmd24 index out the command 
-  //if (!wait_sdio_int_handled(1000)) {rumboot_putstring("SDIO interrupt timeout\n"); return TEST_ERROR;}
+  //if (!wait_sdio_int_handled(1000)) {trace_msg("SDIO interrupt timeout\n"); return TEST_ERROR;}
 read_data =ioread32 (SDIO0_BASE+ 0x048);
   while (!(read_data&0x004))
       {read_data=ioread32 (SDIO0_BASE+ 0x048);}
@@ -194,7 +194,7 @@ read_data=ioread32 (SDIO0_BASE+ 0x048);
   iowrite32(0x00000101,SDIO0_BASE + 0x000);
   iowrite32(0x00000000,SDIO0_BASE + 0x008);
   iowrite32(0x00117911,SDIO0_BASE + 0x004);
-  //if (!wait_sdio_int_handled(1000)) {rumboot_putstring("SDIO interrupt timeout\n"); return TEST_ERROR;}
+  //if (!wait_sdio_int_handled(1000)) {trace_msg("SDIO interrupt timeout\n"); return TEST_ERROR;}
   read_data=ioread32 (SDIO0_BASE+ 0x048);
   while (!(read_data&0x004))
       {read_data=ioread32 (SDIO0_BASE+ 0x048);}
@@ -208,7 +208,7 @@ read_data=ioread32 (SDIO0_BASE+ 0x048);
  iowrite32( 0x00000200,SDIO0_BASE + 0x044);
  iowrite32(dst_addr,SDIO0_BASE + 0x040);    
  iowrite32(0x00020f01,SDIO0_BASE + 0x038);
- // if (!wait_sdio_int_handled(1000)) {rumboot_putstring("SDIO interrupt timeout\n"); return TEST_ERROR;}
+ // if (!wait_sdio_int_handled(1000)) {trace_msg("SDIO interrupt timeout\n"); return TEST_ERROR;}
  read_data=ioread32 (SDIO0_BASE+ 0x28);
   while (!(read_data&0x00080000))
       {read_data=ioread32 (SDIO0_BASE+ 0x028);}
