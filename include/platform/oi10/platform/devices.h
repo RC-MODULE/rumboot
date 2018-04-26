@@ -34,7 +34,6 @@
 #define BOOTROM_BASE            0xFFFF0000
 
 /*DCR address space*/
-/*PLB6 BUS CTRL*/
 #define PLB6_BC_BASE            0x80000200
 
 #define PLB6PLB4_0_BASE         0x80000300
