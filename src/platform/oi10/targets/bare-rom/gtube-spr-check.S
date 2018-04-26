@@ -12,7 +12,7 @@ boot_start:
 rumboot_entry_point:
 
     gtube_init
-    trace_msg "myYarr!!!\n"
+    rumboot_putstring "myYarr!!!\n"
     putchar 'Y'
     putchar 'a'
     putchar 'r'

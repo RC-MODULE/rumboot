@@ -5,9 +5,9 @@
 
 .macro test_assert suffix, crfield, file, line, text
     b\suffix+ \crfield, 4f
-    trace_msg "PROGRAM ASSERTION FAILED: \"\suffix\"\n\file:\line: \"\text\"\n"
+    rumboot_putstring "PROGRAM ASSERTION FAILED: \"\suffix\"\n\file:\line: \"\text\"\n"
     test_event EVENT_ASSERT
-5: //take care of label number with nested macros! 1, 2, 3, 4 labels already decalred in trace_msg
+5: //take care of label number with nested macros! 1, 2, 3, 4 labels already decalred in rumboot_putstring
 .endm
 
 #define TEST_ASSERT(condition, crfield, text) \

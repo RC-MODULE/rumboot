@@ -58,104 +58,104 @@ boot_start:
 .section ".init.text","ax",@progbits
 
 trace_msg_unexpected_itrpt:
-    trace_msg   "Unexpected interrupt: "
+    rumboot_putstring   "Unexpected interrupt: "
     blr
 
 .align 4
 unexpected_itrpt_hdr_base:
 unexpected_CI_hdr:
     bl          trace_msg_unexpected_itrpt
-    trace_msg   "Critical input\n"
+    rumboot_putstring   "Critical input\n"
     b           unexpected_error
 
 .align 4
 unexpected_MC_hdr:
     bl          trace_msg_unexpected_itrpt
-    trace_msg   "Machine check\n"
+    rumboot_putstring   "Machine check\n"
     b           unexpected_error
 
 .align 4
 unexpected_DS_hdr:
     bl          trace_msg_unexpected_itrpt
-    trace_msg   "Data storage\n"
+    rumboot_putstring   "Data storage\n"
     b           unexpected_error
 
 .align 4
 unexpected_IS_hdr:
     bl          trace_msg_unexpected_itrpt
-    trace_msg   "Instruction storage\n"
+    rumboot_putstring   "Instruction storage\n"
     b           unexpected_error
 
 .align 4
 unexpected_E_hdr:
     bl          trace_msg_unexpected_itrpt
-    trace_msg   "External input\n"
+    rumboot_putstring   "External input\n"
     b           unexpected_error
 
 .align 4
 unexpected_A_hdr:
     bl          trace_msg_unexpected_itrpt
-    trace_msg   "Alignment\n"
+    rumboot_putstring   "Alignment\n"
     b           unexpected_error
 
 .align 4
 unexpected_P_hdr:
     bl          trace_msg_unexpected_itrpt
-    trace_msg   "Program\n"
+    rumboot_putstring   "Program\n"
     b           unexpected_error
 
 .align 4
 unexpected_FPU_hdr:
     bl          trace_msg_unexpected_itrpt
-    trace_msg   "Floating point unavailable\n"
+    rumboot_putstring   "Floating point unavailable\n"
     b           unexpected_error
 
 .align 4
 unexpected_SC_hdr:
     bl          trace_msg_unexpected_itrpt
-    trace_msg   "System call\n"
+    rumboot_putstring   "System call\n"
     b           unexpected_error
 
 .align 4
 unexpected_APU_hdr:
     bl          trace_msg_unexpected_itrpt
-    trace_msg   "Auxiliary processor unavailable\n"
+    rumboot_putstring   "Auxiliary processor unavailable\n"
     b           unexpected_error
 
 .align 4
 unexpected_DEC_hdr:
     bl          trace_msg_unexpected_itrpt
-    trace_msg   "Decrementer\n"
+    rumboot_putstring   "Decrementer\n"
     b           unexpected_error
 
 .align 4
 unexpected_FITI_hdr:
     bl          trace_msg_unexpected_itrpt
-    trace_msg   "Fixed interval timer\n"
+    rumboot_putstring   "Fixed interval timer\n"
     b           unexpected_error
 
 .align 4
 unexpected_WTI_hdr:
     bl          trace_msg_unexpected_itrpt
-    trace_msg   "Watchdog timer\n"
+    rumboot_putstring   "Watchdog timer\n"
     b           unexpected_error
 
 .align 4
 unexpected_DTLBE_hdr:
     bl          trace_msg_unexpected_itrpt
-    trace_msg   "Data TLB error\n"
+    rumboot_putstring   "Data TLB error\n"
     b           unexpected_error
 
 .align 4
 unexpected_ITLBE_hdr:
     bl          trace_msg_unexpected_itrpt
-    trace_msg   "Instruction TLB error\n"
+    rumboot_putstring   "Instruction TLB error\n"
     b           unexpected_error
 
  .align 4
 unexpected_D_hdr:
     bl          trace_msg_unexpected_itrpt
-    trace_msg   "Debug\n"
+    rumboot_putstring   "Debug\n"
     b           unexpected_error
 
 

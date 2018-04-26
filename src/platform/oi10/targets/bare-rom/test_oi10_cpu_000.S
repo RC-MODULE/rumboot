@@ -43,5 +43,5 @@ rumboot_entry_point:
     load_const r31, 0x1F
 
     gtube_init
-    trace_msg "TEST OK\n"
+    rumboot_putstring "TEST OK\n"
     exit 0

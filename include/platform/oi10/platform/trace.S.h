@@ -19,7 +19,7 @@
 .endm
 
 
-.macro trace_msg text
+.macro rumboot_putstring text
     b 3f
 
 1:
