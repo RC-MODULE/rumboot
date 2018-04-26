@@ -20,22 +20,20 @@
  * WARNING: DO NOT ADD INDIVIDUAL REGISTER OFFSETS HERE
  */
 
-
-#define BOOTROM_BASE            0xFFFF0000
-
-#define IM0_BASE                0xС0010000
-
-#define IM1_BASE                0xD0000000
+/*PPC virtual addresses of memories, remapped in UTLB PLB6 addresses*/
+#define EM2_BASE                0x00000000
 
 #define EM0_BASE                0x80000000
 
 #define EM1_BASE                0xA0000000
 
-#define EM2_BASE                0x00000000
+#define IM0_BASE                0xС0010000
 
-/*WD*/
-#define WD_BASE                 0x38002000
+#define IM1_BASE                0xD0000000
 
+#define BOOTROM_BASE            0xFFFF0000
+
+/*DCR address space*/
 /*PLB6 BUS CTRL*/
 #define PLB6_BC_BASE            0x80000200
 
