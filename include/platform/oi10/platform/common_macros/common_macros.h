@@ -1,5 +1,5 @@
-#ifndef MIVEM_MACRO_H
-#define MIVEM_MACRO_H
+#ifndef COMMON_MACRO_H
+#define COMMON_MACRO_H
 
 
 #define MACRO_BEGIN     do {
@@ -653,4 +653,4 @@
 CAT( reg, _i ) = (index), CAT( reg, _n ) = (size)
 
 
-#endif // MIVEM_MACRO_H
+#endif // COMMON_MACRO_H

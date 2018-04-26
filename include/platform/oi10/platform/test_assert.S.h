@@ -1,7 +1,7 @@
 #ifndef TEST_ASSERT_S_H_
 #define TEST_ASSERT_S_H_
 
-#include <platform/oi10/platform/trace.S.h>
+#include <platform/trace.S.h>
 
 .macro test_assert suffix, crfield, file, line, text
     b\suffix+ \crfield, 4f

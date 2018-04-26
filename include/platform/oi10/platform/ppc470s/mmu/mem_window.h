@@ -2,7 +2,7 @@
 #define __PPC470_MMU_MEM_WINDOW_H__
 
 
-#include <common_macros/common_macros.h>
+#include <platform/common_macros/common_macros.h>
 #include <arch/ppc/ibm_bit_ordering_macros.h>
 
 

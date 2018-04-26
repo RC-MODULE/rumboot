@@ -5,7 +5,7 @@
 #ifndef P64_REGS_FIELDS_H
 #define P64_REGS_FIELDS_H
 
-#include <common_macros/common_macros.h>
+#include <platform/common_macros/common_macros.h>
 #include <arch/ppc/ibm_bit_ordering_macros.h>
 
 typedef enum P64_P64CR_FIELD

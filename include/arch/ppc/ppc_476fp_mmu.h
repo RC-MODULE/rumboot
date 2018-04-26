@@ -2,7 +2,7 @@
 #define PPC_476FP_MMU_H
 
 
-#include <common_macros/common_macros.h>
+#include <platform/common_macros/common_macros.h>
 #include <arch/ppc/ibm_bit_ordering_macros.h>
 #include <platform/oi10/platform/ppc_c.h>
 #include <platform/oi10/platform/ppc470s/mmu/mem_window.h>
