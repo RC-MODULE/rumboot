@@ -39,11 +39,11 @@ void __attribute__((section(".ROM.text"))) p64_init_simple()
     #include <platform/oi10/platform/devices.h>
     /*enable requests to boot rom mirror (0x00000010_00000000 - 0x00000010_0000FFF)*/
     uint32_t reg_value;
-    p64_dcr_write_P64_ADDRL1(PLB6PLB4_0_BASE, 0x10);
-    p64_dcr_write_P64_ADDRH1(PLB6PLB4_0_BASE, 0x10);
-    reg_value = p64_dcr_read_P64_P64CR(PLB6PLB4_0_BASE);
+    p64_dcr_write_P64_ADDRL1(DCR_PLB6PLB4_0_BASE, 0x10);
+    p64_dcr_write_P64_ADDRH1(DCR_PLB6PLB4_0_BASE, 0x10);
+    reg_value = p64_dcr_read_P64_P64CR(DCR_PLB6PLB4_0_BASE);
     reg_value |= (1 << P64CR_SPEN);
-    p64_dcr_write_P64_P64CR(PLB6PLB4_0_BASE, reg_value);
+    p64_dcr_write_P64_P64CR(DCR_PLB6PLB4_0_BASE, reg_value);
 }
 
 void p64_set_split_range_address(uint32_t const base_addr, uint32_t const addrl1, uint32_t const addrh1)
