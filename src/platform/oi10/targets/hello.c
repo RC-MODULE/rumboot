@@ -14,5 +14,6 @@ int main()
 		       &rumboot_platform_spl_end);
 	rumboot_printf("rumboot: Yarr! I need moar rum!\n\n");
 #endif
+	(*(volatile unsigned int *)(0x40000)) = 0xdeadbeef;
 	return 0;
 }

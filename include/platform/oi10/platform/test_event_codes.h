@@ -1,0 +1,238 @@
+#ifndef TEST_EVENT_CODES_H_
+#define TEST_EVENT_CODES_H_
+
+
+#include <platform/common_macros/common_macros.h>
+#include <platform/arch/ppc/ibm_bit_ordering_macros.h>
+
+
+BEGIN_ENUM( sys_event_code )
+DECLARE_ENUM_VAL( EVENT_RESERVED1,                  0x00000000 )
+DECLARE_ENUM_VAL( EVENT_RESERVED2,                  0xFFFFFFFF )
+DECLARE_ENUM_VAL( EVENT_OK,                         0x00000001 )
+DECLARE_ENUM_VAL( EVENT_ERROR,                      0x00000002 )
+DECLARE_ENUM_VAL( EVENT_TIMEOUT,                    0x00000003 )
+DECLARE_ENUM_VAL( EVENT_FINISHED,                   0x00000004 )
+DECLARE_ENUM_VAL( EVENT_ASSERT,                     0x00000005 )
+/*DECLARE_ENUM_VAL( EVENT_CORE_STARTED,               0x00000006 )*/
+DECLARE_ENUM_VAL( EVENT_CRASH,                      0x00000007 )
+/*DECLARE_ENUM_VAL( EVENT_TRACE_ON,                   0x00000008 )*/
+/*DECLARE_ENUM_VAL( EVENT_TRACE_OFF,                  0x00000009 )*/
+DECLARE_ENUM_VAL( EVENT_PROCESSOR_ID_UNEXPECTED,    0x0000000A )
+DECLARE_ENUM_VAL( EVENT_CORE_SLEEP,                 0x0000000B )
+DECLARE_ENUM_VAL( EVENT_TRACE_MESSAGE,              0x0000000C )
+DECLARE_ENUM_VAL( EVENT_TRACE_DUMP,                 0x0000000D )
+DECLARE_ENUM_VAL( EVENT_TRACE_HEX,                  0x0000000E )
+DECLARE_ENUM_VAL( TEST_EVENT_CHECK_MEM,             0x0000000F )
+END_ENUM( sys_event_code )
+
+DECLARE_CONST( TEST_EVENT_CODE_MIN,     0x00000100 )
+
+#define EVENT_BOOTROM_IREAD_PAGE4KB_OK          0x00000010
+#define EVENT_GPR_READWRITE_OK                  0x00000011
+#define EVENT_SPRG_READWRITE_OK                 0x00000012
+#define EVENT_UNCONDITIONAL_BRANCH_OK           0x00000013
+#define EVENT_CONDITIONAL_BRANCH_OK             0x00000014
+#define EVENT_BOOTROM_DREAD_PAGE4KB_OK          0x00000015
+#define EVENT_BOOTROM_DREAD_PAGE64KB_OK         0x00000016
+#define EVENT_BOOTROM_IREAD_PAGE64KB_OK         0x00000017
+#define EVENT_IM0_IREAD_OK                      0x00000018
+#define EVENT_IM0_DREAD_OK                      0x00000019
+#define EVENT_IM0_BORDERS_READWRITE_OK          0x0000001A
+#define EVENT_IM0_READWRITE_MIX_DATA_OK         0x0000001B
+#define EVENT_ALL_RAM_BORDERS_OK                0x0000001C
+#define EVENT_DCR_READWRITE_OK                  0x0000001E
+#define EVENT_TIMER_OK                          0x0000001F
+/*test_cpu_0001*/
+#define EVENT_CHECK_CPU_PPC_MPIC_2              0x00000020
+#define EVENT_CHECK_CPU_PPC_DCRARB_0            0x00000021
+#define EVENT_CHECK_CPU_PPC_PLB4AHB_0_M0        0x00000022
+#define EVENT_CHECK_CPU_PPC_PLB4AHB_0_M1        0x00000023
+#define EVENT_CHECK_CPU_PPC_PLB4AHB_0_S0        0x00000024
+#define EVENT_CHECK_CPU_PPC_PLB4PLB6_0          0x00000025
+#define EVENT_CHECK_CPU_PPC_SRAMMC2PLB4_0_ROM   0x00000026
+#define EVENT_CHECK_CPU_PPC_SRAMMC2PLB4_0_IM0   0x00000027
+#define EVENT_CHECK_CPU_PPC_PLB4ARB_0_ROM       0x00000028
+#define EVENT_CHECK_CPU_PPC_PLB4ARB_0_IM0       0x00000029
+#define EVENT_CHECK_CPU_PPC_PLB4ARB_0_M0        0x0000002A
+#define EVENT_CHECK_CPU_PPC_PLB4ARB_0_M1        0x0000002B
+#define EVENT_CHECK_CPU_PPC_PLB4ARB_0_S0        0x0000002C
+#define EVENT_CHECK_CPU_PPC_L2C_2               0x0000002D
+#define EVENT_CHECK_CPU_PPC_PLB6BC_0            0x0000002E
+#define EVENT_CHECK_CPU_PPC_PLB6PLB4_0          0x0000002F
+#define EVENT_CHECK_CPU_PPC_PLB6DMA_0_0         0x00000030
+#define EVENT_CHECK_CPU_PPC_PLB6DMA_1_0         0x00000031
+#define EVENT_CHECK_CPU_PPC_MPIC_0              0x00000032
+#define EVENT_CHECK_CPU_PPC_PROG_MODEL_7        0x00000033
+#define EVENT_CHECK_CPU_PPC_PROG_MODEL_8        0x00000034
+/*test_cpu_0004*/
+#define EVENT_CHECK_CPU_PPC_PLB6BC_2            0x00000035
+/*test_cpu_0011*/
+#define EVENT_CHECK_CPU_PPC_PROG_MODEL_16   	0x00000036
+/*test_cpu_0014*/
+#define EVENT_CHECK_CPU_PPC_PROG_MODEL_23       0x0000003A
+#define EVENT_CHECK_CPU_PPC_MMU_0               0x0000003B
+#define EVENT_CHECK_CPU_PPC_MMU_1               0x0000003C
+/*test_cpu_0013*/
+#define EVENT_CHECK_CPU_PPC_PROG_MODEL_18       0x0000003D
+/*test_cpu_0015*/
+#define EVENT_CHECK_CPU_PPC_PROG_MODEL_24_SEQ   0x0000003E
+/*test_cpu_0016*/
+#define EVENT_CHECK_CPU_PPC_IM0_0               0x0000003F
+#define EVENT_CHECK_CPU_PPC_IM0_1               0x00000040
+/*test_cpu_0022*/
+#define EVENT_CHECK_CPU_PPC_IM0_2_SRAM0         0x00000041
+#define EVENT_CHECK_CPU_PPC_IM0_2_SRAM1         0x00000042
+#define EVENT_CHECK_CPU_PPC_IM0_2_SRAM2         0x00000043
+#define EVENT_CHECK_CPU_PPC_IM0_2_SRAM3         0x00000044
+/*test_cpu_0026*/
+#define EVENT_CHECK_CPU_PPC_TIMER_0             0x00000045
+/*test_cpu_0057*/
+#define EVENT_CHECK_CPU_PPC_MPIC_10             0x00000046
+#define EVENT_CHECK_CPU_PPC_MPIC_11             0x00000047
+#define EVENT_CHECK_CPU_PPC_MPIC_12             0x00000048
+#define EVENT_CHECK_CPU_PPC_MPIC_13             0x00000049
+#define EVENT_CHECK_CPU_PPC_MPIC_14             0x0000004A
+/*test_cpu_0012*/
+#define EVENT_CHECK_CPU_PPC_PROG_MODEL_17       0x0000004B
+/*test_cpu_0065, test_cpu_0066, test_cpu_0067*/
+#define EVENT_CHECK_CPU_PPC_SOFT_RESET          0x0000004C
+/*test_ddr_5*/
+#define EVENT_TEST_DDR_5_STARTED                0x0000004F
+/*test_cpu_0071, test_cpu_0072, test_cpu_0073*/
+#define EVENT_CHECK_CPU_PPC_WATCHDOG_RESET      0x00000050
+/*test_cpu_0058*/
+#define EVENT_INT_LEVEL_0_HNDL_START            0x00000051
+#define EVENT_INT_LEVEL_0_HNDL_END              0x00000052
+#define EVENT_INT_LEVEL_1_HNDL_START            0x00000053
+/*test_cpu_0051*/
+#define EVENT_START_CHECK_IRDREQ				0x00000054
+#define EVENT_START_CHECK_DRDREQ				0x00000055
+/*test_cpu_0056*/
+#define EVENT_SET_NONCR_INT			            0x00000056
+#define EVENT_CLEAR_NONCR_INT		            0x00000057
+#define EVENT_SET_CR_INT			            0x00000058
+#define EVENT_CLEAR_CR_INT  		            0x00000059
+#define EVENT_SET_CR_NONCR_INT                  0x0000005A
+#define EVENT_CLEAR_CR_NONCR_INT                0x0000005B
+#define EVENT_0056_RESERVED_                    0x0000005C
+/*test_cpu_0048*/
+#define EVENT_0048_READY_VRID                   0x0000005D
+/*test_mpw_cpu_mem_000*/
+#define EVENT_GPRS_CLEARED_START_CHECK          0x00000060
+/*test_mpw_cpu_mem_001*/
+#define EVENT_FPRS_CLEARED_START_CHECK          0x00000061
+/*test_mpw_cpu_019*/
+#define EVENT_SET_EXT_INT                       0x00000062
+#define EVENT_CLEAR_EXT_INT                     0x00000063
+#define EVENT_SET_SLVERR_INT_0                  0x00000064
+#define EVENT_CLEAR_SLVERR_INT_0                0x00000065
+#define EVENT_SET_SLVERR_INT_1                  0x00000066
+#define EVENT_CLEAR_SLVERR_INT_1                0x00000067
+#define EVENT_SET_SYSTEM_HANG                   0x00000068
+#define EVENT_CLEAR_SYSTEM_HANG                 0x00000069
+#define EVENT_SET_P4XAHB_0_INT                  0x0000006A
+#define EVENT_CLEAR_P4XAHB_0_INT                0x0000006B
+#define EVENT_SET_P4XAHB_1_INT                  0x0000006C
+#define EVENT_CLEAR_P4XAHB_1_INT                0x0000006D
+#define EVENT_SET_DCRARB_INT                    0x0000006E
+#define EVENT_CLEAR_DCRARB_INT                  0x0000006F
+#define EVENT_SET_P4XAHB_2_INT                  0x00000070
+#define EVENT_CLEAR_P4XAHB_2_INT                0x00000071
+/*test_mpw_cpu_mem_002*/
+#define EVENT_INIT_ICU_TAG_ARRAY_ABUS_CHECK     0x00000070
+#define EVENT_INIT_ICU_TAG_ARRAY_DBUS_CHECK     0x00000071
+
+#define EVENT_INIT_ICU_DATA_ARRAY_ABUS_CHECK    0x00000074
+#define EVENT_INIT_ICU_DATA_ARRAY_RDBUS_CHECK   0x00000075
+
+/*test_mpw_cpu_mem_005-006*/
+#define EVENT_DCU_DATA_FILL_1                   0x00000079
+#define EVENT_DCU_DATA_FILL_0                   0x0000007A
+#define EVENT_DCU_TAG_FILL_1                    0x0000007B
+#define EVENT_DCU_TAG_FILL_0                    0x0000007C
+#define EVENT_DCU_DATA_FILL_ADDR                0x0000007E
+#define EVENT_DCU_TAG_FILL_ADDR                 0x0000007F
+/*test_mpw_sys_010*/
+#define EVENT_CHECK_TRACE_CONFIGURED            0x00000080
+#define EVENT_CHECK_TRACE_IAC                   0x00000081
+#define EVENT_CHECK_TRACE_DAC_READ              0x00000082
+#define EVENT_CHECK_TRACE_DAC_WRITE             0x00000083
+#define EVENT_CHECK_TRACE_DVC_READ              0x00000084
+#define EVENT_CHECK_TRACE_DVC_WRITE             0x00000085
+#define EVENT_CHECK_TRACE_TRAP                  0x00000086
+#define EVENT_CHECK_TRACE_IRPT                  0x00000087
+#define EVENT_CHECK_TRACE_UDE                   0x00000088
+#define EVENT_CHECK_TRACE_RET                   0x00000089
+#define EVENT_CHECK_TRACE_BT                    0x0000008A
+#define EVENT_CHECK_TRACE_ICMP                  0x0000008B
+
+#define EVENT_CHECK_NIC301_ARC                  0x00000092
+
+#define EVENT_ITRACE_START                      0x00000093
+#define EVENT_ITRACE_STOP                       0x00000094
+#define EVENT_CHECK_ITRACE_INT                  0x00000095
+
+#define EVENT_LTRACE0_START                     0x00000096
+#define EVENT_LTRACE0_STOP                      0x00000097
+#define EVENT_CHECK_LTRACE0_INT                 0x00000098
+#define EVENT_LTRACE1_START                     0x00000099
+#define EVENT_LTRACE1_STOP                      0x0000009A
+#define EVENT_CHECK_LTRACE1_INT                 0x0000009B
+
+#define EVENT_CHECK_PIR_PVR                     0x0000009C
+
+
+#define EVENT_MPW_CTRL_003_CHECK_DEFAULT_FREQUENCIES                 0x000000C3
+#define EVENT_MPW_CTRL_003_CHECK_PLL_FREQUENCIES                     0x000000C4
+
+#define EVENT_MPW_CTRL_003_CHECK_CKEN_LSIF0_OFF                      0x000000C5
+#define EVENT_MPW_CTRL_003_CHECK_CKEN_LSIF0_ON                       0x000000C6
+
+#define EVENT_MPW_CTRL_003_CHECK_CKEN_LSIF1_OFF                      0x000000C7
+#define EVENT_MPW_CTRL_003_CHECK_CKEN_LSIF1_ON                       0x000000C8
+
+#define EVENT_MPW_CTRL_003_CHECK_CKEN_HSIF_OFF                       0x000000C9
+#define EVENT_MPW_CTRL_003_CHECK_CKEN_HSIF_ON                        0x000000CA
+
+#define EVENT_MPW_CTRL_003_CHECK_CKEN_XHSIF0_OFF                     0x000000CB
+#define EVENT_MPW_CTRL_003_CHECK_CKEN_XHSIF0_ON                      0x000000CC
+
+#define EVENT_MPW_CTRL_003_CHECK_CKEN_XHSIF1_OFF                     0x000000CD
+#define EVENT_MPW_CTRL_003_CHECK_CKEN_XHSIF1_ON                      0x000000CE
+
+#define EVENT_MPW_CTRL_003_CHECK_CKEN_DDR_OFF                        0x000000CF
+#define EVENT_MPW_CTRL_003_CHECK_CKEN_DDR_ON                         0x000000D0
+
+
+#define EVENT_MPW_CTRL_003_CHECK_XHSIF1_RST_OFF                      0x000000D1
+#define EVENT_MPW_CTRL_003_CHECK_XHSIF1_RST_ON                       0x000000D2
+
+#define EVENT_MPW_CTRL_003_CHECK_XHSIF0_RST_OFF                      0x000000D3
+#define EVENT_MPW_CTRL_003_CHECK_XHSIF0_RST_ON                       0x000000D4
+
+#define EVENT_MPW_CTRL_003_CHECK_HSIF_RST_OFF                        0x000000D5
+#define EVENT_MPW_CTRL_003_CHECK_HSIF_RST_ON                         0x000000D6
+
+#define EVENT_MPW_CTRL_003_CHECK_LSIF1_RST_OFF                      0x000000D7
+#define EVENT_MPW_CTRL_003_CHECK_LSIF1_RST_ON                       0x000000D8
+
+#define EVENT_MPW_CTRL_003_CHECK_LSIF0_RST_OFF                      0x000000D9
+#define EVENT_MPW_CTRL_003_CHECK_LSIF0_RST_ON                       0x000000DA
+
+#define EVENT_MPW_CTRL_003_CHECK_EM0_MC_REF_RESET_OFF                0x000000DB
+#define EVENT_MPW_CTRL_003_CHECK_EM0_MC_REF_RESET_ON                 0x000000DC
+
+#define EVENT_MPW_CTRL_003_CHECK_EM0_MC_RECOV_RESET_OFF              0x000000DD
+#define EVENT_MPW_CTRL_003_CHECK_EM0_MC_RECOV_RESET_ON               0x000000DE
+
+#define EVENT_MPW_CTRL_003_CHECK_EM0_MC_RESET_OFF                    0x000000DF
+#define EVENT_MPW_CTRL_003_CHECK_EM0_MC_RESET_ON                     0x000000E0
+
+#define EVENT_MPW_CTRL_003_CHECK_EM0_PHY_PRESET_OFF                  0x000000E1
+#define EVENT_MPW_CTRL_003_CHECK_EM0_PHY_PRESET_ON                   0x000000E2
+
+#define EVENT_MPW_CTRL_003_CHECK_SOFTWARE_RESET_CHIP_WITHOUT_PLL     0x000000E3
+#define EVENT_MPW_CTRL_003_CHECK_SOFTWARE_RESET_CHIP_WITH_PLL        0x000000E4
+
+#endif /* TEST_EVENT_CODES_H_*/
