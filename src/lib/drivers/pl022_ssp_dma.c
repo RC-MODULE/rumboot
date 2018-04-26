@@ -6,7 +6,7 @@
 #include <rumboot/io.h>
 #include <rumboot/printf.h>
 #include <platform/devices.h>
-#include <devices/pl022_ssp.h>
+#include <regs/pl022_ssp.h>
 #include <devices/gpio.h>
 #include <devices/gpio.h>
 

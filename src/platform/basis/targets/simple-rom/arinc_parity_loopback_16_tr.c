@@ -17,7 +17,7 @@
 
 #include <rumboot/printf.h>
 #include <rumboot/io.h>
-#include <devices/arinc.h>
+#include <regs/arinc.h>
 #include <rumboot/irq.h>
 #include <platform/devices.h>
 #define status_integrity_bit  (1 << 27)

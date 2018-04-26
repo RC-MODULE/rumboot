@@ -9,7 +9,7 @@
 #include <rumboot/irq.h>
 #include <../src/lib/drivers/pl022_ssp_dma.c>
 #include <devices/go_dmac.h>
-#include <devices/pl022_ssp.h>
+#include <regs/pl022_ssp.h>
 #include <../src/lib/drivers/go_dmac.c>
 #include <devices/gpio.h>
 

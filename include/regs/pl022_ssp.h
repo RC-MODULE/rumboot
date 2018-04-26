@@ -1,3 +1,5 @@
+#ifndef PL022_SSP
+#define PL022_SSP
 
 #define SSPCR0                          0xc7
 #define SSPCR1                          0x02
@@ -15,6 +17,4 @@
 #define SSPDR_ADDR                      0x08
 #define SSPSR_ADDR                      0x0C
 
-
-
-
+#endif /* end of include guard: PL022_SSP */
