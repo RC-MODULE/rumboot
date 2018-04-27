@@ -4,19 +4,16 @@
 
 /**
  * \defgroup platform_basis_register_map Register Map
- *
  * \ingroup platform_basis
- *
- * \addtogroup platform_basis_register_map
- *
- *
- * @{
- *
  * This file contains physical addresses of devices present in SoC.
  * For developers: Please, keep the list sorted by device address
  * and formatted properly.
  *
  * WARNING: DO NOT ADD INDIVIDUAL REGISTER OFFSETS HERE
+ *
+ * \addtogroup platform_basis_register_map
+ * @{
+ *
  */
 
 
@@ -72,7 +69,7 @@
  #define GPIO2_BASE               BASIS_PHYS(0x0108A000)
  #define GPIO3_BASE               BASIS_PHYS(0x0108B000)
  #define GPIO4_BASE               BASIS_PHYS(0x0108C000)
- #define GPIO5_BASE               BASIS_PHYS(0x01084000) 
+ #define GPIO5_BASE               BASIS_PHYS(0x01084000)
  #define GPIO6_BASE               BASIS_PHYS(0x01085000)
  #define SCTL_BASE                BASIS_PHYS(0x0108D000)
  #define GLOBAL_TIMERS            BASIS_PHYS(0x0108E040)

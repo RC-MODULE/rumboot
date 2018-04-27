@@ -4,19 +4,16 @@
 
 /**
  * \defgroup platform_mpw_proto_register_map Register Map
- *
  * \ingroup platform_mpw_proto
- *
- * \addtogroup platform_mpw_proto_register_map
- *
- *
- * @{
- *
  * This file contains physical addresses of devices present in SoC.
  * For developers: Please, keep the list sorted by device address
  * and formatted properly.
  *
  * WARNING: DO NOT ADD INDIVIDUAL REGISTER OFFSETS HERE
+ *
+ * \addtogroup platform_mpw_proto_register_map
+ * @{
+ *
  */
 
 #define SDIO0_BASE          0x3C06A000
@@ -30,5 +27,8 @@
 
 #define LSIF1_GPIO7__       0x3C067000
 
+/**
+ * @}
+ */
 
 #endif
