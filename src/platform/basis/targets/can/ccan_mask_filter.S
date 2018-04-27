@@ -5,8 +5,8 @@
 .global warning
 
 @ ***arm calling convention***
-@ there is CAN_BASE in the R0
-@ there is test_state number in the R3
+@ there is CAN_BASE in R0
+@ there is test_state number in R3
 
 CCAN_MASK_FILTER:
     PUSH {R1-R7, LR}

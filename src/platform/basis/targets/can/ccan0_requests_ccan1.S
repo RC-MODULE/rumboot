@@ -5,8 +5,8 @@
 .global warning
 
 @ ***arm calling convention***
-@ there is CAN0_BASE in the R0
-@ there is CAN1_BASE in the R3
+@ there is CAN0_BASE in R0
+@ there is CAN1_BASE in R3
 
 CCAN0_REQUESTS_CCAN1:
     PUSH {R1-R7, LR}

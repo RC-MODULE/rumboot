@@ -5,8 +5,8 @@
 .global warning
 
 @ ***arm calling convention***
-@ there is CAN_BASE in the R0
-@ there is test_state number in the R3
+@ there is CAN_BASE in R0
+@ there is test_state number in R3
 
 CCAN_FULL:
     PUSH {R1-R7, LR}
@@ -20,7 +20,7 @@ CCAN_FULL:
     tube_msg "-"
 
     tube_msg "-- Start FIFO"
-    LDR R2, =0xa008                 @ Dir==1 ID==0x8 First Mes
+    LDR R2, =0xa008                 @ Dir=1 ID=0x2 First Mes
     STR R2, [R1, #CCAN_IF1_Arb_2]
     LDR R2, =0x0000
     STR R2, [R1, #CCAN_IF1_Arb_1]
@@ -28,7 +28,7 @@ CCAN_FULL:
     STR R2, [R1, #CCAN_IF1_Mask_2]
     LDR R2, =0xffff
     STR R2, [R1, #CCAN_IF1_Mask_1]
-    LDR R2, =0x8288                 @ NewDat==1 RmtEn TxRqst==0 DLC==0x8
+    LDR R2, =0x8288                 @ NewDat=1 RmtEn TxRqst=0 EoB DLC=0x8
     STR R2, [R1, #CCAN_IF1_Msg_Con]
     LDR R2, =0xf2f1
     STR R2, [R1, #CCAN_IF1_Dat_A_1]
@@ -43,7 +43,8 @@ CCAN_FULL:
     LDR R2, =0x8001
     STR R2, [R1, #CCAN_IF1_Com_Req]
     tube_msg "--- Message 1 stored"
-    LDR R2, =0x8008                 @ Dir==0 ID==0x8 Second Mes
+
+    LDR R2, =0x8008                 @ Dir=0 ID=0x2 Second Mes
     STR R2, [R1, #CCAN_IF1_Arb_2]
     LDR R2, =0x0000
     STR R2, [R1, #CCAN_IF1_Arb_1]
@@ -51,7 +52,7 @@ CCAN_FULL:
     STR R2, [R1, #CCAN_IF1_Mask_2]
     LDR R2, =0xffff
     STR R2, [R1, #CCAN_IF1_Mask_1]
-    LDR R2, =0x0088                 @ NewDat==0 EoB DLC==0x08
+    LDR R2, =0x0088                 @ NewDat=0 EoB DLC=0x08
     STR R2, [R1, #CCAN_IF1_Msg_Con]
     LDR R2, =0x0000
     STR R2, [R1, #CCAN_IF1_Dat_A_1]
@@ -66,15 +67,16 @@ CCAN_FULL:
     LDR R2, =0x8002
     STR R2, [R1, #CCAN_IF1_Com_Req]
     tube_msg "--- Message 2 stored"
-    LDR R2, =0xe00c                 @ Xtd, Dir==1 IDmsb==0xC Fourth Mes
+
+    LDR R2, =0xe00c                 @ Xtd, Dir=1 IDmsb=0xC Fourth Mes
     STR R2, [R1, #CCAN_IF1_Arb_2]
-    LDR R2, =0x0101                 @ IDlsb==0x0101
+    LDR R2, =0x0101                 @ IDlsb=0x0101
     STR R2, [R1, #CCAN_IF1_Arb_1]
     LDR R2, =0xdfff
     STR R2, [R1, #CCAN_IF1_Mask_2]
     LDR R2, =0xffff
     STR R2, [R1, #CCAN_IF1_Mask_1]
-    LDR R2, =0x8288                 @ NewDat==1 RmtEn EoB DLC==0x8
+    LDR R2, =0x8288                 @ NewDat=1 RmtEn TxRqst=0 EoB DLC=0x8
     STR R2, [R1, #CCAN_IF1_Msg_Con]
     LDR R2, =0x2e1e
     STR R2, [R1, #CCAN_IF1_Dat_A_1]
@@ -88,16 +90,17 @@ CCAN_FULL:
     STR R2, [R1, #CCAN_IF1_Com_M]
     LDR R2, =0x8004
     STR R2, [R1, #CCAN_IF1_Com_Req]
-    tube_msg "--- Message 4 stored"
-    LDR R2, =0xc00c                 @ Xtd Dir==0 IDmsb==0xC Fifth Mes
+    tube_msg "--- Message 3 stored"
+
+    LDR R2, =0xc00c                 @ Xtd Dir=0 IDmsb=0xC Fifth Mes
     STR R2, [R1, #CCAN_IF1_Arb_2]
-    LDR R2, =0x0101                 @ IDlsb==0x0101
+    LDR R2, =0x0101                 @ IDlsb=0x0101
     STR R2, [R1, #CCAN_IF1_Arb_1]
     LDR R2, =0xdfff
     STR R2, [R1, #CCAN_IF1_Mask_2]
     LDR R2, =0xffff
     STR R2, [R1, #CCAN_IF1_Mask_1]
-    LDR R2, =0x0088                 @ NewDat==0 EoB DLC==0x8
+    LDR R2, =0x0088                 @ NewDat=0 EoB DLC=0x8
     STR R2, [R1, #CCAN_IF1_Msg_Con]
     LDR R2, =0x0000
     STR R2, [R1, #CCAN_IF1_Dat_A_1]
@@ -111,16 +114,17 @@ CCAN_FULL:
     STR R2, [R1, #CCAN_IF1_Com_M]
     LDR R2, =0x8005
     STR R2, [R1, #CCAN_IF1_Com_Req]
-    tube_msg "--- Message 5 stored"
-    LDR R2, =0xe00c                 @ Xtd Dir==1 IDmsb==0xC Seventh Mes
+    tube_msg "--- Message 4 stored"
+
+    LDR R2, =0xe00c                 @ Xtd Dir=1 IDmsb=0xC Seventh Mes
     STR R2, [R1, #CCAN_IF1_Arb_2]
-    LDR R2, =0x0111                 @ IDlsb==0x0111
+    LDR R2, =0x0111                 @ IDlsb=0x0111
     STR R2, [R1, #CCAN_IF1_Arb_1]
     LDR R2, =0xdfff
     STR R2, [R1, #CCAN_IF1_Mask_2]
     LDR R2, =0xffff
     STR R2, [R1, #CCAN_IF1_Mask_1]
-    LDR R2, =0x8288                 @ NewDat==1 RmtEn EoB DLC==0x8
+    LDR R2, =0x8288                 @ NewDat=1 RmtEn EoB DLC=0x8
     STR R2, [R1, #CCAN_IF1_Msg_Con]
     LDR R2, =0xb2b1
     STR R2, [R1, #CCAN_IF1_Dat_A_1]
@@ -134,16 +138,17 @@ CCAN_FULL:
     STR R2, [R1, #CCAN_IF1_Com_M]
     LDR R2, =0x8007
     STR R2, [R1, #CCAN_IF1_Com_Req]
-    tube_msg "--- Message 7 stored"
-    LDR R2, =0xc00c                 @ Xtd Dir==0 IDmsb==0xC Eighth Mes
+    tube_msg "--- Message 5 stored"
+
+    LDR R2, =0xc00c                 @ Xtd Dir=0 IDmsb=0xC Eighth Mes
     STR R2, [R1, #CCAN_IF1_Arb_2]
-    LDR R2, =0x0111                 @ IDlsb==0x0111
+    LDR R2, =0x0111                 @ IDlsb=0x0111
     STR R2, [R1, #CCAN_IF1_Arb_1]
     LDR R2, =0xdfff
     STR R2, [R1, #CCAN_IF1_Mask_2]
     LDR R2, =0xffff
     STR R2, [R1, #CCAN_IF1_Mask_1]
-    LDR R2, =0x0088                 @ NewDat==0 EoB DLC==0x8
+    LDR R2, =0x0088                 @ NewDat=0 EoB DLC=0x8
     STR R2, [R1, #CCAN_IF1_Msg_Con]
     LDR R2, =0x0000
     STR R2, [R1, #CCAN_IF1_Dat_A_1]
@@ -157,7 +162,7 @@ CCAN_FULL:
     STR R2, [R1, #CCAN_IF1_Com_M]
     LDR R2, =0x8008
     STR R2, [R1, #CCAN_IF1_Com_Req]
-    tube_msg "--- Message 8 stored"
+    tube_msg "--- Message 6 stored"
 
     BL TEST_CONFIG
 
