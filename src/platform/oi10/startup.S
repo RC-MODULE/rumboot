@@ -239,7 +239,7 @@ enable_itrpts:
 #endif
 
 setup_plb6bc:
-    load_const  r3, PLB6_BC_BASE
+    load_const  r3, DCR_PLB6_BC_BASE
 
     addi        r4, r3, PLB6BC_SGD1
     load_const  r5, 0x00000010
