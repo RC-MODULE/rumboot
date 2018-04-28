@@ -17,19 +17,31 @@ void go_dmac(unsigned int gspibase,unsigned int* send, unsigned int* rcv, unsign
 unsigned int SSPSR;
 unsigned int sup;
 unsigned int read_data;
-//unsigned int x;  
+unsigned int x;  
 
 iowrite32(0xDF,GPIO0_BASE+0x20);//SET0
 //iowrite32(0x20,GPIO0_BASE+0x08);//DIRECTION 
 
-if (amount==1)  {  
+if (amount<=8)  {  
  iowrite32(SSPDMACR_PROGRAM,(gspibase + SSPDMACR_ADDR)); 
- sup=ioread32((int)send);
- iowrite32(sup,(gspibase + SSPDR_ADDR));
- SSPSR=ioread32(gspibase + SSPSR_ADDR);
+ x=(unsigned int)send;
+ for (int i=0; i < amount; i++)
+ {
+  sup=ioread8(x);
+  x=x+1;
+  iowrite32(sup,(gspibase + SSPDR_ADDR));
+  }; 
+  SSPSR=ioread32(gspibase + SSPSR_ADDR);
   while (SSPSR!=0x7)
   { SSPSR=ioread32(gspibase + SSPSR_ADDR);}
+  x=(unsigned int)rcv;  
+  for (int i=0; i < amount; i++)
+ { 
   read_data=ioread32(gspibase + SSPDR_ADDR);
+  iowrite8(read_data,x);
+  x=x+1;
+  }
+ 
   iowrite32(SSPDMACR,gspibase + SSPDMACR_ADDR); 
                  
              }
