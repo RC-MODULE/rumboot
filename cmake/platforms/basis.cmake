@@ -351,7 +351,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     CONFIGURATION IRAM
     FILES mdio/mdio_test.c
     NAME mdio_test_0
-    TIMEOUT 170 us
+    TIMEOUT 300 us
     CFLAGS -DMDIO_NUM=0
   )
 
@@ -359,7 +359,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     CONFIGURATION IRAM
     FILES mdio/mdio_test.c
     NAME mdio_test_1
-    TIMEOUT 170 us
+    TIMEOUT 300 us
     CFLAGS -DMDIO_NUM=1
   )
 
@@ -367,7 +367,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     CONFIGURATION IRAM
     FILES mdio/mdio_test.c
     NAME mdio_test_2
-    TIMEOUT 170 us
+    TIMEOUT 300 us
     CFLAGS -DMDIO_NUM=2
   )
 
@@ -375,7 +375,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     CONFIGURATION IRAM
     FILES mdio/mdio_test.c
     NAME mdio_test_3
-    TIMEOUT 170 us
+    TIMEOUT 300 us
     CFLAGS -DMDIO_NUM=3
   )
 
@@ -383,7 +383,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     CONFIGURATION IRAM_MIRROR
     FILES mdio/mdio_test.c
     NAME mdio_test_0
-    TIMEOUT 500 us
+    TIMEOUT 600 us
     CFLAGS -DMDIO_NUM=0
   )
 
@@ -391,7 +391,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     CONFIGURATION IRAM_MIRROR
     FILES mdio/mdio_test.c
     NAME mdio_test_1
-    TIMEOUT 500 us
+    TIMEOUT 600 us
     CFLAGS -DMDIO_NUM=1
   )
 
@@ -399,7 +399,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     CONFIGURATION IRAM_MIRROR
     FILES mdio/mdio_test.c
     NAME mdio_test_2
-    TIMEOUT 500 us
+    TIMEOUT 600 us
     CFLAGS -DMDIO_NUM=2
   )
 
@@ -407,7 +407,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     CONFIGURATION IRAM_MIRROR
     FILES mdio/mdio_test.c
     NAME mdio_test_3
-    TIMEOUT 500 us
+    TIMEOUT 600 us
     CFLAGS -DMDIO_NUM=3
   )
 
@@ -451,7 +451,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     CONFIGURATION IRAM_MIRROR
     FILES mdio/mdio_phy_intrp_test.c
     NAME mdio_phy_intrp_test_0
-    TIMEOUT 400 us
+    TIMEOUT 600 us
     CFLAGS -DMDIO_NUM=0
     IRUN_FLAGS +mirror_eth_phy_interrupt
   )
@@ -460,7 +460,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     CONFIGURATION IRAM_MIRROR
     FILES mdio/mdio_phy_intrp_test.c
     NAME mdio_phy_intrp_test_1
-    TIMEOUT 400 us
+    TIMEOUT 600 us
     CFLAGS -DMDIO_NUM=1
     IRUN_FLAGS +mirror_eth_phy_interrupt
   )
@@ -469,7 +469,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     CONFIGURATION IRAM_MIRROR
     FILES mdio/mdio_phy_intrp_test.c
     NAME mdio_phy_intrp_test_2
-    TIMEOUT 400 us
+    TIMEOUT 600 us
     CFLAGS -DMDIO_NUM=2
     IRUN_FLAGS +mirror_eth_phy_interrupt
   )
@@ -478,7 +478,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     CONFIGURATION IRAM_MIRROR
     FILES mdio/mdio_phy_intrp_test.c
     NAME mdio_phy_intrp_test_3
-    TIMEOUT 400 us
+    TIMEOUT 600 us
     CFLAGS -DMDIO_NUM=3
     IRUN_FLAGS +mirror_eth_phy_interrupt
   )
