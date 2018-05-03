@@ -65,11 +65,14 @@ endif()
 
 
 SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Os -g -Wall -fno-omit-frame-pointer")
-SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DROMBOOT_VERSION=\\\"${GIT_BRANCH}-${GIT_REVISION}\\\"")
-SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DROMBOOT_BUILD_TYPE=\\\"${CMAKE_BUILD_TYPE}\\\"")
-SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DROMBOOT_PLATFORM=\\\"${RUMBOOT_PLATFORM}\\\"")
+SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DRUMBOOT_VERSION=\\\"${GIT_BRANCH}-${GIT_REVISION}\\\"")
+SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DCMAKE_BUILD_TYPE=\\\"${CMAKE_BUILD_TYPE}\\\"")
+SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DRUMBOOT_PLATFORM=\\\"${RUMBOOT_PLATFORM}\\\"")
+SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DRUMBOOT_ARCH=\\\"${RUMBOOT_ARCH}\\\"")
 
-find_program(CCACHE_FOUND ccache)
+if(NOT RUMBOOT_DISABLE_CCACHE)
+  find_program(CCACHE_FOUND ccache)
+endif()
 
 message("\n\n ==== RumBoot Configuration summary ====")
 
@@ -94,14 +97,6 @@ if (DOXYGEN_FOUND)
   message("Doxygen Docs:       enabled")
 else()
   message("Doxygen Docs:       disabled")
-endif()
-
-if (${RUMBOOT_DEBUG})
-  SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DROMBOOT_DEBUG")
-  SET(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} -DROMBOOT_DEBUG")
-  message("Debugging:          Enabled")
-else()
-  message("Debugging:          Disabled")
 endif()
 
 if (RUMBOOT_TRACE)
@@ -131,13 +126,6 @@ message("C Flags:            ${CMAKE_C_FLAGS}")
 message("ASM Flags:          ${CMAKE_ASM_FLAGS}")
 
 message(" ==== ==== ==== ==== ==== ==== ==== ====\n\n")
-
-#Sanity checking. Production builds need these
-if (${CMAKE_BUILD_TYPE} MATCHES "Production")
-  if (${RUMBOOT_DEBUG})
-    message( FATAL_ERROR "Fatal error: You want to ship DEBUG build to production. Srsly?")
-  endif()
-endif()
 
 
 ADD_SOURCE("src/lib/algo/crc32.c")

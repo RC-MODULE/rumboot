@@ -2,8 +2,15 @@
 #define DOXYGEN_PLAT_BASIS_H
 
 /**
+ * \defgroup tests Tests
+ */
+
+/**
  * \defgroup platform_basis Basis B1
  * \ingroup platform
+ * \defgroup tests_basis Basis B1
+ * \ingroup tests
+ *
  */
 
  /**
@@ -20,5 +27,7 @@
     * \defgroup platform_mpw_proto MM7705 MPW Prototyping
     * \ingroup platform
     */
+
+
 
 #endif /* end of include guard: DOXYGEN_PLAT_BASIS_H */

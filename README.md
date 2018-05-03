@@ -2,6 +2,22 @@
 
 [Документация по API, собирается автоматически](http://shadowblade.module.ru/job/Basis-B1/job/rumboot/CMAKE_BUILD_TYPE=Debug,RUMBOOT_PLATFORM=native,label=taruca/Doxygen_HTML_Docs/)
 
+
+# Опции конфигурации cmake
+
+- _RUMBOOT_PLATFORM=native_ тип платформы
+- _RUMBOOT_DISABLE_CCACHE=No_ - принудительное отключение ccache (по умолчанию включается, если в системе есть ccache)
+- _RUMBOOT_TRACE=y_ - Автоматическая трассировка исполняемых функций
+- _RUMBOOT_PROFILE=y_ - Автоматическое профилирование исполняемых функций
+- _CMAKE_BUILD_TYPE=Production_ - Тип сборки (Debug, Production)
+
+# Макросы препроцессора, передаваемые системой сборки
+
+- _RUMBOOT_VERSION_ - Версия rumboot (коммит из git'а)
+- _CMAKE_BUILD_TYPE_ - Тип сборки (Debug, Production)
+- _RUMBOOT_PLATFORM_ - Выбранная платформа rumboot (basis, oi10, mpw-proto, ...)
+- _RUMBOOT_ARCH_ - Целевая архитектура (arm, ppc, native)
+
 # Сборка документации
 
 ```

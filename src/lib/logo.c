@@ -10,7 +10,7 @@ static const char rumboot_logo[] =
 static const char rumboot_host_logo[] = ""
 "\n";
 
-static const char version[] = ROMBOOT_PLATFORM " | " ROMBOOT_BUILD_TYPE " | " ROMBOOT_VERSION "\n";
+static const char version[] = RUMBOOT_PLATFORM " | " CMAKE_BUILD_TYPE " | " RUMBOOT_VERSION "\n";
 
 void rumboot_print_logo()
 {
