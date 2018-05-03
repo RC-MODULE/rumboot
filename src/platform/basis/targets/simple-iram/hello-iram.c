@@ -1,3 +1,37 @@
+/**
+ * \defgroup test_hello_iram Hello World
+ * \ingroup tests_basis
+ *
+ * Description
+ * ===========
+ *
+ * Prints hello world via gtube and exits with 0 exit code
+ *
+ * Verification environment/plusargs
+ * ==============================================
+ * None
+ *
+ * CFLAGS
+ * ======
+ * None
+ *
+ * Expected output
+ * ===============
+ *
+ *
+ * How to compile
+ * ==============
+ *
+ * \code{cmake}
+ *    add_rumboot_target(
+ *       CONFIGURATION IRAM
+ *       FILES common/tools/drom-check.c
+ *       NAME "hello-world"
+ *   )
+ * \endcode
+ *
+ */
+
 #include <stdio.h>
 #include <rumboot/printf.h>
 #include <rumboot/irq.h>
@@ -8,14 +42,6 @@
 
 int main()
 {
-    rumboot_platform_perf("newlib malloc");
-	char *tmp = malloc(2048);
-	rumboot_platform_perf(NULL);
-
-	rumboot_platform_perf("newlib malloc");
-	tmp = rumboot_malloc(2048);
-	rumboot_platform_perf(NULL);
-
-	rumboot_printf("Hello world from IRAM!: %d\n", tmp);
+	rumboot_printf("Hello world from IRAM!\n");
 	return 0;
 }
