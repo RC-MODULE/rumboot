@@ -6,56 +6,65 @@
 #include <platform/oi10/platform/test_assert.S.h>
 #include <platform/oi10/platform/devices.h>
 #include <platform/oi10/platform/arch/ppc/test_macro_asm.S.h>
-#include <regs/regs_mpic.h>
-// #include <mivem_mem_map.h>
-
-
-
-// #include "test_mpw_cpu_008_0.h"
-
-// AG: Compatibility to old definitions
-#define PLB6_BC_BASE DCR_PLB6_BC_BASE
-
-#define PLB6_BC_CR0_ADDR			PLB6_BC_BASE + 0x00
-#define PLB6_BC_PRI_ADDR			PLB6_BC_BASE + 0x01  //0-15
-#define PLB6_BC_TSNOOP_ADDR			PLB6_BC_BASE + 0x02
-#define PLB6_BC_PAAM_WIN_EXT_ADDR	PLB6_BC_BASE + 0x03
-#define PLB6_BC_SGD1_ADDR			PLB6_BC_BASE + 0x04
-#define PLB6_BC_SGD2_ADDR			PLB6_BC_BASE + 0x05
-#define PLB6_BC_SGD3_ADDR			PLB6_BC_BASE + 0x06
-#define PLB6_BC_SGD4_ADDR			PLB6_BC_BASE + 0x07
-#define PLB6_BC_SGD5_ADDR			PLB6_BC_BASE + 0x08
-#define PLB6_BC_SGD6_ADDR			PLB6_BC_BASE + 0x09
-#define PLB6_BC_SGD7_ADDR			PLB6_BC_BASE + 0x0A
-#define PLB6_BC_ERR_ADDR			PLB6_BC_BASE + 0x0B
-#define PLB6_BC_MSRSP_ADDR			PLB6_BC_BASE + 0x0C
-#define PLB6_BC_HCPP_ADDR			PLB6_BC_BASE + 0x0D //6-31
-#define PLB6_BC_HD_ADDR				PLB6_BC_BASE + 0x0E
-#define PLB6_BC_QD_ADDR				PLB6_BC_BASE + 0x0F
-#define PLB6_BC_SHD_ADDR			PLB6_BC_BASE + 0x10
-#define PLB6_BC_REVID_ADDR			PLB6_BC_BASE + 0x11
-
-#define PLB6_BC_CR0_VALUE			0x00000000
-#define PLB6_BC_PRI_VALUE			0x00000000
-#define PLB6_BC_TSNOOP_VALUE		reg_field(3,0x8) //may be changed?
-#define PLB6_BC_PAAM_WIN_EXT_VALUE	0xC0000000
-#define PLB6_BC_SGD1_VALUE			0x10000000
-#define PLB6_BC_SGD2_VALUE			0x20000000
-#define PLB6_BC_SGD3_VALUE			0x30000000
-#define PLB6_BC_SGD4_VALUE			0x40000000
-#define PLB6_BC_SGD5_VALUE			0x50000000
-#define PLB6_BC_SGD6_VALUE			0x60000000
-#define PLB6_BC_SGD7_VALUE			0x70000000
-#define PLB6_BC_ERR_VALUE			0x00000000
-#define PLB6_BC_MSRSP_VALUE			0x00000000
-#define PLB6_BC_HCPP_VALUE			0x03FFFFFF
-#define PLB6_BC_HD_VALUE			0x00000000
-#define PLB6_BC_QD_VALUE			0x00000000
-#define PLB6_BC_SHD_VALUE			0x00000000
-#define PLB6_BC_REVID_VALUE         reg_field(31,0x02) | reg_field(23, 0x01) | reg_field(11, 0x000)
-
+#include <platform/oi10/platform/regs/regs_mpic.h>
+#include <platform/oi10/platform/regs/regs_plb6bc.h>
 
 #define SGD_NON_SYNTH_VALUE         0xFFFFFFF0
+
+#define CONST_SPR_CCR0 (0b0 << CTRL_CCR0_ITE_i)\
+                  | (0b1 << CTRL_CCR0_PRE_i)\
+                  | (0b0 << CTRL_CCR0_CRPE_i)\
+                  | (CTRL_CCR0_ICS_32byte << CTRL_CCR0_ICS_i)\
+                  | (0b0 << CTRL_CCR0_DAPUIB_i)\
+                  | (0b0000 << CTRL_CCR0_ICWRIDX_i)\
+                  | (0b0 << CTRL_CCR0_DTB_i)\
+                  | (0b0 << CTRL_CCR0_FLSTA_i)\
+                  | (CTRL_CCR0_DQWPM_No_prediction << CTRL_CCR0_DQWPM_i)\
+                  | (CTRL_CCR0_IQWPM_Use_EA << CTRL_CCR0_IQWPM_i)
+
+#define CONST_SPR_CCR1 (0b00 << CTRL_CCR1_GPRPEI_i)\
+                  | (0b00 << CTRL_CCR1_FPRPEI_i)\
+                  | (0b00 << CTRL_CCR1_ICDPEI_i)\
+                  | (0b00 << CTRL_CCR1_ICLPEI_i)\
+                  | (0b00 << CTRL_CCR1_ICTPEI_i)\
+                  | (0b00 << CTRL_CCR1_DCDPEI_i)\
+                  | (0b00 << CTRL_CCR1_DCLPEI_i)\
+                  | (0b00 << CTRL_CCR1_DCTPEI_i)\
+                  | (0b0 << CTRL_CCR1_MMUTPEI_i)\
+                  | (0b0 << CTRL_CCR1_MMUDPEI_i)\
+                  | (CTRL_CCR1_TSS_CPU_clock << CTRL_CCR1_TSS_i)\
+                  | (0b0 << CTRL_CCR1_DPC_i)\
+                  | (CTRL_CCR1_TCS_div1 << CTRL_CCR1_TCS_i)
+
+#define CONST_SPR_CCR2 (CTRL_CCR2_DSTG_enabled << CTRL_CCR2_DSTG_i)\
+                  | (0b0 << CTRL_CCR2_DLFPD_i)\
+                  | (0b0 << CTRL_CCR2_DSTI_i)\
+                  | (0b0 << CTRL_CCR2_PMUD_i)\
+                  | (0b0 << CTRL_CCR2_DCSTGW_i)\
+                  | (0 << CTRL_CCR2_STGCTR_i)\
+                  | (0b0 << CTRL_CCR2_DISTG_i)\
+                  | (0b0 << CTRL_CCR2_SPC5C1_i)\
+                  | (0b0 << CTRL_CCR2_MCDTO_i)
+
+#define CONST_SPR_MMUBE0 (0b0 << MMU_MMUBE0_VBE0_i)\
+                  | (0b0 << MMU_MMUBE0_VBE1_i)\
+                  | (0b0 << MMU_MMUBE0_VBE2_i)
+
+#define CONST_SPR_MMUBE1 (0b0 << MMU_MMUBE1_VBE3_i)\
+                  | (0b0 << MMU_MMUBE1_VBE4_i)\
+                  | (0b0 << MMU_MMUBE1_VBE5_i)
+
+#define CONST_SPR_SSPCR ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_64KB) << MMU_SSPCR_ORD1_i)\
+                  | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_4KB) << MMU_SSPCR_ORD2_i)\
+                  | (MMU_XSPCR_ORD_END << MMU_SSPCR_ORD3_i)
+
+#define CONST_SPR_ISPCR (MMU_XSPCR_ORD_64KB << MMU_ISPCR_ORD1_i)\
+                  | (MMU_XSPCR_ORD_4KB << MMU_ISPCR_ORD2_i)\
+                  | (MMU_XSPCR_ORD_END << MMU_ISPCR_ORD3_i)
+
+#define CONST_SPR_USPCR ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_64KB) << MMU_USPCR_ORD1_i)\
+                  | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_4KB) << MMU_USPCR_ORD2_i)\
+                  | (MMU_XSPCR_ORD_END << MMU_USPCR_ORD3_i)
 
 //DCR register value checker
 .macro sgd_wr_check rE,rA,rR,raddress,reg_name
@@ -284,67 +293,28 @@ init_spr:
 
     mtspr       SPR_DBSR_RC, r1     // clear all debug interrupts
 
-    load_const  r3, (0b0 << CTRL_CCR0_ITE_i)\
-                  | (0b1 << CTRL_CCR0_PRE_i)\
-                  | (0b0 << CTRL_CCR0_CRPE_i)\
-                  | (CTRL_CCR0_ICS_32byte << CTRL_CCR0_ICS_i)\
-                  | (0b0 << CTRL_CCR0_DAPUIB_i)\
-                  | (0b0000 << CTRL_CCR0_ICWRIDX_i)\
-                  | (0b0 << CTRL_CCR0_DTB_i)\
-                  | (0b0 << CTRL_CCR0_FLSTA_i)\
-                  | (CTRL_CCR0_DQWPM_No_prediction << CTRL_CCR0_DQWPM_i)\
-                  | (CTRL_CCR0_IQWPM_Use_EA << CTRL_CCR0_IQWPM_i)
+    load_const  r3, CONST_SPR_CCR0
     mtspr       SPR_CCR0, r3
 
-    load_const  r3, (0b00 << CTRL_CCR1_GPRPEI_i)\
-                  | (0b00 << CTRL_CCR1_FPRPEI_i)\
-                  | (0b00 << CTRL_CCR1_ICDPEI_i)\
-                  | (0b00 << CTRL_CCR1_ICLPEI_i)\
-                  | (0b00 << CTRL_CCR1_ICTPEI_i)\
-                  | (0b00 << CTRL_CCR1_DCDPEI_i)\
-                  | (0b00 << CTRL_CCR1_DCLPEI_i)\
-                  | (0b00 << CTRL_CCR1_DCTPEI_i)\
-                  | (0b0 << CTRL_CCR1_MMUTPEI_i)\
-                  | (0b0 << CTRL_CCR1_MMUDPEI_i)\
-                  | (CTRL_CCR1_TSS_CPU_clock << CTRL_CCR1_TSS_i)\
-                  | (0b0 << CTRL_CCR1_DPC_i)\
-                  | (CTRL_CCR1_TCS_div1 << CTRL_CCR1_TCS_i)
+    load_const  r3, CONST_SPR_CCR1
     mtspr       SPR_CCR1, r3
 
-    load_const  r3, (CTRL_CCR2_DSTG_enabled << CTRL_CCR2_DSTG_i)\
-                  | (0b0 << CTRL_CCR2_DLFPD_i)\
-                  | (0b0 << CTRL_CCR2_DSTI_i)\
-                  | (0b0 << CTRL_CCR2_PMUD_i)\
-                  | (0b0 << CTRL_CCR2_DCSTGW_i)\
-                  | (0 << CTRL_CCR2_STGCTR_i)\
-                  | (0b0 << CTRL_CCR2_DISTG_i)\
-                  | (0b0 << CTRL_CCR2_SPC5C1_i)\
-                  | (0b0 << CTRL_CCR2_MCDTO_i)
+    load_const  r3, CONST_SPR_CCR2
     mtspr       SPR_CCR2, r3
 
-    load_const  r3, (0b0 << MMU_MMUBE0_VBE0_i)\
-                  | (0b0 << MMU_MMUBE0_VBE1_i)\
-                  | (0b0 << MMU_MMUBE0_VBE2_i)
+    load_const  r3, CONST_SPR_MMUBE0
     mtspr       SPR_MMUBE0, r3
 
-    load_const  r3, (0b0 << MMU_MMUBE1_VBE3_i)\
-                  | (0b0 << MMU_MMUBE1_VBE4_i)\
-                  | (0b0 << MMU_MMUBE1_VBE5_i)
+    load_const  r3, CONST_SPR_MMUBE1
     mtspr       SPR_MMUBE1, r3
 
-    load_const  r3, ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_64KB) << MMU_SSPCR_ORD1_i)\
-                  | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_4KB) << MMU_SSPCR_ORD2_i)\
-                  | (MMU_XSPCR_ORD_END << MMU_SSPCR_ORD3_i)
+    load_const  r3, CONST_SPR_SSPCR
     mtspr       SPR_SSPCR, r3
 
-    load_const  r3, (MMU_XSPCR_ORD_64KB << MMU_ISPCR_ORD1_i)\
-                  | (MMU_XSPCR_ORD_4KB << MMU_ISPCR_ORD2_i)\
-                  | (MMU_XSPCR_ORD_END << MMU_ISPCR_ORD3_i)
+    load_const  r3, CONST_SPR_ISPCR
     mtspr       SPR_ISPCR, r3
 
-    load_const  r3, ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_64KB) << MMU_USPCR_ORD1_i)\
-                  | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_4KB) << MMU_USPCR_ORD2_i)\
-                  | (MMU_XSPCR_ORD_END << MMU_USPCR_ORD3_i)
+    load_const  r3, CONST_SPR_USPCR
     mtspr       SPR_USPCR, r3
 
 //Before editing TLB let's initialize all SPR registers to default values by the spec

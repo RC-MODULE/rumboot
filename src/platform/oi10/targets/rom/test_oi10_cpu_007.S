@@ -11,7 +11,7 @@
 
 // #include "test_mpw_cpu_007_0.h"
 //MPIC Registers
-#include <regs/regs_mpic.h>
+#include <platform/oi10/platform/regs/regs_mpic.h>
 
 
 .section ".text","ax",@progbits
