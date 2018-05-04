@@ -169,6 +169,39 @@ unexpected_error:
     test_event  EVENT_ERROR
     b endless_loop
 
+.global ppc470s_invalidate_all_tlb_entries_nosnoop
+ppc470s_invalidate_all_tlb_entries_nosnoop:
+    load_const r6, 1024       //set counter to 1024 iterations (there are 1024 TLB entries)
+    mtspr SPR_CTR, r6
+    load_const r6, 0          //iteration index = 0
+    load_const r9, 0          //r9 = 0
+
+invalidate_tlb_entry:
+//Calculate current entry way and index
+    load_const r7, 0                   //clear current entry index
+    copy_field(r7, 33, 34, r6, 54)  //r7[33:34] = r6[54:55] current way
+    copy_field(r7, 40, 47, r6, 56)  //r7[40:47] = r6[56:63] current index
+
+//Read entry value
+    tlbre   r8, r7, 0
+    andi.   r10, r8, reg_field(20, 1) //if (tlbentry[V] == 0) goto_next_tlb_entry;
+    beq     goto_next_tlb_entry
+
+    copy_field(r8, 20, 20, r9, 0) //clear V bit r8[20] = r9[0]. r9 must be zero here
+
+//Invalidate entry, even if bolted entry: (r8[60] == 1 && r7[33:34] == 0b00).
+    oris    r7, r7, 0x8000       //set way assignement type for tlbwe. RA[36] is already 0, RA[32] = 1
+    //MMUCR[STID] = tlbentry[TID]. This is done automatically in tlbre
+    tlbwe   r8, r7, 0
+    tlbwe   r9, r7, 1
+    tlbwe   r9, r7, 2
+
+goto_next_tlb_entry:
+    addi    r6, r6, 1     //increment iteration index
+    bdnz    invalidate_tlb_entry //decrement cnt and check for exit from loop
+
+    blr //return from ppc470s_invalidate_all_tlb_entries_nosnoop
+
 rumboot_entry_point:
 rumboot_reset_handler:
 
@@ -232,6 +265,23 @@ rumboot_reset_handler:
     mtspr       SPR_SSPCR, r3
 
 setup_bootrom_apb_tlb_entries:
+/* We must put currently used TLB entries into shadow TLB.
+ Simple read would be enough in our case
+  lwz         r3, 0(r3)
+
+ TODO Program invalidation of all TLB entries is very slow. Let's skip it in tests.
+ All entries are invalidated from testbench during core reset.*/
+#ifdef ROMBOOT_BUILD_TYPE
+#if ROMBOOT_BUILD_TYPE == "Production"
+    bl          ppc470s_invalidate_all_tlb_entries_nosnoop
+
+    ppc470s_set_mem_window  r3, MEM_WINDOW_SHARED
+#else
+#warning
+#endif
+#else
+#warning
+#endif
     load_addr   r3, boot_tlb_entries
     load_const  r4, BOOT_TLB_ENTRIES_N
     bl          ppc470s_write_tlb_entries
@@ -245,7 +295,7 @@ enable_itrpts:
 #endif
 
 setup_plb6bc:
-    load_const  r3, PLB6_BC_BASE
+    load_const  r3, DCR_PLB6_BC_BASE
 
     addi        r4, r3, PLB6BC_SGD1
     load_const  r5, 0x00000010
@@ -400,7 +450,8 @@ init_spr:
                   | (0b1    << TIMER_TSR_DIS_i)\
                   | (0b1    << TIMER_TSR_FIS_i)
     mtspr       SPR_TSR_RC, r3
-
+/* This is implemented in gtube_init*/
+/*
     mtspr       SPR_SPRG0, r0
     mtspr       SPR_SPRG1, r0
     mtspr       SPR_SPRG2, r0
@@ -410,7 +461,7 @@ init_spr:
     mtspr       SPR_SPRG6, r0
     mtspr       SPR_SPRG7, r0
     mtspr       SPR_SPRG8, r0
-
+*/
     mtspr       SPR_IAC1, r0
     mtspr       SPR_IAC2, r0
     mtspr       SPR_IAC3, r0
@@ -426,16 +477,6 @@ init_spr:
 
 
 setup_tlb:
-/* We must put currently used TLB entries into shadow TLB.
- Simple read would be enough in our case
-  lwz         r3, 0(r3)
-
- TODO Program invalidation of all TLB entries is very slow. Let's skip it in tests.
- All entries are invalidated from testbench during core reset.*/
-/*  bl          ppc470s_invalidate_all_tlb_entries_nosnoop
-
-  ppc470s_set_mem_window  r3, MEM_WINDOW_SHARED*/
-
     load_addr   r3, tlb_entries
     load_size   r4, TLB_ENTRIES_N
     bl          ppc470s_write_tlb_entries /*(r3, r4) - are parameters*/
