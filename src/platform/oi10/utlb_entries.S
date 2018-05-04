@@ -2,7 +2,7 @@
 #include <platform/oi10/platform/ppc470s/mmu/mem_window.h>
 
 
-.section ".init.rodata","a",@progbits
+.section "ROM.rodata","a",@progbits
 .global tlb_entries
 .global TLB_ENTRIES_N
 
