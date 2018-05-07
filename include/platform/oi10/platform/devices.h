@@ -25,8 +25,12 @@
  */
 
 #define EM2_BASE                0x00000000
+#define PLB4AHB_0_BASE          0x00000050
+#define PLB4AHB_1_BASE          0x000000B0
+#define PLB4AHB_2_BASE          0x000000C0
 #define IM0_BASE                0x80000000
 #define IM1_BASE                0xС0000000
+#define MPICx_BASE              0xFFC00000
 #define BOOTROM_BASE            0xFFFF0000
 
 
@@ -50,13 +54,15 @@
 #define DCR_SRAMMC2PLB4_0_BASE      0x00000030
 #define DCR_SRAMMC2PLB4_1_BASE      0x00000040
 #define DCR_PLB4ARB8M_2_BASE        0x00000060
-#define DCR_ARB_BASE                0x80000800
+#define DCR_DMA2PLB6_0_BASE         0x80000100
 #define DCR_PLB6_BC_BASE            0x80000200
 #define DCR_PLB6PLB4_0_BASE         0x80000300
 #define DCR_PLB6PLB4_1_BASE         0x80000400
 #define DCR_PLB4PLB6_0_BASE         0x80000500
 #define DCR_L2C0_BASE               0x80000600
 #define DCR_L2C1_BASE               0x80000700
+#define DCR_ARB_BASE                0x80000800
+
 
 /**
  * @}

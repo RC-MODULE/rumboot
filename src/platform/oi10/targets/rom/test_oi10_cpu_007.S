@@ -1,6 +1,5 @@
 #include <platform/oi10/platform/arch/ppc/ppc_476fp_asm.h>
 #include <platform/oi10/platform/test_event_asm.h>
-// #include <mivem_mem_map.h>
 #include <platform/oi10/platform/test_assert.S.h>
 #include <platform/oi10/platform/devices.h>
 #include <platform/oi10/platform/arch/ppc/test_macro_asm.S.h>

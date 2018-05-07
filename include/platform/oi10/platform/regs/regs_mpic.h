@@ -2,8 +2,6 @@
 #ifndef REGS_MPIC_H
 #define REGS_MPIC_H
 
-#define MPICx_BASE			0xFFC00000
-
 #define MPICx_VIR0_VALUE		reg_field(31,0x14) | reg_field(23,0x50)
 #define MPICx_REVID_VALUE		reg_field(31,0xF)
 

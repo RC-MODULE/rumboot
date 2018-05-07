@@ -8,17 +8,13 @@
 #ifndef REGS_PLB4AHB_H_
 #define REGS_PLB4AHB_H_
 
-//PLB4AHB/AHBPLB4
-#define PLB4AHB_0_BASE          0x00000050
-#define PLB4AHB_1_BASE          0x000000B0
-#define PLB4AHB_2_BASE          0x000000C0
+/* DCR address space */
 
-//DCR address space
 
-//see cpu/units/plb4xahb_v001/verilog/rtl_dcr_addr/PLB4XAHB.defines.v
-//#define UNIDIRECTIONAL_BRIDGE
+/* see cpu/units/plb4xahb_v001/verilog/rtl_dcr_addr/PLB4XAHB.defines.v */
+/* #define UNIDIRECTIONAL_BRIDGE */
 
-//PLB2AHB
+/* PLB2AHB */
 #define REVID                   0x0
 #define SEAR_ADDRUPPER          0x1
 #define SEAR_ADDRLOWER          0x2
@@ -28,35 +24,35 @@
 #define ATTRS                   0x6
 
 #ifdef UNIDIRECTIONAL_BRIDGE
-//AHB2PLB (uni-directional)
-#define CONTROL             0x1
-#define ERR_ST              0x2
-#define ERR_ADDR            0x3
-#define INT_MSK             0x4
+/* AHB2PLB (uni-directional) */
+#define CONTROL                   0x1
+#define ERR_ST                    0x2
+#define ERR_ADDR                  0x3
+#define INT_MSK                   0x4
 #else
-//AHB2PLB (bi-directional)
-#define CONTROL             0x7
-#define ERR_ST              0x8
-#define ERR_ADDR            0x9
-#define INT_MSK             0xA
+/* AHB2PLB (bi-directional) */
+#define CONTROL                   0x7
+#define ERR_ST                    0x8
+#define ERR_ADDR                  0x9
+#define INT_MSK                   0xA
 #endif
 
-//RESET VALUES
-#define PLB4XAHB_DCR_REVID 0x00000320 //from cpu/units/plb4xahb_v001/verilog/rtl_dcr_addr/PLB4XAHB.defines.v
+/* RESET VALUES */
+#define PLB4XAHB_DCR_REVID 0x00000320
+/* from cpu/units/plb4xahb_v001/verilog/rtl_dcr_addr/PLB4XAHB.defines.v */
 
-#define REVID_VALUE                   PLB4XAHB_DCR_REVID
-#define SEAR_ADDRUPPER_VALUE          0x00000000
-#define SEAR_ADDRLOWER_VALUE          0x00000000
-#define SESR_VALUE                    0x00000000
-#define TOP_ADDR_VALUE                0x00000000
-#define BOT_ADDR_VALUE                0x00000000
-#define ATTRS_VALUE                   0x00000000
-#define CONTROL_VALUE                 0x00000004
-#define ERR_ST_VALUE                  0x00000000
-#define ERR_ADDR_VALUE                0x00000000
-#define INT_MSK_VALUE                 0x00000000
-
-//PLB4AHB_0
+#define REVID_VALUE               PLB4XAHB_DCR_REVID
+#define SEAR_ADDRUPPER_VALUE      0x00000000
+#define SEAR_ADDRLOWER_VALUE      0x00000000
+#define SESR_VALUE                0x00000000
+#define TOP_ADDR_VALUE            0x00000000
+#define BOT_ADDR_VALUE            0x00000000
+#define ATTRS_VALUE               0x00000000
+#define CONTROL_VALUE             0x00000004
+#define ERR_ST_VALUE              0x00000000
+#define ERR_ADDR_VALUE            0x00000000
+#define INT_MSK_VALUE             0x00000000
+/* PLB4AHB_0 */
 #define PLB4AHB_0_REVID           (PLB4AHB_0_BASE + REVID)
 #define PLB4AHB_0_SEAR_ADDRUPPER  (PLB4AHB_0_BASE + SEAR_ADDRUPPER)
 #define PLB4AHB_0_SEAR_ADDRLOWER  (PLB4AHB_0_BASE + SEAR_ADDRLOWER)
@@ -69,7 +65,7 @@
 #define PLB4AHB_0_ERR_ADDR        (PLB4AHB_0_BASE + ERR_ADDR)
 #define PLB4AHB_0_INT_MSK         (PLB4AHB_0_BASE + INT_MSK)
 
-//PLB4AHB_1
+/* PLB4AHB_1 */
 #define PLB4AHB_1_REVID           (PLB4AHB_1_BASE + REVID)
 #define PLB4AHB_1_SEAR_ADDRUPPER  (PLB4AHB_1_BASE + SEAR_ADDRUPPER)
 #define PLB4AHB_1_SEAR_ADDRLOWER  (PLB4AHB_1_BASE + SEAR_ADDRLOWER)
@@ -82,7 +78,7 @@
 #define PLB4AHB_1_ERR_ADDR        (PLB4AHB_1_BASE + ERR_ADDR)
 #define PLB4AHB_1_INT_MSK         (PLB4AHB_1_BASE + INT_MSK)
 
-//PLB4AHB_2
+/* PLB4AHB_2 */
 #define PLB4AHB_2_REVID           (PLB4AHB_2_BASE + REVID)
 #define PLB4AHB_2_SEAR_ADDRUPPER  (PLB4AHB_2_BASE + SEAR_ADDRUPPER)
 #define PLB4AHB_2_SEAR_ADDRLOWER  (PLB4AHB_2_BASE + SEAR_ADDRLOWER)
