@@ -84,12 +84,14 @@ int main()
      {read_data=ioread32(CAN0_BASE + STATUS_REG);}
     rumboot_printf("CAN0 Bus Idle!\n");
     
+    //iowrite32(2 << IMCR, CAN1_BASE + IMCR_REG);
+    
     read_data=ioread32(CAN1_BASE + STATUS_REG);
     while (!(read_data & 1 << BI))
      {read_data=ioread32(CAN1_BASE + STATUS_REG);}
     rumboot_printf("CAN1 Bus Idle!\n");
     
-    rumboot_printf("done = %d\n", done);
+    rumboot_printf("done = %d\n", done);    
     // End of TEST
     
     // Deinit
