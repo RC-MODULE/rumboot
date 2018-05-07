@@ -49,7 +49,7 @@ int main()
    //init
  	iowrite32((0x13),( I2C_BASE + 0x24));//I2C_PRESCALE
 	iowrite32((0x1),( I2C_BASE + 0x1C));//0x1C I2C_NUMBER 	 		
-	iowrite32((0x00020002),( I2C_BASE + 0x028));//I2C_FIFOFIL
+	iowrite32((0x00010001),( I2C_BASE + 0x028));//I2C_FIFOFIL
 	// while (tmp != 0x90) {
 //	tmp = ioread32( I2C_BASE + I2C_STATUS); //I2C_STATUS
 //	tmp =  tmp & 0xF0; }
@@ -57,7 +57,7 @@ int main()
 //--------------------------preliminary write 1 byte into sensor-------
 	iowrite32((0xcc),( I2C_BASE + 0x18));//I2C_TRANSMIT  ee -sensor dev. address
 	iowrite32((0x00),( I2C_BASE + 0x18));//first address, I2C_TRANSMIT
-	iowrite32((0x60),( I2C_BASE + 0x18)); //data
+	iowrite32((0x60),( I2C_BASE + 0x18)); //data		
 	iowrite32((0x13),( I2C_BASE + 0x10));//I2c_CTRL   start, en, write 
   
    // do settings to avoid the influence of  write instruction to the next start
@@ -75,6 +75,9 @@ int main()
 		tmp = ioread32( I2C_BASE + I2C_STATUS);		
         tmp = 0x10 & tmp;        // if trn_empty
   }   // while (tmp != 0x10)
+   iowrite32((0x0 ),(I2C_BASE + 0x2c)); //I2C_STAT_RST  
+  iowrite32((0x1 ),(I2C_BASE + 0x2c)); //I2C_STAT_RST
+  iowrite32((0x0 ),(I2C_BASE + 0x2c)); //I2C_STAT_RST	  
 //-------------------------- turn off Controller and I2C--------				
 	iowrite32((0x41),( I2C_BASE + 0x10));//I2C_CTRL   en, stop
      while (tmp != 0x400) {	   
@@ -99,12 +102,10 @@ int main()
 	  // rumboot_printf("I2C wake up!\n");
   
 //--data read instruction-------------------
-   	tmp =-1;
-	iowrite32((0xcd),( I2C_BASE + 0x18));//I2C_TRANSMIT  ee -sensor dev. address
-	iowrite32((0x1 ),(I2C_BASE +  0x2c));//reset status
-	
+	iowrite32((0xcd),( I2C_BASE + 0x18));//I2C_TRANSMIT  ee -sensor dev. address	
 	iowrite32((0x6B),( I2C_BASE + 0x10));//I2C_CTRL   start, en, read, rpt
-	
+ //----------- intr check ----------------------------------- 
+  tmp =-1;	
 	     while (tmp != 0x8) {		   
 		tmp = ioread32( I2C_BASE + I2C_STATUS);		
         tmp = 0x8 & tmp;        //almost full 
