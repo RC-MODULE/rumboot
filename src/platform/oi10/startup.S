@@ -452,18 +452,7 @@ init_spr:
                   | (0b1    << TIMER_TSR_DIS_i)\
                   | (0b1    << TIMER_TSR_FIS_i)
     mtspr       SPR_TSR_RC, r3
-/* This is implemented in gtube_init*/
-/*
-    mtspr       SPR_SPRG0, r0
-    mtspr       SPR_SPRG1, r0
-    mtspr       SPR_SPRG2, r0
-    mtspr       SPR_SPRG3, r0
-    mtspr       SPR_SPRG4, r0
-    mtspr       SPR_SPRG5, r0
-    mtspr       SPR_SPRG6, r0
-    mtspr       SPR_SPRG7, r0
-    mtspr       SPR_SPRG8, r0
-*/
+
     mtspr       SPR_IAC1, r0
     mtspr       SPR_IAC2, r0
     mtspr       SPR_IAC3, r0
