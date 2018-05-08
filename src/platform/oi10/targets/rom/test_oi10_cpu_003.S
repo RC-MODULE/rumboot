@@ -44,7 +44,7 @@ value:
 main:
 image_start:
 check_gpr_lis_ori:
-	or r31, r1, r1 // AG: Save stack ptr
+	or r31, r1, r1 /* AG: Save stack ptr */
     GPR_LOAD_CONST r0, CONST
     GPR_LOAD_CONST r1, CONST
     GPR_LOAD_CONST r2, CONST
@@ -76,11 +76,11 @@ check_gpr_lis_ori:
     GPR_LOAD_CONST r28, CONST
     GPR_LOAD_CONST r29, CONST
     GPR_LOAD_CONST r30, CONST
-    or r1, r31, r31 // AG: Restore stack ptr
+    or r1, r31, r31 /* AG: Restore stack ptr */
     GPR_LOAD_CONST r31, CONST
 
 check_gpr_lw:
-	or r30, r1, r1 // AG: Save stack ptr
+	or r30, r1, r1 /* AG: Save stack ptr */
     GPR_LOAD_MEM r0, r31, value, CONST
     GPR_LOAD_MEM r1, r31, value, CONST
     GPR_LOAD_MEM r2, r31, value, CONST
@@ -111,7 +111,7 @@ check_gpr_lw:
     GPR_LOAD_MEM r27, r31, value, CONST
     GPR_LOAD_MEM r28, r31, value, CONST
     GPR_LOAD_MEM r29, r31, value, CONST
-    or r1, r30, r30 // AG: Restore stack ptr
+    or r1, r30, r30 /* AG: Restore stack ptr */
     GPR_LOAD_MEM r30, r31, value, CONST
     GPR_LOAD_MEM r31, r30, value, CONST
 
