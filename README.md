@@ -11,10 +11,12 @@
 - _RUMBOOT_PROFILE=y_ - Автоматическое профилирование исполняемых функций
 - _CMAKE_BUILD_TYPE=Production_ - Тип сборки (Debug, Production)
 
+
 # Макросы препроцессора, передаваемые системой сборки
 
 - _RUMBOOT_VERSION_ - Версия rumboot (коммит из git'а)
 - _CMAKE_BUILD_TYPE_ - Тип сборки (Debug, Production)
+- _CMAKE_BUILD_TYPE_DEBUG_; _CMAKE_BUILD_TYPE_PRODUCTION_ - Тип сборки в виде одного дефайна (Debug, Production) для проверки через #ifdef
 - _RUMBOOT_PLATFORM_ - Выбранная платформа rumboot (basis, oi10, mpw-proto, ...)
 - _RUMBOOT_ARCH_ - Целевая архитектура (arm, ppc, native)
 
