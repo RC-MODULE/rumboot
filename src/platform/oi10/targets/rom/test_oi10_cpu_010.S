@@ -70,8 +70,8 @@ plb4arb_0_loop_0:
     mfdcrx r6, r5 /* read PESR */
     cmp cr7,0, r6,r12
     TEST_ASSERT(eq,cr7,"Value mismatch: PLB4ARB8M_0.PESR (running 0)")
-    mtdcrx r4, r11 //set all bits of PESR
-    cmp 0, 0, r9, r8
+    mtdcrx r4, r11 /* set all bits of PESR */
+    cmp cr0, 0, r9, r8
     beq check_cpu_ppc_plb4arb_1_2
     slw r8, r8, r7
     b plb4arb_0_loop_0
@@ -163,7 +163,7 @@ plb4arb_2_running_0:
     cmp cr7,0, r2,r7
     TEST_ASSERT(eq,cr7,"Value mismatch: PLB4ARB8M_2.PESR (running 0 init)")
 
-    load_const r8, 0x00000001 //start value for writing
+    load_const r8, 0x00000001 /* start value for writing */
 plb4arb_2_loop_0:
     xor r12, r11, r8 /* r12 = ~r8 (getting running 0 in r8 for compare process) */
     mtdcrx r5, r8 /* clear one bit of PESR */
@@ -188,5 +188,5 @@ error:
 
 finish:
 	blr
-    b finish
+
 

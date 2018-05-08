@@ -5,7 +5,7 @@
 #include <platform/oi10/platform/arch/ppc/test_macro_asm.S.h>
 #include <platform/devices.h>
 
-//DCR address space, DCRARB
+/* DCR address space, DCRARB */
 
 #define DCRARB_TADDR  DCR_ARB_BASE + 0x0
 #define DCRARB_MADDR  DCR_ARB_BASE + 0x1
@@ -17,10 +17,10 @@
 #define DCRARB_REVID  DCR_ARB_BASE + 0x7
 
 
-//from cpu/units/dcrarb4m_v001/verilog/rtl/DCRARB4M.v
+/* from cpu/units/dcrarb4m_v001/verilog/rtl/DCRARB4M.v */
 #define DCRARB_REVID_HARDCODED  0x00000102
 
-//from
+/* from */
 #define STRAP_ARBFAIRNESS       0
 #define STRAP_ARBLEGACYPROTECT  0
 

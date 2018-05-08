@@ -199,7 +199,7 @@ dma0_loop_0:
     mfdcrx r6, r4
     cmp cr7,0, r6,r5
     TEST_ASSERT(eq,cr7,"Read/write error in PLB6_DMA0_SAH0 (running 0)")
-    cmp 0, 0, r5, r8
+    cmp cr0, 0, r5, r8
     beq dma0_done
     slw r5, r5, r7
     ori r5, r5, 1
