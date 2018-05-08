@@ -20,42 +20,41 @@ boot_start:
 .section ".init.text","ax",@progbits
 
 rumboot_entry_point:
-    load_const  r0, 0x00000000  /* make r0 "all zeros" source */
 
     gtube_init
 
-    lis r0,  0
-    lis r1,  0
-    lis r2,  0
-    lis r3,  0
-    lis r4,  0
-    lis r5,  0
-    lis r6,  0
-    lis r7,  0
-    lis r8,  0
-    lis r9,  0
-    lis r10, 0
-    lis r11, 0
-    lis r12, 0
-    lis r13, 0
-    lis r14, 0
-    lis r15, 0
-    lis r16, 0
-    lis r17, 0
-    lis r18, 0
-    lis r19, 0
-    lis r20, 0
-    lis r21, 0
-    lis r22, 0
-    lis r23, 0
-    lis r24, 0
-    lis r25, 0
-    lis r26, 0
-    lis r27, 0
-    lis r28, 0
-    lis r29, 0
-    lis r30, 0
-    lis r31, 0
+    load_const r0,  0
+    load_const r1,  0
+    load_const r2,  0
+    load_const r3,  0
+    load_const r4,  0
+    load_const r5,  0
+    load_const r6,  0
+    load_const r7,  0
+    load_const r8,  0
+    load_const r9,  0
+    load_const r10, 0
+    load_const r11, 0
+    load_const r12, 0
+    load_const r13, 0
+    load_const r14, 0
+    load_const r15, 0
+    load_const r16, 0
+    load_const r17, 0
+    load_const r18, 0
+    load_const r19, 0
+    load_const r20, 0
+    load_const r21, 0
+    load_const r22, 0
+    load_const r23, 0
+    load_const r24, 0
+    load_const r25, 0
+    load_const r26, 0
+    load_const r27, 0
+    load_const r28, 0
+    load_const r29, 0
+    load_const r30, 0
+    load_const r31, 0
 
 init_spr:
 /* according to User's Manual ch. 9.4 Initialization Software Requirements */
@@ -522,7 +521,7 @@ mmu_check_0:
     load_const          r2, IM0_BASE
     load_const          r1, TEST_DATA_WORD_0
     stwu                r1, 0(r2)
-    //check
+    /* check */
     lwzu                r3, 0(r2)
     cmp                 cr7,0, r3, r1
     TEST_ASSERT(eq,cr7,"Write/read value mismatch at IM0_BASE")
@@ -562,8 +561,6 @@ mmu_check_1:
     b ok
 
 error:
-
-    gtube_init
     putchar 'E'
     putchar 'R'
     putchar 'R'
@@ -574,8 +571,6 @@ error:
     b stop
 
 ok:
-
-    gtube_init
     putchar 'O'
     putchar 'K'
     putchar '\n'
@@ -583,7 +578,4 @@ ok:
 
 stop:
     b stop
-
-
-
 

@@ -20,6 +20,6 @@ boot_init:
     test_event EVENT_CHECK_PIR_PVR
 
 program_end:
-    li r3, 0x00
+    load_const r3, 0x00
     blr
 
