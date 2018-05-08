@@ -183,8 +183,8 @@ invalidate_tlb_entry:
 
 //Read entry value
     tlbre   r8, r7, 0
-//    andi.   r10, r8, reg_field(20, 1) //if (tlbentry[V] == 0) goto_next_tlb_entry;
-//    beq     goto_next_tlb_entry
+    andi.   r10, r8, reg_field(20, 1) //if (tlbentry[V] == 0) goto_next_tlb_entry;
+    beq     goto_next_tlb_entry
 
     copy_field(r8, 20, 20, r9, 0) //clear V bit r8[20] = r9[0]. r9 must be zero here
 
@@ -270,12 +270,15 @@ setup_bootrom_apb_tlb_entries:
 
  TODO Program invalidation of all TLB entries is very slow. Let's skip it in tests.
  All entries are invalidated from testbench during core reset.*/
-//#ifdef ROMBOOT_BUILD_TYPE
-//#if ROMBOOT_BUILD_TYPE == "Production"
-//    bl          ppc470s_invalidate_all_tlb_entries_nosnoop
+/*
+#ifdef ROMBOOT_BUILD_TYPE
+#if ROMBOOT_BUILD_TYPE == "Production"
 
-//    ppc470s_set_mem_window  r3, MEM_WINDOW_SHARED
-/*#else
+    bl          ppc470s_invalidate_all_tlb_entries_nosnoop
+
+    ppc470s_set_mem_window  r3, MEM_WINDOW_SHARED
+
+#else
 #warning
 #endif
 #else
