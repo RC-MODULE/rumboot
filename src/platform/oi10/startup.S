@@ -44,6 +44,12 @@ boot_tlb_entries:
     .long   MMU_TLB_ENTRY(  0x000,  0x00000,    0xFFFFF,    MMU_TLBE_DSIZ_4KB,      0b0,    0b0,    0b0,    0b0,    0b0,    00,     MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b0,0b0,0b0,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b0 )
 /* TLB entries to remap 64KB page BOOTROM from 0x000003ff_ffff0000-0x000003ff_ffffffff to 0xffff0000-0xffffffff*/
     .long   MMU_TLB_ENTRY(  0x3FF,  0xFFFF0,    0xFFFF0,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b0,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
+/* TLB entries to remap 128KB pages IM0 from 0x00000010_00010000-0x00000010_0002ffff to 0xC0010000-0xC002ffff*/
+    .long   MMU_TLB_ENTRY(  0x010,  0x00010,    0xC0010,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
+    .long   MMU_TLB_ENTRY(  0x010,  0x00020,    0xC0020,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
+/* TLB entries to remap 128KB pages IM1 from 0x00000020_00000000-0x00000020_0001ffff to 0xD0000000-0xD001ffff*/
+    .long   MMU_TLB_ENTRY(  0x020,  0x00000,    0xD0000,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
+    .long   MMU_TLB_ENTRY(  0x020,  0x00000,    0xD0010,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
 /* TLB entry to remap LHSIF (SW Router) - error in memory map with this entry, please check ranges*/
 /*    .long   MMU_TLB_ENTRY(  0x020,  0xFFFFF,    0xD8000,    MMU_TLBE_DSIZ_256MB,    0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_LITTLE_END,  0b0,0b0,0b0,    0b0,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )*/
 DECLARE_CONST( BOOT_TLB_ENTRIES_N, (.-boot_tlb_entries)/MMU_TLB_ENTRY_SIZE )
@@ -162,6 +168,7 @@ unexpected_D_hdr:
 unexpected_error:
     test_event  EVENT_ERROR
     b endless_loop
+
 
 rumboot_entry_point:
 rumboot_reset_handler:
@@ -395,16 +402,6 @@ init_spr:
                   | (0b1    << TIMER_TSR_FIS_i)
     mtspr       SPR_TSR_RC, r3
 
-    mtspr       SPR_SPRG0, r0
-    mtspr       SPR_SPRG1, r0
-    mtspr       SPR_SPRG2, r0
-    mtspr       SPR_SPRG3, r0
-    mtspr       SPR_SPRG4, r0
-    mtspr       SPR_SPRG5, r0
-    mtspr       SPR_SPRG6, r0
-    mtspr       SPR_SPRG7, r0
-    mtspr       SPR_SPRG8, r0
-
     mtspr       SPR_IAC1, r0
     mtspr       SPR_IAC2, r0
     mtspr       SPR_IAC3, r0
@@ -420,16 +417,6 @@ init_spr:
 
 
 setup_tlb:
-/* We must put currently used TLB entries into shadow TLB.
- Simple read would be enough in our case
-  lwz         r3, 0(r3)
-
- TODO Program invalidation of all TLB entries is very slow. Let's skip it in tests.
- All entries are invalidated from testbench during core reset.*/
-/*  bl          ppc470s_invalidate_all_tlb_entries_nosnoop
-
-  ppc470s_set_mem_window  r3, MEM_WINDOW_SHARED*/
-
     load_addr   r3, tlb_entries
     load_size   r4, TLB_ENTRIES_N
     bl          ppc470s_write_tlb_entries /*(r3, r4) - are parameters*/
