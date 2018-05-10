@@ -193,7 +193,6 @@ boot_start:
 
 .section ".init.text","ax",@progbits
 
-.global cpu_008_entry_point
 cpu_008_entry_point:
 	gtube_init
     load_const  r0, 0x00000000  /* make r0 "all zeros" source */
@@ -258,11 +257,8 @@ core_unexpected:
 
 .section ".init.text","ax",@progbits
 
-.global infinite_loop_008
 infinite_loop_008:
     b infinite_loop_008
-
-.global boot_init
 
 boot_init:
     load_const  r2, 0x00000000
@@ -362,15 +358,6 @@ init_spr:
     mtspr       SPR_TBL_W, r0
     mtspr       SPR_TBU_W, r0
     mtspr       SPR_XER, r0
-    mtspr       SPR_SPRG0, r0
-    mtspr       SPR_SPRG1, r0
-    mtspr       SPR_SPRG2, r0
-    mtspr       SPR_SPRG3, r0
-    mtspr       SPR_SPRG4, r0
-    mtspr       SPR_SPRG5, r0
-    mtspr       SPR_SPRG6, r0
-    mtspr       SPR_SPRG7, r0
-    mtspr       SPR_SPRG8, r0
     mtspr       SPR_PID, r0
 
     b           setup_tlb
