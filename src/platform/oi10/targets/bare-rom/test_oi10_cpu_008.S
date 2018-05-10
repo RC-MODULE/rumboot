@@ -66,15 +66,15 @@
                   | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_4KB) << MMU_USPCR_ORD2_i)\
                   | (MMU_XSPCR_ORD_END << MMU_USPCR_ORD3_i)
 
-//DCR register value checker
+/* DCR register value checker */
 .macro sgd_wr_check rE,rA,rR,raddress,reg_name
-    //load address
+    /* load address */
     load_const \rA, \raddress
-    //load value
+    /* load value */
     load_const \rE, SGD_NON_SYNTH_VALUE
-    //write value to SGDx
+    /* write value to SGDx */
     mtdcrx \rA, \rE
-    //read
+    /* read */
     mfdcrx \rR, \rA
     cmp cr7,0, \rR,\rE
     TEST_ASSERT(eq,cr7,"DCR error: In \reg_name was expected value \exp_value (address \raddress) ")
@@ -83,7 +83,6 @@
 #endif
 .endm
 
-// #include <mpic128/mpic128_regs.h>
 #include <platform/oi10/platform/ppc470s/mmu.S.h>
 
 .section ".init.text","ax",@progbits
@@ -191,8 +190,8 @@ unexpected_D_hdr:
 
 .global cpu_008_entry_point
 cpu_008_entry_point:
-    load_const  r0, 0x00000000  // make r0 "all zeros" source
-    load_const  r1, 0xFFFFFFFF  // make r1 "all ones" source
+    load_const  r0, 0x00000000  /* make r0 "all zeros" source */
+    load_const  r1, 0xFFFFFFFF  /* make r1 "all ones" source */
 
     mtspr       SPR_USPGR0, r0
 
@@ -232,16 +231,20 @@ cpu_008_entry_point:
     mtspr       SPR_IVOR15, r3
 
     load_const  r3, MPICx_BASE+MPIC128x_WAI_PR
-    mfdcrx      r3, r3                          //read Who Am I Register
-    cmpwi       r3, PPC0_CORE_ID                //if Processor ID Register is 0
-    beq         ppc0_core_start                 //execute code for core 0
-    cmpwi       r3, PPC1_CORE_ID                //if Processor ID Register is 1
-    // AG // beq         PPC1_CORE_START                 //execute code for core 1
-    // AG // b           PPC_UNEXPECTED_CORE_START       //something wrong in configuration? unexpected core number? Execute code on the unexpected core
+    mfdcrx      r3, r3                          /* read Who Am I Register */
+    cmpwi       r3, PPC0_CORE_ID                /* if Processor ID Register is 0 */
+    beq         ppc0_core_start                 /* execute code for core 0 */
+    cmpwi       r3, PPC1_CORE_ID                /* if Processor ID Register is 1 */
+    /* AG:
+    beq         PPC1_CORE_START                 //execute code for core 1
+    b           PPC_UNEXPECTED_CORE_START       //something wrong in configuration? unexpected core number? Execute code on the unexpected core
+    */
 
 ppc0_core_start:
 goto_ppc0_core_start:
-// AG //    b           PPC0_CORE_START
+	/* AG
+	b           PPC0_CORE_START
+	*/
 
 core_unexpected:
     test_event  EVENT_PROCESSOR_ID_UNEXPECTED
@@ -288,10 +291,10 @@ boot_init:
     load_const  r31,0x00000000
 
 init_spr:
-//according to User's Manual ch. 9.4 Initialization Software Requirements
-    mtspr       SPR_DBCR0, r0       // disable all debug events
+/* according to User's Manual ch. 9.4 Initialization Software Requirements */
+    mtspr       SPR_DBCR0, r0       /* disable all debug events */
 
-    mtspr       SPR_DBSR_RC, r1     // clear all debug interrupts
+    mtspr       SPR_DBSR_RC, r1     /* clear all debug interrupts */
 
     load_const  r3, CONST_SPR_CCR0
     mtspr       SPR_CCR0, r3
@@ -317,8 +320,10 @@ init_spr:
     load_const  r3, CONST_SPR_USPCR
     mtspr       SPR_USPCR, r3
 
-//Before editing TLB let's initialize all SPR registers to default values by the spec
-//Most of them have X-state after reset and therefore CPU model cannot work properly
+/*
+	Before editing TLB let's initialize all SPR registers to default values by the spec
+	Most of them have X-state after reset and therefore CPU model cannot work properly
+*/
     mtspr       SPR_CTR, r0
     mtcr        r0
     mtspr       SPR_LR, r0
@@ -365,12 +370,12 @@ init_spr:
     b           setup_tlb
 
 tlb_entries:
-// TLB entries to remap 64KB pages BOOTROM from 0xffffffff_fffc0000-0xffffffff_ffffffff to 0xfffc0000-0xffffffff
+/* TLB entries to remap 64KB pages BOOTROM from 0xffffffff_fffc0000-0xffffffff_ffffffff to 0xfffc0000-0xffffffff */
     .long   MMU_TLB_ENTRY(  0x3ff,  0xfffc0,    0xfffc0,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b0,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_UND,   0b1 )
     .long   MMU_TLB_ENTRY(  0x3ff,  0xfffd0,    0xfffd0,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b0,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_UND,   0b1 )
     .long   MMU_TLB_ENTRY(  0x3ff,  0xfffe0,    0xfffe0,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b0,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_UND,   0b1 )
     .long   MMU_TLB_ENTRY(  0x3ff,  0xffff0,    0xffff0,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b0,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_UND,   0b1 )
-// Invalidate initial TLB entry
+/* Invalidate initial TLB entry */
     .long   MMU_TLB_ENTRY(  0x000,  0x00000,    0xfffff,    MMU_TLBE_DSIZ_4KB,      0b0,    0b0,    0b0,    0b0,    0b0,    00,     MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b0,0b0,0b0,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b0 )
 .set TLB_ENTRIES_N, (.-tlb_entries)/MMU_TLB_ENTRY_SIZE
 
@@ -384,12 +389,12 @@ setup_tlb:
 .section ".text","ax",@progbits
 
 test_mpw_cpu_008:
-    //check all default values
+    /* check all default values */
     check_value r0,r1,r2, PLB6_BC_CR0_ADDR, PLB6_BC_CR0_VALUE, "PLB6_BC_CR0"
     check_value r0,r1,r2, PLB6_BC_PRI_ADDR, PLB6_BC_PRI_VALUE, "PLB6_BC_PRI"
     check_value r0,r1,r2, PLB6_BC_TSNOOP_ADDR, PLB6_BC_TSNOOP_VALUE, "PLB6_BC_TSNOOP"
     check_value r0,r1,r2, PLB6_BC_PAAM_WIN_EXT_ADDR,PLB6_BC_PAAM_WIN_EXT_VALUE, "PLB6_BC_PAAM_WIN_EXT"
-    //non-used segments mest be written with value 0xFFFFFFF0.
+    /* non-used segments mest be written with value 0xFFFFFFF0. */
     check_value r0,r1,r2, PLB6_BC_SGD1_ADDR ,PLB6_BC_SGD1_VALUE, "PLB6_BC_SGD1"
     check_value r0,r1,r2, PLB6_BC_SGD2_ADDR ,PLB6_BC_SGD2_VALUE, "PLB6_BC_SGD2"
     sgd_wr_check r0,r1,r2, PLB6_BC_SGD3_ADDR , "PLB6_BC_SGD3"
@@ -404,25 +409,25 @@ test_mpw_cpu_008:
     check_value r0,r1,r2, PLB6_BC_QD_ADDR ,PLB6_BC_QD_VALUE, "PLB6_BC_QD"
     check_value r0,r1,r2, PLB6_BC_SHD_ADDR ,PLB6_BC_SHD_VALUE, "PLB6_BC_SHD"
     check_value r0,r1,r2, PLB6_BC_REVID_ADDR ,PLB6_BC_REVID_VALUE, "PLB6_BC_REVID"
-    //ADDR bus now is checked
+    /* ADDR bus now is checked */
 
-    //check DATA I/O buses
+    /* check DATA I/O buses */
     rumboot_putstring "Sliding '1' and '0' ..."
 running_1_low:
-    load_const r0, PLB6_BC_SGD1_ADDR   //pointer
-    load_const r1, 0x10                  //begin val
-    load_const r3, 1                    //shift
-    load_const r4, 0x80000000           //max val for compare
+    load_const r0, PLB6_BC_SGD1_ADDR   /* pointer */
+    load_const r1, 0x10                /* begin val */
+    load_const r3, 1                   /* shift */
+    load_const r4, 0x80000000          /* max val for compare */
 loop_1_low:
-        mtdcrx r0, r1
-        mfdcrx r2, r0
-        cmp cr7, 0, r2,r1
-        TEST_ASSERT(eq, cr7, "PLB6 DCRDATA: Running one error")
-        cmp 0, 0, r1, r4
-        //beq running_1_hi
-        beq running_0_low
-        slw r1, r1, r3
-        b loop_1_low
+	mtdcrx r0, r1
+	mfdcrx r2, r0
+	cmp cr7, 0, r2,r1
+	TEST_ASSERT(eq, cr7, "PLB6 DCRDATA: Running one error")
+	cmp 0, 0, r1, r4
+	/* beq running_1_hi */
+	beq running_0_low
+	slw r1, r1, r3
+	b loop_1_low
 
 running_0_low:
     load_const r1, 0xFFFFFFF0
@@ -432,16 +437,16 @@ running_0_low:
     cmp cr7,0, r2,r1
     TEST_ASSERT(eq,cr7,"PLB6 DCRDATA: Running null error")
 
-    load_const r1, 0xFFFFFFE0       //begin val
-    load_const r3, 1                //shift
-    load_const r4, 0x7FFFFFF0       //finish val
+    load_const r1, 0xFFFFFFE0       /* begin val  */
+    load_const r3, 1                /* shift      */
+    load_const r4, 0x7FFFFFF0       /* finish val */
 loop_0_low:
     mtdcrx r0, r1
     mfdcrx r2, r0
     cmp cr7,0, r2,r1
     TEST_ASSERT(eq,cr7,"PLB6 DCRDATA: Running null error")
     cmp 0, 0, r1, r4
-    //beq running_0_hi
+    /* beq running_0_hi */
     beq test_ok
     slw r1, r1, r3
     ori r1, r1, 0x10
