@@ -149,7 +149,7 @@ if (launch_tx_rx (freq_0_tx_value))
 //	rumboot_printf("array[61]=0x%x\n", array[61]);
 //	rumboot_printf("array[62]=0x%x\n", array[62]);
 //	rumboot_printf("array[63]=0x%x\n", array[63]);
-	rumboot_printf("cmp=0x%x\n", cmp);
+//	rumboot_printf("cmp=0x%x\n", cmp);
 
 	sz = sz + 1;
 }
@@ -169,8 +169,8 @@ if (cmp==0) rumboot_printf("Test failed: \n");
 int launch_tx_rx (int freq_0_tx_value)
 {
 //  int stus_27tx;
-  int ltmp;
-  int ltmp1;
+//  int ltmp;
+//  int ltmp1;
   int freq_0_rx_value = 0xfc0001f2;
   int mask = 0x00001fff;
 //----------------------------------------------------
@@ -202,11 +202,11 @@ iowrite32(0x00000001<< ch,ARINC_BASE + CHANNEL_DIS);
 while ((ioread32(ARINC_BASE + CHANNEL_EN)) != 0x00000000)
 {}
 //----------------------------------------------------
-ltmp  = ioread32(ARINC_BASE + FREQ_TX + 4*ch);
-ltmp1 = ioread32(ARINC_BASE + FREQ_RX + 4*ch);
+//ltmp  = ioread32(ARINC_BASE + FREQ_TX + 4*ch);
+//ltmp1 = ioread32(ARINC_BASE + FREQ_RX + 4*ch);
 
-	rumboot_printf("freq_tx_fun=0x%x\n", ltmp);
-	rumboot_printf("freq_rx_fun=0x%x\n", ltmp1);
+//	rumboot_printf("freq_tx_fun=0x%x\n", ltmp);
+//	rumboot_printf("freq_rx_fun=0x%x\n", ltmp1);
 	 
 	return err;
 }
@@ -226,7 +226,8 @@ if ((out >> 27 & 1)==0)
 {
 //----------------------------------------------------
 if (((out >> 31 & 1)==1) & ((out >> 30 & 1)==0))
-	rumboot_printf("stus_value=0x%x\n", out);
+	;
+//	rumboot_printf("stus1_value=0x%x\n", out);
 //----------------------------------------------------
 	return ((((stus_value << 6 ) != 0) &
      ((out >> 31 & 1)==1) &
