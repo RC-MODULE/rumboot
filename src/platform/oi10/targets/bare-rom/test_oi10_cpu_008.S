@@ -186,10 +186,16 @@ unexpected_D_hdr:
     rumboot_putstring   "Debug\n"
     b           unexpected_error
 
+.section ".init.start","ax",@progbits
 
+boot_start:
+    b           cpu_008_entry_point
+
+.section ".init.text","ax",@progbits
 
 .global cpu_008_entry_point
 cpu_008_entry_point:
+	gtube_init
     load_const  r0, 0x00000000  /* make r0 "all zeros" source */
     load_const  r1, 0xFFFFFFFF  /* make r1 "all ones" source */
 
