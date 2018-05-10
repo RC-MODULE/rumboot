@@ -6,7 +6,7 @@
 #include <platform/oi10/platform/test_assert.S.h>
 #include <platform/oi10/platform/devices.h>
 #include <platform/oi10/platform/arch/ppc/test_macro_asm.S.h>
-#include <platform/oi10/platform/regs/regs_mpic.h>
+#include <platform/oi10/platform/regs/regs_mpic128.h>
 #include <platform/oi10/platform/regs/regs_plb6bc.h>
 
 #define SGD_NON_SYNTH_VALUE         0xFFFFFFF0

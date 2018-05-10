@@ -5,7 +5,7 @@
 #include <platform/oi10/platform/arch/ppc/test_macro_asm.S.h>
 
 /* MPIC Registers */
-#include <platform/oi10/platform/regs/regs_mpic.h>
+#include <platform/oi10/platform/regs/regs_mpic128.h>
 
 
 .section ".text","ax",@progbits

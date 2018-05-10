@@ -69,6 +69,8 @@
 #define TDST2		(0x0FC011B0)
 #define TDST3		(0x0FC011F0)
 
+/* Values template for tests */
+
 #define MPIC128_R_BIT				(0x80000000)
 /* MPIC RESET VALUES */
 #define MPIC128_VP0_VALUE		reg_field(8,1) | reg_field(0,1)
