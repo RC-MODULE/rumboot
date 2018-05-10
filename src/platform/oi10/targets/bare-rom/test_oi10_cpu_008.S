@@ -390,31 +390,31 @@ setup_tlb:
 
 test_mpw_cpu_008:
     /* check all default values */
-    check_value r0,r1,r2, PLB6_BC_CR0_ADDR, PLB6_BC_CR0_VALUE, "PLB6_BC_CR0"
-    check_value r0,r1,r2, PLB6_BC_PRI_ADDR, PLB6_BC_PRI_VALUE, "PLB6_BC_PRI"
-    check_value r0,r1,r2, PLB6_BC_TSNOOP_ADDR, PLB6_BC_TSNOOP_VALUE, "PLB6_BC_TSNOOP"
-    check_value r0,r1,r2, PLB6_BC_PAAM_WIN_EXT_ADDR,PLB6_BC_PAAM_WIN_EXT_VALUE, "PLB6_BC_PAAM_WIN_EXT"
+    check_value r0,r1,r2,  DCR_PLB6_BC_BASE + PLB6BC_CR0, PLB6_BC_CR0_VALUE, "DCR_PLB6_BC_BASE + PLB6BC_CR0"
+    check_value r0,r1,r2,  DCR_PLB6_BC_BASE + PLB6BC_PRI, PLB6_BC_PRI_VALUE, "DCR_PLB6_BC_BASE + PLB6BC_PRI"
+    check_value r0,r1,r2,  DCR_PLB6_BC_BASE + PLB6BC_TSNOOP, PLB6_BC_TSNOOP_VALUE, "DCR_PLB6_BC_BASE + PLB6BC_TSNOOP"
+    check_value r0,r1,r2,  DCR_PLB6_BC_BASE + PLB6BC_PAAM_WIN_EXT, PLB6_BC_PAAM_WIN_EXT_VALUE, "DCR_PLB6_BC_BASE + PLB6BC_PAAM_WIN_EXT"
     /* non-used segments mest be written with value 0xFFFFFFF0. */
-    check_value r0,r1,r2, PLB6_BC_SGD1_ADDR ,PLB6_BC_SGD1_VALUE, "PLB6_BC_SGD1"
-    check_value r0,r1,r2, PLB6_BC_SGD2_ADDR ,PLB6_BC_SGD2_VALUE, "PLB6_BC_SGD2"
-    sgd_wr_check r0,r1,r2, PLB6_BC_SGD3_ADDR , "PLB6_BC_SGD3"
-    sgd_wr_check r0,r1,r2, PLB6_BC_SGD4_ADDR , "PLB6_BC_SGD4"
-    sgd_wr_check r0,r1,r2, PLB6_BC_SGD5_ADDR , "PLB6_BC_SGD5"
-    sgd_wr_check r0,r1,r2, PLB6_BC_SGD6_ADDR , "PLB6_BC_SGD6"
-    sgd_wr_check r0,r1,r2, PLB6_BC_SGD7_ADDR , "PLB6_BC_SGD7"
-    check_value r0,r1,r2, PLB6_BC_ERR_ADDR ,PLB6_BC_ERR_VALUE, "PLB6_BC_ERR"
-    check_value r0,r1,r2, PLB6_BC_MSRSP_ADDR ,PLB6_BC_MSRSP_VALUE, "PLB6_BC_MSRSP"
-    check_value r0,r1,r2, PLB6_BC_HCPP_ADDR ,PLB6_BC_HCPP_VALUE, "PLB6_BC_HCPP"
-    check_value r0,r1,r2, PLB6_BC_HD_ADDR ,PLB6_BC_HD_VALUE, "PLB6_BC_HD"
-    check_value r0,r1,r2, PLB6_BC_QD_ADDR ,PLB6_BC_QD_VALUE, "PLB6_BC_QD"
-    check_value r0,r1,r2, PLB6_BC_SHD_ADDR ,PLB6_BC_SHD_VALUE, "PLB6_BC_SHD"
-    check_value r0,r1,r2, PLB6_BC_REVID_ADDR ,PLB6_BC_REVID_VALUE, "PLB6_BC_REVID"
+    check_value r0,r1,r2,  DCR_PLB6_BC_BASE + PLB6BC_SGD1,PLB6_BC_SGD1_VALUE, "DCR_PLB6_BC_BASE + PLB6BC_SGD1"
+    check_value r0,r1,r2,  DCR_PLB6_BC_BASE + PLB6BC_SGD2,PLB6_BC_SGD2_VALUE, "DCR_PLB6_BC_BASE + PLB6BC_SGD2"
+    sgd_wr_check r0,r1,r2, DCR_PLB6_BC_BASE + PLB6BC_SGD3, "DCR_PLB6_BC_BASE + PLB6BC_SGD3"
+    sgd_wr_check r0,r1,r2, DCR_PLB6_BC_BASE + PLB6BC_SGD4, "DCR_PLB6_BC_BASE + PLB6BC_SGD4"
+    sgd_wr_check r0,r1,r2, DCR_PLB6_BC_BASE + PLB6BC_SGD5, "DCR_PLB6_BC_BASE + PLB6BC_SGD5"
+    sgd_wr_check r0,r1,r2, DCR_PLB6_BC_BASE + PLB6BC_SGD6, "DCR_PLB6_BC_BASE + PLB6BC_SGD6"
+    sgd_wr_check r0,r1,r2, DCR_PLB6_BC_BASE + PLB6BC_SGD7, "DCR_PLB6_BC_BASE + PLB6BC_SGD7"
+    check_value r0,r1,r2,  DCR_PLB6_BC_BASE + PLB6BC_ERR,PLB6_BC_ERR_VALUE, "DCR_PLB6_BC_BASE + PLB6BC_ERR"
+    check_value r0,r1,r2,  DCR_PLB6_BC_BASE + PLB6BC_MSRSP,PLB6_BC_MSRSP_VALUE, "DCR_PLB6_BC_BASE + PLB6BC_MSRSP"
+    check_value r0,r1,r2,  DCR_PLB6_BC_BASE + PLB6BC_HCPP,PLB6_BC_HCPP_VALUE, "DCR_PLB6_BC_BASE + PLB6BC_HCPP"
+    check_value r0,r1,r2,  DCR_PLB6_BC_BASE + PLB6BC_HD,PLB6_BC_HD_VALUE, "DCR_PLB6_BC_BASE + PLB6BC_HD"
+    check_value r0,r1,r2,  DCR_PLB6_BC_BASE + PLB6BC_QD,PLB6_BC_QD_VALUE, "DCR_PLB6_BC_BASE + PLB6BC_QD"
+    check_value r0,r1,r2,  DCR_PLB6_BC_BASE + PLB6BC_SHD,PLB6_BC_SHD_VALUE, "DCR_PLB6_BC_BASE + PLB6BC_SHD"
+    check_value r0,r1,r2,  DCR_PLB6_BC_BASE + PLB6BC_REVID,PLB6_BC_REVID_VALUE, "DCR_PLB6_BC_BASE + PLB6BC_REVID"
     /* ADDR bus now is checked */
 
     /* check DATA I/O buses */
     rumboot_putstring "Sliding '1' and '0' ..."
 running_1_low:
-    load_const r0, PLB6_BC_SGD1_ADDR   /* pointer */
+    load_const r0, DCR_PLB6_BC_BASE + PLB6BC_SGD1   /* pointer */
     load_const r1, 0x10                /* begin val */
     load_const r3, 1                   /* shift */
     load_const r4, 0x80000000          /* max val for compare */
@@ -431,7 +431,7 @@ loop_1_low:
 
 running_0_low:
     load_const r1, 0xFFFFFFF0
-    load_const r0, PLB6_BC_SGD1_ADDR
+    load_const r0, DCR_PLB6_BC_BASE + PLB6BC_SGD1
     mtdcrx r0, r1
     mfdcrx r2, r0
     cmp cr7,0, r2,r1
