@@ -449,9 +449,13 @@ loop_0_low:
 
 test_ok:
     test_event EVENT_FINISHED
+    rumboot_putstring "TEST OK\n"
 stop:
     b stop
 
 unexpected_error:
+	rumboot_putstring "TEST ERROR\n"
     test_event  EVENT_ERROR
+    b stop
+
 
