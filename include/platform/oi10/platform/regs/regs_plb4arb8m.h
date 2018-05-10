@@ -8,6 +8,13 @@
 #ifndef REGS_PLB4ARB8M_H_
 #define REGS_PLB4ARB8M_H_
 
+#define PREV				0x2
+#define PACR				0x3
+#define PESR_RC				0x4
+#define PESR_W				0x5
+#define PEARL				0x6
+#define PEARH				0x7
+
 #define PLB4ARB8M_0_PREV	(DCR_PLB4ARB8M_0_BASE + PREV)
 #define PLB4ARB8M_0_PACR	(DCR_PLB4ARB8M_0_BASE + PACR)
 #define PLB4ARB8M_0_PESR_RC	(DCR_PLB4ARB8M_0_BASE + PESR_RC)
