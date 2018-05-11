@@ -66,17 +66,29 @@ int main()
     iowrite32(1 <<   GBIE | 1 <<   BIIE, CAN0_BASE + INTRP_EN_REG); // Bus idle interrupt enable for CAN0
     iowrite32(1 <<   GBIE | 1 <<   BIIE, CAN1_BASE + INTRP_EN_REG); // Bus idle interrupt enable for CAN1
     
-    //TR Timing Register
+    //Enable change TR Timing Register
     iowrite32(0 << TME |  1 << TRCE,                      CAN0_BASE + CAN_MODE_REG );
     iowrite32(0 << TME |  1 << TRCE,                      CAN1_BASE + CAN_MODE_REG );
-    iowrite32(1 << TS2 | 12 << TS1 | 0 << SJW | 3 << DIV, CAN0_BASE + TR_TIMING_REG); // BR = 1000 kb/s ( 64 MHz)    
+    
+    // Write and check TR Timing Register value
+    iowrite32(1 << TS2 | 12 << TS1 | 0 << SJW | 3 << DIV, CAN0_BASE + TR_TIMING_REG); // BR = 1000 kb/s ( 64 MHz) 
+    read_data=ioread32(CAN0_BASE + TR_TIMING_REG);
+    while (!(read_data & (1 << TS2 | 12 << TS1 | 0 << SJW | 3 << DIV)))
+     {read_data=ioread32(CAN0_BASE + TR_TIMING_REG);}
+    rumboot_printf("CAN0 TR timing is correct!\n");    
     iowrite32(1 << TS2 | 12 << TS1 | 0 << SJW | 3 << DIV, CAN1_BASE + TR_TIMING_REG); // BR = 1000 kb/s ( 64 MHz)
+    read_data=ioread32(CAN1_BASE + TR_TIMING_REG);
+    while (!(read_data & (1 << TS2 | 12 << TS1 | 0 << SJW | 3 << DIV)))
+     {read_data=ioread32(CAN1_BASE + TR_TIMING_REG);}
+    rumboot_printf("CAN1 TR timing is correct!\n");
+
+    //Disable change TR Timing Register
     iowrite32(0 << TME |  0 << TRCE,                      CAN0_BASE + CAN_MODE_REG );
     iowrite32(0 << TME |  0 << TRCE,                      CAN1_BASE + CAN_MODE_REG );
     
     // Init mode OFF
     iowrite32(2 << IMCR, CAN0_BASE + IMCR_REG); 
-    iowrite32(2 << IMCR, CAN1_BASE + IMCR_REG);
+    //iowrite32(2 << IMCR, CAN1_BASE + IMCR_REG);
     
     //Wait Bus Idle
     read_data=ioread32(CAN0_BASE + STATUS_REG);
@@ -84,7 +96,7 @@ int main()
      {read_data=ioread32(CAN0_BASE + STATUS_REG);}
     rumboot_printf("CAN0 Bus Idle!\n");
     
-    //iowrite32(2 << IMCR, CAN1_BASE + IMCR_REG);
+    iowrite32(2 << IMCR, CAN1_BASE + IMCR_REG);
     
     read_data=ioread32(CAN1_BASE + STATUS_REG);
     while (!(read_data & 1 << BI))

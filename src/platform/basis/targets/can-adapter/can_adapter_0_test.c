@@ -17,11 +17,23 @@ int main()
     iowrite32(1 <<   BI | 1 << BOR | 1 << BO   | 1 << EPEA | 1 << EAEP | 1 << EWRN | 1 << RER | 1 << TER | 1 << LARB, CAN0_BASE + BUS_STAT_EN_REG);
     iowrite32(1 <<   BI | 1 << BOR | 1 << BO   | 1 << EPEA | 1 << EAEP | 1 << EWRN | 1 << RER | 1 << TER | 1 << LARB, CAN1_BASE + BUS_STAT_EN_REG);
     
-    //TR Timing Register
+    //Enable change TR Timing Register
     iowrite32(0 << TME |  1 << TRCE,                      CAN0_BASE + CAN_MODE_REG );
     iowrite32(0 << TME |  1 << TRCE,                      CAN1_BASE + CAN_MODE_REG );
-    iowrite32(1 << TS2 | 12 << TS1 | 0 << SJW | 3 << DIV, CAN0_BASE + TR_TIMING_REG); // BR = 1000 kb/s ( 64 MHz)    
+    
+    // Write and check TR Timing Register value
+    iowrite32(1 << TS2 | 12 << TS1 | 0 << SJW | 3 << DIV, CAN0_BASE + TR_TIMING_REG); // BR = 1000 kb/s ( 64 MHz) 
+    read_data=ioread32(CAN0_BASE + TR_TIMING_REG);
+    while (!(read_data & (1 << TS2 | 12 << TS1 | 0 << SJW | 3 << DIV)))
+     {read_data=ioread32(CAN0_BASE + TR_TIMING_REG);}
+    rumboot_printf("CAN0 TR timing is correct!\n");    
     iowrite32(1 << TS2 | 12 << TS1 | 0 << SJW | 3 << DIV, CAN1_BASE + TR_TIMING_REG); // BR = 1000 kb/s ( 64 MHz)
+    read_data=ioread32(CAN1_BASE + TR_TIMING_REG);
+    while (!(read_data & (1 << TS2 | 12 << TS1 | 0 << SJW | 3 << DIV)))
+     {read_data=ioread32(CAN1_BASE + TR_TIMING_REG);}
+    rumboot_printf("CAN1 TR timing is correct!\n");
+
+    //Disable change TR Timing Register
     iowrite32(0 << TME |  0 << TRCE,                      CAN0_BASE + CAN_MODE_REG );
     iowrite32(0 << TME |  0 << TRCE,                      CAN1_BASE + CAN_MODE_REG );
     
