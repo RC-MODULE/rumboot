@@ -17,8 +17,8 @@
     rumboot_putstring "\reg_name OK\n"
 .endm
 
-#define L2C0_DCRAI_VAL			0x00000000
-/* #define L2C0_DCRDI_VAL		0x000 */
+#define L2C_DCRAI_VAL			0x00000000
+/* #define L2C_DCRDI_VAL		0x000 */
 
 #define I_M_SELF_ID				0x00
 /* from trunk/cpu/units/ppc476l2c_v001/verilog/rtl/PPC476L2C.parameters.v */
