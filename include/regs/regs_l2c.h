@@ -8,6 +8,9 @@
 #ifndef REGS_L2C_H_
 #define REGS_L2C_H_
 
+#define L2C_DCRAI         0x00
+#define L2C_DCRDI         0x04
+
 #define L2C_L2ISTAT       0x00000000
 #define L2C_L2PNCR        0x00000004
 #define L2C_L2REVID       0x0000000C
