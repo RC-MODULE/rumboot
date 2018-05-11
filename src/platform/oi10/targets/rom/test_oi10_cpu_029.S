@@ -20,6 +20,7 @@ boot_init:
     test_event EVENT_CHECK_PIR_PVR
 
 program_end:
+	rumboot_puthex r0 /* AG: For test purpose only! Remove later! */
     load_const r3, 0x00
     blr
 
