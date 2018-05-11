@@ -52,12 +52,13 @@ boot_init:
     load_const  r30,0x00000000
     load_const  r31,0x00000000
 
-//according to User's Manual ch. 9.4 Initialization Software Requirements
-    mtspr       SPR_DBCR0, r0       // disable all debug events
+/* according to User's Manual ch. 9.4 Initialization Software Requirements */
+    mtspr       SPR_DBCR0, r0       /* disable all debug events */
 
-    mtspr       SPR_DBSR_RC, r1     // clear all debug interrupts
+    mtspr       SPR_DBSR_RC, r1     /* clear all debug interrupts */
 
-    load_const  r3, (0b0 << CTRL_CCR0_ITE_i)\
+#define CONST_SPR_CCR0 \
+					(0b0 << CTRL_CCR0_ITE_i)\
                   | (0b1 << CTRL_CCR0_PRE_i)\
                   | (0b1 << CTRL_CCR0_CRPE_i)\
                   | (CTRL_CCR0_ICS_32byte << CTRL_CCR0_ICS_i)\
@@ -67,9 +68,8 @@ boot_init:
                   | (0b0 << CTRL_CCR0_FLSTA_i)\
                   | (CTRL_CCR0_DQWPM_No_prediction << CTRL_CCR0_DQWPM_i)\
                   | (CTRL_CCR0_IQWPM_Use_EA << CTRL_CCR0_IQWPM_i)
-    mtspr       SPR_CCR0, r3
-
-    load_const  r3, (0b00 << CTRL_CCR1_GPRPEI_i)\
+#define CONST_SPR_CCR1 \
+					(0b00 << CTRL_CCR1_GPRPEI_i)\
                   | (0b00 << CTRL_CCR1_FPRPEI_i)\
                   | (0b00 << CTRL_CCR1_ICDPEI_i)\
                   | (0b00 << CTRL_CCR1_ICLPEI_i)\
@@ -82,9 +82,8 @@ boot_init:
                   | (CTRL_CCR1_TSS_CPU_clock << CTRL_CCR1_TSS_i)\
                   | (0b0 << CTRL_CCR1_DPC_i)\
                   | (CTRL_CCR1_TCS_div1 << CTRL_CCR1_TCS_i)
-    mtspr       SPR_CCR1, r3
-
-    load_const  r3, (CTRL_CCR2_DSTG_enabled << CTRL_CCR2_DSTG_i)\
+#define CONST_SPR_CCR2 \
+					(CTRL_CCR2_DSTG_enabled << CTRL_CCR2_DSTG_i)\
                   | (0b0 << CTRL_CCR2_DLFPD_i)\
                   | (0b0 << CTRL_CCR2_DSTI_i)\
                   | (0b0 << CTRL_CCR2_PMUD_i)\
@@ -93,35 +92,48 @@ boot_init:
                   | (0b0 << CTRL_CCR2_DISTG_i)\
                   | (0b0 << CTRL_CCR2_SPC5C1_i)\
                   | (0b0 << CTRL_CCR2_MCDTO_i)
-    mtspr       SPR_CCR2, r3
-
-    load_const  r3, (0b0 << MMU_MMUBE0_VBE0_i)\
+#define CONST_SPR_MMUBE0 \
+					(0b0 << MMU_MMUBE0_VBE0_i)\
                   | (0b0 << MMU_MMUBE0_VBE1_i)\
                   | (0b0 << MMU_MMUBE0_VBE2_i)
-    mtspr       SPR_MMUBE0, r3
-
-    load_const  r3, (0b0 << MMU_MMUBE1_VBE3_i)\
+#define CONST_SPR_MMUBE1 \
+					(0b0 << MMU_MMUBE1_VBE3_i)\
                   | (0b0 << MMU_MMUBE1_VBE4_i)\
                   | (0b0 << MMU_MMUBE1_VBE5_i)
-    mtspr       SPR_MMUBE1, r3
-
-    load_const  r3, ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_64KB)   << MMU_SSPCR_ORD1_i)\
+#define CONST_SPR_SSPCR \
+					((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_64KB)   << MMU_SSPCR_ORD1_i)\
                   | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_4KB)    << MMU_SSPCR_ORD2_i)\
                   | (MMU_XSPCR_ORD_END << MMU_SSPCR_ORD3_i)
-    mtspr       SPR_SSPCR, r3
-
-    load_const  r3, (MMU_XSPCR_ORD_64KB << MMU_ISPCR_ORD1_i)\
+#define CONST_SPR_ISPCR \
+					(MMU_XSPCR_ORD_64KB << MMU_ISPCR_ORD1_i)\
                   | (MMU_XSPCR_ORD_4KB  << MMU_ISPCR_ORD2_i)\
                   | (MMU_XSPCR_ORD_END  << MMU_ISPCR_ORD3_i)
-    mtspr       SPR_ISPCR, r3
-
-    load_const  r3, ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_64KB)   << MMU_USPCR_ORD1_i)\
+#define CONST_SPR_USPCR \
+					((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_64KB)   << MMU_USPCR_ORD1_i)\
                   | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_4KB)    << MMU_USPCR_ORD2_i)\
                   | (MMU_XSPCR_ORD_END                              << MMU_USPCR_ORD3_i)
+
+    load_const  r3, CONST_SPR_CCR0
+    mtspr       SPR_CCR0, r3
+    load_const  r3, CONST_SPR_CCR1
+    mtspr       SPR_CCR1, r3
+    load_const  r3, CONST_SPR_CCR2
+    mtspr       SPR_CCR2, r3
+    load_const  r3, CONST_SPR_MMUBE0
+    mtspr       SPR_MMUBE0, r3
+    load_const  r3, CONST_SPR_MMUBE1
+    mtspr       SPR_MMUBE1, r3
+    load_const  r3, CONST_SPR_SSPCR
+    mtspr       SPR_SSPCR, r3
+    load_const  r3, CONST_SPR_ISPCR
+    mtspr       SPR_ISPCR, r3
+    load_const  r3, CONST_SPR_USPCR
     mtspr       SPR_USPCR, r3
 
-//Initialize all SPR registers to default values by the spec
-//Most of them have X-state after reset and therefore CPU model cannot work properly
+/*
+Initialize all SPR registers to default values by the spec
+Most of them have X-state after reset and therefore CPU model cannot work properly
+*/
     mtspr       SPR_CTR, r0
     mtcr        r0
     mtspr       SPR_LR, r0
@@ -168,8 +180,8 @@ boot_init:
 
     b           setup_initial_tlb
 initial_tlb_entries:
-//          MMU_TLB_ENTRY(  ERPN,   RPN,        EPN,        DSIZ,                   IL1I,   IL1D,   W,      I,      M,      G,      E,                      UX, UW, UR,     SX, SW, SR      DULXE,  IULXE,      TS,     TID,                WAY,                BID,                V   )
-// TLB entries to remap 64KB pages BOOTROM from 0xFFFFFFFF_FFFC0000-0XFFFFFFFF_FFFFFFFF to 0xFFFC0000-0XFFFFFFFF
+/*          MMU_TLB_ENTRY(  ERPN,   RPN,        EPN,        DSIZ,                   IL1I,   IL1D,   W,      I,      M,      G,      E,                      UX, UW, UR,     SX, SW, SR      DULXE,  IULXE,      TS,     TID,                WAY,                BID,                V   ) */
+/* TLB entries to remap 64KB pages BOOTROM from 0xFFFFFFFF_FFFC0000-0XFFFFFFFF_FFFFFFFF to 0xFFFC0000-0XFFFFFFFF */
     .long   MMU_TLB_ENTRY(  0x3FF,  0xFFFC0,    0xFFFC0,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b1,0b0,0b1,    0b1,0b0,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_UND,   0b1 )
     .long   MMU_TLB_ENTRY(  0x3FF,  0xFFFD0,    0xFFFD0,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b1,0b0,0b1,    0b1,0b0,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_UND,   0b1 )
     .long   MMU_TLB_ENTRY(  0x3FF,  0xFFFE0,    0xFFFE0,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b1,0b0,0b1,    0b1,0b0,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_UND,   0b1 )
