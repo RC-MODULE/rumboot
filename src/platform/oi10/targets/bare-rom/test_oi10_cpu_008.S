@@ -235,7 +235,7 @@ cpu_008_entry_point:
     li          r3, unexpected_D_hdr@l
     mtspr       SPR_IVOR15, r3
 
-    load_const  r3, DCR_MPIC128_BASE+MPIC128x_WAI_PR
+    load_const  r3, DCR_MPIC128_BASE+MPIC128_WAI_PR
     mfdcrx      r3, r3                          /* read Who Am I Register */
     cmpwi       r3, PPC0_CORE_ID                /* if Processor ID Register is 0 */
     beq         ppc0_core_start                 /* execute code for core 0 */
