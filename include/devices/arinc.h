@@ -1,3 +1,8 @@
+#ifndef ARINC_REGS_H
+#define ARINC_REGS_H
+
+
+
 
 #define CHANNEL_EN			0x0004
 #define CHANNEL_DIS			0x0008
@@ -77,3 +82,5 @@
 
 #define status_success_bit  (1 << 31)
 #define ARINC_ATTEMPT			10000
+
+#endif /* end of include guard: ARINC_REGS_H */
