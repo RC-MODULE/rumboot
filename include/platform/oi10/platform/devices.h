@@ -58,7 +58,7 @@
 #define DCR_PLB6PLB4_0_BASE     0x80000300
 #define DCR_PLB6PLB4_1_BASE     0x80000400
 #define DCR_PLB4PLB6_0_BASE     0x80000500
-#define DCR_L2C0_BASE           0x80000600
+#define DCR_L2C_BASE            0x80000600
 #define DCR_ARB_BASE            0x80000700
 #define DCR_ITRACE_BASE         0x80000800
 #define DCR_LTRACE_BASE         0x80000900
