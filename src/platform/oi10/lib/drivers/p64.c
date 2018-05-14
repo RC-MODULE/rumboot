@@ -34,7 +34,7 @@ void p64_set_configuration(uint32_t const base_addr, p64_cfg * cfg)
 /*    TEST_ASSERT(p64_dcr_read_P64_P64CR(base_addr)==reg_value, "Error at setting plb6plb4 bridge configuration");*/
 }
 
-void __attribute__((section(".ROM.text"))) p64_init_simple()
+void __attribute__((section(".ROM.text"),optimize("omit-frame-pointer"))) p64_init_simple()
 {
     #include <platform/oi10/platform/devices.h>
     /*enable requests to boot rom mirror (0x00000010_00000000 - 0x00000010_0000FFF)*/

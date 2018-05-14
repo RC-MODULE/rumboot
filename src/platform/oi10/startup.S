@@ -423,17 +423,17 @@ setup_tlb:
 
     ppc470s_set_mem_window  r3, MEM_WINDOW_0
 
+    b setup_plb6plb4
+
+setup_plb6plb4:
+    bl          p64_init_simple
+    b           setup_stack
 
 /*TODO*/
 setup_stack: /*stack is growing down*/
 setup_cpu0_stack:
     load_addr   r1, rumboot_platform_stack_area_end
     stwu        r0, -8(r1) /*allocate LR and save SP of first stack frame according to ABI rules*/
-    b setup_plb6plb4
-
-
-setup_plb6plb4:
-    bl          p64_init_simple
     b goto_boot_main
 
 .section "ROM.text","ax",@progbits
