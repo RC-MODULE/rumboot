@@ -49,7 +49,7 @@ boot_tlb_entries:
     .long   MMU_TLB_ENTRY(  0x010,  0x00020,    0xC0020,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
 /* TLB entries to remap 128KB pages IM1 from 0x00000020_00000000-0x00000020_0001ffff to 0xD0000000-0xD001ffff*/
     .long   MMU_TLB_ENTRY(  0x020,  0x00000,    0xD0000,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
-    .long   MMU_TLB_ENTRY(  0x020,  0x00000,    0xD0010,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
+    .long   MMU_TLB_ENTRY(  0x020,  0x00010,    0xD0010,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
 /* TLB entry to remap LHSIF (SW Router) - error in memory map with this entry, please check ranges*/
 /*    .long   MMU_TLB_ENTRY(  0x020,  0xFFFFF,    0xD8000,    MMU_TLBE_DSIZ_256MB,    0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_LITTLE_END,  0b0,0b0,0b0,    0b0,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )*/
 DECLARE_CONST( BOOT_TLB_ENTRIES_N, (.-boot_tlb_entries)/MMU_TLB_ENTRY_SIZE )
