@@ -28,7 +28,7 @@
         #define IRQ_REAL(n) (n)
 #endif
 
-
+#define TSNS_INTR                   IRQ_REAL(35)
 #define MDIO0_INT                   IRQ_REAL(36)
 #define MDIO1_INT                   IRQ_REAL(37)
 #define MDIO2_INT                   IRQ_REAL(38)
