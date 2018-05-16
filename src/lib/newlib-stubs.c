@@ -32,6 +32,7 @@ int _gettimeofday(struct timeval *__tp, void *__tzp)
 
 extern void (*__fini_array_start []) (void) __attribute__((weak));
 extern void (*__fini_array_end []) (void) __attribute__((weak));
+void _fini();
 
 static void rumboot_fini_array (void)
 {
@@ -41,6 +42,9 @@ static void rumboot_fini_array (void)
   count = __fini_array_end - __fini_array_start;
   for (i = count; i > 0; i--)
     __fini_array_start[i-1] ();
+
+  _fini();
+
 }
 
 /* Override newlib exit */

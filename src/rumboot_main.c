@@ -17,6 +17,7 @@ extern void (*__preinit_array_end []) (void) __attribute__((weak));
 extern void (*__init_array_start []) (void) __attribute__((weak));
 extern void (*__init_array_end []) (void) __attribute__((weak));
 
+extern void _init();
 static void rumboot_init_array (void)
 {
   size_t count;
@@ -25,6 +26,8 @@ static void rumboot_init_array (void)
   count = __preinit_array_end - __preinit_array_start;
   for (i = 0; i < count; i++)
     __preinit_array_start[i] ();
+
+  _init();
 
   count = __init_array_end - __init_array_start;
   for (i = 0; i < count; i++)
