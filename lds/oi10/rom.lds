@@ -8,21 +8,18 @@ SECTIONS
 {
 
 .text : {
-    *(.text)    
+    *(.text)
     *(.text.*)
-    *(.rodata)    
+    *(.rodata)
     . = ALIGN(32);
           } > ROM
-.got2 : {
-    *(.got2)
-    } > ROM
 .init.text 0xFFFFF000:{
         KEEP(*(.init.text))
         KEEP(*(.init.rodata))
 } > ROM
 .init.start 0xFFFFFFFC :    {
         KEEP(*(.init.start))
-    }>ROM  
+    }>ROM
  .rw : {
   . = ALIGN(8);
 
@@ -53,6 +50,9 @@ SECTIONS
 
  /DISCARD/ :
  {
+    *(.rela.*)
+    *(.got2)
+    *(.got)
      libc.a ( * )
      libm.a ( * )
      libgcc.a ( * )

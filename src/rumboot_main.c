@@ -12,7 +12,25 @@ __attribute__((section(".rumboot_platform_runtime_info")))
 rumboot_platform_runtime_info;
 
 
-extern void __libc_init_array (void);
+extern void (*__preinit_array_start []) (void) __attribute__((weak));
+extern void (*__preinit_array_end []) (void) __attribute__((weak));
+extern void (*__init_array_start []) (void) __attribute__((weak));
+extern void (*__init_array_end []) (void) __attribute__((weak));
+
+static void rumboot_init_array (void)
+{
+  size_t count;
+  size_t i;
+
+  count = __preinit_array_end - __preinit_array_start;
+  for (i = 0; i < count; i++)
+    __preinit_array_start[i] ();
+
+  count = __init_array_end - __init_array_start;
+  for (i = 0; i < count; i++)
+    __init_array_start[i] ();
+}
+
 void rumboot_main()
 {
     /*
@@ -65,7 +83,7 @@ void rumboot_main()
      #endif
 
      /* Run constructors */
-     __libc_init_array();
+     rumboot_init_array();
 
      /* Tell environment that we're done with startup */
      rumboot_platform_perf(NULL);
