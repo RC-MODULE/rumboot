@@ -213,27 +213,13 @@ main:
     LOGIC_RA_RS_CHECK   cntlzw., 7,     6,     0xAA55AA55, 30,          0x5,                    29,            3
     LOGIC_RA_RS_CHECK   prtyw,   7,     6,     0xAA55AA55, 30,          0x6,                    29,            3
 
-/*
-test_setup_stack: //stack is growing down
-    load_const  r3, MPICx_BASE+MPIC128x_WAI_PR
-    mfdcrx      r3, r3                          //read Who Am I Register
-    cmpwi       r3, PPC0_CORE_ID                //if Processor ID Register is 0
-    beq         test_setup_cpu0_stack
-    //else                                           Processor ID Register is 1
-    load_addr   r1, cpu1_stack_top
-    b           test_setup_cpu1_stack
-test_setup_cpu0_stack:
-    load_addr   r1, cpu0_stack_top
-test_setup_cpu1_stack:
-    stwu        r0, -8(r1) //allocate LR and save SP of first stack frame according to ABI rules
-*/
     load_addr r3, result_data
     load_addr  r4, iss_mem
     load_const r5, 30
-//    bl compare_data
-//    cmpwi cr0, r3, 0x1
+/*	bl compare_data */
+/*	cmpwi cr0, r3, 0x1 */
 
-//.macro sw_comparator_macro reg_first_start, reg_second_start, reg_byte_count, reg_tmp_offset, reg_tmp_data_first, reg_tmp_data_second, reg_result
+/* .macro sw_comparator_macro reg_first_start, reg_second_start, reg_byte_count, reg_tmp_offset, reg_tmp_data_first, reg_tmp_data_second, reg_result */
     sw_comparator_macro r3, r4, r5, r6, r7, r8, r9
     cmpwi cr0, r9, 0x1
 
