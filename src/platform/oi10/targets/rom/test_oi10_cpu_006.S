@@ -3,7 +3,7 @@
 #include <platform/oi10/platform/test_event_asm.h>
 #include <platform/oi10/platform/test_assert.S.h>
 #include <platform/oi10/platform/devices.h>
-#include <regs/regs_l2c.h>
+#include <platform/oi10/platform/regs/regs_l2c.h>
 
 .macro check_value_l2c address, exp_value, reg_name
     load_const r8, \exp_value
