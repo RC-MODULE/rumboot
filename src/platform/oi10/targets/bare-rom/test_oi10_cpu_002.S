@@ -147,8 +147,10 @@ tlb_entries:
 /*          MMU_TLB_ENTRY(  ERPN,   RPN,        EPN,        DSIZ,                   IL1I,   IL1D,   W,      I,      M,      G,      E,                      UX, UW, UR,     SX, SW, SR      DULXE,  IULXE,      TS,     TID,                WAY,                BID,                V   ) */
 /* Invalidate initial TLB entry*/
     .long   MMU_TLB_ENTRY(  0x000,  0x00000,    0xFFFFF,    MMU_TLBE_DSIZ_4KB,      0b0,    0b0,    0b0,    0b0,    0b0,    00,     MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b0,0b0,0b0,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b0 )
-/* TLB entries to remap 64KB page BOOTROM from 0x000003ff_ffff0000-0x000003ff_ffffffff to 0xffff0000-0xffffffff*/
+/* TLB entry to remap 64KB page BOOTROM from 0x000003ff_ffff0000-0x000003ff_ffffffff to 0xffff0000-0xffffffff*/
     .long   MMU_TLB_ENTRY(  0x3FF,  0xFFFF0,    0xFFFF0,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b0,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
+/* TLB entry to remap 64KB page mirror-BOOTROM from 0x000003ff_ffff0000-0x000003ff_ffffffff to 0x00000000-0x0000ffff*/
+    .long   MMU_TLB_ENTRY(  0x3FF,  0xFFFF0,    0x00000,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b0,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
 /* TLB entries to remap 128KB pages IM0 from 0x00000010_00010000-0x00000010_0002ffff to 0xc0010000-0xc002ffff*/
     .long   MMU_TLB_ENTRY(  0x010,  0x00010,    0xC0010,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
     .long   MMU_TLB_ENTRY(  0x010,  0x00020,    0xC0020,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
@@ -166,20 +168,33 @@ tlb_entries:
 
 .section ".init.text","ax",@progbits
 
-some_code0:
-    /* r5++ */
-    add r5,r5,r4
-    blr
-
 setup_tlb:
     load_addr   r3, tlb_entries
     load_addr   r4, TLB_ENTRIES_N
     bl          ppc470s_write_tlb_entries /* (r3, r4) - are parameters */
 
-	b           test_oi10_cpu_002
+// AG: Must be refactored!
+plb6plb4_init:
+	lis     r10,-32768
+	ori     r10,r10,775
+	li      r9,16
+	mtdcrx  r10,r9
+	addi    r10,r10,1
+	mtdcrx  r10,r9
+	addi    r10,r10,-8
+	mfdcrx  r9,r10
+	ori     r9,r9,256
+	mtdcrx  r10,r9
+	/* blr */
+	b	    test_oi10_cpu_002
 
 
 .section ".text","ax",@progbits
+
+some_code0:
+    /* r5++ */
+    add r5,r5,r4
+    blr
 
 test_oi10_cpu_002:
 
@@ -196,7 +211,7 @@ test_oi10_cpu_002:
     load_const          r2, IM0_BASE
 
     /* stb-lbz, stbu-lbzu */
-	rumboot_putstring "stb-lbz, stbu-lbzu\n"
+	rumboot_putstring "\nstb-lbz, stbu-lbzu\n"
     load_const          r1, 0xFF
     stb                 r1, 0(r2)
     lbz                 r3, 0(r2)
@@ -234,7 +249,7 @@ test_oi10_cpu_002:
     TEST_ASSERT(eq,cr7,"Write/read value mismatch")
 
     /* sth-lhz, sthu-lhzu */
-	rumboot_putstring "sth-lhz, sthu-lhzu\n"
+	rumboot_putstring "\nsth-lhz, sthu-lhzu\n"
     load_const          r1, 0xFFFF
     sth                 r1, 0(r2)
     lhz                 r3, 0(r2)
@@ -272,7 +287,7 @@ test_oi10_cpu_002:
     TEST_ASSERT(eq,cr7,"Write/read value mismatch")
 
     /* stw-lwz, stwu-lwzu */
-	rumboot_putstring "stw-lwz, stwu-lwzu\n"
+	rumboot_putstring "\nstw-lwz, stwu-lwzu\n"
     load_const          r1, 0xFFFFFFFF
     stw                 r1, 0(r2)
     lwz                 r3, 0(r2)
@@ -310,7 +325,7 @@ test_oi10_cpu_002:
     TEST_ASSERT(eq,cr7,"Write/read value mismatch")
 
     /* sth-lha, sthu-lhau */
-	rumboot_putstring "sth-lha, sthu-lhau\n"
+	rumboot_putstring "\nsth-lha, sthu-lhau\n"
     load_const          r1, 0x7FFF
     sth                 r1, 0(r2)
     lha                 r3, 0(r2)
@@ -355,11 +370,11 @@ test_oi10_cpu_002:
        r3 - second address register
        r4 - output register */
 
-    load_const          r2, 0xC0040000
+    load_const          r2, IM0_BASE
     load_const          r3, 0
 
     /* stbx-lbzx, stbux-lbzux */
-	rumboot_putstring "stbx-lbzx, stbux-lbzux\n"
+	rumboot_putstring "\nstbx-lbzx, stbux-lbzux\n"
     load_const          r1, 0xFF
     stbx                r1, r2,r3
     lbzx                r4, r2,r3
@@ -397,7 +412,7 @@ test_oi10_cpu_002:
     TEST_ASSERT(eq,cr7,"Write/read value mismatch")
 
     /* sthx-lhzx, sthux-lhzux */
-	rumboot_putstring "sthx-lhzx, sthux-lhzux\n"
+	rumboot_putstring "\nsthx-lhzx, sthux-lhzux\n"
     load_const          r1, 0xFFFF
     sthx                r1, r2,r3
     lhzx                r4, r2,r3
@@ -435,7 +450,7 @@ test_oi10_cpu_002:
     TEST_ASSERT(eq,cr7,"Write/read value mismatch")
 
     /* stwx-lwzx, stwux-lwzux */
-	rumboot_putstring "stwx-lwzx, stwux-lwzux\n"
+	rumboot_putstring "\nstwx-lwzx, stwux-lwzux\n"
     load_const          r1, 0xFFFFFFFF
     stwx                r1, r2,r3
     lwzx                r4, r2,r3
@@ -473,7 +488,7 @@ test_oi10_cpu_002:
     TEST_ASSERT(eq,cr7,"Write/read value mismatch")
 
     /* sthx-lhax,  sthux-lhaux */
-	rumboot_putstring "sthx-lhax, sthux-lhaux\n"
+	rumboot_putstring "\nsthx-lhax, sthux-lhaux\n"
     load_const          r1, 0x7FFF
     sthx                r1, r2,r3
     lhax                r4, r2,r3
@@ -517,7 +532,7 @@ mmu_check_0:
     load_const r4, 0x321
 
     /* store data in IM0. */
-	rumboot_putstring "Start MMU ckeck stage 0. Store to IM0_BASE VA\n"
+	rumboot_putstring "\nStart MMU ckeck stage 0. Store to IM0_BASE VA\n"
     load_const          r2, IM0_BASE
     load_const          r1, TEST_DATA_WORD_0
     stwu                r1, 0(r2)
@@ -526,16 +541,16 @@ mmu_check_0:
     cmp                 cr7,0, r3, r1
     TEST_ASSERT(eq,cr7,"Write/read value mismatch at IM0_BASE")
 
-    /* read data from virtual address 0x1000 */
-	rumboot_putstring "Read from VA 0x00040000...\n"
-    load_const          r2, 0x00060000
+    /* read data from virtual address 0x00040000 */
+	rumboot_putstring   "\nRead from VA 0x00040000...\n"
+    load_const          r2,	          0x00040000
     lwzu                r4, 0(r2)
     cmp                 cr7,0, r3, r4
     TEST_ASSERT(eq,cr7,"Write/read value mismatch at 0x00040000")
 
-    /* read data from virtual address 0x2000 */
-	rumboot_putstring "Read from VA 0x00060000...\n"
-    load_const          r2, 0x00070000
+    /* read data from virtual address 0x00060000 */
+	rumboot_putstring   "\nRead from VA 0x00060000...\n"
+    load_const          r2,           0x00060000
     lwzu                r5, 0(r2)
     cmp                 cr7,0, r3, r5
     TEST_ASSERT(eq,cr7,"Write/read value mismatch at 0x00060000")
@@ -544,7 +559,7 @@ mmu_check_0:
 
 mmu_check_1:
 
-	rumboot_putstring "Start MMU ckeck stage 1.\n"
+	rumboot_putstring "\nStart MMU ckeck stage 1.\n"
     load_const r2, 0x00000001 /* cmp1 */
     load_const r3, 0x00000002 /* cmp2 */
     load_const r4, 0x00000001
