@@ -199,7 +199,7 @@ test_oi10_cpu_002:
     load_const          r2, 0x00040000 /* IM0 address */
 
     /* stb-lbz, stbu-lbzu */
-
+	rumboot_putstring "stb-lbz, stbu-lbzu\n"
     load_const          r1, 0xFF
     stb                 r1, 0(r2)
     lbz                 r3, 0(r2)
@@ -237,7 +237,7 @@ test_oi10_cpu_002:
     TEST_ASSERT(eq,cr7,"Write/read value mismatch")
 
     /* sth-lhz, sthu-lhzu */
-
+	rumboot_putstring "sth-lhz, sthu-lhzu\n"
     load_const          r1, 0xFFFF
     sth                 r1, 0(r2)
     lhz                 r3, 0(r2)
@@ -275,7 +275,7 @@ test_oi10_cpu_002:
     TEST_ASSERT(eq,cr7,"Write/read value mismatch")
 
     /* stw-lwz, stwu-lwzu */
-
+	rumboot_putstring "stw-lwz, stwu-lwzu\n"
     load_const          r1, 0xFFFFFFFF
     stw                 r1, 0(r2)
     lwz                 r3, 0(r2)
@@ -313,7 +313,7 @@ test_oi10_cpu_002:
     TEST_ASSERT(eq,cr7,"Write/read value mismatch")
 
     /* sth-lha, sthu-lhau */
-
+	rumboot_putstring "sth-lha, sthu-lhau\n"
     load_const          r1, 0x7FFF
     sth                 r1, 0(r2)
     lha                 r3, 0(r2)
@@ -362,7 +362,7 @@ test_oi10_cpu_002:
     load_const          r3, 0
 
     /* stbx-lbzx, stbux-lbzux */
-
+	rumboot_putstring "stbx-lbzx, stbux-lbzux\n"
     load_const          r1, 0xFF
     stbx                r1, r2,r3
     lbzx                r4, r2,r3
@@ -400,7 +400,7 @@ test_oi10_cpu_002:
     TEST_ASSERT(eq,cr7,"Write/read value mismatch")
 
     /* sthx-lhzx, sthux-lhzux */
-
+	rumboot_putstring "sthx-lhzx, sthux-lhzux\n"
     load_const          r1, 0xFFFF
     sthx                r1, r2,r3
     lhzx                r4, r2,r3
@@ -438,7 +438,7 @@ test_oi10_cpu_002:
     TEST_ASSERT(eq,cr7,"Write/read value mismatch")
 
     /* stwx-lwzx, stwux-lwzux */
-
+	rumboot_putstring "stwx-lwzx, stwux-lwzux\n"
     load_const          r1, 0xFFFFFFFF
     stwx                r1, r2,r3
     lwzx                r4, r2,r3
@@ -476,7 +476,7 @@ test_oi10_cpu_002:
     TEST_ASSERT(eq,cr7,"Write/read value mismatch")
 
     /* sthx-lhax,  sthux-lhaux */
-
+	rumboot_putstring "sthx-lhax, sthux-lhaux\n"
     load_const          r1, 0x7FFF
     sthx                r1, r2,r3
     lhax                r4, r2,r3
@@ -519,7 +519,8 @@ mmu_check_0:
     load_const r5, 0x123
     load_const r4, 0x321
 
-    /* store data in IM0. Addres 0x00010000 */
+    /* store data in IM0. Address 0x00010000 */
+	rumboot_putstring "Start MMU ckeck stage 0. Store to VA 0x00010000\n"
     load_const          r2, IM0_BASE
     load_const          r1, TEST_DATA_WORD_0
     stwu                r1, 0(r2)
@@ -529,12 +530,14 @@ mmu_check_0:
     TEST_ASSERT(eq,cr7,"Write/read value mismatch at IM0_BASE")
 
     /* read data from virtual address 0x1000 */
+	rumboot_putstring "Read from VA 0x1000...\n"
     load_const          r2, 0x00001000
     lwzu                r4, 0(r2)
     cmp                 cr7,0, r3, r4
     TEST_ASSERT(eq,cr7,"Write/read value mismatch at 0x00001000")
 
     /* read data from virtual address 0x2000 */
+	rumboot_putstring "Read from VA 0x2000...\n"
     load_const          r2, 0x00002000
     lwzu                r5, 0(r2)
     cmp                 cr7,0, r3, r5
@@ -544,6 +547,7 @@ mmu_check_0:
 
 mmu_check_1:
 
+	rumboot_putstring "Start MMU ckeck stage 1.\n"
     load_const r2, 0x00000001 /* cmp1 */
     load_const r3, 0x00000002 /* cmp2 */
     load_const r4, 0x00000001
