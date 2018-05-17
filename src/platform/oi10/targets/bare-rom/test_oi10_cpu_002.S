@@ -152,18 +152,15 @@ tlb_entries:
 /* TLB entries to remap 128KB pages IM0 from 0x00000010_00010000-0x00000010_0002ffff to 0xc0010000-0xc002ffff*/
     .long   MMU_TLB_ENTRY(  0x010,  0x00010,    0xC0010,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
     .long   MMU_TLB_ENTRY(  0x010,  0x00020,    0xC0020,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
+/* mirror from 0x00000010_00010000-0x00000010_0002ffff to 0x00040000-0x0005ffff */
+    .long   MMU_TLB_ENTRY(  0x010,  0x00010,    0x00010,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
+    .long   MMU_TLB_ENTRY(  0x010,  0x00020,    0x00020,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
+/* mirror from 0x00000010_00010000-0x00000010_0002ffff to 0x00040000-0x0005ffff */
     .long   MMU_TLB_ENTRY(  0x010,  0x00010,    0x00040,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
     .long   MMU_TLB_ENTRY(  0x010,  0x00020,    0x00050,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
-    .long   MMU_TLB_ENTRY(  0x010,  0x00040,    0x00040,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
-    .long   MMU_TLB_ENTRY(  0x010,  0x00050,    0x00050,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
-    .long   MMU_TLB_ENTRY(  0x010,  0x00060,    0x00060,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
-    .long   MMU_TLB_ENTRY(  0x010,  0x00070,    0x00070,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
-
-/* mirror 0x00001000 -> 0x00040000,0x00002000 -> 0x00040000 */
-    .long   MMU_TLB_ENTRY(  0x010,  0x00010,    0x00001,    MMU_TLBE_DSIZ_4KB,      0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
-    .long   MMU_TLB_ENTRY(  0x010,  0x00010,    0x00002,    MMU_TLBE_DSIZ_4KB,      0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
-/* additional entry for test ffff0000 -> 0x00000000 */
-//	.long   MMU_TLB_ENTRY(  0x3ff,  0xffff0,    0x00000,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b0,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
+/* mirror from 0x00000010_00010000-0x00000010_0002ffff to 0x00060000-0x0007ffff */
+    .long   MMU_TLB_ENTRY(  0x010,  0x00010,    0x00060,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
+    .long   MMU_TLB_ENTRY(  0x010,  0x00020,    0x00070,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
 .set TLB_ENTRIES_N, (.-tlb_entries)/MMU_TLB_ENTRY_SIZE
 
 
@@ -196,7 +193,7 @@ test_oi10_cpu_002:
        r2 - address register
        r3 - output register */
 
-    load_const          r2, 0x00040000 /* IM0 address */
+    load_const          r2, IM0_BASE
 
     /* stb-lbz, stbu-lbzu */
 	rumboot_putstring "stb-lbz, stbu-lbzu\n"
@@ -358,7 +355,7 @@ test_oi10_cpu_002:
        r3 - second address register
        r4 - output register */
 
-    load_const          r2, 0x00040000
+    load_const          r2, 0xC0040000
     load_const          r3, 0
 
     /* stbx-lbzx, stbux-lbzux */
@@ -519,8 +516,8 @@ mmu_check_0:
     load_const r5, 0x123
     load_const r4, 0x321
 
-    /* store data in IM0. Address 0x00010000 */
-	rumboot_putstring "Start MMU ckeck stage 0. Store to VA 0x00010000\n"
+    /* store data in IM0. */
+	rumboot_putstring "Start MMU ckeck stage 0. Store to IM0_BASE VA\n"
     load_const          r2, IM0_BASE
     load_const          r1, TEST_DATA_WORD_0
     stwu                r1, 0(r2)
@@ -530,18 +527,18 @@ mmu_check_0:
     TEST_ASSERT(eq,cr7,"Write/read value mismatch at IM0_BASE")
 
     /* read data from virtual address 0x1000 */
-	rumboot_putstring "Read from VA 0x1000...\n"
-    load_const          r2, 0x00001000
+	rumboot_putstring "Read from VA 0x00040000...\n"
+    load_const          r2, 0x00060000
     lwzu                r4, 0(r2)
     cmp                 cr7,0, r3, r4
-    TEST_ASSERT(eq,cr7,"Write/read value mismatch at 0x00001000")
+    TEST_ASSERT(eq,cr7,"Write/read value mismatch at 0x00040000")
 
     /* read data from virtual address 0x2000 */
-	rumboot_putstring "Read from VA 0x2000...\n"
-    load_const          r2, 0x00002000
+	rumboot_putstring "Read from VA 0x00060000...\n"
+    load_const          r2, 0x00070000
     lwzu                r5, 0(r2)
     cmp                 cr7,0, r3, r5
-    TEST_ASSERT(eq,cr7,"Write/read value mismatch at 0x00002000")
+    TEST_ASSERT(eq,cr7,"Write/read value mismatch at 0x00060000")
 
     test_event EVENT_CHECK_CPU_PPC_MMU_0
 
