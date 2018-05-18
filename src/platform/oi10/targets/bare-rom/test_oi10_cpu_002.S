@@ -185,8 +185,6 @@ plb6plb4_init:
 	mfdcrx		r9,  r10
 	ori			r9,  r9, P64CR_VAL
 	mtdcrx		r10, r9
-	/* blr */
-
 
 	b	    test_oi10_cpu_002
 
