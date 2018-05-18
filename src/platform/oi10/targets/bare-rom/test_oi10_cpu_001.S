@@ -19,38 +19,38 @@ boot_start:
 rumboot_entry_point:
     gtube_init
 
-    lis  r0, 0x00000000  /* make r0 "all zeros" source*/
+    load_const  r0, 0x00000000  /* make r0 "all zeros" source*/
     load_const  r1, 0xFFFFFFFF  /* make r1 "all ones" source*/
-    lis  r2, 0x00000000
-    lis  r3, 0x00000000
-    lis  r4, 0x00000000
-    lis  r5, 0x00000000
-    lis  r6, 0x00000000
-    lis  r7, 0x00000000
-    lis  r8, 0x00000000
-    lis  r9, 0x00000000
-    lis  r10,0x00000000
-    lis  r11,0x00000000
-    lis  r12,0x00000000
-    lis  r13,0x00000000
-    lis  r14,0x00000000
-    lis  r15,0x00000000
-    lis  r16,0x00000000
-    lis  r17,0x00000000
-    lis  r18,0x00000000
-    lis  r19,0x00000000
-    lis  r20,0x00000000
-    lis  r21,0x00000000
-    lis  r22,0x00000000
-    lis  r23,0x00000000
-    lis  r24,0x00000000
-    lis  r25,0x00000000
-    lis  r26,0x00000000
-    lis  r27,0x00000000
-    lis  r28,0x00000000
-    lis  r29,0x00000000
-    lis  r30,0x00000000
-    lis  r31,0x00000000
+    load_const  r2, 0x00000000
+    load_const  r3, 0x00000000
+    load_const  r4, 0x00000000
+    load_const  r5, 0x00000000
+    load_const  r6, 0x00000000
+    load_const  r7, 0x00000000
+    load_const  r8, 0x00000000
+    load_const  r9, 0x00000000
+    load_const  r10,0x00000000
+    load_const  r11,0x00000000
+    load_const  r12,0x00000000
+    load_const  r13,0x00000000
+    load_const  r14,0x00000000
+    load_const  r15,0x00000000
+    load_const  r16,0x00000000
+    load_const  r17,0x00000000
+    load_const  r18,0x00000000
+    load_const  r19,0x00000000
+    load_const  r20,0x00000000
+    load_const  r21,0x00000000
+    load_const  r22,0x00000000
+    load_const  r23,0x00000000
+    load_const  r24,0x00000000
+    load_const  r25,0x00000000
+    load_const  r26,0x00000000
+    load_const  r27,0x00000000
+    load_const  r28,0x00000000
+    load_const  r29,0x00000000
+    load_const  r30,0x00000000
+    load_const  r31,0x00000000
 
 init_spr:
 /*according to User's Manual ch. 9.4 Initialization Software Requirements*/
@@ -153,16 +153,6 @@ init_spr:
                   | (0b1    << TIMER_TSR_FIS_i)
     mtspr       SPR_TSR_RC, r3
 
-/*    mtspr       SPR_SPRG0, r0*/
-/*    mtspr       SPR_SPRG1, r0*/
-/*    mtspr       SPR_SPRG2, r0*/
-/*    mtspr       SPR_SPRG3, r0*/
-/*    mtspr       SPR_SPRG4, r0*/
-/*    mtspr       SPR_SPRG5, r0*/
-/*    mtspr       SPR_SPRG6, r0*/
-/*    mtspr       SPR_SPRG7, r0*/
-/*    mtspr       SPR_SPRG8, r0*/
-
     mtspr       SPR_IAC1, r0
     mtspr       SPR_IAC2, r0
     mtspr       SPR_IAC3, r0
@@ -176,33 +166,39 @@ init_spr:
     mtspr       SPR_DBDR, r0
     mtspr       SPR_RMPD, r0
 
+
+
+.section ".text","ax",@progbits
+
+test_oi10_cpu_001:
+
     load_const r0 0x00000000
     mtxer r0
 check_cpu_ppc_prog_model_24:    /*check sequential flow*/
-    /*test_event EVENT_CHECK_CPU_PPC_PROG_MODEL_24_SEQ*/
+    test_event EVENT_CHECK_CPU_PPC_PROG_MODEL_24_SEQ
 
 check_cpu_ppc_prog_model_25:    /*check unconditional branch*/
-    /*rumboot_putstring "check uncond branch (align 3)\n"*/
+    rumboot_putstring "check uncond branch (align 3)\n"
     b bu_b3
-    /*test_event EVENT_ERROR*/
+    test_event EVENT_ERROR
 b_err:
     b b_err
 
 .align 3
 bu_b3:
-    /*rumboot_putstring "check uncond branch (align 4)\n"*/
+    rumboot_putstring "check uncond branch (align 4)\n"
     b bu_b4
     b error
 
 .align 4
 bu_b4:
-    /*rumboot_putstring "check uncond branch (align 5)\n"*/
+    rumboot_putstring "check uncond branch (align 5)\n"
     b bu_b5
     b error
 
 .align 5
 bu_b5:
-    /*rumboot_putstring "check uncond branch (align 6)\n"*/
+    rumboot_putstring "check uncond branch (align 6)\n"
     b bu_b6
     b error
 
@@ -212,7 +208,7 @@ bu_b6:
     b error
 
 bu_ba:
-    /*rumboot_putstring "check bl\n"*/
+    rumboot_putstring "check bl\n"
     bl bu_bl
     b bu_bla
 
@@ -221,7 +217,7 @@ bu_bla:
     b check_cpu_ppc_prog_model_26
 
 bu_b:
-    /*rumboot_putstring "check ba\n"*/
+    rumboot_putstring "check ba\n"
     ba bu_ba
     b error
 
@@ -230,7 +226,7 @@ bu_bl:
     b error
 
 check_cpu_ppc_prog_model_26:    /*check conditional branch*/
-    /*rumboot_putstring "check blt\n"*/
+    rumboot_putstring "check blt\n"
     load_const r0, 0
     load_const r1, 1
     cmp 0, 0, r0, r1
@@ -238,12 +234,12 @@ check_cpu_ppc_prog_model_26:    /*check conditional branch*/
     b error
 
 bc_ble:
-    /*rumboot_putstring "check ble\n"*/
+    rumboot_putstring "check ble\n"
     ble bc_beq
     b error
 
 bc_beq:
-    /*rumboot_putstring "check beq\n"*/
+    rumboot_putstring "check beq\n"
     load_const r0, 1
     load_const r1, 1
     cmp 0, 0, r0, r1
@@ -251,7 +247,7 @@ bc_beq:
     b error
 
 bc_bgt:
-    /*rumboot_putstring "check bgt\n"*/
+    rumboot_putstring "check bgt\n"
     load_const r0, 1
     load_const r1, 0
     cmp 0, 0, r0, r1
@@ -259,12 +255,12 @@ bc_bgt:
     b error
 
 bc_bge:
-    /*rumboot_putstring "check bge\n"*/
+    rumboot_putstring "check bge\n"
     bge bc_bnl
     b error
 
 bc_bnl:
-    /*rumboot_putstring "check bnl\n"*/
+    rumboot_putstring "check bnl\n"
     load_const r0, 1
     load_const r1, 0
     cmp 0, 0, r0, r1
@@ -272,12 +268,12 @@ bc_bnl:
     b error
 
 bc_bne:
-    /*rumboot_putstring "check bne\n"*/
+    rumboot_putstring "check bne\n"
     bne bc_bng
     b error
 
 bc_bng:
-    /*rumboot_putstring "check bng\n"*/
+    rumboot_putstring "check bng\n"
     load_const r0, 0
     load_const r1, 1
     cmp 0, 0, r0, r1
@@ -285,7 +281,7 @@ bc_bng:
     b error
 
 bc_bso:
-    /*rumboot_putstring "check bso\n"*/
+    rumboot_putstring "check bso\n"
     load_const r0, 0x7FFFFFFF
     load_const r1, 0x00000002
     addco. r2, r0, r1 /*operands considered as signed, see PowerISA, 3.3.7*/
@@ -293,7 +289,7 @@ bc_bso:
     b error
 
 bc_bns:
-    /*rumboot_putstring "check bns\n"*/
+    rumboot_putstring "check bns\n"
     load_const r0, 0xFFFFFFFF
     load_const r1, 0x00000000
     mtxer r1            /*SO bit of XER is not cleared automatically*/
@@ -302,7 +298,7 @@ bc_bns:
     b error
 
 check_cpu_ppc_prog_model_27:    /*check XL-branch*/
-    /*rumboot_putstring "check bltlr\n"*/
+    rumboot_putstring "check bltlr\n"
     lis r0, bic_blelr@h
     ori r0, r0, bic_blelr@l
     mtspr 8, r0
@@ -313,7 +309,7 @@ check_cpu_ppc_prog_model_27:    /*check XL-branch*/
     b error
 
 bic_blelr:
-    /*rumboot_putstring "check blelr\n"*/
+    rumboot_putstring "check blelr\n"
     lis r0, bic_beqlr@h
     ori r0, r0, bic_beqlr@l
     mtspr 8, r0
@@ -321,7 +317,7 @@ bic_blelr:
     b error
 
 bic_beqlr:
-    /*rumboot_putstring "check beqlr\n"*/
+    rumboot_putstring "check beqlr\n"
     lis r0, bic_bgtlr@h
     ori r0, r0, bic_bgtlr@l
     mtspr 8, r0
@@ -332,7 +328,7 @@ bic_beqlr:
     b error
 
 bic_bgtlr:
-    /*rumboot_putstring "check bgtlr\n"*/
+    rumboot_putstring "check bgtlr\n"
     lis r0, bic_bgelr@h
     ori r0, r0, bic_bgelr@l
     mtspr 8, r0
@@ -343,7 +339,7 @@ bic_bgtlr:
     b error
 
 bic_bgelr:
-    /*rumboot_putstring "check bgelr\n"*/
+    rumboot_putstring "check bgelr\n"
     lis r0, bic_bnllr@h
     ori r0, r0, bic_bnllr@l
     mtspr 8, r0
@@ -351,7 +347,7 @@ bic_bgelr:
     b error
 
 bic_bnllr:
-    /*rumboot_putstring "check bnllr\n"*/
+    rumboot_putstring "check bnllr\n"
     lis r0, bic_bnelr@h
     ori r0, r0, bic_bnelr@l
     mtspr 8, r0
@@ -362,7 +358,7 @@ bic_bnllr:
     b error
 
 bic_bnelr:
-    /*rumboot_putstring "check bnelr\n"*/
+    rumboot_putstring "check bnelr\n"
     lis r0, bic_bnglr@h
     ori r0, r0, bic_bnglr@l
     mtspr 8, r0
@@ -370,7 +366,7 @@ bic_bnelr:
     b error
 
 bic_bnglr:
-    /*rumboot_putstring "check bnglr\n"*/
+    rumboot_putstring "check bnglr\n"
     lis r0, bic_bsolr@h
     ori r0, r0, bic_bsolr@l
     mtspr 8, r0
@@ -381,7 +377,7 @@ bic_bnglr:
     b error
 
 bic_bsolr:
-    /*rumboot_putstring "check bsolr\n"*/
+    rumboot_putstring "check bsolr\n"
     lis r0, bic_bnslr@h
     ori r0, r0, bic_bnslr@l
     mtspr 8, r0
@@ -392,7 +388,7 @@ bic_bsolr:
     b error
 
 bic_bnslr:
-    /*rumboot_putstring "check bnslr\n"*/
+    rumboot_putstring "check bnslr\n"
     lis r0, bic_bdz@h
     ori r0, r0, bic_bdz@l
     mtspr 8, r0
@@ -404,19 +400,19 @@ bic_bnslr:
     b error
 
 bic_bdz:
-    /*rumboot_putstring "check bdz\n"*/
+    rumboot_putstring "check bdz\n"
     load_const r0, 0x1
     mtspr 9, r0
     bdz bic_bdnz
 
 bic_bdnz:
-    /*rumboot_putstring "check bdnz\n"*/
+    rumboot_putstring "check bdnz\n"
     load_const r0, 0x1
     mtspr 9, r0
     bdnz bic_bltctr
 
 bic_bltctr:
-    /*rumboot_putstring "check bltctr\n"*/
+    rumboot_putstring "check bltctr\n"
     lis r0, bic_blectr@h
     ori r0, r0, bic_blectr@l
     mtspr 9, r0
@@ -427,7 +423,7 @@ bic_bltctr:
     b error
 
 bic_blectr:
-    /*rumboot_putstring "check blectr\n"*/
+    rumboot_putstring "check blectr\n"
     lis r0, bic_beqctr@h
     ori r0, r0, bic_beqctr@l
     mtspr 9, r0
@@ -438,7 +434,7 @@ bic_blectr:
     b error
 
 bic_beqctr:
-    /*rumboot_putstring "check beqctr\n"*/
+    rumboot_putstring "check beqctr\n"
     lis r0, bic_bgtctr@h
     ori r0, r0, bic_bgtctr@l
     mtspr 9, r0
@@ -449,7 +445,7 @@ bic_beqctr:
     b error
 
 bic_bgtctr:
-    /*rumboot_putstring "check bgtctr\n"*/
+    rumboot_putstring "check bgtctr\n"
     lis r0, bic_bgectr@h
     ori r0, r0, bic_bgectr@l
     mtspr 9, r0
@@ -460,7 +456,7 @@ bic_bgtctr:
     b error
 
 bic_bgectr:
-    /*rumboot_putstring "check bgectr\n"*/
+    rumboot_putstring "check bgectr\n"
     lis r0, bic_bnlctr@h
     ori r0, r0, bic_bnlctr@l
     mtspr 9, r0
@@ -471,7 +467,7 @@ bic_bgectr:
     b error
 
 bic_bnlctr:
-    /*rumboot_putstring "check bnlctr\n"*/
+    rumboot_putstring "check bnlctr\n"
     lis r0, bic_bnectr@h
     ori r0, r0, bic_bnectr@l
     mtspr 9, r0
@@ -482,7 +478,7 @@ bic_bnlctr:
     b error
 
 bic_bnectr:
-    /*rumboot_putstring "check bnectr\n"*/
+    rumboot_putstring "check bnectr\n"
     lis r0, bic_bngctr@h
     ori r0, r0, bic_bngctr@l
     mtspr 9, r0
@@ -493,7 +489,7 @@ bic_bnectr:
     b error
 
 bic_bngctr:
-    /*rumboot_putstring "check bngctr\n"*/
+    rumboot_putstring "check bngctr\n"
     lis r0, bic_bsoctr@h
     ori r0, r0, bic_bsoctr@l
     mtspr 9, r0
@@ -504,7 +500,7 @@ bic_bngctr:
     b error
 
 bic_bsoctr:
-    /*rumboot_putstring "check bsoctr\n"*/
+    rumboot_putstring "check bsoctr\n"
     lis r0, bic_bnsctr@h
     ori r0, r0, bic_bnsctr@l
     mtspr 9, r0
@@ -515,7 +511,7 @@ bic_bsoctr:
     b error
 
 bic_bnsctr:
-    /*rumboot_putstring "check bnsctr\n"*/
+    rumboot_putstring "check bnsctr\n"
     lis r0, test_ok@h
     ori r0, r0, test_ok@l
     mtspr 9, r0
@@ -528,12 +524,12 @@ bic_bnsctr:
 
 test_ok:
 
-    gtube_init
-/*    putchar 'T'*/
-/*    putchar 'E'*/
-/*    putchar 'S'*/
-/*    putchar 'T'*/
-/*    putchar ' '*/
+/*	gtube_init */
+    putchar 'T'
+    putchar 'E'
+    putchar 'S'
+	putchar 'T'
+	putchar ' '
     putchar 'O'
     putchar 'K'
     putchar '\n'
@@ -543,12 +539,12 @@ stop:
 
 error:
 
-    gtube_init
-/*    putchar 'T'*/
-/*    putchar 'E'*/
-/*    putchar 'S'*/
-/*    putchar 'T'*/
-/*    putchar ' '*/
+/*	gtube_init */
+    putchar 'T'
+    putchar 'E'
+    putchar 'S'
+    putchar 'T'
+    putchar ' '
     putchar 'E'
     putchar 'R'
     putchar 'R'
