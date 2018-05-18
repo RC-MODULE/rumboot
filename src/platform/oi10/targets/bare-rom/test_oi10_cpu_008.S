@@ -2,12 +2,18 @@
 #include <platform/oi10/platform/arch/ppc/ppc_476fp_asm.h>
 #include <platform/oi10/platform/arch/ppc/ppc_476fp_ctrl_fields.h>
 #include <platform/oi10/platform/arch/ppc/ppc_476fp_mmu.S.h>
+#include <platform/oi10/platform/ppc470s/mmu.S.h>
 #include <platform/oi10/platform/test_event_asm.h>
 #include <platform/oi10/platform/test_assert.S.h>
 #include <platform/oi10/platform/devices.h>
 #include <platform/oi10/platform/arch/ppc/test_macro_asm.S.h>
 #include <platform/oi10/platform/regs/regs_mpic128.h>
 #include <platform/oi10/platform/regs/regs_plb6bc.h>
+
+/* Uncomment for extra debug info */
+/*
+#define DEBUG_DCR_TEST 1
+*/
 
 #define SGD_NON_SYNTH_VALUE         0xFFFFFFF0
 
@@ -78,12 +84,11 @@
     mfdcrx \rR, \rA
     cmp cr7,0, \rR,\rE
     TEST_ASSERT(eq,cr7,"DCR error: In \reg_name was expected value \exp_value (address \raddress) ")
+
 #ifdef DEBUG_DCR_TEST
     rumboot_putstring "\reg_name OK\n"
 #endif
 .endm
-
-#include <platform/oi10/platform/ppc470s/mmu.S.h>
 
 .section ".init.text","ax",@progbits
 
@@ -235,31 +240,6 @@ cpu_008_entry_point:
     li          r3, unexpected_D_hdr@l
     mtspr       SPR_IVOR15, r3
 
-    load_const  r3, DCR_MPIC128_BASE+MPIC128_WAI_PR
-    mfdcrx      r3, r3                          /* read Who Am I Register */
-    cmpwi       r3, PPC0_CORE_ID                /* if Processor ID Register is 0 */
-    beq         ppc0_core_start                 /* execute code for core 0 */
-    cmpwi       r3, PPC1_CORE_ID                /* if Processor ID Register is 1 */
-    /* AG:
-    beq         PPC1_CORE_START                 //execute code for core 1
-    b           PPC_UNEXPECTED_CORE_START       //something wrong in configuration? unexpected core number? Execute code on the unexpected core
-    */
-
-ppc0_core_start:
-goto_ppc0_core_start:
-	/* AG
-	b           PPC0_CORE_START
-	*/
-
-core_unexpected:
-    test_event  EVENT_PROCESSOR_ID_UNEXPECTED
-
-
-.section ".init.text","ax",@progbits
-
-infinite_loop_008:
-    b infinite_loop_008
-
 boot_init:
     load_const  r2, 0x00000000
     load_const  r3, 0x00000000
@@ -294,9 +274,9 @@ boot_init:
 
 init_spr:
 /* according to User's Manual ch. 9.4 Initialization Software Requirements */
-    mtspr       SPR_DBCR0, r0       /* disable all debug events */
+    mtspr       SPR_DBCR0,r0       /* disable all debug events */
 
-    mtspr       SPR_DBSR_RC, r1     /* clear all debug interrupts */
+    mtspr       SPR_DBSR_RC, r1    /* clear all debug interrupts */
 
     load_const  r3, CONST_SPR_CCR0
     mtspr       SPR_CCR0, r3
@@ -362,14 +342,15 @@ init_spr:
 
     b           setup_tlb
 
+infinite_loop_008:
+    b infinite_loop_008
+
 tlb_entries:
-/* TLB entries to remap 64KB pages BOOTROM from 0xffffffff_fffc0000-0xffffffff_ffffffff to 0xfffc0000-0xffffffff */
-    .long   MMU_TLB_ENTRY(  0x3ff,  0xfffc0,    0xfffc0,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b0,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_UND,   0b1 )
-    .long   MMU_TLB_ENTRY(  0x3ff,  0xfffd0,    0xfffd0,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b0,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_UND,   0b1 )
-    .long   MMU_TLB_ENTRY(  0x3ff,  0xfffe0,    0xfffe0,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b0,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_UND,   0b1 )
-    .long   MMU_TLB_ENTRY(  0x3ff,  0xffff0,    0xffff0,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b0,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_UND,   0b1 )
-/* Invalidate initial TLB entry */
-    .long   MMU_TLB_ENTRY(  0x000,  0x00000,    0xfffff,    MMU_TLBE_DSIZ_4KB,      0b0,    0b0,    0b0,    0b0,    0b0,    00,     MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b0,0b0,0b0,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b0 )
+/*          MMU_TLB_ENTRY(  ERPN,   RPN,        EPN,        DSIZ,                   IL1I,   IL1D,   W,      I,      M,      G,      E,                      UX, UW, UR,     SX, SW, SR      DULXE,  IULXE,      TS,     TID,                WAY,                BID,                V   )*/
+/* Invalidate initial TLB entry*/
+    .long   MMU_TLB_ENTRY(  0x000,  0x00000,    0xFFFFF,    MMU_TLBE_DSIZ_4KB,      0b0,    0b0,    0b0,    0b0,    0b0,    00,     MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b0,0b0,0b0,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b0 )
+/* TLB entries to remap 64KB page BOOTROM from 0x000003ff_ffff0000-0x000003ff_ffffffff to 0xffff0000-0xffffffff*/
+    .long   MMU_TLB_ENTRY(  0x3FF,  0xFFFF0,    0xFFFF0,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b0,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
 .set TLB_ENTRIES_N, (.-tlb_entries)/MMU_TLB_ENTRY_SIZE
 
 setup_tlb:
@@ -382,31 +363,49 @@ setup_tlb:
 .section ".text","ax",@progbits
 
 test_mpw_cpu_008:
+	rumboot_putstring "start testing values...\n"
     /* check all default values */
-    check_value r0,r1,r2,  DCR_PLB6_BC_BASE + PLB6BC_CR0, PLB6_BC_CR0_VALUE, "DCR_PLB6_BC_BASE + PLB6BC_CR0"
-    check_value r0,r1,r2,  DCR_PLB6_BC_BASE + PLB6BC_PRI, PLB6_BC_PRI_VALUE, "DCR_PLB6_BC_BASE + PLB6BC_PRI"
-    check_value r0,r1,r2,  DCR_PLB6_BC_BASE + PLB6BC_TSNOOP, PLB6_BC_TSNOOP_VALUE, "DCR_PLB6_BC_BASE + PLB6BC_TSNOOP"
-    check_value r0,r1,r2,  DCR_PLB6_BC_BASE + PLB6BC_PAAM_WIN_EXT, PLB6_BC_PAAM_WIN_EXT_VALUE, "DCR_PLB6_BC_BASE + PLB6BC_PAAM_WIN_EXT"
-    /* non-used segments mest be written with value 0xFFFFFFF0. */
-    check_value r0,r1,r2,  DCR_PLB6_BC_BASE + PLB6BC_SGD1,PLB6_BC_SGD1_VALUE, "DCR_PLB6_BC_BASE + PLB6BC_SGD1"
-    check_value r0,r1,r2,  DCR_PLB6_BC_BASE + PLB6BC_SGD2,PLB6_BC_SGD2_VALUE, "DCR_PLB6_BC_BASE + PLB6BC_SGD2"
-    sgd_wr_check r0,r1,r2, DCR_PLB6_BC_BASE + PLB6BC_SGD3, "DCR_PLB6_BC_BASE + PLB6BC_SGD3"
-    sgd_wr_check r0,r1,r2, DCR_PLB6_BC_BASE + PLB6BC_SGD4, "DCR_PLB6_BC_BASE + PLB6BC_SGD4"
-    sgd_wr_check r0,r1,r2, DCR_PLB6_BC_BASE + PLB6BC_SGD5, "DCR_PLB6_BC_BASE + PLB6BC_SGD5"
-    sgd_wr_check r0,r1,r2, DCR_PLB6_BC_BASE + PLB6BC_SGD6, "DCR_PLB6_BC_BASE + PLB6BC_SGD6"
-    sgd_wr_check r0,r1,r2, DCR_PLB6_BC_BASE + PLB6BC_SGD7, "DCR_PLB6_BC_BASE + PLB6BC_SGD7"
-    check_value r0,r1,r2,  DCR_PLB6_BC_BASE + PLB6BC_ERR,PLB6_BC_ERR_VALUE, "DCR_PLB6_BC_BASE + PLB6BC_ERR"
-    check_value r0,r1,r2,  DCR_PLB6_BC_BASE + PLB6BC_MSRSP,PLB6_BC_MSRSP_VALUE, "DCR_PLB6_BC_BASE + PLB6BC_MSRSP"
-    check_value r0,r1,r2,  DCR_PLB6_BC_BASE + PLB6BC_HCPP,PLB6_BC_HCPP_VALUE, "DCR_PLB6_BC_BASE + PLB6BC_HCPP"
-    check_value r0,r1,r2,  DCR_PLB6_BC_BASE + PLB6BC_HD,PLB6_BC_HD_VALUE, "DCR_PLB6_BC_BASE + PLB6BC_HD"
-    check_value r0,r1,r2,  DCR_PLB6_BC_BASE + PLB6BC_QD,PLB6_BC_QD_VALUE, "DCR_PLB6_BC_BASE + PLB6BC_QD"
-    check_value r0,r1,r2,  DCR_PLB6_BC_BASE + PLB6BC_SHD,PLB6_BC_SHD_VALUE, "DCR_PLB6_BC_BASE + PLB6BC_SHD"
-    check_value r0,r1,r2,  DCR_PLB6_BC_BASE + PLB6BC_REVID,PLB6_BC_REVID_VALUE, "DCR_PLB6_BC_BASE + PLB6BC_REVID"
+    check_value r0,r1,r2,	DCR_PLB6_BC_BASE + PLB6BC_CR0,          \
+    						PLB6_BC_CR0_VALUE,				"PLB6BC_CR0         "
+    check_value r0,r1,r2,	DCR_PLB6_BC_BASE + PLB6BC_PRI,          \
+    						PLB6_BC_PRI_VALUE,				"PLB6BC_PRI         "
+    check_value r0,r1,r2,	DCR_PLB6_BC_BASE + PLB6BC_TSNOOP,       \
+    						PLB6_BC_TSNOOP_VALUE,			"PLB6BC_TSNOOP      "
+    check_value r0,r1,r2,	DCR_PLB6_BC_BASE + PLB6BC_PAAM_WIN_EXT, \
+    						PLB6_BC_PAAM_WIN_EXT_VALUE,		"PLB6BC_PAAM_WIN_EXT"
+    /* non-used segments must be written with value 0xFFFFFFF0. */
+    check_value r0,r1,r2,	DCR_PLB6_BC_BASE + PLB6BC_SGD1,         \
+    						PLB6_BC_SGD1_VALUE,				"PLB6BC_SGD1        "
+    check_value r0,r1,r2,	DCR_PLB6_BC_BASE + PLB6BC_SGD2,         \
+    						PLB6_BC_SGD2_VALUE,				"PLB6BC_SGD2        "
+    sgd_wr_check r0,r1,r2,	DCR_PLB6_BC_BASE + PLB6BC_SGD3, "PLB6BC_SGD3        "
+    sgd_wr_check r0,r1,r2,	DCR_PLB6_BC_BASE + PLB6BC_SGD4, "PLB6BC_SGD4        "
+    sgd_wr_check r0,r1,r2,	DCR_PLB6_BC_BASE + PLB6BC_SGD5, "PLB6BC_SGD5        "
+    sgd_wr_check r0,r1,r2,	DCR_PLB6_BC_BASE + PLB6BC_SGD6, "PLB6BC_SGD6        "
+    sgd_wr_check r0,r1,r2,	DCR_PLB6_BC_BASE + PLB6BC_SGD7, "PLB6BC_SGD7        "
+    check_value r0,r1,r2,	DCR_PLB6_BC_BASE + PLB6BC_ERR,          \
+    						PLB6_BC_ERR_VALUE,				"PLB6BC_ERR         "
+    check_value r0,r1,r2,	DCR_PLB6_BC_BASE + PLB6BC_MSRSP,        \
+    						PLB6_BC_MSRSP_VALUE,			"PLB6BC_MSRSP       "
+    check_value r0,r1,r2,	DCR_PLB6_BC_BASE + PLB6BC_HCPP,         \
+    						PLB6_BC_HCPP_VALUE,				"PLB6BC_HCPP        "
+    check_value r0,r1,r2,	DCR_PLB6_BC_BASE + PLB6BC_HD,           \
+    						PLB6_BC_HD_VALUE,				"PLB6BC_HD          "
+    check_value r0,r1,r2,	DCR_PLB6_BC_BASE + PLB6BC_QD,           \
+    						PLB6_BC_QD_VALUE,				"PLB6BC_QD          "
+    check_value r0,r1,r2,	DCR_PLB6_BC_BASE + PLB6BC_SHD,          \
+    						PLB6_BC_SHD_VALUE,				"PLB6BC_SHD         "
+    check_value r0,r1,r2,	DCR_PLB6_BC_BASE + PLB6BC_REVID,        \
+    						PLB6_BC_REVID_VALUE,			"PLB6BC_REVID       "
     /* ADDR bus now is checked */
 
     /* check DATA I/O buses */
-    rumboot_putstring "Sliding '1' and '0' ..."
+    rumboot_putstring "\nSliding '1' and '0' ...\n"
 running_1_low:
+	putchar '<'
+	putchar '1'
+	putchar '>'
+	putchar ' '
     load_const r0, DCR_PLB6_BC_BASE + PLB6BC_SGD1   /* pointer */
     load_const r1, 0x10                /* begin val */
     load_const r3, 1                   /* shift */
@@ -423,6 +422,11 @@ loop_1_low:
 	b loop_1_low
 
 running_0_low:
+	putchar '\n'
+	putchar '<'
+	putchar '0'
+	putchar '>'
+	putchar ' '
     load_const r1, 0xFFFFFFF0
     load_const r0, DCR_PLB6_BC_BASE + PLB6BC_SGD1
     mtdcrx r0, r1
@@ -447,13 +451,15 @@ loop_0_low:
 
 test_ok:
     test_event EVENT_FINISHED
-    rumboot_putstring "TEST OK\n"
+    rumboot_putstring "\nTEST OK\n"
+    exit 0
 stop:
     b stop
 
 unexpected_error:
-	rumboot_putstring "TEST ERROR\n"
     test_event  EVENT_ERROR
-    b stop
+	rumboot_putstring "\nTEST ERROR\n"
+    exit 1
+
 
 
