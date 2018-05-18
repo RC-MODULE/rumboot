@@ -8,8 +8,10 @@
 #include <platform/oi10/platform/arch/ppc/ppc_476fp_ctrl_fields.h>
 #include <platform/oi10/platform/arch/ppc/ppc_476fp_timer_fields.h>
 #include <platform/oi10/platform/devices.h>
+#include <platform/oi10/platform/regs/regs_plb6plb4.h>
 
 #define TEST_DATA_WORD_0    0x12345678
+#define P64CR_VAL			0x00000100
 
 
 .section ".init.start","ax",@progbits
@@ -173,21 +175,20 @@ setup_tlb:
     load_addr   r4, TLB_ENTRIES_N
     bl          ppc470s_write_tlb_entries /* (r3, r4) - are parameters */
 
-// AG: Must be refactored!
 plb6plb4_init:
-	lis     r10,-32768
-	ori     r10,r10,775
-	li      r9,16
-	mtdcrx  r10,r9
-	addi    r10,r10,1
-	mtdcrx  r10,r9
-	addi    r10,r10,-8
-	mfdcrx  r9,r10
-	ori     r9,r9,256
-	mtdcrx  r10,r9
+	load_const	r9,  0x10
+	load_const	r10, DCR_PLB6PLB4_0_BASE + ADDRL1
+	mtdcrx		r10, r9
+	load_const	r10, DCR_PLB6PLB4_0_BASE + ADDRH1
+	mtdcrx		r10, r9
+	load_const	r10, DCR_PLB6PLB4_0_BASE + P64CR
+	mfdcrx		r9,  r10
+	ori			r9,  r9, P64CR_VAL
+	mtdcrx		r10, r9
 	/* blr */
-	b	    test_oi10_cpu_002
 
+
+	b	    test_oi10_cpu_002
 
 .section ".text","ax",@progbits
 
