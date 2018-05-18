@@ -9,6 +9,12 @@
 #include <platform/oi10/platform/trace.S.h>
 
 
+DECLARE_CONST( PHYSICAL_SPACE_NOT_ENTERED,  0x407E47E8 )
+DECLARE_CONST( PHYSICAL_SPACE_ENTERED,      0xE47E8ED1 )
+
+DECLARE_CONST( HANDLER_NOT_CALLED,  		0x407CA11E )
+DECLARE_CONST( HANDLER_CALLED,      		0xCA11ED11 )
+
 .section ".init.start","ax",@progbits
 
 boot_start:
@@ -134,78 +140,63 @@ boot_init:
 Initialize all SPR registers to default values by the spec
 Most of them have X-state after reset and therefore CPU model cannot work properly
 */
-    mtspr       SPR_CTR, r0
+
     mtcr        r0
-    mtspr       SPR_LR, r0
-    mtspr       SPR_DCESR, r0
-    mtspr       SPR_CSRR0, r0
-    mtspr       SPR_CSRR1, r0
-    mtspr       SPR_MCSRR0, r0
-    mtspr       SPR_MCSRR1, r0
-    mtspr       SPR_RMPD, r0
-    mtspr       SPR_PID, r0
+    mtspr       SPR_CTR,	r0
+    mtspr       SPR_LR,		r0
+    mtspr       SPR_XER,	r0
+    mtspr       SPR_DCESR,	r0
+    mtspr       SPR_CSRR0,	r0
+    mtspr       SPR_CSRR1,	r0
+    mtspr       SPR_MCSRR0,	r0
+    mtspr       SPR_MCSRR1,	r0
+    mtspr       SPR_RMPD,	r0
+    mtspr       SPR_PID,	r0
 
-    mtspr       SPR_MCSR_C, r1
-    mtspr       SPR_DEAR, r0
-    mtspr       SPR_TCR, r0
-    mtspr       SPR_DEC, r0
-    mtspr       SPR_DECAR, r0
-    mtspr       SPR_TSR_RC, r1
-    mtspr       SPR_SRR0, r0
-    mtspr       SPR_SRR1, r0
-    mtspr       SPR_TBL_W, r0
-    mtspr       SPR_TBU_W, r0
-    mtspr       SPR_XER, r0
-    mtspr       SPR_SPRG0, r0
-    mtspr       SPR_SPRG1, r0
-    mtspr       SPR_SPRG2, r0
-    mtspr       SPR_SPRG3, r0
-    mtspr       SPR_SPRG4, r0
-    mtspr       SPR_SPRG5, r0
-    mtspr       SPR_SPRG6, r0
-    mtspr       SPR_SPRG7, r0
-    mtspr       SPR_SPRG8, r0
+    mtspr       SPR_MCSR_C,	r1
+    mtspr       SPR_DEAR,	r0
+    mtspr       SPR_TCR,	r0
+    mtspr       SPR_DEC,	r0
+    mtspr       SPR_DECAR,	r0
+    mtspr       SPR_TSR_RC,	r1
+    mtspr       SPR_SRR0,	r0
+    mtspr       SPR_SRR1,	r0
+    mtspr       SPR_TBL_W,	r0
+    mtspr       SPR_TBU_W,	r0
 
-    mtspr       SPR_IAC1, r0
-    mtspr       SPR_IAC2, r0
-    mtspr       SPR_IAC3, r0
-    mtspr       SPR_IAC4, r0
-    mtspr       SPR_DAC1, r0
-    mtspr       SPR_DAC2, r0
-    mtspr       SPR_DVC1, r0
-    mtspr       SPR_DVC2, r0
-    mtspr       SPR_DBCR1, r0
-    mtspr       SPR_DBCR2, r0
-    mtspr       SPR_DBDR, r0
+    mtspr       SPR_IAC1,	r0
+    mtspr       SPR_IAC2,	r0
+    mtspr       SPR_IAC3,	r0
+    mtspr       SPR_IAC4,	r0
+    mtspr       SPR_DAC1,	r0
+    mtspr       SPR_DAC2,	r0
+    mtspr       SPR_DVC1,	r0
+    mtspr       SPR_DVC2,	r0
+    mtspr       SPR_DBCR1,	r0
+    mtspr       SPR_DBCR2,	r0
+    mtspr       SPR_DBDR,	r0
 
     b           setup_initial_tlb
 initial_tlb_entries:
-/*          MMU_TLB_ENTRY(  ERPN,   RPN,        EPN,        DSIZ,                   IL1I,   IL1D,   W,      I,      M,      G,      E,                      UX, UW, UR,     SX, SW, SR      DULXE,  IULXE,      TS,     TID,                WAY,                BID,                V   ) */
-/* TLB entries to remap 64KB pages BOOTROM from 0xFFFFFFFF_FFFC0000-0XFFFFFFFF_FFFFFFFF to 0xFFFC0000-0XFFFFFFFF */
-    .long   MMU_TLB_ENTRY(  0x3FF,  0xFFFC0,    0xFFFC0,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b1,0b0,0b1,    0b1,0b0,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_UND,   0b1 )
-    .long   MMU_TLB_ENTRY(  0x3FF,  0xFFFD0,    0xFFFD0,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b1,0b0,0b1,    0b1,0b0,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_UND,   0b1 )
-    .long   MMU_TLB_ENTRY(  0x3FF,  0xFFFE0,    0xFFFE0,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b1,0b0,0b1,    0b1,0b0,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_UND,   0b1 )
-    .long   MMU_TLB_ENTRY(  0x3FF,  0xFFFF0,    0xFFFF0,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b1,0b0,0b1,    0b1,0b0,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_UND,   0b1 )
+/*          MMU_TLB_ENTRY(  ERPN,   RPN,        EPN,        DSIZ,                   IL1I,   IL1D,   W,      I,      M,      G,      E,                      UX, UW, UR,     SX, SW, SR      DULXE,  IULXE,      TS,     TID,                WAY,                BID,                V   )*/
+/* Invalidate initial TLB entry*/
+    .long   MMU_TLB_ENTRY(  0x000,  0x00000,    0xFFFFF,    MMU_TLBE_DSIZ_4KB,      0b0,    0b0,    0b0,    0b0,    0b0,    00,     MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b0,0b0,0b0,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b0 )
+/* TLB entries to remap 64KB page BOOTROM from 0x000003ff_ffff0000-0x000003ff_ffffffff to 0xffff0000-0xffffffff*/
+    .long   MMU_TLB_ENTRY(  0x3FF,  0xFFFF0,    0xFFFF0,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b0,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
 DECLARE_CONST( INITIAL_TLB_ENTRIES_N, (.-initial_tlb_entries)/MMU_TLB_ENTRY_SIZE )
 setup_initial_tlb:
     load_addr   r3, initial_tlb_entries
     load_const  r4, INITIAL_TLB_ENTRIES_N
-    bl          ppc470s_write_tlb_entries
+    bl          ppc470s_write_tlb_entries  /* (r3, r4) - are parameters */
 
     load_addr   r0, test_mpw_cpu_020_tlb_2
     mtctr       r0
     bctr
 
-.set TB_RESULT_UNDEFINED,   0x00000000
-.set TB_RESULT_OK,          0x08111111
-.set TB_RESULT_FINISHED,    0xF14158ED
-.set TB_RESULT_ERROR,       0xE8808111
-
-DECLARE_CONST( PHYSICAL_SPACE_NOT_ENTERED,  0x407E47E8 )
-DECLARE_CONST( PHYSICAL_SPACE_ENTERED,      0xE47E8ED1 )
-
-DECLARE_CONST( HANDLER_NOT_CALLED,  0x407CA11E )
-DECLARE_CONST( HANDLER_CALLED,      0xCA11ED11 )
+	.set TB_RESULT_UNDEFINED,   0x00000000
+	.set TB_RESULT_OK,          0x08111111
+	.set TB_RESULT_FINISHED,    0xF14158ED
+	.set TB_RESULT_ERROR,       0xE8808111
 
 .section ".text","ax",@progbits
 .org 0x00000000
@@ -215,22 +206,22 @@ test_mpw_cpu_020_tlb_2:
     mtspr       SPR_IVPR, r0
 
     li          r0, unexpected_interrupt_handler@l
-    mtspr       SPR_IVOR0, r0
-    mtspr       SPR_IVOR1, r0
-    mtspr       SPR_IVOR2, r0
-    mtspr       SPR_IVOR3, r0
-    mtspr       SPR_IVOR4, r0
-    mtspr       SPR_IVOR5, r0
-    mtspr       SPR_IVOR6, r0
-    mtspr       SPR_IVOR7, r0
-//    mtspr       SPR_IVOR8, r0
-    mtspr       SPR_IVOR9, r0
-    mtspr       SPR_IVOR10, r0
-    mtspr       SPR_IVOR11, r0
-    mtspr       SPR_IVOR12, r0
-    mtspr       SPR_IVOR13, r0
-//    mtspr       SPR_IVOR14, r0
-    mtspr       SPR_IVOR15, r0
+    mtspr       SPR_IVOR0,	r0
+    mtspr       SPR_IVOR1,	r0
+    mtspr       SPR_IVOR2,	r0
+    mtspr       SPR_IVOR3,	r0
+    mtspr       SPR_IVOR4,	r0
+    mtspr       SPR_IVOR5,	r0
+    mtspr       SPR_IVOR6,	r0
+    mtspr       SPR_IVOR7,	r0
+/*	mtspr       SPR_IVOR8,	r0 */
+    mtspr       SPR_IVOR9,	r0
+    mtspr       SPR_IVOR10,	r0
+    mtspr       SPR_IVOR11,	r0
+    mtspr       SPR_IVOR12,	r0
+    mtspr       SPR_IVOR13,	r0
+/*	mtspr       SPR_IVOR14,	r0 */
+    mtspr       SPR_IVOR15,	r0
 
     li          r0, system_call_handler@l
     mtspr       SPR_IVOR8, r0
@@ -241,16 +232,6 @@ test_mpw_cpu_020_tlb_2:
     load_const  r21, PHYSICAL_SPACE_NOT_ENTERED
     load_const  r22, HANDLER_NOT_CALLED
 
- /*
-    mfspr       r0, SPR_PIR
-    cmpwi       r0, PPC0_CORE_ID
-    beq         goto_run_physical_space1_on_core0
-    cmpwi       r0, PPC1_CORE_ID
-    beq         goto_run_physical_space1_on_core1
-    rumboot_putstring   "Unexpeted PPC PIR: "
-    trace_hex   r0
-    b           error
-*/
 
 goto_run_physical_space1_on_core0:
     mfmsr       r0
@@ -261,18 +242,6 @@ goto_run_physical_space1_on_core0:
     load_addr   r0, run_physical_space1_on_core0
     mtctr       r0
     bctr
-
-/*
-goto_run_physical_space1_on_core1:
-    mfmsr       r0
-    load_const  r1, (0b1 << ITRPT_XSR_PR_i)
-    or          r0, r0, r1
-    mtmsr       r0
-
-    load_addr   r0, run_physical_space1_on_core1
-    mtctr       r0
-    bctr
-*/
 
 error:
     test_event  EVENT_ERROR
@@ -312,12 +281,12 @@ itlb_miss_handler:
     load_const  r22, HANDLER_CALLED
     b           replace_missed_tlb
 missed_tlb_replace_entry:
-//          MMU_TLB_ENTRY(  ERPN,   RPN,        EPN,        DSIZ,                   IL1I,   IL1D,   W,      I,      M,      G,      E,                      UX, UW, UR,     SX, SW, SR      DULXE,  IULXE,      TS,     TID,                WAY,                BID,                V   )
+/*          MMU_TLB_ENTRY(  ERPN,   RPN,        EPN,        DSIZ,                   IL1I,   IL1D,   W,      I,      M,      G,      E,                      UX, UW, UR,     SX, SW, SR      DULXE,  IULXE,      TS,     TID,                WAY,                BID,                V   )*/
 // TLB entries to remap 64KB pages BOOTROM from 0xFFFFFFFF_FFFC0000-0XFFFFFFFF_FFFFFFFF to 0xFFFC0000-0XFFFFFFFF
-//    .long   MMU_TLB_ENTRY(  0x3FF,  0xFFFC0,    0xFFFC0,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b0,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
-    .long   MMU_TLB_ENTRY(  0x3FF,  0xFFFE0,    0xFFFD0,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b1,0b0,0b1,    0b1,0b0,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
-//    .long   MMU_TLB_ENTRY(  0x3FF,  0xFFFE0,    0xFFFE0,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b0,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
-//    .long   MMU_TLB_ENTRY(  0x3FF,  0xFFFF0,    0xFFFF0,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b0,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
+//	.long   MMU_TLB_ENTRY(  0x3FF,  0xFFFC0,    0xFFFC0,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b0,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
+	.long   MMU_TLB_ENTRY(  0x3FF,  0xFFFE0,    0xFFFD0,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b1,0b0,0b1,    0b1,0b0,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
+//	.long   MMU_TLB_ENTRY(  0x3FF,  0xFFFE0,    0xFFFE0,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b0,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
+//	.long   MMU_TLB_ENTRY(  0x3FF,  0xFFFF0,    0xFFFF0,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b0,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
 replace_missed_tlb:
     load_addr   r3, missed_tlb_replace_entry
     load_const  r4, 1
@@ -330,13 +299,6 @@ generate_system_call:
 run_physical_space1_on_core0:
     load_const  r21, PHYSICAL_SPACE_ENTERED
     b           generate_system_call
-
-/*
-.org 0x00018000
-run_physical_space1_on_core1:
-    load_const  r21, PHYSICAL_SPACE_ENTERED
-    b           run_physical_space1_on_core1
-*/
 
 // .org 0x00020000
 check_tlb_sync_on_core0:
@@ -354,24 +316,4 @@ check_tlb_sync_on_core0:
     mtctr       r0
     bctr
 
-
-/*
-.org 0x00028000
-check_tlb_sync_on_core1:
-    nop
-    nop
-    nop
-
-    load_const  r1, PHYSICAL_SPACE_ENTERED
-    cmpw        r1, r21
-    TEST_ASSERT( eq, cr0, "Physical space1 not entered" )
-
-    load_const  r2, HANDLER_CALLED
-    cmpw        r2, r22
-    TEST_ASSERT( eq, cr0, "Intruction TLB miss handler not called" )
-
-    load_addr   r0, ok
-    mtctr       r0
-    bctr
-*/
 
