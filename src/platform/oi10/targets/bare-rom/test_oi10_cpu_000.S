@@ -1,4 +1,6 @@
+
 #undef __linux__
+
 #include <platform/trace.S.h>
 
 .section ".init.start","ax",@progbits
@@ -9,16 +11,17 @@ boot_start:
 .section ".init.text","ax",@progbits
 
 rumboot_entry_point:
-    load_const r0, 0x00
-    load_const r1, 0x01
-    load_const r2, 0x02
-    load_const r3, 0x03
-    load_const r4, 0x04
-    load_const r5, 0x05
-    load_const r6, 0x06
-    load_const r7, 0x07
-    load_const r8, 0x08
-    load_const r9, 0x09
+    gtube_init
+    load_const r0,  0x00
+    load_const r1,  0x01
+    load_const r2,  0x02
+    load_const r3,  0x03
+    load_const r4,  0x04
+    load_const r5,  0x05
+    load_const r6,  0x06
+    load_const r7,  0x07
+    load_const r8,  0x08
+    load_const r9,  0x09
     load_const r10, 0x0A
     load_const r11, 0x0B
     load_const r12, 0x0C
@@ -42,6 +45,6 @@ rumboot_entry_point:
     load_const r30, 0x1E
     load_const r31, 0x1F
 
-    gtube_init
     rumboot_putstring "TEST OK\n"
     exit 0
+
