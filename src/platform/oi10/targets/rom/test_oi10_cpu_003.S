@@ -117,8 +117,7 @@ check_gpr_lw:
 
 
 is_supervisor_mode:
-    lis r6, 0x02
-    ori r6, r6, 0x0
+    load_const r6, 0x00020000
     mfmsr r7
     and r3, r7, r6
     cmpi cr7, 0, r3, 0x0
