@@ -593,6 +593,22 @@ endif()
         NAME "mdma"
     )
 
+  add_rumboot_target(
+      SNAPSHOT default
+      CONFIGURATION ROM
+      FILES simple-rom/i2c_0_read_test.c
+      NAME i2c_0_read_test
+      IRUN_FLAGS +i2c_interference_gen
+    )
+    
+  add_rumboot_target(
+      SNAPSHOT default
+      CONFIGURATION ROM
+      FILES simple-rom/i2c_1_read_test.c
+      NAME i2c_1_read_test
+      IRUN_FLAGS +i2c_interference_gen
+    )
+    
   #RumBoot Integration tests
 #  add_rumboot_target(
 #      CONFIGURATION INTEGRATION
