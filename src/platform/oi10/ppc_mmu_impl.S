@@ -2,10 +2,8 @@
 #include <platform/arch/ppc/ppc_476fp_mmu_fields.h>
 #include <platform/arch/ppc/ppc_476fp_ctrl_fields.h>
 
-#ifndef BARE_ROM
 
-.section ".init.text","ax",@progbits
-
+.section ".mmu.init.text","ax",@progbits
 
 /*Details about trace infrastructure convention see in trace.S.h
 Caller must preserve r3,r4,r8,r9,r10 before calling
@@ -143,5 +141,4 @@ ra_error:
     load_const r3, -1
     blr
 
-#endif
 
