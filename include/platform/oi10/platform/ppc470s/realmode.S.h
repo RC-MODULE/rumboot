@@ -15,6 +15,14 @@
 /*                  --9876543210UWIMGEID--XWRXWR3210 */
 #define RMPD_DATA 0b00000000000000101011001011010000
 
+/*
+	Usage example:
+	init_realmode r3, r4
+	isync
+	b	main
+*/
+
+/* You must to synchronize context (isync) after usage. */
 /*     init_realmode temp_regA, temp_reg_B  */
 .macro init_realmode trA,       trB
 	load_const \trB, RMPD_DATA
