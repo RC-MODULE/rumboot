@@ -170,6 +170,8 @@ tlb_entries:
 
 .section ".init.text","ax",@progbits
 
+implement__write_tlb_entries r3, r4, r8, r9, r10
+
 setup_tlb:
     load_addr   r3, tlb_entries
     load_addr   r4, TLB_ENTRIES_N

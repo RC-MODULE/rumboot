@@ -2,6 +2,7 @@
 #include <platform/arch/ppc/ppc_476fp_mmu_fields.h>
 #include <platform/arch/ppc/ppc_476fp_ctrl_fields.h>
 
+#ifndef BARE_ROM
 
 .section ".init.text","ax",@progbits
 
@@ -141,4 +142,6 @@ ra_error:
     /*return invalid value (< 0) if an error*/
     load_const r3, -1
     blr
+
+#endif
 

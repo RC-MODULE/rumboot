@@ -32,7 +32,7 @@ rumboot_add_configuration(
 rumboot_add_configuration(
   BAREROM
   LDS oi10/rom.lds
-  CFLAGS -DRUMBOOT_ONLY_STACK
+  CFLAGS -DRUMBOOT_ONLY_STACK -DBARE_ROM
   SNAPSHOT default
   PREFIX bare-rom
   FEATURES ROMGEN
