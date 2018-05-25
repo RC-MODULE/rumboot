@@ -30,9 +30,9 @@
 	or    \trA, \trA, \trB
 	load_const \trB, MMUCR_REALE
 	mtspr SPR_RMPD, \trA
-	mfspr r3, SPR_MMUCR
-	or    r3, r3, r4
-	mtspr SPR_MMUCR, r3
+	mfspr \trA, SPR_MMUCR
+	or    \trA, \trA, \trB
+	mtspr SPR_MMUCR, \trA
 
 .endm
 
