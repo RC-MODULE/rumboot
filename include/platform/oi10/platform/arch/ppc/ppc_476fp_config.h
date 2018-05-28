@@ -148,6 +148,10 @@
 #define SPR_USPCR       831
 #define SPR_USPGR0      256
 
+/*Data Cache DeBug Tag Register*/
+#define SPR_DCDBTRL     924
+#define SPR_DCDBTRH     925
+
 /*Condition register field numbers*/
 #define cr0    0
 #define cr1    1
