@@ -24,12 +24,12 @@ int main()
     // Write and check TR Timing Register value
     iowrite32(1 << TS2 | 12 << TS1 | 0 << SJW | 3 << DIV, CAN0_BASE + TR_TIMING_REG); // BR = 1000 kb/s ( 64 MHz) 
     read_data=ioread32(CAN0_BASE + TR_TIMING_REG);
-    while (!(read_data & (1 << TS2 | 12 << TS1 | 0 << SJW | 3 << DIV)))
+    while (read_data ^ (1 << TS2 | 12 << TS1 | 0 << SJW | 3 << DIV))
      {read_data=ioread32(CAN0_BASE + TR_TIMING_REG);}
     rumboot_printf("CAN0 TR timing is correct!\n");    
     iowrite32(1 << TS2 | 12 << TS1 | 0 << SJW | 3 << DIV, CAN1_BASE + TR_TIMING_REG); // BR = 1000 kb/s ( 64 MHz)
     read_data=ioread32(CAN1_BASE + TR_TIMING_REG);
-    while (!(read_data & (1 << TS2 | 12 << TS1 | 0 << SJW | 3 << DIV)))
+    while (read_data ^ (1 << TS2 | 12 << TS1 | 0 << SJW | 3 << DIV))
      {read_data=ioread32(CAN1_BASE + TR_TIMING_REG);}
     rumboot_printf("CAN1 TR timing is correct!\n");
 
