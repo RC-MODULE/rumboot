@@ -72,7 +72,7 @@
  #define GPIO5_BASE               BASIS_PHYS(0x01084000)
  #define GPIO6_BASE               BASIS_PHYS(0x01085000)
  #define SCTL_BASE                BASIS_PHYS(0x0108D000)
- #define GLOBAL_TIMERS            BASIS_PHYS(0x0108E040)
+ #define GLOBAL_TIMERS            BASIS_PHYS(0x0108E000)
  #define WDT_BASE                 BASIS_PHYS(0x0108F000)
  #define DDR0_BASE                BASIS_PHYS(0x01500000)
  #define DDR1_BASE                BASIS_PHYS(0x01502000)
