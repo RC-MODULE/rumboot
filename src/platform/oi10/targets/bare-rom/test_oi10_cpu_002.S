@@ -60,43 +60,86 @@ rumboot_entry_point:
 
 init_spr:
 /* according to User's Manual ch. 9.4 Initialization Software Requirements */
-    load_const r0, 0x00000000 /* DBCR0 value */
-    mtspr   SPR_DBCR0, r0       /* DBCR0 clear */
+    load_const r0, 0x00000000	/* DBCR0 value */
+    mtspr   SPR_DBCR0, r0		/* DBCR0 clear */
 
 /* Setup DBSR */
-    mfspr   r0, SPR_DBSR_RC        /* read current DBSR */
-    mtspr   SPR_DBSR_RC, r0        /* clear all valid bits */
+    mfspr   r0, SPR_DBSR_RC		/* read current DBSR */
+    mtspr   SPR_DBSR_RC, r0		/* clear all valid bits */
 
-/* CCR0                 ITE                 PRE                  CRPE               ICS                  DAPUIB               ICWRIDX                 DTB                  FLSTA                DQWPM                 IQWPM */
-    load_const r0, reg_field(0, 0b0) | reg_field(1, 0b1) | reg_field(4, 0b0) | reg_field(10, 0b0) | reg_field(11, 0b0) | reg_field(15, 0b0000) | reg_field(16, 0b0) | reg_field(23, 0b0) | reg_field(29, 0b00) | reg_field(30, 0b1)
+    load_const r0,	reg_field( 0, 0b0   ) /* ITE     */  \
+				  | reg_field( 1, 0b1   ) /* PRE     */  \
+				  | reg_field( 4, 0b0   ) /* CRPE    */  \
+				  | reg_field(10, 0b0   ) /* ICS     */  \
+				  | reg_field(11, 0b0   ) /* DAPUIB  */  \
+				  | reg_field(15, 0b0000) /* ICWRIDX */  \
+				  | reg_field(16, 0b0   ) /* DTB     */  \
+				  | reg_field(23, 0b0   ) /* FLSTA   */  \
+				  | reg_field(29, 0b00  ) /* DQWPM   */  \
+				  | reg_field(30, 0b1   ) /* IQWPM   */
     mtspr   SPR_CCR0, r0
 
-/* CCR1                GPRPEI             FPRPEI                 ICDPEI              ICLPEI                ICTPEI                DCDPEI               DCLPEI                 DCTPEI              MMUTPEI              MMUDPEI                 TSS                 DPC                    TCS */
-    load_const r0, reg_field(1, 0b00) | reg_field(3, 0b00) | reg_field(5, 0b00) | reg_field(7, 0b00) | reg_field(9, 0b00) | reg_field(11, 0b00) | reg_field(13, 0b00) | reg_field(15, 0b00) | reg_field(16, 0b0) | reg_field(17, 0b0) | reg_field(19, 0b0) | reg_field(21, 0b0) | reg_field(23, 0b00)
+    load_const r0,	reg_field( 1, 0b00) /* GPRPEI  */ \
+				  | reg_field( 3, 0b00) /* FPRPEI  */ \
+				  | reg_field( 5, 0b00) /* ICDPEI  */ \
+				  | reg_field( 7, 0b00) /* ICLPEI  */ \
+				  | reg_field( 9, 0b00) /* ICTPEI  */ \
+				  | reg_field(11, 0b00) /* DCDPEI  */ \
+				  | reg_field(13, 0b00) /* DCLPEI  */ \
+				  | reg_field(15, 0b00) /* DCTPEI  */ \
+				  | reg_field(16, 0b0 ) /* MMUTPEI */ \
+				  | reg_field(17, 0b0 ) /* MMUDPEI */ \
+				  | reg_field(19, 0b0 ) /* TSS     */ \
+				  | reg_field(21, 0b0 ) /* DPC     */ \
+				  | reg_field(23, 0b00) /* TCS     */
     mtspr   SPR_CCR1, r0
 
-/* CCR2                 DSTG                  DLFPD            DSTI                  PMUD               DCSTGW                STGCTR                  DISTG               SPC5C1               MCDTO */
-    load_const r0, reg_field(1, 0b00) | reg_field(2, 0b0) | reg_field(4, 0b0) | reg_field(9, 0b0) | reg_field(11, 0b0) | reg_field(15, 0b0000) | reg_field(16, 0b0) | reg_field(20, 0b0) | reg_field(21, 0b0)
+    load_const r0,	reg_field( 1, 0b00  ) /* DSTG   */ \
+				  | reg_field( 2, 0b0   ) /* DLFPD  */ \
+				  | reg_field( 4, 0b0   ) /* DSTI   */ \
+				  | reg_field( 9, 0b0   ) /* PMUD   */ \
+				  | reg_field(11, 0b0   ) /* DCSTGW */ \
+				  | reg_field(15, 0b0000) /* STGCTR */ \
+				  | reg_field(16, 0b0   ) /* DISTG  */ \
+				  | reg_field(20, 0b0   ) /* SPC5C1 */ \
+				  | reg_field(21, 0b0   ) /* MCDTO  */
     mtspr   SPR_CCR2, r0
 
-/* MMUBE0                VBE0               VBE1                   VBE2 */
-    load_const r0, reg_field(29, 0b0) | reg_field(30, 0b0) | reg_field(31, 0b0)
+    load_const r0,	reg_field(29, 0b0) /* VBE0 */ \
+    			  | reg_field(30, 0b0) /* VBE1 */ \
+    			  | reg_field(31, 0b0) /* VBE2 */
     mtspr   SPR_MMUBE0, r0
 
-/* MMUBE1                VBE3               VBE4                   VBE5 */
-    load_const r0, reg_field(29, 0b0) | reg_field(30, 0b0) | reg_field(31, 0b0)
+    load_const r0,	reg_field(29, 0b0) /* VBE3 */ \
+    			  | reg_field(30, 0b0) /* VBE4 */ \
+    			  | reg_field(31, 0b0) /* VBE5 */
     mtspr   SPR_MMUBE1, r0
 
-/* SSPCR                 ORD1                   ORD2                   ORD3                    ORD4                    ORD5                    ORD6                    ORD7 */
-    load_const r0, reg_field(3, 0b0001) | reg_field(7, 0b0010) | reg_field(11, 0b0011) | reg_field(15, 0b0100) | reg_field(19, 0b0101) | reg_field(23, 0b0110) | reg_field(27, 0b0111)
+    load_const r0,	reg_field( 3, 0b0001) /* ORD1 */ \
+    			  | reg_field( 7, 0b0010) /* ORD2 */ \
+    			  | reg_field(11, 0b0011) /* ORD3 */ \
+    			  | reg_field(15, 0b0100) /* ORD4 */ \
+    			  | reg_field(19, 0b0101) /* ORD5 */ \
+    			  | reg_field(23, 0b0110) /* ORD6 */ \
+    			  | reg_field(27, 0b0111) /* ORD7 */
     mtspr   SPR_SSPCR, r0
 
-/* ISPCR                ORD1                   ORD2                  ORD3                   ORD4                   ORD5                   ORD6                   ORD7 */
-    load_const r0, reg_field(3, 0b001) | reg_field(7, 0b010) | reg_field(11, 0b011) | reg_field(15, 0b100) | reg_field(19, 0b101) | reg_field(23, 0b110) | reg_field(27, 0b111)
+    load_const r0,	reg_field( 3, 0b0001) /* ORD1 */ \
+    			  | reg_field( 7, 0b0010) /* ORD2 */ \
+    			  | reg_field(11, 0b0011) /* ORD3 */ \
+    			  | reg_field(15, 0b0100) /* ORD4 */ \
+    			  | reg_field(19, 0b0101) /* ORD5 */ \
+    			  | reg_field(23, 0b0110) /* ORD6 */ \
+    			  | reg_field(27, 0b0111) /* ORD7 */
     mtspr   SPR_ISPCR, r0
 
-/* USPCR                 ORD1                   ORD2                   ORD3                    ORD4                    ORD5                    ORD6                    ORD7 */
-    load_const r0, reg_field(3, 0b0001) | reg_field(7, 0b0010) | reg_field(11, 0b0011) | reg_field(15, 0b0100) | reg_field(19, 0b0101) | reg_field(23, 0b0110) | reg_field(27, 0b0111)
+    load_const r0,	reg_field( 3, 0b0001) /* ORD1 */ \
+    			  | reg_field( 7, 0b0010) /* ORD2 */ \
+    			  | reg_field(11, 0b0011) /* ORD3 */ \
+    			  | reg_field(15, 0b0100) /* ORD4 */ \
+    			  | reg_field(19, 0b0101) /* ORD5 */ \
+    			  | reg_field(23, 0b0110) /* ORD6 */ \
+    			  | reg_field(27, 0b0111) /* ORD7 */
     mtspr   SPR_USPCR, r0
 
 /*
@@ -106,38 +149,38 @@ Most of them have X-state after reset and therefore CPU model cannot work proper
     load_const  r0, 0
     load_const  r1, 0xFFFFFFFF
 
-    mtspr   SPR_CTR, r0
+    mtspr   SPR_CTR,	r0
     mtcr    r0
-    mtspr   SPR_LR, r0
-    mtspr   SPR_DCESR, r0
-    mtspr   SPR_CSRR0, r0
-    mtspr   SPR_CSRR1, r0
-    mtspr   SPR_MCSRR0, r0
-    mtspr   SPR_MCSRR1, r0
-    mtspr   SPR_RMPD, r0
+    mtspr   SPR_LR,		r0
+    mtspr   SPR_DCESR,	r0
+    mtspr   SPR_CSRR0,	r0
+    mtspr   SPR_CSRR1,	r0
+    mtspr   SPR_MCSRR0,	r0
+    mtspr   SPR_MCSRR1,	r0
+    mtspr   SPR_RMPD,	r0
 
-    mtspr   SPR_IAC1, r0
-    mtspr   SPR_IAC2, r0
-    mtspr   SPR_IAC3, r0
-    mtspr   SPR_IAC4, r0
-    mtspr   SPR_DAC1, r0
-    mtspr   SPR_DAC2, r0
-    mtspr   SPR_DVC1, r0
-    mtspr   SPR_DVC2, r0
-    mtspr   SPR_DBCR1, r0
-    mtspr   SPR_DBCR2, r0
-    mtspr   SPR_DBDR, r0
-    mtspr   SPR_MCSR_C, r1
-    mtspr   SPR_DEAR, r0
-    mtspr   SPR_TCR, r0
-    mtspr   SPR_DEC, r0
-    mtspr   SPR_DECAR, r0
-    mtspr   SPR_TSR_RC, r1
-    mtspr   SPR_SRR0, r0
-    mtspr   SPR_SRR1, r0
-    mtspr   SPR_TBL_W, r0
-    mtspr   SPR_TBU_W, r0
-    mtspr   SPR_XER, r0
+    mtspr   SPR_IAC1,	r0
+    mtspr   SPR_IAC2,	r0
+    mtspr   SPR_IAC3,	r0
+    mtspr   SPR_IAC4,	r0
+    mtspr   SPR_DAC1,	r0
+    mtspr   SPR_DAC2,	r0
+    mtspr   SPR_DVC1,	r0
+    mtspr   SPR_DVC2,	r0
+    mtspr   SPR_DBCR1,	r0
+    mtspr   SPR_DBCR2,	r0
+    mtspr   SPR_DBDR,	r0
+    mtspr   SPR_MCSR_C,	r1
+    mtspr   SPR_DEAR,	r0
+    mtspr   SPR_TCR,	r0
+    mtspr   SPR_DEC,	r0
+    mtspr   SPR_DECAR,	r0
+    mtspr   SPR_TSR_RC,	r1
+    mtspr   SPR_SRR0,	r0
+    mtspr   SPR_SRR1,	r0
+    mtspr   SPR_TBL_W,	r0
+    mtspr   SPR_TBU_W,	r0
+    mtspr   SPR_XER,	r0
 
     ppc470s_set_mem_window  r3, MEM_WINDOW_SHARED
     b       setup_tlb
