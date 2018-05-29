@@ -135,6 +135,18 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       CFLAGS -DI2C_BASE=I2C1_BASE -DI2C_IRQ=I2C1_IRQ
       PREFIX i2c-1
     )
+	
+	 add_rumboot_target_dir(i2c/
+      CONFIGURATION IRAM_MIRROR
+      CFLAGS -DI2C_BASE=I2C0_BASE -DI2C_IRQ=I2C0_IRQ
+      PREFIX i2c-0-mirror
+    )
+
+    add_rumboot_target_dir(i2c/
+      CONFIGURATION IRAM_MIRROR
+      CFLAGS -DI2C_BASE=I2C1_BASE -DI2C_IRQ=I2C1_IRQ
+      PREFIX i2c-1-mirror
+    )
 
 	 add_rumboot_target_dir(i2c/multimaster
       CONFIGURATION IRAM
@@ -142,7 +154,14 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 	  IRUN_FLAGS +i2c_single_bus
       PREFIX multimaster
     )
-
+	 add_rumboot_target_dir(i2c/multimaster
+      CONFIGURATION IRAM_MIRROR
+	  CFLAGS -DI2C_BASE=I2C0_BASE
+	  IRUN_FLAGS +i2c_single_bus
+      PREFIX multimaster-mirror
+    )
+	
+	
     add_rumboot_target_dir(common/spl-stubs/
       CONFIGURATION IRAM
       PREFIX spl
