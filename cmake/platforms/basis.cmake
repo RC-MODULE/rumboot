@@ -614,18 +614,25 @@ endif()
 
   add_rumboot_target(
       SNAPSHOT default
-      CONFIGURATION ROM
-      FILES simple-rom/i2c_0_read_test.c
-      NAME i2c_0_read_test
+      CONFIGURATION IRAM
+      FILES simple-iram/i2c_0_read_test.c
+      NAME i2c_0_read_test_interference
       IRUN_FLAGS +i2c_interference_gen
     )
     
   add_rumboot_target(
       SNAPSHOT default
-      CONFIGURATION ROM
-      FILES simple-rom/i2c_1_read_test.c
-      NAME i2c_1_read_test
+      CONFIGURATION IRAM
+      FILES simple-iram/i2c_1_read_test.c
+      NAME i2c_1_read_test_interference
       IRUN_FLAGS +i2c_interference_gen
+    )
+    
+  add_rumboot_target(
+      SNAPSHOT default
+      CONFIGURATION IRAM
+      FILES pcie/ext_irq_gen_reg_test.c
+      NAME ext_irq_gen_reg_test
     )
     
   #RumBoot Integration tests
