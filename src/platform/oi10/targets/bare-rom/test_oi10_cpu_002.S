@@ -629,14 +629,14 @@ error:
     putchar 'O'
     putchar 'R'
     putchar '\n'
-    exit 1
+    exit RESULT_ERROR
     b stop
 
 ok:
     putchar 'O'
     putchar 'K'
     putchar '\n'
-    exit 0
+    exit RESULT_OK
 
 stop:
     b stop
