@@ -60,91 +60,91 @@ rumboot_entry_point:
 
 init_spr:
 /* according to User's Manual ch. 9.4 Initialization Software Requirements */
-    load_const r0, 0x00000000	/* DBCR0 value */
-    mtspr   SPR_DBCR0, r0		/* DBCR0 clear */
+    load_const r0, 0x00000000	/* DBCR0 value          */
+    mtspr   SPR_DBCR0, r0		/* DBCR0 clear          */
 
 /* Setup DBSR */
-    mfspr   r0, SPR_DBSR_RC		/* read current DBSR */
+    mfspr   r0, SPR_DBSR_RC		/* read current DBSR    */
     mtspr   SPR_DBSR_RC, r0		/* clear all valid bits */
 
-    load_const r0,	reg_field( 0, 0b0   ) /* ITE     */  \
-				  | reg_field( 1, 0b1   ) /* PRE     */  \
-				  | reg_field( 4, 0b0   ) /* CRPE    */  \
-				  | reg_field(10, 0b0   ) /* ICS     */  \
-				  | reg_field(11, 0b0   ) /* DAPUIB  */  \
-				  | reg_field(15, 0b0000) /* ICWRIDX */  \
-				  | reg_field(16, 0b0   ) /* DTB     */  \
-				  | reg_field(23, 0b0   ) /* FLSTA   */  \
-				  | reg_field(29, 0b00  ) /* DQWPM   */  \
-				  | reg_field(30, 0b1   ) /* IQWPM   */
+    load_const r0,	reg_field( 0, 0b0   ) /* ITE        */ \
+				  | reg_field( 1, 0b1   ) /* PRE        */ \
+				  | reg_field( 4, 0b0   ) /* CRPE       */ \
+				  | reg_field(10, 0b0   ) /* ICS        */ \
+				  | reg_field(11, 0b0   ) /* DAPUIB     */ \
+				  | reg_field(15, 0b0000) /* ICWRIDX    */ \
+				  | reg_field(16, 0b0   ) /* DTB        */ \
+				  | reg_field(23, 0b0   ) /* FLSTA      */ \
+				  | reg_field(29, 0b00  ) /* DQWPM      */ \
+				  | reg_field(30, 0b1   ) /* IQWPM      */
     mtspr   SPR_CCR0, r0
 
-    load_const r0,	reg_field( 1, 0b00) /* GPRPEI  */ \
-				  | reg_field( 3, 0b00) /* FPRPEI  */ \
-				  | reg_field( 5, 0b00) /* ICDPEI  */ \
-				  | reg_field( 7, 0b00) /* ICLPEI  */ \
-				  | reg_field( 9, 0b00) /* ICTPEI  */ \
-				  | reg_field(11, 0b00) /* DCDPEI  */ \
-				  | reg_field(13, 0b00) /* DCLPEI  */ \
-				  | reg_field(15, 0b00) /* DCTPEI  */ \
-				  | reg_field(16, 0b0 ) /* MMUTPEI */ \
-				  | reg_field(17, 0b0 ) /* MMUDPEI */ \
-				  | reg_field(19, 0b0 ) /* TSS     */ \
-				  | reg_field(21, 0b0 ) /* DPC     */ \
-				  | reg_field(23, 0b00) /* TCS     */
+    load_const r0,	reg_field( 1, 0b00  ) /* GPRPEI     */ \
+				  | reg_field( 3, 0b00  ) /* FPRPEI     */ \
+				  | reg_field( 5, 0b00  ) /* ICDPEI     */ \
+				  | reg_field( 7, 0b00  ) /* ICLPEI     */ \
+				  | reg_field( 9, 0b00  ) /* ICTPEI     */ \
+				  | reg_field(11, 0b00  ) /* DCDPEI     */ \
+				  | reg_field(13, 0b00  ) /* DCLPEI     */ \
+				  | reg_field(15, 0b00  ) /* DCTPEI     */ \
+				  | reg_field(16, 0b0   ) /* MMUTPEI    */ \
+				  | reg_field(17, 0b0   ) /* MMUDPEI    */ \
+				  | reg_field(19, 0b0   ) /* TSS        */ \
+				  | reg_field(21, 0b0   ) /* DPC        */ \
+				  | reg_field(23, 0b00  ) /* TCS        */
     mtspr   SPR_CCR1, r0
 
-    load_const r0,	reg_field( 1, 0b00  ) /* DSTG   */ \
-				  | reg_field( 2, 0b0   ) /* DLFPD  */ \
-				  | reg_field( 4, 0b0   ) /* DSTI   */ \
-				  | reg_field( 9, 0b0   ) /* PMUD   */ \
-				  | reg_field(11, 0b0   ) /* DCSTGW */ \
-				  | reg_field(15, 0b0000) /* STGCTR */ \
-				  | reg_field(16, 0b0   ) /* DISTG  */ \
-				  | reg_field(20, 0b0   ) /* SPC5C1 */ \
-				  | reg_field(21, 0b0   ) /* MCDTO  */
+    load_const r0,	reg_field( 1, 0b00  ) /* DSTG       */ \
+				  | reg_field( 2, 0b0   ) /* DLFPD      */ \
+				  | reg_field( 4, 0b0   ) /* DSTI       */ \
+				  | reg_field( 9, 0b0   ) /* PMUD       */ \
+				  | reg_field(11, 0b0   ) /* DCSTGW     */ \
+				  | reg_field(15, 0b0000) /* STGCTR     */ \
+				  | reg_field(16, 0b0   ) /* DISTG      */ \
+				  | reg_field(20, 0b0   ) /* SPC5C1     */ \
+				  | reg_field(21, 0b0   ) /* MCDTO      */
     mtspr   SPR_CCR2, r0
 
-    load_const r0,	reg_field(29, 0b0) /* VBE0 */ \
-    			  | reg_field(30, 0b0) /* VBE1 */ \
-    			  | reg_field(31, 0b0) /* VBE2 */
+    load_const r0,	reg_field(29, 0b0   ) /* VBE0       */ \
+    			  | reg_field(30, 0b0   ) /* VBE1       */ \
+    			  | reg_field(31, 0b0   ) /* VBE2       */
     mtspr   SPR_MMUBE0, r0
 
-    load_const r0,	reg_field(29, 0b0) /* VBE3 */ \
-    			  | reg_field(30, 0b0) /* VBE4 */ \
-    			  | reg_field(31, 0b0) /* VBE5 */
+    load_const r0,	reg_field(29, 0b0   ) /* VBE3       */ \
+    			  | reg_field(30, 0b0   ) /* VBE4       */ \
+    			  | reg_field(31, 0b0   ) /* VBE5       */
     mtspr   SPR_MMUBE1, r0
 
-    load_const r0,	reg_field( 3, 0b0001) /* ORD1 */ \
-    			  | reg_field( 7, 0b0010) /* ORD2 */ \
-    			  | reg_field(11, 0b0011) /* ORD3 */ \
-    			  | reg_field(15, 0b0100) /* ORD4 */ \
-    			  | reg_field(19, 0b0101) /* ORD5 */ \
-    			  | reg_field(23, 0b0110) /* ORD6 */ \
-    			  | reg_field(27, 0b0111) /* ORD7 */
+    load_const r0,	reg_field( 3, 0b0001) /* ORD1       */ \
+    			  | reg_field( 7, 0b0010) /* ORD2       */ \
+    			  | reg_field(11, 0b0011) /* ORD3       */ \
+    			  | reg_field(15, 0b0100) /* ORD4       */ \
+    			  | reg_field(19, 0b0101) /* ORD5       */ \
+    			  | reg_field(23, 0b0110) /* ORD6       */ \
+    			  | reg_field(27, 0b0111) /* ORD7       */
     mtspr   SPR_SSPCR, r0
 
-    load_const r0,	reg_field( 3, 0b0001) /* ORD1 */ \
-    			  | reg_field( 7, 0b0010) /* ORD2 */ \
-    			  | reg_field(11, 0b0011) /* ORD3 */ \
-    			  | reg_field(15, 0b0100) /* ORD4 */ \
-    			  | reg_field(19, 0b0101) /* ORD5 */ \
-    			  | reg_field(23, 0b0110) /* ORD6 */ \
-    			  | reg_field(27, 0b0111) /* ORD7 */
+    load_const r0,	reg_field( 3, 0b0001) /* ORD1       */ \
+    			  | reg_field( 7, 0b0010) /* ORD2       */ \
+    			  | reg_field(11, 0b0011) /* ORD3       */ \
+    			  | reg_field(15, 0b0100) /* ORD4       */ \
+    			  | reg_field(19, 0b0101) /* ORD5       */ \
+    			  | reg_field(23, 0b0110) /* ORD6       */ \
+    			  | reg_field(27, 0b0111) /* ORD7       */
     mtspr   SPR_ISPCR, r0
 
-    load_const r0,	reg_field( 3, 0b0001) /* ORD1 */ \
-    			  | reg_field( 7, 0b0010) /* ORD2 */ \
-    			  | reg_field(11, 0b0011) /* ORD3 */ \
-    			  | reg_field(15, 0b0100) /* ORD4 */ \
-    			  | reg_field(19, 0b0101) /* ORD5 */ \
-    			  | reg_field(23, 0b0110) /* ORD6 */ \
-    			  | reg_field(27, 0b0111) /* ORD7 */
+    load_const r0,	reg_field( 3, 0b0001) /* ORD1       */ \
+    			  | reg_field( 7, 0b0010) /* ORD2       */ \
+    			  | reg_field(11, 0b0011) /* ORD3       */ \
+    			  | reg_field(15, 0b0100) /* ORD4       */ \
+    			  | reg_field(19, 0b0101) /* ORD5       */ \
+    			  | reg_field(23, 0b0110) /* ORD6       */ \
+    			  | reg_field(27, 0b0111) /* ORD7       */
     mtspr   SPR_USPCR, r0
 
 /*
-Before editing TLB let's initialize all SPR registers to default values by the spec
-Most of them have X-state after reset and therefore CPU model cannot work properly
+	Before editing TLB let's initialize all SPR registers to default values by the spec
+	Most of them have X-state after reset and therefore CPU model cannot work properly
 */
     load_const  r0, 0
     load_const  r1, 0xFFFFFFFF
