@@ -15,6 +15,9 @@ int main()
 	rumboot_print_logo();
 	struct rumboot_bootheader *hdr = (struct rumboot_bootheader *)0x40000;
 
+	/* Save simulation state here */
+	rumboot_platform_sim_save("testbench.simulator_state");
+
 	rumboot_platform_request_file("IM0BIN", (uint32_t)hdr);
 
 
