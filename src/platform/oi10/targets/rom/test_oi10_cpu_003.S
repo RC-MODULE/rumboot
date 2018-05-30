@@ -136,15 +136,15 @@ check_sprg_ppc:
     SPRG_LOAD SPR_SPRG8, CONST
 
 test_ok:
-    test_event EVENT_OK
-    load_const r3, 0x00
     rumboot_putstring "\nTEST OK\n"
+    test_event		EVENT_OK
+    load_const r3,	RESULT_OK
     b finish
 
 error:
-    test_event EVENT_ERROR
-    load_const r3, 0x01
     rumboot_putstring "\nTEST ERROR\n"
+    test_event		EVENT_ERROR
+    load_const r3,	RESULT_ERROR
 
 finish:
     blr
