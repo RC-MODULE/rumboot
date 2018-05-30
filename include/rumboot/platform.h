@@ -47,6 +47,8 @@ enum rumboot_simulation_event {
     EVENT_GCDA, /** Request to store coverage information */
     EVENT_MEMCPY, /** memcpy acceleration */
     EVENT_PERF_FUNC, /** Perf checkpoint via function addr */
+    EVENT_SIM_SAVE, /** Request to save simulation state to file */
+    EVENT_SIM_RESTORE, /** Request to load simulation state from a file */
 };
 
 
@@ -192,6 +194,19 @@ void rumboot_platform_perf(const char *tag);
  */
 
 void rumboot_platform_perf_func(void *addr);
+
+/**
+ * Save simulation state to a file
+ * @param filename [description]
+ */
+void rumboot_platform_sim_save(const char *filename);
+
+/**
+ * Restore simulation state from a file.
+ * This function should never return, unless simulator is broken
+ * @param filename [description]
+ */
+void rumboot_platform_sim_restore(const char *filename);
 
 /**
  * Declares a function to be a constructor (will be called before main())
