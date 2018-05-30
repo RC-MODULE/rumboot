@@ -247,16 +247,21 @@ goto_run_physical_space1_on_core0:
     bctr
 
 error:
+	rumboot_putstring "TEST_ERROR!\n"
     test_event  EVENT_ERROR
+    exit		RESULT_ERROR
     b           finish
 
 ok:
+	rumboot_putstring "TEST_OK!\n"
     test_event  EVENT_OK
+    exit		RESULT_OK
     b           finish
 
 finish:
     test_event  EVENT_FINISHED
-    b           finish
+finish_loop:
+    b           finish_loop
 
 
 interrupt_handlers:
