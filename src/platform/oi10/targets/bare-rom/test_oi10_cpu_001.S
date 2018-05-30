@@ -134,9 +134,10 @@ init_spr:
                   | (MMU_XSPCR_ORD_END                              << MMU_USPCR_ORD5_i)
     mtspr       SPR_USPCR, r3
 
-/*Before editing TLB let's initialize all SPR registers to default values by the spec*/
-/*Most of them have X-state after reset and therefore CPU model cannot work properly*/
-
+	/*
+	Before editing TLB let's initialize all SPR registers to default values by the spec
+	Most of them have X-state after reset and therefore CPU model cannot work properly
+	*/
     mtspr       SPR_LR, r0
     mtspr       SPR_CTR, r0
     mtcr        r0
@@ -167,8 +168,6 @@ init_spr:
     mtspr       SPR_RMPD, r0
 
 b	test_oi10_cpu_001
-
-// .section ".text","ax",@progbits
 
 test_oi10_cpu_001:
 
