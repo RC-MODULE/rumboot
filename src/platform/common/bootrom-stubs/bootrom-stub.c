@@ -8,14 +8,13 @@
 
 #ifdef RUMBOOT_MIRROR_STUB
 	#include <rumboot/pcie_test_lib.h>
+	#include <rumboot/ddr_test_lib.h>
 #endif
 
 int main()
 {
 	#ifndef RUMBOOT_STUB_NOLOGO
 		rumboot_print_logo();
-	#else
-		rumboot_printf("stub: start\n");
 	#endif
 
 	struct rumboot_bootheader *hdr = (struct rumboot_bootheader *) &rumboot_platform_spl_start;
@@ -24,9 +23,10 @@ int main()
         /* Set up mirror mode, cut half of memory for it */
 		rumboot_printf("STUB: Configuring PCIe, this will take a while...\n");
         pcie_mirror_tests_setup();
+		rumboot_printf("Setting up DDR. Go grab a coffee, this will take a while\n");
+		ddr0_ddr1_init();
+		rumboot_printf("Done!\n");
     #endif
-
-
 
 	/* Save simulation state here */
 	rumboot_platform_sim_save("testbench.simulator_state");
