@@ -1,4 +1,5 @@
 SET(RUMBOOT_ARCH ppc)
+set(RUMBOOT_PLATFORM_DEFAULT_SNAPSHOT default)
 
 file(GLOB PLATFORM_SOURCES
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/*.c
@@ -22,7 +23,7 @@ rumboot_add_configuration(
   ROM
   LDS oi10/rom.lds
   CFLAGS -DRUMBOOT_ONLY_STACK
-  SNAPSHOT default
+  LDFLAGS "-e rumboot_entry_point"
   PREFIX rom
   FEATURES ROMGEN
   FILES ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/startup.S
@@ -37,7 +38,16 @@ rumboot_add_configuration(
   FEATURES ROMGEN
 )
 
-
+rumboot_add_configuration (
+  IRAM
+  LDS oi10/iram.lds
+  PREFIX iram
+  LDFLAGS -Wl,--start-group -lgcc -lc -lm -Wl,--end-group "-e rumboot_main"
+  FILES ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c
+  CFLAGS
+  BOOTROM bootrom-stub
+  FEATURES LUA COVERAGE
+)
 
 macro(rumboot_platform_generate_stuff_for_taget product)
     list (FIND TARGET_FEATURES "ROMGEN" _index)
@@ -62,13 +72,6 @@ endmacro()
 
 
 macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
-  add_rumboot_target(
-      CONFIGURATION ROM
-      FILES hello.c
-  )
-
-
-
 # Example for adding a single bare-rom test
 #  add_rumboot_target(
 #    CONFIGURATION BAREROM
@@ -85,7 +88,24 @@ add_rumboot_target_dir(rom/
   )
 
   add_rumboot_target_dir(tests/
-    CONFIGURATION ROM)
+    CONFIGURATION ROM
+  )
+
+  add_rumboot_target(
+    CONFIGURATION ROM
+    FILES common/bootrom-stubs/bootrom-stub.c
+    PREFIX "bootrom"
+    CFLAGS -DRUMBOOT_STUB_NOLOGO
+    NAME "stub"
+    FEATURES STUB
+  )
+
+  add_rumboot_target_dir(simple-iram/
+    CONFIGURATION IRAM
+    PREFIX simple-iram
+  )
+
+
 endmacro()
 
 

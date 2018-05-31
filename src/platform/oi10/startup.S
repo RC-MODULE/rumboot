@@ -175,6 +175,7 @@ unexpected_error:
     b endless_loop
 
 
+.global rumboot_entry_point
 rumboot_entry_point:
 rumboot_reset_handler:
 
@@ -442,5 +443,3 @@ goto_boot_main:
 
 endless_loop:
     b           endless_loop
-
-
