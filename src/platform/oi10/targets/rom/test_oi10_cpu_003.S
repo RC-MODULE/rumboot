@@ -1,6 +1,9 @@
 #include <platform/oi10/platform/test_assert.S.h>
-#include <platform/oi10/platform/arch/ppc/ppc_476fp_asm.h>
 #include <platform/oi10/platform/test_event_asm.h>
+#include <platform/oi10/platform/trace.S.h>
+#include <platform/oi10/platform/arch/ppc/ppc_476fp_asm.h>
+#include <platform/oi10/platform/arch/ppc/ppc_476fp_ctrl_fields.h>
+#include <platform/oi10/platform/arch/ppc/ppc_476fp_itrpt_fields.h>
 
 
 #define CONST           0x00007FFF
@@ -9,7 +12,7 @@
     load_const \reg, \value
     cmpi cr7, 0, \reg, \value
     TEST_ASSERT(eq, cr7, "GPR\reg load value from const: Expected \"\value\"")
-    bne cr7, error
+    bne cr7, test_error
 .endm
 
 .macro GPR_LOAD_MEM reg_test, reg_temp, address, value
@@ -18,7 +21,7 @@
     lwz \reg_test, 0(\reg_temp)
     cmpi cr7, 0, \reg_test, \value
     TEST_ASSERT(eq, cr7, "GPR\reg_test load value from memory: Expected \"\value\"")
-    bne cr7, error
+    bne cr7, test_error
 .endm
 
 .macro SPRG_LOAD reg, value
@@ -27,12 +30,13 @@
     mfspr r7, \reg
     cmp cr7, 0, r7, r6
     TEST_ASSERT(eq, cr7, "SPRG\reg load value: Expected \"\value\"")
-    bne cr7, error
+    bne cr7, test_error
 .endm
 
 .section ".init.rodata","a",@progbits
 .global value
 value:
+	.align 2
     .long 0x00007FFF
 
 
@@ -41,10 +45,13 @@ value:
 .global image_start
 .global main
 
+
 main:
 image_start:
 check_gpr_lis_ori:
+	.align 2
 	mr r31,	r1 /* AG: Save stack ptr */
+	rumboot_putstring "check_gpr_lis_ori\n"
     GPR_LOAD_CONST r0, CONST
     GPR_LOAD_CONST r1, CONST
     GPR_LOAD_CONST r2, CONST
@@ -80,6 +87,7 @@ check_gpr_lis_ori:
     GPR_LOAD_CONST r31, CONST
 
 check_gpr_lw:
+	rumboot_putstring "check_gpr_lw\n"
 	mr r30, r1 /* AG: Save stack ptr */
     GPR_LOAD_MEM r0, r31, value, CONST
     GPR_LOAD_MEM r1, r31, value, CONST
@@ -122,18 +130,19 @@ is_supervisor_mode:
     and r3, r7, r6
     cmpi cr7, 0, r3, 0x0
     TEST_ASSERT(eq, cr7, "Supervisor mode disabled in CPU")
-    bne  cr7, error
+    bne  cr7, test_error
 
 check_sprg_ppc:
-    SPRG_LOAD SPR_SPRG0, CONST
-    SPRG_LOAD SPR_SPRG1, CONST
-    SPRG_LOAD SPR_SPRG2, CONST
-    SPRG_LOAD SPR_SPRG3, CONST
-    SPRG_LOAD SPR_SPRG4, CONST
-    SPRG_LOAD SPR_SPRG5, CONST
-    SPRG_LOAD SPR_SPRG6, CONST
-    SPRG_LOAD SPR_SPRG7, CONST
-    SPRG_LOAD SPR_SPRG8, CONST
+	rumboot_putstring "check_sprg_ppc\n"
+	SPRG_LOAD SPR_SPRG0, CONST
+/*	SPRG_LOAD SPR_SPRG1, CONST */
+	SPRG_LOAD SPR_SPRG2, CONST
+	SPRG_LOAD SPR_SPRG3, CONST
+	SPRG_LOAD SPR_SPRG4, CONST
+	SPRG_LOAD SPR_SPRG5, CONST
+	SPRG_LOAD SPR_SPRG6, CONST
+	SPRG_LOAD SPR_SPRG7, CONST
+	SPRG_LOAD SPR_SPRG8, CONST
 
 test_ok:
     rumboot_putstring "\nTEST OK\n"
@@ -141,7 +150,7 @@ test_ok:
     load_const r3,	RESULT_OK
     b finish
 
-error:
+test_error:
     rumboot_putstring "\nTEST ERROR\n"
     test_event		EVENT_ERROR
     load_const r3,	RESULT_ERROR
