@@ -160,7 +160,14 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 	  IRUN_FLAGS +i2c_single_bus
       PREFIX multimaster-mirror
     )
-	
+	add_rumboot_target_dir(arinc/
+      CONFIGURATION IRAM     
+      PREFIX arinc
+    )
+	add_rumboot_target_dir(arinc/
+      CONFIGURATION IRAM_MIRROR
+      PREFIX arinc-mirror
+    )
 	
     add_rumboot_target_dir(common/spl-stubs/
       CONFIGURATION IRAM
