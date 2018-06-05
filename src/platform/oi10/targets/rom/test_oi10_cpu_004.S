@@ -126,40 +126,6 @@
     xori 0,0,0
 .endm
 
-iss_mem:
-.long 0x00000A50
-.long 0x0A500000
-.long 0xAA55FA5F
-.long 0xFA5FAA55
-.long 0xAA55F00F
-.long 0xF00FAA55
-.long 0x0A500A50
-.long 0x0A500A50
-.long 0xFA5FFA5F
-.long 0xFA5FFA5F
-.long 0xF00FF00F
-.long 0xF00FF00F
-.long 0xF5AFF5AF
-.long 0xF5AFF5AF
-.long 0x05A005A0
-.long 0x05A005A0
-.long 0x0FF00FF0
-.long 0x0FF00FF0
-.long 0xA005A005
-.long 0xA005A005
-.long 0xAFF5AFF5
-.long 0xAFF5AFF5
-.long 0x00000000
-.long 0x00000055
-.long 0x00000055
-.long 0xFFFFAA55
-.long 0xFFFFAA55
-.long 0x00000000
-.long 0x00000000
-.long 0x00000000
-.long 0x00000000
-.long 0x00000000
-
 .macro sw_comparator_macro reg_first_start, reg_second_start, reg_byte_count, reg_tmp_offset, reg_tmp_data_first, reg_tmp_data_second, reg_result
     load_const \reg_tmp_offset, 0
     load_const \reg_result, 1
@@ -253,6 +219,44 @@ main:
 
     beq cr0,	test_ok
     b			test_error
+
+
+.align 2
+iss_mem:
+	.long 0x00000A50
+	.long 0x0A500000
+	.long 0xAA55FA5F
+	.long 0xFA5FAA55
+	.long 0xAA55F00F
+	.long 0xF00FAA55
+	.long 0x0A500A50
+	.long 0x0A500A50
+	.long 0xFA5FFA5F
+	.long 0xFA5FFA5F
+	.long 0xF00FF00F
+	.long 0xF00FF00F
+	.long 0xF5AFF5AF
+	.long 0xF5AFF5AF
+	.long 0x05A005A0
+	.long 0x05A005A0
+	.long 0x0FF00FF0
+	.long 0x0FF00FF0
+	.long 0xA005A005
+	.long 0xA005A005
+	.long 0xAFF5AFF5
+	.long 0xAFF5AFF5
+	.long 0x00000000
+	.long 0x00000055
+	.long 0x00000055
+	.long 0xFFFFAA55
+	.long 0xFFFFAA55
+	.long 0x00000000
+	.long 0x00000000
+	.long 0x00000000
+	.long 0x00000000
+	.long 0x00000000
+
+
 
 	/* AG: */
 compare_data:

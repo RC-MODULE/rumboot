@@ -1,18 +1,18 @@
-
+#include <platform/oi10/platform/test_assert.S.h>
 #include <platform/oi10/platform/test_event_asm.h>
+#include <platform/oi10/platform/trace.S.h>
 #include <platform/oi10/platform/devices.h>
 #include <platform/oi10/platform/regs/regs_mpic128.h>
-#include <platform/oi10/platform/trace.S.h>
 
 .macro sw_comparator_macro reg_first_start, reg_second_start, reg_byte_count, reg_tmp_offset, reg_tmp_data_first, reg_tmp_data_second, reg_result
     load_const \reg_tmp_offset, 0
     load_const \reg_result, 1
     li \reg_tmp_offset, 4
-5: /* labels 1-3 used in rumboot_putstring, label 4 used in test_assert */
-        lwzx \reg_tmp_data_first, \reg_first_start, \reg_tmp_offset
+15: /* labels 1-3 used in rumboot_putstring, label 4 used in test_assert */
+        lwzx \reg_tmp_data_first,  \reg_first_start,  \reg_tmp_offset
         lwzx \reg_tmp_data_second, \reg_second_start, \reg_tmp_offset
         cmplw cr2, \reg_tmp_data_first, \reg_tmp_data_second
-        beq cr2, 6f
+        beq cr2, 16f
         load_const \reg_result, 0
 /*
         rumboot_putstring "data mismatch at  offset: 0x"
@@ -22,145 +22,12 @@
         rumboot_putstring "data in the second array: 0x"
         trace_hex \reg_tmp_data_second
 */
-6:
+16:
     addi \reg_tmp_offset, \reg_tmp_offset, 4
     cmpw cr3, \reg_byte_count, \reg_tmp_offset
-    bge cr3, 5b
+    bge cr3, 15b
 .endm
 
-iss_mem:
-.long 0x00005A5A
-.long 0x00005A5A
-.long 0x00005A5A
-.long 0x00005A5A
-.long 0x5A5A0000
-.long 0x5A5A0000
-.long 0x5A5A0000
-.long 0x5A5A0000
-.long 0xAA5604AF
-.long 0xAA5604AF
-.long 0xAA5604AF
-.long 0xAA5604AF
-.long 0xAA5604AF
-.long 0xAA5604AF
-.long 0xAA5604AF
-.long 0xAA5604AF
-.long 0xAA5604AF
-.long 0xAA5604AF
-.long 0x55AAB005
-.long 0x55AAB005
-.long 0x55AAB005
-.long 0x55AAB005
-.long 0x55AAB005
-.long 0xFFFFC3E2
-.long 0xFFFFC3E2
-.long 0xFFFFC3E2
-.long 0xFFFFC3E2
-.long 0x04B004AF
-.long 0x04B004AF
-.long 0x04B004AF
-.long 0x04B004AF
-.long 0xB004B005
-.long 0xB004B005
-.long 0xB004B005
-.long 0xB004B005
-.long 0x04B004AF
-.long 0x04B004AF
-.long 0x04B004AF
-.long 0x04B004AF
-.long 0xB004B005
-.long 0xB004B005
-.long 0xB004B005
-.long 0xB004B005
-.long 0x04B004B0
-.long 0x04B004AF
-.long 0x04B004AF
-.long 0x04B004AF
-.long 0x04B004AF
-.long 0xB004B004
-.long 0xB004B005
-.long 0xB004B004
-.long 0xB004B005
-.long 0xC3E1C3E2
-.long 0xC3E1C3E2
-.long 0xC3E1C3E2
-.long 0xC3E1C3E2
-.long 0xFFFF0D48
-.long 0x00000000
-.long 0xFFFF0D48
-.long 0x00008464
-.long 0xFFFF7B9C
-.long 0x00000000
-.long 0x00000001
-.long 0x00000001
-.long 0x00000001
-.long 0x00000001
-.long 0xE1C3E1C3
-.long 0xE1C3E1C3
-.long 0x3C1E3C1D
-.long 0x3C1E3C1D
-.long 0xAA55AA54
-.long 0xAA55AA55
-.long 0xAA55AA54
-.long 0xAA55AA55
-.long 0x55AA55AA
-.long 0x55AA55A9
-.long 0x55AA55AA
-.long 0x55AA55A9
-.long 0xAA55AA55
-.long 0xAA55AA56
-.long 0xAA55AA55
-.long 0xAA55AA56
-.long 0x55AA55AB
-.long 0x55AA55AA
-.long 0x55AA55AB
-.long 0x55AA55AA
-.long 0x55AA55AB
-.long 0x55AA55AB
-.long 0x00000000
-.long 0x00000000
-.long 0x00000000
-
-/*
-# Memory save for Wed Feb  7 09:28:09 2018
-# Address     = 0x00050000
-# Byte length = 0x00000200
-
-00050000  00005A5A 00005A5A 00005A5A 00005A5A
-00050010  5A5A0000 5A5A0000 5A5A0000 5A5A0000
-00050020  AA5604AF AA5604AF AA5604AF AA5604AF
-00050030  AA5604AF AA5604AF AA5604AF AA5604AF
-00050040  AA5604AF AA5604AF 55AAB005 55AAB005
-00050050  55AAB005 55AAB005 55AAB005 FFFFC3E2
-00050060  FFFFC3E2 FFFFC3E2 FFFFC3E2 04B004AF
-00050070  04B004AF 04B004AF 04B004AF B004B005
-00050080  B004B005 B004B005 B004B005 04B004AF
-00050090  04B004AF 04B004AF 04B004AF B004B0s05
-000500A0  B004B005 B004B005 B004B005 04B004B0
-000500B0  04B004AF 04B004AF 04B004AF 04B004AF
-000500C0  B004B004 B004B005 B004B004 B004B005
-000500D0  C3E1C3E2 C3E1C3E2 C3E1C3E2 C3E1C3E2
-000500E0  FFFF0D48 00000000 FFFF0D48 00000000
-000500F0  00008464 FFFF7B9C 00000000 00000001
-00050100  00000001 00000001 00000001 E1C3E1C3
-00050110  E1C3E1C3 3C1E3C1D 3C1E3C1D AA55AA54
-00050120  AA55AA55 AA55AA54 AA55AA55 55AA55AA
-00050130  55AA55A9 55AA55AA 55AA55A9 AA55AA55
-00050140  AA55AA56 AA55AA55 AA55AA56 55AA55AB
-00050150  55AA55AA 55AA55AB 55AA55AA 55AA55AB
-00050160  55AA55AB 00000000 00000000 00000000
-00050170  00000000 00000000 00000000 00000000
-00050180  00000000 00000000 00000000 00000000
-00050190  00000000 00000000 00000000 00000000
-000501A0  00000000 00000000 00000000 00000000
-000501B0  00000000 00000000 00000000 00000000
-000501C0  00000000 00000000 00000000 00000000
-000501D0  00000000 00000000 00000000 00000000
-000501E0  00000000 00000000 00000000 00000000
-000501F0  00000000 00000000 00000000 00000000
-*/
-
-#include <platform/oi10/platform/arch/ppc/ppc_476fp_config.h>
 
 /* check macro for operations with mask "opcode RA, RS, UI" */
 .macro LOGIC_RA_RS_UI_CHECK opcode, ra_no, rs_no, rs_val, ui_val, info_reg_no, comand_conventional_no, temp_reg_no, result_address
@@ -267,12 +134,12 @@ iss_mem:
 	load_const 0 0x20000000
 .endif
 	mtxer 0
-load_const \rs_no, \rs_val /* load values into reg with number rs_no */
+	load_const \rs_no, \rs_val /* load values into reg with number rs_no */
 
-\opcode \ra_no, \rs_no /* perform operation */
-stwu \ra_no, 4(\result_address)
-test_event EVENT_CHECK_CPU_PPC_PROG_MODEL_17 /* raise event for verilog */
-xori 0,0,0	/* for syncronization purpose */
+	\opcode \ra_no, \rs_no /* perform operation */
+	stwu \ra_no, 4(\result_address)
+	test_event EVENT_CHECK_CPU_PPC_PROG_MODEL_17 /* raise event for verilog */
+	xori 0,0,0	/* for syncronization purpose */
 .endm
 
 
@@ -391,6 +258,140 @@ test_mpw_cpu_005_0:
 	beq cr0, finish_ok
 	b finish_error
 
+.align 2
+iss_mem:
+	.long 0x00005A5A
+	.long 0x00005A5A
+	.long 0x00005A5A
+	.long 0x00005A5A
+	.long 0x5A5A0000
+	.long 0x5A5A0000
+	.long 0x5A5A0000
+	.long 0x5A5A0000
+	.long 0xAA5604AF
+	.long 0xAA5604AF
+	.long 0xAA5604AF
+	.long 0xAA5604AF
+	.long 0xAA5604AF
+	.long 0xAA5604AF
+	.long 0xAA5604AF
+	.long 0xAA5604AF
+	.long 0xAA5604AF
+	.long 0xAA5604AF
+	.long 0x55AAB005
+	.long 0x55AAB005
+	.long 0x55AAB005
+	.long 0x55AAB005
+	.long 0x55AAB005
+	.long 0xFFFFC3E2
+	.long 0xFFFFC3E2
+	.long 0xFFFFC3E2
+	.long 0xFFFFC3E2
+	.long 0x04B004AF
+	.long 0x04B004AF
+	.long 0x04B004AF
+	.long 0x04B004AF
+	.long 0xB004B005
+	.long 0xB004B005
+	.long 0xB004B005
+	.long 0xB004B005
+	.long 0x04B004AF
+	.long 0x04B004AF
+	.long 0x04B004AF
+	.long 0x04B004AF
+	.long 0xB004B005
+	.long 0xB004B005
+	.long 0xB004B005
+	.long 0xB004B005
+	.long 0x04B004B0
+	.long 0x04B004AF
+	.long 0x04B004AF
+	.long 0x04B004AF
+	.long 0x04B004AF
+	.long 0xB004B004
+	.long 0xB004B005
+	.long 0xB004B004
+	.long 0xB004B005
+	.long 0xC3E1C3E2
+	.long 0xC3E1C3E2
+	.long 0xC3E1C3E2
+	.long 0xC3E1C3E2
+	.long 0xFFFF0D48
+	.long 0x00000000
+	.long 0xFFFF0D48
+	.long 0x00008464
+	.long 0xFFFF7B9C
+	.long 0x00000000
+	.long 0x00000001
+	.long 0x00000001
+	.long 0x00000001
+	.long 0x00000001
+	.long 0xE1C3E1C3
+	.long 0xE1C3E1C3
+	.long 0x3C1E3C1D
+	.long 0x3C1E3C1D
+	.long 0xAA55AA54
+	.long 0xAA55AA55
+	.long 0xAA55AA54
+	.long 0xAA55AA55
+	.long 0x55AA55AA
+	.long 0x55AA55A9
+	.long 0x55AA55AA
+	.long 0x55AA55A9
+	.long 0xAA55AA55
+	.long 0xAA55AA56
+	.long 0xAA55AA55
+	.long 0xAA55AA56
+	.long 0x55AA55AB
+	.long 0x55AA55AA
+	.long 0x55AA55AB
+	.long 0x55AA55AA
+	.long 0x55AA55AB
+	.long 0x55AA55AB
+	.long 0x00000000
+	.long 0x00000000
+	.long 0x00000000
+
+/*
+# Memory save for Wed Feb  7 09:28:09 2018
+# Address     = 0x00050000
+# Byte length = 0x00000200
+
+00050000  00005A5A 00005A5A 00005A5A 00005A5A
+00050010  5A5A0000 5A5A0000 5A5A0000 5A5A0000
+00050020  AA5604AF AA5604AF AA5604AF AA5604AF
+00050030  AA5604AF AA5604AF AA5604AF AA5604AF
+00050040  AA5604AF AA5604AF 55AAB005 55AAB005
+00050050  55AAB005 55AAB005 55AAB005 FFFFC3E2
+00050060  FFFFC3E2 FFFFC3E2 FFFFC3E2 04B004AF
+00050070  04B004AF 04B004AF 04B004AF B004B005
+00050080  B004B005 B004B005 B004B005 04B004AF
+00050090  04B004AF 04B004AF 04B004AF B004B005
+000500A0  B004B005 B004B005 B004B005 04B004B0
+000500B0  04B004AF 04B004AF 04B004AF 04B004AF
+000500C0  B004B004 B004B005 B004B004 B004B005
+000500D0  C3E1C3E2 C3E1C3E2 C3E1C3E2 C3E1C3E2
+000500E0  FFFF0D48 00000000 FFFF0D48 00000000
+000500F0  00008464 FFFF7B9C 00000000 00000001
+00050100  00000001 00000001 00000001 E1C3E1C3
+00050110  E1C3E1C3 3C1E3C1D 3C1E3C1D AA55AA54
+00050120  AA55AA55 AA55AA54 AA55AA55 55AA55AA
+00050130  55AA55A9 55AA55AA 55AA55A9 AA55AA55
+00050140  AA55AA56 AA55AA55 AA55AA56 55AA55AB
+00050150  55AA55AA 55AA55AB 55AA55AA 55AA55AB
+00050160  55AA55AB 00000000 00000000 00000000
+00050170  00000000 00000000 00000000 00000000
+00050180  00000000 00000000 00000000 00000000
+00050190  00000000 00000000 00000000 00000000
+000501A0  00000000 00000000 00000000 00000000
+000501B0  00000000 00000000 00000000 00000000
+000501C0  00000000 00000000 00000000 00000000
+000501D0  00000000 00000000 00000000 00000000
+000501E0  00000000 00000000 00000000 00000000
+000501F0  00000000 00000000 00000000 00000000
+*/
+
+
 /* AG: */
 compare_data:
 	cmpwi cr0,r5,0
@@ -424,4 +425,5 @@ finish_ok:
 
 finish:
 	blr
+
 
