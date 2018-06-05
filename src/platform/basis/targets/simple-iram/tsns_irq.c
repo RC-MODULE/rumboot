@@ -21,47 +21,14 @@ uint32_t base;
 
 static void handler(int irq, void *arg)
 {
-  irq_done = 0x1;
-  status=ioread32(TSNS_BASE + TSNS_IR);
-  if (status!=0x1)  
-  rumboot_printf("wrong status!\n"); 
+	irq_done = 0x1;
+	status=ioread32(TSNS_BASE + TSNS_IR);
+	if (status!=0x1)  
+	rumboot_printf("wrong status!\n"); 
+	iowrite32(0xC8, GPIO2_BASE + GPIO_WRITE_APBtoPAD);	//change data
+	udelay(100);
+	iowrite32(0x0, TSNS_BASE + TSNS_IR);				//inactive interrupt
 }
-/*static void handler2()
-{
-  irq_done = 0x1;
-  status=ioread32(GPIO2_BASE+0x14);
-  if ((status!=0x1)&&(status!=0x2))
-  rumboot_printf("wrong status!\n"); 
-}
-static void handler3()
-{
-  irq_done = 0x1;
-  status=ioread32(GPIO3_BASE+0x14);
-  if ((status!=0x1)&&(status!=0x2))
-  rumboot_printf("wrong status!\n"); 
-}
-static void handler4()
-{
-  irq_done = 0x1;
-  status=ioread32(GPIO4_BASE+0x14);
-  if ((status!=0x1)&&(status!=0x2))
-  rumboot_printf("wrong status!\n"); 
-}
-static void handler5()
-{
-  irq_done = 0x1;
-  status=ioread32(GPIO5_BASE+0x14);
-  if ((status!=0x1)&&(status!=0x2))
-  rumboot_printf("wrong status!\n"); l
-}
-static void handler6()
-{
-  irq_done = 0x1;
-  status=ioread32(GPIO6_BASE+0x14);
-  if ((status!=0x1)&&(status!=0x2))
-  rumboot_printf("wrong status!\n"); 
-}
-*/
 
 void init_tsns()
 {
@@ -77,6 +44,7 @@ int TSNS_INT( uint32_t base_tsns_addr,  uint32_t TSNS_IN)
   
 	unsigned send_data;
 	unsigned count;
+	//unsigned count2;
 	count=0x0;
 	irq_done=0x0;
 	
@@ -98,7 +66,8 @@ int TSNS_INT( uint32_t base_tsns_addr,  uint32_t TSNS_IN)
        rumboot_printf("TIMEOUT!\n");
        return 1;
       }
-    }
+    }	
+	
   rumboot_irq_disable(TSNS_INTR);
   return 0; 
 }
