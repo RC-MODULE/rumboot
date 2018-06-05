@@ -171,7 +171,7 @@ int sdio_dma_tr (unsigned int* src_addr, unsigned int* dst_addr)
   iowrite32(0x00000006,SDIO0_BASE + 0x050);//select buf0,write transfer start 
   iowrite32(0x00000200,SDIO0_BASE + 0x034);//set dma total data 512 byte
   iowrite32((unsigned int)src_addr,SDIO0_BASE + 0x02c);//dma source atart address
-  iowrite32(0x000020f1,SDIO0_BASE + 0x028);//ARLEN=16,ARSIZE=2(4bytes)   
+  iowrite32(0x00002001,SDIO0_BASE + 0x028);//ARLEN=16,ARSIZE=2(4bytes)   
   rumboot_printf("check_1\n");
    if (!wait_sdio_int_handled(1000)) 
     {rumboot_printf("SDIO interrupt timeout_1\n");
@@ -210,7 +210,7 @@ int sdio_dma_tr (unsigned int* src_addr, unsigned int* dst_addr)
   iowrite32(0x00000004,SDIO0_BASE + 0x050);
   iowrite32( 0x00000200,SDIO0_BASE + 0x044);
   iowrite32((unsigned int)dst_addr,SDIO0_BASE + 0x040);    
-  iowrite32(0x00020f01,SDIO0_BASE + 0x038);
+  iowrite32(0x00020001,SDIO0_BASE + 0x038);
   rumboot_printf("check_4\n");
    if (!wait_sdio_int_handled(1000)) 
     {rumboot_printf("SDIO interrupt timeout_6\n");
