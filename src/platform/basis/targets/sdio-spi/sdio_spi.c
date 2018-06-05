@@ -8,74 +8,22 @@
 #include <devices/sdio_spi.h>
 #include <rumboot/irq.h>
 #include <platform/devices.h>
+#include <platform/interrupts.h>
 
-
-
-int main()
+volatile unsigned SDIO_HANDLED;
+volatile unsigned timeout;
+unsigned src_array[128];
+unsigned dst_array[128];
+int init_sd()
 {
 unsigned read_data; 
-    rumboot_printf("rumboot: hello sdio!\n");
-    /* Return 0, test passed */
 
-
-   //GSPI loop test - configure SSP
-  //SDIO_SPI = false;
-/*  iowrite32(0xc7,GSPI0_BASE + 0x000); //8-bit data
-  iowrite32(0x03,GSPI0_BASE + 0x004); //turn on controller, loop operation
-  iowrite32(0x02,GSPI0_BASE + 0x010); //clock prescale
-  iowrite32(0x00,GSPI0_BASE + 0x014); //interrupt masks - mask all
-  iowrite32(0x03,GSPI0_BASE + 0x024); //enable DMA
-
-  
-  unsigned i;
-  for (i=0; i<8; i++) iowrite32(i + (i<<8) + (i<<16) + (i<<24),DMA_SDIO_SRC_IM0 + i*4);
-
-  
- //GSPI loop test - dma exchenge
-  iowrite32(0xc,GSPI0_BASE + 0x0d8); //interrupt masks - unmask axiw
-  iowrite32((DMA_SDIO_SRC_IM0),(GSPI0_BASE + 0x0a4));//DMAR start address 
-  iowrite32((DMA_SDIO_SRC_IM0 + 31),(GSPI0_BASE + 0x0a8));//DMAR end address
-  iowrite32(0x80000000|0x1FFFFFE0 ,(GSPI0_BASE + 0x0ac));//DMAR set descriptor 
-  iowrite32(0x1,(GSPI0_BASE + 0x0b4));//set read axi buffer tipe - single (not circled)
-  iowrite32((DMA_SDIO_SRC_IM0 + 0x100),(GSPI0_BASE + 0x090));//DMAW start address
-  iowrite32((DMA_SDIO_SRC_IM0 + 0x100 + 31),(GSPI0_BASE + 0x094));//DMAW end address
-  iowrite32( 0x80000000|0x1FFFFFE0,(GSPI0_BASE + 0x098));//DMAW set descriptor 
-  iowrite32( 0x1ef,(GSPI0_BASE + 0x0c4));//set axi params AWLEN=ARLEN=F, all LSB (0 - LSB, 1 - MSB) ??
-  iowrite32( 0x1,(GSPI0_BASE + 0x0b8));//start AXIR DMA
-  
-  
-  read_data=ioread32(GSPI0_BASE + 0x0d4);
-  while (!(read_data&0x008))
-    {read_data=ioread32(GSPI0_BASE + 0x0d4);}
-  while (!(read_data&0x004))
-    {read_data=ioread32(GSPI0_BASE + 0x0d4);}
-    
-  
-  //GSPI loop test - compare data
-  for (i=0; i<8; i++)
-  {
-    if (ioread32(DMA_SDIO_SRC_IM0 + 0x100 + i*4) != i + (i<<8) + (i<<16) + (i<<24))
-    {
-      rumboot_printf
-      (
-	"Error DMA data check. Addr=%x, data_ref=%x, data_rd=%x \n",
-	DMA_SDIO_SRC_IM0 + 0x100 + i*4,
-	i + (i<<8) + (i<<16) + (i<<24),
-	ioread32(DMA_SDIO_SRC_IM0 + 0x100 + i*4)
-      );
-      return 1;     
-    }
-  }
-
- 
-*/ 
  //Switch to SDIO from GSPI
  // SDIO_SPI = true;
   iowrite32(0x1,SDIO0_BASE + SDIO_ENABLE);  //sdio enable
   iowrite32(0x0,SDIO0_BASE + SDIO_CLK_DIVIDE);  //sdio clock 
   iowrite32(0x7c,SDIO0_BASE + SDIO_INT_MASKS ); //all sdio interrupts enable
-  
- 
+
   //Init SD card
   
   iowrite32( 0x16f,SDIO0_BASE + 0x014);//enable the interrupt and the error flag  
@@ -152,76 +100,138 @@ unsigned read_data;
   
  return 0;
 }
-  
-int sdio_dma_tr (unsigned src_addr, unsigned dst_addr)
+void prepare_array()
 {
-  unsigned read_data;  
-  //Write data to SD card
+  unsigned i;
+  for (i=0; i<128; i++) 
+   src_array[i]= i + (i<<8) + (i<<16) + (i<<24); 
+}  
+
+int check_array()
+{
+ unsigned i;
+ for (i=0; i<128; i++)
+ { 
+  if ( !( src_array[i] == dst_array[i]))  
+    return 1;
+ }
+  return 0;
+}
+
+
+
+static void handler1()
+{
+unsigned int SDIO_Status;
+unsigned int SDIO_clear = 0;
+
+       SDIO_Status=ioread32(SDIO0_BASE + SDIO_INT_STATUS); //Read interrupt status
+
+            if ((SDIO_Status>>5)&0x1) SDIO_clear = SDIO_clear|0x4; //Clear command done interrupt
+            if ((SDIO_Status>>2)&0x1) SDIO_clear = SDIO_clear|0x1; //Clear buf transfer finish interrupt
+            if ((SDIO_Status>>4)&0x1) SDIO_clear = SDIO_clear|0x2; //Clear card transfer done interrupt
+            if ((SDIO_Status>>6)&0x1) 
+              {
+                rumboot_printf("Error in SDIO card !\n");
+                SDIO_clear = SDIO_clear|0x10;
+              }
+            iowrite32(SDIO_clear,SDIO0_BASE+ 0x048);
+            SDIO_HANDLED=0x1;
+}
+
+
+uint32_t wait_sdio_int_handled(unsigned timeout)
+{
+    unsigned i = 0;
+    while(!SDIO_HANDLED && (i++<timeout)){;}
+    if (SDIO_HANDLED)
+    {
+      SDIO_HANDLED=0;
+    return 1;
+    }
+    else 
+    return 0;  
+}
+
+int init_irq()
+{
+  rumboot_irq_cli();
+  struct rumboot_irq_entry *tbl = rumboot_irq_create(NULL);
+  rumboot_irq_set_handler(tbl,GSPI_SDIO0_IRQ,0,handler1,NULL);
+  
+  rumboot_irq_table_activate(tbl);
+  rumboot_irq_sei();
+  return 0;
+}
+
+int sdio_dma_tr (unsigned int* src_addr, unsigned int* dst_addr)
+{
+  //write data
   iowrite32(0x00000101,SDIO0_BASE + 0x000);//one block data transfer,512 byte
   iowrite32(0x00000006,SDIO0_BASE + 0x050);//select buf0,write transfer start 
   iowrite32(0x00000200,SDIO0_BASE + 0x034);//set dma total data 512 byte
-  iowrite32(src_addr,SDIO0_BASE + 0x02c);//dma source atart address
-  iowrite32(0x000020f1,SDIO0_BASE + 0x028);//ARLEN=16,ARSIZE=2(4bytes)
-  //if (!wait_sdio_int_handled(1000)) {trace_msg("SDIO interrupt timeout\n"); return TEST_ERROR;}
-read_data=ioread32 (SDIO0_BASE+ 0x28);
-  while (!(read_data&0x00080000))
-      {read_data=ioread32 (SDIO0_BASE+ 0x028);}
-  iowrite32(0x00080000,SDIO0_BASE+ 0x028);
-  read_data=ioread32 (SDIO0_BASE+ 0x28);
-read_data=ioread32 (SDIO0_BASE+ 0x28);
-  while (!(read_data&0x00000001))
-      {read_data=ioread32 (SDIO0_BASE+ 0x048);}
-  iowrite32(0x00000001,SDIO0_BASE+ 0x048);
-  read_data=ioread32 (SDIO0_BASE+ 0x48);
-
+  iowrite32((unsigned int)src_addr,SDIO0_BASE + 0x02c);//dma source atart address
+  iowrite32(0x000020f1,SDIO0_BASE + 0x028);//ARLEN=16,ARSIZE=2(4bytes)   
+  rumboot_printf("check_1\n");
+   if (!wait_sdio_int_handled(1000)) 
+    {rumboot_printf("SDIO interrupt timeout_1\n");
+    return 1;
+    }
+  
   iowrite32(0x00000000,SDIO0_BASE + 0x00c);//set use buf0 and write data to SD bus
   iowrite32(0x00000101,SDIO0_BASE + 0x000);//set data block 512 byte ans send one block 
   iowrite32(0x00000000,SDIO0_BASE + 0x008);//set cmd24 argument 
   iowrite32(0x00187811,SDIO0_BASE + 0x004);//set cmd24 index out the command 
-  //if (!wait_sdio_int_handled(1000)) {trace_msg("SDIO interrupt timeout\n"); return TEST_ERROR;}
-read_data =ioread32 (SDIO0_BASE+ 0x048);
-  while (!(read_data&0x004))
-      {read_data=ioread32 (SDIO0_BASE+ 0x048);}
-  iowrite32(0x004,SDIO0_BASE+ 0x048);
-read_data=ioread32 (SDIO0_BASE+ 0x048);
-  while (!(read_data&0x002))
-      {read_data=ioread32 (SDIO0_BASE+ 0x048);}
-  iowrite32(0x002,SDIO0_BASE+ 0x048);
+  rumboot_printf("check_2\n");
+   if (!wait_sdio_int_handled(1000)) 
+    {rumboot_printf("SDIO interrupt timeout_2\n");
+    return 1;
+    }
+   if (!wait_sdio_int_handled(1000)) 
+    {rumboot_printf("SDIO interrupt timeout_3\n");
+    return 1;
+    }
   
- 
   //Read data from SD card
   iowrite32(0x00000000,SDIO0_BASE + 0x00c);
   iowrite32(0x00000101,SDIO0_BASE + 0x000);
   iowrite32(0x00000000,SDIO0_BASE + 0x008);
   iowrite32(0x00117911,SDIO0_BASE + 0x004);
-  //if (!wait_sdio_int_handled(1000)) {trace_msg("SDIO interrupt timeout\n"); return TEST_ERROR;}
-  read_data=ioread32 (SDIO0_BASE+ 0x048);
-  while (!(read_data&0x004))
-      {read_data=ioread32 (SDIO0_BASE+ 0x048);}
-  iowrite32(0x004,SDIO0_BASE+ 0x048);
-read_data=ioread32 (SDIO0_BASE+ 0x048);
-  while (!(read_data&0x002))
-      {read_data=ioread32 (SDIO0_BASE+ 0x048);}
-  iowrite32(0x002,SDIO0_BASE+ 0x048);
-  
- iowrite32(0x00000004,SDIO0_BASE + 0x050);
- iowrite32( 0x00000200,SDIO0_BASE + 0x044);
- iowrite32(dst_addr,SDIO0_BASE + 0x040);    
- iowrite32(0x00020f01,SDIO0_BASE + 0x038);
- // if (!wait_sdio_int_handled(1000)) {trace_msg("SDIO interrupt timeout\n"); return TEST_ERROR;}
- read_data=ioread32 (SDIO0_BASE+ 0x28);
-  while (!(read_data&0x00080000))
-      {read_data=ioread32 (SDIO0_BASE+ 0x028);}
-  iowrite32(0x00080000,SDIO0_BASE+ 0x028);
-  read_data=ioread32 (SDIO0_BASE+ 0x28);
-read_data=ioread32 (SDIO0_BASE+ 0x28);
-  while (!(read_data&0x00000001))
-      {read_data=ioread32 (SDIO0_BASE+ 0x048);}
-  iowrite32(0x00000001,SDIO0_BASE+ 0x048);
-  read_data=ioread32 (SDIO0_BASE+ 0x48);
+  rumboot_printf("check_3\n");
+   if (!wait_sdio_int_handled(1000)) 
+    {rumboot_printf("SDIO interrupt timeout_4\n");
+    return 1;
+    }
+   if (!wait_sdio_int_handled(1000)) 
+    {rumboot_printf("SDIO interrupt timeout_5\n");
+    return 1;
+    }
 
- return 0;
-} 
+  iowrite32(0x00000004,SDIO0_BASE + 0x050);
+  iowrite32( 0x00000200,SDIO0_BASE + 0x044);
+  iowrite32((unsigned int)dst_addr,SDIO0_BASE + 0x040);    
+  iowrite32(0x00020f01,SDIO0_BASE + 0x038);
+  rumboot_printf("check_4\n");
+   if (!wait_sdio_int_handled(1000)) 
+    {rumboot_printf("SDIO interrupt timeout_6\n");
+    return 1;
+    }
+  return 0;
+}
+
+int main()
+{
+init_sd();
+init_irq();
+prepare_array();
+  if (sdio_dma_tr(src_array, dst_array)!=0)
+return 1;
+  if ( check_array()!=0)
+return 1; 
+
+return 0; 
+}  
+
 
 
   

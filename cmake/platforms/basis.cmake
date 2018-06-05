@@ -241,9 +241,13 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
   add_rumboot_target(
     CONFIGURATION IRAM
     FILES sdio-spi/sdio_spi.c
-    TIMEOUT 200 us
     IRUN_FLAGS +select_sdio0
   )
+
+   add_rumboot_target_dir(sdio-spi/
+    CONFIGURATION IRAM_MIRROR
+    PREFIX sdio-spi-mirror
+    )
 
   add_rumboot_target(
     CONFIGURATION IRAM
