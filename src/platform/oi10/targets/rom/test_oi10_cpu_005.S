@@ -383,24 +383,6 @@ test_mpw_cpu_005_0:
     LOGIC_RA_RS_CHECK   neg,          7,     6,     0xAA55AA55,    30,          0x10,       29,          0,             3
     LOGIC_RA_RS_CHECK   neg.,         7,     6,     0xAA55AA55,    30,          0x11,       29,          0,             3
 
-/*
-    test_setup_stack:
-    // FIXME !AG
-    load_const r3, MPICx_BASE+MPIC128x_WAI_PR
-    mfdcrx r3, r3
-    cmpwi r3, PPC0_CORE_ID
-    beq test_setup_cpu0_stack
-    //else
-    load_addr r1, cpu1_stack_top
-    b test_setup_cpu1_stack
-
-    test_setup_cpu0_stack:
-    
-    load_addr r1, cpu0_stack_top
-
-    test_setup_cpu1_stack:
-    stwu r0, -8(r1)
-*/
     load_const r3, 0x00050000
     load_addr r4, iss_mem
     load_const r5, 89
