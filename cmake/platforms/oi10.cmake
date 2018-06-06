@@ -110,6 +110,7 @@ add_rumboot_target_dir(rom/
 
 add_rumboot_target_dir(iss-iram/
     CONFIGURATION ISSIRAM
+    PREFIX iss-iram
     CHECKCMD ${CMAKE_SOURCE_DIR}/scripts/ISS/dump_gen.csh
   )
 
