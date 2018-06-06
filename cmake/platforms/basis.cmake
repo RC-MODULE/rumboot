@@ -665,6 +665,55 @@ endif()
       NAME ext_irq_gen_reg_test
     )
     
+  add_rumboot_target(
+      SNAPSHOT default
+      CONFIGURATION IRAM
+      FILES pcie/pcie_ctrl_reg_test.c
+      NAME pcie_ctrl_reg_test
+    )
+    
+  add_rumboot_target(
+      SNAPSHOT default
+      CONFIGURATION IRAM
+      FILES pcie/pcie_phy_bist_prbs31.S
+      NAME pcie_phy_bist_prbs31
+    )
+    
+  add_rumboot_target(
+      SNAPSHOT default
+      CONFIGURATION IRAM
+      FILES pcie/pcie_soft_reset_eRP_test.c
+      NAME pcie_soft_reset_eRP_test
+    )
+    
+  add_rumboot_target(
+      SNAPSHOT default
+      CONFIGURATION IRAM
+      FILES pcie/pcie_core_reg_test.c
+      NAME pcie_core_reg_test
+    )
+    
+  add_rumboot_target(
+      SNAPSHOT default
+      CONFIGURATION IRAM
+      FILES pcie/pcie_msix_eRP_test.c
+      NAME pcie_msix_eRP_test
+    )
+    
+  add_rumboot_target(
+      SNAPSHOT default
+      CONFIGURATION IRAM
+      FILES pcie/pcie_phy_reg_test.c
+      NAME pcie_phy_reg_test
+    )
+    
+  add_rumboot_target(
+      SNAPSHOT default
+      CONFIGURATION IRAM
+      FILES pcie/pcie_turn_on_eRP_test.c
+      NAME pcie_turn_on_eRP_test
+    )
+    
   #RumBoot Integration tests
 #  add_rumboot_target(
 #      CONFIGURATION INTEGRATION
