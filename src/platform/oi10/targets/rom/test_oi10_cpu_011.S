@@ -147,26 +147,28 @@ srammc2plb4_1_loop_0:
     cmp cr7,0, r6,r5
     TEST_ASSERT(eq,cr7,"Read/write error in SRAMMC2PLB4_1_BEAR (running 0)")
     cmp 0, 0, r5, r8
-    beq test_ok
+    beq test_end
     slw r5, r5, r7
     ori r5, r5, 1
     b srammc2plb4_1_loop_0
 
-test_ok:
+test_end:
     load_const r5, BEAR_RESET_VAL
     load_const r4, DCR_SRAMMC2PLB4_0_BASE + BEAR
     mtdcrx r4, r5
     load_const r0, DCR_SRAMMC2PLB4_1_BASE + BEAR
     mtdcrx r4, r5
-    test_event EVENT_OK
-    rumboot_putstring "TEST OK\n"
-    load_const r3, 0x00
-    b finish
 
-error:
-     test_event EVENT_ERROR
-     rumboot_putstring "TEST ERROR\n"
-     load_const r3, 0x01
+test_ok:
+    rumboot_putstring "TEST OK\n"
+    test_event		EVENT_OK
+    load_const r3,	RESULT_OK
+	b finish
+
+test_error:
+	rumboot_putstring "TEST ERROR\n"
+	test_event		EVENT_ERROR
+	load_const r3,	RESULT_ERROR
 
 finish:
 	blr

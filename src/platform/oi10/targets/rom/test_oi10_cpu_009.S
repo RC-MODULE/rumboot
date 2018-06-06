@@ -129,16 +129,15 @@ plb6plb4_1_loop_0:
 end_plb6plb4_1:
 
 test_ok:
+	rumboot_putstring "TEST OK\n"
+	test_event EVENT_OK
+	load_const r3, RESULT_OK
+	b finish
 
-    test_event EVENT_OK
-    rumboot_putstring "TEST OK\n"
-    load_const r3, 0x00
-    b finish
-
-error:
-	test_event EVENT_ERROR
+test_error:
 	rumboot_putstring "TEST ERROR\n"
-	load_const r3, 0x01
+	test_event EVENT_ERROR
+	load_const r3, RESULT_ERROR
 
 finish:
 	blr

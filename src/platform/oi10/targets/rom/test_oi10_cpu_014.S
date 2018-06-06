@@ -73,15 +73,15 @@ dcr_arb_loop_0:
 end_checking:
 
 test_ok:
-    test_event EVENT_OK
     rumboot_putstring "TEST OK\n"
-    load_const r3, 0x00
+    test_event		EVENT_OK
+    load_const r3,	RESULT_OK
     b finish
 
 error:
-     test_event EVENT_ERROR
-     rumboot_putstring "TEST ERROR\n"
-     load_const r3, 0x01
+	rumboot_putstring "TEST ERROR\n"
+	test_event		EVENT_ERROR
+	load_const r3,	RESULT_ERROR
 
 finish:
 	blr
