@@ -30,7 +30,7 @@
 #define SYS_DATA_PARITY         0
 #define DPC_RESET_VAL			reg_field(0,SYS_DATA_PARITY)
 
-.section ".BOOT_ROM.text","ax",@progbits
+.section ".text","ax",@progbits
 
 .global image_start
 .global main

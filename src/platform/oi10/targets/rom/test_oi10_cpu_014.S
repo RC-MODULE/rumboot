@@ -3,6 +3,7 @@
 #include <platform/oi10/platform/test_event_asm.h>
 #include <platform/oi10/platform/test_assert.S.h>
 #include <platform/oi10/platform/arch/ppc/test_macro_asm.S.h>
+#include <platform/devices.h>
 
 //DCR address space, DCRARB
 
@@ -33,76 +34,81 @@
 #define DCRARB_REVID_VALUE      DCRARB_REVID_HARDCODED
 
 
-.section ".BOOT_ROM.text","ax",@progbits
+.section ".text","ax",@progbits
 
 .global image_start
+.global main
 
+main:
 image_start:
-    check_value r0,r1,r2, DCRARB_TADDR, DCRARB_TADDR_VALUE, "DCRARB_TADDR"
-    check_value r0,r1,r2, DCRARB_MADDR, DCRARB_MADDR_VALUE, "DCRARB_MADDR"
-    check_value r0,r1,r2, DCRARB_MASK, DCRARB_MASK_VALUE, "DCRARB_MASK"
-    check_value r0,r1,r2, DCRARB_DACR, DCRARB_DACR_VALUE, "DCRARB_DACR"
-    check_value r0,r1,r2, DCRARB_DAESR, DCRARB_DAESR_VALUE, "DCRARB_DAESR"
-    check_value r0,r1,r2, DCRARB_DAEAR, DCRARB_DAEAR_VALUE, "DCRARB_DAEAR"
-    check_value r0,r1,r2, DCRARB_DASMR, DCRARB_DASMR_VALUE, "DCRARB_DASMR"
-    check_value r0,r1,r2, DCRARB_REVID, DCRARB_REVID_VALUE, "DCRARB_REVID"
+    check_value r4,r5,r6, DCRARB_TADDR, DCRARB_TADDR_VALUE, "DCRARB_TADDR"
+    check_value r4,r5,r6, DCRARB_MADDR, DCRARB_MADDR_VALUE, "DCRARB_MADDR"
+    check_value r4,r5,r6, DCRARB_MASK, DCRARB_MASK_VALUE, "DCRARB_MASK"
+    check_value r4,r5,r6, DCRARB_DACR, DCRARB_DACR_VALUE, "DCRARB_DACR"
+    check_value r4,r5,r6, DCRARB_DAESR, DCRARB_DAESR_VALUE, "DCRARB_DAESR"
+    check_value r4,r5,r6, DCRARB_DAEAR, DCRARB_DAEAR_VALUE, "DCRARB_DAEAR"
+    check_value r4,r5,r6, DCRARB_DASMR, DCRARB_DASMR_VALUE, "DCRARB_DASMR"
+    check_value r4,r5,r6, DCRARB_REVID, DCRARB_REVID_VALUE, "DCRARB_REVID"
 
-    trace_msg "CHECK DEFAULT VALUES DONE\n"
+    rumboot_putstring "CHECK DEFAULT VALUES DONE\n"
 
 running_0_1_dcr_arb:
-    load_const r1, 0x00000000
-    load_const r0, DCRARB_TADDR
-    mtdcrx r0, r1
-    mfdcrx r2, r0
-    cmp cr7,0, r2,r1
+    load_const r5, 0x00000000
+    load_const r4, DCRARB_TADDR
+    mtdcrx r4, r5
+    mfdcrx r6, r4
+    cmp cr7,0, r6,r5
     TEST_ASSERT(eq,cr7,"Read/write error in DCRARB_TADDR (running 1 init)")
 
 dcr_arb_running_1:
-    load_const r1, 0x00000001
-    load_const r3, 1
-    load_const r4, 0x80000000
+    load_const r5, 0x00000001
+    load_const r7, 1
+    load_const r8, 0x80000000
 dcr_arb_loop_1:
-    mtdcrx r0, r1
-    mfdcrx r2, r0
-    cmp cr7,0, r2,r1
+    mtdcrx r4, r5
+    mfdcrx r6, r4
+    cmp cr7,0, r6,r5
     TEST_ASSERT(eq,cr7,"Read/write error in DCRARB_TADDR (running 1)")
-    cmp 0, 0, r1, r4
+    cmp 0, 0, r5, r8
     beq dcr_arb_running_0
-    slw r1, r1, r3
+    slw r5, r5, r7
     b dcr_arb_loop_1
 
 dcr_arb_running_0:
-    load_const r1, 0xFFFFFFFF
-    load_const r0, DCRARB_TADDR
-    mtdcrx r0, r1
-    mfdcrx r2, r0
-    cmp cr7,0, r2,r1
+    load_const r5, 0xFFFFFFFF
+    load_const r4, DCRARB_TADDR
+    mtdcrx r4, r5
+    mfdcrx r6, r4
+    cmp cr7,0, r6,r5
     TEST_ASSERT(eq,cr7,"Read/write error in DCRARB_TADDR (running 0 init)")
 
-    load_const r1, 0xFFFFFFFE
-    load_const r3, 1
-    load_const r4, 0x7FFFFFFF
+    load_const r5, 0xFFFFFFFE
+    load_const r7, 1
+    load_const r8, 0x7FFFFFFF
 dcr_arb_loop_0:
-    mtdcrx r0, r1
-    mfdcrx r2, r0
-    cmp cr7,0, r2,r1
+    mtdcrx r4, r5
+    mfdcrx r6, r4
+    cmp cr7,0, r6,r5
     TEST_ASSERT(eq,cr7,"Read/write error in DCRARB_TADDR (running 0)")
-    cmp 0, 0, r1, r4
+    cmp 0, 0, r5, r8
     beq end_checking
-    slw r1, r1, r3
-    ori r1, r1, 1
+    slw r5, r5, r7
+    ori r5, r5, 1
     b dcr_arb_loop_0
 
-    trace_msg "dcr_arb running 0/1 done\n"
+    rumboot_putstring "dcr_arb running 0/1 done\n"
 
 end_checking:
 
 test_ok:
     test_event EVENT_OK
+    li r3, 0x00
     b finish
 
 error:
      test_event EVENT_ERROR
+     li r3, 0x01
 
 finish:
-    b finish
+	blr
+

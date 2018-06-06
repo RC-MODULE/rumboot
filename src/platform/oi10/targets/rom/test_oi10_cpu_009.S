@@ -1,23 +1,10 @@
 
 #include <platform/oi10/platform/arch/ppc/ppc_476fp_asm.h>
 #include <platform/oi10/platform/test_event_asm.h>
-// #include <mivem_mem_map.h>
 #include <platform/oi10/platform/test_assert.S.h>
 #include <platform/oi10/platform/devices.h>
 #include <platform/oi10/platform/arch/ppc/test_macro_asm.S.h>
 #include <platform/oi10/platform/regs/regs_plb6plb4.h>
-
-#define P64CR				0x0
-#define ESR					0x1
-#define P64REV				0x2
-#define EARH				0x3
-#define EARL				0x4
-#define ADDRL0				0x5
-#define ADDRH0				0x6
-#define ADDRL1				0x7
-#define ADDRH1				0x8
-#define TESR				0x9
-
 
 .section ".text","ax",@progbits
 

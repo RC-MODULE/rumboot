@@ -1,13 +1,12 @@
 
 #include <platform/oi10/platform/arch/ppc/ppc_476fp_asm.h>
 #include <platform/oi10/platform/test_event_asm.h>
-// #include <mivem_mem_map.h>
 #include <platform/oi10/platform/test_assert.S.h>
 #include <platform/oi10/platform/devices.h>
 #include <platform/oi10/platform/arch/ppc/test_macro_asm.S.h>
 #include <platform/oi10/platform/regs/regs_plb4plb6.h>
 
-//OFFSET
+/* OFFSET */
 #define P46CR          0x0
 #define ESR            0x1
 #define P46REV         0x2
@@ -21,7 +20,7 @@
 #define SNOOP_LADDRH1  0xA
 #define SNOOP_UADDRL1  0xB
 #define SNOOP_LADDRL1  0xC
-#define TESR           0xD //WO
+#define TESR           0xD /* WO */
 
 #define ESR_VALUE            0x00000000
 #define P46REV_VALUE         PLB4PLB6_WATERMARK_VALUE
@@ -36,7 +35,7 @@
 #define SNOOP_UADDRL1_VALUE  0x00000000
 #define SNOOP_LADDRL1_VALUE  0x00000000
 
-.section ".BOOT_ROM.text","ax",@progbits
+.section ".text","ax",@progbits
 
 .global image_start
 .global main
@@ -57,7 +56,7 @@ p4p6_0:
     check_value r4,r5,r6, P4P6_0_SNOOP_LADDRH1, SNOOP_LADDRH1_VALUE, "P4P6_0_SNOOP_LADDRH1"
     check_value r4,r5,r6, P4P6_0_SNOOP_UADDRL1, SNOOP_UADDRL1_VALUE, "P4P6_0_SNOOP_UADDRL1"
     check_value r4,r5,r6, P4P6_0_SNOOP_LADDRL1, SNOOP_LADDRL1_VALUE, "P4P6_0_SNOOP_LADDRL1"
-    //P4P6_0_TESR is write-only and reset value is undefined
+    /* P4P6_0_TESR is write-only and reset value is undefined */
 
 
 running_0_1_P46_0:
