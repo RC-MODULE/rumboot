@@ -5,13 +5,12 @@
 #include <platform/common_macros/common_macros.h>
 #include <platform/arch/ppc/ibm_bit_ordering_macros.h>
 
-
 BEGIN_ENUM( sys_event_code )
-DECLARE_ENUM_VAL( EVENT_RESERVED1,                  0x00000000 )
-DECLARE_ENUM_VAL( EVENT_RESERVED2,                  0xFFFFFFFF )
+//DECLARE_ENUM_VAL( EVENT_RESERVED1,                  0x00000000 )
+//DECLARE_ENUM_VAL( EVENT_RESERVED2,                  0xFFFFFFFF )
 DECLARE_ENUM_VAL( EVENT_OK,                         0x00000001 )
 DECLARE_ENUM_VAL( EVENT_ERROR,                      0x00000002 )
-DECLARE_ENUM_VAL( EVENT_TIMEOUT,                    0x00000003 )
+//DECLARE_ENUM_VAL( EVENT_TIMEOUT,                    0x00000003 )
 DECLARE_ENUM_VAL( EVENT_FINISHED,                   0x00000004 )
 DECLARE_ENUM_VAL( EVENT_ASSERT,                     0x00000005 )
 /*DECLARE_ENUM_VAL( EVENT_CORE_STARTED,               0x00000006 )*/
@@ -20,8 +19,8 @@ DECLARE_ENUM_VAL( EVENT_CRASH,                      0x00000007 )
 /*DECLARE_ENUM_VAL( EVENT_TRACE_OFF,                  0x00000009 )*/
 DECLARE_ENUM_VAL( EVENT_PROCESSOR_ID_UNEXPECTED,    0x0000000A )
 DECLARE_ENUM_VAL( EVENT_CORE_SLEEP,                 0x0000000B )
-DECLARE_ENUM_VAL( EVENT_TRACE_MESSAGE,              0x0000000C )
-DECLARE_ENUM_VAL( EVENT_TRACE_DUMP,                 0x0000000D )
+//DECLARE_ENUM_VAL( EVENT_TRACE_MESSAGE,              0x0000000C )
+//DECLARE_ENUM_VAL( EVENT_TRACE_DUMP,                 0x0000000D )
 DECLARE_ENUM_VAL( EVENT_TRACE_HEX,                  0x0000000E )
 DECLARE_ENUM_VAL( TEST_EVENT_CHECK_MEM,             0x0000000F )
 END_ENUM( sys_event_code )
