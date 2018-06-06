@@ -1,7 +1,9 @@
-#include <platform/oi10/platform/arch/ppc/ppc_476fp_asm.h>
-#include <platform/oi10/platform/test_event_asm.h>
+#include <platform/oi10/platform/trace.S.h>
 #include <platform/oi10/platform/test_assert.S.h>
+#include <platform/oi10/platform/test_event_asm.h>
 #include <platform/oi10/platform/devices.h>
+
+#define DEBUG_DCR_TEST
 #include <platform/oi10/platform/arch/ppc/test_macro_asm.S.h>
 
 /* MPIC Registers */
@@ -10,11 +12,9 @@
 
 .section ".text","ax",@progbits
 
-.global image_start
 .global main
 
 main:
-image_start:
     /* reset mpic */
     load_const r5, MPIC128_R_BIT
     load_const r4, DCR_MPIC128_BASE + MPIC128_GCF0
@@ -134,7 +134,7 @@ test_ok:
 	load_const r3,	RESULT_OK
 	b finish
 
-error:
+test_error:
 	rumboot_putstring "TEST ERROR\n"
 	test_event		EVENT_ERROR
 	load_const r3,	RESULT_ERROR
