@@ -193,10 +193,11 @@ iss_mem:
 .global main
 
 //image_start:
-boot_main:
-main:
+
 
 .section ".text","ax",@progbits
+boot_main:
+main:
 
 //  load_const r3, 0x0004FFFC
     load_addr r3, result_data

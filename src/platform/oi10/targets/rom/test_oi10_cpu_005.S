@@ -3,16 +3,11 @@
 #include <platform/oi10/platform/devices.h>
 #include <platform/oi10/platform/regs/regs_mpic.h>
 
-// #include <sw_comparator.S.h>
-#ifndef SW_COMPARATOR_S_H_
-#define SW_COMPARATOR_S_H_
-
-
 .macro sw_comparator_macro reg_first_start, reg_second_start, reg_byte_count, reg_tmp_offset, reg_tmp_data_first, reg_tmp_data_second, reg_result
     load_const \reg_tmp_offset, 0
     load_const \reg_result, 1
     li \reg_tmp_offset, 4
-5: //labels 1-3 used in rumboot_putstring, label 4 used in test_assert
+5: /* labels 1-3 used in rumboot_putstring, label 4 used in test_assert */
         lwzx \reg_tmp_data_first, \reg_first_start, \reg_tmp_offset
         lwzx \reg_tmp_data_second, \reg_second_start, \reg_tmp_offset
         cmplw cr2, \reg_tmp_data_first, \reg_tmp_data_second
@@ -31,19 +26,6 @@
     cmpw cr3, \reg_byte_count, \reg_tmp_offset
     bge cr3, 5b
 .endm
-
-#endif /* SW_COMPARATOR_S_H_ */
-
-// #include "iss_mem_dmp.h"
-/*
- * iss_mem_dmp.h
- *
- *  Created on: Dec 11, 2017
- *      Author: v.strukov
- */
-
-#ifndef ISS_MEM_DMP_H_
-#define ISS_MEM_DMP_H_
 
 iss_mem:
 .long 0x00005A5A
@@ -138,7 +120,6 @@ iss_mem:
 .long 0x00000000
 .long 0x00000000
 
-#endif /* ISS_MEM_DMP_H_ */
 /*
 # Memory save for Wed Feb  7 09:28:09 2018
 # Address     = 0x00050000
@@ -178,59 +159,54 @@ iss_mem:
 000501F0  00000000 00000000 00000000 00000000
 */
 
-
-// #include "test_mpw_cpu_005_0.h"
-#ifndef _TEST_CPU_005_H_
-#define _TEST_CPU_005_H_
-
 #include <platform/oi10/platform/arch/ppc/ppc_476fp_config.h>
 
-// check macro for operations with mask "opcode RA, RS, UI"
+/* check macro for operations with mask "opcode RA, RS, UI" */
 .macro LOGIC_RA_RS_UI_CHECK opcode, ra_no, rs_no, rs_val, ui_val, info_reg_no, comand_conventional_no, temp_reg_no, result_address
-	load_const \info_reg_no, 0x00000000 //clear info register
-	load_const \ra_no, 0x00000000 //clear result register
+	load_const \info_reg_no, 0x00000000 /* clear info register */
+	load_const \ra_no, 0x00000000 /* clear result register */
 
-	ori \info_reg_no, \info_reg_no, 0x1 //put mask tyoe
+	ori \info_reg_no, \info_reg_no, 0x1 /* put mask tyoe */
 	load_const \temp_reg_no, 0x4
 	slw \info_reg_no, \info_reg_no, \temp_reg_no
 
-	ori \info_reg_no, \info_reg_no, \comand_conventional_no //put self-invented comand code into info reg
+	ori \info_reg_no, \info_reg_no, \comand_conventional_no /* put self-invented comand code into info reg */
 	load_const \temp_reg_no, 0x5
 	slw \info_reg_no, \info_reg_no, \temp_reg_no
 
-	ori \info_reg_no, \info_reg_no, \ra_no //put RA reg number into info reg
+	ori \info_reg_no, \info_reg_no, \ra_no /* put RA reg number into info reg */
 	load_const \temp_reg_no, 0x5
 	slw \info_reg_no, \info_reg_no, \temp_reg_no
 
-	ori \info_reg_no, \info_reg_no, \rs_no //put RS reg number into info reg
+	ori \info_reg_no, \info_reg_no, \rs_no /* put RS reg number into info reg */
 	load_const \temp_reg_no, 0x10
 	slw \info_reg_no, \info_reg_no, \temp_reg_no
 
-	ori \info_reg_no, \info_reg_no, \ui_val@l //put UI const into info reg
+	ori \info_reg_no, \info_reg_no, \ui_val@l /* put UI const into info reg */
 
 	load_const 0 0x00000000
 	mtxer 0
-	load_const \rs_no, \rs_val //load values into reg with number rs_no
+	load_const \rs_no, \rs_val /* load values into reg with number rs_no */
 
-	\opcode \ra_no, \rs_no, \ui_val@l //perform operation
+	\opcode \ra_no, \rs_no, \ui_val@l /* perform operation */
 	stwu \ra_no, 4(\result_address)
-	test_event EVENT_CHECK_CPU_PPC_PROG_MODEL_17  //raise event for verilog
-	xori 0,0,0	//for syncronization purpose
+	test_event EVENT_CHECK_CPU_PPC_PROG_MODEL_17  /* raise event for verilog */
+	xori 0,0,0	/* for syncronization purpose */
 .endm
 
-// check macro for operations with mask "opcode RA, RS, RB"
+/* check macro for operations with mask "opcode RA, RS, RB" */
 .macro LOGIC_RA_RS_RB_CHECK opcode, ra_no, rs_no, rb_no, rs_val, rb_val, info_reg_no, comand_conventional_no, temp_reg_no, set_CA_bit, result_address //
-	load_const \info_reg_no, 0x00000000 //clear info register
+	load_const \info_reg_no, 0x00000000 /* clear info register */
 
-	ori \info_reg_no, \info_reg_no, 0x2 //put mask tyoe
+	ori \info_reg_no, \info_reg_no, 0x2 /* put mask tyoe */
 	load_const \temp_reg_no, 0x6
 	slw \info_reg_no, \info_reg_no, \temp_reg_no
 
-	ori \info_reg_no, \info_reg_no, \comand_conventional_no //put self-invented comand code into info reg
+	ori \info_reg_no, \info_reg_no, \comand_conventional_no /* put self-invented comand code into info reg */
 	load_const \temp_reg_no, 0x8
 	slw \info_reg_no, \info_reg_no, \temp_reg_no
 
-	ori \info_reg_no, \info_reg_no, \ra_no //put RA reg number into info reg
+	ori \info_reg_no, \info_reg_no, \ra_no /* put RA reg number into info reg */
 .if (\set_CA_bit != 0)
 	ori \info_reg_no, \info_reg_no, 0x80
 .endif
@@ -238,11 +214,11 @@ iss_mem:
 	load_const \temp_reg_no, 0x8
 	slw \info_reg_no, \info_reg_no, \temp_reg_no
 
-	ori \info_reg_no, \info_reg_no, \rs_no //put RS reg number into info reg
+	ori \info_reg_no, \info_reg_no, \rs_no /* put RS reg number into info reg */
 	load_const \temp_reg_no, 0x8
 	slw \info_reg_no, \info_reg_no, \temp_reg_no
 
-	ori \info_reg_no, \info_reg_no, \rb_no //put RB reg number into info reg
+	ori \info_reg_no, \info_reg_no, \rb_no /* put RB reg number into info reg */
 
 .if (\set_CA_bit == 0)
 	load_const 0 0x00000000
@@ -251,28 +227,28 @@ iss_mem:
 .endif
 	mtxer 0
 
-	load_const \rs_no, \rs_val //load values into reg with number rs_no
-	load_const \rb_no, \rb_val //load values into reg with number rb_no
+	load_const \rs_no, \rs_val /* load values into reg with number rs_no */
+	load_const \rb_no, \rb_val /* load values into reg with number rb_no */
 
-	\opcode \ra_no, \rs_no, \rb_no //perform operation
+	\opcode \ra_no, \rs_no, \rb_no /* perform operation */
 	stwu \ra_no, 4(\result_address)
-	test_event EVENT_CHECK_CPU_PPC_PROG_MODEL_17 //raise event for verilog
-	xori 0,0,0	//for syncronization purpose
+	test_event EVENT_CHECK_CPU_PPC_PROG_MODEL_17 /* raise event for verilog */
+	xori 0,0,0	/* for syncronization purpose
 .endm
 
-// check macro for operations with mask "opcode RA, RS"
+/* check macro for operations with mask "opcode RA, RS" */
 .macro LOGIC_RA_RS_CHECK opcode, ra_no, rs_no, rs_val, info_reg_no, comand_conventional_no, temp_reg_no, set_CA_bit, result_address
-	load_const \info_reg_no, 0x00000000 //clear info register
+	load_const \info_reg_no, 0x00000000 /* clear info register */
 
-	ori \info_reg_no, \info_reg_no, 0x3 //put mask tyoe
+	ori \info_reg_no, \info_reg_no, 0x3 /* put mask tyoe */
 	load_const \temp_reg_no, 0x6
 	slw \info_reg_no, \info_reg_no, \temp_reg_no
 
-	ori \info_reg_no, \info_reg_no, \comand_conventional_no //put self-invented comand code into info reg
+	ori \info_reg_no, \info_reg_no, \comand_conventional_no /* put self-invented comand code into info reg */
 	load_const \temp_reg_no, 0x8
 	slw \info_reg_no, \info_reg_no, \temp_reg_no
 
-	ori \info_reg_no, \info_reg_no, \ra_no //put RA reg number into info reg
+	ori \info_reg_no, \info_reg_no, \ra_no /* put RA reg number into info reg */
 .if (\set_CA_bit != 0)
 	ori \info_reg_no, \info_reg_no, 0x80
 .endif
@@ -280,7 +256,7 @@ iss_mem:
 	load_const \temp_reg_no, 0x8
 	slw \info_reg_no, \info_reg_no, \temp_reg_no
 
-	ori \info_reg_no, \info_reg_no, \rs_no //put RS reg number into info reg
+	ori \info_reg_no, \info_reg_no, \rs_no /* put RS reg number into info reg */
 	load_const \temp_reg_no, 0x8
 	slw \info_reg_no, \info_reg_no, \temp_reg_no
 
@@ -290,15 +266,13 @@ iss_mem:
 	load_const 0 0x20000000
 .endif
 	mtxer 0
-load_const \rs_no, \rs_val //load values into reg with number rs_no
+load_const \rs_no, \rs_val /* load values into reg with number rs_no */
 
-\opcode \ra_no, \rs_no //perform operation
+\opcode \ra_no, \rs_no /* perform operation */
 stwu \ra_no, 4(\result_address)
-test_event EVENT_CHECK_CPU_PPC_PROG_MODEL_17 //raise event for verilog
-xori 0,0,0	//for syncronization purpose
+test_event EVENT_CHECK_CPU_PPC_PROG_MODEL_17 /* raise event for verilog */
+xori 0,0,0	/* for syncronization purpose */
 .endm
-
-#endif //_TEST_CPU_005_H_
 
 
 .section ".text","ax",@progbits
@@ -314,7 +288,7 @@ test_mpw_cpu_005_0:
     load_const r0 0x00000000
 
     mtxer r0
-//  LOGIC_RA_RS_UI_CHECK   opcode, ra_no, rs_no, rs_val,     ui_val, info_reg_no,  comand_no, temp_reg_no,       result_address
+/*  LOGIC_RA_RS_UI_CHECK   opcode, ra_no, rs_no, rs_val,     ui_val, info_reg_no,  comand_no, temp_reg_no,       result_address */
     LOGIC_RA_RS_UI_CHECK   addi,   7,     6,     0xAA55AA55, 0x5A5A, 30,           0x0,       29,                3
     LOGIC_RA_RS_UI_CHECK   addi,   7,     6,     0xAA55AA55, 0x5A5A, 30,           0x0,       29,                3
     LOGIC_RA_RS_UI_CHECK   addi,   7,     6,     0xAA55AA55, 0x5A5A, 30,           0x0,       29,                3
@@ -343,7 +317,7 @@ test_mpw_cpu_005_0:
     LOGIC_RA_RS_UI_CHECK   mulli,  7,     6,     0xAA55AA55, 0x5A5A, 30,           0x5,       29,                3
     LOGIC_RA_RS_UI_CHECK   mulli,  7,     6,     0xAA55AA55, 0x5A5A, 30,           0x5,       29,                3
 
-//  LOGIC_RA_RS_RB_CHECK    ( opcode,   ra_no, rs_no, rb_no, rs_val,     rb_val,          info_reg_no, comand_no,  temp_reg_no, set_CA_bit, result_address )
+/*  LOGIC_RA_RS_RB_CHECK    ( opcode,   ra_no, rs_no, rb_no, rs_val,     rb_val,          info_reg_no, comand_no,  temp_reg_no, set_CA_bit, result_address ) */
     LOGIC_RA_RS_RB_CHECK      add,      8,     6,     7,     0xAA55AA55, 0x5A5A5A5A,      30,          0x00,       29,        0,             3
     LOGIC_RA_RS_RB_CHECK      add.,     8,     6,     7,     0xAA55AA55, 0x5A5A5A5A,      30,          0x01,       29,        0,             3
     LOGIC_RA_RS_RB_CHECK      addo,     8,     6,     7,     0xAA55AA55, 0x5A5A5A5A,      30,          0x02,       29,        0,             3
@@ -388,7 +362,7 @@ test_mpw_cpu_005_0:
     LOGIC_RA_RS_RB_CHECK      mulhw.,   8,     6,     7,     0xAA55AA55, 0x5A5A5A5A,      30,          0x25,       29,        0,             3
     LOGIC_RA_RS_RB_CHECK      mulhwu,   8,     6,     7,     0xAA55AA55, 0x5A5A5A5A,      30,          0x26,       29,        0,             3
     LOGIC_RA_RS_RB_CHECK      mulhwu.,  8,     6,     7,     0xAA55AA55, 0x5A5A5A5A,      30,          0x27,       29,        0,             3
-//  LOGIC_RA_RS_CHECK   opcode,       ra_no, rs_no, rs_val,        info_reg_no, comand_no,  temp_reg_no, set_CA_bit,    result_address)
+/*  LOGIC_RA_RS_CHECK   opcode,       ra_no, rs_no, rs_val,        info_reg_no, comand_no,  temp_reg_no, set_CA_bit,    result_address) */
     LOGIC_RA_RS_CHECK   addme,        7,     6,     0xAA55AA55,    30,          0x00,       29,          0,             3
     LOGIC_RA_RS_CHECK   addme.,       7,     6,     0xAA55AA55,    30,          0x01,       29,          1,             3
     LOGIC_RA_RS_CHECK   addmeo,       7,     6,     0xAA55AA55,    30,          0x02,       29,          0,             3
@@ -439,7 +413,7 @@ finish_error:
 li r3, 0x01
 b finish_error
 
-//test_ok:
+/* test_ok: */
 finish_ok:
 test_event EVENT_OK
 li r3, 0x00
@@ -447,15 +421,14 @@ b finish
 
 finish:
 blr
-// b finish
 
-// AG: Manualy generated by GCC from C code
+/* AG: Manualy generated by GCC from C code */
 compare_data:
         stwu r1,-16(r1)
         cmpwi cr0,r5,0
         li r8,1
         stw r30,8(r1)
-        beq cr0,.compare_data_L1
+        beq cr0, .compare_data_L1
         li r10,0
 .compare_data_L4:
         lwzx r9,r3,r10
@@ -466,11 +439,10 @@ compare_data:
         addic r9,r9,-1
         subfe r9,r9,r9
         and r8,r8,r9
-        bgt cr7,.compare_data_L4
+        bgt cr7, .compare_data_L4
 .compare_data_L1:
         mr r3,r8
         lwz r30,8(r1)
         addi r1,r1,16
         blr
-
 
