@@ -7,14 +7,14 @@
 
 /* L2C REGISTERS */
 
-#define L2C0_DCRAI          (DCR_L2C0_BASE | 0x00)
-#define L2C0_DCRDI          (DCR_L2C0_BASE | 0x04)
+#define L2C_DCRAI          (DCR_L2C_BASE | 0x00)
+#define L2C_DCRDI          (DCR_L2C_BASE | 0x04)
 
 .macro check_value_l2c address, exp_value, reg_name
     load_const r8, \exp_value
     load_const r7, \address
-    load_const r3, L2C0_DCRAI
-    load_const r4, L2C0_DCRDI
+    load_const r3, L2C_DCRAI
+    load_const r4, L2C_DCRDI
     mtdcrx r3, r7
     mfdcrx r2, r4
     cmp cr7,0, r2,r8
@@ -24,13 +24,13 @@
 
 
 
-#define L2C0_DCRAI_VAL      0x00000000
-/* #define L2C0_DCRDI_VAL      0x000 */
+#define L2C0_DCRAI_VAL			0x00000000
+/* #define L2C0_DCRDI_VAL		0x000 */
 
-#define I_M_SELF_ID         0x00
+#define I_M_SELF_ID				0x00
 /* from trunk/cpu/units/ppc476l2c_v001/verilog/rtl/PPC476L2C.parameters.v */
-#define  L2C_VERSION_NUMBER   0x001
-#define  L2C_REVISION_ID      0x02
+#define  L2C_VERSION_NUMBER		0x001
+#define  L2C_REVISION_ID		0x02
 /* from dut */
 #define L2C_L2SIZE              0x1
 #define L2C_PLB_CLK_RATIO       0x0
