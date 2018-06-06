@@ -6,35 +6,6 @@
 #include <platform/oi10/platform/arch/ppc/test_macro_asm.S.h>
 #include <platform/oi10/platform/regs/regs_plb4plb6.h>
 
-/* OFFSET */
-#define P46CR          0x0
-#define ESR            0x1
-#define P46REV         0x2
-#define EARH           0x3
-#define EARL           0x4
-#define SNOOP_UADDRH0  0x5
-#define SNOOP_LADDRH0  0x6
-#define SNOOP_UADDRL0  0x7
-#define SNOOP_LADDRL0  0x8
-#define SNOOP_UADDRH1  0x9
-#define SNOOP_LADDRH1  0xA
-#define SNOOP_UADDRL1  0xB
-#define SNOOP_LADDRL1  0xC
-#define TESR           0xD /* WO */
-
-#define ESR_VALUE            0x00000000
-#define P46REV_VALUE         PLB4PLB6_WATERMARK_VALUE
-#define EARH_VALUE           0x00000000
-#define EARL_VALUE           0x00000000
-#define SNOOP_UADDRH0_VALUE  0x00000000
-#define SNOOP_LADDRH0_VALUE  0x00000000
-#define SNOOP_UADDRL0_VALUE  0x00000000
-#define SNOOP_LADDRL0_VALUE  0x00000000
-#define SNOOP_UADDRH1_VALUE  0x00000000
-#define SNOOP_LADDRH1_VALUE  0x00000000
-#define SNOOP_UADDRL1_VALUE  0x00000000
-#define SNOOP_LADDRL1_VALUE  0x00000000
-
 .section ".text","ax",@progbits
 
 .global image_start
@@ -43,26 +14,26 @@
 image_start:
 main:
 p4p6_0:
-    check_value r4,r5,r6, P4P6_0_P46CR, P46_0_CR_VALUE, "P4P6_0_P46CR"
-    check_value r4,r5,r6, P4P6_0_ESR, ESR_VALUE, "P4P6_0_ESR"
-    check_value r4,r5,r6, P4P6_0_P46REV, P46REV_VALUE, "P4P6_0_P46REV"
-    check_value r4,r5,r6, P4P6_0_EARH, EARH_VALUE, "P4P6_0_EARH"
-    check_value r4,r5,r6, P4P6_0_EARL, EARL_VALUE, "P4P6_0_EARL"
-    check_value r4,r5,r6, P4P6_0_SNOOP_UADDRH0, SNOOP_UADDRH0_VALUE, "P4P6_0_SNOOP_UADDRH0"
-    check_value r4,r5,r6, P4P6_0_SNOOP_LADDRH0, SNOOP_LADDRH0_VALUE, "P4P6_0_SNOOP_LADDRH0"
-    check_value r4,r5,r6, P4P6_0_SNOOP_UADDRL0, SNOOP_UADDRL0_VALUE, "P4P6_0_SNOOP_UADDRL0"
-    check_value r4,r5,r6, P4P6_0_SNOOP_LADDRL0, SNOOP_LADDRL0_VALUE, "P4P6_0_SNOOP_LADDRL0"
-    check_value r4,r5,r6, P4P6_0_SNOOP_UADDRH1, SNOOP_UADDRH1_VALUE, "P4P6_0_SNOOP_UADDRH1"
-    check_value r4,r5,r6, P4P6_0_SNOOP_LADDRH1, SNOOP_LADDRH1_VALUE, "P4P6_0_SNOOP_LADDRH1"
-    check_value r4,r5,r6, P4P6_0_SNOOP_UADDRL1, SNOOP_UADDRL1_VALUE, "P4P6_0_SNOOP_UADDRL1"
-    check_value r4,r5,r6, P4P6_0_SNOOP_LADDRL1, SNOOP_LADDRL1_VALUE, "P4P6_0_SNOOP_LADDRL1"
-    /* P4P6_0_TESR is write-only and reset value is undefined */
+    check_value r4,r5,r6, DCR_PLB4PLB6_0_BASE + P46CR, P46_0_CR_VALUE, "DCR_PLB4PLB6_0_BASE + P46CR"
+    check_value r4,r5,r6, DCR_PLB4PLB6_0_BASE + ESR, ESR_VALUE, "DCR_PLB4PLB6_0_BASE + ESR"
+    check_value r4,r5,r6, DCR_PLB4PLB6_0_BASE + P46REV, P46REV_VALUE, "DCR_PLB4PLB6_0_BASE + P46REV"
+    check_value r4,r5,r6, DCR_PLB4PLB6_0_BASE + EARH, EARH_VALUE, "DCR_PLB4PLB6_0_BASE + EARH"
+    check_value r4,r5,r6, DCR_PLB4PLB6_0_BASE + EARL, EARL_VALUE, "DCR_PLB4PLB6_0_BASE + EARL"
+    check_value r4,r5,r6, DCR_PLB4PLB6_0_BASE + SNOOP_UADDRH0, SNOOP_UADDRH0_VALUE, "DCR_PLB4PLB6_0_BASE + SNOOP_UADDRH0"
+    check_value r4,r5,r6, DCR_PLB4PLB6_0_BASE + SNOOP_LADDRH0, SNOOP_LADDRH0_VALUE, "DCR_PLB4PLB6_0_BASE + SNOOP_LADDRH0"
+    check_value r4,r5,r6, DCR_PLB4PLB6_0_BASE + SNOOP_UADDRL0, SNOOP_UADDRL0_VALUE, "DCR_PLB4PLB6_0_BASE + SNOOP_UADDRL0"
+    check_value r4,r5,r6, DCR_PLB4PLB6_0_BASE + SNOOP_LADDRL0, SNOOP_LADDRL0_VALUE, "DCR_PLB4PLB6_0_BASE + SNOOP_LADDRL0"
+    check_value r4,r5,r6, DCR_PLB4PLB6_0_BASE + SNOOP_UADDRH1, SNOOP_UADDRH1_VALUE, "DCR_PLB4PLB6_0_BASE + SNOOP_UADDRH1"
+    check_value r4,r5,r6, DCR_PLB4PLB6_0_BASE + SNOOP_LADDRH1, SNOOP_LADDRH1_VALUE, "DCR_PLB4PLB6_0_BASE + SNOOP_LADDRH1"
+    check_value r4,r5,r6, DCR_PLB4PLB6_0_BASE + SNOOP_UADDRL1, SNOOP_UADDRL1_VALUE, "DCR_PLB4PLB6_0_BASE + SNOOP_UADDRL1"
+    check_value r4,r5,r6, DCR_PLB4PLB6_0_BASE + SNOOP_LADDRL1, SNOOP_LADDRL1_VALUE, "DCR_PLB4PLB6_0_BASE + SNOOP_LADDRL1"
+    /* DCR_PLB4PLB6_0_BASE + TESR is write-only and reset value is undefined */
 
 
 running_0_1_P46_0:
     rumboot_putstring "Running 0/1 P46_0\n"
     load_const r5, 0x00000000
-    load_const r4, P4P6_0_SNOOP_LADDRL0
+    load_const r4, DCR_PLB4PLB6_0_BASE + SNOOP_LADDRL0
     mtdcrx r4, r5
     mfdcrx r6, r4
     cmp cr7,0, r6,r5
@@ -84,7 +55,7 @@ p46_0_loop_1:
 
 p46_0_running_0:
     load_const r5, 0xFFFFFFFF
-    load_const r4, P4P6_0_SNOOP_LADDRL0
+    load_const r4, DCR_PLB4PLB6_0_BASE + SNOOP_LADDRL0
     mtdcrx r4, r5
     mfdcrx r6, r4
     cmp cr7,0, r6,r5
