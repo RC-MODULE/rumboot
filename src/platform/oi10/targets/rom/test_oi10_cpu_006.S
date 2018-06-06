@@ -5,24 +5,17 @@
 #include <platform/oi10/platform/devices.h>
 #include <regs/regs_l2c.h>
 
-/* L2C REGISTERS */
-
-#define L2C_DCRAI          (DCR_L2C_BASE | 0x00)
-#define L2C_DCRDI          (DCR_L2C_BASE | 0x04)
-
 .macro check_value_l2c address, exp_value, reg_name
     load_const r8, \exp_value
     load_const r7, \address
-    load_const r3, L2C_DCRAI
-    load_const r4, L2C_DCRDI
+    load_const r3, DCR_L2C_BASE + L2C_DCRAI
+    load_const r4, DCR_L2C_BASE + L2C_DCRDI
     mtdcrx r3, r7
     mfdcrx r2, r4
     cmp cr7,0, r2,r8
     TEST_ASSERT(eq, cr7, "DCR check error: In \reg_name was expected value \exp_value (address \raddress) ")
     rumboot_putstring "\reg_name OK\n"
 .endm
-
-
 
 #define L2C0_DCRAI_VAL			0x00000000
 /* #define L2C0_DCRDI_VAL		0x000 */
