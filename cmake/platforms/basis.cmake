@@ -241,14 +241,33 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
   add_rumboot_target(
     CONFIGURATION IRAM
     FILES sdio-spi/sdio_spi.c
+    CFLAGS -DSDIO_BASE=SDIO0_BASE  -DGSPI_SDIO_IRQ=GSPI_SDIO0_IRQ
     IRUN_FLAGS +select_sdio0
+    PREFIX sdio-spi-0
   )
 
-   add_rumboot_target_dir(sdio-spi/
-    CONFIGURATION IRAM_MIRROR
-    PREFIX sdio-spi-mirror
-    )
+  add_rumboot_target(
+    CONFIGURATION IRAM
+    FILES sdio-spi/sdio_spi.c
+    CFLAGS -DSDIO_BASE=SDIO1_BASE  -DGSPI_SDIO_IRQ=GSPI_SDIO1_IRQ
+    IRUN_FLAGS +select_sdio1
+    PREFIX sdio-spi-1
+  )
 
+   add_rumboot_target(
+    CONFIGURATION IRAM_MIRROR
+    FILES sdio-spi/sdio_spi.c
+    CFLAGS -DSDIO_BASE=SDIO0_BASE   -DGSPI_SDIO_IRQ=GSPI_SDIO0_IRQ
+    IRUN_FLAGS +select_sdio0
+    PREFIX sdio-spi-0-mirror
+    )
+   add_rumboot_target(
+    CONFIGURATION IRAM_MIRROR
+    FILES sdio-spi/sdio_spi.c
+    CFLAGS -DSDIO_BASE=SDIO1_BASE  -DGSPI_SDIO_IRQ=GSPI_SDIO1_IRQ
+    IRUN_FLAGS +select_sdio1
+    PREFIX sdio-spi-1-mirror
+    )
   add_rumboot_target(
     CONFIGURATION IRAM
     FILES gpio/gpio.c
