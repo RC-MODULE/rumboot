@@ -3,6 +3,9 @@
 #include <platform/oi10/platform/test_event_asm.h>
 #include <platform/oi10/platform/test_assert.S.h>
 #include <platform/oi10/platform/devices.h>
+
+#define DEBUG_DCR_TEST
+
 #include <platform/oi10/platform/arch/ppc/test_macro_asm.S.h>
 #include <platform/oi10/platform/regs/regs_srammc2plb4.h>
 
@@ -23,9 +26,14 @@
 #define BEAR_RESET_VAL			0x00000000
 #define BESR0_RESET_VAL			0x00000000
 #define BESR1_RESET_VAL			0x00000000
-#define PMEG_RESET_VAL			reg_field(10,0xF)
+#define PMEG_RESET_VAL			reg_field(10,0x0F)
 #define CID_RESET_VAL			0x322B0000
 #define REVID_RESET_VAL			0x00000160
+
+#define CVR3					r4,r5,r6
+
+#define SRC2P40(OFFSET)			(DCR_SRAMMC2PLB4_0_BASE + (OFFSET))
+#define SRC2P41(OFFSET)			(DCR_SRAMMC2PLB4_1_BASE + (OFFSET))
 
 #define SYS_DATA_PARITY         0
 #define DPC_RESET_VAL			reg_field(0,SYS_DATA_PARITY)
@@ -39,30 +47,32 @@ image_start:
 main:
 
 check_cpu_ppc_srammc2plb4_0_2:
-    check_value r4,r5,r6, DCR_SRAMMC2PLB4_0_BASE + SB0CR, SRAMMC2PLB4_0_SB0CR_RESET_VAL, "SRAMMC2PLB4_0_SB0CR"
-    check_value r4,r5,r6, DCR_SRAMMC2PLB4_0_BASE + SB1CR, SRAMMC2PLB4_0_SB1CR_RESET_VAL, "SRAMMC2PLB4_0_SB1CR"
-    check_value r4,r5,r6, DCR_SRAMMC2PLB4_0_BASE + SB2CR, SRAMMC2PLB4_0_SB2CR_RESET_VAL, "SRAMMC2PLB4_0_SB2CR"
-    check_value r4,r5,r6, DCR_SRAMMC2PLB4_0_BASE + SB3CR, SRAMMC2PLB4_0_SB3CR_RESET_VAL, "SRAMMC2PLB4_0_SB3CR"
-    check_value r4,r5,r6, DCR_SRAMMC2PLB4_0_BASE + BEAR, BEAR_RESET_VAL, "SRAMMC2PLB4_0_BEAR"
-    check_value r4,r5,r6, DCR_SRAMMC2PLB4_0_BASE + BESR0, BESR0_RESET_VAL, "SRAMMC2PLB4_0_BESR0"
-    check_value r4,r5,r6, DCR_SRAMMC2PLB4_0_BASE + BESR1, BESR1_RESET_VAL, "SRAMMC2PLB4_0_BESR1"
-    check_value r4,r5,r6, DCR_SRAMMC2PLB4_0_BASE + PMEG, PMEG_RESET_VAL, "SRAMMC2PLB4_0_PMEG"
-    check_value r4,r5,r6, DCR_SRAMMC2PLB4_0_BASE + CID, CID_RESET_VAL, "SRAMMC2PLB4_0_CID"
-    check_value r4,r5,r6, DCR_SRAMMC2PLB4_0_BASE + REVID, REVID_RESET_VAL, "SRAMMC2PLB4_0_REVID"
-    check_value r4,r5,r6, DCR_SRAMMC2PLB4_0_BASE + DPC, DPC_RESET_VAL, "SRAMMC2PLB4_0_DPC"
+	rumboot_putstring "check_cpu_ppc_srammc2plb4_0_2\n"
+    check_value CVR3, SRC2P40(SB0CR), SRAMMC2PLB4_0_SB0CR_RESET_VAL,	"SRAMMC2PLB4_0_SB0CR" /* FAIL */
+    check_value CVR3, SRC2P40(SB1CR), SRAMMC2PLB4_0_SB1CR_RESET_VAL,	"SRAMMC2PLB4_0_SB1CR" /* FAIL */
+    check_value CVR3, SRC2P40(SB2CR), SRAMMC2PLB4_0_SB2CR_RESET_VAL,	"SRAMMC2PLB4_0_SB2CR" /* FAIL */
+    check_value CVR3, SRC2P40(SB3CR), SRAMMC2PLB4_0_SB3CR_RESET_VAL,	"SRAMMC2PLB4_0_SB3CR" /* FAIL */
+    check_value CVR3, SRC2P40(BEAR ), BEAR_RESET_VAL,					"SRAMMC2PLB4_0_BEAR"
+    check_value CVR3, SRC2P40(BESR0), BESR0_RESET_VAL,					"SRAMMC2PLB4_0_BESR0"
+    check_value CVR3, SRC2P40(BESR1), BESR1_RESET_VAL,					"SRAMMC2PLB4_0_BESR1"
+    check_value CVR3, SRC2P40(PMEG ), PMEG_RESET_VAL,					"SRAMMC2PLB4_0_PMEG"
+    check_value CVR3, SRC2P40(CID  ), CID_RESET_VAL,					"SRAMMC2PLB4_0_CID"
+    check_value CVR3, SRC2P40(REVID), REVID_RESET_VAL,					"SRAMMC2PLB4_0_REVID"
+    check_value CVR3, SRC2P40(DPC  ), DPC_RESET_VAL,					"SRAMMC2PLB4_0_DPC"
 
 check_cpu_ppc_srammc2plb4_0_3:
-    load_const r5, 0x00000000
-    load_const r4, DCR_SRAMMC2PLB4_0_BASE + BEAR
+	rumboot_putstring "check_cpu_ppc_srammc2plb4_0_3\n"
+    load_const r5,	0x00000000
+    load_const r4,	SRC2P40(BEAR)
     mtdcrx r4, r5
     mfdcrx r6, r4
     cmp cr7,0, r6,r5
     TEST_ASSERT(eq,cr7,"Read/write error in SRAMMC2PLB4_0_BEAR (running 1 init)")
 
 srammc2plb4_0_running_1:
-    load_const r5, 0x00000001
-    load_const r7, 1
-    load_const r8, 0x80000000
+    load_const r5,	0x00000001
+    load_const r7,	0x00000001
+    load_const r8,	0x80000000
 srammc2plb4_0_loop_1:
     mtdcrx r4, r5
     mfdcrx r6, r4
@@ -74,16 +84,16 @@ srammc2plb4_0_loop_1:
     b srammc2plb4_0_loop_1
 
 srammc2plb4_0_running_0:
-    load_const r5, 0xFFFFFFFF
-    load_const r4, DCR_SRAMMC2PLB4_0_BASE + BEAR
+    load_const r5,	0xFFFFFFFF
+    load_const r4,	SRC2P40(BEAR)
     mtdcrx r4, r5
     mfdcrx r6, r4
     cmp cr7,0, r6,r5
     TEST_ASSERT(eq,cr7,"Read/write error in SRAMMC2PLB4_0_BEAR (running 0 init)")
 
-    load_const r5, 0xFFFFFFFE
-    load_const r7, 1
-    load_const r8, 0x7FFFFFFF
+    load_const r5,	0xFFFFFFFE
+    load_const r7,	0x00000001
+    load_const r8,	0x7FFFFFFF
 srammc2plb4_0_loop_0:
     mtdcrx r4, r5
     mfdcrx r6, r4
@@ -92,34 +102,35 @@ srammc2plb4_0_loop_0:
     cmp cr0,0, r5,r8
     beq check_cpu_ppc_srammc2plb4_1_2
     slw r5, r5, r7
-    ori r5, r5, 1
+    ori r5, r5,		0x00000001
     b srammc2plb4_0_loop_0
 
 check_cpu_ppc_srammc2plb4_1_2:
-    check_value r4,r5,r6, DCR_SRAMMC2PLB4_1_BASE + SB0CR, SRAMMC2PLB4_1_SB0CR_RESET_VAL,"SRAMMC2PLB4_1_SB0CR"
-    check_value r4,r5,r6, DCR_SRAMMC2PLB4_1_BASE + SB1CR, SRAMMC2PLB4_1_SB1CR_RESET_VAL,"SRAMMC2PLB4_1_SB1CR"
-    check_value r4,r5,r6, DCR_SRAMMC2PLB4_1_BASE + SB2CR, SRAMMC2PLB4_1_SB2CR_RESET_VAL,"SRAMMC2PLB4_1_SB2CR"
-    check_value r4,r5,r6, DCR_SRAMMC2PLB4_1_BASE + SB3CR, SRAMMC2PLB4_1_SB3CR_RESET_VAL,"SRAMMC2PLB4_1_SB3CR"
-    check_value r4,r5,r6, DCR_SRAMMC2PLB4_1_BASE + BEAR, BEAR_RESET_VAL,"SRAMMC2PLB4_1_BEAR"
-    check_value r4,r5,r6, DCR_SRAMMC2PLB4_1_BASE + BESR0, BESR0_RESET_VAL,"SRAMMC2PLB4_1_BESR0"
-    check_value r4,r5,r6, DCR_SRAMMC2PLB4_1_BASE + BESR1, BESR1_RESET_VAL,"SRAMMC2PLB4_1_BESR1"
-    check_value r4,r5,r6, DCR_SRAMMC2PLB4_1_BASE + PMEG, PMEG_RESET_VAL,"SRAMMC2PLB4_1_PMEG"
-    check_value r4,r5,r6, DCR_SRAMMC2PLB4_1_BASE + CID, CID_RESET_VAL,"SRAMMC2PLB4_1_CID"
-    check_value r4,r5,r6, DCR_SRAMMC2PLB4_1_BASE + REVID, REVID_RESET_VAL,"SRAMMC2PLB4_1_REVID"
-    check_value r4,r5,r6, DCR_SRAMMC2PLB4_1_BASE + DPC, DPC_RESET_VAL,"SRAMMC2PLB4_1_DPC"
+	rumboot_putstring "check_cpu_ppc_srammc2plb4_1_2\n"
+    check_value CVR3, SRC2P41(SB0CR), SRAMMC2PLB4_1_SB0CR_RESET_VAL,	"SRAMMC2PLB4_1_SB0CR" /* FAIL */
+    check_value CVR3, SRC2P41(SB1CR), SRAMMC2PLB4_1_SB1CR_RESET_VAL,	"SRAMMC2PLB4_1_SB1CR" /* FAIL */
+    check_value CVR3, SRC2P41(SB2CR), SRAMMC2PLB4_1_SB2CR_RESET_VAL,	"SRAMMC2PLB4_1_SB2CR" /* FAIL */
+    check_value CVR3, SRC2P41(SB3CR), SRAMMC2PLB4_1_SB3CR_RESET_VAL,	"SRAMMC2PLB4_1_SB3CR" /* FAIL */
+    check_value CVR3, SRC2P41(BEAR ), BEAR_RESET_VAL,					"SRAMMC2PLB4_1_BEAR"
+    check_value CVR3, SRC2P41(BESR0), BESR0_RESET_VAL,					"SRAMMC2PLB4_1_BESR0"
+    check_value CVR3, SRC2P41(BESR1), BESR1_RESET_VAL,					"SRAMMC2PLB4_1_BESR1"
+    check_value CVR3, SRC2P41(PMEG ), PMEG_RESET_VAL,					"SRAMMC2PLB4_1_PMEG"
+    check_value CVR3, SRC2P41(CID  ), CID_RESET_VAL,					"SRAMMC2PLB4_1_CID"
+    check_value CVR3, SRC2P41(REVID), REVID_RESET_VAL,					"SRAMMC2PLB4_1_REVID"
+    check_value CVR3, SRC2P41(DPC  ), DPC_RESET_VAL,					"SRAMMC2PLB4_1_DPC"
 
 check_cpu_ppc_srammc2plb4_1_3:
-    load_const r5, 0x00000000
-    load_const r4, DCR_SRAMMC2PLB4_1_BASE + BEAR
+    load_const r5,	0x00000000
+    load_const r4,	SRC2P41(BEAR)
     mtdcrx r4, r5
     mfdcrx r6, r4
-    cmp cr7,0, r6,r5
+    cmp cr7,0, r6, r5
     TEST_ASSERT(eq,cr7,"Read/write error in SRAMMC2PLB4_1_BEAR (running 1 init)")
 
 srammc2plb4_1_running_1:
-    load_const r5, 0x00000001
-    load_const r7, 1
-    load_const r8, 0x80000000
+    load_const r5,	0x00000001
+    load_const r7,	0x00000001
+    load_const r8,	0x80000000
 srammc2plb4_1_loop_1:
     mtdcrx r4, r5
     mfdcrx r6, r4
@@ -131,33 +142,33 @@ srammc2plb4_1_loop_1:
     b srammc2plb4_1_loop_1
 
 srammc2plb4_1_running_0:
-    load_const r5, 0xFFFFFFFF
-    load_const r4, DCR_SRAMMC2PLB4_1_BASE + BEAR
+    load_const r5,	0xFFFFFFFF
+    load_const r4,	SRC2P41(BEAR)
     mtdcrx r4, r5
     mfdcrx r6, r4
     cmp cr7,0, r6,r5
     TEST_ASSERT(eq,cr7,"Read/write error in SRAMMC2PLB4_1_BEAR (running 0 init)")
 
-    load_const r5, 0xFFFFFFFE
-    load_const r7, 1
-    load_const r8, 0x7FFFFFFF
+    load_const r5,	0xFFFFFFFE
+    load_const r7,	0x00000001
+    load_const r8,	0x7FFFFFFF
 srammc2plb4_1_loop_0:
     mtdcrx r4, r5
     mfdcrx r6, r4
-    cmp cr7,0, r6,r5
+    cmp cr7,0, r6,	r5
     TEST_ASSERT(eq,cr7,"Read/write error in SRAMMC2PLB4_1_BEAR (running 0)")
-    cmp 0, 0, r5, r8
+    cmp cr0,0, r5,	r8
     beq test_end
     slw r5, r5, r7
     ori r5, r5, 1
     b srammc2plb4_1_loop_0
 
 test_end:
-    load_const r5, BEAR_RESET_VAL
-    load_const r4, DCR_SRAMMC2PLB4_0_BASE + BEAR
-    mtdcrx r4, r5
-    load_const r0, DCR_SRAMMC2PLB4_1_BASE + BEAR
-    mtdcrx r4, r5
+    load_const r4,	SRC2P40(BEAR)
+    load_const r5,	SRC2P41(BEAR)
+    load_const r6,	BEAR_RESET_VAL
+    mtdcrx r4, r6
+    mtdcrx r5, r6
 
 test_ok:
     rumboot_putstring "TEST OK\n"
