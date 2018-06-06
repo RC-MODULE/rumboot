@@ -29,21 +29,14 @@
     mtspr       SPR_SPRG1, r0
 .endm
 
-#define EVENT_TESTEVENT 0xF
-//TODO rewrite it!
+#define EVENT_TESTEVENT 0x11
 .macro test_event test_event_code
     load_const  r2, EVENT_TESTEVENT;
-    load_const  r1, \test_event_code; /* test stdout */
+    load_const  r1, \test_event_code;
     mtspr       SPR_SPRG2, r1
 
     mtspr       SPR_SPRG1, r2
     mtspr       SPR_SPRG1, r0
-/*
-    load_const  r12, \test_event_code
-    mtspr   SPR_USPGR0, r12
-    load_const  r12, EVENT_RESERVED1
-    mtspr   SPR_USPGR0, r12
-*/
 .endm
 
 #endif /* TEST_EVENT_ASM_H_ */
