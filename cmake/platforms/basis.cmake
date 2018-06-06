@@ -276,18 +276,31 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     PREFIX sdio-spi-1-mirror
     )
   add_rumboot_target(
-    CONFIGURATION IRAM
-    FILES gpio/gpio.c
-    TIMEOUT 300 us
-    IRUN_FLAGS +gpio_test
+   CONFIGURATION IRAM
+   FILES gpio/gpio.c
+   TIMEOUT 300 us
+   IRUN_FLAGS +gpio_test
   )
  
-   add_rumboot_target(
-    CONFIGURATION IRAM
-    FILES gpio/gpio_irq.c
-    TIMEOUT 300 us
-    IRUN_FLAGS +gpio_test
+  add_rumboot_target(
+   CONFIGURATION IRAM
+   FILES gpio/gpio_irq.c
+   TIMEOUT 300 us
+   IRUN_FLAGS +gpio_test
   )
+  add_rumboot_target(
+   CONFIGURATION IRAM_MIRROR
+   FILES gpio/gpio.c
+   IRUN_FLAGS +gpio_test
+   PREFIX gpio_mirror
+ )
+
+  add_rumboot_target(
+   CONFIGURATION IRAM_MIRROR
+   FILES gpio/gpio_irq.c
+   IRUN_FLAGS +gpio_test
+   PREFIX gpio_irq_mirror
+ )
 
   add_rumboot_target(
    CONFIGURATION IRAM
