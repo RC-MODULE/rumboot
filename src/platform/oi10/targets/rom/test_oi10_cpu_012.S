@@ -108,13 +108,15 @@ p46_0_loop_0:
 p46_0_end_checking:
 
 test_ok:
-    test_event EVENT_OK
-    li r3, 0x00
+	test_event EVENT_OK
+    rumboot_putstring "TEST OK\n"
+    load_const r3, 0x00
     b finish
 
 error:
-     test_event EVENT_ERROR
-     li r3, 0x01
+	test_event EVENT_ERROR
+	rumboot_putstring "TEST ERROR\n"
+	load_const r3, 0x01
 
 finish:
 	blr

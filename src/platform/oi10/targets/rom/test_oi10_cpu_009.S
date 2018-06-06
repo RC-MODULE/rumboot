@@ -131,12 +131,14 @@ end_plb6plb4_1:
 test_ok:
 
     test_event EVENT_OK
-    li r3, 0x00
+    rumboot_putstring "TEST OK\n"
+    load_const r3, 0x00
     b finish
 
 error:
 	test_event EVENT_ERROR
-	li r3, 0x01
+	rumboot_putstring "TEST ERROR\n"
+	load_const r3, 0x01
 
 finish:
 	blr
