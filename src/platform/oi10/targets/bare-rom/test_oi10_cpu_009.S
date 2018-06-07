@@ -1,7 +1,6 @@
 
 #include <platform/test_event_asm.h>
 #include <platform/test_assert.S.h>
-#include <platform/ppc470s/realmode.S.h>
 #include <platform/ppc470s/mmu.S.h>
 #include <platform/arch/ppc/ppc_476fp_itrpt_fields.h>
 #include <platform/arch/ppc/ppc_476fp_debug_fields.h>
@@ -17,6 +16,13 @@
 #define P640(OFFSET)			DCR_PLB6PLB4_0_BASE + (OFFSET)
 #define P641(OFFSET)			DCR_PLB6PLB4_1_BASE + (OFFSET)
 #define CVR3					r10,r11,r12
+
+#define MMUCR_REALE 0x80000000
+
+/*                                    LL             */
+/*                    |  ERPN  |      11  SSSUUUUUUU */
+/*                  --9876543210UWIMGEID--XWRXWR3210 */
+#define RMPD_DATA 0b00000000000000101011001011010000
 
 
 .section ".init.start","ax",@progbits
@@ -63,25 +69,20 @@ rumboot_entry_point:
     load_const  r30,0x00000000
     load_const  r31,0x00000000
 
-	rumboot_putstring "Init SPRs...\n"
-    mtspr       SPR_USPGR0, r0
+	rumboot_putstring "Init SPRs... "
 
-    mtspr       SPR_SRR0, r0
-    mtspr       SPR_SRR1, r0
-    mtspr       SPR_CSRR0, r0
-    mtspr       SPR_CSRR1, r0
-    mtspr       SPR_MCSRR0, r0
-    mtspr       SPR_MCSRR1, r0
-    mtspr       SPR_MCSR_C, r1
-    mtspr       SPR_ESR, r0
-    mtspr       SPR_DCESR, r0
-    mtspr       SPR_DEAR, r0
+    mtspr       SPR_USPGR0,	r0
 
-    load_const  r3, ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_64KB)	<< MMU_SSPCR_ORD1_i)\
-                  | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_1MB )	<< MMU_SSPCR_ORD2_i)\
-                  | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_4KB )	<< MMU_SSPCR_ORD3_i)\
-                  | (                         MMU_XSPCR_ORD_END		<< MMU_SSPCR_ORD4_i)
-    mtspr       SPR_SSPCR, r3
+    mtspr       SPR_SRR0,	r0
+    mtspr       SPR_SRR1,	r0
+    mtspr       SPR_CSRR0,	r0
+    mtspr       SPR_CSRR1,	r0
+    mtspr       SPR_MCSRR0,	r0
+    mtspr       SPR_MCSRR1,	r0
+    mtspr       SPR_MCSR_C,	r1
+    mtspr       SPR_ESR,	r0
+    mtspr       SPR_DCESR,	r0
+    mtspr       SPR_DEAR,	r0
 
 /*according to User's Manual ch. 9.4 Initialization Software Requirements*/
     mtspr       SPR_DBCR0, r0       /* disable all debug events*/
@@ -143,69 +144,44 @@ rumboot_entry_point:
                   | (0b0                    << CTRL_CCR2_MCDTO_i)
     mtspr       SPR_CCR2, r3
 
-    load_const  r3, ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_64KB)   << MMU_SSPCR_ORD1_i)\
-                  | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_1MB)    << MMU_SSPCR_ORD2_i)\
-                  | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_4KB)    << MMU_SSPCR_ORD3_i)\
-                  | ((MMU_SUSPCR_ORD_PID_ONLY | MMU_XSPCR_ORD_1GB)  << MMU_SSPCR_ORD4_i)\
-                  | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_16KB)   << MMU_SSPCR_ORD5_i)\
-                  | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_16MB)   << MMU_SSPCR_ORD6_i)\
-                  | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_256MB)  << MMU_SSPCR_ORD7_i)
-    mtspr       SPR_SSPCR, r3
-
-    load_const  r3, (MMU_XSPCR_ORD_64KB     << MMU_ISPCR_ORD1_i)\
-                  | (MMU_XSPCR_ORD_1MB      << MMU_ISPCR_ORD2_i)\
-                  | (MMU_XSPCR_ORD_4KB      << MMU_ISPCR_ORD3_i)\
-                  | (MMU_XSPCR_ORD_1GB      << MMU_ISPCR_ORD4_i)\
-                  | (MMU_XSPCR_ORD_16KB     << MMU_ISPCR_ORD5_i)\
-                  | (MMU_XSPCR_ORD_16MB     << MMU_ISPCR_ORD6_i)\
-                  | (MMU_XSPCR_ORD_256MB    << MMU_ISPCR_ORD7_i)
-    mtspr       SPR_ISPCR, r3
-
-    load_const  r3, ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_64KB)   << MMU_SSPCR_ORD1_i)\
-                  | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_1MB)    << MMU_SSPCR_ORD2_i)\
-                  | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_4KB)    << MMU_SSPCR_ORD3_i)\
-                  | ((MMU_SUSPCR_ORD_PID_ONLY | MMU_XSPCR_ORD_1GB)  << MMU_SSPCR_ORD4_i)\
-                  | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_16KB)   << MMU_SSPCR_ORD5_i)\
-                  | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_16MB)   << MMU_SSPCR_ORD6_i)\
-                  | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_256MB)  << MMU_SSPCR_ORD7_i)
-    mtspr       SPR_USPCR, r3
 
 /*Before editing TLB let's initialize all SPR registers to default values by the spec*/
 /*Most of them have X-state after reset and therefore CPU model cannot work properly*/
 
-    mtspr       SPR_LR, r0
-    mtspr       SPR_CTR, r0
+    mtspr       SPR_LR,		r0
+    mtspr       SPR_CTR,	r0
     mtcr        r0
-    mtspr       SPR_XER, r0
+    mtspr       SPR_XER,	r0
 
-    mtspr       SPR_TCR, r0
-    mtspr       SPR_TBL_W, r0
-    mtspr       SPR_TBU_W, r0
-    mtspr       SPR_DEC, r0
-    mtspr       SPR_DECAR, r0
+    mtspr       SPR_TCR,	r0
+    mtspr       SPR_TBL_W,	r0
+    mtspr       SPR_TBU_W,	r0
+    mtspr       SPR_DEC,	r0
+    mtspr       SPR_DECAR,	r0
     load_const  r3, (0b1    << TIMER_TSR_EVW_i)\
                   | (0b1    << TIMER_TSR_WIS_i)\
                   | (0b1    << TIMER_TSR_DIS_i)\
                   | (0b1    << TIMER_TSR_FIS_i)
     mtspr       SPR_TSR_RC, r3
 
-    mtspr       SPR_IAC1, r0
-    mtspr       SPR_IAC2, r0
-    mtspr       SPR_IAC3, r0
-    mtspr       SPR_IAC4, r0
-    mtspr       SPR_DAC1, r0
-    mtspr       SPR_DAC2, r0
-    mtspr       SPR_DVC1, r0
-    mtspr       SPR_DVC2, r0
-    mtspr       SPR_DBCR1, r0
-    mtspr       SPR_DBCR2, r0
-    mtspr       SPR_DBDR, r0
-    mtspr       SPR_RMPD, r0
+    mtspr       SPR_IAC1,	r0
+    mtspr       SPR_IAC2,	r0
+    mtspr       SPR_IAC3,	r0
+    mtspr       SPR_IAC4,	r0
+    mtspr       SPR_DAC1,	r0
+    mtspr       SPR_DAC2,	r0
+    mtspr       SPR_DVC1,	r0
+    mtspr       SPR_DVC2,	r0
+    mtspr       SPR_DBCR1,	r0
+    mtspr       SPR_DBCR2,	r0
+    mtspr       SPR_DBDR,	r0
+    mtspr       SPR_RMPD,	r0
 
-	init_realmode	r4, r5
-	rumboot_putstring	"We are in realmode now!\n"
+	rumboot_putstring "Done!\n"
 
-	b			begin_test
+
+
+
 
 test_ok:
 	rumboot_putstring "TEST_OK!\n"
