@@ -7,15 +7,18 @@
 #include <rumboot/io.h>
 #include <platform/devices.h>
 
+#define DATA_LEN = 1024;
+
+uint8_t test_data_arr [DATA_LEN] __attribute__((section(".issdata"))) = {0};
+
 int main()
 {
-  //   iowrite32(0xdeadbeef, IM0_BASE);
-  //    rumboot_print_logo();
-#if 0
-    rumboot_printf("rumboot: spl start: 0x%x end: 0x%x\n",
-               &rumboot_platform_spl_start,
-               &rumboot_platform_spl_end);
-    rumboot_printf("rumboot: Yarr! I need moar rum!\n\n");
-#endif
-    return 0;
+  uint8_t count = 0;
+  uint32_t i = 0;
+  while (i++ < DATA_LEN)
+    test_data_arr [i] = count++;
+
+  while (0);
+
+  return 0;
 }
