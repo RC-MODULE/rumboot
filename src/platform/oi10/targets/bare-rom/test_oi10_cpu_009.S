@@ -17,12 +17,25 @@
 #define P641(OFFSET)			DCR_PLB6PLB4_1_BASE + (OFFSET)
 #define CVR3					r10,r11,r12
 
-#define MMUCR_REALE 0x80000000
+#define CONST_SPR_MMUBE0 (0b0 << MMU_MMUBE0_VBE0_i)\
+                  | (0b0 << MMU_MMUBE0_VBE1_i)\
+                  | (0b0 << MMU_MMUBE0_VBE2_i)
 
-/*                                    LL             */
-/*                    |  ERPN  |      11  SSSUUUUUUU */
-/*                  --9876543210UWIMGEID--XWRXWR3210 */
-#define RMPD_DATA 0b00000000000000101011001011010000
+#define CONST_SPR_MMUBE1 (0b0 << MMU_MMUBE1_VBE3_i)\
+                  | (0b0 << MMU_MMUBE1_VBE4_i)\
+                  | (0b0 << MMU_MMUBE1_VBE5_i)
+
+#define CONST_SPR_SSPCR ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_64KB) << MMU_SSPCR_ORD1_i)\
+                  | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_4KB) << MMU_SSPCR_ORD2_i)\
+                  | (MMU_XSPCR_ORD_END << MMU_SSPCR_ORD3_i)
+
+#define CONST_SPR_ISPCR (MMU_XSPCR_ORD_64KB << MMU_ISPCR_ORD1_i)\
+                  | (MMU_XSPCR_ORD_4KB << MMU_ISPCR_ORD2_i)\
+                  | (MMU_XSPCR_ORD_END << MMU_ISPCR_ORD3_i)
+
+#define CONST_SPR_USPCR ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_64KB) << MMU_USPCR_ORD1_i)\
+                  | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_4KB) << MMU_USPCR_ORD2_i)\
+                  | (MMU_XSPCR_ORD_END << MMU_USPCR_ORD3_i)
 
 
 .section ".init.start","ax",@progbits
@@ -144,6 +157,20 @@ rumboot_entry_point:
                   | (0b0                    << CTRL_CCR2_MCDTO_i)
     mtspr       SPR_CCR2, r3
 
+    load_const  r3, CONST_SPR_MMUBE0
+    mtspr       SPR_MMUBE0, r3
+
+    load_const  r3, CONST_SPR_MMUBE1
+    mtspr       SPR_MMUBE1, r3
+
+    load_const  r3, CONST_SPR_SSPCR
+    mtspr       SPR_SSPCR, r3
+
+    load_const  r3, CONST_SPR_ISPCR
+    mtspr       SPR_ISPCR, r3
+
+    load_const  r3, CONST_SPR_USPCR
+    mtspr       SPR_USPCR, r3
 
 /*Before editing TLB let's initialize all SPR registers to default values by the spec*/
 /*Most of them have X-state after reset and therefore CPU model cannot work properly*/
@@ -179,8 +206,27 @@ rumboot_entry_point:
 
 	rumboot_putstring "Done!\n"
 
+	b	setup_tlb
 
+tlb_entries:
+/*          MMU_TLB_ENTRY(  ERPN,   RPN,        EPN,        DSIZ,                   IL1I,   IL1D,   W,      I,      M,      G,      E,                      UX, UW, UR,     SX, SW, SR      DULXE,  IULXE,      TS,     TID,                WAY,                BID,                V   )*/
+/* Invalidate initial TLB entry*/
+    .long   MMU_TLB_ENTRY(  0x000,  0x00000,    0xFFFFF,    MMU_TLBE_DSIZ_4KB,      0b0,    0b0,    0b0,    0b0,    0b0,    00,     MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b0,0b0,0b0,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b0 )
+/* TLB entries to remap 64KB page BOOTROM from 0x000003ff_ffff0000-0x000003ff_ffffffff to 0xffff0000-0xffffffff*/
+    .long   MMU_TLB_ENTRY(  0x3FF,  0xFFFF0,    0xFFFF0,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b0,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
+.set TLB_ENTRIES_N, (.-tlb_entries)/MMU_TLB_ENTRY_SIZE
 
+/* implement__write_tlb_entries r3, r4, r8, r9, r10 */
+
+setup_tlb:
+	rumboot_putstring "Init TLB entries... "
+    load_addr   r3, tlb_entries
+    load_const  r4, TLB_ENTRIES_N
+    bl          ppc470s_write_tlb_entries
+    isync
+	rumboot_putstring "Done!\n"
+
+    b begin_test
 
 
 test_ok:
@@ -212,8 +258,8 @@ check_cpu_ppc_plb6plb4_0_2:
 	check_value CVR3, P640(EARL  ),	EARL_RESET_VAL,					"PLB6PLB4_0_EARL"
 	check_value CVR3, P640(ADDRL0),	PLB6PLB4_0_ADDRL0_RESET_VAL,	"PLB6PLB4_0_ADDRL0"
 	check_value CVR3, P640(ADDRH0),	PLB6PLB4_0_ADDRH0_RESET_VAL,	"PLB6PLB4_0_ADDRH0"
-	check_value CVR3, P640(ADDRL1),	ADDRL1_0_RESET_VAL,				"PLB6PLB4_0_ADDRL1"
-	check_value CVR3, P640(ADDRH1),	ADDRH1_0_RESET_VAL,				"PLB6PLB4_0_ADDRH1"
+	check_value CVR3, P640(ADDRL1),	ADDRL1_RESET_VAL,				"PLB6PLB4_0_ADDRL1"
+	check_value CVR3, P640(ADDRH1),	ADDRH1_RESET_VAL,				"PLB6PLB4_0_ADDRH1"
 	check_value CVR3, P640(TESR  ),	TESR_RESET_VAL,					"PLB6PLB4_0_TESR"
 
 check_cpu_ppc_plb6plb4_0_3:
@@ -264,7 +310,7 @@ end_plb6plb4_0:
 
 check_cpu_ppc_plb6plb4_1_2:
 	rumboot_putstring "check_cpu_ppc_plb6plb4_1_2\n"
-	check_value CVR3, P641(P64CR ), P64CR_RESET_VAL,				"PLB6PLB4_1_P64CR"
+	check_value CVR3, P641(P64CR ), P64CR_1_RESET_VAL,				"PLB6PLB4_1_P64CR"
 	check_value CVR3, P641(ESR   ), ESR_RESET_VAL,					"PLB6PLB4_1_ESR"
 	check_value CVR3, P641(P64REV), P64REV_RESET_VAL,				"PLB6PLB4_1_P64REV"
 	check_value CVR3, P641(EARH  ), EARH_RESET_VAL,					"PLB6PLB4_1_EARH"
