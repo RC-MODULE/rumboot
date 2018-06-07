@@ -144,8 +144,12 @@
 #define PERM_VALUE      	0xFFFF0000
 
 /* Table 2-1 */
+
+#define P6DMA0_PNC_VALUE    0x75
+
+/*
 #define P6DMA0_PNC_VALUE    0x41
 #define P6DMA1_PNC_VALUE    0xE0
-
+*/
 
 #endif /* REGS_PLB6DMA_H_ */
