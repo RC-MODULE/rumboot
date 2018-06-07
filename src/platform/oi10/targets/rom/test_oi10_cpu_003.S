@@ -1,9 +1,9 @@
-#include <platform/oi10/platform/test_assert.S.h>
-#include <platform/oi10/platform/test_event_asm.h>
-#include <platform/oi10/platform/trace.S.h>
-#include <platform/oi10/platform/arch/ppc/ppc_476fp_asm.h>
-#include <platform/oi10/platform/arch/ppc/ppc_476fp_ctrl_fields.h>
-#include <platform/oi10/platform/arch/ppc/ppc_476fp_itrpt_fields.h>
+#include <platform/test_assert.S.h>
+#include <platform/test_event_asm.h>
+#include <platform/trace.S.h>
+#include <platform/arch/ppc/ppc_476fp_asm.h>
+#include <platform/arch/ppc/ppc_476fp_ctrl_fields.h>
+#include <platform/arch/ppc/ppc_476fp_itrpt_fields.h>
 
 
 #define CONST           0x00007FFF

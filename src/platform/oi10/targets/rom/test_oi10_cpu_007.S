@@ -1,13 +1,13 @@
-#include <platform/oi10/platform/trace.S.h>
-#include <platform/oi10/platform/test_assert.S.h>
-#include <platform/oi10/platform/test_event_asm.h>
-#include <platform/oi10/platform/devices.h>
+#include <platform/trace.S.h>
+#include <platform/test_assert.S.h>
+#include <platform/test_event_asm.h>
+#include <platform/devices.h>
 
 #define DEBUG_DCR_TEST
-#include <platform/oi10/platform/arch/ppc/test_macro_asm.S.h>
+#include <platform/arch/ppc/test_macro_asm.S.h>
 
 /* MPIC Registers */
-#include <platform/oi10/platform/regs/regs_mpic128.h>
+#include <platform/regs/regs_mpic128.h>
 
 
 .section ".text","ax",@progbits

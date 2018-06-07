@@ -1,13 +1,13 @@
-#include <platform/oi10/platform/arch/ppc/ppc_476fp_asm.h>
-#include <platform/oi10/platform/test_event_asm.h>
-#include <platform/oi10/platform/trace.S.h>
-#include <platform/oi10/platform/test_assert.S.h>
-#include <platform/oi10/platform/ppc470s/mmu.S.h>
-#include <platform/oi10/platform/arch/ppc/ppc_476fp_debug_fields.h>
-#include <platform/oi10/platform/arch/ppc/ppc_476fp_ctrl_fields.h>
-#include <platform/oi10/platform/arch/ppc/ppc_476fp_timer_fields.h>
-#include <platform/oi10/platform/devices.h>
-#include <platform/oi10/platform/regs/regs_plb6plb4.h>
+#include <platform/arch/ppc/ppc_476fp_asm.h>
+#include <platform/test_event_asm.h>
+#include <platform/trace.S.h>
+#include <platform/test_assert.S.h>
+#include <platform/ppc470s/mmu.S.h>
+#include <platform/arch/ppc/ppc_476fp_debug_fields.h>
+#include <platform/arch/ppc/ppc_476fp_ctrl_fields.h>
+#include <platform/arch/ppc/ppc_476fp_timer_fields.h>
+#include <platform/devices.h>
+#include <platform/regs/regs_plb6plb4.h>
 
 #define TEST_DATA_WORD_0    0x12345678
 #define P64CR_VAL			0x00000100

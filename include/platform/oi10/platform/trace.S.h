@@ -2,8 +2,8 @@
 #define TRACE_S_H_
 
 #include <platform/arch/ppc/ppc_476fp_asm.h>
-#include <platform/oi10/platform/test_event_asm.h>
-#include <platform/oi10/platform/test_event_codes.h>
+#include <platform/test_event_asm.h>
+#include <platform/test_event_codes.h>
 
 .macro putchar char, reg_data=r5, reg_ctrl=r6
     load_const  \reg_data, \char; /* test stdout */

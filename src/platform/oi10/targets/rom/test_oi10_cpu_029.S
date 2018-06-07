@@ -1,7 +1,7 @@
-#include <platform/oi10/platform/trace.S.h>
-#include <platform/oi10/platform/test_assert.S.h>
-#include <platform/oi10/platform/test_event_asm.h>
-#include <platform/oi10/platform/devices.h>
+#include <platform/arch/ppc/ppc_476fp_asm.h>
+#include <platform/test_event_asm.h>
+#include <platform/test_assert.S.h>
+#include <platform/arch/ppc/test_macro_asm.S.h>
 
 /* as defined in units/cpu/units/ppc_chip/verilog/rtl/PPC470S_TOP111323221111.v */
 #define PIR_VALUE	0x00000000 /* Single CPU */
