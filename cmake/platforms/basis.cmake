@@ -563,7 +563,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
   add_rumboot_target(
       SNAPSHOT default
-      CONFIGURATION ROM
+      CONFIGURATION IRAM
       FILES pcie/pcie_at_slv_eRP_test_0.c
       NAME pcie_at_slv_eRP_test_0
       CFLAGS -Dshort_test_for_sim=1
@@ -571,7 +571,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
   add_rumboot_target(
       SNAPSHOT default
-      CONFIGURATION ROM
+      CONFIGURATION IRAM
       FILES pcie/pcie_at_typical_eRP_test_0.c
       NAME pcie_at_typical_eRP_test_0
       CFLAGS -Dshort_test_for_sim=1
@@ -579,7 +579,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
   add_rumboot_target(
       SNAPSHOT default
-      CONFIGURATION ROM
+      CONFIGURATION IRAM
       FILES pcie/pcie_at_mst_eRP_test_0.c
       NAME pcie_at_mst_eRP_test_0
       CFLAGS -Dshort_test_for_sim=1
@@ -587,7 +587,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
   add_rumboot_target(
       SNAPSHOT default
-      CONFIGURATION ROM
+      CONFIGURATION IRAM
       FILES pcie/pcie_legacy_eRP_test.c
       NAME pcie_legacy_eRP_test
       IRUN_FLAGS +pcie_legacy_int_elab
@@ -596,7 +596,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 if (CMAKE_BUILD_TYPE MATCHES "RTL")
   add_rumboot_target(
       SNAPSHOT default
-      CONFIGURATION ROM
+      CONFIGURATION IRAM
       FILES pcie/pcie_mbist_test.c
       NAME pcie_mbist_test
       IRUN_FLAGS +pcie_mbist_model
@@ -604,7 +604,7 @@ if (CMAKE_BUILD_TYPE MATCHES "RTL")
 else()
   add_rumboot_target(
       SNAPSHOT default
-      CONFIGURATION ROM
+      CONFIGURATION IRAM
       FILES pcie/pcie_mbist_test.c
       NAME pcie_mbist_test
     )
@@ -612,7 +612,7 @@ endif()
 
   add_rumboot_target(
       SNAPSHOT default
-      CONFIGURATION ROM
+      CONFIGURATION IRAM
       FILES pcie/ext_int_test.c
       NAME ext_int_test
       IRUN_FLAGS +ext_int_elab
@@ -725,6 +725,90 @@ endif()
       CONFIGURATION IRAM
       FILES pcie/pcie_turn_on_eRP_test.c
       NAME pcie_turn_on_eRP_test
+    )
+    
+  add_rumboot_target(
+      SNAPSHOT default
+      CONFIGURATION IRAM
+      FILES pcie/addr_trans_mst_reg_test.c
+      NAME addr_trans_mst_reg_test
+    )
+    
+  add_rumboot_target(
+      SNAPSHOT default
+      CONFIGURATION IRAM
+      FILES pcie/addr_trans_slv_reg_test.c
+      NAME addr_trans_slv_reg_test
+    )
+    
+  add_rumboot_target(
+      SNAPSHOT default
+      CONFIGURATION IRAM
+      FILES ddr/ddr0_addr_test.c
+      NAME ddr0_addr_test
+    )
+    
+  add_rumboot_target(
+      SNAPSHOT default
+      CONFIGURATION IRAM
+      FILES ddr/ddr1_addr_test.c
+      NAME ddr1_addr_test
+    )
+    
+  add_rumboot_target(
+      SNAPSHOT default
+      CONFIGURATION IRAM
+      FILES ddr/ddr0_reg_test.c
+      NAME ddr0_reg_test
+    )
+    
+  add_rumboot_target(
+      SNAPSHOT default
+      CONFIGURATION IRAM
+      FILES ddr/ddr1_reg_test.c
+      NAME ddr1_reg_test
+    )
+    
+  add_rumboot_target(
+      SNAPSHOT default
+      CONFIGURATION IRAM
+      FILES ddr/ddr0_low_power_test.c
+      NAME ddr0_low_power_test
+    )
+    
+  add_rumboot_target(
+      SNAPSHOT default
+      CONFIGURATION IRAM
+      FILES ddr/ddr1_low_power_test.c
+      NAME ddr1_low_power_test
+    )
+    
+  add_rumboot_target(
+      SNAPSHOT default
+      CONFIGURATION IRAM
+      FILES ddr/ddr0_phy_bist_test.S
+      NAME ddr0_phy_bist_test
+    )
+    
+  add_rumboot_target(
+      SNAPSHOT default
+      CONFIGURATION IRAM
+      FILES ddr/ddr1_phy_bist_test.S
+      NAME ddr1_phy_bist_test
+    )
+    
+  add_rumboot_target(
+      SNAPSHOT default
+      CONFIGURATION IRAM
+      FILES ddr/ddr0_ddr1_byte_test.c
+      NAME ddr0_ddr1_byte_test
+    )
+    
+  add_rumboot_target(
+      SNAPSHOT default
+      CONFIGURATION IRAM
+      FILES ddr/ddr0_ddr1_turn_on_test.c
+      NAME ddr0_ddr1_turn_on_test
     )
     
   #RumBoot Integration tests
