@@ -86,7 +86,7 @@ main:
 	check_value CVR3, DP6A(ARB    ), ARB_VALUE,			"DMAPLB6_ARB"
 	check_value CVR3, DP6A(OPTIONS), OPTIONS_VALUE,		"DMAPLB6_OPTIONS"
 	check_value CVR3, DP6A(PERM   ), PERM_VALUE,		"DMAPLB6_PERM"
-	check_value CVR3, DP6A(PNC    ), P6DMA0_PNC_VALUE,	"DMAPLB6_PNC"		/* FAIL */
+	check_value CVR3, DP6A(PNC    ), P6DMA0_PNC_VALUE,	"DMAPLB6_PNC"
 
     rumboot_putstring "CHECK DEFAULT VALUES DONE\n"
 
