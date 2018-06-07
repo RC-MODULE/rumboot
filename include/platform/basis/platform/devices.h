@@ -80,6 +80,7 @@
  #define GIC_DIST_BASE            BASIS_PHYS(0x01504000)
  #define GIC_CPUIF_BASE           BASIS_PHYS(0x01505000)
  #define L2C_BASE                 BASIS_PHYS(0x01506000)
+ #define NIC400_BASE              BASIS_PHYS(0x01600000)
 
 
  /**
