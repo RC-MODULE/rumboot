@@ -10,6 +10,9 @@
     load_const \rA, \raddress
     mfdcrx \rR, \rA
     cmp cr7,0, \rR,\rE
+#ifdef DEBUG_PUT2USPRG0
+    mtspr SPR_USPGR0, \rR
+#endif
 /* 	rumboot_putstring "\reg_name actual value: " */
 /*	trace_hex \rR */
     TEST_ASSERT(eq,cr7,"DCRE: expected \reg_name = \exp_value (\raddress) ")
