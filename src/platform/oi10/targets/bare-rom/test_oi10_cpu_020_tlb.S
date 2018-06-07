@@ -1,11 +1,11 @@
-#include <platform/oi10/platform/arch/ppc/ppc_476fp_asm.h>
-#include <platform/oi10/platform/arch/ppc/ppc_476fp_ctrl_fields.h>
-#include <platform/oi10/platform/arch/ppc/ppc_476fp_itrpt_fields.h>
-#include <platform/oi10/platform/arch/ppc/ppc_476fp_debug_fields.h>
-#include <platform/oi10/platform/ppc470s/mmu.S.h>
-#include <platform/oi10/platform/test_event_asm.h>
-#include <platform/oi10/platform/test_assert.S.h>
-#include <platform/oi10/platform/trace.S.h>
+#include <platform/arch/ppc/ppc_476fp_asm.h>
+#include <platform/arch/ppc/ppc_476fp_ctrl_fields.h>
+#include <platform/arch/ppc/ppc_476fp_itrpt_fields.h>
+#include <platform/arch/ppc/ppc_476fp_debug_fields.h>
+#include <platform/ppc470s/mmu.S.h>
+#include <platform/test_event_asm.h>
+#include <platform/test_assert.S.h>
+#include <platform/trace.S.h>
 
 
 DECLARE_CONST( PHYSICAL_SPACE_NOT_ENTERED,  0x407E47E8 )
