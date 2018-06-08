@@ -39,4 +39,10 @@
     mtspr       SPR_SPRG1, r0
 .endm
 
+.macro test_event_send_test_id test_id_ptr
+    load_addr  r2, \test_id_ptr
+    mtspr       SPR_SPRG3, r2
+    test_event TEST_EVENT_NEW_TEST_STARTED
+.endm
+
 #endif /* TEST_EVENT_ASM_H_ */
