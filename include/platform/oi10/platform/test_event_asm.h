@@ -39,8 +39,15 @@
     mtspr       SPR_SPRG1, r0
 .endm
 
-.macro test_event_send_test_id test_id_ptr
-    load_addr  r2, \test_id_ptr
+.macro test_event_send_test_id test_id
+    b 4f
+3:
+    .ascii "\test_id"
+    .byte  0x0
+    /*end of string*/
+.align 2, 0
+4:
+    load_addr  r2, 3b
     mtspr       SPR_SPRG3, r2
     test_event TEST_EVENT_NEW_TEST_STARTED
 .endm

@@ -20,26 +20,23 @@
 
 
 .macro rumboot_putstring text
-    b 3f
-
+    b 2f
 1:
     .ascii "\text"
-2:
+    .byte  0x0
     /*end of string*/
 .align 2, 0
-3:
-    load_addr   r14, 1b           /*load string ptr*/
-    addi        r14, r14, -1      /*because of lbzu*/
-    load_addr   r15, 2b
-    load_const  r12, 2;
-4:
-    lbzu  r13, 1(r14) /* test stdout */
-    _putchar r13, r12
-    cmplw cr0, r14, r15
-    blt 4b
-
+2:
+    load_addr  r2, 1b
+    mtspr       SPR_SPRG3, r2
+    test_event EVENT_TRACE_MESSAGE
 .endm
 
+
+.macro rumboot_puthex hex_reg
+    mtspr       SPR_SPRG3, \hex_reg
+    test_event EVENT_TRACE_HEX
+.endm
 
 
 #endif /* TRACE_S_H_ */
