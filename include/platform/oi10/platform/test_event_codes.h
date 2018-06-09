@@ -6,7 +6,7 @@
 #include <platform/arch/ppc/ibm_bit_ordering_macros.h>
 
 BEGIN_ENUM( sys_event_code )
-//DECLARE_ENUM_VAL( EVENT_RESERVED1,                  0x00000000 )
+DECLARE_ENUM_VAL( EVENT_RESERVED1,                  0x00000000 )
 //DECLARE_ENUM_VAL( EVENT_RESERVED2,                  0xFFFFFFFF )
 DECLARE_ENUM_VAL( EVENT_OK,                         0x00000001 )
 DECLARE_ENUM_VAL( EVENT_ERROR,                      0x00000002 )
