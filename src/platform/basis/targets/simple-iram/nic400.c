@@ -314,6 +314,7 @@ int main ()
     }
     else{
         rumboot_printf("Errors in tests \n");
+        return 1;
     }
     rumboot_printf("NIC400 test END\n");
     return 0;
