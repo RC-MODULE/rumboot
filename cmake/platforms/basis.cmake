@@ -852,6 +852,7 @@ file(GLOB PLATFORM_SOURCES
     ${CMAKE_SOURCE_DIR}/src/lib/drivers/dit_lib.c
     ${CMAKE_SOURCE_DIR}/src/lib/drivers/bisr.c
     ${CMAKE_SOURCE_DIR}/src/lib/drivers/mdio.c
+    ${CMAKE_SOURCE_DIR}/src/lib/drivers/nic400_lib.c
 )
 
 macro(RUMBOOT_PLATFORM_SET_COMPILER_FLAGS)
