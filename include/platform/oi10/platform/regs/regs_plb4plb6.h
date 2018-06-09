@@ -29,34 +29,15 @@
 #define P4P6_0_I_M_SELF_ID          0x2
 #define P4P6_1_I_M_SELF_ID          0x5
 #define P4P6_2_I_M_SELF_ID          0x6
-/* See table  2-5 plb4to6bridge_ds_v14_2012SEP17_pub.pdf */
-#define P4P6_0_PNCR_VALUE           0x0E
-/* See table  2-5 plb4to6bridge_ds_v14_2012SEP17_pub.pdf */
+/* See table  2-5 plb4to6bridge_ds_v16_2015May18_pub.pdf*/
+#define P4P6_0_PNCR_VALUE           0x41
+/* See table  2-5 plb4to6bridge_ds_v16_2015May18_pub.pdf */
 #define P4P6_1_PNCR_VALUE           0xBB
-/* See table  2-5 plb4to6bridge_ds_v14_2012SEP17_pub.pdf */
+/* See table  2-5 plb4to6bridge_ds_v16_2015May18_pub.pdf */
 #define P4P6_2_PNCR_VALUE           0x8A
 
-#define P46_0_CR_VALUE          	reg_field(31,P4P6_0_PNCR_VALUE) |\
-									reg_field(21,0x1)   |\
-									reg_field(20,0x1)   |\
-									reg_field(19,0)     |\
-									reg_field(18,0b011) |\
-									reg_field(5,0b001)  |\
-									reg_field(2,0b001)
-#define P46_1_CR_VALUE          	reg_field(31,P4P6_1_PNCR_VALUE) |\
-									reg_field(21,0x1)   |\
-									reg_field(20,0x1)   |\
-									reg_field(19,0)     |\
-									reg_field(18,0b011) |\
-									reg_field(5,0b001)  |\
-									reg_field(2,0b001)
-#define P46_2_CR_VALUE          	reg_field(31,P4P6_2_PNCR_VALUE) |\
-									reg_field(21,0x1)   |\
-									reg_field(20,0x1)   |\
-									reg_field(19,0)     |\
-									reg_field(18,0b011) |\
-									reg_field(5,0b001)  |\
-									reg_field(2,0b001)
+#define P46_0_CR_VALUE				(0x24006C00 | P4P6_0_PNCR_VALUE)
+
 
 #define ESR_VALUE            		0x00000000
 #define P46REV_VALUE         		PLB4PLB6_WATERMARK_VALUE
