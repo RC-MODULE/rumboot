@@ -1,11 +1,11 @@
 
+#define DEBUG_DCR_TEST
+#define DEBUG_PUT2USPRG0
+
 #include <platform/arch/ppc/ppc_476fp_asm.h>
 #include <platform/test_event_asm.h>
 #include <platform/test_assert.S.h>
 #include <platform/devices.h>
-
-#define DEBUG_DCR_TEST
-
 #include <platform/arch/ppc/test_macro_asm.S.h>
 #include <platform/regs/regs_plb4plb6.h>
 
@@ -33,20 +33,20 @@ p4p6_0:
     check_value CVR3, P46A0(SNOOP_UADDRL1), SNOOP_UADDRL1_VALUE,	"PLB4PLB6_0_SNOOP_UADDRL1"
     check_value CVR3, P46A0(SNOOP_LADDRL1), SNOOP_LADDRL1_VALUE,	"PLB4PLB6_0_SNOOP_LADDRL1"
 	rumboot_putstring "Done!\n"
-    /* DCR_PLB4PLB6_0_BASE + TESR is write-only and reset value is undefined */
+    /* PLB4PLB6_0_TESR is write-only and reset value is undefined */
 
 
 running_0_1_P46_0:
     rumboot_putstring "Running 0/1 P46_0\n"
     load_const r5,	0x00000000
     load_const r4,	P46A0(SNOOP_LADDRL0)
-    mtdcrx r4, r5	/* HANGS HERE */
+    mtdcrx r4, r5
     mfdcrx r6, r4
     cmp cr7,0, r6,r5
     TEST_ASSERT(eq,cr7,"Read/write error in P4P6_0.SNOOP_LADDRL0 (running 1 init)")
 
 p46_0_running_1:
-    load_const r8,	0x00000001
+    load_const r5,	0x00000001
     load_const r7,	0x00000001
     load_const r8,	0x80000000
 p46_0_loop_1:
