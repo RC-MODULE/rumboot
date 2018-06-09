@@ -1,26 +1,34 @@
 
+#define DEBUG_DCR_TEST
+#define DEBUG_PUT2USPRG0
+
 #include <platform/arch/ppc/ppc_476fp_asm.h>
 #include <platform/test_event_asm.h>
 #include <platform/test_assert.S.h>
 #include <platform/devices.h>
-
-#define DEBUG_DCR_TEST
-
 #include <platform/arch/ppc/test_macro_asm.S.h>
 #include <platform/regs/regs_srammc2plb4.h>
 
-#define SB0CR			0x0
-#define SB1CR			0x1
-#define SB2CR			0x2
-#define SB3CR			0x3
-#define BEAR			0x4
-#define BESR0			0x5
-#define BESR1			0x6
-#define PMEG			0x7
-#define CID				0x8
-#define REVID			0x9
-#define DPC				0xA
+#define SB0CR					0x0
+#define SB1CR					0x1
+#define SB2CR					0x2
+#define SB3CR					0x3
+#define BEAR					0x4
+#define BESR0					0x5
+#define BESR1					0x6
+#define PMEG					0x7
+#define CID						0x8
+#define REVID					0x9
+#define DPC						0xA
 
+#define SB0CR_0_RESET_VAL		SRAMMC2PLB4_0_SB0CR_RESET_VAL
+#define SB1CR_0_RESET_VAL		SRAMMC2PLB4_0_SB1CR_RESET_VAL
+#define SB2CR_0_RESET_VAL		SRAMMC2PLB4_0_SB2CR_RESET_VAL
+#define SB3CR_0_RESET_VAL		SRAMMC2PLB4_0_SB3CR_RESET_VAL
+#define SB0CR_1_RESET_VAL		SRAMMC2PLB4_1_SB0CR_RESET_VAL
+#define SB1CR_1_RESET_VAL		SRAMMC2PLB4_1_SB1CR_RESET_VAL
+#define SB2CR_1_RESET_VAL		SRAMMC2PLB4_1_SB2CR_RESET_VAL
+#define SB3CR_1_RESET_VAL		SRAMMC2PLB4_1_SB3CR_RESET_VAL
 #define BEAR_RESET_VAL			0x00000000
 #define BESR0_RESET_VAL			0x00000000
 #define BESR1_RESET_VAL			0x00000000
@@ -46,17 +54,17 @@ main:
 
 check_cpu_ppc_srammc2plb4_0_2:
 	rumboot_putstring "check_cpu_ppc_srammc2plb4_0_2\n"
-    check_value CVR3, SRC2P40(SB0CR), SRAMMC2PLB4_0_SB0CR_RESET_VAL,	"SRAMMC2PLB4_0_SB0CR" /* FAIL */
-    check_value CVR3, SRC2P40(SB1CR), SRAMMC2PLB4_0_SB1CR_RESET_VAL,	"SRAMMC2PLB4_0_SB1CR" /* FAIL */
-    check_value CVR3, SRC2P40(SB2CR), SRAMMC2PLB4_0_SB2CR_RESET_VAL,	"SRAMMC2PLB4_0_SB2CR" /* FAIL */
-    check_value CVR3, SRC2P40(SB3CR), SRAMMC2PLB4_0_SB3CR_RESET_VAL,	"SRAMMC2PLB4_0_SB3CR" /* FAIL */
-    check_value CVR3, SRC2P40(BEAR ), BEAR_RESET_VAL,					"SRAMMC2PLB4_0_BEAR"
-    check_value CVR3, SRC2P40(BESR0), BESR0_RESET_VAL,					"SRAMMC2PLB4_0_BESR0"
-    check_value CVR3, SRC2P40(BESR1), BESR1_RESET_VAL,					"SRAMMC2PLB4_0_BESR1"
-    check_value CVR3, SRC2P40(PMEG ), PMEG_RESET_VAL,					"SRAMMC2PLB4_0_PMEG"
-    check_value CVR3, SRC2P40(CID  ), CID_RESET_VAL,					"SRAMMC2PLB4_0_CID"
-    check_value CVR3, SRC2P40(REVID), REVID_RESET_VAL,					"SRAMMC2PLB4_0_REVID"
-    check_value CVR3, SRC2P40(DPC  ), DPC_RESET_VAL,					"SRAMMC2PLB4_0_DPC"
+    check_value CVR3, SRC2P40(SB0CR), SB0CR_0_RESET_VAL,	"SRAMMC2PLB4_0_SB0CR"
+    check_value CVR3, SRC2P40(SB1CR), SB1CR_0_RESET_VAL,	"SRAMMC2PLB4_0_SB1CR"
+    check_value CVR3, SRC2P40(SB2CR), SB2CR_0_RESET_VAL,	"SRAMMC2PLB4_0_SB2CR"
+    check_value CVR3, SRC2P40(SB3CR), SB3CR_0_RESET_VAL,	"SRAMMC2PLB4_0_SB3CR"
+    check_value CVR3, SRC2P40(BEAR ), BEAR_RESET_VAL,		"SRAMMC2PLB4_0_BEAR"
+    check_value CVR3, SRC2P40(BESR0), BESR0_RESET_VAL,		"SRAMMC2PLB4_0_BESR0"
+    check_value CVR3, SRC2P40(BESR1), BESR1_RESET_VAL,		"SRAMMC2PLB4_0_BESR1"
+    check_value CVR3, SRC2P40(PMEG ), PMEG_RESET_VAL,		"SRAMMC2PLB4_0_PMEG"
+    check_value CVR3, SRC2P40(CID  ), CID_RESET_VAL,		"SRAMMC2PLB4_0_CID"
+    check_value CVR3, SRC2P40(REVID), REVID_RESET_VAL,		"SRAMMC2PLB4_0_REVID"
+    check_value CVR3, SRC2P40(DPC  ), DPC_RESET_VAL,		"SRAMMC2PLB4_0_DPC"
 
 check_cpu_ppc_srammc2plb4_0_3:
 	rumboot_putstring "check_cpu_ppc_srammc2plb4_0_3\n"
@@ -105,17 +113,17 @@ srammc2plb4_0_loop_0:
 
 check_cpu_ppc_srammc2plb4_1_2:
 	rumboot_putstring "check_cpu_ppc_srammc2plb4_1_2\n"
-    check_value CVR3, SRC2P41(SB0CR), SRAMMC2PLB4_1_SB0CR_RESET_VAL,	"SRAMMC2PLB4_1_SB0CR" /* FAIL */
-    check_value CVR3, SRC2P41(SB1CR), SRAMMC2PLB4_1_SB1CR_RESET_VAL,	"SRAMMC2PLB4_1_SB1CR" /* FAIL */
-    check_value CVR3, SRC2P41(SB2CR), SRAMMC2PLB4_1_SB2CR_RESET_VAL,	"SRAMMC2PLB4_1_SB2CR" /* FAIL */
-    check_value CVR3, SRC2P41(SB3CR), SRAMMC2PLB4_1_SB3CR_RESET_VAL,	"SRAMMC2PLB4_1_SB3CR" /* FAIL */
-    check_value CVR3, SRC2P41(BEAR ), BEAR_RESET_VAL,					"SRAMMC2PLB4_1_BEAR"
-    check_value CVR3, SRC2P41(BESR0), BESR0_RESET_VAL,					"SRAMMC2PLB4_1_BESR0"
-    check_value CVR3, SRC2P41(BESR1), BESR1_RESET_VAL,					"SRAMMC2PLB4_1_BESR1"
-    check_value CVR3, SRC2P41(PMEG ), PMEG_RESET_VAL,					"SRAMMC2PLB4_1_PMEG"
-    check_value CVR3, SRC2P41(CID  ), CID_RESET_VAL,					"SRAMMC2PLB4_1_CID"
-    check_value CVR3, SRC2P41(REVID), REVID_RESET_VAL,					"SRAMMC2PLB4_1_REVID"
-    check_value CVR3, SRC2P41(DPC  ), DPC_RESET_VAL,					"SRAMMC2PLB4_1_DPC"
+    check_value CVR3, SRC2P41(SB0CR), SB0CR_1_RESET_VAL,	"SRAMMC2PLB4_1_SB0CR"
+    check_value CVR3, SRC2P41(SB1CR), SB1CR_1_RESET_VAL,	"SRAMMC2PLB4_1_SB1CR"
+    check_value CVR3, SRC2P41(SB2CR), SB2CR_1_RESET_VAL,	"SRAMMC2PLB4_1_SB2CR"
+    check_value CVR3, SRC2P41(SB3CR), SB3CR_1_RESET_VAL,	"SRAMMC2PLB4_1_SB3CR"
+    check_value CVR3, SRC2P41(BEAR ), BEAR_RESET_VAL,		"SRAMMC2PLB4_1_BEAR"
+    check_value CVR3, SRC2P41(BESR0), BESR0_RESET_VAL,		"SRAMMC2PLB4_1_BESR0"
+    check_value CVR3, SRC2P41(BESR1), BESR1_RESET_VAL,		"SRAMMC2PLB4_1_BESR1"
+    check_value CVR3, SRC2P41(PMEG ), PMEG_RESET_VAL,		"SRAMMC2PLB4_1_PMEG"
+    check_value CVR3, SRC2P41(CID  ), CID_RESET_VAL,		"SRAMMC2PLB4_1_CID"
+    check_value CVR3, SRC2P41(REVID), REVID_RESET_VAL,		"SRAMMC2PLB4_1_REVID"
+    check_value CVR3, SRC2P41(DPC  ), DPC_RESET_VAL,		"SRAMMC2PLB4_1_DPC"
 
 check_cpu_ppc_srammc2plb4_1_3:
     load_const r5,	0x00000000
