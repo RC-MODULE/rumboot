@@ -344,7 +344,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     CONFIGURATION IRAM_MIRROR
     FILES bisr/bisr_hard_test.c
     NAME bisr_hard_test_rep
-    TIMEOUT 700 us
+    TIMEOUT 1000 us
     IRUN_FLAGS +bisr_error_injection_rep
     CFLAGS -DBISR_TEST_EXPECTED=BISR_MEM_GOOD
   )
@@ -362,7 +362,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     CONFIGURATION IRAM_MIRROR
     FILES bisr/bisr_hard_test.c
     NAME bisr_hard_test_nonrep
-    TIMEOUT 700 us
+    TIMEOUT 1000 us
     IRUN_FLAGS +bisr_error_injection_nonrep
     CFLAGS -DBISR_TEST_EXPECTED=BISR_MEM_FAIL
   )
@@ -379,7 +379,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     CONFIGURATION IRAM_MIRROR
     FILES bisr/bisr_hard_test.c
     NAME bisr_hard_test_clear
-    TIMEOUT 700 us
+    TIMEOUT 1000 us
     CFLAGS -DBISR_TEST_EXPECTED=BISR_MEM_PERFECT
   )
 
@@ -513,7 +513,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     CONFIGURATION IRAM_MIRROR
     FILES mdio/mdio_phy_intrp_test.c
     NAME mdio_phy_intrp_test_0
-    TIMEOUT 600 us
+    TIMEOUT 800 us
     CFLAGS -DMDIO_NUM=0
     IRUN_FLAGS +mirror_eth_phy_interrupt
   )
@@ -522,7 +522,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     CONFIGURATION IRAM_MIRROR
     FILES mdio/mdio_phy_intrp_test.c
     NAME mdio_phy_intrp_test_1
-    TIMEOUT 600 us
+    TIMEOUT 800 us
     CFLAGS -DMDIO_NUM=1
     IRUN_FLAGS +mirror_eth_phy_interrupt
   )
@@ -531,7 +531,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     CONFIGURATION IRAM_MIRROR
     FILES mdio/mdio_phy_intrp_test.c
     NAME mdio_phy_intrp_test_2
-    TIMEOUT 600 us
+    TIMEOUT 800 us
     CFLAGS -DMDIO_NUM=2
     IRUN_FLAGS +mirror_eth_phy_interrupt
   )
@@ -540,7 +540,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     CONFIGURATION IRAM_MIRROR
     FILES mdio/mdio_phy_intrp_test.c
     NAME mdio_phy_intrp_test_3
-    TIMEOUT 600 us
+    TIMEOUT 800 us
     CFLAGS -DMDIO_NUM=3
     IRUN_FLAGS +mirror_eth_phy_interrupt
   )
