@@ -14,8 +14,8 @@
 .endm
 
 .macro putchar char
-    load_const  r13, \char; /* test stdout */
-    _putchar r13, r12
+    load_const  r5, \char; /* test stdout */
+    _putchar r5, r6
 .endm
 
 
@@ -27,8 +27,8 @@
     /*end of string*/
 .align 2, 0
 2:
-    load_addr  r2, 1b
-    mtspr       SPR_SPRG3, r2
+    load_addr  r5, 1b
+    mtspr       SPR_SPRG3, r5
     test_event EVENT_TRACE_MESSAGE
 .endm
 
