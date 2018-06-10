@@ -13,6 +13,8 @@ rumboot_entry_point:
 
     gtube_init
     rumboot_putstring "myYarr!!!\n"
+    load_const r5, 0x70075
+    rumboot_puthex r5
     putchar 'Y'
     putchar 'a'
     putchar 'r'
