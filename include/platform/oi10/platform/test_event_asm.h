@@ -21,6 +21,7 @@
 .endm
 
 .macro exit code
+    test_event TEST_EVENT_NEW_TEST_FINISHED
     load_const  r6, 0
     load_const  r7, 1
     load_const  r5, \code /* test stdout */
