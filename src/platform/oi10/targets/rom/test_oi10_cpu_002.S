@@ -1,216 +1,85 @@
-#include <platform/arch/ppc/ppc_476fp_asm.h>
-#include <platform/test_event_asm.h>
+
 #include <platform/trace.S.h>
 #include <platform/test_assert.S.h>
 #include <platform/ppc470s/mmu.S.h>
+#include <platform/test_event_asm.h>
 #include <platform/arch/ppc/ppc_476fp_debug_fields.h>
 #include <platform/arch/ppc/ppc_476fp_ctrl_fields.h>
 #include <platform/arch/ppc/ppc_476fp_timer_fields.h>
 #include <platform/devices.h>
-#include <platform/regs/regs_plb6plb4.h>
 
 #define TEST_DATA_WORD_0    0x12345678
 #define P64CR_VAL			0x00000100
 
 
-.section ".init.start","ax",@progbits
+.section ".text","ax",@progbits
 
-boot_start:
-    b           rumboot_entry_point
+.global main
+.global some_code0
 
-.section ".init.text","ax",@progbits
-
+main:
 rumboot_entry_point:
 
-    gtube_init
+    load_const r3,  0x00000000
+    load_const r4,  0x00000000
+    load_const r5,  0x00000000
+    load_const r6,  0x00000000
+    load_const r7,  0x00000000
+    load_const r8,  0x00000000
+    load_const r9,  0x00000000
+    load_const r10, 0x00000000
+    load_const r11, 0x00000000
+    load_const r12, 0x00000000
+    load_const r13, 0x00000000
+    load_const r14, 0x00000000
+    load_const r15, 0x00000000
+    load_const r16, 0x00000000
+    load_const r17, 0x00000000
+    load_const r18, 0x00000000
+    load_const r19, 0x00000000
+    load_const r20, 0x00000000
+    load_const r21, 0x00000000
+    load_const r22, 0x00000000
+    load_const r23, 0x00000000
+    load_const r24, 0x00000000
+    load_const r25, 0x00000000
+    load_const r26, 0x00000000
+    load_const r27, 0x00000000
+    load_const r28, 0x00000000
+    load_const r29, 0x00000000
+    load_const r30, 0x00000000
+    load_const r31, 0x00000000
 
-    load_const r0,  0
-    load_const r1,  0
-    load_const r2,  0
-    load_const r3,  0
-    load_const r4,  0
-    load_const r5,  0
-    load_const r6,  0
-    load_const r7,  0
-    load_const r8,  0
-    load_const r9,  0
-    load_const r10, 0
-    load_const r11, 0
-    load_const r12, 0
-    load_const r13, 0
-    load_const r14, 0
-    load_const r15, 0
-    load_const r16, 0
-    load_const r17, 0
-    load_const r18, 0
-    load_const r19, 0
-    load_const r20, 0
-    load_const r21, 0
-    load_const r22, 0
-    load_const r23, 0
-    load_const r24, 0
-    load_const r25, 0
-    load_const r26, 0
-    load_const r27, 0
-    load_const r28, 0
-    load_const r29, 0
-    load_const r30, 0
-    load_const r31, 0
-
-init_spr:
-/* according to User's Manual ch. 9.4 Initialization Software Requirements */
-    load_const r0, 0x00000000	/* DBCR0 value          */
-    mtspr   SPR_DBCR0, r0		/* DBCR0 clear          */
-
-/* Setup DBSR */
-    mfspr   r0, SPR_DBSR_RC		/* read current DBSR    */
-    mtspr   SPR_DBSR_RC, r0		/* clear all valid bits */
-
-    load_const r0,	reg_field( 0, 0b0   ) /* ITE        */ \
-				  | reg_field( 1, 0b1   ) /* PRE        */ \
-				  | reg_field( 4, 0b0   ) /* CRPE       */ \
-				  | reg_field(10, 0b0   ) /* ICS        */ \
-				  | reg_field(11, 0b0   ) /* DAPUIB     */ \
-				  | reg_field(15, 0b0000) /* ICWRIDX    */ \
-				  | reg_field(16, 0b0   ) /* DTB        */ \
-				  | reg_field(23, 0b0   ) /* FLSTA      */ \
-				  | reg_field(29, 0b00  ) /* DQWPM      */ \
-				  | reg_field(30, 0b1   ) /* IQWPM      */
-    mtspr   SPR_CCR0, r0
-
-    load_const r0,	reg_field( 1, 0b00  ) /* GPRPEI     */ \
-				  | reg_field( 3, 0b00  ) /* FPRPEI     */ \
-				  | reg_field( 5, 0b00  ) /* ICDPEI     */ \
-				  | reg_field( 7, 0b00  ) /* ICLPEI     */ \
-				  | reg_field( 9, 0b00  ) /* ICTPEI     */ \
-				  | reg_field(11, 0b00  ) /* DCDPEI     */ \
-				  | reg_field(13, 0b00  ) /* DCLPEI     */ \
-				  | reg_field(15, 0b00  ) /* DCTPEI     */ \
-				  | reg_field(16, 0b0   ) /* MMUTPEI    */ \
-				  | reg_field(17, 0b0   ) /* MMUDPEI    */ \
-				  | reg_field(19, 0b0   ) /* TSS        */ \
-				  | reg_field(21, 0b0   ) /* DPC        */ \
-				  | reg_field(23, 0b00  ) /* TCS        */
-    mtspr   SPR_CCR1, r0
-
-    load_const r0,	reg_field( 1, 0b00  ) /* DSTG       */ \
-				  | reg_field( 2, 0b0   ) /* DLFPD      */ \
-				  | reg_field( 4, 0b0   ) /* DSTI       */ \
-				  | reg_field( 9, 0b0   ) /* PMUD       */ \
-				  | reg_field(11, 0b0   ) /* DCSTGW     */ \
-				  | reg_field(15, 0b0000) /* STGCTR     */ \
-				  | reg_field(16, 0b0   ) /* DISTG      */ \
-				  | reg_field(20, 0b0   ) /* SPC5C1     */ \
-				  | reg_field(21, 0b0   ) /* MCDTO      */
-    mtspr   SPR_CCR2, r0
-
-    load_const r0,	reg_field(29, 0b0   ) /* VBE0       */ \
-    			  | reg_field(30, 0b0   ) /* VBE1       */ \
-    			  | reg_field(31, 0b0   ) /* VBE2       */
-    mtspr   SPR_MMUBE0, r0
-
-    load_const r0,	reg_field(29, 0b0   ) /* VBE3       */ \
-    			  | reg_field(30, 0b0   ) /* VBE4       */ \
-    			  | reg_field(31, 0b0   ) /* VBE5       */
-    mtspr   SPR_MMUBE1, r0
-
-    load_const r0,	reg_field( 3, 0b0001) /* ORD1       */ \
-    			  | reg_field( 7, 0b0010) /* ORD2       */ \
-    			  | reg_field(11, 0b0011) /* ORD3       */ \
-    			  | reg_field(15, 0b0100) /* ORD4       */ \
-    			  | reg_field(19, 0b0101) /* ORD5       */ \
-    			  | reg_field(23, 0b0110) /* ORD6       */ \
-    			  | reg_field(27, 0b0111) /* ORD7       */
-    mtspr   SPR_SSPCR, r0
-
-    load_const r0,	reg_field( 3, 0b0001) /* ORD1       */ \
-    			  | reg_field( 7, 0b0010) /* ORD2       */ \
-    			  | reg_field(11, 0b0011) /* ORD3       */ \
-    			  | reg_field(15, 0b0100) /* ORD4       */ \
-    			  | reg_field(19, 0b0101) /* ORD5       */ \
-    			  | reg_field(23, 0b0110) /* ORD6       */ \
-    			  | reg_field(27, 0b0111) /* ORD7       */
-    mtspr   SPR_ISPCR, r0
-
-    load_const r0,	reg_field( 3, 0b0001) /* ORD1       */ \
-    			  | reg_field( 7, 0b0010) /* ORD2       */ \
-    			  | reg_field(11, 0b0011) /* ORD3       */ \
-    			  | reg_field(15, 0b0100) /* ORD4       */ \
-    			  | reg_field(19, 0b0101) /* ORD5       */ \
-    			  | reg_field(23, 0b0110) /* ORD6       */ \
-    			  | reg_field(27, 0b0111) /* ORD7       */
-    mtspr   SPR_USPCR, r0
-
-/*
-	Before editing TLB let's initialize all SPR registers to default values by the spec
-	Most of them have X-state after reset and therefore CPU model cannot work properly
-*/
-    load_const  r0, 0
-    load_const  r1, 0xFFFFFFFF
-
-    mtspr   SPR_CTR,	r0
-    mtcr    r0
-    mtspr   SPR_LR,		r0
-    mtspr   SPR_DCESR,	r0
-    mtspr   SPR_CSRR0,	r0
-    mtspr   SPR_CSRR1,	r0
-    mtspr   SPR_MCSRR0,	r0
-    mtspr   SPR_MCSRR1,	r0
-    mtspr   SPR_RMPD,	r0
-
-    mtspr   SPR_IAC1,	r0
-    mtspr   SPR_IAC2,	r0
-    mtspr   SPR_IAC3,	r0
-    mtspr   SPR_IAC4,	r0
-    mtspr   SPR_DAC1,	r0
-    mtspr   SPR_DAC2,	r0
-    mtspr   SPR_DVC1,	r0
-    mtspr   SPR_DVC2,	r0
-    mtspr   SPR_DBCR1,	r0
-    mtspr   SPR_DBCR2,	r0
-    mtspr   SPR_DBDR,	r0
-    mtspr   SPR_MCSR_C,	r1
-    mtspr   SPR_DEAR,	r0
-    mtspr   SPR_TCR,	r0
-    mtspr   SPR_DEC,	r0
-    mtspr   SPR_DECAR,	r0
-    mtspr   SPR_TSR_RC,	r1
-    mtspr   SPR_SRR0,	r0
-    mtspr   SPR_SRR1,	r0
-    mtspr   SPR_TBL_W,	r0
-    mtspr   SPR_TBU_W,	r0
-    mtspr   SPR_XER,	r0
+	mtspr SPR_SPRG7,	r1	/* Save stack! */
+    mflr  r29				/* save LR */
+    mtspr SPR_SPRG8, 	r29	/* ------- */
 
     ppc470s_set_mem_window  r3, MEM_WINDOW_SHARED
     b       setup_tlb
-
-.section ".init.rodata","a",@progbits
 
 tlb_entries:
 /* TLB entries to remap 64KB pages IM0 from 0x00000010_00010000-0x00000010_0002ffff to 0x00040000-0x0005ffff */
 /*          MMU_TLB_ENTRY(  ERPN,   RPN,        EPN,        DSIZ,                   IL1I,   IL1D,   W,      I,      M,      G,      E,                      UX, UW, UR,     SX, SW, SR      DULXE,  IULXE,      TS,     TID,                WAY,                BID,                V   ) */
 /* Invalidate initial TLB entry*/
-    .long   MMU_TLB_ENTRY(  0x000,  0x00000,    0xFFFFF,    MMU_TLBE_DSIZ_4KB,      0b0,    0b0,    0b0,    0b0,    0b0,    00,     MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b0,0b0,0b0,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b0 )
+/*	.long   MMU_TLB_ENTRY(  0x000,  0x00000,    0xFFFFF,    MMU_TLBE_DSIZ_4KB,      0b0,    0b0,    0b0,    0b0,    0b0,    00,     MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b0,0b0,0b0,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b0 ) */
 /* TLB entry to remap 64KB page BOOTROM from 0x000003ff_ffff0000-0x000003ff_ffffffff to 0xffff0000-0xffffffff*/
-    .long   MMU_TLB_ENTRY(  0x3FF,  0xFFFF0,    0xFFFF0,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b0,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
+/*	.long   MMU_TLB_ENTRY(  0x3FF,  0xFFFF0,    0xFFFF0,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b0,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 ) */
 /* TLB entry to remap 64KB page mirror-BOOTROM from 0x000003ff_ffff0000-0x000003ff_ffffffff to 0x00000000-0x0000ffff*/
-    .long   MMU_TLB_ENTRY(  0x3FF,  0xFFFF0,    0x00000,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b0,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
+	.long   MMU_TLB_ENTRY(  0x3FF,  0xFFFF0,    0x00000,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b0,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
 /* TLB entries to remap 128KB pages IM0 from 0x00000010_00010000-0x00000010_0002ffff to 0xc0010000-0xc002ffff*/
-    .long   MMU_TLB_ENTRY(  0x010,  0x00010,    0xC0010,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
-    .long   MMU_TLB_ENTRY(  0x010,  0x00020,    0xC0020,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
+/*	.long   MMU_TLB_ENTRY(  0x010,  0x00010,    0xC0010,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 ) */
+/*	.long   MMU_TLB_ENTRY(  0x010,  0x00020,    0xC0020,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 ) */
 /* mirror from 0x00000010_00010000-0x00000010_0002ffff to 0x00040000-0x0005ffff */
-    .long   MMU_TLB_ENTRY(  0x010,  0x00010,    0x00010,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
-    .long   MMU_TLB_ENTRY(  0x010,  0x00020,    0x00020,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
+	.long   MMU_TLB_ENTRY(  0x010,  0x00010,    0x00010,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
+	.long   MMU_TLB_ENTRY(  0x010,  0x00020,    0x00020,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
 /* mirror from 0x00000010_00010000-0x00000010_0002ffff to 0x00040000-0x0005ffff */
-    .long   MMU_TLB_ENTRY(  0x010,  0x00010,    0x00040,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
-    .long   MMU_TLB_ENTRY(  0x010,  0x00020,    0x00050,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
+	.long   MMU_TLB_ENTRY(  0x010,  0x00010,    0x00040,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
+	.long   MMU_TLB_ENTRY(  0x010,  0x00020,    0x00050,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
 /* mirror from 0x00000010_00010000-0x00000010_0002ffff to 0x00060000-0x0007ffff */
-    .long   MMU_TLB_ENTRY(  0x010,  0x00010,    0x00060,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
-    .long   MMU_TLB_ENTRY(  0x010,  0x00020,    0x00070,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
+	.long   MMU_TLB_ENTRY(  0x010,  0x00010,    0x00060,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
+	.long   MMU_TLB_ENTRY(  0x010,  0x00020,    0x00070,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
 .set TLB_ENTRIES_N, (.-tlb_entries)/MMU_TLB_ENTRY_SIZE
 
-
-.section ".init.text","ax",@progbits
 
 /* implement__write_tlb_entries r3, r4, r8, r9, r10 */
 
@@ -219,25 +88,8 @@ setup_tlb:
     load_addr   r4, TLB_ENTRIES_N
     bl          ppc470s_write_tlb_entries /* (r3, r4) - are parameters */
 
-plb6plb4_init:
-	load_const	r9,  0x10
-	load_const	r10, DCR_PLB6PLB4_0_BASE + ADDRL1
-	mtdcrx		r10, r9
-	load_const	r10, DCR_PLB6PLB4_0_BASE + ADDRH1
-	mtdcrx		r10, r9
-	load_const	r10, DCR_PLB6PLB4_0_BASE + P64CR
-	mfdcrx		r9,  r10
-	ori			r9,  r9, P64CR_VAL
-	mtdcrx		r10, r9
+	b		    test_oi10_cpu_002
 
-	b	    test_oi10_cpu_002
-
-.section ".text","ax",@progbits
-
-some_code0:
-    /* r5++ */
-    add r5,r5,r4
-    blr
 
 test_oi10_cpu_002:
 
@@ -603,40 +455,52 @@ mmu_check_0:
 mmu_check_1:
 
 	rumboot_putstring "\nStart MMU ckeck stage 1.\n"
+    mflr r29		/* save LR */
     load_const r2, 0x00000001 /* cmp1 */
     load_const r3, 0x00000002 /* cmp2 */
     load_const r4, 0x00000001
     load_const r5, 0x00000000 /* counter */
 
-   /* branch to 0xFFFF0000 (.BOOT_ROM.text) */
-    bla 0xFFFF0000
+	rumboot_putstring "Branch to 0xFFFFxxxx... "
+    bla some_code0
     cmp     cr7,0, r2, r5
     TEST_ASSERT(eq,cr7,"mmu check 1: value(1) mismatch")
-    /* branch to 0x00000000 (.BOOT_ROM.text), virtual */
-    bla 0x00000000
+    rumboot_putstring "Done!\n"
+    lis r6, 0x0000
+    ori r6, r6, some_code0@l
+    mtctr r6	/* Address to CTR */
+	rumboot_putstring "Branch to 0x0000xxxx... "
+    bctrl		/* Do branch */
     cmp     cr7,0, r3, r5
     TEST_ASSERT(eq,cr7,"mmu check 1: value(2) mismatch")
+    rumboot_putstring "Done!\n"
 
     test_event EVENT_CHECK_CPU_PPC_MMU_1
 
-    b ok
+    b test_ok
 
-error:
-    putchar 'E'
-    putchar 'R'
-    putchar 'R'
-    putchar 'O'
-    putchar 'R'
-    putchar '\n'
-    exit RESULT_ERROR
-    b stop
 
-ok:
-    putchar 'O'
-    putchar 'K'
-    putchar '\n'
-    exit RESULT_OK
+test_ok:
+    rumboot_putstring "\nTEST OK\n"
+    test_event		EVENT_OK
+    load_const r3,	RESULT_OK
+    b finish
 
-stop:
-    b stop
+test_error:
+    rumboot_putstring "\nTEST ERROR\n"
+    test_event		EVENT_ERROR
+    load_const r3,	RESULT_ERROR
+
+finish:
+	mfspr r29, SPR_SPRG8	/* Restore LR */
+    mtlr  r29				/* ---------- */
+	mfspr r1,  SPR_SPRG7	/* Restore stack! */
+    blr
+
+
+some_code0:
+    add r5,r5,r4
+	rumboot_putstring "ok "
+    blr
+	.long 0xBAD4DEAD
 
