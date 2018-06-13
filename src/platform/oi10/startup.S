@@ -280,27 +280,6 @@ enable_itrpts:
     mtmsr       r3
 #endif
 
-setup_plb6bc:
-    load_const  r3, DCR_PLB6_BC_BASE
-
-    addi        r4, r3, PLB6BC_SGD1
-    load_const  r5, 0x00000010
-    mtdcrx      r4, r5
-
-    addi        r4, r3, PLB6BC_SGD2
-    load_const  r5, 0x00000010
-    mtdcrx      r4, r5
-
-    addi        r4, r3, PLB6BC_CR0
-    load_const  r5, (0b1 << PLB6BC_CR0_BC_DSBS_i)\
-                  | (0b1 << PLB6BC_CR0_BC_MASK_MSRSP_i)\
-                  | (0b1 << PLB6BC_CR0_BC_MASK_SRSNZ_i)
-    mtdcrx      r4, r5
-
-    addi        r4, r3, PLB6BC_HCPP
-    load_const  r5, PLB6BC_HCPP_4K
-    mtdcrx      r4, r5
-
 init_spr:
 /*according to User's Manual ch. 9.4 Initialization Software Requirements*/
     mtspr       SPR_DBCR0, r0       /* disable all debug events*/
@@ -429,14 +408,40 @@ setup_tlb:
 
     ppc470s_set_mem_window  r3, MEM_WINDOW_0
 
-    bl          p64_init_simple
+setup_boot_rom_im0_p64:
+    load_const  r3, DCR_PLB6PLB4_0_BASE
+    /* enable requests to BOOT_ROM mirror (0x00000010_FFFF0000:0x00000010_FFFFFFFF) and IM0 (0x00000010_80010000:0x00000010_8002FFFF) */
+    load_const  r4, 0x00000010
+    load_const  r5, 0x00000010
+    bl          p64_set_split_range_address
+
+setup_plb6bc:
+    load_const  r3, DCR_PLB6_BC_BASE
+
+    addi        r4, r3, PLB6BC_SGD1
+    load_const  r5, 0x00000010
+    mtdcrx      r4, r5
+
+    addi        r4, r3, PLB6BC_SGD2
+    load_const  r5, 0x00000010
+    mtdcrx      r4, r5
+
+    addi        r4, r3, PLB6BC_HCPP
+    load_const  r5, PLB6BC_HCPP_4K
+    mtdcrx      r4, r5
+
+    addi        r4, r3, PLB6BC_CR0
+    load_const  r5, (0b1 << PLB6BC_CR0_BC_DSBS_i)\
+                  | (0b1 << PLB6BC_CR0_BC_MASK_MSRSP_i)\
+                  | (0b1 << PLB6BC_CR0_BC_MASK_SRSNZ_i)
+    mtdcrx      r4, r5
 
 setup_stack: /*stack is growing down*/
     load_addr   r1, rumboot_platform_stack_area_end
     stwu        r0, -8(r1) /*allocate LR and save SP of first stack frame according to ABI rules*/
     b goto_boot_main
 
-.section "ROM.text","ax",@progbits
+.section ".text.rom","ax",@progbits
 goto_boot_main:
     bl          rumboot_main /* never returns*/
 
