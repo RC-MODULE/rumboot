@@ -1,11 +1,13 @@
 
+#define DEBUG_DCR_TEST
+#define DEBUG_PUT2USPRG0
+
+// #define UNIDIRECTIONAL_BRIDGE
+
 #include <platform/arch/ppc/ppc_476fp_asm.h>
 #include <platform/test_event_asm.h>
 #include <platform/test_assert.S.h>
 #include <platform/devices.h>
-
-#define DEBUG_DCR_TEST
-
 #include <platform/arch/ppc/test_macro_asm.S.h>
 #include <platform/regs/regs_plb4ahb.h>
 
