@@ -11,7 +11,6 @@ SECTIONS
 
   .rwx : {
     KEEP(*(.header))
-
     *(.text)
     *(.text.*)
     *(.rodata)
@@ -41,6 +40,9 @@ SECTIONS
 
     /* This is where stacks end */
     rumboot_platform_stack_area_end = .;
+    
+	. = 0x0002e000;
+	*(.issdata)
  } > IM0
 
  .runtime 0x8001ff00 (NOLOAD): {
