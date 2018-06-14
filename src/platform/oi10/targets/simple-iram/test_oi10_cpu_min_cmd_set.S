@@ -1,5 +1,5 @@
 
-#include <platform/arch/ppc/ppc_476fp_asm.h>
+// #include <platform/arch/ppc/ppc_476fp_asm.h>
 #include <platform/test_event_codes.h>
 #include <platform/test_event_asm.h>
 #include <platform/test_assert.S.h>
@@ -10,6 +10,14 @@
 
 /* .section ".IM0.data","ax",@progbits */
 /* .section ".rodata","ax",@progbits */
+
+.section ".text","ax",@progbits
+
+.global main
+
+main:
+	save_stack r29
+	b	image_start
 
 .align 2
 test_mpw_cpu_min_cmd_set_data:
@@ -33,12 +41,7 @@ test_mpw_cpu_min_cmd_set_fp_data:
 .quad 0x0000000000000000
 .quad 0x0000000000000000
 
-.section ".text","ax",@progbits
 
-.global image_start
-.global main
-
-main:
 image_start:
     rumboot_putstring "Test started.\n"
 
@@ -191,5 +194,6 @@ test_error:
 finish:
     test_event EVENT_FINISHED
     rumboot_putstring "TEST FINISHED\n"
+    rest_stack r29
     blr
 
