@@ -9,7 +9,7 @@
 
 
 /* .section ".IM0.data","ax",@progbits */
-.section ".rodata","ax",@progbits
+/* .section ".rodata","ax",@progbits */
 
 .align 2
 test_mpw_cpu_min_cmd_set_data:
@@ -176,13 +176,13 @@ move_spr_dcr_mcr:
     cmpw cr0, r4, r5
     TEST_ASSERT(eq, cr0, "Expected value 0x22222222 after 'mtcr/mfcr' instructions.")
 
-ok:
+ test_ok:
     test_event EVENT_OK
     rumboot_putstring "TEST OK\n"
     load_const r3, RESULT_OK
     b finish
 
-error:
+test_error:
     test_event EVENT_ERROR
     rumboot_putstring "TEST ERROR\n"
     load_const r3, RESULT_ERROR
