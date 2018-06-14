@@ -49,6 +49,20 @@
     stw \rT,\D(\rA)
 .endm
 
+/* Temp register -vv */
+.macro save_stack tR
+	mtspr	SPR_SPRG7,	r1
+	mflr	\tR
+	mtspr	SPR_SPRG8,	\tR
+.endm
+
+/* Temp register -vv */
+.macro rest_stack tR
+	mfspr	\tR,	SPR_SPRG8
+	mtlr	\tR
+	mfspr	r1,		SPR_SPRG7
+.endm
+
 #define DTLB_ERROR_EA 0x00000000
 .macro run_in_itrpt_handler_dtlb_error USER_HANDLER_NAME
 setup_dtlb_error_interrupt:
