@@ -1,26 +1,42 @@
-#include <platform/oi10/platform/arch/ppc/ppc_476fp_asm.h>
-#include <platform/oi10/platform/test_event_asm.h>
+#include <platform/oi10/platform/trace.S.h>
 #include <platform/oi10/platform/test_assert.S.h>
-#include <platform/oi10/platform/arch/ppc/test_macro_asm.S.h>
+#include <platform/oi10/platform/test_event_asm.h>
+#include <platform/oi10/platform/devices.h>
 
-#define PVR_VALUE 0x7FF520C0
+/* as defined in units/cpu/units/ppc_chip/verilog/rtl/PPC470S_TOP111323221111.v */
+#define PIR_VALUE	0x00000000 /* Single CPU */
+#define PVR_VALUE	0x7FF520C0 /* owner=0x7FF, proc ver=0x520C0 */
 
 .section ".text","ax",@progbits
 
-.global boot_init
 .global main
 
 main:
-boot_init:
-    mfspr r4, SPR_PIR
-    mfspr r5, SPR_PVR
-    load_const r6, PVR_VALUE
-    cmp cr7, 0, r5, r6
+    mfspr		r4, SPR_PIR
+    mfspr		r5, SPR_PVR
+    load_const	r6, PIR_VALUE
+    load_const	r7, PVR_VALUE
+    cmp cr6, 0, r4, r6
+    cmp cr7, 0, r5, r7
+    TEST_ASSERT(eq, cr6, "PIR value is incorrect.")
     TEST_ASSERT(eq, cr7, "PVR value is incorrect.")
-    test_event EVENT_CHECK_PIR_PVR
+    test_event	EVENT_CHECK_PIR_PVR
+    bne- cr6,	test_error
+    bne- cr7,	test_error
 
-program_end:
-	rumboot_puthex r0 /* AG: For test purpose only! Remove later! */
-    load_const r3, 0x00
+
+test_ok:
+    rumboot_putstring "\nTEST OK\n"
+    test_event		EVENT_OK
+    load_const r3,	RESULT_OK
+    b finish
+
+test_error:
+    rumboot_putstring "\nTEST ERROR\n"
+    test_event		EVENT_ERROR
+    load_const r3,	RESULT_ERROR
+
+finish:
     blr
+
 
