@@ -42,20 +42,9 @@ boot_tlb_entries:
 /*          MMU_TLB_ENTRY(  ERPN,   RPN,        EPN,        DSIZ,                   IL1I,   IL1D,   W,      I,      M,      G,      E,                      UX, UW, UR,     SX, SW, SR      DULXE,  IULXE,      TS,     TID,                WAY,                BID,                V   )*/
 /* Invalidate initial TLB entry*/
     .long   MMU_TLB_ENTRY(  0x000,  0x00000,    0xFFFFF,    MMU_TLBE_DSIZ_4KB,      0b0,    0b0,    0b0,    0b0,    0b0,    00,     MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b0,0b0,0b0,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b0 )
-/* TLB entries to remap 128KB pages IM0 from 0x00000010_00010000-0x00000010_0002ffff to 0xc0010000-0xc002ffff*/
-    .long   MMU_TLB_ENTRY(  0x010,  0x80000,    0x80000,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
-    .long   MMU_TLB_ENTRY(  0x010,  0x80010,    0x80010,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
-/* TLB entries to remap 128KB pages IM1 from 0x00000020_00000000-0x00000020_0001ffff to 0xd0000000-0xd001ffff*/
-    .long   MMU_TLB_ENTRY(  0x020,  0xC0000,    0xC0000,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_LITTLE_END,  0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
-    .long   MMU_TLB_ENTRY(  0x020,  0xC0010,    0xC0010,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_LITTLE_END,  0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
-/* TLB entry to remap LHSIF registers   from 0x00000020_00020000-0x00000020_00040fff to 0xd0000000-0xd0040fff*/
-    .long   MMU_TLB_ENTRY(  0x020,  0xC0020,    0xC0020,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_LITTLE_END,  0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
-    .long   MMU_TLB_ENTRY(  0x020,  0xC0030,    0xC0030,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_LITTLE_END,  0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
-/* TLB entry to remap LHSIF commutator registers from 0x00000020_f0000000-0x00000020_f01fffff to 0xf0000000-0xf01fffff*/
-    .long   MMU_TLB_ENTRY(  0x020,  0xF0000,    0xF0000,    MMU_TLBE_DSIZ_1MB,      0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_LITTLE_END,  0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
-    .long   MMU_TLB_ENTRY(  0x020,  0xF0100,    0xF0100,    MMU_TLBE_DSIZ_1MB,      0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_LITTLE_END,  0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
-/* TLB entries to remap 64KB page BOOTROM from 0x000003ff_ffff0000-0x000003ff_ffffffff to 0xffff0000-0xffffffff*/
-    .long   MMU_TLB_ENTRY(  0x3FF,  0xFFFF0,    0xFFFF0,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b0,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
+/* TLB entries to remap 64KB page BOOTROM from 0x000003ff_ffff0000-0x000003ff_ffffffff to 0xffff0000-0xffffffff (bolted entries must be defined first)*/
+    .long   MMU_TLB_ENTRY(  0x3FF,  0xFFFF0,    0xFFFF0,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b0,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_1,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
+    .long   MMU_TLB_ENTRY(  0x01F,  0xFFFF0,    0xFFFF0,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b0,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_0,     0b1 )
 DECLARE_CONST( BOOT_TLB_ENTRIES_N, (.-boot_tlb_entries)/MMU_TLB_ENTRY_SIZE )
 
 
@@ -261,13 +250,14 @@ rumboot_reset_handler:
     mtspr       SPR_DCESR, r0
     mtspr       SPR_DEAR, r0
 
-    load_const  r3, ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_64KB)   << MMU_SSPCR_ORD1_i)\
-                  | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_1MB)  << MMU_SSPCR_ORD2_i)\
-                  | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_4KB)    << MMU_SSPCR_ORD3_i)\
-                  | (MMU_XSPCR_ORD_END                              << MMU_SSPCR_ORD4_i)
+    load_const  r3, ((MMU_SUSPCR_ORD_PID_ONLY | MMU_XSPCR_ORD_64KB) << MMU_SSPCR_ORD1_i)\
+                  | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_4KB)    << MMU_SSPCR_ORD2_i)\
+                  | (MMU_XSPCR_ORD_END                              << MMU_SSPCR_ORD3_i)
     mtspr       SPR_SSPCR, r3
 
-setup_bootrom_apb_tlb_entries:
+setup_boot_tlb_entries:
+    ppc470s_set_mem_window  r3, MEM_WINDOW_1
+
     load_addr   r3, boot_tlb_entries
     load_const  r4, BOOT_TLB_ENTRIES_N
     bl          ppc470s_write_tlb_entries
@@ -341,15 +331,6 @@ init_spr:
                   | (0b0                    << CTRL_CCR2_MCDTO_i)
     mtspr       SPR_CCR2, r3
 
-    load_const  r3, ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_64KB)   << MMU_SSPCR_ORD1_i)\
-                  | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_1MB)    << MMU_SSPCR_ORD2_i)\
-                  | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_4KB)    << MMU_SSPCR_ORD3_i)\
-                  | ((MMU_SUSPCR_ORD_PID_ONLY | MMU_XSPCR_ORD_1GB)  << MMU_SSPCR_ORD4_i)\
-                  | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_16KB)   << MMU_SSPCR_ORD5_i)\
-                  | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_16MB)   << MMU_SSPCR_ORD6_i)\
-                  | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_256MB)  << MMU_SSPCR_ORD7_i)
-    mtspr       SPR_SSPCR, r3
-
     load_const  r3, (MMU_XSPCR_ORD_64KB     << MMU_ISPCR_ORD1_i)\
                   | (MMU_XSPCR_ORD_1MB      << MMU_ISPCR_ORD2_i)\
                   | (MMU_XSPCR_ORD_4KB      << MMU_ISPCR_ORD3_i)\
@@ -400,19 +381,11 @@ init_spr:
     mtspr       SPR_DBDR, r0
     mtspr       SPR_RMPD, r0
 
-
-setup_tlb:
-    load_addr   r3, tlb_entries
-    load_size   r4, TLB_ENTRIES_N
-    bl          ppc470s_write_tlb_entries /*(r3, r4) - are parameters*/
-
-    ppc470s_set_mem_window  r3, MEM_WINDOW_0
-
 setup_boot_rom_im0_p64:
     load_const  r3, DCR_PLB6PLB4_0_BASE
-    /* enable requests to BOOT_ROM mirror (0x00000010_FFFF0000:0x00000010_FFFFFFFF) and IM0 (0x00000010_80010000:0x00000010_8002FFFF) */
+    /* enable requests to BOOT_ROM mirror (0x0000001F_FFFF0000:0x0000001F_FFFFFFFF) and IM0 (0x00000010_80000000:0x00000010_8001FFFF) */
     load_const  r4, 0x00000010
-    load_const  r5, 0x00000010
+    load_const  r5, 0x0000001F
     bl          p64_set_split_range_address
 
 setup_plb6bc:
@@ -426,6 +399,10 @@ setup_plb6bc:
     load_const  r5, 0x00000010
     mtdcrx      r4, r5
 
+    addi        r4, r3, PLB6BC_SGD3
+    load_const  r5, 0x00000020
+    mtdcrx      r4, r5
+
     addi        r4, r3, PLB6BC_HCPP
     load_const  r5, PLB6BC_HCPP_4K
     mtdcrx      r4, r5
@@ -435,6 +412,21 @@ setup_plb6bc:
                   | (0b1 << PLB6BC_CR0_BC_MASK_MSRSP_i)\
                   | (0b1 << PLB6BC_CR0_BC_MASK_SRSNZ_i)
     mtdcrx      r4, r5
+
+    load_const  r3, ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_64KB)   << MMU_SSPCR_ORD1_i)\
+                  | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_1MB)    << MMU_SSPCR_ORD2_i)\
+                  | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_4KB)    << MMU_SSPCR_ORD3_i)\
+                  | ((MMU_SUSPCR_ORD_PID_ONLY | MMU_XSPCR_ORD_1GB)  << MMU_SSPCR_ORD4_i)\
+                  | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_16KB)   << MMU_SSPCR_ORD5_i)\
+                  | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_16MB)   << MMU_SSPCR_ORD6_i)\
+                  | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_256MB)  << MMU_SSPCR_ORD7_i)
+    mtspr       SPR_SSPCR, r3 /* must be set explicitly after segmentation on P6BC has been enabled */
+    ppc470s_set_mem_window  r3, MEM_WINDOW_0
+
+setup_tlb:
+    load_addr   r3, tlb_entries
+    load_size   r4, TLB_ENTRIES_N
+    bl          ppc470s_write_tlb_entries /*(r3, r4) - are parameters*/
 
 setup_stack: /*stack is growing down*/
     load_addr   r1, rumboot_platform_stack_area_end
