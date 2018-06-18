@@ -35,8 +35,8 @@ void p64_set_configuration( uint32_t const base_addr, p64_cfg * cfg ) {
 /* TODO remove this function */
 void __attribute__((section(".text.rom"),optimize("omit-frame-pointer"))) p64_init_simple() {
     #include <platform/oi10/platform/devices.h>
-    /*enable requests to boot rom mirror (0x00000010_00000000 - 0x00000010_0000FFF)*/
-    p64_set_split_range_address(DCR_PLB6PLB4_0_BASE,0x00000010,0x00000010);
+    /*enable requests to boot rom mirror (0x00000010_00000000 - 0x0000001F_FFFFFFFF)*/
+    p64_set_split_range_address(DCR_PLB6PLB4_0_BASE,0x00000010,0x0000001F);
 }
 
 void __attribute__((section(".text.rom"),optimize("omit-frame-pointer"))) p64_set_split_range_address(
