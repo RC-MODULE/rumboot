@@ -1,5 +1,10 @@
 #! /bin/csh -f
 
+if ("$1" == "")  then
+  echo "ERROR: empty argument, need path to the BUILD directory"
+  exit 1
+endif
+
 #Variables for working with ISS and RiscWatch
 set ISS_PATH=/opt/pcad/RISCWatch/IBM/ppc-mc-iss/linux/model/
 set ISS=${ISS_PATH}ppciss
@@ -17,19 +22,20 @@ set COMPARE_MEM_START_ADDR=0xC002E000
 set COMPARE_MEM_LEN_BYTES=0x1000
 set ASM_STEP=130000
 
-echo "START ISS SCRIPT"
+echo "Delete old files"
 
 mkdir ${BUILD_DIR}/rumboot-oi10-Debug/ISS/
 rm ${CMD_PATH}
 rm ${BUILD_DIR}"/rumboot-oi10-Debug/ISS/gold_mem_"${TEST_NAME}".dmp"
 
+echo "Run simulator"
 #run rwcd
 xterm -e ${ISS} ${ICF_PATH} & 
 
-#Start creating ISS command file...
-#regs & tlb
+echo "Create ISS commad file"
+
 echo "exec sim_oi10.rwc" >> ${CMD_PATH}
-#load bin
+
 echo "load bin "${BUILD_DIR}"/rumboot-oi10-Debug/rumboot-oi10-Debug-bootrom-stub.bin "${INIT_BIN_START_ADDR} >> ${CMD_PATH}
 echo "load bin "${BUILD_DIR}"/rumboot-oi10-Debug/rumboot-oi10-Debug-iss-iram-"${TEST_NAME}".bin "${BIN_START_ADDR} >> ${CMD_PATH}
 
@@ -45,9 +51,7 @@ while ($tmp > 0)
     endif
 end
 
-#save dump
 echo "save mem "${BUILD_DIR}"/rumboot-oi10-Debug/ISS/gold_mem_"${TEST_NAME}".dmp "${COMPARE_MEM_START_ADDR} ${COMPARE_MEM_LEN_BYTES} >> ${CMD_PATH}
-#Successfully created ISS command file...
 
 sleep 1
 echo "Run RiscWatch..."
