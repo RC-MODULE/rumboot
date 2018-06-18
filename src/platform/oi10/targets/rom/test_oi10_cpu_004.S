@@ -126,31 +126,38 @@
     xori 0,0,0
 .endm
 
-.macro sw_comparator_macro reg_first_start, reg_second_start, reg_byte_count, reg_tmp_offset, reg_tmp_data_first, reg_tmp_data_second, reg_result
-    load_const \reg_tmp_offset, 0
-    load_const \reg_result, 1
-    li \reg_tmp_offset, 4
+.macro sw_comparator_macro	reg_first_start,     \
+							reg_second_start,    \
+							reg_byte_count,      \
+							reg_tmp_offset,      \
+							reg_tmp_data_first,  \
+							reg_tmp_data_second, \
+							reg_result
+    load_const	\reg_tmp_offset,	0x00000000
+    load_const	\reg_result,		0x00000001
+    li			\reg_tmp_offset,	0x00000004
 5: /* labels 1-3 used in trace_msg, label 4 used in test_assert */
-        lwzx \reg_tmp_data_first, \reg_first_start, \reg_tmp_offset
-        lwzx \reg_tmp_data_second, \reg_second_start, \reg_tmp_offset
-        cmplw cr2, \reg_tmp_data_first, \reg_tmp_data_second
-        beq cr2, 6f
-        load_const \reg_result, 0
+	lwzx		\reg_tmp_data_first,	\reg_first_start,	\reg_tmp_offset
+	lwzx		\reg_tmp_data_second,	\reg_second_start,	\reg_tmp_offset
+	cmplw		cr2, \reg_tmp_data_first, \reg_tmp_data_second
+	beq			cr2, 6f
+	load_const	\reg_result,		0x00000000
 
-        rumboot_putstring "data mismatch at  offset: 0x"
-        rumboot_puthex \reg_tmp_offset
-        rumboot_putstring "data in the first  array: 0x"
-        rumboot_puthex \reg_tmp_data_first
-        rumboot_putstring "data in the second array: 0x"
-        rumboot_puthex \reg_tmp_data_second
+	rumboot_putstring "data mismatch at  offset: 0x"
+	rumboot_puthex \reg_tmp_offset
+	rumboot_putstring "data in the first  array: 0x"
+	rumboot_puthex \reg_tmp_data_first
+	rumboot_putstring "data in the second array: 0x"
+	rumboot_puthex \reg_tmp_data_second
 6:
-    addi \reg_tmp_offset, \reg_tmp_offset, 4
-    cmpw cr3, \reg_byte_count, \reg_tmp_offset
-    bge cr3, 5b
+	addi \reg_tmp_offset, \reg_tmp_offset, 4
+	cmpw cr3, \reg_byte_count, \reg_tmp_offset
+	bge cr3, 5b
 .endm
 
-
-/* .section ".IM0.text","ax",@progbits */ /* old def??? */
+.macro subcall callLabel
+	mtspr	SPR_SPRG8,
+.endm
 
 .global main
 
@@ -162,7 +169,7 @@ main:
     addi r3,r3,-4
     rumboot_puthex r3
     load_const r4, 0x0004FFFC
-    load_const r5, 0
+    load_const r5, 0x00000000
 .rept 128
     stwu r5, 4(r4)
 .endr
@@ -171,45 +178,45 @@ main:
     lwz r5, 4(r4)
 .endr
 
-/*	LOGIC_RA_RS_UI_CHECK  opcode, ra_no, rs_no, rs_val,     ui_val, info_reg_no, comand_conventional_no, temp_reg_no, address_reg */
-    LOGIC_RA_RS_UI_CHECK  andi.,  7,     6,     0xAA55AA55, 0x5A5A, 30,           0x0,                   29,            3
-    LOGIC_RA_RS_UI_CHECK  andis., 7,     6,     0xAA55AA55, 0x5A5A, 30,           0x1,                   29,            3
-    LOGIC_RA_RS_UI_CHECK  ori,    7,     6,     0xAA55AA55, 0x5A5A, 30,           0x2,                   29,            3
-    LOGIC_RA_RS_UI_CHECK  oris,   7,     6,     0xAA55AA55, 0x5A5A, 30,           0x3,                   29,            3
-    LOGIC_RA_RS_UI_CHECK  xori,   7,     6,     0xAA55AA55, 0x5A5A, 30,           0x4,                   29,            3
-    LOGIC_RA_RS_UI_CHECK  xoris,  7,     6,     0xAA55AA55, 0x5A5A, 30,           0x5,                   29,            3
+/*	LOGIC_RA_RS_UI_CHECK opcode,  ra_no, rs_no,       rs_val,     ui_val,      inf_reg, cmd_cnv, tmp_reg, addr_reg */
+    LOGIC_RA_RS_UI_CHECK andi.,   7,     6,            0xAA55AA55, 0x5A5A,     30,      0x00,    29,      3
+    LOGIC_RA_RS_UI_CHECK andis.,  7,     6,            0xAA55AA55, 0x5A5A,     30,      0x01,    29,      3
+    LOGIC_RA_RS_UI_CHECK ori,     7,     6,            0xAA55AA55, 0x5A5A,     30,      0x02,    29,      3
+    LOGIC_RA_RS_UI_CHECK oris,    7,     6,            0xAA55AA55, 0x5A5A,     30,      0x03,    29,      3
+    LOGIC_RA_RS_UI_CHECK xori,    7,     6,            0xAA55AA55, 0x5A5A,     30,      0x04,    29,      3
+    LOGIC_RA_RS_UI_CHECK xoris,   7,     6,            0xAA55AA55, 0x5A5A,     30,      0x05,    29,      3
 
-/*	LOGIC_RA_RS_RB_CHECK      opcode, ra_no, rs_no, rb_no, rs_val,     rb_val,     info_reg_no, comand_conventional_no, temp_reg_no,   address_reg */
-    LOGIC_RA_RS_RB_CHECK      and,    8,     6,     7,     0xAA55AA55, 0x5A5A5A5A, 30,          0x0,                    29,            3
-    LOGIC_RA_RS_RB_CHECK      and.,   8,     6,     7,     0xAA55AA55, 0x5A5A5A5A, 30,          0x1,                    29,            3
-    LOGIC_RA_RS_RB_CHECK      or,     8,     6,     7,     0xAA55AA55, 0x5A5A5A5A, 30,          0x2,                    29,            3
-    LOGIC_RA_RS_RB_CHECK      or.,    8,     6,     7,     0xAA55AA55, 0x5A5A5A5A, 30,          0x3,                    29,            3
-    LOGIC_RA_RS_RB_CHECK      xor,    8,     6,     7,     0xAA55AA55, 0x5A5A5A5A, 30,          0x4,                    29,            3
-    LOGIC_RA_RS_RB_CHECK      xor.,   8,     6,     7,     0xAA55AA55, 0x5A5A5A5A, 30,          0x5,                    29,            3
-    LOGIC_RA_RS_RB_CHECK      nand,   8,     6,     7,     0xAA55AA55, 0x5A5A5A5A, 30,          0x6,                    29,            3
-    LOGIC_RA_RS_RB_CHECK      nand.,  8,     6,     7,     0xAA55AA55, 0x5A5A5A5A, 30,          0x7,                    29,            3
-    LOGIC_RA_RS_RB_CHECK      nor,    8,     6,     7,     0xAA55AA55, 0x5A5A5A5A, 30,          0x8,                    29,            3
-    LOGIC_RA_RS_RB_CHECK      nor.,   8,     6,     7,     0xAA55AA55, 0x5A5A5A5A, 30,          0x9,                    29,            3
-    LOGIC_RA_RS_RB_CHECK      eqv,    8,     6,     7,     0xAA55AA55, 0x5A5A5A5A, 30,          0xA,                    29,            3
-    LOGIC_RA_RS_RB_CHECK      eqv.,   8,     6,     7,     0xAA55AA55, 0x5A5A5A5A, 30,          0xB,                    29,            3
-    LOGIC_RA_RS_RB_CHECK      andc,   8,     6,     7,     0xAA55AA55, 0x5A5A5A5A, 30,          0xC,                    29,            3
-    LOGIC_RA_RS_RB_CHECK      andc.,  8,     6,     7,     0xAA55AA55, 0x5A5A5A5A, 30,          0xD,                    29,            3
-    LOGIC_RA_RS_RB_CHECK      orc,    8,     6,     7,     0xAA55AA55, 0x5A5A5A5A, 30,          0xE,                    29,            3
-    LOGIC_RA_RS_RB_CHECK      orc.,   8,     6,     7,     0xAA55AA55, 0x5A5A5A5A, 30,          0xF,                    29,            3
-    LOGIC_RA_RS_RB_CHECK      cmpb,   8,     6,     7,     0xAA55AA55, 0x5A5A5A5A, 30,          0x10,                   29,            3
+/*	LOGIC_RA_RS_RB_CHECK opcode,  ra_no, rs_no, rb_no, rs_val,     rb_val,     inf_reg, cmd_cnv, tmp_reg, addr_reg */
+    LOGIC_RA_RS_RB_CHECK and,     8,     6,     7,     0xAA55AA55, 0x5A5A5A5A, 30,      0x00,    29,      3
+    LOGIC_RA_RS_RB_CHECK and.,    8,     6,     7,     0xAA55AA55, 0x5A5A5A5A, 30,      0x01,    29,      3
+    LOGIC_RA_RS_RB_CHECK or,      8,     6,     7,     0xAA55AA55, 0x5A5A5A5A, 30,      0x02,    29,      3
+    LOGIC_RA_RS_RB_CHECK or.,     8,     6,     7,     0xAA55AA55, 0x5A5A5A5A, 30,      0x03,    29,      3
+    LOGIC_RA_RS_RB_CHECK xor,     8,     6,     7,     0xAA55AA55, 0x5A5A5A5A, 30,      0x04,    29,      3
+    LOGIC_RA_RS_RB_CHECK xor.,    8,     6,     7,     0xAA55AA55, 0x5A5A5A5A, 30,      0x05,    29,      3
+    LOGIC_RA_RS_RB_CHECK nand,    8,     6,     7,     0xAA55AA55, 0x5A5A5A5A, 30,      0x06,    29,      3
+    LOGIC_RA_RS_RB_CHECK nand.,   8,     6,     7,     0xAA55AA55, 0x5A5A5A5A, 30,      0x07,    29,      3
+    LOGIC_RA_RS_RB_CHECK nor,     8,     6,     7,     0xAA55AA55, 0x5A5A5A5A, 30,      0x08,    29,      3
+    LOGIC_RA_RS_RB_CHECK nor.,    8,     6,     7,     0xAA55AA55, 0x5A5A5A5A, 30,      0x09,    29,      3
+    LOGIC_RA_RS_RB_CHECK eqv,     8,     6,     7,     0xAA55AA55, 0x5A5A5A5A, 30,      0x0A,    29,      3
+    LOGIC_RA_RS_RB_CHECK eqv.,    8,     6,     7,     0xAA55AA55, 0x5A5A5A5A, 30,      0x0B,    29,      3
+    LOGIC_RA_RS_RB_CHECK andc,    8,     6,     7,     0xAA55AA55, 0x5A5A5A5A, 30,      0x0C,    29,      3
+    LOGIC_RA_RS_RB_CHECK andc.,   8,     6,     7,     0xAA55AA55, 0x5A5A5A5A, 30,      0x0D,    29,      3
+    LOGIC_RA_RS_RB_CHECK orc,     8,     6,     7,     0xAA55AA55, 0x5A5A5A5A, 30,      0x0E,    29,      3
+    LOGIC_RA_RS_RB_CHECK orc.,    8,     6,     7,     0xAA55AA55, 0x5A5A5A5A, 30,      0x0F,    29,      3
+    LOGIC_RA_RS_RB_CHECK cmpb,    8,     6,     7,     0xAA55AA55, 0x5A5A5A5A, 30,      0x10,    29,      3
 
-/*	LOGIC_RA_RS_CHECK   opcode,  ra_no, rs_no, rs_val,     info_reg_no, comand_conventional_no, temp_reg_no, address_reg */
-    LOGIC_RA_RS_CHECK   extsb,   7,     6,     0xAA55AA55, 30,          0x0,                    29,            3
-    LOGIC_RA_RS_CHECK   extsb.,  7,     6,     0xAA55AA55, 30,          0x1,                    29,            3
-    LOGIC_RA_RS_CHECK   extsh,   7,     6,     0xAA55AA55, 30,          0x2,                    29,            3
-    LOGIC_RA_RS_CHECK   extsh.,  7,     6,     0xAA55AA55, 30,          0x3,                    29,            3
-    LOGIC_RA_RS_CHECK   cntlzw,  7,     6,     0xAA55AA55, 30,          0x4,                    29,            3
-    LOGIC_RA_RS_CHECK   cntlzw., 7,     6,     0xAA55AA55, 30,          0x5,                    29,            3
-    LOGIC_RA_RS_CHECK   prtyw,   7,     6,     0xAA55AA55, 30,          0x6,                    29,            3
+/*	LOGIC_RA_RS_CHECK    opcode,  ra_no, rs_no,       rs_val,                 inf_reg, cmd_cnv, tmp_reg, addr_reg */
+    LOGIC_RA_RS_CHECK    extsb,   7,     6,           0xAA55AA55,             30,      0x00,    29,      3
+    LOGIC_RA_RS_CHECK    extsb.,  7,     6,           0xAA55AA55,             30,      0x01,    29,      3
+    LOGIC_RA_RS_CHECK    extsh,   7,     6,           0xAA55AA55,             30,      0x02,    29,      3
+    LOGIC_RA_RS_CHECK    extsh.,  7,     6,           0xAA55AA55,             30,      0x03,    29,      3
+    LOGIC_RA_RS_CHECK    cntlzw,  7,     6,           0xAA55AA55,             30,      0x04,    29,      3
+    LOGIC_RA_RS_CHECK    cntlzw., 7,     6,           0xAA55AA55,             30,      0x05,    29,      3
+    LOGIC_RA_RS_CHECK    prtyw,   7,     6,           0xAA55AA55,             30,      0x06,    29,      3
 
-    load_addr r3, result_data
-    load_addr  r4, iss_mem
-    load_const r5, 30
+    load_addr	r3, result_data
+    load_addr 	r4, iss_mem
+    load_const	r5, 30
 	bl compare_data
 	cmpwi cr0, r3, 0x1
 
@@ -257,6 +264,11 @@ iss_mem:
 	.long 0x00000000
 
 
+result_data:
+.rept 512
+    .long 0x00000000
+.endr
+
 
 	/* AG: */
 compare_data:
@@ -278,23 +290,17 @@ compare_data:
 	mr r3,r8
 	blr
 
-test_error:
-    rumboot_putstring "TEST ERROR\n"
-    test_event		EVENT_ERROR
-    load_const r3,	RESULT_ERROR
-
 test_ok:
 	rumboot_putstring "TEST OK\n"
 	test_event		EVENT_OK
 	load_const r3,	RESULT_OK
 	b finish
 
+test_error:
+    rumboot_putstring "TEST ERROR\n"
+    test_event		EVENT_ERROR
+    load_const r3,	RESULT_ERROR
+
 finish:
 	blr
 
-
-.section ".text", "aw", @progbits
-result_data:
-.rept 512
-    .long 0
-.endr

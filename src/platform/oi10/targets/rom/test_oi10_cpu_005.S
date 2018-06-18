@@ -148,12 +148,9 @@
 
 .global main
 main:
-.global boot_main
-boot_main:
-test_mpw_cpu_005_0:
 
-    load_const r3 0x0004FFFC
-    load_const r0 0x00000000
+    load_const r3, 0x0004FFFC
+    load_const r0, 0x00000000
 
     mtxer r0
 /*  LOGIC_RA_RS_UI_CHECK   opcode, ra_no, rs_no, rs_val,     ui_val, info_reg_no,  comand_no, temp_reg_no,       result_address */
