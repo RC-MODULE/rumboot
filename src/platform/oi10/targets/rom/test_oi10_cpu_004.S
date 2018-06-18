@@ -4,126 +4,163 @@
 #include <platform/arch/ppc/ppc_476fp_asm.h>
 #include <platform/trace.S.h>
 
+#define TMP_REG		29
+#define INF_REG		30
+#define REGS_AS 	7,6
+#define REGS_ASB	8,6,7
+
+#define UI_VAL		0x5A5A
+#define RS_VAL		0xAA55AA55
+#define RB_VAL		0x5A5A5A5A
+
+#define ppc_nop xori 0,0,0
+
+.macro subcall callLabel
+	mflr	TMP_REG
+	mtspr	SPR_SPRG8,	TMP_REG
+	bl		\callLabel
+	mfspr	TMP_REG,	SPR_SPRG8
+	mtlr	TMP_REG
+.endm
 
 /* check macro for operations with mask "opcode RA, RS, UI" */
-.macro LOGIC_RA_RS_UI_CHECK opcode, ra_no, rs_no, rs_val, ui_val, info_reg_no, comand_conventional_no, temp_reg_no, r_result_address
-	load_const \info_reg_no, 0x00000000 //clear info register
+.macro LOGIC_RA_RS_UI_CHECK	opcode,     \
+							ra_reg,     \
+							rs_reg,     \
+							rs_val,     \
+							ui_val,     \
+							cmd_cnv,    \
+							r_res_addr
+
+	load_const	INF_REG,	0x00000000	/* clear info register */
 
 	/* put mask type */
-	ori \info_reg_no, \info_reg_no, 0x1
-	load_const \temp_reg_no, 0x4
-	slw \info_reg_no, \info_reg_no, \temp_reg_no
+	ori			INF_REG,	INF_REG, 0x01
+	load_const	TMP_REG,	0x04
+	slw			INF_REG,	INF_REG, TMP_REG
 
 	/* put self-invented comand code into info reg */
-	ori \info_reg_no, \info_reg_no, \comand_conventional_no
-	load_const \temp_reg_no, 0x5
-	slw \info_reg_no, \info_reg_no, \temp_reg_no
+	ori			INF_REG,	INF_REG, \cmd_cnv
+	load_const	TMP_REG,	0x05
+	slw			INF_REG,	INF_REG, TMP_REG
 
 	/* put RA reg number into info reg */
-	ori \info_reg_no, \info_reg_no, \ra_no
-	load_const \temp_reg_no, 0x5
-	slw \info_reg_no, \info_reg_no, \temp_reg_no
+	ori			INF_REG,	INF_REG, \ra_no
+	load_const	TMP_REG,	0x05
+	slw			INF_REG,	INF_REG, TMP_REG
 
 	/* put RS reg number into info reg */
-	ori \info_reg_no, \info_reg_no, \rs_no
-	load_const \temp_reg_no, 0x10
-	slw \info_reg_no, \info_reg_no, \temp_reg_no
+	ori			INF_REG,	INF_REG, \rs_no
+	load_const	TMP_REG,	0x10
+	slw			INF_REG,	INF_REG, TMP_REG
 
 	/* put UI const into info reg */
-	ori \info_reg_no, \info_reg_no, \ui_val
+	ori			INF_REG,	INF_REG, \ui_val
 
 	/* load values into reg with number rs_no */
-    load_const \rs_no, \rs_val
+    load_const	\rs_no,		\rs_val
 
 	/* perform operation */
-    \opcode \ra_no, \rs_no, \ui_val
-    stwu \ra_no, 4(\r_result_address)
+    \opcode		\ra_no,		\rs_no, \ui_val
+    stwu		\ra_no,		4(\r_res_addr)
     /* raise event for verilog */
     test_event EVENT_CHECK_CPU_PPC_PROG_MODEL_18
 
 	/* no-op for syncronization purpose */
-    xori 0,0,0
+    ppc_nop
 .endm
 
 
 /* check macro for operations with mask "opcode RA, RS, RB" */
-.macro LOGIC_RA_RS_RB_CHECK opcode, ra_no, rs_no, rb_no, rs_val, rb_val, info_reg_no, comand_conventional_no, temp_reg_no, r_result_address
+.macro LOGIC_RA_RS_RB_CHECK	opcode,    \
+							ra_no,     \
+							rs_no,     \
+							rb_no,     \
+							rs_val,    \
+							rb_val,    \
+							cmd_cnv,   \
+							r_res_addr
 	/* clear info register */
-	load_const \info_reg_no, 0x00000000
+	load_const	INF_REG,	0x00000000
 
 	/* put mask tyoe */
-	ori \info_reg_no, \info_reg_no, 0x2
-	load_const \temp_reg_no, 0x6
-	slw \info_reg_no, \info_reg_no, \temp_reg_no
+	ori			INF_REG,	INF_REG,	0x02
+	load_const	TMP_REG,	0x6
+	slw			INF_REG,	INF_REG,	TMP_REG
 
 	/* put self-invented comand code into info reg */
-	ori \info_reg_no, \info_reg_no, \comand_conventional_no
-	load_const \temp_reg_no, 0x8
-	slw \info_reg_no, \info_reg_no, \temp_reg_no
+	ori			INF_REG,	INF_REG,	\cmd_cnv
+	load_const	TMP_REG,	0x8
+	slw			INF_REG,	INF_REG,	TMP_REG
 
 	/* put RA reg number into info reg */
-	ori \info_reg_no, \info_reg_no, \ra_no
-	load_const \temp_reg_no, 0x8
-	slw \info_reg_no, \info_reg_no, \temp_reg_no
+	ori			INF_REG,	INF_REG,	\ra_no
+	load_const	TMP_REG,	0x8
+	slw			INF_REG,	INF_REG,	TMP_REG
 
 	/* put RS reg number into info reg */
-	ori \info_reg_no, \info_reg_no, \rs_no
-	load_const \temp_reg_no, 0x8
-	slw \info_reg_no, \info_reg_no, \temp_reg_no
+	ori			INF_REG,	INF_REG,	\rs_no
+	load_const	TMP_REG,	0x8
+	slw			INF_REG,	INF_REG,	TMP_REG
 
 	/* put RB reg number into info reg */
-	ori \info_reg_no, \info_reg_no, \rb_no
+	ori			INF_REG,	INF_REG,	\rb_no
 
     /* load values into reg with number rs_no */
-    load_const \rs_no, \rs_val
+    load_const	\rs_no,		\rs_val
     /* load values into reg with number rb_no */
-    load_const \rb_no, \rb_val
+    load_const	\rb_no,		\rb_val
 
     /* perform operation */
-    \opcode \ra_no, \rs_no, \rb_no
-    stwu \ra_no, 4(\r_result_address)
+    \opcode		\ra_no,		\rs_no,	\rb_no
+    stwu		\ra_no,		4(\r_res_addr)
     /* raise event for verilog */
     test_event EVENT_CHECK_CPU_PPC_PROG_MODEL_18
     /* no-op for syncronization purpose */
-    xori 0,0,0
+    ppc_nop
 .endm
 
 
 /* check macro for operations with mask "opcode RA, RS" */
-.macro LOGIC_RA_RS_CHECK opcode, ra_no, rs_no, rs_val, info_reg_no, comand_conventional_no, temp_reg_no, r_result_address
+.macro LOGIC_RA_RS_CHECK	opcode,    \
+							ra_no,     \
+							rs_no,     \
+							rs_val,    \
+							cmd_cnv,   \
+							r_res_addr
 	/* clear info register */
-	load_const \info_reg_no, 0x00000000
+	load_const	INF_REG,	0x00000000
 
 	/* put mask tyoe */
-	ori \info_reg_no, \info_reg_no, 0x3
-	load_const \temp_reg_no, 0x6
-	slw \info_reg_no, \info_reg_no, \temp_reg_no
+	ori			INF_REG,	INF_REG,	0x03
+	load_const	TMP_REG,	0x06
+	slw			INF_REG,	INF_REG,	TMP_REG
 
 	/* put self-invented comand code into info reg */
-	ori \info_reg_no, \info_reg_no, \comand_conventional_no
-	load_const \temp_reg_no, 0x8
-	slw \info_reg_no, \info_reg_no, \temp_reg_no
+	ori			INF_REG,	INF_REG,	\cmd_cnv
+	load_const	TMP_REG,	0x08
+	slw			INF_REG,	INF_REG,	TMP_REG
 
 	/* put RA reg number into info reg */
-	ori \info_reg_no, \info_reg_no, \ra_no
-	load_const \temp_reg_no, 0x8
-	slw \info_reg_no, \info_reg_no, \temp_reg_no
+	ori			INF_REG,	INF_REG,	\ra_no
+	load_const	TMP_REG,	0x08
+	slw			INF_REG,	INF_REG,	TMP_REG
 
 	/* put RS reg number into info reg */
-	ori \info_reg_no, \info_reg_no, \rs_no
-	load_const \temp_reg_no, 0x8
-	slw \info_reg_no, \info_reg_no, \temp_reg_no
+	ori			INF_REG,	INF_REG,	\rs_no
+	load_const	TMP_REG,	0x08
+	slw			INF_REG,	INF_REG,	TMP_REG
 
     /* load values into reg with number rs_no */
-    load_const \rs_no, \rs_val
+    load_const	\rs_no,		\rs_val
 
     /* perform operation */
-    \opcode \ra_no, \rs_no
-    stwu \ra_no, 4(\r_result_address)
+    \opcode		\ra_no,		\rs_no
+    stwu		\ra_no,		4(\r_res_addr)
     /* raise event for verilog */
     test_event EVENT_CHECK_CPU_PPC_PROG_MODEL_18
     /* no-op for syncronization purpose */
-    xori 0,0,0
+    ppc_nop
 .endm
 
 .macro sw_comparator_macro	reg_first_start,     \
@@ -139,8 +176,8 @@
 5: /* labels 1-3 used in trace_msg, label 4 used in test_assert */
 	lwzx		\reg_tmp_data_first,	\reg_first_start,	\reg_tmp_offset
 	lwzx		\reg_tmp_data_second,	\reg_second_start,	\reg_tmp_offset
-	cmplw		cr2, \reg_tmp_data_first, \reg_tmp_data_second
-	beq			cr2, 6f
+	cmplw cr2,	\reg_tmp_data_first,	\reg_tmp_data_second
+	beq cr2,	6f
 	load_const	\reg_result,		0x00000000
 
 	rumboot_putstring "data mismatch at  offset: 0x"
@@ -150,13 +187,9 @@
 	rumboot_putstring "data in the second array: 0x"
 	rumboot_puthex \reg_tmp_data_second
 6:
-	addi \reg_tmp_offset, \reg_tmp_offset, 4
-	cmpw cr3, \reg_byte_count, \reg_tmp_offset
-	bge cr3, 5b
-.endm
-
-.macro subcall callLabel
-	mtspr	SPR_SPRG8,
+	addi		\reg_tmp_offset, \reg_tmp_offset, 4
+	cmpw cr3,	\reg_byte_count, \reg_tmp_offset
+	bge  cr3,	5b
 .endm
 
 .global main
@@ -164,63 +197,70 @@
 .section ".text","ax",@progbits
 main:
 
-/*  load_const r3, 0x0004FFFC */
-    load_addr r3, result_data
-    addi r3,r3,-4
-    rumboot_puthex r3
-    load_const r4, 0x0004FFFC
-    load_const r5, 0x00000000
+/*  load_const r3,	0x0004FFFC */
+    load_addr	r3, result_data
+    addi		r3,	r3,-4
+    load_const	r4, 0x0004FFFC
+    load_const	r5, 0x00000000
 .rept 128
-    stwu r5, 4(r4)
+    stwu		r5, 4(r4)
 .endr
-    load_const r4, 0x0004FFFC
+    load_const	r4,	0x0004FFFC
 .rept 128
-    lwz r5, 4(r4)
+    lwz			r5,	4(r4)
 .endr
 
-/*	LOGIC_RA_RS_UI_CHECK opcode,  ra_no, rs_no,       rs_val,     ui_val,      inf_reg, cmd_cnv, tmp_reg, addr_reg */
-    LOGIC_RA_RS_UI_CHECK andi.,   7,     6,            0xAA55AA55, 0x5A5A,     30,      0x00,    29,      3
-    LOGIC_RA_RS_UI_CHECK andis.,  7,     6,            0xAA55AA55, 0x5A5A,     30,      0x01,    29,      3
-    LOGIC_RA_RS_UI_CHECK ori,     7,     6,            0xAA55AA55, 0x5A5A,     30,      0x02,    29,      3
-    LOGIC_RA_RS_UI_CHECK oris,    7,     6,            0xAA55AA55, 0x5A5A,     30,      0x03,    29,      3
-    LOGIC_RA_RS_UI_CHECK xori,    7,     6,            0xAA55AA55, 0x5A5A,     30,      0x04,    29,      3
-    LOGIC_RA_RS_UI_CHECK xoris,   7,     6,            0xAA55AA55, 0x5A5A,     30,      0x05,    29,      3
+/*	LOGIC_RA_RS_UI_CHECK opcode,  (ra,rs),    rs_val, ui_val, cmd_cnv, addr_reg */
+    LOGIC_RA_RS_UI_CHECK andi.,   REGS_AS,    RS_VAL, UI_VAL, 0x00,    3
+    LOGIC_RA_RS_UI_CHECK andis.,  REGS_AS,    RS_VAL, UI_VAL, 0x01,    3
+    LOGIC_RA_RS_UI_CHECK ori,     REGS_AS,    RS_VAL, UI_VAL, 0x02,    3
+    LOGIC_RA_RS_UI_CHECK oris,    REGS_AS,    RS_VAL, UI_VAL, 0x03,    3
+    LOGIC_RA_RS_UI_CHECK xori,    REGS_AS,    RS_VAL, UI_VAL, 0x04,    3
+    LOGIC_RA_RS_UI_CHECK xoris,   REGS_AS,    RS_VAL, UI_VAL, 0x05,    3
 
-/*	LOGIC_RA_RS_RB_CHECK opcode,  ra_no, rs_no, rb_no, rs_val,     rb_val,     inf_reg, cmd_cnv, tmp_reg, addr_reg */
-    LOGIC_RA_RS_RB_CHECK and,     8,     6,     7,     0xAA55AA55, 0x5A5A5A5A, 30,      0x00,    29,      3
-    LOGIC_RA_RS_RB_CHECK and.,    8,     6,     7,     0xAA55AA55, 0x5A5A5A5A, 30,      0x01,    29,      3
-    LOGIC_RA_RS_RB_CHECK or,      8,     6,     7,     0xAA55AA55, 0x5A5A5A5A, 30,      0x02,    29,      3
-    LOGIC_RA_RS_RB_CHECK or.,     8,     6,     7,     0xAA55AA55, 0x5A5A5A5A, 30,      0x03,    29,      3
-    LOGIC_RA_RS_RB_CHECK xor,     8,     6,     7,     0xAA55AA55, 0x5A5A5A5A, 30,      0x04,    29,      3
-    LOGIC_RA_RS_RB_CHECK xor.,    8,     6,     7,     0xAA55AA55, 0x5A5A5A5A, 30,      0x05,    29,      3
-    LOGIC_RA_RS_RB_CHECK nand,    8,     6,     7,     0xAA55AA55, 0x5A5A5A5A, 30,      0x06,    29,      3
-    LOGIC_RA_RS_RB_CHECK nand.,   8,     6,     7,     0xAA55AA55, 0x5A5A5A5A, 30,      0x07,    29,      3
-    LOGIC_RA_RS_RB_CHECK nor,     8,     6,     7,     0xAA55AA55, 0x5A5A5A5A, 30,      0x08,    29,      3
-    LOGIC_RA_RS_RB_CHECK nor.,    8,     6,     7,     0xAA55AA55, 0x5A5A5A5A, 30,      0x09,    29,      3
-    LOGIC_RA_RS_RB_CHECK eqv,     8,     6,     7,     0xAA55AA55, 0x5A5A5A5A, 30,      0x0A,    29,      3
-    LOGIC_RA_RS_RB_CHECK eqv.,    8,     6,     7,     0xAA55AA55, 0x5A5A5A5A, 30,      0x0B,    29,      3
-    LOGIC_RA_RS_RB_CHECK andc,    8,     6,     7,     0xAA55AA55, 0x5A5A5A5A, 30,      0x0C,    29,      3
-    LOGIC_RA_RS_RB_CHECK andc.,   8,     6,     7,     0xAA55AA55, 0x5A5A5A5A, 30,      0x0D,    29,      3
-    LOGIC_RA_RS_RB_CHECK orc,     8,     6,     7,     0xAA55AA55, 0x5A5A5A5A, 30,      0x0E,    29,      3
-    LOGIC_RA_RS_RB_CHECK orc.,    8,     6,     7,     0xAA55AA55, 0x5A5A5A5A, 30,      0x0F,    29,      3
-    LOGIC_RA_RS_RB_CHECK cmpb,    8,     6,     7,     0xAA55AA55, 0x5A5A5A5A, 30,      0x10,    29,      3
+/*	LOGIC_RA_RS_RB_CHECK opcode,  (ra,rs,rb), rs_val, rb_val, cmd_cnv, addr_reg */
+    LOGIC_RA_RS_RB_CHECK and,     REGS_ASB,   RS_VAL, RB_VAL, 0x00,    3
+    LOGIC_RA_RS_RB_CHECK and.,    REGS_ASB,   RS_VAL, RB_VAL, 0x01,    3
+    LOGIC_RA_RS_RB_CHECK or,      REGS_ASB,   RS_VAL, RB_VAL, 0x02,    3
+    LOGIC_RA_RS_RB_CHECK or.,     REGS_ASB,   RS_VAL, RB_VAL, 0x03,    3
+    LOGIC_RA_RS_RB_CHECK xor,     REGS_ASB,   RS_VAL, RB_VAL, 0x04,    3
+    LOGIC_RA_RS_RB_CHECK xor.,    REGS_ASB,   RS_VAL, RB_VAL, 0x05,    3
+    LOGIC_RA_RS_RB_CHECK nand,    REGS_ASB,   RS_VAL, RB_VAL, 0x06,    3
+    LOGIC_RA_RS_RB_CHECK nand.,   REGS_ASB,   RS_VAL, RB_VAL, 0x07,    3
+    LOGIC_RA_RS_RB_CHECK nor,     REGS_ASB,   RS_VAL, RB_VAL, 0x08,    3
+    LOGIC_RA_RS_RB_CHECK nor.,    REGS_ASB,   RS_VAL, RB_VAL, 0x09,    3
+    LOGIC_RA_RS_RB_CHECK eqv,     REGS_ASB,   RS_VAL, RB_VAL, 0x0A,    3
+    LOGIC_RA_RS_RB_CHECK eqv.,    REGS_ASB,   RS_VAL, RB_VAL, 0x0B,    3
+    LOGIC_RA_RS_RB_CHECK andc,    REGS_ASB,   RS_VAL, RB_VAL, 0x0C,    3
+    LOGIC_RA_RS_RB_CHECK andc.,   REGS_ASB,   RS_VAL, RB_VAL, 0x0D,    3
+    LOGIC_RA_RS_RB_CHECK orc,     REGS_ASB,   RS_VAL, RB_VAL, 0x0E,    3
+    LOGIC_RA_RS_RB_CHECK orc.,    REGS_ASB,   RS_VAL, RB_VAL, 0x0F,    3
+    LOGIC_RA_RS_RB_CHECK cmpb,    REGS_ASB,   RS_VAL, RB_VAL, 0x10,    3
 
-/*	LOGIC_RA_RS_CHECK    opcode,  ra_no, rs_no,       rs_val,                 inf_reg, cmd_cnv, tmp_reg, addr_reg */
-    LOGIC_RA_RS_CHECK    extsb,   7,     6,           0xAA55AA55,             30,      0x00,    29,      3
-    LOGIC_RA_RS_CHECK    extsb.,  7,     6,           0xAA55AA55,             30,      0x01,    29,      3
-    LOGIC_RA_RS_CHECK    extsh,   7,     6,           0xAA55AA55,             30,      0x02,    29,      3
-    LOGIC_RA_RS_CHECK    extsh.,  7,     6,           0xAA55AA55,             30,      0x03,    29,      3
-    LOGIC_RA_RS_CHECK    cntlzw,  7,     6,           0xAA55AA55,             30,      0x04,    29,      3
-    LOGIC_RA_RS_CHECK    cntlzw., 7,     6,           0xAA55AA55,             30,      0x05,    29,      3
-    LOGIC_RA_RS_CHECK    prtyw,   7,     6,           0xAA55AA55,             30,      0x06,    29,      3
+/*	LOGIC_RA_RS_CHECK    opcode,  (ra,rs),    rs_val,         cmd_cnv, addr_reg */
+    LOGIC_RA_RS_CHECK    extsb,   REGS_AS,    RS_VAL,         0x00,    3
+    LOGIC_RA_RS_CHECK    extsb.,  REGS_AS,    RS_VAL,         0x01,    3
+    LOGIC_RA_RS_CHECK    extsh,   REGS_AS,    RS_VAL,         0x02,    3
+    LOGIC_RA_RS_CHECK    extsh.,  REGS_AS,    RS_VAL,         0x03,    3
+    LOGIC_RA_RS_CHECK    cntlzw,  REGS_AS,    RS_VAL,         0x04,    3
+    LOGIC_RA_RS_CHECK    cntlzw., REGS_AS,    RS_VAL,         0x05,    3
+    LOGIC_RA_RS_CHECK    prtyw,   REGS_AS,    RS_VAL,         0x06,    3
 
     load_addr	r3, result_data
     load_addr 	r4, iss_mem
     load_const	r5, 30
-	bl compare_data
-	cmpwi cr0, r3, 0x1
+	subcall		compare_data
+	cmpwi cr0,	r3, 0x1
 
-/*	.macro sw_comparator_macro reg_first_start, reg_second_start, reg_byte_count, reg_tmp_offset, reg_tmp_data_first, reg_tmp_data_second, reg_result */
+/*
+	.macro sw_comparator_macro	reg_first_start,     \
+								reg_second_start,    \
+								reg_byte_count,      \
+								reg_tmp_offset,      \
+								reg_tmp_data_first,  \
+								reg_tmp_data_second, \
+								reg_result
+*/
     sw_comparator_macro r3, r4, r5, r6, r7, r8, r9
     cmpwi cr0, r9, 0x1
 
@@ -264,30 +304,24 @@ iss_mem:
 	.long 0x00000000
 
 
-result_data:
-.rept 512
-    .long 0x00000000
-.endr
-
-
 	/* AG: */
 compare_data:
-	cmpwi cr0,r5,0
-	li r8,1
-	beq cr0, .compare_data_L1
-	li r10,0
+	cmpwi cr0,	r5,  0
+	li 			r8,  1
+	beq cr0,	.compare_data_L1
+	li 			r10, 0
 .compare_data_L4:
-	lwzx r9,r3,r10
-	lwzx r7,r4,r10
-	addi r10,r10,4
-	cmplw cr7,r5,r10
-	xor r9,r9,r7
-	addic r9,r9,-1
-	subfe r9,r9,r9
-	and r8,r8,r9
-	bgt cr7, .compare_data_L4
+	lwzx		r9,  r3,  r10
+	lwzx 		r7,  r4,  r10
+	addi		r10, r10, 4
+	cmplw cr7,	r5,  r10
+	xor			r9,  r9,  r7
+	addic		r9,  r9,  -1
+	subfe		r9,  r9,  r9
+	and			r8,  r8,  r9
+	bgt cr7,	.compare_data_L4
 .compare_data_L1:
-	mr r3,r8
+	mr			r3,  r8
 	blr
 
 test_ok:
@@ -303,4 +337,11 @@ test_error:
 
 finish:
 	blr
+
+.section ".issdata","aw",@progbits
+
+result_data:
+.rept 512
+    .long 0x00000000
+.endr
 
