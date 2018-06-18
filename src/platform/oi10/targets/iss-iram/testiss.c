@@ -29,7 +29,7 @@ int main()
   	i++; count++;
   }
   rumboot_putstring ("END WRITE DATA\n");
-
+/*
   rumboot_putstring ("START CHECK DATA\n");
   i = 0; count = 0;
   uint32_t addr = (uint32_t) test_data_arr;
@@ -49,6 +49,7 @@ int main()
 
   	i++; count++; addr++;
   }
+  */
   //while (0);
 
   return 0;
