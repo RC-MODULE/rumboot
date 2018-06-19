@@ -17,8 +17,8 @@ set TEST_NAME=testiss
 set CMD_PATH=${BUILD_DIR}/rumboot-oi10-Debug/ISS/${TEST_NAME}.cmd
 
 set INIT_BIN_START_ADDR=0xFFFF0000
-set BIN_START_ADDR=0xC0010000
-set COMPARE_MEM_START_ADDR=0xC002E000
+set BIN_START_ADDR=0x80000000
+set COMPARE_MEM_START_ADDR=0x8001E000
 set COMPARE_MEM_LEN_BYTES=0x1000
 set ASM_STEP=130000
 
@@ -29,6 +29,7 @@ rm ${CMD_PATH}
 rm ${BUILD_DIR}"/rumboot-oi10-Debug/ISS/gold_mem_"${TEST_NAME}".dmp"
 
 echo "Run simulator"
+echo $2
 
 #run rwcd
 xterm -e ${ISS} ${ICF_PATH} & 
@@ -39,6 +40,13 @@ echo "exec sim_oi10.rwc" >> ${CMD_PATH}
 
 echo "load bin "${BUILD_DIR}"/rumboot-oi10-Debug/rumboot-oi10-Debug-bootrom-stub.bin "${INIT_BIN_START_ADDR} >> ${CMD_PATH}
 echo "load bin "${BUILD_DIR}"/rumboot-oi10-Debug/rumboot-oi10-Debug-iss-iram-"${TEST_NAME}".bin "${BIN_START_ADDR} >> ${CMD_PATH}
+
+#double bootrom
+echo "write tlb 0 0 V 0x0" >> ${CMD_PATH}
+echo "write tlb 0 0 EPN 0xFFFF0000 V 0x1 TS 0x0 S 0x03 T 0x0000 E+RPN 0x01FFFFF0000 IL1ID b11 U0123 b0000 WIMG b0111 E 0x0 UXWR b000 SXWR b111 BE0_5 0x-" >> ${CMD_PATH}
+echo "memacc add 0xFFFF0000 0xFFFFFFFF RW 1 MEM 0x1FFFFF0000" >> ${CMD_PATH}
+echo "load bin "${BUILD_DIR}"/rumboot-oi10-Debug/rumboot-oi10-Debug-bootrom-stub.bin "${INIT_BIN_START_ADDR} >> ${CMD_PATH}
+echo "exec postload_oi10.rwc"
 
 @ MAX_ASMSTEP = 65535
 @ tmp = ${ASM_STEP}
