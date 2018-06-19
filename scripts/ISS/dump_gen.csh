@@ -29,6 +29,7 @@ rm ${CMD_PATH}
 rm ${BUILD_DIR}"/rumboot-oi10-Debug/ISS/gold_mem_"${TEST_NAME}".dmp"
 
 echo "Run simulator"
+
 #run rwcd
 xterm -e ${ISS} ${ICF_PATH} & 
 
