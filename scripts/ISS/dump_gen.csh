@@ -1,7 +1,12 @@
 #! /bin/csh -f
 
 if ("$1" == "")  then
-  echo "ERROR: empty argument, need path to the BUILD directory"
+  echo "ERROR: first argument is empty, need set path to the BUILD_DIR"
+  exit 1
+endif
+
+if ("$2" == "")  then
+  echo "ERROR: second argument is empty, need set TEST_NAME"
   exit 1
 endif
 
@@ -13,7 +18,7 @@ set RW_PATH=/opt/pcad/RISCWatch
 set RWCD=./rwcd
 
 set BUILD_DIR=$1
-set TEST_NAME=testiss
+set TEST_NAME=$2
 set CMD_PATH=${BUILD_DIR}/rumboot-oi10-Debug/ISS/${TEST_NAME}.cmd
 
 set INIT_BIN_START_ADDR=0xFFFF0000
@@ -26,22 +31,20 @@ echo "Delete old files"
 
 mkdir ${BUILD_DIR}/rumboot-oi10-Debug/ISS/
 rm ${CMD_PATH}
-rm ${BUILD_DIR}"/rumboot-oi10-Debug/ISS/gold_mem_"${TEST_NAME}".dmp"
+rm ${BUILD_DIR}"/rumboot-oi10-Debug/ISS/"${TEST_NAME}"_gold.dmp"
 
 echo "Run simulator"
-echo $2
 
-#run rwcd
 xterm -e ${ISS} ${ICF_PATH} & 
 
-echo "Create ISS commad file"
+echo "Create ISS command file"
 
 echo "exec sim_oi10.rwc" >> ${CMD_PATH}
 
 echo "load bin "${BUILD_DIR}"/rumboot-oi10-Debug/rumboot-oi10-Debug-bootrom-stub.bin "${INIT_BIN_START_ADDR} >> ${CMD_PATH}
-echo "load bin "${BUILD_DIR}"/rumboot-oi10-Debug/rumboot-oi10-Debug-iss-iram-"${TEST_NAME}".bin "${BIN_START_ADDR} >> ${CMD_PATH}
+echo "load bin "${BUILD_DIR}"/rumboot-oi10-Debug/"${TEST_NAME}".bin "${BIN_START_ADDR} >> ${CMD_PATH}
 
-#double bootrom
+#double bootrom (workaround)
 echo "write tlb 0 0 V 0x0" >> ${CMD_PATH}
 echo "write tlb 0 0 EPN 0xFFFF0000 V 0x1 TS 0x0 S 0x03 T 0x0000 E+RPN 0x01FFFFF0000 IL1ID b11 U0123 b0000 WIMG b0111 E 0x0 UXWR b000 SXWR b111 BE0_5 0x-" >> ${CMD_PATH}
 echo "memacc add 0xFFFF0000 0xFFFFFFFF RW 1 MEM 0x1FFFFF0000" >> ${CMD_PATH}
@@ -60,7 +63,7 @@ while ($tmp > 0)
     endif
 end
 
-echo "save mem "${BUILD_DIR}"/rumboot-oi10-Debug/ISS/gold_mem_"${TEST_NAME}".dmp "${COMPARE_MEM_START_ADDR} ${COMPARE_MEM_LEN_BYTES} >> ${CMD_PATH}
+echo "save mem "${BUILD_DIR}"/rumboot-oi10-Debug/ISS/"${TEST_NAME}"_gold.dmp "${COMPARE_MEM_START_ADDR} ${COMPARE_MEM_LEN_BYTES} >> ${CMD_PATH}
 
 sleep 1
 echo "Run RiscWatch..."
