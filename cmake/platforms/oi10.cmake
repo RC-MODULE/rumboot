@@ -50,17 +50,6 @@ rumboot_add_configuration (
   LOAD IM0BIN SELF
 )
 
-rumboot_add_configuration (
-  ISSIRAM
-  LDS oi10/iram.lds
-  PREFIX iss-iram
-  LDFLAGS -Wl,--start-group -lgcc -lc -lm -Wl,--end-group "-e rumboot_main"
-  FILES ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c
-  CFLAGS
-  BOOTROM bootrom-stub
-  FEATURES LUA COVERAGE
-)
-
 macro(rumboot_platform_generate_stuff_for_taget product)
     list (FIND TARGET_FEATURES "ROMGEN" _index)
     if (${_index} GREATER -1)
@@ -129,9 +118,9 @@ add_rumboot_target_dir(rom/
   )
 
   add_rumboot_target_dir(iss-iram/
-    CONFIGURATION ISSIRAM
+    CONFIGURATION IRAM
     PREFIX iss-iram
-  	CHECKCMD ${CMAKE_SOURCE_DIR}/scripts/ISS/dump_gen.csh ${CMAKE_BINARY_DIR} ${product}
+  	CHECKCMD ${CMAKE_SOURCE_DIR}/scripts/ISS/dump_gen.csh ${CMAKE_BINARY_DIR} $PRODUCT
   )
 endmacro()
 
