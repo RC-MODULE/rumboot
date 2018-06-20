@@ -72,9 +72,9 @@
 
 /* check macro for operations with mask "opcode RA, RS, RB" */
 .macro LOGIC_RA_RS_RB_CHECK	opcode,    \
-							ra_reg,     \
-							rs_reg,     \
-							rb_reg,     \
+							ra_reg,    \
+							rs_reg,    \
+							rb_reg,    \
 							rs_val,    \
 							rb_val,    \
 							cmd_cnv,   \
