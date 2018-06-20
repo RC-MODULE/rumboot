@@ -3,6 +3,10 @@
 #include <platform/arch/ppc/ppc_476fp_config.h>
 #include <platform/arch/ppc/ppc_476fp_asm.h>
 #include <platform/trace.S.h>
+#include <platform/devices.h>
+
+
+#define SAVE_ADDR	IM0_BASE + 0x0001E000
 
 #define TMP_REG		29
 #define INF_REG		30
@@ -15,13 +19,6 @@
 
 #define ppc_nop xori 0,0,0
 
-.macro subcall callLabel
-	mflr	TMP_REG
-	mtspr	SPR_SPRG8,	TMP_REG
-	bl		\callLabel
-	mfspr	TMP_REG,	SPR_SPRG8
-	mtlr	TMP_REG
-.endm
 
 /* check macro for operations with mask "opcode RA, RS, UI" */
 .macro LOGIC_RA_RS_UI_CHECK	opcode,     \
@@ -32,6 +29,7 @@
 							cmd_cnv,    \
 							r_res_addr
 
+	rumboot_putstring "\opcode ... "
 	load_const	INF_REG,	0x00000000	/* clear info register */
 
 	/* put mask type */
@@ -45,12 +43,12 @@
 	slw			INF_REG,	INF_REG, TMP_REG
 
 	/* put RA reg number into info reg */
-	ori			INF_REG,	INF_REG, \ra_no
+	ori			INF_REG,	INF_REG, \ra_reg
 	load_const	TMP_REG,	0x05
 	slw			INF_REG,	INF_REG, TMP_REG
 
 	/* put RS reg number into info reg */
-	ori			INF_REG,	INF_REG, \rs_no
+	ori			INF_REG,	INF_REG, \rs_reg
 	load_const	TMP_REG,	0x10
 	slw			INF_REG,	INF_REG, TMP_REG
 
@@ -58,76 +56,82 @@
 	ori			INF_REG,	INF_REG, \ui_val
 
 	/* load values into reg with number rs_no */
-    load_const	\rs_no,		\rs_val
+    load_const	\rs_reg,	\rs_val
 
 	/* perform operation */
-    \opcode		\ra_no,		\rs_no, \ui_val
-    stwu		\ra_no,		4(\r_res_addr)
+    \opcode		\ra_reg,	\rs_reg, \ui_val
+    stwu		\ra_reg,	4(\r_res_addr)
     /* raise event for verilog */
     test_event EVENT_CHECK_CPU_PPC_PROG_MODEL_18
 
 	/* no-op for syncronization purpose */
     ppc_nop
+	rumboot_putstring "\tdone.\n"
 .endm
 
 
 /* check macro for operations with mask "opcode RA, RS, RB" */
 .macro LOGIC_RA_RS_RB_CHECK	opcode,    \
-							ra_no,     \
-							rs_no,     \
-							rb_no,     \
+							ra_reg,     \
+							rs_reg,     \
+							rb_reg,     \
 							rs_val,    \
 							rb_val,    \
 							cmd_cnv,   \
 							r_res_addr
+
+	rumboot_putstring "\opcode ... "
 	/* clear info register */
 	load_const	INF_REG,	0x00000000
 
 	/* put mask tyoe */
 	ori			INF_REG,	INF_REG,	0x02
-	load_const	TMP_REG,	0x6
+	load_const	TMP_REG,	0x06
 	slw			INF_REG,	INF_REG,	TMP_REG
 
 	/* put self-invented comand code into info reg */
 	ori			INF_REG,	INF_REG,	\cmd_cnv
-	load_const	TMP_REG,	0x8
+	load_const	TMP_REG,	0x08
 	slw			INF_REG,	INF_REG,	TMP_REG
 
 	/* put RA reg number into info reg */
-	ori			INF_REG,	INF_REG,	\ra_no
-	load_const	TMP_REG,	0x8
+	ori			INF_REG,	INF_REG,	\ra_reg
+	load_const	TMP_REG,	0x08
 	slw			INF_REG,	INF_REG,	TMP_REG
 
 	/* put RS reg number into info reg */
-	ori			INF_REG,	INF_REG,	\rs_no
-	load_const	TMP_REG,	0x8
+	ori			INF_REG,	INF_REG,	\rs_reg
+	load_const	TMP_REG,	0x08
 	slw			INF_REG,	INF_REG,	TMP_REG
 
 	/* put RB reg number into info reg */
-	ori			INF_REG,	INF_REG,	\rb_no
+	ori			INF_REG,	INF_REG,	\rb_reg
 
     /* load values into reg with number rs_no */
-    load_const	\rs_no,		\rs_val
+    load_const	\rs_reg,	\rs_val
     /* load values into reg with number rb_no */
-    load_const	\rb_no,		\rb_val
+    load_const	\rb_reg,	\rb_val
 
     /* perform operation */
-    \opcode		\ra_no,		\rs_no,	\rb_no
-    stwu		\ra_no,		4(\r_res_addr)
+    \opcode		\ra_reg,	\rs_reg,	\rb_reg
+    stwu		\ra_reg,	4(\r_res_addr)
     /* raise event for verilog */
     test_event EVENT_CHECK_CPU_PPC_PROG_MODEL_18
     /* no-op for syncronization purpose */
     ppc_nop
+	rumboot_putstring "\tdone.\n"
 .endm
 
 
 /* check macro for operations with mask "opcode RA, RS" */
 .macro LOGIC_RA_RS_CHECK	opcode,    \
-							ra_no,     \
-							rs_no,     \
+							ra_reg,    \
+							rs_reg,    \
 							rs_val,    \
 							cmd_cnv,   \
 							r_res_addr
+
+	rumboot_putstring "\opcode ... "
 	/* clear info register */
 	load_const	INF_REG,	0x00000000
 
@@ -142,54 +146,56 @@
 	slw			INF_REG,	INF_REG,	TMP_REG
 
 	/* put RA reg number into info reg */
-	ori			INF_REG,	INF_REG,	\ra_no
+	ori			INF_REG,	INF_REG,	\ra_reg
 	load_const	TMP_REG,	0x08
 	slw			INF_REG,	INF_REG,	TMP_REG
 
 	/* put RS reg number into info reg */
-	ori			INF_REG,	INF_REG,	\rs_no
+	ori			INF_REG,	INF_REG,	\rs_reg
 	load_const	TMP_REG,	0x08
 	slw			INF_REG,	INF_REG,	TMP_REG
 
     /* load values into reg with number rs_no */
-    load_const	\rs_no,		\rs_val
+    load_const	\rs_reg,	\rs_val
 
     /* perform operation */
-    \opcode		\ra_no,		\rs_no
-    stwu		\ra_no,		4(\r_res_addr)
+    \opcode		\ra_reg,	\rs_reg
+    stwu		\ra_reg,	4(\r_res_addr)
     /* raise event for verilog */
     test_event EVENT_CHECK_CPU_PPC_PROG_MODEL_18
     /* no-op for syncronization purpose */
     ppc_nop
+	rumboot_putstring "\tdone.\n"
 .endm
 
-.macro sw_comparator_macro	reg_first_start,     \
-							reg_second_start,    \
-							reg_byte_count,      \
-							reg_tmp_offset,      \
-							reg_tmp_data_first,  \
-							reg_tmp_data_second, \
-							reg_result
-    load_const	\reg_tmp_offset,	0x00000000
+.macro sw_compare	reg_start1,     \
+					reg_start2,     \
+					reg_byte_count, \
+					reg_tmp_offset, \
+					reg_tmp_data1,  \
+					reg_tmp_data2,  \
+					reg_result
+
+	rumboot_putstring "Comparing data... "
+    load_const	\reg_tmp_offset,	0x00000004
     load_const	\reg_result,		0x00000001
-    li			\reg_tmp_offset,	0x00000004
 5: /* labels 1-3 used in trace_msg, label 4 used in test_assert */
-	lwzx		\reg_tmp_data_first,	\reg_first_start,	\reg_tmp_offset
-	lwzx		\reg_tmp_data_second,	\reg_second_start,	\reg_tmp_offset
-	cmplw cr2,	\reg_tmp_data_first,	\reg_tmp_data_second
-	beq cr2,	6f
+	lwzx		\reg_tmp_data1,	\reg_start1,	\reg_tmp_offset
+	lwzx		\reg_tmp_data2,	\reg_start2,	\reg_tmp_offset
+	cmplw cr2,	\reg_tmp_data1,	\reg_tmp_data2
+	beq+  cr2,	6f
 	load_const	\reg_result,		0x00000000
 
-	rumboot_putstring "data mismatch at  offset: 0x"
-	rumboot_puthex \reg_tmp_offset
-	rumboot_putstring "data in the first  array: 0x"
-	rumboot_puthex \reg_tmp_data_first
-	rumboot_putstring "data in the second array: 0x"
-	rumboot_puthex \reg_tmp_data_second
+	rumboot_putstring	"\ndata mismatch!\n"
+	mtspr		SPR_SPRG5,		\reg_tmp_offset
+	mtspr		SPR_SPRG6,		\reg_tmp_data1
+	mtspr		SPR_SPRG7,		\reg_tmp_data2
+
 6:
-	addi		\reg_tmp_offset, \reg_tmp_offset, 4
+	addi		\reg_tmp_offset, \reg_tmp_offset, 0x0004
 	cmpw cr3,	\reg_byte_count, \reg_tmp_offset
 	bge  cr3,	5b
+	rumboot_putstring "done!\n"
 .endm
 
 .global main
@@ -197,15 +203,14 @@
 .section ".text","ax",@progbits
 main:
 
-/*  load_const r3,	0x0004FFFC */
-    load_addr	r3, result_data
-    addi		r3,	r3,-4
-    load_const	r4, 0x0004FFFC
-    load_const	r5, 0x00000000
+	rumboot_putstring "Start testing...\n"
+	load_const	r5, 0x00000000
+	load_addr	r3,	SAVE_ADDR - 4
+	mr			r4,	r3
 .rept 128
     stwu		r5, 4(r4)
 .endr
-    load_const	r4,	0x0004FFFC
+    mr			r4,	r3
 .rept 128
     lwz			r5,	4(r4)
 .endr
@@ -246,26 +251,29 @@ main:
     LOGIC_RA_RS_CHECK    cntlzw., REGS_AS,    RS_VAL,         0x05,    3
     LOGIC_RA_RS_CHECK    prtyw,   REGS_AS,    RS_VAL,         0x06,    3
 
-    load_addr	r3, result_data
-    load_addr 	r4, iss_mem
-    load_const	r5, 30
-	subcall		compare_data
-	cmpwi cr0,	r3, 0x1
+    load_addr		r3,	SAVE_ADDR
+    load_addr 		r4,	iss_mem
+    load_const		r5,	30
+    sw_compare		r3, r4, r5, r6, r7, r8, r9
+    cmpwi cr2,		r9, 0x0001
 
-/*
-	.macro sw_comparator_macro	reg_first_start,     \
-								reg_second_start,    \
-								reg_byte_count,      \
-								reg_tmp_offset,      \
-								reg_tmp_data_first,  \
-								reg_tmp_data_second, \
-								reg_result
-*/
-    sw_comparator_macro r3, r4, r5, r6, r7, r8, r9
-    cmpwi cr0, r9, 0x1
+    beq+  cr2,		test_ok
+    b				test_error
 
-    beq cr0,	test_ok
-    b			test_error
+
+test_ok:
+	rumboot_putstring "TEST OK\n"
+	test_event		EVENT_OK
+	load_const r3,	RESULT_OK
+	b finish
+
+test_error:
+    rumboot_putstring "TEST ERROR\n"
+    test_event		EVENT_ERROR
+    load_const r3,	RESULT_ERROR
+
+finish:
+	blr
 
 
 .align 2
@@ -303,45 +311,4 @@ iss_mem:
 	.long 0x00000000
 	.long 0x00000000
 
-
-	/* AG: */
-compare_data:
-	cmpwi cr0,	r5,  0
-	li 			r8,  1
-	beq cr0,	.compare_data_L1
-	li 			r10, 0
-.compare_data_L4:
-	lwzx		r9,  r3,  r10
-	lwzx 		r7,  r4,  r10
-	addi		r10, r10, 4
-	cmplw cr7,	r5,  r10
-	xor			r9,  r9,  r7
-	addic		r9,  r9,  -1
-	subfe		r9,  r9,  r9
-	and			r8,  r8,  r9
-	bgt cr7,	.compare_data_L4
-.compare_data_L1:
-	mr			r3,  r8
-	blr
-
-test_ok:
-	rumboot_putstring "TEST OK\n"
-	test_event		EVENT_OK
-	load_const r3,	RESULT_OK
-	b finish
-
-test_error:
-    rumboot_putstring "TEST ERROR\n"
-    test_event		EVENT_ERROR
-    load_const r3,	RESULT_ERROR
-
-finish:
-	blr
-
-.section ".issdata","aw",@progbits
-
-result_data:
-.rept 512
-    .long 0x00000000
-.endr
 
