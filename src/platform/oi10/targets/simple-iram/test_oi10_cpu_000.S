@@ -3,7 +3,7 @@
 #include <platform/test_event_asm.h>
 #include <platform/trace.S.h>
 
-#define SAVE_MEM_ADDR	0xC002e000
+#define SAVE_MEM_ADDR	IM0_BASE + 0x0001E000
 
 .macro check_reg_value rN
 	rumboot_putstring "\rN "
