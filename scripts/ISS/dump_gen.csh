@@ -71,12 +71,13 @@ cd ${RW_PATH}
 ${RWCD} ${CMD_PATH}
 
 cd ${BUILD_DIR}/rumboot-oi10-Debug/ISS/
-diff -Bi ${TEST_NAME}_gold.dmp ${TEST_NAME}_gold2.dmp > log.diff
-if ( -s ${BUILD_DIR}"/rumboot-oi10-Debug/ISS/log.diff" )  then
+sed -i '1,4d' ${TEST_NAME}_gold.dmp
+diff -Biw ${TEST_NAME}_gold.dmp ${TEST_NAME}_gold2.dmp > diff_log.txt
+if ( -s ${BUILD_DIR}"/rumboot-oi10-Debug/ISS/diff_log.txt" )  then
     echo "SUCCESSFULL: dumps are equal"
     exit 0
   else
-  	echo "ERROR: dumps not equal, see log.diff"
+  	echo "ERROR: dumps not equal, see diff_log.txt"
     exit 1
 endif
 
