@@ -69,4 +69,15 @@ sleep 1
 echo "Run RiscWatch..."
 cd ${RW_PATH}
 ${RWCD} ${CMD_PATH}
-exit 0
+
+cd ${BUILD_DIR}/rumboot-oi10-Debug/ISS/
+diff -Bi ${TEST_NAME}_gold.dmp ${TEST_NAME}_gold2.dmp > log.diff
+if ( -s ${BUILD_DIR}"/rumboot-oi10-Debug/ISS/log.diff" )  then
+    echo "SUCCESSFULL: dumps are equal"
+    exit 0
+  else
+  	echo "ERROR: dumps not equal, see log.diff"
+    exit 1
+endif
+
+exit 1
