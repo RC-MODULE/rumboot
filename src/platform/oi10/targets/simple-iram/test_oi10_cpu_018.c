@@ -129,12 +129,10 @@ static int check_cpu_ppc_im0_1()
    
    if(_res64 == 0x4444444411111111)
    {
-     
-     // rumboot_printf("Result: 0x%x0x%x \n", _res64, _res64 << 31 );
      _r64_output1 =(uint32_t)(_res64 >> 32);
      _r64_output2 =(uint32_t)_res64 & 0xFFFFFFFF;
      rumboot_printf("Result: 0x%x%x\n", _r64_output1, _r64_output2);
-     //rumboot_printf("Result: 0x%x0x%x\n", _res64, _res64 << 31);   
+  
    }   
    else
    {
@@ -150,7 +148,7 @@ int main(void)
     if( check_cpu_ppc_im0_0() && check_cpu_ppc_im0_1())
     {
       return 0;
-    }//return RESULT_OK;
+    }
 
-    return 1; //RESULT_ERROR;
+    return 1;
 }
