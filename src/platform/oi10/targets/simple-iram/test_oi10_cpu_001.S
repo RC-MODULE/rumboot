@@ -110,6 +110,7 @@ check_cpu_ppc_prog_model_26:    /*check conditional branch*/
 
     load_const	r4,	0x00000000
     load_const	r5,	0x00000001
+
     cmpw cr0,	r4, r5
     blt			bc_ble
     b			test_error
@@ -125,9 +126,7 @@ bc_beq:
 	putchar		'e'
 	putchar		'q'
 	putchar		' '
-    load_const	r4, 0x00000001
-    load_const	r5, 0x00000001
-    cmpw cr0,	r4,	r5
+    cmpw cr0,	r5,	r5
     beq			bc_bgt
     b			test_error
 
@@ -135,9 +134,7 @@ bc_bgt:
 	putchar		'g'
 	putchar		't'
 	putchar		' '
-    load_const	r4,	0x00000001
-    load_const	r5,	0x00000000
-    cmpw cr0,	r4, r5
+    cmpw cr0,	r5, r4
     bgt			bc_bge
     b			test_error
 
@@ -152,9 +149,7 @@ bc_bnl:
 	putchar		'n'
 	putchar		'l'
 	putchar		' '
-    load_const	r4, 0x00000001
-    load_const	r5, 0x00000000
-    cmp cr0,	r4,	r5
+    cmp cr0,	r5,	r4
     bnl			bc_bne
     b			test_error
 
@@ -169,8 +164,6 @@ bc_bng:
 	putchar		'n'
 	putchar		'g'
 	putchar		' '
-    load_const	r4,	0x00000000
-    load_const	r5,	0x00000001
     cmp cr0,	r4,	r5
     bng			bc_bso
     b			test_error
@@ -179,10 +172,10 @@ bc_bso:
 	putchar		's'
 	putchar		'o'
 	putchar		' '
-    load_const	r4,	0x7FFFFFFF
-    load_const	r5,	0x00000002
+    load_const	r6,	0x7FFFFFFF
+    load_const	r7,	0x00000002
 	/*operands considered as signed, see PowerISA, 3.3.7*/
-    addco.		r6,	r4,	r5
+    addco.		r8,	r6,	r7
     bso bc_bns
     b test_error
 
@@ -190,21 +183,19 @@ bc_bns:
 	putchar		'n'
 	putchar		's'
 	putchar		' '
-    load_const	r4,	0xFFFFFFFF
-    load_const	r5,	0x00000000
+    load_const	r6,	0xFFFFFFFF
+    load_const	r7,	0x00000000
     /*SO bit of XER is not cleared automatically*/
-    mtxer		r5
-    addco.		r6,	r4,	r5
+    mtxer		r7
+    addco.		r8,	r6,	r7
     bns			check_cpu_ppc_prog_model_27
     b			test_error
 
 
 check_cpu_ppc_prog_model_27:    /*check XL-branch*/
 	rumboot_putstring "\ntest conditional branch to lr (XL-branch)\n -> "
-	load_addr	r4,	bic_blelr
-    mtlr		r4
-    load_const	r4, 0x00000000
-    load_const	r5, 0x00000001
+	load_addr	r6,	bic_blelr
+    mtlr		r6
     cmpw  cr0,	r4, r5
     bltlr cr0
     b			test_error
@@ -213,8 +204,8 @@ bic_blelr:
 	putchar		'l'
 	putchar		'e'
 	putchar		' '
-	load_addr	r4,	bic_beqlr
-    mtlr		r4
+	load_addr	r6,	bic_beqlr
+    mtlr		r6
     blelr cr0
     b			test_error
 
@@ -222,11 +213,10 @@ bic_beqlr:
 	putchar		'e'
 	putchar		'q'
 	putchar		' '
-	load_addr	r4,	bic_bgtlr
-    mtlr		r4
-    load_const	r4,	0x00000001
-    load_const	r5,	0x00000001
-    cmpw  cr0,	r4,	r5
+	load_addr	r6,	bic_bgtlr
+    mtlr		r6
+    load_const	r6,	0x00000001
+    cmpw  cr0,	r6,	r5
     beqlr cr0
     b			test_error
 
@@ -234,11 +224,9 @@ bic_bgtlr:
 	putchar 'g'
 	putchar 't'
 	putchar ' '
-	load_addr	r4,	bic_bgelr
-    mtlr		r4
-    load_const	r4,	0x00000001
-    load_const	r5,	0x00000000
-    cmpw  cr0,	r4,	r5
+	load_addr	r6,	bic_bgelr
+    mtlr		r6
+    cmpw  cr0,	r5,	r1
     bgtlr cr0
     b			test_error
 
@@ -246,8 +234,8 @@ bic_bgelr:
 	putchar		'g'
 	putchar		'e'
 	putchar		' '
-	load_addr	r4,	bic_bnllr
-    mtlr		r4
+	load_addr	r6,	bic_bnllr
+    mtlr		r6
     bgelr cr0
     b			test_error
 
@@ -255,20 +243,18 @@ bic_bnllr:
 	putchar		'n'
 	putchar		'l'
 	putchar		' '
-	load_addr	r4,	bic_bnelr
-    mtlr		r4
-    load_const	r4,	0x00000001
-    load_const	r5,	0x00000000
-    cmpw  cr0,	r4,	r5
+	load_addr	r6,	bic_bnelr
+    mtlr		r6
+    cmpw  cr0,	r5,	r4
     bnllr cr0
     b			test_error
 
 bic_bnelr:
 	putchar		'n'
 	putchar		'e'
-	putchar		'6'
-	load_addr	r4,	bic_bnglr
-    mtlr		r4
+	putchar		' '
+	load_addr	r6,	bic_bnglr
+    mtlr		r6
     bnelr cr0
     b			test_error
 
@@ -276,10 +262,8 @@ bic_bnglr:
 	putchar		'n'
 	putchar		'g'
 	putchar		' '
-	load_addr	r4,	bic_bsolr
-    mtlr		r4
-    load_const	r4,	0x00000000
-    load_const	r5,	0x00000001
+	load_addr	r6,	bic_bsolr
+    mtlr		r6
     cmpw  cr0,	r4,	r5
     bnglr cr0
     b			test_error
@@ -288,11 +272,11 @@ bic_bsolr:
 	putchar		's'
 	putchar		'o'
 	putchar		' '
-	load_addr	r4,	bic_bnslr
-    mtlr		r4
-    load_const	r4,	0xFFFFFFFF
-    load_const	r5,	0x80000000
-    addco.		r6,	r4,	r5
+	load_addr	r6,	bic_bnslr
+    mtlr		r6
+    load_const	r6,	0xFFFFFFFF
+    load_const	r7,	0x80000000
+    addco.		r8,	r6,	r7
     bsolr cr0
     b			test_error
 
@@ -300,44 +284,41 @@ bic_bnslr:
 	putchar		'n'
 	putchar		's'
 	putchar		' '
-	load_addr	r4,	bic_bdz
-    mtlr		r4
-    load_const	r4,	0xFFFFFFFF
-    load_const	r5,	0x00000000
-    mtxer		r5
-    addco.		r6,	r4,	r5
+	load_addr	r6,	bic_bdz
+    mtlr		r6
+    load_const	r6,	0xFFFFFFFF
+    mtxer		r4
+    addco.		r8,	r5,	r4
     bnslr cr0
     b			test_error
 
 bic_bdz:
 bic_bdz:
     rumboot_putstring "\ntest bdz/bdnz... "
-    load_const	r4,	0x0003
-    mtctr		r4
+    load_const	r6,	0x0003
+    mtctr		r6
 bic_bdz_loop:
-	addi		r4,	r4,	-1
+	addi		r6,	r6,	-1
     bdz			bic_bdz_stop
     b			bic_bdz_loop
 bic_bdz_stop:
-	cmpwi cr5,	r4,	0x0000
+	cmpwi cr5,	r6,	0x0000
 	beq+  cr5,	bic_bdnz
 	b			test_error
 
 bic_bdnz:
-    load_const	r4,	0x0003
-    mtctr		r4
+    load_const	r6,	0x0003
+    mtctr		r6
 bic_bdnz_loop:
-	addi		r4,	r4,	-1
+	addi		r6,	r6,	-1
 	bdnz		bic_bdnz_loop
 	beq+  cr6,	bic_bltctr
 	b			test_error
 
 bic_bltctr:
 	rumboot_putstring "\ntest cond branch to ctr -> lt "
-	load_addr	r4,	bic_blectr
-    mtctr		r4
-    load_const	r4,	0x00000000
-    load_const	r5, 0x00000001
+	load_addr	r6,	bic_blectr
+    mtctr		r6
     cmpw   cr0,	r4,	r5
     bltctr cr0
     b			test_error
@@ -346,10 +327,8 @@ bic_blectr:
 	putchar		'l'
 	putchar		'e'
 	putchar		' '
-	load_addr	r4,	bic_beqctr
-    mtctr		r4
-    load_const	r4,	0x00000000
-    load_const	r5,	0x00000001
+	load_addr	r6,	bic_beqctr
+    mtctr		r6
     cmpw   cr0,	r4,	r5
     blectr cr0
     b			test_error
@@ -358,11 +337,10 @@ bic_beqctr:
 	putchar		'e'
 	putchar		'q'
 	putchar		' '
-	load_addr	r4,	bic_bgtctr
-    mtctr		r4
-    load_const	r4,	0x00000001
+	load_addr	r6,	bic_bgtctr
+    mtctr		r6
     load_const	r5,	0x00000001
-    cmpw   cr0,	r4,	r5
+    cmpw   cr0,	r5,	r5
     beqctr cr0
     b			test_error
 
@@ -370,11 +348,9 @@ bic_bgtctr:
 	putchar		'g'
 	putchar		't'
 	putchar		' '
-	load_addr	r4,	bic_bgectr
-    mtctr		r4
-    load_const	r4,	0x00000001
-    load_const	r5,	0x00000000
-    cmpw   cr0,	r4,	r5
+	load_addr	r6,	bic_bgectr
+    mtctr		r6
+    cmpw   cr0,	r5,	r4
     bgtctr cr0
     b			test_error
 
@@ -382,11 +358,9 @@ bic_bgectr:
 	putchar		'g'
 	putchar		'e'
 	putchar		' '
-	load_addr	r4,	bic_bnlctr
-    mtctr		r4
-    load_const	r4,	0x00000001
-    load_const	r5,	0x00000000
-    cmpw   cr0,	r4,	r5
+	load_addr	r6,	bic_bnlctr
+    mtctr		r6
+    cmpw   cr0,	r5,	r4
     bgectr cr0
     b			test_error
 
@@ -394,11 +368,9 @@ bic_bnlctr:
 	putchar		'n'
 	putchar		'l'
 	putchar		' '
-	load_addr	r4,	bic_bnectr
-    mtctr		r4
-    load_const	r4,	0x00000001
-    load_const	r5,	0x00000000
-    cmpw   cr0,	r4,	r5
+	load_addr	r6,	bic_bnectr
+    mtctr		r6
+    cmpw   cr0,	r5,	r4
     bnlctr cr0
     b			test_error
 
@@ -406,11 +378,9 @@ bic_bnectr:
 	putchar		'n'
 	putchar		'e'
 	putchar		' '
-	load_addr	r4,	bic_bngctr
-    mtctr		r4
-    load_const	r4,	0x00000001
-    load_const	r5,	0x00000000
-    cmpw   cr0,	r4,	r5
+	load_addr	r6,	bic_bngctr
+    mtctr		r6
+    cmpw   cr0,	r5,	r4
     bnectr cr0
     b			test_error
 
@@ -418,10 +388,8 @@ bic_bngctr:
 	putchar		'n'
 	putchar		'g'
 	putchar		' '
-	load_addr	r4,	bic_bsoctr
-    mtctr		r4
-    load_const	r4,	0x00000000
-    load_const	r5,	0x00000001
+	load_addr	r6,	bic_bsoctr
+    mtctr		r6
     cmpw   cr0,	r4,	r5
     bngctr cr0
     b			test_error
@@ -430,11 +398,11 @@ bic_bsoctr:
 	putchar		's'
 	putchar		'o'
 	putchar		' '
-	load_addr	r4,	bic_bnsctr
-    mtctr		r4
-    load_const	r4,	0x7FFFFFFF
-    load_const	r5,	0x00000002
-    addco.		r6,	r4,	r5
+	load_addr	r6,	bic_bnsctr
+    mtctr		r6
+    load_const	r6,	0x7FFFFFFF
+    load_const	r7,	0x00000002
+    addco.		r8,	r6,	r7
     bsoctr cr0
     b			test_error
 
@@ -442,12 +410,11 @@ bic_bnsctr:
 	putchar		'n'
 	putchar		's'
 	putchar		' '
-	load_addr	r4,	test_ok
-    mtctr		r4
-    load_const	r4,	0xFFFFFFFF
-    load_const	r5,	0x00000000
-    mtxer		r5
-    addco.		r6,	r4,	r5
+	load_addr	r6,	test_ok
+    mtctr		r6
+    load_const	r6,	0xFFFFFFFF
+    mtxer		r4
+    addco.		r8,	r6,	r4
     bnsctr cr0
     b			test_error
 
