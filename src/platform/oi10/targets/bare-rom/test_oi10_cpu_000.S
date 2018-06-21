@@ -46,5 +46,6 @@ rumboot_entry_point:
     load_const r31, 0x1F
 
     rumboot_putstring "TEST OK\n"
-    exit 0
+    exit RESULT_OK
+
 
