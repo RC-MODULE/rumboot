@@ -2,6 +2,7 @@
 #include <platform/test_assert.S.h>
 #include <platform/test_event_asm.h>
 #include <platform/trace.S.h>
+#include <platform/devices.h>
 
 #define SAVE_MEM_ADDR	IM0_BASE + 0x0001E000
 
