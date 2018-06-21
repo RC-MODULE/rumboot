@@ -2,8 +2,6 @@
 #include <platform/test_event_asm.h>
 #include <platform/trace.S.h>
 #include <platform/devices.h>
-#include <platform/regs/regs_mpic128.h>
-
 
 #define SAVE_ADDR	IM0_BASE + 0x0001E000
 
