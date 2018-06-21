@@ -2,7 +2,9 @@
 #define DEBUG_DCR_TEST
 #define DEBUG_PUT2USPRG0
 
-// #define UNIDIRECTIONAL_BRIDGE
+/*
+#define UNIDIRECTIONAL_BRIDGE
+*/
 
 #include <platform/arch/ppc/ppc_476fp_asm.h>
 #include <platform/test_event_asm.h>
@@ -21,14 +23,14 @@
 
 main:
 p4ahb_0:
-    check_value CVR3, P4A0(REVID         ), REVID_VALUE,			"PLB4AHB_0_REVID"			/* FAIL */
+    check_value CVR3, P4A0(REVID         ), REVID_VALUE,			"PLB4AHB_0_REVID"
     check_value CVR3, P4A0(SEAR_ADDRUPPER), SEAR_ADDRUPPER_VALUE,	"PLB4AHB_0_SEAR_ADDRUPPER"
     check_value CVR3, P4A0(SEAR_ADDRLOWER), SEAR_ADDRLOWER_VALUE,	"PLB4AHB_0_SEAR_ADDRLOWER"
     check_value CVR3, P4A0(SESR          ), SESR_VALUE,				"PLB4AHB_0_SESR"
     check_value CVR3, P4A0(TOP_ADDR      ), TOP_ADDR_VALUE,			"PLB4AHB_0_TOP_ADDR"
     check_value CVR3, P4A0(BOT_ADDR      ), BOT_ADDR_VALUE,			"PLB4AHB_0_BOT_ADDR"
     check_value CVR3, P4A0(ATTRS         ), ATTRS_VALUE,			"PLB4AHB_0_ATTRS"
-    check_value CVR3, P4A0(CONTROL       ), CONTROL_VALUE,			"PLB4AHB_0_CONTROL"			/* FAIL */
+    check_value CVR3, P4A0(CONTROL       ), CONTROL_VALUE,			"PLB4AHB_0_CONTROL"
     check_value CVR3, P4A0(ERR_ST        ), ERR_ST_VALUE,			"PLB4AHB_0_ERR_ST"
     check_value CVR3, P4A0(ERR_ADDR      ), ERR_ADDR_VALUE,			"PLB4AHB_0_ERR_ADDR"
     check_value CVR3, P4A0(INT_MSK       ), INT_MSK_VALUE,			"PLB4AHB_0_INT_MSK"
