@@ -3,7 +3,7 @@
 #include <platform/trace.S.h>
 #include <platform/devices.h>
 
-#define SAVE_ADDR	IM0_BASE + 0x0001E000
+#define SAVE_ADDR	save_data /* IM0_BASE + 0x0001E000 */
 
 #define TMP_REG		29
 #define INF_REG		30
@@ -439,6 +439,11 @@ iss_mem:
 	.long 0x00000000
 	.long 0x00000000
 iss_mem_end:
+
+
+.section ".issdata","aw",@progbits
+
+save_data:
 
 
 
