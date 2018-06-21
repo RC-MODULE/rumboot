@@ -39,4 +39,17 @@
 .endm
 
 
+.macro rumboot_putdump start_addr, length_in_bytes
+    mtspr SPR_SPRG3, \start_addr
+    mtspr SPR_SPRG4, \length_in_bytes
+    test_event EVENT_TRACE_DUMP
+.endm
+
+
+.macro rumboot_issdump start_addr, length_in_bytes
+    mtspr SPR_SPRG3, \start_addr
+    mtspr SPR_SPRG4, \length_in_bytes
+    test_event TEST_EVENT_CREATE_ISS_DUMP
+.endm
+
 #endif /* TRACE_S_H_ */
