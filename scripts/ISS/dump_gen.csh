@@ -19,19 +19,14 @@ set RWCD=./rwcd
 
 set BUILD_DIR=$1
 set TEST_NAME=$2
-set CMD_PATH=${BUILD_DIR}/rumboot-oi10-Debug/ISS/${TEST_NAME}.cmd
+set LOG_DIR=$PWD
+set CMD_PATH=${LOG_DIR}/${TEST_NAME}.cmd
 
 set INIT_BIN_START_ADDR=0xFFFF0000
 set BIN_START_ADDR=0x80000000
 set COMPARE_MEM_START_ADDR=0x8001E000
 set COMPARE_MEM_LEN_BYTES=0x1000
 set ASM_STEP=130000
-
-echo "Delete old files"
-
-mkdir ${BUILD_DIR}/rumboot-oi10-Debug/ISS/
-rm ${CMD_PATH}
-rm ${BUILD_DIR}"/rumboot-oi10-Debug/ISS/"${TEST_NAME}"_gold.dmp"
 
 echo "Run simulator"
 
@@ -50,6 +45,7 @@ echo "write tlb 0 0 EPN 0xFFFF0000 V 0x1 TS 0x0 S 0x03 T 0x0000 E+RPN 0x01FFFFF0
 echo "memacc add 0xFFFF0000 0xFFFFFFFF RW 1 MEM 0x1FFFFF0000" >> ${CMD_PATH}
 echo "load bin "${BUILD_DIR}"/rumboot-oi10-Debug/rumboot-oi10-Debug-bootrom-stub.bin "${INIT_BIN_START_ADDR} >> ${CMD_PATH}
 echo "exec postload_oi10.rwc"
+#end workaround
 
 @ MAX_ASMSTEP = 65535
 @ tmp = ${ASM_STEP}
@@ -63,22 +59,28 @@ while ($tmp > 0)
     endif
 end
 
-echo "save mem "${BUILD_DIR}"/rumboot-oi10-Debug/ISS/"${TEST_NAME}"_gold.dmp "${COMPARE_MEM_START_ADDR} ${COMPARE_MEM_LEN_BYTES} >> ${CMD_PATH}
+echo "save mem "${LOG_DIR}"/test_iss_data_gold.dmp "${COMPARE_MEM_START_ADDR} ${COMPARE_MEM_LEN_BYTES} >> ${CMD_PATH}
 
 sleep 1
-echo "Run RiscWatch..."
+echo "Run RiscWatch"
 cd ${RW_PATH}
 ${RWCD} ${CMD_PATH}
 
-cd ${BUILD_DIR}/rumboot-oi10-Debug/ISS/
-sed -i '1,4d' ${TEST_NAME}_gold.dmp
-diff -Biw ${TEST_NAME}_gold.dmp ${TEST_NAME}_gold2.dmp > diff_log.txt
-if ( -s ${BUILD_DIR}"/rumboot-oi10-Debug/ISS/diff_log.txt" )  then
-    echo "SUCCESSFULL: dumps are equal"
-    exit 0
+sleep 1
+echo "Compare dumps..."
+cd ${LOG_DIR}
+if ( -f test_iss_data.dmp) then
+    sed -i '1,4d' test_iss_data_gold.dmp
+    diff -Biw test_iss_data_gold.dmp test_iss_data.dmp > diff_log.txt
+    if ( -z diff_log.txt )  then
+        echo "SUCCESSFULL: dumps are equal"
+        exit 0
+      else
+  	    echo "ERROR: dumps not equal, see diff_log.txt"
+        exit 1
+    endif
   else
-  	echo "ERROR: dumps not equal, see diff_log.txt"
+    echo "ERROR: test iss data dump not found"
     exit 1
 endif
 
-exit 1

@@ -14,6 +14,7 @@ uint8_t test_data_arr [DATA_LEN] __attribute__((section(".issdata"))) = {0};
 
 int main()
 {
+
   rumboot_putstring ("START ADDR");
   rumboot_puthex ((uint32_t) test_data_arr);
 
@@ -29,28 +30,8 @@ int main()
   	i++; count++;
   }
   rumboot_putstring ("END WRITE DATA\n");
-/*
-  rumboot_putstring ("START CHECK DATA\n");
-  i = 0; count = 0;
-  uint32_t addr = (uint32_t) test_data_arr;
-  while (i < DATA_LEN)
-  {
-    if (ioread8(addr) != count)
-	{
-    	rumboot_putstring ("ERROR\n");
-    	rumboot_putstring ("ADDR");
-    	rumboot_puthex (addr);
-    	rumboot_putstring ("EXPECTED");
-		rumboot_puthex (count);
-    	rumboot_putstring ("ACTUAL");
-		rumboot_puthex (ioread8(addr));
-		return 1;
-	};
-
-  	i++; count++; addr++;
-  }
-  */
-  //while (0);
+  rumboot_putstring ("CREATE DUMP");
+  //((uint32_t) test_data_arr, DATA_LEN);
 
   return 0;
 }
