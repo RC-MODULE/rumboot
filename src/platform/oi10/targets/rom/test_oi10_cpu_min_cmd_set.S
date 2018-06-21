@@ -179,13 +179,13 @@ move_spr_dcr_mcr:
 ok:
     test_event EVENT_OK
     rumboot_putstring "TEST OK\n"
-    load_const r3, 0x00
+    load_const r3, RESULT_OK
     b finish
 
 error:
     test_event EVENT_ERROR
     rumboot_putstring "TEST ERROR\n"
-    load_const r3, 0x01
+    load_const r3, RESULT_ERROR
     b finish
 
 finish:
