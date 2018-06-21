@@ -1,13 +1,13 @@
 
-#include <platform/oi10/platform/arch/ppc/ppc_476fp_asm.h>
-#include <platform/oi10/platform/test_event_asm.h>
-#include <platform/oi10/platform/test_assert.S.h>
-#include <platform/oi10/platform/devices.h>
+#include <platform/arch/ppc/ppc_476fp_asm.h>
+#include <platform/test_event_asm.h>
+#include <platform/test_assert.S.h>
+#include <platform/devices.h>
 
 #define DEBUG_DCR_TEST
 
-#include <platform/oi10/platform/arch/ppc/test_macro_asm.S.h>
-#include <platform/oi10/platform/regs/regs_plb4arb8m.h>
+#include <platform/arch/ppc/test_macro_asm.S.h>
+#include <platform/regs/regs_plb4arb8m.h>
 
 #define CVR3				r4,r5,r6
 #define PREV_RESET_VAL		0x00000301

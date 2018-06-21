@@ -1,13 +1,13 @@
 
-#include <platform/oi10/platform/arch/ppc/ppc_476fp_asm.h>
-#include <platform/oi10/platform/test_event_asm.h>
-#include <platform/oi10/platform/test_assert.S.h>
-#include <platform/oi10/platform/devices.h>
+#include <platform/arch/ppc/ppc_476fp_asm.h>
+#include <platform/test_event_asm.h>
+#include <platform/test_assert.S.h>
+#include <platform/devices.h>
 
 #define DEBUG_DCR_TEST
 
-#include <platform/oi10/platform/arch/ppc/test_macro_asm.S.h>
-#include <platform/oi10/platform/regs/regs_srammc2plb4.h>
+#include <platform/arch/ppc/test_macro_asm.S.h>
+#include <platform/regs/regs_srammc2plb4.h>
 
 #define SB0CR			0x0
 #define SB1CR			0x1
@@ -21,8 +21,6 @@
 #define REVID			0x9
 #define DPC				0xA
 
-
-//
 #define BEAR_RESET_VAL			0x00000000
 #define BESR0_RESET_VAL			0x00000000
 #define BESR1_RESET_VAL			0x00000000
