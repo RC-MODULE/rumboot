@@ -4,7 +4,7 @@
 #include <platform/trace.S.h>
 #include <platform/devices.h>
 
-#define SAVE_MEM_ADDR	IM0_BASE + 0x0001E000
+#define SAVE_MEM_ADDR	save_data /* IM0_BASE + 0x0001E000 */
 
 .macro check_reg_value rN
 	rumboot_putstring "\rN "
@@ -94,7 +94,7 @@ rumboot_entry_point:
     load_const	r31, 0x001F
 
 	mtsprg6		r3				/* Save r3 */
-	load_const	r3,  SAVE_MEM_ADDR
+	load_addr	r3,  SAVE_MEM_ADDR
 	stw			r0,  0*4(r3)
 	stw			r1,  1*4(r3)
 	mr			r1,  r3
@@ -103,7 +103,7 @@ rumboot_entry_point:
 
 	rumboot_putstring "Check... "
 
-	load_const	r3,  SAVE_MEM_ADDR - 4	/* for lwzu */
+	load_addr	r3,  SAVE_MEM_ADDR - 4	/* for lwzu */
 	load_addr	r4,  origin_values - 4	/* for lwzu */
 
 	check_reg_value	r0
@@ -156,4 +156,12 @@ test_error:
 finish:
 	rest_stack r29
     blr
+
+
+
+.section ".issdata","aw",@progbits
+
+save_data:
+
+
 
