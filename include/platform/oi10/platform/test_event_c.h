@@ -8,6 +8,7 @@
 #define TEST_EVENT_C_H_
 
 #include <platform/test_event_codes.h>
+#include <rumboot/platform.h>
 #include <platform/arch/ppc/ppc_476fp_config.h>
 
 static inline void test_event( uint32_t const event_code ) {
