@@ -153,6 +153,7 @@ int main()
 	rumboot_printf("ARINC check status RX\n");      
 	for (i = 0; i< 16 ; i++) 
 	{
+	cnt =0;
 	while (tmp_r != status_success_bit) {
 	tmp = ioread32(ARINC_BASE + STAT_E_RX +i*4);	
 	//rumboot_printf("ARINC STATUS=0x%x\n", tmp); //check status
