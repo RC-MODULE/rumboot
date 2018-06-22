@@ -10,6 +10,18 @@ if ("$2" == "")  then
   exit 1
 endif
 
+if ( -f test_iss_data.dmp) then
+	set lines=`cat test_iss_data.dmp`
+	set COMPARE_MEM_START_ADDR=$lines[1]
+	set COMPARE_MEM_LEN_BYTES=$lines[2]
+	sed -i '1,2d' test_iss_data.dmp
+  else
+    echo "ERROR: test iss data dump not found"
+    exit 1
+endif
+
+echo "Start Script"
+
 #Variables for working with ISS and RiscWatch
 set ISS_PATH=/opt/pcad/RISCWatch/IBM/ppc-mc-iss/linux/model/
 set ISS=${ISS_PATH}ppciss
@@ -24,8 +36,6 @@ set CMD_PATH=${LOG_DIR}/${TEST_NAME}.cmd
 
 set INIT_BIN_START_ADDR=0xFFFF0000
 set BIN_START_ADDR=0x80000000
-set COMPARE_MEM_START_ADDR=0x8001E000
-set COMPARE_MEM_LEN_BYTES=0x1000
 set ASM_STEP=130000
 
 echo "Run simulator"
@@ -69,18 +79,15 @@ ${RWCD} ${CMD_PATH}
 sleep 1
 echo "Compare dumps..."
 cd ${LOG_DIR}
-if ( -f test_iss_data.dmp) then
-    sed -i '1,4d' test_iss_data_gold.dmp
-    diff -Biw test_iss_data_gold.dmp test_iss_data.dmp > diff_log.txt
-    if ( -z diff_log.txt )  then
-        echo "SUCCESSFULL: dumps are equal"
-        exit 0
-      else
-  	    echo "ERROR: dumps not equal, see diff_log.txt"
-        exit 1
-    endif
+
+sed -i '1,4d' test_iss_data_gold.dmp
+diff -Biw test_iss_data_gold.dmp test_iss_data.dmp > diff_log.txt
+if ( -z diff_log.txt )  then
+    echo "SUCCESSFULL: dumps are equal"
+    exit 0
   else
-    echo "ERROR: test iss data dump not found"
+    echo "ERROR: dumps not equal, see diff_log.txt"
     exit 1
 endif
+
 
