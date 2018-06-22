@@ -17,9 +17,9 @@
     bne-  cr7,		test_error
 .endm
 
-.macro GPR_LOAD_MEM reg_test, reg_temp, address, value
+.macro GPR_LOAD_MEM reg_test, reg_temp, address, idx, value
 	load_addr		\reg_temp,	\address
-    lwz				\reg_test,	0(\reg_temp)
+    lwz				\reg_test,	((\idx)*4)(\reg_temp)
     cmpwi cr7,		\reg_test,	\value
     TEST_ASSERT(eq, cr7, "GPR\reg_test load value from memory: Expected \"\value\"")
     bne-  cr7,		test_error
@@ -79,38 +79,38 @@ check_gpr_lis_ori:
 
 check_gpr_lw:
 	rumboot_putstring "check_gpr_lw\n"
-    GPR_LOAD_MEM	r0,		r31, mem_tbl, GENCONST2( 0)
-    GPR_LOAD_MEM	r1,		r31, mem_tbl, GENCONST2( 1)
-    GPR_LOAD_MEM	r2,		r31, mem_tbl, GENCONST2( 2)
-    GPR_LOAD_MEM	r3,		r31, mem_tbl, GENCONST2( 3)
-    GPR_LOAD_MEM	r4,		r31, mem_tbl, GENCONST2( 4)
-    GPR_LOAD_MEM	r5,		r31, mem_tbl, GENCONST2( 5)
-    GPR_LOAD_MEM	r6,		r31, mem_tbl, GENCONST2( 6)
-    GPR_LOAD_MEM	r7,		r31, mem_tbl, GENCONST2( 7)
-    GPR_LOAD_MEM	r8,		r31, mem_tbl, GENCONST2( 8)
-    GPR_LOAD_MEM	r9,		r31, mem_tbl, GENCONST2( 9)
-    GPR_LOAD_MEM	r10,	r31, mem_tbl, GENCONST2(10)
-    GPR_LOAD_MEM	r11,	r31, mem_tbl, GENCONST2(11)
-    GPR_LOAD_MEM	r12,	r31, mem_tbl, GENCONST2(12)
-    GPR_LOAD_MEM	r13,	r31, mem_tbl, GENCONST2(13)
-    GPR_LOAD_MEM	r14,	r31, mem_tbl, GENCONST2(14)
-    GPR_LOAD_MEM	r15,	r31, mem_tbl, GENCONST2(15)
-    GPR_LOAD_MEM	r16,	r31, mem_tbl, GENCONST2(16)
-    GPR_LOAD_MEM	r17,	r31, mem_tbl, GENCONST2(17)
-    GPR_LOAD_MEM	r18,	r31, mem_tbl, GENCONST2(18)
-    GPR_LOAD_MEM	r19,	r31, mem_tbl, GENCONST2(19)
-    GPR_LOAD_MEM	r20,	r31, mem_tbl, GENCONST2(20)
-    GPR_LOAD_MEM	r21,	r31, mem_tbl, GENCONST2(21)
-    GPR_LOAD_MEM	r22,	r31, mem_tbl, GENCONST2(22)
-    GPR_LOAD_MEM	r23,	r31, mem_tbl, GENCONST2(23)
-    GPR_LOAD_MEM	r24,	r31, mem_tbl, GENCONST2(24)
-    GPR_LOAD_MEM	r25,	r31, mem_tbl, GENCONST2(25)
-    GPR_LOAD_MEM	r26,	r31, mem_tbl, GENCONST2(26)
-    GPR_LOAD_MEM	r27,	r31, mem_tbl, GENCONST2(27)
-    GPR_LOAD_MEM	r28,	r31, mem_tbl, GENCONST2(28)
-    GPR_LOAD_MEM	r29,	r31, mem_tbl, GENCONST2(29)
-    GPR_LOAD_MEM	r30,	r31, mem_tbl, GENCONST2(30)
-    GPR_LOAD_MEM	r31,	r30, mem_tbl, GENCONST2(31)
+    GPR_LOAD_MEM	r0,		r31, mem_tbl,  0, GENCONST2( 0)
+    GPR_LOAD_MEM	r1,		r31, mem_tbl,  1, GENCONST2( 1)
+    GPR_LOAD_MEM	r2,		r31, mem_tbl,  2, GENCONST2( 2)
+    GPR_LOAD_MEM	r3,		r31, mem_tbl,  3, GENCONST2( 3)
+    GPR_LOAD_MEM	r4,		r31, mem_tbl,  4, GENCONST2( 4)
+    GPR_LOAD_MEM	r5,		r31, mem_tbl,  5, GENCONST2( 5)
+    GPR_LOAD_MEM	r6,		r31, mem_tbl,  6, GENCONST2( 6)
+    GPR_LOAD_MEM	r7,		r31, mem_tbl,  7, GENCONST2( 7)
+    GPR_LOAD_MEM	r8,		r31, mem_tbl,  8, GENCONST2( 8)
+    GPR_LOAD_MEM	r9,		r31, mem_tbl,  9, GENCONST2( 9)
+    GPR_LOAD_MEM	r10,	r31, mem_tbl, 10, GENCONST2(10)
+    GPR_LOAD_MEM	r11,	r31, mem_tbl, 11, GENCONST2(11)
+    GPR_LOAD_MEM	r12,	r31, mem_tbl, 12, GENCONST2(12)
+    GPR_LOAD_MEM	r13,	r31, mem_tbl, 13, GENCONST2(13)
+    GPR_LOAD_MEM	r14,	r31, mem_tbl, 14, GENCONST2(14)
+    GPR_LOAD_MEM	r15,	r31, mem_tbl, 15, GENCONST2(15)
+    GPR_LOAD_MEM	r16,	r31, mem_tbl, 16, GENCONST2(16)
+    GPR_LOAD_MEM	r17,	r31, mem_tbl, 17, GENCONST2(17)
+    GPR_LOAD_MEM	r18,	r31, mem_tbl, 18, GENCONST2(18)
+    GPR_LOAD_MEM	r19,	r31, mem_tbl, 19, GENCONST2(19)
+    GPR_LOAD_MEM	r20,	r31, mem_tbl, 20, GENCONST2(20)
+    GPR_LOAD_MEM	r21,	r31, mem_tbl, 21, GENCONST2(21)
+    GPR_LOAD_MEM	r22,	r31, mem_tbl, 22, GENCONST2(22)
+    GPR_LOAD_MEM	r23,	r31, mem_tbl, 23, GENCONST2(23)
+    GPR_LOAD_MEM	r24,	r31, mem_tbl, 24, GENCONST2(24)
+    GPR_LOAD_MEM	r25,	r31, mem_tbl, 25, GENCONST2(25)
+    GPR_LOAD_MEM	r26,	r31, mem_tbl, 26, GENCONST2(26)
+    GPR_LOAD_MEM	r27,	r31, mem_tbl, 27, GENCONST2(27)
+    GPR_LOAD_MEM	r28,	r31, mem_tbl, 28, GENCONST2(28)
+    GPR_LOAD_MEM	r29,	r31, mem_tbl, 29, GENCONST2(29)
+    GPR_LOAD_MEM	r30,	r31, mem_tbl, 30, GENCONST2(30)
+    GPR_LOAD_MEM	r31,	r30, mem_tbl, 31, GENCONST2(31)
 
 check_sprg_ppc:
 	rumboot_putstring "check_sprg_ppc\n"
