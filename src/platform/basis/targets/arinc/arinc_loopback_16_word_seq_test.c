@@ -121,7 +121,8 @@ int main()
 	iowrite32(( (1 << i) + (1 << (16 +i)) ),ARINC_BASE + CHANNEL_DIS); // stop transmitter
 
 	//rumboot_printf("ARINC number=0x%x\n", i); 
-	tmp_r = -1;	
+	tmp_r = -1;
+    cnt =0;	
 	while (tmp_r != status_success_bit) {
 	tmp = ioread32(ARINC_BASE + STAT_E_RX +i*4);
 	//rumboot_printf("ARINC STATUS=0x%x\n", tmp); //check status
@@ -130,7 +131,7 @@ int main()
  		rumboot_printf("ARINC STATUS=0x%x\n", tmp); //check status
 		rumboot_printf("ARINC address =0x%x\n", (STAT_E_RX +i*4)); //check status
 		rumboot_printf("ARINC number =0x%x\n", i); //check status		  
-		rumboot_printf("No end exchange!\n");
+		rumboot_printf("No end exchange cnt=0x%x\n", cnt);
 		rumboot_printf("ARINC test ERROR!\n");
            return TEST_ERROR;
 			}
