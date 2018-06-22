@@ -150,7 +150,7 @@ int main()
 	}
 	//iowrite32(enable,ARINC_BASE + CHANNEL_DIS); // stop transmitter
 
-
+    cnt =0;
 	while (tmp_r != status_success_bit) {
 	tmp = ioread32(ARINC_BASE + STAT_E_RX);
 	//rumboot_printf("ARINC STATUS=0x%x\n", tmp); //check status
@@ -193,7 +193,7 @@ int main()
 	tmp_r = 0x07FFFFFF & tmp;
   // rumboot_printf("ARINC SIZE=0x%x\n", tmp); //check status
 	}
-
+	cnt =0;
 	while (tmp_r != status_success_bit) {
 	tmp = ioread32(ARINC_BASE + STAT_O_RX);
 	//rumboot_printf("ARINC STATUS=0x%x\n", tmp); //check status
