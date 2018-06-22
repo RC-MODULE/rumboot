@@ -21,6 +21,7 @@
 .global main
 
 main:
+    test_event_send_test_id "test_iss_base"
 	save_stack r29
 	b rumboot_entry_point
 
@@ -143,6 +144,9 @@ rumboot_entry_point:
 	b test_ok
 
 test_ok:
+    load_const r15, 0x8001e000
+    load_const r16, 0x80
+    rumboot_issdump r15, r16
     rumboot_putstring "\nTEST OK\n"
     test_event		EVENT_OK
     load_const r3,	RESULT_OK
