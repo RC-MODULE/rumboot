@@ -3,10 +3,10 @@
 // 
 //  Test includes:
 //  - 16 ARINC429 transmitters and receivers delivery through the external loopback
-//	- 16  receivers accept word arrays awithout checking labels
+//	- 16  receivers accept word arrays without checking labels
 //	- TEST ENABLE mode is turned ON
-//  - external loop is provided by  multiplexing TEST A/B/ TXA/B with TESTA and TESTB used as inputs
-//  - for every exchange the received array is choosed sequentally by addressing only one receiver
+//  - external loop is provided by  multiplexing TESTA&B and TXA&B with TESTA and TESTB used as inputs
+//  - for every exchange. The received array is choosed sequentally by addressing only one receiver
 //  - configured  frequency =100KHz by default value
 //	- used delay control for neighboring arrays switch for correct read state registers
 //	- received arrays compared with ethalon values	
@@ -117,27 +117,33 @@ int main()
 	iowrite32( (1 << i) + (1 << (16 +i)),ARINC_BASE + CHANNEL_EN); // run transaction	
 	rumboot_printf("ARINC CH=0x%x\n", i); 
 	tmp_r = -1;
-
+	cnt = 0;
        while (tmp_r != 0x00000001) {
 	tmp = ioread32(ARINC_BASE + STAT_E_TX + i*4);
-	tmp_r = 0x07FFFFFF & tmp;
+	tmp_r = 0x2FFFFFFF & tmp;
+		if (++cnt == ARINC_ATTEMPT) {
+		rumboot_printf("ARINC STATUS_TR=0x%x\n", tmp); //check status
+		rumboot_printf("ARINC address_tr =0x%x\n", (STAT_E_TX +i*4)); //check status		  
+		rumboot_printf("No end Transmit exchange!\n");
+		rumboot_printf("ARINC test ERROR!\n");
+         return TEST_ERROR;
+			}
+	
     //rumboot_printf("ARINC SIZE=0x%x\n", tmp); //check status
 		}   
  	//rumboot_printf("rcv_channel_num=0x%x\n", (1 << i));
 	iowrite32(( (1 << i) + (1 << (16 +i)) ),ARINC_BASE + CHANNEL_DIS); // stop transmitter
 	//rumboot_printf("channel_dis=0x%x\n", ((1 << (0x10000 +i) )*0x10000));
-  // }
      
-
-	//rumboot_printf("ARINC number=0x%x\n", i); 
 	tmp_r = -1;	
-	while (tmp_r != status_success_bit) {
+	cnt =0;
+	while (tmp_r != 0x00000001) {
 	tmp = ioread32(ARINC_BASE + STAT_E_RX +i*4);
 	//rumboot_printf("ARINC STATUS=0x%x\n", tmp); //check status
-	tmp_r = tmp & status_success_bit;
+	tmp_r = tmp & 0x2FFFFFFF ;
 	if (++cnt == ARINC_ATTEMPT) {
-		rumboot_printf("ARINC STATUS=0x%x\n", tmp); //check status
-		rumboot_printf("ARINC address =0x%x\n", (STAT_E_RX +i*4)); //check status
+		rumboot_printf("ARINC STATUS_RC=0x%x\n", tmp); //check status
+		rumboot_printf("ARINC address_rc =0x%x\n", (STAT_E_RX +i*4)); //check status
 		rumboot_printf("ARINC number =0x%x\n", i); //check status		  
 		rumboot_printf("No end exchange!\n");
 		rumboot_printf("ARINC test ERROR!\n");
