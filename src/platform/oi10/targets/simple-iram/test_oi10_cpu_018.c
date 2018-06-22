@@ -16,15 +16,15 @@ static uint64_t res64 = 0x5555555522222222;
 
 static int check_cpu_ppc_im0_0()
 {
-   register uint8_t _res8;  
-   register uint16_t _res16;
-   register uint32_t _res32, r64_output1, r64_output2;
-   register uint64_t _res64;
+   register uint8_t temp8;  
+   register uint16_t temp16;
+   register uint32_t temp32, temp64_output1, temp64_output2;
+   register uint64_t temp64;
 
-   _res8 = ioread8((uint32_t)&res8);
-   if(_res8 == 0xDD )
+   temp8 = ioread8((uint32_t)&res8);
+   if(temp8 == 0xDD )
    {
-      rumboot_printf("Result: 0x%x \n", _res8);
+      rumboot_printf("Result: 0x%x \n", temp8);
    } 
    else
    {
@@ -32,11 +32,11 @@ static int check_cpu_ppc_im0_0()
       return 0;
    }
      
-   _res16 = ioread16((uint32_t)&res16);
+   temp16 = ioread16((uint32_t)&res16);
    
-   if(_res16 == 0x5454 )
+   if(temp16 == 0x5454 )
    {
-      rumboot_printf("Result: 0x%x \n", _res16);
+      rumboot_printf("Result: 0x%x \n", temp16);
    }
    else
    {
@@ -44,11 +44,11 @@ static int check_cpu_ppc_im0_0()
       return 0;
    }
   
-   _res32 = ioread32((uint32_t)&res32);
+   temp32 = ioread32((uint32_t)&res32);
    
-   if(_res32 == 0x75757575 )
+   if(temp32 == 0x75757575 )
    {
-      rumboot_printf("Result: 0x%x \n", _res32);
+      rumboot_printf("Result: 0x%x \n", temp32);
    }
    else
    {
@@ -56,13 +56,13 @@ static int check_cpu_ppc_im0_0()
       return 0;
    }
    
-   _res64 = ioread64((uint32_t)&res64);
+   temp64 = ioread64((uint32_t)&res64);
    
-   if(_res64 == 0x5555555522222222)
+   if(temp64 == 0x5555555522222222)
    {
-      r64_output1 = (uint32_t)(_res64 >> 32);
-      r64_output2 = (uint32_t)_res64 & 0xFFFFFFFF;
-      rumboot_printf("Result: 0x%x%x\n", r64_output1, r64_output2);
+      temp64_output1 = (uint32_t)(temp64 >> 32);
+      temp64_output2 = (uint32_t)temp64 & 0xFFFFFFFF;
+      rumboot_printf("Result: 0x%x%x\n", temp64_output1, temp64_output2);
    }
    else
    { 
@@ -74,17 +74,17 @@ static int check_cpu_ppc_im0_0()
 
 static int check_cpu_ppc_im0_1() 
 {
-   register uint8_t _res8;  
-   register uint16_t _res16;
-   register uint32_t _res32, _r64_output1, _r64_output2;
-   register uint64_t _res64;
+   register uint8_t temp8;  
+   register uint16_t temp16;
+   register uint32_t temp32, temp64_output1, temp64_output2;
+   register uint64_t temp64;
    
    iowrite8(0xBB, (uint32_t)&res8);
-   _res8 = ioread8((uint32_t)&res8);
+   temp8 = ioread8((uint32_t)&res8);
    
-   if(_res8 == 0xBB )
+   if(temp8 == 0xBB )
    {
-      rumboot_printf("Result: 0x%x \n", _res8);
+      rumboot_printf("Result: 0x%x \n", temp8);
    } 
    else
    {
@@ -93,12 +93,12 @@ static int check_cpu_ppc_im0_1()
    }
      
    iowrite16(0x6666, (uint32_t)&res16);
-   _res16 = ioread16((uint32_t)&res16);
+   temp16 = ioread16((uint32_t)&res16);
    
-   if(_res16 == 0x6666 )
+   if(temp16 == 0x6666 )
    {
      
-      rumboot_printf("Result: 0x%x \n", _res16);
+      rumboot_printf("Result: 0x%x \n", temp16);
    }
    else
    {
@@ -107,11 +107,11 @@ static int check_cpu_ppc_im0_1()
    }
    
    iowrite32(0x88888888, (uint32_t)&res32);
-   _res32 = ioread32((uint32_t)&res32);
+   temp32 = ioread32((uint32_t)&res32);
    
-   if(_res32 == 0x88888888 )
+   if(temp32 == 0x88888888 )
    {
-      rumboot_printf("Result: 0x%x \n", _res32);
+      rumboot_printf("Result: 0x%x \n", temp32);
    }
    else
    {
@@ -120,13 +120,13 @@ static int check_cpu_ppc_im0_1()
    }
    
    iowrite64(0x4444444411111111, (uint32_t)&res64);
-   _res64 = ioread64((uint32_t)&res64);
+   temp64 = ioread64((uint32_t)&res64);
    
-   if(_res64 == 0x4444444411111111)
+   if(temp64 == 0x4444444411111111)
    {
-     _r64_output1 =(uint32_t)(_res64 >> 32);
-     _r64_output2 =(uint32_t)_res64 & 0xFFFFFFFF;
-     rumboot_printf("Result: 0x%x%x\n", _r64_output1, _r64_output2);
+     temp64_output1 =(uint32_t)(temp64 >> 32);
+     temp64_output2 =(uint32_t)temp64 & 0xFFFFFFFF;
+     rumboot_printf("Result: 0x%x%x\n", temp64_output1, temp64_output2);
   
    }   
    else
