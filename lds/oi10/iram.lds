@@ -7,36 +7,32 @@ MEMORY
 SECTIONS
 {
 
-. = 0x00000000;
+  . = 0x00000000;
 
- .text : {
+  .rwx : {
+    KEEP(*(.header))
+
     *(.text)
     *(.text.*)
     *(.rodata)
     *(.rodata.*)
+    *(.data)
+    *(.data.*)
+
+    rumboot_platform_bss_start = .;
+    *(.bss)
+    *(.bss.*)
+    rumboot_platform_bss_end = .;
+
     . = ALIGN(32);
-  } > ROM
-
- .init.text 0xFFFFF000:{
-    KEEP(*(.init.text))
-    KEEP(*(.init.rodata))
-  } > ROM
-
-  .init.start 0xFFFFFFFC :    {
-    KEEP(*(.init.start))
-  } > ROM
-
-  .rw : {
-    . = ALIGN(8);
 
     rumboot_platform_spl_start = .;
-    . = . + 0x10000; /* spl image start */
     rumboot_platform_spl_end = .;
 
     . = ALIGN(8);
 
     rumboot_platform_heap_start = ABSOLUTE(.);
-    . = . + 0x8000; /* 60k heap */
+    . = . + 0x1000; /* 60k heap */
     rumboot_platform_heap_end = ABSOLUTE(.);
 
     /* This is where stacks start */
@@ -55,17 +51,7 @@ SECTIONS
 
  /DISCARD/ :
  {
-    *(.rela.*)
-    *(.got2)
-    *(.got)
-     libc.a ( * )
-     libm.a ( * )
-     libgcc.a ( * )
-     /* Make sure data & bss go to hell */
-     *(.data)
-     *(.bss)
-     *(.bss.*)
-     *(COMMON)
+    *(.text.startup)
  }
 
 }

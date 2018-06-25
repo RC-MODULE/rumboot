@@ -8,21 +8,29 @@
 
 #ifdef RUMBOOT_MIRROR_STUB
 	#include <rumboot/pcie_test_lib.h>
+	#include <rumboot/ddr_test_lib.h>
 #endif
 
 int main()
 {
-	rumboot_print_logo();
-	struct rumboot_bootheader *hdr = (struct rumboot_bootheader *)0x40000;
+	#ifndef RUMBOOT_STUB_NOLOGO
+		rumboot_print_logo();
+	#endif
 
-	rumboot_platform_request_file("IM0BIN", (uint32_t)hdr);
-
+	struct rumboot_bootheader *hdr = (struct rumboot_bootheader *) &rumboot_platform_spl_start;
 
     #ifdef RUMBOOT_MIRROR_STUB
         /* Set up mirror mode, cut half of memory for it */
 		rumboot_printf("STUB: Configuring PCIe, this will take a while...\n");
         pcie_mirror_tests_setup();
+		rumboot_printf("Setting up DDR. Go grab a coffee, this will take a while\n");
+		ddr0_ddr1_init();
+		rumboot_printf("Done!\n");
     #endif
+
+	/* Save simulation state here */
+	rumboot_platform_sim_save("testbench.simulator_state");
+	rumboot_platform_request_file("IM0BIN", (uint32_t)hdr);
 
 	rumboot_printf("STUB: Executing SPL image. Magic: 0x%x Entry: 0x%x\n",
 		       hdr->magic, hdr->entry_point[0]);

@@ -75,9 +75,7 @@ void rumboot_platform_setup()
 				     &rumboot_im1_heap_start, &rumboot_im1_heap_end);
 
 #ifdef RUMBOOT_BASIS_ENABLE_DDR
-	rumboot_printf("Setting up DDR. Go grab a coffee, this will take a while\n");
-	ddr0_ddr1_init();
-	rumboot_printf("Done!\n");
+	/* DDR Should be already initialized via bootrom stub */
 	rumboot_malloc_register_heap("DDR0",
 				     &rumboot_ddr0_heap_start, &rumboot_ddr0_heap_end);
 	rumboot_malloc_register_heap("DDR1",
@@ -93,7 +91,6 @@ void rumboot_platform_setup()
 	int i;
 	for (i = 0; i < heaps; i++)
 		setup_mirrored_heap(i);
-
 #endif
 
 	/* Fire timer subsystem */

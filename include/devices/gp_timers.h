@@ -1,0 +1,1 @@
+#define ENABLE          0x40

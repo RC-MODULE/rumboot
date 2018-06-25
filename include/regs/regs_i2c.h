@@ -15,6 +15,7 @@
 #define I2C_PRESCALE  0x024
 #define I2C_FIFOFIL   0x028
 #define I2C_STAT_RST   0x02C
+#define I2C_FILTR   0x030
 
 //Interrupt enable register
 #define EN_INT_DONE_i 0

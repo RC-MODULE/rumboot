@@ -3,13 +3,15 @@
 // 
 //  Test includes:
 //  - 16 ARINC429 transmitters and receivers delivery through the external loopback
-//	- 16  receivers accept short arrays awithout checking labels 
-//  - configured  frequency =100KHz
-//	- use delay control for neighboring arrays switch for correct read state registers
+//	- 16  receivers accept word arrays without checking labels
+//	- TEST ENABLE mode is turned ON
+//  - external loop is provided by  multiplexing TESTA&B and TXA&B with TESTA and TESTB used as inputs
+//  - for every exchange. The received array is choosed sequentally by addressing only one receiver
+//  - configured  frequency =100KHz by default value
+//	- used delay control for neighboring arrays switch for correct read state registers
 //	- received arrays compared with ethalon values	
 //    Test duration (RTL): < 
-//-----------------------------------------------------------------------------#include <stdio.h>
-
+//-----------------------------------------------------------------------------
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -57,52 +59,42 @@ static const int32_t tx_array32[] = {
 };
 
 void arinc_init (uint32_t arinc_base_addr){
-
+	//uint32_t receiver_number;	
      int i =0;
 	uint32_t  init_axi_mst;
 	uint32_t size;
 
 	init_axi_mst =0x0;
-	size   = 0x2;
+	size   = 0x1;
 
 	uint32_t  tx_mem = 0x40000;
 	uint32_t  rx_mem = 0x50000;
-	
-	uint32_t   freq_tx = 0xe30141f2;//freq =100KHz
-	uint32_t   freq_rx = 0xe01f41f2;//freq =100KHz
+
 //-------------------------------------------------------------------------------------
 //  Set parameters for DMA exchange loopback  connected on chip pins in testbench
 //-------------------------------------------------------------------------------------
-	//iowrite32(receiver_number,(arinc_base_addr + SELF_RX)); //receiver ch number
-	
+
 		for (i = 0; i< 16; i++)	{
-	iowrite32(i,(arinc_base_addr + RNUM_RX +4*i));      			// even receiver buffer ch number
-	//rumboot_printf("RCV_NUM=0x%x\n", i); 
-//iowrite32(i,(arinc_base_addr + RNUM_RX +(4*i +64))); 		// odd receiver buffer ch number
-	//rumboot_printf("RCV16_NUM=0x%x\n", (i+16)); 
-	iowrite32((tx_mem + i*8),(arinc_base_addr + AG_E_TX  + i*4));   // dma rd channel memory address
-	//rumboot_printf("AG_E_TX=0x%x\n", (tx_mem + i*8)); 
+	iowrite32(i,(arinc_base_addr + RNUM_RX +4*i));      			// receiver buffer ch number
+	iowrite32((tx_mem + i*4),(arinc_base_addr + AG_E_TX  + i*4));   // dma rd channel memory address
+
 	iowrite32(size,(arinc_base_addr + SZ_E_TX + i*4));    			// dma rd channel size
-	iowrite32((rx_mem + i*8),(arinc_base_addr + AG_E_RX + i*4));  	// dma wr channel memory address
+	iowrite32((rx_mem + i*4),(arinc_base_addr + AG_E_RX + i*4));  	// dma wr channel memory address
 	iowrite32(size,(arinc_base_addr + SZ_E_RX + i*4));    			// dma wr channel size
-	iowrite32(freq_tx,(arinc_base_addr + FREQ_TX + i*4));       	// freq TX 100Mhz
-	iowrite32(freq_rx,(arinc_base_addr + FREQ_RX + i*4));			// freq RX 100MHz
 	}
 	iowrite32(init_axi_mst,(arinc_base_addr + AXI_CTRL)); 			// AXI parameters
-	//iowrite32(0xffff,(arinc_base_addr + WAIT_TMR_TX));   			// wait  delayed switch after the transmitter start
-	//iowrite32(0xffff,(arinc_base_addr + WAIT_SIG_RX));   			// wait delayed switch after the receiver start
+	iowrite32(0xffff,(arinc_base_addr + WAIT_TMR_TX));   			// wait  after the first  transmitter start
+	iowrite32(0xffff,(arinc_base_addr + WAIT_SIG_RX));   			// wait delayed switch after the receiver start
 //--------------------------------------------------------------------------------------
 }
 
 int main()
 {
 	int tmp = -1;
-	uint32_t enable;
+
 	int cnt;
 	int i;
-	//int j;
-	//int k;
-	enable =0xffffffff;
+
 	int32_t tmp_r =-1;
 	cnt = 0;
     uint32_t addr;
@@ -110,49 +102,58 @@ int main()
 	uint32_t *trg = (uint32_t *) 0x40000;
     uint32_t  tx_mem = 0x40000;
 	uint32_t  rx_mem = 0x50000;
+	uint32_t tst_en =0x10;
 	
 	rumboot_printf("copy %d bytes\n", sizeof(tx_array32));  //transmit
 	memcpy(trg, tx_array32,sizeof(tx_array32));
 
 	arinc_init(ARINC_BASE);
-    iowrite32(enable,ARINC_BASE + CHANNEL_EN); // run transaction
+  
 	rumboot_printf("ARINC START \n");
-	iowrite32(enable,ARINC_BASE + CHANNEL_DIS); // stop transaction
 	//check setting of the end of transaction delivery
 	for (i = 0; i< 16 ; i++)
-	{tmp_r =-1;
-	rumboot_printf("ARINC CH_TR=0x%x\n", i);  	
-
-       while (tmp_r != 0x00000002) {
+	{
+	iowrite32((tst_en +i),(ARINC_BASE + TEST_EN)); //test mode	
+	iowrite32( (1 << i) + (1 << (16 +i)),ARINC_BASE + CHANNEL_EN); // run transaction	
+	rumboot_printf("ARINC CH=0x%x\n", i); 
+	tmp_r = -1;
+	cnt = 0;
+       while (tmp_r != 0x00000001) {
 	tmp = ioread32(ARINC_BASE + STAT_E_TX + i*4);
-	tmp_r = 0x07FFFFFF & tmp;
+	tmp_r = 0x2FFFFFFF & tmp;
+		if (++cnt == ARINC_ATTEMPT) {
+		rumboot_printf("ARINC STATUS_TR=0x%x\n", tmp); //check status
+		rumboot_printf("ARINC address_tr =0x%x\n", (STAT_E_TX +i*4)); //check status		  
+		rumboot_printf("No end Transmit exchange!\n");
+		rumboot_printf("ARINC test ERROR!\n");
+         return TEST_ERROR;
+			}
+	
     //rumboot_printf("ARINC SIZE=0x%x\n", tmp); //check status
 		}   
  	//rumboot_printf("rcv_channel_num=0x%x\n", (1 << i));
-	//iowrite32( ((1 << (0x10000 +i) )*0x10000),ARINC_BASE + CHANNEL_DIS); // stop transmitter
+	iowrite32(( (1 << i) + (1 << (16 +i)) ),ARINC_BASE + CHANNEL_DIS); // stop transmitter
 	//rumboot_printf("channel_dis=0x%x\n", ((1 << (0x10000 +i) )*0x10000));
-    }
      
-	 
-	for (i = 0; i< 16 ; i++) 
-	{
-	rumboot_printf("ARINC number=0x%x\n", i); 
-	tmp_r = -1;		
-	while (tmp_r != status_success_bit) {
+	tmp_r = -1;	
+	cnt =0;
+	while (tmp_r != 0x00000001) {
 	tmp = ioread32(ARINC_BASE + STAT_E_RX +i*4);
-	rumboot_printf("ARINC STATUS=0x%x\n", STAT_E_RX +i*4); //check status
 	//rumboot_printf("ARINC STATUS=0x%x\n", tmp); //check status
-	tmp_r = tmp & status_success_bit;
+	tmp_r = tmp & 0x2FFFFFFF ;
 	if (++cnt == ARINC_ATTEMPT) {
-            rumboot_printf("No end exchange!\n");
-			rumboot_printf("ARINC test ERROR!\n");			
-          // return ARINC_FAILED;
+		rumboot_printf("ARINC STATUS_RC=0x%x\n", tmp); //check status
+		rumboot_printf("ARINC address_rc =0x%x\n", (STAT_E_RX +i*4)); //check status
+		rumboot_printf("ARINC number =0x%x\n", i); //check status		  
+		rumboot_printf("No end exchange!\n");
+		rumboot_printf("ARINC test ERROR!\n");
+           return TEST_ERROR;
 			}
 		}
 	}
 
 
-for (i = 0; i< 32 ; i++)
+for (i = 0; i< 16 ; i++)
 
 	{
 	addr 		=	tx_mem + 4*i;
@@ -167,9 +168,7 @@ for (i = 0; i< 32 ; i++)
 	//rumboot_printf("READ_DATA=0x%x\n", tmp_r);
 
 	tmp  = tmp -tmp_r;
-	if (tmp != 0) {
-		rumboot_printf("ARINC LOOPBACK test ERROR \n");
-	return TEST_ERROR;}
+	if (tmp != 0) return TEST_ERROR;
 	}
 	if (tmp == ARINC_OK) {
 	 rumboot_printf("ARINC LOOPBACK test OK \n");

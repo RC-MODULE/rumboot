@@ -113,6 +113,18 @@ void rumboot_platform_request_file(const char *plusarg, uint32_t addr)
 	rumboot_platform_event_raise(EVENT_UPLOAD, data, ARRAY_SIZE(data));
 }
 
+void rumboot_platform_sim_save(const char *filename)
+{
+	uint32_t data[] = { (uint32_t) filename };
+	rumboot_platform_event_raise(EVENT_SIM_SAVE, data, ARRAY_SIZE(data));
+}
+
+void rumboot_platform_sim_restore(const char *filename)
+{
+	uint32_t data[] = { (uint32_t) filename };
+	rumboot_platform_event_raise(EVENT_SIM_RESTORE, data, ARRAY_SIZE(data));
+}
+
 void rumboot_platform_dump_region(const char *filename, uint32_t addr, uint32_t len)
 {
 	uint32_t data[] = { (uint32_t) filename, addr, len };

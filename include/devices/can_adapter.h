@@ -146,6 +146,9 @@
 #define BOR                   0x7
 //#define BI                    0x8 // comment due to BI repeat like for Status Reg
  
+ // TRSL
+#define TIMEOUT               0x2
+
  //Increment
 #define INC                   0x0
  

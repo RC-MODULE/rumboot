@@ -1,6 +1,6 @@
 //-----------------------------------------------------------------------------
 //  This program is for checking ARINC429 registers.
-// 
+//    ARINC register read after reset and write-read check
 //    Test duration (RTL): < 
 //-----------------------------------------------------------------------------
 #include <stdio.h>

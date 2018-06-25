@@ -46,6 +46,7 @@
  #define BISR_L2C                 BASIS_PHYS(0x0103E000)
  #define GSPI0_BASE               BASIS_PHYS(0x01040000)
  #define SDIO0_BASE               BASIS_PHYS(0x01042000)
+ #define SDIO1_BASE               BASIS_PHYS(0x01043000)
  #define UART0_BASE               BASIS_PHYS(0x01044000)
  #define UART1_BASE               BASIS_PHYS(0x01045000)
  #define I2C0_BASE                BASIS_PHYS(0x01046000)
@@ -72,13 +73,14 @@
  #define GPIO5_BASE               BASIS_PHYS(0x01084000)
  #define GPIO6_BASE               BASIS_PHYS(0x01085000)
  #define SCTL_BASE                BASIS_PHYS(0x0108D000)
- #define GLOBAL_TIMERS            BASIS_PHYS(0x0108E040)
+ #define GLOBAL_TIMERS            BASIS_PHYS(0x0108E000)
  #define WDT_BASE                 BASIS_PHYS(0x0108F000)
  #define DDR0_BASE                BASIS_PHYS(0x01500000)
  #define DDR1_BASE                BASIS_PHYS(0x01502000)
  #define GIC_DIST_BASE            BASIS_PHYS(0x01504000)
  #define GIC_CPUIF_BASE           BASIS_PHYS(0x01505000)
  #define L2C_BASE                 BASIS_PHYS(0x01506000)
+ #define NIC400_BASE              BASIS_PHYS(0x01600000)
 
 
  /**

@@ -17,21 +17,16 @@ uint32_t result;
 int count=0;
 int unsigned check_max = 3795;
 int unsigned check_min = 3409;
-//int unsigned check_max[3] = {3543, 3683, 3795};
-//int unsigned check_min[3] = {3409, 3555, 3693};
 
-int unsigned array_gpio[12] = {241, 220, 199, 178,157, 136, 115, 94, 73, 52, 42, 35};
-//int unsigned array_gpio[3] = {42, 164, 241};
+
+int unsigned array_gpio[6] = {241, 199, 157, 115, 73, 42};
+
 
 void GPIO (uint8_t send_data, uint8_t direction, uint32_t base_gpio_addr)
 {
-	//uint32_t apb_to_pad;
-	//uint32_t pad_to_apb;
 	iowrite32(0xFF, base_gpio_addr + GPIO_SOURCE);
 	iowrite32(direction, base_gpio_addr + GPIO_DIRECTION);
 	iowrite32(send_data, base_gpio_addr + GPIO_WRITE_APBtoPAD);
-	//apb_to_pad = ioread32(base_gpio_addr + GPIO_WRITE_APBtoPAD);
-	//pad_to_apb = ioread32(base_gpio_addr + GPIO_READ_PADtoAPB);
 }
 
 void initial_read_regs() 
@@ -141,17 +136,14 @@ int main(void)
 	init_tsns();
 	//tubef_str("Initialize tempsensor");
 	
-	  // Check That Correct Value Got From rgTSNS_DATA after 7 50MHz Clocks
+	// Check That Correct Value Got From rgTSNS_DATA after 7 50MHz Clocks
 	
-	//int array_gpio[3] = {0x2A, 0xA5, 0xF1}
-	
-	
-	for (count=0;count<12;count++)
+	for (count=0;count<6;count++)
 	{
 		GPIO(array_gpio[count], 0xFF, GPIO2_BASE); 
 		if (count == 0)
 		{
-			for(int unsigned i=0;i<250;i++)
+			for(int unsigned i=0;i<100;i++)
 			{
 				if( i & 0x000003FF )
 				{
@@ -163,7 +155,7 @@ int main(void)
 		}
 		else
 		{
-			for(int unsigned i=0;i<150;i++)
+			for(int unsigned i=0;i<20;i++)
 			{
 				if( i & 0x000000FF )
 				{
@@ -182,18 +174,10 @@ int main(void)
 		}
 		else
 		{
+			result = 1;
 			break;
 		}		
-		//{
-		//	result = 1;
-		//}	
-		
-		if(result == 1)
-		{
-			break;
-		}
 	}	
   
 	return result;
-//   tubef_die();
 }
