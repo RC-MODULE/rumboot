@@ -104,7 +104,11 @@ add_rumboot_target_dir(rom/
     CONFIGURATION IRAM
     PREFIX simple-iram
   )
-
+    
+  add_rumboot_target_dir(uart_data_logger/
+    CONFIGURATION IRAM
+    PREFIX uart_data_logger
+  )
 
 endmacro()
 
