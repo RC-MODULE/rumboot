@@ -127,7 +127,7 @@ test_oi10_cpu_002:
 	ckvalx	stbux,	lbzux,	CVR4, 0xAA
 	ckvalx	stbux,	lbzux,	CVR4, 0x55
 
-	rumboot_putstring "sthux-lhzux...\n"
+	rumboot_putstring "sthx-lhzx...\n"
 	ckvalx	sthx,	lhzx,	CVR4, 0xFFFF
 	ckvalx	sthx,	lhzx,	CVR4, 0xAAAA
 	ckvalx	sthx,	lhzx,	CVR4, 0x5555
