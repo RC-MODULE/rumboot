@@ -101,8 +101,8 @@ uint32_t check_mclfir(const uint32_t base_address)
 
 int main()
 {
-	//rumboot_putstring("CHECK PLB6MCIF2\n");
-	//check_plb6mcif2 (DCR_EM2_PLB6MCIF2_BASE);
+	rumboot_putstring("CHECK PLB6MCIF2\n");
+	check_plb6mcif2 (DCR_EM2_PLB6MCIF2_BASE);
 	rumboot_putstring("CHECK MCLFIR\n");
 	check_mclfir (DCR_EM2_MCLFIR_BASE);
 
