@@ -202,7 +202,7 @@
 
 .section ".text","ax",@progbits
 main:
-
+    test_event_send_test_id "test_iss_base"
 	rumboot_putstring "Start testing...\n"
 	load_const	r5, 0x00000000
 	load_addr	r3,	SAVE_ADDR - 4
@@ -251,14 +251,11 @@ main:
     LOGIC_RA_RS_CHECK    cntlzw., REGS_AS,    RS_VAL,         0x05,    3
     LOGIC_RA_RS_CHECK    prtyw,   REGS_AS,    RS_VAL,         0x06,    3
 
-    load_addr		r3,	SAVE_ADDR
-    load_addr 		r4,	iss_mem
-    load_const		r5,	30
-    sw_compare		r3, r4, r5, r6, r7, r8, r9
-    cmpwi cr2,		r9, 0x0001
+	load_addr	r15,	save_data
+	load_const	r16,	0x0100
+	rumboot_issdump		r15, r16
 
-    beq+  cr2,		test_ok
-    b				test_error
+    b				test_ok
 
 
 test_ok:
@@ -275,7 +272,7 @@ test_error:
 finish:
 	blr
 
-
+/*
 .align 2
 iss_mem:
 	.long 0x00000A50
@@ -310,7 +307,7 @@ iss_mem:
 	.long 0x00000000
 	.long 0x00000000
 	.long 0x00000000
-
+*/
 
 .section ".issdata","aw",@progbits
 
