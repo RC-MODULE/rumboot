@@ -79,6 +79,9 @@ static void uart_enable()
 
 static void uart_write_char(uint8_t data)
 {
+    while (reg_check(UART_BASE_ADDR + UARTFR, (0x01 << 5)))
+        ;
+
     reg_write(UART_BASE_ADDR + UARTDR, data);
 }
 
@@ -102,9 +105,6 @@ int main()
     
     for (size_t i = 0; i < msg_len; i++)
     {
-        while (reg_check(UART_BASE_ADDR + UARTFR, (0x01 << 5)))
-            ;
-        
         uart_write_char((uint8_t)msg[i]);
     }    
         
