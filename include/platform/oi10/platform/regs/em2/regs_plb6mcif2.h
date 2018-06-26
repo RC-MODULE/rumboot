@@ -5,8 +5,8 @@
  *      Author: s.chernousov
  */
 
-#ifndef REGS_EM_PLB6MCIF2_H_
-#define REGS_EM_PLB6MCIF2_H_
+#ifndef REGS_PLB6MCIF2_H_
+#define REGS_PLB6MCIF2_H_
 
 #define PLB6MCIF2_BESR		0x00
 #define PLB6MCIF2_BEARL		0x02
@@ -37,4 +37,4 @@
 
 #define PLB6MCIF2_WATERMARK	0x00000707
 
-#endif /* REGS_EM_PLB6MCIF2_H_ */
+#endif /* REGS_PLB6MCIF2_H_ */
