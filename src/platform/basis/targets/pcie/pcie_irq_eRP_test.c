@@ -160,10 +160,13 @@ void pcie_dma_transaction ()
     //-------------------------------------------------------------
     //  Create descriptor for PCIe internal DMA controller
     //-------------------------------------------------------------
-    PCIe_DMA_descriptor.axi_base_addr   = (uint32_t) (&data_src);
-    PCIe_DMA_descriptor.pcie_base_addr  = (uint64_t) (uint32_t) (&data_dst);
-    PCIe_DMA_descriptor.transfer_length = 8*256;
-    PCIe_DMA_descriptor.control_byte = 1;
+    PCIe_DMA_descriptor.axi_base_addr       = (uint32_t) (&data_src);
+    PCIe_DMA_descriptor.axi_addr_phase      = 0;
+    PCIe_DMA_descriptor.pcie_base_addr      = (uint64_t) (uint32_t) (&data_dst);
+    PCIe_DMA_descriptor.tlp_header_att      = 0;
+    PCIe_DMA_descriptor.transfer_length     = 8*256;
+    PCIe_DMA_descriptor.control_byte        = 1;
+    PCIe_DMA_descriptor.next_desc_pointer   = 0;
     //-------------------------------------------------------------
     //  Set parameters for reading descriptor
     //-------------------------------------------------------------
