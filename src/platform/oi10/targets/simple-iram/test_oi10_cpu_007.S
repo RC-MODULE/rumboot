@@ -9,8 +9,39 @@
 /* MPIC Registers */
 #include <platform/regs/regs_mpic128.h>
 
+
 #define CVR3				r4,r5,r6
 #define MPIC128A(OFFSET)	(DCR_MPIC128_BASE + (OFFSET))
+
+#define VPx_REGS_COUNT		MPIC128_VPx_REGS_COUNT
+#define DSTx_REGS_COUNT		MPIC128_DSTx_REGS_COUNT
+#define VPx_REGS_STEP		MPIC128_VP1  - MPIC128_VP0
+#define DSTx_REGS_STEP		MPIC128_DST1 - MPIC128_DST0
+
+/*	prefix r=register, v=value, s=string
+	rA		- reg for (dcr) address;
+	rR		- reg for read data;
+	rE		- reg for expecting value;
+	vAddr	- DCR address value;
+	vC		- Count of I/O-regs;
+	vI		- Increment of addr;
+	vExp	- Expected value;
+	sName	- User friendly name for debug. */
+.macro check_multiple_values sName,rA,rR,rE,vAddr,vC,vI,vExp
+	rumboot_putstring	"\sName \t-> "
+	load_const	\rA,	\vAddr
+	load_const	\rR,	\vC
+	load_const	\rE,	\vExp
+	mtctr		\rR
+57:
+	putchar		'*'
+	mfdcrx		\rR,	\rA
+	cmpw cr7,	\rR,	\rE
+	TEST_ASSERT(eq,cr7,"Expected: \sName = \vExp")
+	addi		\rA,	\rA,	\vI
+	bdnz		57b
+	putchar		'\n'
+.endm
 
 .section ".text","ax",@progbits
 
@@ -18,18 +49,18 @@
 
 main:
     /* reset mpic */
-    load_const r5, MPIC128_R_BIT
-    load_const r4, MPIC128A(MPIC128_GCF0)
-    mtdcrx r4, r5
+    load_const	r5, MPIC128_R_BIT
+    load_const	r4, MPIC128A(MPIC128_GCF0)
+    mtdcrx		r4,	r5
 
 read_MPICx_GCF0_R_BIT:
-    mfdcrx r6, r4
-    cmp cr0,0, r6,r4
-    beq read_MPICx_GCF0_R_BIT
+    mfdcrx		r6,	r4
+    cmpw cr0,	r6,	r4
+    beq+ cr0,	read_MPICx_GCF0_R_BIT
 
 check_cpu_ppc_mpic_3:
-     check_value CVR3, MPIC128A(MPIC128_VP0   ), MPIC128_VP0_VALUE,    "MPIC128_VP0   "
-     check_value CVR3, MPIC128A(MPIC128_DST0  ), MPIC128_DST0_VALUE,   "MPIC128_DST0  "
+     check_value CVR3, MPIC128A(MPIC128_REVID ), MPIC128_REVID_VALUE,  "MPIC128_REVID "
+     check_value CVR3, MPIC128A(MPIC128_VIR0  ), MPIC128_VIR0_VALUE,   "MPIC128_VP0   "
      check_value CVR3, MPIC128A(MPIC128_CTP0  ), MPIC128_CTP0_VALUE,   "MPIC128_CTP0  "
      check_value CVR3, MPIC128A(MPIC128_CTP1  ), MPIC128_CTP1_VALUE,   "MPIC128_CTP1  "
      check_value CVR3, MPIC128A(MPIC128_CTP2  ), MPIC128_CTP2_VALUE,   "MPIC128_CTP2  "
@@ -85,8 +116,28 @@ check_cpu_ppc_mpic_3:
      check_value CVR3, MPIC128A(MPIC128_TDST1 ), MPIC128_TDST1_VALUE,  "MPIC128_TDST1 "
      check_value CVR3, MPIC128A(MPIC128_TDST2 ), MPIC128_TDST2_VALUE,  "MPIC128_TDST2 "
      check_value CVR3, MPIC128A(MPIC128_TDST3 ), MPIC128_TDST3_VALUE,  "MPIC128_TDST3 "
+     check_value CVR3, MPIC128A(MPIC128_WAI0  ), MPIC128_WAI0_VALUE,   "MPIC128_WAI0  "
+     check_value CVR3, MPIC128A(MPIC128_WAI1  ), MPIC128_WAI1_VALUE,   "MPIC128_WAI1  "
+     check_value CVR3, MPIC128A(MPIC128_WAI2  ), MPIC128_WAI2_VALUE,   "MPIC128_WAI2  "
+     check_value CVR3, MPIC128A(MPIC128_WAI3  ), MPIC128_WAI3_VALUE,   "MPIC128_WAI3  "
 
- check_cpu_ppc_mpic_4_5:
+check_cpu_ppc_mpic_vpx:
+	check_multiple_values	"MPIC128_VPx",          \
+							CVR3,                   \
+							MPIC128A(MPIC128_VP0),  \
+							VPx_REGS_COUNT,         \
+							VPx_REGS_STEP,          \
+							MPIC128_VP0_VALUE
+
+check_cpu_ppc_mpic_dstx:
+	check_multiple_values	"MPIC128_DSTx",         \
+							CVR3,                   \
+							MPIC128A(MPIC128_DST0), \
+							DSTx_REGS_COUNT,        \
+							DSTx_REGS_STEP,         \
+							MPIC128_DST0_VALUE
+
+check_cpu_ppc_mpic_4_5:
 	load_const	r5, 0x00000000
 	load_const	r4, MPIC128A(MPIC128_TFR)
 	mtdcrx		r4, r5
@@ -104,7 +155,7 @@ loop_1:
     cmp cr7, 0, r6,	r5
     TEST_ASSERT(eq,cr7,"Read/write error in MPIC.TFR (running 1)")
     cmpw cr0,	r5, r8
-    beq+		running_0
+    beq+ cr0,	running_0
     slw			r5,	r5,	r7
     b			loop_1
 
@@ -125,7 +176,7 @@ loop_0:
     cmpw cr7,	r6,	r5
     TEST_ASSERT(eq,cr7,"Read/write error in MPIC.TFR (running 0)")
     cmpw cr0,	r5,	r8
-    beq+		test_ok
+    beq+ cr0,	test_ok
     slw			r5,	r5,	r7
     ori			r5,	r5,	0x00000001
     b			loop_0
