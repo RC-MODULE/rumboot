@@ -578,14 +578,6 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
   add_rumboot_target(
       SNAPSHOT default
       CONFIGURATION IRAM
-      FILES pcie/_pcie_dma_ddr_performance_msr.c
-      NAME _pcie_dma_ddr_performance_msr
-      CFLAGS -Dincrease_test_duration=1
-    )
-
-  add_rumboot_target(
-      SNAPSHOT default
-      CONFIGURATION IRAM
       FILES pcie/pcie_int_msix_for_mirror.c
       NAME pcie_int_msix_for_mirror
     )
