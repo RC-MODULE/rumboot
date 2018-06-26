@@ -5,17 +5,13 @@
 #include <platform/oi10/platform/test_event_asm.h>
 #include <platform/oi10/platform/test_event_codes.h>
 
-.macro _putchar reg_data, reg_ctrl
+.macro putchar char, reg_data=r5, reg_ctrl=r6
+    load_const  \reg_data, \char; /* test stdout */
     load_const  \reg_ctrl, 2;
     mtspr       SPR_SPRG2, \reg_data
     load_const  \reg_data, 0
     mtspr       SPR_SPRG1, r12
     mtspr       SPR_SPRG1, \reg_data
-.endm
-
-.macro putchar char
-    load_const  r5, \char; /* test stdout */
-    _putchar r5, r6
 .endm
 
 
