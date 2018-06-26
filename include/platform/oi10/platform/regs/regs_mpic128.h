@@ -3,7 +3,7 @@
 #define REGS_MPIC_H
 
 #define MPIC128_VIR0_VALUE		reg_field(31,0x14) | reg_field(23,0x50)
-#define MPIC128_REVID_VALUE		reg_field(31,0xF)
+#define MPIC128_REVID_VALUE		MPIC128_REVID_DFLT
 
 /* Values template for tests */
 
@@ -462,7 +462,7 @@ BEGIN_ENUM( MPIC128_REG_DFLT )
 DECLARE_ENUM_VAL(   MPIC128_VP_DFLT,       ( reg_field(8,1) | reg_field(0,1) ) )
 DECLARE_ENUM_VAL(   MPIC128_DST_DFLT,      0x00000000 )
 DECLARE_ENUM_VAL(   MPIC128_CTP_DFLT,      0x0000000F )
-#define             MPIC128_WAI_DFLT       SPR_PIR_read() //TODO: check this value
+#define             MPIC128_WAI_DFLT       SPR_PIR_read() /* TODO: check this value */
 DECLARE_ENUM_VAL(   MPIC128_SPV_DFLT,      reg_field(31,0xFF) )
 DECLARE_ENUM_VAL(   MPIC128_NCIAR_DFLT,    MPIC128_SPV_DFLT )
 DECLARE_ENUM_VAL(   MPIC128_NCEOI_DFLT,    0x00000000 )
@@ -474,8 +474,9 @@ DECLARE_ENUM_VAL(   MPIC128_FRG0_DFLT,     ( reg_field(31,2) | reg_field(23,3) |
 DECLARE_ENUM_VAL(   MPIC128_GCF0_DFLT,     reg_field(31,0xF) )
 DECLARE_ENUM_VAL(   MPIC128_VITC_DFLT,     ( reg_field(31,0x10) | reg_field(23,0x10) ) )
 DECLARE_ENUM_VAL(   MPIC128_VRID_DFLT,     0x00000000 )
-DECLARE_ENUM_VAL(   MPIC128_REVID_DFLT,    0x00000103 ) //??? TODO: check this dummy-value
-DECLARE_ENUM_VAL(   MPIC128_VIR0_DFLT,     0x00005014 ) //set acc. to STRAP-pins
+/* units/cpu/units/mpic128_v001/verilog/rtl/MPIC128_dcr_misc.v */
+DECLARE_ENUM_VAL(   MPIC128_REVID_DFLT,    0x00000103 )
+DECLARE_ENUM_VAL(   MPIC128_VIR0_DFLT,     0x00005014 ) /* set acc. to STRAP-pins */
 DECLARE_ENUM_VAL(   MPIC128_PINI_DFLT,     0x00000000 )
 DECLARE_ENUM_VAL(   MPIC128_IVP_DFLT,      reg_field(0,0x1) )
 DECLARE_ENUM_VAL(   MPIC128_TFR_DFLT,      0x00000000 )
