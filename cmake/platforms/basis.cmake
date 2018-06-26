@@ -578,6 +578,13 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
   add_rumboot_target(
       SNAPSHOT default
       CONFIGURATION IRAM
+      FILES pcie/pcie_to_pcie_access.c
+      NAME pcie_to_pcie_access
+    )
+
+  add_rumboot_target(
+      SNAPSHOT default
+      CONFIGURATION IRAM
       FILES pcie/pcie_int_msix_for_mirror.c
       NAME pcie_int_msix_for_mirror
     )
