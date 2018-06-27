@@ -112,8 +112,11 @@ check_gpr_lw:
     GPR_LOAD_MEM	r30,	r31, mem_tbl, 30, GENCONST2(30)
     GPR_LOAD_MEM	r31,	r30, mem_tbl, 31, GENCONST2(31)
 
+    mfspr		r1,	SPR_SPRG7		/* Restore stack ptr */
+
 check_sprg_ppc:
 	rumboot_putstring "check_sprg_ppc\n"
+	mfspr	r29,	SPR_SPRG0
 	SPRG_LOAD SPR_SPRG0, 0x5FA0
 /*	SPRG_LOAD SPR_SPRG1, 0x5EA1 */
 	SPRG_LOAD SPR_SPRG2, 0x5DA2
@@ -123,6 +126,7 @@ check_sprg_ppc:
 	SPRG_LOAD SPR_SPRG6, 0x59A6
 	SPRG_LOAD SPR_SPRG7, 0x58A7
 	SPRG_LOAD SPR_SPRG8, 0x57A8
+	mtspr	SPR_SPRG0,	r29
 
 test_ok:
     rumboot_putstring "\nTEST OK\n"
@@ -136,7 +140,6 @@ test_error:
     load_const	r3,	RESULT_ERROR
 
 finish:
-    mfspr		r1,	SPR_SPRG7		/* Restore stack ptr */
     blr
 
 
