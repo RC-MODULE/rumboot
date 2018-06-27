@@ -51,7 +51,7 @@ p4ahb2:
     check_value r4,r5,r6, PLB4AHB_2_INT_MSK, INT_MSK_VALUE, "PLB4AHB_2_INT_MSK"
 
     rumboot_putstring "DEFAULT VALUES CHECKING DONE\n"
-//check running 1,0
+/* check running 1,0 */
 
 running_0_1_p4ahb_0:
     load_const r5, 0x00000000
@@ -101,7 +101,6 @@ p4ahb_0_loop_0:
  p4ahb_0_done:
     rumboot_putstring "p4ahb_0 running 0/1 done\n"
 
-/////////////////////////////////////////////////////////////////////////////////////////
 
 running_0_1_p4ahb_1:
     load_const r5, 0x00000000
@@ -151,7 +150,6 @@ p4ahb_1_loop_0:
 p4ahb_1_done:
     rumboot_putstring "p4ahb_1 running 0/1 done\n"
 
-/////////////////////////////////////////////////////////////////////////////////////////
 
 running_0_1_p4ahb_2:
     load_const r5, 0x00000000
