@@ -1,8 +1,8 @@
-#include <platform/oi10/platform/trace.S.h>
-#include <platform/oi10/platform/test_assert.S.h>
-#include <platform/oi10/platform/test_event_asm.h>
-#include <platform/oi10/platform/devices.h>
-#include <platform/oi10/platform/regs/regs_l2c.h>
+#include <platform/trace.S.h>
+#include <platform/test_assert.S.h>
+#include <platform/test_event_asm.h>
+#include <platform/devices.h>
+#include <platform/regs/regs_l2c.h>
 
 #define L2C_DCRAI_VAL			0x00000000
 
