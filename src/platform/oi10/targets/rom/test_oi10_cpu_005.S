@@ -383,47 +383,45 @@ test_mpw_cpu_005_0:
     LOGIC_RA_RS_CHECK   neg,          7,     6,     0xAA55AA55,    30,          0x10,       29,          0,             3
     LOGIC_RA_RS_CHECK   neg.,         7,     6,     0xAA55AA55,    30,          0x11,       29,          0,             3
 
-    load_const r3, 0x00050000
-    load_addr r4, iss_mem
-    load_const r5, 89
-    bl compare_data
-    cmpwi cr0, r3, 0x1
-    beq cr0, finish_ok
-
-test_event EVENT_ERROR
-
-finish_error:
-load_const r3, 0x01
-rumboot_putstring "TEST ERROR\n"
-b finish_error
-
-/* test_ok: */
-finish_ok:
-test_event EVENT_OK
-load_const r3, 0x00
-rumboot_putstring "TEST OK\n"
-b finish
-
-finish:
-blr
+	load_const r3, 0x00050000
+	load_addr r4, iss_mem
+	load_const r5, 89
+	bl compare_data
+	cmpwi cr0, r3, 0x1
+	beq cr0, finish_ok
+	b finish_error
 
 /* AG: */
 compare_data:
-        cmpwi cr0,r5,0
-        li r8,1
-        beq cr0, .compare_data_L1
-        li r10,0
+	cmpwi cr0,r5,0
+	li r8,1
+	beq cr0, .compare_data_L1
+	li r10,0
 .compare_data_L4:
-        lwzx r9,r3,r10
-        lwzx r7,r4,r10
-        addi r10,r10,4
-        cmplw cr7,r5,r10
-        xor r9,r9,r7
-        addic r9,r9,-1
-        subfe r9,r9,r9
-        and r8,r8,r9
-        bgt cr7, .compare_data_L4
+	lwzx r9,r3,r10
+	lwzx r7,r4,r10
+	addi r10,r10,4
+	cmplw cr7,r5,r10
+	xor r9,r9,r7
+	addic r9,r9,-1
+	subfe r9,r9,r9
+	and r8,r8,r9
+	bgt cr7, .compare_data_L4
 .compare_data_L1:
-        mr r3,r8
-        blr
+	mr r3,r8
+	blr
+
+finish_error:
+	rumboot_putstring "TEST ERROR\n"
+	test_event		EVENT_ERROR
+	load_const r3,	RESULT_ERROR
+	b finish
+
+finish_ok:
+	rumboot_putstring "TEST OK\n"
+	test_event		EVENT_OK
+	load_const r3,	RESULT_OK
+
+finish:
+	blr
 

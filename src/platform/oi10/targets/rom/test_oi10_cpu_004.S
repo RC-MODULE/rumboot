@@ -251,42 +251,42 @@ main:
     sw_comparator_macro r3, r4, r5, r6, r7, r8, r9
     cmpwi cr0, r9, 0x1
 
-    beq cr0, test_ok
+    beq cr0,	test_ok
+    b			test_error
 
-error:
-    test_event EVENT_ERROR
-    load_const r3, 0x01
+	/* AG: */
+compare_data:
+	cmpwi cr0,r5,0
+	li r8,1
+	beq cr0, .compare_data_L1
+	li r10,0
+.compare_data_L4:
+	lwzx r9,r3,r10
+	lwzx r7,r4,r10
+	addi r10,r10,4
+	cmplw cr7,r5,r10
+	xor r9,r9,r7
+	addic r9,r9,-1
+	subfe r9,r9,r9
+	and r8,r8,r9
+	bgt cr7, .compare_data_L4
+.compare_data_L1:
+	mr r3,r8
+	blr
+
+test_error:
     rumboot_putstring "TEST ERROR\n"
-
+    test_event		EVENT_ERROR
+    load_const r3,	RESULT_ERROR
 
 test_ok:
-     test_event EVENT_OK
-     load_const r3, 0x00
-     rumboot_putstring "TEST OK\n"
-     b finish
+	rumboot_putstring "TEST OK\n"
+	test_event		EVENT_OK
+	load_const r3,	RESULT_OK
+	b finish
 
 finish:
 	blr
-
-/* AG: */
-compare_data:
-        cmpwi cr0,r5,0
-        li r8,1
-        beq cr0, .compare_data_L1
-        li r10,0
-.compare_data_L4:
-        lwzx r9,r3,r10
-        lwzx r7,r4,r10
-        addi r10,r10,4
-        cmplw cr7,r5,r10
-        xor r9,r9,r7
-        addic r9,r9,-1
-        subfe r9,r9,r9
-        and r8,r8,r9
-        bgt cr7, .compare_data_L4
-.compare_data_L1:
-        mr r3,r8
-        blr
 
 
 .section ".text", "aw", @progbits
