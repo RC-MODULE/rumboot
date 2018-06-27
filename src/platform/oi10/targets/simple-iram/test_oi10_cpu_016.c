@@ -38,9 +38,6 @@ static int32_t check_array32[] = {
 
 uint32_t check_plb6mcif2(const uint32_t base_address)
 {
-    uint32_t i;
-    uint32_t result = 0;
-
     TEST_ASSERT(dcr_read(PLB6MCIF2_BEARL + base_address) == 0x00000000,"In PLB6MCIF2_BEARL expected value 0x00000000");
     TEST_ASSERT(dcr_read(PLB6MCIF2_BEARU + base_address) == 0x00000000,"In PLB6MCIF2_BEARU expected value 0x00000000");
     TEST_ASSERT(dcr_read(PLB6MCIF2_BESR + base_address) == 0x00000000,"In PLB6MCIF2_BESR expected value 0x00000000");
@@ -63,6 +60,7 @@ uint32_t check_plb6mcif2(const uint32_t base_address)
     rumboot_putstring("ACTUAL VALUE PLB6MCIF2_PLBCFG = "); rumboot_puthex(dcr_read(PLB6MCIF2_PLBCFG + base_address));
     TEST_ASSERT(dcr_read(PLB6MCIF2_PLBCFG + base_address) == 0x200000F0,"In PLB6MCIF2_PLBCFG expected value 0x200000F0");
 
+    uint32_t result = 0;
     result = dcr_read(PLB6MCIF2_PLBORD + base_address);
     TEST_ASSERT(((result == 0x01000000) || (result == 0x40000000) || (result == 0x20000000)),"In PLB6MCIF2_PLBORD expected value 0x01000000 or 0x40000000 or 0x20000000");
     rumboot_puthex(result);
@@ -77,6 +75,7 @@ uint32_t check_plb6mcif2(const uint32_t base_address)
     rumboot_putstring("ACTUAL VALUE PLB6MCIF2_STATUS = "); rumboot_puthex(dcr_read(PLB6MCIF2_STATUS + base_address));
     TEST_ASSERT(dcr_read(PLB6MCIF2_STATUS + base_address) == 0x80000000,"In PLB6MCIF2_STATUS expected value 0x80000000");
 
+    uint32_t i;
     for (i = 0; i< 12; i++){
         dcr_write(PLB6MCIF2_MAP0CF + base_address, check_array32[i]);
         TEST_ASSERT(dcr_read(PLB6MCIF2_MAP0CF + base_address) == check_array32[i],"PLB6MCIF2 DCR data bus check failed");
@@ -87,7 +86,6 @@ uint32_t check_plb6mcif2(const uint32_t base_address)
 
 uint32_t check_mclfir(const uint32_t base_address)
 {
-    uint32_t i;
     TEST_ASSERT(dcr_read(MCLFIR_MC_ERR0 + base_address) == 0x00000000,"In MC_ERR0 expected value 0x00000000");
     TEST_ASSERT(dcr_read(MCLFIR_MC_ERR1 + base_address) == 0x00000000,"In MC_ERR1 expected value 0x00000000");
     TEST_ASSERT(dcr_read(MCLFIR_MC_ERR_MSK0 + base_address) == 0xFFFFFFFF,"In MC_ERR_MSK0 expected value 0xFFFFFFFF");
@@ -109,6 +107,7 @@ uint32_t check_mclfir(const uint32_t base_address)
     rumboot_putstring("ACTUAL VALUE MCLFIR_MC_CONSOL_STATSUM_MSK = "); rumboot_puthex(dcr_read(MCLFIR_MC_CONSOL_STATSUM_MSK + base_address));
     TEST_ASSERT(dcr_read(MCLFIR_MC_CONSOL_STATSUM_MSK + base_address) == 0x80000000,"In MC_CONSOL_STATSUM_MSK expected value 0x80000000");
 
+    uint32_t i;
     for (i = 0; i< 12; i++){
         dcr_write (MCLFIR_MC_ERR_ACTION0 + base_address, check_array32[i]);
         TEST_ASSERT(dcr_read(MCLFIR_MC_ERR_ACTION0 + base_address) == check_array32[i],"mclfir DCR data bus check failed");
@@ -143,6 +142,7 @@ uint32_t check_emi(const uint32_t base_address)
 	TEST_ASSERT(dcr_read( EMI_IRR + base_address) == 0x00000000, "In EMI_IRR expected value 0x00000000");
 	TEST_ASSERT(dcr_read( EMI_IRR_RST + base_address) == 0x00000000, "In EMI_IRR_RST expected value 0x00000000");
 
+	uint32_t i;
 	for (i = 0; i< 12; i++){
 	        dcr_write (EMI_H1ADR + base_address, check_array32[i]);
 	        TEST_ASSERT(dcr_read(EMI_H1ADR + base_address) == check_array32[i],"EMI DCR data bus check failed");
