@@ -4,7 +4,6 @@
 #include <platform/oi10/platform/test_assert.S.h>
 #include <platform/oi10/platform/devices.h>
 #include <regs/regs_l2c.h>
-// #include <mivem_mem_map.h>
 
 //L2C REGISTERS
 
