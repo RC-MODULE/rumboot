@@ -304,12 +304,14 @@ loop_0:
 
 test_ok:
      test_event EVENT_OK
-     li r3, 0x00
+     load_const r3, 0x00
+     rumboot_putstring "TEST OK\n"
      b finish
 
 error:
      test_event EVENT_ERROR
-     li r3, 0x01
+     load_const r3, 0x01
+     rumboot_putstring "TEST ERROR\n"
 
 finish:
 	blr
