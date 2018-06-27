@@ -12,11 +12,11 @@
 int main()
 {
     unsigned int read_data;
-	rumboot_printf("Hello world from IRAM! This is can_adapter_2_test! %d\n");
-    rumboot_printf("It checks connection between both CAN nodes and GP_GLOBAL_TIMERS %d\n");
+	rumboot_printf("Hello world from IRAM! This is can_adapter_2_test! \n");
+    rumboot_printf("It checks connection between both CAN nodes and GP_GLOBAL_TIMERS \n");
     
     //Enable GP_TIMERS
-    //iowrite32(1, GLOBAL_TIMERS + ENABLE);
+    iowrite32(1, GLOBAL_TIMERS + ENABLE);
         
     //Enable change TR Timing Register
     iowrite32(0 << TME |  1 << TRCE,                      CAN0_BASE + CAN_MODE_REG );
