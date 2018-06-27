@@ -14,52 +14,52 @@
 main:
 image_start:
 p4ahb_0:
-    check_value r4,r5,r6, PLB4AHB_0_REVID, REVID_VALUE, "PLB4AHB_0_REVID"
-    check_value r4,r5,r6, PLB4AHB_0_SEAR_ADDRUPPER, SEAR_ADDRUPPER_VALUE, "PLB4AHB_0_SEAR_ADDRUPPER"
-    check_value r4,r5,r6, PLB4AHB_0_SEAR_ADDRLOWER, SEAR_ADDRLOWER_VALUE, "PLB4AHB_0_SEAR_ADDRLOWER"
-    check_value r4,r5,r6, PLB4AHB_0_SESR, SESR_VALUE, "PLB4AHB_0_SESR"
-    check_value r4,r5,r6, PLB4AHB_0_TOP_ADDR, TOP_ADDR_VALUE, "PLB4AHB_0_TOP_ADDR"
-    check_value r4,r5,r6, PLB4AHB_0_BOT_ADDR, BOT_ADDR_VALUE, "PLB4AHB_0_BOT_ADDR"
-    check_value r4,r5,r6, PLB4AHB_0_ATTRS, ATTRS_VALUE, "PLB4AHB_0_ATTRS"
-    check_value r4,r5,r6, PLB4AHB_0_CONTROL, CONTROL_VALUE, "PLB4AHB_0_CONTROL"
-    check_value r4,r5,r6, PLB4AHB_0_ERR_ST, ERR_ST_VALUE, "PLB4AHB_0_ERR_ST"
-    check_value r4,r5,r6, PLB4AHB_0_ERR_ADDR, ERR_ADDR_VALUE, "PLB4AHB_0_ERR_ADDR"
-    check_value r4,r5,r6, PLB4AHB_0_INT_MSK, INT_MSK_VALUE, "PLB4AHB_0_INT_MSK"
+    check_value r4,r5,r6, DCR_PLB4AHB_0_BASE + REVID, REVID_VALUE, "DCR_PLB4AHB_0_BASE + REVID"
+    check_value r4,r5,r6, DCR_PLB4AHB_0_BASE + SEAR_ADDRUPPER, SEAR_ADDRUPPER_VALUE, "DCR_PLB4AHB_0_BASE + SEAR_ADDRUPPER"
+    check_value r4,r5,r6, DCR_PLB4AHB_0_BASE + SEAR_ADDRLOWER, SEAR_ADDRLOWER_VALUE, "DCR_PLB4AHB_0_BASE + SEAR_ADDRLOWER"
+    check_value r4,r5,r6, DCR_PLB4AHB_0_BASE + SESR, SESR_VALUE, "DCR_PLB4AHB_0_BASE + SESR"
+    check_value r4,r5,r6, DCR_PLB4AHB_0_BASE + TOP_ADDR, TOP_ADDR_VALUE, "DCR_PLB4AHB_0_BASE + TOP_ADDR"
+    check_value r4,r5,r6, DCR_PLB4AHB_0_BASE + BOT_ADDR, BOT_ADDR_VALUE, "DCR_PLB4AHB_0_BASE + BOT_ADDR"
+    check_value r4,r5,r6, DCR_PLB4AHB_0_BASE + ATTRS, ATTRS_VALUE, "DCR_PLB4AHB_0_BASE + ATTRS"
+    check_value r4,r5,r6, DCR_PLB4AHB_0_BASE + CONTROL, CONTROL_VALUE, "DCR_PLB4AHB_0_BASE + CONTROL"
+    check_value r4,r5,r6, DCR_PLB4AHB_0_BASE + ERR_ST, ERR_ST_VALUE, "DCR_PLB4AHB_0_BASE + ERR_ST"
+    check_value r4,r5,r6, DCR_PLB4AHB_0_BASE + ERR_ADDR, ERR_ADDR_VALUE, "DCR_PLB4AHB_0_BASE + ERR_ADDR"
+    check_value r4,r5,r6, DCR_PLB4AHB_0_BASE + INT_MSK, INT_MSK_VALUE, "DCR_PLB4AHB_0_BASE + INT_MSK"
 p4ahb1:
-    check_value r4,r5,r6, PLB4AHB_1_REVID, REVID_VALUE, "PLB4AHB_1_REVID"
-    check_value r4,r5,r6, PLB4AHB_1_SEAR_ADDRUPPER, SEAR_ADDRUPPER_VALUE, "PLB4AHB_1_SEAR_ADDRUPPER"
-    check_value r4,r5,r6, PLB4AHB_1_SEAR_ADDRLOWER, SEAR_ADDRLOWER_VALUE, "PLB4AHB_1_SEAR_ADDRLOWER"
-    check_value r4,r5,r6, PLB4AHB_1_SESR, SESR_VALUE, "PLB4AHB_1_SESR"
-    check_value r4,r5,r6, PLB4AHB_1_TOP_ADDR, TOP_ADDR_VALUE, "PLB4AHB_1_TOP_ADDR"
-    check_value r4,r5,r6, PLB4AHB_1_BOT_ADDR, BOT_ADDR_VALUE, "PLB4AHB_1_BOT_ADDR"
-    check_value r4,r5,r6, PLB4AHB_1_ATTRS, ATTRS_VALUE, "PLB4AHB_1_ATTRS"
-    check_value r4,r5,r6, PLB4AHB_1_CONTROL, CONTROL_VALUE, "PLB4AHB_1_CONTROL"
-    check_value r4,r5,r6, PLB4AHB_1_ERR_ST, ERR_ST_VALUE, "PLB4AHB_1_ERR_ST"
-    check_value r4,r5,r6, PLB4AHB_1_ERR_ADDR, ERR_ADDR_VALUE, "PLB4AHB_1_ERR_ADDR"
-    check_value r4,r5,r6, PLB4AHB_1_INT_MSK, INT_MSK_VALUE, "PLB4AHB_1_INT_MSK"
+    check_value r4,r5,r6, DCR_PLB4AHB_1_BASE + REVID, REVID_VALUE, "DCR_PLB4AHB_1_BASE + REVID"
+    check_value r4,r5,r6, DCR_PLB4AHB_1_BASE + SEAR_ADDRUPPER, SEAR_ADDRUPPER_VALUE, "DCR_PLB4AHB_1_BASE + SEAR_ADDRUPPER"
+    check_value r4,r5,r6, DCR_PLB4AHB_1_BASE + SEAR_ADDRLOWER, SEAR_ADDRLOWER_VALUE, "DCR_PLB4AHB_1_BASE + SEAR_ADDRLOWER"
+    check_value r4,r5,r6, DCR_PLB4AHB_1_BASE + SESR, SESR_VALUE, "DCR_PLB4AHB_1_BASE + SESR"
+    check_value r4,r5,r6, DCR_PLB4AHB_1_BASE + TOP_ADDR, TOP_ADDR_VALUE, "DCR_PLB4AHB_1_BASE + TOP_ADDR"
+    check_value r4,r5,r6, DCR_PLB4AHB_1_BASE + BOT_ADDR, BOT_ADDR_VALUE, "DCR_PLB4AHB_1_BASE + BOT_ADDR"
+    check_value r4,r5,r6, DCR_PLB4AHB_1_BASE + ATTRS, ATTRS_VALUE, "DCR_PLB4AHB_1_BASE + ATTRS"
+    check_value r4,r5,r6, DCR_PLB4AHB_1_BASE + CONTROL, CONTROL_VALUE, "DCR_PLB4AHB_1_BASE + CONTROL"
+    check_value r4,r5,r6, DCR_PLB4AHB_1_BASE + ERR_ST, ERR_ST_VALUE, "DCR_PLB4AHB_1_BASE + ERR_ST"
+    check_value r4,r5,r6, DCR_PLB4AHB_1_BASE + ERR_ADDR, ERR_ADDR_VALUE, "DCR_PLB4AHB_1_BASE + ERR_ADDR"
+    check_value r4,r5,r6, DCR_PLB4AHB_1_BASE + INT_MSK, INT_MSK_VALUE, "DCR_PLB4AHB_1_BASE + INT_MSK"
 p4ahb2:
-    check_value r4,r5,r6, PLB4AHB_2_REVID, REVID_VALUE, "PLB4AHB_2_REVID"
-    check_value r4,r5,r6, PLB4AHB_2_SEAR_ADDRUPPER, SEAR_ADDRUPPER_VALUE, "PLB4AHB_2_SEAR_ADDRUPPER"
-    check_value r4,r5,r6, PLB4AHB_2_SEAR_ADDRLOWER, SEAR_ADDRLOWER_VALUE, "PLB4AHB_2_SEAR_ADDRLOWER"
-    check_value r4,r5,r6, PLB4AHB_2_SESR, SESR_VALUE, "PLB4AHB_2_SESR"
-    check_value r4,r5,r6, PLB4AHB_2_TOP_ADDR, TOP_ADDR_VALUE, "PLB4AHB_2_TOP_ADDR"
-    check_value r4,r5,r6, PLB4AHB_2_BOT_ADDR, BOT_ADDR_VALUE, "PLB4AHB_2_BOT_ADDR"
-    check_value r4,r5,r6, PLB4AHB_2_ATTRS, ATTRS_VALUE, "PLB4AHB_2_ATTRS"
-    check_value r4,r5,r6, PLB4AHB_2_CONTROL, CONTROL_VALUE, "PLB4AHB_2_CONTROL"
-    check_value r4,r5,r6, PLB4AHB_2_ERR_ST, ERR_ST_VALUE, "PLB4AHB_2_ERR_ST"
-    check_value r4,r5,r6, PLB4AHB_2_ERR_ADDR, ERR_ADDR_VALUE, "PLB4AHB_2_ERR_ADDR"
-    check_value r4,r5,r6, PLB4AHB_2_INT_MSK, INT_MSK_VALUE, "PLB4AHB_2_INT_MSK"
+    check_value r4,r5,r6, DCR_PLB4AHB_2_BASE + REVID, REVID_VALUE, "DCR_PLB4AHB_2_BASE + REVID"
+    check_value r4,r5,r6, DCR_PLB4AHB_2_BASE + SEAR_ADDRUPPER, SEAR_ADDRUPPER_VALUE, "DCR_PLB4AHB_2_BASE + SEAR_ADDRUPPER"
+    check_value r4,r5,r6, DCR_PLB4AHB_2_BASE + SEAR_ADDRLOWER, SEAR_ADDRLOWER_VALUE, "DCR_PLB4AHB_2_BASE + SEAR_ADDRLOWER"
+    check_value r4,r5,r6, DCR_PLB4AHB_2_BASE + SESR, SESR_VALUE, "DCR_PLB4AHB_2_BASE + SESR"
+    check_value r4,r5,r6, DCR_PLB4AHB_2_BASE + TOP_ADDR, TOP_ADDR_VALUE, "DCR_PLB4AHB_2_BASE + TOP_ADDR"
+    check_value r4,r5,r6, DCR_PLB4AHB_2_BASE + BOT_ADDR, BOT_ADDR_VALUE, "DCR_PLB4AHB_2_BASE + BOT_ADDR"
+    check_value r4,r5,r6, DCR_PLB4AHB_2_BASE + ATTRS, ATTRS_VALUE, "DCR_PLB4AHB_2_BASE + ATTRS"
+    check_value r4,r5,r6, DCR_PLB4AHB_2_BASE + CONTROL, CONTROL_VALUE, "DCR_PLB4AHB_2_BASE + CONTROL"
+    check_value r4,r5,r6, DCR_PLB4AHB_2_BASE + ERR_ST, ERR_ST_VALUE, "DCR_PLB4AHB_2_BASE + ERR_ST"
+    check_value r4,r5,r6, DCR_PLB4AHB_2_BASE + ERR_ADDR, ERR_ADDR_VALUE, "DCR_PLB4AHB_2_BASE + ERR_ADDR"
+    check_value r4,r5,r6, DCR_PLB4AHB_2_BASE + INT_MSK, INT_MSK_VALUE, "DCR_PLB4AHB_2_BASE + INT_MSK"
 
     rumboot_putstring "DEFAULT VALUES CHECKING DONE\n"
 /* check running 1,0 */
 
 running_0_1_p4ahb_0:
     load_const r5, 0x00000000
-    load_const r4, PLB4AHB_0_CONTROL
+    load_const r4, DCR_PLB4AHB_0_BASE + CONTROL
     mtdcrx r4, r5
     mfdcrx r6, r4
     cmp cr7,0, r6,r5
-    TEST_ASSERT(eq,cr7,"Read/write error in PLB4AHB_0_CONTROL (running 1 init)")
+    TEST_ASSERT(eq,cr7,"Read/write error in DCR_PLB4AHB_0_BASE + CONTROL (running 1 init)")
 
 p4ahb_0_running_1:
     load_const r5, 0x00000001
@@ -69,7 +69,7 @@ p4ahb_0_loop_1:
     mtdcrx r4, r5
     mfdcrx r6, r4
     cmp cr7,0, r6,r5
-    TEST_ASSERT(eq,cr7,"Read/write error in PLB4AHB_0_CONTROL (running 1)")
+    TEST_ASSERT(eq,cr7,"Read/write error in DCR_PLB4AHB_0_BASE + CONTROL (running 1)")
     cmp 0, 0, r5, r8
     beq p4ahb_0_running_0
     slw r5, r5, r7
@@ -77,11 +77,11 @@ p4ahb_0_loop_1:
 
 p4ahb_0_running_0:
     load_const r5, 0x000000FF
-    load_const r4, PLB4AHB_0_CONTROL
+    load_const r4, DCR_PLB4AHB_0_BASE + CONTROL
     mtdcrx r4, r5
     mfdcrx r6, r4
     cmp cr7,0, r6,r5
-    TEST_ASSERT(eq,cr7,"Read/write error in PLB4AHB_0_CONTROL (running 0 init)")
+    TEST_ASSERT(eq,cr7,"Read/write error in DCR_PLB4AHB_0_BASE + CONTROL (running 0 init)")
 
     load_const r5, 0x000000FE
     load_const r7, 1
@@ -91,7 +91,7 @@ p4ahb_0_loop_0:
     mtdcrx r4, r5
     mfdcrx r6, r4
     cmp cr7,0, r6,r5
-    TEST_ASSERT(eq,cr7,"Read/write error in PLB4AHB_0_CONTROL (running 0)")
+    TEST_ASSERT(eq,cr7,"Read/write error in DCR_PLB4AHB_0_BASE + CONTROL (running 0)")
     cmp 0, 0, r5, r8
     beq p4ahb_0_done
     slw r5, r5, r7
@@ -104,11 +104,11 @@ p4ahb_0_loop_0:
 
 running_0_1_p4ahb_1:
     load_const r5, 0x00000000
-    load_const r4, PLB4AHB_1_CONTROL
+    load_const r4, DCR_PLB4AHB_1_BASE + CONTROL
     mtdcrx r4, r5
     mfdcrx r6, r4
     cmp cr7,0, r6,r5
-    TEST_ASSERT(eq,cr7,"Read/write error in PLB4AHB_1_CONTROL (running 1 init)")
+    TEST_ASSERT(eq,cr7,"Read/write error in DCR_PLB4AHB_1_BASE + CONTROL (running 1 init)")
 
 p4ahb_1_running_1:
     load_const r5, 0x00000001
@@ -118,7 +118,7 @@ p4ahb_1_loop_1:
     mtdcrx r4, r5
     mfdcrx r6, r4
     cmp cr7,0, r6,r5
-    TEST_ASSERT(eq,cr7,"Read/write error in PLB4AHB_1_CONTROL (running 1)")
+    TEST_ASSERT(eq,cr7,"Read/write error in DCR_PLB4AHB_1_BASE + CONTROL (running 1)")
     cmp 0, 0, r5, r8
     beq p4ahb_1_running_0
     slw r5, r5, r7
@@ -126,11 +126,11 @@ p4ahb_1_loop_1:
 
 p4ahb_1_running_0:
     load_const r5, 0x000000FF
-    load_const r4, PLB4AHB_1_CONTROL
+    load_const r4, DCR_PLB4AHB_1_BASE + CONTROL
     mtdcrx r4, r5
     mfdcrx r6, r4
     cmp cr7,0, r6,r5
-    TEST_ASSERT(eq,cr7,"Read/write error in PLB4AHB_1_CONTROL (running 0 init)")
+    TEST_ASSERT(eq,cr7,"Read/write error in DCR_PLB4AHB_1_BASE + CONTROL (running 0 init)")
 
     load_const r5, 0x000000FE
     load_const r7, 1
@@ -140,7 +140,7 @@ p4ahb_1_loop_0:
     mtdcrx r4, r5
     mfdcrx r6, r4
     cmp cr7,0, r6,r5
-    TEST_ASSERT(eq,cr7,"Read/write error in PLB4AHB_1_CONTROL (running 0)")
+    TEST_ASSERT(eq,cr7,"Read/write error in DCR_PLB4AHB_1_BASE + CONTROL (running 0)")
     cmp 0, 0, r5, r8
     beq p4ahb_1_done
     slw r5, r5, r7
@@ -153,11 +153,11 @@ p4ahb_1_done:
 
 running_0_1_p4ahb_2:
     load_const r5, 0x00000000
-    load_const r4, PLB4AHB_2_CONTROL
+    load_const r4, DCR_PLB4AHB_2_BASE + CONTROL
     mtdcrx r4, r5
     mfdcrx r6, r4
     cmp cr7,0, r6,r5
-    TEST_ASSERT(eq,cr7,"Read/write error in PLB4AHB_2_CONTROL (running 1 init)")
+    TEST_ASSERT(eq,cr7,"Read/write error in DCR_PLB4AHB_2_BASE + CONTROL (running 1 init)")
 
 p4ahb_2_running_1:
     load_const r5, 0x00000001
@@ -167,7 +167,7 @@ p4ahb_2_loop_1:
     mtdcrx r4, r5
     mfdcrx r6, r4
     cmp cr7,0, r2,r1
-    TEST_ASSERT(eq,cr7,"Read/write error in PLB4AHB_2_CONTROL (running 1)")
+    TEST_ASSERT(eq,cr7,"Read/write error in DCR_PLB4AHB_2_BASE + CONTROL (running 1)")
     cmp 0, 0, r5, r8
     beq p4ahb_2_running_0
     slw r5, r5, r7
@@ -175,11 +175,11 @@ p4ahb_2_loop_1:
 
 p4ahb_2_running_0:
     load_const r5, 0x000000FF
-    load_const r4, PLB4AHB_2_CONTROL
+    load_const r4, DCR_PLB4AHB_2_BASE + CONTROL
     mtdcrx r4, r5
     mfdcrx r2, r0
     cmp cr7,0, r6,r5
-    TEST_ASSERT(eq,cr7,"Read/write error in PLB4AHB_2_CONTROL (running 0 init)")
+    TEST_ASSERT(eq,cr7,"Read/write error in DCR_PLB4AHB_2_BASE + CONTROL (running 0 init)")
 
     load_const r5, 0x000000FE
     load_const r7, 1
@@ -189,7 +189,7 @@ p4ahb_2_loop_0:
     mtdcrx r4, r5
     mfdcrx r6, r4
     cmp cr7,0, r6,r5
-    TEST_ASSERT(eq,cr7,"Read/write error in PLB4AHB_2_CONTROL (running 0)")
+    TEST_ASSERT(eq,cr7,"Read/write error in DCR_PLB4AHB_2_BASE + CONTROL (running 0)")
     cmp cr0, 0, r5, r8
     beq p4ahb_2_done
     slw r5, r5, r7
