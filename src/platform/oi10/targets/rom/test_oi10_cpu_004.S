@@ -4,8 +4,6 @@
 #include <platform/oi10/platform/arch/ppc/ppc_476fp_asm.h>
 #include <platform/oi10/platform/trace.S.h>
 
-#ifndef _TEST_CPU_0013_H_
-#define _TEST_CPU_0013_H_
 
 
 // check macro for operations with mask "opcode RA, RS, UI"
@@ -99,17 +97,6 @@
     xori 0,0,0	//no-op for syncronization purpose
 .endm
 
-#endif //_TEST_CPU_0013_H_
-/*
- * iss_mem_dmp.h
- *
- *  Created on: Dec 11, 2017
- *      Author: v.strukov
- */
-
-#ifndef ISS_MEM_DMP_H_
-#define ISS_MEM_DMP_H_
-
 iss_mem:
 .long 0x00000A50
 .long 0x0A500000
@@ -144,20 +131,6 @@ iss_mem:
 .long 0x00000000
 .long 0x00000000
 
-#endif /* ISS_MEM_DMP_H_ */
-
-// #include "test_cpu_0013.h"
-
-// #include "iss_mem_dmp.h"
-
-// #include <mivem_mem_map.h>
-// #include <mpic128/mpic128_regs.h>
-
-
-// #include <sw_comparator.S.h>
-#ifndef SW_COMPARATOR_S_H_
-#define SW_COMPARATOR_S_H_
-
 .macro sw_comparator_macro reg_first_start, reg_second_start, reg_byte_count, reg_tmp_offset, reg_tmp_data_first, reg_tmp_data_second, reg_result
     load_const \reg_tmp_offset, 0
     load_const \reg_result, 1
@@ -182,21 +155,12 @@ iss_mem:
     bge cr3, 5b
 .endm
 
-#endif /* SW_COMPARATOR_S_H_ */
-
-
 
 //.section ".IM0.text","ax",@progbits
 
-//.global image_start
-.global boot_main
 .global main
 
-//image_start:
-
-
 .section ".text","ax",@progbits
-boot_main:
 main:
 
 //  load_const r3, 0x0004FFFC
@@ -277,17 +241,18 @@ test_setup_cpu1_stack:
 
 error:
     test_event EVENT_ERROR
-    li r3, 0x01
+    load_const r3, 0x01
+    rumboot_putstring "TEST ERROR\n"
 
 
 test_ok:
      test_event EVENT_OK
-     li r3, 0x00
+     load_const r3, 0x00
+     rumboot_putstring "TEST OK\n"
      b finish
 
 finish:
 	blr
-//    b finish
 
 .section ".text", "aw", @progbits
 result_data:

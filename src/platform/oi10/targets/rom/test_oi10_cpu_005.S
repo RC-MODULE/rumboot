@@ -2,6 +2,7 @@
 #include <platform/oi10/platform/test_event_asm.h>
 #include <platform/oi10/platform/devices.h>
 #include <platform/oi10/platform/regs/regs_mpic.h>
+#include <platform/oi10/platform/trace.S.h>
 
 .macro sw_comparator_macro reg_first_start, reg_second_start, reg_byte_count, reg_tmp_offset, reg_tmp_data_first, reg_tmp_data_second, reg_result
     load_const \reg_tmp_offset, 0
@@ -195,7 +196,7 @@ iss_mem:
 .endm
 
 /* check macro for operations with mask "opcode RA, RS, RB" */
-.macro LOGIC_RA_RS_RB_CHECK opcode, ra_no, rs_no, rb_no, rs_val, rb_val, info_reg_no, comand_conventional_no, temp_reg_no, set_CA_bit, result_address //
+.macro LOGIC_RA_RS_RB_CHECK opcode, ra_no, rs_no, rb_no, rs_val, rb_val, info_reg_no, comand_conventional_no, temp_reg_no, set_CA_bit, result_address
 	load_const \info_reg_no, 0x00000000 /* clear info register */
 
 	ori \info_reg_no, \info_reg_no, 0x2 /* put mask tyoe */
@@ -233,7 +234,7 @@ iss_mem:
 	\opcode \ra_no, \rs_no, \rb_no /* perform operation */
 	stwu \ra_no, 4(\result_address)
 	test_event EVENT_CHECK_CPU_PPC_PROG_MODEL_17 /* raise event for verilog */
-	xori 0,0,0	/* for syncronization purpose
+	xori 0,0,0	/* for syncronization purpose */
 .endm
 
 /* check macro for operations with mask "opcode RA, RS" */
@@ -410,13 +411,15 @@ test_mpw_cpu_005_0:
 test_event EVENT_ERROR
 
 finish_error:
-li r3, 0x01
+load_const r3, 0x01
+rumboot_putstring "TEST ERROR\n"
 b finish_error
 
 /* test_ok: */
 finish_ok:
 test_event EVENT_OK
-li r3, 0x00
+load_const r3, 0x00
+rumboot_putstring "TEST OK\n"
 b finish
 
 finish:
