@@ -1,7 +1,7 @@
 
 #include <platform/oi10/platform/test_event_asm.h>
 #include <platform/oi10/platform/devices.h>
-#include <regs/regs_mpic.h>
+#include <platform/oi10/platform/regs/regs_mpic.h>
 
 // #include <mivem_mem_map.h>
 // #include <mpic128/mpic128_regs.h>
