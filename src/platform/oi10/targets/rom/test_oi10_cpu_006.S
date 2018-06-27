@@ -293,15 +293,15 @@ loop_0:
     b loop_0
 
 test_ok:
-     test_event EVENT_OK
-     load_const r3, 0x00
-     rumboot_putstring "TEST OK\n"
-     b finish
+	rumboot_putstring "TEST OK\n"
+	test_event		EVENT_OK
+	load_const r3,	RESULT_OK
+	b finish
 
 error:
-     test_event EVENT_ERROR
-     load_const r3, 0x01
-     rumboot_putstring "TEST ERROR\n"
+	rumboot_putstring "TEST ERROR\n"
+	test_event		EVENT_ERROR
+	load_const r3,	RESULT_ERROR
 
 finish:
 	blr
