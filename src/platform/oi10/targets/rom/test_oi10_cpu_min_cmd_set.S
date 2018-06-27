@@ -1,10 +1,10 @@
 
-#include <platform/oi10/platform/arch/ppc/ppc_476fp_asm.h>
-#include <platform/oi10/platform/test_event_codes.h>
-#include <platform/oi10/platform/test_event_asm.h>
-#include <platform/oi10/platform/test_assert.S.h>
-#include <platform/oi10/platform/arch/ppc/test_macro_asm.S.h>
-#include <platform/oi10/platform/trace.S.h>
+#include <platform/arch/ppc/ppc_476fp_asm.h>
+#include <platform/test_event_codes.h>
+#include <platform/test_event_asm.h>
+#include <platform/test_assert.S.h>
+#include <platform/arch/ppc/test_macro_asm.S.h>
+#include <platform/trace.S.h>
 #include <platform/devices.h>
 
 
