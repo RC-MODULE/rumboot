@@ -1,12 +1,12 @@
 
 #include <platform/oi10/platform/arch/ppc/ppc_476fp_asm.h>
 #include <platform/oi10/platform/test_event_asm.h>
-// #include <mivem_mem_map.h>
 #include <platform/oi10/platform/test_assert.S.h>
+#include <platform/oi10/platform/devices.h>
 #include <platform/oi10/platform/arch/ppc/test_macro_asm.S.h>
 #include <platform/oi10/platform/regs/regs_plb4ahb.h>
 
-.section ".BOOT_ROM.text","ax",@progbits
+.section ".text","ax",@progbits
 
 .global image_start
 .global main
