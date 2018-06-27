@@ -54,7 +54,7 @@ int main()
 	iowrite32((0xA0),( I2C_BASE + 0x18));//I2C_TRANSMIT  ee -sensor dev. address	
 	iowrite32((0x00),( I2C_BASE + 0x18)); //first address
 	iowrite32((0x00),( I2C_BASE + 0x18)); //second address
-	iowrite32((0x39),( I2C_BASE + 0x18)); //second address
+	iowrite32((0x39),( I2C_BASE + 0x18)); //data
 	iowrite32((0x53),( I2C_BASE + 0x10));//  I2C_CTRL 0x010   start, en, write 
 	tmp = -1;
 	//----------- intr check trn_empty------------------------------
@@ -75,7 +75,26 @@ int main()
    iowrite32((0x0 ),(I2C_BASE + 0x2c)); //I2C_STAT_RST  
   iowrite32((0x1 ),(I2C_BASE + 0x2c)); //I2C_STAT_RST
   iowrite32((0x0 ),(I2C_BASE + 0x2c)); //I2C_STAT_RST
-		
+//----------------------- - begin write_read instruction---------------
+//data write instruction
+ 	iowrite32((0x00),( I2C_BASE + 0x02C));//0x02C	reset I2C_STAT_RST
+
+	iowrite32((0xA0),( I2C_BASE + 0x18));//I2C_TRANSMIT   ee -sensor dev. address
+	iowrite32((0x00),( I2C_BASE + 0x18)); //first address
+	iowrite32((0x00),( I2C_BASE + 0x18)); //second address
+//--------------------------reset status before next start----------------------	
+	 iowrite32((0x1 ),(I2C_BASE + 0x2c)); //I2C_STAT_RST
+     iowrite32((0x0 ),(I2C_BASE + 0x2c)); //I2C_STAT_RST
+//---------------------------------------------------------	
+	iowrite32((0x13),( I2C_BASE + 0x10));//  I2C_CTRL 0x010   start, en, write 
+//----------- intr check -----------------------------------
+      tmp =-1;
+      rumboot_printf("i2c_tmp_before =0x%x\n",tmp);	  
+	  while (tmp != 0x10) {		   
+		tmp = ioread32( I2C_BASE + I2C_STATUS);		
+        tmp = 0x10 & tmp;        // if trn_empty
+    }   // while (tmp != 0x10)
+	  // rumboot_printf("I2C wake up!\n");		
 
 //--data read instruction-------------------
 	iowrite32((0xA1),( I2C_BASE + 0x18));//I2C_TRANSMIT  A1 -sensor dev. address
