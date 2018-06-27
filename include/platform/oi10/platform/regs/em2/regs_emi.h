@@ -1,5 +1,5 @@
-#ifndef REGS_MCLFIR_H_
-#define REGS_MCLFIR_H_
+#ifndef REGS_EMI_H_
+#define REGS_EMI_H_
 
 #define EMI_SS0_0                    0x00     //WR 0x00000000
 #define EMI_SD0_0                    0x04     //WR 0x00000000
@@ -30,4 +30,4 @@
 #define EMI_IRR                      0x70     //WR 0x00000000
 #define EMI_IRR_RST                  0x74     //WR 0x00000000
 
-#endif /* REGS_MCLFIR_H_ */
+#endif /* REGS_EMI_H_ */
