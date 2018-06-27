@@ -195,7 +195,8 @@ iss_mem:
 //image_start:
 boot_main:
 main:
-//.section ".BOOT_ROM.text","ax",@progbits
+
+.section ".text","ax",@progbits
 
 //  load_const r3, 0x0004FFFC
     load_addr r3, result_data

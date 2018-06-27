@@ -3,9 +3,6 @@
 #include <platform/oi10/platform/devices.h>
 #include <platform/oi10/platform/regs/regs_mpic.h>
 
-// #include <mivem_mem_map.h>
-// #include <mpic128/mpic128_regs.h>
-
 // #include <sw_comparator.S.h>
 #ifndef SW_COMPARATOR_S_H_
 #define SW_COMPARATOR_S_H_
@@ -185,6 +182,7 @@ iss_mem:
 // #include "test_mpw_cpu_005_0.h"
 #ifndef _TEST_CPU_005_H_
 #define _TEST_CPU_005_H_
+
 #include <platform/oi10/platform/arch/ppc/ppc_476fp_config.h>
 
 // check macro for operations with mask "opcode RA, RS, UI"
