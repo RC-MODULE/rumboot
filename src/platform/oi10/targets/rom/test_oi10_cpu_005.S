@@ -1,8 +1,8 @@
-#include <platform/oi10/platform/test_assert.S.h>
-#include <platform/oi10/platform/test_event_asm.h>
-#include <platform/oi10/platform/trace.S.h>
-#include <platform/oi10/platform/devices.h>
-#include <platform/oi10/platform/regs/regs_mpic128.h>
+#include <platform/test_assert.S.h>
+#include <platform/test_event_asm.h>
+#include <platform/trace.S.h>
+#include <platform/devices.h>
+#include <platform/regs/regs_mpic128.h>
 
 .macro sw_comparator_macro reg_first_start, reg_second_start, reg_byte_count, reg_tmp_offset, reg_tmp_data_first, reg_tmp_data_second, reg_result
     load_const \reg_tmp_offset, 0

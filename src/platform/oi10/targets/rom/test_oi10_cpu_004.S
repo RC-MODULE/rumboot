@@ -1,8 +1,8 @@
 
-#include <platform/oi10/platform/test_event_asm.h>
-#include <platform/oi10/platform/arch/ppc/ppc_476fp_config.h>
-#include <platform/oi10/platform/arch/ppc/ppc_476fp_asm.h>
-#include <platform/oi10/platform/trace.S.h>
+#include <platform/test_event_asm.h>
+#include <platform/arch/ppc/ppc_476fp_config.h>
+#include <platform/arch/ppc/ppc_476fp_asm.h>
+#include <platform/trace.S.h>
 
 
 /* check macro for operations with mask "opcode RA, RS, UI" */
