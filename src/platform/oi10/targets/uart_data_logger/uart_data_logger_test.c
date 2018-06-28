@@ -106,7 +106,11 @@ int main()
     for (size_t i = 0; i < msg_len; i++)
     {
         uart_write_char((uint8_t)msg[i]);
-    }    
+    }
+    
+    //Waiting TFIFO to be empty.
+    while (!reg_check(UART_BASE_ADDR + UARTFR, (0x01 << 7)))
+        ;    
         
     uart_disable();
 
