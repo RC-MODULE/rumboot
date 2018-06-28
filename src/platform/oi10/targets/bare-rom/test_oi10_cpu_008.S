@@ -121,7 +121,7 @@ rumboot_entry_point:
 
 	rumboot_putstring "Init SPRs...\n"
 
-    mtspr       SPR_USPGR0, r0
+    mtspr       SPR_USPRG0, r0
 
     lis         r3, unexpected_itrpt_hdr_base@h
     mtspr       SPR_IVPR, r3
