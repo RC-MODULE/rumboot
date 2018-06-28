@@ -123,6 +123,10 @@
 #define SPR_SPRG6       278
 #define SPR_SPRG7       279
 #define SPR_SPRG8       604
+
+#define SPR_USPRG0		256
+#define SPR_VRSAVE		256
+
 #define SPR_SSPCR       830
 
 /*TBL for read operation*/
@@ -146,7 +150,6 @@
 #define SPR_TSR_W       848
 #define SPR_ISPCR       829
 #define SPR_USPCR       831
-#define SPR_USPGR0      256
 
 /*Data Cache DeBug Tag Register*/
 #define SPR_DCDBTRL     924
