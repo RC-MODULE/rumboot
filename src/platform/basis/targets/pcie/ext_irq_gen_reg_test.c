@@ -19,7 +19,7 @@
 #include <rumboot/printf.h>
 
 #include <platform/devices.h>
-#include <devices/pcie.h>
+#include <regs/regs_pcie.h>
 
 #define reset_EXT_IRQ_GEN_Ctrl                     0x00000021
 // #define reset_EXT_IRQ_GEN_Global_IRQ_Status_l      0x00000000

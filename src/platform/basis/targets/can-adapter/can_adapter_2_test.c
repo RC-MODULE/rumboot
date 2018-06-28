@@ -2,7 +2,7 @@
 #include <rumboot/printf.h>
 #include <rumboot/io.h>
 #include <devices/can_adapter.h>
-#include <devices/gp_timers.h>
+#include <regs/regs_gp_timers.h>
 #include <rumboot/irq.h>
 #include <rumboot/platform.h>
 #include <rumboot/bootheader.h>
