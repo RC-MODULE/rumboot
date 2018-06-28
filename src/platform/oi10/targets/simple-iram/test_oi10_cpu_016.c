@@ -139,13 +139,50 @@ uint32_t check_emi(const uint32_t base_address)
 	TEST_ASSERT(dcr_read( EMI_IMR + base_address) == 0x00000000, "In EMI_IMR expected value 0x00000000");
 	TEST_ASSERT(dcr_read( EMI_IMR_SET + base_address) == 0x00000000, "In EMI_IMR_SET expected value 0x00000000");
 	TEST_ASSERT(dcr_read( EMI_IMR_RST + base_address) == 0x00000000, "In EMI_IMR_RST expected value 0x00000000");
-	TEST_ASSERT(dcr_read( EMI_IRR + base_address) == 0x00000000, "In EMI_IRR expected value 0x00000000");
 	TEST_ASSERT(dcr_read( EMI_IRR_RST + base_address) == 0x00000000, "In EMI_IRR_RST expected value 0x00000000");
+	//rumboot_putstring("IRR");
+	//TEST_ASSERT(dcr_read( EMI_IRR + base_address) == 0x00000000, "In EMI_IRR expected value 0x00000000");
+
+	static int32_t check_array25[] = {
+	        0x01000000,
+	        0x01FFFFFF,
+	        0x01FF0000,
+	        0x0000FFFF,
+	        0x0100FF00,
+	        0x00FF00FF,
+	        0x00F0F0F0,
+	        0x010F0F0F,
+	        0x01CCCCCC,
+	        0x00333333,
+	        0x00AAAAAA,
+	        0x01555555
+	};
 
 	uint32_t i;
 	for (i = 0; i< 12; i++){
-	        dcr_write (EMI_H1ADR + base_address, check_array32[i]);
-	        TEST_ASSERT(dcr_read(EMI_H1ADR + base_address) == check_array32[i],"EMI DCR data bus check failed");
+	        dcr_write (EMI_SS0_0 + base_address, check_array25[i]);
+	        rumboot_puthex(dcr_read(EMI_SS0_0 + base_address));
+	        TEST_ASSERT(dcr_read(EMI_SS0_0  + base_address) == check_array25[i],"EMI DCR data bus check failed");
+	    }
+
+	static int32_t check_array32_emi[] = {
+	        0xFFFFFFF0,
+	        0x00000000,
+	        0xFFFF0000,
+	        0x0000FFF0,
+	        0xFF00FF00,
+	        0x00FF00F0,
+	        0xF0F0F0F0,
+	        0x0F0F0F00,
+	        0xCCCCCCC0,
+	        0x33333330,
+	        0xAAAAAAA0,
+	        0x55555550
+	};
+
+	for (i = 0; i< 12; i++){
+	        dcr_write (EMI_H1ADR + base_address, check_array32_emi[i]);
+	        TEST_ASSERT(dcr_read(EMI_H1ADR + base_address) == check_array32_emi[i],"EMI DCR data bus check failed");
 	    }
 
 	return true;
@@ -153,12 +190,12 @@ uint32_t check_emi(const uint32_t base_address)
 
 int main()
 {
-	rumboot_putstring("CHECK PLB6MCIF2\n");
-	check_plb6mcif2 (DCR_EM2_PLB6MCIF2_BASE);
-	rumboot_putstring("CHECK MCLFIR\n");
-	check_mclfir (DCR_EM2_MCLFIR_BASE);
-	//rumboot_putstring("CHECK EMI\n");
-	//check_emi (DCR_EM2_EMI_BASE);
+	//rumboot_putstring("CHECK PLB6MCIF2\n");
+	//check_plb6mcif2 (DCR_EM2_PLB6MCIF2_BASE);
+	//rumboot_putstring("CHECK MCLFIR\n");
+	//check_mclfir (DCR_EM2_MCLFIR_BASE);
+	rumboot_putstring("CHECK EMI\n");
+	check_emi (DCR_EM2_EMI_BASE);
 
 	return 0;
 }
