@@ -84,7 +84,7 @@ rumboot_entry_point:
 
 	rumboot_putstring "Init SPRs... "
 
-    mtspr       SPR_USPGR0,	r0
+    mtspr       SPR_USPRG0,	r0
 
     mtspr       SPR_SRR0,	r0
     mtspr       SPR_SRR1,	r0
