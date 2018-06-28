@@ -125,7 +125,7 @@
 #define SPR_SPRG8       604
 
 #define SPR_USPRG0		256
-#define SPR_VRSAVE		256
+#define SPR_VRSAVE		SPR_USPRG0
 
 #define SPR_SSPCR       830
 
