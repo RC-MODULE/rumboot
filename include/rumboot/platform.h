@@ -49,6 +49,7 @@ enum rumboot_simulation_event {
     EVENT_PERF_FUNC, /** Perf checkpoint via function addr */
     EVENT_SIM_SAVE, /** Request to save simulation state to file */
     EVENT_SIM_RESTORE, /** Request to load simulation state from a file */
+    EVENT_TESTEVENT, /** Special event to be sent to SystemVerilog part of the test */
 };
 
 

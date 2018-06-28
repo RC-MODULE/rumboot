@@ -5,7 +5,8 @@
 #include <platform/oi10/platform/test_event_asm.h>
 #include <platform/oi10/platform/test_event_codes.h>
 
-.macro _putchar reg_data, reg_ctrl
+.macro putchar char, reg_data=r5, reg_ctrl=r6
+    load_const  \reg_data, \char; /* test stdout */
     load_const  \reg_ctrl, 2;
     mtspr       SPR_SPRG2, \reg_data
     load_const  \reg_data, 0
@@ -13,33 +14,47 @@
     mtspr       SPR_SPRG1, \reg_data
 .endm
 
-.macro putchar char
-    load_const  r13, \char; /* test stdout */
-    _putchar r13, r12
-.endm
 
-
-.macro rumboot_putstring text
-    b 3f
-
+.macro rumboot_putstring text, tmp_reg_nop_or_addr=r5, tmp_reg_opcode_testevent=r6, tmp_reg_event_code=r7
+    b 2f
 1:
     .ascii "\text"
-2:
+    .byte  0x0
     /*end of string*/
 .align 2, 0
-3:
-    load_addr   r14, 1b           /*load string ptr*/
-    addi        r14, r14, -1      /*because of lbzu*/
-    load_addr   r15, 2b
-    load_const  r12, 2;
-4:
-    lbzu  r13, 1(r14) /* test stdout */
-    _putchar r13, r12
-    cmplw cr0, r14, r15
-    blt 4b
-
+2:
+    load_addr  \tmp_reg_nop_or_addr, 1b
+    mtspr       SPR_SPRG3, \tmp_reg_nop_or_addr
+    test_event EVENT_TRACE_MESSAGE, \tmp_reg_nop_or_addr, \tmp_reg_opcode_testevent, \tmp_reg_event_code
 .endm
 
+.macro rumboot_puthex hex_reg, tmp_reg_opcode_testevent=r6, tmp_reg_event_code=r7
+    mtspr       SPR_SPRG3, \hex_reg
+    test_event EVENT_TRACE_HEX, \hex_reg, \tmp_reg_opcode_testevent, \tmp_reg_event_code
+.endm
 
+.macro _rumboot_putdump tmp_reg_start_addr, tmp_reg_length_in_bytes, tmp_reg_event_code=r7
+    mtspr SPR_SPRG3, \tmp_reg_start_addr
+    mtspr SPR_SPRG4, \tmp_reg_length_in_bytes
+    test_event EVENT_TRACE_DUMP, \tmp_reg_start_addr, \tmp_reg_length_in_bytes, \tmp_reg_event_code
+.endm
+
+.macro rumboot_putdump start_addr, length_in_bytes, tmp_reg_start_addr=r5, tmp_reg_length_in_bytes=r6, tmp_reg_event_code=r7
+    load_const \tmp_reg_start_addr, \start_addr
+    load_const \tmp_reg_length_in_bytes, \length_in_bytes
+    _rumboot_putdump \tmp_reg_start_addr, \tmp_reg_length_in_bytes, \tmp_reg_event_code
+.endm
+
+.macro _rumboot_issdump tmp_reg_start_addr, tmp_reg_length_in_bytes, tmp_reg_event_code=r7
+    mtspr SPR_SPRG3, \tmp_reg_start_addr
+    mtspr SPR_SPRG4, \tmp_reg_length_in_bytes
+    test_event TEST_EVENT_CREATE_ISS_DUMP, \tmp_reg_start_addr, \tmp_reg_length_in_bytes, \tmp_reg_event_code
+.endm
+
+.macro rumboot_issdump start_addr, length_in_bytes, tmp_reg_start_addr=r5, tmp_reg_length_in_bytes=r6, tmp_reg_event_code=r7
+    load_const \tmp_reg_start_addr, \start_addr
+    load_const \tmp_reg_length_in_bytes, \length_in_bytes
+    _rumboot_issdump \tmp_reg_start_addr, \tmp_reg_length_in_bytes, \tmp_reg_event_code
+.endm
 
 #endif /* TRACE_S_H_ */

@@ -1,0 +1,32 @@
+
+#ifndef __TEST_ASSERT_H__
+#define __TEST_ASSERT_H__
+
+#include <platform/test_event_c.h>
+#include <platform/trace.h>
+
+
+#define TEST_ASSERT( expr, message )\
+MACRO_BEGIN\
+    if( !(expr) ) {\
+        rumboot_putstring( "PROGRAM ASSERTION FAILED: \"" STRINGIZE(expr) "\"\n" __FILE__ ":" STRINGIZE(__LINE__) ": \"" message "\"\n" );\
+        test_event( EVENT_ASSERT );\
+    }\
+MACRO_END
+
+#define TEST_WAIT( condition, timeout )\
+MACRO_BEGIN\
+    unsigned int time = timeout;\
+    while( !(condition) && time-- );\
+    TEST_ASSERT( condition, "Condition timeout (" STRINGIZE(timeout) ")" );\
+MACRO_END
+
+#define TEST_WAIT_ASSERT( condition, timeout, message )\
+MACRO_BEGIN\
+    unsigned int time = timeout;\
+    while( !(condition) && time-- );\
+    TEST_ASSERT( condition, message ". Condition timeout (" STRINGIZE(timeout) ")"  );\
+MACRO_END
+
+
+#endif // __TEST_ASSERT_H__
