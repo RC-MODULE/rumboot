@@ -77,9 +77,9 @@
 						| (                         MMU_XSPCR_ORD_END   << MMU_USPCR_ORD3_i)
 
 /* DCR register value checker */
-.macro chk_sgdwr rE,rA,rR,raddress,reg_name
+.macro chk_sgdwr rE,rA,rR,vAddr,sName
     /* load address */
-    load_const	\rA,	\raddress
+    load_const	\rA,	\vAddr
     /* load value */
     load_const	\rE,	SGD_NON_SYNTH_VALUE
     /* write value to SGDx */
@@ -88,12 +88,7 @@
     mfdcrx		\rR,	\rA
     cmpw cr7,	\rR,	\rE
     crand		eq6,	eq6,	eq7
-    TEST_ASSERT(eq,cr7,"DCR error: In \reg_name was expected value \exp_value (address \raddress) ")
-.endm
-
-.macro load_spr tR sprReg sprVal
-	load_const	\tR,     \sprVal
-	mtspr		\sprReg, \tR
+    TEST_ASSERT(eq,cr7,"DCR error: In \sName was expected value \vExp (address: \vAddr) ")
 .endm
 
 .macro chk_value rA,rR,rE,vAddr,vExp,sName
@@ -102,9 +97,13 @@
     mfdcrx		\rR,	\rA
     cmpw cr7,	\rR,	\rE
     crand		eq6,	eq6,	eq7
-    TEST_ASSERT(eq,cr7,"DCRE: expected \reg_name = \exp_value (\raddress) ")
+    TEST_ASSERT(eq,cr7,"DCRE: expected \sName = \vExp (address: \vAddr) ")
 .endm
 
+.macro load_spr tR sprReg sprVal
+	load_const	\tR,     \sprVal
+	mtspr		\sprReg, \tR
+.endm
 
 
 .section ".init.start","ax",@progbits
