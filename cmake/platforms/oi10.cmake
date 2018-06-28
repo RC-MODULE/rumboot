@@ -2,9 +2,9 @@ SET(RUMBOOT_ARCH ppc)
 set(RUMBOOT_PLATFORM_DEFAULT_SNAPSHOT default)
 
 file(GLOB PLATFORM_SOURCES
+    ${CMAKE_SOURCE_DIR}/src/lib/eventsystem-memory.c
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/*.c
     ${CMAKE_SOURCE_DIR}/src/lib/drivers/irq-dummy.c
-    ${CMAKE_SOURCE_DIR}/src/lib/eventsystem-memory.c
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/lib/drivers/p64.c
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/ppc_mmu_impl.S
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/utlb_entries.S
@@ -22,7 +22,7 @@ endmacro()
 rumboot_add_configuration(
   ROM
   LDS oi10/rom.lds
-  CFLAGS -DRUMBOOT_ONLY_STACK
+  CFLAGS -DRUMBOOT_ONLY_STACK -DRUMBOOT_PRINTF_ACCEL
   LDFLAGS "-e rumboot_entry_point"
   PREFIX rom
   FEATURES ROMGEN
@@ -44,7 +44,7 @@ rumboot_add_configuration (
   PREFIX iram
   LDFLAGS -Wl,--start-group -lgcc -lc -lm -Wl,--end-group "-e rumboot_main"
   FILES ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c
-  CFLAGS
+  CFLAGS -DRUMBOOT_PRINTF_ACCEL
   BOOTROM bootrom-stub
   FEATURES LUA COVERAGE
 )
