@@ -202,7 +202,7 @@ rumboot_reset_handler:
     load_const  r30,0x00000000
     load_const  r31,0x00000000
 
-    mtspr       SPR_USPGR0, r0
+    mtspr       SPR_USPRG0, r0
 
     lis         r3, unexpected_itrpt_hdr_base@h
     mtspr       SPR_IVPR, r3
