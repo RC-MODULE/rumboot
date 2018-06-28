@@ -11,7 +11,7 @@
     mfdcrx \rR, \rA
     cmp cr7,0, \rR,\rE
 #ifdef DEBUG_PUT2USPRG0
-    mtspr SPR_USPGR0, \rR
+    mtspr SPR_USPRG0, \rR
 #endif
 /* 	rumboot_putstring "\reg_name actual value: " */
 /*	trace_hex \rR */
