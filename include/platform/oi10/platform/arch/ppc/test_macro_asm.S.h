@@ -21,5 +21,7 @@
 #endif
 .endm
 
+#define RESULT_OK   0x00
+#define RESULT_ERROR    0x01
 
 #endif /* TEST_MACRO_ASM_H_ */
