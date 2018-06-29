@@ -5,8 +5,6 @@
 #define DEBUG_DCR_TEST
 */
 
-.macro accum_state
-
 /* DCR register value checker */
 .macro check_value rA,rR,rE,vAddr,vExp,sName
 #ifdef CHECK_VALUE_VERBOSE
