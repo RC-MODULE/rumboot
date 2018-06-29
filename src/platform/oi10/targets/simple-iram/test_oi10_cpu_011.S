@@ -9,17 +9,17 @@
 #include <platform/arch/ppc/test_macro_asm.S.h>
 #include <platform/regs/regs_srammc2plb4.h>
 
-#define SB0CR					0x0
-#define SB1CR					0x1
-#define SB2CR					0x2
-#define SB3CR					0x3
-#define BEAR					0x4
-#define BESR0					0x5
-#define BESR1					0x6
-#define PMEG					0x7
-#define CID						0x8
-#define REVID					0x9
-#define DPC						0xA
+#define SB0CR					0x00
+#define SB1CR					0x01
+#define SB2CR					0x02
+#define SB3CR					0x03
+#define BEAR					0x04
+#define BESR0					0x05
+#define BESR1					0x06
+#define PMEG					0x07
+#define CID						0x08
+#define REVID					0x09
+#define DPC						0x0A
 
 #define SB0CR_0_RESET_VAL		SRAMMC2PLB4_0_SB0CR_RESET_VAL
 #define SB1CR_0_RESET_VAL		SRAMMC2PLB4_0_SB1CR_RESET_VAL
