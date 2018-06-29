@@ -54,7 +54,7 @@ echo "write tlb 0 0 V 0x0" >> ${CMD_PATH}
 echo "write tlb 0 0 EPN 0xFFFF0000 V 0x1 TS 0x0 S 0x03 T 0x0000 E+RPN 0x01FFFFF0000 IL1ID b11 U0123 b0000 WIMG b0111 E 0x0 UXWR b000 SXWR b111 BE0_5 0x-" >> ${CMD_PATH}
 echo "memacc add 0xFFFF0000 0xFFFFFFFF RW 1 MEM 0x1FFFFF0000" >> ${CMD_PATH}
 echo "load bin "${BUILD_DIR}"/rumboot-oi10-Debug/rumboot-oi10-Debug-bootrom-stub.bin "${INIT_BIN_START_ADDR} >> ${CMD_PATH}
-echo "exec postload_oi10.rwc"
+echo "exec postload_oi10.rwc" >> ${CMD_PATH}
 #end workaround
 
 @ MAX_ASMSTEP = 65535
