@@ -10,7 +10,7 @@
     load_const  \reg_ctrl, 2;
     mtspr       SPR_SPRG2, \reg_data
     load_const  \reg_data, 0
-    mtspr       SPR_SPRG1, r12
+    mtspr       SPR_SPRG1, \reg_ctrl
     mtspr       SPR_SPRG1, \reg_data
 .endm
 
