@@ -132,8 +132,8 @@ uint32_t check_emi(const uint32_t base_address)
 	TEST_ASSERT(dcr_read( EMI_IMR + base_address) == 0x00000000, "In EMI_IMR expected value 0x00000000");
 	TEST_ASSERT(dcr_read( EMI_IMR_SET + base_address) == 0x00000000, "In EMI_IMR_SET expected value 0x00000000");
 	TEST_ASSERT(dcr_read( EMI_IMR_RST + base_address) == 0x00000000, "In EMI_IMR_RST expected value 0x00000000");
+	TEST_ASSERT(dcr_read( EMI_IRR + base_address) == 0x00000000, "In EMI_IRR expected value 0x00000000");
 	TEST_ASSERT(dcr_read( EMI_IRR_RST + base_address) == 0x00000000, "In EMI_IRR_RST expected value 0x00000000");
-	//TEST_ASSERT(dcr_read( EMI_IRR + base_address) == 0x00000000, "In EMI_IRR expected value 0x00000000");
 
 	static int32_t check_array25[] = {
 	        0x01000000,
@@ -188,5 +188,6 @@ int main()
 	rumboot_putstring("CHECK EMI\n");
 	check_emi (DCR_EM2_EMI_BASE);
 
+	Error_Detect == 0 ? rumboot_putstring("TEST OK\n"): rumboot_putstring("TEST ERROR\n");
 	return Error_Detect;
 }
