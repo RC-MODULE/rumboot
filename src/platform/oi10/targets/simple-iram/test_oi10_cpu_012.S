@@ -93,6 +93,7 @@ p46_0_loop_0:
 
 
 p46_0_end_checking:
+    bne- cr6,   test_error
 
 test_ok:
 	rumboot_putstring "TEST OK\n"

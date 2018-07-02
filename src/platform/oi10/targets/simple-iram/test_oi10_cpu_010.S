@@ -191,7 +191,9 @@ plb4arb_2_loop_0:
     beq- cr0,   plb4arb_2_end
     slw         r18,  r18,  r17
     b           plb4arb_2_loop_0
+
 plb4arb_2_end:
+    bne- cr6,   test_error
 
 test_ok:
 	rumboot_putstring "TEST OK\n"
@@ -199,7 +201,7 @@ test_ok:
 	load_const r3,	RESULT_OK
 	b finish
 
-error:
+test_error:
 	rumboot_putstring "TEST ERROR\n"
 	test_event		EVENT_ERROR
 	load_const r3,	RESULT_ERROR
