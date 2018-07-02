@@ -16,6 +16,8 @@
 //-----------------------------------------------------------------------------
 
 #include <rumboot/pcie_test_lib.h>
+#include <platform/defs_c.h>
+#include <platform/devices.h>
 
 #ifndef increase_test_duration
 #define increase_test_duration 0

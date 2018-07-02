@@ -1,6 +1,13 @@
 #ifndef DEVICES_PCIE_H
 #define DEVICES_PCIE_H
 
+/* --- SCTL --- */
+
+#define SCTL_PCIE_RST   0x400
+#define SCTL_PCIE_REG_0 0x404
+#define SCTL_PCIE_REG_1 0x408
+#define SCTL_PCIE_REG_2 0x40C
+
 /**
  * \defgroup devices_pcie Cadence PCIe
  * \ingroup devices

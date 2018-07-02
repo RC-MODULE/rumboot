@@ -7,7 +7,9 @@
 #include <rumboot/printf.h>
 #include <rumboot/pcie_test_lib.h>
 #include <platform/interrupts.h>
+#include <platform/devices.h>
 #include <regs/regs_gic.h>
+#include <regs/regs_pcie.h>
 
 
 static void msix_set_vector(uint32_t vector_number, uint32_t addr, uint32_t data, uint32_t mask)

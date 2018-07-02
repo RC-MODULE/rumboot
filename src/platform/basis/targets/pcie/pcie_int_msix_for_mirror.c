@@ -17,6 +17,8 @@
 #include <rumboot/irq.h>
 #include <rumboot/printf.h>
 #include <rumboot/pcie_test_lib.h>
+#include <regs/regs_pcie.h>
+#include <platform/devices.h>
 
 #include <platform/interrupts.h>
 

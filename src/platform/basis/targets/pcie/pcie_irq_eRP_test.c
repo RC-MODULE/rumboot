@@ -35,6 +35,7 @@
 #define irq_cntr_ptr 0x00050000
 #define irq_flag_ptr 0x00050008
 
+#include <platform/defs_c.h>
 
 #define pcie_dma_int_gic             55
 #define pcie_dma_int_ext_irq_gen     23

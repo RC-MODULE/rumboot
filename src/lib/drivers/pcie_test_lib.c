@@ -18,7 +18,8 @@
 //-----------------------------------------------------------------------------
 #include <stdint.h>
 
-#include <platform/defs_c.h>
+#include <regs/regs_pcie.h>
+#include <platform/devices.h>
 #include <rumboot/io.h>
 
 //-----------------------------------------------------------------------------

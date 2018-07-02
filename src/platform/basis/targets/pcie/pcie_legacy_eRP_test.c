@@ -18,6 +18,7 @@
 //-----------------------------------------------------------------------------
 
 #include <rumboot/pcie_test_lib.h>
+#include <platform/defs_c.h>
 
 #define interrupt_turnaround_duration 20
 #define interrupt_repeat_number 16
