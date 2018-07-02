@@ -15,11 +15,19 @@
 #define eq6							cr6*4+eq
 #define eq7							cr7*4+eq
 
+#define PLB6_BC_CR0_STU             (0b1 << PLB6BC_CR0_BC_DSBS_i      )\
+                                  | (0b1 << PLB6BC_CR0_BC_MASK_MSRSP_i)\
+                                  | (0b1 << PLB6BC_CR0_BC_MASK_SRSNZ_i)
+
+#define PLB6_BC_SGD1_STU            0x00000010
+#define PLB6_BC_SGD2_STU            0x00000010
+#define PLB6_BC_SGD3_STU            0x00000020
+#define PLB6_BC_HCPP_VALUE          PLB6BC_HCPP_4K
 
 /* DCR register value checker */
-.macro chk_sgdwr rE,rA,rR,raddress,reg_name
+.macro chk_sgdwr rE,rA,rR,vAddr,sName
     /* load address */
-    load_const	\rA,	\raddress
+    load_const	\rA,	\vAddr
     /* load value */
     load_const	\rE,	SGD_NON_SYNTH_VALUE
     /* write value to SGDx */
@@ -28,12 +36,7 @@
     mfdcrx		\rR,	\rA
     cmpw cr7,	\rR,	\rE
     crand		eq6,	eq6,	eq7
-    TEST_ASSERT(eq,cr7,"DCR error: In \reg_name was expected value \exp_value (address \raddress) ")
-.endm
-
-.macro load_spr tR sprReg sprVal
-	load_const	\tR,     \sprVal
-	mtspr		\sprReg, \tR
+    TEST_ASSERT(eq,cr7,"DCR error: In \sName was expected value \vExp (address: \vAddr) ")
 .endm
 
 .macro chk_value rA,rR,rE,vAddr,vExp,sName
@@ -42,7 +45,7 @@
     mfdcrx		\rR,	\rA
     cmpw cr7,	\rR,	\rE
     crand		eq6,	eq6,	eq7
-    TEST_ASSERT(eq,cr7,"DCRE: expected \reg_name = \exp_value (\raddress) ")
+    TEST_ASSERT(eq,cr7,"DCRE: expected \sName = \vExp (address: \vAddr) ")
 .endm
 
 .global main
@@ -52,18 +55,18 @@
 main:
 	rumboot_putstring "Start testing...\n"
 
-	load_const	r21,	0x00000000
-	cmpwi cr6,	r21,	0x0000		/* General test status in cr6 */
+	load_const	r20,	0x00000000
+	cmpwi cr6,	r20,	0x0000		/* General test status in cr6 */
 
     /* check all default values */
-    chk_value CVR3,	P6BCA(PLB6BC_CR0),			PLB6_BC_CR0_VALUE,			"PLB6BC_CR0         "
+    chk_value CVR3,	P6BCA(PLB6BC_CR0),			PLB6_BC_CR0_STU,            "PLB6BC_CR0         "
     chk_value CVR3,	P6BCA(PLB6BC_PRI),			PLB6_BC_PRI_VALUE,			"PLB6BC_PRI         "
     chk_value CVR3,	P6BCA(PLB6BC_TSNOOP),		PLB6_BC_TSNOOP_VALUE,		"PLB6BC_TSNOOP      "
     chk_value CVR3,	P6BCA(PLB6BC_PAAM_WIN_EXT),	PLB6_BC_PAAM_WIN_EXT_VALUE,	"PLB6BC_PAAM_WIN_EXT"
     /* non-used segments must be written with value 0xFFFFFFF0. */
-    chk_value CVR3,	P6BCA(PLB6BC_SGD1),			PLB6_BC_SGD1_VALUE,			"PLB6BC_SGD1        "
-    chk_value CVR3,	P6BCA(PLB6BC_SGD2),			PLB6_BC_SGD2_VALUE,			"PLB6BC_SGD2        "
-    chk_value CVR3,	P6BCA(PLB6BC_SGD3),			PLB6_BC_SGD3_VALUE			"PLB6BC_SGD3        "
+    chk_value CVR3,	P6BCA(PLB6BC_SGD1),			PLB6_BC_SGD1_STU,       	"PLB6BC_SGD1        "
+    chk_value CVR3,	P6BCA(PLB6BC_SGD2),			PLB6_BC_SGD2_STU,           "PLB6BC_SGD2        "
+    chk_value CVR3,	P6BCA(PLB6BC_SGD3),			PLB6_BC_SGD3_STU,           "PLB6BC_SGD3        "
     chk_sgdwr CVR3,	P6BCA(PLB6BC_SGD4),										"PLB6BC_SGD4        "
     chk_sgdwr CVR3,	P6BCA(PLB6BC_SGD5),										"PLB6BC_SGD5        "
     chk_sgdwr CVR3,	P6BCA(PLB6BC_SGD6),										"PLB6BC_SGD6        "
@@ -80,10 +83,11 @@ main:
     /* check DATA I/O buses */
     rumboot_putstring "\nSliding '1' and '0' (low) ... \n <1> "
 running_1_low:
-    load_const	r20,	P6BCA(PLB6BC_SGD1)  /* DCR addr */
+    load_const	r20,	P6BCA(PLB6BC_SGD2)  /* DCR addr */
     load_const	r21,	0x00000010          /* begin val */
     load_const	r23, 	0x00000001          /* shift */
     load_const	r24, 	0x80000000          /* max val for compare */
+    mfdcrx      r28,    r20
 loop_1_low:
 	mtdcrx		r20,	r21
 	mfdcrx		r22,	r20
@@ -121,6 +125,7 @@ loop_0_low_ok:
     ori			r21,	r21,	0x0010
     b loop_0_low
 loop_0_low_end:
+    mtdcrx      r20,    r28
 
     rumboot_putstring "\nSliding '1' and '0' (high) ... \n <1> "
 running_1_high:
@@ -128,6 +133,7 @@ running_1_high:
     load_const	r21,	0x00000001          /* begin val */
     load_const	r24, 	0x00000008          /* max val for compare */
 	load_const	r25,	0x0000000F			/* bits mask */
+    mfdcrx      r28,    r20
 loop_1_high:
 	ori			r26,	r21,	0x0400
 	mtdcrx		r20,	r26
@@ -166,8 +172,9 @@ loop_0_high:
     ori			r21,	r21,	0x0001
     and			r21,	r21,	r25
     b loop_0_high
-loop_0_high_end:
 
+loop_0_high_end:
+    mtdcrx      r20,    r28
 	beq+ cr6,	test_ok
 	b			test_error
 
