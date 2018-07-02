@@ -51,15 +51,15 @@ uint32_t check_plb6mcif2(const uint32_t base_address)
     TEST_ASSERT(dcr_read(PLB6MCIF2_MAP2CF + base_address) == 0x00000000,"In PLB6MCIF2_MAP2CF expected value 0x00000000");
     TEST_ASSERT(dcr_read(PLB6MCIF2_MAP3CF + base_address) == 0x00000000,"In PLB6MCIF2_MAP3CF expected value 0x00000000");
     TEST_ASSERT(dcr_read(PLB6MCIF2_MAXMEM + base_address) == 0xC0000000,"In PLB6MCIF2_MAXMEM expected value 0xC0000000");//default: [0:1]= 0b11
-    TEST_ASSERT(dcr_read(PLB6MCIF2_MR0CF + base_address) == 0x00000000,"In PLB6MCIF2_MR0CF expected value 0x00000000");
+    TEST_ASSERT(dcr_read(PLB6MCIF2_MR0CF + base_address) == 0x00000001,"In PLB6MCIF2_MR0CF expected value 0x00000000");
     TEST_ASSERT(dcr_read(PLB6MCIF2_MR1CF + base_address) == 0x00000000,"In PLB6MCIF2_MR1CF expected value 0x00000000");
     TEST_ASSERT(dcr_read(PLB6MCIF2_MR2CF + base_address) == 0x00000000,"In PLB6MCIF2_MR2CF expected value 0x00000000");
-    TEST_ASSERT(dcr_read(PLB6MCIF2_MR3CF + base_address) == 0x00000000,"In PLB6MCIF2_MR3CF expected value 0x00000000");
+    TEST_ASSERT(dcr_read(PLB6MCIF2_MR3CF + base_address) == 0xfff80001,"In PLB6MCIF2_MR3CF expected value 0x00000000");
     TEST_ASSERT(dcr_read(PLB6MCIF2_P6BMTAG1 + base_address) == 0x00000000,"In PLB6MCIF2_P6BMTAG1 expected value 0x00000000");
     TEST_ASSERT(dcr_read(PLB6MCIF2_P6BMTAG2 + base_address) == 0x00000000,"In PLB6MCIF2_P6BMTAG2 expected value 0x00000000");
     TEST_ASSERT(dcr_read(PLB6MCIF2_P6BMTAG3 + base_address) == 0x00000000,"In PLB6MCIF2_P6BMTAG3 expected value 0x00000000");
     TEST_ASSERT(dcr_read(PLB6MCIF2_PLBASYNC + base_address) == 0x00000000,"In PLB6MCIF2_PLBASYNC expected value 0x00000000");
-    TEST_ASSERT(dcr_read(PLB6MCIF2_PLBCFG + base_address) == 0x200000F0,"In PLB6MCIF2_PLBCFG expected value 0x200000F0");
+    TEST_ASSERT(dcr_read(PLB6MCIF2_PLBCFG + base_address) == 0x200000F1,"In PLB6MCIF2_PLBCFG expected value 0x200000F0");
 
     uint32_t result = 0;
     result = dcr_read(PLB6MCIF2_PLBORD + base_address);
