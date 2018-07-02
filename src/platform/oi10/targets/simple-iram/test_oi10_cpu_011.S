@@ -56,7 +56,7 @@ main:
     cmpwi cr6,  r3,   0x0000      /* General test status in cr6 */
 
 check_cpu_ppc_srammc2plb4_0_2:
-	rumboot_putstring "check_cpu_ppc_srammc2plb4_0_2\n"
+	rumboot_putstring "Check reset values of SRAMMC2PLB4_0\n"
     check_value CVR3, SRC2P40(SB0CR), SB0CR_0_RESET_VAL, "SRAMMC2PLB4_0_SB0CR"
     check_value CVR3, SRC2P40(SB1CR), SB1CR_0_RESET_VAL, "SRAMMC2PLB4_0_SB1CR"
     check_value CVR3, SRC2P40(SB2CR), SB2CR_0_RESET_VAL, "SRAMMC2PLB4_0_SB2CR"
@@ -68,9 +68,11 @@ check_cpu_ppc_srammc2plb4_0_2:
     check_value CVR3, SRC2P40(CID  ), CID_RESET_VAL,     "SRAMMC2PLB4_0_CID  "
     check_value CVR3, SRC2P40(REVID), REVID_RESET_VAL,   "SRAMMC2PLB4_0_REVID"
     check_value CVR3, SRC2P40(DPC  ), DPC_RESET_VAL,     "SRAMMC2PLB4_0_DPC  "
+    rumboot_putstring "Done!\n"
 
 check_cpu_ppc_srammc2plb4_0_3:
-	rumboot_putstring "check_cpu_ppc_srammc2plb4_0_3\n"
+    rumboot_putstring "Check running 0/1 in SRAMMC2PLB4_0...\n"
+    rumboot_putstring "Init:00000000\n"
     load_const  r15,  0x00000000
     load_const  r14,  SRC2P40(BEAR)
     mtdcrx      r14,  r15
@@ -80,6 +82,7 @@ check_cpu_ppc_srammc2plb4_0_3:
     TEST_ASSERT(eq,cr7,"Read/write error in SRAMMC2PLB4_0_BEAR (running 1 init)")
 
 srammc2plb4_0_running_1:
+    rumboot_putstring "Running <1>\n"
     load_const  r15,  0x00000001
     load_const  r17,  0x00000001
     load_const  r18,  0x80000000
@@ -95,6 +98,7 @@ srammc2plb4_0_loop_1:
     b           srammc2plb4_0_loop_1
 
 srammc2plb4_0_running_0:
+    rumboot_putstring "Init:FFFFFFFF\n"
     load_const  r15,  0xFFFFFFFF
     load_const  r14,  SRC2P40(BEAR)
     mtdcrx      r14,  r15
@@ -103,6 +107,7 @@ srammc2plb4_0_running_0:
     crand       eq6,  eq6, eq7
     TEST_ASSERT(eq,cr7,"Read/write error in SRAMMC2PLB4_0_BEAR (running 0 init)")
 
+    rumboot_putstring "Running <0>\n"
     load_const  r15,  0xFFFFFFFE
     load_const  r17,  0x00000001
     load_const  r18,  0x7FFFFFFF
@@ -119,7 +124,8 @@ srammc2plb4_0_loop_0:
     b srammc2plb4_0_loop_0
 
 check_cpu_ppc_srammc2plb4_1_2:
-	rumboot_putstring "check_cpu_ppc_srammc2plb4_1_2\n"
+    rumboot_putstring "Done!\n"
+    rumboot_putstring "Check reset values of SRAMMC2PLB4_1...\n"
     check_value CVR3, SRC2P41(SB0CR), SB0CR_1_RESET_VAL,	"SRAMMC2PLB4_1_SB0CR"
     check_value CVR3, SRC2P41(SB1CR), SB1CR_1_RESET_VAL,	"SRAMMC2PLB4_1_SB1CR"
     check_value CVR3, SRC2P41(SB2CR), SB2CR_1_RESET_VAL,	"SRAMMC2PLB4_1_SB2CR"
@@ -131,8 +137,11 @@ check_cpu_ppc_srammc2plb4_1_2:
     check_value CVR3, SRC2P41(CID  ), CID_RESET_VAL,		"SRAMMC2PLB4_1_CID  "
     check_value CVR3, SRC2P41(REVID), REVID_RESET_VAL,		"SRAMMC2PLB4_1_REVID"
     check_value CVR3, SRC2P41(DPC  ), DPC_RESET_VAL,		"SRAMMC2PLB4_1_DPC  "
+    rumboot_putstring "Done!\n"
 
 check_cpu_ppc_srammc2plb4_1_3:
+    rumboot_putstring "Check running 0/1 in SRAMMC2PLB4_1...\n"
+    rumboot_putstring "Init:00000000\n"
     load_const  r15,  0x00000000
     load_const  r14,  SRC2P41(BEAR)
     mtdcrx      r14,  r15
@@ -142,6 +151,7 @@ check_cpu_ppc_srammc2plb4_1_3:
     TEST_ASSERT(eq,cr7,"Read/write error in SRAMMC2PLB4_1_BEAR (running 1 init)")
 
 srammc2plb4_1_running_1:
+    rumboot_putstring "Running <1>\n"
     load_const  r15,  0x00000001
     load_const  r17,  0x00000001
     load_const  r18,  0x80000000
@@ -157,6 +167,7 @@ srammc2plb4_1_loop_1:
     b           srammc2plb4_1_loop_1
 
 srammc2plb4_1_running_0:
+    rumboot_putstring "Init:FFFFFFFF\n"
     load_const  r15,  0xFFFFFFFF
     load_const  r14,  SRC2P41(BEAR)
     mtdcrx      r14,  r15
@@ -164,7 +175,7 @@ srammc2plb4_1_running_0:
     cmpw cr7,   r16,  r15
     crand       eq6,  eq6,  eq7
     TEST_ASSERT(eq,cr7,"Read/write error in SRAMMC2PLB4_1_BEAR (running 0 init)")
-
+    rumboot_putstring "Running <0>\n"
     load_const  r15,  0xFFFFFFFE
     load_const  r17,  0x00000001
     load_const  r18,  0x7FFFFFFF
@@ -181,6 +192,7 @@ srammc2plb4_1_loop_0:
     b           srammc2plb4_1_loop_0
 
 test_end:
+    rumboot_putstring "Done!\n"
     load_const  r14,  SRC2P40(BEAR)
     load_const  r15,  SRC2P41(BEAR)
     load_const  r16,  BEAR_RESET_VAL
