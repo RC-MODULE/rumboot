@@ -17,6 +17,8 @@
 
 #define PNC_VALUE               P6DMA0_PNC_VALUE
 
+#define SLIDE_REG               SAH0
+
 
 .section ".text","ax",@progbits
 
@@ -104,7 +106,7 @@ running_0_1_dma0:
     rumboot_putstring "PLB6_DMA_0 running 0/1 ...\n"
     rumboot_putstring "Init:00000000\n"
     load_const  r15,  0x00000000
-    load_const  r14,  DP6A(SAH3)
+    load_const  r14,  DP6A(SLIDE_REG)
     mtdcrx      r14,  r15
     mfdcrx      r16,  r14
     cmpw cr7,   r16,  r15
@@ -117,6 +119,7 @@ dma0_running_1:
     load_const  r17,  0x00000001
     load_const  r18,  0x80000000
 dma0_loop_1:
+    // rumboot_puthex    r15
     mtdcrx      r14,  r15
     mfdcrx      r16,  r14
     cmpw cr7,   r16,  r15
@@ -124,12 +127,11 @@ dma0_loop_1:
     TEST_ASSERT(eq,cr7,"Read/write error in DMAPLB6_SAH0 (running 1)")
     cmpw cr0,   r15,  r18
     beq- cr0,   dma0_running_0
-    slw         r15,  r5,  r7
+    slw         r15,  r15,  r17
     b           dma0_loop_1
 
 dma0_running_0:
     rumboot_putstring "Init:FFFFFFFF\n"
-    load_const  r14,  DP6A(SAH3)
     load_const  r15,  0xFFFFFFFF
     mtdcrx      r14,  r15
     mfdcrx      r16,  r14
@@ -142,6 +144,7 @@ dma0_running_0:
     load_const  r17,  0x00000001
     load_const  r18,  0x7FFFFFFF
 dma0_loop_0:
+    // rumboot_puthex    r15
     mtdcrx      r14,  r15
     mfdcrx      r16,  r14
     cmpw cr7,   r16,  r15
