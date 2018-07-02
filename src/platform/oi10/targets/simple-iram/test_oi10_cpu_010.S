@@ -15,6 +15,10 @@
 #define P4A8M1(OFFSET)		(DCR_PLB4ARB8M_1_BASE + (OFFSET))
 #define P4A8M2(OFFSET)		(DCR_PLB4ARB8M_2_BASE + (OFFSET))
 
+#define eq6                 cr6*4+eq
+#define eq7                 cr7*4+eq
+
+
 .section ".text","ax",@progbits
 
 .global main
@@ -42,12 +46,14 @@ check_cpu_ppc_plb4arb_0_3:
     mtdcrx      r15,  r21       /* clear all bits of PESR */
     mfdcrx      r16,  r15       /* read PESR */
     cmpw cr7,   r20,  r16
+    crand       eq6,  eq6,  eq7
     TEST_ASSERT(eq,cr7,"Bits in PLB4ARB8M_0_PESR not cleared")
 plb4arb_0_running_1:
 plb4arb_0_loop_1:
     mtdcrx      r14,  r18       /* set bit of PESR */
     mfdcrx      r16,  r14       /* read PESR */
     cmpw cr7,   r16,  r18
+    crand       eq6,  eq6,  eq7
     TEST_ASSERT(eq,cr7,"Value mismatch: PLB4ARB8M_0_PESR_W (running 1)")
     mtdcrx      r15,  r18       /* clear PESR bit */
     cmpw cr0,   r19,  r18
@@ -59,15 +65,19 @@ plb4arb_0_running_0:
     mtdcrx      r14,  r21       /* set all bits of PESR */
     mfdcrx      r16,  r15       /* read PESR */
     cmpw cr7,   r16,  r21
+    crand       eq6,  eq6,  eq7
     TEST_ASSERT(eq,cr7,"Value mismatch: PLB4ARB8M_0_PESR (running 0 init)")
+    crand       eq6,  eq6,  eq7
 
     load_const r8, 0x00000001   /* start value for writing */
 plb4arb_0_loop_0:
-    xor         r22,  r21, r18  /* r12 = ~r8 (getting running 0 in r8 for compare process) */
+    xor         r22,  r21, r18  /* r22 = ~r8 (getting running 0 in r8 for compare process) */
     mtdcrx      r15,  r18       /* clear one bit of PESR */
     mfdcrx      r16,  r15       /* read PESR */
     cmpw cr7,   r16,  r22
+    crand       eq6,  eq6,  eq7
     TEST_ASSERT(eq,cr7,"Value mismatch: PLB4ARB8M_0_PESR (running 0)")	/* FAIL */
+    crand       eq6,  eq6,  eq7
     mtdcrx      r14,  r21       /* set all bits of PESR */
     cmpw cr0,   r19,  r18
     beq- cr0,   check_cpu_ppc_plb4arb_1_2
@@ -92,12 +102,14 @@ check_cpu_ppc_plb4arb_1_3:
     mtdcrx      r15,  r21               /* clear all bits of PESR */
     mfdcrx      r16,  r15               /* read PESR */
     cmpw cr7,   r20,  r16
+    crand       eq6,  eq6,  eq7
     TEST_ASSERT(eq,cr7,"Bits in PLB4ARB8M_1_PESR not cleared")
 plb4arb_1_running_1:
 plb4arb_1_loop_1:
     mtdcrx      r14,  r18       /* set bit of PESR */
     mfdcrx      r16,  r14       /* read PESR */
     cmpw cr7,   r16,  r18
+    crand       eq6,  eq6,  eq7
     TEST_ASSERT(eq,cr7,"Value mismatch: PLB4ARB8M_1_PESR_W (running 1)")
     mtdcrx      r15,  r18       /* clear PESR bit */
     cmpw cr0,   r19,  r18
@@ -109,14 +121,16 @@ plb4arb_1_running_0:
     mtdcrx      r14,  r21       /* set all bits of PESR */
     mfdcrx      r16,  r15       /* read PESR */
     cmpw cr7,   r16,  r21
+    crand       eq6,  eq6,  eq7
     TEST_ASSERT(eq,cr7,"Value mismatch: PLB4ARB8M_1_PESR (running 0 init)")
 
     load_const  r8,  0x00000001 /* start value for writing */
 plb4arb_1_loop_0:
-    xor         r22, r21, r18   /* r12 = ~r8 (getting running 0 in r8 for compare process) */
+    xor         r22,  r21, r18   /* r12 = ~r8 (getting running 0 in r8 for compare process) */
     mtdcrx      r15,  r18       /* clear one bit of PESR */
     mfdcrx      r16,  r15       /* read PESR */
     cmpw cr7,   r16,  r22
+    crand       eq6,  eq6,  eq7
     TEST_ASSERT(eq,cr7,"Value mismatch: PLB4ARB8M_1_PESR (running 0)")
     mtdcrx      r14,  r21       /* set all bits of PESR */
     cmpw cr0,   r19,  r18
@@ -142,12 +156,14 @@ check_cpu_ppc_plb4arb_2_3:
     mtdcrx      r15,  r21			/* clear all bits of PESR */
     mfdcrx      r16,  r15			/* read PESR */
     cmpw cr7,   r20,  r16
+    crand       eq6,  eq6,  eq7
     TEST_ASSERT(eq,cr7,"Bits in PLB4ARB8M_2_PESR not cleared")
 plb4arb_2_running_1:
 plb4arb_2_loop_1:
     mtdcrx      r14,  r18			/* set bit of PESR */
     mfdcrx      r16,  r14			/* read PESR */
     cmpw cr7,   r16,  r18
+    crand       eq6,  eq6,  eq7
     TEST_ASSERT(eq,cr7,"Value mismatch: PLB4ARB8M_2_PESR_W (running 1)")
     mtdcrx      r15,  r18			/* clear PESR bit */
     cmpw cr0,   r19,  r18
@@ -159,14 +175,16 @@ plb4arb_2_running_0:
     mtdcrx      r14,  r21			/* set all bits of PESR */
     mfdcrx      r16,  r15			/* read PESR */
     cmpw cr7,   r16,  r21
+    crand       eq6,  eq6,  eq7
     TEST_ASSERT(eq,cr7,"Value mismatch: PLB4ARB8M_2_PESR (running 0 init)")
 
     load_const  r18,   0x00000001 	/* start value for writing */
 plb4arb_2_loop_0:
-    xor         r12,  r21, r18   	/* r12 = ~r8 (getting running 0 in r8 for compare process) */
+    xor         r22,  r21, r18   	/* r22 = ~r18 (getting running 0 in r8 for compare process) */
     mtdcrx      r15,  r18           /* clear one bit of PESR */
     mfdcrx      r16,  r15           /* read PESR */
     cmpw cr7,   r16,  r22
+    crand       eq6,  eq6,  eq7
     TEST_ASSERT(eq,cr7,"Value mismatch: PLB4ARB8M_2_PESR (running 0)")
     mtdcrx      r14,  r21           /* set all bits of PESR */
     cmpw cr0,   r19,  r18
