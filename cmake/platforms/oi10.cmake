@@ -99,6 +99,12 @@ add_rumboot_target_dir(rom/
     FEATURES STUB
   )
 
+  add_rumboot_target_dir(jenkins/
+    CONFIGURATION IRAM
+    PREFIX jenkins
+    TESTGROUP short
+  )
+
   add_rumboot_target_dir(simple-iram/
     CONFIGURATION IRAM
     PREFIX simple-iram
