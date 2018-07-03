@@ -167,11 +167,12 @@ int i2c_write_array(uint32_t i2c_base_addr, uint32_t i2c_addr,
 
 	
 int i2c_write_array_two(uint32_t i2c_base_addr, uint32_t addr_h,
-	uint32_t addr_l,uint32_t byte_array_size, uint32_t run_wr, uint32_t data[]) {
+	uint32_t addr_l,uint32_t byte_array_size, uint32_t run_wr, uint32_t data_i) {
 		
 	int i = 0;	
     int tmp = -1;
-	
+	uint32_t data;
+	data = (i+1)  * data_i;
 	 // Write  high subaddress
     rumboot_printf("    Write high subaddr\n");	
     iowrite32((addr_h),(i2c_base_addr + I2C_TRANSMIT)); 
@@ -185,7 +186,7 @@ int i2c_write_array_two(uint32_t i2c_base_addr, uint32_t addr_h,
 	
 	iowrite32((run_wr),(i2c_base_addr + I2C_CTRL));  //run I2C write
 	for (i = 0; i< byte_array_size; i++)
-	{ iowrite32((data[i]),(i2c_base_addr + I2C_TRANSMIT)); }
+	{ iowrite32((data/*[i]*/),(i2c_base_addr + I2C_TRANSMIT)); }
 
 	 tmp = i2c_wait(i2c_base_addr);
 	 rumboot_printf("I2C wake up!\n");
@@ -246,11 +247,12 @@ int i2c_write_array_last(uint32_t i2c_base_addr,
 }
 
 unsigned  i2c_read_check_array (uint32_t i2c_base_addr,uint32_t i2c_addr, uint32_t addr_h,uint32_t addr_l,
-		  uint32_t byte_array_size,uint32_t run_wr, uint32_t data[]) {
+		  uint32_t byte_array_size,uint32_t run_wr, uint32_t data/*[]*/) {
     int tmp = -1;
 	int i = 0;
     unsigned result;    // read data
-
+    uint32_t data_i;
+	data_i = data * (i+1);
 for (i = 0; i< (byte_array_size); i++)
 	{	
 	if (i ==  0) {
@@ -269,7 +271,7 @@ for (i = 0; i< (byte_array_size); i++)
 	 //rumboot_printf("read_num =0x%x\n",i);
 	 // rumboot_printf("check_array32 =0x%x\n",data[i]); 
 	 //  rumboot_printf("i2c_read_result =0x%x\n",result);  
-    if (result  != data[i]) 
+    if (result  != data_i/*[i]*/) 
     {
 	 rumboot_printf("I2C test ERROR!\n");
 	 rumboot_printf("i2c_read_result =0x%x\n",result);   
@@ -278,7 +280,7 @@ for (i = 0; i< (byte_array_size); i++)
 	else
 		{result = ioread32(i2c_base_addr + I2C_RECEIVE);
    // compare results
-    if (result  != data[i]) {
+    if (result  != data_i) {
 	  rumboot_printf("I2C test ERROR!\n");
 	  rumboot_printf("i2c_read_result =0x%x\n",result);  	
         return TEST_ERROR;
@@ -299,20 +301,21 @@ int main()
 	uint32_t addr_h = 0x00;		//write subaddress
 	uint32_t addr_l = 0x00;
 	//uint32_t size_array;
-
+/*
 	static uint32_t check_array32[] = {
-        0x80,
-        0x40,
+        0x10,
         0x20,
-		0x10
+        0x40,
+		0x80
 };
 
 static uint32_t check_array[] = {
-        0x20,
-        0x04,
-        0xFE,
-		0xFF
+        0x1,
+        0x2,
+        0x4,
+		0x8
 };
+*/
 //-------------------------------I2C0 write---------------------------------
   // size_array = sizeof(check_array32) / 4;
 	tmp =i2c_ini(SCL_FREQ);
@@ -327,7 +330,7 @@ static uint32_t check_array[] = {
 	return TEST_ERROR;}
 	
 	tmp = i2c_write_array_two(i2c_base_addr,addr_h,
-			addr_l, 4,0x11/*I2C_CR_WR_RUN_EN*/, check_array32); //old 0x3
+			addr_l, 4,0x11/*I2C_CR_WR_RUN_EN*/, /*check_array32 */ 0x10); //old 0x3
 	if (tmp == I2C_FAILED)
 	{rumboot_printf("I2C write test ERROR!\n");
 	return TEST_ERROR;}
@@ -340,7 +343,7 @@ tmp = i2c_write_array((i2c_base_addr +0x1000), i2c_addr,
 	return TEST_ERROR;}
 	
 	tmp = i2c_write_array_two((i2c_base_addr +0x1000),addr_h,
-			addr_l, 4,0x11/*I2C_CR_WR_RUN_EN*/, check_array); //old 0x3
+			addr_l, 4,0x11/*I2C_CR_WR_RUN_EN*/, /*check_array*/ 0x1);
 	if (tmp == I2C_FAILED)
 	{rumboot_printf("I2C write test ERROR!\n");
 	return TEST_ERROR;}
@@ -374,7 +377,7 @@ tmp = i2c_write_array((i2c_base_addr +0x1000), i2c_addr,
 	
 	
 	tmp = 	i2c_read_check_array (i2c_base_addr,i2c_addr, addr_h,addr_l,
-			4/*size_array*/,0x6B,  check_array32);
+			4/*size_array*/,0x6B, /* check_array32*/0x10);
 		if (tmp == I2C_FAILED)                  
 	{rumboot_printf("I2C read test ERROR!\n");
 		return TEST_ERROR;}
