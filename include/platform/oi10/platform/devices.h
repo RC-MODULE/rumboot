@@ -26,7 +26,7 @@
 
 #define EM2_BASE                0x00000000
 #define IM0_BASE                0x80000000
-#define IM1_BASE                0xС0000000
+#define IM1_BASE                0xC0000000
 #define BOOTROM_BASE            0xFFFF0000
 
 
