@@ -1,4 +1,5 @@
 
+#include <platform/arch/ppc/test_macro_asm.S.h>
 #include <platform/test_assert.S.h>
 #include <platform/test_event_asm.h>
 #include <platform/trace.S.h>
