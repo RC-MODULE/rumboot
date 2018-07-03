@@ -6,6 +6,7 @@
 #include <rumboot/printf.h>
 #include <rumboot/io.h>
 #include <devices/wdt.h>
+#include <devices/crg.h>
 #include <rumboot/irq.h>
 #include <rumboot/platform.h>
 #include <platform/devices.h>
@@ -25,23 +26,60 @@ static void handler_wdt(int irq, void *arg)
 
 static void wdt_init(int to_ctrl, int interval)
 {
-  iowrite32(WDT_UNLOCK_CODE, WDT_BASE + WDT_LOCK); // Unlock WDT regs
+  iowrite32(WDT_UNLOCK_CODE, WDT_BASE + WDT_LOCK); // Unlock WDT regs for write
   iowrite32(to_ctrl        , WDT_BASE + WDT_CTRL); // WDINT and WDRES enable
   iowrite32(interval       , WDT_BASE + WDT_LOAD); // Cnt interval
 }
+
+static void unlock_crg_ddr()
+{
+    iowrite32(CRG_UNLOCK_CODE, CRG_DDR_BASE + CRG_WR_LOCK); // // Unlock CRG_DDR regs for write
+    //iowrite32(0x1ACCE551, CRG_DDR_BASE + CRG_WR_LOCK); // // Unlock CRG_DDR regs for write
+}
+
+
+
+static void write_to_crg_ddr_fbdiv(int value)
+{
+    iowrite32(value, CRG_DDR_BASE + CRG_FBDIV);
+}
+
+static bool check_crg_ddr_fbdiv_default()
+{
+    if(ioread32(CRG_DDR_BASE + CRG_FBDIV) == CRG_DDR_FBDIV_DEF)
+       return true;
+    else    {
+        rumboot_printf("CRG_DDR[FBDIV] has wrong default value!");
+        rumboot_printf("Test WDT FAIL!\n");
+        return false;
+    }
+}
+    
 
 
 
 int main()
 {
   uint32_t *magic_var = &rumboot_platform_runtime_info.persistent[0];
-
+  
   //WDT_MAGIC check
   if (*magic_var == WDT_MAGIC)
   {
       rumboot_printf("magic_var is equal to WDT_MAGIC\n");
-      rumboot_printf("Test WDT OK!\n");
-      return 0;
+      bool flag = check_crg_ddr_fbdiv_default();
+      
+      if (flag)
+      {
+          rumboot_printf("CRG_DDR_FBDIV has correct default value");
+          rumboot_printf("Test WDT OK!\n");
+          return 0;
+      }
+      else
+      {
+          rumboot_printf("CRG_DDR_FBDIV has wrong default value!");
+          rumboot_printf("Test WDT FAIL!\n");
+          return 1;
+      }          
   }
   else {
       if (*magic_var != 0)
@@ -107,6 +145,11 @@ int main()
   /* Place a perf checkpoint to make perf subsystem happy */
   rumboot_platform_perf("WDT Reset");
   rumboot_printf("WDT init again\n");
+  //Unlock CRG_DDR
+  unlock_crg_ddr();
+  //Write to CRG_DDR[FBDIV] wrong value
+  write_to_crg_ddr_fbdiv(0xFFFFFFFF);
+  
   //WDT init
   wdt_init(1 << RST_EN | 1 << INT_EN, WDT_INTERVAL);
 
