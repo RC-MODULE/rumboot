@@ -12,7 +12,7 @@
 #define eq6                     cr6*4+eq
 #define eq7                     cr7*4+eq
 
-#define CVR3					r4,r5,r6 	/* Check Value Regs triade */
+#define CVR3					r14,r15,r16 	/* Check Value Regs triade */
 #define P46A0(OFFSET)			(DCR_PLB4PLB6_0_BASE + (OFFSET))
 
 .section ".text","ax",@progbits

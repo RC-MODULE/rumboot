@@ -9,7 +9,7 @@
 #include <platform/arch/ppc/test_macro_asm.S.h>
 #include <platform/regs/regs_plb4arb8m.h>
 
-#define CVR3				r4,r5,r6
+#define CVR3				r14,r15,r16
 
 #define P4A8M0(OFFSET)		(DCR_PLB4ARB8M_0_BASE + (OFFSET))
 #define P4A8M1(OFFSET)		(DCR_PLB4ARB8M_1_BASE + (OFFSET))
