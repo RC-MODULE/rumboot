@@ -3,19 +3,20 @@
 
 
 //REGISTERS
-#define I2C_ID    0x0
-#define I2C_ISR    0x004
-#define I2C_IER    0x008
-#define I2C_SOFTR   0x00C
-#define I2C_TRANSMIT  0x018
-#define I2C_RECEIVE   0x020
-#define I2C_CTRL   0x010
-#define I2C_NUMBER   0x01C
-#define I2C_STATUS   0x014
-#define I2C_PRESCALE  0x024
-#define I2C_FIFOFIL   0x028
-#define I2C_STAT_RST   0x02C
-#define I2C_FILTR   0x030
+#define I2C_ID    		0x0
+#define I2C_ISR    		0x004
+#define I2C_IER    		0x008
+#define I2C_SOFTR   	0x00C
+#define I2C_CTRL   		0x010
+#define I2C_STATUS   	0x018
+#define I2C_NUMBER   	0x01C
+#define I2C_STAT_RST   	0x020
+#define I2C_PRESCALE  	0x024
+#define I2C_FIFOFIL   	0x028
+#define I2C_FILTR   	0x02C
+#define I2C_TRANSMIT  	0x030
+#define I2C_RECEIVE   	0x430
+
 
 //Interrupt enable register
 #define EN_INT_DONE_i 0
