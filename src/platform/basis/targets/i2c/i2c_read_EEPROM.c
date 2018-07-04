@@ -23,7 +23,6 @@
 #include "constants.h"
 
 #include <platform/interrupts.h>
--
 	
 int main()
 {  
