@@ -1,8 +1,22 @@
+
+#include <platform/arch/ppc/test_macro_asm.S.h>
 #include <platform/trace.S.h>
 #include <platform/test_assert.S.h>
 #include <platform/test_event_asm.h>
 #include <platform/devices.h>
 #include <platform/regs/regs_l2c.h>
+
+#define eq6                     cr6*4+eq
+#define eq7                     cr7*4+eq
+
+/* Registers aliases */
+#define R_DCRA                  r14     /* DCR Address channel   */
+#define R_DCRD                  r15     /* DCR Data channel      */
+#define R_ADDR                  r16     /* Address of I/O Reg    */
+#define R_DATA                  r17     /* Readed data for check */
+#define R_EXPV                  r18     /* Expected value        */
+#define R_SHFT                  r19     /* Shift value           */
+#define R_TERM                  r20     /* Termination template  */
 
 #define L2CA(OFFSET)			(DCR_L2C_BASE + (OFFSET))
 
@@ -123,25 +137,24 @@
 #define L2C_L2WACINTEN2_VAL		0x00000000
 
 .macro check_value_l2c_init
-    load_const r21, L2CA(L2C_DCRAI)
-    load_const r22, L2CA(L2C_DCRDI)
+    load_const  R_DCRA,  L2CA(L2C_DCRAI)
+    load_const  R_DCRD,  L2CA(L2C_DCRDI)
 .endm
 
-.macro check_value_l2c address, expValue, regName
-	rumboot_putstring "Checking \regName ... "
-    load_const r23, \address
-    load_const r24, \expValue
-    mtdcrx r21, r23
-    mfdcrx r25, r22
-    cmp cr7, 0, r24, r25
+.macro check_value_l2c vAddr, vExp, sName
+	rumboot_putstring "Checking \sName ... "
+    load_const  R_ADDR, \vAddr
+    load_const  R_EXPV, \vExp
+    mtdcrx      R_DCRA, R_ADDR
+    mfdcrx      R_DATA, R_DCRD
+    cmpw cr7,   R_DATA, R_EXPV
+    crand       eq6,  eq6,  eq7
     TEST_ASSERT(eq, cr7, "\nDCR check error: In \regName was expected value \expValue (address \address) ")
-    beq+ cr7, 61f
-    b 62f
+    beq+ cr7,   61f
+    b           62f
 61:
-    putchar 'O'
-    putchar 'K'
+    rumboot_putstring   "OK\n"
 62:
-    putchar '\n'
 .endm
 
 
@@ -150,6 +163,8 @@
 .global main
 
 main:
+    load_const  r3,   0x00000000
+    cmpwi cr6,  r3,   0x0000      /* General test status in cr6 */
 
 check_cpu_ppc_l2c:
 	check_value_l2c_init
@@ -178,13 +193,13 @@ check_cpu_ppc_l2c:
 	check_value_l2c L2C_L2PLBDBG,		L2C_L2PLBDBG_VAL,		"L2C_L2PLBDBG"
 	check_value_l2c L2C_L2PLBERAP,		L2C_L2PLBERAP_VAL,		"L2C_L2PLBERAP"
 //	check_value_l2c L2C_L2PLBSTAT0,		L2C_L2PLBSTAT0_VAL,		"L2C_L2PLBSTAT0"
-	check_value_l2c L2C_L2PLBSTAT1,		L2C_L2PLBSTAT1_VAL,		"L2C_L2PLBSTAT1"	/* X in data */
+//	check_value_l2c L2C_L2PLBSTAT1,		L2C_L2PLBSTAT1_VAL,		"L2C_L2PLBSTAT1"	/* X in data */
 	check_value_l2c L2C_L2PLBFRC0,		L2C_L2PLBFRC0_VAL,		"L2C_L2PLBFRC0"
 	check_value_l2c L2C_L2PLBFRC1,		L2C_L2PLBFRC1_VAL,		"L2C_L2PLBFRC1"
 	check_value_l2c L2C_L2PLBMCKEN0,	L2C_L2PLBMCKEN0_VAL,	"L2C_L2PLBMCKEN0"
 	check_value_l2c L2C_L2PLBMCKEN1,	L2C_L2PLBMCKEN1_VAL,	"L2C_L2PLBMCKEN1"
-	check_value_l2c L2C_L2PLBFERR0,		L2C_L2PLBFERR0_VAL,		"L2C_L2PLBFERR0"
-	check_value_l2c L2C_L2PLBFERR1,		L2C_L2PLBFERR1_VAL,		"L2C_L2PLBFERR1"	/* X in data */
+//	check_value_l2c L2C_L2PLBFERR0,		L2C_L2PLBFERR0_VAL,		"L2C_L2PLBFERR0"
+//	check_value_l2c L2C_L2PLBFERR1,		L2C_L2PLBFERR1_VAL,		"L2C_L2PLBFERR1"	/* X in data */
 	check_value_l2c L2C_L2PLBINTEN0,	L2C_L2PLBINTEN0_VAL,	"L2C_L2PLBINTEN0"
 	check_value_l2c L2C_L2PLBINTEN1,	L2C_L2PLBINTEN1_VAL,	"L2C_L2PLBINTEN1"
 	check_value_l2c L2C_L2ARRCFG,		L2C_L2ARRCFG_VAL,		"L2C_L2ARRCFG"
@@ -217,10 +232,10 @@ check_cpu_ppc_l2c:
 	check_value_l2c L2C_L2ARRINTEN2,	L2C_L2ARRINTEN2_VAL,	"L2C_L2ARRINTEN2"
 	check_value_l2c L2C_L2CPUCFG,		L2C_L2CPUCFG_VAL,		"L2C_L2CPUCFG"
 	check_value_l2c L2C_L2CPUDBG,		L2C_L2CPUDBG_VAL,		"L2C_L2CPUDBG"
-	check_value_l2c L2C_L2CPUSTAT,		L2C_L2CPUSTAT_VAL,		"L2C_L2CPUSTAT"
+//	check_value_l2c L2C_L2CPUSTAT,		L2C_L2CPUSTAT_VAL,		"L2C_L2CPUSTAT"
 	check_value_l2c L2C_L2CPUFRC,		L2C_L2CPUFRC_VAL,		"L2C_L2CPUFRC"
 	check_value_l2c L2C_L2CPUMCKEN,		L2C_L2CPUMCKEN_VAL,		"L2C_L2CPUMCKEN"	/* X in data */
-	check_value_l2c L2C_L2CPUFERR,		L2C_L2CPUFERR_VAL,		"L2C_L2CPUFERR"
+//	check_value_l2c L2C_L2CPUFERR,		L2C_L2CPUFERR_VAL,		"L2C_L2CPUFERR"
 	check_value_l2c L2C_L2CPUINTEN,		L2C_L2CPUINTEN_VAL,		"L2C_L2CPUINTEN"
 	check_value_l2c L2C_L2RACCFG,		L2C_L2RACCFG_VAL,		"L2C_L2RACCFG"
 	check_value_l2c L2C_L2RACDBG0,		L2C_L2RACDBG0_VAL,		"L2C_L2RACDBG0"
@@ -251,61 +266,68 @@ check_cpu_ppc_l2c:
 	check_value_l2c L2C_L2WACINTEN2,	L2C_L2WACINTEN2_VAL,	"L2C_L2WACINTEN2"
 
 check_cpu_ppc_l2c_reg:
-	rumboot_putstring "check_cpu_ppc_l2c_reg\n"
-    load_const r7, 0x00000000
-/*	load_const r8, L2C_L2DBGSEL */
-	load_const r8, L2C_L2PLBDBG
-    load_const r5, L2C_DCRAI
-    load_const r6, L2C_DCRDI
-    mtdcrx r5, r8
-    mtdcrx r6, r7
-    mtdcrx r5, r8
-    mfdcrx r2, r6
-    cmp cr7,0, r2,r7
-/*	TEST_ASSERT(eq, cr7, "Check value in L2C_L2DBGSEL register: expected \"0x00000000\"") */
-	TEST_ASSERT(eq, cr7, "Check value in L2C_L2PLBDBG register: expected \"0x00000000\"")
+	rumboot_putstring   "Check running <1> ...\n"
+    load_const  R_EXPV, 0x00000000
+    load_const  R_SHFT, 0x00000001
+/*  load_const  R_ADDR, L2C_L2DBGSEL */
+    load_const  R_ADDR, L2C_L2PLBDBG
+    mtdcrx      R_DCRA, R_ADDR
+    mtdcrx      R_DCRD, R_EXPV
+    mtdcrx      R_DCRA, R_ADDR
+    mfdcrx      R_DATA, R_DCRD
+    cmpw cr7,   R_DATA, R_EXPV
+    crand       eq6,    eq6,    eq7
+	TEST_ASSERT(eq, cr7, "Check value failed (init 0)")
 
 running_1:
-    load_const r7, 0x00000001
-    load_const r3, 0x00000001
-    load_const r4, 0x80000000
+    load_const  R_EXPV, 0x00000001
+    load_const  R_TERM, 0x80000000
 loop_1:
-    mtdcrx r5, r8
-    mtdcrx r6, r7
-    mtdcrx r5, r8
-    mfdcrx r2, r6
-    cmp cr7,0, r2,r7
+    mtdcrx      R_DCRA, R_ADDR
+    mtdcrx      R_DCRD, R_EXPV
+    mtdcrx      R_DCRA, R_ADDR
+    mfdcrx      R_DATA, R_DCRD
+    cmpw cr7,   R_DATA, R_EXPV
+    crand       eq6,    eq6,    eq7
     TEST_ASSERT(eq, cr7, "Check value failed (running 1)") /* FAIL */
-    cmp cr0,0, r7,r4
-    beq running_0
-    slw r7, r7, r3
+    cmpw cr0,   R_EXPV, R_TERM
+    beq- cr0,   running_1_end
+    slw         R_EXPV, R_EXPV, R_SHFT
     b loop_1
+running_1_end:
+    rumboot_putstring "done!\n"
 
 running_0:
-    load_const r7, 0xFFFFFFFF
-    load_const r8, L2C_L2DBGSEL
-    mtdcrx r5, r8
-    mtdcrx r6, r7
-    mtdcrx r5, r8
-    mfdcrx r2, r6
-    cmp cr7,0, r2,r7
+    rumboot_putstring "Check running <0> ...\n"
+    load_const  R_EXPV, 0xFFFFFFFF
+    load_const  R_ADDR, L2C_L2DBGSEL
+    mtdcrx      R_DCRA, R_ADDR
+    mtdcrx      R_DCRD, R_EXPV
+    mtdcrx      R_DCRA, R_ADDR
+    mfdcrx      R_DATA, R_DCRD
+    cmpw cr7,   R_DATA, R_EXPV
+    crand       eq6,  eq6,  eq7
     TEST_ASSERT(eq, cr7, "Check value failed (running 0)")
 
-    load_const r7, 0xFFFFFFFE
-    load_const r3, 0x00000001
-    load_const r4, 0x7FFFFFFF
+    load_const  R_EXPV, 0xFFFFFFFE
+    load_const  R_TERM, 0x7FFFFFFF
 loop_0:
-    mtdcrx r5, r8
-    mtdcrx r6, r7
-    mtdcrx r5, r8
-    mfdcrx r2, r6
-    cmp cr7,0, r2,r7
+    mtdcrx      R_DCRA, R_ADDR
+    mtdcrx      R_DCRD, R_EXPV
+    mtdcrx      R_DCRA, R_ADDR
+    mfdcrx      R_DATA, R_DCRD
+    cmpw cr7,   R_DATA, R_EXPV
+    crand       eq6,    eq6,    eq7
     TEST_ASSERT(eq, cr7, "Check value failed (running 0)") /* FAIL */
-    cmp cr0,0, r7,r4
-    beq test_ok
-    slw r7, r7, r3
-    ori r7, r7, 1
-    b loop_0
+    cmpw cr0,   R_EXPV, R_TERM
+    beq- cr0,   test_end
+    slw         R_EXPV, R_EXPV, R_SHFT
+    ori         R_EXPV, R_EXPV, 0x0001
+    b           loop_0
+
+test_end:
+    rumboot_putstring "done!\n"
+    bne- cr6,   test_error
 
 test_ok:
 	rumboot_putstring "TEST OK\n"
@@ -320,6 +342,5 @@ test_error:
 
 finish:
 	blr
-
 
 
