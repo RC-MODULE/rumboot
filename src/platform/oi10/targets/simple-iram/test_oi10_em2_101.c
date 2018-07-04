@@ -111,18 +111,18 @@ uint32_t check_mclfir(const uint32_t base_address)
 
 uint32_t check_emi(const uint32_t base_address)
 {
-	TEST_ASSERT(dcr_read( EMI_SS0_0 + base_address) == 0x00000000, "In EMI_SS0_0 expected value 0x00000000");
-	TEST_ASSERT(dcr_read( EMI_SD0_0 + base_address) == 0x00000000, "In EMI_SD0_0 expected value 0x00000000");
-	TEST_ASSERT(dcr_read( EMI_SS1_0 + base_address) == 0x00000000, "In EMI_SS1_0 expected value 0x00000000");
-	TEST_ASSERT(dcr_read( EMI_SD1_0 + base_address) == 0x00000000, "In EMI_SD1_0 expected value 0x00000000");
-	TEST_ASSERT(dcr_read( EMI_SS0_1 + base_address) == 0x00000000, "In EMI_SS0_1 expected value 0x00000000");
-	TEST_ASSERT(dcr_read( EMI_SD0_1 + base_address) == 0x00000000, "In EMI_SD0_1 expected value 0x00000000");
-	TEST_ASSERT(dcr_read( EMI_SS1_1 + base_address) == 0x00000000, "In EMI_SS1_1 expected value 0x00000000");
-	TEST_ASSERT(dcr_read( EMI_SD1_1 + base_address) == 0x00000000, "In EMI_SD1_1 expected value 0x00000000");
-	TEST_ASSERT(dcr_read( EMI_SS0_2 + base_address) == 0x00000000, "In EMI_SS0_2 expected value 0x00000000");
-	TEST_ASSERT(dcr_read( EMI_SD0_2 + base_address) == 0x00000000, "In EMI_SD0_2 expected value 0x00000000");
-	TEST_ASSERT(dcr_read( EMI_SS1_2 + base_address) == 0x00000000, "In EMI_SS1_2 expected value 0x00000000");
-	TEST_ASSERT(dcr_read( EMI_SD1_2 + base_address) == 0x00000000, "In EMI_SD1_2 expected value 0x00000000");
+	TEST_ASSERT(dcr_read( EMI_SS0 + base_address) == 0x00000000, "In EMI_SS0 expected value 0x00000000");
+	TEST_ASSERT(dcr_read( EMI_SD0 + base_address) == 0x00000000, "In EMI_SD0 expected value 0x00000000");
+	TEST_ASSERT(dcr_read( EMI_SS1 + base_address) == 0x00000000, "In EMI_SS1_0 expected value 0x00000000");
+	TEST_ASSERT(dcr_read( EMI_SD1 + base_address) == 0x00000000, "In EMI_SD1 expected value 0x00000000");
+	TEST_ASSERT(dcr_read( EMI_SS2 + base_address) == 0x00000000, "In EMI_SS2 expected value 0x00000000");
+	TEST_ASSERT(dcr_read( EMI_SD2 + base_address) == 0x00000000, "In EMI_SD2 expected value 0x00000000");
+	TEST_ASSERT(dcr_read( EMI_SS3 + base_address) == 0x00000000, "In EMI_SS3 expected value 0x00000000");
+	TEST_ASSERT(dcr_read( EMI_SD3 + base_address) == 0x00000000, "In EMI_SD3 expected value 0x00000000");
+	TEST_ASSERT(dcr_read( EMI_SS4 + base_address) == 0x00000000, "In EMI_SS4 expected value 0x00000000");
+	TEST_ASSERT(dcr_read( EMI_SD4 + base_address) == 0x00000000, "In EMI_SD4 expected value 0x00000000");
+	TEST_ASSERT(dcr_read( EMI_SS5 + base_address) == 0x00000000, "In EMI_SS5 expected value 0x00000000");
+	TEST_ASSERT(dcr_read( EMI_SD5 + base_address) == 0x00000000, "In EMI_SD5 expected value 0x00000000");
 	TEST_ASSERT(dcr_read( EMI_RFC + base_address) == 0x00000000, "In EMI_RFC expected value 0x00000000");
 	TEST_ASSERT(dcr_read( EMI_HSTR + base_address) == 0x00000000, "In EMI_HSTR expected value 0x00000000");
 	TEST_ASSERT(dcr_read( EMI_ECNT20 + base_address) == 0x00000000, "In EMI_ECNT20 expected value 0x00000000");
@@ -152,8 +152,8 @@ uint32_t check_emi(const uint32_t base_address)
 
 	uint32_t i;
 	for (i = 0; i< 12; i++){
-	        dcr_write (EMI_SS0_0 + base_address, check_array25[i]);
-	        TEST_ASSERT(dcr_read(EMI_SS0_0  + base_address) == check_array25[i],"EMI DCR data bus check failed");
+	        dcr_write (EMI_SS0 + base_address, check_array25[i]);
+	        TEST_ASSERT(dcr_read(EMI_SS0  + base_address) == check_array25[i],"EMI DCR data bus check failed");
 	    }
 
 	static int32_t check_array32_emi[] = {
