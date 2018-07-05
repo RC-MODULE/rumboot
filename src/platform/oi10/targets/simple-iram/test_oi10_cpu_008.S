@@ -8,6 +8,13 @@
 #include <platform/regs/regs_mpic128.h>
 #include <platform/regs/regs_plb6bc.h>
 
+#define R_ARG0                  r3      /* Argument #1           */
+#define R_ARG1                  r4      /* Argument #2           */
+#define R_ARG2                  r5      /* Argument #3           */
+#define R_ARG3                  r6      /* Argument #4           */
+#define R_RETV                  R_ARG0  /* Return value main     */
+#define R_RETL                  R_ARG0  /* Return value low      */
+#define R_RETH                  R_ARG1  /* Return value high     */
 #define R_ADDR                  r20     /* Address of DCR reg    */
 #define R_EXPV                  r21     /* Expected value        */
 #define R_DATA                  r22     /* Readed data for check */
