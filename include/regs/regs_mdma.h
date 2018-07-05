@@ -1,25 +1,25 @@
-#ifndef REGS_MDMA_H
-#define REGS_MDMA_H
+#ifndef __REGS_MDMA_H__
+#define __REGS_MDMA_H__
 
 //COMMON
 #define MDMA_GP_ID 0x0
 #define MDMA_GP_VER 0x4
 #define MDMA_GP_SOFT_RST 0x8
-#define MDMA_GP_EVENT_SENSE_CH 0xc
-#define MDMA_GP_STATUS 0x10
+#define MDMA_GP_EVENT_SENSE_CH 0x10
+#define MDMA_GP_STATUS 0x18
 
 //WRITE CHANNEL
+#define MDMA_CHANNEL_W 0x200
 #define MDMA_ENABLE_W 0x200
 #define MDMA_SUSPEND_W 0x204
 #define MDMA_CANCEL_W 0x208
 #define MDMA_SETTINGS_W 0x210
 #define MDMA_IRQ_MASK_W 0x214
 #define MDMA_STATUS_W 0x218
-#define MDMA_STATE_W 0x21c
 #define MDMA_DESC_ADDR_W 0x220
 #define MDMA_CUR_DESC_ADDR_W 0x228
 #define MDMA_CUR_ADDR_W 0x22c
-#define MDMA_MAX_LEN_W 0x230
+#define MDMA_STATE_W 0x230
 #define MDMA_AXLEN_W 0x240
 #define MDMA_AXCACHE_W 0x244
 #define MDMA_AXPROT_W 0x248
@@ -35,9 +35,10 @@
 #define MDMA_AWPROT 0x28c
 #define MDMA_AWLOCK 0x290
 #define MDMA_BRESP 0x294
-#define MDMA_WAXI_ERR_ADDR 0x29c
+#define MDMA_WAXI_ERR_ADDR 0x298
 #define MDMA_W_STATE 0x2a0
-#define MDMA_W_PERMUTATION 0x2a4
+#define MDMA_MAX_LEN_W 0x2a4
+#define MDMA_W_PERMUTATION 0x2a8
 #define MDMA_SENSE_LIST_W 0x2c0
 #define MDMA_SIGNAL_TIME_W 0x2c4
 #define MDMA_EVENTS_PRIOR_L_W 0x2c8
@@ -55,17 +56,17 @@
 
 
 //READ CHANNEL
+#define MDMA_CHANNEL_R 0x100
 #define MDMA_ENABLE_R 0x100
 #define MDMA_SUSPEND_R 0x104
 #define MDMA_CANCEL_R 0x108
 #define MDMA_SETTINGS_R 0x110
 #define MDMA_IRQ_MASK_R 0x114
 #define MDMA_STATUS_R 0x118
-#define MDMA_STATE_R 0x11c
 #define MDMA_DESC_ADDR_R 0x120
 #define MDMA_CUR_DESC_ADDR_R 0x128
 #define MDMA_CUR_ADDR_R 0x12c
-#define MDMA_MAX_LEN_R 0x130
+#define MDMA_STATE_R 0x130
 #define MDMA_AXLEN_R 0x140
 #define MDMA_AXCACHE_R 0x144
 #define MDMA_AXPROT_R 0x148
@@ -81,9 +82,10 @@
 #define MDMA_ARPROT 0x18c
 #define MDMA_ARLOCK 0x190
 #define MDMA_RRESP 0x194
-#define MDMA_RAXI_ERR_ADDR 0x19c
+#define MDMA_RAXI_ERR_ADDR 0x198
 #define MDMA_R_STATE 0x1a0
-#define MDMA_R_PERMUTATION 0x1a4
+#define MDMA_MAX_LEN_R 0x1a4
+#define MDMA_R_PERMUTATION 0x1a8
 #define MDMA_SENSE_LIST_R 0x1c0
 #define MDMA_SIGNAL_TIME_R 0x1c4
 #define MDMA_EVENTS_PRIOR_L_R 0x1c8
@@ -104,17 +106,16 @@
 #define ADD_INFO_i 4
 
 /*IRQ MASK*/
-#define DIS_DONE_i 0
+#define SUSPEND_DONE_i 0
 #define CANCEL_DONE_i 1
 #define INT_DESC_i 2
 #define BAD_DESC_i 3
 #define STOP_DESC_i 4
-#define DISCARD_DESC_i 5
-#define RAXI_ERR_i 6
-#define WAXI_ERR_i 7
-#define AXI_ERR_i 8
-#define START_BY_EVENT_i 9
-#define IGNORE_EVENT_i 10
+#define RAXI_ERR_i 5
+#define WAXI_ERR_i 6
+#define AXI_ERR_i 7
+#define START_BY_EVENT_i 8
+#define IGNORE_EVENT_i 9
 
 /*IRQ STATUS*/
 
