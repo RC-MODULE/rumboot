@@ -1,138 +1,65 @@
 #ifndef PPC_476FP_LIB_C_H
 #define PPC_476FP_LIB_C_H
 
+
 #include <stdint.h>
 
-#define MSR_EE              48
-#define MSR_CE              46
-
 
 /*DCR bus access*/
-static inline void dcr_write( uint32_t const addr, uint32_t const wval )
-{
-    asm volatile
-    (
+static inline void dcr_write( uint32_t const addr, uint32_t const wval ) {
+    asm volatile (
         "mtdcrx %0, %1 \n\t"
-        ::"r"(addr), "r"(wval)
+        ::  "r"(addr), "r"(wval)
     );
 }
 
-static inline uint32_t dcr_read( uint32_t const addr )
-{
-    uint32_t rval=0;
-    asm volatile
-    (
+static inline uint32_t dcr_read( uint32_t const addr ) {
+    uint32_t rval = 0;
+    asm volatile (
         "mfdcrx %0, %1 \n\t"
-        :"=r"(rval)
-        :"r"(addr)
+        :   "=r"(rval)
+        :   "r"(addr)
     );
     return rval;
 }
 
 /*MSR access*/
-static inline void msr_write( uint32_t const wval )
-{
-    asm volatile
-    (
+static inline void msr_write( uint32_t const wval ) {
+    asm volatile (
         "mtmsr %0 \n\t"
-        ::"r"(wval)
+        ::  "r"(wval)
+        :   "memory"
     );
 }
 
-static inline uint32_t msr_read()
-{
-    uint32_t rval=0;
-    asm volatile
-    (
+static inline uint32_t msr_read() {
+    uint32_t rval = 0;
+    asm volatile (
         "mfmsr %0 \n\t"
-        :"=r"(rval)
+        :   "=r"(rval)
+        ::  "memory"
     );
     return rval;
 }
 
-/*DCR bus access*/
-static inline void mtdcrx( uint32_t const addr, uint32_t const wval )
-{
-    asm volatile
-    (
-        "mtdcrx %0, %1 \n\t"
-        ::"r"(addr), "r"(wval)
-    );
-}
-
-static inline uint32_t mfdcrx( uint32_t const addr )
-{
-    uint32_t rval=0;
-    asm volatile
-    (
-        "mfdcrx %0, %1 \n\t"
-        :"=r"(rval)
-        :"r"(addr)
-    );
-    return rval;
-}
-
-/*MSR access*/
-static inline void mtmsr( uint32_t const wval )
-{
-    asm volatile
-    (
-        "mtmsr %0 \n\t"
-        ::"r"(wval)
-    );
-}
-
-static inline uint32_t mfmsr()
-{
-    uint32_t rval=0;
-    asm volatile
-    (
-        "mfmsr %0 \n\t"
-        :"=r"(rval)
-    );
-    return rval;
-}
-
-inline static void dcbi( void* const addr )
-{
-    asm volatile
-    (
+inline static void dcbi( void* const addr ) {
+    asm volatile (
         "dcbi 0, %0\n\t"
-        ::"r"(addr)
+        ::  "r"(addr)
     );
 }
 
-inline static void dcbz( void* const addr )
-{
-    asm volatile
-    (
+inline static void dcbz( void* const addr ) {
+    asm volatile (
         "dcbz 0, %0\n\t"
-        ::"r"(addr)
+        ::  "r"(addr)
     );
 }
 
-inline static void dcbst( void* const addr )
-{
-    asm volatile
-    (
+inline static void dcbst( void* const addr ) {
+    asm volatile (
         "dcbst 0, %0\n\t"
         ::"r"(addr)
-    );
-}
-
-inline static void sc()
-{
-    asm volatile
-    (
-        "sc\n\t"
-    );
-}
-
-inline static void trap()
-{
-    asm volatile
-    (
-        "trap\n\t"
     );
 }
 
@@ -142,65 +69,65 @@ inline static void trap()
  * inlining function is not a must-do but only recommendation
  * to the compiler*/
 #define rfi()\
-    asm volatile\
-    (\
+    asm volatile (\
         "rfi \n\t"\
     )
 
 #define rfci()\
-    asm volatile\
-    (\
+    asm volatile (\
         "rfci \n\t"\
     )
 
 #define rfmci()\
-    asm volatile\
-    (\
+    asm volatile (\
         "rfmci \n\t"\
     )
 
 #define isync()\
-    asm volatile\
-    (\
+    asm volatile (\
         "isync \n\t"\
     )
 
 #define mbar()\
-    asm volatile\
-    (\
+    asm volatile (\
         "mbar \n\t"\
     )
 
 #define msync()\
-    asm volatile\
-    (\
+    asm volatile (\
         "msync \n\t"\
     )
 
 #define lwsync()\
-    asm volatile\
-    (\
+    asm volatile (\
         "lwsync \n\t"\
     )
 
 #define ici( CT )\
-    asm volatile\
-    (\
+    asm volatile (\
         "ici %0 \n\t"\
-        ::"i"(CT)\
+        ::  "i"(CT)\
     )
 
 #define dci( CT )\
-    asm volatile\
-    (\
+    asm volatile (\
         "dci %0 \n\t"\
-        ::"i"(CT)\
+        ::  "i"(CT)\
     )
 
 #define nop()\
-    asm volatile\
-    (\
+    asm volatile (\
         "nop \n\t"\
+    )
+
+#define sc()\
+    asm volatile (\
+        "sc \n\t"\
+    )
+
+#define trap()\
+    asm volatile (\
+        "trap \n\t"\
     )
 
 #endif  /* PPC_476FP_LIB_C_H*/
