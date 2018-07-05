@@ -25,17 +25,17 @@
 #include <arch/irq_macros.h>
 #else
     /* stubs */
-static inline int rumboot_arch_irq_disable(void)
+static inline uint32_t rumboot_arch_irq_disable( )
 {
     return 0;
 }
 
-static inline void rumboot_arch_irq_enable()
+static inline uint32_t rumboot_arch_irq_enable()
 {
-
+    return 0;
 }
 
-static inline int rumboot_arch_irq_setstate(int pri_mask)
+static inline uint32_t rumboot_arch_irq_setstate(uint32_t new_state)
 {
     return 0;
 }
@@ -278,13 +278,13 @@ static inline int rumboot_arch_irq_setstate(int pri_mask)
      * ARCH-specific glue: Disable CPU IRQ handling.
      * DO NOT USE DIRECTLY - USE rumboot_irq_cli()
      */
-    static inline int rumboot_arch_irq_disable();
+    static inline uint32_t rumboot_arch_irq_disable();
 
     /**
      * ARCH-specific glue: Enable CPU IRQ handling.
      * DO NOT USE DIRECTLY - USE rumboot_irq_sei()
      */
-    static inline void rumboot_arch_irq_enable();
+    static inline uint32_t rumboot_arch_irq_enable();
 
     /**
      * This function should be called via platform glue code to register
