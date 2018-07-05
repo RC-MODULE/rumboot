@@ -14,9 +14,6 @@
 #include <platform/arch/ppc/test_macro_asm.S.h>
 #include <platform/regs/regs_plb4ahb.h>
 
-#define eq6                     cr6*4+eq
-#define eq7                     cr7*4+eq
-
 #define CVR3					r14,r15,r16 	/* Check Value Regs triade */
 #define P4A0(OFFSET)			(DCR_PLB4AHB_0_BASE + (OFFSET))
 
@@ -52,7 +49,6 @@ running_0_1_p4ahb_0:
     mtdcrx      r14,  r15
     mfdcrx      r16,  r14
     cmpw cr7,   r16,  r15
-    crand       eq6,  eq6,  eq7
     TEST_ASSERT(eq,cr7,"Read/write error in DCR_PLB4AHB_0_CONTROL (running 1 init)")
 
 p4ahb_0_running_1:
@@ -63,7 +59,6 @@ p4ahb_0_loop_1:
     mtdcrx      r14,  r15
     mfdcrx      r16,  r14
     cmpw cr7,   r16,  r15
-    crand       eq6,  eq6,  eq7
     TEST_ASSERT(eq,cr7,"Read/write error in DCR_PLB4AHB_0_CONTROL (running 1)")
     cmpw cr0,   r15,  r18
     beq- cr0,   p4ahb_0_running_0
@@ -76,7 +71,6 @@ p4ahb_0_running_0:
     mtdcrx      r14,  r15
     mfdcrx      r16,  r14
     cmpw cr7,   r16,  r15
-    crand       eq6,  eq6,  eq7
     TEST_ASSERT(eq,cr7,"Read/write error in DCR_PLB4AHB_0_CONTROL (running 0 init)")
 
     load_const  r15,  0x000000FE
@@ -87,14 +81,14 @@ p4ahb_0_loop_0:
     mtdcrx      r14,  r15
     mfdcrx      r16,  r14
     cmpw cr7,   r16,  r15
-    crand       eq6,  eq6,  eq7
     TEST_ASSERT(eq,cr7,"Read/write error in DCR_PLB4AHB_0_CONTROL (running 0)")
     cmpw cr0,   r15,  r18
     beq- cr0,   p4ahb_0_done
     slw         r15,  r15,  r17
     ori         r15,  r15,  0x00000001
     and         r15,  r15,  r19
-    b p4ahb_0_loop_0
+    b           p4ahb_0_loop_0
+
  p4ahb_0_done:
     rumboot_putstring "p4ahb_0 running 0/1 done!\n"
     bne- cr6,   test_error
