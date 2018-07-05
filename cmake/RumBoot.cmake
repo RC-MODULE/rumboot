@@ -1,3 +1,72 @@
+set(RUMBOOT_ONEVALUE_ARGS SNAPSHOT LDS PREFIX NAME BOOTROM)
+set(RUMBOOT_MULVALUE_ARGS FILES IRUN_FLAGS CFLAGS TESTGROUP LDFLAGS CHECKCMD FEATURES TIMEOUT LOAD )
+
+
+macro(rumboot_add_configuration name)
+  message(STATUS "Adding configuration ${name}")
+  set(options DEFAULT)
+  set(oneValueArgs   ${RUMBOOT_ONEVALUE_ARGS})
+  set(multiValueArgs ${RUMBOOT_MULVALUE_ARGS})
+
+  cmake_parse_arguments(CONFIGURATION_${name} "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+  LIST(APPEND RUMBOOT_CONFIGURATIONS ${name})
+  if (CONFIGURATION_${name}_DEFAULT)
+    set(RUMBOOT_PLATFORM_DEFAULT_CONFIGURATION ${name})
+    message(STATUS "Default configuration set to: ${RUMBOOT_PLATFORM_DEFAULT_CONFIGURATION}")
+  endif()
+
+  list (FIND CONFIGURATION_${name}_FEATURES "COVERAGE" _index)
+  if (${_index} GREATER -1 AND RUMBOOT_COVERAGE)
+    message(STATUS "Enabling coverage instrumentation for: ${name}")
+    set(CONFIGURATION_${name}_CFLAGS
+      ${CONFIGURATION_${name}_CFLAGS} ${RUMBOOT_COVER_CFLAGS})
+    set(CONFIGURATION_${name}_LDFLAGS
+    ${CONFIGURATION_${name}_LDFLAGS} ${RUMBOOT_COVER_LFLAGS})
+
+  endif()
+
+endmacro()
+
+macro(config_load_param conf param)
+  if (NOT TARGET_${param})
+    set(TARGET_${param} ${CONFIGURATION_${conf}_${param}})
+  endif()
+endmacro()
+
+macro(config_load_param_append conf param)
+    set(TARGET_${param} ${TARGET_${param}} ${CONFIGURATION_${conf}_${param}})
+endmacro()
+
+macro(generate_product_name outvar name)
+  set(${outvar} rumboot-${RUMBOOT_PLATFORM}-${RUMBOOT_BUILD_TYPE}-${name})
+endmacro()
+
+macro(add_rumboot_target_dir dir)
+  #TODO: Use RUMBOOT_PLATFORM_TARGET_DIR
+  #TODO: Search and resolve directories in common/ dir
+  file(GLOB RUMBOOT_TARGETS_C ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/targets/${dir}/*.c)
+  file(GLOB RUMBOOT_TARGETS_S ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/targets/${dir}/*.S)
+  file(GLOB RUMBOOT_TARGETS_LUA ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/${dir}/*.lua)
+
+  foreach(target ${RUMBOOT_TARGETS_C} ${RUMBOOT_TARGETS_S} )
+    add_rumboot_target(
+        ${ARGN}
+        FILES ${target}
+    )
+  endforeach()
+endmacro()
+
+
+
+if (CMAKE_VERILOG_RULES_DIR)
+  get_filename_component(_dir ${CMAKE_CURRENT_LIST_FILE} DIRECTORY)
+  include(${_dir}/integration.cmake)
+  return()
+endif()
+
+##############################################################################
+
+
 function(add_source SRC)
         SET(PLATFORM_SOURCES "${PLATFORM_SOURCES};${CMAKE_SOURCE_DIR}/${SRC}" PARENT_SCOPE)
 endfunction()
@@ -53,44 +122,6 @@ endmacro()
 set(RUMBOOT_COVER_CFLAGS -DRUMBOOT_COVERAGE=1 -fprofile-arcs -ftest-coverage)
 set(RUMBOOT_COVER_LFLAGS --coverage)
 
-macro(rumboot_add_configuration name)
-  message(STATUS "Adding configuration ${name}")
-  set(options DEFAULT)
-  set(oneValueArgs SNAPSHOT LDS PREFIX NAME BOOTROM)
-  set(multiValueArgs FILES IRUN_FLAGS CFLAGS LDFLAGS FEATURES TIMEOUT DEPENDS)
-
-  cmake_parse_arguments(CONFIGURATION_${name} "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
-  LIST(APPEND RUMBOOT_CONFIGURATIONS ${name})
-  if (CONFIGURATION_${name}_DEFAULT)
-    set(RUMBOOT_PLATFORM_DEFAULT_CONFIGURATION ${name})
-    message(STATUS "Default configuration set to: ${RUMBOOT_PLATFORM_DEFAULT_CONFIGURATION}")
-  endif()
-
-  list (FIND CONFIGURATION_${name}_FEATURES "COVERAGE" _index)
-  if (${_index} GREATER -1 AND RUMBOOT_COVERAGE)
-    message(STATUS "Enabling coverage instrumentation for: ${name}")
-    set(CONFIGURATION_${name}_CFLAGS
-      ${CONFIGURATION_${name}_CFLAGS} ${RUMBOOT_COVER_CFLAGS})
-    set(CONFIGURATION_${name}_LDFLAGS
-    ${CONFIGURATION_${name}_LDFLAGS} ${RUMBOOT_COVER_LFLAGS})
-
-  endif()
-
-endmacro()
-
-macro(config_load_param conf param)
-  if (NOT TARGET_${param})
-    set(TARGET_${param} ${CONFIGURATION_${conf}_${param}})
-  endif()
-endmacro()
-
-macro(config_load_param_append conf param)
-    set(TARGET_${param} ${TARGET_${param}} ${CONFIGURATION_${conf}_${param}})
-endmacro()
-
-macro(generate_product_name outvar name)
-  set(${outvar} rumboot-${RUMBOOT_PLATFORM}-${CMAKE_BUILD_TYPE}-${name})
-endmacro()
 
 macro(populate_dependencies target)
     foreach(dep ${TARGET_DEPENDS})
@@ -119,27 +150,12 @@ macro(locate_source_file file)
   endif()
 endmacro()
 
-#TODO: CLEAN UN INTEGRATION STUFF BY INCLUDING RumBoot.cmake
-#TODO: RIGHT HERE.
-macro(add_rumboot_target_dir dir)
-  #TODO: Use RUMBOOT_PLATFORM_TARGET_DIR
-  #TODO: Search and resolve directories in common/ dir
-  file(GLOB RUMBOOT_TARGETS_C ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/targets/${dir}/*.c)
-  file(GLOB RUMBOOT_TARGETS_S ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/targets/${dir}/*.S)
-  file(GLOB RUMBOOT_TARGETS_LUA ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/${dir}/*.lua)
-
-  foreach(target ${RUMBOOT_TARGETS_C} ${RUMBOOT_TARGETS_S} )
-    add_rumboot_target(
-        ${ARGN}
-        FILES ${target}
-    )
-  endforeach()
-endmacro()
 
 function(add_rumboot_target)
   set(options )
-  set(oneValueArgs SNAPSHOT LDS NAME PREFIX CONFIGURATION BOOTROM)
-  set(multiValueArgs FILES IRUN_FLAGS CFLAGS TESTGROUP LDFLAGS CHECKCMD FEATURES TIMEOUT DEPENDS)
+
+  set(oneValueArgs   ${RUMBOOT_ONEVALUE_ARGS} CONFIGURATION)
+  set(multiValueArgs ${RUMBOOT_MULVALUE_ARGS})
 
   cmake_parse_arguments(TARGET "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 

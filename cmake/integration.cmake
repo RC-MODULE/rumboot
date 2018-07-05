@@ -1,6 +1,9 @@
 # RumBoot
 # This invocation builds rumboot in native mode and runs the tests
-# if native tests fail - no use to test anything at all
+# if native tests fail - no use to test anything at all${RUMBOOT_ONEVALUE_ARGS}
+
+set(RUMBOOT_ONEVALUE_ARGS SNAPSHOT LDS PREFIX NAME BOOTROM)
+set(RUMBOOT_MULVALUE_ARGS FILES IRUN_FLAGS CFLAGS TESTGROUP LDFLAGS CHECKCMD FEATURES TIMEOUT LOAD)
 
 add_custom_target(rumboot)
 
@@ -13,55 +16,12 @@ if(RUMBOOT_COVERAGE)
   )
 endif()
 
-#TODO: CLEAN UN INTEGRATION STUFF BY INCLUDING RumBoot.cmake
-#TODO: RIGHT HERE.
-macro(add_rumboot_target_dir dir)
-  #TODO: Use RUMBOOT_PLATFORM_TARGET_DIR
-  #TODO: Search and resolve directories in common/ dir
-  file(GLOB RUMBOOT_TARGETS_C ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/targets/${dir}/*.c)
-  file(GLOB RUMBOOT_TARGETS_S ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/targets/${dir}/*.S)
-  file(GLOB RUMBOOT_TARGETS_LUA ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/${dir}/*.lua)
-
-  foreach(target ${RUMBOOT_TARGETS_C} ${RUMBOOT_TARGETS_S} )
-    add_rumboot_target(
-        ${ARGN}
-        FILES ${target}
-    )
-  endforeach()
-endmacro()
-
-# This one builds our rumboot that we're gonna use for the SoC
-# Disabled until the rumboot builds for target are actually supported
-#add_external_component(rumboot rumboot -DRUMBOOT_PLATFORM=basis)
-macro(rumboot_add_configuration name)
-  message(STATUS "Adding configuration ${name}")
-  set(options DEFAULT)
-  set(oneValueArgs SNAPSHOT LDS PREFIX NAME BOOTROM)
-  set(multiValueArgs FILES IRUN_FLAGS CFLAGS TESTGROUP FEATURES TIMEOUT)
-
-  cmake_parse_arguments(CONFIGURATION_${name} "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
-  LIST(APPEND RUMBOOT_CONFIGURATIONS ${name})
-  if (CONFIGURATION_${name}_DEFAULT)
-    set(RUMBOOT_PLATFORM_DEFAULT_CONFIGURATION ${name})
-    message(STATUS "Default configuration set to: ${RUMBOOT_PLATFORM_DEFAULT_CONFIGURATION}")
-  endif()
-endmacro()
-
-macro(config_load_param conf param)
-  if (NOT TARGET_${param})
-    set(TARGET_${param} ${CONFIGURATION_${conf}_${param}})
-  endif()
-endmacro()
-
-macro(config_load_param_append conf param)
-    set(TARGET_${param} ${TARGET_${param}} ${CONFIGURATION_${conf}_${param}})
-endmacro()
 
 function(add_rumboot_target)
   # snapshot lds prefix target
   set(optons "")
-  set(oneValueArgs SNAPSHOT LDS NAME PREFIX CONFIGURATION BOOTROM)
-  set(multiValueArgs FILES IRUN_FLAGS CFLAGS TESTGROUP LDFLAGS CHECKCMD FEATURES TIMEOUT)
+  set(oneValueArgs ${RUMBOOT_ONEVALUE_ARGS} CONFIGURATION)
+  set(multiValueArgs ${RUMBOOT_MULVALUE_ARGS})
 
   cmake_parse_arguments(TARGET "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
@@ -94,6 +54,8 @@ function(add_rumboot_target)
     return()
   endif()
 
+  add_custom_target(${product})
+
   list (FIND TARGET_FEATURES "STUB" _index)
   if (${_index} GREATER -1)
     return()
@@ -115,12 +77,32 @@ function(add_rumboot_target)
   if (NOT TARGET_BOOTROM)
     set(bootrom_flags +BOOTROM=${rumboot_fulldir}/${product}.hex)
   else()
-      set(bproduct rumboot-${RUMBOOT_PLATFORM}-${buildtype}-${TARGET_BOOTROM})
+      generate_product_name(bproduct ${TARGET_BOOTROM})
       set(bootrom_flags
           +BOOTROM=${rumboot_fulldir}/${bproduct}.hex
-          +IM0BIN=${rumboot_fulldir}/${product}.bin
     )
   endif()
+
+  set(v 0)
+  set(loadflags "")
+  foreach(l ${TARGET_LOAD})
+    if (v EQUAL 0)
+      set(plus ${l})
+      set(v 1)
+    else()
+      set(trg ${l})
+      generate_product_name(tproduct ${trg})
+      message(${tproduct})
+      if (${trg} STREQUAL "SELF")
+        set(loadflags "${loadflags} +${plus}=${rumboot_fulldir}/${product}.bin")
+      elseif(TARGET ${tproduct})
+        set(loadflags "${loadflags} +${plus}=${rumboot_fulldir}/${tproduct}.bin")
+      else()
+        set(loadflags "${loadflags} +${plus}=${trg}")
+      endif()
+      set(v 0)
+    endif()
+  endforeach()
 
   if (NOT "${TARGET_CHECKCMD}" STREQUAL "")
     string(REPLACE ";" " " TARGET_CHECKCMD "${TARGET_CHECKCMD}")
@@ -156,6 +138,7 @@ function(add_rumboot_target)
         ${lprobe_flags}
         ${timeout_flags}
         +BOOTMAP=${rumboot_fulldir}/${product}.dmp
+        ${loadflags}
         ${TARGET_IRUN_FLAGS}
     )
 

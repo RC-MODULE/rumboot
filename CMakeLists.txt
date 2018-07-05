@@ -9,6 +9,7 @@ SET(RUMBOOT_PLATFORM "native" CACHE STRING "RumBoot platform to compile for")
 if (NOT CMAKE_BUILD_TYPE)
   SET(CMAKE_BUILD_TYPE "Production" CACHE string "BuildType")
 endif()
+set(RUMBOOT_BUILD_TYPE ${CMAKE_BUILD_TYPE})
 
 INCLUDE(cmake/platforms/${RUMBOOT_PLATFORM}.cmake)
 

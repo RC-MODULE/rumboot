@@ -47,6 +47,7 @@ rumboot_add_configuration (
   CFLAGS -DRUMBOOT_PRINTF_ACCEL
   BOOTROM bootrom-stub
   FEATURES LUA COVERAGE
+  LOAD IM0BIN SELF
 )
 
 macro(rumboot_platform_generate_stuff_for_taget product)
@@ -78,6 +79,15 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 #    FILES bare-rom/gtube-spr-check.S
 #  )
 
+add_rumboot_target(
+  CONFIGURATION ROM
+  FILES common/bootrom-stubs/bootrom-stub.c
+  PREFIX "bootrom"
+  NAME "stub"
+  FEATURES STUB
+)
+
+
   add_rumboot_target_dir(bare-rom/
     CONFIGURATION BAREROM
     TESTGROUP short
@@ -89,14 +99,6 @@ add_rumboot_target_dir(rom/
 
   add_rumboot_target_dir(tests/
     CONFIGURATION ROM
-  )
-
-  add_rumboot_target(
-    CONFIGURATION ROM
-    FILES common/bootrom-stubs/bootrom-stub.c
-    PREFIX "bootrom"
-    NAME "stub"
-    FEATURES STUB
   )
 
   add_rumboot_target_dir(jenkins/

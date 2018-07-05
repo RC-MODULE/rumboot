@@ -38,6 +38,7 @@ rumboot_add_configuration (
   CFLAGS -DRUMBOOT_PRINTF_ACCEL
   BOOTROM bootrom-stub
   FEATURES LUA COVERAGE
+  LOAD IM0BIN SELF
 )
 
 rumboot_add_configuration (
@@ -49,6 +50,7 @@ rumboot_add_configuration (
   CFLAGS -DRUMBOOT_PRINTF_ACCEL -DRUMBOOT_BASIS_ENABLE_MIRROR -DRUMBOOT_BASIS_ENABLE_DDR
   BOOTROM bootrom-stub-mirror
   FEATURES LUA COVERAGE
+  LOAD IM0BIN SELF
 )
 
 rumboot_add_configuration(
@@ -135,7 +137,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       CFLAGS -DI2C_BASE=I2C1_BASE -DI2C_IRQ=I2C1_IRQ
       PREFIX i2c-1
     )
-	
+
 	 add_rumboot_target_dir(i2c/
       CONFIGURATION IRAM_MIRROR
       CFLAGS -DI2C_BASE=I2C0_BASE -DI2C_IRQ=I2C0_IRQ
@@ -161,14 +163,14 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       PREFIX multimaster-mirror
     )
 	add_rumboot_target_dir(arinc/
-      CONFIGURATION IRAM     
+      CONFIGURATION IRAM
       PREFIX arinc
     )
 	add_rumboot_target_dir(arinc/
       CONFIGURATION IRAM_MIRROR
       PREFIX arinc-mirror
     )
-	
+
     add_rumboot_target_dir(common/spl-stubs/
       CONFIGURATION IRAM
       PREFIX spl
@@ -281,7 +283,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
    TIMEOUT 300 us
    IRUN_FLAGS +gpio_test
   )
- 
+
   add_rumboot_target(
    CONFIGURATION IRAM
    FILES gpio/gpio_irq.c
@@ -330,7 +332,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
    TIMEOUT 700 us
    IRUN_FLAGS +can_plus_adapter
   )
-  
+
  add_rumboot_target(
    CONFIGURATION IRAM
    FILES can-adapter/can_adapter_2_test.c
@@ -704,7 +706,7 @@ endif()
       NAME i2c_0_read_test_interference
       IRUN_FLAGS +i2c_interference_gen
     )
-    
+
   add_rumboot_target(
       SNAPSHOT default
       CONFIGURATION IRAM
@@ -712,147 +714,147 @@ endif()
       NAME i2c_1_read_test_interference
       IRUN_FLAGS +i2c_interference_gen
     )
-    
+
   add_rumboot_target(
       SNAPSHOT default
       CONFIGURATION IRAM
       FILES pcie/ext_irq_gen_reg_test.c
       NAME ext_irq_gen_reg_test
     )
-    
+
   add_rumboot_target(
       SNAPSHOT default
       CONFIGURATION IRAM
       FILES pcie/pcie_ctrl_reg_test.c
       NAME pcie_ctrl_reg_test
     )
-    
+
   add_rumboot_target(
       SNAPSHOT default
       CONFIGURATION IRAM
       FILES pcie/pcie_phy_bist_prbs31.S
       NAME pcie_phy_bist_prbs31
     )
-    
+
   add_rumboot_target(
       SNAPSHOT default
       CONFIGURATION IRAM
       FILES pcie/pcie_soft_reset_eRP_test.c
       NAME pcie_soft_reset_eRP_test
     )
-    
+
   add_rumboot_target(
       SNAPSHOT default
       CONFIGURATION IRAM
       FILES pcie/pcie_core_reg_test.c
       NAME pcie_core_reg_test
     )
-    
+
   add_rumboot_target(
       SNAPSHOT default
       CONFIGURATION IRAM
       FILES pcie/pcie_msix_eRP_test.c
       NAME pcie_msix_eRP_test
     )
-    
+
   add_rumboot_target(
       SNAPSHOT default
       CONFIGURATION IRAM
       FILES pcie/pcie_phy_reg_test.c
       NAME pcie_phy_reg_test
     )
-    
+
   add_rumboot_target(
       SNAPSHOT default
       CONFIGURATION IRAM
       FILES pcie/pcie_turn_on_eRP_test.c
       NAME pcie_turn_on_eRP_test
     )
-    
+
   add_rumboot_target(
       SNAPSHOT default
       CONFIGURATION IRAM
       FILES pcie/addr_trans_mst_reg_test.c
       NAME addr_trans_mst_reg_test
     )
-    
+
   add_rumboot_target(
       SNAPSHOT default
       CONFIGURATION IRAM
       FILES pcie/addr_trans_slv_reg_test.c
       NAME addr_trans_slv_reg_test
     )
-    
+
   add_rumboot_target(
       SNAPSHOT default
       CONFIGURATION IRAM
       FILES ddr/ddr0_addr_test.c
       NAME ddr0_addr_test
     )
-    
+
   add_rumboot_target(
       SNAPSHOT default
       CONFIGURATION IRAM
       FILES ddr/ddr1_addr_test.c
       NAME ddr1_addr_test
     )
-    
+
   add_rumboot_target(
       SNAPSHOT default
       CONFIGURATION IRAM
       FILES ddr/ddr0_reg_test.c
       NAME ddr0_reg_test
     )
-    
+
   add_rumboot_target(
       SNAPSHOT default
       CONFIGURATION IRAM
       FILES ddr/ddr1_reg_test.c
       NAME ddr1_reg_test
     )
-    
+
   add_rumboot_target(
       SNAPSHOT default
       CONFIGURATION IRAM
       FILES ddr/ddr0_low_power_test.c
       NAME ddr0_low_power_test
     )
-    
+
   add_rumboot_target(
       SNAPSHOT default
       CONFIGURATION IRAM
       FILES ddr/ddr1_low_power_test.c
       NAME ddr1_low_power_test
     )
-    
+
   add_rumboot_target(
       SNAPSHOT default
       CONFIGURATION IRAM
       FILES ddr/ddr0_phy_bist_test.S
       NAME ddr0_phy_bist_test
     )
-    
+
   add_rumboot_target(
       SNAPSHOT default
       CONFIGURATION IRAM
       FILES ddr/ddr1_phy_bist_test.S
       NAME ddr1_phy_bist_test
     )
-    
+
   add_rumboot_target(
       SNAPSHOT default
       CONFIGURATION IRAM
       FILES ddr/ddr0_ddr1_byte_test.c
       NAME ddr0_ddr1_byte_test
     )
-    
+
   add_rumboot_target(
       SNAPSHOT default
       CONFIGURATION IRAM
       FILES ddr/ddr0_ddr1_turn_on_test.c
       NAME ddr0_ddr1_turn_on_test
     )
-    
+
   #RumBoot Integration tests
 #  add_rumboot_target(
 #      CONFIGURATION INTEGRATION
