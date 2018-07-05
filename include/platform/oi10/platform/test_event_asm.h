@@ -2,7 +2,7 @@
 #define TEST_EVENT_ASM_H_
 
 #include <platform/arch/ppc/ppc_476fp_asm.h>
-#include <platform/oi10/platform/test_event_codes.h>
+#include <platform/test_event_codes.h>
 
 
 .macro gtube_init tmp_reg=r5

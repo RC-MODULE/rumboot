@@ -20,6 +20,8 @@ SECTIONS
  .init.text 0xFFFFF000:{
     KEEP(*(.init.text))
     KEEP(*(.init.rodata))
+         *(*.init.text)
+         *(*.init.rodata)
   } > ROM
 
   .init.start 0xFFFFFFFC :    {

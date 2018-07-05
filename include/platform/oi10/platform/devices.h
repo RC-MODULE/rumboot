@@ -29,6 +29,7 @@
 #define IM1_BASE                0xС0000000
 #define BOOTROM_BASE            0xFFFF0000
 
+
 /**
  *
  * @}
@@ -43,9 +44,28 @@
  *
  *
  */
+ 
+#define DCR_PLB4ARB8M_0_BASE    0x00000010
+#define DCR_PLB4ARB8M_1_BASE    0x00000020
+#define DCR_SRAMMC2PLB4_0_BASE  0x00000030
+#define DCR_SRAMMC2PLB4_1_BASE  0x00000040
+#define DCR_PLB4AHB_0_BASE      0x00000050
+#define DCR_PLB4ARB8M_2_BASE    0x00000060
+#define DCR_PLB4AHB_1_BASE      0x000000B0
+#define DCR_PLB4AHB_2_BASE      0x000000C0
+#define DCR_DMAPLB6_BASE        0x80000100
+#define DCR_PLB6_BC_BASE        0x80000200
+#define DCR_PLB6PLB4_0_BASE     0x80000300
+#define DCR_PLB6PLB4_1_BASE     0x80000400
+#define DCR_PLB4PLB6_0_BASE     0x80000500
+#define DCR_L2C_BASE            0x80000600
+#define DCR_ARB_BASE            0x80000700
+#define DCR_ITRACE_BASE         0x80000800
+#define DCR_LTRACE_BASE         0x80000900
+#define DCR_CLDCR_BASE          0x80000A00
+#define DCR_MPIC128_BASE        0xFFC00000
 
-#define DCR_PLB6_BC_BASE            0x80000200
-#define DCR_PLB6PLB4_0_BASE         0x80000300
+
 /**
  * @}
  */

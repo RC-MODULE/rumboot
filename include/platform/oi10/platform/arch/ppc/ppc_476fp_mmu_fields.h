@@ -282,15 +282,6 @@ DECLARE_ENUM_VAL( MMU_TLBE_DSIZ_256MB,  0b011111 )
 DECLARE_ENUM_VAL( MMU_TLBE_DSIZ_1GB,    0b111111 )
 END_ENUM( MMU_TLBE_DSIZ )
 
-#define MMU_TLBE_TAG( EPN, V, TS, DSIZ,     BLTD,   EPNPar, DSIZPar, TIDPar )\
-    (EPN << MMU_TLBE_TAG_EPN_i)\
-|   (V << MMU_TLBE_TAG_V_i)\
-|   (TS << MMU_TLBE_TAG_TS_i)\
-|   (DSIZ << MMU_TLBE_TAG_DSIZ_i)\
-|   (BLTD << MMU_TLBE_TAG_BLTD_i)\
-|   (EPNPar << MMU_TLBE_TAG_EPNPar_i)\
-|   (DSIZPar << MMU_TLBE_TAG_DSIZPar_i)\
-|   (TIDPar << MMU_TLBE_TAG_TIDPar_i)
 
 BEGIN_ENUM( MMU_TLBE_DATA_FIELD )
 DECLARE_ENUM_VAL( MMU_TLBE_DATA_RPN_e,      51 )
@@ -309,13 +300,6 @@ DECLARE_ENUM_VAL( MMU_TLBE_DATA_ERPN_e,     63 )
 DECLARE_ENUM_VAL( MMU_TLBE_DATA_ERPN_n,     10 )
 DECLARE_ENUM_VAL( MMU_TLBE_DATA_ERPN_i,     IBM_BIT_INDEX( 64, MMU_TLBE_DATA_ERPN_e ) )
 END_ENUM( MMU_TLBE_DATA_FIELD )
-
-#define MMU_TLBE_DATA( ERPN, RPN,   ERPNPar, RPNPar )\
-    (RPN << MMU_TLBE_DATA_RPN_i)\
-|   (RPNPar << MMU_TLBE_DATA_RPNPar_i)\
-|   (ERPNPar << MMU_TLBE_DATA_ERPNPar_i)\
-|   (ERPN << MMU_TLBE_DATA_ERPN_i)
-
 
 BEGIN_ENUM( MMU_TLBE_ATTR_FIELD )
 DECLARE_ENUM_VAL( MMU_TLBE_ATTR_SPPar_e,    32 )
@@ -384,40 +368,12 @@ DECLARE_ENUM_VAL( MMU_TLBE_E_BIG_END,       0b0 )
 DECLARE_ENUM_VAL( MMU_TLBE_E_LITTLE_END,    0b1 )
 END_ENUM( MMU_TLBE_E )
 
-#define MMU_TLBE_ATTR( IL1I, IL1D,  W, I, M, G, E,  UX, UW, UR,     SX, SW, SR,     U,  SPPar )\
-    (SPPar << MMU_TLBE_ATTR_SPPar_i)\
-|   (IL1I << MMU_TLBE_ATTR_IL1I_i)\
-|   (IL1D << MMU_TLBE_ATTR_IL1D_i)\
-|   (U << MMU_TLBE_ATTR_U_i)\
-|   (W << MMU_TLBE_ATTR_W_i)\
-|   (I << MMU_TLBE_ATTR_I_i)\
-|   (M << MMU_TLBE_ATTR_M_i)\
-|   (G << MMU_TLBE_ATTR_G_i)\
-|   (E << MMU_TLBE_ATTR_E_i)\
-|   (UX << MMU_TLBE_ATTR_UX_i)\
-|   (UW << MMU_TLBE_ATTR_UW_i)\
-|   (UR << MMU_TLBE_ATTR_UR_i)\
-|   (SX << MMU_TLBE_ATTR_SX_i)\
-|   (SW << MMU_TLBE_ATTR_SW_i)\
-|   (SR << MMU_TLBE_ATTR_SR_i)
 
 BEGIN_ENUM( MMU_TLB_ENTRY_WORD )
 DECLARE_ENUM_VAL( MMU_TLB_ENTRY_TAG,    0 )
 DECLARE_ENUM_VAL( MMU_TLB_ENTRY_DATA,   1 )
 DECLARE_ENUM_VAL( MMU_TLB_ENTRY_ATTR,   2 )
 END_ENUM( MMU_TLB_ENTRY_WORD )
-
-#define MMU_TLB_ENTRY( ERPN, RPN,    EPN,    DSIZ,   IL1I, IL1D,    W,  I, M, G, E,     UX, UW, UR,     SX, SW, SR,     DULXE, IULXE,      TS, TID,    WAY,    BID, V )\
-    MMU_MMUCR( 0b0,   DULXE, IULXE,   TS,     TID ),\
-\
-    (WAY << MMU_TLBWE_RA_WAY_i)\
-|   (BID << MMU_TLBWE_RA_BE_i),\
-\
-    MMU_TLBE_TAG( EPN, V, TS, DSIZ,     0b0,    0b0, 0b0, 0b0 ),\
-\
-    MMU_TLBE_DATA( ERPN, RPN,   0b0, 0b0 ),\
-\
-    MMU_TLBE_ATTR( IL1I, IL1D,  W,  I, M, G, E,     UX, UW, UR,     SX, SW, SR,     0b0000,     0b0 )
 
 DECLARE_CONST( MMU_TLB_ENTRY_FIELD_SIZE,    4 )
 DECLARE_CONST( MMU_TLB_ENTRY_FIELD_N,       5 )
@@ -436,8 +392,82 @@ DECLARE_ENUM_VAL( MMU_TLBE_ADDR_INDEX_i,    IBM_BIT_INDEX( 64, MMU_TLBE_ADDR_IND
 END_ENUM( MMU_TLBE_ADDR_FIELD )
 
 #define MMU_TLBE_ADDR( index, way )\
-    (way << MMU_TLBE_ADDR_WAY_i)\
+    (way   << MMU_TLBE_ADDR_WAY_i  )\
 |   (index << MMU_TLBE_ADDR_INDEX_i)
+
+
+#define MMU_TLBE_TAG( EPN, V, TS, DSIZ, BLTD, EPNPar, DSIZPar, TIDPar )\
+    (EPN     << MMU_TLBE_TAG_EPN_i    )\
+|   (V       << MMU_TLBE_TAG_V_i      )\
+|   (TS      << MMU_TLBE_TAG_TS_i     )\
+|   (DSIZ    << MMU_TLBE_TAG_DSIZ_i   )\
+|   (BLTD    << MMU_TLBE_TAG_BLTD_i   )\
+|   (EPNPar  << MMU_TLBE_TAG_EPNPar_i )\
+|   (DSIZPar << MMU_TLBE_TAG_DSIZPar_i)\
+|   (TIDPar  << MMU_TLBE_TAG_TIDPar_i )
+
+#define MMU_TLBE_TAG2(EPN, V, TS, DSIZ, BLTD, EPNPar, DSIZPar, TIDPar)\
+    (EPN     << MMU_TLBE_TAG_EPN_i    )\
+|   (V       << MMU_TLBE_TAG_V_i      )\
+|   (TS      << MMU_TLBE_TAG_TS_i     )\
+|   (DSIZ    << MMU_TLBE_TAG_DSIZ_i   )\
+|   (BLTD    << MMU_TLBE_TAG_BLTD_i   )\
+|   (EPNPar  << MMU_TLBE_TAG_EPNPar_i )\
+|   (DSIZPar << MMU_TLBE_TAG_DSIZPar_i)\
+|   (TIDPar  << MMU_TLBE_TAG_TIDPar_i )
+
+
+#define MMU_TLBE_DATA( ERPN, RPN,   ERPNPar, RPNPar )\
+    (RPN     << MMU_TLBE_DATA_RPN_i    )\
+|   (RPNPar  << MMU_TLBE_DATA_RPNPar_i )\
+|   (ERPNPar << MMU_TLBE_DATA_ERPNPar_i)\
+|   (ERPN    << MMU_TLBE_DATA_ERPN_i   )
+
+#define MMU_TLBE_DATA2(ERPN, RPN, ERPNPar, RPNPar)\
+    (RPN     << MMU_TLBE_DATA_RPN_i    )\
+|   (RPNPar  << MMU_TLBE_DATA_RPNPar_i )\
+|   (ERPNPar << MMU_TLBE_DATA_ERPNPar_i)\
+|   (ERPN    << MMU_TLBE_DATA_ERPN_i   )
+
+
+#define MMU_TLBE_ATTR(IL1I,IL1D, W,I,M,G,E, UX,UW,UR, SX,SW,SR, U, SPPar)\
+    (SPPar << MMU_TLBE_ATTR_SPPar_i)\
+|   (IL1I  << MMU_TLBE_ATTR_IL1I_i )\
+|   (IL1D  << MMU_TLBE_ATTR_IL1D_i )\
+|   (U     << MMU_TLBE_ATTR_U_i    )\
+|   (W     << MMU_TLBE_ATTR_W_i    )\
+|   (I     << MMU_TLBE_ATTR_I_i    )\
+|   (M     << MMU_TLBE_ATTR_M_i    )\
+|   (G     << MMU_TLBE_ATTR_G_i    )\
+|   (E     << MMU_TLBE_ATTR_E_i    )\
+|   (UX    << MMU_TLBE_ATTR_UX_i   )\
+|   (UW    << MMU_TLBE_ATTR_UW_i   )\
+|   (UR    << MMU_TLBE_ATTR_UR_i   )\
+|   (SX    << MMU_TLBE_ATTR_SX_i   )\
+|   (SW    << MMU_TLBE_ATTR_SW_i   )\
+|   (SR    << MMU_TLBE_ATTR_SR_i   )
+
+#define MMU_TLBE_ATTR2(L1ID, AUWIMGE, UXWR, SXWR, SPPar)\
+    (SPPar   << MMU_TLBE_ATTR_SPPar_i)\
+|   (L1ID    << MMU_TLBE_ATTR_IL1D_i )\
+|   (AUWIMGE << MMU_TLBE_ATTR_E_i    )\
+|   (UXWR    << MMU_TLBE_ATTR_UR_i   )\
+|   (SXWR    << MMU_TLBE_ATTR_SR_i   )
+
+
+#define MMU_TLB_ENTRY( ERPN, RPN,    EPN,    DSIZ,   IL1I, IL1D,    W,  I, M, G, E,     UX, UW, UR,     SX, SW, SR,     DULXE, IULXE,      TS, TID,    WAY,    BID, V )\
+    MMU_MMUCR( 0b0,   DULXE, IULXE,   TS,     TID ),\
+\
+    (WAY << MMU_TLBWE_RA_WAY_i)\
+|   (BID << MMU_TLBWE_RA_BE_i),\
+\
+    MMU_TLBE_TAG( EPN, V, TS, DSIZ,     0b0,    0b0, 0b0, 0b0 ),\
+\
+    MMU_TLBE_DATA( ERPN, RPN,   0b0, 0b0 ),\
+\
+    MMU_TLBE_ATTR( IL1I, IL1D,  W,  I, M, G, E,     UX, UW, UR,     SX, SW, SR,     0b0000,     0b0 )
+
+#define MMU_TLB_ENTRY2(ERPN, RPN, EPN, DSIZ, L1__ID, A__WIMGE, U__XWR, S__XWR, DULXE, IULXE, TS, TID, WAY, BID, V) 0
 
 
 #endif // PPC_476FP_MMU_FIELDS_H

@@ -8,7 +8,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include <platform/oi10/platform/reg_access/reg_access_p64.h>
+#include <platform/reg_access/reg_access_p64.h>
 
 typedef struct p64_cfg
 {

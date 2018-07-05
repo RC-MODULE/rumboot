@@ -1,62 +1,15 @@
-#include <platform/arch/ppc/ppc_476fp_asm.h>
-#include <platform/arch/ppc/ppc_476fp_mmu_fields.h>
-#include <platform/arch/ppc/ppc_476fp_ctrl_fields.h>
+/*
+ * get_physical_addr.S.h
+ *
+ *  Created on: May 24, 2018
+ *      Author: d.arsentiev
+ */
+
+#ifndef GET_PHYSICAL_ADDR_S_H_
+#define GET_PHYSICAL_ADDR_S_H_
 
 
-.section ".mmu.init.text","ax",@progbits
-
-/*Details about trace infrastructure convention see in trace.S.h
-Caller must preserve r3,r4,r8,r9,r10 before calling
-r3 - TLB entries array pointer
-r4 - TLB entries count
-r8,r9,r10 - tmp registers
-returns nothing*/
-.global write_tlb_entries
-write_tlb_entries:
-    mfspr       r9, SPR_RSTCFG
-
-    subi        r3, r3, MMU_TLB_ENTRY_FIELD_SIZE
-
-write_next_etry:
-    cmplwi      cr7, r4, 0
-    beq-        cr7, write_tlb_entries_exit
-
-    lwzu        r8, MMU_TLB_ENTRY_FIELD_SIZE(r3)
-    mtspr       SPR_MMUCR, r8
-
-    lwzu        r10, MMU_TLB_ENTRY_FIELD_SIZE(r3)
-
-    lwzu        r8, MMU_TLB_ENTRY_FIELD_SIZE(r3)
-    tlbwe       r8, r10, MMU_TLB_ENTRY_TAG
-
-    lwzu        r8, MMU_TLB_ENTRY_FIELD_SIZE(r3)
-    tlbwe       r8, r10, MMU_TLB_ENTRY_DATA
-
-    lwzu        r8, MMU_TLB_ENTRY_FIELD_SIZE(r3)
-/*    copy_field( r8, MMU_MMU_TLB_ENTRY_ATTR_E_e-(MMU_MMU_TLB_ENTRY_ATTR_E_n-1), MMU_MMU_TLB_ENTRY_ATTR_E_e, r9, CTRL_RSTCFG_E_e-(CTRL_RSTCFG_E_n-1) )*/
-    copy_field( r8, MMU_TLBE_ATTR_U_e-(MMU_TLBE_ATTR_U_n-1), MMU_TLBE_ATTR_U_e, r9, CTRL_RSTCFG_U_e-(CTRL_RSTCFG_U_n-1) )
-    tlbwe       r8, r10, MMU_TLB_ENTRY_ATTR
-
-    subi        r4, r4, 1
-    b           write_next_etry
-
-write_tlb_entries_exit:
-    mfspr       r9, SPR_SRR0
-    mfspr       r10, SPR_SRR1
-
-    mfmsr       r8
-    mtspr       SPR_SRR1, r8
-    load_addr   r8, write_tlb_entries_return
-    mtspr       SPR_SRR0, r8
-
-    rfi
-
-write_tlb_entries_return:
-    mtspr       SPR_SRR1, r10
-    mtspr       SPR_SRR0, r9
-
-    blr
-
+.macro implement__get_physical_addr
 /*r3 - parameter, 32bit effective address (EA)*/
 /*r4,r3 - result, 42bit real address (int64_t)*/
 /*if return value <0 (bit 31 = 1) then tlb entry was not found*/
@@ -140,5 +93,7 @@ ra_error:
     /*return invalid value (< 0) if an error*/
     load_const r3, -1
     blr
+.endm
 
 
+#endif /* GET_PHYSICAL_ADDR_S_H_ */
