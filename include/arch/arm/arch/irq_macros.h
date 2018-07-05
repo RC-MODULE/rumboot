@@ -20,9 +20,8 @@ static inline uint32_t rumboot_arch_irq_enable()
     asm volatile (
         "mrs %0, cpsr\n"
         "cpsie i\n" /* IRQ only */
-        : "=r" (state)
-        :
-        : "memory"
+        :   "=r" (state)
+        ::  "memory"
     );
     return state;
 }
@@ -34,9 +33,8 @@ static inline uint32_t rumboot_arch_irq_disable()
     asm volatile (
         "mrs %0, cpsr\n"
         "cpsid i\n" /* IRQ only */
-        : "=r" (state)
-        :
-        : "memory"
+        :   "=r" (state)
+        ::  "memory"
     );
     return state;
 }
@@ -47,9 +45,9 @@ static inline uint32_t rumboot_arch_irq_setstate(uint32_t new_state)
     asm volatile (
         "mrs  %0, cpsr\n"
         "msr cpsr_c, %1\n"
-        : "=r" (state)
-        : "r" (new_state)
-        : "memory"
+        :   "=r" (state)
+        :   "r" (new_state)
+        :   "memory"
     );
     return state;
 }

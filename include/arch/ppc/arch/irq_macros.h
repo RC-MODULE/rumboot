@@ -1,34 +1,30 @@
 #ifndef PPC_IRQ_MACROS_H
 #define PPC_IRQ_MACROS_H
 
+
+#include <platform/arch/ppc/ppc_476fp_itrpt_fields.h>
+#include <platform/arch/ppc/ppc_476fp_lib_c.h>
+
+
 /* Include doxygen.h to make sure that documentation gets updated  */
 #include "../../doxygen.h"
 
-static inline uint32_t rumboot_arch_irq_enable()
-{
-    uint32_t result = 0;
-    asm volatile (
-        "nop\n"
-    );
-    return result;
+static inline uint32_t rumboot_arch_irq_enable() {
+    uint32_t state = msr_read();
+    msr_write( state | ( 1 << ITRPT_XSR_EE_i ) );
+    return state;
 }
 
-
-static inline uint32_t rumboot_arch_irq_disable()
-{
-    uint32_t result = 0;
-    asm volatile (
-        "nop\n"
-    );
-    return result;
+static inline uint32_t rumboot_arch_irq_disable() {
+    uint32_t state = msr_read();
+    msr_write( state & ~( 1 << ITRPT_XSR_EE_i ) );
+    return state;
 }
 
-static inline uint32_t rumboot_arch_irq_setstate(uint32_t new_state){
-    uint32_t result = 0;
-    asm volatile (
-        "nop\n"
-    );
-    return result;
+static inline uint32_t rumboot_arch_irq_setstate( uint32_t new_state ) {
+    uint32_t state = msr_read();
+    msr_write( new_state );
+    return state;
 }
 
 #define RUMBOOT_ATOMIC_BLOCK() \
