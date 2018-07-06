@@ -9,8 +9,6 @@
 #include <platform/arch/ppc/test_macro_asm.S.h>
 #include <platform/regs/regs_srammc2plb4.h>
 
-#define eq6                     cr6*4+eq
-#define eq7                     cr7*4+eq
 
 #define SB0CR					0x00
 #define SB1CR					0x01
@@ -78,7 +76,6 @@ check_cpu_ppc_srammc2plb4_0_3:
     mtdcrx      r14,  r15
     mfdcrx      r16,  r14
     cmpw cr7,   r16,  r15
-    crand       eq6,  eq6,  eq7
     TEST_ASSERT(eq,cr7,"Read/write error in SRAMMC2PLB4_0_BEAR (running 1 init)")
 
 srammc2plb4_0_running_1:
@@ -90,7 +87,6 @@ srammc2plb4_0_loop_1:
     mtdcrx      r14,  r15
     mfdcrx      r16,  r14
     cmpw cr7,   r16,  r15
-    crand       eq6,  eq6, eq7
     TEST_ASSERT(eq,cr7,"Read/write error in SRAMMC2PLB4_0_BEAR (running 1)")
     cmpw cr0,   r15,  r18
     beq- cr0,   srammc2plb4_0_running_0
@@ -104,7 +100,6 @@ srammc2plb4_0_running_0:
     mtdcrx      r14,  r15
     mfdcrx      r16,  r14
     cmpw cr7,   r16,  r15
-    crand       eq6,  eq6, eq7
     TEST_ASSERT(eq,cr7,"Read/write error in SRAMMC2PLB4_0_BEAR (running 0 init)")
 
     rumboot_putstring "Running <0>\n"
@@ -115,7 +110,6 @@ srammc2plb4_0_loop_0:
     mtdcrx      r14,  r15
     mfdcrx      r16,  r14
     cmpw cr7,   r16,  r15
-    crand       eq6,  eq6, eq7
     TEST_ASSERT(eq,cr7,"Read/write error in SRAMMC2PLB4_0_BEAR (running 0)")
     cmpw cr0,   r15,  r18
     beq check_cpu_ppc_srammc2plb4_1_2
@@ -147,7 +141,6 @@ check_cpu_ppc_srammc2plb4_1_3:
     mtdcrx      r14,  r15
     mfdcrx      r16,  r14
     cmpw cr7,   r16,  r15
-    crand       eq6,  eq6, eq7
     TEST_ASSERT(eq,cr7,"Read/write error in SRAMMC2PLB4_1_BEAR (running 1 init)")
 
 srammc2plb4_1_running_1:
@@ -159,7 +152,6 @@ srammc2plb4_1_loop_1:
     mtdcrx      r14,  r15
     mfdcrx      r16,  r14
     cmpw cr7,   r16,  r15
-    crand       eq6,  eq6, eq7
     TEST_ASSERT(eq,cr7,"Read/write error in SRAMMC2PLB4_1_BEAR (running 1)")
     cmpw cr0,   r15,  r18
     beq- cr0,   srammc2plb4_1_running_0
@@ -173,7 +165,6 @@ srammc2plb4_1_running_0:
     mtdcrx      r14,  r15
     mfdcrx      r16,  r14
     cmpw cr7,   r16,  r15
-    crand       eq6,  eq6,  eq7
     TEST_ASSERT(eq,cr7,"Read/write error in SRAMMC2PLB4_1_BEAR (running 0 init)")
     rumboot_putstring "Running <0>\n"
     load_const  r15,  0xFFFFFFFE
@@ -183,7 +174,6 @@ srammc2plb4_1_loop_0:
     mtdcrx      r14,  r15
     mfdcrx      r16,  r14
     cmpw cr7,   r16,  r15
-    crand       eq6,  eq6,  eq7
     TEST_ASSERT(eq,cr7,"Read/write error in SRAMMC2PLB4_1_BEAR (running 0)")
     cmpw cr0,   r15,  r18
     beq- cr0,   test_end
@@ -213,5 +203,4 @@ test_error:
 
 finish:
 	blr
-
 
