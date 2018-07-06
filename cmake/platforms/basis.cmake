@@ -562,6 +562,13 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
   )
 
   add_rumboot_target(
+    CONFIGURATION IRAM
+    FILES wdt/wdt_crg_iint.c
+    NAME wdt_crg_iint_test
+    TIMEOUT 1000 us    
+  )
+
+  add_rumboot_target(
       SNAPSHOT default
       CONFIGURATION IRAM
       FILES pcie/pcie_dma_eRP_test.c
