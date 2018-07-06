@@ -93,14 +93,14 @@ void rumboot_platform_irq_init()
 
 }
 
-void rumboot_arch_irq_disable()
+uint32_t rumboot_arch_irq_disable()
 {
-
+    return 0;
 }
 
-void rumboot_arch_irq_enable()
+uint32_t rumboot_arch_irq_enable()
 {
-
+    return 0;
 }
 
 void rumboot_platform_request_file(const char *plusarg, uint32_t addr)
