@@ -148,7 +148,6 @@
     mtdcrx      R_DCRA, R_ADDR
     mfdcrx      R_DATA, R_DCRD
     cmpw cr7,   R_DATA, R_EXPV
-    crand       eq6,  eq6,  eq7
     TEST_ASSERT(eq, cr7, "\nDCR check error: In \regName was expected value \expValue (address \address) ")
     beq+ cr7,   61f
     b           62f
