@@ -45,7 +45,6 @@
     /* read */
     mfdcrx		\rR,	\rA
     cmpw cr7,	\rR,	\rE
-    crand		eq6,	eq6,	eq7
     TEST_ASSERT(eq,cr7,"DCR error: In \sName was expected value \vExp (address: \vAddr) ")
 .endm
 
@@ -54,7 +53,6 @@
     load_const	\rA,	\vAddr
     mfdcrx		\rR,	\rA
     cmpw cr7,	\rR,	\rE
-    crand		eq6,	eq6,	eq7
     TEST_ASSERT(eq,cr7,"DCRE: expected \sName = \vExp (address: \vAddr) ")
 .endm
 
@@ -68,7 +66,7 @@ main:
 	load_const	r20,	0x00000000
 	cmpwi cr6,	r20,	0x0000		/* General test status in cr6 */
 
-    /* check all default values */
+    rumboot_putstring   "Check default values...\n"
     chk_value CVR3,	P6BCA(PLB6BC_CR0),			PLB6_BC_CR0_STU,            "PLB6BC_CR0         "
     chk_value CVR3,	P6BCA(PLB6BC_PRI),			PLB6_BC_PRI_VALUE,			"PLB6BC_PRI         "
     chk_value CVR3,	P6BCA(PLB6BC_TSNOOP),		PLB6_BC_TSNOOP_VALUE,		"PLB6BC_TSNOOP      "
@@ -81,142 +79,25 @@ main:
     chk_sgdwr CVR3,	P6BCA(PLB6BC_SGD5),										"PLB6BC_SGD5        "
     chk_sgdwr CVR3,	P6BCA(PLB6BC_SGD6),										"PLB6BC_SGD6        "
     chk_sgdwr CVR3,	P6BCA(PLB6BC_SGD7),										"PLB6BC_SGD7        "
-//  chk_value CVR3,	P6BCA(PLB6BC_ERR),          PLB6_BC_ERR_VALUE,			"PLB6BC_ERR         "
+    chk_value CVR3,	P6BCA(PLB6BC_ERR),          PLB6_BC_ERR_VALUE,			"PLB6BC_ERR         "
     chk_value CVR3,	P6BCA(PLB6BC_MSRSP),        PLB6_BC_MSRSP_VALUE,		"PLB6BC_MSRSP       "
     chk_value CVR3,	P6BCA(PLB6BC_HCPP),         PLB6_BC_HCPP_VALUE,			"PLB6BC_HCPP        "
     chk_value CVR3,	P6BCA(PLB6BC_HD),			PLB6_BC_HD_VALUE,			"PLB6BC_HD          "
     chk_value CVR3,	P6BCA(PLB6BC_QD),			PLB6_BC_QD_VALUE,			"PLB6BC_QD          "
     chk_value CVR3,	P6BCA(PLB6BC_SHD),			PLB6_BC_SHD_VALUE,			"PLB6BC_SHD         "
     chk_value CVR3,	P6BCA(PLB6BC_REVID),		PLB6_BC_REVID_VALUE,		"PLB6BC_REVID       "
+    rumboot_putstring   "done\n"
     /* ADDR bus now is checked */
 
+/*
     rumboot_putstring   "PLB6BC_ERR="
     load_const  R_ADDR, P6BCA(PLB6BC_ERR)
-    mfdcrx      r3,     R_ADDR
-    mtdcrx      R_ADDR, r3
-    rumboot_puthex      r3
-
-    /* check DATA I/O buses */
-running_1_low:
-    load_const  R_SHFT, 0x00000001
- // b           running_1_high
-    rumboot_putstring   "Check running <1> and <0> PLB6BC_PRI [0:15] ...\n"
-    rumboot_putstring   "Running <1> (init)\n"
-    load_const  R_TERM, 0x80000000
-    load_const  R_EXPV, 0x00000000
-    load_const  R_RMSK, 0xFFFF0000
-    load_const  R_WMSK, 0xFFFF0000
-    load_const  R_ADDR, P6BCA(PLB6BC_HD)
-    mtdcrx      R_ADDR, R_WMSK              /* Clear hang detect */
-    load_const  R_ADDR, P6BCA(PLB6BC_PRI)
-    mfdcrx      R_BACK, R_ADDR
-    mtdcrx      R_ADDR, R_EXPV
     mfdcrx      R_DATA, R_ADDR
-    cmpw cr7,   R_EXPV, R_DATA
-    crand       eq6,    eq6,    eq7
-    TEST_ASSERT(eq,cr7,"PLB6 DCRDATA: Running <1> [0:15] error (init)")
-    load_const  R_EXPV, 0x00010000
-    rumboot_putstring   "Running <1> [0:15] ...\n"
-loop_1_low:
-    mtdcrx      R_ADDR, R_EXPV
-    mfdcrx      R_DATA, R_ADDR
-    cmpw cr7,   R_EXPV, R_DATA
-    mr          r3,     R_EXPV
-    rumboot_puthex      r3
-    mr          r3,     R_DATA
-    rumboot_puthex      r3
-    crand		eq6,	eq6,	eq7
-    TEST_ASSERT(eq, cr7, "PLB6 DCRDATA: Running <1> [0:15] error (loop)")
-    cmpw cr0,   R_EXPV, R_TERM
-    beq- cr0,   running_0_low
-    slw         R_EXPV, R_EXPV, R_SHFT
-    b           loop_1_low
-
-running_0_low:
-    rumboot_putstring   "Running <0> [0:15] (init)\n"
-    load_const  R_FILL, 0x00010000
-    load_const  R_TERM, 0x7FFF0000
-    load_const  R_EXPV, 0xFFFF0000
-    mtdcrx      R_ADDR, R_EXPV
-    mfdcrx      R_DATA, R_ADDR
-    cmpw cr7,   R_EXPV, R_DATA
-    crand       eq6,    eq6,    eq7
-    TEST_ASSERT(eq,cr7,"PLB6 DCRDATA: Running <0> [0:15] error (init)")
-    load_const  R_EXPV, 0xFFFE0000
-    rumboot_putstring   "Running <0> ...\n"
-loop_0_low:
-    and         R_EXPV, R_EXPV, R_WMSK
-    mtdcrx      R_ADDR, R_EXPV
-    mfdcrx      R_DATA, R_ADDR
-    and         R_DATA, R_DATA, R_RMSK
-    cmpw cr7,   R_EXPV, R_DATA
-    crand       eq6,	eq6,	eq7
-    TEST_ASSERT(eq,cr7,"PLB6 DCRDATA: Running <0> [0:15] error (loop)")
-    cmpw cr0,   R_EXPV, R_TERM
-    beq- cr0,   loop_0_low_end
-    slw         R_EXPV, R_EXPV, R_SHFT
-    or          R_EXPV, R_EXPV, R_FILL
-    b           loop_0_low
-loop_0_low_end:
-    mtdcrx      R_ADDR, R_BACK
-
-running_1_high:
-    rumboot_putstring   "Check running <1> and <0> PLB6BC_HCPP [16:31] ...\n"
-    rumboot_putstring   "Running <1> (init)\n"
-    load_const  R_ADDR, P6BCA(PLB6BC_HCPP)
-    load_const  R_TERM, 0x00008000
-    load_const  R_EXPV, 0x00000000
-    load_const  R_RMSK, 0x0000FFFF
-    load_const  R_WMSK, 0x0000FFFF
-    mfdcrx      R_BACK, R_ADDR
-    mtdcrx      R_ADDR, R_EXPV
-    mfdcrx      R_DATA, R_ADDR
-    cmpw cr7,   R_EXPV, R_DATA
-    crand       eq6,    eq6,    eq7
-    TEST_ASSERT(eq,cr7,"PLB6 DCRDATA: Running <1> [16:31] error (init)")
-    load_const  R_EXPV, 0x00000001
-    rumboot_putstring   "Running <1> ...\n"
-loop_1_high:
-    and         R_EXPV, R_EXPV, R_WMSK
-    mtdcrx      R_ADDR, R_EXPV
-    mfdcrx      R_DATA, R_ADDR
-    and         R_DATA, R_DATA, R_RMSK
-    cmpw cr7,   R_EXPV, R_DATA
-    crand       eq6,    eq6,    eq7
-    TEST_ASSERT(eq, cr7, "PLB6 DCRDATA: Running <1> [16:31] error (loop)")
-    cmpw cr0,   R_EXPV, R_TERM
-    beq- cr0,   running_0_high
-    slw         R_EXPV, R_EXPV, R_SHFT
-    b           loop_1_high
-
-running_0_high:
-    rumboot_putstring   "Running <0> [16:31] (init)\n"
-    load_const  R_FILL, 0x00000001
-    load_const  R_TERM, 0x00007FFF
-    load_const  R_EXPV, 0x0000FFFF
-    mtdcrx      R_ADDR, R_EXPV
-    mfdcrx      R_DATA, R_ADDR
-    cmpw cr7,   R_EXPV, R_DATA
-    crand       eq6,    eq6,    eq7
-    TEST_ASSERT(eq,cr7,"PLB6 DCRDATA: Running <0> [16:31] error (init)")
-    load_const  R_EXPV, 0x0000FFFE
-    rumboot_putstring   "Running <0> ...\n"
-loop_0_high:
-    and         R_EXPV, R_EXPV, R_WMSK
-    mtdcrx      R_ADDR, R_EXPV
-    mfdcrx      R_DATA, R_ADDR
-    and         R_DATA, R_DATA, R_RMSK
-    cmpw cr7,   R_EXPV, R_DATA
-    crand       eq6,    eq6,    eq7
-    TEST_ASSERT(eq,cr7,"PLB6 DCRDATA: Running <0> [16:31] error (loop)")
-    cmpw cr0,   R_EXPV, R_TERM
-    beq- cr0,   test_end
-    slw         R_EXPV, R_EXPV, R_SHFT
-    or          R_EXPV, R_EXPV, R_FILL
-    b loop_0_high
+    mtdcrx      R_ADDR, R_DATA
+    rumboot_puthex      R_DATA
+*/
 
 test_end:
-    mtdcrx      R_ADDR, R_BACK
     bne- cr6,   test_error
 
 test_ok:
