@@ -9,8 +9,6 @@
 #include <platform/devices.h>
 #include <platform/regs/regs_plb6dma.h>
 
-#define eq6                     cr6*4+eq
-#define eq7                     cr7*4+eq
 
 #define CVR3					r4,r5,r6 	/* Check Value Regs triade */
 #define DP6A(OFFSET)			(DCR_DMAPLB6_BASE + (OFFSET))
@@ -110,7 +108,6 @@ running_0_1_dma0:
     mtdcrx      r14,  r15
     mfdcrx      r16,  r14
     cmpw cr7,   r16,  r15
-    crand       eq6,  eq6,  eq7
     TEST_ASSERT(eq,cr7,"Read/write error in DMAPLB6_SAH0 (running 1 init)")
 
 dma0_running_1:
@@ -123,7 +120,6 @@ dma0_loop_1:
     mtdcrx      r14,  r15
     mfdcrx      r16,  r14
     cmpw cr7,   r16,  r15
-    crand       eq6,  eq6,  eq7
     TEST_ASSERT(eq,cr7,"Read/write error in DMAPLB6_SAH0 (running 1)")
     cmpw cr0,   r15,  r18
     beq- cr0,   dma0_running_0
@@ -131,12 +127,12 @@ dma0_loop_1:
     b           dma0_loop_1
 
 dma0_running_0:
+    rumboot_putstring "Done!\n"
     rumboot_putstring "Init:FFFFFFFF\n"
     load_const  r15,  0xFFFFFFFF
     mtdcrx      r14,  r15
     mfdcrx      r16,  r14
     cmpw cr7,   r16,  r15
-    crand       eq6,  eq6,  eq7
     TEST_ASSERT(eq,cr7,"Read/write error in DMAPLB6_SAH0 (running 0 init)")
 
     rumboot_putstring "Running:0...\n"
@@ -144,11 +140,9 @@ dma0_running_0:
     load_const  r17,  0x00000001
     load_const  r18,  0x7FFFFFFF
 dma0_loop_0:
-    // rumboot_puthex    r15
     mtdcrx      r14,  r15
     mfdcrx      r16,  r14
     cmpw cr7,   r16,  r15
-    crand       eq6,  eq6,  eq7
     TEST_ASSERT(eq,cr7,"Read/write error in DMAPLB6_SAH0 (running 0)")
     cmpw cr0,   r15,  r18
     beq- cr0,   dma0_done
@@ -157,7 +151,7 @@ dma0_loop_0:
     b           dma0_loop_0
 
 dma0_done:
-    rumboot_putstring "PLB6_DMA_0 running 0/1 done\n"
+    rumboot_putstring "PLB6_DMA_0 running 0/1 check complete.\n"
     bne- cr6,   test_error
 
 
