@@ -11,7 +11,7 @@ file(GLOB PLATFORM_SOURCES
 
 #Flags for Power PC
 macro(RUMBOOT_PLATFORM_SET_COMPILER_FLAGS)
-    set(RUMBOOT_COMMON_FLAGS "-mcpu=476fp -gdwarf-2 -m32 -ffreestanding -O0 -mbig-endian -std=c99 -fno-zero-initialized-in-bss")
+    set(RUMBOOT_COMMON_FLAGS "-mcpu=476fp -gdwarf-2 -m32 -ffreestanding -O0 -mbig-endian -fno-zero-initialized-in-bss")
     set(CMAKE_C_FLAGS "${RUMBOOT_COMMON_FLAGS} -mstrict-align -Wall -fdata-sections -ffunction-sections ")
     set(CMAKE_ASM_FLAGS ${RUMBOOT_COMMON_FLAGS})
     set(CMAKE_EXE_LINKER_FLAGS "-fno-zero-initialized-in-bss -e boot_image_entry0 -Wl,--oformat=elf32-powerpc -Ttext 0x00040018 -static -nostartfiles -Wl,--gc-sections")
