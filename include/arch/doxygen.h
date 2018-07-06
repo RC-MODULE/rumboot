@@ -25,19 +25,19 @@
 /**
  * Enable IRQ handling by CPU
  */
-static inline void rumboot_arch_irq_enable();
+static inline uint32_t rumboot_arch_irq_enable();
 
 /**
  * Disable IRQ handling by CPU and return previous IRQ state
  * @return  irq satate that can be passed to setstate
  */
-static inline int rumboot_arch_irq_disable(void);
+static inline uint32_t rumboot_arch_irq_disable();
 
 /**
  * Set IRQ handling state
- * @param  pri_mask state to set (from rumboot_arch_irq_disable())
+ * @param  new_state state to set (from rumboot_arch_irq_disable())
  * @return          previous state
  */
-static inline int rumboot_arch_irq_setstate(int pri_mask);
+static inline uint32_t rumboot_arch_irq_setstate(uint32_t new_state);
 
 #endif /* end of include guard: ARCH_DOXYGEN_H */
