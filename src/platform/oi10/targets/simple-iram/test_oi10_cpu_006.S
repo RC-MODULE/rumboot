@@ -276,7 +276,6 @@ check_cpu_ppc_l2c_reg:
     mtdcrx      R_DCRA, R_ADDR
     mfdcrx      R_DATA, R_DCRD
     cmpw cr7,   R_DATA, R_EXPV
-    crand       eq6,    eq6,    eq7
 	TEST_ASSERT(eq, cr7, "Check value failed (init 0)")
 
 running_1:
@@ -288,7 +287,6 @@ loop_1:
     mtdcrx      R_DCRA, R_ADDR
     mfdcrx      R_DATA, R_DCRD
     cmpw cr7,   R_DATA, R_EXPV
-    crand       eq6,    eq6,    eq7
     TEST_ASSERT(eq, cr7, "Check value failed (running 1)") /* FAIL */
     cmpw cr0,   R_EXPV, R_TERM
     beq- cr0,   running_1_end
@@ -306,7 +304,6 @@ running_0:
     mtdcrx      R_DCRA, R_ADDR
     mfdcrx      R_DATA, R_DCRD
     cmpw cr7,   R_DATA, R_EXPV
-    crand       eq6,  eq6,  eq7
     TEST_ASSERT(eq, cr7, "Check value failed (running 0)")
 
     load_const  R_EXPV, 0xFFFFFFFE
@@ -317,7 +314,6 @@ loop_0:
     mtdcrx      R_DCRA, R_ADDR
     mfdcrx      R_DATA, R_DCRD
     cmpw cr7,   R_DATA, R_EXPV
-    crand       eq6,    eq6,    eq7
     TEST_ASSERT(eq, cr7, "Check value failed (running 0)") /* FAIL */
     cmpw cr0,   R_EXPV, R_TERM
     beq- cr0,   test_end
