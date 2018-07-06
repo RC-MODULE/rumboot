@@ -156,11 +156,8 @@ ADD_SOURCE("src/lib/drivers/mdma/descriptor.c")
 ADD_SOURCE("src/lib/drivers/muart.c")
 ADD_SOURCE("src/lib/drivers/eeprom.c")
 ADD_SOURCE("src/lib/drivers/mgeth.c")
-<<<<<<< Updated upstream
 ADD_SOURCE("src/lib/drivers/mdma_chan_lib.c")
-=======
 ADD_SOURCE("src/lib/drivers/wdt.c")
->>>>>>> Stashed changes
 # ADD_SOURCE("src/lib/drivers/bisr.c")
 
 if (RUMBOOT_PLATFORM MATCHES native)
