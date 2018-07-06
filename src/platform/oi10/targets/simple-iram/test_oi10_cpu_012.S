@@ -9,8 +9,6 @@
 #include <platform/arch/ppc/test_macro_asm.S.h>
 #include <platform/regs/regs_plb4plb6.h>
 
-#define eq6                     cr6*4+eq
-#define eq7                     cr7*4+eq
 
 #define CVR3					r14,r15,r16 	/* Check Value Regs triade */
 #define P46A0(OFFSET)			(DCR_PLB4PLB6_0_BASE + (OFFSET))
@@ -49,7 +47,6 @@ running_0_1_P46_0:
     mtdcrx      r14,  r15
     mfdcrx      r16,  r14
     cmpw cr7,   r16,  r15
-    crand       eq6,  eq6,  eq7
     TEST_ASSERT(eq,cr7,"Read/write error in P4P6_0.SNOOP_LADDRL0 (running 1 init)")
 
 p46_0_running_1:
@@ -60,7 +57,6 @@ p46_0_loop_1:
     mtdcrx      r14,  r15
     mfdcrx      r16,  r14
     cmpw cr7,   r16,  r15
-    crand       eq6,  eq6, eq7
     TEST_ASSERT(eq,cr7,"Read/write error in P4P6_0.SNOOP_LADDRL0 (running 1)")
     cmpw cr0,   r15,  r18
     beq- cr0,   p46_0_running_0
@@ -73,7 +69,6 @@ p46_0_running_0:
     mtdcrx      r14,  r15
     mfdcrx      r16,  r14
     cmpw cr7,   r16,  r15
-    crand       eq6,  eq6, eq7
     TEST_ASSERT(eq,cr7,"Read/write error in P4P6_0.SNOOP_LADDRL0 (running 0 init)")
 
     load_const  r15,  0xFFFFFFFE
@@ -83,7 +78,6 @@ p46_0_loop_0:
     mtdcrx      r14,  r15
     mfdcrx      r16,  r14
     cmpw cr7,   r16,  r15
-    crand       eq6,  eq6,  eq7
     TEST_ASSERT(eq,cr7,"Read/write error in P4P6_0.SNOOP_LADDRL0 (running 0)")
     cmpw cr0,   r15,  r18
     beq- cr0,   p46_0_end_checking
