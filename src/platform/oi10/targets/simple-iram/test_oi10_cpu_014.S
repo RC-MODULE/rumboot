@@ -9,8 +9,6 @@
 #include <platform/devices.h>
 #include <platform/regs/regs_dcrarb.h>
 
-#define eq6                     cr6*4+eq
-#define eq7                     cr7*4+eq
 
 #define CVR3					r4,r5,r6 	/* Check Value Regs triade */
 #define ARBA(OFFSET)			(DCR_ARB_BASE + (OFFSET))
@@ -33,7 +31,7 @@ main:
     check_value CVR3, ARBA(DCRARB_DAEAR), DCRARB_DAEAR_VALUE, "DCRARB_DAEAR"
     check_value CVR3, ARBA(DCRARB_DASMR), DCRARB_DASMR_VALUE, "DCRARB_DASMR"
     check_value CVR3, ARBA(DCRARB_REVID), DCRARB_REVID_VALUE, "DCRARB_REVID"
-    rumboot_putstring "CHECK DEFAULT VALUES DONE\n"
+    rumboot_putstring "DONE.\n"
 
 running_0_1_dcr_arb:
     rumboot_putstring "dcr_arb running 0/1 ...\n"
@@ -43,7 +41,6 @@ running_0_1_dcr_arb:
     mtdcrx      r14,  r15
     mfdcrx      r16,  r14
     cmpw cr7,   r16,  r15
-    crand       eq6,  eq6,  eq7
     TEST_ASSERT(eq,cr7,"Read/write error in DCRARB_TADDR (running 1 init)")
 
 dcr_arb_running_1:
@@ -54,7 +51,6 @@ dcr_arb_loop_1:
     mtdcrx      r14,  r15
     mfdcrx      r16,  r14
     cmpw cr7,   r16,  r15
-    crand       eq6,  eq6,  eq7
     TEST_ASSERT(eq,cr7,"Read/write error in DCRARB_TADDR (running 1)")
     cmpw cr0,   r15,  r18
     beq- cr0,   dcr_arb_running_0
@@ -67,7 +63,6 @@ dcr_arb_running_0:
     mtdcrx      r14,  r15
     mfdcrx      r16,  r14
     cmpw cr7,   r16,  r15
-    crand       eq6,  eq6,  eq7
     TEST_ASSERT(eq,cr7,"Read/write error in DCRARB_TADDR (running 0 init)")
 
     load_const  r15,  0xFFFFFFFE
@@ -77,7 +72,6 @@ dcr_arb_loop_0:
     mtdcrx      r14,  r15
     mfdcrx      r16,  r14
     cmpw cr7,   r16,  r15
-    crand       eq6,  eq6,  eq7
     TEST_ASSERT(eq,cr7,"Read/write error in DCRARB_TADDR (running 0)")
     cmpw cr0,   r15,  r18
     beq- cr0,   end_checking
