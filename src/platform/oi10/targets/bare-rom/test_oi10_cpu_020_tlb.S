@@ -134,8 +134,8 @@ rumboot_entry_point:
 					((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_4KB)    << MMU_USPCR_ORD2_i)\
                   | ((                        MMU_XSPCR_ORD_END)    << MMU_USPCR_ORD3_i)
 #define CONST_SPR_ISPCR \
-					(MMU_XSPCR_ORD_4KB  << MMU_ISPCR_ORD2_i)\
-                  | (MMU_XSPCR_ORD_END  << MMU_ISPCR_ORD3_i)
+					(                         MMU_XSPCR_ORD_4KB     << MMU_ISPCR_ORD2_i)\
+                  | (                         MMU_XSPCR_ORD_END     << MMU_ISPCR_ORD3_i)
 
     load_const  r3, CONST_SPR_CCR0
     mtspr       SPR_CCR0,	r3
@@ -162,10 +162,10 @@ rumboot_entry_point:
 	*/
 
     mtcr        r0
-    mtmsr		r0
-    mtspr       SPR_CTR,	r0
-    mtspr       SPR_LR,		r0
-    mtspr       SPR_XER,	r0
+    mtlr        r0
+    mtctr       r0
+    mtxer       r0
+    mtmsr       r0
     mtspr       SPR_DCESR,	r0
     mtspr       SPR_CSRR0,	r0
     mtspr       SPR_CSRR1,	r0
@@ -197,6 +197,7 @@ rumboot_entry_point:
     mtspr       SPR_DBCR2,	r0
     mtspr       SPR_DBDR,	r0
 
+    cmpwi cr6,  r0,         0x0000
     b           setup_initial_tlb
 
 
@@ -279,13 +280,13 @@ usermode_entry:
 
 
 test_error:
-	rumboot_putstring "TEST_ERROR!\n"
+	rumboot_putstring "TEST ERROR\n"
     test_event  EVENT_ERROR
     exit		RESULT_ERROR
     b           finish
 
 test_ok:
-	rumboot_putstring "TEST_OK!\n"
+	rumboot_putstring "TEST OK\n"
     test_event  EVENT_OK
     exit		RESULT_OK
     b           finish
@@ -358,15 +359,14 @@ check_tlb_sync:
     nop
 
     load_const  r1, PHYSICAL_SPACE_ENTERED
-    cmpw        cr3, r1, r21
-    TEST_ASSERT( eq, cr5, "Physical space not entered" )
+    cmpw        cr7, r1, r21
+    TEST_ASSERT( eq, cr7, "Physical space not entered" )
 
     load_const  r2, HANDLER_CALLED
-    cmpw        cr4, r2, r22
-    TEST_ASSERT( eq, cr6, "Intruction TLB miss handler not called" )
+    cmpw        cr7, r2, r22
+    TEST_ASSERT( eq, cr7, "Intruction TLB miss handler not called" )
 
-    bne-		cr3, test_error
-    bne-		cr4, test_error
+    bne-		cr6, test_error
     b			test_ok
 
 
