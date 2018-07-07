@@ -1,24 +1,25 @@
 
-#include <platform/oi10/platform/test_event_asm.h>
-#include <platform/oi10/platform/test_assert.S.h>
-#include <platform/oi10/platform/ppc470s/mmu.S.h>
-#include <platform/oi10/platform/trace.S.h>
-#include <platform/oi10/platform/devices.h>
-#include <platform/oi10/platform/arch/ppc/ppc_476fp_ctrl_fields.h>
-#include <platform/oi10/platform/arch/ppc/ppc_476fp_itrpt_fields.h>
-#include <platform/oi10/platform/arch/ppc/ppc_476fp_debug_fields.h>
-#include <platform/oi10/platform/arch/ppc/ppc_476fp_timer_fields.h>
+#include <platform/test_event_asm.h>
+#include <platform/test_assert.S.h>
+#include <platform/ppc470s/mmu.S.h>
+#include <platform/trace.S.h>
+#include <platform/devices.h>
+#include <platform/arch/ppc/ppc_476fp_ctrl_fields.h>
+#include <platform/arch/ppc/ppc_476fp_itrpt_fields.h>
+#include <platform/arch/ppc/ppc_476fp_debug_fields.h>
+#include <platform/arch/ppc/ppc_476fp_timer_fields.h>
 
 
 .section ".init.start","ax",@progbits
 
 boot_start:
-    b           boot_init
+    b           rumboot_entry_point
 
 .section ".init.text","ax",@progbits
 
-boot_init:
+rumboot_entry_point:
 	gtube_init
+	test_event_send_test_id "test_oi10_cpu_mem_003"
     load_const  r0, 0x00000000  /* make r0 "all zeros" source */
     load_const  r1, 0xFFFFFFFF  /* make r1 "all ones" source  */
     load_const  r2, 0x00000000
@@ -188,10 +189,6 @@ init_spr:
     b           test_cpu_mem_003
 
 
-/*
-.section ".BOOT_ROM.rodata","a",@progbits
-*/
-
 DECLARE_CONST( UTLB_TEST_DATA_SIZE, 4 )
 DECLARE_CONST( UTLB_TEST_DATA_N,    6 )
 
@@ -320,9 +317,6 @@ test_read_tlb_entries:
 
 DECLARE_CONST( MMU_MMUCR_STID_MASK,  0x0000FFFF )
 
-/*
-.section ".BOOT_ROM.text","ax",@progbits
-*/
 
 test_cpu_mem_003:
 
@@ -345,21 +339,21 @@ read_next_test_tlb_entry:
     andi.       r5, r5, MMU_MMUCR_STID_MASK
     tlbre       r6, r3, MMU_TLB_ENTRY_TAG
     cmpw        r6, r4
-    TEST_ASSERT(eq, cr0, "Wrong UTLB TAG(EPN,EPNPar,V,TS,DSIZ,DSIZPar,TIDPar)")
+    TEST_ASSERT(eq, cr0, "Wrong UTLB TAG(EPN...)")
     mfspr       r7, SPR_MMUCR
     andi.       r7, r7, MMU_MMUCR_STID_MASK
     cmpw        r7, r5
-    TEST_ASSERT(eq, cr0, "Wrong UTLB TAG (TID)")
+    TEST_ASSERT(eq, cr0, "Wrong UTLB TAG(TID)")
 
     lwz         r4, UTLB_TEST_TLBE_DATA(r1)
     tlbre       r6, r3, MMU_TLB_ENTRY_DATA
     cmpw        r6, r4
-    TEST_ASSERT(eq, cr0, "Wrong UTLB DATA(ERPN,ERPNPar,RPN,RPNPar)")
+    TEST_ASSERT(eq, cr0, "Wrong UTLB DATA(ERPN...)")
 
     lwz         r4, UTLB_TEST_TLBE_ATTR(r1)
     tlbre       r6, r3, MMU_TLB_ENTRY_ATTR
     cmpw        r6, r4
-    TEST_ASSERT(eq, cr0, "Wrong UTLB DATA(IL1I,IL1D,W,I,M,G,E,UX,UW,UR,SX,SW,SR,U,SPPar)")
+    TEST_ASSERT(eq, cr0, "Wrong UTLB DATA(IL1I...)")
 
     addi        r1, r1, TEST_TLB_ENTRY_SIZE
     addi        r2, r2, 1
@@ -390,20 +384,16 @@ write_next_test_tlb_entry:
     cmplwi      cr7, r2, TEST_WRITE_TLB_ENTRIES_N
     bne+        cr7, write_next_test_tlb_entry
 
-ok:
-	rumboot_putstring "TEST_OK!\n"
-    test_event EVENT_OK
+test_ok:
+	rumboot_putstring "OK\n"
 	exit 0x00
-	b finish
+//	b test_finish
 
-error:
-	rumboot_putstring "TEST_ERROR!\n"
-    test_event EVENT_ERROR
+test_error:
+	rumboot_putstring "ERROR\n"
     exit 0x01
-    b finish
+ //   b test_finish
 
-finish:
-    test_event EVENT_FINISHED
-finish_loop:
-    b finish_loop
+//test_finish:
+//    b test_finish
 
