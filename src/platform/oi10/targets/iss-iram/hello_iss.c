@@ -11,7 +11,7 @@
 
 #define DATA_LEN  4096
 
-uint8_t test_data_arr [DATA_LEN] __attribute__((section(".issdata"))) = {0};
+uint8_t test_data_arr [DATA_LEN] __attribute__((section(".data"))) = {0};
 
 int main()
 {
