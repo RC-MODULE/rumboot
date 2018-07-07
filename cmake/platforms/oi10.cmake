@@ -117,6 +117,11 @@ add_rumboot_target_dir(rom/
     PREFIX uart_data_logger
   )
 
+  add_rumboot_target_dir(iss-iram/
+    CONFIGURATION IRAM
+    PREFIX iss-iram
+    CHECKCMD ${CMAKE_SOURCE_DIR}/scripts/ISS/dump_gen.csh ${CMAKE_BINARY_DIR} $PRODUCT
+  )
 endmacro()
 
 
