@@ -22,9 +22,6 @@
 #define P6BCA(OFFSET)				(DCR_PLB6_BC_BASE + (OFFSET))
 #define SGD_NON_SYNTH_VALUE         0xFFFFFFF0
 
-#define eq6							cr6*4+eq
-#define eq7							cr7*4+eq
-
 #define PLB6_BC_CR0_STU             (0b1 << PLB6BC_CR0_BC_DSBS_i      )\
                                   | (0b1 << PLB6BC_CR0_BC_MASK_MSRSP_i)\
                                   | (0b1 << PLB6BC_CR0_BC_MASK_SRSNZ_i)
@@ -32,7 +29,6 @@
 #define PLB6_BC_SGD1_STU            0x00000010
 #define PLB6_BC_SGD2_STU            0x00000010
 #define PLB6_BC_SGD3_STU            0x00000020
-#define PLB6_BC_HCPP_VALUE          PLB6BC_HCPP_4K
 
 /* DCR register value checker */
 .macro chk_sgdwr rA,rE,rR,vAddr,sName
@@ -79,7 +75,7 @@ main:
     chk_sgdwr CVR3,	P6BCA(PLB6BC_SGD5),										"PLB6BC_SGD5        "
     chk_sgdwr CVR3,	P6BCA(PLB6BC_SGD6),										"PLB6BC_SGD6        "
     chk_sgdwr CVR3,	P6BCA(PLB6BC_SGD7),										"PLB6BC_SGD7        "
-    chk_value CVR3,	P6BCA(PLB6BC_ERR),          PLB6_BC_ERR_VALUE,			"PLB6BC_ERR         "
+//  chk_value CVR3,	P6BCA(PLB6BC_ERR),          PLB6_BC_ERR_VALUE,			"PLB6BC_ERR         "
     chk_value CVR3,	P6BCA(PLB6BC_MSRSP),        PLB6_BC_MSRSP_VALUE,		"PLB6BC_MSRSP       "
     chk_value CVR3,	P6BCA(PLB6BC_HCPP),         PLB6_BC_HCPP_VALUE,			"PLB6BC_HCPP        "
     chk_value CVR3,	P6BCA(PLB6BC_HD),			PLB6_BC_HD_VALUE,			"PLB6BC_HD          "
