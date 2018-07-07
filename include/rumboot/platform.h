@@ -50,6 +50,7 @@ enum rumboot_simulation_event {
     EVENT_SIM_SAVE, /** Request to save simulation state to file */
     EVENT_SIM_RESTORE, /** Request to load simulation state from a file */
     EVENT_TESTEVENT, /** Special event to be sent to SystemVerilog part of the test */
+    EVENT_RELOCATE_RUNTIME, /** Request to poll a different cell for runtime structure */
 };
 
 
@@ -208,6 +209,15 @@ void rumboot_platform_sim_save(const char *filename);
  * @param filename [description]
  */
 void rumboot_platform_sim_restore(const char *filename);
+
+/**
+ * Request to relocate rumboot_runtime_info structure to a different
+ * location in memory. Once this request is sent all events should use the
+ * new location. Usually it's needed to chainload to a new image with it's own
+ * that will runtime location that be further initialized by image's rumboot_main()
+ * @param addr [description]
+ */
+void rumboot_platform_relocate_runtime(uint32_t addr);
 
 /**
  * Declares a function to be a constructor (will be called before main())

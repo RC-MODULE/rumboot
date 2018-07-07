@@ -152,3 +152,8 @@ void __attribute__((noreturn)) rumboot_platform_panic(const char *why, ...)
     raise_event_fast(EVENT_STACKTRACE, (uint32_t) fp);
 	exit(1);
 }
+
+void rumboot_platform_relocate_runtime(uint32_t addr)
+{
+    rumboot_platform_event_raise(EVENT_RELOCATE_RUNTIME, &addr, 1);
+}
