@@ -358,15 +358,15 @@ check_tlb_sync:
     nop
 
     load_const  r1, PHYSICAL_SPACE_ENTERED
-    cmpw        cr5, r1, r21
+    cmpw        cr3, r1, r21
     TEST_ASSERT( eq, cr5, "Physical space not entered" )
 
     load_const  r2, HANDLER_CALLED
-    cmpw        cr6, r2, r22
+    cmpw        cr4, r2, r22
     TEST_ASSERT( eq, cr6, "Intruction TLB miss handler not called" )
 
-    bne-		cr5, test_error
-    bne-		cr6, test_error
+    bne-		cr3, test_error
+    bne-		cr4, test_error
     b			test_ok
 
 
