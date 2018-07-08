@@ -2,6 +2,11 @@
 #ifndef REGS_MPIC_H
 #define REGS_MPIC_H
 
+
+#include <platform/common_macros/common_macros.h>
+#include <platform/arch/ppc/ibm_bit_ordering_macros.h>
+
+
 #define MPIC128_VIR0_VALUE		reg_field(31,0x14) | reg_field(23,0x50)
 #define MPIC128_REVID_VALUE		MPIC128_REVID_DFLT
 

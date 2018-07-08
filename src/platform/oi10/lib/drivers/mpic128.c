@@ -4,6 +4,10 @@
 #include <rumboot/platform.h>
 #include <rumboot/printf.h>
 #include <rumboot/irq.h>
+#include <platform/devices.h>
+#include <platform/devices/mpic128.h>
+#include <platform/regs/regs_mpic128.h>
+
 
 static int mpic128_init( const struct rumboot_irq_controller *dev ) {
     return 0; /* We're good */
@@ -29,6 +33,6 @@ static const struct rumboot_irq_controller irq_ctl = {
     .end = mpic128_end,
     .configure = mpic128_configure };
 
-void rumboot_irq_register_mpic128_controller() {
+void rumboot_irq_register_mpic128() {
     rumboot_irq_register_controller( &irq_ctl );
 }
