@@ -2,7 +2,7 @@
  * PLB6PLB4 bridge implementation
  */
 
-#include <devices/p64.h>
+#include <platform/devices/p64.h>
 
 void p64_get_configuration( uint32_t const base_addr, p64_cfg * cfg ) {
     uint32_t reg_value;
