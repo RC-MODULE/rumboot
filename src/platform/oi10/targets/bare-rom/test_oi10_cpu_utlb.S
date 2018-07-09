@@ -7,6 +7,23 @@
 #include <platform/arch/ppc/ppc_476fp_ctrl_fields.h>
 
 
+#define VAL_MAGIC   0xDEAD4BAD
+#define BEG_ADDR0   0xFFFE0000  /* Skip last 64k page   */
+#define END_ADDR0   0xFF000000
+#define BEG_ADDR1   0xFEFF0000  /* 11111110_11111111    */
+#define END_ADDR1   0xFE000000  /* 11111110_00000000    */
+#define BEG_ADDR2   0xFDFF0000  /* 11111101_11111111    */
+#define END_ADDR2   0xFD000000  /* 11111101_00000000    */
+#define BEG_ADDR3   0xFBFF0000  /* 11111011_11111111    */
+#define END_ADDR3   0xFB000000  /* 11111011_00000000    */
+#define PHY_ADDR0   0xFFFF0000
+#define PHY_ADDRE   0x00003FFF
+
+#define WAY_0       0
+#define WAY_1       1
+#define WAY_2       2
+#define WAY_3       3
+
 #define CONST_CCR0    reg_field( 0, 0b0   ) /* ITE     */ \
                     | reg_field( 1, 0b1   ) /* PRE     */ \
                     | reg_field( 4, 0b1   ) /* CRPE    */ \
@@ -85,6 +102,7 @@
 #define R_TLBR      r15
 #define R_ETAG      r16
 #define R_MASK      r17
+#define R_DUMP      r18
 #define R_ADDR      r20
 #define R_BEGA      R_ADDR
 #define R_ENDA      r21
@@ -93,12 +111,14 @@
 #define R_DATA      r24
 #define R_SAV0      r26
 #define R_SAV1      r27
+#define R_SHFT      R_SAV0
+#define R_XORM      R_SAV1
 #define R_TEMP      r29
 #define R_ZERO      r30
 #define R_ONES      r31
 
 .macro fill_utlb vWay, vAttr, aBeg, aEnd, aStep, vFill, vEFill
-    rumboot_putstring       "Fill UTLB-entries for way \vWay from \aBeg to \aEnd step \aStep ...\n"
+    rumboot_putstring       "Fill UTLB-entries for way \vWay from \aBeg to \aEnd\()...\n"
     load_const  R_MASK,     0xFFFF0000
     load_const  R_MMUC,     MMU_MMUCR(0,0,0,0,0)
     load_const  R_BEGA,     \aBeg
@@ -107,11 +127,17 @@
     load_const  R_FILL,     MMU_TLBE_DATA(\vEFill, \vFill, 0, 0)
     load_const  R_ETAG,     MMU_TLBE_TAG(0,1,0,MMU_TLBE_DSIZ_64KB,0,0,0,0)
 52:
-    mr          R_TEMP,     R_BEGA
-    rumboot_puthex          R_TEMP
     load_const  R_TLBR,     ((\vWay) << MMU_TLBWE_RA_WAY_i)
+    load_const  R_SHFT,     24
+    load_const  R_XORM,     0x000F
     mtspr       SPR_MMUCR,  R_MMUC
     and         R_DATA,     R_BEGA,     R_MASK
+    srw         R_TEMP,     R_DATA,     R_SHFT
+    and         R_TEMP,     R_TEMP,     R_XORM
+    xor         R_TEMP,     R_TEMP,     R_XORM
+    addi        R_SHFT,     R_SHFT,     -8
+    slw         R_TEMP,     R_TEMP,     R_SHFT
+    xor         R_DATA,     R_DATA,     R_TEMP
     or          R_DATA,     R_DATA,     R_ETAG
     tlbwe       R_DATA,     R_TLBR,     MMU_TLB_ENTRY_TAG
     load_const  R_TLBR,     ((\vWay) << MMU_TLBWE_RA_WAY_i)
@@ -124,7 +150,7 @@
     cmpw  cr7,  R_BEGA,     R_ENDA
     add         R_BEGA,     R_BEGA,     R_STEP
     bne+  cr7,  52b
-    rumboot_putstring       "Done.\n"
+    rumboot_putstring       "Filled.\n"
 .endm
 
 .section ".init.start","ax",@progbits
@@ -280,39 +306,37 @@ write_tlb_entries_ret:
 
     rumboot_putstring       "Filling UTLB-entries...\n"
 
-    fill_utlb   0x0000,     /*  WAY         */ \
+    fill_utlb   WAY_0,      /*  WAY         */ \
                 FILL_ATTR,  /*  TLB ATTR    */ \
-                0xFFFE0000, /*  EPN BEGIN   */ \
-                0xFF000000, /*  EPN END     */ \
+                BEG_ADDR0,  /*  EPN BEGIN   */ \
+                END_ADDR0,  /*  EPN END     */ \
                 FILL_STEP,  /*  EPN STEP    */ \
-                0xFFFF0000, /*  RPN FILL    */ \
-                0x03FF      /* eRPN FILL    */
+                PHY_ADDR0,  /*  RPN FILL    */ \
+                PHY_ADDRE   /* eRPN FILL    */
 
-b               fill_end
-
-    fill_utlb   0x0001,     /*  WAY         */ \
+    fill_utlb   WAY_1,      /*  WAY         */ \
                 FILL_ATTR,  /*  TLB ATTR    */ \
-                0xFFFF0000, /*  EPN BEGIN   */ \
-                0xFF000000, /*  EPN END     */ \
+                BEG_ADDR1,  /*  EPN BEGIN   */ \
+                END_ADDR1,  /*  EPN END     */ \
                 FILL_STEP,  /*  EPN STEP    */ \
-                0xFFFF0000, /*  RPN FILL    */ \
-                0x03FF      /* eRPN FILL    */
+                PHY_ADDR0,  /*  RPN FILL    */ \
+                PHY_ADDRE   /* eRPN FILL    */
 
-    fill_utlb   0x0002,     /*  WAY         */ \
+    fill_utlb   WAY_2,      /*  WAY         */ \
                 FILL_ATTR,  /*  TLB ATTR    */ \
-                0xFFFF0000, /*  EPN BEGIN   */ \
-                0xFF000000, /*  EPN END     */ \
+                BEG_ADDR2,  /*  EPN BEGIN   */ \
+                END_ADDR2,  /*  EPN END     */ \
                 FILL_STEP,  /*  EPN STEP    */ \
-                0xFFFF0000, /*  RPN FILL    */ \
-                0x03FF      /* eRPN FILL    */
+                PHY_ADDR0,  /*  RPN FILL    */ \
+                PHY_ADDRE   /* eRPN FILL    */
 
-    fill_utlb   0x0003,     /*  WAY         */ \
+    fill_utlb   WAY_3,      /*  WAY         */ \
                 FILL_ATTR,  /*  TLB ATTR    */ \
-                0xFFFF0000, /*  EPN BEGIN   */ \
-                0xFF000000, /*  EPN END     */ \
+                BEG_ADDR3,  /*  EPN BEGIN   */ \
+                END_ADDR3,  /*  EPN END     */ \
                 FILL_STEP,  /*  EPN STEP    */ \
-                0xFFFF0000, /*  RPN FILL    */ \
-                0x03FF      /* eRPN FILL    */
+                PHY_ADDR0,  /*  RPN FILL    */ \
+                PHY_ADDRE   /* eRPN FILL    */
 
 fill_end:
     rumboot_putstring       "Filling UTLB-entries complete.\n"
@@ -348,7 +372,7 @@ stop:
 .section ".text","ax",@progbits
 
 magic_data:
-    .long 0xDEAD4BAD
+    .long VAL_MAGIC
 
 test_start:
 
