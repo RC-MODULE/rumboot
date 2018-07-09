@@ -323,8 +323,11 @@ test_cpu_mem_003:
 BEGIN_ENUM( test_event_code )
 DECLARE_ENUM_VAL(   TEC_CHECK_MMU_UTLB_READ,   TEST_EVENT_CODE_MIN )
 DECLARE_ENUM_NEXT(  TEC_CHECK_MMU_UTLB_WRITE )
+DECLARE_ENUM_NEXT(  TEC_INIT )
+DECLARE_ENUM_NEXT(  TEC_FINISH )
 END_ENUM( test_event_code )
 
+	test_event  TEC_INIT
 
 check_mmu_utlb_read:
     test_event  TEC_CHECK_MMU_UTLB_READ
@@ -340,6 +343,7 @@ read_next_test_tlb_entry:
     tlbre       r6, r3, MMU_TLB_ENTRY_TAG
     cmpw        r6, r4
     TEST_ASSERT(eq, cr0, "Wrong UTLB TAG(EPN...)")
+
     mfspr       r7, SPR_MMUCR
     andi.       r7, r7, MMU_MMUCR_STID_MASK
     cmpw        r7, r5
@@ -385,15 +389,12 @@ write_next_test_tlb_entry:
     bne+        cr7, write_next_test_tlb_entry
 
 test_ok:
-	rumboot_putstring "OK\n"
+	test_event  TEC_FINISH
 	exit 0x00
-//	b test_finish
 
 test_error:
-	rumboot_putstring "ERROR\n"
+ 	rumboot_putstring "TEST_ERROR\n"
     exit 0x01
- //   b test_finish
 
-//test_finish:
-//    b test_finish
+
 
