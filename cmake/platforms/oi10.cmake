@@ -43,7 +43,7 @@ rumboot_add_configuration (
   LDS oi10/iram.lds
   PREFIX iram
   LDFLAGS -Wl,--start-group -lgcc -lc -lm -Wl,--end-group "-e rumboot_main"
-  FILES ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c
+  FILES ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/startup.S ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c
   CFLAGS -DRUMBOOT_PRINTF_ACCEL
   BOOTROM bootrom-stub
   FEATURES LUA COVERAGE

@@ -20,6 +20,8 @@ uint32_t rumboot_platform_get_uptime() {
     return spr_read( SPR_TBL_R ) / TIMER_TICKS_PER_US;
 }
 
+void rumboot_irq_hdr();
+
 void rumboot_platform_setup() {
     /* Disable interrupts on the PPC core */
     uint32_t const msr_old_value = msr_read();
@@ -29,6 +31,9 @@ void rumboot_platform_setup() {
                                | (0b1 << ITRPT_XSR_DE_i)));    /* MSR[DE] - Debug interrupt. */
 
     rumboot_irq_register_mpic128();
+
+    spr_write( SPR_IVPR,    (uint32_t)&rumboot_irq_hdr & 0xFFFF0000 ); /* link irq handlers mirror */
+    spr_write( SPR_IVOR4,   (uint32_t)&rumboot_irq_hdr & 0x0000FFFF ); /* link rumboot irq dispatcher */
 
     msr_write( msr_old_value );
 

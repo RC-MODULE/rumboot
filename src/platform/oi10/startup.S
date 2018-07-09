@@ -15,6 +15,7 @@
 #include <platform/arch/ppc/ppc_476fp_timer_fields.h>
 #include <platform/devices.h>
 #include <platform/trace.S.h>
+#include <rumboot/irq.h>
 
 .global unexpected_itrpt_hdr_base
 .global unexpected_CI_hdr
@@ -91,8 +92,39 @@ unexpected_E_hdr:
     bl          trace_msg_unexpected_itrpt
     rumboot_putstring   "External input\n"
     b           unexpected_error
+
 .align 4
 rumboot_irq_hdr:
+    stwu        r1, -160(r1)
+    stw         r0, 156(r1)
+    stmw        r2, 36(r1)
+    mflr        r0
+    stw         r0, 32(r1)
+    mfcr        r0
+    stw         r0, 28(r1)
+    mfctr       r0
+    stw         r0, 24(r1)
+    mfxer       r0
+    stw         r0, 20(r1)
+
+    load_const  r3, 0
+    load_const  r4, RUMBOOT_IRQ_TYPE_NORMAL
+    load_const  r5, RUMBOOT_IRQ_IRQ /* TODO remove unused param id */
+    bl          rumboot_irq_core_dispatch
+
+    lwz         r0, 20(r1)
+    mtxer       r0
+    lwz         r0, 24(r1)
+    mtctr       r0
+    lwz         r0, 28(r1)
+    mtcr        r0
+    lwz         r0, 32(r1)
+    mtlr        r0
+    lmw         r2, 36(r1)
+    lwz         r0, 156(r1)
+    addi        r1, r1, 160
+
+    rfi
 
 .align 4
 unexpected_A_hdr:
