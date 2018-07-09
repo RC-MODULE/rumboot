@@ -22,6 +22,7 @@
 .global unexpected_DS_hdr
 .global unexpected_IS_hdr
 .global unexpected_E_hdr
+.global rumboot_irq_hdr
 .global unexpected_A_hdr
 .global unexpected_P_hdr
 .global unexpected_FPU_hdr
@@ -90,6 +91,8 @@ unexpected_E_hdr:
     bl          trace_msg_unexpected_itrpt
     rumboot_putstring   "External input\n"
     b           unexpected_error
+.align 4
+rumboot_irq_hdr:
 
 .align 4
 unexpected_A_hdr:

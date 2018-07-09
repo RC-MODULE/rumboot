@@ -6,6 +6,9 @@
 #include <rumboot/io.h>
 #include <rumboot/printf.h>
 #include <rumboot/rumboot.h>
+#include <platform/arch/ppc/ppc_476fp_config.h>
+#include <platform/arch/ppc/ppc_476fp_lib_c.h>
+#include <platform/arch/ppc/ppc_476fp_itrpt_fields.h>
 
 #include <platform/devices/mpic128.h>
 
@@ -13,24 +16,23 @@
 /* Platform-specific glue */
 uint32_t rumboot_platform_get_uptime() {
     #define TIMER_TICKS_PER_US  800
-    #define SPR_TBL_R           0x10C
 
-    uint32_t value = 0;
-
-    __asm volatile (
-        "mfspr %0, %1 \n\t"
-        :"=r"(value)
-        :"i"(SPR_TBL_R)
-    );
-
-    return value / TIMER_TICKS_PER_US;
+    return spr_read( SPR_TBL_R ) / TIMER_TICKS_PER_US;
 }
 
 void rumboot_platform_setup() {
-    extern char rumboot_platform_heap_start;
-    extern char rumboot_platform_heap_end;
+    /* Disable interrupts on the PPC core */
+    uint32_t const msr_old_value = msr_read();
+    msr_write( msr_old_value & ~((0b1 << ITRPT_XSR_CE_i)       /* MSR[CE] - Critical interrupt. */
+                               | (0b1 << ITRPT_XSR_EE_i)       /* MSR[EE] - External interrupt. */
+                               | (0b1 << ITRPT_XSR_ME_i)       /* MSR[ME] - Machine check. */
+                               | (0b1 << ITRPT_XSR_DE_i)));    /* MSR[DE] - Debug interrupt. */
 
     rumboot_irq_register_mpic128();
 
-    rumboot_malloc_register_heap( "IM0", &rumboot_platform_heap_start, &rumboot_platform_heap_end );
+    msr_write( msr_old_value );
+
+    //extern char rumboot_platform_heap_start;
+    //extern char rumboot_platform_heap_end;
+    //rumboot_malloc_register_heap( "IM0", &rumboot_platform_heap_start, &rumboot_platform_heap_end );
 }
