@@ -100,11 +100,6 @@
     TEST_ASSERT(eq,cr7,"DCRE: expected \sName = \vExp (address: \vAddr) ")
 .endm
 
-.macro load_spr tR sprReg sprVal
-	load_const	\tR,     \sprVal
-	mtspr		\sprReg, \tR
-.endm
-
 
 .section ".init.start","ax",@progbits
 
