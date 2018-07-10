@@ -9,7 +9,7 @@
 #include <platform/arch/ppc/ppc_476fp_ctrl_fields.h>
 
 
-#define VAL_MAGIC   0xDEAD4BAD
+#define VAL_MAGIC   0xBED4DEAD
 #define BEG_ADDR0   0xFFFE0000  /* Skip last 64k page   */
 #define END_ADDR0   0xFF000000
 #define BEG_ADDR1   0xFEFF0000  /* 11111110_11111111    */
@@ -36,12 +36,14 @@
 #define R_ARG1      r4
 #define R_ARG2      r5
 #define R_ARG3      r6
+#define R_ATTR      r13
 #define R_MMUC      r14
 #define R_TLBR      r15
 #define R_ETAG      r16
 #define R_MASK      r17
 #define R_DUMP      r18
 #define R_CNTR      r19
+#define R_AIDX      R_CNTR
 #define R_ADDR      r20
 #define R_BEGA      R_ADDR
 #define R_ENDA      r21
@@ -53,6 +55,7 @@
 #define R_SAV1      r27
 #define R_SHFT      R_SAV0
 #define R_XORM      R_SAV1
+#define R_TPL0      r28
 #define R_TEMP      r29
 #define R_ZERO      r30
 #define R_ONES      r31
@@ -136,63 +139,19 @@
     load_const  R_STEP,     \aStep
     load_const  R_FILL,     MMU_TLBE_DATA(\vEFill, \vFill, 0, 0)
     load_const  R_ETAG,     MMU_TLBE_TAG(0,1,0,MMU_TLBE_DSIZ_64KB,0,0,0,0)
-52:
-    load_const  R_TLBR,     ((\vWay) << MMU_TLBWE_RA_WAY_i)
-    load_const  R_SHFT,     24
-    mtspr       SPR_MMUCR,  R_MMUC
-    and         R_DATA,     R_BEGA,     R_MASK
-    srw         R_TEMP,     R_DATA,     R_SHFT
-    and         R_TEMP,     R_TEMP,     R_XORM
-    xor         R_TEMP,     R_TEMP,     R_XORM
-    addi        R_SHFT,     R_SHFT,     -8
-    slw         R_TEMP,     R_TEMP,     R_SHFT
-    xor         R_DATA,     R_DATA,     R_TEMP
-    mr          R_DUMP,     R_DATA
-    or          R_DATA,     R_DATA,     R_ETAG
-    tlbwe       R_DATA,     R_TLBR,     MMU_TLB_ENTRY_TAG
-    mfspr       R_TEMP,     SPR_MMUCR
-    addi        R_SHFT,     R_SHFT,     1
-    srw         R_TEMP,     R_TEMP,     R_SHFT
-    and         R_TEMP,     R_TEMP,     R_XORM
-    cmpw  cr7,  R_TEMP,     R_CNTR
-
-//  rumboot_puthex          R_DUMP              /* DBG */
-//  mr          R_DUMP,     R_TEMP              /* DBG */
-//  rumboot_puthex          R_DUMP              /* DBG */
-//  mr          R_DUMP,     R_CNTR              /* DBG */
-//  rumboot_puthex          R_DUMP              /* DBG */
-//  rumboot_putstring       "----------\n"      /* DBG */
-
-    TEST_ASSERT(eq,cr7,"UTLB-Entry index is invalid!")
-
-    load_const  R_TLBR,     ((\vWay) << MMU_TLBWE_RA_WAY_i)
-    mtspr       SPR_MMUCR,  R_MMUC
-    tlbwe       R_FILL,     R_TLBR,     MMU_TLB_ENTRY_DATA
-    load_const  R_TLBR,     ((\vWay) << MMU_TLBWE_RA_WAY_i)
-    mtspr       SPR_MMUCR,  R_MMUC
-    load_const  R_DATA,     \vAttr
-    tlbwe       R_DATA,     R_TLBR,     MMU_TLB_ENTRY_ATTR
-    cmpw  cr7,  R_BEGA,     R_ENDA
-    add         R_BEGA,     R_BEGA,     R_STEP
-    addi        R_CNTR,     R_CNTR,     0x0001
-    bne+  cr7,  52b
-    rumboot_putstring       "Filled.\n"
+    load_const  R_TPL0,     ((\vWay) << MMU_TLBWE_RA_WAY_i)
+    load_const  R_ATTR,     \vAttr
+    bl          fill_utlb_loop
 .endm
 
-.macro check_read_pages aBeg, aEnd, aStep, vExp
-    rumboot_putstring       "Checking pages from address \aBeg to \aEnd\()...\n"
+.macro check_read_pages aEnd, aBeg, aStep, vExp
+    rumboot_putstring       "Read from \aBeg to \aEnd\()...\n"
     load_const  R_BEGA,     \aBeg
     load_const  R_ENDA,     \aEnd
     load_const  R_STEP,     \aStep
     load_const  R_EXPV,     \vExp
-53:
-    lwz         R_DATA,     0(R_BEGA)
-    cmpw  cr7,  R_EXPV,     R_DATA
-    TEST_ASSERT(eq,cr7,"Page read fail!")
-    cmpw  cr2,  R_BEGA,     R_ENDA
-    add         R_BEGA,     R_BEGA,     R_STEP
-    bne+  cr2,  53b
-    rumboot_putstring       "Done.\n"
+    load_const  R_AIDX,     0xF000
+    bl          read_pages_loop
 .endm
 
 .section ".init.start","ax",@progbits
@@ -202,6 +161,9 @@ boot_start:
 
 
 .section ".init.text","ax",@progbits
+
+magic_data:
+    .long VAL_MAGIC
 
 rumboot_entry_point:
     gtube_init
@@ -406,14 +368,12 @@ write_tlb_entries_ret:
 fill_end:
     rumboot_putstring       "Filling UTLB-entries complete.\n"
 
-    b           test_start
-
     mfspr       R_SAV0,     SPR_SRR0
     mfspr       R_SAV1,     SPR_SRR1
 
     mfmsr       R_DATA
     mtspr       SPR_SRR1,   R_DATA
-    load_addr   R_ADDR,     test_start
+    load_addr   R_ADDR,     read_pages_start
     mtspr       SPR_SRR0,   R_ADDR
 
     rfi
@@ -423,26 +383,86 @@ test_end:
 
 test_ok:
     rumboot_putstring "TEST OK\n"
-    test_event EVENT_OK
-    exit RESULT_OK
+    test_event  EVENT_OK
+    exit        RESULT_OK
+    b           test_finish
 
 test_error:
     rumboot_putstring "TEST ERROR\n"
     test_event  EVENT_ERROR
     exit RESULT_ERROR
 
-stop:
-    b stop
+test_finish:
+    b           test_finish
 
-.section ".text","ax",@progbits
+fill_utlb_loop:
+    mr          R_TLBR,     R_TPL0
+    load_const  R_SHFT,     24
+    mtspr       SPR_MMUCR,  R_MMUC
+    and         R_DATA,     R_BEGA,     R_MASK
+    srw         R_TEMP,     R_DATA,     R_SHFT
+    and         R_TEMP,     R_TEMP,     R_XORM
+    xor         R_TEMP,     R_TEMP,     R_XORM
+    addi        R_SHFT,     R_SHFT,     -8
+    slw         R_TEMP,     R_TEMP,     R_SHFT
+    xor         R_DATA,     R_DATA,     R_TEMP
+    mr          R_DUMP,     R_DATA              /* DBG */
+    or          R_DATA,     R_DATA,     R_ETAG
+    tlbwe       R_DATA,     R_TLBR,     MMU_TLB_ENTRY_TAG
+    mfspr       R_TEMP,     SPR_MMUCR
+    addi        R_SHFT,     R_SHFT,     1
+    srw         R_TEMP,     R_TEMP,     R_SHFT
+    and         R_TEMP,     R_TEMP,     R_XORM
+    cmpw  cr7,  R_TEMP,     R_CNTR
 
-magic_data:
-    .long VAL_MAGIC
+    rumboot_puthex          R_DUMP              /* DBG */
+//  mr          R_DUMP,     R_TEMP              /* DBG */
+//  rumboot_puthex          R_DUMP              /* DBG */
+//  mr          R_DUMP,     R_CNTR              /* DBG */
+//  rumboot_puthex          R_DUMP              /* DBG */
+//  rumboot_putstring       "----------\n"      /* DBG */
 
-test_start:
+    TEST_ASSERT(eq,cr7,"UTLB-Entry index is invalid!")
 
-    rumboot_putstring   "TEST IS NOT READY!!!\n"
-    clr_cr      cr6,    eq
+    mr          R_TLBR,     R_TPL0
+    mtspr       SPR_MMUCR,  R_MMUC
+    tlbwe       R_FILL,     R_TLBR,     MMU_TLB_ENTRY_DATA
+    mr          R_TLBR,     R_TPL0
+    mtspr       SPR_MMUCR,  R_MMUC
+    mr          R_DATA,     R_ADDR
+    tlbwe       R_DATA,     R_TLBR,     MMU_TLB_ENTRY_ATTR
+    cmpw  cr2,  R_BEGA,     R_ENDA
+    add         R_BEGA,     R_BEGA,     R_STEP
+    addi        R_CNTR,     R_CNTR,     0x0001
+    bne+  cr2,  fill_utlb_loop
+    msync
+    isync
+    rumboot_putstring       "Filled.\n"
+    blr
+
+read_pages_loop:
+    mr          R_DUMP,     R_BEGA              /* DBG */
+    rumboot_puthex          R_DUMP              /* DBG */
+    lwzx        R_DATA,     R_BEGA,     R_AIDX
+    cmpw  cr7,  R_EXPV,     R_DATA
+    TEST_ASSERT(eq,cr7,"Read fail!")
+    cmpw  cr2,  R_BEGA,     R_ENDA
+    add         R_BEGA,     R_BEGA,     R_STEP
+    bne+  cr2,  read_pages_loop
+    rumboot_putstring       "Read done.\n"
+    blr
+
+read_pages_start:
+
+    rumboot_putstring   "Check read memory pages...\n"
+
+    check_read_pages    BEG_ADDR3,  END_ADDR3,  READ_STEP,  VAL_MAGIC
+    check_read_pages    BEG_ADDR2,  END_ADDR2,  READ_STEP,  VAL_MAGIC
+    check_read_pages    BEG_ADDR1,  END_ADDR1,  READ_STEP,  VAL_MAGIC
+    check_read_pages    0xFFFF0000, END_ADDR1,  READ_STEP,  VAL_MAGIC
+
+    rumboot_putstring   "complete.\n"
+
     b test_end
 
 
