@@ -34,12 +34,26 @@ DECLARE_ENUM_VAL( MPIC128_VITC_MCB_i,       IBM_BIT_INDEX(32, MPIC128_VITC_MCB_e
 DECLARE_ENUM_VAL( MPIC128_VITC_MCB_n,       5 )
 END_ENUM( MPIC128_VITC_FIELD )
 
-#define MPIC128_VPy_MSK       0
-#define MPIC128_VPy_ACT       1
-#define MPIC128_VPy_POL       8
-#define MPIC128_VPy_S         9
-#define MPIC128_VPy_PRI       15
-#define MPIC128_VPy_VEC       31
+BEGIN_ENUM( MPIC128_VP_FIELD )
+DECLARE_ENUM_VAL( MPIC128_VP_VEC_e,         31 )                                        /** Interrupt Vector */
+DECLARE_ENUM_VAL( MPIC128_VP_VEC_i,         IBM_BIT_INDEX(32, MPIC128_VP_VEC_e) )
+DECLARE_ENUM_VAL( MPIC128_VP_VEC_n,         8 )
+DECLARE_ENUM_VAL( MPIC128_VP_PRI_e,         15 )                                        /** Interrupt Priority: 0b0000 (0) is the lowest priority, 0b1111 (15) is the highest priority */
+DECLARE_ENUM_VAL( MPIC128_VP_PRI_i,         IBM_BIT_INDEX(32, MPIC128_VP_PRI_e) )
+DECLARE_ENUM_VAL( MPIC128_VP_PRI_n,         4 )
+DECLARE_ENUM_VAL( MPIC128_VP_S_e,           9 )                                        /** Sense. Reset to 0 */
+DECLARE_ENUM_VAL( MPIC128_VP_S_i,           IBM_BIT_INDEX(32, MPIC128_VP_S_e) )
+DECLARE_ENUM_VAL( MPIC128_VP_S_n,           1 )
+DECLARE_ENUM_VAL( MPIC128_VP_POL_e,         8 )                                        /** Polarity. Reset to 1 */
+DECLARE_ENUM_VAL( MPIC128_VP_POL_i,         IBM_BIT_INDEX(32, MPIC128_VP_POL_e) )
+DECLARE_ENUM_VAL( MPIC128_VP_POL_n,         1 )
+DECLARE_ENUM_VAL( MPIC128_VP_ACT_e,         1 )                                        /** Activity bit: 0 Okay to modify contents of this register, 1 The Vector, Priority and Destination information are in use and should not be changed */
+DECLARE_ENUM_VAL( MPIC128_VP_ACT_i,         IBM_BIT_INDEX(32, MPIC128_VP_ACT_e) )
+DECLARE_ENUM_VAL( MPIC128_VP_ACT_n,         1 )
+DECLARE_ENUM_VAL( MPIC128_VP_MSK_e,         0 )                                        /** Mask bit: 0 Interrupt enabled, 1 Disable any further interrupts from this source. Reset to 1 */
+DECLARE_ENUM_VAL( MPIC128_VP_MSK_i,         IBM_BIT_INDEX(32, MPIC128_VP_MSK_e) )
+DECLARE_ENUM_VAL( MPIC128_VP_MSK_n,         1 )
+END_ENUM( MPIC128_VP_FIELD )
 
 BEGIN_ENUM( int_sense_t )
 DECLARE_ENUM_VAL( int_sense_level,  1 )

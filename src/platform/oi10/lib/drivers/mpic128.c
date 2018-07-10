@@ -46,8 +46,90 @@ static void mpic128_end( const struct rumboot_irq_controller *dev, uint32_t irq 
     }
 }
 
-static void mpic128_configure( const struct rumboot_irq_controller *dev, int irq, uint32_t flags, int enable ) {
+#define MPIC128_XADDR_ERR               0xFFFFFFFF
+#define MPIC128_INTERRUPT_SOURCE_N      128
+#define MPIC128_INTERRUPT_SOURCE_MAX    (MPIC128_INTERRUPT_SOURCE_N-1)
+#define MPIC128_INTERRUPT_TIMER_N       4
+#define MPIC128_INTERRUPT_TIMER_MAX     (MPIC128_INTERRUPT_SOURCE_MAX+MPIC128_INTERRUPT_TIMER_N)
+#define MPIC128_INTERRUPT_IPI_N         4
+#define MPIC128_INTERRUPT_IPI_MAX       (MPIC128_INTERRUPT_TIMER_MAX+MPIC128_INTERRUPT_IPI_N)
 
+#define MPIC128_GET_TI_BY_INTERRUPT_NUMBER( interrupt_number )  (interrupt_number & 0b11)
+
+
+static inline uint32_t mpic128_get_interrupt_vpaddr_by_num( int const irq ) {
+    if( irq <= MPIC128_INTERRUPT_SOURCE_MAX )   return MPIC128_VP( irq );
+    if( irq <= MPIC128_INTERRUPT_TIMER_MAX )    return MPIC128_TVP( MPIC128_GET_TI_BY_INTERRUPT_NUMBER(irq) );
+    if( irq <= MPIC128_INTERRUPT_IPI_MAX )      return MPIC128_IVP( MPIC128_GET_TI_BY_INTERRUPT_NUMBER(irq) );
+
+    TEST_ASSERT( 0, "Wrong interrupt number" );
+    return 0xFFFFFFFF;
+}
+
+static inline uint32_t mpic128_get_interrupt_dstaddr_by_num( int const irq ) {
+    if( irq <= MPIC128_INTERRUPT_SOURCE_MAX )   return MPIC128_DST( irq );
+    if( irq <= MPIC128_INTERRUPT_TIMER_MAX )    return MPIC128_TDST( MPIC128_GET_TI_BY_INTERRUPT_NUMBER(irq) );
+
+    TEST_ASSERT( 0, "Wrong interrupt number" );
+    return 0xFFFFFFFF;
+}
+
+static inline void mpic128_mask_int( uint32_t const vp_addr ) {
+    dcr_write( vp_addr, dcr_read( vp_addr ) | (1 << MPIC128_VP_MSK_i) );
+}
+
+static inline void mpic128_unmask_int( uint32_t const vp_addr ) {
+    dcr_write( vp_addr, dcr_read( vp_addr ) & ~(1 << MPIC128_VP_MSK_i) );
+}
+
+static inline uint32_t enable_mpic128_vp_modify( uint32_t const vp_addr ) {
+    uint32_t vpvalue = dcr_read( vp_addr );
+    if( !( vpvalue & ( 1 << MPIC128_VP_MSK_i ) ) || ( vpvalue & ( 1 << MPIC128_VP_ACT_i ) ) ) {
+        mpic128_mask_int( vp_addr ); /* set MSK=1 ACT=0 for correct modifying */
+        do {
+            vpvalue = dcr_read( vp_addr );
+        } while( vpvalue & ( 1 << MPIC128_VP_ACT_i ) );
+    }
+
+    return vpvalue;
+}
+
+static inline uint32_t mpic128_setup_interrupt_source( uint32_t vpvalue, int_sense_t const sense, int_pol_t const polarity ) {
+    CLEAR_BITS_BY_MASK( vpvalue, (0b1 << MPIC128_VP_S_i) | (0b1 << MPIC128_VP_POL_i) );
+    SET_BITS_BY_MASK( vpvalue, (sense << MPIC128_VP_S_i) | (polarity << MPIC128_VP_POL_i) );
+    return vpvalue;
+}
+
+static inline uint32_t mpic128_setup_vp( uint32_t vpvalue, int const interrupt_number, mpic128_prior_t const priority ) {
+    CLEAR_BITS_BY_MASK( vpvalue, (0xF << MPIC128_VP_PRI_i) | (0xFF << MPIC128_VP_VEC_i) );
+    SET_BITS_BY_MASK( vpvalue, (priority << MPIC128_VP_PRI_i) | (interrupt_number << MPIC128_VP_VEC_i) );
+    return vpvalue;
+}
+
+static uint32_t mpic128_setup_ext_interrupt( uint32_t const base_address, int const irq, int_sense_t const sense, int_pol_t const polarity) {
+    uint32_t const interrupt_vpaddr = mpic128_get_interrupt_vpaddr_by_num( irq );
+    if( interrupt_vpaddr != MPIC128_XADDR_ERR ) {
+        uint32_t const interrupt_dstaddr = mpic128_get_interrupt_dstaddr_by_num( irq );
+        uint32_t const vpaddr = base_address + interrupt_vpaddr;
+        uint32_t vpvalue = enable_mpic128_vp_modify( vpaddr );
+
+        if( interrupt_dstaddr != MPIC128_XADDR_ERR ) dcr_write( base_address + interrupt_dstaddr, ( uint32_t )( 1 << Processor0 ) );
+
+        vpvalue = mpic128_setup_vp( vpvalue, irq, MPIC128_PRIOR_1 ); /* set lowest priority to enable all interrupts handling */
+        if( irq <= MPIC128_INTERRUPT_SOURCE_MAX ) vpvalue = mpic128_setup_interrupt_source( vpvalue, sense, polarity );
+        dcr_write( vpaddr, vpvalue );
+
+        return interrupt_vpaddr;
+    }
+
+    TEST_ASSERT( 0, "Wrong interrupt number" );
+    return MPIC128_XADDR_ERR;
+}
+
+static void mpic128_configure( const struct rumboot_irq_controller *dev, int irq, uint32_t flags, int enable ) {
+    uint32_t const interrupt_vpaddr = mpic128_setup_ext_interrupt( DCR_MPIC128_BASE, irq,
+                                                                   (flags & (1 << MPIC128_VP_S_i)), (flags & (1 << MPIC128_VP_POL_i)) );
+    if( (interrupt_vpaddr != MPIC128_XADDR_ERR) && enable ) mpic128_unmask_int( DCR_MPIC128_BASE + interrupt_vpaddr );
 }
 
 static const struct rumboot_irq_controller irq_ctl = {
