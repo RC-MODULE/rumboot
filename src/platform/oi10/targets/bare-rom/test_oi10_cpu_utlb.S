@@ -10,6 +10,7 @@
 
 
 #define VAL_MAGIC   0xBED4DEAD
+#define BEG_ADDRX   0xFFFE0000  /*      Last 64k page   */
 #define BEG_ADDR0   0xFFFE0000  /* Skip last 64k page   */
 #define END_ADDR0   0xFF000000
 #define BEG_ADDR1   0xFEFF0000  /* 11111110_11111111    */
@@ -19,46 +20,46 @@
 #define BEG_ADDR3   0xFBFF0000  /* 11111011_11111111    */
 #define END_ADDR3   0xFB000000  /* 11111011_00000000    */
 #define PHY_ADDR0   0xFFFF0000
-#define PHY_ADDRE   0x00003FFF
+#define PHY_ADDRE   0x000003FF
 #define CNT_INIT0   0x00000000
 #define CNT_INIT1   0x00000001
 
-#define WAY_0       0
-#define WAY_1       1
-#define WAY_2       2
-#define WAY_3       3
+#define MMU_WAY_0       MMU_TLBWE_WAY_0
+#define MMU_WAY_1       MMU_TLBWE_WAY_1
+#define MMU_WAY_2       MMU_TLBWE_WAY_2
+#define MMU_WAY_3       MMU_TLBWE_WAY_3
 
 #define FILL_STEP   (0 - 65536)
 #define READ_STEP   (0 + 65536)
 
-#define R_STKP      r1
-#define R_ARG0      r3
-#define R_ARG1      r4
-#define R_ARG2      r5
-#define R_ARG3      r6
-#define R_ATTR      r13
-#define R_MMUC      r14
-#define R_TLBR      r15
-#define R_ETAG      r16
-#define R_MASK      r17
-#define R_DUMP      r18
-#define R_CNTR      r19
-#define R_AIDX      R_CNTR
-#define R_ADDR      r20
-#define R_BEGA      R_ADDR
-#define R_ENDA      r21
-#define R_STEP      r22
-#define R_FILL      r23
-#define R_EXPV      R_FILL
-#define R_DATA      r24
-#define R_SAV0      r26
-#define R_SAV1      r27
-#define R_SHFT      R_SAV0
-#define R_XORM      R_SAV1
-#define R_TPL0      r28
-#define R_TEMP      r29
-#define R_ZERO      r30
-#define R_ONES      r31
+#define R_STKP      r1          /* Stack pointer (don't work here)  */
+#define R_ARG0      r3          /* Standart argument #0             */
+#define R_ARG1      r4          /* Standart argument #1             */
+#define R_ARG2      r5          /* Standart argument #2             */
+#define R_ARG3      r6          /* Standart argument #3             */
+#define R_ATTR      r13         /* UTLB Attributes                  */
+#define R_MMUC      r14         /* Holds MMURC                      */
+#define R_TLBR      r15         /* Holds tlbwe second parameter     */
+#define R_ETAG      r16         /* Holds UTLB Entry TAG             */
+#define R_MASK      r17         /* Address mask                     */
+#define R_DUMP      r18         /* Dump value for debug purposes    */
+#define R_CNTR      r19         /* Counter (for UTLB index compare) */
+#define R_AIDX      R_CNTR      /* Offset in page table             */
+#define R_ADDR      r20         /* Uniform address pointer          */
+#define R_BEGA      R_ADDR      /* Begin address                    */
+#define R_ENDA      r21         /* End address                      */
+#define R_STEP      r22         /* Step                             */
+#define R_FILL      r23         /* Fill value                       */
+#define R_EXPV      R_FILL      /* Expected value                   */
+#define R_DATA      r24         /* Readed or output data            */
+#define R_SAV0      r26         /* Copy of SRR0                     */
+#define R_SAV1      r27         /* Copy of SRR1                     */
+#define R_SHFT      R_SAV0      /* Shift value                      */
+#define R_XORM      R_SAV1      /* XOR mask                         */
+#define R_TPL0      r28         /* Template for tlbwe second arg    */
+#define R_TEMP      r29         /* Temporary data                   */
+#define R_ZERO      r30         /* 0x00000000                       */
+#define R_ONES      r31         /* 0xFFFFFFFF                       */
 
 #define CONST_CCR0    reg_field( 0, 0b0   ) /* ITE     */ \
                     | reg_field( 1, 0b1   ) /* PRE     */ \
@@ -105,27 +106,21 @@
 
 #define CONST_SSPCR   ((MMU_SUSPCR_ORD_SHARED   | MMU_XSPCR_ORD_64KB ) << MMU_SSPCR_ORD1_i) \
                     | ((MMU_SUSPCR_ORD_SHARED   | MMU_XSPCR_ORD_4KB  ) << MMU_SSPCR_ORD2_i) \
-                    | ((MMU_SUSPCR_ORD_SHARED   | MMU_XSPCR_ORD_256MB) << MMU_SSPCR_ORD3_i) \
-                    | ((MMU_SUSPCR_ORD_PID_ONLY | MMU_XSPCR_ORD_1GB  ) << MMU_SSPCR_ORD4_i) \
-                    | ((                          MMU_XSPCR_ORD_END  ) << MMU_SSPCR_ORD5_i)
+                    | ((                          MMU_XSPCR_ORD_END  ) << MMU_SSPCR_ORD3_i)
 
 #define CONST_ISPCR   ((                          MMU_XSPCR_ORD_64KB ) << MMU_SSPCR_ORD1_i) \
                     | ((                          MMU_XSPCR_ORD_4KB  ) << MMU_SSPCR_ORD2_i) \
-                    | ((                          MMU_XSPCR_ORD_256MB) << MMU_SSPCR_ORD3_i) \
-                    | ((                          MMU_XSPCR_ORD_1GB  ) << MMU_SSPCR_ORD4_i) \
-                    | ((                          MMU_XSPCR_ORD_END  ) << MMU_SSPCR_ORD5_i)
+                    | ((                          MMU_XSPCR_ORD_END  ) << MMU_SSPCR_ORD3_i)
 
 #define CONST_USPCR   ((MMU_SUSPCR_ORD_SHARED   | MMU_XSPCR_ORD_64KB ) << MMU_SSPCR_ORD1_i) \
                     | ((MMU_SUSPCR_ORD_SHARED   | MMU_XSPCR_ORD_4KB  ) << MMU_SSPCR_ORD2_i) \
-                    | ((MMU_SUSPCR_ORD_SHARED   | MMU_XSPCR_ORD_256MB) << MMU_SSPCR_ORD3_i) \
-                    | ((MMU_SUSPCR_ORD_PID_ONLY | MMU_XSPCR_ORD_1GB  ) << MMU_SSPCR_ORD4_i) \
-                    | ((                          MMU_XSPCR_ORD_END  ) << MMU_SSPCR_ORD5_i)
+                    | ((                          MMU_XSPCR_ORD_END  ) << MMU_SSPCR_ORD3_i)
 
-#define FILL_ATTR   MMU_TLBE_ATTR(  1, 1,               /* IL1I, IL1D       */  \
-                                    0, 1, 0, 1,         /* W, I, M, G, E    */  \
-                                    MMU_TLBE_E_BIG_END, /* Endianness       */  \
-                                    1, 0, 1,            /* UX, UW, UR       */  \
-                                    1, 0, 1,            /* SX, SW, SR       */  \
+#define FILL_ATTR   MMU_TLBE_ATTR(  1, 1,               /* IL1I, IL1D   */  \
+                                    0, 1, 0, 1,         /* W, I, M, G,  */  \
+                                    MMU_TLBE_E_BIG_END, /* Endianness   */  \
+                                    1, 0, 1,            /* UX, UW, UR   */  \
+                                    1, 0, 1,            /* SX, SW, SR   */  \
                                     0, 0)
 
 .macro fill_utlb vWay, vAttr, aBeg, aEnd, aStep, vCntInit, vFill, vEFill
@@ -133,11 +128,11 @@
     load_const  R_CNTR,     \vCntInit
     load_const  R_MASK,     0xFFFF0000
     load_const  R_XORM,     0x00FF
-    load_const  R_MMUC,     MMU_MMUCR(0,0,0,0,0)
+    load_const  R_MMUC,     MMU_MMUCR(0,0,0,0,MEM_WINDOW_SHARED)
     load_const  R_BEGA,     \aBeg
     load_const  R_ENDA,     \aEnd
     load_const  R_STEP,     \aStep
-    load_const  R_FILL,     MMU_TLBE_DATA(\vEFill, \vFill, 0, 0)
+    load_const  R_FILL,     MMU_TLBE_DATA(\vEFill, (\vFill) >> 12, 0, 0)
     load_const  R_ETAG,     MMU_TLBE_TAG(0,1,0,MMU_TLBE_DSIZ_64KB,0,0,0,0)
     load_const  R_TPL0,     ((\vWay) << MMU_TLBWE_RA_WAY_i)
     load_const  R_ATTR,     \vAttr
@@ -252,7 +247,7 @@ tlb_entries:
 /* Invalidate initial TLB entry */
     .long   MMU_TLB_ENTRY(0x000, 0x00000, 0xFFFFF, MMU_TLBE_DSIZ_4KB,  0b0, 0b0,  0,0,0,0, MMU_TLBE_E_BIG_END, 0b0,0b0,0b0, 0b0,0b0,0b0, 0b0,  0b0,   0b0, MEM_WINDOW_SHARED, MMU_TLBWE_WAY_3, MMU_TLBWE_BE_UND, 0b0 )
 /* TLB entry to remap 64KB page BOOTROM from 0x000003ff_ffff0000-0x000003ff_ffffffff to 0xffff0000-0xffffffff */
-    .long   MMU_TLB_ENTRY(0x3FF, 0xFFFF0, 0xFFFF0, MMU_TLBE_DSIZ_64KB, 0b1, 0b1,  0,1,0,1, MMU_TLBE_E_BIG_END, 0b0,0b0,0b0, 0b1,0b0,0b1, 0b0,  0b0,   0b0, MEM_WINDOW_SHARED, MMU_TLBWE_WAY_0, MMU_TLBWE_BE_UND, 0b1 )
+    .long   MMU_TLB_ENTRY(0x3FF, 0xFFFF0, 0xFFFF0, MMU_TLBE_DSIZ_64KB, 0b1, 0b1,  0,1,0,1, MMU_TLBE_E_BIG_END, 0b1,0b0,0b1, 0b1,0b0,0b1, 0b0,  0b0,   0b0, MEM_WINDOW_SHARED, MMU_TLBWE_WAY_0, MMU_TLBWE_BE_UND, 0b1 )
 
 
 /*
@@ -329,7 +324,7 @@ write_tlb_entries_ret:
 
     rumboot_putstring       "Filling UTLB-entries...\n"
 
-    fill_utlb   WAY_0,      /*  WAY         */ \
+    fill_utlb   MMU_WAY_0,  /*  WAY         */ \
                 FILL_ATTR,  /*  TLB ATTR    */ \
                 BEG_ADDR0,  /*  EPN BEGIN   */ \
                 END_ADDR0,  /*  EPN END     */ \
@@ -338,7 +333,7 @@ write_tlb_entries_ret:
                 PHY_ADDR0,  /*  RPN FILL    */ \
                 PHY_ADDRE   /* eRPN FILL    */
 
-    fill_utlb   WAY_1,      /*  WAY         */ \
+    fill_utlb   MMU_WAY_1,  /*  WAY         */ \
                 FILL_ATTR,  /*  TLB ATTR    */ \
                 BEG_ADDR1,  /*  EPN BEGIN   */ \
                 END_ADDR1,  /*  EPN END     */ \
@@ -347,7 +342,7 @@ write_tlb_entries_ret:
                 PHY_ADDR0,  /*  RPN FILL    */ \
                 PHY_ADDRE   /* eRPN FILL    */
 
-    fill_utlb   WAY_2,      /*  WAY         */ \
+    fill_utlb   MMU_WAY_2,  /*  WAY         */ \
                 FILL_ATTR,  /*  TLB ATTR    */ \
                 BEG_ADDR2,  /*  EPN BEGIN   */ \
                 END_ADDR2,  /*  EPN END     */ \
@@ -356,7 +351,7 @@ write_tlb_entries_ret:
                 PHY_ADDR0,  /*  RPN FILL    */ \
                 PHY_ADDRE   /* eRPN FILL    */
 
-    fill_utlb   WAY_3,      /*  WAY         */ \
+    fill_utlb   MMU_WAY_3,  /*  WAY         */ \
                 FILL_ATTR,  /*  TLB ATTR    */ \
                 BEG_ADDR3,  /*  EPN BEGIN   */ \
                 END_ADDR3,  /*  EPN END     */ \
@@ -406,7 +401,6 @@ fill_utlb_loop:
     addi        R_SHFT,     R_SHFT,     -8
     slw         R_TEMP,     R_TEMP,     R_SHFT
     xor         R_DATA,     R_DATA,     R_TEMP
-    mr          R_DUMP,     R_DATA              /* DBG */
     or          R_DATA,     R_DATA,     R_ETAG
     tlbwe       R_DATA,     R_TLBR,     MMU_TLB_ENTRY_TAG
     mfspr       R_TEMP,     SPR_MMUCR
@@ -414,35 +408,27 @@ fill_utlb_loop:
     srw         R_TEMP,     R_TEMP,     R_SHFT
     and         R_TEMP,     R_TEMP,     R_XORM
     cmpw  cr7,  R_TEMP,     R_CNTR
-
-    rumboot_puthex          R_DUMP              /* DBG */
-//  mr          R_DUMP,     R_TEMP              /* DBG */
-//  rumboot_puthex          R_DUMP              /* DBG */
-//  mr          R_DUMP,     R_CNTR              /* DBG */
-//  rumboot_puthex          R_DUMP              /* DBG */
-//  rumboot_putstring       "----------\n"      /* DBG */
-
     TEST_ASSERT(eq,cr7,"UTLB-Entry index is invalid!")
 
     mr          R_TLBR,     R_TPL0
+    mr          R_DATA,     R_FILL
     mtspr       SPR_MMUCR,  R_MMUC
-    tlbwe       R_FILL,     R_TLBR,     MMU_TLB_ENTRY_DATA
+    tlbwe       R_DATA,     R_TLBR,     MMU_TLB_ENTRY_DATA
     mr          R_TLBR,     R_TPL0
     mtspr       SPR_MMUCR,  R_MMUC
-    mr          R_DATA,     R_ADDR
+    mr          R_DATA,     R_ATTR
     tlbwe       R_DATA,     R_TLBR,     MMU_TLB_ENTRY_ATTR
     cmpw  cr2,  R_BEGA,     R_ENDA
     add         R_BEGA,     R_BEGA,     R_STEP
     addi        R_CNTR,     R_CNTR,     0x0001
     bne+  cr2,  fill_utlb_loop
+    rumboot_putstring       "Filled.\n"
+    tlbsync
     msync
     isync
-    rumboot_putstring       "Filled.\n"
     blr
 
 read_pages_loop:
-    mr          R_DUMP,     R_BEGA              /* DBG */
-    rumboot_puthex          R_DUMP              /* DBG */
     lwzx        R_DATA,     R_BEGA,     R_AIDX
     cmpw  cr7,  R_EXPV,     R_DATA
     TEST_ASSERT(eq,cr7,"Read fail!")
@@ -459,13 +445,10 @@ read_pages_start:
     check_read_pages    BEG_ADDR3,  END_ADDR3,  READ_STEP,  VAL_MAGIC
     check_read_pages    BEG_ADDR2,  END_ADDR2,  READ_STEP,  VAL_MAGIC
     check_read_pages    BEG_ADDR1,  END_ADDR1,  READ_STEP,  VAL_MAGIC
-    check_read_pages    0xFFFF0000, END_ADDR1,  READ_STEP,  VAL_MAGIC
+    check_read_pages    BEG_ADDRX,  END_ADDR0,  READ_STEP,  VAL_MAGIC
 
     rumboot_putstring   "complete.\n"
 
     b test_end
-
-
-
 
 
