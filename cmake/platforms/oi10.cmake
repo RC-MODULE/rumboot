@@ -317,6 +317,23 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         PREFIX simple-iram
     )
 
+    add_rumboot_target(
+        CONFIGURATION BAREROM
+        LDS oi10/test_oi10_cpu_038_im1.lds
+        FILES test_oi10_cpu_038_helper.c
+        PREFIX supplementary
+        NAME "test_oi10_cpu_038_helper_im1"
+        FEATURES STUB
+    )
+
+    add_rumboot_target(
+        CONFIGURATION IRAM
+        FILES test_oi10_cpu_038_im1.c
+        PREFIX simple-iram
+        LOAD IM0BIN SELF
+             IM1BIN supplementary-test_oi10_cpu_038_helper_im1
+    )
+
     add_rumboot_target_dir(uart_data_logger/
         CONFIGURATION IRAM
         IRUN_FLAGS +use_uart_data_logger
