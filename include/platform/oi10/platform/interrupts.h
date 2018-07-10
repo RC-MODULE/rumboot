@@ -42,8 +42,8 @@
 #define UART1_INT                   (37)
 #define MKIO0_INT                   (38)
 #define MKIO1_INT                   (39)
-#define DIT_INT0                    (40)
-#define DIT_INT1                    (41)
+//#define DIT_INT0                    (40)
+//#define DIT_INT1                    (41)
 #define WDT_INT                     (42)
 #define CRG_INT                     (43)
 #define SW0_HSCB_INT                (44)
@@ -63,6 +63,8 @@
 #define MCLFIR_REC_INT              (63)
 #define MCLFIR_UNREC_INT            (64)
 #define MCLFIR_INFST_INT            (65)
+#define DIT_INT0                    (119)
+#define DIT_INT1                    (118)
 
 
 /**

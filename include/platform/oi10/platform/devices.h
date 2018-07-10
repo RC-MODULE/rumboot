@@ -44,7 +44,7 @@
  *
  *
  */
- 
+
 #define DCR_PLB4ARB8M_0_BASE    0x00000010
 #define DCR_PLB4ARB8M_1_BASE    0x00000020
 #define DCR_SRAMMC2PLB4_0_BASE  0x00000030
@@ -63,6 +63,7 @@
 #define DCR_ITRACE_BASE         0x80000800
 #define DCR_LTRACE_BASE         0x80000900
 #define DCR_CLDCR_BASE          0x80000A00
+#define DCR_TIMERS_BASE         0X800A0000
 #define DCR_MPIC128_BASE        0xFFC00000
 
 
