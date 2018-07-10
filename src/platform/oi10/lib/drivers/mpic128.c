@@ -51,8 +51,8 @@ static void mpic128_end( const struct rumboot_irq_controller *dev, uint32_t irq 
 #define MPIC128_INTERRUPT_SOURCE_MAX    (MPIC128_INTERRUPT_SOURCE_N-1)
 #define MPIC128_INTERRUPT_TIMER_N       4
 #define MPIC128_INTERRUPT_TIMER_MAX     (MPIC128_INTERRUPT_SOURCE_MAX+MPIC128_INTERRUPT_TIMER_N)
-#define MPIC128_INTERRUPT_IPI_N         4
-#define MPIC128_INTERRUPT_IPI_MAX       (MPIC128_INTERRUPT_TIMER_MAX+MPIC128_INTERRUPT_IPI_N)
+#define MPIC128_INTERRUPT_IPID_N        4
+#define MPIC128_INTERRUPT_IPID_MAX      (MPIC128_INTERRUPT_TIMER_MAX+MPIC128_INTERRUPT_IPID_N)
 
 #define MPIC128_GET_TI_BY_INTERRUPT_NUMBER( interrupt_number )  (interrupt_number & 0b11)
 
@@ -60,18 +60,16 @@ static void mpic128_end( const struct rumboot_irq_controller *dev, uint32_t irq 
 static inline uint32_t mpic128_get_interrupt_vpaddr_by_num( int const irq ) {
     if( irq <= MPIC128_INTERRUPT_SOURCE_MAX )   return MPIC128_VP( irq );
     if( irq <= MPIC128_INTERRUPT_TIMER_MAX )    return MPIC128_TVP( MPIC128_GET_TI_BY_INTERRUPT_NUMBER(irq) );
-    if( irq <= MPIC128_INTERRUPT_IPI_MAX )      return MPIC128_IVP( MPIC128_GET_TI_BY_INTERRUPT_NUMBER(irq) );
+    if( irq <= MPIC128_INTERRUPT_IPID_MAX )     return MPIC128_IVP( MPIC128_GET_TI_BY_INTERRUPT_NUMBER(irq) );
 
-    TEST_ASSERT( 0, "Wrong interrupt number" );
-    return 0xFFFFFFFF;
+    return MPIC128_XADDR_ERR;
 }
 
 static inline uint32_t mpic128_get_interrupt_dstaddr_by_num( int const irq ) {
     if( irq <= MPIC128_INTERRUPT_SOURCE_MAX )   return MPIC128_DST( irq );
     if( irq <= MPIC128_INTERRUPT_TIMER_MAX )    return MPIC128_TDST( MPIC128_GET_TI_BY_INTERRUPT_NUMBER(irq) );
 
-    TEST_ASSERT( 0, "Wrong interrupt number" );
-    return 0xFFFFFFFF;
+    return MPIC128_XADDR_ERR;
 }
 
 static inline void mpic128_mask_int( uint32_t const vp_addr ) {
@@ -122,7 +120,6 @@ static uint32_t mpic128_setup_ext_interrupt( uint32_t const base_address, int co
         return interrupt_vpaddr;
     }
 
-    TEST_ASSERT( 0, "Wrong interrupt number" );
     return MPIC128_XADDR_ERR;
 }
 
@@ -134,7 +131,7 @@ static void mpic128_configure( const struct rumboot_irq_controller *dev, int irq
 
 static const struct rumboot_irq_controller irq_ctl = {
     .first = 0,
-    .last = 127,
+    .last = 135,
     .init = mpic128_init,
     .begin = mpic128_begin,
     .end = mpic128_end,
