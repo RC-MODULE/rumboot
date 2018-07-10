@@ -75,12 +75,12 @@
  #define SCTL_BASE                BASIS_PHYS(0x0108D000)
  #define GLOBAL_TIMERS            BASIS_PHYS(0x0108E000)
  #define WDT_BASE                 BASIS_PHYS(0x0108F000)
- #define DDR0_BASE                BASIS_PHYS(0x01500000)
- #define DDR1_BASE                BASIS_PHYS(0x01502000)
- #define GIC_DIST_BASE            BASIS_PHYS(0x01504000)
- #define GIC_CPUIF_BASE           BASIS_PHYS(0x01505000)
- #define L2C_BASE                 BASIS_PHYS(0x01506000)
- #define NIC400_BASE              BASIS_PHYS(0x01600000)
+ #define DDR0_BASE                BASIS_PHYS(0x01100000)
+ #define DDR1_BASE                BASIS_PHYS(0x01102000)
+ #define GIC_DIST_BASE            BASIS_PHYS(0x01104000)
+ #define GIC_CPUIF_BASE           BASIS_PHYS(0x01105000)
+ #define L2C_BASE                 BASIS_PHYS(0x01106000)
+ #define NIC400_BASE              BASIS_PHYS(0x01200000)
 
 
  /**
