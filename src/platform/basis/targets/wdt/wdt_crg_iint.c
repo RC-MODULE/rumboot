@@ -14,37 +14,27 @@
 #include <platform/interrupts.h>
 
 
-/*struct mystr { 
-    int a,
-    int b,
-    int c
+struct wdt_crg_iint_var s = {
+     .wdt_magic           = WDT_MAGIC,
+     .crg_ddr_base        = CRG_DDR_BASE,
+     .crg_fbdiv           = CRG_FBDIV,
+     .crg_ddr_fbdiv_def   = CRG_DDR_FBDIV_DEF,
+     .wdt_int             = WDT_INT,
+     .wdt_interval        = WDT_INTERVAL,
+     .wdt_unlock_code     = WDT_UNLOCK_CODE,
+     .wdt_base            = WDT_BASE,
+     .wdt_lock            = WDT_LOCK,
+     .wdt_ctrl            = WDT_CTRL,
+     .wdt_load            = WDT_LOAD,
+     .crg_unlock_code     = CRG_UNLOCK_CODE,
+     .crg_wr_lock         = CRG_WR_LOCK
 };
-
-struct mystr s = {
-    .a = 1,
-    .b = 2
-};*/
-
-
 
 
 uint32_t main()
 {
-  //int result = wdt_crg_iint(&s);
-  int result = wdt_crg_iint(WDT_MAGIC,
-                 CRG_DDR_BASE,
-                 CRG_FBDIV,
-                 CRG_DDR_FBDIV_DEF,
-                 WDT_INT,
-                 WDT_INTERVAL,
-                 WDT_UNLOCK_CODE,
-                 WDT_BASE,
-                 WDT_LOCK,
-                 WDT_CTRL,
-                 WDT_LOAD,
-                 CRG_UNLOCK_CODE,
-                 CRG_WR_LOCK) ;
-
+  int result = wdt_crg_iint(&s);
+  
   if (result)
       rumboot_printf("Test OK!\n");
   else
@@ -54,9 +44,3 @@ uint32_t main()
   return result ? 0 : 1;
 
 }
-
-
-/*int crg_init(struct mystr *conf)
-{
-    conf->a = 1;
-}*/

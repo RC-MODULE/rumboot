@@ -19,19 +19,24 @@
 
 #include <stdbool.h>
 
-int wdt_crg_iint(int wdt_magic,
-                 int crg_ddr_base,
-                 int crg_fbdiv,
-                 int crg_ddr_fbdiv_def,
-                 int wdt_int,
-                 int wdt_interval,
-                 int wdt_unlock_code,
-                 int wdt_base,
-                 int wdt_lock,
-                 int wdt_ctrl,
-                 int wdt_load,
-                 int crg_unlock_code,
-                 int crg_wr_lock); 
+struct wdt_crg_iint_var{
+    int wdt_magic           ;
+    int crg_ddr_base        ;
+    int crg_fbdiv           ;
+    int crg_ddr_fbdiv_def   ;
+    int wdt_int             ;
+    int wdt_interval        ;
+    int wdt_unlock_code     ;
+    int wdt_base            ;
+    int wdt_lock            ;
+    int wdt_ctrl            ;
+    int wdt_load            ;
+    int crg_unlock_code     ;
+    int crg_wr_lock         ;
+}; 
+
+
+ int wdt_crg_iint(struct wdt_crg_iint_var *conf);
 
 
 #endif
