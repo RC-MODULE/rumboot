@@ -1,4 +1,6 @@
 
+#define DEBUG_CONTINUE_ON_ASSERT
+
 #include <platform/ppc470s/mmu.S.h>
 #include <platform/test_event_asm.h>
 #include <platform/test_assert.S.h>
@@ -18,11 +20,42 @@
 #define END_ADDR3   0xFB000000  /* 11111011_00000000    */
 #define PHY_ADDR0   0xFFFF0000
 #define PHY_ADDRE   0x00003FFF
+#define CNT_INIT0   0x00000000
+#define CNT_INIT1   0x00000001
 
 #define WAY_0       0
 #define WAY_1       1
 #define WAY_2       2
 #define WAY_3       3
+
+#define FILL_STEP   (0 - 65536)
+#define READ_STEP   (0 + 65536)
+
+#define R_STKP      r1
+#define R_ARG0      r3
+#define R_ARG1      r4
+#define R_ARG2      r5
+#define R_ARG3      r6
+#define R_MMUC      r14
+#define R_TLBR      r15
+#define R_ETAG      r16
+#define R_MASK      r17
+#define R_DUMP      r18
+#define R_CNTR      r19
+#define R_ADDR      r20
+#define R_BEGA      R_ADDR
+#define R_ENDA      r21
+#define R_STEP      r22
+#define R_FILL      r23
+#define R_EXPV      R_FILL
+#define R_DATA      r24
+#define R_SAV0      r26
+#define R_SAV1      r27
+#define R_SHFT      R_SAV0
+#define R_XORM      R_SAV1
+#define R_TEMP      r29
+#define R_ZERO      r30
+#define R_ONES      r31
 
 #define CONST_CCR0    reg_field( 0, 0b0   ) /* ITE     */ \
                     | reg_field( 1, 0b1   ) /* PRE     */ \
@@ -91,35 +124,12 @@
                                     1, 0, 1,            /* UX, UW, UR       */  \
                                     1, 0, 1,            /* SX, SW, SR       */  \
                                     0, 0)
-#define FILL_STEP   (0 - 65536)
 
-#define R_STKP      r1
-#define R_ARG0      r3
-#define R_ARG1      r4
-#define R_ARG2      r5
-#define R_ARG3      r6
-#define R_MMUC      r14
-#define R_TLBR      r15
-#define R_ETAG      r16
-#define R_MASK      r17
-#define R_DUMP      r18
-#define R_ADDR      r20
-#define R_BEGA      R_ADDR
-#define R_ENDA      r21
-#define R_STEP      r22
-#define R_FILL      r23
-#define R_DATA      r24
-#define R_SAV0      r26
-#define R_SAV1      r27
-#define R_SHFT      R_SAV0
-#define R_XORM      R_SAV1
-#define R_TEMP      r29
-#define R_ZERO      r30
-#define R_ONES      r31
-
-.macro fill_utlb vWay, vAttr, aBeg, aEnd, aStep, vFill, vEFill
+.macro fill_utlb vWay, vAttr, aBeg, aEnd, aStep, vCntInit, vFill, vEFill
     rumboot_putstring       "Fill UTLB-entries for way \vWay from \aBeg to \aEnd\()...\n"
+    load_const  R_CNTR,     \vCntInit
     load_const  R_MASK,     0xFFFF0000
+    load_const  R_XORM,     0x00FF
     load_const  R_MMUC,     MMU_MMUCR(0,0,0,0,0)
     load_const  R_BEGA,     \aBeg
     load_const  R_ENDA,     \aEnd
@@ -129,7 +139,6 @@
 52:
     load_const  R_TLBR,     ((\vWay) << MMU_TLBWE_RA_WAY_i)
     load_const  R_SHFT,     24
-    load_const  R_XORM,     0x000F
     mtspr       SPR_MMUCR,  R_MMUC
     and         R_DATA,     R_BEGA,     R_MASK
     srw         R_TEMP,     R_DATA,     R_SHFT
@@ -138,8 +147,24 @@
     addi        R_SHFT,     R_SHFT,     -8
     slw         R_TEMP,     R_TEMP,     R_SHFT
     xor         R_DATA,     R_DATA,     R_TEMP
+    mr          R_DUMP,     R_DATA
     or          R_DATA,     R_DATA,     R_ETAG
     tlbwe       R_DATA,     R_TLBR,     MMU_TLB_ENTRY_TAG
+    mfspr       R_TEMP,     SPR_MMUCR
+    addi        R_SHFT,     R_SHFT,     1
+    srw         R_TEMP,     R_TEMP,     R_SHFT
+    and         R_TEMP,     R_TEMP,     R_XORM
+    cmpw  cr7,  R_TEMP,     R_CNTR
+
+//  rumboot_puthex          R_DUMP              /* DBG */
+//  mr          R_DUMP,     R_TEMP              /* DBG */
+//  rumboot_puthex          R_DUMP              /* DBG */
+//  mr          R_DUMP,     R_CNTR              /* DBG */
+//  rumboot_puthex          R_DUMP              /* DBG */
+//  rumboot_putstring       "----------\n"      /* DBG */
+
+    TEST_ASSERT(eq,cr7,"UTLB-Entry index is invalid!")
+
     load_const  R_TLBR,     ((\vWay) << MMU_TLBWE_RA_WAY_i)
     mtspr       SPR_MMUCR,  R_MMUC
     tlbwe       R_FILL,     R_TLBR,     MMU_TLB_ENTRY_DATA
@@ -149,8 +174,25 @@
     tlbwe       R_DATA,     R_TLBR,     MMU_TLB_ENTRY_ATTR
     cmpw  cr7,  R_BEGA,     R_ENDA
     add         R_BEGA,     R_BEGA,     R_STEP
+    addi        R_CNTR,     R_CNTR,     0x0001
     bne+  cr7,  52b
     rumboot_putstring       "Filled.\n"
+.endm
+
+.macro check_read_pages aBeg, aEnd, aStep, vExp
+    rumboot_putstring       "Checking pages from address \aBeg to \aEnd\()...\n"
+    load_const  R_BEGA,     \aBeg
+    load_const  R_ENDA,     \aEnd
+    load_const  R_STEP,     \aStep
+    load_const  R_EXPV,     \vExp
+53:
+    lwz         R_DATA,     0(R_BEGA)
+    cmpw  cr7,  R_EXPV,     R_DATA
+    TEST_ASSERT(eq,cr7,"Page read fail!")
+    cmpw  cr2,  R_BEGA,     R_ENDA
+    add         R_BEGA,     R_BEGA,     R_STEP
+    bne+  cr2,  53b
+    rumboot_putstring       "Done.\n"
 .endm
 
 .section ".init.start","ax",@progbits
@@ -223,7 +265,24 @@ rumboot_entry_point:
     mtspr       SPR_MCSR_C, R_ONES
     mtspr       SPR_TSR_RC, R_ONES
 
+    lis         R_TEMP,     exception_handler@h
+    li          R_ADDR,     exception_handler@l
+    mtspr       SPR_IVPR,   R_TEMP
+    .irp        r_ivor,                                         \
+                SPR_IVOR0,  SPR_IVOR1,  SPR_IVOR2,  SPR_IVOR3,  \
+                SPR_IVOR4,  SPR_IVOR5,  SPR_IVOR6,  SPR_IVOR7,  \
+                SPR_IVOR8,  SPR_IVOR9,  SPR_IVOR10, SPR_IVOR11, \
+                SPR_IVOR12, SPR_IVOR13, SPR_IVOR14, SPR_IVOR15
+        mtspr   \r_ivor,    R_ADDR
+    .endr
+
     b           setup_tlb
+
+.align 4
+exception_handler:
+    rumboot_putstring   "Unexpected exception!\n"
+    clr_cr  cr6,        eq
+    b       test_end
 
 .align 2
 tlb_entries:
@@ -234,6 +293,8 @@ tlb_entries:
     .long   MMU_TLB_ENTRY(0x3FF, 0xFFFF0, 0xFFFF0, MMU_TLBE_DSIZ_64KB, 0b1, 0b1,  0,1,0,1, MMU_TLBE_E_BIG_END, 0b0,0b0,0b0, 0b1,0b0,0b1, 0b0,  0b0,   0b0, MEM_WINDOW_SHARED, MMU_TLBWE_WAY_0, MMU_TLBWE_BE_UND, 0b1 )
 
 
+/*
+.align 2
 utlb_entry_tpl:
     .long   MMU_TLB_ENTRY(0x3BE, 0xDEAD7, 0xBEAF6, MMU_TLBE_DSIZ_64KB, 0b1, 0b1,  0,1,0,1, MMU_TLBE_E_BIG_END, 0b0,0b0,0b0, 0b1,0b0,0b1, 0b0,  0b0,   0b0, MEM_WINDOW_SHARED, MMU_TLBWE_WAY_0, MMU_TLBWE_BE_UND, 0b0 )
     .long   MMU_TLB_ENTRY(0x3BE, 0xDEAD7, 0xBEAF6, MMU_TLBE_DSIZ_64KB, 0b1, 0b1,  0,1,0,1, MMU_TLBE_E_BIG_END, 0b0,0b0,0b0, 0b1,0b0,0b1, 0b0,  0b0,   0b0, MEM_WINDOW_SHARED, MMU_TLBWE_WAY_0, MMU_TLBWE_BE_UND, 0b1 )
@@ -242,7 +303,7 @@ utlb_entry_tpl:
     .long   MMU_TLB_ENTRY(0x3BE, 0xDEAD7, 0xBEAF6, MMU_TLBE_DSIZ_64KB, 0b1, 0b1,  0,1,0,1, MMU_TLBE_E_BIG_END, 0b0,0b0,0b0, 0b1,0b0,0b1, 0b0,  0b0,   0b0, MEM_WINDOW_SHARED, MMU_TLBWE_WAY_3, MMU_TLBWE_BE_UND, 0b1 )
     .long   0xAA55AA55
     .long   0x55AA55AA
-
+*/
 
 
 setup_tlb:
@@ -311,6 +372,7 @@ write_tlb_entries_ret:
                 BEG_ADDR0,  /*  EPN BEGIN   */ \
                 END_ADDR0,  /*  EPN END     */ \
                 FILL_STEP,  /*  EPN STEP    */ \
+                CNT_INIT1,  /*  CNT INIT    */ \
                 PHY_ADDR0,  /*  RPN FILL    */ \
                 PHY_ADDRE   /* eRPN FILL    */
 
@@ -319,6 +381,7 @@ write_tlb_entries_ret:
                 BEG_ADDR1,  /*  EPN BEGIN   */ \
                 END_ADDR1,  /*  EPN END     */ \
                 FILL_STEP,  /*  EPN STEP    */ \
+                CNT_INIT0,  /*  CNT INIT    */ \
                 PHY_ADDR0,  /*  RPN FILL    */ \
                 PHY_ADDRE   /* eRPN FILL    */
 
@@ -327,6 +390,7 @@ write_tlb_entries_ret:
                 BEG_ADDR2,  /*  EPN BEGIN   */ \
                 END_ADDR2,  /*  EPN END     */ \
                 FILL_STEP,  /*  EPN STEP    */ \
+                CNT_INIT0,  /*  CNT INIT    */ \
                 PHY_ADDR0,  /*  RPN FILL    */ \
                 PHY_ADDRE   /* eRPN FILL    */
 
@@ -335,6 +399,7 @@ write_tlb_entries_ret:
                 BEG_ADDR3,  /*  EPN BEGIN   */ \
                 END_ADDR3,  /*  EPN END     */ \
                 FILL_STEP,  /*  EPN STEP    */ \
+                CNT_INIT0,  /*  CNT INIT    */ \
                 PHY_ADDR0,  /*  RPN FILL    */ \
                 PHY_ADDRE   /* eRPN FILL    */
 
