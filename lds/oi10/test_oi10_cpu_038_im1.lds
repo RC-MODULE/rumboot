@@ -10,15 +10,21 @@ SECTIONS
 
     
   .rwx : {
-      KEEP(*(.text.check))
-
+      . = 0x0;
+      . = ALIGN(32);
+      KEEP(*(.text.check_cpu_ppc_038))
     *(.text)
     *(.text.*)
-    *(.text.check)
+      . = 0x1000;
+      . = ALIGN(32);
+      KEEP(*(.data.mass))
+
     *(.rodata)
     *(.rodata.*)
     *(.data)
     *(.data.*)
+    . = ALIGN(32);
+    post_padding = ALIGN(32);
  } > IM1
 
  /DISCARD/ :
@@ -36,6 +42,7 @@ SECTIONS
      *(COMMON)
      *(.text._init)
      *(.text._fini)
+     *(.debug_info)
  }
- 
+
 }
