@@ -331,7 +331,6 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         LDS oi10/test_oi10_cpu_038_im1.lds
         FILES test_oi10_cpu_038_helper.c
         CFLAGS -DTEST_OI10_CPU_038_ARRAY_SIZE=0x7C00
-        LDFLAGS -s
         NAME "test_oi10_cpu_038_helper_im1"
     )
 
