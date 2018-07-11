@@ -9,6 +9,7 @@
 
 #include <rumboot/io.h>
 #include <rumboot/printf.h>
+#include <platform/trace.h>
 
 int main(void) 
 {
@@ -16,7 +17,7 @@ int main(void)
 
     int (*check_function)();
     check_function = (void *)(IM1_BASE);
-    rumboot_putstring("starting code from IM1");
+    rumboot_putstring("starting code from IM1\n");
 
       return check_function();
 
