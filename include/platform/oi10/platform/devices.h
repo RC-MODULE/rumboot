@@ -79,7 +79,16 @@
 
 
 /**
+ *
  * @}
+ * \addtogroup platform_oi10_register_map_gpio
+ * @{
+ * This section contains addresses of devices on the GPIO bus
+ *
+ *
  */
+
+#define GPIO_0_BASE    0xC0028000
+#define GPIO_1_BASE    0xC0038000
 
 #endif /* end of include guard: DEVICES_H */
