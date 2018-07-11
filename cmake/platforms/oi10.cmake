@@ -56,6 +56,15 @@ rumboot_add_configuration(
 )
 
 
+rumboot_add_configuration(
+    SUPPLEMENTARY
+    LDS oi10/rom.lds
+    CFLAGS -DRUMBOOT_PRINTF_ACCEL
+    SNAPSHOT default
+    PREFIX supplementary
+    FEATURES STUB
+)
+
 rumboot_add_configuration (
     IRAM
     LDS oi10/iram.lds
@@ -318,14 +327,12 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     )
 
     add_rumboot_target(
-        CONFIGURATION BAREROM
+        CONFIGURATION SUPPLEMENTARY
         LDS oi10/test_oi10_cpu_038_im1.lds
         FILES test_oi10_cpu_038_helper.c
-        PREFIX supplementary
-        CFLAGS -DTEST_OI10_CPU_038_ARRAY_SIZE=0x7B00
+        CFLAGS -DTEST_OI10_CPU_038_ARRAY_SIZE=0x7C00
         LDFLAGS -s
         NAME "test_oi10_cpu_038_helper_im1"
-        FEATURES STUB
     )
 
     add_rumboot_target(
