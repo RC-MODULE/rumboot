@@ -83,7 +83,7 @@ uint32_t check_mclfir(const uint32_t base_address)
     TEST_ASSERT(dcr_read(MCLFIR_MC_ERR_WOF1 + base_address) == 0x00000000,"In MC_ERR_WOF1 expected value 0x00000000");
     TEST_ASSERT(dcr_read(MCLFIR_MC_LFIR + base_address) == 0x00000000,"In MC_LFIR expected value 0x00000000");
     TEST_ASSERT(dcr_read(MCLFIR_MC_LFIR_MSK + base_address) == 0xC0000000,"In MC_LFIR_MSK expected value 0xC0000000");
-    TEST_ASSERT(dcr_read(MCLFIR_MC_CONSOL_STAT + base_address) == 0x03100000,"In MC_CONSOL_STAT expected value 0x03100000");
+    TEST_ASSERT(dcr_read(MCLFIR_MC_CONSOL_STAT + base_address) == 0x00000000,"In MC_CONSOL_STAT expected value 0x00000000");
     TEST_ASSERT(dcr_read(MCLFIR_MC_CONSOL_STAT_TRIG + base_address) == 0x00000000,"In MC_CONSOL_STAT_TRIG expected value 0x00000000");
     TEST_ASSERT(dcr_read(MCLFIR_MC_CONSOL_STAT_MSK + base_address) == 0xFFF08000,"In MC_CONSOL_STAT_MSK expected value 0xFFF08000");
     TEST_ASSERT(dcr_read(MCLFIR_MC_CONSOL_STATSUM + base_address) == 0x00000000,"In MC_CONSOL_STATSUM expected value 0x00000000");
