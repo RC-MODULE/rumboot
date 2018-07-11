@@ -8,7 +8,9 @@
 #ifndef REGS_PLB6MCIF2_H_
 #define REGS_PLB6MCIF2_H_
 
-#define PLB6MCIF2_BESR		0x00
+#define PLB6MCIF2_BESR_read	 0x00
+#define PLB6MCIF2_BESR_clear 0x00
+#define PLB6MCIF2_BESR_set	 0x01
 #define PLB6MCIF2_BEARL		0x02
 #define PLB6MCIF2_BEARU		0x03
 #define PLB6MCIF2_INTR_EN	0x04
