@@ -75,8 +75,8 @@ static uint8_t AXI64_check_ID_regs()
     TEST_ASSERT((ioread32(PERIPHERAL_ID_BASE_64 + NIC400_PIDR6) == 0x00), "PID_PERIPHERAL_ID6 register default value incorrect");
     TEST_ASSERT((ioread32(PERIPHERAL_ID_BASE_64 + NIC400_PIDR7) == 0x00), "PID_PERIPHERAL_ID7 register default value incorrect");
     TEST_ASSERT((ioread32(PERIPHERAL_ID_BASE_64 + NIC400_PIDR0) == 0x00), "PID_PERIPHERAL_ID0 register default value incorrect");
-    TEST_ASSERT((ioread32(PERIPHERAL_ID_BASE_32 + NIC400_PIDR1) == 0xB4), "PID_PERIPHERAL_ID1 register default value incorrect");
-    TEST_ASSERT((ioread32(PERIPHERAL_ID_BASE_32 + NIC400_PIDR2) == 0x5B), "PID_PERIPHERAL_ID2 register default value incorrect");
+    TEST_ASSERT((ioread32(PERIPHERAL_ID_BASE_64 + NIC400_PIDR1) == 0xB4), "PID_PERIPHERAL_ID1 register default value incorrect");
+    TEST_ASSERT((ioread32(PERIPHERAL_ID_BASE_64 + NIC400_PIDR2) == 0x5B), "PID_PERIPHERAL_ID2 register default value incorrect");
     TEST_ASSERT((ioread32(PERIPHERAL_ID_BASE_64 + NIC400_PIDR3) == 0x00), "PID_PERIPHERAL_ID3 register default value incorrect");
     /*components_id read and compare reset value from table 3-5 in docs*/
     TEST_ASSERT((ioread32(PERIPHERAL_ID_BASE_64 + NIC400_CIDR0) == 0x0D), "PID_COMPONENT_ID0 register default value incorrect");
@@ -86,79 +86,105 @@ static uint8_t AXI64_check_ID_regs()
     
     return 1;
 }
-/*
+
 static uint32_t AXI32_check(uint32_t interface_number)
 {
-    rumboot_printf("Checking AXI registers default value for interface 0x%x \n", interface_number);
-    rumboot_printf("Address 0x%x", PERIPHERAL_ID_BASE_32 + interface_number);
+    //rumboot_printf("Checking AXI registers default value for interface 0x%x \n", interface_number);
+    /// NIC400_ARM_S 0x42100
+    /// NIC400_ARM_S_RQOS 
+    /// #define NIC400_ARM_S_RQOS NIC400_ARM_S+RQOS_OFFSET
     
-    TEST_ASSERT((ioread32(PERIPHERAL_ID_BASE_32 + interface_number + RQOS_OFFSET) == 0x00), "RQOS_OFFSET register default value incorrect");
- //   TEST_ASSERT((ioread32(PERIPHERAL_ID_BASE_32 + interface_number + WQOS_OFFSET) == 0x04), "WQOS_OFFSET register default value incorrect");
-//    TEST_ASSERT((ioread32(PERIPHERAL_ID_BASE_32 + interface_number + FN_MOD_OFFSET) == 0x08), "FN_MOD_OFFSET register default value incorrect");
+    rumboot_printf("Address 0x%x\n", interface_number);
+    rumboot_printf("Address interface_number 0x%x\n", NIC400_ARM_S);
     
-    rumboot_printf("Checking AXI registers write value for interface 0x%x\n", interface_number);
+    iowrite64(0x20, interface_number + NIC400_ARM_S + AMIB_SYNC_MODE);
+    TEST_ASSERT((ioread64(interface_number + NIC400_ARM_S + AMIB_SYNC_MODE) == 0x020), "NIC400_ARM_S_RQOS register value incorrect");
+    //rumboot_puthex(ioread32(PERIPHERAL_ID_BASE_32 + NIC400_PIDR2));
+    rumboot_putstring("AMIB_SYNC_MODE = ");
+  //  iowrite8(0x20, interface_number +  AMIB_SYNC_MODE);
+    rumboot_puthex(ioread32(interface_number + AMIB_SYNC_MODE));
+    
+   //rumboot_puthex(ioread32(PERIPHERAL_ID_BASE_32 + NIC400_DMA0_S_RQOS));
+      
+    /*
+    rumboot_printf("Address 0x%x\n", interface_number);
+    rumboot_printf("Address interface_number 0x%x\n", NIC400_DMA0_S);
+    
+    rumboot_putstring("PERIPHERAL_ID_BASE_32 + interface_number + WQOS_OFFSET = \n");
+    rumboot_puthex(ioread32(PERIPHERAL_ID_BASE_32 + NIC400_DMA0_S_RQOS));
+    rumboot_putstring("PERIPHERAL_ID_BASE_32 + NIC400_DMA0_S_RQOS = \n");
+    rumboot_puthex(ioread32(PERIPHERAL_ID_BASE_32 + NIC400_DMA0_S + RQOS_OFFSET));
+    rumboot_putstring("PERIPHERAL_ID_BASE_32 + interface_number + FN_MOD_OFFSET = \n");
+    rumboot_puthex(ioread32(PERIPHERAL_ID_BASE_32 + NIC400_DMA0_S + FN_MOD_OFFSET));
+    
+    rumboot_printf("Address 0x%x\n", interface_number);
+    rumboot_printf("Address interface_number 0x%x\n", NIC400_DMA1_S);
+    rumboot_putstring("PERIPHERAL_ID_BASE_32 + interface_number + WQOS_OFFSET = \n");
+    rumboot_puthex(ioread32(PERIPHERAL_ID_BASE_32 + NIC400_DMA1_S + WQOS_OFFSET));
+    rumboot_putstring("PERIPHERAL_ID_BASE_32 + interface_number + RQOS_OFFSET = \n");
+    rumboot_puthex(ioread32(PERIPHERAL_ID_BASE_32 + NIC400_DMA1_S + RQOS_OFFSET));
+    rumboot_putstring("PERIPHERAL_ID_BASE_32 + interface_number + RQOS_OFFSET = \n");
+    rumboot_puthex(ioread32(PERIPHERAL_ID_BASE_32 + NIC400_DMA1_S + FN_MOD_OFFSET));
+    
+    rumboot_printf("Address 0x%x\n", interface_number);
+    rumboot_printf("Address interface_number 0x%x\n", NIC400_DMA2_S);
+    rumboot_putstring("PERIPHERAL_ID_BASE_32 + interface_number + RQOS_OFFSET = \n");
+    rumboot_puthex(ioread32(PERIPHERAL_ID_BASE_32 + NIC400_DMA2_S + WQOS_OFFSET));
+    rumboot_putstring("PERIPHERAL_ID_BASE_32 + interface_number + RQOS_OFFSET = \n");
+    rumboot_puthex(ioread32(PERIPHERAL_ID_BASE_32 + NIC400_DMA2_S + RQOS_OFFSET));
+    rumboot_putstring("PERIPHERAL_ID_BASE_32 + interface_number + FN_MOD_OFFSET = \n");
+    rumboot_puthex(ioread32(PERIPHERAL_ID_BASE_32 + NIC400_DMA2_S + FN_MOD_OFFSET));
+    
+    rumboot_printf("Address 0x%x\n", interface_number);
+    rumboot_printf("Address interface_number 0x%x\n", NIC400_DMA3_S);
+    rumboot_putstring("PERIPHERAL_ID_BASE_32 + interface_number + WQOS_OFFSET = \n");
+    rumboot_puthex(ioread32(PERIPHERAL_ID_BASE_32 + NIC400_DMA3_S + WQOS_OFFSET));
+    rumboot_putstring("PERIPHERAL_ID_BASE_32 + interface_number + RQOS_OFFSET = \n");
+    rumboot_puthex(ioread32(PERIPHERAL_ID_BASE_32 + NIC400_DMA2_S + RQOS_OFFSET));
+    rumboot_putstring("PERIPHERAL_ID_BASE_32 + interface_number + FN_MOD_OFFSET = \n");
+    rumboot_puthex(ioread32(PERIPHERAL_ID_BASE_32 + NIC400_DMA2_S + FN_MOD_OFFSET));
+    
+    rumboot_printf("Address 0x%x\n", interface_number);
+
+    rumboot_printf("Address interface_number 0x%x\n", NIC400_ETH0_S);
+    rumboot_putstring("PERIPHERAL_ID_BASE_32 + interface_number + WQOS_OFFSET = \n");
+    rumboot_puthex(ioread32(PERIPHERAL_ID_BASE_32 + NIC400_ETH0_S + WQOS_OFFSET));
+    rumboot_putstring("PERIPHERAL_ID_BASE_32 + interface_number + RQOS_OFFSET = \n");
+    rumboot_puthex(ioread32(PERIPHERAL_ID_BASE_32 + NIC400_DMA2_S + RQOS_OFFSET));
+    rumboot_putstring("PERIPHERAL_ID_BASE_32 + interface_number + FN_MOD_OFFSET = \n");
+    rumboot_puthex(ioread32(PERIPHERAL_ID_BASE_32 + NIC400_DMA2_S + FN_MOD_OFFSET));
+    
+   //rumboot_putstring("PERIPHERAL_ID_BASE_32 + interface_number + RQOS_OFFSET = ");
+   //rumboot_puthex(ioread32(PERIPHERAL_ID_BASE_32 + WQOS_OFFSET));
+    
+   //rumboot_putstring("PERIPHERAL_ID_BASE_32 + interface_number + WQOS_OFFSET = ");
+   //rumboot_puthex(ioread32(PERIPHERAL_ID_BASE_32 + WQOS_OFFSET));
+    
+ //   rumboot_putstring("PERIPHERAL_ID_BASE_32 + interface_number + FN_MOD_OFFSET = ");
+ //   rumboot_puthex(ioread32(PERIPHERAL_ID_BASE_32 + FN_MOD_OFFSET));
+    
+   // TEST_ASSERT((ioread32(PERIPHERAL_ID_BASE_32 + interface_number + RQOS_OFFSET) == 0x00), "RQOS_OFFSET register default value incorrect");
+    
+    //TEST_ASSERT((ioread32(PERIPHERAL_ID_BASE_32 + interface_number + WQOS_OFFSET) == 0x04), "WQOS_OFFSET register default value incorrect");
+    //TEST_ASSERT((ioread32(PERIPHERAL_ID_BASE_32 + interface_number + FN_MOD_OFFSET) == 0x08), "FN_MOD_OFFSET register default value incorrect");
+    
+   // rumboot_printf("Checking AXI registers write value for interface 0x%x\n", interface_number);
     
     //iowrite8(AMIB_BASE(interface_number) + AMIB_WR_TIDEMARK) = 0x00;
     
-    iowrite32(0xBBCCDDBB, AXI32_CPU_BASE(interface_number) + AXI32_READ_QOS);
-    TEST_ASSERT((ioread32(AXI32_CPU_BASE(interface_number) + AXI32_WRITE_QOS) == 0xBBCCDDBB), "AXI32_WRITE_QOS register read value incorrect");
+*/
+    return 0;
+}
+/*
+static uint32_t AXI64_check(uint32_t interface_number)
+{
+    //rumboot_printf("Checking AXI registers default value for interface 0x%x \n", interface_number);
     
-    //iowrite8(AMIB_BASE(interface_number) + AMIB_WR_TIDEMARK) = 0x01;
+    rumboot_printf("Address 0x%x\n", interface_number);
+    rumboot_printf("Address interface_number 0x%x\n", NIC400_DMA0_S);
     
-    iowrite32(0xAADDAADD, AXI32_CPU_BASE(interface_number) + AXI32_READ_QOS); //zakomentil
-    TEST_ASSERT((ioread32(AXI32_CPU_BASE(interface_number) + AXI32_WRITE_QOS) == 0xAADDAADD), "AXI32_WRITE_QOS register read value incorrect");
-    
-    //iowrite8(AMIB_BASE(interface_number) + AMIB_WR_TIDEMARK) = 0x02;
-    
-    iowrite8(0x02, AMIB_BASE(interface_number) + AMIB_WR_TIDEMARK); //zakomentil
-    TEST_ASSERT(ioread8(AMIB_BASE(interface_number) + AMIB_WR_TIDEMARK) == 0x02, "AMIB_WR_TIDEMARK register read value incorrect");
-    
-    //iowrite8(AMIB_BASE(interface_number) + AMIB_WR_TIDEMARK) = 0x04;
-    
-    iowrite8(0x04, AMIB_BASE(interface_number) + AMIB_WR_TIDEMARK); //zakomentil
-    
-    TEST_ASSERT(ioread8(AMIB_BASE(interface_number) + AMIB_WR_TIDEMARK) == 0x04, "AMIB_WR_TIDEMARK register read value incorrect");
-    
-    //iowrite8(AMIB_BASE(interface_number) + AMIB_WR_TIDEMARK) = 0x08;
-    
-    iowrite8(0x08, AMIB_BASE(interface_number) + AMIB_WR_TIDEMARK); //zakomentil
-    
-    TEST_ASSERT(ioread8(AMIB_BASE(interface_number) + AMIB_WR_TIDEMARK) == 0x08, "AMIB_WR_TIDEMARK register read value incorrect");
-
-    iowrite8(AMIB_BASE(interface_number) + AMIB_WR_TIDEMARK) = 0x0F;
-    TEST_ASSERT((ioread32(PERIPHERAL_ID_BASE_64 + NIC400_PIDR4) == 0x00), "PID_PERIPHERAL_ID4 register default value incorrect");
-    TEST_ASSERT((ioread32(PERIPHERAL_ID_BASE_64 + NIC400_PIDR5) == 0x00), "PID_PERIPHERAL_ID5 register default value incorrect");
-    TEST_ASSERT((ioread32(PERIPHERAL_ID_BASE_64 + NIC400_PIDR6) == 0x00), "PID_PERIPHERAL_ID6 register default value incorrect");
-    TEST_ASSERT((ioread32(PERIPHERAL_ID_BASE_64 + NIC400_PIDR7) == 0x00), "PID_PERIPHERAL_ID7 register default value incorrect");
-    TEST_ASSERT((ioread32(PERIPHERAL_ID_BASE_64 + NIC400_PIDR0) == 0x00), "PID_PERIPHERAL_ID0 register default value incorrect");
-    iowrite8(0x0F, AMIB_BASE(interface_number) + AMIB_WR_TIDEMARK); //zakomentil
-    
-    TEST_ASSERT(ioread8(AMIB_BASE(interface_number) + AMIB_WR_TIDEMARK) == 0x0F, "AMIB_WR_TIDEMARK register read value incorrect");
-
-    iowrite8(AMIB_BASE(interface_number) + AMIB_WR_TIDEMARK) = 0x0E;
-    
-    iowrite8(0x0E, AMIB_BASE(interface_number) + AMIB_WR_TIDEMARK); //zakomentil
-    
-    TEST_ASSERT(ioread8(AMIB_BASE(interface_number) + AMIB_WR_TIDEMARK) == 0x0E, "AMIB_WR_TIDEMARK register read value incorrect");
-
-    iowrite8(AMIB_BASE(interface_number) + AMIB_WR_TIDEMARK) = 0x0D;
-    uint8_t
-    iowrite8(0x0D, AMIB_BASE(interface_number) + AMIB_WR_TIDEMARK); //zakomentil
-    
-    TEST_ASSERT(ioread8(AMIB_BASE(interface_number) + AMIB_WR_TIDEMARK) == 0x0D, "AMIB_WR_TIDEMARK register read value incorrect");
-
-    iowrite8(AMIB_BASE(interface_number) + AMIB_WR_TIDEMARK) = 0x0B;
-    
-    iowrite8(0x0B, AMIB_BASE(interface_number) + AMIB_WR_TIDEMARK); //zakomentil
-    
-    TEST_ASSERT(ioread8(AMIB_BASE(interface_number) + AMIB_WR_TIDEMARK) == 0x0B, "AMIB_WR_TIDEMARK register read value incorrect");
-
-    iowrite8(AMIB_BASE(interface_number) + AMIB_WR_TIDEMARK) = 0x07;
-    
-    iowrite8(0x07, AMIB_BASE(interface_number) + AMIB_WR_TIDEMARK); //zakomentil
-    
-    TEST_ASSERT(ioread8(AMIB_BASE(interface_number) + AMIB_WR_TIDEMARK) == 0x07, "AMIB_WR_TIDEMARK register read value incorrect");
-    
+    rumboot_printf("Address 0x%x\n", interface_number);
+    rumboot_printf("Address interface_number 0x%x\n", NIC400_DMA1_S);
     return 0;
 }
 */
@@ -183,7 +209,7 @@ static uint8_t check_ARC_regs(uint32_t security_slaves_count) //functia not used
 */
 //    return 0;
 //}
-/*
+/*NIC400_ARM_DMA
 static uint8_t check_AMIB_regs(uint8_t interface_number) //functia not used 
 {
     rumboot_printf("Checking AMIB registers default value for interface %x", interface_number);
@@ -443,8 +469,10 @@ static uint8_t check_AMIB_regs(uint8_t interface_number) //functia not used
 int main(void)
 { 
    register uint8_t result;
-   result = AXI32_check_ID_regs() && AXI64_check_ID_regs();
-//   && AXI32_check(NIC400_ARM_S);
+   result = AXI32_check_ID_regs() && AXI64_check_ID_regs()
+   && AXI32_check(PERIPHERAL_ID_BASE_32);
+  // && AXI64_check(PERIPHERAL_ID_BASE_64);
+   
   //&& AXI32_check(NIC400_DMA0_S); 
 /*
    &&
