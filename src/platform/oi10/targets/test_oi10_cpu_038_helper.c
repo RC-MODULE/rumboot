@@ -11,8 +11,6 @@
 
 #define TEST_ERROR 1
 #define TEST_OK 0
-#define ERROR 1
-#define OK 0
 
 const uint32_t __attribute__((section(".text"))) array_size = TEST_OI10_CPU_038_ARRAY_SIZE;
 const uint32_t __attribute__((section(".text"))) val_A = 0x0;
@@ -26,9 +24,7 @@ int check_cpu_ppc_038(void)
     uint32_t register R2;
     /*stage 1*/
 
-    rumboot_printf("Stage 1, write offset\n");
-
-    rumboot_printf("mass[0]: 0x%x\n",(uint32_t)mass[0]);
+    rumboot_printf("Stage 1, write offsets\n");
 
     for(i = 0; i < array_size; ++i)
     {
@@ -47,7 +43,7 @@ int check_cpu_ppc_038(void)
         if( R1 != R2 )
         {
             rumboot_printf("Error!  R1 == 0x%x and R2 == 0x%x do not coincide at virtual address == 0x%x!", R1, R2, &mass[i]);
-            return ERROR;
+            return TEST_ERROR;
         }
         R1 += 4;
     }
@@ -56,7 +52,7 @@ int check_cpu_ppc_038(void)
     R1 = val_A;
     for(i = 0; i < array_size; ++i)
     {
-        mass[i] = R1;
+        mass[i] = (~R1);
         R1 +=4;
     }
     /*stage 4*/
@@ -71,11 +67,11 @@ int check_cpu_ppc_038(void)
 
         if( (~R1) != (R2) )
         {
-            rumboot_printf("Error!  R1 == 0x%x and R2 == 0x%x do not coincide at virtual address == 0x%x!", R1, R2, &mass[i]);
-            return ERROR;
+            rumboot_printf("Error!  ~R1 == 0x%x and R2 == 0x%x do not coincide at virtual address == 0x%x!", ~R1, R2, &mass[i]);
+            return TEST_ERROR;
         }
         R1 += 4;
     }
-    return OK;
+    return TEST_OK;
 }
 
