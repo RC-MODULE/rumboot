@@ -327,7 +327,7 @@ DECLARE_ENUM_NEXT(  TEC_INIT )
 DECLARE_ENUM_NEXT(  TEC_FINISH )
 END_ENUM( test_event_code )
 
-	test_event  TEC_INIT
+    test_event  TEC_INIT
 
 check_mmu_utlb_read:
     test_event  TEC_CHECK_MMU_UTLB_READ
@@ -389,11 +389,11 @@ write_next_test_tlb_entry:
     bne+        cr7, write_next_test_tlb_entry
 
 test_ok:
-	test_event  TEC_FINISH
-	exit 0x00
+    test_event  TEC_FINISH
+    exit 0x00
 
 test_error:
- 	rumboot_putstring "TEST_ERROR\n"
+    rumboot_putstring "TEST_ERROR\n"
     exit 0x01
 
 
