@@ -15,86 +15,66 @@
 #define OK 0
 
 const uint32_t __attribute__((section(".text"))) array_size = TEST_OI10_CPU_038_ARRAY_SIZE;
-uint32_t __attribute__((section(".data.test_oi10_cpu_038"))) mass[TEST_OI10_CPU_038_ARRAY_SIZE] = { 0x0 };
+const uint32_t __attribute__((section(".text"))) val_A = 0x0;
+uint32_t __attribute__((section(".data.test_oi10_cpu_038"))) mass[TEST_OI10_CPU_038_ARRAY_SIZE] = { 0xffffffff };
 
-uint32_t r1, r2;
 
 int check_cpu_ppc_038(void)
 {
     uint32_t i;
-    uint32_t register temp_output;
-    uint32_t register val_A = 0x00000000;
+    uint32_t register R1 = val_A;
+    uint32_t register R2;
     /*stage 1*/
 
-    rumboot_printf("Stage 1, write\n");
+    rumboot_printf("Stage 1, write offset\n");
 
-    mass[0] = 0x00;
     rumboot_printf("mass[0]: 0x%x\n",(uint32_t)mass[0]);
 
-    r1 = val_A;
-    rumboot_printf("r1 value early init: 0x%x\n", (uint32_t)r1);
-    /*zapis v massiv chicel s incrementom*/
     for(i = 0; i < array_size; ++i)
     {
-    iowrite32(val_A, mass[i]);
-    temp_output = (uint32_t)&mass[i];
-    rumboot_printf("Write operation...0x%x \n", temp_output);
-    rumboot_printf("Address val_A 0x%x \n", (uint32_t)val_A);
+        mass[i] = R1;
+        R1 += 4;
     }
     /*stage 2*/
-    rumboot_printf("Stage 2, read and compare\n");
-    val_A = 0x00000000;
-    rumboot_printf("Value init val_A: 0x%x \n", (uint32_t)val_A);
-    r1 = val_A; //punkt d
-    rumboot_printf("r1 register value by copy val_A in r1: 0x%x \n", r1);
+    rumboot_printf("Stage 2, read and compare offsets\n");
+    R1 = val_A;
     for(i = 0; i < array_size; ++i)
     {
-    r2 = ioread32((uint32_t)&mass[i]);
-    rumboot_printf("Result READ operaion r1 is: 0x%x\n", r1);
-    rumboot_printf("Result READ operaion r2 is: 0x%x\n", r2);
-    rumboot_printf("Read operation r2 is: 0x%x\n", &mass[i]);
-    if( r1 != r2 )
-    {
-        rumboot_printf("Error  r1 != r2 not compared\n");
-        return ERROR;
+        R2 = mass[i];
+//        rumboot_printf("Result READ operaion r1 is: 0x%x\n", r1);
+//        rumboot_printf("Result READ operaion r2 is: 0x%x\n", r2);
+//        rumboot_printf("Read operation r2 is: 0x%x\n", &mass[i]);
+        if( R1 != R2 )
+        {
+            rumboot_printf("Error!  R1 == 0x%x and R2 == 0x%x do not coincide at virtual address == 0x%x!", R1, R2, &mass[i]);
+            return ERROR;
+        }
+        R1 += 4;
     }
-    rumboot_printf("Read Ok!\n");
-    mass[i] = val_A << 2;
-    }
-    /*3 stage*/
-    rumboot_printf("Stage 3, write\n");
-    mass[0] = 0x00;
-    rumboot_printf("mass[0]: 0x%x\n",(uint32_t)mass[0]);
-    r1 = val_A;
-    rumboot_printf("r1 value early init: 0x%x\n", (uint32_t)r1); //OTLADKA
+    /*stage 3*/
+    rumboot_printf("Stage 3, write inverted offset\n");
+    R1 = val_A;
     for(i = 0; i < array_size; ++i)
     {
-    iowrite32(~val_A, mass[i]);
-    temp_output = (uint32_t)&mass[i];
-    rumboot_printf("Write operation...0x%x \n", temp_output);
-    rumboot_printf("Address val_A 0x%x \n", (uint32_t)val_A); //OTLADRKA
-    val_A +=4;
+        mass[i] = R1;
+        R1 +=4;
     }
-    /*4 stage*/
-    rumboot_printf("Stage 4, read and compare\n");
-    val_A = 0x00000000;
-    rumboot_printf("Value init val_A: 0x%x \n", (uint32_t)val_A); //OTLADRKA
-    r1 = val_A; //punkt d
-    rumboot_printf("r1 register value by copy val_A in r1: 0x%x \n", r1); //OTLADKA
+    /*stage 4*/
+    rumboot_printf("Stage 4, read and compare inverted offset\n");
+    R1 = val_A;
     for(i = 0; i < array_size; ++i)
     {
-    r2 = ioread32((uint32_t)&mass[i]);
-    rumboot_printf("Result READ operaion r1 is: 0x%x\n", r1);
-    rumboot_printf("Result READ operaion r2 is: 0x%x\n", r2);
-    rumboot_printf("Read operation r2 is: 0x%x\n", &mass[i]);
+        R2 = mass[i];
+//        rumboot_printf("Result READ operaion r1 is: 0x%x\n", r1);
+//        rumboot_printf("Result READ operaion r2 is: 0x%x\n", r2);
+//        rumboot_printf("Read operation r2 is: 0x%x\n", &mass[i]);
 
-    if( r1 != r2 )
-    {
-        rumboot_printf("Error  r1 != r2 not compared\n");
-        return ERROR;
-    }
-    rumboot_printf("Read Ok!\n");
-    mass[i] = val_A << 2;
+        if( (~R1) != (R2) )
+        {
+            rumboot_printf("Error!  R1 == 0x%x and R2 == 0x%x do not coincide at virtual address == 0x%x!", R1, R2, &mass[i]);
+            return ERROR;
+        }
+        R1 += 4;
     }
     return OK;
 }
