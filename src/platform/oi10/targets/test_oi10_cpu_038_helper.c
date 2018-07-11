@@ -15,7 +15,7 @@
 #define OK 0
 
 const uint32_t __attribute__((section(".text"))) array_size = TEST_OI10_CPU_038_ARRAY_SIZE;
-uint32_t __attribute__((section(".data"))) mass[TEST_OI10_CPU_038_ARRAY_SIZE] = { 0xFF };
+uint32_t __attribute__((section(".data.test_oi10_cpu_038"))) mass[TEST_OI10_CPU_038_ARRAY_SIZE] = { 0x0 };
 
 uint32_t r1, r2;
 
