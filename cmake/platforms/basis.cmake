@@ -567,6 +567,29 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     NAME wdt_crg_iint_test
     TIMEOUT 1000 us    
   )
+  
+  add_rumboot_target(
+    CONFIGURATION IRAM
+    FILES wdt/wdt_crg_eint.c
+    NAME wdt_crg_eint_test
+    TIMEOUT 1000 us
+    IRUN_FLAGS +wdt_crg_eint_test_flag    
+  )
+  
+  add_rumboot_target(
+    CONFIGURATION IRAM_MIRROR
+    FILES wdt/wdt_crg_iint.c
+    NAME wdt_crg_iint_test
+    TIMEOUT 1000 us    
+  )
+  
+  add_rumboot_target(
+    CONFIGURATION IRAM_MIRROR
+    FILES wdt/wdt_crg_eint.c
+    NAME wdt_crg_eint_test
+    TIMEOUT 1000 us
+    IRUN_FLAGS +wdt_crg_eint_test_flag    
+  )
 
   add_rumboot_target(
       SNAPSHOT default

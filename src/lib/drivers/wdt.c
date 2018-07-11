@@ -32,21 +32,16 @@ void handler_wdt(int irq, void *arg)
     rumboot_printf("after *done = *done + 1; done = %x\n", *done);
 }
 
+void write_to_reg(int value, int addr_base, int addr_shift)
+{
+    iowrite32(value, addr_base + addr_shift);
+}
+
 void wdt_init(int wdt_interval, int wdt_unlock_code, int wdt_base, int wdt_lock, int wdt_ctrl, int wdt_load)
 {
-  iowrite32(wdt_unlock_code, wdt_base + wdt_lock); // Unlock WDT regs for write
-  iowrite32(0x3            , wdt_base + wdt_ctrl); // WDINT and WDRES enable
-  iowrite32(wdt_interval   , wdt_base + wdt_load); // Cnt interval
-}
-
-void unlock_crg_ddr(int crg_unlock_code, int crg_ddr_base, int crg_wr_lock)
-{
-    iowrite32(crg_unlock_code, crg_ddr_base + crg_wr_lock); // // Unlock CRG_DDR regs for write
-}
-
-void write_to_crg_ddr_fbdiv(int value, int crg_ddr_base, int crg_fbdiv)
-{
-    iowrite32(value, crg_ddr_base + crg_fbdiv);
+  write_to_reg(wdt_unlock_code, wdt_base, wdt_lock); // Unlock WDT regs for write
+  write_to_reg(0x3            , wdt_base, wdt_ctrl); // WDINT and WDRES enable
+  write_to_reg(wdt_interval   , wdt_base, wdt_load); // Cnt interval
 }
 
 bool check_crg_ddr_fbdiv_default(int crg_ddr_base, int crg_fbdiv, int crg_ddr_fbdiv_def)
@@ -61,7 +56,7 @@ bool check_crg_ddr_fbdiv_default(int crg_ddr_base, int crg_fbdiv, int crg_ddr_fb
 }
     
 
-//Test     
+//Test   WDT CRG internal interrupt  
 int wdt_crg_iint(struct wdt_crg_iint_var *conf)
 
 {
@@ -151,9 +146,9 @@ int wdt_crg_iint(struct wdt_crg_iint_var *conf)
   rumboot_platform_perf("WDT Reset");
   rumboot_printf("WDT init again\n");
   //Unlock CRG_DDR
-  unlock_crg_ddr(conf->crg_unlock_code, conf->crg_ddr_base, conf->crg_wr_lock);
+  write_to_reg(conf->crg_unlock_code, conf->crg_ddr_base, conf->crg_wr_lock);
   //Write to CRG_DDR[FBDIV] wrong value
-  write_to_crg_ddr_fbdiv(0xFFFFFFFF, conf->crg_ddr_base, conf->crg_fbdiv);
+  write_to_reg(0xFFFFFFFF, conf->crg_ddr_base, conf->crg_fbdiv);
   
   //WDT init
   wdt_init(conf->wdt_interval, conf->wdt_unlock_code, conf->wdt_base, conf->wdt_lock, conf->wdt_ctrl, conf->wdt_load);
@@ -163,3 +158,37 @@ int wdt_crg_iint(struct wdt_crg_iint_var *conf)
   while(1){}
 
 }
+
+//Test   WDT CRG external interrupt  
+int wdt_crg_eint(struct wdt_crg_eint_var *conf)
+
+{
+    //Unlock CRG_SYS
+    write_to_reg(conf->crg_unlock_code, conf->crg_sys_base, conf->crg_wr_lock);
+    //Mask rst_req from WDT
+    write_to_reg(0x00000000, conf->crg_sys_base, conf->crg_rst_cfg2);
+    
+    //Check low state for GPIO0
+    int rd_data = ioread32(conf->gpio0_base+conf->gpio_rd_data);
+    if ((rd_data & 0x00000040) != 0x00000000)
+    {
+        rumboot_printf("GPIO0_6 is n't 0! It's wrong value!");
+        rumboot_printf("Test WDT FAIL!\n");
+        return 0;
+    }        
+
+    //WDT start
+    wdt_init(conf->wdt_interval, conf->wdt_unlock_code, conf->wdt_base, conf->wdt_lock, conf->wdt_ctrl, conf->wdt_load);
+
+    //Wait high state in GPIO0   
+    rd_data = ioread32(conf->gpio0_base+conf->gpio_rd_data);
+    while (!(rd_data & 0x00000040))
+     {rd_data = ioread32(conf->gpio0_base+conf->gpio_rd_data);}
+    rumboot_printf("GPIO0_6 is 1! It indicates external output WDT_INT!\n");    
+    return 1;
+    
+    
+}
+
+
+

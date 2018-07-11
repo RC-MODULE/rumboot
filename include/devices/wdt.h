@@ -33,10 +33,27 @@ struct wdt_crg_iint_var{
     int wdt_load            ;
     int crg_unlock_code     ;
     int crg_wr_lock         ;
+};
+
+struct wdt_crg_eint_var{
+    int crg_sys_base      ;
+    int crg_rst_cfg2      ;
+    int wdt_int           ;
+    int wdt_interval      ;
+    int wdt_unlock_code   ;
+    int wdt_base          ;
+    int wdt_lock          ;
+    int wdt_ctrl          ;
+    int wdt_load          ;
+    int crg_unlock_code   ;
+    int crg_wr_lock       ;
+    int gpio0_base        ;
+    int gpio_rd_data      ;
 }; 
 
 
  int wdt_crg_iint(struct wdt_crg_iint_var *conf);
+ int wdt_crg_eint(struct wdt_crg_eint_var *conf);
 
 
 #endif
