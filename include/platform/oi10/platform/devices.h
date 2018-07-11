@@ -41,7 +41,10 @@
 #define GPIO_0_BASE             0xC0028000
 #define MKIO1_BASE              0xC0030000
 #define GPIO_1_BASE             0xC0038000
+#define UART0_BASE              0xC0029000
+#define UART1_BASE              0xC0039000
 #define BOOTROM_BASE            0xFFFF0000
+
 /**
  * @}
  *
