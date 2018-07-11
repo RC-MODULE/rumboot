@@ -5,7 +5,7 @@
 #include <rumboot/platform.h>
 #include <rumboot/macros.h>
 #include <rumboot/io.h>
-//#include <platform/test_assert.h>
+#include <platform/test_assert.h>
 #include <platform/devices.h>
 #include <platform/trace.h>
 #include <platform/test_event_c.h>
@@ -13,17 +13,6 @@
 #include <platform/regs/em2/regs_plb6mcif2.h>
 #include <platform/regs/em2/regs_mclfir.h>
 #include <platform/regs/em2/regs_emi.h>
-
-uint8_t Error_Detect = 0;
-#ifndef __TEST_ASSERT_H__
-#define TEST_ASSERT( expr, message )\
-MACRO_BEGIN\
-    if( !(expr) ) {\
-        rumboot_putstring( "PROGRAM ASSERTION FAILED: \"" STRINGIZE(expr) "\"\n" __FILE__ ":" STRINGIZE(__LINE__) ": \"" message "\"\n" );\
-        Error_Detect = 1;\
-    }\
-MACRO_END
-#endif
 
 static int32_t check_array32[] = {
         0xFFFFFFFF,
@@ -44,7 +33,7 @@ uint32_t check_plb6mcif2(const uint32_t base_address)
 {
     TEST_ASSERT(dcr_read(PLB6MCIF2_BEARL + base_address) == 0x00000000,"In PLB6MCIF2_BEARL expected value 0x00000000");
     TEST_ASSERT(dcr_read(PLB6MCIF2_BEARU + base_address) == 0x00000000,"In PLB6MCIF2_BEARU expected value 0x00000000");
-    TEST_ASSERT(dcr_read(PLB6MCIF2_BESR + base_address) == 0x00000000,"In PLB6MCIF2_BESR expected value 0x00000000");
+    TEST_ASSERT(dcr_read(PLB6MCIF2_BESR_read + base_address) == 0x00000000,"In PLB6MCIF2_BESR expected value 0x00000000");
     TEST_ASSERT(dcr_read(PLB6MCIF2_INTR_EN + base_address) == 0xFFE001C0,"In PLB6MCIF2_INTR_EN expected value 0xFFE001C0");
     TEST_ASSERT(dcr_read(PLB6MCIF2_MAP0CF + base_address) == 0x00000000,"In PLB6MCIF2_MAP0CF expected value 0x00000000");
     TEST_ASSERT(dcr_read(PLB6MCIF2_MAP1CF + base_address) == 0x00000000,"In PLB6MCIF2_MAP1CF expected value 0x00000000");
@@ -188,6 +177,6 @@ int main()
 	rumboot_putstring("CHECK EMI\n");
 	check_emi (DCR_EM2_EMI_BASE);
 
-	Error_Detect == 0 ? rumboot_putstring("TEST OK\n"): rumboot_putstring("TEST ERROR\n");
-	return Error_Detect;
+	rumboot_putstring("TEST OK\n");
+	return 0;
 }
