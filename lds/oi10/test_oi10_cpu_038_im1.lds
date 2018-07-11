@@ -11,22 +11,25 @@ SECTIONS
     
   .rwx : {
       . = 0x0;
-      . = ALIGN(32);
       KEEP(*(.text.check_cpu_ppc_038))
     *(.text)
     *(.text.*)
-      . = 0x1000;
-      . = ALIGN(32);
-      KEEP(*(.data.mass))
 
     *(.rodata)
     *(.rodata.*)
     *(.data)
+    *(.rumboot_platform_runtime_info)
+     *(.sbss)
+     *(.sbss.*)
+    . = 0x1000;
+    KEEP(*(.data.test_oi10_cpu_038))
     *(.data.*)
-    . = ALIGN(32);
-    post_padding = ALIGN(32);
  } > IM1
-
+/*    .data.test_oi10_cpu_038 0x80021000 :
+    {
+        KEEP(*(.data.test_oi10_cpu_038))
+    }>IM1
+*/
  /DISCARD/ :
  {
     *(.rela.*)
