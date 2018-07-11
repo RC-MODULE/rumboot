@@ -1,5 +1,5 @@
-#ifndef DEVICES_PCIE_H
-#define DEVICES_PCIE_H
+#ifndef REGS_PCIE_H
+#define REGS_PCIE_H
 
 /* --- SCTL --- */
 
@@ -9,18 +9,18 @@
 #define SCTL_PCIE_REG_2 0x40C
 
 /**
- * \defgroup devices_pcie Cadence PCIe
- * \ingroup devices
+ * \defgroup regs_pcie Cadence PCIe
+ * \ingroup regs
  *
  * Register offsets and constants
  * \code{.c}
- * #include <devices/pcie.h>
+ * #include <regs/regs_pcie.h>
  * \endcode
  *
- * \defgroup devices_pcie_constants Constants
- * \ingroup devices_pcie
+ * \defgroup regs_pcie_constants Constants
+ * \ingroup regs_pcie
  *
- * \addtogroup devices_pcie_constants
+ * \addtogroup regs_pcie_constants
  * @{
  */
 
@@ -31,10 +31,10 @@
 
 /**
  * @}
- * \defgroup devices_pcie_ep_regs PCIe Core EndPoint mode Register offsets
- * \ingroup devices_pcie
+ * \defgroup regs_pcie_ep_regs PCIe Core EndPoint mode Register offsets
+ * \ingroup regs_pcie
  *
- * \addtogroup devices_pcie_ep_regs
+ * \addtogroup regs_pcie_ep_regs
  * @{
  */
 
@@ -85,10 +85,10 @@
 
 /**
  * @}
- * \defgroup devices_pcie_rp_regs PCIe Core RootPort mode Register offsets
- * \ingroup devices_pcie
+ * \defgroup regs_pcie_rp_regs PCIe Core RootPort mode Register offsets
+ * \ingroup regs_pcie
  *
- * \addtogroup devices_pcie_rp_regs
+ * \addtogroup regs_pcie_rp_regs
  * @{
  */
 
@@ -147,10 +147,10 @@
 
 /**
  * @}
- * \defgroup devices_pcie_locmgmt_regs PCIe Core Local Management Register offsets
- * \ingroup devices_pcie
+ * \defgroup regs_pcie_locmgmt_regs PCIe Core Local Management Register offsets
+ * \ingroup regs_pcie
  *
- * \addtogroup devices_pcie_locmgmt_regs
+ * \addtogroup regs_pcie_locmgmt_regs
  * @{
  */
 
@@ -208,10 +208,10 @@
 
 /**
  * @}
- * \defgroup devices_pcie_axi_regs PCIe AXI port Registers offsets
- * \ingroup devices_pcie
+ * \defgroup regs_pcie_axi_regs PCIe AXI port Registers offsets
+ * \ingroup regs_pcie
  *
- * \addtogroup devices_pcie_axi_regs
+ * \addtogroup regs_pcie_axi_regs
  * @{
  */
 
@@ -389,10 +389,10 @@
 
 /**
  * @}
- * \defgroup devices_pcie_dma_regs PCIe DMA Registers offsets
- * \ingroup devices_pcie
+ * \defgroup regs_pcie_dma_regs PCIe DMA Registers offsets
+ * \ingroup regs_pcie
  *
- * \addtogroup devices_pcie_dma_regs
+ * \addtogroup regs_pcie_dma_regs
  * @{
  */
 
@@ -418,10 +418,10 @@
 
 /**
  * @}
- * \defgroup devices_pcie_phy_regs PCIe Phy Registers offsets (not full list)
- * \ingroup devices_pcie
+ * \defgroup regs_pcie_phy_regs PCIe Phy Registers offsets (not full list)
+ * \ingroup regs_pcie
  *
- * \addtogroup devices_pcie_phy_regs
+ * \addtogroup regs_pcie_phy_regs
  * @{
  */
 // paddr [11] was excluded, so it paddr forms next way
@@ -590,10 +590,10 @@
 
 /**
  * @}
- * \defgroup devices_pcie_addr_trans_slv_regs PCIe Address Translator Slave Registers offsets
- * \ingroup devices_pcie
+ * \defgroup regs_pcie_addr_trans_slv_regs PCIe Address Translator Slave Registers offsets
+ * \ingroup regs_pcie
  *
- * \addtogroup devices_pcie_addr_trans_slv_regs
+ * \addtogroup regs_pcie_addr_trans_slv_regs
  * @{
  */
 
@@ -985,10 +985,10 @@
 
 /**
  * @}
- * \defgroup devices_pcie_addr_trans_mst_regs PCIe Address Translator Master Registers offsets
- * \ingroup devices_pcie
+ * \defgroup regs_pcie_addr_trans_mst_regs PCIe Address Translator Master Registers offsets
+ * \ingroup regs_pcie
  *
- * \addtogroup devices_pcie_addr_trans_mst_regs
+ * \addtogroup regs_pcie_addr_trans_mst_regs
  * @{
  */
 
@@ -1023,10 +1023,10 @@
 
 /**
  * @}
- * \defgroup devices_pcie_ext_irq_gen_regs PCIe External IRQ Generator Registers offsets
- * \ingroup devices_pcie
+ * \defgroup regs_pcie_ext_irq_gen_regs PCIe External IRQ Generator Registers offsets
+ * \ingroup regs_pcie
  *
- * \addtogroup devices_pcie_ext_irq_gen_regs
+ * \addtogroup regs_pcie_ext_irq_gen_regs
  * @{
  */
 
@@ -1062,7 +1062,7 @@
 /**
  * @}
  * \defgroup TODO
- * \ingroup devices_pcie
+ * \ingroup regs_pcie
  *
  * \addtogroup TODO
  * @{
@@ -1072,4 +1072,4 @@
  * @}
  */
 
-#endif /* end of include guard: DEVICES_PCIE_H */
+#endif /* end of include guard: REGS_PCIE_H */

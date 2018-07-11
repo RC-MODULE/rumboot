@@ -1,3 +1,17 @@
+#ifndef REGS_GP_TIMERS_H
+#define REGS_GP_TIMERS_H
+
+/**
+ * \defgroup regs_gp_timers General Purpose Timers
+ * \ingroup regs
+ *
+ * Register offsets and constants
+ * \code{.c}
+ * #include <regs/regs_gp_timers.h>
+ * \endcode
+ *
+ * @{
+ */
 #define ID                      0x000
 #define VERSION                 0x004
 #define FREE_RUN_L              0x008
@@ -48,3 +62,9 @@
 #define TMR_5_SYS_CNT_NS        0x4A8
 #define TMR_5_SYS_CNT_S_L       0x4AC
 #define TMR_5_SYS_CNT_S_H       0x4B0
+ 
+/**
+ * @}
+ */
+
+#endif /* end of include guard: REGS_GP_TIMERS_H */

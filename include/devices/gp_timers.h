@@ -6,11 +6,11 @@
 
 /**
  *
- * \defgroup GP Timers functions
- * \ingroup devices_gp_timers
+ * \defgroup gp_timers GP Timers functions
+ * \ingroup devices
  *
  * \code{.c}
- * #include <rumboot/gp_timers.h>
+ * #include <devices/gp_timers.h>
  * \endcode
  *
  *  @{

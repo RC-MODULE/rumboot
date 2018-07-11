@@ -1,0 +1,166 @@
+#ifndef MKIO_H
+#define MKIO_H
+
+#include <stdint.h>
+
+
+/**
+ *
+ * \defgroup mkio Gaisler MKIO functions
+ * \ingroup devices
+ *
+ * \code{.c}
+ * #include <devices/mkio.h>
+ * \endcode
+ *
+ *  @{
+ */
+
+
+/** @}*/
+
+typedef volatile struct __attribute__ ((__packed__))
+{
+    //-----------------------------------------------------
+    //      [31] Must be 0 to identify as descriptor
+    //      [30] Wait for external trigger (WTRIG)
+    //      [29] Exclusive time slot (EXCL) - Do not schedule asynchronous messages
+    //      [28] IRQ after transfer on Error (IRQE)
+    //      [27] IRQ normally (IRQN) - Always interrupts after transfer
+    //      [26] Suspend on Error (SUSE) - Suspends the schedule (or stops the async transfer list) on error
+    //      [25] Suspend normally (SUSN) - Always suspends after transfer
+    //      [24 : 23] Retry mode (RETMD). 00 - Retry on same bus only. 01 - Retry alternating on both buses
+    //          10 - Retry first on same bus, then on alternating bus. 11 - Reserved, do not use
+    //      [22 : 20] Number of retries (NRET) - Number of automatic retries per bus
+    //          The total number of tries (including the first attempt) is NRET+1 for RETMD=00, 2 x (NRET+1) for RETMD=01/
+    //          10
+    //      [19] Store bus (STBUS) - If the transfer succeeds and this bit is set, store the bus on which the transfer succeeded (0
+    //          for bus A, 1 for bus B) into the per-RT bus swap register. If the transfer fails and this bit is set, store the opposite
+    //          bus instead. (only if the per-RT bus mask is supported in the core)
+    //          See section 32.4.3 for more information.
+    //      [18] Extended intermessage gap (GAP) - If set, adds an additional amount of gap time, corresponding to the RTTO
+    //          field, after the transfer
+    //      [17 : 16] Reserved - Set to 0 for forward compatibility
+    //      [15 : 0] Slot time (STIME) - Allocated time in 4 microsecond units, remaining time after transfer will insert delay
+    //-----------------------------------------------------
+    uint32_t ctrl_word_0         : 32;
+    //-----------------------------------------------------
+    //      [31] Dummy transfer (DUM) - If set to ‘1’ no bus traffic is generated and transfer “succeeds” immediately
+    //          For dummy transfers, the EXCL,IRQN,SUSN,STBUS,GAP,STIME settings are still in effect, other bits and
+    //          the data buffer pointer are ignored.
+    //      [30] Bus selection (BUS) - Bus to use for transfer, 0 - Bus A, 1 - Bus B
+    //      [29:26] RT Timeout (RTTO) - Extra RT status word timeout above nominal in units of 4 us (0000 -14 us, 1111 -74
+    //          us). Note: This extra time is also used as extra intermessage gap time if the GAP bit is set.
+    //      [25:21] Second RT Address for RT-to-RT transfer (RTAD2) See table 357 for details on how to setup
+    //          RTAD1,RTSA1,RTAD2,RTSA2,WCMC,TR
+    //          for different transfer types.
+    //          Note that bits 15:0 correspond to the (first)
+    //          command word on the 1553 bus
+    //      [20:16] Second RT Subaddress for RT-to-RT transfer (RTSA2)
+    //      [15:11] RT Address (RTAD1)
+    //      [10] Transmit/receive (TR)
+    //      [9:5] RT Subaddress (RTSA1)
+    //      [4:0] Word count/Mode code (WCMC)
+    //-----------------------------------------------------
+    uint32_t ctrl_word_1         : 32;
+    //-----------------------------------------------------
+    //          Data buffer pointer, 16-bit aligned.
+    //          For write buffers, if bit 0 is set the received
+    //          data is discarded and the pointer is ignored.
+    //          This can be used for RT-to-RT transfers where
+    //          the BC is not interested in the data transferred.
+    //-----------------------------------------------------
+    uint32_t data_pointer        : 32;
+    //-----------------------------------------------------
+    //      [31] Always written as 0
+    //      [30:24] Reserved - Mask away on read for forward compatibility
+    //      [23:16] RT 2 Status Bits (RT2ST) - Status bits from receiving RT in RT-to-RT transfer, otherwise 0
+    //          Same bit pattern as for RTST below
+    //      [15:8] RT Status Bits (RTST) - Status bits from RT (transmitting RT in RT-to-RT transfer)
+    //          15 - Message error, 14 - Instrumentation bit or reserved bit set, 13 - Service request, 
+    //          12 - Broadcast command received, 11 - Busy bit, 10 - Subsystem flag, 9 - Dynamic bus control acceptance, 8 - Terminal
+    //          flag
+    //      [7:4] Retry count (RETCNT) - Number of retries performed
+    //      [3] Reserved - Mask away on read for forward compatibility
+    //      [2:0] Transfer status (TFRST) - Outcome of last try
+    //          000 - Success (or dummy bit was set)
+    //          001 - RT did not respond (transmitting RT in RT-to-RT transfer)
+    //          010 - Receiving RT of RT-to-RT transfer did not respond
+    //          011 - A responding RT:s status word had message error, busy, instrumentation or reserved bit set (*)
+    //          100 - Protocol error (improperly timed data words, decoder error, wrong number of data words)
+    //          101 - The transfer descriptor was invalid
+    //          110 - Data buffer DMA timeout or error response
+    //          111 - Transfer aborted due to loop back check failure
+    //-----------------------------------------------------
+    uint32_t result_word         : 32;
+} mkio_bc_descriptor;
+
+typedef volatile struct __attribute__ ((__packed__))
+{
+    //-----------------------------------------------------
+    //      [31 : 19] Reserved - set to 0 for forward compatibility
+    //      [18] Auto-wraparound enable (WRAP) - Enables a test mode for this subaddress, where transmit transfers send back the
+    //          last received data. This is done by copying the finished transfer’s descriptor pointer to the transmit descriptor pointer
+    //          address after each successful transfer.
+    //          Note: If WRAP=1, you should not set TXSZ > RXSZ as this might cause reading beyond buffer end
+    //      [17] Ignore data valid bit (IGNDV) - If this is ‘1’ then receive transfers will proceed (and overwrite the buffer) if the receive
+    //          descriptor has the data valid bit set, instead of not responding to the request.
+    //          This can be used for descriptor rings where you don’t care if the oldest data is overwritten.
+    //      [16] Broadcast receive enable (BCRXEN) - Allow broadcast receive transfers to this subaddress
+    //      [15] Receive enable (RXEN) - Allow receive transfers to this subaddress
+    //      [14] Log receive transfers (RXLOG) - Log all receive transfers in event log ring (only used if RXEN=1)
+    //      [13] Interrupt on receive transfers (RXIRQ) - Each receive transfer will cause an interrupt (only if also RXEN,RXLOG=1)
+    //      [12 : 8] Maximum legal receive size (RXSZ) to this subaddress - in16-bit words, 0 means 32
+    //      [7] Transmit enable (TXEN) - Allow transmit transfers from this subaddress
+    //      [6] Log transmit transfers (TXLOG) - Log all transmit transfers in event log ring (only if also TXEN=1)
+    //      [5] Interrupt on transmit transfers (TXIRQ) - Each transmit transfer will cause an interrupt (only if TXEN,TXLOG=1)
+    //      [4 : 0] Maximum legal transmit size (TXSZ) from this subaddress - in 16-bit words, 0 means 32
+    //-----------------------------------------------------
+    uint32_t ctrl_word                     : 32;
+    //-----------------------------------------------------
+    //      16-byte aligned (0x3 to indicate invalid pointer)
+    //-----------------------------------------------------
+    uint32_t tx_descriptor_pointer         : 32;
+    //-----------------------------------------------------
+    //      16-byte aligned (0x3 to indicate invalid pointer)
+    //-----------------------------------------------------
+    uint32_t rx_descriptor_pointer         : 32;
+    //-----------------------------------------------------
+    uint32_t reserved                      : 32;
+} mkio_rt_subaddress_table;
+
+typedef volatile struct __attribute__ ((__packed__))
+{
+    //-----------------------------------------------------
+    //      [31] Data valid (DV) - Should be set to 0 by software before and set to 1 by hardware after transfer.
+    //          If DV=1 in the current receive descriptor before the receive transfer begins then a descriptor table error will
+    //          be triggered. You can override this by setting the IGNDV bit in the subaddress table.
+    //      [30] IRQ Enable override (IRQEN) - Log and IRQ after transfer regardless of SA control word settings
+    //          Can be used for getting an interrupt when nearing the end of a descriptor list.
+    //      [29 : 26] Reserved - Write 0 and mask out on read for forward compatibility
+    //      [25 : 10] Transmission time tag (TTIME) - Set by the core to the value of the RT timer when the transfer finished.
+    //      [9] Broadcast (BC) - Set by the core if the transfer was a broadcast transfer
+    //      [8 : 3] Transfer size (SZ) - Count in 16-bit words (0-32)
+    //      [2 : 0] Transfer result (TRES)
+    //          000 = Success
+    //          001 = Superseded (canceled because a new command was given on the other bus)
+    //          010 = DMA error or memory timeout occurred
+    //          011 = Protocol error (improperly timed data words or decoder error)
+    //          100 = The busy bit or message error bit was set in the transmitted status word and no data was sent
+    //          101 = Transfer aborted due to loop back checker error
+    //-----------------------------------------------------
+    uint32_t ctrl_status_word            : 32;
+    //-----------------------------------------------------
+    //      Data buffer pointer, 16-bit aligned
+    //-----------------------------------------------------
+    uint32_t data_pointer                : 32;
+    //-----------------------------------------------------
+    //      Pointer to next descriptor, 16-byte aligned
+    //      or 0x0000003 to indicate end of list
+    //-----------------------------------------------------
+    uint32_t next_descriptor_pointer     : 32;
+} mkio_rt_descriptor;
+
+
+
+#endif /* end of include guard: GP_TIMERS_H */
