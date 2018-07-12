@@ -37,12 +37,9 @@ int check_cpu_ppc_038(void)
     for(i = 0; i < array_size; ++i)
     {
         R2 = mass[i];
-//        rumboot_printf("Result READ operaion r1 is: 0x%x\n", r1);
-//        rumboot_printf("Result READ operaion r2 is: 0x%x\n", r2);
-//        rumboot_printf("Read operation r2 is: 0x%x\n", &mass[i]);
         if( R1 != R2 )
         {
-            rumboot_printf("Error!  R1 == 0x%x and R2 == 0x%x do not coincide at virtual address == 0x%x!", R1, R2, &mass[i]);
+            rumboot_printf("Error!  R1 == 0x%x and R2 == 0x%x do not coincide at virtual address == 0x%x!\n", R1, R2, &mass[i]);
             return TEST_ERROR;
         }
         R1 += 4;
@@ -61,13 +58,10 @@ int check_cpu_ppc_038(void)
     for(i = 0; i < array_size; ++i)
     {
         R2 = mass[i];
-//        rumboot_printf("Result READ operaion r1 is: 0x%x\n", r1);
-//        rumboot_printf("Result READ operaion r2 is: 0x%x\n", r2);
-//        rumboot_printf("Read operation r2 is: 0x%x\n", &mass[i]);
 
         if( (~R1) != (R2) )
         {
-            rumboot_printf("Error!  ~R1 == 0x%x and R2 == 0x%x do not coincide at virtual address == 0x%x!", ~R1, R2, &mass[i]);
+            rumboot_printf("Error!  ~R1 == 0x%x and R2 == 0x%x do not coincide at virtual address == 0x%x!\n", ~R1, R2, &mass[i]);
             return TEST_ERROR;
         }
         R1 += 4;
