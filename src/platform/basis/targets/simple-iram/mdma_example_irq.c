@@ -6,6 +6,7 @@
 
 #include <rumboot/printf.h>
 #include <rumboot/rumboot.h>
+#include <rumboot/timer.h>
 #include <rumboot/irq.h>
 
 #include <platform/devices.h>
@@ -15,9 +16,9 @@
 #include <devices/mdma_chan_api.h>
 
 #define MEM_SEGMENT_NUM         3
-#define MEM_SEGMENT_SZ          16
-#define MEM_PITCH_WIDTH         8
-#define MEM_STRING_LENGTH       4
+#define MEM_SEGMENT_SZ          32
+#define MEM_PITCH_WIDTH         16
+#define MEM_STRING_LENGTH       8
 
 struct mdma_gp_dev {
 	void *base_addr;
@@ -42,6 +43,7 @@ struct mdma_gp_dev {
 static void mdma_gp_handler(int irq, void *arg)
 {
 	struct mdma_gp_dev *dev = (struct mdma_gp_dev *)arg;
+	struct mdma_chan *chan;
 	struct mdma_trans *trans;
 	struct mdma_group *group;
 	struct mdma_node *node;
@@ -49,47 +51,74 @@ static void mdma_gp_handler(int irq, void *arg)
 
 	flags = ioread32((unsigned long)dev->base_addr + MDMA_GP_STATUS);
 
-	if (flags & (1 << 16)) {
-		ret = mdma_chan_irq_cb(dev->chan_wr);
-		state = dev->chan_wr->state;
+	rumboot_printf("GP_STATUS: 0x%x\n", flags);
+
+	while (flags) {
+		void *addr;
+		int *cnt;
+		bool is_wr;
+
+		if (flags & (1 << 16)) {
+			chan = dev->chan_wr;
+			addr = dev->dst_addr[1][dev->cnt_wr];
+			cnt = &dev->cnt_wr;
+
+			is_wr = true;
+
+			flags &= ~(1 << 16);
+		}
+		else if (flags & (1 << 0)) {
+			chan = dev->chan_rd;
+			addr = dev->src_addr[1][dev->cnt_rd];
+			cnt = &dev->cnt_rd;
+
+			is_wr = false;
+
+			flags &= ~(1 << 0);
+		}
+		else
+			break;
+
+		ret = mdma_chan_irq_cb(chan);
+		state = chan->state;
 
 		if (ret == IRQ_CHAN_NONE)
-			goto gp_handler_exit;
+			continue;
 
 		if (ret & IRQ_CHAN_ERROR)
-			goto gp_handler_exit;
+			continue;
 
 		if ((state == MDMA_CHAN_PENDING) || (ret & IRQ_CHAN_GROUP)) {
-			if (!(dev->cnt_wr < MEM_SEGMENT_NUM))
-				goto gp_handler_exit;
+			if (!(*cnt < MEM_SEGMENT_NUM))
+				continue;
 
-
-			trans = mdma_chan_get_trans(dev->chan_wr);
+			trans = mdma_chan_get_trans(chan);
 			group = mdma_trans_get_group(trans);
 			node = mdma_group_get_node(group);
 
-			mdma_node_rebase(node, &dev->chan_wr->cfg, dev->dst_addr[1][dev->cnt_wr], MEM_SEGMENT_SZ);
+			mdma_node_rebase(node, &chan->cfg, addr, MEM_SEGMENT_SZ);
 			mdma_trans_rest_group(group);
 
-			dev->cnt_wr++;
+			*cnt += 1;
+
+			if (is_wr)
+				rumboot_printf("CNT_WR: 0x%x\n", *cnt);
+			else
+				rumboot_printf("CNT_RD: 0x%x\n", *cnt);
+
+			if (state == MDMA_CHAN_PENDING)
+				mdma_chan_resume(chan);
 		}
-
-		if (state == MDMA_CHAN_PENDING)
-			mdma_chan_resume(dev->chan_wr);
-
 	}
 
-gp_handler_exit:
 	return;
 }
 
 int main()
 {
 	struct mdma_gp_dev dev;
-	struct mdma_trans *trans;
-	struct mdma_group *group;
-	struct mdma_node * node;
 	void *dst_addr, *src_addr;
+	unsigned int timeout = 100;
 	int i, j, ret = 0;
 
 	rumboot_irq_cli();
@@ -100,14 +129,16 @@ int main()
 	while (ioread32((unsigned long)dev.base_addr + MDMA_GP_SOFT_RST) & 1) {};
 
 	dev.cfg_wr.mode = MDMA_CHAN_INTERRUPT;
-	dev.cfg_wr.desc_kind = NORMAL_DESC;
+	dev.cfg_wr.desc_kind = PITCH_DESC;
 	dev.cfg_wr.heap_id = 1;
 	dev.cfg_wr.burst_width = MDMA_BURST_WIDTH8;
+	dev.cfg_wr.pitch_width = MEM_PITCH_WIDTH;
+	dev.cfg_wr.str_length = MEM_STRING_LENGTH;
 	dev.cfg_wr.event_indx = -1;
 	dev.cfg_wr.add_info = false;
 	dev.cfg_wr.addr_inc = true;
 
-	dev.cfg_rd.mode = MDMA_CHAN_POLLING;
+	dev.cfg_rd.mode = MDMA_CHAN_INTERRUPT;
 	dev.cfg_rd.desc_kind = PITCH_DESC;
 	dev.cfg_rd.heap_id = 1;
 	dev.cfg_rd.burst_width = MDMA_BURST_WIDTH8;
@@ -145,18 +176,20 @@ int main()
 		goto test_exit_2;
 	}
 
-	dst_addr = rumboot_malloc(2 * MEM_SEGMENT_NUM * MEM_SEGMENT_SZ);
+	mdma_chan_attach(dev.chan_wr, dev.chan_rd);
+
+	dst_addr = rumboot_malloc(4 * MEM_SEGMENT_NUM * MEM_SEGMENT_SZ);
 	if (!dst_addr) {
 		ret = -4;
 		goto test_exit_2;
 	}
 
 	for (i = 0; i < MEM_SEGMENT_NUM; i++) {
-		dev.dst_addr[0][i] = dst_addr + i * MEM_SEGMENT_SZ;
-		dev.dst_addr[1][i] = dst_addr + MEM_SEGMENT_NUM * MEM_SEGMENT_SZ +
-				i * MEM_SEGMENT_SZ;
+		dev.dst_addr[0][i] = dst_addr + 2 * i * MEM_SEGMENT_SZ;
+		dev.dst_addr[1][i] = dst_addr + 2 * MEM_SEGMENT_NUM * MEM_SEGMENT_SZ +
+				2 * i * MEM_SEGMENT_SZ;
 
-		for (j = 0; j < MEM_SEGMENT_SZ; j++) {
+		for (j = 0; j < (2 * MEM_SEGMENT_SZ); j++) {
 			*((char *)(dev.dst_addr[0][i] + j)) = 0;
 			*((char *)(dev.dst_addr[1][i] + j)) = 0;
 		}
@@ -170,7 +203,7 @@ int main()
 
 	src_addr = rumboot_malloc(4 * MEM_SEGMENT_NUM * MEM_SEGMENT_SZ);
 	if (!src_addr) {
-		ret = -5;
+		ret = -6;
 		goto test_exit_3;
 	}
 
@@ -180,8 +213,8 @@ int main()
 				2 * i * MEM_SEGMENT_SZ;
 
 		for (j = 0; j < (2 * MEM_SEGMENT_SZ); j++) {
-			*((char *)(dev.src_addr[0][i] + j)) = ((i + j) & 0xFF) | 0x0A;
-			*((char *)(dev.src_addr[1][i] + j)) = ((i + j) & 0xFF) | 0x50;
+			*((char *)(dev.src_addr[0][i] + j)) = ((i + j) & 0xAA) | 0x2;
+			*((char *)(dev.src_addr[1][i] + j)) = ((i + j) & 0x55) | 0x1;
 		}
 
 		if (mdma_trans_add_group(dev.chan_rd, dev.src_addr[0][i], MEM_SEGMENT_SZ, 0,
@@ -210,38 +243,49 @@ int main()
 		goto test_exit_6;
 	}
 
+	i = 0;
+	j = 0;
 
-	while (dev.cnt_rd <  MEM_SEGMENT_NUM) {
-		if (!mdma_chan_wait_group_end(dev.chan_rd, 1000)) {
-			trans = mdma_chan_get_trans(dev.chan_rd);
-			group = mdma_trans_get_group(trans);
-			node = mdma_group_get_node(group);
-
-			mdma_node_rebase(node, &dev.chan_rd->cfg, dev.src_addr[1][dev.cnt_rd], MEM_SEGMENT_SZ);
-			mdma_trans_rest_group(group);
-
-			dev.cnt_rd++;
+	while ((dev.cnt_wr < MEM_SEGMENT_NUM) || (dev.cnt_rd < MEM_SEGMENT_NUM)) {
+		if (!timeout) {
+			ret = -10;
+			goto test_exit_6;
 		}
 
-		if (mdma_chan_get_state(dev.chan_rd) == MDMA_CHAN_PENDING)
-			mdma_chan_resume(dev.chan_rd);
+		if ((i != dev.cnt_wr) || (j != dev.cnt_rd)) {
+			i = dev.cnt_wr;
+			j = dev.cnt_rd;
+		}
+		else {
+			timeout--;
+			udelay(1);			
+		}
 	}
 
-	mdma_chan_wait_trans_end(dev.chan_rd, 1000);
-	mdma_chan_wait_trans_end(dev.chan_wr, 1000);
-
 	for (i = 0; i < MEM_SEGMENT_NUM; i++) {
-		for (j = 0; j < MEM_SEGMENT_SZ; j++)
-			if (*((char *)(dev.dst_addr[0][i] + j)) !=  *((char *)(dev.src_addr[0][i] + j)))
+		for (j = 0; j < (2 * MEM_SEGMENT_SZ); j++) {
+			if ((j < MEM_SEGMENT_SZ) &&
+				(*((char *)(dev.dst_addr[0][i] + j)) !=  *((char *)(dev.src_addr[0][i] + j))))
 				break;
 
-		for (j = 0; j < MEM_SEGMENT_SZ; j++)
-			if (*((char *)(dev.dst_addr[1][i] + j)) !=  *((char *)(dev.src_addr[1][i] + j)))
+			if (!(j < MEM_SEGMENT_SZ) &&
+				(*((char *)(dev.dst_addr[0][i] + j)) ==  *((char *)(dev.src_addr[0][i] + j))))
 				break;
+		}
+
+		for (j = 0; j < (2 * MEM_SEGMENT_SZ); j++) {
+			if ((j < MEM_SEGMENT_SZ) &&
+				(*((char *)(dev.dst_addr[1][i] + j)) !=  *((char *)(dev.src_addr[1][i] + j))))
+				break;
+
+			if (!(j < MEM_SEGMENT_SZ) &&
+				(*((char *)(dev.dst_addr[1][i] + j)) ==  *((char *)(dev.src_addr[1][i] + j))))
+				break;
+		}
 	}
 
 	if (i != MEM_SEGMENT_NUM)
-		ret = -10;
+		ret = -11;
 
 test_exit_6:
 	rumboot_irq_table_activate(NULL);
@@ -249,7 +293,6 @@ test_exit_6:
 	rumboot_irq_cli();
 
 test_exit_5:
-	mdma_chan_reset(dev.chan_rd);
 	mdma_chan_reset(dev.chan_wr);
 
 test_exit_4:

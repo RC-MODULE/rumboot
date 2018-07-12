@@ -50,12 +50,50 @@ struct mdma_chan *mdma_chan_create(void *base_addr, struct mdma_cfg *cfg)
 	chan->cfg = *cfg;
 	chan->trans = NULL;
 
+	chan->slave = NULL;
+	chan->master = NULL;
+
 	chan_print_dbg(0, "channel(0x%x) ---> base address(0x%x)", chan, chan->regs);
 
 chan_create_exit:
 	chan_print_dbg(1, "<-- end");
 
 	return chan;
+}
+
+int mdma_chan_attach(struct mdma_chan *master, struct mdma_chan *slave)
+{
+	int ret = 0;
+
+	chan_print_dbg(1, "start -->");
+
+	if (!master || !slave) {
+		ret = -1;
+		goto chan_attach_exit;
+	}
+
+	if ((master->slave != NULL) || (slave->master != NULL)) {
+		ret = -2;
+		goto chan_attach_exit;
+	}
+
+	if ((master->state != MDMA_CHAN_DUMMY) || (slave->state != MDMA_CHAN_DUMMY)) {
+		ret = -3;
+		goto chan_attach_exit;
+	}
+
+	master->slave = slave;
+	master->master = NULL;
+
+	slave->master = master;
+	slave->slave = NULL;
+
+	chan_print_dbg(0, "channel(0x%x) ---> channel(0x%x)", master, master->slave);
+
+chan_attach_exit:
+	chan_print_dbg(1, "<-- end");
+
+	return ret;
 }
 
 void mdma_chan_destroy(struct mdma_chan *chan)
@@ -67,8 +105,17 @@ void mdma_chan_destroy(struct mdma_chan *chan)
 
 	mdma_trans_destroy(chan);
 
-	chan->regs = NULL;
+	if (chan->master) {
+		chan->master->slave = NULL;
+		chan->master = NULL;
+	}
 
+	if (chan->slave) {
+		chan->slave->master = NULL;
+		chan->slave = NULL;
+	}
+
+	chan->regs = NULL;
 	rumboot_free(chan);
 
 	chan_print_dbg(0, "channel(0x%x)", chan);
@@ -201,7 +248,7 @@ int mdma_trans_add_group(struct mdma_chan *chan, void *mem_addr, size_t mem_size
 	}
 		
 	last_addr = (size_t)mem_addr + mem_size;
-	if (last_addr > UINT32_MAX) {
+	if ((last_addr - 1) > UINT32_MAX) {
 		ret = -6;
 		goto trans_add_group_exit;
 	}
@@ -282,7 +329,7 @@ int mdma_trans_add_group(struct mdma_chan *chan, void *mem_addr, size_t mem_size
 		}
 		
 		last_addr = (size_t)mem_addr + cfg->pitch_width * num_node;
-		if (last_addr > UINT32_MAX) {
+		if ((last_addr - 1) > UINT32_MAX) {
 			ret = -17;
 			goto trans_add_group_exit;
 		}
@@ -697,12 +744,19 @@ int mdma_chan_config(struct mdma_chan *chan)
 	list_for_each_entry(group, &trans->group_list, group_node) {
 		chan_print_dbg(0, "transfer(0x%x) ---> group(0x%x), number of nodes = 0x%x",
 				group->trans, group, group->node_nmb);
+
+		if ((trans->trans_type == MDMA_TRANS_RING) && (trans->group_nmb < 2)) {
+			if (group->node_nmb < 4) {
+				ret = -4;
+				goto chan_config_exit;
+			}
+		}
 	
 		for (i = 0; i < group->node_nmb; i++) {
 			node = &group->node_group[i];
 
 			if (chan_set_desc(node, cfg)) {
-				ret = -4;
+				ret = -5;
 				goto chan_config_exit;
 			}
 		}
@@ -734,12 +788,25 @@ int mdma_chan_config(struct mdma_chan *chan)
 
 		if (!(cfg->event_indx < MDMA_EVENT_MAX_NUM) ||
 			!(cfg->event_prior < MDMA_PRIOR_MAX_NUM)) {
-			ret = -5;
+			ret = -6;
+			goto chan_config_exit;
+		}
+
+		if (cfg->sync_mode == MDMA_SYNC_SLAVE)
+			mdma_chan_write32(MDMA_SYNC_EVENT_SLAVE, (size_t)(&chan->regs->synch_events));
+		else if (cfg->sync_mode == MDMA_SYNC_MASTER)
+			mdma_chan_write32(MDMA_SYNC_EVENT_MASTER, (size_t)(&chan->regs->synch_events));
+		else if (cfg->sync_mode == MDMA_SYNC_NONE)
+			mdma_chan_write32(0, (size_t)(&chan->regs->synch_events));
+		else {
+			rumboot_printf("\tChannel configure: Unknown synchronization mode.\n");
+
+			ret = -7;
 			goto chan_config_exit;
 		}
 
 		mdma_chan_write32(0, (size_t)(&chan->regs->sense_list));
-		mdma_chan_read32((size_t)(&chan->regs->activ_events));
+		mdma_chan_write32(0, (size_t)(&chan->regs->activ_events));
 		mdma_chan_read32((size_t)(&chan->regs->ignore_events));
 
 		if (cfg->signal_time > 0)
@@ -811,21 +878,23 @@ int mdma_chan_reset(struct mdma_chan *chan)
 	RUMBOOT_ATOMIC_BLOCK() {
 		mdma_chan_write32(0, (size_t)(&chan->regs->irq_mask));
 	}
-	
-	mdma_chan_get_state(chan);
-	if (chan->state == MDMA_CHAN_DUMMY)
-		goto chan_reset_exit;
 
 	cfg = &chan->cfg;
 
 	if (!(cfg->event_indx < 0)) {
 		mdma_chan_write32(0, (size_t)(&chan->regs->sense_list));
 		
-		mdma_chan_read32((size_t)(&chan->regs->activ_events));
+		mdma_chan_write32(0, (size_t)(&chan->regs->activ_events));
 		mdma_chan_read32((size_t)(&chan->regs->ignore_events));
 	}
 
 	mdma_chan_write32(MDMA_CANCEL, (size_t)(&chan->regs->cancel));
+
+	if (chan->slave)
+		mdma_chan_reset(chan->slave);
+
+	if (mdma_chan_read32((size_t)(&chan->regs->suspend)) & MDMA_SUSPEND)
+		mdma_chan_write32(0, (size_t)(&chan->regs->suspend));
 	
 	while (mdma_chan_read32((size_t)(&chan->regs->enable)) & MDMA_ENABLE) {
 		if(!timeout)
@@ -833,7 +902,7 @@ int mdma_chan_reset(struct mdma_chan *chan)
 		else
 			timeout--;
 
-		mdelay(1);
+		udelay(1);
 	}
 	
 	if (mdma_chan_read32((size_t)(&chan->regs->cancel)) & MDMA_CANCEL)
@@ -887,6 +956,7 @@ static int chan_check_event(struct mdma_chan *chan, uint32_t status)
 	if (status & MDMA_STATUS_START_EVENT) {
 		mdma_chan_write32(0, (size_t)(&chan->regs->sense_list));
 		event_active = mdma_chan_read32((size_t)(&chan->regs->activ_events));
+		mdma_chan_write32(0, (size_t)(&chan->regs->activ_events));
 		chan->state = MDMA_CHAN_RUNNING;
 
 		if (!(event_active & (1 << chan->cfg.event_prior)))
@@ -954,7 +1024,7 @@ static int chan_trans_progress(struct mdma_chan *chan, int budget)
 			chan, trans, trans->cur_group, trans->next_group);
 	
 	if (!budget || (trans->next_group == NULL))
-		goto progress_exit;
+		goto progress_done;
 
 	chan_print_dbg(0, "transfer(0x%x) - number of group to handling = 0x%x, budget = 0x%x",
 			trans, trans->group_wait, budget);
@@ -992,7 +1062,7 @@ static int chan_trans_progress(struct mdma_chan *chan, int budget)
 	chan_print_dbg(0, "transfer(0x%x) - number of group to handling = 0x%x, budget = 0x%x",
 			trans, trans->group_wait, budget);
 
-progress_exit:
+progress_done:
 	ret = trans->group_wait;
 
 	RUMBOOT_ATOMIC_BLOCK() {
@@ -1023,45 +1093,23 @@ int mdma_chan_get_state(struct mdma_chan *chan)
 		if (!(chan->cfg.event_indx < 0))
 			chan_check_event(chan, status);
 
-		if (mdma_chan_read32((size_t)(&chan->regs->enable)) & MDMA_ENABLE) {
-			if (status & MDMA_STATUS_SUSPEND_DONE) {
-				chan->state = MDMA_CHAN_SUSPENDED;
-				
-				ret = MDMA_CHAN_SUSPENDED;
-				goto state_exit;
-			}
-			
-			chan->state = MDMA_CHAN_RUNNING;
-			
-			ret = MDMA_CHAN_RUNNING;
+		if (chan_is_error(chan, status)) {
+			ret = MDMA_CHAN_ERROR;
 			goto state_exit;
 		}
-		else {
-			if (chan_is_error(chan, status)) {
-				ret = MDMA_CHAN_ERROR;
-				goto state_exit;
-			}
 
-			if (status & MDMA_STATUS_BAD_DESC) {
-				chan->state = MDMA_CHAN_PENDING;
+		if (status & MDMA_STATUS_BAD_DESC) {
+			chan->state = MDMA_CHAN_PENDING;
 
-				ret = MDMA_CHAN_PENDING;
-				goto state_exit;
-			}
+			ret = MDMA_CHAN_PENDING;
+			goto state_exit;
+		}
 
-			if (status & MDMA_STATUS_STOP_DESC) {
-				chan->state = MDMA_CHAN_DUMMY;
+		if (status & MDMA_STATUS_STOP_DESC) {
+			chan->state = MDMA_CHAN_DUMMY;
 
-				ret = MDMA_CHAN_DUMMY;
-				goto state_exit;
-			}
-
-			if (status & MDMA_STATUS_CANCEL_DONE) {
-				chan->state = MDMA_CHAN_CANCELED;
-
-				ret = MDMA_CHAN_CANCELED;
-				goto state_exit;
-			}			
+			ret = MDMA_CHAN_DUMMY;
+			goto state_exit;
 		}
 		
 		ret = chan->state;
@@ -1074,6 +1122,13 @@ int mdma_chan_get_state(struct mdma_chan *chan)
 
 state_exit:
 	chan_print_dbg(0, "channel(0x%x) - state = 0x%x", chan, ret);
+
+#ifdef DEBUG_MDMA_CHAN
+	mdma_chan_read32((size_t)(&chan->regs->dma_state));
+	mdma_chan_read32((size_t)(&chan->regs->axi_state));
+	mdma_chan_read32((size_t)(&chan->regs->available_space));
+#endif
+
 	chan_print_dbg(1, "<-- end");
 
 	return ret;
@@ -1111,25 +1166,26 @@ int mdma_chan_irq_cb(struct mdma_chan *chan)
 
 	if (status & MDMA_STATUS_BAD_DESC) {
 		chan->state = MDMA_CHAN_PENDING;
+
 		ret |= IRQ_CHAN_DONE;
 	}
 	else if (status & MDMA_STATUS_STOP_DESC) {
 		mdma_chan_write32(0, (size_t)(&chan->regs->irq_mask));
 		chan->state = MDMA_CHAN_DUMMY;
-		ret |= IRQ_CHAN_DONE;
-	}
-	else if (status & MDMA_STATUS_SUSPEND_DONE) {
-		chan->state = MDMA_CHAN_SUSPENDED;
-		ret |= IRQ_CHAN_DONE;
-	}
-	else if (status & MDMA_STATUS_CANCEL_DONE) {
-		chan->state = MDMA_CHAN_CANCELED;
+
 		ret |= IRQ_CHAN_DONE;
 	}
 
 cb_exit:
 	chan_print_dbg(0, "channel(0x%x) - state = 0x%x, irq = 0x%x",
 			chan, chan->state, ret);
+
+#ifdef DEBUG_MDMA_CHAN
+	mdma_chan_read32((size_t)(&chan->regs->dma_state));
+	mdma_chan_read32((size_t)(&chan->regs->axi_state));
+	mdma_chan_read32((size_t)(&chan->regs->available_space));
+#endif
+
 	chan_print_dbg(1, "<-- end");
 
 	return ret;
@@ -1156,6 +1212,7 @@ int mdma_chan_start(struct mdma_chan *chan)
 			rumboot_printf("Channel(0x%x): discard ignore_events - 0x%x.\n", chan, val);
 
 		val = mdma_chan_read32((size_t)(&chan->regs->activ_events));
+		mdma_chan_write32(0, (size_t)(&chan->regs->activ_events));
 		if (val)
 			rumboot_printf("Channel(0x%x): discard active_events - 0x%x.\n", chan, val);
 	}
@@ -1167,7 +1224,6 @@ int mdma_chan_start(struct mdma_chan *chan)
 	val = 0;
 
 	if (cfg->mode == MDMA_CHAN_INTERRUPT) {
-		val |= MDMA_IRQ_MASK_SUSPEND_DONE | MDMA_IRQ_MASK_CANCEL_DONE;
 		val |= MDMA_IRQ_MASK_BAD_DESC | MDMA_IRQ_MASK_STOP_DESC;
 		val |= MDMA_IRQ_MASK_DISCARD_DESC | MDMA_IRQ_MASK_WAXI_ERR;
 		val |= MDMA_IRQ_MASK_AXI_ERR;
@@ -1236,13 +1292,14 @@ int mdma_chan_pause(struct mdma_chan *chan, bool suspend)
 {
 	uint32_t flags;
 	uint32_t timeout = MDMA_CHAN_TIMEOUT;
-	int state;
+	int state, mask;
+	int ret = 0;
 
 	chan_print_dbg(1, "start -->");
 
 	if (!chan) {
-		chan_print_dbg(1, "<-- end");
-		return -1;
+		ret = -1;
+		goto chan_pause_exit;
 	}
 
 	chan_print_dbg(0, "channel(0x%x)", chan);
@@ -1253,44 +1310,66 @@ int mdma_chan_pause(struct mdma_chan *chan, bool suspend)
 	}
 
 	state = mdma_chan_get_state(chan);
-	if (state != MDMA_CHAN_RUNNING)
-		goto pause_exit;
 
-	if (suspend)
+	if (suspend) {			
 		mdma_chan_write32(MDMA_SUSPEND, (size_t)(&chan->regs->suspend));
-	else
-		mdma_chan_write32(MDMA_CANCEL, (size_t)(&chan->regs->cancel));
-	
-pause_exit:
-	RUMBOOT_ATOMIC_BLOCK() {
-		mdma_chan_write32(flags, (size_t)(&chan->regs->irq_mask));
+		mask = MDMA_STATE_SUSPEND;
 	}
-	
-	while (state == MDMA_CHAN_RUNNING) {
+	else {
+		mdma_chan_write32(MDMA_CANCEL, (size_t)(&chan->regs->cancel));
+		mask = MDMA_STATE_CANCEL;
+	}
+
+	if (chan->slave)
+		mdma_chan_pause(chan->slave, suspend);
+
+	while (mdma_chan_read32((size_t)(&chan->regs->dma_state)) & mask) {
 		if (!timeout)
 			MDMA_CHAN_BUG("channel(0x%x) - pause timeout", chan);
 		else
 			timeout--;
 
-		mdelay(1);
-		state = mdma_chan_get_state(chan);
+		udelay(1);
+
+		if (suspend)
+			break;
 	}
 
+	if (suspend) {
+		if (mdma_chan_read32((size_t)(&chan->regs->enable)) & MDMA_ENABLE)
+			chan->state = MDMA_CHAN_SUSPENDED;
+		else
+			mdma_chan_write32(0, (size_t)(&chan->regs->suspend));
+	}
+	else {
+		if (state == MDMA_CHAN_RUNNING)
+			chan->state = MDMA_CHAN_CANCELED;
+	}
+
+	RUMBOOT_ATOMIC_BLOCK() {
+		mdma_chan_write32(flags, (size_t)(&chan->regs->irq_mask));
+	}
+
+	state = mdma_chan_get_state(chan);
+	if ((state != MDMA_CHAN_SUSPENDED) && (state != MDMA_CHAN_CANCELED))
+		ret = -2;
+
+chan_pause_exit:
 	chan_print_dbg(1, "<-- end");
 
-	return 0;
+	return ret;
 }
 
 int mdma_chan_resume(struct mdma_chan *chan)
 {
 	uint32_t flags;
-	int state;
+	int state, ret = 0;
 
 	chan_print_dbg(1, "start -->");
 
 	if (!chan) {
-		chan_print_dbg(1, "<-- end");
-		return -1;
+		ret = -1;
+		goto chan_resume_exit;
 	}
 
 	chan_print_dbg(0, "channel(0x%x)", chan);
@@ -1306,33 +1385,36 @@ int mdma_chan_resume(struct mdma_chan *chan)
 		mdma_chan_write32((1 << chan->cfg.event_indx), (size_t)(&chan->regs->sense_list));
 		chan->state = MDMA_CHAN_WAITING;
 
-		goto resume_exit;
+		goto resume_done;
 	}
 	
 	if (state == MDMA_CHAN_SUSPENDED)
-		mdma_chan_write32(~MDMA_SUSPEND, (size_t)(&chan->regs->suspend));
+		mdma_chan_write32(0, (size_t)(&chan->regs->suspend));
 	else if ((state == MDMA_CHAN_CANCELED) || (state == MDMA_CHAN_PENDING))
 		mdma_chan_write32(MDMA_ENABLE, (size_t)(&chan->regs->enable));
-	else
-		goto resume_exit;
+	else {
+		ret = -2;
+		goto resume_done;
+	}
 
 	chan->state = MDMA_CHAN_RUNNING;
 	
-resume_exit:
+resume_done:
 	RUMBOOT_ATOMIC_BLOCK() {
 		mdma_chan_write32(flags, (size_t)(&chan->regs->irq_mask));
 	}
 
+chan_resume_exit:
 	chan_print_dbg(1, "<-- end");
 
-	return 0;
+	return ret;
 }
 
 int mdma_chan_wait_trans_end(struct mdma_chan *chan, int timeout)
 {
 	
 	int state, budget;
-	int ret = 0;
+	int wait_nmb, ret = 0;
 
 	chan_print_dbg(1, "start -->");
 
@@ -1344,8 +1426,6 @@ int mdma_chan_wait_trans_end(struct mdma_chan *chan, int timeout)
 	chan_print_dbg(0, "channel(0x%x)", chan);
 
 	state = mdma_chan_get_state(chan);
-	if (state != MDMA_CHAN_RUNNING)
-		goto wait_trans_exit;
 
 	while (state == MDMA_CHAN_RUNNING) {
 		if (!timeout) {
@@ -1365,9 +1445,11 @@ int mdma_chan_wait_trans_end(struct mdma_chan *chan, int timeout)
 	else
 		budget = 1;
 
-	chan_trans_progress(chan, budget);
+	wait_nmb = chan_trans_progress(chan, budget);
 
-wait_trans_exit:
+	if (wait_nmb < 0)
+		ret = -2;
+
 	chan_print_dbg(1, "<-- end");
 
 	return ret;
@@ -1375,8 +1457,7 @@ wait_trans_exit:
 
 int mdma_chan_wait_group_end(struct mdma_chan *chan, int timeout)
 {
-	int state, wait_nmb;
-	int ret = 0;
+	int wait_nmb, ret = 0;
 
 	chan_print_dbg(1, "start -->");
 
@@ -1386,10 +1467,6 @@ int mdma_chan_wait_group_end(struct mdma_chan *chan, int timeout)
 	}
 
 	chan_print_dbg(0, "channel(0x%x)", chan);
-
-	state = mdma_chan_get_state(chan);
-	if (state != MDMA_CHAN_RUNNING)
-		goto wait_group_exit;
 
 	wait_nmb = chan_trans_progress(chan, 1);
 
@@ -1409,7 +1486,6 @@ int mdma_chan_wait_group_end(struct mdma_chan *chan, int timeout)
 	if (wait_nmb < 0)
 		ret = -2;
 
-wait_group_exit:
 	chan_print_dbg(1, "<-- end");
 
 	return ret;
@@ -1627,7 +1703,7 @@ int mdma_node_rebase(struct mdma_node *node, struct mdma_cfg *cfg,
 	}
 
 	last_addr = (size_t)mem_addr + mem_size;
-	if (last_addr > UINT32_MAX) {
+	if ((last_addr - 1) > UINT32_MAX) {
 		ret = -3;
 		goto node_rebase_exit;
 	}
@@ -1659,7 +1735,7 @@ int mdma_node_rebase(struct mdma_node *node, struct mdma_cfg *cfg,
 		}
 
 		last_addr = (size_t)mem_addr + cfg->pitch_width * num_str;
-		if (last_addr > UINT32_MAX) {
+		if ((last_addr - 1) > UINT32_MAX) {
 			ret = -8;
 			goto node_rebase_exit;
 		}
@@ -1675,7 +1751,6 @@ int mdma_node_rebase(struct mdma_node *node, struct mdma_cfg *cfg,
 		}
 
 		node->mem_size = num_str;
-			
 	}
 	else {
 		if (cfg->add_info && !(mem_size < MDMA_LENGTH_LIMIT(0))) {

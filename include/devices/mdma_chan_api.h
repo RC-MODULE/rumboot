@@ -186,9 +186,17 @@ enum mdma_desc_kind {
 #define MDMA_STATUS_START_EVENT		(1 << 8)
 #define MDMA_STATUS_IGNORE_EVENT	(1 << 9)
 
+/* mdma state register bits */
+#define MDMA_STATE_CANCEL		(1 << 21)
+#define MDMA_STATE_SUSPEND		(1 << 22)
+
 /* mdma event_prior register bits */
 #define MDMA_GET_PRIOR(i, x)		((((uint64_t)(x)) >> (((i) & 0xF) * 4)) & 0xF)
 #define MDMA_SET_PRIOR(i, x)		(((uint64_t)((x) & 0xF)) << (((i) & 0xF) * 4))
+
+/* mdma synch_events register bits */
+#define MDMA_SYNC_EVENT_SLAVE		(1 << 0)
+#define MDMA_SYNC_EVENT_MASTER		(1 << 8)
 
 struct mdma_chan_regs {
 	uint32_t enable;
@@ -233,7 +241,8 @@ struct mdma_chan_regs {
 	uint32_t events_prior_h;
 	uint32_t activ_events;
 	uint32_t ignore_events;
-	uint32_t reserved7[0x2];
+	uint32_t synch_events;
+	uint32_t reserved7;
 	uint32_t event_desc_addr[0x8];
 } __attribute__ ((packed));
 
@@ -309,6 +318,12 @@ enum mdma_burst_width {
 
 };
 
+enum mdma_sync_mode {
+	MDMA_SYNC_NONE,
+	MDMA_SYNC_SLAVE,
+	MDMA_SYNC_MASTER
+};
+
 #define MDMA_EVENT_MAX_NUM	16
 #define MDMA_PRIOR_MAX_NUM	8
 
@@ -325,6 +340,7 @@ struct mdma_cfg {
 	int			event_indx;
 	uint32_t		event_prior;
 	int			signal_time;
+	enum mdma_sync_mode     sync_mode;
 
 	bool			add_info;
 	bool			addr_inc;
@@ -365,9 +381,13 @@ struct mdma_chan {
 
 	struct mdma_cfg		cfg;
 	struct mdma_trans	*trans;
+
+	struct mdma_chan	*slave;
+	struct mdma_chan	*master;
 };
 
 struct mdma_chan *mdma_chan_create(void *base_addr, struct mdma_cfg *cfg);
+int mdma_chan_attach(struct mdma_chan *master, struct mdma_chan *slave);
 void mdma_chan_destroy(struct mdma_chan *chan);
 
 int mdma_trans_create(struct mdma_chan *chan, enum mdma_trans_type trans_type);
