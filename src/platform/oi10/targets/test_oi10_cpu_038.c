@@ -37,27 +37,23 @@ static const tlb_entry im_switch_tlb_entries[] =   {TLB_ENTRY_IM0_INVALIDATE0,
 int main(void) 
 {
 #ifdef TEST_OI10_CPU_038_IM0
-    //TODO copy IM0 to IM1
+    //copy IM0 to IM1
     memcpy((void *)IM1_BASE,(void *)IM0_BASE,0x20000);
     rumboot_putstring("copy IM0 to IM1 finished");
-    //TODO switch memory cell for eventsystem_memory to IM1
-//    rumboot_platform_relocate_runtime(IM1_BASE + 0x1ff00);
-//    rumboot_putstring("relocate finished");
-    //TODO switch physical addresses IM0<->IM1
+    //switch physical addresses IM0<->IM1
     msync();
     isync();
     write_tlb_entries(im_switch_tlb_entries,8);
     msync();
     isync();
 
-    rumboot_putstring("TLB entries switching finished");
-    rumboot_printf("printf working");
+    rumboot_printf("TLB entries switching finished\n");
 #endif
 
     rumboot_platform_request_file("IMBIN", IM_BASE);
     int (*check_function)();
     check_function = (void *)(IM_BASE);
-    rumboot_putstring("starting code from IM1\n");
+    rumboot_putstring("Starting test code from another memory\n");
 
       return check_function();
 
