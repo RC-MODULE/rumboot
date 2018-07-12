@@ -8,7 +8,6 @@
 
 #include <platform/common_macros/common_macros.h>
 #include <platform/test_event_codes.h>
-#include <platform/devices.h>
 #include <platform/test_assert.h>
 
 #include <rumboot/printf.h>
@@ -20,7 +19,7 @@
 
 static uint8_t AXI32_check_ID_regs()
 {   
-    rumboot_printf("Checking ID registers default value ...\n");
+    rumboot_printf("Checking ID 32 registers default value...\n");
     /*peripheral_id*/
     TEST_ASSERT((ioread32(PERIPHERAL_ID_BASE_32 + NIC400_PIDR4) == 0x04), "NIC400_PIDR4 register default value incorrect");
     TEST_ASSERT((ioread32(PERIPHERAL_ID_BASE_32 + NIC400_PIDR5) == 0x00), "NIC400_PIDR5 register default value incorrect");
@@ -41,7 +40,7 @@ static uint8_t AXI32_check_ID_regs()
 
 static uint8_t AXI64_check_ID_regs()
 {
-    rumboot_printf("Checking ID registers default value ...\n");
+    rumboot_printf("Checking ID 64 registers default value...\n");
     /*peripheral_id*/
     TEST_ASSERT((ioread32(PERIPHERAL_ID_BASE_64 + NIC400_PIDR4) == 0x04), "PID_PERIPHERAL_ID4 register default value incorrect");
     TEST_ASSERT((ioread32(PERIPHERAL_ID_BASE_64 + NIC400_PIDR5) == 0x00), "PID_PERIPHERAL_ID5 register default value incorrect");
@@ -60,12 +59,11 @@ static uint8_t AXI64_check_ID_regs()
     return 1;
 }
 
-static uint32_t AXI_check(uint32_t base_addr, uint32_t offset, uint32_t value)
+static uint8_t AXI_check(uint32_t base_addr, uint32_t offset, uint8_t value)
 {
     rumboot_putstring("Checking for read/write registers...\n"); 
     iowrite32(value, base_addr + offset);
     TEST_ASSERT((ioread32(base_addr + offset) == value), "Register default value incorrect");
-    rumboot_puthex(ioread32(base_addr + offset));
     return 1;
 }
 
@@ -97,7 +95,6 @@ int main(void)
    && AXI_check(PERIPHERAL_ID_BASE_32, NIC400_DMA3_S_RQOS, 0xf)
    && AXI_check(PERIPHERAL_ID_BASE_32, NIC400_DMA3_S_WQOS, 0xd)
    && AXI_check(PERIPHERAL_ID_BASE_32, NIC400_DMA3_S_FN_MOD, 0x0)
-   
    ///sw_0_s
    && AXI_check(PERIPHERAL_ID_BASE_64, NIC400_ARM_S_RQOS, 0x4)
    && AXI_check(PERIPHERAL_ID_BASE_64, NIC400_ARM_S_WQOS, 0x5)
