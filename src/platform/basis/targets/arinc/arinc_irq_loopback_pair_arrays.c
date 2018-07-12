@@ -127,20 +127,19 @@ int main()
     uint32_t addr;
 	uint32_t addr_rd;
 
-	 tmp =  ddr_init (DDR0_BASE); 
 	 if (tmp !=0) {return -1;}
 	rumboot_printf("DDR0_BASE=0x%x\n", DDR0_BASE);
-	uint32_t *tx_mem = rumboot_malloc_from_heap_aligned(2, sizeof(tx_array32), 8);
+	uint32_t *tx_mem = rumboot_malloc_from_heap_aligned(0, sizeof(tx_array32), 8);
 	uint32_t *trg = (uint32_t *) tx_mem;
 	memcpy(trg, tx_array32,sizeof(tx_array32));
 	
-	 uint32_t *rx_mem = rumboot_malloc_from_heap_aligned(2, sizeof(tx_array_double), 8);	
+	 uint32_t *rx_mem = rumboot_malloc_from_heap_aligned(0, sizeof(tx_array_double), 8);	
 
-	uint32_t *tx_mem_double = rumboot_malloc_from_heap_aligned(2, sizeof(tx_array_double), 8);
+	uint32_t *tx_mem_double = rumboot_malloc_from_heap_aligned(0, sizeof(tx_array_double), 8);
 	uint32_t *trg_double = (uint32_t *) tx_mem_double;
 	 memcpy(trg_double, tx_array_double,sizeof(tx_array_double));
 	
-	 uint32_t *rx_mem_double = rumboot_malloc_from_heap_aligned(2, sizeof(tx_array_double), 8);	
+	 uint32_t *rx_mem_double = rumboot_malloc_from_heap_aligned(0, sizeof(tx_array_double), 8);	
 
 	iowrite32((uint32_t) &tx_mem[0],(ARINC_BASE + AG_E_TX));    	// dma rd channel memory address	
 	iowrite32((uint32_t) &rx_mem[0],(ARINC_BASE + AG_E_RX));    	// dma wr channel memory address
