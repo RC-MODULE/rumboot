@@ -5,7 +5,8 @@
 #include <platform/arch/ppc/ibm_bit_ordering_macros.h>
 #include <platform/test_assert.h>
 #include <platform/devices/plb6mcif2.h>
-#include <plb6bc.h>
+#include <platform/plb6bc.h>
+#include <platform/devices.h>
 
 void plb6mcif2_init( uint32_t const base_addr, plb6mcif2_cfg const *const cfg ) {
     register uint32_t reg_value;
@@ -229,9 +230,9 @@ void plb6mcif2_simple_init( uint32_t base_addr, const uint32_t puaba )
     plb6mcif2_dcr_write_PLB6MCIF2_MR3CF(base_addr,
             reg_field(31, 0b0)); //Disable Rank3
 
-    const uint32_t Tsnoop = (plb6bc_dcr_read_PLB6BC_TSNOOP(PLB6_BC_BASE) & (0b1111 << 28)) >> 28;
-    trace_msg("Tsnoop=");
-    trace_hex(Tsnoop);
+    const uint32_t Tsnoop = (plb6bc_dcr_read_PLB6BC_TSNOOP(DCR_PLB6_BC_BASE) & (0b1111 << 28)) >> 28;
+    rumboot_putstring("Tsnoop=");
+    rumboot_puthex(Tsnoop);
     plb6mcif2_dcr_write_PLB6MCIF2_PLBCFG(base_addr,
             //PLB6MCIF2 enable [31] = 0b1
               reg_field(0, 0b0) //Non-coherent

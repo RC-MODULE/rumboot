@@ -4,8 +4,8 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include <platform/reg_access_plb6bc.h>
-
+#include <platform/reg_access/reg_access_plb6bc.h>
+#include <platform/common_macros/common_macros.h>
 
 typedef struct plb6bc_cfg
 {

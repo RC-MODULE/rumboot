@@ -5,7 +5,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <platform/reg_access/reg_access_plb6mcif2.h>
-
+#include <platform/regs/fields/plb6mcif2.h>
 
 typedef enum PLB6MCIF2_CLK_RELATION
 {

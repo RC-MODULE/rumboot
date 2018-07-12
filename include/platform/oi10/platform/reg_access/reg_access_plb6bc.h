@@ -1,12 +1,9 @@
 #ifndef __PLB6BC_REG_ACCESS_H__
 #define __PLB6BC_REG_ACCESS_H__
 
-
 #include <platform/regs/regs_plb6bc.h>
 #include <platform/common_macros/common_macros.h>
 #include <platform/arch/ppc/ibm_bit_ordering_macros.h>
-#include <boost/preprocessor/repetition/repeat_from_to.hpp>
-
 
 REG_READ_DCR( plb6bc, PLB6BC_CR0, 32 )
 REG_WRITE_DCR( plb6bc, PLB6BC_CR0, 32 )
@@ -19,10 +16,26 @@ REG_READ_DCR( plb6bc, PLB6BC_TSNOOP, 32 )
 REG_READ_DCR( plb6bc, PLB6BC_PAAM_WIN_EXT, 32 )
 REG_WRITE_DCR( plb6bc, PLB6BC_PAAM_WIN_EXT, 32 )
 
-#define PLB6BC_SGDx_ACCESS(z, x, dummy) \
-REG_READ_DCR(plb6bc, PLB6BC_SGD##x, 32)\
-REG_WRITE_DCR( plb6bc, PLB6BC_SGD##x, 32 )
-BOOST_PP_REPEAT_FROM_TO( 1, PLB6BC_SEGMENT_N, PLB6BC_SGDx_ACCESS, dummy )
+REG_READ_DCR( plb6bc, PLB6BC_SGD1, 32 )
+REG_WRITE_DCR( plb6bc, PLB6BC_SGD1, 32 )
+
+REG_READ_DCR( plb6bc, PLB6BC_SGD2, 32 )
+REG_WRITE_DCR( plb6bc, PLB6BC_SGD2, 32 )
+
+REG_READ_DCR( plb6bc, PLB6BC_SGD3, 32 )
+REG_WRITE_DCR( plb6bc, PLB6BC_SGD3, 32 )
+
+REG_READ_DCR( plb6bc, PLB6BC_SGD4, 32 )
+REG_WRITE_DCR( plb6bc, PLB6BC_SGD4, 32 )
+
+REG_READ_DCR( plb6bc, PLB6BC_SGD5, 32 )
+REG_WRITE_DCR( plb6bc, PLB6BC_SGD5, 32 )
+
+REG_READ_DCR( plb6bc, PLB6BC_SGD6, 32 )
+REG_WRITE_DCR( plb6bc, PLB6BC_SGD6, 32 )
+
+REG_READ_DCR( plb6bc, PLB6BC_SGD7, 32 )
+REG_WRITE_DCR( plb6bc, PLB6BC_SGD7, 32 )
 
 REG_READ_DCR( plb6bc, PLB6BC_ERR, 32 )
 REG_WRITE_DCR( plb6bc, PLB6BC_ERR, 32 )
