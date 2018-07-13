@@ -347,7 +347,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         FILES test_oi10_cpu_038.c
         PREFIX simple-iram
         CFLAGS -DIM_BASE=IM1_BASE
-        NAME "test_oi10_cpu_038_helper_im1"
+        NAME "test_oi10_cpu_038_im1"
         LOAD IM0BIN SELF
              IMBIN supplementary-test_oi10_cpu_038_helper_im1
     )
@@ -357,7 +357,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         FILES test_oi10_cpu_038.c
         PREFIX simple-iram
         CFLAGS -DTEST_OI10_CPU_038_IM0 -DIM_BASE=IM1_BASE
-        NAME "test_oi10_cpu_038_helper_im0"
+        NAME "test_oi10_cpu_038_im0"
         LOAD IM0BIN SELF
              IMBIN supplementary-test_oi10_cpu_038_helper_im0
     )
