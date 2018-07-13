@@ -885,6 +885,13 @@ endif()
       NAME ddr0_ddr1_turn_on_test
     )
 
+  add_rumboot_target(
+      SNAPSHOT default
+      CONFIGURATION IRAM
+      FILES mkio/mkio_write_read_test.c
+      NAME mkio_write_read_test
+    )
+
   #RumBoot Integration tests
 #  add_rumboot_target(
 #      CONFIGURATION INTEGRATION
@@ -928,6 +935,7 @@ file(GLOB PLATFORM_SOURCES
     ${CMAKE_SOURCE_DIR}/src/lib/drivers/mdio.c
     ${CMAKE_SOURCE_DIR}/src/lib/drivers/nic400_lib.c
     ${CMAKE_SOURCE_DIR}/src/lib/drivers/gp_timers.c
+    ${CMAKE_SOURCE_DIR}/src/lib/drivers/mkio.c
 )
 
 macro(RUMBOOT_PLATFORM_SET_COMPILER_FLAGS)

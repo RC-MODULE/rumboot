@@ -17,6 +17,35 @@
  */
 
 
+    /**
+     * This function is for checking, that MKIO is present in current project in that base address.
+     * It checks MKIO configuration, presence of BC, RT and BM blocks
+     *
+     *  TODO: add ID to adjust RTL part and check it.
+     *
+     * @return pass
+     */
+    uint32_t mkio_present (uint32_t base_address);
+
+    /**
+     * 
+     * 
+     *
+     *
+     *
+     */
+    void mkio_report_bc_status (uint32_t base_address);
+
+    /**
+     * 
+     * 
+     *
+     *
+     *
+     */
+    void mkio_report_rt_status (uint32_t base_address);
+
+
 /** @}*/
 
 typedef volatile struct __attribute__ ((__packed__))
@@ -93,6 +122,23 @@ typedef volatile struct __attribute__ ((__packed__))
     //          111 - Transfer aborted due to loop back check failure
     //-----------------------------------------------------
     uint32_t result_word         : 32;
+
+    uint32_t condition_word      : 32;
+    uint32_t branch_address      : 32;
+    uint32_t reserved_0          : 32;
+    uint32_t reserved_1          : 32;
+
+    
+    uint32_t d1_ctrl_word_0      : 32;
+    uint32_t d1_ctrl_word_1      : 32;
+    uint32_t d1_data_pointer     : 32;
+    uint32_t d1_result_word      : 32;
+
+    uint32_t d1_condition_word   : 32;
+    uint32_t d1_branch_address   : 32;
+    uint32_t d1_reserved_0       : 32;
+    uint32_t d1_reserved_1       : 32;
+
 } mkio_bc_descriptor;
 
 typedef volatile struct __attribute__ ((__packed__))
@@ -116,17 +162,38 @@ typedef volatile struct __attribute__ ((__packed__))
     //      [5] Interrupt on transmit transfers (TXIRQ) - Each transmit transfer will cause an interrupt (only if TXEN,TXLOG=1)
     //      [4 : 0] Maximum legal transmit size (TXSZ) from this subaddress - in 16-bit words, 0 means 32
     //-----------------------------------------------------
-    uint32_t ctrl_word                     : 32;
+    uint32_t sa0_ctrl_word                     : 32;
     //-----------------------------------------------------
     //      16-byte aligned (0x3 to indicate invalid pointer)
     //-----------------------------------------------------
-    uint32_t tx_descriptor_pointer         : 32;
+    uint32_t sa0_tx_descriptor_pointer         : 32;
     //-----------------------------------------------------
     //      16-byte aligned (0x3 to indicate invalid pointer)
     //-----------------------------------------------------
-    uint32_t rx_descriptor_pointer         : 32;
+    uint32_t sa0_rx_descriptor_pointer         : 32;
     //-----------------------------------------------------
-    uint32_t reserved                      : 32;
+    uint32_t sa0_reserved                      : 32;
+    
+    
+    //-----------------------------------------------------
+    //  Add more sabaddress table entries, if necessary
+    //    But not more than 32
+    //-----------------------------------------------------
+    uint32_t sa1_ctrl_word                     : 32;
+    uint32_t sa1_tx_descriptor_pointer         : 32;
+    uint32_t sa1_rx_descriptor_pointer         : 32;
+    uint32_t sa1_reserved                      : 32;
+    
+    uint32_t sa2_ctrl_word                     : 32;
+    uint32_t sa2_tx_descriptor_pointer         : 32;
+    uint32_t sa2_rx_descriptor_pointer         : 32;
+    uint32_t sa2_reserved                      : 32;
+    
+    uint32_t sa3_ctrl_word                     : 32;
+    uint32_t sa3_tx_descriptor_pointer         : 32;
+    uint32_t sa3_rx_descriptor_pointer         : 32;
+    uint32_t sa3_reserved                      : 32;
+    
 } mkio_rt_subaddress_table;
 
 typedef volatile struct __attribute__ ((__packed__))
