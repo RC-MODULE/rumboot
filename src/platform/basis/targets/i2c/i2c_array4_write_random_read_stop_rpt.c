@@ -31,9 +31,7 @@ int i2c_set_prescale(uint32_t i2c_base_addr, uint32_t scl_freq){
 	uint32_t ps = scl_freq;
 	uint32_t tmp_ps;
 	iowrite32(ps, I2C_BASE + I2C_PRESCALE );
-	//rumboot_printf("I2C0_WR=0x%x\n",ps);
 	tmp_ps = ioread32(I2C_BASE + I2C_PRESCALE );
-	//rumboot_printf("I2C0_RD=0x%x\n", tmp_ps);
 	if (tmp_ps == ps )
 	return I2C_OK;
     else
@@ -232,8 +230,7 @@ int i2c_write_array_last(uint32_t i2c_base_addr,
     rumboot_printf ("I2C WRITE REPEAT OPERATION\n");
   
     // Write data
-    rumboot_printf("    Write data\n");
-    // iowrite32((data),(i2c_base_addr + I2C_TRANSMIT));  
+    rumboot_printf("    Write data\n"); 
 	rumboot_printf("    START write data\n");
 	for (i = 0; i< byte_array_size; i++)
 	{ iowrite32((data[i+4]),(i2c_base_addr + I2C_TRANSMIT)); }
@@ -267,9 +264,7 @@ for (i = 0; i< (byte_array_size); i++)
 	
     if (tmp == I2C_FAILED) return I2C_FAILED;
 	result = ioread32(i2c_base_addr + I2C_RECEIVE);
-	 //rumboot_printf("read_num =0x%x\n",i);
-	 // rumboot_printf("check_array32 =0x%x\n",data[i]); 
-	 //  rumboot_printf("i2c_read_result =0x%x\n",result);  
+  
     if (result  != data[i]) 
     {
 	 rumboot_printf("I2C test ERROR!\n");
@@ -295,21 +290,16 @@ for (i = 0; i< (byte_array_size); i++)
 int main()
 {
     int tmp = -1;
-	uint32_t i2c_addr = 0xA0;      //0x50; old ver.
+	uint32_t i2c_addr = 0xA0; 
 	uint32_t i2c_base_addr = I2C_BASE;
 	uint32_t addr_h = 0x00;		//write subaddress
 	uint32_t addr_l = 0x00;
-	//uint32_t size_array;
 
 	static uint32_t check_array32[] = {
         0x80,
         0x40,
         0x20,
-		0x10 //,
-       // 0x20,
-       // 0x04,
-      //  0xFE,
-		//0xFF
+		0x10
 };
 
 //interrupt for last READ, interrupt for last write
@@ -337,12 +327,7 @@ int main()
 	iowrite32((I2C_STATRST ),(I2C_BASE + I2C_STAT_RST));
 	tmp = ioread32(I2C_BASE + I2C_STATUS);
 	rumboot_printf("i2c_read_STATUS =0x%x\n",tmp);
-	
-	//tmp = i2c_write_array_last(i2c_base_addr, 4,  0x11, check_array32)	; //old 0x43
-	//if (tmp == I2C_FAILED)
-	//{rumboot_printf("I2C write repeat test ERROR!\n");
-	//return TEST_ERROR;}
-
+		
     // do settings to avoid the influence of  write instruction
 	
     iowrite32((0x0),(i2c_base_addr + I2C_STAT_RST)); //reset STATRST reg
@@ -363,8 +348,7 @@ int main()
 		if (tmp == I2C_FAILED)                  
 	{rumboot_printf("I2C read test ERROR!\n");
 		return TEST_ERROR;}
-	//iowrite32((0x41),(i2c_base_addr + I2C_CTRL)); // STOP instruction
-		
+	
     tmp = i2c_wait_done(i2c_base_addr);
 	if (tmp == I2C_FAILED)
 	{rumboot_printf("I2C STOP test ERROR!\n");	
