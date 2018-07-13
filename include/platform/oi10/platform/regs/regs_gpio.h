@@ -15,8 +15,7 @@
 #define GPIO_DATAx_REGS_COUNT         32
 
 //register defines
-#define GPIO_DATA0                   0x000
-#define GPIO_DATAx(x)                (GPIO_DATA0 + (0x8*x))
+#define GPIO_DATA                    0x000
 #define GPIO_DIR                     0x400
 #define GPIO_IS                      0x404
 #define GPIO_IBE                     0x408
@@ -55,5 +54,6 @@
 #define GPIO_CellID2_DEFAULT         0x05
 #define GPIO_CellID3_DEFAULT         0xB1
 
-
+#define GPIO_REG_MASK                0xFF
+#define GPIO_ADDR_MASK               0x3FC
 #endif

@@ -2,8 +2,8 @@
 #include <stdlib.h>
 
 #include <platform/oi10/platform/devices/gpio.h>
-
 #include <platform/oi10/platform/regs/regs_gpio.h>
+#include <platform/oi10/platform/common_macros/common_macros.h>
 
 #include <rumboot/io.h>
 #include <rumboot/printf.h>
