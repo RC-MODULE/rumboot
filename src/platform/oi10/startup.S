@@ -56,7 +56,7 @@ boot_start:
     b           rumboot_entry_point
 
 
-.section ".init.text","ax",@progbits
+.section "itrpt.init.text","ax",@progbits
 
 trace_msg_unexpected_itrpt:
     rumboot_putstring   "Unexpected interrupt: "
@@ -197,6 +197,7 @@ unexpected_error:
     test_event  EVENT_ERROR
     b endless_loop
 
+.section ".init.text","ax",@progbits
 
 .global rumboot_entry_point
 rumboot_entry_point:

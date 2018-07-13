@@ -16,13 +16,9 @@ SECTIONS {
         *(.data)
         *(.data.*)
 
-        /* TODO remove ROM sections copy */
-        KEEP(*(.init.text))
-        KEEP(*(.init.rodata))
-        KEEP(*(*.init.text))
-        KEEP(*(*.init.rodata))
-        KEEP(*(.init.start))
-        /* end ROM sections copy */
+        /* ROM sections copy */
+        *(*.init.text)
+        /* ROM sections copy end */
 
         rumboot_platform_bss_start = .;
         *(.bss)
@@ -57,7 +53,6 @@ SECTIONS {
     /DISCARD/ : {
         *(.init.text)
         *(.init.rodata)
-        *(*.init.text)
         *(*.init.rodata)
         *(.init.start)
     }
