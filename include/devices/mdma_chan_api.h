@@ -10,7 +10,7 @@
 #include <rumboot/printf.h>
 #include <rumboot/io.h>
 
-#define DEBUG_MDMA_CHAN
+#undef DEBUG_MDMA_CHAN
 
 #ifdef DEBUG_MDMA_CHAN
 #define chan_print_dbg(x, format, ...) \

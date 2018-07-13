@@ -10,7 +10,7 @@
 
 #include <devices/mdma_chan_api.h>
 
-#define MEM_SEGMENT_SZ          15
+#define MEM_SEGMENT_SZ          17
 #define MEM_RING_SIZE		5
 #define MEM_SEGMENT_NUM		(2 * MEM_RING_SIZE)
 
@@ -32,11 +32,13 @@ int main()
 
 	cfg.mode = MDMA_CHAN_POLLING;
 	cfg.desc_kind = LONG_DESC;
-	cfg.heap_id = 0;
+	cfg.heap_id = 1;
 	cfg.burst_width = MDMA_BURST_WIDTH8;
 	cfg.event_indx = -1;
 	cfg.add_info = false;
 	cfg.addr_inc = true;
+
+	rumboot_printf("MDMA0 - soft reset.\n");
 
 	iowrite32(1, MDMA0_BASE + MDMA_GP_SOFT_RST);
 
@@ -54,13 +56,13 @@ int main()
 		goto test_exit_2;
 	}
 
-	mdma_chan_attach(chan_wr, chan_rd);
-
 	if (mdma_trans_create(chan_rd, MDMA_TRANS_RING) ||
 		mdma_trans_create(chan_wr, MDMA_TRANS_QUEUE)) {
 		ret = -3;
 		goto test_exit_2;
 	}
+
+	rumboot_printf("MDMA0 - allocate memory.\n");
 
 	buf_size = MEM_SEGMENT_NUM *
 		((MEM_SEGMENT_SZ / MDMA_BURST_WIDTH8) * MDMA_BURST_WIDTH8 + MDMA_BURST_WIDTH8);
@@ -81,8 +83,10 @@ int main()
 	}
 
 	for (i = 0; i < buf_size; i++)
-		*((char *)(src_addr + i)) = i | 0x01;
+		*((char *)(src_addr + i)) = i | 0x80;
 
+
+	rumboot_printf("MDMA0 - channels configure.\n");
 
 	for (i = 0; i < MEM_SEGMENT_NUM; i++) {
 		dst[i] = dst_addr + i * (buf_size / MEM_SEGMENT_NUM);
@@ -106,11 +110,27 @@ int main()
 		goto test_exit_4;
 	}
 
+	mdma_chan_attach(chan_wr, chan_rd);
+
+	rumboot_printf("MDMA0 - channels start.\n");
+
 	if (mdma_chan_start(chan_wr) || mdma_chan_start(chan_rd)) {
 		ret = -9;
 		goto test_exit_5;
 	}
+#if 0
+	mdma_chan_pause(chan_wr, false);
 
+	rumboot_printf("MDMA0 - channels pause.\n");
+
+	tmp = mdma_chan_get_state(chan_wr);
+	if (tmp == MDMA_CHAN_CANCELED)
+		mdma_chan_resume(chan_wr);
+
+	tmp = mdma_chan_get_state(chan_rd);
+	if (tmp == MDMA_CHAN_CANCELED)
+		mdma_chan_resume(chan_rd);
+#endif
 	for (i = MEM_RING_SIZE; i < MEM_SEGMENT_NUM; i++) {
 		tmp = mdma_chan_get_state(chan_wr);
 		if (tmp != MDMA_CHAN_RUNNING)
@@ -127,6 +147,8 @@ int main()
 			goto test_exit_5;
 		}
 
+		rumboot_printf("MDMA0 - channels work.\n");
+
 		trans = mdma_chan_get_trans(chan_rd);
 		group = mdma_trans_get_group(trans);
 		node = mdma_group_get_node(group);
@@ -139,41 +161,47 @@ int main()
 			mdma_chan_resume(chan_rd);
 	}
 
-	mdma_chan_wait_trans_end(chan_rd, 100);
-
-	tmp = mdma_chan_get_state(chan_rd);
-	if (tmp != MDMA_CHAN_PENDING) {
-		ret = -12;
-		goto test_exit_5;
-	}
+	rumboot_printf("MDMA0 - channels end.\n");
 
 	mdma_chan_wait_trans_end(chan_wr, 100);
 
 	tmp = mdma_chan_get_state(chan_wr);
 	if (tmp != MDMA_CHAN_DUMMY) {
+		ret = -12;
+		goto test_exit_5;
+	}
+
+	mdma_chan_wait_trans_end(chan_rd, 100);
+
+	tmp = mdma_chan_get_state(chan_rd);
+	if (tmp != MDMA_CHAN_PENDING) {
 		ret = -13;
 		goto test_exit_5;
 	}
+
+	rumboot_printf("MDMA0 - channels check.\n");
 
 	for (i = 0; i < MEM_SEGMENT_NUM; i++) {
 		tmp = buf_size / MEM_SEGMENT_NUM;
 
 		for (j = 0; j < tmp; j++) {
+			void *_dst_addr, *_src_addr;
+
+			_dst_addr = dst[i] + j;
+			_src_addr = src[i] + j;
 #if 1
-			if ((j < MEM_SEGMENT_SZ) &&
-				(*((char *)(dst_addr + j + i * tmp)) != *((char *)(src_addr + j + i * tmp)))) {
+			if ((j < MEM_SEGMENT_SZ) && (*((char *)(_dst_addr)) != *((char *)(_src_addr)))) {
 				ret = -14;
-				break;
+				goto test_exit_5;
 			}
 
-			if (!(j <  MEM_SEGMENT_SZ) &&
-				(*((char *)(dst_addr + j + i * tmp)) == *((char *)(src_addr + j + i * tmp)))) {
+			if (!(j <  MEM_SEGMENT_SZ) && (*((char *)(_dst_addr)) == *((char *)(_src_addr)))) {
 				ret = -15;
-				break;
+				goto test_exit_5;
 			}
 #else
-			rumboot_printf("src: 0x%x <-> dst: 0x%x\n",
-					*((char *)(src_addr + j + i * tmp)), *((char *)(dst_addr + j + i * tmp)));
+			rumboot_printf("src[0x%x] == 0x%x <-> dst[0x%x] == 0x%x\n",
+					_src_addr, *(char *)_src_addr, _dst_addr, *(char *)_dst_addr);
 #endif
 		}
 	}

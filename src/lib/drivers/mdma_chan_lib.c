@@ -77,7 +77,7 @@ int mdma_chan_attach(struct mdma_chan *master, struct mdma_chan *slave)
 		goto chan_attach_exit;
 	}
 
-	if ((master->state != MDMA_CHAN_DUMMY) || (slave->state != MDMA_CHAN_DUMMY)) {
+	if ((master->state != MDMA_CHAN_READY) || (slave->state != MDMA_CHAN_READY)) {
 		ret = -3;
 		goto chan_attach_exit;
 	}
@@ -955,12 +955,17 @@ static int chan_check_event(struct mdma_chan *chan, uint32_t status)
 
 	if (status & MDMA_STATUS_START_EVENT) {
 		mdma_chan_write32(0, (size_t)(&chan->regs->sense_list));
+
 		event_active = mdma_chan_read32((size_t)(&chan->regs->activ_events));
 		mdma_chan_write32(0, (size_t)(&chan->regs->activ_events));
 		chan->state = MDMA_CHAN_RUNNING;
 
-		if (!(event_active & (1 << chan->cfg.event_prior)))
+		if (event_active & (1 << chan->cfg.event_prior))
+#if 0
 			MDMA_CHAN_BUG("channel(0x%x) - unknown event", chan);
+#else
+			rumboot_printf("channel(0x%x) - unknown event\n", chan);
+#endif
 
 		ret |= 1;
 	}
@@ -970,7 +975,11 @@ static int chan_check_event(struct mdma_chan *chan, uint32_t status)
 		chan->trans->ignore_event = true;
 
 		if (!(event_ignore & (1 << chan->cfg.event_prior)))
+#if 0
 			MDMA_CHAN_BUG("channel(0x%x) - unknown event", chan);
+#else
+			rumboot_printf("channel(0x%x) - unknown event\n", chan);
+#endif
 
 		ret |= 2;
 	}

@@ -15,10 +15,11 @@
 
 #include <devices/mdma_chan_api.h>
 
-#define MEM_SEGMENT_NUM         3
-#define MEM_SEGMENT_SZ          32
-#define MEM_PITCH_WIDTH         16
-#define MEM_STRING_LENGTH       8
+#define MEM_STRING_NUM		5
+#define MEM_STRING_LEN		13
+#define MEM_PITCH_WIDTH		16
+#define MEM_SEGMENT_SZ		(MEM_STRING_LEN * MEM_STRING_NUM)
+#define MEM_SEGMENT_NUM		3
 
 struct mdma_gp_dev {
 	void *base_addr;
@@ -51,7 +52,7 @@ static void mdma_gp_handler(int irq, void *arg)
 
 	flags = ioread32((unsigned long)dev->base_addr + MDMA_GP_STATUS);
 
-	rumboot_printf("GP_STATUS: 0x%x\n", flags);
+	rumboot_printf("MDMA0 - IRQ occure.\n");
 
 	while (flags) {
 		void *addr;
@@ -102,9 +103,9 @@ static void mdma_gp_handler(int irq, void *arg)
 			*cnt += 1;
 
 			if (is_wr)
-				rumboot_printf("CNT_WR: 0x%x\n", *cnt);
+				rumboot_printf("MDMA0 - channel write interrupr: 0x%x\n", *cnt);
 			else
-				rumboot_printf("CNT_RD: 0x%x\n", *cnt);
+				rumboot_printf("MDMA0 - channel read interrupt: 0x%x\n", *cnt);
 
 			if (state == MDMA_CHAN_PENDING)
 				mdma_chan_resume(chan);
@@ -119,11 +120,13 @@ int main()
 	struct mdma_gp_dev dev;
 	void *dst_addr, *src_addr;
 	unsigned int timeout = 100;
-	int i, j, ret = 0;
+	int i, j, k, ret = 0;
 
 	rumboot_irq_cli();
 
 	dev.base_addr = (void *)MDMA0_BASE;
+
+	rumboot_printf("MDMA0 - soft reset.\n");
 
 	iowrite32(1, (unsigned long)dev.base_addr + MDMA_GP_SOFT_RST);
 	while (ioread32((unsigned long)dev.base_addr + MDMA_GP_SOFT_RST) & 1) {};
@@ -133,7 +136,7 @@ int main()
 	dev.cfg_wr.heap_id = 1;
 	dev.cfg_wr.burst_width = MDMA_BURST_WIDTH8;
 	dev.cfg_wr.pitch_width = MEM_PITCH_WIDTH;
-	dev.cfg_wr.str_length = MEM_STRING_LENGTH;
+	dev.cfg_wr.str_length = MEM_STRING_LEN;
 	dev.cfg_wr.event_indx = -1;
 	dev.cfg_wr.add_info = false;
 	dev.cfg_wr.addr_inc = true;
@@ -143,7 +146,7 @@ int main()
 	dev.cfg_rd.heap_id = 1;
 	dev.cfg_rd.burst_width = MDMA_BURST_WIDTH8;
 	dev.cfg_rd.pitch_width = MEM_PITCH_WIDTH;
-	dev.cfg_rd.str_length = MEM_STRING_LENGTH;
+	dev.cfg_rd.str_length = MEM_STRING_LEN;
 	dev.cfg_rd.event_indx = -1;
 	dev.cfg_rd.add_info = false;
 	dev.cfg_rd.addr_inc = true;
@@ -176,20 +179,19 @@ int main()
 		goto test_exit_2;
 	}
 
-	mdma_chan_attach(dev.chan_wr, dev.chan_rd);
+	rumboot_printf("MDMA0 - allocate memory.\n");
 
-	dst_addr = rumboot_malloc(4 * MEM_SEGMENT_NUM * MEM_SEGMENT_SZ);
+	dst_addr = rumboot_malloc(2 * MEM_SEGMENT_NUM * MEM_STRING_NUM * MEM_PITCH_WIDTH);
 	if (!dst_addr) {
 		ret = -4;
 		goto test_exit_2;
 	}
 
 	for (i = 0; i < MEM_SEGMENT_NUM; i++) {
-		dev.dst_addr[0][i] = dst_addr + 2 * i * MEM_SEGMENT_SZ;
-		dev.dst_addr[1][i] = dst_addr + 2 * MEM_SEGMENT_NUM * MEM_SEGMENT_SZ +
-				2 * i * MEM_SEGMENT_SZ;
+		dev.dst_addr[0][i] = dst_addr + i * MEM_STRING_NUM * MEM_PITCH_WIDTH;
+		dev.dst_addr[1][i] = dst_addr + (i + MEM_SEGMENT_NUM) * MEM_STRING_NUM * MEM_PITCH_WIDTH; 
 
-		for (j = 0; j < (2 * MEM_SEGMENT_SZ); j++) {
+		for (j = 0; j < (MEM_STRING_NUM * MEM_PITCH_WIDTH); j++) {
 			*((char *)(dev.dst_addr[0][i] + j)) = 0;
 			*((char *)(dev.dst_addr[1][i] + j)) = 0;
 		}
@@ -201,20 +203,19 @@ int main()
 		}
 	}
 
-	src_addr = rumboot_malloc(4 * MEM_SEGMENT_NUM * MEM_SEGMENT_SZ);
+	src_addr = rumboot_malloc(2 * MEM_SEGMENT_NUM * MEM_STRING_NUM * MEM_PITCH_WIDTH);
 	if (!src_addr) {
 		ret = -6;
 		goto test_exit_3;
 	}
 
 	for (i = 0; i < MEM_SEGMENT_NUM; i++) {
-		dev.src_addr[0][i] = src_addr + 2 * i * MEM_SEGMENT_SZ;
-		dev.src_addr[1][i] = src_addr + 2 * MEM_SEGMENT_NUM * MEM_SEGMENT_SZ +
-				2 * i * MEM_SEGMENT_SZ;
+		dev.src_addr[0][i] = src_addr + i * MEM_STRING_NUM * MEM_PITCH_WIDTH;
+		dev.src_addr[1][i] = src_addr + (i + MEM_SEGMENT_NUM) * MEM_STRING_NUM * MEM_PITCH_WIDTH;
 
-		for (j = 0; j < (2 * MEM_SEGMENT_SZ); j++) {
-			*((char *)(dev.src_addr[0][i] + j)) = ((i + j) & 0xAA) | 0x2;
-			*((char *)(dev.src_addr[1][i] + j)) = ((i + j) & 0x55) | 0x1;
+		for (j = 0; j < (MEM_STRING_NUM * MEM_PITCH_WIDTH); j++) {
+			*((char *)(dev.src_addr[0][i] + j)) = ((i + j) & 0xAF) | 0x80;
+			*((char *)(dev.src_addr[1][i] + j)) = ((i + j) & 0x5F) | 0x40;
 		}
 
 		if (mdma_trans_add_group(dev.chan_rd, dev.src_addr[0][i], MEM_SEGMENT_SZ, 0,
@@ -224,10 +225,14 @@ int main()
 		}
 	}
 
+	rumboot_printf("MDMA0 - channels configure.\n");
+
 	if (mdma_chan_config(dev.chan_rd) || mdma_chan_config(dev.chan_wr)) {
 		ret = -8;
 		goto test_exit_5;
 	}
+
+	mdma_chan_attach(dev.chan_wr, dev.chan_rd);
 
 	dev.tbl = rumboot_irq_create(NULL);
 	dev.irq = MDMA0_IRQ;
@@ -236,7 +241,12 @@ int main()
 	rumboot_irq_table_activate(dev.tbl);
 	rumboot_irq_enable(dev.irq);
 
+
+	rumboot_printf("MDMA0 - enable interrupt.\n");
+
 	rumboot_irq_sei();
+
+	rumboot_printf("MDMA0 - channels start.\n");
 
 	if (mdma_chan_start(dev.chan_wr) || mdma_chan_start(dev.chan_rd)) {
 		ret = -9;
@@ -252,6 +262,8 @@ int main()
 			goto test_exit_6;
 		}
 
+		rumboot_printf("MDMA0 - channels work.\n");
+
 		if ((i != dev.cnt_wr) || (j != dev.cnt_rd)) {
 			i = dev.cnt_wr;
 			j = dev.cnt_rd;
@@ -262,30 +274,62 @@ int main()
 		}
 	}
 
-	for (i = 0; i < MEM_SEGMENT_NUM; i++) {
-		for (j = 0; j < (2 * MEM_SEGMENT_SZ); j++) {
-			if ((j < MEM_SEGMENT_SZ) &&
-				(*((char *)(dev.dst_addr[0][i] + j)) !=  *((char *)(dev.src_addr[0][i] + j))))
-				break;
+	rumboot_printf("MDMA0 - channels end.\n");
 
-			if (!(j < MEM_SEGMENT_SZ) &&
-				(*((char *)(dev.dst_addr[0][i] + j)) ==  *((char *)(dev.src_addr[0][i] + j))))
-				break;
-		}
-
-		for (j = 0; j < (2 * MEM_SEGMENT_SZ); j++) {
-			if ((j < MEM_SEGMENT_SZ) &&
-				(*((char *)(dev.dst_addr[1][i] + j)) !=  *((char *)(dev.src_addr[1][i] + j))))
-				break;
-
-			if (!(j < MEM_SEGMENT_SZ) &&
-				(*((char *)(dev.dst_addr[1][i] + j)) ==  *((char *)(dev.src_addr[1][i] + j))))
-				break;
-		}
+	k = mdma_chan_get_state(dev.chan_rd);
+	if (k != MDMA_CHAN_PENDING) {
+		ret = -11;
+		goto test_exit_6;
 	}
 
-	if (i != MEM_SEGMENT_NUM)
-		ret = -11;
+	k = mdma_chan_get_state(dev.chan_wr);
+	if (k != MDMA_CHAN_PENDING) {
+		ret = -12;
+		goto test_exit_6;
+	}
+
+	rumboot_printf("MDMA0 - channels check.\n");
+
+	for (i = 0; i < MEM_SEGMENT_NUM; i++) {
+		for (j = 0; j < MEM_STRING_NUM; j++) {
+			for (k = 0; k < MEM_PITCH_WIDTH; k++) {
+				void *dst_addr, *src_addr;
+
+				dst_addr = dev.dst_addr[0][i] + j * MEM_PITCH_WIDTH + k;
+				src_addr = dev.src_addr[0][i] + j * MEM_PITCH_WIDTH + k;
+#if 1
+				if ((k < MEM_STRING_LEN) && (*((char *)(dst_addr)) != *((char *)(src_addr)))) {
+					ret = -13;
+					goto test_exit_6;
+				}
+
+				if (!(k < MEM_STRING_LEN) && (*((char *)(dst_addr)) == *((char *)(src_addr)))) {
+					ret = -14;
+					goto test_exit_6;
+				}
+#else
+				rumboot_printf("src[0x%x] == 0x%x <-> dst[0x%x] == 0x%x\t",
+						src_addr, *(char *)src_addr, dst_addr, *(char *)dst_addr);
+#endif
+				dst_addr = dev.dst_addr[1][i] + j * MEM_PITCH_WIDTH + k;
+				src_addr = dev.src_addr[1][i] + j * MEM_PITCH_WIDTH + k;
+#if 1
+				if ((k < MEM_STRING_LEN) && (*((char *)(dst_addr)) != *((char *)(src_addr)))) {
+					ret = -15;
+					goto test_exit_6;
+				}
+
+				if (!(k < MEM_STRING_LEN) && (*((char *)(dst_addr)) == *((char *)(src_addr)))) {
+					ret = -16;
+					goto test_exit_6;
+				}
+#else
+				rumboot_printf("src[0x%x] == 0x%x <-> dst[0x%x] == 0x%x\n",
+						src_addr, *(char *)src_addr, dst_addr, *(char *)dst_addr);
+#endif
+			}
+		}
+	}
 
 test_exit_6:
 	rumboot_irq_table_activate(NULL);
