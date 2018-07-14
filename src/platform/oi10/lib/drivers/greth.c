@@ -10,7 +10,9 @@
 
 void greth_set_mac(uint32_t base_addr, greth_mac_t* mac)
 {
+#ifdef ETH_DEBUG
     rumboot_printf("Setting MAC: 0x%x%x\n", mac->mac_msb, mac->mac_lsb);
+#endif
     iowrite32((uint32_t) mac->mac_msb, base_addr + MAC_MSB);
     iowrite32(           mac->mac_lsb, base_addr + MAC_LSB);
 }
@@ -23,13 +25,21 @@ void greth_set_edcl_mac(uint32_t base_addr, greth_mac_t* edcl_mac)
 
 void greth_set_tx_descriptor(uint32_t const base_addr, greth_descr_t volatile * const tx_descr)
 {
+#ifdef ETH_DEBUG
     rumboot_printf("TRANSMIT_DESCR_PTR: 0x%x\n", (uint32_t)tx_descr);
+    rumboot_printf("MEM[0x%x]: 0x%x\n", (uint32_t)tx_descr, ioread32((uint32_t) tx_descr));
+    rumboot_printf("MEM[0x%x]: 0x%x\n", (uint32_t)tx_descr+4, ioread32((uint32_t) tx_descr+4));
+#endif
     iowrite32((uint32_t)tx_descr, base_addr + TRANSMIT_DESCR_PTR);
 }
 
 void greth_set_rx_descriptor(uint32_t const base_addr, greth_descr_t volatile * const rx_descr)
 {
+#ifdef ETH_DEBUG
     rumboot_printf("RECEIVER_DESCR_PTR: 0x%x\n", (uint32_t)rx_descr);
+    rumboot_printf("MEM[0x%x]: 0x%x\n", (uint32_t)rx_descr,   ioread32((uint32_t) rx_descr));
+    rumboot_printf("MEM[0x%x]: 0x%x\n", (uint32_t)rx_descr+4, ioread32((uint32_t) rx_descr+4));
+#endif
     iowrite32((uint32_t)rx_descr, base_addr + RECEIVER_DESCR_PTR);
 }
 
@@ -144,7 +154,9 @@ bool set_greth_ctrl(uint32_t base_addr, greth_ctrl_struct_t* ctrl_struct)
     else
         CLEAR_BIT(tmp, GRETH_CTRL_BM);
 
+#ifdef ETH_DEBUG
     rumboot_printf("Write to CTRL 0x%x\n", tmp);
+#endif
     iowrite32(tmp, base_addr + CTRL);
 
     return true;
@@ -162,6 +174,7 @@ bool greth_wait_transmit(uint32_t base_addr)
     uint32_t mask;
 
     rumboot_printf("Waiting transmit..\n");
+
     mask = ((1 << GRETH_STATUS_IA) |
             (1 << GRETH_STATUS_TS) |
             (1 << GRETH_STATUS_TA) |
@@ -258,7 +271,9 @@ static void prepare_tx_descriptors(uint32_t src_addr, uint32_t length, uint32_t 
 
     while(length > GRETH_MAX_DESC_DATA_LENGTH)
     {
+#ifdef ETH_DEBUG
         rumboot_printf("tx_descr[%d]: 0x%x\n", i, tx_descriptor_data[i].start_addr);
+#endif
         tx_descriptor_data[i].options = (1 << GRETH_TX_DESCR_EN) | GRETH_MAX_DESC_DATA_LENGTH;
         tx_descriptor_data[i].start_addr = src_addr;
         src_addr += GRETH_MAX_DESC_DATA_LENGTH;

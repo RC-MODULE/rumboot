@@ -14,8 +14,13 @@
 
 #include <platform/devices.h>
 #include <platform/regs/regs_greth.h>
+#include <platform/regs/regs_plb4ahb.h>
 #include <platform/common_macros/common_macros.h>
 #include <platform/arch/ppc/test_macro.h>
+#include <platform/arch/ppc/ppc_476fp_lib_c.h>
+#include <platform/test_assert.h>
+
+#define ETH_DEBUG
 
 //Transmit descriptor fields
 #define GRETH_TX_DESCR_UC                            20
