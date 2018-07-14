@@ -1,4 +1,4 @@
-SET(RUMBOOT_ARCH mpw-proto)
+SET(RUMBOOT_ARCH ppc)
 
 find_program(PACKIMAGE rumboot-packimage REQUIRED)
 find_program (PYTHON NAMES python3 python3.6 REQUIRED)
