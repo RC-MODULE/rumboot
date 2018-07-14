@@ -16,40 +16,30 @@ static inline void rumboot_arch_irq_dump_cpsr()
 
 static inline uint32_t rumboot_arch_irq_enable()
 {
-    uint32_t state;
-    asm volatile (
-        "mrs %0, cpsr\n"
-        "cpsie i\n" /* IRQ only */
-        :   "=r" (state)
-        ::  "memory"
-    );
-    return state;
+    uint32_t result;
+    asm volatile ("MRS %0, cpsr" : "=r" (result) );
+    asm volatile ("cpsie i" : : : "memory");
+    return result;
 }
 
 
 static inline uint32_t rumboot_arch_irq_disable()
 {
-    uint32_t state;
-    asm volatile (
-        "mrs %0, cpsr\n"
-        "cpsid i\n" /* IRQ only */
-        :   "=r" (state)
-        ::  "memory"
-    );
-    return state;
+    uint32_t result;
+    asm volatile ("MRS %0, cpsr" : "=r" (result) );
+    asm volatile ("cpsid i" : : : "memory");
+    return result;
+
 }
 
 static inline uint32_t rumboot_arch_irq_setstate(uint32_t new_state)
 {
-    uint32_t state;
-    asm volatile (
-        "mrs  %0, cpsr\n"
-        "msr cpsr_c, %1\n"
-        :   "=r" (state)
-        :   "r" (new_state)
-        :   "memory"
-    );
-    return state;
+    uint32_t result;
+
+    asm volatile ("MRS %0, cpsr" : "=r" (result) );
+    asm volatile ("MSR cpsr, %0" : : "r" (new_state) : "memory");
+
+    return result;
 }
 
 static inline void arm_vbar_set(uint32_t addr)
