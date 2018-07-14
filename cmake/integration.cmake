@@ -175,6 +175,8 @@ function(rumboot_load_build platform buildtype)
 
     set(RUMBOOT_PLATFORM ${platform})
     set(RUMBOOT_PLATFORM_TARGET_DIR ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/targets/)
+    set(RUMBOOT_PLATFORM_COMMON_DIR ${CMAKE_SOURCE_DIR}/src/platform/common)
+
     include(${CMAKE_SOURCE_DIR}/cmake/platforms/${platform}.cmake)
 
     RUMBOOT_PLATFORM_ADD_COMPONENTS()

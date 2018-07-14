@@ -41,19 +41,33 @@ macro(generate_product_name outvar name)
   set(${outvar} rumboot-${RUMBOOT_PLATFORM}-${RUMBOOT_BUILD_TYPE}-${name})
 endmacro()
 
-macro(add_rumboot_target_dir dir)
-  #TODO: Use RUMBOOT_PLATFORM_TARGET_DIR
-  #TODO: Search and resolve directories in common/ dir
-  file(GLOB RUMBOOT_TARGETS_C ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/targets/${dir}/*.c)
-  file(GLOB RUMBOOT_TARGETS_S ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/targets/${dir}/*.S)
-  file(GLOB RUMBOOT_TARGETS_LUA ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/${dir}/*.lua)
+macro(fetch_sources dir)
+  file(GLOB RUMBOOT_TARGETS_C ${dir}/*.c)
+  file(GLOB RUMBOOT_TARGETS_S ${dir}/*.S)
+  file(GLOB RUMBOOT_TARGETS_LUA ${dir}/*.lua)
+endmacro()
 
+macro(add_rumboot_target_dir dir)
+
+  #Fetch from current target dir
+  fetch_sources(${RUMBOOT_PLATFORM_TARGET_DIR}/${dir})
   foreach(target ${RUMBOOT_TARGETS_C} ${RUMBOOT_TARGETS_S} )
     add_rumboot_target(
         ${ARGN}
         FILES ${target}
     )
   endforeach()
+
+  #fetch from common directory
+  fetch_sources(${RUMBOOT_PLATFORM_COMMON_DIR}/../${dir})
+  foreach(target ${RUMBOOT_TARGETS_C} ${RUMBOOT_TARGETS_S} )
+    add_rumboot_target(
+        ${ARGN}
+        FILES ${target}
+    )
+  endforeach()
+
+
 endmacro()
 
 
