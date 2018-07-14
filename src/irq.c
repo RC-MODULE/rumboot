@@ -125,6 +125,11 @@ void rumboot_irq_table_activate(struct rumboot_irq_entry *tbl)
 	}
 }
 
+void rumboot_irq_swint(uint32_t irq)
+{
+	const struct rumboot_irq_controller *ctl = rumboot_irq_controller_by_irq(irq);
+	ctl->generate_swint(ctl, irq);
+}
 
 void *rumboot_irq_table_get()
 {

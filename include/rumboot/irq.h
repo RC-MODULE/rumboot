@@ -125,11 +125,19 @@ static inline uint32_t rumboot_arch_irq_setstate(uint32_t new_state)
          * @param irq id of the irq that is done being serviced
          */
     	void		(*end)(const struct rumboot_irq_controller *dev, uint32_t irq);
+
+        /**
+         * Generate a software interrupt.
+         *
+         * @param generate_swint [description]
+         */
+    	void		(*generate_swint)(const struct rumboot_irq_controller *dev, uint32_t irq);
         /**
          * Pointer for implementation-specic data
          * @return [description]
          */
     	void 		*controllerdata;
+
     };
 
     /**
@@ -164,6 +172,14 @@ static inline uint32_t rumboot_arch_irq_setstate(uint32_t new_state)
      */
      void rumboot_irq_set_handler(struct rumboot_irq_entry *tbl, int irq, uint32_t flags,
         void (*handler)(int irq, void *args), void *arg);
+
+    /**
+     * Request controller to generate an interrupt on line irq.
+     * NOTE: Not all IRQ lines may be supported by the controller driver
+     *
+     * @param irq The IRQ line to trigger
+     */
+     void rumboot_irq_swint(uint32_t irq);
 
     /**
      * Set a default IRQ handler. This will be called when an interrupt

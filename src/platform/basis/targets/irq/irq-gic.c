@@ -7,17 +7,15 @@
 #include <rumboot/io.h>
 #include <rumboot/testsuite.h>
 
+#ifndef USE_SWINT
+#define USE_SWINT 0
+#endif
+
 static void handler(int irq, void *arg)
 {
 	volatile uint32_t *done = arg;
 	(*done)++;
 	rumboot_printf("IRQ arrived, arg %x, count %d\n", arg, (*done));
-}
-
-
-static void fire()
-{
-	iowrite32(GIC_GENSWINT0, (GIC_DIST_BASE + GICD_REG_SGIR));
 }
 
 static void delay(uint32_t deadline)
@@ -39,7 +37,7 @@ static bool test_swirq_simple(uint32_t arg)
 		rumboot_printf("Iteration #%d\n", i);
 		int deadline = 10;
 
-		fire();
+		rumboot_irq_swint(USE_SWINT);;
 
 		while (deadline-- && (done == 0)) {
 			asm volatile ("nop");
@@ -56,7 +54,7 @@ static bool test_irq_cli_sei(uint32_t arg)
 	uint32_t done = 0;
 	rumboot_irq_set_handler(NULL, 0, 0, handler, (void *) &done);
 	rumboot_irq_cli();
-	fire();
+	rumboot_irq_swint(USE_SWINT);;
 	delay(arg);
 	if (done) {
 		rumboot_printf("rumboot_irq_cli() is broken\n");
@@ -82,7 +80,7 @@ static bool test_irq_atomic(uint32_t arg)
 	/* The same, but from an atomic block */
 	RUMBOOT_ATOMIC_BLOCK() {
 		rumboot_printf("Firing IRQ from atomic block, arg %x\n", &done);
-		fire();
+		rumboot_irq_swint(USE_SWINT);;
 		delay(arg);
 		if (done != 0) {
 			rumboot_printf("Atomics didn't prevent an irq ;(\n");
@@ -93,7 +91,7 @@ static bool test_irq_atomic(uint32_t arg)
 	delay(arg);
 	if (done == 0) {
 		rumboot_printf("Atomic didn't re-enable the irq ;(\n");
-		fire();
+		rumboot_irq_swint(USE_SWINT);;
 		delay(arg);
 		if (done) {
 			rumboot_printf("The IRQ looks like an implulse one\n");

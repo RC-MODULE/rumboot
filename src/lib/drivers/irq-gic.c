@@ -79,17 +79,27 @@ static void gic_configure(const struct rumboot_irq_controller *dev, int irq, uin
 	gic_dist_write(GICD_REG_CTLR, 1);
 }
 
+static void gic_swint(const struct rumboot_irq_controller *dev, uint32_t irq)
+{
+	if (irq == 0) {
+		iowrite32(GIC_GENSWINT0, (GIC_DIST_BASE + GICD_REG_SGIR));
+	} else {
+		rumboot_platform_panic("gic: Can't generate sw irq on line %d", irq);
+	}
+}
+
 static const struct rumboot_irq_controller irq_ctl = {
-    .first = 0,
-    .last  = 127,
-    .init = gic_init,
-    .begin = gic_begin,
-    .end = gic_end,
-    .configure = gic_configure
+	.first		= 0,
+	.last		= 127,
+	.init		= gic_init,
+	.begin		= gic_begin,
+	.end		= gic_end,
+	.configure	= gic_configure,
+	.generate_swint = gic_swint
 };
 
 
 void rumboot_irq_register_gic()
 {
-    rumboot_irq_register_controller(&irq_ctl);
+	rumboot_irq_register_controller(&irq_ctl);
 }
