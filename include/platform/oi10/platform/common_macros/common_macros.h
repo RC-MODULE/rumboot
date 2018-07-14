@@ -649,8 +649,5 @@
 
 #define BIT_FIELD_SIZE( begin, end )    ((end) - (begin) + 1)
 
-#define REG_FIELD( reg, index, size )\
-CAT( reg, _i ) = (index), CAT( reg, _n ) = (size)
-
 
 #endif // COMMON_MACRO_H

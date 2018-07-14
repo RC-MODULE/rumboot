@@ -11,9 +11,6 @@
 
 #define IBM_BIT_INDEX( size, index )    ( ((size)-1) - ((index)%(size)) )
 
-#define IBM_REG32_FIELD( reg, index, size )\
-REG_FIELD( reg, IBM_BIT_INDEX( 32, (index) + ((size) - 1) ), (size) )
-
 #define reg_field(field_right_bit_num_from_ppc_user_manual, value)\
     ((value) << IBM_BIT_INDEX( 32, field_right_bit_num_from_ppc_user_manual ))
 

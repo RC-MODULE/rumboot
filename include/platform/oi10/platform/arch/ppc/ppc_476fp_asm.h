@@ -7,8 +7,6 @@
 #include <platform/arch/ppc/ibm_bit_ordering_macros.h>
 
 
-#define reg_field(field_right_bit_num_from_ppc_user_manual, value)\
-    ((value) << IBM_BIT_INDEX( 32, field_right_bit_num_from_ppc_user_manual ))
 #define copy_field( reg_dest,\
                         reg_dest_field_begin,\
                         reg_dest_field_end,\
