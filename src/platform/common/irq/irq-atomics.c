@@ -102,10 +102,10 @@ static bool test_irq_atomic(uint32_t arg)
 }
 
 /* Declare the testsuite structure */
-TEST_SUITE_BEGIN(gic_irq_test, "GIC and IRQ Subsystem")
-TEST_ENTRY("GIC_GENSWINT0", 				test_swirq_simple, 	  2),
-TEST_ENTRY("ARM_CLI_SEI",   				test_irq_cli_sei,  	  4),
-TEST_ENTRY("ARM_ATOMIC",    				test_irq_atomic,   	  4),
+TEST_SUITE_BEGIN(gic_irq_test, "IRQ Subsystem")
+TEST_ENTRY("GENSWINT0", 				test_swirq_simple, 	  2),
+TEST_ENTRY("CLI_SEI",   				test_irq_cli_sei,  	  4),
+TEST_ENTRY("ATOMIC",    				test_irq_atomic,   	  4),
 TEST_SUITE_END();
 
 /* Finally, call the whole test suite */

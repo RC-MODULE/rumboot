@@ -6,6 +6,11 @@
 #include <rumboot/io.h>
 #include <stdlib.h>
 
+#ifndef USE_SWINT
+#define USE_SWINT 0
+#endif
+
+
 void handler(int irq)
 {
     rumboot_printf("IRQ default handler called\n");
@@ -25,7 +30,7 @@ int main()
     rumboot_irq_table_activate(tbl);
     #endif
 
-    asm volatile("swi #0");
+	rumboot_irq_swint(USE_SWINT);;
 
     #if 0
     rumboot_irq_table_activate(NULL);
