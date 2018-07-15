@@ -31,13 +31,13 @@ static bool test_swirq_simple(uint32_t arg)
 	int i;
 
 	rumboot_irq_sei();
-	rumboot_irq_set_handler(NULL, 0, 0, handler, (void *) &done);
+	rumboot_irq_set_handler(NULL, USE_SWINT, 0, handler, (void *) &done);
 
 	for (i = 0; i < arg; i++) {
 		rumboot_printf("Iteration #%d\n", i);
 		int deadline = 10;
 
-		rumboot_irq_swint(USE_SWINT);;
+		rumboot_irq_swint(USE_SWINT);
 
 		while (deadline-- && (done == 0)) {
 			asm volatile ("nop");
@@ -52,9 +52,9 @@ static bool test_swirq_simple(uint32_t arg)
 static bool test_irq_cli_sei(uint32_t arg)
 {
 	uint32_t done = 0;
-	rumboot_irq_set_handler(NULL, 0, 0, handler, (void *) &done);
+	rumboot_irq_set_handler(NULL, USE_SWINT, 0, handler, (void *) &done);
 	rumboot_irq_cli();
-	rumboot_irq_swint(USE_SWINT);;
+	rumboot_irq_swint(USE_SWINT);
 	delay(arg);
 	if (done) {
 		rumboot_printf("rumboot_irq_cli() is broken\n");
@@ -74,13 +74,13 @@ static bool test_irq_cli_sei(uint32_t arg)
 static bool test_irq_atomic(uint32_t arg)
 {
 	uint32_t done = 0;
-	rumboot_irq_set_handler(NULL, 0, 0, handler, (void *) &done);
+	rumboot_irq_set_handler(NULL, USE_SWINT, 0, handler, (void *) &done);
 	rumboot_irq_sei();
 
 	/* The same, but from an atomic block */
 	RUMBOOT_ATOMIC_BLOCK() {
 		rumboot_printf("Firing IRQ from atomic block, arg %x\n", &done);
-		rumboot_irq_swint(USE_SWINT);;
+		rumboot_irq_swint(USE_SWINT);
 		delay(arg);
 		if (done != 0) {
 			rumboot_printf("Atomics didn't prevent an irq ;(\n");
@@ -91,7 +91,7 @@ static bool test_irq_atomic(uint32_t arg)
 	delay(arg);
 	if (done == 0) {
 		rumboot_printf("Atomic didn't re-enable the irq ;(\n");
-		rumboot_irq_swint(USE_SWINT);;
+		rumboot_irq_swint(USE_SWINT);
 		delay(arg);
 		if (done) {
 			rumboot_printf("The IRQ looks like an implulse one\n");
@@ -122,7 +122,7 @@ int main()
 	rumboot_irq_table_activate(tbl);
 
 	/* Enable IRQ */
-	rumboot_irq_enable(0);
+	rumboot_irq_enable(USE_SWINT);
 
 	/* Allow interrupt handling */
 	rumboot_irq_sei();

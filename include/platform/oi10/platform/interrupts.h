@@ -65,7 +65,15 @@
 #define MCLFIR_INFST_INT            (65)
 #define DIT_INT0                    (119)
 #define DIT_INT1                    (118)
-
+/* MPIC128 IRQs */
+#define MPIC128_TIMER_0             (128)
+#define MPIC128_TIMER_1             (129)
+#define MPIC128_TIMER_2             (130)
+#define MPIC128_TIMER_3             (131)
+#define MPIC128_IPI_0               (132)
+#define MPIC128_IPI_1               (133)
+#define MPIC128_IPI_2               (134)
+#define MPIC128_IPI_3               (135)
 
 /**
  * @}

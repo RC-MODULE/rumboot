@@ -6,6 +6,7 @@
 #include <rumboot/irq.h>
 #include <platform/test_assert.h>
 #include <platform/devices.h>
+#include <platform/interrupts.h>
 #include <platform/devices/mpic128.h>
 #include <platform/regs/regs_mpic128.h>
 
@@ -124,6 +125,14 @@ static uint32_t mpic128_setup_ext_interrupt( uint32_t const base_address, int co
     return MPIC128_XADDR_ERR;
 }
 
+void mpic128_generate_swint( const struct rumboot_irq_controller *dev, uint32_t irq ) {
+    if( irq == MPIC128_IPI_0 ) {
+        dcr_write( DCR_MPIC128_BASE + MPIC128_IPID_PR, ( 1 << Processor0 ) );
+    } else {
+        rumboot_platform_panic( "gic: Can't generate sw irq on line %d", irq );
+    }
+}
+
 static void mpic128_configure( const struct rumboot_irq_controller *dev, int const irq, uint32_t const flags, int const enable ) {
     uint32_t const interrupt_vpaddr = mpic128_setup_ext_interrupt( DCR_MPIC128_BASE, irq, flags );
     if( (interrupt_vpaddr != MPIC128_XADDR_ERR) && enable ) mpic128_unmask_int( DCR_MPIC128_BASE + interrupt_vpaddr );
@@ -135,6 +144,7 @@ static const struct rumboot_irq_controller irq_ctl = {
     .init = mpic128_init,
     .begin = mpic128_begin,
     .end = mpic128_end,
+    .generate_swint = mpic128_generate_swint,
     .configure = mpic128_configure
 };
 
