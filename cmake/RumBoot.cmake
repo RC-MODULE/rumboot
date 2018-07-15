@@ -59,7 +59,7 @@ macro(add_rumboot_target_dir dir)
   endforeach()
 
   #fetch from common directory
-  fetch_sources(${RUMBOOT_PLATFORM_COMMON_DIR}/../${dir})
+  fetch_sources(${RUMBOOT_PLATFORM_COMMON_DIR}/${dir})
   foreach(target ${RUMBOOT_TARGETS_C} ${RUMBOOT_TARGETS_S} )
     add_rumboot_target(
         ${ARGN}
