@@ -19,6 +19,9 @@
 #include <platform/common_macros/common_macros.h>
 #include <platform/arch/ppc/ibm_bit_ordering_macros.h>
 #include <platform/devices.h>
+#include <platform/reg_access/reg_access_l2c.h>
+#include <platform/regs/regs_srammc2plb4.h>
+#include <platform/regs/regs_mpic128.h>
 
 enum
 {
@@ -85,9 +88,9 @@ static void disable_parity_checks() {
                       (1 << IBM_BIT_INDEX(32, 29)) | (1 << IBM_BIT_INDEX(32, 30)) | (1 << IBM_BIT_INDEX(32, 31)) );
     L2C0_L2PLBCFG_DCR_write( reg );
 
-    reg = srammc2plb4_dcr_read_SRAMMC2PLB4_DPC( DCR_SRAMMC2PLB4_1_BASE );
+    reg = dcr_read( SRAMMC2PLB4_DPC + DCR_SRAMMC2PLB4_1_BASE );
     CLEAR_BIT( reg, IBM_BIT_INDEX(32, 0) );
-    srammc2plb4_dcr_write_SRAMMC2PLB4_DPC( DCR_SRAMMC2PLB4_1_BASE, reg );
+    dcr_write( SRAMMC2PLB4_DPC + DCR_SRAMMC2PLB4_1_BASE, reg );
 
     //TODO add SRAM parity disable
 }
@@ -99,21 +102,21 @@ static void enable_parity_checks() {
     reg = spr_read( SPR_CCR0);
     SET_BITS_BY_MASK( reg,
                       (1 << CTRL_CCR0_PRE_i) | (1 << CTRL_CCR0_CRPE_i) );
-    SPR_CCR0_write( reg );
+    spr_write( SPR_CCR0, reg );
 
     reg = spr_read( SPR_CCR1 );
     CLEAR_BITS_BY_MASK( reg,
                         (1 << CTRL_CCR1_DPC_i) );
-    SPR_CCR1_write( reg );
+    spr_write( SPR_CCR1, reg );
 
     reg = L2C0_L2PLBCFG_DCR_read();
     CLEAR_BITS_BY_MASK( reg,
                         (1 << IBM_BIT_INDEX(32, 29)) | (1 << IBM_BIT_INDEX(32, 30)) | (1 << IBM_BIT_INDEX(32, 31)) );
     L2C0_L2PLBCFG_DCR_write( reg );
 
-    reg = srammc2plb4_dcr_read_SRAMMC2PLB4_DPC( DCR_SRAMMC2PLB4_1_BASE );
+    reg = dcr_read( SRAMMC2PLB4_DPC + DCR_SRAMMC2PLB4_1_BASE );
     SET_BIT( reg, IBM_BIT_INDEX(32, 0) );
-    srammc2plb4_dcr_write_SRAMMC2PLB4_DPC( DCR_SRAMMC2PLB4_1_BASE, reg );
+    dcr_write( SRAMMC2PLB4_DPC + DCR_SRAMMC2PLB4_1_BASE, reg );
 
     //TODO add SRAM parity enable
 }
@@ -130,7 +133,7 @@ void ppc0_w_pe_handler() {
                             | (0b1 << IBM_BIT_INDEX(32, 30))
                             | (0b1 << IBM_BIT_INDEX(32, 31)) );
 
-    SPR_MCSR_C_write( 0xFFFFFFFF );
+    spr_write( SPR_MCSR_C, 0xFFFFFFFF );
 }
 
 void l2c0_w_pe_handler() {
@@ -145,7 +148,7 @@ void l2c0_w_pe_handler() {
     MPIC128_dcr_read_MPIC128x_NCIAR0( DCR_MPIC128_BASE );
     MPIC128_dcr_write_MPIC128x_NCEOI0( DCR_MPIC128_BASE, 0x00000000 );
 
-    SPR_ESR_write( 0x00000000 );
+    spr_write( SPR_ESR, 0x00000000 );
 }
 
 void p6bc_w_pe_handler() {
@@ -158,7 +161,7 @@ void p6bc_w_pe_handler() {
     MPIC128_dcr_read_MPIC128x_NCIAR0( DCR_MPIC128_BASE );
     MPIC128_dcr_write_MPIC128x_NCEOI0( DCR_MPIC128_BASE, 0x00000000 );
 
-    SPR_ESR_write( 0x00000000 );
+    spr_write( SPR_ESR, 0x00000000 );
 }
 
 void plb6plb4_w_pe_handler() {
@@ -171,7 +174,7 @@ void plb6plb4_w_pe_handler() {
     MPIC128_dcr_read_MPIC128x_NCIAR0( DCR_MPIC128_BASE );
     MPIC128_dcr_write_MPIC128x_NCEOI0( DCR_MPIC128_BASE, 0x00000000 );
 
-    SPR_ESR_write( 0x00000000 );
+    spr_write( SPR_ESR, 0x00000000 );
 }
 
 void ppc0_r_pe_handler() {
@@ -180,7 +183,7 @@ void ppc0_r_pe_handler() {
     TEST_ASSERT( ADDR[CHECK_PARITY_PPC0_R] == TEST_VALUE, "Test value read error" );
     ADDR[CHECK_PARITY_PPC0_R] = HANDLER_CALLED;
 
-    SPR_MCSR_C_write( 0xFFFFFFFF );
+    spr_write( SPR_MCSR_C, 0xFFFFFFFF );
 }
 
 void l2c0_r_pe_handler() {
@@ -191,7 +194,7 @@ void l2c0_r_pe_handler() {
 
     L2C0_L2PLBSTAT1_DCR_write( 0xFFFFFFFF );
 
-    SPR_MCSR_C_write( 0xFFFFFFFF );
+    spr_write( SPR_MCSR_C, 0xFFFFFFFF );
 }
 
 void p6bc_r_pe_handler() {
@@ -202,7 +205,7 @@ void p6bc_r_pe_handler() {
 
     L2C0_L2PLBSTAT1_DCR_write( 0xFFFFFFFF );
 
-    SPR_MCSR_C_write( 0xFFFFFFFF );
+    spr_write( SPR_MCSR_C, 0xFFFFFFFF );
 }
 
 void plb6plb4_r_pe_handler() {
@@ -215,7 +218,7 @@ void plb6plb4_r_pe_handler() {
     MPIC128_dcr_read_MPIC128x_NCIAR0( DCR_MPIC128_BASE );
     MPIC128_dcr_write_MPIC128x_NCEOI0( DCR_MPIC128_BASE, 0x00000000 );
 
-    SPR_ESR_write( 0x00000000 );
+    spr_write( SPR_ESR, 0x00000000 );
 }
 
 void srammc2plb4_r_pe_handler() {
@@ -226,7 +229,7 @@ void srammc2plb4_r_pe_handler() {
 
     L2C0_L2PLBSTAT1_DCR_write( 0xFFFFFFFF );
 
-    SPR_MCSR_C_write( 0xFFFFFFFF );
+    spr_write( SPR_MCSR_C, 0xFFFFFFFF );
 }
 
 
@@ -248,7 +251,7 @@ static void check_ppc0_w_pe_detection() {
     irq_set_handler(irq_source_Machine_check, ppc0_w_pe_handler);
 
     L2C0_L2CPUSTAT_DCR_write( 0xFFFFFFFF );
-    SPR_MCSR_C_write( 0xFFFFFFFF );
+    spr_write( SPR_MCSR_C, 0xFFFFFFFF );
     L2C0_L2CPUMCKEN_DCR_write( (0b1 << IBM_BIT_INDEX(32, 28))
                              | (0b1 << IBM_BIT_INDEX(32, 29))
                              | (0b1 << IBM_BIT_INDEX(32, 30))
@@ -285,7 +288,7 @@ static void check_l2c0_w_pe_detection() {
     irq_set_handler(irq_source_External_input, l2c0_w_pe_handler);
 
     mpic128_setup_ext_interrupt( DCR_MPIC128_BASE, 18, MPIC128_PRIOR_1, int_sense_level, int_pol_pos, Processor0 );
-    SPR_ESR_write( 0x00000000 );
+    spr_write( SPR_ESR, 0x00000000 );
     msr_write( (0b0 << ITRPT_XSR_WE_i)
              | (0b0 << ITRPT_XSR_CE_i)
              | (0b1 << ITRPT_XSR_EE_i)
@@ -316,7 +319,7 @@ static void check_p6bc_w_pe_detection() {
     irq_set_handler(irq_source_External_input, p6bc_w_pe_handler);
 
     mpic128_setup_ext_interrupt( DCR_MPIC128_BASE, 18, MPIC128_PRIOR_1, int_sense_level, int_pol_pos, Processor0 );
-    SPR_ESR_write( 0x00000000 );
+    spr_write( SPR_ESR, 0x00000000 );
     msr_write( (0b0 << ITRPT_XSR_WE_i)
              | (0b0 << ITRPT_XSR_CE_i)
              | (0b1 << ITRPT_XSR_EE_i)
@@ -347,7 +350,7 @@ static void check_p6bc_w_pe_detection() {
     irq_set_handler(irq_source_External_input, plb6plb4_w_pe_handler);
 
     mpic128_setup_ext_interrupt( DCR_MPIC128_BASE, 18, MPIC128_PRIOR_1, int_sense_level, int_pol_pos, Processor0 );
-    SPR_ESR_write( 0x00000000 );
+    spr_write( SPR_ESR, 0x00000000 );
     msr_write( (0b0 << ITRPT_XSR_WE_i)
              | (0b0 << ITRPT_XSR_CE_i)
              | (0b1 << ITRPT_XSR_EE_i)
@@ -377,7 +380,7 @@ static void check_p6bc_w_pe_detection() {
 
     irq_set_handler(irq_source_Machine_check, ppc0_r_pe_handler);
 
-    SPR_MCSR_C_write( 0xFFFFFFFF );
+    spr_write( SPR_MCSR_C, 0xFFFFFFFF );
     msr_write( (0b0 << ITRPT_XSR_WE_i)
              | (0b1 << ITRPT_XSR_CE_i)
              | (0b1 << ITRPT_XSR_EE_i)
