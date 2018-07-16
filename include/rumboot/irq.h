@@ -21,7 +21,9 @@
 
 #ifndef __ASSEMBLER__
 
-#ifdef __arm__
+#if defined( __arm__ )
+#include <arch/irq_macros.h>
+#elif defined( __PPC__ )
 #include <arch/irq_macros.h>
 #else
     /* stubs */

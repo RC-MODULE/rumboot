@@ -27,7 +27,7 @@ void sp804_enable( uint32_t base_addr, int index)
 }
 
 
-void sp804_stop( int base_addr, int index)
+void sp804_stop( uint32_t base_addr, int index)
 {
     int cntrl ;
     int control_reg;
@@ -44,7 +44,7 @@ void sp804_stop( int base_addr, int index)
 }
 
 
-int sp804_get_value( int base_addr, int index)
+int sp804_get_value( uint32_t base_addr, int index)
 {
     int value_reg;
     if (index){
@@ -58,7 +58,7 @@ int sp804_get_value( int base_addr, int index)
 
 
 
-void sp804_clrint( int base_addr, int index)
+void sp804_clrint( uint32_t base_addr, int index)
 {
     int int_clr_reg;
     if (index){

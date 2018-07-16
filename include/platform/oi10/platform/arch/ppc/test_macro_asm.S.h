@@ -26,6 +26,23 @@ rumboot_putstring       "Check \sName ... \t"
 #endif
 .endm
 
+.macro set_cr crF, crC
+    crorc   \crF*4+\crC, \crF*4+\crC, \crF*4+\crC
+.endm
+
+.macro clr_cr crF, crC
+    crandc   \crF*4+\crC, \crF*4+\crC, \crF*4+\crC
+.endm
+
+.macro inv_cr crF, crC
+    crnor   \crF*4+\crC, \crF*4+\crC, \crF*4+\crC
+.endm
+
+.macro load_spr tmp_reg, spr_reg, spr_val
+    load_const  \tmp_reg,   \spr_val
+    mtspr       \spr_reg,   \tmp_reg
+.endm
+
 #define RESULT_OK       0x00
 #define RESULT_ERROR    0x01
 
