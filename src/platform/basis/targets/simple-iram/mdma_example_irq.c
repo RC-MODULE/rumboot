@@ -181,7 +181,8 @@ int main()
 
 	rumboot_printf("MDMA0 - allocate memory.\n");
 
-	dst_addr = rumboot_malloc(2 * MEM_SEGMENT_NUM * MEM_STRING_NUM * MEM_PITCH_WIDTH);
+	dst_addr = rumboot_malloc_from_heap_aligned(0, 2 * MEM_SEGMENT_NUM * MEM_STRING_NUM * MEM_PITCH_WIDTH,
+							MDMA_BURST_WIDTH8);
 	if (!dst_addr) {
 		ret = -4;
 		goto test_exit_2;
@@ -203,7 +204,8 @@ int main()
 		}
 	}
 
-	src_addr = rumboot_malloc(2 * MEM_SEGMENT_NUM * MEM_STRING_NUM * MEM_PITCH_WIDTH);
+	src_addr = rumboot_malloc_from_heap_aligned(1, 2 * MEM_SEGMENT_NUM * MEM_STRING_NUM * MEM_PITCH_WIDTH,
+							MDMA_BURST_WIDTH8);
 	if (!src_addr) {
 		ret = -6;
 		goto test_exit_3;
@@ -273,6 +275,8 @@ int main()
 			udelay(1);			
 		}
 	}
+
+	mdma_chan_wait_trans_end(dev.chan_wr, 100);
 
 	rumboot_printf("MDMA0 - channels end.\n");
 

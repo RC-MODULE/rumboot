@@ -158,19 +158,19 @@ int main()
 	buf_size = MEM_SEGMENT_NUM *
 		((MEM_SEGMENT_SZ / MDMA_BURST_WIDTH8) * MDMA_BURST_WIDTH8 + MDMA_BURST_WIDTH8);
 
-	first_addr = rumboot_malloc_from_heap(1, buf_size);
+	first_addr = rumboot_malloc_from_heap_aligned(0, buf_size, MDMA_BURST_WIDTH8);
 	if (!first_addr) {
 		ret = -1;
 		goto test_exit_1;
 	}
 
-	second_addr = rumboot_malloc_from_heap(1, buf_size);
+	second_addr = rumboot_malloc_from_heap_aligned(1, buf_size, MDMA_BURST_WIDTH8);
 	if (!second_addr) {
 		ret = -2;
 		goto test_exit_2;
 	}
 
-	third_addr = rumboot_malloc_from_heap(1, buf_size);
+	third_addr = rumboot_malloc_from_heap_aligned(1, buf_size, MDMA_BURST_WIDTH8);
 	if (!third_addr) {
 		ret = -3;
 		goto test_exit_3;

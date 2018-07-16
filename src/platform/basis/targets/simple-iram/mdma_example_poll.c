@@ -67,7 +67,7 @@ int main()
 	buf_size = MEM_SEGMENT_NUM *
 		((MEM_SEGMENT_SZ / MDMA_BURST_WIDTH8) * MDMA_BURST_WIDTH8 + MDMA_BURST_WIDTH8);
 
-	dst_addr = rumboot_malloc_from_heap(0, buf_size);
+	dst_addr = rumboot_malloc_from_heap_aligned(0, buf_size, MDMA_BURST_WIDTH8);
 	if (!dst_addr) {
 		ret = -4;
 		goto test_exit_2;
@@ -76,7 +76,7 @@ int main()
 	for (i = 0; i < buf_size; i++)
 		*((char *)(dst_addr + i)) = 0;
 
-	src_addr = rumboot_malloc_from_heap(1, buf_size);
+	src_addr = rumboot_malloc_from_heap_aligned(1, buf_size, MDMA_BURST_WIDTH8);
 	if (!src_addr) {
 		ret = -5;
 		goto test_exit_3;

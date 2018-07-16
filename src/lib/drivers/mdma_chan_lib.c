@@ -210,7 +210,9 @@ int mdma_trans_add_group(struct mdma_chan *chan, void *mem_addr, size_t mem_size
 	int desc_align, gap_size;
 	int i, num_node;
 	size_t size_limit;
+#if 0
 	uint64_t last_addr;
+#endif
 	int ret = 0;
 
 	chan_print_dbg(1, "start -->");
@@ -246,13 +248,13 @@ int mdma_trans_add_group(struct mdma_chan *chan, void *mem_addr, size_t mem_size
 		ret = -5;
 		goto trans_add_group_exit;
 	}
-		
+#if 0
 	last_addr = (size_t)mem_addr + mem_size;
 	if ((last_addr - 1) > UINT32_MAX) {
 		ret = -6;
 		goto trans_add_group_exit;
 	}
-
+#endif
 	if (((size_t)mem_addr) & (cfg->burst_width - 1)) {
 		ret = -7;
 		goto trans_add_group_exit;
@@ -327,13 +329,13 @@ int mdma_trans_add_group(struct mdma_chan *chan, void *mem_addr, size_t mem_size
 			ret = -16;
 			goto trans_add_group_exit;
 		}
-		
+#if 0
 		last_addr = (size_t)mem_addr + cfg->pitch_width * num_node;
 		if ((last_addr - 1) > UINT32_MAX) {
 			ret = -17;
 			goto trans_add_group_exit;
 		}
-
+#endif
 		if (cfg->add_info) {
 			if (!(num_node < MDMA_LENGTH_LIMIT(0)))
 				size_limit = (MDMA_LENGTH_LIMIT(0) - 1) * cfg->str_length;
@@ -960,12 +962,8 @@ static int chan_check_event(struct mdma_chan *chan, uint32_t status)
 		mdma_chan_write32(0, (size_t)(&chan->regs->activ_events));
 		chan->state = MDMA_CHAN_RUNNING;
 
-		if (event_active & (1 << chan->cfg.event_prior))
-#if 0
+		if (event_active & ~(1 << chan->cfg.event_prior))
 			MDMA_CHAN_BUG("channel(0x%x) - unknown event", chan);
-#else
-			rumboot_printf("channel(0x%x) - unknown event\n", chan);
-#endif
 
 		ret |= 1;
 	}
@@ -974,12 +972,8 @@ static int chan_check_event(struct mdma_chan *chan, uint32_t status)
 		event_ignore = mdma_chan_read32((size_t)(&chan->regs->ignore_events));
 		chan->trans->ignore_event = true;
 
-		if (!(event_ignore & (1 << chan->cfg.event_prior)))
-#if 0
+		if (event_ignore & ~(1 << chan->cfg.event_prior))
 			MDMA_CHAN_BUG("channel(0x%x) - unknown event", chan);
-#else
-			rumboot_printf("channel(0x%x) - unknown event\n", chan);
-#endif
 
 		ret |= 2;
 	}
@@ -1696,7 +1690,9 @@ get_node_exit:
 int mdma_node_rebase(struct mdma_node *node, struct mdma_cfg *cfg,
 			void *mem_addr, size_t mem_size)
 {
+#if 0
 	uint64_t last_addr;
+#endif
 	int ret = 0;
 
 	chan_print_dbg(1, "start -->");
@@ -1710,13 +1706,13 @@ int mdma_node_rebase(struct mdma_node *node, struct mdma_cfg *cfg,
 		ret = -2;
 		goto node_rebase_exit;
 	}
-
+#if 0
 	last_addr = (size_t)mem_addr + mem_size;
 	if ((last_addr - 1) > UINT32_MAX) {
 		ret = -3;
 		goto node_rebase_exit;
 	}
-
+#endif
 	if (((size_t)mem_addr) & (cfg->burst_width - 1)) {
 		ret = -4;
 		goto node_rebase_exit;
@@ -1742,13 +1738,13 @@ int mdma_node_rebase(struct mdma_node *node, struct mdma_cfg *cfg,
 			ret = -7;
 			goto node_rebase_exit;
 		}
-
+#if 0
 		last_addr = (size_t)mem_addr + cfg->pitch_width * num_str;
 		if ((last_addr - 1) > UINT32_MAX) {
 			ret = -8;
 			goto node_rebase_exit;
 		}
-
+#endif
 		if (cfg->add_info && !(num_str < MDMA_LENGTH_LIMIT(0))) {
 			ret = -9;
 			goto node_rebase_exit;
