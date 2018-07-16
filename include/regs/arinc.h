@@ -80,14 +80,14 @@
 #define awprot				0x0
 #define awcache				0x0
 
-#define tx_freq_100			0xe30141f2 //freq =100KHz
+#define tx_freq_100			0xe30081f2 //freq =100KHz
 #define rx_freq_100			0xe01f41f2 //freq =100KHz
 
 #define tx_freq_50			0xe30083e6 //freq =50KHz
 #define rx_freq_50			0xe01f43e6 //freq =50KHz
 
-#define tx_freq_12_5		0xe30083e6 //freq =12,5KHz
-#define rx_freq_12_5		0xe01f43e6 //freq =12,5KHz
+#define tx_freq_12_5		0xe3008f9e //freq =12,5KHz
+#define rx_freq_12_5		0xe01f4f9e //freq =12,5KHz
 
 
 
