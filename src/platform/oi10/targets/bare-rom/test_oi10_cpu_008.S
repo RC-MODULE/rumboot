@@ -1,4 +1,6 @@
 
+#define RUMBOOT_ASSERT_WARN_ONLY
+
 #include <platform/ppc470s/mmu.S.h>
 #include <platform/test_event_asm.h>
 #include <platform/test_assert.S.h>
@@ -12,8 +14,6 @@
 #define P6BCA(OFFSET)				(DCR_PLB6_BC_BASE + (OFFSET))
 #define SGD_NON_SYNTH_VALUE         0xFFFFFFF0
 
-#define eq6							cr6*4+eq
-#define eq7							cr7*4+eq
 
 #define CONST_SPR_CCR0    (0b0    << CTRL_CCR0_ITE_i    )\
 						| (0b1    << CTRL_CCR0_PRE_i    )\
@@ -87,7 +87,6 @@
     /* read */
     mfdcrx		\rR,	\rA
     cmpw cr7,	\rR,	\rE
-    crand		eq6,	eq6,	eq7
     TEST_ASSERT(eq,cr7,"DCR error: In \sName was expected value \vExp (address: \vAddr) ")
 .endm
 
@@ -96,8 +95,10 @@
     load_const	\rA,	\vAddr
     mfdcrx		\rR,	\rA
     cmpw cr7,	\rR,	\rE
-    crand		eq6,	eq6,	eq7
     TEST_ASSERT(eq,cr7,"DCRE: expected \sName = \vExp (address: \vAddr) ")
+    rumboot_putstring   "\sName: "
+    rumboot_puthex      \rA
+    rumboot_puthex      \rR
 .endm
 
 
@@ -380,8 +381,7 @@ stop:
 test_cpu_008:
 	rumboot_putstring "start testing values...\n"
 
-	load_const	r21,	0x00000000
-	cmpwi cr6,	r21,	0x0000		/* General test status in cr6 */
+    set_cr    cr6,  eq  /* General test status in cr6 */
 
     /* check all default values */
     chk_value CVR3,	P6BCA(PLB6BC_CR0),			PLB6_BC_CR0_VALUE,			"PLB6BC_CR0         "
@@ -416,7 +416,6 @@ loop_1_low:
 	mtdcrx		r20,	r21
 	mfdcrx		r22,	r20
 	cmpw cr7,	r21,	r22
-	crand		eq6,	eq6,	eq7
 	TEST_ASSERT(eq, cr7, "PLB6 DCRDATA: Running one error (loop)")
 	cmpw cr0,	r21,	r24
 	/* beq running_1_hi */
@@ -431,7 +430,6 @@ running_0_low:
     mtdcrx		r20,	r21
     mfdcrx		r22,	r20
     cmpw cr7,	r21,	r22
-    crand		eq6,	eq6,	eq7
     TEST_ASSERT(eq,cr7,"PLB6 DCRDATA: Running zero error (init)")
     load_const	r21,	0xFFFFFFE0		/* begin val  */
     load_const	r24,	0x7FFFFFF0		/* finish val */
@@ -439,7 +437,6 @@ loop_0_low:
     mtdcrx		r20,	r21
     mfdcrx		r22,	r20
     cmpw cr7,	r21,	r22
-    crand		eq6,	eq6,	eq7
     TEST_ASSERT(eq,cr7,"PLB6 DCRDATA: Running zero error (loop)")
 loop_0_low_ok:
     cmpw cr0,	r21,	r24
@@ -461,7 +458,6 @@ loop_1_high:
 	mtdcrx		r20,	r26
 	mfdcrx		r22,	r20
 	cmpw cr7,	r26,	r22
-	crand		eq6,	eq6,	eq7
 	TEST_ASSERT(eq, cr7, "PLB6 DCRDATA: Running one (high) error (loop)")
 	cmpw cr0,	r21,	r24
 	/* beq running_1_hi */
@@ -476,7 +472,6 @@ running_0_high:
     mtdcrx		r20,	r21
     mfdcrx		r22,	r20
     cmpw cr7,	r21,	r22
-    crand		eq6,	eq6,	eq7
     TEST_ASSERT(eq,cr7,"PLB6 DCRDATA: Running zero (high) error (init)")
     load_const	r21,	0x0000000E		/* begin val  */
     load_const	r24,	0x00000007		/* finish val */
@@ -485,7 +480,6 @@ loop_0_high:
 	mtdcrx		r20,	r26
     mfdcrx		r22,	r20
     cmpw cr7,	r26,	r22
-    crand		eq6,	eq6,	eq7
     TEST_ASSERT(eq,cr7,"PLB6 DCRDATA: Running zero (high) error (loop)")
     cmpw cr0,	r21,	r24
     /* beq running_0_hi */
