@@ -23,18 +23,14 @@ int main()
     rumboot_irq_set_default_handler(handler);
     rumboot_printf("Firing IRQ\n");
 
-    #if 0
     struct rumboot_irq_entry *tbl = rumboot_irq_create(NULL);
-    rumboot_irq_set_handler(tbl, 0, 0, handler, (void *)&done);
     rumboot_irq_enable(0);
     rumboot_irq_table_activate(tbl);
-    #endif
 
 	rumboot_irq_swint(USE_SWINT);;
 
-    #if 0
     rumboot_irq_table_activate(NULL);
     rumboot_irq_free(tbl);
-    #endif
+
     return 1;
 }
