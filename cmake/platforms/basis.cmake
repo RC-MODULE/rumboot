@@ -170,7 +170,46 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       CONFIGURATION IRAM_MIRROR
       PREFIX arinc-mirror
     )
-
+	add_rumboot_target_dir(arinc/freq/
+      CONFIGURATION IRAM
+      FILES arinc/arinc_loopback_16_freq.c	  
+      CFLAGS -DTX_FREQ=tx_freq_100 -DRX_FREQ=rx_freq_100  
+      PREFIX arinc_freq_100
+    )
+	add_rumboot_target_dir(arinc/freq/
+      CONFIGURATION IRAM
+      FILES arinc/arinc_loopback_16_freq.c	  
+      CFLAGS -DTX_FREQ=tx_freq_50 -DRX_FREQ=rx_freq_50  
+      PREFIX arinc_freq_50
+    )
+	
+	add_rumboot_target_dir(arinc/freq/
+      CONFIGURATION IRAM
+      FILES arinc/arinc_loopback_16_freq.c	  
+      CFLAGS -DTX_FREQ=tx_freq_12_5 -DRX_FREQ=rx_freq_12_5  
+      PREFIX arinc_freq_12_5
+    )
+	add_rumboot_target_dir(arinc/freq
+      CONFIGURATION IRAM_MIRROR
+	  FILES arinc/arinc_loopback_16_freq.c	  
+      CFLAGS -DTX_FREQ=tx_freq_12_5 -DRX_FREQ=rx_freq_12_5
+      PREFIX arinc-mirror_freq_12_5
+    )
+	
+	add_rumboot_target_dir(arinc/freq
+      CONFIGURATION IRAM_MIRROR
+	  FILES arinc/arinc_loopback_16_freq.c	  
+      CFLAGS -DTX_FREQ=tx_freq_50 -DRX_FREQ=rx_freq_50
+      PREFIX arinc-mirror_freq_50
+    )
+	
+	add_rumboot_target_dir(arinc/freq
+      CONFIGURATION IRAM_MIRROR
+	  FILES arinc/arinc_loopback_16_freq.c	  
+      CFLAGS -DTX_FREQ=tx_freq_100 -DRX_FREQ=rx_freq_100
+      PREFIX arinc-mirror_freq_100
+    )
+	
     add_rumboot_target_dir(common/spl-stubs/
       CONFIGURATION IRAM
       PREFIX spl
