@@ -78,10 +78,11 @@ void plb6bc_init( uint32_t const base_addr,  plb6bc_cfg const *const cfg ) {
     };
     plb6bc_clear_status( base_addr, &clear_all_status );
 
-    reg_value   =   0x00000000;
-    #define PLB6BC_MASTERi_PRIORITY_SET( z, i, dummy )\
-                |   (cfg->priority.CAT( master,i ) << CAT(CAT( PLB6BC_PRI_M,i),P_i ))
-    //REPEAT( PLB6BC_MASTER_N, PLB6BC_MASTERi_PRIORITY_SET, dummy );
+    reg_value   =   0x00000000
+    #define PLB6BC_MASTERi_PRIORITY_SET( i, dummy )\
+               |   (cfg->priority.CAT( master,i ) << CAT(CAT( PLB6BC_PRI_M,i),P_i ))
+    REPEAT( PLB6BC_MASTER_N, PLB6BC_MASTERi_PRIORITY_SET, dummy );
+
     plb6bc_dcr_write_PLB6BC_PRI( base_addr, reg_value );
     TEST_ASSERT( plb6bc_dcr_read_PLB6BC_PRI( base_addr ) == reg_value, "Register value is not updated" );
 
@@ -90,11 +91,17 @@ void plb6bc_init( uint32_t const base_addr,  plb6bc_cfg const *const cfg ) {
     TEST_ASSERT( plb6bc_dcr_read_PLB6BC_PAAM_WIN_EXT( base_addr ) == reg_value, "Register value is not updated" );
 
     #define PLB6BC_SEGMENTi_ADDR_SET( z, i, dummy )\
-    reg_value   =   (cfg->CAT(BOOST_PP_CAT( segment,i),_addr ) << PLB6BC_SGDi_i);\
+    reg_value   =   (cfg->CAT(CAT( segment,i),_addr ) << PLB6BC_SGDi_i);\
     CAT( plb6bc_dcr_write_PLB6BC_SGD,i )( base_addr, reg_value );\
-    TEST_ASSERT( BOOST_PP_CAT( plb6bc_dcr_read_PLB6BC_SGD,i )( base_addr ) == reg_value, "Register value is not updated" );
+    TEST_ASSERT( CAT( plb6bc_dcr_read_PLB6BC_SGD,i )( base_addr ) == reg_value, "Register value is not updated" );
 
-    //BOOST_PP_REPEAT_FROM_TO( 1, PLB6BC_SEGMENT_N, PLB6BC_SEGMENTi_ADDR_SET, dummy )
+    PLB6BC_SEGMENTi_ADDR_SET (z, 1 , dummy);
+    PLB6BC_SEGMENTi_ADDR_SET (z, 2 , dummy);
+    PLB6BC_SEGMENTi_ADDR_SET (z, 3 , dummy);
+    PLB6BC_SEGMENTi_ADDR_SET (z, 4 , dummy);
+    PLB6BC_SEGMENTi_ADDR_SET (z, 5 , dummy);
+    PLB6BC_SEGMENTi_ADDR_SET (z, 6 , dummy);
+    PLB6BC_SEGMENTi_ADDR_SET (z, 7 , dummy);
 
     reg_value   =   (cfg->hang_count_pulse_period << PLB6BC_HCPP_i);
     plb6bc_dcr_write_PLB6BC_HCPP( base_addr, reg_value );
