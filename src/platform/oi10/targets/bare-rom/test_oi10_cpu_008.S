@@ -96,9 +96,6 @@
     mfdcrx		\rR,	\rA
     cmpw cr7,	\rR,	\rE
     TEST_ASSERT(eq,cr7,"DCRE: expected \sName = \vExp (address: \vAddr) ")
-    rumboot_putstring   "\sName: "
-    rumboot_puthex      \rA
-    rumboot_puthex      \rR
 .endm
 
 
