@@ -1,6 +1,4 @@
 
-#define RUMBOOT_ASSERT_WARN_ONLY
-
 #include <platform/ppc470s/mmu.S.h>
 #include <platform/test_event_asm.h>
 #include <platform/test_assert.S.h>
