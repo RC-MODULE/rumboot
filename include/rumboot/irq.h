@@ -23,7 +23,7 @@
 
 #if defined( __arm__ )
 #include <arch/irq_macros.h>
-#elif defined( __PPC__ )
+#elif defined( __PPC__ ) && !defined(RUMBOOT_NO_IRQ_MACROS)
 #include <arch/irq_macros.h>
 #else
     /* stubs */

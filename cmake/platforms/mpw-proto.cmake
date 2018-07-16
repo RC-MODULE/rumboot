@@ -5,17 +5,17 @@ find_program (PYTHON NAMES python3 python3.6 REQUIRED)
 
 file(GLOB PLATFORM_SOURCES
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/*.c
-    ${CMAKE_SOURCE_DIR}/src/lib/drivers/irq-dummy.c
+    ${CMAKE_SOURCE_DIR}/src/lib/drivers/irq-mpic128.c
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/*.S
 )
 
-#Flags for Power PC
 macro(RUMBOOT_PLATFORM_SET_COMPILER_FLAGS)
-    set(RUMBOOT_COMMON_FLAGS "-mcpu=476fp -gdwarf-2 -m32 -ffreestanding -O0 -mbig-endian -fno-zero-initialized-in-bss")
+    set(RUMBOOT_COMMON_FLAGS "-DRUMBOOT_NO_IRQ_MACROS -mcpu=476fp -gdwarf-2 -m32 -ffreestanding -O0 -mbig-endian -fno-zero-initialized-in-bss")
     set(CMAKE_C_FLAGS "${RUMBOOT_COMMON_FLAGS} -mstrict-align -Wall -fdata-sections -ffunction-sections ")
     set(CMAKE_ASM_FLAGS ${RUMBOOT_COMMON_FLAGS})
     set(CMAKE_EXE_LINKER_FLAGS "-fno-zero-initialized-in-bss -e boot_image_entry0 -Wl,--oformat=elf32-powerpc -Ttext 0x00040018 -static -nostartfiles -Wl,--gc-sections")
     set(CMAKE_DUMP_FLAGS -S -EB -M476,32)
+
 endmacro()
 
 rumboot_add_configuration(
