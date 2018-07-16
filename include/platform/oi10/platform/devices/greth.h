@@ -54,6 +54,33 @@
 #define GRETH_RX_DESCR_EN                            11
 //bits 10:0 LENGTH
 
+//ETH PHY regs from environment
+#define ETH_PHY_CTRL       0
+#define ETH_PHY_STATUS     1
+#define ETH_PHY_ID0        2
+#define ETH_PHY_ID1        3
+#define ETH_PHY_ANEGADV    4
+#define ETH_PHY_ANEGLP     5
+#define ETH_PHY_ANEGXP     6
+#define ETH_PHY_ANEGNPTX   7
+#define ETH_PHY_ANEGNPLP   8
+#define ETH_PHY_MSTSLVCTRL 9
+#define ETH_PHY_MSTSLVSTAT 10
+#define ETH_PHY_EXTSTATUS  15
+
+#define ETH_PHY_CTRL_DEFAULT       0x7100
+#define ETH_PHY_STATUS_DEFAULT     0x7E29
+#define ETH_PHY_ID0_DEFAULT        0xBBCD
+#define ETH_PHY_ID1_DEFAULT        0x9C83
+#define ETH_PHY_ANEGADV_DEFAULT    0x01E1
+#define ETH_PHY_ANEGLP_DEFAULT     0x01E1
+#define ETH_PHY_ANEGXP_DEFAULT     0x00
+#define ETH_PHY_ANEGNPTX_DEFAULT   0x2001
+#define ETH_PHY_ANEGNPLP_DEFAULT   0x2001
+#define ETH_PHY_MSTSLVCTRL_DEFAULT 0x00
+#define ETH_PHY_MSTSLVSTAT_DEFAULT 0x7000
+#define ETH_PHY_EXTSTATUS_DEFAULT  0x0
+
 
 typedef enum greth_speed
 {
