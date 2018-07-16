@@ -10,9 +10,9 @@
 #include <platform/trace.h>
 #include <platform/test_event_c.h>
 #include <platform/arch/ppc/ppc_476fp_lib_c.h>
-#include <platform/regs/em2/regs_plb6mcif2.h>
-#include <platform/regs/em2/regs_mclfir.h>
-#include <platform/regs/em2/regs_emi.h>
+#include <platform/regs/regs_plb6mcif2.h>
+#include <platform/regs/regs_mclfir.h>
+#include <platform/regs/regs_emi.h>
 
 static int32_t check_array32[] = {
         0xFFFFFFFF,
