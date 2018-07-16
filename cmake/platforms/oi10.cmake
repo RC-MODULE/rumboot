@@ -88,6 +88,24 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         FEATURES STUB
     )
 
+
+    add_rumboot_target(
+        CONFIGURATION ROM
+        CFLAGS -DUSE_SWINT=132
+        FILES common/irq/irq-atomics.c
+        PREFIX "irq-rom"
+        TESTGROUP short
+    )
+
+    add_rumboot_target(
+        CONFIGURATION ROM
+        CFLAGS -DUSE_SWINT=132
+        FILES common/irq/irq-defhandler.c
+        PREFIX "irq-rom"
+        TESTGROUP short
+    )
+
+
     add_rumboot_target(
         CONFIGURATION IRAM
         CFLAGS -DUSE_SWINT=132
