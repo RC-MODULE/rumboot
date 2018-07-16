@@ -3,7 +3,7 @@
 // 
 //  Test includes:
 //  - 16 ARINC429 transmitters and receivers delivery through the external loopback
-//	- 16  receivers accept short arrays awithout checking labels 
+//	- 16  receivers accept short arrays without checking labels 
 //  - configured  frequency =100KHz
 //	- use delay control for neighboring arrays switch for correct read state registers
 //	- received arrays compared with ethalon values	
@@ -145,7 +145,10 @@ int main()
     iowrite32(enable,ARINC_BASE + CHANNEL_EN); // run transaction
 	rumboot_printf("ARINC START \n");
 	 
-
+	tmp = arinc_status_check16(STAT_E_TX, STAT_E_RX);
+	if (tmp == TEST_ERROR)  {
+		 rumboot_printf(" TEST_ERROR\n");
+		 return TEST_ERROR;}
 
 for (i = 0; i< 32 ; i++)
 
