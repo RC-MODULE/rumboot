@@ -38,8 +38,8 @@
 #define GPIO1_INT                   (33)
 #define GSPI0_INT                   (34)
 #define GSPI1_INT                   (35)
-#define UART0_INT                   (36)
-#define UART1_INT                   (37)
+//#define UART0_INT                   (36)
+//#define UART1_INT                   (37)
 #define MKIO0_INT                   (38)
 #define MKIO1_INT                   (39)
 #define DIT_INT0                    (40)
@@ -77,6 +77,8 @@
 #define MPIC128_IPI_1               (133)
 #define MPIC128_IPI_2               (134)
 #define MPIC128_IPI_3               (135)
+#define UART0_INT                   (123)
+#define UART1_INT                   (122)
 
 /**
  * @}

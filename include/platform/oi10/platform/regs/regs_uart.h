@@ -83,6 +83,8 @@
  * \addtogroup uart_constants
  * @{
  */
+#define UART_SYS_FREQ_HZ 100000000
+#define UART_DEFAULT_BAUDRATE 38400
 #define UART_TIMEOUT 150000 //>8-bit at 1200 baudrate @ 500MHz sys clock
 /**
  * @}
