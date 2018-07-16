@@ -5,7 +5,7 @@
 #include <platform/common_macros/common_macros.h>
 #include <platform/arch/ppc/ibm_bit_ordering_macros.h>
 #include <platform/reg_access/macros.h>
-#include <platform/regs/em2/regs_plb6mcif2.h>
+#include <platform/regs/regs_plb6mcif2.h>
 #include <platform/arch/ppc/ppc_476fp_lib_c.h>
 
 inline static uint32_t plb6mcif2_dcr_read_PLB6MCIF2_BESR( uint32_t const base_addr ) {
