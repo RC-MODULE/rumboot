@@ -5,7 +5,7 @@
 #include <platform/common_macros/common_macros.h>
 #include <platform/arch/ppc/ibm_bit_ordering_macros.h>
 #include <platform/test_assert.h>
-#include <platform/plb6bc.h>
+#include <platform/devices/plb6bc.h>
 #include <platform/devices.h>
 
 

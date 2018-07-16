@@ -5,7 +5,7 @@
 #include <platform/arch/ppc/ibm_bit_ordering_macros.h>
 #include <platform/test_assert.h>
 #include <platform/devices/plb6mcif2.h>
-#include <platform/plb6bc.h>
+#include <platform/devices/plb6bc.h>
 #include <platform/devices.h>
 
 void plb6mcif2_init( uint32_t const base_addr, plb6mcif2_cfg const *const cfg ) {
