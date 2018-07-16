@@ -590,16 +590,14 @@ void Unconditional(uint8_t two_state, uint8_t bank_on_trigger)
 
 
         //rumboot_printf("emulate instruction completed\n");
-        SPR_DBSR_W_write(0x08000000);
         spr_write(SPR_DBCSR_W, 0x08000000);
 
-        SPR_DBSR_RC_write(0x08000000);
-        spr_write(SPR_DBCR0, 0x08000000);
+        spr_write(SPR_DBSR_RC, 0x08000000);
     }
 }
 
 
-static int test_ltrace0(LTRACE_CONDITION_TYPE condition_type,
+static int test_ltrace(LTRACE_CONDITION_TYPE condition_type,
                         LTRACE_TRIGGER_MODE trigger_mode,
                         LTRACE_COMPRESSION_MODE compression_mode,
                         uint32_t cond1_or,
@@ -1213,7 +1211,7 @@ static int test_ltrace1_bank_on_trigger_int_on(uint32_t cond1_or,
 */
 
 
-int test_mpw_cpu_026_0()
+int main()
 {
     uint32_t complete_stop_mask = 0x01;
     uint32_t complete_enable = 0x01;
@@ -1250,11 +1248,11 @@ int test_mpw_cpu_026_0()
     L2C1_L2DBGSEL_DCR_write(0x22222222); //PLB6 Debug Select Register
     L2C1_L2PLBDBG_DCR_write(0x87654321);
 
-    //LTRACE0
+    //LTRACE
 
     //IAC1
     rumboot_printf("IAC1 Core 0 stop on trigger, one state ...\n");
-    test_ltrace0(LTRACE_CONDITION_TYPE_COND1,
+    test_ltrace(LTRACE_CONDITION_TYPE_COND1,
                 LTRACE_TRIGGER_MODE_STOP_ON_TRIGGER,
                 LTRACE_COMPRESSION_MODE_NO_COMPRESSION,
                 cond1_or,
@@ -1283,7 +1281,7 @@ int test_mpw_cpu_026_0()
                 IAC1);
 
     rumboot_printf("IAC1 Core 0 stop on trigger, two state ...\n");
-    test_ltrace0(LTRACE_CONDITION_TYPE_CONDITIONS_TIMEOUT_DISABLE,
+    test_ltrace(LTRACE_CONDITION_TYPE_CONDITIONS_TIMEOUT_DISABLE,
                 LTRACE_TRIGGER_MODE_STOP_ON_TRIGGER,
                 LTRACE_COMPRESSION_MODE_NO_COMPRESSION,
                 cond1_or,
@@ -1312,7 +1310,7 @@ int test_mpw_cpu_026_0()
                 IAC1);
 
     rumboot_printf("IAC1 Core 0 bank on trigger ...\n");
-    test_ltrace0(LTRACE_CONDITION_TYPE_COND1,
+    test_ltrace(LTRACE_CONDITION_TYPE_COND1,
                 LTRACE_TRIGGER_MODE_BANK_ON_TRIGGER,
                 LTRACE_COMPRESSION_MODE_NO_COMPRESSION,
                 cond1_or,
@@ -1342,7 +1340,7 @@ int test_mpw_cpu_026_0()
 /*
     //DAC2W
     rumboot_printf("DAC2W Core 0 stop on trigger, one state ...\n");
-    test_ltrace0(LTRACE_CONDITION_TYPE_COND1,
+    test_ltrace(LTRACE_CONDITION_TYPE_COND1,
                 LTRACE_TRIGGER_MODE_STOP_ON_TRIGGER,
                 LTRACE_COMPRESSION_MODE_NO_COMPRESSION,
                 cond1_or,
@@ -1371,7 +1369,7 @@ int test_mpw_cpu_026_0()
                 DAC2W);
 
     rumboot_printf("DAC2W Core 0 stop on trigger, two state ...\n");
-    test_ltrace0(LTRACE_CONDITION_TYPE_CONDITIONS_TIMEOUT_DISABLE,
+    test_ltrace(LTRACE_CONDITION_TYPE_CONDITIONS_TIMEOUT_DISABLE,
                 LTRACE_TRIGGER_MODE_STOP_ON_TRIGGER,
                 LTRACE_COMPRESSION_MODE_NO_COMPRESSION,
                 cond1_or,
@@ -1400,7 +1398,7 @@ int test_mpw_cpu_026_0()
                 DAC2W);
 
     rumboot_printf("DAC2W Core 0 bank on trigger ...\n");
-    test_ltrace0(LTRACE_CONDITION_TYPE_COND1,
+    test_ltrace(LTRACE_CONDITION_TYPE_COND1,
                 LTRACE_TRIGGER_MODE_BANK_ON_TRIGGER,
                 LTRACE_COMPRESSION_MODE_NO_COMPRESSION,
                 cond1_or,
@@ -1431,7 +1429,7 @@ int test_mpw_cpu_026_0()
 
     //Trap
     rumboot_printf("Trap Core 0 stop on trigger, one state ...\n");
-    test_ltrace0(LTRACE_CONDITION_TYPE_COND1,
+    test_ltrace(LTRACE_CONDITION_TYPE_COND1,
                 LTRACE_TRIGGER_MODE_STOP_ON_TRIGGER,
                 LTRACE_COMPRESSION_MODE_NO_COMPRESSION,
                 cond1_or,
@@ -1460,7 +1458,7 @@ int test_mpw_cpu_026_0()
                 Trap);
 
     rumboot_printf("Trap Core 0 stop on trigger, two state ...\n");
-    test_ltrace0(LTRACE_CONDITION_TYPE_CONDITIONS_TIMEOUT_DISABLE,
+    test_ltrace(LTRACE_CONDITION_TYPE_CONDITIONS_TIMEOUT_DISABLE,
                 LTRACE_TRIGGER_MODE_STOP_ON_TRIGGER,
                 LTRACE_COMPRESSION_MODE_NO_COMPRESSION,
                 cond1_or,
@@ -1489,7 +1487,7 @@ int test_mpw_cpu_026_0()
                 Trap);
 
     rumboot_printf("Trap Core 0 bank on trigger ...\n");
-    test_ltrace0(LTRACE_CONDITION_TYPE_COND1,
+    test_ltrace(LTRACE_CONDITION_TYPE_COND1,
                 LTRACE_TRIGGER_MODE_BANK_ON_TRIGGER,
                 LTRACE_COMPRESSION_MODE_NO_COMPRESSION,
                 cond1_or,
@@ -1519,7 +1517,7 @@ int test_mpw_cpu_026_0()
 
     //InstructionComplete
     rumboot_printf("InstructionComplete Core 0 stop on trigger, one state ...\n");
-    test_ltrace0(LTRACE_CONDITION_TYPE_COND1,
+    test_ltrace(LTRACE_CONDITION_TYPE_COND1,
                 LTRACE_TRIGGER_MODE_STOP_ON_TRIGGER,
                 LTRACE_COMPRESSION_MODE_NO_COMPRESSION,
                 cond1_or,
@@ -1548,7 +1546,7 @@ int test_mpw_cpu_026_0()
                 InstructionComplete);
 
     rumboot_printf("InstructionComplete Core 0 stop on trigger, two state ...\n");
-    test_ltrace0(LTRACE_CONDITION_TYPE_CONDITIONS_TIMEOUT_DISABLE,
+    test_ltrace(LTRACE_CONDITION_TYPE_CONDITIONS_TIMEOUT_DISABLE,
                 LTRACE_TRIGGER_MODE_STOP_ON_TRIGGER,
                 LTRACE_COMPRESSION_MODE_NO_COMPRESSION,
                 cond1_or,
@@ -1577,7 +1575,7 @@ int test_mpw_cpu_026_0()
                 InstructionComplete);
 
     rumboot_printf("InstructionComplete Core 0 bank on trigger ...\n");
-    test_ltrace0(LTRACE_CONDITION_TYPE_COND1,
+    test_ltrace(LTRACE_CONDITION_TYPE_COND1,
                 LTRACE_TRIGGER_MODE_BANK_ON_TRIGGER,
                 LTRACE_COMPRESSION_MODE_NO_COMPRESSION,
                 cond1_or,
@@ -1607,7 +1605,7 @@ int test_mpw_cpu_026_0()
 
     //Interrupt
     rumboot_printf("Interrupt Core 0 stop on trigger, one state ...\n");
-    test_ltrace0(LTRACE_CONDITION_TYPE_COND1,
+    test_ltrace(LTRACE_CONDITION_TYPE_COND1,
                 LTRACE_TRIGGER_MODE_STOP_ON_TRIGGER,
                 LTRACE_COMPRESSION_MODE_NO_COMPRESSION,
                 cond1_or,
@@ -1636,7 +1634,7 @@ int test_mpw_cpu_026_0()
                 Interrupt);
 
     rumboot_printf("Interrupt Core 0 stop on trigger, two state ...\n");
-    test_ltrace0(LTRACE_CONDITION_TYPE_CONDITIONS_TIMEOUT_DISABLE,
+    test_ltrace(LTRACE_CONDITION_TYPE_CONDITIONS_TIMEOUT_DISABLE,
                 LTRACE_TRIGGER_MODE_STOP_ON_TRIGGER,
                 LTRACE_COMPRESSION_MODE_NO_COMPRESSION,
                 cond1_or,
@@ -1665,7 +1663,7 @@ int test_mpw_cpu_026_0()
                 Interrupt);
 
     rumboot_printf("Interrupt Core 0 bank on trigger ...\n");
-    test_ltrace0(LTRACE_CONDITION_TYPE_COND1,
+    test_ltrace(LTRACE_CONDITION_TYPE_COND1,
                 LTRACE_TRIGGER_MODE_BANK_ON_TRIGGER,
                 LTRACE_COMPRESSION_MODE_NO_COMPRESSION,
                 cond1_or,
@@ -1695,7 +1693,7 @@ int test_mpw_cpu_026_0()
 
     //Return
     rumboot_printf("Return Core 0 stop on trigger, one state ...\n");
-    test_ltrace0(LTRACE_CONDITION_TYPE_COND1,
+    test_ltrace(LTRACE_CONDITION_TYPE_COND1,
                 LTRACE_TRIGGER_MODE_STOP_ON_TRIGGER,
                 LTRACE_COMPRESSION_MODE_NO_COMPRESSION,
                 cond1_or,
@@ -1724,7 +1722,7 @@ int test_mpw_cpu_026_0()
                 Return);
 
     rumboot_printf("Return Core 0 stop on trigger, two state ...\n");
-    test_ltrace0(LTRACE_CONDITION_TYPE_CONDITIONS_TIMEOUT_DISABLE,
+    test_ltrace(LTRACE_CONDITION_TYPE_CONDITIONS_TIMEOUT_DISABLE,
                 LTRACE_TRIGGER_MODE_STOP_ON_TRIGGER,
                 LTRACE_COMPRESSION_MODE_NO_COMPRESSION,
                 cond1_or,
@@ -1753,7 +1751,7 @@ int test_mpw_cpu_026_0()
                 Return);
 
     rumboot_printf("Return Core 0 bank on trigger ...\n");
-    test_ltrace0(LTRACE_CONDITION_TYPE_COND1,
+    test_ltrace(LTRACE_CONDITION_TYPE_COND1,
                 LTRACE_TRIGGER_MODE_BANK_ON_TRIGGER,
                 LTRACE_COMPRESSION_MODE_NO_COMPRESSION,
                 cond1_or,
