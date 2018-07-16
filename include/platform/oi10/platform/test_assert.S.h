@@ -8,7 +8,7 @@
     crand \crAccErr*4+\suffix, \crAccErr*4+\suffix, \crfield*4+\suffix
     b\suffix+ \crfield, 5f
     rumboot_putstring "PROGRAM ASSERTION FAILED: \"\suffix\"\n\file:\line: \"\text\"\n", \tmp_reg_nop_or_addr, \tmp_reg_opcode_testevent, \tmp_reg_event_code
-#ifndef DEBUG_CONTINUE_ON_ASSERT
+#ifndef RUMBOOT_ASSERT_WARN_ONLY
     b   \errLabel
 #endif
 5: //take care of label number with nested macros! 1, 2, 3, 4 labels already declared in rumboot_putstring
