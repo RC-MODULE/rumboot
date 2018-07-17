@@ -11,7 +11,7 @@
 #include <rumboot/io.h>
 #include <rumboot/printf.h>
 
-#include <platform/ltrace.h>
+#include <platform/devices/ltrace.h>
 #include <platform/test_event_c.h>
 #include <platform/test_assert.h>
 
@@ -631,13 +631,14 @@ static int test_ltrace(LTRACE_CONDITION_TYPE condition_type,
     LTRACE_ADDRESS trace_address = {0};
 
     //rumboot_printf("LTRACE disable \n");
-    ltrace_disable();
+    ltrace_disable(DCR_LTRACE_BASE);
 
     //rumboot_printf("LTRACE clear \n");
-    ltrace_clear_status();
+    ltrace_clear_status(DCR_LTRACE_BASE);
 
     //rumboot_printf("LTRACE init \n");
-    ltrace_init(condition_type,
+    ltrace_init(DCR_LTRACE_BASE,
+                 condition_type,
                  trigger_mode,
                  compression_mode,
                  cond1_or,
@@ -651,35 +652,35 @@ static int test_ltrace(LTRACE_CONDITION_TYPE condition_type,
                  complete_enable);
 
     //rumboot_printf("LTRACE set trace window \n");
-    ltrace_set_trace_window(trace_window_timeout);
+    ltrace_set_trace_window(DCR_LTRACE_BASE, trace_window_timeout);
 
     //rumboot_printf("LTRACE set condcomp1 \n");
-    ltrace_set_condcomp1_polarity_h(condcomp1_polarity_h);
-    ltrace_set_condcomp1_polarity_l(condcomp1_polarity_l);
-    ltrace_set_condcomp1_mask_h(condcomp1_mask_h);
-    ltrace_set_condcomp1_mask_l(condcomp1_mask_l);
+    ltrace_set_condcomp1_polarity_h(DCR_LTRACE_BASE, condcomp1_polarity_h);
+    ltrace_set_condcomp1_polarity_l(DCR_LTRACE_BASE, condcomp1_polarity_l);
+    ltrace_set_condcomp1_mask_h(DCR_LTRACE_BASE, condcomp1_mask_h);
+    ltrace_set_condcomp1_mask_l(DCR_LTRACE_BASE, condcomp1_mask_l);
 
     //rumboot_printf("LTRACE set condcomp2 \n");
-    ltrace_set_condcomp2_polarity_h(condcomp2_polarity_h);
-    ltrace_set_condcomp2_polarity_l(condcomp2_polarity_l);
-    ltrace_set_condcomp2_mask_h(condcomp2_mask_h);
-    ltrace_set_condcomp2_mask_l(condcomp2_mask_l);
+    ltrace_set_condcomp2_polarity_h(DCR_LTRACE_BASE, condcomp2_polarity_h);
+    ltrace_set_condcomp2_polarity_l(DCR_LTRACE_BASE, condcomp2_polarity_l);
+    ltrace_set_condcomp2_mask_h(DCR_LTRACE_BASE, condcomp2_mask_h);
+    ltrace_set_condcomp2_mask_l(DCR_LTRACE_BASE, condcomp2_mask_l);
 
     //rumboot_printf("LTRACE set condcomp3 \n");
-    ltrace_set_condcomp3_polarity_h(condcomp3_polarity_h);
-    ltrace_set_condcomp3_polarity_l(condcomp3_polarity_l);
-    ltrace_set_condcomp3_mask_h(condcomp3_mask_h);
-    ltrace_set_condcomp3_mask_l(condcomp3_mask_l);
+    ltrace_set_condcomp3_polarity_h(DCR_LTRACE_BASE, condcomp3_polarity_h);
+    ltrace_set_condcomp3_polarity_l(DCR_LTRACE_BASE, condcomp3_polarity_l);
+    ltrace_set_condcomp3_mask_h(DCR_LTRACE_BASE, condcomp3_mask_h);
+    ltrace_set_condcomp3_mask_l(DCR_LTRACE_BASE, condcomp3_mask_l);
 
     //rumboot_printf("LTRACE set compression mask \n");
-    ltrace_set_compression_mask_h(compression_mask_h);
-    ltrace_set_compression_mask_l(compression_mask_l);
+    ltrace_set_compression_mask_h(DCR_LTRACE_BASE, compression_mask_h);
+    ltrace_set_compression_mask_l(DCR_LTRACE_BASE, compression_mask_l);
 
 
     test_event(EVENT_LTRACE0_START);
 
     //rumboot_printf("LTRACE enable \n");
-    ltrace_enable();
+    ltrace_enable(DCR_LTRACE_BASE);
 
     //rumboot_printf("Fn \n");
     fn((condition_type == LTRACE_CONDITION_TYPE_CONDITIONS_TIMEOUT_DISABLE) ||
@@ -692,34 +693,34 @@ static int test_ltrace(LTRACE_CONDITION_TYPE condition_type,
  */
 
     //rumboot_printf("LTRACE get status (running) \n");
-    TEST_ASSERT((ltrace_get_status() & LTRACE_STATUS_RUNNING) == 0x00, "Tracing is still running!");
+    TEST_ASSERT((ltrace_get_status(DCR_LTRACE_BASE) & LTRACE_STATUS_RUNNING) == 0x00, "Tracing is still running!");
 
     //rumboot_printf("LTRACE get status (complete) \n");
-    TEST_ASSERT((ltrace_get_status() & LTRACE_STATUS_COMPLETE) == LTRACE_STATUS_COMPLETE, "Tracing does not terminated!");
+    TEST_ASSERT((ltrace_get_status(DCR_LTRACE_BASE) & LTRACE_STATUS_COMPLETE) == LTRACE_STATUS_COMPLETE, "Tracing does not terminated!");
 
     //rumboot_printf("LTRACE get status (address 1 wrapped) \n");
-    TEST_ASSERT((ltrace_get_status() & LTRACE_STATUS_ADDRESS1_WRAPPED) == 0x00, "Trace address 1 wrapped!");
+    TEST_ASSERT((ltrace_get_status(DCR_LTRACE_BASE) & LTRACE_STATUS_ADDRESS1_WRAPPED) == 0x00, "Trace address 1 wrapped!");
 
     if (trigger_mode == LTRACE_TRIGGER_MODE_BANK_ON_TRIGGER)
     {
         //rumboot_printf("LTRACE get status (address 2 wrapped) \n");
-        TEST_ASSERT((ltrace_get_status() & LTRACE_STATUS_ADDRESS2_WRAPPED) == 0x00, "Trace address 2 wrapped!");
+        TEST_ASSERT((ltrace_get_status(DCR_LTRACE_BASE) & LTRACE_STATUS_ADDRESS2_WRAPPED) == 0x00, "Trace address 2 wrapped!");
     }
 
     test_event(EVENT_CHECK_LTRACE0_INT);
 
     //rumboot_printf("LTRACE disable \n");
-    ltrace_disable();
+    ltrace_disable(DCR_LTRACE_BASE);
     //test_event(EVENT_CHECK_LTRACE0_STOP);
 
     //rumboot_printf("LTRACE get last address 1 \n");
-    uint32_t last_address = ltrace_get_last_address1();
-    uint32_t last_address2 = ltrace_get_last_address2();
+    uint32_t last_address = ltrace_get_last_address1(DCR_LTRACE_BASE);
+    uint32_t last_address2 = ltrace_get_last_address2(DCR_LTRACE_BASE);
 
     last_address = (last_address != 0xFF)?last_address:1;
     last_address2 = ((last_address2 != 0xFF) && (last_address2 != 0x7F))?last_address2:1;
 
-    uint8_t last_buffer_used = (ltrace_get_status() & (1 << IBM_BIT_INDEX(31, 4)));
+    uint8_t last_buffer_used = (ltrace_get_status(DCR_LTRACE_BASE) & (1 << IBM_BIT_INDEX(31, 4)));
 
 //    rumboot_printf("Last address1 is ");
 //    trace_hex(last_address);
@@ -755,10 +756,10 @@ static int test_ltrace(LTRACE_CONDITION_TYPE condition_type,
             break;
 
         //rumboot_printf("LTRACE set address \n");
-        ltrace_set_address(trace_address);
+        ltrace_set_address(DCR_LTRACE_BASE, trace_address);
 
         //rumboot_printf("LTRACE get data \n");
-        data[i] = ltrace_get_data();
+        data[i] = ltrace_get_data(DCR_LTRACE_BASE);
 
         trace_address.range = 0x01;
 
@@ -766,10 +767,10 @@ static int test_ltrace(LTRACE_CONDITION_TYPE condition_type,
             break;
 
         //rumboot_printf("LTRACE set address \n");
-        ltrace_set_address(trace_address);
+        ltrace_set_address(DCR_LTRACE_BASE, trace_address);
 
         //rumboot_printf("LTRACE get data \n");
-        data[i+1] = ltrace_get_data();
+        data[i+1] = ltrace_get_data(DCR_LTRACE_BASE);
 
 //        trace_hex(i);
 //        trace_hex(data[i]);
