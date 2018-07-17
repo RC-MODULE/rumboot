@@ -5,11 +5,16 @@
 #include <platform/common_macros/common_macros.h>
 #include <platform/test_event_codes.h>
 #include <platform/devices.h>
-#include <ppc_476fp_config.h>
-#include <ppc_476fp_lib_c.h>
+#include <platform/arch/ppc/ppc_476fp_config.h>
+#include <platform/arch/ppc/ppc_476fp_lib_c.h>
 
 #include <rumboot/io.h>
 #include <rumboot/printf.h>
+
+#include <platform/ltrace.h>
+#include <platform/test_event_c.h>
+#include <platform/test_assert.h>
+
 
 
 #define EVENT_LTRACE0_CHECK_DATA    0x0000000099
@@ -122,7 +127,6 @@ void IAC2(uint8_t two_state, uint8_t bank_on_trigger)
     spr_write(SPR_DBSR_RC, 0xCFFF8003);
 
     //rumboot_printf("mtspr SPR_IAC2, 0x00\n");
-    SPR_IAC2_write((uint32_t)&call_IAC);
     spr_write(SPR_IAC2, (uint32_t)&call_IAC);
 
     //rumboot_printf("mtspr SPR_DBCR1, 0x00\n");
@@ -261,7 +265,6 @@ void DAC1R(uint8_t two_state, uint8_t bank_on_trigger)
     spr_write(SPR_DBCR0, 0x00);
 
     //rumboot_printf("mtspr SPR_DBSR_RC, 0xCFFF8003\n");
-    SPR_DBSR_RC_write(0xCFFF8003);
     spr_write(SPR_DBSR_RC, 0xCFFF8003);
 
     //rumboot_printf("mtspr SPR_DBCR1, 0x00\n");
@@ -590,7 +593,7 @@ void Unconditional(uint8_t two_state, uint8_t bank_on_trigger)
 
 
         //rumboot_printf("emulate instruction completed\n");
-        spr_write(SPR_DBCSR_W, 0x08000000);
+        spr_write(SPR_DBSR_W, 0x08000000);
 
         spr_write(SPR_DBSR_RC, 0x08000000);
     }
@@ -684,7 +687,7 @@ static int test_ltrace(LTRACE_CONDITION_TYPE condition_type,
        (trigger_mode == LTRACE_TRIGGER_MODE_BANK_ON_TRIGGER));
 
 /*
-    while (!(ltrace0_get_status() & LTRACE_STATUS_COMPLETE))
+    while (!(ltrace_get_status() & LTRACE_STATUS_COMPLETE))
         ;
  */
 
@@ -783,7 +786,7 @@ static int test_ltrace(LTRACE_CONDITION_TYPE condition_type,
     //TEST_ASSERT(data.value0.stop_bit == 0x1, "Stop bit not equal to 0x1");
 
 
-    MEM32(IM0_ADDR_CELL) = (uint32_t)&data;
+    iowrite32((uint32_t)&data, IM0_ADDR_CELL);
     isync();
 
 //    rumboot_printf("data address =");
@@ -795,7 +798,7 @@ static int test_ltrace(LTRACE_CONDITION_TYPE condition_type,
     test_event(EVENT_LTRACE0_CHECK_DATA);
 
 
-    return TEST_OK;
+    return 0;
 }
 
 /*
@@ -1240,13 +1243,10 @@ int main()
     uint32_t compression_mask_h = 0x00000000;
     uint32_t compression_mask_l = 0x00000000;
 
-    //rumboot_printf("Configure L2C0 Debug\n");
-    L2C0_L2DBGSEL_DCR_write(0x22222222); //PLB6 Debug Select Register
-    L2C0_L2PLBDBG_DCR_write(0x87654321);
+    //rumboot_printf("Configure L2C Debug\n");
+    dcr_write(DCR_L2C_BASE + L2C_L2DBGSEL, 0x22222222);
+    dcr_write(DCR_L2C_BASE + L2C_L2PLBDBG, 0x87654321);
 
-    //rumboot_printf("Configure L2C1 Debug\n");
-    L2C1_L2DBGSEL_DCR_write(0x22222222); //PLB6 Debug Select Register
-    L2C1_L2PLBDBG_DCR_write(0x87654321);
 
     //LTRACE
 
