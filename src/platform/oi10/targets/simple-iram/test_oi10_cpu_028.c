@@ -10,7 +10,7 @@
 #include <platform/common_macros/common_macros.h>
 #include <platform/arch/ppc/ibm_bit_ordering_macros.h>
 #include <platform/devices.h>
-#include <platform/reg_access/reg_access_l2c.h>
+#include <platform/devices/l2c.h>
 #include <platform/regs/regs_srammc2plb4.h>
 #include <platform/regs/regs_mpic128.h>
 #include <platform/regs/fields/mpic128.h>
