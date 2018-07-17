@@ -1,7 +1,7 @@
 #include <stddef.h>
 #include <platform/common_macros/common_macros.h>
 #include <platform/arch/ppc/ppc_476fp_lib_c.h>
-#include <platform/reg_access/reg_access_l2c.h>
+#include <platform/devices/l2c.h>
 #include <platform/trace.h>
 #include <platform/test_assert.h>
 #include <platform/arch/ppc/test_macro.h>
@@ -63,14 +63,14 @@ uint32_t pmu_dcr_read(uint32_t pmu_dcr_base, uint32_t dcr_index)
     return dcr_read(PMUDCRDI(pmu_dcr_base));
 }
 
-inline void pmu_set_CE_bit(uint32_t pmu_dcr_base, uint32_t dcr_index)
+inline void l2c_pmu_set_CE_bit(uint32_t pmu_dcr_base, uint32_t dcr_index)
 {
     uint32_t tmp;
     tmp = pmu_dcr_read(pmu_dcr_base, dcr_index);
     pmu_dcr_write(pmu_dcr_base, dcr_index, tmp | PMULCX_CE);
 }
 
-inline void pmu_enable_interrupt(uint32_t pmu_dcr_base, uint32_t dcr_index, uint32_t mask)
+inline void l2c_pmu_enable_interrupt(uint32_t pmu_dcr_base, uint32_t dcr_index, uint32_t mask)
 {
     uint32_t tmp;
     tmp = pmu_dcr_read(pmu_dcr_base, dcr_index);
@@ -85,14 +85,14 @@ inline void pmu_disable_interrupt(uint32_t pmu_dcr_base, uint32_t dcr_index, uin
     pmu_dcr_write(pmu_dcr_base, dcr_index, tmp);
 }
 
-inline void pmu_clear_interrupt(uint32_t pmu_dcr_base)
+inline void l2c_pmu_clear_interrupt(uint32_t pmu_dcr_base)
 {
     uint32_t tmp;
     tmp = pmu_dcr_read(pmu_dcr_base, PMUIS0);
     pmu_dcr_write(pmu_dcr_base, PMUIS0, tmp);
 }
 
-inline void pmu_set_cx(uint32_t pmu_dcr_base, uint32_t dcr_index, uint32_t value)
+inline void l2c_pmu_set_cx(uint32_t pmu_dcr_base, uint32_t dcr_index, uint32_t value)
 {
     pmu_dcr_write(pmu_dcr_base, dcr_index, value);
 }
@@ -198,7 +198,7 @@ bool l2c_arracc_get_way_by_address (uint32_t base, uint32_t ext_phys_addr, uint3
     rumboot_puthex(ext_phys_addr);
     rumboot_putstring("address lower == ");
     rumboot_puthex(phys_addr);
-	addr64 = ( (uint64_t) (ext_phys_addr & EXT_ADDR_MSK) << 32 ) + phys_addr;
+	addr64 = ( (uint64_t) (ext_phys_addr & L2C_EXT_ADDR_MSK) << 32 ) + phys_addr;
 	(*cache_way) = -1;
 	rumboot_putstring("cache_way == ");
 	rumboot_puthex((int32_t)(*cache_way));
@@ -261,7 +261,7 @@ uint64_t l2c_arracc_data_read (uint32_t base, uint32_t ext_phys_addr, uint32_t p
 	l2arraccadr = L2C_L2ARRACCADR_DCR_read(base) & ~L2C_L2ARRACCADR_MSK;
 	l2arraccctl = L2C_L2ARRACCCTL_DCR_read(base) & ~L2C_ARRACCCTL_MSK;
 
-	addr64 = ( (uint64_t) (ext_phys_addr & EXT_ADDR_MSK) << 32 ) + phys_addr;
+	addr64 = ( (uint64_t) (ext_phys_addr & L2C_EXT_ADDR_MSK) << 32 ) + phys_addr;
 	do
 	{
 		cache_way++;
