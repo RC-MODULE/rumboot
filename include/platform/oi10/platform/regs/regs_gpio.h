@@ -56,4 +56,6 @@
 
 #define GPIO_REG_MASK                0xFF
 #define GPIO_ADDR_MASK               0x3FC
+
+#define GPIO_TIMEOUT    0x200
 #endif

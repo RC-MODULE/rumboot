@@ -17,6 +17,7 @@
 
 #define CHECK_REGS
 
+#ifdef CHECK_REGS
 static uint32_t check_gpio_default_val(uint32_t base_addr)
 {
     rumboot_printf("Check the default values of the registers \n");
@@ -125,23 +126,50 @@ static uint32_t check_gpio_regs(uint32_t base_addr)
     rumboot_printf(" OK\n");
     iowrite32(GPIO_AFSEL_DEFAULT, base_addr + GPIO_AFSEL);
 
-
     return 0;
 }
+#endif
+
+static volatile uint32_t IRQ;
+
 static void handler0( int irq, void *arg ) {
     rumboot_printf( "IRQ 0 arrived  \n" );
-//    gpio_clear_edge_int(GPIO_0_BASE, 0xFF);
-    iowrite32(0xFF, GPIO_0_BASE + GPIO_IE);
+    gpio_clear_edge_int(GPIO_0_BASE, 0xFF);
+    rumboot_printf("Clear interrupts\n");
+    IRQ = 1;
 }
 
 static void handler1( int irq, void *arg ) {
     rumboot_printf( "IRQ 1 arrived  \n" );
     gpio_clear_edge_int(GPIO_1_BASE, 0xFF);
+    rumboot_printf("Clear interrupts\n");
+    IRQ = 1;
 }
 
-uint32_t check_int(uint32_t base_addr)
+uint32_t wait_gpio_int(){
+    unsigned t;
+
+    rumboot_printf ("wait_gpio_int \n");
+
+    for (t=1; t<=GPIO_TIMEOUT; t++){
+        if (IRQ)
+        {
+            IRQ = 0;
+            break;
+        }
+    }
+    if (t>=GPIO_TIMEOUT) {
+        rumboot_printf("Error! IRQ flag wait timeout! \n");
+        return 1;
+    }
+    return 0;
+}
+
+uint32_t test_gpio(uint32_t base_addr, uint32_t GPIODIR_value)
 {
-    uint32_t result = 0x0;
+    uint8_t data_read_gpio, data_write_gpio;
+// setup of interrupts
+    IRQ = 0;
     rumboot_irq_cli();
     struct rumboot_irq_entry *tbl = rumboot_irq_create( NULL );
 
@@ -154,20 +182,34 @@ uint32_t check_int(uint32_t base_addr)
     rumboot_irq_enable( GPIO1_INT );
     rumboot_irq_sei();
 
-    iowrite32(0xFF, base_addr + GPIO_IS);
-    iowrite32(0xFF, base_addr + GPIO_IEV);
-    iowrite32(0xFF, base_addr + GPIO_IE);
+    //init GPIO_W
+    iowrite32(0x00, base_addr + GPIO_AFSEL); //gpio to gpio mode
+    gpio_set_direction(base_addr, GPIODIR_value, direction_out);
+    iowrite32(0x00, base_addr + GPIO_ADDR_MASK); //write data to output
 
-//    gpio_interrupt_setup(base_addr, 0xFF, true, level);
-    iowrite32(0xFF, base_addr + GPIO_DIR);
-    iowrite32(0xAA, base_addr + GPIO_DATA + GPIO_ADDR_MASK);
-    ioread32(base_addr + GPIO_DATA + GPIO_ADDR_MASK);
+    gpio_interrupt_setup(base_addr, 0xff, true, both_edge);
 
+    //write
+    data_write_gpio = 0xFF & GPIODIR_value;
+//    rumboot_printf( "data_write_gpio : %x\n", data_write_gpio);
+    iowrite32(data_write_gpio, base_addr + GPIO_ADDR_MASK);
+
+    if (wait_gpio_int())
+    {
+        return 1;
+    }
+
+    //read
+    data_read_gpio = gpio_get_data(base_addr);
+//    rumboot_printf( "data_read_gpio : %x\n", data_read_gpio);
+    TEST_ASSERT((( (data_write_gpio>>1) | GPIODIR_value) == data_read_gpio),"Error! The value of GPOUT does not match the expected\n");
 
     rumboot_irq_table_activate(NULL);
     rumboot_irq_free(tbl);
-    return result;
+
+    return 0;
 }
+
 
 int main(void)
 {
@@ -178,7 +220,7 @@ int main(void)
         check_gpio_regs(GPIO_0_BASE);
     #endif
 
-    if(!check_int(GPIO_0_BASE))
+    if(!test_gpio(GPIO_0_BASE, 0x2A))
         rumboot_printf("Check GPIO_0: OK \n");
     else
         result = (1<<0);
@@ -189,7 +231,7 @@ int main(void)
         check_gpio_regs(GPIO_1_BASE);
     #endif
 
-    if(!check_int(GPIO_1_BASE))
+    if(!test_gpio(GPIO_1_BASE, 0xAA))
         rumboot_printf("Check GPIO_1: OK \n");
     else
         result = (1<<1);
