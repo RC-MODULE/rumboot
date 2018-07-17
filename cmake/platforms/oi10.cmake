@@ -369,13 +369,6 @@ endif()
     )
     
     add_rumboot_target(
-        CONFIGURATION IRAM
-        LDS oi10/test_oi10_greth.lds
-        FILES test_oi10_greth.c
-    )
-
-
-    add_rumboot_target(
         CONFIGURATION ROM
         CFLAGS -DUSE_SWINT=132
         FILES common/irq/irq-atomics.c

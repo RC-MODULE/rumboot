@@ -23,21 +23,6 @@ uint32_t test_data_im0_src[] __attribute__((section(".data")))__attribute__((ali
 
 uint32_t test_data_im0_dst[sizeof(test_data_im0_src)] __attribute__((section(".data")));
 
-uint32_t test_data_im1_src[] __attribute__((section(".im1.data")))__attribute__((aligned(0x4))) =
-        {
-                [0] = 0x00000000,
-                [1] = 0x11111111,
-                [2] = 0x22222222,
-                [3] = 0x33333333,
-                [4] = 0x44444444,
-                [5] = 0x55555555,
-                [6] = 0x66666666,
-                [7] = 0x77777777
-        };
-
-uint32_t test_data_im1_dst[sizeof(test_data_im0_src)] __attribute__((section(".im1.data")));
-
-
 void dump_plb4xahb()
 {
     rumboot_printf("Dumping PLB4XAHB1 regs\n");
@@ -82,14 +67,14 @@ int main(void)
 //    mdio_check(GRETH_0_BASE);
 //    mdio_check(GRETH_1_BASE);
     rumboot_printf("Start test_oi10_greth\n\n");
+
     iowrite32(0xBABADEDA, 0xC0000000);
     rumboot_printf("MEM[0xC0000000] 0x%x\n\n", ioread32(0xC0000000));
 
-    rumboot_printf("test_data_im1_src address is 0x%x\n\n", (uint32_t)test_data_im1_src);
+    memcpy((uint32_t*)IM1_BASE, test_data_im0_src, sizeof(test_data_im0_src));
     for (uint32_t i = 0; i<8; i++)
     {
-        rumboot_printf("test_data_im0_src[%d] = 0x%x\n",   i, test_data_im0_src[i]);
-        rumboot_printf("test_data_im1_src[%d] = 0x%x\n\n", i, test_data_im1_src[i]);
+        rumboot_printf("test_data_im1_src[%d] = 0x%x\n\n", i, ioread32(IM1_BASE+(i<<2)) );
     }
 
 /*

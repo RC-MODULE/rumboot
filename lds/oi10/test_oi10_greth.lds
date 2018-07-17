@@ -1,6 +1,6 @@
 MEMORY {
     IM0 (rwx)   : ORIGIN = 0x80000000, LENGTH = 0x20000
-    IM1 (rw)    : ORIGIN = 0xC0000000, LENGTH = 0x20000
+    IM1 (rw)    : ORIGIN = 0x80020000, LENGTH = 0x20000
     ROM (rx)    : ORIGIN = 0xFFFF0000, LENGTH = 0x10000
 }
 
@@ -51,7 +51,7 @@ SECTIONS {
         *(.rumboot_platform_runtime_info);
     }
 
-    .rw 0xC0000000: {
+    .rw 0x80020000: {
         *(.im1.data)
     } > IM1
 
