@@ -367,6 +367,12 @@ endif()
         NAME "stub"
         FEATURES STUB
     )
+    
+    add_rumboot_target(
+        CONFIGURATION IRAM
+        LDS oi10/test_oi10_greth.lds
+        FILES test_oi10_greth.c
+    )
 
 
     add_rumboot_target(

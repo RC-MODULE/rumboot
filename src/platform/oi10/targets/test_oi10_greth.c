@@ -9,7 +9,7 @@
 
 #include <platform/devices/greth.h>
 
-uint32_t test_data_src[] __attribute__((section(".data")))__attribute__((aligned(0x4))) =
+uint32_t test_data_im0_src[] __attribute__((section(".data")))__attribute__((aligned(0x4))) =
         {
                 [0] = 0x00000000,
                 [1] = 0x11111111,
@@ -21,7 +21,21 @@ uint32_t test_data_src[] __attribute__((section(".data")))__attribute__((aligned
                 [7] = 0x77777777
         };
 
-uint32_t test_data_dst[sizeof(test_data_src)] __attribute__((section(".data")));
+uint32_t test_data_im0_dst[sizeof(test_data_im0_src)] __attribute__((section(".data")));
+
+uint32_t test_data_im1_src[] __attribute__((section(".im1.data")))__attribute__((aligned(0x4))) =
+        {
+                [0] = 0x00000000,
+                [1] = 0x11111111,
+                [2] = 0x22222222,
+                [3] = 0x33333333,
+                [4] = 0x44444444,
+                [5] = 0x55555555,
+                [6] = 0x66666666,
+                [7] = 0x77777777
+        };
+
+uint32_t test_data_im1_dst[sizeof(test_data_im0_src)] __attribute__((section(".im1.data")));
 
 
 void dump_plb4xahb()
@@ -40,7 +54,6 @@ void dump_plb4xahb()
     rumboot_printf("PLB4XAHB0_ERR_ST         = 0x%x\n", dcr_read(DCR_PLB4AHB_0_BASE+ERR_ST        ));
     rumboot_printf("PLB4XAHB0_ERR_ADDR       = 0x%x\n", dcr_read(DCR_PLB4AHB_0_BASE+ERR_ADDR      ));
     rumboot_printf("PLB4XAHB0_INT_MSK        = 0x%x\n", dcr_read(DCR_PLB4AHB_0_BASE+INT_MSK       ));
-
 }
 
 
@@ -66,10 +79,19 @@ bool mdio_check(uint32_t base_addr)
 int main(void)
 {
 
-    mdio_check(GRETH_0_BASE);
-    mdio_check(GRETH_1_BASE);
+//    mdio_check(GRETH_0_BASE);
+//    mdio_check(GRETH_1_BASE);
+    rumboot_printf("Start test_oi10_greth\n\n");
+    iowrite32(0xBABADEDA, 0xC0000000);
+    rumboot_printf("MEM[0xC0000000] 0x%x\n\n", ioread32(0xC0000000));
 
-    //if (mdio_check(GBIT_GRETH_1_BASE)) return 1;
+    rumboot_printf("test_data_im1_src address is 0x%x\n\n", (uint32_t)test_data_im1_src);
+    for (uint32_t i = 0; i<8; i++)
+    {
+        rumboot_printf("test_data_im0_src[%d] = 0x%x\n",   i, test_data_im0_src[i]);
+        rumboot_printf("test_data_im1_src[%d] = 0x%x\n\n", i, test_data_im1_src[i]);
+    }
+
 /*
     dump_plb4xahb();
     if (!greth_mem_copy(GRETH_0_BASE, test_data_src, test_data_dst, sizeof(test_data_dst)))
