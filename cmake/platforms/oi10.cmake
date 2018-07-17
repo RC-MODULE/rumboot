@@ -94,7 +94,6 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         CFLAGS -DUSE_SWINT=132
         FILES common/irq/irq-atomics.c
         PREFIX "irq-rom"
-        TESTGROUP short
     )
 
     add_rumboot_target(
@@ -102,7 +101,6 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         CFLAGS -DUSE_SWINT=132
         FILES common/irq/irq-defhandler.c
         PREFIX "irq-rom"
-        TESTGROUP short
     )
 
 
@@ -111,7 +109,6 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         CFLAGS -DUSE_SWINT=132
         FILES common/irq/irq-atomics.c
         PREFIX "irq-iram"
-        TESTGROUP short
     )
 
     add_rumboot_target(
@@ -119,12 +116,10 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         CFLAGS -DUSE_SWINT=132
         FILES common/irq/irq-defhandler.c
         PREFIX "irq-iram"
-        TESTGROUP short
     )
 
     add_rumboot_target_dir(bare-rom/
         CONFIGURATION BAREROM
-        TESTGROUP short
     )
 
     add_rumboot_target_dir(rom/
