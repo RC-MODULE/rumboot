@@ -1,22 +1,23 @@
-#include <regs_ltrace.h>
-#include <ltrace.h>
-#include <devices.h>
+#include <platform/regs/regs_ltrace.h>
+#include <platform/ltrace.h>
+#include <platform/arch/ppc/ppc_476fp_lib_c.h>
+#include <platform/devices.h>
 
 
 
 
-static void dcr_set(const uint32_t base_address, const uint32_t reg_address, uint32_t value)
+static void dcr_set(const uint32_t dcr_address, uint32_t value)
 {
-    uint32_t reg_value = dcr_read(base_address + reg_address);
+    uint32_t reg_value = dcr_read(dcr_address);
     reg_value |= value;
-    dcr_write(base_addr + reg_address, reg_value);
+    dcr_write(dcr_address, reg_value);
 }
 
-static void dcr_clear(const uint32_t base_address, const uint32_t reg_address, uint32_t value)
+static void dcr_clear(const uint32_t dcr_address, uint32_t value)
 {
-    uint32_t reg_value = dcr_read(base_address + reg_address);
+    uint32_t reg_value = dcr_read(dcr_address);
     reg_value &= ~value;
-    dcr_write(base_addr + reg_address, reg_value);
+    dcr_write(dcr_address, reg_value);
 }
 
 
@@ -24,12 +25,12 @@ static void dcr_clear(const uint32_t base_address, const uint32_t reg_address, u
 
 void ltrace_enable()
 {
-    dcr_set(DCR_LTRACE_BASE, LTR_TC, reg_field(0, 0x01));
+    dcr_set(DCR_LTRACE_BASE + LTR_TC, reg_field(0, 0x01));
 }
 
 void ltrace_disable()
 {
-    dcr_clear(DCR_LTRACE_BASE, LTR_TC, reg_field(0, 0x00));
+    dcr_clear(DCR_LTRACE_BASE + LTR_TC, reg_field(0, 0x00));
 }
 
 void ltrace_init(LTRACE_CONDITION_TYPE condition_type,
