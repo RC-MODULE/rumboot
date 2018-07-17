@@ -6,7 +6,8 @@
 #define P64_REGS_H
 
 #include <stdint.h>
-#include <regs/p64/reg_fields_p64.h>
+
+#include <platform/regs/fields/p64.h>
 
 enum P64_REG
 {

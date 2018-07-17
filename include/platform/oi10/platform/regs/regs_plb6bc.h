@@ -6,9 +6,9 @@
 #define __PLB6BC_REG_H__
 
 
-#include <regs/plb6bc/reg_field_plb6bc.h>
 #include <platform/common_macros/common_macros.h>
 #include <platform/arch/ppc/ibm_bit_ordering_macros.h>
+#include <platform/regs/fields/plb6bc.h>
 
 
 BEGIN_ENUM( PLB6BC_REG )
