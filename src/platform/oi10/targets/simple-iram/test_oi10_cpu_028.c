@@ -484,6 +484,7 @@ static void check_srammc2plb4_r_pe_detection() {
 
 
 int main() {
+    test_event_send_test_id("test_oi10_cpu_028");
     disable_parity_checks();
 
     check_parity_disabled();
