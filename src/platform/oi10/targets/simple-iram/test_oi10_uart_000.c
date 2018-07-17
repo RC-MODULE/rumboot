@@ -7,11 +7,12 @@
 #include <rumboot/io.h>
 #include <rumboot/irq.h>
 #include <platform/devices.h>
-#include <platform/regs/regs_uart.h>
 #include <platform/interrupts.h>
 #include <platform/regs/fields/mpic128.h>
 #include <platform/devices/uart.h>
 #include <platform/test_assert.h>
+#include <regs/regs_uart.h>
+#include <devices/uart.h>
 
 
 //default values

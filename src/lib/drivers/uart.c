@@ -1,8 +1,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include <platform/devices/uart.h>
-#include <platform/regs/regs_uart.h>
+#include <devices/uart.h>
+#include <regs/regs_uart.h>
 #include <rumboot/io.h>
 #include <rumboot/timer.h>
 #include <rumboot/printf.h>

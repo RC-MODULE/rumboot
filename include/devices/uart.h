@@ -35,32 +35,12 @@ typedef enum {
 }UART_word_length;
 
 typedef enum {
-    UART_even_parity = (1 << 0),
-    UART_odd_parity  = (1 << 1),
-    UART_no_parity   = (1 << 2)
+    UART_parity_even = (1 << 0),
+    UART_parity_odd  = (1 << 1),
+    UART_parity_no   = (1 << 2)
 }UART_parity;
 
-/**
- * muart_conf						: Structure contains configuration parameters
- * wlen				  				- word length - 5..8 bit
- * stp2									- number of stop bits
- * is_even							- Choose either even or odd parity
- * is_parity_available	- Choose either parity available or not
- * mode									- mode of MUART
- * is_loopback					- Choose either loopback is or not?
- * baud_rate						- baud rate
- * dma_en								- Choose either DMA enable or not?
- */
-struct muart_conf {
-								enum WORD_LENGTH wlen;
-								enum STOP_BITS_N stp2;
-								bool is_even;
-								bool is_parity_available;
-								enum MUART_MODE mode;
-								bool is_loopback;
-								uint32_t baud_rate;
-								bool dma_en;
-};
+
 
 /**
  * brief Init UART
@@ -68,9 +48,10 @@ struct muart_conf {
  * @param wlen word length
  * @param baud_rate baud rate
  * @param parity parity
+ * @param int_mask interrupt mask
  * @param loopback loopback
  */
-void uart_init(uint32_t base_addr, UART_word_length wlen, uint32_t baud_rate, UART_parity parity, int loopback);
+void uart_init(uint32_t base_addr, UART_word_length wlen, uint32_t baud_rate, UART_parity parity, short int int_mask, int loopback);
 
 /**
  * brief Enable UART
