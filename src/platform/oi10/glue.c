@@ -15,10 +15,9 @@
 
 /* Platform-specific glue */
 uint32_t rumboot_platform_get_uptime() {
-    #define TIMER_TICKS_PER_US  800
+    #define TIMER_TICKS_PER_US  200 /* TODO check if PPC_TMR_CLK is 5ns */
 
-    //return spr_read( SPR_TBL_R ) / TIMER_TICKS_PER_US;
-    return 20000000; /* TODO this is hardware bug temporary workaround */
+    return spr_read( SPR_TBL_R ) / TIMER_TICKS_PER_US;
 }
 
 void unexpected_itrpt_hdr_base();
