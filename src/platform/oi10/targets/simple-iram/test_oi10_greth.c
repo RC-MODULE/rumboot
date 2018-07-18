@@ -9,6 +9,9 @@
 
 #include <platform/devices/greth.h>
 
+greth_descr_t  tx_descriptor_data_[512] __attribute__((aligned(1024)));
+greth_descr_t  rx_descriptor_data_[512] __attribute__((aligned(1024)));
+
 uint32_t test_data_im0_src[] __attribute__((section(".data")))__attribute__((aligned(0x4))) =
         {
                 [0] = 0x00000000,
@@ -22,26 +25,6 @@ uint32_t test_data_im0_src[] __attribute__((section(".data")))__attribute__((ali
         };
 
 uint32_t test_data_im0_dst[sizeof(test_data_im0_src)] __attribute__((section(".data")));
-
-void dump_plb4xahb()
-{
-    rumboot_printf("Dumping PLB4XAHB1 regs\n");
-    /*
-    rumboot_printf("PLB4XAHB0_REVID          = 0x%x\n", dcr_read(DCR_PLB4AHB_0_BASE+REVID         ));
-    rumboot_printf("PLB4XAHB0_SEAR_ADDRUPPER = 0x%x\n", dcr_read(DCR_PLB4AHB_0_BASE+SEAR_ADDRUPPER));
-    rumboot_printf("PLB4XAHB0_SEAR_ADDRLOWER = 0x%x\n", dcr_read(DCR_PLB4AHB_0_BASE+SEAR_ADDRLOWER));
-    rumboot_printf("PLB4XAHB0_SESR           = 0x%x\n", dcr_read(DCR_PLB4AHB_0_BASE+SESR          ));
-    rumboot_printf("PLB4XAHB0_TOP_ADDR       = 0x%x\n", dcr_read(DCR_PLB4AHB_0_BASE+TOP_ADDR      ));
-    rumboot_printf("PLB4XAHB0_BOT_ADDR       = 0x%x\n", dcr_read(DCR_PLB4AHB_0_BASE+BOT_ADDR      ));
-    rumboot_printf("PLB4XAHB0_ATTRS          = 0x%x\n", dcr_read(DCR_PLB4AHB_0_BASE+ATTRS         ));
-    */
-    rumboot_printf("PLB4XAHB0_CONTROL        = 0x%x\n", dcr_read(DCR_PLB4AHB_0_BASE+CONTROL       ));
-    rumboot_printf("PLB4XAHB0_ERR_ST         = 0x%x\n", dcr_read(DCR_PLB4AHB_0_BASE+ERR_ST        ));
-    rumboot_printf("PLB4XAHB0_ERR_ADDR       = 0x%x\n", dcr_read(DCR_PLB4AHB_0_BASE+ERR_ADDR      ));
-    rumboot_printf("PLB4XAHB0_INT_MSK        = 0x%x\n", dcr_read(DCR_PLB4AHB_0_BASE+INT_MSK       ));
-}
-
-
 
 bool mdio_check(uint32_t base_addr)
 {
@@ -61,29 +44,63 @@ bool mdio_check(uint32_t base_addr)
     return 0;
 }
 
+int check_transfer_from_im1_to_im1()
+{
+    rumboot_printf("IM1-IM1 checking\n\n");
+    memcpy((uint32_t*)IM1_BASE, test_data_im0_src, sizeof(test_data_im0_src));
+    greth_mem_copy(GRETH_0_BASE, (uint32_t*)IM1_BASE, (uint32_t*)(IM1_BASE + sizeof(test_data_im0_src)), sizeof(test_data_im0_src) );
+    return 0;
+}
+
+bool mem_cmp(void volatile * const src, void volatile * const dst, uint32_t len)
+{
+    uint32_t * src_addr;
+    uint32_t * dst_addr;
+    bool data_ok = true;
+    src_addr = (uint32_t *)src; dst_addr = (uint32_t *)dst;
+    for (uint32_t i=0; i<len; i++)
+    {
+        if (*src_addr!=*dst_addr)
+        {
+            rumboot_printf("Data error:\nsrc: 0x%x\ndst: 0x%x\n", *src_addr, *dst_addr);
+            data_ok = false;
+        }
+        src_addr++; dst_addr++;
+    }
+    return data_ok;
+}
+
+void mem_clr(void volatile * const ptr, uint32_t len)
+{
+    uint32_t * addr = (uint32_t *) ptr;
+    for (uint32_t i=0; i<len; i++)
+    {
+        *addr = 0xFFFFFFFF; addr++;
+    }
+}
+
+int check_transfer_from_im0_to_im0(uint32_t base_addr_src_eth, uint32_t base_addr_dst_eth)
+{
+    rumboot_printf("IM0-IM0 checking\n");
+    greth_configure_for_receive( base_addr_dst_eth, test_data_im0_dst, sizeof(test_data_im0_src), rx_descriptor_data_);
+    greth_configure_for_transmit( base_addr_src_eth, test_data_im0_src, sizeof(test_data_im0_src), tx_descriptor_data_);
+
+    greth_start_receive( base_addr_dst_eth );
+    greth_start_transmit( base_addr_src_eth );
+
+    TEST_ASSERT(greth_wait_receive(base_addr_dst_eth), "Receiving is failed");
+    TEST_ASSERT(mem_cmp(test_data_im0_src, test_data_im0_dst, sizeof(test_data_im0_src)/sizeof(uint32_t)), "Data compare error!");
+    mem_clr(test_data_im0_dst, sizeof(test_data_im0_src)/sizeof(uint32_t));
+    return 0;
+}
+
 int main(void)
 {
 
 //    mdio_check(GRETH_0_BASE);
 //    mdio_check(GRETH_1_BASE);
     rumboot_printf("Start test_oi10_greth\n\n");
-
-    iowrite32(0xBABADEDA, 0xC0000000);
-    rumboot_printf("MEM[0xC0000000] 0x%x\n\n", ioread32(0xC0000000));
-
-    memcpy((uint32_t*)IM1_BASE, test_data_im0_src, sizeof(test_data_im0_src));
-    for (uint32_t i = 0; i<8; i++)
-    {
-        rumboot_printf("test_data_im1_src[%d] = 0x%x\n\n", i, ioread32(IM1_BASE+(i<<2)) );
-    }
-
-/*
-    dump_plb4xahb();
-    if (!greth_mem_copy(GRETH_0_BASE, test_data_src, test_data_dst, sizeof(test_data_dst)))
-    {
-        dump_plb4xahb();
-        return 1;
-    }
-*/
+    check_transfer_from_im0_to_im0(GRETH_0_BASE, GRETH_1_BASE);
+    check_transfer_from_im0_to_im0(GRETH_1_BASE, GRETH_0_BASE);
     return 0;
 }

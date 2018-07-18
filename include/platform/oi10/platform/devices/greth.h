@@ -131,5 +131,10 @@ typedef struct greth_ctrl_struct
 bool greth_mem_copy(uint32_t base_addr, void volatile * src, void volatile * dst, uint32_t length);
 bool mdio_write( uint32_t base_addr, uint8_t phy_addr, uint8_t reg_addr, uint16_t data);
 uint16_t mdio_read( uint32_t base_addr, uint8_t phy_addr, uint8_t reg_addr);
+bool greth_configure_for_receive( uint32_t base_addr, void volatile * const dst, uint32_t length, greth_descr_t* rx_descriptor_data_);
+bool greth_start_receive(uint32_t base_addr);
+bool greth_wait_receive(uint32_t base_addr);
+bool greth_configure_for_transmit( uint32_t base_addr, void volatile * const src, uint32_t length, greth_descr_t* tx_descriptor_data_);
+bool greth_start_transmit(uint32_t base_addr);
 
 #endif /* PLATFORM_DEVICES_GBIT_GRETH_H */
