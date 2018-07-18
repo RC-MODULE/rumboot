@@ -45,6 +45,60 @@
      */
     void mkio_report_rt_status (uint32_t base_address);
 
+    /**
+     * 
+     * 
+     *
+     *
+     *
+     */
+    void mkio_bc_start_schedule (uint32_t base_address, uint32_t descriptor_pointer);
+
+    /**
+     * 
+     * 
+     *
+     *
+     *
+     */
+    void mkio_rt_start_schedule (uint32_t base_address, uint32_t subaddress_table_pointer);
+
+    /**
+     * 
+     * 
+     *
+     *
+     *
+     */
+    void mkio_bm_start_logging (uint32_t base_address, uint32_t ring_buffer_pointer, uint32_t ring_buffer_size);
+
+    /**
+     * 
+     * 
+     *
+     *
+     *
+     */
+    uint32_t mkio_write_to_rt (uint32_t data_src, uint32_t data_dst, uint32_t size, uint32_t bc_base_address, uint32_t rt_base_address);
+
+    /**
+     * 
+     * 
+     *
+     *
+     *
+     */
+    uint32_t mkio_read_from_rt (uint32_t data_src, uint32_t data_dst, uint32_t size, uint32_t bc_base_address, uint32_t rt_base_address);
+
+    /**
+     * 
+     * 
+     *
+     *
+     *
+     */
+    void mkio_set_polarity (uint32_t base_address, uint32_t polarity_reg);
+
 
 /** @}*/
 

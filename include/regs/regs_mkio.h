@@ -52,4 +52,6 @@
  * @}
  */
 
+#define POLARITY          0x100
+
 #endif /* end of include guard: REGS_MKIO_H */

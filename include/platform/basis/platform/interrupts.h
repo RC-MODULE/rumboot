@@ -53,6 +53,8 @@
 #define MDMA1_IRQ                   IRQ_REAL(65)
 #define MDMA2_IRQ                   IRQ_REAL(66)
 #define MDMA3_IRQ                   IRQ_REAL(67)
+#define MKIO0_IRQ                   IRQ_REAL(68)
+#define MKIO1_IRQ                   IRQ_REAL(69)
 #define GSPI_SDIO0_IRQ              IRQ_REAL(72)
 #define GSPI_SDIO1_IRQ              IRQ_REAL(73)
 #define I2C0_IRQ                    IRQ_REAL(74)

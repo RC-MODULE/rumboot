@@ -1,18 +1,18 @@
 
 //-----------------------------------------------------------------------------
-//  This program is for testing Gaisler MKIO write/read functionality
+//  This program is for testing Gaisler MKIO polarity change features
 //    Test includes:
-//    - clear source, middle and destination arrays space
-//    - initialise source array
-//    - check that MKIO0 and MKIO1 are present
-//    - write data to MKIO1 (RT) with MKIO0 (BC)
-//    - check transacrion correct
-//    - read data from MKIO1 (RT) with MKIO0 (BC)
-//    - check transacrion correct
+//    - 
+//    - 
+//    - 
+//    - 
+//    - 
+//    - 
+//    - 
 //    - 
 //
 //
-//    Test duration (RTL): < 550 us
+//    Test duration (RTL): < 
 //-----------------------------------------------------------------------------
 
 #include <stdint.h>
@@ -26,7 +26,7 @@
 #include <devices/mkio.h>
 
 //  Single Array Data Size In Bytes
-#define DATA_SIZE   16
+#define DATA_SIZE   2
 
 
 
@@ -104,6 +104,18 @@ uint32_t main ()
     if (mkio_present (MKIO1_BASE) != 0)
         return -2;
 
+    //  This cycle is for checking our polarity scheme.
+    //  Has no functional meaning for program.
+    for (uint32_t i = 0; i <= 31; i++)
+    {
+        mkio_set_polarity ((1 << i), MKIO0_BASE);
+        mkio_set_polarity ((1 << i), MKIO1_BASE);
+    }
+
+    //  Change BC and RT data signals polarity
+    mkio_set_polarity (0x0F, MKIO0_BASE);
+    mkio_set_polarity (0x0F, MKIO1_BASE);
+    
     if (mkio_write_to_rt ((uint32_t) (&data_src), (uint32_t) (&data_mid), DATA_SIZE, MKIO0_BASE, MKIO1_BASE) != 0)
         return -3;
     cmp_arrays ((uint32_t) (&data_src), (uint32_t) (&data_mid), DATA_SIZE);

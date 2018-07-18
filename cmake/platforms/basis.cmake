@@ -931,6 +931,27 @@ endif()
       NAME mkio_write_read_test
     )
 
+  add_rumboot_target(
+      SNAPSHOT default
+      CONFIGURATION IRAM
+      FILES mkio/mkio0_irq_test.c
+      NAME mkio0_irq_test
+    )
+
+  add_rumboot_target(
+      SNAPSHOT default
+      CONFIGURATION IRAM
+      FILES mkio/mkio1_irq_test.c
+      NAME mkio1_irq_test
+    )
+
+  add_rumboot_target(
+      SNAPSHOT default
+      CONFIGURATION IRAM
+      FILES mkio/mkio_polarity_test.c
+      NAME mkio_polarity_test
+    )
+
   #RumBoot Integration tests
 #  add_rumboot_target(
 #      CONFIGURATION INTEGRATION
