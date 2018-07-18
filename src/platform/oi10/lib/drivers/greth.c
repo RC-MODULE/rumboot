@@ -162,9 +162,14 @@ bool set_greth_ctrl(uint32_t base_addr, greth_ctrl_struct_t* ctrl_struct)
     return true;
 }
 
-static void greth_clear_status_bits(uint32_t base_addr, uint32_t mask)
+void greth_clear_status_bits(uint32_t base_addr, uint32_t mask)
 {
     iowrite32(mask, base_addr + STATUS);
+}
+
+uint32_t greth_get_status(uint32_t base_addr)
+{
+    return ioread32(base_addr + STATUS);
 }
 
 bool greth_wait_transmit(uint32_t base_addr)
@@ -403,7 +408,7 @@ bool greth_start_receive(uint32_t base_addr)
     greth_info.multicast_enable       = false;
     greth_info.speed                  = GRETH_SPEED_100MB;
     greth_info.fullduplex_enable      = true;
-    greth_info.transmitter_int_enable = true;
+    greth_info.transmitter_int_enable = false;
     greth_info.receiver_int_enable    = true;
     greth_info.transmitter_enable     = false;
     greth_info.receiver_enable        = true;
@@ -453,7 +458,7 @@ bool greth_start_transmit(uint32_t base_addr)
     greth_info.multicast_enable       = false;
     greth_info.speed                  = GRETH_SPEED_100MB;
     greth_info.fullduplex_enable      = true;
-    greth_info.transmitter_int_enable = true;
+    greth_info.transmitter_int_enable = false;
     greth_info.receiver_int_enable    = true;
     greth_info.transmitter_enable     = true;
     greth_info.receiver_enable        = false;

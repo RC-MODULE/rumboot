@@ -136,5 +136,7 @@ bool greth_start_receive(uint32_t base_addr);
 bool greth_wait_receive(uint32_t base_addr);
 bool greth_configure_for_transmit( uint32_t base_addr, void volatile * const src, uint32_t length, greth_descr_t* tx_descriptor_data_);
 bool greth_start_transmit(uint32_t base_addr);
+void greth_clear_status_bits(uint32_t base_addr, uint32_t mask);
+uint32_t greth_get_status(uint32_t base_addr);
 
 #endif /* PLATFORM_DEVICES_GBIT_GRETH_H */
