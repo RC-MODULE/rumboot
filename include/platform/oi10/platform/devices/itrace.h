@@ -4,6 +4,7 @@
 #include <stdint.h>
 
 #include <platform/regs/regs_itrace.h>
+#include <platform/arch/ppc/ibm_bit_ordering_macros.h>
 
 
 typedef enum
@@ -69,40 +70,42 @@ struct itrace_data_2
 };
 
 
-void itrace_enable();
-void itrace_disable();
+void itrace_enable(uint32_t base_address);
+void itrace_disable(uint32_t base_address);
 
-void itrace_init(ITRACE_CONDITION_TYPE condition_type,
+void itrace_init(uint32_t base_address,
+                  ITRACE_CONDITION_TYPE condition_type,
                   ITRACE_TRIGGER_MODE trigger_mode,
                   ITRACE_SOURCE_SELECTION source_selection,
                   uint32_t trace_interrupt_enable,
                   uint32_t power_down_eDRAM);
 
-uint32_t itrace_get_status();
-void itrace_clear_status();
+uint32_t itrace_get_status(uint32_t base_address);
+void itrace_clear_status(uint32_t base_address);
 
-uint32_t itrace_get_last_address1();
-uint32_t itrace_get_last_address2();
+uint32_t itrace_get_last_address1(uint32_t base_address);
+uint32_t itrace_get_last_address2(uint32_t base_address);
 
-uint32_t itrace_get_trace_window();
-void itrace_set_trace_window(uint32_t value);
+uint32_t itrace_get_trace_window(uint32_t base_address);
+void itrace_set_trace_window(uint32_t base_address, uint32_t value);
 
-uint32_t itrace_get_condition_timeout();
-void itrace_set_condition_timeout(uint32_t value);
+uint32_t itrace_get_condition_timeout(uint32_t base_address);
+void itrace_set_condition_timeout(uint32_t base_address, uint32_t value);
 
-uint32_t itrace_get_cond1_mask_h();
-void itrace_set_cond1_mask_h(uint32_t value);
+uint32_t itrace_get_cond1_mask_h(uint32_t base_address);
+void itrace_set_cond1_mask_h(uint32_t base_address, uint32_t value);
 
-uint32_t itrace_get_cond2_mask_h();
-void itrace_set_cond2_mask_h(uint32_t value);
+uint32_t itrace_get_cond2_mask_h(uint32_t base_address);
+void itrace_set_cond2_mask_h(uint32_t base_address, uint32_t value);
 
-uint32_t itrace_get_address();
-void itrace_set_address(uint32_t value);
+uint32_t itrace_get_address(uint32_t base_address);
+void itrace_set_address(uint32_t base_address, uint32_t value);
 
-uint32_t itrace_get_raw_data();
-void itrace_set_raw_data(uint32_t value);
+uint32_t itrace_get_raw_data(uint32_t base_address);
+void itrace_set_raw_data(uint32_t base_address, uint32_t value);
 
-struct itrace_data_2 itrace_get_data();
-void itrace_set_data(struct itrace_data_2 value);
+struct itrace_data_2 itrace_get_data(uint32_t base_address);
+void itrace_set_data(uint32_t base_address, struct itrace_data_2 value);
+
 
 #endif /* ITRACE_H_ */
