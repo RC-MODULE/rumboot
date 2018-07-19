@@ -247,3 +247,33 @@ void mkio_set_polarity (uint32_t polarity_reg, uint32_t base_address)
     iowrite32 (polarity_reg, base_address + POLARITY);
 }
 
+void mkio_trig_first_timestamp (uint32_t base_address)
+{
+    iowrite32 (0x1, base_address + SYNC_CTRL_ADDR);
+}
+
+void mkio_fix_timestamp (uint32_t base_address)
+{
+    iowrite32 (0x2, base_address + SYNC_CTRL_ADDR);
+}
+
+void mkio_report_timestamp (uint32_t base_address)
+{
+    uint32_t rdata;
+    
+    rumboot_printf("mkio_report_timestamp for device 0x%x\n", base_address);
+    mkio_fix_timestamp (base_address);
+    rdata = ioread32 (base_address + VALIDCMD_FIRST_L_ADDR);
+    rumboot_printf("    VALIDCMD_FIRST_L_ADDR reg value: 0x%x\n", rdata);
+    rdata = ioread32 (base_address + VALIDCMD_FIRST_H_ADDR);
+    rumboot_printf("    VALIDCMD_FIRST_H_ADDR reg value: 0x%x\n", rdata);
+    rdata = ioread32 (base_address + VALIDCMD_LAST_L_ADDR );
+    rumboot_printf("    VALIDCMD_LAST_L_ADDR reg value: 0x%x\n",  rdata);
+    rdata = ioread32 (base_address + VALIDCMD_LAST_H_ADDR );
+    rumboot_printf("    VALIDCMD_LAST_H_ADDR reg value: 0x%x\n",  rdata);
+    rdata = ioread32 (base_address + RTSYNC_LAST_L_ADDR   );
+    rumboot_printf("    RTSYNC_LAST_L_ADDR reg value: 0x%x\n",    rdata);
+    rdata = ioread32 (base_address + RTSYNC_LAST_H_ADDR   );
+    rumboot_printf("    RTSYNC_LAST_H_ADDR reg value: 0x%x\n",    rdata);
+}
+

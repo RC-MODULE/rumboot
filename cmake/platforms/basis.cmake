@@ -952,6 +952,13 @@ endif()
       NAME mkio_polarity_test
     )
 
+  add_rumboot_target(
+      SNAPSHOT default
+      CONFIGURATION IRAM
+      FILES mkio/mkio_events_timestamps_test.c
+      NAME mkio_events_timestamps_test
+    )
+
   #RumBoot Integration tests
 #  add_rumboot_target(
 #      CONFIGURATION INTEGRATION

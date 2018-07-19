@@ -99,6 +99,33 @@
      */
     void mkio_set_polarity (uint32_t base_address, uint32_t polarity_reg);
 
+    /**
+     * 
+     * 
+     *
+     *
+     *
+     */
+    void mkio_trig_first_timestamp (uint32_t base_address);
+
+    /**
+     * 
+     * 
+     *
+     *
+     *
+     */
+    void mkio_fix_timestamp (uint32_t base_address);
+
+    /**
+     * 
+     * 
+     *
+     *
+     *
+     */
+    void mkio_report_timestamp (uint32_t base_address);
+
 
 /** @}*/
 
@@ -181,18 +208,6 @@ typedef volatile struct __attribute__ ((__packed__))
     uint32_t branch_address      : 32;
     uint32_t reserved_0          : 32;
     uint32_t reserved_1          : 32;
-
-    
-    uint32_t d1_ctrl_word_0      : 32;
-    uint32_t d1_ctrl_word_1      : 32;
-    uint32_t d1_data_pointer     : 32;
-    uint32_t d1_result_word      : 32;
-
-    uint32_t d1_condition_word   : 32;
-    uint32_t d1_branch_address   : 32;
-    uint32_t d1_reserved_0       : 32;
-    uint32_t d1_reserved_1       : 32;
-
 } mkio_bc_descriptor;
 
 typedef volatile struct __attribute__ ((__packed__))

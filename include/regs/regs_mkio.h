@@ -52,6 +52,13 @@
  * @}
  */
 
-#define POLARITY          0x100
+#define POLARITY                0x100
+#define SYNC_CTRL_ADDR          0x104
+#define VALIDCMD_FIRST_L_ADDR   0x108
+#define VALIDCMD_FIRST_H_ADDR   0x10C
+#define VALIDCMD_LAST_L_ADDR    0x110
+#define VALIDCMD_LAST_H_ADDR    0x114
+#define RTSYNC_LAST_L_ADDR      0x118
+#define RTSYNC_LAST_H_ADDR      0x11C
 
 #endif /* end of include guard: REGS_MKIO_H */
