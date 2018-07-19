@@ -238,12 +238,12 @@ rumboot_reset_handler:
     load_const  r30,0x00000000
     load_const  r31,0x00000000
 
-/* TODO Remove timer clk bugfix */
-#define DCR_CLDCR_BASE          0x80090000
-#define PPC_SYS_CONF            0x004       /* From /opt/logs/r.galiulin/top/units/sctl/rtl/sctl.v */
-#define PPC_TMRCLK_SEL_i        1           /* From http://git.module.ru/OI10/doc/blob/master/spec/design/OI10_SCTL_user_guide.docx */
-    load_const  r3, DCR_CLDCR_BASE+PPC_SYS_CONF
-    load_const  r4, (1 << PPC_TMRCLK_SEL_i)
+/* TODO: Remove timer clk bugfix */
+#define DCR_SCTL_BASE_          0x80090000
+#define PPC_SYS_CONF_           0x004       /* From /opt/logs/r.galiulin/top/units/sctl/rtl/sctl.v */
+#define PPC_TMRCLK_SEL_i_       1           /* From http://git.module.ru/OI10/doc/blob/master/spec/design/OI10_SCTL_user_guide.docx */
+    load_const  r3, DCR_SCTL_BASE_+PPC_SYS_CONF_
+    load_const  r4, (1 << PPC_TMRCLK_SEL_i_)
     mtdcrx      r3, r4
 /* timer clk bugfix end */
 

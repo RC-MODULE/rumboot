@@ -150,4 +150,9 @@ inline static void dcbst( void* const addr ) {
         "trap \n\t"\
     )
 
+#define tlbsync()\
+    asm volatile (\
+        "tlbsync \n\t"\
+    )
+
 #endif  /* PPC_476FP_LIB_C_H*/
