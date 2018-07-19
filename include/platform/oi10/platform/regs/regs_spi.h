@@ -20,3 +20,17 @@
 
 //Default values
 #define DEFAULT_SSPCR0          0x0000#define DEFAULT_SSPCR1          0x0#define DEFAULT_SSPSR           0x03#define DEFAULT_SSPCPSR         0x00#define DEFAULT_SSPIMSC         0x0#define DEFAULT_SSPRIS          0x8#define DEFAULT_SSPMIS          0x0#define DEFAULT_SSPICR          0x0#define DEFAULT_SSPDMACR        0x0#define DEFAULT_SSPPeriphID0    0x22#define DEFAULT_SSPPeriphID1    0x10#define DEFAULT_SSPPeriphID2    0x34#define DEFAULT_SSPPeriphID3    0x00#define DEFAULT_SSPPCellID0     0x0D#define DEFAULT_SSPPCellID1     0xF0#define DEFAULT_SSPPCellID2     0x05#define DEFAULT_SSPPCellID3     0xB1
+
+//Mask
+#define MASK_SSPCR0             0XFFFF
+#define MASK_SSPCR1             0XF
+#define MASK_SSPDR              0XFFFF
+#define MASK_SSPSR              0X1F
+#define MASK_SSPCPSR            0XFF
+#define MASK_SSPIMSC            0XF
+#define MASK_SSPRIS             0XF
+#define MASK_SSPMIS             0XF
+#define MASK_SSPICR             0XF
+#define MASK_SSPDMACR           0X3
+
+#define GSPI_TIMEOUT            200
