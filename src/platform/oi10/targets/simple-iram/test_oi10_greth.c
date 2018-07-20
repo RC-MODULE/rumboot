@@ -14,7 +14,7 @@
 
 #define IM1_BASE_MIRROR     0xC0000000
 
-#define GRETH_TEST_DATA_LEN 69
+#define GRETH_TEST_DATA_LEN 64
 #define TST_MAC_MSB     0xFFFF
 #define TST_MAC_LSB     0xFFFFFFFF
 greth_mac_t tst_greth_mac = {TST_MAC_MSB, TST_MAC_LSB};
@@ -184,22 +184,15 @@ void mem_clr(void volatile * const ptr, uint32_t len)
 void prepare_test_data()
 {
     uint32_t i=0;
-    uint32_t j=0;
+    bool toggle = true;
     test_data_im0_src[i++] = (tst_greth_mac.mac_msb << 16) | ((tst_greth_mac.mac_lsb & 0xFFFF0000) >> 16);//DST MAC [48:16]
     test_data_im0_src[i++] = ((tst_greth_mac.mac_lsb & 0xFFFF) << 16) | tst_greth_mac.mac_msb;//DST MAC [15:0] SRC MAC [48:32]
     test_data_im0_src[i++] = tst_greth_mac.mac_lsb;//SRC MAC [31:0]
     test_data_im0_src[i++] = ((GRETH_TEST_DATA_LEN * sizeof(uint32_t) - 14) << 16);//Len and 0x0000 data
-    while(j<32)
+    while(i<GRETH_TEST_DATA_LEN)
     {
-        test_data_im0_src[i] = (1 << j);
-        i++; j++;
-    }
-    test_data_im0_src[i++] = 0xFFFFFFFF;
-    j=0;
-    while(j<32)
-    {
-        test_data_im0_src[i] = ~(1 << j);
-        i++; j++;
+        test_data_im0_src[i] = toggle ? (1 << i) : ~(1 << i);
+        i++; toggle = !toggle;
     }
     memcpy(test_data_im1_src, test_data_im0_src, sizeof(test_data_im0_src));
 }
