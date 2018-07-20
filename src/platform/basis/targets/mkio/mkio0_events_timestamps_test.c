@@ -2,12 +2,16 @@
 //-----------------------------------------------------------------------------
 //  This program is for testing Gaisler MKIO events and timestamps features
 //    Test includes:
-//    - 
-//    - 
-//    - 
-//    - 
-//    - 
-//    - 
+//    - clear source and destination arrays space
+//    - initialise source array
+//    - turn GP_TIMER On
+//    - check that MKIO0 and MKIO1 are present
+//    - repeat few times:
+//      - check MKIOs timestamps values
+//      - send synchronize command to MKIO1 (RT) with MKIO0 (BC)
+//      - write data to MKIO1 (RT) with MKIO0 (BC)
+//      - check MKIOs timestamps values
+//      - check transacrion correct
 //    - 
 //    - 
 //
@@ -30,7 +34,21 @@
 //  Single Array Data Size In Bytes
 #define DATA_SIZE   2
 
+//  Timestamp variables described as global. Because they are.
+uint32_t bc_validcmd_first_l_addr = 0;
+uint32_t bc_validcmd_first_h_addr = 0;
+uint32_t bc_validcmd_last_l_addr  = 0;
+uint32_t bc_validcmd_last_h_addr  = 0;
+uint32_t bc_rtsync_last_l_addr    = 0;
+uint32_t bc_rtsync_last_h_addr    = 0;
 
+uint32_t rt_validcmd_first_l_addr = 0;
+uint32_t rt_validcmd_first_h_addr = 0;
+uint32_t rt_validcmd_last_l_addr  = 0;
+uint32_t rt_validcmd_last_h_addr  = 0;
+uint32_t rt_rtsync_last_l_addr    = 0;
+uint32_t rt_rtsync_last_h_addr    = 0;
+    
 
 
 //-----------------------------------------------------------------------------
@@ -101,8 +119,6 @@ uint32_t mkio_events_timestamps_test (uint32_t data_src, uint32_t data_dst, uint
     mkio_rt_subaddress_table   mkio_rt_subaddress_table  __attribute__ ((aligned(512))) ;
     mkio_rt_descriptor         mkio_rt_rx_descriptor     __attribute__ ((aligned(16)))  ;
     
-    uint32_t mkio_irq_ring_buffer [16] __attribute__ ((aligned(64)));
-    
     //  Wait for external trigger (WTRIG)
     uint32_t WTRIG = 0x1;
     //  Suspend normally (SUSN) - Always suspends after transfer
@@ -133,16 +149,15 @@ uint32_t mkio_events_timestamps_test (uint32_t data_src, uint32_t data_dst, uint
     uint32_t unused = 0xDEADBEEF ;
     
 
-    rumboot_printf("execute mkio_write_to_rt_with_irq\n");
-    rumboot_printf("    data_src %x\n",                 (uint32_t) (&data_src                 ));
-    rumboot_printf("    data_dst %x\n",                 (uint32_t) (&data_dst                 ));
-    rumboot_printf("    mkio_bc_descriptor_0 %x\n",     (uint32_t) (&mkio_bc_descriptor_0     ));
-    rumboot_printf("    mkio_bc_descriptor_1 %x\n",     (uint32_t) (&mkio_bc_descriptor_1     ));
-    rumboot_printf("    mkio_rt_subaddress_table %x\n", (uint32_t) (&mkio_rt_subaddress_table ));
-    rumboot_printf("    mkio_rt_rx_descriptor %x\n",    (uint32_t) (&mkio_rt_rx_descriptor    ));
-    rumboot_printf("    mkio_irq_ring_buffer %x\n",     (uint32_t) (&mkio_irq_ring_buffer     ));
+    rumboot_printf("execute mkio_events_timestamps_test\n");
+    // rumboot_printf("    data_src %x\n",                 (uint32_t) (&data_src                 ));
+    // rumboot_printf("    data_dst %x\n",                 (uint32_t) (&data_dst                 ));
+    // rumboot_printf("    mkio_bc_descriptor_0 %x\n",     (uint32_t) (&mkio_bc_descriptor_0     ));
+    // rumboot_printf("    mkio_bc_descriptor_1 %x\n",     (uint32_t) (&mkio_bc_descriptor_1     ));
+    // rumboot_printf("    mkio_rt_subaddress_table %x\n", (uint32_t) (&mkio_rt_subaddress_table ));
+    // rumboot_printf("    mkio_rt_rx_descriptor %x\n",    (uint32_t) (&mkio_rt_rx_descriptor    ));
     
-    //  Configure synchronize descriptor
+    //  Configure synchronize command descriptor
     mkio_bc_descriptor_0.ctrl_word_0      = 0x00000000 | (WTRIG << 30) | (IRQE_ << 28) | (IRQN << 27) | (SUSN << 25);
     mkio_bc_descriptor_0.ctrl_word_1      = 0x00000000 | (RTAD1 << 11) | (TR << 10) | (RTSA1 << 5) | (WCMC << 0) ;
     mkio_bc_descriptor_0.data_pointer     = unused ;
@@ -181,17 +196,53 @@ uint32_t mkio_events_timestamps_test (uint32_t data_src, uint32_t data_dst, uint
     mkio_rt_rx_descriptor.ctrl_status_word        = 0x03FFFFFF ;
     mkio_rt_rx_descriptor.data_pointer            = data_dst ;
     mkio_rt_rx_descriptor.next_descriptor_pointer = rt_descriptor_end_of_list ;
-
     
-    mkio_report_timestamp (bc_base_address);
-    mkio_report_timestamp (rt_base_address);
+    //-----------------------------------------------------------------------------
+    //  Check, that timestamp didnt change while no transaction
+    //-----------------------------------------------------------------------------
+    mkio_fix_timestamp (bc_base_address);
+    if (
+       (ioread32 (bc_base_address + VALIDCMD_FIRST_L_ADDR) != bc_validcmd_first_l_addr ) |
+       (ioread32 (bc_base_address + VALIDCMD_FIRST_H_ADDR) != bc_validcmd_first_h_addr ) |
+       (ioread32 (bc_base_address + VALIDCMD_LAST_L_ADDR ) != bc_validcmd_last_l_addr  ) |
+       (ioread32 (bc_base_address + VALIDCMD_LAST_H_ADDR ) != bc_validcmd_last_h_addr  ) |
+       (ioread32 (bc_base_address + RTSYNC_LAST_L_ADDR   ) != bc_rtsync_last_l_addr    ) |
+       (ioread32 (bc_base_address + RTSYNC_LAST_H_ADDR   ) != bc_rtsync_last_h_addr    )
+       )
+        return -1;
+    bc_validcmd_first_l_addr = ioread32 (bc_base_address + VALIDCMD_FIRST_L_ADDR);
+    bc_validcmd_first_h_addr = ioread32 (bc_base_address + VALIDCMD_FIRST_H_ADDR);
+    bc_validcmd_last_l_addr  = ioread32 (bc_base_address + VALIDCMD_LAST_L_ADDR );
+    bc_validcmd_last_h_addr  = ioread32 (bc_base_address + VALIDCMD_LAST_H_ADDR );
+    bc_rtsync_last_l_addr    = ioread32 (bc_base_address + RTSYNC_LAST_L_ADDR   );
+    bc_rtsync_last_h_addr    = ioread32 (bc_base_address + RTSYNC_LAST_H_ADDR   );
     
+    mkio_fix_timestamp (rt_base_address);
+    if (
+       (ioread32 (rt_base_address + VALIDCMD_FIRST_L_ADDR) != rt_validcmd_first_l_addr ) |
+       (ioread32 (rt_base_address + VALIDCMD_FIRST_H_ADDR) != rt_validcmd_first_h_addr ) |
+       (ioread32 (rt_base_address + VALIDCMD_LAST_L_ADDR ) != rt_validcmd_last_l_addr  ) |
+       (ioread32 (rt_base_address + VALIDCMD_LAST_H_ADDR ) != rt_validcmd_last_h_addr  ) |
+       (ioread32 (rt_base_address + RTSYNC_LAST_L_ADDR   ) != rt_rtsync_last_l_addr    ) |
+       (ioread32 (rt_base_address + RTSYNC_LAST_H_ADDR   ) != rt_rtsync_last_h_addr    )
+       )
+        return -1;
+    rt_validcmd_first_l_addr = ioread32 (rt_base_address + VALIDCMD_FIRST_L_ADDR);
+    rt_validcmd_first_h_addr = ioread32 (rt_base_address + VALIDCMD_FIRST_H_ADDR);
+    rt_validcmd_last_l_addr  = ioread32 (rt_base_address + VALIDCMD_LAST_L_ADDR );
+    rt_validcmd_last_h_addr  = ioread32 (rt_base_address + VALIDCMD_LAST_H_ADDR );
+    rt_rtsync_last_l_addr    = ioread32 (rt_base_address + RTSYNC_LAST_L_ADDR   );
+    rt_rtsync_last_h_addr    = ioread32 (rt_base_address + RTSYNC_LAST_H_ADDR   );
+    rumboot_printf("bc and rt timestamps before transaction OK\n");
+    //-----------------------------------------------------------------------------
+    
+    rumboot_printf("start rt and bc schedules\n");
     mkio_rt_start_schedule (rt_base_address, (uint32_t) (&mkio_rt_subaddress_table));
     mkio_bc_start_schedule (bc_base_address, (uint32_t) (&mkio_bc_descriptor_0      ));
     
     //  Wait some time to ensure, that BC didnt start transaction without external trigger
     delay_cycle (200);
-    rdata = ioread32 (MKIO0_BASE + BCSL);
+    rdata = ioread32 (bc_base_address + BCSL);
     if (((mkio_bc_descriptor_0.result_word & 0x7) == 0) | ((rdata & 0x07) != 0x4))
         return -1;
     rumboot_printf("transaction didnt started before event. OK.\n");
@@ -207,10 +258,48 @@ uint32_t mkio_events_timestamps_test (uint32_t data_src, uint32_t data_dst, uint
     }
     rumboot_printf("bc and rt descriptors closed successfully\n");
     
-    mkio_report_timestamp (bc_base_address);
-    mkio_report_timestamp (rt_base_address);
+    //-----------------------------------------------------------------------------
+    //  Check, that validcmd timestamp increased with transactions in BC and RT
+    //  Check, that rtsync timestamp increased only in RT
+    //-----------------------------------------------------------------------------
+    mkio_fix_timestamp (bc_base_address);
+    if (
+       (ioread32 (bc_base_address + VALIDCMD_FIRST_L_ADDR) <= bc_validcmd_first_l_addr ) |
+       (ioread32 (bc_base_address + VALIDCMD_FIRST_H_ADDR) <  bc_validcmd_first_h_addr ) |
+       (ioread32 (bc_base_address + VALIDCMD_LAST_L_ADDR ) <= bc_validcmd_last_l_addr  ) |
+       (ioread32 (bc_base_address + VALIDCMD_LAST_H_ADDR ) <  bc_validcmd_last_h_addr  ) |
+       (ioread32 (bc_base_address + RTSYNC_LAST_L_ADDR   ) != bc_rtsync_last_l_addr    ) |
+       (ioread32 (bc_base_address + RTSYNC_LAST_H_ADDR   ) != bc_rtsync_last_h_addr    )
+       )
+        return -1;
+    bc_validcmd_first_l_addr = ioread32 (bc_base_address + VALIDCMD_FIRST_L_ADDR);
+    bc_validcmd_first_h_addr = ioread32 (bc_base_address + VALIDCMD_FIRST_H_ADDR);
+    bc_validcmd_last_l_addr  = ioread32 (bc_base_address + VALIDCMD_LAST_L_ADDR );
+    bc_validcmd_last_h_addr  = ioread32 (bc_base_address + VALIDCMD_LAST_H_ADDR );
+    bc_rtsync_last_l_addr    = ioread32 (bc_base_address + RTSYNC_LAST_L_ADDR   );
+    bc_rtsync_last_h_addr    = ioread32 (bc_base_address + RTSYNC_LAST_H_ADDR   );
+    
+    mkio_fix_timestamp (rt_base_address);
+    if (
+       (ioread32 (rt_base_address + VALIDCMD_FIRST_L_ADDR) <= rt_validcmd_first_l_addr ) |
+       (ioread32 (rt_base_address + VALIDCMD_FIRST_H_ADDR) <  rt_validcmd_first_h_addr ) |
+       (ioread32 (rt_base_address + VALIDCMD_LAST_L_ADDR ) <= rt_validcmd_last_l_addr  ) |
+       (ioread32 (rt_base_address + VALIDCMD_LAST_H_ADDR ) <  rt_validcmd_last_h_addr  ) |
+       (ioread32 (rt_base_address + RTSYNC_LAST_L_ADDR   ) <= rt_rtsync_last_l_addr    ) |
+       (ioread32 (rt_base_address + RTSYNC_LAST_H_ADDR   ) <  rt_rtsync_last_h_addr    )
+       )
+        return -1;
+    rt_validcmd_first_l_addr = ioread32 (rt_base_address + VALIDCMD_FIRST_L_ADDR);
+    rt_validcmd_first_h_addr = ioread32 (rt_base_address + VALIDCMD_FIRST_H_ADDR);
+    rt_validcmd_last_l_addr  = ioread32 (rt_base_address + VALIDCMD_LAST_L_ADDR );
+    rt_validcmd_last_h_addr  = ioread32 (rt_base_address + VALIDCMD_LAST_H_ADDR );
+    rt_rtsync_last_l_addr    = ioread32 (rt_base_address + RTSYNC_LAST_L_ADDR   );
+    rt_rtsync_last_h_addr    = ioread32 (rt_base_address + RTSYNC_LAST_H_ADDR   );
+    rumboot_printf("bc and rt timestamps after transaction OK\n");
+    //-----------------------------------------------------------------------------
     
     //  trigger first_timestamp for next iterration
+    rumboot_printf("arm first_timestamp trigger\n");
     mkio_trig_first_timestamp (bc_base_address);
     mkio_trig_first_timestamp (rt_base_address);
 
@@ -223,13 +312,11 @@ uint32_t mkio_events_timestamps_test (uint32_t data_src, uint32_t data_dst, uint
 uint32_t main ()
 {
     uint32_t data_src [DATA_SIZE >> 2] __attribute__ ((aligned(4)));
-    uint32_t data_mid [DATA_SIZE >> 2] __attribute__ ((aligned(4)));
     uint32_t data_dst [DATA_SIZE >> 2] __attribute__ ((aligned(4)));
     
-    rumboot_printf("    mkio_events_timestamps_test\n");
+    rumboot_printf("    mkio0_events_timestamps_test\n");
     
     clear_destination_space (data_src, DATA_SIZE);
-    clear_destination_space (data_mid, DATA_SIZE);
     clear_destination_space (data_dst, DATA_SIZE);
     
     create_etalon_array (data_src, DATA_SIZE);

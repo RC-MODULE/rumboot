@@ -964,8 +964,15 @@ endif()
   add_rumboot_target(
       SNAPSHOT default
       CONFIGURATION IRAM
-      FILES mkio/mkio_events_timestamps_test.c
-      NAME mkio_events_timestamps_test
+      FILES mkio/mkio0_events_timestamps_test.c
+      NAME mkio0_events_timestamps_test
+    )
+
+  add_rumboot_target(
+      SNAPSHOT default
+      CONFIGURATION IRAM
+      FILES mkio/mkio1_events_timestamps_test.c
+      NAME mkio1_events_timestamps_test
     )
 
   #RumBoot Integration tests
