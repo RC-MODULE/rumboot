@@ -210,9 +210,6 @@ int mdma_trans_add_group(struct mdma_chan *chan, void *mem_addr, size_t mem_size
 	int desc_align, gap_size;
 	int i, num_node;
 	size_t size_limit;
-#if 0
-	uint64_t last_addr;
-#endif
 	int ret = 0;
 
 	chan_print_dbg(1, "start -->");
@@ -248,13 +245,7 @@ int mdma_trans_add_group(struct mdma_chan *chan, void *mem_addr, size_t mem_size
 		ret = -5;
 		goto trans_add_group_exit;
 	}
-#if 0
-	last_addr = (size_t)mem_addr + mem_size;
-	if ((last_addr - 1) > UINT32_MAX) {
-		ret = -6;
-		goto trans_add_group_exit;
-	}
-#endif
+
 	if (((size_t)mem_addr) & (cfg->burst_width - 1)) {
 		ret = -7;
 		goto trans_add_group_exit;
@@ -329,13 +320,7 @@ int mdma_trans_add_group(struct mdma_chan *chan, void *mem_addr, size_t mem_size
 			ret = -16;
 			goto trans_add_group_exit;
 		}
-#if 0
-		last_addr = (size_t)mem_addr + cfg->pitch_width * num_node;
-		if ((last_addr - 1) > UINT32_MAX) {
-			ret = -17;
-			goto trans_add_group_exit;
-		}
-#endif
+
 		if (cfg->add_info) {
 			if (!(num_node < MDMA_LENGTH_LIMIT(0)))
 				size_limit = (MDMA_LENGTH_LIMIT(0) - 1) * cfg->str_length;
@@ -670,7 +655,8 @@ static int chan_set_desc(struct mdma_node *node, struct mdma_cfg *cfg)
 			chan_print_dbg(0, "node(0x%x) settings to long descriptor(0x%x), index = 0x%x",
 					node, long_desc, node->desc_indx);
 
-			iowrite64(0, (size_t)(&long_desc->usrdata));
+			iowrite32(0, (size_t)(&long_desc->usrdata_l));
+			iowrite32(0, (size_t)(&long_desc->usrdata_h));
 			mdma_chan_write32(addr, (size_t)(&long_desc->memptr));
 			mdma_chan_write32(val, (size_t)(&long_desc->flags_length));
 		} while (0);
@@ -786,7 +772,7 @@ int mdma_chan_config(struct mdma_chan *chan)
 	mdma_chan_write32(val, (size_t)(&chan->regs->desc_addr));
 
 	if (!(cfg->event_indx < 0)) {
-		uint64_t prior;
+		uint32_t prior_l, prior_h;
 
 		if (!(cfg->event_indx < MDMA_EVENT_MAX_NUM) ||
 			!(cfg->event_prior < MDMA_PRIOR_MAX_NUM)) {
@@ -814,15 +800,14 @@ int mdma_chan_config(struct mdma_chan *chan)
 		if (cfg->signal_time > 0)
 			mdma_chan_write32(cfg->signal_time, (size_t)(&chan->regs->signal_time));
 
-		val = mdma_chan_read32((size_t)(&chan->regs->events_prior_h));
-		prior = val;
-		prior = prior << 32;
-
-		val = mdma_chan_read32((size_t)(&chan->regs->events_prior_l));
-		prior += val;
+		prior_h = mdma_chan_read32((size_t)(&chan->regs->events_prior_h));
+		prior_l = mdma_chan_read32((size_t)(&chan->regs->events_prior_l));
 
 		for (i = 0; i < MDMA_EVENT_MAX_NUM; i++) {
-			val = MDMA_GET_PRIOR(i, prior);
+			if (i < 8)
+				val = MDMA_GET_PRIOR(i, prior_l);
+			else
+				val = MDMA_GET_PRIOR(i - 8, prior_h);
 
 			if (val == cfg->event_prior)
 				break;
@@ -832,18 +817,28 @@ int mdma_chan_config(struct mdma_chan *chan)
 			MDMA_CHAN_BUG("channel(0x%x) - unknown event prior", chan);
 
 		if (i != cfg->event_indx) {
-			val = MDMA_GET_PRIOR(cfg->event_indx, prior);
-			prior &= ~(MDMA_SET_PRIOR(i, 0xF) |
-				MDMA_SET_PRIOR(cfg->event_indx, 0xF));
-			prior |= (MDMA_SET_PRIOR(i, val) |
-				MDMA_SET_PRIOR(cfg->event_indx, cfg->event_prior));
+			if (cfg->event_indx < 8) {
+				val = MDMA_GET_PRIOR(cfg->event_indx, prior_l);
+				prior_l &= ~MDMA_SET_PRIOR(cfg->event_indx, 0xF);
+				prior_l |= MDMA_SET_PRIOR(cfg->event_indx, cfg->event_prior);
+			}
+			else {
+				val = MDMA_GET_PRIOR(cfg->event_indx - 8, prior_h);
+				prior_h &= ~MDMA_SET_PRIOR(cfg->event_indx - 8, 0xF);
+				prior_h |= MDMA_SET_PRIOR(cfg->event_indx - 8, cfg->event_prior);
+			}
 
-			val = prior;
-			mdma_chan_write32(val, (size_t)(&chan->regs->events_prior_l));
+			if (i < 8) {
+				prior_l &= ~MDMA_SET_PRIOR(i, 0xF);
+				prior_l |= MDMA_SET_PRIOR(i, val);
+			}
+			else {
+				prior_h &= ~MDMA_SET_PRIOR(i - 8, 0xF);
+				prior_h |= MDMA_SET_PRIOR(i - 8, val);
+			}
 
-			prior = prior >> 32;
-			val = prior;
-			mdma_chan_write32(val, (size_t)(&chan->regs->events_prior_h));
+			mdma_chan_write32(prior_l, (size_t)(&chan->regs->events_prior_l));
+			mdma_chan_write32(prior_h, (size_t)(&chan->regs->events_prior_h));
 		}
 
 		val = (uint32_t)trans->first_group->desc_pool_addr;
@@ -1690,9 +1685,7 @@ get_node_exit:
 int mdma_node_rebase(struct mdma_node *node, struct mdma_cfg *cfg,
 			void *mem_addr, size_t mem_size)
 {
-#if 0
-	uint64_t last_addr;
-#endif
+
 	int ret = 0;
 
 	chan_print_dbg(1, "start -->");
@@ -1706,13 +1699,7 @@ int mdma_node_rebase(struct mdma_node *node, struct mdma_cfg *cfg,
 		ret = -2;
 		goto node_rebase_exit;
 	}
-#if 0
-	last_addr = (size_t)mem_addr + mem_size;
-	if ((last_addr - 1) > UINT32_MAX) {
-		ret = -3;
-		goto node_rebase_exit;
-	}
-#endif
+
 	if (((size_t)mem_addr) & (cfg->burst_width - 1)) {
 		ret = -4;
 		goto node_rebase_exit;
@@ -1738,13 +1725,7 @@ int mdma_node_rebase(struct mdma_node *node, struct mdma_cfg *cfg,
 			ret = -7;
 			goto node_rebase_exit;
 		}
-#if 0
-		last_addr = (size_t)mem_addr + cfg->pitch_width * num_str;
-		if ((last_addr - 1) > UINT32_MAX) {
-			ret = -8;
-			goto node_rebase_exit;
-		}
-#endif
+
 		if (cfg->add_info && !(num_str < MDMA_LENGTH_LIMIT(0))) {
 			ret = -9;
 			goto node_rebase_exit;
@@ -1837,9 +1818,9 @@ flags_length_exit:
 	return val;
 }
 
-uint64_t mdma_desc_user_data(void *desc)
+uint32_t mdma_desc_user_data(void *desc, bool low)
 {
-	uint64_t val = 0;
+	uint32_t val = 0;
 
 	chan_print_dbg(1, "start -->");
 
@@ -1851,10 +1832,10 @@ uint64_t mdma_desc_user_data(void *desc)
 	if (((size_t)desc) & 0x3)
 		goto user_data_exit;
 
-	val = mdma_chan_read32((size_t)(desc + sizeof(uint32_t)));
-	val = val << 32;
-
-	val += mdma_chan_read32((size_t)desc);
+	if (!low)
+		val = mdma_chan_read32((size_t)(desc + sizeof(uint32_t)));
+	else
+		val = mdma_chan_read32((size_t)desc);
 
 user_data_exit:
 	chan_print_dbg(1, "<-- end");

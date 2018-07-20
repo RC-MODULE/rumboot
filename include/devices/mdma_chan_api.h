@@ -119,12 +119,9 @@ struct __normal_desc {
 	uint32_t flags_length;
 } __attribute__ ((packed, aligned(8)));
 
-/* MDMA Descriptor usrdata field */
-#define MDMA_DESC_USER_DATA_L(x)	((uint32_t)(x))
-#define MDMA_DESC_USER_DATA_H(x)	((uint32_t)(((uint64_t)(x)) >> 32))
-
 struct __long_desc {
-	uint64_t usrdata;
+	uint32_t usrdata_l;
+	uint32_t usrdata_h;
 	uint32_t memptr;
 	uint32_t flags_length;
 } __attribute__ ((packed, aligned(16)));
@@ -191,8 +188,8 @@ enum mdma_desc_kind {
 #define MDMA_STATE_SUSPEND		(1 << 22)
 
 /* mdma event_prior register bits */
-#define MDMA_GET_PRIOR(i, x)		((((uint64_t)(x)) >> (((i) & 0xF) * 4)) & 0xF)
-#define MDMA_SET_PRIOR(i, x)		(((uint64_t)((x) & 0xF)) << (((i) & 0xF) * 4))
+#define MDMA_GET_PRIOR(i, x)		((((uint32_t)(x)) >> (((i) & 0xF) * 4)) & 0xF)
+#define MDMA_SET_PRIOR(i, x)		(((uint32_t)((x) & 0xF)) << (((i) & 0xF) * 4))
 
 /* mdma synch_events register bits */
 #define MDMA_SYNC_EVENT_SLAVE		(1 << 0)
@@ -372,7 +369,7 @@ enum mdma_chan_error {
 	CHAN_DATA_ERR
 };
 
-#define MDMA_CHAN_TIMEOUT	1000
+#define MDMA_CHAN_TIMEOUT	1000000
 
 struct mdma_chan {
 	struct mdma_chan_regs	*regs;
@@ -424,6 +421,6 @@ int mdma_node_rebase(struct mdma_node *node, struct mdma_cfg *cfg,
 
 void *mdma_node_get_desc(struct mdma_node *node, int *size);
 uint32_t mdma_desc_flags_length(void *desc, int size);
-uint64_t mdma_desc_user_data(void *desc);
+uint32_t mdma_desc_user_data(void *desc, bool low);
 
 #endif // __MDMA_CHAN_H__

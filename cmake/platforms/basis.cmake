@@ -42,6 +42,18 @@ rumboot_add_configuration (
 )
 
 rumboot_add_configuration (
+  IRAM_WITH_DDR
+  LDS basis/iram.lds
+  PREFIX iram_with_ddr
+  LDFLAGS -Wl,--start-group -lgcc -lc -lm -Wl,--end-group "-e rumboot_main"
+  FILES ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c
+  CFLAGS -DRUMBOOT_PRINTF_ACCEL -DRUMBOOT_BASIS_ENABLE_DDR
+  BOOTROM bootrom-stub-mirror
+  FEATURES LUA COVERAGE
+  LOAD IM0BIN SELF
+)
+
+rumboot_add_configuration (
   IRAM_MIRROR
   LDS basis/iram.lds
   PREFIX iram-mirror
@@ -776,6 +788,34 @@ endif()
         PREFIX "mirror"
         NAME "mdma"
     )
+
+   add_rumboot_target(
+       CONFIGURATION IRAM_WITH_DDR
+       FILES mdma_gp/test_suite_direct.c mdma_gp/test_suite_base.c
+       PREFIX "direct"
+       NAME "mdma_gp_1-1_1-2_1-3_1-4"
+   )
+
+  add_rumboot_target(
+      CONFIGURATION IRAM_MIRROR
+      FILES mdma_gp/test_suite_mirror.c mdma_gp/test_suite_base.c
+      PREFIX "mirror"
+      NAME "mdma_gp_1-1_1-2_1-3_1-5_2-4"
+  )
+
+  add_rumboot_target(
+      CONFIGURATION IRAM_WITH_DDR
+      FILES mdma_gp/test_suite_full.c mdma_gp/test_suite_base.c
+      PREFIX "direct"
+      NAME "mdma_gp_2-1_2-2_2-3"
+  )
+
+  add_rumboot_target(
+      CONFIGURATION IRAM_MIRROR
+      FILES mdma_gp/test_suite_full.c mdma_gp/test_suite_base.c
+      PREFIX "mirror"
+      NAME "mdma_gp_2-1_2-2_2-3"
+  )
 
   add_rumboot_target(
       SNAPSHOT default
