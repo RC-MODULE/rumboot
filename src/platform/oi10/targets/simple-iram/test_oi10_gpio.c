@@ -5,8 +5,8 @@
 #include <platform/common_macros/common_macros.h>
 #include <platform/test_event_codes.h>
 #include <platform/devices.h>
-#include <platform/oi10/platform/regs/regs_gpio.h>
-#include <platform/oi10/platform/devices/gpio.h>
+#include <platform/regs/regs_gpio.h>
+#include <platform/devices/gpio.h>
 
 #include <rumboot/irq.h>
 #include <rumboot/io.h>
