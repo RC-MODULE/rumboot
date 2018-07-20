@@ -22,18 +22,14 @@ static uint32_t check_gpio_default_val(uint32_t base_addr)
 {
     rumboot_printf("Check the default values of the registers \n");
 
-    TEST_ASSERT((ioread32(base_addr + GPIO_DIR) == GPIO_DIR_DEFAULT), "ERROR!!! The default value does not match the expected value the register GPIO_DIR.\n");
-    rumboot_printf("Check GPIO_DIR: OK \n");
-
-    gpio_set_direction(base_addr, 0x2A, direction_out);
     TEST_ASSERT((ioread32(base_addr + GPIO_DATA) == GPIO_DATA_DEFAULT), "ERROR!!! The default value does not match the expected value the register GPIO_DATA.\n");
     rumboot_printf("Check GPIO_DATA: OK \n");
 
+    TEST_ASSERT((ioread32(base_addr + GPIO_DIR) == GPIO_DIR_DEFAULT), "ERROR!!! The default value does not match the expected value the register GPIO_DIR.\n");
+    rumboot_printf("Check GPIO_DIR: OK \n");
+
     TEST_ASSERT((ioread32(base_addr + GPIO_IS) == GPIO_IS_DEFAULT), "ERROR!!! The default value does not match the expected value the register GPIO_IS.\n");
     rumboot_printf("Check GPIO_IS: OK \n");
-
-//    TEST_ASSERT((ioread32(base_addr + GPIO_RIS) == GPIO_RIS_DEFAULT), "ERROR!!! The default value does not match the expected value the register GPIO_RIS.\n");
-//    rumboot_printf("Check GPIO_RIS: OK \n");
 
     TEST_ASSERT((ioread32(base_addr + GPIO_IBE) == GPIO_IBE_DEFAULT), "ERROR!!! The default value does not match the expected value the register GPIO_IBE.\n");
     rumboot_printf("Check GPIO_IBE: OK \n");
@@ -43,6 +39,9 @@ static uint32_t check_gpio_default_val(uint32_t base_addr)
 
     TEST_ASSERT((ioread32(base_addr + GPIO_IE) == GPIO_IE_DEFAULT), "ERROR!!! The default value does not match the expected value the register GPIO_IE.\n");
     rumboot_printf("Check GPIO_IE: OK \n");
+
+    TEST_ASSERT((ioread32(base_addr + GPIO_RIS) == GPIO_RIS_DEFAULT), "ERROR!!! The default value does not match the expected value the register GPIO_RIS.\n");
+    rumboot_printf("Check GPIO_RIS: OK \n");
 
     TEST_ASSERT((ioread32(base_addr + GPIO_MIS) == GPIO_MIS_DEFAULT), "ERROR!!! The default value does not match the expected value the register GPIO_MIS.\n");
     rumboot_printf("Check GPIO_MIS: OK \n");
