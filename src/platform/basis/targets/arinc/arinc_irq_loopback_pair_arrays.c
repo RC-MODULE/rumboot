@@ -127,8 +127,7 @@ int main()
     uint32_t addr;
 	uint32_t addr_rd;
 
-	 if (tmp !=0) {return -1;}
-	rumboot_printf("DDR0_BASE=0x%x\n", DDR0_BASE);
+	rumboot_printf("copy %d bytes\n", sizeof(tx_array32)); 
 	uint32_t *tx_mem = rumboot_malloc_from_heap_aligned(0, sizeof(tx_array32), 8);
 	uint32_t *trg = (uint32_t *) tx_mem;
 	memcpy(trg, tx_array32,sizeof(tx_array32));
