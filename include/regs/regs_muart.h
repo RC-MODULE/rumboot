@@ -1,6 +1,7 @@
 #ifndef REGS_MUART_H
 #define REGS_MUART_H
 
+//COMMON
 #define MUART_ID 0x000
 #define MUART_VERSION 0x004
 #define MUART_SW_RST 0x008
@@ -28,6 +29,7 @@
 #define MUART_SPS_i 9
 #define MUART_STP2_i 10
 #define MUART_WLEN_i 12
+#define MUART_DUM_i 15
 
 //MUART_BDIV
 #define MUART_BAUD_DIV_i 0
@@ -36,11 +38,79 @@
 //MUART_STATUS
 #define MUART_RXRIS_i 0
 #define MUART_TXRIS_i 1
+#define MUART_RTRIS_i 2
+#define MUART_FERIS_i 3
+#define MUART_PERIS_i 4
+#define MUART_BERIS_i 5
 #define MUART_RERIS_i 6
 #define MUART_TERIS_i 7
+#define MUART_TTRIS_i 8
 
 //MUART_FIFO_STATE
 #define MUART_RXFS_i 0
 #define MUART_TXFS_i 16
 
+//READ CHANNEL
+#define TX_CHANNEL_R 0x100
+#define TX_ENABLE_R 0x100
+#define TX_SUSPEND_R 0x104
+#define TX_CANCEL_R 0x108
+#define TX_SETTINGS_R 0x110
+#define TX_IRQ_MASK_R 0x114
+#define TX_STATUS_R 0x118
+#define TX_DESC_ADDR_R 0x120
+#define TX_CUR_DESC_ADDR_R 0x128
+#define TX_CUR_ADDR_R 0x12c
+#define TX_STATE_R 0x130
+#define TX_AXLEN_R 0x140
+#define TX_AXCACHE_R 0x144
+#define TX_AXPROT_R 0x148
+#define TX_AXLOCK_R 0x14c
+#define TX_RRESP_R 0x150
+#define TX_RAXI_ERR_ADDR_R 0x154
+#define TX_BRESP_R 0x158
+#define TX_WAXI_ERR_ADDR_R 0x15c
+#define TX_DESC_PERMUT_R 0x160
+#define TX_R_MAX_TRANS 0x180
+#define TX_ARLEN 0x184
+#define TX_ARCACHE 0x188
+#define TX_ARPROT 0x18c
+#define TX_ARLOCK 0x190
+#define TX_RRESP 0x194
+#define TX_RAXI_ERR_ADDR 0x198
+#define TX_RAXI_STATE 0x1a0
+#define TX_R_AVAILABLE_SPACE 0x1a4
+#define TX_R_PERMUTATION 0x1a8
+
+//WRITE CHANNEL
+#define RX_CHANNEL_W 0x200
+#define RX_ENABLE_W 0x200
+#define RX_SUSPEND_W 0x204
+#define RX_CANCEL_W 0x208
+#define RX_SETTINGS_W 0x210
+#define RX_IRQ_MASK_W 0x214
+#define RX_STATUS_W 0x218
+#define RX_DESC_ADDR_W 0x220
+#define RX_CUR_DESC_ADDR_W 0x228
+#define RX_CUR_ADDR_W 0x22c
+#define RX_STATE_W 0x230
+#define RX_AXLEN_W 0x240
+#define RX_AXCACHE_W 0x244
+#define RX_AXPROT_W 0x248
+#define RX_AXLOCK_W 0x24c
+#define RX_RRESP_W 0x250
+#define RX_RAXI_ERR_ADDR_W 0x254
+#define RX_BRESP_W 0x258
+#define RX_WAXI_ERR_ADDR_W 0x25c
+#define RX_DESC_PERMUT_W 0x260
+#define RX_W_MAX_TRANS 0x280
+#define RX_AWLEN 0x284
+#define RX_AWCACHE 0x288
+#define RX_AWPROT 0x28c
+#define RX_AWLOCK 0x290
+#define RX_BRESP 0x294
+#define RX_WAXI_ERR_ADDR 0x298
+#define RX_W_STATE 0x2a0
+#define RX_W_AWAILABLE_SPACE 0x2a4
+#define RX_W_PERMUTATION 0x2a8
 #endif

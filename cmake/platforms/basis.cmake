@@ -215,6 +215,15 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       PREFIX spl
       FEATURES STUB
     )
+	
+	add_rumboot_target_dir(muart/
+      CONFIGURATION IRAM
+      PREFIX muart-iram
+    )
+	add_rumboot_target_dir(muart/
+      CONFIGURATION IRAM_MIRROR
+      PREFIX muart-mirror
+	)
 
     add_rumboot_target(
         CONFIGURATION DROM
