@@ -20,7 +20,7 @@
 #include <platform/arch/ppc/ppc_476fp_lib_c.h>
 #include <platform/test_assert.h>
 
-#define ETH_DEBUG
+//#define ETH_DEBUG
 
 //Transmit descriptor fields
 #define GRETH_TX_DESCR_UC                            20
@@ -131,10 +131,10 @@ typedef struct greth_ctrl_struct
 bool greth_mem_copy(uint32_t base_addr, void volatile * src, void volatile * dst, uint32_t length);
 bool mdio_write( uint32_t base_addr, uint8_t phy_addr, uint8_t reg_addr, uint16_t data);
 uint16_t mdio_read( uint32_t base_addr, uint8_t phy_addr, uint8_t reg_addr);
-bool greth_configure_for_receive( uint32_t base_addr, void volatile * const dst, uint32_t length, greth_descr_t* rx_descriptor_data_);
+bool greth_configure_for_receive( uint32_t base_addr, void volatile * const dst, uint32_t length, greth_descr_t* rx_descriptor_data_, greth_mac_t* gr_mac);
 bool greth_start_receive(uint32_t base_addr);
 bool greth_wait_receive(uint32_t base_addr);
-bool greth_configure_for_transmit( uint32_t base_addr, void volatile * const src, uint32_t length, greth_descr_t* tx_descriptor_data_);
+bool greth_configure_for_transmit( uint32_t base_addr, void volatile * const src, uint32_t length, greth_descr_t* tx_descriptor_data_, greth_mac_t* gr_mac);
 bool greth_start_transmit(uint32_t base_addr);
 void greth_clear_status_bits(uint32_t base_addr, uint32_t mask);
 uint32_t greth_get_status(uint32_t base_addr);

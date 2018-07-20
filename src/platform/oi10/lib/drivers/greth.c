@@ -69,7 +69,7 @@ void new_greth_ctrl_struct(greth_ctrl_struct_t* ctrl_struct)
     ctrl_struct->multicast_enable           = false;
     ctrl_struct->phy_int_enable             = false;
     ctrl_struct->burstmode_enable           = false;
-    ctrl_struct->speed                      = GRETH_SPEED_100MB;
+    ctrl_struct->speed                      = GRETH_SPEED_10MB;
     ctrl_struct->promiscuous_mode           = false;
     ctrl_struct->fullduplex_enable          = false;
     ctrl_struct->receiver_int_enable        = false;
@@ -246,28 +246,6 @@ static bool is_tx_descriptor_data_set __attribute__((section(".data"))) = false;
 static greth_descr_t volatile * rx_descriptor_data;
 static bool is_rx_descriptor_data_set __attribute__((section(".data"))) = false;
 
-void greth_set_tx_descriptor_data( greth_descr_t volatile * const new_tx_descriptor_data )
-{
-    tx_descriptor_data = new_tx_descriptor_data;
-    is_tx_descriptor_data_set = true;
-}
-
-void greth_set_tx_descriptor_default_data()
-{
-    is_tx_descriptor_data_set = false;
-}
-
-void greth_set_rx_descriptor_data( greth_descr_t volatile * const new_rx_descriptor_data )
-{
-    rx_descriptor_data = new_rx_descriptor_data;
-    is_rx_descriptor_data_set = true;
-}
-
-void greth_set_rx_descriptor_default_data()
-{
-    is_rx_descriptor_data_set = false;
-}
-
 /* GRETH DMA copy functions*/
 
 static void prepare_tx_descriptors(uint32_t src_addr, uint32_t length, uint32_t const base_addr)
@@ -277,7 +255,7 @@ static void prepare_tx_descriptors(uint32_t src_addr, uint32_t length, uint32_t 
     while(length > GRETH_MAX_DESC_DATA_LENGTH)
     {
 #ifdef ETH_DEBUG
-        rumboot_printf("tx_descr[%d]: 0x%x\n", i, tx_descriptor_data[i].start_addr);
+        rumboot_printf("tx_descr[%d]: 0x%x / 0x%x\n", i, tx_descriptor_data[i].options, tx_descriptor_data[i].start_addr);
 #endif
         tx_descriptor_data[i].options = (1 << GRETH_TX_DESCR_EN) | GRETH_MAX_DESC_DATA_LENGTH;
         tx_descriptor_data[i].start_addr = src_addr;
@@ -288,8 +266,9 @@ static void prepare_tx_descriptors(uint32_t src_addr, uint32_t length, uint32_t 
     //wrap descriptor. enable interrupt
     tx_descriptor_data[i].options = (1 << GRETH_TX_DESCR_WR)| (1 << GRETH_TX_DESCR_EN) | (1 << GRETH_TX_DESCR_IE) | length;
     tx_descriptor_data[i].start_addr = src_addr;
-    rumboot_printf("tx_descr[%d]: 0x%x\n", i, tx_descriptor_data[i].start_addr);
-
+#ifdef ETH_DEBUG
+    rumboot_printf("tx_descr[%d]: 0x%x / 0x%x\n", i, tx_descriptor_data[i].options, tx_descriptor_data[i].start_addr);
+#endif
     greth_set_tx_descriptor(base_addr, tx_descriptor_data);
 }
 
@@ -300,7 +279,7 @@ static void prepare_rx_descriptors(uint32_t src_addr, uint32_t length, uint32_t 
     while(length > GRETH_MAX_DESC_DATA_LENGTH)
     {
 #ifdef ETH_DEBUG
-        rumboot_printf("rx_descr[%d]: 0x%x\n", i, rx_descriptor_data[i].start_addr);
+        rumboot_printf("rx_descr[%d]: 0x%x / 0x%x\n", i, rx_descriptor_data[i].options, rx_descriptor_data[i].start_addr);
 #endif
         rx_descriptor_data[i].options = (1 << GRETH_RX_DESCR_EN) | GRETH_MAX_DESC_DATA_LENGTH;
         rx_descriptor_data[i].start_addr = (src_addr);
@@ -311,64 +290,13 @@ static void prepare_rx_descriptors(uint32_t src_addr, uint32_t length, uint32_t 
     //wrap descriptor. enable interrupt
     rx_descriptor_data[i].options = (1 << GRETH_RX_DESCR_WR) | (1 << GRETH_RX_DESCR_EN) | (1 << GRETH_RX_DESCR_IE) | length;
     rx_descriptor_data[i].start_addr = (src_addr);
-    rumboot_printf("rx_descr[%d]: 0x%x\n", i, rx_descriptor_data[i].start_addr);
-
+#ifdef ETH_DEBUG
+    rumboot_printf("rx_descr[%d]: 0x%x / 0x%x\n", i, rx_descriptor_data[i].options, rx_descriptor_data[i].start_addr);
+#endif
     greth_set_rx_descriptor(base_addr, rx_descriptor_data);
 }
 
-bool greth_mem_copy( uint32_t base_addr, void volatile * const src, void volatile * const dst, uint32_t length)
-{
-
-    //descriptor address is 1KB aligned. //max count=512
-    greth_descr_t  volatile tx_descriptor_data_[512] __attribute__((aligned(1024)));
-    greth_descr_t  volatile rx_descriptor_data_[512] __attribute__((aligned(1024)));
-    greth_ctrl_struct_t greth_info;
-    greth_mac_t greth_mac;
-    uint32_t greth_idx = base_addr==GRETH_0_BASE ? 0 : 1;
-
-    rumboot_printf("Start copy operation %d bytes by GRETH%d(0x%x) from 0x%x to 0x%x\n", length, greth_idx, base_addr, (uint32_t)src, (uint32_t)dst);
-
-    //clear status register by writing '1's (TA,RA,TI,RI,TE,RE)
-    iowrite32( (1 << GRETH_STATUS_RE) |
-               (1 << GRETH_STATUS_TE) |
-               (1 << GRETH_STATUS_RI) |
-               (1 << GRETH_STATUS_TI) |
-               (1 << GRETH_STATUS_RA) |
-               (1 << GRETH_STATUS_TA), base_addr + STATUS);
-
-    if( !is_tx_descriptor_data_set ) {
-        tx_descriptor_data = tx_descriptor_data_;
-    }
-    if( !is_rx_descriptor_data_set ) {
-        rx_descriptor_data = rx_descriptor_data_;
-    }
-    greth_mac.mac_msb = 0xFFFF;    //0x0000;
-    greth_mac.mac_lsb = 0xFFFFFFFF;//0x5E000000;
-    greth_set_mac(base_addr,&greth_mac);
-
-    prepare_tx_descriptors((uint32_t)src, length, base_addr);
-    prepare_rx_descriptors((uint32_t)dst, length, base_addr);
-
-    new_greth_ctrl_struct(&greth_info);
-    greth_info.promiscuous_mode       = true;
-    greth_info.edcl_disable           = false;
-    greth_info.multicast_enable       = false;
-    greth_info.speed                  = GRETH_SPEED_100MB;
-    greth_info.fullduplex_enable      = true;
-    greth_info.transmitter_int_enable = true;
-    greth_info.receiver_int_enable    = true;
-    greth_info.transmitter_enable     = true;
-    greth_info.receiver_enable        = true;
-    greth_info.ram_debug_enable       = true;
-    set_greth_ctrl(base_addr, &greth_info);
-
-    if (!greth_wait_transmit(base_addr)) return false;
-    if (!greth_wait_receive(base_addr))  return false;
-
-    return true;
-}
-
-bool greth_configure_for_receive( uint32_t base_addr, void volatile * const dst, uint32_t length, greth_descr_t* rx_descriptor_data_)
+bool greth_configure_for_receive( uint32_t base_addr, void volatile * const dst, uint32_t length, greth_descr_t* rx_descriptor_data_, greth_mac_t* gr_mac)
 {
 
     //descriptor address is 1KB aligned. //max count=512
@@ -389,9 +317,9 @@ bool greth_configure_for_receive( uint32_t base_addr, void volatile * const dst,
     if( !is_rx_descriptor_data_set ) {
         rx_descriptor_data = rx_descriptor_data_;
     }
-    greth_mac.mac_msb = 0xFFFF;    //0x0000;
-    greth_mac.mac_lsb = 0xFFFFFFFF;//0x5E000000;
-    greth_set_mac(base_addr,&greth_mac);
+    greth_mac.mac_msb = gr_mac->mac_msb;
+    greth_mac.mac_lsb = gr_mac->mac_lsb;
+    greth_set_mac(base_addr, &greth_mac);
 
     prepare_rx_descriptors((uint32_t)dst, length, base_addr);
 
@@ -406,19 +334,19 @@ bool greth_start_receive(uint32_t base_addr)
     greth_info.promiscuous_mode       = true;
     greth_info.edcl_disable           = false;
     greth_info.multicast_enable       = false;
-    greth_info.speed                  = GRETH_SPEED_100MB;
+    greth_info.speed                  = GRETH_SPEED_10MB;
     greth_info.fullduplex_enable      = true;
     greth_info.transmitter_int_enable = false;
     greth_info.receiver_int_enable    = true;
     greth_info.transmitter_enable     = false;
     greth_info.receiver_enable        = true;
-    greth_info.ram_debug_enable       = true;
+    greth_info.ram_debug_enable       = false;
     set_greth_ctrl(base_addr, &greth_info);
 
     return true;
 }
 
-bool greth_configure_for_transmit( uint32_t base_addr, void volatile * const src, uint32_t length, greth_descr_t* tx_descriptor_data_)
+bool greth_configure_for_transmit( uint32_t base_addr, void volatile * const src, uint32_t length, greth_descr_t* tx_descriptor_data_, greth_mac_t* gr_mac)
 {
 
     //descriptor address is 1KB aligned. //max count=512
@@ -440,8 +368,8 @@ bool greth_configure_for_transmit( uint32_t base_addr, void volatile * const src
         tx_descriptor_data = tx_descriptor_data_;
     }
 
-    greth_mac.mac_msb = 0xFFFF;    //0x0000;
-    greth_mac.mac_lsb = 0xFFFFFFFF;//0x5E000000;
+    greth_mac.mac_msb = gr_mac->mac_msb;
+    greth_mac.mac_lsb = gr_mac->mac_lsb;
     greth_set_mac(base_addr,&greth_mac);
 
     prepare_tx_descriptors((uint32_t)src, length, base_addr);
@@ -456,13 +384,13 @@ bool greth_start_transmit(uint32_t base_addr)
     greth_info.promiscuous_mode       = true;
     greth_info.edcl_disable           = false;
     greth_info.multicast_enable       = false;
-    greth_info.speed                  = GRETH_SPEED_100MB;
+    greth_info.speed                  = GRETH_SPEED_10MB;
     greth_info.fullduplex_enable      = true;
     greth_info.transmitter_int_enable = false;
-    greth_info.receiver_int_enable    = true;
+    greth_info.receiver_int_enable    = false;
     greth_info.transmitter_enable     = true;
     greth_info.receiver_enable        = false;
-    greth_info.ram_debug_enable       = true;
+    greth_info.ram_debug_enable       = false;
     set_greth_ctrl(base_addr, &greth_info);
 
 //    if (!greth_wait_transmit(base_addr)) return false;
@@ -542,7 +470,6 @@ void run_mdio_read(uint32_t base_addr, uint8_t phy_addr, uint8_t reg_addr)
           (                  1 << GRETH_MDIO_RD      );
     iowrite32(buf, base_addr + MDIO_CTRL);
 }
-
 
 bool mdio_write( uint32_t base_addr, uint8_t phy_addr, uint8_t reg_addr, uint16_t data)
 {

@@ -12,29 +12,16 @@
 
 #include <platform/devices/greth.h>
 
+#define IM1_BASE_MIRROR     0xC0000000
+
+#define GRETH_TEST_DATA_LEN 69
+#define TST_MAC_MSB     0xFFFF
+#define TST_MAC_LSB     0xFFFFFFFF
+greth_mac_t tst_greth_mac = {TST_MAC_MSB, TST_MAC_LSB};
+
 /*
  * Functions and variables for interrupt handling
  */
-
-struct greth_instance
-{
-    uint32_t base_addr;
-    int      greth_index;
-};
-
-
-static struct greth_instance in[ ] = {
-                                            {
-                                                .base_addr = GRETH_0_BASE,
-                                                .greth_index = 0
-                                            },
-                                            {
-                                                .base_addr = GRETH_1_BASE,
-                                                .greth_index = 1
-                                            },
-                                      };
-
-
 uint32_t GRETH0_IRQ_HANDLED = 0;
 uint32_t GRETH1_IRQ_HANDLED = 0;
 
@@ -107,41 +94,41 @@ bool greth_wait_receive_irq(uint32_t base_addr, uint32_t *eth_irq_handled_flag)
     }
 }
 
-void enable_eth01_irqs()
+struct rumboot_irq_entry * create_greth01_irq_handlers()
 {
     rumboot_printf( "Enable GRETH irqs\n" );
     rumboot_irq_cli();
     struct rumboot_irq_entry *tbl = rumboot_irq_create( NULL );
 
-    rumboot_irq_set_handler( tbl, ETH0_INT, (int_sense_edge << MPIC128_VP_S_i) | (int_pol_pos << MPIC128_VP_POL_i), handler_eth0, &in[0] );
-    rumboot_irq_set_handler( tbl, ETH1_INT, (int_sense_edge << MPIC128_VP_S_i) | (int_pol_pos << MPIC128_VP_POL_i), handler_eth1, &in[1] );
+    rumboot_irq_set_handler( tbl, ETH0_INT, (int_sense_edge << MPIC128_VP_S_i) | (int_pol_pos << MPIC128_VP_POL_i), handler_eth0, (void *)0 );
+    rumboot_irq_set_handler( tbl, ETH1_INT, (int_sense_edge << MPIC128_VP_S_i) | (int_pol_pos << MPIC128_VP_POL_i), handler_eth1, (void *)0 );
 
     /* Activate the table */
     rumboot_irq_table_activate( tbl );
     rumboot_irq_enable( ETH0_INT );
     rumboot_irq_enable( ETH1_INT );
     rumboot_irq_sei();
+
+    return tbl;
+}
+
+void delete_greth01_irq_handlers(struct rumboot_irq_entry *tbl)
+{
+    rumboot_irq_table_activate(NULL);
+    rumboot_irq_free(tbl);
 }
 
 /*
  * Test data and descriptors
  */
-greth_descr_t  tx_descriptor_data_[512] __attribute__((aligned(1024)));
-greth_descr_t  rx_descriptor_data_[512] __attribute__((aligned(1024)));
+greth_descr_t  tx_descriptor_data_[GRETH_MAX_DESCRIPTORS_COUNT] __attribute__((aligned(1024)));
+greth_descr_t  rx_descriptor_data_[GRETH_MAX_DESCRIPTORS_COUNT] __attribute__((aligned(1024)));
 
-uint32_t test_data_im0_src[] __attribute__((section(".data")))__attribute__((aligned(0x4))) =
-        {
-                [0] = 0x00000000,
-                [1] = 0x11111111,
-                [2] = 0x22222222,
-                [3] = 0x33333333,
-                [4] = 0x44444444,
-                [5] = 0x55555555,
-                [6] = 0x66666666,
-                [7] = 0x77777777
-        };
+uint32_t test_data_im0_src[GRETH_TEST_DATA_LEN] __attribute__((section(".data")))__attribute__((aligned(0x4)));
+uint32_t test_data_im0_dst[GRETH_TEST_DATA_LEN] __attribute__((section(".data")))__attribute__((aligned(0x4)));
 
-uint32_t test_data_im0_dst[sizeof(test_data_im0_src)] __attribute__((section(".data")));
+uint32_t* test_data_im1_src = (uint32_t *) IM1_BASE_MIRROR;
+uint32_t* test_data_im1_dst = (uint32_t *)(IM1_BASE_MIRROR + sizeof(test_data_im0_src));
 
 /*
  * MDIO checks
@@ -194,19 +181,35 @@ void mem_clr(void volatile * const ptr, uint32_t len)
     }
 }
 
+void prepare_test_data()
+{
+    uint32_t i=0;
+    uint32_t j=0;
+    test_data_im0_src[i++] = (tst_greth_mac.mac_msb << 16) | ((tst_greth_mac.mac_lsb & 0xFFFF0000) >> 16);//DST MAC [48:16]
+    test_data_im0_src[i++] = ((tst_greth_mac.mac_lsb & 0xFFFF) << 16) | tst_greth_mac.mac_msb;//DST MAC [15:0] SRC MAC [48:32]
+    test_data_im0_src[i++] = tst_greth_mac.mac_lsb;//SRC MAC [31:0]
+    test_data_im0_src[i++] = ((GRETH_TEST_DATA_LEN * sizeof(uint32_t) - 14) << 16);//Len and 0x0000 data
+    while(j<32)
+    {
+        test_data_im0_src[i] = (1 << j);
+        i++; j++;
+    }
+    test_data_im0_src[i++] = 0xFFFFFFFF;
+    j=0;
+    while(j<32)
+    {
+        test_data_im0_src[i] = ~(1 << j);
+        i++; j++;
+    }
+    memcpy(test_data_im1_src, test_data_im0_src, sizeof(test_data_im0_src));
+}
+
 /*
  * Checks transfers which uses different memory blocks
  */
-int check_transfer_from_im1_to_im1()
+int check_transfer_via_external_loopback(uint32_t base_addr_src_eth, uint32_t base_addr_dst_eth, uint32_t * test_data_src, uint32_t * test_data_dst)
 {
-    rumboot_printf("IM1-IM1 checking\n\n");
-    memcpy((uint32_t*)IM1_BASE, test_data_im0_src, sizeof(test_data_im0_src));
-    greth_mem_copy(GRETH_0_BASE, (uint32_t*)IM1_BASE, (uint32_t*)(IM1_BASE + sizeof(test_data_im0_src)), sizeof(test_data_im0_src) );
-    return 0;
-}
-
-int check_transfer_from_im0_to_im0(uint32_t base_addr_src_eth, uint32_t base_addr_dst_eth)
-{
+    /*
     uint32_t * eth_hadled_flag_ptr;
     if (base_addr_dst_eth==GRETH_0_BASE)
     {
@@ -218,18 +221,20 @@ int check_transfer_from_im0_to_im0(uint32_t base_addr_src_eth, uint32_t base_add
         GRETH1_IRQ_HANDLED = 0;
         eth_hadled_flag_ptr = &GRETH1_IRQ_HANDLED;
     }
+    */
+    rumboot_printf("\nChecking transfer from 0x%X to 0x%x\n", (uint32_t)test_data_src, (uint32_t) test_data_dst);
 
-    rumboot_printf("IM0-IM0 checking\n");
-    greth_configure_for_receive( base_addr_dst_eth, test_data_im0_dst, sizeof(test_data_im0_src), rx_descriptor_data_);
-    greth_configure_for_transmit( base_addr_src_eth, test_data_im0_src, sizeof(test_data_im0_src), tx_descriptor_data_);
+    greth_configure_for_receive( base_addr_dst_eth, test_data_dst, sizeof(test_data_im0_src), rx_descriptor_data_, &tst_greth_mac);
+    greth_configure_for_transmit( base_addr_src_eth, test_data_src, sizeof(test_data_im0_src), tx_descriptor_data_, &tst_greth_mac);
 
     greth_start_receive( base_addr_dst_eth );
     greth_start_transmit( base_addr_src_eth );
 
-    TEST_ASSERT(greth_wait_receive_irq(base_addr_dst_eth, eth_hadled_flag_ptr), "Receiving is failed");
-    TEST_ASSERT(mem_cmp(test_data_im0_src, test_data_im0_dst, sizeof(test_data_im0_src)/sizeof(uint32_t)), "Data compare error!");
+//    TEST_ASSERT(greth_wait_receive_irq(base_addr_dst_eth, eth_hadled_flag_ptr), "Receiving is failed");
+    TEST_ASSERT(greth_wait_receive(base_addr_dst_eth), "Receiving is failed");
+    TEST_ASSERT(mem_cmp(test_data_src, test_data_dst, sizeof(test_data_im0_src)/sizeof(uint32_t)), "Data compare error!");
 
-    mem_clr(test_data_im0_dst, sizeof(test_data_im0_src)/sizeof(uint32_t));
+    mem_clr(test_data_dst, sizeof(test_data_im0_src)/sizeof(uint32_t));
     return 0;
 }
 
@@ -238,16 +243,27 @@ int check_transfer_from_im0_to_im0(uint32_t base_addr_src_eth, uint32_t base_add
  */
 int main(void)
 {
+    struct rumboot_irq_entry *tbl;
 
     rumboot_printf("Start test_oi10_greth\n\n");
 
 //    mdio_check(GRETH_0_BASE);
 //    mdio_check(GRETH_1_BASE);
 
-    enable_eth01_irqs();
+    tbl = create_greth01_irq_handlers();
 
-                                    //from          //to
-    check_transfer_from_im0_to_im0(GRETH_0_BASE, GRETH_1_BASE);
-    check_transfer_from_im0_to_im0(GRETH_1_BASE, GRETH_0_BASE);
+    prepare_test_data(test_data_im1_src);
+
+                                            //TX          //RX          src addr            dst addr
+    check_transfer_via_external_loopback(GRETH_0_BASE, GRETH_1_BASE, test_data_im0_src, test_data_im0_dst);
+    check_transfer_via_external_loopback(GRETH_1_BASE, GRETH_0_BASE, test_data_im0_src, test_data_im0_dst);
+    check_transfer_via_external_loopback(GRETH_0_BASE, GRETH_1_BASE, test_data_im1_src, test_data_im1_dst);
+    check_transfer_via_external_loopback(GRETH_1_BASE, GRETH_0_BASE, test_data_im1_src, test_data_im1_dst);
+    check_transfer_via_external_loopback(GRETH_0_BASE, GRETH_1_BASE, test_data_im0_src, test_data_im1_dst);
+    check_transfer_via_external_loopback(GRETH_1_BASE, GRETH_0_BASE, test_data_im0_src, test_data_im1_dst);
+    check_transfer_via_external_loopback(GRETH_0_BASE, GRETH_1_BASE, test_data_im1_src, test_data_im0_dst);
+    check_transfer_via_external_loopback(GRETH_1_BASE, GRETH_0_BASE, test_data_im1_src, test_data_im0_dst);
+
+    delete_greth01_irq_handlers(tbl);
     return 0;
 }
