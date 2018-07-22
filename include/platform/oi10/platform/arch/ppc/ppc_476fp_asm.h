@@ -16,6 +16,8 @@
             (((reg_src_field_begin)%32) + (32 - ((reg_dest_field_begin)%32)))%32,\
             (reg_dest_field_begin)%32, (reg_dest_field_end)%32
 
+#define field_begin( field )  CAT( field,_e ) - ( CAT( field,_n ) - 1 )
+
 .macro  load_const rD, constant
 .if ((\constant & 0xFFFF8000) == 0xFFFF8000) || ((\constant & 0xFFFF8000) == 0x00000000)
     li      \rD, \constant
