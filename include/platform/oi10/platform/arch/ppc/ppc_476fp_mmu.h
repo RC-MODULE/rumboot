@@ -3,6 +3,7 @@
 
 
 #include <platform/arch/ppc/ppc_476fp_lib_c.h>
+#include <platform/arch/ppc/ppc_476fp_config.h>
 #include <platform/ppc470s/mmu/mem_window.h>
 #include <platform/arch/ppc/ppc_476fp_mmu_fields.h>
 
@@ -25,7 +26,13 @@ typedef struct tlb_entry {
 
 void write_tlb_entries( tlb_entry const * entries, uint32_t n );
 
-int64_t get_physical_addr( uint32_t ea );
+/**
+ * Gets physical address for virtual address
+ * @param ea virtual address
+ * @param ts translation space (usually 0)
+ * @return if found physical address, value < 0 otherwise
+ */
+int64_t get_physical_addr( uint32_t ea, uint32_t ts );
 
 
 #endif // PPC_476FP_MMU_H
