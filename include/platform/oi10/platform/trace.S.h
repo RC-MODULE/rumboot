@@ -28,9 +28,9 @@
     test_event EVENT_TRACE_MESSAGE, \tmp_reg_nop_or_addr, \tmp_reg_opcode_testevent, \tmp_reg_event_code
 .endm
 
-.macro rumboot_puthex hex_reg, tmp_reg_opcode_testevent=r6, tmp_reg_event_code=r7
+.macro rumboot_puthex hex_reg, tmp_reg_nop=r5, tmp_reg_opcode_testevent=r6, tmp_reg_event_code=r7
     mtspr       SPR_SPRG3, \hex_reg
-    test_event EVENT_TRACE_HEX, \hex_reg, \tmp_reg_opcode_testevent, \tmp_reg_event_code
+    test_event EVENT_TRACE_HEX, \tmp_reg_nop, \tmp_reg_opcode_testevent, \tmp_reg_event_code
 .endm
 
 .macro _rumboot_putdump tmp_reg_start_addr, tmp_reg_length_in_bytes, tmp_reg_event_code=r7
