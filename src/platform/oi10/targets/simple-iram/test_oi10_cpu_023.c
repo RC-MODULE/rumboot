@@ -131,11 +131,11 @@ int main(void)
 
     //prepare physical address
     set_mem_window(MEM_WINDOW_SHARED);//WORKAROUND
-    src_im0_physical = get_physical_addr((uint32_t)source_area_im0);
-    dst_im0_physical = get_physical_addr((uint32_t)dest_area_im0);
+    src_im0_physical = get_physical_addr((uint32_t)source_area_im0, 0);
+    dst_im0_physical = get_physical_addr((uint32_t)dest_area_im0, 0);
 
     set_mem_window(MEM_WINDOW_0);//WORKAROUND
-    src_im1_physical = get_physical_addr(IM1_BASE);
+    src_im1_physical = get_physical_addr(IM1_BASE, 0);
     dst_im1_physical = src_im1_physical;
 
     //src_em2_physical = get_physical_addr(EM2_BASE);
@@ -165,7 +165,7 @@ int main(void)
 //   rumboot_printf("dst_im0_physical = 0x%x%x\n", (uint32_t)(dst_im0_physical >> 32), (uint32_t)(dst_im0_physical & 0xFFFFFFFF));
 //
 //   rumboot_printf("dst_im1_logical = 0x%x\n", IM1_BASE);
-   rumboot_printf("dst_im1_physical = 0x%x%x\n", (uint32_t)(src_im1_physical >> 32), (uint32_t)(dst_im1_physical & 0xFFFFFFFF));
+//   rumboot_printf("dst_im1_physical = 0x%x%x\n", (uint32_t)(src_im1_physical >> 32), (uint32_t)(dst_im1_physical & 0xFFFFFFFF));
 
 
 
@@ -179,12 +179,12 @@ int main(void)
    TEST_ASSERT(check_dma2plb6_0_mem_to_mem((uint32_t)source_area_im0,
                                            IM1_BASE,
                                            src_im0_physical,
-                                           0x00000020C0000000) == true, "IM0-to-IM1 failed");
+                                           dst_im1_physical) == true, "IM0-to-IM1 failed");
 
    rumboot_printf("im1->im0\n");
    TEST_ASSERT(check_dma2plb6_0_mem_to_mem(IM1_BASE,
                                            (uint32_t)dest_area_im0,
-                                           0x00000020C0000000,
+                                           dst_im1_physical,
                                            dst_im0_physical) == true, "IM1-to-IM0 failed");
 
 /*
