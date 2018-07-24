@@ -27,7 +27,7 @@ case tag: \
 			continue; \
 		v = (1 << i); \
 		iowrite ## sz(v, array->base + offset); \
-		readback = ioread32(array->base + offset); \
+		readback = ioread ## sz(array->base + offset); \
 		if ((readback & array->mask) != v) { \
 			fails++; \
 			rumboot_printf("Write register %s (0x%x): wrote: 0x%x got: 0x%x mask: 0x%x\n", \
