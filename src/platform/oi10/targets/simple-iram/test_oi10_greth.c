@@ -394,14 +394,14 @@ int main(void)
 
     prepare_test_data();
                                             //TX          src addr            dst addr
-    check_transfer_via_external_loopback(GRETH_0_BASE, test_data_im0_src, test_data_im0_dst);
-    check_transfer_via_external_loopback(GRETH_1_BASE, test_data_im0_src, test_data_im0_dst);
+    //check_transfer_via_external_loopback(GRETH_0_BASE, test_data_im0_src, test_data_im0_dst);
+    //check_transfer_via_external_loopback(GRETH_1_BASE, test_data_im0_src, test_data_im0_dst);
     check_transfer_via_external_loopback(GRETH_0_BASE, test_data_im1_src, test_data_im1_dst);
     check_transfer_via_external_loopback(GRETH_1_BASE, test_data_im1_src, test_data_im1_dst);
-    check_transfer_via_external_loopback(GRETH_0_BASE, test_data_im0_src, test_data_im1_dst);
-    check_transfer_via_external_loopback(GRETH_1_BASE, test_data_im0_src, test_data_im1_dst);
-    check_transfer_via_external_loopback(GRETH_0_BASE, test_data_im1_src, test_data_im0_dst);
-    check_transfer_via_external_loopback(GRETH_1_BASE, test_data_im1_src, test_data_im0_dst);
+    //check_transfer_via_external_loopback(GRETH_0_BASE, test_data_im0_src, test_data_im1_dst);
+    //check_transfer_via_external_loopback(GRETH_1_BASE, test_data_im0_src, test_data_im1_dst);
+    //check_transfer_via_external_loopback(GRETH_0_BASE, test_data_im1_src, test_data_im0_dst);
+    //check_transfer_via_external_loopback(GRETH_1_BASE, test_data_im1_src, test_data_im0_dst);
 
     edcl_seq_number = 0;
     check_edcl_via_external_loopback(GRETH_0_BASE, test_edcl_packet_im1, test_data_im1_dst, test_edcl_rcv_packet_im1);
