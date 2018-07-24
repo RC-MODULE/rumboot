@@ -1,0 +1,1259 @@
+#include <platform/test_event_asm.h>
+#include <platform/test_assert.S.h>
+#include <platform/arch/ppc/test_macro_asm.S.h>
+#include <platform/ppc470s/mmu.S.h>
+#include <platform/devices.h>
+#include <platform/trace.S.h>
+
+
+
+#define TEST_OI10_CPU_MEM_000_ZERO_OFFSET            0x0000
+#define TEST_OI10_CPU_MEM_000_ONE_OFFSET             0x0010
+#define TEST_OI10_CPU_MEM_000_SLIDING_ONE_OFFSET     0x0020
+#define TEST_OI10_CPU_MEM_000_SLIDING_ZERO_OFFSET    0x00A0
+
+
+.macro read_from_mem_zero_clean reg, offset
+    .align 4
+    lwz             \reg, \offset(r0)
+    lwz             \reg, TEST_OI10_CPU_MEM_000_ZERO_OFFSET(r0)
+    isync
+.endm
+
+.macro read_from_mem_zero_clean_with_addr reg, offset, addr
+    .align 4
+    lwz             \reg, \offset(\addr)
+//    stwu            \reg, 4(r6)
+    lwz             \reg, TEST_OI10_CPU_MEM_000_ZERO_OFFSET(\addr)
+    isync
+.endm
+
+.macro read_from_mem_one_clean_with_addr reg, offset, addr
+    .align 4
+    lwz             \reg, \offset(\addr)
+    lwz             \reg, TEST_OI10_CPU_MEM_000_ONE_OFFSET(\addr)
+    isync
+.endm
+
+.macro clear_regs_with_0
+    .align 4
+    li r0,0x0
+    li r1,0x0
+    li r2,0x0
+    li r3,0x0
+    li r4,0x0
+    li r5,0x0
+    li r6,0x0
+    li r7,0x0
+    li r8,0x0
+    li r9,0x0
+    li r10,0x0
+    li r11,0x0
+    li r12,0x0
+    li r13,0x0
+    li r14,0x0
+    li r15,0x0
+    li r16,0x0
+    li r17,0x0
+    li r18,0x0
+    li r19,0x0
+    li r20,0x0
+    li r21,0x0
+    li r22,0x0
+    li r23,0x0
+    li r24,0x0
+    li r25,0x0
+    li r26,0x0
+    li r27,0x0
+    li r28,0x0
+    li r29,0x0
+    li r30,0x0
+    li r31,0x0
+    mtspr SPR_SPRG8, r0
+.endm
+
+.macro clear_regs_with_0_xor
+    .align 4
+    xor r0, r0, r0
+    xor r1, r1, r1
+    xor r2, r2, r2
+    xor r3, r3, r3
+    xor r4, r4, r4
+    xor r5, r5, r5
+    xor r6, r6, r6
+    xor r7, r7, r7
+    xor r8, r8, r8
+    xor r9, r9, r9
+    xor r10,r10,r10
+    xor r11,r11,r11
+    xor r12,r12,r12
+    xor r13,r13,r13
+    xor r14,r14,r14
+    xor r15,r15,r15
+    xor r16,r16,r16
+    xor r17,r17,r17
+    xor r18,r18,r18
+    xor r19,r19,r19
+    xor r20,r20,r20
+    xor r21,r21,r21
+    xor r22,r22,r22
+    xor r23,r23,r23
+    xor r24,r24,r24
+    xor r25,r25,r25
+    xor r26,r26,r26
+    xor r27,r27,r27
+    xor r28,r28,r28
+    xor r29,r29,r29
+    xor r30,r30,r30
+    xor r31,r31,r31
+.endm
+
+.macro nor_with_itself reg
+    nor \reg,\reg,\reg
+.endm
+
+.macro clear_regs_with_1
+    .align 4
+    nor_with_itself r0
+    nor_with_itself r1
+    nor_with_itself r2
+    nor_with_itself r3
+    nor_with_itself r4
+    nor_with_itself r5
+    nor_with_itself r6
+    nor_with_itself r7
+    nor_with_itself r8
+    nor_with_itself r9
+    nor_with_itself r10
+    nor_with_itself r11
+    nor_with_itself r12
+    nor_with_itself r13
+    nor_with_itself r14
+    nor_with_itself r15
+    nor_with_itself r16
+    nor_with_itself r17
+    nor_with_itself r18
+    nor_with_itself r19
+    nor_with_itself r20
+    nor_with_itself r21
+    nor_with_itself r22
+    nor_with_itself r23
+    nor_with_itself r24
+    nor_with_itself r25
+    nor_with_itself r26
+    nor_with_itself r27
+    nor_with_itself r28
+    nor_with_itself r29
+    nor_with_itself r30
+    nor_with_itself r31
+    mtspr SPR_SPRG8, r0
+.endm
+
+.macro xori_reg reg,value
+    .align 4
+    xori \reg,\reg,\value
+    xori \reg,\reg,\value
+    .align 4
+.endm
+
+.macro xoris_reg reg,value
+    .align 4
+    xoris \reg,\reg,\value
+    xoris \reg,\reg,\value
+    .align 4
+.endm
+
+.macro xori_reg_spr reg,value,spr
+    .align 4
+    xori \reg,\reg,\value
+    mtspr \spr,\reg
+//    mulli \reg,\reg,0x1
+    xori \reg,\reg,\value
+    .align 4
+.endm
+
+.macro xoris_reg_spr reg,value,spr
+    .align 4
+    xoris \reg,\reg,\value
+    mtspr \spr,\reg
+//    mulli \reg,\reg,0x1
+    xoris \reg,\reg,\value
+    .align 4
+.endm
+
+.macro mfspr_reg reg,spr
+    mfspr \reg,\spr
+    mfspr \reg,SPR_SPRG8
+.endm
+
+.global results
+.section ".issdata","aw",@nobits
+.align 4
+results:
+    .space 4096
+
+
+
+.global main
+.section ".text","ax",@progbits
+
+.global test_oi10_cpu_mem_000_data_zero
+.global test_oi10_cpu_mem_000_data_one
+.global test_oi10_cpu_mem_000_data_sliding_one
+.global test_oi10_cpu_mem_000_data_sliding_zero
+
+
+.org TEST_OI10_CPU_MEM_000_ZERO_OFFSET
+test_oi10_cpu_mem_000_data_zero:
+    .long           0x00000000
+.org TEST_OI10_CPU_MEM_000_ONE_OFFSET
+test_oi10_cpu_mem_000_data_one:
+    .long           0xFFFFFFFF
+.org TEST_OI10_CPU_MEM_000_SLIDING_ONE_OFFSET
+test_oi10_cpu_mem_000_data_sliding_one:
+    .long           0x00000001
+    .long          (0x00000001 << 1)
+    .long          (0x00000001 << 2)
+    .long          (0x00000001 << 3)
+    .long          (0x00000001 << 4)
+    .long          (0x00000001 << 5)
+    .long          (0x00000001 << 6)
+    .long          (0x00000001 << 7)
+    .long          (0x00000001 << 8)
+    .long          (0x00000001 << 9)
+    .long          (0x00000001 << 10)
+    .long          (0x00000001 << 11)
+    .long          (0x00000001 << 12)
+    .long          (0x00000001 << 13)
+    .long          (0x00000001 << 14)
+    .long          (0x00000001 << 15)
+    .long          (0x00000001 << 16)
+    .long          (0x00000001 << 17)
+    .long          (0x00000001 << 18)
+    .long          (0x00000001 << 19)
+    .long          (0x00000001 << 20)
+    .long          (0x00000001 << 21)
+    .long          (0x00000001 << 22)
+    .long          (0x00000001 << 23)
+    .long          (0x00000001 << 24)
+    .long          (0x00000001 << 25)
+    .long          (0x00000001 << 26)
+    .long          (0x00000001 << 27)
+    .long          (0x00000001 << 28)
+    .long          (0x00000001 << 29)
+    .long          (0x00000001 << 30)
+    .long          (0x00000001 << 31)
+.org TEST_OI10_CPU_MEM_000_SLIDING_ZERO_OFFSET
+test_oi10_cpu_mem_000_data_sliding_zero:
+    .long          ~0x00000001
+    .long          ~(0x00000001 << 1)
+    .long          ~(0x00000001 << 2)
+    .long          ~(0x00000001 << 3)
+    .long          ~(0x00000001 << 4)
+    .long          ~(0x00000001 << 5)
+    .long          ~(0x00000001 << 6)
+    .long          ~(0x00000001 << 7)
+    .long          ~(0x00000001 << 8)
+    .long          ~(0x00000001 << 9)
+    .long          ~(0x00000001 << 10)
+    .long          ~(0x00000001 << 11)
+    .long          ~(0x00000001 << 12)
+    .long          ~(0x00000001 << 13)
+    .long          ~(0x00000001 << 14)
+    .long          ~(0x00000001 << 15)
+    .long          ~(0x00000001 << 16)
+    .long          ~(0x00000001 << 17)
+    .long          ~(0x00000001 << 18)
+    .long          ~(0x00000001 << 19)
+    .long          ~(0x00000001 << 20)
+    .long          ~(0x00000001 << 21)
+    .long          ~(0x00000001 << 22)
+    .long          ~(0x00000001 << 23)
+    .long          ~(0x00000001 << 24)
+    .long          ~(0x00000001 << 25)
+    .long          ~(0x00000001 << 26)
+    .long          ~(0x00000001 << 27)
+    .long          ~(0x00000001 << 28)
+    .long          ~(0x00000001 << 29)
+    .long          ~(0x00000001 << 30)
+    .long          ~(0x00000001 << 31)
+
+
+
+main:
+    test_event_send_test_id "test_iss"
+
+    load_addr r31, results
+    mtspr SPR_VRSAVE, r31
+
+    clear_regs_with_1
+
+    rumboot_putstring "Checking LWZ ...\n"
+//    test_event EVENT_GPRS_CLEARED_START_CHECK_LWZ
+
+
+    .align 4
+    lis             r31, test_oi10_cpu_mem_000_data_zero@h
+    ori             r31, r31, test_oi10_cpu_mem_000_data_zero@l
+
+    .align 4
+    lwz             r0 , TEST_OI10_CPU_MEM_000_ZERO_OFFSET(r31)
+    lwz             r1 , TEST_OI10_CPU_MEM_000_ZERO_OFFSET(r31)
+    lwz             r2 , TEST_OI10_CPU_MEM_000_ZERO_OFFSET(r31)
+    lwz             r3 , TEST_OI10_CPU_MEM_000_ZERO_OFFSET(r31)
+    lwz             r4 , TEST_OI10_CPU_MEM_000_ZERO_OFFSET(r31)
+    lwz             r5 , TEST_OI10_CPU_MEM_000_ZERO_OFFSET(r31)
+    lwz             r6 , TEST_OI10_CPU_MEM_000_ZERO_OFFSET(r31)
+    lwz             r7 , TEST_OI10_CPU_MEM_000_ZERO_OFFSET(r31)
+    lwz             r8 , TEST_OI10_CPU_MEM_000_ZERO_OFFSET(r31)
+    lwz             r9 , TEST_OI10_CPU_MEM_000_ZERO_OFFSET(r31)
+    lwz             r10, TEST_OI10_CPU_MEM_000_ZERO_OFFSET(r31)
+    lwz             r11, TEST_OI10_CPU_MEM_000_ZERO_OFFSET(r31)
+    lwz             r12, TEST_OI10_CPU_MEM_000_ZERO_OFFSET(r31)
+    lwz             r13, TEST_OI10_CPU_MEM_000_ZERO_OFFSET(r31)
+    lwz             r14, TEST_OI10_CPU_MEM_000_ZERO_OFFSET(r31)
+    lwz             r15, TEST_OI10_CPU_MEM_000_ZERO_OFFSET(r31)
+    lwz             r16, TEST_OI10_CPU_MEM_000_ZERO_OFFSET(r31)
+    lwz             r17, TEST_OI10_CPU_MEM_000_ZERO_OFFSET(r31)
+    lwz             r18, TEST_OI10_CPU_MEM_000_ZERO_OFFSET(r31)
+    lwz             r19, TEST_OI10_CPU_MEM_000_ZERO_OFFSET(r31)
+    lwz             r20, TEST_OI10_CPU_MEM_000_ZERO_OFFSET(r31)
+    lwz             r21, TEST_OI10_CPU_MEM_000_ZERO_OFFSET(r31)
+    lwz             r22, TEST_OI10_CPU_MEM_000_ZERO_OFFSET(r31)
+    lwz             r23, TEST_OI10_CPU_MEM_000_ZERO_OFFSET(r31)
+    lwz             r24, TEST_OI10_CPU_MEM_000_ZERO_OFFSET(r31)
+    lwz             r25, TEST_OI10_CPU_MEM_000_ZERO_OFFSET(r31)
+    lwz             r26, TEST_OI10_CPU_MEM_000_ZERO_OFFSET(r31)
+    lwz             r27, TEST_OI10_CPU_MEM_000_ZERO_OFFSET(r31)
+    lwz             r28, TEST_OI10_CPU_MEM_000_ZERO_OFFSET(r31)
+    lwz             r29, TEST_OI10_CPU_MEM_000_ZERO_OFFSET(r31)
+    lwz             r30, TEST_OI10_CPU_MEM_000_ZERO_OFFSET(r31)
+    lwz             r31, TEST_OI10_CPU_MEM_000_ZERO_OFFSET(r31)
+
+    isync
+
+    mtspr SPR_SPRG8, r31
+    mfspr r31, SPR_VRSAVE
+    stmw r0, 0(r31)
+    mfspr r30, SPR_SPRG8
+    stw r30, 124(r31)
+    addi r31, r31, 128
+    mtspr SPR_VRSAVE, r31
+    li r31, 0
+    mtspr SPR_SPRG8, r31
+
+    msync
+    load_addr       r30, results
+    load_const      r31, 0x80
+
+    _rumboot_putdump r30, r31
+
+    _rumboot_issdump r30, r31
+
+    b test_error
+
+
+//    clear_regs_with_0
+
+    lis             r7, test_oi10_cpu_mem_000_data_zero@h
+    ori             r7, r7, test_oi10_cpu_mem_000_data_zero@l
+
+    read_from_mem_zero_clean_with_addr r0 , (TEST_OI10_CPU_MEM_000_SLIDING_ONE_OFFSET       ), r7
+    read_from_mem_zero_clean_with_addr r1 , (TEST_OI10_CPU_MEM_000_SLIDING_ONE_OFFSET +  0x4), r7
+    read_from_mem_zero_clean_with_addr r0 , (TEST_OI10_CPU_MEM_000_SLIDING_ONE_OFFSET +  0x8), r7
+    read_from_mem_zero_clean_with_addr r2 , (TEST_OI10_CPU_MEM_000_SLIDING_ONE_OFFSET +  0xC), r7
+    read_from_mem_zero_clean_with_addr r0 , (TEST_OI10_CPU_MEM_000_SLIDING_ONE_OFFSET + 0x10), r7
+    read_from_mem_zero_clean_with_addr r4 , (TEST_OI10_CPU_MEM_000_SLIDING_ONE_OFFSET + 0x14), r7
+    read_from_mem_zero_clean_with_addr r0 , (TEST_OI10_CPU_MEM_000_SLIDING_ONE_OFFSET + 0x18), r7
+    read_from_mem_zero_clean_with_addr r8 , (TEST_OI10_CPU_MEM_000_SLIDING_ONE_OFFSET + 0x1C), r7
+    read_from_mem_zero_clean_with_addr r0 , (TEST_OI10_CPU_MEM_000_SLIDING_ONE_OFFSET + 0x20), r7
+    read_from_mem_zero_clean_with_addr r16, (TEST_OI10_CPU_MEM_000_SLIDING_ONE_OFFSET + 0x24), r7
+    read_from_mem_zero_clean_with_addr r0 , (TEST_OI10_CPU_MEM_000_SLIDING_ONE_OFFSET + 0x28), r7
+    read_from_mem_zero_clean_with_addr r31, (TEST_OI10_CPU_MEM_000_SLIDING_ONE_OFFSET + 0x2C), r7
+    read_from_mem_zero_clean_with_addr r30, (TEST_OI10_CPU_MEM_000_SLIDING_ONE_OFFSET + 0x30), r7
+    read_from_mem_zero_clean_with_addr r31, (TEST_OI10_CPU_MEM_000_SLIDING_ONE_OFFSET + 0x34), r7
+    read_from_mem_zero_clean_with_addr r29, (TEST_OI10_CPU_MEM_000_SLIDING_ONE_OFFSET + 0x38), r7
+    read_from_mem_zero_clean_with_addr r31, (TEST_OI10_CPU_MEM_000_SLIDING_ONE_OFFSET + 0x3C), r7
+    read_from_mem_zero_clean_with_addr r27, (TEST_OI10_CPU_MEM_000_SLIDING_ONE_OFFSET + 0x40), r7
+    read_from_mem_zero_clean_with_addr r31, (TEST_OI10_CPU_MEM_000_SLIDING_ONE_OFFSET + 0x44), r7
+    read_from_mem_zero_clean_with_addr r23, (TEST_OI10_CPU_MEM_000_SLIDING_ONE_OFFSET + 0x48), r7
+    read_from_mem_zero_clean_with_addr r31, (TEST_OI10_CPU_MEM_000_SLIDING_ONE_OFFSET + 0x4C), r7
+    read_from_mem_zero_clean_with_addr r15, (TEST_OI10_CPU_MEM_000_SLIDING_ONE_OFFSET + 0x50), r7
+    read_from_mem_zero_clean_with_addr r31, (TEST_OI10_CPU_MEM_000_SLIDING_ONE_OFFSET + 0x54), r7
+    read_from_mem_zero_clean_with_addr r1 , (TEST_OI10_CPU_MEM_000_SLIDING_ONE_OFFSET + 0x58), r7
+    read_from_mem_zero_clean_with_addr r2 , (TEST_OI10_CPU_MEM_000_SLIDING_ONE_OFFSET + 0x5C), r7
+    read_from_mem_zero_clean_with_addr r4 , (TEST_OI10_CPU_MEM_000_SLIDING_ONE_OFFSET + 0x60), r7
+    read_from_mem_zero_clean_with_addr r8 , (TEST_OI10_CPU_MEM_000_SLIDING_ONE_OFFSET + 0x64), r7
+    read_from_mem_zero_clean_with_addr r16, (TEST_OI10_CPU_MEM_000_SLIDING_ONE_OFFSET + 0x68), r7
+    read_from_mem_zero_clean_with_addr r30, (TEST_OI10_CPU_MEM_000_SLIDING_ONE_OFFSET + 0x6C), r7
+    read_from_mem_zero_clean_with_addr r29, (TEST_OI10_CPU_MEM_000_SLIDING_ONE_OFFSET + 0x70), r7
+    read_from_mem_zero_clean_with_addr r27, (TEST_OI10_CPU_MEM_000_SLIDING_ONE_OFFSET + 0x74), r7
+    read_from_mem_zero_clean_with_addr r23, (TEST_OI10_CPU_MEM_000_SLIDING_ONE_OFFSET + 0x78), r7
+    read_from_mem_zero_clean_with_addr r15, (TEST_OI10_CPU_MEM_000_SLIDING_ONE_OFFSET + 0x7C), r7
+
+
+
+
+
+    .align 4
+    lis             r31, test_oi10_cpu_mem_000_data_zero@h
+    ori             r31, r31, test_oi10_cpu_mem_000_data_zero@l
+
+    .align 4
+    lwz             r0 , TEST_OI10_CPU_MEM_000_ONE_OFFSET(r31)
+    lwz             r1 , TEST_OI10_CPU_MEM_000_ONE_OFFSET(r31)
+    lwz             r2 , TEST_OI10_CPU_MEM_000_ONE_OFFSET(r31)
+    lwz             r3 , TEST_OI10_CPU_MEM_000_ONE_OFFSET(r31)
+    lwz             r4 , TEST_OI10_CPU_MEM_000_ONE_OFFSET(r31)
+    lwz             r5 , TEST_OI10_CPU_MEM_000_ONE_OFFSET(r31)
+    lwz             r6 , TEST_OI10_CPU_MEM_000_ONE_OFFSET(r31)
+    lwz             r7 , TEST_OI10_CPU_MEM_000_ONE_OFFSET(r31)
+    lwz             r8 , TEST_OI10_CPU_MEM_000_ONE_OFFSET(r31)
+    lwz             r9 , TEST_OI10_CPU_MEM_000_ONE_OFFSET(r31)
+    lwz             r10, TEST_OI10_CPU_MEM_000_ONE_OFFSET(r31)
+    lwz             r11, TEST_OI10_CPU_MEM_000_ONE_OFFSET(r31)
+    lwz             r12, TEST_OI10_CPU_MEM_000_ONE_OFFSET(r31)
+    lwz             r13, TEST_OI10_CPU_MEM_000_ONE_OFFSET(r31)
+    lwz             r14, TEST_OI10_CPU_MEM_000_ONE_OFFSET(r31)
+    lwz             r15, TEST_OI10_CPU_MEM_000_ONE_OFFSET(r31)
+    lwz             r16, TEST_OI10_CPU_MEM_000_ONE_OFFSET(r31)
+    lwz             r17, TEST_OI10_CPU_MEM_000_ONE_OFFSET(r31)
+    lwz             r18, TEST_OI10_CPU_MEM_000_ONE_OFFSET(r31)
+    lwz             r19, TEST_OI10_CPU_MEM_000_ONE_OFFSET(r31)
+    lwz             r20, TEST_OI10_CPU_MEM_000_ONE_OFFSET(r31)
+    lwz             r21, TEST_OI10_CPU_MEM_000_ONE_OFFSET(r31)
+    lwz             r22, TEST_OI10_CPU_MEM_000_ONE_OFFSET(r31)
+    lwz             r23, TEST_OI10_CPU_MEM_000_ONE_OFFSET(r31)
+    lwz             r24, TEST_OI10_CPU_MEM_000_ONE_OFFSET(r31)
+    lwz             r25, TEST_OI10_CPU_MEM_000_ONE_OFFSET(r31)
+    lwz             r26, TEST_OI10_CPU_MEM_000_ONE_OFFSET(r31)
+    lwz             r27, TEST_OI10_CPU_MEM_000_ONE_OFFSET(r31)
+    lwz             r28, TEST_OI10_CPU_MEM_000_ONE_OFFSET(r31)
+    lwz             r29, TEST_OI10_CPU_MEM_000_ONE_OFFSET(r31)
+    lwz             r30, TEST_OI10_CPU_MEM_000_ONE_OFFSET(r31)
+    lwz             r31, TEST_OI10_CPU_MEM_000_ONE_OFFSET(r31)
+
+    isync
+
+
+
+
+
+    lis             r7, test_oi10_cpu_mem_000_data_zero@h
+    ori             r7, r7, test_oi10_cpu_mem_000_data_zero@l
+
+    read_from_mem_one_clean_with_addr r0 , (TEST_OI10_CPU_MEM_000_SLIDING_ZERO_OFFSET       ), r7
+    read_from_mem_one_clean_with_addr r1 , (TEST_OI10_CPU_MEM_000_SLIDING_ZERO_OFFSET +  0x4), r7
+    read_from_mem_one_clean_with_addr r0 , (TEST_OI10_CPU_MEM_000_SLIDING_ZERO_OFFSET +  0x8), r7
+    read_from_mem_one_clean_with_addr r2 , (TEST_OI10_CPU_MEM_000_SLIDING_ZERO_OFFSET +  0xC), r7
+    read_from_mem_one_clean_with_addr r0 , (TEST_OI10_CPU_MEM_000_SLIDING_ZERO_OFFSET + 0x10), r7
+    read_from_mem_one_clean_with_addr r4 , (TEST_OI10_CPU_MEM_000_SLIDING_ZERO_OFFSET + 0x14), r7
+    read_from_mem_one_clean_with_addr r0 , (TEST_OI10_CPU_MEM_000_SLIDING_ZERO_OFFSET + 0x18), r7
+    read_from_mem_one_clean_with_addr r8 , (TEST_OI10_CPU_MEM_000_SLIDING_ZERO_OFFSET + 0x1C), r7
+    read_from_mem_one_clean_with_addr r0 , (TEST_OI10_CPU_MEM_000_SLIDING_ZERO_OFFSET + 0x20), r7
+    read_from_mem_one_clean_with_addr r16, (TEST_OI10_CPU_MEM_000_SLIDING_ZERO_OFFSET + 0x24), r7
+    read_from_mem_one_clean_with_addr r0 , (TEST_OI10_CPU_MEM_000_SLIDING_ZERO_OFFSET + 0x28), r7
+    read_from_mem_one_clean_with_addr r31, (TEST_OI10_CPU_MEM_000_SLIDING_ZERO_OFFSET + 0x2C), r7
+    read_from_mem_one_clean_with_addr r30, (TEST_OI10_CPU_MEM_000_SLIDING_ZERO_OFFSET + 0x30), r7
+    read_from_mem_one_clean_with_addr r31, (TEST_OI10_CPU_MEM_000_SLIDING_ZERO_OFFSET + 0x34), r7
+    read_from_mem_one_clean_with_addr r29, (TEST_OI10_CPU_MEM_000_SLIDING_ZERO_OFFSET + 0x38), r7
+    read_from_mem_one_clean_with_addr r31, (TEST_OI10_CPU_MEM_000_SLIDING_ZERO_OFFSET + 0x3C), r7
+    read_from_mem_one_clean_with_addr r27, (TEST_OI10_CPU_MEM_000_SLIDING_ZERO_OFFSET + 0x40), r7
+    read_from_mem_one_clean_with_addr r31, (TEST_OI10_CPU_MEM_000_SLIDING_ZERO_OFFSET + 0x44), r7
+    read_from_mem_one_clean_with_addr r23, (TEST_OI10_CPU_MEM_000_SLIDING_ZERO_OFFSET + 0x48), r7
+    read_from_mem_one_clean_with_addr r31, (TEST_OI10_CPU_MEM_000_SLIDING_ZERO_OFFSET + 0x4C), r7
+    read_from_mem_one_clean_with_addr r15, (TEST_OI10_CPU_MEM_000_SLIDING_ZERO_OFFSET + 0x50), r7
+    read_from_mem_one_clean_with_addr r31, (TEST_OI10_CPU_MEM_000_SLIDING_ZERO_OFFSET + 0x54), r7
+    read_from_mem_one_clean_with_addr r1 , (TEST_OI10_CPU_MEM_000_SLIDING_ZERO_OFFSET + 0x58), r7
+    read_from_mem_one_clean_with_addr r2 , (TEST_OI10_CPU_MEM_000_SLIDING_ZERO_OFFSET + 0x5C), r7
+    read_from_mem_one_clean_with_addr r4 , (TEST_OI10_CPU_MEM_000_SLIDING_ZERO_OFFSET + 0x60), r7
+    read_from_mem_one_clean_with_addr r8 , (TEST_OI10_CPU_MEM_000_SLIDING_ZERO_OFFSET + 0x64), r7
+    read_from_mem_one_clean_with_addr r16, (TEST_OI10_CPU_MEM_000_SLIDING_ZERO_OFFSET + 0x68), r7
+    read_from_mem_one_clean_with_addr r30, (TEST_OI10_CPU_MEM_000_SLIDING_ZERO_OFFSET + 0x6C), r7
+    read_from_mem_one_clean_with_addr r29, (TEST_OI10_CPU_MEM_000_SLIDING_ZERO_OFFSET + 0x70), r7
+    read_from_mem_one_clean_with_addr r27, (TEST_OI10_CPU_MEM_000_SLIDING_ZERO_OFFSET + 0x74), r7
+    read_from_mem_one_clean_with_addr r23, (TEST_OI10_CPU_MEM_000_SLIDING_ZERO_OFFSET + 0x78), r7
+    read_from_mem_one_clean_with_addr r15, (TEST_OI10_CPU_MEM_000_SLIDING_ZERO_OFFSET + 0x7C), r7
+    isync
+
+
+
+
+
+    .align 4
+    lis             r31, test_oi10_cpu_mem_000_data_zero@h
+    ori             r31, r31, test_oi10_cpu_mem_000_data_zero@l
+
+
+    .align 4
+    lwz             r0 , TEST_OI10_CPU_MEM_000_ZERO_OFFSET(r31)
+    lwz             r1 , TEST_OI10_CPU_MEM_000_ZERO_OFFSET(r31)
+    lwz             r2 , TEST_OI10_CPU_MEM_000_ZERO_OFFSET(r31)
+    lwz             r3 , TEST_OI10_CPU_MEM_000_ZERO_OFFSET(r31)
+    lwz             r4 , TEST_OI10_CPU_MEM_000_ZERO_OFFSET(r31)
+    lwz             r5 , TEST_OI10_CPU_MEM_000_ZERO_OFFSET(r31)
+    lwz             r6 , TEST_OI10_CPU_MEM_000_ZERO_OFFSET(r31)
+    lwz             r7 , TEST_OI10_CPU_MEM_000_ZERO_OFFSET(r31)
+    lwz             r8 , TEST_OI10_CPU_MEM_000_ZERO_OFFSET(r31)
+    lwz             r9 , TEST_OI10_CPU_MEM_000_ZERO_OFFSET(r31)
+    lwz             r10, TEST_OI10_CPU_MEM_000_ZERO_OFFSET(r31)
+    lwz             r11, TEST_OI10_CPU_MEM_000_ZERO_OFFSET(r31)
+    lwz             r12, TEST_OI10_CPU_MEM_000_ZERO_OFFSET(r31)
+    lwz             r13, TEST_OI10_CPU_MEM_000_ZERO_OFFSET(r31)
+    lwz             r14, TEST_OI10_CPU_MEM_000_ZERO_OFFSET(r31)
+    lwz             r15, TEST_OI10_CPU_MEM_000_ZERO_OFFSET(r31)
+    lwz             r16, TEST_OI10_CPU_MEM_000_ZERO_OFFSET(r31)
+    lwz             r17, TEST_OI10_CPU_MEM_000_ZERO_OFFSET(r31)
+    lwz             r18, TEST_OI10_CPU_MEM_000_ZERO_OFFSET(r31)
+    lwz             r19, TEST_OI10_CPU_MEM_000_ZERO_OFFSET(r31)
+    lwz             r20, TEST_OI10_CPU_MEM_000_ZERO_OFFSET(r31)
+    lwz             r21, TEST_OI10_CPU_MEM_000_ZERO_OFFSET(r31)
+    lwz             r22, TEST_OI10_CPU_MEM_000_ZERO_OFFSET(r31)
+    lwz             r23, TEST_OI10_CPU_MEM_000_ZERO_OFFSET(r31)
+    lwz             r24, TEST_OI10_CPU_MEM_000_ZERO_OFFSET(r31)
+    lwz             r25, TEST_OI10_CPU_MEM_000_ZERO_OFFSET(r31)
+    lwz             r26, TEST_OI10_CPU_MEM_000_ZERO_OFFSET(r31)
+    lwz             r27, TEST_OI10_CPU_MEM_000_ZERO_OFFSET(r31)
+    lwz             r28, TEST_OI10_CPU_MEM_000_ZERO_OFFSET(r31)
+    lwz             r29, TEST_OI10_CPU_MEM_000_ZERO_OFFSET(r31)
+    lwz             r30, TEST_OI10_CPU_MEM_000_ZERO_OFFSET(r31)
+    lwz             r31, TEST_OI10_CPU_MEM_000_ZERO_OFFSET(r31)
+
+    isync
+
+
+
+
+
+
+    clear_regs_with_1
+
+    rumboot_putstring "Checking MAC ...\n"
+//    test_event EVENT_GPRS_CLEARED_START_CHECK_MAC
+    msync
+    isync
+    clear_regs_with_0
+
+    li r1,1
+    li r2,1
+    li r4,1
+
+    maclhw r5,r2,r5
+
+    maclhw r2,r1,r2
+    maclhw r5,r2,r5
+
+    maclhw r2,r1,r2
+    maclhw r5,r2,r5
+
+    maclhw r2,r1,r2
+    maclhw r5,r2,r5
+
+    maclhw r2,r1,r2
+    maclhw r5,r2,r5
+
+    maclhw r2,r1,r2
+    maclhw r5,r2,r5
+
+    maclhw r2,r1,r2
+    maclhw r5,r2,r5
+
+    maclhw r2,r1,r2
+    maclhw r5,r2,r5
+
+    maclhw r2,r1,r2
+    maclhw r5,r2,r5
+
+    maclhw r2,r1,r2
+    maclhw r5,r2,r5
+
+    maclhw r2,r1,r2
+    maclhw r5,r2,r5
+
+    maclhw r2,r1,r2
+    maclhw r5,r2,r5
+
+    maclhw r2,r1,r2
+    maclhw r5,r2,r5
+
+    maclhw r2,r1,r2
+    maclhw r5,r2,r5
+
+    maclhw r2,r1,r2
+    maclhw r5,r2,r5
+
+    maclhw r2,r1,r2
+    maclhw r5,r2,r5
+
+
+
+
+
+    .align 4
+    ori r6, r6,0x8000 // r6 == 8000
+    .align 4
+    maclhwu r2, r1,r2 // r2 == 10000
+    maclhw r5,r2,r5
+
+    xori 0,0,0
+    xori 0,0,0
+    xori 0,0,0
+    xori 0,0,0
+
+    xori 0,0,0
+    xori 0,0,0
+    xori 0,0,0
+    xori 0,0,0
+
+    xori 0,0,0
+    xori 0,0,0
+    xori 0,0,0
+    xori 0,0,0
+
+    xori 0,0,0
+    xori 0,0,0
+    xori 0,0,0
+    xori 0,0,0
+
+    maclhwu r1, r1,r4 //r1 == 2
+    maclhw r5,r2,r5
+
+    maclhwu r2, r1,r6 //r2 == 20000
+    maclhw r5,r2,r5
+
+    maclhwu r1, r1,r4 //r1 == 4
+    maclhw r5,r2,r5
+
+    maclhwu r2, r1,r6
+    maclhw r5,r2,r5
+
+    maclhwu r1, r1,r4
+    maclhw r5,r2,r5
+
+    maclhwu r2, r1,r6
+    maclhw r5,r2,r5
+
+    maclhwu r1, r1,r4
+    maclhw r5,r2,r5
+
+    maclhwu r2, r1,r6
+    maclhw r5,r2,r5
+
+    maclhwu r1, r1,r4
+    maclhw r5,r2,r5
+
+    maclhwu r2, r1,r6
+    maclhw r5,r2,r5
+
+    maclhwu r1, r1,r4
+    maclhw r5,r2,r5
+
+    maclhwu r2, r1,r6
+    maclhw r5,r2,r5
+
+    maclhwu r1, r1,r4
+    maclhw r5,r2,r5
+
+    maclhwu r2, r1,r6
+    maclhw r5,r2,r5
+
+    maclhwu r1, r1,r4
+    maclhw r5,r2,r5
+
+    maclhwu r2, r1,r6
+    maclhw r5,r2,r5
+
+    maclhwu r1, r1,r4
+    maclhw r5,r2,r5
+
+    maclhwu r2, r1,r6
+    maclhw r5,r2,r5
+
+    maclhwu r1, r1,r4
+    maclhw r5,r2,r5
+
+    maclhwu r2, r1,r6
+    maclhw r5,r2,r5
+
+    maclhwu r1, r1,r4
+    maclhw r5,r2,r5
+
+    maclhwu r2, r1,r6
+    maclhw r5,r2,r5
+
+    maclhwu r1, r1,r4
+    maclhw r5,r2,r5
+
+    maclhwu r2, r1,r6
+    maclhw r5,r2,r5
+
+    maclhwu r1, r1,r4
+    maclhw r5,r2,r5
+
+    maclhwu r2, r1,r6
+    maclhw r5,r2,r5
+
+    maclhwu r1, r1,r4
+    maclhw r5,r2,r5
+
+    maclhwu r2, r1,r6
+    maclhw r5,r2,r5
+
+    maclhwu r1, r1,r4
+    maclhw r5,r2,r5
+
+    maclhwu r2, r1,r6
+    maclhw r5,r2,r5
+
+    maclhwu r1, r1,r4
+    maclhw r5,r2,r5
+
+    maclhwu r2, r1,r6
+
+    .align 4
+    xori 0,0,0
+    xori 0,0,0
+    xori 0,0,0
+    xori 0,0,0
+
+    xori 0,0,0
+    xori 0,0,0
+    xori 0,0,0
+    xori 0,0,0
+
+    xori 0,0,0
+    xori 0,0,0
+    xori 0,0,0
+    xori 0,0,0
+
+    xori 0,0,0
+    xori 0,0,0
+    xori 0,0,0
+    xori 0,0,0
+
+
+
+
+
+
+    rumboot_putstring "Checking STW ...\n"
+//    test_event EVENT_GPRS_CLEARED_START_CHECK_STW
+    .align 4
+    li r1,1
+    li r2,1
+    li r4,1
+    stwu    r2, 4(r3) //0
+    isync
+
+    //mullw  r5,r1,r2
+    maclhw r5,r2,r5
+    maclhw r2,r1,r2
+    maclhw r5,r2,r5
+    stwu    r2, 4(r3) //1
+    stwu    r5, 4(r7) //
+    isync
+
+    maclhw r2,r1,r2
+    maclhw r5,r2,r5
+    stwu    r2, 4(r3) //2
+    stwu    r5, 4(r7) //
+    isync
+
+    maclhw r2,r1,r2
+    maclhw r5,r2,r5
+    stwu    r2, 4(r3) //3
+    stwu    r5, 4(r7) //
+    isync
+
+    maclhw r2,r1,r2
+    maclhw r5,r2,r5
+    stwu    r2, 4(r3) //4
+    stwu    r5, 4(r7) //
+    isync
+
+    maclhw r2,r1,r2
+    maclhw r5,r2,r5
+    stwu    r2, 4(r3) //5
+    stwu    r5, 4(r7) //
+    isync
+
+    maclhw r2,r1,r2
+    maclhw r5,r2,r5
+    stwu    r2, 4(r3) //6
+    stwu    r5, 4(r7) //
+    isync
+
+    maclhw r2,r1,r2
+    maclhw r5,r2,r5
+    stwu    r2, 4(r3) //7
+    stwu    r5, 4(r7) //
+    isync
+
+    maclhw r2,r1,r2
+    maclhw r5,r2,r5
+    stwu    r2, 4(r3) //8
+    stwu    r5, 4(r7) //
+    isync
+
+    maclhw r2,r1,r2
+    maclhw r5,r2,r5
+    stwu    r2, 4(r3) //9
+    stwu    r5, 4(r7) //
+    isync
+
+    maclhw r2,r1,r2
+    maclhw r5,r2,r5
+    stwu    r2, 4(r3) //10
+    stwu    r5, 4(r7) //
+    isync
+
+    maclhw r2,r1,r2
+    maclhw r5,r2,r5
+    stwu    r2, 4(r3) //11
+    stwu    r5, 4(r7) //
+    isync
+
+    maclhw r2,r1,r2
+    maclhw r5,r2,r5
+    stwu    r2, 4(r3) //12
+    stwu    r5, 4(r7) //
+    isync
+
+    maclhw r2,r1,r2
+    maclhw r5,r2,r5
+    stwu    r2, 4(r3) //13
+    stwu    r5, 4(r7) //
+    isync
+
+    maclhw r2,r1,r2
+    maclhw r5,r2,r5
+    stwu    r2, 4(r3) //14
+    stwu    r5, 4(r7) //
+    isync
+
+    maclhw r2,r1,r2
+    maclhw r5,r2,r5
+    stwu    r2, 4(r3) //15
+    stwu    r5, 4(r7) //
+    isync
+
+    ori r6, r6,0x8000 // r6 == 8000
+    maclhwu r2, r1,r2 // r2 == 10000
+    maclhw r5,r2,r5
+    stwu    r2, 4(r3) //16
+    stwu    r5, 4(r7) //
+    isync
+
+    xori 0,0,0
+    xori 0,0,0
+    xori 0,0,0
+    xori 0,0,0
+
+    xori 0,0,0
+    xori 0,0,0
+    xori 0,0,0
+    xori 0,0,0
+
+    xori 0,0,0
+    xori 0,0,0
+    xori 0,0,0
+    xori 0,0,0
+
+    xori 0,0,0
+    xori 0,0,0
+    xori 0,0,0
+    xori 0,0,0
+    //isync
+    //r1 == 1
+    //r2 == 8000
+    //r4 == 1
+    //r5 == 0
+    //r6 == 0
+    stwu    r1, 4(r8)
+
+    maclhwu r1, r1,r4 //r1 == 2
+    maclhw r5,r2,r5
+    stwu    r1, 4(r8)
+    stwu    r5, 4(r7) //
+    isync
+
+    maclhwu r2, r1,r6 //r2 == 20000
+    maclhw r5,r2,r5
+    stwu    r2, 4(r3)
+    stwu    r5, 4(r7) //
+    isync
+
+    maclhwu r1, r1,r4 //r1 == 4
+    maclhw r5,r2,r5
+    stwu    r1, 4(r8)
+    stwu    r5, 4(r7) //
+    isync
+
+    maclhwu r2, r1,r6
+    maclhw r5,r2,r5
+    stwu    r2, 4(r3)
+    stwu    r5, 4(r7) //
+    isync
+
+    maclhwu r1, r1,r4 //r1 == 4
+    maclhw r5,r2,r5
+    stwu    r1, 4(r8)
+    stwu    r5, 4(r7) //
+    isync
+
+    maclhwu r2, r1,r6 //r6 == 40000
+    maclhw r5,r2,r5
+    stwu    r2, 4(r3)
+    stwu    r5, 4(r7) //
+    isync
+
+    maclhwu r1, r1,r4
+    maclhw r5,r2,r5
+    stwu    r1, 4(r8)
+    stwu    r5, 4(r7) //
+    isync
+
+    maclhwu r2, r1,r6
+    maclhw r5,r2,r5
+    stwu    r2, 4(r3)
+    stwu    r5, 4(r7) //
+    isync
+
+    maclhwu r1, r1,r4
+    maclhw r5,r2,r5
+    stwu    r1, 4(r8)
+    stwu    r5, 4(r7) //
+    isync
+
+    maclhwu r2, r1,r6
+    maclhw r5,r2,r5
+    stwu    r2, 4(r3)
+    stwu    r5, 4(r7) //
+    isync
+
+    maclhwu r1, r1,r4
+    maclhw r5,r2,r5
+    stwu    r1, 4(r8)
+    stwu    r5, 4(r7) //
+    isync
+
+    maclhwu r2, r1,r6
+    maclhw r5,r2,r5
+    stwu    r2, 4(r3)
+    stwu    r5, 4(r7) //
+    isync
+
+    maclhwu r1, r1,r4
+    maclhw r5,r2,r5
+    stwu    r1, 4(r8)
+    stwu    r5, 4(r7) //
+    isync
+
+    maclhwu r2, r1,r6
+    maclhw r5,r2,r5
+    stwu    r2, 4(r3)
+    stwu    r5, 4(r7) //
+    isync
+
+    maclhwu r1, r1,r4
+    maclhw r5,r2,r5
+    stwu    r1, 4(r8)
+    stwu    r5, 4(r7) //
+    isync
+
+    maclhwu r2, r1,r6
+    maclhw r5,r2,r5
+    stwu    r2, 4(r3)
+    stwu    r5, 4(r7) //
+    isync
+
+    maclhwu r1, r1,r4
+    maclhw r5,r2,r5
+    stwu    r1, 4(r8)
+    stwu    r5, 4(r7) //
+    isync
+
+    maclhwu r2, r1,r6
+    maclhw r5,r2,r5
+    stwu    r2, 4(r3)
+    stwu    r5, 4(r7) //
+    isync
+
+    maclhwu r1, r1,r4
+    maclhw r5,r2,r5
+    stwu    r1, 4(r8)
+    stwu    r5, 4(r7) //
+    isync
+
+    maclhwu r2, r1,r6
+    maclhw r5,r2,r5
+    stwu    r2, 4(r3)
+    stwu    r5, 4(r7) //
+    isync
+
+    maclhwu r1, r1,r4
+    maclhw r5,r2,r5
+    stwu    r1, 4(r8)
+    stwu    r5, 4(r7) //
+    isync
+
+    maclhwu r2, r1,r6
+    maclhw r5,r2,r5
+    stwu    r2, 4(r3)
+    stwu    r5, 4(r7) //
+    isync
+
+    maclhwu r1, r1,r4
+    maclhw r5,r2,r5
+    stwu    r1, 4(r8)
+    stwu    r5, 4(r7) //
+    isync
+
+    maclhwu r2, r1,r6
+    maclhw r5,r2,r5
+    stwu    r2, 4(r3)
+    stwu    r5, 4(r7) //
+    isync
+
+    maclhwu r1, r1,r4
+    maclhw r5,r2,r5
+    stwu    r1, 4(r8)
+    stwu    r5, 4(r7) //
+    isync
+
+    maclhwu r2, r1,r6
+    maclhw r5,r2,r5
+    stwu    r2, 4(r3)
+    stwu    r5, 4(r7) //
+    isync
+
+    maclhwu r1, r1,r4
+    maclhw r5,r2,r5
+    stwu    r1, 4(r8)
+    stwu    r5, 4(r7) //
+    isync
+
+    maclhwu r2, r1,r6
+    maclhw r5,r2,r5
+    stwu    r2, 4(r3)
+    stwu    r5, 4(r7) //
+    isync
+
+    maclhwu r1, r1,r4
+    maclhw r5,r2,r5
+    stwu    r1, 4(r8)
+    stwu    r5, 4(r7) //
+    isync
+
+    maclhwu r2, r1,r6
+    maclhw r5,r2,r5
+    stwu    r2, 4(r3)
+    stwu    r5, 4(r7) //
+    isync
+
+    maclhwu r1, r1,r4
+    maclhw r5,r2,r5
+    stwu    r1, 4(r8)
+    stwu    r5, 4(r7) //
+    isync
+
+    maclhwu r2, r1,r6
+    maclhw r5,r2,r5
+//    stwu    r2, 4(r3)
+    stwu    r5, 4(r7) //
+    isync
+
+
+
+
+
+
+    clear_regs_with_0
+
+    rumboot_putstring "Checking XORI MTFSPR ...\n"
+//    test_event EVENT_GPRS_CLEARED_START_CHECK_XORI_MTFSPR
+    msync
+    isync
+    .align 4
+    //iterations 0-7
+    xori_reg_spr r0, 0x0001, SPR_SPRG0
+    xori_reg_spr r1, 0x0002, SPR_SPRG1
+    xori_reg_spr r0, 0x0004, SPR_SPRG2
+    xori_reg_spr r2, 0x0008, SPR_SPRG3
+    xori_reg_spr r0, 0x0010, SPR_SPRG4
+    xori_reg_spr r4, 0x0020, SPR_SPRG5
+    xori_reg_spr r0, 0x0040, SPR_SPRG6
+    xori_reg_spr r8, 0x0080, SPR_SPRG7
+
+    //iterations 8-15
+    mfspr_reg r0, SPR_SPRG7
+    mfspr_reg r1, SPR_SPRG6
+    mfspr_reg r0, SPR_SPRG5
+    mfspr_reg r2, SPR_SPRG4
+    mfspr_reg r0, SPR_SPRG3
+    mfspr_reg r4, SPR_SPRG2
+    mfspr_reg r0, SPR_SPRG1
+    mfspr_reg r8, SPR_SPRG0
+
+    //iterations 16-23
+    xori_reg_spr r0,  0x0100, SPR_SPRG0
+    xori_reg_spr r16, 0x0200, SPR_SPRG1
+    xori_reg_spr r0,  0x0400, SPR_SPRG2
+    xori_reg_spr r31, 0x0800, SPR_SPRG3
+    xori_reg_spr r30, 0x1000, SPR_SPRG4
+    xori_reg_spr r31, 0x2000, SPR_SPRG5
+    xori_reg_spr r29, 0x4000, SPR_SPRG6
+    xori_reg_spr r31, 0x8000, SPR_SPRG7
+
+    //iterations 24-31
+    mfspr_reg r0,  SPR_SPRG7
+    mfspr_reg r16, SPR_SPRG6
+    mfspr_reg r0,  SPR_SPRG5
+    mfspr_reg r31, SPR_SPRG4
+    mfspr_reg r30, SPR_SPRG3
+    mfspr_reg r31, SPR_SPRG2
+    mfspr_reg r29, SPR_SPRG1
+    mfspr_reg r31, SPR_SPRG0
+
+    //iterations 32-39
+    xoris_reg_spr r27, 0x0001, SPR_SPRG0
+    xoris_reg_spr r31, 0x0002, SPR_SPRG1
+    xoris_reg_spr r23, 0x0004, SPR_SPRG2
+    xoris_reg_spr r31, 0x0008, SPR_SPRG3
+    xoris_reg_spr r15, 0x0010, SPR_SPRG4
+    xoris_reg_spr r31, 0x0020, SPR_SPRG5
+    xoris_reg_spr r1, 0x0040, SPR_SPRG6
+    xoris_reg_spr r2, 0x0080, SPR_SPRG7
+
+    //iterations 40-47
+    mfspr_reg r27, SPR_SPRG7
+    mfspr_reg r31, SPR_SPRG6
+    mfspr_reg r23, SPR_SPRG5
+    mfspr_reg r31, SPR_SPRG4
+    mfspr_reg r15, SPR_SPRG3
+    mfspr_reg r31, SPR_SPRG2
+    mfspr_reg r1 , SPR_SPRG1
+    mfspr_reg r2 , SPR_SPRG0
+
+    //iterations 48-55
+    xoris_reg_spr r4,  0x0100, SPR_SPRG0
+    xoris_reg_spr r8,  0x0200, SPR_SPRG1
+    xoris_reg_spr r16, 0x0400, SPR_SPRG2
+    xoris_reg_spr r30, 0x0800, SPR_SPRG3
+    xoris_reg_spr r29, 0x1000, SPR_SPRG4
+    xoris_reg_spr r27, 0x2000, SPR_SPRG5
+    xoris_reg_spr r23, 0x4000, SPR_SPRG6
+    xoris_reg_spr r15, 0x8000, SPR_SPRG7
+
+    //iterations 56-63
+    mfspr_reg r4 , SPR_SPRG7
+    mfspr_reg r8 , SPR_SPRG6
+    mfspr_reg r16, SPR_SPRG5
+    mfspr_reg r30, SPR_SPRG4
+    mfspr_reg r29, SPR_SPRG3
+    mfspr_reg r27, SPR_SPRG2
+    mfspr_reg r23, SPR_SPRG1
+    mfspr_reg r15, SPR_SPRG0
+
+    clear_regs_with_1
+
+    //iterations 0-7
+    xori_reg_spr r0, 0x0001, SPR_SPRG0
+    xori_reg_spr r1, 0x0002, SPR_SPRG1
+    xori_reg_spr r0, 0x0004, SPR_SPRG2
+    xori_reg_spr r2, 0x0008, SPR_SPRG3
+    xori_reg_spr r0, 0x0010, SPR_SPRG4
+    xori_reg_spr r4, 0x0020, SPR_SPRG5
+    xori_reg_spr r0, 0x0040, SPR_SPRG6
+    xori_reg_spr r8, 0x0080, SPR_SPRG7
+
+    //iterations 8-15
+    mfspr_reg r0, SPR_SPRG7
+    mfspr_reg r1, SPR_SPRG6
+    mfspr_reg r0, SPR_SPRG5
+    mfspr_reg r2, SPR_SPRG4
+    mfspr_reg r0, SPR_SPRG3
+    mfspr_reg r4, SPR_SPRG2
+    mfspr_reg r0, SPR_SPRG1
+    mfspr_reg r8, SPR_SPRG0
+
+    //iterations 16-23
+    xori_reg_spr r0 , 0x0100, SPR_SPRG0
+    xori_reg_spr r16, 0x0200, SPR_SPRG1
+    xori_reg_spr r0 , 0x0400, SPR_SPRG2
+    xori_reg_spr r31, 0x0800, SPR_SPRG3
+    xori_reg_spr r30, 0x1000, SPR_SPRG4
+    xori_reg_spr r31, 0x2000, SPR_SPRG5
+    xori_reg_spr r29, 0x4000, SPR_SPRG6
+    xori_reg_spr r31, 0x8000, SPR_SPRG7
+
+    //iterations 24-31
+    mfspr_reg r0 , SPR_SPRG7
+    mfspr_reg r16, SPR_SPRG6
+    mfspr_reg r0 , SPR_SPRG5
+    mfspr_reg r31, SPR_SPRG4
+    mfspr_reg r30, SPR_SPRG3
+    mfspr_reg r31, SPR_SPRG2
+    mfspr_reg r29, SPR_SPRG1
+    mfspr_reg r31, SPR_SPRG0
+
+    //iterations 32-39
+    xoris_reg_spr r27, 0x0001, SPR_SPRG0
+    xoris_reg_spr r31, 0x0002, SPR_SPRG1
+    xoris_reg_spr r23, 0x0004, SPR_SPRG2
+    xoris_reg_spr r31, 0x0008, SPR_SPRG3
+    xoris_reg_spr r15, 0x0010, SPR_SPRG4
+    xoris_reg_spr r31, 0x0020, SPR_SPRG5
+    xoris_reg_spr r1 , 0x0040, SPR_SPRG6
+    xoris_reg_spr r2 , 0x0080, SPR_SPRG7
+
+    //iterations 40-47
+    mfspr_reg r27, SPR_SPRG7
+    mfspr_reg r31, SPR_SPRG6
+    mfspr_reg r23, SPR_SPRG5
+    mfspr_reg r31, SPR_SPRG4
+    mfspr_reg r15, SPR_SPRG3
+    mfspr_reg r31, SPR_SPRG2
+    mfspr_reg r1 , SPR_SPRG1
+    mfspr_reg r2 , SPR_SPRG0
+
+    //iterations 48-55
+    xoris_reg_spr r4, 0x0100, SPR_SPRG0
+    xoris_reg_spr r8, 0x0200, SPR_SPRG1
+    xoris_reg_spr r16, 0x0400, SPR_SPRG2
+    xoris_reg_spr r30, 0x0800, SPR_SPRG3
+    xoris_reg_spr r29, 0x1000, SPR_SPRG4
+    xoris_reg_spr r27, 0x2000, SPR_SPRG5
+    xoris_reg_spr r23, 0x4000, SPR_SPRG6
+    xoris_reg_spr r15, 0x8000, SPR_SPRG7
+
+    //iterations 56-63
+    mfspr_reg r4 , SPR_SPRG7
+    mfspr_reg r8 , SPR_SPRG6
+    mfspr_reg r16, SPR_SPRG5
+    mfspr_reg r30, SPR_SPRG4
+    mfspr_reg r29, SPR_SPRG3
+    mfspr_reg r27, SPR_SPRG2
+    mfspr_reg r23, SPR_SPRG1
+    mfspr_reg r15, SPR_SPRG0
+
+    clear_regs_with_0
+
+
+
+    .align 4
+    b test_ok
+
+test_error:
+    gtube_init
+    rumboot_putstring "TEST ERROR\n"
+    test_event EVENT_ERROR
+
+finish:
+    b finish
+
+test_ok:
+    gtube_init
+    rumboot_putstring "TEST OK\n"
+    test_event EVENT_OK
+    b finish
