@@ -16,8 +16,6 @@
 #define RUMBOOT_IRQ_IRQ  0
 #define RUMBOOT_IRQ_FIQ  1
 
-#define RUMBOOT_IRQ_EDGE  (1 << 1)
-#define RUMBOOT_IRQ_LEVEL (0 << 1)
 
 #ifndef __ASSEMBLER__
 
@@ -26,7 +24,15 @@
 #elif defined( __PPC__ ) && !defined(RUMBOOT_NO_IRQ_MACROS)
 #include <arch/irq_macros.h>
 #else
-    /* stubs */
+
+#define RUMBOOT_IRQ_EDGE    (0)
+#define RUMBOOT_IRQ_LEVEL   (0)
+#define RUMBOOT_IRQ_POS     (0)
+#define RUMBOOT_IRQ_NEG     (0)
+#define RUMBOOT_IRQ_HIGH    (0)
+#define RUMBOOT_IRQ_LOW     (0)
+
+/* stubs */
 static inline uint32_t rumboot_arch_irq_disable( )
 {
     return 0;

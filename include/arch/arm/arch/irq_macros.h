@@ -3,6 +3,15 @@
 
 /* Include doxygen.h to make sure that documentation gets updated  */
 #include "../../doxygen.h"
+
+#define RUMBOOT_IRQ_EDGE    (1 << 1)
+#define RUMBOOT_IRQ_LEVEL   (0 << 1)
+#define RUMBOOT_IRQ_POS     (0)
+#define RUMBOOT_IRQ_NEG     (0)
+#define RUMBOOT_IRQ_HIGH    (0)
+#define RUMBOOT_IRQ_LOW     (0)
+
+
 #if 0
 static inline void rumboot_arch_irq_dump_cpsr()
 {

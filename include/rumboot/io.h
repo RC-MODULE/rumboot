@@ -48,7 +48,7 @@ static inline uint64_t ioread64(uint32_t const base_addr);
  * @param value     value
  * @param base_addr base_addr
  */
-static inline void iowrite64(uint64_t const value, uint32_t const base_addr)
+static inline void iowrite64(uint64_t const value, uint32_t const base_addr);
 /**
  * Read a 32-bit value from memory location base_addr
  * @param  base_addr

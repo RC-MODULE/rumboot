@@ -4,10 +4,20 @@
 
 #include <platform/arch/ppc/ppc_476fp_itrpt_fields.h>
 #include <platform/arch/ppc/ppc_476fp_lib_c.h>
+#include <platform/regs/fields/mpic128.h>
 
 
 /* Include doxygen.h to make sure that documentation gets updated  */
 #include "../../doxygen.h"
+
+
+#define RUMBOOT_IRQ_EDGE    (int_sense_edge << MPIC128_VP_S_i)
+#define RUMBOOT_IRQ_LEVEL   (int_sense_level << MPIC128_VP_S_i)
+#define RUMBOOT_IRQ_POS     (int_pol_pos << MPIC128_VP_POL_i)
+#define RUMBOOT_IRQ_NEG     (int_pol_neg << MPIC128_VP_POL_i)
+#define RUMBOOT_IRQ_HIGH    (int_pol_high << MPIC128_VP_POL_i)
+#define RUMBOOT_IRQ_LOW     (int_pol_low << MPIC128_VP_POL_i)
+
 
 static inline uint32_t rumboot_arch_irq_enable() {
     uint32_t state = msr_read();
