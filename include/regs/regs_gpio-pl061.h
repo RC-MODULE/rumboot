@@ -1,7 +1,18 @@
-#ifndef REGS_GPIO_H
-#define REGS_GPIO_H
+#ifndef REGS_GPIO_PL061_H
+#define REGS_GPIO_PL061_H
 
-//register defines
+
+/**
+ * \defgroup regs_gpio-pl061 GPIO PL061
+ * \ingroup regs
+ *
+ * Register offsets and constants
+ * \code{.c}
+ * #include <regs/regs_gpio-pl061.h>
+ * \endcode
+ *
+ * @{
+ */
 #define GPIO_DATA                    0x000
 #define GPIO_DIR                     0x400
 #define GPIO_IS                      0x404
@@ -20,6 +31,9 @@
 #define GPIO_CellID1                 0xFF4
 #define GPIO_CellID2                 0xFF8
 #define GPIO_CellID3                 0xFFC
+/**
+ * @}
+ */
 
 //default values
 #define GPIO_DATA_DEFAULT            0x00
@@ -40,9 +54,11 @@
 #define GPIO_CellID1_DEFAULT         0xF0
 #define GPIO_CellID2_DEFAULT         0x05
 #define GPIO_CellID3_DEFAULT         0xB1
-
+// masks
 #define GPIO_REG_MASK                0xFF
-#define GPIO_ADDR_MASK               0x3FC
+#define GPIO_ADDR_MASK               (GPIO_REG_MASK << 2)
 
 #define GPIO_TIMEOUT    0x200
-#endif
+
+
+#endif /* REGS_GPIO_PL061_H */

@@ -5,15 +5,14 @@
 #include <platform/common_macros/common_macros.h>
 #include <platform/test_event_codes.h>
 #include <platform/devices.h>
-#include <platform/regs/regs_gpio.h>
-#include <platform/devices/gpio.h>
-
 #include <rumboot/irq.h>
 #include <rumboot/io.h>
 #include <rumboot/printf.h>
 #include <platform/interrupts.h>
 #include <platform/test_assert.h>
 #include <platform/regs/fields/mpic128.h>
+#include <regs/regs_gpio-pl061.h>
+#include <devices/gpio-pl061.h>
 
 #define CHECK_REGS
 
@@ -21,6 +20,7 @@
 static uint32_t check_gpio_default_val(uint32_t base_addr)
 {
     rumboot_printf("Check the default values of the registers:");
+
 
     TEST_ASSERT((ioread32(base_addr + GPIO_DATA) == GPIO_DATA_DEFAULT), "ERROR!!! The default value does not match the expected value the register GPIO_DATA.\n");
 
