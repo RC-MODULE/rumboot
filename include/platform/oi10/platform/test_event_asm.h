@@ -32,6 +32,19 @@
 .endm
 
 #define EVENT_TESTEVENT 0x11
+#define EVENT_RELOCATE_RUNTIME 0x12
+
+.macro gtube_init_runtime tmp_reg=r5
+    load_addr   \tmp_reg, rumboot_platform_runtime_info;
+    mtspr       SPR_SPRG2, \tmp_reg
+
+    load_const  \tmp_reg, EVENT_RELOCATE_RUNTIME
+    mtspr       SPR_SPRG1, \tmp_reg
+
+    load_const  \tmp_reg, 0
+    mtspr       SPR_SPRG1, \tmp_reg
+.endm
+
 .macro test_event test_event_code, tmp_reg_nop=r5, tmp_reg_opcode_testevent=r6, tmp_reg_event_code=r7
     load_const  \tmp_reg_nop, 0
     load_const  \tmp_reg_opcode_testevent, EVENT_TESTEVENT;

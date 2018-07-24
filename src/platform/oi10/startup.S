@@ -479,8 +479,11 @@ setup_stack: /*stack is growing down*/
     b goto_boot_main
 
 .section ".text.rom","ax",@progbits
+
 goto_boot_main:
-    bl          rumboot_main /* never returns*/
+    /* Initialize the runtime  */
+    gtube_init_runtime
+    bl          rumboot_main /* never returns */
 
 endless_loop:
     b           endless_loop
