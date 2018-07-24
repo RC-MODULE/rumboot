@@ -81,6 +81,8 @@
 #define ETH_PHY_MSTSLVSTAT_DEFAULT 0x7000
 #define ETH_PHY_EXTSTATUS_DEFAULT  0x0
 
+#define EDCL_WR     true
+#define EDCL_RD     false
 
 typedef enum greth_speed
 {
@@ -138,5 +140,6 @@ bool greth_configure_for_transmit( uint32_t base_addr, void volatile * const src
 bool greth_start_transmit(uint32_t base_addr);
 void greth_clear_status_bits(uint32_t base_addr, uint32_t mask);
 uint32_t greth_get_status(uint32_t base_addr);
+bool greth_start_edcl_rd(uint32_t base_addr);
 
 #endif /* PLATFORM_DEVICES_GBIT_GRETH_H */

@@ -69,7 +69,7 @@ void new_greth_ctrl_struct(greth_ctrl_struct_t* ctrl_struct)
     ctrl_struct->multicast_enable           = false;
     ctrl_struct->phy_int_enable             = false;
     ctrl_struct->burstmode_enable           = false;
-    ctrl_struct->speed                      = GRETH_SPEED_10MB;
+    ctrl_struct->speed                      = GRETH_SPEED_100MB;
     ctrl_struct->promiscuous_mode           = false;
     ctrl_struct->fullduplex_enable          = false;
     ctrl_struct->receiver_int_enable        = false;
@@ -334,7 +334,7 @@ bool greth_start_receive(uint32_t base_addr)
     greth_info.promiscuous_mode       = true;
     greth_info.edcl_disable           = false;
     greth_info.multicast_enable       = false;
-    greth_info.speed                  = GRETH_SPEED_10MB;
+    greth_info.speed                  = GRETH_SPEED_100MB;
     greth_info.fullduplex_enable      = true;
     greth_info.transmitter_int_enable = false;
     greth_info.receiver_int_enable    = true;
@@ -384,12 +384,33 @@ bool greth_start_transmit(uint32_t base_addr)
     greth_info.promiscuous_mode       = true;
     greth_info.edcl_disable           = false;
     greth_info.multicast_enable       = false;
-    greth_info.speed                  = GRETH_SPEED_10MB;
+    greth_info.speed                  = GRETH_SPEED_100MB;
     greth_info.fullduplex_enable      = true;
     greth_info.transmitter_int_enable = false;
     greth_info.receiver_int_enable    = false;
     greth_info.transmitter_enable     = true;
     greth_info.receiver_enable        = false;
+    greth_info.ram_debug_enable       = false;
+    set_greth_ctrl(base_addr, &greth_info);
+
+//    if (!greth_wait_transmit(base_addr)) return false;
+
+    return true;
+}
+
+bool greth_start_edcl_rd(uint32_t base_addr)
+{
+    greth_ctrl_struct_t greth_info;
+    new_greth_ctrl_struct(&greth_info);
+    greth_info.promiscuous_mode       = true;
+    greth_info.edcl_disable           = false;
+    greth_info.multicast_enable       = false;
+    greth_info.speed                  = GRETH_SPEED_100MB;
+    greth_info.fullduplex_enable      = true;
+    greth_info.transmitter_int_enable = false;
+    greth_info.receiver_int_enable    = true;
+    greth_info.transmitter_enable     = true;
+    greth_info.receiver_enable        = true;
     greth_info.ram_debug_enable       = false;
     set_greth_ctrl(base_addr, &greth_info);
 
