@@ -28,8 +28,36 @@
 #define IM0_BASE                0x80000000
 #define IM1_BASE                0x80020000
 #define BOOTROM_BASE            0xFFFF0000
-
-
+//bank0
+#define EM2_BANK0_BASE          0x00000000
+#define EM2_BANK0_SIZE          0x20000000
+#define SRAM0_BASE              EM2_BANK0_BASE
+#define SRAM0_SIZE              EM2_BANK0_SIZE
+//bank1
+#define EM2_BANK1_BASE          0x20000000
+#define EM2_BANK1_SIZE          0x20000000
+#define SDRAM_BASE              EM2_BANK1_BASE
+#define SDRAM_SIZE              EM2_BANK1_SIZE
+//bank2
+#define EM2_BANK2_BASE          0x40000000
+#define EM2_BANK2_SIZE          0x10000000
+#define SSRAM_BASE              EM2_BANK2_BASE
+#define SSRAM_SIZE              EM2_BANK2_SIZE
+//bank3
+#define EM2_BANK3_BASE          0x50000000
+#define EM2_BANK3_SIZE          0x10000000
+#define PIPELINED_BASE          EM2_BANK3_BASE
+#define PIPELINED_SIZE          EM2_BANK3_SIZE
+//bank4
+#define EM2_BANK4_BASE          0x60000000
+#define EM2_BANK4_SIZE          0x10000000
+#define SRAM1_BASE              EM2_BANK4_BASE
+#define SRAM1_SIZE              EM2_BANK4_SIZE
+//bank5
+#define EM2_BANK5_BASE          0x70000000
+#define EM2_BANK5_SIZE          0x10000000
+#define NOR_BASE                EM2_BANK5_BASE
+#define NOR_SIZE                EM2_BANK5_SIZE
 /**
  *
  * @}
