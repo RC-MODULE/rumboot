@@ -281,7 +281,7 @@ test_oi10_cpu_mem_000_data_sliding_zero:
 
 
 main:
-    test_event_send_test_id "test_iss"
+    test_event_send_test_id "test_iss_base"
 
     load_addr r31, results
     mtspr SPR_VRSAVE, r31
@@ -342,16 +342,6 @@ main:
     li r31, 0
     mtspr SPR_SPRG8, r31
 
-    msync
-    load_addr       r30, results
-    load_const      r31, 0x80
-
-    _rumboot_putdump r30, r31
-
-    _rumboot_issdump r30, r31
-
-    b test_error
-
 
 //    clear_regs_with_0
 
@@ -392,7 +382,15 @@ main:
     read_from_mem_zero_clean_with_addr r15, (TEST_OI10_CPU_MEM_000_SLIDING_ONE_OFFSET + 0x7C), r7
 
 
-
+    mtspr SPR_SPRG8, r31
+    mfspr r31, SPR_VRSAVE
+    stmw r0, 0(r31)
+    mfspr r30, SPR_SPRG8
+    stw r30, 124(r31)
+    addi r31, r31, 128
+    mtspr SPR_VRSAVE, r31
+    li r31, 0
+    mtspr SPR_SPRG8, r31
 
 
     .align 4
@@ -436,7 +434,15 @@ main:
     isync
 
 
-
+    mtspr SPR_SPRG8, r31
+    mfspr r31, SPR_VRSAVE
+    stmw r0, 0(r31)
+    mfspr r30, SPR_SPRG8
+    stw r30, 124(r31)
+    addi r31, r31, 128
+    mtspr SPR_VRSAVE, r31
+    li r31, 0
+    mtspr SPR_SPRG8, r31
 
 
     lis             r7, test_oi10_cpu_mem_000_data_zero@h
@@ -477,7 +483,15 @@ main:
     isync
 
 
-
+    mtspr SPR_SPRG8, r31
+    mfspr r31, SPR_VRSAVE
+    stmw r0, 0(r31)
+    mfspr r30, SPR_SPRG8
+    stw r30, 124(r31)
+    addi r31, r31, 128
+    mtspr SPR_VRSAVE, r31
+    li r31, 0
+    mtspr SPR_SPRG8, r31
 
 
     .align 4
@@ -522,7 +536,15 @@ main:
     isync
 
 
-
+    mtspr SPR_SPRG8, r31
+    mfspr r31, SPR_VRSAVE
+    stmw r0, 0(r31)
+    mfspr r30, SPR_SPRG8
+    stw r30, 124(r31)
+    addi r31, r31, 128
+    mtspr SPR_VRSAVE, r31
+    li r31, 0
+    mtspr SPR_SPRG8, r31
 
 
 
@@ -538,55 +560,114 @@ main:
     li r2,1
     li r4,1
 
+    mfspr r31, SPR_VRSAVE
+
     maclhw r5,r2,r5
+
+    stw r5, 0(r31)
 
     maclhw r2,r1,r2
     maclhw r5,r2,r5
 
-    maclhw r2,r1,r2
-    maclhw r5,r2,r5
+    stw r2, 4(r31)
+    stw r5, 8(r31)
 
     maclhw r2,r1,r2
     maclhw r5,r2,r5
 
-    maclhw r2,r1,r2
-    maclhw r5,r2,r5
+    stw r2, 12(r31)
+    stw r5, 16(r31)
 
     maclhw r2,r1,r2
     maclhw r5,r2,r5
 
-    maclhw r2,r1,r2
-    maclhw r5,r2,r5
+    stw r2, 20(r31)
+    stw r5, 24(r31)
 
     maclhw r2,r1,r2
     maclhw r5,r2,r5
 
-    maclhw r2,r1,r2
-    maclhw r5,r2,r5
+    stw r2, 28(r31)
+    stw r5, 32(r31)
 
     maclhw r2,r1,r2
     maclhw r5,r2,r5
 
-    maclhw r2,r1,r2
-    maclhw r5,r2,r5
+    stw r2, 36(r31)
+    stw r5, 40(r31)
 
     maclhw r2,r1,r2
     maclhw r5,r2,r5
 
-    maclhw r2,r1,r2
-    maclhw r5,r2,r5
+    stw r2, 44(r31)
+    stw r5, 48(r31)
 
     maclhw r2,r1,r2
     maclhw r5,r2,r5
 
-    maclhw r2,r1,r2
-    maclhw r5,r2,r5
+    stw r2, 52(r31)
+    stw r5, 56(r31)
 
     maclhw r2,r1,r2
     maclhw r5,r2,r5
 
+    stw r2, 60(r31)
+    stw r5, 64(r31)
 
+    maclhw r2,r1,r2
+    maclhw r5,r2,r5
 
+    stw r2, 68(r31)
+    stw r5, 72(r31)
+
+    maclhw r2,r1,r2
+    maclhw r5,r2,r5
+
+    stw r2, 76(r31)
+    stw r5, 80(r31)
+
+    maclhw r2,r1,r2
+    maclhw r5,r2,r5
+
+    stw r2, 84(r31)
+    stw r5, 88(r31)
+
+    maclhw r2,r1,r2
+    maclhw r5,r2,r5
+
+    stw r2, 92(r31)
+    stw r5, 96(r31)
+
+    maclhw r2,r1,r2
+    maclhw r5,r2,r5
+
+    stw r2, 100(r31)
+    stw r5, 104(r31)
+
+    maclhw r2,r1,r2
+    maclhw r5,r2,r5
+
+    stw r2, 108(r31)
+    stw r5, 112(r31)
+
+    maclhw r2,r1,r2
+    maclhw r5,r2,r5
+
+    stw r2, 116(r31)
+    stw r5, 120(r31)
+
+    addi r31, r31, 124
+    mtspr SPR_VRSAVE, r31
+
+    msync
+    load_addr       r30, results
+    load_const      r31, 0x2FC
+
+    _rumboot_putdump r30, r31
+
+    _rumboot_issdump r30, r31
+
+    b test_error
 
 
     .align 4
@@ -594,6 +675,10 @@ main:
     .align 4
     maclhwu r2, r1,r2 // r2 == 10000
     maclhw r5,r2,r5
+
+
+
+
 
     xori 0,0,0
     xori 0,0,0
@@ -734,7 +819,15 @@ main:
 
 
 
+    msync
+    load_addr       r30, results
+    load_const      r31, 0x380
 
+    _rumboot_putdump r30, r31
+
+    _rumboot_issdump r30, r31
+
+    b test_error
 
     rumboot_putstring "Checking STW ...\n"
 //    test_event EVENT_GPRS_CLEARED_START_CHECK_STW
