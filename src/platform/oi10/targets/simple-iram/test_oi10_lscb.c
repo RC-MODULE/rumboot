@@ -19,6 +19,7 @@
 #define test_LSCB1
 #define CHECK_MSP_REG_ADDR          MSP_RM_DSA
 #define CHECK_MSP_REG_NAME          "rm_dsa"
+#define DEBUG_MARK_SPR              SPR_SPRG8
 /* ------ */
 
 #define LSCB0_M0_IRQ_s              105
@@ -45,7 +46,7 @@
 #define OP_RUN_MASK                 BIT(OP_RUN_BIT)
 /* not in doc, for local usage only */
 #define OP_RUN_RD                   (OP_RUN_MASK                )
-#define OP_RUN_WR                   (OP_RUN_MASK | REG_WR_RD_BIT)
+#define OP_RUN_WR                   (OP_RUN_MASK | BIT(REG_WR_RD_BIT))
 
 #define MSP_SSFLAG_EXT_TRIG_BIT     8
 #define MSP_SSFLAG_EXT_TRIG_MASK    BIT(MSP_SSFLAG_EXT_TRIG_BIT)
@@ -84,6 +85,7 @@ typedef struct
 #define LSCB0                   ((lscb_t*)(LSCB0_BASE))
 #define LSCB1                   ((lscb_t*)(LSCB1_BASE))
 
+#define DEBUG_MARK(MARK)        spr_write(DEBUG_MARK_SPR, (MARK))
 #define IDX32(ADDR)             ((ADDR) / sizeof(uint32_t))
 
 #define REG_WR_REQ(ADDR,DATA)   ((((ADDR) << REG_ADDR_BIT) & REG_ADDR_MASK) \
@@ -94,21 +96,24 @@ typedef struct
 
 static a16d16_t mem_fill_table[] =
 {
-        {0x0000, 0x4000},
+        {0x0000, 0x8000},   /* --- */
         {0x0004, 0x0000},
 
         {0x000C, 0x0154},
         {0x0008, 0x00DC},
+        {0x0010, 0xA000},   /* --- */
         {0x001C, 0x0180},
         {0x0018, 0x00DC},
 
         {0x0550, 0x0082},
         {0x0554, 0xF821},
         {0x0558, 0xA5A5},
+        {0x055C, 0x0000},
 
         {0x0600, 0x0002},
         {0x0604, 0xF821},
         {0x0608, 0x5A5A},
+        {0x060C, 0x0000},
 
         {0x0400, 0x0000},
         {0x0404, 0xFFFD},
@@ -241,13 +246,15 @@ uint32_t check_msp_reg( lscb_t      *lscb,
                 idx;
     ck_result = TEST_OK;
     rumboot_printf("Checking reg %s ...\n", msp_reg_name);
-    tab_sz = (*(fill_tab++));
+    tab_sz = (*(fill_tab++)); /* First entry is an entries count */
+    DEBUG_MARK(REG_RD_REQ(msp_addr));
     lscb->reg_access = REG_RD_REQ(msp_addr);
     while ((reg_access = lscb->reg_access) & OP_RUN_MASK)
         rumboot_printf("try read %s: 0x%X ...\n", msp_reg_name, reg_access);
     reg_backup = reg_access;
     for(idx = 0; idx < tab_sz; idx++)
     {
+        DEBUG_MARK(REG_WR_REQ(msp_addr, fill_tab[idx]));
         lscb->reg_access = REG_WR_REQ(msp_addr, fill_tab[idx]);
         while ((reg_access = lscb->reg_access) & OP_RUN_MASK)
             rumboot_printf("try write to %s: 0x%X = 0x%X (0x%X) ...\n",
@@ -262,9 +269,11 @@ uint32_t check_msp_reg( lscb_t      *lscb,
                     "reg %s exp: 0x%X, val: 0x%X\n",
                     msp_reg_name, fill_tab[idx], reg_access);
     }
-    rumboot_putstring("done.\n");
     lscb->reg_access = REG_WR_REQ(msp_addr, reg_backup);
-    while ((reg_access = lscb->reg_access) & OP_RUN_MASK);
+    while ((reg_access = lscb->reg_access) & OP_RUN_MASK)
+        rumboot_printf("try write (restore) to %s: 0x%X = 0x%X (0x%X) ...\n",
+                msp_reg_name, msp_addr, reg_backup, reg_access);
+    rumboot_putstring("done.\n");
     return ck_result;
 }
 
@@ -278,16 +287,18 @@ uint32_t test_lscb(lscb_t *lscb, int lscbn)
 
     rumboot_putstring("-------- check msp reg access -------- \n");
 
-    if(test_result) test_result = check_msp_reg(
+    if(!!(test_result = check_msp_reg(
             lscb,
             msp_fill_table,
             CHECK_MSP_REG_ADDR,
-            CHECK_MSP_REG_NAME);
-    if(test_result) return TEST_ERROR;
+            CHECK_MSP_REG_NAME)))
+        return TEST_ERROR;
 
     rumboot_printf("------ write config: 0x%X ----- \n",
             RTAD_MASK | MSP_SSFLAG_EXT_TRIG_MASK);
     lscb->reg_msp_signal = RTAD_MASK | MSP_SSFLAG_EXT_TRIG_MASK;
+    msync();
+
 
     rumboot_putstring("------------ read config ------------ \n");
     read_config = lscb->reg_msp_signal;
@@ -311,14 +322,12 @@ uint32_t test_lscb(lscb_t *lscb, int lscbn)
             (uint32_t)(&(lscb->mem[IDX32(0x0004)])));
 
     /* Fill memory */
-    spr_write(SPR_SPRG8, 0xBEE4FACE);
     for(mft = mem_fill_table; (mft->addr) != 0xFFFF; mft++)
     {
         rumboot_printf("fill mem 0x%X <- 0x%X\n",
                 (uint32_t)(&(lscb->mem[IDX32(mft->addr)])), (uint32_t)mft->data);
         lscb->mem[IDX32(mft->addr)] = (uint32_t)mft->data;
     }
-    spr_write(SPR_SPRG8, 0xFACE4BEE);
 
     rumboot_putstring("------------ write reg ------------- \n");
 
@@ -326,8 +335,11 @@ uint32_t test_lscb(lscb_t *lscb, int lscbn)
 
     /* !!!!!!!!!!!!!!!!! */
     rumboot_putstring("--- start: msp_ssflag_ext_trig 0->1 --- \n");
+    DEBUG_MARK(RTAD_MASK);
     lscb->reg_msp_signal = RTAD_MASK;
+    DEBUG_MARK(RTAD_MASK | MSP_SSFLAG_EXT_TRIG_MASK);
     lscb->reg_msp_signal = RTAD_MASK | MSP_SSFLAG_EXT_TRIG_MASK;
+    DEBUG_MARK(0xFFFFFFFF);
     /* !!!!!!!!!!!!!!!!! */
 
     if (!!(test_result = wait_lscb_int())) return TEST_ERROR;
@@ -339,7 +351,9 @@ uint32_t test_lscb(lscb_t *lscb, int lscbn)
             lscbn);
 
     read_mem = check_read_mem(lscb, 0x0558);
+    if(read_mem != 0xA5A5) return TEST_ERROR;
     read_mem = check_read_mem(lscb, 0x055C);
+    if(read_mem != 0x0000) return TEST_ERROR;
 
     if(!!(test_result = wait_lscb_int())) return TEST_ERROR;
 
@@ -349,7 +363,9 @@ uint32_t test_lscb(lscb_t *lscb, int lscbn)
     rumboot_printf("------------ read word loop_test LSCB%d ch B -------------- \n",
             lscbn);
     read_mem = check_read_mem(lscb, 0x0608);
+    if(read_mem != 0xA5A5) return TEST_ERROR;
     read_mem = check_read_mem(lscb, 0x060C);
+    if(read_mem != 0x0000) return TEST_ERROR;
 
     return !!test_result;
 }
