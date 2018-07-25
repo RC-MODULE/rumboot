@@ -71,15 +71,15 @@ typedef struct
 } a16d16_t;             /* memory fill table entry */
 
 
-#define MSP_CFG1_VALUE                  BIT(CFG1_FAR_i)     | \
-                                        BIT(CFG1_IMGTE_i)   | \
-                                        BIT(CFG1_ITE_i)     | \
-                             /* --- */  BIT(CFG1_ETE_i)
-#define MSP_CFG2_VALUE                  BIT(CFG2_EI_i)
-#define MSP_CFG3_VALUE                  BIT(CFG3_EME_i)
-#define MSP_BCFT_VALUE                  0x0010
-#define MSP_IMR__VALUE                  BIT(IMR_M_BC_EOF_i) | \
-                                        BIT(IMR_M_EOM_i)
+#define MSP_CFG1_VALUE          BIT(CFG1_FAR_i)     | \
+                                BIT(CFG1_IMGTE_i)   | \
+                                BIT(CFG1_ITE_i)     | \
+                                BIT(CFG1_ETE_i)     /* LAST */
+#define MSP_CFG2_VALUE          BIT(CFG2_EI_i)
+#define MSP_CFG3_VALUE          BIT(CFG3_EME_i)
+#define MSP_BCFT_VALUE          0x0010
+#define MSP_IMR__VALUE          BIT(IMR_M_BC_EOF_i) | \
+                                BIT(IMR_M_EOM_i)    /* LAST */
 
 
 #define LSCB0                   ((lscb_t*)(LSCB0_BASE))
