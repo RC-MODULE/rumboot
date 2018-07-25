@@ -8,7 +8,7 @@
  *
  * Register offsets and constants
  * \code{.c}
- * #include <regs/regs_gpio-pl061.h>
+ * #include <regs/regs_gpio_pl061.h>
  * \endcode
  *
  * @{
@@ -57,8 +57,6 @@
 // masks
 #define GPIO_REG_MASK                0xFF
 #define GPIO_ADDR_MASK               (GPIO_REG_MASK << 2)
-
-#define GPIO_TIMEOUT    0x200
 
 
 #endif /* REGS_GPIO_PL061_H */

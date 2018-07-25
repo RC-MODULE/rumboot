@@ -6,8 +6,8 @@
 #include <rumboot/io.h>
 #include <rumboot/printf.h>
 #include <rumboot/timer.h>
-#include <devices/gpio-pl061.h>
-#include <regs/regs_gpio-pl061.h>
+#include <devices/gpio_pl061.h>
+#include <regs/regs_gpio_pl061.h>
 
 
 static void reg_write( uint32_t base, uint32_t reg_offset, uint32_t value ) {
