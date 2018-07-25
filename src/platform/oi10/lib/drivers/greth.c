@@ -195,13 +195,13 @@ bool greth_wait_transmit(uint32_t base_addr)
     }
     if ((t==GRETH_TIMEOUT) || !(cur_status & (1 << GRETH_STATUS_TI)))
     {
-        rumboot_printf("Waiting transmit is timed out\n");
+        rumboot_printf("Transmit is timed out\n");
         greth_clear_status_bits(base_addr, mask);
         return false;
     }
     else
     {
-        rumboot_printf("Waiting transmit is OK\n");
+        rumboot_printf("Transmit is OK\n");
         greth_clear_status_bits(base_addr, (1 << GRETH_STATUS_TI));
         return true;
     }
@@ -214,7 +214,7 @@ bool greth_wait_receive(uint32_t base_addr)
     uint32_t mask;
     cur_status = ioread32(base_addr + STATUS);
 
-    rumboot_printf("Waiting receive..\n");
+    rumboot_printf("Waiting receive by GRETH%d..\n", base_addr==GRETH_0_BASE? 0 : 1);
     mask = ((1 << GRETH_STATUS_IA) |
             (1 << GRETH_STATUS_TS) |
             (1 << GRETH_STATUS_TA) |
@@ -229,13 +229,13 @@ bool greth_wait_receive(uint32_t base_addr)
     }
     if ((t==GRETH_TIMEOUT) || !(cur_status & (1 << GRETH_STATUS_RI)))
     {
-        rumboot_printf("Waiting receive is timed out\n");
+        rumboot_printf("Receive is timed out\n");
         greth_clear_status_bits(base_addr, mask);
         return false;
     }
     else
     {
-        rumboot_printf("Waiting receive is OK\n");
+        rumboot_printf("Receive is OK\n");
         greth_clear_status_bits(base_addr, (1 << GRETH_STATUS_RI) );
         return true;
     }
@@ -344,6 +344,25 @@ bool greth_start_receive(uint32_t base_addr)
     set_greth_ctrl(base_addr, &greth_info);
 
     return true;
+}
+
+bool greth_wait_receive_irq(uint32_t base_addr, uint32_t *eth_irq_handled_flag)
+{
+    uint32_t t = 0;
+
+    rumboot_printf("Waiting receive..\n");
+    while(!(*eth_irq_handled_flag) && (t++ < GRETH_TIMEOUT*100)){}
+
+    if ((t==GRETH_TIMEOUT) || !(*eth_irq_handled_flag))
+    {
+        rumboot_printf("Receive is timed out\n");
+        return false;
+    }
+    else
+    {
+        rumboot_printf("Receive is OK\n");
+        return true;
+    }
 }
 
 bool greth_configure_for_transmit( uint32_t base_addr, void volatile * const src, uint32_t length, greth_descr_t* tx_descriptor_data_, greth_mac_t* gr_mac)

@@ -396,6 +396,20 @@ endif()
         FILES common/irq/irq-defhandler.c
         PREFIX "irq-iram"
     )
+    
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES test_oi10_greth.c
+      CFLAGS -DGRETH_BASE=GRETH_0_BASE
+      PREFIX greth0
+    )     
+
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES test_oi10_greth.c
+      CFLAGS -DGRETH_BASE=GRETH_1_BASE
+      PREFIX greth1
+    )     
 
     add_rumboot_target_dir(bare-rom/
         CONFIGURATION BAREROM

@@ -21,6 +21,7 @@
 #include <platform/test_assert.h>
 
 //#define ETH_DEBUG
+#define POLLING_GRETH_STATUS_INSTEAD_IRQ
 
 //Transmit descriptor fields
 #define GRETH_TX_DESCR_UC                            20
@@ -84,6 +85,16 @@
 #define EDCL_WR     true
 #define EDCL_RD     false
 
+#define EDCLADDRL0  0
+#define EDCLADDRL1  1
+
+#define EDCLMAC_MSB     0x0017
+#define EDCLMAC_LSB     0x66000500
+
+#define EDCLIP      0xC0A80130
+#define EDCLIP0     (EDCLIP | EDCLADDRL0)
+#define EDCLIP1     (EDCLIP | EDCLADDRL1)
+
 typedef enum greth_speed
 {
     GRETH_SPEED_1GB,
@@ -121,6 +132,19 @@ typedef struct greth_ctrl_struct
     bool transmitter_enable;
 }greth_ctrl_struct_t;
 
+typedef struct edcl_test_data_struct
+{
+    greth_mac_t  src_mac;
+    uint32_t     src_ip;
+    greth_mac_t  dst_mac;
+    uint32_t     dst_ip;
+    uint32_t     edcl_seq_number;
+    uint32_t     addr;
+    uint32_t*    data;
+    uint32_t     len;
+    bool         wrrd;
+}edcl_test_data_struct_t;
+
 //length in a single descriptor
 //set not 1514(by spec) because this value isn't multiply of 32
 #define GRETH_MAX_DESC_DATA_LENGTH    1504
@@ -136,6 +160,7 @@ uint16_t mdio_read( uint32_t base_addr, uint8_t phy_addr, uint8_t reg_addr);
 bool greth_configure_for_receive( uint32_t base_addr, void volatile * const dst, uint32_t length, greth_descr_t* rx_descriptor_data_, greth_mac_t* gr_mac);
 bool greth_start_receive(uint32_t base_addr);
 bool greth_wait_receive(uint32_t base_addr);
+bool greth_wait_receive_irq(uint32_t base_addr, uint32_t *eth_irq_handled_flag);
 bool greth_configure_for_transmit( uint32_t base_addr, void volatile * const src, uint32_t length, greth_descr_t* tx_descriptor_data_, greth_mac_t* gr_mac);
 bool greth_start_transmit(uint32_t base_addr);
 void greth_clear_status_bits(uint32_t base_addr, uint32_t mask);
