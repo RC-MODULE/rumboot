@@ -55,11 +55,11 @@ uint32_t main()
 
     rumboot_printf("Test 1.1 MUART APB transmit\n");
 
-    if((dd=(char *)rumboot_malloc_from_heap(heap_id,8)) == NULL){
+    if((dd=(char *)rumboot_malloc_from_heap_aligned(heap_id,8,ALIGN4)) == NULL){
         rumboot_printf("UNTESTED: ERROR rumboot_malloc_from_heap dd\n");
         return false;
     }
-    if((src=(char *)rumboot_malloc_from_heap(heap_id,8)) == NULL){
+    if((src=(char *)rumboot_malloc_from_heap_aligned(heap_id,8,ALIGN4)) == NULL){
         rumboot_printf("UNTESTED: ERROR rumboot_malloc_from_heap src\n");
         rumboot_free(dd);
         return false;

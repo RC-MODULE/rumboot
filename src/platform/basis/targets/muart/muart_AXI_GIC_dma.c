@@ -150,7 +150,7 @@ static bool test_AXI_GIC(uint32_t uart_N)
     uint32_t intr =INTR[uart_N];
 
 
-       if((src_addr = (char *)rumboot_malloc_from_heap(heap_id,size+4)) == NULL){
+       if((src_addr = (char *)rumboot_malloc_from_heap_aligned(heap_id,size+4, ALIGN4)) == NULL){
            rumboot_printf("UNTESTED: ERROR rumboot_malloc_from_heap\n");
            return 2;
        }
@@ -216,6 +216,8 @@ uint32_t main()
     int res = 0;
 
     rumboot_printf("Test 1.4 MUART AXI GIC\n");
+    rumboot_printf("Test 1.5 MUART AXI EXT_IRQ_GEN\n");
+    rumboot_printf("Interrupt by finish mdma\n");
 
     /* Disable all interrupts */
     rumboot_irq_cli();

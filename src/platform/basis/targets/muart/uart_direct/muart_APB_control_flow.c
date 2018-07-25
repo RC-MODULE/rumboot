@@ -43,7 +43,8 @@ static void set_muart(uint32_t base)
     muart_init(base, &conf);
 
     set_reg(base, MUART_MASK, 0x1FF);
-    set_reg(base,MUART_TIMEOUT, 0x4);
+    set_reg(base,MUART_TIMEOUT, 0x16);
+    set_reg(base,MUART_TXTIMEOUT, 0x16);
 }
 
 static bool test_APB_control_flow(uint32_t uart_N)
@@ -105,22 +106,24 @@ static bool test_APB_control_flow(uint32_t uart_N)
 }
 // Declare the testsuite structure
 TEST_SUITE_BEGIN(APB_control_flow_test, "APB interface, mode RS-232")
-TEST_ENTRY("APB_control_flow_base_0", test_APB_control_flow, 1), //UART0_BASE
-TEST_ENTRY("APB_control_flow_base_1", test_APB_control_flow, 0), //UART1_BASE
+TEST_ENTRY("APB_control_flow_base_0", test_APB_control_flow, 0), //UART0_BASE
+TEST_ENTRY("APB_control_flow_base_1", test_APB_control_flow, 1), //UART1_BASE
 TEST_SUITE_END();
 
 uint32_t main()
 {
     int res = 0;
 
-    rumboot_printf("TEST 1.6: Check the MUART connection with " \
-                   "the external chip pins. \n");
-    rumboot_printf("TESTING: Data transfer flow control by " \
+    rumboot_printf("TEST 1.6: TESTING: Data transfer flow control by " \
                    "RTS/CTS is working.\n");
     rumboot_printf("USING: APB interface, mode RS-232.\n");
 
     /* Run APB Interface and GIC test suite */
-        res = test_suite_run(NULL, &APB_control_flow_test);
-        rumboot_printf("%d tests from suite failed\n", res);
+    res = test_suite_run(NULL, &APB_control_flow_test);
+    if (res == 0) {
+       rumboot_printf("TEST PASS: %d errors happened\n", res);
+    }else{
+        rumboot_printf("TEST FAIL: %d errors happened\n", res);
+    }
     return res;
 }

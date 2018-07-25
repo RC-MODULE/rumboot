@@ -74,11 +74,11 @@ uint32_t main()
 
     rumboot_printf("Test 1.3 MUART AXI transmit and free_run_timer\n");
 
-    if((wr_addr=(char *)rumboot_malloc_from_heap(heap_id,size+4)) == NULL){
+    if((wr_addr=(char *)rumboot_malloc_from_heap_aligned(heap_id,size+4,ALIGN4)) == NULL){
        rumboot_printf("UNTESTED: ERROR rumboot_malloc_from_heap\n");
        return 2;
     }
-    if((rd_addr = (char *)rumboot_malloc_from_heap(heap_id,size+4)) == NULL){
+    if((rd_addr = (char *)rumboot_malloc_from_heap_aligned(heap_id,size+4,ALIGN4)) == NULL){
          rumboot_printf("UNTESTED: ERROR rumboot_malloc_from_heap\n");
          return 2;
     }

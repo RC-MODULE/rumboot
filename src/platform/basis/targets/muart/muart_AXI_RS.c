@@ -121,12 +121,12 @@ uint32_t main()
 
     rumboot_printf("Test 1.6 MUART AXI transmit in RS standards\n");
 
-    if((dst_addr=(char *)rumboot_malloc_from_heap(heap_id,size+4)) == NULL){
+    if((dst_addr=(char *)rumboot_malloc_from_heap_aligned(heap_id,size+4,ALIGN4)) == NULL){
         rumboot_printf("UNTESTED: ERROR rumboot_malloc_from_heap\n");
         rumboot_free(dst_addr);
         return 2;
     }
-    if((src_addr = (char *)rumboot_malloc_from_heap(heap_id,size+4)) == NULL){
+    if((src_addr = (char *)rumboot_malloc_from_heap_aligned(heap_id,size+4,ALIGN4)) == NULL){
         rumboot_printf("UNTESTED: ERROR rumboot_malloc_from_heap\n");
         return 2;
     }

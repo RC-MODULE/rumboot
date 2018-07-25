@@ -28,6 +28,9 @@
  * @{
  */
 
+#define ALIGN4 4
+#define ALIGN8 8
+
 enum WORD_LENGTH {
         WL_5 = 0,
         WL_6,

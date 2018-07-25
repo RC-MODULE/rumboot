@@ -31,25 +31,6 @@ void reset_bit(uint32_t base, uint32_t reg_offset, uint32_t bit_pos)
         reg &= ~(1 << bit_pos);
         iowrite32(reg, base + reg_offset);
 }
-/*static void set_field(uint32_t base, uint32_t reg_offset, uint32_t bit_pos,
-                      uint32_t mask)
-{
-	uint32_t reg = ioread32(base + reg_offset);
-
-	reg |= (mask << bit_pos);
-	iowrite32(reg, base + reg_offset);
-}*/
-// not needed set_bit is enough
-/*
-static void reset_field(uint32_t base, uint32_t reg_offset, uint32_t bit_pos,
-                        uint32_t mask)
-{
-	uint32_t reg = ioread32(base + reg_offset);
-
-	reg &= ~(mask << bit_pos);
-	iowrite32(reg, base + reg_offset);
-}
-*/
 
 void muart_init(const uint32_t base, const struct muart_conf *conf)
 {
@@ -391,8 +372,10 @@ void muart_dump(uint32_t base)
 
     reg = ioread32(base + MUART_MASK);
     rumboot_printf("MUART_MASK = %x\n", reg);
-    reg = ioread32(base + MUART_TIMEOUT);
-    rumboot_printf("MUART_TIMEOUT = %x\n", reg);
+    reg = ioread32(base + MUART_RXTIMEOUT);
+    rumboot_printf("MUART_RXTIMEOUT = %x\n", reg);
+    reg = ioread32(base + MUART_TXTIMEOUT);
+    rumboot_printf("MUART_TXTIMEOUT = %x\n", reg);
     rumboot_printf("=======END muart_dump ====== base: %x \n", base);
 }
 

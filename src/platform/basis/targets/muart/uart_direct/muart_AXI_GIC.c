@@ -78,15 +78,6 @@ static bool test_AXI_GIC(uint32_t uart_N)
 
     rumboot_printf("====== Interrupt by FIFO filling\n");
 
-    //Set handler
-/*    M[0]=base;
-    M[1]=0;
-    rumboot_irq_set_handler(tbl, intr, 0, handler, (void *) &M);
-    // Configure and Activate the table
-    rumboot_irq_table_activate(tbl);
-    rumboot_irq_enable(intr); //UART0_INTR);
-    rumboot_irq_sei();
-*/
     set_muart(base);
     set_reg(base, MUART_FIFOWM, FIFOWM); //0x2000200
     set_reg(base, MUART_MASK, 0x1FF); //[0:8]
@@ -137,8 +128,8 @@ static bool test_AXI_GIC(uint32_t uart_N)
         rumboot_printf("FAIL:Uart interrupt is not happened \n");
         return false;
     }
-//    reg_fifo_state = ioread32(base + MUART_FIFO_STATE);
-//    rumboot_printf("fifo_state=%x limit=%x\n",reg_fifo_state,FIFOWM&0xFF);
+    reg_fifo_state = ioread32(base + MUART_FIFO_STATE);
+    rumboot_printf("fifo_state=%x limit=%x\n",reg_fifo_state,FIFOWM&0xFF);
 //    if (reg_fifo_state < (FIFOWM&0xFF)) {
 //        rumboot_printf("FAIL:Uart interrupt is happened before\n");
 //        return false;
@@ -156,6 +147,7 @@ uint32_t main()
     int res = 0;
 
     rumboot_printf("Test 1.4 MUART AXI GIC\n");
+    rumboot_printf("Interrupt by FIFO overflow\n");
 
     /* Disable all interrupts */
     rumboot_irq_cli();

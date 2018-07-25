@@ -33,7 +33,7 @@ static void handler(int irq, void *arg)
 static void set_muart(uint32_t base)
 {
     struct muart_conf conf;
-    conf.wlen = WL_8;
+        conf.wlen = WL_8;
         conf.stp2 = STP1;
         conf.is_even = 0;
         conf.is_parity = 1;
@@ -64,10 +64,10 @@ static bool test_APB_GIC(uint32_t uart_N)
     rumboot_printf("====== Interrupt by FIFO filling\n");
 
     //Set handler
-    M = (uint32_t *)rumboot_malloc_from_heap(heap_id,cnt+4);
+    M = (uint32_t *)rumboot_malloc_from_heap_aligned(heap_id,16,ALIGN4);
     M[0]=base;
     M[1]=0;
-    rumboot_irq_set_handler(tbl, intr, 0, handler, (void *) &M);
+    rumboot_irq_set_handler(tbl, intr, 0, handler, (void *)M);
     // Configure and Activate the table
     rumboot_irq_table_activate(tbl);
     rumboot_irq_enable(0); //UART0_INTR);
@@ -77,20 +77,20 @@ static bool test_APB_GIC(uint32_t uart_N)
     set_reg(base, MUART_FIFOWM, FIFOWM); //0x2000200
     set_reg(base, MUART_MASK, 0x1FF); //[0:8]
     muart_dump(base);
-
+    rumboot_printf("arg=%x base=%x \n", M, M[0]);
     // Interrupt call
     rumboot_printf("====== Interrupt call\n");
     muart_enable(base);
 
-    if((ch=(char *)rumboot_malloc_from_heap(heap_id,cnt+4)) == NULL){
+    if((ch=(char *)rumboot_malloc_from_heap_aligned(heap_id,cnt+4,ALIGN4)) == NULL){
         rumboot_printf("UNTESTED: ERROR rumboot_malloc_from_heap\n");
         return false;
     }
     muart_write_data_apb(base, ch, cnt);
 
     rumboot_free(ch);
-//    reg_fifo_state = ioread32(base + MUART_FIFO_STATE);
-//    rumboot_printf("fifo_state=%x limit=%x\n",reg_fifo_state,FIFOWM&0xFF);
+    reg_fifo_state = ioread32(base + MUART_FIFO_STATE);
+    rumboot_printf("fifo_state=%x limit=%x\n",reg_fifo_state,FIFOWM&0xFF);
     if ( M[1] == 0) {
         rumboot_printf("FAIL:Uart interrupt is not happened \n");
         return false;
@@ -114,6 +114,8 @@ uint32_t main()
     int res = 0;
 
     rumboot_printf("Test 1.4 MUART APB GIC\n");
+    rumboot_printf("Test 1.5 MUART APB EXT_IRQ_GEN\n");
+    rumboot_printf("Interrupt by FIFO overflow\n");
 
     /* Disable all interrupts */
     rumboot_irq_cli();

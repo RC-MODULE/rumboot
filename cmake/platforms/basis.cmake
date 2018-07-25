@@ -236,7 +236,26 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       CONFIGURATION IRAM_MIRROR
       PREFIX muart-mirror
 	)
-
+	add_rumboot_target_dir(muart/uart_direct
+      CONFIGURATION IRAM
+      PREFIX muart-uart_direct
+	)
+	add_rumboot_target_dir(muart/uart_mirror
+      CONFIGURATION IRAM_MIRROR
+      PREFIX muart-uart_mirror
+	)
+	add_rumboot_target_dir(muart/uart_direct_DDR
+      CONFIGURATION IRAM_WITH_DDR
+      PREFIX muart-direct_DDR
+	)
+	
+#    add_rumboot_target(
+#       CONFIGURATION IRAM_WITH_DDR
+#       FILES muart/muart_AXI_DDR_PCIE.c
+#       PREFIX muart_iram_with_DDR
+#       NAME muart_AXI_DDR_PCIE
+#   )
+   
     add_rumboot_target(
         CONFIGURATION DROM
         FILES common/tools/drom-check.c

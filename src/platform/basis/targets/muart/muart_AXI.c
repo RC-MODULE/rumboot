@@ -25,13 +25,14 @@ uint32_t main()
     uint32_t  reg;
     char * dst_addr = NULL, *src_addr = NULL;
 
-    rumboot_printf("Test 1.2 MUART AXI transmit\n");
+    rumboot_printf("Test 1.2: MUART AXI transmit\n");
+    rumboot_printf("Test 2.1: Check access MUART to IM0 memory\n");
 
-    if((dst_addr=(char *)rumboot_malloc_from_heap(heap_id,size+4)) == NULL){
+    if((dst_addr=(char *)rumboot_malloc_from_heap_aligned(heap_id,size+4,ALIGN4)) == NULL){
         rumboot_printf("UNTESTED: ERROR rumboot_malloc_from_heap\n");
         return 2;
     }
-    if((src_addr = (char *)rumboot_malloc_from_heap(heap_id,size+4)) == NULL){
+    if((src_addr = (char *)rumboot_malloc_from_heap_aligned(heap_id,size+4,ALIGN4)) == NULL){
         rumboot_printf("UNTESTED: ERROR rumboot_malloc_from_heap\n");
         return 2;
     }
