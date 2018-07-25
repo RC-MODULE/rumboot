@@ -10,6 +10,7 @@
 #include <platform/interrupts.h>
 #include <platform/regs/fields/mpic128.h>
 #include <rumboot/regpoker.h>
+#include <rumboot/irq.h>
 
 #include <platform/devices/greth.h>
 
@@ -51,6 +52,8 @@ static void handler_eth0( int irq, void *arg )
     }
     else
     {
+        GRETH0_IRQ_HANDLED = 2;
+        rumboot_printf( "Unexpected status (0x%x)\n", cur_status );
         greth_clear_status_bits(GRETH_0_BASE, mask);
     }
 }
@@ -76,6 +79,8 @@ static void handler_eth1( int irq, void *arg )
     }
     else
     {
+        GRETH1_IRQ_HANDLED = 2;
+        rumboot_printf( "Unexpected status (0x%x)\n", cur_status );
         greth_clear_status_bits(GRETH_1_BASE, mask);
     }
 }
@@ -86,8 +91,8 @@ struct rumboot_irq_entry * create_greth01_irq_handlers()
     rumboot_irq_cli();
     struct rumboot_irq_entry *tbl = rumboot_irq_create( NULL );
 
-    rumboot_irq_set_handler( tbl, ETH0_INT, (int_sense_level << MPIC128_VP_S_i) | (int_pol_high << MPIC128_VP_POL_i), handler_eth0, (void *)0 );
-    rumboot_irq_set_handler( tbl, ETH1_INT, (int_sense_level << MPIC128_VP_S_i) | (int_pol_high << MPIC128_VP_POL_i), handler_eth1, (void *)0 );
+    rumboot_irq_set_handler( tbl, ETH0_INT, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler_eth0, (void *)0 );
+    rumboot_irq_set_handler( tbl, ETH1_INT, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler_eth1, (void *)0 );
 
     /* Activate the table */
     rumboot_irq_table_activate( tbl );
@@ -129,13 +134,17 @@ uint32_t* test_edcl_data_im1 = (uint32_t *)( IM1_BASE_MIRROR + 2*sizeof(test_dat
  * Registers access checks
  */
 struct regpoker_checker greth_check_array[] = {
-    { "CTRL              ",  REGPOKER_READ32, CTRL              , 0x92000010, 0xFE007CFF },
-    { "MDIO_CTRL         ",  REGPOKER_READ32, MDIO_CTRL         , 0x01E10140, 0xFFFFFFCF },
-    { "TRANSMIT_DESCR_PTR",  REGPOKER_READ32, TRANSMIT_DESCR_PTR, 0x0, 0x3F8 },
-    { "RECEIVER_DESCR_PTR",  REGPOKER_READ32, RECEIVER_DESCR_PTR, 0x0, 0x3F8 },
-    { "EDCL_IP           ",  REGPOKER_READ32, EDCL_IP           , EDCLIP0, ~0 },
-    { "EDCL_MAC_MSB      ",  REGPOKER_READ32, EDCL_MAC_MSB      , EDCLMAC_MSB, 0xffff },
-    { "EDCL_MAC_LSB      ",  REGPOKER_READ32, EDCL_MAC_LSB      , EDCLMAC_LSB, ~0 }
+    { "CTRL              ",  REGPOKER_READ32,  CTRL              , 0x92000010, 0xFE007CFF },
+    { "MDIO_CTRL         ",  REGPOKER_READ32,  MDIO_CTRL         , 0x01E10140, 0xFFFFFFCF },
+    { "TRANSMIT_DESCR_PTR",  REGPOKER_READ32,  TRANSMIT_DESCR_PTR, 0x0, 0x3F8 },
+    { "RECEIVER_DESCR_PTR",  REGPOKER_READ32,  RECEIVER_DESCR_PTR, 0x0, 0x3F8 },
+    { "EDCL_IP           ",  REGPOKER_READ32,  EDCL_IP           , EDCLIP0, ~0 },
+    { "EDCL_MAC_MSB      ",  REGPOKER_READ32,  EDCL_MAC_MSB      , EDCLMAC_MSB, 0xffff },
+    { "EDCL_MAC_LSB      ",  REGPOKER_READ32,  EDCL_MAC_LSB      , EDCLMAC_LSB, ~0 },
+    { "EDCL_IP           ",  REGPOKER_WRITE32, EDCL_IP           , 0, ~0 },
+    { "EDCL_MAC_MSB      ",  REGPOKER_WRITE32, EDCL_MAC_MSB      , 0, 0xffff },
+    { "EDCL_MAC_LSB      ",  REGPOKER_WRITE32, EDCL_MAC_LSB      , 0, ~0 }
+
 };
 
 void regs_check(uint32_t base_addr)
@@ -382,16 +391,18 @@ int main(void)
 
     tbl = create_greth01_irq_handlers();
 
+#ifndef DISABLE_GRETH_REG_CHECKS
     regs_check(GRETH_BASE);
+#endif
 
     mdio_check(GRETH_BASE);
 
     prepare_test_data();
                                             //TX          src addr            dst addr
-//    check_transfer_via_external_loopback(GRETH_BASE, test_data_im0_src, test_data_im0_dst);
+    check_transfer_via_external_loopback(GRETH_BASE, test_data_im0_src, test_data_im0_dst);
     check_transfer_via_external_loopback(GRETH_BASE, test_data_im1_src, test_data_im1_dst);
-//    check_transfer_via_external_loopback(GRETH_BASE, test_data_im0_src, test_data_im1_dst);
-//    check_transfer_via_external_loopback(GRETH_BASE, test_data_im1_src, test_data_im0_dst);
+    check_transfer_via_external_loopback(GRETH_BASE, test_data_im0_src, test_data_im1_dst);
+    check_transfer_via_external_loopback(GRETH_BASE, test_data_im1_src, test_data_im0_dst);
 
     edcl_seq_number = 0;
     check_edcl_via_external_loopback(GRETH_BASE, test_edcl_packet_im1, test_data_im1_dst, test_edcl_rcv_packet_im1);

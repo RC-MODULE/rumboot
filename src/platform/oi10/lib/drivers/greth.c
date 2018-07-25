@@ -351,15 +351,17 @@ bool greth_wait_receive_irq(uint32_t base_addr, uint32_t *eth_irq_handled_flag)
     uint32_t t = 0;
 
     rumboot_printf("Waiting receive IRQ\n");
-    while(!(*eth_irq_handled_flag) && (t++ < GRETH_TIMEOUT*100)){}
+    while(!(*eth_irq_handled_flag) && (t++ < GRETH_TIMEOUT)){}
 
-    if ((t==GRETH_TIMEOUT) || !(*eth_irq_handled_flag))
+    if ((t==GRETH_TIMEOUT) || ((*eth_irq_handled_flag)!=1))
     {
         rumboot_printf("Receive IRQ is timed out\n");
+        *eth_irq_handled_flag = 0;
         return false;
     }
     else
     {
+        *eth_irq_handled_flag = 0;
         rumboot_printf("Receive IRQ is OK\n");
         return true;
     }

@@ -21,6 +21,7 @@
 #include <platform/test_assert.h>
 
 //#define ETH_DEBUG
+//#define DISABLE_GRETH_REG_CHECKS
 
 //Transmit descriptor fields
 #define GRETH_TX_DESCR_UC                            20
@@ -152,7 +153,7 @@ typedef struct edcl_test_data_struct
 //maximum count of descriptors (1K border = 512)
 #define GRETH_MAX_DESCRIPTORS_COUNT   512
 
-#define GRETH_TIMEOUT                 10000
+#define GRETH_TIMEOUT                 1000
 
 
 bool greth_mem_copy(uint32_t base_addr, void volatile * src, void volatile * dst, uint32_t length);
