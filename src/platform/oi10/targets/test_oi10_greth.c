@@ -9,6 +9,7 @@
 #include <rumboot/irq.h>
 #include <platform/interrupts.h>
 #include <platform/regs/fields/mpic128.h>
+#include <rumboot/regpoker.h>
 
 #include <platform/devices/greth.h>
 
@@ -26,7 +27,6 @@ greth_mac_t tst_greth_edcl_mac1 = {EDCLMAC_MSB, (EDCLMAC_LSB | EDCLADDRL1) };
 /*
  * Functions and variables for interrupt handling
  */
-#ifndef POLLING_GRETH_STATUS_INSTEAD_IRQ
 uint32_t GRETH0_IRQ_HANDLED = 0;
 uint32_t GRETH1_IRQ_HANDLED = 0;
 
@@ -34,7 +34,7 @@ static void handler_eth0( int irq, void *arg )
 {
     uint32_t cur_status;
     uint32_t mask;
-    rumboot_printf( "ETH0 IRQ arrived  \n" );
+    rumboot_printf( "GRETH0 IRQ arrived  \n" );
     mask = ((1 << GRETH_STATUS_IA) |
             (1 << GRETH_STATUS_TS) |
             (1 << GRETH_STATUS_TA) |
@@ -59,7 +59,7 @@ static void handler_eth1( int irq, void *arg )
 {
     uint32_t cur_status;
     uint32_t mask;
-    rumboot_printf( "ETH1 IRQ arrived  \n" );
+    rumboot_printf( "GRETH1 IRQ arrived  \n" );
     mask = ((1 << GRETH_STATUS_IA) |
             (1 << GRETH_STATUS_TS) |
             (1 << GRETH_STATUS_TA) |
@@ -103,7 +103,7 @@ void delete_greth01_irq_handlers(struct rumboot_irq_entry *tbl)
     rumboot_irq_table_activate(NULL);
     rumboot_irq_free(tbl);
 }
-#endif
+
 /*
  * Test data and descriptors
  */
@@ -126,24 +126,50 @@ uint32_t* test_edcl_rcv_packet_im1 = (uint32_t *)( IM1_BASE_MIRROR + 2*sizeof(te
 uint32_t* test_edcl_data_im1 = (uint32_t *)( IM1_BASE_MIRROR + 2*sizeof(test_data_im0_src) + 2*sizeof(test_edcl_packet_im0));
 
 /*
+ * Registers access checks
+ */
+struct regpoker_checker greth_check_array[] = {
+    { "CTRL              ",  REGPOKER_READ32, CTRL              , 0x92000010, 0xFE007CFF },
+    { "MDIO_CTRL         ",  REGPOKER_READ32, MDIO_CTRL         , 0x01E10140, 0xFFFFFFCF },
+    { "TRANSMIT_DESCR_PTR",  REGPOKER_READ32, TRANSMIT_DESCR_PTR, 0x0, 0x3F8 },
+    { "RECEIVER_DESCR_PTR",  REGPOKER_READ32, RECEIVER_DESCR_PTR, 0x0, 0x3F8 },
+    { "EDCL_IP           ",  REGPOKER_READ32, EDCL_IP           , EDCLIP0, ~0 },
+    { "EDCL_MAC_MSB      ",  REGPOKER_READ32, EDCL_MAC_MSB      , EDCLMAC_MSB, 0xffff },
+    { "EDCL_MAC_LSB      ",  REGPOKER_READ32, EDCL_MAC_LSB      , EDCLMAC_LSB, ~0 }
+};
+
+void regs_check(uint32_t base_addr)
+{
+    if (base_addr==GRETH_1_BASE)
+    {
+        rumboot_printf("Checking access to GRETH%d(0x%x) registers\n", 1, base_addr);
+        greth_check_array[4].expected = EDCLIP1;
+        greth_check_array[6].expected |= EDCLADDRL1;
+    }
+    else
+    {
+        rumboot_printf("Checking access to GRETH%d(0x%x) registers\n", 0, base_addr);
+    }
+    TEST_ASSERT(rumboot_regpoker_check_array(greth_check_array, base_addr)==0, "Failed to check GRETH registers\n");
+}
+/*
  * MDIO checks
  */
-bool mdio_check(uint32_t base_addr)
+void mdio_check(uint32_t base_addr)
 {
-    rumboot_printf("MDIO check for ETH%d(0x%x)\n", base_addr==GRETH_0_BASE ? 0 : 1, base_addr);
-    TEST_ASSERT(mdio_read(base_addr, 0, ETH_PHY_CTRL      )==ETH_PHY_CTRL_DEFAULT      , "Error at mdio reading ETH_PHY_CTRL       register");
-    TEST_ASSERT(mdio_read(base_addr, 0, ETH_PHY_STATUS    )==ETH_PHY_STATUS_DEFAULT    , "Error at mdio reading ETH_PHY_STATUS     register");
-    TEST_ASSERT(mdio_read(base_addr, 0, ETH_PHY_ID0       )==ETH_PHY_ID0_DEFAULT       , "Error at mdio reading ETH_PHY_ID0        register");
-    TEST_ASSERT(mdio_read(base_addr, 0, ETH_PHY_ID1       )==ETH_PHY_ID1_DEFAULT       , "Error at mdio reading ETH_PHY_ID1        register");
-    TEST_ASSERT(mdio_read(base_addr, 0, ETH_PHY_ANEGADV   )==ETH_PHY_ANEGADV_DEFAULT   , "Error at mdio reading ETH_PHY_ANEGADV    register");
-    TEST_ASSERT(mdio_read(base_addr, 0, ETH_PHY_ANEGLP    )==ETH_PHY_ANEGLP_DEFAULT    , "Error at mdio reading ETH_PHY_ANEGLP     register");
-    TEST_ASSERT(mdio_read(base_addr, 0, ETH_PHY_ANEGXP    )==ETH_PHY_ANEGXP_DEFAULT    , "Error at mdio reading ETH_PHY_ANEGXP     register");
-    TEST_ASSERT(mdio_read(base_addr, 0, ETH_PHY_ANEGNPTX  )==ETH_PHY_ANEGNPTX_DEFAULT  , "Error at mdio reading ETH_PHY_ANEGNPTX   register");
-    TEST_ASSERT(mdio_read(base_addr, 0, ETH_PHY_ANEGNPLP  )==ETH_PHY_ANEGNPLP_DEFAULT  , "Error at mdio reading ETH_PHY_ANEGNPLP   register");
-    TEST_ASSERT(mdio_read(base_addr, 0, ETH_PHY_MSTSLVCTRL)==ETH_PHY_MSTSLVCTRL_DEFAULT, "Error at mdio reading ETH_PHY_MSTSLVCTRL register");
-    TEST_ASSERT(mdio_read(base_addr, 0, ETH_PHY_MSTSLVSTAT)==ETH_PHY_MSTSLVSTAT_DEFAULT, "Error at mdio reading ETH_PHY_MSTSLVSTAT register");
-    TEST_ASSERT(mdio_read(base_addr, 0, ETH_PHY_EXTSTATUS )==ETH_PHY_EXTSTATUS_DEFAULT , "Error at mdio reading ETH_PHY_EXTSTATUS  register");
-    return 0;
+    rumboot_printf("MDIO check for GRETH%d(0x%x)\n", base_addr==GRETH_0_BASE ? 0 : 1, base_addr);
+    TEST_ASSERT(mdio_read(base_addr, ETH_PHY_ADDR, ETH_PHY_CTRL      )==ETH_PHY_CTRL_DEFAULT      , "Error at mdio reading ETH_PHY_CTRL       register\n");
+    TEST_ASSERT(mdio_read(base_addr, ETH_PHY_ADDR, ETH_PHY_STATUS    )==ETH_PHY_STATUS_DEFAULT    , "Error at mdio reading ETH_PHY_STATUS     register\n");
+    TEST_ASSERT(mdio_read(base_addr, ETH_PHY_ADDR, ETH_PHY_ID0       )==ETH_PHY_ID0_DEFAULT       , "Error at mdio reading ETH_PHY_ID0        register\n");
+    TEST_ASSERT(mdio_read(base_addr, ETH_PHY_ADDR, ETH_PHY_ID1       )==ETH_PHY_ID1_DEFAULT       , "Error at mdio reading ETH_PHY_ID1        register\n");
+    TEST_ASSERT(mdio_read(base_addr, ETH_PHY_ADDR, ETH_PHY_ANEGADV   )==ETH_PHY_ANEGADV_DEFAULT   , "Error at mdio reading ETH_PHY_ANEGADV    register\n");
+    TEST_ASSERT(mdio_read(base_addr, ETH_PHY_ADDR, ETH_PHY_ANEGLP    )==ETH_PHY_ANEGLP_DEFAULT    , "Error at mdio reading ETH_PHY_ANEGLP     register\n");
+    TEST_ASSERT(mdio_read(base_addr, ETH_PHY_ADDR, ETH_PHY_ANEGXP    )==ETH_PHY_ANEGXP_DEFAULT    , "Error at mdio reading ETH_PHY_ANEGXP     register\n");
+    TEST_ASSERT(mdio_read(base_addr, ETH_PHY_ADDR, ETH_PHY_ANEGNPTX  )==ETH_PHY_ANEGNPTX_DEFAULT  , "Error at mdio reading ETH_PHY_ANEGNPTX   register\n");
+    TEST_ASSERT(mdio_read(base_addr, ETH_PHY_ADDR, ETH_PHY_ANEGNPLP  )==ETH_PHY_ANEGNPLP_DEFAULT  , "Error at mdio reading ETH_PHY_ANEGNPLP   register\n");
+    TEST_ASSERT(mdio_read(base_addr, ETH_PHY_ADDR, ETH_PHY_MSTSLVCTRL)==ETH_PHY_MSTSLVCTRL_DEFAULT, "Error at mdio reading ETH_PHY_MSTSLVCTRL register\n");
+    TEST_ASSERT(mdio_read(base_addr, ETH_PHY_ADDR, ETH_PHY_MSTSLVSTAT)==ETH_PHY_MSTSLVSTAT_DEFAULT, "Error at mdio reading ETH_PHY_MSTSLVSTAT register\n");
+    TEST_ASSERT(mdio_read(base_addr, ETH_PHY_ADDR, ETH_PHY_EXTSTATUS )==ETH_PHY_EXTSTATUS_DEFAULT , "Error at mdio reading ETH_PHY_EXTSTATUS  register\n");
 }
 
 /*
@@ -206,12 +232,9 @@ void prepare_test_edcl_data(edcl_test_data_struct_t* edcl_cfg)
     uint32_t     ECN              = 0;
     uint32_t     Total_Length     = 0;
     uint32_t     Id               = 0;
-//    uint32_t     Flags            = 0;
-//    uint32_t     Fragment_Offset  = 0;
     uint32_t     Time_To_Live     = 1;
     uint32_t     Protocol         = 0x11;
     uint32_t     Header_Checksum  = 0;
-    // UDP Header
     uint32_t     Source_Port      = 0;
     uint32_t     Dest_Port        = 0;
     uint32_t     Data_Length      = 18 + edcl_cfg->len; //header_length + offset_length + control_word_length + address_length + data_length = 8 + 2 + 4 + 4 + len = 18 + len
@@ -247,31 +270,25 @@ void prepare_test_edcl_data(edcl_test_data_struct_t* edcl_cfg)
 /*
  * Checks transfers which uses different memory blocks
  */
-int check_transfer_via_external_loopback(uint32_t base_addr_src_eth,  uint32_t * test_data_src, uint32_t * test_data_dst)
+void check_transfer_via_external_loopback(uint32_t base_addr_src_eth,  uint32_t * test_data_src, uint32_t * test_data_dst)
 {
     uint32_t base_addr_dst_eth;
-#ifndef POLLING_GRETH_STATUS_INSTEAD_IRQ
     uint32_t * eth_hadled_flag_ptr;
-#endif
 
-    TEST_ASSERT((base_addr_src_eth==GRETH_1_BASE)||(base_addr_src_eth==GRETH_0_BASE), "Wrong GRETH base address");
+    TEST_ASSERT((base_addr_src_eth==GRETH_1_BASE)||(base_addr_src_eth==GRETH_0_BASE), "Wrong GRETH base address\n");
     base_addr_dst_eth = base_addr_src_eth==GRETH_0_BASE ? GRETH_1_BASE : GRETH_0_BASE;
 
     if (base_addr_src_eth==GRETH_1_BASE)
     {
         base_addr_dst_eth = GRETH_0_BASE;
-#ifndef POLLING_GRETH_STATUS_INSTEAD_IRQ
         GRETH0_IRQ_HANDLED = 0;
         eth_hadled_flag_ptr = &GRETH0_IRQ_HANDLED;
-#endif
     }
     else
     {
         base_addr_dst_eth = GRETH_1_BASE;
-#ifndef POLLING_GRETH_STATUS_INSTEAD_IRQ
         GRETH1_IRQ_HANDLED = 0;
         eth_hadled_flag_ptr = &GRETH1_IRQ_HANDLED;
-#endif
     }
 
     rumboot_printf("\nChecking transfer from 0x%X to 0x%x\n", (uint32_t)test_data_src, (uint32_t) test_data_dst);
@@ -279,29 +296,22 @@ int check_transfer_via_external_loopback(uint32_t base_addr_src_eth,  uint32_t *
     greth_configure_for_receive( base_addr_dst_eth, test_data_dst, sizeof(test_data_im0_src), rx_descriptor_data_, &tst_greth_mac);
     greth_configure_for_transmit( base_addr_src_eth, test_data_src, sizeof(test_data_im0_src), tx_descriptor_data_, &tst_greth_mac);
 
-    greth_start_receive( base_addr_dst_eth );
+    greth_start_receive( base_addr_dst_eth, true );
     greth_start_transmit( base_addr_src_eth );
 
-#ifndef POLLING_GRETH_STATUS_INSTEAD_IRQ
-    TEST_ASSERT(greth_wait_receive_irq(base_addr_dst_eth, eth_hadled_flag_ptr), "Receiving is failed");
-#else
-    TEST_ASSERT(greth_wait_receive(base_addr_dst_eth), "Receiving is failed");
-#endif
-    TEST_ASSERT(mem_cmp(test_data_src, test_data_dst, sizeof(test_data_im0_src)/sizeof(uint32_t)), "Data compare error!");
+    TEST_ASSERT(greth_wait_receive_irq(base_addr_dst_eth, eth_hadled_flag_ptr), "Receiving is failed\n");
+    TEST_ASSERT(mem_cmp(test_data_src, test_data_dst, sizeof(test_data_im0_src)/sizeof(uint32_t)), "Data compare error!\n");
 
     mem_clr(test_data_dst, sizeof(test_data_im0_src)/sizeof(uint32_t));
-    return 0;
 }
 
-int check_edcl_via_external_loopback(uint32_t base_addr_src_eth, uint32_t * test_data_src, uint32_t * test_data_dst, uint32_t * test_data_resp)
+void check_edcl_via_external_loopback(uint32_t base_addr_src_eth, uint32_t * test_data_src, uint32_t * test_data_dst, uint32_t * test_data_resp)
 {
     edcl_test_data_struct_t edcl_cfg;
-#ifndef POLLING_GRETH_STATUS_INSTEAD_IRQ
     uint32_t * eth_hadled_flag_ptr;
-#endif
     uint32_t base_addr_dst_eth;
 
-    TEST_ASSERT((base_addr_src_eth==GRETH_1_BASE)||(base_addr_src_eth==GRETH_0_BASE), "Wrong GRETH base address");
+    TEST_ASSERT((base_addr_src_eth==GRETH_1_BASE)||(base_addr_src_eth==GRETH_0_BASE), "Wrong GRETH base address\n");
     if (base_addr_src_eth==GRETH_1_BASE)
     {
         base_addr_dst_eth = GRETH_0_BASE;
@@ -309,10 +319,8 @@ int check_edcl_via_external_loopback(uint32_t base_addr_src_eth, uint32_t * test
         edcl_cfg.src_mac  = tst_greth_edcl_mac0;
         edcl_cfg.dst_ip   = EDCLIP0;
         edcl_cfg.dst_mac  = tst_greth_edcl_mac0;
-#ifndef POLLING_GRETH_STATUS_INSTEAD_IRQ
         GRETH0_IRQ_HANDLED = 0;
         eth_hadled_flag_ptr = &GRETH0_IRQ_HANDLED;
-#endif
     }
     else
     {
@@ -321,10 +329,8 @@ int check_edcl_via_external_loopback(uint32_t base_addr_src_eth, uint32_t * test
         edcl_cfg.src_mac  = tst_greth_edcl_mac1;
         edcl_cfg.dst_ip   = EDCLIP1;
         edcl_cfg.dst_mac  = tst_greth_edcl_mac1;
-#ifndef POLLING_GRETH_STATUS_INSTEAD_IRQ
         GRETH1_IRQ_HANDLED = 0;
         eth_hadled_flag_ptr = &GRETH1_IRQ_HANDLED;
-#endif
     }
 
     //check edcl write
@@ -339,14 +345,11 @@ int check_edcl_via_external_loopback(uint32_t base_addr_src_eth, uint32_t * test
     greth_configure_for_receive( base_addr_dst_eth, test_data_dst, sizeof(test_edcl_packet_im0), rx_descriptor_data_, &tst_greth_mac);
     greth_configure_for_transmit( base_addr_src_eth, test_data_src, sizeof(test_edcl_packet_im0), tx_descriptor_data_, &tst_greth_mac);
 
-    greth_start_receive( base_addr_dst_eth );
+    greth_start_receive( base_addr_dst_eth, true );
     greth_start_transmit( base_addr_src_eth );
 
-//    TEST_ASSERT(greth_wait_receive_irq(base_addr_dst_eth, eth_hadled_flag_ptr), "Receiving is failed");
-    TEST_ASSERT(greth_wait_receive(base_addr_dst_eth), "Receiving is failed");
-    rumboot_printf("Start compare\n");
-    TEST_ASSERT(mem_cmp(edcl_cfg.data, (uint32_t *)edcl_cfg.addr, edcl_cfg.len / sizeof(uint32_t)), "Data compare error!");
-    rumboot_printf("Clear mem\n");
+    TEST_ASSERT(greth_wait_receive_irq(base_addr_dst_eth, eth_hadled_flag_ptr), "Receiving is failed");
+    TEST_ASSERT(mem_cmp(edcl_cfg.data, (uint32_t *)edcl_cfg.addr, edcl_cfg.len / sizeof(uint32_t)), "Data compare error!\n");
     mem_clr((uint32_t *) edcl_cfg.addr, edcl_cfg.len / sizeof(uint32_t));
     rumboot_printf("EDCL write is OK\n");
 
@@ -360,36 +363,26 @@ int check_edcl_via_external_loopback(uint32_t base_addr_src_eth, uint32_t * test
     greth_configure_for_receive(  base_addr_src_eth, test_data_resp, sizeof(test_edcl_packet_im0), rx_descriptor_data_, &tst_greth_mac);
     greth_configure_for_transmit( base_addr_src_eth, test_data_src,  sizeof(test_edcl_packet_im0), tx_descriptor_data_, &tst_greth_mac);
 
-    greth_start_receive( base_addr_dst_eth );
+    greth_start_receive( base_addr_dst_eth, false );
     greth_start_edcl_rd( base_addr_src_eth );
 
-#ifndef POLLING_GRETH_STATUS_INSTEAD_IRQ
-    TEST_ASSERT(greth_wait_receive_irq(base_addr_dst_eth, eth_hadled_flag_ptr), "Receiving EDCL request is failed");
-    TEST_ASSERT(greth_wait_receive_irq(base_addr_src_eth, eth_hadled_flag_ptr), "Receiving EDCL response failed");
-#else
-    TEST_ASSERT(greth_wait_receive(base_addr_dst_eth), "Receiving EDCL request is failed");
-    TEST_ASSERT(greth_wait_receive(base_addr_src_eth), "Receiving EDCL response failed");
-#endif
-
-    TEST_ASSERT(mem_cmp(test_edcl_data_im1, &test_data_resp[13], edcl_cfg.len / sizeof(uint32_t)), "Data compare error!");
+    TEST_ASSERT(greth_wait_receive_irq(base_addr_src_eth, eth_hadled_flag_ptr), "Receiving EDCL response failed\n");
+    TEST_ASSERT(mem_cmp(test_edcl_data_im1, &test_data_resp[13], edcl_cfg.len / sizeof(uint32_t)), "Data compare error!\n");
     mem_clr(test_data_resp, sizeof(test_edcl_packet_im0));
-
     rumboot_printf("EDCL read is OK\n");
-
-    return 0;
 }
 /*
  * test_oi10_greth
  */
 int main(void)
 {
-#ifndef POLLING_GRETH_STATUS_INSTEAD_IRQ
     struct rumboot_irq_entry *tbl;
-    //set interrupt handlers
-    tbl = create_greth01_irq_handlers();
-#endif
 
     rumboot_printf("Start test_oi10_greth\n\n");
+
+    tbl = create_greth01_irq_handlers();
+
+    regs_check(GRETH_BASE);
 
     mdio_check(GRETH_BASE);
 
@@ -400,12 +393,9 @@ int main(void)
 //    check_transfer_via_external_loopback(GRETH_BASE, test_data_im0_src, test_data_im1_dst);
 //    check_transfer_via_external_loopback(GRETH_BASE, test_data_im1_src, test_data_im0_dst);
 
-    //edcl check
     edcl_seq_number = 0;
     check_edcl_via_external_loopback(GRETH_BASE, test_edcl_packet_im1, test_data_im1_dst, test_edcl_rcv_packet_im1);
 
-#ifndef POLLING_GRETH_STATUS_INSTEAD_IRQ
     delete_greth01_irq_handlers(tbl);
-#endif
     return 0;
 }

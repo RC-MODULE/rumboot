@@ -21,7 +21,6 @@
 #include <platform/test_assert.h>
 
 //#define ETH_DEBUG
-#define POLLING_GRETH_STATUS_INSTEAD_IRQ
 
 //Transmit descriptor fields
 #define GRETH_TX_DESCR_UC                            20
@@ -95,6 +94,8 @@
 #define EDCLIP0     (EDCLIP | EDCLADDRL0)
 #define EDCLIP1     (EDCLIP | EDCLADDRL1)
 
+#define ETH_PHY_ADDR    0
+
 typedef enum greth_speed
 {
     GRETH_SPEED_1GB,
@@ -158,7 +159,7 @@ bool greth_mem_copy(uint32_t base_addr, void volatile * src, void volatile * dst
 bool mdio_write( uint32_t base_addr, uint8_t phy_addr, uint8_t reg_addr, uint16_t data);
 uint16_t mdio_read( uint32_t base_addr, uint8_t phy_addr, uint8_t reg_addr);
 bool greth_configure_for_receive( uint32_t base_addr, void volatile * const dst, uint32_t length, greth_descr_t* rx_descriptor_data_, greth_mac_t* gr_mac);
-bool greth_start_receive(uint32_t base_addr);
+bool greth_start_receive(uint32_t base_addr, bool rcv_int_ena);
 bool greth_wait_receive(uint32_t base_addr);
 bool greth_wait_receive_irq(uint32_t base_addr, uint32_t *eth_irq_handled_flag);
 bool greth_configure_for_transmit( uint32_t base_addr, void volatile * const src, uint32_t length, greth_descr_t* tx_descriptor_data_, greth_mac_t* gr_mac);

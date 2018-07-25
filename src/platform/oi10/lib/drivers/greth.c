@@ -326,7 +326,7 @@ bool greth_configure_for_receive( uint32_t base_addr, void volatile * const dst,
     return true;
 }
 
-bool greth_start_receive(uint32_t base_addr)
+bool greth_start_receive(uint32_t base_addr, bool rcv_int_ena)
 {
     greth_ctrl_struct_t greth_info;
 
@@ -337,7 +337,7 @@ bool greth_start_receive(uint32_t base_addr)
     greth_info.speed                  = GRETH_SPEED_100MB;
     greth_info.fullduplex_enable      = true;
     greth_info.transmitter_int_enable = false;
-    greth_info.receiver_int_enable    = true;
+    greth_info.receiver_int_enable    = rcv_int_ena;
     greth_info.transmitter_enable     = false;
     greth_info.receiver_enable        = true;
     greth_info.ram_debug_enable       = false;
@@ -350,17 +350,17 @@ bool greth_wait_receive_irq(uint32_t base_addr, uint32_t *eth_irq_handled_flag)
 {
     uint32_t t = 0;
 
-    rumboot_printf("Waiting receive..\n");
+    rumboot_printf("Waiting receive IRQ\n");
     while(!(*eth_irq_handled_flag) && (t++ < GRETH_TIMEOUT*100)){}
 
     if ((t==GRETH_TIMEOUT) || !(*eth_irq_handled_flag))
     {
-        rumboot_printf("Receive is timed out\n");
+        rumboot_printf("Receive IRQ is timed out\n");
         return false;
     }
     else
     {
-        rumboot_printf("Receive is OK\n");
+        rumboot_printf("Receive IRQ is OK\n");
         return true;
     }
 }
