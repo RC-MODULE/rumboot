@@ -90,18 +90,18 @@ void plb6bc_init( uint32_t const base_addr,  plb6bc_cfg const *const cfg ) {
     plb6bc_dcr_write_PLB6BC_PAAM_WIN_EXT( base_addr, reg_value );
     TEST_ASSERT( plb6bc_dcr_read_PLB6BC_PAAM_WIN_EXT( base_addr ) == reg_value, "Register value is not updated" );
 
-    #define PLB6BC_SEGMENTi_ADDR_SET( z, i, dummy )\
+    #define PLB6BC_SEGMENTi_ADDR_SET( i )\
     reg_value   =   (cfg->CAT(CAT( segment,i),_addr ) << PLB6BC_SGDi_i);\
     CAT( plb6bc_dcr_write_PLB6BC_SGD,i )( base_addr, reg_value );\
     TEST_ASSERT( CAT( plb6bc_dcr_read_PLB6BC_SGD,i )( base_addr ) == reg_value, "Register value is not updated" );
 
-    PLB6BC_SEGMENTi_ADDR_SET (z, 1 , dummy);
-    PLB6BC_SEGMENTi_ADDR_SET (z, 2 , dummy);
-    PLB6BC_SEGMENTi_ADDR_SET (z, 3 , dummy);
-    PLB6BC_SEGMENTi_ADDR_SET (z, 4 , dummy);
-    PLB6BC_SEGMENTi_ADDR_SET (z, 5 , dummy);
-    PLB6BC_SEGMENTi_ADDR_SET (z, 6 , dummy);
-    PLB6BC_SEGMENTi_ADDR_SET (z, 7 , dummy);
+    PLB6BC_SEGMENTi_ADDR_SET ( 1 );
+    PLB6BC_SEGMENTi_ADDR_SET ( 2 );
+    PLB6BC_SEGMENTi_ADDR_SET ( 3 );
+    PLB6BC_SEGMENTi_ADDR_SET ( 4 );
+    PLB6BC_SEGMENTi_ADDR_SET ( 5 );
+    PLB6BC_SEGMENTi_ADDR_SET ( 6 );
+    PLB6BC_SEGMENTi_ADDR_SET ( 7 );
 
     reg_value   =   (cfg->hang_count_pulse_period << PLB6BC_HCPP_i);
     plb6bc_dcr_write_PLB6BC_HCPP( base_addr, reg_value );
