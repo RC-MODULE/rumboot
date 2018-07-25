@@ -656,18 +656,6 @@ main:
     stw r2, 116(r31)
     stw r5, 120(r31)
 
-    addi r31, r31, 124
-    mtspr SPR_VRSAVE, r31
-
-    msync
-    load_addr       r30, results
-    load_const      r31, 0x2FC
-
-    _rumboot_putdump r30, r31
-
-    _rumboot_issdump r30, r31
-
-    b test_error
 
 
     .align 4
@@ -676,7 +664,8 @@ main:
     maclhwu r2, r1,r2 // r2 == 10000
     maclhw r5,r2,r5
 
-
+    stw r2, 124(r31)
+    stw r5, 128(r31)
 
 
 
@@ -703,97 +692,193 @@ main:
     maclhwu r1, r1,r4 //r1 == 2
     maclhw r5,r2,r5
 
+    stw r1, 132(r31)
+    stw r5, 136(r31)
+
     maclhwu r2, r1,r6 //r2 == 20000
     maclhw r5,r2,r5
+
+    stw r2, 140(r31)
+    stw r5, 144(r31)
 
     maclhwu r1, r1,r4 //r1 == 4
     maclhw r5,r2,r5
 
+    stw r1, 148(r31)
+    stw r5, 152(r31)
+
     maclhwu r2, r1,r6
     maclhw r5,r2,r5
+
+    stw r2, 156(r31)
+    stw r5, 160(r31)
 
     maclhwu r1, r1,r4
     maclhw r5,r2,r5
 
+    stw r1, 164(r31)
+    stw r5, 168(r31)
+
     maclhwu r2, r1,r6
     maclhw r5,r2,r5
+
+    stw r2, 172(r31)
+    stw r5, 176(r31)
 
     maclhwu r1, r1,r4
     maclhw r5,r2,r5
 
+    stw r1, 180(r31)
+    stw r5, 184(r31)
+
     maclhwu r2, r1,r6
     maclhw r5,r2,r5
+
+    stw r2, 188(r31)
+    stw r5, 192(r31)
 
     maclhwu r1, r1,r4
     maclhw r5,r2,r5
 
+    stw r1, 196(r31)
+    stw r5, 200(r31)
+
     maclhwu r2, r1,r6
     maclhw r5,r2,r5
+
+    stw r2, 204(r31)
+    stw r5, 208(r31)
 
     maclhwu r1, r1,r4
     maclhw r5,r2,r5
 
+    stw r1, 212(r31)
+    stw r5, 216(r31)
+
     maclhwu r2, r1,r6
     maclhw r5,r2,r5
+
+    stw r2, 220(r31)
+    stw r5, 224(r31)
 
     maclhwu r1, r1,r4
     maclhw r5,r2,r5
 
+    stw r1, 228(r31)
+    stw r5, 232(r31)
+
     maclhwu r2, r1,r6
     maclhw r5,r2,r5
+
+    stw r2, 236(r31)
+    stw r5, 240(r31)
 
     maclhwu r1, r1,r4
     maclhw r5,r2,r5
 
+    stw r1, 244(r31)
+    stw r5, 248(r31)
+
     maclhwu r2, r1,r6
     maclhw r5,r2,r5
+
+    stw r2, 252(r31)
+    stw r5, 256(r31)
 
     maclhwu r1, r1,r4
     maclhw r5,r2,r5
 
+    stw r1, 260(r31)
+    stw r5, 264(r31)
+
     maclhwu r2, r1,r6
     maclhw r5,r2,r5
+
+    stw r2, 268(r31)
+    stw r5, 272(r31)
 
     maclhwu r1, r1,r4
     maclhw r5,r2,r5
 
+    stw r1, 276(r31)
+    stw r5, 280(r31)
+
     maclhwu r2, r1,r6
     maclhw r5,r2,r5
+
+    stw r2, 284(r31)
+    stw r5, 288(r31)
 
     maclhwu r1, r1,r4
     maclhw r5,r2,r5
 
+    stw r1, 292(r31)
+    stw r5, 296(r31)
+
     maclhwu r2, r1,r6
     maclhw r5,r2,r5
+
+    stw r2, 300(r31)
+    stw r5, 304(r31)
 
     maclhwu r1, r1,r4
     maclhw r5,r2,r5
 
+    stw r1, 308(r31)
+    stw r5, 312(r31)
+
     maclhwu r2, r1,r6
     maclhw r5,r2,r5
+
+    stw r2, 316(r31)
+    stw r5, 320(r31)
 
     maclhwu r1, r1,r4
     maclhw r5,r2,r5
 
+    stw r1, 324(r31)
+    stw r5, 328(r31)
+
     maclhwu r2, r1,r6
     maclhw r5,r2,r5
+
+    stw r2, 332(r31)
+    stw r5, 336(r31)
 
     maclhwu r1, r1,r4
     maclhw r5,r2,r5
 
+    stw r1, 340(r31)
+    stw r5, 344(r31)
+
     maclhwu r2, r1,r6
     maclhw r5,r2,r5
+
+    stw r2, 348(r31)
+    stw r5, 352(r31)
 
     maclhwu r1, r1,r4
     maclhw r5,r2,r5
 
+    stw r1, 356(r31)
+    stw r5, 360(r31)
+
     maclhwu r2, r1,r6
     maclhw r5,r2,r5
+
+    stw r2, 364(r31)
+    stw r5, 368(r31)
 
     maclhwu r1, r1,r4
     maclhw r5,r2,r5
 
+    stw r1, 372(r31)
+    stw r5, 376(r31)
+
     maclhwu r2, r1,r6
+
+    stw r2, 380(r31)
+
 
     .align 4
     xori 0,0,0
@@ -817,26 +902,28 @@ main:
     xori 0,0,0
 
 
+    addi r31, r31, 384
+    mtspr SPR_VRSAVE, r31
 
 
-    msync
-    load_addr       r30, results
-    load_const      r31, 0x380
-
-    _rumboot_putdump r30, r31
-
-    _rumboot_issdump r30, r31
-
-    b test_error
 
     rumboot_putstring "Checking STW ...\n"
 //    test_event EVENT_GPRS_CLEARED_START_CHECK_STW
+
+    mfspr r3, SPR_VRSAVE
+    mr r7, r3
+    subi r3, r3, 4
+    //addi r7, r7, 4
+
+
     .align 4
     li r1,1
     li r2,1
     li r4,1
     stwu    r2, 4(r3) //0
     isync
+
+    addi r3, r3, 4
 
     //mullw  r5,r1,r2
     maclhw r5,r2,r5
@@ -846,11 +933,17 @@ main:
     stwu    r5, 4(r7) //
     isync
 
+    addi r3, r3, 4
+    addi r7, r7, 4
+
     maclhw r2,r1,r2
     maclhw r5,r2,r5
     stwu    r2, 4(r3) //2
     stwu    r5, 4(r7) //
     isync
+
+    addi r3, r3, 4
+    addi r7, r7, 4
 
     maclhw r2,r1,r2
     maclhw r5,r2,r5
@@ -858,11 +951,17 @@ main:
     stwu    r5, 4(r7) //
     isync
 
+    addi r3, r3, 4
+    addi r7, r7, 4
+
     maclhw r2,r1,r2
     maclhw r5,r2,r5
     stwu    r2, 4(r3) //4
     stwu    r5, 4(r7) //
     isync
+
+    addi r3, r3, 4
+    addi r7, r7, 4
 
     maclhw r2,r1,r2
     maclhw r5,r2,r5
@@ -870,11 +969,17 @@ main:
     stwu    r5, 4(r7) //
     isync
 
+    addi r3, r3, 4
+    addi r7, r7, 4
+
     maclhw r2,r1,r2
     maclhw r5,r2,r5
     stwu    r2, 4(r3) //6
     stwu    r5, 4(r7) //
     isync
+
+    addi r3, r3, 4
+    addi r7, r7, 4
 
     maclhw r2,r1,r2
     maclhw r5,r2,r5
@@ -882,11 +987,17 @@ main:
     stwu    r5, 4(r7) //
     isync
 
+    addi r3, r3, 4
+    addi r7, r7, 4
+
     maclhw r2,r1,r2
     maclhw r5,r2,r5
     stwu    r2, 4(r3) //8
     stwu    r5, 4(r7) //
     isync
+
+    addi r3, r3, 4
+    addi r7, r7, 4
 
     maclhw r2,r1,r2
     maclhw r5,r2,r5
@@ -894,11 +1005,17 @@ main:
     stwu    r5, 4(r7) //
     isync
 
+    addi r3, r3, 4
+    addi r7, r7, 4
+
     maclhw r2,r1,r2
     maclhw r5,r2,r5
     stwu    r2, 4(r3) //10
     stwu    r5, 4(r7) //
     isync
+
+    addi r3, r3, 4
+    addi r7, r7, 4
 
     maclhw r2,r1,r2
     maclhw r5,r2,r5
@@ -906,11 +1023,17 @@ main:
     stwu    r5, 4(r7) //
     isync
 
+    addi r3, r3, 4
+    addi r7, r7, 4
+
     maclhw r2,r1,r2
     maclhw r5,r2,r5
     stwu    r2, 4(r3) //12
     stwu    r5, 4(r7) //
     isync
+
+    addi r3, r3, 4
+    addi r7, r7, 4
 
     maclhw r2,r1,r2
     maclhw r5,r2,r5
@@ -918,11 +1041,17 @@ main:
     stwu    r5, 4(r7) //
     isync
 
+    addi r3, r3, 4
+    addi r7, r7, 4
+
     maclhw r2,r1,r2
     maclhw r5,r2,r5
     stwu    r2, 4(r3) //14
     stwu    r5, 4(r7) //
     isync
+
+    addi r3, r3, 4
+    addi r7, r7, 4
 
     maclhw r2,r1,r2
     maclhw r5,r2,r5
@@ -930,12 +1059,18 @@ main:
     stwu    r5, 4(r7) //
     isync
 
+    addi r3, r3, 4
+    addi r7, r7, 4
+
     ori r6, r6,0x8000 // r6 == 8000
     maclhwu r2, r1,r2 // r2 == 10000
     maclhw r5,r2,r5
     stwu    r2, 4(r3) //16
     stwu    r5, 4(r7) //
     isync
+
+    addi r3, r3, 4
+    addi r7, r7, 4
 
     xori 0,0,0
     xori 0,0,0
@@ -962,6 +1097,21 @@ main:
     //r4 == 1
     //r5 == 0
     //r6 == 0
+
+
+
+    msync
+    load_addr       r30, results
+    load_const      r31, 0x484
+
+    _rumboot_putdump r30, r31
+
+    _rumboot_issdump r30, r31
+
+    b test_error
+
+
+
     stwu    r1, 4(r8)
 
     maclhwu r1, r1,r4 //r1 == 2
@@ -1332,6 +1482,11 @@ main:
 
     clear_regs_with_0
 
+
+    load_addr       r30, results
+    load_const      r31, 0x480
+
+    _rumboot_issdump r30, r31
 
 
     .align 4
