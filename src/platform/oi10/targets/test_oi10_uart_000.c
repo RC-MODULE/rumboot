@@ -42,7 +42,7 @@
 #define     UARTDR_MSK          0x000
 #define     UARTRSR_MSK         0xF
 #define     UARTECR_MSK         0xF
-#define     UARTFR_MSK          0x1FF
+#define     UARTFR_MSK          0b011111000
 #define     UARTILPR_MSK        0xFF
 #define     UARTIBRD_MSK        0xFFFF
 #define     UARTFBRD_MSK        0x3F
@@ -50,13 +50,13 @@
 #define     UARTCR_MSK          0xFF87
 #define     UARTIFLS_MSK        0x3F
 #define     UARTIMSC_MSK        0x7FF
-#define     UARTRIS_MSK         0x7FF
-#define     UARTMIS_MSK         0x7FF
+#define     UARTRIS_MSK         0x7F0
+#define     UARTMIS_MSK         0x7F0
 #define     UARTICR_MSK         0x7FF
 #define     UARTDMACR_MSK       0x7
 #define     UARTPeriphID0_MSK   0xFF
 #define     UARTPeriphID1_MSK   0xFF
-#define     UARTPeriphID2_MSK   0xFF
+#define     UARTPeriphID2_MSK   0x0F
 #define     UARTPeriphID3_MSK   0xFF
 #define     UARTPCellID0_MSK    0xFF
 #define     UARTPCellID1_MSK    0xFF
@@ -123,16 +123,16 @@ static uint32_t reg_read(uint32_t base, uint32_t reg_offset)
 
 
 uint32_t read_from_uart(uint32_t base_addr, const uint8_t* data);
-
 static volatile uint32_t READ_FROM_FIFO;
+
 
 static void irq_handler_uart(int irq, void* arg)
 {
-    uint32_t uart0_status;
+    uint32_t uart_status;
     rumboot_printf("UART interrupt handler\n");
 
-    uart0_status = reg_read(UARTRX_BASE, UARTRIS);
-    if (uart0_status & 0x10){
+    uart_status = reg_read(UARTRX_BASE, UARTRIS);
+    if (uart_status & 0x10){
 
         read_from_uart(UARTRX_BASE, data_seq_arr);
 
@@ -140,7 +140,6 @@ static void irq_handler_uart(int irq, void* arg)
         reg_write(UARTRX_BASE, UARTICR, 0x7FF);//clear interrupts
     }
 }
-
 
 
 uint32_t wait_uart_int(){
@@ -165,97 +164,29 @@ uint32_t wait_uart_int(){
 int uart_check_defaults(uint32_t base_addr)
 {
     struct regpoker_checker check_array[] = {
-     { "UARTRSR",       REGPOKER_READ32, UARTRSR,       UARTRSR_DEFAULT,        ~0x00 },
-     { "UARTFR",        REGPOKER_READ32, UARTFR,        UARTFR_DEFAULT,         ~0x00 },
-     { "UARTILPR",      REGPOKER_READ32, UARTILPR,      UARTILPR_DEFAULT,       ~0x00 },
-     { "UARTIBRD",      REGPOKER_READ32, UARTIBRD,      UARTFBRD_DEFAULT,       ~0x00 },
-     { "UARTLCR_H",     REGPOKER_READ32, UARTLCR_H,     UARTLCR_H_DEFAULT,      ~0x00 },
-     { "UARTCR",        REGPOKER_READ32, UARTCR,        UARTCR_DEFAULT,         ~0x00 },
-     { "UARTIFLS",      REGPOKER_READ32, UARTIFLS,      UARTIFLS_DEFAULT,       ~0x00 },
-     { "UARTIMSC",      REGPOKER_READ32, UARTIMSC,      UARTIMSC_DEFAULT,       ~0x00 },
-     { "UARTRIS",       REGPOKER_READ32, UARTRIS,       UARTRIS_DEFAULT,        ~0x00 },
-     { "UARTMIS",       REGPOKER_READ32, UARTMIS,       UARTMIS_DEFAULT,        ~0x00 },
-     { "UARTDMACR",     REGPOKER_READ32, UARTDMACR,     UARTDMACR_DEFAULT,      ~0x00 },
-     { "UARTPeriphID0", REGPOKER_READ32, UARTPeriphID0, UARTPeriphID0_DEFAULT,  ~0x00 },
-     { "UARTPeriphID1", REGPOKER_READ32, UARTPeriphID1, UARTPeriphID1_DEFAULT,  ~0x00 },
-     { "UARTPeriphID2", REGPOKER_READ32, UARTPeriphID2, UARTPeriphID2_DEFAULT,  ~0x00 },
-     { "UARTPeriphID3", REGPOKER_READ32, UARTPeriphID3, UARTPeriphID3_DEFAULT,  ~0x00 },
-     { "UARTPCellID0",  REGPOKER_READ32, UARTPCellID0,  UARTPCellID0_DEFAULT,   ~0x00 },
-     { "UARTPCellID1",  REGPOKER_READ32, UARTPCellID1,  UARTPCellID1_DEFAULT,   ~0x00 },
-     { "UARTPCellID2",  REGPOKER_READ32, UARTPCellID2,  UARTPCellID2_DEFAULT,   ~0x00 },
-     { "UARTPCellID3",  REGPOKER_READ32, UARTPCellID3,  UARTPCellID3_DEFAULT,   ~0x00 },
+     { "UARTRSR",       REGPOKER_READ32, UARTRSR,       UARTRSR_DEFAULT,        UARTRSR_MSK },
+     { "UARTFR",        REGPOKER_READ32, UARTFR,        UARTFR_DEFAULT,         UARTFR_MSK },
+     { "UARTILPR",      REGPOKER_READ32, UARTILPR,      UARTILPR_DEFAULT,       UARTILPR_MSK },
+     { "UARTIBRD",      REGPOKER_READ32, UARTIBRD,      UARTFBRD_DEFAULT,       UARTFBRD_MSK },
+     { "UARTLCR_H",     REGPOKER_READ32, UARTLCR_H,     UARTLCR_H_DEFAULT,      UARTLCR_H_MSK },
+     { "UARTCR",        REGPOKER_READ32, UARTCR,        UARTCR_DEFAULT,         UARTCR_MSK },
+     { "UARTIFLS",      REGPOKER_READ32, UARTIFLS,      UARTIFLS_DEFAULT,       UARTIFLS_MSK },
+     { "UARTIMSC",      REGPOKER_READ32, UARTIMSC,      UARTIMSC_DEFAULT,       UARTIMSC_MSK },
+     { "UARTRIS",       REGPOKER_READ32, UARTRIS,       UARTRIS_DEFAULT,        UARTRIS_MSK },
+     { "UARTMIS",       REGPOKER_READ32, UARTMIS,       UARTMIS_DEFAULT,        UARTMIS_MSK },
+     { "UARTDMACR",     REGPOKER_READ32, UARTDMACR,     UARTDMACR_DEFAULT,      UARTDMACR_MSK },
+     { "UARTPeriphID0", REGPOKER_READ32, UARTPeriphID0, UARTPeriphID0_DEFAULT,  UARTPeriphID0_MSK },
+     { "UARTPeriphID1", REGPOKER_READ32, UARTPeriphID1, UARTPeriphID1_DEFAULT,  UARTPeriphID1_MSK },
+     { "UARTPeriphID2", REGPOKER_READ32, UARTPeriphID2, UARTPeriphID2_DEFAULT,  UARTPeriphID2_MSK },
+     { "UARTPeriphID3", REGPOKER_READ32, UARTPeriphID3, UARTPeriphID3_DEFAULT,  UARTPeriphID3_MSK },
+     { "UARTPCellID0",  REGPOKER_READ32, UARTPCellID0,  UARTPCellID0_DEFAULT,   UARTPCellID0_MSK },
+     { "UARTPCellID1",  REGPOKER_READ32, UARTPCellID1,  UARTPCellID1_DEFAULT,   UARTPCellID1_MSK },
+     { "UARTPCellID2",  REGPOKER_READ32, UARTPCellID2,  UARTPCellID2_DEFAULT,   UARTPCellID2_MSK },
+     { "UARTPCellID3",  REGPOKER_READ32, UARTPCellID3,  UARTPCellID3_DEFAULT,   UARTPCellID3_MSK },
      { /* Sentinel */ }
     };
 
     return rumboot_regpoker_check_array(check_array, base_addr);
-
-/*
-    int result = 0;
-
-    uint32_t value;
-
-    value = reg_read(base_addr, UARTRSR);
-    TEST_ASSERT((value & UARTRSR_DEFAULT) == UARTRSR_DEFAULT, "UARTRSR - incorrect default value!");
-
-    value = reg_read(base_addr, UARTFR);
-    TEST_ASSERT((value & UARTFR_DEFAULT) == UARTFR_DEFAULT, "UARTFR - incorrect default value!");
-
-    value = reg_read(base_addr, UARTILPR);
-    TEST_ASSERT((value & UARTILPR_DEFAULT) == UARTILPR_DEFAULT, "UARTILPR - incorrect default value!");
-
-    value = reg_read(base_addr, UARTIBRD);
-    TEST_ASSERT((value & UARTIBRD_DEFAULT) == UARTIBRD_DEFAULT, "UARTIBRD - incorrect default value!");
-
-    value = reg_read(base_addr, UARTFBRD);
-    TEST_ASSERT((value & UARTFBRD_DEFAULT) == UARTFBRD_DEFAULT, "UARTFBRD - incorrect default value!");
-
-    value = reg_read(base_addr, UARTLCR_H);
-    TEST_ASSERT((value & UARTLCR_H_DEFAULT) == UARTLCR_H_DEFAULT, "UARTLCR_H - incorrect default value!");
-
-    value = reg_read(base_addr, UARTCR);
-    TEST_ASSERT((value & UARTCR_DEFAULT) == UARTCR_DEFAULT, "UARTCR - incorrect default value!");
-
-    value = reg_read(base_addr, UARTIFLS);
-    TEST_ASSERT((value & UARTIFLS_DEFAULT) == UARTIFLS_DEFAULT, "UARTIFLS - incorrect default value!");
-
-    value = reg_read(base_addr, UARTIMSC);
-    TEST_ASSERT((value & UARTIMSC_DEFAULT) == UARTIMSC_DEFAULT, "UARTIMSC - incorrect default value!");
-
-    value = reg_read(base_addr, UARTRIS);
-    TEST_ASSERT((value & UARTRIS_DEFAULT) == UARTRIS_DEFAULT, "UARTRIS - incorrect default value!");
-
-    value = reg_read(base_addr, UARTMIS);
-    TEST_ASSERT((value & UARTMIS_DEFAULT) == UARTMIS_DEFAULT, "UARTMIS - incorrect default value!");
-
-    value = reg_read(base_addr, UARTDMACR);
-    TEST_ASSERT((value & UARTDMACR_DEFAULT) == UARTDMACR_DEFAULT, "UARTDMACR - incorrect default value!");
-
-    value = reg_read(base_addr, UARTPeriphID0);
-    TEST_ASSERT((value & UARTPeriphID0_DEFAULT) == UARTPeriphID0_DEFAULT, "UARTPeriphID0 - incorrect default value!");
-
-    value = reg_read(base_addr, UARTPeriphID1);
-    TEST_ASSERT((value & UARTPeriphID1_DEFAULT) == UARTPeriphID1_DEFAULT, "UARTPeriphID1 - incorrect default value!");
-
-    value = reg_read(base_addr, UARTPeriphID2);
-    TEST_ASSERT((value & UARTPeriphID2_DEFAULT) == UARTPeriphID2_DEFAULT, "UARTPeriphID2 - incorrect default value!");
-
-    value = reg_read(base_addr, UARTPeriphID3);
-    TEST_ASSERT((value & UARTPeriphID3_DEFAULT) == UARTPeriphID3_DEFAULT, "UARTPeriphID3 - incorrect default value!");
-
-    value = reg_read(base_addr, UARTPCellID0);
-    TEST_ASSERT((value & UARTPCellID0_DEFAULT) == UARTPCellID0_DEFAULT, "UARTPCellID0 - incorrect default value!");
-
-    value = reg_read(base_addr, UARTPCellID1);
-    TEST_ASSERT((value & UARTPCellID1_DEFAULT) == UARTPCellID1_DEFAULT, "UARTPCellID1 - incorrect default value!");
-
-    value = reg_read(base_addr, UARTPCellID2);
-    TEST_ASSERT((value & UARTPCellID2_DEFAULT) == UARTPCellID2_DEFAULT, "UARTPCellID2 - incorrect default value!");
-
-    value = reg_read(base_addr, UARTPCellID3);
-    TEST_ASSERT((value & UARTPCellID3_DEFAULT) == UARTPCellID3_DEFAULT, "UARTPCellID3 - incorrect default value!");
-
-    return result;
-*/
 }
 
 void write_to_uart(uint32_t base_addr, const uint8_t* data, size_t data_len)
@@ -293,14 +224,13 @@ uint32_t read_from_uart(uint32_t base_addr, const uint8_t* data)
 }
 
 
-uint32_t test_uart(uint32_t UART_TRANSMITTER_BASE, uint32_t UART_RECEIVER_BASE, uint32_t irq_num) {
+uint32_t test_uart(uint32_t UART_TRANSMITTER_BASE, uint32_t UART_RECEIVER_BASE) {
     rumboot_printf("------- Test UART -------\n");
     rumboot_printf("UART_BASE = 0x%x\n", UART_RECEIVER_BASE);
 
     uint32_t test_result, j;
 
     test_result = 0;
-
 
 
     uart_init(UART_TRANSMITTER_BASE, UART_word_length_8bit, 6250000, UART_parity_no, 0x30, 0);
@@ -326,26 +256,9 @@ uint32_t test_uart(uint32_t UART_TRANSMITTER_BASE, uint32_t UART_RECEIVER_BASE, 
     rumboot_printf("Finish Write\n");
 
 
-    rumboot_printf("Waiting for interrupt ...\n");
     if (wait_uart_int() == TEST_ERROR){
        return TEST_ERROR;
     }
-
-
-//    rumboot_printf("Read:\n");
-//    for (j = 0; j < UART_TEST_DATA_LEN; j++){
-//        readval = uart_getc(UART_RECEIVER_BASE);
-//
-//        rumboot_printf("UART_BASE+UARTDR = 0x%x\n", UART_RECEIVER_BASE+UARTDR);
-//        rumboot_printf("readval = 0x%x\n", readval);
-//        if (readval != data_seq_arr[j]){
-//            rumboot_printf("Error on compare transmit and receive data!\n");
-//            rumboot_printf("Read: readval = 0x%x\n", readval);
-//            rumboot_printf("Expected: data_seq_arr[%d] = 0x%x\n", j, data_seq_arr[j]);
-//            test_result = TEST_ERROR;
-//            break;
-//        }
-//    }
 
    return test_result;
 }
@@ -364,7 +277,7 @@ int main() {
     rumboot_irq_cli();
     struct rumboot_irq_entry *tbl = rumboot_irq_create( NULL );
 
-    rumboot_irq_set_handler(tbl, UART_INT, RUMBOOT_IRQ_EDGE | RUMBOOT_IRQ_POS, irq_handler_uart, (void*)0);
+    rumboot_irq_set_handler(tbl, UART_INT, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, irq_handler_uart, (void*)0);
 
     /* Activate the table */
     rumboot_irq_table_activate( tbl );
@@ -378,10 +291,10 @@ int main() {
 
 #endif //CHECK_DEFAULT_VALUES
 
-    rumboot_printf("Testing UART0 ...\n");
-    test_result = test_uart(UARTTX_BASE, UARTRX_BASE, UART_INT);
+    rumboot_printf("Testing UART ...\n");
+    test_result = test_uart(UARTTX_BASE, UARTRX_BASE);
     if (test_result == TEST_ERROR){
-        rumboot_printf("Error while testing UART0.\n");
+        rumboot_printf("Error while testing UART.\n");
         return 1;
     }
 
