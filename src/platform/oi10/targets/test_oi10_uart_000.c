@@ -255,7 +255,7 @@ uint32_t test_uart(uint32_t UART_TRANSMITTER_BASE, uint32_t UART_RECEIVER_BASE) 
     }
     rumboot_printf("Finish Write\n");
 
-
+    rumboot_printf("Waiting interrupt ...\n");
     if (wait_uart_int() == TEST_ERROR){
        return TEST_ERROR;
     }
