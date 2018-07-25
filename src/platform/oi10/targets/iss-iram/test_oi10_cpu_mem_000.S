@@ -913,7 +913,7 @@ main:
     mfspr r3, SPR_VRSAVE
     mr r7, r3
     subi r3, r3, 4
-    //addi r7, r7, 4
+    addi r7, r7, 4
 
 
     .align 4
@@ -922,8 +922,6 @@ main:
     li r4,1
     stwu    r2, 4(r3) //0
     isync
-
-    addi r3, r3, 4
 
     //mullw  r5,r1,r2
     maclhw r5,r2,r5
@@ -1069,9 +1067,6 @@ main:
     stwu    r5, 4(r7) //
     isync
 
-    addi r3, r3, 4
-    addi r7, r7, 4
-
     xori 0,0,0
     xori 0,0,0
     xori 0,0,0
@@ -1099,17 +1094,16 @@ main:
     //r6 == 0
 
 
+    mr r8, r7
+    subi r8, r8, 4
+    addi r7, r7, 4
+    addi r3, r3, 8
 
-    msync
-    load_addr       r30, results
-    load_const      r31, 0x484
+    rumboot_putstring "r8 = "
+    rumboot_puthex r8
 
-    _rumboot_putdump r30, r31
-
-    _rumboot_issdump r30, r31
-
-    b test_error
-
+    rumboot_putstring "r3 = "
+    rumboot_puthex r3
 
 
     stwu    r1, 4(r8)
@@ -1120,17 +1114,26 @@ main:
     stwu    r5, 4(r7) //
     isync
 
+    addi r8, r8, 8
+    addi r7, r7, 4
+
     maclhwu r2, r1,r6 //r2 == 20000
     maclhw r5,r2,r5
     stwu    r2, 4(r3)
     stwu    r5, 4(r7) //
     isync
 
+    addi r3, r3, 8
+    addi r7, r7, 4
+
     maclhwu r1, r1,r4 //r1 == 4
     maclhw r5,r2,r5
     stwu    r1, 4(r8)
     stwu    r5, 4(r7) //
     isync
+
+    addi r8, r8, 8
+    addi r7, r7, 4
 
     maclhwu r2, r1,r6
     maclhw r5,r2,r5
@@ -1138,11 +1141,17 @@ main:
     stwu    r5, 4(r7) //
     isync
 
+    addi r3, r3, 8
+    addi r7, r7, 4
+
     maclhwu r1, r1,r4 //r1 == 4
     maclhw r5,r2,r5
     stwu    r1, 4(r8)
     stwu    r5, 4(r7) //
     isync
+
+    addi r8, r8, 8
+    addi r7, r7, 4
 
     maclhwu r2, r1,r6 //r6 == 40000
     maclhw r5,r2,r5
@@ -1150,11 +1159,17 @@ main:
     stwu    r5, 4(r7) //
     isync
 
+    addi r3, r3, 8
+    addi r7, r7, 4
+
     maclhwu r1, r1,r4
     maclhw r5,r2,r5
     stwu    r1, 4(r8)
     stwu    r5, 4(r7) //
     isync
+
+    addi r8, r8, 8
+    addi r7, r7, 4
 
     maclhwu r2, r1,r6
     maclhw r5,r2,r5
@@ -1162,11 +1177,17 @@ main:
     stwu    r5, 4(r7) //
     isync
 
+    addi r3, r3, 8
+    addi r7, r7, 4
+
     maclhwu r1, r1,r4
     maclhw r5,r2,r5
     stwu    r1, 4(r8)
     stwu    r5, 4(r7) //
     isync
+
+    addi r8, r8, 8
+    addi r7, r7, 4
 
     maclhwu r2, r1,r6
     maclhw r5,r2,r5
@@ -1174,11 +1195,17 @@ main:
     stwu    r5, 4(r7) //
     isync
 
+    addi r3, r3, 8
+    addi r7, r7, 4
+
     maclhwu r1, r1,r4
     maclhw r5,r2,r5
     stwu    r1, 4(r8)
     stwu    r5, 4(r7) //
     isync
+
+    addi r8, r8, 8
+    addi r7, r7, 4
 
     maclhwu r2, r1,r6
     maclhw r5,r2,r5
@@ -1186,11 +1213,17 @@ main:
     stwu    r5, 4(r7) //
     isync
 
+    addi r3, r3, 8
+    addi r7, r7, 4
+
     maclhwu r1, r1,r4
     maclhw r5,r2,r5
     stwu    r1, 4(r8)
     stwu    r5, 4(r7) //
     isync
+
+    addi r8, r8, 8
+    addi r7, r7, 4
 
     maclhwu r2, r1,r6
     maclhw r5,r2,r5
@@ -1198,11 +1231,17 @@ main:
     stwu    r5, 4(r7) //
     isync
 
+    addi r3, r3, 8
+    addi r7, r7, 4
+
     maclhwu r1, r1,r4
     maclhw r5,r2,r5
     stwu    r1, 4(r8)
     stwu    r5, 4(r7) //
     isync
+
+    addi r8, r8, 8
+    addi r7, r7, 4
 
     maclhwu r2, r1,r6
     maclhw r5,r2,r5
@@ -1210,11 +1249,17 @@ main:
     stwu    r5, 4(r7) //
     isync
 
+    addi r3, r3, 8
+    addi r7, r7, 4
+
     maclhwu r1, r1,r4
     maclhw r5,r2,r5
     stwu    r1, 4(r8)
     stwu    r5, 4(r7) //
     isync
+
+    addi r8, r8, 8
+    addi r7, r7, 4
 
     maclhwu r2, r1,r6
     maclhw r5,r2,r5
@@ -1222,11 +1267,17 @@ main:
     stwu    r5, 4(r7) //
     isync
 
+    addi r3, r3, 8
+    addi r7, r7, 4
+
     maclhwu r1, r1,r4
     maclhw r5,r2,r5
     stwu    r1, 4(r8)
     stwu    r5, 4(r7) //
     isync
+
+    addi r8, r8, 8
+    addi r7, r7, 4
 
     maclhwu r2, r1,r6
     maclhw r5,r2,r5
@@ -1234,11 +1285,17 @@ main:
     stwu    r5, 4(r7) //
     isync
 
+    addi r3, r3, 8
+    addi r7, r7, 4
+
     maclhwu r1, r1,r4
     maclhw r5,r2,r5
     stwu    r1, 4(r8)
     stwu    r5, 4(r7) //
     isync
+
+    addi r8, r8, 8
+    addi r7, r7, 4
 
     maclhwu r2, r1,r6
     maclhw r5,r2,r5
@@ -1246,11 +1303,17 @@ main:
     stwu    r5, 4(r7) //
     isync
 
+    addi r3, r3, 8
+    addi r7, r7, 4
+
     maclhwu r1, r1,r4
     maclhw r5,r2,r5
     stwu    r1, 4(r8)
     stwu    r5, 4(r7) //
     isync
+
+    addi r8, r8, 8
+    addi r7, r7, 4
 
     maclhwu r2, r1,r6
     maclhw r5,r2,r5
@@ -1258,11 +1321,17 @@ main:
     stwu    r5, 4(r7) //
     isync
 
+    addi r3, r3, 8
+    addi r7, r7, 4
+
     maclhwu r1, r1,r4
     maclhw r5,r2,r5
     stwu    r1, 4(r8)
     stwu    r5, 4(r7) //
     isync
+
+    addi r8, r8, 8
+    addi r7, r7, 4
 
     maclhwu r2, r1,r6
     maclhw r5,r2,r5
@@ -1270,11 +1339,17 @@ main:
     stwu    r5, 4(r7) //
     isync
 
+    addi r3, r3, 8
+    addi r7, r7, 4
+
     maclhwu r1, r1,r4
     maclhw r5,r2,r5
     stwu    r1, 4(r8)
     stwu    r5, 4(r7) //
     isync
+
+    addi r8, r8, 8
+    addi r7, r7, 4
 
     maclhwu r2, r1,r6
     maclhw r5,r2,r5
@@ -1282,11 +1357,17 @@ main:
     stwu    r5, 4(r7) //
     isync
 
+    addi r3, r3, 8
+    addi r7, r7, 4
+
     maclhwu r1, r1,r4
     maclhw r5,r2,r5
     stwu    r1, 4(r8)
     stwu    r5, 4(r7) //
     isync
+
+    addi r8, r8, 8
+    addi r7, r7, 4
 
     maclhwu r2, r1,r6
     maclhw r5,r2,r5
@@ -1294,11 +1375,17 @@ main:
     stwu    r5, 4(r7) //
     isync
 
+    addi r3, r3, 8
+    addi r7, r7, 4
+
     maclhwu r1, r1,r4
     maclhw r5,r2,r5
     stwu    r1, 4(r8)
     stwu    r5, 4(r7) //
     isync
+
+    addi r8, r8, 8
+    addi r7, r7, 4
 
     maclhwu r2, r1,r6
     maclhw r5,r2,r5
@@ -1306,8 +1393,21 @@ main:
     stwu    r5, 4(r7) //
     isync
 
+    addi r7, r7, 4
 
 
+    mtspr SPR_VRSAVE, r7
+
+
+    msync
+    load_addr       r30, results
+    load_const      r31, 0x584
+
+    _rumboot_putdump r30, r31
+
+    _rumboot_issdump r30, r31
+
+    b test_error
 
 
 
