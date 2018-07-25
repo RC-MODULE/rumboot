@@ -1,7 +1,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include <devices/uart.h>
+#include <devices/uart_pl011.h>
 #include <regs/regs_uart.h>
 #include <rumboot/io.h>
 #include <rumboot/timer.h>

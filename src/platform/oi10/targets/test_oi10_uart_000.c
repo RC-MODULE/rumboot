@@ -9,10 +9,10 @@
 #include <platform/devices.h>
 #include <platform/interrupts.h>
 #include <platform/regs/fields/mpic128.h>
-#include <platform/devices/uart.h>
 #include <platform/test_assert.h>
 #include <regs/regs_uart.h>
-#include <devices/uart.h>
+#include <devices/uart_pl011.h>
+#include <rumboot/regpoker.h>
 
 
 //default values
@@ -126,33 +126,18 @@ uint32_t read_from_uart(uint32_t base_addr, const uint8_t* data);
 
 static volatile uint32_t READ_FROM_FIFO;
 
-static void irq_handler_uart0(int irq, void* arg)
+static void irq_handler_uart(int irq, void* arg)
 {
     uint32_t uart0_status;
-    rumboot_printf("UART0 interrupt handler\n");
+    rumboot_printf("UART interrupt handler\n");
 
-    uart0_status = reg_read(UART0_BASE, UARTRIS);
+    uart0_status = reg_read(UARTRX_BASE, UARTRIS);
     if (uart0_status & 0x10){
 
-        read_from_uart(UART0_BASE, data_seq_arr);
+        read_from_uart(UARTRX_BASE, data_seq_arr);
 
         READ_FROM_FIFO = 1;
-        reg_write(UART0_BASE, UARTICR, 0x7FF);//clear interrupts
-    }
-}
-
-static void irq_handler_uart1(int irq, void* arg)
-{
-    uint32_t uart1_status;
-    rumboot_printf ("UART1 interrupt handler\n");
-
-    uart1_status = reg_read(UART1_BASE, UARTRIS);
-    if (uart1_status & 0x10){
-
-        read_from_uart(UART1_BASE, data_seq_arr);
-
-        READ_FROM_FIFO = 1;
-        reg_write(UART1_BASE, UARTICR, 0x7FF);//clear interrupts
+        reg_write(UARTRX_BASE, UARTICR, 0x7FF);//clear interrupts
     }
 }
 
@@ -179,6 +164,32 @@ uint32_t wait_uart_int(){
 
 int uart_check_defaults(uint32_t base_addr)
 {
+    struct regpoker_checker check_array[] = {
+     { "UARTRSR",       REGPOKER_READ32, UARTRSR,       UARTRSR_DEFAULT,        ~0x00 },
+     { "UARTFR",        REGPOKER_READ32, UARTFR,        UARTFR_DEFAULT,         ~0x00 },
+     { "UARTILPR",      REGPOKER_READ32, UARTILPR,      UARTILPR_DEFAULT,       ~0x00 },
+     { "UARTIBRD",      REGPOKER_READ32, UARTIBRD,      UARTFBRD_DEFAULT,       ~0x00 },
+     { "UARTLCR_H",     REGPOKER_READ32, UARTLCR_H,     UARTLCR_H_DEFAULT,      ~0x00 },
+     { "UARTCR",        REGPOKER_READ32, UARTCR,        UARTCR_DEFAULT,         ~0x00 },
+     { "UARTIFLS",      REGPOKER_READ32, UARTIFLS,      UARTIFLS_DEFAULT,       ~0x00 },
+     { "UARTIMSC",      REGPOKER_READ32, UARTIMSC,      UARTIMSC_DEFAULT,       ~0x00 },
+     { "UARTRIS",       REGPOKER_READ32, UARTRIS,       UARTRIS_DEFAULT,        ~0x00 },
+     { "UARTMIS",       REGPOKER_READ32, UARTMIS,       UARTMIS_DEFAULT,        ~0x00 },
+     { "UARTDMACR",     REGPOKER_READ32, UARTDMACR,     UARTDMACR_DEFAULT,      ~0x00 },
+     { "UARTPeriphID0", REGPOKER_READ32, UARTPeriphID0, UARTPeriphID0_DEFAULT,  ~0x00 },
+     { "UARTPeriphID1", REGPOKER_READ32, UARTPeriphID1, UARTPeriphID1_DEFAULT,  ~0x00 },
+     { "UARTPeriphID2", REGPOKER_READ32, UARTPeriphID2, UARTPeriphID2_DEFAULT,  ~0x00 },
+     { "UARTPeriphID3", REGPOKER_READ32, UARTPeriphID3, UARTPeriphID3_DEFAULT,  ~0x00 },
+     { "UARTPCellID0",  REGPOKER_READ32, UARTPCellID0,  UARTPCellID0_DEFAULT,   ~0x00 },
+     { "UARTPCellID1",  REGPOKER_READ32, UARTPCellID1,  UARTPCellID1_DEFAULT,   ~0x00 },
+     { "UARTPCellID2",  REGPOKER_READ32, UARTPCellID2,  UARTPCellID2_DEFAULT,   ~0x00 },
+     { "UARTPCellID3",  REGPOKER_READ32, UARTPCellID3,  UARTPCellID3_DEFAULT,   ~0x00 },
+     { /* Sentinel */ }
+    };
+
+    return rumboot_regpoker_check_array(check_array, base_addr);
+
+/*
     int result = 0;
 
     uint32_t value;
@@ -244,6 +255,7 @@ int uart_check_defaults(uint32_t base_addr)
     TEST_ASSERT((value & UARTPCellID3_DEFAULT) == UARTPCellID3_DEFAULT, "UARTPCellID3 - incorrect default value!");
 
     return result;
+*/
 }
 
 void write_to_uart(uint32_t base_addr, const uint8_t* data, size_t data_len)
@@ -352,39 +364,26 @@ int main() {
     rumboot_irq_cli();
     struct rumboot_irq_entry *tbl = rumboot_irq_create( NULL );
 
-    rumboot_irq_set_handler(tbl, UART0_INT, (int_sense_level << MPIC128_VP_S_i) | (int_pol_high << MPIC128_VP_POL_i), irq_handler_uart0, (void*)0);
-    rumboot_irq_set_handler(tbl, UART1_INT, (int_sense_level << MPIC128_VP_S_i) | (int_pol_high << MPIC128_VP_POL_i), irq_handler_uart1, (void*)0);
+    rumboot_irq_set_handler(tbl, UART_INT, RUMBOOT_IRQ_EDGE | RUMBOOT_IRQ_POS, irq_handler_uart, (void*)0);
 
     /* Activate the table */
     rumboot_irq_table_activate( tbl );
-    rumboot_irq_enable( UART0_INT );
-    rumboot_irq_enable( UART1_INT );
+    rumboot_irq_enable( UART_INT );
     rumboot_irq_sei();
 
 #ifdef CHECK_DEFAULT_VALUES
 
-    rumboot_putstring("Checking UART0 registers default values ...\n");
-    uart_check_defaults(UART0_BASE);
-
-    rumboot_putstring("Checking UART1 registers default values ...\n");
-    uart_check_defaults(UART1_BASE);
+    rumboot_putstring("Checking UART registers default values ...\n");
+    uart_check_defaults(UARTRX_BASE);
 
 #endif //CHECK_DEFAULT_VALUES
 
     rumboot_printf("Testing UART0 ...\n");
-    test_result = test_uart(UART1_BASE, UART0_BASE, UART0_INT);
+    test_result = test_uart(UARTTX_BASE, UARTRX_BASE, UART_INT);
     if (test_result == TEST_ERROR){
         rumboot_printf("Error while testing UART0.\n");
         return 1;
     }
-
-    rumboot_printf ("Testing UART1\n");
-    test_result = test_uart(UART0_BASE, UART1_BASE, UART1_INT);
-    if (test_result == TEST_ERROR){
-        rumboot_printf("Error while testing UART1.\n");
-        return 1;
-    }
-
 
     rumboot_irq_table_activate(NULL);
     rumboot_irq_free(tbl);

@@ -48,6 +48,7 @@ typedef enum {
  * @param wlen word length
  * @param baud_rate baud rate
  * @param parity parity
+ * @param int_mask interrupt mask
  * @param loopback loopback
  */
 void uart_init(uint32_t base_addr, UART_word_length wlen, uint32_t baud_rate, UART_parity parity, short int int_mask, int loopback);

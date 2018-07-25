@@ -3,7 +3,7 @@ set(RUMBOOT_PLATFORM_DEFAULT_SNAPSHOT default)
 
 file(GLOB PLATFORM_SOURCES
     ${CMAKE_SOURCE_DIR}/src/lib/eventsystem-memory.c
-    ${CMAKE_SOURCE_DIR}/src/lib/drivers/uart.c
+    ${CMAKE_SOURCE_DIR}/src/lib/drivers/uart_pl011.c
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/*.c
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/lib/drivers/irq-mpic128.c
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/lib/drivers/p64.c
@@ -219,6 +219,20 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 #        IRUN_FLAGS +mkio_signal_test
 #      )
 
+    
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES test_oi10_uart_000.c
+      CFLAGS -DUARTRX_BASE=UART0_BASE -DUARTTX_BASE=UART1_BASE -DUART_INT=UART0_INT
+      PREFIX uart0
+    )
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES test_oi10_uart_000.c
+      CFLAGS -DUARTRX_BASE=UART1_BASE -DUARTTX_BASE=UART0_BASE -DUART_INT=UART1_INT
+      PREFIX uart1
+    ) 
+    
 endmacro()
 
 
