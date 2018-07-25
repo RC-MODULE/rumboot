@@ -34,6 +34,7 @@ void emi_init_impl (uint32_t emi_dcr_base, uint32_t plb6mcif2_dcr_base, uint32_t
 
     //init bank5
     //TODO:
+    emi_dcr_write_EMI_SS5 (emi_dcr_base, 0x10);
     emi_dcr_write_EMI_BUSEN(emi_dcr_base, 0x01);
 }
 
