@@ -155,6 +155,20 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         PREFIX iss-iram
         CHECKCMD ${CMAKE_SOURCE_DIR}/scripts/ISS/dump_gen.csh ${CMAKE_BINARY_DIR} $PRODUCT
     )
+
+    add_rumboot_target(
+        CONFIGURATION IRAM
+        CFLAGS -DGPIO_X_BASE=GPIO_0_BASE -DCHECK_REGS
+        FILES test_oi10_gpio.c
+        PREFIX "gpio_0"
+    )
+
+    add_rumboot_target(
+        CONFIGURATION IRAM
+        CFLAGS -DGPIO_X_BASE=GPIO_1_BASE -DCHECK_REGS
+        FILES test_oi10_gpio.c
+        PREFIX "gpio_1"
+    )
 endmacro()
 
 

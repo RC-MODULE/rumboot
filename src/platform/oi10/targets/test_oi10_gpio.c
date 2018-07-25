@@ -15,11 +15,9 @@
 #include <regs/regs_gpio-pl061.h>
 #include <devices/gpio-pl061.h>
 
-#define CHECK_REGS
 
 #ifdef CHECK_REGS
-static bool check_gpio_default_val(uint32_t base_addr)
-{
+static uint32_t check_gpio_default_val( uint32_t base_addr ) {
     rumboot_printf("Check the default values of the registers:");
 
     struct regpoker_checker check_default_array[] = {
@@ -45,18 +43,15 @@ static bool check_gpio_default_val(uint32_t base_addr)
 
     if( rumboot_regpoker_check_array( check_default_array, 0 ) == 0 ) {
         rumboot_printf( " OK\n" );
-        return true;
+        return 0;
     }
 
     rumboot_printf( " ERROR\n" );
-    return false;
+    return 1;
 }
 
-static bool check_gpio_regs(uint32_t base_addr)
-{
+static uint32_t check_gpio_regs( uint32_t base_addr ) {
     rumboot_printf("Check WRITE/READ registers:");
-
-    iowrite32(GPIO_REG_MASK & (~GPIO_DIR_DEFAULT), base_addr + GPIO_DIR); /* this value is used in checking of GPIO_DATA */
 
     struct regpoker_checker check_rw_array[] = {
         {   "GPIO_DIR",         REGPOKER_WRITE32,   base_addr+GPIO_DIR,                 ~GPIO_DIR_DEFAULT,      GPIO_REG_MASK   },
@@ -71,14 +66,13 @@ static bool check_gpio_regs(uint32_t base_addr)
         { /* Sentinel */ }
     };
 
-
     if( rumboot_regpoker_check_array( check_rw_array, 0 ) == 0 ) {
         rumboot_printf( " OK\n" );
-        return true;
+        return 0;
     }
 
     rumboot_printf( " ERROR\n" );
-    return false;
+    return 1;
 }
 #endif
 
@@ -98,7 +92,7 @@ static void handler1( int irq, void *arg ) {
     IRQ = 1;
 }
 
-uint32_t wait_gpio_int(){
+static uint32_t wait_gpio_int() {
     unsigned t;
 
     rumboot_printf ("wait_gpio_int \n");
@@ -117,8 +111,7 @@ uint32_t wait_gpio_int(){
     return 0;
 }
 
-uint32_t test_gpio(uint32_t base_addr, uint32_t GPIODIR_value)
-{
+static uint32_t test_gpio( uint32_t base_addr, uint32_t GPIODIR_value ) {
     uint8_t data_read_gpio, data_write_gpio;
 // setup of interrupts
     IRQ = 0;
@@ -163,31 +156,16 @@ uint32_t test_gpio(uint32_t base_addr, uint32_t GPIODIR_value)
 }
 
 
-int main(void)
-{
+int main() {
     uint32_t result = 0x0;
-    rumboot_printf("Check GPIO_0 \n");
-    #ifdef CHECK_REGS
-        check_gpio_default_val(GPIO_0_BASE);
-        check_gpio_regs(GPIO_0_BASE);
-    #endif
 
-    if(!test_gpio(GPIO_0_BASE, 0x2A))
-        rumboot_printf("Check GPIO_0: OK \n");
-    else
-        result = (1<<0);
+    rumboot_printf( "Check GPIO (0x%x) \n", GPIO_X_BASE );
 
-    rumboot_printf("Check GPIO_1 \n");
-    #ifdef CHECK_REGS
-        check_gpio_default_val(GPIO_1_BASE);
-        check_gpio_regs(GPIO_1_BASE);
-    #endif
-
-    if(!test_gpio(GPIO_1_BASE, 0xAA))
-        rumboot_printf("Check GPIO_1: OK \n");
-    else
-        result = (1<<1);
+#ifdef CHECK_REGS
+    result += check_gpio_default_val(GPIO_X_BASE);
+    result += check_gpio_regs(GPIO_X_BASE);
+#endif
+    result += test_gpio(GPIO_X_BASE, 0x2A);
 
     return result;
-
 }
