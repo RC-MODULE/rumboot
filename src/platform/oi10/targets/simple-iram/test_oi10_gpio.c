@@ -10,6 +10,7 @@
 #include <rumboot/printf.h>
 #include <platform/interrupts.h>
 #include <platform/test_assert.h>
+#include <rumboot/regpoker.h>
 #include <platform/regs/fields/mpic128.h>
 #include <regs/regs_gpio-pl061.h>
 #include <devices/gpio-pl061.h>
@@ -17,83 +18,67 @@
 #define CHECK_REGS
 
 #ifdef CHECK_REGS
-static uint32_t check_gpio_default_val(uint32_t base_addr)
+static bool check_gpio_default_val(uint32_t base_addr)
 {
     rumboot_printf("Check the default values of the registers:");
 
+    struct regpoker_checker check_default_array[] = {
+        {   "GPIO_DATA",        REGPOKER_READ32,    base_addr+GPIO_DATA,        GPIO_DATA_DEFAULT,      GPIO_REG_MASK   }, /* check only first of 256 */
+        {   "GPIO_DIR",         REGPOKER_READ32,    base_addr+GPIO_DIR,         GPIO_DIR_DEFAULT,       GPIO_REG_MASK   },
+        {   "GPIO_IS",          REGPOKER_READ32,    base_addr+GPIO_IS,          GPIO_IS_DEFAULT,        GPIO_REG_MASK   },
+        {   "GPIO_IBE",         REGPOKER_READ32,    base_addr+GPIO_IBE,         GPIO_IBE_DEFAULT,       GPIO_REG_MASK   },
+        {   "GPIO_IEV",         REGPOKER_READ32,    base_addr+GPIO_IEV,         GPIO_IEV_DEFAULT,       GPIO_REG_MASK   },
+        {   "GPIO_IE",          REGPOKER_READ32,    base_addr+GPIO_IE,          GPIO_IE_DEFAULT,        GPIO_REG_MASK   },
+        {   "GPIO_RIS",         REGPOKER_READ32,    base_addr+GPIO_RIS,         GPIO_RIS_DEFAULT,       GPIO_REG_MASK   },
+        {   "GPIO_MIS",         REGPOKER_READ32,    base_addr+GPIO_MIS,         GPIO_MIS_DEFAULT,       GPIO_REG_MASK   },
+        {   "GPIO_AFSEL",       REGPOKER_READ32,    base_addr+GPIO_AFSEL,       GPIO_AFSEL_DEFAULT,     GPIO_REG_MASK   },
+        {   "GPIO_PeriphID0",   REGPOKER_READ32,    base_addr+GPIO_PeriphID0,   GPIO_PeriphID0_DEFAULT, GPIO_REG_MASK   },
+        {   "GPIO_PeriphID1",   REGPOKER_READ32,    base_addr+GPIO_PeriphID1,   GPIO_PeriphID1_DEFAULT, GPIO_REG_MASK   },
+        {   "GPIO_PeriphID2",   REGPOKER_READ32,    base_addr+GPIO_PeriphID2,   GPIO_PeriphID2_DEFAULT, GPIO_REG_MASK   },
+        {   "GPIO_PeriphID3",   REGPOKER_READ32,    base_addr+GPIO_PeriphID3,   GPIO_PeriphID3_DEFAULT, GPIO_REG_MASK   },
+        {   "GPIO_CellID0",     REGPOKER_READ32,    base_addr+GPIO_CellID0,     GPIO_CellID0_DEFAULT,   GPIO_REG_MASK   },
+        {   "GPIO_CellID1",     REGPOKER_READ32,    base_addr+GPIO_CellID1,     GPIO_CellID1_DEFAULT,   GPIO_REG_MASK   },
+        {   "GPIO_CellID2",     REGPOKER_READ32,    base_addr+GPIO_CellID2,     GPIO_CellID2_DEFAULT,   GPIO_REG_MASK   },
+        {   "GPIO_CellID3",     REGPOKER_READ32,    base_addr+GPIO_CellID3,     GPIO_CellID3_DEFAULT,   GPIO_REG_MASK   },
+        { /* Sentinel */ }
+    };
 
-    TEST_ASSERT((ioread32(base_addr + GPIO_DATA) == GPIO_DATA_DEFAULT), "ERROR!!! The default value does not match the expected value the register GPIO_DATA.\n");
+    if( rumboot_regpoker_check_array( check_default_array, 0 ) == 0 ) {
+        rumboot_printf( " OK\n" );
+        return true;
+    }
 
-    TEST_ASSERT((ioread32(base_addr + GPIO_DIR) == GPIO_DIR_DEFAULT), "ERROR!!! The default value does not match the expected value the register GPIO_DIR.\n");
-
-    TEST_ASSERT((ioread32(base_addr + GPIO_IS) == GPIO_IS_DEFAULT), "ERROR!!! The default value does not match the expected value the register GPIO_IS.\n");
-
-    TEST_ASSERT((ioread32(base_addr + GPIO_IBE) == GPIO_IBE_DEFAULT), "ERROR!!! The default value does not match the expected value the register GPIO_IBE.\n");
-
-    TEST_ASSERT((ioread32(base_addr + GPIO_IEV) == GPIO_IEV_DEFAULT), "ERROR!!! The default value does not match the expected value the register GPIO_IEV.\n");
-
-    TEST_ASSERT((ioread32(base_addr + GPIO_IE) == GPIO_IE_DEFAULT), "ERROR!!! The default value does not match the expected value the register GPIO_IE.\n");
-
-    TEST_ASSERT((ioread32(base_addr + GPIO_RIS) == GPIO_RIS_DEFAULT), "ERROR!!! The default value does not match the expected value the register GPIO_RIS.\n");
-
-    TEST_ASSERT((ioread32(base_addr + GPIO_MIS) == GPIO_MIS_DEFAULT), "ERROR!!! The default value does not match the expected value the register GPIO_MIS.\n");
-
-    TEST_ASSERT((ioread32(base_addr + GPIO_AFSEL) == GPIO_AFSEL_DEFAULT), "ERROR!!! The default value does not match the expected value the register GPIO_AFSEL.\n");
-
-    TEST_ASSERT((ioread32(base_addr + GPIO_PeriphID0) == GPIO_PeriphID0_DEFAULT), "ERROR!!! The default value does not match the expected value the register GPIO_PeriphID0.\n");
-
-    TEST_ASSERT((ioread32(base_addr + GPIO_PeriphID1) == GPIO_PeriphID1_DEFAULT), "ERROR!!! The default value does not match the expected value the register GPIO_PeriphID1.\n");
-
-    TEST_ASSERT((ioread32(base_addr + GPIO_PeriphID2) == GPIO_PeriphID2_DEFAULT), "ERROR!!! The default value does not match the expected value the register GPIO_PeriphID2.\n");
-
-    TEST_ASSERT((ioread32(base_addr + GPIO_PeriphID3) == GPIO_PeriphID3_DEFAULT), "ERROR!!! The default value does not match the expected value the register GPIO_PeriphID3.\n");
-
-    TEST_ASSERT((ioread32(base_addr + GPIO_CellID0) == GPIO_CellID0_DEFAULT), "ERROR!!! The default value does not match the expected value the register GPIO_CellID0.\n");
-
-    TEST_ASSERT((ioread32(base_addr + GPIO_CellID1) == GPIO_CellID1_DEFAULT), "ERROR!!! The default value does not match the expected value the register GPIO_CellID1.\n");
-
-    TEST_ASSERT((ioread32(base_addr + GPIO_CellID2) == GPIO_CellID2_DEFAULT), "ERROR!!! The default value does not match the expected value the register GPIO_CellID2.\n");
-
-    TEST_ASSERT((ioread32(base_addr + GPIO_CellID3) == GPIO_CellID3_DEFAULT), "ERROR!!! The default value does not match the expected value the register GPIO_CellID3.\n");
-
-    rumboot_printf(" OK\n");
-    return 0;
+    rumboot_printf( " ERROR\n" );
+    return false;
 }
 
-static uint32_t check_gpio_regs(uint32_t base_addr)
+static bool check_gpio_regs(uint32_t base_addr)
 {
     rumboot_printf("Check WRITE/READ registers:");
 
-    iowrite32(GPIO_REG_MASK & (~GPIO_DIR_DEFAULT), base_addr + GPIO_DIR);
-    TEST_ASSERT((ioread32(base_addr + GPIO_DIR) == (GPIO_REG_MASK & (~GPIO_DIR_DEFAULT))), "ERROR!!! The value read does not match the recorded value the register GPIO_DIR.\n");
+    iowrite32(GPIO_REG_MASK & (~GPIO_DIR_DEFAULT), base_addr + GPIO_DIR); /* this value is used in checking of GPIO_DATA */
 
-    iowrite32(GPIO_REG_MASK & (~GPIO_DATA_DEFAULT), base_addr + GPIO_DATA + GPIO_ADDR_MASK);
-    TEST_ASSERT((ioread32(base_addr + GPIO_DATA + GPIO_ADDR_MASK) == (GPIO_REG_MASK & (~GPIO_DATA_DEFAULT))), "ERROR!!! The value read does not match the recorded value the register GPIO_DATA.\n");
-    iowrite32(GPIO_DATA_DEFAULT, base_addr + GPIO_DATA);
-    iowrite32(GPIO_DIR_DEFAULT, base_addr + GPIO_DIR);
+    struct regpoker_checker check_rw_array[] = {
+        {   "GPIO_DIR",         REGPOKER_WRITE32,   base_addr+GPIO_DIR,                 ~GPIO_DIR_DEFAULT,      GPIO_REG_MASK   },
+        {   "GPIO_DATAFF",      REGPOKER_WRITE32,   base_addr+GPIO_DATA+GPIO_ADDR_MASK, GPIO_DATA_DEFAULT,      GPIO_REG_MASK   },
+//        {   "GPIO_DATA00",      REGPOKER_WRITE32,   base_addr+GPIO_DATA,                GPIO_DATA_DEFAULT,      0x00            },
+        {   "GPIO_DIR",         REGPOKER_WRITE32,   base_addr+GPIO_DIR,                 GPIO_DIR_DEFAULT,       0x00            },
+        {   "GPIO_IS",          REGPOKER_WRITE32,   base_addr+GPIO_IS,                  GPIO_IS_DEFAULT,        GPIO_REG_MASK   },
+        {   "GPIO_IBE",         REGPOKER_WRITE32,   base_addr+GPIO_IBE,                 GPIO_IBE_DEFAULT,       GPIO_REG_MASK   },
+        {   "GPIO_IEV",         REGPOKER_WRITE32,   base_addr+GPIO_IEV,                 GPIO_IEV_DEFAULT,       GPIO_REG_MASK   },
+        {   "GPIO_IE",          REGPOKER_WRITE32,   base_addr+GPIO_IE,                  GPIO_IE_DEFAULT,        GPIO_REG_MASK   },
+        {   "GPIO_AFSEL",       REGPOKER_WRITE32,   base_addr+GPIO_AFSEL,               GPIO_AFSEL_DEFAULT,     GPIO_REG_MASK   },
+        { /* Sentinel */ }
+    };
 
-    iowrite32(GPIO_REG_MASK & (~GPIO_IS_DEFAULT), base_addr + GPIO_IS);
-    TEST_ASSERT((ioread32(base_addr + GPIO_IS) == (GPIO_REG_MASK & (~GPIO_IS_DEFAULT))), "ERROR!!! The value read does not match the recorded value the register GPIO_IS.\n");
-    iowrite32(GPIO_IS_DEFAULT, base_addr + GPIO_IS);
 
-    iowrite32(GPIO_REG_MASK & (~GPIO_IBE_DEFAULT), base_addr + GPIO_IBE);
-    TEST_ASSERT((ioread32(base_addr + GPIO_IBE) == (GPIO_REG_MASK & (~GPIO_IBE_DEFAULT))), "ERROR!!! The value read does not match the recorded value the register GPIO_IBE.\n");
-    iowrite32(GPIO_IBE_DEFAULT, base_addr + GPIO_IBE);
+    if( rumboot_regpoker_check_array( check_rw_array, 0 ) == 0 ) {
+        rumboot_printf( " OK\n" );
+        return true;
+    }
 
-    iowrite32(GPIO_REG_MASK & (~GPIO_IEV_DEFAULT), base_addr + GPIO_IEV);
-    TEST_ASSERT((ioread32(base_addr + GPIO_IEV) == (GPIO_REG_MASK & (~GPIO_IEV_DEFAULT))), "ERROR!!! The value read does not match the recorded value the register GPIO_IEV.\n");
-    iowrite32(GPIO_IEV_DEFAULT, base_addr + GPIO_IEV);
-
-    iowrite32(GPIO_REG_MASK & (~GPIO_IE_DEFAULT), base_addr + GPIO_IE);
-    TEST_ASSERT((ioread32(base_addr + GPIO_IE) == (GPIO_REG_MASK & (~GPIO_IE_DEFAULT))), "ERROR!!! The value read does not match the recorded value the register GPIO_IE.\n");
-    iowrite32(GPIO_IE_DEFAULT, base_addr + GPIO_IE);
-
-    iowrite32(GPIO_REG_MASK & (~GPIO_AFSEL_DEFAULT), base_addr + GPIO_AFSEL);
-    TEST_ASSERT((ioread32(base_addr + GPIO_AFSEL) == (GPIO_REG_MASK & (~GPIO_AFSEL_DEFAULT))), "ERROR!!! The value read does not match the recorded value the register GPIO_AFSEL.\n");
-    iowrite32(GPIO_AFSEL_DEFAULT, base_addr + GPIO_AFSEL);
-
-    rumboot_printf(" OK\n");
-    return 0;
+    rumboot_printf( " ERROR\n" );
+    return false;
 }
 #endif
 
@@ -140,8 +125,8 @@ uint32_t test_gpio(uint32_t base_addr, uint32_t GPIODIR_value)
     rumboot_irq_cli();
     struct rumboot_irq_entry *tbl = rumboot_irq_create( NULL );
 
-    rumboot_irq_set_handler( tbl, GPIO0_INT, (int_sense_level << MPIC128_VP_S_i) | (int_pol_high << MPIC128_VP_POL_i), handler0, (void*)0);
-    rumboot_irq_set_handler( tbl, GPIO1_INT, (int_sense_level << MPIC128_VP_S_i) | (int_pol_high << MPIC128_VP_POL_i), handler1, (void*)0);
+    rumboot_irq_set_handler( tbl, GPIO0_INT, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler0, (void*)0);
+    rumboot_irq_set_handler( tbl, GPIO1_INT, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler1, (void*)0);
 
     /* Activate the table */
     rumboot_irq_table_activate( tbl );
