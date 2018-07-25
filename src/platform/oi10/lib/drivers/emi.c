@@ -10,15 +10,17 @@
 #include <platform/devices.h>
 #include <platform/reg_access/reg_access_emi.h>
 #include <platform/devices/plb6mcif2.h>
+#include <platform/devices/emi.h>
+#include <rumboot/printf.h>
 
 void emi_init_impl (uint32_t emi_dcr_base, uint32_t plb6mcif2_dcr_base, uint32_t puaba)
 {
+    rumboot_printf("Init EMI\n");
     //init bridge
     plb6mcif2_simple_init( plb6mcif2_dcr_base,  puaba );
 
     //init bank0
-    //TODO:
-    emi_dcr_write_EMI_SS0 (emi_dcr_base, 0x00);
+    emi_dcr_write_EMI_SS0 (emi_dcr_base, 0x900); //T_CYC == 8
 
     //init bank1
     //TODO:
@@ -34,7 +36,8 @@ void emi_init_impl (uint32_t emi_dcr_base, uint32_t plb6mcif2_dcr_base, uint32_t
 
     //init bank5
     //TODO:
-    emi_dcr_write_EMI_SS5 (emi_dcr_base, 0x10);
+    emi_dcr_write_EMI_SS5 (emi_dcr_base, 0x00);
+
     emi_dcr_write_EMI_BUSEN(emi_dcr_base, 0x01);
 }
 
