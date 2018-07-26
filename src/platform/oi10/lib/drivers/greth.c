@@ -349,9 +349,12 @@ bool greth_start_receive(uint32_t base_addr, bool rcv_int_ena)
 bool greth_wait_receive_irq(uint32_t base_addr, uint32_t *eth_irq_handled_flag)
 {
     uint32_t t = 0;
-
+    uint32_t irq_handled = *eth_irq_handled_flag;
     rumboot_printf("Waiting receive IRQ\n");
-    while(((*eth_irq_handled_flag)==0) && (t++ < GRETH_TIMEOUT)){}
+    while(((irq_handled)==0) && (t++ < GRETH_TIMEOUT)){
+//        rumboot_printf("%d: (*eth_irq_handled_flag) = 0x%X\n", t, *eth_irq_handled_flag);
+        irq_handled = *eth_irq_handled_flag;
+    }
 
     if ((t==GRETH_TIMEOUT) || ((*eth_irq_handled_flag)!=1))
     {
