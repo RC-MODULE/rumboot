@@ -2,7 +2,7 @@
 #include <stdbool.h>
 
 #include <devices/uart_pl011.h>
-#include <regs/regs_uart.h>
+#include <regs/regs_uart_pl011.h>
 #include <rumboot/io.h>
 #include <rumboot/timer.h>
 #include <rumboot/printf.h>
