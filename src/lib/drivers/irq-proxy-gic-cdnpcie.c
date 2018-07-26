@@ -69,14 +69,14 @@ static void msix_proxy_configure(const struct rumboot_irq_controller *dev, int i
 	irq = irq - dev->first;
 	if (irq <= 31) {
 		rdata = ioread32(EXT_IRQ_GEN_BASE + EXT_IRQ_GEN_Global_IRQ_Mask_l);
-		if (enable) {
+		if (!enable) {
 			iowrite32(rdata | ((1 << irq)), EXT_IRQ_GEN_BASE + EXT_IRQ_GEN_Global_IRQ_Mask_l);
 		} else {
 			iowrite32(rdata & (~(1 << irq)), EXT_IRQ_GEN_BASE + EXT_IRQ_GEN_Global_IRQ_Mask_l);
 		}
 	} else {
 		rdata = ioread32(EXT_IRQ_GEN_BASE + EXT_IRQ_GEN_Global_IRQ_Mask_h);
-		if (enable) {
+		if (!enable) {
 			iowrite32(rdata | ((1 << irq)), EXT_IRQ_GEN_BASE + EXT_IRQ_GEN_Global_IRQ_Mask_h);
 		} else {
 			iowrite32(rdata & (~(1 << irq)), EXT_IRQ_GEN_BASE + EXT_IRQ_GEN_Global_IRQ_Mask_h);
