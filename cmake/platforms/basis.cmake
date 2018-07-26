@@ -248,6 +248,10 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       CONFIGURATION IRAM_WITH_DDR
       PREFIX muart-direct_DDR
 	)
+	add_rumboot_target_dir(muart/uart_direct_DDR
+      CONFIGURATION IRAM_MIRROR
+      PREFIX muart-mirror_DDR
+	)
 	
 #    add_rumboot_target(
 #       CONFIGURATION IRAM_WITH_DDR

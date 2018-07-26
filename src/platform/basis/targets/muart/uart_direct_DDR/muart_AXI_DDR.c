@@ -189,7 +189,7 @@ int AXI_mem_access(int heap_id)
 
 uint32_t main()
 {
-    int i, res=0, res_fail=0;
+    int i, res=0, res_fail=0, cnt_test=0;
     int heap_id = 0, heap_cnt=0;
     char *heaps_name[10];
 #define t_heap 2
@@ -233,12 +233,17 @@ uint32_t main()
             if ((strcmp(heaps_name[heap_id],testing_heaps[i])) == 0) break;
         }
         if(i >= t_heap) continue;
+        cnt_test++;
         rumboot_printf("START TEST FOR HEAP %d. %s\n", heap_id, heaps_name[heap_id]);
         res=AXI_mem_access(heap_id);
         if (res != 0)
            res_fail++;
     }
 
+    if (cnt_test == 0) {
+        rumboot_printf("UNTESTED: Needed heaps are not found\n");
+        res_fail++;
+    }
     if (res_fail == 0) {
            rumboot_printf("TEST PASS: %d errors happened\n", res_fail);
     }else{
