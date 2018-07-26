@@ -416,9 +416,6 @@ bool greth_start_transmit(uint32_t base_addr)
     greth_info.receiver_enable        = false;
     greth_info.ram_debug_enable       = false;
     set_greth_ctrl(base_addr, &greth_info);
-
-//    if (!greth_wait_transmit(base_addr)) return false;
-
     return true;
 }
 
@@ -437,9 +434,6 @@ bool greth_start_edcl_rd(uint32_t base_addr)
     greth_info.receiver_enable        = true;
     greth_info.ram_debug_enable       = false;
     set_greth_ctrl(base_addr, &greth_info);
-
-//    if (!greth_wait_transmit(base_addr)) return false;
-
     return true;
 }
 
