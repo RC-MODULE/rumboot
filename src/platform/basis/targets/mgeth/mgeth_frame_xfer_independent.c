@@ -203,7 +203,7 @@ int main()
 	mgeth_reset(ETH2_BASE);
 	mgeth_reset(ETH3_BASE);
 
-	res = test_suite_run(NULL, &mgeth_frame_xfer_test);
+	res = test_suite_run(NULL, &mgeth_frame_xfer_independent_test);
 
 	if (res)
 		rumboot_printf("%d tests from suite failed!\n", res);
