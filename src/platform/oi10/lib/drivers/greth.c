@@ -299,8 +299,6 @@ static void prepare_rx_descriptors(uint32_t src_addr, uint32_t length, uint32_t 
 bool greth_configure_for_receive( uint32_t base_addr, void volatile * const dst, uint32_t length, greth_descr_t* rx_descriptor_data_, greth_mac_t* gr_mac)
 {
 
-    //descriptor address is 1KB aligned. //max count=512
-    //greth_descr_t  volatile rx_descriptor_data_[512] __attribute__((aligned(1024)));
     greth_mac_t greth_mac;
     uint32_t greth_idx = base_addr==GRETH_0_BASE ? 0 : 1;
 
@@ -352,7 +350,9 @@ bool greth_wait_receive_irq(uint32_t base_addr, uint32_t *eth_irq_handled_flag)
     uint32_t irq_handled = *eth_irq_handled_flag;
     rumboot_printf("Waiting receive IRQ\n");
     while(((irq_handled)==0) && (t++ < GRETH_TIMEOUT)){
-//        rumboot_printf("%d: (*eth_irq_handled_flag) = 0x%X\n", t, *eth_irq_handled_flag);
+#ifdef ETH_DEBUG
+        rumboot_printf("%d: (*eth_irq_handled_flag) = 0x%X\n", t, *eth_irq_handled_flag);
+#endif
         irq_handled = *eth_irq_handled_flag;
     }
 
@@ -372,9 +372,6 @@ bool greth_wait_receive_irq(uint32_t base_addr, uint32_t *eth_irq_handled_flag)
 
 bool greth_configure_for_transmit( uint32_t base_addr, void volatile * const src, uint32_t length, greth_descr_t* tx_descriptor_data_, greth_mac_t* gr_mac)
 {
-
-    //descriptor address is 1KB aligned. //max count=512
-    //greth_descr_t  volatile tx_descriptor_data_[512] __attribute__((aligned(1024)));
     greth_mac_t greth_mac;
     uint32_t greth_idx = base_addr==GRETH_0_BASE ? 0 : 1;
 
