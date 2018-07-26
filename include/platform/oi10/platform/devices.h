@@ -25,11 +25,21 @@
  */
 
 #define EM2_BASE                0x00000000
+#define EM2_BANK0_BASE          0x00000000
+#define SRAM0_BASE              EM2_BANK0_BASE
+#define EM2_BANK1_BASE          0x20000000
+#define SDRAM_BASE              EM2_BANK1_BASE
+#define EM2_BANK2_BASE          0x40000000
+#define SSRAM_BASE              EM2_BANK2_BASE
+#define EM2_BANK3_BASE          0x50000000
+#define PIPELINED_BASE          EM2_BANK3_BASE
+#define EM2_BANK4_BASE          0x60000000
+#define SRAM1_BASE              EM2_BANK4_BASE
+#define EM2_BANK5_BASE          0x70000000
+#define NOR_BASE                EM2_BANK5_BASE
 #define IM0_BASE                0x80000000
 #define IM1_BASE                0x80020000
 #define BOOTROM_BASE            0xFFFF0000
-
-
 /**
  *
  * @}
@@ -62,6 +72,9 @@
 #define DCR_LTRACE_BASE         0x80000900
 #define DCR_CLDCR_BASE          0x80000A00
 #define DCR_TIMERS_BASE         0X800A0000
+#define DCR_EM2_PLB6MCIF2_BASE  0x80050000
+#define DCR_EM2_EMI_BASE        0x80060000
+#define DCR_EM2_MCLFIR_BASE     0x80070000
 #define DCR_MPIC128_BASE        0xFFC00000
 
 
