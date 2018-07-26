@@ -156,7 +156,7 @@ int main()
 
 	rumboot_printf("================================================================================\n");
 
-	mgeth_init_sgmii((void *)SGMII_PHY, (void *)SCTL_BASE);
+	mgeth_init_sgmii(SGMII_PHY, SCTL_BASE);
 
 	// Start timer
 	gp_timer_turn_on();

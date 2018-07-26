@@ -22,7 +22,7 @@ int main()
 
 	rumboot_printf("================================================================================\n");
 
-	mgeth_init_sgmii((void *)SGMII_PHY, (void *)SCTL_BASE);
+	mgeth_init_sgmii(SGMII_PHY, SCTL_BASE);
 
 	// Start timer
 	iowrite32(0x1, GLOBAL_TIMERS + ENABLE);

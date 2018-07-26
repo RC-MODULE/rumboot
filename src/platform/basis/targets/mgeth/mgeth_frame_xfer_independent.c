@@ -180,7 +180,7 @@ static bool test_mgeth_frame_xfer(uint32_t eth_send_num)
 }
 
 // Declare the testsuite structure
-TEST_SUITE_BEGIN(mgeth_frame_xfer_test, "Frame transfer")
+TEST_SUITE_BEGIN(mgeth_frame_xfer_independent_test, "Frame transfer")
 TEST_ENTRY("From ETH0 to ETH1", test_mgeth_frame_xfer, 0),
 TEST_ENTRY("From ETH1 to ETH0", test_mgeth_frame_xfer, 1),
 TEST_ENTRY("From ETH2 to ETH3", test_mgeth_frame_xfer, 2),
@@ -193,7 +193,7 @@ int main()
 
 	rumboot_printf("================================================================================\n");
 
-	mgeth_init_sgmii((void *)SGMII_PHY, (void *)SCTL_BASE);
+	mgeth_init_sgmii(SGMII_PHY, SCTL_BASE);
 
 	// Start timer
 	gp_timer_turn_on();
