@@ -10,7 +10,7 @@
 #include <platform/interrupts.h>
 #include <platform/regs/fields/mpic128.h>
 #include <platform/test_assert.h>
-#include <regs/regs_uart.h>
+#include <regs/regs_uart_pl011.h>
 #include <devices/uart_pl011.h>
 #include <rumboot/regpoker.h>
 
@@ -145,8 +145,6 @@ static void irq_handler_uart(int irq, void* arg)
 uint32_t wait_uart_int(){
     unsigned t;
 
-    rumboot_printf("wait_uart_int\n");
-
     for (t=1; t<=UART_TIMEOUT; t++){
         if (READ_FROM_FIFO == 1){
             READ_FROM_FIFO = 0;
@@ -184,15 +182,12 @@ int uart_check_defaults(uint32_t base_addr)
      { "UARTPCellID1",  REGPOKER_READ32, UARTPCellID1,  UARTPCellID1_DEFAULT,   UARTPCellID1_MSK },
      { "UARTPCellID2",  REGPOKER_READ32, UARTPCellID2,  UARTPCellID2_DEFAULT,   UARTPCellID2_MSK },
      { "UARTPCellID3",  REGPOKER_READ32, UARTPCellID3,  UARTPCellID3_DEFAULT,   UARTPCellID3_MSK },
-     { "UARTDR",        REGPOKER_WRITE32, UARTDR,       0x00,                   ~0x00 },
-     { "UARTRSR",       REGPOKER_WRITE32, UARTRSR,      0x00,                   UARTRSR_MSK },
      { "UARTILPR",      REGPOKER_WRITE32, UARTILPR,     0x00,                   UARTILPR_MSK },
      { "UARTIBRD",      REGPOKER_WRITE32, UARTIBRD,     0x00,                   UARTFBRD_MSK },
      { "UARTFBRD",      REGPOKER_WRITE32, UARTFBRD,     0x00,                   UARTFBRD_MSK },
      { "UARTLCR_H",     REGPOKER_WRITE32, UARTLCR_H,    0x00,                   UARTLCR_H_MSK },
-     { "UARTCR",        REGPOKER_WRITE32, UARTCR,       0x00,                   UARTCR_MSK },
+     { "UARTCR",        REGPOKER_WRITE32, UARTCR,       0x00,                   0xFF86 },
      { "UARTIFLS",      REGPOKER_WRITE32, UARTIFLS,     0x00,                   UARTIFLS_MSK },
-     { "UARTIMSC",      REGPOKER_WRITE32, UARTIMSC,     0x00,                   UARTIMSC_MSK },
      { "UARTDMACR",     REGPOKER_WRITE32, UARTDMACR,    0x00,                   UARTDMACR_MSK },
      { /* Sentinel */ }
     };
