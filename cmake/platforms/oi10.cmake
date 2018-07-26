@@ -567,6 +567,48 @@ endif()
         FILES common/irq/irq-defhandler.c
         PREFIX "irq-iram"
     )
+    
+    add_rumboot_target(
+          CONFIGURATION IRAM
+          FILES test_oi10_em2_201.c
+          CFLAGS -DEXT_MEM_BASE=SRAM0_BASE
+          PREFIX sram0
+        )     
+
+    add_rumboot_target(
+          CONFIGURATION IRAM
+          FILES test_oi10_em2_201.c
+          CFLAGS -DEXT_MEM_BASE=SDRAM_BASE
+          PREFIX sdram
+        )
+        
+    add_rumboot_target(
+          CONFIGURATION IRAM
+          FILES test_oi10_em2_201.c
+          CFLAGS -DEXT_MEM_BASE=SSRAM_BASE
+          PREFIX ssram
+        )
+
+    add_rumboot_target(
+          CONFIGURATION IRAM
+          FILES test_oi10_em2_201.c
+          CFLAGS -DEXT_MEM_BASE=PIPELINED_BASE
+          PREFIX pipelined
+        )
+
+    add_rumboot_target(
+          CONFIGURATION IRAM
+          FILES test_oi10_em2_201.c
+          CFLAGS -DEXT_MEM_BASE=SRAM1_BASE
+          PREFIX sram1
+        )     
+
+    add_rumboot_target(
+          CONFIGURATION IRAM
+          FILES test_oi10_em2_201.c
+          CFLAGS -DEXT_MEM_BASE=NOR_BASE
+          PREFIX nor
+        )
 
     #---GRETH tests start---
     add_rumboot_target(
