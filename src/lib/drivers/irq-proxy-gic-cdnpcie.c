@@ -66,7 +66,7 @@ static void msix_proxy_end(const struct rumboot_irq_controller *dev, uint32_t ir
 static void msix_proxy_configure(const struct rumboot_irq_controller *dev, int irq, uint32_t flags, int enable)
 {
 	uint32_t rdata;
-	int mirq = irq - dev->first;
+	irq = irq - dev->first;
 	if (irq <= 31) {
 		rdata = ioread32(EXT_IRQ_GEN_BASE + EXT_IRQ_GEN_Global_IRQ_Mask_l);
 		if (enable) {
