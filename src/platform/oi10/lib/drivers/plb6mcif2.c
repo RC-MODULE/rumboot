@@ -5,7 +5,7 @@
 #include <platform/arch/ppc/ibm_bit_ordering_macros.h>
 #include <platform/test_assert.h>
 #include <platform/devices/plb6mcif2.h>
-#include <platform/devices/plb6bc.h>
+#include <platform/reg_access/reg_access_plb6bc.h>
 #include <platform/devices.h>
 #include <rumboot/printf.h>
 
