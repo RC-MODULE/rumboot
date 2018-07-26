@@ -30,6 +30,38 @@
 #define EM2_BANK5_SIZE          0x10000000
 #define NOR_SIZE                EM2_BANK5_SIZE
 
+typedef struct
+{
+   uint8_t BTYP;
+   uint8_t PTYP;
+   uint8_t SRDY;
+   uint8_t TWR;
+   uint8_t SST;
+   uint8_t T_SSOE;
+   uint8_t T_SOE;
+   uint8_t T_CYC;
+   uint16_t T_RDY;
+   uint8_t T_DEL;
+   uint8_t UWEB;
+} emi_ssx_reg_cfg;
+
+typedef struct
+{
+   uint8_t CSP;
+   uint8_t SDS;
+   uint8_t CL;
+   uint8_t T_RDL;
+   uint8_t SI;
+   uint8_t T_RCD;
+   uint8_t T_RAS;
+} emi_sdx_reg_cfg;
+
+typedef struct
+{
+    emi_ssx_reg_cfg ssx_cfg;
+    emi_sdx_reg_cfg sdx_cfg;
+} emi_init_bank_cfg;
+
 void emi_init ();
 void emi_init_impl (uint32_t emi_dcr_base, uint32_t plb6mcif2_dcr_base, uint32_t puaba);
 
