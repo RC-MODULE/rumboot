@@ -83,7 +83,7 @@ static void msix_proxy_configure(const struct rumboot_irq_controller *dev, int i
 		}
 	}
 
-	msix_set_vector(mirq, GIC_DIST_BASE + GICD_REG_SGIR, GIC_GENSWINT0, 0);
+	msix_set_vector(irq, GIC_DIST_BASE + GICD_REG_SGIR, GIC_GENSWINT0, 0);
 }
 
 static const struct rumboot_irq_controller irq_ctl = {
