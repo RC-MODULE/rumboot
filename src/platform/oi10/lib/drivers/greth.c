@@ -351,7 +351,7 @@ bool greth_wait_receive_irq(uint32_t base_addr, uint32_t *eth_irq_handled_flag)
     uint32_t t = 0;
 
     rumboot_printf("Waiting receive IRQ\n");
-    while(!(*eth_irq_handled_flag) && (t++ < GRETH_TIMEOUT)){}
+    while(((*eth_irq_handled_flag)==0) && (t++ < GRETH_TIMEOUT)){}
 
     if ((t==GRETH_TIMEOUT) || ((*eth_irq_handled_flag)!=1))
     {
