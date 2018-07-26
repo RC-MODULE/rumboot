@@ -11,6 +11,7 @@
 #include <platform/regs/fields/mpic128.h>
 #include <rumboot/regpoker.h>
 #include <rumboot/irq.h>
+#include <platform/devices/emi.h>
 
 #include <platform/devices/greth.h>
 
@@ -129,6 +130,8 @@ uint32_t* test_data_im1_dst  = (uint32_t *)( IM1_BASE_MIRROR +   sizeof(test_dat
 uint32_t* test_edcl_packet_im1 = (uint32_t *)( IM1_BASE_MIRROR + 2*sizeof(test_data_im0_src) );
 uint32_t* test_edcl_rcv_packet_im1 = (uint32_t *)( IM1_BASE_MIRROR + 2*sizeof(test_data_im0_src) + sizeof(test_edcl_packet_im0));
 uint32_t* test_edcl_data_im1 = (uint32_t *)( IM1_BASE_MIRROR + 2*sizeof(test_data_im0_src) + 2*sizeof(test_edcl_packet_im0));
+uint32_t* test_data_em2_src  = (uint32_t *)( SRAM0_BASE + 0x100);
+uint32_t* test_data_em2_dst  = (uint32_t *)( SRAM0_BASE + 0x100 + sizeof(test_data_im0_src) );
 
 /*
  * Registers access checks
@@ -229,6 +232,13 @@ void prepare_test_data()
         i++; toggle = !toggle;
     }
     memcpy(test_data_im1_src, test_data_im0_src, sizeof(test_data_im0_src));
+
+    emi_init();
+    //    memcpy(test_data_em2_src, test_data_im0_src, sizeof(test_data_im0_src));
+    for (i=0; i<sizeof(test_data_im0_src)/sizeof(uint32_t); i++)
+    {
+        test_data_em2_src[i] = test_data_im0_src[i];
+    }
 }
 
 void prepare_test_edcl_data(edcl_test_data_struct_t* edcl_cfg)
@@ -349,7 +359,7 @@ void check_edcl_via_external_loopback(uint32_t base_addr_src_eth, uint32_t * tes
     edcl_cfg.data = &test_edcl_data;
     edcl_cfg.len  = sizeof(uint32_t);
     prepare_test_edcl_data(&edcl_cfg);
-    rumboot_printf("\nChecking EDCL write transfer %d bytes from 0x%X to 0x%x\n", edcl_cfg.len, (uint32_t) edcl_cfg.data, edcl_cfg.addr);
+    rumboot_printf("\nChecking EDCL write transfer\n");
 
     greth_configure_for_receive( base_addr_dst_eth, test_data_dst, sizeof(test_edcl_packet_im0), rx_descriptor_data_, &tst_greth_mac);
     greth_configure_for_transmit( base_addr_src_eth, test_data_src, sizeof(test_edcl_packet_im0), tx_descriptor_data_, &tst_greth_mac);
@@ -367,7 +377,7 @@ void check_edcl_via_external_loopback(uint32_t base_addr_src_eth, uint32_t * tes
     edcl_cfg.wrrd = EDCL_RD;
     edcl_cfg.addr = (uint32_t)test_edcl_data_im1;
     prepare_test_edcl_data(&edcl_cfg);
-    rumboot_printf("\nChecking EDCL read transfer %d bytes from 0x%X to 0x%x\n", edcl_cfg.len, edcl_cfg.addr, (uint32_t)test_data_resp);
+    rumboot_printf("\nChecking EDCL read transfer\n");
     greth_configure_for_receive(  base_addr_dst_eth, test_data_dst,  sizeof(test_edcl_packet_im0), rx_descriptor_data_, &tst_greth_mac);
     greth_configure_for_receive(  base_addr_src_eth, test_data_resp, sizeof(test_edcl_packet_im0), rx_descriptor_data_, &tst_greth_mac);
     greth_configure_for_transmit( base_addr_src_eth, test_data_src,  sizeof(test_edcl_packet_im0), tx_descriptor_data_, &tst_greth_mac);
@@ -398,11 +408,19 @@ int main(void)
     mdio_check(GRETH_BASE);
 
     prepare_test_data();
+
                                             //TX          src addr            dst addr
     check_transfer_via_external_loopback(GRETH_BASE, test_data_im0_src, test_data_im0_dst);
-    check_transfer_via_external_loopback(GRETH_BASE, test_data_im1_src, test_data_im1_dst);
     check_transfer_via_external_loopback(GRETH_BASE, test_data_im0_src, test_data_im1_dst);
+    check_transfer_via_external_loopback(GRETH_BASE, test_data_im0_src, test_data_em2_dst);
+
     check_transfer_via_external_loopback(GRETH_BASE, test_data_im1_src, test_data_im0_dst);
+    check_transfer_via_external_loopback(GRETH_BASE, test_data_im1_src, test_data_im1_dst);
+    check_transfer_via_external_loopback(GRETH_BASE, test_data_im1_src, test_data_em2_dst);
+
+    check_transfer_via_external_loopback(GRETH_BASE, test_data_em2_src, test_data_im0_dst);
+    check_transfer_via_external_loopback(GRETH_BASE, test_data_em2_src, test_data_im1_dst);
+    check_transfer_via_external_loopback(GRETH_BASE, test_data_em2_src, test_data_em2_dst);
 
     edcl_seq_number = 0;
     check_edcl_via_external_loopback(GRETH_BASE, test_edcl_packet_im1, test_data_im1_dst, test_edcl_rcv_packet_im1);
