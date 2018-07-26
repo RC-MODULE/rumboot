@@ -1,48 +1,90 @@
-#include <stdbool.h>
-#include <stdint.h>
-#include <stddef.h>
+#ifndef __MGETH__H__
+#define __MGETH__H__
 
-enum mgeth_SPEED {
-  SPEED_10 = 0b00,
-  SPEED_100 = 0b01,
-  SPEED_1000 = 0b10,
-};
+#define DBG
+
+#ifdef DBG
+#define DBG_print(fmt, ...) rumboot_printf("%s:%d: "fmt"\n", __FUNCTION__, __LINE__, ##__VA_ARGS__);
+#else
+#define DBG_print(fmt, ...);
+#endif // DBG
 
 /**
- * mgeth_conf: : Structure contains configuration parameters
- * is_full_duplex whether duplex full or not
- * speed speed of MGETH
+ * \defgroup devices_mgeth MGETH
+ * \ingroup devices
+ * \brief MGETH function library
+ * \addtogroup devices_mgeth
+ * @{
  */
-struct mgeth_conf {
 
-  bool is_full_duplex;
-  enum mgeth_SPEED speed;
+enum mgeth_SPEED
+{
+	SPEED_10   = 0b00,
+	SPEED_100  = 0b01,
+	SPEED_1000 = 0b10,
+};
+
+struct mgeth_conf
+{
+	bool is_full_duplex;
+	enum mgeth_SPEED speed;
 };
 
 /**
- * brief Init MGETH
- * base: base address of mgeth
- * conf: structure contains configuration parameters
+ * \brief SGMII initialization
+ * \param sgmii_base_addr Base address of SGMII
+ * \param sctl_base_addr Base address of SCTL
+ */
+void mgeth_init_sgmii(uint32_t sgmii_base_addr, uint32_t sctl_base_addr);
+
+/**
+ * \brief MGETH reset
+ * \param base_addr Base address of MGETH
+ */
+void mgeth_reset(uint32_t base_addr);
+
+/**
+ * \brief MGETH initialization
+ * \param base Base address of MGETH
+ * \param conf Configuration structure
  */
 void mgeth_init(const uint32_t base, const struct mgeth_conf *conf);
 
 /**
-* brief Transmit data throught MDMA
-* base1: base address of MGETH
-* base2: base address of MGETH
-* src: poiniter to transmitted data
-* dst: pointer to received data
-* len: size of transmitted data
-* return if data was transmitted OK - 0, else - value less than 0
+ * \brief Read data throught MDMA channel
+ * \param base Base address of MGETH
+ * \param data Pointer to read data
+ * \param len Size of transmitted data
+ * \return If OK - pointer on MDMA read channel, else - NULL
  */
-int mgeth_transmit_data_throught_mdma(uint32_t base1, uint32_t base2, volatile void *dest, volatile void *src, size_t len);
+struct mdma_chan *mgeth_transmit(uint32_t base, void *data, size_t len);
 
 /**
- * return if data was transmitted OK - 0, else - value less than 0
+ * \brief Write data throught MDMA channel
+ * \param base Base address of MGETH
+ * \param data Pointer to written data
+ * \param len Size of transmitted data
+ * \return If OK - pointer on MDMA write channel, else - NULL
  */
-int mgeth_init_sgmii();
+struct mdma_chan *mgeth_receive(uint32_t base, void *data, size_t len);
 
+/**
+ * \brief Waiting transfer complete
+ * \param chan Pointer on MDMA channel
+ * \param timeout Timeout in microseconds (-1 for infinite timeout)
+ * \return If OK - 0, else - not 0
+ */
+int mgeth_wait_transfer_complete(struct mdma_chan *chan, int timeout);
+
+/**
+ * \brief Finish work with channel
+ * \param chan Pointer on MDMA channel
+ * \return If OK - 0, else - not 0
+ */
+int mgeth_finish_transfer(struct mdma_chan *chan);
 
 /**
  * @}
  */
+
+#endif // __MGETH__H__

@@ -65,6 +65,7 @@
  #define MDIO3_BASE               BASIS_PHYS(0x01083000)
  #define MGPIO0_BASE              BASIS_PHYS(0x01084000)
  #define MGPIO1_BASE              BASIS_PHYS(0x01085000)
+ #define SGMII_PHY                BASIS_PHYS(0x01086000)
  #define GPIO0_BASE               BASIS_PHYS(0x01088000)
  #define GPIO1_BASE               BASIS_PHYS(0x01089000)
  #define GPIO2_BASE               BASIS_PHYS(0x0108A000)

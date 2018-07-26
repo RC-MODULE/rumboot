@@ -255,7 +255,12 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 #       PREFIX muart_iram_with_DDR
 #       NAME muart_AXI_DDR_PCIE
 #   )
-   
+
+    add_rumboot_target_dir(mgeth/
+        CONFIGURATION IRAM
+        PREFIX mgeth-iram
+    )
+
     add_rumboot_target(
         CONFIGURATION DROM
         FILES common/tools/drom-check.c
