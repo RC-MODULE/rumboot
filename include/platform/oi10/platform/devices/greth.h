@@ -97,6 +97,8 @@
 
 #define ETH_PHY_ADDR    0
 
+#define GET_GRETH_IDX(base_addr)  (base_addr==GRETH_0_BASE ? 0 : 1)
+
 typedef enum greth_speed
 {
     GRETH_SPEED_1GB,

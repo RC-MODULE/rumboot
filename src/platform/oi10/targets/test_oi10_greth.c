@@ -32,11 +32,18 @@ greth_mac_t tst_greth_edcl_mac1 = {EDCLMAC_MSB, (EDCLMAC_LSB | EDCLADDRL1) };
 uint32_t GRETH0_IRQ_HANDLED = 0;
 uint32_t GRETH1_IRQ_HANDLED = 0;
 
-static void handler_eth0( int irq, void *arg )
+struct greth_instance {
+    uint32_t  base_addr;
+    uint32_t* irq_handled;
+};
+
+static void handler_eth( int irq, void *arg )
 {
     uint32_t cur_status;
     uint32_t mask;
-    rumboot_printf( "GRETH0 IRQ arrived  \n" );
+    struct greth_instance* gr_inst = (struct greth_instance* ) arg;
+
+    rumboot_printf( "GRETH%d(0x%X) IRQ arrived  \n", GET_GRETH_IDX(gr_inst->base_addr), gr_inst->base_addr );
     mask = ((1 << GRETH_STATUS_IA) |
             (1 << GRETH_STATUS_TS) |
             (1 << GRETH_STATUS_TA) |
@@ -45,46 +52,31 @@ static void handler_eth0( int irq, void *arg )
             (1 << GRETH_STATUS_TE) |
             (1 << GRETH_STATUS_RE));
 
-    cur_status = greth_get_status(GRETH_0_BASE);
+    cur_status = greth_get_status(gr_inst->base_addr);
     if (cur_status & (1 << GRETH_STATUS_RI))
     {
-        GRETH0_IRQ_HANDLED = 1;
-        greth_clear_status_bits(GRETH_0_BASE, (1 << GRETH_STATUS_RI) );
+        *(gr_inst->irq_handled) = 1;
+        greth_clear_status_bits(gr_inst->base_addr, (1 << GRETH_STATUS_RI) );
     }
     else
     {
-        GRETH0_IRQ_HANDLED = 2;
+        *(gr_inst->irq_handled) = 2;
         rumboot_printf( "Unexpected status (0x%x)\n", cur_status );
-        greth_clear_status_bits(GRETH_0_BASE, mask);
+        greth_clear_status_bits(gr_inst->base_addr, mask);
     }
 }
 
-static void handler_eth1( int irq, void *arg )
-{
-    uint32_t cur_status;
-    uint32_t mask;
-    rumboot_printf( "GRETH1 IRQ arrived  \n" );
-    mask = ((1 << GRETH_STATUS_IA) |
-            (1 << GRETH_STATUS_TS) |
-            (1 << GRETH_STATUS_TA) |
-            (1 << GRETH_STATUS_RA) |
-            (1 << GRETH_STATUS_TI) |
-            (1 << GRETH_STATUS_TE) |
-            (1 << GRETH_STATUS_RE));
+static struct greth_instance in[ ] = {
+                                        {
+                                            .base_addr   = GRETH_0_BASE,
+                                            .irq_handled = &GRETH0_IRQ_HANDLED
+                                        },
+                                        {
+                                            .base_addr   = GRETH_1_BASE,
+                                            .irq_handled = &GRETH1_IRQ_HANDLED
+                                        }
+                                     };
 
-    cur_status = greth_get_status(GRETH_1_BASE);
-    if (cur_status & (1 << GRETH_STATUS_RI))
-    {
-        GRETH1_IRQ_HANDLED = 1;
-        greth_clear_status_bits(GRETH_1_BASE, (1 << GRETH_STATUS_RI) );
-    }
-    else
-    {
-        GRETH1_IRQ_HANDLED = 2;
-        rumboot_printf( "Unexpected status (0x%x)\n", cur_status );
-        greth_clear_status_bits(GRETH_1_BASE, mask);
-    }
-}
 
 struct rumboot_irq_entry * create_greth01_irq_handlers()
 {
@@ -92,8 +84,8 @@ struct rumboot_irq_entry * create_greth01_irq_handlers()
     rumboot_irq_cli();
     struct rumboot_irq_entry *tbl = rumboot_irq_create( NULL );
 
-    rumboot_irq_set_handler( tbl, ETH0_INT, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler_eth0, (void *)0 );
-    rumboot_irq_set_handler( tbl, ETH1_INT, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler_eth1, (void *)0 );
+    rumboot_irq_set_handler( tbl, ETH0_INT, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler_eth, &in[0] );
+    rumboot_irq_set_handler( tbl, ETH1_INT, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler_eth, &in[1] );
 
     /* Activate the table */
     rumboot_irq_table_activate( tbl );
@@ -169,7 +161,7 @@ void regs_check(uint32_t base_addr)
  */
 void mdio_check(uint32_t base_addr)
 {
-    rumboot_printf("MDIO check for GRETH%d(0x%x)\n", base_addr==GRETH_0_BASE ? 0 : 1, base_addr);
+    rumboot_printf("MDIO check for GRETH%d(0x%x)\n", GET_GRETH_IDX(base_addr), base_addr);
     TEST_ASSERT(mdio_read(base_addr, ETH_PHY_ADDR, ETH_PHY_CTRL      )==ETH_PHY_CTRL_DEFAULT      , "Error at mdio reading ETH_PHY_CTRL       register\n");
     TEST_ASSERT(mdio_read(base_addr, ETH_PHY_ADDR, ETH_PHY_STATUS    )==ETH_PHY_STATUS_DEFAULT    , "Error at mdio reading ETH_PHY_STATUS     register\n");
     TEST_ASSERT(mdio_read(base_addr, ETH_PHY_ADDR, ETH_PHY_ID0       )==ETH_PHY_ID0_DEFAULT       , "Error at mdio reading ETH_PHY_ID0        register\n");
@@ -408,7 +400,6 @@ int main(void)
     mdio_check(GRETH_BASE);
 
     prepare_test_data();
-
                                             //TX          src addr            dst addr
     check_transfer_via_external_loopback(GRETH_BASE, test_data_im0_src, test_data_im0_dst);
     check_transfer_via_external_loopback(GRETH_BASE, test_data_im0_src, test_data_im1_dst);
