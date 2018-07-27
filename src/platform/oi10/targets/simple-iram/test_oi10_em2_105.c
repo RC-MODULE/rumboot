@@ -26,23 +26,23 @@ int main ()
     emi_init ();
 
     rumboot_printf ("WRITE32 NOR\n");
-    iowrite32_NOR ( 0x00000000, (NOR_BASE + 0x0));
-    iowrite32_NOR ( 0x10101010, (NOR_BASE + 0x4));
-    iowrite32_NOR ( 0x11111111, (NOR_BASE + 0x8));
-    iowrite32_NOR ( 0xBABADEDA, (NOR_BASE + 0xC));
-    iowrite32_NOR ( 0xDEDABABA, (NOR_BASE + 0x10));
-    iowrite32_NOR ( 0xAAAAAAAA, (NOR_BASE + 0x14));
-    iowrite32_NOR ( 0x55555555, (NOR_BASE + 0x18));
-    iowrite32_NOR ( 0xCCCCCCCC, (NOR_BASE + 0x1C));
+    nor_write32 ( 0x00000000, (NOR_BASE + 0x0));
+    nor_write32 ( 0x10101010, (NOR_BASE + 0x4));
+    nor_write32 ( 0x11111111, (NOR_BASE + 0x8));
+    nor_write32 ( 0xBABADEDA, (NOR_BASE + 0xC));
+    nor_write32 ( 0xDEDABABA, (NOR_BASE + 0x10));
+    nor_write32 ( 0xAAAAAAAA, (NOR_BASE + 0x14));
+    nor_write32 ( 0x55555555, (NOR_BASE + 0x18));
+    nor_write32 ( 0xCCCCCCCC, (NOR_BASE + 0x1C));
 
-    iowrite32_NOR ( 0x00000000, ((uint32_t) NOR_BASE + NOR_SIZE - 0x20));
-    iowrite32_NOR ( 0x10101010, ((uint32_t) NOR_BASE + NOR_SIZE - 0x1C));
-    iowrite32_NOR ( 0x11111111, ((uint32_t) NOR_BASE + NOR_SIZE - 0x18));
-    iowrite32_NOR ( 0xBABADEDA, ((uint32_t) NOR_BASE + NOR_SIZE - 0x14));
-    iowrite32_NOR ( 0xDEDABABA, ((uint32_t) NOR_BASE + NOR_SIZE - 0x10));
-    iowrite32_NOR ( 0xAAAAAAAA, ((uint32_t) NOR_BASE + NOR_SIZE - 0x0C));
-    iowrite32_NOR ( 0x55555555, ((uint32_t) NOR_BASE + NOR_SIZE - 0x08));
-    iowrite32_NOR ( 0xCCCCCCCC, ((uint32_t) NOR_BASE + NOR_SIZE - 0x04));
+    nor_write32 ( 0x00000000, ((uint32_t) NOR_BASE + NOR_SIZE - 0x20));
+    nor_write32 ( 0x10101010, ((uint32_t) NOR_BASE + NOR_SIZE - 0x1C));
+    nor_write32 ( 0x11111111, ((uint32_t) NOR_BASE + NOR_SIZE - 0x18));
+    nor_write32 ( 0xBABADEDA, ((uint32_t) NOR_BASE + NOR_SIZE - 0x14));
+    nor_write32 ( 0xDEDABABA, ((uint32_t) NOR_BASE + NOR_SIZE - 0x10));
+    nor_write32 ( 0xAAAAAAAA, ((uint32_t) NOR_BASE + NOR_SIZE - 0x0C));
+    nor_write32 ( 0x55555555, ((uint32_t) NOR_BASE + NOR_SIZE - 0x08));
+    nor_write32 ( 0xCCCCCCCC, ((uint32_t) NOR_BASE + NOR_SIZE - 0x04));
 
     rumboot_printf ("READ32 NOR\n");
 
