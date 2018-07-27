@@ -34,6 +34,15 @@ int main ()
     iowrite32_NOR ( 0x55555555, (NOR_BASE + 0x18));
     iowrite32_NOR ( 0xCCCCCCCC, (NOR_BASE + 0x1C));
 
+    iowrite32_NOR ( 0x00000000, ((uint32_t) NOR_BASE + NOR_SIZE - 0x20));
+    iowrite32_NOR ( 0x10101010, ((uint32_t) NOR_BASE + NOR_SIZE - 0x1C));
+    iowrite32_NOR ( 0x11111111, ((uint32_t) NOR_BASE + NOR_SIZE - 0x18));
+    iowrite32_NOR ( 0xBABADEDA, ((uint32_t) NOR_BASE + NOR_SIZE - 0x14));
+    iowrite32_NOR ( 0xDEDABABA, ((uint32_t) NOR_BASE + NOR_SIZE - 0x10));
+    iowrite32_NOR ( 0xAAAAAAAA, ((uint32_t) NOR_BASE + NOR_SIZE - 0x0C));
+    iowrite32_NOR ( 0x55555555, ((uint32_t) NOR_BASE + NOR_SIZE - 0x08));
+    iowrite32_NOR ( 0xCCCCCCCC, ((uint32_t) NOR_BASE + NOR_SIZE - 0x04));
+
     rumboot_printf ("READ32 NOR\n");
     rumboot_printf( "0x00 = %x\n",ioread32 (NOR_BASE + 0x0));
     TEST_ASSERT (ioread32 (NOR_BASE + 0x0) == 0x00000000,"TEST ERROR: (0x00) - read value is wrong");
@@ -51,6 +60,23 @@ int main ()
     TEST_ASSERT (ioread32 (NOR_BASE + 0x18) == 0x55555555,"TEST ERROR: (0x18) - read value is wrong");
     rumboot_printf( "0x1C = %x\n",ioread32 (NOR_BASE + 0x1C));
     TEST_ASSERT (ioread32 (NOR_BASE + 0x1C) == 0xCCCCCCCC,"TEST ERROR: (0x1C) - read value is wrong");
+
+    rumboot_printf( "0xFFFFFE0 = %x\n",ioread32 ((uint32_t) NOR_BASE + NOR_SIZE - 0x20));
+    TEST_ASSERT (ioread32 ((uint32_t) NOR_BASE + NOR_SIZE - 0x20) == 0x00000000,"TEST ERROR: (0xFFFFFE0) - read value is wrong");
+    rumboot_printf( "0xFFFFFE4 = %x\n",ioread32 ((uint32_t) NOR_BASE + NOR_SIZE - 0x1C));
+    TEST_ASSERT (ioread32 ((uint32_t) NOR_BASE + NOR_SIZE - 0x1C) == 0x10101010,"TEST ERROR: (0xFFFFFE4) - read value is wrong");
+    rumboot_printf( "0xFFFFFE8 = %x\n",ioread32 ((uint32_t) NOR_BASE + NOR_SIZE - 0x18));
+    TEST_ASSERT (ioread32 ((uint32_t) NOR_BASE + NOR_SIZE - 0x18) == 0x11111111,"TEST ERROR: (0xFFFFFE8) - read value is wrong");
+    rumboot_printf( "0xFFFFFEC = %x\n",ioread32 ((uint32_t) NOR_BASE + NOR_SIZE - 0x14));
+    TEST_ASSERT (ioread32 ((uint32_t) NOR_BASE + NOR_SIZE - 0x14) == 0xBABADEDA,"TEST ERROR: (0xFFFFFEC) - read value is wrong");
+    rumboot_printf( "0xFFFFFF0 = %x\n",ioread32 ((uint32_t) NOR_BASE + NOR_SIZE - 0x10));
+    TEST_ASSERT (ioread32 ((uint32_t) NOR_BASE + NOR_SIZE - 0x10) == 0xDEDABABA,"TEST ERROR: (0xFFFFFF0) - read value is wrong");
+    rumboot_printf( "0xFFFFFF4 = %x\n",ioread32 ((uint32_t) NOR_BASE + NOR_SIZE - 0x0C));
+    TEST_ASSERT (ioread32 ((uint32_t) NOR_BASE + NOR_SIZE - 0x0C) == 0xAAAAAAAA,"TEST ERROR: (0xFFFFFF4) - read value is wrong");
+    rumboot_printf( "0xFFFFFF8 = %x\n",ioread32 ((uint32_t) NOR_BASE + NOR_SIZE - 0x08));
+    TEST_ASSERT (ioread32 ((uint32_t) NOR_BASE + NOR_SIZE - 0x08) == 0x55555555,"TEST ERROR: (0xFFFFFF8) - read value is wrong");
+    rumboot_printf( "0xFFFFFFC = %x\n",ioread32 ((uint32_t) NOR_BASE + NOR_SIZE - 0x04));
+    TEST_ASSERT (ioread32 ((uint32_t) NOR_BASE + NOR_SIZE - 0x04) == 0xCCCCCCCC,"TEST ERROR: (0xFFFFFFC) - read value is wrong");
 
     rumboot_printf ("TEST OK\n");
     return 0;
