@@ -65,8 +65,8 @@ typedef struct
 
 void emi_init ();
 void emi_init_impl (uint32_t emi_dcr_base, uint32_t plb6mcif2_dcr_base, uint32_t puaba);
-void get_emi_bank_cfg(uint8_t num_bank, uint32_t emi_base, emi_bank_cfg* bn_cfg);
-void set_emi_bank_cfg(uint8_t num_bank, uint32_t emi_base, emi_bank_cfg* bn_cfg);
+void emi_get_bank_cfg(uint8_t num_bank, uint32_t emi_base, emi_bank_cfg* bn_cfg);
+void emi_set_bank_cfg(uint8_t num_bank, uint32_t emi_base, emi_bank_cfg* bn_cfg);
 
 
 #endif /* EMI_H_ */

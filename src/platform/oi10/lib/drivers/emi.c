@@ -15,7 +15,7 @@
 #include <platform/common_macros/common_macros.h>
 #include <platform/regs/regs_emi.h>
 
-void get_emi_bank_cfg(uint8_t num_bank, uint32_t emi_base, emi_bank_cfg* bn_cfg)
+void emi_get_bank_cfg(uint8_t num_bank, uint32_t emi_base, emi_bank_cfg* bn_cfg)
 {
     uint32_t val;
 
@@ -42,7 +42,7 @@ void get_emi_bank_cfg(uint8_t num_bank, uint32_t emi_base, emi_bank_cfg* bn_cfg)
 }
 
 
-void set_emi_bank_cfg (uint8_t num_bank, uint32_t emi_base, emi_bank_cfg* bn_cfg)
+void emi_set_bank_cfg (uint8_t num_bank, uint32_t emi_base, emi_bank_cfg* bn_cfg)
 {
     dcr_write (emi_base + EMI_SS0 + num_bank*(EMI_SS1 - EMI_SS0),  //write SSx
             ((bn_cfg->ssx_cfg.BTYP   << EMI_SSx_BTYP_i )  |
@@ -100,7 +100,7 @@ void emi_init_impl (uint32_t emi_dcr_base, uint32_t plb6mcif2_dcr_base, uint32_t
            TRAS_9
        }
     };
-    set_emi_bank_cfg(0, emi_dcr_base, &b0_cfg);
+    emi_set_bank_cfg(0, emi_dcr_base, &b0_cfg);
 
     //init bank1
     //TODO:
@@ -138,7 +138,7 @@ void emi_init_impl (uint32_t emi_dcr_base, uint32_t plb6mcif2_dcr_base, uint32_t
             TRAS_9
         }
     };
-    set_emi_bank_cfg(5, emi_dcr_base, &b5_cfg);
+    emi_set_bank_cfg(5, emi_dcr_base, &b5_cfg);
 
     dcr_write(emi_dcr_base + EMI_BUSEN, 0x01);
 }
