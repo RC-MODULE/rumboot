@@ -30,7 +30,7 @@ typedef struct
           iowrite32 (sequence[i].data, base + sequence[i].addr);\
     MACRO_END
 
-static inline void iowrite32_NOR (uint32_t write_DATA, uint32_t write_ADDR)
+static inline void nor_write32 (uint32_t write_DATA, uint32_t write_ADDR)
 {
     nor_addr_data32_pair NOR_write32_word_program_sequence[] =
     {
