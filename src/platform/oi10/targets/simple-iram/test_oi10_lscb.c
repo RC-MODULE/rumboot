@@ -204,6 +204,7 @@ void lscb_irq_set()
 uint32_t lscb_read_mem(lscb_t *lscb, uint32_t mem_addr)
 {
     uint32_t mem_data = lscb->mem[IDX32(mem_addr)];
+    DEBUG_MARK((mem_addr<<16 & 0x0FFF0000) | (mem_data&0xFFFF));
     rumboot_printf("Read mem 0x%X: 0x%X\n",
             (uint32_t)(&(lscb->mem[IDX32(mem_addr)])), mem_data);
     return mem_data;
@@ -249,14 +250,12 @@ uint32_t check_msp_reg( lscb_t      *lscb,
     ck_result = TEST_OK;
     rumboot_printf("Checking reg %s ...\n", msp_reg_name);
     tab_sz = (*(fill_tab++)); /* First entry is an entries count */
-    DEBUG_MARK(REG_RD_REQ(msp_addr));
     lscb->reg_access = REG_RD_REQ(msp_addr);
     while ((reg_access = lscb->reg_access) & OP_RUN_MASK)
         rumboot_printf("try read %s: 0x%X ...\n", msp_reg_name, reg_access);
     reg_backup = reg_access;
     for(idx = 0; idx < tab_sz; idx++)
     {
-        DEBUG_MARK(REG_WR_REQ(msp_addr, fill_tab[idx]));
         lscb->reg_access = REG_WR_REQ(msp_addr, fill_tab[idx]);
         while ((reg_access = lscb->reg_access) & OP_RUN_MASK)
             rumboot_printf("try write to %s: 0x%X = 0x%X (0x%X) ...\n",
@@ -322,6 +321,7 @@ uint32_t test_lscb(lscb_t *lscb, int lscbn)
     for(mft = mem_fill_table; (mft->addr) != 0xFFFF; mft++)
     {
         rumboot_printf("write mem 0x%X <- 0x%X\n",
+        DEBUG_MARK(0xEEEE0000 | (0xFFFF & mft->data));
                 (uint32_t)(&(lscb->mem[IDX32(mft->addr)])), (uint32_t)mft->data);
         lscb->mem[IDX32(mft->addr)] = (uint32_t)mft->data;
     }
