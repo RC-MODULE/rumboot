@@ -19,14 +19,15 @@ void handler(int irq)
 
 int main()
 {
+    rumboot_irq_sei();
     rumboot_printf("Setting default handler\n");
     rumboot_irq_set_default_handler(handler);
-    rumboot_printf("Firing IRQ\n");
 
     struct rumboot_irq_entry *tbl = rumboot_irq_create(NULL);
-    rumboot_irq_enable(0);
     rumboot_irq_table_activate(tbl);
+    rumboot_irq_enable(0);
 
+    rumboot_printf("Firing IRQ\n");
 	rumboot_irq_swint(USE_SWINT);;
 
     rumboot_irq_table_activate(NULL);
