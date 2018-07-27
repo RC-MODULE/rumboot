@@ -23,7 +23,7 @@
 #include <platform/ppc470s/mmu/mem_window.h>
 #include <platform/devices/emi.h>
 
-void check_sram0_8 (const uint32_t addr)
+void check_sram0_8 (uint32_t addr)
 {
     uint8_t check_arr8[] =
     {
@@ -68,11 +68,7 @@ void check_sram0_8 (const uint32_t addr)
         iowrite8 (check_arr8[i], addr + i);
     }
     //flush
-    asm volatile
-    (
-        "dcbf 0,%0\n\t"
-        ::"r"(addr)
-    );
+    dcbf ((void*)addr);
     msync();
     //read
     for (i = 0; i < 32; i++)
@@ -81,7 +77,7 @@ void check_sram0_8 (const uint32_t addr)
     }
 }
 
-void check_sram0_16 (const uint32_t addr)
+void check_sram0_16 (uint32_t addr)
 {
     uint16_t check_arr16[] =
     {
@@ -109,11 +105,7 @@ void check_sram0_16 (const uint32_t addr)
         iowrite16 (check_arr16[i], addr + i*2);
     }
     //flush
-    asm volatile
-    (
-        "dcbf 0,%0\n\t"
-        ::"r"(addr)
-    );
+    dcbf ((void*)addr);
     msync();
     //read
     for (i = 0; i < 16; i++)
@@ -142,11 +134,7 @@ void check_sram0_32 (uint32_t addr)
         iowrite32 (check_arr32[i], addr + i*4);
     }
     //flush
-    asm volatile
-    (
-        "dcbf 0,%0\n\t"
-        ::"r"(addr)
-    );
+    dcbf ((void*)addr);
     msync();
     //read
     for (i = 0; i < 8; i++)
@@ -171,11 +159,7 @@ void check_sram0_64 (uint32_t addr)
         iowrite64 (check_arr64[i], addr + i * 8);
     }
     //flush
-    asm volatile
-    (
-        "dcbf 0,%0\n\t"
-        ::"r"(addr)
-    );
+    dcbf ((void*)addr);
     msync();
     //read
     for (i = 0; i < 4; i++)
