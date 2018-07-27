@@ -213,16 +213,16 @@ int main ()
 
     rumboot_printf ("Init data\n");
     uint32_t addr = 0;
-	uint32_t i = 0;
+    uint32_t i = 0;
 
-	addr = SRAM0_BASE + 0x3000;
-	for (i = 0; i < 0x100; i++)
-		iowrite32 (0x00, addr + i*4);
+    addr = SRAM0_BASE + 0x3000;
+    for (i = 0; i < 0x100; i++)
+      iowrite32 (0x00, addr + i*4);
 
-	addr = SRAM0_BASE + 0x4000;
-	for (i = 0; i < 0x100; i++)
-		iowrite32 (0x00, addr + i*4);
-	dci(2);
+    addr = SRAM0_BASE + 0x4000;
+    for (i = 0; i < 0x100; i++)
+      iowrite32 (0x00, addr + i*4);
+    dci(2);
 
     rumboot_printf ("CACHE WT\n");
     static const tlb_entry sram0_tlb_entry_wt = {TLB_ENTRY_CACHE_WT};
