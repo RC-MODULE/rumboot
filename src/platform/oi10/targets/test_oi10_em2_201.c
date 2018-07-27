@@ -12,23 +12,38 @@
 #include <rumboot/platform.h>
 #include <platform/devices/emi.h>
 
-int check_sram(uint32_t base_addr)
+
+void emi_update_tcyc_tsoe(uint32_t bank_num, ssx_tsoe_t tsoe, ssx_tcyc_t tcyc)
 {
     emi_bank_cfg bn_cfg;
+    emi_get_bank_cfg(bank_num, DCR_EM2_EMI_BASE, &bn_cfg);
+    bn_cfg.ssx_cfg.T_SOE = tsoe;
+    bn_cfg.ssx_cfg.T_CYC = tcyc;
+    emi_set_bank_cfg(bank_num, DCR_EM2_EMI_BASE, &bn_cfg);
+}
+
+void check_wrrd(uint32_t addr)
+{
+    iowrite32(0xBABADEDA, addr);
+    rumboot_printf("MEM[0x%X] = 0x%x\n", addr, ioread32(addr));
+}
+
+int check_sram(uint32_t base_addr)
+{
+    #define TSOE_SPACE  2
+    #define TCYC_SPACE  4
+    const ssx_tsoe_t test_tsoe_arr[TSOE_SPACE] = {TSOE_1, TSOE_2};
+    const ssx_tcyc_t test_tcyc_arr[TCYC_SPACE] = {TCYC_2, TCYC_3, TCYC_4, TCYC_5};
 
     rumboot_printf("Checking SRAM (0x%X)\n", base_addr);
     emi_init();
 
-    iowrite32(0xBABADEDA, base_addr);
-    rumboot_printf("MEM[0x%X] = 0x%x\n", base_addr, ioread32(base_addr));
-
-    get_emi_bank_cfg(0, DCR_EM2_EMI_BASE, &bn_cfg);
-    bn_cfg.ssx_cfg.T_CYC = TCYC_2;
-    set_emi_bank_cfg(0, DCR_EM2_EMI_BASE, &bn_cfg);
-
-    iowrite32(0xBABADEDA, base_addr);
-    rumboot_printf("MEM[0x%X] = 0x%x\n", base_addr, ioread32(base_addr));
-
+    for (int i=0; i<TSOE_SPACE; i++)
+        for (int j=0; j<TCYC_SPACE; j++)
+        {
+            emi_update_tcyc_tsoe(0, test_tsoe_arr[i], test_tcyc_arr[j]);
+            check_wrrd(base_addr);
+        }
     return 0;
 }
 
