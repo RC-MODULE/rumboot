@@ -14,10 +14,21 @@
 
 int check_sram(uint32_t base_addr)
 {
+    emi_bank_cfg bn_cfg;
+
     rumboot_printf("Checking SRAM (0x%X)\n", base_addr);
     emi_init();
+
     iowrite32(0xBABADEDA, base_addr);
     rumboot_printf("MEM[0x%X] = 0x%x\n", base_addr, ioread32(base_addr));
+
+    get_emi_bank_cfg(0, DCR_EM2_EMI_BASE, &bn_cfg);
+    bn_cfg.ssx_cfg.T_CYC = TCYC_2;
+    set_emi_bank_cfg(0, DCR_EM2_EMI_BASE, &bn_cfg);
+
+    iowrite32(0xBABADEDA, base_addr);
+    rumboot_printf("MEM[0x%X] = 0x%x\n", base_addr, ioread32(base_addr));
+
     return 0;
 }
 
