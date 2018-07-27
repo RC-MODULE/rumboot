@@ -10,30 +10,35 @@
 
 #include <platform/devices.h>
 #include <rumboot/platform.h>
-#include <platform/interrupts.h>
-#include <platform/regs/fields/mpic128.h>
+#include <platform/devices/emi.h>
 
 int check_sram(uint32_t base_addr)
 {
     rumboot_printf("Checking SRAM (0x%X)\n", base_addr);
+    emi_init();
+    iowrite32(0xBABADEDA, base_addr);
+    rumboot_printf("MEM[0x%X] = 0x%x\n", base_addr, ioread32(base_addr));
     return 0;
 }
 
 //TODO:
 int check_sdram(uint32_t base_addr)
 {
+    rumboot_printf("Checking SDRAM (0x%X) not yet implemented\n", base_addr);
     return 0;
 }
 
 //TODO:
 int check_ssram(uint32_t base_addr)
 {
+    rumboot_printf("Checking SSRAM (0x%X) not yet implemented\n", base_addr);
     return 0;
 }
 
 //TODO:
 int check_pipelined(uint32_t base_addr)
 {
+    rumboot_printf("Checking SDRAM (0x%X) not yet implemented\n", base_addr);
     return 0;
 }
 
