@@ -67,7 +67,7 @@ void check_sram0_8 (const uint32_t addr)
         iowrite8 (check_arr8[i], addr + i);
     }
     //flush
-    dcbf(addr);
+    dcbf((void*)addr);
     msync();
     //read
     for (i = 0; i < 32; i++)
@@ -104,7 +104,7 @@ void check_sram0_16 (const uint32_t addr)
         iowrite16 (check_arr16[i], addr + i*2);
     }
     //flush
-    dcbf(addr);
+    dcbf((void*)addr);
     msync();
     //read
     for (i = 0; i < 16; i++)
@@ -133,7 +133,7 @@ void check_sram0_32 (uint32_t addr)
         iowrite32 (check_arr32[i], addr + i*4);
     }
     //flush
-    dcbf(addr);
+    dcbf((void*)addr);
     msync();
     //read
     for (i = 0; i < 8; i++)
@@ -158,7 +158,7 @@ void check_sram0_64 (uint32_t addr)
         iowrite64 (check_arr64[i], addr + i * 8);
     }
     //flush
-    dcbf(addr);
+    dcbf((void*)addr);
     msync();
     //read
     for (i = 0; i < 4; i++)
