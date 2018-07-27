@@ -67,11 +67,7 @@ void check_sram0_8 (const uint32_t addr)
         iowrite8 (check_arr8[i], addr + i);
     }
     //flush
-    asm volatile
-    (
-        "dcbf 0,%0\n\t"
-        ::"r"(addr)
-    );
+    dcbf(addr);
     msync();
     //read
     for (i = 0; i < 32; i++)
@@ -108,11 +104,7 @@ void check_sram0_16 (const uint32_t addr)
         iowrite16 (check_arr16[i], addr + i*2);
     }
     //flush
-    asm volatile
-    (
-        "dcbf 0,%0\n\t"
-        ::"r"(addr)
-    );
+    dcbf(addr);
     msync();
     //read
     for (i = 0; i < 16; i++)
@@ -141,11 +133,7 @@ void check_sram0_32 (uint32_t addr)
         iowrite32 (check_arr32[i], addr + i*4);
     }
     //flush
-    asm volatile
-    (
-        "dcbf 0,%0\n\t"
-        ::"r"(addr)
-    );
+    dcbf(addr);
     msync();
     //read
     for (i = 0; i < 8; i++)
@@ -170,11 +158,7 @@ void check_sram0_64 (uint32_t addr)
         iowrite64 (check_arr64[i], addr + i * 8);
     }
     //flush
-    asm volatile
-    (
-        "dcbf 0,%0\n\t"
-        ::"r"(addr)
-    );
+    dcbf(addr);
     msync();
     //read
     for (i = 0; i < 4; i++)
@@ -228,7 +212,6 @@ int main ()
     msync();
     isync();
     check_sram0 (SRAM0_BASE + 0x200);
-    dci(2);
 
     rumboot_printf ("TEST_OK\n");
     return 0;
