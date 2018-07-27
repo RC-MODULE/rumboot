@@ -61,6 +61,13 @@ static inline uint32_t msr_read() {
 })
 
 
+inline static void dcbf( void* const addr ) {
+    asm volatile (
+        "dcbf 0, %0\n\t"
+        ::  "r"(addr)
+    );
+}
+
 inline static void dcbi( void* const addr ) {
     asm volatile (
         "dcbi 0, %0\n\t"
