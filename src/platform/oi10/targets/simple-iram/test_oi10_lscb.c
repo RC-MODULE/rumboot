@@ -45,7 +45,7 @@
 #define REG_WR_RD_MASK              MASK_BIT(REG_WR_RD_BIT)
 #define OP_RUN_MASK                 BIT(OP_RUN_BIT)
 /* not in doc, for local usage only */
-#define OP_RUN_RD                   (OP_RUN_MASK                )
+#define OP_RUN_RD                   (OP_RUN_MASK)
 #define OP_RUN_WR                   (OP_RUN_MASK | BIT(REG_WR_RD_BIT))
 
 #define MSP_SSFLAG_EXT_TRIG_BIT     8
@@ -96,31 +96,34 @@ typedef struct
 
 static a16d16_t mem_fill_table[] =
 {
-/*      {0x0000, 0x8000}, */
-/*      {0x0004, 0x0000}, */
-        {0x0010, 0xA000},   /* ??? */
+/*      {0x0000,    0x8000}, */
+/*      {0x0004,    0x0000}, */
+        {0x0010,    0xA000},    /* ??? */
 
-        {0x000C, 0x0154},
-        {0x0008, 0x00DC},
-        {0x001C, 0x0180},
-        {0x0018, 0x00DC},
+        {0x000C,    0x0154},
+        {0x0008,    0x00DC},
+        {0x001C,    0x0180},
+        {0x0018,    0x00DC},
 
-        {0x0550, 0x0082},
-        {0x0554, 0xF821},
-        {0x0558, 0xA5A5},
+        {0x0550,    0x0082},    /* Msg block #2 */
+        {0x0554,    0xF821},
+        {0x0558,    0xA5A5},
+        {0x055C,    0x0000},
 
-        {0x055C, 0x0000},   /* ??? */
+        {0x0600,    0x0002},    /* Msg block #3 */
+        {0x0604,    0xF821},
+        {0x0608,    0x5A5A},
+        {0x060C,    0x0000},
 
-        {0x0600, 0x0002},
-        {0x0604, 0xF821},
-        {0x0608, 0x5A5A},
+        {0x0100*4,  0x0000},    /* Cmd stack ptr A              */
+        {0x0101*4,  0xFFFD},    /* Msg count A                  */
+        {0x0102*4,  0x0000},    /* Init val of cmd stack ptr A  */
+        {0x0103*4,  0xFFFD},    /* Init val of msg count A      */
 
-        {0x060C, 0x0000},   /* ??? */
-
-        {0x0400, 0x0000},
-        {0x0404, 0xFFFD},
-        {0x0408, 0x0000},
-        {0x040C, 0xFFFD},
+        {0x0104*4,  0x0F00},    /* Cmd stack ptr A              */
+        {0x0105*4,  0xFFFD},    /* Msg count A                  */
+        {0x0106*4,  0x0000},    /* Init val of cmd stack ptr A  */
+        {0x0107*4,  0xFFFD},    /* Init val of msg count A      */
         MEM_FILL_END
 };
 
@@ -308,7 +311,11 @@ uint32_t test_lscb(lscb_t *lscb, int lscbn)
     rumboot_putstring("------------ write reg ------------- \n");
     write_msp_reg(lscb, MSP_SRR, BIT(SRR_RESET_i), "srr");
     rumboot_putstring("-- read reg cfg5_: test msp_rtad[4:0] & msp_rtadp -- \n");
-    read_msp_reg(lscb, MSP_CFG5_, "cfg5_");
+    if(
+        (read_msp_reg(lscb, MSP_CFG5_, "cfg5_") & (RTAD_MASK|RTADP_MASK)) !=
+        (( (read_config << CFG5_RT_A_0_i) | (read_config & RTADP_MASK)
+                ?BIT(CFG5_RT_A_P_i):0) & (RTAD_MASK|RTADP_MASK))
+    ) test_result |= TEST_ERROR;
     write_msp_reg(lscb, MSP_CFG3_, MSP_CFG3_VALUE, "cfg3_");
     write_msp_reg(lscb, MSP_CFG1_, MSP_CFG1_VALUE, "cfg1_");
     write_msp_reg(lscb, MSP_CFG2_, MSP_CFG2_VALUE, "cfg2_");
@@ -321,8 +328,8 @@ uint32_t test_lscb(lscb_t *lscb, int lscbn)
     for(mft = mem_fill_table; (mft->addr) != 0xFFFF; mft++)
     {
         rumboot_printf("write mem 0x%X <- 0x%X\n",
-        DEBUG_MARK(0xEEEE0000 | (0xFFFF & mft->data));
                 (uint32_t)(&(lscb->mem[IDX32(mft->addr)])), (uint32_t)mft->data);
+        DEBUG_MARK(0xEEEE0000 | (0xFFFF & mft->data));
         lscb->mem[IDX32(mft->addr)] = (uint32_t)mft->data;
     }
 
