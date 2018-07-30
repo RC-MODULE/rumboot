@@ -14,12 +14,13 @@
 #include <rumboot/platform.h>
 #include <rumboot/macros.h>
 #include <rumboot/io.h>
+#include <rumboot/timer.h>
 #include <platform/devices.h>
 #include <platform/test_assert.h>
 
 typedef struct {
-        uint32_t	addr;
-        uint32_t	data;
+        uint32_t    addr;
+        uint32_t    data;
 } nor_addr_data32_pair;
 
 #define NOR_WRITE32_SEQUENCE(base, sequence) \
@@ -38,12 +39,13 @@ static inline void nor_write32(uint32_t write_DATA, uint32_t write_ADDR)
                         { (0x555 << 2), 0xAAAAAAAA },
                         { (0x2AA << 2), 0x55555555 },
                         { (0x555 << 2), 0xA0A0A0A0 },
-                        { 0,		0	   }
+                        { 0,        0      }
                 };
 
                 NOR_write32_word_program_sequence[3].addr = write_ADDR - NOR_BASE;
                 NOR_write32_word_program_sequence[3].data = write_DATA;
                 NOR_WRITE32_SEQUENCE(NOR_BASE, NOR_write32_word_program_sequence);
+                udelay (0); //workaround
         }
 }
 
