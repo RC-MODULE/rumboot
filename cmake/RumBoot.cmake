@@ -1,5 +1,5 @@
 set(RUMBOOT_ONEVALUE_ARGS SNAPSHOT LDS PREFIX NAME BOOTROM)
-set(RUMBOOT_MULVALUE_ARGS FILES IRUN_FLAGS CFLAGS TESTGROUP LDFLAGS CHECKCMD FEATURES TIMEOUT LOAD )
+set(RUMBOOT_MULVALUE_ARGS FILES IRUN_FLAGS CFLAGS TESTGROUP LDFLAGS CHECKCMD FEATURES TIMEOUT LOAD DEPENDS)
 
 
 macro(rumboot_add_configuration name)
@@ -138,9 +138,26 @@ set(RUMBOOT_COVER_LFLAGS --coverage)
 
 
 macro(populate_dependencies target)
+    #Filter out dependencies
     foreach(dep ${TARGET_DEPENDS})
       generate_product_name(dep ${dep})
       add_dependencies(${target} ${dep}.all)
+    endforeach()
+    #Process TARGET_LOAD dependencies
+    set(v 0)
+    set(loadflags "")
+    foreach(l ${TARGET_LOAD})
+      if (v EQUAL 0)
+        set(plus ${l})
+        set(v 1)
+      else()
+        set(trg ${l})
+        generate_product_name(tproduct ${trg})
+        if(TARGET ${tproduct})
+          add_dependencies(${target} ${tproduct}.all)
+        endif()
+        set(v 0)
+      endif()
     endforeach()
 endmacro()
 
