@@ -12,7 +12,7 @@
 #include <platform/devices.h>
 #include <platform/interrupts.h>
 
-#define TIMEOUT_MDIO_ETH_PHY 24
+#define TIMEOUT_MDIO_ETH_PHY 100
 
 
 static void handler_mdio(int irq, void *arg)
@@ -28,6 +28,12 @@ static void handler_mdio(int irq, void *arg)
 
 bool mdio_phy_intrp_test(uint32_t num_mdio)
 {
+    //GPIO1 --> outputs
+    iowrite32(0xFFFFFFFF, GPIO1_BASE + GPIO_PAD_DIR);
+    
+    //GPIO1 --> "1"
+    iowrite32(0xFFFFFFFF, GPIO1_BASE + GPIO_WR_DATA_SET1);
+    
     //Switch MGPIO PADS to MDIO
     iowrite32(0x00000000, MGPIO0_BASE + GPIO_SWITCH_SOURCE);
     iowrite32(0x00000000, MGPIO1_BASE + GPIO_SWITCH_SOURCE);
@@ -41,6 +47,8 @@ bool mdio_phy_intrp_test(uint32_t num_mdio)
     //mdc enable
     iowrite32(1 << MDC_EN, MDIO0_BASE + 0x1000*num_mdio + MDIO_EN);
 
+    //GPIO1 --> "0"
+    iowrite32(0x00000000, GPIO1_BASE + GPIO_WR_DATA_SET0);
 
     //Wait intrp from PHY
     uint32_t read_data=ioread32(MDIO0_BASE + 0x1000*num_mdio + MDIO_STATUS);
