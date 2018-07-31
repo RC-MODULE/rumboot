@@ -108,8 +108,34 @@ void emi_init_impl (uint32_t emi_dcr_base, uint32_t plb6mcif2_dcr_base, uint32_t
     //TODO:
     //init bank3
     //TODO:
-    //init bank4
-    //TODO:
+    //init bank4 - SRAM1
+    emi_bank_cfg b4_cfg =
+    {
+       //SS0
+       {
+           BTYP_SRAM,
+           PTYP_NO_PAGES,
+           SRDY_EXT_RDY_NOT_USE,
+           TWR_0,
+           SST_Flow_Through,
+           TSSOE_1,
+           TSOE_1,
+           TCYC_8,
+           0, //T_RDY
+           TDEL_0
+       },
+       //SD0
+       {
+           CSP_256,
+           SDS_2M,
+           CL_3,
+           TRDL_1,
+           SI_EXT_INIT,
+           TRCD_5,
+           TRAS_9
+       }
+    };
+    emi_set_bank_cfg(0, emi_dcr_base, &b4_cfg);
 
     //init bank5 - NOR
     emi_bank_cfg b5_cfg =
