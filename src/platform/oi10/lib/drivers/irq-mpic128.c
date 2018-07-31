@@ -42,7 +42,7 @@ static uint32_t mpic128_begin( const struct rumboot_irq_controller *dev ) {
 }
 
 static void mpic128_end( const struct rumboot_irq_controller *dev, uint32_t irq ) {
-    if( irq != dcr_read( DCR_MPIC128_BASE + MPIC128_NCIAR_PR ) ) {
+    if( irq != dcr_read( DCR_MPIC128_BASE + MPIC128_SPV ) ) {
         dcr_write( DCR_MPIC128_BASE + MPIC128_NCEOI_PR, 0 ); /* signal the end of processing for non-spurious interrupt */
     }
 }
