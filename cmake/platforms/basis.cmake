@@ -264,6 +264,22 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         CONFIGURATION IRAM
         PREFIX mgeth-iram
     )
+    add_rumboot_target_dir(mgeth/
+        CONFIGURATION IRAM_MIRROR
+        PREFIX mgeth-mirror
+    )
+    add_rumboot_target_dir(mgeth/geth_direct
+        CONFIGURATION IRAM
+        PREFIX mgeth-geth_direct
+    )
+    add_rumboot_target_dir(mgeth/geth_mirror
+        CONFIGURATION IRAM_MIRROR
+        PREFIX mgeth-geth_mirror
+    )
+    add_rumboot_target_dir(mgeth/geth_direct_ddr
+        CONFIGURATION IRAM_WITH_DDR
+        PREFIX mgeth-geth_direct_ddr
+    )
 
     add_rumboot_target(
         CONFIGURATION DROM

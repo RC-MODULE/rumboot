@@ -8,6 +8,7 @@
 #include <rumboot/io.h>
 #include <rumboot/testsuite.h>
 #include <platform/devices.h>
+#include <platform/interrupts.h>
 #include <regs/regs_global_timers.h>
 #include <regs/regs_mgeth.h>
 #include <devices/gp_timers.h>
@@ -17,6 +18,41 @@
 #define XFER_SIZE 64
 
 uint32_t BASE[] = {ETH0_BASE, ETH1_BASE, ETH2_BASE, ETH3_BASE};
+uint32_t INTR[] = {MGETH0_IRQ, MGETH1_IRQ, MGETH2_IRQ, MGETH3_IRQ};
+struct rumboot_irq_entry *tbl;
+volatile int int_f_send = 0, int_f_recv = 0;
+
+static void isr_send(int irq, void *arg)
+{
+	int ret;
+
+	rumboot_printf("isr_send start; irq = %d; arg = 0x%X.\n", irq, arg);
+
+	ret = mdma_chan_irq_cb((struct mdma_chan *)arg);
+
+	rumboot_printf("ret = 0x%X\n", ret);
+
+	if (ret & IRQ_CHAN_DONE)
+		int_f_send = 1;
+
+	rumboot_printf("isr_send end.\n");
+}
+
+static void isr_recv(int irq, void *arg)
+{
+	int ret;
+
+	rumboot_printf("isr_recv start; irq = %d; arg = 0x%X.\n", irq, arg);
+
+	ret = mdma_chan_irq_cb((struct mdma_chan *)arg);
+
+	rumboot_printf("ret = 0x%X\n", ret);
+
+	if (ret & IRQ_CHAN_DONE)
+		int_f_recv = 1;
+
+	rumboot_printf("isr_recv end.\n");
+}
 
 static bool test_mgeth_frame_xfer(uint32_t eth_send_num)
 {
@@ -38,6 +74,11 @@ static bool test_mgeth_frame_xfer(uint32_t eth_send_num)
 
 	rumboot_printf("eth_send_num = %u\n", eth_send_num);
 	rumboot_printf("eth_recv_num = %u\n", eth_recv_num);
+
+	int_f_send = 0;
+	int_f_recv = 0;
+
+	while (int_f_send || int_f_recv);
 
 	frame_o = rumboot_malloc_from_heap_aligned(0, XFER_SIZE, 4);
 	frame_i = rumboot_malloc_from_heap_aligned(0, XFER_SIZE, 4);
@@ -75,7 +116,7 @@ static bool test_mgeth_frame_xfer(uint32_t eth_send_num)
 	for (i = 0; i < XFER_SIZE; i++)
 		frame_i[i] = 0x0;
 
-	chan_i = mgeth_receive(BASE[eth_recv_num], (void *)frame_i, XFER_SIZE, false);
+	chan_i = mgeth_receive(BASE[eth_recv_num], (void *)frame_i, XFER_SIZE, true);
 	if (!chan_i)
 	{
 		rumboot_printf("ERROR: Failed receive frame!\n");
@@ -84,7 +125,7 @@ static bool test_mgeth_frame_xfer(uint32_t eth_send_num)
 		return false;
 	}
 
-	chan_o = mgeth_transmit(BASE[eth_send_num], (void *)frame_o, XFER_SIZE, false);
+	chan_o = mgeth_transmit(BASE[eth_send_num], (void *)frame_o, XFER_SIZE, true);
 	if (!chan_o)
 	{
 		rumboot_printf("ERROR: Failed transmit frame!\n");
@@ -93,16 +134,34 @@ static bool test_mgeth_frame_xfer(uint32_t eth_send_num)
 		return false;
 	}
 
-	rumboot_printf("Waiting of sending of output packet...\n");
+	rumboot_irq_set_handler(tbl, INTR[eth_send_num], 0x0, isr_send, (void *)chan_o);
+	rumboot_irq_set_handler(tbl, INTR[eth_recv_num], 0x0, isr_recv, (void *)chan_i);
+	rumboot_irq_table_activate(tbl);
+	rumboot_irq_enable(INTR[eth_send_num]);
+	rumboot_irq_enable(INTR[eth_recv_num]);
+	rumboot_irq_sei();
 
-	ret = mgeth_wait_transfer_complete(chan_o, -1);
+	ret = mdma_chan_start(chan_i);
 	if (ret)
 	{
-		rumboot_printf("ERROR: Failed transmit frame!\n");
+		rumboot_printf("ERROR: Failed start receive frame (ret = %d)!\n", ret);
 		rumboot_free((void *)frame_o);
 		rumboot_free((void *)frame_i);
 		return false;
 	}
+
+	ret = mdma_chan_start(chan_o);
+	if (ret)
+	{
+		rumboot_printf("ERROR: Failed start transmit frame (ret = %d)!\n", ret);
+		rumboot_free((void *)frame_o);
+		rumboot_free((void *)frame_i);
+		return false;
+	}
+
+	rumboot_printf("Waiting of sending of output packet...\n");
+
+	while (!int_f_send);
 
 	rumboot_printf("Output packet sended.\n");
 
@@ -133,14 +192,7 @@ static bool test_mgeth_frame_xfer(uint32_t eth_send_num)
 
 	rumboot_printf("Waiting of receiving of input packet...\n");
 
-	ret = mgeth_wait_transfer_complete(chan_i, -1);
-	if (ret)
-	{
-		rumboot_printf("ERROR: Failed receive frame!\n");
-		rumboot_free((void *)frame_o);
-		rumboot_free((void *)frame_i);
-		return false;
-	}
+	while (!int_f_recv);
 
 	rumboot_printf("Input packet received.\n");
 
@@ -232,6 +284,8 @@ int main()
 
 	mgeth_init_sgmii(SGMII_PHY, SCTL_BASE);
 
+	tbl = rumboot_irq_create(NULL);
+
 	// Start timer
 	gp_timer_turn_on();
 
@@ -249,6 +303,9 @@ int main()
 	mgeth_init(ETH3_BASE, &cfg);
 
 	res = test_suite_run(NULL, &mgeth_frame_xfer_test);
+
+	rumboot_irq_table_activate(NULL);
+	rumboot_irq_free(tbl);
 
 	if (res)
 		rumboot_printf("%d tests from suite failed!\n", res);

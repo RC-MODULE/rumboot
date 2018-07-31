@@ -18,29 +18,25 @@
 
 uint32_t BASE[] = {ETH0_BASE, ETH1_BASE, ETH2_BASE, ETH3_BASE};
 
-static bool test_mgeth_frame_xfer(uint32_t eth_send_num)
+int mgeth_frame_xfer(uint32_t eth_send_num, uint32_t eth_recv_num, const char *heap_name)
 {
-	uint32_t eth_recv_num, ts_o_low, ts_o_high, ts_i_low, ts_i_high;
 	volatile uint8_t *frame_o, *frame_i;
 	struct mdma_chan *chan_o, *chan_i;
-	struct mdma_trans *trans_o, *trans_i;
-	struct mdma_group *group_o, *group_i;
-	struct mdma_node *node_o, *node_i;
-	void *desc_o, *desc_i;
-	int desc_size, i, ret;
+	int heap_id, i, ret;
 
-	rumboot_printf("--------------------------------------------------------------------------------\n");
+	rumboot_printf("Checking access to memory: '%s'.\n", heap_name);
 
-	if (!(eth_send_num % 2))
-		eth_recv_num = eth_send_num + 1;
-	else
-		eth_recv_num = eth_send_num - 1;
+	heap_id = rumboot_malloc_heap_by_name(heap_name);
+	if (heap_id < 0)
+	{
+		rumboot_printf("ERROR: Memory not exist!\n");
+		return 1;
+	}
 
-	rumboot_printf("eth_send_num = %u\n", eth_send_num);
-	rumboot_printf("eth_recv_num = %u\n", eth_recv_num);
+	rumboot_printf("heap_id = %d\n", heap_id);
 
-	frame_o = rumboot_malloc_from_heap_aligned(0, XFER_SIZE, 4);
-	frame_i = rumboot_malloc_from_heap_aligned(0, XFER_SIZE, 4);
+	frame_o = rumboot_malloc_from_heap_aligned(heap_id, XFER_SIZE, 4);
+	frame_i = rumboot_malloc_from_heap_aligned(heap_id, XFER_SIZE, 4);
 
 	for (i = 0; i < 12; i++)
 		frame_o[i] = 0xFF;
@@ -79,18 +75,14 @@ static bool test_mgeth_frame_xfer(uint32_t eth_send_num)
 	if (!chan_i)
 	{
 		rumboot_printf("ERROR: Failed receive frame!\n");
-		rumboot_free((void *)frame_o);
-		rumboot_free((void *)frame_i);
-		return false;
+		return 1;
 	}
 
 	chan_o = mgeth_transmit(BASE[eth_send_num], (void *)frame_o, XFER_SIZE, false);
 	if (!chan_o)
 	{
 		rumboot_printf("ERROR: Failed transmit frame!\n");
-		rumboot_free((void *)frame_o);
-		rumboot_free((void *)frame_i);
-		return false;
+		return 1;
 	}
 
 	rumboot_printf("Waiting of sending of output packet...\n");
@@ -99,36 +91,16 @@ static bool test_mgeth_frame_xfer(uint32_t eth_send_num)
 	if (ret)
 	{
 		rumboot_printf("ERROR: Failed transmit frame!\n");
-		rumboot_free((void *)frame_o);
-		rumboot_free((void *)frame_i);
-		return false;
+		return 1;
 	}
 
 	rumboot_printf("Output packet sended.\n");
-
-	trans_o = mdma_chan_get_trans(chan_o);
-	group_o = mdma_trans_get_group(trans_o);
-	node_o = mdma_group_get_node(group_o);
-	desc_o = mdma_node_get_desc(node_o, &desc_size);
-
-	if (desc_size != 16)
-	{
-		rumboot_printf("ERROR: Wrong output descriptor size (%d)!\n", desc_size);
-		rumboot_free((void *)frame_o);
-		rumboot_free((void *)frame_i);
-		return false;
-	}
-
-	ts_o_low = mdma_desc_user_data(desc_o, true);
-	ts_o_high = mdma_desc_user_data(desc_o, false);
 
 	ret = mgeth_finish_transfer(chan_o);
 	if (ret)
 	{
 		rumboot_printf("ERROR: Failed finish transfer!\n");
-		rumboot_free((void *)frame_o);
-		rumboot_free((void *)frame_i);
-		return false;
+		return 1;
 	}
 
 	rumboot_printf("Waiting of receiving of input packet...\n");
@@ -137,86 +109,84 @@ static bool test_mgeth_frame_xfer(uint32_t eth_send_num)
 	if (ret)
 	{
 		rumboot_printf("ERROR: Failed receive frame!\n");
-		rumboot_free((void *)frame_o);
-		rumboot_free((void *)frame_i);
-		return false;
+		return 1;
 	}
 
 	rumboot_printf("Input packet received.\n");
-
-	trans_i = mdma_chan_get_trans(chan_i);
-	group_i = mdma_trans_get_group(trans_i);
-	node_i = mdma_group_get_node(group_i);
-	desc_i = mdma_node_get_desc(node_i, &desc_size);
-
-	if (desc_size != 16)
-	{
-		rumboot_printf("ERROR: Wrong input descriptor size (%d)!\n", desc_size);
-		rumboot_free((void *)frame_o);
-		rumboot_free((void *)frame_i);
-		return false;
-	}
-
-	ts_i_low = mdma_desc_user_data(desc_i, true);
-	ts_i_high = mdma_desc_user_data(desc_i, false);
 
 	ret = mgeth_finish_transfer(chan_i);
 	if (ret)
 	{
 		rumboot_printf("ERROR: Failed finish transfer!\n");
-		rumboot_free((void *)frame_o);
-		rumboot_free((void *)frame_i);
-		return false;
+		return 1;
 	}
 
-	rumboot_printf("frame_o:\n");
-	for (i = 0; i < XFER_SIZE; i++)
-		rumboot_printf("%X ", frame_o[i]);
-	rumboot_printf("\n");
-
-	rumboot_printf("frame_i:\n");
-	for (i = 0; i < XFER_SIZE; i++)
-		rumboot_printf("%X ", frame_i[i]);
-	rumboot_printf("\n");
+	rumboot_printf("Checking frame...\n");
 
 	for (i = 0; i < XFER_SIZE; i++)
 		if ((i != 24) && (i != 25) && (frame_i[i] != frame_o[i]))
 		{
 			rumboot_printf("ERROR: Wrong byte %d!\n", i);
-			rumboot_free((void *)frame_o);
-			rumboot_free((void *)frame_i);
-			return false;
+			return 1;
 		}
 
-	rumboot_free((void *)frame_o);
-	rumboot_free((void *)frame_i);
+	rumboot_printf("Done.\n");
 
-	rumboot_printf("Output timestamp: 0x%X_%X\n", ts_o_high, ts_o_low);
-	rumboot_printf("Input timestamp: 0x%X_%X\n", ts_i_high, ts_i_low);
+	return 0;
+}
 
-	if ((!ts_o_low) && (!ts_o_high))
+static bool test_mgeth_frame_xfer(uint32_t eth_send_num)
+{
+	uint32_t eth_recv_num;
+	int ret;
+
+	rumboot_printf("--------------------------------------------------------------------------------\n");
+
+	if (!(eth_send_num % 2))
+		eth_recv_num = eth_send_num + 1;
+	else
+		eth_recv_num = eth_send_num - 1;
+
+	rumboot_printf("eth_send_num = %u\n", eth_send_num);
+	rumboot_printf("eth_recv_num = %u\n", eth_recv_num);
+
+//------------------------------------------------------------------------------
+
+	ret = mgeth_frame_xfer(eth_send_num, eth_recv_num, "IM0");
+	if (ret)
 	{
-		rumboot_printf("ERROR: No timestamps!\n");
+		rumboot_printf("ERROR: Transfer frame ERROR!\n");
 		return false;
 	}
 
-	if (ts_i_high < ts_o_high)
+	ret = mgeth_frame_xfer(eth_send_num, eth_recv_num, "IM1");
+	if (ret)
 	{
-		rumboot_printf("ERROR: Wrong timestamps!\n");
+		rumboot_printf("ERROR: Transfer frame ERROR!\n");
 		return false;
 	}
 
-	if ((ts_i_high == ts_o_high) && (ts_i_low < ts_o_low))
+	ret = mgeth_frame_xfer(eth_send_num, eth_recv_num, "DDR0");
+	if (ret)
 	{
-		rumboot_printf("ERROR: Wrong timestamps!\n");
+		rumboot_printf("ERROR: Transfer frame ERROR!\n");
 		return false;
 	}
+
+	ret = mgeth_frame_xfer(eth_send_num, eth_recv_num, "DDR1");
+	if (ret)
+	{
+		rumboot_printf("ERROR: Transfer frame ERROR!\n");
+		return false;
+	}
+
+//------------------------------------------------------------------------------
 
 	return true;
 }
 
 // Declare the testsuite structure
-TEST_SUITE_BEGIN(mgeth_frame_xfer_test, "Frame transfer")
+TEST_SUITE_BEGIN(mgeth_mem_access_test, "Frame transfer")
 TEST_ENTRY("From ETH0 to ETH1", test_mgeth_frame_xfer, 0),
 TEST_ENTRY("From ETH1 to ETH0", test_mgeth_frame_xfer, 1),
 TEST_ENTRY("From ETH2 to ETH3", test_mgeth_frame_xfer, 2),
@@ -248,7 +218,7 @@ int main()
 	mgeth_init(ETH2_BASE, &cfg);
 	mgeth_init(ETH3_BASE, &cfg);
 
-	res = test_suite_run(NULL, &mgeth_frame_xfer_test);
+	res = test_suite_run(NULL, &mgeth_mem_access_test);
 
 	if (res)
 		rumboot_printf("%d tests from suite failed!\n", res);

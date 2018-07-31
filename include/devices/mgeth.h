@@ -1,7 +1,7 @@
 #ifndef __MGETH__H__
 #define __MGETH__H__
 
-#define DBG
+//#define DBG
 
 #ifdef DBG
 #define DBG_print(fmt, ...) rumboot_printf("%s:%d: "fmt"\n", __FUNCTION__, __LINE__, ##__VA_ARGS__);
@@ -55,18 +55,20 @@ void mgeth_init(const uint32_t base, const struct mgeth_conf *conf);
  * \param base Base address of MGETH
  * \param data Pointer to read data
  * \param len Size of transmitted data
+ * \param use_interrupt Interrupt using
  * \return If OK - pointer on MDMA read channel, else - NULL
  */
-struct mdma_chan *mgeth_transmit(uint32_t base, void *data, size_t len);
+struct mdma_chan *mgeth_transmit(uint32_t base, void *data, size_t len, bool use_interrupt);
 
 /**
  * \brief Write data throught MDMA channel
  * \param base Base address of MGETH
  * \param data Pointer to written data
  * \param len Size of transmitted data
+ * \param use_interrupt Interrupt using
  * \return If OK - pointer on MDMA write channel, else - NULL
  */
-struct mdma_chan *mgeth_receive(uint32_t base, void *data, size_t len);
+struct mdma_chan *mgeth_receive(uint32_t base, void *data, size_t len, bool use_interrupt);
 
 /**
  * \brief Waiting transfer complete

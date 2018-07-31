@@ -115,7 +115,7 @@ void mgeth_init(const uint32_t base, const struct mgeth_conf *conf)
 	DBG_print("End.");
 }
 
-struct mdma_chan *mgeth_transfer(uint32_t base, void *data, size_t len, bool send)
+struct mdma_chan *mgeth_transfer(uint32_t base, void *data, size_t len, bool use_interrupt, bool send)
 {
 	struct mdma_chan *chan;
 	struct mdma_cfg cfg;
@@ -124,7 +124,7 @@ struct mdma_chan *mgeth_transfer(uint32_t base, void *data, size_t len, bool sen
 
 	DBG_print("Start; base = 0x%X; send = %d.", base, send);
 
-	cfg.mode = MDMA_CHAN_POLLING;
+	cfg.mode = use_interrupt ? MDMA_CHAN_INTERRUPT : MDMA_CHAN_POLLING;
 	cfg.desc_kind = LONG_DESC;
 	cfg.heap_id = 0;
 	cfg.burst_width = MDMA_BURST_WIDTH4; // Fixed for ETH
@@ -167,13 +167,16 @@ struct mdma_chan *mgeth_transfer(uint32_t base, void *data, size_t len, bool sen
 		return NULL;
 	}
 
-	ret = mdma_chan_start(chan);
-	if (ret)
+	if (!use_interrupt)
 	{
-		DBG_print("ERROR: Failed start DMA channel (ret = %d)!", ret);
-		mdma_chan_destroy(chan);
-		DBG_print("End (With ERROR!); Return: NULL!");
-		return NULL;
+		ret = mdma_chan_start(chan);
+		if (ret)
+		{
+			DBG_print("ERROR: Failed start DMA channel (ret = %d)!", ret);
+			mdma_chan_destroy(chan);
+			DBG_print("End (With ERROR!); Return: NULL!");
+			return NULL;
+		}
 	}
 
 	DBG_print("End; Return: 0x%X.", chan);
@@ -181,14 +184,14 @@ struct mdma_chan *mgeth_transfer(uint32_t base, void *data, size_t len, bool sen
 	return chan;
 }
 
-struct mdma_chan *mgeth_transmit(uint32_t base, void *data, size_t len)
+struct mdma_chan *mgeth_transmit(uint32_t base, void *data, size_t len, bool use_interrupt)
 {
-	return mgeth_transfer(base, data, len, true);
+	return mgeth_transfer(base, data, len, use_interrupt, true);
 }
 
-struct mdma_chan *mgeth_receive(uint32_t base, void *data, size_t len)
+struct mdma_chan *mgeth_receive(uint32_t base, void *data, size_t len, bool use_interrupt)
 {
-	return mgeth_transfer(base, data, len, false);
+	return mgeth_transfer(base, data, len, use_interrupt, false);
 }
 
 int mgeth_wait_transfer_complete(struct mdma_chan *chan, int timeout)

@@ -36,6 +36,8 @@
 // Setup registers of DMA channel (relative begin of channel)
 #define ENABLE_x                0x00
 #define SETTINGS_x              0x10
+#define IRQ_MASK_x              0x14
+#define STATUS_x                0x18
 #define DESC_ADDR_x             0x20
 
 #endif // __REGS_MGETH__H__
