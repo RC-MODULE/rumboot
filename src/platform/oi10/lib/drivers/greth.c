@@ -1,11 +1,4 @@
 
-#include <stdbool.h>
-#include <stdint.h>
-
-#include <rumboot/io.h>
-#include <rumboot/printf.h>
-#include <rumboot/timer.h>
-
 #include <platform/devices/greth.h>
 
 void greth_set_mac(uint32_t base_addr, greth_mac_t* mac)
@@ -60,7 +53,7 @@ bool greth_reset(uint32_t base_addr)
         return true;
 }
 
-void new_greth_ctrl_struct(greth_ctrl_struct_t* ctrl_struct)
+static void new_greth_ctrl_struct(greth_ctrl_struct_t* ctrl_struct)
 {
     ctrl_struct->mdio_int_enable            = false;
     ctrl_struct->edcl_disable               = false;
@@ -68,7 +61,6 @@ void new_greth_ctrl_struct(greth_ctrl_struct_t* ctrl_struct)
     ctrl_struct->disable_duplex_detection   = false;
     ctrl_struct->multicast_enable           = false;
     ctrl_struct->phy_int_enable             = false;
-    ctrl_struct->burstmode_enable           = false;
     ctrl_struct->speed                      = GRETH_SPEED_100MB;
     ctrl_struct->promiscuous_mode           = false;
     ctrl_struct->fullduplex_enable          = false;
@@ -78,29 +70,7 @@ void new_greth_ctrl_struct(greth_ctrl_struct_t* ctrl_struct)
     ctrl_struct->transmitter_enable         = false;
 }
 
-void get_current_greth_ctrl_struct(uint32_t base_addr, greth_ctrl_struct_t* ctrl_struct)
-{
-    uint32_t rval;
-    rval = ioread32(base_addr + CTRL);
-    ctrl_struct->mdio_int_enable          = (rval & (1 << GRETH_CTRL_ME));
-    ctrl_struct->edcl_disable             = (rval & (1 << GRETH_CTRL_ED));
-    ctrl_struct->ram_debug_enable         = (rval & (1 << GRETH_CTRL_RD));
-    ctrl_struct->disable_duplex_detection = (rval & (1 << GRETH_CTRL_DD));
-    ctrl_struct->multicast_enable         = (rval & (1 << GRETH_CTRL_MCE));
-    ctrl_struct->phy_int_enable           = (rval & (1 << GRETH_CTRL_PI));
-    ctrl_struct->burstmode_enable         = (rval & (1 << GRETH_CTRL_BM));
-    ctrl_struct->speed                    = (rval & (1 << GRETH_CTRL_GB)) ? GRETH_SPEED_1GB   :
-                                            (rval & (1 << GRETH_CTRL_SP)) ? GRETH_SPEED_100MB :
-                                                                            GRETH_SPEED_10MB;
-    ctrl_struct->promiscuous_mode         = (rval & (1 << GRETH_CTRL_PM));
-    ctrl_struct->fullduplex_enable        = (rval & (1 << GRETH_CTRL_FD));
-    ctrl_struct->receiver_int_enable      = (rval & (1 << GRETH_CTRL_RI));
-    ctrl_struct->transmitter_int_enable   = (rval & (1 << GRETH_CTRL_TI));
-    ctrl_struct->receiver_enable          = (rval & (1 << GRETH_CTRL_RE));
-    ctrl_struct->transmitter_enable       = (rval & (1 << GRETH_CTRL_TE));
-}
-
-bool set_greth_ctrl(uint32_t base_addr, greth_ctrl_struct_t* ctrl_struct)
+static bool set_greth_ctrl(uint32_t base_addr, greth_ctrl_struct_t* ctrl_struct)
 {
     uint32_t tmp;
 
@@ -120,39 +90,22 @@ bool set_greth_ctrl(uint32_t base_addr, greth_ctrl_struct_t* ctrl_struct)
 
     switch (ctrl_struct->speed)
     {
-        case GRETH_SPEED_1GB    :
-        {
-            SET_BIT(tmp, GRETH_CTRL_GB);
-            CLEAR_BIT(tmp, GRETH_CTRL_SP);
-            break;
-        }
         case GRETH_SPEED_100MB    :
         {
-            CLEAR_BIT(tmp, GRETH_CTRL_GB);
             SET_BIT(tmp, GRETH_CTRL_SP);
             break;
         }
         case GRETH_SPEED_10MB    :
         {
-            CLEAR_BITS_BY_MASK(tmp, (1 << GRETH_CTRL_GB) | (1 << GRETH_CTRL_SP));
+            CLEAR_BITS_BY_MASK(tmp, (1 << GRETH_CTRL_SP));
             break;
         }
         default :
         {
-            SET_BIT(tmp, GRETH_CTRL_GB);
+            SET_BIT(tmp, GRETH_CTRL_SP);
             break;
         }
     }
-
-
-    if (ctrl_struct->burstmode_enable==true)
-        //if burst mode is enabled transmissions use burst mode in 1000 Mbit Half-duplex mode (GB=1, FD = 0)
-        if ((tmp & (1 << GRETH_CTRL_GB)) && !(tmp & (1 << GRETH_CTRL_FD)))
-            SET_BIT(tmp, GRETH_CTRL_BM);
-        else
-            return false;
-    else
-        CLEAR_BIT(tmp, GRETH_CTRL_BM);
 
 #ifdef ETH_DEBUG
     rumboot_printf("Write to CTRL 0x%x\n", tmp);
@@ -324,9 +277,10 @@ bool greth_configure_for_receive( uint32_t base_addr, void volatile * const dst,
     return true;
 }
 
-bool greth_start_receive(uint32_t base_addr, bool rcv_int_ena)
+void greth_start_receive(uint32_t base_addr, bool rcv_int_ena)
 {
     greth_ctrl_struct_t greth_info;
+    rumboot_printf("Start receive data (0x%X)\n", base_addr);
 
     new_greth_ctrl_struct(&greth_info);
     greth_info.promiscuous_mode       = true;
@@ -340,11 +294,9 @@ bool greth_start_receive(uint32_t base_addr, bool rcv_int_ena)
     greth_info.receiver_enable        = true;
     greth_info.ram_debug_enable       = false;
     set_greth_ctrl(base_addr, &greth_info);
-
-    return true;
 }
 
-bool greth_wait_receive_irq(uint32_t base_addr, uint32_t *eth_irq_handled_flag)
+bool greth_wait_receive_irq(uint32_t base_addr, uint32_t volatile* eth_irq_handled_flag)
 {
     uint32_t t = 0;
     uint32_t irq_handled = *eth_irq_handled_flag;
@@ -398,9 +350,10 @@ bool greth_configure_for_transmit( uint32_t base_addr, void volatile * const src
     return true;
 }
 
-bool greth_start_transmit(uint32_t base_addr)
+void greth_start_transmit(uint32_t base_addr)
 {
     greth_ctrl_struct_t greth_info;
+    rumboot_printf("Start transmit data (0x%X)\n", base_addr);
     new_greth_ctrl_struct(&greth_info);
     greth_info.promiscuous_mode       = true;
     greth_info.edcl_disable           = false;
@@ -413,12 +366,13 @@ bool greth_start_transmit(uint32_t base_addr)
     greth_info.receiver_enable        = false;
     greth_info.ram_debug_enable       = false;
     set_greth_ctrl(base_addr, &greth_info);
-    return true;
 }
 
-bool greth_start_edcl_rd(uint32_t base_addr)
+void greth_start_edcl_rd(uint32_t base_addr)
 {
     greth_ctrl_struct_t greth_info;
+    rumboot_printf("Start EDCL read transaction (0x%X)\n", base_addr);
+
     new_greth_ctrl_struct(&greth_info);
     greth_info.promiscuous_mode       = true;
     greth_info.edcl_disable           = false;
@@ -431,11 +385,9 @@ bool greth_start_edcl_rd(uint32_t base_addr)
     greth_info.receiver_enable        = true;
     greth_info.ram_debug_enable       = false;
     set_greth_ctrl(base_addr, &greth_info);
-    return true;
 }
 
-
-bool wait_mdio_not_busy_and_no_link_fail(uint32_t base_addr)
+static bool wait_mdio_not_busy_and_no_link_fail(uint32_t base_addr)
 {
     uint32_t buf;
     uint32_t timeout = 0;
@@ -462,7 +414,7 @@ bool wait_mdio_not_busy_and_no_link_fail(uint32_t base_addr)
     return true;
 }
 
-bool wait_mdio_started(uint32_t base_addr)
+static bool wait_mdio_started(uint32_t base_addr)
 {
     uint32_t buf;
     uint32_t timeout = 0;
@@ -482,7 +434,7 @@ bool wait_mdio_started(uint32_t base_addr)
     return true;
 }
 
-void run_mdio_write(uint32_t base_addr, uint8_t phy_addr, uint8_t reg_addr, uint16_t data)
+static void run_mdio_write(uint32_t base_addr, uint8_t phy_addr, uint8_t reg_addr, uint16_t data)
 {
     uint32_t buf;
     //read MDIO control/status and clear data and addr bits;
@@ -495,7 +447,7 @@ void run_mdio_write(uint32_t base_addr, uint8_t phy_addr, uint8_t reg_addr, uint
     iowrite32(buf, base_addr + MDIO_CTRL);
 }
 
-void run_mdio_read(uint32_t base_addr, uint8_t phy_addr, uint8_t reg_addr)
+static void run_mdio_read(uint32_t base_addr, uint8_t phy_addr, uint8_t reg_addr)
 {
     uint32_t buf;
     //read MDIO control/status and clear data and addr bits;
@@ -507,7 +459,7 @@ void run_mdio_read(uint32_t base_addr, uint8_t phy_addr, uint8_t reg_addr)
     iowrite32(buf, base_addr + MDIO_CTRL);
 }
 
-bool mdio_write( uint32_t base_addr, uint8_t phy_addr, uint8_t reg_addr, uint16_t data)
+bool greth_mdio_write( uint32_t base_addr, uint8_t phy_addr, uint8_t reg_addr, uint16_t data)
 {
     if ( !wait_mdio_not_busy_and_no_link_fail(base_addr) ) return false;
     run_mdio_write(base_addr, phy_addr, reg_addr, data);
@@ -516,7 +468,7 @@ bool mdio_write( uint32_t base_addr, uint8_t phy_addr, uint8_t reg_addr, uint16_
     return true;
 }
 
-uint16_t mdio_read( uint32_t base_addr, uint8_t phy_addr, uint8_t reg_addr)
+uint16_t greth_mdio_read( uint32_t base_addr, uint8_t phy_addr, uint8_t reg_addr)
 {
     if ( !wait_mdio_not_busy_and_no_link_fail(base_addr) ) return false;
     run_mdio_read(base_addr, phy_addr, reg_addr);
