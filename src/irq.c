@@ -128,6 +128,7 @@ void rumboot_irq_table_activate(struct rumboot_irq_entry *tbl)
 void rumboot_irq_swint(uint32_t irq)
 {
 	const struct rumboot_irq_controller *ctl = rumboot_irq_controller_by_irq(irq);
+	irq -= ctl->first;
 	ctl->generate_swint(ctl, irq);
 }
 
@@ -140,6 +141,7 @@ void rumboot_irq_enable(int irq)
 {
 	struct rumboot_irq_entry *tbl = rumboot_irq_table_get();
 	const struct rumboot_irq_controller *ctl = rumboot_irq_controller_by_irq(irq);
+	irq -= ctl->first;
 	ctl->configure(ctl, irq, tbl[irq].flags, 1);
 }
 
@@ -164,6 +166,7 @@ void rumboot_irq_disable(int irq)
 	if (tbl) {
 		flags = tbl[irq].flags;
 	}
+	irq -= ctl->first;
 	ctl->configure(ctl, irq, flags, 0);
 }
 
