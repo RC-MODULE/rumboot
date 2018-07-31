@@ -66,7 +66,6 @@ static void msix_proxy_end(const struct rumboot_irq_controller *dev, uint32_t ir
 static void msix_proxy_configure(const struct rumboot_irq_controller *dev, int irq, uint32_t flags, int enable)
 {
 	uint32_t rdata;
-	irq = irq - dev->first;
 	if (irq <= 31) {
 		rdata = ioread32(EXT_IRQ_GEN_BASE + EXT_IRQ_GEN_Global_IRQ_Mask_l);
 		if (!enable) {
@@ -74,13 +73,16 @@ static void msix_proxy_configure(const struct rumboot_irq_controller *dev, int i
 		} else {
 			iowrite32(rdata & (~(1 << irq)), EXT_IRQ_GEN_BASE + EXT_IRQ_GEN_Global_IRQ_Mask_l);
 		}
-	} else {
+	} else if (irq <= 63) {
+		irq -= 32;
 		rdata = ioread32(EXT_IRQ_GEN_BASE + EXT_IRQ_GEN_Global_IRQ_Mask_h);
 		if (!enable) {
 			iowrite32(rdata | ((1 << irq)), EXT_IRQ_GEN_BASE + EXT_IRQ_GEN_Global_IRQ_Mask_h);
 		} else {
 			iowrite32(rdata & (~(1 << irq)), EXT_IRQ_GEN_BASE + EXT_IRQ_GEN_Global_IRQ_Mask_h);
 		}
+	} else {
+		rumboot_platform_panic("IRQ %d out of bounds\n", irq);
 	}
 
 	msix_set_vector(irq, GIC_DIST_BASE + GICD_REG_SGIR, GIC_GENSWINT0, 0);
