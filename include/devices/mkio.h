@@ -21,107 +21,117 @@
      * This function is for checking, that MKIO is present in current project in that base address.
      * It checks MKIO configuration, presence of BC, RT and BM blocks
      *
-     *  TODO: add ID to adjust RTL part and check it.
+     * @param base_address             base address of MKIO controller
      *
      * @return pass
      */
     uint32_t mkio_present (uint32_t base_address);
 
     /**
+     * This function display core BCSL and IRQ registers values with rumboot_printf function
+     *
+     * @param base_address             base address of MKIO controller
      * 
-     * 
-     *
-     *
-     *
      */
     void mkio_report_bc_status (uint32_t base_address);
 
     /**
-     * 
-     * 
+     * This function display core RTS and IRQ registers values with rumboot_printf function
      *
-     *
+     * @param base_address             base address of MKIO controller
      *
      */
     void mkio_report_rt_status (uint32_t base_address);
 
     /**
-     * 
-     * 
+     * This function start simple MKIO work in BC mode
      *
-     *
+     * @param base_address             base address of MKIO controller
+     * @param descriptor_pointer       address of first descriptor in SoC memory (SRAM, DDR, PCIe ...)
      *
      */
     void mkio_bc_start_schedule (uint32_t base_address, uint32_t descriptor_pointer);
 
     /**
-     * 
-     * 
+     * This function start simple MKIO work in RT mode
      *
-     *
+     * @param base_address             base address of MKIO controller
+     * @param subaddress_table_pointer address of subaddress table in SoC memory (SRAM, DDR, PCIe ...)
      *
      */
     void mkio_rt_start_schedule (uint32_t base_address, uint32_t subaddress_table_pointer);
 
     /**
-     * 
-     * 
+     * This function start simple MKIO work in BM mode
      *
-     *
+     * @param base_address             base address of MKIO controller
+     * @param ring_buffer_pointer      address of ring buffer in SoC memory (SRAM, DDR, PCIe ...)
+     * @param ring_buffer_size         size in bytes of ring buffer in SoC memory (SRAM, DDR, PCIe ...)
      *
      */
     void mkio_bm_start_logging (uint32_t base_address, uint32_t ring_buffer_pointer, uint32_t ring_buffer_size);
 
     /**
-     * 
-     * 
+     * This function is for simple array transaction from BC to RT.
+     *   It is specifical for Basis SoC, use one MKIO like BC and another like RT.
+     *   Both MKIOs must be connected to one external 1553 bus.
      *
-     *
+     * @param data_src             head address of data source array
+     * @param data_dst             head address of data destination array
+     * @param size                 data array size
+     * @param bc_base_address      base address of MKIO BC controller
+     * @param rt_base_address      base address of MKIO RT controller
      *
      */
     uint32_t mkio_write_to_rt (uint32_t data_src, uint32_t data_dst, uint32_t size, uint32_t bc_base_address, uint32_t rt_base_address);
 
     /**
-     * 
-     * 
+     * This function is for simple array transaction from RT to BC.
+     *   It is specifical for Basis SoC, use one MKIO like BC and another like RT.
+     *   Both MKIOs must be connected to one external 1553 bus.
      *
-     *
+     * @param data_src             head address of data source array
+     * @param data_dst             head address of data destination array
+     * @param size                 data array size
+     * @param bc_base_address      base address of MKIO BC controller
+     * @param rt_base_address      base address of MKIO RT controller
      *
      */
     uint32_t mkio_read_from_rt (uint32_t data_src, uint32_t data_dst, uint32_t size, uint32_t bc_base_address, uint32_t rt_base_address);
 
     /**
-     * 
-     * 
+     * This function is for setting MKIO signals polarity.
+     *   This function must be called one time before all other work with MKIO
+     *   Watch polarity_reg format in the documentation.
      *
-     *
+     * @param base_address             base address of MKIO controller
+     * @param polarity_reg             value of polarity register
      *
      */
     void mkio_set_polarity (uint32_t base_address, uint32_t polarity_reg);
 
     /**
-     * 
-     * 
+     * This function arms first timestamp trigger for selected MKIO
      *
-     *
+     * @param base_address          base address of MKIO controller
      *
      */
     void mkio_trig_first_timestamp (uint32_t base_address);
 
     /**
-     * 
-     * 
+     * This function is a command to fix current timestamp
+     * It is needed, because timestamp has 64 bit width format and could not be readed in one moment
      *
-     *
+     * @param base_address          base address of MKIO controller
      *
      */
     void mkio_fix_timestamp (uint32_t base_address);
 
     /**
-     * 
-     * 
+     * This function reports current timestamp with rumboot_printf mechanism
+     * It includes mkio_fix_timestamp function
      *
-     *
+     * @param base_address          base address of MKIO controller
      *
      */
     void mkio_report_timestamp (uint32_t base_address);
