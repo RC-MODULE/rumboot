@@ -18,6 +18,9 @@
 #include <platform/trace.h>
 #include <platform/test_event_c.h>
 #include <platform/arch/ppc/ppc_476fp_lib_c.h>
+#include <platform/arch/ppc/ppc_476fp_mmu_fields.h>
+#include <platform/arch/ppc/ppc_476fp_mmu.h>
+#include <platform/ppc470s/mmu/mem_window.h>
 #include <platform/devices/emi.h>
 #include <platform/devices/nor_1636RR4.h>
 
@@ -83,7 +86,7 @@ void check_nor ()
           { "Data0_16",  REGPOKER_READ16, 0x0, 0x1010, 0xffff },
           { "Data1_16",  REGPOKER_READ16, 0x2, 0x1010, 0xffff },
           { "Data2_16",  REGPOKER_READ16, 0x4, 0x0123, 0xffff },
-          { "Data3_16",  REGPOKER_READ16, 0x5, 0x4567, 0xffff },
+          { "Data3_16",  REGPOKER_READ16, 0x6, 0x4567, 0xffff },
           { "Data4_16",  REGPOKER_READ16, 0x8, 0x89AB, 0xffff },
           { "Data5_16",  REGPOKER_READ16, 0xA, 0xCDEF, 0xffff },
           { "Data6_16",  REGPOKER_READ16, 0xC, 0x0000, 0xffff },
