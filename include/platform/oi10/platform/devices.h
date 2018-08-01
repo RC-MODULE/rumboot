@@ -56,6 +56,8 @@
 #define HSCB2_BASE              0xC0302000
 #define HSCB3_BASE              0xC0303000
 #define BOOTROM_BASE            0xFFFF0000
+#define AXI32HSIFS_CTRL_BASE    0xC0100000
+#define AXI64HSIFS_CTRL_BASE    0xC0200000
 
 /**
  * @}
