@@ -28,6 +28,9 @@ void refresh_timings(int32_t bank_num)
         case 0:
             ioread32(NOR_BASE);
             break;
+        case 4:
+            ioread32(SRAM0_BASE);
+            break;
         case 5:
             ioread32(SRAM0_BASE);
             break;
@@ -68,10 +71,14 @@ int check_sram_nor(uint32_t base_addr)
     const ssx_tcyc_t test_tcyc_arr_sram0[SRAM_TCYC_SPACE] = {TCYC_2, TCYC_3, TCYC_4, TCYC_5};
     const ssx_tcyc_t test_tcyc_arr_nor[SRAM_TCYC_SPACE]   = {TCYC_3, TCYC_5, TCYC_9, TCYC_12};
     ssx_tcyc_t tcyc;
+
     uint32_t event_code = (base_addr==NOR_BASE)   ? EVENT_CHECK_NOR_TSOE_TCYC   :
                           (base_addr==SRAM1_BASE) ? EVENT_CHECK_SRAM1_TSOE_TCYC :
                                                     EVENT_CHECK_SRAM0_TSOE_TCYC;
-    uint32_t bank       = (base_addr==NOR_BASE) ? 5 : 0;
+
+    uint32_t bank       = (base_addr==NOR_BASE)   ? 5 :
+                          (base_addr==SRAM1_BASE) ? 4 :
+                                                    0;
 
     rumboot_printf("Checking SRAM/NOR (0x%X)\n", base_addr);
 
@@ -120,7 +127,7 @@ int check_pipelined(uint32_t base_addr)
 int main()
 {
     int ret;
-    rumboot_printf("Start test_oi10_em2_201\n");
+    rumboot_printf("Start test_oi10_em2_201 (0x%X)\n", EXT_MEM_BASE);
     test_event_send_test_id("test_oi10_em2_201");
     emi_init();
     switch (EXT_MEM_BASE)
