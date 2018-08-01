@@ -104,8 +104,6 @@ int main ()
 
     static const tlb_entry im0_tlb_entry_little_0 = {TLB_ENTRY_IM0_LITTLE_MIRROR_0};
        write_tlb_entries(&im0_tlb_entry_little_0,1);
-       msync();
-       isync();
 
     static const tlb_entry im0_tlb_entry_little_1 = {TLB_ENTRY_IM0_LITTLE_MIRROR_1};
        write_tlb_entries(&im0_tlb_entry_little_1,1);
