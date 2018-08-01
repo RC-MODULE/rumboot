@@ -23,8 +23,8 @@
 #include <platform/devices/emi.h>
 #include <platform/devices/nor_1636RR4.h>
 
-#define TLB_ENTRY_IM0_LITTLE_MIRROR_0   MMU_TLB_ENTRY(  0x010,  0x80000,    0x80040,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_LITTLE_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_1,     0b1 )
-#define TLB_ENTRY_IM0_LITTLE_MIRROR_1   MMU_TLB_ENTRY(  0x010,  0x80010,    0x80050,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_LITTLE_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_2,     0b1 )
+#define TLB_ENTRY_IM0_LITTLE_MIRROR_0   MMU_TLB_ENTRY(  0x010,  0x80000,    0x80040,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_LITTLE_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,    MMU_TLBWE_BE_UND,     0b1 )
+#define TLB_ENTRY_IM0_LITTLE_MIRROR_1   MMU_TLB_ENTRY(  0x010,  0x80010,    0x80050,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_LITTLE_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,    MMU_TLBWE_BE_UND,     0b1 )
 #define TLB_ENTRY_IM1_LITTLE            MMU_TLB_ENTRY(  0x020,  0xC0000,    0x80020,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_LITTLE_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
 #define TLB_ENTRY_SRAM0_LITTLE          MMU_TLB_ENTRY(  0x000,  0x00000,    0x00000,    MMU_TLBE_DSIZ_1GB,      0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_LITTLE_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
 #define TLB_ENTRY_SRAM1_NOR_LITTLE      MMU_TLB_ENTRY(  0x000,  0x40000,    0x40000,    MMU_TLBE_DSIZ_1GB,      0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_LITTLE_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
@@ -109,8 +109,6 @@ int main ()
 
     static const tlb_entry im0_tlb_entry_little_1 = {TLB_ENTRY_IM0_LITTLE_MIRROR_1};
        write_tlb_entries(&im0_tlb_entry_little_1,1);
-       msync();
-       isync();
 
     uint32_t im0_array_mirror = (uint32_t) im0_array - IM0_BASE + IM0_BASE_MIRROR;
     check_mem_little_e (im0_array_mirror);
@@ -122,8 +120,6 @@ int main ()
     //IM1 Little Endian
     static const tlb_entry im1_tlb_entry_little = {TLB_ENTRY_IM1_LITTLE};
     write_tlb_entries(&im1_tlb_entry_little,1);
-    msync();
-    isync();
 
     rumboot_printf("Check IM1 LittleEndian\n");
     check_mem_little_e (IM1_BASE);
@@ -139,8 +135,6 @@ int main ()
 
     static const tlb_entry sram0_tlb_entry_little = {TLB_ENTRY_SRAM0_LITTLE};
     write_tlb_entries(&sram0_tlb_entry_little,1);
-    msync();
-    isync();
 
     check_mem_little_e (SRAM0_BASE);
 
@@ -155,8 +149,6 @@ int main ()
 
     static const tlb_entry nor_tlb_entry_little = {TLB_ENTRY_SRAM1_NOR_LITTLE};
     write_tlb_entries(&nor_tlb_entry_little,1);
-    msync();
-    isync();
 
     check_mem_nor_little_e (NOR_BASE);
 
@@ -166,8 +158,6 @@ int main ()
 
     static const tlb_entry sram1_tlb_entry_big = {TLB_ENTRY_SRAM1_NOR_BIG};
     write_tlb_entries(&sram1_tlb_entry_big,1);
-    msync();
-    isync();
 
     check_mem_big_e (SRAM1_BASE);
 
@@ -177,8 +167,6 @@ int main ()
 
     static const tlb_entry sram1_tlb_entry_little = {TLB_ENTRY_SRAM1_NOR_LITTLE};
     write_tlb_entries(&sram1_tlb_entry_little,1);
-    msync();
-    isync();
 
     check_mem_little_e (SRAM1_BASE);
 
