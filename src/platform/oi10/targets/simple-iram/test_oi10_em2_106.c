@@ -27,8 +27,11 @@
 //static uint32_t input_data_transfer_32[NUM_ELEM]  __attribute__((section(".EM2.data"))) __attribute__((aligned(1024))) = {0};
 //static uint32_t output_data_transfer_32[NUM_ELEM] __attribute__((section(".EM2.data"))) __attribute__((aligned(1024))) = {0};
 
-uint32_t* input_data_transfer_32 = (uint32_t*)(SRAM0_BASE + 0x100);
-uint32_t* output_data_transfer_32 = (uint32_t*)(SRAM0_BASE + 0x100 + NUM_ELEM*sizeof(uint32_t));
+uint32_t* input_data_transfer_32_WT = (uint32_t*)(SRAM0_BASE + 0x100);
+uint32_t* output_data_transfer_32_WT = (uint32_t*)(SRAM0_BASE + 0x100 + NUM_ELEM*sizeof(uint32_t));
+
+uint32_t* input_data_transfer_32_WB = (uint32_t*)(SRAM0_BASE + 0x200);
+uint32_t* output_data_transfer_32_WB = (uint32_t*)(SRAM0_BASE + 0x200 + NUM_ELEM*sizeof(uint32_t));
 
 
 static uint32_t dma2plb6_get_bytesize(transfer_width transfer_width_code)
@@ -53,7 +56,7 @@ static uint32_t dma2plb6_get_bytesize(transfer_width transfer_width_code)
     return 0;
 }
 
-static void init_data()
+static void init_data(uint32_t* addr)
 {
     uint32_t i = 0, reg = 0;
     for (i = 0; i < NUM_ELEM; i++)
@@ -61,30 +64,30 @@ static void init_data()
         //reg = input_data_transfer_32[i];
         reg = i + 0xABCD0000;
         //input_data_transfer_32[i] = reg;
-        iowrite32(reg, (uint32_t)(input_data_transfer_32 + i));
+        iowrite32(reg, (uint32_t)(addr + i));
     }
 
     i = 0;
 
     while (i < NUM_ELEM)
     {
-        dcbi(input_data_transfer_32 + i);
+        dcbi(addr + i);
         i += 32;
     };
 }
 
-static bool check_data()
+static bool check_data(uint32_t* input_addr, uint32_t* output_addr)
 {
     rumboot_putstring("Check data...\n");
     uint32_t i = 0;
     for (i = 0; i < NUM_ELEM; i++)
     {
-        if ((output_data_transfer_32[i] != input_data_transfer_32[i]) || (output_data_transfer_32[i] != i + 0xABCD0000))
+        if ((output_addr[i] != input_addr[i]) || (output_addr[i] != i + 0xABCD0000))
         {
             rumboot_printf("Error in output data array, index = %d\n", i);
             rumboot_printf("Expected = 0x%x\n", i + 0xABCD0000);
-            rumboot_printf("Actual (in) = 0x%x\n", input_data_transfer_32[i]);
-            rumboot_printf("Actual (out) = 0x%x\n", output_data_transfer_32[i]);
+            rumboot_printf("Actual (in) = 0x%x\n", input_addr[i]);
+            rumboot_printf("Actual (out) = 0x%x\n", output_addr[i]);
             return false;
         };
     }
@@ -167,10 +170,10 @@ int main(void)
     msync();
     isync();
 
-    init_data();
+    init_data(input_data_transfer_32_WT);
 
-    src = get_physical_addr((uint32_t)input_data_transfer_32, 0);
-    dst = get_physical_addr((uint32_t)output_data_transfer_32, 0);
+    src = get_physical_addr((uint32_t)input_data_transfer_32_WT, 0);
+    dst = get_physical_addr((uint32_t)output_data_transfer_32_WT, 0);
 
     dma_transfer_width_cur = tr_width_word;
     dma_rw_transfer_size_cur = rw_tr_size_4q;
@@ -189,7 +192,7 @@ int main(void)
         return 1;
     }
 
-    if (!check_data())
+    if (!check_data(input_data_transfer_32_WT, output_data_transfer_32_WT))
     {
         rumboot_putstring("Data error\n");
         return 1;
@@ -200,8 +203,6 @@ int main(void)
 
 
 
-
-
     //cache WB
     rumboot_putstring("Set cache WB\n");
     static const tlb_entry em0_tlb_entry_wb = {TLB_ENTRY_EM2_CACHE_WB};
@@ -209,10 +210,10 @@ int main(void)
     msync();
     isync();
 
-    init_data();
+    init_data(input_data_transfer_32_WB);
 
-    src = get_physical_addr((uint32_t)input_data_transfer_32, 0);
-    dst = get_physical_addr((uint32_t)output_data_transfer_32, 0);
+    src = get_physical_addr((uint32_t)input_data_transfer_32_WB, 0);
+    dst = get_physical_addr((uint32_t)output_data_transfer_32_WB, 0);
 
     dma_transfer_width_cur = tr_width_word;
     dma_rw_transfer_size_cur = rw_tr_size_4q;
@@ -234,7 +235,7 @@ int main(void)
 
     msync();
 
-    if (!check_data())
+    if (!check_data(input_data_transfer_32_WB, output_data_transfer_32_WB))
     {
         rumboot_putstring("Data error\n");
         return 1;
