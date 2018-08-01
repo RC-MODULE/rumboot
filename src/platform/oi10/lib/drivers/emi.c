@@ -135,7 +135,7 @@ void emi_init_impl (uint32_t emi_dcr_base, uint32_t plb6mcif2_dcr_base, uint32_t
            TRAS_9
        }
     };
-    emi_set_bank_cfg(0, emi_dcr_base, &b4_cfg);
+    emi_set_bank_cfg(4, emi_dcr_base, &b4_cfg);
 
     //init bank5 - NOR
     emi_bank_cfg b5_cfg =
