@@ -4,6 +4,7 @@
 #include <string.h>
 
 #include <rumboot/io.h>
+#include <rumboot/irq.h>
 #include <rumboot/printf.h>
 #include <rumboot/timer.h>
 
@@ -11,35 +12,30 @@
 #include <platform/arch/ppc/ppc_476fp_lib_c.h>
 #include <platform/test_event_codes.h>
 #include <platform/devices.h>
+#include <platform/interrupts.h>
 #include <platform/regs/regs_lscb.h>
 #include <platform/regs/fields/lscb_msp.h>
 
 /* config */
-#define test_read_ID
-#define test_LSCB0
-#define test_LSCB1
-#define RTAD_VALUE                  0x001F
 #define USE_OFF_LINE_SELF_TEST      1
+#define RTAD_VALUE                  0x001F
 #define CHECK_MSP_REG_ADDR          MSP_RM_DSA
 #define CHECK_MSP_REG_NAME          "rm_dsa"
+#define LCSB_IRQ_TIMEOUT            10000 /* us */
 #define DEBUG_MARK_SPR              SPR_SPRG8
+#define IRQ_FLAGS                   (RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH)
 /* ------ */
 
 /* General constants, bits, and masks */
-#define LSCB0_M0_IRQ_s              105
-#define LSCB1_M1_IRQ_s              68
-
 #define BIT(BN)                     (1 << (BN))
 
 #define MKO_MEM_OFFSET              0x1000
 
-#define LCSB_TIMEOUT                0x1000
-
 #define TEST_OK                     0x0000
 #define TEST_ERROR                  0x0001
 
-#define MEM_TABLE_END                {0xFFFF, 0xFFFF}
-#define REG_TABLE_END                {0xFFFF, 0xFFFF, NULL}
+#define MEM_TABLE_END               {0xFFFF, 0xFFFF}
+#define REG_TABLE_END               {0xFFFF, 0xFFFF, NULL}
 
 #define REG_DATA_BIT                0
 #define REG_ADDR_BIT                16
@@ -85,6 +81,8 @@
 #define ICSP_B                      0x0106
 #define IMSG_B                      0x0107
 
+typedef struct rumboot_irq_entry rumboot_irq_entry;
+
 /* Data structures */
 
 typedef struct
@@ -114,7 +112,8 @@ typedef struct
                                 BIT(CFG1_ETE_i)
 
 #define MSP_CFG2_VALUE          BIT(CFG2_EI_i)          | \
-                                BIT(CFG2_ISAC_i)
+                                BIT(CFG2_ISAC_i)        | \
+                                BIT(CFG2_L_P_IR_i)
 
 #define MSP_CFG3_VALUE          BIT(CFG3_EME_i)
 #define MSP_CFG4_VALUE          BIT(CFG4_E_BC_CWE_i)
@@ -136,8 +135,7 @@ typedef struct
                                 BIT(CTL_WORD_BC_A_B_i)
 #define CTL_WORD_B_VALUE        CTL_WORD_VALUE
 
-#define LSCB0                   ((lscb_t*)(LSCB0_BASE))
-#define LSCB1                   ((lscb_t*)(LSCB1_BASE))
+#define LSCBX                   ((lscb_t*)(LSCB_X_BASE))
 
 /* Macro functions (utilities) */
 
@@ -341,46 +339,8 @@ static uint8_t rtad_fill_table[] =
         0x3F, 0x3E, 0x3D, 0x3B, 0x37, 0x2F, 0x1F
 };
 
-static volatile uint32_t IRQ;
+static volatile uint32_t IRQ = 0;
 
-/*
-void NON_CR_INTERRUPT_HANDLER(void)
-{
-	rumboot_putstring ("NON_CR_INTERRUPT_HANDLER \n");
-    uint32_t source_vector = mpic_get_ncr_interrupt_vector(Processor0);
-    rumboot_putstring("NON_CRITICAL int handler message ");
-    rumboot_puthex (source_vector);
-    if (source_vector == LSCB0_M0_IRQ_s)
-    {
-        rumboot_putstring("source_vector == LSCB0_M0_IRQ_s \n");
-        IRQ = 1;
-    }
-    if (source_vector == LSCB1_M1_IRQ_s)
-    {
-        rumboot_putstring("source_vector == LSCB1_M1_IRQ_s \n");
-        IRQ = 1;
-    }
-	END_NONCR_INT_P0;
-}
-*/
-
-void lscb_irq_set()
-{
-    /* Initialization Interrupt controller */
-	IRQ = 0;
-    rumboot_putstring ("\tStart IRQ initialization...\n");
-/*
-    mpic_reset();
-    mpic_pass_through_disable();
-    mpic_setup_ext_interrupt(LSCB0_M0_IRQ_s, MPIC_PRIOR_1,int_sense_edge,int_pol_pos,Processor0);
-    mpic_setup_ext_interrupt(LSCB1_M1_IRQ_s, MPIC_PRIOR_1,int_sense_edge,int_pol_pos,Processor0);
-	SET_NONCR_INT_HANDLER(non_cr_interrupt_handler);
-	ppc_noncr_int_enable();
-	mpic_set_interrupt_borders(10, 5);  // MCK, CR borders
-	mpic_set_minimal_interrupt_priority_mask(Processor0, MPIC_PRIOR_0);
-*/
-	rumboot_putstring ("\tIRQ have NOT been initialized (not implemented).\n");
-}
 
 void write_msp_reg(     lscb_t      *lscb,
                         MSP_REG      msp_addr,
@@ -416,6 +376,7 @@ void init_lscb_regs(lscb_t *lscb, msp_reg_t *rit_ptr)
     for(rit = rit_ptr; (rit->addr) != 0xFFFF; rit++)
         write_msp_reg(lscb, rit->addr, rit->data, rit->name);
 }
+
 
 uint32_t check_msp_reg( lscb_t      *lscb,
                         uint32_t    *fill_tab,
@@ -491,7 +452,7 @@ uint32_t compare_lscb_mem(lscb_t *lscb, a16d16_t *mem_cmp_table)
         /*
         rumboot_printf("Check 0x%X at 0x%X...\n",
                 (uint32_t)mct->data, (uint32_t)mct->addr);
-         */
+        */
         if(read_mem != expt_mem)
         {
             ck_result |= TEST_ERROR;
@@ -502,32 +463,6 @@ uint32_t compare_lscb_mem(lscb_t *lscb, a16d16_t *mem_cmp_table)
         }
     }
     return ck_result;
-}
-
-int wait_lscb_int(lscb_t *lscb, uint32_t *res)
-{
-    int i=0;
-
-    rumboot_putstring ("wait_lscb_int \n");
-    // read_msp_reg(lscb, MSP_ISR, "isr");
-
-/*
-    for (i = 1; i <= LCSB_TIMEOUT; i++)
-    {
-        if (IRQ == 1)
-        {
-            IRQ = 0;
-            break;
-        }
-    }
-    if ( i >=LCSB_TIMEOUT)
-    {
-        rumboot_putstring("Error! IRQ flag wait timeout!");
-        return TEST_ERROR;
-    }
-*/
-
-    return (*res |= (TEST_OK^i));
 }
 
 uint32_t check_rms(lscb_t *lscb, uint8_t *ft)
@@ -561,32 +496,86 @@ uint32_t compare_cfg5_rtad(uint32_t cfg5_val, uint32_t signal_val)
     return (uint32_t)(parsed_cfg5 != (signal_val & (RTAD_MASK | RTADP_MASK)));
 }
 
+void lscb_irq_handler( int irq, void *arg )
+{
+    rumboot_printf("IRQ%d received!\n", irq);
+    IRQ |= 0x00000001;
+    read_msp_reg((lscb_t*)arg, MSP_ISR, "isr");
+}
+
+void init_lscb_irq(rumboot_irq_entry **irq_table, lscb_t *lscb)
+{
+    rumboot_putstring ("\tStart IRQ initialization...\n");
+
+    IRQ = 0;
+    rumboot_irq_cli();
+    *irq_table = rumboot_irq_create( NULL );
+
+    rumboot_irq_set_handler(*irq_table, LSCB_X_INT, IRQ_FLAGS, lscb_irq_handler, (void*)lscb);
+
+    /* Activate the table */
+    rumboot_irq_table_activate(*irq_table);
+    rumboot_irq_enable( LSCB_X_INT );
+    rumboot_irq_sei();
+    rumboot_putstring ("\tIRQ have been initialized.\n");
+}
+
+void free_lscb_irq(rumboot_irq_entry **irq_table)
+{
+    rumboot_irq_table_activate(NULL);
+    rumboot_irq_free(*irq_table);
+    *irq_table = NULL;
+}
+
+uint32_t wait_lscb_int(lscb_t *lscb, uint32_t *res)
+{
+    uint32_t    tbeg = rumboot_platform_get_uptime(),
+                tend = 0;
+
+    rumboot_putstring ("wait_lscb_int \n");
+    while(
+            (!IRQ) &&
+            ((tend = rumboot_platform_get_uptime()) <= (tbeg + LCSB_IRQ_TIMEOUT))
+    );
+
+    if(tend > (tbeg + LCSB_IRQ_TIMEOUT))
+    {
+        rumboot_putstring("Error! IRQ wait timeout!\n");
+        *res |= TEST_ERROR;
+    }
+    return *res;
+}
+
+
 /* ----------------- MAIN LSCB TEST --------------------- */
 
-#if defined(test_LSCB0) && defined(test_LSCB1)
-uint32_t test_lscb(lscb_t *lscb, int lscbn)
+uint32_t test_lscb(lscb_t *lscb)
 {
     uint32_t     test_result = TEST_OK;
 
+#ifdef CHECK_REGS
     rumboot_putstring("------- check msp reg access -------- \n");
-
     if(!!(test_result = check_msp_reg(
             lscb,
             msp_fill_table,
             CHECK_MSP_REG_ADDR,
             CHECK_MSP_REG_NAME)))
         return TEST_ERROR;
+#endif
 
     rumboot_printf("------- write config: 0x%X -------- \n",
-            RTAD_VALUE | MSP_SSFLAG_EXT_TRIG_MASK);
-    lscb->reg_msp_signal = RTAD_VALUE | MSP_SSFLAG_EXT_TRIG_MASK;
+            RTAD_VALUE);
+    lscb->reg_msp_signal = RTAD_VALUE;
 
+#ifdef CHECK_REGS
     rumboot_putstring("---- check reg_msp_signal access ---- \n");
     test_result |= check_rms(lscb, rtad_fill_table);
+#endif
 
     rumboot_putstring("------------- init regs ------------- \n");
     init_lscb_regs(lscb, reg_init_table);
 
+#ifdef CHECK_REGS
     rumboot_putstring("-------- read 'reg cfg5_' and ------- \n");
     rumboot_putstring("-------- compare msp_rtad[4:0] ------ \n");
     rumboot_putstring("-------- -- with msp_rtadp ---------- \n");
@@ -594,34 +583,32 @@ uint32_t test_lscb(lscb_t *lscb, int lscbn)
             read_msp_reg(lscb, MSP_CFG5_, NULL),
             lscb->reg_msp_signal);
     rumboot_putstring(!test_result ? "Success!\n" : "Failed!\n");
+#endif
 
     rumboot_putstring("------------- init mem -------------- \n");
     rumboot_printf("Total: %d words writen.\n",
             init_lscb_mem(lscb, mem_init_table));
 
-    rumboot_putstring("------- transfer message ch A ------- \n");
+    rumboot_putstring("------- Transfer message ch A ------- \n");
     START_OF_MESSAGE(lscb);
 
-    if (wait_lscb_int(lscb, &test_result)) return TEST_ERROR;
+    wait_lscb_int(lscb, &test_result);
 
-    rumboot_printf("-- read word loop_test LSCB%d ch A -- \n",
-            lscbn);
+    rumboot_putstring("------- Check LSCB channel A -------- \n");
 
     test_result |= compare_lscb_mem(lscb, mem_check_table_a_stack);
     test_result |= compare_lscb_mem(lscb, mem_check_table_a);
     rumboot_printf("LSCB memory compare %s!\n",
             !test_result?"SUCCESS":"FAILED");
 
-    if (wait_lscb_int(lscb, &test_result)) return TEST_ERROR;
-
-
-    rumboot_printf("-- read word loop_test LSCB%d ch B -- \n",
-            lscbn);
+    rumboot_putstring("------- Check LSCB channel B -------- \n");
 
     /* Select channel B */
     write_msp_reg(lscb, MSP_CFG1_, MSP_CFG1_VALUE_B , "cfg1_");
-    rumboot_putstring("------- transfer message ch A ------- \n");
+    rumboot_putstring("------- Transfer message ch B ------- \n");
     START_OF_MESSAGE(lscb);
+
+    if (wait_lscb_int(lscb, &test_result)) return TEST_ERROR;
 
     test_result |= compare_lscb_mem(lscb, mem_check_table_b_stack);
     test_result |= compare_lscb_mem(lscb, mem_check_table_b);
@@ -630,51 +617,20 @@ uint32_t test_lscb(lscb_t *lscb, int lscbn)
 
     return !!test_result;
 }
-#endif
-
-#ifdef test_read_ID
-void test_read_id(lscb_t *lscb, int lscbn)
-{
-    rumboot_printf("---------- test_read_ID LSCB%d ---------- \n",
-            lscbn);
-    lscb->reg_msp_signal = RTAD_MASK;
-    rumboot_printf("test_read_ID LSCB%d write=0x%X read=0x%X\n",
-            RTAD_MASK, lscb->reg_msp_signal);
-}
-#endif
 
 int main(void)
 {
-	uint32_t    test_result[2],
-	            test_error;
+	uint32_t    test_result = TEST_OK;
 
-    test_result[0] = TEST_OK;
-    test_result[1] = TEST_OK;
+    test_result = TEST_OK;
 
-#ifdef test_read_ID
-    test_read_id(LSCB0, 0);
-    test_read_id(LSCB1, 1);
-#endif
-		
-#if defined(test_LSCB0) || defined(test_LSCB1)
-	rumboot_putstring("------------ Start test LSCB ----------- \n");
-	lscb_irq_set();
-#endif
+    rumboot_irq_entry *irq_table = NULL;
+	init_lscb_irq(&irq_table, (void*)LSCBX);
 
-#ifdef test_LSCB0
-    rumboot_putstring("-------------- TEST LSCB0 -------------- \n");
-	test_result[0] = test_lscb(LSCB0, 0);
-	rumboot_printf("Test lscb%d - %s!\n", 0, test_result[0]?"ERROR":"OK");
-#endif
-
-#ifdef test_LSCB1
-    rumboot_putstring("-------------- TEST LSCB1 -------------- \n");
-    test_result[1] = test_lscb(LSCB1, 1);
-    rumboot_printf("Test lscb%d - %s!\n", 1, test_result[1]?"ERROR":"OK");
-#endif
-    test_error = test_result[0] || test_result[1];
-	rumboot_putstring((!test_error)?
+    rumboot_putstring("------------ TEST LSCB -------------- \n");
+	rumboot_putstring(!(test_result |= test_lscb(LSCBX)) ?
 	        "TEST OK\n":"TEST ERROR\n");
-    return test_error;
+    free_lscb_irq(&irq_table);
+    return test_result;
 }
 
