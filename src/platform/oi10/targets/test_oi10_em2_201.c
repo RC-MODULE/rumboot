@@ -100,7 +100,9 @@ int check_sram_nor(uint32_t base_addr)
 //TODO:
 int check_sdram(uint32_t base_addr)
 {
-    rumboot_printf("Checking SDRAM (0x%X) not yet implemented\n", base_addr);
+    rumboot_printf("Checking SDRAM (0x%X)\n", base_addr);
+    iowrite32(0xBABADEDA, base_addr);
+    rumboot_printf("[0x%x] = 0x%X\n", ioread32(base_addr));
     return 0;
 }
 
