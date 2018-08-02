@@ -14,24 +14,24 @@
 #include <platform/devices/emi.h>
 #include <platform/devices/nor_1636RR4.h>
 
+#define EVENT_CHECK_SRAM0_TSOE_TCYC      0x0000003E
+#define EVENT_CHECK_NOR_TSOE_TCYC        0x0000003F
+#define EVENT_CHECK_SRAM1_TSOE_TCYC      0x00000040
+#define EVENT_CHECK_SSRAM_SST_TSSOE_FT    0x00000041
+#define EVENT_CHECK_SSRAM_SST_TSSOE_PIPE  0x00000042
 
-#define EVENT_CHECK_SRAM0_TSOE_TCYC  0x0000003E
-#define EVENT_CHECK_NOR_TSOE_TCYC    0x0000003F
-#define EVENT_CHECK_SRAM1_TSOE_TCYC  0x00000040
+#define TEST_ADDR_0  (base_addr +  0x4)
+#define TEST_ADDR_1  (base_addr + 0x10)
 
 void refresh_timings(int32_t bank_num)
 {
-    //TODO: have to add other banks
     //for refreshing timings at some bank we have to make access to some other bank
     switch (bank_num)
     {
         case 0:
             ioread32(NOR_BASE);
             break;
-        case 4:
-            ioread32(SRAM0_BASE);
-            break;
-        case 5:
+        default:
             ioread32(SRAM0_BASE);
             break;
     }
@@ -43,6 +43,16 @@ void emi_update_tcyc_tsoe(uint32_t bank_num, ssx_tsoe_t tsoe, ssx_tcyc_t tcyc)
     emi_get_bank_cfg(bank_num, DCR_EM2_EMI_BASE, &bn_cfg);
     bn_cfg.ssx_cfg.T_SOE = tsoe;
     bn_cfg.ssx_cfg.T_CYC = tcyc;
+    emi_set_bank_cfg(bank_num, DCR_EM2_EMI_BASE, &bn_cfg);
+    refresh_timings(bank_num);
+}
+
+void emi_update_sst_tssoe(uint32_t bank_num, ssx_sst_t sst, ssx_tssoe_t tssoe)
+{
+    emi_bank_cfg bn_cfg;
+    emi_get_bank_cfg(bank_num, DCR_EM2_EMI_BASE, &bn_cfg);
+    bn_cfg.ssx_cfg.SST = sst;
+    bn_cfg.ssx_cfg.T_SSOE = tssoe;
     emi_set_bank_cfg(bank_num, DCR_EM2_EMI_BASE, &bn_cfg);
     refresh_timings(bank_num);
 }
@@ -64,8 +74,6 @@ int check_sram_nor(uint32_t base_addr)
 {
     #define SRAM_TSOE_SPACE  2
     #define SRAM_TCYC_SPACE  4
-    #define TEST_ADDR_0  (base_addr +  0x4)
-    #define TEST_ADDR_1  (base_addr + 0x10)
 
     const ssx_tsoe_t test_tsoe_arr[SRAM_TSOE_SPACE]       = {TSOE_1, TSOE_2};
     const ssx_tcyc_t test_tcyc_arr_sram0[SRAM_TCYC_SPACE] = {TCYC_2, TCYC_3, TCYC_4, TCYC_5};
@@ -95,34 +103,50 @@ int check_sram_nor(uint32_t base_addr)
 }
 
 /*
- * SDRAM
+ * SDRAM (2.1.3 and 2.1.5 PPPC_SRAM_SDRAM_slave0_testplan.docx)
  */
 //TODO:
 int check_sdram(uint32_t base_addr)
 {
     rumboot_printf("Checking SDRAM (0x%X)\n", base_addr);
     iowrite32(0xBABADEDA, base_addr);
-    rumboot_printf("[0x%x] = 0x%X\n", ioread32(base_addr));
+    rumboot_printf("[0x%x] = 0x%X\n", base_addr, ioread32(base_addr));
     return 0;
 }
 
 /*
- * SSRAM
+ * SSRAM (2.1.4 PPPC_SRAM_SDRAM_slave0_testplan.docx)
  */
-//TODO:
 int check_ssram(uint32_t base_addr)
 {
-    rumboot_printf("Checking SSRAM (0x%X) not yet implemented\n", base_addr);
+    #define SSRAM_SST_TSSOE_SPACE 2
+
+    const uint32_t bank = 2;
+    uint32_t event_code = EVENT_CHECK_SSRAM_SST_TSSOE_FT;
+
+    ssx_sst_t sst_arr[SSRAM_SST_TSSOE_SPACE] = {SST_Flow_Through, SST_Pipelined};
+    ssx_tssoe_t tssoe_arr[SSRAM_SST_TSSOE_SPACE] = {TSSOE_1, TSSOE_2};
+
+    rumboot_printf("Checking SSRAM (0x%X)\n", base_addr);
+
+    for (int i=0; i<SSRAM_SST_TSSOE_SPACE; i++)
+    {
+        emi_update_sst_tssoe(bank, sst_arr[i], tssoe_arr[i]);
+        test_event(event_code++);
+        check_wrrd(TEST_ADDR_0, 0x55555555<<i     );
+        check_wrrd(TEST_ADDR_1, 0x55555555<<(i+1) );
+    }
     return 0;
 }
 
 /*
- * PIPELINED
+ * PIPELINED (2.1.6 PPPC_SRAM_SDRAM_slave0_testplan.docx)
  */
-//TODO:
 int check_pipelined(uint32_t base_addr)
 {
-    rumboot_printf("Checking SDRAM (0x%X) not yet implemented\n", base_addr);
+    rumboot_printf("Checking PIPELINED (0x%X)\n", base_addr);
+    check_wrrd(TEST_ADDR_0, 0x55555555 );
+    check_wrrd(TEST_ADDR_1, 0xAAAAAAAA );
     return 0;
 }
 
