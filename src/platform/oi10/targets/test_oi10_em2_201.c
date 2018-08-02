@@ -17,7 +17,7 @@
 
 #define EVENT_CHECK_SRAM0_TSOE_TCYC  0x0000003E
 #define EVENT_CHECK_NOR_TSOE_TCYC    0x0000003F
-
+#define EVENT_CHECK_SRAM1_TSOE_TCYC  0x00000040
 
 void refresh_timings(int32_t bank_num)
 {
@@ -68,7 +68,9 @@ int check_sram_nor(uint32_t base_addr)
     const ssx_tcyc_t test_tcyc_arr_sram0[SRAM_TCYC_SPACE] = {TCYC_2, TCYC_3, TCYC_4, TCYC_5};
     const ssx_tcyc_t test_tcyc_arr_nor[SRAM_TCYC_SPACE]   = {TCYC_3, TCYC_5, TCYC_9, TCYC_12};
     ssx_tcyc_t tcyc;
-    uint32_t event_code = (base_addr==NOR_BASE) ? EVENT_CHECK_NOR_TSOE_TCYC : EVENT_CHECK_SRAM0_TSOE_TCYC;
+    uint32_t event_code = (base_addr==NOR_BASE)   ? EVENT_CHECK_NOR_TSOE_TCYC   :
+                          (base_addr==SRAM1_BASE) ? EVENT_CHECK_SRAM1_TSOE_TCYC :
+                                                    EVENT_CHECK_SRAM0_TSOE_TCYC;
     uint32_t bank       = (base_addr==NOR_BASE) ? 5 : 0;
 
     rumboot_printf("Checking SRAM/NOR (0x%X)\n", base_addr);
@@ -114,8 +116,6 @@ int check_pipelined(uint32_t base_addr)
     rumboot_printf("Checking SDRAM (0x%X) not yet implemented\n", base_addr);
     return 0;
 }
-
-
 
 int main()
 {
