@@ -154,11 +154,63 @@ void emi_init_impl (uint32_t emi_dcr_base, uint32_t plb6mcif2_dcr_base, uint32_t
     };
     emi_set_rfc(emi_dcr_base, &emi_rfc);
 
-    //init bank2
-    //TODO:
+    //init bank2 - SSRAM
+    emi_bank_cfg b2_cfg =
+    {
+       //SS2
+       {
+           BTYP_SSRAM,
+           PTYP_NO_PAGES,
+           SRDY_EXT_RDY_NOT_USE,
+           TWR_0,
+           SST_Flow_Through,
+           TSSOE_2,
+           TSOE_1,
+           TCYC_8,
+           0, //T_RDY
+           TDEL_0
+       },
+       //SD2
+       {
+           CSP_256,
+           SDS_2M,
+           CL_3,
+           TRDL_1,
+           SI_EXT_INIT,
+           TRCD_5,
+           TRAS_9
+       }
+    };
+    emi_set_bank_cfg(2, emi_dcr_base, &b2_cfg);
 
-    //init bank3
-    //TODO:
+    //init bank3 - PIPELINED
+    emi_bank_cfg b3_cfg =
+    {
+       //SS3
+       {
+           BTYP_PIPERDY,
+           PTYP_NO_PAGES,
+           SRDY_EXT_RDY_NOT_USE,
+           TWR_0,
+           SST_Flow_Through,
+           TSSOE_1,
+           TSOE_1,
+           TCYC_8,
+           0, //T_RDY
+           TDEL_0
+       },
+       //SD3
+       {
+           CSP_256,
+           SDS_2M,
+           CL_3,
+           TRDL_1,
+           SI_EXT_INIT,
+           TRCD_5,
+           TRAS_9
+       }
+    };
+    emi_set_bank_cfg(3, emi_dcr_base, &b3_cfg);
 
     //init bank4 - SRAM1
     emi_bank_cfg b4_cfg =
