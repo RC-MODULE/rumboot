@@ -14,9 +14,11 @@
 #include <platform/regs/fields/emi.h>
 #include <platform/common_macros/common_macros.h>
 #include <platform/regs/regs_emi.h>
+#include <platform/test_assert.h>
 
-void emi_get_bank_cfg(uint8_t num_bank, uint32_t emi_base, emi_bank_cfg* bn_cfg)
+void emi_get_bank_cfg(uint32_t emi_base, emi_bank_num num_bank, emi_bank_cfg* bn_cfg)
 {
+    if (num_bank == emi_bank_all) TEST_ASSERT(0, "Invalid argument in emi_get_bank_cfg");
     uint32_t val;
 
     val = dcr_read(emi_base + EMI_SS0 + num_bank*(EMI_SS1 - EMI_SS0));
@@ -42,8 +44,9 @@ void emi_get_bank_cfg(uint8_t num_bank, uint32_t emi_base, emi_bank_cfg* bn_cfg)
 }
 
 
-void emi_set_bank_cfg (uint8_t num_bank, uint32_t emi_base, emi_bank_cfg* bn_cfg)
+void emi_set_bank_cfg (uint32_t emi_base, emi_bank_num num_bank, emi_bank_cfg* bn_cfg)
 {
+    if (num_bank == emi_bank_all) TEST_ASSERT(0, "Invalid argument in emi_set_bank_cfg");
     dcr_write (emi_base + EMI_SS0 + num_bank*(EMI_SS1 - EMI_SS0),  //write SSx
             ((bn_cfg->ssx_cfg.BTYP   << EMI_SSx_BTYP_i )  |
             ( bn_cfg->ssx_cfg.PTYP   << EMI_SSx_PTYP_i)   |
@@ -116,7 +119,7 @@ void emi_init_impl (uint32_t emi_dcr_base, uint32_t plb6mcif2_dcr_base, uint32_t
            TRAS_9
        }
     };
-    emi_set_bank_cfg(0, emi_dcr_base, &b0_cfg);
+    emi_set_bank_cfg(emi_dcr_base, emi_b0_sram0, &b0_cfg);
 
     //init bank1 - SDRAM
     emi_bank_cfg b1_cfg =
@@ -145,7 +148,7 @@ void emi_init_impl (uint32_t emi_dcr_base, uint32_t plb6mcif2_dcr_base, uint32_t
            TRAS_9
        }
     };
-    emi_set_bank_cfg(1, emi_dcr_base, &b1_cfg);
+    emi_set_bank_cfg(emi_dcr_base, emi_b1_sdram, &b1_cfg);
 
     emi_rfc_cfg emi_rfc =
     {
@@ -181,7 +184,7 @@ void emi_init_impl (uint32_t emi_dcr_base, uint32_t plb6mcif2_dcr_base, uint32_t
            TRAS_9
        }
     };
-    emi_set_bank_cfg(2, emi_dcr_base, &b2_cfg);
+    emi_set_bank_cfg(emi_dcr_base, emi_b2_ssram, &b2_cfg);
 
     //init bank3 - PIPELINED
     emi_bank_cfg b3_cfg =
@@ -210,7 +213,7 @@ void emi_init_impl (uint32_t emi_dcr_base, uint32_t plb6mcif2_dcr_base, uint32_t
            TRAS_9
        }
     };
-    emi_set_bank_cfg(3, emi_dcr_base, &b3_cfg);
+    emi_set_bank_cfg(emi_dcr_base, emi_b3_pipelined, &b3_cfg);
 
     //init bank4 - SRAM1
     emi_bank_cfg b4_cfg =
@@ -239,7 +242,7 @@ void emi_init_impl (uint32_t emi_dcr_base, uint32_t plb6mcif2_dcr_base, uint32_t
            TRAS_9
        }
     };
-    emi_set_bank_cfg(4, emi_dcr_base, &b4_cfg);
+    emi_set_bank_cfg(emi_dcr_base, emi_b4_sram1, &b4_cfg);
 
     //init bank5 - NOR
     emi_bank_cfg b5_cfg =
@@ -268,9 +271,34 @@ void emi_init_impl (uint32_t emi_dcr_base, uint32_t plb6mcif2_dcr_base, uint32_t
             TRAS_9
         }
     };
-    emi_set_bank_cfg(5, emi_dcr_base, &b5_cfg);
-
+    emi_set_bank_cfg(emi_dcr_base, emi_b5_nor, &b5_cfg);
+    emi_set_ecc (emi_dcr_base, emi_bank_all, emi_ecc_off);
     dcr_write(emi_dcr_base + EMI_BUSEN, 0x01);
+}
+
+void emi_set_ecc (uint32_t emi_base, emi_bank_num num_bank, emi_ecc_status ecc_stat)
+{
+    if (num_bank == emi_bank_all )
+    {
+        if (ecc_stat == emi_ecc_off)
+            dcr_write (emi_base + EMI_HSTR, 0x00);
+        else
+            dcr_write (emi_base + EMI_HSTR, 0x3F);
+    }
+    else
+    {
+        uint32_t tmp = dcr_read (emi_base + EMI_HSTR);
+        if (ecc_stat == emi_ecc_off)
+        {
+            tmp &= ~(1 << num_bank);
+            dcr_write (emi_base + EMI_HSTR, tmp);
+        }
+        else
+        {
+            tmp |= 1 << num_bank;
+            dcr_write (emi_base + EMI_HSTR, tmp);
+        }
+    }
 }
 
 void emi_init ()
