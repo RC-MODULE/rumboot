@@ -8,7 +8,7 @@
 /*
  * copy
  */
-uint32_t dma_single_copy(dma2plb6_setup_info * setup_info, channel_status * status)
+uint32_t dma2plb6_single_copy(dma2plb6_setup_info * setup_info, channel_status * status)
 {
     dma2plb6_mcpy(setup_info);
     do{
@@ -23,7 +23,7 @@ uint32_t dma_single_copy(dma2plb6_setup_info * setup_info, channel_status * stat
 /*
  * copy for memory coherent requests
  */
-uint32_t dma_single_copy_coherency_required(dma2plb6_setup_info * setup_info, channel_status * status)
+uint32_t dma2plb6_single_copy_coherency_required(dma2plb6_setup_info * setup_info, channel_status * status)
 {
     dma2plb6_mcpy_coherency_required(setup_info);
     do{
@@ -117,7 +117,7 @@ void dma2plb6_disable_o_slv_err_interrupt(uint32_t base_addr)
 }
 
 
-void disable_channel(uint32_t base_addr, DmaChannel channel)
+void dma2plb6_disable_channel(uint32_t base_addr, DmaChannel channel)
 {
     dcr_write(get_addr(channel,PLB6_DMA_CR,base_addr),0x00000000);
 }

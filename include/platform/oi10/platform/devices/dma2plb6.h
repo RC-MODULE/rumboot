@@ -107,14 +107,14 @@ typedef struct{
 //
 
 channel_status dma2plb6_ch_get_status(uint32_t base_address, DmaChannel channel);
-uint32_t dma_single_copy(dma2plb6_setup_info * setup_info, channel_status * status);
-uint32_t dma_single_copy_coherency_required(dma2plb6_setup_info * setup_info, channel_status * status);
+uint32_t dma2plb6_single_copy(dma2plb6_setup_info * setup_info, channel_status * status);
+uint32_t dma2plb6_single_copy_coherency_required(dma2plb6_setup_info * setup_info, channel_status * status);
 void dma2plb6_clear_interrupt(uint32_t base_addr, DmaChannel channel);
 void dma2plb6_mcpy(dma2plb6_setup_info * setup_info);
 void dma2plb6_mcpy_coherency_required(dma2plb6_setup_info * setup_info);
 void dma2plb6_enable_o_slv_err_interrupt(uint32_t base_addr);
 void dma2plb6_disable_o_slv_err_interrupt(uint32_t base_addr);
 
-void disable_channel(uint32_t base_addr, DmaChannel channel);
+void dma2plb6_disable_channel(uint32_t base_addr, DmaChannel channel);
 
 #endif // DMA2PLB6_H_
