@@ -281,22 +281,22 @@ void emi_set_ecc (uint32_t emi_base, emi_bank_num num_bank, emi_ecc_status ecc_s
     if (num_bank == emi_bank_all )
     {
         if (ecc_stat == emi_ecc_off)
-            dcr_write (emi_base + EMI_HSTR, 0x00);
+            dcr_write (emi_base + EMI_HSTSR, 0x00);
         else
-            dcr_write (emi_base + EMI_HSTR, 0x3F);
+            dcr_write (emi_base + EMI_HSTSR, 0x3F);
     }
     else
     {
-        uint32_t tmp = dcr_read (emi_base + EMI_HSTR);
+        uint32_t tmp = dcr_read (emi_base + EMI_HSTSR);
         if (ecc_stat == emi_ecc_off)
         {
             tmp &= ~(1 << num_bank);
-            dcr_write (emi_base + EMI_HSTR, tmp);
+            dcr_write (emi_base + EMI_HSTSR, tmp);
         }
         else
         {
             tmp |= 1 << num_bank;
-            dcr_write (emi_base + EMI_HSTR, tmp);
+            dcr_write (emi_base + EMI_HSTSR, tmp);
         }
     }
 }

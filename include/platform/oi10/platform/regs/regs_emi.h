@@ -17,7 +17,7 @@ DECLARE_ENUM_VAL( EMI_SD4,                      0x24 )    //WR 0x00000000
 DECLARE_ENUM_VAL( EMI_SS5,                      0x28 )    //WR 0x00000000
 DECLARE_ENUM_VAL( EMI_SD5,                      0x2C )    //WR 0x00000000
 DECLARE_ENUM_VAL( EMI_RFC,                      0x30 )    //WR 0x00000000
-DECLARE_ENUM_VAL( EMI_HSTR,                     0x34 )    //WR 0x00000000
+DECLARE_ENUM_VAL( EMI_HSTSR,                    0x34 )    //WR 0x00000000
 DECLARE_ENUM_VAL( EMI_ECNT20,                   0x38 )    //WR 0x00000000
 DECLARE_ENUM_VAL( EMI_ECNT53,                   0x3C )    //WR 0x00000000
 DECLARE_ENUM_VAL( EMI_H1ADR,                    0x40 )    //WR N/A
