@@ -2,6 +2,7 @@
 #ifndef __TEST_ASSERT_H__
 #define __TEST_ASSERT_H__
 
+#include <stdlib.h>
 #include <platform/test_event_c.h>
 #include <platform/trace.h>
 
