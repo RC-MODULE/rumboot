@@ -110,7 +110,7 @@ uint32_t check_dma2plb6_0_mem_to_mem(uint32_t source_ea, uint32_t dest_ea, uint6
             fill((uint64_t *)source_ea, fill_word, TEST_DATA_SIZE);
             fill((uint64_t *)dest_ea, 0x0, TEST_DATA_SIZE);
             dma_info.count = TEST_DATA_SIZE/dma2plb6_get_bytesize(dma_info.transfer_width);
-            if(dma_single_copy(&dma_info, &status) == false){
+            if(dma2plb6_single_copy(&dma_info, &status) == false){
                 SHOW_STATUS(status.spec_error_status);
                 return false;
             } else {
@@ -124,7 +124,7 @@ uint32_t check_dma2plb6_0_mem_to_mem(uint32_t source_ea, uint32_t dest_ea, uint6
 }
 
 
-int main(void) 
+int main(void)
 {
     volatile int64_t src_im0_physical, dst_im0_physical;
     volatile int64_t src_im1_physical, dst_im1_physical;
