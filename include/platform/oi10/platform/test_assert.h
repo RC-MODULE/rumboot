@@ -5,14 +5,23 @@
 #include <platform/test_event_c.h>
 #include <platform/trace.h>
 
-
+#ifndef RUMBOOT_ASSERT_WARN_ONLY
 #define TEST_ASSERT( expr, message )\
 MACRO_BEGIN\
     if( !(expr) ) {\
         rumboot_putstring( "PROGRAM ASSERTION FAILED: \"" STRINGIZE(expr) "\"\n" __FILE__ ":" STRINGIZE(__LINE__) ": \"" message "\"\n" );\
-        test_event( EVENT_ASSERT );\
+        exit( 1 );\
     }\
 MACRO_END
+#else
+#define TEST_ASSERT( expr, message )\
+MACRO_BEGIN\
+    if( !(expr) ) {\
+        rumboot_putstring( "PROGRAM ASSERTION FAILED: \"" STRINGIZE(expr) "\"\n" __FILE__ ":" STRINGIZE(__LINE__) ": \"" message "\"\n" );\
+    }\
+MACRO_END
+#endif
+
 
 #define TEST_WAIT( condition, timeout )\
 MACRO_BEGIN\
