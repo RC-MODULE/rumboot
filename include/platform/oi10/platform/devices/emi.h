@@ -11,7 +11,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <platform/regs/fields/emi.h>
-#include <platform/common_macros/common_macros.h>
 
 //bank0
 #define EM2_BANK0_SIZE          0x20000000
@@ -32,20 +31,22 @@
 #define EM2_BANK5_SIZE          0x10000000
 #define NOR_SIZE                0x400000  //4MB  //EM2_BANK5_SIZE
 
-BEGIN_ENUM(emi_bank_num)
-DECLARE_ENUM_VAL( emi_b0_sram0,     0 )
-DECLARE_ENUM_VAL( emi_b1_sdram,     1 )
-DECLARE_ENUM_VAL( emi_b2_ssram,     2 )
-DECLARE_ENUM_VAL( emi_b3_pipelined, 3 )
-DECLARE_ENUM_VAL( emi_b4_sram1,     4 )
-DECLARE_ENUM_VAL( emi_b5_nor,       5 )
-DECLARE_ENUM_VAL( emi_bank_all,     0xF )
-END_ENUM( emi_bank_num );
+typedef enum
+{
+    emi_b0_sram0 = 0,
+    emi_b1_sdram = 1,
+    emi_b2_ssram = 2,
+    emi_b3_pipelined = 3,
+    emi_b4_sram1 = 4,
+    emi_b5_nor = 5,
+    emi_bank_all = 0xF,
+} emi_bank_num;
 
-BEGIN_ENUM(emi_ecc_status)
-DECLARE_ENUM_VAL( emi_ecc_off,  0 )
-DECLARE_ENUM_VAL( emi_ecc_on,   1 )
-END_ENUM( emi_ecc_status );
+typedef enum
+{
+    emi_ecc_off = 0,
+    emi_ecc_on = 1,
+} emi_ecc_status;
 
 typedef struct
 {
