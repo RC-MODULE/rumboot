@@ -58,27 +58,6 @@ typedef enum {
     tr_width_quadword = 0b100//quad
 }transfer_width;
 
-/*typedef struct {
-    transfer_width code_of_width;
-    uint32_t width;
-}transfer__;
-
-typedef struct{
-    transfer__ byte;
-    transfer__ halfword;
-    transfer__ word;
-    transfer__ doubleword;
-    transfer__ quadword;
-}transfer_;
-
-static transfer_ transferwidth = {
-        .byte={.width=0,.code_of_width=tr_width_byte},
-        .halfword={.width=0,.code_of_width=tr_width_halfword},
-        .word={.width=0,.code_of_width=tr_width_word},
-        .doubleword={.width=0,.code_of_width=tr_width_doubleword},
-        .quadword={.width=0,.code_of_width=tr_width_quadword}
-};*/
-
 typedef enum {
     rw_tr_size_1q = 0b000,
     rw_tr_size_2q = 0b001,
