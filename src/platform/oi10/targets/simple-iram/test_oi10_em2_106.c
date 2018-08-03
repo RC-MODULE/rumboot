@@ -146,7 +146,7 @@ static bool dma2plb6_memcpy(const uint32_t base_addr, const uint64_t source, con
     rumboot_printf("hi = 0x%x\n", (uint32_t)(dest >> 32));
     rumboot_printf("lo = 0x%x\n", (uint32_t)dest);
 
-    if(dma_single_copy(&dma_info,&status) == false)
+    if(dma2plb6_single_copy(&dma_info,&status) == false)
     {
         dma2plb6_trace_status(status);
         return false;
@@ -155,7 +155,7 @@ static bool dma2plb6_memcpy(const uint32_t base_addr, const uint64_t source, con
 }
 
 
-int main(void) 
+int main(void)
 {
     emi_init();
 
