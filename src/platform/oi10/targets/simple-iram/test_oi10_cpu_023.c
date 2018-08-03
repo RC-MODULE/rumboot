@@ -2,17 +2,16 @@
 #include <stdint.h>
 #include <string.h>
 
-#include <platform/common_macros/common_macros.h>
-#include <platform/test_event_codes.h>
-#include <platform/test_assert.h>
-#include <platform/devices.h>
-#include <platform/arch/ppc/ppc_476fp_mmu.h>
-
 #include <rumboot/io.h>
 #include <rumboot/printf.h>
 
+#include <platform/arch/ppc/ppc_476fp_mmu.h>
+#include <platform/common_macros/common_macros.h>
+#include <platform/devices.h>
+#include <platform/devices/emi.h>
 #include <platform/devices/dma2plb6.h>
-
+#include <platform/test_assert.h>
+#include <platform/test_event_codes.h>
 
 
 //size in bytes
@@ -43,6 +42,7 @@
 static uint8_t source_area_im0 [TEST_DATA_SIZE]__attribute__((aligned(16)));
 static uint8_t dest_area_im0 [TEST_DATA_SIZE] __attribute__((aligned(16)));
 
+
 static uint64_t fill_word = TEST_DATA_CONTENT;
 
 
@@ -68,7 +68,7 @@ uint32_t dma2plb6_get_bytesize(transfer_width transfer_width_code)
     return 0;
 }
 
-void fill (uint64_t *s, uint64_t pattern, uint32_t size_in_bytes)
+void fill(uint64_t *s, uint64_t pattern, uint32_t size_in_bytes)
 {
     uint32_t i;
     for (i = 0; i < (size_in_bytes>>3); i++)
@@ -126,8 +126,11 @@ uint32_t check_dma2plb6_0_mem_to_mem(uint32_t source_ea, uint32_t dest_ea, uint6
 
 int main(void) 
 {
-    volatile int64_t src_im0_physical,dst_im0_physical,src_im1_physical,dst_im1_physical;
-//    volatile int64_t src_em2_physical, dst_em2_physical;
+    volatile int64_t src_im0_physical, dst_im0_physical;
+    volatile int64_t src_im1_physical, dst_im1_physical;
+    volatile int64_t src_em2_physical, dst_em2_physical;
+
+    emi_init();
 
     //prepare physical address
     set_mem_window(MEM_WINDOW_SHARED);//WORKAROUND
@@ -138,35 +141,12 @@ int main(void)
     src_im1_physical = get_physical_addr(IM1_BASE, 0);
     dst_im1_physical = src_im1_physical;
 
-    //src_em2_physical = get_physical_addr(EM2_BASE);
-    //dst_em2_physical = src_em2_physical;
+    src_em2_physical = get_physical_addr(EM2_BASE, 0);
+    dst_em2_physical = src_em2_physical;
 
     TEST_ASSERT(src_im0_physical >=0,"IM0 src addr is not presented in UTLB");
     TEST_ASSERT(dst_im0_physical >=0,"IM0 dst addr is not presented in UTLB");
-//    TEST_ASSERT(src_em2_physical >=0,"EM2 src/dst addr is not presented in UTLB");
-
-/*
-    //initialize ddr
-    //ddr_init();
-
-    ddr_init_impl(
-                DdrHlbId_Default,
-                DdrInitMode_Default,
-                DdrEccMode_Default,
-                DdrPmMode_Default,
-                DdrBurstLength_4,
-                DdrPartialWriteMode_Default);
-*/
-
-//   rumboot_printf("source_area_im0 = 0x%x\n", source_area_im0);
-//   rumboot_printf("dest_area_im0 = 0x%x\n", dest_area_im0);
-//
-//   rumboot_printf("src_im0_physical = 0x%x%x\n", (uint32_t)(src_im0_physical >> 32), (uint32_t)(src_im0_physical & 0xFFFFFFFF));
-//   rumboot_printf("dst_im0_physical = 0x%x%x\n", (uint32_t)(dst_im0_physical >> 32), (uint32_t)(dst_im0_physical & 0xFFFFFFFF));
-//
-//   rumboot_printf("dst_im1_logical = 0x%x\n", IM1_BASE);
-//   rumboot_printf("dst_im1_physical = 0x%x%x\n", (uint32_t)(src_im1_physical >> 32), (uint32_t)(dst_im1_physical & 0xFFFFFFFF));
-
+    TEST_ASSERT(src_em2_physical >=0,"EM2 src/dst addr is not presented in UTLB");
 
 
    rumboot_printf("im0->im0\n");
@@ -187,14 +167,14 @@ int main(void)
                                            dst_im1_physical,
                                            dst_im0_physical) == true, "IM1-to-IM0 failed");
 
-/*
+
    rumboot_printf("em2->im0\n");
    TEST_ASSERT(check_dma2plb6_0_mem_to_mem(EM2_BASE,
                                            (uint32_t)dest_area_im0,
                                            src_em2_physical,
                                            dst_im0_physical) == true, "EM2-to-IM0 failed");
-*/
-/*
+
+
    rumboot_printf("im0->em2\n");
    TEST_ASSERT(check_dma2plb6_0_mem_to_mem((uint32_t)source_area_im0,
                                            EM2_BASE,
@@ -203,7 +183,7 @@ int main(void)
 
    rumboot_printf("em2->im1\n");
    TEST_ASSERT(check_dma2plb6_0_mem_to_mem(EM2_BASE,
-                                           (uint32_t)dest_area_im1,
+                                           IM1_BASE,
                                            src_em2_physical,
                                            dst_im1_physical) == true, "EM2-to-IM1 failed");
 
@@ -212,7 +192,6 @@ int main(void)
                                            EM2_BASE,
                                            src_im1_physical,
                                            dst_em2_physical) == true, "IM1-to-EM2 failed");
-*/
 
     return 0;
 }
