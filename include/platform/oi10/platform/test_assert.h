@@ -6,7 +6,7 @@
 #include <platform/trace.h>
 
 
-#ifdef RUMBOOT_ASSERT_WARN_ONLY
+#ifndef RUMBOOT_ASSERT_WARN_ONLY
 #define __test_assert_failure_do()  exit( 1 )
 #else
 #define __test_assert_failure_do()  (void)0
