@@ -75,7 +75,7 @@ void dma2plb6_mcpy(dma2plb6_setup_info * setup_info)
  */
 void dma2plb6_mcpy_coherency_required(dma2plb6_setup_info * setup_info)
 {
-    disable_channel(setup_info->base_addr,setup_info->channel);
+    dma2plb6_disable_channel(setup_info->base_addr,setup_info->channel);
     dcr_write(get_addr(setup_info->channel,PLB6_DMA_SAH,setup_info->base_addr),(setup_info->source_adr >> 32));
     dcr_write(get_addr(setup_info->channel,PLB6_DMA_SAL,setup_info->base_addr),setup_info->source_adr & 0xFFFFFFFF);
     dcr_write(get_addr(setup_info->channel,PLB6_DMA_DAH,setup_info->base_addr),(setup_info->dest_adr >> 32));
