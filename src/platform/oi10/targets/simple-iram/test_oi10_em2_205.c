@@ -1,32 +1,30 @@
-#include <stdio.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <string.h>
 
 #include <rumboot/io.h>
-#include <rumboot/timer.h>
 #include <rumboot/printf.h>
+#include <rumboot/timer.h>
 
 #include <platform/common_macros/common_macros.h>
-#include <platform/test_event_codes.h>
-#include <platform/test_event_c.h>
 #include <platform/devices.h>
 #include <platform/devices/emi.h>
-#include <platform/regs/regs_emi.h>
 #include <platform/devices/nor_1636RR4.h>
+#include <platform/regs/regs_emi.h>
+#include <platform/test_event_c.h>
+#include <platform/test_event_codes.h>
 
 
+#define EVENT_INJECT_SRAM0_0                    TEST_EVENT_CODE_MIN + 0
+#define EVENT_INJECT_SRAM0_7                    TEST_EVENT_CODE_MIN + 1
+#define EVENT_INJECT_SSRAM_0                    TEST_EVENT_CODE_MIN + 2
+#define EVENT_INJECT_SSRAM_7                    TEST_EVENT_CODE_MIN + 3
 
-#define EVENT_INJECT_SRAM0_0                        TEST_EVENT_CODE_MIN + 0
-#define EVENT_INJECT_SRAM0_7                        TEST_EVENT_CODE_MIN + 1
+#define EVENT_INJECT_SDRAM_0                    TEST_EVENT_CODE_MIN + 4
+#define EVENT_INJECT_SDRAM_7                    TEST_EVENT_CODE_MIN + 5
 
-#define EVENT_INJECT_SSRAM_0                        TEST_EVENT_CODE_MIN + 2
-#define EVENT_INJECT_SSRAM_7                        TEST_EVENT_CODE_MIN + 3
-
-#define EVENT_INJECT_SDRAM_0                        TEST_EVENT_CODE_MIN + 4
-#define EVENT_INJECT_SDRAM_7                        TEST_EVENT_CODE_MIN + 5
-
-#define EVENT_INJECT_NOR_0                          TEST_EVENT_CODE_MIN + 6
-#define EVENT_INJECT_NOR_7                          TEST_EVENT_CODE_MIN + 7
+#define EVENT_INJECT_NOR_0                      TEST_EVENT_CODE_MIN + 6
+#define EVENT_INJECT_NOR_7                      TEST_EVENT_CODE_MIN + 7
 
 
 #define ADDR_SRAM0_SE                           SRAM0_BASE
@@ -46,8 +44,8 @@ bool check_data()
 {
     uint32_t reg = 0, stat = 0;
 
-//    stat = dcr_read(DCR_EM2_EMI_BASE + EMI_ECNT20); //clear reg
-//    stat = dcr_read(DCR_EM2_EMI_BASE + EMI_ECNT53);
+    stat = dcr_read(DCR_EM2_EMI_BASE + EMI_ECNT20); //clear reg
+    stat = dcr_read(DCR_EM2_EMI_BASE + EMI_ECNT53);
 
     reg = ioread32(ADDR_SRAM0_SE);
     if (reg != 0xBABA0001)
@@ -60,7 +58,7 @@ bool check_data()
     }
     stat = dcr_read(DCR_EM2_EMI_BASE + EMI_ECNT20);
     rumboot_printf("stat = 0x%x\n", stat);
-    //TEST_ASSERT(stat == 0x001, "Invalid value in STATUS_IRQ (SRAM0)");
+    TEST_ASSERT(stat == 0x000001, "Invalid value in STATUS_IRQ (SRAM0)");
 
     reg = ioread32(ADDR_SRAM0_DE);
     if (reg != 0xBABA0007) //see .svh
@@ -73,7 +71,7 @@ bool check_data()
     }
     stat = dcr_read(DCR_EM2_EMI_BASE + EMI_ECNT20);
     rumboot_printf("stat = 0x%x\n", stat);
-    //TEST_ASSERT(stat == 0x002, "Invalid value in STATUS_IRQ (SRAM)");
+    TEST_ASSERT(stat == 0x000001, "Invalid value in STATUS_IRQ (SRAM)");
 
 
 //    reg = ioread32(ADDR_SSRAM_SE);
@@ -137,7 +135,7 @@ bool check_data()
     }
     stat = dcr_read(DCR_EM2_EMI_BASE + EMI_ECNT53);
     rumboot_printf("stat = 0x%x\n", stat);
-    //TEST_ASSERT(stat == 0x100, "Invalid value in STATUS_IRQ (NOR)");
+    TEST_ASSERT(stat == 0x010000, "Invalid value in STATUS_IRQ (NOR)");
 
     reg = ioread32(ADDR_NOR_DE);
     if (reg != 0xBABA0007) //see .svh
@@ -150,7 +148,7 @@ bool check_data()
     }
     stat = dcr_read(DCR_EM2_EMI_BASE + EMI_ECNT53);
     rumboot_printf("stat = 0x%x\n", stat);
-    //TEST_ASSERT(stat == 0x200, "Invalid value in STATUS_IRQ (NOR)");
+    TEST_ASSERT(stat == 0x010000, "Invalid value in STATUS_IRQ (NOR)");
 
     return true;
 }
@@ -161,6 +159,8 @@ int main(void)
     test_event_send_test_id("test_oi10_em2_205");
 
     emi_init();
+
+    dcr_write(DCR_EM2_EMI_BASE + EMI_HSTR, 0x3F);
 
 /*
     uint32_t mask_reg = 0;
@@ -194,10 +194,14 @@ int main(void)
 
     rumboot_putstring("WRITE NOR\n");
     test_event(EVENT_INJECT_NOR_0); //DATA_SE = 0xBABA0000
+#define RUMBOOT_ASSERT_WARN_ONLY 1
     nor_write32(0xBABA0001, ADDR_NOR_SE);
+#undef RUMBOOT_ASSERT_WARN_ONLY
 
     test_event(EVENT_INJECT_NOR_7); //DATA_DE = 0xBABA0007
+#define RUMBOOT_ASSERT_WARN_ONLY 1
     nor_write32(0xBABA0001, ADDR_NOR_DE);
+#undef RUMBOOT_ASSERT_WARN_ONLY
 
     udelay(5);
 
