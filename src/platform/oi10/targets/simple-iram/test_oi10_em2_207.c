@@ -93,15 +93,61 @@ void check8(uint32_t addr)
     }
 }
 
+void check16(uint32_t addr)
+{
+    for (int i=0; i<8; i++)
+    {
+        check_wrrd16(addr + i*2, (~(1 << (i+8)) & 0xFF00) | (1 << i) );
+    }
+}
+
+void check32(uint32_t addr)
+{
+    const uint32_t tdata[4] = {
+                                0xFFFFFFFF,
+                                0xAAAAAAAA,
+                                0x00000000,
+                                0x55555555
+                               };
+    for (int i=0; i<4; i++)
+    {
+        check_wrrd32(addr + i*4, tdata[i]);
+    }
+}
+
+void check64(uint32_t addr)
+{
+    check_wrrd64(addr, 0x0011223344556677);
+}
+
+void check_bank(uint32_t addr)
+{
+    check8(addr);
+    check16(addr);
+    check32(addr);
+    check64(addr);
+}
+
+void run_check()
+{
+    check_bank(SRAM0_BASE);
+    check_bank(SDRAM_BASE);
+    check_bank(SSRAM_BASE);
+    check_bank(PIPELINED_BASE);
+}
+
 int main()
 {
 
     rumboot_printf("Start test_oi10_em2_204\n");
 
     emi_init();
-    emi_set_ecc(DCR_EM2_EMI_BASE, emi_bank_all, emi_ecc_on);
 
-    check8(SRAM0_BASE);
+    emi_set_ecc(DCR_EM2_EMI_BASE, emi_bank_all, emi_ecc_on);
+    run_check();
+
+    emi_set_ecc(DCR_EM2_EMI_BASE, emi_bank_all, emi_ecc_off);
+    run_check();
 
     return 0;
 }
