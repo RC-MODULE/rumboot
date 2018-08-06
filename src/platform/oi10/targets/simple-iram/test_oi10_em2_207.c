@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <string.h>
 
 #include <rumboot/testsuite.h>
 
@@ -24,7 +25,7 @@ void report_data_error(uint32_t addr, uint32_t exp, uint32_t act)
 void check_wrrd8(uint32_t addr, uint8_t data)
 {
     uint8_t rd;
-    rumboot_printf("Check Write/Read operation. Width: 1 byte\n");
+    rumboot_printf("Check Write/Read operation (0x%X). Width: 1 byte\n", addr);
 
     iowrite8(data, addr);
 
@@ -39,7 +40,7 @@ void check_wrrd8(uint32_t addr, uint8_t data)
 void check_wrrd16(uint32_t addr, uint16_t data)
 {
     uint16_t rd;
-    rumboot_printf("Check Write/Read operation. Width: 2 bytes\n");
+    rumboot_printf("Check Write/Read operation (0x%X). Width: 2 bytes\n", addr);
 
     iowrite16(data, addr);
 
@@ -54,7 +55,7 @@ void check_wrrd16(uint32_t addr, uint16_t data)
 void check_wrrd32(uint32_t addr, uint16_t data)
 {
     uint32_t rd;
-    rumboot_printf("Check Write/Read operation. Width: 4 bytes\n");
+    rumboot_printf("Check Write/Read operation (0x%X). Width: 4 bytes\n", addr);
 
     iowrite32(data, addr);
 
@@ -69,7 +70,7 @@ void check_wrrd32(uint32_t addr, uint16_t data)
 void check_wrrd64(uint32_t addr, uint64_t data)
 {
     uint64_t rd;
-    rumboot_printf("Check Write/Read operation. Width: 8 bytes\n");
+    rumboot_printf("Check Write/Read operation (0x%X). Width: 8 bytes\n", addr);
 
     iowrite64(data, addr);
 
@@ -120,8 +121,18 @@ void check64(uint32_t addr)
     check_wrrd64(addr, 0x0011223344556677);
 }
 
+void mem_set(uint32_t* addr, uint32_t val, uint32_t size)
+{
+    for (int i=0; i<(size/sizeof(uint32_t)); i++)
+    {
+        iowrite32(val, (uint32_t)(addr + i));
+    }
+}
+
 void check_bank(uint32_t addr)
 {
+    rumboot_printf("Start checking bank 0x%X\n", addr);
+    mem_set((uint32_t *) addr, 0x00, 0x100);
     check8(addr);
     check16(addr);
     check32(addr);
@@ -138,8 +149,7 @@ void run_check()
 
 int main()
 {
-
-    rumboot_printf("Start test_oi10_em2_204\n");
+    rumboot_printf("Start test_oi10_em2_207\n");
 
     emi_init();
 
