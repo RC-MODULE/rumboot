@@ -121,7 +121,7 @@ static uint32_t check_gpio_func( uint32_t base_addr, uint32_t GPIODIR_value ) {
 
     //init GPIO_W
     iowrite32( 0x00, base_addr + GPIO_AFSEL ); //gpio to gpio mode
-    gpio_set_direction( base_addr, GPIODIR_value, direction_out );
+    gpio_set_port_direction( base_addr, GPIODIR_value);
     iowrite32( 0x00, base_addr + GPIO_ADDR_MASK ); //write data to output
 
     gpio_interrupt_setup( base_addr, 0xff, true, both_edge );
@@ -138,9 +138,7 @@ static uint32_t check_gpio_func( uint32_t base_addr, uint32_t GPIODIR_value ) {
 
     //read
     data_read_gpio = gpio_get_data( base_addr );
-//    rumboot_printf( "data_read_gpio : %x\n", data_read_gpio);
-    TEST_ASSERT( ( ( ( data_write_gpio >> 1 ) | GPIODIR_value ) == data_read_gpio ),
-                 "Error! The value of GPOUT does not match the expected\n" );
+    TEST_ASSERT( (data_read_gpio == 0xFF), "Error! The value of GPOUT does not match the expected\n" );
 
     rumboot_irq_table_activate( NULL );
     rumboot_irq_free( tbl );
@@ -159,7 +157,12 @@ int main() {
     result += check_gpio_default_val( GPIO_X_BASE );
     result += check_gpio_regs( GPIO_X_BASE );
 #endif
-    result += check_gpio_func( GPIO_X_BASE, 0x2A );
+    rumboot_printf("INPUT: GPIO0_0, GPIO0_2, GPIO0_4, GPIO0_6\n");
+    rumboot_printf("OUTPUT: GPIO0_1, GPIO0_3, GPIO0_5, GPIO0_7\n");
+    result += check_gpio_func( GPIO_X_BASE, 0xAA );
+    rumboot_printf("INPUT: GPIO0_1, GPIO0_3, GPIO0_5, GPIO0_7\n");
+    rumboot_printf("OUTPUT: GPIO0_0, GPIO0_2, GPIO0_4, GPIO0_6\n");
+    result += check_gpio_func( GPIO_X_BASE, 0x55 );
 
     return result;
 }
