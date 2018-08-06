@@ -68,6 +68,7 @@
 #define CAN0_INT                    IRQ_REAL(83)
 #define CAN1_INT                    IRQ_REAL(84)
 #define ARINC_INT                   IRQ_REAL(85)
+#define SGMII_INT                   IRQ_REAL(86)
 
 
 /**

@@ -34,8 +34,9 @@ struct mgeth_conf
  * \brief SGMII initialization
  * \param sgmii_base_addr Base address of SGMII
  * \param sctl_base_addr Base address of SCTL
+ * \return If OK - 0, else - not 0
  */
-void mgeth_init_sgmii(uint32_t sgmii_base_addr, uint32_t sctl_base_addr);
+int mgeth_init_sgmii(uint32_t sgmii_base_addr, uint32_t sctl_base_addr);
 
 /**
  * \brief MGETH reset

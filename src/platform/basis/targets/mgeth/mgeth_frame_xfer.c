@@ -40,7 +40,19 @@ static bool test_mgeth_frame_xfer(uint32_t eth_send_num)
 	rumboot_printf("eth_recv_num = %u\n", eth_recv_num);
 
 	frame_o = rumboot_malloc_from_heap_aligned(0, XFER_SIZE, 4);
+	if (!frame_o)
+	{
+		rumboot_printf("ERROR: Insufficient memory!\n");
+		return false;
+	}
+
 	frame_i = rumboot_malloc_from_heap_aligned(0, XFER_SIZE, 4);
+	if (!frame_i)
+	{
+		rumboot_printf("ERROR: Insufficient memory!\n");
+		rumboot_free((void *)frame_o);
+		return false;
+	}
 
 	for (i = 0; i < 12; i++)
 		frame_o[i] = 0xFF;
@@ -230,7 +242,15 @@ int main()
 
 	rumboot_printf("================================================================================\n");
 
-	mgeth_init_sgmii(SGMII_PHY, SCTL_BASE);
+	rumboot_printf("Waiting SGMII initialization...\n");
+
+	if (mgeth_init_sgmii(SGMII_PHY, SCTL_BASE))
+	{
+		rumboot_printf("ERROR: SGMII initialization ERROR!\n");
+		return 1;
+	}
+
+	rumboot_printf("SGMII initialized.\n");
 
 	// Start timer
 	gp_timer_turn_on();

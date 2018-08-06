@@ -22,7 +22,15 @@ int main()
 
 	rumboot_printf("================================================================================\n");
 
-	mgeth_init_sgmii(SGMII_PHY, SCTL_BASE);
+	rumboot_printf("Waiting SGMII initialization...\n");
+
+	if (mgeth_init_sgmii(SGMII_PHY, SCTL_BASE))
+	{
+		rumboot_printf("ERROR: SGMII initialization ERROR!\n");
+		return 1;
+	}
+
+	rumboot_printf("SGMII initialized.\n");
 
 	// Start timer
 	iowrite32(0x1, GLOBAL_TIMERS + ENABLE);
@@ -31,9 +39,38 @@ int main()
 	mgeth_reset(ETH1_BASE);
 
 	frame_o = rumboot_malloc_from_heap_aligned(0, 64, 8);
+	if (!frame_o)
+	{
+		rumboot_printf("ERROR: Insufficient memory!\n");
+		return 1;
+	}
+
 	frame_i = rumboot_malloc_from_heap_aligned(0, 64, 8);
+	if (!frame_i)
+	{
+		rumboot_printf("ERROR: Insufficient memory!\n");
+		rumboot_free((void *)frame_o);
+		return 1;
+	}
+
 	desc_o = rumboot_malloc_from_heap_aligned(0, 16, 8);
+	if (!desc_o)
+	{
+		rumboot_printf("ERROR: Insufficient memory!\n");
+		rumboot_free((void *)frame_o);
+		rumboot_free((void *)frame_i);
+		return 1;
+	}
+
 	desc_i = rumboot_malloc_from_heap_aligned(0, 16, 8);
+	if (!desc_i)
+	{
+		rumboot_printf("ERROR: Insufficient memory!\n");
+		rumboot_free((void *)frame_o);
+		rumboot_free((void *)frame_i);
+		rumboot_free((void *)desc_o);
+		return 1;
+	}
 
 	for (i = 0; i < 12; i++)
 		frame_o[i] = 0xFF;
@@ -155,20 +192,34 @@ int main()
 		if ((i != 24) && (i != 25) && (frame_i[i] != frame_o[i]))
 		{
 			rumboot_printf("ERROR: Wrong byte %d!\n", i);
+			rumboot_free((void *)frame_o);
+			rumboot_free((void *)frame_i);
+			rumboot_free((void *)desc_o);
+			rumboot_free((void *)desc_i);
 			return 1;
 		}
+
+	rumboot_free((void *)frame_o);
+	rumboot_free((void *)frame_i);
 
 	if (desc_i[1] < desc_o[1])
 	{
 		rumboot_printf("ERROR: Wrong timestamps!\n");
+		rumboot_free((void *)desc_o);
+		rumboot_free((void *)desc_i);
 		return 1;
 	}
 
 	if ((desc_i[1] == desc_o[1]) && (desc_i[0] < desc_o[0]))
 	{
 		rumboot_printf("ERROR: Wrong timestamps!\n");
+		rumboot_free((void *)desc_o);
+		rumboot_free((void *)desc_i);
 		return 1;
 	}
+
+	rumboot_free((void *)desc_o);
+	rumboot_free((void *)desc_i);
 
 	return 0;
 }

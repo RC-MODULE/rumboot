@@ -5,16 +5,25 @@
 #include <devices/mdma_chan_api.h>
 #include <devices/mgeth.h>
 
-void mgeth_init_sgmii(uint32_t sgmii_base_addr, uint32_t sctl_base_addr)
+int mgeth_init_sgmii(uint32_t sgmii_base_addr, uint32_t sctl_base_addr)
 {
 	uint32_t
-		read_data,
+		sgmii_ctrl_stat_val,
 		OFFSET_SPCS_0, OFFSET_SPCS_1, OFFSET_SPCS_2, OFFSET_SPCS_3,
 		OFFSET_TXS_0, OFFSET_TXS_1, OFFSET_TXS_2, OFFSET_TXS_3,
 		OFFSET_CM,
 		OFFSET_RXS_0, OFFSET_RXS_1, OFFSET_RXS_2, OFFSET_RXS_3;
 
 	DBG_print("Start.");
+
+	sgmii_ctrl_stat_val = ioread32(sctl_base_addr + 0x14);
+
+	if (sgmii_ctrl_stat_val)
+	{
+		DBG_print("ERROR: SGMII_CTRL_STAT value before setting is not zero (0x%X)!", sgmii_ctrl_stat_val);
+		DBG_print("End (With ERROR!); Return: 1!");
+		return 1;
+	}
 
 	OFFSET_SPCS_0 = sgmii_base_addr + 0x0200;
 	OFFSET_SPCS_1 = sgmii_base_addr + 0x0600;
@@ -63,18 +72,18 @@ void mgeth_init_sgmii(uint32_t sgmii_base_addr, uint32_t sctl_base_addr)
 
 	iowrite32(0x1, sctl_base_addr + 0x14);
 
-	read_data = 0x0;
-
 	DBG_print("=== wait SGMII PLL_LOCK & SGMII PHY_RDY ===");
 
-	while (read_data != 0x000001F1)
+	while (sgmii_ctrl_stat_val != 0x000001F1)
 	{
-		read_data = ioread32(sctl_base_addr + 0x14);
+		sgmii_ctrl_stat_val = ioread32(sctl_base_addr + 0x14);
 
-		DBG_print("SCTL register SGMII_CTRL_STAT: 0x%X", read_data);
+		DBG_print("SCTL register SGMII_CTRL_STAT: 0x%X", sgmii_ctrl_stat_val);
 	}
 
-	DBG_print("End.");
+	DBG_print("End; Return: 0.");
+
+	return 0;
 }
 
 void mgeth_reset(uint32_t base_addr)

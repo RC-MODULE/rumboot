@@ -36,7 +36,19 @@ int mgeth_frame_xfer(uint32_t eth_send_num, uint32_t eth_recv_num, const char *h
 	rumboot_printf("heap_id = %d\n", heap_id);
 
 	frame_o = rumboot_malloc_from_heap_aligned(heap_id, XFER_SIZE, 4);
+	if (!frame_o)
+	{
+		rumboot_printf("ERROR: Insufficient memory!\n");
+		return 1;
+	}
+
 	frame_i = rumboot_malloc_from_heap_aligned(heap_id, XFER_SIZE, 4);
+	if (!frame_i)
+	{
+		rumboot_printf("ERROR: Insufficient memory!\n");
+		rumboot_free((void *)frame_o);
+		return 1;
+	}
 
 	for (i = 0; i < 12; i++)
 		frame_o[i] = 0xFF;
@@ -75,6 +87,8 @@ int mgeth_frame_xfer(uint32_t eth_send_num, uint32_t eth_recv_num, const char *h
 	if (!chan_i)
 	{
 		rumboot_printf("ERROR: Failed receive frame!\n");
+		rumboot_free((void *)frame_o);
+		rumboot_free((void *)frame_i);
 		return 1;
 	}
 
@@ -82,6 +96,8 @@ int mgeth_frame_xfer(uint32_t eth_send_num, uint32_t eth_recv_num, const char *h
 	if (!chan_o)
 	{
 		rumboot_printf("ERROR: Failed transmit frame!\n");
+		rumboot_free((void *)frame_o);
+		rumboot_free((void *)frame_i);
 		return 1;
 	}
 
@@ -91,6 +107,8 @@ int mgeth_frame_xfer(uint32_t eth_send_num, uint32_t eth_recv_num, const char *h
 	if (ret)
 	{
 		rumboot_printf("ERROR: Failed transmit frame!\n");
+		rumboot_free((void *)frame_o);
+		rumboot_free((void *)frame_i);
 		return 1;
 	}
 
@@ -100,6 +118,8 @@ int mgeth_frame_xfer(uint32_t eth_send_num, uint32_t eth_recv_num, const char *h
 	if (ret)
 	{
 		rumboot_printf("ERROR: Failed finish transfer!\n");
+		rumboot_free((void *)frame_o);
+		rumboot_free((void *)frame_i);
 		return 1;
 	}
 
@@ -109,6 +129,8 @@ int mgeth_frame_xfer(uint32_t eth_send_num, uint32_t eth_recv_num, const char *h
 	if (ret)
 	{
 		rumboot_printf("ERROR: Failed receive frame!\n");
+		rumboot_free((void *)frame_o);
+		rumboot_free((void *)frame_i);
 		return 1;
 	}
 
@@ -118,6 +140,8 @@ int mgeth_frame_xfer(uint32_t eth_send_num, uint32_t eth_recv_num, const char *h
 	if (ret)
 	{
 		rumboot_printf("ERROR: Failed finish transfer!\n");
+		rumboot_free((void *)frame_o);
+		rumboot_free((void *)frame_i);
 		return 1;
 	}
 
@@ -127,8 +151,13 @@ int mgeth_frame_xfer(uint32_t eth_send_num, uint32_t eth_recv_num, const char *h
 		if ((i != 24) && (i != 25) && (frame_i[i] != frame_o[i]))
 		{
 			rumboot_printf("ERROR: Wrong byte %d!\n", i);
+			rumboot_free((void *)frame_o);
+			rumboot_free((void *)frame_i);
 			return 1;
 		}
+
+	rumboot_free((void *)frame_o);
+	rumboot_free((void *)frame_i);
 
 	rumboot_printf("Done.\n");
 
@@ -186,7 +215,15 @@ int main()
 
 	rumboot_printf("================================================================================\n");
 
-	mgeth_init_sgmii(SGMII_PHY, SCTL_BASE);
+	rumboot_printf("Waiting SGMII initialization...\n");
+
+	if (mgeth_init_sgmii(SGMII_PHY, SCTL_BASE))
+	{
+		rumboot_printf("ERROR: SGMII initialization ERROR!\n");
+		return 1;
+	}
+
+	rumboot_printf("SGMII initialized.\n");
 
 	// Start timer
 	gp_timer_turn_on();

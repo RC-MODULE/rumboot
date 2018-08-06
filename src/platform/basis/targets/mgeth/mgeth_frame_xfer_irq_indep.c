@@ -75,9 +75,38 @@ static bool test_mgeth_frame_xfer(uint32_t eth_send_num)
 	rumboot_irq_sei();
 
 	frame_o = rumboot_malloc_from_heap_aligned(0, 64, 4);
+	if (!frame_o)
+	{
+		rumboot_printf("ERROR: Insufficient memory!\n");
+		return false;
+	}
+
 	frame_i = rumboot_malloc_from_heap_aligned(0, 64, 4);
+	if (!frame_i)
+	{
+		rumboot_printf("ERROR: Insufficient memory!\n");
+		rumboot_free((void *)frame_o);
+		return false;
+	}
+
 	desc_o = rumboot_malloc_from_heap_aligned(0, 16, 4);
+	if (!desc_o)
+	{
+		rumboot_printf("ERROR: Insufficient memory!\n");
+		rumboot_free((void *)frame_o);
+		rumboot_free((void *)frame_i);
+		return false;
+	}
+
 	desc_i = rumboot_malloc_from_heap_aligned(0, 16, 4);
+	if (!desc_i)
+	{
+		rumboot_printf("ERROR: Insufficient memory!\n");
+		rumboot_free((void *)frame_o);
+		rumboot_free((void *)frame_i);
+		rumboot_free((void *)desc_o);
+		return false;
+	}
 
 	for (i = 0; i < 12; i++)
 		frame_o[i] = 0xFF;
@@ -224,7 +253,15 @@ int main()
 
 	rumboot_printf("================================================================================\n");
 
-	mgeth_init_sgmii(SGMII_PHY, SCTL_BASE);
+	rumboot_printf("Waiting SGMII initialization...\n");
+
+	if (mgeth_init_sgmii(SGMII_PHY, SCTL_BASE))
+	{
+		rumboot_printf("ERROR: SGMII initialization ERROR!\n");
+		return 1;
+	}
+
+	rumboot_printf("SGMII initialized.\n");
 
 	tbl = rumboot_irq_create(NULL);
 
