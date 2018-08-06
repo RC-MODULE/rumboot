@@ -113,7 +113,7 @@ uint32_t check_emi(const uint32_t base_address)
 	TEST_ASSERT(dcr_read( EMI_SS5 + base_address) == 0x00000000, "In EMI_SS5 expected value 0x00000000");
 	TEST_ASSERT(dcr_read( EMI_SD5 + base_address) == 0x00000000, "In EMI_SD5 expected value 0x00000000");
 	TEST_ASSERT(dcr_read( EMI_RFC + base_address) == 0x00000000, "In EMI_RFC expected value 0x00000000");
-	TEST_ASSERT(dcr_read( EMI_HSTR + base_address) == 0x00000000, "In EMI_HSTR expected value 0x00000000");
+	TEST_ASSERT(dcr_read( EMI_HSTSR + base_address) == 0x00000000, "In EMI_HSTR expected value 0x00000000");
 	TEST_ASSERT(dcr_read( EMI_ECNT20 + base_address) == 0x00000000, "In EMI_ECNT20 expected value 0x00000000");
 	TEST_ASSERT(dcr_read( EMI_ECNT53 + base_address) == 0x00000000, "In EMI_ECNT53 expected value 0x00000000");
 	TEST_ASSERT(dcr_read( EMI_BUSEN + base_address) == 0x00000000, "In EMI_BUSEN expected value 0x00000000");
