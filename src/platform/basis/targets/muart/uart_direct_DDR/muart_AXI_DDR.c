@@ -105,10 +105,21 @@ int AXI_mem_access(int heap_id)
         rumboot_printf("UNTESTED: ERROR rumboot_malloc_from_heap\n");
         return 2;
     }
-    for (i = 0; i < size; i++){
+//------------------------------------------------------------------------------
+/*    for (i = 0; i < size; i++){
         src_addr[i] = i;
         dst_addr[i] = 0;
+    }*/
+//------------------------------------------------------------------------------
+    ((uint32_t *)src_addr)[0] = 0x03020100;
+    ((uint32_t *)src_addr)[1] = 0x07060504;
+    ((uint32_t *)src_addr)[2] = 0x0B0A0908;
+    ((uint32_t *)src_addr)[3] = 0x0F0E0D0C;
+    for (i = 0; i < 4; i++){
+//        ((uint32_t *)src_addr)[i] = i;
+        ((uint32_t *)dst_addr)[i] = 0;
     }
+//------------------------------------------------------------------------------
 
     for ( b=0; b<= 1; b++) {        //base loop
         muart_soft_reset(BASE[b]);
