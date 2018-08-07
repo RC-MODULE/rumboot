@@ -1051,6 +1051,63 @@ endif()
       NAME mkio1_events_timestamps_test
     )
 
+  add_rumboot_target(
+      SNAPSHOT default
+      CONFIGURATION IRAM_MIRROR
+      PREFIX "mirror"
+      FILES mkio/mkio_write_read_test.c
+      NAME mkio_write_read_test
+    )
+
+  add_rumboot_target(
+      SNAPSHOT default
+      CONFIGURATION IRAM_MIRROR
+      PREFIX "mirror"
+      FILES mkio/mkio0_irq_test.c
+      NAME mkio0_irq_test
+    )
+
+  add_rumboot_target(
+      SNAPSHOT default
+      CONFIGURATION IRAM_MIRROR
+      PREFIX "mirror"
+      FILES mkio/mkio1_irq_test.c
+      NAME mkio1_irq_test
+    )
+
+  add_rumboot_target(
+      SNAPSHOT default
+      CONFIGURATION IRAM_MIRROR
+      PREFIX "mirror"
+      FILES mkio/mkio_polarity_test.c
+      NAME mkio_polarity_test
+    )
+
+  add_rumboot_target(
+      SNAPSHOT default
+      CONFIGURATION IRAM_MIRROR
+      PREFIX "mirror"
+      FILES mkio/mkio0_events_timestamps_test.c
+      NAME mkio0_events_timestamps_test
+    )
+
+  add_rumboot_target(
+      SNAPSHOT default
+      CONFIGURATION IRAM_MIRROR
+      PREFIX "mirror"
+      FILES mkio/mkio1_events_timestamps_test.c
+      NAME mkio1_events_timestamps_test
+    )
+
+  add_rumboot_target(
+      SNAPSHOT default
+      CONFIGURATION IRAM
+      FILES mkio/mkio_signal_test.c
+      NAME mkio_signal_test
+      IRUN_FLAGS +mkio_signal_test
+    )
+
+
   #RumBoot Integration tests
 #  add_rumboot_target(
 #      CONFIGURATION INTEGRATION

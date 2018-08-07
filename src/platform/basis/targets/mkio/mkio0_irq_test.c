@@ -6,12 +6,10 @@
 //    - initialise source array
 //    - write data to MKIO1 (RT) with MKIO0 (BC)
 //    - catch interuption from MKIO0 and MKIO1
-//    - write data to MKIO0 (RT) with MKIO1 (BC)
-//    - catch interuption from MKIO0 and MKIO1
 //    - 
 //    - 
 //
-//  It is dufficult to configure RT for interrupts (need logginc also)
+//  It is dufficult to configure RT for interrupts (need logging also)
 //    So, test repeats with different BC
 //
 //    Test duration (RTL): < 

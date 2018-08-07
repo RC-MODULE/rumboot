@@ -1,16 +1,14 @@
 
 //-----------------------------------------------------------------------------
-//  This program is for testing Gaisler MKIO interruption functionality
+//  This program is for testing Gaisler MKIO external signals connectivity
 //    Test includes:
-//    - clear source and destination arrays space
 //    - initialise source array
+//    - check mkio_inh signals idle
 //    - write data to MKIO0 (RT) with MKIO1 (BC)
-//    - catch interuption from MKIO0 and MKIO1
+//    - check mkio_inh signals work
 //    - 
 //    - 
 //
-//  It is dufficult to configure RT for interrupts (need logging also)
-//    So, test repeats with different BC
 //
 //    Test duration (RTL): < 
 //-----------------------------------------------------------------------------
@@ -25,6 +23,7 @@
 #include <platform/devices.h>
 #include <platform/interrupts.h>
 #include <regs/regs_mkio.h>
+#include <regs/regs_gpio.h>
 #include <devices/mkio.h>
 
 //  Single Array Data Size In Bytes
@@ -85,6 +84,69 @@ uint32_t cmp_arrays (uint32_t address_src, uint32_t address_dst, uint32_t size)
     return 0;
 }
 //-----------------------------------------------------------------------------
+uint32_t check_mkio0_A_inh_idle ()
+{
+    for (uint32_t i = 0; i < 8; i++)
+        if ((ioread32 (GPIO1_BASE + GPIO_READ_PADtoAPB) & 0x1) != 0x1)
+            return -1;
+    return 0;
+}
+
+uint32_t check_mkio0_A_inh_active ()
+{
+    for (uint32_t i = 0; i < 8; i++)
+        if ((ioread32 (GPIO1_BASE + GPIO_READ_PADtoAPB) & 0x1) != 0x0)
+            return -1;
+    return 0;
+}
+
+uint32_t check_mkio0_B_inh_idle ()
+{
+    for (uint32_t i = 0; i < 8; i++)
+        if ((ioread32 (GPIO1_BASE + GPIO_READ_PADtoAPB) & 0x2) != 0x2)
+            return -1;
+    return 0;
+}
+
+uint32_t check_mkio0_B_inh_active ()
+{
+    for (uint32_t i = 0; i < 8; i++)
+        if ((ioread32 (GPIO1_BASE + GPIO_READ_PADtoAPB) & 0x2) != 0x0)
+            return -1;
+    return 0;
+}
+
+uint32_t check_mkio1_A_inh_idle ()
+{
+    for (uint32_t i = 0; i < 8; i++)
+        if ((ioread32 (GPIO1_BASE + GPIO_READ_PADtoAPB) & 0x4) != 0x4)
+            return -1;
+    return 0;
+}
+
+uint32_t check_mkio1_A_inh_active ()
+{
+    for (uint32_t i = 0; i < 8; i++)
+        if ((ioread32 (GPIO1_BASE + GPIO_READ_PADtoAPB) & 0x4) != 0x0)
+            return -1;
+    return 0;
+}
+
+uint32_t check_mkio1_B_inh_idle ()
+{
+    for (uint32_t i = 0; i < 8; i++)
+        if ((ioread32 (GPIO1_BASE + GPIO_READ_PADtoAPB) & 0x8) != 0x8)
+            return -1;
+    return 0;
+}
+
+uint32_t check_mkio1_B_inh_active ()
+{
+    for (uint32_t i = 0; i < 8; i++)
+        if ((ioread32 (GPIO1_BASE + GPIO_READ_PADtoAPB) & 0x8) != 0x0)
+            return -1;
+    return 0;
+}
 
 
 uint32_t mkio_write_to_rt_with_irq (uint32_t data_src, uint32_t data_dst, uint32_t size, uint32_t bc_base_address, uint32_t rt_base_address)
@@ -101,6 +163,8 @@ uint32_t mkio_write_to_rt_with_irq (uint32_t data_src, uint32_t data_dst, uint32
     uint32_t IRQE_ = 1;
     //  IRQ normally (IRQN) - Always interrupts after transfer
     uint32_t IRQN = 1;
+    //  Bus selection (BUS) - Bus to use for transfer, 0 - Bus A, 1 - Bus B
+    uint32_t BUS = 0;
     
     //  RT Address (RTAD1)
     uint32_t RTAD1 = 0x00;
@@ -131,8 +195,80 @@ uint32_t mkio_write_to_rt_with_irq (uint32_t data_src, uint32_t data_dst, uint32
     rumboot_printf("    mkio_rt_rx_descriptor %x\n",    (uint32_t) (&mkio_rt_rx_descriptor    ));
     rumboot_printf("    mkio_irq_ring_buffer %x\n",     (uint32_t) (&mkio_irq_ring_buffer     ));
     
+    if (
+            (check_mkio0_A_inh_idle () != 0) |
+            (check_mkio0_B_inh_idle () != 0) |
+            (check_mkio1_A_inh_idle () != 0) |
+            (check_mkio1_B_inh_idle () != 0)
+        )
+        return -1;
+    
+    //-------------------------------------------------------------------------
+    //  For 1553 BUS A
+    //-------------------------------------------------------------------------
     mkio_bc_descriptor.ctrl_word_0      = 0x00000000 | (IRQE_ << 28) | (IRQN << 27) | (SUSN << 25);
-    mkio_bc_descriptor.ctrl_word_1      = 0x00000000 | (RTAD1 << 11) | (TR << 10) | (RTSA1 << 5) | (WCMC << 0) ;
+    mkio_bc_descriptor.ctrl_word_1      = 0x00000000 | (BUS << 30) | (RTAD1 << 11) | (TR << 10) | (RTSA1 << 5) | (WCMC << 0) ;
+    mkio_bc_descriptor.data_pointer     = data_src ;
+    mkio_bc_descriptor.result_word      = 0xFFFFFFFF ;
+    mkio_bc_descriptor.condition_word   = bc_descriptor_end_of_list;
+    mkio_bc_descriptor.branch_address   = unused;
+    mkio_bc_descriptor.reserved_0       = unused;
+    mkio_bc_descriptor.reserved_1       = unused;
+    
+    //  Subaddress = 0x00 and 0x1F are reserved to identify "mode command"
+    //  So, use 0x01 table entrance
+    mkio_rt_subaddress_table.sa0_ctrl_word             = unused ;
+    mkio_rt_subaddress_table.sa0_tx_descriptor_pointer = unused ;
+    mkio_rt_subaddress_table.sa0_rx_descriptor_pointer = unused ;
+    mkio_rt_subaddress_table.sa0_reserved              = unused ;
+    mkio_rt_subaddress_table.sa1_ctrl_word             = 0x00000000 | (RXEN << 15) | (TXEN << 7) ;
+    mkio_rt_subaddress_table.sa1_tx_descriptor_pointer = 0x00000000 ;
+    mkio_rt_subaddress_table.sa1_rx_descriptor_pointer = (uint32_t) (&mkio_rt_rx_descriptor) ;
+    mkio_rt_subaddress_table.sa1_reserved              = 0x00000000 ;
+    
+    mkio_rt_rx_descriptor.ctrl_status_word        = 0x03FFFFFF ;
+    mkio_rt_rx_descriptor.data_pointer            = data_dst ;
+    mkio_rt_rx_descriptor.next_descriptor_pointer = rt_descriptor_end_of_list ;
+    
+    //  reset interrupt flag
+    irq_flag = 0;
+    //  Enable all interrupts in BC controller
+    iowrite32 (0xFFFFFFFF, bc_base_address + IRQE);
+    iowrite32 ((uint32_t) (&mkio_irq_ring_buffer), bc_base_address + BCRD);
+    
+    mkio_rt_start_schedule (rt_base_address, (uint32_t) (&mkio_rt_subaddress_table));
+    if (
+            (check_mkio0_A_inh_idle () != 0) |
+            (check_mkio0_B_inh_idle () != 0) |
+            (check_mkio1_A_inh_active () != 0) |
+            (check_mkio1_B_inh_active () != 0)
+        )
+        return -1;
+    mkio_bc_start_schedule (bc_base_address, (uint32_t) (&mkio_bc_descriptor      ));
+    
+    if (
+            (check_mkio0_A_inh_active () != 0) |
+            (check_mkio0_B_inh_active () != 0) |
+            (check_mkio1_A_inh_active () != 0) |
+            (check_mkio1_B_inh_active () != 0)
+        )
+        return -1;
+    
+    //  Wait end of transaction with "polling descriptor" mechanism
+    while (((mkio_bc_descriptor.result_word & 0x7) != 0) | ((mkio_rt_rx_descriptor.ctrl_status_word & 0x7) != 0))
+    {
+        for (volatile uint32_t i = 0; i < 10; i++)
+            ;
+    }
+    rumboot_printf("bc and rt descriptors closed successfully\n");
+    
+    //-------------------------------------------------------------------------
+    //  For 1553 BUS B
+    //-------------------------------------------------------------------------
+    BUS = 1;
+    
+    mkio_bc_descriptor.ctrl_word_0      = 0x00000000 | (IRQE_ << 28) | (IRQN << 27) | (SUSN << 25);
+    mkio_bc_descriptor.ctrl_word_1      = 0x00000000 | (BUS << 30) | (RTAD1 << 11) | (TR << 10) | (RTSA1 << 5) | (WCMC << 0) ;
     mkio_bc_descriptor.data_pointer     = data_src ;
     mkio_bc_descriptor.result_word      = 0xFFFFFFFF ;
     mkio_bc_descriptor.condition_word   = bc_descriptor_end_of_list;
@@ -164,6 +300,14 @@ uint32_t mkio_write_to_rt_with_irq (uint32_t data_src, uint32_t data_dst, uint32
     mkio_rt_start_schedule (rt_base_address, (uint32_t) (&mkio_rt_subaddress_table));
     mkio_bc_start_schedule (bc_base_address, (uint32_t) (&mkio_bc_descriptor      ));
     
+    if (
+            (check_mkio0_A_inh_active () != 0) |
+            (check_mkio0_B_inh_active () != 0) |
+            (check_mkio1_A_inh_active () != 0) |
+            (check_mkio1_B_inh_active () != 0)
+        )
+        return -1;
+    
     //  Wait end of transaction with "polling descriptor" mechanism
     while (((mkio_bc_descriptor.result_word & 0x7) != 0) | ((mkio_rt_rx_descriptor.ctrl_status_word & 0x7) != 0))
     {
@@ -171,36 +315,16 @@ uint32_t mkio_write_to_rt_with_irq (uint32_t data_src, uint32_t data_dst, uint32
             ;
     }
     rumboot_printf("bc and rt descriptors closed successfully\n");
-    //  Wait end of transaction with "polling descriptor" mechanism
-    while (irq_flag != 0x5ACCE551)
-    {
-        for (volatile uint32_t i = 0; i < 10; i++)
-            ;
-    }
+    
+    if (
+            (check_mkio0_A_inh_active () != 0) |
+            (check_mkio0_B_inh_active () != 0) |
+            (check_mkio1_A_inh_active () != 0) |
+            (check_mkio1_B_inh_active () != 0)
+        )
+        return -1;
+    
     return 0;
-}
-
-//------------------------------------------------------------------------
-//  MKIO1 IRQ handler function.
-//    Set irq_flag main program to acknowledge irq recieving
-//------------------------------------------------------------------------
-static void MKIO1_IRQ_handler (int irq, void *arg)
-{
-    uint32_t rdata;
-    
-	rumboot_printf("MKIO1_IRQ_handler start \n");
-    irq_flag = 0x5ACCE551;
-    
-    //  This cycle is for checking our irq scheme.
-    //  Has no functional meaning for program.
-    for (uint32_t i = 0; i <= 31; i++)
-    {
-        iowrite32 ((1 << i), MKIO1_BASE + IRQE);
-    }
-    
-    rdata = ioread32 (MKIO1_BASE + IRQ);
-    rumboot_printf("MKIO1 IRQ reg value: 0x%x\n", rdata);
-    iowrite32 (rdata, MKIO1_BASE + IRQ);
 }
 
 //-----------------------------------------------------------------------------
@@ -211,30 +335,11 @@ uint32_t main ()
     uint32_t data_src [DATA_SIZE >> 2] __attribute__ ((aligned(4)));
     uint32_t data_dst [DATA_SIZE >> 2] __attribute__ ((aligned(4)));
     
-    rumboot_printf("    mkio_irq_test\n");
-    
-    clear_destination_space (data_src, DATA_SIZE);
-    clear_destination_space (data_dst, DATA_SIZE);
+    rumboot_printf("    mkio_signal_test\n");
     
     create_etalon_array (data_src, DATA_SIZE);
-    
-    //---------------------------------------------------------
-    //  GIC configuration
-    //---------------------------------------------------------
-    rumboot_irq_cli();
-    struct rumboot_irq_entry *tbl = rumboot_irq_create(NULL);
-    rumboot_irq_set_handler(tbl, MKIO1_IRQ, 0, MKIO1_IRQ_handler, NULL);
-    /* Activate the table */
-    rumboot_irq_table_activate(tbl);
-    rumboot_irq_enable(MKIO1_IRQ);
-    rumboot_irq_sei();
 
-    if (mkio_present (MKIO0_BASE) != 0)
-        return -1;
-    if (mkio_present (MKIO1_BASE) != 0)
-        return -2;
-
-    if (mkio_write_to_rt_with_irq ((uint32_t) (&data_src), (uint32_t) (&data_dst), DATA_SIZE, MKIO1_BASE, MKIO0_BASE) != 0)
+    if (mkio_write_to_rt_with_irq ((uint32_t) (&data_src), (uint32_t) (&data_dst), DATA_SIZE, MKIO0_BASE, MKIO1_BASE) != 0)
         return -3;
 
     return 0;
