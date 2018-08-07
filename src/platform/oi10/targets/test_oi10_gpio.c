@@ -15,6 +15,7 @@
 #include <regs/regs_gpio_pl061.h>
 #include <devices/gpio_pl061.h>
 
+#define CHECK_REGS
 
 #ifdef CHECK_REGS
 static uint32_t check_gpio_default_val( uint32_t base_addr ) {
@@ -128,7 +129,6 @@ static uint32_t check_gpio_func( uint32_t base_addr, uint32_t GPIODIR_value ) {
 
     //write
     data_write_gpio = 0xFF & GPIODIR_value;
-//    rumboot_printf( "data_write_gpio : %x\n", data_write_gpio);
     iowrite32( data_write_gpio, base_addr + GPIO_ADDR_MASK );
 
     if( wait_gpio_int() ) {
@@ -139,6 +139,13 @@ static uint32_t check_gpio_func( uint32_t base_addr, uint32_t GPIODIR_value ) {
     //read
     data_read_gpio = gpio_get_data( base_addr );
     TEST_ASSERT( (data_read_gpio == 0xFF), "Error! The value of GPOUT does not match the expected\n" );
+
+    rumboot_printf("Inverse value \n");
+    data_write_gpio = 0xFF & (~GPIODIR_value);
+    iowrite32( data_write_gpio, base_addr + GPIO_ADDR_MASK );
+    data_read_gpio = gpio_get_data( base_addr );
+    rumboot_printf("data_read_gpio = %x \n", data_read_gpio);
+    TEST_ASSERT( (data_read_gpio == 0x00), "Error! The value of GPOUT does not match the expected\n" );
 
     rumboot_irq_table_activate( NULL );
     rumboot_irq_free( tbl );
