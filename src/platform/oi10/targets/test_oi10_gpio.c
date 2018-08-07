@@ -15,8 +15,6 @@
 #include <regs/regs_gpio_pl061.h>
 #include <devices/gpio_pl061.h>
 
-#define CHECK_REGS
-
 #ifdef CHECK_REGS
 static uint32_t check_gpio_default_val( uint32_t base_addr ) {
     rumboot_printf("Check the default values of the registers:");
