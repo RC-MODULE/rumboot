@@ -40,6 +40,21 @@ typedef enum {
     UART_parity_no   = (1 << 2)
 }UART_parity;
 
+typedef enum {
+    UART_RX_FIFO_LEVEL_GT_1_8 = 0,
+    UART_RX_FIFO_LEVEL_GT_1_4 = 1,
+    UART_RX_FIFO_LEVEL_GT_1_2 = 2,
+    UART_RX_FIFO_LEVEL_GT_3_4 = 3,
+    UART_RX_FIFO_LEVEL_GT_7_8 = 4,
+}UART_RX_FIFO_LEVEL;
+
+typedef enum {
+    UART_TX_FIFO_LEVEL_LT_1_8 = 0,
+    UART_TX_FIFO_LEVEL_LT_1_4 = 1,
+    UART_TX_FIFO_LEVEL_LT_1_2 = 2,
+    UART_TX_FIFO_LEVEL_LT_3_4 = 3,
+    UART_TX_FIFO_LEVEL_LT_7_8 = 4,
+}UART_TX_FIFO_LEVEL;
 
 
 /**
@@ -95,6 +110,14 @@ void uart_rts_cts_enable(uint32_t base_addr, bool enabled);
  * @param enabled enable/disable flag
  */
 void uart_fifos_enable(uint32_t  base_addr, bool enabled);
+
+/**
+ * brief Set UART fifos level
+ * @param base_adr base address of UART
+ * @param rx_fifo_level Trigger level of RX FIFO
+ * @param tx_fifo_level Trigger level of TX FIFO
+ */
+void uart_fifos_set_level(uint32_t base_addr, UART_RX_FIFO_LEVEL rx_fifo_level, UART_TX_FIFO_LEVEL tx_fifo_level);
 
 /**
  * brief Set baudrate for UART

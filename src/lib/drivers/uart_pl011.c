@@ -120,6 +120,10 @@ void uart_fifos_enable(uint32_t base_addr, bool enabled){
     }
 }
 
+void uart_fifos_set_level(uint32_t base_addr, UART_RX_FIFO_LEVEL rx_fifo_level, UART_TX_FIFO_LEVEL tx_fifo_level){
+    reg_write(base_addr, UARTIFLS, (rx_fifo_level << 3) | tx_fifo_level);
+}
+
 void uart_rts_cts_enable(uint32_t base_addr, bool enabled){
     if(enabled){
         reg_set(base_addr, UARTCR, (UARTCR__RTSEN | UARTCR__CTSEN));
