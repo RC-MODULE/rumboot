@@ -85,14 +85,62 @@ typedef struct
     uint16_t   RP;
 } emi_rfc_cfg;
 
-void emi_init         ();
-void emi_init_impl    (uint32_t emi_dcr_base, uint32_t plb6mcif2_dcr_base, uint32_t puaba);
-void emi_get_bank_cfg (uint32_t emi_base, emi_bank_num num_bank, emi_bank_cfg* bn_cfg);
-void emi_set_bank_cfg (uint32_t emi_base, emi_bank_num num_bank, emi_bank_cfg* bn_cfg);
-void emi_set_rfc      (uint32_t emi_base, emi_rfc_cfg* rfc);
-void emi_get_rfc      (uint32_t emi_base, emi_rfc_cfg* rfc);
-void emi_set_ecc      (uint32_t emi_base, emi_bank_num num_bank, emi_ecc_status ecc_stat);
+typedef struct
+{
+    bool MERRDW;
+    bool MERRAW;
+    bool MERRAR;
+    bool MRDYW;
+    bool MRDYR;
+    bool ME2B5;
+    bool ME1B5;
+    bool ME2B4;
+    bool ME1B4;
+    bool ME2B3;
+    bool ME1B3;
+    bool ME2B2;
+    bool ME1B2;
+    bool ME2B1;
+    bool ME1B1;
+    bool ME2B0;
+    bool ME1B0;
+} emi_imr_cfg;
+
+typedef struct
+{
+    bool IERRDW;
+    bool IERRAW;
+    bool IERRAR;
+    bool IRDYW;
+    bool IRDYR;
+    bool IE2B5;
+    bool IE1B5;
+    bool IE2B4;
+    bool IE1B4;
+    bool IE2B3;
+    bool IE1B3;
+    bool IE2B2;
+    bool IE1B2;
+    bool IE2B1;
+    bool IE1B1;
+    bool IE2B0;
+    bool IE1B0;
+} emi_irr_cfg;
+
+void emi_init           ();
+void emi_init_impl      (uint32_t emi_dcr_base, uint32_t plb6mcif2_dcr_base, uint32_t puaba);
+void emi_get_bank_cfg   (uint32_t emi_dcr_base, emi_bank_num num_bank, emi_bank_cfg* bn_cfg);
+void emi_set_bank_cfg   (uint32_t emi_dcr_base, emi_bank_num num_bank, emi_bank_cfg* bn_cfg);
+void emi_set_rfc        (uint32_t emi_dcr_base, emi_rfc_cfg* rfc);
+void emi_get_rfc        (uint32_t emi_dcr_base, emi_rfc_cfg* rfc);
+void emi_set_ecc        (uint32_t emi_dcr_base, emi_bank_num num_bank, emi_ecc_status ecc_stat);
 void emi_hiz_mode_on  (uint32_t emi_dcr_base);
 void emi_hiz_mode_off (uint32_t emi_dcr_base);
+void emi_enable_ext_rdy (uint32_t emi_dcr_base, emi_bank_num num_bank);
+void emi_set_trdy       (uint32_t emi_dcr_base, emi_bank_num num_bank, uint16_t trdy);
+void emi_set_int_mask   (uint32_t emi_dcr_base, emi_imr_cfg* mask);
+void emi_get_int_mask   (uint32_t emi_dcr_base, emi_imr_cfg* mask);
+void emi_get_irr        (uint32_t emi_dcr_base, emi_irr_cfg* irr);
+void emi_clear_irr      (uint32_t emi_dcr_base, emi_irr_cfg* irr);
 
 #endif /* EMI_H_ */
