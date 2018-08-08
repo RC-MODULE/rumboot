@@ -9,7 +9,11 @@
 #include <platform/common_macros/common_macros.h>
 #include <platform/devices.h>
 #include <platform/devices/emi.h>
+
+#define RUMBOOT_ASSERT_WARN_ONLY
 #include <platform/devices/nor_1636RR4.h>
+#undef RUMBOOT_ASSERT_WARN_ONLY
+
 #include <platform/regs/regs_emi.h>
 #include <platform/test_event_c.h>
 #include <platform/test_event_codes.h>
@@ -159,8 +163,7 @@ int main(void)
     test_event_send_test_id("test_oi10_em2_205");
 
     emi_init();
-
-    dcr_write(DCR_EM2_EMI_BASE + EMI_HSTR, 0x3F);
+    emi_set_ecc(DCR_EM2_EMI_BASE, emi_bank_all, emi_ecc_on);
 
 /*
     uint32_t mask_reg = 0;
@@ -193,15 +196,12 @@ int main(void)
 //    iowrite32(0xBABA0001, ADDR_SDRAM_DE);
 
     rumboot_putstring("WRITE NOR\n");
+
     test_event(EVENT_INJECT_NOR_0); //DATA_SE = 0xBABA0000
-#define RUMBOOT_ASSERT_WARN_ONLY 1
     nor_write32(0xBABA0001, ADDR_NOR_SE);
-#undef RUMBOOT_ASSERT_WARN_ONLY
 
     test_event(EVENT_INJECT_NOR_7); //DATA_DE = 0xBABA0007
-#define RUMBOOT_ASSERT_WARN_ONLY 1
     nor_write32(0xBABA0001, ADDR_NOR_DE);
-#undef RUMBOOT_ASSERT_WARN_ONLY
 
     udelay(5);
 
