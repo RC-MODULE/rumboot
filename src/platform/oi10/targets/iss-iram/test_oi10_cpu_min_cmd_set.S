@@ -8,6 +8,25 @@
 #include <platform/trace.S.h>
 #include <platform/devices.h>
 
+
+/* Config */
+#define DUMP_ADDR   save_data
+
+/* Data sizes */
+#define SIZEOF_BYTE     0x0001
+#define SIZEOF_CHAR     SIZEOF_BYTE
+#define SIZEOF_HWORD    0x0002
+#define SIZEOF_WCHAR    SIZEOF_HWORD
+#define SIZEOF_WORD     0x0004
+#define SIZEOF_LONG     SIZEOF_WORD
+#define SIZEOF_DWORD    0x0008
+#define SIZEOF_FLOAT    SIZEOF_WORD
+#define SIZEOF_DOUBLE   SIZEOF_DWORD
+#define SIZEOF_SINGLE   SIZEOF_FLOAT
+#define SIZEOF_ADDR     SIZEOF_WORD
+
+
+
 .section ".text","ax",@progbits
 
 .global main
