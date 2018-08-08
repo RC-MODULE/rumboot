@@ -4,7 +4,7 @@
 #include <platform/test_assert.S.h>
 #include <platform/test_event_asm.h>
 #include <platform/devices.h>
-#include <platform/regs/regs_l2c.h>
+#include <platform/regs/regs_l2c_l2.h>
 
 #define eq6                     cr6*4+eq
 #define eq7                     cr7*4+eq
@@ -137,8 +137,8 @@
 #define L2C_L2WACINTEN2_VAL		0x00000000
 
 .macro check_value_l2c_init
-    load_const  R_DCRA,  L2CA(L2C_DCRAI)
-    load_const  R_DCRD,  L2CA(L2C_DCRDI)
+    load_const  R_DCRA,  L2CA(L2C_L2CDCRAI)
+    load_const  R_DCRD,  L2CA(L2C_L2CDCRDI)
 .endm
 
 .macro check_value_l2c vAddr, vExp, sName
