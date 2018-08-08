@@ -4,6 +4,7 @@
 #include <platform/test_event_asm.h>
 #include <platform/test_assert.S.h>
 #include <platform/arch/ppc/test_macro_asm.S.h>
+#include <platform/arch/ppc/ppc_476fp_fpu_const.h>
 #include <platform/trace.S.h>
 #include <platform/devices.h>
 
@@ -28,15 +29,18 @@ test_mpw_cpu_min_cmd_set_data:
 
 .align 3
 test_mpw_cpu_min_cmd_set_fp_data:
-.long 0xC3C3C3C3
-.long 0x3C3C3C3C
-.quad 0x85A5A5A5A5A5A5A5
-.quad 0x8A5A5A5A5A5A5A5A
-.quad 0x0000000000000000
-.quad 0x0000000000000000
-.quad 0x0000000000000000
-.quad 0x0000000000000000
-
+.long   0xC3C3C3C3
+.long   0x3C3C3C3C
+.long   C_S_POS_ZERO
+.single M_PI
+.quad   0x85A5A5A5A5A5A5A5
+.quad   0x8A5A5A5A5A5A5A5A
+.quad   C_D_POS_ZERO
+.quad   C_D_POS_ZERO
+.quad   C_D_POS_ZERO
+.quad   C_D_POS_ZERO
+.double M_PI
+.quad   C_D_NEG_ZERO
 
 image_start:
     rumboot_putstring   "Test started.\n"
@@ -52,6 +56,7 @@ loop:
     cmpwi cr0,  r23,    0x0000
     bne+  cr0,  loop
     blr
+    b           test_error
 
 b_pipe:
     rumboot_putstring   "B-pipe... "
@@ -157,8 +162,10 @@ fp_exec:
     fmuls.		f6, f5, f1
     fadd		f5, f1, f2
     fsub		f6, f5, f1
-    fcmpo cr0,  f6, f2
-    TEST_ASSERT(eq, cr0, "Unexpected result after floating point compare instruction.")
+    fcmpo cr3,  f6, f2
+    fcmpu cr4,  f6, f2
+    TEST_ASSERT(eq, cr3, "Unexpected FP ordered compare instruction result.")
+    TEST_ASSERT(eq, cr4, "Unexpected FP unordered compare instruction result.")
     fsqrts		f6, f6
     rumboot_putstring   "done.\n"
 
