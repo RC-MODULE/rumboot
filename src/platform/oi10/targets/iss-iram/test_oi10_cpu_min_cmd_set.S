@@ -88,6 +88,104 @@
 #define ADDRV(R,N)      VARSOFFT(N)(R)          /* For variables access         */
 
 
+.macro cr_rst crn
+    clr_cr  \crn,   lt
+    clr_cr  \crn,   gt
+    clr_cr  \crn,   eq
+    clr_cr  \crn,   so
+.endm
+.macro dump_write_uint32 sR
+    stw     \sR,    0(R_DMPA)
+    addi    R_DMPA, R_DMPA, SIZEOF_WORD
+    addi    R_DMPB, R_DMPB, SIZEOF_WORD
+.endm
+
+.macro dump_write_uint64 sR
+    stswi   \sR,    R_DMPA, SIZEOF_DWORD
+    addi    R_DMPA, R_DMPA, SIZEOF_DWORD
+    addi    R_DMPB  R_DMPB, SIZEOF_DWORD
+.endm
+
+.macro dump_write_single sFR
+    stfs    \sFR,   0(R_DMPA)
+    addi    R_DMPA, R_DMPA, SIZEOF_SINGLE
+    addi    R_DMPB, R_DMPB, SIZEOF_SINGLE
+.endm
+
+.macro dump_write_double sFR
+    stfd    \sFR,   0(R_DMPA)
+    addi    R_DMPA, R_DMPA, SIZEOF_DOUBLE
+    addi    R_DMPB, R_DMPB, SIZEOF_DOUBLE
+.endm
+
+.macro dump_write_fpscr
+    mffs    FR_SCR
+    stfd    FR_SCR, 0(R_DMPA)
+    addi    R_DMPA, R_DMPA, SIZEOF_DOUBLE
+    addi    R_DMPB, R_DMPB, SIZEOF_DOUBLE
+.endm
+
+.macro dump_write_cr
+    mfcr    R_TEMP
+    stw     R_ZERO, 0(R_DMPA)
+    stw     R_TEMP, 0(R_DMPA)
+    addi    R_DMPA, R_DMPA, SIZEOF_DOUBLE
+    addi    R_DMPB, R_DMPB, SIZEOF_DOUBLE
+.endm
+
+.macro fpscr_set_bit bitnum
+    mtfsb1      ((\bitnum) - 32)
+.endm
+
+.macro fpscr_clr_bit bitnum
+    mtfsb0      ((\bitnum) - 32)
+.endm
+
+.macro fpscr_reset
+    mtfsf   0xFF,   FR_NUL
+.endm
+
+.macro fpscr_load frN
+    mtfsf   0xFF,   \frN
+.endm
+
+.macro fpscr_rn_near
+    fpscr_clr_bit   FPSCR_RN_HIBIT
+    fpscr_clr_bit   FPSCR_RN_LOBIT
+.endm
+
+.macro fpscr_rn_zero
+    fpscr_clr_bit   FPSCR_RN_HIBIT
+    fpscr_set_bit   FPSCR_RN_LOBIT
+.endm
+
+.macro fpscr_rn_pinf
+    fpscr_set_bit   FPSCR_RN_HIBIT
+    fpscr_clr_bit   FPSCR_RN_LOBIT
+.endm
+
+.macro fpscr_rn_ninf
+    fpscr_set_bit   FPSCR_RN_HIBIT
+    fpscr_set_bit   FPSCR_RN_LOBIT
+.endm
+
+.macro save_srr
+    mfsrr0      R_SAV0
+    mfsrr1      R_SAV1
+.endm
+
+.macro rest_srr
+    mtsrr0      R_SAV0
+    mtsrr1      R_SAV1
+.endm
+
+.macro load_srr rADDR rMSR
+    save_srr
+    mtsrr0      \rADDR
+    mtsrr1      \rMSR
+.endm
+
+
 .section ".text","ax",@progbits
 
 .global main
