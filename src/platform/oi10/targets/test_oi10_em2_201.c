@@ -29,7 +29,7 @@ void refresh_timings(int32_t bank_num)
     switch (bank_num)
     {
         case 0:
-            ioread32(NOR_BASE);
+            ioread32(SRAM1_BASE);
             break;
         default:
             ioread32(SRAM0_BASE);
@@ -95,6 +95,7 @@ int check_sram_nor(uint32_t base_addr)
         {
             tcyc = (base_addr==NOR_BASE) ? test_tcyc_arr_nor[j] : test_tcyc_arr_sram0[j];
             emi_update_tcyc_tsoe(bank, test_tsoe_arr[i], tcyc);
+            rumboot_printf("Setting tcyc / tsoe: %d / %d\n", tcyc, test_tsoe_arr[i]);
             test_event(event_code);
             check_wrrd(TEST_ADDR_0, (i<<16) | j);
             check_wrrd(TEST_ADDR_1, ~((i<<16) | j));
