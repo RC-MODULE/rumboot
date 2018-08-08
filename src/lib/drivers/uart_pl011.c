@@ -1,11 +1,12 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include <devices/uart_pl011.h>
-#include <regs/regs_uart_pl011.h>
 #include <rumboot/io.h>
 #include <rumboot/timer.h>
 #include <rumboot/printf.h>
+
+#include <regs/regs_uart_pl011.h>
+#include <devices/uart_pl011.h>
 
 
 static void reg_write(uint32_t base, uint32_t reg_offset, uint32_t value)
@@ -54,11 +55,8 @@ void uart_init(uint32_t base_addr, UART_word_length wlen, uint32_t baud_rate, UA
     uart_set_word_length(base_addr,wlen);
     if(loopback == 0x1)//loopback
         uart_loopback_enable(base_addr,loopback);
-    //uart_rx_enable(base_addr,true);
-    //uart_tx_enable(base_addr,true);
     uart_set_parity(base_addr,parity);
     uart_set_interrupt_mask(base_addr, int_mask);
-    //uart_enable(base_addr,true);
 }
 
 void uart_enable(uint32_t base_addr, bool enabled){
