@@ -122,6 +122,8 @@ void emi_init_impl (uint32_t emi_dcr_base, uint32_t plb6mcif2_dcr_base, uint32_t
     emi_set_bank_cfg(emi_dcr_base, emi_b0_sram0, &b0_cfg);
 
     //init bank1 - SDRAM
+    //setting parameters by comment:
+    //(https://jira.module.ru/jira/browse/OI10-116?focusedCommentId=43530&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-43530)
     emi_bank_cfg b1_cfg =
     {
        //SS1
@@ -139,21 +141,21 @@ void emi_init_impl (uint32_t emi_dcr_base, uint32_t plb6mcif2_dcr_base, uint32_t
        },
        //SD1
        {
-           CSP_1024,
-           SDS_16M,
+           CSP_2048,
+           SDS_64M,
            CL_3,
            TRDL_1,
            SI_CPU_INIT,
-           TRCD_5,
-           TRAS_9
+           TRCD_2,
+           TRAS_5
        }
     };
     emi_set_bank_cfg(emi_dcr_base, emi_b1_sdram, &b1_cfg);
 
     emi_rfc_cfg emi_rfc =
     {
-            TRFC_9,
-            10,//RP
+            TRFC_7,
+            0b11110011110011,//RP
     };
     emi_set_rfc(emi_dcr_base, &emi_rfc);
 
