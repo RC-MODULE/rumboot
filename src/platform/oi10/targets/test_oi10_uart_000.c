@@ -73,8 +73,6 @@
 
 #define UART_TEST_DATA_LEN  32
 
-//#define CHECK_DEFAULT_VALUES 1
-
 
 //array for testing data exchange
 static const uint8_t data_seq_arr[UART_TEST_DATA_LEN] = {
@@ -129,16 +127,14 @@ static uint32_t reg_read(uint32_t base, uint32_t reg_offset)
 uint32_t check_read_from_uart(uint32_t base_addr, const uint8_t* data);
 
 static volatile uint32_t READ_FROM_FIFO;
+static volatile uint32_t UART_TX_CTS_INT;
 
-
-static void irq_handler_uart(int irq, void* arg)
+static void irq_handler_uart_receiver(int irq, void* arg)
 {
     uint32_t uart_status;
-    rumboot_printf("UART interrupt handler\n");
-
     uart_status = reg_read(UARTRX_BASE, UARTRIS);
 
-    rumboot_printf("uart_status = 0x%x\n", uart_status);
+    rumboot_printf("UART receiver interrupt handler - 0x%x\n", uart_status);
 
     if (uart_status & 0x10)
     {
@@ -146,29 +142,24 @@ static void irq_handler_uart(int irq, void* arg)
             exit(1);
 
         READ_FROM_FIFO = 1;
-        reg_write(UARTRX_BASE, UARTICR, 0x7FF);//clear interrupts
     }
+
+    reg_write(UARTRX_BASE, UARTICR, 0x7FF);//clear interrupts
 }
 
-
-uint32_t wait_uart_int()
+static void irq_handler_uart_transmitter(int irq, void* arg)
 {
-    unsigned t;
+    uint32_t uart_status;
+    uart_status = reg_read(UARTTX_BASE, UARTRIS);
 
-    for (t=1; t<=UART_TIMEOUT; t++)
+    rumboot_printf("UART transmitter interrupt handler - 0x%x\n", uart_status);
+
+    if (uart_status & 0x2)
     {
-        if (READ_FROM_FIFO == 1){
-            READ_FROM_FIFO = 0;
-            break;
-        }
+        UART_TX_CTS_INT = 1;
     }
 
-    if (t >= UART_TIMEOUT)
-    {
-        rumboot_printf("Error! READ_FROM_FIFO flag wait timeout!\n");
-        return TEST_ERROR;
-    }
-    return TEST_OK;
+    reg_write(UARTTX_BASE, UARTICR, 0x7FF);//clear interrupts
 }
 
 
@@ -208,11 +199,12 @@ int uart_check_defaults(uint32_t base_addr)
     return rumboot_regpoker_check_array(check_array, base_addr);
 }
 
+
+
 void write_to_uart(uint32_t base_addr, const uint8_t* data, size_t data_len)
 {
     rumboot_printf("Write:\n");
-    uint32_t j;
-    for (j = 0; j < data_len; j++)
+    for (uint32_t j = 0; j < data_len; j++)
     {
         rumboot_printf("data_seq_arr[%d] = 0x%x\n", j, data[j]);
         uart_putc(base_addr, data[j]);
@@ -244,44 +236,55 @@ uint32_t check_read_from_uart(uint32_t base_addr, const uint8_t* data)
 }
 
 
-uint32_t test_uart(uint32_t UART_TRANSMITTER_BASE, uint32_t UART_RECEIVER_BASE, bool rts_cts)
+bool wait_for_tx_cts_int(uint32_t timeout)
+{
+    while (!UART_TX_CTS_INT && --timeout)
+        ;
+
+    if (!timeout)
+    {
+        rumboot_putstring("Transmitter UART CTS interrupt waiting failed.\n");
+        return false;
+    }
+
+    return true;
+}
+
+
+
+uint32_t test_uart(uint32_t UART_TRANSMITTER_BASE, uint32_t UART_RECEIVER_BASE)
 {
     rumboot_printf("------- Test UART -------\n");
     rumboot_printf("UART_BASE = 0x%x\n", UART_RECEIVER_BASE);
 
 
-    uart_init(UART_TRANSMITTER_BASE, UART_word_length_8bit, 6250000, UART_parity_no, 0x30, 0);
+    uart_init(UART_TRANSMITTER_BASE, UART_word_length_8bit, 6250000, UART_parity_no, 0x022, 0);
     uart_fifos_set_level(UART_TRANSMITTER_BASE, UART_RX_FIFO_LEVEL_GT_7_8, UART_TX_FIFO_LEVEL_LT_1_8);
     uart_fifos_enable(UART_TRANSMITTER_BASE, true);
-
-    if (rts_cts)
-        uart_rts_cts_enable(UART_TRANSMITTER_BASE, true);
-
+    uart_rts_cts_enable(UART_TRANSMITTER_BASE, true);
     uart_tx_enable(UART_TRANSMITTER_BASE, true);
     uart_enable(UART_TRANSMITTER_BASE, true);
 
 
-    uart_init(UART_RECEIVER_BASE, UART_word_length_8bit, 6250000, UART_parity_no, 0x30, 0);
-
-    if (!rts_cts)
-    {
-        uart_fifos_set_level(UART_RECEIVER_BASE, UART_RX_FIFO_LEVEL_GT_7_8, UART_TX_FIFO_LEVEL_LT_1_8);
-        uart_fifos_enable(UART_RECEIVER_BASE, true);
-    }
-    else
-        uart_rts_cts_enable(UART_RECEIVER_BASE, true);
-
+    uart_init(UART_RECEIVER_BASE, UART_word_length_8bit, 6250000, UART_parity_no, 0x410, 0);
+    uart_fifos_set_level(UART_RECEIVER_BASE, UART_RX_FIFO_LEVEL_GT_7_8, UART_TX_FIFO_LEVEL_LT_1_8);
+    uart_fifos_enable(UART_RECEIVER_BASE, true);
+    uart_rts_cts_enable(UART_RECEIVER_BASE, true);
     uart_rx_enable(UART_RECEIVER_BASE, true);
     uart_enable(UART_RECEIVER_BASE, true);
 
 
-    write_to_uart(UART_TRANSMITTER_BASE, data_seq_arr, ARRAY_SIZE(data_seq_arr));
+    write_to_uart(UART_TRANSMITTER_BASE, data_seq_arr, UART_TEST_DATA_LEN);
+
+
+    if (!wait_for_tx_cts_int(UART_TIMEOUT))
+        return TEST_ERROR;
 
 
     while(!uart_check_rfifo_empty(UART_RECEIVER_BASE))
     {
         if (check_read_from_uart(UART_RECEIVER_BASE, data_seq_arr))
-            exit(1);
+            return TEST_ERROR;
     }
 
    return TEST_OK;
@@ -297,26 +300,29 @@ int main() {
     rumboot_printf("UART interface test has been started.\n");
 
     READ_FROM_FIFO = 0;
+    UART_TX_CTS_INT = 0;
 
     rumboot_irq_cli();
     struct rumboot_irq_entry *tbl = rumboot_irq_create( NULL );
 
-    rumboot_irq_set_handler(tbl, UART_INT, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, irq_handler_uart, (void*)0);
+    rumboot_irq_set_handler(tbl, UARTRX_INT, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, irq_handler_uart_receiver, (void*)0);
+    rumboot_irq_set_handler(tbl, UARTTX_INT, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, irq_handler_uart_transmitter, (void*)0);
 
     /* Activate the table */
     rumboot_irq_table_activate( tbl );
-    rumboot_irq_enable( UART_INT );
+    rumboot_irq_enable( UARTRX_INT );
+    rumboot_irq_enable( UARTTX_INT );
     rumboot_irq_sei();
 
-#ifdef CHECK_DEFAULT_VALUES
+#ifdef CHECK_REGISTERS
 
     rumboot_putstring("Checking UART registers default values ...\n");
     uart_check_defaults(UARTRX_BASE);
 
-#endif //CHECK_DEFAULT_VALUES
+#endif //CHECK_REGISTERS
 
     rumboot_printf("Testing UART ...\n");
-    test_result = test_uart(UARTTX_BASE, UARTRX_BASE, 0);
+    test_result = test_uart(UARTTX_BASE, UARTRX_BASE);
     if (test_result == TEST_ERROR)
     {
         rumboot_printf("Error while testing UART.\n");
