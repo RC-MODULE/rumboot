@@ -25,6 +25,67 @@
 #define SIZEOF_SINGLE   SIZEOF_FLOAT
 #define SIZEOF_ADDR     SIZEOF_WORD
 
+/* Integer register aliases */
+#define R_STPT          r1      /* Stack pointer            */
+#define R_ARG0          r3      /* Argument parameter #0    */
+#define R_ARG1          r4      /* Argument parameter #1    */
+#define R_ARG2          r5      /* Argument parameter #2    */
+#define R_ARG3          r6      /* Argument parameter #3    */
+#define R_RETN          R_ARG0  /* Return value             */
+#define R_VARS          r14     /* Variables address        */
+#define R_DMPA          r15     /* Dump memory address      */
+#define R_DMPB          r16     /* Dump bytes count         */
+#define R_DMPC          R_TEMP  /* Dump temp data           */
+#define R_MSRC          r17     /* MSR copy                 */
+#define R_BACK          r18     /* Unified backup           */
+#define R_CONA          r19     /* Constants memory address */
+#define R_ADDR          r20     /* Unified address pointer  */
+#define R_SIZE          r21     /* Size                     */
+#define R_CNTR          R_SIZE  /* Counter                  */
+#define R_BEGA          R_ADDR  /* Begin address            */
+#define R_ENDA          R_SIZE  /* End address              */
+#define R_DATH          r22     /* Data (high doubleword)   */
+#define R_DATL          r23     /* Data (low doubleword)    */
+#define R_DATA          R_DATH  /* Readed or writable data  */
+#define R_OFFT          r24     /* Offset                   */
+#define R_EXPV          r25     /* Expecting value          */
+#define R_MASK          r26     /* Uniform mask value       */
+#define R_TEMP          r27     /* Temporary data           */
+#define R_SAV0          r28     /* Copy of SRR0             */
+#define R_SAV1          r29     /* Copy of SRR1             */
+#define R_ZERO          r30     /* Holds 0x00000000         */
+#define R_ONES          r31     /* Holds 0xFFFFFFFF         */
+
+/* Floating point register aliases */
+#define FR_NUL          f0      /* 0x0000000000000000       */
+#define FR_ONE          f1      /* 0xFFFFFFFFFFFFFFFF       */
+#define FR_TWO          f2      /* Reserved                 */
+#define FR_RES          f3      /* Result of operation      */
+#define FR_VLA          f4      /* Value A (first operand)  */
+#define FR_VLB          f5      /* Value B (second operand) */
+#define FR_DAT          f6      /* Readed data              */
+#define FR_EXP          f7      /* Expected value           */
+#define FR_SCR          f19     /* Holds FPSCR              */
+#define FR_SP0          f20     /* Positive 0 single        */
+#define FR_SPN          f21     /* Positive NaN single      */
+#define FR_SNN          f22     /* Negative NaN single      */
+#define FR_SPI          f23     /* Positive Inf single      */
+#define FR_SNI          f24     /* Negative Inf single      */
+#define FR_SN0          f25     /* Negative 0 single        */
+#define FR_DPN          f26     /* Positive NaN double      */
+#define FR_DNN          f27     /* Negative NaN double      */
+#define FR_DPI          f28     /* Positive Inf double      */
+#define FR_DNI          f29     /* Negative Inf double      */
+#define FR_DN0          f30     /* Negative 0 double        */
+#define FR_DP0          FR_NUL  /* Positive 0 double        */
+
+/* Macro definitions for various calculations */
+#define CONSTOFT(CNM)   ((CNM) - consts)        /* Calculate constant   offset  */
+#define VARSOFFT(CNM)   ((CNM) - vars)          /* Calculate variables  offset  */
+#define LONGI(IDX)      ((IDX) * SIZEOF_LONG)   /* Calculate long index offset  */
+#define QUADI(IDX)      ((IDX) * SIZEOF_DOUBLE) /* Calculate quad index offset  */
+#define CONST(R,N)      CONSTOFT(N)(R)          /* For use in load/store ops    */
+#define ADDRV(R,N)      VARSOFFT(N)(R)          /* For variables access         */
 
 
 .section ".text","ax",@progbits
