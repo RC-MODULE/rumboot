@@ -296,6 +296,26 @@ void greth_start_receive(uint32_t base_addr, bool rcv_int_ena)
     set_greth_ctrl(base_addr, &greth_info);
 }
 
+void greth_start_receive_transmit(uint32_t base_addr, bool rcv_int_ena)
+{
+    greth_ctrl_struct_t greth_info;
+    rumboot_printf("Start receive data (0x%X)\n", base_addr);
+
+    new_greth_ctrl_struct(&greth_info);
+    greth_info.promiscuous_mode       = true;
+    greth_info.edcl_disable           = false;
+    greth_info.multicast_enable       = false;
+    greth_info.speed                  = GRETH_SPEED_100MB;
+    greth_info.fullduplex_enable      = true;
+    greth_info.transmitter_int_enable = false;
+    greth_info.receiver_int_enable    = rcv_int_ena;
+    greth_info.transmitter_enable     = true;
+    greth_info.receiver_enable        = true;
+    greth_info.ram_debug_enable       = false;
+    set_greth_ctrl(base_addr, &greth_info);
+}
+
+
 bool greth_wait_receive_irq(uint32_t base_addr, uint32_t volatile* eth_irq_handled_flag)
 {
     uint32_t t = 0;

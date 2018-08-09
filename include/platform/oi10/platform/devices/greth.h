@@ -339,6 +339,13 @@ bool greth_configure_for_receive( uint32_t base_addr, void volatile * const dst,
 void greth_start_receive(uint32_t base_addr, bool rcv_int_ena);
 
 /**
+ * \brief Enables GRETH to receive and transmit data
+ * \param base_addr: base address of GRETH
+ * \param rcv_int_ena: enable inerrupt at receiving data
+ */
+void greth_start_receive_transmit(uint32_t base_addr, bool rcv_int_ena);
+
+/**
  * \brief Waiting receiving data by polling STATUS register
  * \param base_addr: base address of GRETH
  * \return If data were received - true, else - false

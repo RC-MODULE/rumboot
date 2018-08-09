@@ -19,6 +19,11 @@
 
 #define IM1_BASE_MIRROR     0xC0000000
 
+#define EVENT_CHECK_GRETH0_RX_ER   0x00001000
+#define EVENT_CHECK_GRETH1_RX_ER   0x00001001
+#define EVENT_CHECK_GRETH01_RX_COL 0x00001002
+
+#define GRETH_TEST_DATA_LEN_LONG 256
 #define GRETH_TEST_DATA_LEN 64
 #define GRETH_EDCL_DATA_LEN 15
 
@@ -58,13 +63,13 @@ static void handler_eth( int irq, void *arg )
     if (cur_status & (1 << GRETH_STATUS_RI))
     {
         *(gr_inst->irq_handled) = 1;
-        rumboot_printf("Setting handled flag ([0x%X] = 0x%X)\n", (uint32_t) gr_inst->irq_handled, *(gr_inst->irq_handled));
+        rumboot_printf("Receive interrupt (0x%x)\n", cur_status );
         greth_clear_status_bits(gr_inst->base_addr, mask );
     }
     if (cur_status & (1 << GRETH_STATUS_RE))
     {
         *(gr_inst->irq_handled) = 3;
-        rumboot_printf( "Receive Error interrupt (0x%x)\n", cur_status );
+        rumboot_printf("Receive Error interrupt (0x%x)\n", cur_status );
     }
     if (!(cur_status & (1 << GRETH_STATUS_RI)) && !(cur_status & (1 << GRETH_STATUS_RE)))
     {
@@ -123,6 +128,10 @@ uint32_t test_edcl_data = 0xBABADEDA;
 greth_descr_t  tx_descriptor_data_[GRETH_MAX_DESCRIPTORS_COUNT] __attribute__((aligned(1024)));
 greth_descr_t  rx_descriptor_data_[GRETH_MAX_DESCRIPTORS_COUNT] __attribute__((aligned(1024)));
 
+greth_descr_t  tx_descriptor_data2_[GRETH_MAX_DESCRIPTORS_COUNT] __attribute__((aligned(1024)));
+greth_descr_t  rx_descriptor_data2_[GRETH_MAX_DESCRIPTORS_COUNT] __attribute__((aligned(1024)));
+
+
 uint32_t test_data_im0_src[GRETH_TEST_DATA_LEN]  __attribute__((section(".data")));
 uint32_t test_data_im0_dst[GRETH_TEST_DATA_LEN]  __attribute__((section(".data")));
 uint32_t test_edcl_packet_im0[GRETH_EDCL_DATA_LEN] __attribute__((section(".data")));
@@ -135,6 +144,15 @@ uint32_t* test_edcl_rcv_packet_im1 = (uint32_t *)( IM1_BASE_MIRROR + 2*sizeof(te
 uint32_t* test_edcl_data_im1 = (uint32_t *)( IM1_BASE_MIRROR + 2*sizeof(test_data_im0_src) + 2*sizeof(test_edcl_packet_im0));
 uint32_t* test_data_em2_src  = (uint32_t *)( SRAM0_BASE + 0x100);
 uint32_t* test_data_em2_dst  = (uint32_t *)( SRAM0_BASE + 0x100 + sizeof(test_data_im0_src) );
+
+/*
+ * Data for testing rx_col
+ */
+uint32_t test_data_im0_src_long[GRETH_TEST_DATA_LEN_LONG]  __attribute__((section(".data")));
+uint32_t test_data_im0_dst_long[GRETH_TEST_DATA_LEN_LONG]  __attribute__((section(".data")));
+uint32_t* test_data_im1_src_long  = (uint32_t *)( IM1_BASE_MIRROR );
+uint32_t* test_data_im1_dst_long  = (uint32_t *)( IM1_BASE_MIRROR + sizeof(test_data_im0_src_long) );
+uint32_t* test_data_im1_dst_long2  = (uint32_t *)( IM1_BASE_MIRROR + 2*sizeof(test_data_im0_src_long) );
 
 /*
  * Registers access checks
@@ -273,6 +291,24 @@ void prepare_test_data(uint32_t src_bank, uint32_t dst_bank)
         }
     }
 }
+
+void prepare_test_data_long()
+{
+    uint32_t i=0;
+    bool toggle = true;
+    test_data_im0_src_long[i++] = (tst_greth_mac.mac_msb << 16) | ((tst_greth_mac.mac_lsb & 0xFFFF0000) >> 16);//DST MAC [48:16]
+    test_data_im0_src_long[i++] = ((tst_greth_mac.mac_lsb & 0xFFFF) << 16) | tst_greth_mac.mac_msb;//DST MAC [15:0] SRC MAC [48:32]
+    test_data_im0_src_long[i++] = tst_greth_mac.mac_lsb;//SRC MAC [31:0]
+    test_data_im0_src_long[i++] = ((GRETH_TEST_DATA_LEN * sizeof(uint32_t) - 14) << 16);//Len and 0x0000 data
+    while(i<GRETH_TEST_DATA_LEN_LONG)
+    {
+        test_data_im0_src_long[i] = toggle ? (1 << i) : ~(1 << i);
+        i++; toggle = !toggle;
+    }
+
+    memcpy(test_data_im1_src_long, test_data_im0_src_long, sizeof(test_data_im0_src_long));
+}
+
 
 void prepare_test_edcl_data(edcl_test_data_struct_t* edcl_cfg)
 {
@@ -427,9 +463,6 @@ void check_edcl_via_external_loopback(uint32_t base_addr_src_eth, uint32_t * tes
 
 void check_rx_er(uint32_t base_addr)
 {
-#define EVENT_CHECK_GRETH0_RX_ER 0x00001000
-#define EVENT_CHECK_GRETH1_RX_ER 0x00001001
-
     uint32_t base_addr_dst_eth;
     uint32_t base_addr_src_eth;
     uint32_t volatile* eth_handled_flag_ptr;
@@ -465,6 +498,25 @@ void check_rx_er(uint32_t base_addr)
     TEST_ASSERT(greth_wait_receive_err_irq(base_addr_dst_eth, eth_handled_flag_ptr), "Receiving error is failed\n");
 }
 
+void check_rx_col_crs()
+{
+    prepare_test_data(1, 1);
+
+    greth_configure_for_transmit( GRETH_0_BASE, test_data_im1_src_long, sizeof(test_data_im0_src_long), tx_descriptor_data_, &tst_greth_mac);
+    greth_configure_for_transmit( GRETH_1_BASE, test_data_im1_src_long, sizeof(test_data_im0_src_long), tx_descriptor_data2_, &tst_greth_mac);
+
+    greth_configure_for_receive( GRETH_0_BASE, test_data_im1_dst_long, sizeof(test_data_im0_src_long), rx_descriptor_data_, &tst_greth_mac);
+    greth_configure_for_receive( GRETH_1_BASE, test_data_im1_dst_long2, sizeof(test_data_im0_src_long), rx_descriptor_data2_, &tst_greth_mac);
+
+    test_event(EVENT_CHECK_GRETH01_RX_COL);
+
+    greth_start_receive_transmit(GRETH_0_BASE, true);
+    greth_start_receive_transmit(GRETH_1_BASE, false);
+
+    TEST_ASSERT(greth_wait_receive_err_irq(GRETH_0_BASE, &GRETH0_IRQ_HANDLED), "Receiving error is failed\n");
+}
+
+
 /*
  * test_oi10_greth
  */
@@ -489,6 +541,12 @@ int main(void)
     test_event_send_test_id("test_oi10_greth");
     tbl = create_greth01_irq_handlers();
     check_rx_er(GRETH_BASE);
+    delete_greth01_irq_handlers(tbl);
+#elif CHECK_RX_COL_CRS
+    rumboot_printf("Start test_oi10_greth. Checks connection RX_COL RX_CRS signals for both GRETHS\n");
+    test_event_send_test_id("test_oi10_greth");
+    tbl = create_greth01_irq_handlers();
+    check_rx_col_crs();
     delete_greth01_irq_handlers(tbl);
 #else
     rumboot_printf("Start test_oi10_greth. Transmit/receive checks\n");

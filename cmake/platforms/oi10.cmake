@@ -401,6 +401,13 @@ endif()
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES test_oi10_greth.c
+      CFLAGS -DGRETH_BASE=GRETH_0_BASE -DCHECK_RX_COL_CRS=1
+      PREFIX greth-rx_col_crs
+    )
+
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES test_oi10_greth.c
       CFLAGS -DGRETH_BASE=GRETH_0_BASE -DCHECK_RX_ER=1
       PREFIX greth0-rx_er
     )
