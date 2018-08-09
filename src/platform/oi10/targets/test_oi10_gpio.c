@@ -89,8 +89,10 @@ static uint32_t wait_gpio_int() {
 
     rumboot_printf( "wait_gpio_int \n" );
 
-    for( t = 1; t <= GPIO_TIMEOUT; t++ ) {
-        if( IRQ ) {
+    for( t = 1; t <= GPIO_TIMEOUT; t++ )
+    {
+        if( IRQ )
+        {
             IRQ = 0;
             break;
         }
@@ -99,6 +101,7 @@ static uint32_t wait_gpio_int() {
         rumboot_printf( "Error! IRQ flag wait timeout! \n" );
         return 1;
     }
+    rumboot_printf( "Exit wait_gpio_int\n");
     return 0;
 }
 
@@ -125,25 +128,43 @@ static uint32_t check_gpio_func( uint32_t base_addr, uint32_t GPIODIR_value ) {
 
     gpio_interrupt_setup( base_addr, 0xff, true, both_edge );
 
-    //write
-    data_write_gpio = 0xFF & GPIODIR_value;
-    iowrite32( data_write_gpio, base_addr + GPIO_ADDR_MASK );
+    if (GPIODIR_value == 0xAA)
+        for (int i = 0; i<4; i++)
+        {
+            //write
+            data_write_gpio = 0x01 << (2*i+1);
+            iowrite32( data_write_gpio, base_addr + GPIO_ADDR_MASK );
+            rumboot_printf( "data_write_gpio = %x\n", data_write_gpio);
+            if( wait_gpio_int() )
+            {
+                rumboot_printf( "ERROR\n" );
+                return 1;
+            }
+            rumboot_printf( "START read\n" );
+            //read
+            data_read_gpio = gpio_get_data( base_addr );
+            rumboot_printf( "data_read_gpio = %x\n", data_read_gpio);
+            TEST_ASSERT( ( ((data_write_gpio >> 1) | data_write_gpio) == data_read_gpio), "Error! The value of GPOUT does not match the expected\n" );
+        }
 
-    if( wait_gpio_int() ) {
-        rumboot_printf( "ERROR\n" );
-        return 1;
-    }
+    if (GPIODIR_value == 0x55)
+        for (int i = 0; i<4; i++)
+        {
+            //write
+            data_write_gpio = 0x01 << (2*i);
+            iowrite32( data_write_gpio, base_addr + GPIO_ADDR_MASK );
 
-    //read
-    data_read_gpio = gpio_get_data( base_addr );
-    TEST_ASSERT( (data_read_gpio == 0xFF), "Error! The value of GPOUT does not match the expected\n" );
-
-    rumboot_printf("Inverse value \n");
-    data_write_gpio = 0xFF & (~GPIODIR_value);
-    iowrite32( data_write_gpio, base_addr + GPIO_ADDR_MASK );
-    data_read_gpio = gpio_get_data( base_addr );
-    rumboot_printf("data_read_gpio = %x \n", data_read_gpio);
-    TEST_ASSERT( (data_read_gpio == 0x00), "Error! The value of GPOUT does not match the expected\n" );
+            if( wait_gpio_int() )
+            {
+                rumboot_printf( "ERROR\n" );
+                return 1;
+            }
+            rumboot_printf( "START read\n" );
+            //read
+            data_read_gpio = gpio_get_data( base_addr );
+            rumboot_printf( "data_read_gpio = %x\n", data_read_gpio);
+            TEST_ASSERT( ( ((data_write_gpio << 1) | data_write_gpio) == data_read_gpio), "Error! The value of GPOUT does not match the expected\n" );
+        }
 
     rumboot_irq_table_activate( NULL );
     rumboot_irq_free( tbl );
