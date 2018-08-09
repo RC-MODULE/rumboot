@@ -59,14 +59,19 @@ static void handler_eth( int irq, void *arg )
     {
         *(gr_inst->irq_handled) = 1;
         rumboot_printf("Setting handled flag ([0x%X] = 0x%X)\n", (uint32_t) gr_inst->irq_handled, *(gr_inst->irq_handled));
-        greth_clear_status_bits(gr_inst->base_addr, (1 << GRETH_STATUS_RI) );
+        greth_clear_status_bits(gr_inst->base_addr, mask );
     }
-    else
+    if (cur_status & (1 << GRETH_STATUS_RE))
+    {
+        *(gr_inst->irq_handled) = 3;
+        rumboot_printf( "Receive Error interrupt (0x%x)\n", cur_status );
+    }
+    if (!(cur_status & (1 << GRETH_STATUS_RI)) && !(cur_status & (1 << GRETH_STATUS_RE)))
     {
         *(gr_inst->irq_handled) = 2;
         rumboot_printf( "Unexpected status (0x%x)\n", cur_status );
-        greth_clear_status_bits(gr_inst->base_addr, mask);
     }
+    greth_clear_status_bits(gr_inst->base_addr, mask);
     rumboot_printf("Exit from handler\n");
 }
 
@@ -419,6 +424,47 @@ void check_edcl_via_external_loopback(uint32_t base_addr_src_eth, uint32_t * tes
     mem_clr(test_data_resp, sizeof(test_edcl_packet_im0));
     rumboot_printf("EDCL read is OK\n");
 }
+
+void check_rx_er(uint32_t base_addr)
+{
+#define EVENT_CHECK_GRETH0_RX_ER 0x00001000
+#define EVENT_CHECK_GRETH1_RX_ER 0x00001001
+
+    uint32_t base_addr_dst_eth;
+    uint32_t base_addr_src_eth;
+    uint32_t volatile* eth_handled_flag_ptr;
+    uint32_t event_code;
+
+    TEST_ASSERT((base_addr==GRETH_1_BASE)||(base_addr==GRETH_0_BASE), "Wrong GRETH base address\n");
+    if (base_addr==GRETH_1_BASE)
+    {
+        base_addr_dst_eth = GRETH_1_BASE;
+        base_addr_src_eth = GRETH_0_BASE;
+        GRETH1_IRQ_HANDLED = 0;
+        eth_handled_flag_ptr = &GRETH1_IRQ_HANDLED;
+        event_code = EVENT_CHECK_GRETH1_RX_ER;
+    }
+    else
+    {
+        base_addr_dst_eth = GRETH_0_BASE;
+        base_addr_src_eth = GRETH_1_BASE;
+        GRETH0_IRQ_HANDLED = 0;
+        eth_handled_flag_ptr = &GRETH0_IRQ_HANDLED;
+        event_code = EVENT_CHECK_GRETH0_RX_ER;
+    }
+
+    prepare_test_data(1, 1);
+
+    greth_configure_for_receive( base_addr_dst_eth, test_data_im1_dst, sizeof(test_data_im0_src), rx_descriptor_data_, &tst_greth_mac);
+    greth_configure_for_transmit( base_addr_src_eth, test_data_im1_src, sizeof(test_data_im0_src), tx_descriptor_data_, &tst_greth_mac);
+
+    test_event(event_code);
+    greth_start_receive( base_addr_dst_eth, true );
+    greth_start_transmit( base_addr_src_eth );
+
+    TEST_ASSERT(greth_wait_receive_err_irq(base_addr_dst_eth, eth_handled_flag_ptr), "Receiving error is failed\n");
+}
+
 /*
  * test_oi10_greth
  */
@@ -437,6 +483,12 @@ int main(void)
     tbl = create_greth01_irq_handlers();
     edcl_seq_number = 0;
     check_edcl_via_external_loopback(GRETH_BASE, test_edcl_packet_im1, test_data_im1_dst, test_edcl_rcv_packet_im1);
+    delete_greth01_irq_handlers(tbl);
+#elif CHECK_RX_ER
+    rumboot_printf("Start test_oi10_greth. Checks connection RX_ER signal for GRETH%d (0x%X)\n", GET_GRETH_IDX(GRETH_BASE), GRETH_BASE);
+    test_event_send_test_id("test_oi10_greth");
+    tbl = create_greth01_irq_handlers();
+    check_rx_er(GRETH_BASE);
     delete_greth01_irq_handlers(tbl);
 #else
     rumboot_printf("Start test_oi10_greth. Transmit/receive checks\n");
