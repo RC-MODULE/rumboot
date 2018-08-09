@@ -353,6 +353,15 @@ bool greth_wait_receive(uint32_t base_addr);
  */
 bool greth_wait_receive_irq(uint32_t base_addr, uint32_t volatile* eth_irq_handled_flag);
 
+
+/**
+ * \brief Waiting RE (receive error) interrupt
+ * \param base_addr: base address of GRETH
+ * \param eth_irq_handled_flag: interrupt handler flag
+ * \return If happened receive error - true, else - false
+ */
+bool greth_wait_receive_err_irq(uint32_t base_addr, uint32_t volatile* eth_irq_handled_flag);
+
 /**
  * \brief Set GRETH configuration for transmit
  * \param base_addr: base address of GRETH

@@ -322,6 +322,33 @@ bool greth_wait_receive_irq(uint32_t base_addr, uint32_t volatile* eth_irq_handl
     }
 }
 
+bool greth_wait_receive_err_irq(uint32_t base_addr, uint32_t volatile* eth_irq_handled_flag)
+{
+    uint32_t t = 0;
+    uint32_t irq_handled = *eth_irq_handled_flag;
+    rumboot_printf("Waiting RE (receive error) IRQ\n");
+    while(((irq_handled)==0) && (t++ < GRETH_TIMEOUT)){
+#ifdef ETH_DEBUG
+        rumboot_printf("%d: (*eth_irq_handled_flag) = 0x%X\n", t, *eth_irq_handled_flag);
+#endif
+        irq_handled = *eth_irq_handled_flag;
+    }
+
+    if ((t==GRETH_TIMEOUT) || ((*eth_irq_handled_flag)!=3))
+    {
+        rumboot_printf("RE IRQ is timed out\n");
+        *eth_irq_handled_flag = 0;
+        return false;
+    }
+    else
+    {
+        *eth_irq_handled_flag = 0;
+        rumboot_printf("RE IRQ is OK\n");
+        return true;
+    }
+}
+
+
 bool greth_configure_for_transmit( uint32_t base_addr, void volatile * const src, uint32_t length, greth_descr_t* tx_descriptor_data_, greth_mac_t* gr_mac)
 {
     greth_mac_t greth_mac;
