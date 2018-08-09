@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdint.h>
+#include <stdbool.h>
 #include <rumboot/rumboot.h>
 #include <rumboot/platform.h>
 #include <rumboot/printf.h>
@@ -102,6 +103,7 @@ int rumboot_malloc_register_heap(const char *name, void *heap_start, void *heap_
 		hp->name = name;
 		hp->start = heap_start;
 		hp->pos = heap_start;
+		hp->save = hp->pos;
 		hp->end = heap_end;
 		rumboot_platform_runtime_info.num_heaps++;
 		break;
@@ -111,6 +113,23 @@ int rumboot_malloc_register_heap(const char *name, void *heap_start, void *heap_
 		rumboot_platform_panic("Failed to register heap %s, please increase RUMBOOT_PLATFORM_NUM_HEAPS (current - %d)\n", name, RUMBOOT_PLATFORM_NUM_HEAPS);
 	}
 	return i;
+}
+
+void rumboot_malloc_update_heaps(bool save)
+{
+	int i;
+
+	for (i = 0; i < rumboot_platform_runtime_info.num_heaps; i++) {
+		struct rumboot_heap *hp;
+		hp = &rumboot_platform_runtime_info.heaps[i];
+
+		if (save)
+			hp->save = hp->pos;
+		else
+			hp->pos = hp->save;
+	}
+
+	return;
 }
 
 void *rumboot_malloc(uint32_t length)

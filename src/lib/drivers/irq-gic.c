@@ -40,12 +40,22 @@ static int gic_init(const struct rumboot_irq_controller *dev)
 
 static uint32_t gic_begin(const struct rumboot_irq_controller *dev)
 {
-	return gic_cpuif_read(GICC_REG_IAR);
+	uint32_t irq = gic_cpuif_read(GICC_REG_IAR);
+
+	if (!irq && dev->slave_save)
+		dev->slave_save();
+
+	return irq;
 }
 
 static void gic_end(const struct rumboot_irq_controller *dev, uint32_t irq)
 {
 	gic_cpuif_write(GICC_REG_EOIR, irq);
+
+	if (!irq && dev->slave_restore)
+		dev->slave_restore();
+
+	return;
 }
 
 static void gic_configure(const struct rumboot_irq_controller *dev, int irq, uint32_t flags, int enable)
@@ -95,7 +105,9 @@ static const struct rumboot_irq_controller irq_ctl = {
 	.begin		= gic_begin,
 	.end		= gic_end,
 	.configure	= gic_configure,
-	.generate_swint = gic_swint
+	.generate_swint = gic_swint,
+	.slave_save	= NULL,
+	.slave_restore	= NULL
 };
 
 

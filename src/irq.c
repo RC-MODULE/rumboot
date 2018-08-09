@@ -76,7 +76,7 @@ struct rumboot_irq_entry *rumboot_irq_create(struct rumboot_irq_entry *copyfrom)
 	}
 
 	if (copyfrom) {
-		memcpy(tbl, copyfrom, sizeof(*tbl) + (RUMBOOT_PLATFORM_NUM_IRQS + 1));
+		memcpy(tbl, copyfrom, sizeof(*tbl) * (RUMBOOT_PLATFORM_NUM_IRQS + 1));
 	}
 
 	return tbl;

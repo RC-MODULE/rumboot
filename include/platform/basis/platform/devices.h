@@ -24,8 +24,10 @@
 
  #ifndef RUMBOOT_BASIS_ENABLE_MIRROR
     #define BASIS_PHYS(addr) (addr)
+    #define BASIS_VIRT(addr) (addr)
  #else
     #define BASIS_PHYS(addr) (addr + PCIE_BASE)
+    #define BASIS_VIRT(addr) (addr - PCIE_BASE)
  #endif
 
  #define MDMA0_BASE               BASIS_PHYS(0x01010000)

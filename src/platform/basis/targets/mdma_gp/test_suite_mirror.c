@@ -54,7 +54,7 @@ static void test_free_mem(void *seg_addr[])
 	return;
 }
 
-static bool test_speed(unsigned long arg)
+static bool test_memory(unsigned long arg)
 {
 	struct mdma_gp *dev;
 	int i, j, err;
@@ -69,7 +69,7 @@ static bool test_speed(unsigned long arg)
 			goto speed_exit_1;
 		}
 
-		rumboot_printf("test_speed - gp_timer reset\n");
+		rumboot_printf("test - gp_timer reset\n");
 
 		udelay(1);
 		timeout--;
@@ -86,11 +86,11 @@ static bool test_speed(unsigned long arg)
 
 	for (i = 0; i < 4; i++) {
 		if (i == 0)
-			err = mdma_gp_dev_config(dev, all_addr[i][0], all_addr[i][1], MDMA_GP_SEGMENT_IM0);
+			err = mdma_gp_dev_config(dev, all_addr[i][0], all_addr[i][1], 2 * MDMA_GP_SEGMENT_IM0);
 		else if (i == 1)
-			err = mdma_gp_dev_config(dev, all_addr[i][0], all_addr[i][1], MDMA_GP_SEGMENT_IM1);
+			err = mdma_gp_dev_config(dev, all_addr[i][0], all_addr[i][1], 2 * MDMA_GP_SEGMENT_IM1);
 		else
-			err = mdma_gp_dev_config(dev, all_addr[i][0], all_addr[i][1], MDMA_GP_SEGMENT_DDR);
+			err = mdma_gp_dev_config(dev, all_addr[i][0], all_addr[i][1], 2 * MDMA_GP_SEGMENT_DDR);
 
 		if (err) {
 			ret = false;
@@ -107,7 +107,7 @@ static bool test_speed(unsigned long arg)
 			goto speed_exit_3;
 		}
 
-		rumboot_printf("test_speed - wait event\n");
+		rumboot_printf("test - wait event\n");
 
 		iowrite32(10, GLOBAL_TIMERS + gp_timer_limit[arg]);
 		iowrite32(0xA0002, GLOBAL_TIMERS + gp_timer_state[arg]);
@@ -120,7 +120,7 @@ static bool test_speed(unsigned long arg)
 				goto speed_exit_3;
 			}
 
-			rumboot_printf("test_speed - wait completion\n");
+			rumboot_printf("test - wait completion\n");
 
 			timeout--;
 			udelay(10);
@@ -143,13 +143,11 @@ speed_exit_1:
 	return ret;
 }
 
-TEST_SUITE_BEGIN(mdma_gp_test_speed, "MDMA GP speed")
-TEST_ENTRY("MDMA1", test_speed, 1),
-#if 0
-TEST_ENTRY("MDMA0", test_speed, 0),
-TEST_ENTRY("MDMA2", test_speed, 2),
-TEST_ENTRY("MDMA3", test_speed, 3),
-#endif
+TEST_SUITE_BEGIN(mdma_gp_test_memory, "MDMA GP memory")
+TEST_ENTRY("MDMA0", test_memory, 0),
+TEST_ENTRY("MDMA1", test_memory, 1),
+TEST_ENTRY("MDMA2", test_memory, 2),
+TEST_ENTRY("MDMA3", test_memory, 3),
 TEST_SUITE_END();
 
 int main()
@@ -161,7 +159,7 @@ int main()
 
 	rumboot_irq_cli();
 
-	rumboot_printf("Test MDMA GP: 1.1, 1.2, 1.3, 1.5, 2.4\n");
+	rumboot_printf("Test MDMA GP: 2.1, 2.2, 2.3, 2.4\n");
 
 	tbl = rumboot_irq_create(NULL);
 	rumboot_irq_table_activate(tbl);
@@ -177,7 +175,7 @@ int main()
 				goto test_exit_1;
 			}
 
-			rumboot_printf("MDMA(0x%x), mdma_gp reset\n", dev->base_addr);
+			rumboot_printf("test - mdma_gp reset\n");
 
 			udelay(1);
 			timeout--;
@@ -191,27 +189,27 @@ int main()
 
 	rumboot_irq_sei();
 
-	if (test_alloc_mem("PCIE-IM0", all_addr[0], MDMA_GP_SEGMENT_IM0)) {
+	if (test_alloc_mem("PCIE-IM0", all_addr[0], 2 * MDMA_GP_SEGMENT_IM0)) {
 		ret = -2;
 		goto test_exit_1;
 	}
 
-	if (test_alloc_mem("PCIE-IM1", all_addr[1], MDMA_GP_SEGMENT_IM1)) {
+	if (test_alloc_mem("PCIE-IM1", all_addr[1], 2 * MDMA_GP_SEGMENT_IM1)) {
 		ret = -3;
 		goto test_exit_2;
 	}
 
-	if (test_alloc_mem("PCIE-DDR0", all_addr[2], MDMA_GP_SEGMENT_DDR)) {
+	if (test_alloc_mem("PCIE-DDR0", all_addr[2], 2 * MDMA_GP_SEGMENT_DDR)) {
 		ret = -4;
 		goto test_exit_3;
 	}
 
-	if (test_alloc_mem("PCIE-DDR1", all_addr[3], MDMA_GP_SEGMENT_DDR)) {
+	if (test_alloc_mem("PCIE-DDR1", all_addr[3], 2 * MDMA_GP_SEGMENT_DDR)) {
 		ret = -5;
 		goto test_exit_4;
 	}
 
-	err = test_suite_run(NULL, &mdma_gp_test_speed);
+	err = test_suite_run(NULL, &mdma_gp_test_memory);
 	rumboot_printf("%d tests from suite failed\n", err);
 
 	if (err)
@@ -239,7 +237,7 @@ test_exit_1:
 
 #define MDMA_GP_INIT(base, irq)	{(void *)(base), \
 	{MDMA_CHAN_INTERRUPT, NORMAL_DESC, 1, MDMA_BURST_WIDTH8, 0, 0, -1, 0, 0, MDMA_SYNC_NONE, false, true}, \
-	(irq), NULL, NULL, NULL, NULL, 0, false}
+	(irq), NULL, NULL, NULL, NULL, 0, 0, 0, 0, 0, false}
 
 static struct mdma_gp mdma_gp_dev[4] = {
 	MDMA_GP_INIT(MDMA0_BASE, MDMA0_IRQ),

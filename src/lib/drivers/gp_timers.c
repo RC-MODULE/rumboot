@@ -54,7 +54,7 @@ uint32_t gp_timer_get_free_run_h ()
 void gp_timer_show_free_run ()
 {
     gp_timer_fix_value ();
-    rumboot_printf("free run timer value: %x.%x\n", gp_timer_get_free_run_h (), gp_timer_get_free_run_l ());
+    rumboot_printf("free run timer value: 0x%x_%x\n", gp_timer_get_free_run_h (), gp_timer_get_free_run_l ());
 }
 
 

@@ -129,7 +129,13 @@ int mdma_gp_dev_start(struct mdma_gp *dev)
 {
 	int ret = 0;
 
-	if (mdma_chan_start(dev->chan_rd) || mdma_chan_start(dev->chan_wr))
+	dev->start_l = 0;
+	dev->start_h = 0;
+
+	dev->end_l = 0;
+	dev->end_h = 0;
+
+	if (mdma_chan_start(dev->chan_wr) || mdma_chan_start(dev->chan_rd))
 		ret = -1;
 
 	rumboot_printf("MDMA(0x%x), start device\n", dev->base_addr);
@@ -141,6 +147,7 @@ bool mdma_gp_dev_check(struct mdma_gp *dev)
 {
 	struct mdma_trans *trans_rd, *trans_wr;
 	int state_rd, state_wr;
+	unsigned long long delta, start, end;
 	bool ret = true;
 
 	rumboot_printf("MDMA(0x%x), check device\n", dev->base_addr);
@@ -174,6 +181,18 @@ bool mdma_gp_dev_check(struct mdma_gp *dev)
 		}
 	}
 
+	start = dev->start_h;
+	start = (start << 32) + dev->start_l;
+
+	end = dev->end_h;
+	end = (end << 32) + dev->end_l;
+
+	delta = (end - start) / 100;
+
+	rumboot_printf("MDMA(0x%x) copy 0x%x bytes from 0x%x to 0x%x, elapsed time 0x%x_%x us\n",
+		dev->base_addr, dev->segment_size, dev->src_addr, dev->dst_addr,
+		(unsigned int)(delta >> 32), (unsigned int)delta);
+
 dev_check_exit:
 	return ret;
 }
@@ -185,7 +204,7 @@ void mdma_gp_handler(int irq, void *arg)
 	int flags, ret;
 	bool is_rd;
 
-	iowrite32(1, GLOBAL_TIMERS + FIX_CMD);
+	iowrite32(0x1, GLOBAL_TIMERS + FIX_CMD);
 
 	flags = ioread32((unsigned long)dev->base_addr + MDMA_GP_STATUS);
 
@@ -221,10 +240,14 @@ void mdma_gp_handler(int irq, void *arg)
 
 				break;
 			}
-			else {
-				rumboot_printf("MDMA(0x%x) - event fire\n",
-					dev->base_addr + ((is_rd) ? MDMA_CHANNEL_R : MDMA_CHANNEL_W));
-			}	
+
+			if (!is_rd) {
+				dev->start_l = ioread32(GLOBAL_TIMERS + FREE_RUN_L);
+				dev->start_h = ioread32(GLOBAL_TIMERS + FREE_RUN_H);
+			}
+
+			rumboot_printf("MDMA channel(0x%x) - event fire\n",
+				dev->base_addr + ((is_rd) ? MDMA_CHANNEL_R : MDMA_CHANNEL_W));
 		}
 
 		if (ret & IRQ_CHAN_ERROR) {
@@ -234,8 +257,12 @@ void mdma_gp_handler(int irq, void *arg)
 			break;
 		}
 
-		if (!is_rd && (ret & IRQ_CHAN_DONE))
+		if (!is_rd && (ret & IRQ_CHAN_DONE)) {
+			dev->end_l = ioread32(GLOBAL_TIMERS + FREE_RUN_L);
+			dev->end_h = ioread32(GLOBAL_TIMERS + FREE_RUN_H);
+
 			dev->done = true;
+		}
 	}
 
 	return;

@@ -24,8 +24,10 @@
 
 #ifdef RUMBOOT_BASIS_ENABLE_MIRROR
         #define IRQ_REAL(n) (IRQ_MIRROR_BASE - 32 + n)
+	#define IRQ_VIRT(n) (n - IRQ_MIRROR_BASE + 32)
 #else
         #define IRQ_REAL(n) (n)
+	#define IRQ_VIRT(n) (n)
 #endif
 
 #define TSNS_INTR                   IRQ_REAL(35)

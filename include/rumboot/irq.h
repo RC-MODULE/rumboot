@@ -140,6 +140,10 @@ static inline uint32_t rumboot_arch_irq_setstate(uint32_t new_state)
          * @param generate_swint [description]
          */
     	void		(*generate_swint)(const struct rumboot_irq_controller *dev, uint32_t irq);
+
+	void		(*slave_save)(void);
+	void		(*slave_restore)(void);
+
         /**
          * Pointer for implementation-specic data
          * @return [description]
@@ -320,6 +324,8 @@ static inline uint32_t rumboot_arch_irq_setstate(uint32_t new_state)
     /**
     *  @}
     */
+
+   const struct rumboot_irq_controller *rumboot_irq_controller_by_id(int id);
 
 #endif
 

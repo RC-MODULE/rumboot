@@ -285,6 +285,7 @@ struct rumboot_heap {
     void *start;
     void *end;
     void *pos;
+    void *save;
     const char *name;
 };
 

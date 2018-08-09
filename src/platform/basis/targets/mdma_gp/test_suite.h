@@ -22,7 +22,7 @@
 
 #include <devices/mdma_chan_api.h>
 
-#define MDMA_GP_TIMEOUT		1000
+#define MDMA_GP_TIMEOUT		100
 
 // Multiple of 8! You can only change the DDR
 #define MDMA_GP_SEGMENT_DDR	512
@@ -40,6 +40,12 @@ struct mdma_gp {
 	void *dst_addr;
 	void *src_addr;
 	int segment_size;
+
+	unsigned int start_l;
+	unsigned int start_h;
+
+	unsigned int end_l;
+	unsigned int end_h;
 
 	volatile bool done;
 };
