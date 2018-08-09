@@ -241,13 +241,16 @@ static void check_parity_enabled() {
 
 static void check_ppc0_w_pe_detection() {
     const uint32_t l2cpumcken = l2c_l2_read( DCR_L2C_BASE, L2C_L2CPUMCKEN );
+    rumboot_irq_cli();
     struct rumboot_irq_entry *tbl = rumboot_irq_create( NULL );
 
     rumboot_putstring( "check_ppc0_w_pe_detection\n" );
 
-    rumboot_irq_set_handler(tbl, L2C0_MCHKOUT, (int_sense_level << MPIC128_VP_S_i) | (int_pol_high << MPIC128_VP_POL_i), ppc0_w_pe_handler, NULL);
+    rumboot_irq_set_handler(tbl, L2C0_MCHKOUT, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, ppc0_w_pe_handler, NULL);
 
     rumboot_irq_table_activate(tbl);
+    rumboot_irq_enable( L2C0_MCHKOUT );
+    rumboot_irq_sei();
 
     l2c_l2_write( DCR_L2C_BASE, L2C_L2CPUSTAT, 0xFFFFFFFF );
     l2c_l2_write( DCR_L2C_BASE, L2C_L2CPUMCKEN, (0b1 << IBM_BIT_INDEX(32, 28))
@@ -270,11 +273,14 @@ static void check_ppc0_w_pe_detection() {
 
 static void check_l2c0_w_pe_detection() {
     struct rumboot_irq_entry *tbl = rumboot_irq_create( NULL );
+    rumboot_irq_cli();
     rumboot_putstring( "check_l2c0_w_pe_detection\n" );
 
-    rumboot_irq_set_handler(tbl,PLB6PLB40_O_0_BR6TO4_INTR, (int_sense_level << MPIC128_VP_S_i) | (int_pol_high << MPIC128_VP_POL_i), l2c0_w_pe_handler, NULL);
+    rumboot_irq_set_handler(tbl,PLB6PLB40_O_0_BR6TO4_INTR, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, l2c0_w_pe_handler, NULL);
 
     rumboot_irq_table_activate(tbl);
+    rumboot_irq_enable( PLB6PLB40_O_0_BR6TO4_INTR );
+    rumboot_irq_sei();
 
     test_event( TEC_CHECK_L2C0_W_PE_DETECTION );
     ADDR[CHECK_PARITY_L2C0_W] = TEST_VALUE;
@@ -286,11 +292,14 @@ static void check_l2c0_w_pe_detection() {
 
 static void check_p6bc_w_pe_detection() {
     struct rumboot_irq_entry *tbl = rumboot_irq_create( NULL );
+    rumboot_irq_cli();
     rumboot_putstring( "check_p6bc_w_pe_detection\n" );
 
-    rumboot_irq_set_handler(tbl,PLB6PLB40_O_0_BR6TO4_INTR, (int_sense_level << MPIC128_VP_S_i) | (int_pol_high << MPIC128_VP_POL_i), p6bc_w_pe_handler, NULL);
+    rumboot_irq_set_handler(tbl,PLB6PLB40_O_0_BR6TO4_INTR, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, p6bc_w_pe_handler, NULL);
 
     rumboot_irq_table_activate(tbl);
+    rumboot_irq_enable( PLB6PLB40_O_0_BR6TO4_INTR );
+    rumboot_irq_sei();
 
     test_event( TEC_CHECK_P6BC_W_PE_DETECTION );
     ADDR[CHECK_PARITY_P6BC_W] = TEST_VALUE;
@@ -367,6 +376,7 @@ static void check_p6bc_w_pe_detection() {
 
 static void check_l2c0_r_pe_detection() {
     uint32_t l2plbmcken1 = l2c_l2_read( DCR_L2C_BASE, L2C_L2PLBMCKEN1 );
+    rumboot_irq_cli();
     struct rumboot_irq_entry *tbl = rumboot_irq_create( NULL );
 
     rumboot_putstring( "check_l2c0_r_pe_detection\n" );
@@ -374,6 +384,8 @@ static void check_l2c0_r_pe_detection() {
     rumboot_irq_set_handler(tbl, L2C0_MCHKOUT, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, l2c0_r_pe_handler, NULL);
 
     rumboot_irq_table_activate(tbl);
+    rumboot_irq_enable( L2C0_MCHKOUT );
+    rumboot_irq_sei();
 
     l2c_l2_write( DCR_L2C_BASE, L2C_L2PLBSTAT0, 0xFFFFFFFF );
     l2c_l2_write( DCR_L2C_BASE, L2C_L2PLBSTAT1, 0xFFFFFFFF );
@@ -396,13 +408,16 @@ static void check_l2c0_r_pe_detection() {
 
 static void check_p6bc_r_pe_detection() {
     uint32_t l2plbmcken1 = l2c_l2_read( DCR_L2C_BASE, L2C_L2PLBMCKEN1 );
+    rumboot_irq_cli();
     struct rumboot_irq_entry *tbl = rumboot_irq_create( NULL );
 
     rumboot_putstring( "check_p6bc_r_pe_detection\n" );
 
-    rumboot_irq_set_handler(tbl, L2C0_MCHKOUT, (int_sense_level << MPIC128_VP_S_i) | (int_pol_high << MPIC128_VP_POL_i), p6bc_r_pe_handler, NULL);
+    rumboot_irq_set_handler(tbl, L2C0_MCHKOUT, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, p6bc_r_pe_handler, NULL);
 
     rumboot_irq_table_activate(tbl);
+    rumboot_irq_enable( L2C0_MCHKOUT );
+    rumboot_irq_sei();
 
     l2c_l2_write( DCR_L2C_BASE, L2C_L2PLBSTAT0, 0xFFFFFFFF );
     l2c_l2_write( DCR_L2C_BASE, L2C_L2PLBSTAT1, 0xFFFFFFFF );
@@ -456,13 +471,16 @@ static void check_p6bc_r_pe_detection() {
 
 static void check_srammc2plb4_r_pe_detection() {
     uint32_t l2plbmcken1 = l2c_l2_read( DCR_L2C_BASE, L2C_L2PLBMCKEN1 );
+    rumboot_irq_cli();
     struct rumboot_irq_entry *tbl = rumboot_irq_create( NULL );
 
     rumboot_putstring( "check_srammc2plb4_r_pe_detection\n" );
 
-    rumboot_irq_set_handler(tbl, L2C0_MCHKOUT, (int_sense_level << MPIC128_VP_S_i) | (int_pol_high << MPIC128_VP_POL_i), srammc2plb4_r_pe_handler, NULL);
+    rumboot_irq_set_handler(tbl, L2C0_MCHKOUT, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, srammc2plb4_r_pe_handler, NULL);
 
     rumboot_irq_table_activate(tbl);
+    rumboot_irq_enable( L2C0_MCHKOUT );
+    rumboot_irq_sei();
 
     l2c_l2_write( DCR_L2C_BASE, L2C_L2PLBSTAT0, 0xFFFFFFFF );
     l2c_l2_write( DCR_L2C_BASE, L2C_L2PLBSTAT1, 0xFFFFFFFF );
