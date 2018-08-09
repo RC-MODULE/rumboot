@@ -11,6 +11,7 @@
 #include <platform/arch/ppc/ibm_bit_ordering_macros.h>
 #include <platform/devices.h>
 #include <platform/devices/l2c.h>
+#include <platform/regs/regs_l2c_l2.h>
 #include <platform/regs/regs_srammc2plb4.h>
 #include <platform/regs/regs_mpic128.h>
 #include <platform/regs/fields/mpic128.h>
@@ -78,10 +79,10 @@ static void disable_parity_checks() {
                       (1 << CTRL_CCR1_DPC_i) );
     spr_write(SPR_CCR1, reg );
 
-    reg = L2C0_L2PLBCFG_DCR_read();
+    reg = l2c_l2_read( DCR_L2C_BASE, L2C_L2PLBCFG );
     SET_BITS_BY_MASK( reg,
                       (1 << IBM_BIT_INDEX(32, 29)) | (1 << IBM_BIT_INDEX(32, 30)) | (1 << IBM_BIT_INDEX(32, 31)) );
-    L2C0_L2PLBCFG_DCR_write( reg );
+    l2c_l2_write( DCR_L2C_BASE, L2C_L2PLBCFG, reg );
 
     reg = dcr_read( SRAMMC2PLB4_DPC + DCR_SRAMMC2PLB4_1_BASE );
     CLEAR_BIT( reg, IBM_BIT_INDEX(32, 0) );
@@ -104,10 +105,10 @@ static void enable_parity_checks() {
                         (1 << CTRL_CCR1_DPC_i) );
     spr_write( SPR_CCR1, reg );
 
-    reg = L2C0_L2PLBCFG_DCR_read();
+    reg = l2c_l2_read( DCR_L2C_BASE, L2C_L2PLBCFG );
     CLEAR_BITS_BY_MASK( reg,
                         (1 << IBM_BIT_INDEX(32, 29)) | (1 << IBM_BIT_INDEX(32, 30)) | (1 << IBM_BIT_INDEX(32, 31)) );
-    L2C0_L2PLBCFG_DCR_write( reg );
+    l2c_l2_write( DCR_L2C_BASE, L2C_L2PLBCFG, reg );
 
     reg = dcr_read( SRAMMC2PLB4_DPC + DCR_SRAMMC2PLB4_1_BASE );
     SET_BIT( reg, IBM_BIT_INDEX(32, 0) );
@@ -123,10 +124,10 @@ void ppc0_w_pe_handler(int irq, void *args) {
     TEST_ASSERT( (ADDR[CHECK_PARITY_PPC0_W] ^ TEST_MASK) == TEST_VALUE, "Masked test value read error" );
     ADDR[CHECK_PARITY_PPC0_W] = HANDLER_CALLED;
 
-    L2C0_L2CPUSTAT_DCR_write( (0b1 << IBM_BIT_INDEX(32, 28))
-                            | (0b1 << IBM_BIT_INDEX(32, 29))
-                            | (0b1 << IBM_BIT_INDEX(32, 30))
-                            | (0b1 << IBM_BIT_INDEX(32, 31)) );
+    l2c_l2_write( DCR_L2C_BASE, L2C_L2CPUSTAT, (0b1 << IBM_BIT_INDEX(32, 28))
+                                             | (0b1 << IBM_BIT_INDEX(32, 29))
+                                             | (0b1 << IBM_BIT_INDEX(32, 30))
+                                             | (0b1 << IBM_BIT_INDEX(32, 31)) );
 
     spr_write( SPR_MCSR_C, 0xFFFFFFFF );
 }
@@ -187,7 +188,7 @@ void l2c0_r_pe_handler(int irq, void *args) {
     TEST_ASSERT( ADDR[CHECK_PARITY_L2C0_R] == TEST_VALUE, "Test value read error" );
     ADDR[CHECK_PARITY_L2C0_R] = HANDLER_CALLED;
 
-    L2C0_L2PLBSTAT1_DCR_write( 0xFFFFFFFF );
+    l2c_l2_write( DCR_L2C_BASE, L2C_L2PLBSTAT1, 0xFFFFFFFF );
 
     spr_write( SPR_MCSR_C, 0xFFFFFFFF );
 }
@@ -198,7 +199,7 @@ void p6bc_r_pe_handler(int irq, void *args) {
     TEST_ASSERT( ADDR[CHECK_PARITY_P6BC_R] == TEST_VALUE, "Test value read error" );
     ADDR[CHECK_PARITY_P6BC_R] = HANDLER_CALLED;
 
-    L2C0_L2PLBSTAT1_DCR_write( 0xFFFFFFFF );
+    l2c_l2_write( DCR_L2C_BASE, L2C_L2PLBSTAT1, 0xFFFFFFFF );
 
     spr_write( SPR_MCSR_C, 0xFFFFFFFF );
 }
@@ -222,7 +223,7 @@ void srammc2plb4_r_pe_handler(int irq, void *args) {
     TEST_ASSERT( ADDR[CHECK_PARITY_SRAMMC2PLB4_R] == TEST_VALUE, "Test value read error" );
     ADDR[CHECK_PARITY_SRAMMC2PLB4_R] = HANDLER_CALLED;
 
-    L2C0_L2PLBSTAT1_DCR_write( 0xFFFFFFFF );
+    l2c_l2_write( DCR_L2C_BASE, L2C_L2PLBSTAT1, 0xFFFFFFFF );
 
     spr_write( SPR_MCSR_C, 0xFFFFFFFF );
 }
@@ -239,7 +240,7 @@ static void check_parity_enabled() {
 }
 
 static void check_ppc0_w_pe_detection() {
-    const uint32_t l2cpumcken = L2C0_L2CPUMCKEN_DCR_read();
+    const uint32_t l2cpumcken = l2c_l2_read( DCR_L2C_BASE, L2C_L2CPUMCKEN );
     struct rumboot_irq_entry *tbl = rumboot_irq_create( NULL );
 
     rumboot_putstring( "check_ppc0_w_pe_detection\n" );
@@ -248,11 +249,11 @@ static void check_ppc0_w_pe_detection() {
 
     rumboot_irq_table_activate(tbl);
 
-    L2C0_L2CPUSTAT_DCR_write( 0xFFFFFFFF );
-    L2C0_L2CPUMCKEN_DCR_write( (0b1 << IBM_BIT_INDEX(32, 28))
-                             | (0b1 << IBM_BIT_INDEX(32, 29))
-                             | (0b1 << IBM_BIT_INDEX(32, 30))
-                             | (0b1 << IBM_BIT_INDEX(32, 31)) );
+    l2c_l2_write( DCR_L2C_BASE, L2C_L2CPUSTAT, 0xFFFFFFFF );
+    l2c_l2_write( DCR_L2C_BASE, L2C_L2CPUMCKEN, (0b1 << IBM_BIT_INDEX(32, 28))
+                                              | (0b1 << IBM_BIT_INDEX(32, 29))
+                                              | (0b1 << IBM_BIT_INDEX(32, 30))
+                                              | (0b1 << IBM_BIT_INDEX(32, 31)) );
 
     test_event( TEC_CHECK_PPC0_W_PE_DETECTION );
     ADDR[CHECK_PARITY_PPC0_W] = TEST_VALUE;
@@ -261,7 +262,7 @@ static void check_ppc0_w_pe_detection() {
 //    TEST_ASSERT( ADDR[CHECK_PARITY_PPC0_W] == HANDLER_CALLED, "PPC0 write parity error handler isn't called" );
     TEST_WAIT( ADDR[CHECK_PARITY_PPC0_W] == HANDLER_CALLED, 2 );
 
-    L2C0_L2CPUMCKEN_DCR_write( l2cpumcken );
+    l2c_l2_write( DCR_L2C_BASE, L2C_L2CPUMCKEN, l2cpumcken );
 
     rumboot_irq_table_activate(NULL);
     rumboot_irq_free(tbl);
@@ -365,18 +366,18 @@ static void check_p6bc_w_pe_detection() {
 }*/
 
 static void check_l2c0_r_pe_detection() {
-    uint32_t l2plbmcken1 = L2C0_L2PLBMCKEN1_DCR_read();
+    uint32_t l2plbmcken1 = l2c_l2_read( DCR_L2C_BASE, L2C_L2PLBMCKEN1 );
     struct rumboot_irq_entry *tbl = rumboot_irq_create( NULL );
 
     rumboot_putstring( "check_l2c0_r_pe_detection\n" );
 
-    rumboot_irq_set_handler(tbl, L2C0_MCHKOUT, (int_sense_level << MPIC128_VP_S_i) | (int_pol_high << MPIC128_VP_POL_i), l2c0_r_pe_handler, NULL);
+    rumboot_irq_set_handler(tbl, L2C0_MCHKOUT, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, l2c0_r_pe_handler, NULL);
 
     rumboot_irq_table_activate(tbl);
 
-    L2C0_L2PLBSTAT0_DCR_write( 0xFFFFFFFF );
-    L2C0_L2PLBSTAT1_DCR_write( 0xFFFFFFFF );
-    L2C0_L2PLBMCKEN1_DCR_write( 0xFFFF << IBM_BIT_INDEX(32, 31) );
+    l2c_l2_write( DCR_L2C_BASE, L2C_L2PLBSTAT0, 0xFFFFFFFF );
+    l2c_l2_write( DCR_L2C_BASE, L2C_L2PLBSTAT1, 0xFFFFFFFF );
+    l2c_l2_write( DCR_L2C_BASE, L2C_L2PLBMCKEN1, 0xFFFF << IBM_BIT_INDEX(32, 31) );
 
     ADDR[CHECK_PARITY_L2C0_R] = TEST_VALUE;
     msync();
@@ -387,14 +388,14 @@ static void check_l2c0_r_pe_detection() {
 //    TEST_ASSERT( ADDR[CHECK_PARITY_L2C0_R] == HANDLER_CALLED, "L2C0 read parity error handler isn't called" );
     TEST_WAIT( ADDR[CHECK_PARITY_L2C0_R] == HANDLER_CALLED, 2 );
 
-    L2C0_L2PLBMCKEN1_DCR_write( l2plbmcken1 );
+    l2c_l2_write( DCR_L2C_BASE, L2C_L2PLBMCKEN1, l2plbmcken1 );
 
     rumboot_irq_table_activate(NULL);
     rumboot_irq_free(tbl);
 }
 
 static void check_p6bc_r_pe_detection() {
-    uint32_t l2plbmcken1 = L2C0_L2PLBMCKEN1_DCR_read();
+    uint32_t l2plbmcken1 = l2c_l2_read( DCR_L2C_BASE, L2C_L2PLBMCKEN1 );
     struct rumboot_irq_entry *tbl = rumboot_irq_create( NULL );
 
     rumboot_putstring( "check_p6bc_r_pe_detection\n" );
@@ -403,9 +404,9 @@ static void check_p6bc_r_pe_detection() {
 
     rumboot_irq_table_activate(tbl);
 
-    L2C0_L2PLBSTAT0_DCR_write( 0xFFFFFFFF );
-    L2C0_L2PLBSTAT1_DCR_write( 0xFFFFFFFF );
-    L2C0_L2PLBMCKEN1_DCR_write( 0xFFFF << IBM_BIT_INDEX(32, 31) );
+    l2c_l2_write( DCR_L2C_BASE, L2C_L2PLBSTAT0, 0xFFFFFFFF );
+    l2c_l2_write( DCR_L2C_BASE, L2C_L2PLBSTAT1, 0xFFFFFFFF );
+    l2c_l2_write( DCR_L2C_BASE, L2C_L2PLBMCKEN1, 0xFFFF << IBM_BIT_INDEX(32, 31) );
 
     ADDR[CHECK_PARITY_P6BC_R] = TEST_VALUE;
     msync();
@@ -414,7 +415,7 @@ static void check_p6bc_r_pe_detection() {
 
     TEST_WAIT( ADDR[CHECK_PARITY_P6BC_R] == HANDLER_CALLED, 2 );
 
-    L2C0_L2PLBMCKEN1_DCR_write( l2plbmcken1 );
+    l2c_l2_write( DCR_L2C_BASE, L2C_L2PLBMCKEN1, l2plbmcken1 );
 
     rumboot_irq_table_activate(NULL);
     rumboot_irq_free(tbl);
@@ -454,7 +455,7 @@ static void check_p6bc_r_pe_detection() {
 }*/
 
 static void check_srammc2plb4_r_pe_detection() {
-    uint32_t l2plbmcken1 = L2C0_L2PLBMCKEN1_DCR_read();
+    uint32_t l2plbmcken1 = l2c_l2_read( DCR_L2C_BASE, L2C_L2PLBMCKEN1 );
     struct rumboot_irq_entry *tbl = rumboot_irq_create( NULL );
 
     rumboot_putstring( "check_srammc2plb4_r_pe_detection\n" );
@@ -463,9 +464,9 @@ static void check_srammc2plb4_r_pe_detection() {
 
     rumboot_irq_table_activate(tbl);
 
-    L2C0_L2PLBSTAT0_DCR_write( 0xFFFFFFFF );
-    L2C0_L2PLBSTAT1_DCR_write( 0xFFFFFFFF );
-    L2C0_L2PLBMCKEN1_DCR_write( 0x3 << IBM_BIT_INDEX(32, 13) );
+    l2c_l2_write( DCR_L2C_BASE, L2C_L2PLBSTAT0, 0xFFFFFFFF );
+    l2c_l2_write( DCR_L2C_BASE, L2C_L2PLBSTAT1, 0xFFFFFFFF );
+    l2c_l2_write( DCR_L2C_BASE, L2C_L2PLBMCKEN1, 0x3 << IBM_BIT_INDEX(32, 13) );
 
     ADDR[CHECK_PARITY_SRAMMC2PLB4_R] = TEST_VALUE;
     msync();
@@ -476,7 +477,7 @@ static void check_srammc2plb4_r_pe_detection() {
 //    TEST_ASSERT( ADDR[CHECK_PARITY_SRAMMC2PLB4_R] == HANDLER_CALLED, "SRAMMC2PLB4 read parity error handler isn't called" );
     TEST_WAIT( ADDR[CHECK_PARITY_SRAMMC2PLB4_R] == HANDLER_CALLED, 2 );
 
-    L2C0_L2PLBMCKEN1_DCR_write( l2plbmcken1 );
+    l2c_l2_write( DCR_L2C_BASE, L2C_L2PLBMCKEN1, l2plbmcken1 );
 
     rumboot_irq_table_activate(NULL);
     rumboot_irq_free(tbl);
