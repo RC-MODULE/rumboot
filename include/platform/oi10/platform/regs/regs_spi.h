@@ -57,7 +57,7 @@
 #define GSPI_WORDOP_DEFAULT          0x00
 #define GSPI_SOFTSS_DEFAULT          0x00
 #define GSPI_SOFTRST_DEFAULT         0x00
-#define GSPI_STATUS_DEFAULT          0x00
+#define GSPI_STATUS_DEFAULT          0x80
 #define GSPI_IRQMASKS_DEFAULT        0x00
 
 
