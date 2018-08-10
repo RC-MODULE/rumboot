@@ -830,6 +830,7 @@ endif()
        FILES mdma_gp/test_suite_event.c mdma_gp/test_suite_base.c
        PREFIX "direct-event"
        NAME "mdma_gp_1-1_1-2_1-3_1-4"
+       TESTGROUP mdma_gp
    )
 
    add_rumboot_target(
@@ -837,6 +838,7 @@ endif()
        FILES mdma_gp/test_suite_event.c mdma_gp/test_suite_base.c
        PREFIX "mirror-event"
        NAME "mdma_gp_1-1_1-2_1-3_1-5"
+       TESTGROUP mdma_gp
    )
 
   add_rumboot_target(
@@ -844,6 +846,7 @@ endif()
       FILES mdma_gp/test_suite_mirror.c mdma_gp/test_suite_base.c
       PREFIX "mirror-memory"
       NAME "mdma_gp_2-1_2-2_2-3_2-4"
+      TESTGROUP mdma_gp
   )
 
   add_rumboot_target(
@@ -851,6 +854,7 @@ endif()
       FILES mdma_gp/test_suite_direct.c mdma_gp/test_suite_base.c
       PREFIX "direct-memory"
       NAME "mdma_gp_2-1_2-2_2-3"
+      TESTGROUP mdma_gp
   )
 
   add_rumboot_target(

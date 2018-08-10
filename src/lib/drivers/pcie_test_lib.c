@@ -735,7 +735,7 @@ uint32_t pcie_mirror_tests_setup ()
     
     iowrite32 (0x60000000 | 0x1, ADDR_TRANS_MST_BASE + ((2 * 3 + 1) << 2)) ;  //  base address, enable
     iowrite32 (0x6FFFFFFF      , ADDR_TRANS_MST_BASE + ((2 * 3 + 2) << 2)) ;  //  end address
-    iowrite32 (0x50000000      , ADDR_TRANS_MST_BASE + ((2 * 3 + 3) << 2)) ;  //  translate address
+    iowrite32 (0x60000000      , ADDR_TRANS_MST_BASE + ((2 * 3 + 3) << 2)) ;  //  translate address
     
     iowrite32 (0, ADDR_TRANS_MST_BASE);
     

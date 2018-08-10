@@ -37,6 +37,13 @@ static int test_alloc_mem(const char *name, void *seg_addr[], int seg_size)
 			rumboot_free(seg_addr[i - 1]);
 	}
 
+#if 0
+	for (i = 0; i < (seg_size / 4); i++) {
+		*((unsigned long *)seg_addr[1] + i) = 0;
+		*((unsigned long *)seg_addr[0] + i) = i + 1;
+	}
+#endif
+
 alloc_mem_exit:
 	return ret;
 }
@@ -97,21 +104,23 @@ static bool test_event(unsigned long arg)
 		}
 
 		if (i == arg)
-			err = mdma_gp_dev_config(dev, all_addr[j][0], all_addr[j][1], MDMA_GP_SEGMENT_IM0);
+			err = mdma_gp_dev_config(dev, all_addr[j][0], all_addr[j][1], 2 * MDMA_GP_SEGMENT_IM0);
 		else if (j == 1)
-			err = mdma_gp_dev_config(dev, all_addr[j][0], all_addr[j][1], MDMA_GP_SEGMENT_IM1);
+			err = mdma_gp_dev_config(dev, all_addr[j][0], all_addr[j][1], 2 * MDMA_GP_SEGMENT_IM1);
 		else
-			err = mdma_gp_dev_config(dev, all_addr[j][0], all_addr[j][1], MDMA_GP_SEGMENT_DDR);
+			err = mdma_gp_dev_config(dev, all_addr[j][0], all_addr[j][1], 2 * MDMA_GP_SEGMENT_DDR);
 
 		if (err) {
 			ret = false;
 			goto event_exit_3;
 		}
 
+#if 1
 		for (j = 0; j < (dev->segment_size / 4); j++) {
 			*((unsigned long *)dev->dst_addr + j) = 0;
 			*((unsigned long *)dev->src_addr + j) = arg + i + j;
 		}
+#endif
 
 		if (mdma_gp_dev_start(dev)) {
 			ret = false;
@@ -148,6 +157,7 @@ static bool test_event(unsigned long arg)
 		ret = false;
 		goto event_exit_3;
 	}
+
 #if 1
 	for (i = 0; i < 4; i++) {
 		dev = &mdma_gp_dev[i];
@@ -157,6 +167,7 @@ static bool test_event(unsigned long arg)
 			break;
 	}
 #endif
+
 event_exit_3:
 	for(i = 0; i < 4; i++)
 		mdma_gp_dev_terminate(&mdma_gp_dev[i]);
@@ -215,22 +226,22 @@ int main()
 
 	rumboot_irq_sei();
 
-	if (test_alloc_mem("IM0", all_addr[0], MDMA_GP_SEGMENT_IM0)) {
+	if (test_alloc_mem("IM0", all_addr[0], 2 * MDMA_GP_SEGMENT_IM0)) {
 		ret = -2;
 		goto test_exit_1;
 	}
 
-	if (test_alloc_mem("IM1", all_addr[1], MDMA_GP_SEGMENT_IM1)) {
+	if (test_alloc_mem("IM1", all_addr[1], 2 * MDMA_GP_SEGMENT_IM1)) {
 		ret = -3;
 		goto test_exit_2;
 	}
 
-	if (test_alloc_mem("DDR0", all_addr[2], MDMA_GP_SEGMENT_DDR)) {
+	if (test_alloc_mem("DDR0", all_addr[2], 2 * MDMA_GP_SEGMENT_DDR)) {
 		ret = -4;
 		goto test_exit_3;
 	}
 
-	if (test_alloc_mem("DDR1", all_addr[3], MDMA_GP_SEGMENT_DDR)) {
+	if (test_alloc_mem("DDR1", all_addr[3], 2 * MDMA_GP_SEGMENT_DDR)) {
 		ret = -5;
 		goto test_exit_4;
 	}

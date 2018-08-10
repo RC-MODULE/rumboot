@@ -51,8 +51,8 @@ undefined_handler:
 swi_handler:
   push     {r0-r3, r12, lr}
   subs     r0, lr, #4
-  ldr      r1, [r0]
-  and      r1, r1, #0xff
+  ldr      r2, [r0]
+  and      r2, r2, #0xff
   mov      r0, #0
   mov      r1, #RUMBOOT_IRQ_TYPE_SOFT
   bl       rumboot_irq_core_dispatch
