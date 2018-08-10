@@ -287,7 +287,7 @@ void greth_start_receive(uint32_t base_addr, bool rcv_int_ena)
     greth_info.edcl_disable           = false;
     greth_info.multicast_enable       = false;
     greth_info.speed                  = GRETH_SPEED_100MB;
-    greth_info.fullduplex_enable      = true;
+    greth_info.fullduplex_enable      = false;
     greth_info.transmitter_int_enable = false;
     greth_info.receiver_int_enable    = rcv_int_ena;
     greth_info.transmitter_enable     = false;
@@ -306,7 +306,7 @@ void greth_start_receive_transmit(uint32_t base_addr, bool rcv_int_ena)
     greth_info.edcl_disable           = false;
     greth_info.multicast_enable       = false;
     greth_info.speed                  = GRETH_SPEED_100MB;
-    greth_info.fullduplex_enable      = true;
+    greth_info.fullduplex_enable      = false;
     greth_info.transmitter_int_enable = false;
     greth_info.receiver_int_enable    = rcv_int_ena;
     greth_info.transmitter_enable     = true;
@@ -406,7 +406,7 @@ void greth_start_transmit(uint32_t base_addr)
     greth_info.edcl_disable           = false;
     greth_info.multicast_enable       = false;
     greth_info.speed                  = GRETH_SPEED_100MB;
-    greth_info.fullduplex_enable      = true;
+    greth_info.fullduplex_enable      = false;
     greth_info.transmitter_int_enable = false;
     greth_info.receiver_int_enable    = false;
     greth_info.transmitter_enable     = true;
