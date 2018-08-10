@@ -2,7 +2,6 @@
 #define DEVICES_H
 
 
-
 /**
  * \defgroup platform_oi10_register_map Register Map
  * \ingroup platform_oi10
@@ -23,7 +22,6 @@
  *
  * WARNING: DO NOT ADD INDIVIDUAL REGISTER OFFSETS HERE
  */
-
 #define EM2_BASE                0x00000000
 #define EM2_BANK0_BASE          0x00000000
 #define SRAM0_BASE              EM2_BANK0_BASE
@@ -39,10 +37,12 @@
 #define NOR_BASE                EM2_BANK5_BASE
 #define IM0_BASE                0x80000000
 #define IM1_BASE                0x80020000
+#define GPIO_0_BASE             0xC0028000
+#define GPIO_1_BASE             0xC0038000
 #define BOOTROM_BASE            0xFFFF0000
 /**
- *
  * @}
+ *
  * \addtogroup platform_oi10_register_map_dcr
  * @{
  * This section contains addresses of devices on the DCR bus
@@ -51,10 +51,7 @@
  * and formatted properly, do not forget DCR_ prefix
  *
  * WARNING: DO NOT ADD INDIVIDUAL REGISTER OFFSETS HERE
- *
- *
  */
-
 #define DCR_PLB4ARB8M_0_BASE    0x00000010
 #define DCR_PLB4ARB8M_1_BASE    0x00000020
 #define DCR_SRAMMC2PLB4_0_BASE  0x00000030
@@ -76,10 +73,9 @@
 #define DCR_EM2_EMI_BASE        0x80060000
 #define DCR_EM2_MCLFIR_BASE     0x80070000
 #define DCR_MPIC128_BASE        0xFFC00000
-
-
 /**
  * @}
  */
+
 
 #endif /* end of include guard: DEVICES_H */

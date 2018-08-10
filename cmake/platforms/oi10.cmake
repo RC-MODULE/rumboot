@@ -9,6 +9,7 @@ file(GLOB PLATFORM_SOURCES
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/lib/drivers/plb6mcif2.c
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/lib/drivers/dma2plb6.c
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/lib/drivers/emi.c
+    ${CMAKE_SOURCE_DIR}/src/lib/drivers/gpio_pl061.c
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/ppc_mmu_impl.S
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/utlb_entries.S
 )
@@ -153,6 +154,20 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         CONFIGURATION IRAM
         PREFIX iss-iram
         CHECKCMD ${CMAKE_SOURCE_DIR}/scripts/ISS/dump_gen.csh ${CMAKE_BINARY_DIR} $PRODUCT
+    )
+
+    add_rumboot_target(
+        CONFIGURATION IRAM
+        CFLAGS -DGPIO_X_BASE=GPIO_0_BASE -DGPIO_X_INT=GPIO0_INT -DCHECK_REGS -DGPIO_TIMEOUT=0x200 IRUN_FLAGS +gpio_test
+        FILES test_oi10_gpio.c
+        PREFIX "gpio_0"
+    )
+
+    add_rumboot_target(
+        CONFIGURATION IRAM
+        CFLAGS -DGPIO_X_BASE=GPIO_1_BASE -DGPIO_X_INT=GPIO1_INT -DCHECK_REGS -DGPIO_TIMEOUT=0x200 IRUN_FLAGS +gpio_test
+        FILES test_oi10_gpio.c
+        PREFIX "gpio_1"
     )
 endmacro()
 
