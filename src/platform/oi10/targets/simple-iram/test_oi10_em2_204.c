@@ -61,17 +61,22 @@ em2_banks_cfg_t em2_cfg2[EM2_BANKS_NUM] = {
                                             { NOR_BASE,       NOR_SIZE,       WRDATA2 },
                                           };
 
-void preinit_mem(uint32_t addr)
+void preinit_mem(uint32_t base_addr, uint32_t size)
 {
-    uint32_t addr_i = (addr<0x10) ? addr : (addr - 0x10);
 
-    while (addr_i < (addr + 0x10))
+    if (base_addr==NOR_BASE)
+    {/*
+        nor_write32(0x0, NOR_BASE + NOR_SIZE/2 + 4);
+        nor_write32(0x0, NOR_BASE + NOR_SIZE/2 + 8);
+        nor_write32(0x0, NOR_BASE + NOR_SIZE/2 + 12);
+        nor_write32(0x0, NOR_BASE + NOR_SIZE/2 + 16);
+    */}
+    else
     {
-        if (addr_i>=NOR_BASE)
-            nor_write32(0x77777777, addr_i);
-        else
-            iowrite32(0x77777777, addr_i);
-        addr_i += 4;
+        iowrite32(0x0, base_addr + size/2 + 4);
+        iowrite32(0x0, base_addr + size/2 + 8);
+        iowrite32(0x0, base_addr + size/2 + 12);
+        iowrite32(0x0, base_addr + size/2 + 16);
     }
 }
 
@@ -83,13 +88,10 @@ void generate_test_data_and_addr_for_bank(em2_banks_cfg_t* bank_cfg, test_data_a
     test_data_and_addr->A2 = bank_cfg->base_addr + bank_cfg->size/2;
     test_data_and_addr->A3 = bank_cfg->base_addr + bank_cfg->size - 4;
     test_data_and_addr->D  = bank_cfg->data;
-    //rumboot_printf("0x%X 0x%X 0x%X 0x%X / 0x%X\n", test_data_and_addr->A0, test_data_and_addr->A1, test_data_and_addr->A2, test_data_and_addr->A3, test_data_and_addr->D);
+    rumboot_printf("0x%X 0x%X 0x%X 0x%X / 0x%X\n", test_data_and_addr->A0, test_data_and_addr->A1, test_data_and_addr->A2, test_data_and_addr->A3, test_data_and_addr->D);
 
-    //rumboot_printf("Preinit memory\n");
-    preinit_mem(test_data_and_addr->A0);
-    preinit_mem(test_data_and_addr->A1);
-    preinit_mem(test_data_and_addr->A2);
-    preinit_mem(test_data_and_addr->A3);
+    rumboot_printf("Preinit memory\n");
+    preinit_mem(bank_cfg->base_addr, bank_cfg->size);
 }
 
 void generate_test_data_and_addr(em2_banks_cfg_t* bank_cfg, test_data_and_addr_t* test_data_and_addr)
