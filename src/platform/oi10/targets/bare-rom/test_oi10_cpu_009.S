@@ -272,7 +272,6 @@ check_cpu_ppc_plb6plb4_0_2:
     check_value CVR3,   P640(ADDRH0),   PLB6PLB4_0_ADDRH0_RESET_VAL,    "PLB6PLB4_0_ADDRH0"
     check_value CVR3,   P640(ADDRL1),   ADDRL1_RESET_VAL,               "PLB6PLB4_0_ADDRL1"
     check_value CVR3,   P640(ADDRH1),   ADDRH1_RESET_VAL,               "PLB6PLB4_0_ADDRH1"
-    check_value CVR3,   P640(TESR  ),   TESR_RESET_VAL,                 "PLB6PLB4_0_TESR"
     rumboot_putstring   "done.\n"
 
 check_cpu_ppc_plb6plb4_0_3:
@@ -335,7 +334,6 @@ check_cpu_ppc_plb6plb4_1_2:
     check_value CVR3,   P641(ADDRH0), PLB6PLB4_1_ADDRH0_RESET_VAL,  "PLB6PLB4_1_ADDRH0"
     check_value CVR3,   P641(ADDRL1), ADDRL1_RESET_VAL,             "PLB6PLB4_1_ADDRL1"
     check_value CVR3,   P641(ADDRH1), ADDRH1_RESET_VAL,             "PLB6PLB4_1_ADDRH1"
-    check_value CVR3,   P641(TESR  ), TESR_RESET_VAL,               "PLB6PLB4_1_TESR"
     rumboot_putstring   "done.\n"
 
 check_cpu_ppc_plb6plb4_1_3:
