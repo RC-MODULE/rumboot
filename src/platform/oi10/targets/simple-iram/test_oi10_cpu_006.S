@@ -6,17 +6,18 @@
 #include <platform/devices.h>
 #include <platform/regs/regs_l2c_l2.h>
 
-#define eq6                     cr6*4+eq
-#define eq7                     cr7*4+eq
-
 /* Registers aliases */
-#define R_DCRA                  r14     /* DCR Address channel   */
-#define R_DCRD                  r15     /* DCR Data channel      */
-#define R_ADDR                  r16     /* Address of I/O Reg    */
-#define R_DATA                  r17     /* Readed data for check */
-#define R_EXPV                  r18     /* Expected value        */
-#define R_SHFT                  r19     /* Shift value           */
-#define R_TERM                  r20     /* Termination template  */
+#define R_ARG0                  r3
+#define R_ARG1                  r3
+#define R_RETV                  R_ARG0
+#define R_DCRA                  r20     /* DCR Address channel   */
+#define R_DCRD                  r21     /* DCR Data channel      */
+#define R_ADDR                  r22     /* Address of I/O Reg    */
+#define R_DATA                  r23     /* Readed data for check */
+#define R_EXPV                  r24     /* Expected value        */
+#define R_SHFT                  r25     /* Shift value           */
+#define R_TERM                  r26     /* Termination template  */
+#define R_BACK                  r27     /* Common backup         */
 
 #define L2CA(OFFSET)			(DCR_L2C_BASE + (OFFSET))
 
@@ -148,11 +149,11 @@
     mtdcrx      R_DCRA, R_ADDR
     mfdcrx      R_DATA, R_DCRD
     cmpw cr7,   R_DATA, R_EXPV
-    TEST_ASSERT(eq, cr7, "\nDCR check error: In \regName was expected value \expValue (address \address) ")
+    TEST_ASSERT(eq, cr7, "\nDCR check error: In \sName was expected value \vExp (address \vAddr) ")
     beq+ cr7,   61f
     b           62f
 61:
-    rumboot_putstring   "OK\n"
+    rumboot_putstring   "done.\n"
 62:
 .endm
 
@@ -163,127 +164,129 @@
 
 main:
     load_const  r3,   0x00000000
-    cmpwi cr6,  r3,   0x0000      /* General test status in cr6 */
+    set_cr      cr6,    eq
 
 check_cpu_ppc_l2c:
-	check_value_l2c_init
-	check_value_l2c L2C_L2ISTAT,		L2C_L2ISTAT_VAL,		"L2C_L2ISTAT"
-	check_value_l2c L2C_L2PNCR,			L2C_L2PNCR_VAL,			"L2C_L2PNCR"
-	check_value_l2c L2C_L2REVID,		L2C_L2REVID_VAL,		"L2C_L2REVID"
-	check_value_l2c L2C_L2CNFG0,		L2C_L2CNFG0_VAL,		"L2C_L2CNFG0"
-	check_value_l2c L2C_L2CNFG1,		L2C_L2CNFG1_VAL,		"L2C_L2CNFG1"
-	check_value_l2c L2C_L2DBGSEL,		L2C_L2DBGSEL_VAL,		"L2C_L2DBGSEL"
-	check_value_l2c L2C_L2DBGDATA0,		L2C_L2DBGDATA0_VAL,		"L2C_L2DBGDATA0"
-	check_value_l2c L2C_L2DBGDATA1,		L2C_L2DBGDATA1_VAL,		"L2C_L2DBGDATA1"
-	check_value_l2c L2C_L2SLEEPSTAT,	L2C_L2SLEEPSTAT_VAL,	"L2C_L2SLEEPSTAT"
-	check_value_l2c L2C_L2SLEEPREQ,		L2C_L2SLEEPREQ_VAL,		"L2C_L2SLEEPREQ"
-//	check_value_l2c L2C_L2MCK,			L2C_L2MCK_VAL,			"L2C_L2MCK"			/* X in data */
-	check_value_l2c L2C_L2MCKEN,		L2C_L2MCKEN_VAL,		"L2C_L2MCKEN"
-//	check_value_l2c L2C_L2FERR,			L2C_L2FERR_VAL,			"L2C_L2FERR"		/* X in data */
-//	check_value_l2c L2C_L2INT,			L2C_L2INT_VAL,			"L2C_L2INT"			/* X in data */
-	check_value_l2c L2C_L2INTEN,		L2C_L2INTEN_VAL,		"L2C_L2INTEN"
-	check_value_l2c L2C_L2LOG0,			L2C_L2LOG0_VAL,			"L2C_L2LOG0"
-	check_value_l2c L2C_L2LOG1,			L2C_L2LOG1_VAL,			"L2C_L2LOG1"
-	check_value_l2c L2C_L2LOG2,			L2C_L2LOG2_VAL,			"L2C_L2LOG2"
-	check_value_l2c L2C_L2LOG3,			L2C_L2LOG3_VAL,			"L2C_L2LOG3"
-//	check_value_l2c L2C_L2LOG4,			L2C_L2LOG4_VAL,			"L2C_L2LOG4"		/* X in data */
-//	check_value_l2c L2C_L2LOG5,			L2C_L2LOG5_VAL,			"L2C_L2LOG5"
-	check_value_l2c L2C_L2PLBCFG,		L2C_L2PLBCFG_VAL,		"L2C_L2PLBCFG"
-	check_value_l2c L2C_L2PLBDBG,		L2C_L2PLBDBG_VAL,		"L2C_L2PLBDBG"
-	check_value_l2c L2C_L2PLBERAP,		L2C_L2PLBERAP_VAL,		"L2C_L2PLBERAP"
-//	check_value_l2c L2C_L2PLBSTAT0,		L2C_L2PLBSTAT0_VAL,		"L2C_L2PLBSTAT0"
-//	check_value_l2c L2C_L2PLBSTAT1,		L2C_L2PLBSTAT1_VAL,		"L2C_L2PLBSTAT1"	/* X in data */
-	check_value_l2c L2C_L2PLBFRC0,		L2C_L2PLBFRC0_VAL,		"L2C_L2PLBFRC0"
-	check_value_l2c L2C_L2PLBFRC1,		L2C_L2PLBFRC1_VAL,		"L2C_L2PLBFRC1"
-	check_value_l2c L2C_L2PLBMCKEN0,	L2C_L2PLBMCKEN0_VAL,	"L2C_L2PLBMCKEN0"
-	check_value_l2c L2C_L2PLBMCKEN1,	L2C_L2PLBMCKEN1_VAL,	"L2C_L2PLBMCKEN1"
-//	check_value_l2c L2C_L2PLBFERR0,		L2C_L2PLBFERR0_VAL,		"L2C_L2PLBFERR0"
-//	check_value_l2c L2C_L2PLBFERR1,		L2C_L2PLBFERR1_VAL,		"L2C_L2PLBFERR1"	/* X in data */
-	check_value_l2c L2C_L2PLBINTEN0,	L2C_L2PLBINTEN0_VAL,	"L2C_L2PLBINTEN0"
-	check_value_l2c L2C_L2PLBINTEN1,	L2C_L2PLBINTEN1_VAL,	"L2C_L2PLBINTEN1"
-	check_value_l2c L2C_L2ARRCFG,		L2C_L2ARRCFG_VAL,		"L2C_L2ARRCFG"
-	check_value_l2c L2C_L2ARRDBG0,		L2C_L2ARRDBG0_VAL,		"L2C_L2ARRDBG0"
-	check_value_l2c L2C_L2ARRDBG1,		L2C_L2ARRDBG1_VAL,		"L2C_L2ARRDBG1"
-	check_value_l2c L2C_L2ARRDBG2,		L2C_L2ARRDBG2_VAL,		"L2C_L2ARRDBG2"
-	check_value_l2c L2C_L2ARRDBG3,		L2C_L2ARRDBG3_VAL,		"L2C_L2ARRDBG3"
-	check_value_l2c L2C_L2ARRACCCTL,	L2C_L2ARRACCCTL_VAL,	"L2C_L2ARRACCCTL"
-	check_value_l2c L2C_L2ARRACCADR,	L2C_L2ARRACCADR_VAL,	"L2C_L2ARRACCADR"
-	check_value_l2c L2C_L2ARRACCDI0,	L2C_L2ARRACCDI0_VAL,	"L2C_L2ARRACCDI0"
-	check_value_l2c L2C_L2ARRACCDI1,	L2C_L2ARRACCDI1_VAL,	"L2C_L2ARRACCDI1"
-	check_value_l2c L2C_L2ARRACCDI2,	L2C_L2ARRACCDI2_VAL,	"L2C_L2ARRACCDI2"
-	check_value_l2c L2C_L2ARRACCDO0,	L2C_L2ARRACCDO0_VAL,	"L2C_L2ARRACCDO0"
-	check_value_l2c L2C_L2ARRACCDO1,	L2C_L2ARRACCDO1_VAL,	"L2C_L2ARRACCDO1"
-	check_value_l2c L2C_L2ARRACCDO2,	L2C_L2ARRACCDO2_VAL,	"L2C_L2ARRACCDO2"
-	check_value_l2c L2C_L2ARRSTAT0,		L2C_L2ARRSTAT0_VAL,		"L2C_L2ARRSTAT0"
-	check_value_l2c L2C_L2ARRSTAT1,		L2C_L2ARRSTAT1_VAL,		"L2C_L2ARRSTAT1"
-	check_value_l2c L2C_L2ARRSTAT2,		L2C_L2ARRSTAT2_VAL,		"L2C_L2ARRSTAT2"
-	check_value_l2c L2C_L2ARRFRC0,		L2C_L2ARRFRC0_VAL,		"L2C_L2ARRFRC0"
-	check_value_l2c L2C_L2ARRFRC1,		L2C_L2ARRFRC1_VAL,		"L2C_L2ARRFRC1"
-	check_value_l2c L2C_L2ARRFRC2,		L2C_L2ARRFRC2_VAL,		"L2C_L2ARRFRC2"
-	check_value_l2c L2C_L2ARRMCKEN0,	L2C_L2ARRMCKEN0_VAL,	"L2C_L2ARRMCKEN0"
-	check_value_l2c L2C_L2ARRMCKEN1,	L2C_L2ARRMCKEN1_VAL,	"L2C_L2ARRMCKEN1"
-	check_value_l2c L2C_L2ARRMCKEN2,	L2C_L2ARRMCKEN2_VAL,	"L2C_L2ARRMCKEN2"
-	check_value_l2c L2C_L2ARRFERR0,		L2C_L2ARRFERR0_VAL,		"L2C_L2ARRFERR0"
-	check_value_l2c L2C_L2ARRFERR1,		L2C_L2ARRFERR1_VAL,		"L2C_L2ARRFERR1"
-	check_value_l2c L2C_L2ARRFERR2,		L2C_L2ARRFERR1_VAL,		"L2C_L2ARRFERR2"
-	check_value_l2c L2C_L2ARRINTEN0,	L2C_L2ARRINTEN0_VAL,	"L2C_L2ARRINTEN0"
-	check_value_l2c L2C_L2ARRINTEN1,	L2C_L2ARRINTEN1_VAL,	"L2C_L2ARRINTEN1"
-	check_value_l2c L2C_L2ARRINTEN2,	L2C_L2ARRINTEN2_VAL,	"L2C_L2ARRINTEN2"
-	check_value_l2c L2C_L2CPUCFG,		L2C_L2CPUCFG_VAL,		"L2C_L2CPUCFG"
-	check_value_l2c L2C_L2CPUDBG,		L2C_L2CPUDBG_VAL,		"L2C_L2CPUDBG"
-//	check_value_l2c L2C_L2CPUSTAT,		L2C_L2CPUSTAT_VAL,		"L2C_L2CPUSTAT"
-	check_value_l2c L2C_L2CPUFRC,		L2C_L2CPUFRC_VAL,		"L2C_L2CPUFRC"
-	check_value_l2c L2C_L2CPUMCKEN,		L2C_L2CPUMCKEN_VAL,		"L2C_L2CPUMCKEN"	/* X in data */
-//	check_value_l2c L2C_L2CPUFERR,		L2C_L2CPUFERR_VAL,		"L2C_L2CPUFERR"
-	check_value_l2c L2C_L2CPUINTEN,		L2C_L2CPUINTEN_VAL,		"L2C_L2CPUINTEN"
-	check_value_l2c L2C_L2RACCFG,		L2C_L2RACCFG_VAL,		"L2C_L2RACCFG"
-	check_value_l2c L2C_L2RACDBG0,		L2C_L2RACDBG0_VAL,		"L2C_L2RACDBG0"
-	check_value_l2c L2C_L2RACDBG1,		L2C_L2RACDBG1_VAL,		"L2C_L2RACDBG1"
-	check_value_l2c L2C_L2RACSTAT0,		L2C_L2RACSTAT0_VAL,		"L2C_L2RACSTAT0"
-	check_value_l2c L2C_L2RACFRC0,		L2C_L2RACFRC0_VAL,		"L2C_L2RACFRC0"
-	check_value_l2c L2C_L2RACMCKEN0,	L2C_L2RACMCKEN0_VAL,	"L2C_L2RACMCKEN0"
-	check_value_l2c L2C_L2RACFERR0,		L2C_L2RACFERR0_VAL,		"L2C_L2RACFERR0"
-	check_value_l2c L2C_L2RACINTEN0,	L2C_L2RACINTEN0_VAL,	"L2C_L2RACINTEN0"
-	check_value_l2c L2C_L2WACCFG,		L2C_L2WACCFG_VAL,		"L2C_L2WACCFG"
-	check_value_l2c L2C_L2WACDBG0,		L2C_L2WACDBG0_VAL,		"L2C_L2WACDBG0"
-	check_value_l2c L2C_L2WACDBG1,		L2C_L2WACDBG1_VAL,		"L2C_L2WACDBG1"
-	check_value_l2c L2C_L2WACDBG2,		L2C_L2WACDBG2_VAL,		"L2C_L2WACDBG2"
-	check_value_l2c L2C_L2WACSTAT0,		L2C_L2WACSTAT0_VAL,		"L2C_L2WACSTAT0"
-	check_value_l2c L2C_L2WACSTAT1,		L2C_L2WACSTAT1_VAL,		"L2C_L2WACSTAT1"
-    check_value_l2c L2C_L2WACSTAT2,		L2C_L2WACSTAT2_VAL,		"L2C_L2WACSTAT2"
-	check_value_l2c L2C_L2WACFRC0,		L2C_L2WACFRC0_VAL,		"L2C_L2WACFRC0"
-	check_value_l2c L2C_L2WACFRC1,		L2C_L2WACFRC1_VAL,		"L2C_L2WACFRC1"
-	check_value_l2c L2C_L2WACFRC2,		L2C_L2WACFRC2_VAL,		"L2C_L2WACFRC2"
-	check_value_l2c L2C_L2WACMCKEN0,	L2C_L2WACMCKEN0_VAL,	"L2C_L2WACMCKEN0"
-	check_value_l2c L2C_L2WACMCKEN1,	L2C_L2WACMCKEN1_VAL,	"L2C_L2WACMCKEN1"
-	check_value_l2c L2C_L2WACMCKEN2,	L2C_L2WACMCKEN2_VAL,	"L2C_L2WACMCKEN2"
-	check_value_l2c L2C_L2WACFERR0,		L2C_L2WACFERR0_VAL,		"L2C_L2WACFERR0"
-	check_value_l2c L2C_L2WACFERR1,		L2C_L2WACFERR1_VAL,		"L2C_L2WACFERR1"
-	check_value_l2c L2C_L2WACFERR2,		L2C_L2WACFERR2_VAL,		"L2C_L2WACFERR2"
-	check_value_l2c L2C_L2WACINTEN0,	L2C_L2WACINTEN0_VAL,	"L2C_L2WACINTEN0"
-	check_value_l2c L2C_L2WACINTEN1,	L2C_L2WACINTEN1_VAL,	"L2C_L2WACINTEN1"
-	check_value_l2c L2C_L2WACINTEN2,	L2C_L2WACINTEN2_VAL,	"L2C_L2WACINTEN2"
+    check_value_l2c_init
+    check_value_l2c L2C_L2ISTAT,        L2C_L2ISTAT_VAL,        "L2C_L2ISTAT"
+    check_value_l2c L2C_L2PNCR,         L2C_L2PNCR_VAL,         "L2C_L2PNCR"
+    check_value_l2c L2C_L2REVID,        L2C_L2REVID_VAL,        "L2C_L2REVID"
+    check_value_l2c L2C_L2CNFG0,        L2C_L2CNFG0_VAL,        "L2C_L2CNFG0"
+    check_value_l2c L2C_L2CNFG1,        L2C_L2CNFG1_VAL,        "L2C_L2CNFG1"
+    check_value_l2c L2C_L2DBGSEL,       L2C_L2DBGSEL_VAL,       "L2C_L2DBGSEL"
+    check_value_l2c L2C_L2DBGDATA0,     L2C_L2DBGDATA0_VAL,     "L2C_L2DBGDATA0"
+    check_value_l2c L2C_L2DBGDATA1,     L2C_L2DBGDATA1_VAL,     "L2C_L2DBGDATA1"
+    check_value_l2c L2C_L2SLEEPSTAT,    L2C_L2SLEEPSTAT_VAL,    "L2C_L2SLEEPSTAT"
+    check_value_l2c L2C_L2SLEEPREQ,     L2C_L2SLEEPREQ_VAL,     "L2C_L2SLEEPREQ"
+    check_value_l2c L2C_L2MCK,          L2C_L2MCK_VAL,          "L2C_L2MCK"			/* X in data */
+    check_value_l2c L2C_L2MCKEN,        L2C_L2MCKEN_VAL,        "L2C_L2MCKEN"
+    check_value_l2c L2C_L2FERR,         L2C_L2FERR_VAL,         "L2C_L2FERR"		/* X in data */
+    check_value_l2c L2C_L2INT,          L2C_L2INT_VAL,          "L2C_L2INT"			/* X in data */
+    check_value_l2c L2C_L2INTEN,        L2C_L2INTEN_VAL,        "L2C_L2INTEN"
+    check_value_l2c L2C_L2LOG0,         L2C_L2LOG0_VAL,         "L2C_L2LOG0"
+    check_value_l2c L2C_L2LOG1,         L2C_L2LOG1_VAL,         "L2C_L2LOG1"
+    check_value_l2c L2C_L2LOG2,         L2C_L2LOG2_VAL,         "L2C_L2LOG2"
+    check_value_l2c L2C_L2LOG3,         L2C_L2LOG3_VAL,         "L2C_L2LOG3"
+    check_value_l2c L2C_L2LOG4,         L2C_L2LOG4_VAL,         "L2C_L2LOG4"		/* X in data */
+    check_value_l2c L2C_L2LOG5,         L2C_L2LOG5_VAL,         "L2C_L2LOG5"
+    check_value_l2c L2C_L2PLBCFG,       L2C_L2PLBCFG_VAL,       "L2C_L2PLBCFG"
+    check_value_l2c L2C_L2PLBDBG,       L2C_L2PLBDBG_VAL,       "L2C_L2PLBDBG"
+    check_value_l2c L2C_L2PLBERAP,      L2C_L2PLBERAP_VAL,      "L2C_L2PLBERAP"
+    check_value_l2c L2C_L2PLBSTAT0,     L2C_L2PLBSTAT0_VAL,     "L2C_L2PLBSTAT0"
+    check_value_l2c L2C_L2PLBSTAT1,     L2C_L2PLBSTAT1_VAL,     "L2C_L2PLBSTAT1"	/* X in data */
+    /* L2C_L2PLBFRC0, L2C_L2PLBFRC1 are W/O regs */
+/*  check_value_l2c L2C_L2PLBFRC0,      L2C_L2PLBFRC0_VAL,      "L2C_L2PLBFRC0"     */
+/*  check_value_l2c L2C_L2PLBFRC1,      L2C_L2PLBFRC1_VAL,      "L2C_L2PLBFRC1"     */
+    check_value_l2c L2C_L2PLBMCKEN0,    L2C_L2PLBMCKEN0_VAL,    "L2C_L2PLBMCKEN0"
+    check_value_l2c L2C_L2PLBMCKEN1,    L2C_L2PLBMCKEN1_VAL,    "L2C_L2PLBMCKEN1"
+    check_value_l2c L2C_L2PLBFERR0,     L2C_L2PLBFERR0_VAL,     "L2C_L2PLBFERR0"
+    check_value_l2c L2C_L2PLBFERR1,     L2C_L2PLBFERR1_VAL,     "L2C_L2PLBFERR1"	/* X in data */
+    check_value_l2c L2C_L2PLBINTEN0,    L2C_L2PLBINTEN0_VAL,    "L2C_L2PLBINTEN0"
+    check_value_l2c L2C_L2PLBINTEN1,    L2C_L2PLBINTEN1_VAL,    "L2C_L2PLBINTEN1"
+    check_value_l2c L2C_L2ARRCFG,       L2C_L2ARRCFG_VAL,       "L2C_L2ARRCFG"
+    check_value_l2c L2C_L2ARRDBG0,      L2C_L2ARRDBG0_VAL,      "L2C_L2ARRDBG0"
+    check_value_l2c L2C_L2ARRDBG1,      L2C_L2ARRDBG1_VAL,      "L2C_L2ARRDBG1"
+    check_value_l2c L2C_L2ARRDBG2,      L2C_L2ARRDBG2_VAL,      "L2C_L2ARRDBG2"
+    check_value_l2c L2C_L2ARRDBG3,      L2C_L2ARRDBG3_VAL,      "L2C_L2ARRDBG3"
+    check_value_l2c L2C_L2ARRACCCTL,    L2C_L2ARRACCCTL_VAL,    "L2C_L2ARRACCCTL"
+    check_value_l2c L2C_L2ARRACCADR,    L2C_L2ARRACCADR_VAL,    "L2C_L2ARRACCADR"
+    check_value_l2c L2C_L2ARRACCDI0,    L2C_L2ARRACCDI0_VAL,    "L2C_L2ARRACCDI0"
+    check_value_l2c L2C_L2ARRACCDI1,    L2C_L2ARRACCDI1_VAL,    "L2C_L2ARRACCDI1"
+    check_value_l2c L2C_L2ARRACCDI2,    L2C_L2ARRACCDI2_VAL,    "L2C_L2ARRACCDI2"
+    check_value_l2c L2C_L2ARRACCDO0,    L2C_L2ARRACCDO0_VAL,    "L2C_L2ARRACCDO0"
+    check_value_l2c L2C_L2ARRACCDO1,    L2C_L2ARRACCDO1_VAL,    "L2C_L2ARRACCDO1"
+    check_value_l2c L2C_L2ARRACCDO2,    L2C_L2ARRACCDO2_VAL,    "L2C_L2ARRACCDO2"
+    check_value_l2c L2C_L2ARRSTAT0,     L2C_L2ARRSTAT0_VAL,     "L2C_L2ARRSTAT0"
+    check_value_l2c L2C_L2ARRSTAT1,     L2C_L2ARRSTAT1_VAL,     "L2C_L2ARRSTAT1"
+    check_value_l2c L2C_L2ARRSTAT2,     L2C_L2ARRSTAT2_VAL,     "L2C_L2ARRSTAT2"
+    /* L2C_L2ARRFRCx are W/O regs */
+/*  check_value_l2c L2C_L2ARRFRC0,      L2C_L2ARRFRC0_VAL,      "L2C_L2ARRFRC0"     */
+/*  check_value_l2c L2C_L2ARRFRC1,      L2C_L2ARRFRC1_VAL,      "L2C_L2ARRFRC1"     */
+/*  check_value_l2c L2C_L2ARRFRC2,      L2C_L2ARRFRC2_VAL,      "L2C_L2ARRFRC2"     */
+    check_value_l2c L2C_L2ARRMCKEN0,    L2C_L2ARRMCKEN0_VAL,    "L2C_L2ARRMCKEN0"
+    check_value_l2c L2C_L2ARRMCKEN1,    L2C_L2ARRMCKEN1_VAL,    "L2C_L2ARRMCKEN1"
+    check_value_l2c L2C_L2ARRMCKEN2,    L2C_L2ARRMCKEN2_VAL,    "L2C_L2ARRMCKEN2"
+    check_value_l2c L2C_L2ARRFERR0,     L2C_L2ARRFERR0_VAL,     "L2C_L2ARRFERR0"
+    check_value_l2c L2C_L2ARRFERR1,     L2C_L2ARRFERR1_VAL,     "L2C_L2ARRFERR1"
+    check_value_l2c L2C_L2ARRFERR2,     L2C_L2ARRFERR1_VAL,     "L2C_L2ARRFERR2"
+    check_value_l2c L2C_L2ARRINTEN0,    L2C_L2ARRINTEN0_VAL,    "L2C_L2ARRINTEN0"
+    check_value_l2c L2C_L2ARRINTEN1,    L2C_L2ARRINTEN1_VAL,    "L2C_L2ARRINTEN1"
+    check_value_l2c L2C_L2ARRINTEN2,    L2C_L2ARRINTEN2_VAL,    "L2C_L2ARRINTEN2"
+    check_value_l2c L2C_L2CPUCFG,       L2C_L2CPUCFG_VAL,       "L2C_L2CPUCFG"
+    check_value_l2c L2C_L2CPUDBG,       L2C_L2CPUDBG_VAL,       "L2C_L2CPUDBG"
+    check_value_l2c L2C_L2CPUSTAT,      L2C_L2CPUSTAT_VAL,      "L2C_L2CPUSTAT"
+    /* L2C_L2CPUFRC is W/O reg */
+/*  check_value_l2c L2C_L2CPUFRC,       L2C_L2CPUFRC_VAL,       "L2C_L2CPUFRC"      */
+    check_value_l2c L2C_L2CPUMCKEN,     L2C_L2CPUMCKEN_VAL,     "L2C_L2CPUMCKEN"
+    check_value_l2c L2C_L2CPUFERR,      L2C_L2CPUFERR_VAL,      "L2C_L2CPUFERR"
+    check_value_l2c L2C_L2CPUINTEN,     L2C_L2CPUINTEN_VAL,     "L2C_L2CPUINTEN"
+    check_value_l2c L2C_L2RACCFG,       L2C_L2RACCFG_VAL,       "L2C_L2RACCFG"
+    check_value_l2c L2C_L2RACDBG0,      L2C_L2RACDBG0_VAL,      "L2C_L2RACDBG0"
+    check_value_l2c L2C_L2RACDBG1,      L2C_L2RACDBG1_VAL,      "L2C_L2RACDBG1"
+    check_value_l2c L2C_L2RACSTAT0,     L2C_L2RACSTAT0_VAL,     "L2C_L2RACSTAT0"
+    /* L2C_L2RACFRC0 is W/O reg */
+/*  check_value_l2c L2C_L2RACFRC0,      L2C_L2RACFRC0_VAL,      "L2C_L2RACFRC0"     */
+    check_value_l2c L2C_L2RACMCKEN0,    L2C_L2RACMCKEN0_VAL,    "L2C_L2RACMCKEN0"
+    check_value_l2c L2C_L2RACFERR0,     L2C_L2RACFERR0_VAL,     "L2C_L2RACFERR0"
+    check_value_l2c L2C_L2RACINTEN0,    L2C_L2RACINTEN0_VAL,    "L2C_L2RACINTEN0"
+    check_value_l2c L2C_L2WACCFG,       L2C_L2WACCFG_VAL,       "L2C_L2WACCFG"
+    check_value_l2c L2C_L2WACDBG0,      L2C_L2WACDBG0_VAL,      "L2C_L2WACDBG0"
+    check_value_l2c L2C_L2WACDBG1,      L2C_L2WACDBG1_VAL,      "L2C_L2WACDBG1"
+    check_value_l2c L2C_L2WACDBG2,      L2C_L2WACDBG2_VAL,      "L2C_L2WACDBG2"
+    check_value_l2c L2C_L2WACSTAT0,     L2C_L2WACSTAT0_VAL,     "L2C_L2WACSTAT0"
+    check_value_l2c L2C_L2WACSTAT1,     L2C_L2WACSTAT1_VAL,     "L2C_L2WACSTAT1"
+    check_value_l2c L2C_L2WACSTAT2,     L2C_L2WACSTAT2_VAL,     "L2C_L2WACSTAT2"
+    /* L2C_L2WACFRCx are W/O regs */
+/*  check_value_l2c L2C_L2WACFRC0,      L2C_L2WACFRC0_VAL,      "L2C_L2WACFRC0"     */
+/*  check_value_l2c L2C_L2WACFRC1,      L2C_L2WACFRC1_VAL,      "L2C_L2WACFRC1"     */
+/*  check_value_l2c L2C_L2WACFRC2,      L2C_L2WACFRC2_VAL,      "L2C_L2WACFRC2"     */
+    check_value_l2c L2C_L2WACMCKEN0,    L2C_L2WACMCKEN0_VAL,    "L2C_L2WACMCKEN0"
+    check_value_l2c L2C_L2WACMCKEN1,    L2C_L2WACMCKEN1_VAL,    "L2C_L2WACMCKEN1"
+    check_value_l2c L2C_L2WACMCKEN2,    L2C_L2WACMCKEN2_VAL,    "L2C_L2WACMCKEN2"
+    check_value_l2c L2C_L2WACFERR0,     L2C_L2WACFERR0_VAL,     "L2C_L2WACFERR0"
+    check_value_l2c L2C_L2WACFERR1,     L2C_L2WACFERR1_VAL,     "L2C_L2WACFERR1"
+    check_value_l2c L2C_L2WACFERR2,     L2C_L2WACFERR2_VAL,     "L2C_L2WACFERR2"
+    check_value_l2c L2C_L2WACINTEN0,    L2C_L2WACINTEN0_VAL,    "L2C_L2WACINTEN0"
+    check_value_l2c L2C_L2WACINTEN1,    L2C_L2WACINTEN1_VAL,    "L2C_L2WACINTEN1"
+    check_value_l2c L2C_L2WACINTEN2,    L2C_L2WACINTEN2_VAL,    "L2C_L2WACINTEN2"
 
 check_cpu_ppc_l2c_reg:
-	rumboot_putstring   "Check running <1> ...\n"
+    rumboot_putstring   "Check running <1> ...\n"
     load_const  R_EXPV, 0x00000000
     load_const  R_SHFT, 0x00000001
-/*  load_const  R_ADDR, L2C_L2DBGSEL */
     load_const  R_ADDR, L2C_L2PLBDBG
-    mtdcrx      R_DCRA, R_ADDR
+    mtdcrx      R_DCRA, R_ADDR          /* Select address */
+    mfdcrx      R_BACK, R_DCRD          /* Backup previous value */
     mtdcrx      R_DCRD, R_EXPV
-    mtdcrx      R_DCRA, R_ADDR
     mfdcrx      R_DATA, R_DCRD
     cmpw cr7,   R_DATA, R_EXPV
-	TEST_ASSERT(eq, cr7, "Check value failed (init 0)")
+    TEST_ASSERT(eq, cr7, "Check value failed (init 0)")
 
 running_1:
     load_const  R_EXPV, 0x00000001
     load_const  R_TERM, 0x80000000
 loop_1:
-    mtdcrx      R_DCRA, R_ADDR
     mtdcrx      R_DCRD, R_EXPV
-    mtdcrx      R_DCRA, R_ADDR
     mfdcrx      R_DATA, R_DCRD
     cmpw cr7,   R_DATA, R_EXPV
     TEST_ASSERT(eq, cr7, "Check value failed (running 1)") /* FAIL */
@@ -298,9 +301,7 @@ running_0:
     rumboot_putstring "Check running <0> ...\n"
     load_const  R_EXPV, 0xFFFFFFFF
     load_const  R_ADDR, L2C_L2DBGSEL
-    mtdcrx      R_DCRA, R_ADDR
     mtdcrx      R_DCRD, R_EXPV
-    mtdcrx      R_DCRA, R_ADDR
     mfdcrx      R_DATA, R_DCRD
     cmpw cr7,   R_DATA, R_EXPV
     TEST_ASSERT(eq, cr7, "Check value failed (running 0)")
@@ -308,32 +309,30 @@ running_0:
     load_const  R_EXPV, 0xFFFFFFFE
     load_const  R_TERM, 0x7FFFFFFF
 loop_0:
-    mtdcrx      R_DCRA, R_ADDR
     mtdcrx      R_DCRD, R_EXPV
-    mtdcrx      R_DCRA, R_ADDR
     mfdcrx      R_DATA, R_DCRD
     cmpw cr7,   R_DATA, R_EXPV
     TEST_ASSERT(eq, cr7, "Check value failed (running 0)") /* FAIL */
     cmpw cr0,   R_EXPV, R_TERM
-    beq- cr0,   test_end
+    beq- cr0,   running_0_end
     slw         R_EXPV, R_EXPV, R_SHFT
     ori         R_EXPV, R_EXPV, 0x0001
     b           loop_0
+running_0_end:
+    mtdcrx      R_DCRD, R_BACK          /* Restore previous value */
+    rumboot_putstring "done!\n"
 
 test_end:
-    rumboot_putstring "done!\n"
     bne- cr6,   test_error
 
 test_ok:
-	rumboot_putstring "TEST OK\n"
-	test_event		EVENT_OK
-	load_const r3,	RESULT_OK
-	b finish
+    rumboot_putstring "TEST OK\n"
+    load_const R_RETV, RESULT_OK
+    b finish
 
 test_error:
-	rumboot_putstring "TEST ERROR\n"
-	test_event		EVENT_ERROR
-	load_const r3,	RESULT_ERROR
+    rumboot_putstring "TEST ERROR\n"
+    load_const R_RETV, RESULT_ERROR
 
 finish:
 	blr
