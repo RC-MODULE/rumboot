@@ -158,6 +158,8 @@ ADD_SOURCE("src/lib/drivers/eeprom.c")
 ADD_SOURCE("src/lib/drivers/mgeth.c")
 ADD_SOURCE("src/lib/drivers/mdma_chan_lib.c")
 ADD_SOURCE("src/lib/drivers/wdt.c")
+ADD_SOURCE("/src/lib/drivers/mkio.c")
+
 # ADD_SOURCE("src/lib/drivers/bisr.c")
 
 if (RUMBOOT_PLATFORM MATCHES native)

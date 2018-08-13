@@ -169,6 +169,54 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         FILES test_oi10_gpio.c
         PREFIX "gpio_1"
     )
+
+    add_rumboot_target(
+        CONFIGURATION IRAM
+        CFLAGS -DMKIO0_IRQ=MKIO0_INT -DMKIO1_IRQ=MKIO1_INT
+        FILES common/mkio/mkio_write_read_test.c
+        NAME mkio_write_read_test
+      )
+
+    add_rumboot_target(
+        CONFIGURATION IRAM
+        CFLAGS -DMKIO0_IRQ=MKIO0_INT -DMKIO1_IRQ=MKIO1_INT
+        FILES common/mkio/mkio0_irq_test.c
+        NAME mkio0_irq_test
+      )
+
+    add_rumboot_target(
+        CONFIGURATION IRAM
+        CFLAGS -DMKIO0_IRQ=MKIO0_INT -DMKIO1_IRQ=MKIO1_INT
+        FILES common/mkio/mkio1_irq_test.c
+        NAME mkio1_irq_test
+      )
+
+    add_rumboot_target(
+        CONFIGURATION IRAM
+        CFLAGS -DMKIO0_IRQ=MKIO0_INT -DMKIO1_IRQ=MKIO1_INT
+        FILES common/mkio/mkio_polarity_test.c
+        NAME mkio_polarity_test
+      )
+
+#    add_rumboot_target(
+#        CONFIGURATION IRAM
+#        FILES common/mkio/mkio0_events_timestamps_test.c
+#        NAME mkio0_events_timestamps_test
+#      )
+#
+#    add_rumboot_target(
+#        CONFIGURATION IRAM
+#        FILES common/mkio/mkio1_events_timestamps_test.c
+#        NAME mkio1_events_timestamps_test
+#      )
+
+#    add_rumboot_target(
+#        CONFIGURATION IRAM
+#        FILES common/mkio/mkio_signal_test.c
+#        NAME mkio_signal_test
+#        IRUN_FLAGS +mkio_signal_test
+#      )
+
 endmacro()
 
 

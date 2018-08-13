@@ -184,50 +184,50 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     )
 	add_rumboot_target_dir(arinc/freq/
       CONFIGURATION IRAM
-      FILES arinc/arinc_loopback_16_freq.c	  
-      CFLAGS -DTX_FREQ=tx_freq_100 -DRX_FREQ=rx_freq_100  
+      FILES arinc/arinc_loopback_16_freq.c
+      CFLAGS -DTX_FREQ=tx_freq_100 -DRX_FREQ=rx_freq_100
       PREFIX arinc_freq_100
     )
 	add_rumboot_target_dir(arinc/freq/
       CONFIGURATION IRAM
-      FILES arinc/arinc_loopback_16_freq.c	  
-      CFLAGS -DTX_FREQ=tx_freq_50 -DRX_FREQ=rx_freq_50  
+      FILES arinc/arinc_loopback_16_freq.c
+      CFLAGS -DTX_FREQ=tx_freq_50 -DRX_FREQ=rx_freq_50
       PREFIX arinc_freq_50
     )
-	
+
 	add_rumboot_target_dir(arinc/freq/
       CONFIGURATION IRAM
-      FILES arinc/arinc_loopback_16_freq.c	  
-      CFLAGS -DTX_FREQ=tx_freq_12_5 -DRX_FREQ=rx_freq_12_5  
+      FILES arinc/arinc_loopback_16_freq.c
+      CFLAGS -DTX_FREQ=tx_freq_12_5 -DRX_FREQ=rx_freq_12_5
       PREFIX arinc_freq_12_5
     )
 	add_rumboot_target_dir(arinc/freq
       CONFIGURATION IRAM_MIRROR
-	  FILES arinc/arinc_loopback_16_freq.c	  
+	  FILES arinc/arinc_loopback_16_freq.c
       CFLAGS -DTX_FREQ=tx_freq_12_5 -DRX_FREQ=rx_freq_12_5
       PREFIX arinc-mirror_freq_12_5
     )
-	
+
 	add_rumboot_target_dir(arinc/freq
       CONFIGURATION IRAM_MIRROR
-	  FILES arinc/arinc_loopback_16_freq.c	  
+	  FILES arinc/arinc_loopback_16_freq.c
       CFLAGS -DTX_FREQ=tx_freq_50 -DRX_FREQ=rx_freq_50
       PREFIX arinc-mirror_freq_50
     )
-	
+
 	add_rumboot_target_dir(arinc/freq
       CONFIGURATION IRAM_MIRROR
-	  FILES arinc/arinc_loopback_16_freq.c	  
+	  FILES arinc/arinc_loopback_16_freq.c
       CFLAGS -DTX_FREQ=tx_freq_100 -DRX_FREQ=rx_freq_100
       PREFIX arinc-mirror_freq_100
     )
-	
+
     add_rumboot_target_dir(common/spl-stubs/
       CONFIGURATION IRAM
       PREFIX spl
       FEATURES STUB
     )
-	
+
 	add_rumboot_target_dir(muart/
       CONFIGURATION IRAM
       PREFIX muart-iram
@@ -252,7 +252,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       CONFIGURATION IRAM_MIRROR
       PREFIX muart-mirror_DDR
 	)
-	
+
 #    add_rumboot_target(
 #       CONFIGURATION IRAM_WITH_DDR
 #       FILES muart/muart_AXI_DDR_PCIE.c
@@ -1016,42 +1016,42 @@ endif()
   add_rumboot_target(
       SNAPSHOT default
       CONFIGURATION IRAM
-      FILES mkio/mkio_write_read_test.c
+      FILES common/mkio/mkio_write_read_test.c
       NAME mkio_write_read_test
     )
 
   add_rumboot_target(
       SNAPSHOT default
       CONFIGURATION IRAM
-      FILES mkio/mkio0_irq_test.c
+      FILES common/mkio/mkio0_irq_test.c
       NAME mkio0_irq_test
     )
 
   add_rumboot_target(
       SNAPSHOT default
       CONFIGURATION IRAM
-      FILES mkio/mkio1_irq_test.c
+      FILES common/mkio/mkio1_irq_test.c
       NAME mkio1_irq_test
     )
 
   add_rumboot_target(
       SNAPSHOT default
       CONFIGURATION IRAM
-      FILES mkio/mkio_polarity_test.c
+      FILES common/mkio/mkio_polarity_test.c
       NAME mkio_polarity_test
     )
 
   add_rumboot_target(
       SNAPSHOT default
       CONFIGURATION IRAM
-      FILES mkio/mkio0_events_timestamps_test.c
+      FILES common/mkio/mkio0_events_timestamps_test.c
       NAME mkio0_events_timestamps_test
     )
 
   add_rumboot_target(
       SNAPSHOT default
       CONFIGURATION IRAM
-      FILES mkio/mkio1_events_timestamps_test.c
+      FILES common/mkio/mkio1_events_timestamps_test.c
       NAME mkio1_events_timestamps_test
     )
 
@@ -1059,7 +1059,7 @@ endif()
       SNAPSHOT default
       CONFIGURATION IRAM_MIRROR
       PREFIX "mirror"
-      FILES mkio/mkio_write_read_test.c
+      FILES common/mkio/mkio_write_read_test.c
       NAME mkio_write_read_test
     )
 
@@ -1067,7 +1067,7 @@ endif()
       SNAPSHOT default
       CONFIGURATION IRAM_MIRROR
       PREFIX "mirror"
-      FILES mkio/mkio0_irq_test.c
+      FILES common/mkio/mkio0_irq_test.c
       NAME mkio0_irq_test
     )
 
@@ -1075,7 +1075,7 @@ endif()
       SNAPSHOT default
       CONFIGURATION IRAM_MIRROR
       PREFIX "mirror"
-      FILES mkio/mkio1_irq_test.c
+      FILES common/mkio/mkio1_irq_test.c
       NAME mkio1_irq_test
     )
 
@@ -1083,7 +1083,7 @@ endif()
       SNAPSHOT default
       CONFIGURATION IRAM_MIRROR
       PREFIX "mirror"
-      FILES mkio/mkio_polarity_test.c
+      FILES common/mkio/mkio_polarity_test.c
       NAME mkio_polarity_test
     )
 
@@ -1091,7 +1091,7 @@ endif()
       SNAPSHOT default
       CONFIGURATION IRAM_MIRROR
       PREFIX "mirror"
-      FILES mkio/mkio0_events_timestamps_test.c
+      FILES common/mkio/mkio0_events_timestamps_test.c
       NAME mkio0_events_timestamps_test
     )
 
@@ -1099,14 +1099,14 @@ endif()
       SNAPSHOT default
       CONFIGURATION IRAM_MIRROR
       PREFIX "mirror"
-      FILES mkio/mkio1_events_timestamps_test.c
+      FILES common/mkio/mkio1_events_timestamps_test.c
       NAME mkio1_events_timestamps_test
     )
 
   add_rumboot_target(
       SNAPSHOT default
       CONFIGURATION IRAM
-      FILES mkio/mkio_signal_test.c
+      FILES common/mkio/mkio_signal_test.c
       NAME mkio_signal_test
       IRUN_FLAGS +mkio_signal_test
     )
@@ -1155,7 +1155,6 @@ file(GLOB PLATFORM_SOURCES
     ${CMAKE_SOURCE_DIR}/src/lib/drivers/mdio.c
     ${CMAKE_SOURCE_DIR}/src/lib/drivers/nic400_lib.c
     ${CMAKE_SOURCE_DIR}/src/lib/drivers/gp_timers.c
-    ${CMAKE_SOURCE_DIR}/src/lib/drivers/mkio.c
 )
 
 macro(RUMBOOT_PLATFORM_SET_COMPILER_FLAGS)
