@@ -29,7 +29,6 @@ void mpic128_set_interrupt_borders( uint32_t base_address, uint32_t mc_border, u
 }
 
 static int mpic128_init( const struct rumboot_irq_controller *dev ) {
-    rumboot_printf("Init MPIC\n");
     mpic128_reset( DCR_MPIC128_BASE );
     mpic128_pass_through_disable( DCR_MPIC128_BASE );
     mpic128_set_interrupt_borders( DCR_MPIC128_BASE, MPIC128_PRIOR_UND, MPIC128_PRIOR_UND ); /* make all interrupts non-critical */
@@ -129,7 +128,7 @@ void mpic128_generate_swint( const struct rumboot_irq_controller *dev, uint32_t 
     if( irq == MPIC128_IPI_0 ) {
         dcr_write( DCR_MPIC128_BASE + MPIC128_IPID_PR, ( 1 << Processor0 ) );
     } else {
-        rumboot_platform_panic( "gic: Can't generate sw irq on line %d", irq );
+        rumboot_platform_panic( "mpic: Can't generate sw irq on line %d", irq );
     }
 }
 
