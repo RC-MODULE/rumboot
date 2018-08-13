@@ -90,8 +90,8 @@ void generate_test_data_and_addr_for_bank(em2_banks_cfg_t* bank_cfg, test_data_a
     test_data_and_addr->D  = bank_cfg->data;
     rumboot_printf("0x%X 0x%X 0x%X 0x%X / 0x%X\n", test_data_and_addr->A0, test_data_and_addr->A1, test_data_and_addr->A2, test_data_and_addr->A3, test_data_and_addr->D);
 
-    //rumboot_printf("Preinit memory\n");
-    //preinit_mem(bank_cfg->base_addr, bank_cfg->size);
+//    rumboot_printf("Preinit memory\n");
+//    preinit_mem(bank_cfg->base_addr, bank_cfg->size);
 }
 
 void generate_test_data_and_addr(em2_banks_cfg_t* bank_cfg, test_data_and_addr_t* test_data_and_addr)
