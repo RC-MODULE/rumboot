@@ -1,136 +1,115 @@
- 
+
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
-
-#include <rumboot/io.h>
 #include <rumboot/printf.h>
-
-#include <platform/common_macros/common_macros.h>
-#include <platform/test_event_codes.h>
+#include <rumboot/platform.h>
+#include <rumboot/macros.h>
+#include <rumboot/io.h>
 #include <platform/test_assert.h>
 #include <platform/devices.h>
-#include <platform/devices/emi.h>
-#include <platform/ppc470s/mmu.h>
+#include <platform/trace.h>
+#include <platform/test_event_c.h>
+#include <platform/arch/ppc/ppc_476fp_lib_c.h>
+#include <platform/arch/ppc/ppc_476fp_mmu_fields.h>
+#include <platform/arch/ppc/ppc_476fp_mmu.h>
 #include <platform/ppc470s/mmu/mem_window.h>
+#include <platform/devices/emi.h>
 #include <platform/devices/dma2plb6.h>
 
+#include <platform/devices.h>
 
-#define TLB_ENTRY_EM2_CACHE_WT   MMU_TLB_ENTRY(  0x000,  0x00000,    0x00000,    MMU_TLBE_DSIZ_1GB,      0b0,    0b0,    0b1,    0b0,    0b1,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
-#define TLB_ENTRY_EM2_CACHE_WB   MMU_TLB_ENTRY(  0x000,  0x00000,    0x00000,    MMU_TLBE_DSIZ_1GB,      0b0,    0b0,    0b0,    0b0,    0b1,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
+#define NUM_ELEM    256
 
-//#define EVENT_RESET_DATA        TEST_EVENT_CODE_MIN + 0
+#define input_data_transfer_em2_1   0xC0000001 //init see in .svh
+#define input_data_transfer_em3_1   0xD0010002
+#define input_data_transfer_em2_2   0xC0003008
+#define input_data_transfer_em3_2   0xD0011000
 
-#define NUM_ELEM 64
+#define output_data_transfer_em2_1  0xC0001003
+#define output_data_transfer_em2_2  0xC0002006
+#define output_data_transfer_em2_3  0xC0004008
+#define output_data_transfer_em2_4  0xC0005000
 
-
-//static uint32_t input_data_transfer_32[NUM_ELEM]  __attribute__((section(".EM2.data"))) __attribute__((aligned(1024))) = {0};
-//static uint32_t output_data_transfer_32[NUM_ELEM] __attribute__((section(".EM2.data"))) __attribute__((aligned(1024))) = {0};
-
-uint32_t* input_data_transfer_32_WT = (uint32_t*)(SRAM0_BASE + 0x101);
-uint32_t* output_data_transfer_32_WT = (uint32_t*)(SRAM0_BASE + 0x101 + NUM_ELEM*sizeof(uint32_t));
-uint32_t* input_data_transfer_32_2_WT = (uint32_t*)(SRAM0_BASE+ 0x102);
-uint32_t* output_data_transfer_32_2_WT = (uint32_t*)(SRAM0_BASE + 0x102 + NUM_ELEM*sizeof(uint32_t));
-
-uint32_t* input_data_transfer_32_3_WT = (uint32_t*)(SRAM0_BASE+ 0x103);
-uint32_t* output_data_transfer_32_3_WT = (uint32_t*)(SRAM0_BASE + 0x103 + NUM_ELEM*sizeof(uint32_t));
-
-uint32_t* input_data_transfer_32_3_WT = (uint32_t*)(SRAM0_BASE+ 0x105);
-uint32_t* output_data_transfer_32_3_WT = (uint32_t*)(SRAM0_BASE + 0x105 + NUM_ELEM*sizeof(uint32_t));
-
-uint32_t* input_data_transfer_32_WB = (uint32_t*)(SRAM0_BASE + 0x201);
-uint32_t* output_data_transfer_32_WB = (uint32_t*)(SRAM0_BASE + 0x201 + NUM_ELEM*sizeof(uint32_t));
-
-
-static uint32_t dma2plb6_get_bytesize(transfer_width transfer_width_code)
+uint32_t check_data ()
 {
-    switch(transfer_width_code){
-    case tr_width_byte:
-        return 1;
-        break;
-    case tr_width_halfword:
-        return 2;
-        break;
-    case tr_width_word:
-        return 4;
-        break;
-    case tr_width_doubleword:
-        return 8;
-        break;
-  //  case tr_width_quadword:
-  //      return 16;
-  //      break;
-    }
-    return 0;
-}
-
-static void init_data(uint32_t* addr)
-{
-    uint32_t i = 0, reg = 0;
+    rumboot_printf("Check data...\n");
+    rumboot_printf("Count of data elements 0x%x \n", NUM_ELEM);
+    register uint32_t i = 0;
     for (i = 0; i < NUM_ELEM; i++)
     {
-        //reg = input_data_transfer_32[i];
-        reg = i + 0xABCD0000;
-        //input_data_transfer_32[i] = reg;
-        iowrite32(reg, (uint32_t)(addr + i));
-    }
+        rumboot_printf("Num elem: "); //trace_hex(i);
 
-    i = 0;
-
-    while (i < NUM_ELEM)
-    {
-        dcbi(addr + i);
-        i += 32;
-    };
-}
-
-static bool check_data(uint32_t* input_addr, uint32_t* output_addr)
-{
-    rumboot_putstring("Check data...\n");
-    uint32_t i = 0;
-    for (i = 0; i < NUM_ELEM; i++)
-    {
-        if ((output_addr[i] != input_addr[i]) || (output_addr[i] != i + 0xABCD0000))
+        if (((uint32_t*) output_data_transfer_em2_1) [i] != ((uint32_t*) input_data_transfer_em2_1)[i])
         {
-            rumboot_printf("Error in output data array, index = %d\n", i);
-            rumboot_printf("Expected = 0x%x\n", i + 0xABCD0000);
-            rumboot_printf("Actual (in) = 0x%x\n", input_addr[i]);
-            rumboot_printf("Actual (out) = 0x%x\n", output_addr[i]);
-            return false;
+            rumboot_printf ("Error in output data 1, addr = %d\n",((uint32_t*) output_data_transfer_em2_1)[i]);
+
+            //trace_hex (&(((uint32_t*)output_data_transfer_em2_1) [i]));
+            rumboot_printf("Expected data = %d\n", ((uint32_t*)input_data_transfer_em2_1)[i]); //trace_hex(((uint32_t*)input_data_transfer_em2_1) [i]);
+            rumboot_printf("Actual data = %d\n", ((uint32_t*)output_data_transfer_em2_1)[i]); //trace_hex(((uint32_t*)output_data_transfer_em2_1) [i]);
+            return 0;
         };
+
+        if (((uint32_t*) output_data_transfer_em2_2) [i] != ((uint32_t*) input_data_transfer_em3_1) [i])
+        {
+            rumboot_printf("Error in output data 2, addr = %d\n", ((uint32_t*) output_data_transfer_em2_2)[i]);
+            //trace_hex (&(((uint32_t*)output_data_transfer_em2_2) [i]));
+            rumboot_printf("Expected data = %d\n", ((uint32_t*)input_data_transfer_em3_1)[i]); //trace_hex(((uint32_t*) input_data_transfer_em3_1) [i]);
+            rumboot_printf("Actual data = %d\n", ((uint32_t *)output_data_transfer_em2_2)[i]); //trace_hex(((uint32_t*)output_data_transfer_em2_2) [i]);
+            return 0;
+        };
+
+        if (((uint32_t*) output_data_transfer_em2_3) [i] != ((uint32_t*) input_data_transfer_em2_2)[i])
+        {
+            rumboot_printf ("Error in output data 3, addr =  %d\n", ((uint32_t*)output_data_transfer_em2_3)[i]);
+            //trace_hex (&(((uint32_t*)output_data_transfer_em2_3) [i]));
+            rumboot_printf("Expected data = %d\n",((uint32_t*) input_data_transfer_em2_2)[i]); //trace_hex(((uint32_t*)input_data_transfer_em2_2) [i]);
+            rumboot_printf("Actual data = %d\n", ((uint32_t*) output_data_transfer_em2_3)[i]); //trace_hex(((uint32_t*)output_data_transfer_em2_3) [i]);
+            return 0;
+        };
+
+        if (((uint32_t*)output_data_transfer_em2_4) [i] != ((uint32_t*) input_data_transfer_em3_2)[i])
+        {
+            rumboot_printf ("Error in output data 4, addr = %d\n", ((uint32_t*)output_data_transfer_em2_4)[i]);
+            //trace_hex (&(((uint32_t*)output_data_transfer_em2_4) [i]));
+            rumboot_printf("Expected data = %d\n", ((uint32_t*)input_data_transfer_em3_2)[i]); //trace_hex(((uint32_t*) input_data_transfer_em3_2) [i]);
+            rumboot_printf("Actual data = %d\n", ((uint32_t*)output_data_transfer_em2_4)[i]); //trace_hex(((uint32_t*)output_data_transfer_em2_4) [i]);
+            return 0;
+        };
+
     }
-    rumboot_putstring("Check data successful\n");
-    return true;
+    rumboot_printf ("Check data successful\n");
+    return 1;
 }
 
-static void dma2plb6_trace_status(channel_status status)
+void dma2plb6_trace_status(channel_status status)
 {
     switch(status.spec_error_status)
     {
         case error_alignnment:
         case error_scatter_alignment:
-            rumboot_putstring("DMA2PLB6: Error alignment\n");
+            rumboot_printf ("EM2_BASE: Error alignment\n");
             break;
         case error_read_data_regular:
         case error_read_data_scatter_or_resume:
-            rumboot_putstring("DMA2PLB6: Error read data\n");
+            rumboot_printf ("EM2_BASE: Error read data\n");
             break;
         case error_read_request_regular:
         case error_read_request_scatter_or_resume:
-            rumboot_putstring("DMA2PLB6: Error read request\n");
+            rumboot_printf ("EM2_BASE: Error read request\n");
             break;
         case error_write_request:
-            rumboot_putstring("DMA2PLB6: Error write request\n");
+            rumboot_printf ("EM2_BASE: Error write request\n");
             break;
         default:
-            rumboot_putstring("DMA2PLB6: Unexpected status\n");
+            rumboot_printf ("EM2_BASE: Unexpected status\n");
     }
 }
 
-static bool dma2plb6_memcpy(const uint32_t base_addr, const uint64_t source, const uint64_t dest, const DmaChannel channel, const transfer_width width, const rw_transfer_size size, const uint32_t count)
+void dma2plb6_memcpy(const uint32_t base_addr, const uint64_t source, const uint64_t dest, const DmaChannel channel, const transfer_width width, const rw_transfer_size size, const uint32_t count, uint8_t wait)
 {
     dma2plb6_setup_info dma_info;
-    channel_status status = {};
+    channel_status status = {0};
     dma_info.base_addr = base_addr;
     dma_info.source_adr = source;
     dma_info.dest_adr = dest;
@@ -144,132 +123,66 @@ static bool dma2plb6_memcpy(const uint32_t base_addr, const uint64_t source, con
     dma_info.rw_transfer_size = size;
     dma_info.count = count;
 
-    rumboot_putstring("Call dma2plb6_memcpy\n");
+    rumboot_printf("Call dma2plb6_memcpy\n");
 
-    rumboot_putstring("Source address:\n");
-    rumboot_printf("hi = 0x%x\n", (uint32_t)(source >> 32));
-    rumboot_printf("lo = 0x%x\n", (uint32_t)(source));
+    rumboot_printf("Source address:\n");
+    rumboot_printf("hi= %d\n", (uint32_t)(source >> 32)); //trace_hex((uint32_t)(source >> 32));
+    rumboot_printf("lo= %d\n", (uint32_t)(source)); //trace_hex((uint32_t)(source));
 
-    rumboot_putstring("Destination address\n");
-    rumboot_printf("hi = 0x%x\n", (uint32_t)(dest >> 32));
-    rumboot_printf("lo = 0x%x\n", (uint32_t)dest);
+    rumboot_printf("Destination address\n");
+    rumboot_printf("hi= %d\n", (uint32_t)(dest >> 32)); //trace_hex((uint32_t)(dest >> 32));
+    rumboot_printf("lo= %d\n", (uint32_t)dest); //trace_hex((uint32_t)dest);
 
-    if(dma_single_copy(&dma_info,&status) == false)
+
+    if (wait == 0){ dma2plb6_mcpy(&dma_info);}
+    else
     {
-        dma2plb6_trace_status(status);
-        return false;
+        if(dma_single_copy(&dma_info,&status) == false)
+        {
+            dma2plb6_trace_status(status);
+        }
     }
-    return true;
+
 }
 
-
-int main(void) 
+uint64_t get_physical_addr_em2 (uint32_t ea)
 {
+    return ea + 0x400000000 - 0xc0000000;
+}
+
+uint64_t get_physical_addr_em3 (uint32_t ea)
+{
+    return ea + 0x600000000 - 0xd0000000;
+}
+
+int main (void)
+{
+    uint64_t src = 0, dst = 0;
+    uint32_t size_for_dma = NUM_ELEM * sizeof(uint32_t);
     emi_init();
 
-    uint64_t src = 0, dst = 0;
-    transfer_width dma_transfer_width_cur;
-    rw_transfer_size dma_rw_transfer_size_cur;
+    //init_data see in .svh
 
+    src = get_physical_addr_em2((uint32_t)input_data_transfer_em2_1);
+    dst = get_physical_addr_em2((uint32_t)output_data_transfer_em2_1);
+    dma2plb6_memcpy (EM2_BASE, src, dst, channel0, tr_width_byte, rw_tr_size_1q, size_for_dma, 0);
 
-    init_data(input_data_transfer_32_WT);
+    src = get_physical_addr_em3((uint32_t)input_data_transfer_em3_1);
+    dst = get_physical_addr_em2((uint32_t)output_data_transfer_em2_2);
+    dma2plb6_memcpy (EM2_BASE, src, dst, channel1, tr_width_halfword, rw_tr_size_2q, size_for_dma/2, 0);
 
-    src = get_physical_addr((uint32_t)input_data_transfer_32_WT, 0);
-    dst = get_physical_addr((uint32_t)output_data_transfer_32_WT, 0);
+    src = get_physical_addr_em2((uint32_t)input_data_transfer_em2_2);
+    dst = get_physical_addr_em2((uint32_t)output_data_transfer_em2_3);
+    dma2plb6_memcpy (EM2_BASE, src, dst, channel2, tr_width_doubleword, rw_tr_size_4q, size_for_dma/8, 0);
 
-    dma_transfer_width_cur = tr_width_word;
-    dma_rw_transfer_size_cur = rw_tr_size_4q;
+    src = get_physical_addr_em3((uint32_t)input_data_transfer_em3_2);
+    dst = get_physical_addr_em2((uint32_t)output_data_transfer_em2_4);
+    dma2plb6_memcpy (EM2_BASE, src, dst, channel3, tr_width_quadword, rw_tr_size_8q, size_for_dma/16, 1);
 
-
-
-    if (dma2plb6_memcpy(EM2_BASE, src, dst, channel0, dma_transfer_width_cur, dma_rw_transfer_size_cur, (NUM_ELEM*sizeof(uint32_t))/dma2plb6_get_bytesize(dma_transfer_width_cur)))
-    {
-        if (!dma2plb6_memcpy(EM2_BASE, dst, src, channel0, dma_transfer_width_cur, dma_rw_transfer_size_cur, (NUM_ELEM*sizeof(uint32_t))/dma2plb6_get_bytesize(dma_transfer_width_cur)))
-        {
-            rumboot_putstring("DMA dst -> src ERROR\n");
-            return 1;
-        }
-    }
-    else
-    {
-        rumboot_putstring("DMA src -> dst ERROR\n");
-        return 1;
-    }
-
-    if (!check_data(input_data_transfer_32_WT, output_data_transfer_32_WT))
-    {
-        rumboot_putstring("Data error\n");
-        return 1;
-    }
-
-    init_data(input_data_transfer_32_WB);
-
-    src = get_physical_addr((uint32_t)input_data_transfer_32_WB, 0);
-    dst = get_physical_addr((uint32_t)output_data_transfer_32_WB, 0);
-
-
-    dma_transfer_width_cur = tr_width_word;
-    dma_rw_transfer_size_cur = rw_tr_size_4q;
-
-
-    if (dma2plb6_memcpy(EM2_BASE, src, dst, channel0, dma_transfer_width_cur, dma_rw_transfer_size_cur, (NUM_ELEM*sizeof(uint32_t))/dma2plb6_get_bytesize(dma_transfer_width_cur)))
-    {
-        if (!dma2plb6_memcpy(EM2_BASE, dst, src, channel0, dma_transfer_width_cur, dma_rw_transfer_size_cur, (NUM_ELEM*sizeof(uint32_t))/dma2plb6_get_bytesize(dma_transfer_width_cur)))
-        {
-            rumboot_putstring("DMA dst -> src ERROR\n");
-            return 1;
-        }
-    }
-    else
-    {
-        rumboot_putstring("DMA src -> dst ERROR\n");
-        return 1;
-    }
-
-    //msync();
-
-    if (!check_data(input_data_transfer_32_WB, output_data_transfer_32_WB))
-    {
-        rumboot_putstring("Data error\n");
-        return 1;
-    }
-
-        init_data(input_data_transfer_32_WB+2);
-
-        src = get_physical_addr((uint32_t)input_data_transfer_32_WB+2, 0);
-        dst = get_physical_addr((uint32_t)output_data_transfer_32_WB+2, 0);
-
-
-        dma_transfer_width_cur = tr_width_word;
-        dma_rw_transfer_size_cur = rw_tr_size_4q;
-
-
-        if (dma2plb6_memcpy(EM2_BASE, src, dst, channel0, dma_transfer_width_cur, dma_rw_transfer_size_cur, (NUM_ELEM*sizeof(uint32_t))/dma2plb6_get_bytesize(dma_transfer_width_cur)))
-        {
-            if (!dma2plb6_memcpy(EM2_BASE, dst, src, channel0, dma_transfer_width_cur, dma_rw_transfer_size_cur, (NUM_ELEM*sizeof(uint32_t))/dma2plb6_get_bytesize(dma_transfer_width_cur)))
-            {
-                rumboot_putstring("DMA dst -> src ERROR\n");
-                return 1;
-            }
-        }
-        else
-        {
-            rumboot_putstring("DMA src -> dst ERROR\n");
-            return 1;
-        }
-
-        //msync();
-
-        if (!check_data(input_data_transfer_32_WB, output_data_transfer_32_WB))
-        {
-            rumboot_putstring("Data error\n");
-            return 1;
-        }
-
-
-
-
-
-
-    return 0;
+    if (check_data())
+        rumboot_putstring("TEST_OK\n");
+        return 0;
+    //else
+    rumboot_putstring("TEST_ERROR\n");
+    return 1;
 }
