@@ -17,7 +17,7 @@
 #include <platform/devices/emi.h>
 #include <platform/devices/nor_1636RR4.h>
 
-void report_data_error(uint32_t addr, uint32_t exp, uint32_t act)
+void report_data_error(uint32_t addr, uint64_t exp, uint64_t act)
 {
     rumboot_printf("Data compare error at addr 0x%X!\n Expected: 0x%X\nActual: 0x%X\n", addr, exp, act);
 }
