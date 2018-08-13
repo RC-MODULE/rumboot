@@ -137,7 +137,7 @@ function(add_rumboot_target)
         ${loadflags}
         ${TARGET_IRUN_FLAGS}
     )
-    SET_TESTS_PROPERTIES(rumboot-${TARGET_SNAPSHOT}-${product} PROPERTIES LABELS "${TARGET_TESTGROUP}")
+    SET_TESTS_PROPERTIES(rumboot-${TARGET_SNAPSHOT}-${product} PROPERTIES LABELS "full ${TARGET_TESTGROUP}")
 
     #FixMe: Hack. ARM ModelManager fucks up simulation with a segfault if
     #No JTAGbsi file is found. That happens even if it's not really running
