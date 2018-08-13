@@ -281,7 +281,7 @@ check_cpu_ppc_plb6plb4_0_3:
     mtdcrx      r10,    r11
     mfdcrx      r12,    r10
     cmpw cr7,   r12,    r11
-    TEST_ASSERT(eq,cr7,"Read/write error in PLB6PLB4_0_ADDRL0")
+    TEST_ASSERT(eq,cr7,"Read/write error in PLB6PLB4_0_ADDRL1")
 
 plb6plb4_0_running_1:
     load_const  r11,    0x00000001
