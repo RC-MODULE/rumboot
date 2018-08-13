@@ -2,9 +2,6 @@
 # This invocation builds rumboot in native mode and runs the tests
 # if native tests fail - no use to test anything at all${RUMBOOT_ONEVALUE_ARGS}
 
-set(RUMBOOT_ONEVALUE_ARGS SNAPSHOT LDS PREFIX NAME BOOTROM)
-set(RUMBOOT_MULVALUE_ARGS FILES IRUN_FLAGS CFLAGS TESTGROUP LDFLAGS CHECKCMD FEATURES TIMEOUT LOAD)
-
 add_custom_target(rumboot)
 
 add_external_component(rumboot-native-tests rumboot NO -DRUMBOOT_PLATFORM=native)
