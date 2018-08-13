@@ -9,7 +9,7 @@
  * These functions should be implemented in the platform support code.
  * Rumboot core modules depend on these for proper operation
  * \code{.c}
- * #include <rumboot/testsuite.h>
+ * #include <rumboot/platform.h>
  * \endcode
  *
  * \defgroup platform_glue_base Basics
@@ -218,6 +218,28 @@ void rumboot_platform_sim_restore(const char *filename);
  * @param addr [description]
  */
 void rumboot_platform_relocate_runtime(uint32_t addr);
+
+
+/**
+ * Returns 64-bit physical address from a virtual 32-bit
+ * address on ppc platforms. On ARM just platforms returns
+ * the addr cast to 64-bit.
+ *
+ * This function may return -1 on error.
+ *
+ * @param  addr [description]
+ * @return      [description]
+ */
+int64_t rumboot_virt_to_phys(volatile void *addr);
+
+/**
+ * Returns 32-bit address for dma operations
+ *
+ * @param  addr [description]
+ * @return      [description]
+ */
+uint32_t rumboot_virt_to_dma(volatile void *addr);
+
 
 /**
  * Declares a function to be a constructor (will be called before main())

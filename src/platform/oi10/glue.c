@@ -9,9 +9,20 @@
 #include <platform/arch/ppc/ppc_476fp_config.h>
 #include <platform/arch/ppc/ppc_476fp_lib_c.h>
 #include <platform/arch/ppc/ppc_476fp_itrpt_fields.h>
-
+#include <platform/ppc470s/mmu.h>
 #include <platform/devices/mpic128.h>
 
+
+int64_t rumboot_virt_to_phys(volatile void *addr)
+{
+    return get_physical_addr( (uint32_t) addr, 0);
+}
+
+uint32_t rumboot_virt_to_dma(volatile void *addr)
+{
+    uint64_t ret = get_physical_addr( (uint32_t)  addr, 0);
+    return (uint32_t) (ret & 0xFFFFFFFF);
+}
 
 /* Platform-specific glue */
 uint32_t rumboot_platform_get_uptime() {

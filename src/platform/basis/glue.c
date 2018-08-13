@@ -15,6 +15,18 @@
 #include <devices/irq-proxy-gic-cdnpcie.h>
 #include <rumboot/irq.h>
 
+
+int64_t rumboot_virt_to_phys(volatile void *addr)
+{
+    int64_t ret = (uint32_t) addr;
+	return ret;
+}
+
+uint32_t rumboot_virt_to_dma(volatile void *addr)
+{
+    return (uint32_t) addr;
+}
+
 /* Platform-specific glue */
 uint32_t rumboot_platform_get_uptime()
 {
