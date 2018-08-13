@@ -100,6 +100,37 @@ __attribute__((no_instrument_function)) void *memcpy(void *d, const void *s, siz
 	 */
 	raise_event_fast(EVENT_PRINTF, (uint32_t) __builtin_frame_address(0));
 }
+
+ __attribute__((no_instrument_function))
+ __attribute__((noreturn))
+ __attribute__((optimize("-O0")))
+ void rumboot_platform_panic(const char *why, ...)
+{
+	uint32_t *fp = __builtin_frame_address(0);
+	if (why) {
+    	raise_event_fast(EVENT_PRINTF, (uint32_t) __builtin_frame_address(0));
+    }
+    raise_event_fast(EVENT_STACKTRACE, (uint32_t) fp);
+	exit(1);
+}
+#else
+__attribute__((no_instrument_function))
+__attribute__((noreturn))
+void rumboot_platform_panic(const char *why, ...)
+{
+   uint32_t *fp = __builtin_frame_address(0);
+
+   if (why) {
+	   va_list ap;
+	   rumboot_printf("PANIC: ");
+	   va_start(ap, why);
+	   rumboot_vprintf(why, ap);
+	   va_end(ap);
+   }
+
+   raise_event_fast(EVENT_STACKTRACE, (uint32_t) fp);
+   exit(1);
+}
 #endif
 
 int rumboot_platform_getchar(uint32_t timeout_us)
@@ -137,21 +168,6 @@ void rumboot_platform_store_gcda(const char *filename, uint32_t addr, uint32_t l
 	rumboot_platform_event_raise(EVENT_GCDA, data, ARRAY_SIZE(data));
 }
 
-void __attribute__((noreturn)) rumboot_platform_panic(const char *why, ...)
-{
-	uint32_t *fp = __builtin_frame_address(0);
-
-	if (why) {
-        va_list ap;
-        rumboot_printf("PANIC: ");
-    	va_start(ap, why);
-        rumboot_vprintf(why, ap);
-    	va_end(ap);
-    }
-
-    raise_event_fast(EVENT_STACKTRACE, (uint32_t) fp);
-	exit(1);
-}
 
 void rumboot_platform_relocate_runtime(uint32_t addr)
 {
