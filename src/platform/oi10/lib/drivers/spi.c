@@ -8,6 +8,92 @@
 #include <rumboot/io.h>
 #include <rumboot/printf.h>
 #include <rumboot/timer.h>
+
+
+void spi_eeprom_write_enable(uint32_t base_addr)
+{
+    iowrite32(0x06, base_addr+GSPI_SSPDR); //write data to SPI - command write enable
+
+    while((ioread32(base_addr+GSPI_SSPSR) & 0x1) == 0) //wait tx fifo empty
+        ;
+
+    (void)ioread32(base_addr+GSPI_SSPDR);  //read data from rx fifo
+}
+
+uint32_t read_eeprom_status (uint32_t base_addr)
+{
+
+//  MEM(S_GPIO_BASE+0x3fc) = 0xd0;    //start operation
+    iowrite32(0x05, base_addr+GSPI_SSPDR); //write data to SPI - command read status
+    iowrite32(0xff, base_addr+GSPI_SSPDR); //write data to SPI - data staff
+
+    while((ioread32(base_addr+GSPI_SSPSR) & 0x1) == 0) //wait tx fifo empty
+        ;
+
+//  MEM(S_GPIO_BASE+0x3fc) = 0xf0;    //stop operation
+    (void)ioread32(base_addr+GSPI_SSPDR); //read data from rx fifo
+
+    return (ioread32(base_addr+GSPI_SSPDR)); //read data from rx fifo
+}
+
+void spi_eeprom_erase_init(uint32_t base_addr)
+{
+    iowrite32(0xD8, base_addr+GSPI_SSPDR); //sector erase command
+    iowrite32(0x00, base_addr+GSPI_SSPDR); //write data to SPI - write address
+    iowrite32(0x00, base_addr+GSPI_SSPDR); //write data to SPI - write address
+    iowrite32(0x00, base_addr+GSPI_SSPDR); //write data to SPI - write address
+
+    while((ioread32(base_addr+GSPI_SSPSR) & 0x1) == 0) //wait tx fifo empty
+        ;
+
+    (void)ioread32(base_addr+GSPI_SSPDR); //read data from rx fifo
+    (void)ioread32(base_addr+GSPI_SSPDR); //read data from rx fifo
+    (void)ioread32(base_addr+GSPI_SSPDR); //read data from rx fifo
+    (void)ioread32(base_addr+GSPI_SSPDR); //read data from rx fifo
+
+    while ((read_eeprom_status(base_addr) & 0x1) == 0x1) //wait write complete
+        ;
+}
+
+
+
+
+//                                                                                                                   iowrite32(0xD8, base_addr+GSPI_SSPDR); //sector erase command
+//    iowrite32(0xD8, base_addr+GSPI_SSPDR); //sector erase command                                                  iowrite32(0x00, base_addr+GSPI_SSPDR); //write data to SPI - write address
+//    iowrite32(0x00, base_addr+GSPI_SSPDR); //write data to SPI - write address                                     iowrite32(0x00, base_addr+GSPI_SSPDR); //write data to SPI - write address
+//    iowrite32(0x00, base_addr+GSPI_SSPDR); //write data to SPI - write address                                     iowrite32(0x00, base_addr+GSPI_SSPDR); //write data to SPI - write address
+//    iowrite32(0x00, base_addr+GSPI_SSPDR); //write data to SPI - write address
+//                                                                                                                   while((ioread32(base_addr+GSPI_SSPSR) & 0x1) == 0) //wait tx fifo empty
+//    while((ioread32(base_addr+GSPI_SSPSR) & 0x1) == 0) //wait tx fifo empty                                            ;
+//        ;
+//                                                                                                                   (void)ioread32(base_addr+GSPI_SSPDR); //read data from rx fifo
+//    (void)ioread32(base_addr+GSPI_SSPDR); //read data from rx fifo                                                 (void)ioread32(base_addr+GSPI_SSPDR); //read data from rx fifo
+//    (void)ioread32(base_addr+GSPI_SSPDR); //read data from rx fifo                                                 (void)ioread32(base_addr+GSPI_SSPDR); //read data from rx fifo
+//    (void)ioread32(base_addr+GSPI_SSPDR); //read data from rx fifo                                                 (void)ioread32(base_addr+GSPI_SSPDR); //read data from rx fifo
+//    (void)ioread32(base_addr+GSPI_SSPDR); //read data from rx fifo
+//                                                                                                                   while ((read_eeprom_status(base_addr) & 0x1) == 0x1) //wait write complete
+//    while ((read_eeprom_status(base_addr) & 0x1) == 0x1) //wait write complete                                         ;
+//        ;
+//
+//                                                                                                                   iowrite32(0x06, base_addr+GSPI_SSPDR); //write data to SPI - command write enable
+//    iowrite32(0x06, base_addr+GSPI_SSPDR); //write data to SPI - command write enable
+//                                                                                                                   while((ioread32(base_addr+GSPI_SSPSR) & 0x1) == 0) //wait tx fifo empty
+//    while((ioread32(base_addr+GSPI_SSPSR) & 0x1) == 0) //wait tx fifo empty                                            ;
+//        ;
+//                                                                                                                   (void)ioread32(base_addr+GSPI_SSPDR);  //read data from rx fifo
+//    (void)ioread32(base_addr+GSPI_SSPDR);  //read data from rx fifo
+//}
+
+
+
+
+
+
+
+
+
+
+
 /*
 int ssp_send_word(uint32_t base_address, uint16_t word){
     //check transmit FIFO full
