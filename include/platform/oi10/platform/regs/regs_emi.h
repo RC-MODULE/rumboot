@@ -27,11 +27,14 @@ DECLARE_ENUM_VAL( EMI_WREQADR,                  0x4C )    //WR N/A
 DECLARE_ENUM_VAL( EMI_WDADR,                    0x50 )    //WR N/A
 DECLARE_ENUM_VAL( EMI_BUSEN,                    0x54 )    //WR 0x00000000
 DECLARE_ENUM_VAL( EMI_WECR,                     0x58 )    //WR 0x00000000
+DECLARE_ENUM_VAL( EMI_FLCNTRL,                  0x5C )    //WR 0x00000000
 DECLARE_ENUM_VAL( EMI_IMR,                      0x60 )    //WR 0x00000000
 DECLARE_ENUM_VAL( EMI_IMR_SET,                  0x64 )    //WR 0x00000000
 DECLARE_ENUM_VAL( EMI_IMR_RST,                  0x68 )    //WR 0x00000000
 DECLARE_ENUM_VAL( EMI_IRR,                      0x70 )    //WR 0x00000000
 DECLARE_ENUM_VAL( EMI_IRR_RST,                  0x74 )    //WR 0x00000000
+DECLARE_ENUM_VAL( EMI_ECCWRR,                   0x78 )    //WR 0x00000000
+DECLARE_ENUM_VAL( EMI_ECCRDR,                   0x7C )    //WR 0x00000000
 END_ENUM( EMI_REG )
 
 #endif /* REGS_EMI_H_ */

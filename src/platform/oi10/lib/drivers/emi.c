@@ -249,7 +249,7 @@ void emi_init_impl (uint32_t emi_dcr_base, uint32_t plb6mcif2_dcr_base, uint32_t
     {
         //SS5
         {
-            BTYP_SRAM,
+            BTYP_NOR,
             PTYP_NO_PAGES,
             SRDY_EXT_RDY_NOT_USE,
             TWR_0,
@@ -272,6 +272,7 @@ void emi_init_impl (uint32_t emi_dcr_base, uint32_t plb6mcif2_dcr_base, uint32_t
         }
     };
     emi_set_bank_cfg(emi_dcr_base, emi_b5_nor, &b5_cfg);
+    dcr_write(DCR_EM2_EMI_BASE + EMI_FLCNTRL, 0x17);
     emi_set_ecc (emi_dcr_base, emi_bank_all, emi_ecc_off);
     dcr_write(emi_dcr_base + EMI_BUSEN, 0x01);
 }
