@@ -1064,33 +1064,17 @@ endif()
     )
 
 
-    add_rumboot_target(
-      CONFIGURATION IRAM
-      NAME sp804-0
-      FILES common/sp804/dit.c
-      CFLAGS -DDIT_BASE=DIT0_BASE -DDIT_TIMINT1=DIT0_TIMINT1 -DDIT_TIMINT2=DIT0_TIMINT2
-    )
+    foreach(conf IRAM IRAM_MIRROR)
+    foreach(dit 0 1 2 3)
+      add_rumboot_target(
+        CONFIGURATION ${conf}
+        NAME sp804-${dit}
+        FILES common/sp804/dit.c
+        CFLAGS -DDIT_BASE=DIT${dit}_BASE -DDIT_TIMINT1=DIT${dit}_TIMINT1 -DDIT_TIMINT2=DIT${dit}_TIMINT2
+      )
+    endforeach()
+    endforeach()
 
-    add_rumboot_target(
-      CONFIGURATION IRAM
-      NAME sp804-1
-      FILES common/sp804/dit.c
-      CFLAGS -DDIT_BASE=DIT1_BASE -DDIT_TIMINT1=DIT1_TIMINT1 -DDIT_TIMINT2=DIT1_TIMINT2
-    )
-
-    add_rumboot_target(
-      CONFIGURATION IRAM
-      NAME sp804-2
-      FILES common/sp804/dit.c
-      CFLAGS -DDIT_BASE=DIT2_BASE -DDIT_TIMINT1=DIT2_TIMINT1 -DDIT_TIMINT2=DIT2_TIMINT2
-    )
-
-    add_rumboot_target(
-      CONFIGURATION IRAM
-      NAME sp804-3
-      FILES common/sp804/dit.c
-      CFLAGS -DDIT_BASE=DIT3_BASE -DDIT_TIMINT1=DIT3_TIMINT1 -DDIT_TIMINT2=DIT3_TIMINT2
-    )
 
   #RumBoot Integration tests
 #  add_rumboot_target(
