@@ -368,7 +368,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
   add_rumboot_target(
     CONFIGURATION IRAM_MIRROR
     FILES spi/spi.c
-    CFLAGS -DGSPI_BASE=GSPI0_BASE 
+    CFLAGS -DGSPI_BASE=GSPI0_BASE
     IRUN_FLAGS +select_sdio0
     PREFIX spi-0-mirror
     )
@@ -376,7 +376,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
   add_rumboot_target(
     CONFIGURATION IRAM_MIRROR
     FILES spi/spi.c
-    CCFLAGS -DGSPI_BASE=GSPI1_BASE
+    CFLAGS -DGSPI_BASE=GSPI1_BASE
     IRUN_FLAGS +select_sdio0
     PREFIX spi-1-mirror
     )
