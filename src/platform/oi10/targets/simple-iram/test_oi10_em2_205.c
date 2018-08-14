@@ -167,27 +167,6 @@ int main(void)
     emi_init();
     emi_set_ecc(DCR_EM2_EMI_BASE, emi_bank_all, emi_ecc_on);
 
-
-
-//    rumboot_putstring_fast("WRITE SRAM0");
-//    iowrite32(0xBABA0001, ADDR_SRAM0_SE);
-//    rumboot_printf("ADDR_SRAM0_SE = 0x%x\n", ioread32(ADDR_SRAM0_SE));
-//
-////    rumboot_putstring_fast("WRITE SSRAM");
-////    iowrite32(0xBABA0001, ADDR_SSRAM_SE);
-////    rumboot_printf("ADDR_SSRAM_SE = 0x%x\n", ioread32(ADDR_SSRAM_SE));
-//
-//    rumboot_putstring_fast("WRITE SDRAM");
-//    iowrite32(0xBABA0001, ADDR_SDRAM_SE);
-//    rumboot_printf("ADDR_SDRAM_SE = 0x%x\n", ioread32(ADDR_SDRAM_SE));
-//
-//    rumboot_putstring_fast("WRITE NOR");
-//    nor_write32(0xBABA0001, ADDR_NOR_SE);
-//    rumboot_printf("ADDR_NOR_SE = 0x%x\n", ioread32(ADDR_NOR_SE));
-//
-//    return 0;
-
-
 /*
     uint32_t mask_reg = 0;
     mask_reg = sram_nor_dcr_read_SRAM_NOR_DCR_MASK_IRQ(EM2_SRAM_DCRAPB_DCR_BASE);
