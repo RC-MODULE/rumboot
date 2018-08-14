@@ -78,21 +78,39 @@ int32_t rumboot_bootimage_exec(struct rumboot_bootheader *hdr);
      } \
    }
 
+struct rumboot_bootsource;
+ struct rumboot_bootmodule {
+    int privdatalen;
+    bool (*init) (const struct rumboot_bootsource* src, void* pdata);
+    void (*deinit) (void* pdata);
+    int  (*read) (void* pdata, void* dest, void* src);
+ };
+
  struct rumboot_bootsource {
    const char *name;
    uint32_t base;
    uint32_t offset;
    uint32_t freq_khz;
-   int privdatalen;
-   bool (*init) (const struct rumboot_bootsource* src, void* pdata);
-   void (*deinit) (void* pdata);
-   int (*read) (void* pdata, void* dest, void* src);
-   bool (*init_gpio_mux) (void* pdata);
-   void (*deinit_gpio_mux) (void* pdata);
-   bool (*load_again) (void* pdata);
+   const struct rumboot_bootmodule *plugin;
+   bool (*prepare)   (const struct rumboot_bootsource* src, void* pdata);
+   void (*unprepare) (const struct rumboot_bootsource* src, void* pdata);
  };
 
  bool bootsource_try_single(const struct rumboot_bootsource *src, void* pdata);
  bool bootsource_try_chain(const struct rumboot_bootsource *src, void* pdata);
 
+
+ struct rumboot_config {
+         bool	hostmode;
+         bool	selftest;
+         bool  has_edcl;
+         bool	edcl;
+         bool	legacyboot;
+         int	baudrate;
+ };
+
+
+ void rumboot_platform_read_config(struct rumboot_config *conf);
+ void rumboot_platform_selftest(struct rumboot_config *conf);
+ const struct rumboot_bootsource *rumboot_platform_get_bootsources();
 #endif /* end of include guard: BOOTHEADER_H */

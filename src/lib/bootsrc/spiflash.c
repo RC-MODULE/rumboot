@@ -10,6 +10,23 @@
 #define DEBUG
 #define SPI_READ_TIMEOUT 500
 
+enum Data_size {
+  _4_BIT = 0,
+  _5_BIT,
+  _6_BIT,
+  _7_BIT,
+  _8_BIT,
+  _9_BIT,
+  _10_BIT,
+  _11_BIT,
+  _12_BIT,
+  _13_BIT,
+  _14_BIT,
+  _15_BIT,
+  _16_BIT,
+};
+
+
 struct spiflash_private_data {
 	const struct rumboot_bootsource *src;
 };
@@ -44,7 +61,7 @@ static void clear_rx_buf(uint32_t base)
 		ioread32(base + PL022_DR);
 }
 
-bool spiflash_init(const struct rumboot_bootsource *src, void *pdata)
+static bool spiflash_init(const struct rumboot_bootsource *src, void *pdata)
 {
 	struct spiflash_private_data *spi_flash = (struct spiflash_private_data *)pdata;
 
@@ -66,7 +83,7 @@ static inline struct spiflash_private_data *to_spiflash_pdata(void *pdata)
 	return (struct spiflash_private_data *)pdata;
 }
 
-void spiflash_deinit(void *pdata)
+static void spiflash_deinit(void *pdata)
 {
 	/*TO DO!*/
 	struct spiflash_private_data *spiflash_pdata = to_spiflash_pdata(pdata);
@@ -76,7 +93,7 @@ void spiflash_deinit(void *pdata)
 	iowrite32(cr1 & ~(1 << PL022_CR1__SSE_i), src->base + PL022_CR1); //disable PL022 SSP
 }
 
-int spiflash_read(void *pdata, void *ram, void *spi_addr)
+static int spiflash_read(void *pdata, void *ram, void *spi_addr)
 {
 	/*TO DO!*/
 	struct spiflash_private_data *spiflash_pdata = to_spiflash_pdata(pdata);
@@ -151,7 +168,9 @@ int spiflash_read(void *pdata, void *ram, void *spi_addr)
 	return data_size;
 }
 
-bool spiflash_load_again(void *pdata)
-{
-	return false;
-}
+const struct rumboot_bootmodule g_bootmodule_spiflash = {
+		.init = spiflash_init,
+		.deinit = spiflash_deinit,
+		.read = spiflash_read,
+		.privdatalen = sizeof(struct spiflash_private_data)
+};

@@ -14,7 +14,9 @@
 #include <devices/gic.h>
 #include <devices/irq-proxy-gic-cdnpcie.h>
 #include <rumboot/irq.h>
-
+#include <rumboot/boot.h>
+#include <rumboot/bootsrc/spiflash.h>
+#include <regs/regs_gpio_rcm.h>
 
 int64_t rumboot_virt_to_phys(volatile void *addr)
 {
@@ -117,4 +119,76 @@ void rumboot_platform_setup()
 
 	sp804_config(DIT3_BASE, &conf_str, 1);
 	sp804_enable(DIT3_BASE, 1);
+}
+
+
+void rumboot_platform_read_config(struct rumboot_config *conf)
+{
+	/* Parse BOOTM flags here */
+}
+
+
+void rumboot_platform_selftest(struct rumboot_config *conf)
+{
+	/* Execute selftest routines */
+}
+
+static bool spi0_prepare(const struct rumboot_bootsource* src, void* pdata)
+{
+	/* GPIO0_4 is our chip-select */
+
+	return true;
+}
+
+static void spi0_unprepare(const struct rumboot_bootsource* src, void* pdata)
+{
+	/*TO DO!*/
+}
+
+
+
+
+static const struct rumboot_bootsource arr[] = {
+		{
+			.name = "SPI_0",
+			.base = GSPI0_BASE,
+			.freq_khz = 100000,
+			.plugin = &g_bootmodule_spiflash,
+			.prepare = spi0_prepare,
+			.unprepare = spi0_unprepare,
+		},
+	#if 0
+	{
+		.name = "SDIO_0",
+		.base = SDIO0_BASE,
+		.freq_khz = SDIO_CLK_FREQ,
+		.privdatalen = 128,
+		.init = sd_init,
+		.deinit = sd_deinit,
+		.read = sd_read,
+
+		.prepare   = sdio_init_gpio_mux,
+		.unprepare = sdio_deinit_gpio_mux,
+		.retry = sd_load_again,
+	},
+
+	{
+		.name = "EEPROM",
+		.base = 0,
+		.freq_khz = EEPROM_CLK_FREQ,
+		.privdatalen = 128,
+		.init = eeprom_init,
+		.deinit = eeprom_deinit,
+		.read = eeprom_read,
+		.init_gpio_mux = eeprom_init_gpio_mux,
+		.deinit_gpio_mux = eeprom_deinit_gpio_mux,
+		.load_again = eeprom_load_again,
+	},
+	#endif
+	{ /*Sentinel*/ }
+};
+
+const struct rumboot_bootsource *rumboot_platform_get_bootsources()
+{
+	return arr;
 }

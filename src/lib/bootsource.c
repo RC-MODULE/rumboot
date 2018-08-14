@@ -15,7 +15,7 @@ static bool load_img(const struct rumboot_bootsource *src, void *pdata)
 	char tmp[512];
 
 	//Read header!
-	size_t count = src->read(pdata, &tmp, read_from);
+	size_t count = src->plugin->read(pdata, &tmp, read_from);
 	if(count < 0)
 		return false;
 
@@ -25,7 +25,7 @@ static bool load_img(const struct rumboot_bootsource *src, void *pdata)
 	//Reed data image
 	while (img_size > 0) {
 
-		count = src->read(pdata, &tmp, read_from);
+		count = src->plugin->read(pdata, &tmp, read_from);
 
 		if (count < 0) {
 			rumboot_printf("boot: read from %s failed.\n", src->name);
@@ -51,7 +51,7 @@ bool bootsource_try_single(const struct rumboot_bootsource *src, void *pdata)
 
 	struct rumboot_bootheader *dst = (struct rumboot_bootheader *)&rumboot_platform_spl_start;
 
-	ret = src->init_gpio_mux(pdata);
+	ret = src->prepare(src, pdata);
 	if (ret) {
 		rumboot_printf("boot: %s, gpio initialized, okay\n", src->name);
 	} else {
@@ -59,7 +59,7 @@ bool bootsource_try_single(const struct rumboot_bootsource *src, void *pdata)
 		goto gpio_deinit;
 	}
 
-	ret = src->init(src, pdata);
+	ret = src->plugin->init(src, pdata);
 	if (ret) {
 		rumboot_printf("boot: %s initialized, okay\n", src->name);
 	} else {
@@ -80,12 +80,13 @@ bool bootsource_try_single(const struct rumboot_bootsource *src, void *pdata)
 	/* At this point we have a valid image in IM0 */
 	rumboot_bootimage_exec(dst);
 
+    /* We might get back here actually */
 	return true;
 
 deinit:
-	src->deinit(pdata);
+	src->plugin->deinit(pdata);
 gpio_deinit:
-	src->deinit_gpio_mux(pdata);
+	src->unprepare(src, pdata);
 	return false;
 }
 

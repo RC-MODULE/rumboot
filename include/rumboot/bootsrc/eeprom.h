@@ -26,28 +26,6 @@
 
 #include <rumboot/boot.h>
 
-/**
- * [eeprom_init description]
- * @param  data [description]
- * @return      [description]
- */
-bool eeprom_init(const struct rumboot_bootsource* src, void* pdata);
-/**
- * [eeprom_deinit description]
- * @param data [description]
- */
-void eeprom_deinit(void* pdata);
-/**
- * [eeprom_read description]
- * @param  data [description]
- * @return      [description]
- */
-int eeprom_read(void* dst, void* src, void* pdata);
-/**
- * [eeprom_load_failed_should_i_try_again description]
- * @param  data [description]
- * @return      [description]
- */
-bool eeprom_load_again(void* pdata) ;
+
 
 #endif
