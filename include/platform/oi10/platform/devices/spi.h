@@ -5,6 +5,8 @@
 uint32_t read_eeprom_status (uint32_t base_addr);
 void spi_eeprom_write_enable(uint32_t base_addr);
 void spi_eeprom_erase_init(uint32_t base_addr);
+void spi_eeprom_write_data(uint32_t base_addr, uint32_t mem_addr, uint32_t data);
+uint32_t spi_eeprom_read_data(uint32_t base_addr);
 
 #define SSP_SYS_FREQ_HZ 500000000
 //clock divider
