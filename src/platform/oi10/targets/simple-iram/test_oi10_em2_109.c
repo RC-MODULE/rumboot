@@ -31,6 +31,18 @@
 #define output_data_transfer_em2_3  0xC0004008
 #define output_data_transfer_em2_4  0xC0005000
 
+uint32_t dma_single_copy(dma2plb6_setup_info * setup_info, channel_status * status)
+{
+    dma2plb6_mcpy(setup_info);
+    do{
+        *status = dma2plb6_ch_get_status(setup_info->base_addr,setup_info->channel);
+        if(status->error_detected)
+            return false;
+    }
+    while(status->busy | !status->terminalcnt_reached);
+    return true;
+}
+
 uint32_t check_data ()
 {
     rumboot_printf("Check data...\n");
@@ -147,18 +159,21 @@ void dma2plb6_memcpy(const uint32_t base_addr, const uint64_t source, const uint
 
 uint64_t get_physical_addr_em2 (uint32_t ea)
 {
-    return ea + 0x400000000 - 0xc0000000;
+    //return ea + 0x400000000 - 0xc0000000;
+    return ea + EM2_BANK0_BASE - 0xc0000000;
 }
 
 uint64_t get_physical_addr_em3 (uint32_t ea)
 {
-    return ea + 0x600000000 - 0xd0000000;
+//    return ea + 0x600000000 - 0xd0000000;
+    return ea + EM2_BANK0_BASE - 0xd0000000;
 }
 
 int main (void)
 {
     uint64_t src = 0, dst = 0;
     uint32_t size_for_dma = NUM_ELEM * sizeof(uint32_t);
+
     emi_init();
 
     //init_data see in .svh
