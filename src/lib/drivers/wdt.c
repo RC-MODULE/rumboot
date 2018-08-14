@@ -10,7 +10,6 @@
 #include <devices/wdt.h>
 #include <devices/crg.h>
 #include <rumboot/platform.h>
-#include <rumboot/bootheader.h>
 #include <platform/devices.h>
 #include <platform/interrupts.h>
 
@@ -54,20 +53,20 @@ bool check_crg_ddr_fbdiv_default(int crg_ddr_base, int crg_fbdiv, int crg_ddr_fb
         return false;
     }
 }
-    
 
-//Test   WDT CRG internal interrupt  
+
+//Test   WDT CRG internal interrupt
 int wdt_crg_iint(struct wdt_crg_iint_var *conf)
 
 {
   uint32_t *magic_var = &rumboot_platform_runtime_info.persistent[0];
-  
+
   //WDT_MAGIC check
   if (*magic_var == conf->wdt_magic)
   {
       rumboot_printf("magic_var is equal to WDT_MAGIC\n");
       bool flag = check_crg_ddr_fbdiv_default(conf->crg_ddr_base, conf->crg_fbdiv, conf->crg_ddr_fbdiv_def);
-      
+
       if (flag)
       {
           rumboot_printf("CRG_DDR_FBDIV has correct default value");
@@ -79,7 +78,7 @@ int wdt_crg_iint(struct wdt_crg_iint_var *conf)
           rumboot_printf("CRG_DDR_FBDIV has wrong default value!");
           rumboot_printf("Test WDT FAIL!\n");
           return 0;
-      }          
+      }
   }
   else {
       if (*magic_var != 0)
@@ -142,14 +141,14 @@ int wdt_crg_iint(struct wdt_crg_iint_var *conf)
   *magic_var = conf->wdt_magic;
   rumboot_printf("WDT_MAGIC in memory\n");
 
-  
+
   rumboot_platform_perf("WDT Reset");
   rumboot_printf("WDT init again\n");
   //Unlock CRG_DDR
   write_to_reg(conf->crg_unlock_code, conf->crg_ddr_base, conf->crg_wr_lock);
   //Write to CRG_DDR[FBDIV] wrong value
   write_to_reg(0xFFFFFFFF, conf->crg_ddr_base, conf->crg_fbdiv);
-  
+
   //WDT init
   wdt_init(conf->wdt_interval, conf->wdt_unlock_code, conf->wdt_base, conf->wdt_lock, conf->wdt_ctrl, conf->wdt_load);
 
@@ -159,7 +158,7 @@ int wdt_crg_iint(struct wdt_crg_iint_var *conf)
 
 }
 
-//Test   WDT CRG external interrupt  
+//Test   WDT CRG external interrupt
 int wdt_crg_eint(struct wdt_crg_eint_var *conf)
 
 {
@@ -167,7 +166,7 @@ int wdt_crg_eint(struct wdt_crg_eint_var *conf)
     write_to_reg(conf->crg_unlock_code, conf->crg_sys_base, conf->crg_wr_lock);
     //Mask rst_req from WDT
     write_to_reg(0x00000000, conf->crg_sys_base, conf->crg_rst_cfg2);
-    
+
     //Check low state for GPIO0
     int rd_data = ioread32(conf->gpio0_base+conf->gpio_rd_data);
     if ((rd_data & 0x00000040) != 0x00000000)
@@ -175,20 +174,17 @@ int wdt_crg_eint(struct wdt_crg_eint_var *conf)
         rumboot_printf("GPIO0_6 is n't 0! It's wrong value!");
         rumboot_printf("Test WDT FAIL!\n");
         return 0;
-    }        
+    }
 
     //WDT start
     wdt_init(conf->wdt_interval, conf->wdt_unlock_code, conf->wdt_base, conf->wdt_lock, conf->wdt_ctrl, conf->wdt_load);
 
-    //Wait high state in GPIO0   
+    //Wait high state in GPIO0
     rd_data = ioread32(conf->gpio0_base+conf->gpio_rd_data);
     while (!(rd_data & 0x00000040))
      {rd_data = ioread32(conf->gpio0_base+conf->gpio_rd_data);}
-    rumboot_printf("GPIO0_6 is 1! It indicates external output WDT_INT!\n");    
+    rumboot_printf("GPIO0_6 is 1! It indicates external output WDT_INT!\n");
     return 1;
-    
-    
+
+
 }
-
-
-

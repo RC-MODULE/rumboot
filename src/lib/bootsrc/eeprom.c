@@ -1,7 +1,6 @@
 #include <rumboot/bootsrc/eeprom.h>
-#include <rumboot/bootsource.h>
 #include <rumboot/printf.h>
-
+#include <stdlib.h>
 #include <devices/i2c.h>
 
 struct eeprom_private_data {

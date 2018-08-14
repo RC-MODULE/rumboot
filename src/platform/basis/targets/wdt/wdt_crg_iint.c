@@ -9,7 +9,7 @@
 #include <devices/wdt.h>
 #include <devices/crg.h>
 #include <rumboot/platform.h>
-#include <rumboot/bootheader.h>
+
 #include <platform/devices.h>
 #include <platform/interrupts.h>
 

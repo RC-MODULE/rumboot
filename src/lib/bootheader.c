@@ -1,5 +1,5 @@
 #include <stdint.h>
-#include <rumboot/bootheader.h>
+#include <rumboot/boot.h>
 #include <rumboot/platform.h>
 
 extern void rumboot_main();

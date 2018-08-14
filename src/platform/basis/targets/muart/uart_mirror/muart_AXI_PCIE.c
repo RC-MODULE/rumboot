@@ -5,7 +5,7 @@
 #include <regs/regs_muart.h>
 #include <rumboot/irq.h>
 #include <rumboot/platform.h>
-#include <rumboot/bootheader.h>
+
 #include <rumboot/rumboot.h>
 #include <rumboot/timer.h>
 #include <platform/devices.h>

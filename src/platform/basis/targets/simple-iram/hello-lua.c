@@ -9,7 +9,7 @@
 #include <rumboot/printf.h>
 #include <rumboot/irq.h>
 #include <rumboot/platform.h>
-#include <rumboot/bootheader.h>
+
 #include <rumboot/macros.h>
 
 const char luacode[] = "print('Hello world, from ',_VERSION,'!')";

@@ -4,7 +4,7 @@
 #include <rumboot/printf.h>
 #include <rumboot/platform.h>
 #include <rumboot/macros.h>
-#include <rumboot/bootheader.h>
+#include <rumboot/boot.h>
 
 #ifdef RUMBOOT_MIRROR_STUB
 	#include <rumboot/pcie_test_lib.h>

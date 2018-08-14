@@ -10,7 +10,6 @@
 #include <rumboot/io.h>
 #include <rumboot/timer.h>
 #include <rumboot/rumboot.h>
-#include <rumboot/bootsource.h>
 
 #define BUFER_TRANS_START           0x04
 #define DCDTR_1_VAL_512             0x200

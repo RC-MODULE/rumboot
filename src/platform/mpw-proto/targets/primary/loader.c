@@ -7,7 +7,7 @@
 #include <rumboot/io.h>
 #include <rumboot/bootsrc/sdio.h>
 #include <rumboot/bootsrc/spiflash.h>
-#include <rumboot/bootsource.h>
+#include <rumboot/boot.h>
 
 #include <platform/devices.h>
 

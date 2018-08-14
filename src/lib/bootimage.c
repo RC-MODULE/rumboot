@@ -1,4 +1,4 @@
-#include <rumboot/bootheader.h>
+#include <rumboot/boot.h>
 #include <rumboot/printf.h>
 #include <rumboot/platform.h>
 #include <algo/crc32.h>

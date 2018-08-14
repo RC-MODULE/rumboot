@@ -8,7 +8,6 @@
 #include <rumboot/printf.h>
 #include <rumboot/irq.h>
 #include <rumboot/platform.h>
-#include <rumboot/bootheader.h>
 #include <platform/devices.h>
 #include <platform/interrupts.h>
 
@@ -30,10 +29,10 @@ bool mdio_phy_intrp_test(uint32_t num_mdio)
 {
     //GPIO1 --> outputs
     iowrite32(0xFFFFFFFF, GPIO1_BASE + GPIO_PAD_DIR);
-    
+
     //GPIO1 --> "1"
     iowrite32(0xFFFFFFFF, GPIO1_BASE + GPIO_WR_DATA_SET1);
-    
+
     //Switch MGPIO PADS to MDIO
     iowrite32(0x00000000, MGPIO0_BASE + GPIO_SWITCH_SOURCE);
     iowrite32(0x00000000, MGPIO1_BASE + GPIO_SWITCH_SOURCE);

@@ -24,7 +24,7 @@
 
 #include <stdbool.h>
 
-#include <rumboot/bootsource.h>
+#include <rumboot/boot.h>
 
 
 enum Data_size {

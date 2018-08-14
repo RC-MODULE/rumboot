@@ -4,7 +4,7 @@
 #include <rumboot/printf.h>
 #include <rumboot/irq.h>
 #include <rumboot/platform.h>
-#include <rumboot/bootheader.h>
+
 #include <rumboot/rumboot.h>
 #include <rumboot/io.h>
 

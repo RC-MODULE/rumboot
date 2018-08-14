@@ -22,7 +22,7 @@
  * @{
  */
 
-#include <rumboot/bootsource.h>
+#include <rumboot/boot.h>
 
 
 /**

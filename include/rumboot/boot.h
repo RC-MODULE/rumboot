@@ -14,7 +14,7 @@
  * RUMBOOT_PLATFORM_NUMCORES
  *
  * \code{.c}
- * #include <rumboot/bootheader.h>
+ *
  * \endcode
  *
  * \addtogroup bootheader
@@ -26,6 +26,7 @@
 
 #include <platform/bootheader.h>
 #include <stdint.h>
+#include <stdbool.h>
 
 struct __attribute__((packed)) rumboot_bootheader {
     uint32_t magic;
@@ -67,5 +68,31 @@ int32_t rumboot_bootimage_exec(struct rumboot_bootheader *hdr);
 /*
  * @}
  */
+
+
+ #define DBG_ASSERT(statement, message) \
+   { \
+     if(statement) {\
+       rumboot_printf("%s\n", message); \
+       while(1); \
+     } \
+   }
+
+ struct rumboot_bootsource {
+   const char *name;
+   uint32_t base;
+   uint32_t offset;
+   uint32_t freq_khz;
+   int privdatalen;
+   bool (*init) (const struct rumboot_bootsource* src, void* pdata);
+   void (*deinit) (void* pdata);
+   int (*read) (void* pdata, void* dest, void* src);
+   bool (*init_gpio_mux) (void* pdata);
+   void (*deinit_gpio_mux) (void* pdata);
+   bool (*load_again) (void* pdata);
+ };
+
+ bool bootsource_try_single(const struct rumboot_bootsource *src, void* pdata);
+ bool bootsource_try_chain(const struct rumboot_bootsource *src, void* pdata);
 
 #endif /* end of include guard: BOOTHEADER_H */

@@ -1,5 +1,4 @@
-#include <rumboot/bootheader.h>
-#include <rumboot/bootsource.h>
+#include <rumboot/boot.h>
 #include <rumboot/printf.h>
 #include <rumboot/platform.h>
 #include <rumboot/macros.h>

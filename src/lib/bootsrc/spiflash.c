@@ -1,5 +1,4 @@
 #include <rumboot/bootsrc/spiflash.h>
-#include <rumboot/bootsource.h>
 #include <rumboot/io.h>
 #include <rumboot/printf.h>
 #include <rumboot/timer.h>
