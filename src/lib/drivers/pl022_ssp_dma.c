@@ -12,16 +12,16 @@
 
 
 
-void ssp_init( unsigned int gspibase)
+void ssp_init( unsigned int GSPI_BASE)
 {  
 
 rumboot_printf("blabla_2\n");  
-iowrite32(SSPCR0,gspibase + SSPCR0_ADDR);//8-bit data
+iowrite32(SSPCR0,GSPI_BASE + SSPCR0_ADDR);//8-bit data
 rumboot_printf("blabla\n");
-iowrite32(SSPCR1,gspibase + SSPCR1_ADDR ); //turn on controller, loop operation
-iowrite32(SSPCPSR,gspibase + SSPCPSR_ADDR); //clock prescale (10MHz)
-iowrite32(SSPIMSC,gspibase +  SSPIMSC_ADDR); //interrupt masks - mask all
-iowrite32(SSPDMACR,gspibase + SSPDMACR_ADDR); //enable DMA
+iowrite32(SSPCR1,GSPI_BASE + SSPCR1_ADDR ); //turn on controller, loop operation
+iowrite32(SSPCPSR,GSPI_BASE + SSPCPSR_ADDR); //clock prescale (10MHz)
+iowrite32(SSPIMSC,GSPI_BASE +  SSPIMSC_ADDR); //interrupt masks - mask all
+iowrite32(SSPDMACR,GSPI_BASE + SSPDMACR_ADDR); //enable DMA
 
 iowrite32(0x20,GPIO0_BASE+0x24);//SOURCE
 iowrite32(0x20,GPIO0_BASE+0x08);//DIRECTION 

@@ -47,6 +47,7 @@
  #define TSNS_BASE                BASIS_PHYS(0x01032000)
  #define BISR_L2C                 BASIS_PHYS(0x0103E000)
  #define GSPI0_BASE               BASIS_PHYS(0x01040000)
+ #define GSPI1_BASE               BASIS_PHYS(0x01041000)
  #define SDIO0_BASE               BASIS_PHYS(0x01042000)
  #define SDIO1_BASE               BASIS_PHYS(0x01043000)
  #define UART0_BASE               BASIS_PHYS(0x01044000)

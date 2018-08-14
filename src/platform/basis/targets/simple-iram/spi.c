@@ -83,7 +83,6 @@ unsigned int etalonarray[Size*2] __attribute__ ((section("data.esram1"))) = {
   0xE3A09000,
   0xE3A0B321
 };
-
 unsigned int srcarray[Size*2]  __attribute__ ((section("data.esram1"))) = {
   0x00000002, // Page Program Instruction
   0xE6BF2F32,
@@ -160,8 +159,7 @@ unsigned int readcmd[Size*2] __attribute__ ((section("data.esram1"))) = { 0x3,[ 
 unsigned int writeenablecmd        =  0x06;
 unsigned int readstatusregistercmd =  0x05;
 unsigned int writedisablecmd       =  0x04;
-unsigned int sectorerase           =  0xd8;
-unsigned int gspibase              = GSPI0_BASE;  
+unsigned int sectorerase           =  0xd8; 
 unsigned int gpio5_1 = 0x10;
 unsigned int gpio5_2 = 0x0;
 
@@ -170,14 +168,14 @@ int main(void){
  rumboot_printf("lala\n");
   iowrite32(0x1010,SCTL_BASE + 0x128);
   iowrite32(0x1000,SCTL_BASE + 0x12C); 
-  ssp_init(gspibase); 
-  go_dmac(gspibase,&writeenablecmd, dummyarray, 1);
+  ssp_init(GSPI_BASE); 
+  go_dmac(GSPI_BASE,&writeenablecmd, dummyarray, 1);
   rumboot_printf("WREN Issued for SE\n");
-  go_dmac(gspibase,&sectorerase, dummyarray, 4);
+  go_dmac(GSPI_BASE,&sectorerase, dummyarray, 4);
   x=0x010000; // Test bit0 of STREG
   do {
   // Three Bytes (OPC|DUMMY|DUMMY)/(DUMMY|STREG|STREG)
-    go_dmac(gspibase,&readstatusregistercmd , dummyarray , 3);
+    go_dmac(GSPI_BASE,&readstatusregistercmd , dummyarray , 3);
     rumboot_printf("status_reg=%x\n",
     (*dummyarray));  
   }while ((x& (*dummyarray)) != 0);
@@ -190,11 +188,11 @@ int main(void){
 
     //--------- Write Flash (Page Program) -----
     // -- (1) Issue Write Enable Instruction To Flash    
-    go_dmac(gspibase,&writeenablecmd, dummyarray, 1);
+    go_dmac(GSPI_BASE,&writeenablecmd, dummyarray, 1);
     rumboot_printf("WREN Issued\n");
 
     // -- (2) Run KDMAC Both Channels For Simultaneous SPI Transfer
-    go_dmac(gspibase,srcarray , dummyarray , 260);
+    go_dmac(GSPI_BASE,srcarray , dummyarray , 260);
     rumboot_printf("PP Complete\n");
 
     // --- (6) Wait Until Page Program Instruction Complete (On Real Board takes About 1.5 - 5 ms
@@ -202,17 +200,17 @@ int main(void){
     x=0x010000; // Test bit0 of STREG
     do{
     // Three Bytes (OPC|DUMMY|DUMMY)/(DUMMY|STREG|STREG)
-      go_dmac(gspibase,&readstatusregistercmd , dummyarray , 3);
+      go_dmac(GSPI_BASE,&readstatusregistercmd , dummyarray , 3);
       rumboot_printf("status_reg=%x\n",(*dummyarray)); 
     }while ((x & (*dummyarray)) != 0);
     rumboot_printf("Write Complete\n");
     // -- (6) Write Disable Instruction 
-    go_dmac(gspibase,&writedisablecmd , dummyarray , 1);
+    go_dmac(GSPI_BASE,&writedisablecmd , dummyarray , 1);
     rumboot_printf("WRDI Issued\n");
     //--------- Read Flash -----
 
     // -- (1) Run KDMAC Both Channels For Simultaneous SPI Transfer
-    go_dmac(gspibase,readcmd , dstarray , 260);
+    go_dmac(GSPI_BASE,readcmd , dstarray , 260);
     rumboot_printf("Read Complete\n");
     //----------- Check Received Array -------- 
     for (int n =0; n < (256/4+1); n++){
