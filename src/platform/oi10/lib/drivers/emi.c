@@ -86,6 +86,22 @@ void emi_get_rfc(uint32_t emi_base, emi_rfc_cfg* rfc)
     rfc->RP   = ( val & (0x3FFF << EMI_RFC_RP_i))   >> EMI_RFC_RP_i;
 }
 
+void emi_hiz_mode_on(uint32_t emi_dcr_base)
+{
+    uint32_t val;
+    val = dcr_read(emi_dcr_base + EMI_WECR);
+    SET_BIT(val, EMI_WECR_OE_DIS_i);
+    dcr_write(emi_dcr_base + EMI_WECR, val);
+}
+
+void emi_hiz_mode_off(uint32_t emi_dcr_base)
+{
+    uint32_t val;
+    val = dcr_read(emi_dcr_base + EMI_WECR);
+    CLEAR_BIT(val, EMI_WECR_OE_DIS_i);
+    dcr_write(emi_dcr_base + EMI_WECR, val);
+}
+
 void emi_init_impl (uint32_t emi_dcr_base, uint32_t plb6mcif2_dcr_base, uint32_t puaba)
 {
     rumboot_printf("Init EMI\n");

@@ -92,5 +92,7 @@ void emi_set_bank_cfg (uint32_t emi_base, emi_bank_num num_bank, emi_bank_cfg* b
 void emi_set_rfc      (uint32_t emi_base, emi_rfc_cfg* rfc);
 void emi_get_rfc      (uint32_t emi_base, emi_rfc_cfg* rfc);
 void emi_set_ecc      (uint32_t emi_base, emi_bank_num num_bank, emi_ecc_status ecc_stat);
+void emi_hiz_mode_on  (uint32_t emi_dcr_base);
+void emi_hiz_mode_off (uint32_t emi_dcr_base);
 
 #endif /* EMI_H_ */
