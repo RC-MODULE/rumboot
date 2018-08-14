@@ -688,7 +688,6 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
   )
 
   add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM
       FILES pcie/pcie_dma_eRP_test.c
       NAME pcie_dma_eRP_test
@@ -697,42 +696,36 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     )
 
   add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM
       FILES pcie/pcie_irq_eRP_test.c
       NAME pcie_irq_eRP_test
     )
 
   add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM
       FILES pcie/pcie_to_pcie_access.c
       NAME pcie_to_pcie_access
     )
 
   add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM
       FILES pcie/pcie_dma_ddr0_performance_msr.c
       NAME pcie_dma_ddr0_performance_msr
     )
 
   add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM
       FILES pcie/pcie_dma_ddr1_performance_msr.c
       NAME pcie_dma_ddr1_performance_msr
     )
 
   add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM
       FILES pcie/pcie_int_msix_for_mirror.c
       NAME pcie_int_msix_for_mirror
     )
 
   add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM
       FILES pcie/pcie_at_slv_eRP_test_0.c
       NAME pcie_at_slv_eRP_test_0
@@ -740,7 +733,6 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     )
 
   add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM
       FILES pcie/pcie_at_typical_eRP_test_0.c
       NAME pcie_at_typical_eRP_test_0
@@ -748,7 +740,6 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     )
 
   add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM
       FILES pcie/pcie_at_mst_eRP_test_0.c
       NAME pcie_at_mst_eRP_test_0
@@ -756,7 +747,6 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     )
 
   add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM
       FILES pcie/pcie_legacy_eRP_test.c
       NAME pcie_legacy_eRP_test
@@ -765,7 +755,6 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
 if (CMAKE_BUILD_TYPE MATCHES "RTL")
   add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM
       FILES pcie/pcie_mbist_test.c
       NAME pcie_mbist_test
@@ -773,7 +762,6 @@ if (CMAKE_BUILD_TYPE MATCHES "RTL")
     )
 else()
   add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM
       FILES pcie/pcie_mbist_test.c
       NAME pcie_mbist_test
@@ -781,7 +769,6 @@ else()
 endif()
 
   add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM
       FILES pcie/ext_int_test.c
       NAME ext_int_test
@@ -858,7 +845,6 @@ endif()
   )
 
   add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM
       FILES simple-iram/i2c_0_read_test.c
       NAME i2c_0_read_test_interference
@@ -866,7 +852,6 @@ endif()
     )
 
   add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM
       FILES simple-iram/i2c_1_read_test.c
       NAME i2c_1_read_test_interference
@@ -874,189 +859,162 @@ endif()
     )
 
   add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM
       FILES pcie/ext_irq_gen_reg_test.c
       NAME ext_irq_gen_reg_test
     )
 
   add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM
       FILES pcie/pcie_ctrl_reg_test.c
       NAME pcie_ctrl_reg_test
     )
 
   add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM
       FILES pcie/pcie_phy_bist_prbs31.S
       NAME pcie_phy_bist_prbs31
     )
 
   add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM
       FILES pcie/pcie_soft_reset_eRP_test.c
       NAME pcie_soft_reset_eRP_test
     )
 
   add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM
       FILES pcie/pcie_core_reg_test.c
       NAME pcie_core_reg_test
     )
 
   add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM
       FILES pcie/pcie_msix_eRP_test.c
       NAME pcie_msix_eRP_test
     )
 
   add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM
       FILES pcie/pcie_phy_reg_test.c
       NAME pcie_phy_reg_test
     )
 
   add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM
       FILES pcie/pcie_turn_on_eRP_test.c
       NAME pcie_turn_on_eRP_test
     )
 
   add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM
       FILES pcie/addr_trans_mst_reg_test.c
       NAME addr_trans_mst_reg_test
     )
 
   add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM
       FILES pcie/addr_trans_slv_reg_test.c
       NAME addr_trans_slv_reg_test
     )
 
   add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM
       FILES ddr/ddr0_addr_test.c
       NAME ddr0_addr_test
     )
 
   add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM
       FILES ddr/ddr1_addr_test.c
       NAME ddr1_addr_test
     )
 
   add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM
       FILES ddr/ddr0_reg_test.c
       NAME ddr0_reg_test
     )
 
   add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM
       FILES ddr/ddr1_reg_test.c
       NAME ddr1_reg_test
     )
 
   add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM
       FILES ddr/ddr0_low_power_test.c
       NAME ddr0_low_power_test
     )
 
   add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM
       FILES ddr/ddr1_low_power_test.c
       NAME ddr1_low_power_test
     )
 
   add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM
       FILES ddr/ddr0_phy_bist_test.S
       NAME ddr0_phy_bist_test
     )
 
   add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM
       FILES ddr/ddr1_phy_bist_test.S
       NAME ddr1_phy_bist_test
     )
 
   add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM
       FILES ddr/ddr0_ddr1_byte_test.c
       NAME ddr0_ddr1_byte_test
     )
 
   add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM
       FILES ddr/ddr0_ddr1_turn_on_test.c
       NAME ddr0_ddr1_turn_on_test
     )
 
   add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM
       FILES common/mkio/mkio_write_read_test.c
       NAME mkio_write_read_test
     )
 
   add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM
       FILES common/mkio/mkio0_irq_test.c
       NAME mkio0_irq_test
     )
 
   add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM
       FILES common/mkio/mkio1_irq_test.c
       NAME mkio1_irq_test
     )
 
   add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM
       FILES common/mkio/mkio_polarity_test.c
       NAME mkio_polarity_test
     )
 
   add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM
       FILES common/mkio/mkio0_events_timestamps_test.c
       NAME mkio0_events_timestamps_test
     )
 
   add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM
       FILES common/mkio/mkio1_events_timestamps_test.c
       NAME mkio1_events_timestamps_test
     )
 
   add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM_MIRROR
       PREFIX "mirror"
       FILES common/mkio/mkio_write_read_test.c
@@ -1064,7 +1022,6 @@ endif()
     )
 
   add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM_MIRROR
       PREFIX "mirror"
       FILES common/mkio/mkio0_irq_test.c
@@ -1072,7 +1029,6 @@ endif()
     )
 
   add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM_MIRROR
       PREFIX "mirror"
       FILES common/mkio/mkio1_irq_test.c
@@ -1080,7 +1036,6 @@ endif()
     )
 
   add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM_MIRROR
       PREFIX "mirror"
       FILES common/mkio/mkio_polarity_test.c
@@ -1088,7 +1043,6 @@ endif()
     )
 
   add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM_MIRROR
       PREFIX "mirror"
       FILES common/mkio/mkio0_events_timestamps_test.c
@@ -1096,7 +1050,6 @@ endif()
     )
 
   add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM_MIRROR
       PREFIX "mirror"
       FILES common/mkio/mkio1_events_timestamps_test.c
@@ -1104,7 +1057,6 @@ endif()
     )
 
   add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM
       FILES common/mkio/mkio_signal_test.c
       NAME mkio_signal_test
@@ -1113,33 +1065,33 @@ endif()
 
 
     add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM
+      NAME sp804-0
       FILES common/sp804/dit.c
       CFLAGS -DDIT_BASE=DIT0_BASE -DDIT_TIMINT1=DIT0_TIMINT1 -DDIT_TIMINT2=DIT0_TIMINT2
-    )    
-    
+    )
+
     add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM
+      NAME sp804-1
       FILES common/sp804/dit.c
       CFLAGS -DDIT_BASE=DIT1_BASE -DDIT_TIMINT1=DIT1_TIMINT1 -DDIT_TIMINT2=DIT1_TIMINT2
     )
 
     add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM
+      NAME sp804-2
       FILES common/sp804/dit.c
       CFLAGS -DDIT_BASE=DIT2_BASE -DDIT_TIMINT1=DIT2_TIMINT1 -DDIT_TIMINT2=DIT2_TIMINT2
     )
 
     add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM
+      NAME sp804-3
       FILES common/sp804/dit.c
       CFLAGS -DDIT_BASE=DIT3_BASE -DDIT_TIMINT1=DIT3_TIMINT1 -DDIT_TIMINT2=DIT3_TIMINT2
     )
-    
+
   #RumBoot Integration tests
 #  add_rumboot_target(
 #      CONFIGURATION INTEGRATION
