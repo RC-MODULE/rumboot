@@ -117,31 +117,36 @@ bool test_dit_4_timers (uint32_t structure)
     return true;
 }
 
+//static struct s804_instance in[] = {
+//    {
+//        .base_addr = DIT0_BASE,
+//        .dit_index = 0
+//    },
+//    {
+//        .base_addr = DIT1_BASE,
+//        .dit_index = 1
+//    },
+//    {
+//        .base_addr = DIT2_BASE,
+//        .dit_index = 2
+//    },
+//    {
+//        .base_addr = DIT3_BASE,
+//        .dit_index = 3
+//    }
+//};
 
+// Saved structre so shouldnt rewrite every instance of it
 static struct s804_instance in[] = {
     {
-        .base_addr = DIT0_BASE,
+        .base_addr = DIT_BASE,
         .dit_index = 0
-    },
-    {
-        .base_addr = DIT1_BASE,
-        .dit_index = 1
-    },
-    {
-        .base_addr = DIT2_BASE,
-        .dit_index = 2
-    },
-    {
-        .base_addr = DIT3_BASE,
-        .dit_index = 3
     }
 };
 
 TEST_SUITE_BEGIN(dit_testlist, "SP804 IRQ TEST")
-TEST_ENTRY("SP804_0", test_dit_4_timers, (uint32_t) &in[0]),
-TEST_ENTRY("SP804_1", test_dit_4_timers, (uint32_t) &in[1]),
-TEST_ENTRY("SP804_2", test_dit_4_timers, (uint32_t) &in[2]),
-TEST_ENTRY("SP804_3", test_dit_4_timers, (uint32_t) &in[3]),
+TEST_ENTRY("SP804", test_dit_4_timers, (uint32_t) &in[0]),
+
 TEST_SUITE_END();
 
 
@@ -153,27 +158,16 @@ int main ()
 	rumboot_irq_cli();
 	struct rumboot_irq_entry *tbl = rumboot_irq_create(NULL);
 
-    rumboot_irq_set_handler(tbl, DIT0_TIMINT1, 0, handler0, &in[0] );
-    rumboot_irq_set_handler(tbl, DIT0_TIMINT2, 0, handler1, &in[0] );
-    rumboot_irq_set_handler(tbl, DIT1_TIMINT1, 0, handler0, &in[1] );
-    rumboot_irq_set_handler(tbl, DIT1_TIMINT2, 0, handler1, &in[1] );
-    rumboot_irq_set_handler(tbl, DIT2_TIMINT1, 0, handler0, &in[2] );
-    rumboot_irq_set_handler(tbl, DIT2_TIMINT2, 0, handler1, &in[2] );
-    rumboot_irq_set_handler(tbl, DIT3_TIMINT1, 0, handler0, &in[3] );
-    rumboot_irq_set_handler(tbl, DIT3_TIMINT2, 0, handler1, &in[3] );
+    rumboot_irq_set_handler(tbl, DIT_TIMINT1, 0, handler0, &in[0] );
+    rumboot_irq_set_handler(tbl, DIT_TIMINT2, 0, handler1, &in[0] );
+    
 
 
 
 	/* Activate the table */
 	rumboot_irq_table_activate(tbl);
-	rumboot_irq_enable(DIT0_TIMINT1);
-	rumboot_irq_enable(DIT0_TIMINT2);
-	rumboot_irq_enable(DIT1_TIMINT1);
-	rumboot_irq_enable(DIT1_TIMINT2);
-	rumboot_irq_enable(DIT2_TIMINT1);
-	rumboot_irq_enable(DIT2_TIMINT2);
-	rumboot_irq_enable(DIT3_TIMINT1);
-	rumboot_irq_enable(DIT3_TIMINT2);
+	rumboot_irq_enable(DIT_TIMINT1);
+	rumboot_irq_enable(DIT_TIMINT2);
 	rumboot_irq_sei();
 
 // Run tests and return failed one
