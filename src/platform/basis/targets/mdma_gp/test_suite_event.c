@@ -117,8 +117,8 @@ static bool test_event(unsigned long arg)
 
 #if 1
 		for (j = 0; j < (dev->segment_size / 4); j++) {
-			*((unsigned long *)dev->dst_addr + j) = 0;
-			*((unsigned long *)dev->src_addr + j) = arg + i + j;
+			*((unsigned long *)dev->dst_mirror + j) = 0;
+			*((unsigned long *)dev->src_mirror + j) = arg + i + j;
 		}
 #endif
 
@@ -130,13 +130,13 @@ static bool test_event(unsigned long arg)
 
 	rumboot_printf("test - wait event\n");
 
-	iowrite32(10, GLOBAL_TIMERS + gp_timer_limit[arg]);
-	iowrite32(0xA0002, GLOBAL_TIMERS + gp_timer_state[arg]);
+	iowrite32(1, GLOBAL_TIMERS + gp_timer_limit[arg]);
+	iowrite32(0x10002, GLOBAL_TIMERS + gp_timer_state[arg]);
 
 	timeout = MDMA_GP_TIMEOUT;
 
 	do {
-		udelay(10);
+		udelay(1);
 
 		rumboot_printf("test - wait completion\n");
 
@@ -274,7 +274,7 @@ test_exit_1:
 
 #define MDMA_GP_INIT(base, irq)	{(void *)(base), \
 	{MDMA_CHAN_INTERRUPT, NORMAL_DESC, 1, MDMA_BURST_WIDTH8, 0, 0, -1, 0, 0, MDMA_SYNC_NONE, false, true}, \
-	(irq), NULL, NULL, NULL, NULL, 0, 0, 0, 0, 0, false}
+	(irq), NULL, NULL, NULL, NULL, 0, NULL, NULL, 0, 0, 0, 0, false}
 
 static struct mdma_gp mdma_gp_dev[4] = {
 	MDMA_GP_INIT(MDMA0_BASE, MDMA0_IRQ),

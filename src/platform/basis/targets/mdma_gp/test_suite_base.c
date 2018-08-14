@@ -79,11 +79,42 @@ int mdma_gp_dev_config(struct mdma_gp *dev, void *src_addr, void *dst_addr, int 
 		goto dev_config_exit_1;
 	}
 
+#ifndef MDMA_GP_ARM_PCIE
+	if ((dst_addr >= (void *)0x40000000) && (dst_addr <= (void *)0x7FFFFFFF)) {
+		if (dst_addr >= (void*)0x60000000)
+			dev->dst_mirror = dst_addr - 0x60000000 + 0xC0000000;
+		else if (dst_addr >= (void*)0x50000000)
+			dev->dst_mirror = dst_addr - 0x50000000 + 0x80000000;
+		else
+			dev->dst_mirror = BASIS_VIRT(dst_addr);
+	}
+	else {
+		dev->dst_mirror = dst_addr;
+	}
+#else
+	dev->dst_mirror = dst_addr;
+#endif
 	dev->src_addr = src_addr;
 	if (mdma_trans_add_group(dev->chan_rd, dev->src_addr, dev->segment_size, 0, true)) {
 		ret = -2;
 		goto dev_config_exit_2;
 	}
+
+#ifndef MDMA_GP_ARM_PCIE
+	if ((src_addr >= (void *)0x40000000) && (src_addr <= (void *)0x7FFFFFFF)) {
+		if (src_addr >= (void*)0x60000000)
+			dev->src_mirror = src_addr - 0x60000000 + 0xC0000000;
+		else if (src_addr >= (void*)0x50000000)
+			dev->src_mirror = src_addr - 0x50000000 + 0x80000000;
+		else
+			dev->src_mirror = BASIS_VIRT(src_addr);
+	}
+	else {
+		dev->src_mirror = src_addr;
+	}
+#else
+	dev->src_mirror = src_addr;
+#endif
 
 	if (mdma_chan_config(dev->chan_wr) || mdma_chan_config(dev->chan_rd)) {
 		ret = -3;
@@ -99,10 +130,12 @@ int mdma_gp_dev_config(struct mdma_gp *dev, void *src_addr, void *dst_addr, int 
 dev_config_exit_2:
 	mdma_trans_free_groups(dev->chan_rd);
 	dev->src_addr = NULL;
+	dev->src_mirror = NULL;
 
 dev_config_exit_1:
 	mdma_trans_free_groups(dev->chan_wr);
 	dev->dst_addr = NULL;
+	dev->dst_mirror = NULL;
 
 	dev->segment_size = 0;
 
@@ -113,9 +146,11 @@ void mdma_gp_dev_terminate(struct mdma_gp *dev)
 {
 	mdma_trans_free_groups(dev->chan_wr);
 	dev->dst_addr = NULL;
+	dev->dst_mirror = NULL;
 
 	mdma_trans_free_groups(dev->chan_rd);
 	dev->src_addr = NULL;
+	dev->src_mirror = NULL;
 
 	rumboot_printf("MDMA(0x%x), terminate device\n", dev->base_addr);
 
@@ -175,7 +210,7 @@ bool mdma_gp_dev_check(struct mdma_gp *dev)
 	}
 
 	for (int i = 0; i < (dev->segment_size / 4); i++) {
-		if (*((unsigned long *)dev->dst_addr + i) != *((unsigned long *)dev->src_addr + i)) {
+		if (*((unsigned long *)dev->dst_mirror + i) != *((unsigned long *)dev->src_mirror + i)) {
 			ret = false;
 			break;
 		}

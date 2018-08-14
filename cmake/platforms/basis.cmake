@@ -876,6 +876,23 @@ endif()
   )
 
   add_rumboot_target(
+      CONFIGURATION IRAM_WITH_DDR
+      FILES mdma_gp/test_suite_mem.c mdma_gp/test_suite_base.c
+      PREFIX "direct"
+      NAME "mdma_gp_memory"
+      TESTGROUP mdma_gp
+  )
+
+  add_rumboot_target(
+      CONFIGURATION IRAM_MIRROR
+      FILES mdma_gp/test_suite_mem.c mdma_gp/test_suite_base.c
+      PREFIX "mirror"
+      NAME "mdma_gp_memory"
+      TESTGROUP mdma_gp
+  )
+
+  add_rumboot_target(
+      SNAPSHOT default
       CONFIGURATION IRAM
       FILES simple-iram/i2c_0_read_test.c
       NAME i2c_0_read_test_interference
