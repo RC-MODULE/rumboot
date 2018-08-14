@@ -221,7 +221,7 @@ void emi_get_int_mask(uint32_t const emi_dcr_base, emi_imr_cfg * mask)
     mask->MERRDW = (rd & (1 << EMI_IMR_MERRDW_i)) >> EMI_IMR_MERRDW_i;
 }
 
-void emi_get_irr(uint32_t emi_dcr_base, emi_irr_cfg * irr)
+void emi_get_irr(uint32_t const emi_dcr_base, emi_irr_cfg * irr)
 {
     uint32_t rd;
     rd = dcr_read(emi_dcr_base + EMI_IRR);

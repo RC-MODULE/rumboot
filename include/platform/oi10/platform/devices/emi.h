@@ -86,6 +86,7 @@ typedef struct
     uint16_t   RP;
 } emi_rfc_cfg;
 
+
 typedef struct
 {
     bool MERRDW;
