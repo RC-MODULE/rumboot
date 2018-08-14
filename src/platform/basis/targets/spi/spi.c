@@ -11,7 +11,7 @@
 #include <devices/go_dmac.h>
 #include <regs/pl022_ssp.h>
 #include <../src/lib/drivers/go_dmac.c>
-#include <devices/gpio.h>
+#include <regs/regs_gpio_rcm.h>
 
 
 
@@ -159,16 +159,16 @@ unsigned int readcmd[Size*2] __attribute__ ((section("data.esram1"))) = { 0x3,[ 
 unsigned int writeenablecmd        =  0x06;
 unsigned int readstatusregistercmd =  0x05;
 unsigned int writedisablecmd       =  0x04;
-unsigned int sectorerase           =  0xd8; 
+unsigned int sectorerase           =  0xd8;
 unsigned int gpio5_1 = 0x10;
 unsigned int gpio5_2 = 0x0;
 
 int main(void){
-  unsigned int x;  
+  unsigned int x;
  rumboot_printf("lala\n");
   iowrite32(0x1010,SCTL_BASE + 0x128);
-  iowrite32(0x1000,SCTL_BASE + 0x12C); 
-  ssp_init(GSPI_BASE); 
+  iowrite32(0x1000,SCTL_BASE + 0x12C);
+  ssp_init(GSPI_BASE);
   go_dmac(GSPI_BASE,&writeenablecmd, dummyarray, 1);
   rumboot_printf("WREN Issued for SE\n");
   go_dmac(GSPI_BASE,&sectorerase, dummyarray, 4);
@@ -177,17 +177,17 @@ int main(void){
   // Three Bytes (OPC|DUMMY|DUMMY)/(DUMMY|STREG|STREG)
     go_dmac(GSPI_BASE,&readstatusregistercmd , dummyarray , 3);
     rumboot_printf("status_reg=%x\n",
-    (*dummyarray));  
+    (*dummyarray));
   }while ((x& (*dummyarray)) != 0);
   rumboot_printf("SECTOR ERASE Complete\n");
   for( int i = 0; i < 4; i++){
     rumboot_printf("loop=%x\n",(i));
     //rgSPI_CPSR = SSPDivisor25MHz;
-    unsigned int x;  
+    unsigned int x;
 
 
     //--------- Write Flash (Page Program) -----
-    // -- (1) Issue Write Enable Instruction To Flash    
+    // -- (1) Issue Write Enable Instruction To Flash
     go_dmac(GSPI_BASE,&writeenablecmd, dummyarray, 1);
     rumboot_printf("WREN Issued\n");
 
@@ -201,10 +201,10 @@ int main(void){
     do{
     // Three Bytes (OPC|DUMMY|DUMMY)/(DUMMY|STREG|STREG)
       go_dmac(GSPI_BASE,&readstatusregistercmd , dummyarray , 3);
-      rumboot_printf("status_reg=%x\n",(*dummyarray)); 
+      rumboot_printf("status_reg=%x\n",(*dummyarray));
     }while ((x & (*dummyarray)) != 0);
     rumboot_printf("Write Complete\n");
-    // -- (6) Write Disable Instruction 
+    // -- (6) Write Disable Instruction
     go_dmac(GSPI_BASE,&writedisablecmd , dummyarray , 1);
     rumboot_printf("WRDI Issued\n");
     //--------- Read Flash -----
@@ -212,7 +212,7 @@ int main(void){
     // -- (1) Run KDMAC Both Channels For Simultaneous SPI Transfer
     go_dmac(GSPI_BASE,readcmd , dstarray , 260);
     rumboot_printf("Read Complete\n");
-    //----------- Check Received Array -------- 
+    //----------- Check Received Array --------
     for (int n =0; n < (256/4+1); n++){
       if (dstarray[n] != etalonarray[n]) {
         rumboot_printf("FAILED!etalonarray=%x,dstarray=%x\n",(etalonarray[n]),(dstarray[n]));
@@ -223,9 +223,4 @@ int main(void){
   rumboot_printf( "test on spi has PASSED!!!\n");
 
   return 0;
-}   
-
-
-
-
-
+}
