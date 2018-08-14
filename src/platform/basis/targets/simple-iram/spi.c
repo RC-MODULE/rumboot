@@ -11,7 +11,7 @@
 #include <devices/go_dmac.h>
 #include <regs/pl022_ssp.h>
 #include <../src/lib/drivers/go_dmac.c>
-#include <devices/gpio.h>
+#include <regs/regs_gpio_rcm.h>
 
 
 

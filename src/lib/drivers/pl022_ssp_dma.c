@@ -7,8 +7,8 @@
 #include <rumboot/printf.h>
 #include <platform/devices.h>
 #include <regs/pl022_ssp.h>
-#include <devices/gpio.h>
-#include <devices/gpio.h>
+#include <regs/regs_gpio_rcm.h>
+#include <regs/regs_gpio_rcm.h>
 
 
 

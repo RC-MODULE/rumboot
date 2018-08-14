@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdbool.h>
-#include <devices/gpio.h>
+#include <regs/regs_gpio_rcm.h>
 #include <rumboot/io.h>
 #include <rumboot/timer.h>
 #include <rumboot/printf.h>

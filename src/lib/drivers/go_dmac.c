@@ -7,7 +7,7 @@
 #include <rumboot/printf.h>
 #include <platform/devices.h>
 #include <devices/go_dmac.h>
-#include <devices/gpio.h>
+#include <regs/regs_gpio_rcm.h>
 
 void go_dmac(unsigned int GSPI_BASE,unsigned int* send, unsigned int* rcv, unsigned int amount) //
 {   

@@ -1,7 +1,3 @@
-#include <stdbool.h>
-#include <stdint.h>
-#include <stddef.h>
-
 #ifndef GPIO__
 #define GPIO__
 
