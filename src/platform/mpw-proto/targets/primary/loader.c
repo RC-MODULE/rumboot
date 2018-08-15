@@ -10,7 +10,7 @@
 #include <rumboot/boot.h>
 
 #include <platform/devices.h>
-
+#if 0
 static void msr_write(uint32_t const wval)
 {
 	__asm volatile
@@ -72,7 +72,9 @@ static void spiflash_deinit_gpio_mux()
 #define SPI_CLK_FREQ 10000
 const struct rumboot_bootsource arr[] = {
 
-#if 1
+#endif
+
+#if 0
   {
 		.name = "SDIO",
 		.base = SDIO0_BASE,
@@ -88,6 +90,7 @@ const struct rumboot_bootsource arr[] = {
 	},
 #endif
 
+#if 0
 	{
 		.name = "SPI",
 		.base = SPI_CTRL1_BASE,
@@ -105,9 +108,11 @@ const struct rumboot_bootsource arr[] = {
 	{ /*Sentinel*/ }
 };
 
+#endif
 #define PDATA_SIZE 64
 int main()
 {
+    #if 0
 	enable_fpu();
 
 	rumboot_print_logo();
@@ -136,6 +141,6 @@ int main()
 #endif
 
 	while (1);
-
+#endif
 	return 0;
 }
