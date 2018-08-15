@@ -150,10 +150,12 @@ int main()
 	iowrite32( ((1 << (0x10000 +i) )*0x10000),ARINC_BASE + CHANNEL_DIS); // stop transmitter
 	//rumboot_printf("channel_dis=0x%x\n", ((1 << (0x10000 +i) )*0x10000)); 	
     }
-	rumboot_printf("ARINC check status RX\n");      
+	rumboot_printf("ARINC check status RX\n"); 
+	i=0;
 	for (i = 0; i< 16 ; i++) 
 	{
 	cnt =0;
+	tmp_r =-1;
 	while (tmp_r != status_success_bit) {
 	tmp = ioread32(ARINC_BASE + STAT_E_RX +i*4);	
 	//rumboot_printf("ARINC STATUS=0x%x\n", tmp); //check status
