@@ -214,7 +214,6 @@ void emi_clear_irr(uint32_t emi_dcr_base, emi_irr_cfg* irr)
 
 void emi_init_impl (uint32_t emi_dcr_base, uint32_t plb6mcif2_dcr_base, uint32_t puaba)
 {
-    rumboot_printf("Init EMI\n");
     //init bridge
     plb6mcif2_simple_init( plb6mcif2_dcr_base,  puaba );
 
