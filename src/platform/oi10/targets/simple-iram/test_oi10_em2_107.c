@@ -179,7 +179,7 @@ void check_sram0 (const uint32_t addr)
 
 int main ()
 {
-    emi_init();
+    emi_init(DCR_EM2_EMI_BASE);
 
     rumboot_printf ("CACHE OFF\n");
     check_sram0 (SRAM0_BASE + 0x01);

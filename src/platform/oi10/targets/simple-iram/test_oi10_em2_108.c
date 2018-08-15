@@ -194,7 +194,7 @@ void check_sram0 (const uint32_t addr)
 
 int main ()
 {
-    emi_init();
+    emi_init(DCR_EM2_EMI_BASE);
 
     rumboot_printf ("Init data\n");
     uint32_t addr = 0;
