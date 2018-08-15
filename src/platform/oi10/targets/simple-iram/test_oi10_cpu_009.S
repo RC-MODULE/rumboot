@@ -45,6 +45,62 @@
 #define CVR3					r15,r16,r17
 
 
+.macro check_running_10 blknum regaddr regmask regfill begval endval regname
+    rumboot_putstring  "Check PLB6PLB4_\()\blknum\()_\()\regname running <1>\n"
+    load_const  R_SHFT, 0x00000001
+    /* Running <1> init */
+    load_const  R_ADDR, \regaddr
+    load_const  R_MASK, \regmask
+    load_const  R_FILL, \regfill
+    load_const  R_EXPV, \begval
+    load_const  R_TERM, \endval
+    mfdcrx      R_BACK, R_ADDR
+    mtdcrx      R_ADDR, R_ZERO
+    mfdcrx      R_DATA, R_ADDR
+    and         R_DATA, R_DATA, R_MASK
+    cmpw  cr7,  R_DATA, R_ZERO
+    TEST_ASSERT(eq,cr7,"Read/write error in PLB6PLB4_\()\blknum\()_\()\regname (running 1 init)")
+    /* Running <1> loop */
+loop_1_\()\blknum:
+    mtdcrx      R_ADDR, R_EXPV
+    mfdcrx      R_DATA, R_ADDR
+    and         R_DATA, R_DATA, R_MASK
+    cmpw  cr7,  R_DATA, R_EXPV
+    TEST_ASSERT(eq,cr7,"Read/write error in PLB6PLB4_\()\blknum\()_\()\regname (running 1)")
+    cmpw  cr0,  R_EXPV, R_TERM
+    beq-  cr0,  end_1_\()\blknum
+    slw         R_EXPV, R_EXPV, R_SHFT
+    b           loop_1_\()\blknum
+end_1_\()\blknum:
+    rumboot_putstring   "done.\n"
+    rumboot_putstring   "Check PLB6PLB4_\()\blknum\()_\()\regname running <0>\n"
+    /* Running <0> init */
+    and         R_EXPV, R_ONES, R_MASK
+    mtdcrx      R_ADDR, R_EXPV
+    mfdcrx      R_DATA, R_ADDR
+    and         R_DATA, R_DATA, R_MASK
+    cmpw  cr7,  R_DATA, R_EXPV
+    TEST_ASSERT(eq,cr7,"Read/write error in PLB6PLB4_\()\blknum\()_\()\regname (running 0 init)")
+    load_const  R_EXPV, \begval
+    not         R_EXPV, R_EXPV
+    not         R_TERM, R_TERM
+    /* Running <0> loop */
+loop_0_\()\blknum:
+    mtdcrx      R_ADDR, R_EXPV
+    mfdcrx      R_DATA, R_ADDR
+    and         R_DATA, R_DATA, R_MASK
+    cmpw cr7,   R_DATA, R_EXPV
+    TEST_ASSERT(eq,cr7,"Read/write error in PLB6PLB4_\()\blknum\()_\()\regname (running 0)")
+    cmpw cr0,   R_EXPV, R_TERM
+    beq- cr0,   end_0_\()\blknum
+    slw         R_EXPV, R_EXPV, R_SHFT
+    or          R_EXPV, R_EXPV, R_FILL
+    b           loop_0_\()\blknum
+end_0_\()\blknum:
+    mtdcrx      R_ADDR, R_BACK
+    rumboot_putstring   "done.\n"
+.endm
+
 .macro check_clr_esr crF
     mtdcrx      R_CADR, R_MASK
     mfdcrx      R_DATA, R_RADR
@@ -181,6 +237,9 @@ check_cpu_ppc_plb6plb4_1_2:
     check_value CVR3,   P641(ADDRH1),   ADDRH1_RESET_VAL,               "PLB6PLB4_1_ADDRH1"
     rumboot_putstring   "done.\n"
 
+    /*       block number | DCR-addr      | mask      | fill val  | begin val | end val   | reg name |  */
+/*  check_running_10    0,  P640(ADDRL1),   0xFFFFFFFF, 0x00000001, 0x00000001, 0x80000000, "ADDRL1"    */
+    check_running_10    1,  P641(ADDRL1),   0xFFFFFFFF, 0x00000001, 0x00000001, 0x80000000, "ADDRL1"
 
     /*           block number | base DCR-address   |    */
     check_running_10_tesr   0,  DCR_PLB6PLB4_0_BASE
