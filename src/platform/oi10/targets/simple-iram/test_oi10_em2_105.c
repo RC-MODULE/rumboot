@@ -23,7 +23,7 @@
 
 int main ()
 {
-    emi_init ();
+    emi_init (DCR_EM2_EMI_BASE);
 
     rumboot_printf ("WRITE32 NOR\n");
     nor_write32 ( 0x00000000, (NOR_BASE + 0x0));
