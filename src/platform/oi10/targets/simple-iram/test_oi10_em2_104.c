@@ -135,7 +135,7 @@ void check_nor ()
 
 int main ()
 {
-    emi_init ();
+    emi_init (DCR_EM2_EMI_BASE);
     init_nor ();
 
     rumboot_printf ("CACHE OFF\n");
