@@ -92,6 +92,6 @@
 
 
 #define status_success_bit  (1 << 31)
-#define ARINC_ATTEMPT			10000
+#define ARINC_ATTEMPT			1000000
 
 #endif /* end of include guard: ARINC_REGS_H */
