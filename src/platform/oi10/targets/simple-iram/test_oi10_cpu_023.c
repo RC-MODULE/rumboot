@@ -130,7 +130,7 @@ int main(void)
     volatile int64_t src_im1_physical, dst_im1_physical;
     volatile int64_t src_em2_physical, dst_em2_physical;
 
-    emi_init();
+    emi_init(DCR_EM2_EMI_BASE);
 
     //prepare physical address
     set_mem_window(MEM_WINDOW_SHARED);//WORKAROUND
