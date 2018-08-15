@@ -46,7 +46,7 @@ uint32_t check_instruction_read_access_sram0()
 
 int main(void)
 {
-    emi_init();
+    emi_init(DCR_EM2_EMI_BASE);
 
     test_event_send_test_id("test_oi10_em2_102");
 
