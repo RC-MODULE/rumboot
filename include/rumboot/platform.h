@@ -51,6 +51,8 @@ enum rumboot_simulation_event {
     EVENT_SIM_RESTORE, /** Request to load simulation state from a file */
     EVENT_TESTEVENT, /** Special event to be sent to SystemVerilog part of the test */
     EVENT_RELOCATE_RUNTIME, /** Request to poll a different cell for runtime structure */
+    EVENT_MEMFILLSEQ, /** Fill the memory with 32-bit incrementing values */
+    EVENT_MEMCHECKSEQ, /** Check that memory filled with 32-bit incrementing values */
 };
 
 
