@@ -16,7 +16,8 @@
 #include <platform/regs/regs_emi.h>
 #include <platform/test_assert.h>
 
-void emi_get_bank_cfg(uint32_t emi_dcr_base, emi_bank_num num_bank, emi_bank_cfg* bn_cfg)
+
+void emi_get_bank_cfg(uint32_t const emi_dcr_base, emi_bank_num const num_bank, emi_bank_cfg * bn_cfg)
 {
     if (num_bank == emi_bank_all) TEST_ASSERT(0, "Invalid argument in emi_get_bank_cfg");
     uint32_t val;
@@ -44,7 +45,7 @@ void emi_get_bank_cfg(uint32_t emi_dcr_base, emi_bank_num num_bank, emi_bank_cfg
 }
 
 
-void emi_set_bank_cfg (uint32_t emi_dcr_base, emi_bank_num num_bank, emi_bank_cfg* bn_cfg)
+void emi_set_bank_cfg (uint32_t const emi_dcr_base, emi_bank_num const num_bank, emi_bank_cfg const * bn_cfg)
 {
     if (num_bank == emi_bank_all) TEST_ASSERT(0, "Invalid argument in emi_set_bank_cfg");
     dcr_write (emi_dcr_base + EMI_SS0 + num_bank*(EMI_SS1 - EMI_SS0),  //write SSx
@@ -70,7 +71,7 @@ void emi_set_bank_cfg (uint32_t emi_dcr_base, emi_bank_num num_bank, emi_bank_cf
             );
 }
 
-void emi_set_rfc(uint32_t emi_dcr_base, emi_rfc_cfg* rfc)
+void emi_set_rfc(uint32_t const emi_dcr_base, emi_rfc_cfg const * rfc)
 {
     dcr_write(emi_dcr_base + EMI_RFC,
                 ( rfc->TRFC << EMI_RFC_TRFC_i ) |
@@ -78,7 +79,7 @@ void emi_set_rfc(uint32_t emi_dcr_base, emi_rfc_cfg* rfc)
              );
 }
 
-void emi_get_rfc(uint32_t emi_dcr_base, emi_rfc_cfg* rfc)
+void emi_get_rfc(uint32_t const emi_dcr_base, emi_rfc_cfg * rfc)
 {
     uint32_t val;
     val = dcr_read(emi_dcr_base + EMI_RFC);
@@ -86,7 +87,7 @@ void emi_get_rfc(uint32_t emi_dcr_base, emi_rfc_cfg* rfc)
     rfc->RP   = ( val & (0x3FFF << EMI_RFC_RP_i))   >> EMI_RFC_RP_i;
 }
 
-void emi_hiz_mode_on(uint32_t emi_dcr_base)
+void emi_hiz_mode_on(uint32_t const emi_dcr_base)
 {
     uint32_t val;
     val = dcr_read(emi_dcr_base + EMI_WECR);
@@ -94,7 +95,7 @@ void emi_hiz_mode_on(uint32_t emi_dcr_base)
     dcr_write(emi_dcr_base + EMI_WECR, val);
 }
 
-void emi_hiz_mode_off(uint32_t emi_dcr_base)
+void emi_hiz_mode_off(uint32_t const emi_dcr_base)
 {
     uint32_t val;
     val = dcr_read(emi_dcr_base + EMI_WECR);
@@ -102,7 +103,7 @@ void emi_hiz_mode_off(uint32_t emi_dcr_base)
     dcr_write(emi_dcr_base + EMI_WECR, val);
 }
 
-void emi_enable_ext_rdy(uint32_t emi_dcr_base, emi_bank_num num_bank)
+void emi_enable_ext_rdy(uint32_t const emi_dcr_base, emi_bank_num const num_bank)
 {
     emi_bank_cfg bank_cfg;
     if (num_bank == emi_bank_all) TEST_ASSERT(0, "Invalid argument in emi_set_bank_cfg");
@@ -111,7 +112,7 @@ void emi_enable_ext_rdy(uint32_t emi_dcr_base, emi_bank_num num_bank)
     emi_set_bank_cfg(emi_dcr_base, num_bank, &bank_cfg);
 }
 
-void emi_set_trdy(uint32_t emi_dcr_base, emi_bank_num num_bank, uint16_t trdy)
+void emi_set_trdy(uint32_t const emi_dcr_base, emi_bank_num const num_bank, uint16_t const trdy)
 {
     emi_bank_cfg bank_cfg;
     if (num_bank == emi_bank_all) TEST_ASSERT(0, "Invalid argument in emi_set_bank_cfg");
@@ -120,7 +121,7 @@ void emi_set_trdy(uint32_t emi_dcr_base, emi_bank_num num_bank, uint16_t trdy)
     emi_set_bank_cfg(emi_dcr_base, num_bank, &bank_cfg);
 }
 
-void emi_set_int_mask(uint32_t emi_dcr_base, emi_imr_cfg* mask)
+void emi_set_int_mask(uint32_t const emi_dcr_base, emi_imr_cfg const * mask)
 {
     dcr_write(emi_dcr_base + EMI_IMR_SET,
                                             (mask->ME1B0  << EMI_IMR_ME1B0_i ) |
@@ -143,7 +144,7 @@ void emi_set_int_mask(uint32_t emi_dcr_base, emi_imr_cfg* mask)
             );
 }
 
-void emi_get_int_mask(uint32_t emi_dcr_base, emi_imr_cfg* mask)
+void emi_get_int_mask(uint32_t const emi_dcr_base, emi_imr_cfg * mask)
 {
     uint32_t rd;
     rd = dcr_read(emi_dcr_base + EMI_IMR);
@@ -166,7 +167,7 @@ void emi_get_int_mask(uint32_t emi_dcr_base, emi_imr_cfg* mask)
     mask->MERRDW = (rd & (1 << EMI_IMR_MERRDW_i)) >> EMI_IMR_MERRDW_i;
 }
 
-void emi_get_irr(uint32_t emi_dcr_base, emi_irr_cfg* irr)
+void emi_get_irr(uint32_t emi_dcr_base, emi_irr_cfg * irr)
 {
     uint32_t rd;
     rd = dcr_read(emi_dcr_base + EMI_IRR);
@@ -189,7 +190,7 @@ void emi_get_irr(uint32_t emi_dcr_base, emi_irr_cfg* irr)
     irr->IERRDW = (rd & (1 << EMI_IRR_IERRDW_i)) >> EMI_IRR_IERRDW_i;
 }
 
-void emi_clear_irr(uint32_t emi_dcr_base, emi_irr_cfg* irr)
+void emi_clear_irr(uint32_t const emi_dcr_base, emi_irr_cfg const * irr)
 {
     dcr_write(emi_dcr_base + EMI_IRR_RST,
                                             (irr->IE1B0  << EMI_IRR_IE1B0_i ) |
@@ -212,7 +213,7 @@ void emi_clear_irr(uint32_t emi_dcr_base, emi_irr_cfg* irr)
              );
 }
 
-void emi_init_impl (uint32_t emi_dcr_base, uint32_t plb6mcif2_dcr_base, uint32_t puaba)
+void emi_init_impl (uint32_t const emi_dcr_base, uint32_t const plb6mcif2_dcr_base, uint32_t const puaba)
 {
     //init bridge
     plb6mcif2_simple_init( plb6mcif2_dcr_base,  puaba );
@@ -404,7 +405,7 @@ void emi_init_impl (uint32_t emi_dcr_base, uint32_t plb6mcif2_dcr_base, uint32_t
     dcr_write(emi_dcr_base + EMI_BUSEN, 0x01);
 }
 
-void emi_set_ecc (uint32_t emi_dcr_base, emi_bank_num num_bank, emi_ecc_status ecc_stat)
+void emi_set_ecc (uint32_t const emi_dcr_base, emi_bank_num const num_bank, emi_ecc_status const ecc_stat)
 {
     if (num_bank == emi_bank_all )
     {
@@ -429,7 +430,7 @@ void emi_set_ecc (uint32_t emi_dcr_base, emi_bank_num num_bank, emi_ecc_status e
     }
 }
 
-void emi_init ()
+void emi_init (uint32_t const emi_dcr_base)
 {
-    emi_init_impl (DCR_EM2_EMI_BASE, DCR_EM2_PLB6MCIF2_BASE, 0x00);
+    emi_init_impl (emi_dcr_base, DCR_EM2_PLB6MCIF2_BASE, 0x00);
 }

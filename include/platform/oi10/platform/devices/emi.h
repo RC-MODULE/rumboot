@@ -8,9 +8,10 @@
 #ifndef EMI_H_
 #define EMI_H_
 
+
 #include <stdint.h>
-#include <stdbool.h>
 #include <platform/regs/fields/emi.h>
+
 
 //bank0
 #define EM2_BANK0_SIZE          0x20000000
@@ -127,20 +128,20 @@ typedef struct
     bool IE1B0;
 } emi_irr_cfg;
 
-void emi_init           ();
+void emi_init           (uint32_t emi_dcr_base);
 void emi_init_impl      (uint32_t emi_dcr_base, uint32_t plb6mcif2_dcr_base, uint32_t puaba);
-void emi_get_bank_cfg   (uint32_t emi_dcr_base, emi_bank_num num_bank, emi_bank_cfg* bn_cfg);
-void emi_set_bank_cfg   (uint32_t emi_dcr_base, emi_bank_num num_bank, emi_bank_cfg* bn_cfg);
-void emi_set_rfc        (uint32_t emi_dcr_base, emi_rfc_cfg* rfc);
-void emi_get_rfc        (uint32_t emi_dcr_base, emi_rfc_cfg* rfc);
+void emi_get_bank_cfg   (uint32_t emi_dcr_base, emi_bank_num num_bank, emi_bank_cfg * bn_cfg);
+void emi_set_bank_cfg   (uint32_t emi_dcr_base, emi_bank_num num_bank, emi_bank_cfg const * bn_cfg);
+void emi_set_rfc        (uint32_t emi_dcr_base, emi_rfc_cfg const * rfc);
+void emi_get_rfc        (uint32_t emi_dcr_base, emi_rfc_cfg * rfc);
 void emi_set_ecc        (uint32_t emi_dcr_base, emi_bank_num num_bank, emi_ecc_status ecc_stat);
-void emi_hiz_mode_on  (uint32_t emi_dcr_base);
-void emi_hiz_mode_off (uint32_t emi_dcr_base);
+void emi_hiz_mode_on    (uint32_t emi_dcr_base);
+void emi_hiz_mode_off   (uint32_t emi_dcr_base);
 void emi_enable_ext_rdy (uint32_t emi_dcr_base, emi_bank_num num_bank);
 void emi_set_trdy       (uint32_t emi_dcr_base, emi_bank_num num_bank, uint16_t trdy);
-void emi_set_int_mask   (uint32_t emi_dcr_base, emi_imr_cfg* mask);
-void emi_get_int_mask   (uint32_t emi_dcr_base, emi_imr_cfg* mask);
-void emi_get_irr        (uint32_t emi_dcr_base, emi_irr_cfg* irr);
-void emi_clear_irr      (uint32_t emi_dcr_base, emi_irr_cfg* irr);
+void emi_set_int_mask   (uint32_t emi_dcr_base, emi_imr_cfg const * mask);
+void emi_get_int_mask   (uint32_t emi_dcr_base, emi_imr_cfg * mask);
+void emi_get_irr        (uint32_t emi_dcr_base, emi_irr_cfg * irr);
+void emi_clear_irr      (uint32_t emi_dcr_base, emi_irr_cfg const * irr);
 
 #endif /* EMI_H_ */
