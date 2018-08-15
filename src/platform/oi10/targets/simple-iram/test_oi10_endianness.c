@@ -93,7 +93,7 @@ void check_mem_nor_little_e (uint32_t base_addr)
 
 int main ()
 {
-    emi_init();
+    emi_init(DCR_EM2_EMI_BASE);
 
     //IM0 BigeEndian (default)
     rumboot_printf("Check IM0 BigEndian\n");
