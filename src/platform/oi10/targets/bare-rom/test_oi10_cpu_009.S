@@ -1,4 +1,6 @@
 
+#define RUMBOOT_ASSERT_WARN_ONLY
+
 #include <platform/test_event_asm.h>
 #include <platform/test_assert.S.h>
 #include <platform/ppc470s/mmu.S.h>
@@ -8,14 +10,41 @@
 #include <platform/arch/ppc/ppc_476fp_timer_fields.h>
 #include <platform/devices.h>
 
-#define DEBUG_DCR_TEST
-
 #include <platform/arch/ppc/test_macro_asm.S.h>
 #include <platform/regs/regs_plb6plb4.h>
 
+#define R_ARG0                  r3
+#define R_ARG1                  r4
+#define R_ARG2                  r5
+#define R_ARG3                  r6
+#define R_RETV                  R_ARG0
+#define R_RNGM                  r18     /* Range mask            */
+#define R_RSLT                  r19     /* Result of command     */
+#define R_ADDR                  r20     /* Address of I/O reg    */
+#define R_WADR                  R_ADDR  /* Write I/O reg address */
+#define R_RADR                  r21     /* Read I/O reg address  */
+#define R_CADR                  R_RADR  /* Clear I/O reg address */
+#define R_DATA                  r22     /* Readed data for check */
+#define R_EXPV                  r23     /* Expected value        */
+#define R_SHFT                  r24     /* Shift value           */
+#define R_TERM                  r25     /* Termination template  */
+#define R_MASK                  r26     /* Register mask         */
+#define R_FILL                  r27     /* Fill value            */
+#define R_TEMP                  r28     /* Temporary data        */
+#define R_BACK                  r29     /* Common backup         */
+#define R_ZERO                  r30     /* Holds 0x00000000      */
+#define R_ONES                  r31     /* Holds 0xFFFFFFFF      */
+
+#define TESR_MASK               0xFFFFF000
+#define TESR_RANGE_MASK         0xFF800000
+#define TESR_R0_FILL            0x00001000
+#define TESR_R1_FILL            0x00800000
+#define TESR_R10_BEG            0x00001000
+#define TESR_R10_END            0x80000000
+
 #define P640(OFFSET)			DCR_PLB6PLB4_0_BASE + (OFFSET)
 #define P641(OFFSET)			DCR_PLB6PLB4_1_BASE + (OFFSET)
-#define CVR3					r20,r21,r22
+#define CVR3					r15,r16,r17
 
 #define CONST_SPR_MMUBE0  (0b0 << MMU_MMUBE0_VBE0_i)\
                         | (0b0 << MMU_MMUBE0_VBE1_i)\
@@ -94,6 +123,145 @@
                         | (0b0                            << CTRL_CCR2_SPC5C1_i )\
                         | (0b0                            << CTRL_CCR2_MCDTO_i  )
 
+.macro check_running_10 blknum regaddr regmask regfill begval endval regname
+    rumboot_putstring  "Check PLB6PLB4_\()\blknum\()_\()\regname running <1>\n"
+    load_const  R_SHFT, 0x00000001
+    /* Running <1> init */
+    load_const  R_ADDR, \regaddr
+    load_const  R_MASK, \regmask
+    load_const  R_FILL, \regfill
+    load_const  R_EXPV, \begval
+    load_const  R_TERM, \endval
+    mfdcrx      R_BACK, R_ADDR
+    mtdcrx      R_ADDR, R_ZERO
+    mfdcrx      R_DATA, R_ADDR
+    and         R_DATA, R_DATA, R_MASK
+    cmpw  cr7,  R_DATA, R_ZERO
+    TEST_ASSERT(eq,cr7,"Read/write error in PLB6PLB4_\()\blknum\()_\()\regname (running 1 init)")
+    /* Running <1> loop */
+loop_1_\()\blknum:
+    mtdcrx      R_ADDR, R_EXPV
+    mfdcrx      R_DATA, R_ADDR
+    and         R_DATA, R_DATA, R_MASK
+    cmpw  cr7,  R_DATA, R_EXPV
+    TEST_ASSERT(eq,cr7,"Read/write error in PLB6PLB4_\()\blknum\()_\()\regname (running 1)")
+    cmpw  cr0,  R_EXPV, R_TERM
+    beq-  cr0,  end_1_\()\blknum
+    slw         R_EXPV, R_EXPV, R_SHFT
+    b           loop_1_\()\blknum
+end_1_\()\blknum:
+    rumboot_putstring   "done.\n"
+    rumboot_putstring   "Check PLB6PLB4_\()\blknum\()_\()\regname running <0>\n"
+    /* Running <0> init */
+    and         R_EXPV, R_ONES, R_MASK
+    mtdcrx      R_ADDR, R_EXPV
+    mfdcrx      R_DATA, R_ADDR
+    and         R_DATA, R_DATA, R_MASK
+    cmpw  cr7,  R_DATA, R_EXPV
+    TEST_ASSERT(eq,cr7,"Read/write error in PLB6PLB4_\()\blknum\()_\()\regname (running 0 init)")
+    load_const  R_EXPV, \begval
+    not         R_EXPV, R_EXPV
+    not         R_TERM, R_TERM
+    /* Running <0> loop */
+loop_0_\()\blknum:
+    mtdcrx      R_ADDR, R_EXPV
+    mfdcrx      R_DATA, R_ADDR
+    and         R_DATA, R_DATA, R_MASK
+    cmpw cr7,   R_DATA, R_EXPV
+    TEST_ASSERT(eq,cr7,"Read/write error in PLB6PLB4_\()\blknum\()_\()\regname (running 0)")
+    cmpw cr0,   R_EXPV, R_TERM
+    beq- cr0,   end_0_\()\blknum
+    slw         R_EXPV, R_EXPV, R_SHFT
+    or          R_EXPV, R_EXPV, R_FILL
+    b           loop_0_\()\blknum
+end_0_\()\blknum:
+    mtdcrx      R_ADDR, R_BACK
+    rumboot_putstring   "done.\n"
+.endm
+
+.macro check_clr_esr crF
+    mtdcrx      R_CADR, R_MASK
+    mfdcrx      R_DATA, R_RADR
+    and         R_DATA, R_DATA, R_MASK
+    cmpw  \crF, R_DATA, R_ZERO
+.endm
+
+.macro check_running_10_tesr blknum dcrbase
+    rumboot_putstring  "Check PLB6PLB4_\()\blknum\()_ESR/TESR running <1>\n"
+    load_const  R_SHFT, 0x00000001
+    /* Running <1> init */
+    load_const  R_WADR, \dcrbase + TESR
+    load_const  R_RADR, \dcrbase +  ESR
+    load_const  R_MASK, TESR_MASK
+    load_const  R_RNGM, TESR_RANGE_MASK
+    load_const  R_FILL, TESR_R1_FILL
+    load_const  R_EXPV, TESR_R10_BEG
+    load_const  R_TERM, TESR_R10_END
+    mfdcrx      R_BACK, R_RADR
+    mtdcrx      R_WADR, R_ZERO
+    mfdcrx      R_DATA, R_ADDR
+    and         R_DATA, R_DATA, R_MASK
+    and         R_BACK, R_BACK, R_MASK
+    cmpw  cr7,  R_DATA, R_ZERO
+    TEST_ASSERT(eq,cr7,"Read/write error in PLB6PLB4_\()\blknum\()_ESR/TESR (running 1 init)")
+    /* Running <1> loop */
+tesr_loop_1_\()\blknum:
+    and         R_RSLT, R_EXPV, R_RNGM
+    cmpw  cr5,  R_RSLT, R_ZERO
+    beq+  cr5,  tesr_fill_1_\()\blknum
+    or          R_TEMP, R_EXPV, R_ZERO
+    b           tesr_skip_1_\()\blknum
+tesr_fill_1_\()\blknum:
+    or          R_TEMP, R_EXPV, R_FILL
+tesr_skip_1_\()\blknum:
+    mtdcrx      R_WADR, R_TEMP
+    mfdcrx      R_DATA, R_RADR
+    and         R_DATA, R_DATA, R_MASK
+    cmpw  cr7,  R_DATA, R_TEMP
+    TEST_ASSERT(eq,cr7,"Read/write error in PLB6PLB4_\()\blknum\()_ESR/TESR (running 1)")
+    check_clr_esr  cr4
+    TEST_ASSERT(eq,cr4,"PLB6PLB4_\()\blknum\()_ESR clear error (running 1)")
+    cmpw  cr3,  R_EXPV, R_TERM
+    beq-  cr3,  tesr_end_1_\()\blknum
+    slw         R_EXPV, R_EXPV, R_SHFT
+    b           tesr_loop_1_\()\blknum
+tesr_end_1_\()\blknum:
+    rumboot_putstring   "done.\n"
+    rumboot_putstring   "Check PLB6PLB4_\()\blknum\()_ESR/TESR running <0>\n"
+    /* Running <0> init */
+    load_const  R_FILL, TESR_R0_FILL
+    and         R_EXPV, R_ONES, R_MASK
+    mtdcrx      R_WADR, R_EXPV
+    mfdcrx      R_DATA, R_RADR
+    and         R_DATA, R_DATA, R_MASK
+    cmpw  cr7,  R_DATA, R_EXPV
+    TEST_ASSERT(eq,cr7,"Read/write error in PLB6PLB4_\()\blknum\()_ESR/TESR (running 0 init)")
+    check_clr_esr  cr4
+    TEST_ASSERT(eq,cr4,"PLB6PLB4_\()\blknum\()_ESR clear error (running 0 init)")
+    load_const  R_EXPV, TESR_R10_BEG
+    not         R_EXPV, R_EXPV
+    not         R_TERM, R_TERM
+    and         R_TERM, R_TERM, R_MASK
+    and         R_EXPV, R_EXPV, R_MASK
+    /* Running <0> loop */
+tesr_loop_0_\()\blknum:
+    mtdcrx      R_WADR, R_EXPV
+    mfdcrx      R_DATA, R_RADR
+    and         R_DATA, R_DATA, R_MASK
+    cmpw  cr7,  R_DATA, R_EXPV
+    TEST_ASSERT(eq,cr7,"Read/write error in PLB6PLB4_\()\blknum\()_ESR/TESR (running 0)")
+    check_clr_esr  cr4
+    TEST_ASSERT(eq,cr4,"PLB6PLB4_\()\blknum\()_ESR clear error (running 0)")
+    cmpw  cr3,  R_EXPV, R_TERM
+    beq-  cr3,  tesr_end_0_\()\blknum
+    slw         R_EXPV, R_EXPV, R_SHFT
+    or          R_EXPV, R_EXPV, R_FILL
+    b           tesr_loop_0_\()\blknum
+tesr_end_0_\()\blknum:
+    mtdcrx      R_WADR, R_BACK
+    rumboot_putstring   "done.\n"
+.endm
+
 
 .section ".init.start","ax",@progbits
 
@@ -136,85 +304,84 @@ rumboot_entry_point:
     load_const  r27,    0x00000000
     load_const  r28,    0x00000000
     load_const  r29,    0x00000000
-    load_const  r30,    0x00000000
-    load_const  r31,    0xFFFFFFFF
+    load_const  R_ZERO, 0x00000000
+    load_const  R_ONES, 0xFFFFFFFF
 
 	rumboot_putstring "Init SPRs... "
 
-    mtspr       SPR_USPRG0, r30
-
-    mtspr       SPR_SRR0,   r30
-    mtspr       SPR_SRR1,   r30
-    mtspr       SPR_CSRR0,  r30
-    mtspr       SPR_CSRR1,  r30
-    mtspr       SPR_MCSRR0, r30
-    mtspr       SPR_MCSRR1, r30
-    mtspr       SPR_MCSR_C, r31
-    mtspr       SPR_ESR,    r30
-    mtspr       SPR_DCESR,  r30
-    mtspr       SPR_DEAR,   r30
+    mtspr       SPR_USPRG0, R_ZERO
+    mtspr       SPR_SRR0,   R_ZERO
+    mtspr       SPR_SRR1,   R_ZERO
+    mtspr       SPR_CSRR0,  R_ZERO
+    mtspr       SPR_CSRR1,  R_ZERO
+    mtspr       SPR_MCSRR0, R_ZERO
+    mtspr       SPR_MCSRR1, R_ZERO
+    mtspr       SPR_ESR,    R_ZERO
+    mtspr       SPR_DCESR,  R_ZERO
+    mtspr       SPR_DEAR,   R_ZERO
+    mtspr       SPR_MCSR_C, R_ONES
 
 /*according to User's Manual ch. 9.4 Initialization Software Requirements*/
-    mtspr       SPR_DBCR0, r30       /* disable all debug events*/
+    mtspr       SPR_DBCR0, R_ZERO       /* disable all debug events*/
 
-    load_const  r3, CONST_SPR_DBSR_RC
-    mtspr       SPR_DBSR_RC,    r3     /* clear all debug interrupts*/
+    load_const  R_DATA, CONST_SPR_DBSR_RC
+    mtspr       SPR_DBSR_RC,    R_DATA     /* clear all debug interrupts*/
 
-    load_const  r3, CONST_SPR_CCR0
-    mtspr       SPR_CCR0,   r3
+    load_const  R_DATA, CONST_SPR_CCR0
+    mtspr       SPR_CCR0,   R_DATA
 
-    load_const  r3, CONST_SPR_CCR0
-    mtspr       SPR_CCR1,   r3
+    load_const  R_DATA, CONST_SPR_CCR0
+    mtspr       SPR_CCR1,   R_DATA
 
-    load_const  r3, CONST_SPR_CCR0
-    mtspr       SPR_CCR2,   r3
+    load_const  R_DATA, CONST_SPR_CCR0
+    mtspr       SPR_CCR2,   R_DATA
 
-    load_const  r3, CONST_SPR_MMUBE0
-    mtspr       SPR_MMUBE0, r3
+    load_const  R_DATA, CONST_SPR_MMUBE0
+    mtspr       SPR_MMUBE0, R_DATA
 
-    load_const  r3, CONST_SPR_MMUBE1
-    mtspr       SPR_MMUBE1, r3
+    load_const  R_DATA, CONST_SPR_MMUBE1
+    mtspr       SPR_MMUBE1, R_DATA
 
-    load_const  r3, CONST_SPR_SSPCR
-    mtspr       SPR_SSPCR,  r3
+    load_const  R_DATA, CONST_SPR_SSPCR
+    mtspr       SPR_SSPCR,  R_DATA
 
-    load_const  r3, CONST_SPR_ISPCR
-    mtspr       SPR_ISPCR,  r3
+    load_const  R_DATA, CONST_SPR_ISPCR
+    mtspr       SPR_ISPCR,  R_DATA
 
-    load_const  r3, CONST_SPR_USPCR
-    mtspr       SPR_USPCR,  r3
+    load_const  R_DATA, CONST_SPR_USPCR
+    mtspr       SPR_USPCR,  R_DATA
 
 /*Before editing TLB let's initialize all SPR registers to default values by the spec*/
 /*Most of them have X-state after reset and therefore CPU model cannot work properly*/
 
-    mtspr       SPR_LR,     r30
-    mtspr       SPR_CTR,	r30
-    mtcr                    r30
-    mtspr       SPR_XER,    r30
+    mtspr       SPR_LR,     R_ZERO
+    mtspr       SPR_CTR,	R_ZERO
+    mtcr                    R_ZERO
+    mtspr       SPR_XER,    R_ZERO
 
-    mtspr       SPR_TCR,    r30
-    mtspr       SPR_TBL_W,  r30
-    mtspr       SPR_TBU_W,  r30
-    mtspr       SPR_DEC,    r30
-    mtspr       SPR_DECAR,  r30
-    load_const  r3, (0b1    << TIMER_TSR_EVW_i)\
-                  | (0b1    << TIMER_TSR_WIS_i)\
-                  | (0b1    << TIMER_TSR_DIS_i)\
-                  | (0b1    << TIMER_TSR_FIS_i)
-    mtspr       SPR_TSR_RC, r3
+    mtspr       SPR_TCR,    R_ZERO
+    mtspr       SPR_TBL_W,  R_ZERO
+    mtspr       SPR_TBU_W,  R_ZERO
+    mtspr       SPR_DEC,    R_ZERO
+    mtspr       SPR_DECAR,  R_ZERO
+    load_const  R_DATA,   (0b1  << TIMER_TSR_EVW_i)\
+                        | (0b1  << TIMER_TSR_WIS_i)\
+                        | (0b1  << TIMER_TSR_DIS_i)\
+                        | (0b1  << TIMER_TSR_FIS_i)
+    mtspr       SPR_TSR_RC, R_DATA
 
-    mtspr       SPR_IAC1,   r30
-    mtspr       SPR_IAC2,   r30
-    mtspr       SPR_IAC3,   r30
-    mtspr       SPR_IAC4,   r30
-    mtspr       SPR_DAC1,   r30
-    mtspr       SPR_DAC2,   r30
-    mtspr       SPR_DVC1,   r30
-    mtspr       SPR_DVC2,   r30
-    mtspr       SPR_DBCR1,  r30
-    mtspr       SPR_DBCR2,  r30
-    mtspr       SPR_DBDR,   r30
-    mtspr       SPR_RMPD,   r30
+    mtspr       SPR_IAC1,   R_ZERO
+    mtspr       SPR_IAC2,   R_ZERO
+    mtspr       SPR_IAC3,   R_ZERO
+    mtspr       SPR_IAC4,   R_ZERO
+    mtspr       SPR_DAC1,   R_ZERO
+    mtspr       SPR_DAC2,   R_ZERO
+    mtspr       SPR_DVC1,   R_ZERO
+    mtspr       SPR_DVC2,   R_ZERO
+    mtspr       SPR_DBCR1,  R_ZERO
+    mtspr       SPR_DBCR2,  R_ZERO
+    mtspr       SPR_DBDR,   R_ZERO
+    mtspr       SPR_RMPD,   R_ZERO
 
     rumboot_putstring  "Done!\n"
 
@@ -232,8 +399,8 @@ tlb_entries:
 
 setup_tlb:
 	rumboot_putstring  "Init TLB entries... "
-    load_addr   r3, tlb_entries
-    load_const  r4, TLB_ENTRIES_N
+    load_addr   R_ARG0, tlb_entries
+    load_const  R_ARG1, TLB_ENTRIES_N
     bl          ppc470s_write_tlb_entries
     isync
 	rumboot_putstring  "Done!\n"
@@ -243,25 +410,23 @@ setup_tlb:
 
 test_ok:
     rumboot_putstring   "TEST_OK!\n"
-    test_event          EVENT_OK
     exit                RESULT_OK
     b                   test_finish
 
 test_error:
     rumboot_putstring   "TEST_ERROR!\n"
-    test_event          EVENT_ERROR
     exit                RESULT_ERROR
 
 test_finish:
-    test_event          EVENT_FINISHED
 test_finish_loop:
     b                   test_finish_loop
 
 .section ".text","ax",@progbits
 
 begin_test:
+    set_cr      cr6,    eq
+
 check_cpu_ppc_plb6plb4_0_2:
-    cmpwi cr6,  r30,    0x0000
     rumboot_putstring   "Check PLB6PLB4_0 reset values...\n"
     check_value CVR3,   P640(P64CR ),   P64CR_0_RESET_VAL,              "PLB6PLB4_0_P64CR"
     check_value CVR3,   P640(ESR   ),   ESR_RESET_VAL,                  "PLB6PLB4_0_ESR"
@@ -274,116 +439,26 @@ check_cpu_ppc_plb6plb4_0_2:
     check_value CVR3,   P640(ADDRH1),   ADDRH1_RESET_VAL,               "PLB6PLB4_0_ADDRH1"
     rumboot_putstring   "done.\n"
 
-check_cpu_ppc_plb6plb4_0_3:
-	rumboot_putstring  "Check PLB6PLB4_0 running <1>\n"
-    load_const  r11,    0x00000000
-    load_const  r10,    P640(ADDRL1)
-    mtdcrx      r10,    r11
-    mfdcrx      r12,    r10
-    cmpw cr7,   r12,    r11
-    TEST_ASSERT(eq,cr7,"Read/write error in PLB6PLB4_0_ADDRL1")
-
-plb6plb4_0_running_1:
-    load_const  r11,    0x00000001
-    load_const  r3,     0x00000001
-    load_const  r4,     0x80000000
-plb6plb4_0_loop_1:
-    mtdcrx      r10,    r11
-    mfdcrx      r12,    r10
-    cmpw cr7,   r12,    r11
-    TEST_ASSERT(eq,cr7,"Read/write error in PLB6PLB4_0_ADDRL1 (running 1)")
-    cmpw cr0,   r11,    r4
-    beq- cr0,   plb6plb4_0_running_0
-    slw         r11,    r11,    r3
-    b           plb6plb4_0_loop_1
-
-plb6plb4_0_running_0:
-    rumboot_putstring   "done.\n"
-    rumboot_putstring   "Check PLB6PLB4_0 running <0>\n"
-    load_const  r11,    0xFFFFFFFF
-    load_const  r10,    P640(ADDRL1)
-    mtdcrx      r10,    r11
-    mfdcrx      r12,    r10
-    cmpw cr7,   r12,    r11
-    TEST_ASSERT(eq,cr7,"Read/write error in PLB6PLB4_0_ADDRL1 (running 0)")
-
-    load_const  r11,    0xFFFFFFFE
-    load_const  r3,     0x00000001
-    load_const  r4,     0x7FFFFFFF
-plb6plb4_0_loop_0:
-    mtdcrx      r10,    r11
-    mfdcrx      r12,    r10
-    cmpw cr7,   r12,    r11
-    TEST_ASSERT(eq,cr7,"Read/write error in PLB6PLB4_0_ADDRL1 (running 0)")
-    cmpw cr0,   r11,    r4
-    beq- cr0,   end_plb6plb4_0
-    slw         r11,    r11,    r3
-    ori         r11,    r11,    0x0001
-    b           plb6plb4_0_loop_0
-end_plb6plb4_0:
-    rumboot_putstring   "done.\n"
-
 check_cpu_ppc_plb6plb4_1_2:
     rumboot_putstring   "Check PLB6PLB4_1 reset values...\n"
-    check_value CVR3,   P641(P64CR ), P64CR_1_RESET_VAL,            "PLB6PLB4_1_P64CR"
-    check_value CVR3,   P641(ESR   ), ESR_RESET_VAL,                "PLB6PLB4_1_ESR"
-    check_value CVR3,   P641(P64REV), P64REV_RESET_VAL,             "PLB6PLB4_1_P64REV"
-    check_value CVR3,   P641(EARH  ), EARH_RESET_VAL,               "PLB6PLB4_1_EARH"
-    check_value CVR3,   P641(EARL  ), EARL_RESET_VAL,               "PLB6PLB4_1_EARL"
-    check_value CVR3,   P641(ADDRL0), PLB6PLB4_1_ADDRL0_RESET_VAL,  "PLB6PLB4_1_ADDRL0"
-    check_value CVR3,   P641(ADDRH0), PLB6PLB4_1_ADDRH0_RESET_VAL,  "PLB6PLB4_1_ADDRH0"
-    check_value CVR3,   P641(ADDRL1), ADDRL1_RESET_VAL,             "PLB6PLB4_1_ADDRL1"
-    check_value CVR3,   P641(ADDRH1), ADDRH1_RESET_VAL,             "PLB6PLB4_1_ADDRH1"
+    check_value CVR3,   P641(P64CR ),   P64CR_1_RESET_VAL,            "PLB6PLB4_1_P64CR"
+    check_value CVR3,   P641(ESR   ),   ESR_RESET_VAL,                "PLB6PLB4_1_ESR"
+    check_value CVR3,   P641(P64REV),   P64REV_RESET_VAL,             "PLB6PLB4_1_P64REV"
+    check_value CVR3,   P641(EARH  ),   EARH_RESET_VAL,               "PLB6PLB4_1_EARH"
+    check_value CVR3,   P641(EARL  ),   EARL_RESET_VAL,               "PLB6PLB4_1_EARL"
+    check_value CVR3,   P641(ADDRL0),   PLB6PLB4_1_ADDRL0_RESET_VAL,  "PLB6PLB4_1_ADDRL0"
+    check_value CVR3,   P641(ADDRH0),   PLB6PLB4_1_ADDRH0_RESET_VAL,  "PLB6PLB4_1_ADDRH0"
+    check_value CVR3,   P641(ADDRL1),   ADDRL1_RESET_VAL,             "PLB6PLB4_1_ADDRL1"
+    check_value CVR3,   P641(ADDRH1),   ADDRH1_RESET_VAL,             "PLB6PLB4_1_ADDRH1"
     rumboot_putstring   "done.\n"
 
-check_cpu_ppc_plb6plb4_1_3:
-    rumboot_putstring   "Check PLB6PLB4_1 running <1>\n"
-    load_const  r11,    0x00000000
-    load_const  r10,    P641(ADDRL1)
-    mtdcrx      r10,    r11
-    mfdcrx      r12,    r10
-    cmpw cr7,   r12,    r11
-    TEST_ASSERT(eq,cr7,"Read/write error in PLB6PLB4_1_ADDRL1")
+    /*       block number | DCR-addr      | mask      | fill val  | begin val | end val   | reg name |  */
+    check_running_10    0,  P640(ADDRL1),   0xFFFFFFFF, 0x00000001, 0x00000001, 0x80000000, "ADDRL1"
+    check_running_10    1,  P640(ADDRL1),   0xFFFFFFFF, 0x00000001, 0x00000001, 0x80000000, "ADDRL1"
 
-plb6plb4_1_running_1:
-    load_const  r11,	0x00000001
-    load_const  r3,     0x00000001
-    load_const  r4,     0x80000000
-plb6plb4_1_loop_1:
-    mtdcrx      r10,    r11
-    mfdcrx      r12,    r10
-    cmpw cr7,   r12,    r11
-    TEST_ASSERT(eq,cr7,"Read/write error in PLB6PLB4_1_ADDRL1 (running 1)")
-    cmpw cr0,   r11,    r4
-    beq- cr0,   plb6plb4_1_running_0
-    slw         r11,    r11,    r3
-    b           plb6plb4_1_loop_1
-
-plb6plb4_1_running_0:
-    rumboot_putstring   "done.\n"
-    rumboot_putstring   "Check PLB6PLB4_1 running <0>\n"
-    load_const  r11,    0xFFFFFFFF
-    load_const  r10,    P641(ADDRL1)
-    mtdcrx      r10,    r11
-    mfdcrx      r12,    r10
-    cmpw cr7,   r12,    r11
-    TEST_ASSERT(eq,cr7,"Read/write error in PLB6PLB4_1_ADDRL1 (running 0)")
-
-    load_const  r11,    0xFFFFFFFE
-    load_const  r3,     0x00000001
-    load_const  r4,     0x7FFFFFFF
-plb6plb4_1_loop_0:
-    mtdcrx      r10,    r11
-    mfdcrx      r12,    r10
-    cmpw cr7,   r12,    r11
-    TEST_ASSERT(eq,cr7,"Read/write error in PLB6PLB4_1_ADDRL1 (running 0)")
-    cmpw cr0,   r11,    r4
-    beq- cr0,   end_plb6plb4_1
-    slw         r11,    r11,    r3
-    ori         r11,    r11,    0x0001
-    b plb6plb4_1_loop_0
-end_plb6plb4_1:
-    rumboot_putstring   "done.\n"
+    /*           block number | base DCR-address   |    */
+    check_running_10_tesr   0,  DCR_PLB6PLB4_0_BASE
+    check_running_10_tesr   1,  DCR_PLB6PLB4_1_BASE
 
     blr
 
