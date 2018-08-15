@@ -157,7 +157,7 @@ static bool dma2plb6_memcpy(const uint32_t base_addr, const uint64_t source, con
 
 int main(void)
 {
-    emi_init();
+    emi_init(DCR_EM2_EMI_BASE);
 
     uint64_t src = 0, dst = 0;
     transfer_width dma_transfer_width_cur;
