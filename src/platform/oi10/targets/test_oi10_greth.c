@@ -271,7 +271,7 @@ void prepare_test_data(uint32_t src_bank, uint32_t dst_bank)
         memcpy(test_data_im1_src, test_data_im0_src, sizeof(test_data_im0_src));
 
     if ((src_bank==2) || (dst_bank==2))
-        emi_init();
+        emi_init(DCR_EM2_EMI_BASE);
 
     if (src_bank==2)
     {
