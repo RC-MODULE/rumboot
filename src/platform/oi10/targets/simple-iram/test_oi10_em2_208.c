@@ -23,6 +23,7 @@
 #define TEST_EVENT_CHECK_GPIO_ACTIVE    0x00001002
 #define TEST_EVENT_CHECK_GPIO_HIZ       0x00001003
 #define TEST_EVENT_CHECK_MDIO           0x00001004
+#define TEST_EVENT_CHECK_HOLDAn         0x00001005
 
 void check_emi_ports()
 {
@@ -67,6 +68,11 @@ void check_mdio()
     TEST_ASSERT(greth_mdio_read(GRETH_1_BASE, ETH_PHY_ADDR, ETH_PHY_ID0 )==ETH_PHY_ID0_DEFAULT, "Error at mdio reading ETH1_PHY_ID0 register\n");
 }
 
+void check_holdan()
+{
+    test_event(TEST_EVENT_CHECK_HOLDAn);
+}
+
 
 int main()
 {
@@ -76,6 +82,7 @@ int main()
     check_emi_ports();
     check_gpio();
     check_mdio();
+    check_holdan();
 
     return 0;
 }
