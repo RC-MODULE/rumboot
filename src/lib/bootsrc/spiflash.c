@@ -2,7 +2,7 @@
 #include <rumboot/io.h>
 #include <rumboot/printf.h>
 #include <rumboot/timer.h>
-
+#include <rumboot/macros.h>
 #include <regs/regs_spi.h>
 
 #include <stddef.h>
@@ -31,6 +31,125 @@ struct spiflash_private_data {
 	const struct rumboot_bootsource *src;
 };
 
+
+
+void pl022_internal_cs(uint32_t base, int select)
+{
+	/* TODO: .... */
+}
+
+bool pl022_tx_empty(uint32_t base)
+{
+	return ioread32(base + PL022_SR) & (1 << PL022_SR__TFE_i);
+}
+
+bool pl022_tx_avail(uint32_t base)
+{
+	return ioread32(base + PL022_SR) & (1 << PL022_SR__TNF_i);
+}
+
+bool pl022_rx_empty(uint32_t base)
+{
+	return !(ioread32(base + PL022_SR) & (1 << PL022_SR__RNE_i));
+}
+
+void pl022_dump_fifo_state(uint32_t base)
+{
+	rumboot_printf("FIFO: rx: %s tx %s\n",
+		pl022_rx_empty(base) ? "empty" : "non-empty",
+		pl022_tx_empty(base) ? "empty" : "non-empty");
+}
+
+void pl022_xfer(uint32_t base, unsigned char *wrbuf, unsigned char *rdbuf, size_t len)
+{
+	int written = 0;
+	int read = 0;
+
+	while ((read < len) || (written < len)) {
+		if ((read < len) && (!pl022_rx_empty(base))) {
+			*rdbuf++ = (unsigned char)(ioread32(base + PL022_DR) & 0xff);
+			read++;
+		}
+		if ((written < len) && (pl022_tx_avail(base))) {
+			iowrite32(*wrbuf++, base + PL022_DR);
+			written++;
+		}
+	}
+}
+
+void pl022_clear_rx_buf(uint32_t base)
+{
+	while (ioread32(base + PL022_SR) & (1 << PL022_SR__RNE_i))
+		ioread32(base + PL022_DR);
+}
+
+static void spi_cs(const struct rumboot_bootsource *src, void *pdata, int select)
+{
+	if (src->chipselect) {
+		src->chipselect(src, pdata, select);
+	} else {
+		pl022_internal_cs(src->base, select);
+	}
+}
+
+
+#define	SPIFLASH_MANID         0x90
+#define SPIFLASH_PAGEPROG      0x02
+#define SPIFLASH_READDATA      0x03
+#define SPIFLASH_FASTREAD      0x0B
+#define SPIFLASH_WRITEDISABLE  0x04
+#define SPIFLASH_READSTAT1     0x05
+#define SPIFLASH_READSTAT2     0x35
+#define SPIFLASH_READSTAT3     0x15
+#define SPIFLASH_WRITESTATEN   0x50
+#define SPIFLASH_WRITESTAT1    0x01
+#define SPIFLASH_WRITESTAT2    0x31
+#define SPIFLASH_WRITESTAT3    0x11
+#define SPIFLASH_WRITEENABLE   0x06
+#define SPIFLASH_ADDR4BYTE_EN  0xB7
+#define SPIFLASH_ADDR4BYTE_DIS 0xE9
+#define SPIFLASH_SECTORERASE   0x20
+#define SPIFLASH_BLOCK32ERASE  0x52
+#define SPIFLASH_BLOCK64ERASE  0xD8
+#define SPIFLASH_CHIPERASE     0x60
+#define SPIFLASH_ALT_CHIPERASE 0xC7    // Some flash chips use a different chip erase command
+#define SPIFLASH_SUSPEND       0x75
+#define SPIFLASH_ID            0x90
+#define SPIFLASH_RESUME        0x7A
+#define SPIFLASH_JEDECID       0x9F
+#define SPIFLASH_POWERDOWN     0xB9
+#define SPIFLASH_RELEASE       0xAB
+#define SPIFLASH_READSFDP      0x5A
+#define SPIFLASH_UNIQUEID 	   0x4B
+
+
+void spiflash_read_id(uint32_t base) {
+   unsigned char wrbuf[5];
+   unsigned char rdbuf[5];
+
+   wrbuf[0] = SPIFLASH_MANID;
+
+   pl022_xfer(base, wrbuf, rdbuf, 5);
+   int i;
+
+   for (i=0; i<5; i++) {
+	   rumboot_printf("0x%x\n", rdbuf[i]);
+   }
+}
+
+void spiflash_read_flash(uint32_t base, uint32_t offset, unsigned char *dest, int len) {
+   unsigned char cmd[4];
+   cmd[0] = SPIFLASH_READDATA;
+   cmd[1] = (unsigned char) ((offset >> 16) & 0xff);
+   cmd[2] = (unsigned char) ((offset >> 8)  & 0xff);
+   cmd[3] = (unsigned char) ((offset >> 0)  & 0xff);
+
+   pl022_xfer(base, cmd, cmd, ARRAY_SIZE(cmd));
+   pl022_xfer(base, dest, dest, len);
+
+}
+
+
 /*FIX THIS FUNC!*/
 #if 0
 static uint32_t calc_div(const uint32_t freq)
@@ -55,11 +174,6 @@ static void set_data_size(uint32_t base, enum Data_size data_size)
 	iowrite32(value, base + PL022_CR0);
 }
 
-static void clear_rx_buf(uint32_t base)
-{
-	while (ioread32(base + PL022_SR) & (1 << PL022_SR__RNE_i))
-		ioread32(base + PL022_DR);
-}
 
 static bool spiflash_init(const struct rumboot_bootsource *src, void *pdata)
 {
@@ -78,94 +192,20 @@ static bool spiflash_init(const struct rumboot_bootsource *src, void *pdata)
 	return true;
 }
 
-static inline struct spiflash_private_data *to_spiflash_pdata(void *pdata)
+static void spiflash_deinit(const struct rumboot_bootsource *src, void *pdata)
 {
-	return (struct spiflash_private_data *)pdata;
-}
 
-static void spiflash_deinit(void *pdata)
-{
-	/*TO DO!*/
-	struct spiflash_private_data *spiflash_pdata = to_spiflash_pdata(pdata);
-	const struct rumboot_bootsource *src = spiflash_pdata->src;
 	uint32_t cr1 = ioread32(src->base + PL022_CR1);
-
 	iowrite32(cr1 & ~(1 << PL022_CR1__SSE_i), src->base + PL022_CR1); //disable PL022 SSP
 }
 
-static int spiflash_read(void *pdata, void *ram, void *spi_addr)
+static size_t spiflash_read(const struct rumboot_bootsource* src, void* pdata, void* to, size_t offset, size_t length)
 {
-	/*TO DO!*/
-	struct spiflash_private_data *spiflash_pdata = to_spiflash_pdata(pdata);
-	const struct rumboot_bootsource *src = spiflash_pdata->src;
-	uint8_t *dst = ram;
-
-	clear_rx_buf(src->base);
-
-	iowrite8(0x03, src->base + PL022_DR);
-	iowrite8(( (uint32_t) spi_addr >> 16) & 0xff, src->base + PL022_DR);
-	iowrite8(( (uint32_t) spi_addr >> 8) & 0xff, src->base + PL022_DR);
-	iowrite8(( (uint32_t) spi_addr >> 0) & 0xff, src->base + PL022_DR);
-
-	uint32_t start;
-	start = rumboot_platform_get_uptime();
-
-	while (!(ioread32(src->base + PL022_SR) & (1 << PL022_SR__TFE_i))) {
-		if ((rumboot_platform_get_uptime() - start) > SPI_READ_CMD_TIMEOUT) {
-			rumboot_printf("SPI flash read cmd timeout");
-
-			return -1;
-		}
-	}
-
-	clear_rx_buf(src->base);
-
-	//UGLY HACK: WRITE REAL LENGTH
-	size_t tx_len = 512;
-	size_t rx_len = 512;
-	size_t data_size = 0;
-
-	start = rumboot_platform_get_uptime();
-
-	while (rx_len-- && tx_len--) {
-
-#if 0
-		if ((rumboot_platform_get_uptime() - start) > SPI_READ_TIMEOUT) {
-			rumboot_printf("SPI flash read timeout.\n");
-
-			return -2;
-		}
-#endif
-
-		if (ioread32(src->base + PL022_SR) & (1 << PL022_SR__TNF_i)) {
-#ifdef DEBUG
-			rumboot_printf("write 0x%x ", 0xff);
-#endif
-			iowrite16(0xff, src->base + PL022_DR);
-		}
-
-//		udelay(100);
-
-		if (ioread32(src->base + PL022_SR) & (1 << PL022_SR__RNE_i)) {
-			uint8_t byte = ioread16(src->base + PL022_DR);
-			rumboot_printf("read 0x%x\n", ioread16(src->base + PL022_DR));
-
-			*dst++ = byte;
-			//dst++;
-		}
-	}
-
-	dst = ram;
-	rumboot_printf("\n");
-
-	int i;
-	for (i = 0; i < 512; i++) {
-		rumboot_printf("%x ", *dst);
-		dst++;
-	}
-	rumboot_printf("\n");
-
-	return data_size;
+	spi_cs(src, pdata, 0);
+	rumboot_printf("boot: %s: Reading %d bytes from offset 0x%x\n", src->name, length, offset);
+	spiflash_read_flash(src->base, offset, to, length);
+	spi_cs(src, pdata, 1);
+	return length;
 }
 
 const struct rumboot_bootmodule g_bootmodule_spiflash = {

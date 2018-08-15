@@ -133,30 +133,80 @@ void rumboot_platform_selftest(struct rumboot_config *conf)
 	/* Execute selftest routines */
 }
 
-static bool spi0_prepare(const struct rumboot_bootsource* src, void* pdata)
+static bool spi0_0_enable(const struct rumboot_bootsource* src, void* pdata)
 {
-	/* GPIO0_4 is our chip-select */
-
+	uint32_t v;
+	v = ioread32(GPIO0_BASE + GPIO_PAD_DIR);
+	v |= 1<<4;
+    iowrite32(v, GPIO0_BASE + GPIO_PAD_DIR);
+	iowrite32((1<<4), GPIO0_BASE + GPIO_WR_DATA_SET1);
 	return true;
 }
 
-static void spi0_unprepare(const struct rumboot_bootsource* src, void* pdata)
+static void spi0_0_disable(const struct rumboot_bootsource* src, void* pdata)
 {
-	/*TO DO!*/
+	uint32_t v;
+	v = ioread32(GPIO0_BASE + GPIO_PAD_DIR);
+	v &= ~(1<<4);
+    iowrite32(v, GPIO0_BASE + GPIO_PAD_DIR);
 }
 
+static void spi0_0_cs(const struct rumboot_bootsource* src, void* pdata, int select)
+{
+	if (!select) {
+    	iowrite32(~(1<<4), GPIO0_BASE + GPIO_WR_DATA_SET0);
+	} else {
+		iowrite32((1<<4), GPIO0_BASE + GPIO_WR_DATA_SET1);
+	}
+}
 
+static bool spi0_1_enable(const struct rumboot_bootsource* src, void* pdata)
+{
+	uint32_t v;
+	v = ioread32(GPIO0_BASE + GPIO_PAD_DIR);
+	v |= 1<<5;
+    iowrite32(v, GPIO0_BASE + GPIO_PAD_DIR);
+	iowrite32((1<<5), GPIO0_BASE + GPIO_WR_DATA_SET1);	
+	return true;
+}
 
+static void spi0_1_disable(const struct rumboot_bootsource* src, void* pdata)
+{
+	uint32_t v;
+	v = ioread32(GPIO0_BASE + GPIO_PAD_DIR);
+	v &= ~(1<<5);
+    iowrite32(v, GPIO0_BASE + GPIO_PAD_DIR);
+}
+
+static void spi0_1_cs(const struct rumboot_bootsource* src, void* pdata, int select)
+{
+	if (!select) {
+    	iowrite32(~(1<<5), GPIO0_BASE + GPIO_WR_DATA_SET0);
+	} else {
+		iowrite32((1<<5), GPIO0_BASE + GPIO_WR_DATA_SET1);
+	}
+}
 
 static const struct rumboot_bootsource arr[] = {
 		{
-			.name = "SPI_0",
+			.name = "SPI0 (CS: GPIO0_4)",
 			.base = GSPI0_BASE,
 			.freq_khz = 100000,
 			.plugin = &g_bootmodule_spiflash,
-			.prepare = spi0_prepare,
-			.unprepare = spi0_unprepare,
+			.enable  = spi0_0_enable,
+			.disable = spi0_0_disable,
+			.chipselect = spi0_0_cs,
 		},
+		{
+			.name = "SPI0 (CS: GPIO0_5)",
+			.base = GSPI0_BASE,
+			.freq_khz = 100000,
+			.plugin = &g_bootmodule_spiflash,
+			.enable  = spi0_1_enable,
+			.disable = spi0_1_disable,
+			.chipselect = spi0_1_cs,
+		},
+
 	#if 0
 	{
 		.name = "SDIO_0",

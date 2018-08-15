@@ -27,6 +27,10 @@
 #include <platform/bootheader.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <unistd.h>
+#include <stdlib.h>
+
+struct rumboot_bootsource;
 
 struct __attribute__((packed)) rumboot_bootheader {
     uint32_t magic;
@@ -38,6 +42,7 @@ struct __attribute__((packed)) rumboot_bootheader {
     uint32_t datalen;
     uint32_t entry_point[11];
     uint32_t header_crc32;
+    const struct rumboot_bootsource *device;
     char     data[];
 };
 
@@ -47,7 +52,7 @@ struct __attribute__((packed)) rumboot_bootheader {
  * @param  dataptr Pointer to image data (for a valid header)
  * @return         Image data length
  */
-int32_t rumboot_bootimage_check_header(struct rumboot_bootheader *hdr, void **dataptr);
+ssize_t rumboot_bootimage_check_header(struct rumboot_bootheader *hdr, void **dataptr);
 
 /**
  * Validate data section of the bootable image
@@ -69,6 +74,7 @@ int32_t rumboot_bootimage_exec(struct rumboot_bootheader *hdr);
  * @}
  */
 
+#define dbg_boot(src, msg, ...) rumboot_printf("boot: %s: " msg "\n", src->name, ## __VA_ARGS__);
 
  #define DBG_ASSERT(statement, message) \
    { \
@@ -78,12 +84,13 @@ int32_t rumboot_bootimage_exec(struct rumboot_bootheader *hdr);
      } \
    }
 
-struct rumboot_bootsource;
+
  struct rumboot_bootmodule {
     int privdatalen;
-    bool (*init) (const struct rumboot_bootsource* src, void* pdata);
-    void (*deinit) (void* pdata);
-    int  (*read) (void* pdata, void* dest, void* src);
+    size_t align;
+    bool (*init)      (const struct rumboot_bootsource* src, void* pdata);
+    void (*deinit)    (const struct rumboot_bootsource* src, void* pdata);
+    size_t  (*read)   (const struct rumboot_bootsource* src, void* pdata, void* to, size_t offset, size_t length);
  };
 
  struct rumboot_bootsource {
@@ -92,8 +99,9 @@ struct rumboot_bootsource;
    uint32_t offset;
    uint32_t freq_khz;
    const struct rumboot_bootmodule *plugin;
-   bool (*prepare)   (const struct rumboot_bootsource* src, void* pdata);
-   void (*unprepare) (const struct rumboot_bootsource* src, void* pdata);
+   bool (*enable)   (const struct rumboot_bootsource* src, void* pdata);
+   void (*disable) (const struct rumboot_bootsource* src, void* pdata);
+   void (*chipselect)(const struct rumboot_bootsource* src, void* pdata, int select);
  };
 
  bool bootsource_try_single(const struct rumboot_bootsource *src, void* pdata);
@@ -103,7 +111,7 @@ struct rumboot_bootsource;
  struct rumboot_config {
          bool	hostmode;
          bool	selftest;
-         bool  has_edcl;
+         bool   has_edcl;
          bool	edcl;
          bool	legacyboot;
          int	baudrate;

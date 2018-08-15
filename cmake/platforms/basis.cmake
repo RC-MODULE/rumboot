@@ -333,6 +333,8 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
           FILES bootrom.c
           PREFIX "bootrom"
           NAME "production"
+          LOAD
+            SPI0_CONF spl-ok
   )
 
   add_rumboot_target(

@@ -10,32 +10,24 @@
 
 static bool load_img(const struct rumboot_bootsource *src, void *pdata)
 {
-	uint8_t *read_from = (uint8_t *)(src->base + src->offset);
-	uint8_t *write_to = (uint8_t *)&rumboot_platform_spl_start;
-	char tmp[512];
+	struct rumboot_bootheader *hdr = (struct rumboot_bootheader *) &rumboot_platform_spl_start;
+	void *data;
+
+	size_t toread = src->plugin->align;
+	if (!toread)
+		toread = sizeof(*hdr);
 
 	//Read header!
-	size_t count = src->plugin->read(pdata, &tmp, read_from);
-	if(count < 0)
+	size_t count = src->plugin->read(src, pdata, hdr, 0, toread);
+	if(count != toread) {
 		return false;
+	}
+	hdr->device = src;
 
-	struct rumboot_bootheader *hdr = (struct rumboot_bootheader *)&tmp;
-	size_t img_size = hdr->datalen + 66;
-
-	//Reed data image
-	while (img_size > 0) {
-
-		count = src->plugin->read(pdata, &tmp, read_from);
-
-		if (count < 0) {
-			rumboot_printf("boot: read from %s failed.\n", src->name);
-			break;
-		}
-		memcpy(write_to, &tmp, count);
-
-		img_size	-= count;
-		write_to	+= count;
-		read_from	+= count;
+	ssize_t len = rumboot_bootimage_check_header(hdr, &data);
+	dbg_boot(src, "%d", len);
+	if (len > 0) {
+		src->plugin->read(src, pdata, hdr->data, count, len);
 	}
 
 	return true;
@@ -45,49 +37,45 @@ bool bootsource_try_single(const struct rumboot_bootsource *src, void *pdata)
 {
 	bool ret = false;
 
-	rumboot_printf("boot: trying to boot from  %s\n", src->name);
-
 	//DBG_ASSERT(PRIVDATA_SIZE < src->privdatalen, "FATAL: Increase PRIVDATA_SIZE length");
 
 	struct rumboot_bootheader *dst = (struct rumboot_bootheader *)&rumboot_platform_spl_start;
 
-	ret = src->prepare(src, pdata);
+	ret = src->enable(src, pdata);
 	if (ret) {
-		rumboot_printf("boot: %s, gpio initialized, okay\n", src->name);
+		dbg_boot(src, "Enabled successfully");
 	} else {
-		rumboot_printf("boot: %s, gpio initialization failed\n", src->name);
+		dbg_boot(src, "Failed to enable or media not present");
 		goto gpio_deinit;
 	}
 
 	ret = src->plugin->init(src, pdata);
 	if (ret) {
-		rumboot_printf("boot: %s initialized, okay\n", src->name);
+		dbg_boot(src, "Initialized");
 	} else {
-		rumboot_printf("boot: %s initialization failed\n", src->name);
+		dbg_boot(src, "Initialization failed");
 		goto deinit;
 	}
 
 	ret = load_img(src, pdata);
 	if (ret) {
-		rumboot_printf("boot: loaded an image from %s, okay, ", src->name);
+		dbg_boot(src, "Image validated successfully");
 	} else {
-		rumboot_printf("boot: no valid image found in %s\n\n", src->name);
+		dbg_boot(src, "No bootable image found");
 		goto deinit;
 	}
 
-	rumboot_printf("and... execute!\n");
-
-	/* At this point we have a valid image in IM0 */
-	rumboot_bootimage_exec(dst);
-
-    /* We might get back here actually */
-	return true;
-
 deinit:
-	src->plugin->deinit(pdata);
+	src->plugin->deinit(src, pdata);
 gpio_deinit:
-	src->unprepare(src, pdata);
-	return false;
+	src->disable(src, pdata);
+
+	if (ret) {
+		dbg_boot(src, "Executing image");
+		rumboot_bootimage_exec(dst);
+	}
+
+	return ret;
 }
 
 bool bootsource_try_chain(const struct rumboot_bootsource *src, void *pdata)
