@@ -452,7 +452,7 @@ check_cpu_ppc_plb6plb4_1_2:
 
     /*       block number | DCR-addr      | mask      | fill val  | begin val | end val   | reg name |  */
     check_running_10    0,  P640(ADDRL1),   0xFFFFFFFF, 0x00000001, 0x00000001, 0x80000000, "ADDRL1"
-    check_running_10    1,  P640(ADDRL1),   0xFFFFFFFF, 0x00000001, 0x00000001, 0x80000000, "ADDRL1"
+    check_running_10    1,  P641(ADDRL1),   0xFFFFFFFF, 0x00000001, 0x00000001, 0x80000000, "ADDRL1"
 
     /*           block number | base DCR-address   |    */
     check_running_10_tesr   0,  DCR_PLB6PLB4_0_BASE
