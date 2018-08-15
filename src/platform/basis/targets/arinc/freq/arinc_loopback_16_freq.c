@@ -99,10 +99,13 @@ int arinc_status_check16(uint32_t status_x_tx, uint32_t status_x_rx) {
 	iowrite32(( (1 << i) + (1 << (16 +i)) ),ARINC_BASE + CHANNEL_DIS); // stop transmitter
     }
      
-	cnt=0; 
+
+    i = 0;
 	for (i = 0; i< 16 ; i++) 
 	{
-	cnt=0;	
+	cnt=0;
+	//rumboot_printf("STAT_E_RX=0x%x\n", (STAT_E_RX +i*4)); 
+	tmp_r= -1;
 	while (tmp_r != status_success_bit) {
 	tmp = ioread32(ARINC_BASE + STAT_E_RX +i*4);
 	tmp_r = tmp & status_success_bit;
