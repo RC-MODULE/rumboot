@@ -88,21 +88,21 @@ asm (       \
     asm("    rfci  \n\t");\
     void cr_isr
 
-/*
+
 #define COMPARE_VALUES(received, expected, msg)     \
 MACRO_BEGIN                                         \
     uint32_t rcv = received;                        \
     uint32_t exp = expected;                        \
     if (rcv!=exp)                                   \
     {                                               \
-        trace_msg(msg"\n");                         \
-        trace_msg("Received: ");                    \
-        trace_hex(rcv);                             \
-        trace_msg("Expected: ");                    \
-        trace_hex(exp);                             \
+        rumboot_putstring(msg"\n");                         \
+        rumboot_putstring("Received: ");                    \
+        rumboot_puthex(rcv);                             \
+        rumboot_putstring("Expected: ");                    \
+        rumboot_puthex(exp);                             \
         test_event( EVENT_ASSERT );                 \
     }                                               \
 MACRO_END
-*/
+
 
 #endif /* TEST_MACRO_H_ */

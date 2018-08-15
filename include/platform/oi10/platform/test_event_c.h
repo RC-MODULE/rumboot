@@ -11,9 +11,9 @@
 #include <rumboot/platform.h>
 #include <platform/arch/ppc/ppc_476fp_config.h>
 
-static inline void test_event( uint32_t const event_code ) {
-    unsigned volatile test_event_opcode = EVENT_TESTEVENT;
-    unsigned volatile nop_opcode        = EVENT_NOP;
+static inline __attribute__((always_inline)) void test_event( uint32_t const event_code ) {
+    register uint32_t const test_event_opcode   = EVENT_TESTEVENT;
+    register uint32_t const nop_opcode          = EVENT_NOP;
     asm volatile(
         "mtspr %0, %1 \n\t"
         "mtspr %2, %3 \n\t"
@@ -25,10 +25,10 @@ static inline void test_event( uint32_t const event_code ) {
 }
 
 
-static inline void test_event_send_test_id( const char* test_id ) {
-    unsigned volatile test_event_opcode = EVENT_TESTEVENT;
-    unsigned volatile nop_opcode        = EVENT_NOP;
-    uint32_t event_code                 = TEST_EVENT_NEW_TEST_STARTED;
+static inline __attribute__((always_inline)) void test_event_send_test_id( char const * const test_id ) {
+    register uint32_t const test_event_opcode   = EVENT_TESTEVENT;
+    register uint32_t const nop_opcode          = EVENT_NOP;
+    register uint32_t const event_code          = TEST_EVENT_NEW_TEST_STARTED;
     asm volatile(
         "mtspr %0, %1 \n\t"
         "mtspr %2, %3 \n\t"
