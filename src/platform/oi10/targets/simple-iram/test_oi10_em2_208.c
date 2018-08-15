@@ -15,9 +15,14 @@
 #include <rumboot/platform.h>
 #include <platform/test_assert.h>
 #include <platform/devices/emi.h>
+#include <platform/devices/greth.h>
+#include <devices/gpio_pl061.h>
 
 #define TEST_EVENT_CHECK_EMI_ACTIVE     0x00001000
 #define TEST_EVENT_CHECK_EMI_HIZ        0x00001001
+#define TEST_EVENT_CHECK_GPIO_ACTIVE    0x00001002
+#define TEST_EVENT_CHECK_GPIO_HIZ       0x00001003
+#define TEST_EVENT_CHECK_MDIO           0x00001004
 
 void check_emi_ports()
 {
@@ -37,12 +42,40 @@ void check_emi_ports()
     TEST_ASSERT(test_data==ioread32(SRAM0_BASE), "Data error");
 }
 
+void check_gpio()
+{
+    test_event(TEST_EVENT_CHECK_GPIO_HIZ);
+
+    gpio_set_port_direction(GPIO_0_BASE, GIO_PIN_ALL_OUT);
+    gpio_set_port_direction(GPIO_1_BASE, GIO_PIN_ALL_OUT);
+    for (int i=0; i<8; i++)
+    {
+        gpio_set_pin(GPIO_0_BASE, i, 0);
+        gpio_set_pin(GPIO_1_BASE, i, 0);
+    }
+    test_event(TEST_EVENT_CHECK_GPIO_ACTIVE);
+
+    gpio_set_port_direction(GPIO_0_BASE, GIO_PIN_ALL_IN);
+    gpio_set_port_direction(GPIO_1_BASE, GIO_PIN_ALL_IN);
+    test_event(TEST_EVENT_CHECK_GPIO_HIZ);
+}
+
+void check_mdio()
+{
+    test_event(TEST_EVENT_CHECK_MDIO);
+    TEST_ASSERT(greth_mdio_read(GRETH_0_BASE, ETH_PHY_ADDR, ETH_PHY_ID0 )==ETH_PHY_ID0_DEFAULT, "Error at mdio reading ETH0_PHY_ID0 register\n");
+    TEST_ASSERT(greth_mdio_read(GRETH_1_BASE, ETH_PHY_ADDR, ETH_PHY_ID0 )==ETH_PHY_ID0_DEFAULT, "Error at mdio reading ETH1_PHY_ID0 register\n");
+}
+
+
 int main()
 {
     rumboot_printf("Start test_oi10_em2_208\n");
     test_event_send_test_id("test_oi10_em2_208");
 
     check_emi_ports();
+    check_gpio();
+    check_mdio();
 
     return 0;
 }
