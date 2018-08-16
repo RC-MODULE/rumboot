@@ -101,7 +101,7 @@
 void check_emi_ports()
 {
     const uint32_t test_data = 0xDEADBA11;
-    emi_init();
+    emi_init(DCR_EM2_EMI_BASE);
 
     test_event(TEST_EVENT_CHECK_EMI_ACTIVE);
     iowrite32(test_data, SRAM0_BASE);
