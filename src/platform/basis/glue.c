@@ -166,7 +166,7 @@ static bool spi0_1_enable(const struct rumboot_bootsource* src, void* pdata)
 	v = ioread32(GPIO0_BASE + GPIO_PAD_DIR);
 	v |= 1<<5;
     iowrite32(v, GPIO0_BASE + GPIO_PAD_DIR);
-	iowrite32((1<<5), GPIO0_BASE + GPIO_WR_DATA_SET1);	
+	iowrite32((1<<5), GPIO0_BASE + GPIO_WR_DATA_SET1);
 	return true;
 }
 

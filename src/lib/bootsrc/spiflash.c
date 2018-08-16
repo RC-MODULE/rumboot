@@ -4,84 +4,17 @@
 #include <rumboot/timer.h>
 #include <rumboot/macros.h>
 #include <regs/regs_spi.h>
-
 #include <stddef.h>
+#include <devices/pl022.h>
 
 #define DEBUG
 #define SPI_READ_TIMEOUT 500
 
-enum Data_size {
-  _4_BIT = 0,
-  _5_BIT,
-  _6_BIT,
-  _7_BIT,
-  _8_BIT,
-  _9_BIT,
-  _10_BIT,
-  _11_BIT,
-  _12_BIT,
-  _13_BIT,
-  _14_BIT,
-  _15_BIT,
-  _16_BIT,
-};
 
 
 struct spiflash_private_data {
 	const struct rumboot_bootsource *src;
 };
-
-
-
-void pl022_internal_cs(uint32_t base, int select)
-{
-	/* TODO: .... */
-}
-
-bool pl022_tx_empty(uint32_t base)
-{
-	return ioread32(base + PL022_SR) & (1 << PL022_SR__TFE_i);
-}
-
-bool pl022_tx_avail(uint32_t base)
-{
-	return ioread32(base + PL022_SR) & (1 << PL022_SR__TNF_i);
-}
-
-bool pl022_rx_empty(uint32_t base)
-{
-	return !(ioread32(base + PL022_SR) & (1 << PL022_SR__RNE_i));
-}
-
-void pl022_dump_fifo_state(uint32_t base)
-{
-	rumboot_printf("FIFO: rx: %s tx %s\n",
-		pl022_rx_empty(base) ? "empty" : "non-empty",
-		pl022_tx_empty(base) ? "empty" : "non-empty");
-}
-
-void pl022_xfer(uint32_t base, unsigned char *wrbuf, unsigned char *rdbuf, size_t len)
-{
-	int written = 0;
-	int read = 0;
-
-	while ((read < len) || (written < len)) {
-		if ((read < len) && (!pl022_rx_empty(base))) {
-			*rdbuf++ = (unsigned char)(ioread32(base + PL022_DR) & 0xff);
-			read++;
-		}
-		if ((written < len) && (pl022_tx_avail(base))) {
-			iowrite32(*wrbuf++, base + PL022_DR);
-			written++;
-		}
-	}
-}
-
-void pl022_clear_rx_buf(uint32_t base)
-{
-	while (ioread32(base + PL022_SR) & (1 << PL022_SR__RNE_i))
-		ioread32(base + PL022_DR);
-}
 
 static void spi_cs(const struct rumboot_bootsource *src, void *pdata, int select)
 {
@@ -152,40 +85,21 @@ void spiflash_read_flash(uint32_t base, uint32_t offset, unsigned char *dest, in
 
 /*FIX THIS FUNC!*/
 #if 0
-static uint32_t calc_div(const uint32_t freq)
-{
-	uint32_t scr = 0;
-	//uint32_t bit_rate;
-	uint32_t div = freq / (12500 * (1 + scr));
-	rumboot_printf("DIV: %d\n", div);
 
-	return div;
-}
 #endif
 
-static void set_data_size(uint32_t base, enum Data_size data_size)
-{
-	size_t i;
-	uint32_t value = 0b0011;
-
-	for (i = 0; i < data_size; i++)
-		value += 0b1;
-
-	iowrite32(value, base + PL022_CR0);
-}
 
 
 static bool spiflash_init(const struct rumboot_bootsource *src, void *pdata)
 {
 	struct spiflash_private_data *spi_flash = (struct spiflash_private_data *)pdata;
 
-	//uint32_t div = calc_div(src->freq_khz);
+   struct pl022_config conf;
+   conf.ssp_clk = src->freq_khz * 1000;
+   conf.spi_clk = 12500000;
+   conf.data_size = 8;
 
-	iowrite32(8, src->base + PL022_CPSR); //100MHz/8 = 12.5MHz if SCR = 0
-
-	set_data_size(src->base, _8_BIT);
-
-	iowrite32((1 << PL022_CR1__SOD_i) | (1 << PL022_CR1__SSE_i), src->base + PL022_CR1);//enable PL022 SSP
+   pl022_init(src->base, &conf);
 
 	spi_flash->src = src;
 
