@@ -153,7 +153,7 @@ uint32_t main(void)
     emi_init_impl (DCR_EM2_EMI_BASE, DCR_EM2_PLB6MCIF2_BASE, 0x00);
     emi_set_ecc(SRAM0_BASE, emi_b0_sram0, emi_ecc_on);
     emi_set_ecc(SRAM1_BASE, emi_b4_sram1, emi_ecc_on);
-    // emi_set_ecc(NOR_BASE,   emi_b5_nor,   emi_ecc_on);
+    emi_set_ecc(NOR_BASE,   emi_b5_nor,   emi_ecc_on);
     rumboot_putstring("done.\n");
 
     for(ckitem = check_list; ckitem->api; ckitem++)
