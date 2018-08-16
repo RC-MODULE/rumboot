@@ -144,4 +144,7 @@ void emi_get_int_mask   (uint32_t emi_dcr_base, emi_imr_cfg * mask);
 void emi_get_irr        (uint32_t emi_dcr_base, emi_irr_cfg * irr);
 void emi_clear_irr      (uint32_t emi_dcr_base, emi_irr_cfg const * irr);
 
+emi_bank_cfg
+    *emi_get_bank_cfg_cached(emi_bank_num num_bank);
+
 #endif /* EMI_H_ */
