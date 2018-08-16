@@ -4,7 +4,7 @@
 #include <string.h>
 #include <rumboot/platform.h>
 #include <rumboot/printf.h>
-#include <rumboot/memfillseq.h>
+#include <rumboot/memfill.h>
 #include <rumboot/io.h>
 #include <rumboot/macros.h>
 #include <arch/irq_macros.h>
@@ -85,20 +85,21 @@ __attribute__((no_instrument_function)) void *memset(void *s, int c, size_t n)
 	raise_event_fast(EVENT_MEMFILLSEQ, (uint32_t) __builtin_frame_address(0));
 }
 
-__attribute__((no_instrument_function)) void *rumboot_memfillseq(void *s, uint32_t c, size_t n)
+__attribute__((no_instrument_function)) int rumboot_memfill32(void *addr, size_t sz, int val, int incr)
 {
-	do_memfillseq(s, c, n);
-	return s;
+	do_memfillseq(addr,sz,val,incr);
+	return 0;
 }
 
- __attribute__((no_instrument_function)) __attribute__((optimize("-O0"))) void do_memcheckseq(void *ptr, ...)
+ __attribute__((no_instrument_function)) __attribute__((optimize("-O0"))) void do_memcheckseq(void *ptr0,  ...)
 {
 	raise_event_fast(EVENT_MEMCHECKSEQ, (uint32_t) __builtin_frame_address(0));
 }
 
-__attribute__((no_instrument_function)) void rumboot_memcheckseq(void *s, uint32_t c, size_t n)
+__attribute__((no_instrument_function)) int rumboot_memcheck32(void *src, void *dst, size_t sz)
 {
-	do_memcheckseq(s, c, n);
+	do_memcheckseq(src, dst, sz);
+  return 0;
 }
 
 __attribute__((no_instrument_function)) __attribute__((optimize("-O0"))) void do_memcpy(void *ptr, ...)
