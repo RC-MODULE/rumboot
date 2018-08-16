@@ -16,7 +16,6 @@
 #include <platform/regs/fields/mpic128.h>
 #include <rumboot/regpoker.h>
 
-//#define GSPI_CHECK_REGS
 #define TEST_DATA       0xDCFE3412
 
 #ifdef GSPI_CHECK_REGS
@@ -64,10 +63,8 @@ static uint32_t gspi_check_regs(uint32_t base_addr)
      { "IRQMASKS",      REGPOKER_READ32, GSPI_IRQMASKS,     GSPI_IRQMASKS_DEFAULT,      GSPI_IRQMASKS_MASK },
      { "DMAWSTART",     REGPOKER_WRITE32, GSPI_DMAWSTART,    0x00,                      GSPI_DMAWSTART_MASK },
      { "DMAWEND",       REGPOKER_WRITE32, GSPI_DMAWEND,      0x00,                      GSPI_DMAWEND_MASK },
-     { "DMAWCNTRL",     REGPOKER_WRITE32, GSPI_DMAWCNTRL,    0x00,                      0xC0000000 },
      { "DMARSTART",     REGPOKER_WRITE32, GSPI_DMARSTART,    0x00,                      GSPI_DMARSTART_MASK },
      { "DMAREND",       REGPOKER_WRITE32, GSPI_DMAREND,      0x00,                      GSPI_DMAREND_MASK },
-     { "DMARCNTRL",     REGPOKER_WRITE32, GSPI_DMARCNTRL,    0x00,                      0xC0000000 },
      { "AXIR_BUFTYPE",  REGPOKER_WRITE32, GSPI_AXIR_BUFTYPE, 0x00,                      GSPI_AXIR_BUFTYPE_MASK },
      { "AXI_PARAMS",    REGPOKER_WRITE32, GSPI_AXI_PARAMS,   0x00,                      GSPI_AXI_PARAMS_MASK },
      { "WORDOP",        REGPOKER_WRITE32, GSPI_WORDOP,       0x00,                      GSPI_WORDOP_MASK },
@@ -75,20 +72,6 @@ static uint32_t gspi_check_regs(uint32_t base_addr)
      { "IRQMASKS",      REGPOKER_WRITE32, GSPI_IRQMASKS,     0x00,                      GSPI_IRQMASKS_MASK },
      { /* Sentinel */ }
     };
-
-//    rumboot_printf("GSPI_DMARCNTRL check:\n");
-//    iowrite32(0xDFFFFFE0, base_addr + GSPI_DMARCNTRL);
-//    rumboot_printf("GSPI_DMARCNTRL = %x:\n", ioread32(base_addr + GSPI_DMARCNTRL));
-//    TEST_ASSERT((ioread32(base_addr + GSPI_DMARCNTRL) == 0xC0000000), "ERROR!!! The value read does not match the recorded value the register GSPI_DMARCNTRL.\n");
-//    iowrite32(0x0FFFFFE0, base_addr + GSPI_DMARCNTRL);
-//    rumboot_printf(" OK\n");
-
-//    rumboot_printf("GSPI_DMAWCNTRL check:\n");
-//    iowrite32(0xDFFFFFE0, base_addr + GSPI_DMAWCNTRL);
-//    rumboot_printf("GSPI_DMAWCNTRL = %x\n", ioread32(base_addr + GSPI_DMAWCNTRL));
-//    TEST_ASSERT((ioread32(base_addr + GSPI_DMAWCNTRL) == 0xC0000000), "ERROR!!! The value read does not match the recorded value the register GSPI_DMAWCNTRL.\n");
-//    iowrite32(0x0FFFFFE0, base_addr + GSPI_DMAWCNTRL);
-//    rumboot_printf(" OK\n");
 
     return rumboot_regpoker_check_array(check_array, base_addr);
 }
@@ -138,11 +121,14 @@ static uint32_t wait_gspi_int(){
     return 0;
 }
 
+static uint8_t data_src[] = { 0x02, 0x00, 0x00, 0x00, 0x01, 0x02, 0x03, 0x04 };
+//        , 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0xF};
+static uint8_t data_dst[4];
 
-static uint32_t gspi_dma_axi(uint32_t base_addr)
+static uint32_t gspi_dma_axi(uint32_t base_addr, uint32_t* r_mem_addr, uint32_t* w_mem_addr)
 {
-    uint8_t data[] = { 0x02, 0x00, 0x00, 0x00, 0x01, 0x02, 0x03, 0x04 };
-
+    rumboot_printf("Read from address =%x\n", r_mem_addr);
+    rumboot_printf("Write to address =%x\n", w_mem_addr);
 
     iowrite32(0x01, base_addr + GSPI_SOFTRST); //reset DMA
 
@@ -162,7 +148,6 @@ static uint32_t gspi_dma_axi(uint32_t base_addr)
 
     spi_eeprom_write_enable(base_addr);
 
-    //IM0 - IM1
     iowrite32(0x04, base_addr + GSPI_IRQMASKS); //set irq masks
 
     iowrite32(0x03, base_addr + GSPI_SSPDMACR); //enable DMA
@@ -170,11 +155,11 @@ static uint32_t gspi_dma_axi(uint32_t base_addr)
     iowrite32(0x01, base_addr + GSPI_AXIR_BUFTYPE); //base mode
     iowrite32(0x108, base_addr + GSPI_AXI_PARAMS); //AXI params
 
-    iowrite32((uint32_t)data, base_addr + GSPI_DMARSTART);
-    iowrite32((uint32_t)(data + 7), base_addr + GSPI_DMAREND);
+    iowrite32((uint32_t)r_mem_addr, base_addr + GSPI_DMARSTART);
+    iowrite32((uint32_t)((uint8_t*)(r_mem_addr) + 7), base_addr + GSPI_DMAREND);
 
-    iowrite32((uint32_t)(IM1_BASE), base_addr + GSPI_DMAWSTART);
-    iowrite32((uint32_t)(IM1_BASE + 3), base_addr + GSPI_DMAWEND);
+    iowrite32((uint32_t)(w_mem_addr), base_addr + GSPI_DMAWSTART);
+    iowrite32((uint32_t)((uint8_t*)(w_mem_addr) + 3), base_addr + GSPI_DMAWEND);
 
     iowrite32(0xDFFFFFE0, base_addr + GSPI_DMARCNTRL);
     iowrite32(0xDFFFFFE0, base_addr + GSPI_DMAWCNTRL);
@@ -185,35 +170,16 @@ static uint32_t gspi_dma_axi(uint32_t base_addr)
         ;
     DMA_write_buffer_end = 0;
 
-
-
-    rumboot_putstring("Reading from flash memory ...\n");
-    //Read from flash
-    iowrite32(0x03, base_addr+GSPI_SSPDR); //write data to SPI - command read
-    iowrite32(0x00, base_addr+GSPI_SSPDR); //write data to SPI - read address
-    iowrite32(0x00, base_addr+GSPI_SSPDR); //write data to SPI - read address
-    iowrite32(0x00, base_addr+GSPI_SSPDR); //write data to SPI - read address
-    for (int i = 0; i < 3; ++i) {
-        iowrite32(0xff, base_addr+GSPI_SSPDR); //write data to SPI - staff
-    }
-
-    while((ioread32(base_addr+GSPI_SSPSR) & 0x1) == 0) //wait tx fifo empty
-        ;
-
+    rumboot_putstring("Reading data...\n");
+    (void)spi_eeprom_read_data(base_addr);
+    rumboot_printf("Read data from memory =%x\n", ioread32((uint32_t)w_mem_addr));
     rumboot_putstring("Checking data ...\n");
-    for (int i = 0; i < 3; ++i)
+    if (ioread32((uint32_t)w_mem_addr) != 0x01020304)
     {
-        uint32_t read_data = ioread32(base_addr+GSPI_SSPDR);
-
-        rumboot_printf("read_data = 0x%x\n", read_data);
-
-        if (read_data != (i + 1))
-        {
-            rumboot_putstring("GSPI AXI IM1: SPI data read fail\n");
-            return 1;
-        }
+        rumboot_putstring("GSPI AXI: SPI data read fail\n");
+        return 1;
     }
-
+    rumboot_putstring("Check GSPI AXI: OK\n");
     return 0;
 }
 
@@ -265,7 +231,6 @@ static uint32_t gspi_ssp_eeprom(uint32_t base_addr)
 
 
     //Read and check data from spi slash
-    spi_eeprom_read_data(base_addr);
     if (spi_eeprom_read_data(base_addr) != TEST_DATA)
     {
         rumboot_printf("SPI data read fail\n");
@@ -283,7 +248,7 @@ int main(void)
 
     #ifdef GSPI_CHECK_REGS
         rumboot_printf("Checking GSPI registers ...\n");
-        test_result = gspi_check_regs(GSPI_BASE);
+        test_result += gspi_check_regs(GSPI_BASE);
     #endif
 
     IRQ = 0;
@@ -299,29 +264,39 @@ int main(void)
 
 
     rumboot_printf("Checking GSPI AXI functionality ...\n");
-    if(!gspi_dma_axi(GSPI_BASE))
-        rumboot_printf("GSPI check is OK \n");
-    else
-    {
-        rumboot_printf("GSPI test has been failed.\n");
-        test_result = 1;
-    }
+    //IM0 - IM0
+//    test_result += gspi_dma_axi(GSPI_BASE, (uint32_t*)data_src, (uint32_t*)data_dst);
+    //IM0 - IM1
+    test_result += gspi_dma_axi(GSPI_BASE, (uint32_t*)data_src, (uint32_t*)IM1_BASE);
+    //IM0 - EM2
+//    test_result += gspi_dma_axi(GSPI_BASE, (uint32_t*)data_src, (uint32_t*)EM2_BASE);
+//    memcpy(data_src, (uint32_t*)IM1_BASE, ARRAY_SIZE(data_src));
+    //IM1 - IM0
+    test_result += gspi_dma_axi(GSPI_BASE, (uint32_t*)IM1_BASE, (uint32_t*)data_dst);
+    //IM1 - IM1
+//    test_result += gspi_dma_axi(GSPI_BASE, (uint32_t*)IM1_BASE, (uint32_t*)(IM1_BASE + 16));
+    //IM1 - EM2
+//    test_result += gspi_dma_axi(GSPI_BASE, (uint32_t*)IM1_BASE, (uint32_t*)EM2_BASE);
+//    for(int i=0; i <8; i++)
+//    {
+//        rumboot_printf("data_src[%d] =0x%x\n", i, data_src[i]);
+//        iowrite8(data_src[i], EM2_BASE+i);
+//        rumboot_printf("Copy data =%x\n", ioread8(EM2_BASE+i));
+//    }
+    //EM2 - IM0
+//    test_result += gspi_dma_axi(GSPI_BASE, (uint32_t*)EM2_BASE, (uint32_t*)data_dst);
+    //EM2 - IM1
+//    test_result += gspi_dma_axi(GSPI_BASE, (uint32_t*)EM2_BASE, (uint32_t*)IM1_BASE);
+    //EM2 - EM2
+//    test_result += gspi_dma_axi(GSPI_BASE, (uint32_t*)EM2_BASE, (uint32_t*)(EM2_BASE+ 16));
+
 
     rumboot_printf("Checking GSPI EEPROM read/write functionality ...\n");
-    if(!gspi_ssp_eeprom(GSPI_BASE))
-        rumboot_printf("GSPI check is OK \n");
-    else
-    {
-        rumboot_printf("GSPI test has been failed.\n");
-        test_result = 1;
-    }
+    test_result += gspi_ssp_eeprom(GSPI_BASE);
 
     rumboot_irq_table_activate(NULL);
     rumboot_irq_free(tbl);
 
-    if (test_result)
-        return 1;
-
-    rumboot_printf("GSPI test has been finished successfully.\n");
-    return 0;
+//    rumboot_printf("GSPI test has been finished successfully.\n");
+    return test_result;
 }
