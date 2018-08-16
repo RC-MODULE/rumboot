@@ -16,7 +16,12 @@
 #include <platform/regs/regs_emi.h>
 #include <platform/test_assert.h>
 
+static emi_bank_cfg *bank_config_cache[6];
 
+emi_bank_cfg *emi_get_bank_cfg_cached(emi_bank_num num_bank)
+{
+    return bank_config_cache[num_bank];
+}
 void emi_get_bank_cfg(uint32_t const emi_dcr_base, emi_bank_num const num_bank, emi_bank_cfg * bn_cfg)
 {
     if (num_bank == emi_bank_all) TEST_ASSERT(0, "Invalid argument in emi_get_bank_cfg");
@@ -219,7 +224,7 @@ void emi_init_impl (uint32_t const emi_dcr_base, uint32_t const plb6mcif2_dcr_ba
     plb6mcif2_simple_init( plb6mcif2_dcr_base,  puaba );
 
     //init bank0 - SRAM0
-    emi_bank_cfg b0_cfg =
+    static emi_bank_cfg b0_cfg =
     {
        //SS0
        {
@@ -250,7 +255,7 @@ void emi_init_impl (uint32_t const emi_dcr_base, uint32_t const plb6mcif2_dcr_ba
     //init bank1 - SDRAM
     //setting parameters by comment:
     //(https://jira.module.ru/jira/browse/OI10-116?focusedCommentId=43530&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-43530)
-    emi_bank_cfg b1_cfg =
+    static emi_bank_cfg b1_cfg =
     {
        //SS1
        {
@@ -286,7 +291,7 @@ void emi_init_impl (uint32_t const emi_dcr_base, uint32_t const plb6mcif2_dcr_ba
     emi_set_rfc(emi_dcr_base, &emi_rfc);
 
     //init bank2 - SSRAM
-    emi_bank_cfg b2_cfg =
+    static emi_bank_cfg b2_cfg =
     {
        //SS2
        {
@@ -315,7 +320,7 @@ void emi_init_impl (uint32_t const emi_dcr_base, uint32_t const plb6mcif2_dcr_ba
     emi_set_bank_cfg(emi_dcr_base, emi_b2_ssram, &b2_cfg);
 
     //init bank3 - PIPELINED
-    emi_bank_cfg b3_cfg =
+    static emi_bank_cfg b3_cfg =
     {
        //SS3
        {
@@ -344,7 +349,7 @@ void emi_init_impl (uint32_t const emi_dcr_base, uint32_t const plb6mcif2_dcr_ba
     emi_set_bank_cfg(emi_dcr_base, emi_b3_pipelined, &b3_cfg);
 
     //init bank4 - SRAM1
-    emi_bank_cfg b4_cfg =
+    static emi_bank_cfg b4_cfg =
     {
        //SS4
        {
@@ -373,7 +378,7 @@ void emi_init_impl (uint32_t const emi_dcr_base, uint32_t const plb6mcif2_dcr_ba
     emi_set_bank_cfg(emi_dcr_base, emi_b4_sram1, &b4_cfg);
 
     //init bank5 - NOR
-    emi_bank_cfg b5_cfg =
+    static emi_bank_cfg b5_cfg =
     {
         //SS5
         {
@@ -403,6 +408,14 @@ void emi_init_impl (uint32_t const emi_dcr_base, uint32_t const plb6mcif2_dcr_ba
     dcr_write(DCR_EM2_EMI_BASE + EMI_FLCNTRL, 0x17);
     emi_set_ecc (emi_dcr_base, emi_bank_all, emi_ecc_off);
     dcr_write(emi_dcr_base + EMI_BUSEN, 0x01);
+
+    /* Current config */
+    bank_config_cache[0] = &b0_cfg;
+    bank_config_cache[1] = &b1_cfg;
+    bank_config_cache[2] = &b2_cfg;
+    bank_config_cache[3] = &b3_cfg;
+    bank_config_cache[4] = &b4_cfg;
+    bank_config_cache[5] = &b5_cfg;
 }
 
 void emi_set_ecc (uint32_t const emi_dcr_base, emi_bank_num const num_bank, emi_ecc_status const ecc_stat)
