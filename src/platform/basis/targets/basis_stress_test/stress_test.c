@@ -24,6 +24,10 @@
 #include <rumboot/timer.h>
 #include <rumboot/irq.h>
 
+#if defined(RUMBOOT_BASIS_DMA_MEM_ACCEL)
+#include <rumboot/memfill.h>
+#endif
+
 // Must be <= 4!
 #define UART_SEGMENT_NUM	4
 #define ETH_SEGMENT_NUM		4
@@ -113,54 +117,60 @@ static void test_reset_dma(struct test_dev *dev);
 
 static bool test_dev_check(struct test_dev *first_dev, struct test_dev *second_dev);
 
-#define TEST_DEV_CFG(width, info)	{MDMA_CHAN_INTERRUPT, LONG_DESC, 0, width, 0, 0, -1, 0, 0, MDMA_SYNC_NONE, info, true}
+#if defined(RUMBOOT_BASIS_DMA_MEM_ACCEL)
+static void test_dma_accel_init(void);
+static void test_dma_memfill32(void *addr, int size, int val, int incr);
+static void test_dma_memcheck32(void *first, void *second, int size);
+#endif
+
+#define TEST_DEV_CFG(width, indx, info)	{MDMA_CHAN_INTERRUPT, LONG_DESC, 0, width, 0, 0, indx, 0, 0, MDMA_SYNC_NONE, info, true}
 
 static struct test_dev dev_to_test[TEST_DEV_NUM] = {
 	{(void *)BASIS_VIRT(UART0_BASE), IRQ_VIRT(UART0_INTR), MUART_GEN_STATUS, MUART_STATUS, MUART_MASK, 0, 1, 2,
-	TEST_DEV_CFG(MDMA_BURST_WIDTH4, true), 0, NULL, NULL, {NULL}, {NULL}, {NULL}, {NULL}, UART_SEGMENT_NUM,
+	TEST_DEV_CFG(MDMA_BURST_WIDTH4, -1, true), 0, NULL, NULL, {NULL}, {NULL}, {NULL}, {NULL}, UART_SEGMENT_NUM,
 	UART_SEGMENT_SZ, false, false, 0x1FC},
 
 	{(void *)UART1_BASE, UART1_INTR, MUART_GEN_STATUS, MUART_STATUS, MUART_MASK, 0, 1, 2,
-	TEST_DEV_CFG(MDMA_BURST_WIDTH4, true), 0, NULL, NULL, {NULL}, {NULL}, {NULL}, {NULL}, UART_SEGMENT_NUM,
+	TEST_DEV_CFG(MDMA_BURST_WIDTH4, -1, true), 0, NULL, NULL, {NULL}, {NULL}, {NULL}, {NULL}, UART_SEGMENT_NUM,
 	UART_SEGMENT_SZ, false, false, 0x1FC},
 
 	{(void *)BASIS_VIRT(ETH0_BASE), IRQ_VIRT(MGETH0_IRQ), MGETH_GLOBAL_STATUS, MGETH_STATUS, MGETH_IRQ_MASK, 31, 0, 16,
-	TEST_DEV_CFG(MDMA_BURST_WIDTH4, true), 0x800, NULL, NULL, {NULL}, {NULL}, {NULL}, {NULL}, ETH_SEGMENT_NUM,
+	TEST_DEV_CFG(MDMA_BURST_WIDTH4, -1, true), 0x800, NULL, NULL, {NULL}, {NULL}, {NULL}, {NULL}, ETH_SEGMENT_NUM,
 	ETH_SEGMENT_SZ, false, false, 0x11},
 
 	{(void *)BASIS_VIRT(ETH1_BASE), IRQ_VIRT(MGETH1_IRQ), MGETH_GLOBAL_STATUS, MGETH_STATUS, MGETH_IRQ_MASK, 31, 0, 16,
-	TEST_DEV_CFG(MDMA_BURST_WIDTH4, true), 0x800, NULL, NULL, {NULL}, {NULL}, {NULL}, {NULL}, ETH_SEGMENT_NUM,
+	TEST_DEV_CFG(MDMA_BURST_WIDTH4, -1, true), 0x800, NULL, NULL, {NULL}, {NULL}, {NULL}, {NULL}, ETH_SEGMENT_NUM,
 	ETH_SEGMENT_SZ, false, false, 0x11},
 
 	{(void *)ETH2_BASE, MGETH2_IRQ, MGETH_GLOBAL_STATUS, MGETH_STATUS, MGETH_IRQ_MASK, 31, 0, 16,
-	TEST_DEV_CFG(MDMA_BURST_WIDTH4, true), 0x800, NULL, NULL, {NULL}, {NULL}, {NULL}, {NULL}, ETH_SEGMENT_NUM,
+	TEST_DEV_CFG(MDMA_BURST_WIDTH4, -1, true), 0x800, NULL, NULL, {NULL}, {NULL}, {NULL}, {NULL}, ETH_SEGMENT_NUM,
 	ETH_SEGMENT_SZ, false, false, 0x11},
 
 	{(void *)ETH3_BASE, MGETH3_IRQ, MGETH_GLOBAL_STATUS, MGETH_STATUS, MGETH_IRQ_MASK, 31, 0, 16,
-	TEST_DEV_CFG(MDMA_BURST_WIDTH4, true), 0x800, NULL, NULL, {NULL}, {NULL}, {NULL}, {NULL}, ETH_SEGMENT_NUM,
+	TEST_DEV_CFG(MDMA_BURST_WIDTH4, -1, true), 0x800, NULL, NULL, {NULL}, {NULL}, {NULL}, {NULL}, ETH_SEGMENT_NUM,
 	ETH_SEGMENT_SZ, false, false, 0x11},
 
 #if !defined(RUMBOOT_BASIS_DMA_MEM_ACCEL) || (RUMBOOT_BASIS_DMA_MEM_ACCEL != 0)
 	{(void *)BASIS_VIRT(MDMA0_BASE), IRQ_VIRT(MDMA0_IRQ), MDMA_GP_STATUS, ~0, ~0, -1, 0, 16,
-	TEST_DEV_CFG(MDMA_BURST_WIDTH8, false), 0, NULL, NULL, {NULL}, {NULL}, {NULL}, {NULL}, MDMA_SEGMENT_NUM,
+	TEST_DEV_CFG(MDMA_BURST_WIDTH8, 4, false), 0, NULL, NULL, {NULL}, {NULL}, {NULL}, {NULL}, MDMA_SEGMENT_NUM,
 	MDMA_SEGMENT_SZ, false, false, 0},
 #endif
 
 #if !defined(RUMBOOT_BASIS_DMA_MEM_ACCEL) || (RUMBOOT_BASIS_DMA_MEM_ACCEL != 1)
 	{(void *)BASIS_VIRT(MDMA1_BASE), IRQ_VIRT(MDMA1_IRQ), MDMA_GP_STATUS, ~0, ~0, -1, 0, 16,
-	TEST_DEV_CFG(MDMA_BURST_WIDTH8, false), 0, NULL, NULL, {NULL}, {NULL}, {NULL}, {NULL}, MDMA_SEGMENT_NUM,
+	TEST_DEV_CFG(MDMA_BURST_WIDTH8, 4, false), 0, NULL, NULL, {NULL}, {NULL}, {NULL}, {NULL}, MDMA_SEGMENT_NUM,
 	MDMA_SEGMENT_SZ, false, false, 0},
 #endif
 
 #if !defined(RUMBOOT_BASIS_DMA_MEM_ACCEL) || (RUMBOOT_BASIS_DMA_MEM_ACCEL != 2)
 	{(void *)MDMA2_BASE, MDMA2_IRQ, MDMA_GP_STATUS, ~0, ~0, -1, 0, 16,
-	TEST_DEV_CFG(MDMA_BURST_WIDTH8, false), 0, NULL, NULL, {NULL}, {NULL}, {NULL}, {NULL}, MDMA_SEGMENT_NUM,
+	TEST_DEV_CFG(MDMA_BURST_WIDTH8, 4, false), 0, NULL, NULL, {NULL}, {NULL}, {NULL}, {NULL}, MDMA_SEGMENT_NUM,
 	MDMA_SEGMENT_SZ, false, false, 0},
 #endif
 
 #if !defined(RUMBOOT_BASIS_DMA_MEM_ACCEL) || (RUMBOOT_BASIS_DMA_MEM_ACCEL != 3)
 	{(void *)MDMA3_BASE, MDMA3_IRQ, MDMA_GP_STATUS, ~0, ~0, -1, 0, 16,
-	TEST_DEV_CFG(MDMA_BURST_WIDTH8, false), 0, NULL, NULL, {NULL}, {NULL}, {NULL}, {NULL}, MDMA_SEGMENT_NUM,
+	TEST_DEV_CFG(MDMA_BURST_WIDTH8, 4, false), 0, NULL, NULL, {NULL}, {NULL}, {NULL}, {NULL}, MDMA_SEGMENT_NUM,
 	MDMA_SEGMENT_SZ, false, false, 0},
 #endif
 };
@@ -217,7 +227,7 @@ static void test_dev_handler(int irq, void *arg)
 
 		if (ret & IRQ_CHAN_DONE)
 			(chan == dev->chan_rd) ? (dev->rd_done = true) : (dev->wr_done = true);
-		else if (ret == IRQ_CHAN_GROUP)
+		else if ((ret & IRQ_CHAN_GROUP) || (ret & IRQ_CHAN_EVENT))
 			rumboot_printf("Device(0x%x): test in progress\n", dev->base_addr);
 		else
 			rumboot_platform_panic("Unkhown reason of IRQ %d\n", irq);
@@ -336,6 +346,9 @@ int main()
 		}
 	}
 
+	iowrite32(1, GLOBAL_TIMERS + TMR_0_LIMIT);
+	iowrite32(0x10002, GLOBAL_TIMERS + TMR_0_STATE);
+
 	rumboot_irq_sei();
 
 	do {
@@ -391,7 +404,11 @@ stress_test_exit:
 	test_reset_dma(&dev_to_test[MDMA3_INDX]);
 #endif
 
+#if defined(RUMBOOT_BASIS_DMA_MEM_ACCEL) && (RUMBOOT_BASIS_DMA_MEM_ACCEL == 3)
+stress_test_exit:
+#else
 stress_test_exit_10:
+#endif
 	test_reset_eth(&dev_to_test[ETH3_INDX]);
 
 #if !defined(RUMBOOT_BASIS_DMA_MEM_ACCEL) || (RUMBOOT_BASIS_DMA_MEM_ACCEL != 2)
@@ -447,7 +464,7 @@ static int test_setup_uart(struct test_dev *dev, struct muart_conf *cfg,
 {
 	void *src_addr, *dst_addr;
 	void *dst_mirror, *src_mirror;
-	int i, buf_size;
+	int buf_size;
 	int ret = 0;
 
 	muart_soft_reset((unsigned long)(dev->base_addr));
@@ -485,7 +502,7 @@ static int test_setup_uart(struct test_dev *dev, struct muart_conf *cfg,
 	dst_mirror  = test_addr_map(dst_addr);
 
 #if !defined(RUMBOOT_BASIS_DMA_MEM_ACCEL)
-	for (i = 0; i < (buf_size / sizeof(unsigned long)); i++) {
+	for (int i = 0; i < (buf_size / sizeof(unsigned long)); i++) {
 		*((unsigned long *)dst_mirror + i) = 0;
 		*((unsigned long *)src_mirror + i) = buf_size - i;
 	}
@@ -540,7 +557,7 @@ static int test_setup_eth(struct test_dev *dev, struct mgeth_conf *cfg,
 {
 	void *src_addr, *dst_addr;
 	void *src_mirror, *dst_mirror;
-	int i, j, buf_size;
+	int i, buf_size;
 	int ret = 0;
 
 	mgeth_reset((unsigned long)(dev->base_addr));
@@ -582,7 +599,7 @@ static int test_setup_eth(struct test_dev *dev, struct mgeth_conf *cfg,
 		*((unsigned long *)src_mirror + i * tmp + 9) = 0x87654321;
 
 #if !defined(RUMBOOT_BASIS_DMA_MEM_ACCEL)
-		for (j = 10; j < tmp; j++)
+		for (int j = 10; j < tmp; j++)
 			*((unsigned long *)src_mirror + i * tmp + j) = buf_size - j;
 #else
 		test_dma_memfill32((void *)((unsigned long *)src_mirror + i * tmp + 10),
@@ -652,7 +669,7 @@ static int test_setup_dma(struct test_dev *dev,
 {
 	void *src_addr, *dst_addr;
 	void *src_mirror, *dst_mirror;
-	int i, buf_size;
+	int buf_size;
 	int ret = 0;
 
 	iowrite32(1, (unsigned long)(dev->base_addr + MDMA_GP_SOFT_RST));
@@ -686,7 +703,7 @@ static int test_setup_dma(struct test_dev *dev,
 	dst_mirror  = test_addr_map(dst_addr);
 
 #if !defined(RUMBOOT_BASIS_DMA_MEM_ACCEL)
-	for (i = 0; i < (buf_size / sizeof(unsigned long)); i++) {
+	for (int i = 0; i < (buf_size / sizeof(unsigned long)); i++) {
 		*((unsigned long *)src_mirror + i) = buf_size - i;
 		*((unsigned long *)dst_mirror + i) = 0;
 	}
@@ -868,7 +885,7 @@ static void test_dev_terminate(struct test_dev *dev)
 static bool test_dev_check(struct test_dev *first_dev, struct test_dev *second_dev)
 {
 	int state_rd, state_wr;
-	int i, j;
+	int i;
 	bool ret = true;
 
 	rumboot_printf("Device(0x%x) is check\n", first_dev->base_addr);
@@ -898,7 +915,7 @@ dev_check_skip:
 
 	for (i = 0; i < first_dev->seg_num; i++) {
 #if !defined(RUMBOOT_BASIS_DMA_MEM_ACCEL)
-		for (j = 0; j < (first_dev->seg_size / sizeof(unsigned long)); j++) {
+		for (int j = 0; j < (first_dev->seg_size / sizeof(unsigned long)); j++) {
 #if 1
 			if (*((unsigned long *)first_dev->dst_mirror[i] + j) != *((unsigned long *)second_dev->src_mirror[i] + j)) {
 				ret = false;
@@ -950,17 +967,17 @@ dev_check_exit:
 
 #if defined(RUMBOOT_BASIS_DMA_MEM_ACCEL)
 
-static void *_src_desc, _src_addr;
-static void *_dst_desc, _dst_addr;
+static void *_src_desc, *_src_addr;
+static void *_dst_desc, *_dst_addr;
 
 #if RUMBOOT_BASIS_DMA_MEM_ACCEL == 0
-static unsigned long _base_addr = BASIS_VIRT(MDMA0);
+static unsigned long _base_addr = BASIS_VIRT(MDMA0_BASE);
 #elif RUMBOOT_BASIS_DMA_MEM_ACCEL == 1
-static unsigned long _base_addr = BASIS_VIRT(MDMA1);
+static unsigned long _base_addr = BASIS_VIRT(MDMA1_BASE);
 #elif RUMBOOT_BASIS_DMA_MEM_ACCEL == 2
-static unsigned long _base_addr = BASIS_VIRT(MDMA2);
+static unsigned long _base_addr = BASIS_VIRT(MDMA2_BASE);
 #elif RUMBOOT_BASIS_DMA_MEM_ACCEL == 3
-static unsigned long _base_addr = BASIS_VIRT(MDMA3);
+static unsigned long _base_addr = BASIS_VIRT(MDMA3_BASE);
 #endif
 
 static void test_dma_accel_init(void)
@@ -1037,7 +1054,7 @@ static void test_dma_memfill32(void *addr, int size, int val, int incr)
 			size = 0;
 		}
 
-		rumboot_memfill(_src_addr, _size, val, incr);
+		rumboot_memfill32(_src_addr, _size, val, incr);
 		test_dma_copy(_src_addr, addr, _size * sizeof(unsigned long));
 
 		if (size) {
