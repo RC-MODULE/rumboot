@@ -6,48 +6,48 @@
  *  inout     wire  UART1_TXD               ,check_others();
  *  inout     wire  UART1_RTS               ,check_others();
  *
- *  inout     wire  MK0_TXA                 ,
- *  inout     wire  MK0_TXA_N               ,
- *  inout     wire  MK0_TXB                 ,
- *  inout     wire  MK0_TXB_N               ,
- *  inout     wire  MK0_TXINHA              ,
- *  inout     wire  MK0_TXINHB              ,
+ *  inout     wire  MK0_TXA                 ,check_others()
+ *  inout     wire  MK0_TXA_N               ,check_others()
+ *  inout     wire  MK0_TXB                 ,check_others()
+ *  inout     wire  MK0_TXB_N               ,check_others()
+ *  inout     wire  MK0_TXINHA              ,check_others()
+ *  inout     wire  MK0_TXINHB              ,check_others()
  *
- *  inout     wire  MK1_TXA                 ,
- *  inout     wire  MK1_TXA_N               ,
- *  inout     wire  MK1_TXB                 ,
- *  inout     wire  MK1_TXB_N               ,
- *  inout     wire  MK1_TXINHA              ,
- *  inout     wire  MK1_TXINHB              ,
+ *  inout     wire  MK1_TXA                 ,check_others()
+ *  inout     wire  MK1_TXA_N               ,check_others()
+ *  inout     wire  MK1_TXB                 ,check_others()
+ *  inout     wire  MK1_TXB_N               ,check_others()
+ *  inout     wire  MK1_TXINHA              ,check_others()
+ *  inout     wire  MK1_TXINHB              ,check_others()
  *
- *  inout     wire  SPI0_SCK                ,
- *  inout     wire  SPI0_MOSI               ,
- *  inout     wire  SPI0_MISO               ,
- *  inout     wire  SPI0_IRQ                ,
- *  inout     wire  SPI0_DAT2               ,
- *  inout     wire  SPI0_SCS                ,
+ *  inout     wire  SPI0_SCK                ,check_others()
+ *  inout     wire  SPI0_MOSI               ,check_spi()
+ *  inout     wire  SPI0_MISO               ,check_others()
+ *  inout     wire  SPI0_IRQ                ,check_others()
+ *  inout     wire  SPI0_DAT2               ,check_others()
+ *  inout     wire  SPI0_SCS                ,check_spi()
  *
- *  inout     wire  SPI1_SCK                ,
- *  inout     wire  SPI1_MOSI               ,
- *  inout     wire  SPI1_MISO               ,
- *  inout     wire  SPI1_IRQ                ,
- *  inout     wire  SPI1_DAT2               ,
- *  inout     wire  SPI1_SCS                ,
+ *  inout     wire  SPI1_SCK                ,check_others()
+ *  inout     wire  SPI1_MOSI               ,check_spi()
+ *  inout     wire  SPI1_MISO               ,check_others()
+ *  inout     wire  SPI1_IRQ                ,check_others()
+ *  inout     wire  SPI1_DAT2               ,check_others()
+ *  inout     wire  SPI1_SCS                ,check_spi()
  *
  *  inout     wire  GPIO0_0-GPIO0_7         , check_gpio
  *
  *  inout     wire  GPIO1_0-GPIO1_7         , check_gpio
  *
- *  inout     wire  ETH0_TX_EN              ,
- *  inout     wire  ETH0_TX_ER              ,
- *  inout     wire  ETH0_TXD0-ETH0_TXD3     ,
- *  inout     wire  ETH0_MDC                ,
+ *  inout     wire  ETH0_TX_EN              ,check_others();
+ *  inout     wire  ETH0_TX_ER              ,check_others();
+ *  inout     wire  ETH0_TXD0-ETH0_TXD3     ,check_others();
+ *  inout     wire  ETH0_MDC                ,check_others();
  *  inout     wire  ETH0_MDIO               ,check_mdio
  *
- *  inout     wire  ETH1_TX_EN              ,
- *  inout     wire  ETH1_TX_ER              ,
- *  inout     wire  ETH1_TXD0-ETH1_TXD3     ,
- *  inout     wire  ETH1_MDC                ,
+ *  inout     wire  ETH1_TX_EN              ,check_others();
+ *  inout     wire  ETH1_TX_ER              ,check_others();
+ *  inout     wire  ETH1_TXD0-ETH1_TXD3     ,check_others();
+ *  inout     wire  ETH1_MDC                ,check_others();
  *  inout     wire  ETH1_MDIO               ,check_mdio
  *
  *  inout     wire  TDO                     ,
@@ -64,14 +64,14 @@
  *  inout     wire  RASn                    ,check_emi_ports
  *  inout     wire  CASn                    ,check_emi_ports
  *  inout     wire  DQMBn0-DQMBn4           ,check_emi_ports
- *  inout     wire  HOLDOn                  ,check_emi_ports
- *  inout     wire  HOLDAn                  ,check_emi_ports
+ *  inout     wire  HOLDOn                  ,check_others();
+ *  inout     wire  HOLDAn                  ,check_others();
  *
- *  inout     wire  NRST_SYS                ,
+ *  inout     wire  NRST_SYS                ,check_others();
  *
- *  inout     wire  EXT_CLK                 ,
+ *  inout     wire  EXT_CLK                 ,check_others();
  *
- *  inout     wire  WDT_IRQ
+ *  inout     wire  WDT_IRQ                  check_others();
  *
  */
 #include <stdio.h>
@@ -97,6 +97,7 @@
 #define TEST_EVENT_CHECK_GPIO_HIZ       0x00001003
 #define TEST_EVENT_CHECK_MDIO           0x00001004
 #define TEST_EVENT_CHECK_OTHERS         0x00001005
+#define TEST_EVENT_CHECK_SPI            0x00001006
 
 void check_emi_ports()
 {
@@ -141,6 +142,15 @@ void check_mdio()
     TEST_ASSERT(greth_mdio_read(GRETH_1_BASE, ETH_PHY_ADDR, ETH_PHY_ID0 )==ETH_PHY_ID0_DEFAULT, "Error at mdio reading ETH1_PHY_ID0 register\n");
 }
 
+void check_spi()
+{
+    test_event(TEST_EVENT_CHECK_SPI);
+    iowrite32(0x1, 0xC002C000 + 0x300);//SDIO0_ENABLE to switch in HiZ
+    iowrite32(0x1, 0xC003C000 + 0x300);//SDIO0_ENABLE to switch in HiZ
+    iowrite32(0x0, 0xC002C000 + 0x300);//SDIO0_ENABLE to switch in act
+    iowrite32(0x0, 0xC003C000 + 0x300);//SDIO0_ENABLE to switch in act
+}
+
 void check_others()
 {
     test_event(TEST_EVENT_CHECK_OTHERS);
@@ -151,9 +161,10 @@ int main()
     rumboot_printf("Start test_oi10_em2_208\n");
     test_event_send_test_id("test_oi10_em2_208");
 
-    //check_emi_ports();
-    //check_gpio();
-    //check_mdio();
+    check_emi_ports();
+    check_gpio();
+    check_mdio();
+    check_spi();
     check_others();
 
     return 0;
