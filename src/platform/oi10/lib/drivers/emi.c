@@ -108,6 +108,7 @@ void emi_hiz_mode_off(uint32_t const emi_dcr_base)
     dcr_write(emi_dcr_base + EMI_WECR, val);
 }
 
+/* (c) a.gurov  */
 void emi_hsh_mode_on(uint32_t const emi_dcr_base)
 {
     uint32_t val;
@@ -122,6 +123,7 @@ void emi_hsh_mode_on(uint32_t const emi_dcr_base)
     dcr_write(emi_dcr_base + EMI_WECR, val);
 }
 
+/* (c) a.gurov  */
 void emi_hsh_mode_off(uint32_t const emi_dcr_base)
 {
     uint32_t val;
