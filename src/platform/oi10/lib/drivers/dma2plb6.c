@@ -5,12 +5,12 @@
 
 
 
+
 /*
- * copy
+ * wait copy
  */
-uint32_t dma2plb6_single_copy(dma2plb6_setup_info * setup_info, channel_status * status)
+bool wait_dma2plb6_mcpy(dma2plb6_setup_info const * const setup_info, channel_status * const status)
 {
-    dma2plb6_mcpy(setup_info);
     do{
         *status = dma2plb6_ch_get_status(setup_info->base_addr, setup_info->channel);
         if(status->error_detected)
@@ -18,27 +18,30 @@ uint32_t dma2plb6_single_copy(dma2plb6_setup_info * setup_info, channel_status *
     }
     while(status->busy | !status->terminalcnt_reached);
     return true;
+}
+
+/*
+ * copy
+ */
+bool dma2plb6_single_copy(dma2plb6_setup_info * const setup_info, channel_status * const status)
+{
+    dma2plb6_mcpy(setup_info);
+    return wait_dma2plb6_mcpy(setup_info, status);
 }
 
 /*
  * copy for memory coherent requests
  */
-uint32_t dma2plb6_single_copy_coherency_required(dma2plb6_setup_info * setup_info, channel_status * status)
+bool dma2plb6_single_copy_coherency_required(dma2plb6_setup_info const * const setup_info, channel_status * const status)
 {
     dma2plb6_mcpy_coherency_required(setup_info);
-    do{
-        *status = dma2plb6_ch_get_status(setup_info->base_addr, setup_info->channel);
-        if(status->error_detected)
-            return false;
-    }
-    while(status->busy | !status->terminalcnt_reached);
-    return true;
+    return wait_dma2plb6_mcpy(setup_info, status);
 }
 
 /*
  * returns status of channel
  */
-channel_status dma2plb6_ch_get_status(uint32_t base_address, DmaChannel channel)
+channel_status dma2plb6_ch_get_status(uint32_t const base_address, DmaChannel const channel)
 {
     channel_status status;
     uint32_t sr = dcr_read(base_address + PLB6_DMA_SR);
@@ -54,7 +57,7 @@ channel_status dma2plb6_ch_get_status(uint32_t base_address, DmaChannel channel)
  * clear SR[CSn]
  *       SR[RIn]
  */
-void dma2plb6_clear_interrupt(uint32_t base_addr, DmaChannel channel)
+void dma2plb6_clear_interrupt(uint32_t const base_addr, DmaChannel const channel)
 {
     dcr_write(base_addr + PLB6_DMA_SR, (1 << IBM_BIT_INDEX(32,CS)) << IBM_BIT_INDEX(4,channel));
 }
@@ -64,7 +67,7 @@ void dma2plb6_clear_interrupt(uint32_t base_addr, DmaChannel channel)
  * this function is not applicable for requests to coherent slaves
  * but for compatibility reasons it is left here
  */
-void dma2plb6_mcpy(dma2plb6_setup_info * setup_info)
+void dma2plb6_mcpy(dma2plb6_setup_info * const setup_info)
 {
     setup_info->snp_mode = snp_mode_off;
     dma2plb6_mcpy_coherency_required(setup_info);
@@ -73,7 +76,7 @@ void dma2plb6_mcpy(dma2plb6_setup_info * setup_info)
 /*
  * initializes memory-to-memory single transfer for channel (setup_info->channel=0,1,2 or 3)
  */
-void dma2plb6_mcpy_coherency_required(dma2plb6_setup_info * setup_info)
+void dma2plb6_mcpy_coherency_required(dma2plb6_setup_info const * const setup_info)
 {
     dma2plb6_disable_channel(setup_info->base_addr,setup_info->channel);
     dcr_write(get_addr(setup_info->channel,PLB6_DMA_SAH,setup_info->base_addr),(setup_info->source_adr >> 32));
@@ -106,18 +109,18 @@ void dma2plb6_mcpy_coherency_required(dma2plb6_setup_info * setup_info)
     dcr_write(get_addr(setup_info->channel,PLB6_DMA_CR,setup_info->base_addr),cr);
 }
 
-void dma2plb6_enable_o_slv_err_interrupt(uint32_t base_addr)
+void dma2plb6_enable_o_slv_err_interrupt(uint32_t const base_addr)
 {
     dcr_write(base_addr + PLB6_DMA_OPTIONS, dcr_read(base_addr + PLB6_DMA_OPTIONS) | (1 << DMA_OPTIONS_SL_INT_i));
 }
 
-void dma2plb6_disable_o_slv_err_interrupt(uint32_t base_addr)
+void dma2plb6_disable_o_slv_err_interrupt(uint32_t const base_addr)
 {
     dcr_write(base_addr + PLB6_DMA_OPTIONS, dcr_read(base_addr + PLB6_DMA_OPTIONS) & ~(1 << DMA_OPTIONS_SL_INT_i));
 }
 
 
-void dma2plb6_disable_channel(uint32_t base_addr, DmaChannel channel)
+void dma2plb6_disable_channel(uint32_t const base_addr, DmaChannel const channel)
 {
     dcr_write(get_addr(channel,PLB6_DMA_CR,base_addr),0x00000000);
 }
