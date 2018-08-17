@@ -107,11 +107,39 @@ typedef struct{
 //
 
 channel_status dma2plb6_ch_get_status(uint32_t base_address, DmaChannel channel);
-uint32_t dma2plb6_single_copy(dma2plb6_setup_info * setup_info, channel_status * status);
-uint32_t dma2plb6_single_copy_coherency_required(dma2plb6_setup_info * setup_info, channel_status * status);
+/**
+ * Blocking version of dma2plb6_mcpy
+ * @param setup_info
+ * @param status
+ * @return
+ */
+bool dma2plb6_single_copy(dma2plb6_setup_info * setup_info, channel_status * status);
+/**
+ * Blocking version of dma2plb6_mcpy_coherency_required
+ * @param setup_info
+ * @param status
+ * @return
+ */
+bool dma2plb6_single_copy_coherency_required(dma2plb6_setup_info const * setup_info, channel_status * status);
 void dma2plb6_clear_interrupt(uint32_t base_addr, DmaChannel channel);
+/**
+ * Async copy. This function is not applicable for requests to coherent slaves
+ * @param setup_info
+ */
 void dma2plb6_mcpy(dma2plb6_setup_info * setup_info);
-void dma2plb6_mcpy_coherency_required(dma2plb6_setup_info * setup_info);
+/**
+ * Async copy
+ * @param setup_info
+ */
+
+void dma2plb6_mcpy_coherency_required(dma2plb6_setup_info const * setup_info);
+/**
+ * Waits dma2plb6_mcpy or dma2plb6_mcpy_coherency_required
+ * @param setup_info
+ * @param status
+ * @return
+ */
+bool wait_dma2plb6_mcpy(dma2plb6_setup_info const * setup_info, channel_status * status);
 void dma2plb6_enable_o_slv_err_interrupt(uint32_t base_addr);
 void dma2plb6_disable_o_slv_err_interrupt(uint32_t base_addr);
 
