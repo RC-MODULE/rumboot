@@ -640,6 +640,7 @@
 #define SET_ALL_BITS( val )             ((val) = -1)
 #define CLEAR_ALL_BITS( val )           ((val) = 0)
 #define SET_BIT( val, i )               ((val) |= (1 << (i)))
+#define GET_BIT( val, i )               (((val) >> i) & 1 )
 #define CLEAR_BIT( val, i )             ((val) &= ~(1 << (i)))
 #define SET_BITS_BY_MASK( val, mask )   ((val) |= (mask))
 #define CLEAR_BITS_BY_MASK( val, mask ) ((val) &= ~(mask))
