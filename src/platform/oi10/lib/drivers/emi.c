@@ -148,7 +148,7 @@ void emi_ecc_write(uint32_t emi_dcr_base, uint32_t *word_addr, uint8_t  ecc_val)
 }
 
 /* (c) a.gurov  */
-void emi_ecc_read(uint32_t emi_dcr_base, uintptr_t word_addr, uint8_t *ecc_val)
+void emi_ecc_read(uint32_t emi_dcr_base, uint32_t *word_addr, uint8_t *ecc_val)
 {
     uint32_t wecr = dcr_read(emi_dcr_base + EMI_WECR);
     if(!GET_BIT(wecr, EMI_WECR_HSH_i)) emi_hsh_mode_on(emi_dcr_base);
