@@ -108,6 +108,22 @@ void emi_hiz_mode_off(uint32_t const emi_dcr_base)
     dcr_write(emi_dcr_base + EMI_WECR, val);
 }
 
+void emi_hsh_mode_on(uint32_t const emi_dcr_base)
+{
+    uint32_t val;
+    val = dcr_read(emi_dcr_base + EMI_WECR);
+    SET_BIT(val, EMI_WECR_HSH_i);
+    dcr_write(emi_dcr_base + EMI_WECR, val);
+}
+
+void emi_hsh_mode_off(uint32_t const emi_dcr_base)
+{
+    uint32_t val;
+    val = dcr_read(emi_dcr_base + EMI_WECR);
+    CLEAR_BIT(val, EMI_WECR_HSH_i);
+    dcr_write(emi_dcr_base + EMI_WECR, val);
+}
+
 void emi_enable_ext_rdy(uint32_t const emi_dcr_base, emi_bank_num const num_bank)
 {
     emi_bank_cfg bank_cfg;
