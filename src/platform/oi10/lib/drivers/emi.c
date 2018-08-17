@@ -112,7 +112,13 @@ void emi_hsh_mode_on(uint32_t const emi_dcr_base)
 {
     uint32_t val;
     val = dcr_read(emi_dcr_base + EMI_WECR);
-    SET_BIT(val, EMI_WECR_HSH_i);
+    SET_BITS_BY_MASK(val,
+            (1 << EMI_WECR_HSH_i)   |
+            (1 << EMI_WECR_BWE0_i)  |
+            (1 << EMI_WECR_BWE1_i)  |
+            (1 << EMI_WECR_BWE2_i)  |
+            (1 << EMI_WECR_BWE3_i)
+            );
     dcr_write(emi_dcr_base + EMI_WECR, val);
 }
 
@@ -120,7 +126,13 @@ void emi_hsh_mode_off(uint32_t const emi_dcr_base)
 {
     uint32_t val;
     val = dcr_read(emi_dcr_base + EMI_WECR);
-    CLEAR_BIT(val, EMI_WECR_HSH_i);
+    CLEAR_BITS_BY_MASK(val,
+            (1 << EMI_WECR_HSH_i)   |
+            (1 << EMI_WECR_BWE0_i)  |
+            (1 << EMI_WECR_BWE1_i)  |
+            (1 << EMI_WECR_BWE2_i)  |
+            (1 << EMI_WECR_BWE3_i)
+            );
     dcr_write(emi_dcr_base + EMI_WECR, val);
 }
 
