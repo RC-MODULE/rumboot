@@ -26,17 +26,18 @@
 #define TEST_ERROR              0x00000000
 #define INIT_OK                 TEST_OK
 #define INIT_ERROR              TEST_ERROR
+#define NUMBER_OF_BANKS         6
 #define IRQ_FLAGS               (RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH)
-#define ENABLE_BANK_0           (1 << 0)
-#define ENABLE_BANK_1           (1 << 1)
-#define ENABLE_BANK_2           (1 << 2)
-#define ENABLE_BANK_3           (1 << 3)
-#define ENABLE_BANK_4           (1 << 4)
-#define ENABLE_BANK_5           (1 << 5)
+#define EMBANKS(A,B,C,D,E,F)    (((A) & 1) << 0) |  \
+                                (((B) & 1) << 1) |  \
+                                (((C) & 1) << 2) |  \
+                                (((D) & 1) << 3) |  \
+                                (((E) & 1) << 4) |  \
+                                (((F) & 1) << 5)
 
 /* Config */
-#define CHECKING_BANKS          ENABLE_BANK_0   | \
-                                ENABLE_BANK_4
+/*                      ENABLED BANK -> |0|1|2|3|4|5| */
+#define ENABLED_EM_BANKS        EMBANKS( 1,0,0,0,1,0 )
 
 /* Other macros */
 #define CHECKLIST_TERMINATOR    {NULL,NULL}
@@ -56,9 +57,10 @@
 #define END_TESTS               CHECKLIST_TERMINATOR}
 #define FOREACH_TEST(ITEM,LIST) for(ITEM = LIST; ITEM->test; ITEM++)
 #define FOREACH_IRQ(ITEM,LIST)  for(ITEM = LIST; ~*ITEM; ITEM++)
-/* N - Bits number; C - Counter (bit number); B - Bit value; V - Value. */
-#define FOREACH_BIT(N,C,B,V)     for(C = 0, B = (V) & 1; C < N;   \
-                                     C++, B = (((V) << C) & 1))
+/* N - Banks number;  I - Bank index;
+   A - Bank activity; L - Active banks list (as bits). */
+#define FOREACH_BANK(I,A,N,L)   for(I = 0, A = (L) & 1; I < N;   \
+                                    I++, A = (((L) >> I) & 1))
 #define DO_INIT(RES,FUNC)       if(!!(RES = init__ ## FUNC ())) \
                                 return test_result
 
@@ -86,6 +88,12 @@ static volatile const uint8_t emi_ecnt[8] =
     {
         EMI_ECNT20, EMI_ECNT20, EMI_ECNT20,
         EMI_ECNT53, EMI_ECNT53, EMI_ECNT53, 0,0
+    };
+static volatile const uintptr_t emi_bank_bases[8] =
+    {
+        EM2_BANK0_BASE, EM2_BANK1_BASE,
+        EM2_BANK2_BASE, EM2_BANK3_BASE,
+        EM2_BANK4_BASE, EM2_BANK5_BASE, 0,0
     };
 
 int is_irq(irq_flags_t *irq_f)
@@ -143,7 +151,7 @@ DEFINE_INIT(interrupts)
 
 DEFINE_INIT(emi_hw)
 {
-    emi_init();
+    emi_init(DCR_EM2_EMI_BASE);
     return INIT_OK;
 }
 
@@ -166,31 +174,42 @@ END_TESTS;
 
 DEFINE_CHECK(rfc)
 {
+    if(emi_get_bank_cfg_cached(bank)->ssx_cfg.BTYP != BTYP_SDRAM)
+    {
+        rumboot_printf("Bank %d is not SDRAM. Check skipped.\n", bank);
+        return TEST_OK;
+    }
+    rumboot_putstring("Check is not implemented!\n");
     return TEST_OK;
 }
 
 DEFINE_CHECK(hstsr_ecc_on)
 {
+    rumboot_putstring("Check is not implemented!\n");
     return TEST_OK;
 }
 
 DEFINE_CHECK(hstsr_ecc_off)
 {
+    rumboot_putstring("Check is not implemented!\n");
     return TEST_OK;
 }
 
 DEFINE_CHECK(error_counter)
 {
+    rumboot_putstring("Check is not implemented!\n");
     return TEST_OK;
 }
 
 DEFINE_CHECK(single_interrupts)
 {
+    rumboot_putstring("Check is not implemented!\n");
     return TEST_OK;
 }
 
 DEFINE_CHECK(double_interrupts)
 {
+    rumboot_putstring("Check is not implemented!\n");
     return TEST_OK;
 }
 
@@ -201,7 +220,6 @@ int main(void)
                  test_status = TEST_OK,
                  init_result = INIT_OK;
     ckinfo_t    *test;
-    int          i,b;
 
     DO_INIT(init_result, emi_hw);
     DO_INIT(init_result, interrupts);
@@ -210,12 +228,13 @@ int main(void)
 
     FOREACH_TEST(test,tests)
     {
-        rumboot_printf("Check EMI: (%s)...\n", test->desc);
-        FOREACH_BIT(6,i,b,CHECKING_BANKS)
+        int bank, active;
+        rumboot_printf("\n\nCheck EMI: (%s)...\n", test->desc);
+        FOREACH_BANK(bank,active,NUMBER_OF_BANKS,ENABLED_EM_BANKS)
         {
-            rumboot_printf("%s bank #%d...\n", b?"Check":"Skip", i);
-            if(!b) continue;
-            test_result = test->test(test, i);
+            rumboot_printf("%s bank #%d...\n", active?"Check":"Skip", bank);
+            if(!active) continue;
+            test_result = test->test(test, bank);
             rumboot_printf("%s!\n", test_result ? "Fail" : "Success");
             test_status |= test_result;
         }
