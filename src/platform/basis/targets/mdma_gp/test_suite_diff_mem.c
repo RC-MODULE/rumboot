@@ -2,7 +2,7 @@
 
 static struct mdma_gp mdma_gp_dev[];
 
-static void *all_addr[4];
+static void *all_addr[4] = {NULL};
 
 static int gp_timer_state[4] = {TMR_0_STATE, TMR_1_STATE, TMR_2_STATE, TMR_3_STATE};
 static int gp_timer_limit[4] = {TMR_0_LIMIT, TMR_1_LIMIT, TMR_2_LIMIT, TMR_3_LIMIT};
@@ -93,7 +93,7 @@ static bool test_memory(unsigned long arg)
 			goto speed_exit_2;
 		}
 
-		for (int j = 0; j < ((dev->segment_size / 4) + 1); j++) {
+		for (int j = 0; j < (dev->segment_size / sizeof(unsigned long)); j++) {
 			*((unsigned long *)dev->dst_mirror + j) = 0;
 			*((unsigned long *)dev->src_mirror + j) = arg + i + j;
 		}
@@ -191,26 +191,22 @@ int main()
 
 	rumboot_irq_sei();
 
-	if (test_alloc_mem(test_heap[0], all_addr, 0, (MDMA_GP_SEGMENT_MEM / MDMA_BURST_WIDTH8) * MDMA_BURST_WIDTH8 +
-			MDMA_BURST_WIDTH8)) {
+	if (test_alloc_mem(test_heap[0], all_addr, 0, MDMA_GP_SEGMENT_MEM)) {
 		ret = -2;
 		goto test_exit_1;
 	}
 
-	if (test_alloc_mem(test_heap[1], all_addr, 1, (MDMA_GP_SEGMENT_MEM / MDMA_BURST_WIDTH8) * MDMA_BURST_WIDTH8 +
-			MDMA_BURST_WIDTH8)) {
+	if (test_alloc_mem(test_heap[1], all_addr, 1, MDMA_GP_SEGMENT_MEM)) {
 		ret = -3;
 		goto test_exit_2;
 	}
 
-	if (test_alloc_mem(test_heap[2], all_addr, 2, (MDMA_GP_SEGMENT_MEM / MDMA_BURST_WIDTH8) * MDMA_BURST_WIDTH8 +
-			MDMA_BURST_WIDTH8)) {
+	if (test_alloc_mem(test_heap[2], all_addr, 2, MDMA_GP_SEGMENT_MEM)) {
 		ret = -4;
 		goto test_exit_3;
 	}
 
-	if (test_alloc_mem(test_heap[3], all_addr, 3, (MDMA_GP_SEGMENT_MEM / MDMA_BURST_WIDTH8) * MDMA_BURST_WIDTH8 +
-			MDMA_BURST_WIDTH8)) {
+	if (test_alloc_mem(test_heap[3], all_addr, 3, MDMA_GP_SEGMENT_MEM)) {
 		ret = -5;
 		goto test_exit_4;
 	}

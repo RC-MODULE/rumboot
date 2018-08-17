@@ -103,8 +103,14 @@ void rumboot_platform_setup()
 	rumboot_irq_register_msix_proxy_controller();
 	int heaps = rumboot_malloc_num_heaps();
 	int i;
+
+#if  defined(RUMBOOT_BASIS_ENABLE_DDR) && defined(RUMBOOT_BASIS_DIRECT_IRAM)
+	for (i = 2; i < heaps; i++)
+		setup_mirrored_heap(i);
+#else
 	for (i = 0; i < heaps; i++)
 		setup_mirrored_heap(i);
+#endif
 #endif
 
 	/* Fire timer subsystem */

@@ -14,7 +14,7 @@ SECTIONS
   KEEP(*(.header))
 
   rumboot_im0_heap_start = .;
-  . = . + 0x4000; /* 16k IM0 heap */
+  . = . + 0x8000; /* 32k IM0 heap */
   rumboot_im0_heap_end = .;
 
   KEEP(*(.text.startup))

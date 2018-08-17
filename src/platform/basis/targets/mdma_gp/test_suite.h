@@ -22,16 +22,12 @@
 
 #include <devices/mdma_chan_api.h>
 
-#undef MDMA_GP_ARM_PCIE
-
 #define MDMA_GP_TIMEOUT		1000
 
-// Multiple of 8! You can only change the DDR
+// Must be multiple of 8 bytes!
 #define MDMA_GP_SEGMENT_DDR	512
 #define MDMA_GP_SEGMENT_IM0	128
 #define MDMA_GP_SEGMENT_IM1	256
-
-// Must be multiple of 4!
 #define MDMA_GP_SEGMENT_MEM	1024
 
 struct mdma_gp {
