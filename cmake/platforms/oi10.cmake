@@ -718,6 +718,13 @@ endif()
 
     add_rumboot_target(
         CONFIGURATION IRAM
+        CFLAGS -DHSCB_UNDER_TEST_BASE=SW0_BASE -DHSCB_SUPPLEMENTARY_BASE=SW1_BASE -DHSCB_UNDER_TEST_INT=SW0_HSCB_INT -DHSCB_UNDER_TEST_DMA_INT=SW0_AXI_INT -DHSCB_SUPPLEMENTARY_INT=SW1_HSCB_INT -DHSCB_SUPPLEMENTARY_DMA_INT=SW1_AXI_INT #-DCHECK_REGS
+        FILES test_oi10_hscb.c
+        PREFIX "hscb_0"
+    )
+
+    add_rumboot_target(
+        CONFIGURATION IRAM
         CFLAGS -DMKIO0_IRQ=MKIO0_INT -DMKIO1_IRQ=MKIO1_INT
         FILES common/mkio/mkio_write_read_test.c
         NAME mkio_write_read_test
