@@ -296,6 +296,12 @@ typedef struct edcl_test_data_struct
 #define GRETH_TIMEOUT                 1000
 
 /**
+ * \brief Resets the GRETH core
+ * \param base_addr: base address of GRETH
+ */
+bool greth_reset(uint32_t base_addr);
+
+/**
  * \brief Copy data from source memory region to destination memory region by external loopback
  * \param base_addr: base address of GRETH
  * \param src: pointer to source data region
