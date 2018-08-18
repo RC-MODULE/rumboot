@@ -153,8 +153,6 @@ static void l2c0_w_pe_handler( int irq, void *args ) {
 
     TEST_ASSERT( ( ADDR[ CHECK_PARITY_L2C0_W ] ^ TEST_MASK ) == TEST_VALUE, "Masked test value read error" );
     ADDR[ CHECK_PARITY_L2C0_W ] = HANDLER_CALLED;
-//    msync();
-//    trace_dump( &ADDR[CHECK_PARITY_L2C0_W], 4 );
 
     dcr_write( DCR_PLB6PLB4_0_BASE + P64_ESR, 0xFFFFFFFF );
 }
@@ -396,6 +394,42 @@ static void check_srammc2plb4_r_pe_detection() {
 }
 
 
+static void srammc2plb4_w_pe_handler( int irq, void *args ) {
+    rumboot_putstring( "srammc2plb4_w_pe_handler\n" );
+
+//    TEST_ASSERT( ( ADDR[ CHECK_PARITY_SRAMMC2PLB4_W ] ^ TEST_MASK ) == TEST_VALUE, "Masked test value read error" );
+//    TEST_ASSERT( ADDR[ CHECK_PARITY_SRAMMC2PLB4_W ] == TEST_VALUE, "Test value read error" );
+    ADDR[ CHECK_PARITY_SRAMMC2PLB4_W ] = HANDLER_CALLED;
+
+    l2c_l2_write( DCR_L2C_BASE, L2C_L2PLBSTAT1, 0xFFFFFFFF );
+}
+
+static void check_srammc2plb4_w_pe_detection() {
+    uint32_t l2plbmcken1 = l2c_l2_read( DCR_L2C_BASE, L2C_L2PLBMCKEN1 );
+
+    rumboot_putstring( "check_srammc2plb4_w_pe_detection\n" );
+
+    rumboot_irq_cli();
+    rumboot_irq_set_handler( tbl, L2C0_MCHKOUT, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, srammc2plb4_w_pe_handler, NULL );
+    rumboot_irq_table_activate( tbl );
+    rumboot_irq_enable( L2C0_MCHKOUT );
+    rumboot_irq_sei();
+
+    l2c_l2_write( DCR_L2C_BASE, L2C_L2PLBSTAT0, 0xFFFFFFFF );
+    l2c_l2_write( DCR_L2C_BASE, L2C_L2PLBSTAT1, 0xFFFFFFFF );
+    l2c_l2_write( DCR_L2C_BASE, L2C_L2PLBMCKEN1, 0x3 << IBM_BIT_INDEX( 32, 13 ) );
+
+    test_event( TEC_CHECK_SRAMMC2PLB4_W_PE_DETECTION );
+    ADDR[ CHECK_PARITY_SRAMMC2PLB4_W ] = TEST_VALUE;
+    msync();
+    TEST_ASSERT( ( ADDR[ CHECK_PARITY_SRAMMC2PLB4_W ] ^ TEST_MASK ) == TEST_VALUE, "Masked test value read error" );
+
+    TEST_WAIT( ADDR[ CHECK_PARITY_SRAMMC2PLB4_W ] == HANDLER_CALLED, 2 );
+
+    l2c_l2_write( DCR_L2C_BASE, L2C_L2PLBMCKEN1, l2plbmcken1 );
+}
+
+
 int main() {
     test_event_send_test_id( "test_oi10_cpu_028" );
 
@@ -416,6 +450,7 @@ int main() {
     check_p6bc_r_pe_detection();
     /*check_plb6plb4_r_pe_detection();*/
     check_srammc2plb4_r_pe_detection();
+    check_srammc2plb4_w_pe_detection();
     rumboot_irq_table_activate( NULL );
     rumboot_irq_free( tbl );
 
