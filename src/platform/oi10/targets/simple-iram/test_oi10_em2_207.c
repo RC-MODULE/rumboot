@@ -151,7 +151,7 @@ int main()
 {
     rumboot_printf("Start test_oi10_em2_207\n");
 
-    emi_init();
+    emi_init(DCR_EM2_EMI_BASE);
 
     emi_set_ecc(DCR_EM2_EMI_BASE, emi_bank_all, emi_ecc_on);
     run_check();
