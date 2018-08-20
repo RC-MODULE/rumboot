@@ -26,7 +26,7 @@
  */
 
 /**
- * rd_descr: Structure contains receive descriptor parameters which use to transmit
+ * hscb_descr_struct: Structure contains receive descriptor parameters which use to transmit
  * start_address: 32-bit start address
  * length: Data block length (max 64M-1)
  * act: descr type
@@ -35,16 +35,39 @@
  * err: link fail
  * valid: data is correct
  */
-typedef struct rd_descr_struct
+typedef struct hscb_descr_struct
 {
     uint32_t start_address;
     uint32_t length;
     uint8_t  act;
+    bool     act0;
     bool     ie;
     bool     err;
     bool     valid;
-}rd_descr_struct;
+}hscb_descr_struct_t;
 
+/**
+ * rd_descr: Structure contains receive descriptor parameters which use to transmit
+ * en_hscb:     SW interface ON
+ * tx_endian:   TX channel bytes order (1-Big Endian; 0-Little Endian)
+ * rx_endian:   RX channel bytes order (1-Big Endian; 0-Little Endian)
+ * time_mode:   Time-Code mode 0-receiver; 1-transmitter
+ * loop_back:   1-loopback is ON
+ * en_rmap:     RMAP handling
+ * en_trim_clk: Frequency auto-tune
+ * rx_fix_en:   Recover receiver clock by incoming data
+ */
+typedef struct hscb_cfg
+{
+    bool en_hscb;
+    bool tx_endian;
+    bool rx_endian;
+    bool time_mode;
+    bool loop_back;
+    bool en_rmap;
+    bool en_trim_clk;
+    bool rx_fix_en;
+}hscb_cfg_t;
 
 
 /**
@@ -94,6 +117,16 @@ uint32_t hscb_set_desc (uint32_t sys_addr, uint32_t len, uint32_t desc_addr, uin
  */
 uint32_t hscb_get_desc (uint32_t sys_addr, uint8_t* data_out, uint32_t* len,  bool* act0, bool* interrupt, bool* end, bool* valid, bool endian);
 
+
+/**
+ * \brief Set descriptor in memory
+ * \param[in] sys_addr address in memory for placing descriptor
+ * \param[in] pointer on read data descriptor
+ */
+void hscb_set_descr_in_mem(uint32_t sys_addr, hscb_descr_struct_t* descr);
+
+void hscb_set_config(uint32_t base_addr, hscb_cfg_t* cfg);
+void hscb_get_config(uint32_t base_addr, hscb_cfg_t* cfg);
 
 /**
  * @}

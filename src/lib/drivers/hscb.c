@@ -134,3 +134,44 @@ uint32_t hscb_get_desc (uint32_t sys_addr, uint8_t* data_out, uint32_t* len,  bo
     }
     return sys_addr;
 }
+
+void hscb_set_config(uint32_t base_addr, hscb_cfg_t* cfg)
+{
+    iowrite32(((cfg->en_hscb << HSCB_SETTINGS_EN_HSCB_i)     & HSCB_SETTINGS_EN_HSCB_mask)     |
+              ((cfg->en_hscb << HSCB_SETTINGS_TX_ENDIAN_i)   & HSCB_SETTINGS_TX_ENDIAN_mask)   |
+              ((cfg->en_hscb << HSCB_SETTINGS_RX_ENDIAN_i)   & HSCB_SETTINGS_RX_ENDIAN_mask)   |
+              ((cfg->en_hscb << HSCB_SETTINGS_TIME_MODE_i)   & HSCB_SETTINGS_TIME_MODE_mask)   |
+              ((cfg->en_hscb << HSCB_SETTINGS_LOOP_BACK_i)   & HSCB_SETTINGS_LOOP_BACK_mask)   |
+              ((cfg->en_hscb << HSCB_SETTINGS_EN_RMAP_i)     & HSCB_SETTINGS_EN_RMAP_i)        |
+              ((cfg->en_hscb << HSCB_SETTINGS_EN_TRIM_CLK_i) & HSCB_SETTINGS_EN_TRIM_CLK_mask) |
+              ((cfg->en_hscb << HSCB_SETTINGS_RX_FIX_EN_i)   & HSCB_SETTINGS_RX_FIX_EN_mask),
+              base_addr + HSCB_SETTINGS);
+}
+
+void hscb_get_config(uint32_t base_addr, hscb_cfg_t* cfg)
+{
+    uint32_t settings;
+    settings = ioread32(base_addr + HSCB_SETTINGS);
+    cfg->en_hscb     = (settings & HSCB_SETTINGS_EN_HSCB_mask)      >> HSCB_SETTINGS_EN_HSCB_i     ;
+    cfg->tx_endian   = (settings & HSCB_SETTINGS_TX_ENDIAN_mask)    >> HSCB_SETTINGS_TX_ENDIAN_i   ;
+    cfg->rx_endian   = (settings & HSCB_SETTINGS_RX_ENDIAN_mask)    >> HSCB_SETTINGS_RX_ENDIAN_i   ;
+    cfg->time_mode   = (settings & HSCB_SETTINGS_TIME_MODE_mask)    >> HSCB_SETTINGS_TIME_MODE_i   ;
+    cfg->loop_back   = (settings & HSCB_SETTINGS_LOOP_BACK_mask)    >> HSCB_SETTINGS_LOOP_BACK_i   ;
+    cfg->en_rmap     = (settings & HSCB_SETTINGS_EN_RMAP_i)         >> HSCB_SETTINGS_EN_RMAP_i     ;
+    cfg->en_trim_clk = (settings & HSCB_SETTINGS_EN_TRIM_CLK_mask)  >> HSCB_SETTINGS_EN_TRIM_CLK_i ;
+    cfg->rx_fix_en   = (settings & HSCB_SETTINGS_RX_FIX_EN_mask)    >> HSCB_SETTINGS_RX_FIX_EN_i   ;
+}
+
+
+void hscb_set_rd_descr_in_mem(uint32_t sys_addr, hscb_descr_struct_t* descr)
+{
+    iowrite32( ( descr->start_address                            & HSCB_RD_DESCR_START_ADDRESS_mask), sys_addr + 4);
+    iowrite32( ((descr->length << HSCB_RD_DESCR_START_ADDRESS_i) & HSCB_RD_DESCR_START_ADDRESS_mask) |
+               ((descr->act    << HSCB_RD_DESCR_ACT_i)           & HSCB_RD_DESCR_ACT_mask)           |
+               ((descr->act0   << HSCB_RD_DESCR_ACT0_i)          & HSCB_RD_DESCR_ACT0_mask)          |
+               ((descr->ie     << HSCB_RD_DESCR_IE_i)            & HSCB_RD_DESCR_IE_mask)            |
+               ((descr->err    << HSCB_RD_DESCR_ERR_i)           & HSCB_RD_DESCR_ERR_mask)           |
+               ((descr->valid  << HSCB_RD_DESCR_VALID_i)         & HSCB_RD_DESCR_VALID_mask),
+               sys_addr);
+}
+
