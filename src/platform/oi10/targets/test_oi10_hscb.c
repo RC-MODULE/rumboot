@@ -186,6 +186,8 @@ static void handler( int irq, void *arg ) {
     if (irq == HSCB_SUPPLEMENTARY_DMA_INT) {
         rumboot_putstring("HSCB_1_DMA_IRQ\n");
         hscb1_dma_status = ioread32(HSCB_SUPPLEMENTARY_BASE + HSCB_ADMA_CH_STATUS);
+        isync();
+        msync();
         rumboot_puthex(hscb1_dma_status);
         if (hscb1_dma_status & 0x00000001)
             hscb1_dma_status = ioread32(HSCB_SUPPLEMENTARY_BASE + HSCB_RDMA_STATUS);
