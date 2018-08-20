@@ -16,7 +16,7 @@
 #include <platform/trace.h>
 
 
-uint32_t change_endian (uint32_t data_in){
+uint32_t hscb_change_endian (uint32_t data_in){
     uint32_t data_out = 0;
     rumboot_puthex(data_in);
 
@@ -28,7 +28,7 @@ uint32_t change_endian (uint32_t data_in){
     return data_out;
 }
 
-void convert_to_bytes (uint32_t* data_in, uint8_t* data_out, uint32_t len) {
+void hscb_convert_to_bytes (uint32_t* data_in, uint8_t* data_out, uint32_t len) {
     int i = 0;
 
     for (i=0; i<=len; i=i+8){
@@ -43,7 +43,7 @@ void convert_to_bytes (uint32_t* data_in, uint8_t* data_out, uint32_t len) {
         }
 }
 
-uint32_t set_desc (uint32_t sys_addr, uint32_t len, uint32_t desc_addr, uint8_t* data_in, bool act0, bool interrupt, bool valid, bool endian){
+uint32_t hscb_set_desc (uint32_t sys_addr, uint32_t len, uint32_t desc_addr, uint8_t* data_in, bool act0, bool interrupt, bool valid, bool endian){
     int i = 0;
     uint32_t tmp = 0;
     uint32_t desc_data = 0;
@@ -93,7 +93,7 @@ uint32_t set_desc (uint32_t sys_addr, uint32_t len, uint32_t desc_addr, uint8_t*
     return sys_addr;
 }
 
-uint32_t get_desc (uint32_t sys_addr, uint8_t* data_out, uint32_t* len,  bool* act0, bool* interrupt, bool* end, bool* valid, bool endian){
+uint32_t hscb_get_desc (uint32_t sys_addr, uint8_t* data_out, uint32_t* len,  bool* act0, bool* interrupt, bool* end, bool* valid, bool endian){
     int i = 0;
     uint32_t desc_addr = 0;
     uint32_t desc_data = 0;
