@@ -135,6 +135,12 @@ uint32_t hscb_get_desc (uint32_t sys_addr, uint8_t* data_out, uint32_t* len,  bo
     return sys_addr;
 }
 
+bool hscb_reset(uint32_t base_addr)
+{
+
+    return true;
+}
+
 void hscb_set_config(uint32_t base_addr, hscb_cfg_t* cfg)
 {
     iowrite32(((cfg->en_hscb << HSCB_SETTINGS_EN_HSCB_i)     & HSCB_SETTINGS_EN_HSCB_mask)     |
