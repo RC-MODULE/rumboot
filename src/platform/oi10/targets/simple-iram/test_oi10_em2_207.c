@@ -145,6 +145,7 @@ void run_check()
     check_bank(SDRAM_BASE);
     check_bank(SSRAM_BASE);
     check_bank(PIPELINED_BASE);
+    check_bank(SRAM1_BASE);
 }
 
 int main()
