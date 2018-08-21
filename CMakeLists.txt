@@ -80,6 +80,30 @@ if(NOT RUMBOOT_DISABLE_CCACHE)
   find_program(CCACHE_FOUND ccache)
 endif()
 
+set(Python_ADDITIONAL_VERSIONS 3)
+find_package(PythonInterp REQUIRED)
+
+macro(find_rumboot_packimage)
+  find_file(RUMBOOT_PACKIMAGE
+    NAMES rumboot_packimage.py rumboot-packimage
+    PATHS ${PROJECT_SOURCE_DIR}/rumboot-packimage.py
+          ${CMAKE_SOURCE_DIR}/rumboot-packimage.py
+  )
+endmacro()
+
+find_rumboot_packimage()
+if (RUMBOOT_PACKIMAGE STREQUAL "RUMBOOT_PACKIMAGE-NOTFOUND")
+  message("rumboot-packimage.py not found, trying check it out")
+  execute_process(git submodule update --init{${PROJECT_SOURCE_DIR}/rumboot-packimage.py)
+  find_rumboot_packimage()
+endif()
+
+if (NOT RUMBOOT_PACKIMAGE STREQUAL "RUMBOOT_PACKIMAGE-NOTFOUND")
+  message("-- Found Rumboot-Packimage.py: ${RUMBOOT_PACKIMAGE}")
+else()
+  message(FATAL_ERROR "Failed to find Rumboot-Packimage.py")
+endif()
+
 message("\n\n ==== RumBoot Configuration summary ====")
 
 message("Platform:           ${RUMBOOT_PLATFORM}")
