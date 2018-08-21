@@ -16,6 +16,8 @@
 #include <platform/regs/fields/mpic128.h>
 #include <rumboot/regpoker.h>
 #include <rumboot/platform.h>
+#include <regs/regs_gpio_pl061.h>
+#include <devices/gpio_pl061.h>
 
 #define TEST_DATA       0xDCFE3412
 
@@ -73,6 +75,11 @@ static uint32_t gspi_check_regs(uint32_t base_addr)
      { "IRQMASKS",      REGPOKER_WRITE32, GSPI_IRQMASKS,     0x00,                      GSPI_IRQMASKS_MASK },
      { /* Sentinel */ }
     };
+
+    gpio_set_port_direction(GPIO_1_BASE, GPIO1_X);
+    iowrite32( GPIO1_X, GPIO_1_BASE + GPIO_ADDR_MASK );
+    TEST_ASSERT((ioread32(GSPI_BASE + GSPI_STATUS) == 0x82), "ERROR!!! GSPI interrupt not set");
+    gpio_set_port_direction(GPIO_1_BASE, 0x0);
 
     return rumboot_regpoker_check_array(check_array, base_addr);
 }
@@ -264,7 +271,6 @@ int main(void)
     rumboot_irq_sei();
 
 
-    rumboot_printf("Checking GSPI AXI functionality ...\n");
     //IM0 - IM0
     test_result += gspi_dma_axi(GSPI_BASE, (uint32_t*)data_src, (uint32_t*)data_dst);
     //IM0 - IM1
@@ -272,7 +278,7 @@ int main(void)
     //IM0 - EM2
     test_result += gspi_dma_axi(GSPI_BASE, (uint32_t*)data_src, (uint32_t*)rumboot_virt_to_dma((void*)EM2_BASE));
 
-    // Copy data in IыM1
+    // Copy data in IM1
 //    memcpy(data_src, (uint32_t*)rumboot_virt_to_dma((uint32_t*)IM1_BASE), sizeof(data_src));
     for(int i=0; i <8; i++)
     {
