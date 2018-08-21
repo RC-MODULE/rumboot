@@ -3,6 +3,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
 
 INCLUDE(cmake/RumBoot.cmake)
 find_package(Doxygen)
+find_package(Git)
 
 SET(RUMBOOT_PLATFORM "native" CACHE STRING "RumBoot platform to compile for")
 
@@ -94,7 +95,10 @@ endmacro()
 find_rumboot_packimage()
 if (RUMBOOT_PACKIMAGE STREQUAL "RUMBOOT_PACKIMAGE-NOTFOUND")
   message("rumboot-packimage.py not found, trying check it out")
-  execute_process(git submodule update --init{${PROJECT_SOURCE_DIR}/rumboot-packimage.py)
+  execute_process(
+    COMMAND ${GIT_EXECUTABLE} submodule update --init rumboot-packimage.py
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+  )
   find_rumboot_packimage()
 endif()
 
