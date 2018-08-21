@@ -19,7 +19,7 @@
 #include <platform/devices/nor_1636RR4.h>
 #include <platform/devices.h>
 
-#define NUM_ELEM 256
+#define NUM_ELEM 16
 ///src
 static uint32_t em2_cs0_sram_out = (SRAM0_BASE);
 static uint32_t em2_cs1_nor_out = (NOR_BASE);
@@ -45,7 +45,7 @@ static void init_nor_data(uint32_t addr, uint32_t value)
     uint32_t j = 0;
     for(j = 0; j < NUM_ELEM; j++ )
     {
-        nor_write(value, (uint32_t)(addr + 4 * j));
+        nor_write32(value, (uint32_t)(addr + 4 * j));
     }
 }
 
@@ -100,17 +100,6 @@ int main (void)
 
     rumboot_printf ("Init data0\n") ;
     init_data(em2_cs0_sram_out, 0xaaaaaaaa);
-    rumboot_printf ("Init data1\n") ;
-
-    /*
-    {
-        for (j = 0; j < NUM_ELEM; j++)
-        {
-            nor_write32(0xbbbbbbbb, (em2_cs1_nor_out + 4*j));
-        }
-    }
-    */
-
     rumboot_printf("Init data1\n");
     init_nor_data(em2_cs1_nor_out, 0xbbbbbbbb);
     rumboot_printf ("Init data2\n") ;
