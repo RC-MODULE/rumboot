@@ -76,11 +76,6 @@ static uint32_t gspi_check_regs(uint32_t base_addr)
      { /* Sentinel */ }
     };
 
-    gpio_set_port_direction(GPIO_1_BASE, GPIO1_X);
-    iowrite32( GPIO1_X, GPIO_1_BASE + GPIO_ADDR_MASK );
-    TEST_ASSERT((ioread32(GSPI_BASE + GSPI_STATUS) == 0x82), "ERROR!!! GSPI interrupt not set");
-    gpio_set_port_direction(GPIO_1_BASE, 0x0);
-
     return rumboot_regpoker_check_array(check_array, base_addr);
 }
 
@@ -257,6 +252,11 @@ int main(void)
     #ifdef GSPI_CHECK_REGS
         rumboot_printf("Checking GSPI registers ...\n");
         test_result += gspi_check_regs(GSPI_BASE);
+
+        gpio_set_port_direction(GPIO_1_BASE, GPIO1_X);
+        iowrite32( GPIO1_X, GPIO_1_BASE + GPIO_ADDR_MASK );
+        TEST_ASSERT((ioread32(GSPI_BASE + GSPI_STATUS) == 0x82), "ERROR!!! GSPI interrupt not set");
+        gpio_set_port_direction(GPIO_1_BASE, 0x0);
     #endif
 
     IRQ = 0;
