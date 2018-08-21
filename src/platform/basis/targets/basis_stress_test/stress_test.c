@@ -135,19 +135,19 @@ static struct test_dev dev_to_test[TEST_DEV_NUM] = {
 	UART_SEGMENT_SZ, false, false, 0x1FC},
 
 	{(void *)BASIS_VIRT(ETH0_BASE), IRQ_VIRT(MGETH0_IRQ), MGETH_GLOBAL_STATUS, MGETH_STATUS, MGETH_IRQ_MASK, 31, 0, 16,
-	TEST_DEV_CFG(MDMA_BURST_WIDTH4, -1, true), 0x800, NULL, NULL, {NULL}, {NULL}, {NULL}, {NULL}, ETH_SEGMENT_NUM,
+	TEST_DEV_CFG(MDMA_BURST_WIDTH4, -1, true), 0, NULL, NULL, {NULL}, {NULL}, {NULL}, {NULL}, ETH_SEGMENT_NUM,
 	ETH_SEGMENT_SZ, false, false, 0x11},
 
 	{(void *)BASIS_VIRT(ETH1_BASE), IRQ_VIRT(MGETH1_IRQ), MGETH_GLOBAL_STATUS, MGETH_STATUS, MGETH_IRQ_MASK, 31, 0, 16,
-	TEST_DEV_CFG(MDMA_BURST_WIDTH4, -1, true), 0x800, NULL, NULL, {NULL}, {NULL}, {NULL}, {NULL}, ETH_SEGMENT_NUM,
+	TEST_DEV_CFG(MDMA_BURST_WIDTH4, -1, true), 0, NULL, NULL, {NULL}, {NULL}, {NULL}, {NULL}, ETH_SEGMENT_NUM,
 	ETH_SEGMENT_SZ, false, false, 0x11},
 
 	{(void *)ETH2_BASE, MGETH2_IRQ, MGETH_GLOBAL_STATUS, MGETH_STATUS, MGETH_IRQ_MASK, 31, 0, 16,
-	TEST_DEV_CFG(MDMA_BURST_WIDTH4, -1, true), 0x800, NULL, NULL, {NULL}, {NULL}, {NULL}, {NULL}, ETH_SEGMENT_NUM,
+	TEST_DEV_CFG(MDMA_BURST_WIDTH4, -1, true), 0, NULL, NULL, {NULL}, {NULL}, {NULL}, {NULL}, ETH_SEGMENT_NUM,
 	ETH_SEGMENT_SZ, false, false, 0x11},
 
 	{(void *)ETH3_BASE, MGETH3_IRQ, MGETH_GLOBAL_STATUS, MGETH_STATUS, MGETH_IRQ_MASK, 31, 0, 16,
-	TEST_DEV_CFG(MDMA_BURST_WIDTH4, -1, true), 0x800, NULL, NULL, {NULL}, {NULL}, {NULL}, {NULL}, ETH_SEGMENT_NUM,
+	TEST_DEV_CFG(MDMA_BURST_WIDTH4, -1, true), 0, NULL, NULL, {NULL}, {NULL}, {NULL}, {NULL}, ETH_SEGMENT_NUM,
 	ETH_SEGMENT_SZ, false, false, 0x11},
 
 #if !defined(RUMBOOT_BASIS_DMA_MEM_ACCEL) || (RUMBOOT_BASIS_DMA_MEM_ACCEL != 0)
@@ -339,7 +339,7 @@ int main()
 		}
 	}
 
-	for (i = TEST_DEV_NUM; i > 0; i--) {
+	for (i = TEST_DEV_NUM; i > (ETH3_INDX + 1); i--) {
 		if (mdma_chan_start(dev_to_test[i - 1].chan_rd)) {
 			ret = -13;
 			goto stress_test_exit;
@@ -348,6 +348,13 @@ int main()
 
 	iowrite32(1, GLOBAL_TIMERS + TMR_0_LIMIT);
 	iowrite32(0x10002, GLOBAL_TIMERS + TMR_0_STATE);
+
+	for (i = (ETH3_INDX + 1); i > 0; i--) {
+		if (mdma_chan_start(dev_to_test[i - 1].chan_rd)) {
+			ret = -13;
+			goto stress_test_exit;
+		}
+	}
 
 	rumboot_irq_sei();
 
