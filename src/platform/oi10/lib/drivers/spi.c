@@ -9,6 +9,23 @@
 #include <rumboot/printf.h>
 #include <rumboot/timer.h>
 
+void gspi_reset(uint32_t base_addr)
+{
+    iowrite32(0x01, base_addr + GSPI_SOFTRST); //reset DMA
+
+    while (ioread32(base_addr + GSPI_SOFTRST))
+        ;
+}
+
+void gspi_dma_enable(uint32_t base_addr)
+{
+    iowrite32(0x03, base_addr + GSPI_SSPDMACR); //enable DMA
+}
+
+void gspi_set_irq_mask(uint32_t base_addr, uint32_t mask)
+{
+    iowrite32(mask, base_addr + GSPI_IRQMASKS); //set irq masks
+}
 
 void spi_eeprom_write_enable(uint32_t base_addr)
 {
@@ -22,15 +39,12 @@ void spi_eeprom_write_enable(uint32_t base_addr)
 
 uint32_t read_eeprom_status (uint32_t base_addr)
 {
-
-//  MEM(S_GPIO_BASE+0x3fc) = 0xd0;    //start operation
     iowrite32(0x05, base_addr+GSPI_SSPDR); //write data to SPI - command read status
     iowrite32(0xff, base_addr+GSPI_SSPDR); //write data to SPI - data staff
 
     while((ioread32(base_addr+GSPI_SSPSR) & 0x1) == 0) //wait tx fifo empty
         ;
 
-//  MEM(S_GPIO_BASE+0x3fc) = 0xf0;    //stop operation
     (void)ioread32(base_addr+GSPI_SSPDR); //read data from rx fifo
 
     return (ioread32(base_addr+GSPI_SSPDR)); //read data from rx fifo

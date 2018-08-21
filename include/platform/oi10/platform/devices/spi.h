@@ -2,6 +2,9 @@
 #include <stdint.h>
 #include <stddef.h>
 
+void gspi_reset(uint32_t base_addr);
+void gspi_dma_enable(uint32_t base_addr);
+void gspi_set_irq_mask(uint32_t base_addr, uint32_t mask);
 uint32_t read_eeprom_status (uint32_t base_addr);
 void spi_eeprom_write_enable(uint32_t base_addr);
 void spi_eeprom_erase_init(uint32_t base_addr);
