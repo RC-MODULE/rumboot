@@ -8,6 +8,12 @@
 #ifndef DEVICES_HSCB_H
 #define DEVICES_HSCB_H
 
+#include <platform/arch/ppc/test_macro.h>
+#include <rumboot/platform.h>
+#include <rumboot/io.h>
+#include <rumboot/printf.h>
+#include <platform/devices.h>
+#include <platform/trace.h>
 #include <regs/regs_hscb.h>
 
 /**
@@ -37,13 +43,13 @@
  */
 typedef struct hscb_descr_struct
 {
-    uint32_t start_address;
-    uint32_t length;
-    uint8_t  act;
-    bool     act0;
-    bool     ie;
-    bool     err;
-    bool     valid;
+    uint32_t    start_address;
+    uint32_t    length;
+    hscb_act_t  act;
+    hscb_act0_t act0;
+    bool        ie;
+    bool        err;
+    bool        valid;
 }hscb_descr_struct_t;
 
 /**
@@ -87,6 +93,64 @@ typedef struct hscb_timings_cfg
     uint16_t time_128;
     uint8_t  silence_time;
 }hscb_timings_cfg_t;
+
+/**
+ * hscb_rwdma_settings
+ * rw_desc_int:       Interrupt mask "Descriptor execution is finished"
+ * rw_desc_end:       Interrupt mask "Finished stop R(W)DMA execution"
+ * rw_bad_desc:       Interrupt mask "Descriptor of rd chan tagged as completed"
+ * rw_axi_error:      Interrupt mask "Error on system bus"
+ * rw_buf_full:       Interrupt mask "RD/WR buffer is full"
+ * rw_buf_empty:      Interrupt mask "RD/WR buffer is empty"
+ * en_rwdma:          RD/WR channel is ON
+ * en_rwdma_desc_tbl: Accept external desc table (must be true)
+ * rwdma_long_len:    Extend Length field through Custom field
+ * cansel_rwdma:      Stop operation of RD/WR DMA
+ */
+typedef struct hscb_rwdma_settings
+{
+    bool rw_desc_int;
+    bool rw_desc_end;
+    bool rw_bad_desc;
+    bool rw_axi_error;
+    bool rw_buf_full;
+    bool rw_buf_empty;
+    bool en_rwdma;
+    bool en_rwdma_desc_tbl;
+    bool rwdma_long_len;
+    bool cancel_rwdma;
+}hscb_rwdma_settings_t;
+
+/**
+ * hscb_axi_params_cfg: Structure contains HSCB AXI parameters
+ * arlen:         ARLEN[3:0] value for AXI transactions
+ * awlen:         AWLEN[3:0] value for AXI transactions
+ * bresp:         BRESP[1:0] value for AXI transactions
+ * raxi_err_addr: Address which produced error on AXI
+ * arcache:       ARCACHE[3:0] value for AXI transactions
+ * awcache:       AWCACHE[3:0] value for AXI transactions
+ * arprot:        ARPROT[2:0] value for AXI transactions
+ * awprot:        AWPROT[2:0] value for AXI transactions
+ * arlock:        ARLOCK[1:0] value for AXI transactions
+ * awlock:        AWLOCK[1:0] value for AXI transactions
+ * arburst:       ARBURST[1:0] value for AXI transactions
+ * awburst:       AWBURST[1:0] value for AXI transactions
+ */
+typedef struct hscb_axi_params_cfg
+{
+    hscb_axi_arwlen_t   arlen;
+    hscb_axi_arwlen_t   awlen;
+    hscb_axi_bresp_t    bresp;
+    uint32_t            raxi_err_addr;
+    hscb_axi_arwcache_t arcache;
+    hscb_axi_arwcache_t awcache;
+    hscb_axi_arwprot_t  arprot;
+    hscb_axi_arwprot_t  awprot;
+    hscb_axi_arwlock_t  arlock;
+    hscb_axi_arwlock_t  awlock;
+    hscb_axi_arwburst_t arburst;
+    hscb_axi_arwburst_t awburst;
+}hscb_axi_params_cfg_t;
 
 /**
  * \brief Change endianness in 4-byte word function
@@ -164,9 +228,17 @@ void hscb_set_rdma_sys_addr(uint32_t base_addr, uint32_t descr_addr);
 uint32_t hscb_get_rdma_sys_addr(uint32_t base_addr);
 void hscb_set_wdma_sys_addr(uint32_t base_addr, uint32_t descr_addr);
 uint32_t hscb_get_wdma_sys_addr(uint32_t base_addr);
-
+void hscb_set_axi_params(uint32_t base_addr, hscb_axi_params_cfg_t* cfg);
+void hscb_get_axi_params(uint32_t base_addr, hscb_axi_params_cfg_t* cfg);
+void hscb_set_rdma_settings(uint32_t base_addr, hscb_rwdma_settings_t* settings);
+void hscb_get_rdma_settings(uint32_t base_addr, hscb_rwdma_settings_t* settings);
+void hscb_set_wdma_settings(uint32_t base_addr, hscb_rwdma_settings_t* settings);
+void hscb_get_wdma_settings(uint32_t base_addr, hscb_rwdma_settings_t* settings);
+bool hscb_wait_status(uint32_t base_addr, uint32_t status);
+bool hscb_transmit(uint32_t base_addr, uint32_t* data_ptr, uint32_t len, uint32_t* desc_ptr);
 
 #define HSCB_SW_RESET_TIMEOUT   100
+#define HSCB_TIMEOUT            100
 /**
  * @}
  */
