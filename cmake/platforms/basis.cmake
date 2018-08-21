@@ -42,6 +42,18 @@ rumboot_add_configuration (
 )
 
 rumboot_add_configuration (
+  IRAM_SPL
+  LDS basis/iram-spl.lds
+  PREFIX iram
+  LDFLAGS -Wl,--start-group -lgcc -lc -lm -Wl,--end-group "-e rumboot_main"
+  FILES ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c
+  CFLAGS -DRUMBOOT_PRINTF_ACCEL
+  BOOTROM bootrom-stub
+  FEATURES LUA COVERAGE
+  LOAD IM0BIN SELF
+)
+
+rumboot_add_configuration (
   IRAM_WITH_DDR
   LDS basis/iram.lds
   PREFIX iram_with_ddr
@@ -217,7 +229,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     )
 
     add_rumboot_target_dir(common/spl-stubs/
-      CONFIGURATION IRAM
+      CONFIGURATION IRAM_SPL
       PREFIX spl
       FEATURES STUB
     )
