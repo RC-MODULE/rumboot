@@ -59,7 +59,7 @@ uint32_t hscb_set_desc (uint32_t sys_addr, uint32_t len, uint32_t desc_addr, uin
         if (interrupt) desc_data = desc_data | 0x00000004;
         if (valid) desc_data = desc_data | 0x00000001;
             if (endian)
-                iowrite32(change_endian(desc_data), sys_addr);
+                iowrite32(hscb_change_endian(desc_data), sys_addr);
             else
                 iowrite32(desc_data, sys_addr);
     }
@@ -73,7 +73,7 @@ uint32_t hscb_set_desc (uint32_t sys_addr, uint32_t len, uint32_t desc_addr, uin
     }
     else {
             if (endian)
-                iowrite32(change_endian(desc_addr), sys_addr);
+                iowrite32(hscb_change_endian(desc_addr), sys_addr);
             else
                 iowrite32(desc_addr,sys_addr);
     }
@@ -101,7 +101,7 @@ uint32_t hscb_get_desc (uint32_t sys_addr, uint8_t* data_out, uint32_t* len,  bo
     rumboot_putstring( "Get descriptor " );
     rumboot_puthex (sys_addr);
     if (endian)
-        desc_data = change_endian(ioread32(sys_addr));
+        desc_data = hscb_change_endian(ioread32(sys_addr));
 
     else
         desc_data = ioread32(sys_addr);
@@ -109,7 +109,7 @@ uint32_t hscb_get_desc (uint32_t sys_addr, uint8_t* data_out, uint32_t* len,  bo
     sys_addr += 4;
 
     if (endian)
-        desc_addr = change_endian(ioread32(sys_addr));
+        desc_addr = hscb_change_endian(ioread32(sys_addr));
     else
         desc_addr = ioread32(sys_addr);
 
@@ -135,10 +135,15 @@ uint32_t hscb_get_desc (uint32_t sys_addr, uint8_t* data_out, uint32_t* len,  bo
     return sys_addr;
 }
 
-bool hscb_reset(uint32_t base_addr)
+bool hscb_sw_rst(uint32_t base_addr)
 {
-
-    return true;
+    uint32_t time = 0;
+    iowrite32(1, base_addr + HSCB_SW_RESET);
+    while ((ioread32(base_addr + HSCB_SW_RESET)!=0) && (time++<HSCB_SW_RESET_TIMEOUT));
+    if (time<HSCB_SW_RESET_TIMEOUT)
+        return true;
+    else
+        return false;
 }
 
 void hscb_set_config(uint32_t base_addr, hscb_cfg_t* cfg)
@@ -168,7 +173,6 @@ void hscb_get_config(uint32_t base_addr, hscb_cfg_t* cfg)
     cfg->rx_fix_en   = (settings & HSCB_SETTINGS_RX_FIX_EN_mask)    >> HSCB_SETTINGS_RX_FIX_EN_i   ;
 }
 
-
 void hscb_set_rd_descr_in_mem(uint32_t sys_addr, hscb_descr_struct_t* descr)
 {
     iowrite32( ( descr->start_address                            & HSCB_RD_DESCR_START_ADDRESS_mask), sys_addr + 4);
@@ -181,3 +185,113 @@ void hscb_set_rd_descr_in_mem(uint32_t sys_addr, hscb_descr_struct_t* descr)
                sys_addr);
 }
 
+uint32_t hscb_get_status(uint32_t base_addr)
+{
+    return ioread32(base_addr + HSCB_STATUS);
+}
+
+void hscb_set_irq_mask(uint32_t base_addr, uint32_t mask)
+{
+    iowrite32(mask, base_addr + HSCB_IRQ_MASK);
+}
+
+void hscb_set_timings(uint32_t base_addr, hscb_timings_cfg_t* cfg)
+{
+    iowrite32(((cfg->freq      << HSCB_TRANS_CLK_FREQ_i)      & HSCB_TRANS_CLK_FREQ_mask)      |
+              ((cfg->init_freq << HSCB_TRANS_CLK_INIT_FREQ_i) & HSCB_TRANS_CLK_INIT_FREQ_mask) |
+              ((cfg->freq      << HSCB_TRANS_CLK_LIMIT_i)     & HSCB_TRANS_CLK_LIMIT_mask),
+              base_addr + HSCB_TRANS_CLK);
+    iowrite32(((cfg->time_64      << HSCB_TIMINGS_TIME_64_i)      & HSCB_TIMINGS_TIME_64_mask)      |
+              ((cfg->time_128     << HSCB_TIMINGS_TIME_128_i)     & HSCB_TIMINGS_TIME_128_i)        |
+              ((cfg->silence_time << HSCB_TIMINGS_SILENCE_TIME_i) & HSCB_TIMINGS_SILENCE_TIME_mask),
+              base_addr + HSCB_TIMINGS);
+}
+
+void hscb_get_timings(uint32_t base_addr, hscb_timings_cfg_t* cfg)
+{
+    uint32_t buf;
+    buf = ioread32(base_addr + HSCB_TRANS_CLK);
+    cfg->freq      = (buf & HSCB_TRANS_CLK_FREQ_mask)      >> HSCB_TRANS_CLK_FREQ_i;
+    cfg->init_freq = (buf & HSCB_TRANS_CLK_INIT_FREQ_mask) >> HSCB_TRANS_CLK_INIT_FREQ_i;
+    cfg->freq      = (buf & HSCB_TRANS_CLK_LIMIT_mask)     >> HSCB_TRANS_CLK_LIMIT_i;
+    buf = ioread32(base_addr + HSCB_TIMINGS);
+    cfg->time_64      = (buf & HSCB_TIMINGS_TIME_64_mask)      >> HSCB_TIMINGS_TIME_64_i;
+    cfg->time_128     = (buf & HSCB_TIMINGS_TIME_128_i)        >> HSCB_TIMINGS_TIME_128_i;
+    cfg->silence_time = (buf & HSCB_TIMINGS_SILENCE_TIME_mask) >> HSCB_TIMINGS_SILENCE_TIME_i;
+}
+
+bool hscb_adma_sw_rst(uint32_t base_addr)
+{
+    uint32_t time = 0;
+    iowrite32(1, base_addr + HSCB_ADMA_SW_RESET);
+    while ((ioread32(base_addr + HSCB_ADMA_SW_RESET)!=0) && (time++<HSCB_SW_RESET_TIMEOUT));
+    if (time<HSCB_SW_RESET_TIMEOUT)
+        return true;
+    else
+        return false;
+}
+
+uint32_t hscb_get_adma_ch_status(uint32_t base_addr)
+{
+    return ioread32(base_addr + HSCB_ADMA_CH_STATUS);
+}
+
+void hscb_set_rdma_irq_mask(uint32_t base_addr, uint32_t mask)
+{
+    iowrite32(mask, base_addr + HSCB_RDMA_SETTINGS);
+}
+
+void hscb_set_wdma_irq_mask(uint32_t base_addr, uint32_t mask)
+{
+    iowrite32(mask, base_addr + HSCB_WDMA_SETTINGS);
+}
+
+uint32_t hscb_get_rdma_status(uint32_t base_addr)
+{
+    return ioread32(base_addr + HSCB_RDMA_STATUS);
+}
+
+uint32_t hscb_get_wdma_status(uint32_t base_addr)
+{
+    return ioread32(base_addr + HSCB_WDMA_STATUS);
+}
+
+void hscb_set_rdma_tbl_size(uint32_t base_addr, uint32_t size)
+{
+    iowrite32(size, base_addr + HSCB_RDMA_TBL_SIZE);
+}
+
+uint32_t hscb_get_rdma_tbl_size(uint32_t base_addr)
+{
+    return ioread32(base_addr + HSCB_RDMA_TBL_SIZE);
+}
+
+void hscb_set_wdma_tbl_size(uint32_t base_addr, uint32_t size)
+{
+    iowrite32(size, base_addr + HSCB_WDMA_TBL_SIZE);
+}
+
+uint32_t hscb_get_wdma_tbl_size(uint32_t base_addr)
+{
+    return ioread32(base_addr + HSCB_WDMA_TBL_SIZE);
+}
+
+void hscb_set_rdma_sys_addr(uint32_t base_addr, uint32_t descr_addr)
+{
+    iowrite32(descr_addr, base_addr + HSCB_RDMA_SYS_ADDR);
+}
+
+uint32_t hscb_get_rdma_sys_addr(uint32_t base_addr)
+{
+    return ioread32(base_addr + HSCB_RDMA_SYS_ADDR);
+}
+
+void hscb_set_wdma_sys_addr(uint32_t base_addr, uint32_t descr_addr)
+{
+    iowrite32(descr_addr, base_addr + HSCB_WDMA_SYS_ADDR);
+}
+
+uint32_t hscb_get_wdma_sys_addr(uint32_t base_addr)
+{
+    return ioread32(base_addr + HSCB_WDMA_SYS_ADDR);
+}

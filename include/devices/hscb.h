@@ -47,7 +47,7 @@ typedef struct hscb_descr_struct
 }hscb_descr_struct_t;
 
 /**
- * rd_descr: Structure contains receive descriptor parameters which use to transmit
+ * hscb_cfg: Structure contains HSCB settings
  * en_hscb:     SW interface ON
  * tx_endian:   TX channel bytes order (1-Big Endian; 0-Little Endian)
  * rx_endian:   RX channel bytes order (1-Big Endian; 0-Little Endian)
@@ -69,6 +69,24 @@ typedef struct hscb_cfg
     bool rx_fix_en;
 }hscb_cfg_t;
 
+/**
+ * hscb_trans_clock_cfg: Structure contains HSCB trans_clock settings
+ * freq:                 Transmitter divider factor
+ * init_freq:            Transmitter divider factor at rate 10Mbit/s
+ * limit:                Minimal transmit bit rate
+ * time_64:              6.4 us counter
+ * time_128              12.8 us counter
+ * silence_time:         Max time between symbols without link fail
+ */
+typedef struct hscb_timings_cfg
+{
+    uint8_t  freq;
+    uint8_t  init_freq;
+    uint8_t  limit;
+    uint16_t time_64;
+    uint16_t time_128;
+    uint8_t  silence_time;
+}hscb_timings_cfg_t;
 
 /**
  * \brief Change endianness in 4-byte word function
@@ -125,9 +143,30 @@ uint32_t hscb_get_desc (uint32_t sys_addr, uint8_t* data_out, uint32_t* len,  bo
  */
 void hscb_set_descr_in_mem(uint32_t sys_addr, hscb_descr_struct_t* descr);
 
+bool hscb_sw_rst(uint32_t base_addr);
 void hscb_set_config(uint32_t base_addr, hscb_cfg_t* cfg);
 void hscb_get_config(uint32_t base_addr, hscb_cfg_t* cfg);
+uint32_t hscb_get_status(uint32_t base_addr);
+void hscb_set_irq_mask(uint32_t base_addr, uint32_t mask);
+void hscb_set_timings(uint32_t base_addr, hscb_timings_cfg_t* cfg);
+void hscb_get_timings(uint32_t base_addr, hscb_timings_cfg_t* cfg);
+bool hscb_adma_sw_rst(uint32_t base_addr);
+uint32_t hscb_get_adma_ch_status(uint32_t base_addr);
+void hscb_set_rdma_irq_mask(uint32_t base_addr, uint32_t mask);
+void hscb_set_wdma_irq_mask(uint32_t base_addr, uint32_t mask);
+uint32_t hscb_get_rdma_status(uint32_t base_addr);
+uint32_t hscb_get_wdma_status(uint32_t base_addr);
+void hscb_set_rdma_tbl_size(uint32_t base_addr, uint32_t size);
+uint32_t hscb_get_rdma_tbl_size(uint32_t base_addr);
+void hscb_set_wdma_tbl_size(uint32_t base_addr, uint32_t size);
+uint32_t hscb_get_wdma_tbl_size(uint32_t base_addr);
+void hscb_set_rdma_sys_addr(uint32_t base_addr, uint32_t descr_addr);
+uint32_t hscb_get_rdma_sys_addr(uint32_t base_addr);
+void hscb_set_wdma_sys_addr(uint32_t base_addr, uint32_t descr_addr);
+uint32_t hscb_get_wdma_sys_addr(uint32_t base_addr);
 
+
+#define HSCB_SW_RESET_TIMEOUT   100
 /**
  * @}
  */
