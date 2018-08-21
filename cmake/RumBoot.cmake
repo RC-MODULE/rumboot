@@ -117,6 +117,7 @@ macro(generate_stuff_for_target product)
   add_custom_command(
     OUTPUT ${product}.bin
     COMMAND ${CROSS_COMPILE}-objcopy ${CMAKE_OBJCOPY_FLAGS} -O binary ${product} ${product}.bin
+    COMMAND ${PYTHON_EXECUTABLE} ${RUMBOOT_PACKIMAGE} -f ${product}.bin -c || true
     COMMENT "Generating binary image ${product}.bin"
     DEPENDS ${product}
   )
