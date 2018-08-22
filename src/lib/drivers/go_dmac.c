@@ -29,7 +29,9 @@ void go_dmac(unsigned int base, unsigned int *send, unsigned int *rcv, unsigned 
                 }
                 ;
                 SSPSR = ioread32(base + SSPSR_ADDR);
-                while (SSPSR != 0x7) SSPSR = ioread32(base + SSPSR_ADDR); x = (unsigned int)rcv;
+                while (SSPSR != 0x7) {
+                    SSPSR = ioread32(base + SSPSR_ADDR); x = (unsigned int)rcv;
+                }
                 for (int i = 0; i < amount; i++) {
                         read_data = ioread32(base + SSPDR_ADDR);
                         iowrite8(read_data, x);
@@ -54,7 +56,12 @@ void go_dmac(unsigned int base, unsigned int *send, unsigned int *rcv, unsigned 
                 iowrite32(SPI_AXIR_BUFENA, (base + SPI_AXIR_BUFENA_ADDR));         //start AXIR DMA
                 read_data = ioread32(base + SPI_STATUS);
                 rumboot_printf("example_ok\n");
-                while (!(read_data & 0x008)) read_data = ioread32(base + SPI_STATUS); while (!(read_data & 0x004)) read_data = ioread32(base + SPI_STATUS);
+                while (!(read_data & 0x008)) {
+                        read_data = ioread32(base + SPI_STATUS);
+                        while (!(read_data & 0x004)) {
+                                read_data = ioread32(base + SPI_STATUS);
+                        }
+                }
         }
         do {
                 SSPSR = ioread32(base + 0x0c);
