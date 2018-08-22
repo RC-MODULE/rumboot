@@ -100,5 +100,24 @@
 #define GSPI_STATUS_MASK             0x000000FF
 #define GSPI_IRQMASKS_MASK           0x0000007F
 
+//bitmask
+//CR0
+#define SPH_SHIFT 7
+#define SPO_SHIFT 6
+#define DSS_SHIFT 0
+#define FRF_SHIFT 4
+#define SCR_SHIFT 8
+//CR1
+#define SSE (1 << 1)
+#define LBM_SHIFT   0
+#define MS_SHIFT    2
+//SSPSR
+#define RFF (1 << 3)
+#define RNE (1 << 2)
+#define TNF (1 << 1)
+#define TFE (1 << 0)
+//SSPDMACR
+#define TXDMAE  (1 << 1)
+#define RXDMAE  (1 << 0)
 
 #define GSPI_TIMEOUT                 200

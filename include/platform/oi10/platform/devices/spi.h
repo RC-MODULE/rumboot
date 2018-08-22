@@ -2,18 +2,26 @@
 #include <stdint.h>
 #include <stddef.h>
 
-void gspi_reset(uint32_t base_addr);
-void gspi_dma_enable(uint32_t base_addr);
-void gspi_set_irq_mask(uint32_t base_addr, uint32_t mask);
-uint32_t read_eeprom_status (uint32_t base_addr);
-void spi_eeprom_write_enable(uint32_t base_addr);
-void spi_eeprom_erase_init(uint32_t base_addr);
-void spi_eeprom_write_data(uint32_t base_addr, uint32_t mem_addr, uint32_t data);
-uint32_t spi_eeprom_read_data(uint32_t base_addr);
-
 #define SSP_SYS_FREQ_HZ 500000000
 //clock divider
 #define CPSDVR  2
+
+typedef enum{
+    SSP_INT = (0x1 << 0),
+    GSPI_INT = (0x1 << 1),
+    end_buf_write = (0x1 << 2),
+    end_buf_read = (0x1 << 3),
+    err_read = (0x1 << 4),
+    err_write = (0x1 << 5),
+    overflow_buf_write = (0x1 << 6)
+}gspi_dma_interrupt;
+
+typedef enum{
+    disable = 0x0,
+    transmit = 0x1,
+    receive = 0x2,
+    all = 0x3
+}dma_enable;
 
 typedef enum{
     ssp_data_size_4 = 0x3,
@@ -43,7 +51,7 @@ typedef enum{
 }ssp_frame_format;
 
 typedef struct{
-    uint32_t clock_rate;
+    uint32_t cpsdvr;
     uint8_t cpol;//spol
     uint8_t cpha;//sph
     ssp_data_size data_size;
@@ -54,12 +62,29 @@ typedef struct{
 
 
 //global functions
-void ssp_set_int_mask(uint32_t base_address, uint16_t mask);
-uint16_t ssp_get_ris(uint32_t base_address);
-uint16_t ssp_get_mis(uint32_t base_address);
-uint16_t ssp_get_status(uint32_t base_address);
-void ssp_dma_enable(uint32_t base_address, bool enabled);
-void ssp_disable(uint32_t base_address);
-void ssp_init(uint32_t base_address, ssp_params params);
-int ssp_send_word(uint32_t base_address, uint16_t word);
-int ssp_get_word(uint32_t base_address, uint16_t * word);
+
+//ssp functions
+void gspi_disable(uint32_t base_address);
+void gspi_init(uint32_t base_address, ssp_params params);
+uint32_t gspi_get_ris(uint32_t base_address);
+uint32_t gspi_get_mis(uint32_t base_address);
+uint32_t gspi_get_ssp_status(uint32_t base_addr);
+void gspi_set_int_mask(uint32_t base_address, uint16_t mask);
+void gspi_dma_enable(uint32_t base_addr, dma_enable enabled);
+void gspi_write_data(uint32_t base_addr, uint32_t data);
+uint32_t gspi_read_data(uint32_t base_addr);
+int gspi_send_word(uint32_t base_address, uint32_t word);
+int gspi_get_word(uint32_t base_address, uint32_t * word);
+
+//dma function
+void gspi_dma_reset(uint32_t base_addr);
+void gspi_dma_set_irq_mask(uint32_t base_addr, gspi_dma_interrupt interrupt);
+uint32_t gspi_get_dma_status(uint32_t base_addr);
+
+//eeprom function
+uint32_t read_eeprom_status (uint32_t base_addr);
+void gspi_eeprom_write_enable(uint32_t base_addr);
+void gspi_eeprom_erase_init(uint32_t base_addr);
+void gspi_eeprom_write_data(uint32_t base_addr, uint32_t mem_addr, uint32_t data);
+uint32_t gspi_eeprom_read_data(uint32_t base_addr);
+

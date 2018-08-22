@@ -9,7 +9,7 @@
 #include <rumboot/printf.h>
 #include <rumboot/timer.h>
 
-void gspi_reset(uint32_t base_addr)
+void gspi_dma_reset(uint32_t base_addr)
 {
     iowrite32(0x01, base_addr + GSPI_SOFTRST); //reset DMA
 
@@ -17,17 +17,116 @@ void gspi_reset(uint32_t base_addr)
         ;
 }
 
-void gspi_dma_enable(uint32_t base_addr)
+void gspi_dma_enable(uint32_t base_addr, dma_enable enabled)
 {
-    iowrite32(0x03, base_addr + GSPI_SSPDMACR); //enable DMA
+    iowrite32(enabled, base_addr + GSPI_SSPDMACR);
 }
 
-void gspi_set_irq_mask(uint32_t base_addr, uint32_t mask)
+void gspi_dma_set_irq_mask(uint32_t base_addr, gspi_dma_interrupt interrupt)
 {
-    iowrite32(mask, base_addr + GSPI_IRQMASKS); //set irq masks
+    iowrite32(interrupt, base_addr + GSPI_IRQMASKS); //set irq masks
 }
 
-void spi_eeprom_write_enable(uint32_t base_addr)
+void gspi_write_data(uint32_t base_addr, uint32_t data)
+{
+    iowrite32(data, base_addr+GSPI_SSPDR);
+}
+
+uint32_t gspi_read_data(uint32_t base_addr)
+{
+    return (ioread32(base_addr + GSPI_SSPDR));
+}
+uint32_t gspi_get_ris(uint32_t base_address)
+{
+    return ioread32(base_address + GSPI_SSPRIS);
+}
+
+uint32_t gspi_get_mis(uint32_t base_address)
+{
+    return ioread32(base_address + GSPI_SSPMIS);
+}
+
+uint32_t gspi_get_ssp_status(uint32_t base_addr)
+{
+    return (ioread32(base_addr + GSPI_SSPSR));
+}
+
+uint32_t gspi_get_dma_status(uint32_t base_addr)
+{
+    return (ioread32(base_addr + GSPI_STATUS));
+}
+
+void gspi_set_int_mask(uint32_t base_address, uint16_t mask)
+{
+    iowrite32(base_address + GSPI_SSPIMSC, mask);
+}
+
+int gspi_send_word(uint32_t base_address, uint32_t word)
+{
+    //check transmit FIFO full
+    if(ioread32(base_address + GSPI_SSPSR) & TNF) // transmit FIFO is not full
+    {
+        iowrite32(word, base_address + GSPI_SSPDR);
+        return 1;
+    } else
+    {
+        rumboot_printf("Warning: writing to SSP TFIFO when TFIFO is full\n");
+        return 0;
+    }
+}
+
+int gspi_get_word(uint32_t base_address, uint32_t * word)
+{
+    //check receive FIFO empty
+    if(ioread32(base_address + GSPI_SSPSR) & RNE) //receive FIFO is not empty
+    {
+        *word = ioread32(base_address + GSPI_SSPDR);
+        return 1;
+    } else
+    {
+        rumboot_printf("Warning: reading from SSP RFIFO when RFIFO is empty\n");
+        return 0;
+    }
+}
+
+
+void gspi_set_clock_rate(uint32_t base_address, uint32_t cpsdvr)
+{
+    //NOTE: CR0 should be zero
+    iowrite32(cpsdvr, base_address + GSPI_SSPCPSR); //set divider
+//    iowrite32(CPSDVR, base_address + GSPI_SSPCPSR); //set divider
+//    int scr = (SSP_SYS_FREQ_HZ / (clk_rate * 2)) - 1;
+//    iowrite32(scr << SCR_SHIFT, base_address + GSPI_SSPCR0); //set SCR
+}
+
+void gspi_disable(uint32_t base_address)
+{
+    iowrite32(SSE, base_address + GSPI_SSPCR1); //clear enable bit
+//    SSP_clear_SSP_CR1(base_address + GSPI_SSPCR1, SSE);//clear enable bit
+}
+
+
+
+void gspi_init(uint32_t base_address, ssp_params params)
+{
+    //disable ssp
+    iowrite32(0x00, base_address + GSPI_SSPCR1);
+    iowrite32(0x0000, base_address + GSPI_SSPCR0);
+    //setup the parameters
+    //clock rate
+    gspi_set_clock_rate(base_address,params.cpsdvr);
+    //cpol, cpha, format
+    iowrite32((((params.cpha & 0x1) << SPH_SHIFT) |
+                ((params.cpol & 0x1) << SPO_SHIFT) |
+                (params.fr_format << FRF_SHIFT) |
+                (params.data_size << DSS_SHIFT)),
+                base_address + GSPI_SSPCR0);
+    //mode, loopback, enable core
+    iowrite32( ( ((params.loopback & 0x1) << LBM_SHIFT) | (params.mode << MS_SHIFT) | SSE ), base_address + GSPI_SSPCR1);
+}
+
+
+void gspi_eeprom_write_enable(uint32_t base_addr)
 {
     iowrite32(0x06, base_addr+GSPI_SSPDR); //write data to SPI - command write enable
 
@@ -50,7 +149,7 @@ uint32_t read_eeprom_status (uint32_t base_addr)
     return (ioread32(base_addr+GSPI_SSPDR)); //read data from rx fifo
 }
 
-void spi_eeprom_erase_init(uint32_t base_addr)
+void gspi_eeprom_erase_init(uint32_t base_addr)
 {
     iowrite32(0xD8, base_addr+GSPI_SSPDR); //sector erase command
     iowrite32(0x00, base_addr+GSPI_SSPDR); //write data to SPI - write address
@@ -69,7 +168,7 @@ void spi_eeprom_erase_init(uint32_t base_addr)
         ;
 }
 
-void spi_eeprom_write_data(uint32_t base_addr, uint32_t mem_addr, uint32_t data)
+void gspi_eeprom_write_data(uint32_t base_addr, uint32_t mem_addr, uint32_t data)
 {
     iowrite32(0x02, base_addr+GSPI_SSPDR); //write data to SPI - command write
     iowrite32((mem_addr & 0x000000FF), base_addr+GSPI_SSPDR); //write data to SPI - write address
@@ -96,7 +195,7 @@ void spi_eeprom_write_data(uint32_t base_addr, uint32_t mem_addr, uint32_t data)
         ;
 }
 
-uint32_t spi_eeprom_read_data(uint32_t base_addr)
+uint32_t gspi_eeprom_read_data(uint32_t base_addr)
 {
         uint32_t data;
         iowrite32(0x03, base_addr+GSPI_SSPDR); //write data to SPI - command read
@@ -124,106 +223,3 @@ uint32_t spi_eeprom_read_data(uint32_t base_addr)
 }
 
 
-
-
-
-
-
-
-
-
-/*
-int ssp_send_word(uint32_t base_address, uint16_t word){
-    //check transmit FIFO full
-    if(SSP_read_SSP_SR(base_address) & TNF){ // transmit FIFO is not full
-        SSP_write_SSP_DR(base_address, word);
-        return true;
-    } else {
-        trace_msg("Warning: writing to SSP TFIFO when TFIFO is full\n");
-        return false;
-    }
-}
-
-int ssp_get_word(uint32_t base_address, uint16_t * word){
-    //check receive FIFO empty
-    if(SSP_read_SSP_SR(base_address) & RNE){ //receive FIFO is not empty
-        *word = SSP_read_SSP_DR(base_address);
-        return true;
-    } else {
-        trace_msg("Warning: reading from SSP RFIFO when RFIFO is empty\n");
-        return false;
-    }
-}
-
-void ssp_set_int_mask(uint32_t base_address, uint16_t mask){
-    SSP_write_SSP_IMSC(base_address,mask);
-    TEST_ASSERT((SSP_read_SSP_IMSC(base_address) == mask), "SSP_IMSC not set");
-}
-
-uint16_t ssp_get_ris(uint32_t base_address){
-    return SSP_read_SSP_RIS(base_address);
-}
-
-uint16_t ssp_get_mis(uint32_t base_address){
-    return SSP_read_SSP_MIS(base_address);
-}
-
-uint16_t ssp_get_status(uint32_t base_address){
-    return SSP_read_SSP_SR(base_address);
-}
-
-void ssp_dma_enable(uint32_t base_address, bool enabled){
-    if(enabled){
-        SSP_write_SSP_DMACR(base_address, (TXDMAE | RXDMAE));//enable DMA tx and rx FIFO
-        TEST_ASSERT((SSP_read_SSP_DMACR(base_address) == (TXDMAE | RXDMAE)), "SSP_DMACR not set");
-    }else{
-        SSP_write_SSP_DMACR(base_address,0x0);
-        TEST_ASSERT((SSP_read_SSP_DMACR(base_address) == 0x0),"SSP_DMACR not set");
-    }
-}
-
-void ssp_set_clock_rate(uint32_t base_address, uint32_t clk_rate){
-    //NOTE: CR0 should be zero
-    SSP_write_SSP_CPSR(base_address,CPSDVR);//set divider
-    int scr = (SSP_SYS_FREQ_HZ / (clk_rate * 2)) - 1;
-    SSP_write_SSP_CR0(base_address,scr << SCR_SHIFT);//set SCR
-    TEST_ASSERT((SSP_read_SSP_CR0(base_address) == (scr << SCR_SHIFT)),"SSP_CR0 not set");
-}
-
-void ssp_disable(uint32_t base_address){
-    SSP_clear_SSP_CR1(base_address, SSE);//clear enable bit
-    TEST_ASSERT(((SSP_read_SSP_CR1(base_address) & SSE) == false), "SSP_CR1 not set");
-}
-
-void ssp_init(uint32_t base_address, ssp_params params){
-    //disable ssp
-    SSP_write_SSP_CR1(base_address,0x0);
-    TEST_ASSERT((SSP_read_SSP_CR1(base_address) == 0x0),"SSP_CR1 not set");
-    SSP_write_SSP_CR0(base_address,0x0000);
-    TEST_ASSERT((SSP_read_SSP_CR0(base_address) == 0x0000),"SSP_CR0 not set");
-    //setup the parameters
-    //clock rate
-    ssp_set_clock_rate(base_address,params.clock_rate);
-    //cpol, cpha, format
-    SSP_set_SSP_CR0(base_address,
-            ((params.cpha & 0x1) << SPH_SHIFT) |
-            ((params.cpol & 0x1) << SPO_SHIFT) |
-            (params.fr_format << FRF_SHIFT) |
-            (params.data_size << DSS_SHIFT));
-    TEST_ASSERT((SSP_read_SSP_CR0(base_address) ==
-            (((params.cpha & 0x1) << SPH_SHIFT) |
-            ((params.cpol & 0x1) << SPO_SHIFT) |
-            (params.fr_format << FRF_SHIFT) |
-            (params.data_size << DSS_SHIFT))),"SSP_CR0 not set");
-
-    //mode, loopback, enable core
-    SSP_set_SSP_CR1(base_address,
-            ((params.loopback & 0x1) << LBM_SHIFT) |
-            (params.mode << MS_SHIFT) |
-            SSE);
-    TEST_ASSERT(((SSP_read_SSP_CR1(base_address) & 0xF) ==
-            (((params.loopback & 0x1) << LBM_SHIFT) |
-            (params.mode << MS_SHIFT) |
-            SSE)), "SSP_CR1 not set");
-}
-*/
