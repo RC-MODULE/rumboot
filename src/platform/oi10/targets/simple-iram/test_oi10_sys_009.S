@@ -12,16 +12,19 @@
 .global main
 
 .section ".text","ax",@progbits
-
+event_pointer:
+.long 0
 main:
     mflr        r3              /* Save */
     mtspr       SPR_SPRG8,  r3  /*  LR  */
     test_event_send_test_id "test_oi10_sys_009"
-infine_loop:
-    b           infine_loop
 
+    load_addr r3, event_pointer
+    bl            rumboot_platform_event_get
 
-    test_error:
+//b test_ok
+
+test_error:
     rumboot_putstring "\nTEST ERROR\n", r15, r16, r17
     test_event      EVENT_ERROR, r15, r16, r17
     load_const  r3, RESULT_ERROR
