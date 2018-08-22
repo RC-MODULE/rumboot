@@ -1,5 +1,9 @@
 #include "test_suite.h"
 
+#ifdef RUMBOOT_BASIS_MEM_ACCEL
+#include <rumboot/memfill.h>
+#endif
+
 int mdma_gp_dev_init(struct mdma_gp *dev, int event_indx, int event_prior)
 {
 	int ret = 0;
@@ -66,6 +70,25 @@ void mdma_gp_dev_destroy(struct mdma_gp *dev)
 	return;
 }
 
+void *mdma_gp_addr_trans(void *addr)
+{
+	void *_addr;
+
+	if ((addr >= (void *)0x40000000) && (addr <= (void *)0x7FFFFFFF)) {
+		if (addr >= (void*)0x60000000)
+			_addr = addr - 0x60000000 + 0xC0000000;
+		else if (addr >= (void*)0x50000000)
+			_addr = addr - 0x50000000 + 0x80000000;
+		else
+			_addr = BASIS_VIRT(addr);
+	}
+	else {
+		_addr = addr;
+	}
+
+	return _addr;
+}
+
 int mdma_gp_dev_config(struct mdma_gp *dev, void *src_addr, void *dst_addr, int segment_size)
 {
 	int ret = 0;
@@ -79,17 +102,7 @@ int mdma_gp_dev_config(struct mdma_gp *dev, void *src_addr, void *dst_addr, int 
 		goto dev_config_exit_1;
 	}
 
-	if ((dst_addr >= (void *)0x40000000) && (dst_addr <= (void *)0x7FFFFFFF)) {
-		if (dst_addr >= (void*)0x60000000)
-			dev->dst_mirror = dst_addr - 0x60000000 + 0xC0000000;
-		else if (dst_addr >= (void*)0x50000000)
-			dev->dst_mirror = dst_addr - 0x50000000 + 0x80000000;
-		else
-			dev->dst_mirror = BASIS_VIRT(dst_addr);
-	}
-	else {
-		dev->dst_mirror = dst_addr;
-	}
+	dev->dst_mirror = mdma_gp_addr_trans(dst_addr);
 
 	dev->src_addr = src_addr;
 	if (mdma_trans_add_group(dev->chan_rd, dev->src_addr, dev->segment_size, 0, true)) {
@@ -97,17 +110,7 @@ int mdma_gp_dev_config(struct mdma_gp *dev, void *src_addr, void *dst_addr, int 
 		goto dev_config_exit_2;
 	}
 
-	if ((src_addr >= (void *)0x40000000) && (src_addr <= (void *)0x7FFFFFFF)) {
-		if (src_addr >= (void*)0x60000000)
-			dev->src_mirror = src_addr - 0x60000000 + 0xC0000000;
-		else if (src_addr >= (void*)0x50000000)
-			dev->src_mirror = src_addr - 0x50000000 + 0x80000000;
-		else
-			dev->src_mirror = BASIS_VIRT(src_addr);
-	}
-	else {
-		dev->src_mirror = src_addr;
-	}
+	dev->src_mirror = mdma_gp_addr_trans(src_addr);
 
 	if (mdma_chan_config(dev->chan_wr) || mdma_chan_config(dev->chan_rd)) {
 		ret = -3;
@@ -202,13 +205,6 @@ bool mdma_gp_dev_check(struct mdma_gp *dev)
 		goto dev_check_exit;
 	}
 
-	for (int i = 0; i < (dev->segment_size / sizeof(unsigned long)); i++) {
-		if (*((unsigned long *)dev->dst_mirror + i) != *((unsigned long *)dev->src_mirror + i)) {
-			ret = false;
-			break;
-		}
-	}
-
 	start = dev->start_h;
 	start = (start << 32) + dev->start_l;
 
@@ -223,6 +219,37 @@ bool mdma_gp_dev_check(struct mdma_gp *dev)
 
 dev_check_exit:
 	return ret;
+}
+
+bool mdma_gp_mem_check(void *first, void *second, int size)
+{
+	bool ret = true;
+
+#ifndef RUMBOOT_BASIS_MEM_ACCEL
+	for (int i = 0; i < (size / sizeof(unsigned long)); i++) {
+		if (*((unsigned long *)first + i) != *((unsigned long *)second + i)) {
+			ret = false;
+			break;
+		}
+	}
+#else
+	rumboot_memcheck32(first, second, size / sizeof(unsigned long));
+#endif
+
+	return ret;
+}
+
+void mdma_gp_mem_fill(void *addr, int size, int val, int incr)
+{
+#ifndef RUMBOOT_BASIS_MEM_ACCEL
+	for (int i = 0; i < (size / sizeof(unsigned long)); i++) {
+		*((unsigned long *)addr + i) = val + i * incr;
+	}
+#else
+	rumboot_memfill32(addr, size / sizeof(unsigned long), val, incr);
+#endif
+
+	return;
 }
 
 void mdma_gp_handler(int irq, void *arg)

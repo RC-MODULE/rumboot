@@ -878,6 +878,7 @@ endif()
   add_rumboot_target(
       CONFIGURATION IRAM_MIRROR
       FILES mdma_gp/test_suite_memory.c mdma_gp/test_suite_base.c
+      CFLAGS -DRUMBOOT_BASIS_MEM_ACCEL
       PREFIX "mirror-memory"
       NAME "mdma_gp_2-1_2-2_2-3_2-4"
       TESTGROUP mdma_gp
@@ -886,24 +887,9 @@ endif()
   add_rumboot_target(
       CONFIGURATION IRAM_WITH_DDR
       FILES mdma_gp/test_suite_memory.c mdma_gp/test_suite_base.c
+      CFLAGS -DRUMBOOT_BASIS_MEM_ACCEL
       PREFIX "direct-memory"
       NAME "mdma_gp_2-1_2-2_2-3"
-      TESTGROUP mdma_gp
-  )
-
-  add_rumboot_target(
-      CONFIGURATION IRAM_WITH_DDR
-      FILES mdma_gp/test_suite_diff_mem.c mdma_gp/test_suite_base.c
-      PREFIX "direct"
-      NAME "mdma_gp_diff_mem"
-      TESTGROUP mdma_gp
-  )
-
-  add_rumboot_target(
-      CONFIGURATION IRAM_MIRROR
-      FILES mdma_gp/test_suite_diff_mem.c mdma_gp/test_suite_base.c
-      PREFIX "mirror"
-      NAME "mdma_gp_diff_mem"
       TESTGROUP mdma_gp
   )
 

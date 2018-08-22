@@ -25,10 +25,7 @@
 #define MDMA_GP_TIMEOUT		1000
 
 // Must be multiple of 8 bytes!
-#define MDMA_GP_SEGMENT_DDR	512
-#define MDMA_GP_SEGMENT_IM0	128
-#define MDMA_GP_SEGMENT_IM1	256
-#define MDMA_GP_SEGMENT_MEM	1024
+#define MDMA_GP_SEGMENT_MEM	128
 
 struct mdma_gp {
 	void *base_addr;
@@ -61,5 +58,10 @@ void mdma_gp_dev_terminate(struct mdma_gp *dev);
 int mdma_gp_dev_start(struct mdma_gp *dev);
 bool mdma_gp_dev_check(struct mdma_gp *dev);
 void mdma_gp_handler(int irq, void *arg);
+
+void *mdma_gp_addr_trans(void *addr);
+
+bool mdma_gp_mem_check(void *first, void *second, int size);
+void mdma_gp_mem_fill(void *addr, int size, int val, int incr);
 
 #endif // __TEST_SUITE_H__

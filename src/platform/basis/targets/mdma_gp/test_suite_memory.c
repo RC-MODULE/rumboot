@@ -3,24 +3,24 @@
 static struct mdma_gp mdma_gp_dev[];
 
 #ifdef RUMBOOT_BASIS_ENABLE_MIRROR
-#define MEM_SEGMENT_MULT	2
+#define MEM_SEGMENT_MULT	4
 static char *test_heap[] = {"PCIE-IM0", "PCIE-IM1", "PCIE-DDR0", "PCIE-DDR1"};
 #else
-#define MEM_SEGMENT_MULT	4
+#define MEM_SEGMENT_MULT	8
 static char *test_heap[] = {"IM0", "IM1", "DDR0", "DDR1"};
 #endif
 
-static void *all_addr[4][2] = {NULL};
+static void *cmp_addr[2] = {NULL};
+static void *all_addr[4] = {NULL};
 
 static int gp_timer_state[4] = {TMR_0_STATE, TMR_1_STATE, TMR_2_STATE, TMR_3_STATE};
 static int gp_timer_limit[4] = {TMR_0_LIMIT, TMR_1_LIMIT, TMR_2_LIMIT, TMR_3_LIMIT};
 
 static int gp_timer_event[4] = {4, 5, 6, 7};
 
-static int test_alloc_mem(const char *name, void *seg_addr[], int seg_size)
+static int test_alloc_mem(const char *name, void *seg_addr[], int indx, int seg_size)
 {
-	int i, id;
-	int ret = 0;
+	int id, ret = 0;
 
 	id = rumboot_malloc_heap_by_name(name);
 	if (id < 0) {
@@ -30,34 +30,21 @@ static int test_alloc_mem(const char *name, void *seg_addr[], int seg_size)
 
 	rumboot_printf("test -  allocate memory\n");
 
-	for (i = 0; i < 2; i++) {
-		seg_addr[i] = rumboot_malloc_from_heap_aligned(id, seg_size, MDMA_BURST_WIDTH8);
+	seg_addr[indx] = rumboot_malloc_from_heap_aligned(id, seg_size, MDMA_BURST_WIDTH8);
 
-		if (!seg_addr[i]) {
-			ret = -2;
-			break;
-		}
-	}
-
-	if (i != 2) {
-		for (; i > 0; i--)
-			rumboot_free(seg_addr[i - 1]);
-	}
+	if (!seg_addr[indx])
+		ret = -2;
 
 alloc_mem_exit:
 	return ret;
 }
 
-static void test_free_mem(void *seg_addr[])
+static void test_free_mem(void *seg_addr[], int indx)
 {
-	int i;
-
 	rumboot_printf("test -  free memory\n");
 
-	for (i = 0; i < 2; i++) {
-		if (seg_addr[i])
-			rumboot_free(seg_addr[i]);
-	}
+	if (seg_addr[indx])
+		rumboot_free(seg_addr[indx]);
 
 	return;
 }
@@ -90,24 +77,26 @@ static bool test_memory(unsigned long arg)
 		goto speed_exit_1;
 	}
 
+	mdma_gp_mem_fill(cmp_addr[0], MEM_SEGMENT_MULT * MDMA_GP_SEGMENT_MEM, arg, 1);
+	mdma_gp_mem_fill(cmp_addr[1], MEM_SEGMENT_MULT * MDMA_GP_SEGMENT_MEM, 0, 0);
+
 	iowrite32(1, GLOBAL_TIMERS + ENABLE);
 
-	for (i = 0; i < 4; i++) {
+	for (i = 0; i < 5; i++) {
 		if (i == 0)
-			err = mdma_gp_dev_config(dev, all_addr[i][0], all_addr[i][1], MEM_SEGMENT_MULT * MDMA_GP_SEGMENT_IM0);
+			err = mdma_gp_dev_config(dev, cmp_addr[0], all_addr[0], MEM_SEGMENT_MULT * MDMA_GP_SEGMENT_MEM);
 		else if (i == 1)
-			err = mdma_gp_dev_config(dev, all_addr[i][0], all_addr[i][1], MEM_SEGMENT_MULT * MDMA_GP_SEGMENT_IM1);
+			err = mdma_gp_dev_config(dev, all_addr[0], all_addr[1], MEM_SEGMENT_MULT * MDMA_GP_SEGMENT_MEM);
+		else if (i == 2)
+			err = mdma_gp_dev_config(dev, all_addr[1], all_addr[2], MEM_SEGMENT_MULT * MDMA_GP_SEGMENT_MEM);
+		else if (i == 3)
+			err = mdma_gp_dev_config(dev, all_addr[2], all_addr[3], MEM_SEGMENT_MULT * MDMA_GP_SEGMENT_MEM);
 		else
-			err = mdma_gp_dev_config(dev, all_addr[i][0], all_addr[i][1], MEM_SEGMENT_MULT * MDMA_GP_SEGMENT_DDR);
+			err = mdma_gp_dev_config(dev, all_addr[3], cmp_addr[1], MEM_SEGMENT_MULT * MDMA_GP_SEGMENT_MEM);
 
 		if (err) {
 			ret = false;
 			goto speed_exit_2;
-		}
-
-		for (int j = 0; j < (dev->segment_size / sizeof(unsigned long)); j++) {
-			*((unsigned long *)dev->dst_mirror + j) = 0;
-			*((unsigned long *)dev->src_mirror + j) = arg + i + j;
 		}
 
 		if (mdma_gp_dev_start(dev)) {
@@ -136,10 +125,12 @@ static bool test_memory(unsigned long arg)
 
 		ret = mdma_gp_dev_check(dev);
 		if (ret == false)
-			break;
+			goto speed_exit_3;
 
 		mdma_gp_dev_terminate(dev);
 	}
+
+	ret = mdma_gp_mem_check(cmp_addr[0], cmp_addr[1], MEM_SEGMENT_MULT * MDMA_GP_SEGMENT_MEM);
 
 speed_exit_3:
 	mdma_gp_dev_terminate(dev);
@@ -167,7 +158,7 @@ int main()
 
 	rumboot_irq_cli();
 
-	rumboot_printf("Test MDMA GP: 2.1, 2.2, 2.3\n");
+	rumboot_printf("Test MDMA GP: 2.1, 2.2, 2.3, 2.4\n");
 
 	tbl = rumboot_irq_create(NULL);
 	rumboot_irq_table_activate(tbl);
@@ -197,24 +188,34 @@ int main()
 
 	rumboot_irq_sei();
 
-	if (test_alloc_mem(test_heap[0], all_addr[0], MEM_SEGMENT_MULT * MDMA_GP_SEGMENT_IM0)) {
+	if (test_alloc_mem("IM1", cmp_addr, 0, MEM_SEGMENT_MULT * MDMA_GP_SEGMENT_MEM)) {
 		ret = -2;
 		goto test_exit_1;
 	}
 
-	if (test_alloc_mem(test_heap[1], all_addr[1], MEM_SEGMENT_MULT * MDMA_GP_SEGMENT_IM1)) {
+	if (test_alloc_mem("IM1", cmp_addr, 1, MEM_SEGMENT_MULT * MDMA_GP_SEGMENT_MEM)) {
 		ret = -3;
 		goto test_exit_2;
 	}
 
-	if (test_alloc_mem(test_heap[2], all_addr[2], MEM_SEGMENT_MULT * MDMA_GP_SEGMENT_DDR)) {
+	if (test_alloc_mem(test_heap[0], all_addr, 0, MEM_SEGMENT_MULT * MDMA_GP_SEGMENT_MEM)) {
 		ret = -4;
 		goto test_exit_3;
 	}
 
-	if (test_alloc_mem(test_heap[3], all_addr[3], MEM_SEGMENT_MULT * MDMA_GP_SEGMENT_DDR)) {
+	if (test_alloc_mem(test_heap[1], all_addr, 1, MEM_SEGMENT_MULT * MDMA_GP_SEGMENT_MEM)) {
 		ret = -5;
 		goto test_exit_4;
+	}
+
+	if (test_alloc_mem(test_heap[2], all_addr, 2, MEM_SEGMENT_MULT * MDMA_GP_SEGMENT_MEM)) {
+		ret = -6;
+		goto test_exit_5;
+	}
+
+	if (test_alloc_mem(test_heap[3], all_addr, 3, MEM_SEGMENT_MULT * MDMA_GP_SEGMENT_MEM)) {
+		ret = -7;
+		goto test_exit_6;
 	}
 
 	err = test_suite_run(NULL, &mdma_gp_test_memory);
@@ -223,16 +224,22 @@ int main()
 	if (err)
 		ret = 1;
 
-	test_free_mem(all_addr[3]);
+	test_free_mem(all_addr, 3);
+
+test_exit_6:
+	test_free_mem(all_addr, 2);
+
+test_exit_5:
+	test_free_mem(all_addr, 1);
 
 test_exit_4:
-	test_free_mem(all_addr[2]);
+	test_free_mem(all_addr, 0);
 
 test_exit_3:
-	test_free_mem(all_addr[1]);
+	test_free_mem(cmp_addr, 1);
 
 test_exit_2:
-	test_free_mem(all_addr[0]);
+	test_free_mem(cmp_addr, 0);
 
 test_exit_1:
 	rumboot_irq_table_activate(NULL);
