@@ -235,10 +235,19 @@ void hscb_get_rdma_settings(uint32_t base_addr, hscb_rwdma_settings_t* settings)
 void hscb_set_wdma_settings(uint32_t base_addr, hscb_rwdma_settings_t* settings);
 void hscb_get_wdma_settings(uint32_t base_addr, hscb_rwdma_settings_t* settings);
 bool hscb_wait_status(uint32_t base_addr, uint32_t status);
-bool hscb_transmit(uint32_t base_addr, uint32_t* data_ptr, uint32_t len, uint32_t* desc_ptr);
+bool hscb_transmit(uint32_t base_addr, uint32_t src_data_addr, uint32_t len, uint32_t desc_addr);
 
 #define HSCB_SW_RESET_TIMEOUT   100
 #define HSCB_TIMEOUT            100
+
+#define GET_HSCB_IDX_BY_ADDR(addr)\
+    ((addr==HSCB0_BASE) ? 0 :\
+    (addr==HSCB1_BASE) ? 1 :\
+    (addr==HSCB2_BASE) ? 2 :\
+    (addr==HSCB3_BASE) ? 3 :15)
+
+
+
 /**
  * @}
  */

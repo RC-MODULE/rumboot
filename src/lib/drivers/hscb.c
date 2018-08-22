@@ -389,39 +389,51 @@ bool hscb_wait_status(uint32_t base_addr, uint32_t status)
     }
     else
     {
-        rumboot_printf("Unexpected HSCB (0x%0x) status: 0x%x", base_addr, hscb_get_status(base_addr));
+        rumboot_printf("Unexpected HSCB(0x%x) status: 0x%x\n", base_addr, hscb_get_status(base_addr));
         return false;
     }
 }
 
-bool hscb_transmit(uint32_t base_addr, uint32_t* data_ptr, uint32_t len, uint32_t* desc_ptr)
+bool hscb_transmit(uint32_t base_addr, uint32_t src_data_addr, uint32_t len, uint32_t desc_addr)
 {
     hscb_descr_struct_t   tx_descr;
     hscb_cfg_t            hscb_cfg;
     hscb_rwdma_settings_t rdma_settings;
+    uint8_t hscb_idx    = GET_HSCB_IDX_BY_ADDR(base_addr);
 
-    tx_descr.start_address = (uint32_t) data_ptr;
+    rumboot_printf("HSCB%d(0x%x) starts transmit %d bytes from address 0x%X\n", hscb_idx, base_addr, len, (uint32_t)src_data_addr);
+
+    rumboot_printf("Apply software reset\n", (uint32_t)desc_addr);
+    hscb_sw_rst(base_addr);
+    hscb_adma_sw_rst(base_addr);
+
+    rumboot_printf("Setting transmit descriptor to addr 0x%X\n", (uint32_t)desc_addr);
+    tx_descr.start_address = (uint32_t) src_data_addr;
     tx_descr.length = len;
     tx_descr.act  = HSCB_ACT_TRAN;
     tx_descr.act0 = HSCB_ACT0_LAST;
     tx_descr.ie = true;
     tx_descr.valid = true;
-    hscb_set_descr_in_mem((uint32_t)desc_ptr, &tx_descr);
+    hscb_set_descr_in_mem((uint32_t)desc_addr, &tx_descr);
 
+    rumboot_printf("Setting RDMA_TBL_SIZE and RDMA_SYS_ADDR\n");
     hscb_set_rdma_tbl_size(base_addr, 8);
-    hscb_set_rdma_sys_addr(base_addr, (uint32_t) desc_ptr);
+    hscb_set_rdma_sys_addr(base_addr, (uint32_t) desc_addr);
 
+    rumboot_printf("Enable HSCB\n");
+    hscb_get_config(base_addr, &hscb_cfg);
+    hscb_cfg.en_hscb = true;
+    hscb_set_config(base_addr, &hscb_cfg);
+
+    rumboot_printf("Waiting ACTIVE_LINK status\n");
+    if (!hscb_wait_status(base_addr, HSCB_STATUS_ACTIVE_LINK_mask)) return false;
+
+    rumboot_printf("Setting RDMA_SETTINGS\n");
     hscb_get_rdma_settings(base_addr, &rdma_settings);
     rdma_settings.rw_desc_int = true;
     rdma_settings.en_rwdma = true;
     rdma_settings.en_rwdma_desc_tbl = true;
     hscb_set_rdma_settings(base_addr, &rdma_settings);
-
-    if (!hscb_wait_status(base_addr, HSCB_STATUS_ACTIVE_LINK_mask)) return false;
-
-    hscb_get_config(base_addr, &hscb_cfg);
-    hscb_cfg.en_hscb = true;
-    hscb_set_config(base_addr, &hscb_cfg);
 
     return true;
 }
