@@ -249,8 +249,6 @@ void __attribute__((section(".EM0.text"))) write_check(uint32_t source, uint32_t
 
 static void prepare_devices() {
 
-    emi_init(DCR_EM2_EMI_BASE);
-
     prepare_snoop_ready_window_in_PLB6_address_space(DCR_PLB4PLB6_0_BASE);
     prepare_plb4xahb_2_upper_address_bits(DCR_PLB4AHB_0_BASE, 0x2);
     dci(2);
@@ -258,21 +256,39 @@ static void prepare_devices() {
     isync();
 }
 
+#define TLB_ENTRY_LOCAL   MMU_TLB_ENTRY(  0x000,  0x40000,    0x40000,    MMU_TLBE_DSIZ_1GB,      0b1,    0b1,    0b0,    0b0,    0b1,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
+
+#define source_test_data_rwnitc_sram0 (SRAM0_BASE)
+#define target_test_data_rwnitc_sram0 (SRAM0_BASE + test_io10_cpu_020_plb6_io_full_l2c_line_size)
+
+#define source_test_data_write_sram0 (SRAM0_BASE + 2 * test_io10_cpu_020_plb6_io_full_l2c_line_size)
+#define target_test_data_write_sram0 (SRAM0_BASE + 3 * test_io10_cpu_020_plb6_io_full_l2c_line_size)
+
 int main ()
 {
-    #define source_test_data_rwnitc_sram0 (SRAM0_BASE)
-    #define target_test_data_rwnitc_sram0 (SRAM0_BASE + test_io10_cpu_020_plb6_io_full_l2c_line_size)
+    emi_init(DCR_EM2_EMI_BASE);
 
-    #define source_test_data_write_sram1 (SRAM1_BASE)
-    #define target_test_data_write_sram1 (SRAM1_BASE + test_io10_cpu_020_plb6_io_full_l2c_line_size)
+    rumboot_printf ("Init data\n");
+    uint32_t i = 0;
+    for (i = 0; i < test_io10_cpu_020_plb6_io_full_l2c_line_size; i+=4)
+    {
+        iowrite32(i*i, source_test_data_write_sram0 + i);
+        iowrite32(2*i, source_test_data_rwnitc_sram0 + i);
+    }
+    msync();
+    dci(2);
 
-    rumboot_printf("(uint32_t) source_test_data_rwnitc_SRAM0 == %x\n", (uint32_t) source_test_data_rwnitc_sram0);
-    rumboot_printf("(uint32_t) target_test_data_rwnitc_SRAM0 == %x\n", (uint32_t) target_test_data_rwnitc_sram0);
-
-    rumboot_printf("(uint32_t) source_test_data_write_sram1 == %x\n", (uint32_t) source_test_data_write_sram1);
-    rumboot_printf("(uint32_t) target_test_data_write_sram1 == %x\n", (uint32_t) target_test_data_write_sram1);
+    rumboot_printf ("Set TLB Entry\n");
+    static const tlb_entry sram0_tlb_entry_local = {TLB_ENTRY_LOCAL};
+    write_tlb_entries(&sram0_tlb_entry_local,1);
 
     prepare_devices();
+
+    rumboot_printf("(uint32_t) source_test_data_rwnitc_sram0 == %x\n", (uint32_t) source_test_data_rwnitc_sram0);
+    rumboot_printf("(uint32_t) target_test_data_rwnitc_sram0 == %x\n", (uint32_t) target_test_data_rwnitc_sram0);
+
+    rumboot_printf("(uint32_t) source_test_data_write_sram0 == %x\n", (uint32_t) source_test_data_write_sram0);
+    rumboot_printf("(uint32_t) target_test_data_write_sram0 == %x\n", (uint32_t) target_test_data_write_sram0);
 
     //SRAM0
     //RWNITC checks
@@ -280,7 +296,7 @@ int main ()
     rwnitc_check((uint32_t) source_test_data_rwnitc_sram0, (uint32_t)target_test_data_rwnitc_sram0, 0x0);
 
     //WRITE checks
-    write_check((uint32_t) source_test_data_write_sram1, (uint32_t)target_test_data_write_sram1, 0x0);
+    write_check((uint32_t) source_test_data_write_sram0, (uint32_t)target_test_data_write_sram0, 0x0);
 
     return 0;
 }
