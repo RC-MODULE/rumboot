@@ -327,30 +327,36 @@ static uint32_t check_hscb_func(uint32_t base_addr, uint32_t supplementary_base_
     hscb0_dma_status = 0;
     hscb1_dma_status = 0;
 
-//    rumboot_putstring( "Finish work!\n" );
+    rumboot_putstring( "Finish work!\n" );
     rumboot_putstring( "HSCB1 to HSCB0 descriptor #1\n" );
     cur_tbl_addr = get_desc(sys_addr_0_rx, data_out_0_3, &len, &act0, &interrupt, &end, &valid, 1);
-//    rumboot_putstring( "Length:" );
+    rumboot_putstring( "Length:" );
     rumboot_puthex (len);
     for (i=0; i<=len-1; i++) {
         tmp_data = 0x30 + i;
-//        rumboot_puthex (data_out_0_3[i]);
+        rumboot_putstring("Expected data: ");
+        rumboot_puthex(tmp_data);
+        rumboot_putstring("Obtained data: ");
+        rumboot_puthex (data_out_0_3[i]);
         if (data_out_0_3[i] != tmp_data) {
             rumboot_putstring( "Data compare ERROR!!!\n" );
-            return 1;
+//            return 1;
         }
     }
 
     rumboot_putstring( "HSCB0 to HSCB1 descriptor #1\n" );
-    cur_tbl_addr = get_desc(sys_addr_1_rx, data_out_0_3, &len, &act0, &interrupt, &end, &valid, 1);
+    cur_tbl_addr = get_desc(sys_addr_1_rx, data_out_0_1, &len, &act0, &interrupt, &end, &valid, 1);
     rumboot_putstring( "Length:" );
     rumboot_puthex (len);
     for (i=0; i<=len-1; i++) {
         tmp_data = 0x10 + i;
-//        rumboot_puthex (data_out_0_3[i]);
-        if (data_out_0_3[i] != tmp_data) {
+        rumboot_putstring("Expected data: ");
+        rumboot_puthex(tmp_data);
+        rumboot_putstring("Obtained data: ");
+        rumboot_puthex (data_out_0_1[i]);
+        if (data_out_0_1[i] != tmp_data) {
             rumboot_putstring( "Data compare ERROR!!!\n" );
-            return 1;
+//            return 1;
         }
     }
 
