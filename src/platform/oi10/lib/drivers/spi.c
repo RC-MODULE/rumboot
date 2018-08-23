@@ -58,7 +58,7 @@ uint32_t gspi_get_dma_status(uint32_t base_addr)
 
 void gspi_set_int_mask(uint32_t base_address, uint16_t mask)
 {
-    iowrite32(base_address + GSPI_SSPIMSC, mask);
+    iowrite32(mask, base_address + GSPI_SSPIMSC);
 }
 
 int gspi_send_word(uint32_t base_address, uint32_t word)
