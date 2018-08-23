@@ -14,6 +14,7 @@
 #include <rumboot/regpoker.h>
 #include <platform/devices.h>
 #include <platform/trace.h>
+#include <platform/test_assert.h>
 #include <platform/interrupts.h>
 #include <regs/regs_hscb.h>
 #include <rumboot/irq.h>
@@ -338,10 +339,7 @@ static uint32_t check_hscb_func(uint32_t base_addr, uint32_t supplementary_base_
         rumboot_puthex(tmp_data);
         rumboot_putstring("Obtained data: ");
         rumboot_puthex (data_out_0_3[i]);
-        if (data_out_0_3[i] != tmp_data) {
-            rumboot_putstring( "Data compare ERROR!!!\n" );
-//            return 1;
-        }
+        TEST_ASSERT ((data_out_0_3[i] == tmp_data), "Data compare ERROR!!!\n" );
     }
 
     rumboot_putstring( "HSCB0 to HSCB1 descriptor #1\n" );
@@ -354,10 +352,7 @@ static uint32_t check_hscb_func(uint32_t base_addr, uint32_t supplementary_base_
         rumboot_puthex(tmp_data);
         rumboot_putstring("Obtained data: ");
         rumboot_puthex (data_out_0_1[i]);
-        if (data_out_0_1[i] != tmp_data) {
-            rumboot_putstring( "Data compare ERROR!!!\n" );
-//            return 1;
-        }
+        TEST_ASSERT ((data_out_0_1[i] == tmp_data), "Data compare ERROR!!!\n" );
     }
 
     return 0;
