@@ -26,14 +26,10 @@
 #include <platform/regs/regs_plb4plb6.h>
 #include <platform/regs/regs_plb4ahb.h>
 #include <platform/devices/l2c.h>
-
-/* HEADER */
-
-#define TEST_VALUE_CLEAR                                0x0
-#define TEST_VALUE_DMA0_FULL_L2C_LINE                   0x11111111
-#define TEST_VALUE_DMA0_QWORD                           0x22222222
-#define L2C_TAG_CACHE_STATE_INVALID                     0x0
-#define L2C_TAG_CACHE_STATE_FROM_ARRACCDO0(val)         ( ((val) >> IBM_BIT_INDEX(32, 2)) & 0x7)
+#include <platform/interrupts.h>
+#include <platform/regs/fields/mpic128.h>
+#include <platform/devices/greth.h>
+#include <rumboot/irq.h>
 
 typedef enum {
     test_io10_cpu_020_plb6_io_full_l2c_line_size = 128,
@@ -41,7 +37,46 @@ typedef enum {
     test_io10_cpu_020_plb6_io_qword_size = 16
 }test_io10_cpu_020_plb6_io_data_size;
 
-/* END HEADER */
+struct greth_instance {
+    uint32_t  base_addr;
+    uint32_t* irq_handled;
+};
+
+static uint32_t GRETH0_IRQ_HANDLED = 0;
+static uint32_t GRETH1_IRQ_HANDLED = 0;
+
+#define TEST_VALUE_CLEAR                                0x0
+#define TEST_VALUE_DMA0_FULL_L2C_LINE                   0x11111111
+#define TEST_VALUE_DMA0_QWORD                           0x22222222
+#define TEST_VALUE_GMII_FULL_L2C_LINE                   0x7E570000
+#define TEST_VALUE_GMII_QWORD                           0xBABA0000
+#define L2C_TAG_CACHE_STATE_INVALID                     0x0
+#define L2C_TAG_CACHE_STATE_FROM_ARRACCDO0(val)         ( ((val) >> IBM_BIT_INDEX(32, 2)) & 0x7)
+
+#define TLB_ENTRY_LOCAL   MMU_TLB_ENTRY(  0x000,  0x40000,    0x40000,    MMU_TLBE_DSIZ_1GB,      0b1,    0b1,    0b0,    0b0,    0b1,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
+
+#define source_test_data_rwnitc_sram0 (SRAM0_BASE)
+#define target_test_data_rwnitc_sram0 (SRAM0_BASE + 4 * test_io10_cpu_020_plb6_io_full_l2c_line_size)
+
+#define source_test_data_write_sram0  (SRAM0_BASE + 8 * test_io10_cpu_020_plb6_io_full_l2c_line_size)
+#define target_test_data_write_sram0  (SRAM0_BASE + 12 * test_io10_cpu_020_plb6_io_full_l2c_line_size)
+
+#define TST_MAC_MSB     0xFFFF
+#define TST_MAC_LSB     0xFFFFFFFF
+greth_mac_t tst_greth_mac       = {TST_MAC_MSB, TST_MAC_LSB};
+greth_descr_t  tx_descriptor_data_[GRETH_MAX_DESCRIPTORS_COUNT] __attribute__((aligned(1024)));
+greth_descr_t  rx_descriptor_data_[GRETH_MAX_DESCRIPTORS_COUNT] __attribute__((aligned(1024)));
+
+static struct greth_instance in[ ] = {
+                                        {
+                                            .base_addr   = GRETH_0_BASE,
+                                            .irq_handled = &GRETH0_IRQ_HANDLED
+                                        },
+                                        {
+                                            .base_addr   = GRETH_1_BASE,
+                                            .irq_handled = &GRETH1_IRQ_HANDLED
+                                        }
+                                     };
 
 static void cache_and_modify_data(uint32_t test_value, uint32_t source, uint32_t target)
 {
@@ -87,6 +122,39 @@ inline void dma2plb6_trace_status(
     default:
         rumboot_printf("DMA2PLB6: Unexpected status\n");
     }
+}
+
+static void test_procedure_with_gmii(uint32_t base_addr_src_eth, test_io10_cpu_020_plb6_io_data_size data_size, uint32_t source, uint32_t target)
+{
+    uint32_t base_addr_dst_eth;
+    uint32_t * eth_hadled_flag_ptr;
+
+    TEST_ASSERT((base_addr_src_eth==GRETH_1_BASE)||(base_addr_src_eth==GRETH_0_BASE), "Wrong GRETH base address\n");
+
+    if (base_addr_src_eth==GRETH_1_BASE)
+    {
+        base_addr_dst_eth = GRETH_0_BASE;
+        GRETH0_IRQ_HANDLED = 0;
+        eth_hadled_flag_ptr = &GRETH0_IRQ_HANDLED;
+    }
+    else
+    {
+        base_addr_dst_eth = GRETH_1_BASE;
+        GRETH1_IRQ_HANDLED = 0;
+        eth_hadled_flag_ptr = &GRETH1_IRQ_HANDLED;
+    }
+
+    rumboot_printf("\nChecking transfer from 0x%X to 0x%x\n", (uint32_t)source, (uint32_t) target);
+
+    greth_configure_for_receive( base_addr_dst_eth, (uint32_t *) target, data_size, rx_descriptor_data_, &tst_greth_mac);
+    greth_configure_for_transmit( base_addr_src_eth, (uint32_t *) source, data_size, tx_descriptor_data_, &tst_greth_mac);
+
+    greth_start_receive( base_addr_dst_eth, true );
+    greth_start_transmit( base_addr_src_eth );
+
+    TEST_ASSERT(greth_wait_receive_irq(base_addr_dst_eth, eth_hadled_flag_ptr), "Receiving is failed\n");
+
+    rumboot_printf("GMII copy completed.\n");
 }
 
 static void test_procedure_with_dma(uint32_t dma_base, test_io10_cpu_020_plb6_io_data_size data_size, uint32_t source, uint32_t target)
@@ -219,6 +287,19 @@ void rwnitc_check (uint32_t source, uint32_t target, uint32_t xor_invertor)
     test_procedure_with_dma(DCR_DMAPLB6_BASE, test_io10_cpu_020_plb6_io_qword_size, source, target);
     check_values((TEST_VALUE_DMA0_QWORD ^ xor_invertor), test_io10_cpu_020_plb6_io_qword_size, target);
     clear_test_fields(TEST_VALUE_CLEAR, source, target);
+
+
+    cache_and_modify_data((TEST_VALUE_GMII_FULL_L2C_LINE  ^ xor_invertor), source, target);
+    test_procedure_with_gmii(GRETH_0_BASE,
+            test_io10_cpu_020_plb6_io_full_l2c_line_size, source, target);
+    check_values((TEST_VALUE_GMII_FULL_L2C_LINE  ^ xor_invertor),
+            test_io10_cpu_020_plb6_io_full_l2c_line_size, target);
+    clear_test_fields(TEST_VALUE_CLEAR, source, target);
+
+    cache_and_modify_data((TEST_VALUE_GMII_QWORD ^ xor_invertor), source, target);
+    test_procedure_with_gmii(GRETH_0_BASE, test_io10_cpu_020_plb6_io_qword_size, source, target);
+    check_values((TEST_VALUE_GMII_QWORD ^ xor_invertor), test_io10_cpu_020_plb6_io_qword_size, target);
+    clear_test_fields(TEST_VALUE_CLEAR, source, target);
 }
 
 void __attribute__((section(".EM0.text"))) write_check(uint32_t source, uint32_t target, uint32_t xor_invertor)
@@ -232,11 +313,9 @@ void __attribute__((section(".EM0.text"))) write_check(uint32_t source, uint32_t
 
     cache_and_modify_data((TEST_VALUE_DMA0_FULL_L2C_LINE ^ xor_invertor), source, target);
     check_target_is_invalidated_in_l2c(l2c_base, target, false);
-    test_procedure_with_dma(DCR_DMAPLB6_BASE,
-            test_io10_cpu_020_plb6_io_full_l2c_line_size, source, target);
+    test_procedure_with_dma(DCR_DMAPLB6_BASE, test_io10_cpu_020_plb6_io_full_l2c_line_size, source, target);
     check_target_is_invalidated_in_l2c(l2c_base, target, true);
-    check_values((TEST_VALUE_DMA0_FULL_L2C_LINE ^ xor_invertor),
-            test_io10_cpu_020_plb6_io_full_l2c_line_size, target);
+    check_values((TEST_VALUE_DMA0_FULL_L2C_LINE ^ xor_invertor), test_io10_cpu_020_plb6_io_full_l2c_line_size, target);
     clear_test_fields(TEST_VALUE_CLEAR, source, target);
 
     cache_and_modify_data((TEST_VALUE_DMA0_QWORD ^ xor_invertor), source, target);
@@ -244,6 +323,20 @@ void __attribute__((section(".EM0.text"))) write_check(uint32_t source, uint32_t
     test_procedure_with_dma(DCR_DMAPLB6_BASE, test_io10_cpu_020_plb6_io_qword_size, source, target);
     check_target_is_invalidated_in_l2c(l2c_base, target, true);
     check_values((TEST_VALUE_DMA0_QWORD ^ xor_invertor), test_io10_cpu_020_plb6_io_qword_size, target);
+    clear_test_fields(TEST_VALUE_CLEAR, source, target);
+
+    cache_and_modify_data((TEST_VALUE_GMII_FULL_L2C_LINE ^ xor_invertor), source, target);
+    check_target_is_invalidated_in_l2c(l2c_base, target, false);
+    test_procedure_with_gmii(GRETH_0_BASE, test_io10_cpu_020_plb6_io_full_l2c_line_size, source, target);
+    check_target_is_invalidated_in_l2c(l2c_base, target, true);
+    check_values((TEST_VALUE_GMII_FULL_L2C_LINE ^ xor_invertor), test_io10_cpu_020_plb6_io_full_l2c_line_size, target);
+    clear_test_fields(TEST_VALUE_CLEAR, source, target);
+
+    cache_and_modify_data((TEST_VALUE_GMII_QWORD ^ xor_invertor), source, target);
+    check_target_is_invalidated_in_l2c(l2c_base, target, false);
+    test_procedure_with_gmii(GRETH_0_BASE, test_io10_cpu_020_plb6_io_qword_size, source, target);
+    check_target_is_invalidated_in_l2c(l2c_base, target, true);
+    check_values((TEST_VALUE_GMII_QWORD ^ xor_invertor), test_io10_cpu_020_plb6_io_qword_size, target);
     clear_test_fields(TEST_VALUE_CLEAR, source, target);
 }
 
@@ -256,31 +349,98 @@ static void prepare_devices() {
     isync();
 }
 
-#define TLB_ENTRY_LOCAL   MMU_TLB_ENTRY(  0x000,  0x40000,    0x40000,    MMU_TLBE_DSIZ_1GB,      0b1,    0b1,    0b0,    0b0,    0b1,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
-
-#define source_test_data_rwnitc_sram0 (SRAM0_BASE)
-#define target_test_data_rwnitc_sram0 (SRAM0_BASE + test_io10_cpu_020_plb6_io_full_l2c_line_size)
-
-#define source_test_data_write_sram0 (SRAM0_BASE + 2 * test_io10_cpu_020_plb6_io_full_l2c_line_size)
-#define target_test_data_write_sram0 (SRAM0_BASE + 3 * test_io10_cpu_020_plb6_io_full_l2c_line_size)
-
-int main ()
+static void handler_eth( int irq, void *arg )
 {
-    emi_init(DCR_EM2_EMI_BASE);
+    uint32_t cur_status;
+    uint32_t mask;
+    struct greth_instance * gr_inst = (struct greth_instance* ) arg;
 
+    rumboot_printf( "GRETH%d(0x%X) IRQ arrived  \n", GET_GRETH_IDX(gr_inst->base_addr), gr_inst->base_addr );
+    mask = ((1 << GRETH_STATUS_IA) |
+            (1 << GRETH_STATUS_TS) |
+            (1 << GRETH_STATUS_TA) |
+            (1 << GRETH_STATUS_RA) |
+            (1 << GRETH_STATUS_TI) |
+            (1 << GRETH_STATUS_TE) |
+            (1 << GRETH_STATUS_RE));
+
+    cur_status = greth_get_status(gr_inst->base_addr);
+    if (cur_status & (1 << GRETH_STATUS_RI))
+    {
+        *(gr_inst->irq_handled) = 1;
+        rumboot_printf("Receive interrupt (0x%x)\n", cur_status );
+        greth_clear_status_bits(gr_inst->base_addr, mask );
+    }
+    if (cur_status & (1 << GRETH_STATUS_RE))
+    {
+        *(gr_inst->irq_handled) = 3;
+        rumboot_printf("Receive Error interrupt (0x%x)\n", cur_status );
+    }
+    if (!(cur_status & (1 << GRETH_STATUS_RI)) && !(cur_status & (1 << GRETH_STATUS_RE)))
+    {
+        *(gr_inst->irq_handled) = 2;
+        rumboot_printf( "Unexpected status (0x%x)\n", cur_status );
+    }
+    greth_clear_status_bits(gr_inst->base_addr, mask);
+    rumboot_printf("Exit from handler\n");
+}
+
+struct rumboot_irq_entry * create_greth01_irq_handlers()
+{
+    rumboot_printf( "Enable GRETH irqs\n" );
+    rumboot_irq_cli();
+    struct rumboot_irq_entry *tbl = rumboot_irq_create( NULL );
+
+    GRETH0_IRQ_HANDLED = 0;
+    GRETH1_IRQ_HANDLED = 0;
+
+    rumboot_irq_set_handler( tbl, ETH0_INT, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler_eth, &in[0] );
+    rumboot_irq_set_handler( tbl, ETH1_INT, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler_eth, &in[1] );
+
+    /* Activate the table */
+    rumboot_irq_table_activate( tbl );
+    rumboot_irq_enable( ETH0_INT );
+    rumboot_irq_enable( ETH1_INT );
+    rumboot_irq_sei();
+
+    return tbl;
+}
+
+void delete_greth01_irq_handlers(struct rumboot_irq_entry *tbl)
+{
+    rumboot_irq_table_activate(NULL);
+    rumboot_irq_free(tbl);
+}
+
+void init_data ()
+{
     rumboot_printf ("Init data\n");
     uint32_t i = 0;
-    for (i = 0; i < test_io10_cpu_020_plb6_io_full_l2c_line_size; i+=4)
+    for (i = 0; i < test_io10_cpu_020_plb6_io_full_l2c_line_size; i++)
     {
-        iowrite32(i*i, source_test_data_write_sram0 + i);
-        iowrite32(2*i, source_test_data_rwnitc_sram0 + i);
+        iowrite32(i*i, source_test_data_write_sram0 + i * 4);
+        iowrite32(2*i, source_test_data_rwnitc_sram0 + i * 4);
     }
     msync();
     dci(2);
+}
+
+int main ()
+{
+    const uint32_t EVENT_START_MONITOR_PLB6 = 0x00001000;
+    test_event_send_test_id("test_oi10_cpu_020_plb6_io");
+    test_event(EVENT_START_MONITOR_PLB6);
+
+    emi_init(DCR_EM2_EMI_BASE);
+
+    init_data();
 
     rumboot_printf ("Set TLB Entry\n");
     static const tlb_entry sram0_tlb_entry_local = {TLB_ENTRY_LOCAL};
     write_tlb_entries(&sram0_tlb_entry_local,1);
+
+    struct rumboot_irq_entry *tbl;
+    tbl = create_greth01_irq_handlers();
 
     prepare_devices();
 
@@ -298,5 +458,7 @@ int main ()
     //WRITE checks
     write_check((uint32_t) source_test_data_write_sram0, (uint32_t)target_test_data_write_sram0, 0x0);
 
+    delete_greth01_irq_handlers(tbl);
+    rumboot_printf("TEST_OK\n");
     return 0;
 }
