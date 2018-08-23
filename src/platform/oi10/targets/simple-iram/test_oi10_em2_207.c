@@ -141,9 +141,9 @@ void check_bank(uint32_t addr)
 
 void run_check()
 {
-    check_bank(SRAM0_BASE);
+    //check_bank(SRAM0_BASE);
     //check_bank(SDRAM_BASE);
-    //check_bank(SSRAM_BASE);
+    check_bank(SSRAM_BASE);
     //check_bank(PIPELINED_BASE);
     check_bank(SRAM1_BASE);
 }
@@ -154,9 +154,11 @@ int main()
 
     emi_init(DCR_EM2_EMI_BASE);
 
+    rumboot_printf("ECC is ON\n");
     emi_set_ecc(DCR_EM2_EMI_BASE, emi_bank_all, emi_ecc_on);
     run_check();
 
+    rumboot_printf("ECC is OFF\n");
     emi_set_ecc(DCR_EM2_EMI_BASE, emi_bank_all, emi_ecc_off);
     run_check();
 
