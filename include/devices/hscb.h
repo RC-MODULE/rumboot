@@ -205,7 +205,8 @@ uint32_t hscb_get_desc (uint32_t sys_addr, uint8_t* data_out, uint32_t* len,  bo
  * \param[in] sys_addr address in memory for placing descriptor
  * \param[in] pointer on read data descriptor
  */
-void hscb_set_descr_in_mem(uint32_t sys_addr, uint32_t src_data_addr, uint32_t len);
+void hscb_set_descr_in_mem_tx(uint32_t sys_addr, uint32_t src_data_addr, uint32_t len);
+void hscb_set_descr_in_mem_rx(uint32_t sys_addr, uint32_t src_data_addr, uint32_t len);
 
 bool hscb_sw_rst(uint32_t base_addr);
 void hscb_set_config(uint32_t base_addr, hscb_cfg_t* cfg);
@@ -236,6 +237,13 @@ void hscb_set_wdma_settings(uint32_t base_addr, hscb_rwdma_settings_t* settings)
 void hscb_get_wdma_settings(uint32_t base_addr, hscb_rwdma_settings_t* settings);
 bool hscb_wait_status(uint32_t base_addr, uint32_t status);
 bool hscb_transmit(uint32_t base_addr, uint32_t src_data_addr, uint32_t len, uint32_t desc_addr);
+bool hscb_receive(uint32_t base_addr, uint32_t dst_data_addr, uint32_t len, uint32_t desc_addr);
+void hscb_configure_for_transmit(uint32_t base_addr, uint32_t src_data_addr, uint32_t len, uint32_t desc_addr);
+void hscb_configure_for_receive(uint32_t base_addr, uint32_t dst_data_addr, uint32_t len, uint32_t desc_addr);
+void hscb_run_rdma(uint32_t base_addr);
+void hscb_run_wdma(uint32_t base_addr);
+void hscb_enable(uint32_t base_addr);
+
 
 #define HSCB_SW_RESET_TIMEOUT   100
 #define HSCB_TIMEOUT            100
