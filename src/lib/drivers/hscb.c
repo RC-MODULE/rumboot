@@ -462,7 +462,7 @@ void hscb_configure_for_transmit(uint32_t base_addr, uint32_t src_data_addr, uin
     hscb_set_descr_in_mem_tx(desc_addr, src_data_addr, len);
 
     rumboot_printf("Setting RDMA_TBL_SIZE and RDMA_SYS_ADDR\n");
-    hscb_set_rdma_tbl_size(base_addr, 0x18);
+    hscb_set_rdma_tbl_size(base_addr, 0x14);
     hscb_set_rdma_sys_addr(base_addr, rumboot_virt_to_dma((uint32_t *) desc_addr));
 }
 
@@ -472,7 +472,7 @@ void hscb_configure_for_receive(uint32_t base_addr, uint32_t dst_data_addr, uint
     hscb_set_descr_in_mem_rx(desc_addr, dst_data_addr, len);
 
     rumboot_printf("Setting WDMA_TBL_SIZE and WDMA_SYS_ADDR\n");
-    hscb_set_wdma_tbl_size(base_addr, 0x18);
+    hscb_set_wdma_tbl_size(base_addr, 0x14);
     hscb_set_wdma_sys_addr(base_addr, rumboot_virt_to_dma((uint32_t *) desc_addr));
 }
 
@@ -490,11 +490,12 @@ void hscb_run_rdma(uint32_t base_addr)
     hscb_rwdma_settings_t rdma_settings;
     rumboot_printf("Run RDMA\n");
     hscb_get_rdma_settings(base_addr, &rdma_settings);
-    rdma_settings.rw_desc_int = true;
-    rdma_settings.rw_desc_end = true;
+//    rdma_settings.rw_desc_int = true;
+//    rdma_settings.rw_desc_end = true;
     rdma_settings.rw_bad_desc = true;
     rdma_settings.en_rwdma = true;
     rdma_settings.en_rwdma_desc_tbl = true;
+    rdma_settings.rwdma_long_len = true;
     hscb_set_rdma_settings(base_addr, &rdma_settings);
 }
 
@@ -503,11 +504,12 @@ void hscb_run_wdma(uint32_t base_addr)
     hscb_rwdma_settings_t wdma_settings;
     rumboot_printf("Run WDMA\n");
     hscb_get_wdma_settings(base_addr, &wdma_settings);
-    wdma_settings.rw_desc_int = true;
-    wdma_settings.rw_desc_end = true;
+//    wdma_settings.rw_desc_int = true;
+//    wdma_settings.rw_desc_end = true;
     wdma_settings.rw_bad_desc = true;
     wdma_settings.en_rwdma = true;
     wdma_settings.en_rwdma_desc_tbl = true;
+    wdma_settings.rwdma_long_len = true;
     hscb_set_rdma_settings(base_addr, &wdma_settings);
 }
 
