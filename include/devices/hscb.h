@@ -205,7 +205,7 @@ uint32_t hscb_get_desc (uint32_t sys_addr, uint8_t* data_out, uint32_t* len,  bo
  * \param[in] sys_addr address in memory for placing descriptor
  * \param[in] pointer on read data descriptor
  */
-void hscb_set_descr_in_mem(uint32_t sys_addr, hscb_descr_struct_t* descr);
+void hscb_set_descr_in_mem(uint32_t sys_addr, uint32_t src_data_addr, uint32_t len);
 
 bool hscb_sw_rst(uint32_t base_addr);
 void hscb_set_config(uint32_t base_addr, hscb_cfg_t* cfg);
