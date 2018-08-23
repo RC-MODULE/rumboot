@@ -15,6 +15,9 @@ SECTIONS
  } > IM0
 
  .rwx : {
+  KEEP(*(.text.startup.rumboot_default_irq_vectors))
+  *(.text.startup)
+
   rumboot_im0_heap_start = .;
   rumboot_im0_heap_end = .;
 
@@ -100,11 +103,5 @@ SECTIONS
    . = . + 0x800000; /* 8Mb DDR0 heap */
    rumboot_ddr1_heap_end = .;
  } > DDR1
-
-
- /DISCARD/ :
- {
-     *(.text.startup)
- }
 
 }

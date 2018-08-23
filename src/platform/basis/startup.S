@@ -28,8 +28,10 @@
 #define UND_Size              256*1
 #define USR_Size              256*2
 
+
 .global rumboot_default_irq_vectors
 rumboot_default_irq_vectors:
+.align 5
   b      rumboot_reset_handler
   b      undefined_handler
   b      swi_handler
