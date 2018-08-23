@@ -81,8 +81,7 @@ if(NOT RUMBOOT_DISABLE_CCACHE)
   find_program(CCACHE_FOUND ccache)
 endif()
 
-set(Python_ADDITIONAL_VERSIONS 3)
-find_package(PythonInterp REQUIRED)
+find_package(PythonInterp 3 REQUIRED)
 
 macro(find_rumboot_packimage)
   find_file(RUMBOOT_PACKIMAGE
