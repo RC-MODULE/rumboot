@@ -23,13 +23,13 @@
 ///src
 static uint32_t em2_cs0_sram_out = (SRAM0_BASE);
 //static uint32_t em2_cs1_nor_out = (NOR_BASE);
-static uint32_t em2_cs2_sdram_out = (SDRAM_BASE);
+//static uint32_t em2_cs2_sdram_out = (SDRAM_BASE);
 //static uint32_t em2_cs1_nor_out_3000 = (NOR_BASE) + 4 * NUM_ELEM;
 
 ///dst
 static uint32_t em2_cs0_sram_in = (SRAM0_BASE) + 4 * NUM_ELEM;
 //static uint32_t em2_cs0_sram_in_2000 = (SRAM0_BASE) + 2 * 4 * NUM_ELEM;
-static uint32_t em2_cs2_sdram_in_4000 = (SDRAM_BASE) + 4 * NUM_ELEM;
+//static uint32_t em2_cs2_sdram_in_4000 = (SDRAM_BASE) + 4 * NUM_ELEM;
 //static uint32_t em2_cs2_sdram_in_8000 = (SDRAM_BASE) + 2 * 4 * NUM_ELEM;
 
 static void init_data(uint32_t addr, uint32_t value)
@@ -126,10 +126,10 @@ int main (void)
     init_data(em2_cs0_sram_out, 0xaaaaaaaa);
 //    rumboot_printf("Init data1\n");
 //    init_nor_data(em2_cs1_nor_out, 0xbbbbbbbb);
-    rumboot_printf ("Init data2\n") ;
-    init_data(em2_cs2_sdram_out, 0xcccccccc);
-//    rumboot_printf("Init data3 \n");
-//    init_nor_data(em2_cs1_nor_out_3000, 0xdddddddd);
+//    rumboot_printf ("Init data2\n") ;
+//    init_data(em2_cs2_sdram_out, 0xcccccccc);
+   // rumboot_printf("Init data3 \n");
+   // init_nor_data(em2_cs1_nor_out_3000, 0xdddddddd);
 
     rumboot_printf ("End init data\n");
 
@@ -164,7 +164,6 @@ int main (void)
     dma_info1.transfer_width = tr_width_halfword;
     dma_info1.rw_transfer_size = rw_tr_size_2q;
     dma_info1.count = size_for_dma/2;
-*/
 
     dma2plb6_setup_info dma_info2;
     channel_status status2 = {};
@@ -180,11 +179,12 @@ int main (void)
     dma_info2.transfer_width = tr_width_doubleword;
     dma_info2.rw_transfer_size = rw_tr_size_4q;
     dma_info2.count = size_for_dma/8;
-/*
+*/
+    /*
     dma2plb6_setup_info dma_info3;
     channel_status status3 = {};
     dma_info3.base_addr = DCR_DMAPLB6_BASE;
-    dma_info3.source_adr = rumboot_virt_to_dma((uint32_t*)em2_cs2_sdram_out);
+    dma_info3.source_adr = rumboot_virt_to_dma((uint32_t*)em2_cs1_nor_out_3000);
     dma_info3.dest_adr = rumboot_virt_to_dma((uint32_t*)em2_cs2_sdram_in_8000);
     dma_info3.priority = priority_medium_low;
     dma_info3.striding_info.striding = striding_none;
@@ -200,11 +200,12 @@ int main (void)
     dma2plb6_mcpy(&dma_info0);
 //    rumboot_printf ("Start dma1\n");
 //    dma2plb6_mcpy(&dma_info1);
-    rumboot_printf ("Start dma2\n");
-    dma2plb6_mcpy(&dma_info2);
+//    rumboot_printf ("Start dma2\n");
+//    dma2plb6_mcpy(&dma_info2);
 //    rumboot_printf ("Start dma3\n");
 //    dma2plb6_mcpy(&dma_info3);
-//  rumboot_printf ("Start wait...\n");
+
+    rumboot_printf ("Start wait...\n");
 
    // if (wait_dma2plb6_mcpy(&dma_info0, &status0) && wait_dma2plb6_mcpy(&dma_info1, &status1) &&
     //        wait_dma2plb6_mcpy(&dma_info2, &status2) && wait_dma2plb6_mcpy(&dma_info3, &status3) == false) return 1; // == TEST_EROR
@@ -217,18 +218,26 @@ int main (void)
         return 1;
     }
     */
-
-    if( !wait_dma2plb6_mcpy(&dma_info0, &status0) )// &&
-      // (wait_dma2plb6_mcpy(&dma_info1, &status1) == false) && (check_data1(em2_cs0_sram_in_2000, em2_cs1_nor_out) == false) &&
-     //  (wait_dma2plb6_mcpy(&dma_info2, &status2) == false) && (check_data1(em2_cs2_sdram_in_4000, em2_cs2_sdram_out) == false) &&
-     //  (wait_dma2plb6_mcpy(&dma_info3, &status3) == false) && (check_data1(em2_cs2_sdram_in_8000, em2_cs1_nor_out_3000) == false))
+/*
+    if(!wait_dma2plb6_mcpy(&dma_info0, &status0))// == false && (check_data1(em2_cs0_sram_in, em2_cs0_sram_out) == false) &&
+//       (wait_dma2plb6_mcpy(&dma_info1, &status1) == false) && (check_data1(em2_cs0_sram_in_2000, em2_cs1_nor_out) == false) &&
+//       (wait_dma2plb6_mcpy(&dma_info2, &status2) == false) && (check_data1(em2_cs2_sdram_in_4000, em2_cs2_sdram_out) == false) &&
+//       (wait_dma2plb6_mcpy(&dma_info3, &status3) == false) && (check_data1(em2_cs2_sdram_in_8000, em2_cs1_nor_out_3000) == false))
     {
         rumboot_printf("WAIT2PLB6_MCPY IS FAIL!\n");
         return 1;
     }
+
     if( !check_data1(em2_cs0_sram_in, em2_cs0_sram_out))
         return 1;
+  */
+    while(!wait_dma2plb6_mcpy(&dma_info0, &status0) && !check_data1(em2_cs0_sram_in, em2_cs0_sram_out))
+    {
+        rumboot_printf("WAIT2PLB6_MCPY IS FAIL!\n");
+                return 1;
+    }
 
+    /*
     if( !wait_dma2plb6_mcpy(&dma_info2, &status2) )
     {
         rumboot_printf("WAIT2PLB6_MCPY IS FAIL!\n");
@@ -237,8 +246,6 @@ int main (void)
 
     if( !check_data1(em2_cs2_sdram_in_4000, em2_cs2_sdram_out))
             return 1;
-
-
-
+*/
     return 0;
 }
