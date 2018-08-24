@@ -145,7 +145,7 @@ int main()
     rumboot_printf("Start test_oi10_em2_203\n");
     test_event_send_test_id("test_oi10_em2_203");
 
-    emi_init();
+    emi_init(DCR_EM2_EMI_BASE);
     emi_set_trdy(DCR_EM2_EMI_BASE, TEST_BANK_IDX, TEST_TRDY);
     emi_enable_ext_rdy(DCR_EM2_EMI_BASE, TEST_BANK_IDX);
     emi_get_int_mask(DCR_EM2_EMI_BASE, &mask);
