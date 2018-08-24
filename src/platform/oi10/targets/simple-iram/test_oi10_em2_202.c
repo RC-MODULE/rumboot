@@ -275,7 +275,6 @@ DEFINE_CHECK(hstsr_ecc_on)
     TEST_ASSERT(result = (EMI_READ(EMI_ECCRDR) == CHECK_ECC_CODE),
             "EMI: Wrong ECC-code.");
     status |= !result;
-    rumboot_printf("ECNT=%d\n", READ_ECNT(bank)); // TODO: delete it!
     TEST_ASSERT(result = (READ_ECNT(bank) == 0),
             "EMI: Wrong single error counter value.");
     status |= !result;
@@ -298,7 +297,6 @@ DEFINE_CHECK(hstsr_ecc_on)
     TEST_ASSERT(result = (EMI_READ(EMI_ECCRDR) == CHECK_ECC_CODE),
             "EMI: Wrong ECC-code after single error.");
     status |= !result;
-    rumboot_printf("ECNT=%d\n", READ_ECNT(bank)); // TODO: delete it!
     TEST_ASSERT(result = (READ_ECNT(bank) == 1),
             "EMI: Wrong single error counter value.");
     status |= !result;
@@ -378,7 +376,6 @@ DEFINE_CHECK(hstsr_ecc_off)
     TEST_ASSERT(result = (EMI_READ(EMI_ECCRDR) == CHECK_ECC_CODE),
             "EMI: Wrong ECC-code.");
     status |= !result;
-    rumboot_printf("ECNT=%d\n", READ_ECNT(bank)); // TODO: delete it!
     TEST_ASSERT(result = (READ_ECNT(bank) == 0),
             "EMI: Wrong single error counter value.");
     status |= !result;
@@ -401,7 +398,6 @@ DEFINE_CHECK(hstsr_ecc_off)
     TEST_ASSERT(result = (EMI_READ(EMI_ECCRDR) == CHECK_ECC_CODE),
             "EMI: Wrong ECC-code after single error.");
     status |= !result;
-    rumboot_printf("ECNT=%d\n", READ_ECNT(bank)); // TODO: delete it!
     TEST_ASSERT(result = (READ_ECNT(bank) == 0),
             "EMI: Wrong single error counter value.");
     status |= !result;
