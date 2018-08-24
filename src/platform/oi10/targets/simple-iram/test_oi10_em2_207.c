@@ -141,10 +141,10 @@ void check_bank(uint32_t addr)
 
 void run_check()
 {
-    //check_bank(SRAM0_BASE);
-    //check_bank(SDRAM_BASE);
+    check_bank(SRAM0_BASE);
+    check_bank(SDRAM_BASE);
     check_bank(SSRAM_BASE);
-    //check_bank(PIPELINED_BASE);
+    check_bank(PIPELINED_BASE);
     check_bank(SRAM1_BASE);
 }
 
