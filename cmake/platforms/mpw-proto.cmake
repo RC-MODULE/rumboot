@@ -1,8 +1,5 @@
 SET(RUMBOOT_ARCH ppc)
 
-find_program(PACKIMAGE rumboot-packimage REQUIRED)
-find_program (PYTHON NAMES python3 python3.6 REQUIRED)
-
 file(GLOB PLATFORM_SOURCES
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/*.c
     ${CMAKE_SOURCE_DIR}/src/lib/drivers/irq-mpic128.c
@@ -21,9 +18,11 @@ endmacro()
 rumboot_add_configuration(
   PRIMARY
   LDS mpw-proto/primary.lds
+  FILES ${CMAKE_SOURCE_DIR}/src/lib/bootheader_legacy.c
   CFLAGS -DRUMBOOT_ONLY_STACK
   #LDFLAGS -Wl,--start-group -lgcc -lc -lm -Wl,--end-group
   PREFIX PRIMARY
+  FEATURES PACKIMAGE
 )
 
 #Add configuration for binaries
@@ -33,7 +32,7 @@ rumboot_add_configuration(
   FILES ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c
   CFLAGS -DRUMBOOT_NEWLIB_PRINTF
   LDFLAGS -Wl,--start-group -lgcc -lc -lm -Wl,--end-group
-  FEATURES SECONDARY
+  FEATURES PACKIMAGE SECONDARY
 )
 
 rumboot_add_configuration(
@@ -47,45 +46,6 @@ rumboot_add_configuration(
 
 
 macro(rumboot_platform_generate_stuff_for_taget product)
-
-if(${TARGET_CONFIGURATION} STREQUAL "SECONDARY")
-  add_custom_target(
-    ${product}.img ALL
-    COMMAND ${PYTHON} ${CMAKE_SOURCE_DIR}/scripts/rumbootpackimage.py -i ${product}.bin
-    COMMENT "Packing image ${product}.img"
-    DEPENDS ${product}.bin
-  )
-
-  add_dependencies(${product}.all ${product}.img)
-else()
-
-  add_custom_target(
-    ${product}.img ALL
-    COMMAND COMMAND ${PACKIMAGE} -t bootimage -i ${product}.bin -o ${product}.img
-    COMMENT "Packing image ${product}.img"
-    DEPENDS ${product}.bin
-  )
-
-  add_custom_target(
-    ${product}.edcl ALL
-    COMMAND ${PACKIMAGE} -t hostimage -i ${product}.bin -o ${product}.edcl
-    COMMENT "Creating edcl image ${product}.edcl"
-    DEPENDS ${product}.bin
-  )
-
-  add_dependencies(${product}.all ${product}.img ${product}.edcl)
-endif()
-
-  add_custom_target(
-    ${product}.sd ALL
-    COMMAND dd if=/dev/zero of=${product}.sd bs=1024 count=8;
-    COMMAND dd if=${product}.bin of=${product}.sd bs=1024 seek=8
-    # COMMAND dd if=${product}.bin of=${product}.sd
-    COMMENT "Creating SD card image ${product}.sd"
-    DEPENDS ${product}.bin
-  )
-
-  add_dependencies(${product}.all ${product}.sd)
 
 endmacro()
 

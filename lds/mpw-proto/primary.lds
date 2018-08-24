@@ -1,6 +1,6 @@
 MEMORY
 {
-    ROM (rx): ORIGIN = 0x40000,  LENGTH = 0x20000
+    ROM_SHIM (rx): ORIGIN = 0x40000,  LENGTH = 0x20000
     IM0 (rwx): ORIGIN = 0x60000, LENGTH = 0x20000
 }
 
@@ -8,11 +8,12 @@ SECTIONS
 {
 
   .text : {
+    KEEP(*(.header))
     KEEP(*(.text.startup))
     *(.text)
     *(.text.*)
     *(.rodata)
-  } > ROM
+  } > ROM_SHIM
 
  .rw : {
   . = ALIGN(8);
