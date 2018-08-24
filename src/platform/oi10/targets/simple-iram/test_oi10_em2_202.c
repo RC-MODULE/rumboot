@@ -29,6 +29,7 @@
 #define INIT_ERROR              TEST_ERROR
 #define NUMBER_OF_BANKS         6
 #define IRR_RST_ALL             0x0001FFFF
+#define IMR_UNMASK_ALL          IRR_RST_ALL
 #define IRQ_FLAGS               (RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH)
 #define EMI_BITS_D0_D7          EMI_WECR_BWE0_i
 #define EMI_BITS_D8_D15         EMI_WECR_BWE1_i
@@ -44,7 +45,7 @@
 
 /* Config */
 /*                      ENABLED BANK -> |0|1|2|3|4|5| */
-#define ENABLED_EM_BANKS        EMBANKS( 1,0,0,0,0,0 )
+#define ENABLED_EM_BANKS        EMBANKS( 1,0,1,1,0,0 )
 #define CHECK_OFFSET            0x00000100
 #define CHECK_CONST             0xF00D4BEE
 #define CHECK_ECC_CODE          0x10
@@ -105,6 +106,7 @@ typedef volatile uint32_t           irq_flags_t;
 /* Global variables */
 static irq_flags_t IRQ[8] = {0,0,0,0,0,0,0,0};
 static rumboot_irq_entry *irq_table = NULL;
+static volatile uint32_t global_irr = 0;
 /* Data tables, for register calculation, depending on bank */
 static volatile const uint8_t emi_ss[8] =
     {EMI_SS0, EMI_SS1, EMI_SS2, EMI_SS3, EMI_SS4, EMI_SS5, 0,0};
@@ -144,23 +146,26 @@ static const char *btyp_descr[8] =
         "PIPELINE", "UNKNOWN",  "SDRAM",    "UNKNOWN"
     };
 
-int is_irq(irq_flags_t *irq_f)
+int is_irq(void)
 {
     int r, i;
-    for(r = 0, i = 0; i < 8; i++) r |= irq_f[i];
+    for(r = 0, i = 0; i < 8; i++) r |= IRQ[i];
     return r;
 }
 
-void clear_all_irqs(irq_flags_t *irq_f)
+void clear_all_irqs(void)
 {
     int i;
-    for(i=0; i<8; i++) irq_f[i] = 0;
+    for(i=0; i<8; i++) IRQ[i] = 0;
 }
 
 void emi_irq_handler( int irq, void *arg )
 {
     rumboot_printf("IRQ #%d received.\n", irq);
-    IRQ[irq >> 5] = (1 << (irq & 0x1F));
+    IRQ[irq >> 5] = BIT(irq & 0x1F);
+    global_irr = EMI_READ(EMI_IRR);
+    /* Reset interrupts */
+    EMI_WRITE(EMI_IRR_RST, IRR_RST_ALL);
 }
 
 
@@ -180,7 +185,7 @@ DEFINE_INIT(interrupts)
     };
     rumboot_putstring ("\tStart IRQ initialization...\n");
 
-    clear_all_irqs(IRQ);
+    clear_all_irqs();
     rumboot_irq_cli();
     irq_table = rumboot_irq_create( NULL );
     FOREACH_IRQ(irq_item, irq_list)
@@ -192,6 +197,9 @@ DEFINE_INIT(interrupts)
     FOREACH_IRQ(irq_item, irq_list)
         rumboot_irq_enable(*irq_item);
     rumboot_irq_sei();
+    /* Unmask all interrupts */
+    EMI_WRITE(EMI_IMR, IMR_UNMASK_ALL);
+
     rumboot_putstring ("\tIRQ have been initialized.\n");
 
     return INIT_OK;
@@ -233,26 +241,27 @@ DEFINE_CHECK(rfc)
 
 DEFINE_CHECK(hstsr_ecc_on)
 {
-    uint32_t hstsr, wecr,
-             readed = 0,
+    uint32_t hstsr,
              result = TEST_OK,
              status = TEST_OK;
+    volatile
+    uint32_t readed = 0;
     volatile const emi_access_api *api = &emi_api_list[EMI_TYPE(bank)];
     if(EMI_TYPE(bank) == BTYP_NOR)
     {
         rumboot_printf("NOR is not supported. Check skipped.\n", bank);
         return TEST_OK;
     }
+    /* Force bank switch */
+    readed = api->r(CHECK_ADDR(bank));
+    EMI_WRITE(EMI_WECR, 0);
     hstsr = EMI_READ(EMI_HSTSR);
-    wecr  = EMI_READ(EMI_WECR);
     if(!GET_BIT(hstsr, bank)) ECC_ON(bank);
-    /* Reset interrupts */
-    EMI_WRITE(EMI_IRR_RST, IRR_RST_ALL);
     /* Reset single error counter */
-    EMI_WRITE(emi_ecnt[bank], EMI_READ(emi_ecnt[bank]) & ~MASK_ECNT(bank));
+    EMI_WRITE(emi_ecnt[bank], 0);
 
-    /* Write & check */
-    rumboot_putstring("First stage: Regular write/read...\n");
+    /* Regular write/read */
+    rumboot_putstring("First stage: Regular write/read (ECC ON)...\n");
     rumboot_printf("Writing at 0x%X <- 0x%X...\n",
             CHECK_ADDR(bank), CHECK_CONST);
     api->w(CHECK_CONST, CHECK_ADDR(bank));
@@ -266,6 +275,7 @@ DEFINE_CHECK(hstsr_ecc_on)
     TEST_ASSERT(result = (EMI_READ(EMI_ECCRDR) == CHECK_ECC_CODE),
             "EMI: Wrong ECC-code.");
     status |= !result;
+    rumboot_printf("ECNT=%d\n", READ_ECNT(bank)); // TODO: delete it!
     TEST_ASSERT(result = (READ_ECNT(bank) == 0),
             "EMI: Wrong single error counter value.");
     status |= !result;
@@ -273,9 +283,13 @@ DEFINE_CHECK(hstsr_ecc_on)
 
     /* Make single error */
     rumboot_putstring("Second stage: Make single error...\n");
+    clear_all_irqs();
     api->w(CHECK_CONST ^ MK_ERR_1, CHECK_ADDR(bank));
+    msync();
     EMI_WRITE(EMI_WECR, EMI_READ(EMI_WECR) | BIT(EMI_BITS_D24_D31));
     api->w(CHECK_CONST, CHECK_ADDR(bank));
+    msync();
+    EMI_WRITE(EMI_WECR, 0);
     readed = api->r(CHECK_ADDR(bank));
     rumboot_printf("READED: 0x%X after single error.\n", readed);
     TEST_ASSERT(result = (readed == CHECK_CONST),
@@ -284,24 +298,27 @@ DEFINE_CHECK(hstsr_ecc_on)
     TEST_ASSERT(result = (EMI_READ(EMI_ECCRDR) == CHECK_ECC_CODE),
             "EMI: Wrong ECC-code after single error.");
     status |= !result;
+    rumboot_printf("ECNT=%d\n", READ_ECNT(bank)); // TODO: delete it!
     TEST_ASSERT(result = (READ_ECNT(bank) == 1),
             "EMI: Wrong single error counter value.");
     status |= !result;
-    TEST_ASSERT(result = (EMI_READ(EMI_IRR) & SINGLE_ERR_FLAG(bank)),
+    TEST_ASSERT(result = (global_irr & SINGLE_ERR_FLAG(bank)),
             "EMI: Single error interrupt flag not risen.");
     status |= !result;
-    /* Restore EMI_WECR */
-    EMI_WRITE(EMI_WECR, wecr);
     /* ----------------- */
 
     /* Reset interrupts */
-    EMI_WRITE(EMI_IRR_RST, IRR_RST_ALL);
+    global_irr = 0x00000000;
+    clear_all_irqs();
 
     /* Make double error */
     rumboot_putstring("Third stage: Make double error...\n");
     api->w(CHECK_CONST ^ MK_ERR_2, CHECK_ADDR(bank));
+    msync();
     EMI_WRITE(EMI_WECR, EMI_READ(EMI_WECR) | BIT(EMI_BITS_D16_D23));
     api->w(CHECK_CONST, CHECK_ADDR(bank));
+    msync();
+    EMI_WRITE(EMI_WECR, 0);
     readed = api->r(CHECK_ADDR(bank));
     rumboot_printf("READED: 0x%X after double error.\n", readed);
     TEST_ASSERT(result = (readed == (CHECK_CONST ^ MK_ERR_2)),
@@ -313,14 +330,12 @@ DEFINE_CHECK(hstsr_ecc_on)
     TEST_ASSERT(result = (READ_ECNT(bank) == 1),
             "EMI: Wrong single error counter value.");
     status |= !result;
-    TEST_ASSERT(result = (!(EMI_READ(EMI_IRR) & SINGLE_ERR_FLAG(bank))),
+    TEST_ASSERT(result = (!(global_irr & SINGLE_ERR_FLAG(bank))),
             "EMI: Unexpected single error interrupt flag risen.");
     status |= !result;
-    TEST_ASSERT(result = (EMI_READ(EMI_IRR) & DOUBLE_ERR_FLAG(bank)),
+    TEST_ASSERT(result = (global_irr & DOUBLE_ERR_FLAG(bank)),
             "EMI: Double error interrupt flag not risen.");
     status |= !result;
-    /* Restore EMI_WECR */
-    EMI_WRITE(EMI_WECR, wecr);
     /* ----------------- */
 
     EMI_WRITE(EMI_HSTSR, hstsr);
@@ -329,26 +344,27 @@ DEFINE_CHECK(hstsr_ecc_on)
 
 DEFINE_CHECK(hstsr_ecc_off)
 {
-    uint32_t hstsr, wecr,
-             readed = 0,
+    uint32_t hstsr,
              result = TEST_OK,
              status = TEST_OK;
+    volatile
+    uint32_t readed = 0;
     volatile const emi_access_api *api = &emi_api_list[EMI_TYPE(bank)];
     if(EMI_TYPE(bank) == BTYP_NOR)
     {
         rumboot_printf("NOR is not supported. Check skipped.\n", bank);
         return TEST_OK;
     }
+    /* Force bank switch */
+    readed = api->r(CHECK_ADDR(bank));
+    EMI_WRITE(EMI_WECR, 0);
     hstsr = EMI_READ(EMI_HSTSR);
-    wecr  = EMI_READ(EMI_WECR);
     if(GET_BIT(hstsr, bank)) ECC_OFF(bank);
-    /* Reset interrupts */
-    EMI_WRITE(EMI_IRR_RST, IRR_RST_ALL);
     /* Reset single error counter */
-    EMI_WRITE(emi_ecnt[bank], EMI_READ(emi_ecnt[bank]) & ~MASK_ECNT(bank));
+    EMI_WRITE(emi_ecnt[bank], 0);
 
-    /* Write & check */
-    rumboot_putstring("First stage: Regular write/read...\n");
+    /* Regular write/read */
+    rumboot_putstring("First stage: Regular write/read (ECC OFF)...\n");
     rumboot_printf("Writing at 0x%X <- 0x%X...\n",
             CHECK_ADDR(bank), CHECK_CONST);
     api->w(CHECK_CONST, CHECK_ADDR(bank));
@@ -362,16 +378,21 @@ DEFINE_CHECK(hstsr_ecc_off)
     TEST_ASSERT(result = (EMI_READ(EMI_ECCRDR) == CHECK_ECC_CODE),
             "EMI: Wrong ECC-code.");
     status |= !result;
+    rumboot_printf("ECNT=%d\n", READ_ECNT(bank)); // TODO: delete it!
     TEST_ASSERT(result = (READ_ECNT(bank) == 0),
             "EMI: Wrong single error counter value.");
     status |= !result;
+    clear_all_irqs();
     /* ------------- */
 
     /* Make single error */
     rumboot_putstring("Second stage: Make single error...\n");
     api->w(CHECK_CONST ^ MK_ERR_1, CHECK_ADDR(bank));
     EMI_WRITE(EMI_WECR, EMI_READ(EMI_WECR) | BIT(EMI_BITS_D24_D31));
+    msync();
     api->w(CHECK_CONST, CHECK_ADDR(bank));
+    EMI_WRITE(EMI_WECR, 0);
+    msync();
     readed = api->r(CHECK_ADDR(bank));
     rumboot_printf("READED: 0x%X after single error.\n", readed);
     TEST_ASSERT(result = (readed == (CHECK_CONST ^ MK_ERR_1)),
@@ -380,24 +401,27 @@ DEFINE_CHECK(hstsr_ecc_off)
     TEST_ASSERT(result = (EMI_READ(EMI_ECCRDR) == CHECK_ECC_CODE),
             "EMI: Wrong ECC-code after single error.");
     status |= !result;
+    rumboot_printf("ECNT=%d\n", READ_ECNT(bank)); // TODO: delete it!
     TEST_ASSERT(result = (READ_ECNT(bank) == 0),
             "EMI: Wrong single error counter value.");
     status |= !result;
-    TEST_ASSERT(result = (!(EMI_READ(EMI_IRR) & SINGLE_ERR_FLAG(bank))),
+    TEST_ASSERT(result = (!(global_irr & SINGLE_ERR_FLAG(bank))),
             "EMI: Unexpected single error interrupt flag risen.");
     status |= !result;
-    /* Restore EMI_WECR */
-    EMI_WRITE(EMI_WECR, wecr);
     /* ----------------- */
 
     /* Reset interrupts */
-    EMI_WRITE(EMI_IRR_RST, IRR_RST_ALL);
+    global_irr = 0x00000000;
+    clear_all_irqs();
 
     /* Make double error */
     rumboot_putstring("Third stage: Make double error...\n");
     api->w(CHECK_CONST ^ MK_ERR_2, CHECK_ADDR(bank));
     EMI_WRITE(EMI_WECR, EMI_READ(EMI_WECR) | BIT(EMI_BITS_D16_D23));
+    msync();
     api->w(CHECK_CONST, CHECK_ADDR(bank));
+    EMI_WRITE(EMI_WECR, 0);
+    msync();
     readed = api->r(CHECK_ADDR(bank));
     rumboot_printf("READED: 0x%X after double error.\n", readed);
     TEST_ASSERT(result = (readed == (CHECK_CONST ^ MK_ERR_2)),
@@ -409,14 +433,12 @@ DEFINE_CHECK(hstsr_ecc_off)
     TEST_ASSERT(result = (READ_ECNT(bank) == 0),
             "EMI: Wrong single error counter value.");
     status |= !result;
-    TEST_ASSERT(result = (!(EMI_READ(EMI_IRR) & SINGLE_ERR_FLAG(bank))),
+    TEST_ASSERT(result = (!(global_irr & SINGLE_ERR_FLAG(bank))),
             "EMI: Unexpected single error interrupt flag risen.");
     status |= !result;
-    TEST_ASSERT(result = (!(EMI_READ(EMI_IRR) & DOUBLE_ERR_FLAG(bank))),
+    TEST_ASSERT(result = (!(global_irr & DOUBLE_ERR_FLAG(bank))),
             "EMI: Unexpected double error interrupt flag risen.");
     status |= !result;
-    /* Restore EMI_WECR */
-    EMI_WRITE(EMI_WECR, wecr);
     /* ----------------- */
 
     EMI_WRITE(EMI_HSTSR, hstsr);
@@ -457,17 +479,21 @@ int main(void)
     FOREACH_TEST(test,tests)
     {
         int bank, active;
-        rumboot_printf("\n\nCheck EMI: (%s)...\n", test->desc);
+        rumboot_printf("\n\n *** Check EMI: (%s) *** \n", test->desc);
         FOREACH_BANK(bank,active,NUMBER_OF_BANKS,ENABLED_EM_BANKS)
         {
             rumboot_printf("%s bank #%d (type: %d - %s)...\n",
                     active?"Check":"Skip", bank,
                     EMI_TYPE(bank), btyp_descr[EMI_TYPE(bank)]);
             if(!active) continue;
+            /* Reset interrupts */
+            clear_all_irqs();
+            EMI_WRITE(EMI_IRR_RST, IRR_RST_ALL);
             test_result = test->test(test, bank);
             rumboot_printf("%s!\n", test_result ? "Fail" : "Success");
             test_status |= test_result;
         }
+        rumboot_printf(" ************************ \n");
     }
 
     rumboot_putstring(!test_status ? "TEST OK!\n" : "TEST ERRER!\n");
