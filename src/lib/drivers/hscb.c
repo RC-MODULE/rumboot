@@ -464,12 +464,20 @@ void hscb_configure_for_transmit(uint32_t base_addr, uint32_t src_data_addr, uin
     rumboot_printf("Setting RDMA_TBL_SIZE and RDMA_SYS_ADDR\n");
     hscb_set_rdma_tbl_size(base_addr, 0x14);
     hscb_set_rdma_sys_addr(base_addr, rumboot_virt_to_dma((uint32_t *) desc_addr));
+
+    rumboot_printf("Setting WDMA_TBL_SIZE and WDMA_SYS_ADDR\n");
+    hscb_set_wdma_tbl_size(base_addr, 0x14);
+    hscb_set_wdma_sys_addr(base_addr, rumboot_virt_to_dma((uint32_t *) desc_addr));
 }
 
 void hscb_configure_for_receive(uint32_t base_addr, uint32_t dst_data_addr, uint32_t len, uint32_t desc_addr)
 {
     rumboot_printf("Setting receive descriptor to addr 0x%X\n", desc_addr);
     hscb_set_descr_in_mem_rx(desc_addr, dst_data_addr, len);
+
+    rumboot_printf("Setting RDMA_TBL_SIZE and RDMA_SYS_ADDR\n");
+    hscb_set_rdma_tbl_size(base_addr, 0x14);
+    hscb_set_rdma_sys_addr(base_addr, rumboot_virt_to_dma((uint32_t *) desc_addr));
 
     rumboot_printf("Setting WDMA_TBL_SIZE and WDMA_SYS_ADDR\n");
     hscb_set_wdma_tbl_size(base_addr, 0x14);
