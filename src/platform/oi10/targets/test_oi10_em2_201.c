@@ -156,7 +156,7 @@ int main()
     int ret;
     rumboot_printf("Start test_oi10_em2_201 (0x%X)\n", EXT_MEM_BASE);
     test_event_send_test_id("test_oi10_em2_201");
-    emi_init();
+    emi_init(DCR_EM2_EMI_BASE);
     switch (EXT_MEM_BASE)
     {
         case SRAM0_BASE:
