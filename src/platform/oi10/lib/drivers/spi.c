@@ -136,7 +136,7 @@ void gspi_eeprom_write_enable(uint32_t base_addr)
     (void)ioread32(base_addr+GSPI_SSPDR);  //read data from rx fifo
 }
 
-uint32_t read_eeprom_status (uint32_t base_addr)
+static uint32_t read_eeprom_status (uint32_t base_addr)
 {
     iowrite32(0x05, base_addr+GSPI_SSPDR); //write data to SPI - command read status
     iowrite32(0xff, base_addr+GSPI_SSPDR); //write data to SPI - data staff

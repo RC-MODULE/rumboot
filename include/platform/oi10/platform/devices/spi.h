@@ -82,7 +82,6 @@ void gspi_dma_set_irq_mask(uint32_t base_addr, gspi_dma_interrupt interrupt);
 uint32_t gspi_get_dma_status(uint32_t base_addr);
 
 //eeprom function
-uint32_t read_eeprom_status (uint32_t base_addr);
 void gspi_eeprom_write_enable(uint32_t base_addr);
 void gspi_eeprom_erase_init(uint32_t base_addr);
 void gspi_eeprom_write_data(uint32_t base_addr, uint32_t mem_addr, uint32_t data);
