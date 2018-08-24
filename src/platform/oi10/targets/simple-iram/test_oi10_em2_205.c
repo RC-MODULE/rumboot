@@ -53,6 +53,7 @@ bool check_data()
     dcr_write(DCR_EM2_EMI_BASE + EMI_ECNT53, 0x00); //clear reg
 
 
+    rumboot_putstring("Checking SRAM0 ... \n");
     reg = ioread32(ADDR_SRAM0_SE);
     if (reg != 0xBABA0001)
     {
@@ -63,8 +64,8 @@ bool check_data()
         return false;
     }
     stat = dcr_read(DCR_EM2_EMI_BASE + EMI_ECNT20);
-    rumboot_printf("stat = 0x%x\n", stat);
     TEST_ASSERT(stat == 0x000001, "Invalid value in STATUS_IRQ (SRAM0)");
+    dcr_write(DCR_EM2_EMI_BASE + EMI_ECNT20, 0x00);
 
     reg = ioread32(ADDR_SRAM0_DE);
     if (reg != 0xBABA0007) //see .svh
@@ -76,10 +77,10 @@ bool check_data()
         return false;
     }
     stat = dcr_read(DCR_EM2_EMI_BASE + EMI_ECNT20);
-    rumboot_printf("stat = 0x%x\n", stat);
-    TEST_ASSERT(stat == 0x000001, "Invalid value in STATUS_IRQ (SRAM)");
+    TEST_ASSERT(stat == 0x000000, "Invalid value in STATUS_IRQ (SRAM)");
 
 
+    rumboot_putstring("Checking SSRAM ... \n");
     reg = ioread32(ADDR_SSRAM_SE);
     if (reg != 0xBABA0001)
     {
@@ -90,7 +91,8 @@ bool check_data()
         return false;
     }
     stat = dcr_read(DCR_EM2_EMI_BASE + EMI_ECNT20);
-    TEST_ASSERT(stat == 0x100, "Invalid value in STATUS_IRQ (SSRAM)");
+    TEST_ASSERT(stat == 0x10000, "Invalid value in STATUS_IRQ (SSRAM)");
+    dcr_write(DCR_EM2_EMI_BASE + EMI_ECNT20, 0x00);
 
     reg = ioread32(ADDR_SSRAM_DE);
     if (reg != 0xBABA0007) //see .svh
@@ -102,9 +104,10 @@ bool check_data()
         return false;
     }
     stat = dcr_read(DCR_EM2_EMI_BASE + EMI_ECNT20);
-    TEST_ASSERT(stat == 0x200, "Invalid value in STATUS_IRQ (SSRAM)");
+    TEST_ASSERT(stat == 0x00, "Invalid value in STATUS_IRQ (SSRAM)");
 
 
+    rumboot_putstring("Checking SDRAM ... \n");
     reg = ioread32(ADDR_SDRAM_SE);
     if (reg != 0xBABA0001)
     {
@@ -115,7 +118,8 @@ bool check_data()
         return false;
     }
     stat = dcr_read(DCR_EM2_EMI_BASE + EMI_ECNT20);
-    TEST_ASSERT(stat == 0x010, "Invalid value in STATUS_IRQ (SDRAM)");
+    TEST_ASSERT(stat == 0x100, "Invalid value in STATUS_IRQ (SDRAM)");
+    dcr_write(DCR_EM2_EMI_BASE + EMI_ECNT20, 0x00);
 
     reg = ioread32(ADDR_SDRAM_DE);
     if (reg != 0xBABA0007) //see .svh
@@ -127,9 +131,10 @@ bool check_data()
         return false;
     }
     stat = dcr_read(DCR_EM2_EMI_BASE + EMI_ECNT20);
-    TEST_ASSERT(stat == 0x020, "Invalid value in STATUS_IRQ (SDRAM)");
+    TEST_ASSERT(stat == 0x00, "Invalid value in STATUS_IRQ (SDRAM)");
 
 
+    rumboot_putstring("Checking NOR ... \n");
     reg = ioread32(ADDR_NOR_SE);
     if (reg != 0xBABA0001)
     {
@@ -140,8 +145,8 @@ bool check_data()
         return false;
     }
     stat = dcr_read(DCR_EM2_EMI_BASE + EMI_ECNT53);
-    rumboot_printf("stat = 0x%x\n", stat);
     TEST_ASSERT(stat == 0x010000, "Invalid value in STATUS_IRQ (NOR)");
+    dcr_write(DCR_EM2_EMI_BASE + EMI_ECNT53, 0x00);
 
     reg = ioread32(ADDR_NOR_DE);
     if (reg != 0xBABA0007) //see .svh
@@ -153,8 +158,7 @@ bool check_data()
         return false;
     }
     stat = dcr_read(DCR_EM2_EMI_BASE + EMI_ECNT53);
-    rumboot_printf("stat = 0x%x\n", stat);
-    TEST_ASSERT(stat == 0x010000, "Invalid value in STATUS_IRQ (NOR)");
+    TEST_ASSERT(stat == 0x00, "Invalid value in STATUS_IRQ (NOR)");
 
     return true;
 }
@@ -164,54 +168,51 @@ int main(void)
 {
     test_event_send_test_id("test_oi10_em2_205");
 
-    emi_init();
+    emi_init(DCR_EM2_EMI_BASE);
     emi_set_ecc(DCR_EM2_EMI_BASE, emi_bank_all, emi_ecc_on);
 
-/*
-    uint32_t mask_reg = 0;
-    mask_reg = sram_nor_dcr_read_SRAM_NOR_DCR_MASK_IRQ(EM2_SRAM_DCRAPB_DCR_BASE);
-    sram_nor_dcr_write_SRAM_NOR_DCR_MASK_IRQ(EM2_SRAM_DCRAPB_DCR_BASE,
-            (mask_reg |
-            (0x01 << SRAM_NOR_DCR_MASK_IRQ_S_ERR_i))
-    );
-
-    mask_reg = sram_nor_dcr_read_SRAM_NOR_DCR_MASK_IRQ(EM3_NOR_DCRAPB_DCR_BASE);
-    sram_nor_dcr_write_SRAM_NOR_DCR_MASK_IRQ(EM3_NOR_DCRAPB_DCR_BASE,
-            (mask_reg |
-            (0x01 << SRAM_NOR_DCR_MASK_IRQ_S_ERR_i))
-    );
-*/
     rumboot_putstring("WRITE SRAM0\n");
     test_event(EVENT_INJECT_SRAM0_0); //DATA_SE = 0xBABA0000
     iowrite32(0xBABA0001, ADDR_SRAM0_SE);
+    isync();
 
     test_event(EVENT_INJECT_SRAM0_7); //DATA_DE = 0xBABA0007
     iowrite32(0xBABA0001, ADDR_SRAM0_DE);
+    isync();
 
 
     rumboot_putstring("WRITE SSRAM\n");
-    iowrite32(0xBABA0001, ADDR_SSRAM_SE);
     test_event(EVENT_INJECT_SSRAM_0); //DATA_SE = 0xBABA0000
+    iowrite32(0xBABA0001, ADDR_SSRAM_SE);
+    isync();
 
-    iowrite32(0xBABA0001, ADDR_SSRAM_DE);
     test_event(EVENT_INJECT_SSRAM_7); //DATA_SE = 0xBABA0007
+    iowrite32(0xBABA0001, ADDR_SSRAM_DE);
+    isync();
 
 
     rumboot_putstring("WRITE SDRAM\n");
-    iowrite32(0xBABA0001, ADDR_SDRAM_SE);
     test_event(EVENT_INJECT_SDRAM_0); //DATA_SE = 0xBABA0000
+    iowrite32(0xBABA0001, ADDR_SDRAM_SE);
+    isync();
 
-    iowrite32(0xBABA0001, ADDR_SDRAM_DE);
     test_event(EVENT_INJECT_SDRAM_7); //DATA_SE = 0xBABA0007
+    iowrite32(0xBABA0001, ADDR_SDRAM_DE);
+    isync();
 
 
     rumboot_putstring("WRITE NOR\n");
-
     test_event(EVENT_INJECT_NOR_0); //DATA_SE = 0xBABA0000
+//#define RUMBOOT_ASSERT_WARN_ONLY
     nor_write32(0xBABA0001, ADDR_NOR_SE);
+//#undef RUMBOOT_ASSERT_WARN_ONLY
+    isync();
 
     test_event(EVENT_INJECT_NOR_7); //DATA_DE = 0xBABA0007
+//#define RUMBOOT_ASSERT_WARN_ONLY
     nor_write32(0xBABA0001, ADDR_NOR_DE);
+//#undef RUMBOOT_ASSERT_WARN_ONLY
+    isync();
 
     udelay(5);
 
