@@ -37,7 +37,7 @@ rumboot_add_configuration (
   FILES ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c
   CFLAGS -DRUMBOOT_PRINTF_ACCEL
   BOOTROM bootrom-stub
-  FEATURES LUA COVERAGE
+  FEATURES LUA COVERAGE PACKIMAGE
   LOAD IM0BIN SELF
 )
 
@@ -49,7 +49,7 @@ rumboot_add_configuration (
   FILES ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c
   CFLAGS -DRUMBOOT_PRINTF_ACCEL
   BOOTROM bootrom-stub
-  FEATURES LUA COVERAGE
+  FEATURES LUA COVERAGE PACKIMAGE
   LOAD IM0BIN SELF
 )
 
@@ -61,7 +61,7 @@ rumboot_add_configuration (
   FILES ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c
   CFLAGS -DRUMBOOT_PRINTF_ACCEL -DRUMBOOT_BASIS_ENABLE_DDR
   BOOTROM bootrom-stub-mirror
-  FEATURES LUA COVERAGE
+  FEATURES LUA COVERAGE PACKIMAGE
   LOAD IM0BIN SELF
 )
 
@@ -73,7 +73,7 @@ rumboot_add_configuration (
   FILES ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c
   CFLAGS -DRUMBOOT_PRINTF_ACCEL -DRUMBOOT_BASIS_ENABLE_MIRROR -DRUMBOOT_BASIS_ENABLE_DDR
   BOOTROM bootrom-stub-mirror
-  FEATURES LUA COVERAGE
+  FEATURES LUA COVERAGE PACKIMAGE
   LOAD IM0BIN SELF
 )
 
@@ -98,6 +98,7 @@ rumboot_add_configuration(
   PREFIX integration
   BOOTROM bootrom-lprobe-stub
   DEPENDS spl-ok spl
+  FEATURES PACKIMAGE
 )
 
 
@@ -232,6 +233,14 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       CONFIGURATION IRAM_SPL
       PREFIX spl
       FEATURES STUB
+    )
+
+    add_rumboot_target(common/spl-stubs/
+      CONFIGURATION IRAM_SPL
+      FILES common/spl-stubs/fail.c
+      NAME spl-fail-bad-magic
+      PREFIX spl
+      PACKIMAGE_FLAGS -s magic 0xbadc0de
     )
 
 	add_rumboot_target_dir(muart/

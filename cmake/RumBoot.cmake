@@ -1,5 +1,5 @@
 set(RUMBOOT_ONEVALUE_ARGS SNAPSHOT LDS PREFIX NAME BOOTROM CHECKPOINTS RESTORE)
-set(RUMBOOT_MULVALUE_ARGS FILES IRUN_FLAGS CFLAGS TESTGROUP LDFLAGS CHECKCMD FEATURES TIMEOUT LOAD DEPENDS)
+set(RUMBOOT_MULVALUE_ARGS FILES IRUN_FLAGS CFLAGS TESTGROUP LDFLAGS CHECKCMD FEATURES TIMEOUT LOAD DEPENDS PACKIMAGE_FLAGS)
 
 
 macro(rumboot_add_configuration name)
@@ -114,10 +114,19 @@ macro(generate_stuff_for_target product)
     DEPENDS ${product}
   )
 
+  list (FIND TARGET_FEATURES "PACKIMAGE" _index)
+  if (${_index} EQUAL -1)
+    set(packimage_cmd true)
+  elseif (NOT TARGET_PACKIMAGE_FLAGS)
+    set(packimage_cmd ${PYTHON_EXECUTABLE} ${RUMBOOT_PACKIMAGE} -f ${product}.bin -c)
+  else()
+    set(packimage_cmd ${PYTHON_EXECUTABLE} ${RUMBOOT_PACKIMAGE} -f ${product}.bin ${TARGET_PACKIMAGE_FLAGS})
+  endif()
+
   add_custom_command(
     OUTPUT ${product}.bin
     COMMAND ${CROSS_COMPILE}-objcopy ${CMAKE_OBJCOPY_FLAGS} -O binary ${product} ${product}.bin
-    COMMAND ${PYTHON_EXECUTABLE} ${RUMBOOT_PACKIMAGE} -f ${product}.bin -c || true
+    COMMAND ${packimage_cmd}
     COMMENT "Generating binary image ${product}.bin"
     DEPENDS ${product}
   )
