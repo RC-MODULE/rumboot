@@ -261,13 +261,11 @@ main:
 
 test_ok:
 	rumboot_putstring "TEST OK\n"
-	test_event		EVENT_OK
 	load_const r3,	RESULT_OK
 	b finish
 
 test_error:
     rumboot_putstring "TEST ERROR\n"
-    test_event		EVENT_ERROR
     load_const r3,	RESULT_ERROR
 
 finish:
