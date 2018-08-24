@@ -61,26 +61,6 @@ em2_banks_cfg_t em2_cfg2[EM2_BANKS_NUM] = {
                                             { NOR_BASE,       NOR_SIZE,       WRDATA2 },
                                           };
 
-void preinit_mem(uint32_t base_addr, uint32_t size)
-{
-
-    if (base_addr==NOR_BASE)
-    {/*
-        nor_write32(0x0, NOR_BASE + NOR_SIZE/2 + 4);
-        nor_write32(0x0, NOR_BASE + NOR_SIZE/2 + 8);
-        nor_write32(0x0, NOR_BASE + NOR_SIZE/2 + 12);
-        nor_write32(0x0, NOR_BASE + NOR_SIZE/2 + 16);
-    */}
-    else
-    {
-        iowrite32(0x0, base_addr + size/2 + 4);
-        iowrite32(0x0, base_addr + size/2 + 8);
-        iowrite32(0x0, base_addr + size/2 + 12);
-        iowrite32(0x0, base_addr + size/2 + 16);
-    }
-}
-
-
 void generate_test_data_and_addr_for_bank(em2_banks_cfg_t* bank_cfg, test_data_and_addr_t* test_data_and_addr)
 {
     test_data_and_addr->A0 = bank_cfg->base_addr;
@@ -89,9 +69,6 @@ void generate_test_data_and_addr_for_bank(em2_banks_cfg_t* bank_cfg, test_data_a
     test_data_and_addr->A3 = bank_cfg->base_addr + bank_cfg->size - 4;
     test_data_and_addr->D  = bank_cfg->data;
     rumboot_printf("0x%X 0x%X 0x%X 0x%X / 0x%X\n", test_data_and_addr->A0, test_data_and_addr->A1, test_data_and_addr->A2, test_data_and_addr->A3, test_data_and_addr->D);
-
-//    rumboot_printf("Preinit memory\n");
-//    preinit_mem(bank_cfg->base_addr, bank_cfg->size);
 }
 
 void generate_test_data_and_addr(em2_banks_cfg_t* bank_cfg, test_data_and_addr_t* test_data_and_addr)
@@ -340,8 +317,8 @@ int main()
 
     rumboot_printf("Start test_oi10_em2_204\n");
 
-    emi_init();
-    emi_set_ecc(DCR_EM2_EMI_BASE, emi_bank_all, emi_ecc_off);
+    emi_init(DCR_EM2_EMI_BASE);
+    emi_set_ecc(DCR_EM2_EMI_BASE, emi_bank_all, emi_ecc_on);
 
     generate_test_data_and_addr(em2_cfg1, test_data_and_addr);
     run_checks(test_data_and_addr);
