@@ -252,11 +252,11 @@ main:
     LOGIC_RA_RS_CHECK    cntlzw., REGS_AS,    RS_VAL,         0x05,    3
     LOGIC_RA_RS_CHECK    prtyw,   REGS_AS,    RS_VAL,         0x06,    3
 
-	load_addr	r15,	save_data
-	load_const	r16,	0x0100
-	rumboot_issdump		r15, r16
+    load_addr   r15,    save_data
+    load_const  r16,    0x0100
+    _rumboot_issdump    r15, r16
 
-    b				test_ok
+    b test_ok
 
 
 test_ok:
