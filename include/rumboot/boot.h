@@ -107,6 +107,13 @@ int32_t rumboot_bootimage_exec(struct rumboot_bootheader *hdr);
  bool bootsource_try_single(const struct rumboot_bootsource *src, void* pdata);
  bool bootsource_try_chain(const struct rumboot_bootsource *src, void* pdata);
 
+#define EBADMAGIC      1
+#define EBADHDRCRC     2
+#define EBADCHIPID     3
+#define EBADENTRY      4
+#define EBADNUMCORES   5
+#define EBADDATACRC    6
+#define EMAXERROR      7
 
  struct rumboot_config {
          bool	hostmode;

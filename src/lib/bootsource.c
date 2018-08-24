@@ -25,12 +25,14 @@ static bool load_img(const struct rumboot_bootsource *src, void *pdata)
 	hdr->device = src;
 
 	ssize_t len = rumboot_bootimage_check_header(hdr, &data);
-	dbg_boot(src, "%d", len);
+
 	if (len > 0) {
 		src->plugin->read(src, pdata, hdr->data, count, len);
+	} else {
+		/* TODO: Error reporting */
 	}
 
-	return true;
+	return (0 == rumboot_bootimage_check_data(hdr));
 }
 
 bool bootsource_try_single(const struct rumboot_bootsource *src, void *pdata)
