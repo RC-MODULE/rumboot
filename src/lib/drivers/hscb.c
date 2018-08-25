@@ -500,7 +500,7 @@ void hscb_run_rdma(uint32_t base_addr)
     hscb_get_rdma_settings(base_addr, &rdma_settings);
 //    rdma_settings.rw_desc_int = true;
 //    rdma_settings.rw_desc_end = true;
-    rdma_settings.rw_bad_desc = true;
+//    rdma_settings.rw_bad_desc = true;
     rdma_settings.en_rwdma = true;
     rdma_settings.en_rwdma_desc_tbl = true;
     rdma_settings.rwdma_long_len = true;
@@ -518,7 +518,7 @@ void hscb_run_wdma(uint32_t base_addr)
     wdma_settings.en_rwdma = true;
     wdma_settings.en_rwdma_desc_tbl = true;
     wdma_settings.rwdma_long_len = true;
-    hscb_set_rdma_settings(base_addr, &wdma_settings);
+    hscb_set_wdma_settings(base_addr, &wdma_settings);
 }
 
 void hscb_set_max_speed(uint32_t base_addr)
