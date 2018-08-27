@@ -311,23 +311,21 @@ main:
     LOGIC_RA_RS_CHECK		neg,      REGS_AS1,	0xAA55AA55,				0x10, 0
     LOGIC_RA_RS_CHECK		neg.,     REGS_AS1,	0xAA55AA55,				0x11, 0
 
-	load_addr	r15,	save_data
-	load_const	r16,	DUMP_SIZE
-	rumboot_issdump		r15, r16
+    load_addr   r15,    save_data
+    load_const  r16,    DUMP_SIZE
+    _rumboot_issdump    r15, r16
 
-	b			test_ok
+    b test_ok
 
 
 test_error:
-	rumboot_putstring "TEST ERROR\n"
-	test_event		EVENT_ERROR
-	load_const r3,	RESULT_ERROR
-	b finish
+    rumboot_putstring   "TEST ERROR\n"
+    load_const  r3,     RESULT_ERROR
+    b finish
 
 test_ok:
-	rumboot_putstring "TEST OK\n"
-	test_event		EVENT_OK
-	load_const r3,	RESULT_OK
+    rumboot_putstring   "TEST OK\n"
+    load_const  r3,     RESULT_OK
 
 finish:
 	blr
