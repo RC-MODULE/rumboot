@@ -136,7 +136,7 @@ int main ()
 {
     test_event_send_test_id("test_oi10_em2_110");
 
-    emi_init();
+    emi_init(DCR_EM2_EMI_BASE);
     dcr_write(DCR_EM2_EMI_BASE + EMI_IRR, 0x00000); //Clear all EMI interrupts
     dcr_write(DCR_EM2_EMI_BASE + EMI_IMR, 0x1FFFF); //Unmask all EMI interrupts
 
