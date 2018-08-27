@@ -66,22 +66,6 @@ typedef enum{
     all = 0x3
 }dma_enable;
 
-//typedef enum{
-//    ssp_data_size_4 = 0x3,
-//    ssp_data_size_5 = 0x4,
-//    ssp_data_size_6 = 0x5,
-//    ssp_data_size_7 = 0x6,
-//    ssp_data_size_8 = 0x7,
-//    ssp_data_size_9 = 0x8,
-//    ssp_data_size_10 = 0x9,
-//    ssp_data_size_11 = 0xA,
-//    ssp_data_size_12 = 0xB,
-//    ssp_data_size_13 = 0xC,
-//    ssp_data_size_14 = 0xD,
-//    ssp_data_size_15 = 0xE,
-//    ssp_data_size_16 = 0xF
-//}ssp_data_size;
-
 typedef enum{
     master_mode = 0,
     slave_mode = 1
