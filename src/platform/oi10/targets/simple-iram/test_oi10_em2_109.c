@@ -28,10 +28,10 @@ static uint32_t data_src_2 = (SDRAM_BASE);
 static uint32_t data_src_3 = (NOR_BASE) + 4 * NUM_ELEM;
 
 ///dst
-static uint32_t data_dst_0 = (SRAM0_BASE) + 4 * NUM_ELEM;
-static uint32_t data_dst_1 = (SRAM0_BASE) + 8 * NUM_ELEM;
-static uint32_t data_dst_2 = (SDRAM_BASE) + 4 * NUM_ELEM;
-static uint32_t data_dst_3 = (SDRAM_BASE) + 8 * NUM_ELEM;
+static uint32_t data_dst_0 = (SRAM0_BASE) + 32 * NUM_ELEM;
+static uint32_t data_dst_1 = (SRAM0_BASE) + 64 * NUM_ELEM;
+static uint32_t data_dst_2 = (SDRAM_BASE) + 32 * NUM_ELEM;
+static uint32_t data_dst_3 = (SDRAM_BASE) + 64 * NUM_ELEM;
 
 void init_data ()
 {
@@ -58,16 +58,10 @@ void check_data ()
     uint32_t i = 0;
     for (i = 0; i < NUM_ELEM; i++)
     {
-        /*
       TEST_ASSERT(ioread32(data_dst_0 + 4*i) == 0xAAAAAAAA + i, "ASSERT: data_dst_0 is corrupted");
       TEST_ASSERT(ioread32(data_dst_1 + 4*i) == 0xBBBBBBBB + 2*i, "ASSERT: data_dst_1 is corrupted");
       TEST_ASSERT(ioread32(data_dst_2 + 4*i) == 0xCCCCCCCC + 3*i, "ASSERT: data_dst_2 is corrupted");
       TEST_ASSERT(ioread32(data_dst_3 + 4*i) == 0xDDDDDDDD + 4*i, "ASSERT: data_dst_3 is corrupted");
-      */
-        rumboot_printf("DST0(%x) = %x\n", i, ioread32(data_dst_0 + 4*i));
-        rumboot_printf("DST1(%x) = %x\n", i, ioread32(data_dst_1 + 4*i));
-        rumboot_printf("DST2(%x) = %x\n", i, ioread32(data_dst_2 + 4*i));
-        rumboot_printf("DST3(%x) = %x\n", i, ioread32(data_dst_3 + 4*i));
     }
 }
 
@@ -145,7 +139,7 @@ int main (void)
     dma2plb6_mcpy(&dma_info3);
 
     rumboot_printf ("Wait DMA...\n");
-    if (wait_dma2plb6_mcpy(&dma_info0, &status0))
+   if (wait_dma2plb6_mcpy(&dma_info0, &status0))
     {
         rumboot_printf ("DMA channel0 completed...\n");
         if (wait_dma2plb6_mcpy(&dma_info1, &status1))
