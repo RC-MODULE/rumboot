@@ -29,6 +29,10 @@
 #define INIT_ERROR              TEST_ERROR
 #define NUMBER_OF_BANKS         6
 #define IRR_RST_ALL             0x0001FFFF
+#define EMI_RFC_RP_DIV_1        0b11110011110011
+#define EMI_RFC_RP_DIV_2        0b01111001111001
+#define EMI_RFC_RP_MASK         0x8FFF
+#define EMI_RFC_TRFC_MASK       0x0007
 #define IMR_UNMASK_ALL          IRR_RST_ALL
 #define IRQ_FLAGS               (RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH)
 #define EMI_BITS_D0_D7          EMI_WECR_BWE0_i
@@ -45,15 +49,24 @@
 
 /* Config */
 /*                      ENABLED BANK -> |0|1|2|3|4|5| */
-#define ENABLED_EM_BANKS        EMBANKS( 1,0,1,1,0,0 )
+#define ENABLED_EM_BANKS        EMBANKS( 1,1,1,1,1,1 )
 #define CHECK_OFFSET            0x00000100
-#define CHECK_CONST             0xF00D4BEE
+#define CHECK_OFFSET8           (CHECK_OFFSET + ((2 * 4) + 3))
+#define CHECK_OFFSET16          (CHECK_OFFSET + ((3 * 4) + 2))
+#define CHECK_OFFSET32          CHECK_OFFSET
+#define CHECK_OFFSET64          (CHECK_OFFSET + ((4 * 4) + 2))
+#define CHECK_CONST8            0xE5
+#define CHECK_CONST16           0xCAFE
+#define CHECK_CONST32           0xF00D4BEE
+#define CHECK_CONST64           0xDEADCAFE4BADBABEULL
+#define CHECK_CONST             CHECK_CONST32
 #define CHECK_ECC_CODE          0x10
 #define MK_ERR_1                0x0001
 #define MK_ERR_2                0x1100
 
 /* Other macros */
 #define CHECKLIST_TERMINATOR    {NULL,NULL}
+#define CF_ARGS                 ckinfo,bank
 
 /* Function and block definition macros */
 #define BIT(N)                  (1 << (N))
@@ -61,6 +74,8 @@
 #define EMI_READ(ADDR)          dcr_read (EMIA(ADDR))
 #define EMI_WRITE(ADDR,DATA)    dcr_write(EMIA(ADDR),(DATA))
 #define EMI_TYPE(BANK)          emi_get_bank_cfg_cached(bank)->ssx_cfg.BTYP
+#define MK_RFC(RP,TRFC)         ((((RP)   & 0x8FFF) << EMI_RFC_RP_i  ) |    \
+                                 (((TRFC) & 0x0007) << EMI_RFC_TRFC_i))
 #define MASK_ECNT(BANK)         (0xFF >> emi_ecnt_b[BANK])
 #define READ_ECNT(BANK)         ((EMI_READ(emi_ecnt[BANK])       \
                                     >> emi_ecnt_b[BANK]) & 0xFF)
@@ -68,7 +83,11 @@
 #define DOUBLE_ERR_FLAG(BANK)   (BIT(((BANK) << 1) + 1))
 #define ECC_ON(BANK)            EMI_WRITE(EMI_HSTSR, EMI_READ(EMI_HSTSR) |  (1 << (BANK)));
 #define ECC_OFF(BANK)           EMI_WRITE(EMI_HSTSR, EMI_READ(EMI_HSTSR) & ~(1 << (BANK)));
-#define CHECK_ADDR(BANK)        (emi_bank_bases[BANK] + CHECK_OFFSET)
+#define CHECK_ADDR8(BANK)       (emi_bank_bases[BANK] + CHECK_OFFSET8)
+#define CHECK_ADDR16(BANK)      (emi_bank_bases[BANK] + CHECK_OFFSET16)
+#define CHECK_ADDR32(BANK)      (emi_bank_bases[BANK] + CHECK_OFFSET32)
+#define CHECK_ADDR64(BANK)      (emi_bank_bases[BANK] + CHECK_OFFSET64)
+#define CHECK_ADDR(BANK)        CHECK_ADDR32(BANK)
 #define CHECK_FUNC(NAME)        check__ ## NAME
 #define INIT_FUNC(NAME)         init__ ## NAME
 #define CHECK_ITEM(NAME,DESC)   {CHECK_FUNC(NAME),DESC}
@@ -141,9 +160,9 @@ static volatile const emi_access_api emi_api_list[8] =
 static const char *btyp_descr[8] =
     {
 /*       0           1           2           3          */
-        "SRAM",     "NOR",      "SSRAM",    "UNKNOWN",
+        "SRAM",     "NOR",      "SSRAM",    "UNKNOWN3",
 /*       4           5           6           7          */
-        "PIPELINE", "UNKNOWN",  "SDRAM",    "UNKNOWN"
+        "PIPELINE", "UNKNOWN5", "SDRAM",    "UNKNOWN7"
     };
 
 int is_irq(void)
@@ -218,6 +237,10 @@ DEFINE_CHECK(error_counter);
 DEFINE_CHECK(single_interrupts);
 DEFINE_CHECK(double_interrupts);
 
+DEFINE_CHECK(hstsr_ecc_on_nor);
+DEFINE_CHECK(hstsr_ecc_off_nor);
+
+
 /* Checklist. Put your tests here. */
 BEGIN_TESTS(tests)
     CHECK_ITEM(rfc,                     "regeneration configure"    ),
@@ -230,13 +253,93 @@ END_TESTS;
 
 DEFINE_CHECK(rfc)
 {
+    uint32_t  rfc_saved = 0,
+              cnt       = 0,
+              result    = TEST_OK,
+              status    = TEST_OK;
+    uint32_t *rfcp      = NULL;
+    volatile
+    uint8_t   readed8   = 0;
+    volatile
+    uint16_t  readed16  = 0;
+    volatile
+    uint32_t  readed32  = 0;
+    volatile
+    uint64_t  readed64  = 0;
+    static
+    uint32_t rfc[] =
+    {
+        4,
+        MK_RFC(EMI_RFC_RP_DIV_1,TRFC_6 ),
+        MK_RFC(EMI_RFC_RP_DIV_1,TRFC_13),
+        MK_RFC(EMI_RFC_RP_DIV_2,TRFC_6 ),
+        MK_RFC(EMI_RFC_RP_DIV_2,TRFC_13)
+    };
+
     if(EMI_TYPE(bank) != BTYP_SDRAM)
     {
         rumboot_printf("Bank %d is not SDRAM. Check skipped.\n", bank);
         return TEST_OK;
     }
-    rumboot_putstring("Check is not implemented!\n");
-    return TEST_OK;
+
+    /* Force bank switch */
+    readed32 = ioread32(CHECK_ADDR(bank));
+
+    for(rfcp = rfc+1; cnt < rfc[0]; rfcp++,cnt++)
+    {
+        rumboot_printf("Check SDRAM: RP=0x%X, TRFC=0x%X\n...\n",
+                (*rfcp >> EMI_RFC_RP_i  ) & EMI_RFC_RP_MASK,
+                (*rfcp >> EMI_RFC_TRFC_i) & EMI_RFC_TRFC_MASK);
+        EMI_WRITE(EMI_RFC, *rfcp);
+
+        /* 8 bits */
+        rumboot_putstring("8 bits...\n");
+        iowrite8(CHECK_CONST8, CHECK_ADDR8(bank));
+        msync();
+        readed8 = ioread8(CHECK_ADDR8(bank));
+        TEST_ASSERT(result = (readed8 == CHECK_CONST8),
+                "EMI_SDRAM: Write/read 8 bits failed.");
+        status |= !result;
+        /* ------ */
+
+        /* 16 bits */
+        rumboot_putstring("16 bits...\n");
+        iowrite16(CHECK_CONST16, CHECK_ADDR16(bank));
+        msync();
+        readed16 = ioread16(CHECK_ADDR16(bank));
+        TEST_ASSERT(result = (readed16 == CHECK_CONST16),
+                "EMI_SDRAM: Write/read 16 bits failed.");
+        status |= !result;
+        /* ------- */
+
+        /* 32 bits */
+        rumboot_putstring("32 bits...\n");
+        iowrite32(CHECK_CONST32, CHECK_ADDR32(bank));
+        msync();
+        readed32 = ioread32(CHECK_ADDR32(bank));
+        TEST_ASSERT(result = (readed32 == CHECK_CONST32),
+                "EMI_SDRAM: Write/read 32 bits failed.");
+        status |= !result;
+        /* ------- */
+
+        /* 64 bits */
+        rumboot_putstring("64 bits...\n");
+        iowrite64(CHECK_CONST64, CHECK_ADDR64(bank));
+        msync();
+        readed64 = ioread64(CHECK_ADDR64(bank));
+        TEST_ASSERT(result = (readed64 == CHECK_CONST64),
+                "EMI_SDRAM: Write/read 64 bits failed.");
+        status |= !result;
+        /* ------- */
+
+        rumboot_putstring("Done.\n");
+    }
+
+    rfc_saved = EMI_READ(EMI_RFC);
+    rumboot_putstring("Check SDRAM complete.\n");
+
+    EMI_WRITE(EMI_RFC, rfc_saved);
+    return status;
 }
 
 DEFINE_CHECK(hstsr_ecc_on)
@@ -246,11 +349,14 @@ DEFINE_CHECK(hstsr_ecc_on)
              status = TEST_OK;
     volatile
     uint32_t readed = 0;
+    volatile
+    uint32_t tmp    = 0;
     volatile const emi_access_api *api = &emi_api_list[EMI_TYPE(bank)];
+    tmp ^= tmp; /* Prevent compiler warning */
     if(EMI_TYPE(bank) == BTYP_NOR)
     {
-        rumboot_printf("NOR is not supported. Check skipped.\n", bank);
-        return TEST_OK;
+        rumboot_printf("Using alternative check method for NOR RAM.\n", bank);
+        return CHECK_FUNC(hstsr_ecc_on_nor)(CF_ARGS);
     }
     /* Force bank switch */
     readed = api->r(CHECK_ADDR(bank));
@@ -266,6 +372,7 @@ DEFINE_CHECK(hstsr_ecc_on)
             CHECK_ADDR(bank), CHECK_CONST);
     api->w(CHECK_CONST, CHECK_ADDR(bank));
     msync();
+    tmp = EMI_READ(EMI_WECR);
     rumboot_printf("Reading at 0x%X...\n", CHECK_ADDR(bank));
     readed = api->r(CHECK_ADDR(bank));
     rumboot_printf("READED: 0x%X after regular write.\n", readed);
@@ -285,9 +392,11 @@ DEFINE_CHECK(hstsr_ecc_on)
     clear_all_irqs();
     api->w(CHECK_CONST ^ MK_ERR_1, CHECK_ADDR(bank));
     msync();
+    tmp = EMI_READ(EMI_WECR);
     EMI_WRITE(EMI_WECR, EMI_READ(EMI_WECR) | BIT(EMI_BITS_D24_D31));
     api->w(CHECK_CONST, CHECK_ADDR(bank));
     msync();
+    tmp = EMI_READ(EMI_WECR);
     EMI_WRITE(EMI_WECR, 0);
     readed = api->r(CHECK_ADDR(bank));
     rumboot_printf("READED: 0x%X after single error.\n", readed);
@@ -313,9 +422,11 @@ DEFINE_CHECK(hstsr_ecc_on)
     rumboot_putstring("Third stage: Make double error...\n");
     api->w(CHECK_CONST ^ MK_ERR_2, CHECK_ADDR(bank));
     msync();
+    tmp = EMI_READ(EMI_WECR);
     EMI_WRITE(EMI_WECR, EMI_READ(EMI_WECR) | BIT(EMI_BITS_D16_D23));
     api->w(CHECK_CONST, CHECK_ADDR(bank));
     msync();
+    tmp = EMI_READ(EMI_WECR);
     EMI_WRITE(EMI_WECR, 0);
     readed = api->r(CHECK_ADDR(bank));
     rumboot_printf("READED: 0x%X after double error.\n", readed);
@@ -347,11 +458,14 @@ DEFINE_CHECK(hstsr_ecc_off)
              status = TEST_OK;
     volatile
     uint32_t readed = 0;
+    volatile
+    uint32_t tmp    = 0;
     volatile const emi_access_api *api = &emi_api_list[EMI_TYPE(bank)];
+    tmp ^= tmp; /* Prevent compiler warning */
     if(EMI_TYPE(bank) == BTYP_NOR)
     {
-        rumboot_printf("NOR is not supported. Check skipped.\n", bank);
-        return TEST_OK;
+        rumboot_printf("Using alternative check method for NOR RAM.\n", bank);
+        return CHECK_FUNC(hstsr_ecc_off_nor)(CF_ARGS);
     }
     /* Force bank switch */
     readed = api->r(CHECK_ADDR(bank));
@@ -367,6 +481,7 @@ DEFINE_CHECK(hstsr_ecc_off)
             CHECK_ADDR(bank), CHECK_CONST);
     api->w(CHECK_CONST, CHECK_ADDR(bank));
     msync();
+    tmp = EMI_READ(EMI_WECR);
     rumboot_printf("Reading at 0x%X...\n", CHECK_ADDR(bank));
     readed = api->r(CHECK_ADDR(bank));
     rumboot_printf("READED: 0x%X after regular write.\n", readed);
@@ -385,11 +500,13 @@ DEFINE_CHECK(hstsr_ecc_off)
     /* Make single error */
     rumboot_putstring("Second stage: Make single error...\n");
     api->w(CHECK_CONST ^ MK_ERR_1, CHECK_ADDR(bank));
+    msync();
+    tmp = EMI_READ(EMI_WECR);
     EMI_WRITE(EMI_WECR, EMI_READ(EMI_WECR) | BIT(EMI_BITS_D24_D31));
-    msync();
     api->w(CHECK_CONST, CHECK_ADDR(bank));
-    EMI_WRITE(EMI_WECR, 0);
     msync();
+    tmp = EMI_READ(EMI_WECR);
+    EMI_WRITE(EMI_WECR, 0);
     readed = api->r(CHECK_ADDR(bank));
     rumboot_printf("READED: 0x%X after single error.\n", readed);
     TEST_ASSERT(result = (readed == (CHECK_CONST ^ MK_ERR_1)),
@@ -413,11 +530,13 @@ DEFINE_CHECK(hstsr_ecc_off)
     /* Make double error */
     rumboot_putstring("Third stage: Make double error...\n");
     api->w(CHECK_CONST ^ MK_ERR_2, CHECK_ADDR(bank));
+    msync();
+    tmp = EMI_READ(EMI_WECR);
     EMI_WRITE(EMI_WECR, EMI_READ(EMI_WECR) | BIT(EMI_BITS_D16_D23));
-    msync();
     api->w(CHECK_CONST, CHECK_ADDR(bank));
-    EMI_WRITE(EMI_WECR, 0);
     msync();
+    tmp = EMI_READ(EMI_WECR);
+    EMI_WRITE(EMI_WECR, 0);
     readed = api->r(CHECK_ADDR(bank));
     rumboot_printf("READED: 0x%X after double error.\n", readed);
     TEST_ASSERT(result = (readed == (CHECK_CONST ^ MK_ERR_2)),
@@ -439,6 +558,18 @@ DEFINE_CHECK(hstsr_ecc_off)
 
     EMI_WRITE(EMI_HSTSR, hstsr);
     return status;
+}
+
+DEFINE_CHECK(hstsr_ecc_on_nor)
+{
+    rumboot_putstring("Check of NOR RAM is not implemented!\n");
+    return TEST_OK;
+}
+
+DEFINE_CHECK(hstsr_ecc_off_nor)
+{
+    rumboot_putstring("Check of NOR RAM is not implemented!\n");
+    return TEST_OK;
 }
 
 DEFINE_CHECK(error_counter)
@@ -492,7 +623,7 @@ int main(void)
         rumboot_printf(" ************************ \n");
     }
 
-    rumboot_putstring(!test_status ? "TEST OK!\n" : "TEST ERRER!\n");
+    rumboot_putstring(!test_status ? "TEST OK!\n" : "TEST ERROR!\n");
 
     return test_status;
 }
