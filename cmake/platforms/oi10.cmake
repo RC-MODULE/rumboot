@@ -52,7 +52,7 @@ rumboot_add_configuration (
     FILES ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/startup.S ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c
     CFLAGS -DRUMBOOT_PRINTF_ACCEL
     BOOTROM bootrom-stub
-    FEATURES LUA COVERAGE
+    FEATURES LUA COVERAGE PACKIMAGE
     LOAD IM0BIN SELF
 )
 
