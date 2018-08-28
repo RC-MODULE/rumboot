@@ -27,7 +27,6 @@
 #include <platform/regs/regs_mclfir.h>
 #include <platform/interrupts.h>
 
-
 #define NE_ADDR_SRAM0 0x1000000
 
 uint32_t const EVENT_ERR_ADR_RS_PTY       = TEST_EVENT_CODE_MIN + 0;
@@ -44,12 +43,12 @@ uint32_t const EVENT_ERR_RD_DATA_PAR      = TEST_EVENT_CODE_MIN + 10;
 uint32_t const EVENT_REL_RD_DATA_PAR      = TEST_EVENT_CODE_MIN + 11;
 
 bool     volatile  IRQ_EXPECT = false;
-uint32_t volatile  emi_irqstat_reg = 0x00;
+uint32_t volatile  rel_event_code = 0x00;
 
 
 static void trace_emi_irq_regs ()
 {
-    rumboot_printf("EMI_IRR = 0x%x\n", emi_irqstat_reg);
+    rumboot_printf("EMI_IRR = 0x%x\n", dcr_read (DCR_EM2_EMI_BASE + EMI_IRR));
     rumboot_printf("EMI_RREQADR = 0x%x\n", dcr_read (DCR_EM2_EMI_BASE + EMI_RREQADR));
     rumboot_printf("EMI_WREQADR = 0x%x\n", dcr_read (DCR_EM2_EMI_BASE + EMI_WREQADR));
     rumboot_printf("EMI_WDADR = 0x%x\n",   dcr_read (DCR_EM2_EMI_BASE + EMI_WDADR));
@@ -57,36 +56,42 @@ static void trace_emi_irq_regs ()
     rumboot_printf("MCLFIR_ERR1 = 0x%x\n", dcr_read (DCR_EM2_MCLFIR_BASE + MCLFIR_MC_ERR1));
 }
 
-void wait_irq ()
+void release_signal ()
 {
-    uint32_t i = 0, timeout = 1000;
-    while (IRQ_EXPECT && (i < timeout)) i++;
-    //TEST_ASSERT (i < timeout, "ERRORL: wait_irq is timeout");
-    if (i >= timeout)
-    {
-      trace_emi_irq_regs ();
-      TEST_ASSERT (0, "ERRORL: wait_irq is timeout");
-    }
+    rumboot_printf("Release\n");
+    test_event(rel_event_code);
 }
 
+void emi_irq_unmask ()
+{
+    dcr_write(DCR_EM2_EMI_BASE + EMI_IMR, 0x1FFFF);
+}
 
-//static void sram0_handler ()
-//{
-//    rumboot_printf("sram0_handler\n");
-//    TEST_ASSERT (IRQ_EXPECT, "Not expected interrupt (SRAM0)");
-//    IRQ_EXPECT = false;
-//    emi_irqstat_reg = dcr_read (DCR_EM2_EMI_BASE + EMI_IRR);
-//    trace_emi_irq_regs ();
-//}
+void emi_irq_clear ()
+{
+    rumboot_printf("irq_clear\n");
+    release_signal();
+    iowrite32(0x00, SRAM0_BASE);
+    TEST_ASSERT (ioread32(SRAM0_BASE) == 0,"TEST_ERROR: write_data != read_data (emi_irq_clear)");
+    dcr_write(DCR_EM2_EMI_BASE + EMI_IRR, 0x00);
+    TEST_ASSERT(dcr_read (DCR_EM2_EMI_BASE + EMI_IRR) == 0x00, "TEST_ERROR: EMI_IRR != 0, irq not clear ");
+}
+
+void wait_irq ()
+{
+    uint32_t i = 0, timeout = 100;
+    while (IRQ_EXPECT && (i < timeout)) i++;
+    if (i >= timeout)
+      TEST_ASSERT (0, "ERROR: wait_irq is timeout");
+}
 
 static void sram_handler ()
 {
     rumboot_printf("sram_handler\n");
     TEST_ASSERT (IRQ_EXPECT, "Not expected interrupt (SRAM)");
     IRQ_EXPECT = false;
-    emi_irqstat_reg = dcr_read (DCR_EM2_EMI_BASE + EMI_IRR);
     trace_emi_irq_regs ();
-    dcr_write(DCR_EM2_EMI_BASE + EMI_IRR_RST, 0x00000);
+    emi_irq_clear ();
 }
 
 static void emi_cntr_0_handler ()
@@ -94,9 +99,8 @@ static void emi_cntr_0_handler ()
     rumboot_printf("emi_cntr_0_handler\n");
     TEST_ASSERT (IRQ_EXPECT, "Not expected interrupt (EMI_CNTR_0)");
     IRQ_EXPECT = false;
-    emi_irqstat_reg = dcr_read (DCR_EM2_EMI_BASE + EMI_IRR);
     trace_emi_irq_regs ();
-    dcr_write(DCR_EM2_EMI_BASE + EMI_IRR_RST, 0x00000);
+    emi_irq_clear ();
 }
 
 static void emi_cntr_1_handler ()
@@ -104,9 +108,8 @@ static void emi_cntr_1_handler ()
     rumboot_printf("emi_cntr_1_handler\n");
     TEST_ASSERT (IRQ_EXPECT, "Not expected interrupt (EMI_CNTR_1)");
     IRQ_EXPECT = false;
-    emi_irqstat_reg = dcr_read (DCR_EM2_EMI_BASE + EMI_IRR);
     trace_emi_irq_regs ();
-    dcr_write(DCR_EM2_EMI_BASE + EMI_IRR_RST, 0x00000);
+    emi_irq_clear ();
 }
 
 static void emi_cntr_2_handler ()
@@ -114,36 +117,28 @@ static void emi_cntr_2_handler ()
     rumboot_printf("emi_cntr_2_handler\n");
     TEST_ASSERT (IRQ_EXPECT, "Not expected interrupt (EMI_CNTR_2)");
     IRQ_EXPECT = false;
-    emi_irqstat_reg = dcr_read (DCR_EM2_EMI_BASE + EMI_IRR);
     trace_emi_irq_regs ();
-    dcr_write(DCR_EM2_EMI_BASE + EMI_IRR_RST, 0x00000);
+    emi_irq_clear ();
 }
 
 static void emi_cntr_3_handler ()
 {
     rumboot_printf("emi_cntr_3_handler\n");
     TEST_ASSERT (IRQ_EXPECT, "Not expected interrupt (EMI_CNTR_3)");
-    //IRQ_EXPECT = false;
-    emi_irqstat_reg = dcr_read (DCR_EM2_EMI_BASE + EMI_IRR);
+    IRQ_EXPECT = false;
     trace_emi_irq_regs ();
-    dcr_write(DCR_EM2_EMI_BASE + EMI_IRR_RST, 0x00000);
-    rumboot_printf("DCR_EM2_EMI_BASE + EMI_IRR = 0x%x\n", dcr_read(DCR_EM2_EMI_BASE + EMI_IRR));
+    emi_irq_clear ();
 }
-
-
 
 int main ()
 {
     test_event_send_test_id("test_oi10_em2_110");
 
     emi_init(DCR_EM2_EMI_BASE);
-    dcr_write(DCR_EM2_EMI_BASE + EMI_IRR, 0x00000); //Clear all EMI interrupts
-    dcr_write(DCR_EM2_EMI_BASE + EMI_IMR, 0x1FFFF); //Unmask all EMI interrupts
-
+    emi_irq_unmask ();
 
     rumboot_irq_cli();
     struct rumboot_irq_entry *tbl = rumboot_irq_create( NULL );
-//    rumboot_irq_set_handler( tbl, L2C0_MCHKOUT, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, sram0_handler, ( void* )0 );
     rumboot_irq_set_handler( tbl, SRAM_INT, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, sram_handler, ( void* )0 );
     rumboot_irq_set_handler( tbl, EMI_CNTR_INT_0, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, emi_cntr_0_handler, ( void* )0 );
     rumboot_irq_set_handler( tbl, EMI_CNTR_INT_1, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, emi_cntr_1_handler, ( void* )0 );
@@ -151,14 +146,12 @@ int main ()
     rumboot_irq_set_handler( tbl, EMI_CNTR_INT_3, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, emi_cntr_3_handler, ( void* )0 );
     /* Activate the table */
     rumboot_irq_table_activate( tbl );
-//    rumboot_irq_enable( L2C0_MCHKOUT );
     rumboot_irq_enable( SRAM_INT );
     rumboot_irq_enable( EMI_CNTR_INT_0 );
     rumboot_irq_enable( EMI_CNTR_INT_1 );
     rumboot_irq_enable( EMI_CNTR_INT_2 );
     rumboot_irq_enable( EMI_CNTR_INT_3 );
     rumboot_irq_sei();
-
 
 //*******************************************************************************************************
     rumboot_printf ("10.1 Check write/read in non-existent address\n");
@@ -168,16 +161,17 @@ int main ()
 
     iowrite32 (0x00, SRAM0_BASE);
     iowrite32 (test_data, ne_addr);
+    msync();
+    trace_emi_irq_regs ();
     TEST_ASSERT (ioread32(SRAM0_BASE)    == test_data, "Not expected EMI behavior");
     TEST_ASSERT (ioread32(NE_ADDR_SRAM0) == test_data, "Not expected EMI behavior");
     rumboot_printf ("Done! Behavior of the EMI is correct\n");
 //*******************************************************************************************************
 
-
 //*******************************************************************************************************
     rumboot_printf ("10.2 Error in M_ADR_RS_PTY\n");
-
-    //iowrite32(0xFFFFFFFF, SRAM0_BASE + 0xC); //Init memory
+    iowrite32(0x00, SRAM0_BASE + 0xC); //Init memory
+    rel_event_code = EVENT_REL_ADR_RS_PTY;
 
     rumboot_printf("Inject err in ADR_RS_PTY\n");
     test_event(EVENT_ERR_ADR_RS_PTY);
@@ -188,22 +182,22 @@ int main ()
     msync();
     wait_irq();
 
+    msync(); dci(2);
+    rumboot_printf("Inject err in ADR_RS_PTY\n");
+    test_event(EVENT_ERR_ADR_RS_PTY);
+
     rumboot_printf("Read transaction\n");
     IRQ_EXPECT = true;
     read_data = ioread32(SRAM0_BASE + 0xC);
     rumboot_printf("read data = %x\n", read_data);
-    TEST_ASSERT(read_data != test_data, "Unexpected data has been read from SRAM0.");
-
     msync();
     wait_irq();
-
-    rumboot_printf("Release ADR_RS_PTY\n");
-    test_event(EVENT_REL_ADR_RS_PTY);
 //*******************************************************************************************************
-
 
 //*******************************************************************************************************
     rumboot_printf ("10.3 Error in M_BE_PTY\n");
+    iowrite32(0x00, SRAM0_BASE + 0xC); //Init memory
+    rel_event_code = EVENT_REL_BE_PTY;
 
     rumboot_printf("Inject err in BE_PTY\n");
     test_event(EVENT_ERR_BE_PTY);
@@ -214,21 +208,21 @@ int main ()
     msync();
     wait_irq();
 
+    rumboot_printf("Inject err in BE_PTY\n");
+    test_event(EVENT_ERR_BE_PTY);
+
     rumboot_printf("Read transaction\n");
     IRQ_EXPECT = true;
     read_data = ioread32(SRAM0_BASE + 0xC);
     rumboot_printf("read data = %x\n", read_data);
-    TEST_ASSERT(read_data != test_data, "Unexpected data has been read from SRAM0.");
     msync();
     wait_irq();
-
-    rumboot_printf("Release BE_PTY\n");
-    test_event(EVENT_REL_BE_PTY);
 //*******************************************************************************************************
-
 
 //*******************************************************************************************************
     rumboot_printf ("10.4 Error in M_CMD_PTY\n");
+    iowrite32(0x00, SRAM0_BASE + 0xC); //Init memory
+    rel_event_code = EVENT_REL_CMD_PTY;
 
     rumboot_printf("Inject err in CMD_PTY\n");
     test_event(EVENT_ERR_CMD_PTY);
@@ -239,21 +233,21 @@ int main ()
     msync();
     wait_irq();
 
+    rumboot_printf("Inject err in CMD_PTY\n");
+    test_event(EVENT_ERR_CMD_PTY);
+
     rumboot_printf("Read transaction\n");
     IRQ_EXPECT = true;
     read_data = ioread32(SRAM0_BASE + 0xC);
     rumboot_printf("read data = %x\n", read_data);
-    TEST_ASSERT(read_data != test_data, "Unexpected data has been read from SRAM0.");
     msync();
     wait_irq();
-
-    rumboot_printf("Release CMD_PTY\n");
-    test_event(EVENT_REL_CMD_PTY);
 //*******************************************************************************************************
-
 
 //*******************************************************************************************************
     rumboot_printf ("10.5 Error in M_COMP_CMD_PTY\n");
+    iowrite32(0x00, SRAM0_BASE + 0xC); //Init memory
+    rel_event_code = EVENT_REL_COMP_CMD_PTY;
 
     rumboot_printf("Inject err in COMP_CMD_PTY\n");
     test_event(EVENT_ERR_COMP_CMD_PTY);
@@ -264,21 +258,23 @@ int main ()
     msync();
     wait_irq();
 
+    rumboot_printf("Inject err in COMP_CMD_PTY\n");
+    test_event(EVENT_ERR_COMP_CMD_PTY);
+
     rumboot_printf("Read transaction\n");
     IRQ_EXPECT = true;
     read_data = ioread32(SRAM0_BASE + 0xC);
     rumboot_printf("read data = %x\n", read_data);
-    TEST_ASSERT(read_data != test_data, "Unexpected data has been read from SRAM0.");
+    //TEST_ASSERT(read_data != test_data, "Unexpected data has been read from SRAM0.");
     msync();
     wait_irq();
 
-    rumboot_printf("Release COMP_CMD_PTY\n");
-    test_event(EVENT_REL_COMP_CMD_PTY);
 //*******************************************************************************************************
-
 
 //*******************************************************************************************************
     rumboot_printf ("10.6 Error in M_WR_DATA_PAR\n");
+    iowrite32(0x00, SRAM0_BASE + 0xC); //Init memory
+    rel_event_code = EVENT_REL_WR_DATA_PAR;
 
     rumboot_printf("Inject err in WR_DATA_PAR\n");
     test_event(EVENT_ERR_WR_DATA_PAR);
@@ -288,14 +284,12 @@ int main ()
     iowrite32(test_data, SRAM0_BASE + 0xC);
     msync();
     wait_irq();
-
-    rumboot_printf("Release WR_DATA_PAR\n");
-    test_event(EVENT_REL_WR_DATA_PAR);
 //*******************************************************************************************************
-
 
 //*******************************************************************************************************
     rumboot_printf ("10.7 Error in M_RD_DATA_PAR\n");
+    iowrite32(test_data, SRAM0_BASE + 0xC); //Init memory
+    rel_event_code = EVENT_REL_RD_DATA_PAR;
 
     rumboot_printf("Inject err in RD_DATA_PAR\n");
     test_event(EVENT_ERR_RD_DATA_PAR);
@@ -304,15 +298,10 @@ int main ()
     IRQ_EXPECT = true;
     read_data = ioread32(SRAM0_BASE + 0xC);
     rumboot_printf("read data = %x\n", read_data);
-    TEST_ASSERT(read_data != test_data, "Unexpected data has been read from SRAM0.");
     msync();
     wait_irq();
-
-    rumboot_printf("Release RD_DATA_PAR\n");
-    test_event(EVENT_REL_RD_DATA_PAR);
 //*******************************************************************************************************
 
-
-    rumboot_printf ("TEST OK");
+    rumboot_printf ("TEST OK\n");
     return 0;
 }
