@@ -25,26 +25,33 @@
 #include <rumboot/irq.h>
 #include <rumboot/printf.h>
 
-#include <ppc_476fp_lib_c.h>
+#include <platform/arch/ppc/ppc_476fp_lib_c.h>
 #include <platform/common_macros/common_macros.h>
 #include <platform/test_event_codes.h>
 #include <platform/test_assert.h>
 #include <rumboot/regpoker.h>
 #include <rumboot/printf.h>
 #include <rumboot/io.h>
-#include <irq_macros.h>
+#include <arch/irq_macros.h>
 #include <platform/devices.h>
-#include <macros.h> //dcr_write/dcr_read
-#include <test_macro.h>
-#include <devices.h>
-#include <test_oi10_ctrl_004.h>
+#include <rumboot/macros.h> //dcr_write/dcr_read
+#include <platform/arch/ppc/test_macro.h>
+//#include <devices.h>
+#include <platform/interrupts.h>
 
-#include <regs/regs_mpic128.h>
-#include <mpic128.h>
+#include <platform/regs/regs_mpic128.h>
+#include <platform/devices/mpic128.h>
 
+#include <regs/regs_sp804.h>
+
+//#define TIM1_INTERRUPT_NUMBER   40
+//#define TIM2_INTERRUPT_NUMBER   41
+//#define TIMER_INT_TIMEOUT       60
+static volatile uint32_t IRQ = 0;
 
 static uint32_t volatile TIMINT1_HANDLED = 0;
 static uint32_t volatile TIMINT2_HANDLED = 0;
+
 static int32_t check_array32[] = {
         0xFFFFFFFF,
         0x00000000,
@@ -60,24 +67,101 @@ static int32_t check_array32[] = {
         0x55555555
 };
 
-
-void NON_CR_INTERRUPT_HANDLER(void)
+static uint32_t check_timer_default_ro_val( uint32_t base_addr )
 {
-//    trace_msg("NON_CR_INTERRUPT_HANDLER\n");
+    rumboot_printf("Check the default values of the registers:");
+
+    struct regpoker_checker check_default_array[] = {
+          {   "TimerPeriphID0",   REGPOKER_READ32,    DIT_REG_PERIPHID0,      0xFE0, 0xff   }, /* check only first of 256 */
+          {   "TimerPeriphID1",   REGPOKER_READ32,    DIT_REG_PERIPHID1,      0xFE4, 0xff   },
+          {   "TimerPeriphID2",   REGPOKER_READ32,    DIT_REG_PERIPHID2,      0xFE8, 0xff   },
+          {   "TimerPeriphID3",   REGPOKER_READ32,    DIT_REG_PERIPHID3,      0x00,  0xff   },
+          {   "TimerPCellID0",    REGPOKER_READ32,    DIT_REG_PCELLID0,       0x0D,  0xff   },
+          {   "TimerPCellID1",    REGPOKER_READ32,    DIT_REG_PCELLID1,       0xF0,  0xff   },
+          {   "TimerPCellID2",    REGPOKER_READ32,    DIT_REG_PCELLID2,       0x05,  0xff   },
+          {   "TimerPCellID3",    REGPOKER_READ32,    DIT_REG_PCELLID3,       0xB1,  0xff   },
+          { /* Sentinel */ }
+      };
+
+    if( rumboot_regpoker_check_array( check_default_array, base_addr ) == 0 ) {
+        rumboot_printf( " OK\n" );
+        return 0;
+    }
+
+    rumboot_printf( " ERROR\n" );
+    return 1;
+}
+
+static uint32_t check_timer_default_rw_val( uint32_t base_addr )
+{
+    rumboot_printf("Check the default values of the registers:");
+
+    struct regpoker_checker check_default_array[] = {
+          {   "Timer1Load",     REGPOKER_READ32,    DIT0_REG_LOAD0,          0x000,          0xff   },
+          {   "Timer1Value",    REGPOKER_READ32,    DIT0_REG_VALUE0,         0x04,           0xff   },
+          {   "Timer1Control",  REGPOKER_READ32,    DIT0_REG_CONTROL0,       0x08,           0xff   },
+          {   "Timer1IntClr",   REGPOKER_READ32,    DIT0_REG_INTCLR0,        0x0C,           0xff   },
+          {   "Timer1RIS",      REGPOKER_READ32,    DIT0_REG_RIS0,           0x10,           0xff   },
+          {   "Timer1MIS",      REGPOKER_READ32,    DIT0_REG_MIS0,           0x14,           0xff   },
+          {   "Timer1BGLoad",   REGPOKER_READ32,    DIT0_REG_BGLOAD0,        0x18,           0xff   },
+          {   "Timer2Load",     REGPOKER_READ32,    DIT0_REG_LOAD1,          0x20,           0xff   },
+          {   "Timer2Value",    REGPOKER_READ32,    DIT0_REG_VALUE1,         0x24,           0xff   },
+          {   "Timer2Control",  REGPOKER_READ32,    DIT0_REG_CONTROL1,       0x28,           0xff   },
+          {   "Timer2IntClr",   REGPOKER_READ32,    DIT0_REG_INTCLR1,        0x2C,           0xff   },
+          {   "Timer2RIS",      REGPOKER_READ32,    DIT0_REG_RIS1,           0x30,           0xff   },
+          {   "Timer2MIS",      REGPOKER_READ32,    DIT0_REG_MIS1,           0x34,           0xff   },
+          {   "Timer2BGLoad",   REGPOKER_READ32,    DIT0_REG_BGLOAD1,        0x38,           0xff   },
+          {   "TimerITCR",      REGPOKER_READ32,    DIT_REG_ITCR,            0xf0,           0xff   },
+          {   "TimerITOP",      REGPOKER_READ32,    DIT_REG_ITOP,            0xf04,          0xff   },
+          { }
+      };
+
+
+    if( rumboot_regpoker_check_array( check_default_array, base_addr ) == 0 )
+    {
+        rumboot_printf( "OK\n" );
+        return 0;
+    }
+
+    rumboot_printf( "ERROR\n" );
+    return 1;
+}
+
+static void handler( int irq, void *arg ) {
+    rumboot_printf( "IRQ arrived  \n" );
+    gpio_clear_edge_int( DIT_INT0, 0xFF );
+    gpio_clear_edge_int( DIT_INT1, 0xFF );
+    rumboot_printf( "Clear interrupts\n" );
+    IRQ = 1;
+}
+
+
+void check_timers_irq(void)
+{
+//    rumboot_putstring("NON_CR_INTERRUPT_HANDLER\n");
     //get interrupt source
-    uint32_t source_vector = mpic128_get_ncr_interrupt_vector( DCR_MPIC128_BASE, Processor0);// - clear interrupt by read NCIAR
+    //uint32_t source_vector = mpic128_get_ncr_interrupt_vector( DCR_MPIC128_BASE );// - clear interrupt by read NCIAR
+    IRQ = 0;
+    rumboot_irq_cli();
+    struct rumboot_irq_entry *tbl1 = rumboot_irq_create( NULL );
+    struct rumboot_irq_entry *tbl2 = rumboot_irq_create( NULL );
+
+   rumboot_irq_set_handler( tbl1, DIT_INT0, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler, ( void* )0 );
+   rumboot_irq_set_handler( tbl2, DIT_INT1, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler, ( void* )0 );
+
+
     if(source_vector == TIM1_INTERRUPT_NUMBER)
     {
         timer_stop(1);
         TIMINT1_HANDLED = 1;
-//        trace_msg("source_vector == TIM1_INTERRUPT_NUMBER\n");
+//        rumboot_putstring("source_vector == TIM1_INTERRUPT_NUMBER\n");
 //        trace_hex(TIMINT1_HANDLED);
     }
     else if(source_vector == TIM2_INTERRUPT_NUMBER)
     {
         timer_stop(2);
         TIMINT2_HANDLED = 1;
-//        trace_msg("source_vector == TIM2_INTERRUPT_NUMBER\n");
+//        rumboot_putstring("source_vector == TIM2_INTERRUPT_NUMBER\n");
 //        trace_hex(TIMINT2_HANDLED);
     }
 
@@ -94,8 +178,8 @@ void NON_CR_INTERRUPT_HANDLER(void)
 
 uint32_t wait_timint1_handled(){
     int t = 0;
-    while(!TIMINT1_HANDLED && (t++<TIMER_INT_TIMEOUT)){;}
-//    trace_msg("while(!TIMINT1_HANDLED && (t++<TIMER_INT_TIMEOUT))\n");
+    while(!TIMINT1_HANDLED && (t++ < TIMER_INT_TIMEOUT)){;}
+//    rumboot_putstring("while(!TIMINT1_HANDLED && (t++<TIMER_INT_TIMEOUT))\n");
 //    trace_hex(TIMINT1_HANDLED);
     return TIMINT1_HANDLED;
 }
@@ -103,7 +187,7 @@ uint32_t wait_timint1_handled(){
 uint32_t wait_timint2_handled(){
     int t = 0;
     while(!TIMINT2_HANDLED && ( t++ < TIMER_INT_TIMEOUT)){;}
-//    trace_msg("while(!TIMINT2_HANDLED && (t++<TIMER_INT_TIMEOUT))\n");
+//    rumboot_putstring("while(!TIMINT2_HANDLED && (t++<TIMER_INT_TIMEOUT))\n");
 //    trace_hex(TIMINT2_HANDLED);
     return TIMINT2_HANDLED;
 }
@@ -111,7 +195,7 @@ uint32_t wait_timint2_handled(){
 uint32_t check_timer_regs()
 {
     uint32_t i;
-    trace_msg("check_timer_regs\n");
+    rumboot_printf("check_timer_regs\n");
     COMPARE_VALUES( (timer_read_TIMER1LOAD(DCR_TIMERS_BASE)      &    TIMER1LOAD_MASK),      TIMER1LOAD_VALUE,       "check TIMER1LOAD failed");
     COMPARE_VALUES( (timer_read_TIMER1VALUE(DCR_TIMERS_BASE)     &    TIMER1VALUE_MASK),     TIMER1VALUE_VALUE,      "check TIMER1VALUE failed");
     COMPARE_VALUES( (timer_read_TIMER1CONTROL(DCR_TIMERS_BASE)   &    TIMER1CONTROL_MASK),   TIMER1CONTROL_VALUE,    "check TIMER1CONTROL failed");
@@ -149,7 +233,7 @@ uint32_t check_tcr()
      * set tim1 interrupt using ITC mode.
      * clear interrupt using ITC mode
      */
-    trace_msg("check_tcr\n");
+    rumboot_putstring("check_tcr\n");
     mpic128_reset( DCR_MPIC128_BASE );
     mpic128_pass_through_disable( DCR_MPIC128_BASE );
     //setup MPIC128 interrupt 36
@@ -173,7 +257,7 @@ uint32_t check_tcr()
     if(wait_timint1_handled() && wait_timint2_handled())
         return 1;
     else{
-        trace_msg("Timint1 and/or Timint2 are not handled\n");
+        rumboot_putstring("Timint1 and/or Timint2 are not handled\n");
         timer_itc_disable();
         timer_itc_set_output(0,0);
         return 0;
@@ -182,16 +266,20 @@ uint32_t check_tcr()
 
 uint32_t check_timint1_timint2()
 {
-    trace_msg("check_timint1_timint2\n");
+   rumboot_putstring("check_timint1_timint2\n");
    mpic128_reset( DCR_MPIC128_BASE );
    mpic128_pass_through_disable( DCR_MPIC128_BASE );
    //setup MPIC128 interrupt 36
-   mpic128_setup_ext_interrupt( DCR_MPIC128_BASE, TIM1_INTERRUPT_NUMBER,MPIC128_PRIOR_1,int_sense_level,int_pol_pos,Processor0);
-   mpic128_setup_ext_interrupt( DCR_MPIC128_BASE, TIM2_INTERRUPT_NUMBER,MPIC128_PRIOR_2,int_sense_level,int_pol_pos,Processor0);
+  // mpic128_setup_ext_interrupt( DCR_MPIC128_BASE, TIM1_INTERRUPT_NUMBER,MPIC128_PRIOR_1,int_sense_level,int_pol_pos,Processor0);
+ //  mpic128_setup_ext_interrupt( DCR_MPIC128_BASE, TIM2_INTERRUPT_NUMBER,MPIC128_PRIOR_2,int_sense_level,int_pol_pos,Processor0);
+   mpic128_setup_ext_interrupt( DCR_MPIC128_BASE, TIM1_INTERRUPT_NUMBER, int_sense_level);
+   mpic128_setup_ext_interrupt( DCR_MPIC128_BASE, TIM2_INTERRUPT_NUMBER, int_sense_level);
+
    SET_NONCR_INT_HANDLER(non_cr_interrupt_handler);
    ppc_noncr_int_enable();//MSR setup
    mpic128_set_interrupt_borders( DCR_MPIC128_BASE, 10, 5);//MCK, CR borders
-   mpic128_set_minimal_interrupt_priority_mask( DCR_MPIC128_BASE, Processor0, MPIC128_PRIOR_0);
+   //mpic128_set_minimal_interrupt_priority_mask( DCR_MPIC128_BASE, Processor0, MPIC128_PRIOR_0);
+   mpic128_set_minimal_interrupt_priority_mask( DCR_MPIC128_BASE );
    TIMINT1_HANDLED = 0;
    TIMINT2_HANDLED = 0;
    //mpic128 is ready for interrupt
