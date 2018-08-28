@@ -45,6 +45,9 @@ set INIT_BIN_START_ADDR=0xFFFF0000
 set BIN_START_ADDR=0x80000000
 set ASM_STEP=130000
 
+rm -f ${CMD_PATH}
+rm -f test_iss_data_gold.dmp
+
 echo "Run simulator"
 
 xterm -e ${ISS} ${ICF_PATH} & 
