@@ -19,6 +19,22 @@
 
 static emi_bank_cfg *bank_config_cache[6];
 
+uint8_t calc_hamming_ecc(uint32_t data)
+{
+    static const
+    uint32_t   hmat[7] = {HAMMING_MATRIX};
+    uint32_t   t,i,m,s; /* (t)emp, (i)ndex, (m)ask, (s)hift */
+    uint8_t    result;
+
+    for(result=0,i=0;i<7;i++)
+    {
+        for(m=0xFFFF,t=hmat[i]&data,s=16;s;s>>=1,m>>=s)
+            t = (t & m) ^ (t >> s);
+        result |= t << i;
+    }
+    return result;
+}
+
 emi_bank_cfg *emi_get_bank_cfg_cached(emi_bank_num num_bank)
 {
     return bank_config_cache[num_bank];
