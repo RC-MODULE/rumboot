@@ -7,9 +7,9 @@
 #include <platform/arch/ppc/test_macro_asm.S.h>
 #include <platform/test_event_asm.h>
 #include <platform/trace.S.h>
-#include <platform/test_assert.h>
-*/#include <test_assert.S.h>
-#include <trace.S.h>
+#include <platform/test_assert.S.h>
+#include <platform/arch/ppc/ppc_476fp_timer_fields.h>
+
 
 .global main
 
@@ -162,8 +162,8 @@ check_debug_dbdr:
     isync
     mfspr       r3, SPR_DBDR
     load_const  r4, TB_RESULT_OK
-    cmpw        r3, r4
-    TEST_ASSERT(eq, cr0, "DBDR check failed");
+    cmpw        cr0, r3, r4
+    TEST_ASSERT(eq, cr0, "DBDR check failed")
 
     b test_ok
 
