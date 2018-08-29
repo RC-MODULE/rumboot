@@ -94,7 +94,7 @@ void dma2plb6_mcpy_coherency_required(dma2plb6_setup_info const * const setup_in
                 setup_info->striding_info.sbs << IBM_BIT_INDEX(32,31) | setup_info->striding_info.tbs << IBM_BIT_INDEX(32,15));
     }
     //clear CS[x] and RIx in SR
-    dcr_write(setup_info->base_addr + PLB6_DMA_SR,(1 << IBM_BIT_INDEX(32,RI0)) | (((1 << IBM_BIT_INDEX(32,CS)) << IBM_BIT_INDEX(4,channel0))));
+    dcr_write(setup_info->base_addr + PLB6_DMA_SR,(1 << IBM_BIT_INDEX(32,RI0)) | (((1 << IBM_BIT_INDEX(32,CS)) << IBM_BIT_INDEX(4,setup_info->channel))));
     uint32_t cr = 0;
     //int mode, int enable
     cr |= setup_info->int_mode << IBM_BIT_INDEX(32,CIM);
@@ -115,23 +115,23 @@ void dma2plb6_mcpy_coherency_required(dma2plb6_setup_info const * const setup_in
 
 void dma2plb6_mcpy_init(dma2plb6_setup_info const * const setup_info)
 {
-    dma2plb6_disable_channel(setup_info->base_addr,setup_info->channel);
+    dma2plb6_disable_channel(setup_info->base_addr, setup_info->channel);
 
-    dcr_write(get_addr(setup_info->channel,PLB6_DMA_SAH,setup_info->base_addr),(setup_info->source_adr >> 32));
-    dcr_write(get_addr(setup_info->channel,PLB6_DMA_SAL,setup_info->base_addr),setup_info->source_adr & 0xFFFFFFFF);
-    dcr_write(get_addr(setup_info->channel,PLB6_DMA_DAH,setup_info->base_addr),(setup_info->dest_adr >> 32));
-    dcr_write(get_addr(setup_info->channel,PLB6_DMA_DAL,setup_info->base_addr),setup_info->dest_adr & 0xFFFFFFFF);
+    dcr_write(get_addr(setup_info->channel, PLB6_DMA_SAH,setup_info->base_addr), (setup_info->source_adr >> 32));
+    dcr_write(get_addr(setup_info->channel, PLB6_DMA_SAL,setup_info->base_addr), setup_info->source_adr & 0xFFFFFFFF);
+    dcr_write(get_addr(setup_info->channel, PLB6_DMA_DAH,setup_info->base_addr), (setup_info->dest_adr >> 32));
+    dcr_write(get_addr(setup_info->channel, PLB6_DMA_DAL,setup_info->base_addr), setup_info->dest_adr & 0xFFFFFFFF);
 
     //count < 0x000FFFFF
-    dcr_write(get_addr(setup_info->channel,PLB6_DMA_CTC,setup_info->base_addr),setup_info->count);
+    dcr_write(get_addr(setup_info->channel, PLB6_DMA_CTC, setup_info->base_addr), setup_info->count);
 
     if(setup_info->striding_info.striding != striding_none){
-        dcr_write(get_addr(setup_info->channel,PLB6_DMA_DSTR,setup_info->base_addr),
+        dcr_write(get_addr(setup_info->channel, PLB6_DMA_DSTR, setup_info->base_addr),
                 setup_info->striding_info.sbs << IBM_BIT_INDEX(32,31) | setup_info->striding_info.tbs << IBM_BIT_INDEX(32,15));
     }
 
     //clear CS[x] and RIx in SR
-    dcr_write(setup_info->base_addr + PLB6_DMA_SR,(1 << IBM_BIT_INDEX(32,RI0)) | (((1 << IBM_BIT_INDEX(32,CS)) << IBM_BIT_INDEX(4,channel0))));
+    dcr_write(setup_info->base_addr + PLB6_DMA_SR,(1 << IBM_BIT_INDEX(32,RI0)) | (((1 << IBM_BIT_INDEX(32,CS)) << IBM_BIT_INDEX(4,setup_info->channel))));
 
     uint32_t cr = 0;
     //int mode, int enable
@@ -145,7 +145,7 @@ void dma2plb6_mcpy_init(dma2plb6_setup_info const * const setup_info)
     cr |= setup_info->priority << IBM_BIT_INDEX(32,CP);
     cr |= setup_info->rw_transfer_size << IBM_BIT_INDEX(32,PF);
     cr |= setup_info->snp_mode << IBM_BIT_INDEX(32,DSC);
-    dcr_write(get_addr(setup_info->channel,PLB6_DMA_CR,setup_info->base_addr), cr);
+    dcr_write(get_addr(setup_info->channel, PLB6_DMA_CR, setup_info->base_addr), cr);
 }
 
 void dma2plb6_enable_o_slv_err_interrupt(uint32_t const base_addr)
@@ -161,7 +161,7 @@ void dma2plb6_disable_o_slv_err_interrupt(uint32_t const base_addr)
 void dma2plb6_enable_channel(uint32_t const base_addr, DmaChannel const channel)
 {
     uint32_t cr_value = dcr_read(get_addr(channel, PLB6_DMA_CR, base_addr));
-    dcr_write(get_addr(channel,PLB6_DMA_CR,base_addr), (cr_value | 1 << IBM_BIT_INDEX(32, CE)));
+    dcr_write(get_addr(channel, PLB6_DMA_CR, base_addr), (cr_value | 1 << IBM_BIT_INDEX(32, CE)));
 }
 
 void dma2plb6_enable_all_channels(uint32_t const base_addr)
