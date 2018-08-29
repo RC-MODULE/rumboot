@@ -62,8 +62,6 @@
 	/* perform operation */
     \opcode		\ra_reg,	\rs_reg, \ui_val
     stwu		\ra_reg,	4(\r_res_addr)
-    /* raise event for verilog */
-    test_event EVENT_CHECK_CPU_PPC_PROG_MODEL_18
 
 	/* no-op for syncronization purpose */
     ppc_nop
@@ -116,8 +114,6 @@
     /* perform operation */
     \opcode		\ra_reg,	\rs_reg,	\rb_reg
     stwu		\ra_reg,	4(\r_res_addr)
-    /* raise event for verilog */
-    test_event EVENT_CHECK_CPU_PPC_PROG_MODEL_18
     /* no-op for syncronization purpose */
     ppc_nop
 	rumboot_putstring "\tdone.\n"
@@ -162,8 +158,6 @@
     /* perform operation */
     \opcode		\ra_reg,	\rs_reg
     stwu		\ra_reg,	4(\r_res_addr)
-    /* raise event for verilog */
-    test_event EVENT_CHECK_CPU_PPC_PROG_MODEL_18
     /* no-op for syncronization purpose */
     ppc_nop
 	rumboot_putstring "\tdone.\n"

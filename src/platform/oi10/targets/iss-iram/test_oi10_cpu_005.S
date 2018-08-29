@@ -69,7 +69,6 @@
 
 	\opcode		\ra_reg,	\rs_reg,	\ui_val@l /* perform operation */
 	stwu		\ra_reg,	4(RES_REG)
-	test_event	EVENT_CHECK_CPU_PPC_PROG_MODEL_17  /* raise event for verilog */
 	ppc_nop	/* for syncronization purpose */
 	rumboot_putstring "\tdone.\n"
 .endm
@@ -124,7 +123,6 @@
 
 	\opcode		\ra_reg,	\rs_reg,	\rb_reg /* perform operation */
 	stwu		\ra_reg,	4(RES_REG)
-	test_event EVENT_CHECK_CPU_PPC_PROG_MODEL_17 /* raise event for verilog */
 	ppc_nop		/* for syncronization purpose */
 	rumboot_putstring "\tdone.\n"
 .endm
@@ -172,7 +170,6 @@
 
 	\opcode		\ra_reg,	\rs_reg /* perform operation */
 	stwu		\ra_reg,	4(RES_REG)
-	test_event	EVENT_CHECK_CPU_PPC_PROG_MODEL_17 /* raise event for verilog */
 	ppc_nop	/* for syncronization purpose */
 	rumboot_putstring "\tdone.\n"
 .endm
