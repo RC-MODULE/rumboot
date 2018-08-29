@@ -201,12 +201,11 @@ void hscb_set_timings(uint32_t base_addr, hscb_timings_cfg_t* cfg)
 {
     iowrite32(((cfg->freq      << HSCB_TRANS_CLK_FREQ_i)      & HSCB_TRANS_CLK_FREQ_mask)      |
               ((cfg->init_freq << HSCB_TRANS_CLK_INIT_FREQ_i) & HSCB_TRANS_CLK_INIT_FREQ_mask) |
-              ((cfg->limit     << HSCB_TRANS_CLK_LIMIT_i)     & HSCB_TRANS_CLK_LIMIT_mask),
-              base_addr + HSCB_TRANS_CLK);
-    iowrite32(((cfg->time_64      << HSCB_TIMINGS_TIME_64_i)      & HSCB_TIMINGS_TIME_64_mask)      |
-              ((cfg->time_128     << HSCB_TIMINGS_TIME_128_i)     & HSCB_TIMINGS_TIME_128_i)        |
-              ((cfg->silence_time << HSCB_TIMINGS_SILENCE_TIME_i) & HSCB_TIMINGS_SILENCE_TIME_mask),
-              base_addr + HSCB_TIMINGS);
+              ((cfg->limit     << HSCB_TRANS_CLK_LIMIT_i)     & HSCB_TRANS_CLK_LIMIT_mask), base_addr + HSCB_TRANS_CLK);
+
+    iowrite32(((cfg->time_64      << HSCB_TIMINGS_TIME_64_i)      & HSCB_TIMINGS_TIME_64_mask)       |
+              ((cfg->time_128     << HSCB_TIMINGS_TIME_128_i)     & HSCB_TIMINGS_TIME_128_mask)      |
+              ((cfg->silence_time << HSCB_TIMINGS_SILENCE_TIME_i) & HSCB_TIMINGS_SILENCE_TIME_mask), base_addr + HSCB_TIMINGS);
 }
 
 void hscb_get_timings(uint32_t base_addr, hscb_timings_cfg_t* cfg)
@@ -216,6 +215,7 @@ void hscb_get_timings(uint32_t base_addr, hscb_timings_cfg_t* cfg)
     cfg->freq      = (buf & HSCB_TRANS_CLK_FREQ_mask)      >> HSCB_TRANS_CLK_FREQ_i;
     cfg->init_freq = (buf & HSCB_TRANS_CLK_INIT_FREQ_mask) >> HSCB_TRANS_CLK_INIT_FREQ_i;
     cfg->limit     = (buf & HSCB_TRANS_CLK_LIMIT_mask)     >> HSCB_TRANS_CLK_LIMIT_i;
+
     buf = ioread32(base_addr + HSCB_TIMINGS);
     cfg->time_64      = (buf & HSCB_TIMINGS_TIME_64_mask)      >> HSCB_TIMINGS_TIME_64_i;
     cfg->time_128     = (buf & HSCB_TIMINGS_TIME_128_mask)     >> HSCB_TIMINGS_TIME_128_i;
@@ -425,7 +425,7 @@ void hscb_configure_for_transmit(uint32_t base_addr, uint32_t src_data_addr, uin
     rumboot_printf("Setting transmit descriptor to addr 0x%X\n", desc_addr);
     hscb_set_descr_in_mem(desc_addr, src_data_addr, len);
 
-    rumboot_printf("Setting RDMA_TBL_SIZE and RDMA_SYS_ADDR\n");
+    rumboot_putstring("Setting RDMA_TBL_SIZE and RDMA_SYS_ADDR\n");
     hscb_set_rdma_tbl_size(base_addr, 0x14);
     hscb_set_rdma_sys_addr(base_addr, rumboot_virt_to_dma((uint32_t *) desc_addr));
 /*
@@ -494,7 +494,7 @@ void hscb_set_max_speed(uint32_t base_addr)
     rumboot_printf("TIME_128 = %d\n", timings.time_128);
     rumboot_printf("TIME_64 = %d\n", timings.time_64);
     */
-    timings.freq = 5;
+    timings.freq = 0;
     hscb_set_timings(base_addr, &timings);
 }
 
@@ -507,7 +507,7 @@ bool hscb_transmit(uint32_t base_addr, uint32_t src_data_addr, uint32_t len, uin
     //hscb_set_max_speed(base_addr);
     hscb_enable(base_addr);
 
-    rumboot_printf("Waiting ACTIVE_LINK status\n");
+    rumboot_putstring("Waiting ACTIVE_LINK status\n");
     if (!hscb_wait_status(base_addr, HSCB_STATUS_ACTIVE_LINK_mask)) return false;
 
     hscb_run_rdma(base_addr);
@@ -525,7 +525,7 @@ bool hscb_receive(uint32_t base_addr, uint32_t dst_data_addr, uint32_t len, uint
     //hscb_set_max_speed(base_addr);
     hscb_enable(base_addr);
 
-    rumboot_printf("Waiting ACTIVE_LINK status\n");
+    rumboot_putstring("Waiting ACTIVE_LINK status\n");
     if (!hscb_wait_status(base_addr, HSCB_STATUS_ACTIVE_LINK_mask)) return false;
 
     hscb_run_rdma(base_addr);
