@@ -8,6 +8,10 @@
 #ifndef DEVICES_HSCB_H
 #define DEVICES_HSCB_H
 
+#include <stdio.h>
+#include <stdint.h>
+#include <string.h>
+
 #include <platform/arch/ppc/test_macro.h>
 #include <rumboot/platform.h>
 #include <rumboot/io.h>
@@ -205,8 +209,19 @@ uint32_t hscb_get_desc (uint32_t sys_addr, uint8_t* data_out, uint32_t* len,  bo
  * \param[in] sys_addr address in memory for placing descriptor
  * \param[in] pointer on read data descriptor
  */
-void hscb_set_descr_in_mem_tx(uint32_t sys_addr, uint32_t src_data_addr, uint32_t len);
-void hscb_set_descr_in_mem_rx(uint32_t sys_addr, uint32_t src_data_addr, uint32_t len);
+void hscb_set_descr_in_mem(uint32_t sys_addr, uint32_t src_data_addr, uint32_t len);
+
+typedef struct hscb_instance
+{
+    uint32_t        src_hscb_base_addr;
+    uint32_t        dst_hscb_base_addr;
+    uint32_t*       src_addr;
+    uint32_t        src_size;
+    uint32_t*       dst_addr;
+    uint32_t        dst_size;
+    uint32_t        tx_descr_addr;
+    uint32_t        rx_descr_addr;
+}hscb_instance_t;
 
 bool hscb_sw_rst(uint32_t base_addr);
 void hscb_set_config(uint32_t base_addr, hscb_cfg_t* cfg);
@@ -243,6 +258,7 @@ void hscb_configure_for_receive(uint32_t base_addr, uint32_t dst_data_addr, uint
 void hscb_run_rdma(uint32_t base_addr);
 void hscb_run_wdma(uint32_t base_addr);
 void hscb_enable(uint32_t base_addr);
+void hscb_config_for_receive_and_transmit(hscb_instance_t* hscb_inst);
 
 
 #define HSCB_SW_RESET_TIMEOUT   100

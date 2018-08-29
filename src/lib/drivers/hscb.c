@@ -165,64 +165,26 @@ void hscb_get_config(uint32_t base_addr, hscb_cfg_t* cfg)
     cfg->rx_fix_en   = (settings & HSCB_SETTINGS_RX_FIX_EN_mask)    >> HSCB_SETTINGS_RX_FIX_EN_i;
 }
 
-void hscb_set_descr_in_mem_tx(uint32_t sys_addr, uint32_t src_data_addr, uint32_t len)
+void hscb_set_descr_in_mem(uint32_t sys_addr, uint32_t src_data_addr, uint32_t len)
 {
-    uint32_t buf;
     hscb_descr_struct_t descr;
-
     descr.start_address = src_data_addr;
     descr.length = len;
     descr.act  = HSCB_ACT_TRAN;
     descr.act0 = HSCB_ACT0_LAST;
     descr.ie = false;
     descr.valid = true;
-    buf = hscb_change_endian(((descr.length << HSCB_RD_DESCR_LENGTH_i) & HSCB_RD_DESCR_LENGTH_mask)   |
-                             ((descr.act    << HSCB_RD_DESCR_ACT_i)    & HSCB_RD_DESCR_ACT_mask)      |
-                             ((descr.act0   << HSCB_RD_DESCR_ACT0_i)   & HSCB_RD_DESCR_ACT0_mask)     |
-                             ((descr.ie     << HSCB_RD_DESCR_IE_i)     & HSCB_RD_DESCR_IE_mask)       |
-                             ((descr.valid  << HSCB_RD_DESCR_VALID_i)  & HSCB_RD_DESCR_VALID_mask));
-    iowrite32( buf, sys_addr);
-
-    buf = hscb_change_endian(src_data_addr);
-    iowrite32( buf, sys_addr + 0x04);
-
+    iowrite32( hscb_change_endian(((descr.length << HSCB_RD_DESCR_LENGTH_i) & HSCB_RD_DESCR_LENGTH_mask)   |
+                                  ((descr.act    << HSCB_RD_DESCR_ACT_i)    & HSCB_RD_DESCR_ACT_mask)      |
+                                  ((descr.act0   << HSCB_RD_DESCR_ACT0_i)   & HSCB_RD_DESCR_ACT0_mask)     |
+                                  ((descr.ie     << HSCB_RD_DESCR_IE_i)     & HSCB_RD_DESCR_IE_mask)       |
+                                  ((descr.valid  << HSCB_RD_DESCR_VALID_i)  & HSCB_RD_DESCR_VALID_mask)),
+                                   sys_addr);
+    iowrite32( hscb_change_endian(descr.start_address), sys_addr + 0x04);
     iowrite32( 0x01000000, sys_addr + 0x08);
-    iowrite32( 0, sys_addr + 0x0C);
-    iowrite32( 0, sys_addr + 0x10);
-    iowrite32( 0, sys_addr + 0x14);
-
-    rumboot_printf("Preparing descriptor TX: MEM[0x%x] = 0x%x\n", sys_addr,     ioread32(sys_addr));
-    rumboot_printf("Preparing descriptor TX: MEM[0x%x] = 0x%x\n", sys_addr + 4, ioread32(sys_addr + 4));
-}
-
-void hscb_set_descr_in_mem_rx(uint32_t sys_addr, uint32_t src_data_addr, uint32_t len)
-{
-    uint32_t buf;
-    hscb_descr_struct_t descr;
-
-    descr.start_address = src_data_addr;
-    descr.length = len;
-    descr.act  = HSCB_ACT_TRAN;
-    descr.ie = false;
-    descr.act0 = HSCB_ACT0_LAST;
-    descr.valid = true;
-    buf = hscb_change_endian(((descr.length << HSCB_RD_DESCR_LENGTH_i) & HSCB_RD_DESCR_LENGTH_mask)   |
-                             ((descr.act    << HSCB_RD_DESCR_ACT_i)    & HSCB_RD_DESCR_ACT_mask)      |
-                             ((descr.act0   << HSCB_RD_DESCR_ACT0_i)   & HSCB_RD_DESCR_ACT0_mask)     |
-                             ((descr.ie     << HSCB_RD_DESCR_IE_i)     & HSCB_RD_DESCR_IE_mask)       |
-                             ((descr.valid  << HSCB_RD_DESCR_VALID_i)  & HSCB_RD_DESCR_VALID_mask));
-    iowrite32( buf, sys_addr);
-
-    buf = hscb_change_endian(src_data_addr);
-    iowrite32( buf, sys_addr + 0x04);
-
-    iowrite32( 0x01000000, sys_addr + 0x08);
-    iowrite32( 0, sys_addr + 0x0C);
-    iowrite32( 0, sys_addr + 0x10);
-    iowrite32( 0, sys_addr + 0x14);
-
-    rumboot_printf("Preparing descriptor RX: MEM[0x%x] = 0x%x\n", sys_addr,     ioread32(sys_addr));
-    rumboot_printf("Preparing descriptor RX: MEM[0x%x] = 0x%x\n", sys_addr + 4, ioread32(sys_addr + 4));
+    memset((uint32_t*)(sys_addr + 0x0C), 0x0, 3*sizeof(uint32_t));
+//    rumboot_printf("Preparing descriptor: MEM[0x%x] = 0x%x\n", sys_addr,     ioread32(sys_addr));
+//    rumboot_printf("Preparing descriptor: MEM[0x%x] = 0x%x\n", sys_addr + 4, ioread32(sys_addr + 4));
 }
 
 uint32_t hscb_get_status(uint32_t base_addr)
@@ -461,7 +423,7 @@ bool hscb_wait_rdma_status(uint32_t base_addr, uint32_t status)
 void hscb_configure_for_transmit(uint32_t base_addr, uint32_t src_data_addr, uint32_t len, uint32_t desc_addr)
 {
     rumboot_printf("Setting transmit descriptor to addr 0x%X\n", desc_addr);
-    hscb_set_descr_in_mem_tx(desc_addr, src_data_addr, len);
+    hscb_set_descr_in_mem(desc_addr, src_data_addr, len);
 
     rumboot_printf("Setting RDMA_TBL_SIZE and RDMA_SYS_ADDR\n");
     hscb_set_rdma_tbl_size(base_addr, 0x14);
@@ -476,13 +438,13 @@ void hscb_configure_for_transmit(uint32_t base_addr, uint32_t src_data_addr, uin
 void hscb_configure_for_receive(uint32_t base_addr, uint32_t dst_data_addr, uint32_t len, uint32_t desc_addr)
 {
     rumboot_printf("Setting receive descriptor to addr 0x%X\n", desc_addr);
-    hscb_set_descr_in_mem_rx(desc_addr, dst_data_addr, len);
+    hscb_set_descr_in_mem(desc_addr, dst_data_addr, len);
 /*
     rumboot_printf("Setting RDMA_TBL_SIZE and RDMA_SYS_ADDR\n");
     hscb_set_rdma_tbl_size(base_addr, 0x14);
     hscb_set_rdma_sys_addr(base_addr, rumboot_virt_to_dma((uint32_t *) (desc_addr + 0x20)));
 */
-    rumboot_printf("Setting WDMA_TBL_SIZE and WDMA_SYS_ADDR\n");
+    rumboot_printf("Setting WDMA_TBL_SIZE and WDMA_SYS_ADDR (0x%X)\n", base_addr);
     hscb_set_wdma_tbl_size(base_addr, 0x14);
     hscb_set_wdma_sys_addr(base_addr, rumboot_virt_to_dma((uint32_t *) desc_addr));
 }
@@ -490,15 +452,9 @@ void hscb_configure_for_receive(uint32_t base_addr, uint32_t dst_data_addr, uint
 void hscb_enable(uint32_t base_addr)
 {
     hscb_cfg_t hscb_cfg;
-    rumboot_printf("Enable HSCB\n");
-    //hscb_get_config(base_addr, &hscb_cfg);
+    rumboot_printf("Enable HSCB (0x%X)\n", base_addr);
+    hscb_get_config(base_addr, &hscb_cfg);
     hscb_cfg.en_hscb = true;
-    hscb_cfg.tx_endian = false;
-    hscb_cfg.rx_endian = false;
-    hscb_cfg.time_mode = false;
-    hscb_cfg.loop_back = false;
-    hscb_cfg.en_rmap = false;
-    hscb_cfg.en_trim_clk = false;
     hscb_cfg.rx_fix_en = true;
     hscb_set_config(base_addr, &hscb_cfg);
 }
@@ -508,9 +464,6 @@ void hscb_run_rdma(uint32_t base_addr)
     hscb_rwdma_settings_t rdma_settings;
     rumboot_printf("Run RDMA (0x%X)\n", base_addr);
     hscb_get_rdma_settings(base_addr, &rdma_settings);
-//    rdma_settings.rw_desc_int = true;
-//    rdma_settings.rw_desc_end = true;
-//    rdma_settings.rw_bad_desc = true;
     rdma_settings.en_rwdma = true;
     rdma_settings.en_rwdma_desc_tbl = true;
     rdma_settings.rwdma_long_len = true;
@@ -522,8 +475,6 @@ void hscb_run_wdma(uint32_t base_addr)
     hscb_rwdma_settings_t wdma_settings;
     rumboot_printf("Run WDMA (0x%X)\n", base_addr);
     hscb_get_wdma_settings(base_addr, &wdma_settings);
-//    wdma_settings.rw_desc_int = true;
-//    wdma_settings.rw_desc_end = true;
     wdma_settings.rw_bad_desc = true;
     wdma_settings.en_rwdma = true;
     wdma_settings.en_rwdma_desc_tbl = true;
@@ -543,7 +494,7 @@ void hscb_set_max_speed(uint32_t base_addr)
     rumboot_printf("TIME_128 = %d\n", timings.time_128);
     rumboot_printf("TIME_64 = %d\n", timings.time_64);
     */
-    timings.freq = 1;
+    timings.freq = 5;
     hscb_set_timings(base_addr, &timings);
 }
 
@@ -580,4 +531,25 @@ bool hscb_receive(uint32_t base_addr, uint32_t dst_data_addr, uint32_t len, uint
     hscb_run_rdma(base_addr);
 
     return true;
+}
+
+void hscb_config_for_receive_and_transmit(hscb_instance_t* hscb_inst)
+{
+    rumboot_printf("\nHSCB%d(0x%x) will transmit %d bytes from address 0x%X\n", GET_HSCB_IDX_BY_ADDR(hscb_inst->src_hscb_base_addr), hscb_inst->src_hscb_base_addr, hscb_inst->src_size, rumboot_virt_to_dma(hscb_inst->src_addr));
+    //rumboot_printf("Setting transmit descriptor to addr 0x%X\n", hscb_inst->tx_descr_addr);
+    hscb_set_descr_in_mem(hscb_inst->tx_descr_addr, rumboot_virt_to_dma(hscb_inst->src_addr), hscb_inst->src_size);
+
+    rumboot_printf("HSCB%d(0x%x) will receive %d bytes to address 0x%X\n", GET_HSCB_IDX_BY_ADDR(hscb_inst->src_hscb_base_addr), hscb_inst->src_hscb_base_addr, hscb_inst->dst_size, rumboot_virt_to_dma(hscb_inst->dst_addr));
+    //rumboot_printf("Setting receive descriptor to addr 0x%X\n", hscb_inst->rx_descr_addr);
+    hscb_set_descr_in_mem(hscb_inst->rx_descr_addr, rumboot_virt_to_dma(hscb_inst->dst_addr), hscb_inst->dst_size);
+
+    //rumboot_printf("Setting RDMA_TBL_SIZE and RDMA_SYS_ADDR\n");
+    hscb_set_rdma_tbl_size(hscb_inst->src_hscb_base_addr, 0x14);
+    hscb_set_rdma_sys_addr(hscb_inst->src_hscb_base_addr, rumboot_virt_to_dma((uint32_t *) hscb_inst->tx_descr_addr));
+
+    //rumboot_printf("Setting WDMA_TBL_SIZE and WDMA_SYS_ADDR\n");
+    hscb_set_wdma_tbl_size(hscb_inst->src_hscb_base_addr, 0x14);
+    hscb_set_wdma_sys_addr(hscb_inst->src_hscb_base_addr, rumboot_virt_to_dma((uint32_t *) hscb_inst->rx_descr_addr));
+
+    //hscb_set_max_speed(hscb_inst->src_hscb_base_addr);
 }
