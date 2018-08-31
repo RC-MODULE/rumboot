@@ -220,7 +220,8 @@ function(add_rumboot_target)
     GET_FILENAME_COMPONENT(TARGET_NAME ${TARGET_NAME} NAME_WE)
   endif()
 
-  if (NOT TARGET_FILES)
+  list (FIND TARGET_FEATURES "NOCODE" _index2)
+  if ((NOT ${_index2} GREATER -1) AND (NOT TARGET_FILES))
     message(FATAL_ERROR "add_rumboot_target() requires TARGET_FILES to contain at least one file")
   endif()
 
@@ -237,10 +238,10 @@ function(add_rumboot_target)
   endif()
 
   list (FIND CONFIGURATION_${TARGET_CONFIGURATION}_FEATURES "LPROBE" _index)
-  list (FIND CONFIGURATION_${TARGET_CONFIGURATION}_FEATURES "NOCODE" _index2)
   if (${_index} GREATER -1 OR ${_index2} GREATER -1)
     #Lprobe scripts compile nothing. Provide a dummy
     #target and return
+    message(${product})
     add_custom_target(${product}.all ALL DEPENDS ${bootrom})
     populate_dependencies(${product}.all)
     return()

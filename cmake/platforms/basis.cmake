@@ -107,16 +107,16 @@ macro(add_bootrom_stuff)
   add_rumboot_target_dir(common/spl-stubs/
     CONFIGURATION IRAM_SPL
     PREFIX spl
-    FEATURES STUB
+    FEATURES STUB PACKIMAGE
   )
 
   add_rumboot_target(common/spl-stubs/
     CONFIGURATION IRAM_SPL
     FILES common/spl-stubs/fail.c
-    NAME spl-fail-bad-magic
+    NAME fail-bad-magic
     PREFIX spl
     PACKIMAGE_FLAGS -s magic 0xbadc0de
-    FEATURES STUB
+    FEATURES STUB PACKIMAGE
   )
 
   add_rumboot_target(
@@ -132,6 +132,7 @@ macro(add_bootrom_stuff)
           CONFIGURATION ROM
           PREFIX "bootrom"
           BOOTROM bootrom-loader
+          TESTGROUP bootrom
           LOAD
             SPI0_CONF spl-ok,spl-fail
           FEATURES NOCODE
@@ -142,6 +143,7 @@ macro(add_bootrom_stuff)
           CONFIGURATION ROM
           PREFIX "bootrom"
           BOOTROM bootrom-loader
+          TESTGROUP bootrom
           LOAD
             SPI0_CONF spl-fail-bad-magic,spl-ok
           FEATURES NOCODE
@@ -154,7 +156,7 @@ endmacro()
 #WARNING! Full regression automatically includes all tests from the short ones
 macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
   add_bootrom_stuff()
-  
+
   add_rumboot_target_dir(simple-rom/
     CONFIGURATION ROM
     PREFIX simple-rom)
