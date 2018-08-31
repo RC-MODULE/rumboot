@@ -118,6 +118,19 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     PREFIX simple-iram-mirror)
 
 
+    add_rumboot_target_dir(sprint/
+        CONFIGURATION IRAM
+        PREFIX simple-iram
+        TESTGROUP sprint
+      )
+
+    add_rumboot_target_dir(sprint/
+        CONFIGURATION IRAM_MIRROR
+        PREFIX simple-iram-mirror
+        TESTGROUP sprint
+    )
+
+
   add_rumboot_target_dir(jenkins/
       CONFIGURATION ROM
       PREFIX jenkins
@@ -190,7 +203,9 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 	add_rumboot_target_dir(arinc/
       CONFIGURATION IRAM
       PREFIX arinc
+      TESTGROUP sprint
     )
+
 	add_rumboot_target_dir(arinc/
       CONFIGURATION IRAM_MIRROR
       PREFIX arinc-mirror
@@ -241,6 +256,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       NAME spl-fail-bad-magic
       PREFIX spl
       PACKIMAGE_FLAGS -s magic 0xbadc0de
+      FEATURES STUB
     )
 
 	add_rumboot_target_dir(muart/
@@ -357,7 +373,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
           PREFIX "bootrom"
           NAME "production"
           LOAD
-            SPI0_CONF spl-ok
+            SPI0_CONF spl-ok,spl-fail
   )
 
   add_rumboot_target(
@@ -368,6 +384,8 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
   add_rumboot_target(
           CONFIGURATION IRAM_MIRROR
           FILES common/tools/print-heaps.c
+          TESTGROUP     touchstone
+          CHECKPOINT    testbench.initial
   )
 
   add_rumboot_target(
@@ -381,6 +399,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     FILES spi/spi.c
     CFLAGS -DGSPI_BASE=GSPI0_BASE
     PREFIX spi-0
+    TESTGROUP sprint
   )
 
   add_rumboot_target(
@@ -388,6 +407,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     FILES spi/spi.c
     CFLAGS -DGSPI_BASE=GSPI1_BASE
     PREFIX spi-1
+    TESTGROUP sprint
   )
 
   add_rumboot_target(
@@ -396,6 +416,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     CFLAGS -DGSPI_BASE=GSPI0_BASE
     IRUN_FLAGS +select_sdio0
     PREFIX spi-0-mirror
+    TESTGROUP sprint
     )
 
   add_rumboot_target(
@@ -404,6 +425,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     CFLAGS -DGSPI_BASE=GSPI1_BASE
     IRUN_FLAGS +select_sdio0
     PREFIX spi-1-mirror
+    TESTGROUP sprint
     )
 
 
@@ -413,6 +435,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     CFLAGS -DSDIO_BASE=SDIO0_BASE  -DGSPI_SDIO_IRQ=GSPI_SDIO0_IRQ
     IRUN_FLAGS +select_sdio0
     PREFIX sdio-spi-0
+    TESTGROUP sprint
   )
 
   add_rumboot_target(
@@ -421,6 +444,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     CFLAGS -DSDIO_BASE=SDIO1_BASE  -DGSPI_SDIO_IRQ=GSPI_SDIO1_IRQ
     IRUN_FLAGS +select_sdio1
     PREFIX sdio-spi-1
+    TESTGROUP sprint
   )
 
    add_rumboot_target(
@@ -429,14 +453,18 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     CFLAGS -DSDIO_BASE=SDIO0_BASE   -DGSPI_SDIO_IRQ=GSPI_SDIO0_IRQ
     IRUN_FLAGS +select_sdio0
     PREFIX sdio-spi-0-mirror
+    TESTGROUP sprint
     )
+
    add_rumboot_target(
     CONFIGURATION IRAM_MIRROR
     FILES sdio-spi/sdio_spi.c
     CFLAGS -DSDIO_BASE=SDIO1_BASE  -DGSPI_SDIO_IRQ=GSPI_SDIO1_IRQ
     IRUN_FLAGS +select_sdio1
     PREFIX sdio-spi-1-mirror
+    TESTGROUP sprint
     )
+
   add_rumboot_target(
    CONFIGURATION IRAM
    FILES gpio/gpio.c
@@ -599,6 +627,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     NAME mdio_test_1
     TIMEOUT 300 us
     CFLAGS -DMDIO_NUM=1
+    TESTGROUP sprint
   )
 
   add_rumboot_target(
@@ -623,6 +652,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     NAME mdio_test_0
     TIMEOUT 600 us
     CFLAGS -DMDIO_NUM=0
+    TESTGROUP sprint
   )
 
   add_rumboot_target(
@@ -718,6 +748,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     FILES wdt/wdt_crg_iint.c
     NAME wdt_crg_iint_test
     TIMEOUT 1000 us
+    TESTGROUP sprint
   )
 
   add_rumboot_target(
@@ -726,6 +757,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     NAME wdt_crg_eint_test
     TIMEOUT 1000 us
     IRUN_FLAGS +wdt_crg_eint_test_flag
+    TESTGROUP sprint
   )
 
   add_rumboot_target(
@@ -733,6 +765,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     FILES wdt/wdt_crg_iint.c
     NAME wdt_crg_iint_test
     TIMEOUT 1000 us
+    TESTGROUP sprint
   )
 
   add_rumboot_target(
@@ -741,6 +774,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     NAME wdt_crg_eint_test
     TIMEOUT 1000 us
     IRUN_FLAGS +wdt_crg_eint_test_flag
+    TESTGROUP sprint
   )
 
   add_rumboot_target(
@@ -755,6 +789,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       CONFIGURATION IRAM
       FILES pcie/pcie_irq_eRP_test.c
       NAME pcie_irq_eRP_test
+      TESTGROUP sprint
     )
 
   add_rumboot_target(
