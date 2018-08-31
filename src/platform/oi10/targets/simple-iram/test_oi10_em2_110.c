@@ -71,8 +71,9 @@ void emi_irq_clear ()
 {
     rumboot_printf("irq_clear\n");
     release_signal();
-    iowrite32(0x00, SRAM0_BASE);
-    TEST_ASSERT (ioread32(SRAM0_BASE) == 0,"TEST_ERROR: write_data != read_data (emi_irq_clear)");
+    iowrite32(0x00, SRAM0_BASE+0x4);
+    msync();
+    TEST_ASSERT (ioread32(SRAM0_BASE+0x4) == 0,"TEST_ERROR: write_data != read_data (emi_irq_clear)");
     dcr_write(DCR_EM2_EMI_BASE + EMI_IRR, 0x00);
     TEST_ASSERT(dcr_read (DCR_EM2_EMI_BASE + EMI_IRR) == 0x00, "TEST_ERROR: EMI_IRR != 0, irq not clear ");
 }
@@ -253,21 +254,16 @@ int main ()
     test_event(EVENT_ERR_COMP_CMD_PTY);
 
     rumboot_printf("Write transaction\n");
-    IRQ_EXPECT = true;
     iowrite32(test_data, SRAM0_BASE + 0xC);
     msync();
-    wait_irq();
 
     rumboot_printf("Inject err in COMP_CMD_PTY\n");
     test_event(EVENT_ERR_COMP_CMD_PTY);
 
     rumboot_printf("Read transaction\n");
-    IRQ_EXPECT = true;
     read_data = ioread32(SRAM0_BASE + 0xC);
     rumboot_printf("read data = %x\n", read_data);
-    //TEST_ASSERT(read_data != test_data, "Unexpected data has been read from SRAM0.");
     msync();
-    wait_irq();
 
 //*******************************************************************************************************
 
@@ -295,11 +291,11 @@ int main ()
     test_event(EVENT_ERR_RD_DATA_PAR);
 
     rumboot_printf("Read transaction\n");
-    IRQ_EXPECT = true;
+    //IRQ_EXPECT = true;
     read_data = ioread32(SRAM0_BASE + 0xC);
     rumboot_printf("read data = %x\n", read_data);
     msync();
-    wait_irq();
+    //wait_irq();
 //*******************************************************************************************************
 
     rumboot_printf ("TEST OK\n");
