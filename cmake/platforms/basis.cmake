@@ -693,6 +693,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     CONFIGURATION IRAM
     FILES mdio/mdio_test.c
     NAME mdio_test_1
+    IRUN_FLAGS +mdio_test
     TIMEOUT 300 us
     CFLAGS -DMDIO_NUM=1
     TESTGROUP sprint
@@ -727,6 +728,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     CONFIGURATION IRAM_MIRROR
     FILES mdio/mdio_test.c
     NAME mdio_test_1
+    IRUN_FLAGS +mdio_test
     TIMEOUT 600 us
     CFLAGS -DMDIO_NUM=1
   )
@@ -759,6 +761,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     CONFIGURATION IRAM
     FILES mdio/mdio_phy_intrp_test.c
     NAME mdio_phy_intrp_test_1
+    IRUN_FLAGS +mdio_test
     TIMEOUT 100 us
     CFLAGS -DMDIO_NUM=1
   )
@@ -791,6 +794,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     CONFIGURATION IRAM_MIRROR
     FILES mdio/mdio_phy_intrp_test.c
     NAME mdio_phy_intrp_test_1
+    IRUN_FLAGS +mdio_test
     TIMEOUT 800 us
     CFLAGS -DMDIO_NUM=1
   )

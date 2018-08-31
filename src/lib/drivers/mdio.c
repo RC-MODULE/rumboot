@@ -118,7 +118,7 @@ bool mdio_test(uint32_t num_mdio)
         return 0;
     }
     if (ioread32(MDIO0_BASE + 0x1000*num_mdio + MDIO_CONTROL) != MDIO_CONTROL_RESET){
-        rumboot_printf("MDIO_PHY_IRQ_STATE reset value is wrong!\n");
+        rumboot_printf("MDIO_CONTROL reset value is wrong!\n");
         return 0;
     }
     if (ioread32(MDIO0_BASE + 0x1000*num_mdio + MDIO_ETH_RST_N) != MDIO_ETH_RST_N_RESET){
