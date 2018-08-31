@@ -2,7 +2,7 @@
 #include <rumboot/printf.h>
 #include <rumboot/platform.h>
 #include <algo/crc32.h>
-
+#include <platform/bootheader.h>
 
 /* TODO: Move to error.h */
 static const char *errors[] =
@@ -30,6 +30,16 @@ ssize_t rumboot_bootimage_check_header(struct rumboot_bootheader *hdr, void **da
 {
 	if (hdr->magic != RUMBOOT_HEADER_MAGIC)
 		return -EBADMAGIC;
+
+    dbg_boot(hdr->device, "--- Boot header ---");
+    dbg_boot(hdr->device, "Magic:            %x", hdr->magic);
+    dbg_boot(hdr->device, "Header version:   %x", hdr->version);
+    dbg_boot(hdr->device, "Chip Id:          %x", hdr->chip_id);
+    dbg_boot(hdr->device, "Chip Revision:    %x", hdr->chip_rev);
+    dbg_boot(hdr->device, "Data length:      %x", hdr->datalen);
+    dbg_boot(hdr->device, "Header CRC32:     %x", hdr->header_crc32);
+    dbg_boot(hdr->device, "Data CRC32:       %x", hdr->data_crc32);
+
 
 	if (hdr->num_cores != RUMBOOT_PLATFORM_NUMCORES)
 		return -EBADNUMCORES;
@@ -79,7 +89,7 @@ int32_t rumboot_bootimage_exec(struct rumboot_bootheader *hdr)
 {
 
 	/* Fire up secondary cores, if any */
-//	rumboot_bootimage_platform_exec(hdr);
+	//	rumboot_bootimage_platform_exec(hdr);
 
 	dbg_boot(hdr->device, "Primary image entry point: 0x%x", hdr->entry_point[0]);
 	int (*ram_main)();
