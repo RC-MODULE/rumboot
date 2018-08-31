@@ -1,6 +1,7 @@
 #ifndef SCTL__
 #define SCTL__
 
+#define SCTL_BOOTM    0x0
 /* --- CAN --- */
 #define SCTL_CAN0     0x030
 #define SCTL_CAN1     0x034

@@ -5,6 +5,7 @@
 #include <rumboot/platform.h>
 #include <rumboot/macros.h>
 #include <rumboot/boot.h>
+#include <rumboot/platform.h>
 
 
 static inline const char *bool_param(bool param)
@@ -29,10 +30,26 @@ void rumboot_platform_dump_config(struct rumboot_config *conf) {
 
 static void hostmode_loop()
 {
+        struct rumboot_bootheader *hdr = (struct rumboot_bootheader *) &rumboot_platform_spl_start;
         rumboot_printf("boot: Entering host mode loop\n");
-        //struct rumboot_bootheader *hdr = (struct rumboot_bootheader *)&rumboot_platform_spl_start;
+        rumboot_platform_request_file("HOSTMOCK", (uint32_t) hdr);
+        void *data;
         while (1) {
-
+                ssize_t len = rumboot_bootimage_check_header(hdr, &data);
+                if (len == -EBADMAGIC) {
+                        continue;
+                }
+                if (len < 0) {
+                        rumboot_printf("boot: validation failed: %s\n", rumboot_strerror(len));
+                        hdr->magic = 0;
+                        continue;
+                }
+                if (0 == rumboot_bootimage_check_data(hdr)) {
+                        rumboot_bootimage_exec(hdr);
+                        rumboot_printf("boot: We're back in rom!\n");
+                } else {
+                        rumboot_printf("boot: Data CRC32 mismatch\n");
+                }
         }
 }
 

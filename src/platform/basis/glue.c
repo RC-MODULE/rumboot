@@ -18,6 +18,7 @@
 #include <rumboot/bootsrc/spiflash.h>
 #include <regs/regs_gpio_rcm.h>
 #include <stdbool.h>
+#include <devices/sctl.h>
 
 int64_t rumboot_virt_to_phys(volatile void *addr)
 {
@@ -129,9 +130,21 @@ void rumboot_platform_setup()
 }
 
 
+#define BOOTM_SELFTEST     (0<<1)
+#define BOOTM_HOST         (1<<1)
+#define BOOTM_FASTUART     (2<<1)
+
 void rumboot_platform_read_config(struct rumboot_config *conf)
 {
-	/* Parse BOOTM flags here */
+	uint32_t bootm = ioread32(SCTL_BASE + SCTL_BOOTM);
+	if (bootm & BOOTM_FASTUART)
+		conf->baudrate = 6000000;
+	else
+		conf->baudrate = 115200;
+
+	conf->hostmode = (bootm & BOOTM_HOST);
+	conf->selftest = (bootm & BOOTM_SELFTEST);
+
 }
 
 

@@ -176,6 +176,19 @@ macro(add_bootrom_stuff)
           FEATURES NOCODE
   )
 
+  add_rumboot_target(
+          NAME "host-shim"
+          CONFIGURATION ROM
+          PREFIX "bootrom"
+          BOOTROM bootrom-loader
+          TESTGROUP bootrom
+          IRUN_FLAGS +BOOT_HOST
+          LOAD
+            SPI0_CONF spl-fail,spl-fail
+            HOSTMOCK spl-ok
+          FEATURES NOCODE
+  )
+
 
 endmacro()
 

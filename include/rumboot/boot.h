@@ -74,7 +74,7 @@ int32_t rumboot_bootimage_exec(struct rumboot_bootheader *hdr);
  * @}
  */
 
-#define dbg_boot(src, msg, ...) rumboot_printf("boot: %s: " msg "\n", src->name, ## __VA_ARGS__);
+#define dbg_boot(src, msg, ...) rumboot_printf("boot: %s: " msg "\n", src ? src->name : "host", ## __VA_ARGS__);
 
  #define DBG_ASSERT(statement, message) \
    { \
@@ -125,7 +125,7 @@ int32_t rumboot_bootimage_exec(struct rumboot_bootheader *hdr);
          int	baudrate;
  };
 
-
+ const char *rumboot_strerror(int err);
  void rumboot_platform_read_config(struct rumboot_config *conf);
  void rumboot_platform_selftest(struct rumboot_config *conf);
  const struct rumboot_bootsource *rumboot_platform_get_bootsources();
