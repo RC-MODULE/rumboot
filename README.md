@@ -113,7 +113,7 @@ add_rumboot_target(
     DEPENDS prefix-name
     BOOTROM prefix-name
     PACKIMAGE_FLAGS flags
-    FEATURES [STUB] [LUA] [COVERAGE] [LPROBE] [PACKIMAGE]
+    FEATURES [STUB] [LUA] [COVERAGE] [LPROBE] [PACKIMAGE] [PACKIMAGE] [ROMGEN] [NOCODE] [COVERAGE]
     LOAD
         PLUSARG TARGET
         PLUSARG SELF
@@ -206,6 +206,8 @@ add_rumboot_target(
     * COVERAGE - для данной цели возможна сборка покрытия. Для включения инструментирования данной цели используйте -DRUMBOOT_COVERAGE=Y при конфигурации сборки
 
     * PACKIMAGE - Говорит, что к бинарным файлам надо добавить контрольную сумму при помощи rumboot-packimage.py. Дополнительные опции для rumboot-packimage.py можно передавать через директиву PACKIMAGE_FLAGS.
+
+    * NOCODE - Эта цель не требует ничего компилировать, а только распихать по памятям другие цели и создать скрипт запуска (Для тестов загрузчика)
 
 ## Общие рекомендации к написанию тестов
 

@@ -102,9 +102,59 @@ rumboot_add_configuration(
 )
 
 
+macro(add_bootrom_stuff)
+  #Let's add our spl stuff
+  add_rumboot_target_dir(common/spl-stubs/
+    CONFIGURATION IRAM_SPL
+    PREFIX spl
+    FEATURES STUB
+  )
+
+  add_rumboot_target(common/spl-stubs/
+    CONFIGURATION IRAM_SPL
+    FILES common/spl-stubs/fail.c
+    NAME spl-fail-bad-magic
+    PREFIX spl
+    PACKIMAGE_FLAGS -s magic 0xbadc0de
+    FEATURES STUB
+  )
+
+  add_rumboot_target(
+          CONFIGURATION ROM
+          FILES bootrom.c
+          PREFIX "bootrom"
+          NAME "loader"
+          FEATURES STUB
+  )
+
+  add_rumboot_target(
+          NAME "spi-cs0-boot"
+          CONFIGURATION ROM
+          PREFIX "bootrom"
+          BOOTROM bootrom-loader
+          LOAD
+            SPI0_CONF spl-ok,spl-fail
+          FEATURES NOCODE
+  )
+
+  add_rumboot_target(
+          NAME "spi-cs1-boot"
+          CONFIGURATION ROM
+          PREFIX "bootrom"
+          BOOTROM bootrom-loader
+          LOAD
+            SPI0_CONF spl-fail-bad-magic,spl-ok
+          FEATURES NOCODE
+  )
+
+
+endmacro()
+
 ### Add tests here ###
 #WARNING! Full regression automatically includes all tests from the short ones
 macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
+  add_bootrom_stuff()
+  
   add_rumboot_target_dir(simple-rom/
     CONFIGURATION ROM
     PREFIX simple-rom)
@@ -244,21 +294,6 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       PREFIX arinc-mirror_freq_100
     )
 
-    add_rumboot_target_dir(common/spl-stubs/
-      CONFIGURATION IRAM_SPL
-      PREFIX spl
-      FEATURES STUB
-    )
-
-    add_rumboot_target(common/spl-stubs/
-      CONFIGURATION IRAM_SPL
-      FILES common/spl-stubs/fail.c
-      NAME spl-fail-bad-magic
-      PREFIX spl
-      PACKIMAGE_FLAGS -s magic 0xbadc0de
-      FEATURES STUB
-    )
-
 	add_rumboot_target_dir(muart/
       CONFIGURATION IRAM
       PREFIX muart-iram
@@ -366,15 +401,6 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
             NAME "noop-stub"
             FEATURES STUB
       )
-
-  add_rumboot_target(
-          CONFIGURATION ROM
-          FILES bootrom.c
-          PREFIX "bootrom"
-          NAME "production"
-          LOAD
-            SPI0_CONF spl-ok,spl-fail
-  )
 
   add_rumboot_target(
           CONFIGURATION IRAM

@@ -237,7 +237,8 @@ function(add_rumboot_target)
   endif()
 
   list (FIND CONFIGURATION_${TARGET_CONFIGURATION}_FEATURES "LPROBE" _index)
-  if (${_index} GREATER -1)
+  list (FIND CONFIGURATION_${TARGET_CONFIGURATION}_FEATURES "NOCODE" _index2)
+  if (${_index} GREATER -1 OR ${_index2} GREATER -1)
     #Lprobe scripts compile nothing. Provide a dummy
     #target and return
     add_custom_target(${product}.all ALL DEPENDS ${bootrom})
