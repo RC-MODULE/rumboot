@@ -334,7 +334,7 @@ static uint32_t check_hscb_func(uint32_t base_addr, uint32_t supplementary_base_
     rumboot_putstring( "Length:" );
     rumboot_puthex (len);
     for (i=0; i<=len-1; i++) {
-        tmp_data = 0x30 + i;
+        tmp_data = ioread8(TX_DATA_ADDR_1+i);
         rumboot_putstring("Expected data: ");
         rumboot_puthex(tmp_data);
         rumboot_putstring("Obtained data: ");
@@ -347,7 +347,7 @@ static uint32_t check_hscb_func(uint32_t base_addr, uint32_t supplementary_base_
     rumboot_putstring( "Length:" );
     rumboot_puthex (len);
     for (i=0; i<=len-1; i++) {
-        tmp_data = 0x10 + i;
+        tmp_data = ioread8(TX_DATA_ADDR_0+i);
         rumboot_putstring("Expected data: ");
         rumboot_puthex(tmp_data);
         rumboot_putstring("Obtained data: ");
