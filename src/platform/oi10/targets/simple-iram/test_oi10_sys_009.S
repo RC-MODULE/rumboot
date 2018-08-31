@@ -163,8 +163,8 @@ check_debug_dbdr:
     test_event  TEC_CHECK_DEBUG_DBDR
     msync
 
-    //lwz         r30, 0(r13)
-    //msync
+    lwz         r30, 0(r13)
+    msync
 
     b test_ok
 
