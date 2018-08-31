@@ -130,7 +130,7 @@ END_ENUM( test_event_code )
 
 BEGIN_ENUM( tb_result )
 DECLARE_ENUM_VAL( TB_RESULT_UNDEFINED,  0xFFFFFFFF )
-DECLARE_ENUM_VAL( TB_RESULT_OK,         0x8E591708 )
+DECLARE_ENUM_VAL( TB_RESULT_OK,         0x00000001 )
 DECLARE_ENUM_VAL( TB_RESULT_ERROR,      0x8E5917E8 )
 END_ENUM( tb_result )
 
@@ -149,6 +149,13 @@ main:
 test_oi10_sys_009:
 
 check_debug_dbdr:
+//event_hz
+    mfspr       r3, SPR_DBDR
+    load_const  r4, TB_RESULT_OK
+    cmpw        cr0, r3, r4
+    TEST_ASSERT(eq, cr0, "DBDR check failed")
+
+
     load_const  r3, TB_RESULT_UNDEFINED
     mtspr       SPR_DBDR, r3
     isync
@@ -156,14 +163,8 @@ check_debug_dbdr:
     test_event  TEC_CHECK_DEBUG_DBDR
     msync
 
-    lwz         r30, 0(r13)
-    msync
-
-    isync
-    mfspr       r3, SPR_DBDR
-    load_const  r4, TB_RESULT_OK
-    cmpw        cr0, r3, r4
-    TEST_ASSERT(eq, cr0, "DBDR check failed")
+    //lwz         r30, 0(r13)
+    //msync
 
     b test_ok
 
