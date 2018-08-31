@@ -15,14 +15,11 @@ SECTIONS
  } > IM0
 
  .rwx : {
-  KEEP(*(.text.startup.rumboot_default_irq_vectors))
-  *(.text.startup)
-
   rumboot_im0_heap_start = .;
   rumboot_im0_heap_end = .;
 
-  KEEP(*(.text.startup))
   *(.text)
+  *(.text.*)
   *(.rodata)
   *(.data)
 

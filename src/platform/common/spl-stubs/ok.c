@@ -4,9 +4,10 @@
 #include <rumboot/printf.h>
 #include <rumboot/platform.h>
 #include <rumboot/macros.h>
+#include <stdlib.h>
 
 int main()
 {
 	rumboot_printf("spl: hello, I'm the secondary image! Eveything's good\n");
-	return 0;
+    exit(0);
 }

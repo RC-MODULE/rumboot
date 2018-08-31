@@ -108,12 +108,13 @@ int32_t rumboot_bootimage_exec(struct rumboot_bootheader *hdr);
  bool bootsource_try_chain(const struct rumboot_bootsource *src, void* pdata);
 
 #define EBADMAGIC      1
-#define EBADHDRCRC     2
-#define EBADCHIPID     3
-#define EBADENTRY      4
-#define EBADNUMCORES   5
-#define EBADDATACRC    6
-#define EMAXERROR      7
+#define EBADVERSION    2
+#define EBADHDRCRC     3
+#define EBADCHIPID     4
+#define EBADENTRY      5
+#define EBADNUMCORES   6
+#define EBADDATACRC    7
+#define EMAXERROR      8
 
  struct rumboot_config {
          bool	hostmode;
@@ -128,4 +129,6 @@ int32_t rumboot_bootimage_exec(struct rumboot_bootheader *hdr);
  void rumboot_platform_read_config(struct rumboot_config *conf);
  void rumboot_platform_selftest(struct rumboot_config *conf);
  const struct rumboot_bootsource *rumboot_platform_get_bootsources();
+ bool rumboot_platform_check_entry_points(struct rumboot_bootheader *hdr);
+ void rumboot_platform_exec(struct rumboot_bootheader *hdr);
 #endif /* end of include guard: BOOTHEADER_H */

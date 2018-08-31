@@ -61,10 +61,9 @@ bool bootsource_try_single(const struct rumboot_bootsource *src, void *pdata)
 
 	ret = load_img(src, pdata);
 	if (ret) {
-		dbg_boot(src, "Image validated successfully");
+		dbg_boot(src, "Image validated, executing...");
 	} else {
-		dbg_boot(src, "No bootable image found");
-		goto deinit;
+		dbg_boot(src, "No bootable image found here");
 	}
 
 deinit:
@@ -73,7 +72,6 @@ gpio_deinit:
 	src->disable(src, pdata);
 
 	if (ret) {
-		dbg_boot(src, "Executing image");
 		rumboot_bootimage_exec(dst);
 	}
 

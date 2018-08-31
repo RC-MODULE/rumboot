@@ -9,6 +9,7 @@ static const char *errors[] =
 {
 	[0] = "Success",
 	[EBADMAGIC] = "Bad Magic value",
+	[EBADVERSION] = "Incompatible header version",
 	[EBADHDRCRC] = "Header CRC32 mismatch",
 	[EBADCHIPID] = "Incorrect ChipId",
 	[EBADENTRY] = "Bad entry point(s)",
@@ -34,6 +35,10 @@ ssize_t rumboot_bootimage_check_header(struct rumboot_bootheader *hdr, void **da
     dbg_boot(hdr->device, "--- Boot header ---");
     dbg_boot(hdr->device, "Magic:            %x", hdr->magic);
     dbg_boot(hdr->device, "Header version:   %x", hdr->version);
+
+	if (hdr->version != RUMBOOT_HEADER_VERSION)
+		return -EBADVERSION;
+
     dbg_boot(hdr->device, "Chip Id:          %x", hdr->chip_id);
     dbg_boot(hdr->device, "Chip Revision:    %x", hdr->chip_rev);
     dbg_boot(hdr->device, "Data length:      %x", hdr->datalen);
@@ -62,11 +67,8 @@ ssize_t rumboot_bootimage_check_header(struct rumboot_bootheader *hdr, void **da
 		return -EBADHDRCRC;
 	}
 
-	/*
-	TODO: ...
-	if (!rumboot_platform_check_entries(hdr))
+	if (!rumboot_platform_check_entry_points(hdr))
 		return -EBADENTRY;
-	*/
 
 	*dataptr = hdr->data;
 	return hdr->datalen;
@@ -78,9 +80,11 @@ int32_t rumboot_bootimage_check_data(struct rumboot_bootheader *hdr)
 		return -EBADDATACRC;
 
 	uint32_t checksum = crc32(0, hdr->data, hdr->datalen);
-	dbg_boot(hdr->device, "Data CRC32 mismatch: expected: 0x%x calculated: %x",
-		checksum, hdr->data_crc32
-	);
+	if (checksum != hdr->data_crc32) {
+		dbg_boot(hdr->device, "Data CRC32 mismatch: expected: 0x%x calculated: %x",
+			checksum, hdr->data_crc32
+		);
+	}
 
 	return (checksum != hdr->data_crc32);
 }
@@ -89,9 +93,8 @@ int32_t rumboot_bootimage_exec(struct rumboot_bootheader *hdr)
 {
 
 	/* Fire up secondary cores, if any */
-	//	rumboot_bootimage_platform_exec(hdr);
-
-	dbg_boot(hdr->device, "Primary image entry point: 0x%x", hdr->entry_point[0]);
+	rumboot_platform_exec(hdr);
+	dbg_boot(hdr->device, "Primary entry point: 0x%x", hdr->entry_point[0]);
 	int (*ram_main)();
 	ram_main = (void *)hdr->entry_point[0];
 	return ram_main();

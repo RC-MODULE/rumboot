@@ -17,6 +17,7 @@
 #include <rumboot/boot.h>
 #include <rumboot/bootsrc/spiflash.h>
 #include <regs/regs_gpio_rcm.h>
+#include <stdbool.h>
 
 int64_t rumboot_virt_to_phys(volatile void *addr)
 {
@@ -247,4 +248,15 @@ static const struct rumboot_bootsource arr[] = {
 const struct rumboot_bootsource *rumboot_platform_get_bootsources()
 {
 	return arr;
+}
+
+bool rumboot_platform_check_entry_points(struct rumboot_bootheader *hdr)
+{
+	/* Any entry point is okay */
+	return true;
+}
+
+void rumboot_platform_exec(struct rumboot_bootheader *hdr)
+{
+	/* No-op, this chip has only one core */
 }

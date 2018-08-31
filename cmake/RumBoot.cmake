@@ -241,7 +241,6 @@ function(add_rumboot_target)
   if (${_index} GREATER -1 OR ${_index2} GREATER -1)
     #Lprobe scripts compile nothing. Provide a dummy
     #target and return
-    message(${product})
     add_custom_target(${product}.all ALL DEPENDS ${bootrom})
     populate_dependencies(${product}.all)
     return()

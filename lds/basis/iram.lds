@@ -23,6 +23,7 @@ SECTIONS
   rumboot_im0_heap_end = .;
 
   *(.text)
+  *(.text.*)
   *(.rodata)
   *(.data)
 

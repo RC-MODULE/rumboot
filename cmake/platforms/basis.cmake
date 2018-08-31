@@ -45,11 +45,11 @@ rumboot_add_configuration (
   IRAM_SPL
   LDS basis/iram-spl.lds
   PREFIX iram
-  LDFLAGS -Wl,--start-group -lgcc -lc -lm -Wl,--end-group "-e rumboot_main"
+  LDFLAGS -Wl,--start-group -lgcc -lc -lm -Wl,--end-group "-e main"
   FILES ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c
-  CFLAGS -DRUMBOOT_PRINTF_ACCEL
+  CFLAGS -DRUMBOOT_PRINTF_ACCEL -DRUMBOOT_NOINIT
   BOOTROM bootrom-stub
-  FEATURES LUA COVERAGE PACKIMAGE
+  FEATURES COVERAGE PACKIMAGE
   LOAD IM0BIN SELF
 )
 
@@ -110,12 +110,39 @@ macro(add_bootrom_stuff)
     FEATURES STUB PACKIMAGE
   )
 
-  add_rumboot_target(common/spl-stubs/
+  add_rumboot_target(
     CONFIGURATION IRAM_SPL
     FILES common/spl-stubs/fail.c
     NAME fail-bad-magic
     PREFIX spl
     PACKIMAGE_FLAGS -s magic 0xbadc0de
+    FEATURES STUB PACKIMAGE
+  )
+
+  add_rumboot_target(
+    CONFIGURATION IRAM_SPL
+    FILES common/spl-stubs/fail.c
+    NAME fail-bad-version
+    PREFIX spl
+    PACKIMAGE_FLAGS -s version 1 -c
+    FEATURES STUB PACKIMAGE
+  )
+
+  add_rumboot_target(
+    CONFIGURATION IRAM_SPL
+    FILES common/spl-stubs/fail.c
+    NAME fail-bad-id
+    PREFIX spl
+    PACKIMAGE_FLAGS -s chip_id 1 -c
+    FEATURES STUB PACKIMAGE
+  )
+
+  add_rumboot_target(
+    CONFIGURATION IRAM_SPL
+    FILES common/spl-stubs/fail.c
+    NAME ok-bad-revision
+    PREFIX spl
+    PACKIMAGE_FLAGS -s revision 99 -c
     FEATURES STUB PACKIMAGE
   )
 
