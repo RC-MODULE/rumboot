@@ -285,7 +285,6 @@ int main(void)
     rumboot_irq_sei();
 
 
-
     // Copy data in IM1
     memcpy((uint32_t*)rumboot_virt_to_dma((void*)IM1_BASE), data_src_im1, sizeof(data_src_im1));
 
