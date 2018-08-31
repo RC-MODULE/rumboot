@@ -303,8 +303,18 @@ int main(void)
     //IM0 - EM2
     test_result += gspi_dma_axi(GSPI_BASE, (uint32_t*)data_src_im0, (uint32_t*)rumboot_virt_to_dma((void*)(EM2_BASE + 0x10)), TEST_DATA_IM0);
 
+//    // Copy data in IM1
+//    memcpy((uint32_t*)rumboot_virt_to_dma((void*)IM1_BASE), data_src_im1, sizeof(data_src_im1));
+//
+//    //IM1 - IM0
+//    test_result += gspi_dma_axi(GSPI_BASE, (uint32_t*)rumboot_virt_to_dma((void*)IM1_BASE), (uint32_t*)data_dst, TEST_DATA_IM1);
+//    //IM1 - IM1
+//    test_result += gspi_dma_axi(GSPI_BASE, (uint32_t*)rumboot_virt_to_dma((void*)IM1_BASE), (uint32_t*)rumboot_virt_to_dma((void*)(IM1_BASE + 0x20)), TEST_DATA_IM1);
+//    //IM1 - EM2
+//    test_result += gspi_dma_axi(GSPI_BASE, (uint32_t*)rumboot_virt_to_dma((void*)IM1_BASE), (uint32_t*)rumboot_virt_to_dma((void*)(EM2_BASE + 0x20)), TEST_DATA_IM1);
 
     // Copy data in EM2
+
     for(int i=0; i <8; i++)
     {
         iowrite8(data_src_em2[i], EM2_BASE+i);
