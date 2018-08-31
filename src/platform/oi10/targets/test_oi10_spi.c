@@ -171,6 +171,8 @@ static uint32_t gspi_dma_axi(uint32_t base_addr, uint32_t* r_mem_addr, uint32_t*
 
     iowrite32(0x01, base_addr + GSPI_AXIR_BUFENA); //enable transmitting
 
+    rumboot_printf("GSPI_DMARCUR =%x\n", ioread32(base_addr + GSPI_DMARCUR));
+
     while(!DMA_write_buffer_end)
         ;
     DMA_write_buffer_end = 0;
@@ -282,12 +284,7 @@ int main(void)
     rumboot_irq_enable( GSPI_INT );
     rumboot_irq_sei();
 
-    //IM0 - IM0
-    test_result += gspi_dma_axi(GSPI_BASE, (uint32_t*)data_src_im0, (uint32_t*)data_dst, TEST_DATA_IM0);
-    //IM0 - IM1
-    test_result += gspi_dma_axi(GSPI_BASE, (uint32_t*)data_src_im0, (uint32_t*)rumboot_virt_to_dma((void*)(IM1_BASE + 0x10)), TEST_DATA_IM0);
-    //IM0 - EM2
-    test_result += gspi_dma_axi(GSPI_BASE, (uint32_t*)data_src_im0, (uint32_t*)rumboot_virt_to_dma((void*)(EM2_BASE + 0x10)), TEST_DATA_IM0);
+
 
     // Copy data in IM1
     memcpy((uint32_t*)rumboot_virt_to_dma((void*)IM1_BASE), data_src_im1, sizeof(data_src_im1));
@@ -299,8 +296,15 @@ int main(void)
     //IM1 - EM2
     test_result += gspi_dma_axi(GSPI_BASE, (uint32_t*)rumboot_virt_to_dma((void*)IM1_BASE), (uint32_t*)rumboot_virt_to_dma((void*)(EM2_BASE + 0x20)), TEST_DATA_IM1);
 
-    // Copy data in EM2
+    //IM0 - IM0
+    test_result += gspi_dma_axi(GSPI_BASE, (uint32_t*)data_src_im0, (uint32_t*)data_dst, TEST_DATA_IM0);
+    //IM0 - IM1
+    test_result += gspi_dma_axi(GSPI_BASE, (uint32_t*)data_src_im0, (uint32_t*)rumboot_virt_to_dma((void*)(IM1_BASE + 0x10)), TEST_DATA_IM0);
+    //IM0 - EM2
+    test_result += gspi_dma_axi(GSPI_BASE, (uint32_t*)data_src_im0, (uint32_t*)rumboot_virt_to_dma((void*)(EM2_BASE + 0x10)), TEST_DATA_IM0);
 
+
+    // Copy data in EM2
     for(int i=0; i <8; i++)
     {
         iowrite8(data_src_em2[i], EM2_BASE+i);
