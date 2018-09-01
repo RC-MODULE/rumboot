@@ -222,16 +222,6 @@ static void handler( int irq, void *arg ) {
 #define SSRAM_RX_0      SSRAM_TX_1 + DATA_SIZE_1
 #define SSRAM_RX_1      SSRAM_RX_0 + DATA_SIZE_0
 
-//Here are defined addresses, for using different memories use addresses from defines above
-//Note that for current memory (say, IM0 for IRAM configuration) you should use CURRENT_MEMORY_* addresses
-//in order not to erase code
-#define TX_DATA_ADDR_0   CURRENT_MEMORY_TX_0 //Here we have Mem0 address from chain Mem0->SW0->SW1->Mem1
-#define TX_DATA_ADDR_1   CURRENT_MEMORY_TX_1 //Here we have Mem1 address from chain Mem1->SW1->SW0->Mem0
-#define RX_DATA_ADDR_0   CURRENT_MEMORY_RX_0 //Here we have Mem1 address from chain Mem0->SW0->SW1->Mem1
-#define RX_DATA_ADDR_1   CURRENT_MEMORY_RX_1 //Here we have Mem0 address from chain Mem1->SW1->SW0->Mem0
-
-#define DATA_SIZE_0 256
-#define DATA_SIZE_1 257
 static volatile uint8_t __attribute__((section(".data"))) data_in_0_1[DATA_SIZE_0]  = {0x0};
 static volatile uint8_t __attribute__((section(".data"))) data_out_0_1[DATA_SIZE_0] = {0x0};
 static volatile uint8_t __attribute__((section(".data"))) data_in_0_3[DATA_SIZE_1]  = {0x0};
