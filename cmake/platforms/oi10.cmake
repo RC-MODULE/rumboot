@@ -724,15 +724,50 @@ endif()
                -DHSCB_UNDER_TEST_DMA_INT=SW0_AXI_INT 
                -DHSCB_SUPPLEMENTARY_INT=SW1_HSCB_INT 
                -DHSCB_SUPPLEMENTARY_DMA_INT=SW1_AXI_INT 
-               -DTX_DATA_ADDR_0=CURRENT_MEMORY_TX_0
-               -DTX_DATA_ADDR_1=CURRENT_MEMORY_TX_1
-               -DRX_DATA_ADDR_0=CURRENT_MEMORY_RX_0
-               -DRX_DATA_ADDR_1=CURRENT_MEMORY_RX_1
-               -DDATA_SIZE_0=3
+              #-DCHECK_REGS
+        FILES test_oi10_hscb.c
+        PREFIX "hscb_0"
+        NAME test_oi10_hscb_im0_im0
+    )
+
+    add_rumboot_target(
+        CONFIGURATION IRAM
+        CFLAGS -DHSCB_UNDER_TEST_BASE=HSCB0_BASE 
+               -DHSCB_SUPPLEMENTARY_BASE=HSCB1_BASE 
+               -DHSCB_UNDER_TEST_INT=SW0_HSCB_INT 
+               -DHSCB_UNDER_TEST_DMA_INT=SW0_AXI_INT 
+               -DHSCB_SUPPLEMENTARY_INT=SW1_HSCB_INT 
+               -DHSCB_SUPPLEMENTARY_DMA_INT=SW1_AXI_INT 
+               -DTX_DATA_ADDR_0=SDRAM_TX_0
+               -DTX_DATA_ADDR_1=SDRAM_TX_1
+               -DRX_DATA_ADDR_0=SDRAM_RX_0
+               -DRX_DATA_ADDR_1=SDRAM_RX_1
+               -DDATA_SIZE_0=32
                -DDATA_SIZE_1=257
               #-DCHECK_REGS
         FILES test_oi10_hscb.c
         PREFIX "hscb_0"
+        NAME test_oi10_hscb_sdram_sdram
+    )
+
+    add_rumboot_target(
+        CONFIGURATION IRAM
+        CFLAGS -DHSCB_UNDER_TEST_BASE=HSCB0_BASE 
+               -DHSCB_SUPPLEMENTARY_BASE=HSCB1_BASE 
+               -DHSCB_UNDER_TEST_INT=SW0_HSCB_INT 
+               -DHSCB_UNDER_TEST_DMA_INT=SW0_AXI_INT 
+               -DHSCB_SUPPLEMENTARY_INT=SW1_HSCB_INT 
+               -DHSCB_SUPPLEMENTARY_DMA_INT=SW1_AXI_INT 
+               -DTX_DATA_ADDR_0=IM1_TX_0
+               -DTX_DATA_ADDR_1=SSRAM_TX_1
+               -DRX_DATA_ADDR_0=SSRAM_RX_0
+               -DRX_DATA_ADDR_1=IM0_RX_1
+               -DDATA_SIZE_0=320
+               -DDATA_SIZE_1=257
+              #-DCHECK_REGS
+        FILES test_oi10_hscb.c
+        PREFIX "hscb_0"
+        NAME test_oi10_hscb_im1_ssram_im0
     )
 
     add_rumboot_target(
