@@ -222,13 +222,53 @@ static void handler( int irq, void *arg ) {
 #define SSRAM_RX_0      SSRAM_TX_1 + DATA_SIZE_1
 #define SSRAM_RX_1      SSRAM_RX_0 + DATA_SIZE_0
 
+
+#define SDRAM_TX_0      SDRAM_BASE
+#define SDRAM_TX_1      SDRAM_TX_0 + DATA_SIZE_0
+#define SDRAM_RX_0      SDRAM_TX_1 + DATA_SIZE_1
+#define SDRAM_RX_1      SDRAM_RX_0 + DATA_SIZE_0
+
+#ifndef DATA_SIZE_0
+#define DATA_SIZE_0 256
+#endif
+#ifndef DATA_SIZE_1
+#define DATA_SIZE_1 257
+#endif
+
 static volatile uint8_t __attribute__((section(".data"))) data_in_0_1[DATA_SIZE_0]  = {0x0};
 static volatile uint8_t __attribute__((section(".data"))) data_out_0_1[DATA_SIZE_0] = {0x0};
 static volatile uint8_t __attribute__((section(".data"))) data_in_0_3[DATA_SIZE_1]  = {0x0};
 static volatile uint8_t __attribute__((section(".data"))) data_out_0_3[DATA_SIZE_1] = {0x0};
+//Here are defined addresses, for using different memories use addresses from defines above
+//Note that for current memory (say, IM0 for IRAM configuration) you should use CURRENT_MEMORY_* addresses
+//in order not to erase code
+#ifndef TX_DATA_ADDR_0
+#define TX_DATA_ADDR_0   CURRENT_MEMORY_TX_0 //Here we have Mem0 address from chain Mem0->SW0->SW1->Mem1
+#endif
+#ifndef TX_DATA_ADDR_1
+#define TX_DATA_ADDR_1   CURRENT_MEMORY_TX_1 //Here we have Mem1 address from chain Mem1->SW1->SW0->Mem0
+#endif
+#ifndef RX_DATA_ADDR_0
+#define RX_DATA_ADDR_0   CURRENT_MEMORY_RX_0 //Here we have Mem1 address from chain Mem0->SW0->SW1->Mem1
+#endif
+#ifndef RX_DATA_ADDR_1
+#define RX_DATA_ADDR_1   CURRENT_MEMORY_RX_1 //Here we have Mem0 address from chain Mem1->SW1->SW0->Mem0
+#endif
+
+#ifndef DATA_INITIAL_VALUE
+#define DATA_INITIAL_VALUE 0
+#endif
+
+#ifndef INCREMENT_0
+#define INCREMENT_0 1
+#endif
+
+#ifndef INCREMENT_1
+#define INCREMENT_1 -1
+#endif
 
 static void set_test_data(uint32_t base_addr, uint32_t length, int increment){
-    uint8_t data = 0;
+    uint8_t data = DATA_INITIAL_VALUE;
     if ((base_addr >= NOR_BASE) && (base_addr <= IM0_BASE))
         rumboot_putstring("Oops! NOR initialization is still a To-Do in this test!");
     else
@@ -293,10 +333,18 @@ static uint32_t check_hscb_func(uint32_t base_addr, uint32_t supplementary_base_
         rumboot_putstring("RX_DATA_ADDR_1 - destination address cannot be NOR!");
 
 
+    //Some dirty hack to pass around [-Werror=unused-variable] for transfers not in current memory
+    data_in_0_1[0] = 0xff;
+    data_out_0_1[0] = data_in_0_1[0] - 1;
+    data_in_0_3[0] = data_out_0_3[0] - 1;
+    data_out_0_3[0] = data_in_0_3[0] - 1;
+
     // Set data for HSCB0
-    set_test_data(TX_DATA_ADDR_0,DATA_SIZE_0,1);
+    set_test_data(TX_DATA_ADDR_0,DATA_SIZE_0,INCREMENT_0);
+    set_test_data(RX_DATA_ADDR_0,DATA_SIZE_0,0);
     // Set data for HSCB1
-    set_test_data(TX_DATA_ADDR_1,DATA_SIZE_1,-1);
+    set_test_data(TX_DATA_ADDR_1,DATA_SIZE_1,INCREMENT_1);
+    set_test_data(RX_DATA_ADDR_1,DATA_SIZE_1,0);
     msync();
     // Set descriptors table HSCB0
     // -- Set Tx data
@@ -385,6 +433,7 @@ static uint32_t check_hscb_func(uint32_t base_addr, uint32_t supplementary_base_
     rumboot_puthex (len);
     for (i=0; i<=len-1; i++) {
         tmp_data = ioread8(TX_DATA_ADDR_1+i);
+        rumboot_puthex(RX_DATA_ADDR_1+i);
         rumboot_putstring("Expected data: ");
         rumboot_puthex(tmp_data);
         rumboot_putstring("Obtained data: ");
@@ -398,6 +447,7 @@ static uint32_t check_hscb_func(uint32_t base_addr, uint32_t supplementary_base_
     rumboot_puthex (len);
     for (i=0; i<=len-1; i++) {
         tmp_data = ioread8(TX_DATA_ADDR_0+i);
+        rumboot_puthex(RX_DATA_ADDR_0+i);
         rumboot_putstring("Expected data: ");
         rumboot_puthex(tmp_data);
         rumboot_putstring("Obtained data: ");
