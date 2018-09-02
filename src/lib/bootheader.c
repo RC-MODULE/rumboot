@@ -14,7 +14,6 @@ struct rumboot_bootheader hdr = {
 	.chip_rev	= RUMBOOT_PLATFORM_CHIPREV,
 	.entry_point	= {
 #ifndef RUMBOOT_NOINIT
-#warning sfsfdvsdfv
 		(uint32_t)&rumboot_main,
 #else
 		(uint32_t)&main,
