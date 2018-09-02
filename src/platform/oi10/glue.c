@@ -11,6 +11,7 @@
 #include <platform/arch/ppc/ppc_476fp_itrpt_fields.h>
 #include <platform/ppc470s/mmu.h>
 #include <platform/devices/mpic128.h>
+#include <rumboot/boot.h>
 
 
 int64_t rumboot_virt_to_phys(volatile void *addr)
@@ -83,4 +84,20 @@ void rumboot_platform_setup() {
     extern char rumboot_platform_heap_start;
     extern char rumboot_platform_heap_end;
     rumboot_malloc_register_heap( "IM0", &rumboot_platform_heap_start, &rumboot_platform_heap_end );
+}
+
+const struct rumboot_bootsource *rumboot_platform_get_bootsources()
+{
+    return NULL;
+}
+
+bool rumboot_platform_check_entry_points(struct rumboot_bootheader *hdr)
+{
+	/* Any entry point is okay */
+	return true;
+}
+
+void rumboot_platform_exec(struct rumboot_bootheader *hdr)
+{
+	/* No-op, this chip has only one core */
 }

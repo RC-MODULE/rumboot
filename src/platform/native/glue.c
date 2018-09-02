@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <stdarg.h>
 #include <rumboot/platform.h>
+#include <rumboot/boot.h>
 
 /* HACK: dummy variables */
 char rumboot_platform_spl_start;
@@ -70,5 +71,20 @@ void rumboot_platform_dump_region(const char *filename, uint32_t addr, uint32_t 
 void rumboot_platform_perf(const char *tag)
 {
 
+}
 
+const struct rumboot_bootsource *rumboot_platform_get_bootsources()
+{
+    return NULL;
+}
+
+bool rumboot_platform_check_entry_points(struct rumboot_bootheader *hdr)
+{
+	/* Any entry point is okay */
+	return true;
+}
+
+void rumboot_platform_exec(struct rumboot_bootheader *hdr)
+{
+	/* No-op, this chip has only one core */
 }
