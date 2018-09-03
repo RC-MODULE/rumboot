@@ -44,14 +44,14 @@
 
 #include <regs/regs_sp804.h>
 
+#define TIMER0_CYCLES           1
+#define TIMER1_CYCLES           2
+
 //#define TIM1_INTERRUPT_NUMBER   40
 //#define TIM2_INTERRUPT_NUMBER   41
 //#define TIMER_INT_TIMEOUT       60
-static volatile uint32_t IRQ = 0;
 
-static uint32_t volatile TIMINT1_HANDLED = 0;
-static uint32_t volatile TIMINT2_HANDLED = 0;
-
+/*
 static int32_t check_array32[] = {
         0xFFFFFFFF,
         0x00000000,
@@ -66,6 +66,8 @@ static int32_t check_array32[] = {
         0xAAAAAAAA,
         0x55555555
 };
+*/
+
 
 static uint32_t check_timer_default_ro_val( uint32_t base_addr )
 {
@@ -116,7 +118,6 @@ static uint32_t check_timer_default_rw_val( uint32_t base_addr )
           { }
       };
 
-
     if( rumboot_regpoker_check_array( check_default_array, base_addr ) == 0 )
     {
         rumboot_printf( "OK\n" );
@@ -127,195 +128,86 @@ static uint32_t check_timer_default_rw_val( uint32_t base_addr )
     return 1;
 }
 
-static void handler( int irq, void *arg ) {
-    rumboot_printf( "IRQ arrived  \n" );
-    gpio_clear_edge_int( DIT_INT0, 0xFF );
-    gpio_clear_edge_int( DIT_INT1, 0xFF );
-    rumboot_printf( "Clear interrupts\n" );
-    IRQ = 1;
+struct s804_instance {
+    int timer0_irq;
+    int timer1_irq;
+    uint32_t base_addr;
+    int dit_index;
+};
+
+static void handler0( int irq, void *arg ) {
+    struct s804_instance *a = ( struct s804_instance * )arg;
+    a->timer0_irq = a->timer0_irq + 1;
+    rumboot_printf( "IRQ 0 arrived  \n" );
+
+    rumboot_printf( "sp804_%d timer 0 INT # %d  \n", a->dit_index, a->timer0_irq );
+    sp804_clrint( a->base_addr, 0 );
 }
 
-
-void check_timers_irq(void)
-{
-//    rumboot_putstring("NON_CR_INTERRUPT_HANDLER\n");
-    //get interrupt source
-    //uint32_t source_vector = mpic128_get_ncr_interrupt_vector( DCR_MPIC128_BASE );// - clear interrupt by read NCIAR
-    IRQ = 0;
-    rumboot_irq_cli();
-    struct rumboot_irq_entry *tbl1 = rumboot_irq_create( NULL );
-    struct rumboot_irq_entry *tbl2 = rumboot_irq_create( NULL );
-
-   rumboot_irq_set_handler( tbl1, DIT_INT0, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler, ( void* )0 );
-   rumboot_irq_set_handler( tbl2, DIT_INT1, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler, ( void* )0 );
-
-
-    if(source_vector == TIM1_INTERRUPT_NUMBER)
-    {
-        timer_stop(1);
-        TIMINT1_HANDLED = 1;
-//        rumboot_putstring("source_vector == TIM1_INTERRUPT_NUMBER\n");
-//        trace_hex(TIMINT1_HANDLED);
-    }
-    else if(source_vector == TIM2_INTERRUPT_NUMBER)
-    {
-        timer_stop(2);
-        TIMINT2_HANDLED = 1;
-//        rumboot_putstring("source_vector == TIM2_INTERRUPT_NUMBER\n");
-//        trace_hex(TIMINT2_HANDLED);
-    }
-
-    //if test control (itc) is enabled
-    if(timer_read_TIMERITCR(DCR_TIMERS_BASE) == 0x1)
-    {   //clear handled output
-        timer_itc_set_output(!TIMINT1_HANDLED,!TIMINT2_HANDLED);
-        //if all interrupts handled then disable itc
-        if(TIMINT1_HANDLED && TIMINT2_HANDLED)
-            timer_itc_disable();
-    }
-    MPIC128_dcr_write_MPIC128x_NCEOI0( DCR_MPIC128_BASE, 0);
+static void handler1( int irq, void *arg ) {
+    struct s804_instance *a = ( struct s804_instance * )arg;
+    a->timer1_irq = a->timer1_irq + 1;
+    rumboot_printf( "IRQ 1 arrived  \n" );
+    rumboot_printf( "sp804_%d timer 1 INT # %d  \n", a->dit_index, a->timer1_irq );
+    sp804_clrint( a->base_addr, 1 );
 }
 
-uint32_t wait_timint1_handled(){
-    int t = 0;
-    while(!TIMINT1_HANDLED && (t++ < TIMER_INT_TIMEOUT)){;}
-//    rumboot_putstring("while(!TIMINT1_HANDLED && (t++<TIMER_INT_TIMEOUT))\n");
-//    trace_hex(TIMINT1_HANDLED);
-    return TIMINT1_HANDLED;
-}
+bool test_dit_timers( uint32_t structure ) {
+    int c = 0;
+    int d = 0;
 
-uint32_t wait_timint2_handled(){
-    int t = 0;
-    while(!TIMINT2_HANDLED && ( t++ < TIMER_INT_TIMEOUT)){;}
-//    rumboot_putstring("while(!TIMINT2_HANDLED && (t++<TIMER_INT_TIMEOUT))\n");
-//    trace_hex(TIMINT2_HANDLED);
-    return TIMINT2_HANDLED;
-}
+    struct s804_instance *stru = ( struct s804_instance * )structure;
+    uint32_t base_addr = stru->base_addr;
 
-uint32_t check_timer_regs()
-{
-    uint32_t i;
-    rumboot_printf("check_timer_regs\n");
-    COMPARE_VALUES( (timer_read_TIMER1LOAD(DCR_TIMERS_BASE)      &    TIMER1LOAD_MASK),      TIMER1LOAD_VALUE,       "check TIMER1LOAD failed");
-    COMPARE_VALUES( (timer_read_TIMER1VALUE(DCR_TIMERS_BASE)     &    TIMER1VALUE_MASK),     TIMER1VALUE_VALUE,      "check TIMER1VALUE failed");
-    COMPARE_VALUES( (timer_read_TIMER1CONTROL(DCR_TIMERS_BASE)   &    TIMER1CONTROL_MASK),   TIMER1CONTROL_VALUE,    "check TIMER1CONTROL failed");
-    COMPARE_VALUES( (timer_read_TIMER1RIS(DCR_TIMERS_BASE)       &    TIMER1RIS_MASK),       TIMER1RIS_VALUE,        "check TIMER1RIS failed");
-    COMPARE_VALUES( (timer_read_TIMER1MIS(DCR_TIMERS_BASE)       &    TIMER1MIS_MASK),       TIMER1MIS_VALUE,        "check TIMER1MIS failed");
-    COMPARE_VALUES( (timer_read_TIMER1BGLOAD(DCR_TIMERS_BASE)    &    TIMER1BGLOAD_MASK),    TIMER1BGLOAD_VALUE,     "check TIMER1BGLOAD failed");
-    COMPARE_VALUES( (timer_read_TIMER2LOAD(DCR_TIMERS_BASE)      &    TIMER2LOAD_MASK),      TIMER2LOAD_VALUE,       "check TIMER2LOAD failed");
-    COMPARE_VALUES( (timer_read_TIMER2VALUE(DCR_TIMERS_BASE)     &    TIMER2VALUE_MASK),     TIMER2VALUE_VALUE,      "check TIMER2VALUE failed");
-    COMPARE_VALUES( (timer_read_TIMER2CONTROL(DCR_TIMERS_BASE)   &    TIMER2CONTROL_MASK),   TIMER2CONTROL_VALUE,    "check TIMER2CONTROL failed");
-    COMPARE_VALUES( (timer_read_TIMER2RIS(DCR_TIMERS_BASE)       &    TIMER2RIS_MASK),       TIMER2RIS_VALUE,        "check TIMER2RIS failed");
-    COMPARE_VALUES( (timer_read_TIMER2MIS(DCR_TIMERS_BASE)       &    TIMER2MIS_MASK),       TIMER2MIS_VALUE,        "check TIMER2MIS failed");
-    COMPARE_VALUES( (timer_read_TIMER2BGLOAD(DCR_TIMERS_BASE)    &    TIMER2BGLOAD_MASK),    TIMER2BGLOAD_VALUE,     "check TIMER2BGLOAD failed");
-    COMPARE_VALUES( (timer_read_TIMERITCR(DCR_TIMERS_BASE)       &    TIMERITCR_MASK),       TIMERITCR_VALUE,        "check TIMERITCR failed");
-    COMPARE_VALUES( (timer_read_TIMERPERIPHID0(DCR_TIMERS_BASE)  &    TIMERPERIPHID0_MASK),  TIMERPERIPHID0_VALUE,   "check TIMERPERIPHID0 failed");
-    COMPARE_VALUES( (timer_read_TIMERPERIPHID1(DCR_TIMERS_BASE)  &    TIMERPERIPHID1_MASK),  TIMERPERIPHID1_VALUE,   "check TIMERPERIPHID1 failed");
-    COMPARE_VALUES( (timer_read_TIMERPERIPHID2(DCR_TIMERS_BASE)  &    TIMERPERIPHID2_MASK),  TIMERPERIPHID2_VALUE,   "check TIMERPERIPHID2 failed");
-    COMPARE_VALUES( (timer_read_TIMERPERIPHID3(DCR_TIMERS_BASE)  &    TIMERPERIPHID3_MASK),  TIMERPERIPHID3_VALUE,   "check TIMERPCELLID0 failed");
-    COMPARE_VALUES( (timer_read_TIMERPCELLID0(DCR_TIMERS_BASE)   &    TIMERPCELLID0_MASK),   TIMERPCELLID0_VALUE,    "check TIMERPCELLID1 failed");
-    COMPARE_VALUES( (timer_read_TIMERPCELLID1(DCR_TIMERS_BASE)   &    TIMERPCELLID1_MASK),   TIMERPCELLID1_VALUE,    "check TIMERPCELLID2 failed");
-    COMPARE_VALUES( (timer_read_TIMERPCELLID2(DCR_TIMERS_BASE)   &    TIMERPCELLID2_MASK),   TIMERPCELLID2_VALUE,    "check TIMERPCELLID2 failed");
-    COMPARE_VALUES( (timer_read_TIMERPCELLID3(DCR_TIMERS_BASE)   &    TIMERPCELLID3_MASK),   TIMERPCELLID3_VALUE,    "check TIMERPCELLID3 failed");
+    struct sp804_conf config_0 = {
+        .mode = ONESHOT,
+        .interrupt_enable = 1,
+        .clock_division = 1,
+        .width = 32,
+        .load = 100,
+        .bgload = 0 };
 
-    for (i = 0; i< 12; i++){
-        //timer_write_TIMER1BGLOAD(DCR_TIMERS_BASE, check_array32[i]);
-        dcr_write(DCR_TIMERS_BASE, check_array32[i]);
-        COMPARE_VALUES(timer_read_TIMER1BGLOAD(DCR_TIMERS_BASE), check_array32[i],"SysTimer DCR data bus check failed");
+    struct sp804_conf config_1 = {
+        .mode = ONESHOT,
+        .interrupt_enable = 1,
+        .clock_division = 1,
+        .width = 32,
+        .load = 200,
+        .bgload = 0 };
+
+    for( int i = 0; i < TIMER0_CYCLES + stru->dit_index; i++ ) {
+        sp804_config( base_addr, &config_0, 0 );
+        sp804_enable( base_addr, 0 );
+        while( sp804_get_value( base_addr, 0 ) ) {
+        };
+        c++;
     }
 
-    return 1;
-}
-
-uint32_t check_tcr()
-{
-    /*
-     * set tim1 interrupt using ITC mode.
-     * clear interrupt using ITC mode
-     */
-    rumboot_putstring("check_tcr\n");
-    mpic128_reset( DCR_MPIC128_BASE );
-    mpic128_pass_through_disable( DCR_MPIC128_BASE );
-    //setup MPIC128 interrupt 36
-    //mpic128_setup_ext_interrupt( DCR_MPIC128_BASE, TIM1_INTERRUPT_NUMBER,MPIC128_PRIOR_1,int_sense_level,int_pol_pos,Processor0);
-    //mpic128_setup_ext_interrupt( DCR_MPIC128_BASE, TIM2_INTERRUPT_NUMBER,MPIC128_PRIOR_2,int_sense_level,int_pol_pos,Processor0);
-    mpic128_setup_ext_interrupt( DCR_MPIC128_BASE, TIM1_INTERRUPT_NUMBER, int_sense_level);
-    mpic128_setup_ext_interrupt( DCR_MPIC128_BASE, TIM2_INTERRUPT_NUMBER, int_sense_level);
-
-    SET_NONCR_INT_HANDLER(non_cr_interrupt_handler);
-    ppc_noncr_int_enable();//MSR setup
-    mpic128_set_interrupt_borders( DCR_MPIC128_BASE, 10, 5);//MCK, CR borders
-    //mpic128_set_minimal_interrupt_priority_mask( DCR_MPIC128_BASE, Processor0, MPIC128_PRIOR_0);
-    TIMINT1_HANDLED = 0;
-    TIMINT2_HANDLED = 0;
-    //mpic128 is ready for interrupt
-
-    //timer going to integration test control mode
-    timer_itc_enable();
-    timer_itc_set_output(1,1);
-    //wait handler
-    if(wait_timint1_handled() && wait_timint2_handled())
-        return 1;
-    else{
-        rumboot_putstring("Timint1 and/or Timint2 are not handled\n");
-        timer_itc_disable();
-        timer_itc_set_output(0,0);
-        return 0;
+    for( int i = 0; i < TIMER1_CYCLES + stru->dit_index; i++ ) {
+        sp804_config( base_addr, &config_1, 1 );
+        sp804_enable( base_addr, 1 );
+        while( sp804_get_value( base_addr, 1 ) ) {
+        };
+        d++;
     }
-}
 
-uint32_t check_timint1_timint2()
-{
-   rumboot_putstring("check_timint1_timint2\n");
-   mpic128_reset( DCR_MPIC128_BASE );
-   mpic128_pass_through_disable( DCR_MPIC128_BASE );
-   //setup MPIC128 interrupt 36
-  // mpic128_setup_ext_interrupt( DCR_MPIC128_BASE, TIM1_INTERRUPT_NUMBER,MPIC128_PRIOR_1,int_sense_level,int_pol_pos,Processor0);
- //  mpic128_setup_ext_interrupt( DCR_MPIC128_BASE, TIM2_INTERRUPT_NUMBER,MPIC128_PRIOR_2,int_sense_level,int_pol_pos,Processor0);
-   mpic128_setup_ext_interrupt( DCR_MPIC128_BASE, TIM1_INTERRUPT_NUMBER, int_sense_level);
-   mpic128_setup_ext_interrupt( DCR_MPIC128_BASE, TIM2_INTERRUPT_NUMBER, int_sense_level);
-
-   SET_NONCR_INT_HANDLER(non_cr_interrupt_handler);
-   ppc_noncr_int_enable();//MSR setup
-   mpic128_set_interrupt_borders( DCR_MPIC128_BASE, 10, 5);//MCK, CR borders
-   //mpic128_set_minimal_interrupt_priority_mask( DCR_MPIC128_BASE, Processor0, MPIC128_PRIOR_0);
-   mpic128_set_minimal_interrupt_priority_mask( DCR_MPIC128_BASE );
-   TIMINT1_HANDLED = 0;
-   TIMINT2_HANDLED = 0;
-   //mpic128 is ready for interrupt
-
-    timer_info t_info1 = {
-        .timer_number = 1,
-        .load_value = 0x300,
-        .run_mode = mode_free_run,
-        .int_enable = 1,//TIMINT1 active
-        .prescale = ps_div_by_1,
-        .timer_size = timer_size_16bit,
-        .one_shot_count = 1 //counter decrements once
-    };
-    timer_info t_info2 = {
-        .timer_number = 2,
-        .load_value = 0x300,
-        .run_mode = mode_free_run,
-        .int_enable = 1,//TIMINT2 active
-        .prescale = ps_div_by_1,
-        .timer_size = timer_size_16bit,
-        .one_shot_count = 1 //counter decrements once
-    };
-    //One-shot
-    //start first timer
-    timer_start(&t_info1);
-    //start 2nd timer
-    timer_start(&t_info2);
-    //wait for interrupt handling
-    if(wait_timint1_handled() && wait_timint2_handled()){
-        return 1;
-    }else{
-        timer_stop(1);
-        timer_stop(2);
-        return 0;
+    if( stru->timer0_irq == TIMER0_CYCLES + stru->dit_index ) {
+        rumboot_printf( "Timer 0 test OK \n" );
+    } else {
+        rumboot_printf( "ERROR in Timer 0 test \n" );
+        rumboot_printf( "Interrupts came == %d, should be %d \n", stru->timer0_irq, TIMER0_CYCLES + stru->dit_index );
+        return false;
     }
-    return 1;
+
+    if( stru->timer1_irq == TIMER1_CYCLES + stru->dit_index ) {
+        rumboot_printf( "Timer 1 test OK \n" );
+    } else {
+        rumboot_printf( "ERROR in Timer 1 test \n" );
+        rumboot_printf( "Interrupts came == %d, should be %d \n", stru->timer1_irq, TIMER1_CYCLES + stru->dit_index );
+        return false;
+    }
+
+    return true;
 }
 
 uint32_t main(void){
@@ -325,8 +217,15 @@ uint32_t main(void){
      * - setup TCR, wait TIMINT1,2
      * - setup timers, wait TIMINT1,2
      */
-    TEST_ASSERT(check_timer_regs() == 1,"check_timer_regs failed");
-    TEST_ASSERT(check_tcr() == 1,"check TCR interrupt generation failed");
-    TEST_ASSERT(check_timint1_timint2() == 1,"check_timint1_timint2 generation failed");
+
+    // Set up interrupt handlers
+        rumboot_printf( "SP804 test START\n" );
+        //sp804_clrint(DCR_TIMERS_BASE);
+        rumboot_irq_cli();
+        struct rumboot_irq_entry *tbl = rumboot_irq_create( NULL );
+
+
+
+
     return 0;
 }
