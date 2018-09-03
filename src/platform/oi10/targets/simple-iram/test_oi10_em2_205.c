@@ -44,6 +44,8 @@
 #define ADDR_NOR_SE                             NOR_BASE + 0x10000
 #define ADDR_NOR_DE                             NOR_BASE + 0x10100
 
+#define BABA0001_ECC                            0x7A
+
 
 bool check_data()
 {
@@ -201,16 +203,19 @@ int main(void)
     isync();
 
 
+    dcr_write(DCR_EM2_EMI_BASE + EMI_ECCWRR, BABA0001_ECC);
+    dcr_write(DCR_EM2_EMI_BASE + EMI_FLCNTRL,  (dcr_read(DCR_EM2_EMI_BASE + EMI_FLCNTRL) & 0x1C)  | ECC_CTRL_CNT_ECCWRR);
+
     rumboot_putstring("WRITE NOR\n");
-    test_event(EVENT_INJECT_NOR_0); //DATA_SE = 0xBABA0000
+//    test_event(EVENT_INJECT_NOR_0); //DATA_SE = 0xBABA0000
 //#define RUMBOOT_ASSERT_WARN_ONLY
-    nor_write32(0xBABA0001, ADDR_NOR_SE);
+    nor_write32(0xBABA0000, ADDR_NOR_SE);
 //#undef RUMBOOT_ASSERT_WARN_ONLY
     isync();
 
-    test_event(EVENT_INJECT_NOR_7); //DATA_DE = 0xBABA0007
+//    test_event(EVENT_INJECT_NOR_7); //DATA_DE = 0xBABA0007
 //#define RUMBOOT_ASSERT_WARN_ONLY
-    nor_write32(0xBABA0001, ADDR_NOR_DE);
+    nor_write32(0xBABA0007, ADDR_NOR_DE);
 //#undef RUMBOOT_ASSERT_WARN_ONLY
     isync();
 
