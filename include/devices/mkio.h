@@ -343,7 +343,18 @@ typedef volatile struct __attribute__ ((__packed__))
     uint32_t sa_reserved                      : 32;
 } mkio_rt_sa_table_t;
 
+typedef enum mkio_bc_schedule_state
+{
+    MKIO_BCSL_SCST_STOPPED        = 0b000,
+    MKIO_BCSL_SCST_EXEC           = 0b001,
+    MKIO_BCSL_SCST_WAIT_SLOT      = 0b010,
+    MKIO_BCSL_SCST_SUSPEND        = 0b011,
+    MKIO_BCSL_SCST_WAIT_EXT_TRIG  = 0b100
+} mkio_bc_schedule_state_t;
+
 #define MKIO_WC_MAX     32
+
+#define MKIO_TIMEOUT    100
 
 void mkio_prepare_rt_descr(uint32_t base_addr, uint32_t* data_ptr, uint32_t size, mkio_rt_descriptor* mkio_rt_rx_descriptor);
 void mkio_prepare_bc_descr(uint32_t base_addr, uint32_t* data_ptr, uint32_t size, mkio_bc_descriptor* descr_ptr);
@@ -351,6 +362,8 @@ void mkio_bc_run_schedule (uint32_t base_address);
 void mkio_rt_run_schedule (uint32_t base_address);
 void mkio_set_bcrd(uint32_t base_address, uint32_t bc_irq_ring_addr);
 void mkio_enable_all_irq(uint32_t base_address);
+bool mkio_wait_bc_schedule_state(uint32_t base_address, mkio_bc_schedule_state_t sched_state);
+
 
 
 
