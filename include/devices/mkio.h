@@ -2,6 +2,7 @@
 #define MKIO_H
 
 #include <stdint.h>
+#include <platform/trace.h>
 
 
 /**
@@ -308,6 +309,49 @@ typedef volatile struct __attribute__ ((__packed__))
     //-----------------------------------------------------
     uint32_t next_descriptor_pointer     : 32;
 } mkio_rt_descriptor;
+
+typedef struct mkio_instance
+{
+    uint32_t            src_mkio_base_addr;
+    uint32_t            dst_mkio_base_addr;
+    uint32_t*           src_addr;
+    uint32_t*           dst_addr;
+    mkio_bc_descriptor* bc_desr;
+    mkio_rt_descriptor* rt_descr;
+    uint32_t            size;
+}mkio_instance_t;
+
+typedef struct mkio_irqe_struct
+{
+    bool    bceve;
+    bool    bcde;
+    bool    bcwke;
+    bool    rteve;
+    bool    rtde;
+    bool    rttee;
+    bool    bmde;
+    bool    bmtoe;
+    bool    all;
+}mkio_irqe_t;
+
+
+typedef volatile struct __attribute__ ((__packed__))
+{
+    uint32_t sa_ctrl_word                     : 32;
+    uint32_t sa_tx_descriptor_pointer         : 32;
+    uint32_t sa_rx_descriptor_pointer         : 32;
+    uint32_t sa_reserved                      : 32;
+} mkio_rt_sa_table_t;
+
+#define MKIO_WC_MAX     32
+
+void mkio_prepare_rt_descr(uint32_t base_addr, uint32_t* data_ptr, uint32_t size, mkio_rt_descriptor* mkio_rt_rx_descriptor);
+void mkio_prepare_bc_descr(uint32_t base_addr, uint32_t* data_ptr, uint32_t size, mkio_bc_descriptor* descr_ptr);
+void mkio_bc_run_schedule (uint32_t base_address);
+void mkio_rt_run_schedule (uint32_t base_address);
+void mkio_set_bcrd(uint32_t base_address, uint32_t bc_irq_ring_addr);
+void mkio_enable_all_irq(uint32_t base_address);
+
 
 
 
