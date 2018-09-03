@@ -551,5 +551,5 @@ void hscb_config_for_receive_and_transmit(hscb_instance_t* hscb_inst)
     hscb_set_wdma_tbl_size(hscb_inst->src_hscb_base_addr, 0x14);
     hscb_set_wdma_sys_addr(hscb_inst->src_hscb_base_addr, rumboot_virt_to_dma((uint32_t *) hscb_inst->rx_descr_addr));
 
-    //hscb_set_max_speed(hscb_inst->src_hscb_base_addr);
+    hscb_set_max_speed(hscb_inst->src_hscb_base_addr);
 }
