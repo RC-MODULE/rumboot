@@ -29,8 +29,8 @@
 uint32_t mkio_present  (uint32_t base_address)
 {
     if (
-            (ioread32 (base_address + HWCFG) != 0x00000000) |
-            ((ioread32 (base_address + BCSL) & 0x80000000) != 0x80000000) |
+            // (ioread32 (base_address + HWCFG) != 0x00000000) |
+            ((ioread32 (base_address + BCSL) & 0xF0000000) != 0xF0000000) |
             ((ioread32 (base_address + RTS ) & 0x80000000) != 0x80000000) |
             ((ioread32 (base_address + BMS ) & 0x80000000) != 0x80000000)
         )
@@ -104,9 +104,9 @@ void mkio_bm_start_logging (uint32_t base_address, uint32_t ring_buffer_pointer,
 
 uint32_t mkio_write_to_rt (uint32_t data_src, uint32_t data_dst, uint32_t size, uint32_t bc_base_address, uint32_t rt_base_address)
 {
-    mkio_bc_descriptor         mkio_bc_descriptor        __attribute__ ((aligned(16)))  ;
+    mkio_bc_descriptor         mkio_bc_descriptor        __attribute__ ((aligned(16 << 2)))  ;
     mkio_rt_subaddress_table   mkio_rt_subaddress_table  __attribute__ ((aligned(512))) ;
-    mkio_rt_descriptor         mkio_rt_rx_descriptor     __attribute__ ((aligned(16)))  ;
+    mkio_rt_descriptor         mkio_rt_rx_descriptor     __attribute__ ((aligned(16 << 2)))  ;
     
     //  Suspend normally (SUSN) - Always suspends after transfer
     uint32_t SUSN = 0x0;
@@ -134,6 +134,10 @@ uint32_t mkio_write_to_rt (uint32_t data_src, uint32_t data_dst, uint32_t size, 
 
     rumboot_printf("execute mkio_write_to_rt\n");
     
+    rumboot_printf("  mkio_bc_descriptor        0x%x\n", (uint32_t)(&mkio_bc_descriptor      ));
+    rumboot_printf("  mkio_rt_subaddress_table  0x%x\n", (uint32_t)(&mkio_rt_subaddress_table));
+    rumboot_printf("  mkio_rt_rx_descriptor     0x%x\n", (uint32_t)(&mkio_rt_rx_descriptor   ));
+    
     mkio_bc_descriptor.ctrl_word_0      = 0x00000000 | (SUSN << 25);
     mkio_bc_descriptor.ctrl_word_1      = 0x00000000 | (RTAD1 << 11) | (TR << 10) | (RTSA1 << 5) | (WCMC << 0) ;
     mkio_bc_descriptor.data_pointer     = data_src ;
@@ -158,6 +162,7 @@ uint32_t mkio_write_to_rt (uint32_t data_src, uint32_t data_dst, uint32_t size, 
     mkio_rt_rx_descriptor.data_pointer            = data_dst ;
     mkio_rt_rx_descriptor.next_descriptor_pointer = rt_descriptor_end_of_list ;
     
+    
     mkio_rt_start_schedule (rt_base_address, (uint32_t) (&mkio_rt_subaddress_table));
     mkio_bc_start_schedule (bc_base_address, (uint32_t) (&mkio_bc_descriptor      ));
     
@@ -174,9 +179,9 @@ uint32_t mkio_write_to_rt (uint32_t data_src, uint32_t data_dst, uint32_t size, 
 
 uint32_t mkio_read_from_rt (uint32_t data_src, uint32_t data_dst, uint32_t size, uint32_t bc_base_address, uint32_t rt_base_address)
 {
-    mkio_bc_descriptor         mkio_bc_descriptor        __attribute__ ((aligned(16)))  ;
+    mkio_bc_descriptor         mkio_bc_descriptor        __attribute__ ((aligned(16 << 2)))  ;
     mkio_rt_subaddress_table   mkio_rt_subaddress_table  __attribute__ ((aligned(512))) ;
-    mkio_rt_descriptor         mkio_rt_tx_descriptor     __attribute__ ((aligned(16)))  ;
+    mkio_rt_descriptor         mkio_rt_tx_descriptor     __attribute__ ((aligned(16 << 2)))  ;
     
     //  Suspend normally (SUSN) - Always suspends after transfer
     uint32_t SUSN = 0x0;
