@@ -32,9 +32,6 @@
 #include <platform/devices.h>
 #include <devices/sp804.h>
 
-#define irq_cntr_ptr 0x00050000
-#define irq_flag_ptr 0x00050008
-
 #include <platform/defs_c.h>
 
 #define pcie_dma_int_gic             55
@@ -44,6 +41,9 @@
 
 #define data_dst_ptr 0x00051000
 const long long data_dst [256];
+
+volatile int irq_cntr = 0;
+volatile int irq_flag = 0;
 
 const long long data_src [256] = {
     (long long) 0x0000000000000000l,(long long) 0x0101010101010101l,(long long) 0x0202020202020202l,(long long) 0x0303030303030303l,
@@ -143,14 +143,14 @@ uint32_t check_msix_PCIe_DMA_IRQ ()
 
 //------------------------------------------------------------------------
 //  PCIe DMA IRQ handler function.
-//    Increase irq_cntr_ptr to count irq events number
-//    Set irq_flag_ptr main program to acknowledge irq recieving
+//    Increase irq_cntr to count irq events number
+//    Set irq_flag main program to acknowledge irq recieving
 //------------------------------------------------------------------------
 static void PCIe_DMA_IRQ_handler (int irq, void *arg)
 {
 	rumboot_printf("PCIe DMA IRQ happened \n");
-    iowrite32 (ioread32 (irq_cntr_ptr) + 1, irq_cntr_ptr);
-    iowrite32 (1, irq_flag_ptr);
+    irq_cntr += 1;
+    irq_flag = 1;
     clear_PCIe_DMA_IRQ_effects ();
 }
 
@@ -182,8 +182,8 @@ void pcie_dma_transaction ()
 
 uint32_t main ()
 {
-    iowrite64 (0, irq_cntr_ptr) ;
-    iowrite64 (0, irq_flag_ptr) ;
+    irq_cntr = 0;
+    irq_flag = 0;
 
     //---------------------------------------------------------
     //  GIC configuration
@@ -228,10 +228,10 @@ uint32_t main ()
         //  Wait interrupt handled by GIC
         //    It should be made at the beginning of previous cycle.
         //---------------------------------------------------------
-        while (ioread32 (irq_flag_ptr) != 1)
+        while (irq_flag != 1)
         {
         }
-        iowrite32 (0, irq_flag_ptr) ;
+        irq_flag = 0;
         //---------------------------------------------------------
         //  Wait MSIX come back
         //    And check it
@@ -260,12 +260,14 @@ uint32_t main ()
 
     }
 
+    
+	// rumboot_printf("  __dbg_0    %d    %d\n", irq_cntr, repeat_number);
     //---------------------------------------------------------
     //  Check, that irq handler was called neccessary times
     //---------------------------------------------------------
-    if (ioread32 (irq_cntr_ptr) != repeat_number)
+    if (irq_cntr != repeat_number)
     {
-        return ioread32 (irq_cntr_ptr);
+        return irq_cntr;
     }
 
     return 0;
