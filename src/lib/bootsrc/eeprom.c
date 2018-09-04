@@ -4,6 +4,8 @@
 #include <regs/regs_i2c.h>
 #include <rumboot/io.h>
 
+
+#define EEPROM_PAGE_SIZE 32
 struct eeprom_private_data {
 	const struct rumboot_bootsource *src;
 };
@@ -44,9 +46,24 @@ static void i2c_stat_rst(uint32_t base)
 }
 
 
-static void eeprom_read_chunk(uint32_t base, uint8_t devaddr, uint16_t offset, uint8_t *dst, int len)
+static bool i2c_has_errors(const struct rumboot_bootsource *src)
 {
-	rumboot_printf("a: %x\n", devaddr << 1);
+	if (ioread32(src->base + I2C_STATUS) & (1<<9)) {
+		dbg_boot(src, "error: nack");
+		return true;
+	}
+	if (ioread32(src->base + I2C_STATUS) & (1<<9)) {
+		dbg_boot(src, "error: arbitration lost");
+		return true;
+	}
+
+	return false;
+}
+
+static size_t eeprom_read_chunk(const struct rumboot_bootsource *src, uint8_t devaddr, uint16_t offset, uint8_t *dst, int len)
+{
+	size_t ret = 0;
+	uint32_t base = src->base;
 	iowrite32(0x00,   				 base + I2C_STATUS);
 	iowrite32(devaddr << 1,          base + I2C_TRANSMIT);
 	iowrite32(offset >> 8,           base + I2C_TRANSMIT);
@@ -55,7 +72,8 @@ static void eeprom_read_chunk(uint32_t base, uint8_t devaddr, uint16_t offset, u
 	iowrite32(1<<0 | 1<<1 | 1<<4,    		         base + I2C_CTRL);
 
 	while (! (ioread32(base + I2C_STATUS) & 0x10)) {
-		rumboot_printf("%x\n", ioread32(base + I2C_STATUS));;
+		if (i2c_has_errors(src))
+			goto bailout;
 	};;
 
 	i2c_stat_rst(base);
@@ -64,10 +82,16 @@ static void eeprom_read_chunk(uint32_t base, uint8_t devaddr, uint16_t offset, u
 	iowrite32(CMD_READ_REPEAT_STOP,( base + I2C_CTRL));
 
 	while (len--) {
-		while (ioread32(base + I2C_STATUS) & (1 << 7));;
+		while (ioread32(base + I2C_STATUS) & (1 << 7)) {
+			if (i2c_has_errors(src))
+				goto bailout;
+		}
 		*dst++ = ioread32(base + I2C_RECEIVE);
+		ret++;
 	}
+bailout:
 	i2c_stat_rst(base);
+	return ret;
 }
 
 const uint32_t get_eeprom_numb()
@@ -82,15 +106,15 @@ bool eeprom_init(const struct rumboot_bootsource *src, void *pdata)
 	uint32_t base = src->base;
 	int sda, scl;
 
-	dbg_boot(src, "Checking id");
 	uint32_t tmp = ioread32(base + I2C_ID);
 	if (tmp != I2C_DEVICE_ID_VALUE) {
 		dbg_boot(src, "Invalid device id, bootrom bug?");
 		return false;
 	}
 
-	dbg_boot(src, "Checking line status");
+	i2c_stat_rst(base);
 	tmp = ioread32(base + I2C_STATUS);
+	dbg_boot(src, "%x", tmp);
 	sda = (tmp & (1 << 24)) ? 1 : 0;
 	scl = (tmp & (1 << 26)) ? 1 : 0;
 	if ((!sda) || (!scl)) {
@@ -98,7 +122,6 @@ bool eeprom_init(const struct rumboot_bootsource *src, void *pdata)
 		return false;
 	}
 
-	dbg_boot(src, "Calculating PR");
 	uint32_t pr = calc_best_pr(src->freq_khz * 1000, 400000);
 	iowrite32(1, base + I2C_SOFTR);
 	iowrite32(0, base + I2C_SOFTR);
@@ -118,13 +141,13 @@ static size_t eeprom_read(const struct rumboot_bootsource* src, void* pdata, voi
 	uint8_t *dest = to;
 	size_t transferred = 0;
 	while (length) {
-		size_t toread = (length < 64) ? length : 64;
-		dbg_boot(src, "reading chunk %d bytes @ %d", toread, offset);
-		eeprom_read_chunk(src->base, src->slave_addr, offset, dest, toread);
-		/* TODO: Error handling here */
+		size_t toread = (length < EEPROM_PAGE_SIZE) ? length : EEPROM_PAGE_SIZE;
+		size_t actual = eeprom_read_chunk(src, src->slave_addr, offset, dest, toread);
+		transferred += actual;
+		if (actual != toread) /* short read, return what we've got */
+			return transferred;
 		length -= toread;
 		offset += toread;
-		transferred += toread;
 		dest = &dest[toread];
 	}
 	return transferred;
