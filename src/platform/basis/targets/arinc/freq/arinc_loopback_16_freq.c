@@ -62,6 +62,7 @@ void arinc_init_freq(uint32_t tx_freq, uint32_t rx_freq) {
      int i =0;
 	uint32_t  init_axi_mst=0x0;
 	uint32_t size = 0x2;
+	rumboot_printf("===> %x %x\n", tx_freq, rx_freq);
 
 	//-------------------------------------------------------------------------------------
 //  Set parameters for DMA exchange loopback  connected on chip pins in testbench
@@ -122,7 +123,7 @@ int main()
 {
     int i =0;
 	
-	uint32_t size = 0x2;
+	//uint32_t size = 0x2;
 	int tmp = -1;
 	uint32_t tmp_r =-1;	
 	uint32_t enable=0xffffffff;
@@ -131,18 +132,17 @@ int main()
 
 	
 	rumboot_printf("copy %d bytes\n", sizeof(tx_array32));  //transmit
-	uint32_t *tx_mem = rumboot_malloc_from_heap_aligned(0, sizeof(tx_array32), 4);
+	uint32_t *tx_mem = rumboot_malloc_from_heap_aligned(heap_0, sizeof(tx_array32), 4);
 	uint32_t *trg = (uint32_t *) tx_mem;
 	memcpy(trg, tx_array32,sizeof(tx_array32));
 	 
-	uint32_t *rx_mem = rumboot_malloc_from_heap_aligned(0, sizeof(tx_array32), 4);	
+	uint32_t *rx_mem = rumboot_malloc_from_heap_aligned(heap_1, sizeof(tx_array32), 4);	
 	
 
 		for (i = 0; i< 16; i++)	{
 			iowrite32((uint32_t) &tx_mem[2*i],(ARINC_BASE + AG_E_TX + i*4)); 	// dma rd channel memory address
-			iowrite32(size,(ARINC_BASE + SZ_E_TX + i*4));    					// dma rd channel size
 			iowrite32((uint32_t) &rx_mem[2*i],(ARINC_BASE + AG_E_RX + i*4)); 	// dma wr channel memory address
-			iowrite32(size,(ARINC_BASE + SZ_E_RX + i*4));    					// dma wr channel size
+
 	}
 	arinc_init_freq(TX_FREQ, RX_FREQ);	
     iowrite32(enable,ARINC_BASE + CHANNEL_EN); // run transaction
@@ -177,4 +177,3 @@ for (i = 0; i< 32 ; i++)
 			rumboot_printf("ARINC test ERROR!\n");
 			return TEST_ERROR; }
 }
-
