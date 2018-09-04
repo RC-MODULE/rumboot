@@ -6,12 +6,10 @@
 #include <rumboot/printf.h>
 
 #include <platform/common_macros/common_macros.h>
-#include <platform/test_event_codes.h>
-#include <platform/test_assert.h>
 #include <rumboot/regpoker.h>
 #include <rumboot/printf.h>
 #include <rumboot/io.h>
-#include <regs/regs_nic400.h>
+#include <platform/regs/regs_nic400.h>
 #include <platform/devices.h>
 
 
@@ -50,16 +48,16 @@ static int AXI_check_regs32(uint32_t base_addr)
     { "NIC400_CPU_S_WQOS", REGPOKER_WRITE32, NIC400_CPU_S_RQOS, 0x0, 0b1111 },
 
     { "NIC400_CPU_S_FN_MOD", REGPOKER_READ32, NIC400_CPU_S_FN_MOD, 0x0, 0b11 },
-    { "NIC400_CPU_S_FN_MOD", REGPOKER_WRITE32, NIC400_CPU_S_FN_MOD, 0x0, 0b11},
+    { "NIC400_CPU_S_FN_MOD", REGPOKER_WRITE32, NIC400_CPU_S_FN_MOD, 0x0, 0b11 },
 
     { "NIC400_GSPI_1_S_RQOS", REGPOKER_READ32, NIC400_GSPI_1_S_RQOS, 0x0, 0b1111 },
     { "NIC400_GSPI_1_S_RQOS", REGPOKER_WRITE32, NIC400_GSPI_1_S_RQOS, 0x0,0b1111 },
 
-    { "NIC400_GSPI_1_WQOS", REGPOKER_READ32, NIC400_GSPI_1_WQOS, 0x0, 0b1111 },
-    { "NIC400_GSPI_1_WQOS", REGPOKER_WRITE32, NIC400_GSPI_1_WQOS, 0x0, 0b1111 },
+    { "NIC400_GSPI_1_S_WQOS", REGPOKER_READ32, NIC400_GSPI_1_S_WQOS, 0x0, 0b1111 },
+    { "NIC400_GSPI_1_S_WQOS", REGPOKER_WRITE32, NIC400_GSPI_1_S_WQOS, 0x0, 0b1111 },
 
-    { "NIC400_GSPI_1_FN_MOD", REGPOKER_READ32, NIC400_GSPI_1_FN_MOD, 0x0, 0b11 },
-    { "NIC400_GSPI_1_FN_MOD", REGPOKER_WRITE32, NIC400_GSPI_1_FN_MOD, 0x0, 0b11 },
+    { "NIC400_GSPI_1_S_FN_MOD", REGPOKER_READ32, NIC400_GSPI_1_S_FN_MOD, 0x0, 0b11 },
+    { "NIC400_GSPI_1_S_FN_MOD", REGPOKER_WRITE32, NIC400_GSPI_1_S_FN_MOD, 0x0, 0b11 },
 
     { "NIC400_ETH_1_S_RQOS", REGPOKER_READ32, NIC400_ETH_1_S_RQOS, 0x0, 0b1111 },
     { "NIC400_ETH_1_S_RQOS", REGPOKER_WRITE32, NIC400_ETH_1_S_RQOS, 0x0, 0b1111 },
@@ -70,11 +68,11 @@ static int AXI_check_regs32(uint32_t base_addr)
     { "NIC400_ETH_1_S_FN_MOD", REGPOKER_READ32, NIC400_ETH_1_S_FN_MOD, 0x0, 0b11 },
     { "NIC400_ETH_1_S_FN_MOD", REGPOKER_WRITE32, NIC400_ETH_1_S_FN_MOD, 0x0, 0b11 },
 
-    { "NIC400_SW_0_3_S_RQOS", REGPOKER_READ32, NIC400_SW_0_3_S_RQOS, 0x0, 0b1111 },
-    { "NIC400_SW_0_3_S_RQOS", REGPOKER_WRITE32, NIC400_SW_0_3_S_RQOS, 0x0, 0b1111 },
+    { "NIC400_SW_0_3_S_RQOS", REGPOKER_READ32, NIC400_SW_0_3_S_RQOS, 0x0, 0b11 },
+    { "NIC400_SW_0_3_S_RQOS", REGPOKER_WRITE32, NIC400_SW_0_3_S_RQOS, 0x0, 0b11 },
 
-    { "NIC400_SW_0_3_S_WQOS", REGPOKER_READ32, NIC400_SW_0_3_S_WQOS, 0x0, 0b1111 },
-    { "NIC400_SW_0_3_S_WQOS", REGPOKER_WRITE32, NIC400_SW_0_3_S_WQOS, 0x0, 0b1111 },
+    { "NIC400_SW_0_3_S_WQOS", REGPOKER_READ32, NIC400_SW_0_3_S_WQOS, 0x0, 0b11 },
+    { "NIC400_SW_0_3_S_WQOS", REGPOKER_WRITE32, NIC400_SW_0_3_S_WQOS, 0x0, 0b11 },
 
     { "NIC400_SW_0_3_S_FN_MOD", REGPOKER_READ32, NIC400_SW_0_3_S_FN_MOD, 0x0, 0b11 },
     { "NIC400_SW_0_3_S_FN_MOD", REGPOKER_WRITE32, NIC400_SW_0_3_S_FN_MOD, 0x0, 0b11 },
@@ -168,9 +166,9 @@ int main(void)
            AXI_check_regs64(AXI64HSIFS_CTRL_BASE);
    if(!result)
    {
-       rumboot_printf("Checked TEST_ERROR\n");
-       return 1;
+       rumboot_printf("Checked TEST_OK\n");
+       return 0;
    }
-   rumboot_printf("Checked TEST_OK\n");
+   rumboot_printf("Checked TEST_ERROR\n");
    return result;
 }
