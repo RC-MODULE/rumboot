@@ -16,6 +16,7 @@
 #include <rumboot/irq.h>
 #include <rumboot/boot.h>
 #include <rumboot/bootsrc/spiflash.h>
+#include <rumboot/bootsrc/eeprom.h>
 #include <regs/regs_gpio_rcm.h>
 #include <stdbool.h>
 #include <devices/sctl.h>
@@ -208,6 +209,16 @@ static void spi0_1_cs(const struct rumboot_bootsource* src, void* pdata, int sel
 }
 
 static const struct rumboot_bootsource arr[] = {
+		{
+			.name = "I2C0 (EEPROM @ 0xA0)",
+			.base = I2C0_BASE,
+			.slave_addr = 0x50,
+			.freq_khz = 100000,
+			.plugin = &g_bootmodule_eeprom,
+//			.enable  = spi0_0_enable,
+//			.disable = spi0_0_disable,
+//			.chipselect = spi0_0_cs,
+		},
 		{
 			.name = "SPI0 (CS: GPIO0_4)",
 			.base = GSPI0_BASE,

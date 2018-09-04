@@ -2,6 +2,9 @@
 #define REGS_I2C_H
 
 
+
+#define I2C_DEVICE_ID_VALUE  0x012C012C
+
 //REGISTERS
 #define I2C_ID    		0x0
 #define I2C_ISR    		0x004

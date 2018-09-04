@@ -177,6 +177,17 @@ macro(add_bootrom_stuff)
   )
 
   add_rumboot_target(
+          NAME "i2c-eeprom-a0-boot"
+          CONFIGURATION ROM
+          PREFIX "bootrom"
+          BOOTROM bootrom-loader
+          TESTGROUP bootrom
+          LOAD
+            I2C0_CONF spl-ok,spl-fail,spl-fail,spl-fail
+          FEATURES NOCODE
+  )
+
+  add_rumboot_target(
           NAME "host-shim"
           CONFIGURATION ROM
           PREFIX "bootrom"

@@ -43,7 +43,10 @@ bool bootsource_try_single(const struct rumboot_bootsource *src, void *pdata)
 
 	struct rumboot_bootheader *dst = (struct rumboot_bootheader *)&rumboot_platform_spl_start;
 
-	ret = src->enable(src, pdata);
+	ret = true;
+    if (src->enable)
+		ret = src->enable(src, pdata);
+
 	if (ret) {
 		dbg_boot(src, "Enabled successfully");
 	} else {
@@ -51,7 +54,10 @@ bool bootsource_try_single(const struct rumboot_bootsource *src, void *pdata)
 		goto gpio_deinit;
 	}
 
-	ret = src->plugin->init(src, pdata);
+	ret = true;
+    if (src->plugin->init)
+		ret = src->plugin->init(src, pdata);
+
 	if (ret) {
 		dbg_boot(src, "Initialized");
 	} else {
@@ -67,9 +73,11 @@ bool bootsource_try_single(const struct rumboot_bootsource *src, void *pdata)
 	}
 
 deinit:
-	src->plugin->deinit(src, pdata);
+	if (src->plugin->deinit)
+		src->plugin->deinit(src, pdata);
 gpio_deinit:
-	src->disable(src, pdata);
+	if (src->disable)
+		src->disable(src, pdata);
 
 	if (ret) {
 		rumboot_bootimage_exec(dst);

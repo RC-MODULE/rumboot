@@ -98,6 +98,7 @@ int32_t rumboot_bootimage_exec(struct rumboot_bootheader *hdr);
    uint32_t base;
    uint32_t offset;
    uint32_t freq_khz;
+   uint32_t slave_addr;
    const struct rumboot_bootmodule *plugin;
    bool (*enable)   (const struct rumboot_bootsource* src, void* pdata);
    void (*disable) (const struct rumboot_bootsource* src, void* pdata);

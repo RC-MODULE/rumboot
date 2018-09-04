@@ -27,5 +27,6 @@
 #include <rumboot/boot.h>
 
 
+const struct rumboot_bootmodule g_bootmodule_eeprom;
 
 #endif
