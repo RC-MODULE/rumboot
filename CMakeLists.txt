@@ -199,7 +199,7 @@ ADD_SOURCE("src/lib/drivers/mdma_chan_lib.c")
 ADD_SOURCE("src/lib/drivers/wdt.c")
 ADD_SOURCE("/src/lib/drivers/mkio.c")
 ADD_SOURCE("/src/lib/drivers/pl022.c")
-
+ADD_SOURCE("/src/lib/bootsrc/boilerplate.c")
 if (RUMBOOT_PLATFORM MATCHES native)
     ADD_SOURCE("src/rumboot_main_native.c")
 else()
