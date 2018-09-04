@@ -50,21 +50,21 @@ struct pl022_config {
 #define CPSDVR  2
 
 typedef enum{
-    SSP_INT = (0x1 << 0),
-    GSPI_INT = (0x1 << 1),
+    ssp_int = (0x1 << 0),
+    gspi_int = (0x1 << 1),
     end_buf_write = (0x1 << 2),
     end_buf_read = (0x1 << 3),
     err_read = (0x1 << 4),
     err_write = (0x1 << 5),
     overflow_buf_write = (0x1 << 6)
-}gspi_dma_interrupt;
+}ssp_dma_interrupt;
 
 typedef enum{
     disable = 0x0,
     transmit = 0x1,
     receive = 0x2,
     all = 0x3
-}dma_enable;
+}ssp_dma_enable;
 
 typedef enum{
     master_mode = 0,
@@ -170,7 +170,7 @@ uint32_t gspi_get_ris(uint32_t base_address);
 uint32_t gspi_get_mis(uint32_t base_address);
 uint32_t gspi_get_ssp_status(uint32_t base_addr);
 void gspi_set_int_mask(uint32_t base_address, uint16_t mask);
-void gspi_dma_enable(uint32_t base_addr, dma_enable enabled);
+void gspi_dma_enable(uint32_t base_addr, ssp_dma_enable enabled);
 void gspi_write_data(uint32_t base_addr, uint32_t data);
 uint32_t gspi_read_data(uint32_t base_addr);
 int gspi_send_word(uint32_t base_address, uint32_t word);
@@ -178,7 +178,7 @@ int gspi_get_word(uint32_t base_address, uint32_t * word);
 
 //dma function
 void gspi_dma_reset(uint32_t base_addr);
-void gspi_dma_set_irq_mask(uint32_t base_addr, gspi_dma_interrupt interrupt);
+void gspi_dma_set_irq_mask(uint32_t base_addr, ssp_dma_interrupt interrupt);
 uint32_t gspi_get_dma_status(uint32_t base_addr);
 
 //eeprom function
