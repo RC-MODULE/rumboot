@@ -51,26 +51,7 @@ setup_tlb:
     load_size   r4, TLB_ENTRIES_N
     bl          ppc470s_write_tlb_entries /*(r3, r4) - are parameters*/
 
-//setup_stack: //stack is growing down
-//    mfspr       r3, SPR_PIR         //read Processor ID Register
-//    cmpwi       r3, PPC0_CORE_ID    //if Processor ID Register is 0 (primary)
-//    beq         setup_cpu0_stack
-//    //else
-//    load_addr   r1, cpu1_stack_top
-//    b           setup_cpu1_stack
-//setup_cpu0_stack:
-//    load_addr   r1, cpu0_stack_top
-//setup_cpu1_stack:
-//    stwu        r0, -8(r1) //allocate LR and save SP of first stack frame according to ABI rules
-//
-//setup_ddr:
-//    bl          ddr_init_em0
-
     b           test_oi10_cpu_020_plb6_0
-
-never_comes_here:
-    test_event  EVENT_ERROR
-    b           never_comes_here
 
 
 .section ".IM0.data","aw",@progbits
@@ -99,32 +80,32 @@ plb6_write_with_flush_test_data:
 
 .section ".IM0.text","ax",@progbits
 
-BEGIN_ENUM( TEST_EVENT_CODE )
-DECLARE_ENUM_VAL( TEC_CHECK_PLB6_RWNITC,            TEST_EVENT_CODE_MIN )
-DECLARE_ENUM_VAL( TEC_CHECK_PLB6_READ,              TEST_EVENT_CODE_MIN+1 )
-DECLARE_ENUM_VAL( TEC_CHECK_PLB6_RWITM,             TEST_EVENT_CODE_MIN+2 )
-DECLARE_ENUM_VAL( TEC_CHECK_PLB6_READ_ATOMIC,       TEST_EVENT_CODE_MIN+3 )
-DECLARE_ENUM_VAL( TEC_CHECK_PLB6_WRITE_WITH_FLUSH,  TEST_EVENT_CODE_MIN+4 )
-DECLARE_ENUM_VAL( TEC_CHECK_PLB6_WRITE_WITH_KILL,   TEST_EVENT_CODE_MIN+5 )
-DECLARE_ENUM_VAL( TEC_CHECK_PLB6_WRITE_WITH_CLEAN,  TEST_EVENT_CODE_MIN+6 )
-DECLARE_ENUM_VAL( TEC_CHECK_PLB6_MSYNC,             TEST_EVENT_CODE_MIN+7 )
-DECLARE_ENUM_VAL( TEC_CHECK_PLB6_MBAR,              TEST_EVENT_CODE_MIN+8 )
-DECLARE_ENUM_VAL( TEC_CHECK_PLB6_TLBSYNC,           TEST_EVENT_CODE_MIN+9 )
-DECLARE_ENUM_VAL( TEC_CHECK_PLB6_DCLAIM,            TEST_EVENT_CODE_MIN+10 )
-DECLARE_ENUM_VAL( TEC_CHECK_PLB6_IKILL,             TEST_EVENT_CODE_MIN+11 )
-DECLARE_ENUM_VAL( TEC_CHECK_PLB6_CLEAN,             TEST_EVENT_CODE_MIN+12 )
-DECLARE_ENUM_VAL( TEC_CHECK_PLB6_FLUSH,             TEST_EVENT_CODE_MIN+13 )
-DECLARE_ENUM_VAL( TEC_CHECK_PLB6_TLBIE,             TEST_EVENT_CODE_MIN+14 )
-END_ENUM( TEST_EVENT_CODE )
+BEGIN_ENUM( test_event_code )
+DECLARE_ENUM_VAL( EVENT_CHECK_PLB6_RWNITC, TEST_EVENT_CODE_MIN )
+DECLARE_ENUM_NEXT( EVENT_CHECK_PLB6_READ )
+DECLARE_ENUM_NEXT( EVENT_CHECK_PLB6_RWITM )
+DECLARE_ENUM_NEXT( EVENT_CHECK_PLB6_READ_ATOMIC )
+DECLARE_ENUM_NEXT( EVENT_CHECK_PLB6_WRITE_WITH_FLUSH )
+DECLARE_ENUM_NEXT( EVENT_CHECK_PLB6_WRITE_WITH_KILL )
+DECLARE_ENUM_NEXT( EVENT_CHECK_PLB6_WRITE_WITH_CLEAN )
+DECLARE_ENUM_NEXT( EVENT_CHECK_PLB6_MSYNC )
+DECLARE_ENUM_NEXT( EVENT_CHECK_PLB6_MBAR )
+DECLARE_ENUM_NEXT( EVENT_CHECK_PLB6_TLBSYNC )
+DECLARE_ENUM_NEXT( EVENT_CHECK_PLB6_DCLAIM )
+DECLARE_ENUM_NEXT( EVENT_CHECK_PLB6_IKILL )
+DECLARE_ENUM_NEXT( EVENT_CHECK_PLB6_CLEAN )
+DECLARE_ENUM_NEXT( EVENT_CHECK_PLB6_FLUSH )
+DECLARE_ENUM_NEXT( EVENT_CHECK_PLB6_TLBIE )
+END_ENUM( test_event_code )
 
 
 test_oi10_cpu_020_plb6_0:
-
+    test_event_send_test_id "test_oi10_cpu_020_plb6"
 check_plb6_rwnitc:
     rumboot_putstring   "check_plb6_rwnitc\n"
 
     load_addr   r1, plb6_rwnitc_test_data
-    test_event  TEC_CHECK_PLB6_RWNITC
+    test_event  EVENT_CHECK_PLB6_RWNITC
     lwz         r1, 0(r1)
     load_const  r0, TD_RWNITC
     cmpw        r0, r1
@@ -134,7 +115,7 @@ check_plb6_read:
     rumboot_putstring   "check_plb6_read\n"
 
     load_addr   r1, plb6_read_test_data
-    test_event  TEC_CHECK_PLB6_READ
+    test_event  EVENT_CHECK_PLB6_READ
     lwz         r1, 0(r1)
     load_const  r0, TD_READ
     cmpw        r0, r1
@@ -144,7 +125,7 @@ check_plb6_rwitm:
     rumboot_putstring   "check_plb6_rwitm\n"
 
     load_addr   r1, plb6_rwitm_test_data
-    test_event  TEC_CHECK_PLB6_RWITM
+    test_event  EVENT_CHECK_PLB6_RWITM
     dcbtst      0, r1, 2
     lwz         r1, 0(r1)
     load_const  r0, TD_RWITM
@@ -155,7 +136,7 @@ check_plb6_read_atomic:
     rumboot_putstring   "check_plb6_read_atomic\n"
 
     load_addr   r1, plb6_read_atomic_test_data
-    test_event  TEC_CHECK_PLB6_READ_ATOMIC
+    test_event  EVENT_CHECK_PLB6_READ_ATOMIC
     lwarx       r1, 0, r1
     load_const  r0, TD_READ_ATOMIC
     cmpw        r0, r1
@@ -166,7 +147,7 @@ check_plb6_write_with_flush:
 
     load_addr   r1, plb6_write_with_flush_test_data
     load_const  r0, TD_WRITE_WITH_FLUSH
-    test_event  TEC_CHECK_PLB6_WRITE_WITH_FLUSH
+    test_event  EVENT_CHECK_PLB6_WRITE_WITH_FLUSH
     stw         r0, 0(r1)
 
 check_plb6_write_with_kill:
@@ -177,7 +158,7 @@ check_plb6_write_with_kill:
     load_const  r0, TD_WRITE_WITH_KILL
     stw         r0, 0(r1)
     mbar
-    test_event  TEC_CHECK_PLB6_WRITE_WITH_KILL
+    test_event  EVENT_CHECK_PLB6_WRITE_WITH_KILL
     dcbf        0, r1
     msync
 
@@ -189,33 +170,33 @@ check_plb6_write_with_clean:
     load_const  r0, TD_WRITE_WITH_CLEAN
     stw         r0, 0(r1)
     mbar
-    test_event  TEC_CHECK_PLB6_WRITE_WITH_CLEAN
+    test_event  EVENT_CHECK_PLB6_WRITE_WITH_CLEAN
     dcbst       0, r1
     msync
 
 check_plb6_msync:
     rumboot_putstring   "check_plb6_msync\n"
 
-    test_event  TEC_CHECK_PLB6_MSYNC
+    test_event  EVENT_CHECK_PLB6_MSYNC
     msync
 
 check_plb6_mbar:
     rumboot_putstring   "check_plb6_mbar\n"
 
-    test_event  TEC_CHECK_PLB6_MBAR
+    test_event  EVENT_CHECK_PLB6_MBAR
     mbar
 
 check_plb6_tlbsync:
     rumboot_putstring   "check_plb6_tlbsync\n"
 
-    test_event  TEC_CHECK_PLB6_TLBSYNC
+    test_event  EVENT_CHECK_PLB6_TLBSYNC
     tlbsync
 
 check_plb6_dclaim:
     rumboot_putstring   "check_plb6_dclaim\n"
 
     load_addr   r1, plb6_dclaim_test_data
-    test_event  TEC_CHECK_PLB6_DCLAIM
+    test_event  EVENT_CHECK_PLB6_DCLAIM
     dcbz        0, r1
     msync
 
@@ -225,7 +206,7 @@ check_plb6_ikill:
     bl          plb6_ikill_test_code
     load_addr   r1, plb6_ikill_test_code
 
-    test_event  TEC_CHECK_PLB6_IKILL
+    test_event  EVENT_CHECK_PLB6_IKILL
     icbi        0, r1
 
 check_plb6_clean:
@@ -237,7 +218,7 @@ check_plb6_clean:
     stw         r0, 0(r1)
     dcbi        0, r1
     mbar
-    test_event  TEC_CHECK_PLB6_CLEAN
+    test_event  EVENT_CHECK_PLB6_CLEAN
     dcbst       0, r1
     msync
 
@@ -250,7 +231,7 @@ check_plb6_flush:
     stw         r0, 0(r1)
     dcbi        0, r1
     mbar
-    test_event  TEC_CHECK_PLB6_FLUSH
+    test_event  EVENT_CHECK_PLB6_FLUSH
     dcbf        0, r1
     msync
 
@@ -258,7 +239,7 @@ check_plb6_tlbie:
     rumboot_putstring   "check_plb6_tlbie\n"
 
     load_const  r1, 0x00000000
-    test_event  TEC_CHECK_PLB6_TLBIE
+    test_event  EVENT_CHECK_PLB6_TLBIE
     tlbivax     0, r1
     msync
 
@@ -276,6 +257,10 @@ test_error:
     rumboot_putstring "TEST ERROR\n"
     test_event  EVENT_ERROR
     load_const  R_RETV, RESULT_ERROR
+
+never_comes_here:
+    test_event  EVENT_ERROR
+    b           never_comes_here
 
 .section ".EM0.data","awx",@progbits
 .org 0x00000000
