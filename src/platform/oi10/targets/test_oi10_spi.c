@@ -5,8 +5,6 @@
 #include <platform/common_macros/common_macros.h>
 #include <platform/test_event_codes.h>
 #include <platform/devices.h>
-//#include <platform/oi10/platform/regs/regs_spi.h>
-//#include <platform/oi10/platform/devices/spi.h>
 #include <regs/regs_spi.h>
 #include <devices/pl022.h>
 
@@ -89,7 +87,7 @@ static uint32_t gspi_check_regs(uint32_t base_addr)
 
 static volatile uint32_t IRQ;
 static volatile uint32_t SSP_data;
-static volatile uint32_t DMA_write_buffer_end;
+static volatile uint32_t DMA_write_buffer_end = 0;
 
 static void gspi_irq_handler( int irq, void *arg )
 {
@@ -106,10 +104,13 @@ static void gspi_irq_handler( int irq, void *arg )
     }
 
     if (dma_status & 0x4)
+    {
         DMA_write_buffer_end = 1;
-
+        rumboot_printf("DMA_write_buffer_end\n");
+    }
     rumboot_printf("Clear interrupts\n");
     iowrite32(0x0F, GSPI_BASE + GSPI_SSPICR);
+    rumboot_printf("GSPI STATUS is 0x%x\n", dma_status);
     IRQ = 1;
 }
 
@@ -162,16 +163,13 @@ static uint32_t gspi_dma_axi(uint32_t base_addr, uint32_t* r_mem_addr, uint32_t*
     iowrite32((uint32_t)((uint8_t*)(r_mem_addr) + 7), base_addr + GSPI_DMAREND);
 
     iowrite32((uint32_t)(w_mem_addr), base_addr + GSPI_DMAWSTART);
-    iowrite32((uint32_t)((uint8_t*)(w_mem_addr) + 3), base_addr + GSPI_DMAWEND);
+    iowrite32((uint32_t)((uint8_t*)(w_mem_addr) + 7), base_addr + GSPI_DMAWEND);
 
     iowrite32(0x9FFFFFE0, base_addr + GSPI_DMARCNTRL);
-    iowrite32(0x5FFFFFE0, base_addr + GSPI_DMARCNTRL);
     iowrite32(0X9FFFFFE0, base_addr + GSPI_DMAWCNTRL);
-    iowrite32(0X5FFFFFE0, base_addr + GSPI_DMAWCNTRL);
 
     iowrite32(0x01, base_addr + GSPI_AXIR_BUFENA); //enable transmitting
 
-    rumboot_printf("GSPI_DMARCUR =%x\n", ioread32(base_addr + GSPI_DMARCUR));
 
     while(!DMA_write_buffer_end)
         ;
@@ -179,9 +177,14 @@ static uint32_t gspi_dma_axi(uint32_t base_addr, uint32_t* r_mem_addr, uint32_t*
 
     rumboot_putstring("Reading data...\n");
     (void)gspi_eeprom_read_data(base_addr);
+    while(!DMA_write_buffer_end)
+        ;
+    DMA_write_buffer_end = 0;
+
     rumboot_printf("Read data from memory =%x\n", ioread32((uint32_t)w_mem_addr));
+    rumboot_printf("Read data from memory =%x\n", ioread32((uint32_t)w_mem_addr + 4));
     rumboot_putstring("Checking data ...\n");
-    if (ioread32((uint32_t)w_mem_addr) != test_data)
+    if (ioread32((uint32_t)w_mem_addr + 4) != test_data)
     {
         rumboot_putstring("GSPI AXI: SPI data read fail\n");
         gspi_dma_enable(base_addr, disable);
@@ -301,16 +304,6 @@ int main(void)
     test_result += gspi_dma_axi(GSPI_BASE, (uint32_t*)data_src_im0, (uint32_t*)rumboot_virt_to_dma((void*)(IM1_BASE + 0x10)), TEST_DATA_IM0);
     //IM0 - EM2
     test_result += gspi_dma_axi(GSPI_BASE, (uint32_t*)data_src_im0, (uint32_t*)rumboot_virt_to_dma((void*)(EM2_BASE + 0x10)), TEST_DATA_IM0);
-
-//    // Copy data in IM1
-//    memcpy((uint32_t*)rumboot_virt_to_dma((void*)IM1_BASE), data_src_im1, sizeof(data_src_im1));
-//
-//    //IM1 - IM0
-//    test_result += gspi_dma_axi(GSPI_BASE, (uint32_t*)rumboot_virt_to_dma((void*)IM1_BASE), (uint32_t*)data_dst, TEST_DATA_IM1);
-//    //IM1 - IM1
-//    test_result += gspi_dma_axi(GSPI_BASE, (uint32_t*)rumboot_virt_to_dma((void*)IM1_BASE), (uint32_t*)rumboot_virt_to_dma((void*)(IM1_BASE + 0x20)), TEST_DATA_IM1);
-//    //IM1 - EM2
-//    test_result += gspi_dma_axi(GSPI_BASE, (uint32_t*)rumboot_virt_to_dma((void*)IM1_BASE), (uint32_t*)rumboot_virt_to_dma((void*)(EM2_BASE + 0x20)), TEST_DATA_IM1);
 
     // Copy data in EM2
 
