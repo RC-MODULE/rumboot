@@ -304,38 +304,79 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     )
 	add_rumboot_target_dir(arinc/freq/
       CONFIGURATION IRAM
-      CFLAGS -DTX_FREQ=tx_freq_100 -DRX_FREQ=rx_freq_100
-      PREFIX arinc_freq_100
+      CFLAGS -DTX_FREQ=tx_freq_100 -DRX_FREQ=rx_freq_100 -Dheap_0=0 -Dheap_1=0 
+      PREFIX arinc_freq_100_IM0
+    )
+	add_rumboot_target_dir(arinc/freq/
+      CONFIGURATION IRAM_WITH_DDR
+      CFLAGS -DTX_FREQ=tx_freq_100 -DRX_FREQ=rx_freq_100 -Dheap_0=0 -Dheap_1=2
+      PREFIX arinc_freq_100_IM0_ddr0
+    )
+	add_rumboot_target_dir(arinc/freq/
+      CONFIGURATION IRAM_WITH_DDR
+      CFLAGS -DTX_FREQ=tx_freq_100 -DRX_FREQ=rx_freq_100 -Dheap_0=0 -Dheap_1=3
+      PREFIX arinc_freq_100_IM0_ddr1
+    )
+	
+	add_rumboot_target_dir(arinc/freq/
+      CONFIGURATION IRAM_WITH_DDR
+      CFLAGS -DTX_FREQ=tx_freq_100 -DRX_FREQ=rx_freq_100 -Dheap_0=1 -Dheap_1=0
+      PREFIX arinc_freq_100_IM1_IM0
+    )
+	add_rumboot_target_dir(arinc/freq/
+      CONFIGURATION IRAM_WITH_DDR
+      CFLAGS -DTX_FREQ=tx_freq_100 -DRX_FREQ=rx_freq_100 -Dheap_0=1 -Dheap_1=2
+      PREFIX arinc_freq_100_IM1_ddr0
+    )
+	add_rumboot_target_dir(arinc/freq/
+      CONFIGURATION IRAM_WITH_DDR
+      CFLAGS -DTX_FREQ=tx_freq_100 -DRX_FREQ=rx_freq_100 -Dheap_0=1 -Dheap_1=3
+      PREFIX arinc_freq_100_IM1_ddr0
+    )
+	
+	add_rumboot_target_dir(arinc/freq/
+      CONFIGURATION IRAM_MIRROR
+      CFLAGS -DTX_FREQ=tx_freq_100 -DRX_FREQ=rx_freq_100 -Dheap_0=4 -Dheap_1=4 
+      PREFIX arinc_freq_100_PCI_0
+    )
+	add_rumboot_target_dir(arinc/freq/
+      CONFIGURATION IRAM_MIRROR
+      CFLAGS -DTX_FREQ=tx_freq_100 -DRX_FREQ=rx_freq_100 -Dheap_0=5 -Dheap_1=5 
+      PREFIX arinc_freq_100_PCI_1
     )
 	add_rumboot_target_dir(arinc/freq/
       CONFIGURATION IRAM
-      CFLAGS -DTX_FREQ=tx_freq_50 -DRX_FREQ=rx_freq_50
-      PREFIX arinc_freq_50
+      CFLAGS -DTX_FREQ=tx_freq_50 -DRX_FREQ=rx_freq_50 -Dheap_0=1 -Dheap_1=1
+      PREFIX arinc_freq_50_IM1
     )
 
 	add_rumboot_target_dir(arinc/freq/
-      CONFIGURATION IRAM
-      CFLAGS -DTX_FREQ=tx_freq_12_5 -DRX_FREQ=rx_freq_12_5
-      PREFIX arinc_freq_12_5
+      CONFIGURATION IRAM_WITH_DDR
+      CFLAGS -DTX_FREQ=tx_freq_12_5 -DRX_FREQ=rx_freq_12_5 -Dheap_0=1 -Dheap_1=2
+      PREFIX arinc_freq_12_5_IM1_ddr0
+    )
+	add_rumboot_target_dir(arinc/freq/
+      CONFIGURATION IRAM_WITH_DDR
+      CFLAGS -DTX_FREQ=tx_freq_12_5 -DRX_FREQ=rx_freq_12_5 -Dheap_0=1 -Dheap_1=3
+      PREFIX arinc_freq_12_5_IM1_ddr1
     )
 	add_rumboot_target_dir(arinc/freq
       CONFIGURATION IRAM_MIRROR
-      CFLAGS -DTX_FREQ=tx_freq_12_5 -DRX_FREQ=rx_freq_12_5
+      CFLAGS -DTX_FREQ=tx_freq_12_5 -DRX_FREQ=rx_freq_12_5 -Dheap_0=4 -Dheap_1=4
       PREFIX arinc-mirror_freq_12_5
     )
 
 	add_rumboot_target_dir(arinc/freq
       CONFIGURATION IRAM_MIRROR
-      CFLAGS -DTX_FREQ=tx_freq_50 -DRX_FREQ=rx_freq_50
-      PREFIX arinc-mirror_freq_50
+      CFLAGS -DTX_FREQ=tx_freq_50 -DRX_FREQ=rx_freq_50 -Dheap_0=5 -Dheap_1=5
+      PREFIX arinc-mirror_freq_50_PCI_1
     )
 
 	add_rumboot_target_dir(arinc/freq
       CONFIGURATION IRAM_MIRROR
-      CFLAGS -DTX_FREQ=tx_freq_100 -DRX_FREQ=rx_freq_100
-      PREFIX arinc-mirror_freq_100
+      CFLAGS -DTX_FREQ=tx_freq_100 -DRX_FREQ=rx_freq_100 -Dheap_0=4 -Dheap_1=5
+      PREFIX arinc-mirror_freq_100_PCI_0_PCI_1
     )
-
 	add_rumboot_target_dir(muart/
       CONFIGURATION IRAM
       PREFIX muart-iram
