@@ -15,6 +15,7 @@
 #include <platform/common_macros/common_macros.h>
 #include <platform/regs/regs_emi.h>
 #include <platform/test_assert.h>
+#include <rumboot/io.h>
 
 static emi_bank_cfg *bank_config_cache[6];
 
@@ -492,7 +493,16 @@ void emi_set_ecc (uint32_t const emi_dcr_base, emi_bank_num const num_bank, emi_
     }
 }
 
+static void touch_sdram()
+{
+    uint32_t buf;
+    buf = ioread32(SDRAM_BASE);
+    iowrite32(buf, SDRAM_BASE);
+}
+
 void emi_init (uint32_t const emi_dcr_base)
 {
+
     emi_init_impl (emi_dcr_base, DCR_EM2_PLB6MCIF2_BASE, 0x00);
+    touch_sdram();//to prevent warnings in console
 }
