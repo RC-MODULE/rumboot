@@ -72,6 +72,8 @@
 #define ARINC_INT                   IRQ_REAL(85)
 #define SGMII_INT                   IRQ_REAL(86)
 
+#define GP_GLOB_INT                 IRQ_REAL(89)
+
 
 /**
  * @}

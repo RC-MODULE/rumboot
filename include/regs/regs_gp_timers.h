@@ -62,6 +62,13 @@
 #define TMR_5_SYS_CNT_NS        0x4A8
 #define TMR_5_SYS_CNT_S_L       0x4AC
 #define TMR_5_SYS_CNT_S_H       0x4B0
+
+#define TMR_6_STATE             0x4C0
+#define TMR_7_STATE             0x4E0
+#define TMR_8_STATE             0x500
+#define TMR_9_STATE             0x520
+#define TMR_9_LIMIT             0x524
+
  
 /**
  * @}
