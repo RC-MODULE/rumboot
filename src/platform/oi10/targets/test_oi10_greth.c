@@ -57,6 +57,7 @@ static void handler_eth( int irq, void *arg )
             (1 << GRETH_STATUS_RA) |
             (1 << GRETH_STATUS_TI) |
             (1 << GRETH_STATUS_TE) |
+            (1 << GRETH_STATUS_RI) |
             (1 << GRETH_STATUS_RE));
 
     cur_status = greth_get_status(gr_inst->base_addr);
@@ -64,7 +65,6 @@ static void handler_eth( int irq, void *arg )
     {
         *(gr_inst->irq_handled) = 1;
         rumboot_printf("Receive interrupt (0x%x)\n", cur_status );
-        greth_clear_status_bits(gr_inst->base_addr, mask );
     }
     if (cur_status & (1 << GRETH_STATUS_RE))
     {
@@ -149,7 +149,7 @@ uint32_t* test_data_em2_dst  = (uint32_t *)( SRAM0_BASE + 0x100 + sizeof(test_da
  * Registers access checks
  */
 struct regpoker_checker greth_check_array[] = {
-    { "CTRL              ",  REGPOKER_READ32,  CTRL              , 0x92000010, 0xFE007CFF },
+    { "CTRL              ",  REGPOKER_READ32,  CTRL              , 0x98000090, 0xFE007CFF },
     { "MDIO_CTRL         ",  REGPOKER_READ32,  MDIO_CTRL         , 0x01E10140, 0xFFFFFFCF },
     { "TRANSMIT_DESCR_PTR",  REGPOKER_READ32,  TRANSMIT_DESCR_PTR, 0x0, 0x3F8 },
     { "RECEIVER_DESCR_PTR",  REGPOKER_READ32,  RECEIVER_DESCR_PTR, 0x0, 0x3F8 },
