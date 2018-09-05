@@ -13,7 +13,6 @@ static const char *errors[] =
 	[EBADHDRCRC] = "Header CRC32 mismatch",
 	[EBADCHIPID] = "Incorrect ChipId",
 	[EBADENTRY] = "Bad entry point(s)",
-	[EBADNUMCORES] = "Invalid cpu core count",
 	[EBADDATACRC] = "Bad data CRC32",
 	[EMAXERROR] = "Unknown error",
 };
@@ -44,10 +43,6 @@ ssize_t rumboot_bootimage_check_header(struct rumboot_bootheader *hdr, void **da
     dbg_boot(hdr->device, "Data length:      %x", hdr->datalen);
     dbg_boot(hdr->device, "Header CRC32:     %x", hdr->header_crc32);
     dbg_boot(hdr->device, "Data CRC32:       %x", hdr->data_crc32);
-
-
-	if (hdr->num_cores != RUMBOOT_PLATFORM_NUMCORES)
-		return -EBADNUMCORES;
 
 	if (hdr->chip_id != RUMBOOT_PLATFORM_CHIPID)
 		return -EBADCHIPID;

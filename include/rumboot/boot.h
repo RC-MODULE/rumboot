@@ -35,12 +35,12 @@ struct rumboot_bootsource;
 struct __attribute__((packed)) rumboot_bootheader {
     uint32_t magic;
     uint8_t  version;
-    uint8_t  num_cores;
+    uint8_t  reserved;
     uint8_t  chip_id;
     uint8_t  chip_rev;
     uint32_t data_crc32;
     uint32_t datalen;
-    uint32_t entry_point[11];
+    uint32_t entry_point[10];
     uint32_t header_crc32;
     const struct rumboot_bootsource *device;
     char     data[];
