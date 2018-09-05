@@ -7,6 +7,7 @@
 #include <platform/devices.h>
 #include <regs/regs_spi.h>
 #include <devices/pl022.h>
+#include <devices/pl022_flash.h>
 
 #include <rumboot/irq.h>
 #include <rumboot/io.h>
@@ -131,8 +132,8 @@ static uint32_t wait_gspi_int()
     }
     return 0;
 }
-static uint8_t data_src_im0[] = { 0x02, 0x00, 0x00, 0x00, 0xDC, 0xFE, 0x34, 0x12 };
-static uint8_t data_src_im1[] = { 0x02, 0x00, 0x00, 0x00, 0xDD, 0xCC, 0xBB, 0xAA };
+//static uint8_t data_src_im0[] = { 0x02, 0x00, 0x00, 0x00, 0xDC, 0xFE, 0x34, 0x12 };
+//static uint8_t data_src_im1[] = { 0x02, 0x00, 0x00, 0x00, 0xDD, 0xCC, 0xBB, 0xAA };
 static uint8_t data_src_em2[] = { 0x02, 0x00, 0x00, 0x00, 0x11, 0x22, 0x33, 0x44 };
 static uint8_t data_dst[4];
 
@@ -149,10 +150,10 @@ static uint32_t gspi_dma_axi(uint32_t base_addr, uint32_t* r_mem_addr, uint32_t*
     gspi_init(base_addr, params); //turn on SSP controller
     gspi_set_int_mask(base_addr, 0x02); //interrupt masks - unmask rx_fifo not empty
 
-    gspi_eeprom_write_enable(base_addr);
-    gspi_eeprom_erase(base_addr);
+    pl022_flash_write_enable(base_addr);
+    pl022_flash_erase(base_addr);
 
-    gspi_eeprom_write_enable(base_addr);
+    pl022_flash_write_enable(base_addr);
     gspi_dma_set_irq_mask(base_addr, end_buf_write);
     gspi_dma_enable(base_addr, all);
 
@@ -176,7 +177,7 @@ static uint32_t gspi_dma_axi(uint32_t base_addr, uint32_t* r_mem_addr, uint32_t*
     DMA_write_buffer_end = 0;
 
     rumboot_putstring("Reading data...\n");
-    (void)gspi_eeprom_read_data(base_addr);
+    (void)pl022_flash_read_data(base_addr);
     while(!DMA_write_buffer_end)
         ;
     DMA_write_buffer_end = 0;
@@ -195,7 +196,7 @@ static uint32_t gspi_dma_axi(uint32_t base_addr, uint32_t* r_mem_addr, uint32_t*
     return 0;
 }
 
-static uint32_t gspi_ssp_eeprom(uint32_t base_addr)
+static uint32_t gspi_ssp_flash(uint32_t base_addr)
 {
     //Read and check ID
     unsigned gspi_sspid;
@@ -239,15 +240,15 @@ static uint32_t gspi_ssp_eeprom(uint32_t base_addr)
     gspi_set_int_mask(base_addr, 0x0); //mask all interrupts
 
 
-    gspi_eeprom_write_enable(base_addr);
-    gspi_eeprom_erase(base_addr);
+    pl022_flash_write_enable(base_addr);
+    pl022_flash_erase(base_addr);
 
 
-    gspi_eeprom_write_enable(base_addr);
-    gspi_eeprom_write_data(base_addr, 0x00, TEST_DATA);
+    pl022_flash_write_enable(base_addr);
+    pl022_flash_write_data(base_addr, 0x00, TEST_DATA);
 
     //Read and check data from spi slash
-    if (gspi_eeprom_read_data(base_addr) != TEST_DATA)
+    if (pl022_flash_read_data(base_addr) != TEST_DATA)
     {
         rumboot_printf("SPI data read fail\n");
         return 1;
@@ -274,6 +275,7 @@ int main(void)
         iowrite32( GPIO1_X, GPIO_1_BASE + GPIO_ADDR_MASK );
         TEST_ASSERT((ioread32(GSPI_BASE + GSPI_STATUS) == 0x82), "ERROR!!! GSPI interrupt not set");
         gpio_set_port_direction(GPIO_1_BASE, 0x0);
+        (void)(ioread32(GSPI_BASE + GSPI_STATUS)); // clear interrupt
     #endif
 
     IRQ = 0;
@@ -320,7 +322,7 @@ int main(void)
 
 
     rumboot_printf("Checking GSPI EEPROM read/write functionality ...\n");
-    test_result += gspi_ssp_eeprom(GSPI_BASE);
+    test_result += gspi_ssp_flash(GSPI_BASE);
 
 
     rumboot_irq_table_activate(NULL);
