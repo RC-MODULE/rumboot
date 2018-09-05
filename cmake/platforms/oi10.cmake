@@ -626,9 +626,9 @@ endif()
 
     add_rumboot_target(
       CONFIGURATION IRAM
-      FILES simple-iram/test_oi10_em2_208.c
+      FILES test_oi10_em2_208.c
       IRUN_FLAGS +test_oi10_em2_208
-      NAME test_oi10_em2_208
+      PREFIX HiZ
     )
 
     add_rumboot_target_dir(bare-rom/
