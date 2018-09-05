@@ -209,6 +209,24 @@ static void spi0_1_cs(const struct rumboot_bootsource* src, void* pdata, int sel
 }
 
 static const struct rumboot_bootsource arr[] = {
+    	{
+        	.name = "SPI0 (CS: GPIO0_4)",
+        	.base = GSPI0_BASE,
+        	.freq_khz = 100000,
+        	.plugin = &g_bootmodule_spiflash,
+        	.enable  = spi0_0_enable,
+        	.disable = spi0_0_disable,
+        	.chipselect = spi0_0_cs,
+    	},
+    	{
+        	.name = "SPI0 (CS: GPIO0_5)",
+        	.base = GSPI0_BASE,
+        	.freq_khz = 100000,
+        	.plugin = &g_bootmodule_spiflash,
+        	.enable  = spi0_1_enable,
+        	.disable = spi0_1_disable,
+        	.chipselect = spi0_1_cs,
+    	},
 		{
 			.name = "I2C0 (EEPROM @ 0x50)",
 			.base = I2C0_BASE,
@@ -264,24 +282,6 @@ static const struct rumboot_bootsource arr[] = {
 			.slave_addr = 0x53,
 			.freq_khz = 100000,
 			.plugin = &g_bootmodule_eeprom,
-		},
-		{
-			.name = "SPI0 (CS: GPIO0_4)",
-			.base = GSPI0_BASE,
-			.freq_khz = 100000,
-			.plugin = &g_bootmodule_spiflash,
-			.enable  = spi0_0_enable,
-			.disable = spi0_0_disable,
-			.chipselect = spi0_0_cs,
-		},
-		{
-			.name = "SPI0 (CS: GPIO0_5)",
-			.base = GSPI0_BASE,
-			.freq_khz = 100000,
-			.plugin = &g_bootmodule_spiflash,
-			.enable  = spi0_1_enable,
-			.disable = spi0_1_disable,
-			.chipselect = spi0_1_cs,
 		},
 
 	#if 0

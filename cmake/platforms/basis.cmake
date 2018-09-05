@@ -102,6 +102,40 @@ rumboot_add_configuration(
 )
 
 
+macro(rumboot_unit_test id tag memtag )
+  add_rumboot_target(
+          NAME "unit-${tag}-ok"
+          CONFIGURATION ROM
+          PREFIX "bootrom"
+          FILES common/bootrom/unit.c
+          TESTGROUP bootrom
+          CFLAGS -DSOURCE=${id} -DEXPECTED=true
+          LOAD ${memtag} ${ARGN}spl-ok
+  )
+
+  add_rumboot_target(
+          NAME "unit-${tag}-bad-magic"
+          CONFIGURATION ROM
+          PREFIX "bootrom"
+          FILES common/bootrom/unit.c
+          TESTGROUP bootrom
+          CFLAGS -DSOURCE=${id} -DEXPECTED=false
+          LOAD ${memtag} ${ARGN}spl-fail-bad-magic
+  )
+
+  add_rumboot_target(
+          NAME "unit-${tag}-bad-version"
+          CONFIGURATION ROM
+          PREFIX "bootrom"
+          FILES common/bootrom/unit.c
+          TESTGROUP bootrom
+          CFLAGS -DSOURCE=${id} -DEXPECTED=false
+          LOAD ${memtag} ${ARGN}spl-fail-bad-version
+  )
+
+endmacro()
+
+
 macro(add_bootrom_stuff)
   #Let's add our spl stuff
   add_rumboot_target_dir(common/spl-stubs/
@@ -183,9 +217,15 @@ macro(add_bootrom_stuff)
           BOOTROM bootrom-loader
           TESTGROUP bootrom
           LOAD
+            SPI0_CONF spl-fail-bad-magic,spl-fail-bad-magic
             I2C0_CONF spl-ok,spl-fail,spl-fail,spl-fail
+            I2C1_CONF spl-fail,spl-fail,spl-fail,spl-fail
           FEATURES NOCODE
   )
+
+
+  rumboot_unit_test(0 spi0_cs0 SPI0_CONF)
+  rumboot_unit_test(1 spi0_cs1 SPI0_CONF ,)
 
   add_rumboot_target(
           NAME "host-shim"
@@ -315,7 +355,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     )
 	add_rumboot_target_dir(arinc/freq/
       CONFIGURATION IRAM
-      CFLAGS -DTX_FREQ=tx_freq_100 -DRX_FREQ=rx_freq_100 -Dheap_0=0 -Dheap_1=0 
+      CFLAGS -DTX_FREQ=tx_freq_100 -DRX_FREQ=rx_freq_100 -Dheap_0=0 -Dheap_1=0
       PREFIX arinc_freq_100_IM0
     )
 	add_rumboot_target_dir(arinc/freq/
@@ -328,7 +368,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       CFLAGS -DTX_FREQ=tx_freq_100 -DRX_FREQ=rx_freq_100 -Dheap_0=0 -Dheap_1=3
       PREFIX arinc_freq_100_IM0_ddr1
     )
-	
+
 	add_rumboot_target_dir(arinc/freq/
       CONFIGURATION IRAM_WITH_DDR
       CFLAGS -DTX_FREQ=tx_freq_100 -DRX_FREQ=rx_freq_100 -Dheap_0=1 -Dheap_1=0
@@ -344,15 +384,15 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       CFLAGS -DTX_FREQ=tx_freq_100 -DRX_FREQ=rx_freq_100 -Dheap_0=1 -Dheap_1=3
       PREFIX arinc_freq_100_IM1_ddr0
     )
-	
+
 	add_rumboot_target_dir(arinc/freq/
       CONFIGURATION IRAM_MIRROR
-      CFLAGS -DTX_FREQ=tx_freq_100 -DRX_FREQ=rx_freq_100 -Dheap_0=4 -Dheap_1=4 
+      CFLAGS -DTX_FREQ=tx_freq_100 -DRX_FREQ=rx_freq_100 -Dheap_0=4 -Dheap_1=4
       PREFIX arinc_freq_100_PCI_0
     )
 	add_rumboot_target_dir(arinc/freq/
       CONFIGURATION IRAM_MIRROR
-      CFLAGS -DTX_FREQ=tx_freq_100 -DRX_FREQ=rx_freq_100 -Dheap_0=5 -Dheap_1=5 
+      CFLAGS -DTX_FREQ=tx_freq_100 -DRX_FREQ=rx_freq_100 -Dheap_0=5 -Dheap_1=5
       PREFIX arinc_freq_100_PCI_1
     )
 	add_rumboot_target_dir(arinc/freq/

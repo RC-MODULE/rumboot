@@ -29,7 +29,8 @@ static bool load_img(const struct rumboot_bootsource *src, void *pdata)
 	if (len > 0) {
 		src->plugin->read(src, pdata, hdr->data, count, len);
 	} else {
-		/* TODO: Error reporting */
+        dbg_boot(src, "Error validating header: %s", rumboot_strerror(-len));
+		return false;
 	}
 
 	return (0 == rumboot_bootimage_check_data(hdr));

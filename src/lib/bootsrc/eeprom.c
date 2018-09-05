@@ -115,8 +115,8 @@ bool eeprom_init(const struct rumboot_bootsource *src, void *pdata)
 	i2c_stat_rst(base);
 	tmp = ioread32(base + I2C_STATUS);
 	dbg_boot(src, "%x", tmp);
-	sda = (tmp & (1 << 24)) ? 1 : 0;
-	scl = (tmp & (1 << 26)) ? 1 : 0;
+	scl = (tmp & (1 << 23)) ? 1 : 0;
+	sda = (tmp & (1 << 25)) ? 1 : 0;
 	if ((!sda) || (!scl)) {
 		dbg_boot(src, "Invalid I2C line state: SDA: %d SCL: %d", sda, scl);
 		return false;
