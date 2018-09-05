@@ -134,64 +134,78 @@ int main(void)
 
     //prepare physical address
     set_mem_window(MEM_WINDOW_SHARED);//WORKAROUND
-    src_im0_physical = get_physical_addr((uint32_t)source_area_im0, 0);
-    dst_im0_physical = get_physical_addr((uint32_t)dest_area_im0, 0);
+    src_im0_physical = rumboot_virt_to_dma((uint32_t*)source_area_im0);
+    dst_im0_physical = rumboot_virt_to_dma((uint32_t*)dest_area_im0);
 
     set_mem_window(MEM_WINDOW_0);//WORKAROUND
-    src_im1_physical = get_physical_addr(IM1_BASE, 0);
-    dst_im1_physical = src_im1_physical;
+    src_im1_physical = rumboot_virt_to_dma((uint32_t*)(IM1_BASE));
+    dst_im1_physical = rumboot_virt_to_dma((uint32_t*)(IM1_BASE + 0x80));
 
-    src_em2_physical = get_physical_addr(EM2_BASE, 0);
-    dst_em2_physical = src_em2_physical;
+    src_em2_physical = rumboot_virt_to_dma((uint32_t*)(EM2_BASE));
+    dst_em2_physical = rumboot_virt_to_dma((uint32_t*)(EM2_BASE + 0x80));
 
     TEST_ASSERT(src_im0_physical >=0,"IM0 src addr is not presented in UTLB");
     TEST_ASSERT(dst_im0_physical >=0,"IM0 dst addr is not presented in UTLB");
-    TEST_ASSERT(src_em2_physical >=0,"EM2 src/dst addr is not presented in UTLB");
+    TEST_ASSERT(src_im1_physical >=0,"IM1 src addr is not presented in UTLB");
+    TEST_ASSERT(dst_im1_physical >=0,"IM1 dst addr is not presented in UTLB");
+    TEST_ASSERT(src_em2_physical >=0,"EM2 src addr is not presented in UTLB");
+    TEST_ASSERT(dst_em2_physical >=0,"EM2 dst addr is not presented in UTLB");
 
 
-   rumboot_printf("im0->im0\n");
-   TEST_ASSERT(check_dma2plb6_0_mem_to_mem((uint32_t)source_area_im0,
+    rumboot_printf("im0->im0\n");
+    TEST_ASSERT(check_dma2plb6_0_mem_to_mem((uint32_t)source_area_im0,
                                            (uint32_t)dest_area_im0,
                                            src_im0_physical,
                                            dst_im0_physical) == true, "IM0-to-IM0 failed");
 
-   rumboot_printf("im0->im1\n");
-   TEST_ASSERT(check_dma2plb6_0_mem_to_mem((uint32_t)source_area_im0,
+    rumboot_printf("im0->im1\n");
+    TEST_ASSERT(check_dma2plb6_0_mem_to_mem((uint32_t)source_area_im0,
                                            IM1_BASE,
                                            src_im0_physical,
                                            dst_im1_physical) == true, "IM0-to-IM1 failed");
 
-   rumboot_printf("im1->im0\n");
-   TEST_ASSERT(check_dma2plb6_0_mem_to_mem(IM1_BASE,
+    rumboot_printf("im1->im0\n");
+    TEST_ASSERT(check_dma2plb6_0_mem_to_mem(IM1_BASE,
                                            (uint32_t)dest_area_im0,
-                                           dst_im1_physical,
+                                           src_im1_physical,
                                            dst_im0_physical) == true, "IM1-to-IM0 failed");
 
+    rumboot_printf("im1->im1\n");
+    TEST_ASSERT(check_dma2plb6_0_mem_to_mem(IM1_BASE,
+                                          IM1_BASE + 0x80,
+                                          src_im1_physical,
+                                          dst_im1_physical) == true, "IM1-to-IM1 failed");
 
-   rumboot_printf("em2->im0\n");
-   TEST_ASSERT(check_dma2plb6_0_mem_to_mem(EM2_BASE,
+    rumboot_printf("em2->im0\n");
+    TEST_ASSERT(check_dma2plb6_0_mem_to_mem(EM2_BASE,
                                            (uint32_t)dest_area_im0,
                                            src_em2_physical,
                                            dst_im0_physical) == true, "EM2-to-IM0 failed");
 
 
-   rumboot_printf("im0->em2\n");
-   TEST_ASSERT(check_dma2plb6_0_mem_to_mem((uint32_t)source_area_im0,
+    rumboot_printf("im0->em2\n");
+    TEST_ASSERT(check_dma2plb6_0_mem_to_mem((uint32_t)source_area_im0,
                                            EM2_BASE,
                                            src_im0_physical,
                                            dst_em2_physical) == true, "IM0-to-EM2 failed");
 
-   rumboot_printf("em2->im1\n");
-   TEST_ASSERT(check_dma2plb6_0_mem_to_mem(EM2_BASE,
+    rumboot_printf("em2->im1\n");
+    TEST_ASSERT(check_dma2plb6_0_mem_to_mem(EM2_BASE,
                                            IM1_BASE,
                                            src_em2_physical,
                                            dst_im1_physical) == true, "EM2-to-IM1 failed");
 
-   rumboot_printf("im1->em2\n");
-   TEST_ASSERT(check_dma2plb6_0_mem_to_mem(IM1_BASE,
+    rumboot_printf("im1->em2\n");
+    TEST_ASSERT(check_dma2plb6_0_mem_to_mem(IM1_BASE,
                                            EM2_BASE,
                                            src_im1_physical,
                                            dst_em2_physical) == true, "IM1-to-EM2 failed");
+
+    rumboot_printf("em2->em2\n");
+    TEST_ASSERT(check_dma2plb6_0_mem_to_mem(EM2_BASE,
+                                          EM2_BASE + 0x80,
+                                          src_em2_physical,
+                                          dst_em2_physical) == true, "EM2-to-EM2 failed");
 
     return 0;
 }
