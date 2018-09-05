@@ -1094,17 +1094,11 @@ main:
     //r6 == 0
 
 
+
     mr r8, r7
     subi r8, r8, 4
     addi r7, r7, 4
-    addi r3, r3, 8
-
-    rumboot_putstring "r8 = "
-    rumboot_puthex r8
-
-    rumboot_putstring "r3 = "
-    rumboot_puthex r3
-
+    addi r3, r3, 12
 
     stwu    r1, 4(r8)
 
@@ -1114,7 +1108,7 @@ main:
     stwu    r5, 4(r7) //
     isync
 
-    addi r8, r8, 8
+    addi r8, r8, 12
     addi r7, r7, 4
 
     maclhwu r2, r1,r6 //r2 == 20000
@@ -1123,7 +1117,7 @@ main:
     stwu    r5, 4(r7) //
     isync
 
-    addi r3, r3, 8
+    addi r3, r3, 12
     addi r7, r7, 4
 
     maclhwu r1, r1,r4 //r1 == 4
@@ -1132,7 +1126,7 @@ main:
     stwu    r5, 4(r7) //
     isync
 
-    addi r8, r8, 8
+    addi r8, r8, 12
     addi r7, r7, 4
 
     maclhwu r2, r1,r6
@@ -1141,7 +1135,7 @@ main:
     stwu    r5, 4(r7) //
     isync
 
-    addi r3, r3, 8
+    addi r3, r3, 12
     addi r7, r7, 4
 
     maclhwu r1, r1,r4 //r1 == 4
@@ -1150,7 +1144,7 @@ main:
     stwu    r5, 4(r7) //
     isync
 
-    addi r8, r8, 8
+    addi r8, r8, 12
     addi r7, r7, 4
 
     maclhwu r2, r1,r6 //r6 == 40000
@@ -1159,7 +1153,7 @@ main:
     stwu    r5, 4(r7) //
     isync
 
-    addi r3, r3, 8
+    addi r3, r3, 12
     addi r7, r7, 4
 
     maclhwu r1, r1,r4
@@ -1168,7 +1162,7 @@ main:
     stwu    r5, 4(r7) //
     isync
 
-    addi r8, r8, 8
+    addi r8, r8, 12
     addi r7, r7, 4
 
     maclhwu r2, r1,r6
@@ -1177,7 +1171,7 @@ main:
     stwu    r5, 4(r7) //
     isync
 
-    addi r3, r3, 8
+    addi r3, r3, 12
     addi r7, r7, 4
 
     maclhwu r1, r1,r4
@@ -1186,7 +1180,7 @@ main:
     stwu    r5, 4(r7) //
     isync
 
-    addi r8, r8, 8
+    addi r8, r8, 12
     addi r7, r7, 4
 
     maclhwu r2, r1,r6
@@ -1195,7 +1189,7 @@ main:
     stwu    r5, 4(r7) //
     isync
 
-    addi r3, r3, 8
+    addi r3, r3, 12
     addi r7, r7, 4
 
     maclhwu r1, r1,r4
@@ -1204,7 +1198,7 @@ main:
     stwu    r5, 4(r7) //
     isync
 
-    addi r8, r8, 8
+    addi r8, r8, 12
     addi r7, r7, 4
 
     maclhwu r2, r1,r6
@@ -1213,7 +1207,7 @@ main:
     stwu    r5, 4(r7) //
     isync
 
-    addi r3, r3, 8
+    addi r3, r3, 12
     addi r7, r7, 4
 
     maclhwu r1, r1,r4
@@ -1222,7 +1216,7 @@ main:
     stwu    r5, 4(r7) //
     isync
 
-    addi r8, r8, 8
+    addi r8, r8, 12
     addi r7, r7, 4
 
     maclhwu r2, r1,r6
@@ -1231,7 +1225,7 @@ main:
     stwu    r5, 4(r7) //
     isync
 
-    addi r3, r3, 8
+    addi r3, r3, 12
     addi r7, r7, 4
 
     maclhwu r1, r1,r4
@@ -1240,7 +1234,7 @@ main:
     stwu    r5, 4(r7) //
     isync
 
-    addi r8, r8, 8
+    addi r8, r8, 12
     addi r7, r7, 4
 
     maclhwu r2, r1,r6
@@ -1249,7 +1243,7 @@ main:
     stwu    r5, 4(r7) //
     isync
 
-    addi r3, r3, 8
+    addi r3, r3, 12
     addi r7, r7, 4
 
     maclhwu r1, r1,r4
@@ -1258,7 +1252,7 @@ main:
     stwu    r5, 4(r7) //
     isync
 
-    addi r8, r8, 8
+    addi r8, r8, 12
     addi r7, r7, 4
 
     maclhwu r2, r1,r6
@@ -1267,7 +1261,7 @@ main:
     stwu    r5, 4(r7) //
     isync
 
-    addi r3, r3, 8
+    addi r3, r3, 12
     addi r7, r7, 4
 
     maclhwu r1, r1,r4
@@ -1276,7 +1270,7 @@ main:
     stwu    r5, 4(r7) //
     isync
 
-    addi r8, r8, 8
+    addi r8, r8, 12
     addi r7, r7, 4
 
     maclhwu r2, r1,r6
@@ -1285,7 +1279,7 @@ main:
     stwu    r5, 4(r7) //
     isync
 
-    addi r3, r3, 8
+    addi r3, r3, 12
     addi r7, r7, 4
 
     maclhwu r1, r1,r4
@@ -1294,7 +1288,7 @@ main:
     stwu    r5, 4(r7) //
     isync
 
-    addi r8, r8, 8
+    addi r8, r8, 12
     addi r7, r7, 4
 
     maclhwu r2, r1,r6
@@ -1303,7 +1297,7 @@ main:
     stwu    r5, 4(r7) //
     isync
 
-    addi r3, r3, 8
+    addi r3, r3, 12
     addi r7, r7, 4
 
     maclhwu r1, r1,r4
@@ -1312,7 +1306,7 @@ main:
     stwu    r5, 4(r7) //
     isync
 
-    addi r8, r8, 8
+    addi r8, r8, 12
     addi r7, r7, 4
 
     maclhwu r2, r1,r6
@@ -1321,7 +1315,7 @@ main:
     stwu    r5, 4(r7) //
     isync
 
-    addi r3, r3, 8
+    addi r3, r3, 12
     addi r7, r7, 4
 
     maclhwu r1, r1,r4
@@ -1330,7 +1324,7 @@ main:
     stwu    r5, 4(r7) //
     isync
 
-    addi r8, r8, 8
+    addi r8, r8, 12
     addi r7, r7, 4
 
     maclhwu r2, r1,r6
@@ -1339,7 +1333,7 @@ main:
     stwu    r5, 4(r7) //
     isync
 
-    addi r3, r3, 8
+    addi r3, r3, 12
     addi r7, r7, 4
 
     maclhwu r1, r1,r4
@@ -1348,7 +1342,7 @@ main:
     stwu    r5, 4(r7) //
     isync
 
-    addi r8, r8, 8
+    addi r8, r8, 12
     addi r7, r7, 4
 
     maclhwu r2, r1,r6
@@ -1357,7 +1351,7 @@ main:
     stwu    r5, 4(r7) //
     isync
 
-    addi r3, r3, 8
+    addi r3, r3, 12
     addi r7, r7, 4
 
     maclhwu r1, r1,r4
@@ -1366,7 +1360,7 @@ main:
     stwu    r5, 4(r7) //
     isync
 
-    addi r8, r8, 8
+    addi r8, r8, 12
     addi r7, r7, 4
 
     maclhwu r2, r1,r6
@@ -1375,7 +1369,7 @@ main:
     stwu    r5, 4(r7) //
     isync
 
-    addi r3, r3, 8
+    addi r3, r3, 12
     addi r7, r7, 4
 
     maclhwu r1, r1,r4
@@ -1384,7 +1378,7 @@ main:
     stwu    r5, 4(r7) //
     isync
 
-    addi r8, r8, 8
+    addi r8, r8, 12
     addi r7, r7, 4
 
     maclhwu r2, r1,r6
@@ -1395,23 +1389,24 @@ main:
 
     addi r7, r7, 4
 
-
     mtspr SPR_VRSAVE, r7
+
+    clear_regs_with_0
+
 
 
     msync
     load_addr       r30, results
-    load_const      r31, 0x584
 
-    _rumboot_putdump r30, r31
+    load_const      r28, 0x57C
 
-    _rumboot_issdump r30, r31
+    _rumboot_issdump r30, r28
 
     b test_error
 
 
 
-    clear_regs_with_0
+
 
     rumboot_putstring "Checking XORI MTFSPR ...\n"
 //    test_event EVENT_GPRS_CLEARED_START_CHECK_XORI_MTFSPR
@@ -1428,15 +1423,37 @@ main:
     xori_reg_spr r0, 0x0040, SPR_SPRG6
     xori_reg_spr r8, 0x0080, SPR_SPRG7
 
+
+    mfspr r31, SPR_VRSAVE
+
     //iterations 8-15
     mfspr_reg r0, SPR_SPRG7
     mfspr_reg r1, SPR_SPRG6
+
+    stw r0, 0(r31)
+    stw r1, 4(r31)
+
     mfspr_reg r0, SPR_SPRG5
     mfspr_reg r2, SPR_SPRG4
+
+    stw r0, 8(r31)
+    stw r2, 12(r31)
+
     mfspr_reg r0, SPR_SPRG3
     mfspr_reg r4, SPR_SPRG2
+
+    stw r0, 16(r31)
+    stw r4, 20(r31)
+
     mfspr_reg r0, SPR_SPRG1
     mfspr_reg r8, SPR_SPRG0
+
+    stw r0, 24(r31)
+    stw r8, 28(r31)
+
+
+    mr r1, r31
+
 
     //iterations 16-23
     xori_reg_spr r0,  0x0100, SPR_SPRG0
@@ -1451,12 +1468,30 @@ main:
     //iterations 24-31
     mfspr_reg r0,  SPR_SPRG7
     mfspr_reg r16, SPR_SPRG6
+
+    stw r0, 32(r1)
+    stw r16, 36(r1)
+
     mfspr_reg r0,  SPR_SPRG5
     mfspr_reg r31, SPR_SPRG4
+
+    stw r0, 40(r1)
+    stw r31, 44(r1)
+
     mfspr_reg r30, SPR_SPRG3
     mfspr_reg r31, SPR_SPRG2
+
+    stw r30, 48(r1)
+    stw r31, 52(r1)
+
     mfspr_reg r29, SPR_SPRG1
     mfspr_reg r31, SPR_SPRG0
+
+    stw r29, 56(r1)
+    stw r31, 60(r1)
+
+    mr r3, r1
+
 
     //iterations 32-39
     xoris_reg_spr r27, 0x0001, SPR_SPRG0
@@ -1471,12 +1506,28 @@ main:
     //iterations 40-47
     mfspr_reg r27, SPR_SPRG7
     mfspr_reg r31, SPR_SPRG6
+
+    stw r27, 64(r3)
+    stw r31, 68(r3)
+
     mfspr_reg r23, SPR_SPRG5
     mfspr_reg r31, SPR_SPRG4
+
+    stw r23, 72(r3)
+    stw r31, 76(r3)
+
     mfspr_reg r15, SPR_SPRG3
     mfspr_reg r31, SPR_SPRG2
+
+    stw r15, 80(r3)
+    stw r31, 84(r3)
+
     mfspr_reg r1 , SPR_SPRG1
     mfspr_reg r2 , SPR_SPRG0
+
+    stw r1, 88(r3)
+    stw r2, 92(r3)
+
 
     //iterations 48-55
     xoris_reg_spr r4,  0x0100, SPR_SPRG0
@@ -1498,6 +1549,17 @@ main:
     mfspr_reg r23, SPR_SPRG1
     mfspr_reg r15, SPR_SPRG0
 
+    stw r4, 96(r3)
+    stw r8, 100(r3)
+    stw r16, 104(r3)
+    stw r30, 108(r3)
+    stw r29, 112(r3)
+    stw r27, 116(r3)
+    stw r23, 120(r3)
+    stw r15, 124(r3)
+
+
+
     clear_regs_with_1
 
     //iterations 0-7
@@ -1513,12 +1575,28 @@ main:
     //iterations 8-15
     mfspr_reg r0, SPR_SPRG7
     mfspr_reg r1, SPR_SPRG6
+
+    stw r0, 128(r3)
+    stw r1, 132(r3)
+
     mfspr_reg r0, SPR_SPRG5
     mfspr_reg r2, SPR_SPRG4
+
+    stw r0, 136(r3)
+    stw r2, 140(r3)
+
     mfspr_reg r0, SPR_SPRG3
     mfspr_reg r4, SPR_SPRG2
+
+    stw r0, 144(r3)
+    stw r4, 148(r3)
+
     mfspr_reg r0, SPR_SPRG1
     mfspr_reg r8, SPR_SPRG0
+
+    stw r0, 152(r3)
+    stw r8, 156(r3)
+
 
     //iterations 16-23
     xori_reg_spr r0 , 0x0100, SPR_SPRG0
@@ -1533,12 +1611,28 @@ main:
     //iterations 24-31
     mfspr_reg r0 , SPR_SPRG7
     mfspr_reg r16, SPR_SPRG6
+
+    stw r0, 160(r3)
+    stw r16, 164(r3)
+
     mfspr_reg r0 , SPR_SPRG5
     mfspr_reg r31, SPR_SPRG4
+
+    stw r0, 168(r3)
+    stw r31, 172(r3)
+
     mfspr_reg r30, SPR_SPRG3
     mfspr_reg r31, SPR_SPRG2
+
+    stw r30, 176(r3)
+    stw r31, 180(r3)
+
     mfspr_reg r29, SPR_SPRG1
     mfspr_reg r31, SPR_SPRG0
+
+    stw r29, 184(r3)
+    stw r31, 188(r3)
+
 
     //iterations 32-39
     xoris_reg_spr r27, 0x0001, SPR_SPRG0
@@ -1553,12 +1647,28 @@ main:
     //iterations 40-47
     mfspr_reg r27, SPR_SPRG7
     mfspr_reg r31, SPR_SPRG6
+
+    stw r27, 192(r3)
+    stw r31, 196(r3)
+
     mfspr_reg r23, SPR_SPRG5
     mfspr_reg r31, SPR_SPRG4
+
+    stw r23, 200(r3)
+    stw r31, 204(r3)
+
     mfspr_reg r15, SPR_SPRG3
     mfspr_reg r31, SPR_SPRG2
+
+    stw r15, 208(r3)
+    stw r31, 212(r3)
+
     mfspr_reg r1 , SPR_SPRG1
     mfspr_reg r2 , SPR_SPRG0
+
+    stw r1, 216(r3)
+    stw r2, 220(r3)
+
 
     //iterations 48-55
     xoris_reg_spr r4, 0x0100, SPR_SPRG0
@@ -1580,11 +1690,21 @@ main:
     mfspr_reg r23, SPR_SPRG1
     mfspr_reg r15, SPR_SPRG0
 
+    stw r4, 224(r3)
+    stw r8, 228(r3)
+    stw r16, 232(r3)
+    stw r30, 236(r3)
+    stw r29, 240(r3)
+    stw r27, 244(r3)
+    stw r23, 248(r3)
+    stw r15, 252(r3)
+
+
     clear_regs_with_0
 
-
+    msync
     load_addr       r30, results
-    load_const      r31, 0x480
+    load_const      r31, 0x680
 
     _rumboot_issdump r30, r31
 
