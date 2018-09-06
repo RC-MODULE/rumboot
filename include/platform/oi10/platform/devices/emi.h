@@ -15,7 +15,7 @@
 
 //bank0
 #define EM2_BANK0_SIZE          0x20000000
-#define SRAM0_SIZE              0x1000000 //16MB //EM2_BANK0_SIZE
+#define SRAM0_SIZE              0x100000  //1MB  //EM2_BANK0_SIZE
 //bank1
 #define EM2_BANK1_SIZE          0x20000000
 #define SDRAM_SIZE              0x4000000 //64MB //EM2_BANK1_SIZE
