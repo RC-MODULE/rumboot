@@ -1,6 +1,6 @@
 MEMORY
 {
-    SRAM0 (rwx)       : ORIGIN = 0x00000000, LENGTH = 0x10000000
+    SRAM0 (rwx)       : ORIGIN = 0x00000000, LENGTH = 0x100000
 }
 
 SECTIONS
