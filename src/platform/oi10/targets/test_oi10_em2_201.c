@@ -107,7 +107,7 @@ int check_nor(uint32_t base_addr)
     #define NOR_TCYC_SPACE  3
 
     const ssx_tsoe_t test_tsoe_arr[NOR_TSOE_SPACE] = {TSOE_1, TSOE_2};
-    const ssx_tcyc_t test_tcyc_arr[NOR_TCYC_SPACE] = {TCYC_5, TCYC_9, TCYC_13};
+    const ssx_tcyc_t test_tcyc_arr[NOR_TCYC_SPACE] = {TCYC_5, TCYC_9, TCYC_12};
 
     rumboot_printf("Checking NOR (0x%X)\n", base_addr);
 
