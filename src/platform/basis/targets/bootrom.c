@@ -56,6 +56,8 @@ static void hostmode_loop()
 
 int main()
 {
+        rumboot_platform_perf("Config printout");
+
         int ret;
         #define PDATA_SIZE 128
         char pdata[PDATA_SIZE];
@@ -65,8 +67,12 @@ int main()
         rumboot_platform_read_config(&conf);
         rumboot_platform_dump_config(&conf);
 
+        rumboot_platform_perf(NULL);
+
         if (conf.selftest) {
+                rumboot_platform_perf("Selftest");
                 rumboot_platform_selftest(&conf);
+                rumboot_platform_perf(NULL);
         }
 
         if (conf.hostmode) {
@@ -74,6 +80,7 @@ int main()
         }
 
 
+        rumboot_platform_perf("Boot chain");
         const struct rumboot_bootsource *sources = rumboot_platform_get_bootsources();
         ret = bootsource_try_chain(sources, (void*) &pdata);
         if (ret) {
@@ -81,7 +88,7 @@ int main()
         } else {
                 rumboot_printf("boot: Failed to boot secondary image\n");
         }
-
+        rumboot_platform_perf(NULL);
         hostmode_loop();
         /* Never reached. Throw an error if it does */
         return 1;
