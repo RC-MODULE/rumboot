@@ -20,7 +20,7 @@
 #include <platform/regs/regs_l2c_l2.h>
 #include <platform/devices/dma2plb6.h>
 
-typedef bool func();
+typedef uint8_t func();
 #define L2C_TIMEOUT   0x00000020
 #define NUM_BYTE      (1024 * 8)
 
@@ -58,14 +58,14 @@ int main(void)
     int         i;
     uint32_t    data;
 
-    data = dcr_read (DCR_L2C_BASE + L2C_L2ISTAT);
+    data = l2c_l2_read (DCR_L2C_BASE, L2C_L2ISTAT);
     i = 0;
-    while (~(data & 0x1) && (i < L2C_TIMEOUT))
+    while (((data & 0x1) != 1) && (i < L2C_TIMEOUT))
     {
-        data = dcr_read (DCR_L2C_BASE + L2C_L2ISTAT);
+        data = l2c_l2_read (DCR_L2C_BASE, L2C_L2ISTAT);
         i++;
     }
-    //TEST_ASSERT((data & 0x1),"L2C Array Initialization Complete Event did not occur!");
+    TEST_ASSERT((data & 0x1),"L2C Array Initialization Complete Event did not occur!");
 
     rumboot_printf("Copy SRAM0BIN to IM0 (addr = 0x%x)\n", im0_data);
     rumboot_platform_request_file("SRAM0BIN", (uint32_t) im0_data);
@@ -75,19 +75,18 @@ int main(void)
     dma2plb6_setup_info dma_info;
     channel_status status = {};
     dma_info.base_addr = DCR_DMAPLB6_BASE;
-    dma_info.source_adr = rumboot_virt_to_dma((void*) im0_data);
-    dma_info.dest_adr = rumboot_virt_to_dma((void*) SRAM0_BASE);
+    dma_info.source_adr = rumboot_virt_to_phys((void*) im0_data);
+    dma_info.dest_adr = rumboot_virt_to_phys((void*) SRAM0_BASE);
     dma_info.priority = priority_medium_low;
     dma_info.striding_info.striding = striding_none;
     dma_info.tc_int_enable = false;
     dma_info.err_int_enable = false;
     dma_info.int_mode = int_mode_level_wait_clr;
     dma_info.channel = channel0;
-    dma_info.transfer_width = tr_width_word;
-    dma_info.rw_transfer_size = rw_tr_size_4q;
-    dma_info.count = NUM_BYTE/4;
+    dma_info.transfer_width = tr_width_quadword;
+    dma_info.rw_transfer_size = rw_tr_size_8q;
+    dma_info.count = NUM_BYTE/16;
 
-    rumboot_printf("src = 0x%x\ndst = 0x%x\n", (uint32_t) dma_info.source_adr, (uint32_t) dma_info.dest_adr);
     rumboot_printf("DMA prepared, starting copy.\n");
     dma2plb6_mcpy(&dma_info);
     if (!wait_dma2plb6_mcpy (&dma_info, &status))
@@ -98,12 +97,22 @@ int main(void)
     msync();
     rumboot_printf("Code and data copied to SRAM0\n");
     rumboot_printf("Starting test code from SRAM0 ...\n");
-    rumboot_printf("DATA0 = %x\n", ioread32(SRAM0_BASE));
-    rumboot_printf("DATA1 = %x\n", ioread32(SRAM0_BASE + 0x4));
-    rumboot_printf("DATA2 = %x\n", ioread32(SRAM0_BASE + 0x8));
-    rumboot_printf("DATA3 = %x\n", ioread32(SRAM0_BASE + 0xC));
     func* f = (func*)(SRAM0_BASE);
-    f();
+    uint8_t result = f();
+    if (result != 0)
+    {
+        switch (result) // result == error code
+        {
+            case 1: rumboot_printf("steps 6,7 - FAIL, reading from cache inhibited page: failed, data not changed (cache is off).\n"); break;
+            case 2: rumboot_printf("steps 6,7 - FAIL, reading from cache inhibited page: failed, data not changed (cache is on).\n"); break;
+            case 3: rumboot_printf("steps 6,7 - FAIL, reading from cache inhibited page: failed, data changed.\n"); break;
+            case 4: rumboot_printf("steps 8,9 - FAIL, reading from cacheable page: failed, data not changed.\n"); break;
+            case 5: rumboot_printf("steps 11, 12 - FAIL, reading from cache inhibited page after flush: failed, data not changed.\n"); break;
+            case 6: rumboot_printf("steps 13, 14 - FAIL, reading from cacheable page after flush: failed, data not changed.\n"); break;
+        }
+        rumboot_printf("TEST_ERROR\n");
+        return 1;
+    }
 
     rumboot_printf("TEST_OK\n");
     return 0;
