@@ -36,16 +36,18 @@
 #include <platform/devices.h>
 #include <rumboot/macros.h> //dcr_write/dcr_read
 #include <platform/arch/ppc/test_macro.h>
-//#include <devices.h>
+#include <devices/sp804.h>
 #include <platform/interrupts.h>
 
 #include <platform/regs/regs_mpic128.h>
 #include <platform/devices/mpic128.h>
 
+#include <platform/devices.h>
+
 #include <regs/regs_sp804.h>
 
-#define TIMER0_CYCLES           1
-#define TIMER1_CYCLES           2
+//#define TIMER0_CYCLES           1
+//#define TIMER1_CYCLES           2
 
 //#define TIM1_INTERRUPT_NUMBER   40
 //#define TIM2_INTERRUPT_NUMBER   41
@@ -67,7 +69,7 @@ static int32_t check_array32[] = {
         0x55555555
 };
 */
-
+//static struct sp804_config c1, c2;
 
 static uint32_t check_timer_default_ro_val( uint32_t base_addr )
 {
@@ -128,6 +130,8 @@ static uint32_t check_timer_default_rw_val( uint32_t base_addr )
     return 1;
 }
 
+
+/*
 struct s804_instance {
     int timer0_irq;
     int timer1_irq;
@@ -181,7 +185,7 @@ bool test_dit_timers( uint32_t structure ) {
         while( sp804_get_value( base_addr, 0 ) ) {
         };
         c++;
-    }
+    }regs
 
     for( int i = 0; i < TIMER1_CYCLES + stru->dit_index; i++ ) {
         sp804_config( base_addr, &config_1, 1 );
@@ -209,7 +213,7 @@ bool test_dit_timers( uint32_t structure ) {
 
     return true;
 }
-
+*/
 uint32_t main(void){
     /*
      * Test scenario:
@@ -217,15 +221,67 @@ uint32_t main(void){
      * - setup TCR, wait TIMINT1,2
      * - setup timers, wait TIMINT1,2
      */
+    struct sp804_conf c1 = {
+        .mode = 0,
+        .interrupt_enable = 1,
+        .clock_division = 1,
+        .width = 32,
+        .load = 100,
+        .bgload = 0 };
 
+    struct sp804_conf c2 = {
+        .mode = 0,
+        .interrupt_enable = 1,
+        .clock_division = 1,
+        .width = 32,
+        .load = 200,
+        .bgload = 0 };
+
+/*
+    c1.mode = 0;
+    c1.interrupt_enable = 1;
+    c1.clock_division = 1;
+    c1.width = 32;
+    c1.load = 100;
+    c1.bgload = 0;
+
+    c2.mode = 0;
+    c2.interrupt_enable = 1;
+    c2.clock_division = 1;
+    c2.width = 32;
+    c2.load = 200;
+    c2.bgload = 0;
+*/
     // Set up interrupt handlers
+     uint32_t result;
+
         rumboot_printf( "SP804 test START\n" );
-        //sp804_clrint(DCR_TIMERS_BASE);
-        rumboot_irq_cli();
-        struct rumboot_irq_entry *tbl = rumboot_irq_create( NULL );
+
+
+        rumboot_printf( "SP804 int are clean up\n" );
+
+        result = check_timer_default_ro_val(DCR_TIMERS_BASE) ||
+                check_timer_default_rw_val(DCR_TIMERS_BASE);
+        if(!result)
+        {
+            rumboot_printf("Checked TEST_ERROR\n");
+            return 1;
+        }
+        rumboot_printf("Checked TEST_OK\n");
+
+        sp804_config(DCR_TIMERS_BASE, &c1, 0);
+        sp804_config(DCR_TIMERS_BASE, &c2, 1);
+
+
+        //sp804_clrint(DCR_TIMERS_BASE, 0);
+        //sp804_clrint(DCR_TIMERS_BASE, 1);
+
+
+        return result;
 
 
 
 
-    return 0;
+      //  struct rumboot_irq_entry *tbl = rumboot_irq_create( NULL );
+
 }
