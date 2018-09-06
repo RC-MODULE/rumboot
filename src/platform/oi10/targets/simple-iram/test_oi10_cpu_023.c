@@ -10,12 +10,15 @@
 #include <platform/devices.h>
 #include <platform/devices/emi.h>
 #include <platform/devices/dma2plb6.h>
+#include <platform/devices/nor_1636RR4.h>
 #include <platform/test_assert.h>
 #include <platform/test_event_codes.h>
 
 
+
 //size in bytes
-#define TEST_DATA_SIZE 128
+#define TEST_DATA_SIZE 16
+//#define TEST_DATA_SIZE 128
 //test data content
 #define TEST_DATA_CONTENT 0x0123456789ABCDEF
 
@@ -46,7 +49,7 @@ static uint8_t dest_area_im0 [TEST_DATA_SIZE] __attribute__((aligned(16)));
 static uint64_t fill_word = TEST_DATA_CONTENT;
 
 
-uint32_t dma2plb6_get_bytesize(transfer_width transfer_width_code)
+static uint32_t dma2plb6_get_bytesize(transfer_width transfer_width_code)
 {
     switch(transfer_width_code){
     case tr_width_byte:
@@ -68,14 +71,14 @@ uint32_t dma2plb6_get_bytesize(transfer_width transfer_width_code)
     return 0;
 }
 
-void fill(uint64_t *s, uint64_t pattern, uint32_t size_in_bytes)
+static void fill(uint64_t *s, uint64_t pattern, uint32_t size_in_bytes)
 {
     uint32_t i;
     for (i = 0; i < (size_in_bytes>>3); i++)
         s[i] = pattern;
 }
 
-uint32_t compare(uint32_t s_addr, uint32_t d_addr,uint32_t size_in_bytes)
+static uint32_t compare(uint32_t s_addr, uint32_t d_addr,uint32_t size_in_bytes)
 {
     uint32_t i;
     for (i = 0; i < size_in_bytes; i+=8){
@@ -89,7 +92,7 @@ uint32_t compare(uint32_t s_addr, uint32_t d_addr,uint32_t size_in_bytes)
     return true;
 }
 
-uint32_t check_dma2plb6_0_mem_to_mem(uint32_t source_ea, uint32_t dest_ea, uint64_t source_phys, uint64_t dest_phys)
+static uint32_t check_dma2plb6_0_mem_to_mem(uint32_t source_ea, uint32_t dest_ea, uint64_t source_phys, uint64_t dest_phys)
 {
     dma2plb6_setup_info dma_info;
     channel_status status = {};
@@ -102,10 +105,10 @@ uint32_t check_dma2plb6_0_mem_to_mem(uint32_t source_ea, uint32_t dest_ea, uint6
     dma_info.err_int_enable = false;
     dma_info.int_mode = int_mode_level_wait_clr;
     dma_info.channel = channel0;
-    for (dma_info.rw_transfer_size = rw_tr_size_1q; dma_info.rw_transfer_size <= rw_tr_size_8q; dma_info.rw_transfer_size++)
+    for (dma_info.rw_transfer_size = rw_tr_size_8q; dma_info.rw_transfer_size <= rw_tr_size_8q; dma_info.rw_transfer_size++)
     {
         rumboot_printf("rw_transfer_size = 0x%x\n", dma_info.rw_transfer_size);
-        for(dma_info.transfer_width = tr_width_byte; dma_info.transfer_width <= tr_width_quadword; dma_info.transfer_width++)
+        for(dma_info.transfer_width = tr_width_quadword; dma_info.transfer_width <= tr_width_quadword; dma_info.transfer_width++)
         {
             fill((uint64_t *)source_ea, fill_word, TEST_DATA_SIZE);
             fill((uint64_t *)dest_ea, 0x0, TEST_DATA_SIZE);
@@ -124,13 +127,11 @@ uint32_t check_dma2plb6_0_mem_to_mem(uint32_t source_ea, uint32_t dest_ea, uint6
 }
 
 
-int main(void)
+static uint32_t check_single_channel()
 {
-    volatile int64_t src_im0_physical, dst_im0_physical;
-    volatile int64_t src_im1_physical, dst_im1_physical;
-    volatile int64_t src_em2_physical, dst_em2_physical;
-
-    emi_init(DCR_EM2_EMI_BASE);
+    volatile uint64_t src_im0_physical, dst_im0_physical;
+    volatile uint64_t src_im1_physical, dst_im1_physical;
+    volatile uint64_t src_em2_physical, dst_em2_physical;
 
     //prepare physical address
     set_mem_window(MEM_WINDOW_SHARED);//WORKAROUND
@@ -208,4 +209,207 @@ int main(void)
                                           dst_em2_physical) == true, "EM2-to-EM2 failed");
 
     return 0;
+}
+
+
+
+static dma2plb6_setup_info get_default_dma_info(DmaChannel channel, uint32_t* ch_src, uint32_t* ch_dst)
+{
+    dma2plb6_setup_info dma_info;
+
+    dma_info.base_addr = DCR_DMAPLB6_BASE;
+    dma_info.source_adr = rumboot_virt_to_dma(ch_src);
+    dma_info.dest_adr = rumboot_virt_to_dma(ch_dst);
+    dma_info.priority = priority_medium_low;
+    dma_info.striding_info.striding = striding_none;
+    dma_info.tc_int_enable = false;
+    dma_info.err_int_enable = false;
+    dma_info.int_mode = int_mode_level_wait_clr;
+    dma_info.channel = channel;
+    dma_info.transfer_width = tr_width_quadword;
+    dma_info.rw_transfer_size = rw_tr_size_8q;
+    dma_info.count = TEST_DATA_SIZE/dma2plb6_get_bytesize(dma_info.transfer_width);
+
+    return dma_info;
+}
+
+//static void mem_fill(uint32_t* mem, uint64_t pattern, size_t size)
+//{
+//    size_t index = 0;
+//
+//    while(index < size)
+//    {
+//        iowrite64(pattern, (uint32_t)(mem + index/sizeof(mem)));
+//        index += 8;
+//    }
+//}
+
+static void nor_fill(uint32_t* mem, uint64_t pattern, size_t size)
+{
+    size_t index = 0;
+
+    while(index < size)
+    {
+        nor_write32((pattern >> 32), (uint32_t)(mem + index/sizeof(mem)));
+        nor_write32((pattern && 0xffffffff), (uint32_t)(mem + 4 + index/sizeof(mem)));
+        index += 8;
+    }
+}
+
+static uint32_t check_multiple_channels_4()
+{
+    uint32_t* ch0_src = (uint32_t*)(SRAM0_BASE);
+    uint32_t* ch0_dst = (uint32_t*)(SDRAM_BASE + 0x80);
+    uint32_t* ch1_src = (uint32_t*)(SDRAM_BASE);
+    uint32_t* ch1_dst = (uint32_t*)(SSRAM_BASE + 0x80);
+    uint32_t* ch2_src = (uint32_t*)(SSRAM_BASE);
+    uint32_t* ch2_dst = (uint32_t*)(PIPELINED_BASE + 0x80);
+    uint32_t* ch3_src = (uint32_t*)(PIPELINED_BASE);
+    uint32_t* ch3_dst = (uint32_t*)(SRAM1_BASE + 0x80);
+
+    rumboot_putstring("Initializing memory ...\n");
+    fill((uint64_t*)ch0_src, fill_word, TEST_DATA_SIZE);
+    fill((uint64_t*)ch0_dst, 0x00, TEST_DATA_SIZE);
+    fill((uint64_t*)ch1_src, fill_word, TEST_DATA_SIZE);
+    fill((uint64_t*)ch1_dst, 0x00, TEST_DATA_SIZE);
+    fill((uint64_t*)ch2_src, fill_word, TEST_DATA_SIZE);
+    fill((uint64_t*)ch2_dst, 0x00, TEST_DATA_SIZE);
+    fill((uint64_t*)ch3_src, fill_word, TEST_DATA_SIZE);
+    fill((uint64_t*)ch3_dst, 0x00, TEST_DATA_SIZE);
+
+    dma2plb6_setup_info ch0_dma_info = get_default_dma_info(channel0, ch0_src, ch0_dst);
+    dma2plb6_setup_info ch1_dma_info = get_default_dma_info(channel1, ch1_src, ch1_dst);
+    dma2plb6_setup_info ch2_dma_info = get_default_dma_info(channel2, ch2_src, ch2_dst);
+    dma2plb6_setup_info ch3_dma_info = get_default_dma_info(channel3, ch3_src, ch3_dst);
+
+    channel_status ch0_status = {};
+    channel_status ch1_status = {};
+    channel_status ch2_status = {};
+    channel_status ch3_status = {};
+
+    rumboot_putstring("Initializing DMA channels ...\n");
+    dma2plb6_mcpy(&ch0_dma_info);
+    dma2plb6_mcpy(&ch1_dma_info);
+    dma2plb6_mcpy(&ch2_dma_info);
+    dma2plb6_mcpy(&ch3_dma_info);
+
+    rumboot_putstring("Waiting for DMA transfer complete ...\n");
+    if (wait_dma2plb6_mcpy(&ch0_dma_info, &ch0_status))
+    {
+        rumboot_putstring("DMA2PLB6: Channel 0 transfer succeeded.\n");
+        if (wait_dma2plb6_mcpy(&ch1_dma_info, &ch1_status))
+        {
+            rumboot_putstring("DMA2PLB6: Channel 1 transfer succeeded.\n");
+            if (wait_dma2plb6_mcpy(&ch2_dma_info, &ch2_status))
+            {
+                rumboot_putstring("DMA2PLB6: Channel 2 transfer succeeded.\n");
+                if (wait_dma2plb6_mcpy(&ch3_dma_info, &ch3_status))
+                {
+                    rumboot_putstring("DMA2PLB6: Channel 3 transfer succeeded.\n");
+                }
+                else
+                {
+                    rumboot_putstring("DMA2PLB6: Channel 3 transfer error.\n");
+                    return 1;
+                }
+            }
+            else
+            {
+                rumboot_putstring("DMA2PLB6: Channel 2 transfer error.\n");
+                return 1;
+            }
+        }
+        else
+        {
+            rumboot_putstring("DMA2PLB6: Channel 1 transfer error.\n");
+            return 1;
+        }
+    }
+    else
+    {
+        rumboot_putstring("DMA2PLB6: Channel 0 transfer error.\n");
+        return 1;
+    }
+
+    rumboot_putstring("Memory check ...\n");
+    TEST_ASSERT(compare((uint32_t)ch0_src, (uint32_t)ch0_dst, TEST_DATA_SIZE) == true, "Channel0: memory comparison failed");
+    TEST_ASSERT(compare((uint32_t)ch1_src, (uint32_t)ch1_dst, TEST_DATA_SIZE) == true, "Channel1: memory comparison failed");
+    TEST_ASSERT(compare((uint32_t)ch2_src, (uint32_t)ch2_dst, TEST_DATA_SIZE) == true, "Channel2: memory comparison failed");
+    TEST_ASSERT(compare((uint32_t)ch3_src, (uint32_t)ch3_dst, TEST_DATA_SIZE) == true, "Channel3: memory comparison failed");
+
+    return 0;
+}
+
+static uint32_t check_multiple_channels_2()
+{
+    uint32_t* ch0_src = (uint32_t*)(SRAM1_BASE);
+    uint32_t* ch0_dst = (uint32_t*)(SRAM0_BASE + 0x80);
+    uint32_t* ch1_src = (uint32_t*)(NOR_BASE);
+    uint32_t* ch1_dst = (uint32_t*)(SRAM0_BASE + 0x80);
+
+    rumboot_putstring("Initializing memory ...\n");
+    fill((uint64_t*)ch0_src, fill_word, TEST_DATA_SIZE);
+    fill((uint64_t*)ch0_dst, 0x00, TEST_DATA_SIZE);
+    nor_fill((uint32_t*)ch1_src, fill_word, TEST_DATA_SIZE);
+    fill((uint64_t*)ch1_dst, 0x00, TEST_DATA_SIZE);
+
+    dma2plb6_setup_info ch0_dma_info = get_default_dma_info(channel0, ch0_src, ch0_dst);
+    dma2plb6_setup_info ch1_dma_info = get_default_dma_info(channel1, ch1_src, ch1_dst);
+
+    channel_status ch0_status = {};
+    channel_status ch1_status = {};
+
+    rumboot_putstring("Initializing DMA channels ...\n");
+    dma2plb6_mcpy(&ch0_dma_info);
+    dma2plb6_mcpy(&ch1_dma_info);
+
+    rumboot_putstring("Waiting for DMA transfer complete ...\n");
+    if (wait_dma2plb6_mcpy(&ch0_dma_info, &ch0_status))
+    {
+        rumboot_putstring("DMA2PLB6: Channel 0 transfer succeeded.\n");
+        if (wait_dma2plb6_mcpy(&ch1_dma_info, &ch1_status))
+        {
+            rumboot_putstring("DMA2PLB6: Channel 1 transfer succeeded.\n");
+        }
+        else
+        {
+            rumboot_putstring("DMA2PLB6: Channel 1 transfer error.\n");
+            return 1;
+        }
+    }
+    else
+    {
+        rumboot_putstring("DMA2PLB6: Channel 0 transfer error.\n");
+        return 1;
+    }
+
+    rumboot_putstring("Memory check ...\n");
+    TEST_ASSERT(compare((uint32_t)ch0_src, (uint32_t)ch0_dst, TEST_DATA_SIZE) == true, "Channel0: memory comparison failed");
+    TEST_ASSERT(compare((uint32_t)ch1_src, (uint32_t)ch1_dst, TEST_DATA_SIZE) == true, "Channel1: memory comparison failed");
+
+    return 0;
+}
+
+
+int main(void)
+{
+    uint32_t result = 0;
+
+    rumboot_putstring("Starting test_oi10_cpu_023 ...\n");
+
+    emi_init(DCR_EM2_EMI_BASE);
+
+    result += check_multiple_channels_2();
+    return result;
+
+    result += check_single_channel();
+    result += check_multiple_channels_4();
+    result += check_multiple_channels_2();
+
+    if (result)
+        rumboot_putstring("Test has been failed.\n");
+    else
+        rumboot_putstring("Test has been finished successfully.\n");
+
+    return result;
 }
