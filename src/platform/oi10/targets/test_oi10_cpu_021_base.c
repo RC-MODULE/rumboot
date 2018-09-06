@@ -19,12 +19,12 @@
 #include <platform/test_event_codes.h>
 #include <platform/regs/regs_l2c_l2.h>
 #include <platform/devices/dma2plb6.h>
-#include <platform/devices/nor_1636RR4.h>
-
-#define L2C_TIMEOUT   0x000000FF
 
 typedef bool func();
-uint8_t __attribute__((section(".data"),aligned(128))) volatile im0_data[1024 * 16] = { 0 };
+#define L2C_TIMEOUT   0x00000020
+#define NUM_BYTE      (1024 * 8)
+
+uint8_t __attribute__((section(".data"),aligned(0x100))) volatile im0_data[NUM_BYTE] = { 0 };
 
 inline void dma2plb6_trace_status(channel_status status)
 {
@@ -75,27 +75,33 @@ int main(void)
     dma2plb6_setup_info dma_info;
     channel_status status = {};
     dma_info.base_addr = DCR_DMAPLB6_BASE;
-    dma_info.source_adr = rumboot_virt_to_dma((uint32_t*) im0_data);
-    dma_info.dest_adr = rumboot_virt_to_dma((uint32_t*) SRAM0_BASE);
+    dma_info.source_adr = rumboot_virt_to_dma((void*) im0_data);
+    dma_info.dest_adr = rumboot_virt_to_dma((void*) SRAM0_BASE);
     dma_info.priority = priority_medium_low;
     dma_info.striding_info.striding = striding_none;
     dma_info.tc_int_enable = false;
     dma_info.err_int_enable = false;
     dma_info.int_mode = int_mode_level_wait_clr;
     dma_info.channel = channel0;
-    dma_info.transfer_width = tr_width_quadword;
-    dma_info.rw_transfer_size = rw_tr_size_8q;
-    dma_info.count = 1024;
+    dma_info.transfer_width = tr_width_word;
+    dma_info.rw_transfer_size = rw_tr_size_4q;
+    dma_info.count = NUM_BYTE/4;
 
+    rumboot_printf("src = 0x%x\ndst = 0x%x\n", (uint32_t) dma_info.source_adr, (uint32_t) dma_info.dest_adr);
     rumboot_printf("DMA prepared, starting copy.\n");
-    if(dma2plb6_single_copy(&dma_info,&status) == false)
+    dma2plb6_mcpy(&dma_info);
+    if (!wait_dma2plb6_mcpy (&dma_info, &status))
     {
         dma2plb6_trace_status(status);
         return 1;
     }
     msync();
     rumboot_printf("Code and data copied to SRAM0\n");
-    rumboot_printf("Starting test code from SRAM0 ...%x\n", ioread32(SRAM0_BASE));
+    rumboot_printf("Starting test code from SRAM0 ...\n");
+    rumboot_printf("DATA0 = %x\n", ioread32(SRAM0_BASE));
+    rumboot_printf("DATA1 = %x\n", ioread32(SRAM0_BASE + 0x4));
+    rumboot_printf("DATA2 = %x\n", ioread32(SRAM0_BASE + 0x8));
+    rumboot_printf("DATA3 = %x\n", ioread32(SRAM0_BASE + 0xC));
     func* f = (func*)(SRAM0_BASE);
     f();
 
