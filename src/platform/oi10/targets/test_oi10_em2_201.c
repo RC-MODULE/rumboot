@@ -84,14 +84,17 @@ int check_sram0(uint32_t base_addr)
     const ssx_tsoe_t test_tsoe_arr[SRAM0_TSOE_SPACE] = {TSOE_1, TSOE_2};
     const ssx_tcyc_t test_tcyc_arr[SRAM0_TCYC_SPACE] = {TCYC_2, TCYC_3, TCYC_4, TCYC_5};
 
-    rumboot_printf("Checking SRAM0 (0x%X)\n", base_addr);
+    uint32_t event_code = (base_addr==SRAM0_BASE) ? EVENT_CHECK_SRAM0_TSOE_TCYC : EVENT_CHECK_SRAM1_TSOE_TCYC;
+    emi_bank_num bank = (base_addr==SRAM0_BASE) ? emi_b0_sram0 : emi_b4_sram1;
+
+    rumboot_printf("Checking SRAM0/SRAM1 (0x%X)\n", base_addr);
 
     for (int i=0; i<SRAM0_TSOE_SPACE; i++)
         for (int j=0; j<SRAM0_TCYC_SPACE; j++)
         {
-            emi_update_tcyc_tsoe(emi_b0_sram0, test_tsoe_arr[i], test_tcyc_arr[j]);
+            emi_update_tcyc_tsoe(bank, test_tsoe_arr[i], test_tcyc_arr[j]);
             rumboot_printf("Setting tcyc / tsoe: %d / %d\n", test_tcyc_arr[j], test_tsoe_arr[i]);
-            test_event(EVENT_CHECK_SRAM0_TSOE_TCYC);
+            test_event(event_code);
             check_wrrd(TEST_ADDR_0, (i<<16) | j);
             check_wrrd(TEST_ADDR_1, ~((i<<16) | j));
         }
