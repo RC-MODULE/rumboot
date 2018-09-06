@@ -1110,16 +1110,31 @@ endif()
     add_rumboot_target(
         CONFIGURATION SUPPLEMENTARY
         LDS oi10/sram0.lds
-        FILES test_oi10_cpu_021_wt_100.c
+        FILES test_oi10_cpu_021.c
         NAME "test_oi10_cpu_021_wt_100"
+        CFLAGS -DL2C_IL1I_BIT=1 -DL2C_IL1D_BIT=1 -DL2C_WRITE_MODE_BIT=1 -DL2C_INHIBIT_BIT=0 -DL2C_MEMORY_COHERENCE_BIT=1
     )
     add_rumboot_target(
         CONFIGURATION IRAM
         FILES test_oi10_cpu_021_base.c
-        CFLAGS -DTEST_OI10_CPU_021_WT_100
         NAME "test_oi10_cpu_021_wt_100"
         LOAD IM0BIN SELF
              SRAM0BIN supplementary-test_oi10_cpu_021_wt_100
+    )
+    
+    add_rumboot_target(
+        CONFIGURATION SUPPLEMENTARY
+        LDS oi10/sram0.lds
+        FILES test_oi10_cpu_021.c
+        NAME "test_oi10_cpu_021_wt_101"
+        CFLAGS -DL2C_IL1I_BIT=0 -DL2C_IL1D_BIT=1 -DL2C_WRITE_MODE_BIT=1 -DL2C_INHIBIT_BIT=0 -DL2C_MEMORY_COHERENCE_BIT=1
+    )
+    add_rumboot_target(
+        CONFIGURATION IRAM
+        FILES test_oi10_cpu_021_base.c
+        NAME "test_oi10_cpu_021_wt_101"
+        LOAD IM0BIN SELF
+             SRAM0BIN supplementary-test_oi10_cpu_021_wt_101
     )
     
     add_rumboot_target(
