@@ -129,12 +129,48 @@ int check_nor(uint32_t base_addr)
 /*
  * SDRAM (2.1.3 and 2.1.5 PPPC_SRAM_SDRAM_slave0_testplan.docx)
  */
-//TODO:
+void emi_update_sdx(emi_sdx_reg_cfg* sdx)
+{
+    emi_bank_cfg bank_cfg;
+    emi_get_bank_cfg(DCR_EM2_EMI_BASE, emi_b1_sdram, &bank_cfg);
+    bank_cfg.sdx_cfg = *sdx;
+    emi_set_bank_cfg(DCR_EM2_EMI_BASE, emi_b1_sdram, &bank_cfg);
+    refresh_timings(emi_b1_sdram);
+}
+
 int check_sdram(uint32_t base_addr)
 {
+#define SDRAM_CSP_SPACE     5
+#define SDRAM_CL_SPACE      2
+#define SDRAM_TRDL_SPACE    2
+#define SDRAM_TRCD_SPACE    2
+#define SDRAM_TRAS_SPACE    2
+
+    sdx_csp_t csp_arr[SDRAM_CSP_SPACE] = {CSP_256, CSP_512, CSP_1024, CSP_2048, CSP_4096};
+    sdx_cl_t  cl_arr[SDRAM_CL_SPACE]   = {CL_1, CL_3};
+    sdx_trdl_t trdl_arr[SDRAM_TRDL_SPACE] = {TRDL_1, TRDL_2};
+    sdx_trcd_t trcd_arr[SDRAM_TRCD_SPACE] = {TRCD_2, TRCD_5};
+    sdx_tras_t tras_arr[SDRAM_TRAS_SPACE] = {TRAS_4, TRAS_11};
+    emi_sdx_reg_cfg sdx_sdram;
+    uint32_t i, j, k, l, m;
+
     rumboot_printf("Checking SDRAM (0x%X)\n", base_addr);
-    iowrite32(0xBABADEDA, base_addr);
-    rumboot_printf("[0x%x] = 0x%X\n", base_addr, ioread32(base_addr));
+
+    for (i=0; i<SDRAM_CSP_SPACE  ; i++)
+        for (j=0; i<SDRAM_CL_SPACE   ; j++)
+            for (k=0; i<SDRAM_TRDL_SPACE ; k++)
+                for (l=0; i<SDRAM_TRCD_SPACE ; l++)
+                    for (m=0; i<SDRAM_TRAS_SPACE ; m++)
+                    {
+                        sdx_sdram.CSP   = csp_arr[i];
+                        sdx_sdram.CL    = cl_arr[j];
+                        sdx_sdram.T_RDL = trdl_arr[k];
+                        sdx_sdram.T_RCD = trcd_arr[l];
+                        sdx_sdram.T_RAS = tras_arr[m];
+                        emi_update_sdx(&sdx_sdram);
+                        check_wrrd(TEST_ADDR_0, (i<<16) | j);
+                        check_wrrd(TEST_ADDR_1, ~((i<<16) | j));
+                    }
     return 0;
 }
 
