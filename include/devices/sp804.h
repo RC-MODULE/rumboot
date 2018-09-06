@@ -18,6 +18,7 @@
  * \endcode
  *
  *  Usage example:
+ * \code{.c}
  *
  *  static void handler0(int irq, int base_addr)
  *  {
@@ -44,6 +45,7 @@
  *        while(sp804_get_value(base_addr,0)){};
  *        c++;
  *    }
+ * \endcode
  *
  * \addtogroup devices_sp804
  *
