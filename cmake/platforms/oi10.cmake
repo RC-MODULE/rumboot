@@ -1088,7 +1088,40 @@ endif()
       PREFIX mkio1-em2-func-b
     )
 
+#    add_rumboot_target(
+#        CONFIGURATION IRAM
+#        FILES common/mkio/mkio0_events_timestamps_test.c
+#        NAME mkio0_events_timestamps_test
+#      )
+#
+#    add_rumboot_target(
+#        CONFIGURATION IRAM
+#        FILES common/mkio/mkio1_events_timestamps_test.c
+#        NAME mkio1_events_timestamps_test
+#      )
 
+#    add_rumboot_target(
+#        CONFIGURATION IRAM
+#        FILES common/mkio/mkio_signal_test.c
+#        NAME mkio_signal_test
+#        IRUN_FLAGS +mkio_signal_test
+#      )
+
+    add_rumboot_target(
+        CONFIGURATION SUPPLEMENTARY
+        LDS oi10/sram0.lds
+        FILES test_oi10_cpu_021_wt_100.c
+        NAME "test_oi10_cpu_021_wt_100"
+    )
+    add_rumboot_target(
+        CONFIGURATION IRAM
+        FILES test_oi10_cpu_021_base.c
+        CFLAGS -DTEST_OI10_CPU_021_WT_100
+        NAME "test_oi10_cpu_021_wt_100"
+        LOAD IM0BIN SELF
+             SRAM0BIN supplementary-test_oi10_cpu_021_wt_100
+    )
+    
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES test_oi10_uart_000.c
