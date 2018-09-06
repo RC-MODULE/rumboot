@@ -45,7 +45,7 @@ static inline void nor_write32(uint32_t write_DATA, uint32_t write_ADDR)
                 NOR_write32_word_program_sequence[3].addr = write_ADDR - NOR_BASE;
                 NOR_write32_word_program_sequence[3].data = write_DATA;
                 NOR_WRITE32_SEQUENCE(NOR_BASE, NOR_write32_word_program_sequence);
-                udelay(200); //workaround
+                udelay(20); //workaround
                 TEST_ASSERT(ioread32(write_ADDR) == write_DATA, "ERROR: nor_write32 failed");
         }
 }
