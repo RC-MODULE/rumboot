@@ -102,7 +102,13 @@ rumboot_add_configuration(
 )
 
 
-macro(rumboot_unit_test id tag memtag )
+macro(rumboot_unit_test id tag memtag tagoffset)
+
+  set(_commas)
+  foreach(offset RANGE ${tagoffset})
+    set(_commas "${_commas},")
+  endforeach()
+
   add_rumboot_target(
           NAME "unit-${tag}-ok"
           CONFIGURATION ROM
@@ -110,7 +116,7 @@ macro(rumboot_unit_test id tag memtag )
           FILES common/bootrom/unit.c
           TESTGROUP bootrom
           CFLAGS -DSOURCE=${id} -DEXPECTED=true
-          LOAD ${memtag} ${ARGN}spl-ok
+          LOAD ${memtag} ${_commas}spl-ok
   )
 
   add_rumboot_target(
@@ -120,7 +126,7 @@ macro(rumboot_unit_test id tag memtag )
           FILES common/bootrom/unit.c
           TESTGROUP bootrom
           CFLAGS -DSOURCE=${id} -DEXPECTED=false
-          LOAD ${memtag} ${ARGN}spl-fail-bad-magic
+          LOAD ${memtag} ${_commas}spl-fail-bad-magic
   )
 
   add_rumboot_target(
@@ -130,7 +136,7 @@ macro(rumboot_unit_test id tag memtag )
           FILES common/bootrom/unit.c
           TESTGROUP bootrom
           CFLAGS -DSOURCE=${id} -DEXPECTED=false
-          LOAD ${memtag} ${ARGN}spl-fail-bad-version
+          LOAD ${memtag} ${_commas}spl-fail-bad-version
   )
 
 endmacro()
@@ -224,15 +230,19 @@ macro(add_bootrom_stuff)
   )
 
 
-  rumboot_unit_test(0 spi0_cs0 SPI0_CONF)
-  rumboot_unit_test(1 spi0_cs1 SPI0_CONF ,)
+  rumboot_unit_test(0 spi0_cs0 SPI0_CONF 0)
+  rumboot_unit_test(1 spi0_cs1 SPI0_CONF 1)
+  rumboot_unit_test(2 i2c0_50  I2C0_CONF 0)
+  rumboot_unit_test(3 i2c0_51  I2C0_CONF 1)
+  rumboot_unit_test(4 i2c0_52  I2C0_CONF 2)
+  rumboot_unit_test(5 i2c0_53  I2C0_CONF 3)
 
   add_rumboot_target(
           NAME "host-shim"
           CONFIGURATION ROM
           PREFIX "bootrom"
           BOOTROM bootrom-loader
-          TESTGROUP bootrom
+          TESTGROUP bootrom bootrom-unit-tests
           IRUN_FLAGS +BOOT_HOST
           LOAD
             SPI0_CONF spl-fail,spl-fail
@@ -1332,30 +1342,6 @@ endif()
       )
     endforeach()
     endforeach()
-
-
-  #RumBoot Integration tests
-#  add_rumboot_target(
-#      CONFIGURATION INTEGRATION
-#      NAME selftest_and_boot_sd
-#      IRUN_FLAGS
-#        +SD_INSERTED
-#        +SD_IMAGE=${rumboot_prefix}spl-ok.bin
-#    )
-
-#  add_rumboot_target(
-#      CONFIGURATION INTEGRATION
-#      NAME selftest_and_boot_spi0
-#      IRUN_FLAGS
-#        +SPI0_0_IMAGE=${rumboot_prefix}spl-ok.bin
-#    )
-
-#  add_rumboot_target(
-#      CONFIGURATION INTEGRATION
-#      NAME selftest_and_boot_spi1
-#      IRUN_FLAGS
-#        +SPI0_1_IMAGE=${rumboot_prefix}spl-ok.bin
-#    )
 
 endmacro()
 

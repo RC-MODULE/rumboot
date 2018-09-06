@@ -3,61 +3,53 @@
 #include <stdlib.h>
 #include <regs/regs_i2c.h>
 #include <rumboot/io.h>
-
+#include <rumboot/timer.h>
 
 #define EEPROM_PAGE_SIZE 32
+#define I2C_FREQ 400000
+
 struct eeprom_private_data {
-	const struct rumboot_bootsource *src;
+
 };
 
 #define CMD_WRITE_START ((1 << I2C_EN_i) | (1 << WR_i) | (1 << START_i))
 #define CMD_WRITE ((1 << I2C_EN_i) | (1 << WR_i))
 #define CMD_READ_REPEAT_START ((1 << I2C_EN_i) | (1 << RD_i) | (1 << START_i) | (1 << REPEAT_i))
-//#define CMD_READ_REPEAT_START ((1 << I2C_EN_i) | (1 << RD_i) | (1 << START_i) | (1 << REPEAT_i))
 #define CMD_STOP ((1 << I2C_EN_i) | (1 << STOP_i))
 #define CMD_READ_REPEAT_STOP ((1 << I2C_EN_i) | (1 << RD_i) | (1 << START_i) | (1 << REPEAT_i) | (1 << STOP_i))
 
 
 uint32_t get_i2c_clk(uint32_t clk_apb, uint32_t pr)
 {
-    return clk_apb / (5 * pr);
+    return clk_apb / (5 * (pr + 1));
 }
 
 static uint32_t calc_best_pr(uint32_t clk_apb, uint32_t clk_i2c)
 {
-#if 1
-	return 51;
-#else
-	uint32_t clk_real = 0;
-	uint32_t pr = 1;
-	do {
-		clk_real = get_i2c_clk(clk_apb, pr++);
-	} while ((clk_real > clk_i2c));
-	rumboot_printf("pr %d clk %d ? %d\n", pr, clk_real, clk_i2c);
-	return pr - 1;
-#endif
+	return clk_apb / (5 * clk_i2c) - 1;
 }
 
 static void i2c_stat_rst(uint32_t base)
 {
-	iowrite32(0x0, base + I2C_STAT_RST); //reset STATRST reg
-	iowrite32(0x1, base + I2C_STAT_RST); //reset STATUS reg
-	iowrite32(0x0, base + I2C_STAT_RST); //reset STATRST reg
+	iowrite32(0x0, base + I2C_STAT_RST);
+	iowrite32(0x1, base + I2C_STAT_RST);
+	iowrite32(0x0, base + I2C_STAT_RST);
 }
 
-
-static bool i2c_has_errors(const struct rumboot_bootsource *src)
+static void i2c_reset(uint32_t base)
 {
-	if (ioread32(src->base + I2C_STATUS) & (1<<9)) {
-		dbg_boot(src, "error: nack");
-		return true;
-	}
-	if (ioread32(src->base + I2C_STATUS) & (1<<9)) {
-		dbg_boot(src, "error: arbitration lost");
-		return true;
-	}
+	iowrite32(1, base + I2C_SOFTR);
+	iowrite32(0, base + I2C_SOFTR);
+}
 
-	return false;
+static bool i2c_is_nack(uint32_t base)
+{
+	return ioread32(base + I2C_STATUS) & (1<<9);
+}
+
+static bool i2c_is_arblost(uint32_t base)
+{
+	return ioread32(base + I2C_STATUS) & (1<<1);
 }
 
 static size_t eeprom_read_chunk(const struct rumboot_bootsource *src, uint8_t devaddr, uint16_t offset, uint8_t *dst, int len)
@@ -68,13 +60,30 @@ static size_t eeprom_read_chunk(const struct rumboot_bootsource *src, uint8_t de
 	iowrite32(devaddr << 1,          base + I2C_TRANSMIT);
 	iowrite32(offset >> 8,           base + I2C_TRANSMIT);
 	iowrite32(offset & 0xff,         base + I2C_TRANSMIT);
+	iowrite32(1<<0 | 1<<1 | 1<<4,    base + I2C_CTRL);
 
-	iowrite32(1<<0 | 1<<1 | 1<<4,    		         base + I2C_CTRL);
+	bool timeout = true;
 
-	while (! (ioread32(base + I2C_STATUS) & 0x10)) {
-		if (i2c_has_errors(src))
+	LOOP_UNTIL_TIMEOUT(100) {
+		if (ioread32(base + I2C_STATUS) & 0x10) {
+			timeout = false;
+			break;
+		}
+
+		if (i2c_is_nack(base)) {
+			dbg_boot(src, "error: nack while writing eeprom offset");
 			goto bailout;
-	};;
+		}
+		if (i2c_is_arblost(base)) {
+			dbg_boot(src, "error: arbitration lost while writing eeprom offset");
+			goto bailout;
+		}
+	};
+
+	if (timeout) {
+		dbg_boot(src, "error: timeout while writing eeprom offset (%d)", offset);
+		goto bailout;
+	}
 
 	i2c_stat_rst(base);
 	iowrite32(len, base + I2C_NUMBER);
@@ -82,13 +91,38 @@ static size_t eeprom_read_chunk(const struct rumboot_bootsource *src, uint8_t de
 	iowrite32(CMD_READ_REPEAT_STOP,( base + I2C_CTRL));
 
 	while (len--) {
-		while (ioread32(base + I2C_STATUS) & (1 << 7)) {
-			if (i2c_has_errors(src))
-				goto bailout;
+		uint32_t have_bytes = 0;
+		LOOP_UNTIL_TIMEOUT(100) {
+			have_bytes = !(ioread32(base + I2C_STATUS) & (1 << 7));
+			if (have_bytes)
+				break;
 		}
+
+		if (len && i2c_is_nack(src->base)) {
+				dbg_boot(src, "error: unexpected nack at byte %d", offset + ret);
+				goto bailout;
+			}
+
+		if (i2c_is_arblost(src->base)) {
+				dbg_boot(src, "error: arbitration lost at byte %d", offset + ret);
+				goto bailout;
+			}
+
+		if (!have_bytes) {
+			dbg_boot(src, "error: operation timed out at byte %d", offset + ret);
+			goto bailout;
+		}
+
 		*dst++ = ioread32(base + I2C_RECEIVE);
 		ret++;
 	}
+
+	/* Wait for hardware to release SDA & SCL */
+	LOOP_UNTIL_TIMEOUT(40) {
+		if (ioread32(base + I2C_STATUS) & (1 << 10))
+			break;
+	}
+
 bailout:
 	i2c_stat_rst(base);
 	return ret;
@@ -114,7 +148,6 @@ bool eeprom_init(const struct rumboot_bootsource *src, void *pdata)
 
 	i2c_stat_rst(base);
 	tmp = ioread32(base + I2C_STATUS);
-	dbg_boot(src, "%x", tmp);
 	scl = (tmp & (1 << 23)) ? 1 : 0;
 	sda = (tmp & (1 << 25)) ? 1 : 0;
 	if ((!sda) || (!scl)) {
@@ -122,18 +155,17 @@ bool eeprom_init(const struct rumboot_bootsource *src, void *pdata)
 		return false;
 	}
 
-	uint32_t pr = calc_best_pr(src->freq_khz * 1000, 400000);
-	iowrite32(1, base + I2C_SOFTR);
-	iowrite32(0, base + I2C_SOFTR);
+	uint32_t pr = calc_best_pr(src->freq_khz * 1000, I2C_FREQ);
+    i2c_reset(base);
 	iowrite32(pr, base + I2C_PRESCALE);
+	dbg_boot(src, "Prescaler: 0x%x (%d Hz)", pr, get_i2c_clk(src->freq_khz * 1000, pr));
 	return true;
 }
 
 static void eeprom_deinit(const struct rumboot_bootsource *src, void *pdata)
 {
 	/* Just soft-reset this bitch */
-	iowrite32(1, src->base + I2C_SOFTR);
-	iowrite32(0, src->base + I2C_SOFTR);
+    i2c_reset(src->base);
 }
 
 static size_t eeprom_read(const struct rumboot_bootsource* src, void* pdata, void* to, size_t offset, size_t length)
