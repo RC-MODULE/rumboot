@@ -14,7 +14,8 @@ bool pl022_tx_empty(uint32_t base);
 bool pl022_tx_avail(uint32_t base);
 bool pl022_rx_empty(uint32_t base);
 void pl022_dump_fifo_state(uint32_t base);
-void pl022_xfer(uint32_t base, unsigned char *wrbuf, unsigned char *rdbuf, size_t len);
+int pl022_xfer(uint32_t base, unsigned char *wrbuf, unsigned char *rdbuf, size_t len);
+int pl022_xfer_timeout(uint32_t base, unsigned char *wrbuf, unsigned char *rdbuf, size_t len, uint32_t timeout);
 void pl022_clear_rx_buf(uint32_t base);
 
 #endif /* end of include guard: PL022_H */

@@ -4,6 +4,7 @@
 #include <rumboot/macros.h>
 #include <regs/regs_spi.h>
 #include <devices/pl022.h>
+#include <rumboot/platform.h>
 
 
 #define CPSDVR_MIN 0x02
@@ -156,21 +157,35 @@ void pl022_dump_fifo_state(uint32_t base)
 		pl022_tx_empty(base) ? "empty" : "non-empty");
 }
 
-void pl022_xfer(uint32_t base, unsigned char *wrbuf, unsigned char *rdbuf, size_t len)
+int pl022_xfer_timeout(uint32_t base, unsigned char *wrbuf, unsigned char *rdbuf, size_t len, uint32_t timeout)
 {
 	int written = 0;
 	int read = 0;
+	uint32_t lastop = rumboot_platform_get_uptime();
 
 	while ((read < len) || (written < len)) {
 		if ((read < len) && (!pl022_rx_empty(base))) {
 			*rdbuf++ = (unsigned char)(ioread32(base + PL022_DR) & 0xff);
 			read++;
+			lastop = rumboot_platform_get_uptime();
 		}
+
 		if ((written < len) && (pl022_tx_avail(base))) {
 			iowrite32(*wrbuf++, base + PL022_DR);
 			written++;
+			lastop = rumboot_platform_get_uptime();
+		}
+		if (timeout && (rumboot_platform_get_uptime() - lastop > timeout)) {
+			return -1;
 		}
 	}
+	/* return count of bytes read */
+	return read;
+}
+
+int pl022_xfer(uint32_t base, unsigned char *wrbuf, unsigned char *rdbuf, size_t len)
+{
+	return pl022_xfer_timeout(base, wrbuf, rdbuf, len, 0);
 }
 
 void pl022_clear_rx_buf(uint32_t base)
