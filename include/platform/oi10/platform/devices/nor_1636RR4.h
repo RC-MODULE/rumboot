@@ -45,13 +45,17 @@ static inline void nor_write32(uint32_t write_DATA, uint32_t write_ADDR)
                 NOR_write32_word_program_sequence[3].addr = write_ADDR - NOR_BASE;
                 NOR_write32_word_program_sequence[3].data = write_DATA;
                 NOR_WRITE32_SEQUENCE(NOR_BASE, NOR_write32_word_program_sequence);
-                udelay(20); //workaround
+                udelay(10); //workaround
                 TEST_ASSERT(ioread32(write_ADDR) == write_DATA, "ERROR: nor_write32 failed");
         }
 }
 
-static inline void nor_erase_addr(uint32_t addr){
-//    uint32_t data_read_nor;
+static inline void nor_reset(){
+    iowrite32(0xF0F0F0F0, NOR_BASE);
+}
+
+static inline void nor_erase_sect(uint32_t addr){
+    uint32_t data_read_nor;
     nor_addr_data32_pair NOR_sector_erase_sequence[] =
     {
         {(0x555 << 2),     0xAAAAAAAA},
@@ -64,17 +68,11 @@ static inline void nor_erase_addr(uint32_t addr){
 
     NOR_sector_erase_sequence[5].addr = addr - NOR_BASE;
     NOR_WRITE32_SEQUENCE(NOR_BASE,NOR_sector_erase_sequence);
-    udelay(100);
-/*
+    udelay(50);
     do {
         data_read_nor = ioread32(addr);
     } while (data_read_nor != 0xffffffff);
-*/
-}
-
-static inline void nor_reset(){
-    iowrite32(0xF0F0F0F0, NOR_BASE);
-    udelay(100);
+    nor_reset();
 }
 
 #endif /* NOR_1636RR4_H_ */
