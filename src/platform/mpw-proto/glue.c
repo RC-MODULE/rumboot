@@ -158,7 +158,7 @@ void rumboot_platform_setup()
   enable_fpu();
 }
 
-static bool sdio_enable(const struct rumboot_bootsource* src, void* pdata, int select)
+static bool sdio_enable(const struct rumboot_bootsource* src, void* pdata)
 {
   return true;
 }
