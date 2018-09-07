@@ -1395,19 +1395,6 @@ main:
 
 
 
-    msync
-    load_addr       r30, results
-
-    load_const      r28, 0x57C
-
-    _rumboot_issdump r30, r28
-
-    b test_error
-
-
-
-
-
     rumboot_putstring "Checking XORI MTFSPR ...\n"
 //    test_event EVENT_GPRS_CLEARED_START_CHECK_XORI_MTFSPR
     msync
@@ -1424,6 +1411,13 @@ main:
     xori_reg_spr r8, 0x0080, SPR_SPRG7
 
 
+    msync
+    load_addr       r30, results
+    load_const      r28, 0x57C
+    _rumboot_issdump r30, r28
+    b test_error
+
+
     mfspr r31, SPR_VRSAVE
 
     //iterations 8-15
@@ -1432,6 +1426,10 @@ main:
 
     stw r0, 0(r31)
     stw r1, 4(r31)
+
+
+
+
 
     mfspr_reg r0, SPR_SPRG5
     mfspr_reg r2, SPR_SPRG4
@@ -1450,6 +1448,9 @@ main:
 
     stw r0, 24(r31)
     stw r8, 28(r31)
+
+
+
 
 
     mr r1, r31
