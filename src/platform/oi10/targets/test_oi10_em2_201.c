@@ -37,6 +37,28 @@ void refresh_timings(emi_bank_num bank_num)
     }
 }
 
+void report_bank_cfg(emi_bank_cfg* bank_cfg)
+{
+    rumboot_printf("Report emi bank configuration\n");
+    rumboot_printf("EMI_SSI[BTYP  ] = 0x%X\n", (uint8_t)bank_cfg->ssx_cfg.BTYP   );
+    rumboot_printf("EMI_SSI[PTYP  ] = 0x%X\n", (uint8_t)bank_cfg->ssx_cfg.PTYP   );
+    rumboot_printf("EMI_SSI[SRDY  ] = 0x%X\n", (uint8_t)bank_cfg->ssx_cfg.SRDY   );
+    rumboot_printf("EMI_SSI[TWR   ] = 0x%X\n", (uint8_t)bank_cfg->ssx_cfg.TWR    );
+    rumboot_printf("EMI_SSI[SST   ] = 0x%X\n", (uint8_t)bank_cfg->ssx_cfg.SST    );
+    rumboot_printf("EMI_SSI[T_SSOE] = 0x%X\n", (uint8_t)bank_cfg->ssx_cfg.T_SSOE );
+    rumboot_printf("EMI_SSI[T_SOE ] = 0x%X\n", (uint8_t)bank_cfg->ssx_cfg.T_SOE  );
+    rumboot_printf("EMI_SSI[T_CYC ] = 0x%X\n", (uint8_t)bank_cfg->ssx_cfg.T_CYC  );
+    rumboot_printf("EMI_SSI[T_RDY ] = 0x%X\n", (uint8_t)bank_cfg->ssx_cfg.T_RDY  );
+    rumboot_printf("EMI_SSI[T_DEL ] = 0x%X\n", (uint8_t)bank_cfg->ssx_cfg.T_DEL  );
+    rumboot_printf("EMI_SDI[CSP   ] = 0x%X\n", (uint8_t)bank_cfg->sdx_cfg.CSP    );
+    rumboot_printf("EMI_SDI[SDS   ] = 0x%X\n", (uint8_t)bank_cfg->sdx_cfg.SDS    );
+    rumboot_printf("EMI_SDI[CL    ] = 0x%X\n", (uint8_t)bank_cfg->sdx_cfg.CL     );
+    rumboot_printf("EMI_SDI[T_RDL ] = 0x%X\n", (uint8_t)bank_cfg->sdx_cfg.T_RDL  );
+    rumboot_printf("EMI_SDI[SI    ] = 0x%X\n", (uint8_t)bank_cfg->sdx_cfg.SI     );
+    rumboot_printf("EMI_SDI[T_RCD ] = 0x%X\n", (uint8_t)bank_cfg->sdx_cfg.T_RCD  );
+    rumboot_printf("EMI_SDI[T_RAS ] = 0x%X\n", (uint8_t)bank_cfg->sdx_cfg.T_RAS  );
+}
+
 void emi_update_tcyc_tsoe(emi_bank_num bank_num, ssx_tsoe_t tsoe, ssx_tcyc_t tcyc)
 {
     emi_bank_cfg bn_cfg;
@@ -122,7 +144,9 @@ int check_nor(uint32_t base_addr)
             test_event(EVENT_CHECK_NOR_TSOE_TCYC);
             check_wrrd(TEST_ADDR_0, (i<<16) | j);
             check_wrrd(TEST_ADDR_1, ~((i<<16) | j));
+            nor_erase_addr(TEST_ADDR_0);
         }
+
     return 0;
 }
 
@@ -133,9 +157,16 @@ void emi_update_sdx(emi_sdx_reg_cfg* sdx)
 {
     emi_bank_cfg bank_cfg;
     emi_get_bank_cfg(DCR_EM2_EMI_BASE, emi_b1_sdram, &bank_cfg);
+    rumboot_printf("SDRAM bank configuration before updating\n");
+    report_bank_cfg(&bank_cfg);
+
     bank_cfg.sdx_cfg = *sdx;
     emi_set_bank_cfg(DCR_EM2_EMI_BASE, emi_b1_sdram, &bank_cfg);
     refresh_timings(emi_b1_sdram);
+
+    emi_get_bank_cfg(DCR_EM2_EMI_BASE, emi_b1_sdram, &bank_cfg);
+    rumboot_printf("SDRAM bank configuration after updating\n");
+    report_bank_cfg(&bank_cfg);
 }
 
 int check_sdram(uint32_t base_addr)
