@@ -4,7 +4,42 @@
 #include <stdarg.h>
 #include <rumboot/platform.h>
 #include <rumboot/io.h>
-//#include <rumboot/irq.h>
+#include <rumboot/boot.h>
+#include <platform/devices.h>
+#include <rumboot/bootsrc/sdio.h>
+
+
+
+#define IBM_BIT_INDEX(size, index)    (((size) - 1) - ((index) % (size)))
+#define ITRPT_XSR_FP_e  50
+#define ITRPT_XSR_FP_i IBM_BIT_INDEX(64, ITRPT_XSR_FP_e)
+
+void msr_write(uint32_t const wval)
+{
+	__asm volatile
+	(
+		"mtmsr %0 \n\t"
+		::"r" (wval)
+	);
+}
+
+uint32_t msr_read()
+{
+	uint32_t rval = 0;
+	__asm volatile
+	(
+		"mfmsr %0 \n\t"
+		: "=r" (rval)
+	);
+
+	return rval;
+}
+
+static void enable_fpu()
+{
+	msr_write(msr_read() | (1 << ITRPT_XSR_FP_i));
+}
+
 
 /* Platform-specific glue */
 uint32_t rumboot_platform_get_uptime()
@@ -23,7 +58,7 @@ uint32_t rumboot_platform_get_uptime()
       :
   );
 
-  return value/TIMER_TICKS_PER_US;
+  return value / TIMER_TICKS_PER_US;
 }
 
 void __attribute__((noreturn)) rumboot_platform_panic(const char *why, ...)
@@ -46,7 +81,6 @@ void rumboot_platform_event_raise(enum rumboot_simulation_event event, uint32_t 
     exit(event);
 }
 
-#define UART0__       0x3C034000
 #define PL011_UARTDR  0x0
 #define PL011_UARTFR  0x018
 #define PL011_UARTRIS 0x03C
@@ -77,8 +111,8 @@ void rumboot_platform_putchar(uint8_t c)
   if (c == '\n')
     rumboot_platform_putchar('\r');
 
-  if (tx_fifo_ready(UART0__) == 0)
-    iowrite32((char)c, UART0__ + PL011_UARTDR);
+  if (tx_fifo_ready(UART0_BASE) == 0)
+    iowrite32((char)c, UART0_BASE + PL011_UARTDR);
 }
 
 int rumboot_platform_getchar(uint32_t timeout_us)
@@ -121,5 +155,57 @@ void rumboot_platform_perf(const char *tag)
 
 void rumboot_platform_setup()
 {
+  enable_fpu();
+}
 
+static bool sdio_enable(const struct rumboot_bootsource* src, void* pdata, int select)
+{
+  return true;
+}
+
+static void sdio_disable(const struct rumboot_bootsource* src, void* pdata)
+{
+
+}
+
+
+static const struct rumboot_bootsource arr[] = {
+  {
+      .name = "SDIO (CD: GPIO1_X)",
+      .base = SDIO_BASE,
+      .freq_khz = 100000,
+      .plugin = &g_bootmodule_sdio,
+      .enable  = sdio_enable,
+      .disable = sdio_disable,
+  },
+	{ /*Sentinel*/ }
+};
+
+const struct rumboot_bootsource *rumboot_platform_get_bootsources()
+{
+	return arr;
+}
+
+bool rumboot_platform_check_entry_points(struct rumboot_bootheader *hdr)
+{
+	/* Any entry point is okay */
+	return true;
+}
+
+void rumboot_platform_exec(struct rumboot_bootheader *hdr)
+{
+	/* No-op, this chip has only one core */
+}
+
+void rumboot_platform_read_config(struct rumboot_config *conf)
+{
+  conf->baudrate = 1000000;
+  conf->hostmode = 0;
+
+}
+
+
+void rumboot_platform_selftest(struct rumboot_config *conf)
+{
+	/* Execute selftest routines */
 }

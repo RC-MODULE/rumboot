@@ -9,12 +9,14 @@ SECTIONS
 
 .text :
 {
-  KEEP(*(.text.startup))
+  KEEP(*(.header))
   *(.rumboot_platform_runtime_info);
   *(.text)
   *(.text.*)
   *(.rodata)
   *(.data)
+  *(.rodata.*)
+  *(.data.*)
 } > IM0
 
 .bss :
@@ -30,17 +32,5 @@ SECTIONS
   . = . + 0xf00;
   rumboot_platform_spl_end = .;
 } > IM0
-
-.data :
-{
-    *(.data)
-} > IM0
-
-.rodata :
-{
-  *(.rodata)
-  *(.rodata).*
-} > IM0
-
 
 }

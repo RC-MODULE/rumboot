@@ -29,8 +29,9 @@ struct legacy_bootheader
 
     uint32_t hdrsum; /* Checksum of all previous fields. */
 
-    uint8_t imagedata[1]; /* Image data. */
+    uint8_t data[]; /* Image data. */
 } __attribute__((packed));
+
 
 static const __attribute__((used)) __attribute__((section(".header")))
 struct legacy_bootheader hdr = {

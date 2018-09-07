@@ -7,17 +7,17 @@ file(GLOB PLATFORM_SOURCES
 )
 
 macro(RUMBOOT_PLATFORM_SET_COMPILER_FLAGS)
-    set(RUMBOOT_COMMON_FLAGS "-DRUMBOOT_NO_IRQ_MACROS -mcpu=476fp -gdwarf-2 -m32 -ffreestanding -O0 -mbig-endian -fno-zero-initialized-in-bss")
+    set(RUMBOOT_COMMON_FLAGS "-DRUMBOOT_NO_IRQ_MACROS -mcpu=476fp -gdwarf-2 -m32 -ffreestanding -Os -mbig-endian -fno-zero-initialized-in-bss")
     set(CMAKE_C_FLAGS "${RUMBOOT_COMMON_FLAGS} -mstrict-align -Wall -fdata-sections -ffunction-sections ")
     set(CMAKE_ASM_FLAGS ${RUMBOOT_COMMON_FLAGS})
-    set(CMAKE_EXE_LINKER_FLAGS "-fno-zero-initialized-in-bss -e boot_image_entry0 -Wl,--oformat=elf32-powerpc -Ttext 0x00040018 -static -nostartfiles -Wl,--gc-sections")
+    set(CMAKE_EXE_LINKER_FLAGS "-fno-zero-initialized-in-bss -e rumboot_main -Wl,--oformat=elf32-powerpc -static -nostartfiles -Wl,--gc-sections")
     set(CMAKE_DUMP_FLAGS -S -EB -M476,32)
 
 endmacro()
 
 rumboot_add_configuration(
-  PRIMARY
-  LDS mpw-proto/primary.lds
+  ROM
+  LDS mpw-proto/rom-shim.lds
   FILES ${CMAKE_SOURCE_DIR}/src/lib/bootheader_legacy.c
   CFLAGS -DRUMBOOT_ONLY_STACK
   #LDFLAGS -Wl,--start-group -lgcc -lc -lm -Wl,--end-group
@@ -27,8 +27,8 @@ rumboot_add_configuration(
 
 #Add configuration for binaries
 rumboot_add_configuration(
-  SECONDARY
-  LDS mpw-proto/secondary.lds
+  SPL
+  LDS mpw-proto/spl.lds
   FILES ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c
   CFLAGS -DRUMBOOT_NEWLIB_PRINTF
   LDFLAGS -Wl,--start-group -lgcc -lc -lm -Wl,--end-group
@@ -36,7 +36,7 @@ rumboot_add_configuration(
 )
 
 rumboot_add_configuration(
-  MPW-PROTO
+  IRAM
   DEFAULT
   LDS mpw-proto/ram.lds
   CFLAGS -DRUMBOOT_NEWLIB_PRINTF
@@ -52,13 +52,14 @@ endmacro()
 
 macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
-  add_rumboot_target_dir(primary/
-    CONFIGURATION PRIMARY
-  PREFIX primary)
+  add_rumboot_target(
+    FILES basis/targets/bootrom.c
+    CONFIGURATION ROM
+    NAME loader)
 
-  add_rumboot_target_dir(secondary/
-      CONFIGURATION SECONDARY
-    PREFIX secondary)
+  add_rumboot_target_dir(common/spl
+      CONFIGURATION SPL
+      PREFIX spl)
 
   foreach(target ${RUMBOOT_TARGETS_C} ${RUMBOOT_TARGETS_S})
     add_rumboot_target(
@@ -69,17 +70,6 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
   endforeach()
 
 endmacro()
-
-# macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
-#   file(GLOB RUMBOOT_TARGETS ${PROJECT_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/targets/*.c  )
-#   foreach(target ${RUMBOOT_TARGETS})
-#     add_rumboot_target(
-#         SNAPSHOT "null"
-#         PREFIX "test"
-#         FILES ${target}
-#     )
-#   endforeach()
-# endmacro()
 
 function(RUMBOOT_PLATFORM_PRINT_SUMMARY)
 endfunction()

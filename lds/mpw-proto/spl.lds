@@ -11,7 +11,7 @@ SECTIONS
   *(.text)
   *(.rodata)
   *(.data)
-  rumboot_platform_runtime_info = .;
+rumboot_platform_runtime_info = .;
   *(.rumboot_platform_runtime_info);
   rumboot_platform_bss_start = .;
   *(.bss)

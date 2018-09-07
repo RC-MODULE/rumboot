@@ -9,7 +9,6 @@ SECTIONS
 
   .text : {
     KEEP(*(.header))
-    KEEP(*(.text.startup))
     *(.text)
     *(.text.*)
     *(.rodata)
