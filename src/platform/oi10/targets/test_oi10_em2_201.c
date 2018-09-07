@@ -144,9 +144,8 @@ int check_nor(uint32_t base_addr)
             test_event(EVENT_CHECK_NOR_TSOE_TCYC);
             check_wrrd(TEST_ADDR_0, (i<<16) | j);
             check_wrrd(TEST_ADDR_1, ~((i<<16) | j));
-            nor_erase_addr(TEST_ADDR_0);
+            nor_erase_sect(TEST_ADDR_0);
         }
-
     return 0;
 }
 
