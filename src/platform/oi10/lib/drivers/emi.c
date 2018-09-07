@@ -284,8 +284,8 @@ void emi_init_impl (uint32_t const emi_dcr_base, uint32_t const plb6mcif2_dcr_ba
            TWR_0,
            SST_Flow_Through,
            TSSOE_1,
-           TSOE_2,
-           TCYC_6,
+           TSOE_1,
+           TCYC_2,
            0, //T_RDY
            TDEL_0
        },
