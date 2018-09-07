@@ -31,8 +31,8 @@
 #define TLB_ENTRY_CACHE_VALID      MMU_TLB_ENTRY(  0x000,  0x00000,    0x00000,    MMU_TLBE_DSIZ_1GB,      L2C_IL1I_BIT,    L2C_IL1D_BIT,    L2C_WRITE_MODE_BIT,    L2C_INHIBIT_BIT, L2C_MEMORY_COHERENCE_BIT,   0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
 #define TLB_ENTRY_CACHE_INVALID    MMU_TLB_ENTRY(  0x000,  0x00000,    0x00000,    MMU_TLBE_DSIZ_1GB,      L2C_IL1I_BIT,    L2C_IL1D_BIT,    L2C_WRITE_MODE_BIT,    L2C_INHIBIT_BIT, L2C_MEMORY_COHERENCE_BIT,   0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b0 )
 
-#define TEST_CONST_BABADEDA     0xBABADEDA
-#define TEST_CONST_7E57DA7A     0x7E57DA7A
+#define TEST_CONST_1     0x7E57DA7A
+#define TEST_CONST_2     0xBABADEDA
 
 uint32_t __attribute__((section(".data"),aligned(16))) volatile sram0_data[64] = { 0 };
 
@@ -42,14 +42,14 @@ uint8_t __attribute__((section(".text.test_oi10_cpu_021"))) cache_testing_functi
     static const tlb_entry sram0_tlb_entry_non_cacheable_valid = {TLB_ENTRY_NOCACHE_VALID};
 
     //step 1 - initial value to EM0
-    iowrite32 (TEST_CONST_7E57DA7A, (uint32_t) sram0_data);
+    iowrite32 (TEST_CONST_1, (uint32_t) sram0_data);
     msync();
 
     //step 2 - switch page to write-through mode
     write_tlb_entries(&sram0_tlb_entry_cacheable_valid,1);
 
     //steps 3, 4 - put data into write-through cacheable page
-    iowrite32(TEST_CONST_BABADEDA, (uint32_t) sram0_data);
+    iowrite32(TEST_CONST_2, (uint32_t) sram0_data);
     msync();
 
     write_tlb_entries(&sram0_tlb_entry_non_cacheable_valid,1);
@@ -59,14 +59,14 @@ uint8_t __attribute__((section(".text.test_oi10_cpu_021"))) cache_testing_functi
     //steps 6,7 - read from cache inhibited page
     if (L2C_INHIBIT_BIT)
     {
-      if (ioread32((uint32_t) sram0_data) != TEST_CONST_BABADEDA) return 1;
+      if (ioread32((uint32_t) sram0_data) != TEST_CONST_2) return 1;
     }
     else
     {
       if (L2C_WRITE_MODE_BIT)
-        {if (ioread32((uint32_t) sram0_data) != TEST_CONST_BABADEDA) return 2;}
+        {if (ioread32((uint32_t) sram0_data) != TEST_CONST_2) return 2;}
       else
-        {if (ioread32((uint32_t) sram0_data) != TEST_CONST_7E57DA7A) return 3;}
+        {if (ioread32((uint32_t) sram0_data) != TEST_CONST_1) return 3;}
     }
     msync();
 
@@ -74,7 +74,7 @@ uint8_t __attribute__((section(".text.test_oi10_cpu_021"))) cache_testing_functi
     write_tlb_entries(&sram0_tlb_entry_cacheable_valid,1);
     msync();
     isync();
-     if (ioread32((uint32_t) sram0_data) != TEST_CONST_BABADEDA) return 4;
+     if (ioread32((uint32_t) sram0_data) != TEST_CONST_2) return 4;
     msync();
 
     //step 10 - cache flush
@@ -85,14 +85,14 @@ uint8_t __attribute__((section(".text.test_oi10_cpu_021"))) cache_testing_functi
     write_tlb_entries(&sram0_tlb_entry_non_cacheable_valid,1);
     msync();
     isync();
-    if (ioread32((uint32_t) sram0_data) != TEST_CONST_BABADEDA) return 5;
+    if (ioread32((uint32_t) sram0_data) != TEST_CONST_2) return 5;
      msync();
 
     //steps 13,14 - read new data from cacheable page
     write_tlb_entries(&sram0_tlb_entry_cacheable_valid,1);
     msync();
     isync();
-    if (ioread32((uint32_t) sram0_data) != TEST_CONST_BABADEDA) return 6;
+    if (ioread32((uint32_t) sram0_data) != TEST_CONST_2) return 6;
     msync();
 
     return 0;
