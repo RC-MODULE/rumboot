@@ -50,4 +50,31 @@ static inline void nor_write32(uint32_t write_DATA, uint32_t write_ADDR)
         }
 }
 
+static inline void nor_erase_addr(uint32_t addr){
+//    uint32_t data_read_nor;
+    nor_addr_data32_pair NOR_sector_erase_sequence[] =
+    {
+        {(0x555 << 2),     0xAAAAAAAA},
+        {(0x2AA << 2),     0x55555555},
+        {(0x555 << 2),     0x80808080},
+        {(0x555 << 2),     0xAAAAAAAA},
+        {(0x2AA << 2),     0x55555555},
+        {0,                0x30303030}
+    } ;
+
+    NOR_sector_erase_sequence[5].addr = addr - NOR_BASE;
+    NOR_WRITE32_SEQUENCE(NOR_BASE,NOR_sector_erase_sequence);
+    udelay(100);
+/*
+    do {
+        data_read_nor = ioread32(addr);
+    } while (data_read_nor != 0xffffffff);
+*/
+}
+
+static inline void nor_reset(){
+    iowrite32(0xF0F0F0F0, NOR_BASE);
+    udelay(100);
+}
+
 #endif /* NOR_1636RR4_H_ */
