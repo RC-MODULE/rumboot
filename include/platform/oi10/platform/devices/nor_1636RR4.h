@@ -55,7 +55,6 @@ static inline void nor_reset(){
 }
 
 static inline void nor_erase_sect(uint32_t addr){
-    uint32_t data_read_nor;
     nor_addr_data32_pair NOR_sector_erase_sequence[] =
     {
         {(0x555 << 2),     0xAAAAAAAA},
@@ -69,9 +68,10 @@ static inline void nor_erase_sect(uint32_t addr){
     NOR_sector_erase_sequence[5].addr = addr - NOR_BASE;
     NOR_WRITE32_SEQUENCE(NOR_BASE,NOR_sector_erase_sequence);
     udelay(50);
-    do {
-        data_read_nor = ioread32(addr);
-    } while (data_read_nor != 0xffffffff);
+    /*
+     * TODO: For detecting of sector erase finishing we have to poll STATUS[D3] bit (4.17 of document 1636RR4.pdf)
+     */
+    TEST_ASSERT(ioread32(addr)==0xffffffff, "ERROR: nor_erase_sect failed");
     nor_reset();
 }
 
