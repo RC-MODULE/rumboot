@@ -193,6 +193,12 @@ results:
     .space 4096
 
 
+.global event_data
+.section ".data","aw",@nobits
+.align 4
+event_data:
+    .space 16
+
 
 .global main
 .section ".text","ax",@progbits
@@ -287,6 +293,7 @@ main:
     mtspr SPR_VRSAVE, r31
 
     clear_regs_with_1
+
 
     rumboot_putstring "Checking LWZ ...\n"
 //    test_event EVENT_GPRS_CLEARED_START_CHECK_LWZ
@@ -546,9 +553,9 @@ main:
     li r31, 0
     mtspr SPR_SPRG8, r31
 
-
-
     clear_regs_with_1
+
+
 
     rumboot_putstring "Checking MAC ...\n"
 //    test_event EVENT_GPRS_CLEARED_START_CHECK_MAC
@@ -1389,6 +1396,10 @@ main:
 
     addi r7, r7, 4
 
+    //to initialize 4(r3) memory word
+    load_const r2, 0x00
+    stw r2, 4(r3)
+
     mtspr SPR_VRSAVE, r7
 
     clear_regs_with_0
@@ -1411,13 +1422,6 @@ main:
     xori_reg_spr r8, 0x0080, SPR_SPRG7
 
 
-    msync
-    load_addr       r30, results
-    load_const      r28, 0x57C
-    _rumboot_issdump r30, r28
-    b test_error
-
-
     mfspr r31, SPR_VRSAVE
 
     //iterations 8-15
@@ -1426,10 +1430,6 @@ main:
 
     stw r0, 0(r31)
     stw r1, 4(r31)
-
-
-
-
 
     mfspr_reg r0, SPR_SPRG5
     mfspr_reg r2, SPR_SPRG4
@@ -1448,9 +1448,6 @@ main:
 
     stw r0, 24(r31)
     stw r8, 28(r31)
-
-
-
 
 
     mr r1, r31
@@ -1490,6 +1487,7 @@ main:
 
     stw r29, 56(r1)
     stw r31, 60(r1)
+
 
     mr r3, r1
 
@@ -1560,8 +1558,12 @@ main:
     stw r15, 124(r3)
 
 
+    mtspr SPR_VRSAVE, r3
 
     clear_regs_with_1
+
+    mfspr r3, SPR_VRSAVE
+
 
     //iterations 0-7
     xori_reg_spr r0, 0x0001, SPR_SPRG0
@@ -1704,10 +1706,23 @@ main:
     clear_regs_with_0
 
     msync
-    load_addr       r30, results
-    load_const      r31, 0x680
 
-    _rumboot_issdump r30, r31
+
+    load_addr r1, (rumboot_platform_stack_area_end - 8)
+
+    load_addr       r4, event_data
+
+    load_const      r3, TEST_EVENT_CREATE_ISS_DUMP
+    stw             r3, 0(r4)
+    load_addr       r3, results
+    stw             r3, 4(r4)
+    load_const      r3, 0x680
+    stw             r3, 8(r4)
+
+    load_const      r3, 0x11
+    load_const      r5, 0x3
+
+    bl rumboot_platform_event_raise
 
 
     .align 4
