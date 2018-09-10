@@ -455,7 +455,7 @@ void hscb_enable(uint32_t base_addr)
     rumboot_printf("Enable HSCB (0x%X)\n", base_addr);
     hscb_get_config(base_addr, &hscb_cfg);
     hscb_cfg.en_hscb = true;
-    hscb_cfg.rx_fix_en = true;
+    hscb_cfg.rx_fix_en = false;
     hscb_set_config(base_addr, &hscb_cfg);
 }
 
