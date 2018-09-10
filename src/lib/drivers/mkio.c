@@ -344,12 +344,17 @@ void mkio_prepare_bc_descr(uint32_t base_addr, uint32_t* data_ptr, uint32_t size
     rumboot_printf("Setting BC descr: 0x%X / 0x%X\n", rumboot_virt_to_dma(descr_ptr), size_mkio_words);
     descr_ptr->ctrl_word_0      = (0x00000000 | (IRQE_ << 28) | (IRQN << 27) | (SUSN << 25));
     descr_ptr->ctrl_word_1      = (0x00000000 | (BUS << 30) | (RTAD1 << 11) | (TR << 10) | (RTSA1 << 5) | (size_mkio_words << 0));
-    descr_ptr->data_pointer     = (rumboot_virt_to_dma((uint32_t*)data_ptr));
+    descr_ptr->data_pointer     = (rumboot_virt_to_dma(data_ptr));
     descr_ptr->result_word      = 0xFFFFFFFF ;
     descr_ptr->condition_word   = (bc_descriptor_end_of_list);
     descr_ptr->branch_address   = unused;
     descr_ptr->reserved_0       = unused;
     descr_ptr->reserved_1       = unused;
+
+    rumboot_printf("ctrl_word_0:  0x%X\n", descr_ptr->ctrl_word_0);
+    rumboot_printf("ctrl_word_1:  0x%X\n", descr_ptr->ctrl_word_1);
+    rumboot_printf("data_pointer: 0x%X\n", descr_ptr->data_pointer);
+
     iowrite32(rumboot_virt_to_dma(descr_ptr), base_addr + BCTNP);
 }
 
