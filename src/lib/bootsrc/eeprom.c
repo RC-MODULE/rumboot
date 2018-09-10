@@ -9,7 +9,7 @@
 #define I2C_FREQ 400000
 
 struct eeprom_private_data {
-
+	uint32_t prescaler;
 };
 
 #define CMD_WRITE_START ((1 << I2C_EN_i) | (1 << WR_i) | (1 << START_i))
@@ -52,7 +52,18 @@ static bool i2c_is_arblost(uint32_t base)
 	return ioread32(base + I2C_STATUS) & (1<<1);
 }
 
-static size_t eeprom_read_chunk(const struct rumboot_bootsource *src, uint8_t devaddr, uint16_t offset, uint8_t *dst, int len)
+static bool i2c_is_busy(uint32_t base)
+{
+	return ioread32(base + I2C_STATUS) & (1<<0);
+}
+
+static void i2c_resetinit(uint32_t base, uint32_t prescaler)
+{
+	i2c_reset(base);
+	iowrite32(prescaler, base + I2C_PRESCALE);
+}
+
+static size_t eeprom_read_chunk(const struct rumboot_bootsource *src, struct eeprom_private_data *epd, uint8_t devaddr, uint16_t offset, uint8_t *dst, int len)
 {
 	size_t ret = 0;
 	uint32_t base = src->base;
@@ -117,11 +128,21 @@ static size_t eeprom_read_chunk(const struct rumboot_bootsource *src, uint8_t de
 		ret++;
 	}
 
-	/* Wait for hardware to release SDA & SCL */
 	LOOP_UNTIL_TIMEOUT(40) {
-		if (ioread32(base + I2C_STATUS) & (1 << 10))
+        /* Wait for transaction to finish */
+		i2c_stat_rst(base);
+		if (!i2c_is_busy(base))
 			break;
 	}
+
+	if (i2c_is_busy(base)) {
+		dbg_boot(src, "WARN: Timeout waiting for bus release");
+	}
+
+	/* Hardware weirdness: We have to do softreset to get rid of
+	*  NACK from STATUS register
+	*/
+	i2c_resetinit(base, epd->prescaler);
 
 bailout:
 	i2c_stat_rst(base);
@@ -137,8 +158,11 @@ const uint32_t get_eeprom_numb()
 
 bool eeprom_init(const struct rumboot_bootsource *src, void *pdata)
 {
+	struct eeprom_private_data *epd = pdata;
+
 	uint32_t base = src->base;
 	int sda, scl;
+
 
 	uint32_t tmp = ioread32(base + I2C_ID);
 	if (tmp != I2C_DEVICE_ID_VALUE) {
@@ -155,10 +179,10 @@ bool eeprom_init(const struct rumboot_bootsource *src, void *pdata)
 		return false;
 	}
 
-	uint32_t pr = calc_best_pr(src->freq_khz * 1000, I2C_FREQ);
-    i2c_reset(base);
-	iowrite32(pr, base + I2C_PRESCALE);
-	dbg_boot(src, "Prescaler: 0x%x (%d Hz)", pr, get_i2c_clk(src->freq_khz * 1000, pr));
+	epd->prescaler = calc_best_pr(src->freq_khz * 1000, I2C_FREQ);
+	i2c_resetinit(base, epd->prescaler);
+
+	dbg_boot(src, "Prescaler: 0x%x (%d Hz)", epd->prescaler, get_i2c_clk(src->freq_khz * 1000, epd->prescaler));
 	return true;
 }
 
@@ -174,7 +198,7 @@ static size_t eeprom_read(const struct rumboot_bootsource* src, void* pdata, voi
 	size_t transferred = 0;
 	while (length) {
 		size_t toread = (length < EEPROM_PAGE_SIZE) ? length : EEPROM_PAGE_SIZE;
-		size_t actual = eeprom_read_chunk(src, src->slave_addr, offset, dest, toread);
+		size_t actual = eeprom_read_chunk(src, pdata, src->slave_addr, offset, dest, toread);
 		transferred += actual;
 		if (actual != toread) /* short read, return what we've got */
 			return transferred;
