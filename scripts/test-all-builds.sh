@@ -1,5 +1,5 @@
 #!/bin/bash
-PLATFORMS="native mpw-proto oi10 basis"
+PLATFORMS="native mm7705 oi10 basis"
 mkdir build-test
 cd build-test
 for p in ${PLATFORMS}; do

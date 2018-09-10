@@ -17,7 +17,7 @@ endmacro()
 
 rumboot_add_configuration(
   ROM
-  LDS mpw-proto/rom-shim.lds
+  LDS mm7705/rom-shim.lds
   FILES ${CMAKE_SOURCE_DIR}/src/lib/bootheader_legacy.c
   CFLAGS -DRUMBOOT_ONLY_STACK
   #LDFLAGS -Wl,--start-group -lgcc -lc -lm -Wl,--end-group
@@ -28,7 +28,7 @@ rumboot_add_configuration(
 #Add configuration for binaries
 rumboot_add_configuration(
   SPL
-  LDS mpw-proto/spl.lds
+  LDS mm7705/spl.lds
   FILES ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c
   CFLAGS -DRUMBOOT_NEWLIB_PRINTF
   LDFLAGS -Wl,--start-group -lgcc -lc -lm -Wl,--end-group
@@ -38,10 +38,9 @@ rumboot_add_configuration(
 rumboot_add_configuration(
   IRAM
   DEFAULT
-  LDS mpw-proto/ram.lds
+  LDS mm7705/ram.lds
   CFLAGS -DRUMBOOT_NEWLIB_PRINTF
   LDFLAGS -Wl,--start-group -lgcc -lc -lm -Wl,--end-group
-  FEATURES MPW-PROTO
 )
 
 
