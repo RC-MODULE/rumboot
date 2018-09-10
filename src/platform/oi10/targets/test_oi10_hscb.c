@@ -145,61 +145,6 @@ static uint32_t check_hscb_regs( uint32_t base_addr ) {
 }
 #endif
 
-static volatile uint32_t IRQ;
-
-static volatile uint32_t hscb0_status;
-static volatile uint32_t hscb1_status;
-static volatile uint32_t hscb0_dma_status;
-static volatile uint32_t hscb1_dma_status;
-
-static volatile uint8_t __attribute__((section(".data"))) sys_0_rx[0x100] = {0} ;
-static volatile uint8_t __attribute__((section(".data"))) sys_0_tx[0x100] = {0} ;
-static volatile uint8_t __attribute__((section(".data"))) sys_1_rx[0x100] = {0} ;
-static volatile uint8_t __attribute__((section(".data"))) sys_1_tx[0x100] = {0} ;
-static volatile uint8_t __attribute__((section(".data"))) tx_data_0_im[0x100] = {0} ;
-static volatile uint8_t __attribute__((section(".data"))) tx_data_1_im[0x100] = {0} ;
-static volatile uint8_t __attribute__((section(".data"))) rx_data_0_im[0x100] = {0} ;
-static volatile uint8_t __attribute__((section(".data"))) rx_data_1_im[0x100] = {0} ;
-
-
-static void handler( int irq, void *arg ) {
-    //get interrupt source
-    rumboot_printf( "IRQ arrived  \n" );
-    rumboot_putstring("NON_CRITICAL int handler message\n");
-//    rumboot_puthex (irq);
-    if (irq == HSCB_UNDER_TEST_INT) {
-        rumboot_putstring("HSCB_0_IRQ\n");
-        hscb0_status = ioread32(HSCB_UNDER_TEST_BASE + HSCB_STATUS);
-    }
-    if (irq == HSCB_UNDER_TEST_DMA_INT) {
-        rumboot_putstring("HSCB_0_DMA_IRQ\n");
-        hscb0_dma_status = ioread32(HSCB_UNDER_TEST_BASE + HSCB_ADMA_CH_STATUS);
-        rumboot_puthex(hscb0_dma_status);
-        if (hscb0_dma_status & 0x00000001)
-            hscb0_dma_status = ioread32(HSCB_UNDER_TEST_BASE + HSCB_RDMA_STATUS);
-        else if (hscb0_dma_status & 0x00010000)
-            hscb0_dma_status = ioread32(HSCB_UNDER_TEST_BASE + HSCB_WDMA_STATUS);
-        rumboot_puthex(hscb0_dma_status);
-    }
-    if (irq == HSCB_SUPPLEMENTARY_INT) {
-        rumboot_putstring("HSCB_1_IRQ\n");
-        hscb1_status = ioread32(HSCB_SUPPLEMENTARY_BASE + HSCB_STATUS);
-        rumboot_puthex (hscb1_status);
-    }
-    if (irq == HSCB_SUPPLEMENTARY_DMA_INT) {
-        rumboot_putstring("HSCB_1_DMA_IRQ\n");
-        hscb1_dma_status = ioread32(HSCB_SUPPLEMENTARY_BASE + HSCB_ADMA_CH_STATUS);
-        isync();
-        msync();
-        rumboot_puthex(hscb1_dma_status);
-        if (hscb1_dma_status & 0x00000001)
-            hscb1_dma_status = ioread32(HSCB_SUPPLEMENTARY_BASE + HSCB_RDMA_STATUS);
-        else if (hscb1_dma_status & 0x00010000)
-            hscb1_dma_status = ioread32(HSCB_SUPPLEMENTARY_BASE + HSCB_WDMA_STATUS);
-    }
-    rumboot_printf( "Clear interrupts\n" );
-    IRQ = 1;
-}
 #define CURRENT_MEMORY_TX_0 ((uint32_t)data_in_0_1)
 #define CURRENT_MEMORY_TX_1 ((uint32_t)data_out_0_1)
 #define CURRENT_MEMORY_RX_0 ((uint32_t)data_in_0_3)
@@ -229,16 +174,11 @@ static void handler( int irq, void *arg ) {
 #define SDRAM_RX_1      SDRAM_RX_0 + DATA_SIZE_0
 
 #ifndef DATA_SIZE_0
-#define DATA_SIZE_0 256
+#define DATA_SIZE_0 0x10
 #endif
 #ifndef DATA_SIZE_1
-#define DATA_SIZE_1 257
+#define DATA_SIZE_1 0x20
 #endif
-
-static volatile uint8_t __attribute__((section(".data"))) data_in_0_1[DATA_SIZE_0]  = {0x0};
-static volatile uint8_t __attribute__((section(".data"))) data_out_0_1[DATA_SIZE_0] = {0x0};
-static volatile uint8_t __attribute__((section(".data"))) data_in_0_3[DATA_SIZE_1]  = {0x0};
-static volatile uint8_t __attribute__((section(".data"))) data_out_0_3[DATA_SIZE_1] = {0x0};
 //Here are defined addresses, for using different memories use addresses from defines above
 //Note that for current memory (say, IM0 for IRAM configuration) you should use CURRENT_MEMORY_* addresses
 //in order not to erase code
@@ -267,6 +207,72 @@ static volatile uint8_t __attribute__((section(".data"))) data_out_0_3[DATA_SIZE
 #define INCREMENT_1 -1
 #endif
 
+static volatile uint8_t __attribute__((section(".data"),aligned(8))) tx_data_0_im[0x100] = {0} ;
+static volatile uint8_t __attribute__((section(".data"),aligned(8))) tx_data_1_im[0x100] = {0} ;
+static volatile uint8_t __attribute__((section(".data"),aligned(8))) rx_data_0_im[0x100] = {0} ;
+static volatile uint8_t __attribute__((section(".data"),aligned(8))) rx_data_1_im[0x100] = {0} ;
+static volatile uint8_t __attribute__((section(".data"),aligned(8))) sys_0_rx[0x100] = {0} ;
+static volatile uint8_t __attribute__((section(".data"),aligned(8))) sys_0_tx[0x100] = {0} ;
+static volatile uint8_t __attribute__((section(".data"),aligned(8))) sys_1_rx[0x100] = {0} ;
+static volatile uint8_t __attribute__((section(".data"),aligned(8))) sys_1_tx[0x100] = {0} ;
+
+static volatile uint8_t __attribute__((section(".data"))) data_in_0_1[DATA_SIZE_0]  = {0x0};
+static volatile uint8_t __attribute__((section(".data"))) data_out_0_1[DATA_SIZE_0] = {0x0};
+static volatile uint8_t __attribute__((section(".data"))) data_in_0_3[DATA_SIZE_1]  = {0x0};
+static volatile uint8_t __attribute__((section(".data"))) data_out_0_3[DATA_SIZE_1] = {0x0};
+
+static volatile uint32_t IRQ;
+
+static volatile uint32_t hscb0_status;
+static volatile uint32_t hscb1_status;
+static volatile uint32_t hscb0_dma_status;
+static volatile uint32_t hscb1_dma_status;
+static volatile bool hscb0_link_established;
+static volatile bool hscb1_link_established;
+
+
+static void handler( int irq, void *arg ) {
+    //get interrupt source
+    rumboot_printf( "IRQ arrived  \n" );
+    rumboot_putstring("NON_CRITICAL int handler message\n");
+//    rumboot_puthex (irq);
+    if (irq == HSCB_UNDER_TEST_INT) {
+        rumboot_putstring("HSCB_0_IRQ\n");
+        hscb0_status = hscb_get_status(HSCB_UNDER_TEST_BASE);
+        if(!hscb0_link_established)
+            hscb0_link_established = hscb0_status & (1 << HSCB_STATUS_ACTIVE_LINK_i);
+        rumboot_puthex (hscb0_status );
+    }
+    if (irq == HSCB_UNDER_TEST_DMA_INT) {
+        rumboot_putstring("HSCB_0_DMA_IRQ\n");
+        hscb0_dma_status = hscb_get_adma_ch_status(HSCB_UNDER_TEST_BASE );
+        rumboot_puthex(hscb0_dma_status);
+        if (hscb0_dma_status & HSCB_ADMA_CH_STATUS_RDMA_IRQ_mask)
+            hscb0_dma_status = hscb_get_rdma_status(HSCB_UNDER_TEST_BASE);
+        else if (hscb0_dma_status & HSCB_ADMA_CH_STATUS_WDMA_IRQ_mask)
+            hscb0_dma_status = hscb_get_wdma_status(HSCB_UNDER_TEST_BASE);
+        rumboot_puthex(hscb0_dma_status);
+    }
+    if (irq == HSCB_SUPPLEMENTARY_INT) {
+        rumboot_putstring("HSCB_1_IRQ\n");
+        hscb1_status = hscb_get_status(HSCB_SUPPLEMENTARY_BASE);
+        if(!hscb1_link_established)
+            hscb1_link_established = hscb1_status & (1 << HSCB_STATUS_ACTIVE_LINK_i);
+        rumboot_puthex (hscb1_status);
+    }
+    if (irq == HSCB_SUPPLEMENTARY_DMA_INT) {
+        rumboot_putstring("HSCB_1_DMA_IRQ\n");
+        hscb1_dma_status = hscb_get_adma_ch_status(HSCB_SUPPLEMENTARY_BASE );
+        isync();
+        msync();
+        rumboot_puthex(hscb1_dma_status);
+        if (hscb1_dma_status & HSCB_ADMA_CH_STATUS_RDMA_IRQ_mask)
+            hscb1_dma_status = hscb_get_rdma_status(HSCB_SUPPLEMENTARY_BASE);
+        else if (hscb1_dma_status & HSCB_ADMA_CH_STATUS_WDMA_IRQ_mask)
+            hscb1_dma_status = hscb_get_wdma_status(HSCB_SUPPLEMENTARY_BASE);
+    }
+}
+
 static void set_test_data(uint32_t base_addr, uint32_t length, int increment){
     uint8_t data = DATA_INITIAL_VALUE;
     if ((base_addr >= NOR_BASE) && (base_addr <= IM0_BASE))
@@ -276,6 +282,9 @@ static void set_test_data(uint32_t base_addr, uint32_t length, int increment){
         iowrite8(data,(base_addr+i));
         data += increment;
     }
+}
+inline static void print_hscb_descriptor(uint32_t addr){
+    rumboot_printf("descriptor address: \n%x\nfirst word == \n%x\nsecond word == \n%x\n", addr,*((uint32_t*)addr),*(((uint32_t*)addr)+1));
 }
 
 static uint32_t check_hscb_func(uint32_t base_addr, uint32_t supplementary_base_addr){
@@ -378,6 +387,10 @@ static uint32_t check_hscb_func(uint32_t base_addr, uint32_t supplementary_base_
     iowrite32( sys_addr_1_rx,                   supplementary_base_addr + HSCB_WDMA_SYS_ADDR);
     iowrite32( cur_tbl_addr - sys_addr_1_rx,    supplementary_base_addr + HSCB_WDMA_TBL_SIZE);
     // Enable HSCB0 and HSCB1
+    print_hscb_descriptor(sys_addr_0_tx);
+    print_hscb_descriptor(sys_addr_0_rx);
+    print_hscb_descriptor(sys_addr_1_tx);
+    print_hscb_descriptor(sys_addr_1_rx);
 
     msync();
     iowrite32(0x200,        base_addr + HSCB_IRQ_MASK);
@@ -387,7 +400,7 @@ static uint32_t check_hscb_func(uint32_t base_addr, uint32_t supplementary_base_
     msync();
     // Wait connecting
     rumboot_putstring( "Wait HSCB0 and HSCB1 enable\n" );
-    while (!(hscb0_status & hscb1_status)){
+    while (!(hscb0_link_established & hscb1_link_established)){
         if (cnt == MAX_ATTEMPTS) {
             rumboot_putstring( "Wait interrupt Time-out\n" );
             return 1;
@@ -428,7 +441,7 @@ static uint32_t check_hscb_func(uint32_t base_addr, uint32_t supplementary_base_
 
     rumboot_putstring( "Finish work!\n" );
     rumboot_putstring( "HSCB1 to HSCB0 descriptor #1\n" );
-    cur_tbl_addr = get_desc(sys_addr_0_rx, (uint8_t*)RX_DATA_ADDR_1, &len, &act0, &interrupt, &end, &valid, 1);
+    cur_tbl_addr = hscb_get_desc(sys_addr_0_rx, (uint8_t*)RX_DATA_ADDR_1, &len, &act0, &interrupt, &end, &valid, 1);
     rumboot_putstring( "Length:" );
     rumboot_puthex (len);
     for (i=0; i<=len-1; i++) {
@@ -442,7 +455,7 @@ static uint32_t check_hscb_func(uint32_t base_addr, uint32_t supplementary_base_
     }
 
     rumboot_putstring( "HSCB0 to HSCB1 descriptor #1\n" );
-    cur_tbl_addr = get_desc(sys_addr_1_rx, (uint8_t*)RX_DATA_ADDR_0, &len, &act0, &interrupt, &end, &valid, 1);
+    cur_tbl_addr = hscb_get_desc(sys_addr_1_rx, (uint8_t*)RX_DATA_ADDR_0, &len, &act0, &interrupt, &end, &valid, 1);
     rumboot_putstring( "Length:" );
     rumboot_puthex (len);
     for (i=0; i<=len-1; i++) {
