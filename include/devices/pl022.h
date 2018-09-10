@@ -181,10 +181,5 @@ void gspi_dma_reset(uint32_t base_addr);
 void gspi_dma_set_irq_mask(uint32_t base_addr, ssp_dma_interrupt interrupt);
 uint32_t gspi_get_dma_status(uint32_t base_addr);
 
-//eeprom function
-void gspi_eeprom_write_enable(uint32_t base_addr);
-void gspi_eeprom_erase(uint32_t base_addr);
-void gspi_eeprom_write_data(uint32_t base_addr, uint32_t mem_addr, uint32_t data);
-uint32_t gspi_eeprom_read_data(uint32_t base_addr);
 
 #endif /* end of include guard: PL022_H */
