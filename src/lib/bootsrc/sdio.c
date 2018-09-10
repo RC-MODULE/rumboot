@@ -21,9 +21,9 @@
 //#define DEBUG
 
 /**
- * Card_type Type card enumeration
+ * sd_card_type Type card enumeration
  */
-enum Card_type {
+enum sd_card_type {
         SDIO_CARD_UNKNOWN = 0,
         SDIO_CARD_OLD,
         SDIO_CARD_SDHC,
@@ -32,11 +32,11 @@ enum Card_type {
         SDIO_CARD_MAX,
 };
 
-const char *card_type_names[] = {
+const char *sd_card_type_names[] = {
         [SDIO_CARD_UNKNOWN] = "Unknown/Invalid",
         [SDIO_CARD_OLD]    = "Ancient relic",
         [SDIO_CARD_SDHC]   = "SDHC",
-        [SDIO_CARD_SDHC]   = "SDSC",
+        [SDIO_CARD_SDSC]   = "SDSC",
         [SDIO_CARD_SDXC]   = "SDXC",
 
 };
@@ -56,7 +56,7 @@ struct sd_cid {
         unsigned char	crc : 7;
 } __attribute__((packed));
 
-enum Type_event {
+enum sdio_event {
         CH1_DMA_DONE_HANDLE = 0,
         CMD_DONE_HANDLE,
         TRAN_DONE_HANDLE,
@@ -64,14 +64,14 @@ enum Type_event {
 };
 
 struct Event {
-        enum Type_event type;
+        enum sdio_event type;
         uint32_t	response;
         uint32_t	flag;
 };
 
 struct sdio_private_data {
         const struct rumboot_bootsource *	src;
-        enum Card_type				cardtype;
+        enum sd_card_type				cardtype;
 };
 
 static inline uint32_t make_cmd(const uint32_t cmd, const uint32_t resp, const uint32_t crc, const uint32_t idx)
@@ -102,13 +102,13 @@ static bool wait(const uint32_t base, struct Event *event)
 }
 
 #if 0
-static void debug_card_name(struct rumboot_bootsource *src, enum Card_type type)
+static void debug_card_name(struct rumboot_bootsource *src, enum sd_card_type type)
 {
         if ((type >= SDIO_CARD_MAX) || (type < 0)) {
                 type = SDIO_CARD_UNKNOWN;
         }
 
-        dbg_boot(src, "Detected: %s", card_type_names[type]);
+        dbg_boot(src, "Detected: %s", sd_card_type_names[type]);
 }
 #endif
 
