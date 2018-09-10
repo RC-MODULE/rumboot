@@ -56,15 +56,15 @@ struct sd_cid {
         unsigned char	crc : 7;
 } __attribute__((packed));
 
-enum sdio_event {
+enum sdio_event_type {
         CH1_DMA_DONE_HANDLE = 0,
         CMD_DONE_HANDLE,
         TRAN_DONE_HANDLE,
         TRAN_FINISH_HANDLE,
 };
 
-struct Event {
-        enum sdio_event type;
+struct sdio_event {
+        enum sdio_event_type type;
         uint32_t	response;
         uint32_t	flag;
 };
@@ -79,7 +79,7 @@ static inline uint32_t make_cmd(const uint32_t cmd, const uint32_t resp, const u
         return cmd << 16 | (idx << 12) | (crc << 13) | (resp << 10) | (0x11);
 }
 
-static bool wait(const uint32_t base, struct Event *event)
+static bool wait(const uint32_t base, struct sdio_event *event)
 {
         uint32_t status;
 
@@ -162,7 +162,7 @@ static bool send_cmd(const uint32_t base, const uint32_t cmd_ctrl, const uint32_
         iowrite32(arg, base + SDIO_SDR_CMD_ARGUMENT_REG);
         iowrite32(cmd_ctrl, base + SDIO_SDR_CTRL_REG);
 
-        struct Event cmd_event = {
+        struct sdio_event cmd_event = {
                 .type		= CMD_DONE_HANDLE,
                 .flag		= SPISDIO_SDIO_INT_STATUS_CMD_DONE,
                 .response	= SDR_TRAN_SDC_CMD_DONE
@@ -204,13 +204,13 @@ static bool SD2buf512(const uint32_t base, const uint32_t buf_num, const uint32_
         iowrite32(idx, base + SDIO_SDR_CMD_ARGUMENT_REG);
         iowrite32(CMD17_CTRL, base + SDIO_SDR_CTRL_REG);
 
-        struct Event cmd_event = {
+        struct sdio_event cmd_event = {
                 .type		= CMD_DONE_HANDLE,
                 .flag		= SPISDIO_SDIO_INT_STATUS_CMD_DONE,
                 .response	= SDR_TRAN_SDC_CMD_DONE
         };
 
-        struct Event tran_event = {
+        struct sdio_event tran_event = {
                 .type		= TRAN_DONE_HANDLE,
                 .flag		= SPISDIO_SDIO_INT_STATUS_TRAN_DONE,
                 .response	= SDR_TRAN_SDC_DAT_DONE
@@ -238,13 +238,13 @@ static int buf2axi(const uint32_t base, int buf_num, uint32_t dma_addr)
         iowrite32(dma_addr, base + SDIO_DCDSAR_1);
         iowrite32(DCCR_1_VAL, base + SDIO_DCCR_1);
 
-        struct Event dma_event = {
+        struct sdio_event dma_event = {
                 .type		= CH1_DMA_DONE_HANDLE,
                 .flag		= SPISDIO_SDIO_INT_STATUS_CH1_FINISH,
                 .response	= DSSR_CHANNEL_TR_DONE
         };
 
-        struct Event event = {
+        struct sdio_event event = {
                 .type		= TRAN_FINISH_HANDLE,
                 .response	= SDR_TRAN_FIFO_FINISH,
                 .flag		= SPISDIO_SDIO_INT_STATUS_BUF_FINISH
