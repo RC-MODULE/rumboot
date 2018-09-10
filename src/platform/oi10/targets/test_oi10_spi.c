@@ -140,11 +140,11 @@ static uint32_t wait_gspi_int()
     return 0;
 }
 
-static uint8_t __attribute__((section(".data.data_src"))) data_src[BYTE_NUMBER + 4] = { 0x02, 0x00, 0x00, 0x00 };
+static uint8_t __attribute__((section(".data.data_src"))) data_src[DATA_SIZE] = { 0x02, 0x00, 0x00, 0x00 };
 static uint8_t __attribute__((section(".data.data_dst"))) data_dst[BYTE_NUMBER];
 
-ssp_params params = {0x6, 1, 1, 7, master_mode, false, ssp_motorola_fr_form};
-
+ssp_params ssp_param = {0x6, 1, 1, 7, master_mode, false, ssp_motorola_fr_form};
+dma_params dma_param = {lsb, 8, lsb, 8};
 
 static uint32_t gspi_dma_axi(uint32_t base_addr, uint32_t* r_mem_addr, uint32_t* w_mem_addr, uint32_t test_data)
 {
@@ -153,7 +153,7 @@ static uint32_t gspi_dma_axi(uint32_t base_addr, uint32_t* r_mem_addr, uint32_t*
 
     gspi_dma_reset(base_addr);
 
-    gspi_init(base_addr, params); //turn on SSP controller
+    gspi_init(base_addr, ssp_param); //turn on SSP controller
     gspi_set_int_mask(base_addr, 0x02); //interrupt masks - unmask rx_fifo not empty
 
     pl022_flash_write_enable(base_addr);
@@ -163,14 +163,11 @@ static uint32_t gspi_dma_axi(uint32_t base_addr, uint32_t* r_mem_addr, uint32_t*
     gspi_dma_set_irq_mask(base_addr, end_buf_write);
     gspi_dma_enable(base_addr, all);
 
-    iowrite32(0x01, base_addr + GSPI_AXIR_BUFTYPE); //base mode
-    iowrite32(0x108, base_addr + GSPI_AXI_PARAMS); //AXI params
+    gspi_dma_set_mode(base_addr, base_mode);
+    gspi_dma_set_param(base_addr, dma_param);
 
-    iowrite32((uint32_t)r_mem_addr, base_addr + GSPI_DMARSTART);
-    iowrite32((uint32_t)((uint8_t*)(r_mem_addr) + DATA_SIZE-1), base_addr + GSPI_DMAREND);
-
-    iowrite32((uint32_t)(w_mem_addr), base_addr + GSPI_DMAWSTART);
-    iowrite32((uint32_t)((uint8_t*)(w_mem_addr) + DATA_SIZE-1), base_addr + GSPI_DMAWEND);
+    gspi_dma_set_read_addr(base_addr, r_mem_addr, BYTE_NUMBER);
+    gspi_dma_set_write_addr(base_addr, w_mem_addr, BYTE_NUMBER);
 
     iowrite32(0x9FFFFFE0, base_addr + GSPI_DMARCNTRL);
     iowrite32(0X9FFFFFE0, base_addr + GSPI_DMAWCNTRL);
@@ -220,8 +217,8 @@ static uint32_t gspi_ssp_flash(uint32_t base_addr)
     gspi_dma_set_irq_mask(base_addr, ssp_int); //mask all interrupts except SSP
 
     //Check SPI interrupt with loop operation
-    params.loopback = true;
-    gspi_init(base_addr, params); //turn on SSP controller, loop operation
+    ssp_param.loopback = true;
+    gspi_init(base_addr, ssp_param); //turn on SSP controller, loop operation
     gspi_set_int_mask(base_addr, 0x02); //interrupt masks - unmask rx_fifo not empty
 
 
@@ -243,8 +240,8 @@ static uint32_t gspi_ssp_flash(uint32_t base_addr)
     //Read and check data
 
     //Write data to spi eeprom
-    params.loopback = false;
-    gspi_init(base_addr, params); //turn on SSP controller, loop operation
+    ssp_param.loopback = false;
+    gspi_init(base_addr, ssp_param); //turn on SSP controller, loop operation
     gspi_set_int_mask(base_addr, 0x0); //mask all interrupts
 
 
