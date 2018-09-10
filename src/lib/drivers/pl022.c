@@ -306,13 +306,29 @@ void gspi_set_clock_rate(uint32_t base_address, uint32_t cpsdvr)
     iowrite32(cpsdvr, base_address + GSPI_SSPCPSR); //set divider
 }
 
-void gspi_disable(uint32_t base_address)
+void gspi_dma_set_read_addr(uint32_t base_addr, uint32_t* r_addr, uint32_t byte_n)
 {
-    iowrite32(SSE, base_address + GSPI_SSPCR1); //clear enable bit
-//    SSP_clear_SSP_CR1(base_address + GSPI_SSPCR1, SSE);//clear enable bit
+    iowrite32((uint32_t)r_addr, base_addr + GSPI_DMARSTART);
+    iowrite32((uint32_t)((uint8_t*)(r_addr) + byte_n+3), base_addr + GSPI_DMAREND);
 }
 
+void gspi_dma_set_write_addr(uint32_t base_addr, uint32_t* w_addr, uint32_t byte_n)
+{
+    iowrite32((uint32_t)(w_addr), base_addr + GSPI_DMAWSTART);
+    iowrite32((uint32_t)((uint8_t*)(w_addr) + byte_n+3), base_addr + GSPI_DMAWEND);
+}
 
+void gspi_dma_set_mode(uint32_t base_addr, dma_mode mode)
+{
+    iowrite32(mode, base_addr + GSPI_AXIR_BUFTYPE);
+}
+
+void gspi_dma_set_param(uint32_t base_addr, dma_params param)
+{
+    iowrite32((param.endian_read << 9) | ((param.arlen << 5) |
+              (param.endian_write << 4) | param.awlen),
+             base_addr + GSPI_AXI_PARAMS);
+}
 
 void gspi_init(uint32_t base_address, ssp_params params)
 {

@@ -87,6 +87,24 @@ typedef struct{
     ssp_frame_format fr_format;
 }ssp_params;
 
+typedef enum{
+    circle_buf = 0,
+    base_mode = 1
+}dma_mode;
+
+typedef enum{
+    lsb = 0,
+    msb = 1
+}dma_endianness;
+
+
+typedef struct{
+    dma_endianness endian_read;
+    uint8_t arlen;
+    dma_endianness endian_write;
+    uint8_t awlen;
+}dma_params;
+
 
 //global functions
 void pl022_init(uint32_t base, struct pl022_config *conf);
@@ -164,7 +182,6 @@ void pl022_clear_rx_buf(uint32_t base);
 */
 
 //ssp functions
-void gspi_disable(uint32_t base_address);
 void gspi_init(uint32_t base_address, ssp_params params);
 uint32_t gspi_get_ris(uint32_t base_address);
 uint32_t gspi_get_mis(uint32_t base_address);
@@ -180,6 +197,9 @@ int gspi_get_word(uint32_t base_address, uint32_t * word);
 void gspi_dma_reset(uint32_t base_addr);
 void gspi_dma_set_irq_mask(uint32_t base_addr, ssp_dma_interrupt interrupt);
 uint32_t gspi_get_dma_status(uint32_t base_addr);
-
+void gspi_dma_set_read_addr(uint32_t base_addr, uint32_t* r_addr, uint32_t byte_n);//for 8-bit data
+void gspi_dma_set_write_addr(uint32_t base_addr, uint32_t* w_addr, uint32_t byte_n);//for 8-bit data
+void gspi_dma_set_mode(uint32_t base_addr, dma_mode mode);
+void gspi_dma_set_param(uint32_t base_addr, dma_params param);
 
 #endif /* end of include guard: PL022_H */
