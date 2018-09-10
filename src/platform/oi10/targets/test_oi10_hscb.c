@@ -207,10 +207,10 @@ static uint32_t check_hscb_regs( uint32_t base_addr ) {
 #define INCREMENT_1 -1
 #endif
 
-static volatile uint8_t __attribute__((section(".data"),aligned(8))) tx_data_0_im[0x100] = {0} ;
-static volatile uint8_t __attribute__((section(".data"),aligned(8))) tx_data_1_im[0x100] = {0} ;
-static volatile uint8_t __attribute__((section(".data"),aligned(8))) rx_data_0_im[0x100] = {0} ;
-static volatile uint8_t __attribute__((section(".data"),aligned(8))) rx_data_1_im[0x100] = {0} ;
+static volatile uint8_t __attribute__((section(".data"),aligned(8))) tx_desc_0_im[0x100] = {0} ;
+static volatile uint8_t __attribute__((section(".data"),aligned(8))) tx_desc_1_im[0x100] = {0} ;
+static volatile uint8_t __attribute__((section(".data"),aligned(8))) rx_desc_0_im[0x100] = {0} ;
+static volatile uint8_t __attribute__((section(".data"),aligned(8))) rx_desc_1_im[0x100] = {0} ;
 static volatile uint8_t __attribute__((section(".data"),aligned(8))) sys_0_rx[0x100] = {0} ;
 static volatile uint8_t __attribute__((section(".data"),aligned(8))) sys_0_tx[0x100] = {0} ;
 static volatile uint8_t __attribute__((section(".data"),aligned(8))) sys_1_rx[0x100] = {0} ;
@@ -230,6 +230,7 @@ static volatile uint32_t hscb1_dma_status;
 static volatile bool hscb0_link_established;
 static volatile bool hscb1_link_established;
 
+hscb_instance_t  hscb_cfg[2];
 
 static void handler( int irq, void *arg ) {
     //get interrupt source
@@ -287,6 +288,33 @@ inline static void print_hscb_descriptor(uint32_t addr){
     rumboot_printf("descriptor address: \n%x\nfirst word == \n%x\nsecond word == \n%x\n", addr,*((uint32_t*)addr),*(((uint32_t*)addr)+1));
 }
 
+void init_hscb_cfg_short(hscb_instance_t* hscb_inst)
+{
+    (hscb_inst + 0)->src_hscb_base_addr   = HSCB_UNDER_TEST_BASE;
+    (hscb_inst + 0)->dst_hscb_base_addr   = HSCB_SUPPLEMENTARY_BASE;
+    (hscb_inst + 0)->src_addr             = (uint32_t*)TX_DATA_ADDR_0;
+    (hscb_inst + 0)->dst_addr             = (uint32_t*)RX_DATA_ADDR_0;
+    (hscb_inst + 0)->src_size             = DATA_SIZE_0;
+    (hscb_inst + 0)->dst_size             = DATA_SIZE_0;
+    (hscb_inst + 0)->tx_descr_addr        = (uint32_t)tx_desc_0_im;
+    (hscb_inst + 0)->rx_descr_addr        = (uint32_t)rx_desc_0_im;
+
+    (hscb_inst + 1)->src_hscb_base_addr   = HSCB_SUPPLEMENTARY_BASE;
+    (hscb_inst + 1)->dst_hscb_base_addr   = HSCB_UNDER_TEST_BASE;
+    (hscb_inst + 1)->src_addr             = (uint32_t*)TX_DATA_ADDR_1;
+    (hscb_inst + 1)->dst_addr             = (uint32_t*)RX_DATA_ADDR_1;
+    (hscb_inst + 1)->src_size             = DATA_SIZE_1;
+    (hscb_inst + 1)->dst_size             = DATA_SIZE_1;
+    (hscb_inst + 1)->tx_descr_addr        = (uint32_t)tx_desc_1_im;
+    (hscb_inst + 1)->rx_descr_addr        = (uint32_t)rx_desc_1_im;
+
+    //Some dirty hack to pass around [-Werror=unused-variable] for transfers not in current memory
+    data_in_0_1[0] = 0xff;
+    data_out_0_1[0] = data_in_0_1[0] - 1;
+    data_in_0_3[0] = data_out_0_3[0] - 1;
+    data_out_0_3[0] = data_in_0_3[0] - 1;
+}
+
 static uint32_t check_hscb_func(uint32_t base_addr, uint32_t supplementary_base_addr){
     rumboot_printf("Check functionality...\n");
 
@@ -329,24 +357,18 @@ static uint32_t check_hscb_func(uint32_t base_addr, uint32_t supplementary_base_
     uint32_t sys_addr_1_rx = (uint32_t)sys_1_rx; //
     uint32_t sys_addr_1_tx = (uint32_t)sys_1_tx; //
     uint32_t cur_tbl_addr = 0;
-    uint32_t tx_desc_addr_0_im  = (uint32_t)tx_data_0_im; //
-    uint32_t tx_desc_addr_1_im  = (uint32_t)tx_data_1_im; //
-    uint32_t rx_desc_addr_0_im  = (uint32_t)rx_data_0_im; //
-    uint32_t rx_desc_addr_1_im  = (uint32_t)rx_data_1_im; //
+    uint32_t hscb0_settings;
+    uint32_t hscb1_settings;
 
     uint8_t tmp_data = 0;
 
-    if ((((uint32_t)RX_DATA_ADDR_0) >= NOR_BASE) && (((uint32_t)RX_DATA_ADDR_0) <= IM0_BASE))
-        rumboot_putstring("RX_DATA_ADDR_0 - destination address cannot be NOR!");
-    if ((((uint32_t)RX_DATA_ADDR_1) >= NOR_BASE) && (((uint32_t)RX_DATA_ADDR_1) <= IM0_BASE))
-        rumboot_putstring("RX_DATA_ADDR_1 - destination address cannot be NOR!");
+    init_hscb_cfg_short(hscb_cfg);
 
+    TEST_ASSERT(((uint32_t)(hscb_cfg->dst_addr) < NOR_BASE) || ((uint32_t)(hscb_cfg->dst_addr) >= IM0_BASE),
+        "RX_DATA_ADDR_0 - destination address cannot be NOR!");
+    TEST_ASSERT(((uint32_t)((hscb_cfg + 1)->dst_addr) < NOR_BASE) || ((uint32_t)((hscb_cfg + 1)->dst_addr) >= IM0_BASE),
+        "RX_DATA_ADDR_1 - destination address cannot be NOR!");
 
-    //Some dirty hack to pass around [-Werror=unused-variable] for transfers not in current memory
-    data_in_0_1[0] = 0xff;
-    data_out_0_1[0] = data_in_0_1[0] - 1;
-    data_in_0_3[0] = data_out_0_3[0] - 1;
-    data_out_0_3[0] = data_in_0_3[0] - 1;
 
     // Set data for HSCB0
     set_test_data(TX_DATA_ADDR_0,DATA_SIZE_0,INCREMENT_0);
@@ -357,47 +379,48 @@ static uint32_t check_hscb_func(uint32_t base_addr, uint32_t supplementary_base_
     msync();
     // Set descriptors table HSCB0
     // -- Set Tx data
-    cur_tbl_addr = set_desc(sys_addr_0_tx, DATA_SIZE_0, tx_desc_addr_0_im, (uint8_t*)TX_DATA_ADDR_0, 1, 0, 1, 1);
-    cur_tbl_addr = set_desc(cur_tbl_addr, 0, 0, 0, 0, 0, 0, 0); // Bad descriptor
+    cur_tbl_addr = hscb_set_desc(sys_addr_0_tx, DATA_SIZE_0, (hscb_cfg->tx_descr_addr), (uint8_t*)TX_DATA_ADDR_0, 1, 0, 1, 1);
+    cur_tbl_addr = hscb_set_desc(cur_tbl_addr, 0, 0, 0, 0, 0, 0, 0); // Bad descriptor
     msync();
     // -- Set RDMA
-    iowrite32( sys_addr_0_tx,                   base_addr + HSCB_RDMA_SYS_ADDR);
-    iowrite32( cur_tbl_addr - sys_addr_0_tx,    base_addr + HSCB_RDMA_TBL_SIZE);
+    iowrite32( sys_addr_0_tx,                   (hscb_cfg->src_hscb_base_addr) + HSCB_RDMA_SYS_ADDR);
+    iowrite32( cur_tbl_addr - sys_addr_0_tx,    (hscb_cfg->src_hscb_base_addr) + HSCB_RDMA_TBL_SIZE);
     // -- Set Rx data
-    cur_tbl_addr = set_desc(sys_addr_0_rx, DATA_SIZE_0, rx_desc_addr_0_im, (uint8_t*)RX_DATA_ADDR_1 , 1, 0, 1, 1);
-    cur_tbl_addr = set_desc(cur_tbl_addr, 0, 0, 0, 0, 0, 0, 0); // Bad descriptor
+    cur_tbl_addr = hscb_set_desc(sys_addr_0_rx, DATA_SIZE_0, (hscb_cfg->rx_descr_addr), (uint8_t*)RX_DATA_ADDR_1 , 1, 0, 1, 1);
+    cur_tbl_addr = hscb_set_desc(cur_tbl_addr, 0, 0, 0, 0, 0, 0, 0); // Bad descriptor
     msync();
     // -- Set RDMA
-    iowrite32( sys_addr_0_rx,                   base_addr + HSCB_WDMA_SYS_ADDR);
-    iowrite32( cur_tbl_addr - sys_addr_0_rx,    base_addr + HSCB_WDMA_TBL_SIZE);
+    iowrite32( sys_addr_0_rx,                   (hscb_cfg->src_hscb_base_addr) + HSCB_WDMA_SYS_ADDR);
+    iowrite32( cur_tbl_addr - sys_addr_0_rx,    (hscb_cfg->src_hscb_base_addr) + HSCB_WDMA_TBL_SIZE);
 
     // Set descriptors table HSCB1
     // -- Set Tx data
-    cur_tbl_addr = set_desc(sys_addr_1_tx, DATA_SIZE_1, tx_desc_addr_1_im, (uint8_t*)TX_DATA_ADDR_1, 1, 0, 1, 1);
-    cur_tbl_addr = set_desc(cur_tbl_addr, 0, 0, 0, 0, 0, 0, 1); // Bad descriptor
+    cur_tbl_addr = hscb_set_desc(sys_addr_1_tx, DATA_SIZE_1, ((hscb_cfg + 1)->tx_descr_addr), (uint8_t*)TX_DATA_ADDR_1, 1, 0, 1, 1);
+    cur_tbl_addr = hscb_set_desc(cur_tbl_addr, 0, 0, 0, 0, 0, 0, 1); // Bad descriptor
     msync();
-  // -- Set RDMA
-    iowrite32( sys_addr_1_tx,                   supplementary_base_addr + HSCB_RDMA_SYS_ADDR);
-    iowrite32( cur_tbl_addr - sys_addr_1_tx,    supplementary_base_addr + HSCB_RDMA_TBL_SIZE);
+   // -- Set RDMA
+    iowrite32( sys_addr_1_tx,                   ((hscb_cfg + 1)->src_hscb_base_addr) + HSCB_RDMA_SYS_ADDR);
+    iowrite32( cur_tbl_addr - sys_addr_1_tx,    ((hscb_cfg + 1)->src_hscb_base_addr) + HSCB_RDMA_TBL_SIZE);
     // -- Set Rx data
-    cur_tbl_addr = set_desc(sys_addr_1_rx, DATA_SIZE_0, rx_desc_addr_1_im, (uint8_t*)RX_DATA_ADDR_0, 1, 0, 1, 1);
-    cur_tbl_addr = set_desc(cur_tbl_addr, 0, 0, 0, 0, 0, 0, 1); // Bad descriptor
+    cur_tbl_addr = hscb_set_desc(sys_addr_1_rx, DATA_SIZE_0, ((hscb_cfg + 1)->rx_descr_addr), (uint8_t*)RX_DATA_ADDR_0, 1, 0, 1, 1);
+    cur_tbl_addr = hscb_set_desc(cur_tbl_addr, 0, 0, 0, 0, 0, 0, 1); // Bad descriptor
     msync();
     // -- Set RDMA
-    iowrite32( sys_addr_1_rx,                   supplementary_base_addr + HSCB_WDMA_SYS_ADDR);
-    iowrite32( cur_tbl_addr - sys_addr_1_rx,    supplementary_base_addr + HSCB_WDMA_TBL_SIZE);
-    // Enable HSCB0 and HSCB1
+    iowrite32( sys_addr_1_rx,                   ((hscb_cfg + 1)->src_hscb_base_addr) + HSCB_WDMA_SYS_ADDR);
+    iowrite32( cur_tbl_addr - sys_addr_1_rx,    ((hscb_cfg + 1)->src_hscb_base_addr) + HSCB_WDMA_TBL_SIZE);
     print_hscb_descriptor(sys_addr_0_tx);
     print_hscb_descriptor(sys_addr_0_rx);
     print_hscb_descriptor(sys_addr_1_tx);
     print_hscb_descriptor(sys_addr_1_rx);
 
-    msync();
-    iowrite32(0x200,        base_addr + HSCB_IRQ_MASK);
-    iowrite32(0x200,        supplementary_base_addr + HSCB_IRQ_MASK);
-    iowrite32(0x01000001,   base_addr + HSCB_SETTINGS);
-    iowrite32(0x01000001,   supplementary_base_addr + HSCB_SETTINGS);
-    msync();
+    // Enable HSCB0 and HSCB1
+    hscb0_settings = ioread32(hscb_cfg->src_hscb_base_addr + HSCB_SETTINGS) | (1 << HSCB_SETTINGS_EN_HSCB_i);
+    hscb1_settings = ioread32((hscb_cfg + 1)->src_hscb_base_addr + HSCB_SETTINGS) | (1 << HSCB_SETTINGS_EN_HSCB_i);
+
+    iowrite32(0x200,        hscb_cfg->src_hscb_base_addr + HSCB_IRQ_MASK);
+    iowrite32(0x200,        (hscb_cfg + 1)->src_hscb_base_addr + HSCB_IRQ_MASK);
+    iowrite32(hscb0_settings,        hscb_cfg->src_hscb_base_addr + HSCB_SETTINGS);
+    iowrite32(hscb1_settings,        (hscb_cfg + 1)->src_hscb_base_addr + HSCB_SETTINGS);
     // Wait connecting
     rumboot_putstring( "Wait HSCB0 and HSCB1 enable\n" );
     while (!(hscb0_link_established & hscb1_link_established)){
@@ -414,17 +437,17 @@ static uint32_t check_hscb_func(uint32_t base_addr, uint32_t supplementary_base_
 
     rumboot_putstring( "HSCB link has enabled\n" );
     // Setting DMA for HSCB0 and HSCB1
-    iowrite32( 0xf,     base_addr + HSCB_ARLEN);
-    iowrite32( 0xf,     base_addr + HSCB_AWLEN);
-    iowrite32( 0xf,     supplementary_base_addr + HSCB_ARLEN);
-    iowrite32( 0xf,     supplementary_base_addr + HSCB_AWLEN);
+    iowrite32( 0xf,     hscb_cfg->src_hscb_base_addr + HSCB_ARLEN);
+    iowrite32( 0xf,     hscb_cfg->src_hscb_base_addr + HSCB_AWLEN);
+    iowrite32( 0xf,     (hscb_cfg + 1)->src_hscb_base_addr + HSCB_ARLEN);
+    iowrite32( 0xf,     (hscb_cfg + 1)->src_hscb_base_addr + HSCB_AWLEN);
     msync();
     // Enable DMA for HSCB0 and HSCB1
     rumboot_putstring( "Start work!\n" );
-    iowrite32( 0x70000000,  base_addr + HSCB_RDMA_SETTINGS);
-    iowrite32( 0x70000004,  base_addr + HSCB_WDMA_SETTINGS);
-    iowrite32( 0x70000000,  supplementary_base_addr + HSCB_RDMA_SETTINGS);
-    iowrite32( 0x70000004,  supplementary_base_addr + HSCB_WDMA_SETTINGS);
+    iowrite32( 0x70000000,  hscb_cfg->src_hscb_base_addr + HSCB_RDMA_SETTINGS);
+    iowrite32( 0x70000004,  hscb_cfg->src_hscb_base_addr + HSCB_WDMA_SETTINGS);
+    iowrite32( 0x70000000,  (hscb_cfg + 1)->src_hscb_base_addr + HSCB_RDMA_SETTINGS);
+    iowrite32( 0x70000004,  (hscb_cfg + 1)->src_hscb_base_addr + HSCB_WDMA_SETTINGS);
     msync();
     rumboot_putstring( "Wait HSCB0 and HSCB1 finish work\n" );
     while (!(hscb0_dma_status & hscb1_dma_status)){
