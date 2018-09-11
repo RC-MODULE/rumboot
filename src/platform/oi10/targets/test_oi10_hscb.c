@@ -371,9 +371,17 @@ static uint32_t check_hscb_func(uint32_t base_addr, uint32_t supplementary_base_
 
 
     // Set data for HSCB0
+    rumboot_putstring("(uint32_t)hscb_cfg->src_addr == ");
+    rumboot_puthex(TX_DATA_ADDR_0);
+    rumboot_putstring("(uint32_t)hscb_cfg->dst_addr == ");
+    rumboot_puthex(RX_DATA_ADDR_0);
     set_test_data(TX_DATA_ADDR_0,DATA_SIZE_0,INCREMENT_0);
     set_test_data(RX_DATA_ADDR_0,DATA_SIZE_0,0);
     // Set data for HSCB1
+    rumboot_putstring("(uint32_t)((hscb_cfg + 1)->src_addr) == ");
+    rumboot_puthex(TX_DATA_ADDR_1);
+    rumboot_putstring("(uint32_t)((hscb_cfg + 1)->dst_addr) == ");
+    rumboot_puthex(RX_DATA_ADDR_1);
     set_test_data(TX_DATA_ADDR_1,DATA_SIZE_1,INCREMENT_1);
     set_test_data(RX_DATA_ADDR_1,DATA_SIZE_1,0);
     msync();
