@@ -12,6 +12,14 @@
 #include <platform/regs/regs_nic400.h>
 #include <platform/devices.h>
 
+/*
+static int array[] = {
+        0xAAAAAAAA,
+        0xBBBBBBBB,
+        0xCCCCCCCC,
+        0xDDDDDDD
+};
+*/
 
 static uint8_t AXIx_check_ID_regs(uint32_t base_addr)
 {   
@@ -36,9 +44,10 @@ static uint8_t AXIx_check_ID_regs(uint32_t base_addr)
           return 1;
 }
 
-static int AXI_check_regs32(uint32_t base_addr)
+static int AXI_check_regs32_0(uint32_t base_addr)
 {
     rumboot_printf("Checking ID registers random value...\n");
+    rumboot_printf("Checking ID registers random value regs32_0...\n");
 
     struct regpoker_checker check_array[] = {
     { "NIC400_CPU_S_RQOS", REGPOKER_READ32, NIC400_CPU_S_RQOS, 0x0, 0b1111 },
@@ -94,6 +103,25 @@ static int AXI_check_regs32(uint32_t base_addr)
 
     { "NIC400_ETH_0_S_FN_MOD", REGPOKER_READ32, NIC400_ETH_0_S_FN_MOD, 0x0, 0b11 },
     { "NIC400_ETH_0_S_FN_MOD", REGPOKER_WRITE32, NIC400_ETH_0_S_FN_MOD, 0x0, 0b11 },
+
+    { "NIC400_MKIO_0_S_RQOS", REGPOKER_READ32, NIC400_MKIO_0_S_RQOS, 0x0, 0b1111 },
+    { "NIC400_MKIO_0_S_RQOS", REGPOKER_WRITE32, NIC400_MKIO_0_S_RQOS, 0x0, 0b1111 },
+
+    { "NIC400_MKIO_0_S_WQOS", REGPOKER_READ32, NIC400_MKIO_0_S_WQOS, 0x0, 0b1111 },
+    { "NIC400_MKIO_0_S_WQOS", REGPOKER_WRITE32, NIC400_MKIO_0_S_WQOS, 0x0, 0b1111 },
+
+    { "NIC400_MKIO_0_S_FN_MOD", REGPOKER_READ32, NIC400_MKIO_0_S_FN_MOD, 0x0, 0b11 },
+    { "NIC400_MKIO_0_S_FN_MOD", REGPOKER_WRITE32, NIC400_MKIO_0_S_FN_MOD, 0x0, 0b11 },
+
+    { "NIC400_MKIO_1_S_RQOS", REGPOKER_READ32, NIC400_MKIO_1_S_RQOS, 0x0, 0b1111 },
+    { "NIC400_MKIO_1_S_RQOS", REGPOKER_WRITE32, NIC400_MKIO_1_S_RQOS, 0x0, 0b1111 },
+
+    { "NIC400_MKIO_1_S_WQOS", REGPOKER_READ32, NIC400_MKIO_1_S_WQOS, 0x0, 0b1111 },
+    { "NIC400_MKIO_1_S_WQOS", REGPOKER_WRITE32, NIC400_MKIO_1_S_WQOS, 0x0, 0b1111 },
+
+    { "NIC400_MKIO_1_S_FN_MOD", REGPOKER_READ32, NIC400_MKIO_1_S_FN_MOD, 0x0, 0b11 },
+    { "NIC400_MKIO_1_S_FN_MOD", REGPOKER_WRITE32, NIC400_MKIO_1_S_FN_MOD, 0x0, 0b11 },
+
     {}
     };
     if( rumboot_regpoker_check_array( check_array, base_addr ) == 0 ) {
@@ -104,9 +132,98 @@ static int AXI_check_regs32(uint32_t base_addr)
     return 1;
 }
 
-static int AXI_check_regs64(uint32_t base_addr)
+static int AXI_check_regs32_1(uint32_t base_addr)
 {
     rumboot_printf("Checking ID registers random value...\n");
+    rumboot_printf("Checking ID registers random value regs32_1...\n");
+
+    struct regpoker_checker check_array[] = {
+    { "NIC400_CPU_S_RQOS", REGPOKER_READ32, NIC400_CPU_S_RQOS, 0x0, 0x0 },
+    { "NIC400_CPU_S_RQOS", REGPOKER_WRITE32, NIC400_CPU_S_RQOS, 0x0, 0x0 },
+
+    { "NIC400_CPU_S_WQOS", REGPOKER_READ32, NIC400_CPU_S_WQOS, 0x0, 0x0 },
+    { "NIC400_CPU_S_WQOS", REGPOKER_WRITE32, NIC400_CPU_S_RQOS, 0x0, 0x0 },
+
+    { "NIC400_CPU_S_FN_MOD", REGPOKER_READ32, NIC400_CPU_S_FN_MOD, 0x0, 0x0 },
+    { "NIC400_CPU_S_FN_MOD", REGPOKER_WRITE32, NIC400_CPU_S_FN_MOD, 0x0, 0x0 },
+
+    { "NIC400_GSPI_1_S_RQOS", REGPOKER_READ32, NIC400_GSPI_1_S_RQOS, 0x0, 0x0 },
+    { "NIC400_GSPI_1_S_RQOS", REGPOKER_WRITE32, NIC400_GSPI_1_S_RQOS, 0x0, 0x0 },
+
+    { "NIC400_GSPI_1_S_WQOS", REGPOKER_READ32, NIC400_GSPI_1_S_WQOS, 0x0, 0x0 },
+    { "NIC400_GSPI_1_S_WQOS", REGPOKER_WRITE32, NIC400_GSPI_1_S_WQOS, 0x0, 0x0 },
+
+    { "NIC400_GSPI_1_S_FN_MOD", REGPOKER_READ32, NIC400_GSPI_1_S_FN_MOD, 0x0, 0x0 },
+    { "NIC400_GSPI_1_S_FN_MOD", REGPOKER_WRITE32, NIC400_GSPI_1_S_FN_MOD, 0x0, 0x0 },
+
+    { "NIC400_ETH_1_S_RQOS", REGPOKER_READ32, NIC400_ETH_1_S_RQOS, 0x0, 0x0 },
+    { "NIC400_ETH_1_S_RQOS", REGPOKER_WRITE32, NIC400_ETH_1_S_RQOS, 0x0, 0x0 },
+
+    { "NIC400_ETH_1_S_WQOS", REGPOKER_READ32, NIC400_ETH_1_S_WQOS, 0x0, 0x0 },
+    { "NIC400_ETH_1_S_WQOS", REGPOKER_WRITE32, NIC400_ETH_1_S_WQOS, 0x0, 0x0 },
+
+    { "NIC400_ETH_1_S_FN_MOD", REGPOKER_READ32, NIC400_ETH_1_S_FN_MOD, 0x0, 0x0 },
+    { "NIC400_ETH_1_S_FN_MOD", REGPOKER_WRITE32, NIC400_ETH_1_S_FN_MOD, 0x0, 0x0 },
+
+    { "NIC400_SW_0_3_S_RQOS", REGPOKER_READ32, NIC400_SW_0_3_S_RQOS, 0x0, 0x0 },
+    { "NIC400_SW_0_3_S_RQOS", REGPOKER_WRITE32, NIC400_SW_0_3_S_RQOS, 0x0, 0x0 },
+
+    { "NIC400_SW_0_3_S_WQOS", REGPOKER_READ32, NIC400_SW_0_3_S_WQOS, 0x0, 0x0 },
+    { "NIC400_SW_0_3_S_WQOS", REGPOKER_WRITE32, NIC400_SW_0_3_S_WQOS, 0x0, 0x0 },
+
+    { "NIC400_SW_0_3_S_FN_MOD", REGPOKER_READ32, NIC400_SW_0_3_S_FN_MOD, 0x0, 0x0 },
+    { "NIC400_SW_0_3_S_FN_MOD", REGPOKER_WRITE32, NIC400_SW_0_3_S_FN_MOD, 0x0, 0x0 },
+
+    { "NIC400_GSPI_0_S_RQOS", REGPOKER_READ32, NIC400_GSPI_0_S_RQOS, 0x0, 0x0 },
+    { "NIC400_GSPI_0_S_RQOS", REGPOKER_WRITE32, NIC400_GSPI_0_S_RQOS, 0x0, 0x0 },
+
+    { "NIC400_GSPI_0_S_WQOS", REGPOKER_READ32, NIC400_GSPI_0_S_WQOS, 0x0, 0x0 },
+    { "NIC400_GSPI_0_S_WQOS", REGPOKER_WRITE32, NIC400_GSPI_0_S_WQOS, 0x0, 0x0 },
+
+    { "NIC400_GSPI_0_S_FN_MOD", REGPOKER_READ32, NIC400_GSPI_0_S_FN_MOD, 0x0, 0x0 },
+    { "NIC400_GSPI_0_S_FN_MOD", REGPOKER_WRITE32, NIC400_GSPI_0_S_FN_MOD, 0x0, 0x0 },
+
+    { "NIC400_ETH_0_S_RQOS", REGPOKER_READ32, NIC400_ETH_0_S_RQOS, 0x0, 0x0 },
+    { "NIC400_ETH_0_S_RQOS", REGPOKER_WRITE32, NIC400_ETH_0_S_RQOS, 0x0, 0x0 },
+
+    { "NIC400_ETH_0_S_WQOS", REGPOKER_READ32, NIC400_ETH_0_S_WQOS, 0x0, 0x0 },
+    { "NIC400_ETH_0_S_WQOS", REGPOKER_WRITE32, NIC400_ETH_0_S_WQOS, 0x0, 0x0 },
+
+    { "NIC400_ETH_0_S_FN_MOD", REGPOKER_READ32, NIC400_ETH_0_S_FN_MOD, 0x0, 0x0 },
+    { "NIC400_ETH_0_S_FN_MOD", REGPOKER_WRITE32, NIC400_ETH_0_S_FN_MOD, 0x0, 0x0 },
+
+    { "NIC400_MKIO_0_S_RQOS", REGPOKER_READ32, NIC400_MKIO_0_S_RQOS, 0x0, 0x0 },
+    { "NIC400_MKIO_0_S_RQOS", REGPOKER_WRITE32, NIC400_MKIO_0_S_RQOS, 0x0, 0x0 },
+
+    { "NIC400_MKIO_0_S_WQOS", REGPOKER_READ32, NIC400_MKIO_0_S_WQOS, 0x0, 0x0 },
+    { "NIC400_MKIO_0_S_WQOS", REGPOKER_WRITE32, NIC400_MKIO_0_S_WQOS, 0x0, 0x0 },
+
+    { "NIC400_MKIO_0_S_FN_MOD", REGPOKER_READ32, NIC400_MKIO_0_S_FN_MOD, 0x0, 0x0 },
+    { "NIC400_MKIO_0_S_FN_MOD", REGPOKER_WRITE32, NIC400_MKIO_0_S_FN_MOD, 0x0, 0x0 },
+
+    { "NIC400_MKIO_1_S_RQOS", REGPOKER_READ32, NIC400_MKIO_1_S_RQOS, 0x0, 0x0 },
+    { "NIC400_MKIO_1_S_RQOS", REGPOKER_WRITE32, NIC400_MKIO_1_S_RQOS, 0x0, 0x0 },
+
+    { "NIC400_MKIO_1_S_WQOS", REGPOKER_READ32, NIC400_MKIO_1_S_WQOS, 0x0, 0x0 },
+    { "NIC400_MKIO_1_S_WQOS", REGPOKER_WRITE32, NIC400_MKIO_1_S_WQOS, 0x0, 0x0 },
+
+    { "NIC400_MKIO_1_S_FN_MOD", REGPOKER_READ32, NIC400_MKIO_1_S_FN_MOD, 0x0, 0x0 },
+    { "NIC400_MKIO_1_S_FN_MOD", REGPOKER_WRITE32, NIC400_MKIO_1_S_FN_MOD, 0x0, 0x0 },
+
+    {}
+    };
+    if( rumboot_regpoker_check_array( check_array, base_addr ) == 0 ) {
+           rumboot_printf( "OK\n" );
+           return 0;
+       }
+    rumboot_printf( "ERROR\n" );
+    return 1;
+}
+
+static int AXI_check_regs64_0(uint32_t base_addr)
+{
+    rumboot_printf("Checking ID registers random value...\n");
+    rumboot_printf("Checking ID registers random value regs64_0...\n");
 
     struct regpoker_checker check_array[] = {
     { "NIC400_SW_0_S_RQOS", REGPOKER_READ32, NIC400_SW_0_S_RQOS, 0x00, 0b1111 },
@@ -155,6 +272,58 @@ static int AXI_check_regs64(uint32_t base_addr)
     return 1;
 }
 
+static int AXI_check_regs64_1(uint32_t base_addr)
+{
+    rumboot_printf("Checking ID registers random value...\n");
+    rumboot_printf("Checking ID registers random value regs64_1...\n");
+
+    struct regpoker_checker check_array[] = {
+    { "NIC400_SW_0_S_RQOS", REGPOKER_READ32, NIC400_SW_0_S_RQOS, 0x0, 0x0 },
+    { "NIC400_SW_0_S_RQOS", REGPOKER_WRITE32, NIC400_SW_0_S_RQOS, 0x0, 0x0 },
+
+    { "NIC400_SW_0_S_WQOS", REGPOKER_READ32, NIC400_SW_0_S_WQOS, 0x0, 0x0 },
+    { "NIC400_SW_0_S_WQOS", REGPOKER_WRITE32, NIC400_SW_0_S_WQOS, 0x0, 0x0 },
+
+    { "NIC400_SW_0_S_FN_MOD", REGPOKER_READ32, NIC400_SW_0_S_FN_MOD, 0x0, 0x0 },
+    { "NIC400_SW_0_S_FN_MOD", REGPOKER_WRITE32, NIC400_SW_0_S_FN_MOD, 0x0, 0x0 },
+
+    { "NIC400_SW_1_S_RQOS", REGPOKER_READ32, NIC400_SW_1_S_RQOS, 0x0, 0x0 },
+    { "NIC400_SW_1_S_RQOS", REGPOKER_WRITE32, NIC400_SW_1_S_RQOS, 0x0, 0x0 },
+
+    { "NIC400_SW_1_S_WQOS", REGPOKER_READ32, NIC400_SW_1_S_WQOS, 0x0, 0x0 },
+    { "NIC400_SW_1_S_WQOS", REGPOKER_WRITE32, NIC400_SW_1_S_WQOS, 0x0, 0x0 },
+
+    { "NIC400_SW_1_S_FN_MOD", REGPOKER_READ32, NIC400_SW_1_S_FN_MOD, 0x0, 0x0 },
+    { "NIC400_SW_1_S_FN_MOD", REGPOKER_WRITE32, NIC400_SW_1_S_FN_MOD, 0x0, 0x0 },
+
+    { "NIC400_SW_2_1_S_RQOS", REGPOKER_READ32, NIC400_SW_2_1_S_RQOS, 0x0, 0x0 },
+    { "NIC400_SW_2_1_S_RQOS", REGPOKER_WRITE32, NIC400_SW_2_1_S_RQOS, 0x0, 0x0 },
+
+    { "NIC400_SW_2_1_S_WQOS", REGPOKER_READ32, NIC400_SW_2_1_S_WQOS, 0x0, 0x0 },
+    { "NIC400_SW_2_1_S_WQOS", REGPOKER_WRITE32, NIC400_SW_2_1_S_WQOS, 0x0, 0x0 },
+
+    { "NIC400_SW_2_1_S_FN_MOD", REGPOKER_READ32, NIC400_SW_2_1_S_FN_MOD, 0x0, 0x0 },
+    { "NIC400_SW_2_1_S_FN_MOD", REGPOKER_WRITE32, NIC400_SW_2_1_S_FN_MOD, 0x0, 0x0 },
+
+    { "NIC400_SW_3_S_RQOS", REGPOKER_READ32, NIC400_SW_3_S_RQOS, 0x0, 0x0 },
+    { "NIC400_SW_3_S_RQOS", REGPOKER_WRITE32, NIC400_SW_3_S_RQOS, 0x0, 0x0 },
+
+    { "NIC400_SW_3_S_WQOS", REGPOKER_READ32, NIC400_SW_3_S_WQOS, 0x0, 0x0 },
+    { "NIC400_SW_3_S_WQOS", REGPOKER_WRITE32, NIC400_SW_3_S_WQOS, 0x0, 0x0 },
+
+    { "NIC400_SW_3_S_FN_MOD", REGPOKER_READ32, NIC400_SW_3_S_FN_MOD, 0x0, 0x0 },
+    { "NIC400_SW_3_S_FN_MOD", REGPOKER_WRITE32, NIC400_SW_3_S_FN_MOD, 0x0, 0x0 },
+    {}
+    };
+
+    if( rumboot_regpoker_check_array( check_array, base_addr ) == 0 ) {
+            rumboot_printf( "OK\n" );
+            return 0;
+        }
+    rumboot_printf( "ERROR\n" );
+    return 1;
+}
+
 int main(void)
 {
    register int result;
@@ -162,8 +331,10 @@ int main(void)
 
    result = AXIx_check_ID_regs(AXI32HSIFS_CTRL_BASE) ||
            AXIx_check_ID_regs(AXI64HSIFS_CTRL_BASE) ||
-           AXI_check_regs32(AXI32HSIFS_CTRL_BASE) ||
-           AXI_check_regs64(AXI64HSIFS_CTRL_BASE);
+           AXI_check_regs32_0(AXI32HSIFS_CTRL_BASE) ||
+           AXI_check_regs32_1(AXI32HSIFS_CTRL_BASE) ||
+           AXI_check_regs64_0(AXI64HSIFS_CTRL_BASE) ||
+           AXI_check_regs64_1(AXI64HSIFS_CTRL_BASE);
    if(!result)
    {
        rumboot_printf("Checked TEST_OK\n");
