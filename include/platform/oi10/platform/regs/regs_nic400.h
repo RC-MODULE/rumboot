@@ -29,6 +29,8 @@
 #define NIC400_SW_0_3_S                      0x45100
 #define NIC400_GSPI_0_S                      0x46100
 #define NIC400_ETH_0_S                       0x47100
+#define NIC400_MKIO_0_S                      0x48100
+#define NIC400_MKIO_1_S                      0x49100
 ///AXI64 regs name
 #define NIC400_SW_0_S                        0x42100
 #define NIC400_SW_1_S                        0x43100
@@ -59,6 +61,14 @@
 #define NIC400_ETH_0_S_RQOS         NIC400_ETH_0_S+RQOS_OFFSET
 #define NIC400_ETH_0_S_WQOS         NIC400_ETH_0_S+WQOS_OFFSET
 #define NIC400_ETH_0_S_FN_MOD       NIC400_ETH_0_S+FN_MOD_OFFSET
+
+#define NIC400_MKIO_0_S_RQOS        NIC400_MKIO_0_S+RQOS_OFFSET
+#define NIC400_MKIO_0_S_WQOS        NIC400_MKIO_0_S+WQOS_OFFSET
+#define NIC400_MKIO_0_S_FN_MOD      NIC400_MKIO_0_S+FN_MOD_OFFSET
+
+#define NIC400_MKIO_1_S_RQOS        NIC400_MKIO_1_S+RQOS_OFFSET
+#define NIC400_MKIO_1_S_WQOS        NIC400_MKIO_1_S+WQOS_OFFSET
+#define NIC400_MKIO_1_S_FN_MOD      NIC400_MKIO_1_S+FN_MOD_OFFSET
 
 ///AXI64 regs+offset
 #define NIC400_SW_0_S_RQOS          NIC400_SW_0_S+RQOS_OFFSET
