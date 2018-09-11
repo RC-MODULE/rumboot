@@ -15,6 +15,7 @@
 #include <platform/common_macros/common_macros.h>
 #include <platform/regs/regs_emi.h>
 #include <platform/test_assert.h>
+#include <rumboot/io.h>
 
 static emi_bank_cfg *bank_config_cache[6];
 
@@ -221,7 +222,7 @@ void emi_get_int_mask(uint32_t const emi_dcr_base, emi_imr_cfg * mask)
     mask->MERRDW = (rd & (1 << EMI_IMR_MERRDW_i)) >> EMI_IMR_MERRDW_i;
 }
 
-void emi_get_irr(uint32_t emi_dcr_base, emi_irr_cfg * irr)
+void emi_get_irr(uint32_t const emi_dcr_base, emi_irr_cfg * irr)
 {
     uint32_t rd;
     rd = dcr_read(emi_dcr_base + EMI_IRR);
@@ -284,7 +285,7 @@ void emi_init_impl (uint32_t const emi_dcr_base, uint32_t const plb6mcif2_dcr_ba
            SST_Flow_Through,
            TSSOE_1,
            TSOE_1,
-           TCYC_8,
+           TCYC_2,
            0, //T_RDY
            TDEL_0
        },
@@ -348,7 +349,7 @@ void emi_init_impl (uint32_t const emi_dcr_base, uint32_t const plb6mcif2_dcr_ba
            PTYP_NO_PAGES,
            SRDY_EXT_RDY_NOT_USE,
            TWR_0,
-           SST_Flow_Through,
+           SST_Pipelined,
            TSSOE_2,
            TSOE_1,
            TCYC_8,
@@ -377,7 +378,7 @@ void emi_init_impl (uint32_t const emi_dcr_base, uint32_t const plb6mcif2_dcr_ba
            PTYP_NO_PAGES,
            SRDY_EXT_RDY_NOT_USE,
            TWR_0,
-           SST_Flow_Through,
+           SST_Pipelined,
            TSSOE_1,
            TSOE_1,
            TCYC_8,
@@ -409,7 +410,7 @@ void emi_init_impl (uint32_t const emi_dcr_base, uint32_t const plb6mcif2_dcr_ba
            SST_Flow_Through,
            TSSOE_1,
            TSOE_1,
-           TCYC_8,
+           TCYC_2,
            0, //T_RDY
            TDEL_0
        },
@@ -492,7 +493,16 @@ void emi_set_ecc (uint32_t const emi_dcr_base, emi_bank_num const num_bank, emi_
     }
 }
 
+static void touch_sdram()
+{
+    uint32_t buf;
+    buf = ioread32(SDRAM_BASE);
+    iowrite32(buf, SDRAM_BASE);
+}
+
 void emi_init (uint32_t const emi_dcr_base)
 {
+
     emi_init_impl (emi_dcr_base, DCR_EM2_PLB6MCIF2_BASE, 0x00);
+    touch_sdram();//to prevent warnings in console
 }
