@@ -12,15 +12,6 @@
 #include <platform/regs/regs_nic400.h>
 #include <platform/devices.h>
 
-/*
-static int array[] = {
-        0xAAAAAAAA,
-        0xBBBBBBBB,
-        0xCCCCCCCC,
-        0xDDDDDDD
-};
-*/
-
 static uint8_t AXIx_check_ID_regs(uint32_t base_addr)
 {   
     rumboot_printf("Checking ID registers default value...\n");
