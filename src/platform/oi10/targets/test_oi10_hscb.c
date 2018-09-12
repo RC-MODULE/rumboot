@@ -357,8 +357,6 @@ static uint32_t check_hscb_func(uint32_t base_addr, uint32_t supplementary_base_
     uint32_t sys_addr_1_rx = (uint32_t)sys_1_rx; //
     uint32_t sys_addr_1_tx = (uint32_t)sys_1_tx; //
     uint32_t cur_tbl_addr = 0;
-    uint32_t hscb0_settings;
-    uint32_t hscb1_settings;
 
     uint8_t tmp_data = 0;
 
@@ -422,13 +420,10 @@ static uint32_t check_hscb_func(uint32_t base_addr, uint32_t supplementary_base_
     print_hscb_descriptor(sys_addr_1_rx);
 
     // Enable HSCB0 and HSCB1
-    hscb0_settings = ioread32(hscb_cfg->src_hscb_base_addr + HSCB_SETTINGS) | (1 << HSCB_SETTINGS_EN_HSCB_i);
-    hscb1_settings = ioread32((hscb_cfg + 1)->src_hscb_base_addr + HSCB_SETTINGS) | (1 << HSCB_SETTINGS_EN_HSCB_i);
-
     iowrite32(0x200,        hscb_cfg->src_hscb_base_addr + HSCB_IRQ_MASK);
     iowrite32(0x200,        (hscb_cfg + 1)->src_hscb_base_addr + HSCB_IRQ_MASK);
-    iowrite32(hscb0_settings,        hscb_cfg->src_hscb_base_addr + HSCB_SETTINGS);
-    iowrite32(hscb1_settings,        (hscb_cfg + 1)->src_hscb_base_addr + HSCB_SETTINGS);
+    iowrite32((1 << HSCB_SETTINGS_EN_HSCB_i),        hscb_cfg->src_hscb_base_addr + HSCB_SETTINGS);
+    iowrite32((1 << HSCB_SETTINGS_EN_HSCB_i),        (hscb_cfg + 1)->src_hscb_base_addr + HSCB_SETTINGS);
     // Wait connecting
     rumboot_putstring( "Wait HSCB0 and HSCB1 enable\n" );
     while (!(hscb0_link_established & hscb1_link_established)){
