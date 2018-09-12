@@ -315,6 +315,13 @@ static const struct rumboot_bootsource arr[] = {
 	{ /*Sentinel*/ }
 };
 
+
+void *rumboot_platform_get_spl_area(size_t *size)
+{
+  *size = (&rumboot_platform_spl_end - &rumboot_platform_spl_start);
+  return (void *) &rumboot_platform_spl_start;
+}
+
 const struct rumboot_bootsource *rumboot_platform_get_bootsources()
 {
 	return arr;
@@ -326,7 +333,8 @@ bool rumboot_platform_check_entry_points(struct rumboot_bootheader *hdr)
 	return true;
 }
 
-void rumboot_platform_exec(struct rumboot_bootheader *hdr)
+int rumboot_platform_exec(struct rumboot_bootheader *hdr)
 {
 	/* No-op, this chip has only one core */
+    return 0;
 }

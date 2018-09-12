@@ -52,7 +52,7 @@ endmacro()
 macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
   add_rumboot_target(
-    FILES basis/targets/bootrom.c
+    FILES common/bootrom/bootrom.c
     CONFIGURATION ROM
     NAME loader)
 

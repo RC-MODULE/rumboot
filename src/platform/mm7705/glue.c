@@ -192,9 +192,16 @@ bool rumboot_platform_check_entry_points(struct rumboot_bootheader *hdr)
 	return true;
 }
 
-void rumboot_platform_exec(struct rumboot_bootheader *hdr)
+void *rumboot_platform_get_spl_area(size_t *size)
 {
-	/* No-op, this chip has only one core */
+  *size = (&rumboot_platform_spl_end - &rumboot_platform_spl_start); 
+  return (void *) &rumboot_platform_spl_start;
+}
+
+int rumboot_platform_exec(struct rumboot_bootheader *hdr)
+{
+  /* No-op, this chip has only one core */
+  return 0;
 }
 
 void rumboot_platform_read_config(struct rumboot_config *conf)

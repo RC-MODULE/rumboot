@@ -114,13 +114,17 @@ macro(generate_stuff_for_target product)
     DEPENDS ${product}
   )
 
+
+  if (NOT RUMBOOT_PLATFORM STREQUAL "native")
+    set(PACKIMAGE_EXT ".bin")
+  endif()
   list (FIND TARGET_FEATURES "PACKIMAGE" _index)
   if (${_index} EQUAL -1)
     set(packimage_cmd true)
   elseif (NOT TARGET_PACKIMAGE_FLAGS)
-    set(packimage_cmd ${PYTHON_EXECUTABLE} ${RUMBOOT_PACKIMAGE} -f ${product}.bin -c)
+    set(packimage_cmd ${PYTHON_EXECUTABLE} ${RUMBOOT_PACKIMAGE} -f ${product}${PACKIMAGE_EXT} -c)
   else()
-    set(packimage_cmd ${PYTHON_EXECUTABLE} ${RUMBOOT_PACKIMAGE} -f ${product}.bin ${TARGET_PACKIMAGE_FLAGS})
+    set(packimage_cmd ${PYTHON_EXECUTABLE} ${RUMBOOT_PACKIMAGE} -f ${product}${PACKIMAGE_EXT} ${TARGET_PACKIMAGE_FLAGS})
   endif()
 
   add_custom_command(
@@ -306,8 +310,10 @@ function(add_rumboot_target)
 
   rumboot_platform_generate_stuff_for_taget(${product})
 
+
   # Native platform is special - we do unit-testing!
-  if (${RUMBOOT_PLATFORM} MATCHES "native")
+  list (FIND TARGET_FEATURES "STUB" _index)
+  if (${RUMBOOT_PLATFORM} MATCHES "native" AND NOT _index GREATER -1 )
     add_test(${product} ${product})
   endif()
 endfunction()

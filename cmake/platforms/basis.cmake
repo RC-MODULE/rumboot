@@ -188,7 +188,7 @@ macro(add_bootrom_stuff)
 
   add_rumboot_target(
           CONFIGURATION ROM
-          FILES bootrom.c
+          FILES common/bootrom/bootrom.c
           PREFIX "bootrom"
           NAME "loader"
           FEATURES STUB

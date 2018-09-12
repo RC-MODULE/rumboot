@@ -88,7 +88,7 @@ int32_t rumboot_bootimage_exec(struct rumboot_bootheader *hdr)
 {
 
 	/* Fire up secondary cores, if any */
-	rumboot_platform_exec(hdr);
+	return rumboot_platform_exec(hdr);
 	dbg_boot(hdr->device, "Primary entry point: 0x%x", hdr->entry_point[0]);
 	int (*ram_main)();
 	ram_main = (void *)hdr->entry_point[0];

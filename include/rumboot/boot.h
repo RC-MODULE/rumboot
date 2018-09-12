@@ -105,8 +105,12 @@ int32_t rumboot_bootimage_exec(struct rumboot_bootheader *hdr);
    void (*chipselect)(const struct rumboot_bootsource* src, void* pdata, int select);
  };
 
- bool bootsource_try_single(const struct rumboot_bootsource *src, void* pdata);
- bool bootsource_try_chain(const struct rumboot_bootsource *src, void* pdata);
+ bool bootsource_init(const struct rumboot_bootsource *src, void *pdata);
+ size_t bootsource_read(const struct rumboot_bootsource *src, void *pdata, void *dest, size_t offset, size_t len);
+ void bootsource_deinit(const struct rumboot_bootsource *src, void *pdata);
+
+ bool bootsource_try_single(const struct rumboot_bootsource *src, void* pdata, struct rumboot_bootheader *hdr, size_t maxsize);
+ bool bootsource_try_chain(const struct rumboot_bootsource *src, void* pdata, struct rumboot_bootheader *hdr, size_t maxsize);
 
 #define EBADMAGIC      1
 #define EBADVERSION    2
@@ -115,7 +119,8 @@ int32_t rumboot_bootimage_exec(struct rumboot_bootheader *hdr);
 #define EBADENTRY      5
 #define EBADNUMCORES   6
 #define EBADDATACRC    7
-#define EMAXERROR      8
+#define ETOOBIG        8
+#define EMAXERROR      9
 
  struct rumboot_config {
          bool	hostmode;
@@ -131,5 +136,6 @@ int32_t rumboot_bootimage_exec(struct rumboot_bootheader *hdr);
  void rumboot_platform_selftest(struct rumboot_config *conf);
  const struct rumboot_bootsource *rumboot_platform_get_bootsources();
  bool rumboot_platform_check_entry_points(struct rumboot_bootheader *hdr);
- void rumboot_platform_exec(struct rumboot_bootheader *hdr);
+ int rumboot_platform_exec(struct rumboot_bootheader *hdr);
+ void *rumboot_platform_get_spl_area(size_t *size);
 #endif /* end of include guard: BOOTHEADER_H */

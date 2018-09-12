@@ -13,7 +13,7 @@ static inline const char *bool_param(bool param)
         return param ? "enabled" : "disabled";
 }
 
-void rumboot_platform_dump_config(struct rumboot_config *conf) {
+void rumboot_platform_dump_config(struct rumboot_config *conf,size_t maxsize) {
         rumboot_printf("--- RumBoot Configuration ---\n");
         rumboot_printf("Force Host Mode: %s\n", bool_param(conf->hostmode));
         rumboot_printf("Selftest:        %s\n", bool_param(conf->selftest));
@@ -24,13 +24,15 @@ void rumboot_platform_dump_config(struct rumboot_config *conf) {
                 rumboot_printf("Legacy BBP boot: enabled\n");
         }
         rumboot_printf("UART speed:      %d bps\n", conf->baudrate);
+        rumboot_printf("Max SPL size:    %d bytes\n", maxsize);
         rumboot_printf("---          ---          ---\n");
 }
 
 
 static void hostmode_loop()
 {
-        struct rumboot_bootheader *hdr = (struct rumboot_bootheader *) &rumboot_platform_spl_start;
+        size_t maxsize;
+        struct rumboot_bootheader *hdr = rumboot_platform_get_spl_area(&maxsize);
         rumboot_printf("boot: Entering host mode loop\n");
         rumboot_platform_request_file("HOSTMOCK", (uint32_t) hdr);
         void *data;
@@ -56,8 +58,9 @@ static void hostmode_loop()
 
 int main()
 {
+        size_t maxsize;
+        struct rumboot_bootheader *hdr = rumboot_platform_get_spl_area(&maxsize);
         rumboot_platform_perf("Config printout");
-
         int ret;
         #define PDATA_SIZE 128
         char pdata[PDATA_SIZE];
@@ -65,7 +68,7 @@ int main()
         rumboot_print_logo();
         struct rumboot_config conf;
         rumboot_platform_read_config(&conf);
-        rumboot_platform_dump_config(&conf);
+        rumboot_platform_dump_config(&conf, maxsize);
 
         rumboot_platform_perf(NULL);
 
@@ -81,8 +84,9 @@ int main()
 
 
         rumboot_platform_perf("Boot chain");
+
         const struct rumboot_bootsource *sources = rumboot_platform_get_bootsources();
-        ret = bootsource_try_chain(sources, (void*) &pdata);
+        ret = bootsource_try_chain(sources, (void*) &pdata, hdr, maxsize);
         if (ret) {
                 rumboot_printf("boot: We got back from secondary image\n");
         } else {

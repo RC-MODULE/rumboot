@@ -3,7 +3,6 @@
 
 #define RUMBOOT_PLATFORM_CHIPID   0
 #define RUMBOOT_PLATFORM_CHIPREV  0
-#define RUMBOOT_PLATFORM_NUMCORES 1
 
 
 #endif /* end of include guard: PLATFORM_BOOTHEADER_h */
