@@ -88,3 +88,9 @@ void rumboot_platform_exec(struct rumboot_bootheader *hdr)
 {
 	/* No-op, this chip has only one core */
 }
+
+uint32_t rumboot_virt_to_dma(volatile void *addr)
+{
+    return (uint32_t) addr;
+}
+
