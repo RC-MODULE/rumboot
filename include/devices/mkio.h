@@ -2,8 +2,6 @@
 #define MKIO_H
 
 #include <stdint.h>
-#include <platform/trace.h>
-
 
 /**
  *

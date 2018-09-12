@@ -19,6 +19,7 @@
 
 #include <rumboot/io.h>
 #include <rumboot/printf.h>
+#include <rumboot/platform.h>
 
 #include <platform/devices.h>
 
