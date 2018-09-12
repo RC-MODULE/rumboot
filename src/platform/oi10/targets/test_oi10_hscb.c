@@ -221,8 +221,6 @@ static volatile uint8_t __attribute__((section(".data"))) data_out_0_1[DATA_SIZE
 static volatile uint8_t __attribute__((section(".data"))) data_in_0_3[DATA_SIZE_1]  = {0x0};
 static volatile uint8_t __attribute__((section(".data"))) data_out_0_3[DATA_SIZE_1] = {0x0};
 
-static volatile uint32_t IRQ;
-
 static volatile uint32_t hscb0_status;
 static volatile uint32_t hscb1_status;
 static volatile uint32_t hscb0_dma_status;
@@ -319,7 +317,6 @@ static uint32_t check_hscb_func(uint32_t base_addr, uint32_t supplementary_base_
     rumboot_printf("Check functionality...\n");
 
 // setup of interrupts
-    IRQ = 0;
     rumboot_irq_cli();
     struct rumboot_irq_entry *tbl = rumboot_irq_create( NULL );
 
@@ -420,8 +417,8 @@ static uint32_t check_hscb_func(uint32_t base_addr, uint32_t supplementary_base_
     print_hscb_descriptor(sys_addr_1_rx);
 
     // Enable HSCB0 and HSCB1
-    iowrite32(0x200,        hscb_cfg->src_hscb_base_addr + HSCB_IRQ_MASK);
-    iowrite32(0x200,        (hscb_cfg + 1)->src_hscb_base_addr + HSCB_IRQ_MASK);
+    iowrite32((1 << HSCB_IRQ_MASK_ACTIVE_LINK_i),        hscb_cfg->src_hscb_base_addr + HSCB_IRQ_MASK);
+    iowrite32((1 << HSCB_IRQ_MASK_ACTIVE_LINK_i),        (hscb_cfg + 1)->src_hscb_base_addr + HSCB_IRQ_MASK);
     iowrite32((1 << HSCB_SETTINGS_EN_HSCB_i),        hscb_cfg->src_hscb_base_addr + HSCB_SETTINGS);
     iowrite32((1 << HSCB_SETTINGS_EN_HSCB_i),        (hscb_cfg + 1)->src_hscb_base_addr + HSCB_SETTINGS);
     // Wait connecting
@@ -439,18 +436,12 @@ static uint32_t check_hscb_func(uint32_t base_addr, uint32_t supplementary_base_
     hscb1_status = 0;
 
     rumboot_putstring( "HSCB link has enabled\n" );
-    // Setting DMA for HSCB0 and HSCB1
-    iowrite32( 0xf,     hscb_cfg->src_hscb_base_addr + HSCB_ARLEN);
-    iowrite32( 0xf,     hscb_cfg->src_hscb_base_addr + HSCB_AWLEN);
-    iowrite32( 0xf,     (hscb_cfg + 1)->src_hscb_base_addr + HSCB_ARLEN);
-    iowrite32( 0xf,     (hscb_cfg + 1)->src_hscb_base_addr + HSCB_AWLEN);
-    msync();
     // Enable DMA for HSCB0 and HSCB1
     rumboot_putstring( "Start work!\n" );
-    iowrite32( 0x70000000,  hscb_cfg->src_hscb_base_addr + HSCB_RDMA_SETTINGS);
-    iowrite32( 0x70000004,  hscb_cfg->src_hscb_base_addr + HSCB_WDMA_SETTINGS);
-    iowrite32( 0x70000000,  (hscb_cfg + 1)->src_hscb_base_addr + HSCB_RDMA_SETTINGS);
-    iowrite32( 0x70000004,  (hscb_cfg + 1)->src_hscb_base_addr + HSCB_WDMA_SETTINGS);
+    hscb_run_rdma(hscb_cfg->src_hscb_base_addr);
+    hscb_run_wdma(hscb_cfg->src_hscb_base_addr);
+    hscb_run_rdma((hscb_cfg + 1)->src_hscb_base_addr);
+    hscb_run_wdma((hscb_cfg + 1)->src_hscb_base_addr);
     msync();
     rumboot_putstring( "Wait HSCB0 and HSCB1 finish work\n" );
     while (!(hscb0_dma_status & hscb1_dma_status)){
