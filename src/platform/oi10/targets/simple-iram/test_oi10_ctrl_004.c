@@ -95,8 +95,63 @@ static uint32_t check_timer_default_ro_val( uint32_t base_addr )
     rumboot_printf( " ERROR\n" );
     return 1;
 }
-
+/*
 static uint32_t check_timer_default_rw_val( uint32_t base_addr )
+{
+    rumboot_printf("Check the default values of the registers:");
+
+    struct regpoker_checker check_default_array[] = {
+          {   "Timer1Load",     REGPOKER_READ32,    DIT0_REG_LOAD0,          0x00,           0xff },
+          {   "Timer1Load",     REGPOKER_WRITE32,   DIT0_REG_LOAD0,          0x00,           0xff },
+
+          {   "Timer1Value",    REGPOKER_READ32,    DIT0_REG_VALUE0,         0xffffffff,      0xffffffff },
+
+
+          {   "Timer1Control",  REGPOKER_READ32,    DIT0_REG_CONTROL0,       0xff,           0xff },
+          {   "Timer1Control",  REGPOKER_WRITE32,   DIT0_REG_CONTROL0,       0xff,           0xff },
+
+          {   "Timer1IntClr",   REGPOKER_READ32,    DIT0_REG_INTCLR0,        0xff,           0xff },
+
+          {   "Timer1RIS",      REGPOKER_READ32,    DIT0_REG_RIS0,           0xff,           0xff },
+          {   "Timer1MIS",      REGPOKER_READ32,    DIT0_REG_MIS0,           0xff,           0xff },
+
+
+          {   "Timer1BGLoad",   REGPOKER_READ32,    DIT0_REG_BGLOAD0,        0x18,           0xff },
+          {   "Timer1BGLoad",   REGPOKER_WRITE32,   DIT0_REG_BGLOAD0,        0x18,           0xff },
+
+          {   "Timer2Load",     REGPOKER_READ32,    DIT0_REG_LOAD1,          0x00,           0xff },
+          {   "Timer2Load",     REGPOKER_WRITE32,   DIT0_REG_LOAD1,          0x00,           0xff },
+
+          {   "Timer2Value",    REGPOKER_READ32,    DIT0_REG_VALUE1,         0x00,           0xff },
+
+
+          {   "Timer2Control",  REGPOKER_READ32,    DIT0_REG_CONTROL1,       0x0,            0xf },
+          {   "Timer2Control",  REGPOKER_WRITE32,   DIT0_REG_CONTROL1,       0x0,            0xff },
+
+          {   "Timer2RIS",      REGPOKER_READ32,    DIT0_REG_RIS1,           0x0,           0xff },
+          {   "Timer2MIS",      REGPOKER_READ32,    DIT0_REG_MIS1,           0x0,           0xff },
+
+          {   "Timer2BGLoad",   REGPOKER_READ32,    DIT0_REG_BGLOAD1,        0x0,           0xff },
+          {   "Timer2BGLoad",   REGPOKER_WRITE32,   DIT0_REG_BGLOAD1,        0x0,           0xff },
+
+
+          {   "TimerITCR",      REGPOKER_READ32,    DIT_REG_ITCR,            0xf0,           0xff },
+          {   "TimerITOP",      REGPOKER_READ32,    DIT_REG_ITOP,            0xf04,          0xff },
+          { }
+      };
+
+    if( rumboot_regpoker_check_array( check_default_array, base_addr ) == 0 )
+    {
+        rumboot_printf( "OK\n" );
+        return 0;
+    }
+
+    rumboot_printf( "ERROR\n" );
+    return 1;
+}
+*/
+/*
+static uint32_t check_timer_default_w_val( uint32_t base_addr )
 {
     rumboot_printf("Check the default values of the registers:");
 
@@ -129,6 +184,7 @@ static uint32_t check_timer_default_rw_val( uint32_t base_addr )
     rumboot_printf( "ERROR\n" );
     return 1;
 }
+*/
 
 
 /*
@@ -221,6 +277,7 @@ uint32_t main(void){
      * - setup TCR, wait TIMINT1,2
      * - setup timers, wait TIMINT1,2
      */
+    /*
     struct sp804_conf c1 = {
         .mode = 0,
         .interrupt_enable = 1,
@@ -236,7 +293,7 @@ uint32_t main(void){
         .width = 32,
         .load = 200,
         .bgload = 0 };
-
+*/
 /*
     c1.mode = 0;
     c1.interrupt_enable = 1;
@@ -257,11 +314,9 @@ uint32_t main(void){
 
         rumboot_printf( "SP804 test START\n" );
 
-
         rumboot_printf( "SP804 int are clean up\n" );
-
-        result = check_timer_default_ro_val(DCR_TIMERS_BASE) ||
-                check_timer_default_rw_val(DCR_TIMERS_BASE);
+        result = check_timer_default_ro_val(DCR_TIMERS_BASE);// ||
+//                check_timer_default_rw_val(DCR_TIMERS_BASE);
         if(!result)
         {
             rumboot_printf("Checked TEST_ERROR\n");
@@ -269,8 +324,8 @@ uint32_t main(void){
         }
         rumboot_printf("Checked TEST_OK\n");
 
-        sp804_config(DCR_TIMERS_BASE, &c1, 0);
-        sp804_config(DCR_TIMERS_BASE, &c2, 1);
+      //  sp804_config(DCR_TIMERS_BASE, &c1, 0);
+      //  sp804_config(DCR_TIMERS_BASE, &c2, 1);
 
 
         //sp804_clrint(DCR_TIMERS_BASE, 0);
@@ -278,9 +333,6 @@ uint32_t main(void){
 
 
         return result;
-
-
-
 
       //  struct rumboot_irq_entry *tbl = rumboot_irq_create( NULL );
 
