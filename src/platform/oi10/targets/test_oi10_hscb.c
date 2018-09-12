@@ -145,10 +145,10 @@ static uint32_t check_hscb_regs( uint32_t base_addr ) {
 }
 #endif
 
+#define CURRENT_MEMORY_RX_0 ((uint32_t)data_out_0_1)
 #define CURRENT_MEMORY_TX_0 ((uint32_t)data_in_0_1)
-#define CURRENT_MEMORY_TX_1 ((uint32_t)data_out_0_1)
-#define CURRENT_MEMORY_RX_0 ((uint32_t)data_in_0_3)
 #define CURRENT_MEMORY_RX_1 ((uint32_t)data_out_0_3)
+#define CURRENT_MEMORY_TX_1 ((uint32_t)data_in_0_3)
 
 #define IM0_TX_0        IM0_BASE
 #define IM0_TX_1        IM0_TX_0 + DATA_SIZE_0
@@ -211,10 +211,6 @@ static volatile uint8_t __attribute__((section(".data"),aligned(8))) tx_desc_0_i
 static volatile uint8_t __attribute__((section(".data"),aligned(8))) tx_desc_1_im[0x100] = {0} ;
 static volatile uint8_t __attribute__((section(".data"),aligned(8))) rx_desc_0_im[0x100] = {0} ;
 static volatile uint8_t __attribute__((section(".data"),aligned(8))) rx_desc_1_im[0x100] = {0} ;
-static volatile uint8_t __attribute__((section(".data"),aligned(8))) sys_0_rx[0x100] = {0} ;
-static volatile uint8_t __attribute__((section(".data"),aligned(8))) sys_0_tx[0x100] = {0} ;
-static volatile uint8_t __attribute__((section(".data"),aligned(8))) sys_1_rx[0x100] = {0} ;
-static volatile uint8_t __attribute__((section(".data"),aligned(8))) sys_1_tx[0x100] = {0} ;
 
 static volatile uint8_t __attribute__((section(".data"))) data_in_0_1[DATA_SIZE_0]  = {0x0};
 static volatile uint8_t __attribute__((section(".data"))) data_out_0_1[DATA_SIZE_0] = {0x0};
@@ -283,7 +279,8 @@ static void set_test_data(uint32_t base_addr, uint32_t length, int increment){
     }
 }
 inline static void print_hscb_descriptor(uint32_t addr){
-    rumboot_printf("descriptor address: \n%x\nfirst word == \n%x\nsecond word == \n%x\n", addr,*((uint32_t*)addr),*(((uint32_t*)addr)+1));
+    rumboot_printf("descriptor address: \n%x\nfirst word == \n%0x\nsecond word == \n%0x\n",
+            addr,hscb_change_endian(*((uint32_t*)addr)),hscb_change_endian(*(((uint32_t*)addr)+1)));
 }
 
 void init_hscb_cfg_short(hscb_instance_t* hscb_inst)
@@ -291,18 +288,18 @@ void init_hscb_cfg_short(hscb_instance_t* hscb_inst)
     (hscb_inst + 0)->src_hscb_base_addr   = HSCB_UNDER_TEST_BASE;
     (hscb_inst + 0)->dst_hscb_base_addr   = HSCB_SUPPLEMENTARY_BASE;
     (hscb_inst + 0)->src_addr             = (uint32_t*)TX_DATA_ADDR_0;
-    (hscb_inst + 0)->dst_addr             = (uint32_t*)RX_DATA_ADDR_0;
+    (hscb_inst + 0)->dst_addr             = (uint32_t*)RX_DATA_ADDR_1;
     (hscb_inst + 0)->src_size             = DATA_SIZE_0;
-    (hscb_inst + 0)->dst_size             = DATA_SIZE_0;
+    (hscb_inst + 0)->dst_size             = DATA_SIZE_1;
     (hscb_inst + 0)->tx_descr_addr        = (uint32_t)tx_desc_0_im;
     (hscb_inst + 0)->rx_descr_addr        = (uint32_t)rx_desc_0_im;
 
     (hscb_inst + 1)->src_hscb_base_addr   = HSCB_SUPPLEMENTARY_BASE;
     (hscb_inst + 1)->dst_hscb_base_addr   = HSCB_UNDER_TEST_BASE;
     (hscb_inst + 1)->src_addr             = (uint32_t*)TX_DATA_ADDR_1;
-    (hscb_inst + 1)->dst_addr             = (uint32_t*)RX_DATA_ADDR_1;
+    (hscb_inst + 1)->dst_addr             = (uint32_t*)RX_DATA_ADDR_0;
     (hscb_inst + 1)->src_size             = DATA_SIZE_1;
-    (hscb_inst + 1)->dst_size             = DATA_SIZE_1;
+    (hscb_inst + 1)->dst_size             = DATA_SIZE_0;
     (hscb_inst + 1)->tx_descr_addr        = (uint32_t)tx_desc_1_im;
     (hscb_inst + 1)->rx_descr_addr        = (uint32_t)rx_desc_1_im;
 
@@ -349,12 +346,6 @@ static uint32_t check_hscb_func(uint32_t base_addr, uint32_t supplementary_base_
     hscb0_dma_status = 0;
     hscb1_dma_status = 0;
 
-    uint32_t sys_addr_0_rx = (uint32_t)sys_0_rx; //
-    uint32_t sys_addr_0_tx = (uint32_t)sys_0_tx; //
-    uint32_t sys_addr_1_rx = (uint32_t)sys_1_rx; //
-    uint32_t sys_addr_1_tx = (uint32_t)sys_1_tx; //
-    uint32_t cur_tbl_addr = 0;
-
     uint8_t tmp_data = 0;
 
     init_hscb_cfg_short(hscb_cfg);
@@ -367,54 +358,25 @@ static uint32_t check_hscb_func(uint32_t base_addr, uint32_t supplementary_base_
 
     // Set data for HSCB0
     rumboot_putstring("(uint32_t)hscb_cfg->src_addr == ");
-    rumboot_puthex(TX_DATA_ADDR_0);
+    rumboot_puthex((uint32_t)hscb_cfg->src_addr);
     rumboot_putstring("(uint32_t)hscb_cfg->dst_addr == ");
-    rumboot_puthex(RX_DATA_ADDR_0);
+    rumboot_puthex((uint32_t)hscb_cfg->dst_addr);
     set_test_data(TX_DATA_ADDR_0,DATA_SIZE_0,INCREMENT_0);
     set_test_data(RX_DATA_ADDR_0,DATA_SIZE_0,0);
     // Set data for HSCB1
     rumboot_putstring("(uint32_t)((hscb_cfg + 1)->src_addr) == ");
-    rumboot_puthex(TX_DATA_ADDR_1);
+    rumboot_puthex((uint32_t)((hscb_cfg + 1)->src_addr));
     rumboot_putstring("(uint32_t)((hscb_cfg + 1)->dst_addr) == ");
-    rumboot_puthex(RX_DATA_ADDR_1);
+    rumboot_puthex((uint32_t)((hscb_cfg + 1)->dst_addr));
     set_test_data(TX_DATA_ADDR_1,DATA_SIZE_1,INCREMENT_1);
     set_test_data(RX_DATA_ADDR_1,DATA_SIZE_1,0);
     msync();
-    // Set descriptors table HSCB0
-    // -- Set Tx data
-    cur_tbl_addr = hscb_set_desc(sys_addr_0_tx, DATA_SIZE_0, (hscb_cfg->tx_descr_addr), (uint8_t*)TX_DATA_ADDR_0, 1, 0, 1, 1);
-    cur_tbl_addr = hscb_set_desc(cur_tbl_addr, 0, 0, 0, 0, 0, 0, 0); // Bad descriptor
-    msync();
-    // -- Set RDMA
-    iowrite32( sys_addr_0_tx,                   (hscb_cfg->src_hscb_base_addr) + HSCB_RDMA_SYS_ADDR);
-    iowrite32( cur_tbl_addr - sys_addr_0_tx,    (hscb_cfg->src_hscb_base_addr) + HSCB_RDMA_TBL_SIZE);
-    // -- Set Rx data
-    cur_tbl_addr = hscb_set_desc(sys_addr_0_rx, DATA_SIZE_0, (hscb_cfg->rx_descr_addr), (uint8_t*)RX_DATA_ADDR_1 , 1, 0, 1, 1);
-    cur_tbl_addr = hscb_set_desc(cur_tbl_addr, 0, 0, 0, 0, 0, 0, 0); // Bad descriptor
-    msync();
-    // -- Set RDMA
-    iowrite32( sys_addr_0_rx,                   (hscb_cfg->src_hscb_base_addr) + HSCB_WDMA_SYS_ADDR);
-    iowrite32( cur_tbl_addr - sys_addr_0_rx,    (hscb_cfg->src_hscb_base_addr) + HSCB_WDMA_TBL_SIZE);
-
-    // Set descriptors table HSCB1
-    // -- Set Tx data
-    cur_tbl_addr = hscb_set_desc(sys_addr_1_tx, DATA_SIZE_1, ((hscb_cfg + 1)->tx_descr_addr), (uint8_t*)TX_DATA_ADDR_1, 1, 0, 1, 1);
-    cur_tbl_addr = hscb_set_desc(cur_tbl_addr, 0, 0, 0, 0, 0, 0, 1); // Bad descriptor
-    msync();
-   // -- Set RDMA
-    iowrite32( sys_addr_1_tx,                   ((hscb_cfg + 1)->src_hscb_base_addr) + HSCB_RDMA_SYS_ADDR);
-    iowrite32( cur_tbl_addr - sys_addr_1_tx,    ((hscb_cfg + 1)->src_hscb_base_addr) + HSCB_RDMA_TBL_SIZE);
-    // -- Set Rx data
-    cur_tbl_addr = hscb_set_desc(sys_addr_1_rx, DATA_SIZE_0, ((hscb_cfg + 1)->rx_descr_addr), (uint8_t*)RX_DATA_ADDR_0, 1, 0, 1, 1);
-    cur_tbl_addr = hscb_set_desc(cur_tbl_addr, 0, 0, 0, 0, 0, 0, 1); // Bad descriptor
-    msync();
-    // -- Set RDMA
-    iowrite32( sys_addr_1_rx,                   ((hscb_cfg + 1)->src_hscb_base_addr) + HSCB_WDMA_SYS_ADDR);
-    iowrite32( cur_tbl_addr - sys_addr_1_rx,    ((hscb_cfg + 1)->src_hscb_base_addr) + HSCB_WDMA_TBL_SIZE);
-    print_hscb_descriptor(sys_addr_0_tx);
-    print_hscb_descriptor(sys_addr_0_rx);
-    print_hscb_descriptor(sys_addr_1_tx);
-    print_hscb_descriptor(sys_addr_1_rx);
+    hscb_config_for_receive_and_transmit(hscb_cfg);
+    hscb_config_for_receive_and_transmit((hscb_cfg + 1));
+    print_hscb_descriptor(hscb_cfg->tx_descr_addr);
+    print_hscb_descriptor(hscb_cfg->rx_descr_addr);
+    print_hscb_descriptor((hscb_cfg + 1)->tx_descr_addr);
+    print_hscb_descriptor((hscb_cfg + 1)->rx_descr_addr);
 
     // Enable HSCB0 and HSCB1
     iowrite32((1 << HSCB_IRQ_MASK_ACTIVE_LINK_i),        hscb_cfg->src_hscb_base_addr + HSCB_IRQ_MASK);
@@ -458,7 +420,7 @@ static uint32_t check_hscb_func(uint32_t base_addr, uint32_t supplementary_base_
 
     rumboot_putstring( "Finish work!\n" );
     rumboot_putstring( "HSCB1 to HSCB0 descriptor #1\n" );
-    cur_tbl_addr = hscb_get_desc(sys_addr_0_rx, (uint8_t*)RX_DATA_ADDR_1, &len, &act0, &interrupt, &end, &valid, 1);
+    hscb_get_desc((hscb_cfg->rx_descr_addr), (uint8_t*)RX_DATA_ADDR_1, &len, &act0, &interrupt, &end, &valid, 1);
     rumboot_putstring( "Length:" );
     rumboot_puthex (len);
     for (i=0; i<=len-1; i++) {
@@ -472,7 +434,7 @@ static uint32_t check_hscb_func(uint32_t base_addr, uint32_t supplementary_base_
     }
 
     rumboot_putstring( "HSCB0 to HSCB1 descriptor #1\n" );
-    cur_tbl_addr = hscb_get_desc(sys_addr_1_rx, (uint8_t*)RX_DATA_ADDR_0, &len, &act0, &interrupt, &end, &valid, 1);
+    hscb_get_desc(((hscb_cfg + 1)->rx_descr_addr), (uint8_t*)RX_DATA_ADDR_0, &len, &act0, &interrupt, &end, &valid, 1);
     rumboot_putstring( "Length:" );
     rumboot_puthex (len);
     for (i=0; i<=len-1; i++) {
