@@ -187,6 +187,32 @@ void hscb_set_descr_in_mem(uint32_t sys_addr, uint32_t src_data_addr, uint32_t l
 //    rumboot_printf("Preparing descriptor: MEM[0x%x] = 0x%x\n", sys_addr + 4, ioread32(sys_addr + 4));
 }
 
+hscb_descr_struct_t hscb_get_descr_from_mem(uint32_t sys_addr, bool endian)
+{
+    uint32_t desc_data;
+    hscb_descr_struct_t result;
+    rumboot_putstring( "Get descriptor " );
+    rumboot_puthex (sys_addr);
+    if (endian)
+    {
+        desc_data = hscb_change_endian(ioread32(sys_addr));
+        result.start_address = hscb_change_endian(ioread32(sys_addr + 4));
+    }
+    else
+    {
+        desc_data = ioread32(sys_addr);
+        result.start_address = ioread32(sys_addr + 4);
+    }
+
+    result.length = (desc_data & HSCB_RD_DESCR_LENGTH_mask) >> HSCB_RD_DESCR_LENGTH_i;
+    result.act  = (desc_data & HSCB_RD_DESCR_ACT_mask) >> HSCB_RD_DESCR_ACT_i;
+    result.act0 = (desc_data & HSCB_RD_DESCR_ACT0_mask) >> HSCB_RD_DESCR_ACT0_i;
+    result.ie = ((desc_data & HSCB_RD_DESCR_IE_mask) >> HSCB_RD_DESCR_IE_i) ? true : false;
+    result.err = ((desc_data & HSCB_RD_DESCR_ERR_mask) >> HSCB_RD_DESCR_ERR_i) ? true : false;
+    result.valid = ((desc_data & HSCB_RD_DESCR_VALID_mask) >> HSCB_RD_DESCR_VALID_i) ? true : false;
+    return result;
+}
+
 uint32_t hscb_get_status(uint32_t base_addr)
 {
     return ioread32(base_addr + HSCB_STATUS);
