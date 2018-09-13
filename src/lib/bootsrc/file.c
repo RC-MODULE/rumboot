@@ -8,27 +8,23 @@
 #include <unistd.h>
 #include <sys/syscall.h>
 #include <stdlib.h>
-#define DEBUG
-
-#define to_fpdata(pdata) ((struct file_private_data *)pdata)
 
 static bool file_init(const struct rumboot_bootsource *src, void *pdata)
 {
-        struct file_private_data *fpd = to_fpdata(pdata);
+        struct file_private_data *fpd = pdata;
         fpd->filefd = fopen(src->name, "r");
         return (fpd->filefd);
 }
 
 static void file_deinit(const struct rumboot_bootsource *src, void *pdata)
 {
-        struct file_private_data *fpd = to_fpdata(pdata);
-        close(fpd->memfd);
+        struct file_private_data *fpd = pdata;
         fclose(fpd->filefd);
 }
 
 static size_t file_read(const struct rumboot_bootsource *src, void *pdata, void *to, size_t offset, size_t length)
 {
-        struct file_private_data *fpd = to_fpdata(pdata);
+        struct file_private_data *fpd = pdata;
         return fread(to, 1, length, fpd->filefd);
 }
 
