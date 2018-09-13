@@ -721,6 +721,12 @@ BEGIN_ENUM( hscb_act0_t )
     DECLARE_ENUM_VAL( HSCB_ACT0_LAST,     0b01 )
 END_ENUM( hscb_act0_t )
 
+
+BEGIN_ENUM( hscb_rotate_bytes_t )
+    DECLARE_ENUM_VAL( HSCB_ROTATE_BYTES_DISABLE,   0b0 )
+    DECLARE_ENUM_VAL( HSCB_ROTATE_BYTES_ENABLE,    0b1 )
+END_ENUM( hscb_rotate_bytes_t )
+
 /**
  * @}
  */
