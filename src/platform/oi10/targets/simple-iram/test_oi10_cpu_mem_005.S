@@ -169,6 +169,7 @@ test_oi10_cpu_mem_005:
 DCU_DATA_CHECK:
     //send to tb that ready for dcu fillilg
     test_event EVENT_DCU_DATA_FILL_1
+
     data_run Array_A,0x00000000 | WAY0, 0x00000004 | WAY0, 0x00000000 | WAY1, 0x00000004 | WAY1, 0x20
     data_run Array_B,0x00000008 | WAY0, 0x0000000C | WAY0, 0x00000008 | WAY1, 0x0000000C | WAY1, 0x20
     data_run Array_C,0x00000010 | WAY0, 0x00000014 | WAY0, 0x00000010 | WAY1, 0x00000014 | WAY1, 0x20
@@ -180,86 +181,93 @@ DCU_DATA_CHECK:
 
     test_event EVENT_DCU_DATA_FILL_ADDR
 
-   //Array A run
-   data_addr Data_abus_A,   WAY2 | INDEX(0xFF) | WORD(4),WAY2 | INDEX(0xFF) | WORD(5),WAY3 | INDEX(0xFF) | WORD(4),WAY3 | INDEX(0xFF) | WORD(5),BankA0 | 0xFF
-   data_addr Data_abus_A,   WAY0 | INDEX(0x00) | WORD(0),WAY0 | INDEX(0x00) | WORD(1),WAY1 | INDEX(0x00) | WORD(0),WAY1 | INDEX(0x00) | WORD(1),BankA0 | 0x00
-   data_addr Data_abus_A,   WAY0 | INDEX(0x8F) | WORD(0),WAY0 | INDEX(0x8F) | WORD(1),WAY1 | INDEX(0x8F) | WORD(0),WAY1 | INDEX(0x8F) | WORD(1),BankA0 | 0xF0
-   data_addr Data_abus_A,   WAY2 | INDEX(0x70) | WORD(4),WAY2 | INDEX(0x70) | WORD(5),WAY3 | INDEX(0x70) | WORD(4),WAY3 | INDEX(0x70) | WORD(5),BankA0 | 0x0F
-   data_addr Data_abus_A,   WAY0 | INDEX(0xB3) | WORD(0),WAY0 | INDEX(0xB3) | WORD(1),WAY1 | INDEX(0xB3) | WORD(0),WAY1 | INDEX(0xB3) | WORD(1),BankA0 | 0xCC
-   data_addr Data_abus_A,   WAY2 | INDEX(0x4C) | WORD(4),WAY2 | INDEX(0x4C) | WORD(5),WAY3 | INDEX(0x4C) | WORD(4),WAY3 | INDEX(0x4C) | WORD(5),BankA0 | 0x33
-   data_addr Data_abus_A,   WAY2 | INDEX(0x95) | WORD(4),WAY2 | INDEX(0x95) | WORD(5),WAY3 | INDEX(0x95) | WORD(4),WAY3 | INDEX(0x95) | WORD(5),BankA0 | 0xAA
-   data_addr Data_abus_A,   WAY0 | INDEX(0x6A) | WORD(0),WAY0 | INDEX(0x6A) | WORD(1),WAY1 | INDEX(0x6A) | WORD(0),WAY1 | INDEX(0x6A) | WORD(1),BankA0 | 0x55
-   rumboot_putstring "Data_abus_A checking OK\n"
-   //Array B run
-   data_addr Data_abus_B,   WAY2 | INDEX(0xFF) | WORD(6),WAY2 | INDEX(0xFF) | WORD(7),WAY3 | INDEX(0xFF) | WORD(6),WAY3 | INDEX(0xFF) | WORD(7),BankB0 | 0xFF
-   data_addr Data_abus_B,   WAY0 | INDEX(0x00) | WORD(2),WAY0 | INDEX(0x00) | WORD(3),WAY1 | INDEX(0x00) | WORD(2),WAY1 | INDEX(0x00) | WORD(3),BankB0 | 0x00
-   data_addr Data_abus_B,   WAY0 | INDEX(0x8F) | WORD(2),WAY0 | INDEX(0x8F) | WORD(3),WAY1 | INDEX(0x8F) | WORD(2),WAY1 | INDEX(0x8F) | WORD(3),BankB0 | 0xF0
-   data_addr Data_abus_B,   WAY2 | INDEX(0x70) | WORD(6),WAY2 | INDEX(0x70) | WORD(7),WAY3 | INDEX(0x70) | WORD(6),WAY3 | INDEX(0x70) | WORD(7),BankB0 | 0x0F
-   data_addr Data_abus_B,   WAY0 | INDEX(0xB3) | WORD(2),WAY0 | INDEX(0xB3) | WORD(3),WAY1 | INDEX(0xB3) | WORD(2),WAY1 | INDEX(0xB3) | WORD(3),BankB0 | 0xCC
-   data_addr Data_abus_B,   WAY2 | INDEX(0x4C) | WORD(6),WAY2 | INDEX(0x4C) | WORD(7),WAY3 | INDEX(0x4C) | WORD(6),WAY3 | INDEX(0x4C) | WORD(7),BankB0 | 0x33
-   data_addr Data_abus_B,   WAY2 | INDEX(0x95) | WORD(6),WAY2 | INDEX(0x95) | WORD(7),WAY3 | INDEX(0x95) | WORD(6),WAY3 | INDEX(0x95) | WORD(7),BankB0 | 0xAA
-   data_addr Data_abus_B,   WAY0 | INDEX(0x6A) | WORD(2),WAY0 | INDEX(0x6A) | WORD(3),WAY1 | INDEX(0x6A) | WORD(2),WAY1 | INDEX(0x6A) | WORD(3),BankB0 | 0x55
-   rumboot_putstring "Data_abus_B checking OK\n"
-   //Array C run
-   data_addr Data_abus_C,   WAY0 | INDEX(0xFF) | WORD(4),WAY0 | INDEX(0xFF) | WORD(5),WAY1 | INDEX(0xFF) | WORD(4),WAY1 | INDEX(0xFF) | WORD(5),BankC0 | 0xFF
-   data_addr Data_abus_C,   WAY2 | INDEX(0x00) | WORD(0),WAY2 | INDEX(0x00) | WORD(1),WAY3 | INDEX(0x00) | WORD(0),WAY3 | INDEX(0x00) | WORD(1),BankC0 | 0x00
-   data_addr Data_abus_C,   WAY2 | INDEX(0x8F) | WORD(0),WAY2 | INDEX(0x8F) | WORD(1),WAY3 | INDEX(0x8F) | WORD(0),WAY3 | INDEX(0x8F) | WORD(1),BankC0 | 0xF0
-   data_addr Data_abus_C,   WAY0 | INDEX(0x70) | WORD(4),WAY0 | INDEX(0x70) | WORD(5),WAY1 | INDEX(0x70) | WORD(4),WAY1 | INDEX(0x70) | WORD(5),BankC0 | 0x0F
-   data_addr Data_abus_C,   WAY2 | INDEX(0xB3) | WORD(0),WAY2 | INDEX(0xB3) | WORD(1),WAY3 | INDEX(0xB3) | WORD(0),WAY3 | INDEX(0xB3) | WORD(1),BankC0 | 0xCC
-   data_addr Data_abus_C,   WAY0 | INDEX(0x4C) | WORD(4),WAY0 | INDEX(0x4C) | WORD(5),WAY1 | INDEX(0x4C) | WORD(4),WAY1 | INDEX(0x4C) | WORD(5),BankC0 | 0x33
-   data_addr Data_abus_C,   WAY0 | INDEX(0x95) | WORD(4),WAY0 | INDEX(0x95) | WORD(5),WAY1 | INDEX(0x95) | WORD(4),WAY1 | INDEX(0x95) | WORD(5),BankC0 | 0xAA
-   data_addr Data_abus_C,   WAY2 | INDEX(0x6A) | WORD(0),WAY2 | INDEX(0x6A) | WORD(1),WAY3 | INDEX(0x6A) | WORD(0),WAY3 | INDEX(0x6A) | WORD(1),BankC0 | 0x55
-   rumboot_putstring "Data_abus_C checking OK\n"
-   //Array B run
-   data_addr Data_abus_D,   WAY0 | INDEX(0xFF) | WORD(6),WAY0 | INDEX(0xFF) | WORD(7),WAY1 | INDEX(0xFF) | WORD(6),WAY1 | INDEX(0xFF) | WORD(7),BankD0 | 0xFF
-   data_addr Data_abus_D,   WAY2 | INDEX(0x00) | WORD(2),WAY2 | INDEX(0x00) | WORD(3),WAY3 | INDEX(0x00) | WORD(2),WAY3 | INDEX(0x00) | WORD(3),BankD0 | 0x00
-   data_addr Data_abus_D,   WAY2 | INDEX(0x8F) | WORD(2),WAY2 | INDEX(0x8F) | WORD(3),WAY3 | INDEX(0x8F) | WORD(2),WAY3 | INDEX(0x8F) | WORD(3),BankD0 | 0xF0
-   data_addr Data_abus_D,   WAY0 | INDEX(0x70) | WORD(6),WAY0 | INDEX(0x70) | WORD(7),WAY1 | INDEX(0x70) | WORD(6),WAY1 | INDEX(0x70) | WORD(7),BankD0 | 0x0F
-   data_addr Data_abus_D,   WAY2 | INDEX(0xB3) | WORD(2),WAY2 | INDEX(0xB3) | WORD(3),WAY3 | INDEX(0xB3) | WORD(2),WAY3 | INDEX(0xB3) | WORD(3),BankD0 | 0xCC
-   data_addr Data_abus_D,   WAY0 | INDEX(0x4C) | WORD(6),WAY0 | INDEX(0x4C) | WORD(7),WAY1 | INDEX(0x4C) | WORD(6),WAY1 | INDEX(0x4C) | WORD(7),BankD0 | 0x33
-   data_addr Data_abus_D,   WAY0 | INDEX(0x95) | WORD(6),WAY0 | INDEX(0x95) | WORD(7),WAY1 | INDEX(0x95) | WORD(6),WAY1 | INDEX(0x95) | WORD(7),BankD0 | 0xAA
-   data_addr Data_abus_D,   WAY2 | INDEX(0x6A) | WORD(2),WAY2 | INDEX(0x6A) | WORD(3),WAY3 | INDEX(0x6A) | WORD(2),WAY3 | INDEX(0x6A) | WORD(3),BankD0 | 0x55
-   rumboot_putstring "Data_abus_D checking OK\n"
-   //Array E run
-   data_addr Data_abus_E,   WAY2 | INDEX(0x7F) | WORD(4),WAY2 | INDEX(0x7F) | WORD(5),WAY3 | INDEX(0x7F) | WORD(4),WAY3 | INDEX(0x7F) | WORD(5),BankE0 | 0xFF
-   data_addr Data_abus_E,   WAY0 | INDEX(0x80) | WORD(0),WAY0 | INDEX(0x80) | WORD(1),WAY1 | INDEX(0x80) | WORD(0),WAY1 | INDEX(0x80) | WORD(1),BankE0 | 0x00
-   data_addr Data_abus_E,   WAY0 | INDEX(0x0F) | WORD(0),WAY0 | INDEX(0x0F) | WORD(1),WAY1 | INDEX(0x0F) | WORD(0),WAY1 | INDEX(0x0F) | WORD(1),BankE0 | 0xF0
-   data_addr Data_abus_E,   WAY2 | INDEX(0xF0) | WORD(4),WAY2 | INDEX(0xF0) | WORD(5),WAY3 | INDEX(0xF0) | WORD(4),WAY3 | INDEX(0xF0) | WORD(5),BankE0 | 0x0F
-   data_addr Data_abus_E,   WAY0 | INDEX(0x33) | WORD(0),WAY0 | INDEX(0x33) | WORD(1),WAY1 | INDEX(0x33) | WORD(0),WAY1 | INDEX(0x33) | WORD(1),BankE0 | 0xCC
-   data_addr Data_abus_E,   WAY2 | INDEX(0xCC) | WORD(4),WAY2 | INDEX(0xCC) | WORD(5),WAY3 | INDEX(0xCC) | WORD(4),WAY3 | INDEX(0xCC) | WORD(5),BankE0 | 0x33
-   data_addr Data_abus_E,   WAY2 | INDEX(0x15) | WORD(4),WAY2 | INDEX(0x15) | WORD(5),WAY3 | INDEX(0x15) | WORD(4),WAY3 | INDEX(0x15) | WORD(5),BankE0 | 0xAA
-   data_addr Data_abus_E,   WAY0 | INDEX(0xEA) | WORD(0),WAY0 | INDEX(0xEA) | WORD(1),WAY1 | INDEX(0xEA) | WORD(0),WAY1 | INDEX(0xEA) | WORD(1),BankE0 | 0x55
-   rumboot_putstring "Data_abus_E checking OK\n"
-   //Array F run
-   data_addr Data_abus_F,   WAY2 | INDEX(0x7F) | WORD(6),WAY2 | INDEX(0x7F) | WORD(7),WAY3 | INDEX(0x7F) | WORD(6),WAY3 | INDEX(0x7F) | WORD(7),BankF0 | 0xFF
-   data_addr Data_abus_F,   WAY0 | INDEX(0x80) | WORD(2),WAY0 | INDEX(0x80) | WORD(3),WAY1 | INDEX(0x80) | WORD(2),WAY1 | INDEX(0x80) | WORD(3),BankF0 | 0x00
-   data_addr Data_abus_F,   WAY0 | INDEX(0x0F) | WORD(2),WAY0 | INDEX(0x0F) | WORD(3),WAY1 | INDEX(0x0F) | WORD(2),WAY1 | INDEX(0x0F) | WORD(3),BankF0 | 0xF0
-   data_addr Data_abus_F,   WAY2 | INDEX(0xF0) | WORD(6),WAY2 | INDEX(0xF0) | WORD(7),WAY3 | INDEX(0xF0) | WORD(6),WAY3 | INDEX(0xF0) | WORD(7),BankF0 | 0x0F
-   data_addr Data_abus_F,   WAY0 | INDEX(0x33) | WORD(2),WAY0 | INDEX(0x33) | WORD(3),WAY1 | INDEX(0x33) | WORD(2),WAY1 | INDEX(0x33) | WORD(3),BankF0 | 0xCC
-   data_addr Data_abus_F,   WAY2 | INDEX(0xCC) | WORD(6),WAY2 | INDEX(0xCC) | WORD(7),WAY3 | INDEX(0xCC) | WORD(6),WAY3 | INDEX(0xCC) | WORD(7),BankF0 | 0x33
-   data_addr Data_abus_F,   WAY2 | INDEX(0x15) | WORD(6),WAY2 | INDEX(0x15) | WORD(7),WAY3 | INDEX(0x15) | WORD(6),WAY3 | INDEX(0x15) | WORD(7),BankF0 | 0xAA
-   data_addr Data_abus_F,   WAY0 | INDEX(0xEA) | WORD(2),WAY0 | INDEX(0xEA) | WORD(3),WAY1 | INDEX(0xEA) | WORD(2),WAY1 | INDEX(0xEA) | WORD(3),BankF0 | 0x55
-   rumboot_putstring "Data_abus_F checking OK\n"
-   //Array G run
-   data_addr Data_abus_G,   WAY0 | INDEX(0x7F) | WORD(4),WAY0 | INDEX(0x7F) | WORD(5),WAY1 | INDEX(0x7F) | WORD(4),WAY1 | INDEX(0x7F) | WORD(5),BankG0 | 0xFF
-   data_addr Data_abus_G,   WAY2 | INDEX(0x80) | WORD(0),WAY2 | INDEX(0x80) | WORD(1),WAY3 | INDEX(0x80) | WORD(0),WAY3 | INDEX(0x80) | WORD(1),BankG0 | 0x00
-   data_addr Data_abus_G,   WAY2 | INDEX(0x0F) | WORD(0),WAY2 | INDEX(0x0F) | WORD(1),WAY3 | INDEX(0x0F) | WORD(0),WAY3 | INDEX(0x0F) | WORD(1),BankG0 | 0xF0
-   data_addr Data_abus_G,   WAY0 | INDEX(0xF0) | WORD(4),WAY0 | INDEX(0xF0) | WORD(5),WAY1 | INDEX(0xF0) | WORD(4),WAY1 | INDEX(0xF0) | WORD(5),BankG0 | 0x0F
-   data_addr Data_abus_G,   WAY2 | INDEX(0x33) | WORD(0),WAY2 | INDEX(0x33) | WORD(1),WAY3 | INDEX(0x33) | WORD(0),WAY3 | INDEX(0x33) | WORD(1),BankG0 | 0xCC
-   data_addr Data_abus_G,   WAY0 | INDEX(0xCC) | WORD(4),WAY0 | INDEX(0xCC) | WORD(5),WAY1 | INDEX(0xCC) | WORD(4),WAY1 | INDEX(0xCC) | WORD(5),BankG0 | 0x33
-   data_addr Data_abus_G,   WAY0 | INDEX(0x15) | WORD(4),WAY0 | INDEX(0x15) | WORD(5),WAY1 | INDEX(0x15) | WORD(4),WAY1 | INDEX(0x15) | WORD(5),BankG0 | 0xAA
-   data_addr Data_abus_G,   WAY2 | INDEX(0xEA) | WORD(0),WAY2 | INDEX(0xEA) | WORD(1),WAY3 | INDEX(0xEA) | WORD(0),WAY3 | INDEX(0xEA) | WORD(1),BankG0 | 0x55
-   rumboot_putstring "Data_abus_G checking OK\n"
-   //Array H run
-   data_addr Data_abus_H,   WAY0 | INDEX(0x7F) | WORD(6),WAY0 | INDEX(0x7F) | WORD(7),WAY1 | INDEX(0x7F) | WORD(6),WAY1 | INDEX(0x7F) | WORD(7),BankH0 | 0xFF
-   data_addr Data_abus_H,   WAY2 | INDEX(0x80) | WORD(2),WAY2 | INDEX(0x80) | WORD(3),WAY3 | INDEX(0x80) | WORD(2),WAY3 | INDEX(0x80) | WORD(3),BankH0 | 0x00
-   data_addr Data_abus_H,   WAY2 | INDEX(0x0F) | WORD(2),WAY2 | INDEX(0x0F) | WORD(3),WAY3 | INDEX(0x0F) | WORD(2),WAY3 | INDEX(0x0F) | WORD(3),BankH0 | 0xF0
-   data_addr Data_abus_H,   WAY0 | INDEX(0xF0) | WORD(6),WAY0 | INDEX(0xF0) | WORD(7),WAY1 | INDEX(0xF0) | WORD(6),WAY1 | INDEX(0xF0) | WORD(7),BankH0 | 0x0F
-   data_addr Data_abus_H,   WAY2 | INDEX(0x33) | WORD(2),WAY2 | INDEX(0x33) | WORD(3),WAY3 | INDEX(0x33) | WORD(2),WAY3 | INDEX(0x33) | WORD(3),BankH0 | 0xCC
-   data_addr Data_abus_H,   WAY0 | INDEX(0xCC) | WORD(6),WAY0 | INDEX(0xCC) | WORD(7),WAY1 | INDEX(0xCC) | WORD(6),WAY1 | INDEX(0xCC) | WORD(7),BankH0 | 0x33
-   data_addr Data_abus_H,   WAY0 | INDEX(0x15) | WORD(6),WAY0 | INDEX(0x15) | WORD(7),WAY1 | INDEX(0x15) | WORD(6),WAY1 | INDEX(0x15) | WORD(7),BankH0 | 0xAA
-   data_addr Data_abus_H,   WAY2 | INDEX(0xEA) | WORD(2),WAY2 | INDEX(0xEA) | WORD(3),WAY3 | INDEX(0xEA) | WORD(2),WAY3 | INDEX(0xEA) | WORD(3),BankH0 | 0x55
-   rumboot_putstring "Data_abus_H checking OK\n"
+    //Array A run
+    data_addr Data_abus_A,   WAY2 | INDEX(0xFF) | WORD(4),WAY2 | INDEX(0xFF) | WORD(5),WAY3 | INDEX(0xFF) | WORD(4),WAY3 | INDEX(0xFF) | WORD(5),BankA0 | 0xFF
+    data_addr Data_abus_A,   WAY0 | INDEX(0x00) | WORD(0),WAY0 | INDEX(0x00) | WORD(1),WAY1 | INDEX(0x00) | WORD(0),WAY1 | INDEX(0x00) | WORD(1),BankA0 | 0x00
+    data_addr Data_abus_A,   WAY0 | INDEX(0x8F) | WORD(0),WAY0 | INDEX(0x8F) | WORD(1),WAY1 | INDEX(0x8F) | WORD(0),WAY1 | INDEX(0x8F) | WORD(1),BankA0 | 0xF0
+    data_addr Data_abus_A,   WAY2 | INDEX(0x70) | WORD(4),WAY2 | INDEX(0x70) | WORD(5),WAY3 | INDEX(0x70) | WORD(4),WAY3 | INDEX(0x70) | WORD(5),BankA0 | 0x0F
+    data_addr Data_abus_A,   WAY0 | INDEX(0xB3) | WORD(0),WAY0 | INDEX(0xB3) | WORD(1),WAY1 | INDEX(0xB3) | WORD(0),WAY1 | INDEX(0xB3) | WORD(1),BankA0 | 0xCC
+    data_addr Data_abus_A,   WAY2 | INDEX(0x4C) | WORD(4),WAY2 | INDEX(0x4C) | WORD(5),WAY3 | INDEX(0x4C) | WORD(4),WAY3 | INDEX(0x4C) | WORD(5),BankA0 | 0x33
+    data_addr Data_abus_A,   WAY2 | INDEX(0x95) | WORD(4),WAY2 | INDEX(0x95) | WORD(5),WAY3 | INDEX(0x95) | WORD(4),WAY3 | INDEX(0x95) | WORD(5),BankA0 | 0xAA
+    data_addr Data_abus_A,   WAY0 | INDEX(0x6A) | WORD(0),WAY0 | INDEX(0x6A) | WORD(1),WAY1 | INDEX(0x6A) | WORD(0),WAY1 | INDEX(0x6A) | WORD(1),BankA0 | 0x55
+    rumboot_putstring "Data_abus_A checking OK\n"
+
+    //Array B run
+    data_addr Data_abus_B,   WAY2 | INDEX(0xFF) | WORD(6),WAY2 | INDEX(0xFF) | WORD(7),WAY3 | INDEX(0xFF) | WORD(6),WAY3 | INDEX(0xFF) | WORD(7),BankB0 | 0xFF
+    data_addr Data_abus_B,   WAY0 | INDEX(0x00) | WORD(2),WAY0 | INDEX(0x00) | WORD(3),WAY1 | INDEX(0x00) | WORD(2),WAY1 | INDEX(0x00) | WORD(3),BankB0 | 0x00
+    data_addr Data_abus_B,   WAY0 | INDEX(0x8F) | WORD(2),WAY0 | INDEX(0x8F) | WORD(3),WAY1 | INDEX(0x8F) | WORD(2),WAY1 | INDEX(0x8F) | WORD(3),BankB0 | 0xF0
+    data_addr Data_abus_B,   WAY2 | INDEX(0x70) | WORD(6),WAY2 | INDEX(0x70) | WORD(7),WAY3 | INDEX(0x70) | WORD(6),WAY3 | INDEX(0x70) | WORD(7),BankB0 | 0x0F
+    data_addr Data_abus_B,   WAY0 | INDEX(0xB3) | WORD(2),WAY0 | INDEX(0xB3) | WORD(3),WAY1 | INDEX(0xB3) | WORD(2),WAY1 | INDEX(0xB3) | WORD(3),BankB0 | 0xCC
+    data_addr Data_abus_B,   WAY2 | INDEX(0x4C) | WORD(6),WAY2 | INDEX(0x4C) | WORD(7),WAY3 | INDEX(0x4C) | WORD(6),WAY3 | INDEX(0x4C) | WORD(7),BankB0 | 0x33
+    data_addr Data_abus_B,   WAY2 | INDEX(0x95) | WORD(6),WAY2 | INDEX(0x95) | WORD(7),WAY3 | INDEX(0x95) | WORD(6),WAY3 | INDEX(0x95) | WORD(7),BankB0 | 0xAA
+    data_addr Data_abus_B,   WAY0 | INDEX(0x6A) | WORD(2),WAY0 | INDEX(0x6A) | WORD(3),WAY1 | INDEX(0x6A) | WORD(2),WAY1 | INDEX(0x6A) | WORD(3),BankB0 | 0x55
+    rumboot_putstring "Data_abus_B checking OK\n"
+
+    //Array C run
+    data_addr Data_abus_C,   WAY0 | INDEX(0xFF) | WORD(4),WAY0 | INDEX(0xFF) | WORD(5),WAY1 | INDEX(0xFF) | WORD(4),WAY1 | INDEX(0xFF) | WORD(5),BankC0 | 0xFF
+    data_addr Data_abus_C,   WAY2 | INDEX(0x00) | WORD(0),WAY2 | INDEX(0x00) | WORD(1),WAY3 | INDEX(0x00) | WORD(0),WAY3 | INDEX(0x00) | WORD(1),BankC0 | 0x00
+    data_addr Data_abus_C,   WAY2 | INDEX(0x8F) | WORD(0),WAY2 | INDEX(0x8F) | WORD(1),WAY3 | INDEX(0x8F) | WORD(0),WAY3 | INDEX(0x8F) | WORD(1),BankC0 | 0xF0
+    data_addr Data_abus_C,   WAY0 | INDEX(0x70) | WORD(4),WAY0 | INDEX(0x70) | WORD(5),WAY1 | INDEX(0x70) | WORD(4),WAY1 | INDEX(0x70) | WORD(5),BankC0 | 0x0F
+    data_addr Data_abus_C,   WAY2 | INDEX(0xB3) | WORD(0),WAY2 | INDEX(0xB3) | WORD(1),WAY3 | INDEX(0xB3) | WORD(0),WAY3 | INDEX(0xB3) | WORD(1),BankC0 | 0xCC
+    data_addr Data_abus_C,   WAY0 | INDEX(0x4C) | WORD(4),WAY0 | INDEX(0x4C) | WORD(5),WAY1 | INDEX(0x4C) | WORD(4),WAY1 | INDEX(0x4C) | WORD(5),BankC0 | 0x33
+    data_addr Data_abus_C,   WAY0 | INDEX(0x95) | WORD(4),WAY0 | INDEX(0x95) | WORD(5),WAY1 | INDEX(0x95) | WORD(4),WAY1 | INDEX(0x95) | WORD(5),BankC0 | 0xAA
+    data_addr Data_abus_C,   WAY2 | INDEX(0x6A) | WORD(0),WAY2 | INDEX(0x6A) | WORD(1),WAY3 | INDEX(0x6A) | WORD(0),WAY3 | INDEX(0x6A) | WORD(1),BankC0 | 0x55
+    rumboot_putstring "Data_abus_C checking OK\n"
+
+    //Array D run
+    data_addr Data_abus_D,   WAY0 | INDEX(0xFF) | WORD(6),WAY0 | INDEX(0xFF) | WORD(7),WAY1 | INDEX(0xFF) | WORD(6),WAY1 | INDEX(0xFF) | WORD(7),BankD0 | 0xFF
+    data_addr Data_abus_D,   WAY2 | INDEX(0x00) | WORD(2),WAY2 | INDEX(0x00) | WORD(3),WAY3 | INDEX(0x00) | WORD(2),WAY3 | INDEX(0x00) | WORD(3),BankD0 | 0x00
+    data_addr Data_abus_D,   WAY2 | INDEX(0x8F) | WORD(2),WAY2 | INDEX(0x8F) | WORD(3),WAY3 | INDEX(0x8F) | WORD(2),WAY3 | INDEX(0x8F) | WORD(3),BankD0 | 0xF0
+    data_addr Data_abus_D,   WAY0 | INDEX(0x70) | WORD(6),WAY0 | INDEX(0x70) | WORD(7),WAY1 | INDEX(0x70) | WORD(6),WAY1 | INDEX(0x70) | WORD(7),BankD0 | 0x0F
+    data_addr Data_abus_D,   WAY2 | INDEX(0xB3) | WORD(2),WAY2 | INDEX(0xB3) | WORD(3),WAY3 | INDEX(0xB3) | WORD(2),WAY3 | INDEX(0xB3) | WORD(3),BankD0 | 0xCC
+    data_addr Data_abus_D,   WAY0 | INDEX(0x4C) | WORD(6),WAY0 | INDEX(0x4C) | WORD(7),WAY1 | INDEX(0x4C) | WORD(6),WAY1 | INDEX(0x4C) | WORD(7),BankD0 | 0x33
+    data_addr Data_abus_D,   WAY0 | INDEX(0x95) | WORD(6),WAY0 | INDEX(0x95) | WORD(7),WAY1 | INDEX(0x95) | WORD(6),WAY1 | INDEX(0x95) | WORD(7),BankD0 | 0xAA
+    data_addr Data_abus_D,   WAY2 | INDEX(0x6A) | WORD(2),WAY2 | INDEX(0x6A) | WORD(3),WAY3 | INDEX(0x6A) | WORD(2),WAY3 | INDEX(0x6A) | WORD(3),BankD0 | 0x55
+    rumboot_putstring "Data_abus_D checking OK\n"
+
+    //Array E run
+    data_addr Data_abus_E,   WAY2 | INDEX(0x7F) | WORD(4),WAY2 | INDEX(0x7F) | WORD(5),WAY3 | INDEX(0x7F) | WORD(4),WAY3 | INDEX(0x7F) | WORD(5),BankE0 | 0xFF
+    data_addr Data_abus_E,   WAY0 | INDEX(0x80) | WORD(0),WAY0 | INDEX(0x80) | WORD(1),WAY1 | INDEX(0x80) | WORD(0),WAY1 | INDEX(0x80) | WORD(1),BankE0 | 0x00
+    data_addr Data_abus_E,   WAY0 | INDEX(0x0F) | WORD(0),WAY0 | INDEX(0x0F) | WORD(1),WAY1 | INDEX(0x0F) | WORD(0),WAY1 | INDEX(0x0F) | WORD(1),BankE0 | 0xF0
+    data_addr Data_abus_E,   WAY2 | INDEX(0xF0) | WORD(4),WAY2 | INDEX(0xF0) | WORD(5),WAY3 | INDEX(0xF0) | WORD(4),WAY3 | INDEX(0xF0) | WORD(5),BankE0 | 0x0F
+    data_addr Data_abus_E,   WAY0 | INDEX(0x33) | WORD(0),WAY0 | INDEX(0x33) | WORD(1),WAY1 | INDEX(0x33) | WORD(0),WAY1 | INDEX(0x33) | WORD(1),BankE0 | 0xCC
+    data_addr Data_abus_E,   WAY2 | INDEX(0xCC) | WORD(4),WAY2 | INDEX(0xCC) | WORD(5),WAY3 | INDEX(0xCC) | WORD(4),WAY3 | INDEX(0xCC) | WORD(5),BankE0 | 0x33
+    data_addr Data_abus_E,   WAY2 | INDEX(0x15) | WORD(4),WAY2 | INDEX(0x15) | WORD(5),WAY3 | INDEX(0x15) | WORD(4),WAY3 | INDEX(0x15) | WORD(5),BankE0 | 0xAA
+    data_addr Data_abus_E,   WAY0 | INDEX(0xEA) | WORD(0),WAY0 | INDEX(0xEA) | WORD(1),WAY1 | INDEX(0xEA) | WORD(0),WAY1 | INDEX(0xEA) | WORD(1),BankE0 | 0x55
+    rumboot_putstring "Data_abus_E checking OK\n"
+
+    //Array F run
+    data_addr Data_abus_F,   WAY2 | INDEX(0x7F) | WORD(6),WAY2 | INDEX(0x7F) | WORD(7),WAY3 | INDEX(0x7F) | WORD(6),WAY3 | INDEX(0x7F) | WORD(7),BankF0 | 0xFF
+    data_addr Data_abus_F,   WAY0 | INDEX(0x80) | WORD(2),WAY0 | INDEX(0x80) | WORD(3),WAY1 | INDEX(0x80) | WORD(2),WAY1 | INDEX(0x80) | WORD(3),BankF0 | 0x00
+    data_addr Data_abus_F,   WAY0 | INDEX(0x0F) | WORD(2),WAY0 | INDEX(0x0F) | WORD(3),WAY1 | INDEX(0x0F) | WORD(2),WAY1 | INDEX(0x0F) | WORD(3),BankF0 | 0xF0
+    data_addr Data_abus_F,   WAY2 | INDEX(0xF0) | WORD(6),WAY2 | INDEX(0xF0) | WORD(7),WAY3 | INDEX(0xF0) | WORD(6),WAY3 | INDEX(0xF0) | WORD(7),BankF0 | 0x0F
+    data_addr Data_abus_F,   WAY0 | INDEX(0x33) | WORD(2),WAY0 | INDEX(0x33) | WORD(3),WAY1 | INDEX(0x33) | WORD(2),WAY1 | INDEX(0x33) | WORD(3),BankF0 | 0xCC
+    data_addr Data_abus_F,   WAY2 | INDEX(0xCC) | WORD(6),WAY2 | INDEX(0xCC) | WORD(7),WAY3 | INDEX(0xCC) | WORD(6),WAY3 | INDEX(0xCC) | WORD(7),BankF0 | 0x33
+    data_addr Data_abus_F,   WAY2 | INDEX(0x15) | WORD(6),WAY2 | INDEX(0x15) | WORD(7),WAY3 | INDEX(0x15) | WORD(6),WAY3 | INDEX(0x15) | WORD(7),BankF0 | 0xAA
+    data_addr Data_abus_F,   WAY0 | INDEX(0xEA) | WORD(2),WAY0 | INDEX(0xEA) | WORD(3),WAY1 | INDEX(0xEA) | WORD(2),WAY1 | INDEX(0xEA) | WORD(3),BankF0 | 0x55
+    rumboot_putstring "Data_abus_F checking OK\n"
+
+    //Array G run
+    data_addr Data_abus_G,   WAY0 | INDEX(0x7F) | WORD(4),WAY0 | INDEX(0x7F) | WORD(5),WAY1 | INDEX(0x7F) | WORD(4),WAY1 | INDEX(0x7F) | WORD(5),BankG0 | 0xFF
+    data_addr Data_abus_G,   WAY2 | INDEX(0x80) | WORD(0),WAY2 | INDEX(0x80) | WORD(1),WAY3 | INDEX(0x80) | WORD(0),WAY3 | INDEX(0x80) | WORD(1),BankG0 | 0x00
+    data_addr Data_abus_G,   WAY2 | INDEX(0x0F) | WORD(0),WAY2 | INDEX(0x0F) | WORD(1),WAY3 | INDEX(0x0F) | WORD(0),WAY3 | INDEX(0x0F) | WORD(1),BankG0 | 0xF0
+    data_addr Data_abus_G,   WAY0 | INDEX(0xF0) | WORD(4),WAY0 | INDEX(0xF0) | WORD(5),WAY1 | INDEX(0xF0) | WORD(4),WAY1 | INDEX(0xF0) | WORD(5),BankG0 | 0x0F
+    data_addr Data_abus_G,   WAY2 | INDEX(0x33) | WORD(0),WAY2 | INDEX(0x33) | WORD(1),WAY3 | INDEX(0x33) | WORD(0),WAY3 | INDEX(0x33) | WORD(1),BankG0 | 0xCC
+    data_addr Data_abus_G,   WAY0 | INDEX(0xCC) | WORD(4),WAY0 | INDEX(0xCC) | WORD(5),WAY1 | INDEX(0xCC) | WORD(4),WAY1 | INDEX(0xCC) | WORD(5),BankG0 | 0x33
+    data_addr Data_abus_G,   WAY0 | INDEX(0x15) | WORD(4),WAY0 | INDEX(0x15) | WORD(5),WAY1 | INDEX(0x15) | WORD(4),WAY1 | INDEX(0x15) | WORD(5),BankG0 | 0xAA
+    data_addr Data_abus_G,   WAY2 | INDEX(0xEA) | WORD(0),WAY2 | INDEX(0xEA) | WORD(1),WAY3 | INDEX(0xEA) | WORD(0),WAY3 | INDEX(0xEA) | WORD(1),BankG0 | 0x55
+    rumboot_putstring "Data_abus_G checking OK\n"
+
+    //Array H run
+    data_addr Data_abus_H,   WAY0 | INDEX(0x7F) | WORD(6),WAY0 | INDEX(0x7F) | WORD(7),WAY1 | INDEX(0x7F) | WORD(6),WAY1 | INDEX(0x7F) | WORD(7),BankH0 | 0xFF
+    data_addr Data_abus_H,   WAY2 | INDEX(0x80) | WORD(2),WAY2 | INDEX(0x80) | WORD(3),WAY3 | INDEX(0x80) | WORD(2),WAY3 | INDEX(0x80) | WORD(3),BankH0 | 0x00
+    data_addr Data_abus_H,   WAY2 | INDEX(0x0F) | WORD(2),WAY2 | INDEX(0x0F) | WORD(3),WAY3 | INDEX(0x0F) | WORD(2),WAY3 | INDEX(0x0F) | WORD(3),BankH0 | 0xF0
+    data_addr Data_abus_H,   WAY0 | INDEX(0xF0) | WORD(6),WAY0 | INDEX(0xF0) | WORD(7),WAY1 | INDEX(0xF0) | WORD(6),WAY1 | INDEX(0xF0) | WORD(7),BankH0 | 0x0F
+    data_addr Data_abus_H,   WAY2 | INDEX(0x33) | WORD(2),WAY2 | INDEX(0x33) | WORD(3),WAY3 | INDEX(0x33) | WORD(2),WAY3 | INDEX(0x33) | WORD(3),BankH0 | 0xCC
+    data_addr Data_abus_H,   WAY0 | INDEX(0xCC) | WORD(6),WAY0 | INDEX(0xCC) | WORD(7),WAY1 | INDEX(0xCC) | WORD(6),WAY1 | INDEX(0xCC) | WORD(7),BankH0 | 0x33
+    data_addr Data_abus_H,   WAY0 | INDEX(0x15) | WORD(6),WAY0 | INDEX(0x15) | WORD(7),WAY1 | INDEX(0x15) | WORD(6),WAY1 | INDEX(0x15) | WORD(7),BankH0 | 0xAA
+    data_addr Data_abus_H,   WAY2 | INDEX(0xEA) | WORD(2),WAY2 | INDEX(0xEA) | WORD(3),WAY3 | INDEX(0xEA) | WORD(2),WAY3 | INDEX(0xEA) | WORD(3),BankH0 | 0x55
+    rumboot_putstring "Data_abus_H checking OK\n"
 
 test_ok:
     rumboot_putstring "TEST_OK\n"
