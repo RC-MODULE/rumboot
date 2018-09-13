@@ -279,7 +279,7 @@ static void set_test_data(uint32_t base_addr, uint32_t length, int increment){
     }
 }
 inline static void print_hscb_descriptor(uint32_t addr){
-    rumboot_printf("descriptor address: \n%x\nfirst word == \n%0x\nsecond word == \n%0x\n",
+    rumboot_printf("descriptor address: \n%x\nfirst word == \n%x\nsecond word == \n%x\n",
             addr,hscb_change_endian(*((uint32_t*)addr)),hscb_change_endian(*(((uint32_t*)addr)+1)));
 }
 
@@ -334,19 +334,15 @@ static uint32_t check_hscb_func(uint32_t base_addr, uint32_t supplementary_base_
     // Local variables
     int i = 0;
     int cnt = 0;
-
-    bool act0 = 0;
-    bool interrupt = 0;
-    bool end = 0;
-    bool valid = 0;
-    uint32_t len = 0;
+    hscb_descr_struct_t hscb_descr;
 
     hscb0_status = 0;
     hscb1_status = 0;
     hscb0_dma_status = 0;
     hscb1_dma_status = 0;
 
-    uint8_t tmp_data = 0;
+    uint8_t expected_data = 0;
+    uint8_t obtained_data = 0;
 
     init_hscb_cfg_short(hscb_cfg);
 
@@ -361,15 +357,15 @@ static uint32_t check_hscb_func(uint32_t base_addr, uint32_t supplementary_base_
     rumboot_puthex((uint32_t)hscb_cfg->src_addr);
     rumboot_putstring("(uint32_t)hscb_cfg->dst_addr == ");
     rumboot_puthex((uint32_t)hscb_cfg->dst_addr);
-    set_test_data(TX_DATA_ADDR_0,DATA_SIZE_0,INCREMENT_0);
-    set_test_data(RX_DATA_ADDR_0,DATA_SIZE_0,0);
+    set_test_data((uint32_t)hscb_cfg->src_addr,DATA_SIZE_0,INCREMENT_0);
+    set_test_data((uint32_t)hscb_cfg->dst_addr,DATA_SIZE_0,0);
     // Set data for HSCB1
     rumboot_putstring("(uint32_t)((hscb_cfg + 1)->src_addr) == ");
     rumboot_puthex((uint32_t)((hscb_cfg + 1)->src_addr));
     rumboot_putstring("(uint32_t)((hscb_cfg + 1)->dst_addr) == ");
     rumboot_puthex((uint32_t)((hscb_cfg + 1)->dst_addr));
-    set_test_data(TX_DATA_ADDR_1,DATA_SIZE_1,INCREMENT_1);
-    set_test_data(RX_DATA_ADDR_1,DATA_SIZE_1,0);
+    set_test_data((uint32_t)((hscb_cfg + 1)->src_addr),DATA_SIZE_1,INCREMENT_1);
+    set_test_data((uint32_t)((hscb_cfg + 1)->dst_addr),DATA_SIZE_1,0);
     msync();
     hscb_config_for_receive_and_transmit(hscb_cfg);
     hscb_config_for_receive_and_transmit((hscb_cfg + 1));
@@ -420,31 +416,33 @@ static uint32_t check_hscb_func(uint32_t base_addr, uint32_t supplementary_base_
 
     rumboot_putstring( "Finish work!\n" );
     rumboot_putstring( "HSCB1 to HSCB0 descriptor #1\n" );
-    hscb_get_desc((hscb_cfg->rx_descr_addr), (uint8_t*)RX_DATA_ADDR_1, &len, &act0, &interrupt, &end, &valid, 1);
+    hscb_descr = hscb_get_descr_from_mem(hscb_cfg->rx_descr_addr, HSCB_ROTATE_BYTES_ENABLE);
     rumboot_putstring( "Length:" );
-    rumboot_puthex (len);
-    for (i=0; i<=len-1; i++) {
-        tmp_data = ioread8(TX_DATA_ADDR_1+i);
-        rumboot_puthex(RX_DATA_ADDR_1+i);
+    rumboot_puthex (hscb_descr.length);
+    for (i = 0; i < hscb_descr.length; ++i) {
+        expected_data = ioread8(((uint32_t)((hscb_cfg + 1)->src_addr)) + i);
+        obtained_data = ioread8(((uint32_t)((hscb_cfg    )->dst_addr)) + i);
+        rumboot_puthex(((uint32_t)((hscb_cfg    )->dst_addr)) + i);
         rumboot_putstring("Expected data: ");
-        rumboot_puthex(tmp_data);
+        rumboot_puthex(expected_data);
         rumboot_putstring("Obtained data: ");
-        rumboot_puthex (ioread8(RX_DATA_ADDR_1+i));
-        TEST_ASSERT ((ioread8(RX_DATA_ADDR_1+i) == tmp_data), "Data compare ERROR!!!\n" );
+        rumboot_puthex (obtained_data);
+        TEST_ASSERT ((obtained_data == expected_data), "Data compare ERROR!!!\n" );
     }
 
     rumboot_putstring( "HSCB0 to HSCB1 descriptor #1\n" );
-    hscb_get_desc(((hscb_cfg + 1)->rx_descr_addr), (uint8_t*)RX_DATA_ADDR_0, &len, &act0, &interrupt, &end, &valid, 1);
+    hscb_descr = hscb_get_descr_from_mem((hscb_cfg + 1)->rx_descr_addr, HSCB_ROTATE_BYTES_ENABLE);
     rumboot_putstring( "Length:" );
-    rumboot_puthex (len);
-    for (i=0; i<=len-1; i++) {
-        tmp_data = ioread8(TX_DATA_ADDR_0+i);
-        rumboot_puthex(RX_DATA_ADDR_0+i);
+    rumboot_puthex (hscb_descr.length);
+    for (i = 0; i < hscb_descr.length; ++i) {
+        expected_data = ioread8(((uint32_t)((hscb_cfg    )->src_addr)) + i);
+        obtained_data = ioread8(((uint32_t)((hscb_cfg + 1)->dst_addr)) + i);
+        rumboot_puthex(((uint32_t)((hscb_cfg + 1)->dst_addr)) + i);
         rumboot_putstring("Expected data: ");
-        rumboot_puthex(tmp_data);
+        rumboot_puthex(expected_data);
         rumboot_putstring("Obtained data: ");
-        rumboot_puthex (ioread8(RX_DATA_ADDR_0+i));
-        TEST_ASSERT ((ioread8(RX_DATA_ADDR_0+i) == tmp_data), "Data compare ERROR!!!\n" );
+        rumboot_puthex (obtained_data);
+        TEST_ASSERT ((obtained_data == expected_data), "Data compare ERROR!!!\n" );
     }
 
     return 0;
