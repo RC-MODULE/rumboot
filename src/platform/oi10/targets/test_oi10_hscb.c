@@ -278,6 +278,34 @@ static void set_test_data(uint32_t base_addr, uint32_t length, int increment){
         data += increment;
     }
 }
+
+struct rumboot_irq_entry * create_irq_handlers(hscb_instance_t* hscb_inst)
+{
+    rumboot_irq_cli();
+    struct rumboot_irq_entry *tbl = rumboot_irq_create( NULL );
+
+    rumboot_irq_set_handler( tbl, HSCB_UNDER_TEST_INT,          RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler, ( void* )0 );
+    rumboot_irq_set_handler( tbl, HSCB_UNDER_TEST_DMA_INT,      RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler, ( void* )0 );
+    rumboot_irq_set_handler( tbl, HSCB_SUPPLEMENTARY_INT,       RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler, ( void* )0 );
+    rumboot_irq_set_handler( tbl, HSCB_SUPPLEMENTARY_DMA_INT,   RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler, ( void* )0 );
+
+    /* Activate the table */
+    rumboot_irq_table_activate( tbl );
+    rumboot_irq_enable( HSCB_UNDER_TEST_INT );
+    rumboot_irq_enable( HSCB_UNDER_TEST_DMA_INT );
+    rumboot_irq_enable( HSCB_SUPPLEMENTARY_INT );
+    rumboot_irq_enable( HSCB_SUPPLEMENTARY_DMA_INT );
+    rumboot_irq_sei();
+
+     return tbl;
+}
+
+void delete_irq_handlers(struct rumboot_irq_entry *tbl)
+{
+    rumboot_irq_table_activate(NULL);
+    rumboot_irq_free(tbl);
+}
+
 inline static void print_hscb_descriptor(uint32_t addr){
     rumboot_printf("descriptor address: \n%x\nfirst word == \n%x\nsecond word == \n%x\n",
             addr,hscb_change_endian(*((uint32_t*)addr)),hscb_change_endian(*(((uint32_t*)addr)+1)));
@@ -310,27 +338,10 @@ void init_hscb_cfg_short(hscb_instance_t* hscb_inst)
     data_out_0_3[0] = data_in_0_3[0] - 1;
 }
 
-static uint32_t check_hscb_func(uint32_t base_addr, uint32_t supplementary_base_addr){
+static uint32_t check_hscb_func(){
     rumboot_printf("Check functionality...\n");
 
-// setup of interrupts
-    rumboot_irq_cli();
-    struct rumboot_irq_entry *tbl = rumboot_irq_create( NULL );
-
-    rumboot_irq_set_handler( tbl, HSCB_UNDER_TEST_INT,          RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler, ( void* )0 );
-    rumboot_irq_set_handler( tbl, HSCB_UNDER_TEST_DMA_INT,      RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler, ( void* )0 );
-    rumboot_irq_set_handler( tbl, HSCB_SUPPLEMENTARY_INT,       RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler, ( void* )0 );
-    rumboot_irq_set_handler( tbl, HSCB_SUPPLEMENTARY_DMA_INT,   RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler, ( void* )0 );
-
-    /* Activate the table */
-    rumboot_irq_table_activate( tbl );
-    rumboot_irq_enable( HSCB_UNDER_TEST_INT );
-    rumboot_irq_enable( HSCB_UNDER_TEST_DMA_INT );
-    rumboot_irq_enable( HSCB_SUPPLEMENTARY_INT );
-    rumboot_irq_enable( HSCB_SUPPLEMENTARY_DMA_INT );
-    rumboot_irq_sei();
-
-        rumboot_putstring( "------- HSCB Short ACCESS test -------\n" );
+    rumboot_putstring( "------- HSCB Short ACCESS test -------\n" );
     // Local variables
     int i = 0;
     int cnt = 0;
@@ -451,6 +462,7 @@ static uint32_t check_hscb_func(uint32_t base_addr, uint32_t supplementary_base_
 
 int main() {
     uint32_t result = 0x0;
+    struct rumboot_irq_entry *tbl;
 
     rumboot_printf( "Check HSCB (0x%x) \n", HSCB_UNDER_TEST_BASE );
 
@@ -459,7 +471,12 @@ int main() {
     result += check_hscb_regs( HSCB_UNDER_TEST_BASE );
 #endif
     emi_init(DCR_EM2_EMI_BASE);
+    tbl = create_irq_handlers(hscb_cfg);
+
+
     result += check_hscb_func( HSCB_UNDER_TEST_BASE, HSCB_SUPPLEMENTARY_BASE );
+    delete_irq_handlers(tbl);
+
     //result += check_gpio_func( HSCB_UNDER_TEST_BASE, 0x2A );
 
     return result;
