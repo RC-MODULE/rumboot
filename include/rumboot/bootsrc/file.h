@@ -26,7 +26,7 @@ struct file_private_data {
         FILE *	filefd;
 };
 
-extern const struct rumboot_bootmodule g_bootmodule_file;
+extern struct rumboot_bootmodule g_bootmodule_file;
 
 /**
  * @}

@@ -28,8 +28,8 @@ static size_t file_read(const struct rumboot_bootsource *src, void *pdata, void 
         return fread(to, 1, length, fpd->filefd);
 }
 
-const struct rumboot_bootmodule g_bootmodule_file = {
-        .align      = 128,
+struct rumboot_bootmodule g_bootmodule_file = {
+        .align          = 128,
         .init		= file_init,
         .deinit		= file_deinit,
         .read		= file_read,
