@@ -40,9 +40,9 @@ SECTIONS
 
   . = ALIGN(8);
 
-  rumboot_im0_heap_start = ABSOLUTE(.);
+  rumboot_im0_heap_start = .;
     /* empty */
-  rumboot_im0_heap_end = ABSOLUTE(.);
+  rumboot_im0_heap_end = .;
 
   rumboot_im1_heap_start = .;
   . = . + 0xf000; /* 60k heap */
