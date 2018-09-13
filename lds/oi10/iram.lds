@@ -1,5 +1,6 @@
 MEMORY {
     IM0 (rwx)   : ORIGIN = 0x80000000, LENGTH = 0x20000
+    IM1 (rwx)   : ORIGIN = 0x80020000, LENGTH = 0x20000
     ROM (rx)    : ORIGIN = 0xFFFF0000, LENGTH = 0x10000
 }
 
@@ -32,23 +33,28 @@ SECTIONS {
 
         . = ALIGN(8);
 
-        rumboot_platform_heap_start = ABSOLUTE(.);
-        . = . + 0x1000; /* 60k heap */
-        rumboot_platform_heap_end = ABSOLUTE(.);
+        rumboot_im0_heap_start = .;
+        . = . + 0x4000; /* 16k heap */
+        rumboot_im0_heap_end = .;
 
         /* This is where stacks start */
         rumboot_platform_stack_area_start = .;
-        . = . + 0x7f00; /* 60k stack */
-
+        . = . + 0x4000; /* 16k stack */
         /* This is where stacks end */
         rumboot_platform_stack_area_end = .;
     } > IM0
 
-    .runtime 0x8001ff00 (NOLOAD): {
+    .runtime 0x8001ff00 (NOLOAD) : {
         /* Runtime info is at the very top of iram */
         rumboot_platform_runtime_info = .;
         *(.rumboot_platform_runtime_info);
     }
+
+    .im1_heap 0x80020000 (NOLOAD) : {
+        rumboot_im1_heap_start = .;
+        . = . + 0x20000; /* 128k heap */
+        rumboot_im1_heap_end = .;
+    } > IM1
 
     /DISCARD/ : {
         *(.init.text)
