@@ -211,6 +211,14 @@ uint32_t hscb_get_desc (uint32_t sys_addr, uint8_t* data_out, uint32_t* len,  bo
  */
 void hscb_set_descr_in_mem(uint32_t sys_addr, uint32_t src_data_addr, uint32_t len);
 
+/**
+ * \brief Get descriptor from memory
+ * \param[in] sys_addr descriptor address in memory
+ * \param[in] endian should we rotate bytes?
+ * \return    descriptor structure
+ */
+hscb_descr_struct_t hscb_get_descr_from_mem(uint32_t sys_addr, bool endian);
+
 typedef struct hscb_instance
 {
     uint32_t        src_hscb_base_addr;
