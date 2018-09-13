@@ -7,7 +7,6 @@
 #include <linux/memfd.h>
 #include <unistd.h>
 #include <sys/syscall.h>
-#include <linux/memfd.h>
 #include <stdlib.h>
 #define DEBUG
 
