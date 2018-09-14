@@ -19,19 +19,34 @@
 #include <platform/devices/nor_1636RR4.h>
 #include <platform/devices.h>
 
-#define NUM_ELEM 512
+#define NUM_ELEM 32
 
 ///src
-static uint32_t data_src_0 = (SRAM0_BASE);
-static uint32_t data_src_1 = (NOR_BASE);
-static uint32_t data_src_2 = (SDRAM_BASE);
-static uint32_t data_src_3 = (NOR_BASE) + 4 * NUM_ELEM;
+static uint32_t data_src_0 = SRAM0_BASE;
+static uint32_t data_src_1 = NOR_BASE;
+static uint32_t data_src_2 = SDRAM_BASE;
+static uint32_t data_src_3 = NOR_BASE + 4*NUM_ELEM;
 
+static uint32_t data_src_00 = SRAM0_BASE; //==data_src_0; //SRAM0
+static uint32_t data_src_01 = SDRAM_BASE; //==data_src_2; //SDRAM
+static uint32_t data_src_02 = SSRAM_BASE;
+static uint32_t data_src_03 = PIPELINED_BASE;
+
+static uint32_t data_src_04 = SRAM1_BASE;
+static uint32_t data_src_05 = NOR_BASE;   //==data_src_1 //NOR
 ///dst
-static uint32_t data_dst_0 = (SRAM0_BASE) + 32 * NUM_ELEM;
-static uint32_t data_dst_1 = (SRAM0_BASE) + 64 * NUM_ELEM;
-static uint32_t data_dst_2 = (SDRAM_BASE) + 32 * NUM_ELEM;
-static uint32_t data_dst_3 = (SDRAM_BASE) + 64 * NUM_ELEM;
+static uint32_t data_dst_0 = SRAM0_BASE + 0x1000;
+static uint32_t data_dst_1 = SRAM0_BASE + 0x2000;
+static uint32_t data_dst_2 = SDRAM_BASE + 0x4000;
+static uint32_t data_dst_3 = SDRAM_BASE + 0x8000;
+
+static uint32_t data_dst_00 = SDRAM_BASE + 0xC000;
+static uint32_t data_dst_01 = SSRAM_BASE + 0x1000;
+static uint32_t data_dst_02 = PIPELINED_BASE + 0x1000;
+static uint32_t data_dst_03 = SRAM1_BASE + 0x1000;
+
+static uint32_t data_dst_04 = SRAM0_BASE + 0x3000;
+static uint32_t data_dst_05 = SRAM0_BASE + 0x4000;
 
 void init_data ()
 {
@@ -39,30 +54,70 @@ void init_data ()
     uint32_t i = 0;
     for (i = 0; i < NUM_ELEM; i++)
     {
-      iowrite32 (0xAAAAAAAA + i, data_src_0 + 4*i);
+      iowrite32  (0xAAAAAAAA + i,   data_src_0 + 4*i);
       msync();
       nor_write32(0xBBBBBBBB + 2*i, data_src_1 + 4*i);
       msync();
-      iowrite32 (0xCCCCCCCC + 3*i, data_src_2 + 4*i);
+      iowrite32  (0xCCCCCCCC + 3*i, data_src_2 + 4*i);
       msync();
       nor_write32(0xDDDDDDDD + 4*i, data_src_3 + 4*i);
+      msync();
+
+      iowrite32  (0x55555555 + 5*i, data_src_02 + 4*i);
+      msync();
+      iowrite32  (0x66666666 + 6*i, data_src_03 + 4*i);
+      msync();
+      iowrite32  (0x77777777 + 7*i, data_src_04 + 4*i);
       msync();
     }
     rumboot_printf ("End init data\n");
 }
 
-void check_data ()
+void check_data (uint8_t part)
 {
-    rumboot_printf ("Check data\n") ;
-
+    rumboot_printf ("Check data (part = %x)\n", part) ;
     uint32_t i = 0;
+
     for (i = 0; i < NUM_ELEM; i++)
     {
-      TEST_ASSERT(ioread32(data_dst_0 + 4*i) == 0xAAAAAAAA + i, "ASSERT: data_dst_0 is corrupted");
-      TEST_ASSERT(ioread32(data_dst_1 + 4*i) == 0xBBBBBBBB + 2*i, "ASSERT: data_dst_1 is corrupted");
-      TEST_ASSERT(ioread32(data_dst_2 + 4*i) == 0xCCCCCCCC + 3*i, "ASSERT: data_dst_2 is corrupted");
-      TEST_ASSERT(ioread32(data_dst_3 + 4*i) == 0xDDDDDDDD + 4*i, "ASSERT: data_dst_3 is corrupted");
+      if (part == 0)
+      {
+          TEST_ASSERT(ioread32(data_dst_0 + 4*i) == ioread32(data_src_0 + 4*i), "ASSERT: data_dst_0 is corrupted");
+          TEST_ASSERT(ioread32(data_dst_1 + 4*i) == ioread32(data_src_1 + 4*i), "ASSERT: data_dst_1 is corrupted");
+          TEST_ASSERT(ioread32(data_dst_2 + 4*i) == ioread32(data_src_2 + 4*i), "ASSERT: data_dst_2 is corrupted");
+          TEST_ASSERT(ioread32(data_dst_3 + 4*i) == ioread32(data_src_3 + 4*i), "ASSERT: data_dst_3 is corrupted");
+      }
+      if (part == 1)
+      {
+          TEST_ASSERT(ioread32(data_dst_00 + 4*i) == ioread32(data_src_00 + 4*i), "ASSERT: data_dst_00 is corrupted");
+          TEST_ASSERT(ioread32(data_dst_01 + 4*i) == ioread32(data_src_01 + 4*i), "ASSERT: data_dst_01 is corrupted");
+          TEST_ASSERT(ioread32(data_dst_02 + 4*i) == ioread32(data_src_02 + 4*i), "ASSERT: data_dst_02 is corrupted");
+          TEST_ASSERT(ioread32(data_dst_03 + 4*i) == ioread32(data_src_03 + 4*i), "ASSERT: data_dst_03 is corrupted");
+      }
+      if (part == 2)
+      {
+          TEST_ASSERT(ioread32(data_dst_04 + 4*i) == ioread32(data_src_04 + 4*i), "ASSERT: data_dst_04 is corrupted");
+          TEST_ASSERT(ioread32(data_dst_05 + 4*i) == ioread32(data_src_05 + 4*i), "ASSERT: data_dst_05 is corrupted");
+      }
     }
+    rumboot_printf ("Check data complete\n") ;
+
+}
+
+void set_dma_cfg (dma2plb6_setup_info * dma_info, uint32_t base_addr, DmaChannel channel, transfer_width tr_width, rw_transfer_size rw_tr_size, uint64_t src, uint64_t dst, uint32_t count)
+{
+    dma_info->base_addr = base_addr;
+    dma_info->source_adr = src;
+    dma_info->dest_adr = dst;
+    dma_info->priority = priority_medium_low;
+    dma_info->striding_info.striding = striding_none;
+    dma_info->tc_int_enable = false;
+    dma_info->err_int_enable = false;
+    dma_info->int_mode = int_mode_level_wait_clr;
+    dma_info->channel = channel;
+    dma_info->transfer_width = tr_width;
+    dma_info->rw_transfer_size = rw_tr_size;
+    dma_info->count = count;
 }
 
 int main (void)
@@ -70,113 +125,133 @@ int main (void)
     emi_init(DCR_EM2_EMI_BASE);
     init_data ();
 
-    uint32_t size_for_dma = NUM_ELEM * sizeof(uint32_t);
+    uint32_t size_for_dma = NUM_ELEM * 4;
 
+    rumboot_printf ("DMA prepare...\n");
     dma2plb6_setup_info dma_info0;
     channel_status status0 = {};
-    dma_info0.base_addr = DCR_DMAPLB6_BASE;
-    dma_info0.source_adr = rumboot_virt_to_dma((uint32_t*)data_src_0);
-    dma_info0.dest_adr = rumboot_virt_to_dma((uint32_t*)data_dst_0);
-    dma_info0.priority = priority_medium_low;
-    dma_info0.striding_info.striding = striding_none;
-    dma_info0.tc_int_enable = false;
-    dma_info0.err_int_enable = false;
-    dma_info0.int_mode = int_mode_level_wait_clr;
-    dma_info0.channel = channel0;
-    dma_info0.transfer_width = tr_width_byte;
-    dma_info0.rw_transfer_size = rw_tr_size_1q;
-    dma_info0.count = size_for_dma;
+    set_dma_cfg (&dma_info0, DCR_DMAPLB6_BASE, channel0, tr_width_byte, rw_tr_size_1q, rumboot_virt_to_phys((void*)data_src_0), rumboot_virt_to_phys((void*)data_dst_0), size_for_dma);
 
     dma2plb6_setup_info dma_info1;
     channel_status status1 = {};
-    dma_info1.base_addr = DCR_DMAPLB6_BASE;
-    dma_info1.source_adr = rumboot_virt_to_dma((uint32_t*)data_src_1);
-    dma_info1.dest_adr = rumboot_virt_to_dma((uint32_t*)data_dst_1);
-    dma_info1.priority = priority_medium_low;
-    dma_info1.striding_info.striding = striding_none;
-    dma_info1.tc_int_enable = false;
-    dma_info1.err_int_enable = false;
-    dma_info1.int_mode = int_mode_level_wait_clr;
-    dma_info1.channel = channel1;
-    dma_info1.transfer_width = tr_width_halfword;
-    dma_info1.rw_transfer_size = rw_tr_size_2q;
-    dma_info1.count = size_for_dma/2;
+    set_dma_cfg (&dma_info1, DCR_DMAPLB6_BASE, channel1, tr_width_halfword, rw_tr_size_2q, rumboot_virt_to_phys((void*)data_src_1), rumboot_virt_to_phys((void*)data_dst_1), size_for_dma/2);
 
     dma2plb6_setup_info dma_info2;
     channel_status status2 = {};
-    dma_info2.base_addr = DCR_DMAPLB6_BASE;
-    dma_info2.source_adr = rumboot_virt_to_dma((uint32_t*)data_src_2);
-    dma_info2.dest_adr = rumboot_virt_to_dma((uint32_t*)data_dst_2);
-    dma_info2.priority = priority_medium_low;
-    dma_info2.striding_info.striding = striding_none;
-    dma_info2.tc_int_enable = false;
-    dma_info2.err_int_enable = false;
-    dma_info2.int_mode = int_mode_level_wait_clr;
-    dma_info2.channel = channel2;
-    dma_info2.transfer_width = tr_width_doubleword;
-    dma_info2.rw_transfer_size = rw_tr_size_4q;
-    dma_info2.count = size_for_dma/8;
+    set_dma_cfg (&dma_info2, DCR_DMAPLB6_BASE, channel2, tr_width_doubleword, rw_tr_size_4q, rumboot_virt_to_phys((void*)data_src_2), rumboot_virt_to_phys((void*)data_dst_2), size_for_dma/8);
 
     dma2plb6_setup_info dma_info3;
     channel_status status3 = {};
-    dma_info3.base_addr = DCR_DMAPLB6_BASE;
-    dma_info3.source_adr = rumboot_virt_to_dma((uint32_t*)data_src_3);
-    dma_info3.dest_adr = rumboot_virt_to_dma((uint32_t*)data_dst_3);
-    dma_info3.priority = priority_medium_low;
-    dma_info3.striding_info.striding = striding_none;
-    dma_info3.tc_int_enable = false;
-    dma_info3.err_int_enable = false;
-    dma_info3.int_mode = int_mode_level_wait_clr;
-    dma_info3.channel = channel3;
-    dma_info3.transfer_width = tr_width_quadword;
-    dma_info3.rw_transfer_size = rw_tr_size_8q;
-    dma_info3.count = size_for_dma/16;
+    set_dma_cfg (&dma_info3, DCR_DMAPLB6_BASE, channel3, tr_width_quadword, rw_tr_size_8q, rumboot_virt_to_phys((void*)data_src_3), rumboot_virt_to_phys((void*)data_dst_3), size_for_dma/16);
+
+    rumboot_printf ("DMA prepared: ch0 (sram0->sram0), ch1 (nor->sram0), ch2 (sdram->sdram), ch3 (nor-> sdram)\n");
+
+    rumboot_printf ("Start DMA\n");
+    dma2plb6_mcpy_init(&dma_info0);
+    dma2plb6_mcpy_init(&dma_info1);
+    dma2plb6_mcpy_init(&dma_info2);
+    dma2plb6_mcpy_init(&dma_info3);
+    dma2plb6_enable_all_channels (DCR_DMAPLB6_BASE);
+
+    rumboot_printf ("Wait DMA...\n");
+
+    if (!wait_dma2plb6_mcpy(&dma_info0, &status0))
+    {
+        rumboot_printf ("DMA transfer error\n");
+        return 1;
+    }
+
+    if (!wait_dma2plb6_mcpy(&dma_info1, &status1))
+    {
+        rumboot_printf ("DMA transfer error\n");
+        return 1;
+    }
+    if (!wait_dma2plb6_mcpy(&dma_info2, &status2))
+    {
+        rumboot_printf ("DMA transfer error\n");
+        return 1;
+    }
+
+    if (!wait_dma2plb6_mcpy(&dma_info3, &status3))
+    {
+        rumboot_printf ("DMA transfer error\n");
+        return 1;
+    }
+    rumboot_printf ("DMA transfer complete\n");
+
+    msync();
+    check_data(0);
+    rumboot_printf ("------------------------------------------------------------------\n");
+    rumboot_printf ("DMA prepare...\n");
+    set_dma_cfg (&dma_info0, DCR_DMAPLB6_BASE, channel0, tr_width_quadword, rw_tr_size_4q, rumboot_virt_to_phys((void*)data_src_00), rumboot_virt_to_phys((void*)data_dst_00), size_for_dma/16);
+    set_dma_cfg (&dma_info1, DCR_DMAPLB6_BASE, channel1, tr_width_quadword, rw_tr_size_4q, rumboot_virt_to_phys((void*)data_src_01), rumboot_virt_to_phys((void*)data_dst_01), size_for_dma/16);
+    set_dma_cfg (&dma_info2, DCR_DMAPLB6_BASE, channel2, tr_width_quadword, rw_tr_size_4q, rumboot_virt_to_phys((void*)data_src_02), rumboot_virt_to_phys((void*)data_dst_02), size_for_dma/16);
+    set_dma_cfg (&dma_info3, DCR_DMAPLB6_BASE, channel3, tr_width_quadword, rw_tr_size_4q, rumboot_virt_to_phys((void*)data_src_03), rumboot_virt_to_phys((void*)data_dst_03), size_for_dma/16);
+    rumboot_printf ("DMA prepared: ch0 (sram0->sdram), ch1 (sdram->ssram), ch2 (ssram->pipelined), ch3 (pipelined-> sram1)\n");
+
+    rumboot_printf ("Start DMA\n");
+
+    dma2plb6_mcpy_init(&dma_info0);
+    dma2plb6_mcpy_init(&dma_info1);
+    dma2plb6_mcpy_init(&dma_info2);
+    dma2plb6_mcpy_init(&dma_info3);
+    dma2plb6_enable_all_channels (DCR_DMAPLB6_BASE);
+
+    rumboot_printf ("Wait DMA...\n");
+
+    if (!wait_dma2plb6_mcpy(&dma_info0, &status0))
+    {
+        rumboot_printf ("DMA transfer error\n");
+        return 1;
+    }
+
+    if (!wait_dma2plb6_mcpy(&dma_info1, &status1))
+    {
+        rumboot_printf ("DMA transfer error\n");
+        return 1;
+    }
+    if (!wait_dma2plb6_mcpy(&dma_info2, &status2))
+    {
+        rumboot_printf ("DMA transfer error\n");
+        return 1;
+    }
+
+    if (!wait_dma2plb6_mcpy(&dma_info3, &status3))
+    {
+        rumboot_printf ("DMA transfer error\n");
+        return 1;
+    }
+
+    rumboot_printf ("DMA transfer complete\n");
+
+    msync();
+    check_data(1);
+    rumboot_printf ("------------------------------------------------------------------\n");
+    rumboot_printf ("DMA prepare...\n");
+    set_dma_cfg (&dma_info0, DCR_DMAPLB6_BASE, channel0, tr_width_quadword, rw_tr_size_4q, rumboot_virt_to_phys((void*)data_src_04), rumboot_virt_to_phys((void*)data_dst_04), size_for_dma/16);
+    set_dma_cfg (&dma_info1, DCR_DMAPLB6_BASE, channel1, tr_width_quadword, rw_tr_size_4q, rumboot_virt_to_phys((void*)data_src_05), rumboot_virt_to_phys((void*)data_dst_05), size_for_dma/16);
+    rumboot_printf ("DMA prepared: ch0 (sram1->sram0), ch1 (nor->sram0)\n");
 
     rumboot_printf ("Start DMA\n");
     dma2plb6_mcpy(&dma_info0);
     dma2plb6_mcpy(&dma_info1);
-    dma2plb6_mcpy(&dma_info2);
-    dma2plb6_mcpy(&dma_info3);
 
     rumboot_printf ("Wait DMA...\n");
-   if (wait_dma2plb6_mcpy(&dma_info0, &status0))
+    if (!wait_dma2plb6_mcpy(&dma_info0, &status0))
     {
-        rumboot_printf ("DMA channel0 completed...\n");
-        if (wait_dma2plb6_mcpy(&dma_info1, &status1))
-        {
-            rumboot_printf ("DMA channel1 completed...\n");
-            if (wait_dma2plb6_mcpy(&dma_info2, &status2))
-            {
-              rumboot_printf ("DMA channel2 completed...\n");
-              if (wait_dma2plb6_mcpy(&dma_info3, &status3))
-              {
-                  rumboot_printf ("DMA channel3 completed...\n");
-                  msync();
-                  check_data ();
-              }
-              else
-              {
-                  rumboot_printf ("TEST ERROR: DMA channel3 fail\n");
-                  return 1;
-              }
-            }
-            else
-            {
-                  rumboot_printf ("TEST ERROR: DMA channel2 fail\n");
-                  return 1;
-            }
-        }
-        else
-        {
-           rumboot_printf ("TEST ERROR: DMA channel1 fail\n");
-           return 1;
-        }
+        rumboot_printf ("DMA transfer error\n");
+        return 1;
     }
-    else
+
+    if (!wait_dma2plb6_mcpy(&dma_info1, &status1))
     {
-      rumboot_printf ("TEST ERROR: DMA channel0 fail\n");
-      return 1;
+        rumboot_printf ("DMA transfer error\n");
+        return 1;
     }
+    rumboot_printf ("DMA transfer complete\n");
+
+    msync();
+    check_data(2);
 
     rumboot_printf ("TEST_OK\n");
     return 0;
