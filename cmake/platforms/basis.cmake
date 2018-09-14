@@ -1357,6 +1357,12 @@ endif()
       NAME esram1_heap_rnd_space_test
     )
 
+  add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES esram/esram_mia_test.c
+      NAME esram_mia_test
+    )
+
 
     foreach(conf IRAM IRAM_MIRROR)
     foreach(dit 0 1 2 3)
