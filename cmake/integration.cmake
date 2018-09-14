@@ -151,6 +151,9 @@ function(add_rumboot_target)
     endif()
     SET_TESTS_PROPERTIES(rumboot-${TARGET_SNAPSHOT}-${product} PROPERTIES LABELS "full;${TARGET_TESTGROUP}")
 
+    if (TARGET_TIMEOUT_CTEST)
+      SET_TESTS_PROPERTIES(rumboot-${TARGET_SNAPSHOT}-${product} PROPERTIES TIMEOUT "${TARGET_TIMEOUT_CTEST}")
+    endif()
     #FixMe: Hack. ARM ModelManager fucks up simulation with a segfault if
     #No JTAGbsi file is found. That happens even if it's not really running
     #So we always provide a dummy here to be safe.
