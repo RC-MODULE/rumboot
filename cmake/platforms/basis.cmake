@@ -1331,6 +1331,32 @@ endif()
       IRUN_FLAGS +mkio_signal_test
     )
 
+  add_rumboot_target(
+      CONFIGURATION IRAM_MIRROR
+      PREFIX "mirror"
+      FILES common/mkio/mkio_signal_test.c
+      NAME mkio_signal_test
+      IRUN_FLAGS +mkio_signal_test
+    )
+
+  add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES esram/esram_rnd_space_test.c
+      NAME esram_rnd_space_test
+    )
+
+  add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES esram/esram0_heap_rnd_space_test.c
+      NAME esram0_heap_rnd_space_test
+    )
+
+  add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES esram/esram1_heap_rnd_space_test.c
+      NAME esram1_heap_rnd_space_test
+    )
+
 
     foreach(conf IRAM IRAM_MIRROR)
     foreach(dit 0 1 2 3)
