@@ -56,6 +56,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       CONFIGURATION NATIVE
       CFLAGS -DSOURCE=0 -DEXPECTED=1
       FILES common/bootrom/unit.c
+      FEATURES STUB      
   )
 
   add_rumboot_target(
