@@ -4,7 +4,6 @@
 #include <rumboot/timer.h>
 #include <rumboot/macros.h>
 #include <stddef.h>
-#include <linux/memfd.h>
 #include <unistd.h>
 #include <sys/syscall.h>
 #include <stdlib.h>
@@ -19,7 +18,8 @@ static bool file_init(const struct rumboot_bootsource *src, void *pdata)
 static void file_deinit(const struct rumboot_bootsource *src, void *pdata)
 {
         struct file_private_data *fpd = pdata;
-        fclose(fpd->filefd);
+        if (fpd->filefd)
+            fclose(fpd->filefd);
 }
 
 static size_t file_read(const struct rumboot_bootsource *src, void *pdata, void *to, size_t offset, size_t length)
