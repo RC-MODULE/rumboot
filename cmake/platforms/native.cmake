@@ -62,6 +62,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       NAME bootrom
       CONFIGURATION NATIVE
       FILES common/bootrom/bootrom.c
+      FEATURES STUB
   )
 
 
