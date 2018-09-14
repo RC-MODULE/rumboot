@@ -469,6 +469,10 @@ int main() {
 #ifdef CHECK_REGS
     result += check_hscb_default_val( HSCB_UNDER_TEST_BASE );
     result += check_hscb_regs( HSCB_UNDER_TEST_BASE );
+    hscb_sw_rst(HSCB_UNDER_TEST_BASE);
+    hscb_adma_sw_rst(HSCB_UNDER_TEST_BASE);
+    hscb_sw_rst(HSCB_SUPPLEMENTARY_BASE);
+    hscb_adma_sw_rst(HSCB_SUPPLEMENTARY_BASE);
 #endif
     emi_init(DCR_EM2_EMI_BASE);
     tbl = create_irq_handlers(hscb_cfg);
