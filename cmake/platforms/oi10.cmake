@@ -33,6 +33,7 @@ rumboot_add_configuration(
     PREFIX rom
     FEATURES ROMGEN
     FILES ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/startup.S
+    TIMEOUT_CTEST 7200
 )
 
 rumboot_add_configuration(
@@ -42,6 +43,7 @@ rumboot_add_configuration(
     SNAPSHOT default
     PREFIX bare-rom
     FEATURES ROMGEN
+    TIMEOUT_CTEST 7200
 )
 
 rumboot_add_configuration (
@@ -54,6 +56,7 @@ rumboot_add_configuration (
     BOOTROM bootrom-stub
     FEATURES LUA COVERAGE PACKIMAGE
     LOAD IM0BIN SELF
+    TIMEOUT_CTEST 86400
 )
 
 macro(rumboot_platform_generate_stuff_for_taget product)
