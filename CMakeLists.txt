@@ -202,7 +202,7 @@ ADD_SOURCE("src/lib/drivers/pl022.c")
 ADD_SOURCE("src/lib/bootsrc/boilerplate.c")
 if (RUMBOOT_PLATFORM MATCHES native)
     ADD_SOURCE("src/rumboot_main_native.c")
-    ADD_SOURCE("src/lib/bootsrc/file.c")    
+    ADD_SOURCE("src/lib/bootsrc/file.c")
 else()
     ADD_SOURCE("src/rumboot_main.c")
     ADD_SOURCE("src/lib/newlib-stubs.c")
@@ -234,6 +234,12 @@ endforeach()
     "${CMAKE_CURRENT_BINARY_DIR}/Doxyfile"
   )
 
+if (RUMBOOT_COVERAGE AND RUMBOOT_PLATFORM STREQUAL "native")
+    add_custom_target(coverage
+      COMMAND lcov -c -o coverage.info -d ${PROJECT_BINARY_DIR}
+      COMMAND genhtml -o coverage_report coverage.info
+    )
+endif()
 
 if (DOXYGEN_FOUND)
   add_custom_target(docs COMMAND doxygen > doxygen.log)
