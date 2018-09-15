@@ -144,46 +144,56 @@ endmacro()
 
 macro(add_bootrom_stuff)
   #Let's add our spl stuff
-  add_rumboot_target_dir(common/spl-stubs/
+  add_rumboot_target(
+    FILES common/bootrom/spl.c
+    NAME ok
     CONFIGURATION IRAM_SPL
-    PREFIX spl
+    CFLAGS -DEXITCODE=0 -DTERMINATE_SIMULATION
     FEATURES STUB PACKIMAGE
   )
 
   add_rumboot_target(
+    FILES common/bootrom/spl.c
+    NAME fail
     CONFIGURATION IRAM_SPL
-    FILES common/spl-stubs/fail.c
+    CFLAGS -DEXITCODE=1 -DTERMINATE_SIMULATION
+    FEATURES STUB PACKIMAGE
+  )
+
+  add_rumboot_target(
+    FILES common/bootrom/spl.c
     NAME fail-bad-magic
-    PREFIX spl
+    CONFIGURATION IRAM_SPL
+    CFLAGS -DEXITCODE=1 -DTERMINATE_SIMULATION
+    FEATURES STUB PACKIMAGE
     PACKIMAGE_FLAGS -s magic 0xbadc0de
-    FEATURES STUB PACKIMAGE
   )
 
   add_rumboot_target(
-    CONFIGURATION IRAM_SPL
-    FILES common/spl-stubs/fail.c
+    FILES common/bootrom/spl.c
     NAME fail-bad-version
-    PREFIX spl
+    CONFIGURATION IRAM_SPL
+    CFLAGS -DEXITCODE=1 -DTERMINATE_SIMULATION
+    FEATURES STUB PACKIMAGE
     PACKIMAGE_FLAGS -s version 1 -c
-    FEATURES STUB PACKIMAGE
   )
 
   add_rumboot_target(
-    CONFIGURATION IRAM_SPL
-    FILES common/spl-stubs/fail.c
+    FILES common/bootrom/spl.c
     NAME fail-bad-id
-    PREFIX spl
-    PACKIMAGE_FLAGS -s chip_id 1 -c
+    CONFIGURATION IRAM_SPL
+    CFLAGS -DEXITCODE=1 -DTERMINATE_SIMULATION
     FEATURES STUB PACKIMAGE
+    PACKIMAGE_FLAGS -s version 1 -c
   )
 
   add_rumboot_target(
-    CONFIGURATION IRAM_SPL
-    FILES common/spl-stubs/fail.c
+    FILES common/bootrom/spl.c
     NAME ok-bad-revision
-    PREFIX spl
-    PACKIMAGE_FLAGS -s revision 99 -c
+    CONFIGURATION IRAM_SPL
+    CFLAGS -DEXITCODE=0 -DTERMINATE_SIMULATION
     FEATURES STUB PACKIMAGE
+    PACKIMAGE_FLAGS -s revision 99 -c
   )
 
   add_rumboot_target(
