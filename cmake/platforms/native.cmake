@@ -151,6 +151,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 #  lines......: 12.6% (403 of 3192 lines)
 #  functions..: 17.3% (52 of 300 functions)
 
+  add_rumboot_test(host-fileboot unit-boot --file ${SPL_OK})
   add_rumboot_test(host-bootrom bootrom-boot --file ${SPL_OK} --file2 ${SPL_FAIL})
   add_rumboot_test(host-bootrom bootrom-boot-a32 --align 32 --file ${SPL_OK} --file2 ${SPL_FAIL})
   add_rumboot_test(host-bootrom bootrom-boot-a64 --align 64 --file ${SPL_OK} --file2 ${SPL_FAIL})
