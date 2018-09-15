@@ -14,6 +14,8 @@ static const char *errors[] =
 	[EBADCHIPID] = "Incorrect ChipId",
 	[EBADENTRY] = "Bad entry point(s)",
 	[EBADDATACRC] = "Bad data CRC32",
+	[ETOOBIG] = "Image too big",
+    [EIO]   = "I/O Error while reading",
 	[EMAXERROR] = "Unknown error",
 };
 
@@ -84,13 +86,9 @@ int32_t rumboot_bootimage_check_data(struct rumboot_bootheader *hdr)
 	return (checksum != hdr->data_crc32);
 }
 
-int32_t rumboot_bootimage_exec(struct rumboot_bootheader *hdr)
+int rumboot_bootimage_execute_ep(void *ep)
 {
-
-	/* Fire up secondary cores, if any */
-	return rumboot_platform_exec(hdr);
-	dbg_boot(hdr->device, "Primary entry point: 0x%x", hdr->entry_point[0]);
 	int (*ram_main)();
-	ram_main = (void *)hdr->entry_point[0];
+	ram_main = ep;
 	return ram_main();
 }

@@ -62,14 +62,6 @@ ssize_t rumboot_bootimage_check_header(struct rumboot_bootheader *hdr, void **da
 int32_t rumboot_bootimage_check_data(struct rumboot_bootheader *hdr);
 
 
-/**
- * Execute the loaded bootimage. The bootimage may return with
- * an exit code from the image's main().
- * @param [name] [description]
- * @return     exit code from image file's main()
- */
-int32_t rumboot_bootimage_exec(struct rumboot_bootheader *hdr);
-
 /*
  * @}
  */
@@ -109,18 +101,23 @@ int32_t rumboot_bootimage_exec(struct rumboot_bootheader *hdr);
  size_t bootsource_read(const struct rumboot_bootsource *src, void *pdata, void *dest, size_t offset, size_t len);
  void bootsource_deinit(const struct rumboot_bootsource *src, void *pdata);
 
- bool bootsource_try_single(const struct rumboot_bootsource *src, void* pdata, struct rumboot_bootheader *hdr, size_t maxsize);
- bool bootsource_try_chain(const struct rumboot_bootsource *src, void* pdata, struct rumboot_bootheader *hdr, size_t maxsize);
+ int bootsource_try_by_id(int bootid, void *pdata, struct rumboot_bootheader *hdr, size_t maxsize);
+ int bootsource_try_single(const struct rumboot_bootsource *src, void *pdata, struct rumboot_bootheader *dst, size_t maxsize, size_t *offset);
+ void bootsource_try_chain(void *pdata, struct rumboot_bootheader *hdr, size_t maxsize);
 
+
+ /* Header check errors must go first */
 #define EBADMAGIC      1
 #define EBADVERSION    2
 #define EBADHDRCRC     3
 #define EBADCHIPID     4
 #define EBADENTRY      5
-#define EBADNUMCORES   6
+#define EBADHEADER     6
 #define EBADDATACRC    7
 #define ETOOBIG        8
-#define EMAXERROR      9
+#define EBADSOURCE     9
+#define EIO            10
+#define EMAXERROR      11
 
  struct rumboot_config {
          bool	hostmode;
@@ -138,4 +135,5 @@ int32_t rumboot_bootimage_exec(struct rumboot_bootheader *hdr);
  bool rumboot_platform_check_entry_points(struct rumboot_bootheader *hdr);
  int rumboot_platform_exec(struct rumboot_bootheader *hdr);
  void *rumboot_platform_get_spl_area(size_t *size);
+ int rumboot_bootimage_execute_ep(void *ep);
 #endif /* end of include guard: BOOTHEADER_H */

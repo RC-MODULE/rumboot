@@ -36,6 +36,7 @@ static void hostmode_loop()
         rumboot_printf("boot: Entering host mode loop\n");
         rumboot_platform_request_file("HOSTMOCK", (uint32_t) hdr);
         void *data;
+        int ret;
         while (1) {
                 ssize_t len = rumboot_bootimage_check_header(hdr, &data);
                 if (len == -EBADMAGIC) {
@@ -47,8 +48,8 @@ static void hostmode_loop()
                         continue;
                 }
                 if (0 == rumboot_bootimage_check_data(hdr)) {
-                        rumboot_bootimage_exec(hdr);
-                        rumboot_printf("boot: We're back in rom!\n");
+                        ret = rumboot_platform_exec(hdr);
+                        rumboot_printf("boot: We're back in rom, return code %d\n", ret);
                 } else {
                         rumboot_printf("boot: Data CRC32 mismatch\n");
                 }
@@ -61,7 +62,6 @@ int main()
         size_t maxsize;
         struct rumboot_bootheader *hdr = rumboot_platform_get_spl_area(&maxsize);
         rumboot_platform_perf("Config printout");
-        int ret;
         #define PDATA_SIZE 128
         char pdata[PDATA_SIZE];
 
@@ -84,15 +84,9 @@ int main()
 
 
         rumboot_platform_perf("Boot chain");
-
-        const struct rumboot_bootsource *sources = rumboot_platform_get_bootsources();
-        ret = bootsource_try_chain(sources, (void*) &pdata, hdr, maxsize);
-        if (ret) {
-                rumboot_printf("boot: We got back from secondary image\n");
-        } else {
-                rumboot_printf("boot: Failed to boot secondary image\n");
-        }
+        bootsource_try_chain((void*) &pdata, hdr, maxsize);
         rumboot_platform_perf(NULL);
+
         hostmode_loop();
         /* Never reached. Throw an error if it does */
         return 1;

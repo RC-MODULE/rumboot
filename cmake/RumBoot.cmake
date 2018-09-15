@@ -1,4 +1,4 @@
-set(RUMBOOT_ONEVALUE_ARGS SNAPSHOT LDS PREFIX NAME BOOTROM CHECKPOINTS RESTORE TIMEOUT_CTEST)
+set(RUMBOOT_ONEVALUE_ARGS SNAPSHOT LDS PREFIX NAME BOOTROM CHECKPOINTS RESTORE TIMEOUT_CTEST VARIABLE)
 set(RUMBOOT_MULVALUE_ARGS FILES IRUN_FLAGS CFLAGS TESTGROUP LDFLAGS CHECKCMD FEATURES TIMEOUT LOAD DEPENDS PACKIMAGE_FLAGS)
 
 
@@ -91,29 +91,8 @@ function(add_boot_source KEY SRC)
     endif()
 endfunction()
 
-macro(add_rumboot_test name_ binary baseclass)
-    string(TOLOWER "${name_}" name)
-    STRING(REGEX REPLACE "-" "_" name ${name})
-    if (${RUMBOOT_PLATFORM} MATCHES "native")
-      add_test(${name} ${binary} ${ARGN})
-    else()
-        file(APPEND ${RUMBOOT_MANIFEST}
-        "${baseclass} test_rumboot_${name} ${binary}.bin")
-        foreach(arg ${ARGN})
-                file(APPEND ${RUMBOOT_MANIFEST} " ${arg}")
-        endforeach()
-        file(APPEND ${RUMBOOT_MANIFEST} "\n")
-    endif()
-endmacro()
 
 macro(generate_stuff_for_target product)
-  add_custom_command(
-    OUTPUT ${product}.dmp
-    COMMAND ${CROSS_COMPILE}-objdump -D ${CMAKE_DUMP_FLAGS} ${product} > ${product}.dmp
-    COMMENT "Generating disassembly listing: ${product}.dmp"
-    DEPENDS ${product}
-  )
-
 
   if (NOT RUMBOOT_PLATFORM STREQUAL "native")
     set(PACKIMAGE_EXT ".bin")
@@ -127,18 +106,34 @@ macro(generate_stuff_for_target product)
     set(packimage_cmd ${PYTHON_EXECUTABLE} ${RUMBOOT_PACKIMAGE} -f ${product}${PACKIMAGE_EXT} ${TARGET_PACKIMAGE_FLAGS})
   endif()
 
-  add_custom_command(
-    OUTPUT ${product}.bin
-    COMMAND ${CROSS_COMPILE}-objcopy ${CMAKE_OBJCOPY_FLAGS} -O binary ${product} ${product}.bin
-    COMMAND ${packimage_cmd}
-    COMMENT "Generating binary image ${product}.bin"
-    DEPENDS ${product}
-  )
+  if (NOT RUMBOOT_PLATFORM STREQUAL "native")
+      add_custom_command(
+        OUTPUT ${product}.dmp
+        COMMAND ${CROSS_COMPILE}-objdump -D ${CMAKE_DUMP_FLAGS} ${product} > ${product}.dmp
+        COMMENT "Generating disassembly listing: ${product}.dmp"
+        DEPENDS ${product}
+      )
 
-  add_custom_target(
-    ${product}.all ALL
-    DEPENDS ${product}.bin ${product}.dmp
-  )
+      add_custom_command(
+        OUTPUT ${product}.bin
+        COMMAND ${CROSS_COMPILE}-objcopy ${CMAKE_OBJCOPY_FLAGS} -O binary ${product} ${product}.bin
+        COMMAND ${packimage_cmd}
+        COMMENT "Generating binary image ${product}.bin"
+        DEPENDS ${product}
+      )
+
+      add_custom_target(
+        ${product}.all ALL
+        DEPENDS ${product}.bin ${product}.dmp
+      )
+  else()
+    add_custom_command(
+      TARGET ${product}
+      COMMAND ${packimage_cmd}
+      COMMENT "Adding image header to ${product}"
+    )
+  endif()
+
   if (NOT ${TARGET_BOOTROM} STREQUAL "")
     add_dependencies(${product}.all ${bootrom})
   endif()
@@ -199,6 +194,12 @@ macro(locate_source_file file)
 endmacro()
 
 
+function(add_rumboot_test target name)
+  generate_product_name(product ${target})
+  add_test(${name} ${product} ${ARGN})
+  SET_TESTS_PROPERTIES(${name} PROPERTIES TIMEOUT "5")
+endfunction()
+
 function(add_rumboot_target)
   set(options )
 
@@ -231,6 +232,10 @@ function(add_rumboot_target)
 
   generate_product_name(product ${TARGET_PREFIX}-${TARGET_NAME})
   generate_product_name(bootrom ${TARGET_BOOTROM}.all)
+
+  if (TARGET_VARIABLE)
+    set(${TARGET_VARIABLE} ${PROJECT_BINARY_DIR}/${product} PARENT_SCOPE)
+  endif()
 
 #  set(product rumboot-${RUMBOOT_PLATFORM}-${CMAKE_BUILD_TYPE}-${TARGET_PREFIX}-${TARGET_NAME})
 #  set(bootrom rumboot-${RUMBOOT_PLATFORM}-${CMAKE_BUILD_TYPE}-${TARGET_BOOTROM}.all)
