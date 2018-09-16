@@ -81,9 +81,13 @@ void rumboot_platform_setup() {
 
     msr_write( msr_old_value );
 
-    extern char rumboot_platform_heap_start;
-    extern char rumboot_platform_heap_end;
-    rumboot_malloc_register_heap( "IM0", &rumboot_platform_heap_start, &rumboot_platform_heap_end );
+    extern char rumboot_im0_heap_start;
+    extern char rumboot_im0_heap_end;
+    rumboot_malloc_register_heap( "IM0", &rumboot_im0_heap_start, &rumboot_im0_heap_end );
+
+    extern char rumboot_im1_heap_start;
+    extern char rumboot_im1_heap_end;
+    rumboot_malloc_register_heap( "IM1", &rumboot_im1_heap_start, &rumboot_im1_heap_end );
 }
 
 const struct rumboot_bootsource *rumboot_platform_get_bootsources()
