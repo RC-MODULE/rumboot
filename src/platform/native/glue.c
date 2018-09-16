@@ -101,9 +101,23 @@ uint32_t rumboot_arch_irq_enable()
         return 0;
 }
 
+static char *hfile = "null";
 void rumboot_platform_request_file(const char *plusarg, uint32_t addr)
 {
-        printf("REQUEST %s\n", plusarg);
+        if (strcmp(plusarg, "HOSTMOCK")==0) {
+                if (!hfile)
+                        return;
+                FILE *fd = fopen(hfile, "r");
+                if (!fd)
+                        return;
+                size_t sz;
+                fseek(fd, 0, SEEK_END);
+                sz = ftell(fd);
+                fseek(fd, 0, SEEK_SET);
+                fread((void *) addr, sz, 1, fd);
+                fclose(fd);
+                hfile = strtok(NULL, ",");
+        }
 }
 
 void rumboot_platform_dump_region(const char *filename, uint32_t addr, uint32_t len)
@@ -150,6 +164,7 @@ void *rumboot_platform_get_spl_area(size_t *size)
 static int do_selftest = 0;
 static int do_host = 0;
 
+
 static struct option long_options[] =
 {
         { "selftest", no_argument,	 &do_selftest, 1   },
@@ -157,6 +172,7 @@ static struct option long_options[] =
         { "align",    required_argument, 0,	       'a' },
         { "file",     required_argument, 0,	       'f' },
         { "file2",    required_argument, 0,	       'F' },
+        { "hfile",    required_argument, 0,	       'h' },
         { 0,	      0,		 0,	       0   }
 };
 
@@ -175,14 +191,20 @@ void rumboot_platform_read_config(struct rumboot_config *conf)
                         rumboot_printf("DEBUG: setting alignment to %d\n", g_bootmodule_file.align);
                         break;
 
+                case 'h':
+                        hfile = strdup(optarg);
+                        hfile = strtok(hfile, ",");
+                        rumboot_printf("DEBUG: setting host boot file to %s\n", optarg);
+                        break;
+
                 case 'F':
                         arr[1].name = optarg;
-                        rumboot_printf("DEBUG: setting 2nd boot file to %d\n", optarg);
+                        rumboot_printf("DEBUG: setting 2nd boot file to %s\n", optarg);
                         break;
 
                 case 'f':
                         arr[0].name = optarg;
-                        rumboot_printf("DEBUG: setting 1st boot file to %d\n", optarg);
+                        rumboot_printf("DEBUG: setting 1st boot file to %s\n", optarg);
                         break;
                 }
         }
@@ -283,6 +305,7 @@ int rumboot_platform_exec(struct rumboot_bootheader *hdr)
 {
         int ret;
         FILE *tmp = fopen("binary", "w");
+
         fwrite(hdr->data, hdr->datalen, 1, tmp);
         fclose(tmp);
         system("chmod +x binary");

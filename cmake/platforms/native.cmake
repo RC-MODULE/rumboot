@@ -172,6 +172,12 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
   add_rumboot_test(host-bootrom bootrom-bad-version --file ${SPL_FAIL_BAD_VERSION} --file2 ${SPL_OK})
   add_rumboot_test(host-bootrom bootrom-bad-revision --file ${SPL_OK_BAD_REV} --file2 ${SPL_FAIL})
   add_rumboot_test(host-bootrom bootrom-bad-version --file ${SPL_NEXT} --file2 ${SPL_OK})
+  add_rumboot_test(host-bootrom bootrom-hostmode-ok --host --hfile ${SPL_OK})
+  add_rumboot_test(host-bootrom bootrom-hostmode-bad-magic --host --hfile ${SPL_FAIL_BAD_MAGIC},${SPL_OK})
+  add_rumboot_test(host-bootrom bootrom-hostmode-bad-id --host --hfile ${SPL_FAIL_BAD_ID},${SPL_OK})
+  add_rumboot_test(host-bootrom bootrom-fallback-to-hostmode --file ${SPL_FAIL_BAD_HCRC32} --file2 ${SPL_FAIL_BAD_DCRC32} --hfile ${SPL_OK})
+  add_rumboot_test(host-bootrom bootrom-hostmode-jump-to-file --host --file2 ${SPL_FAIL} --file2 ${SPL_OK} --hfile ${SPL_FAIL_BAD_ID},${SPL_JUMP})
+
 endmacro()
 
 macro(rumboot_platform_setup_configuration)

@@ -153,6 +153,7 @@ int bootsource_try_source_once(const struct rumboot_bootsource *src, void *pdata
         }
 
         dbg_boot(src, "Image validated, executing...");
+        dst->magic = 0x0;
         ret = rumboot_platform_exec(dst);
         dbg_boot(src, "Back in rom, code %d, will now %s", ret, describe_next_step(ret));
 bailout:

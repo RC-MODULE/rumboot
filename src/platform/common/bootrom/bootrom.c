@@ -29,27 +29,34 @@ void rumboot_platform_dump_config(struct rumboot_config *conf,size_t maxsize) {
 }
 
 
-static void hostmode_loop()
+static void hostmode_loop(void *pdata)
 {
         size_t maxsize;
         struct rumboot_bootheader *hdr = rumboot_platform_get_spl_area(&maxsize);
         rumboot_printf("boot: Entering host mode loop\n");
-        rumboot_platform_request_file("HOSTMOCK", (uint32_t) hdr);
         void *data;
         int ret;
         while (1) {
+                rumboot_platform_request_file("HOSTMOCK", (uint32_t) hdr);
+                if (hdr->device) {
+                        hdr->device = NULL;
+                }
                 ssize_t len = rumboot_bootimage_check_header(hdr, &data);
                 if (len == -EBADMAGIC) {
                         continue;
                 }
                 if (len < 0) {
-                        rumboot_printf("boot: validation failed: %s\n", rumboot_strerror(len));
+                        dbg_boot(NULL, "validation failed: %s\n", rumboot_strerror(len));
                         hdr->magic = 0;
                         continue;
                 }
                 if (0 == rumboot_bootimage_check_data(hdr)) {
+                        hdr->magic = 0x0;
                         ret = rumboot_platform_exec(hdr);
-                        rumboot_printf("boot: We're back in rom, return code %d\n", ret);
+                        dbg_boot(NULL, "Back in rom, code %d", ret);
+                        if (ret > 0) {
+                                bootsource_try_by_id(ret - 1, pdata, hdr, maxsize);
+                        }
                 } else {
                         rumboot_printf("boot: Data CRC32 mismatch\n");
                 }
@@ -79,7 +86,7 @@ int main()
         }
 
         if (conf.hostmode) {
-                hostmode_loop();
+                hostmode_loop(pdata);
         }
 
 
@@ -87,7 +94,7 @@ int main()
         bootsource_try_chain((void*) &pdata, hdr, maxsize);
         rumboot_platform_perf(NULL);
 
-        hostmode_loop();
+        hostmode_loop(pdata);
         /* Never reached. Throw an error if it does */
         return 1;
 }
