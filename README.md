@@ -114,6 +114,7 @@ add_rumboot_target(
     DEPENDS prefix-name
     BOOTROM prefix-name
     PACKIMAGE_FLAGS flags
+    VARIABLE PATHVAR
     FEATURES [STUB] [LUA] [COVERAGE] [LPROBE] [PACKIMAGE] [PACKIMAGE] [ROMGEN] [NOCODE] [COVERAGE]
     LOAD
         PLUSARG TARGET
@@ -158,6 +159,8 @@ add_rumboot_target(
 - BOOTROM - имя цели, которая генерирует BOOTROM, необходимый для запуска данного теста. Зависимость указывается в формате prefix-name.
 
 - DEPENDS - Указывает на зависимые цели, которые надо собрать перед сборкой/запуском данной цели (С указанием префикса. Цель из директивы BOOTROM дублировать здесь не требуется, если BOOTROM требуется для данной конфигурации, то он будет собран всегда)
+
+- VARIABLE - Устанавливает переменную, имя которой передано аргументом в абсолютный путь к компилируемому ELF файлу в директории сборке (без .bin/.dmp).
 
 - LOAD - Перечисляет загружаемые .bin файлы. Аргумент принимает пары значний PLUSARG и TARGET.
     * PLUSARG - имя PLUSARG переменной, куда будет помещен путь к BIN файлу.
