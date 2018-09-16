@@ -155,11 +155,9 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
      VARIABLE SPL_OK_BAD_REV
    )
 
-#
-#
-#  lines......: 12.6% (403 of 3192 lines)
-#  functions..: 17.3% (52 of 300 functions)
-
+  #TODO: Test all header combination in host mocking mode
+  #TODO: Add selftest stub code and tests
+  #TODO: Test chain-booting appended images from one source
   add_rumboot_test(host-fileboot unit-boot --file ${SPL_OK})
   add_rumboot_test(host-bootrom bootrom-jump --file ${SPL_JUMP} --file2 ${SPL_OK})
   add_rumboot_test(host-bootrom bootrom-boot --file ${SPL_OK} --file2 ${SPL_FAIL})
