@@ -125,6 +125,15 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
      VARIABLE SPL_NEXT
    )
 
+   add_rumboot_target(
+     FILES common/bootrom/spl.c
+     NAME jump
+     CONFIGURATION NATIVE_SPL
+     CFLAGS -DEXITCODE=2
+     FEATURES STUB PACKIMAGE
+     VARIABLE SPL_JUMP
+   )
+
 
    add_rumboot_target(
      FILES common/bootrom/spl.c
@@ -152,6 +161,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 #  functions..: 17.3% (52 of 300 functions)
 
   add_rumboot_test(host-fileboot unit-boot --file ${SPL_OK})
+  add_rumboot_test(host-bootrom bootrom-jump --file ${SPL_JUMP} --file2 ${SPL_OK})
   add_rumboot_test(host-bootrom bootrom-boot --file ${SPL_OK} --file2 ${SPL_FAIL})
   add_rumboot_test(host-bootrom bootrom-boot-a32 --align 32 --file ${SPL_OK} --file2 ${SPL_FAIL})
   add_rumboot_test(host-bootrom bootrom-boot-a64 --align 64 --file ${SPL_OK} --file2 ${SPL_FAIL})

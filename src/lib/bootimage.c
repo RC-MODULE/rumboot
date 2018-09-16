@@ -5,16 +5,19 @@
 #include <platform/bootheader.h>
 
 /* TODO: Move to error.h */
+
 static const char *errors[] =
 {
 	[0] = "Success",
-	[EBADMAGIC] = "Bad Magic value",
+	[EBADMAGIC] = "Bad Magic",
 	[EBADVERSION] = "Incompatible header version",
 	[EBADHDRCRC] = "Header CRC32 mismatch",
 	[EBADCHIPID] = "Incorrect ChipId",
 	[EBADENTRY] = "Bad entry point(s)",
+	[EBADHEADER] = "Bad header",
 	[EBADDATACRC] = "Bad data CRC32",
 	[ETOOBIG] = "Image too big",
+	[EBADSOURCE] = "Bad boot source (internal)",
     [EIO]   = "I/O Error while reading",
 	[EMAXERROR] = "Unknown error",
 };

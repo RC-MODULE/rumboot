@@ -25,6 +25,7 @@ static void file_deinit(const struct rumboot_bootsource *src, void *pdata)
 static size_t file_read(const struct rumboot_bootsource *src, void *pdata, void *to, size_t offset, size_t length)
 {
         struct file_private_data *fpd = pdata;
+        fseek(fpd->filefd, offset, SEEK_SET);
         return fread(to, 1, length, fpd->filefd);
 }
 

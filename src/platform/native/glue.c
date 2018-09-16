@@ -12,6 +12,8 @@
 #include <sys/types.h>
 #include <errno.h>
 #include <signal.h>
+#include <string.h>
+#include <rumboot/printf.h>
 
 extern int g_argc;
 extern char *g_argv[64];
@@ -39,12 +41,11 @@ uint32_t rumboot_platform_get_uptime()
 void rumboot_platform_setup()
 {
         signal(SIGUSR1, my_handler);
-        signal(SIGUSR2, my_handler);        
+        signal(SIGUSR2, my_handler);
         FILE *fd = fopen("/proc/self/cmdline", "r");
         char *tmp = malloc(4096);
         size_t sz = fread(tmp, 1, 4096, fd);
         size_t pos = 0;
-        int argc = 0;
 
         while (pos < sz) {
                 char *arg = &tmp[pos];
@@ -148,7 +149,6 @@ void *rumboot_platform_get_spl_area(size_t *size)
 
 static int do_selftest = 0;
 static int do_host = 0;
-static int do_align = 0;
 
 static struct option long_options[] =
 {
@@ -249,14 +249,13 @@ int run_binary(const char *command)
 
                 sigprocmask(SIG_SETMASK, &origMask, NULL);
 
-                execl(command, (char *)NULL);
+                execl(command, command, (char *)NULL);
                 _exit(127);     /* We could not exec the shell */
 
         default:                /* Parent: wait for our child to terminate */
 
                 /* We must use waitpid() for this task; using wait() could inadvertently
                  * collect the status of one of the caller's other children */
-
                 while (waitpid(childPid, &status, 0) == -1) {
                         if (errno != EINTR) {   /* Error other than EINTR */
                                 status = -1;
@@ -276,7 +275,7 @@ int run_binary(const char *command)
 
         errno = savedErrno;
 
-        return status;
+        return WEXITSTATUS(status);
 }
 
 
@@ -284,11 +283,11 @@ int rumboot_platform_exec(struct rumboot_bootheader *hdr)
 {
         int ret;
         FILE *tmp = fopen("binary", "w");
-
         fwrite(hdr->data, hdr->datalen, 1, tmp);
         fclose(tmp);
         system("chmod +x binary");
         ret = run_binary("binary");
+        rumboot_printf("%d\n", ret);
         return ret;
 }
 

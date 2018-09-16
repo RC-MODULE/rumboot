@@ -102,6 +102,7 @@ int32_t rumboot_bootimage_check_data(struct rumboot_bootheader *hdr);
  void bootsource_deinit(const struct rumboot_bootsource *src, void *pdata);
 
  int bootsource_try_by_id(int bootid, void *pdata, struct rumboot_bootheader *hdr, size_t maxsize);
+ int bootsource_try_source_once(const struct rumboot_bootsource *src, void *pdata, struct rumboot_bootheader *dst, size_t maxsize, size_t *offset);
  int bootsource_try_single(const struct rumboot_bootsource *src, void *pdata, struct rumboot_bootheader *dst, size_t maxsize, size_t *offset);
  void bootsource_try_chain(void *pdata, struct rumboot_bootheader *hdr, size_t maxsize);
 
