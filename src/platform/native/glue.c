@@ -303,7 +303,7 @@ int run_binary(const char *command)
 
 int rumboot_platform_exec(struct rumboot_bootheader *hdr)
 {
-        int ret;
+        char ret;
         FILE *tmp = fopen("binary", "w");
 
         fwrite(hdr->data, hdr->datalen, 1, tmp);
