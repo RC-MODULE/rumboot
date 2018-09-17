@@ -62,6 +62,12 @@ void dma2plb6_clear_interrupt(uint32_t const base_addr, DmaChannel const channel
     dcr_write(base_addr + PLB6_DMA_SR, (1 << IBM_BIT_INDEX(32,CS)) << IBM_BIT_INDEX(4,channel));
 }
 
+void dma2plb6_clear_status_reg(uint32_t const base_addr)
+{
+    uint32_t reg = dcr_read (base_addr + PLB6_DMA_SR);
+    dcr_write(base_addr + PLB6_DMA_SR, reg);
+}
+
 /*
  * initializes memory-to-memory single transfer for channel (setup_info->channel=0,1,2 or 3)
  * this function is not applicable for requests to coherent slaves
@@ -176,4 +182,12 @@ void dma2plb6_enable_all_channels(uint32_t const base_addr)
 void dma2plb6_disable_channel(uint32_t const base_addr, DmaChannel const channel)
 {
     dcr_write(get_addr(channel,PLB6_DMA_CR,base_addr),0x00000000);
+}
+
+void dma2plb6_disable_all_channel(uint32_t const base_addr)
+{
+    dma2plb6_disable_channel (base_addr, channel0);
+    dma2plb6_disable_channel (base_addr, channel1);
+    dma2plb6_disable_channel (base_addr, channel2);
+    dma2plb6_disable_channel (base_addr, channel3);
 }
