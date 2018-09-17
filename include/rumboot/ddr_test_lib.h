@@ -3,8 +3,6 @@
 
 #include <stdint.h>
 
-#include <platform/defs_c.h>
-
 /**
  *
  * \defgroup example_functions Example Functions

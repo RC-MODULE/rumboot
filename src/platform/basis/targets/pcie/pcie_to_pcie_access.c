@@ -15,6 +15,8 @@
 #include <rumboot/ddr_test_lib.h>
 #include <rumboot/pcie_test_lib.h>
 #include <rumboot/io.h>
+#include <regs/regs_pcie.h>
+#include <platform/devices.h>
 
 void clear_ddr0_space ()
 {

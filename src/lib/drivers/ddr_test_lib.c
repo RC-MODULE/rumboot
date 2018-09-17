@@ -12,7 +12,12 @@
 //-----------------------------------------------------------------------------
 #include <stdint.h>
 
-#include <platform/defs_c.h>
+#include <regs/regs_ddr.h>
+#include <regs/regs_crg.h>
+
+#include <platform/devices.h>
+
+#include <rumboot/io.h>
 
 //-----------------------------------------------------------------------------
 //  These defines must be changed for real program
@@ -1350,24 +1355,24 @@ uint32_t crg_ddr_init
     uint32_t timer_cntr = 0;
     
     if (
-        (rgCRG_DDR_PLL_FBDIV != pll_fbdiv) ||
-        (rgCRG_DDR_PLL_PSDIV != pll_psdiv)
+        (ioread32 (CRG_DDR_BASE + CRG_PLL_FBDIV) != pll_fbdiv) ||
+        (ioread32 (CRG_DDR_BASE + CRG_PLL_PSDIV) != pll_psdiv)
         )
     {
-        rgCRG_DDR_WR_LOCK   = 0x1ACCE551 ;
-        rgCRG_DDR_PLL_CTRL  = 0x3        ;
-        rgCRG_DDR_PLL_FBDIV = pll_fbdiv  ;
-        rgCRG_DDR_PLL_PSDIV = pll_psdiv  ;
+        iowrite32 (0x1ACCE551, CRG_DDR_BASE + CRG_WR_LOCK);
+        iowrite32 (0x3, CRG_DDR_BASE + CRG_PLL_CTRL);
+        iowrite32 (pll_fbdiv, CRG_DDR_BASE + CRG_PLL_FBDIV);
+        iowrite32 (pll_psdiv, CRG_DDR_BASE + CRG_PLL_PSDIV);
 
-        while ((rgCRG_DDR_PLL_STAT & 0x00000010) == 0)
+        while ((ioread32 (CRG_DDR_BASE + CRG_PLL_STAT) & 0x00000010) == 0)
         {
             timer_cntr++;
             if (timer_cntr == CRG_DDR_TEST_LIB_PLL_LOCK_TIMEOUT)
                 return -1;
         }
 
-        rgCRG_DDR_PLL_CTRL  = 0x0        ;
-        while ((rgCRG_DDR_PLL_STAT & 0x00000011) == 0)
+        iowrite32 (0x0, CRG_DDR_BASE + CRG_PLL_CTRL);
+        while ((ioread32 (CRG_DDR_BASE + CRG_PLL_STAT) & 0x00000011) == 0)
         {
             timer_cntr++;
             if (timer_cntr == CRG_DDR_TEST_LIB_PLL_LOCK_TIMEOUT)

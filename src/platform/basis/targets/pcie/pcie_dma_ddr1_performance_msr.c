@@ -30,6 +30,7 @@
 #include <rumboot/pcie_test_lib.h>
 #include <rumboot/ddr_test_lib.h>
 #include <regs/regs_pcie.h>
+#include <platform/devices.h>
 
 #include <devices/gp_timers.h>
 

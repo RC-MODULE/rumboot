@@ -21,6 +21,7 @@
 
 #include <rumboot/ddr_test_lib.h>
 #include <rumboot/io.h>
+#include <platform/devices.h>
 
 void clear_space (uint32_t base_address)
 {

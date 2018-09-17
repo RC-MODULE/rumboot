@@ -27,6 +27,8 @@
 #include <rumboot/pcie_test_lib.h>
 #include <rumboot/ddr_test_lib.h>
 #include <rumboot/io.h>
+#include <regs/regs_pcie.h>
+#include <platform/devices.h>
 
 #define array_depth 29
 
@@ -168,7 +170,7 @@
 uint32_t at_slv_test_0 ()
 {
     
-    rgADDR_TRANS_SLV_ctrl = 0;
+    iowrite32 (0x0, ADDR_TRANS_SLV_BASE + ADDR_TRANS_SLV_ctrl);
     
     for (volatile uint32_t j = 0; j < regions_for_test_number; j++)
     {
