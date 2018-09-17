@@ -8,7 +8,15 @@
 //
 //    Test duration (RTL): < 310us
 //-----------------------------------------------------------------------------
-#include <platform/defs_c.h>
+
+#include <stdint.h>
+#include <stdlib.h>
+
+#include <rumboot/io.h>
+#include <rumboot/pcie_test_lib.h>
+#include <regs/regs_pcie.h>
+#include <platform/devices.h>
+
 
 #define def_PCIe_EP_i_vendor_id_device_id                  0x010017CD
 #define def_PCIe_EP_i_command_status                       0x00100007
@@ -32,62 +40,72 @@
 int PCIe_setting_ ()
 {
     int timer_cntr;
+#ifndef PCIE_TEST_LIB_SIMSPEEDUP_OFF
     /***************************************************/
     /*    this PHY settings are only for simulation    */
     /*    and must be removed for real programm        */
     /***************************************************/
-    rgPCIe_Phy_PCS_COM_LOCK_CFG1        = 0x4010;
-    rgPCIe_Phy_PCS_COM_LOCK_CFG2        = 0x0810;
-    rgPCIe_Phy_PCS_GEN3_EIE_LOCK_CFG    = 0x0101;
-    rgPCIe_Phy_PCS_RCV_DET_INH          = 0x000A;
+    iowrite32 (0x4010, PCIE_PHY_BASE + PCIe_Phy_PCS_COM_LOCK_CFG1      );
+    iowrite32 (0x0810, PCIE_PHY_BASE + PCIe_Phy_PCS_COM_LOCK_CFG2      );
+    iowrite32 (0x0101, PCIE_PHY_BASE + PCIe_Phy_PCS_GEN3_EIE_LOCK_CFG  );
+    iowrite32 (0x000A, PCIE_PHY_BASE + PCIe_Phy_PCS_RCV_DET_INH        );
     /***************************************************/
+#endif
 
-    rgSCTL_PCIE_RST = 0x1;
+    iowrite32 (0x1, SCTL_BASE + SCTL_PCIE_RST);
 
+    //---------------------------------------------------------------
+    //  Wait until PLL locked
+    //   Exit with error if emergency timer overflow
+    //---------------------------------------------------------------
     timer_cntr = 0;
-    while ((rgSCTL_PCIE_RST & 0x1) == 0)
+    while ((ioread32 (SCTL_BASE + SCTL_PCIE_RST) & 0x1) == 0)
     {
         timer_cntr++;
         if (timer_cntr == PLL_LOCK_DURATION)
             return -1;
     }
+    
+    //------------------------------------------------------
+    //  Enable access through controller
+    //------------------------------------------------------
+    iowrite32 (0x07, PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_EP_i_command_status);
+    //------------------------------------------------------
+    //  BAR 1 - what high bits of inbound address to mask
+    //------------------------------------------------------
+    iowrite32 (0x80000000, PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_EP_i_base_addr_1);
+    //------------------------------------------------------
+    //  Enable BAR 0 and BAR 1 for inbound transactions
+    //   - maximum BAR size selected - 2 GB
+    //   - two BARs cover all memory space
+    //------------------------------------------------------
+    iowrite32 (0x00009898, PCIE_CORE_BASE + PCIe_Core_LocalMgmt + PCIe_LocMgmt_i_pf_0_BAR_config_0_reg);
+    //------------------------------------------------------
+    //  BAR 1 - what to put instead of masked bits
+    //------------------------------------------------------
+    iowrite32 (0x80000000, PCIE_CORE_BASE + PCIe_Core_AXIConfig + PCIe_AXI_inregion_ep_bar_1_addr_translation);
+    //------------------------------------------------------
+    //     AXI outbound addr translation setup
+    //       - pass 32 bits to bridge, zero none bits
+    //------------------------------------------------------
+    iowrite32 (0x0000001F, PCIE_CORE_BASE + PCIe_Core_AXIConfig + PCIe_AXI_outregion_0_addr_translation_0);
+    //------------------------------------------------------
+    //     AXI outbound PCIe header descriptor
+    //       - configure for memory RW
+    //------------------------------------------------------
+    iowrite32 (0x00000002, PCIE_CORE_BASE + PCIe_Core_AXIConfig + PCIe_AXI_outregion_0_header_descriptor_0);
+    //------------------------------------------------------
+    //     AXI Outbound Region 0 AXI Region Base Address 0
+    //       - none of bits choose region
+    //------------------------------------------------------
+    iowrite32 (0x0000001F, PCIE_CORE_BASE + PCIe_Core_AXIConfig + PCIe_AXI_outregion_0_region_base_addr);
 
-    /***************************************************************/
-    /*     Enable access through controller                        */
-    /***************************************************************/
-    rgPCIe_EP_i_command_status = 0x07;
-    /***************************************************************/
-    /*     BAR 1 - what high bits of inbound address to mask       */
-    /***************************************************************/
-    rgPCIe_EP_i_base_addr_1 = 0x80000000;
-    /***************************************************************/
-    /* enable BAR 0 and BAR 1 for inbound transactions             */
-    /*   - maximum BAR size selected - 2 GB                        */
-    /*   - two BARs cover all memory space                         */
-    /***************************************************************/
-    rgPCIe_LocMgmt_i_pf_0_BAR_config_0_reg = 0x00009898;
-    /***************************************************************/
-    /*     BAR 1 - what to put instead of masked bits              */
-    /***************************************************************/
-    rgPCIe_AXI_inregion_ep_bar_1_addr_translation = 0x80000000;
-    /***************************************************************/
-    /*     AXI outbound addr translation setup                     */
-    /*       - pass 32 bits to bridge, zero none bits              */
-    /***************************************************************/
-    rgPCIe_AXI_outregion_0_addr_translation_0 = 0x0000001F;
-    /***************************************************************/
-    /*     AXI outbound PCIe header descriptor                     */
-    /*       - configure for memory RW                             */
-    /***************************************************************/
-    rgPCIe_AXI_outregion_0_header_descriptor_0 = 0x00000002;
-    /***************************************************************/
-    /*     AXI Outbound Region 0 AXI Region Base Address 0         */
-    /*       - none of bits choose region                          */
-    /***************************************************************/
-    rgPCIe_AXI_outregion_0_region_base_addr = 0x0000001F;
-
+    //---------------------------------------------------------------
+    //  Wait until training complete
+    //   Exit with error if emergency timer overflow
+    //---------------------------------------------------------------
     timer_cntr = 0;
-    while ((rgPCIe_LocMgmt_i_pl_config_0_reg & 0x1) == 0)
+    while ((ioread32 (PCIE_CORE_BASE + PCIe_Core_LocalMgmt + PCIe_LocMgmt_i_pl_config_0_reg) & 0x1) == 0)
     {
         timer_cntr++;
         if (timer_cntr == TRAINING_DURATION)
@@ -100,20 +118,20 @@ int PCIe_setting_ ()
 int check_read_default_value ()
 {
     if (
-        (rgPCIe_EP_i_vendor_id_device_id                      != def_PCIe_EP_i_vendor_id_device_id                      ) ||
-        (rgPCIe_EP_i_command_status                           != def_PCIe_EP_i_command_status                           ) ||
-        (rgPCIe_EP_i_revision_id_class_code                   != def_PCIe_EP_i_revision_id_class_code                   ) ||
-        (rgPCIe_EP_i_base_addr_0                              != def_PCIe_EP_i_base_addr_0                              ) ||
-        (rgPCIe_EP_i_base_addr_4                              != def_PCIe_EP_i_base_addr_4                              ) ||
-        (rgPCIe_EP_i_pwr_mgmt_cap                             != def_PCIe_EP_i_pwr_mgmt_cap                             ) ||
-        (rgPCIe_EP_i_AER_enhanced_cap_hdr                     != def_PCIe_EP_i_AER_enhanced_cap_hdr                     ) ||
-        (rgPCIe_LocMgmt_i_pl_config_1_reg                     != def_PCIe_LocMgmt_i_pl_config_1_reg                     ) ||
-        (rgPCIe_LocMgmt_i_dll_tmr_config_reg                  != def_PCIe_LocMgmt_i_dll_tmr_config_reg                  ) ||
-        (rgPCIe_LocMgmt_i_rcv_cred_lim_1_reg                  != def_PCIe_LocMgmt_i_rcv_cred_lim_1_reg                  ) ||
-        (rgPCIe_LocMgmt_i_L1_st_reentry_delay_reg             != def_PCIe_LocMgmt_i_L1_st_reentry_delay_reg             ) ||
-        (rgPCIe_LocMgmt_i_shdw_hdr_log_0_reg                  != def_PCIe_LocMgmt_i_shdw_hdr_log_0_reg                  ) ||
-        (rgPCIe_LocMgmt_i_negotiated_lane_map_reg             != def_PCIe_LocMgmt_i_negotiated_lane_map_reg             ) ||
-        (rgPCIe_LocMgmt_i_ecc_corr_err_count_reg_axi          != def_PCIe_LocMgmt_i_ecc_corr_err_count_reg_axi          )
+        (ioread32 (PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_EP_i_vendor_id_device_id            )  != def_PCIe_EP_i_vendor_id_device_id                      ) ||
+        (ioread32 (PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_EP_i_command_status                 )  != def_PCIe_EP_i_command_status                           ) ||
+        (ioread32 (PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_EP_i_revision_id_class_code         )  != def_PCIe_EP_i_revision_id_class_code                   ) ||
+        (ioread32 (PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_EP_i_base_addr_0                    )  != def_PCIe_EP_i_base_addr_0                              ) ||
+        (ioread32 (PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_EP_i_base_addr_4                    )  != def_PCIe_EP_i_base_addr_4                              ) ||
+        (ioread32 (PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_EP_i_pwr_mgmt_cap                   )  != def_PCIe_EP_i_pwr_mgmt_cap                             ) ||
+        (ioread32 (PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_EP_i_AER_enhanced_cap_hdr           )  != def_PCIe_EP_i_AER_enhanced_cap_hdr                     ) ||
+        (ioread32 (PCIE_CORE_BASE + PCIe_Core_LocalMgmt    + PCIe_LocMgmt_i_pl_config_1_reg           )  != def_PCIe_LocMgmt_i_pl_config_1_reg                     ) ||
+        (ioread32 (PCIE_CORE_BASE + PCIe_Core_LocalMgmt    + PCIe_LocMgmt_i_dll_tmr_config_reg        )  != def_PCIe_LocMgmt_i_dll_tmr_config_reg                  ) ||
+        (ioread32 (PCIE_CORE_BASE + PCIe_Core_LocalMgmt    + PCIe_LocMgmt_i_rcv_cred_lim_1_reg        )  != def_PCIe_LocMgmt_i_rcv_cred_lim_1_reg                  ) ||
+        (ioread32 (PCIE_CORE_BASE + PCIe_Core_LocalMgmt    + PCIe_LocMgmt_i_L1_st_reentry_delay_reg   )  != def_PCIe_LocMgmt_i_L1_st_reentry_delay_reg             ) ||
+        (ioread32 (PCIE_CORE_BASE + PCIe_Core_LocalMgmt    + PCIe_LocMgmt_i_shdw_hdr_log_0_reg        )  != def_PCIe_LocMgmt_i_shdw_hdr_log_0_reg                  ) ||
+        (ioread32 (PCIE_CORE_BASE + PCIe_Core_LocalMgmt    + PCIe_LocMgmt_i_negotiated_lane_map_reg   )  != def_PCIe_LocMgmt_i_negotiated_lane_map_reg             ) ||
+        (ioread32 (PCIE_CORE_BASE + PCIe_Core_LocalMgmt    + PCIe_LocMgmt_i_ecc_corr_err_count_reg_axi)  != def_PCIe_LocMgmt_i_ecc_corr_err_count_reg_axi          )
     )
         return -1;
     return 0;

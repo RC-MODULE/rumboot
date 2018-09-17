@@ -17,22 +17,21 @@
 //    Test duration (RTL): < 300us
 //-----------------------------------------------------------------------------
 
-#include <rumboot/pcie_test_lib.h>
-
-#define interrupt_turnaround_duration 4
-
-#include <stdio.h>
-#include <stdlib.h>
 #include <stdint.h>
+#include <stdlib.h>
 
-#include <rumboot/printf.h>
 #include <rumboot/io.h>
+#include <rumboot/pcie_test_lib.h>
+#include <rumboot/printf.h>
 #include <rumboot/irq.h>
 
+#include <regs/regs_pcie.h>
 #include <platform/devices.h>
+
 #include <devices/sp804.h>
 
-#include <platform/defs_c.h>
+
+#define interrupt_turnaround_duration 4
 
 #define pcie_dma_int_gic             55
 #define pcie_dma_int_ext_irq_gen     23
@@ -114,7 +113,7 @@ const long long data_src [256] = {
 
 void clear_PCIe_DMA_IRQ_effects ()
 {
-    rgPCIe_DMA_common_udma_int = 0x1;
+    iowrite32 (0x1, PCIE_CORE_BASE + PCIe_Core_DMAConfig + PCIe_DMA_common_udma_int);
 }
 
 //------------------------------------------------------------------------
@@ -171,13 +170,13 @@ void pcie_dma_transaction ()
     //-------------------------------------------------------------
     //  Set parameters for reading descriptor
     //-------------------------------------------------------------
-    rgPCIe_DMA_channel_0_ctrl = 0x2;
-    rgPCIe_DMA_channel_0_sp_l = (uint32_t) (&PCIe_DMA_descriptor);
-    rgPCIe_DMA_channel_0_sp_u = 0;
-    rgPCIe_DMA_channel_0_attr_l = 0;
-    rgPCIe_DMA_channel_0_attr_u = 0;
+    iowrite32 ( 0x2, PCIE_CORE_BASE + PCIe_Core_DMAConfig + PCIe_DMA_channel_0_ctrl  );
+    iowrite32 ((uint32_t) (&PCIe_DMA_descriptor), PCIE_CORE_BASE + PCIe_Core_DMAConfig + PCIe_DMA_channel_0_sp_l  );
+    iowrite32 ( 0x0, PCIE_CORE_BASE + PCIe_Core_DMAConfig + PCIe_DMA_channel_0_sp_u  );
+    iowrite32 ( 0x0, PCIE_CORE_BASE + PCIe_Core_DMAConfig + PCIe_DMA_channel_0_attr_l);
+    iowrite32 ( 0x0, PCIE_CORE_BASE + PCIe_Core_DMAConfig + PCIe_DMA_channel_0_attr_u);
     //  ... and run transaction for writing
-    rgPCIe_DMA_channel_0_ctrl = 0x3;
+    iowrite32 (0x3, PCIE_CORE_BASE + PCIe_Core_DMAConfig + PCIe_DMA_channel_0_ctrl );
 }
 
 uint32_t main ()
