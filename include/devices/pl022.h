@@ -182,12 +182,38 @@ void pl022_clear_rx_buf(uint32_t base);
 */
 
 //ssp functions
-void gspi_init(uint32_t base_address, ssp_params params);
+void gspi_init(uint32_t base_address, ssp_params params, struct pl022_config *conf);
+/**
+ * Read of Raw interrupt status register
+ * @param base_address   SSP base address
+ * @return              Raw interrupt status
+ */
 uint32_t gspi_get_ris(uint32_t base_address);
+/**
+ * Read of Masked interrupt status register
+ * @param base_address   SSP base address
+ * @return              Masked interrupt status
+ */
 uint32_t gspi_get_mis(uint32_t base_address);
+/**
+ * Read of status register
+ * @param base_address   SSP base address
+ * @return               Status
+ */
 uint32_t gspi_get_ssp_status(uint32_t base_addr);
+/**
+ * Set or clear Interrupt mask
+ * @param base_address   SSP base address
+ * @param mask           interrupt mask
+ */
 void gspi_set_int_mask(uint32_t base_address, uint16_t mask);
+/**
+ * Enable DMA
+ * @param base_address   SSP base address
+ * @param enabled        parameters of dma enable
+ */
 void gspi_dma_enable(uint32_t base_addr, ssp_dma_enable enabled);
+
 void gspi_write_data(uint32_t base_addr, uint32_t data);
 uint32_t gspi_read_data(uint32_t base_addr);
 int gspi_send_word(uint32_t base_address, uint32_t word);
