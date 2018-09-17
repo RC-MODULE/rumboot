@@ -44,7 +44,7 @@ rumboot_add_configuration (
 rumboot_add_configuration (
   IRAM_SPL
   LDS basis/iram-spl.lds
-  PREFIX iram
+  PREFIX spl
   LDFLAGS -Wl,--start-group -lgcc -lc -lm -Wl,--end-group "-e main"
   FILES ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c
   CFLAGS -DRUMBOOT_PRINTF_ACCEL -DRUMBOOT_NOINIT
