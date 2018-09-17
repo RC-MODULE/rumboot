@@ -1,5 +1,6 @@
 
-#include <platform/defs.h>
+#include <regs/regs_ddr.h>
+#include <platform/devices.h>
 
 .global main
 
