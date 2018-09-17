@@ -43,6 +43,16 @@
 #define GPIO_1_BASE             0xC0038000
 #define UART0_BASE              0xC0029000
 #define UART1_BASE              0xC0039000
+#define GRETH_0_BASE            0xC002A000
+#define GRETH_1_BASE            0xC003A000
+#define GSPI_0_BASE             0xC002B000
+#define GSPI_1_BASE             0xC003B000
+#define LSCB0_BASE              0xC0020000
+#define LSCB1_BASE              0xC0030000
+#define HSCB0_BASE              0xC0300000
+#define HSCB1_BASE              0xC0301000
+#define HSCB2_BASE              0xC0302000
+#define HSCB3_BASE              0xC0303000
 #define BOOTROM_BASE            0xFFFF0000
 
 /**
