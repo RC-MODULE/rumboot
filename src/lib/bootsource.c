@@ -144,7 +144,7 @@ int bootsource_try_source_once(const struct rumboot_bootsource *src, void *pdata
         }
 
         *offset = round_up_to_align(*offset, src->plugin->align);
-        dbg_boot(src, "Reading image from offset %ld", *offset);
+        dbg_boot(src, "Reading image from offset %d", *offset);
         ret = bootsource_load_img(src, pdata, dst, maxsize, offset);
         if (ret != 0) {
                 dbg_boot(src, "Error: %s (%d)", rumboot_strerror(-ret), -ret);
