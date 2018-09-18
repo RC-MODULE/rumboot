@@ -101,6 +101,13 @@ macro(find_rumboot_packimage)
     PATHS ${PROJECT_SOURCE_DIR}/rumboot-packimage.py
           ${CMAKE_SOURCE_DIR}/rumboot-packimage.py
   )
+  if("${RUMBOOT_PACKIMAGE}" STREQUAL "${PROJECT_SOURCE_DIR}/rumboot-packimage.py/rumboot_packimage.py")
+    message("rumboot_packimage.py: Using shipped version, so I will update the submodule for you")
+    execute_process(
+      COMMAND ${GIT_EXECUTABLE} submodule update rumboot-packimage.py
+      WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+    )
+  endif()
 endmacro()
 
 find_rumboot_packimage()
