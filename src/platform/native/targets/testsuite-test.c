@@ -3,13 +3,13 @@
 #include <rumboot/testsuite.h>
 #include <rumboot/printf.h>
 
-bool mytest(uint32_t arg)
+static bool mytest(uint32_t arg)
 {
     /* Return true if test passed, false otherwise */
     return (rand() % 2) ? true : false;
 }
 
-bool myskip_func(uint32_t arg)
+static bool myskip_func(uint32_t arg)
 {
     /* return true to skip test */
     return true;

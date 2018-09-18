@@ -6,7 +6,7 @@
 void __attribute__((no_instrument_function)) __cyg_profile_func_enter(void *this_fn, void *call_site)
 {
 #ifdef RUMBOOT_TRACE
-    rumboot_platform_runtime_info.nestlevel++;
+    rumboot_platform_runtime_info->nestlevel++;
     rumboot_platform_trace(this_fn);
 #endif
 
@@ -20,7 +20,7 @@ void __attribute__((no_instrument_function))
 {
 
 #ifdef RUMBOOT_TRACE
-    rumboot_platform_runtime_info.nestlevel--;
+    rumboot_platform_runtime_info->nestlevel--;
 #endif
 
 #ifdef RUMBOOT_PROFILE

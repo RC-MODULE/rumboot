@@ -221,8 +221,8 @@ uint32_t main()
     for (i = 0; i < heap_cnt; i++) {
         rumboot_printf("        %d. %s start 0x%x -- %x \n",
                 i, heaps_name[i],
-                rumboot_platform_runtime_info.heaps[i].start,
-                rumboot_platform_runtime_info.heaps[i].end );
+                rumboot_platform_runtime_info->heaps[i].start,
+                rumboot_platform_runtime_info->heaps[i].end );
     }
     // Test mem
     for (heap_id = 0; heap_id < heap_cnt; heap_id++) {

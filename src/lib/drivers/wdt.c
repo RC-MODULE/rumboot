@@ -59,7 +59,7 @@ bool check_crg_ddr_fbdiv_default(int crg_ddr_base, int crg_fbdiv, int crg_ddr_fb
 int wdt_crg_iint(struct wdt_crg_iint_var *conf)
 
 {
-  uint32_t *magic_var = &rumboot_platform_runtime_info.persistent[0];
+  uint32_t *magic_var = &rumboot_platform_runtime_info->persistent[0];
 
   //WDT_MAGIC check
   if (*magic_var == conf->wdt_magic)

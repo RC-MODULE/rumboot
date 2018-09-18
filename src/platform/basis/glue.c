@@ -62,11 +62,11 @@ void setup_mirrored_heap(int id)
 	strcat(name, rumboot_malloc_heap_name(id));
 
 	/* Trashy code, but will do for now */
-	if (rumboot_platform_runtime_info.heaps[id].start >= (void *)0xC0000000) {
+	if (rumboot_platform_runtime_info->heaps[id].start >= (void *)0xC0000000) {
 		rumboot_malloc_register_heap(name,
 					     (ptr - 0xC0000000) + 0x60000000,
 					     (ptr + (len / 2) - 0xC0000000) + 0x60000000);
-	} else if ((rumboot_platform_runtime_info.heaps[id].start >= (void *)0x80000000)) {
+	} else if ((rumboot_platform_runtime_info->heaps[id].start >= (void *)0x80000000)) {
 		rumboot_malloc_register_heap(name,
 					     ptr - 0x80000000 + 0x50000000,
 					     ptr + (len / 2) - 0x80000000 + 0x50000000);

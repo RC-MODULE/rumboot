@@ -37,7 +37,7 @@ struct lprobe_event {
 
 static inline void parse_event(struct lprobe_event *evt)
 {
-    struct lprobe_event *out = (struct lprobe_event *) rumboot_platform_runtime_info.out.data;
+    struct lprobe_event *out = (struct lprobe_event *) rumboot_platform_runtime_info->out.data;
 
 	out->opcode = evt->opcode;
 
@@ -78,7 +78,7 @@ static inline void parse_event(struct lprobe_event *evt)
 		break;
 	}
 
-	rumboot_platform_runtime_info.out.opcode = EVENT_LPROBE;
+	rumboot_platform_runtime_info->out.opcode = EVENT_LPROBE;
 
 }
 

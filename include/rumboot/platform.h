@@ -350,7 +350,7 @@ struct rumboot_runtime_info {
 /**
  * Global instance of struct rumboot_runtime_info.
  */
-extern struct rumboot_runtime_info rumboot_platform_runtime_info;
+extern struct rumboot_runtime_info *rumboot_platform_runtime_info;
 
 /**
  * This global variable defined by the linker points to the start of SPL

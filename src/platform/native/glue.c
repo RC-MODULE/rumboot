@@ -14,6 +14,7 @@
 #include <signal.h>
 #include <string.h>
 #include <rumboot/printf.h>
+#include <rumboot/testsuite.h>
 
 extern int g_argc;
 extern char *g_argv[64];
@@ -87,8 +88,6 @@ int rumboot_platform_getchar(uint32_t timeout_us)
 {
         return (uint8_t)getc(stdin);
 }
-
-struct rumboot_runtime_info rumboot_platform_runtime_info;
 
 
 uint32_t rumboot_arch_irq_disable()
@@ -214,9 +213,31 @@ void rumboot_platform_read_config(struct rumboot_config *conf)
 }
 
 
+static bool mytest(uint32_t arg)
+{
+    /* Return true if test passed, false otherwise */
+    return (rand() % 2) ? true : false;
+}
+
+static bool myskip_func(uint32_t arg)
+{
+    /* return true to skip test */
+    return true;
+}
+
+TEST_SUITE_BEGIN(selftest, "dummies")
+TEST_ENTRY("shit-o-test-1", mytest, 0),
+TEST_ENTRY_COND("shit-o-test-cond", mytest, 0, myskip_func),
+TEST_ENTRY("shit-o-test-2", mytest, 0),
+TEST_ENTRY("shit-o-test-3", mytest, 0),
+TEST_ENTRY("shit-o-test-4", mytest, 0),
+TEST_ENTRY("shit-o-test-5", mytest, 0),
+TEST_ENTRY("shit-o-test-6", mytest, 0),
+TEST_SUITE_END();
+
 void rumboot_platform_selftest(struct rumboot_config *conf)
 {
-        /* Execute selftest routines */
+    test_suite_run(NULL, &selftest);
 }
 
 

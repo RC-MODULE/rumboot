@@ -15,8 +15,8 @@ __attribute__((no_instrument_function)) void rumboot_platform_event_raise(enum r
 	int i;
 	RUMBOOT_ATOMIC_BLOCK() {
 		for (i=0; i<len; i++)
-			rumboot_platform_runtime_info.out.data[i] = data[i];
-		rumboot_platform_runtime_info.out.opcode = event;
+			rumboot_platform_runtime_info->out.data[i] = data[i];
+		rumboot_platform_runtime_info->out.opcode = event;
 	}
 }
 
@@ -24,29 +24,29 @@ __attribute__((no_instrument_function)) void rumboot_platform_event_raise(enum r
 	rumboot_platform_event_get(
 				  volatile uint32_t **data)
 {
-	while(!rumboot_platform_runtime_info.in.opcode);;
+	while(!rumboot_platform_runtime_info->in.opcode);;
 
-	*data = rumboot_platform_runtime_info.in.data;
-	return rumboot_platform_runtime_info.in.opcode;
+	*data = rumboot_platform_runtime_info->in.data;
+	return rumboot_platform_runtime_info->in.opcode;
 }
 
 __attribute__((no_instrument_function)) void rumboot_platform_event_clear()
 {
-	rumboot_platform_runtime_info.in.opcode = 0;
+	rumboot_platform_runtime_info->in.opcode = 0;
 }
 
 __attribute__((no_instrument_function)) static inline void raise_event_fast(enum rumboot_simulation_event event, uint32_t data)
 {
-	rumboot_platform_runtime_info.out.data[0] = data;
-	rumboot_platform_runtime_info.out.opcode = event;
+	rumboot_platform_runtime_info->out.data[0] = data;
+	rumboot_platform_runtime_info->out.opcode = event;
 }
 
 __attribute__((no_instrument_function)) void rumboot_platform_trace(void *pc)
 {
 //	RUMBOOT_ATOMIC_BLOCK() {
-    	rumboot_platform_runtime_info.out.data[0] = (uint32_t) (pc);
-    	rumboot_platform_runtime_info.out.data[1] = rumboot_platform_runtime_info.nestlevel;
-		rumboot_platform_runtime_info.out.opcode = EVENT_TRACE;
+    	rumboot_platform_runtime_info->out.data[0] = (uint32_t) (pc);
+    	rumboot_platform_runtime_info->out.data[1] = rumboot_platform_runtime_info->nestlevel;
+		rumboot_platform_runtime_info->out.opcode = EVENT_TRACE;
 //	}
 }
 
