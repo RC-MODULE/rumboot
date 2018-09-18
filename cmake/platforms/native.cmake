@@ -48,6 +48,9 @@ function(gen_chain_spl var name s1 s2)
   set(var ${SPL_CHAIN_EXEC} PARENT_SCOPE)
 endfunction()
 
+
+include(${CMAKE_SOURCE_DIR}/cmake/bootrom.cmake)
+
 macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
   file(GLOB RUMBOOT_TARGETS ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/targets/*.c)
   foreach(target ${RUMBOOT_TARGETS})
@@ -57,6 +60,9 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     )
   endforeach()
 
+
+  rumboot_add_bootrom_components(NATIVE_SPL NATIVE)
+
   add_rumboot_target(
       NAME fileboot
       CONFIGURATION NATIVE
@@ -65,131 +71,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       FEATURES STUB
   )
 
-  add_rumboot_target(
-      NAME bootrom
-      CONFIGURATION NATIVE
-      FILES common/bootrom/bootrom.c
-      FEATURES STUB
-  )
 
-  add_rumboot_target(
-      CONFIGURATION NATIVE_SPL
-      NAME ok
-      FILES common/bootrom/spl.c
-      CFLAGS -DTERMINATE_SIMULATION -DEXITCODE=0
-      VARIABLE SPL_OK
-  )
-
-  add_rumboot_target(
-      CONFIGURATION NATIVE_SPL
-      NAME ok-check2
-      FILES common/bootrom/spl.c
-      CFLAGS -DTERMINATE_SIMULATION -DEXITCODE=0 -DSPL_COUNT_CHECK=2
-      VARIABLE SPL_OK_CHECK2
-  )
-
-  add_rumboot_target(
-      CONFIGURATION NATIVE_SPL
-      NAME ok-check1
-      FILES common/bootrom/spl.c
-      CFLAGS -DTERMINATE_SIMULATION -DEXITCODE=0 -DSPL_COUNT_CHECK=1
-      VARIABLE SPL_OK_CHECK1
-  )
-
-  add_rumboot_target(
-      CONFIGURATION NATIVE_SPL
-      NAME fail
-      FILES common/bootrom/spl.c
-      CFLAGS -DTERMINATE_SIMULATION -DEXITCODE=1
-      VARIABLE SPL_FAIL
-  )
-
-  add_rumboot_target(
-     FILES common/bootrom/spl.c
-     NAME fail-bad-magic
-     CONFIGURATION NATIVE_SPL
-     CFLAGS -DEXITCODE=1 -DTERMINATE_SIMULATION
-     FEATURES STUB PACKIMAGE
-     PACKIMAGE_FLAGS -s magic 0xbadc0de
-     VARIABLE SPL_FAIL_BAD_MAGIC
-   )
-
-   add_rumboot_target(
-     FILES common/bootrom/spl.c
-     NAME fail-bad-version
-     CONFIGURATION NATIVE_SPL
-     CFLAGS -DEXITCODE=1 -DTERMINATE_SIMULATION
-     FEATURES STUB PACKIMAGE
-     PACKIMAGE_FLAGS -s version 1 -c
-     VARIABLE SPL_FAIL_BAD_VERSION
-   )
-
-   add_rumboot_target(
-     FILES common/bootrom/spl.c
-     NAME fail-bad-header-crc
-     CONFIGURATION NATIVE_SPL
-     CFLAGS -DEXITCODE=1 -DTERMINATE_SIMULATION
-     FEATURES STUB PACKIMAGE
-     PACKIMAGE_FLAGS -s header_crc32 0xb00bc0de
-     VARIABLE SPL_FAIL_BAD_HCRC32
-   )
-
-   add_rumboot_target(
-     FILES common/bootrom/spl.c
-     NAME fail-bad-data-crc
-     CONFIGURATION NATIVE_SPL
-     CFLAGS -DEXITCODE=1 -DTERMINATE_SIMULATION
-     FEATURES STUB PACKIMAGE
-     PACKIMAGE_FLAGS -s data_crc32 0xb00bc0de -c
-     VARIABLE SPL_FAIL_BAD_DCRC32
-   )
-
-   add_rumboot_target(
-     FILES common/bootrom/spl.c
-     NAME next
-     CONFIGURATION NATIVE_SPL
-     CFLAGS -DEXITCODE=0
-     FEATURES STUB PACKIMAGE
-     VARIABLE SPL_NEXT
-   )
-
-   add_rumboot_target(
-     FILES common/bootrom/spl.c
-     NAME jump
-     CONFIGURATION NATIVE_SPL
-     CFLAGS -DEXITCODE=2
-     FEATURES STUB PACKIMAGE
-     VARIABLE SPL_JUMP
-   )
-
-   add_rumboot_target(
-     FILES common/bootrom/spl.c
-     NAME jump_host
-     CONFIGURATION NATIVE_SPL
-     CFLAGS -DEXITCODE=-1
-     FEATURES STUB PACKIMAGE
-     VARIABLE SPL_JUMP_HOST
-   )
-
-   add_rumboot_target(
-     FILES common/bootrom/spl.c
-     NAME fail-bad-id
-     CONFIGURATION NATIVE_SPL
-     CFLAGS -DEXITCODE=1 -DTERMINATE_SIMULATION
-     FEATURES STUB PACKIMAGE
-     PACKIMAGE_FLAGS -s chip_id 1 -c
-     VARIABLE SPL_FAIL_BAD_ID
-   )
-
-   add_rumboot_target(
-     FILES common/bootrom/spl.c
-     NAME ok-bad-revision
-     CONFIGURATION NATIVE_SPL
-     CFLAGS -DEXITCODE=0 -DTERMINATE_SIMULATION
-     FEATURES STUB PACKIMAGE
-     PACKIMAGE_FLAGS -s chip_rev 99 -c
-     VARIABLE SPL_OK_BAD_REV
-   )
 
    gen_chain_spl(spl_chain_ok SPL_CHAIN_OK SPL_NEXT SPL_OK)
 

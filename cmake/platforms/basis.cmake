@@ -101,47 +101,6 @@ rumboot_add_configuration(
   FEATURES PACKIMAGE
 )
 
-
-macro(rumboot_unit_test id tag memtag tagoffset)
-
-  set(_commas)
-  foreach(offset RANGE ${tagoffset})
-    set(_commas "${_commas},")
-  endforeach()
-
-  add_rumboot_target(
-          NAME "unit-${tag}-ok"
-          CONFIGURATION ROM
-          PREFIX "bootrom"
-          FILES common/bootrom/unit.c
-          TESTGROUP bootrom
-          CFLAGS -DSOURCE=${id} -DEXPECTED=true
-          LOAD ${memtag} ${_commas}spl-ok
-  )
-
-  add_rumboot_target(
-          NAME "unit-${tag}-bad-magic"
-          CONFIGURATION ROM
-          PREFIX "bootrom"
-          FILES common/bootrom/unit.c
-          TESTGROUP bootrom
-          CFLAGS -DSOURCE=${id} -DEXPECTED=false
-          LOAD ${memtag} ${_commas}spl-fail-bad-magic
-  )
-
-  add_rumboot_target(
-          NAME "unit-${tag}-bad-version"
-          CONFIGURATION ROM
-          PREFIX "bootrom"
-          FILES common/bootrom/unit.c
-          TESTGROUP bootrom
-          CFLAGS -DSOURCE=${id} -DEXPECTED=false
-          LOAD ${memtag} ${_commas}spl-fail-bad-version
-  )
-
-endmacro()
-
-
 macro(add_bootrom_stuff)
   #Let's add our spl stuff
   add_rumboot_target(
@@ -266,7 +225,7 @@ endmacro()
 ### Add tests here ###
 #WARNING! Full regression automatically includes all tests from the short ones
 macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
-  add_bootrom_stuff()
+#  add_bootrom_stuff()
 
   add_rumboot_target_dir(simple-rom/
     CONFIGURATION ROM
