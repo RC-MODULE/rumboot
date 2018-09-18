@@ -15,10 +15,26 @@
 #include <string.h>
 #include <rumboot/printf.h>
 #include <rumboot/testsuite.h>
+#include <sys/types.h>
+#include <sys/shm.h>
 
-extern int g_argc;
-extern char *g_argv[64];
 
+int g_argc = 0;
+static int ipc_id;
+char *g_argv[64];
+#define NAME CMAKE_BINARY_DIR "/rumboot-native-Production-spl-ok"
+static struct rumboot_bootsource arr[] = {
+        {
+                .name = NAME,
+                .plugin = &g_bootmodule_file,
+        },
+        {
+                .name = NAME,
+                .plugin = &g_bootmodule_file,
+        },
+
+        { /*Sentinel*/ }
+};
 
 
 void my_handler(int signum)
@@ -39,6 +55,51 @@ uint32_t rumboot_platform_get_uptime()
         return 0;
 }
 
+
+static void *create_shared_memory(const char *skey, int id, size_t size)
+{
+        /* make the key: */
+        key_t key;
+        int shmid;
+
+        if ((key = ftok(skey, id)) == -1) { /*Here the file must exist */
+                perror("ftok");
+                exit(1);
+        }
+
+        /*  create the segment: */
+        if ((shmid = shmget(key, size, 0644 | IPC_CREAT)) == -1) {
+                perror("shmget");
+                exit(1);
+        }
+
+        /* attach to the segment to get a pointer to it: */
+        void *data = shmat(shmid, (void *)0, 0);
+        if (data == (char *)(-1)) {
+                perror("shmat");
+                exit(1);
+        }
+        return data;
+}
+
+
+
+static int do_selftest = 0;
+static int do_host = 0;
+static char *hfile = "null";
+
+static struct option long_options[] =
+{
+        { "selftest", no_argument,	 &do_selftest, 1   },
+        { "host",     no_argument,	 &do_host,     1   },
+        { "align",    required_argument, 0,	       'a' },
+        { "file",     required_argument, 0,	       'f' },
+        { "file2",    required_argument, 0,	       'F' },
+        { "hfile",    required_argument, 0,	       'h' },
+        { "ipckey",   required_argument, 0,	       'i' },
+        { 0,	      0,		 0,	       0   }
+};
+
 void rumboot_platform_setup()
 {
         signal(SIGUSR1, my_handler);
@@ -55,6 +116,46 @@ void rumboot_platform_setup()
                 g_argv[g_argc++] = arg;
         }
         fclose(fd);
+
+        ipc_id = getpid();
+
+        while (1) {
+                int option_index = 0;
+                int c = getopt_long(g_argc, g_argv, "sha:F:f:h:i:",
+                                    long_options, &option_index);
+                if (c == -1) {
+                        break;
+                }
+                switch (c) {
+                case 'i':
+                        ipc_id = atoi(optarg);
+                        break;
+
+                case 'a':
+                        g_bootmodule_file.align = atoi(optarg);
+                        rumboot_printf("DEBUG: setting alignment to %d\n", g_bootmodule_file.align);
+                        break;
+
+                case 'h':
+                        hfile = strdup(optarg);
+                        hfile = strtok(hfile, ",");
+                        rumboot_printf("DEBUG: setting host boot file to %s\n", optarg);
+                        break;
+
+                case 'F':
+                        arr[1].name = optarg;
+                        rumboot_printf("DEBUG: setting 2nd boot file to %s\n", optarg);
+                        break;
+
+                case 'f':
+                        arr[0].name = optarg;
+                        rumboot_printf("DEBUG: setting 1st boot file to %s\n", optarg);
+                        break;
+                }
+        }
+
+        system("touch /tmp/rumboot.tmp");
+        rumboot_platform_runtime_info = create_shared_memory("/tmp/rumboot.tmp", ipc_id, sizeof(rumboot_platform_runtime_info));
         /* No - op */
 }
 
@@ -100,20 +201,22 @@ uint32_t rumboot_arch_irq_enable()
         return 0;
 }
 
-static char *hfile = "null";
+
 void rumboot_platform_request_file(const char *plusarg, uint32_t addr)
 {
-        if (strcmp(plusarg, "HOSTMOCK")==0) {
-                if (!hfile)
+        if (strcmp(plusarg, "HOSTMOCK") == 0) {
+                if (!hfile) {
                         return;
+                }
                 FILE *fd = fopen(hfile, "r");
-                if (!fd)
+                if (!fd) {
                         return;
+                }
                 size_t sz;
                 fseek(fd, 0, SEEK_END);
                 sz = ftell(fd);
                 fseek(fd, 0, SEEK_SET);
-                fread((void *) addr, sz, 1, fd);
+                fread((void *)addr, sz, 1, fd);
                 fclose(fd);
                 hfile = strtok(NULL, ",");
         }
@@ -127,19 +230,6 @@ void rumboot_platform_perf(const char *tag)
 {
 }
 
-#define NAME CMAKE_BINARY_DIR "/rumboot-native-Production-spl-ok"
-static struct rumboot_bootsource arr[] = {
-        {
-                .name = NAME,
-                .plugin = &g_bootmodule_file,
-        },
-        {
-                .name = NAME,
-                .plugin = &g_bootmodule_file,
-        },
-
-        { /*Sentinel*/ }
-};
 
 const struct rumboot_bootsource *rumboot_platform_get_bootsources()
 {
@@ -159,55 +249,8 @@ void *rumboot_platform_get_spl_area(size_t *size)
         return malloc(SIZE);
 }
 
-
-static int do_selftest = 0;
-static int do_host = 0;
-
-
-static struct option long_options[] =
-{
-        { "selftest", no_argument,	 &do_selftest, 1   },
-        { "host",     no_argument,	 &do_host,     1   },
-        { "align",    required_argument, 0,	       'a' },
-        { "file",     required_argument, 0,	       'f' },
-        { "file2",    required_argument, 0,	       'F' },
-        { "hfile",    required_argument, 0,	       'h' },
-        { 0,	      0,		 0,	       0   }
-};
-
 void rumboot_platform_read_config(struct rumboot_config *conf)
 {
-        while (1) {
-                int option_index = 0;
-                int c = getopt_long(g_argc, g_argv, "sha:",
-                                    long_options, &option_index);
-                if (c == -1) {
-                        break;
-                }
-                switch (c) {
-                case 'a':
-                        g_bootmodule_file.align = atoi(optarg);
-                        rumboot_printf("DEBUG: setting alignment to %d\n", g_bootmodule_file.align);
-                        break;
-
-                case 'h':
-                        hfile = strdup(optarg);
-                        hfile = strtok(hfile, ",");
-                        rumboot_printf("DEBUG: setting host boot file to %s\n", optarg);
-                        break;
-
-                case 'F':
-                        arr[1].name = optarg;
-                        rumboot_printf("DEBUG: setting 2nd boot file to %s\n", optarg);
-                        break;
-
-                case 'f':
-                        arr[0].name = optarg;
-                        rumboot_printf("DEBUG: setting 1st boot file to %s\n", optarg);
-                        break;
-                }
-        }
-
         conf->hostmode = do_host;
         conf->selftest = do_selftest;
 }
@@ -215,14 +258,14 @@ void rumboot_platform_read_config(struct rumboot_config *conf)
 
 static bool mytest(uint32_t arg)
 {
-    /* Return true if test passed, false otherwise */
-    return (rand() % 2) ? true : false;
+        /* Return true if test passed, false otherwise */
+        return (rand() % 2) ? true : false;
 }
 
 static bool myskip_func(uint32_t arg)
 {
-    /* return true to skip test */
-    return true;
+        /* return true to skip test */
+        return true;
 }
 
 TEST_SUITE_BEGIN(selftest, "dummies")
@@ -237,7 +280,7 @@ TEST_SUITE_END();
 
 void rumboot_platform_selftest(struct rumboot_config *conf)
 {
-    test_suite_run(NULL, &selftest);
+        test_suite_run(NULL, &selftest);
 }
 
 
@@ -292,7 +335,9 @@ int run_binary(const char *command)
 
                 sigprocmask(SIG_SETMASK, &origMask, NULL);
 
-                execl(command, command, (char *)NULL);
+                char tmp[128];
+                sprintf(tmp, "%d", ipc_id);
+                execl(command, command, "--ipckey", tmp, (char *)NULL);
                 _exit(127);     /* We could not exec the shell */
 
         default:                /* Parent: wait for our child to terminate */

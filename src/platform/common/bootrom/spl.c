@@ -7,26 +7,38 @@
 #include <stdlib.h>
 
 #ifdef RUMBOOT_NATIVE
-    #include <unistd.h>
-    #include <signal.h>
+#include <unistd.h>
+#include <signal.h>
 #endif
 
-#ifndef SIGNAL
-    #define SIGNAL SIGUSR1
-#endif
+void do_exit(int code) {
+        #ifndef RUMBOOT_NATIVE
+                exit(code);
+        #else
+                rumboot_printf("spl: Will now send parent a signal\n");
+                kill(getppid(), code ? SIGUSR2 : SIGUSR1);
+                sleep(1);
+                exit(0);
+        #endif
+}
 
 int main()
 {
-	rumboot_printf("spl: hello, I'm the secondary image\n");
-    rumboot_printf("spl: I will exit with %d!\n", EXITCODE);
+        rumboot_platform_runtime_info->persistent[0]++;
+        rumboot_printf("spl: executing spl #%d\n",
+                       rumboot_platform_runtime_info->persistent[0]
+                       );
+        rumboot_printf("spl: I will exit with %d!\n", EXITCODE);
+
+#ifdef SPL_COUNT_CHECK
+        if (rumboot_platform_runtime_info->persistent[0] != SPL_COUNT_CHECK) {
+                rumboot_printf("spl: Execution counter check failed!\n");
+                do_exit(1);
+        }
+#endif
 
 #ifdef TERMINATE_SIMULATION
-    #ifndef RUMBOOT_NATIVE
-        exit(EXITCODE);
-    #else
-	   rumboot_printf("spl: Will now send parent a signal\n");
-       kill(getppid(), SIGNAL);
-    #endif
+        do_exit(EXITCODE);
 #endif
-    return EXITCODE;
+        return EXITCODE;
 }

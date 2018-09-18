@@ -82,9 +82,25 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
   add_rumboot_target(
       CONFIGURATION NATIVE_SPL
+      NAME ok-check2
+      FILES common/bootrom/spl.c
+      CFLAGS -DTERMINATE_SIMULATION -DEXITCODE=0 -DSPL_COUNT_CHECK=2
+      VARIABLE SPL_OK_CHECK2
+  )
+
+  add_rumboot_target(
+      CONFIGURATION NATIVE_SPL
+      NAME ok-check1
+      FILES common/bootrom/spl.c
+      CFLAGS -DTERMINATE_SIMULATION -DEXITCODE=0 -DSPL_COUNT_CHECK=1
+      VARIABLE SPL_OK_CHECK1
+  )
+
+  add_rumboot_target(
+      CONFIGURATION NATIVE_SPL
       NAME fail
       FILES common/bootrom/spl.c
-      CFLAGS -DTERMINATE_SIMULATION -DEXITCODE=1 -DSIGNAL=SIGUSR2
+      CFLAGS -DTERMINATE_SIMULATION -DEXITCODE=1
       VARIABLE SPL_FAIL
   )
 
@@ -92,7 +108,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
      FILES common/bootrom/spl.c
      NAME fail-bad-magic
      CONFIGURATION NATIVE_SPL
-     CFLAGS -DEXITCODE=1 -DTERMINATE_SIMULATION -DSIGNAL=SIGUSR2
+     CFLAGS -DEXITCODE=1 -DTERMINATE_SIMULATION
      FEATURES STUB PACKIMAGE
      PACKIMAGE_FLAGS -s magic 0xbadc0de
      VARIABLE SPL_FAIL_BAD_MAGIC
@@ -102,7 +118,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
      FILES common/bootrom/spl.c
      NAME fail-bad-version
      CONFIGURATION NATIVE_SPL
-     CFLAGS -DEXITCODE=1 -DTERMINATE_SIMULATION -DSIGNAL=SIGUSR2
+     CFLAGS -DEXITCODE=1 -DTERMINATE_SIMULATION
      FEATURES STUB PACKIMAGE
      PACKIMAGE_FLAGS -s version 1 -c
      VARIABLE SPL_FAIL_BAD_VERSION
@@ -112,7 +128,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
      FILES common/bootrom/spl.c
      NAME fail-bad-header-crc
      CONFIGURATION NATIVE_SPL
-     CFLAGS -DEXITCODE=1 -DTERMINATE_SIMULATION -DSIGNAL=SIGUSR2
+     CFLAGS -DEXITCODE=1 -DTERMINATE_SIMULATION
      FEATURES STUB PACKIMAGE
      PACKIMAGE_FLAGS -s header_crc32 0xb00bc0de
      VARIABLE SPL_FAIL_BAD_HCRC32
@@ -122,7 +138,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
      FILES common/bootrom/spl.c
      NAME fail-bad-data-crc
      CONFIGURATION NATIVE_SPL
-     CFLAGS -DEXITCODE=1 -DTERMINATE_SIMULATION -DSIGNAL=SIGUSR2
+     CFLAGS -DEXITCODE=1 -DTERMINATE_SIMULATION
      FEATURES STUB PACKIMAGE
      PACKIMAGE_FLAGS -s data_crc32 0xb00bc0de -c
      VARIABLE SPL_FAIL_BAD_DCRC32
@@ -181,27 +197,27 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
   #TODO: Test chain-booting appended images from one source
   add_rumboot_test(host-bootrom bootrom-chain --file ${SPL_CHAIN_OK})
   add_rumboot_test(host-fileboot unit-boot --file ${SPL_OK})
-  add_rumboot_test(host-bootrom bootrom-jump --file ${SPL_JUMP} --file2 ${SPL_OK})
-  add_rumboot_test(host-bootrom bootrom-jump-to-host --file ${SPL_JUMP_HOST} --hfile ${SPL_OK})
+  add_rumboot_test(host-bootrom bootrom-jump --file ${SPL_JUMP} --file2 ${SPL_OK_CHECK2})
+  add_rumboot_test(host-bootrom bootrom-jump-to-host --file ${SPL_JUMP_HOST} --hfile ${SPL_OK_CHECK2})
   add_rumboot_test(host-bootrom bootrom-boot --file ${SPL_OK} --file2 ${SPL_FAIL})
   add_rumboot_test(host-bootrom bootrom-boot-selftest --selftest --file ${SPL_OK} --file2 ${SPL_FAIL})
   add_rumboot_test(host-bootrom bootrom-boot-a32 --align 32 --file ${SPL_OK} --file2 ${SPL_FAIL})
   add_rumboot_test(host-bootrom bootrom-boot-a64 --align 64 --file ${SPL_OK} --file2 ${SPL_FAIL})
   add_rumboot_test(host-bootrom bootrom-boot-a128 --align 128 --file ${SPL_OK} --file2 ${SPL_FAIL})
-  add_rumboot_test(host-bootrom bootrom-bad-magic --file ${SPL_FAIL_BAD_MAGIC} --file2 ${SPL_OK})
-  add_rumboot_test(host-bootrom bootrom-bad-header-crc32 --file ${SPL_FAIL_BAD_HCRC32} --file2 ${SPL_OK})
-  add_rumboot_test(host-bootrom bootrom-bad-data-crc32 --file ${SPL_FAIL_BAD_DCRC32} --file2 ${SPL_OK})
+  add_rumboot_test(host-bootrom bootrom-bad-magic --file ${SPL_FAIL_BAD_MAGIC} --file2 ${SPL_OK_CHECK1})
+  add_rumboot_test(host-bootrom bootrom-bad-header-crc32 --file ${SPL_FAIL_BAD_HCRC32} --file2 ${SPL_OK_CHECK1})
+  add_rumboot_test(host-bootrom bootrom-bad-data-crc32 --file ${SPL_FAIL_BAD_DCRC32} --file2 ${SPL_OK_CHECK1})
 
   add_rumboot_test(host-bootrom bootrom-bad-id --file ${SPL_FAIL_BAD_ID} --file2 ${SPL_OK})
   add_rumboot_test(host-bootrom bootrom-bad-version --file ${SPL_FAIL_BAD_VERSION} --file2 ${SPL_OK})
   add_rumboot_test(host-bootrom bootrom-bad-revision --file ${SPL_OK_BAD_REV} --file2 ${SPL_FAIL})
-  add_rumboot_test(host-bootrom bootrom-bad-version --file ${SPL_NEXT} --file2 ${SPL_OK})
+  add_rumboot_test(host-bootrom bootrom-next --file ${SPL_NEXT} --file2 ${SPL_OK_CHECK2})
   add_rumboot_test(host-bootrom bootrom-hostmode-ok --host --hfile ${SPL_OK})
   add_rumboot_test(host-bootrom bootrom-hostmode-bad-data --host --hfile ${SPL_FAIL_BAD_DCRC32},${SPL_OK})
   add_rumboot_test(host-bootrom bootrom-hostmode-bad-magic --host --hfile ${SPL_FAIL_BAD_MAGIC},${SPL_OK})
   add_rumboot_test(host-bootrom bootrom-hostmode-bad-id --host --hfile ${SPL_FAIL_BAD_ID},${SPL_OK})
   add_rumboot_test(host-bootrom bootrom-fallback-to-hostmode --file ${SPL_FAIL_BAD_HCRC32} --file2 ${SPL_FAIL_BAD_DCRC32} --hfile ${SPL_OK})
-  add_rumboot_test(host-bootrom bootrom-hostmode-jump-to-file --host --file2 ${SPL_FAIL} --file2 ${SPL_OK} --hfile ${SPL_FAIL_BAD_ID},${SPL_JUMP})
+  add_rumboot_test(host-bootrom bootrom-hostmode-jump-to-file --host --file2 ${SPL_FAIL} --file2 ${SPL_OK_CHECK2} --hfile ${SPL_FAIL_BAD_ID},${SPL_JUMP})
 
 endmacro()
 
