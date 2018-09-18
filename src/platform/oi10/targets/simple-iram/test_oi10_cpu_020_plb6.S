@@ -11,20 +11,7 @@
 
 
 #define R_ARG0              r3
-#define R_ARG1              r4
 #define R_RETV              R_ARG0
-#define R_ADDR              r20
-#define R_EXPV              r21
-#define R_DATA              r22
-#define R_OFFT              r23
-#define R_CMP1              r24
-#define R_CMP2              r25
-#define R_INCR              r26
-#define R_CNTR              r27
-#define R_TEMP              r28
-#define R_BACK              r29
-
-
 
 .section ".text","ax",@progbits
 
@@ -37,12 +24,12 @@ main:
 
 tlb_entries:
 //          MMU_TLB_ENTRY(  ERPN,   RPN,        EPN,        DSIZ,                   IL1I,   IL1D,   W,      I,      M,      G,      E,                      UX, UW, UR,     SX, SW, SR      DULXE,  IULXE,      TS,     TID,                WAY,                BID,                V   )
-// TLB entries to remap 64KB pages IM0 from 0x00000010_00040000-0x00000010_0007FFFF to 0x00040000-0x0007FFFF
-    .long   MMU_TLB_ENTRY(  0x010,  0x00040,    0x00040,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
-    .long   MMU_TLB_ENTRY(  0x010,  0x00050,    0x00050,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
-    .long   MMU_TLB_ENTRY(  0x010,  0x00060,    0x00060,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
-    .long   MMU_TLB_ENTRY(  0x010,  0x00070,    0x00070,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
-// TLB entries to remap 1GB pages DDR3 EM0 from 0x00000000_00000000-0x00000001_FFFFFFFF to 0x40000000-0x7FFFFFFF
+// TLB entries to remap 64KB pages IM0 from 0x00000010_80000000-0x00000010_FFF3FFFF to 0x80000000-0xFFF3FFFF
+    .long   MMU_TLB_ENTRY(  0x010,  0x80000,    0xFFF00,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
+    .long   MMU_TLB_ENTRY(  0x010,  0x80010,    0xFFF10,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
+    .long   MMU_TLB_ENTRY(  0x010,  0x80020,    0xFFF20,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
+    .long   MMU_TLB_ENTRY(  0x010,  0x80030,    0xFFF30,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
+// TLB entries to remap 1GB pages SRAM EM2 from 0x00000000_00000000-0x00000001_FFFFFFFF to 0x40000000-0x7FFFFFFF
     .long   MMU_TLB_ENTRY(  0x000,  0x00000,    0x40000,    MMU_TLBE_DSIZ_1GB,      0b1,    0b1,    0b0,    0b0,    0b1,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
     .set TLB_ENTRIES_N, (.-tlb_entries)/MMU_TLB_ENTRY_SIZE
 
@@ -243,6 +230,7 @@ check_plb6_tlbie:
     tlbivax     0, r1
     msync
 
+
 finish:
     test_event  EVENT_FINISHED
     blr
@@ -262,7 +250,7 @@ never_comes_here:
     test_event  EVENT_ERROR
     b           never_comes_here
 
-.section ".EM0.data","awx",@progbits
+.section ".EM2.data","awx",@progbits
 .org 0x00000000
 __ddr_init_data:
 .space 128, 0x00
@@ -295,4 +283,4 @@ plb6_clean_test_data:
 plb6_flush_test_data:
 .long   TD_FLUSH
 .align 7
-em0_data_end:
+em2_data_end:
