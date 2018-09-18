@@ -9,7 +9,6 @@
 #include <rumboot/bootsrc/sdio.h>
 
 
-
 #define IBM_BIT_INDEX(size, index)    (((size) - 1) - ((index) % (size)))
 #define ITRPT_XSR_FP_e  50
 #define ITRPT_XSR_FP_i IBM_BIT_INDEX(64, ITRPT_XSR_FP_e)
@@ -120,7 +119,6 @@ int rumboot_platform_getchar(uint32_t timeout_us)
     return (uint8_t) getc(stdin);
 }
 
-struct rumboot_runtime_info rumboot_platform_runtime_info;
 
 void rumboot_platform_irq_init()
 {
@@ -194,7 +192,7 @@ bool rumboot_platform_check_entry_points(struct rumboot_bootheader *hdr)
 
 void *rumboot_platform_get_spl_area(size_t *size)
 {
-  *size = (&rumboot_platform_spl_end - &rumboot_platform_spl_start); 
+  *size = (&rumboot_platform_spl_end - &rumboot_platform_spl_start);
   return (void *) &rumboot_platform_spl_start;
 }
 
