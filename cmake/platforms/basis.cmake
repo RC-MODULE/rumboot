@@ -402,7 +402,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 	add_rumboot_target_dir(arinc/freq/
       CONFIGURATION IRAM_WITH_DDR
       CFLAGS -DTX_FREQ=tx_freq_100 -DRX_FREQ=rx_freq_100 -Dheap_0=1 -Dheap_1=3
-      PREFIX arinc_freq_100_IM1_ddr0
+      PREFIX arinc_freq_100_IM1_ddr1
     )
 
 	add_rumboot_target_dir(arinc/freq/
