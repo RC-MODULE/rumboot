@@ -17,24 +17,28 @@
  */
 
 enum checker_type {
-	REGPOKER_EOL = 0,
-	REGPOKER_READ8,
-	REGPOKER_WRITE8,
-	REGPOKER_READ16,
-	REGPOKER_WRITE16,
-	REGPOKER_READ32,
-	REGPOKER_WRITE32,
-	REGPOKER_READ64,
-	REGPOKER_WRITE64,
+    REGPOKER_EOL = 0,
+    REGPOKER_READ8,
+    REGPOKER_WRITE8,
+    REGPOKER_READ16,
+    REGPOKER_WRITE16,
+    REGPOKER_READ32,
+    REGPOKER_WRITE32,
+    REGPOKER_READ64,
+    REGPOKER_WRITE64,
+#ifdef __PPC__
+    REGPOKER_READ_DCR,
+    REGPOKER_WRITE_DCR,
+#endif
 };
 
 
 struct regpoker_checker {
-	const char *		name;
-	enum checker_type	tp;
-	uint32_t		base;
-	uint64_t		expected;
-	uint64_t		mask;
+    const char *        name;
+    enum checker_type   tp;
+    uint32_t            base;
+    uint64_t            expected;
+    uint64_t            mask;
 };
 
 

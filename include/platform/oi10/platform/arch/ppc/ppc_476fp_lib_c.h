@@ -3,25 +3,7 @@
 
 
 #include <stdint.h>
-
-
-/*DCR bus access*/
-static inline void dcr_write( uint32_t const addr, uint32_t const wval ) {
-    asm volatile (
-        "mtdcrx %0, %1 \n\t"
-        ::  "r"(addr), "r"(wval)
-    );
-}
-
-static inline uint32_t dcr_read( uint32_t const addr ) {
-    uint32_t rval = 0;
-    asm volatile (
-        "mfdcrx %0, %1 \n\t"
-        :   "=r"(rval)
-        :   "r"(addr)
-    );
-    return rval;
-}
+#include <rumboot/io.h>
 
 
 /*MSR access*/
@@ -113,21 +95,6 @@ inline static void dcbst( void* const addr ) {
 #define isync()\
     asm volatile (\
         "isync \n\t"\
-    )
-
-#define mbar()\
-    asm volatile (\
-        "mbar \n\t"\
-    )
-
-#define msync()\
-    asm volatile (\
-        "msync \n\t"\
-    )
-
-#define lwsync()\
-    asm volatile (\
-        "lwsync \n\t"\
     )
 
 #define ici( CT )\
