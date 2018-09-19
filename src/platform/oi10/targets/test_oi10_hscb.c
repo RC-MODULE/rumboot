@@ -9,6 +9,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <stdbool.h>
+#include <stdio.h>
 #include <rumboot/io.h>
 #include <rumboot/printf.h>
 #include <rumboot/regpoker.h>
@@ -18,6 +19,7 @@
 #include <platform/interrupts.h>
 #include <regs/regs_hscb.h>
 #include <rumboot/irq.h>
+#include <rumboot/rumboot.h>
 #include <devices/hscb.h>
 #include <platform/devices/emi.h>
 #include <platform/devices/nor_1636RR4.h>
@@ -145,33 +147,33 @@ static uint32_t check_hscb_regs( uint32_t base_addr ) {
 }
 #endif
 
-#define CURRENT_MEMORY_RX_0 ((uint32_t)data_out_0_1)
-#define CURRENT_MEMORY_TX_0 ((uint32_t)data_in_0_1)
-#define CURRENT_MEMORY_RX_1 ((uint32_t)data_out_0_3)
-#define CURRENT_MEMORY_TX_1 ((uint32_t)data_in_0_3)
+#define CURRENT_MEMORY_RX_0 IM0_BASE
+#define CURRENT_MEMORY_TX_0 IM0_BASE
+#define CURRENT_MEMORY_RX_1 IM0_BASE
+#define CURRENT_MEMORY_TX_1 IM0_BASE
 
 #define IM0_TX_0        IM0_BASE
-#define IM0_TX_1        IM0_TX_0 + DATA_SIZE_0
-#define IM0_RX_0        IM0_TX_1 + DATA_SIZE_1
-#define IM0_RX_1        IM0_RX_0 + DATA_SIZE_0
+#define IM0_TX_1        IM0_BASE
+#define IM0_RX_0        IM0_BASE
+#define IM0_RX_1        IM0_BASE
 
 
 #define IM1_TX_0        IM1_BASE
-#define IM1_TX_1        IM1_TX_0 + DATA_SIZE_0
-#define IM1_RX_0        IM1_TX_1 + DATA_SIZE_1
-#define IM1_RX_1        IM1_RX_0 + DATA_SIZE_0
+#define IM1_TX_1        IM1_BASE
+#define IM1_RX_0        IM1_BASE
+#define IM1_RX_1        IM1_BASE
 
 
 #define SSRAM_TX_0      SSRAM_BASE
-#define SSRAM_TX_1      SSRAM_TX_0 + DATA_SIZE_0
-#define SSRAM_RX_0      SSRAM_TX_1 + DATA_SIZE_1
-#define SSRAM_RX_1      SSRAM_RX_0 + DATA_SIZE_0
+#define SSRAM_TX_1      SSRAM_BASE
+#define SSRAM_RX_0      SSRAM_BASE
+#define SSRAM_RX_1      SSRAM_BASE
 
 
 #define SDRAM_TX_0      SDRAM_BASE
-#define SDRAM_TX_1      SDRAM_TX_0 + DATA_SIZE_0
-#define SDRAM_RX_0      SDRAM_TX_1 + DATA_SIZE_1
-#define SDRAM_RX_1      SDRAM_RX_0 + DATA_SIZE_0
+#define SDRAM_TX_1      SDRAM_BASE
+#define SDRAM_RX_0      SDRAM_BASE
+#define SDRAM_RX_1      SDRAM_BASE
 
 #ifndef DATA_SIZE_0
 #define DATA_SIZE_0 0x10
@@ -207,15 +209,36 @@ static uint32_t check_hscb_regs( uint32_t base_addr ) {
 #define INCREMENT_1 -1
 #endif
 
+#ifdef HSCB_SHORT_TEST
+#define COUNT_AREAS 4
+#else
+#define COUNT_AREAS 12
+#endif
+
+extern char rumboot_im0_heap_start;
+extern char rumboot_im0_heap_end;
+extern char rumboot_im1_heap_start;
+extern char rumboot_im1_heap_end;
+extern char rumboot_sram0_heap_start;
+extern char rumboot_sram0_heap_end;
+extern char rumboot_sdram_heap_start;
+extern char rumboot_sdram_heap_end;
+extern char rumboot_ssram_heap_start;
+extern char rumboot_ssram_heap_end;
+extern char rumboot_plram_heap_start;
+extern char rumboot_plram_heap_end;
+extern char rumboot_sram1_heap_start;
+extern char rumboot_sram1_heap_end;
+extern char rumboot_nor_heap_start;
+extern char rumboot_nor_heap_end;
+
 static volatile uint8_t __attribute__((section(".data"),aligned(8))) tx_desc_0_im[0x100] = {0} ;
 static volatile uint8_t __attribute__((section(".data"),aligned(8))) tx_desc_1_im[0x100] = {0} ;
 static volatile uint8_t __attribute__((section(".data"),aligned(8))) rx_desc_0_im[0x100] = {0} ;
 static volatile uint8_t __attribute__((section(".data"),aligned(8))) rx_desc_1_im[0x100] = {0} ;
 
-static volatile uint8_t __attribute__((section(".data"))) data_in_0_1[DATA_SIZE_0]  = {0x0};
-static volatile uint8_t __attribute__((section(".data"))) data_out_0_1[DATA_SIZE_0] = {0x0};
-static volatile uint8_t __attribute__((section(".data"))) data_in_0_3[DATA_SIZE_1]  = {0x0};
-static volatile uint8_t __attribute__((section(".data"))) data_out_0_3[DATA_SIZE_1] = {0x0};
+static volatile uint8_t*  data_areas[COUNT_AREAS];/*from odd to even*/
+static volatile uint32_t*  data_areas_sizes;
 
 static volatile uint32_t hscb0_status;
 static volatile uint32_t hscb1_status;
@@ -268,6 +291,94 @@ static void handler( int irq, void *arg ) {
     }
 }
 
+int get_heap_id_and_register_if_undefined(const char* heap_name, void* heap_start, void* heap_end){
+    int heap_id;
+
+    heap_id = rumboot_malloc_heap_by_name(heap_name);
+    if(heap_id < 0){
+        rumboot_malloc_register_heap( heap_name, heap_start, heap_end );
+        heap_id = rumboot_malloc_heap_by_name(heap_name);
+    }
+    return heap_id;
+}
+
+int get_heap_id_for_address(uint32_t address){
+    int heap_id;
+    rumboot_putstring("get_heap_id_for_address ");
+    rumboot_puthex(address);
+    switch (address){
+        case IM0_BASE:
+            heap_id = get_heap_id_and_register_if_undefined("IM0", &rumboot_im0_heap_start, &rumboot_im0_heap_end);
+            rumboot_putstring("IM0");
+            break;
+        case IM1_BASE:
+            heap_id = get_heap_id_and_register_if_undefined("IM1", &rumboot_im1_heap_start, &rumboot_im1_heap_end);
+            rumboot_putstring("IM1");
+            break;
+        case SRAM0_BASE:
+            heap_id = get_heap_id_and_register_if_undefined("SRAM0", &rumboot_sram0_heap_start, &rumboot_sram0_heap_end);
+            rumboot_putstring("SRAM0");
+            break;
+        case SDRAM_BASE:
+            heap_id = get_heap_id_and_register_if_undefined("SDRAM", &rumboot_sdram_heap_start, &rumboot_sdram_heap_end);
+            rumboot_putstring("SDRAM");
+            break;
+        case SSRAM_BASE:
+            heap_id = get_heap_id_and_register_if_undefined("SSRAM", &rumboot_ssram_heap_start, &rumboot_ssram_heap_end);
+            rumboot_putstring("SSRAM");
+            break;
+        case PIPELINED_BASE:
+            heap_id = get_heap_id_and_register_if_undefined("PLRAM", &rumboot_plram_heap_start, &rumboot_plram_heap_end);
+            rumboot_putstring("PLRAM");
+            break;
+        case SRAM1_BASE:
+            heap_id = get_heap_id_and_register_if_undefined("SRAM1", &rumboot_sram1_heap_start, &rumboot_sram1_heap_end);
+            rumboot_putstring("SRAM1");
+            break;
+        case NOR_BASE:
+            heap_id = get_heap_id_and_register_if_undefined("NOR", &rumboot_nor_heap_start, &rumboot_nor_heap_end);
+            rumboot_putstring("NOR");
+            break;
+        default: {
+            heap_id = -1;
+            rumboot_printf("Cannot find the specified memory base address among available ones, address: 0x%x", address);
+            TEST_ASSERT(heap_id > 0, "Heap was not set. Exiting...");
+        }
+    }
+    return heap_id;
+}
+
+void prepare_memory_areas(){
+    int heap_id;
+    int i;
+#ifdef HSCB_SHORT_TEST
+    uint32_t memory_area_addresses[COUNT_AREAS] = {TX_DATA_ADDR_0,RX_DATA_ADDR_0,TX_DATA_ADDR_1,RX_DATA_ADDR_1};
+    uint32_t memory_areas_sizes[COUNT_AREAS/2] = {DATA_SIZE_0, DATA_SIZE_1};
+#else
+    uint32_t memory_area_addresses[COUNT_AREAS] = { TX_DATA_ADDR_0,
+                                                    RX_DATA_ADDR_0,
+                                                    TX_DATA_ADDR_1,
+                                                    RX_DATA_ADDR_1,
+                                                    TX_DATA_ADDR_2,
+                                                    RX_DATA_ADDR_2,
+                                                    TX_DATA_ADDR_3,
+                                                    RX_DATA_ADDR_3,
+                                                    TX_DATA_ADDR_4,
+                                                    RX_DATA_ADDR_4,
+                                                    TX_DATA_ADDR_5,
+                                                    RX_DATA_ADDR_5,};// TODO: add addresses
+    uint32_t memory_areas_sizes[COUNT_AREAS/2] = {DATA_SIZE_0, DATA_SIZE_1, DATA_SIZE_2};// TODO: add addresses
+#endif
+    data_areas_sizes = memory_areas_sizes;
+    for (i = 0; i < COUNT_AREAS; ++i){
+        heap_id = get_heap_id_for_address(memory_area_addresses[i]);
+        data_areas[i] = rumboot_malloc_from_heap_aligned(heap_id, memory_areas_sizes[i >> 1], 1);
+        data_areas_sizes[i >> 1] = memory_areas_sizes[i >> 1];
+//        rumboot_putstring("data_areas[i] == ");
+//        rumboot_puthex(data_areas[i]);
+    }
+}
+
 static void set_test_data(uint32_t base_addr, uint32_t length, int increment){
     uint8_t data = DATA_INITIAL_VALUE;
     if ((base_addr >= NOR_BASE) && (base_addr <= IM0_BASE))
@@ -315,30 +426,25 @@ void init_hscb_cfg_short(hscb_instance_t* hscb_inst)
 {
     hscb_inst[0].src_hscb_base_addr   = HSCB_UNDER_TEST_BASE;
     hscb_inst[0].dst_hscb_base_addr   = HSCB_SUPPLEMENTARY_BASE;
-    hscb_inst[0].src_addr             = (uint32_t*)TX_DATA_ADDR_0;
-    hscb_inst[0].dst_addr             = (uint32_t*)RX_DATA_ADDR_1;
-    hscb_inst[0].src_size             = DATA_SIZE_0;
-    hscb_inst[0].dst_size             = DATA_SIZE_1;
+    hscb_inst[0].src_addr             = (uint32_t*)data_areas[0];
+    hscb_inst[0].dst_addr             = (uint32_t*)data_areas[3];
+    hscb_inst[0].src_size             = data_areas_sizes[0];
+    hscb_inst[0].dst_size             = data_areas_sizes[1];
     hscb_inst[0].tx_descr_addr        = (uint32_t)tx_desc_0_im;
-    hscb_inst[0].rx_descr_addr        = (uint32_t)rx_desc_0_im;
+    hscb_inst[0].rx_descr_addr        = (uint32_t)rx_desc_1_im;
 
     hscb_inst[1].src_hscb_base_addr   = HSCB_SUPPLEMENTARY_BASE;
     hscb_inst[1].dst_hscb_base_addr   = HSCB_UNDER_TEST_BASE;
-    hscb_inst[1].src_addr             = (uint32_t*)TX_DATA_ADDR_1;
-    hscb_inst[1].dst_addr             = (uint32_t*)RX_DATA_ADDR_0;
-    hscb_inst[1].src_size             = DATA_SIZE_1;
-    hscb_inst[1].dst_size             = DATA_SIZE_0;
+    hscb_inst[1].src_addr             = (uint32_t*)data_areas[2];
+    hscb_inst[1].dst_addr             = (uint32_t*)data_areas[1];
+    hscb_inst[1].src_size             = data_areas_sizes[1];
+    hscb_inst[1].dst_size             = data_areas_sizes[0];
     hscb_inst[1].tx_descr_addr        = (uint32_t)tx_desc_1_im;
-    hscb_inst[1].rx_descr_addr        = (uint32_t)rx_desc_1_im;
+    hscb_inst[1].rx_descr_addr        = (uint32_t)rx_desc_0_im;
 
-    //Some dirty hack to pass around [-Werror=unused-variable] for transfers not in current memory
-    data_in_0_1[0] = 0xff;
-    data_out_0_1[0] = data_in_0_1[0] - 1;
-    data_in_0_3[0] = data_out_0_3[0] - 1;
-    data_out_0_3[0] = data_in_0_3[0] - 1;
 }
 
-static uint32_t check_hscb_func(){
+static uint32_t check_hscb_short_func(){
     rumboot_printf("Check functionality...\n");
 
     rumboot_putstring( "------- HSCB Short ACCESS test -------\n" );
@@ -357,24 +463,28 @@ static uint32_t check_hscb_func(){
 
     init_hscb_cfg_short(hscb_cfg);
 
-    TEST_ASSERT(((uint32_t)(hscb_cfg[0].dst_addr) < NOR_BASE) || ((uint32_t)(hscb_cfg[0].dst_addr) >= IM0_BASE),
+//    rumboot_putstring("(uint32_t)(hscb_cfg[0].dst_addr)");
+//    rumboot_puthex((uint32_t)(hscb_cfg[0].dst_addr));
+    TEST_ASSERT(!(((uint32_t)(hscb_cfg[0].dst_addr) >= NOR_BASE) && ((uint32_t)(hscb_cfg[0].dst_addr) < NOR_BASE +NOR_SIZE)),
         "RX_DATA_ADDR_0 - destination address cannot be NOR!");
-    TEST_ASSERT(((uint32_t)(hscb_cfg[1].dst_addr) < NOR_BASE) || ((uint32_t)(hscb_cfg[1].dst_addr) >= IM0_BASE),
+//    rumboot_putstring("(uint32_t)(hscb_cfg[1].dst_addr)");
+//    rumboot_puthex((uint32_t)(hscb_cfg[1].dst_addr));
+    TEST_ASSERT(!(((uint32_t)(hscb_cfg[1].dst_addr) >= NOR_BASE) && ((uint32_t)(hscb_cfg[1].dst_addr) < NOR_BASE +NOR_SIZE)),
         "RX_DATA_ADDR_1 - destination address cannot be NOR!");
 
 
     // Set data for HSCB0
-    rumboot_putstring("(uint32_t)hscb_cfg[0].src_addr == ");
-    rumboot_puthex((uint32_t)hscb_cfg[0].src_addr);
-    rumboot_putstring("(uint32_t)hscb_cfg[0].dst_addr == ");
-    rumboot_puthex((uint32_t)hscb_cfg[0].dst_addr);
+//    rumboot_putstring("(uint32_t)hscb_cfg[0].src_addr == ");
+//    rumboot_puthex((uint32_t)hscb_cfg[0].src_addr);
+//    rumboot_putstring("(uint32_t)hscb_cfg[0].dst_addr == ");
+//    rumboot_puthex((uint32_t)hscb_cfg[0].dst_addr);
     set_test_data((uint32_t)hscb_cfg[0].src_addr,DATA_SIZE_0,INCREMENT_0);
     set_test_data((uint32_t)hscb_cfg[0].dst_addr,DATA_SIZE_0,0);
     // Set data for HSCB1
-    rumboot_putstring("(uint32_t)(hscb_cfg[1].src_addr) == ");
-    rumboot_puthex((uint32_t)(hscb_cfg[1].src_addr));
-    rumboot_putstring("(uint32_t)(hscb_cfg[1].dst_addr) == ");
-    rumboot_puthex((uint32_t)(hscb_cfg[1].dst_addr));
+//    rumboot_putstring("(uint32_t)(hscb_cfg[1].src_addr) == ");
+//    rumboot_puthex((uint32_t)(hscb_cfg[1].src_addr));
+//    rumboot_putstring("(uint32_t)(hscb_cfg[1].dst_addr) == ");
+//    rumboot_puthex((uint32_t)(hscb_cfg[1].dst_addr));
     set_test_data((uint32_t)(hscb_cfg[1].src_addr),DATA_SIZE_1,INCREMENT_1);
     set_test_data((uint32_t)(hscb_cfg[1].dst_addr),DATA_SIZE_1,0);
     msync();
@@ -477,8 +587,8 @@ int main() {
     emi_init(DCR_EM2_EMI_BASE);
     tbl = create_irq_handlers(hscb_cfg);
 
-
-    result += check_hscb_func();
+    prepare_memory_areas();
+    result += check_hscb_short_func();
     delete_irq_handlers(tbl);
 
     //result += check_gpio_func( HSCB_UNDER_TEST_BASE, 0x2A );
