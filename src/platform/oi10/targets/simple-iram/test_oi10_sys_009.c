@@ -13,14 +13,13 @@
 #include <rumboot/io.h>
 #include <platform/devices.h>
 
-#include <platform/arch/ppc/test_macro_asm.S.h>
+#include <platform/arch/ppc/test_macro.h>
 #include <platform/test_event_c.h>
-#include <platform/trace.S.h>
-#include <platform/test_assert.S.h>
+#include <platform/trace.h>
+#include <platform/test_assert.h>
 #include <platform/arch/ppc/ppc_476fp_timer_fields.h>
 #include <platform/arch/ppc/ppc_476fp_lib_c.h>
 #include <platform/arch/ppc/ppc_476fp_config.h>
-
 
 
    typedef enum
@@ -50,38 +49,60 @@
    	{
    	TEST_DATA_PROGG     = 0xFFFFFFFF,
    	TEST_DATA_OK        = 0x00000001,
-	TEST_DATA_EVENT     = 0x00000001,
+	TEST_DATA_EVENT     = 0x00000002,
    	TEST_DATA_ERROR     = 0x8E5917E8
    } test_data;
+
+int check_dbdr ()
+{
+		volatile uint32_t *data;
+	    enum rumboot_simulation_event rumboot_event;
+	    rumboot_event = rumboot_platform_event_get(&data);
+		if (rumboot_event != EVENT_TESTEVENT ){
+			rumboot_printf("Error event!\n");
+			return 1;
+		}
+
+		if (data [0] != TEST_DATA_EVENT){
+			rumboot_printf("Error event!\n");
+			return 1;
+		}
+		/*schitay dbdr*/
+		uint32_t dbdr = spr_read(SPR_DBDR);
+		if (dbdr != TEST_DATA_OK ){
+			rumboot_printf("Error DBDR_TEST!\n");
+			return 1;
+		}
+
+		/*prover' dbdr*/
+		spr_write(SPR_DBDR, TEST_DATA_PROGG);
+		test_event(TEC_CHECK_DEBUG_DBDR );
+		return 0;
+}
+
+int check_stuff ()
+{
+
+	rumboot_printf("Hello STUFF!\n");
+
+	test_event(TEC_CHECK_DEBUG_STUFF );
+	return 0;
+}
 
 int main()
 {
 	test_event_send_test_id("test_oi10_sys_009");
 
     rumboot_printf("Hello world from IRAM!\n");
+int result = 0;
 
-    volatile uint32_t *data;
-    enum rumboot_simulation_event rumboot_event;
-    rumboot_event = rumboot_platform_event_get(&data);
-	if (rumboot_event != EVENT_TESTEVENT ){
-		rumboot_printf("Error event!\n");
-		return 1;
-	}
-	if (data [0] != TEST_DATA_EVENT){
-		rumboot_printf("Error event!\n");
-		return 1;
-	}
-	/*schitay dbdr*/
-	uint32_t dbdr = spr_read(SPR_DBDR);
-	if (dbdr != TEST_DATA_OK ){
-		rumboot_printf("Error DBDR_TEST!\n");
-		return 1;
-	}
+	result += check_dbdr ();
 
-	/*prover' dbdr*/
-	spr_write(SPR_DBDR, TEST_DATA_PROGG);
 
-	test_event(TEC_CHECK_DEBUG_DBDR );
+	result += check_stuff ();
 
-    return 0;
+
+
+
+    return result;
 }
