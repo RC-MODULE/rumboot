@@ -724,6 +724,7 @@ endif()
                -DHSCB_UNDER_TEST_DMA_INT=SW0_AXI_INT 
                -DHSCB_SUPPLEMENTARY_INT=SW1_HSCB_INT 
                -DHSCB_SUPPLEMENTARY_DMA_INT=SW1_AXI_INT 
+               -DHSCB_SHORT_TEST
               #-DCHECK_REGS
         FILES test_oi10_hscb.c
         PREFIX "hscb_0"
@@ -744,6 +745,7 @@ endif()
                -DRX_DATA_ADDR_1=SDRAM_RX_1
                -DDATA_SIZE_0=32
                -DDATA_SIZE_1=257
+               -DHSCB_SHORT_TEST
               #-DCHECK_REGS
         FILES test_oi10_hscb.c
         PREFIX "hscb_0"
@@ -764,6 +766,7 @@ endif()
                -DRX_DATA_ADDR_1=IM0_RX_1
                -DDATA_SIZE_0=320
                -DDATA_SIZE_1=257
+               -DHSCB_SHORT_TEST
               #-DCHECK_REGS
         FILES test_oi10_hscb.c
         PREFIX "hscb_0"
