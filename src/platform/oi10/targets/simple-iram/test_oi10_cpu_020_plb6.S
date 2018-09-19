@@ -13,6 +13,8 @@
 #define R_ARG0              r3
 #define R_RETV              R_ARG0
 
+#define EM2_ADDR(addr)      (addr)-em2_data_begin+EM2_BASE
+
 .section ".text","ax",@progbits
 
 .global main
@@ -41,7 +43,7 @@ setup_tlb:
     b           test_oi10_cpu_020_plb6_0
 
 
-.section ".IM0.data","aw",@progbits
+.section ".data","aw",@progbits
 
 BEGIN_ENUM( TEST_DATA )
 DECLARE_ENUM_VAL( TD_RWNITC,            0x83417C7D )
@@ -65,7 +67,7 @@ plb6_write_with_flush_test_data:
 .long   !TD_WRITE_WITH_FLUSH
 
 
-.section ".IM0.text","ax",@progbits
+.section ".text","ax",@progbits
 
 BEGIN_ENUM( test_event_code )
 DECLARE_ENUM_VAL( EVENT_CHECK_PLB6_RWNITC, TEST_EVENT_CODE_MIN )
@@ -88,6 +90,20 @@ END_ENUM( test_event_code )
 
 test_oi10_cpu_020_plb6_0:
     test_event_send_test_id "test_oi10_cpu_020_plb6"
+    load_addr r3, DCR_EM2_EMI_BASE
+    bl    emi_init
+
+
+    load_addr r3, em2_data_begin
+    load_const r4, EM2_BASE
+    load_size r5, EM2_DATA_SIZE
+    mtctr r5
+loop:
+    lbzu r6, 0(r3)
+    stwu r6, 0(r4)
+    bdnz loop
+
+
 check_plb6_rwnitc:
     rumboot_putstring   "check_plb6_rwnitc\n"
 
@@ -101,7 +117,7 @@ check_plb6_rwnitc:
 check_plb6_read:
     rumboot_putstring   "check_plb6_read\n"
 
-    load_addr   r1, plb6_read_test_data
+    load_addr   r1, EM2_ADDR(plb6_read_test_data)
     test_event  EVENT_CHECK_PLB6_READ
     lwz         r1, 0(r1)
     load_const  r0, TD_READ
@@ -111,7 +127,7 @@ check_plb6_read:
 check_plb6_rwitm:
     rumboot_putstring   "check_plb6_rwitm\n"
 
-    load_addr   r1, plb6_rwitm_test_data
+    load_addr   r1, EM2_ADDR(plb6_rwitm_test_data)
     test_event  EVENT_CHECK_PLB6_RWITM
     dcbtst      0, r1, 2
     lwz         r1, 0(r1)
@@ -122,7 +138,7 @@ check_plb6_rwitm:
 check_plb6_read_atomic:
     rumboot_putstring   "check_plb6_read_atomic\n"
 
-    load_addr   r1, plb6_read_atomic_test_data
+    load_addr   r1, EM2_ADDR(plb6_read_atomic_test_data)
     test_event  EVENT_CHECK_PLB6_READ_ATOMIC
     lwarx       r1, 0, r1
     load_const  r0, TD_READ_ATOMIC
@@ -140,7 +156,7 @@ check_plb6_write_with_flush:
 check_plb6_write_with_kill:
     rumboot_putstring   "check_plb6_write_with_kill\n"
 
-    load_addr   r1, plb6_write_with_kill_test_data
+    load_addr   r1, EM2_ADDR(plb6_write_with_kill_test_data)
     lwz         r2, 0(r1)
     load_const  r0, TD_WRITE_WITH_KILL
     stw         r0, 0(r1)
@@ -152,7 +168,7 @@ check_plb6_write_with_kill:
 check_plb6_write_with_clean:
     rumboot_putstring   "check_plb6_write_with_clean\n"
 
-    load_addr   r1, plb6_write_with_clean_test_data
+    load_addr   r1, EM2_ADDR(plb6_write_with_clean_test_data)
     lwz         r2, 0(r1)
     load_const  r0, TD_WRITE_WITH_CLEAN
     stw         r0, 0(r1)
@@ -182,7 +198,7 @@ check_plb6_tlbsync:
 check_plb6_dclaim:
     rumboot_putstring   "check_plb6_dclaim\n"
 
-    load_addr   r1, plb6_dclaim_test_data
+    load_addr   r1, EM2_ADDR(plb6_dclaim_test_data)
     test_event  EVENT_CHECK_PLB6_DCLAIM
     dcbz        0, r1
     msync
@@ -190,8 +206,8 @@ check_plb6_dclaim:
 check_plb6_ikill:
     rumboot_putstring   "check_plb6_ikill\n"
 
-    bl          plb6_ikill_test_code
-    load_addr   r1, plb6_ikill_test_code
+    bl          EM2_ADDR(plb6_ikill_test_code)
+    load_addr   r1, EM2_ADDR(plb6_ikill_test_code)
 
     test_event  EVENT_CHECK_PLB6_IKILL
     icbi        0, r1
@@ -199,7 +215,7 @@ check_plb6_ikill:
 check_plb6_clean:
     rumboot_putstring   "check_plb6_clean\n"
 
-    load_addr   r1, plb6_clean_test_data
+    load_addr   r1, EM2_ADDR(plb6_clean_test_data)
     lwz         r2, 0(r1)
     load_const  r0, TD_CLEAN
     stw         r0, 0(r1)
@@ -212,7 +228,7 @@ check_plb6_clean:
 check_plb6_flush:
     rumboot_putstring   "check_plb6_flush\n"
 
-    load_addr   r1, plb6_flush_test_data
+    load_addr   r1, (plb6_flush_test_data)
     lwz         r2, 0(r1)
     load_const  r0, TD_FLUSH
     stw         r0, 0(r1)
@@ -250,37 +266,37 @@ never_comes_here:
     test_event  EVENT_ERROR
     b           never_comes_here
 
-.section ".EM2.data","awx",@progbits
-.org 0x00000000
-__ddr_init_data:
-.space 128, 0x00
+.section ".data","aw",@progbits
 .align 7
-plb6_read_test_data:
-.long   TD_READ
-.align 7
-plb6_rwitm_test_data:
-.long   TD_RWITM
-.align 7
-plb6_read_atomic_test_data:
-.long   TD_READ_ATOMIC
-.align 7
-plb6_write_with_kill_test_data:
-.long   !TD_WRITE_WITH_KILL
-.align 7
-plb6_write_with_clean_test_data:
-.long   !TD_WRITE_WITH_CLEAN
-.align 7
-plb6_dclaim_test_data:
-.long   TD_DCLAIM
-.align 7
-plb6_ikill_test_code:
-    blr
-//.long   TD_IKILL
-.align 7
-plb6_clean_test_data:
-.long   TD_CLEAN
-.align 7
-plb6_flush_test_data:
-.long   TD_FLUSH
-.align 7
+em2_data_begin:
+    plb6_read_test_data:
+    .long   TD_READ
+    .align 7
+    plb6_rwitm_test_data:
+    .long   TD_RWITM
+    .align 7
+    plb6_read_atomic_test_data:
+    .long   TD_READ_ATOMIC
+    .align 7
+    plb6_write_with_kill_test_data:
+    .long   !TD_WRITE_WITH_KILL
+    .align 7
+    plb6_write_with_clean_test_data:
+    .long   !TD_WRITE_WITH_CLEAN
+    .align 7
+    plb6_dclaim_test_data:
+    .long   TD_DCLAIM
+    .align 7
+    plb6_ikill_test_code:
+        blr
+    //.long   TD_IKILL
+    .align 7
+    plb6_clean_test_data:
+    .long   TD_CLEAN
+    .align 7
+    plb6_flush_test_data:
+    .long   TD_FLUSH
+    .align 7
 em2_data_end:
+
+.set EM2_DATA_SIZE, (.-em2_data_begin)
