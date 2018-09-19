@@ -154,8 +154,12 @@ void rumboot_platform_setup()
                 }
         }
 
-        system("touch /tmp/rumboot.tmp");
-        rumboot_platform_runtime_info = create_shared_memory("/tmp/rumboot.tmp", ipc_id, sizeof(rumboot_platform_runtime_info));
+        system("touch " CMAKE_BINARY_DIR "/rumboot.tmp");
+        rumboot_platform_runtime_info = create_shared_memory(CMAKE_BINARY_DIR "/rumboot.tmp", ipc_id, sizeof(rumboot_platform_runtime_info));
+        if (ipc_id == getpid()) {
+                /* If we own memory, clear it! */
+                memset(rumboot_platform_runtime_info, 0x0, sizeof(*rumboot_platform_runtime_info));
+        }
         /* No - op */
 }
 

@@ -17,7 +17,7 @@ void do_exit(int code) {
         #else
                 rumboot_printf("spl: Will now send parent a signal\n");
                 kill(getppid(), code ? SIGUSR2 : SIGUSR1);
-                sleep(1);
+                usleep(1000);
                 exit(0);
         #endif
 }
