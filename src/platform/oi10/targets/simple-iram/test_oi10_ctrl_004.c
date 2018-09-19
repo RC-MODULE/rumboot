@@ -34,7 +34,7 @@
 
 #include <regs/regs_sp804.h>
 
-static struct sp804_conf conf1, conf2;
+//static struct sp804_conf conf1, conf2;
 
 //#define TIMER0_CYCLES           1
 //#define TIMER1_CYCLES           2
@@ -59,11 +59,42 @@ static int32_t check_array32[] = {
         0x55555555
 };
 
+
+
 */
+
+static uint32_t check_timer_default_ro_val(uint32_t base_addr)
+{
+    rumboot_printf("Check the default values of the registers:");
+
+    struct regpoker_checker check_default_array[] = {
+          {   "DIT_REG_PERIPHID0",   REGPOKER_READ_DCR,    DIT_REG_PERIPHID0,         0x04,           0xff   },
+          {   "DIT_REG_PERIPHID1",   REGPOKER_READ_DCR,    DIT_REG_PERIPHID1,         0x18,           0xff   },
+          {   "DIT_REG_PERIPHID2",   REGPOKER_READ_DCR,    DIT_REG_PERIPHID2,         0x14,           0xff   },
+          {   "DIT_REG_PERIPHID3",   REGPOKER_READ_DCR,    DIT_REG_PERIPHID3,         0x00,           0xff   },
+          {   "DIT_REG_PCELLID0",    REGPOKER_READ_DCR,    DIT_REG_PCELLID0,          0x0D,           0xff   },
+          {   "DIT_REG_PCELLID1",    REGPOKER_READ_DCR,    DIT_REG_PCELLID1,          0xF0,           0xff   },
+          {   "DIT_REG_PCELLID2",    REGPOKER_READ_DCR,    DIT_REG_PCELLID2,          0x05,           0xff   },
+          {   "DIT_REG_PCELLID3",    REGPOKER_READ_DCR,    DIT_REG_PCELLID3,          0xB1,           0xff   },
+          { }
+      };
+
+    if( rumboot_regpoker_check_array( check_default_array, base_addr ) == 0 )
+    {
+        rumboot_printf( "OK\n" );
+        return 0;
+    }
+
+    rumboot_printf( "ERROR\n" );
+    return 1;
+}
 
 //static struct sp804_config c1, c2;
 
 /*
+ *
+ *
+
 
 static uint32_t check_timer_default_rw_val( uint32_t base_addr )
 {
@@ -260,7 +291,6 @@ uint32_t main(void)
      * - setup TCR, wait TIMINT1,2
      * - setup timers, wait TIMINT1,2
 
-    /**
      *  sp804_conf         : Structure contains configuration parameters
      *  sp804_mode         - Chose counting mode - Oneshot, Periodic or Freerun
      *  interrupt_enable   - Interrupts enabled
@@ -269,6 +299,7 @@ uint32_t main(void)
      *  bgload             - Background Load value to count from (won't be writen to corresponding reg if zero )
      */
 
+    uint32_t result;
     conf1.mode = 0;
     conf1.interrupt_enable = 1;
     conf1.clock_division = 32;
@@ -292,17 +323,21 @@ uint32_t main(void)
         rumboot_printf( "SP804 int are clean up\n" );
 
         // ||
-//                check_timer_default_rw_val(DCR_TIMERS_BASE);
+
+        result = check_timer_default_ro_val(DCR_TIMERS_BASE);
+
+        if(!result)
+        {
+            rumboot_printf("Checked test Failed\n");
+            return -1;
+        }
 
         rumboot_printf("Checked TEST_OK\n");
 //        sp804_config(DCR_TIMERS_BASE, c1, 0);
 //        sp804_config(DCR_TIMERS_BASE, c2, 0);
 
-
-
-
         //sp804_clrint(DCR_TIMERS_BASE, 0);
         //sp804_clrint(DCR_TIMERS_BASE, 1);
-        return 0;
+        return result;
       //  struct rumboot_irq_entry *tbl = rumboot_irq_create( NULL );
 }
