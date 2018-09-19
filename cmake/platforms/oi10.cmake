@@ -744,6 +744,19 @@ endif()
         NAME mkio_polarity_test
       )
 
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES test_oi10_lscb.c
+      CFLAGS -DMKIO_BASE=MKIO0_BASE -DCHECK_MKIO_REGS=1
+      PREFIX mkio0-regs
+    )
+
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES test_oi10_lscb.c
+      CFLAGS -DMKIO_BASE=MKIO1_BASE -DCHECK_MKIO_REGS=1
+      PREFIX mkio1-regs
+    )
 
     add_rumboot_target(
       CONFIGURATION IRAM
