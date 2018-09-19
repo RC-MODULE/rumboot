@@ -257,6 +257,7 @@ void rumboot_platform_read_config(struct rumboot_config *conf)
 {
         conf->hostmode = do_host;
         conf->selftest = do_selftest;
+        conf->baudrate = 115200;
 }
 
 
