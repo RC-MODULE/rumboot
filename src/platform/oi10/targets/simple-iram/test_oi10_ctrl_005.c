@@ -1,15 +1,49 @@
- 
-#include <mivem_test.h>
-#include <ppc_c.h>
-#include <wd.h>
-#include <mpic128.h>
-#include <test_event_codes.h>
-#include <mivem_regs_access.h>
-#include "test_mpw_ctrl_005.h"
-#include <trace.h>
+/*
+ * test_oi10_ctrl_004.c
+ *
+ *  Created on: Aug 24, 2018
+ *      Author: m.dubinkin
+ */
 
-uint32_t volatile WD_INT_HANDLED = false;
+#include <stdio.h>
+#include <stdint.h>
+#include <string.h>
 
+#include <rumboot/io.h>
+#include <rumboot/irq.h>
+#include <rumboot/printf.h>
+
+#include <platform/arch/ppc/ppc_476fp_lib_c.h>
+#include <platform/common_macros/common_macros.h>
+#include <platform/test_event_codes.h>
+#include <platform/test_assert.h>
+#include <rumboot/regpoker.h>
+#include <rumboot/printf.h>
+#include <rumboot/io.h>
+#include <arch/irq_macros.h>
+#include <platform/devices.h>
+#include <rumboot/macros.h> //dcr_write/dcr_read
+#include <platform/arch/ppc/test_macro.h>
+//#include <devices/sp804.h>
+#include <platform/interrupts.h>
+
+#include <platform/regs/regs_mpic128.h>
+#include <platform/devices/mpic128.h>
+
+#include <platform/devices.h>
+
+#include <regs/regs_sp805.h>
+
+//static struct sp804_conf conf1, conf2;
+
+//#define TIMER0_CYCLES           1
+//#define TIMER1_CYCLES           2
+
+//#define TIM1_INTERRUPT_NUMBER   40
+//#define TIM2_INTERRUPT_NUMBER   41
+//#define TIMER_INT_TIMEOUT       60
+
+/*
 static int32_t check_array32[] = {
         0xFFFFFFFF,
         0x00000000,
@@ -25,210 +59,268 @@ static int32_t check_array32[] = {
         0x55555555
 };
 
-static uint32_t check_wd_default_val( uint32_t base_addr ) {
-    rumboot_printf("Check the default values of the registers:");
-/*
-    struct regpoker_checker check_default_array[] = {
-        {   "Timer1Load",       REGPOKER_READ32,    GPIO_DATA,      GPIO_DATA_DEFAULT,      GPIO_REG_MASK   }, // check only first of 256 //
-        {   "Timer1Value",      REGPOKER_READ32,    GPIO_DIR,       GPIO_DIR_DEFAULT,       GPIO_REG_MASK   },
-        {   "Timer1Control",    REGPOKER_READ32,    GPIO_IS,        GPIO_IS_DEFAULT,        GPIO_REG_MASK   },
-        {   "Timer1IntClr",     REGPOKER_READ32,    GPIO_IBE,       GPIO_IBE_DEFAULT,       GPIO_REG_MASK   },
-        {   "GPIO_IEV",         REGPOKER_READ32,    GPIO_IEV,       GPIO_IEV_DEFAULT,       GPIO_REG_MASK   },
-        {   "GPIO_IE",          REGPOKER_READ32,    GPIO_IE,        GPIO_IE_DEFAULT,        GPIO_REG_MASK   },
-        {   "GPIO_RIS",         REGPOKER_READ32,    GPIO_RIS,       GPIO_RIS_DEFAULT,       GPIO_REG_MASK   },
-        {   "GPIO_MIS",         REGPOKER_READ32,    GPIO_MIS,       GPIO_MIS_DEFAULT,       GPIO_REG_MASK   },
-        {   "GPIO_AFSEL",       REGPOKER_READ32,    GPIO_AFSEL,     GPIO_AFSEL_DEFAULT,     GPIO_REG_MASK   },
-        {   "GPIO_PeriphID0",   REGPOKER_READ32,    GPIO_PeriphID0, GPIO_PeriphID0_DEFAULT, GPIO_REG_MASK   },
-        {   "GPIO_PeriphID1",   REGPOKER_READ32,    GPIO_PeriphID1, GPIO_PeriphID1_DEFAULT, GPIO_REG_MASK   },
-        {   "GPIO_PeriphID2",   REGPOKER_READ32,    GPIO_PeriphID2, GPIO_PeriphID2_DEFAULT, GPIO_REG_MASK   },
-        {   "GPIO_PeriphID3",   REGPOKER_READ32,    GPIO_PeriphID3, GPIO_PeriphID3_DEFAULT, GPIO_REG_MASK   },
-        {   "GPIO_CellID0",     REGPOKER_READ32,    GPIO_CellID0,   GPIO_CellID0_DEFAULT,   GPIO_REG_MASK   },
-        {   "GPIO_CellID1",     REGPOKER_READ32,    GPIO_CellID1,   GPIO_CellID1_DEFAULT,   GPIO_REG_MASK   },
-        {   "GPIO_CellID2",     REGPOKER_READ32,    GPIO_CellID2,   GPIO_CellID2_DEFAULT,   GPIO_REG_MASK   },
-        {   "GPIO_CellID3",     REGPOKER_READ32,    GPIO_CellID3,   GPIO_CellID3_DEFAULT,   GPIO_REG_MASK   },
-        {  }
-    };
+
+
 */
+
+static uint32_t check_wd_default_ro_val(uint32_t base_addr)
+{
+    rumboot_printf("Check the default values of the registers:");
+
     struct regpoker_checker check_default_array[] = {
-          {   "TimerPeriphID0",   REGPOKER_READ8,    WD_REG_PERIPHID0,      0x05, 0xff   }, /* check only first of 256 */
-          {   "TimerPeriphID1",   REGPOKER_READ8,    WD_REG_PERIPHID1,      0x18, 0xff   },
-          {   "TimerPeriphID2",   REGPOKER_READ8,    WD_REG_PERIPHID2,      0x14, 0xff   },
-          {   "TimerPeriphID3",   REGPOKER_READ8,    WD_REG_PERIPHID3,      0x00, 0xff   },
-          {   "TimerPCellID0",    REGPOKER_READ8,    WD_REG_PCELLID0,       0x0D, 0xff   },
-          {   "TimerPCellID1",    REGPOKER_READ8,    WD_REG_PCELLID1,       0xF0, 0xff   },
-          {   "TimerPCellID2",    REGPOKER_READ8,    WD_REG_PCELLID2,       0x05, 0xff   },
-          {   "TimerPCellID3",    REGPOKER_READ8,    WD_REG_PCELLID3,       0xB1, 0xff   },
-          { /* Sentinel */ }
+          {   "WD_REG_PERIPHID0",   REGPOKER_READ_DCR,    WD_REG_PERIPHID0,         0x05,           0xff   },
+          {   "WD_REG_PERIPHID1",   REGPOKER_READ_DCR,    WD_REG_PERIPHID1,         0x18,           0xff   },
+          {   "WD_REG_PERIPHID2",   REGPOKER_READ_DCR,    WD_REG_PERIPHID2,         0x14,           0xff   },
+          {   "WD_REG_PERIPHID3",   REGPOKER_READ_DCR,    WD_REG_PERIPHID3,         0x00,           0xff   },
+          {   "WD_REG_PCELLID0",    REGPOKER_READ_DCR,    WD_REG_PCELLID0,          0x0D,           0xff   },
+          {   "WD_REG_PCELLID1",    REGPOKER_READ_DCR,    WD_REG_PCELLID1,          0xF0,           0xff   },
+          {   "WD_REG_PCELLID2",    REGPOKER_READ_DCR,    WD_REG_PCELLID2,          0x05,           0xff   },
+          {   "WD_REG_PCELLID3",    REGPOKER_READ_DCR,    WD_REG_PCELLID3,          0xB1,           0xff   },
+          { }
       };
 
-
-    if( rumboot_regpoker_check_array( check_default_array, base_addr ) == 0 ) {
-        rumboot_printf( " OK\n" );
+    if( rumboot_regpoker_check_array( check_default_array, base_addr ) == 0 )
+    {
+        rumboot_printf( "OK\n" );
         return 0;
     }
 
-    rumboot_printf( " ERROR\n" );
+    rumboot_printf( "ERROR\n" );
     return 1;
 }
 
+//static struct sp804_config c1, c2;
+
+/*
+ *
+ *
 
 
-
-uint32_t check_wd_regs()
+static uint32_t check_timer_default_rw_val( uint32_t base_addr )
 {
-   uint32_t i;
-   trace_msg("check_wd_regs\n");
-   COMPARE_VALUES( (wd_read_WDOGLOAD(WD_BASE)        &  WDOGLOAD_MASK),        
-WDOGLOAD_VALUE,"WDOGLOAD value check failed");
-   COMPARE_VALUES( (wd_read_WDOGVALUE(WD_BASE)       &  WDOGVALUE_MASK),       
-WDOGVALUE_VALUE,"WDOGVALUE value check failed");
-   COMPARE_VALUES( (wd_read_WDOGCONTROL(WD_BASE)     &  WDOGCONTROL_MASK),     
-WDOGCONTROL_VALUE,"WDOGCONTROL value check failed");
-   COMPARE_VALUES( (wd_read_WDOGRIS(WD_BASE)         &  WDOGRIS_MASK),         
-WDOGRIS_VALUE,"WDOGRIS value check failed");
-   COMPARE_VALUES( (wd_read_WDOGMIS(WD_BASE)         &  WDOGMIS_MASK),         
-WDOGMIS_VALUE,"WDOGMIS value check failed");
-   COMPARE_VALUES( (wd_read_WDOGLOCK(WD_BASE)        &  WDOGLOCK_MASK),        
-WDOGLOCK_VALUE,"WDOGLOCK value check failed");
-   COMPARE_VALUES( (wd_read_WDOGITCR(WD_BASE)        &  WDOGITCR_MASK),        
-WDOGITCR_VALUE,"WDOGITCR value check failed");
-   COMPARE_VALUES( (wd_read_WDOGPERIPHID0(WD_BASE)   &  WDOGPERIPHID0_MASK),   
-WDOGPERIPHID0_VALUE,"WDOGPERIPHID0 value check failed");
-   COMPARE_VALUES( (wd_read_WDOGPERIPHID1(WD_BASE)   &  WDOGPERIPHID1_MASK),   
-WDOGPERIPHID1_VALUE,"WDOGPERIPHID1 value check failed");
-   COMPARE_VALUES( (wd_read_WDOGPERIPHID2(WD_BASE)   &  WDOGPERIPHID2_MASK),   
-WDOGPERIPHID2_VALUE,"WDOGPERIPHID2 value check failed");
-   COMPARE_VALUES( (wd_read_WDOGPERIPHID3(WD_BASE)   &  WDOGPERIPHID3_MASK),   
-WDOGPERIPHID3_VALUE,"WDOGPERIPHID3 value check failed");
-   COMPARE_VALUES( (wd_read_WDOGPCELLID0(WD_BASE)    &  WDOGPCELLID0_MASK),    
-WDOGPCELLID0_VALUE,"WDOGPCELLID0 value check failed");
-   COMPARE_VALUES( (wd_read_WDOGPCELLID1(WD_BASE)    &  WDOGPCELLID1_MASK),    
-WDOGPCELLID1_VALUE,"WDOGPCELLID1 value check failed");
-   COMPARE_VALUES( (wd_read_WDOGPCELLID2(WD_BASE)    &  WDOGPCELLID2_MASK) ,   
-WDOGPCELLID2_VALUE,"WDOGPCELLID2 value check failed");
-   COMPARE_VALUES( (wd_read_WDOGPCELLID3(WD_BASE)    &  WDOGPCELLID3_MASK),    
-WDOGPCELLID3_VALUE,"WDOGPCELLID3 value check failed");
+    rumboot_printf("Check the default values of the registers:");
 
-   //check data bus
-   //interrupt and reset are disabled by default
-   for (i = 0; i< 12; i++){
-           wd_write_WDOGLOAD(WD_BASE, check_array32[i]);
-           COMPARE_VALUES(wd_read_WDOGLOAD(WD_BASE), check_array32[i],"WDOG DCR
-data bus check failed");
-       }
+    struct regpoker_checker check_default_array[] = {
+          {   "Timer1Load",     REGPOKER_READ32,    DIT0_REG_LOAD0,          0x00,           0xff },
+          {   "Timer1Load",     REGPOKER_WRITE32,   DIT0_REG_LOAD0,          0x00,           0xff },
 
-   wd_clear_int();//clear RIS if occurred (WDOGLOAD write)
+          {   "Timer1Value",    REGPOKER_READ32,    DIT0_REG_VALUE0,         0xffffffff,      0xffffffff },
 
 
-   return true;
-}
+          {   "Timer1Control",  REGPOKER_READ32,    DIT0_REG_CONTROL0,       0xff,           0xff },
+          {   "Timer1Control",  REGPOKER_WRITE32,   DIT0_REG_CONTROL0,       0xff,           0xff },
 
-void NON_CR_INTERRUPT_HANDLER(void)
-{
-    MPIC128_dcr_read_MPIC128x_NCIAR0( MPICx_BASE );
-    MPIC128_dcr_write_MPIC128x_NCEOI0( MPICx_BASE, 0);
-    if(wd_read_WDOGITCR(WD_BASE) == 0x1)//if integrated test control is enabled
+          {   "Timer1IntClr",   REGPOKER_READ32,    DIT0_REG_INTCLR0,        0xff,           0xff },
+
+          {   "Timer1RIS",      REGPOKER_READ32,    DIT0_REG_RIS0,           0xff,           0xff },
+          {   "Timer1MIS",      REGPOKER_READ32,    DIT0_REG_MIS0,           0xff,           0xff },
+
+
+          {   "Timer1BGLoad",   REGPOKER_READ32,    DIT0_REG_BGLOAD0,        0x18,           0xff },
+          {   "Timer1BGLoad",   REGPOKER_WRITE32,   DIT0_REG_BGLOAD0,        0x18,           0xff },
+
+          {   "Timer2Load",     REGPOKER_READ32,    DIT0_REG_LOAD1,          0x00,           0xff },
+          {   "Timer2Load",     REGPOKER_WRITE32,   DIT0_REG_LOAD1,          0x00,           0xff },
+
+          {   "Timer2Value",    REGPOKER_READ32,    DIT0_REG_VALUE1,         0x00,           0xff },
+
+
+          {   "Timer2Control",  REGPOKER_READ32,    DIT0_REG_CONTROL1,       0x0,            0xf },
+          {   "Timer2Control",  REGPOKER_WRITE32,   DIT0_REG_CONTROL1,       0x0,            0xff },
+
+          {   "Timer2RIS",      REGPOKER_READ32,    DIT0_REG_RIS1,           0x0,           0xff },
+          {   "Timer2MIS",      REGPOKER_READ32,    DIT0_REG_MIS1,           0x0,           0xff },
+
+          {   "Timer2BGLoad",   REGPOKER_READ32,    DIT0_REG_BGLOAD1,        0x0,           0xff },
+          {   "Timer2BGLoad",   REGPOKER_WRITE32,   DIT0_REG_BGLOAD1,        0x0,           0xff },
+
+
+          {   "TimerITCR",      REGPOKER_READ32,    DIT_REG_ITCR,            0xf0,           0xff },
+          {   "TimerITOP",      REGPOKER_READ32,    DIT_REG_ITOP,            0xf04,          0xff },
+          { }
+      };
+
+    if( rumboot_regpoker_check_array( check_default_array, base_addr ) == 0 )
     {
-        //then disable it
-        wd_itc_disable();
-        wd_itc_set_output(false,false);
+        rumboot_printf( "OK\n" );
+        return 0;
     }
-    else{
-        wd_disable();
-        wd_clear_int();
-    }
-    WD_INT_HANDLED = true;
-}
 
-uint32_t wait_wd_int_handled(){
-    int t = 0;
-    while(!WD_INT_HANDLED && (t++<WAIT_INT_TIMEOUT))
-        {;}
-    return WD_INT_HANDLED;
+    rumboot_printf( "ERROR\n" );
+    return 1;
 }
-
-uint32_t check_wd_tcr()
+*/
+/*
+static uint32_t check_timer_default_w_val( uint32_t base_addr )
 {
-    /*
-     * set wd interrupt using ITC mode.
-     * clear interrupt using ITC mode
-     */
-    trace_msg("check_wd_tcr\n");
-    mpic128_reset( MPICx_BASE );
-    mpic128_pass_through_disable( MPICx_BASE );
-    //setup MPIC128 interrupt 36
-    mpic128_setup_ext_interrupt( MPICx_BASE,
-WD_INTERRUPT_NUMBER,MPIC128_PRIOR_1,int_sense_level,int_pol_pos,Processor0);
-    SET_NONCR_INT_HANDLER(non_cr_interrupt_handler);
-    ppc_noncr_int_enable();//MSR setup
-    mpic128_set_interrupt_borders( MPICx_BASE, 10, 5);//MCK, CR borders
-    mpic128_set_minimal_interrupt_priority_mask( MPICx_BASE, Processor0,
-MPIC128_PRIOR_0);
-    WD_INT_HANDLED = false;
-    //mpic128 is ready for interrupt
+    rumboot_printf("Check the default values of the registers:");
 
-    //enable integrated test control
-    wd_itc_enable();
-    //set wd interrupt, no reset
-    wd_itc_set_output(false,true);
-    if(wait_wd_int_handled())
-        //itc is already disabled in interrupt handler
-        return true;
-    else
+    struct regpoker_checker check_default_array[] = {
+          {   "Timer1Load",     REGPOKER_READ32,    DIT0_REG_LOAD0,          0x000,          0xff   },
+          {   "Timer1Value",    REGPOKER_READ32,    DIT0_REG_VALUE0,         0x04,           0xff   },
+          {   "Timer1Control",  REGPOKER_READ32,    DIT0_REG_CONTROL0,       0x08,           0xff   },
+          {   "Timer1IntClr",   REGPOKER_READ32,    DIT0_REG_INTCLR0,        0x0C,           0xff   },
+          {   "Timer1RIS",      REGPOKER_READ32,    DIT0_REG_RIS0,           0x10,           0xff   },
+          {   "Timer1MIS",      REGPOKER_READ32,    DIT0_REG_MIS0,           0x14,           0xff   },
+          {   "Timer1BGLoad",   REGPOKER_READ32,    DIT0_REG_BGLOAD0,        0x18,           0xff   },
+          {   "Timer2Load",     REGPOKER_READ32,    DIT0_REG_LOAD1,          0x20,           0xff   },
+          {   "Timer2Value",    REGPOKER_READ32,    DIT0_REG_VALUE1,         0x24,           0xff   },
+          {   "Timer2Control",  REGPOKER_READ32,    DIT0_REG_CONTROL1,       0x28,           0xff   },
+          {   "Timer2IntClr",   REGPOKER_READ32,    DIT0_REG_INTCLR1,        0x2C,           0xff   },
+          {   "Timer2RIS",      REGPOKER_READ32,    DIT0_REG_RIS1,           0x30,           0xff   },
+          {   "Timer2MIS",      REGPOKER_READ32,    DIT0_REG_MIS1,           0x34,           0xff   },
+          {   "Timer2BGLoad",   REGPOKER_READ32,    DIT0_REG_BGLOAD1,        0x38,           0xff   },
+          {   "TimerITCR",      REGPOKER_READ32,    DIT_REG_ITCR,            0xf0,           0xff   },
+          {   "TimerITOP",      REGPOKER_READ32,    DIT_REG_ITOP,            0xf04,          0xff   },
+          { }
+      };
+
+    if( rumboot_regpoker_check_array( check_default_array, base_addr ) == 0 )
     {
-        //disable integrated test control, clear value on output
-        wd_itc_disable();
-        wd_itc_set_output(false,false);
+        rumboot_printf( "OK\n" );
+        return 0;
+    }
+
+    rumboot_printf( "ERROR\n" );
+    return 1;
+}
+*/
+/*
+static struct s804_instance in[ ] = {
+    {
+        .base_addr = DCR_TIMERS_BASE,
+        .dit_index = 0 }, };
+
+static struct s804_instance {
+    int timer0_irq;
+    int timer1_irq;
+    uint32_t base_addr;
+    int dit_index;
+};
+
+static void handler0( int irq, void *arg ) {
+    struct s804_instance *a = ( struct s804_instance * )arg;
+    a->timer0_irq = a->timer0_irq + 1;
+    rumboot_printf( "IRQ 0 arrived  \n" );
+
+    rumboot_printf( "sp804_%d timer 0 INT # %d  \n", a->dit_index, a->timer0_irq );
+    sp804_clrint( a->base_addr, 0 );
+}
+
+static void handler1( int irq, void *arg ) {
+    struct s804_instance *a = ( struct s804_instance * )arg;
+    a->timer1_irq = a->timer1_irq + 1;
+    rumboot_printf( "IRQ 1 arrived  \n" );
+    rumboot_printf( "sp804_%d timer 1 INT # %d  \n", a->dit_index, a->timer1_irq );
+    sp804_clrint( a->base_addr, 1 );
+}
+
+bool test_dit_timers( uint32_t structure ) {
+    int c = 0;
+    int d = 0;
+
+    struct s804_instance *stru = ( struct s804_instance * )structure;
+    uint32_t base_addr = stru->base_addr;
+
+    struct sp804_conf config_0 = {
+        .mode = ONESHOT,
+        .interrupt_enable = 1,
+        .clock_division = 1,
+        .width = 32,
+        .load = 100,
+        .bgload = 0 };
+
+    struct sp804_conf config_1 = {
+        .mode = ONESHOT,
+        .interrupt_enable = 1,
+        .clock_division = 1,
+        .width = 32,
+        .load = 200,
+        .bgload = 0 };
+
+    for( int i = 0; i < TIMER0_CYCLES + stru->dit_index; i++ ) {
+        sp804_config( base_addr, &config_0, 0 );
+        sp804_enable( base_addr, 0 );
+        while( sp804_get_value( base_addr, 0 ) ) {
+        };
+        c++;
+    }
+
+    for( int i = 0; i < TIMER1_CYCLES + stru->dit_index; i++ ) {
+        sp804_config( base_addr, &config_1, 1 );
+        sp804_enable( base_addr, 1 );
+        while( sp804_get_value( base_addr, 1 ) ) {
+        };
+        d++;
+    }
+
+    if( stru->timer0_irq == TIMER0_CYCLES + stru->dit_index ) {
+        rumboot_printf( "Timer 0 test OK \n" );
+    } else {
+        rumboot_printf( "ERROR in Timer 0 test \n" );
+        rumboot_printf( "Interrupts came == %d, should be %d \n", stru->timer0_irq, TIMER0_CYCLES + stru->dit_index );
         return false;
     }
-}
 
-uint32_t check_wd_int()
-{
-    /*
-     * set interrupt using WD counter (standard method)
-     * clear interrupt using WD restart (clear interrupt register)
-     */
-    trace_msg("check_wd_int\n");
-    mpic128_reset( MPICx_BASE );
-    mpic128_pass_through_disable( MPICx_BASE );
-    //setup MPIC128 interrupt 36
-    mpic128_setup_ext_interrupt( MPICx_BASE,
-WD_INTERRUPT_NUMBER,MPIC128_PRIOR_1,int_sense_edge,int_pol_pos,Processor0);
-    SET_NONCR_INT_HANDLER(non_cr_interrupt_handler);
-    ppc_noncr_int_enable();//MSR setup
-    mpic128_set_interrupt_borders( MPICx_BASE, 10, 5);//MCK, CR borders
-    mpic128_set_minimal_interrupt_priority_mask( MPICx_BASE, Processor0,
-MPIC128_PRIOR_0);
-    WD_INT_HANDLED = false;
-    //mpic128 is ready for interrupt
-
-    //setup WD
-    wd_int_enable();
-    //reload
-    wd_restart(200);
-    if(wait_wd_int_handled())
-        return true;
-    else{
-        trace_msg("Wait WD_INT_HANDLED timeout\n");
-        wd_clear_int();
-        wd_disable();
+    if( stru->timer1_irq == TIMER1_CYCLES + stru->dit_index ) {
+        rumboot_printf( "Timer 1 test OK \n" );
+    } else {
+        rumboot_printf( "ERROR in Timer 1 test \n" );
+        rumboot_printf( "Interrupts came == %d, should be %d \n", stru->timer1_irq, TIMER1_CYCLES + stru->dit_index );
         return false;
     }
-}
 
-uint32_t test_mpw_ctrl_005(){
+    return true;
+}
+*/
+
+/*
+bool test_dir_run(struct dit_timers)
+{
+
+    return true;
+}
+*/
+
+
+uint32_t main(void)
+{
     /*
-     * test scenario:
+     * Test scenario:
      * - check APB connection
-     * - generate and clear interrupts using ITC
-     * - generate interrupt using WD counter and clear it using int clear
-register
-     */
-    TEST_ASSERT(check_wd_regs() == true,"check_wd_regs failed");
-    TEST_ASSERT(check_wd_tcr() == true,"check_wd_tcr failed");
-    TEST_ASSERT(check_wd_int() == true,"check_wd_int failed");
-    return TEST_OK;
-}
+     * - setup TCR, wait TIMINT1,2
+     * - setup timers, wait TIMINT1,2
 
-DECLARE_TEST(test_mpw_ctrl_005)
+     *  sp804_conf         : Structure contains configuration parameters
+     *  sp804_mode         - Chose counting mode - Oneshot, Periodic or Freerun
+     *  interrupt_enable   - Interrupts enabled
+     *  width              - Width of the counter - 32 or 16
+     *  load               - Load value to count from (won't be writen to corresponding reg if zero )
+     *  bgload             - Background Load value to count from (won't be writen to corresponding reg if zero )
+     */
+
+    // Set up interrupt handlers
+    uint32_t result;
+        rumboot_printf( "SP805 test START\n" );
+
+        rumboot_printf( "SP805 int are clean up\n" );
+
+        // ||
+
+        result = check_wd_default_ro_val(DCR_WATCHDOG_BASE);
+
+        if(!result)
+        {
+            rumboot_printf("Checked test Failed\n");
+            return -1;
+        }
+
+        rumboot_printf("Checked TEST_OK\n");
+//        sp804_config(DCR_TIMERS_BASE, c1, 0);
+//        sp804_config(DCR_TIMERS_BASE, c2, 0);
+
+        //sp804_clrint(DCR_TIMERS_BASE, 0);
+        //sp804_clrint(DCR_TIMERS_BASE, 1);
+        return result;
+      //  struct rumboot_irq_entry *tbl = rumboot_irq_create( NULL );
+}
