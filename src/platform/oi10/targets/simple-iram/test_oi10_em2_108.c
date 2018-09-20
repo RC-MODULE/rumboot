@@ -202,7 +202,7 @@ int main ()
 
     addr = SRAM0_BASE + 0x3000;
     for (i = 0; i < 0x100; i++)
-      iowrite32 (0x00, addr + i*4);
+      iowrite64 (0x00, addr + i*4);
 
     addr = SRAM0_BASE + 0x4000;
     for (i = 0; i < 0x100; i++)
