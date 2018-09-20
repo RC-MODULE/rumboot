@@ -211,14 +211,13 @@ void bootsource_try_chain(void *pdata, struct rumboot_bootheader *hdr, size_t ma
         }
 }
 
-
 int bootsource_try_by_id(int bootid, void *pdata, struct rumboot_bootheader *hdr, size_t maxsize)
 {
         const struct rumboot_bootsource *src = find_source_by_id(bootid);
 
         if (src) {
                 size_t offset = src->offset;
-                return bootsource_try_single(src, pdata, hdr, maxsize, &offset);
+                return bootsource_try_source_once(src, pdata, hdr, maxsize, &offset);
         }
         return -EBADSOURCE;
 }
