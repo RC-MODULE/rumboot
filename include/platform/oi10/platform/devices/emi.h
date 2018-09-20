@@ -32,6 +32,15 @@
 #define EM2_BANK5_SIZE          0x10000000
 #define NOR_SIZE                0x400000  //4MB  //EM2_BANK5_SIZE
 
+#define HAMMING_MATRIX          0b10000100001100011101010011000111, \
+                                0b00110000001111000010101100001011, \
+                                0b11000011000001101011000100011101, \
+                                0b00101101100000110000110000101110, \
+                                0b00011010011011001100110010110000, \
+                                0b11000000110110110100001101110000, \
+                                0b01111111110000000011001011000000
+
+
 typedef enum
 {
     emi_b0_sram0 = 0,
@@ -149,6 +158,8 @@ void emi_get_int_mask   (uint32_t emi_dcr_base, emi_imr_cfg * mask);
 void emi_get_irr        (uint32_t emi_dcr_base, emi_irr_cfg * irr);
 void emi_clear_irr      (uint32_t emi_dcr_base, emi_irr_cfg const * irr);
 
+/* a.gurov */
+uint8_t calc_hamming_ecc(uint32_t data);
 emi_bank_cfg
     *emi_get_bank_cfg_cached(emi_bank_num num_bank);
 

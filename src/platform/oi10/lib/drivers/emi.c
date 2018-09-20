@@ -19,13 +19,29 @@
 
 static emi_bank_cfg *bank_config_cache[6];
 
+uint8_t calc_hamming_ecc(uint32_t data)
+{
+    static const
+    uint32_t   hmat[7] = {HAMMING_MATRIX};
+    uint32_t   t,i,m,s; /* (t)emp, (i)ndex, (m)ask, (s)hift */
+    uint8_t    result;
+
+    for(result=0,i=0;i<7;i++)
+    {
+        for(m=0xFFFF,t=hmat[i]&data,s=16;s;s>>=1,m>>=s)
+            t = (t & m) ^ (t >> s);
+        result |= t << i;
+    }
+    return result;
+}
+
 emi_bank_cfg *emi_get_bank_cfg_cached(emi_bank_num num_bank)
 {
     return bank_config_cache[num_bank];
 }
 void emi_get_bank_cfg(uint32_t const emi_dcr_base, emi_bank_num const num_bank, emi_bank_cfg * bn_cfg)
 {
-    if (num_bank == emi_bank_all) TEST_ASSERT(0, "Invalid argument in emi_get_bank_cfg");
+    TEST_ASSERT( num_bank != emi_bank_all, "Invalid argument in emi_get_bank_cfg" );
     uint32_t val;
 
     val = dcr_read(emi_dcr_base + EMI_SS0 + num_bank*(EMI_SS1 - EMI_SS0));
@@ -53,7 +69,7 @@ void emi_get_bank_cfg(uint32_t const emi_dcr_base, emi_bank_num const num_bank, 
 
 void emi_set_bank_cfg (uint32_t const emi_dcr_base, emi_bank_num const num_bank, emi_bank_cfg const * bn_cfg)
 {
-    if (num_bank == emi_bank_all) TEST_ASSERT(0, "Invalid argument in emi_set_bank_cfg");
+    TEST_ASSERT( num_bank != emi_bank_all, "Invalid argument in emi_set_bank_cfg" );
     dcr_write (emi_dcr_base + EMI_SS0 + num_bank*(EMI_SS1 - EMI_SS0),  //write SSx
             ((bn_cfg->ssx_cfg.BTYP   << EMI_SSx_BTYP_i )  |
             ( bn_cfg->ssx_cfg.PTYP   << EMI_SSx_PTYP_i)   |
@@ -161,7 +177,7 @@ void emi_ecc_read(uint32_t emi_dcr_base, uint32_t *word_addr, uint8_t *ecc_val)
 void emi_enable_ext_rdy(uint32_t const emi_dcr_base, emi_bank_num const num_bank)
 {
     emi_bank_cfg bank_cfg;
-    if (num_bank == emi_bank_all) TEST_ASSERT(0, "Invalid argument in emi_set_bank_cfg");
+    TEST_ASSERT( num_bank != emi_bank_all, "Invalid argument in emi_set_bank_cfg" );
     emi_get_bank_cfg(emi_dcr_base, num_bank, &bank_cfg);
     bank_cfg.ssx_cfg.SRDY = SRDY_EXT_RDY_USE;
     emi_set_bank_cfg(emi_dcr_base, num_bank, &bank_cfg);
@@ -170,7 +186,7 @@ void emi_enable_ext_rdy(uint32_t const emi_dcr_base, emi_bank_num const num_bank
 void emi_set_trdy(uint32_t const emi_dcr_base, emi_bank_num const num_bank, uint16_t const trdy)
 {
     emi_bank_cfg bank_cfg;
-    if (num_bank == emi_bank_all) TEST_ASSERT(0, "Invalid argument in emi_set_bank_cfg");
+    TEST_ASSERT( num_bank != emi_bank_all, "Invalid argument in emi_set_bank_cfg" );
     emi_get_bank_cfg(emi_dcr_base, num_bank, &bank_cfg);
     bank_cfg.ssx_cfg.T_RDY = trdy;
     emi_set_bank_cfg(emi_dcr_base, num_bank, &bank_cfg);
@@ -493,16 +509,11 @@ void emi_set_ecc (uint32_t const emi_dcr_base, emi_bank_num const num_bank, emi_
     }
 }
 
-static void touch_sdram()
-{
-    uint32_t buf;
-    buf = ioread32(SDRAM_BASE);
-    iowrite32(buf, SDRAM_BASE);
-}
-
 void emi_init (uint32_t const emi_dcr_base)
 {
-
     emi_init_impl (emi_dcr_base, DCR_EM2_PLB6MCIF2_BASE, 0x00);
-    touch_sdram();//to prevent warnings in console
+#ifdef CMAKE_BUILD_TYPE_DEBUG
+    iowrite32(0x00000000, SDRAM_BASE); // touch sdram to prevent warnings in simulation console
+    rumboot_putstring( "Touching SDRAM: WARNING!!! WRITING 0x00000000 to SDRAM_BASE!!!" );
+#endif
 }
