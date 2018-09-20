@@ -61,7 +61,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
   endforeach()
 
 
-  rumboot_add_bootrom_components(NATIVE_SPL NATIVE)
+  rumboot_bootrom_add_components(NATIVE_SPL NATIVE)
 
   add_rumboot_target(
       NAME fileboot
@@ -73,33 +73,31 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
 
 
-   gen_chain_spl(spl_chain_ok SPL_CHAIN_OK SPL_NEXT SPL_OK)
+  gen_chain_spl(spl_chain_ok SPL_CHAIN_OK SPL_NEXT SPL_OK)
 
-  #TODO: Add selftest stub code and tests
-  #TODO: Test chain-booting appended images from one source
-  add_rumboot_test(host-bootrom bootrom-chain --file ${SPL_CHAIN_OK})
+  add_rumboot_test(bootrom-loader bootrom-chain --file ${SPL_CHAIN_OK})
   add_rumboot_test(host-fileboot unit-boot --file ${SPL_OK})
-  add_rumboot_test(host-bootrom bootrom-jump --file ${SPL_JUMP} --file2 ${SPL_OK_CHECK2})
-  add_rumboot_test(host-bootrom bootrom-jump-to-host --file ${SPL_JUMP_HOST} --hfile ${SPL_OK_CHECK2})
-  add_rumboot_test(host-bootrom bootrom-boot --file ${SPL_OK} --file2 ${SPL_FAIL})
-  add_rumboot_test(host-bootrom bootrom-boot-selftest --selftest --file ${SPL_OK} --file2 ${SPL_FAIL})
-  add_rumboot_test(host-bootrom bootrom-boot-a32 --align 32 --file ${SPL_OK} --file2 ${SPL_FAIL})
-  add_rumboot_test(host-bootrom bootrom-boot-a64 --align 64 --file ${SPL_OK} --file2 ${SPL_FAIL})
-  add_rumboot_test(host-bootrom bootrom-boot-a128 --align 128 --file ${SPL_OK} --file2 ${SPL_FAIL})
-  add_rumboot_test(host-bootrom bootrom-bad-magic --file ${SPL_FAIL_BAD_MAGIC} --file2 ${SPL_OK_CHECK1})
-  add_rumboot_test(host-bootrom bootrom-bad-header-crc32 --file ${SPL_FAIL_BAD_HCRC32} --file2 ${SPL_OK_CHECK1})
-  add_rumboot_test(host-bootrom bootrom-bad-data-crc32 --file ${SPL_FAIL_BAD_DCRC32} --file2 ${SPL_OK_CHECK1})
+  add_rumboot_test(bootrom-loader bootrom-jump --file ${SPL_JUMP} --file2 ${SPL_OK_CHECK2})
+  add_rumboot_test(bootrom-loader bootrom-jump-to-host --file ${SPL_JUMP_HOST} --hfile ${SPL_OK_CHECK2})
+  add_rumboot_test(bootrom-loader bootrom-boot --file ${SPL_OK} --file2 ${SPL_FAIL})
+  add_rumboot_test(bootrom-loader bootrom-boot-selftest --selftest --file ${SPL_OK} --file2 ${SPL_FAIL})
+  add_rumboot_test(bootrom-loader bootrom-boot-a32 --align 32 --file ${SPL_OK} --file2 ${SPL_FAIL})
+  add_rumboot_test(bootrom-loader bootrom-boot-a64 --align 64 --file ${SPL_OK} --file2 ${SPL_FAIL})
+  add_rumboot_test(bootrom-loader bootrom-boot-a128 --align 128 --file ${SPL_OK} --file2 ${SPL_FAIL})
+  add_rumboot_test(bootrom-loader bootrom-bad-magic --file ${SPL_FAIL_BAD_MAGIC} --file2 ${SPL_OK_CHECK1})
+  add_rumboot_test(bootrom-loader bootrom-bad-header-crc32 --file ${SPL_FAIL_BAD_HCRC32} --file2 ${SPL_OK_CHECK1})
+  add_rumboot_test(bootrom-loader bootrom-bad-data-crc32 --file ${SPL_FAIL_BAD_DCRC32} --file2 ${SPL_OK_CHECK1})
 
-  add_rumboot_test(host-bootrom bootrom-bad-id --file ${SPL_FAIL_BAD_ID} --file2 ${SPL_OK})
-  add_rumboot_test(host-bootrom bootrom-bad-version --file ${SPL_FAIL_BAD_VERSION} --file2 ${SPL_OK})
-  add_rumboot_test(host-bootrom bootrom-bad-revision --file ${SPL_OK_BAD_REV} --file2 ${SPL_FAIL})
-  add_rumboot_test(host-bootrom bootrom-next --file ${SPL_NEXT} --file2 ${SPL_OK_CHECK2})
-  add_rumboot_test(host-bootrom bootrom-hostmode-ok --host --hfile ${SPL_OK})
-  add_rumboot_test(host-bootrom bootrom-hostmode-bad-data --host --hfile ${SPL_FAIL_BAD_DCRC32},${SPL_OK})
-  add_rumboot_test(host-bootrom bootrom-hostmode-bad-magic --host --hfile ${SPL_FAIL_BAD_MAGIC},${SPL_OK})
-  add_rumboot_test(host-bootrom bootrom-hostmode-bad-id --host --hfile ${SPL_FAIL_BAD_ID},${SPL_OK})
-  add_rumboot_test(host-bootrom bootrom-fallback-to-hostmode --file ${SPL_FAIL_BAD_HCRC32} --file2 ${SPL_FAIL_BAD_DCRC32} --hfile ${SPL_OK})
-  add_rumboot_test(host-bootrom bootrom-hostmode-jump-to-file --host --file2 ${SPL_FAIL} --file2 ${SPL_OK_CHECK2} --hfile ${SPL_FAIL_BAD_ID},${SPL_JUMP})
+  add_rumboot_test(bootrom-loader bootrom-bad-id --file ${SPL_FAIL_BAD_ID} --file2 ${SPL_OK})
+  add_rumboot_test(bootrom-loader bootrom-bad-version --file ${SPL_FAIL_BAD_VERSION} --file2 ${SPL_OK})
+  add_rumboot_test(bootrom-loader bootrom-bad-revision --file ${SPL_OK_BAD_REV} --file2 ${SPL_FAIL})
+  add_rumboot_test(bootrom-loader bootrom-next --file ${SPL_NEXT} --file2 ${SPL_OK_CHECK2})
+  add_rumboot_test(bootrom-loader bootrom-hostmode-ok --host --hfile ${SPL_OK})
+  add_rumboot_test(bootrom-loader bootrom-hostmode-bad-data --host --hfile ${SPL_FAIL_BAD_DCRC32},${SPL_OK})
+  add_rumboot_test(bootrom-loader bootrom-hostmode-bad-magic --host --hfile ${SPL_FAIL_BAD_MAGIC},${SPL_OK})
+  add_rumboot_test(bootrom-loader bootrom-hostmode-bad-id --host --hfile ${SPL_FAIL_BAD_ID},${SPL_OK})
+  add_rumboot_test(bootrom-loader bootrom-fallback-to-hostmode --file ${SPL_FAIL_BAD_HCRC32} --file2 ${SPL_FAIL_BAD_DCRC32} --hfile ${SPL_OK})
+  add_rumboot_test(bootrom-loader bootrom-hostmode-jump-to-file --host --file2 ${SPL_FAIL} --file2 ${SPL_OK_CHECK2} --hfile ${SPL_FAIL_BAD_ID},${SPL_JUMP})
 
 endmacro()
 

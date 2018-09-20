@@ -88,7 +88,7 @@ int32_t rumboot_bootimage_check_data(struct rumboot_bootheader *hdr);
  struct rumboot_bootsource {
    const char *name;
    uint32_t base;
-   uint32_t offset;
+   uint64_t offset;
    uint32_t freq_khz;
    uint32_t slave_addr;
    const struct rumboot_bootmodule *plugin;
@@ -101,7 +101,28 @@ int32_t rumboot_bootimage_check_data(struct rumboot_bootheader *hdr);
  size_t bootsource_read(const struct rumboot_bootsource *src, void *pdata, void *dest, size_t offset, size_t len);
  void bootsource_deinit(const struct rumboot_bootsource *src, void *pdata);
 
+
+ /**
+  * Attempts to boot from specified boot source once.
+  * Used for unit-testing
+  *
+  * @param  bootid  Boot device id
+  * @param  pdata   pdata for the bootsource
+  * @param  hdr     Pointer to the area where the image will be loaded
+  * @param  maxsize Maximum size available in hdr
+  * @return         Returns the code from executed image or -EBADSOURCE if a bad id was specified
+  */
  int bootsource_try_by_id(int bootid, void *pdata, struct rumboot_bootheader *hdr, size_t maxsize);
+ /**
+  * Attempts to boot from a specified device once. The image is read from *offset parameter, which in turn
+  * is incremented by the amount of valid image data read.
+  * @param  src     Bootsource to boot from
+  * @param  pdata   pdata for the bootsource
+  * @param  dst     Where the image is stored
+  * @param  maxsize Maximum size of image and header
+  * @param  offset  Pointer to size_t with device offset
+  * @return         TODO:...
+  */
  int bootsource_try_source_once(const struct rumboot_bootsource *src, void *pdata, struct rumboot_bootheader *dst, size_t maxsize, size_t *offset);
  int bootsource_try_single(const struct rumboot_bootsource *src, void *pdata, struct rumboot_bootheader *dst, size_t maxsize, size_t *offset);
  void bootsource_try_chain(void *pdata, struct rumboot_bootheader *hdr, size_t maxsize);

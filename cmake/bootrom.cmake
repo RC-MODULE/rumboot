@@ -1,10 +1,7 @@
-macro(rumboot_add_bootrom_components spl_conf romconf)
-  if (NOT RUMBOOT_PLATFORM STREQUAL "native")
-    set(ROM_EXTRAFEATURES NOCODE)
-  endif()
-
+macro(rumboot_bootrom_add_components spl_conf romconf)
   add_rumboot_target(
-      NAME bootrom
+      PREFIX "bootrom"
+      NAME "loader"
       CONFIGURATION ${romconf}
       FILES common/bootrom/bootrom.c
       FEATURES STUB ${ROM_EXTRAFEATURES}
@@ -15,6 +12,7 @@ macro(rumboot_add_bootrom_components spl_conf romconf)
       NAME ok
       FILES common/bootrom/spl.c
       CFLAGS -DTERMINATE_SIMULATION -DEXITCODE=0
+      PACKIMAGE_FLAGS ${ARGN} -c
       VARIABLE SPL_OK
   )
 
@@ -23,6 +21,7 @@ macro(rumboot_add_bootrom_components spl_conf romconf)
       NAME ok-check2
       FILES common/bootrom/spl.c
       CFLAGS -DTERMINATE_SIMULATION -DEXITCODE=0 -DSPL_COUNT_CHECK=2
+      PACKIMAGE_FLAGS ${ARGN} -c
       VARIABLE SPL_OK_CHECK2
   )
 
@@ -31,6 +30,7 @@ macro(rumboot_add_bootrom_components spl_conf romconf)
       NAME ok-check1
       FILES common/bootrom/spl.c
       CFLAGS -DTERMINATE_SIMULATION -DEXITCODE=0 -DSPL_COUNT_CHECK=1
+      PACKIMAGE_FLAGS ${ARGN} -c
       VARIABLE SPL_OK_CHECK1
   )
 
@@ -39,6 +39,7 @@ macro(rumboot_add_bootrom_components spl_conf romconf)
       NAME fail
       FILES common/bootrom/spl.c
       CFLAGS -DTERMINATE_SIMULATION -DEXITCODE=1
+      PACKIMAGE_FLAGS ${ARGN} -c
       VARIABLE SPL_FAIL
   )
 
@@ -48,7 +49,7 @@ macro(rumboot_add_bootrom_components spl_conf romconf)
      CONFIGURATION ${spl_conf}
      CFLAGS -DEXITCODE=1 -DTERMINATE_SIMULATION
      FEATURES STUB PACKIMAGE
-     PACKIMAGE_FLAGS -s magic 0xbadc0de
+     PACKIMAGE_FLAGS -s magic 0xbadc0de ${ARGN}
      VARIABLE SPL_FAIL_BAD_MAGIC
    )
 
@@ -58,7 +59,7 @@ macro(rumboot_add_bootrom_components spl_conf romconf)
      CONFIGURATION ${spl_conf}
      CFLAGS -DEXITCODE=1 -DTERMINATE_SIMULATION
      FEATURES STUB PACKIMAGE
-     PACKIMAGE_FLAGS -s version 1 -c
+     PACKIMAGE_FLAGS -s version 1 -c ${ARGN}
      VARIABLE SPL_FAIL_BAD_VERSION
    )
 
@@ -68,7 +69,7 @@ macro(rumboot_add_bootrom_components spl_conf romconf)
      CONFIGURATION ${spl_conf}
      CFLAGS -DEXITCODE=1 -DTERMINATE_SIMULATION
      FEATURES STUB PACKIMAGE
-     PACKIMAGE_FLAGS -s header_crc32 0xb00bc0de
+     PACKIMAGE_FLAGS -s header_crc32 0xb00bc0de ${ARGN}
      VARIABLE SPL_FAIL_BAD_HCRC32
    )
 
@@ -78,7 +79,7 @@ macro(rumboot_add_bootrom_components spl_conf romconf)
      CONFIGURATION ${spl_conf}
      CFLAGS -DEXITCODE=1 -DTERMINATE_SIMULATION
      FEATURES STUB PACKIMAGE
-     PACKIMAGE_FLAGS -s data_crc32 0xb00bc0de -c
+     PACKIMAGE_FLAGS -s data_crc32 0xb00bc0de -c ${ARGN}
      VARIABLE SPL_FAIL_BAD_DCRC32
    )
 
@@ -87,6 +88,7 @@ macro(rumboot_add_bootrom_components spl_conf romconf)
      NAME next
      CONFIGURATION ${spl_conf}
      CFLAGS -DEXITCODE=0
+     PACKIMAGE_FLAGS ${ARGN} -c
      FEATURES STUB PACKIMAGE
      VARIABLE SPL_NEXT
    )
@@ -96,6 +98,7 @@ macro(rumboot_add_bootrom_components spl_conf romconf)
      NAME jump
      CONFIGURATION ${spl_conf}
      CFLAGS -DEXITCODE=2
+     PACKIMAGE_FLAGS ${ARGN} -c
      FEATURES STUB PACKIMAGE
      VARIABLE SPL_JUMP
    )
@@ -105,6 +108,7 @@ macro(rumboot_add_bootrom_components spl_conf romconf)
      NAME jump_host
      CONFIGURATION ${spl_conf}
      CFLAGS -DEXITCODE=-1
+     PACKIMAGE_FLAGS ${ARGN} -c
      FEATURES STUB PACKIMAGE
      VARIABLE SPL_JUMP_HOST
    )
@@ -130,7 +134,7 @@ macro(rumboot_add_bootrom_components spl_conf romconf)
    )
 endmacro()
 
-macro(rumboot_unit_test_bootsource)
+macro(rumboot_bootrom_unit_test)
   set(options DEFAULT)
   set(oneValueArgs   ID TAG MEMTAG TAGOFFSET CONFIGURATION)
   set(multiValueArgs IRUN_FLAGS)
@@ -139,8 +143,10 @@ macro(rumboot_unit_test_bootsource)
 
   set(_commas)
 
-  foreach(offset RANGE ${BOOTSOURCE_TAGOFFSET})
-    set(_commas "${_commas},")
+  foreach(offset RANGE 0 ${BOOTSOURCE_TAGOFFSET})
+    if (NOT ${offset} EQUAL "0")
+      set(_commas "${_commas},")
+    endif()
   endforeach()
 
   add_rumboot_target(
@@ -148,21 +154,10 @@ macro(rumboot_unit_test_bootsource)
           CONFIGURATION ${BOOTSOURCE_CONFIGURATION}
           PREFIX "bootrom"
           FILES common/bootrom/unit.c
-          TESTGROUP bootrom
+          TESTGROUP bootrom bootrom-unit
           IRUN_FLAGS ${IRUN_FLAGS}
-          CFLAGS -DSOURCE=${id} -DEXPECTED=true
+          CFLAGS -DSOURCE=${BOOTSOURCE_ID} -DEXPECTED=0
           LOAD ${BOOTSOURCE_MEMTAG} ${_commas}spl-ok
-  )
-
-  add_rumboot_target(
-          NAME "unit-${BOOTSOURCE_TAG}-next-ok"
-          CONFIGURATION ${BOOTSOURCE_CONFIGURATION}
-          PREFIX "bootrom"
-          FILES common/bootrom/unit.c
-          TESTGROUP bootrom
-          IRUN_FLAGS ${IRUN_FLAGS}
-          CFLAGS -DSOURCE=${id} -DEXPECTED=true
-          LOAD ${BOOTSOURCE_MEMTAG} ${_commas}spl-ok-check2
   )
 
   add_rumboot_target(
@@ -170,9 +165,9 @@ macro(rumboot_unit_test_bootsource)
           CONFIGURATION ${BOOTSOURCE_CONFIGURATION}
           PREFIX "bootrom"
           FILES common/bootrom/unit.c
-          TESTGROUP bootrom
+          TESTGROUP bootrom bootrom-unit
           IRUN_FLAGS ${IRUN_FLAGS}
-          CFLAGS -DSOURCE=${id} -DEXPECTED=false
+          CFLAGS -DSOURCE=${BOOTSOURCE_ID} -DEXPECTED=-EBADMAGIC
           LOAD ${BOOTSOURCE_MEMTAG} ${_commas}spl-fail-bad-magic
   )
 
@@ -181,9 +176,106 @@ macro(rumboot_unit_test_bootsource)
           CONFIGURATION ${BOOTSOURCE_CONFIGURATION}
           PREFIX "bootrom"
           FILES common/bootrom/unit.c
-          TESTGROUP bootrom
+          TESTGROUP bootrom bootrom-unit
           IRUN_FLAGS ${IRUN_FLAGS}
-          CFLAGS -DSOURCE=${id} -DEXPECTED=false
+          CFLAGS -DSOURCE=${BOOTSOURCE_ID} -DEXPECTED=-EBADVERSION
           LOAD ${BOOTSOURCE_MEMTAG} ${_commas}spl-fail-bad-version
   )
+
+  add_rumboot_target(
+          NAME "unit-${BOOTSOURCE_TAG}-bad-header"
+          CONFIGURATION ${BOOTSOURCE_CONFIGURATION}
+          PREFIX "bootrom"
+          FILES common/bootrom/unit.c
+          TESTGROUP bootrom bootrom-unit
+          IRUN_FLAGS ${IRUN_FLAGS}
+          CFLAGS -DSOURCE=${BOOTSOURCE_ID} -DEXPECTED=-EBADHDRCRC
+          LOAD ${BOOTSOURCE_MEMTAG} ${_commas}spl-fail-bad-header-crc
+  )
+
+  add_rumboot_target(
+          NAME "unit-${BOOTSOURCE_TAG}-bad-data"
+          CONFIGURATION ${BOOTSOURCE_CONFIGURATION}
+          PREFIX "bootrom"
+          FILES common/bootrom/unit.c
+          TESTGROUP bootrom bootrom-unit
+          IRUN_FLAGS ${IRUN_FLAGS}
+          CFLAGS -DSOURCE=${BOOTSOURCE_ID} -DEXPECTED=-EBADDATACRC
+          LOAD ${BOOTSOURCE_MEMTAG} ${_commas}spl-fail-bad-data-crc
+  )
+
+endmacro()
+
+macro(rumboot_bootrom_integration_test name romconf)
+  add_rumboot_target(
+          NAME ${name}
+          CONFIGURATION ${romconf}
+          PREFIX "bootrom"
+          BOOTROM bootrom-loader
+          TESTGROUP bootrom bootrom-integration
+          FEATURES NOCODE
+          ${ARGN}
+  )
+endmacro()
+
+# TODO: Take this one apart
+macro(add_bootrom_stuff romconf)
+  add_rumboot_target(
+          NAME "spi-cs0-boot"
+          CONFIGURATION ${romconf}
+          PREFIX "bootrom"
+          BOOTROM bootrom-loader
+          TESTGROUP bootrom
+          FEATURES NOCODE
+          LOAD
+            SPI0_CONF spl-ok,spl-fail
+
+  )
+
+  add_rumboot_target(
+          NAME "spi-cs1-boot"
+          CONFIGURATION ROM
+          PREFIX "bootrom"
+          BOOTROM bootrom-loader
+          TESTGROUP bootrom
+          LOAD
+            SPI0_CONF spl-fail-bad-magic,spl-ok
+          FEATURES NOCODE
+  )
+
+  add_rumboot_target(
+          NAME "i2c-eeprom-a0-boot"
+          CONFIGURATION ROM
+          PREFIX "bootrom"
+          BOOTROM bootrom-loader
+          TESTGROUP bootrom
+          LOAD
+            SPI0_CONF spl-fail-bad-magic,spl-fail-bad-magic
+            I2C0_CONF spl-ok,spl-fail,spl-fail,spl-fail
+            I2C1_CONF spl-fail,spl-fail,spl-fail,spl-fail
+          FEATURES NOCODE
+  )
+
+
+  rumboot_unit_test(0 spi0_cs0 SPI0_CONF 0)
+  rumboot_unit_test(1 spi0_cs1 SPI0_CONF 1)
+  rumboot_unit_test(2 i2c0_50  I2C0_CONF 0)
+  rumboot_unit_test(3 i2c0_51  I2C0_CONF 1)
+  rumboot_unit_test(4 i2c0_52  I2C0_CONF 2)
+  rumboot_unit_test(5 i2c0_53  I2C0_CONF 3)
+
+  add_rumboot_target(
+          NAME "host-shim"
+          CONFIGURATION ROM
+          PREFIX "bootrom"
+          BOOTROM bootrom-loader
+          TESTGROUP bootrom bootrom-unit-tests
+          IRUN_FLAGS +BOOT_HOST
+          LOAD
+            SPI0_CONF spl-fail,spl-fail
+            HOSTMOCK spl-ok
+          FEATURES NOCODE
+  )
+
+
 endmacro()

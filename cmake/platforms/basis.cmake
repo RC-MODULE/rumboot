@@ -101,131 +101,28 @@ rumboot_add_configuration(
   FEATURES PACKIMAGE
 )
 
-macro(add_bootrom_stuff)
-  #Let's add our spl stuff
-  add_rumboot_target(
-    FILES common/bootrom/spl.c
-    NAME ok
-    CONFIGURATION IRAM_SPL
-    CFLAGS -DEXITCODE=0 -DTERMINATE_SIMULATION
-    FEATURES STUB PACKIMAGE
-  )
-
-  add_rumboot_target(
-    FILES common/bootrom/spl.c
-    NAME fail
-    CONFIGURATION IRAM_SPL
-    CFLAGS -DEXITCODE=1 -DTERMINATE_SIMULATION
-    FEATURES STUB PACKIMAGE
-  )
-
-  add_rumboot_target(
-    FILES common/bootrom/spl.c
-    NAME fail-bad-magic
-    CONFIGURATION IRAM_SPL
-    CFLAGS -DEXITCODE=1 -DTERMINATE_SIMULATION
-    FEATURES STUB PACKIMAGE
-    PACKIMAGE_FLAGS -s magic 0xbadc0de
-  )
-
-  add_rumboot_target(
-    FILES common/bootrom/spl.c
-    NAME fail-bad-version
-    CONFIGURATION IRAM_SPL
-    CFLAGS -DEXITCODE=1 -DTERMINATE_SIMULATION
-    FEATURES STUB PACKIMAGE
-    PACKIMAGE_FLAGS -s version 1 -c
-  )
-
-  add_rumboot_target(
-    FILES common/bootrom/spl.c
-    NAME fail-bad-id
-    CONFIGURATION IRAM_SPL
-    CFLAGS -DEXITCODE=1 -DTERMINATE_SIMULATION
-    FEATURES STUB PACKIMAGE
-    PACKIMAGE_FLAGS -s version 1 -c
-  )
-
-  add_rumboot_target(
-    FILES common/bootrom/spl.c
-    NAME ok-bad-revision
-    CONFIGURATION IRAM_SPL
-    CFLAGS -DEXITCODE=0 -DTERMINATE_SIMULATION
-    FEATURES STUB PACKIMAGE
-    PACKIMAGE_FLAGS -s revision 99 -c
-  )
-
-  add_rumboot_target(
-          CONFIGURATION ROM
-          FILES common/bootrom/bootrom.c
-          PREFIX "bootrom"
-          NAME "loader"
-          FEATURES STUB
-  )
-
-  add_rumboot_target(
-          NAME "spi-cs0-boot"
-          CONFIGURATION ROM
-          PREFIX "bootrom"
-          BOOTROM bootrom-loader
-          TESTGROUP bootrom
-          LOAD
-            SPI0_CONF spl-ok,spl-fail
-          FEATURES NOCODE
-  )
-
-  add_rumboot_target(
-          NAME "spi-cs1-boot"
-          CONFIGURATION ROM
-          PREFIX "bootrom"
-          BOOTROM bootrom-loader
-          TESTGROUP bootrom
-          LOAD
-            SPI0_CONF spl-fail-bad-magic,spl-ok
-          FEATURES NOCODE
-  )
-
-  add_rumboot_target(
-          NAME "i2c-eeprom-a0-boot"
-          CONFIGURATION ROM
-          PREFIX "bootrom"
-          BOOTROM bootrom-loader
-          TESTGROUP bootrom
-          LOAD
-            SPI0_CONF spl-fail-bad-magic,spl-fail-bad-magic
-            I2C0_CONF spl-ok,spl-fail,spl-fail,spl-fail
-            I2C1_CONF spl-fail,spl-fail,spl-fail,spl-fail
-          FEATURES NOCODE
-  )
-
-
-  rumboot_unit_test(0 spi0_cs0 SPI0_CONF 0)
-  rumboot_unit_test(1 spi0_cs1 SPI0_CONF 1)
-  rumboot_unit_test(2 i2c0_50  I2C0_CONF 0)
-  rumboot_unit_test(3 i2c0_51  I2C0_CONF 1)
-  rumboot_unit_test(4 i2c0_52  I2C0_CONF 2)
-  rumboot_unit_test(5 i2c0_53  I2C0_CONF 3)
-
-  add_rumboot_target(
-          NAME "host-shim"
-          CONFIGURATION ROM
-          PREFIX "bootrom"
-          BOOTROM bootrom-loader
-          TESTGROUP bootrom bootrom-unit-tests
-          IRUN_FLAGS +BOOT_HOST
-          LOAD
-            SPI0_CONF spl-fail,spl-fail
-            HOSTMOCK spl-ok
-          FEATURES NOCODE
-  )
-
-
-endmacro()
+include(${CMAKE_SOURCE_DIR}/cmake/bootrom.cmake)
 
 ### Add tests here ###
 #WARNING! Full regression automatically includes all tests from the short ones
 macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
-#  add_bootrom_stuff()
+
+  rumboot_bootrom_add_components(IRAM_SPL ROM)
+
+  rumboot_bootrom_unit_test(
+      ID 0
+      TAG spi0_cs0
+      MEMTAG SPI0_CONF
+      TAGOFFSET 0
+  )
+
+  rumboot_bootrom_unit_test(
+      ID 1
+      TAG spi0_cs1
+      MEMTAG SPI0_CONF
+      TAGOFFSET 1
+  )
+
 
   add_rumboot_target_dir(simple-rom/
     CONFIGURATION ROM
@@ -332,7 +229,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       CONFIGURATION IRAM_MIRROR
       PREFIX arinc-mirror
     )
-	
+
 	add_rumboot_target_dir(arinc/arinc_ddr/
       CONFIGURATION IRAM_WITH_DDR
       CFLAGS -DTX_FREQ=tx_freq_100 -DRX_FREQ=rx_freq_100 -Dheap_0=2 -Dheap_1=0
@@ -342,7 +239,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
        CONFIGURATION IRAM_WITH_DDR
       CFLAGS -DTX_FREQ=tx_freq_100 -DRX_FREQ=rx_freq_100 -Dheap_0=2 -Dheap_1=1
       PREFIX arinc_ddr_freq_100_ddr0_IM1
-    ) 
+    )
 	add_rumboot_target_dir(arinc/arinc_ddr/
        CONFIGURATION IRAM_WITH_DDR
       CFLAGS -DTX_FREQ=tx_freq_100 -DRX_FREQ=rx_freq_100 -Dheap_0=2 -Dheap_1=2
@@ -374,7 +271,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       CFLAGS -DTX_FREQ=tx_freq_100 -DRX_FREQ=rx_freq_100 -Dheap_0=3 -Dheap_1=3
       PREFIX arinc_ddr_freq_100_ddr1_ddr1
     )
-	
+
 	add_rumboot_target_dir(arinc/arinc_ddr
       CONFIGURATION IRAM_MIRROR
       CFLAGS -DTX_FREQ=tx_freq_12_5 -DRX_FREQ=rx_freq_12_5 -Dheap_0=4 -Dheap_1=4
