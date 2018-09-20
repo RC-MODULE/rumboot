@@ -422,6 +422,7 @@ inline static void print_hscb_descriptor(uint32_t addr){
             addr,hscb_change_endian(*((uint32_t*)addr)),hscb_change_endian(*(((uint32_t*)addr)+1)));
 }
 
+#ifdef HSCB_SHORT_TEST
 void init_hscb_cfg_short(hscb_instance_t* hscb_inst)
 {
     hscb_inst[0].src_hscb_base_addr   = HSCB_UNDER_TEST_BASE;
@@ -568,7 +569,11 @@ static uint32_t check_hscb_short_func(){
 
     return 0;
 }
-
+#else
+static uint32_t check_hscb_func(){
+    return 0;
+}
+#endif
 
 int main() {
     uint32_t result = 0x0;
@@ -588,7 +593,11 @@ int main() {
     tbl = create_irq_handlers(hscb_cfg);
 
     prepare_memory_areas();
+#ifdef HSCB_SHORT_TEST
     result += check_hscb_short_func();
+#else
+    result += check_hscb_func();
+#endif
     delete_irq_handlers(tbl);
 
     //result += check_gpio_func( HSCB_UNDER_TEST_BASE, 0x2A );
