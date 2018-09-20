@@ -139,7 +139,7 @@ int main()
 
         rumboot_printf("UART data received: 0x%x\n", data);
 
-        //TEST_ASSERT(data == i, "Incorrect data received.");
+        TEST_ASSERT(data == i, "Incorrect data received.");
     }
 
     uart_disable();
