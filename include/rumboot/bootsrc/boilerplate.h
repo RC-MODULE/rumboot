@@ -1,5 +1,5 @@
-#ifndef SPIFLASH__
-#define SPIFLASH__
+#ifndef BOOTSRC_BOILERPLATE__
+#define BOOTSRC_BOILERPLATE__
 
 /**
  * \defgroup bootsrc_boilerplate Boilerplate boot source
