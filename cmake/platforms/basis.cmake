@@ -109,18 +109,54 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
   rumboot_bootrom_add_components(IRAM_SPL ROM)
 
+
+#  rumboot_bootrom_unit_test(
+#      ID 0
+#      TAG sdio0
+#      MEMTAG SDIO0_CONF
+#      TAGOFFSET 0
+#  )
+
   rumboot_bootrom_unit_test(
-      ID 0
+      ID 1
       TAG spi0_cs0
       MEMTAG SPI0_CONF
       TAGOFFSET 0
   )
 
   rumboot_bootrom_unit_test(
-      ID 1
+      ID 2
       TAG spi0_cs1
       MEMTAG SPI0_CONF
       TAGOFFSET 1
+  )
+
+  rumboot_bootrom_unit_test(
+      ID 3
+      TAG i2c0_50
+      MEMTAG I2C0_CONF
+      TAGOFFSET 0
+  )
+
+  rumboot_bootrom_unit_test(
+      ID 4
+      TAG i2c0_51
+      MEMTAG I2C0_CONF
+      TAGOFFSET 1
+  )
+
+  rumboot_bootrom_unit_test(
+      ID 5
+      TAG i2c0_52
+      MEMTAG I2C0_CONF
+      TAGOFFSET 2
+  )
+
+  rumboot_bootrom_unit_test(
+      ID 6
+      TAG i2c0_53
+      MEMTAG I2C0_CONF
+      TAGOFFSET 3
   )
 
 
