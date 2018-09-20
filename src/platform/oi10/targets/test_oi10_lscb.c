@@ -13,9 +13,55 @@
 #include <platform/devices.h>
 #include <platform/interrupts.h>
 #include <platform/test_assert.h>
+#include <platform/devices/emi.h>
 
 #include <regs/regs_mkio.h>
 #include <devices/mkio.h>
+
+#define MKIO_TEST_LEN_IN_WORDS  32
+#define MKIO_TEST_DATA_SIZE     (MKIO_TEST_LEN_IN_WORDS*sizeof(uint16_t))
+
+uint16_t test_mkio_data_im0_src[MKIO_TEST_LEN_IN_WORDS] = {
+                                                            0x0001,
+                                                            0x0002,
+                                                            0x0004,
+                                                            0x0008,
+                                                            0x0010,
+                                                            0x0020,
+                                                            0x0040,
+                                                            0x0080,
+                                                            0x0100,
+                                                            0x0200,
+                                                            0x0400,
+                                                            0x0800,
+                                                            0x1000,
+                                                            0x2000,
+                                                            0x4000,
+                                                            0x8000,
+                                                            0xFFFE,
+                                                            0xFFFD,
+                                                            0xFFFB,
+                                                            0xFFF7,
+                                                            0xFFEF,
+                                                            0xFFDF,
+                                                            0xFFBF,
+                                                            0xFF7F,
+                                                            0xFEFF,
+                                                            0xFDFF,
+                                                            0xFBFF,
+                                                            0xF7FF,
+                                                            0xEFFF,
+                                                            0xDFFF,
+                                                            0xBFFF,
+                                                            0x7FFF
+                                                    };
+
+uint16_t* test_mkio_data_im1_src   = (uint16_t *)( IM1_BASE );
+uint16_t* test_mkio_data_im1_dst   = (uint16_t *)( IM1_BASE + MKIO_TEST_DATA_SIZE);
+
+mkio_bc_descriptor* mkio_bc_desr  = (mkio_bc_descriptor*)(IM1_BASE + 2 * MKIO_TEST_DATA_SIZE);
+mkio_rt_descriptor* mkio_rt_descr = (mkio_rt_descriptor*)(IM1_BASE + 2 * MKIO_TEST_DATA_SIZE + sizeof(mkio_bc_descriptor));
+
 
 /*
  * Registers access checks
@@ -73,12 +119,143 @@ void regs_check(uint32_t base_address)
     TEST_ASSERT(rumboot_regpoker_check_array(mkio_check_array, base_address)==0, "Failed to check MKIO registers\n");
 }
 
+volatile bool mkio_handler = false;
+
+static void handler_mkio( int irq, void *arg )
+{
+    uint32_t cur_status;
+    mkio_instance_t* mkio_inst = (mkio_instance_t* ) arg;
+    rumboot_printf( "MKIO(0x%X) IRQ arrived\n", mkio_inst->src_mkio_base_addr);
+    cur_status = ioread32(mkio_inst->src_mkio_base_addr + IRQ);
+    rumboot_printf( "IRQ = 0x%X\n", cur_status);
+    iowrite32(1, mkio_inst->src_mkio_base_addr + IRQ);
+    mkio_handler = true;
+}
+
+
+struct rumboot_irq_entry * create_irq_handlers(mkio_instance_t* mkio_inst)
+{
+    rumboot_printf( "Create irq handlers\n" );
+    rumboot_irq_cli();
+    struct rumboot_irq_entry *tbl = rumboot_irq_create( NULL );
+
+    if (mkio_inst->src_mkio_base_addr==MKIO0_BASE)
+    {
+        rumboot_irq_set_handler( tbl, MKIO0_INT, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler_mkio, mkio_inst );
+        rumboot_irq_table_activate( tbl );
+        rumboot_irq_enable( MKIO0_INT );
+    }
+    else
+    {
+        rumboot_irq_set_handler( tbl, MKIO1_INT, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler_mkio, mkio_inst );
+        rumboot_irq_table_activate( tbl );
+        rumboot_irq_enable( MKIO1_INT );
+    }
+    rumboot_irq_sei();
+    return tbl;
+}
+
+void delete_irq_handlers(struct rumboot_irq_entry *tbl)
+{
+    rumboot_irq_table_activate(NULL);
+    rumboot_irq_free(tbl);
+}
+
+void prepare_test_data()
+{
+    rumboot_putstring("Preparing source test data\n");
+    memcpy(test_mkio_data_im1_src, test_mkio_data_im0_src, sizeof(test_mkio_data_im0_src));
+}
+
+void init_mkio_cfg(mkio_instance_t* mkio_inst, uint32_t bc_base_addr, uint32_t rt_base_addr, uint16_t* src_addr, uint16_t* dst_addr, mkio_bc_descriptor* bc_descr_addr, mkio_rt_descriptor* rt_descr_addr, uint32_t size)
+{
+    mkio_inst->src_mkio_base_addr   = bc_base_addr;
+    mkio_inst->dst_mkio_base_addr   = rt_base_addr;
+    mkio_inst->src_addr             = (uint32_t *) src_addr;
+    mkio_inst->dst_addr             = (uint32_t *) dst_addr;
+    mkio_inst->bc_desr              = bc_descr_addr;
+    mkio_inst->rt_descr             = rt_descr_addr;
+    mkio_inst->size                 = size;
+}
+
+void configure_mkio(mkio_instance_t* mkio_cfg)
+{
+    uint32_t mkio_irq_ring_buffer [16] __attribute__ ((aligned(64)));
+
+    mkio_prepare_bc_descr(mkio_cfg->src_mkio_base_addr, mkio_cfg->src_addr, mkio_cfg->size, mkio_cfg->bc_desr);
+    mkio_prepare_rt_descr(mkio_cfg->dst_mkio_base_addr, mkio_cfg->dst_addr, mkio_cfg->size, mkio_cfg->rt_descr);
+
+    mkio_enable_all_irq(mkio_cfg->src_mkio_base_addr);
+    mkio_set_bcrd(mkio_cfg->src_mkio_base_addr, rumboot_virt_to_dma(&mkio_irq_ring_buffer));
+}
+
+void run_mkio_transfers_via_external_loopback(mkio_instance_t* mkio_cfg)
+{
+    configure_mkio(mkio_cfg);
+
+    mkio_rt_run_schedule(mkio_cfg->dst_mkio_base_addr);
+    mkio_bc_run_schedule(mkio_cfg->src_mkio_base_addr);
+    TEST_ASSERT(mkio_wait_bc_schedule_state(mkio_cfg->src_mkio_base_addr, MKIO_BCSL_SCST_EXEC)==true, "BC sched state EXEC is timed out");
+}
+
+void wait_mkio_irq()
+{
+#define MKIO_TR_TIMEOUT 1000
+    uint32_t timeout_cnt = 0;
+    rumboot_putstring("Waiting MKIO interrupt...\n");
+    while ((mkio_handler==false) && (timeout_cnt++<MKIO_TR_TIMEOUT)){};
+    TEST_ASSERT(timeout_cnt<MKIO_TR_TIMEOUT, "Failed to waiting MKIO interrupt");
+    rumboot_putstring("Waiting MKIO interrupt... OK\n");
+}
+void mem_cmp(uint16_t* src, uint16_t* dst, uint32_t size)
+{
+    uint32_t i = 0;
+    bool err = false;
+    rumboot_putstring("Start compare source and destination data\n");
+    while (i<size)
+    {
+        if (*src!=*dst)
+        {
+            rumboot_printf("%d. Data error\nsrc[0x%X] = 0x%X\ndst[0x%X] = 0x%X\n\n", (i / sizeof(uint16_t)), (uint32_t)src, *src, (uint32_t)dst, *dst);
+            err = true;
+        }
+        src++; dst++;
+        i += sizeof(uint16_t);
+    }
+    TEST_ASSERT(err==false, "Were data error(s). Please review log");
+    rumboot_putstring("Data OK!\n");
+}
+
 int main(void)
 {
 #ifdef CHECK_MKIO_REGS
     rumboot_printf("Start test_oi10_lscb. Registers access checks for MKIO module (0x%X)\n", MKIO_BASE);
     regs_check(MKIO_BASE);
 #endif
+
+#ifdef CHECK_MKIO_FUNC
+    mkio_instance_t mkio_cfg;
+    struct rumboot_irq_entry *tbl;
+    uint32_t bc_base_addr;
+    uint32_t rt_base_addr;
+
+    prepare_test_data();
+
+    mkio_handler = false;
+    bc_base_addr = MKIO_BASE;
+    rt_base_addr = (MKIO_BASE==MKIO0_BASE) ? MKIO1_BASE : MKIO0_BASE;
+    rumboot_printf("Start MKIO functional test\nBC: 0x%X\nRT: 0x%X\n", bc_base_addr, rt_base_addr);
+    init_mkio_cfg(&mkio_cfg, bc_base_addr, rt_base_addr, test_mkio_data_im1_src, test_mkio_data_im1_dst, mkio_bc_desr, mkio_rt_descr, MKIO_TEST_DATA_SIZE);
+    tbl = create_irq_handlers(&mkio_cfg);
+
+    run_mkio_transfers_via_external_loopback(&mkio_cfg);
+    wait_mkio_irq();
+
+    delete_irq_handlers(tbl);
+
+    mem_cmp(test_mkio_data_im1_src, test_mkio_data_im1_dst, MKIO_TEST_DATA_SIZE);
+#endif
+
     return 0;
 }
 
