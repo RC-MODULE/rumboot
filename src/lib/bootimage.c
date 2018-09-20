@@ -36,19 +36,19 @@ ssize_t rumboot_bootimage_check_header(struct rumboot_bootheader *hdr, void **da
 	if (hdr->magic != RUMBOOT_HEADER_MAGIC)
 		return -EBADMAGIC;
 
-    dbg_boot(hdr->device, "--- Boot header ---");
-    dbg_boot(hdr->device, "Magic:            %x", hdr->magic);
-    dbg_boot(hdr->device, "Header version:   %x", hdr->version);
+    dbg_boot(hdr->device, "--- Boot Image Header ---");
+    dbg_boot(hdr->device, "Magic:            0x%x", hdr->magic);
+    dbg_boot(hdr->device, "Header version:   %d", hdr->version);
 
 	if (hdr->version != RUMBOOT_HEADER_VERSION)
 		return -EBADVERSION;
 
-    dbg_boot(hdr->device, "Chip Id:          %x", hdr->chip_id);
-    dbg_boot(hdr->device, "Chip Revision:    %x", hdr->chip_rev);
-    dbg_boot(hdr->device, "Data length:      %x", hdr->datalen);
-    dbg_boot(hdr->device, "Header CRC32:     %x", hdr->header_crc32);
-    dbg_boot(hdr->device, "Data CRC32:       %x", hdr->data_crc32);
-
+    dbg_boot(hdr->device, "Chip Id:          %d", hdr->chip_id);
+    dbg_boot(hdr->device, "Chip Revision:    %d", hdr->chip_rev);
+    dbg_boot(hdr->device, "Data length:      %d", hdr->datalen);
+    dbg_boot(hdr->device, "Header CRC32:     0x%x", hdr->header_crc32);
+    dbg_boot(hdr->device, "Data CRC32:       0x%x", hdr->data_crc32);
+    dbg_boot(hdr->device, "---        ---        ---");
 	if (hdr->chip_id != RUMBOOT_PLATFORM_CHIPID)
 		return -EBADCHIPID;
 
