@@ -372,7 +372,7 @@ void prepare_memory_areas(){
     data_areas_sizes = memory_areas_sizes;
     for (i = 0; i < COUNT_AREAS; ++i){
         heap_id = get_heap_id_for_address(memory_area_addresses[i]);
-        data_areas[i] = rumboot_malloc_from_heap_aligned(heap_id, memory_areas_sizes[i >> 1], 1);
+        data_areas[i] = rumboot_malloc_from_heap_aligned(heap_id, memory_areas_sizes[i >> 1], 0x8);
         data_areas_sizes[i >> 1] = memory_areas_sizes[i >> 1];
 //        rumboot_putstring("data_areas[i] == ");
 //        rumboot_puthex(data_areas[i]);
@@ -478,15 +478,15 @@ static uint32_t check_hscb_short_func(){
 //    rumboot_puthex((uint32_t)hscb_cfg[0].src_addr);
 //    rumboot_putstring("(uint32_t)hscb_cfg[0].dst_addr == ");
 //    rumboot_puthex((uint32_t)hscb_cfg[0].dst_addr);
-    set_test_data((uint32_t)hscb_cfg[0].src_addr,DATA_SIZE_0,INCREMENT_0);
-    set_test_data((uint32_t)hscb_cfg[0].dst_addr,DATA_SIZE_0,0);
+    set_test_data((uint32_t)hscb_cfg[0].src_addr,hscb_cfg[0].src_size,INCREMENT_0);
+    set_test_data((uint32_t)hscb_cfg[0].dst_addr,hscb_cfg[0].dst_size,0);
     // Set data for HSCB1
 //    rumboot_putstring("(uint32_t)(hscb_cfg[1].src_addr) == ");
 //    rumboot_puthex((uint32_t)(hscb_cfg[1].src_addr));
 //    rumboot_putstring("(uint32_t)(hscb_cfg[1].dst_addr) == ");
 //    rumboot_puthex((uint32_t)(hscb_cfg[1].dst_addr));
-    set_test_data((uint32_t)(hscb_cfg[1].src_addr),DATA_SIZE_1,INCREMENT_1);
-    set_test_data((uint32_t)(hscb_cfg[1].dst_addr),DATA_SIZE_1,0);
+    set_test_data((uint32_t)(hscb_cfg[1].src_addr),hscb_cfg[1].src_size,INCREMENT_1);
+    set_test_data((uint32_t)(hscb_cfg[1].dst_addr),hscb_cfg[1].dst_size,0);
     msync();
     hscb_config_for_receive_and_transmit(&hscb_cfg[0]);
     hscb_config_for_receive_and_transmit(&hscb_cfg[1]);
@@ -517,10 +517,10 @@ static uint32_t check_hscb_short_func(){
     rumboot_putstring( "HSCB link has enabled\n" );
     // Enable DMA for HSCB0 and HSCB1
     rumboot_putstring( "Start work!\n" );
-    hscb_run_rdma(hscb_cfg[0].src_hscb_base_addr);
     hscb_run_wdma(hscb_cfg[0].src_hscb_base_addr);
-    hscb_run_rdma(hscb_cfg[1].src_hscb_base_addr);
     hscb_run_wdma(hscb_cfg[1].src_hscb_base_addr);
+    hscb_run_rdma(hscb_cfg[0].src_hscb_base_addr);
+    hscb_run_rdma(hscb_cfg[1].src_hscb_base_addr);
     msync();
     rumboot_putstring( "Wait HSCB0 and HSCB1 finish work\n" );
     while (!(hscb0_dma_status & hscb1_dma_status)){
