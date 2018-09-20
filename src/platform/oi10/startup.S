@@ -243,7 +243,9 @@ rumboot_reset_handler:
 #define PPC_SYS_CONF_           0x004       /* From /opt/logs/r.galiulin/top/units/sctl/rtl/sctl.v */
 #define PPC_TMRCLK_SEL_i_       1           /* From http://git.module.ru/OI10/doc/blob/master/spec/design/OI10_SCTL_user_guide.docx */
     load_const  r3, DCR_SCTL_BASE_+PPC_SYS_CONF_
-    load_const  r4, (1 << PPC_TMRCLK_SEL_i_)
+    mfdcrx      r4, r3
+    load_const  r5, (1 << PPC_TMRCLK_SEL_i_)
+    or          r4, r4, r5
     mtdcrx      r3, r4
 /* timer clk bugfix end */
 
