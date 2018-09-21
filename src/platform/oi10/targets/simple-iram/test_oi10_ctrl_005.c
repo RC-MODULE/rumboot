@@ -1,5 +1,5 @@
 /*
- * test_oi10_ctrl_004.c
+ * test_oi10_ctrl_005.c
  *
  *  Created on: Aug 24, 2018
  *      Author: m.dubinkin
@@ -43,27 +43,7 @@
 //#define TIM2_INTERRUPT_NUMBER   41
 //#define TIMER_INT_TIMEOUT       60
 
-/*
-static int32_t check_array32[] = {
-        0xFFFFFFFF,
-        0x00000000,
-        0xFFFF0000,
-        0x0000FFFF,
-        0xFF00FF00,
-        0x00FF00FF,
-        0xF0F0F0F0,
-        0x0F0F0F0F,
-        0xCCCCCCCC,
-        0x33333333,
-        0xAAAAAAAA,
-        0x55555555
-};
-
-
-
-*/
-
-static uint32_t check_wd_default_ro_val(uint32_t base_addr)
+static uint32_t check_watchdog_default_ro_val(uint32_t base_addr)
 {
     rumboot_printf("Check the default values of the registers:");
 
@@ -89,55 +69,31 @@ static uint32_t check_wd_default_ro_val(uint32_t base_addr)
     return 1;
 }
 
-//static struct sp804_config c1, c2;
-
-/*
- *
- *
-
-
-static uint32_t check_timer_default_rw_val( uint32_t base_addr )
+static uint32_t check_watchdog_default_rw_val( uint32_t base_addr )
 {
     rumboot_printf("Check the default values of the registers:");
 
     struct regpoker_checker check_default_array[] = {
-          {   "Timer1Load",     REGPOKER_READ32,    DIT0_REG_LOAD0,          0x00,           0xff },
-          {   "Timer1Load",     REGPOKER_WRITE32,   DIT0_REG_LOAD0,          0x00,           0xff },
+    {   "WdogLoad",      REGPOKER_READ_DCR,    WD_REG_LOAD,            0x00000000,     0xffffffff },
+    {   "WdogLoad",      REGPOKER_WRITE_DCR,   WD_REG_LOAD,            0x00000000,     0xffffffff },
 
-          {   "Timer1Value",    REGPOKER_READ32,    DIT0_REG_VALUE0,         0xffffffff,      0xffffffff },
+    {   "WdogValue",     REGPOKER_READ_DCR,    WD_REG_VALUE,           0x00000000,     0xffffffff },
 
+    {   "WdogControl",   REGPOKER_READ_DCR,    WD_REG_CONTROL,        0b00,           0b11 },
+    {   "WdogControl",   REGPOKER_WRITE_DCR,   WD_REG_CONTROL,        0b00,           0b11 },
 
-          {   "Timer1Control",  REGPOKER_READ32,    DIT0_REG_CONTROL0,       0xff,           0xff },
-          {   "Timer1Control",  REGPOKER_WRITE32,   DIT0_REG_CONTROL0,       0xff,           0xff },
+    {   "WdogRIS",       REGPOKER_READ_DCR,    WD_REG_RIS,            0b0,            0b1 },
 
-          {   "Timer1IntClr",   REGPOKER_READ32,    DIT0_REG_INTCLR0,        0xff,           0xff },
+    {   "WdogMIS",       REGPOKER_READ_DCR,    WD_REG_MIS,            0b0,            0b1 },
 
-          {   "Timer1RIS",      REGPOKER_READ32,    DIT0_REG_RIS0,           0xff,           0xff },
-          {   "Timer1MIS",      REGPOKER_READ32,    DIT0_REG_MIS0,           0xff,           0xff },
+    {   "WdogLock",      REGPOKER_READ_DCR,    WD_REG_LOAD,           0x00000000, 0xffffffff },
+    {   "WdogLock",      REGPOKER_WRITE_DCR,   WD_REG_LOAD,           0x00000000, 0xffffffff },
 
+    {   "WdogITCR",     REGPOKER_READ_DCR,    WD_REG_ITCR,          0b0,           0b0 },
+    {   "WdogITCR",     REGPOKER_WRITE_DCR,   WD_REG_ITCR,          0b0,           0b0 },
 
-          {   "Timer1BGLoad",   REGPOKER_READ32,    DIT0_REG_BGLOAD0,        0x18,           0xff },
-          {   "Timer1BGLoad",   REGPOKER_WRITE32,   DIT0_REG_BGLOAD0,        0x18,           0xff },
-
-          {   "Timer2Load",     REGPOKER_READ32,    DIT0_REG_LOAD1,          0x00,           0xff },
-          {   "Timer2Load",     REGPOKER_WRITE32,   DIT0_REG_LOAD1,          0x00,           0xff },
-
-          {   "Timer2Value",    REGPOKER_READ32,    DIT0_REG_VALUE1,         0x00,           0xff },
-
-
-          {   "Timer2Control",  REGPOKER_READ32,    DIT0_REG_CONTROL1,       0x0,            0xf },
-          {   "Timer2Control",  REGPOKER_WRITE32,   DIT0_REG_CONTROL1,       0x0,            0xff },
-
-          {   "Timer2RIS",      REGPOKER_READ32,    DIT0_REG_RIS1,           0x0,           0xff },
-          {   "Timer2MIS",      REGPOKER_READ32,    DIT0_REG_MIS1,           0x0,           0xff },
-
-          {   "Timer2BGLoad",   REGPOKER_READ32,    DIT0_REG_BGLOAD1,        0x0,           0xff },
-          {   "Timer2BGLoad",   REGPOKER_WRITE32,   DIT0_REG_BGLOAD1,        0x0,           0xff },
-
-
-          {   "TimerITCR",      REGPOKER_READ32,    DIT_REG_ITCR,            0xf0,           0xff },
-          {   "TimerITOP",      REGPOKER_READ32,    DIT_REG_ITOP,            0xf04,          0xff },
-          { }
+    {   "WdogITOP",     REGPOKER_WRITE_DCR,   WD_REG_ITOP,          0b00,          0b00 },
+    { }
       };
 
     if( rumboot_regpoker_check_array( check_default_array, base_addr ) == 0 )
@@ -149,7 +105,7 @@ static uint32_t check_timer_default_rw_val( uint32_t base_addr )
     rumboot_printf( "ERROR\n" );
     return 1;
 }
-*/
+
 /*
 static uint32_t check_timer_default_w_val( uint32_t base_addr )
 {
@@ -301,26 +257,23 @@ uint32_t main(void)
 
     // Set up interrupt handlers
     uint32_t result;
-        rumboot_printf( "SP805 test START\n" );
+    rumboot_printf( "SP805 test START\n" );
 
-        rumboot_printf( "SP805 int are clean up\n" );
-
+    rumboot_printf( "SP805 int are clean up\n" );
         // ||
+    result = check_watchdog_default_ro_val(DCR_WATCHDOG_BASE) ||
+            check_watchdog_default_rw_val(DCR_WATCHDOG_BASE);
+    if(result)
+    {
+        rumboot_printf("Checked test Failed\n");
+        return 1;
+    }
 
-        result = check_wd_default_ro_val(DCR_WATCHDOG_BASE);
-
-        if(!result)
-        {
-            rumboot_printf("Checked test Failed\n");
-            return -1;
-        }
-
-        rumboot_printf("Checked TEST_OK\n");
+    rumboot_printf("Checked TEST_OK\n");
 //        sp804_config(DCR_TIMERS_BASE, c1, 0);
 //        sp804_config(DCR_TIMERS_BASE, c2, 0);
 
         //sp804_clrint(DCR_TIMERS_BASE, 0);
         //sp804_clrint(DCR_TIMERS_BASE, 1);
-        return result;
-      //  struct rumboot_irq_entry *tbl = rumboot_irq_create( NULL );
+     return result;
 }
