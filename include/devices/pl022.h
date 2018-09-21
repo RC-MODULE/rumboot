@@ -182,6 +182,7 @@ void pl022_clear_rx_buf(uint32_t base);
 */
 
 //ssp functions
+
 void gspi_init(uint32_t base_address, ssp_params params, struct pl022_config *conf);
 /**
  * Read of Raw interrupt status register
@@ -197,7 +198,7 @@ uint32_t gspi_get_ris(uint32_t base_address);
 uint32_t gspi_get_mis(uint32_t base_address);
 /**
  * Read of status register
- * @param base_address   SSP base address
+ * @param base_addr   SSP base address
  * @return               Status
  */
 uint32_t gspi_get_ssp_status(uint32_t base_addr);
@@ -209,23 +210,67 @@ uint32_t gspi_get_ssp_status(uint32_t base_addr);
 void gspi_set_int_mask(uint32_t base_address, uint16_t mask);
 /**
  * Enable DMA
- * @param base_address   SSP base address
+ * @param base_addr   SSP base address
  * @param enabled        parameters of dma enable
  */
 void gspi_dma_enable(uint32_t base_addr, ssp_dma_enable enabled);
+/**
+ * Write in data register
+ * @param base_address   SSP base address
+ * @param word           data
+ */
+void gspi_send_word(uint32_t base_address, uint32_t word);
+/**
+ * Read from data register
+ * @param base_address   SSP base address
+ * @return               read data
+ */
+uint32_t gspi_get_word(uint32_t base_address);
 
-void gspi_write_data(uint32_t base_addr, uint32_t data);
-uint32_t gspi_read_data(uint32_t base_addr);
-int gspi_send_word(uint32_t base_address, uint32_t word);
-int gspi_get_word(uint32_t base_address, uint32_t * word);
 
 //dma function
+/**
+ * Reset DMA
+ * @param base_address   SSP base address
+ */
 void gspi_dma_reset(uint32_t base_addr);
+/**
+ * Set interrupt mask of DMA
+ * @param base_addr   SSP base address
+ * @param interrupt           interrupt mask
+ */
 void gspi_dma_set_irq_mask(uint32_t base_addr, ssp_dma_interrupt interrupt);
+/**
+ * Read of DMA status register
+ * @param base_addr   SSP base address
+ * @return               DMA Status
+ */
 uint32_t gspi_get_dma_status(uint32_t base_addr);
-void gspi_dma_set_read_addr(uint32_t base_addr, uint32_t* r_addr, uint32_t byte_n);//for 8-bit data
+/**
+ * Set start and end address of buffer of read DMA for 8-bit data
+ * @param base_addr   SSP base address
+ * @param r_addr      start address of buffer of read DMA
+ * @param byte_n      number of bytes
+ */
+void gspi_dma_set_read_addr(uint32_t base_addr, uint32_t* r_addr, uint32_t byte_n);
+/**
+ * Set start and end address of buffer of write DMA for 8-bit data
+ * @param base_addr   SSP base address
+ * @param r_addr      start address of buffer of write DMA
+ * @param byte_n      number of bytes
+ */
 void gspi_dma_set_write_addr(uint32_t base_addr, uint32_t* w_addr, uint32_t byte_n);//for 8-bit data
+/**
+ * Set mode of DMA
+ * @param base_address   SSP base address
+ * @param mode           circular or basic mode
+ */
 void gspi_dma_set_mode(uint32_t base_addr, dma_mode mode);
+/**
+ * Set parameters of DMA
+ * @param base_addr   SSP base address
+ * @param param       parameters of channel of read/write: endianness, length of data in a package
+ */
 void gspi_dma_set_param(uint32_t base_addr, dma_params param);
 
 #endif /* end of include guard: PL022_H */

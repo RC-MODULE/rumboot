@@ -239,15 +239,6 @@ void gspi_dma_set_irq_mask(uint32_t base_addr, ssp_dma_interrupt interrupt)
     iowrite32(interrupt, base_addr + GSPI_IRQMASKS); //set irq masks
 }
 
-void gspi_write_data(uint32_t base_addr, uint32_t data)
-{
-    iowrite32(data, base_addr+GSPI_SSPDR);
-}
-
-uint32_t gspi_read_data(uint32_t base_addr)
-{
-    return (ioread32(base_addr + GSPI_SSPDR));
-}
 uint32_t gspi_get_ris(uint32_t base_address)
 {
     return ioread32(base_address + GSPI_SSPRIS);
@@ -273,32 +264,30 @@ void gspi_set_int_mask(uint32_t base_address, uint16_t mask)
     iowrite32(mask, base_address + GSPI_SSPIMSC);
 }
 
-int gspi_send_word(uint32_t base_address, uint32_t word)
+void gspi_send_word(uint32_t base_address, uint32_t word)
 {
     //check transmit FIFO full
     if(ioread32(base_address + GSPI_SSPSR) & TNF) // transmit FIFO is not full
     {
         iowrite32(word, base_address + GSPI_SSPDR);
-        return 1;
     } else
     {
         rumboot_printf("Warning: writing to SSP TFIFO when TFIFO is full\n");
-        return 0;
     }
 }
 
-int gspi_get_word(uint32_t base_address, uint32_t * word)
+uint32_t gspi_get_word(uint32_t base_address)
 {
+    uint32_t  word = 0x00;
     //check receive FIFO empty
     if(ioread32(base_address + GSPI_SSPSR) & RNE) //receive FIFO is not empty
     {
-        *word = ioread32(base_address + GSPI_SSPDR);
-        return 1;
+        word = ioread32(base_address + GSPI_SSPDR);
     } else
     {
         rumboot_printf("Warning: reading from SSP RFIFO when RFIFO is empty\n");
-        return 0;
     }
+    return word;
 }
 
 
