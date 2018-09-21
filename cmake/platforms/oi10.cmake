@@ -761,15 +761,33 @@ endif()
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES test_oi10_lscb.c
-      CFLAGS -DMKIO_BASE=MKIO0_BASE -DCHECK_MKIO_FUNC
-      PREFIX mkio0-func
+      CFLAGS -DMKIO_BASE=MKIO0_BASE -DCHECK_MKIO_FUNC -DMKIO_BUS=MKIO_BUS_A
+      IRUN_FLAGS +mkio_signal_test
+      PREFIX mkio0-func-a
     )
 
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES test_oi10_lscb.c
-      CFLAGS -DMKIO_BASE=MKIO1_BASE -DCHECK_MKIO_FUNC
-      PREFIX mkio1-func
+      CFLAGS -DMKIO_BASE=MKIO1_BASE -DCHECK_MKIO_FUNC -DMKIO_BUS=MKIO_BUS_A
+      IRUN_FLAGS +mkio_signal_test
+      PREFIX mkio1-func-a
+    )
+
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES test_oi10_lscb.c
+      CFLAGS -DMKIO_BASE=MKIO0_BASE -DCHECK_MKIO_FUNC -DMKIO_BUS=MKIO_BUS_B
+      IRUN_FLAGS +mkio_signal_test
+      PREFIX mkio0-func-b
+    )
+
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES test_oi10_lscb.c
+      CFLAGS -DMKIO_BASE=MKIO1_BASE -DCHECK_MKIO_FUNC -DMKIO_BUS=MKIO_BUS_B
+      IRUN_FLAGS +mkio_signal_test
+      PREFIX mkio1-func-b
     )
 
     add_rumboot_target(
