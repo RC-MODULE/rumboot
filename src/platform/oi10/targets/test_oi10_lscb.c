@@ -17,6 +17,10 @@
 
 #include <regs/regs_mkio.h>
 #include <devices/mkio.h>
+#include <devices/gpio_pl061.h>
+
+void check_mkio_txinh_idle_via_gpio();
+void check_mkio_txinh_switch_via_gpio(uint8_t exp_state);
 
 #define MKIO_TEST_LEN_IN_WORDS  32
 #define MKIO_TEST_DATA_SIZE     (MKIO_TEST_LEN_IN_WORDS*sizeof(uint16_t))
@@ -167,7 +171,7 @@ void prepare_test_data()
     memcpy(test_mkio_data_im1_src, test_mkio_data_im0_src, sizeof(test_mkio_data_im0_src));
 }
 
-void init_mkio_cfg(mkio_instance_t* mkio_inst, uint32_t bc_base_addr, uint32_t rt_base_addr, uint16_t* src_addr, uint16_t* dst_addr, mkio_bc_descriptor* bc_descr_addr, mkio_rt_descriptor* rt_descr_addr, uint32_t size)
+void init_mkio_cfg(mkio_instance_t* mkio_inst, uint32_t bc_base_addr, uint32_t rt_base_addr, uint16_t* src_addr, uint16_t* dst_addr, mkio_bc_descriptor* bc_descr_addr, mkio_rt_descriptor* rt_descr_addr, uint32_t size, mkio_bus_t bus)
 {
     mkio_inst->src_mkio_base_addr   = bc_base_addr;
     mkio_inst->dst_mkio_base_addr   = rt_base_addr;
@@ -176,13 +180,14 @@ void init_mkio_cfg(mkio_instance_t* mkio_inst, uint32_t bc_base_addr, uint32_t r
     mkio_inst->bc_desr              = bc_descr_addr;
     mkio_inst->rt_descr             = rt_descr_addr;
     mkio_inst->size                 = size;
+    mkio_inst->bus                  = bus;
 }
 
 void configure_mkio(mkio_instance_t* mkio_cfg)
 {
     uint32_t mkio_irq_ring_buffer [16] __attribute__ ((aligned(64)));
 
-    mkio_prepare_bc_descr(mkio_cfg->src_mkio_base_addr, mkio_cfg->src_addr, mkio_cfg->size, mkio_cfg->bc_desr);
+    mkio_prepare_bc_descr(mkio_cfg->src_mkio_base_addr, mkio_cfg->src_addr, mkio_cfg->size, mkio_cfg->bc_desr, mkio_cfg->bus);
     mkio_prepare_rt_descr(mkio_cfg->dst_mkio_base_addr, mkio_cfg->dst_addr, mkio_cfg->size, mkio_cfg->rt_descr);
 
     mkio_enable_all_irq(mkio_cfg->src_mkio_base_addr);
@@ -191,10 +196,16 @@ void configure_mkio(mkio_instance_t* mkio_cfg)
 
 void run_mkio_transfers_via_external_loopback(mkio_instance_t* mkio_cfg)
 {
+    check_mkio_txinh_idle_via_gpio();
     configure_mkio(mkio_cfg);
 
     mkio_rt_run_schedule(mkio_cfg->dst_mkio_base_addr);
+    //In tb GPIO1[3:0] = {MK1_TXINHB, MK1_TXINHA, MK0_TXINHB, MK0_TXINHA}
+    check_mkio_txinh_switch_via_gpio((mkio_cfg->dst_mkio_base_addr==MKIO0_BASE) ? 0b00001100 : 0b00000011);
+
     mkio_bc_run_schedule(mkio_cfg->src_mkio_base_addr);
+    //In tb GPIO1[3:0] = {MK1_TXINHB, MK1_TXINHA, MK0_TXINHB, MK0_TXINHA}
+    check_mkio_txinh_switch_via_gpio(0b00000000);
     TEST_ASSERT(mkio_wait_bc_schedule_state(mkio_cfg->src_mkio_base_addr, MKIO_BCSL_SCST_EXEC)==true, "BC sched state EXEC is timed out");
 }
 
@@ -226,6 +237,31 @@ void mem_cmp(uint16_t* src, uint16_t* dst, uint32_t size)
     rumboot_putstring("Data OK!\n");
 }
 
+void check_mkio_txinh_idle_via_gpio()
+{
+    uint8_t data;
+    rumboot_putstring("Checking initial state of TXINH (HIGH) via GPIO\n");
+    gpio_set_port_direction(GPIO_1_BASE, GIO_PIN_ALL_IN);
+    data = gpio_get_data(GPIO_1_BASE) & 0x0F;
+    TEST_ASSERT(data==0b00001111, "Expected all MK*_TXINH* = 0b1");
+    rumboot_putstring("Checking initial state of TXINH (HIGH) via GPIO ... OK\n");
+}
+
+void check_mkio_txinh_switch_via_gpio(uint8_t exp_state)
+{
+#define MKI_TX_INH_TIMEOUT  100
+    uint8_t data;
+    uint32_t timeout_cnt = 0;
+    rumboot_printf("Checking {MK1_TXINHB, MK1_TXINHA, MK0_TXINHB, MK0_TXINHA} switch to 0x%X\n", exp_state);
+    data = gpio_get_data(GPIO_1_BASE) & 0x0F;
+    while ((data != exp_state) && (timeout_cnt<MKI_TX_INH_TIMEOUT))
+    {
+        data = gpio_get_data(GPIO_1_BASE) & 0x0F;
+    }
+    TEST_ASSERT(data==exp_state, "Expected all MK*_TXINH* = 0b0");
+    rumboot_putstring("Checking {MK1_TXINHB, MK1_TXINHA, MK0_TXINHB, MK0_TXINHA} switch ... OK\n");
+}
+
 int main(void)
 {
 #ifdef CHECK_MKIO_REGS
@@ -245,7 +281,7 @@ int main(void)
     bc_base_addr = MKIO_BASE;
     rt_base_addr = (MKIO_BASE==MKIO0_BASE) ? MKIO1_BASE : MKIO0_BASE;
     rumboot_printf("Start MKIO functional test\nBC: 0x%X\nRT: 0x%X\n", bc_base_addr, rt_base_addr);
-    init_mkio_cfg(&mkio_cfg, bc_base_addr, rt_base_addr, test_mkio_data_im1_src, test_mkio_data_im1_dst, mkio_bc_desr, mkio_rt_descr, MKIO_TEST_DATA_SIZE);
+    init_mkio_cfg(&mkio_cfg, bc_base_addr, rt_base_addr, test_mkio_data_im1_src, test_mkio_data_im1_dst, mkio_bc_desr, mkio_rt_descr, MKIO_TEST_DATA_SIZE, MKIO_BUS);
     tbl = create_irq_handlers(&mkio_cfg);
 
     run_mkio_transfers_via_external_loopback(&mkio_cfg);
