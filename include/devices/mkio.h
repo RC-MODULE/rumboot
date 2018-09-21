@@ -308,6 +308,12 @@ typedef volatile struct __attribute__ ((__packed__))
     uint32_t next_descriptor_pointer     : 32;
 } mkio_rt_descriptor;
 
+typedef enum mkio_bus
+{
+    MKIO_BUS_A  = 0b0,
+    MKIO_BUS_B  = 0b1
+} mkio_bus_t;
+
 typedef struct mkio_instance
 {
     uint32_t            src_mkio_base_addr;
@@ -317,6 +323,7 @@ typedef struct mkio_instance
     mkio_bc_descriptor* bc_desr;
     mkio_rt_descriptor* rt_descr;
     uint32_t            size;
+    mkio_bus_t          bus;
 }mkio_instance_t;
 
 typedef struct mkio_irqe_struct
@@ -355,7 +362,7 @@ typedef enum mkio_bc_schedule_state
 #define MKIO_TIMEOUT    100
 
 void mkio_prepare_rt_descr(uint32_t base_addr, uint32_t* data_ptr, uint32_t size, mkio_rt_descriptor* mkio_rt_rx_descriptor);
-void mkio_prepare_bc_descr(uint32_t base_addr, uint32_t* data_ptr, uint32_t size, mkio_bc_descriptor* descr_ptr);
+void mkio_prepare_bc_descr(uint32_t base_addr, uint32_t* data_ptr, uint32_t size, mkio_bc_descriptor* descr_ptr, mkio_bus_t bus);
 void mkio_bc_run_schedule (uint32_t base_address);
 void mkio_rt_run_schedule (uint32_t base_address);
 void mkio_set_bcrd(uint32_t base_address, uint32_t bc_irq_ring_addr);

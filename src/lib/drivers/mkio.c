@@ -318,7 +318,7 @@ void mkio_prepare_rt_descr(uint32_t base_addr, uint32_t* data_ptr, uint32_t size
     iowrite32 (rumboot_virt_to_dma(rt_sa_tbl), base_addr + RTSTBA);
 }
 
-void mkio_prepare_bc_descr(uint32_t base_addr, uint32_t* data_ptr, uint32_t size, mkio_bc_descriptor* descr_ptr)
+void mkio_prepare_bc_descr(uint32_t base_addr, uint32_t* data_ptr, uint32_t size, mkio_bc_descriptor* descr_ptr, mkio_bus_t bus)
 {
     //  Suspend normally (SUSN) - Always suspends after transfer
     uint32_t SUSN = 0x1;
@@ -327,7 +327,7 @@ void mkio_prepare_bc_descr(uint32_t base_addr, uint32_t* data_ptr, uint32_t size
     //  IRQ normally (IRQN) - Always interrupts after transfer
     uint32_t IRQN = 1;
     //  Bus selection (BUS) - Bus to use for transfer, 0 - Bus A, 1 - Bus B
-    uint32_t BUS = 0;
+    //uint32_t BUS = 0;
 
     //  RT Address (RTAD1)
     uint32_t RTAD1 = 0x00;
@@ -344,7 +344,7 @@ void mkio_prepare_bc_descr(uint32_t base_addr, uint32_t* data_ptr, uint32_t size
 
     rumboot_printf("Setting BC descr: 0x%X / 0x%X\n", rumboot_virt_to_dma(descr_ptr), size_mkio_words);
     descr_ptr->ctrl_word_0      = (0x00000000 | (IRQE_ << 28) | (IRQN << 27) | (SUSN << 25));
-    descr_ptr->ctrl_word_1      = (0x00000000 | (BUS << 30) | (RTAD1 << 11) | (TR << 10) | (RTSA1 << 5) | (size_mkio_words << 0));
+    descr_ptr->ctrl_word_1      = (0x00000000 | (bus << 30) | (RTAD1 << 11) | (TR << 10) | (RTSA1 << 5) | (size_mkio_words << 0));
     descr_ptr->data_pointer     = (rumboot_virt_to_dma(data_ptr));
     descr_ptr->result_word      = 0xFFFFFFFF ;
     descr_ptr->condition_word   = (bc_descriptor_end_of_list);
@@ -434,7 +434,7 @@ void mkio_write_to_rt_with_irq_2(mkio_instance_t* mkio_cfg)
 {
     uint32_t mkio_irq_ring_buffer [16] __attribute__ ((aligned(64)));
 
-    mkio_prepare_bc_descr((mkio_cfg + 0)->src_mkio_base_addr, (mkio_cfg + 0)->src_addr, (mkio_cfg + 0)->size, (mkio_cfg + 0)->bc_desr);
+    mkio_prepare_bc_descr((mkio_cfg + 0)->src_mkio_base_addr, (mkio_cfg + 0)->src_addr, (mkio_cfg + 0)->size, (mkio_cfg + 0)->bc_desr, MKIO_BUS_A);
     mkio_prepare_rt_descr((mkio_cfg + 0)->dst_mkio_base_addr, (mkio_cfg + 0)->dst_addr, (mkio_cfg + 0)->size, (mkio_cfg + 0)->rt_descr);
 
     //mkio_prepare_bc_descr((mkio_cfg + 1)->src_mkio_base_addr, (mkio_cfg + 1)->src_addr, (mkio_cfg + 1)->size, (mkio_cfg + 0)->bc_desr, true);
