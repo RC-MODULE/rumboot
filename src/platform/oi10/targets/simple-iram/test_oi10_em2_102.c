@@ -56,7 +56,7 @@ int main(void)
     uint32_t check_instruction_read_access_sram0_end_addr = (uint32_t)&main;
 
     for (uint32_t addr = check_instruction_read_access_sram0_start_addr, sram0_offset = 0;
-            addr < check_instruction_read_access_sram0_start_addr + 256;
+            addr < check_instruction_read_access_sram0_start_addr + 640;
             addr+=4, sram0_offset+=4) {
 
         if (addr < check_instruction_read_access_sram0_end_addr)
