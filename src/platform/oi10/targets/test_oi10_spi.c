@@ -22,7 +22,7 @@
 #include <devices/gpio_pl061.h>
 #include <platform/devices/emi.h>
 
-#define BYTE_NUMBER             4
+#define BYTE_NUMBER             16
 #define DATA_SIZE               (BYTE_NUMBER+4)
 #define PAGE_PROGRAM_COMMAND    0x02000000
 #define READ_COMMAND            0x03000000
@@ -307,7 +307,7 @@ int main(void)
     for (int i=4; i<DATA_SIZE; i++)
         data_src[i] = TEST_DATA_IM0;
     iowrite32(0x0, (uint32_t)data_src + DATA_SIZE);
-    iowrite32(0x0, (uint32_t)data_src + DATA_SIZE+4);
+    msync();
 
     //IM0 - IM0
     test_result += gspi_dma_axi(GSPI_BASE, (uint32_t)data_src, (uint32_t)data_dst, TEST_DATA_IM0);
@@ -346,7 +346,7 @@ int main(void)
         iowrite8(data_src[i], SRAM0_BASE+i);
     }
     iowrite32(0x0, SRAM0_BASE+DATA_SIZE);
-    iowrite32(0x0, SRAM0_BASE+DATA_SIZE+4);
+    msync();
 
 
     //EM2 - IM0
