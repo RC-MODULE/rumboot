@@ -22,7 +22,6 @@
 #include <rumboot/io.h>
 #include <arch/irq_macros.h>
 #include <platform/devices.h>
-#include <rumboot/macros.h> //dcr_write/dcr_read
 #include <platform/arch/ppc/test_macro.h>
 #include <devices/sp804.h>
 #include <platform/interrupts.h>
@@ -34,7 +33,7 @@
 
 #include <regs/regs_sp804.h>
 
-//static struct sp804_conf conf1, conf2;
+static struct sp804_conf conf1, conf2;
 
 //#define TIMER0_CYCLES           1
 //#define TIMER1_CYCLES           2
@@ -43,25 +42,6 @@
 //#define TIM2_INTERRUPT_NUMBER   41
 //#define TIMER_INT_TIMEOUT       60
 
-/*
-static int32_t check_array32[] = {
-        0xFFFFFFFF,
-        0x00000000,
-        0xFFFF0000,
-        0x0000FFFF,
-        0xFF00FF00,
-        0x00FF00FF,
-        0xF0F0F0F0,
-        0x0F0F0F0F,
-        0xCCCCCCCC,
-        0x33333333,
-        0xAAAAAAAA,
-        0x55555555
-};
-
-
-
-*/
 
 static uint32_t check_timer_default_ro_val(uint32_t base_addr)
 {
@@ -89,54 +69,47 @@ static uint32_t check_timer_default_ro_val(uint32_t base_addr)
     return 1;
 }
 
-//static struct sp804_config c1, c2;
-
-/*
- *
- *
-
 
 static uint32_t check_timer_default_rw_val( uint32_t base_addr )
 {
     rumboot_printf("Check the default values of the registers:");
 
     struct regpoker_checker check_default_array[] = {
-          {   "Timer1Load",     REGPOKER_READ32,    DIT0_REG_LOAD0,          0x00,           0xff },
-          {   "Timer1Load",     REGPOKER_WRITE32,   DIT0_REG_LOAD0,          0x00,           0xff },
+          {   "Timer1Load",     REGPOKER_READ_DCR,  DIT0_REG_LOAD0,          0x00000000, 0xffffffff },
+          {   "Timer1Load",     REGPOKER_WRITE_DCR, DIT0_REG_LOAD0,          0x00000000, 0xffffffff },
 
-          {   "Timer1Value",    REGPOKER_READ32,    DIT0_REG_VALUE0,         0xffffffff,      0xffffffff },
+          {   "Timer1Value",    REGPOKER_READ_DCR,  DIT0_REG_VALUE0,         0x00000000, 0xffffffff },
 
+//          {   "Timer1Control",  REGPOKER_READ_DCR,  DIT0_REG_CONTROL0,       0x20,           0x20 },
+//          {   "Timer1Control",  REGPOKER_WRITE_DCR, DIT0_REG_CONTROL0,       0x00,           0x10 },
 
-          {   "Timer1Control",  REGPOKER_READ32,    DIT0_REG_CONTROL0,       0xff,           0xff },
-          {   "Timer1Control",  REGPOKER_WRITE32,   DIT0_REG_CONTROL0,       0xff,           0xff },
+//          {   "Timer1IntClr",   REGPOKER_READ_DCR,  DIT0_REG_INTCLR0,        0xff,           0xff },
 
-          {   "Timer1IntClr",   REGPOKER_READ32,    DIT0_REG_INTCLR0,        0xff,           0xff },
+          {   "Timer1RIS",      REGPOKER_READ_DCR,  DIT0_REG_RIS0,           0b0,           0b0 },
+          {   "Timer1MIS",      REGPOKER_READ_DCR,  DIT0_REG_MIS0,           0b0,           0b0 },
 
-          {   "Timer1RIS",      REGPOKER_READ32,    DIT0_REG_RIS0,           0xff,           0xff },
-          {   "Timer1MIS",      REGPOKER_READ32,    DIT0_REG_MIS0,           0xff,           0xff },
+          {   "Timer1BGLoad",   REGPOKER_READ_DCR,    DIT0_REG_BGLOAD0,      0x00000000,    0xffffffff },
+          {   "Timer1BGLoad",   REGPOKER_WRITE_DCR,   DIT0_REG_BGLOAD0,      0x00000000,    0xffffffff },
 
+          {   "Timer2Load",     REGPOKER_READ_DCR,    DIT0_REG_LOAD1,        0x00000000,    0xffffffff },
+          {   "Timer2Load",     REGPOKER_WRITE_DCR,   DIT0_REG_LOAD1,        0x00000000,    0xffffffff },
 
-          {   "Timer1BGLoad",   REGPOKER_READ32,    DIT0_REG_BGLOAD0,        0x18,           0xff },
-          {   "Timer1BGLoad",   REGPOKER_WRITE32,   DIT0_REG_BGLOAD0,        0x18,           0xff },
+          {   "Timer2Value",    REGPOKER_READ_DCR,    DIT0_REG_VALUE1,       0x00000000,    0x00000000 },
 
-          {   "Timer2Load",     REGPOKER_READ32,    DIT0_REG_LOAD1,          0x00,           0xff },
-          {   "Timer2Load",     REGPOKER_WRITE32,   DIT0_REG_LOAD1,          0x00,           0xff },
+//        {   "Timer2Control",  REGPOKER_READ_DCR,    DIT0_REG_CONTROL1,       0x0,            0xff },
+//        {   "Timer2Control",  REGPOKER_WRITE_DCR,   DIT0_REG_CONTROL1,       0x0,            0xff },
 
-          {   "Timer2Value",    REGPOKER_READ32,    DIT0_REG_VALUE1,         0x00,           0xff },
+          {   "Timer2RIS",      REGPOKER_READ_DCR,    DIT0_REG_RIS1,           0b0,           0b0 },
+          {   "Timer2MIS",      REGPOKER_READ_DCR,    DIT0_REG_MIS1,           0b0,           0b0 },
 
+          {   "Timer2BGLoad",   REGPOKER_READ_DCR,    DIT0_REG_BGLOAD1,        0x0,           0xff },
+          {   "Timer2BGLoad",   REGPOKER_WRITE_DCR,   DIT0_REG_BGLOAD1,        0x0,           0xff },
 
-          {   "Timer2Control",  REGPOKER_READ32,    DIT0_REG_CONTROL1,       0x0,            0xf },
-          {   "Timer2Control",  REGPOKER_WRITE32,   DIT0_REG_CONTROL1,       0x0,            0xff },
+          {   "TimerITCR",      REGPOKER_READ_DCR,    DIT_REG_ITCR,            0b0,           0b1 },
+          {   "TimerITCR",      REGPOKER_WRITE_DCR,   DIT_REG_ITCR,            0b0,           0b1 },
 
-          {   "Timer2RIS",      REGPOKER_READ32,    DIT0_REG_RIS1,           0x0,           0xff },
-          {   "Timer2MIS",      REGPOKER_READ32,    DIT0_REG_MIS1,           0x0,           0xff },
+          {   "TimerITOP",      REGPOKER_READ_DCR,    DIT_REG_ITOP,            0b00,          0b11 },
 
-          {   "Timer2BGLoad",   REGPOKER_READ32,    DIT0_REG_BGLOAD1,        0x0,           0xff },
-          {   "Timer2BGLoad",   REGPOKER_WRITE32,   DIT0_REG_BGLOAD1,        0x0,           0xff },
-
-
-          {   "TimerITCR",      REGPOKER_READ32,    DIT_REG_ITCR,            0xf0,           0xff },
-          {   "TimerITOP",      REGPOKER_READ32,    DIT_REG_ITOP,            0xf04,          0xff },
           { }
       };
 
@@ -149,47 +122,20 @@ static uint32_t check_timer_default_rw_val( uint32_t base_addr )
     rumboot_printf( "ERROR\n" );
     return 1;
 }
-*/
 /*
-static uint32_t check_timer_default_w_val( uint32_t base_addr )
+static uint32_t ckeck_timers( )
 {
-    rumboot_printf("Check the default values of the registers:");
-
-    struct regpoker_checker check_default_array[] = {
-          {   "Timer1Load",     REGPOKER_READ32,    DIT0_REG_LOAD0,          0x000,          0xff   },
-          {   "Timer1Value",    REGPOKER_READ32,    DIT0_REG_VALUE0,         0x04,           0xff   },
-          {   "Timer1Control",  REGPOKER_READ32,    DIT0_REG_CONTROL0,       0x08,           0xff   },
-          {   "Timer1IntClr",   REGPOKER_READ32,    DIT0_REG_INTCLR0,        0x0C,           0xff   },
-          {   "Timer1RIS",      REGPOKER_READ32,    DIT0_REG_RIS0,           0x10,           0xff   },
-          {   "Timer1MIS",      REGPOKER_READ32,    DIT0_REG_MIS0,           0x14,           0xff   },
-          {   "Timer1BGLoad",   REGPOKER_READ32,    DIT0_REG_BGLOAD0,        0x18,           0xff   },
-          {   "Timer2Load",     REGPOKER_READ32,    DIT0_REG_LOAD1,          0x20,           0xff   },
-          {   "Timer2Value",    REGPOKER_READ32,    DIT0_REG_VALUE1,         0x24,           0xff   },
-          {   "Timer2Control",  REGPOKER_READ32,    DIT0_REG_CONTROL1,       0x28,           0xff   },
-          {   "Timer2IntClr",   REGPOKER_READ32,    DIT0_REG_INTCLR1,        0x2C,           0xff   },
-          {   "Timer2RIS",      REGPOKER_READ32,    DIT0_REG_RIS1,           0x30,           0xff   },
-          {   "Timer2MIS",      REGPOKER_READ32,    DIT0_REG_MIS1,           0x34,           0xff   },
-          {   "Timer2BGLoad",   REGPOKER_READ32,    DIT0_REG_BGLOAD1,        0x38,           0xff   },
-          {   "TimerITCR",      REGPOKER_READ32,    DIT_REG_ITCR,            0xf0,           0xff   },
-          {   "TimerITOP",      REGPOKER_READ32,    DIT_REG_ITOP,            0xf04,          0xff   },
-          { }
-      };
-
-    if( rumboot_regpoker_check_array( check_default_array, base_addr ) == 0 )
-    {
-        rumboot_printf( "OK\n" );
-        return 0;
-    }
-
-    rumboot_printf( "ERROR\n" );
-    return 1;
+    uint32_t result;
 }
 */
+
+
 /*
 static struct s804_instance in[ ] = {
     {
         .base_addr = DCR_TIMERS_BASE,
         .dit_index = 0 }, };
+*/
 
 static struct s804_instance {
     int timer0_irq;
@@ -215,11 +161,13 @@ static void handler1( int irq, void *arg ) {
     sp804_clrint( a->base_addr, 1 );
 }
 
-bool test_dit_timers( uint32_t structure ) {
+bool test_dit_timers( uint32_t structure )
+{
     int c = 0;
     int d = 0;
 
-    struct s804_instance *stru = ( struct s804_instance * )structure;
+    struct s804_in
+    stance *stru = ( struct s804_instance * )structure;
     uint32_t base_addr = stru->base_addr;
 
     struct sp804_conf config_0 = {
@@ -238,11 +186,13 @@ bool test_dit_timers( uint32_t structure ) {
         .load = 200,
         .bgload = 0 };
 
-    for( int i = 0; i < TIMER0_CYCLES + stru->dit_index; i++ ) {
+    for( int i = 0; i < TIMER0_CYCLES + stru->dit_index; i++ )
+    {
         sp804_config( base_addr, &config_0, 0 );
         sp804_enable( base_addr, 0 );
         while( sp804_get_value( base_addr, 0 ) ) {
         };
+        if(!result)
         c++;
     }
 
@@ -262,7 +212,8 @@ bool test_dit_timers( uint32_t structure ) {
         return false;
     }
 
-    if( stru->timer1_irq == TIMER1_CYCLES + stru->dit_index ) {
+    if( stru->timer1_irq == TIMER1_CYCLES + stru->dit_index )
+    {
         rumboot_printf( "Timer 1 test OK \n" );
     } else {
         rumboot_printf( "ERROR in Timer 1 test \n" );
@@ -272,7 +223,6 @@ bool test_dit_timers( uint32_t structure ) {
 
     return true;
 }
-*/
 
 /*
 bool test_dir_run(struct dit_timers)
@@ -300,6 +250,7 @@ uint32_t main(void)
      */
 
     uint32_t result;
+
     conf1.mode = 0;
     conf1.interrupt_enable = 1;
     conf1.clock_division = 32;
@@ -314,8 +265,6 @@ uint32_t main(void)
     conf2.load = 1;
     conf2.bgload = 0;
 
-
-
     // Set up interrupt handlers
 
         rumboot_printf( "SP804 test START\n" );
@@ -324,15 +273,28 @@ uint32_t main(void)
 
         // ||
 
-        result = check_timer_default_ro_val(DCR_TIMERS_BASE);
+        result = check_timer_default_ro_val(DCR_TIMERS_BASE) ||
+                check_timer_default_rw_val(DCR_TIMERS_BASE);
 
-        if(!result)
+        if(result)
         {
             rumboot_printf("Checked test Failed\n");
-            return -1;
+            return 1;
         }
 
         rumboot_printf("Checked TEST_OK\n");
+
+        rumboot_printf( "SP804 test START\n" );
+        struct rumboot_irq_entry *tbl = rumboot_irq_create( NULL );
+        rumboot_irq_cli();
+
+
+        //rumboot_irq_set_handler( tbl, DIT_INT0, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler0, &in[ 0 ] );
+        //rumboot_irq_set_handler( tbl, DIT_INT1, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler1, &in[ 0 ] );
+
+
+
+
 //        sp804_config(DCR_TIMERS_BASE, c1, 0);
 //        sp804_config(DCR_TIMERS_BASE, c2, 0);
 
