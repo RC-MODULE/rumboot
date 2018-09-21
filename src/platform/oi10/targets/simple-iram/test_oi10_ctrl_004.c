@@ -33,15 +33,24 @@
 
 #include <regs/regs_sp804.h>
 
+
+#define TIMER0_CYCLES           1
+#define TIMER1_CYCLES           2
+
 static struct sp804_conf conf1, conf2;
 
-//#define TIMER0_CYCLES           1
-//#define TIMER1_CYCLES           2
+struct s804_instance
+{
+    uint32_t base_addr;
+    int dit_index;
+};
 
-//#define TIM1_INTERRUPT_NUMBER   40
-//#define TIM2_INTERRUPT_NUMBER   41
-//#define TIMER_INT_TIMEOUT       60
-
+struct s804_instance_i {
+    int timer0_irq;
+    int timer1_irq;
+    uint32_t base_addr;
+    int dit_index;
+} s804_i;
 
 static uint32_t check_timer_default_ro_val(uint32_t base_addr)
 {
@@ -68,7 +77,6 @@ static uint32_t check_timer_default_ro_val(uint32_t base_addr)
     rumboot_printf( "ERROR\n" );
     return 1;
 }
-
 
 static uint32_t check_timer_default_rw_val( uint32_t base_addr )
 {
@@ -122,52 +130,157 @@ static uint32_t check_timer_default_rw_val( uint32_t base_addr )
     rumboot_printf( "ERROR\n" );
     return 1;
 }
-/*
-static uint32_t ckeck_timers( )
-{
-    uint32_t result;
+
+void sp804_enable( uint32_t base_addr, int index ) {
+    int cntrl;
+    int control_reg;
+    if( index ) {
+        control_reg = DIT0_REG_CONTROL1;
+    } else {
+        control_reg = DIT0_REG_CONTROL0;
+    }
+    cntrl = dcr_read( base_addr + control_reg );
+    cntrl |= DIT_CTRL_ENABLE;
+    dcr_write( base_addr + control_reg, cntrl );
+
 }
-*/
+
+void sp804_stop( uint32_t base_addr, int index ) {
+    int cntrl;
+    int control_reg;
+    if( index ) {
+        control_reg = DIT0_REG_CONTROL1;
+    } else {
+        control_reg = DIT0_REG_CONTROL0;
+    }
+    cntrl = dcr_read( base_addr + control_reg );
+    cntrl = cntrl & ( ~( DIT_CTRL_ENABLE ) );
+    dcr_write( base_addr + control_reg, cntrl );
+
+}
+
+int sp804_get_value( uint32_t base_addr, int index ) {
+    int value_reg;
+    if( index ) {
+        value_reg = DIT0_REG_VALUE1;
+    } else {
+        value_reg = DIT0_REG_VALUE0;
+    }
+    return dcr_read( base_addr + value_reg );
+}
+
+void sp804_clrint( uint32_t base_addr, int index ) {
+    int int_clr_reg;
+    if( index ) {
+        int_clr_reg = DIT0_REG_INTCLR1;
+    } else {
+        int_clr_reg = DIT0_REG_INTCLR0;
+    }
+    dcr_write( base_addr + int_clr_reg, 1 );
+}
+
+void sp804_config( uint32_t base_addr, const struct sp804_conf * config, int index ) {
+    int cntrl = 0;
+    // MODE
+    if( config->mode == ONESHOT ) {
+        cntrl |= DIT_CTRL_ONESHOT;
+        cntrl &= ~DIT_CTRL_PERIODIC;
+    } else if( config->mode == PERIODIC ) {
+        cntrl &= ~ DIT_CTRL_ONESHOT;
+        cntrl |= DIT_CTRL_PERIODIC;
+    } else if( config->mode == FREERUN ) {
+        cntrl &= ~ DIT_CTRL_ONESHOT;
+        cntrl &= ~ DIT_CTRL_PERIODIC;
+    }
+
+    // INT EN
+    if( config->interrupt_enable ) {
+        cntrl |= DIT_CTRL_INTEN;
+    } else {
+        cntrl &= ~DIT_CTRL_INTEN;
+    }
+
+    // CLK DIV
+    if( config->clock_division == 256 ) {
+        cntrl |= DIT_CTRL_DIV1;
+        cntrl &= ~DIT_CTRL_DIV0;
+    } else if( config->clock_division == 16 ) {
+        cntrl &= ~DIT_CTRL_DIV1;
+        cntrl |= DIT_CTRL_DIV0;
+    } else {
+        cntrl &= ~DIT_CTRL_DIV1;
+        cntrl &= ~DIT_CTRL_DIV0;
+    }
+
+    // SIZE 32
+    if( config->width == 32 ) {
+        cntrl |= DIT_CTRL_SIZE32;
+    } else {
+        cntrl &= ~DIT_CTRL_SIZE32;
+    }
+
+    if( index ) {
+        dcr_write( base_addr + DIT0_REG_CONTROL1, cntrl );
+
+        // LOAD
+        if( config->load ) {
+            dcr_write( base_addr + DIT0_REG_LOAD1, config->load );
+        }
+
+        // BG LOAD
+        if( config->bgload ) {
+            dcr_write( base_addr + DIT0_REG_BGLOAD1, config->bgload );
+        }
+    } else {
+        dcr_write( base_addr + DIT0_REG_CONTROL0, cntrl );
+
+        // LOAD
+        if( config->load ) {
+            dcr_write( base_addr + DIT0_REG_LOAD0, config->load );
+        }
+
+        // BG LOAD
+        if( config->bgload ) {
+            dcr_write( base_addr + DIT0_REG_BGLOAD0, config->bgload );
+        }
+    }
+}
 
 
-/*
-static struct s804_instance in[ ] = {
-    {
-        .base_addr = DCR_TIMERS_BASE,
-        .dit_index = 0 }, };
-*/
 
-static struct s804_instance {
-    int timer0_irq;
-    int timer1_irq;
-    uint32_t base_addr;
-    int dit_index;
-};
+static void handler0( int irq, void *arg )
+{
 
-static void handler0( int irq, void *arg ) {
-    struct s804_instance *a = ( struct s804_instance * )arg;
-    a->timer0_irq = a->timer0_irq + 1;
+    struct s804_instance_i *a = (struct s804_instance_i *) arg;
+        a->timer0_irq = a->timer0_irq + 1;
     rumboot_printf( "IRQ 0 arrived  \n" );
-
     rumboot_printf( "sp804_%d timer 0 INT # %d  \n", a->dit_index, a->timer0_irq );
     sp804_clrint( a->base_addr, 0 );
 }
 
-static void handler1( int irq, void *arg ) {
-    struct s804_instance *a = ( struct s804_instance * )arg;
+static void handler1( int irq, void *arg )
+{
+    struct s804_instance_i *a = (struct s804_instance_i *) arg;
     a->timer1_irq = a->timer1_irq + 1;
     rumboot_printf( "IRQ 1 arrived  \n" );
     rumboot_printf( "sp804_%d timer 1 INT # %d  \n", a->dit_index, a->timer1_irq );
     sp804_clrint( a->base_addr, 1 );
 }
 
-bool test_dit_timers( uint32_t structure )
+/*
+struct s804_instance {
+    int timer0_irq;
+    int timer1_irq;
+    uint32_t base_addr;
+    int dit_index;
+};
+*/
+bool test_dit_timers(struct s804_instance_i ins)
 {
     int c = 0;
     int d = 0;
 
-    struct s804_in
-    stance *stru = ( struct s804_instance * )structure;
+    struct s804_instance_i *stru = &ins;
     uint32_t base_addr = stru->base_addr;
 
     struct sp804_conf config_0 = {
@@ -192,7 +305,6 @@ bool test_dit_timers( uint32_t structure )
         sp804_enable( base_addr, 0 );
         while( sp804_get_value( base_addr, 0 ) ) {
         };
-        if(!result)
         c++;
     }
 
@@ -203,7 +315,6 @@ bool test_dit_timers( uint32_t structure )
         };
         d++;
     }
-
     if( stru->timer0_irq == TIMER0_CYCLES + stru->dit_index ) {
         rumboot_printf( "Timer 0 test OK \n" );
     } else {
@@ -223,15 +334,6 @@ bool test_dit_timers( uint32_t structure )
 
     return true;
 }
-
-/*
-bool test_dir_run(struct dit_timers)
-{
-
-    return true;
-}
-*/
-
 
 uint32_t main(void)
 {
@@ -267,39 +369,49 @@ uint32_t main(void)
 
     // Set up interrupt handlers
 
-        rumboot_printf( "SP804 test START\n" );
+    rumboot_printf( "SP804 test START\n" );
 
-        rumboot_printf( "SP804 int are clean up\n" );
+    rumboot_printf( "SP804 int are clean up\n" );
 
         // ||
 
-        result = check_timer_default_ro_val(DCR_TIMERS_BASE) ||
+    result = check_timer_default_ro_val(DCR_TIMERS_BASE) ||
                 check_timer_default_rw_val(DCR_TIMERS_BASE);
 
-        if(result)
-        {
-            rumboot_printf("Checked test Failed\n");
-            return 1;
-        }
+    if(result)
+    {
+        rumboot_printf("Checked test Failed\n");
+        return 1;
+    }
 
-        rumboot_printf("Checked TEST_OK\n");
+    rumboot_printf("Checked TEST_OK\n");
 
-        rumboot_printf( "SP804 test START\n" );
-        struct rumboot_irq_entry *tbl = rumboot_irq_create( NULL );
-        rumboot_irq_cli();
+    rumboot_printf( "SP804 test START\n" );
+    struct rumboot_irq_entry *tbl = rumboot_irq_create( NULL );
+    rumboot_irq_cli();
 
-
-        //rumboot_irq_set_handler( tbl, DIT_INT0, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler0, &in[ 0 ] );
-        //rumboot_irq_set_handler( tbl, DIT_INT1, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler1, &in[ 0 ] );
-
+    rumboot_irq_set_handler( tbl, DIT_INT0, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler0, &s804_i );
+    rumboot_irq_set_handler( tbl, DIT_INT1, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler1, &s804_i );
 
 
+    rumboot_irq_table_activate( tbl );
+    rumboot_irq_enable( DIT_INT0 );
+    rumboot_irq_enable( DIT_INT1 );
+    rumboot_irq_sei();
+
+    result = test_dit_timers(s804_i);
+
+    if(!result)
+    {
+        rumboot_printf("test error\n");
+        return 1;
+    }
 
 //        sp804_config(DCR_TIMERS_BASE, c1, 0);
 //        sp804_config(DCR_TIMERS_BASE, c2, 0);
 
         //sp804_clrint(DCR_TIMERS_BASE, 0);
         //sp804_clrint(DCR_TIMERS_BASE, 1);
-        return result;
+    return result;
       //  struct rumboot_irq_entry *tbl = rumboot_irq_create( NULL );
 }
