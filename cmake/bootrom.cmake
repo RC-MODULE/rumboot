@@ -150,6 +150,17 @@ macro(rumboot_bootrom_unit_test)
   endforeach()
 
   add_rumboot_target(
+          NAME "unit-${BOOTSOURCE_TAG}-io-check"
+          CONFIGURATION ${BOOTSOURCE_CONFIGURATION}
+          PREFIX "bootrom"
+          FILES common/bootrom/bootsource-test-io.c
+          TESTGROUP bootrom
+          IRUN_FLAGS ${IRUN_FLAGS}
+          CFLAGS -DSOURCE=${id} -DEXPECTED=true
+          LOAD ${BOOTSOURCE_MEMTAG} ${_commas}spl-ok
+  )
+
+  add_rumboot_target(
           NAME "unit-${BOOTSOURCE_TAG}-ok"
           CONFIGURATION ${BOOTSOURCE_CONFIGURATION}
           PREFIX "bootrom"

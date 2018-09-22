@@ -71,10 +71,22 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       FEATURES STUB
   )
 
-
+  add_rumboot_target(
+      NAME bootsrc-check-io
+      CONFIGURATION NATIVE
+      CFLAGS -DSOURCE=0
+      FILES common/bootrom/bootsource-test-io.c
+      FEATURES STUB
+  )
 
   gen_chain_spl(spl_chain_ok SPL_CHAIN_OK SPL_NEXT SPL_OK)
 
+  #TODO: Add selftest stub code and tests
+  #TODO: Test chain-booting appended images from one source
+
+  add_rumboot_test(host-bootsrc-check-io bootsrc-check-io-no-align)
+  add_rumboot_test(host-bootsrc-check-io bootsrc-check-io-no-align --align 16)
+  add_rumboot_test(host-bootsrc-check-io bootsrc-check-io-no-align --align 512)
   add_rumboot_test(bootrom-loader bootrom-chain --file ${SPL_CHAIN_OK})
   add_rumboot_test(host-fileboot unit-boot --file ${SPL_OK})
   add_rumboot_test(bootrom-loader bootrom-jump --file ${SPL_JUMP} --file2 ${SPL_OK_CHECK2})
