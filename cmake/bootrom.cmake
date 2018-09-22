@@ -156,7 +156,7 @@ macro(rumboot_bootrom_unit_test)
           FILES common/bootrom/bootsource-test-io.c
           TESTGROUP bootrom
           IRUN_FLAGS ${IRUN_FLAGS}
-          CFLAGS -DSOURCE=${id} -DEXPECTED=true
+          CFLAGS -DSOURCE=${BOOTSOURCE_ID} -DEXPECTED=true
           LOAD ${BOOTSOURCE_MEMTAG} ${_commas}spl-ok
   )
 
