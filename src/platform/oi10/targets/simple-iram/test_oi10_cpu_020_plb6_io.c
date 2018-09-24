@@ -12,6 +12,7 @@
 #include <rumboot/platform.h>
 #include <rumboot/macros.h>
 #include <rumboot/io.h>
+#include <rumboot/irq.h>
 #include <platform/test_assert.h>
 #include <platform/devices.h>
 #include <platform/trace.h>
@@ -29,7 +30,10 @@
 #include <platform/interrupts.h>
 #include <platform/regs/fields/mpic128.h>
 #include <platform/devices/greth.h>
-#include <rumboot/irq.h>
+#include <regs/regs_hscb.h>
+#include <devices/hscb.h>
+
+static void test_procedure_with_hscb(uint32_t source, uint32_t target, uint32_t size);
 
 typedef enum {
     test_io10_cpu_020_plb6_io_full_l2c_line_size = 128,
@@ -50,6 +54,8 @@ static uint32_t GRETH1_IRQ_HANDLED = 0;
 #define TEST_VALUE_DMA0_QWORD                           0x22222222
 #define TEST_VALUE_GMII_FULL_L2C_LINE                   0x7E570000
 #define TEST_VALUE_GMII_QWORD                           0xBABA0000
+#define TEST_VALUE_HSCB_FULL_L2C_LINE                   0x37BA0000
+#define TEST_VALUE_HSCB_QWORD                           0xDEDA0000
 #define L2C_TAG_CACHE_STATE_INVALID                     0x0
 #define L2C_TAG_CACHE_STATE_FROM_ARRACCDO0(val)         ( ((val) >> IBM_BIT_INDEX(32, 2)) & 0x7)
 
@@ -63,9 +69,29 @@ static uint32_t GRETH1_IRQ_HANDLED = 0;
 
 #define TST_MAC_MSB     0xFFFF
 #define TST_MAC_LSB     0xFFFFFFFF
+
+#define HSCB_UNDER_TEST_BASE        HSCB0_BASE
+#define HSCB_SUPPLEMENTARY_BASE     HSCB1_BASE
+#define HSCB_UNDER_TEST_INT         SW0_HSCB_INT
+#define HSCB_UNDER_TEST_DMA_INT     SW0_AXI_INT
+#define HSCB_SUPPLEMENTARY_INT      SW1_HSCB_INT
+#define HSCB_SUPPLEMENTARY_DMA_INT  SW1_AXI_INT
+
+#define GPIO_REG_MASK   0xFFFFFFFF
+#define MAX_ATTEMPTS 2000
+
+static volatile uint32_t hscb0_status;
+static volatile uint32_t hscb1_status;
+static volatile uint32_t hscb0_dma_status;
+static volatile uint32_t hscb1_dma_status;
+static volatile bool hscb0_link_established;
+static volatile bool hscb1_link_established;
+
 greth_mac_t tst_greth_mac       = {TST_MAC_MSB, TST_MAC_LSB};
 greth_descr_t  tx_descriptor_data_[GRETH_MAX_DESCRIPTORS_COUNT] __attribute__((aligned(1024)));
 greth_descr_t  rx_descriptor_data_[GRETH_MAX_DESCRIPTORS_COUNT] __attribute__((aligned(1024)));
+static volatile uint8_t __attribute__((section(".data"),aligned(16))) tx_desc_im[0x100] = {0} ;
+static volatile uint8_t __attribute__((section(".data"),aligned(16))) rx_desc_im[0x100] = {0} ;
 
 static struct greth_instance in[ ] = {
                                         {
@@ -276,6 +302,8 @@ void rwnitc_check (uint32_t source, uint32_t target, uint32_t xor_invertor)
     rumboot_printf("source == %x\n", source);
     rumboot_printf("target == %x\n", target);
     rumboot_printf("xor_invertor == %x\n", xor_invertor);
+
+    rumboot_printf("DMA_1 (rwnitc_check)\n");
     cache_and_modify_data((TEST_VALUE_DMA0_FULL_L2C_LINE ^ xor_invertor), source, target);
     test_procedure_with_dma(DCR_DMAPLB6_BASE,
             test_io10_cpu_020_plb6_io_full_l2c_line_size, source, target);
@@ -283,12 +311,13 @@ void rwnitc_check (uint32_t source, uint32_t target, uint32_t xor_invertor)
             test_io10_cpu_020_plb6_io_full_l2c_line_size, target);
     clear_test_fields(TEST_VALUE_CLEAR, source, target);
 
+    rumboot_printf("DMA_2 (rwnitc_check)\n");
     cache_and_modify_data((TEST_VALUE_DMA0_QWORD ^ xor_invertor), source, target);
     test_procedure_with_dma(DCR_DMAPLB6_BASE, test_io10_cpu_020_plb6_io_qword_size, source, target);
     check_values((TEST_VALUE_DMA0_QWORD ^ xor_invertor), test_io10_cpu_020_plb6_io_qword_size, target);
     clear_test_fields(TEST_VALUE_CLEAR, source, target);
 
-
+    rumboot_printf("GMII_1 (rwnitc_check)\n");
     cache_and_modify_data((TEST_VALUE_GMII_FULL_L2C_LINE  ^ xor_invertor), source, target);
     test_procedure_with_gmii(GRETH_0_BASE,
             test_io10_cpu_020_plb6_io_full_l2c_line_size, source, target);
@@ -296,9 +325,24 @@ void rwnitc_check (uint32_t source, uint32_t target, uint32_t xor_invertor)
             test_io10_cpu_020_plb6_io_full_l2c_line_size, target);
     clear_test_fields(TEST_VALUE_CLEAR, source, target);
 
+    rumboot_printf("GMII_2 (rwnitc_check)\n");
     cache_and_modify_data((TEST_VALUE_GMII_QWORD ^ xor_invertor), source, target);
     test_procedure_with_gmii(GRETH_0_BASE, test_io10_cpu_020_plb6_io_qword_size, source, target);
     check_values((TEST_VALUE_GMII_QWORD ^ xor_invertor), test_io10_cpu_020_plb6_io_qword_size, target);
+    clear_test_fields(TEST_VALUE_CLEAR, source, target);
+
+    rumboot_printf("HSCB_1 (rwnitc_check)\n");
+    cache_and_modify_data((TEST_VALUE_HSCB_FULL_L2C_LINE  ^ xor_invertor), source, target);
+    test_procedure_with_hscb(source, target, test_io10_cpu_020_plb6_io_full_l2c_line_size);
+    rumboot_printf("test_procedure hscb end\n");
+    check_values((TEST_VALUE_HSCB_FULL_L2C_LINE  ^ xor_invertor), test_io10_cpu_020_plb6_io_full_l2c_line_size, target);
+    clear_test_fields(TEST_VALUE_CLEAR, source, target);
+
+    rumboot_printf("HSCB_2 (rwnitc_check)\n");
+    cache_and_modify_data((TEST_VALUE_HSCB_QWORD ^ xor_invertor), source, target);
+    test_procedure_with_hscb(source, target, test_io10_cpu_020_plb6_io_qword_size);
+    rumboot_printf("test_procedure hscb end\n");
+    check_values((TEST_VALUE_HSCB_QWORD ^ xor_invertor), test_io10_cpu_020_plb6_io_qword_size, target);
     clear_test_fields(TEST_VALUE_CLEAR, source, target);
 }
 
@@ -311,6 +355,7 @@ void __attribute__((section(".EM0.text"))) write_check(uint32_t source, uint32_t
     rumboot_printf("xor_invertor == %x\n", xor_invertor);
     rumboot_printf("l2c_base == %x\n", l2c_base);
 
+    rumboot_printf("DMA_1 (write_check)\n");
     cache_and_modify_data((TEST_VALUE_DMA0_FULL_L2C_LINE ^ xor_invertor), source, target);
     check_target_is_invalidated_in_l2c(l2c_base, target, false);
     test_procedure_with_dma(DCR_DMAPLB6_BASE, test_io10_cpu_020_plb6_io_full_l2c_line_size, source, target);
@@ -318,6 +363,7 @@ void __attribute__((section(".EM0.text"))) write_check(uint32_t source, uint32_t
     check_values((TEST_VALUE_DMA0_FULL_L2C_LINE ^ xor_invertor), test_io10_cpu_020_plb6_io_full_l2c_line_size, target);
     clear_test_fields(TEST_VALUE_CLEAR, source, target);
 
+    rumboot_printf("DMA_2 (write_check)\n");
     cache_and_modify_data((TEST_VALUE_DMA0_QWORD ^ xor_invertor), source, target);
     check_target_is_invalidated_in_l2c(l2c_base, target, false);
     test_procedure_with_dma(DCR_DMAPLB6_BASE, test_io10_cpu_020_plb6_io_qword_size, source, target);
@@ -325,6 +371,7 @@ void __attribute__((section(".EM0.text"))) write_check(uint32_t source, uint32_t
     check_values((TEST_VALUE_DMA0_QWORD ^ xor_invertor), test_io10_cpu_020_plb6_io_qword_size, target);
     clear_test_fields(TEST_VALUE_CLEAR, source, target);
 
+    rumboot_printf("GMII_1 (write_check)\n");
     cache_and_modify_data((TEST_VALUE_GMII_FULL_L2C_LINE ^ xor_invertor), source, target);
     check_target_is_invalidated_in_l2c(l2c_base, target, false);
     test_procedure_with_gmii(GRETH_0_BASE, test_io10_cpu_020_plb6_io_full_l2c_line_size, source, target);
@@ -332,11 +379,28 @@ void __attribute__((section(".EM0.text"))) write_check(uint32_t source, uint32_t
     check_values((TEST_VALUE_GMII_FULL_L2C_LINE ^ xor_invertor), test_io10_cpu_020_plb6_io_full_l2c_line_size, target);
     clear_test_fields(TEST_VALUE_CLEAR, source, target);
 
+    rumboot_printf("GMII_2 (write_check)\n");
     cache_and_modify_data((TEST_VALUE_GMII_QWORD ^ xor_invertor), source, target);
     check_target_is_invalidated_in_l2c(l2c_base, target, false);
     test_procedure_with_gmii(GRETH_0_BASE, test_io10_cpu_020_plb6_io_qword_size, source, target);
     check_target_is_invalidated_in_l2c(l2c_base, target, true);
     check_values((TEST_VALUE_GMII_QWORD ^ xor_invertor), test_io10_cpu_020_plb6_io_qword_size, target);
+    clear_test_fields(TEST_VALUE_CLEAR, source, target);
+
+    rumboot_printf("HSCB_1 (write_check)\n");
+    cache_and_modify_data((TEST_VALUE_HSCB_FULL_L2C_LINE ^ xor_invertor), source, target);
+    check_target_is_invalidated_in_l2c(l2c_base, target, false);
+    test_procedure_with_hscb(source, target, test_io10_cpu_020_plb6_io_full_l2c_line_size);
+    check_target_is_invalidated_in_l2c(l2c_base, target, true);
+    check_values((TEST_VALUE_HSCB_FULL_L2C_LINE ^ xor_invertor), test_io10_cpu_020_plb6_io_full_l2c_line_size, target);
+    clear_test_fields(TEST_VALUE_CLEAR, source, target);
+
+    rumboot_printf("HSCB_2 (write_check)\n");
+    cache_and_modify_data((TEST_VALUE_HSCB_QWORD ^ xor_invertor), source, target);
+    check_target_is_invalidated_in_l2c(l2c_base, target, false);
+    test_procedure_with_hscb(source, target, test_io10_cpu_020_plb6_io_full_l2c_line_size);
+    check_target_is_invalidated_in_l2c(l2c_base, target, true);
+    check_values((TEST_VALUE_HSCB_QWORD ^ xor_invertor), test_io10_cpu_020_plb6_io_qword_size, target);
     clear_test_fields(TEST_VALUE_CLEAR, source, target);
 }
 
@@ -406,7 +470,7 @@ struct rumboot_irq_entry * create_greth01_irq_handlers()
     return tbl;
 }
 
-void delete_greth01_irq_handlers(struct rumboot_irq_entry *tbl)
+void delete_irq_handler(struct rumboot_irq_entry *tbl)
 {
     rumboot_irq_table_activate(NULL);
     rumboot_irq_free(tbl);
@@ -423,6 +487,126 @@ void init_data ()
     }
     msync();
     dci(2);
+}
+
+static void handler( int irq, void *arg ) {
+    //get interrupt source
+    rumboot_printf( "IRQ arrived  \n" );
+    rumboot_putstring("NON_CRITICAL int handler message\n");
+//    rumboot_puthex (irq);
+    if (irq == HSCB_UNDER_TEST_INT) {
+        rumboot_putstring("HSCB_0_IRQ\n");
+        hscb0_status = hscb_get_status(HSCB_UNDER_TEST_BASE);
+        if(!hscb0_link_established)
+            hscb0_link_established = hscb0_status & (1 << HSCB_STATUS_ACTIVE_LINK_i);
+        rumboot_puthex (hscb0_status );
+    }
+    if (irq == HSCB_UNDER_TEST_DMA_INT) {
+        rumboot_putstring("HSCB_0_DMA_IRQ\n");
+        hscb0_dma_status = hscb_get_adma_ch_status(HSCB_UNDER_TEST_BASE );
+        rumboot_puthex(hscb0_dma_status);
+        if (hscb0_dma_status & HSCB_ADMA_CH_STATUS_RDMA_IRQ_mask)
+            hscb0_dma_status = hscb_get_rdma_status(HSCB_UNDER_TEST_BASE);
+        else if (hscb0_dma_status & HSCB_ADMA_CH_STATUS_WDMA_IRQ_mask)
+            hscb0_dma_status = hscb_get_wdma_status(HSCB_UNDER_TEST_BASE);
+        rumboot_puthex(hscb0_dma_status);
+    }
+    if (irq == HSCB_SUPPLEMENTARY_INT) {
+        rumboot_putstring("HSCB_1_IRQ\n");
+        hscb1_status = hscb_get_status(HSCB_SUPPLEMENTARY_BASE);
+        if(!hscb1_link_established)
+            hscb1_link_established = hscb1_status & (1 << HSCB_STATUS_ACTIVE_LINK_i);
+        rumboot_puthex (hscb1_status);
+    }
+    if (irq == HSCB_SUPPLEMENTARY_DMA_INT) {
+        rumboot_putstring("HSCB_1_DMA_IRQ\n");
+        hscb1_dma_status = hscb_get_adma_ch_status(HSCB_SUPPLEMENTARY_BASE );
+        isync();
+        msync();
+        rumboot_puthex(hscb1_dma_status);
+        if (hscb1_dma_status & HSCB_ADMA_CH_STATUS_RDMA_IRQ_mask)
+            hscb1_dma_status = hscb_get_rdma_status(HSCB_SUPPLEMENTARY_BASE);
+        else if (hscb1_dma_status & HSCB_ADMA_CH_STATUS_WDMA_IRQ_mask)
+            hscb1_dma_status = hscb_get_wdma_status(HSCB_SUPPLEMENTARY_BASE);
+    }
+}
+
+struct rumboot_irq_entry * create_irq_handlers( )
+{
+    rumboot_irq_cli();
+    struct rumboot_irq_entry *tbl = rumboot_irq_create( NULL );
+
+    rumboot_irq_set_handler( tbl, HSCB_UNDER_TEST_INT,          RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler, ( void* )0 );
+    rumboot_irq_set_handler( tbl, HSCB_UNDER_TEST_DMA_INT,      RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler, ( void* )0 );
+    rumboot_irq_set_handler( tbl, HSCB_SUPPLEMENTARY_INT,       RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler, ( void* )0 );
+    rumboot_irq_set_handler( tbl, HSCB_SUPPLEMENTARY_DMA_INT,   RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler, ( void* )0 );
+
+    /* Activate the table */
+    rumboot_irq_table_activate( tbl );
+    rumboot_irq_enable( HSCB_UNDER_TEST_INT );
+    rumboot_irq_enable( HSCB_UNDER_TEST_DMA_INT );
+    rumboot_irq_enable( HSCB_SUPPLEMENTARY_INT );
+    rumboot_irq_enable( HSCB_SUPPLEMENTARY_DMA_INT );
+    rumboot_irq_sei();
+
+    return tbl;
+}
+
+static void test_procedure_with_hscb(uint32_t source, uint32_t target, uint32_t size){
+    int cnt = 0;
+
+    hscb0_status = 0;
+    hscb1_status = 0;
+    hscb0_dma_status = 0;
+    hscb1_dma_status = 0;
+
+    hscb_configure_for_transmit(HSCB_UNDER_TEST_BASE, source, size, (uint32_t) tx_desc_im);
+    hscb_configure_for_receive(HSCB_SUPPLEMENTARY_BASE, target, size, (uint32_t) rx_desc_im);
+    rumboot_putstring( "Enable HSCB...\n" );
+    // Enable HSCB0 and HSCB1
+    iowrite32((1 << HSCB_IRQ_MASK_ACTIVE_LINK_i),    HSCB_UNDER_TEST_BASE + HSCB_IRQ_MASK);
+    iowrite32((1 << HSCB_IRQ_MASK_ACTIVE_LINK_i),    HSCB_SUPPLEMENTARY_BASE + HSCB_IRQ_MASK);
+    iowrite32((1 << HSCB_SETTINGS_EN_HSCB_i),        HSCB_UNDER_TEST_BASE + HSCB_SETTINGS);
+    iowrite32((1 << HSCB_SETTINGS_EN_HSCB_i),        HSCB_SUPPLEMENTARY_BASE + HSCB_SETTINGS);
+    // Wait connecting
+    rumboot_putstring( "Wait HSCB0 and HSCB1 enable\n" );
+    while (!(hscb0_link_established & hscb1_link_established)){
+        if (cnt == MAX_ATTEMPTS) {
+            rumboot_putstring( "Wait interrupt Time-out\n" );
+            TEST_ASSERT(0, "TEST_ERROR");
+        }
+        else
+            cnt += 1;
+    }
+    cnt = 0;
+    hscb0_status = 0;
+    hscb1_status = 0;
+
+    rumboot_putstring( "HSCB link has enabled\n" );
+    // Enable DMA for HSCB0 and HSCB1
+    rumboot_putstring( "Start work!\n" );
+
+    hscb_run_rdma(HSCB_UNDER_TEST_BASE);
+    hscb_run_wdma(HSCB_SUPPLEMENTARY_BASE);
+    msync();
+    rumboot_putstring( "Wait HSCB0 and HSCB1 finish work\n" );
+    while (!(hscb0_dma_status || hscb1_dma_status)){
+        if (cnt == MAX_ATTEMPTS) {
+            rumboot_putstring( "Wait interrupt Time-out\n" );
+            TEST_ASSERT(0, "TEST_ERROR");
+        }
+        else
+            cnt += 1;
+    }
+    cnt = 0;
+    hscb0_dma_status = 0;
+    hscb1_dma_status = 0;
+
+    if (hscb_adma_sw_rst(HSCB_UNDER_TEST_BASE) && hscb_adma_sw_rst(HSCB_SUPPLEMENTARY_BASE) && hscb_sw_rst(HSCB_UNDER_TEST_BASE) && hscb_sw_rst(HSCB_SUPPLEMENTARY_BASE))
+      rumboot_putstring( "HSCB rst!\n" );
+    else
+      rumboot_putstring( "NOOOOOOOOO! HSCB dont rst!\n" );  ;
+    rumboot_putstring( "Finish work!\n" );
 }
 
 int main ()
@@ -442,6 +626,9 @@ int main ()
     struct rumboot_irq_entry *tbl;
     tbl = create_greth01_irq_handlers();
 
+    struct rumboot_irq_entry *tbl_hscb;
+    tbl_hscb = create_irq_handlers();
+
     prepare_devices();
 
     rumboot_printf("(uint32_t) source_test_data_rwnitc_sram0 == %x\n", (uint32_t) source_test_data_rwnitc_sram0);
@@ -458,7 +645,8 @@ int main ()
     //WRITE checks
     write_check((uint32_t) source_test_data_write_sram0, (uint32_t)target_test_data_write_sram0, 0x0);
 
-    delete_greth01_irq_handlers(tbl);
+    delete_irq_handler(tbl);
+    delete_irq_handler(tbl_hscb);
     rumboot_printf("TEST_OK\n");
     return 0;
 }
