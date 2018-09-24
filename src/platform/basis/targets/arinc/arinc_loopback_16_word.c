@@ -100,7 +100,6 @@ int arinc_status_check16_word() {
 	iowrite32(( (1 << i) + (1 << (16 +i)) ),ARINC_BASE + CHANNEL_DIS); // stop transmitter
     }
      
-
     i = 0;
 	for (i = 0; i< 16 ; i++) 
 	{
