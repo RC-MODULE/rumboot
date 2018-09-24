@@ -209,7 +209,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       PREFIX irq-iram-mirror
     )
 
-    add_rumboot_target_dir(lua/
+    add_rumboot_target_dir(common/lua/
       CONFIGURATION LPROBE_CPU
       PREFIX lprobe-cpu
     )

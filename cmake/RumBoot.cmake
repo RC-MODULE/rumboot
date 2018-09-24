@@ -51,7 +51,7 @@ macro(add_rumboot_target_dir dir)
 
   #Fetch from current target dir
   fetch_sources(${RUMBOOT_PLATFORM_TARGET_DIR}/${dir})
-  foreach(target ${RUMBOOT_TARGETS_C} ${RUMBOOT_TARGETS_S} )
+  foreach(target ${RUMBOOT_TARGETS_C} ${RUMBOOT_TARGETS_S} ${RUMBOOT_TARGETS_LUA})
     add_rumboot_target(
         ${ARGN}
         FILES ${target}
@@ -60,7 +60,7 @@ macro(add_rumboot_target_dir dir)
 
   #fetch from common directory
   fetch_sources(${RUMBOOT_PLATFORM_COMMON_DIR}/${dir})
-  foreach(target ${RUMBOOT_TARGETS_C} ${RUMBOOT_TARGETS_S} )
+  foreach(target ${RUMBOOT_TARGETS_C} ${RUMBOOT_TARGETS_S} ${RUMBOOT_TARGETS_LUA})
     add_rumboot_target(
         ${ARGN}
         FILES ${target}

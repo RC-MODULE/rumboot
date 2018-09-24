@@ -98,7 +98,6 @@ int main()
 	while (1) {
 		volatile uint32_t *data;
 		rumboot_platform_event_get(&data);
-		//rumboot_printf("Inbound event %d arg 0x%x\n", evt, data[0]);
 		parse_event((void *)data);
 		rumboot_platform_event_clear();
 	}

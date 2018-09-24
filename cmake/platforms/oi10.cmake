@@ -46,6 +46,15 @@ rumboot_add_configuration(
     TIMEOUT_CTEST 7200
 )
 
+rumboot_add_configuration(
+  LPROBE_CPU
+  PREFIX lprobe-cpu
+  BOOTROM bootrom-lprobe-stub
+  FEATURES LPROBE
+  IRUN_FLAGS +LPROBE_MODE=CPU -input ${CMAKE_SOURCE_DIR}/../scripts/lprobe-helper.tcl
+)
+
+
 rumboot_add_configuration (
     IRAM
     LDS oi10/iram.lds
@@ -88,6 +97,21 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 #       CONFIGURATION BAREROM
 #       FILES bare-rom/gtube-spr-check.S
 #   )
+
+
+    #Add lprobe sample scripts
+    add_rumboot_target_dir(common/lua/
+      CONFIGURATION LPROBE_CPU
+      PREFIX lprobe-cpu
+    )
+
+    add_rumboot_target(
+        CONFIGURATION ROM
+        FILES common/bootrom-stubs/bootrom-lprobe-stub.c
+        PREFIX "bootrom"
+        NAME "lprobe-stub"
+        FEATURES STUB
+      )
 
     add_rumboot_target(
         CONFIGURATION ROM
@@ -223,7 +247,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 #        IRUN_FLAGS +mkio_signal_test
 #      )
 
-    
+
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES test_oi10_uart_000.c
@@ -235,8 +259,8 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       FILES test_oi10_uart_000.c
       CFLAGS -DUARTRX_BASE=UART1_BASE -DUARTTX_BASE=UART0_BASE -DUARTRX_INT=UART1_INT -DUARTTX_INT=UART0_INT -DCHECK_REGISTERS
       PREFIX uart1
-    ) 
-    
+    )
+
 endmacro()
 
 
