@@ -38,15 +38,15 @@ setup_tlb:
     bl          ppc470s_write_tlb_entries
 
 check_cpu_ppc_prog_model_24:    /*check sequential flow*/
-	rumboot_putstring "Start test...\n", r15, r16, r17
+	rumboot_putstring "Start test...\n", r15, r16
     load_const	r3,	0x00000000
     mtxer		r3
-    test_event	EVENT_CHECK_CPU_PPC_PROG_MODEL_24_SEQ, r15, r16, r17
+    test_event	EVENT_CHECK_CPU_PPC_PROG_MODEL_24_SEQ, r15, r16
 
 check_cpu_ppc_prog_model_25:    /*check unconditional branch*/
-    rumboot_putstring	"Unconditional branch:\n align: 3 ", r15, r16, r17
+    rumboot_putstring	"Unconditional branch:\n align: 3 ", r15, r16
     b			bu_b3
-    test_event	EVENT_ERROR, r15, r16, r17
+    test_event	EVENT_ERROR, r15, r16
     b 			test_error
 
 .align 3
@@ -77,7 +77,7 @@ bu_b6:
 
 
 bu_bl:
-	rumboot_putstring "\ntest bl/ba ... ", r15, r16, r17
+	rumboot_putstring "\ntest bl/ba ... ", r15, r16
 	load_const	r3,		0x0001
     bl			bu_blr
     cmpwi cr5,	r3,		0x0000
@@ -85,7 +85,7 @@ bu_bl:
     b			test_error
 
 bu_end:
-	rumboot_putstring "ok!\n", r15, r16, r17
+	rumboot_putstring "ok!\n", r15, r16
     b			check_cpu_ppc_prog_model_26
 
 bu_ba:
@@ -107,7 +107,7 @@ bu_blr:
 
 
 check_cpu_ppc_prog_model_26:    /*check conditional branch*/
-	rumboot_putstring "\ntest conditional branch\n -> ", r15, r16, r17
+	rumboot_putstring "\ntest conditional branch\n -> ", r15, r16
 
     load_const	r4,	0x00000000
     load_const	r5,	0x00000001
@@ -194,7 +194,7 @@ bc_bns:
 
 
 check_cpu_ppc_prog_model_27:    /*check XL-branch*/
-	rumboot_putstring "\ntest conditional branch to lr (XL-branch)\n -> ", r15, r16, r17
+	rumboot_putstring "\ntest conditional branch to lr (XL-branch)\n -> ", r15, r16
 	load_addr	r6,	bic_blelr
     mtlr		r6
     cmpw  cr0,	r4, r5
@@ -295,7 +295,7 @@ bic_bnslr:
 
 bic_bdz:
 bic_bdz:
-    rumboot_putstring "\ntest bdz/bdnz... ", r15, r16, r17
+    rumboot_putstring "\ntest bdz/bdnz... ", r15, r16
     load_const	r6,	0x0003
     mtctr		r6
 bic_bdz_loop:
@@ -317,7 +317,7 @@ bic_bdnz_loop:
 	b			test_error
 
 bic_bltctr:
-	rumboot_putstring "\ntest cond branch to ctr -> lt ", r15, r16, r17
+	rumboot_putstring "\ntest cond branch to ctr -> lt ", r15, r16
 	load_addr	r6,	bic_blectr
     mtctr		r6
     cmpw   cr0,	r4,	r5
@@ -420,14 +420,14 @@ bic_bnsctr:
     b			test_error
 
 test_error:
-	rumboot_putstring "\nTEST ERROR\n", r15, r16, r17
-	test_event		EVENT_ERROR, r15, r16, r17
+	rumboot_putstring "\nTEST ERROR\n", r15, r16
+	test_event		EVENT_ERROR, r15, r16
 	load_const	r3,	RESULT_ERROR
 	b finish
 
 test_ok:
-	rumboot_putstring "\nTEST OK\n", r15, r16, r17
-	test_event		EVENT_OK, r15, r16, r17
+	rumboot_putstring "\nTEST OK\n", r15, r16
+	test_event		EVENT_OK, r15, r16
 	load_const	r3,	RESULT_OK
 
 finish:
