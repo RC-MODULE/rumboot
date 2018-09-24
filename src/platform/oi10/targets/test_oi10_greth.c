@@ -4,6 +4,7 @@
 
 #include <rumboot/printf.h>
 #include <rumboot/platform.h>
+#include <rumboot/rumboot.h>
 #include <rumboot/macros.h>
 #include <rumboot/io.h>
 #include <rumboot/irq.h>
@@ -125,11 +126,11 @@ void delete_greth01_irq_handlers(struct rumboot_irq_entry *tbl)
 uint32_t edcl_seq_number = 0;
 uint32_t test_edcl_data = 0xBABADEDA;
 
-greth_descr_t  tx_descriptor_data_[GRETH_MAX_DESCRIPTORS_COUNT] __attribute__((aligned(1024)));
-greth_descr_t  rx_descriptor_data_[GRETH_MAX_DESCRIPTORS_COUNT] __attribute__((aligned(1024)));
+greth_descr_t*  tx_descriptor_data_;//[GRETH_MAX_DESCRIPTORS_COUNT];// __attribute__((aligned(1024)));
+greth_descr_t*  rx_descriptor_data_;//[GRETH_MAX_DESCRIPTORS_COUNT];// __attribute__((aligned(1024)));
 
-greth_descr_t  tx_descriptor_data2_[GRETH_MAX_DESCRIPTORS_COUNT] __attribute__((aligned(1024)));
-greth_descr_t  rx_descriptor_data2_[GRETH_MAX_DESCRIPTORS_COUNT] __attribute__((aligned(1024)));
+greth_descr_t  tx_descriptor_data2_[GRETH_MAX_DESCRIPTORS_COUNT];// __attribute__((aligned(1024)));
+greth_descr_t  rx_descriptor_data2_[GRETH_MAX_DESCRIPTORS_COUNT];// __attribute__((aligned(1024)));
 
 
 uint32_t test_data_im0_src[GRETH_TEST_DATA_LEN]  __attribute__((section(".data")));
@@ -256,7 +257,13 @@ uint32_t * get_src_dst_data_ptr(bool src_dst, uint32_t bank_num)
 void prepare_test_data(uint32_t src_bank, uint32_t dst_bank)
 {
     uint32_t i=0;
+
     bool toggle = true;
+
+    rumboot_putstring("Preparing data\n");
+    tx_descriptor_data_ = (greth_descr_t*) rumboot_malloc_from_heap_aligned(1, 3*sizeof(greth_descr_t), 1024);
+    rx_descriptor_data_ = (greth_descr_t*) rumboot_malloc_from_heap_aligned(1, 3*sizeof(greth_descr_t), 1024);
+
     test_data_im0_src[i++] = (tst_greth_mac.mac_msb << 16) | ((tst_greth_mac.mac_lsb & 0xFFFF0000) >> 16);//DST MAC [48:16]
     test_data_im0_src[i++] = ((tst_greth_mac.mac_lsb & 0xFFFF) << 16) | tst_greth_mac.mac_msb;//DST MAC [15:0] SRC MAC [48:32]
     test_data_im0_src[i++] = tst_greth_mac.mac_lsb;//SRC MAC [31:0]
