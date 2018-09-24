@@ -40,15 +40,15 @@ uint32_t check_plb6mcif2(const uint32_t base_address)
     TEST_ASSERT(dcr_read(PLB6MCIF2_MAP2CF + base_address) == 0x00000000,"In PLB6MCIF2_MAP2CF expected value 0x00000000");
     TEST_ASSERT(dcr_read(PLB6MCIF2_MAP3CF + base_address) == 0x00000000,"In PLB6MCIF2_MAP3CF expected value 0x00000000");
     TEST_ASSERT(dcr_read(PLB6MCIF2_MAXMEM + base_address) == 0xC0000000,"In PLB6MCIF2_MAXMEM expected value 0xC0000000");//default: [0:1]= 0b11
-    TEST_ASSERT(dcr_read(PLB6MCIF2_MR0CF + base_address) == 0x00000001,"In PLB6MCIF2_MR0CF expected value 0x00000000");
+    TEST_ASSERT(dcr_read(PLB6MCIF2_MR0CF + base_address) == 0x00000001,"In PLB6MCIF2_MR0CF expected value 0x00000001");
     TEST_ASSERT(dcr_read(PLB6MCIF2_MR1CF + base_address) == 0x00000000,"In PLB6MCIF2_MR1CF expected value 0x00000000");
     TEST_ASSERT(dcr_read(PLB6MCIF2_MR2CF + base_address) == 0x00000000,"In PLB6MCIF2_MR2CF expected value 0x00000000");
-    TEST_ASSERT(dcr_read(PLB6MCIF2_MR3CF + base_address) == 0xfff80001,"In PLB6MCIF2_MR3CF expected value 0x00000000");
+    TEST_ASSERT(dcr_read(PLB6MCIF2_MR3CF + base_address) == 0xfff80001,"In PLB6MCIF2_MR3CF expected value 0xfff80001");
     TEST_ASSERT(dcr_read(PLB6MCIF2_P6BMTAG1 + base_address) == 0x00000000,"In PLB6MCIF2_P6BMTAG1 expected value 0x00000000");
     TEST_ASSERT(dcr_read(PLB6MCIF2_P6BMTAG2 + base_address) == 0x00000000,"In PLB6MCIF2_P6BMTAG2 expected value 0x00000000");
     TEST_ASSERT(dcr_read(PLB6MCIF2_P6BMTAG3 + base_address) == 0x00000000,"In PLB6MCIF2_P6BMTAG3 expected value 0x00000000");
     TEST_ASSERT(dcr_read(PLB6MCIF2_PLBASYNC + base_address) == 0x00000000,"In PLB6MCIF2_PLBASYNC expected value 0x00000000");
-    TEST_ASSERT(dcr_read(PLB6MCIF2_PLBCFG + base_address) == 0x200000F1,"In PLB6MCIF2_PLBCFG expected value 0x200000F0");
+    TEST_ASSERT(dcr_read(PLB6MCIF2_PLBCFG + base_address) == 0x200000F1,"In PLB6MCIF2_PLBCFG expected value 0x200000F1");
 
     uint32_t result = 0;
     result = dcr_read(PLB6MCIF2_PLBORD + base_address);
@@ -118,6 +118,7 @@ uint32_t check_emi(const uint32_t base_address)
 	TEST_ASSERT(dcr_read( EMI_ECNT53 + base_address) == 0x00000000, "In EMI_ECNT53 expected value 0x00000000");
 	TEST_ASSERT(dcr_read( EMI_BUSEN + base_address) == 0x00000000, "In EMI_BUSEN expected value 0x00000000");
 	TEST_ASSERT(dcr_read( EMI_WECR + base_address) == 0x00000000, "In EMI_WECR expected value 0x00000000");
+	TEST_ASSERT(dcr_read( EMI_FLCNTRL + base_address) == 0x00000000, "In EMI_FLCNTRL expected value 0x00000000");
 	TEST_ASSERT(dcr_read( EMI_IMR + base_address) == 0x00000000, "In EMI_IMR expected value 0x00000000");
 	TEST_ASSERT(dcr_read( EMI_IMR_SET + base_address) == 0x00000000, "In EMI_IMR_SET expected value 0x00000000");
 	TEST_ASSERT(dcr_read( EMI_IMR_RST + base_address) == 0x00000000, "In EMI_IMR_RST expected value 0x00000000");
@@ -170,13 +171,13 @@ uint32_t check_emi(const uint32_t base_address)
 
 int main()
 {
-	rumboot_putstring("CHECK PLB6MCIF2\n");
+    rumboot_printf("CHECK PLB6MCIF2\n");
 	check_plb6mcif2 (DCR_EM2_PLB6MCIF2_BASE);
-	rumboot_putstring("CHECK MCLFIR\n");
+	rumboot_printf("CHECK MCLFIR\n");
 	check_mclfir (DCR_EM2_MCLFIR_BASE);
-	rumboot_putstring("CHECK EMI\n");
+	rumboot_printf("CHECK EMI\n");
 	check_emi (DCR_EM2_EMI_BASE);
 
-	rumboot_putstring("TEST OK\n");
+	rumboot_printf("TEST OK\n");
 	return 0;
 }
