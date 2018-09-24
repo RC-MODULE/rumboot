@@ -155,7 +155,6 @@ int tmp = -1;
 		 rumboot_printf(" TEST_ERROR\n");
 		 return TEST_ERROR;}
 
-
 for (i = 0; i< 16 ; i++)
 
 	{
