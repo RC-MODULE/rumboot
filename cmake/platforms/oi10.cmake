@@ -152,6 +152,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
     add_rumboot_target_dir(uart_data_logger/
         CONFIGURATION IRAM
+        IRUN_FLAGS +use_uart_data_logger
         PREFIX uart_data_logger
     )
 
