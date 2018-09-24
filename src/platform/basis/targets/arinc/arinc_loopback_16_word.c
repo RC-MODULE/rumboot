@@ -161,8 +161,8 @@ int main()
 for (i = 0; i< 16 ; i++)
 
 	{
-	addr 		=	(uint32_t)	&tx_mem[i];
-	addr_rd 	=	(uint32_t)	&rx_mem[i];
+	addr 		=	(uint32_t)	&tx_mem[2 *i];
+	addr_rd 	=	(uint32_t)	&rx_mem[2 *i];
 
 	tmp			= 	ioread32(addr);
 	tmp_r 		= 	ioread32(addr_rd);
