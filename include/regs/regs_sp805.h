@@ -28,6 +28,15 @@
 #define WD_REG_PCELLID2         0xFF8
 #define WD_REG_PCELLID3         0xFFC
 
+
+struct sp805_instance
+{
+    uint32_t base_addr;
+    int wd_index;
+};
+
+
+
 /**
 * @}
 */
