@@ -17,6 +17,7 @@
  #define PL022_DMACR 0x24
  #define PL022_SR 0xc
  #define PL022_DR 0x8
+ #define SSPSR_SOFTCS                    0xCC
 /**
   * @}
 */

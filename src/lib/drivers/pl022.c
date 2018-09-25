@@ -128,11 +128,22 @@ void pl022_init(uint32_t base, struct pl022_config *conf)
 	pl022_set_speed(base, conf);
 	set_data_size(base, conf->data_size);
 	pl022_enable(base);
+	uint32_t soft_cs_ctl = ioread32(base + SSPSR_SOFTCS);
+	if (conf->soft_cs) {
+		iowrite32(soft_cs_ctl | (1<<1), base + SSPSR_SOFTCS);
+	} else {
+		iowrite32(soft_cs_ctl & (~(1<<1)), base + SSPSR_SOFTCS);
+	}
 }
 
 void pl022_internal_cs(uint32_t base, int select)
 {
-	/* TODO: .... */
+	uint32_t soft_cs_ctl = ioread32(base + SSPSR_SOFTCS);
+	if (select) {
+		iowrite32(soft_cs_ctl | (1<<0), base + SSPSR_SOFTCS);
+	} else {
+		iowrite32(soft_cs_ctl & (~(1<<0)), base + SSPSR_SOFTCS);
+	}
 }
 
 bool pl022_tx_empty(uint32_t base)

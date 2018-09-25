@@ -10,8 +10,6 @@
 #define DEBUG
 #define SPI_READ_TIMEOUT 500
 
-
-
 struct spiflash_private_data {
 	const struct rumboot_bootsource *src;
 };
@@ -82,14 +80,6 @@ void spiflash_read_flash(uint32_t base, uint32_t offset, unsigned char *dest, in
 
 }
 
-
-/*FIX THIS FUNC!*/
-#if 0
-
-#endif
-
-
-
 static bool spiflash_init(const struct rumboot_bootsource *src, void *pdata)
 {
 	struct spiflash_private_data *spi_flash = (struct spiflash_private_data *)pdata;
@@ -98,7 +88,7 @@ static bool spiflash_init(const struct rumboot_bootsource *src, void *pdata)
    conf.ssp_clk = src->freq_khz * 1000;
    conf.spi_clk = 12500000;
    conf.data_size = 8;
-
+   conf.soft_cs = 1;
    pl022_init(src->base, &conf);
 
 	spi_flash->src = src;

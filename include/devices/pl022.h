@@ -32,6 +32,7 @@ struct pl022_config {
 	uint32_t ssp_clk; /** SSP input frequency from CRG (See SoC Doc!) */
 	uint32_t spi_clk; /** Desired SPI Frequency */
 	uint32_t data_size; /** Transfer unit size in bits (Usually 8) */
+    uint32_t soft_cs; /** Use software chip-select control */
 };
 
 /**
