@@ -7,7 +7,7 @@
 #include <rumboot/bootsrc/spiflash.h>
 #include <rumboot/bootsrc/eeprom.h>
 #include <rumboot/bootsrc/boilerplate.h>
-#include <devices/sctl.h>
+#include <platform/regs/sctl.h>
 
 
 #define BOOTM_SELFTEST     (0 << 1)

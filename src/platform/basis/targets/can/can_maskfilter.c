@@ -3,7 +3,7 @@
 #include <rumboot/printf.h>
 #include <rumboot/io.h>
 #include <devices/can.h>
-#include <devices/sctl.h>
+#include <platform/regs/sctl.h>
 #include <platform/devices.h> 
 
 extern int CCAN_MASK_FILTER(uint32_t r0, uint32_t r1, uint32_t r2, uint32_t r3);

@@ -1,7 +1,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include <devices/sctl.h>
+#include <platform/regs/sctl.h>
 #include <devices/bisr.h>
 
 #include <rumboot/io.h>
