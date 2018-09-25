@@ -134,8 +134,8 @@ uint8_t* test_data_im0_dst;
 uint32_t* test_edcl_packet_im0;
 uint32_t* test_edcl_rcv_packet_im0;
 
-uint8_t* test_data_im1_src  = (uint8_t *)( IM1_BASE_MIRROR );
-uint8_t* test_data_im1_dst  = (uint8_t *)( IM1_BASE_MIRROR +   GRETH_TEST_DATA_LEN_BYTES*sizeof(uint8_t) );
+uint8_t* test_data_im1_src;//  = (uint8_t *)( IM1_BASE_MIRROR );
+uint8_t* test_data_im1_dst;//  = (uint8_t *)( IM1_BASE_MIRROR +   GRETH_TEST_DATA_LEN_BYTES*sizeof(uint8_t) );
 uint32_t* test_edcl_packet_im1 = (uint32_t *)( IM1_BASE_MIRROR + 2*GRETH_TEST_DATA_LEN_BYTES*sizeof(uint8_t) );
 uint32_t* test_edcl_rcv_packet_im1 = (uint32_t *)( IM1_BASE_MIRROR + 2*GRETH_TEST_DATA_LEN_BYTES*sizeof(uint8_t) + GRETH_TEST_DATA_LEN_BYTES*sizeof(uint8_t) );
 uint8_t* test_edcl_data_im1 = (uint8_t *)( IM1_BASE_MIRROR + 2*GRETH_TEST_DATA_LEN_BYTES*sizeof(uint8_t) + 2*GRETH_TEST_DATA_LEN_BYTES*sizeof(uint8_t));
@@ -260,9 +260,16 @@ void prepare_test_data(uint32_t src_bank, uint32_t dst_bank)
     tx_descriptor_data_ = (greth_descr_t*) rumboot_malloc_from_heap_aligned(0, 3*sizeof(greth_descr_t), 1024);
     rx_descriptor_data_ = (greth_descr_t*) rumboot_malloc_from_heap_aligned(0, 3*sizeof(greth_descr_t), 1024);
 
+    rumboot_putstring("Allocate from im0");
     test_data_im0_src = (uint8_t* )rumboot_malloc_from_heap(0, GRETH_TEST_DATA_LEN_BYTES * sizeof(uint8_t));
     test_data_im0_dst = (uint8_t* )rumboot_malloc_from_heap(0, GRETH_TEST_DATA_LEN_BYTES * sizeof(uint8_t));
 
+    rumboot_putstring("Allocate from im1 for src");
+    test_data_im1_src = (uint8_t* )rumboot_malloc_from_heap(1, GRETH_TEST_DATA_LEN_BYTES * sizeof(uint8_t));
+    rumboot_putstring("Allocate from im1 for dst");
+    test_data_im1_dst = (uint8_t* )rumboot_malloc_from_heap(1, GRETH_TEST_DATA_LEN_BYTES * sizeof(uint8_t));
+
+    rumboot_putstring("Fill im0 src array");
     test_data_im0_src[i++] = (uint8_t)((tst_greth_mac.mac_lsb & 0x00FF0000) >> 16);
     test_data_im0_src[i++] = (uint8_t)((tst_greth_mac.mac_lsb & 0xFF000000) >> 24);
     test_data_im0_src[i++] = (uint8_t)((tst_greth_mac.mac_msb & 0x000000FF) >>  0);
@@ -294,13 +301,20 @@ void prepare_test_data(uint32_t src_bank, uint32_t dst_bank)
     }
 
     if (src_bank==1)
+    {
+        rumboot_putstring("Fill im1 src array");
         memcpy(test_data_im1_src, test_data_im0_src, GRETH_TEST_DATA_LEN_BYTES*sizeof(uint8_t));
+    }
 
     if ((src_bank==2) || (dst_bank==2))
+    {
+        rumboot_putstring("Init EMI");
         emi_init(DCR_EM2_EMI_BASE);
+    }
 
     if (src_bank==2)
     {
+        rumboot_putstring("Fill em2 src array");
         //    memcpy(test_data_em2_src, test_data_im0_src, sizeof(test_data_im0_src));
         for (i=0; i<GRETH_TEST_DATA_LEN_BYTES/sizeof(uint8_t); i++)
         {
