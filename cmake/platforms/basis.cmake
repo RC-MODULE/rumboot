@@ -42,15 +42,12 @@ rumboot_add_configuration (
 )
 
 rumboot_add_configuration (
-  IRAM_SPL
-  LDS basis/iram-spl.lds
-  PREFIX spl
-  LDFLAGS -Wl,--start-group -lgcc -lc -lm -Wl,--end-group "-e main"
-  FILES ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c
-  CFLAGS -DRUMBOOT_PRINTF_ACCEL -DRUMBOOT_NOINIT
-  BOOTROM bootrom-stub
-  FEATURES COVERAGE PACKIMAGE
-  LOAD IM0BIN SELF
+    IRAM_SPL
+    CONFIGURATION IRAM
+    PREFIX spl
+    LDFLAGS -Wl,--start-group -lgcc -lc -lm -Wl,--end-group "-e main"
+    CFLAGS -DRUMBOOT_PRINTF_ACCEL -DRUMBOOT_NOINIT
+    FEATURES COVERAGE PACKIMAGE
 )
 
 rumboot_add_configuration (

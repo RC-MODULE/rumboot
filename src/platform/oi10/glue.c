@@ -89,26 +89,3 @@ void rumboot_platform_setup() {
     extern char rumboot_im1_heap_end;
     rumboot_malloc_register_heap( "IM1", &rumboot_im1_heap_start, &rumboot_im1_heap_end );
 }
-
-const struct rumboot_bootsource *rumboot_platform_get_bootsources()
-{
-    return NULL;
-}
-
-bool rumboot_platform_check_entry_points(struct rumboot_bootheader *hdr)
-{
-	/* Any entry point is okay */
-	return true;
-}
-
-int rumboot_platform_exec(struct rumboot_bootheader *hdr)
-{
-	/* No-op, this chip has only one core */
-    return 0;
-}
-
-void *rumboot_platform_get_spl_area(size_t *size)
-{
-  *size = (&rumboot_platform_spl_end - &rumboot_platform_spl_start);
-  return (void *) &rumboot_platform_spl_start;
-}

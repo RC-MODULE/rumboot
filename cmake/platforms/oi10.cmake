@@ -27,6 +27,7 @@ endmacro()
 
 rumboot_add_configuration(
     ROM
+    DEFAULT
     LDS oi10/rom.lds
     CFLAGS -DRUMBOOT_ONLY_STACK -DRUMBOOT_PRINTF_ACCEL
     LDFLAGS "-e rumboot_entry_point"
@@ -68,6 +69,15 @@ rumboot_add_configuration (
     TIMEOUT_CTEST 86400
 )
 
+rumboot_add_configuration (
+    IRAM_SPL
+    CONFIGURATION IRAM
+    PREFIX spl
+    LDFLAGS -Wl,--start-group -lgcc -lc -lm -Wl,--end-group "-e main"
+    CFLAGS -DRUMBOOT_PRINTF_ACCEL -DRUMBOOT_NOINIT
+    FEATURES COVERAGE PACKIMAGE
+)
+
 macro(rumboot_platform_generate_stuff_for_taget product)
     list (FIND TARGET_FEATURES "ROMGEN" _index)
     if (${_index} GREATER -1)
@@ -91,6 +101,8 @@ endmacro()
 
 
 
+include(${CMAKE_SOURCE_DIR}/cmake/bootrom.cmake)
+
 macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 #   Example for adding a single bare-rom test
 #   add_rumboot_target(
@@ -98,6 +110,27 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 #       FILES bare-rom/gtube-spr-check.S
 #   )
 
+    rumboot_bootrom_add_components(IRAM_SPL ROM)
+    #  rumboot_bootrom_unit_test(
+    #      ID 0
+    #      TAG sdio0
+    #      MEMTAG SDIO0_CONF
+    #      TAGOFFSET 0
+    #  )
+
+    rumboot_bootrom_unit_test(
+        ID 1
+        TAG spi0_cs0
+        MEMTAG SPI0_CONF
+        TAGOFFSET 0
+    )
+
+    rumboot_bootrom_unit_test(
+        ID 2
+        TAG spi0_cs1
+        MEMTAG SPI0_CONF
+        TAGOFFSET 1
+    )
 
     #Add lprobe sample scripts
     add_rumboot_target_dir(common/lua/
