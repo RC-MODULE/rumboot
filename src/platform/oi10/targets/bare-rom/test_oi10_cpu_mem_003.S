@@ -18,11 +18,11 @@ boot_start:
 .section ".init.text","ax",@progbits
 
 rumboot_entry_point:
-	gtube_init
-	test_event_send_test_id "test_oi10_cpu_mem_003"
+    gtube_init
+    test_event_send_test_id "test_oi10_cpu_mem_003"
     load_const  r0, 0x00000000  /* make r0 "all zeros" source */
     load_const  r1, 0xFFFFFFFF  /* make r1 "all ones" source  */
-    load_const  r2, 0x00000000
+/*    load_const  r2, 0x00000000
     load_const  r3, 0x00000000
     load_const  r4, 0x00000000
     load_const  r5, 0x00000000
@@ -51,7 +51,7 @@ rumboot_entry_point:
     load_const  r28,0x00000000
     load_const  r29,0x00000000
     load_const  r30,0x00000000
-    load_const  r31,0x00000000
+    load_const  r31,0x00000000*/
 
 init_spr:
 /* according to User's Manual ch. 9.4 Initialization Software Requirements */
@@ -173,7 +173,7 @@ init_spr:
                   | (0b1    << TIMER_TSR_FIS_i)
     mtspr       SPR_TSR_RC,	r3
 
-    mtspr       SPR_IAC1,	r0
+/*    mtspr       SPR_IAC1,	r0
     mtspr       SPR_IAC2,	r0
     mtspr       SPR_IAC3,	r0
     mtspr       SPR_IAC4,	r0
@@ -184,21 +184,22 @@ init_spr:
     mtspr       SPR_DBCR1,	r0
     mtspr       SPR_DBCR2,	r0
     mtspr       SPR_DBDR,	r0
-    mtspr       SPR_RMPD,	r0
+    mtspr       SPR_RMPD,	r0*/
 
     b           test_cpu_mem_003
 
+.section ".init.rodata","a",@progbits
 
 DECLARE_CONST( UTLB_TEST_DATA_SIZE, 4 )
 DECLARE_CONST( UTLB_TEST_DATA_N,    6 )
 
 BEGIN_ENUM( UTLB_TEST_DATA )
-DECLARE_ENUM_VAL( UTLB_TEST_TLBE_ADDR,  0*UTLB_TEST_DATA_SIZE )
-DECLARE_ENUM_VAL( UTLB_TEST_TLBE_TAG,   1*UTLB_TEST_DATA_SIZE )
-DECLARE_ENUM_VAL( UTLB_TEST_TLBE_DATA,  2*UTLB_TEST_DATA_SIZE )
-DECLARE_ENUM_VAL( UTLB_TEST_TLBE_ATTR,  3*UTLB_TEST_DATA_SIZE )
-DECLARE_ENUM_VAL( UTLB_TEST_MMUCR,      4*UTLB_TEST_DATA_SIZE )
-DECLARE_ENUM_VAL( UTLB_TEST_TLBWE_RA,   5*UTLB_TEST_DATA_SIZE )
+    DECLARE_ENUM_VAL( UTLB_TEST_TLBE_ADDR,  0*UTLB_TEST_DATA_SIZE )
+    DECLARE_ENUM_VAL( UTLB_TEST_TLBE_TAG,   1*UTLB_TEST_DATA_SIZE )
+    DECLARE_ENUM_VAL( UTLB_TEST_TLBE_DATA,  2*UTLB_TEST_DATA_SIZE )
+    DECLARE_ENUM_VAL( UTLB_TEST_TLBE_ATTR,  3*UTLB_TEST_DATA_SIZE )
+    DECLARE_ENUM_VAL( UTLB_TEST_MMUCR,      4*UTLB_TEST_DATA_SIZE )
+    DECLARE_ENUM_VAL( UTLB_TEST_TLBWE_RA,   5*UTLB_TEST_DATA_SIZE )
 END_ENUM( UTLB_TEST_DATA )
 
 DECLARE_CONST( TEST_TLB_ENTRY_SIZE, UTLB_TEST_DATA_N*UTLB_TEST_DATA_SIZE )
@@ -212,10 +213,10 @@ DECLARE_CONST( TEST_TLB_ENTRY_SIZE, UTLB_TEST_DATA_N*UTLB_TEST_DATA_SIZE )
     ((0b100 | way) << MMU_TLBWE_RA_WAY_i) | (MMU_TLBWE_BE_UND << MMU_TLBWE_RA_BE_i)
 
 test_write_tlb_entries: // write UTLB DATA for invalig (V=0) UTLB TAG entry
-/*			TEST_TLB_ENTRY( index,      way,    EPN,                    EPNPar, V,      TS,     DSIZ,       DSIZPar,TID,                TIDPar, ERPN,           ERPNPar,RPN,                    RPNPar, IL1I,   IL1D,   W,      I,      M,      G,      E,      UX,     UW,     UR,     SX,     SW,     SR,     U,      SPPar) */
+/*          TEST_TLB_ENTRY( index,      way,    EPN,                    EPNPar, V,      TS,     DSIZ,       DSIZPar,TID,                TIDPar, ERPN,           ERPNPar,RPN,                    RPNPar, IL1I,   IL1D,   W,      I,      M,      G,      E,      UX,     UW,     UR,     SX,     SW,     SR,     U,      SPPar) */
     .long   TEST_TLB_ENTRY( 0b11110111, 0b11,   0b00000000000000000000, 0b1,    0b1,    0b0,    0b000000,   0b0,    0b0000000011110111, 0b0,    0b0000000000,   0b1,    0b00000000000000000000, 0b1,    0b0,    0b1,    0b0,    0b0,    0b0,    0b0,    0b0,    0b0,    0b0,    0b0,    0b0,    0b0,    0b0,    0b0000, 0b0 )
 test_read_tlb_entries:
-/*			TEST_TLB_ENTRY( index,      way,    EPN,                    EPNPar, V,      TS,     DSIZ,       DSIZPar,TID,                TIDPar, ERPN,           ERPNPar,RPN,                    RPNPar, IL1I,   IL1D,   W,      I,      M,      G,      E,      UX,     UW,     UR,     SX,     SW,     SR,     U,      SPPar) */
+/*          TEST_TLB_ENTRY( index,      way,    EPN,                    EPNPar, V,      TS,     DSIZ,       DSIZPar,TID,                TIDPar, ERPN,           ERPNPar,RPN,                    RPNPar, IL1I,   IL1D,   W,      I,      M,      G,      E,      UX,     UW,     UR,     SX,     SW,     SR,     U,      SPPar) */
     .long   TEST_TLB_ENTRY( 0b11111111, 0b00,   0b11111111111111111111, 0b1,    0b1,    0b0,    0b000000,   0b0,    0b1111111100001111, 0b1,    0b1111111111,   0b1,    0b11111111111111111111, 0b1,    0b1,    0b1,    0b1,    0b1,    0b1,    0b1,    0b1,    0b1,    0b1,    0b1,    0b1,    0b1,    0b1,    0b1111, 0b0 )
     .long   TEST_TLB_ENTRY( 0b11111110, 0b00,   0b11111111111111111111, 0b1,    0b1,    0b0,    0b000000,   0b0,    0b1111111100001110, 0b0,    0b1111111111,   0b1,    0b11111111111111111111, 0b1,    0b1,    0b1,    0b1,    0b1,    0b1,    0b1,    0b1,    0b1,    0b1,    0b1,    0b1,    0b1,    0b0,    0b1111, 0b1 )
     .long   TEST_TLB_ENTRY( 0b11111101, 0b00,   0b11111111111111111111, 0b1,    0b1,    0b0,    0b000000,   0b0,    0b1111111100001101, 0b0,    0b1111111111,   0b1,    0b11111111111111111111, 0b1,    0b1,    0b1,    0b1,    0b1,    0b1,    0b1,    0b1,    0b1,    0b1,    0b1,    0b1,    0b0,    0b1,    0b1111, 0b1 )
@@ -317,14 +318,15 @@ test_read_tlb_entries:
 
 DECLARE_CONST( MMU_MMUCR_STID_MASK,  0x0000FFFF )
 
+.section ".init.text","ax",@progbits
 
 test_cpu_mem_003:
 
 BEGIN_ENUM( test_event_code )
-DECLARE_ENUM_VAL(   TEC_CHECK_MMU_UTLB_READ,   TEST_EVENT_CODE_MIN )
-DECLARE_ENUM_NEXT(  TEC_CHECK_MMU_UTLB_WRITE )
-DECLARE_ENUM_NEXT(  TEC_INIT )
-DECLARE_ENUM_NEXT(  TEC_FINISH )
+    DECLARE_ENUM_VAL(   TEC_CHECK_MMU_UTLB_READ,   TEST_EVENT_CODE_MIN )
+    DECLARE_ENUM_NEXT(  TEC_CHECK_MMU_UTLB_WRITE )
+    DECLARE_ENUM_NEXT(  TEC_INIT )
+    DECLARE_ENUM_NEXT(  TEC_FINISH )
 END_ENUM( test_event_code )
 
     test_event  TEC_INIT
@@ -342,22 +344,22 @@ read_next_test_tlb_entry:
     andi.       r5, r5, MMU_MMUCR_STID_MASK
     tlbre       r6, r3, MMU_TLB_ENTRY_TAG
     cmpw        r6, r4
-    TEST_ASSERT(eq, cr0, "Wrong UTLB TAG(EPN...)")
+    TEST_ASSERT(eq, cr0, "EPN")
 
     mfspr       r7, SPR_MMUCR
     andi.       r7, r7, MMU_MMUCR_STID_MASK
     cmpw        r7, r5
-    TEST_ASSERT(eq, cr0, "Wrong UTLB TAG(TID)")
+    TEST_ASSERT(eq, cr0, "TID")
 
     lwz         r4, UTLB_TEST_TLBE_DATA(r1)
     tlbre       r6, r3, MMU_TLB_ENTRY_DATA
     cmpw        r6, r4
-    TEST_ASSERT(eq, cr0, "Wrong UTLB DATA(ERPN...)")
+    TEST_ASSERT(eq, cr0, "ERPN")
 
     lwz         r4, UTLB_TEST_TLBE_ATTR(r1)
     tlbre       r6, r3, MMU_TLB_ENTRY_ATTR
     cmpw        r6, r4
-    TEST_ASSERT(eq, cr0, "Wrong UTLB DATA(IL1I...)")
+    TEST_ASSERT(eq, cr0, "IL1I")
 
     addi        r1, r1, TEST_TLB_ENTRY_SIZE
     addi        r2, r2, 1
@@ -393,7 +395,6 @@ test_ok:
     exit 0x00
 
 test_error:
-    rumboot_putstring "TEST_ERROR\n"
     exit 0x01
 
 
