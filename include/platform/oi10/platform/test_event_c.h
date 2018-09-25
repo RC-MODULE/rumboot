@@ -7,38 +7,31 @@
 #ifndef TEST_EVENT_C_H_
 #define TEST_EVENT_C_H_
 
+
 #include <platform/test_event_codes.h>
 #include <rumboot/platform.h>
+#include <rumboot/irq.h>
 #include <platform/arch/ppc/ppc_476fp_config.h>
+#include <platform/arch/ppc/ppc_476fp_lib_c.h>
 
-static inline __attribute__((always_inline)) void test_event( uint32_t const event_code ) {
-    register uint32_t const test_event_opcode   = EVENT_TESTEVENT;
-    register uint32_t const nop_opcode          = EVENT_NOP;
-    asm volatile(
-        "mtspr %0, %1 \n\t"
-        "mtspr %2, %3 \n\t"
-        "mtspr %2, %4 \n\t"
-        ::"n"(SPR_SPRG2), "r"(event_code),
-         "n"(SPR_SPRG1), "r"(test_event_opcode),
-         "r"(nop_opcode)
-    );
+
+static inline __attribute__((always_inline)) void rumboot_event_arg1_( enum rumboot_simulation_event const event, uint32_t const arg0 ) {
+    spr_write( SPR_SPRG2, arg0 );
+    spr_write( SPR_SPRG1, event );
+    spr_write( SPR_SPRG1, EVENT_NOP );
 }
 
+static inline __attribute__((always_inline)) void test_event( uint32_t const event_code ) {
+    RUMBOOT_ATOMIC_BLOCK() {
+        rumboot_event_arg1_( EVENT_TESTEVENT, event_code );
+    }
+}
 
 static inline __attribute__((always_inline)) void test_event_send_test_id( char const * const test_id ) {
-    register uint32_t const test_event_opcode   = EVENT_TESTEVENT;
-    register uint32_t const nop_opcode          = EVENT_NOP;
-    register uint32_t const event_code          = TEST_EVENT_NEW_TEST_STARTED;
-    asm volatile(
-        "mtspr %0, %1 \n\t"
-        "mtspr %2, %3 \n\t"
-        "mtspr %4, %5 \n\t"
-        "mtspr %4, %6 \n\t"
-        ::"n"(SPR_SPRG3), "r"(test_id),
-         "n"(SPR_SPRG2), "r"(event_code),
-         "n"(SPR_SPRG1), "r"(test_event_opcode),
-         "r"(nop_opcode)
-    );
+    RUMBOOT_ATOMIC_BLOCK() {
+        spr_write( SPR_SPRG3, test_id );
+        rumboot_event_arg1_( EVENT_TESTEVENT, TEST_EVENT_NEW_TEST_STARTED );
+    }
 }
 
 

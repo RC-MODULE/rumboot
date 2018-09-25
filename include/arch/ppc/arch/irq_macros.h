@@ -19,20 +19,20 @@
 #define RUMBOOT_IRQ_LOW     (int_pol_low << MPIC128_VP_POL_i)
 
 
-static inline uint32_t rumboot_arch_irq_enable() {
-    uint32_t state = msr_read();
+static inline __attribute__((always_inline)) uint32_t rumboot_arch_irq_enable() {
+    uint32_t const state = msr_read();
     msr_write( state | ( 1 << ITRPT_XSR_EE_i ) );
     return state;
 }
 
-static inline uint32_t rumboot_arch_irq_disable() {
-    uint32_t state = msr_read();
+static inline __attribute__((always_inline)) uint32_t rumboot_arch_irq_disable() {
+    uint32_t const state = msr_read();
     msr_write( state & ~( 1 << ITRPT_XSR_EE_i ) );
     return state;
 }
 
-static inline uint32_t rumboot_arch_irq_setstate( uint32_t new_state ) {
-    uint32_t state = msr_read();
+static inline __attribute__((always_inline)) uint32_t rumboot_arch_irq_setstate( uint32_t const new_state ) {
+    uint32_t const state = msr_read();
     msr_write( new_state );
     return state;
 }
