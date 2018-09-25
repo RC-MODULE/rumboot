@@ -72,6 +72,7 @@ rumboot_add_configuration (
 rumboot_add_configuration (
     IRAM_SPL
     CONFIGURATION IRAM
+    LDS oi10/iram-spl.lds
     PREFIX spl
     LDFLAGS -Wl,--start-group -lgcc -lc -lm -Wl,--end-group "-e main"
     CFLAGS -DRUMBOOT_PRINTF_ACCEL -DRUMBOOT_NOINIT
