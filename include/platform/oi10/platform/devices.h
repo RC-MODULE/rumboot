@@ -87,6 +87,7 @@
 #define DCR_EM2_PLB6MCIF2_BASE  0x80050000
 #define DCR_EM2_EMI_BASE        0x80060000
 #define DCR_EM2_MCLFIR_BASE     0x80070000
+#define DCR_SCTL_BASE           0x80090000
 #define DCR_MPIC128_BASE        0xFFC00000
 /**
  * @}
