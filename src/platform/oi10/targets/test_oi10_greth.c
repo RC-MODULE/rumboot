@@ -395,7 +395,7 @@ void check_transfer_via_external_loopback(uint32_t base_addr_src_eth,  uint8_t *
     mem_clr(test_data_dst, GRETH_TEST_DATA_LEN_BYTES/sizeof(uint8_t));
 }
 
-void check_edcl_via_external_loopback(uint32_t base_addr_src_eth, uint32_t * test_data_src, uint32_t * test_data_dst, uint32_t * test_data_resp)
+void check_edcl_via_external_loopback(uint32_t base_addr_src_eth, uint32_t * test_data_src, uint8_t * test_data_dst, uint32_t * test_data_resp)
 {
     edcl_test_data_struct_t edcl_cfg;
     uint32_t volatile* eth_handled_flag_ptr;
