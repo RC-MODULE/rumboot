@@ -12,12 +12,28 @@
 #include <platform/ppc470s/mmu.h>
 #include <platform/devices/mpic128.h>
 #include <platform/devices.h>
+#include <platform/regs/sctl.h>
 #include <rumboot/boot.h>
 #include <rumboot/bootsrc/spiflash.h>
 
 
+#define BOOTM_SELFTEST     (0 << 1)
+#define BOOTM_HOST         (1 << 1)
+#define BOOTM_FASTUART     (2 << 1)
+
 void rumboot_platform_read_config(struct rumboot_config *conf)
 {
+        uint32_t bootm = dcr_read(DCR_SCTL_BASE + SCTL_BOOTM);
+
+        /* TODO: 19200 & 9600 */
+        if (bootm & BOOTM_FASTUART) {
+                conf->baudrate = 6250000;
+        } else {
+                conf->baudrate = 115200;
+        }
+
+        conf->hostmode = (bootm & BOOTM_HOST);
+        conf->selftest = (bootm & BOOTM_SELFTEST);
 }
 
 void rumboot_platform_selftest(struct rumboot_config *conf)
