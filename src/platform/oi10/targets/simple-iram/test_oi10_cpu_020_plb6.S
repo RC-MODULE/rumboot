@@ -20,18 +20,27 @@
 .global main
 
 main:
+    load_addr r3, DCR_EM2_EMI_BASE
+    bl    emi_init
+
+    load_addr r3, em2_data_begin
+    load_const r4, EM2_BASE
+    load_size r5, EM2_DATA_SIZE
+loop:
+    lmw  r8, 0(r3)
+    stmw r8, 0(r4)
+    addi r3, r3, 96
+    addi r4, r4, 96
+    subi r5, r5, 96
+    cmpwi cr3, r5, 0
+    bgt cr3, loop
+
     mflr        r3              /* Save */
     mtspr       SPR_SPRG8,  r3  /*  LR  */
     b           setup_tlb
 
 tlb_entries:
 //          MMU_TLB_ENTRY(  ERPN,   RPN,        EPN,        DSIZ,                   IL1I,   IL1D,   W,      I,      M,      G,      E,                      UX, UW, UR,     SX, SW, SR      DULXE,  IULXE,      TS,     TID,                WAY,                BID,                V   )
-// TLB entries to remap 64KB pages IM0 from 0x00000010_80000000-0x00000010_FFF3FFFF to 0x80000000-0xFFF3FFFF
-    .long   MMU_TLB_ENTRY(  0x010,  0x80000,    0x80000,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,  MMU_TLBWE_BE_1,   0b1 )
-    .long   MMU_TLB_ENTRY(  0x010,  0x80010,    0x80010,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,  MMU_TLBWE_BE_1,   0b1 )
-    .long   MMU_TLB_ENTRY(  0x010,  0x80020,    0x80020,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,  MMU_TLBWE_BE_1,   0b1 )
-    .long   MMU_TLB_ENTRY(  0x010,  0x80030,    0x80030,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,  MMU_TLBWE_BE_1,   0b1 )
-// TLB entries to remap 1GB pages SRAM EM2 from 0x00000000_00000000-0x00000001_FFFFFFFF to 0x40000000-0x7FFFFFFF
     .long   MMU_TLB_ENTRY(  0x000,  0x00000,    0x00000,    MMU_TLBE_DSIZ_1GB,      0b1,    0b1,    0b0,    0b0,    0b1,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,  MMU_TLBWE_BE_UND,   0b1 )
     .set TLB_ENTRIES_N, (.-tlb_entries)/MMU_TLB_ENTRY_SIZE
 
@@ -90,21 +99,6 @@ END_ENUM( test_event_code )
 
 test_oi10_cpu_020_plb6_0:
     test_event_send_test_id "test_oi10_cpu_020_plb6"
-    load_addr r3, DCR_EM2_EMI_BASE
-    bl    emi_init
-
-    load_addr r3, em2_data_begin
-    load_const r4, EM2_BASE
-    load_size r5, EM2_DATA_SIZE
-loop:
-    lmw  r8, 0(r3)
-    stmw r8, 0(r4)
-    addi r3, r3, 96
-    addi r4, r4, 96
-    subi r5, r5, 96
-    cmpwi cr3, r5, 0
-    bgt cr3, loop
-
 
 check_plb6_rwnitc:
     rumboot_putstring   "check_plb6_rwnitc\n"
@@ -211,6 +205,8 @@ check_plb6_ikill:
     bl          EM2_ADDR(plb6_ikill_test_code)
     load_addr   r1, EM2_ADDR(plb6_ikill_test_code)
 
+    rumboot_putstring   "EVENT_CHECK_PLB6_IKILL\n"
+
     test_event  EVENT_CHECK_PLB6_IKILL
     icbi        0, r1
 
@@ -248,25 +244,19 @@ check_plb6_tlbie:
     tlbivax     0, r1
     msync
 
-
-finish:
-    test_event  EVENT_FINISHED
-    blr
-
 test_ok:
     rumboot_putstring "TEST OK\n"
-    test_event  EVENT_OK
-    load_const  R_RETV, RESULT_OK
-    b           finish
+    test_event      EVENT_OK
+    load_const r3,  RESULT_OK
+    b finish
 
 test_error:
     rumboot_putstring "TEST ERROR\n"
-    test_event  EVENT_ERROR
-    load_const  R_RETV, RESULT_ERROR
+    test_event      EVENT_ERROR
+    load_const r3,  RESULT_ERROR
 
-never_comes_here:
-    test_event  EVENT_ERROR
-    b           never_comes_here
+finish:
+    blr
 
 .section ".data","aw",@progbits
 .align 7
