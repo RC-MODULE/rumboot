@@ -119,14 +119,14 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     #  )
 
     rumboot_bootrom_unit_test(
-        ID 1
+        ID 0
         TAG spi0_cs0
         MEMTAG SPI0_CONF
         TAGOFFSET 0
     )
 
     rumboot_bootrom_unit_test(
-        ID 2
+        ID 1
         TAG spi0_cs1
         MEMTAG SPI0_CONF
         TAGOFFSET 1
