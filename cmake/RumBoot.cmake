@@ -1,4 +1,4 @@
-set(RUMBOOT_ONEVALUE_ARGS SNAPSHOT LDS PREFIX NAME BOOTROM CHECKPOINTS RESTORE TIMEOUT_CTEST VARIABLE)
+set(RUMBOOT_ONEVALUE_ARGS SNAPSHOT LDS PREFIX NAME BOOTROM CHECKPOINTS RESTORE TIMEOUT_CTEST VARIABLE CONFIGURATION)
 set(RUMBOOT_MULVALUE_ARGS FILES IRUN_FLAGS CFLAGS TESTGROUP LDFLAGS CHECKCMD FEATURES TIMEOUT LOAD DEPENDS PACKIMAGE_FLAGS)
 
 
@@ -15,6 +15,12 @@ macro(rumboot_add_configuration name)
     message(STATUS "Default configuration set to: ${RUMBOOT_PLATFORM_DEFAULT_CONFIGURATION}")
   endif()
 
+  if (CONFIGURATION_${name}_CONFIGURATION)
+    foreach(c ${oneValueArgs} ${multiValueArgs})
+      config_load_param(CONFIGURATION_${name} ${CONFIGURATION_${name}_CONFIGURATION} ${c})
+    endforeach()
+  endif()
+
   list (FIND CONFIGURATION_${name}_FEATURES "COVERAGE" _index)
   if (${_index} GREATER -1 AND RUMBOOT_COVERAGE)
     message(STATUS "Enabling coverage instrumentation for: ${name}")
@@ -27,14 +33,14 @@ macro(rumboot_add_configuration name)
 
 endmacro()
 
-macro(config_load_param conf param)
-  if (NOT TARGET_${param})
-    set(TARGET_${param} ${CONFIGURATION_${conf}_${param}})
+macro(config_load_param prefix conf param)
+  if (NOT ${prefix}_${param})
+    set(${prefix}_${param} ${CONFIGURATION_${conf}_${param}})
   endif()
 endmacro()
 
-macro(config_load_param_append conf param)
-    set(TARGET_${param} ${TARGET_${param}} ${CONFIGURATION_${conf}_${param}})
+macro(config_load_param_append prefix conf param)
+    set(${prefix}_${param} ${${prefix}_${param}} ${CONFIGURATION_${conf}_${param}})
 endmacro()
 
 macro(generate_product_name outvar name)
@@ -203,7 +209,7 @@ endfunction()
 function(add_rumboot_target)
   set(options )
 
-  set(oneValueArgs   ${RUMBOOT_ONEVALUE_ARGS} CONFIGURATION)
+  set(oneValueArgs   ${RUMBOOT_ONEVALUE_ARGS})
   set(multiValueArgs ${RUMBOOT_MULVALUE_ARGS})
 
   cmake_parse_arguments(TARGET "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
@@ -213,11 +219,11 @@ function(add_rumboot_target)
   endif()
 
   foreach(c ${oneValueArgs})
-    config_load_param(${TARGET_CONFIGURATION} ${c})
+    config_load_param(TARGET ${TARGET_CONFIGURATION} ${c})
   endforeach()
 
   foreach(c ${multiValueArgs})
-    config_load_param_append(${TARGET_CONFIGURATION} ${c})
+    config_load_param_append(TARGET ${TARGET_CONFIGURATION} ${c})
   endforeach()
 
   if (NOT TARGET_NAME)

@@ -27,11 +27,11 @@ function(add_rumboot_target)
   endif()
 
   foreach(c ${oneValueArgs})
-    config_load_param(${TARGET_CONFIGURATION} ${c})
+    config_load_param(TARGET ${TARGET_CONFIGURATION} ${c})
   endforeach()
 
   foreach(c ${multiValueArgs})
-    config_load_param_append(${TARGET_CONFIGURATION} ${c})
+    config_load_param_append(TARGET ${TARGET_CONFIGURATION} ${c})
   endforeach()
 
   if (NOT TARGET_NAME)
