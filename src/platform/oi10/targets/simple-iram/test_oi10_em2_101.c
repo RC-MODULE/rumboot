@@ -5,6 +5,7 @@
 #include <rumboot/platform.h>
 #include <rumboot/macros.h>
 #include <rumboot/io.h>
+#include <rumboot/regpoker.h>
 #include <platform/test_assert.h>
 #include <platform/devices.h>
 #include <platform/trace.h>
@@ -14,168 +15,186 @@
 #include <platform/regs/regs_mclfir.h>
 #include <platform/regs/regs_emi.h>
 
-static int32_t check_array32[] = {
-        0xFFFFFFFF,
-        0x00000000,
-        0xFFFF0000,
-        0x0000FFFF,
-        0xFF00FF00,
-        0x00FF00FF,
-        0xF0F0F0F0,
-        0x0F0F0F0F,
-        0xCCCCCCCC,
-        0x33333333,
-        0xAAAAAAAA,
-        0x55555555
-};
-
-uint32_t check_plb6mcif2(const uint32_t base_address)
+void check_plb6mcif2(const uint32_t base_address)
 {
-    TEST_ASSERT(dcr_read(PLB6MCIF2_BEARL + base_address) == 0x00000000,"In PLB6MCIF2_BEARL expected value 0x00000000");
-    TEST_ASSERT(dcr_read(PLB6MCIF2_BEARU + base_address) == 0x00000000,"In PLB6MCIF2_BEARU expected value 0x00000000");
-    TEST_ASSERT(dcr_read(PLB6MCIF2_BESR_read + base_address) == 0x00000000,"In PLB6MCIF2_BESR expected value 0x00000000");
-    TEST_ASSERT(dcr_read(PLB6MCIF2_INTR_EN + base_address) == 0xFFE001C0,"In PLB6MCIF2_INTR_EN expected value 0xFFE001C0");
-    TEST_ASSERT(dcr_read(PLB6MCIF2_MAP0CF + base_address) == 0x00000000,"In PLB6MCIF2_MAP0CF expected value 0x00000000");
-    TEST_ASSERT(dcr_read(PLB6MCIF2_MAP1CF + base_address) == 0x00000000,"In PLB6MCIF2_MAP1CF expected value 0x00000000");
-    TEST_ASSERT(dcr_read(PLB6MCIF2_MAP2CF + base_address) == 0x00000000,"In PLB6MCIF2_MAP2CF expected value 0x00000000");
-    TEST_ASSERT(dcr_read(PLB6MCIF2_MAP3CF + base_address) == 0x00000000,"In PLB6MCIF2_MAP3CF expected value 0x00000000");
-    TEST_ASSERT(dcr_read(PLB6MCIF2_MAXMEM + base_address) == 0xC0000000,"In PLB6MCIF2_MAXMEM expected value 0xC0000000");//default: [0:1]= 0b11
-    TEST_ASSERT(dcr_read(PLB6MCIF2_MR0CF + base_address) == 0x00000001,"In PLB6MCIF2_MR0CF expected value 0x00000001");
-    TEST_ASSERT(dcr_read(PLB6MCIF2_MR1CF + base_address) == 0x00000000,"In PLB6MCIF2_MR1CF expected value 0x00000000");
-    TEST_ASSERT(dcr_read(PLB6MCIF2_MR2CF + base_address) == 0x00000000,"In PLB6MCIF2_MR2CF expected value 0x00000000");
-    TEST_ASSERT(dcr_read(PLB6MCIF2_MR3CF + base_address) == 0xfff80001,"In PLB6MCIF2_MR3CF expected value 0xfff80001");
-    TEST_ASSERT(dcr_read(PLB6MCIF2_P6BMTAG1 + base_address) == 0x00000000,"In PLB6MCIF2_P6BMTAG1 expected value 0x00000000");
-    TEST_ASSERT(dcr_read(PLB6MCIF2_P6BMTAG2 + base_address) == 0x00000000,"In PLB6MCIF2_P6BMTAG2 expected value 0x00000000");
-    TEST_ASSERT(dcr_read(PLB6MCIF2_P6BMTAG3 + base_address) == 0x00000000,"In PLB6MCIF2_P6BMTAG3 expected value 0x00000000");
-    TEST_ASSERT(dcr_read(PLB6MCIF2_PLBASYNC + base_address) == 0x00000000,"In PLB6MCIF2_PLBASYNC expected value 0x00000000");
-    TEST_ASSERT(dcr_read(PLB6MCIF2_PLBCFG + base_address) == 0x200000F1,"In PLB6MCIF2_PLBCFG expected value 0x200000F1");
+    rumboot_printf("Check default values\n");
+    struct regpoker_checker plb6mcif2_regs_default[] = {
+        //      name                check type          offset         exp val                  mask
+        {"PLB6MCIF2_BEARL",     REGPOKER_READ_DCR, PLB6MCIF2_BEARL,     0x00,                0xffffffff},
+        {"PLB6MCIF2_BEARU",     REGPOKER_READ_DCR, PLB6MCIF2_BEARU,     0x00,                0xffffffff},
+        {"PLB6MCIF2_BESR_read", REGPOKER_READ_DCR, PLB6MCIF2_BESR_read, 0x00,                0xffffffff},
+        {"PLB6MCIF2_INTR_EN",   REGPOKER_READ_DCR, PLB6MCIF2_INTR_EN,   0xFFE001C0,          0xffffffff},
+        {"PLB6MCIF2_MAP0CF",    REGPOKER_READ_DCR, PLB6MCIF2_MAP0CF,    0x00,                0xffffffff},
+        {"PLB6MCIF2_MAP1CF",    REGPOKER_READ_DCR, PLB6MCIF2_MAP1CF,    0x00,                0xffffffff},
+        {"PLB6MCIF2_MAP2CF",    REGPOKER_READ_DCR, PLB6MCIF2_MAP2CF,    0x00,                0xffffffff},
+        {"PLB6MCIF2_MAP3CF",    REGPOKER_READ_DCR, PLB6MCIF2_MAP3CF,    0x00,                0xffffffff},
+        {"PLB6MCIF2_MAXMEM",    REGPOKER_READ_DCR, PLB6MCIF2_MAXMEM,    0xC0000000,          0xffffffff},  //default: [0:1]= 0b11
+        {"PLB6MCIF2_MR0CF",     REGPOKER_READ_DCR, PLB6MCIF2_MR0CF,     0x01,                0xffffffff},
+        {"PLB6MCIF2_MR1CF",     REGPOKER_READ_DCR, PLB6MCIF2_MR1CF,     0x00,                0xffffffff},
+        {"PLB6MCIF2_MR2CF",     REGPOKER_READ_DCR, PLB6MCIF2_MR2CF,     0x00,                0xffffffff},
+        {"PLB6MCIF2_MR3CF",     REGPOKER_READ_DCR, PLB6MCIF2_MR3CF,     0xfff80001,          0xffffffff},
+        {"PLB6MCIF2_P6BMTAG1",  REGPOKER_READ_DCR, PLB6MCIF2_P6BMTAG1,  0x00,                0xffffffff},
+        {"PLB6MCIF2_P6BMTAG2",  REGPOKER_READ_DCR, PLB6MCIF2_P6BMTAG2,  0x00,                0xffffffff},
+        {"PLB6MCIF2_P6BMTAG3",  REGPOKER_READ_DCR, PLB6MCIF2_P6BMTAG3,  0x00,                0xffffffff},
+        {"PLB6MCIF2_PLBASYNC",  REGPOKER_READ_DCR, PLB6MCIF2_PLBASYNC,  0x00,                0xffffffff},
+        {"PLB6MCIF2_PLBCFG",    REGPOKER_READ_DCR, PLB6MCIF2_PLBCFG,    0x200000F1,          0xffffffff},
+        {"PLB6MCIF2_PLBORD",    REGPOKER_READ_DCR, PLB6MCIF2_PLBORD,    0x01000000,          0xffffffff},
+        {"PLB6MCIF2_PUABA",     REGPOKER_READ_DCR, PLB6MCIF2_PUABA,     0x00,                0xffffffff},
+        {"PLB6MCIF2_RID",       REGPOKER_READ_DCR, PLB6MCIF2_RID,       PLB6MCIF2_WATERMARK, 0xffffffff},
+        {"PLB6MCIF2_SR0CF",     REGPOKER_READ_DCR, PLB6MCIF2_SR0CF,     0x00,                0xffffffff},
+        {"PLB6MCIF2_SR1CF",     REGPOKER_READ_DCR, PLB6MCIF2_SR1CF,     0x00,                0xffffffff},
+        {"PLB6MCIF2_SR2CF",     REGPOKER_READ_DCR, PLB6MCIF2_SR2CF,     0x00,                0xffffffff},
+        {"PLB6MCIF2_SR3CF",     REGPOKER_READ_DCR, PLB6MCIF2_SR3CF,     0x00,                0xffffffff},
+        {"PLB6MCIF2_STATUS",    REGPOKER_READ_DCR, PLB6MCIF2_STATUS,    0x80000000,          0xffffffff},
+        {/* Sentinel */ }
+    };
+    TEST_ASSERT (rumboot_regpoker_check_array(plb6mcif2_regs_default, base_address) == 0, "TEST ERROR" );
 
-    uint32_t result = 0;
-    result = dcr_read(PLB6MCIF2_PLBORD + base_address);
-    TEST_ASSERT(((result == 0x01000000) || (result == 0x40000000) || (result == 0x20000000)),"In PLB6MCIF2_PLBORD expected value 0x01000000 or 0x40000000 or 0x20000000");
-
-    TEST_ASSERT(dcr_read(PLB6MCIF2_PUABA + base_address) == 0x00000000,"In PLB6MCIF2_PUABA expected value 0x00000000");
-    TEST_ASSERT(dcr_read(PLB6MCIF2_RID + base_address) == PLB6MCIF2_WATERMARK,"In PLB6MCIF2_RevID expected value 0x00_0007_07");
-    TEST_ASSERT(dcr_read(PLB6MCIF2_SR0CF + base_address) == 0x00000000,"In PLB6MCIF2_SR0CF expected value 0x00000000");
-    TEST_ASSERT(dcr_read(PLB6MCIF2_SR1CF + base_address) == 0x00000000,"In PLB6MCIF2_SR1CF expected value 0x00000000");
-    TEST_ASSERT(dcr_read(PLB6MCIF2_SR2CF + base_address) == 0x00000000,"In PLB6MCIF2_SR2CF expected value 0x00000000");
-    TEST_ASSERT(dcr_read(PLB6MCIF2_SR3CF + base_address) == 0x00000000,"In PLB6MCIF2_SR3CF expected value 0x00000000");
-    TEST_ASSERT(dcr_read(PLB6MCIF2_STATUS + base_address) == 0x80000000,"In PLB6MCIF2_STATUS expected value 0x80000000");
-
-    uint32_t i;
-    for (i = 0; i< 12; i++){
-        dcr_write(PLB6MCIF2_MAP0CF + base_address, check_array32[i]);
-        TEST_ASSERT(dcr_read(PLB6MCIF2_MAP0CF + base_address) == check_array32[i],"PLB6MCIF2 DCR data bus check failed");
-    }
-
-    return true;
+    rumboot_printf("Check write/read\n");
+    struct regpoker_checker plb6mcif2_regs_write[] = {
+        //      name                check type          offset           val                  mask
+        {"PLB6MCIF2_INTR_EN",   REGPOKER_WRITE_DCR, PLB6MCIF2_INTR_EN,   0xFFE001C0,          0xffffffff},
+        {"PLB6MCIF2_MAP0CF",    REGPOKER_WRITE_DCR, PLB6MCIF2_MAP0CF,    0x00,                0xffffffff},
+        {"PLB6MCIF2_MAP1CF",    REGPOKER_WRITE_DCR, PLB6MCIF2_MAP1CF,    0x00,                0xffffffff},
+        {"PLB6MCIF2_MAP2CF",    REGPOKER_WRITE_DCR, PLB6MCIF2_MAP2CF,    0x00,                0xffffffff},
+        {"PLB6MCIF2_MAP3CF",    REGPOKER_WRITE_DCR, PLB6MCIF2_MAP3CF,    0x00,                0xffffffff},
+        {"PLB6MCIF2_MAXMEM",    REGPOKER_WRITE_DCR, PLB6MCIF2_MAXMEM,    0xC0000000,          PLB6MCIF2_MAXMEM_MSK},
+        {"PLB6MCIF2_MR0CF",     REGPOKER_WRITE_DCR, PLB6MCIF2_MR0CF,     0x01,                PLB6MCIF2_MRxCF_MSK},
+        {"PLB6MCIF2_MR1CF",     REGPOKER_WRITE_DCR, PLB6MCIF2_MR1CF,     0x00,                PLB6MCIF2_MRxCF_MSK},
+        {"PLB6MCIF2_MR2CF",     REGPOKER_WRITE_DCR, PLB6MCIF2_MR2CF,     0x00,                PLB6MCIF2_MRxCF_MSK},
+        {"PLB6MCIF2_MR3CF",     REGPOKER_WRITE_DCR, PLB6MCIF2_MR3CF,     0xfff80001,          PLB6MCIF2_MRxCF_MSK},
+        {"PLB6MCIF2_P6BMTAG1",  REGPOKER_WRITE_DCR, PLB6MCIF2_P6BMTAG1,  0x00,                PLB6MCIF2_P6BMTAG1_MSK},
+        {"PLB6MCIF2_P6BMTAG2",  REGPOKER_WRITE_DCR, PLB6MCIF2_P6BMTAG2,  0x00,                PLB6MCIF2_P6BMTAG2_MSK},
+        {"PLB6MCIF2_P6BMTAG3",  REGPOKER_WRITE_DCR, PLB6MCIF2_P6BMTAG3,  0x00,                PLB6MCIF2_P6BMTAG3_MSK},
+        {"PLB6MCIF2_PLBASYNC",  REGPOKER_WRITE_DCR, PLB6MCIF2_PLBASYNC,  0x00,                PLB6MCIF2_PLBASYNC_MSK},
+        {"PLB6MCIF2_PLBCFG",    REGPOKER_WRITE_DCR, PLB6MCIF2_PLBCFG,    0x200000F1,          PLB6MCIF2_PLBCFG_MSK},
+        {"PLB6MCIF2_PLBORD",    REGPOKER_WRITE_DCR, PLB6MCIF2_PLBORD,    0x01000000,          PLB6MCIF2_PLBORD_MSK},
+        {"PLB6MCIF2_PUABA",     REGPOKER_WRITE_DCR, PLB6MCIF2_PUABA,     0x00,                0xfffffffe},
+        {/* Sentinel */ }
+    };
+    TEST_ASSERT (rumboot_regpoker_check_array(plb6mcif2_regs_write, base_address) == 0, "TEST ERROR" );
 }
 
-uint32_t check_mclfir(const uint32_t base_address)
+void check_mclfir(const uint32_t base_address)
 {
-    TEST_ASSERT(dcr_read(MCLFIR_MC_ERR0 + base_address) == 0x00000000,"In MC_ERR0 expected value 0x00000000");
-    TEST_ASSERT(dcr_read(MCLFIR_MC_ERR1 + base_address) == 0x00000000,"In MC_ERR1 expected value 0x00000000");
-    TEST_ASSERT(dcr_read(MCLFIR_MC_ERR_MSK0 + base_address) == 0xFFFFFFFF,"In MC_ERR_MSK0 expected value 0xFFFFFFFF");
-    TEST_ASSERT(dcr_read(MCLFIR_MC_ERR_MSK1 + base_address) == 0xFFFFFFC0,"In MC_ERR_MSK1 expected value 0xFFFFFFC0");
-    TEST_ASSERT(dcr_read(MCLFIR_MC_ERR_ACTION0 + base_address) == 0x00000000,"In MC_ERR_ACTION0 expected value 0x00000000");
-    TEST_ASSERT(dcr_read(MCLFIR_MC_ERR_ACTION1 + base_address) == 0x00000000,"In MC_ERR_ACTION1 expected value 0x00000000");
-    TEST_ASSERT(dcr_read(MCLFIR_MC_ERR_WOF0 + base_address) == 0x00000000,"In MC_ERR_WOF0 expected value 0x00000000");
-    TEST_ASSERT(dcr_read(MCLFIR_MC_ERR_WOF1 + base_address) == 0x00000000,"In MC_ERR_WOF1 expected value 0x00000000");
-    TEST_ASSERT(dcr_read(MCLFIR_MC_LFIR + base_address) == 0x00000000,"In MC_LFIR expected value 0x00000000");
-    TEST_ASSERT(dcr_read(MCLFIR_MC_LFIR_MSK + base_address) == 0xC0000000,"In MC_LFIR_MSK expected value 0xC0000000");
-    TEST_ASSERT(dcr_read(MCLFIR_MC_CONSOL_STAT + base_address) == 0x00100000,"In MC_CONSOL_STAT expected value 0x00100000");
-    TEST_ASSERT(dcr_read(MCLFIR_MC_CONSOL_STAT_TRIG + base_address) == 0x00000000,"In MC_CONSOL_STAT_TRIG expected value 0x00000000");
-    TEST_ASSERT(dcr_read(MCLFIR_MC_CONSOL_STAT_MSK + base_address) == 0xFFF08000,"In MC_CONSOL_STAT_MSK expected value 0xFFF08000");
-    TEST_ASSERT(dcr_read(MCLFIR_MC_CONSOL_STATSUM + base_address) == 0x00000000,"In MC_CONSOL_STATSUM expected value 0x00000000");
-    TEST_ASSERT(dcr_read(MCLFIR_MC_CONSOL_STATSUM_MSK + base_address) == 0x80000000,"In MC_CONSOL_STATSUM_MSK expected value 0x80000000");
+    rumboot_printf("Check default values\n");
+    struct regpoker_checker mclfir_regs_default[] = {
+        //      name                       check type          offset                    exp val                  mask
+        {"MCLFIR_MC_ERR0",               REGPOKER_READ_DCR, MCLFIR_MC_ERR0,               0x00,          0xffffffff},
+        {"MCLFIR_MC_ERR1",               REGPOKER_READ_DCR, MCLFIR_MC_ERR1,               0x00,          0xffffffff},
+        {"MCLFIR_MC_ERR_MSK0",           REGPOKER_READ_DCR, MCLFIR_MC_ERR_MSK0,           0xFFFFFFFF,    0xffffffff},
+        {"MCLFIR_MC_ERR_MSK1",           REGPOKER_READ_DCR, MCLFIR_MC_ERR_MSK1,           0xFFFFFFC0,    0xffffffff},
+        {"MCLFIR_MC_ERR_ACTION0",        REGPOKER_READ_DCR, MCLFIR_MC_ERR_ACTION0,        0x00,          0xffffffff},
+        {"MCLFIR_MC_ERR_ACTION1",        REGPOKER_READ_DCR, MCLFIR_MC_ERR_ACTION1,        0x00,          0xffffffff},
+        {"MCLFIR_MC_ERR_WOF0",           REGPOKER_READ_DCR, MCLFIR_MC_ERR_WOF0,           0x00,          0xffffffff},
+        {"MCLFIR_MC_ERR_WOF1",           REGPOKER_READ_DCR, MCLFIR_MC_ERR_WOF1,           0x00,          0xffffffff},
+        {"MCLFIR_MC_LFIR",               REGPOKER_READ_DCR, MCLFIR_MC_LFIR,               0x00,          0xffffffff},
+        {"MCLFIR_MC_LFIR_MSK",           REGPOKER_READ_DCR, MCLFIR_MC_LFIR_MSK,           0xC0000000,    0xffffffff},
+        {"MCLFIR_MC_CONSOL_STAT",        REGPOKER_READ_DCR, MCLFIR_MC_CONSOL_STAT,        0x00100000,    0xffffffff},
+        {"MCLFIR_MC_CONSOL_STAT_TRIG",   REGPOKER_READ_DCR, MCLFIR_MC_CONSOL_STAT_TRIG,   0x00,          0xffffffff},
+        {"MCLFIR_MC_CONSOL_STAT_MSK",    REGPOKER_READ_DCR, MCLFIR_MC_CONSOL_STAT_MSK,    0xFFF08000,    0xffffffff},
+        {"MCLFIR_MC_CONSOL_STATSUM",     REGPOKER_READ_DCR, MCLFIR_MC_CONSOL_STATSUM,     0x00,          0xffffffff},
+        {"MCLFIR_MC_CONSOL_STATSUM_MSK", REGPOKER_READ_DCR, MCLFIR_MC_CONSOL_STATSUM_MSK, 0x80000000,    0xffffffff},
+        {/* Sentinel */ }
+    };
+    msync();
+    TEST_ASSERT (rumboot_regpoker_check_array(mclfir_regs_default, base_address) == 0, "TEST ERROR" );
 
-    uint32_t i;
-    for (i = 0; i< 12; i++){
-        dcr_write (MCLFIR_MC_ERR_ACTION0 + base_address, check_array32[i]);
-        TEST_ASSERT(dcr_read(MCLFIR_MC_ERR_ACTION0 + base_address) == check_array32[i],"mclfir DCR data bus check failed");
-    }
-
-    return true;
+    rumboot_printf("Check write/read\n");
+    struct regpoker_checker mclfir_regs_write[] = {
+        //      name                check type            offset                val         mask
+        {"MCLFIR_MC_ERR_ACTION0",  REGPOKER_WRITE_DCR, MCLFIR_MC_ERR_ACTION0,   0x00,    0xffffffff},
+        {"MCLFIR_MC_ERR_ACTION1",  REGPOKER_WRITE_DCR, MCLFIR_MC_ERR_ACTION1,   0x00,    0xffffffc0},
+        {"MCLFIR_MC_ERR_WOF0",     REGPOKER_WRITE_DCR, MCLFIR_MC_ERR_WOF0,      0x00,    0xffffffff},
+        {"MCLFIR_MC_ERR_WOF1",     REGPOKER_WRITE_DCR, MCLFIR_MC_ERR_WOF1,      0x00,    0xffffffc0},
+        { }
+    };
+    TEST_ASSERT (rumboot_regpoker_check_array(mclfir_regs_write, base_address) == 0, "TEST ERROR" );
 }
 
-uint32_t check_emi(const uint32_t base_address)
+void check_emi(const uint32_t base_address)
 {
-	TEST_ASSERT(dcr_read( EMI_SS0 + base_address) == 0x00000000, "In EMI_SS0 expected value 0x00000000");
-	TEST_ASSERT(dcr_read( EMI_SD0 + base_address) == 0x00000000, "In EMI_SD0 expected value 0x00000000");
-	TEST_ASSERT(dcr_read( EMI_SS1 + base_address) == 0x00000000, "In EMI_SS1_0 expected value 0x00000000");
-	TEST_ASSERT(dcr_read( EMI_SD1 + base_address) == 0x00000000, "In EMI_SD1 expected value 0x00000000");
-	TEST_ASSERT(dcr_read( EMI_SS2 + base_address) == 0x00000000, "In EMI_SS2 expected value 0x00000000");
-	TEST_ASSERT(dcr_read( EMI_SD2 + base_address) == 0x00000000, "In EMI_SD2 expected value 0x00000000");
-	TEST_ASSERT(dcr_read( EMI_SS3 + base_address) == 0x00000000, "In EMI_SS3 expected value 0x00000000");
-	TEST_ASSERT(dcr_read( EMI_SD3 + base_address) == 0x00000000, "In EMI_SD3 expected value 0x00000000");
-	TEST_ASSERT(dcr_read( EMI_SS4 + base_address) == 0x00000000, "In EMI_SS4 expected value 0x00000000");
-	TEST_ASSERT(dcr_read( EMI_SD4 + base_address) == 0x00000000, "In EMI_SD4 expected value 0x00000000");
-	TEST_ASSERT(dcr_read( EMI_SS5 + base_address) == 0x00000000, "In EMI_SS5 expected value 0x00000000");
-	TEST_ASSERT(dcr_read( EMI_SD5 + base_address) == 0x00000000, "In EMI_SD5 expected value 0x00000000");
-	TEST_ASSERT(dcr_read( EMI_RFC + base_address) == 0x00000000, "In EMI_RFC expected value 0x00000000");
-	TEST_ASSERT(dcr_read( EMI_HSTSR + base_address) == 0x00000000, "In EMI_HSTR expected value 0x00000000");
-	TEST_ASSERT(dcr_read( EMI_ECNT20 + base_address) == 0x00000000, "In EMI_ECNT20 expected value 0x00000000");
-	TEST_ASSERT(dcr_read( EMI_ECNT53 + base_address) == 0x00000000, "In EMI_ECNT53 expected value 0x00000000");
-	TEST_ASSERT(dcr_read( EMI_BUSEN + base_address) == 0x00000000, "In EMI_BUSEN expected value 0x00000000");
-	TEST_ASSERT(dcr_read( EMI_WECR + base_address) == 0x00000000, "In EMI_WECR expected value 0x00000000");
-	TEST_ASSERT(dcr_read( EMI_FLCNTRL + base_address) == 0x00000000, "In EMI_FLCNTRL expected value 0x00000000");
-	TEST_ASSERT(dcr_read( EMI_IMR + base_address) == 0x00000000, "In EMI_IMR expected value 0x00000000");
-	TEST_ASSERT(dcr_read( EMI_IMR_SET + base_address) == 0x00000000, "In EMI_IMR_SET expected value 0x00000000");
-	TEST_ASSERT(dcr_read( EMI_IMR_RST + base_address) == 0x00000000, "In EMI_IMR_RST expected value 0x00000000");
-	TEST_ASSERT(dcr_read( EMI_IRR + base_address) == 0x00000000, "In EMI_IRR expected value 0x00000000");
-	TEST_ASSERT(dcr_read( EMI_IRR_RST + base_address) == 0x00000000, "In EMI_IRR_RST expected value 0x00000000");
+    rumboot_printf("Check default values\n");
+    struct regpoker_checker emi_regs_default[] = {
+        // name             check type     offset        exp val            mask
+        {"EMI_SS0",     REGPOKER_READ_DCR, EMI_SS0,       0x00,          0xffffffff},
+        {"EMI_SD0",     REGPOKER_READ_DCR, EMI_SD0,       0x00,          0xffffffff},
+        {"EMI_SS1",     REGPOKER_READ_DCR, EMI_SS1,       0x00,          0xffffffff},
+        {"EMI_SD1",     REGPOKER_READ_DCR, EMI_SD1,       0x00,          0xffffffff},
+        {"EMI_SS2",     REGPOKER_READ_DCR, EMI_SS2,       0x00,          0xffffffff},
+        {"EMI_SD2",     REGPOKER_READ_DCR, EMI_SD2,       0x00,          0xffffffff},
+        {"EMI_SS3",     REGPOKER_READ_DCR, EMI_SS3,       0x00,          0xffffffff},
+        {"EMI_SD3",     REGPOKER_READ_DCR, EMI_SD3,       0x00,          0xffffffff},
+        {"EMI_SS4",     REGPOKER_READ_DCR, EMI_SS4,       0x00,          0xffffffff},
+        {"EMI_SD4",     REGPOKER_READ_DCR, EMI_SD4,       0x00,          0xffffffff},
+        {"EMI_SS5",     REGPOKER_READ_DCR, EMI_SS5,       0x00,          0xffffffff},
+        {"EMI_SD5",     REGPOKER_READ_DCR, EMI_SD5,       0x00,          0xffffffff},
+        {"EMI_RFC",     REGPOKER_READ_DCR, EMI_RFC,       0x00,          0xffffffff},
+        {"EMI_HSTSR",   REGPOKER_READ_DCR, EMI_HSTSR,     0x00,          0xffffffff},
+        {"EMI_ECNT20",  REGPOKER_READ_DCR, EMI_ECNT20,    0x00,          0xffffffff},
+        {"EMI_ECNT53",  REGPOKER_READ_DCR, EMI_ECNT53,    0x00,          0xffffffff},
+        {"EMI_BUSEN",   REGPOKER_READ_DCR, EMI_BUSEN,     0x00,          0xffffffff},
+        {"EMI_WECR",    REGPOKER_READ_DCR, EMI_WECR,      0x00,          0xffffffff},
+        {"EMI_FLCNTRL", REGPOKER_READ_DCR, EMI_FLCNTRL,   0x1C,          0xffffffff},
+        {"EMI_IMR",     REGPOKER_READ_DCR, EMI_IMR,       0x00,          0xffffffff},
+        {"EMI_IMR_SET", REGPOKER_READ_DCR, EMI_IMR_SET,   0x00,          0xffffffff},
+        {"EMI_IMR_RST", REGPOKER_READ_DCR, EMI_IMR_RST,   0x00,          0xffffffff},
+        {"EMI_IRR",     REGPOKER_READ_DCR, EMI_IRR,       0x00,          0xffffffff},
+        {"EMI_IRR_RST", REGPOKER_READ_DCR, EMI_IRR_RST,   0x00,          0xffffffff},
+        {/* Sentinel */ }
+    };
+    msync();
+    TEST_ASSERT (rumboot_regpoker_check_array(emi_regs_default, base_address) == 0, "TEST ERROR" );
 
-	static int32_t check_array25[] = {
-	        0x01000000,
-	        0x01FFFFFF,
-	        0x01FF0000,
-	        0x0000FFFF,
-	        0x0100FF00,
-	        0x00FF00FF,
-	        0x00F0F0F0,
-	        0x010F0F0F,
-	        0x01CCCCCC,
-	        0x00333333,
-	        0x00AAAAAA,
-	        0x01555555
-	};
-
-	uint32_t i;
-	for (i = 0; i< 12; i++){
-	        dcr_write (EMI_SS0 + base_address, check_array25[i]);
-	        TEST_ASSERT(dcr_read(EMI_SS0  + base_address) == check_array25[i],"EMI DCR data bus check failed");
-	    }
-
-	static int32_t check_array32_emi[] = {
-	        0xFFFFFFF0,
-	        0x00000000,
-	        0xFFFF0000,
-	        0x0000FFF0,
-	        0xFF00FF00,
-	        0x00FF00F0,
-	        0xF0F0F0F0,
-	        0x0F0F0F00,
-	        0xCCCCCCC0,
-	        0x33333330,
-	        0xAAAAAAA0,
-	        0x55555550
-	};
-
-	for (i = 0; i< 12; i++){
-	        dcr_write (EMI_H1ADR + base_address, check_array32_emi[i]);
-	        TEST_ASSERT(dcr_read(EMI_H1ADR + base_address) == check_array32_emi[i],"EMI DCR data bus check failed");
-	    }
-
-	return true;
+    rumboot_printf("Check write/read\n");
+    struct regpoker_checker emi_regs_write[] = {
+        // name             check type       offset         val             mask
+        {"EMI_SS0",     REGPOKER_WRITE_DCR, EMI_SS0,       0x00,         0x001fffff},
+        {"EMI_SD0",     REGPOKER_WRITE_DCR, EMI_SD0,       0x00,         0x0000fffe},
+        {"EMI_SS1",     REGPOKER_WRITE_DCR, EMI_SS1,       0x00,         0x001fffff},
+        {"EMI_SD1",     REGPOKER_WRITE_DCR, EMI_SD1,       0x00,         0x0000fffe},
+        {"EMI_SS2",     REGPOKER_WRITE_DCR, EMI_SS2,       0x00,         0x001fffff},
+        {"EMI_SD2",     REGPOKER_WRITE_DCR, EMI_SD2,       0x00,         0x0000fffe},
+        {"EMI_SS3",     REGPOKER_WRITE_DCR, EMI_SS3,       0x00,         0x001fffff},
+        {"EMI_SD3",     REGPOKER_WRITE_DCR, EMI_SD3,       0x00,         0x0000fffe},
+        {"EMI_SS4",     REGPOKER_WRITE_DCR, EMI_SS4,       0x00,         0x001fffff},
+        {"EMI_SD4",     REGPOKER_WRITE_DCR, EMI_SD4,       0x00,         0x0000fffe},
+        {"EMI_SS5",     REGPOKER_WRITE_DCR, EMI_SS5,       0x00,         0x001fffff},
+        {"EMI_SD5",     REGPOKER_WRITE_DCR, EMI_SD5,       0x00,         0x0000fffe},
+        {"EMI_RFC",     REGPOKER_WRITE_DCR, EMI_RFC,       0x00,         0x0003fffe},
+        {"EMI_HSTSR",   REGPOKER_WRITE_DCR, EMI_HSTSR,     0x00,         0x0000003f},
+        {"EMI_ECNT20",  REGPOKER_WRITE_DCR, EMI_ECNT20,    0x00,         0x00ffffff},
+        {"EMI_ECNT53",  REGPOKER_WRITE_DCR, EMI_ECNT53,    0x00,         0x00ffffff},
+        {"EMI_BUSEN",   REGPOKER_WRITE_DCR, EMI_BUSEN,     0x00,         0x00000001},
+        {"EMI_WECR",    REGPOKER_WRITE_DCR, EMI_WECR,      0x00,         0x000000ff},
+        {"EMI_FLCNTRL", REGPOKER_WRITE_DCR, EMI_FLCNTRL,   0x1C,         0x0000001f},
+        {"EMI_IMR",     REGPOKER_WRITE_DCR, EMI_IMR,       0x00,         0x0001ffff},
+        {"EMI_IRR",     REGPOKER_WRITE_DCR, EMI_IRR,       0x00,         0x0001ffff},
+        {"EMI_ECCWRR",  REGPOKER_WRITE_DCR, EMI_ECCWRR,    0x00,         0x000000ff},
+        {"EMI_ECCRDR",  REGPOKER_WRITE_DCR, EMI_ECCRDR,    0x00,         0x000000ff},
+        {"EMI_H1CMR",   REGPOKER_WRITE_DCR, EMI_H1CMR,     0x00,         0x0000007f},
+        {"EMI_H2CMR",   REGPOKER_WRITE_DCR, EMI_H2CMR,     0x00,         0x0000007f},
+        {"EMI_RREQCMR", REGPOKER_WRITE_DCR, EMI_RREQCMR,   0x00,         0x0000007f},
+        {"EMI_WREQCMR", REGPOKER_WRITE_DCR, EMI_WREQCMR,   0x00,         0x0000007f},
+        {"EMI_WDCMR",   REGPOKER_WRITE_DCR, EMI_WDCMR,     0x00,         0x0000007f},
+        {"EMI_H1ADR",   REGPOKER_WRITE_DCR, EMI_H1ADR,     0x00,         0xfffffff0},
+        {"EMI_H2ADR",   REGPOKER_WRITE_DCR, EMI_H2ADR,     0x00,         0xfffffff0},
+        {"EMI_RREQADR", REGPOKER_WRITE_DCR, EMI_RREQADR,   0x00,         0xfffffff0},
+        {"EMI_WREQADR", REGPOKER_WRITE_DCR, EMI_WREQADR,   0x00,         0xfffffff0},
+        {"EMI_WDADR",   REGPOKER_WRITE_DCR, EMI_WDADR,     0x00,         0xfffffff0},
+        {/* Sentinel */ }
+    };
+    msync();
+    TEST_ASSERT (rumboot_regpoker_check_array(emi_regs_write, base_address) == 0, "TEST ERROR" );
 }
 
 int main()
 {
-    rumboot_printf("CHECK PLB6MCIF2\n");
-	check_plb6mcif2 (DCR_EM2_PLB6MCIF2_BASE);
-	rumboot_printf("CHECK MCLFIR\n");
-	check_mclfir (DCR_EM2_MCLFIR_BASE);
-	rumboot_printf("CHECK EMI\n");
+    rumboot_printf("\nCHECK PLB6MCIF2\n\n");
+    check_plb6mcif2 (DCR_EM2_PLB6MCIF2_BASE);
+    rumboot_printf("\nCHECK MCLFIR\n\n");
+    check_mclfir (DCR_EM2_MCLFIR_BASE);
+	rumboot_printf("\nCHECK EMI\n\n");
 	check_emi (DCR_EM2_EMI_BASE);
 
 	rumboot_printf("TEST OK\n");
