@@ -86,6 +86,7 @@
 
 #include <platform/devices.h>
 #include <rumboot/platform.h>
+#include <rumboot/timer.h>
 #include <platform/test_assert.h>
 #include <platform/devices/emi.h>
 #include <platform/devices/greth.h>
@@ -98,11 +99,11 @@
 #define TEST_EVENT_CHECK_MDIO           0x00001004
 #define TEST_EVENT_CHECK_OTHERS         0x00001005
 #define TEST_EVENT_CHECK_SPI            0x00001006
+#define TEST_EVENT_FORCE_HOLDIn         0x00001007
 
+const uint32_t test_data = 0xDEADBA11;
 void check_emi_ports()
 {
-    const uint32_t test_data = 0xDEADBA11;
-    emi_init(DCR_EM2_EMI_BASE);
 
     test_event(TEST_EVENT_CHECK_EMI_ACTIVE);
     iowrite32(test_data, SRAM0_BASE);
@@ -116,6 +117,22 @@ void check_emi_ports()
     iowrite32(test_data, SRAM0_BASE);
     TEST_ASSERT(test_data==ioread32(SRAM0_BASE), "Data error");
 }
+
+void hw_check_emi_ports()
+{
+    test_event(TEST_EVENT_CHECK_EMI_ACTIVE);
+    iowrite32(test_data, SRAM0_BASE);
+    TEST_ASSERT(test_data==ioread32(SRAM0_BASE), "Data error");
+
+    test_event(TEST_EVENT_FORCE_HOLDIn);
+    udelay(10);
+
+    //test_event(TEST_EVENT_CHECK_EMI_ACTIVE);
+    iowrite32(test_data, SRAM0_BASE);
+    TEST_ASSERT(test_data==ioread32(SRAM0_BASE), "Data error");
+
+}
+
 
 void check_gpio()
 {
@@ -161,11 +178,13 @@ int main()
     rumboot_printf("Start test_oi10_em2_208\n");
     test_event_send_test_id("test_oi10_em2_208");
 
+    emi_init(DCR_EM2_EMI_BASE);
     check_emi_ports();
-    check_gpio();
-    check_mdio();
-    check_spi();
-    check_others();
+    hw_check_emi_ports();
+//    check_gpio();
+//    check_mdio();
+//    check_spi();
+//    check_others();
 
     return 0;
 }
