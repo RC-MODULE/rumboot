@@ -125,7 +125,7 @@ void hw_check_emi_ports()
     TEST_ASSERT(test_data==ioread32(SRAM0_BASE), "Data error");
 
     test_event(TEST_EVENT_FORCE_HOLDIn);
-    udelay(10);
+    udelay(5);
 
     //test_event(TEST_EVENT_CHECK_EMI_ACTIVE);
     iowrite32(test_data, SRAM0_BASE);
