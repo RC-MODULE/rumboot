@@ -56,11 +56,34 @@ uint32_t rumboot_platform_get_uptime()
 }
 
 
+static int shmid;
+static int the_ipc_id;
+static void detach() {
+        rumboot_printf("Detaching from shared memory\n");
+        shmdt(rumboot_platform_runtime_info);
+        /* This is very hacky. It looks like the shared memory is released
+         * not at the moment when the last process exits, but when
+         * shmctl(shmid, IPC_RMID, NULL) is called.
+         *
+         * If we schedule removal at creation time, tests will fail since
+         * each spl will work with a freshly allocated shared memory segment
+         * (lolwut?)
+         *
+         */
+        if (the_ipc_id == getpid()) {
+                rumboot_printf("RELEASE!\n");
+                if (-1 == shmctl(shmid, IPC_RMID, NULL)) {
+                        perror("shmctl: ");
+                        exit(1);
+                }
+       }
+}
+
 static void *create_shared_memory(const char *skey, int id, size_t size)
 {
         /* make the key: */
         key_t key;
-        int shmid;
+
 
         if ((key = ftok(skey, id)) == -1) { /*Here the file must exist */
                 perror("ftok");
@@ -79,6 +102,10 @@ static void *create_shared_memory(const char *skey, int id, size_t size)
                 perror("shmat");
                 exit(1);
         }
+
+        the_ipc_id = id;
+        atexit(detach);
+
         return data;
 }
 
@@ -380,6 +407,9 @@ int rumboot_platform_exec(struct rumboot_bootheader *hdr)
         fwrite(hdr->data, hdr->datalen, 1, tmp);
         fclose(tmp);
         system("chmod +x binary");
+        rumboot_printf("rom: spl exec count: %d\n",
+                       rumboot_platform_runtime_info->persistent[0]
+                       );
         ret = run_binary("binary");
         rumboot_printf("%d\n", ret);
         return ret;
