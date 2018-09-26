@@ -24,21 +24,29 @@
 #include <platform/devices.h>
 #include <rumboot/macros.h> //dcr_write/dcr_read
 #include <platform/arch/ppc/test_macro.h>
-//#include <devices/sp804.h>
+#include <devices/sp805.h>
 #include <platform/interrupts.h>
 
 #include <platform/regs/regs_mpic128.h>
 #include <platform/devices/mpic128.h>
 
-#include <platform/devices.h>
-
 #include <regs/regs_sp805.h>
-
-#define RESEN 1
 
 //static struct sp804_conf conf1, conf2;
 
 //#define TIMER_INT_TIMEOUT       60
+
+struct s805_instance
+{
+    uint32_t base_addr;
+    int dit_index;
+};
+
+struct s805_instance_i {
+    int wd_irq;
+    uint32_t base_addr;
+    int dit_index;
+} s805_i;
 
 static uint32_t check_watchdog_default_ro_val(uint32_t base_addr)
 {
@@ -103,25 +111,16 @@ static uint32_t check_watchdog_default_rw_val( uint32_t base_addr )
     return 1;
 }
 
-static void handler0( int irq, void *arg )
-{
-    struct s805_instance_i *a = (struct s805_instance_i *) arg;
-    a->timer0_irq = a->timer0_irq + 1;
-    rumboot_printf( "IRQ 0 arrived  \n" );
-    rumboot_printf( "sp805_%d timer 0 INT # %d  \n", a->dit_index, a->timer0_irq );
-    sp805_clrint( a->base_addr, 0 );
-}
-
 void sp805_enable( uint32_t base_addr, int index )
 {
     int cntrl;
     int control_reg;
     if( index )     /*if index == 1 */
     {
-        control_reg = RESEN;
+        control_reg = WD_CTRL_RESEN;
     }
     cntrl = dcr_read( base_addr + control_reg );
-    cntrl |= RESEN;
+    cntrl |= WD_CTRL_RESEN;
     dcr_write( base_addr + control_reg, cntrl );
 }
 
@@ -134,7 +133,7 @@ void sp805_stop( uint32_t base_addr, int index )
         control_reg = WD_REG_CONTROL;
     }
     cntrl = dcr_read( base_addr + control_reg );
-    cntrl = cntrl & ( ~( RESEN ) );
+    cntrl = cntrl & ( ~( WD_CTRL_RESEN ) );
     dcr_write( base_addr + control_reg, cntrl );
 }
 
@@ -158,6 +157,15 @@ void sp805_clrint( uint32_t base_addr, int index )
     dcr_write( base_addr + int_clr_reg, 1 );
 }
 
+static void handler0( int irq, void *arg )
+{
+    struct s805_instance_i *a = (struct s805_instance_i *) arg;
+    a->wd_irq = a->wd_irq + 1;
+    rumboot_printf( "IRQ 0 arrived  \n" );
+    rumboot_printf( "sp805_%d timer 0 INT # %d  \n", a->dit_index, a->wd_irq );
+    sp805_clrint( a->base_addr, 0 );
+}
+/*
 void sp805_config( uint32_t base_addr, const struct sp805_conf * config, int index )
 {
     int cntrl = 0;
@@ -226,6 +234,7 @@ void sp805_config( uint32_t base_addr, const struct sp805_conf * config, int ind
         }
     }
 }
+*/
 
 /*
 bool test_wd(struct s804_instance_i ins)
@@ -253,7 +262,7 @@ uint32_t main(void)
     // Set up interrupt handlers
     uint32_t result;
     rumboot_printf( "SP805 test START\n" );
-
+    struct rumboot_irq_entry *tbl = rumboot_irq_create( NULL );
     rumboot_printf( "SP805 int are clean up\n" );
         // ||
     result = check_watchdog_default_ro_val(DCR_WATCHDOG_BASE) ||
@@ -267,8 +276,9 @@ uint32_t main(void)
     rumboot_printf("Checked TEST_OK\n");
 
     rumboot_printf( "SP805 test START\n" );
-//    struct rumboot_irq_entry *tbl = rumboot_irq_create( NULL );
+//  struct rumboot_irq_entry *tbl = rumboot_irq_create( NULL );
     rumboot_irq_cli();
+    rumboot_irq_set_handler( tbl, WDT_INT, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler0, &s805_i );
 
 
     rumboot_printf("Checked TEST_OK\n");

@@ -61,7 +61,7 @@
 #define DIT_CTRL_SIZE32     (1<<1)
 */
 
-#define WD_CTRL_RESEN           (1 << 2)
+#define WD_CTRL_RESEN           (1<<1)
 #define WD_CTRL_INTEN           0
 /*
 enum sp804_mode{
