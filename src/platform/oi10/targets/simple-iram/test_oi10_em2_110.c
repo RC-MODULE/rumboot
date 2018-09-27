@@ -80,6 +80,7 @@ void emi_irq_clear ()
 
 void wait_irq ()
 {
+    rumboot_printf("wait_irq\n");
     uint32_t i = 0, timeout = 100;
     while (IRQ_EXPECT && (i < timeout)) i++;
     if (i >= timeout)
