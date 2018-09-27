@@ -84,9 +84,13 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
   #TODO: Add selftest stub code and tests
   #TODO: Test chain-booting appended images from one source
 
-  add_rumboot_test(host-bootsrc-check-io bootsrc-check-io-no-align)
-  add_rumboot_test(host-bootsrc-check-io bootsrc-check-io-align-16  --align 16)
-  add_rumboot_test(host-bootsrc-check-io bootsrc-check-io-align-512 --align 512)
+  add_custom_target(pattern.bin ALL 
+    COMMAND ${PROJECT_SOURCE_DIR}/scripts/wordpattern.py -f ${PROJECT_BINARY_DIR}/pattern.bin -s 8192
+  )
+  add_rumboot_test(host-bootsrc-check-io bootsrc-check-io-no-align --file pattern.bin)
+  add_rumboot_test(host-bootsrc-check-io bootsrc-check-io-align-16  --align 16 --file pattern.bin)
+  add_rumboot_test(host-bootsrc-check-io bootsrc-check-io-align-512 --align 512 --file pattern.bin)
+
   add_rumboot_test(bootrom-loader bootrom-chain --file ${SPL_CHAIN_OK})
   add_rumboot_test(host-fileboot unit-boot --file ${SPL_OK})
   add_rumboot_test(bootrom-loader bootrom-jump --file ${SPL_JUMP} --file2 ${SPL_OK_CHECK2})
