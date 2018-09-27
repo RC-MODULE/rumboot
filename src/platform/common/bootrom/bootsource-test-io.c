@@ -29,7 +29,6 @@ static int check_data(void *ptr, size_t offset, size_t len)
 
 		if (p[pos] != u.u8[i % 4]) {
 			rumboot_printf("bytecheck: expected: %x got %x at pos %d\n", u.u8[i % 4], p[i], i);
-//			rumboot_printf("%x %x %x %x %x\n", p[i], p[i+1], p[i+2], p[i+3], p[i+4]);
 			errors++;
 		}
 		pos++;
