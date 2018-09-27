@@ -155,7 +155,7 @@ macro(rumboot_bootrom_unit_test)
           PREFIX "bootrom"
           FILES common/bootrom/bootsource-test-io.c
           TESTGROUP bootrom
-          PREPCMD ${CMAKE_SOURCE_DIR}/scripts/wordpattern.py -e big -f pattern.bin -s 16384
+          PREPCMD ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/scripts/wordpattern.py -e big -f pattern.bin -s 16384
           IRUN_FLAGS ${IRUN_FLAGS}
           CFLAGS -DSOURCE=${BOOTSOURCE_ID} -DEXPECTED=true
           LOAD ${BOOTSOURCE_MEMTAG} ${_commas}pattern.bin
