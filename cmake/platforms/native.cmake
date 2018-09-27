@@ -82,7 +82,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
   gen_chain_spl(spl_chain_ok SPL_CHAIN_OK SPL_NEXT SPL_OK)
 
   add_custom_target(pattern.bin ALL
-    COMMAND ${PROJECT_SOURCE_DIR}/scripts/wordpattern.py -f ${PROJECT_BINARY_DIR}/pattern.bin -s 8192
+    COMMAND ${PYTHON_EXECUTABLE} ${PROJECT_SOURCE_DIR}/scripts/wordpattern.py -f ${PROJECT_BINARY_DIR}/pattern.bin -s 8192
   )
   add_rumboot_test(host-bootsrc-check-io bootsrc-check-io-no-align --file pattern.bin)
   add_rumboot_test(host-bootsrc-check-io bootsrc-check-io-align-16  --align 16 --file pattern.bin)
