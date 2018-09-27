@@ -32,6 +32,8 @@ opts = parser.parse_args()
 endian = "little"
 size = int(opts.size[0])
 filename = opts.file[0]
+if (opts.endian):
+    endian = opts.endian[0]
 
 if size % 4 > 0:
     size = size + 4
