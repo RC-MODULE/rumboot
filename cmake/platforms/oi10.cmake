@@ -124,6 +124,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         TAG spi0_cs0
         MEMTAG SPI0_CONF
         TAGOFFSET 0
+        FULL YES
     )
 
     rumboot_bootrom_unit_test(
