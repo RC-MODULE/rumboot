@@ -71,7 +71,7 @@ size_t bootsource_read(const struct rumboot_bootsource *src, void *pdata, void *
 {
         if (src->plugin->align) {
                 if (offset % src->plugin->align) {
-                        dbg_boot(src, "WARN: Attempting to do misaligned read");
+                        dbg_boot(src, "WARN: Refusing to do misaligned read");
                         return 0;
                 }
                 size_t misalign = len % src->plugin->align;
