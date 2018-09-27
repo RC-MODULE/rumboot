@@ -17,7 +17,7 @@ endif()
 function(add_rumboot_target)
   # snapshot lds prefix target
   set(optons "")
-  set(oneValueArgs ${RUMBOOT_ONEVALUE_ARGS} CONFIGURATION)
+  set(oneValueArgs ${RUMBOOT_ONEVALUE_ARGS})
   set(multiValueArgs ${RUMBOOT_MULVALUE_ARGS})
 
   cmake_parse_arguments(TARGET "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
@@ -110,6 +110,10 @@ function(add_rumboot_target)
 
   if (NOT "${TARGET_CHECKCMD}" STREQUAL "")
     string(REPLACE ";" " " TARGET_CHECKCMD "${TARGET_CHECKCMD}")
+  endif()
+
+  if (NOT "${TARGET_PREPCMD}" STREQUAL "")
+    string(REPLACE ";" " " TARGET_PREPCMD "${TARGET_PREPCMD}")
   endif()
 
   if (TARGET_TIMEOUT)
