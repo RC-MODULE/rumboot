@@ -57,6 +57,22 @@ typedef struct hscb_descr_struct
 }hscb_descr_struct_t;
 
 /**
+ * hscb_packed_descr_struct: Structure contains descriptor parameters which are used to transmit
+ * start_address: 32-bit start address
+ * length: Data block length (max 64M-1)
+ * act: descr type
+ * last: is last packet descriptor
+ * ie: interrupt at finish execution
+ * err: link fail
+ * valid: data is correct
+ */
+typedef struct hscb_packed_descr_struct
+{
+    uint32_t    start_address;
+    uint32_t    length_attr;
+}hscb_packed_descr_struct_t;
+
+/**
  * hscb_cfg: Structure contains HSCB settings
  * en_hscb:     SW interface ON
  * tx_endian:   TX channel bytes order (1-Big Endian; 0-Little Endian)
@@ -156,6 +172,8 @@ typedef struct hscb_axi_params_cfg
     hscb_axi_arwburst_t awburst;
 }hscb_axi_params_cfg_t;
 
+
+
 /**
  * \brief Change endianness in 4-byte word function
  * \param[in]   data_in input 4-byte data word
@@ -173,7 +191,7 @@ uint32_t hscb_change_endian (uint32_t data_in);
 void hscb_convert_to_bytes (uint32_t* data_in, uint8_t* data_out, uint32_t len);
 
 /**
- * \brief Set descriptor data function
+ * \brief Set descriptor data function, DEPRECATED!!! Use hscb_set_descr_in_mem instead
  * \param[in]   sys_addr    address of descriptor
  * \param[in]   len         length of data array
  * \param[in]   desc_addr   address of data array (address in descriptor)
@@ -187,7 +205,7 @@ void hscb_convert_to_bytes (uint32_t* data_in, uint8_t* data_out, uint32_t len);
 uint32_t hscb_set_desc (uint32_t sys_addr, uint32_t len, uint32_t desc_addr, uint8_t* data_in, bool act0, bool interrupt, bool valid, bool endian);
 
 /**
- * \brief Get descriptor data function
+ * \brief Get descriptor data function, DEPRECATED!!! Use hscb_get_descr_from_mem instead
  * \param[in]   sys_addr    address of descriptor
  * \param[in]   data_out    accepted byte-data array pointer
  * \param[in]   len         length of data array pointer
@@ -235,6 +253,7 @@ bool hscb_sw_rst(uint32_t base_addr);
 void hscb_set_config(uint32_t base_addr, hscb_cfg_t* cfg);
 void hscb_get_config(uint32_t base_addr, hscb_cfg_t* cfg);
 uint32_t hscb_get_status(uint32_t base_addr);
+uint32_t hscb_get_tbl_len_by_count(uint32_t count);
 void hscb_set_irq_mask(uint32_t base_addr, uint32_t mask);
 void hscb_set_timings(uint32_t base_addr, hscb_timings_cfg_t* cfg);
 void hscb_get_timings(uint32_t base_addr, hscb_timings_cfg_t* cfg);
