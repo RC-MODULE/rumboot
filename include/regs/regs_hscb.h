@@ -721,11 +721,51 @@ BEGIN_ENUM( hscb_act0_t )
     DECLARE_ENUM_VAL( HSCB_ACT0_LAST,     0b01 )
 END_ENUM( hscb_act0_t )
 
+BEGIN_ENUM( hscb_descr_itrpt_t )
+    DECLARE_ENUM_VAL( HSCB_DESCR_ITRPT_OFF,   0b0 )
+    DECLARE_ENUM_VAL( HSCB_DESCR_ITRPT_ON,   0b01 )
+END_ENUM( hscb_descr_itrpt_t )
+
+BEGIN_ENUM( hscb_descr_validity_t )
+    DECLARE_ENUM_VAL( HSCB_DESCR_VALID,   0b0 )
+    DECLARE_ENUM_VAL( HSCB_DESCR_INVALID,   0b01 )
+END_ENUM( hscb_descr_validity_t )
+
 
 BEGIN_ENUM( hscb_rotate_bytes_t )
     DECLARE_ENUM_VAL( HSCB_ROTATE_BYTES_DISABLE,   0b0 )
     DECLARE_ENUM_VAL( HSCB_ROTATE_BYTES_ENABLE,    0b1 )
 END_ENUM( hscb_rotate_bytes_t )
+
+
+#define HSCB_CREATE_DESCRIPTOR_LEN_ATTR(length,act,act0,ie,valid)  (\
+    (((length) << HSCB_RD_DESCR_LENGTH_i) & HSCB_RD_DESCR_LENGTH_mask)   | \
+    (((act)    << HSCB_RD_DESCR_ACT_i)    & HSCB_RD_DESCR_ACT_mask)      | \
+    (((act0)   << HSCB_RD_DESCR_ACT0_i)   & HSCB_RD_DESCR_ACT0_mask)     | \
+    (((ie)     << HSCB_RD_DESCR_IE_i)     & HSCB_RD_DESCR_IE_mask)       | \
+    (((valid)  << HSCB_RD_DESCR_VALID_i)  & HSCB_RD_DESCR_VALID_mask)       )
+
+#define HSCB_CHANGE_ENDIAN_WORD(word)           \
+    (((word) << 24) & 0xff000000) | \
+    (((word) <<  8) & 0x00ff0000) | \
+    (((word) >>  8) & 0x0000ff00) | \
+    (((word) >> 24) & 0x000000ff)
+
+#define HSCB_CREATE_DESCRIPTOR_LEN_ATTR_ENDIAN_EXE (length,act,act0,ie,valid,change_endian) \
+    (change_endian) ?   \
+        HSCB_CHANGE_ENDIAN_WORD( \
+             HSCB_CREATE_DESCRIPTOR_LEN_ATTR_ENDIAN_EXE( \
+                     length, \
+                     act, \
+                     act0, \
+                     ie, \
+                     valid) ) \
+        :   HSCB_CREATE_DESCRIPTOR_LEN_ATTR_ENDIAN_EXE( \
+                     length, \
+                     act, \
+                     act0, \
+                     ie, \
+                     valid)
 
 /**
  * @}
