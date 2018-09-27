@@ -136,7 +136,7 @@ endmacro()
 
 macro(rumboot_bootrom_unit_test)
   set(options DEFAULT)
-  set(oneValueArgs   ID TAG MEMTAG TAGOFFSET CONFIGURATION)
+  set(oneValueArgs   ID TAG MEMTAG TAGOFFSET CONFIGURATION FULL)
   set(multiValueArgs IRUN_FLAGS)
 
   cmake_parse_arguments(BOOTSOURCE "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
@@ -155,9 +155,10 @@ macro(rumboot_bootrom_unit_test)
           PREFIX "bootrom"
           FILES common/bootrom/bootsource-test-io.c
           TESTGROUP bootrom
+          PREPCMD ${CMAKE_SOURCE_DIR}/scripts/wordpattern.py -e big -f pattern.bin -s 16384
           IRUN_FLAGS ${IRUN_FLAGS}
           CFLAGS -DSOURCE=${BOOTSOURCE_ID} -DEXPECTED=true
-          LOAD ${BOOTSOURCE_MEMTAG} ${_commas}spl-ok
+          LOAD ${BOOTSOURCE_MEMTAG} ${_commas}pattern.bin
   )
 
   add_rumboot_target(
@@ -172,39 +173,6 @@ macro(rumboot_bootrom_unit_test)
   )
 
   add_rumboot_target(
-          NAME "unit-${BOOTSOURCE_TAG}-bad-magic"
-          CONFIGURATION ${BOOTSOURCE_CONFIGURATION}
-          PREFIX "bootrom"
-          FILES common/bootrom/unit.c
-          TESTGROUP bootrom bootrom-unit
-          IRUN_FLAGS ${IRUN_FLAGS}
-          CFLAGS -DSOURCE=${BOOTSOURCE_ID} -DEXPECTED=-EBADMAGIC
-          LOAD ${BOOTSOURCE_MEMTAG} ${_commas}spl-fail-bad-magic
-  )
-
-  add_rumboot_target(
-          NAME "unit-${BOOTSOURCE_TAG}-bad-version"
-          CONFIGURATION ${BOOTSOURCE_CONFIGURATION}
-          PREFIX "bootrom"
-          FILES common/bootrom/unit.c
-          TESTGROUP bootrom bootrom-unit
-          IRUN_FLAGS ${IRUN_FLAGS}
-          CFLAGS -DSOURCE=${BOOTSOURCE_ID} -DEXPECTED=-EBADVERSION
-          LOAD ${BOOTSOURCE_MEMTAG} ${_commas}spl-fail-bad-version
-  )
-
-  add_rumboot_target(
-          NAME "unit-${BOOTSOURCE_TAG}-bad-header"
-          CONFIGURATION ${BOOTSOURCE_CONFIGURATION}
-          PREFIX "bootrom"
-          FILES common/bootrom/unit.c
-          TESTGROUP bootrom bootrom-unit
-          IRUN_FLAGS ${IRUN_FLAGS}
-          CFLAGS -DSOURCE=${BOOTSOURCE_ID} -DEXPECTED=-EBADHDRCRC
-          LOAD ${BOOTSOURCE_MEMTAG} ${_commas}spl-fail-bad-header-crc
-  )
-
-  add_rumboot_target(
           NAME "unit-${BOOTSOURCE_TAG}-bad-data"
           CONFIGURATION ${BOOTSOURCE_CONFIGURATION}
           PREFIX "bootrom"
@@ -214,6 +182,42 @@ macro(rumboot_bootrom_unit_test)
           CFLAGS -DSOURCE=${BOOTSOURCE_ID} -DEXPECTED=-EBADDATACRC
           LOAD ${BOOTSOURCE_MEMTAG} ${_commas}spl-fail-bad-data-crc
   )
+
+  if (BOOTSOURCE_FULL)
+    add_rumboot_target(
+            NAME "unit-${BOOTSOURCE_TAG}-bad-magic"
+            CONFIGURATION ${BOOTSOURCE_CONFIGURATION}
+            PREFIX "bootrom"
+            FILES common/bootrom/unit.c
+            TESTGROUP bootrom bootrom-unit
+            IRUN_FLAGS ${IRUN_FLAGS}
+            CFLAGS -DSOURCE=${BOOTSOURCE_ID} -DEXPECTED=-EBADMAGIC
+            LOAD ${BOOTSOURCE_MEMTAG} ${_commas}spl-fail-bad-magic
+          )
+
+          add_rumboot_target(
+            NAME "unit-${BOOTSOURCE_TAG}-bad-version"
+            CONFIGURATION ${BOOTSOURCE_CONFIGURATION}
+            PREFIX "bootrom"
+            FILES common/bootrom/unit.c
+            TESTGROUP bootrom bootrom-unit
+            IRUN_FLAGS ${IRUN_FLAGS}
+            CFLAGS -DSOURCE=${BOOTSOURCE_ID} -DEXPECTED=-EBADVERSION
+            LOAD ${BOOTSOURCE_MEMTAG} ${_commas}spl-fail-bad-version
+          )
+
+          add_rumboot_target(
+            NAME "unit-${BOOTSOURCE_TAG}-bad-header"
+            CONFIGURATION ${BOOTSOURCE_CONFIGURATION}
+            PREFIX "bootrom"
+            FILES common/bootrom/unit.c
+            TESTGROUP bootrom bootrom-unit
+            IRUN_FLAGS ${IRUN_FLAGS}
+            CFLAGS -DSOURCE=${BOOTSOURCE_ID} -DEXPECTED=-EBADHDRCRC
+            LOAD ${BOOTSOURCE_MEMTAG} ${_commas}spl-fail-bad-header-crc
+          )
+  endif()
+
 
 endmacro()
 
