@@ -88,4 +88,28 @@ void rumboot_platform_setup() {
     extern char rumboot_im1_heap_start;
     extern char rumboot_im1_heap_end;
     rumboot_malloc_register_heap( "IM1", &rumboot_im1_heap_start, &rumboot_im1_heap_end );
+
+    extern char rumboot_sram0_heap_start;
+    extern char rumboot_sram0_heap_end;
+    rumboot_malloc_register_heap("SRAM0", &rumboot_sram0_heap_start, &rumboot_sram0_heap_end);
+
+    extern char rumboot_sdram_heap_start;
+    extern char rumboot_sdram_heap_end;
+    rumboot_malloc_register_heap("SDRAM", &rumboot_sdram_heap_start, &rumboot_sdram_heap_end);
+
+    extern char rumboot_ssram_heap_start;
+    extern char rumboot_ssram_heap_end;
+    rumboot_malloc_register_heap("SSRAM", &rumboot_ssram_heap_start, &rumboot_ssram_heap_end);
+
+    extern char rumboot_plram_heap_start;
+    extern char rumboot_plram_heap_end;
+    rumboot_malloc_register_heap("PLRAM", &rumboot_plram_heap_start, &rumboot_plram_heap_end);
+
+    extern char rumboot_sram1_heap_start;
+    extern char rumboot_sram1_heap_end;
+    rumboot_malloc_register_heap("SRAM1", &rumboot_sram1_heap_start, &rumboot_sram1_heap_end);
+
+    extern char rumboot_nor_heap_start;
+    extern char rumboot_nor_heap_end;
+    rumboot_malloc_register_heap("NOR", &rumboot_nor_heap_start, &rumboot_nor_heap_end);
 }
