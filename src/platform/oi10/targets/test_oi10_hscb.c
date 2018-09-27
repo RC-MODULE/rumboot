@@ -348,7 +348,7 @@ int get_heap_id_for_address(uint32_t address){
     return heap_id;
 }
 
-void prepare_memory_areas(){
+void prepare_memory_areas(volatile uint8_t** data_areas, volatile uint32_t* data_areas_sizes){
     int heap_id;
     int i;
 #ifdef HSCB_SHORT_TEST
@@ -377,6 +377,14 @@ void prepare_memory_areas(){
 //        rumboot_putstring("data_areas[i] == ");
 //        rumboot_puthex(data_areas[i]);
     }
+}
+
+void prepare_descriptor_areas(hscb_packed_descr_struct_t ** array_of_descriptors, uint32_t len_of_array, uint32_t* count_of_descriptors){
+    uint32_t i;
+    for(i = 0; i < len_of_array; ++i)
+        array_of_descriptors[i] = rumboot_malloc_from_heap_aligned(0,
+                sizeof(hscb_packed_descr_struct_t) * ( count_of_descriptors[i] + 1 ),
+                0x8);
 }
 
 static void set_test_data(uint32_t base_addr, uint32_t length, int increment){
@@ -570,7 +578,62 @@ static uint32_t check_hscb_short_func(){
     return 0;
 }
 #else
+void init_hscb_cfg( hscb_packed_descr_struct_t** hscb_descr,
+                    uint32_t* descr_table_length,
+                    uint32_t count_descr_tables,
+//                    uint8** data_areas,
+                    bool change_endian){
+    int i,j;
+    for (i = 0; i < count_descr_tables; ++i){
+        for (j = 0; j < descr_table_length[i]; ++j){
+            hscb_descr[i][j].start_address = (change_endian) ? HSCB_CHANGE_ENDIAN_WORD(data_areas[(i << 2)    ])
+                                                                                     : data_areas[(i << 2)    ];
+        }
+        hscb0_descr_tx[i].start_address = (change_endian) ? HSCB_CHANGE_ENDIAN_WORD(data_areas[(i << 2)    ])
+                                                                                  : data_areas[(i << 2)    ];
+        hscb0_descr_tx[i].length_attr = HSCB_CREATE_DESCRIPTOR_LEN_ATTR_ENDIAN_EXE(
+                                             data_areas_sizes[(i << 1)],
+                                             HSCB_ACT_TRAN,
+                                             HSCB_ACT0_LAST,
+                                             HSCB_DESCR_ITRPT_ON,
+                                             HSCB_DESCR_VALID,
+                                             change_endian) ;
+        hscb1_descr_rx[i].start_address = (change_endian) ? HSCB_CHANGE_ENDIAN_WORD(data_areas[(i << 2) + 1])
+                                                                                  : data_areas[(i << 2) + 1];
+        hscb1_descr_rx[i].length_attr = HSCB_CREATE_DESCRIPTOR_LEN_ATTR_ENDIAN_EXE(
+                                             data_areas_sizes[(i << 1)],
+                                             HSCB_ACT_TRAN,
+                                             HSCB_ACT0_LAST,
+                                             HSCB_DESCR_ITRPT_ON,
+                                             HSCB_DESCR_VALID,
+                                             change_endian) ;
+        hscb1_descr_tx[i].start_address = (change_endian) ? HSCB_CHANGE_ENDIAN_WORD(data_areas[(i << 2) + 2])
+                                                                                  : data_areas[(i << 2) + 2];
+        hscb1_descr_tx[i].length_attr = HSCB_CREATE_DESCRIPTOR_LEN_ATTR_ENDIAN_EXE(
+                                             data_areas_sizes[(i << 1) + 1],
+                                             HSCB_ACT_TRAN,
+                                             HSCB_ACT0_LAST,
+                                             HSCB_DESCR_ITRPT_ON,
+                                             HSCB_DESCR_VALID,
+                                             change_endian) ;
+        hscb0_descr_rx[i].start_address = (change_endian) ? HSCB_CHANGE_ENDIAN_WORD(data_areas[(i << 2) + 3])
+                                                                                  : data_areas[(i << 2) + 3];
+        hscb0_descr_rx[i].length_attr = HSCB_CREATE_DESCRIPTOR_LEN_ATTR_ENDIAN_EXE(
+                                             data_areas_sizes[(i << 1) + 1],
+                                             HSCB_ACT_TRAN,
+                                             HSCB_ACT0_LAST,
+                                             HSCB_DESCR_ITRPT_ON,
+                                             HSCB_DESCR_VALID,
+                                             change_endian) ;
+    }
+}
+
 static uint32_t check_hscb_func(){
+    const DESCRIPTOR_TABLES_COUNT = 4;
+    hscb_packed_descr_struct_t* descriptors[DESCRIPTOR_TABLES_COUNT];
+    uint32_t descriptor_counts[DESCRIPTOR_TABLES_COUNT] = {3, 3, 3, 3};
+    prepare_descriptor_areas(descriptors,DESCRIPTOR_TABLES_COUNT,descriptor_counts);
+    init_hscb_cfg()
     return 0;
 }
 #endif
@@ -592,7 +655,7 @@ int main() {
     emi_init(DCR_EM2_EMI_BASE);
     tbl = create_irq_handlers(hscb_cfg);
 
-    prepare_memory_areas();
+    prepare_memory_areas(data_areas, data_areas_sizes);
 #ifdef HSCB_SHORT_TEST
     result += check_hscb_short_func();
 #else
