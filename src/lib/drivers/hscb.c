@@ -218,6 +218,10 @@ uint32_t hscb_get_status(uint32_t base_addr)
     return ioread32(base_addr + HSCB_STATUS);
 }
 
+inline uint32_t hscb_get_tbl_len_by_count(uint32_t count){
+    return (count + 1) << 3;
+}
+
 void hscb_set_irq_mask(uint32_t base_addr, uint32_t mask)
 {
     iowrite32(mask, base_addr + HSCB_IRQ_MASK);
@@ -452,7 +456,7 @@ void hscb_configure_for_transmit(uint32_t base_addr, uint32_t src_data_addr, uin
     hscb_set_descr_in_mem(desc_addr, src_data_addr, len);
 
     rumboot_putstring("Setting RDMA_TBL_SIZE and RDMA_SYS_ADDR\n");
-    hscb_set_rdma_tbl_size(base_addr, 0x14);
+    hscb_set_rdma_tbl_size(base_addr, hscb_get_tbl_len_by_count(1));
     hscb_set_rdma_sys_addr(base_addr, rumboot_virt_to_dma((uint32_t *) desc_addr));
 /*
     rumboot_printf("Setting WDMA_TBL_SIZE and WDMA_SYS_ADDR\n");
@@ -471,7 +475,7 @@ void hscb_configure_for_receive(uint32_t base_addr, uint32_t dst_data_addr, uint
     hscb_set_rdma_sys_addr(base_addr, rumboot_virt_to_dma((uint32_t *) (desc_addr + 0x20)));
 */
     rumboot_printf("Setting WDMA_TBL_SIZE and WDMA_SYS_ADDR (0x%X)\n", base_addr);
-    hscb_set_wdma_tbl_size(base_addr, 0x14);
+    hscb_set_wdma_tbl_size(base_addr, hscb_get_tbl_len_by_count(1));
     hscb_set_wdma_sys_addr(base_addr, rumboot_virt_to_dma((uint32_t *) desc_addr));
 }
 
@@ -570,11 +574,11 @@ void hscb_config_for_receive_and_transmit(hscb_instance_t* hscb_inst)
     hscb_set_descr_in_mem(hscb_inst->rx_descr_addr, rumboot_virt_to_dma(hscb_inst->dst_addr), hscb_inst->dst_size);
 
     //rumboot_printf("Setting RDMA_TBL_SIZE and RDMA_SYS_ADDR\n");
-    hscb_set_rdma_tbl_size(hscb_inst->src_hscb_base_addr, 0x14);
+    hscb_set_rdma_tbl_size(hscb_inst->src_hscb_base_addr, hscb_get_tbl_len_by_count(1));
     hscb_set_rdma_sys_addr(hscb_inst->src_hscb_base_addr, rumboot_virt_to_dma((uint32_t *) hscb_inst->tx_descr_addr));
 
     //rumboot_printf("Setting WDMA_TBL_SIZE and WDMA_SYS_ADDR\n");
-    hscb_set_wdma_tbl_size(hscb_inst->src_hscb_base_addr, 0x14);
+    hscb_set_wdma_tbl_size(hscb_inst->src_hscb_base_addr, hscb_get_tbl_len_by_count(1));
     hscb_set_wdma_sys_addr(hscb_inst->src_hscb_base_addr, rumboot_virt_to_dma((uint32_t *) hscb_inst->rx_descr_addr));
 
     hscb_set_max_speed(hscb_inst->src_hscb_base_addr);
