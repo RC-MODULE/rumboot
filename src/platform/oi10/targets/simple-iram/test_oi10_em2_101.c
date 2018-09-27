@@ -18,7 +18,7 @@
 void check_plb6mcif2(const uint32_t base_address)
 {
     rumboot_printf("Check default values\n");
-    struct regpoker_checker plb6mcif2_regs_default[] = {
+    static const struct regpoker_checker plb6mcif2_regs_default[] = {
         //      name                check type          offset         exp val                  mask
         {"PLB6MCIF2_BEARL",     REGPOKER_READ_DCR, PLB6MCIF2_BEARL,     0x00,                0xffffffff},
         {"PLB6MCIF2_BEARU",     REGPOKER_READ_DCR, PLB6MCIF2_BEARU,     0x00,                0xffffffff},
@@ -51,7 +51,7 @@ void check_plb6mcif2(const uint32_t base_address)
     TEST_ASSERT (rumboot_regpoker_check_array(plb6mcif2_regs_default, base_address) == 0, "TEST ERROR" );
 
     rumboot_printf("Check write/read\n");
-    struct regpoker_checker plb6mcif2_regs_write[] = {
+    static const struct regpoker_checker plb6mcif2_regs_write[] = {
         //      name                check type          offset           val                  mask
         {"PLB6MCIF2_INTR_EN",   REGPOKER_WRITE_DCR, PLB6MCIF2_INTR_EN,   0xFFE001C0,          0xffffffff},
         {"PLB6MCIF2_MAP0CF",    REGPOKER_WRITE_DCR, PLB6MCIF2_MAP0CF,    0x00,                0xffffffff},
@@ -78,7 +78,7 @@ void check_plb6mcif2(const uint32_t base_address)
 void check_mclfir(const uint32_t base_address)
 {
     rumboot_printf("Check default values\n");
-    struct regpoker_checker mclfir_regs_default[] = {
+    static const struct regpoker_checker mclfir_regs_default[] = {
         //      name                       check type          offset                    exp val                  mask
         {"MCLFIR_MC_ERR0",               REGPOKER_READ_DCR, MCLFIR_MC_ERR0,               0x00,          0xffffffff},
         {"MCLFIR_MC_ERR1",               REGPOKER_READ_DCR, MCLFIR_MC_ERR1,               0x00,          0xffffffff},
@@ -101,7 +101,7 @@ void check_mclfir(const uint32_t base_address)
     TEST_ASSERT (rumboot_regpoker_check_array(mclfir_regs_default, base_address) == 0, "TEST ERROR" );
 
     rumboot_printf("Check write/read\n");
-    struct regpoker_checker mclfir_regs_write[] = {
+    static const struct regpoker_checker mclfir_regs_write[] = {
         //      name                check type            offset                val         mask
         {"MCLFIR_MC_ERR_ACTION0",  REGPOKER_WRITE_DCR, MCLFIR_MC_ERR_ACTION0,   0x00,    0xffffffff},
         {"MCLFIR_MC_ERR_ACTION1",  REGPOKER_WRITE_DCR, MCLFIR_MC_ERR_ACTION1,   0x00,    0xffffffc0},
@@ -115,7 +115,7 @@ void check_mclfir(const uint32_t base_address)
 void check_emi(const uint32_t base_address)
 {
     rumboot_printf("Check default values\n");
-    struct regpoker_checker emi_regs_default[] = {
+    static const struct regpoker_checker emi_regs_default[] = {
         // name             check type     offset        exp val            mask
         {"EMI_SS0",     REGPOKER_READ_DCR, EMI_SS0,       0x00,          0xffffffff},
         {"EMI_SD0",     REGPOKER_READ_DCR, EMI_SD0,       0x00,          0xffffffff},
@@ -147,7 +147,7 @@ void check_emi(const uint32_t base_address)
     TEST_ASSERT (rumboot_regpoker_check_array(emi_regs_default, base_address) == 0, "TEST ERROR" );
 
     rumboot_printf("Check write/read\n");
-    struct regpoker_checker emi_regs_write[] = {
+    static const struct regpoker_checker emi_regs_write[] = {
         // name             check type       offset         val             mask
         {"EMI_SS0",     REGPOKER_WRITE_DCR, EMI_SS0,       0x00,         0x001fffff},
         {"EMI_SD0",     REGPOKER_WRITE_DCR, EMI_SD0,       0x00,         0x0000fffe},
@@ -192,11 +192,11 @@ int main()
 {
     rumboot_printf("\nCHECK PLB6MCIF2\n\n");
     check_plb6mcif2 (DCR_EM2_PLB6MCIF2_BASE);
+    rumboot_printf("\nCHECK EMI\n\n");
+    check_emi (DCR_EM2_EMI_BASE);
     rumboot_printf("\nCHECK MCLFIR\n\n");
     check_mclfir (DCR_EM2_MCLFIR_BASE);
-	rumboot_printf("\nCHECK EMI\n\n");
-	check_emi (DCR_EM2_EMI_BASE);
 
-	rumboot_printf("TEST OK\n");
-	return 0;
+    rumboot_printf("TEST OK\n");
+    return 0;
 }
