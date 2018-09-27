@@ -111,6 +111,7 @@ void set_dma_cfg (dma2plb6_setup_info * dma_info, uint32_t base_addr, DmaChannel
     dma_info->channel = channel;
     dma_info->transfer_width = tr_width;
     dma_info->rw_transfer_size = rw_tr_size;
+    dma_info->snp_mode =snp_mode_off;
     dma_info->count = count;
     msync();
 }
