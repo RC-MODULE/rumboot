@@ -93,12 +93,10 @@ int pl022_set_speed(uint32_t base, struct pl022_config *conf)
     if (!best_freq)
         rumboot_printf("pl022: Matching cpsdvsr and scr not found for %d Hz rate \n", freq);
 
-    rumboot_printf("Best cpsdvsr = %x", best_cpsdvsr);
     iowrite32((best_cpsdvsr & 0xFF), base + PL022_CPSR);
 
     uint32_t v = ioread32(base + PL022_CR0);
     v &= ~0xff00;
-    rumboot_printf("Best rate = %x", v | ((best_scr & 0xFF) << 8));
     iowrite32(v | ((best_scr & 0xFF) << 8), base + PL022_CR0);
 
 #ifdef DEBUG
@@ -321,20 +319,17 @@ void gspi_dma_set_param(uint32_t base_addr, dma_params param)
              base_addr + GSPI_AXI_PARAMS);
 }
 
-void gspi_init(uint32_t base_address, ssp_params params, struct pl022_config *conf)
+void gspi_set_param(uint32_t base_address, ssp_params params)
 {
+    uint32_t cr0;
     //disable ssp
-    iowrite32(0x00, base_address + GSPI_SSPCR1);
-    iowrite32(0x0000, base_address + GSPI_SSPCR0);
+    pl022_disable(base_address);
     //setup the parameters
-    //clock rate
-//    pl022_set_speed(base_address, conf);
-    gspi_set_clock_rate(base_address,params.cpsdvr);
+    cr0 = ioread32(base_address + GSPI_SSPCR0);
     //cpol, cpha, format
     iowrite32((((params.cpha & 0x1) << SPH_SHIFT) |
                 ((params.cpol & 0x1) << SPO_SHIFT) |
-                (params.fr_format << FRF_SHIFT) |
-                (params.data_size << DSS_SHIFT)),
+                (params.fr_format << FRF_SHIFT) | cr0),
                 base_address + GSPI_SSPCR0);
     //mode, loopback, enable core
     iowrite32( ( ((params.loopback & 0x1) << LBM_SHIFT) | (params.mode << MS_SHIFT) | SSE ), base_address + GSPI_SSPCR1);

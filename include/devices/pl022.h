@@ -78,10 +78,8 @@ typedef enum{
 }ssp_frame_format;
 
 typedef struct{
-    uint32_t cpsdvr;
     uint8_t cpol;//spol
     uint8_t cpha;//sph
-    uint8_t data_size;
     ssp_mode mode;
     bool loopback;
     ssp_frame_format fr_format;
@@ -182,8 +180,6 @@ void pl022_clear_rx_buf(uint32_t base);
 */
 
 //ssp functions
-
-void gspi_init(uint32_t base_address, ssp_params params, struct pl022_config *conf);
 /**
  * Read of Raw interrupt status register
  * @param base_address   SSP base address
@@ -226,6 +222,12 @@ void gspi_send_word(uint32_t base_address, uint32_t word);
  * @return               read data
  */
 uint32_t gspi_get_word(uint32_t base_address);
+/**
+ * Set parameters of SSP
+ * @param base_address   SSP base address
+ * @param params         parameters of SSP: cpol, cpha, mode, loopback, fr_format
+ */
+void gspi_set_param(uint32_t base_address, ssp_params params);
 
 
 //dma function
