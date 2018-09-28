@@ -371,6 +371,8 @@ uint32_t check_emi(uint32_t bank)
             bank, typ, btyp_descr[typ]);
 
     /* Force bank switch */
+    rumboot_printf("Writing 0x%X to 0x%X...\n", 0x00000000, base);
+    iowrite32(0x00000000, base);
     rumboot_printf("Reading from 0x%X...\n", base);
     data32 = ioread32(base);
 
