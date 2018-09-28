@@ -23,7 +23,17 @@
 #include <platform/ppc470s/mmu/mem_window.h>
 #include <platform/devices/emi.h>
 
-void check_sram0_8 (uint32_t addr)
+typedef enum
+{
+    flush_off = 0,
+    flush_on = 1
+} flush_state;
+
+#define SRAM0_OFFSET_WT 0x3000
+#define SRAM0_OFFSET_WB 0x4000
+#define NUM_ELEM 		0x100
+
+void check_sram0_8 (uint32_t addr, flush_state state)
 {
     uint8_t check_arr8[] =
     {
@@ -68,8 +78,10 @@ void check_sram0_8 (uint32_t addr)
         iowrite8 (check_arr8[i], addr + i);
     }
     //flush
+    if (state){
     dcbf ((void*)addr);
     msync();
+    }
     //read
     for (i = 0; i < 32; i++)
     {
@@ -77,7 +89,7 @@ void check_sram0_8 (uint32_t addr)
     }
 }
 
-void check_sram0_16 (uint32_t addr)
+void check_sram0_16 (uint32_t addr, flush_state state)
 {
     uint16_t check_arr16[] =
     {
@@ -105,8 +117,10 @@ void check_sram0_16 (uint32_t addr)
         iowrite16 (check_arr16[i], addr + i*2);
     }
     //flush
+    if (state){
     dcbf ((void*)addr);
     msync();
+    }
     //read
     for (i = 0; i < 16; i++)
     {
@@ -114,7 +128,7 @@ void check_sram0_16 (uint32_t addr)
     }
 }
 
-void check_sram0_32 (uint32_t addr)
+void check_sram0_32 (uint32_t addr, flush_state state)
 {
     uint32_t check_arr32[] =
     {
@@ -134,8 +148,10 @@ void check_sram0_32 (uint32_t addr)
         iowrite32 (check_arr32[i], addr + i*4);
     }
     //flush
+    if (state){
     dcbf ((void*)addr);
     msync();
+    }
     //read
     for (i = 0; i < 8; i++)
     {
@@ -143,7 +159,7 @@ void check_sram0_32 (uint32_t addr)
     }
 }
 
-void check_sram0_64 (uint32_t addr)
+void check_sram0_64 (uint32_t addr, flush_state state)
 {
     uint64_t check_arr64[] =
     {
@@ -159,8 +175,10 @@ void check_sram0_64 (uint32_t addr)
         iowrite64 (check_arr64[i], addr + i * 8);
     }
     //flush
+    if (state){
     dcbf ((void*)addr);
     msync();
+    }
     //read
     for (i = 0; i < 4; i++)
     {
@@ -168,22 +186,22 @@ void check_sram0_64 (uint32_t addr)
     }
 }
 
-void check_sram0 (const uint32_t addr)
+void check_sram0 (const uint32_t addr, flush_state state)
 {
     rumboot_printf ("START CHECK W/R SRAM0\n");
     rumboot_printf ("START ADDR = %x\n", addr);
 
     rumboot_printf ("SIZE_8\n");
-    check_sram0_8(addr);
+    check_sram0_8(addr, state);
 
     rumboot_printf ("SIZE_16\n");
-    check_sram0_16(addr + 32);
+    check_sram0_16(addr + 32, state);
 
     rumboot_printf ("SIZE_32\n");
-    check_sram0_32(addr + 64);
+    check_sram0_32(addr + 64, state);
 
     rumboot_printf ("SIZE_64\n");
-    check_sram0_64(addr + 96);
+    check_sram0_64(addr + 96, state);
 
     rumboot_printf ("CHECK W/R SRAM0 SUCCESSFUL\n");
 }
@@ -200,12 +218,12 @@ int main ()
     uint32_t addr = 0;
     uint32_t i = 0;
 
-    addr = SRAM0_BASE + 0x3000;
-    for (i = 0; i < 0x100; i++)
-      iowrite64 (0x00, addr + i*4);
+    addr = SRAM0_BASE + SRAM0_OFFSET_WT;
+    for (i = 0; i < NUM_ELEM; i++)
+      iowrite32 (0x00, addr + i*4);
 
-    addr = SRAM0_BASE + 0x4000;
-    for (i = 0; i < 0x100; i++)
+    addr = SRAM0_BASE + SRAM0_OFFSET_WB;
+    for (i = 0; i < NUM_ELEM; i++)
       iowrite32 (0x00, addr + i*4);
     dci(2);
 
@@ -214,7 +232,7 @@ int main ()
     write_tlb_entries(&sram0_tlb_entry_wt,1);
     msync();
     isync();
-    check_sram0 (SRAM0_BASE + 0x3001);
+    check_sram0 (SRAM0_BASE +  SRAM0_OFFSET_WT + 1, flush_off);
     dci(2);
 
 
@@ -223,7 +241,12 @@ int main ()
     write_tlb_entries(&sram0_tlb_entry_wb,1);
     msync();
     isync();
-    check_sram0 (SRAM0_BASE + 0x4002);
+    check_sram0 (SRAM0_BASE +  SRAM0_OFFSET_WB + 2, flush_on);
+    dci(2);
+
+    msync();
+    isync();
+    check_sram0 (SRAM0_BASE + SRAM0_OFFSET_WB + 2, flush_off);
     dci(2);
 
     rumboot_printf ("TEST_OK\n");
