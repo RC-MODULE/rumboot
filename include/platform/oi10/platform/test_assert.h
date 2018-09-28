@@ -15,7 +15,7 @@
 #define TEST_ASSERT( expr, message )\
 MACRO_BEGIN\
     if( !(expr) ) {\
-        rumboot_putstring( "PROGRAM ASSERTION FAILED: \"" STRINGIZE(expr) "\"\n" __FILE__ ":" STRINGIZE(__LINE__) ": \"" message "\"\n" );\
+        rumboot_putstring( "SOFT ASSERTION FAILED: \"" STRINGIZE(expr) "\"\n" __FILENAME__ ": \"" message "\"\n" );\
         __test_assert_failure_do();\
     }\
 MACRO_END
