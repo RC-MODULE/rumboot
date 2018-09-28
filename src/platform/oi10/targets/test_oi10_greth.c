@@ -8,6 +8,7 @@
 #include <rumboot/macros.h>
 #include <rumboot/io.h>
 #include <rumboot/irq.h>
+#include <rumboot/timer.h>
 #include <rumboot/regpoker.h>
 #include <rumboot/irq.h>
 
@@ -20,13 +21,17 @@
 
 #define IM1_BASE_MIRROR     0xC0000000
 
+#define EDCL_TEST_ADDR_IM0  (IM0_BASE + 0x20000 - 0x400)
+#define EDCL_TEST_ADDR_IM1  (IM1_BASE)
+#define EDCL_TEST_ADDR_EM2  (EM2_BANK3_BASE)
+
 #define EVENT_CHECK_GRETH0_RX_ER   0x00001000
 #define EVENT_CHECK_GRETH1_RX_ER   0x00001001
 #define EVENT_CHECK_GRETH0_RX_COL  0x00001002
 #define EVENT_CHECK_GRETH1_RX_COL  0x00001003
 
 #define GRETH_TEST_DATA_LEN_BYTES 256
-#define GRETH_EDCL_DATA_LEN 15
+#define GRETH_EDCL_DATA_LEN 16
 
 #define TST_MAC_MSB     0xFFFF
 #define TST_MAC_LSB     0xFFFFFFFF
@@ -124,23 +129,19 @@ void delete_greth01_irq_handlers(struct rumboot_irq_entry *tbl)
  * Test data and descriptors
  */
 uint32_t edcl_seq_number = 0;
-uint32_t test_edcl_data = 0xBABADEDA;
+uint8_t edcl_test_data_im0_wr[GRETH_EDCL_DATA_LEN] = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10};
 
 greth_descr_t*  tx_descriptor_data_;
 greth_descr_t*  rx_descriptor_data_;
 
-uint8_t* test_data_im0_src;
-uint8_t* test_data_im0_dst;
-uint32_t* test_edcl_packet_im0;
-uint32_t* test_edcl_rcv_packet_im0;
+uint32_t* test_data_im0_src;
+uint32_t* test_data_im0_dst;
 
-uint8_t* test_data_im1_src;//  = (uint8_t *)( IM1_BASE_MIRROR );
-uint8_t* test_data_im1_dst;//  = (uint8_t *)( IM1_BASE_MIRROR +   GRETH_TEST_DATA_LEN_BYTES*sizeof(uint8_t) );
-uint32_t* test_edcl_packet_im1 = (uint32_t *)( IM1_BASE_MIRROR + 2*GRETH_TEST_DATA_LEN_BYTES*sizeof(uint8_t) );
-uint32_t* test_edcl_rcv_packet_im1 = (uint32_t *)( IM1_BASE_MIRROR + 2*GRETH_TEST_DATA_LEN_BYTES*sizeof(uint8_t) + GRETH_TEST_DATA_LEN_BYTES*sizeof(uint8_t) );
-uint8_t* test_edcl_data_im1 = (uint8_t *)( IM1_BASE_MIRROR + 2*GRETH_TEST_DATA_LEN_BYTES*sizeof(uint8_t) + 2*GRETH_TEST_DATA_LEN_BYTES*sizeof(uint8_t));
-uint8_t* test_data_em2_src  = (uint8_t *)( SRAM0_BASE + 0x100);
-uint8_t* test_data_em2_dst  = (uint8_t *)( SRAM0_BASE + 0x100 + sizeof(test_data_im0_src) );
+uint32_t* test_data_im1_src  = (uint32_t *)( IM1_BASE_MIRROR );
+uint32_t* test_data_im1_dst  = (uint32_t *)( IM1_BASE_MIRROR +   GRETH_TEST_DATA_LEN_BYTES );
+uint32_t* test_edcl_rcv_packet_im1 = (uint32_t *)( IM1_BASE_MIRROR + 2*GRETH_TEST_DATA_LEN_BYTES + GRETH_TEST_DATA_LEN_BYTES );
+uint32_t* test_data_em2_src  = (uint32_t *)( SRAM0_BASE + 0x100);
+uint32_t* test_data_em2_dst  = (uint32_t *)( SRAM0_BASE + 0x100 + GRETH_TEST_DATA_LEN_BYTES );
 
 /*
  * Registers access checks
@@ -229,9 +230,9 @@ void mem_clr(void volatile * const ptr, uint32_t len)
 #define GRETH_SRC_DATA_SEL  true
 #define GRETH_DST_DATA_SEL  false
 
-uint8_t * get_src_dst_data_ptr(bool src_dst, uint32_t bank_num)
+uint32_t * get_src_dst_data_ptr(bool src_dst, uint32_t bank_num)
 {
-    uint8_t* data_ptr = (uint8_t *) 0;
+    uint32_t* data_ptr = (uint32_t *) 0;
     switch (bank_num)
     {
         case 0:
@@ -261,16 +262,16 @@ void prepare_test_data(uint32_t src_bank, uint32_t dst_bank)
     rx_descriptor_data_ = (greth_descr_t*) rumboot_malloc_from_heap_aligned(0, 3*sizeof(greth_descr_t), 1024);
 
     rumboot_putstring("Allocate from im0");
-    test_data_im0_src = (uint8_t* )rumboot_malloc_from_heap(0, GRETH_TEST_DATA_LEN_BYTES * sizeof(uint8_t));
-    test_data_im0_dst = (uint8_t* )rumboot_malloc_from_heap(0, GRETH_TEST_DATA_LEN_BYTES * sizeof(uint8_t));
+    test_data_im0_src = (uint32_t* )rumboot_malloc_from_heap(0, GRETH_TEST_DATA_LEN_BYTES);
+    test_data_im0_dst = (uint32_t* )rumboot_malloc_from_heap(0, GRETH_TEST_DATA_LEN_BYTES);
 
     rumboot_putstring("Allocate from im1 for src");
-    test_data_im1_src = (uint8_t* )rumboot_malloc_from_heap(1, GRETH_TEST_DATA_LEN_BYTES * sizeof(uint8_t));
+    test_data_im1_src = (uint32_t* )rumboot_malloc_from_heap(1, GRETH_TEST_DATA_LEN_BYTES);
     rumboot_putstring("Allocate from im1 for dst");
-    test_data_im1_dst = (uint8_t* )rumboot_malloc_from_heap(1, GRETH_TEST_DATA_LEN_BYTES * sizeof(uint8_t));
+    test_data_im1_dst = (uint32_t* )rumboot_malloc_from_heap(1, GRETH_TEST_DATA_LEN_BYTES);
 
     rumboot_putstring("Fill im0 src array");
-    test_data_im0_src[i++] = (uint8_t)((tst_greth_mac.mac_lsb & 0x00FF0000) >> 16);
+/*    test_data_im0_src[i++] = (uint8_t)((tst_greth_mac.mac_lsb & 0x00FF0000) >> 16);
     test_data_im0_src[i++] = (uint8_t)((tst_greth_mac.mac_lsb & 0xFF000000) >> 24);
     test_data_im0_src[i++] = (uint8_t)((tst_greth_mac.mac_msb & 0x000000FF) >>  0);
     test_data_im0_src[i++] = (uint8_t)((tst_greth_mac.mac_msb & 0x0000FF00) >>  8);
@@ -285,16 +286,16 @@ void prepare_test_data(uint32_t src_bank, uint32_t dst_bank)
     test_data_im0_src[i++] = (uint8_t)((tst_greth_mac.mac_lsb & 0x00FF0000) >> 16);
     test_data_im0_src[i++] = (uint8_t)((tst_greth_mac.mac_lsb & 0xFF000000) >> 24);
 
-    test_data_im0_src[i++] = (uint8_t)(((GRETH_TEST_DATA_LEN_BYTES * sizeof(uint8_t) - 14) & 0x00FF) >> 0);
-    test_data_im0_src[i++] = (uint8_t)(((GRETH_TEST_DATA_LEN_BYTES * sizeof(uint8_t) - 14) & 0xFF00) >> 8);
+    test_data_im0_src[i++] = (uint8_t)(((GRETH_TEST_DATA_LEN_BYTES - 14) & 0x00FF) >> 0);
+    test_data_im0_src[i++] = (uint8_t)(((GRETH_TEST_DATA_LEN_BYTES - 14) & 0xFF00) >> 8);
     test_data_im0_src[i++] = (uint8_t)(0);
     test_data_im0_src[i++] = (uint8_t)(0);
-
-//    test_data_im0_src[i++] = (tst_greth_mac.mac_msb << 16) | ((tst_greth_mac.mac_lsb & 0xFFFF0000) >> 16);//DST MAC [48:16]
-//    test_data_im0_src[i++] = ((tst_greth_mac.mac_lsb & 0xFFFF) << 16) | tst_greth_mac.mac_msb;//DST MAC [15:0] SRC MAC [48:32]
-//    test_data_im0_src[i++] = tst_greth_mac.mac_lsb;//SRC MAC [31:0]
-//    test_data_im0_src[i++] = ((GRETH_TEST_DATA_LEN_BYTES * sizeof(uint32_t) - 14) << 16);//Len and 0x0000 data
-    while(i<GRETH_TEST_DATA_LEN_BYTES)
+*/
+    test_data_im0_src[i++] = (tst_greth_mac.mac_msb << 16) | ((tst_greth_mac.mac_lsb & 0xFFFF0000) >> 16);//DST MAC [48:16]
+    test_data_im0_src[i++] = ((tst_greth_mac.mac_lsb & 0xFFFF) << 16) | tst_greth_mac.mac_msb;//DST MAC [15:0] SRC MAC [48:32]
+    test_data_im0_src[i++] = tst_greth_mac.mac_lsb;//SRC MAC [31:0]
+    test_data_im0_src[i++] = ((GRETH_TEST_DATA_LEN_BYTES * sizeof(uint32_t) - 14) << 16);//Len and 0x0000 data
+    while(i<(GRETH_TEST_DATA_LEN_BYTES/4))
     {
         test_data_im0_src[i] = i;
         i++;// toggle = !toggle;
@@ -303,7 +304,7 @@ void prepare_test_data(uint32_t src_bank, uint32_t dst_bank)
     if (src_bank==1)
     {
         rumboot_putstring("Fill im1 src array");
-        memcpy(test_data_im1_src, test_data_im0_src, GRETH_TEST_DATA_LEN_BYTES*sizeof(uint8_t));
+        memcpy(test_data_im1_src, test_data_im0_src, GRETH_TEST_DATA_LEN_BYTES);
     }
 
     if ((src_bank==2) || (dst_bank==2))
@@ -316,7 +317,7 @@ void prepare_test_data(uint32_t src_bank, uint32_t dst_bank)
     {
         rumboot_putstring("Fill em2 src array");
         //    memcpy(test_data_em2_src, test_data_im0_src, sizeof(test_data_im0_src));
-        for (i=0; i<GRETH_TEST_DATA_LEN_BYTES/sizeof(uint8_t); i++)
+        for (i=0; i<GRETH_TEST_DATA_LEN_BYTES; i++)
         {
             test_data_em2_src[i] = test_data_im0_src[i];
         }
@@ -324,7 +325,7 @@ void prepare_test_data(uint32_t src_bank, uint32_t dst_bank)
     rumboot_putstring("Preparing data finished");
 }
 
-void prepare_test_edcl_data(edcl_test_data_struct_t* edcl_cfg)
+void prepare_test_edcl_data(edcl_test_data_struct_t* edcl_cfg, uint32_t* test_edcl_packet)
 {
     uint32_t     i = 0;
     uint32_t     j = 0;
@@ -339,42 +340,59 @@ void prepare_test_edcl_data(edcl_test_data_struct_t* edcl_cfg)
     uint32_t     Header_Checksum  = 0;
     uint32_t     Source_Port      = 0;
     uint32_t     Dest_Port        = 0;
-    uint32_t     Data_Length      = 18 + edcl_cfg->len; //header_length + offset_length + control_word_length + address_length + data_length = 8 + 2 + 4 + 4 + len = 18 + len
+    uint32_t     Data_Length      = 64 + (edcl_cfg->wrrd==EDCL_WR) ? edcl_cfg->len : 0; //header_length + offset_length + control_word_length + address_length + data_length = 8 + 2 + 4 + 4 + len = 18 + len
     uint32_t     Checksum         = 0;
+    uint32_t     len;
 
-    test_edcl_packet_im0 = (uint32_t* )rumboot_malloc_from_heap(0, GRETH_TEST_DATA_LEN_BYTES * sizeof(uint32_t));
-
-    test_edcl_packet_im0[i++] = (edcl_cfg->dst_mac.mac_msb << 16) | ((edcl_cfg->dst_mac.mac_lsb & 0xFFFF0000) >> 16);  //DST MAC [48:16]
-    test_edcl_packet_im0[i++] = ((edcl_cfg->dst_mac.mac_lsb & 0xFFFF) << 16) | edcl_cfg->src_mac.mac_msb;              //DST MAC [15:0] SRC MAC [48:32]
-    test_edcl_packet_im0[i++] = edcl_cfg->src_mac.mac_lsb;                                                         //SRC MAC [31:0]
-    test_edcl_packet_im0[i++] = (0x0800 << 16) | Version << 12 |  IHL << 8 | DSCP << 2 | ECN;
-    test_edcl_packet_im0[i++] = (Total_Length << 16) | Id;
-    test_edcl_packet_im0[i++] = (Time_To_Live << 8 | Protocol);
-    test_edcl_packet_im0[i++] = (Header_Checksum << 16) | (edcl_cfg->src_ip & 0xFFFF0000) >> 16;
-    test_edcl_packet_im0[i++] = (edcl_cfg->src_ip & 0xFFFF) | (edcl_cfg->dst_ip & 0xFFFF0000);
-    test_edcl_packet_im0[i++] = (edcl_cfg->dst_ip & 0xFFFF) << 16;
-    test_edcl_packet_im0[i++] = Source_Port << 16 | Dest_Port                                        ;
-    test_edcl_packet_im0[i++] = Data_Length << 16 | Checksum                                         ;
-    test_edcl_packet_im0[i++] = edcl_cfg->edcl_seq_number << 18 | edcl_cfg->wrrd << 17 | 0x4 << 7; //CTRL_WORD
-    test_edcl_packet_im0[i++] = edcl_cfg->addr;
+    test_edcl_packet[i++] = (edcl_cfg->dst_mac.mac_msb << 16) | ((edcl_cfg->dst_mac.mac_lsb & 0xFFFF0000) >> 16);  //DST MAC [48:16]
+    test_edcl_packet[i++] = ((edcl_cfg->dst_mac.mac_lsb & 0xFFFF) << 16) | edcl_cfg->src_mac.mac_msb;              //DST MAC [15:0] SRC MAC [48:32]
+    test_edcl_packet[i++] = edcl_cfg->src_mac.mac_lsb;                                                         //SRC MAC [31:0]
+    test_edcl_packet[i++] = (0x0800 << 16) | Version << 12 |  IHL << 8 | DSCP << 2 | ECN;
+    test_edcl_packet[i++] = (Total_Length << 16) | Id;
+    test_edcl_packet[i++] = (Time_To_Live << 8 | Protocol);
+    test_edcl_packet[i++] = (Header_Checksum << 16) | (edcl_cfg->src_ip & 0xFFFF0000) >> 16;
+    test_edcl_packet[i++] = (edcl_cfg->src_ip & 0xFFFF) | (edcl_cfg->dst_ip & 0xFFFF0000);
+    test_edcl_packet[i++] = (edcl_cfg->dst_ip & 0xFFFF) << 16;
+    test_edcl_packet[i++] = Source_Port << 16 | Dest_Port                                        ;
+    test_edcl_packet[i++] = Data_Length << 16 | Checksum                                         ;
+    test_edcl_packet[i++] = edcl_cfg->edcl_seq_number << 18 | edcl_cfg->wrrd << 17 | edcl_cfg->len << 7; //CTRL_WORD
+    test_edcl_packet[i++] = edcl_cfg->addr;
     if (edcl_cfg->wrrd==EDCL_WR)
     {
-        while (j < (edcl_cfg->len / sizeof(uint32_t)))
+        len = edcl_cfg->len;
+        while (len > 3)
         {
-            //change byte order
-            test_edcl_packet_im0[i++] = *(edcl_cfg->data + j);
-            j++;
+            test_edcl_packet[i++] = (((uint32_t)(*(edcl_cfg->data + j + 3) <<  0) & 0x000000FF) |
+                                     ((uint32_t)(*(edcl_cfg->data + j + 2) <<  8) & 0x0000FF00) |
+                                     ((uint32_t)(*(edcl_cfg->data + j + 1) << 16) & 0x00FF0000) |
+                                     ((uint32_t)(*(edcl_cfg->data + j + 0) << 24) & 0xFF000000));
+            j+=4;
+            len-=4;
+        }
+        switch (len)
+        {
+            case 1:
+                test_edcl_packet[i++] = ((uint32_t)(*(edcl_cfg->data + j) << 24) & 0xFF000000);
+                break;
+            case 2:
+                test_edcl_packet[i++] = (((uint32_t)(*(edcl_cfg->data + j + 1) << 16) & 0x00FF0000) |
+                                         ((uint32_t)(*(edcl_cfg->data + j + 0) << 24) & 0xFF000000));
+                break;
+            case 3:
+                test_edcl_packet[i++] = (((uint32_t)(*(edcl_cfg->data + j + 2) <<  8) & 0x0000FF00) |
+                                         ((uint32_t)(*(edcl_cfg->data + j + 1) << 16) & 0x00FF0000) |
+                                         ((uint32_t)(*(edcl_cfg->data + j + 0) << 24) & 0xFF000000));
+                break;
+            default: break;
         }
     }
-    test_edcl_packet_im0[i++] = 0xDEADBEAF;
-    memcpy(test_edcl_packet_im1, test_edcl_packet_im0, sizeof(test_edcl_packet_im0));
-    memcpy(test_edcl_data_im1, &test_edcl_data, sizeof(test_edcl_data));
+    test_edcl_packet[i++] = 0xDEADBEAF;
 }
 
 /*
  * Checks transfers which uses different memory blocks
  */
-void check_transfer_via_external_loopback(uint32_t base_addr_src_eth,  uint8_t * test_data_src, uint8_t * test_data_dst)
+void check_transfer_via_external_loopback(uint32_t base_addr_src_eth,  uint32_t * test_data_src, uint32_t * test_data_dst)
 {
     uint32_t base_addr_dst_eth;
     uint32_t volatile* eth_handled_flag_ptr;
@@ -397,84 +415,117 @@ void check_transfer_via_external_loopback(uint32_t base_addr_src_eth,  uint8_t *
 
     rumboot_printf("\nChecking transfer from 0x%X to 0x%x\n", (uint32_t)test_data_src, (uint32_t) test_data_dst);
 
-    greth_configure_for_receive( base_addr_dst_eth, test_data_dst, GRETH_TEST_DATA_LEN_BYTES*sizeof(uint8_t), rx_descriptor_data_, &tst_greth_mac);
-    greth_configure_for_transmit( base_addr_src_eth, test_data_src, GRETH_TEST_DATA_LEN_BYTES*sizeof(uint8_t), tx_descriptor_data_, &tst_greth_mac);
+    greth_configure_for_receive( base_addr_dst_eth, test_data_dst, GRETH_TEST_DATA_LEN_BYTES, rx_descriptor_data_, &tst_greth_mac);
+    greth_configure_for_transmit( base_addr_src_eth, test_data_src, GRETH_TEST_DATA_LEN_BYTES, tx_descriptor_data_, &tst_greth_mac);
 
     greth_start_receive( base_addr_dst_eth, true );
     greth_start_transmit( base_addr_src_eth );
 
     TEST_ASSERT(greth_wait_receive_irq(base_addr_dst_eth, eth_handled_flag_ptr), "Receiving is failed\n");
-    TEST_ASSERT(mem_cmp(test_data_src, test_data_dst, GRETH_TEST_DATA_LEN_BYTES/sizeof(uint8_t)), "Data compare error!\n");
+    TEST_ASSERT(mem_cmp(test_data_src, test_data_dst, GRETH_TEST_DATA_LEN_BYTES), "Data compare error!\n");
 
-    mem_clr(test_data_dst, GRETH_TEST_DATA_LEN_BYTES/sizeof(uint8_t));
+    mem_clr(test_data_dst, GRETH_TEST_DATA_LEN_BYTES);
+
+    rumboot_free(tx_descriptor_data_);
+    rumboot_free(rx_descriptor_data_);
 }
 
-void check_edcl_via_external_loopback(uint32_t base_addr_src_eth, uint32_t * test_data_src, uint8_t * test_data_dst, uint32_t * test_data_resp)
+void check_edcl_wr_via_external_loopback(uint32_t base_addr_dst_eth, uint32_t wr_mem_addr, void* data, uint32_t len)
 {
+    uint32_t * edcl_packet = (uint32_t* )rumboot_malloc_from_heap(0, 64 + len );
     edcl_test_data_struct_t edcl_cfg;
+    uint32_t base_addr_src_eth;
+    uint32_t edcl_packet_len;
     uint32_t volatile* eth_handled_flag_ptr;
-    uint32_t base_addr_dst_eth;
+    uint32_t * test_data_resp = test_edcl_rcv_packet_im1;
 
-    TEST_ASSERT((base_addr_src_eth==GRETH_1_BASE)||(base_addr_src_eth==GRETH_0_BASE), "Wrong GRETH base address\n");
-    if (base_addr_src_eth==GRETH_1_BASE)
+    TEST_ASSERT((base_addr_dst_eth==GRETH_1_BASE)||(base_addr_dst_eth==GRETH_0_BASE), "Wrong GRETH base address\n");
+    if (base_addr_dst_eth==GRETH_1_BASE)
     {
-        base_addr_dst_eth = GRETH_0_BASE;
-        edcl_cfg.src_ip   = EDCLIP0;
-        edcl_cfg.src_mac  = tst_greth_edcl_mac0;
-        edcl_cfg.dst_ip   = EDCLIP0;
-        edcl_cfg.dst_mac  = tst_greth_edcl_mac0;
-        GRETH0_IRQ_HANDLED = 0;
-        eth_handled_flag_ptr = &GRETH0_IRQ_HANDLED;
-    }
-    else
-    {
-        base_addr_dst_eth = GRETH_1_BASE;
         edcl_cfg.src_ip   = EDCLIP1;
         edcl_cfg.src_mac  = tst_greth_edcl_mac1;
         edcl_cfg.dst_ip   = EDCLIP1;
         edcl_cfg.dst_mac  = tst_greth_edcl_mac1;
         GRETH1_IRQ_HANDLED = 0;
-        eth_handled_flag_ptr = &GRETH1_IRQ_HANDLED;
+        base_addr_src_eth = GRETH_0_BASE;
+    }
+    else
+    {
+        edcl_cfg.src_ip   = EDCLIP0;
+        edcl_cfg.src_mac  = tst_greth_edcl_mac0;
+        edcl_cfg.dst_ip   = EDCLIP0;
+        edcl_cfg.dst_mac  = tst_greth_edcl_mac0;
+        GRETH0_IRQ_HANDLED = 0;
+        base_addr_src_eth = GRETH_1_BASE;
     }
 
     //check edcl write
     edcl_cfg.edcl_seq_number = edcl_seq_number++;
     edcl_cfg.wrrd = EDCL_WR;
-    edcl_cfg.addr = IM1_BASE_MIRROR + 0x1000;
-    edcl_cfg.data = &test_edcl_data;
-    edcl_cfg.len  = sizeof(uint32_t);
-    prepare_test_edcl_data(&edcl_cfg);
+    edcl_cfg.addr = wr_mem_addr;
+    edcl_cfg.data = (uint8_t*)data;
+    edcl_cfg.len  = len;
+    edcl_packet_len = (len + 64);
+    prepare_test_edcl_data(&edcl_cfg, edcl_packet);
     rumboot_printf("\nChecking EDCL write transfer\n");
 
-    greth_configure_for_receive( base_addr_dst_eth, test_data_dst, sizeof(test_edcl_packet_im0), rx_descriptor_data_, &tst_greth_mac);
-    greth_configure_for_transmit( base_addr_src_eth, test_data_src, sizeof(test_edcl_packet_im0), tx_descriptor_data_, &tst_greth_mac);
+    greth_configure_for_receive(  base_addr_src_eth, test_data_resp, edcl_packet_len, rx_descriptor_data_, &tst_greth_mac);
+    greth_configure_for_transmit( base_addr_src_eth, edcl_packet, edcl_packet_len, tx_descriptor_data_, &tst_greth_mac);
 
-    greth_start_receive( base_addr_dst_eth, true );
-    greth_start_transmit( base_addr_src_eth );
-
-    TEST_ASSERT(greth_wait_receive_irq(base_addr_dst_eth, eth_handled_flag_ptr), "Receiving is failed");
-    TEST_ASSERT(mem_cmp(edcl_cfg.data, (uint32_t *)edcl_cfg.addr, edcl_cfg.len / sizeof(uint32_t)), "Data compare error!\n");
-    mem_clr((uint32_t *) edcl_cfg.addr, edcl_cfg.len / sizeof(uint32_t));
-    rumboot_printf("EDCL write is OK\n");
-
-    //check edcl read data from cell &test_edcl_data
-    edcl_cfg.edcl_seq_number = edcl_seq_number++;
-    edcl_cfg.wrrd = EDCL_RD;
-    edcl_cfg.addr = (uint32_t)test_edcl_data_im1;
-    prepare_test_edcl_data(&edcl_cfg);
-    rumboot_printf("\nChecking EDCL read transfer\n");
-    greth_configure_for_receive(  base_addr_dst_eth, test_data_dst,  sizeof(test_edcl_packet_im0), rx_descriptor_data_, &tst_greth_mac);
-    greth_configure_for_receive(  base_addr_src_eth, test_data_resp, sizeof(test_edcl_packet_im0), rx_descriptor_data_, &tst_greth_mac);
-    greth_configure_for_transmit( base_addr_src_eth, test_data_src,  sizeof(test_edcl_packet_im0), tx_descriptor_data_, &tst_greth_mac);
-
-    greth_start_receive( base_addr_dst_eth, false );
+    //greth_start_transmit( base_addr_src_eth );
     greth_start_edcl_rd( base_addr_src_eth );
 
     eth_handled_flag_ptr = (base_addr_src_eth==GRETH_0_BASE) ? &GRETH0_IRQ_HANDLED : &GRETH1_IRQ_HANDLED;
     TEST_ASSERT(greth_wait_receive_irq(base_addr_src_eth, eth_handled_flag_ptr), "Receiving EDCL response failed\n");
-    TEST_ASSERT(mem_cmp(test_edcl_data_im1, &test_data_resp[13], edcl_cfg.len / sizeof(uint32_t)), "Data compare error!\n");
-    mem_clr(test_data_resp, sizeof(test_edcl_packet_im0));
-    rumboot_printf("EDCL read is OK\n");
+    TEST_ASSERT(mem_cmp(data, (uint8_t*) wr_mem_addr, len), "Data error at EDCL WR operation!");
+}
+
+void check_edcl_rd_via_external_loopback(uint32_t base_addr_dst_eth, uint32_t rd_mem_addr, uint32_t len)
+{
+    uint32_t * edcl_packet = (uint32_t* )rumboot_malloc_from_heap(0, 64 + len );
+    edcl_test_data_struct_t edcl_cfg;
+    uint32_t base_addr_src_eth;
+    uint32_t edcl_packet_len;
+    uint32_t * test_data_resp = test_edcl_rcv_packet_im1;
+    uint32_t volatile* eth_handled_flag_ptr;
+
+    TEST_ASSERT((base_addr_dst_eth==GRETH_1_BASE)||(base_addr_dst_eth==GRETH_0_BASE), "Wrong GRETH base address\n");
+    if (base_addr_dst_eth==GRETH_1_BASE)
+    {
+        edcl_cfg.src_ip   = EDCLIP1;
+        edcl_cfg.src_mac  = tst_greth_edcl_mac1;
+        edcl_cfg.dst_ip   = EDCLIP1;
+        edcl_cfg.dst_mac  = tst_greth_edcl_mac1;
+        GRETH1_IRQ_HANDLED = 0;
+        base_addr_src_eth = GRETH_0_BASE;
+    }
+    else
+    {
+        edcl_cfg.src_ip   = EDCLIP0;
+        edcl_cfg.src_mac  = tst_greth_edcl_mac0;
+        edcl_cfg.dst_ip   = EDCLIP0;
+        edcl_cfg.dst_mac  = tst_greth_edcl_mac0;
+        GRETH0_IRQ_HANDLED = 0;
+        base_addr_src_eth = GRETH_1_BASE;
+    }
+
+    //check edcl read
+    edcl_cfg.edcl_seq_number = edcl_seq_number++;
+    edcl_cfg.wrrd = EDCL_RD;
+    edcl_cfg.addr = rd_mem_addr;
+    edcl_cfg.len  = len;
+    edcl_packet_len = (len + 64);
+    prepare_test_edcl_data(&edcl_cfg, edcl_packet);
+    rumboot_printf("\nChecking EDCL read transfer\n");
+
+    greth_configure_for_receive(  base_addr_src_eth, test_data_resp, edcl_packet_len, rx_descriptor_data_, &tst_greth_mac);
+    greth_configure_for_transmit( base_addr_src_eth, edcl_packet, edcl_packet_len, tx_descriptor_data_, &tst_greth_mac);
+
+    greth_start_edcl_rd( base_addr_src_eth );
+
+    eth_handled_flag_ptr = (base_addr_src_eth==GRETH_0_BASE) ? &GRETH0_IRQ_HANDLED : &GRETH1_IRQ_HANDLED;
+    TEST_ASSERT(greth_wait_receive_irq(base_addr_src_eth, eth_handled_flag_ptr), "Receiving EDCL response failed\n");
+    TEST_ASSERT(mem_cmp((uint8_t*) rd_mem_addr, &test_data_resp[13], len), "Data compare error at EDCL RD operation!\n");
 }
 
 void check_rx_er(uint32_t base_addr)
@@ -504,14 +555,17 @@ void check_rx_er(uint32_t base_addr)
 
     prepare_test_data(1, 1);
 
-    greth_configure_for_receive( base_addr_dst_eth, test_data_im1_dst, sizeof(test_data_im0_src), rx_descriptor_data_, &tst_greth_mac);
-    greth_configure_for_transmit( base_addr_src_eth, test_data_im1_src, sizeof(test_data_im0_src), tx_descriptor_data_, &tst_greth_mac);
+    greth_configure_for_receive( base_addr_dst_eth, test_data_im1_dst, GRETH_TEST_DATA_LEN_BYTES, rx_descriptor_data_, &tst_greth_mac);
+    greth_configure_for_transmit( base_addr_src_eth, test_data_im1_src, GRETH_TEST_DATA_LEN_BYTES, tx_descriptor_data_, &tst_greth_mac);
 
     test_event(event_code);
     greth_start_receive( base_addr_dst_eth, true );
     greth_start_transmit( base_addr_src_eth );
 
     TEST_ASSERT(greth_wait_receive_err_irq(base_addr_dst_eth, eth_handled_flag_ptr), "Receiving error is failed\n");
+
+    rumboot_free(tx_descriptor_data_);
+    rumboot_free(rx_descriptor_data_);
 }
 
 void check_rx_col(uint32_t base_src_addr)
@@ -537,8 +591,8 @@ void check_rx_col(uint32_t base_src_addr)
 
     prepare_test_data(1, 1);
 
-    greth_configure_for_transmit( base_src_addr, test_data_im1_src, sizeof(test_data_im0_src), tx_descriptor_data_, &tst_greth_mac);
-    greth_configure_for_receive( base_addr_dst_eth, test_data_im1_dst, sizeof(test_data_im0_src), rx_descriptor_data_, &tst_greth_mac);
+    greth_configure_for_transmit( base_src_addr, test_data_im1_src, GRETH_TEST_DATA_LEN_BYTES, tx_descriptor_data_, &tst_greth_mac);
+    greth_configure_for_receive( base_addr_dst_eth, test_data_im1_dst, GRETH_TEST_DATA_LEN_BYTES, rx_descriptor_data_, &tst_greth_mac);
 
     test_event(event_code);
 
@@ -546,6 +600,9 @@ void check_rx_col(uint32_t base_src_addr)
     greth_start_transmit(base_src_addr);
 
     TEST_ASSERT(greth_wait_receive_irq(base_addr_dst_eth, eth_handled_flag_ptr), "Receiving error is failed\n");
+
+    rumboot_free(tx_descriptor_data_);
+    rumboot_free(rx_descriptor_data_);
 }
 
 
@@ -562,11 +619,16 @@ int main(void)
     rumboot_printf("Start test_oi10_greth. MDIO and registers access checks for GRETH%d (0x%X)\n", GET_GRETH_IDX(GRETH_BASE), GRETH_BASE);
     regs_check(GRETH_BASE);
     mdio_check(GRETH_BASE);
-#elif CHECK_EDCL
+#elif EDCL_TEST_ADDR
     rumboot_printf("Start test_oi10_greth. EDCL checks\n");
     tbl = create_greth01_irq_handlers();
     edcl_seq_number = 0;
-    check_edcl_via_external_loopback(GRETH_BASE, test_edcl_packet_im1, test_data_im1_dst, test_edcl_rcv_packet_im1);
+    if ((EDCL_TEST_ADDR>=EM2_BANK0_BASE) && ((EDCL_TEST_ADDR<(EM2_BANK5_BASE+NOR_SIZE))))
+        emi_init(DCR_EM2_EMI_BASE);
+    rx_descriptor_data_ = (greth_descr_t*) rumboot_malloc_from_heap_aligned(0, 3*sizeof(greth_descr_t), 1024);
+    tx_descriptor_data_ = (greth_descr_t*) rumboot_malloc_from_heap_aligned(0, 3*sizeof(greth_descr_t), 1024);
+    check_edcl_wr_via_external_loopback(GRETH_BASE, rumboot_virt_to_dma((uint32_t*) EDCL_TEST_ADDR), edcl_test_data_im0_wr, GRETH_EDCL_DATA_LEN);
+    check_edcl_rd_via_external_loopback(GRETH_BASE, rumboot_virt_to_dma((uint32_t*) EDCL_TEST_ADDR), GRETH_EDCL_DATA_LEN);
     delete_greth01_irq_handlers(tbl);
 #elif CHECK_RX_ER
     rumboot_printf("Start test_oi10_greth. Checks connection RX_ER signal for GRETH%d (0x%X)\n", GET_GRETH_IDX(GRETH_BASE), GRETH_BASE);
