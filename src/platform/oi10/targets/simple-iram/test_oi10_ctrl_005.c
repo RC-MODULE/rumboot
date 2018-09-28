@@ -121,7 +121,9 @@ void sp805_enable( uint32_t base_addr, int index )
     }
     cntrl = dcr_read( base_addr + control_reg );
     cntrl |= WD_CTRL_RESEN;
-    dcr_write( base_addr + control_reg, cntrl );
+
+    cntrl = dcr_read( base_addr + control_reg );
+    dcr_write( base_addr + control_reg, cntrl);
 }
 
 void sp805_stop( uint32_t base_addr, int index )
@@ -181,60 +183,6 @@ void sp805_config( uint32_t base_addr, const struct sp805_conf * config, int ind
         cntrl &= ~ DIT_CTRL_ONESHOT;
         cntrl &= ~ DIT_CTRL_PERIODIC;
     }
-
-    // INT EN
-    if( config->interrupt_enable ) {
-        cntrl |= DIT_CTRL_INTEN;
-    } else {
-        cntrl &= ~DIT_CTRL_INTEN;
-    }
-
-    // CLK DIV
-    if( config->clock_division == 256 ) {
-        cntrl |= DIT_CTRL_DIV1;
-        cntrl &= ~DIT_CTRL_DIV0;
-    } else if( config->clock_division == 16 ) {
-        cntrl &= ~DIT_CTRL_DIV1;
-        cntrl |= DIT_CTRL_DIV0;
-    } else {
-        cntrl &= ~DIT_CTRL_DIV1;
-        cntrl &= ~DIT_CTRL_DIV0;
-    }
-
-    // SIZE 32
-    if( config->width == 32 ) {
-        cntrl |= DIT_CTRL_SIZE32;
-    } else {
-        cntrl &= ~DIT_CTRL_SIZE32;
-    }
-
-    if( index ) {
-        dcr_write( base_addr + DIT0_REG_CONTROL1, cntrl );
-
-        // LOAD
-        if( config->load ) {
-            dcr_write( base_addr + DIT0_REG_LOAD1, config->load );
-        }
-
-        // BG LOAD
-        if( config->bgload ) {
-            dcr_write( base_addr + DIT0_REG_BGLOAD1, config->bgload );
-        }
-    } else {
-        dcr_write( base_addr + DIT0_REG_CONTROL0, cntrl );
-
-        // LOAD
-        if( config->load ) {
-            dcr_write( base_addr + DIT0_REG_LOAD0, config->load );
-        }
-
-        // BG LOAD
-        if( config->bgload ) {
-            dcr_write( base_addr + DIT0_REG_BGLOAD0, config->bgload );
-        }
-    }
-}
-*/
 
 /*
 bool test_wd(struct s804_instance_i ins)
