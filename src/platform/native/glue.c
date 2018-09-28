@@ -22,7 +22,7 @@
 int g_argc = 0;
 static int ipc_id;
 char *g_argv[64];
-#define NAME CMAKE_BINARY_DIR "/rumboot-native-Production-spl-ok"
+#define NAME CMAKE_BINARY_DIR "/rumboot-native-" CMAKE_BUILD_TYPE "-spl-fail"
 static struct rumboot_bootsource arr[] = {
         {
                 .name = NAME,
@@ -153,6 +153,12 @@ void rumboot_platform_setup()
                 if (c == -1) {
                         break;
                 }
+
+                if (c == '?') {
+                       rumboot_printf("FATAL: Missing required argument");
+                       exit(1);
+                }
+
                 switch (c) {
                 case 'i':
                         ipc_id = atoi(optarg);

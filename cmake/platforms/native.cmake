@@ -38,14 +38,15 @@ endmacro()
 
 function(gen_chain_spl var name s1 s2)
   generate_product_name(SPL_CHAIN_EXEC ${name})
-  add_custom_target(${SPL_CHAIN_EXEC}
+  message(${SPL_CHAIN_EXEC})
+  add_custom_target(${SPL_CHAIN_EXEC} ALL
     COMMAND cat ${s1} > ${SPL_CHAIN_EXEC}
     COMMAND cat ${s2}   >> ${SPL_CHAIN_EXEC}
     WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
     COMMENT "Generating chained ${name}"
     DEPENDS ${s1} ${s2}
   )
-  set(var ${SPL_CHAIN_EXEC} PARENT_SCOPE)
+  set(${var} ${SPL_CHAIN_EXEC} PARENT_SCOPE)
 endfunction()
 
 
@@ -79,17 +80,19 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       FEATURES STUB
   )
 
-  gen_chain_spl(spl_chain_ok SPL_CHAIN_OK SPL_NEXT SPL_OK)
+  gen_chain_spl(SPL_CHAIN_OK spl_chain_ok ${SPL_NEXT} ${SPL_OK})
 
   add_custom_target(pattern.bin ALL
     COMMAND ${PYTHON_EXECUTABLE} ${PROJECT_SOURCE_DIR}/scripts/wordpattern.py -f ${PROJECT_BINARY_DIR}/pattern.bin -s 8192
   )
+
   add_rumboot_test(host-bootsrc-check-io bootsrc-check-io-no-align --file pattern.bin)
   add_rumboot_test(host-bootsrc-check-io bootsrc-check-io-align-16  --align 16 --file pattern.bin)
   add_rumboot_test(host-bootsrc-check-io bootsrc-check-io-align-512 --align 512 --file pattern.bin)
 
-  add_rumboot_test(bootrom-loader bootrom-chain --file ${SPL_CHAIN_OK})
   add_rumboot_test(host-fileboot unit-boot --file ${SPL_OK})
+
+  add_rumboot_test(bootrom-loader bootrom-chain --file ${SPL_CHAIN_OK})
   add_rumboot_test(bootrom-loader bootrom-jump --file ${SPL_JUMP} --file2 ${SPL_OK_CHECK2})
   add_rumboot_test(bootrom-loader bootrom-jump-to-host --file ${SPL_JUMP_HOST} --hfile ${SPL_OK_CHECK2})
   add_rumboot_test(bootrom-loader bootrom-boot --file ${SPL_OK} --file2 ${SPL_FAIL})
