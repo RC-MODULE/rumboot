@@ -26,7 +26,7 @@
 #include <devices/mkio.h>
 
 //  Single Array Data Size In Bytes
-#define DATA_SIZE   2
+#define DATA_SIZE   4
 
 
 
@@ -112,9 +112,19 @@ uint32_t main ()
         mkio_set_polarity ((1 << i), MKIO1_BASE);
     }
 
+    if (mkio_write_to_rt ((uint32_t) (&data_src), (uint32_t) (&data_mid), DATA_SIZE, MKIO0_BASE, MKIO1_BASE) != 0)
+        return -3;
+    cmp_arrays ((uint32_t) (&data_src), (uint32_t) (&data_mid), DATA_SIZE);
+    rumboot_printf("mkio_write_to_rt usual polarity OK\n");
+
+    if (mkio_read_from_rt ((uint32_t) (&data_mid), (uint32_t) (&data_dst), DATA_SIZE, MKIO0_BASE, MKIO1_BASE) != 0)
+        return -4;
+    cmp_arrays ((uint32_t) (&data_mid), (uint32_t) (&data_dst), DATA_SIZE);
+    rumboot_printf("mkio_read_from_rt usual polarity OK\n");
+
     //  Change BC and RT data signals polarity
-    mkio_set_polarity (0x0F, MKIO0_BASE);
-    mkio_set_polarity (0x0F, MKIO1_BASE);
+    mkio_set_polarity (0x01, MKIO0_BASE);
+    mkio_set_polarity (0x01, MKIO1_BASE);
     
     if (mkio_write_to_rt ((uint32_t) (&data_src), (uint32_t) (&data_mid), DATA_SIZE, MKIO0_BASE, MKIO1_BASE) != 0)
         return -3;
