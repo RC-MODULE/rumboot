@@ -19,6 +19,9 @@
 #include <platform/arch/ppc/ppc_476fp_lib_c.h>
 #include <platform/devices/emi.h>
 
+#define SRAM0_OFFSET_1 0x1000
+#define SRAM0_OFFSET_2 0x2000
+
 void check_sram0_8 (const uint32_t addr)
 {
     uint8_t check_arr8[] =
@@ -185,10 +188,10 @@ int main ()
     check_sram0 (SRAM0_BASE + 0x01);
 
     rumboot_printf ("CACHE OFF\n");
-    check_sram0 (SRAM0_BASE + 0x1002);
+    check_sram0 (SRAM0_BASE + SRAM0_OFFSET_1 + 2);
 
     rumboot_printf ("CACHE OFF\n");
-    check_sram0 (SRAM0_BASE + 0x2003);
+    check_sram0 (SRAM0_BASE + SRAM0_OFFSET_2 + 3);
 
     rumboot_printf ("TEST_OK\n");
     return 0;
