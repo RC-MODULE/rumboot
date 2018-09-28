@@ -1,5 +1,6 @@
 
 #include <platform/devices/greth.h>
+#define ETH_DEBUG
 
 void greth_set_mac(uint32_t base_addr, greth_mac_t* mac)
 {

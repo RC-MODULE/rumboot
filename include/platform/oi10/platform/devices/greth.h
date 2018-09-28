@@ -273,7 +273,7 @@ typedef struct edcl_test_data_struct
     uint32_t     dst_ip;
     uint32_t     edcl_seq_number;
     uint32_t     addr;
-    uint32_t*    data;
+    uint8_t*     data;
     uint32_t     len;
     bool         wrrd;
 }edcl_test_data_struct_t;
