@@ -246,7 +246,7 @@ int main ()
 
     msync();
     isync();
-    check_sram0 (SRAM0_BASE + SRAM0_OFFSET_WB + 2, flush_off);
+    check_sram0 (SRAM0_BASE + SRAM0_OFFSET_WB + 3, flush_off);
     dci(2);
 
     rumboot_printf ("TEST_OK\n");
