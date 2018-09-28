@@ -29,6 +29,9 @@
 #define TLB_ENTRY_SRAM0_LITTLE          MMU_TLB_ENTRY(  0x000,  0x00000,    0x00000,    MMU_TLBE_DSIZ_1GB,      0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_LITTLE_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
 #define TLB_ENTRY_SRAM1_NOR_LITTLE      MMU_TLB_ENTRY(  0x000,  0x40000,    0x40000,    MMU_TLBE_DSIZ_1GB,      0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_LITTLE_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
 #define TLB_ENTRY_SRAM1_NOR_BIG         MMU_TLB_ENTRY(  0x000,  0x40000,    0x40000,    MMU_TLBE_DSIZ_1GB,      0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
+#define TLB_ENTRY_SDRAM_LITTLE          MMU_TLB_ENTRY(  0x000,  0x00000,    0x00000,    MMU_TLBE_DSIZ_1GB,      0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_LITTLE_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
+#define TLB_ENTRY_PRAM_LITTLE           MMU_TLB_ENTRY(  0x000,  0x40000,    0x40000,    MMU_TLBE_DSIZ_1GB,      0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_LITTLE_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
+#define TLB_ENTRY_SSRAM_BIG             MMU_TLB_ENTRY(  0x000,  0x40000,    0x40000,    MMU_TLBE_DSIZ_1GB,      0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
 
 #define IM0_BASE_MIRROR 0x80040000
 
@@ -167,6 +170,30 @@ int main ()
     write_tlb_entries(&sram1_tlb_entry_little,1);
 
     check_mem_little_e (SRAM1_BASE);
+
+    //SDRAM LittleEndian
+     rumboot_printf("Check SDRAM LittleEndian\n");
+
+     static const tlb_entry sdram_tlb_entry_little = {TLB_ENTRY_SDRAM_LITTLE};
+     write_tlb_entries(&sdram_tlb_entry_little,1);
+
+     check_mem_little_e (SDRAM_BASE);
+
+     //SSRAM BigEndian
+      rumboot_printf("Check SSRAM LittleEndian\n");
+
+      static const tlb_entry ssram_tlb_entry_big = {TLB_ENTRY_SSRAM_BIG};
+      write_tlb_entries(&ssram_tlb_entry_big,1);
+
+      check_mem_big_e (SSRAM_BASE);
+
+      //PRAM LittleEndian
+       rumboot_printf("Check PRAM LittleEndian\n");
+
+       static const tlb_entry pram_tlb_entry_little = {TLB_ENTRY_PRAM_LITTLE};
+       write_tlb_entries(&pram_tlb_entry_little,1);
+
+       check_mem_little_e (PIPELINED_BASE);
 
     rumboot_printf("TEST OK\n");
     return 0;
