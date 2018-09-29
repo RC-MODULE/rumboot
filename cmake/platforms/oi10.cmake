@@ -134,6 +134,13 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         TAGOFFSET 1
     )
 
+    rumboot_bootrom_unit_test(
+        ID 2
+        TAG nor
+        MEMTAG NOR_IMAGE
+        TAGOFFSET 0
+    )
+
     #Add lprobe sample scripts
     add_rumboot_target_dir(common/lua/
       CONFIGURATION LPROBE_CPU

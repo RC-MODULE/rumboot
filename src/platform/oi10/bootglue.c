@@ -15,7 +15,7 @@
 #include <platform/regs/sctl.h>
 #include <rumboot/boot.h>
 #include <rumboot/bootsrc/spiflash.h>
-
+#include <rumboot/bootsrc/physmap.h>
 
 #define BOOTM_SELFTEST     (0 << 1)
 #define BOOTM_HOST         (1 << 1)
@@ -86,6 +86,11 @@ static const struct rumboot_bootsource arr[] = {
                 .enable = spi0_gcs_enable,
                 .disable = spi0_gcs_disable,
                 .chipselect = spi0_gcs,
+        },
+        {
+                .name = "NOR (CS: 5)",
+                .base = NOR_BASE,
+                .plugin = &g_bootmodule_physmap,
         },
 };
 
