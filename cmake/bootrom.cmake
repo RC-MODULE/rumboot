@@ -143,6 +143,7 @@ macro(rumboot_bootrom_unit_test)
 
   set(_commas)
 
+
   foreach(offset RANGE 0 ${BOOTSOURCE_TAGOFFSET})
     if (NOT ${offset} EQUAL "0")
       set(_commas "${_commas},")
@@ -228,7 +229,7 @@ macro(rumboot_bootrom_integration_test name romconf)
           PREFIX "bootrom"
           BOOTROM bootrom-loader
           TESTGROUP bootrom bootrom-integration
-          FEATURES NOCODE
+          FEATURES NOCODE ${CONFIGURATION_${romconf}_FEATURES}
           ${ARGN}
   )
 endmacro()
