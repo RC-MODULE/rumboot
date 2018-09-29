@@ -1,5 +1,5 @@
-#ifndef SPIFLASH__
-#define SPIFLASH__
+#ifndef BOOTSRC_PHYSMAP__
+#define BOOTSRC_PHYSMAP__
 
 /**
  * \defgroup bootsrc_physmap physmap boot source
