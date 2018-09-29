@@ -17,9 +17,13 @@
 #include <rumboot/bootsrc/spiflash.h>
 #include <rumboot/bootsrc/physmap.h>
 
-#define BOOTM_SELFTEST     (0 << 1)
-#define BOOTM_HOST         (1 << 1)
-#define BOOTM_FASTUART     (2 << 1)
+#define BOOTM_SELFTEST     (1 << 1)
+#define BOOTM_HOST         (1 << 2)
+#define BOOTM_FASTUART     (1 << 3)
+#define BOOTM_SDIO_CD      (1 << 4)
+#define BOOTM_CPU_ECC      (1 << 5)
+#define BOOTM_EMI_ECC      (1 << 6)
+#define BOOTM_NOR_BOOT     (1 << 7)
 
 void rumboot_platform_read_config(struct rumboot_config *conf)
 {
@@ -31,9 +35,20 @@ void rumboot_platform_read_config(struct rumboot_config *conf)
         } else {
                 conf->baudrate = 115200;
         }
-
         conf->hostmode = (bootm & BOOTM_HOST);
         conf->selftest = (bootm & BOOTM_SELFTEST);
+}
+
+void rumboot_platform_print_summary(struct rumboot_config *conf)
+{
+        uint32_t bootm = dcr_read(DCR_SCTL_BASE + SCTL_BOOTM);
+
+        rumboot_printf("CPU ECC:         %s\n",
+                bootm & BOOTM_CPU_ECC ? "enabled" : "disabled");
+
+        rumboot_printf("NOR/SRAM ECC:    %s\n",
+                bootm & BOOTM_EMI_ECC ? "disabled" : "enabled");
+
 }
 
 void rumboot_platform_selftest(struct rumboot_config *conf)

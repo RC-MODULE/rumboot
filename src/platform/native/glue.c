@@ -425,3 +425,8 @@ uint32_t rumboot_virt_to_dma(volatile void *addr)
 {
         return (uint32_t)addr;
 }
+
+void rumboot_platform_print_summary(struct rumboot_config *conf)
+{
+    
+}

@@ -152,6 +152,7 @@ int32_t rumboot_bootimage_check_data(struct rumboot_bootheader *hdr);
 
  const char *rumboot_strerror(int err);
  void rumboot_platform_read_config(struct rumboot_config *conf);
+ void rumboot_platform_print_summary(struct rumboot_config *conf);
  void rumboot_platform_selftest(struct rumboot_config *conf);
  const struct rumboot_bootsource *rumboot_platform_get_bootsources();
  bool rumboot_platform_check_entry_points(struct rumboot_bootheader *hdr);

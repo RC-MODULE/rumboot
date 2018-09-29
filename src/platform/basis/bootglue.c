@@ -236,3 +236,8 @@ int rumboot_platform_exec(struct rumboot_bootheader *hdr)
         /* No-op, this chip has only one core */
         return 0;
 }
+
+void rumboot_platform_print_summary(struct rumboot_config *conf)
+{
+    
+}

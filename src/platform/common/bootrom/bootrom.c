@@ -13,7 +13,7 @@ static inline const char *bool_param(bool param)
         return param ? "enabled" : "disabled";
 }
 
-void rumboot_platform_dump_config(struct rumboot_config *conf,size_t maxsize) {
+void rumboot_platform_dump_config(struct rumboot_config *conf, size_t maxsize) {
         rumboot_printf("--- RumBoot Configuration ---\n");
         rumboot_printf("Force Host Mode: %s\n", bool_param(conf->hostmode));
         rumboot_printf("Selftest:        %s\n", bool_param(conf->selftest));
@@ -25,6 +25,9 @@ void rumboot_platform_dump_config(struct rumboot_config *conf,size_t maxsize) {
         }
         rumboot_printf("UART speed:      %d bps\n", conf->baudrate);
         rumboot_printf("Max SPL size:    %d bytes\n", maxsize);
+
+        rumboot_platform_print_summary(conf);
+
         rumboot_printf("---          ---          ---\n");
 }
 
