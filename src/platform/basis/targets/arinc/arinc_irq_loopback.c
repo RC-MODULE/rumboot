@@ -17,7 +17,8 @@
 
 #include <rumboot/printf.h>
 #include <rumboot/io.h>
-#include <regs/arinc.h>
+#include <devices/arinc.h>
+#include <rumboot/rumboot.h>
 #include <rumboot/irq.h>
 #include <platform/devices.h>
 #include <rumboot/io.h>
@@ -25,50 +26,45 @@
 #include <rumboot/platform.h>
 #include <platform/interrupts.h>
 
-#define tx_mem				0x40000
-#define rx_mem				0x50000
-
-#define tx_mem_double		0x60000
-#define rx_mem_double		0x70000
 
 static const int32_t tx_array32[] = {
         0x80818283,
         0x40414243,
         0x20212223,
-		0x10111213,
+        0x10111213,
         0x08090a0B,
-		0x04152637,
+        0x04152637,
         0x02132456,
         0x01122334,
         0x00112233,
         0x7F8091AB,
-		0x8F90A1B2,
-		0xDF90A1B2,
+        0x8F90A1B2,
+        0xDF90A1B2,
         0xE090A1B2,
         0xEF90A1B2,
         0xF790A1B2,
         0xFB90A1B2,
-		0xFFFEFDFC
+        0xFFFEFDFC
 };
 
 static const int32_t tx_array_double[] = {
         0x10818283,
         0x20414243,
         0x40212223,
-		0x80111213,
+        0x80111213,
         0xF8090a0B,
-		0xF4152637,
+        0xF4152637,
         0xF2132456,
         0xF1122334,
         0xF0112233,
         0x1F8091AB,
-		0x7F90A1B2,
-		0x2F90A1B2,
+        0x7F90A1B2,
+        0x2F90A1B2,
         0x1090A1B2,
         0x1F90A1B2,
         0x0790A1B2,
         0x0B90A1B2,
-		0x0FFEFDFC
+        0x0FFEFDFC
 };
 
 volatile uint32_t expected = 0;
@@ -104,7 +100,7 @@ static void handler(int irq, void *arg)
 	}
 	iowrite32(0x1,(ARINC_BASE + INT_DIS));	 //INT RESET	
 }		
-void arinc_init (uint32_t arinc_base_addr){
+void arinc_init (){
 	uint32_t receiver_number;
 
 	uint32_t  init_axi_mst;
@@ -113,27 +109,22 @@ void arinc_init (uint32_t arinc_base_addr){
 	init_axi_mst =0x0;
 	size   = 0x2;
 
-	//void *tx_mem =rumboot_malloc(8192);
 	receiver_number = 0x0;
 //-------------------------------------------------------------------------------------
 //  Set parameters for DMA exchange loopback  connected on chip pins in testbench
 //-------------------------------------------------------------------------------------
 
-	iowrite32(receiver_number,(arinc_base_addr + RNUM_RX)); //receiver ch number
-	iowrite32(tx_mem,(arinc_base_addr + AG_E_TX));    	// dma rd channel memory address
-	iowrite32(size,(arinc_base_addr + SZ_E_TX));    	// dma rd channel size
-	iowrite32(rx_mem,(arinc_base_addr + AG_E_RX));    	// dma wr channel memory address
-	iowrite32(size,(arinc_base_addr + SZ_E_RX));    	// dma wr channel size
+	iowrite32(receiver_number,(ARINC_BASE + RNUM_RX)); //receiver ch number
+	iowrite32(size,(ARINC_BASE + SZ_E_TX));    	// dma rd channel size
+	iowrite32(size,(ARINC_BASE + SZ_E_RX));    	// dma wr channel size
 	
-	iowrite32(tx_mem_double,(arinc_base_addr + AG_O_TX));   // dma rd channel memory address
-	iowrite32(size,(arinc_base_addr + SZ_O_TX));    	    // dma rd channel size
-	iowrite32(rx_mem_double,(arinc_base_addr + AG_O_RX));   // dma wr channel memory address
-	iowrite32(size,(arinc_base_addr + SZ_O_RX));    	    // dma wr channel size
+	iowrite32(size,(ARINC_BASE + SZ_O_TX));    	    // dma rd channel size
+	iowrite32(size,(ARINC_BASE + SZ_O_RX));    	    // dma wr channel size
 	
-	iowrite32(init_axi_mst,(arinc_base_addr + AXI_CTRL)); //AXI parameters
-	iowrite32(0x1,(arinc_base_addr + INT_TX));			 //INT TX
-	iowrite32(0x1,(arinc_base_addr + INT_RX));			//INT RX
-	iowrite32(0x1,(arinc_base_addr + INT_LONG));		//INT level
+	iowrite32(init_axi_mst,(ARINC_BASE + AXI_CTRL)); //AXI parameters
+	iowrite32(0x1,(ARINC_BASE + INT_TX));			 //INT TX
+	iowrite32(0x1,(ARINC_BASE + INT_RX));			//INT RX
+	iowrite32(0x1,(ARINC_BASE + INT_LONG));		//INT level
 	
 //--------------------------------------------------------------------------------------
 }
@@ -143,9 +134,32 @@ static void call_arinc_irq_even_array()
 	uint32_t enable;
 	enable =0x10001;
  
-	arinc_init(ARINC_BASE);
-    iowrite32(enable,ARINC_BASE + CHANNEL_EN); // run transaction
-	//iowrite32(enable,ARINC_BASE + CHANNEL_DIS); // stop transmitter
+ 	rumboot_printf("copy %d bytes\n", sizeof(tx_array32)); 
+	uint32_t *tx_mem = rumboot_malloc_from_heap_aligned(0,  sizeof(tx_array32), 128);	
+	rumboot_printf("tx_mem=0x%x\n", tx_mem ); //check data
+	
+	uint32_t *trg = (uint32_t *) tx_mem;
+	memcpy(trg, tx_array32,sizeof(tx_array32));
+	
+	uint32_t *rx_mem = rumboot_malloc_from_heap_aligned(0, sizeof(tx_array32), 128);
+	rumboot_printf("rx_mem=0x%x\n", rx_mem ); //check data
+
+	uint32_t *tx_mem_double = rumboot_malloc_from_heap_aligned(0, sizeof(tx_array_double), 128);
+	uint32_t *trg_double = (uint32_t *) tx_mem_double;
+	memcpy(trg_double, tx_array_double,sizeof(tx_array_double));
+	rumboot_printf("tx_mem_double=0x%x\n", tx_mem_double );
+
+	 uint32_t *rx_mem_double = rumboot_malloc_from_heap_aligned(0, sizeof(tx_array_double), 128);	
+	rumboot_printf("rx_mem_double=0x%x\n", rx_mem_double );
+	
+	iowrite32((uint32_t) &tx_mem[0],(ARINC_BASE + AG_E_TX));    	// dma rd channel memory address	
+	iowrite32((uint32_t) &rx_mem[0],(ARINC_BASE + AG_E_RX));    	// dma wr channel memory address
+	iowrite32((uint32_t) &tx_mem_double[0],(ARINC_BASE + AG_O_TX)); // dma rd channel memory address	
+	iowrite32((uint32_t) &rx_mem_double[0],(ARINC_BASE + AG_O_RX)); // dma wr channel memory address
+ 
+ 
+	arinc_init();
+	iowrite32(enable,ARINC_BASE + CHANNEL_EN); // run transaction
 	rumboot_printf("ARINC START CH0\n");									
 }
 void wait_irq() {
@@ -174,16 +188,7 @@ TEST_SUITE_END();
 /* Call the whole test suite */
 int main()
 {
-	
-	uint32_t *trg 		 = (uint32_t *) 0x40000;
-	uint32_t *trg_double = (uint32_t *) 0x60000;
-
-	rumboot_printf("copy %d bytes\n", sizeof(tx_array32));  //transmi
-	memcpy(trg, tx_array32,sizeof(tx_array32));
-
-	rumboot_printf("copy %d bytes\n", sizeof(tx_array_double));  //transmi
-	memcpy(trg_double, tx_array_double,sizeof(tx_array32));
-	
+		
 	rumboot_irq_cli(); //Disable all interrupts
 	
 	struct rumboot_irq_entry *tbl = rumboot_irq_create(NULL); //Create an IRQ table	
@@ -196,8 +201,8 @@ int main()
 
 	rumboot_irq_sei(); //allow interrupt handling
 
-    int ret = test_suite_run(NULL, &arinc_irq_test); //run irq test suite
-    rumboot_printf("%d tests from suite failed\n", ret);
+	int ret = test_suite_run(NULL, &arinc_irq_test); //run irq test suite
+	rumboot_printf("%d tests from suite failed\n", ret);
 
 	/* Deinit */
 	rumboot_irq_table_activate(NULL);
