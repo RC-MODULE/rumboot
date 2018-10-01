@@ -85,10 +85,10 @@ uint32_t pl022_flash_read_data(uint32_t const base_addr)
         {}
     REPEAT(4, READ_DATA_STAFF, dummy)
 
-    data = ioread8(base_addr+GSPI_SSPDR);
-    data = data | (ioread8(base_addr+GSPI_SSPDR) << 8);
-    data = data | (ioread8(base_addr+GSPI_SSPDR) << 16);
-    data = data | (ioread8(base_addr+GSPI_SSPDR) << 24);
+    data = ioread8(addr);
+    data = data | (ioread8(addr) << 8);
+    data = data | (ioread8(addr) << 16);
+    data = data | (ioread8(addr) << 24);
     return data;
 }
 
