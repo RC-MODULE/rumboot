@@ -21,7 +21,7 @@
 
 #define IM1_BASE_MIRROR     0xC0000000
 
-#define EDCL_TEST_ADDR_IM0  (IM0_BASE + 0x20000 - 0x400)
+#define EDCL_TEST_ADDR_IM0  (IM0_BASE + 0x4000 + 0x100)
 #define EDCL_TEST_ADDR_IM1  (IM1_BASE)
 #define EDCL_TEST_ADDR_EM2  (EM2_BANK3_BASE)
 
@@ -467,7 +467,7 @@ void check_edcl_wr_via_external_loopback(uint32_t base_addr_dst_eth, uint32_t wr
     edcl_cfg.len  = len;
     edcl_packet_len = (len + 64);
     prepare_test_edcl_data(&edcl_cfg, edcl_packet);
-    rumboot_printf("\nChecking EDCL write transfer\n");
+    rumboot_printf("\nChecking EDCL write transfer %d bytes to 0x%X\n", len, wr_mem_addr);
 
     greth_configure_for_receive(  base_addr_src_eth, test_data_resp, edcl_packet_len, rx_descriptor_data_, &tst_greth_mac);
     greth_configure_for_transmit( base_addr_src_eth, edcl_packet, edcl_packet_len, tx_descriptor_data_, &tst_greth_mac);
@@ -516,7 +516,7 @@ void check_edcl_rd_via_external_loopback(uint32_t base_addr_dst_eth, uint32_t rd
     edcl_cfg.len  = len;
     edcl_packet_len = (len + 64);
     prepare_test_edcl_data(&edcl_cfg, edcl_packet);
-    rumboot_printf("\nChecking EDCL read transfer\n");
+    rumboot_printf("\nChecking EDCL read transfer %d bytes from 0x%X\n", len, rd_mem_addr);
 
     greth_configure_for_receive(  base_addr_src_eth, test_data_resp, edcl_packet_len, rx_descriptor_data_, &tst_greth_mac);
     greth_configure_for_transmit( base_addr_src_eth, edcl_packet, edcl_packet_len, tx_descriptor_data_, &tst_greth_mac);
@@ -525,7 +525,7 @@ void check_edcl_rd_via_external_loopback(uint32_t base_addr_dst_eth, uint32_t rd
 
     eth_handled_flag_ptr = (base_addr_src_eth==GRETH_0_BASE) ? &GRETH0_IRQ_HANDLED : &GRETH1_IRQ_HANDLED;
     TEST_ASSERT(greth_wait_receive_irq(base_addr_src_eth, eth_handled_flag_ptr), "Receiving EDCL response failed\n");
-    TEST_ASSERT(mem_cmp((uint8_t*) rd_mem_addr, &test_data_resp[13], len), "Data compare error at EDCL RD operation!\n");
+    TEST_ASSERT(mem_cmp((uint8_t*) rd_mem_addr, (uint8_t*)(&test_data_resp[13]), len), "Data compare error at EDCL RD operation!\n");
 }
 
 void check_rx_er(uint32_t base_addr)
