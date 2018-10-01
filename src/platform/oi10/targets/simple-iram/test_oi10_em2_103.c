@@ -22,6 +22,17 @@
 #include <platform/ppc470s/mmu/mem_window.h>
 #include <platform/devices/emi.h>
 
+#define NUM_BYTE 128
+
+void init_data (uint32_t addr)
+{
+    int i = 0;
+    for (i = 0; i < (NUM_BYTE/4); i++)
+    {
+        iowrite32 (0x00, addr + i*4);
+    }
+}
+
 void check_sram0_8 (const uint32_t addr)
 {
     uint8_t check_arr8[] =
@@ -61,14 +72,18 @@ void check_sram0_8 (const uint32_t addr)
     };
 
     //write
+    rumboot_printf ("write\n");
     uint32_t i = 0;
     for (i = 0; i < 32; i++)
     {
         iowrite8 (check_arr8[i], addr + i);
     }
+    msync();
+
     //flush
     dcbf((void*)addr);
-    msync();
+
+    rumboot_printf ("read\n");
     //read
     for (i = 0; i < 32; i++)
     {
@@ -97,16 +112,19 @@ void check_sram0_16 (const uint32_t addr)
         [14] = 0xeeee,
         [15] = 0xffff
     };
-    //write
+
+    rumboot_printf ("write\n");
     uint32_t i = 0;
     for (i = 0; i < 16; i++)
     {
         iowrite16 (check_arr16[i], addr + i*2);
     }
+    msync();
+
     //flush
     dcbf((void*)addr);
-    msync();
-    //read
+
+    rumboot_printf ("read\n");
     for (i = 0; i < 16; i++)
     {
         TEST_ASSERT (ioread16(addr + i*2) == check_arr16[i],"ERROR: read value is wrong");
@@ -126,15 +144,19 @@ void check_sram0_32 (uint32_t addr)
         [6] = 0x66666666,
         [7] = 0x77777777
     };
-    //write
+
+    rumboot_printf ("write\n");
     uint32_t i = 0;
     for (i = 0; i < 8; i++)
     {
         iowrite32 (check_arr32[i], addr + i*4);
     }
+    msync();
+
     //flush
     dcbf((void*)addr);
-    msync();
+
+    rumboot_printf ("write\n");
     //read
     for (i = 0; i < 8; i++)
     {
@@ -151,16 +173,19 @@ void check_sram0_64 (uint32_t addr)
         [2] = 0x0011223344556677ULL,
         [3] = 0x8899aabbccddeeffULL
     };
-    //write
+
+    rumboot_printf ("write\n");
     uint32_t i = 0;
     for (i = 0; i < 4; i++)
     {
         iowrite64 (check_arr64[i], addr + i * 8);
     }
+    msync();
+
     //flush
     dcbf((void*)addr);
-    msync();
-    //read
+
+    rumboot_printf ("read\n");
     for (i = 0; i < 4; i++)
     {
         TEST_ASSERT (ioread64(addr + i*8) == check_arr64[i],"ERROR: read value is wrong");
@@ -194,6 +219,7 @@ void check_sram0 (const uint32_t addr)
 int main ()
 {
     emi_init(DCR_EM2_EMI_BASE);
+    init_data (SRAM0_BASE + 0x200);
 
     rumboot_printf ("CACHE OFF\n");
     check_sram0 (SRAM0_BASE);
@@ -202,16 +228,12 @@ int main ()
     rumboot_printf ("CACHE WT\n");
     static const tlb_entry sram0_tlb_entry_wt = {TLB_ENTRY_CACHE_WT};
     write_tlb_entries(&sram0_tlb_entry_wt,1);
-    msync();
-    isync();
     check_sram0 (SRAM0_BASE + 0x100);
     dci(2);
 
     rumboot_printf ("CACHE WB\n");
     static const tlb_entry sram0_tlb_entry_wb = {TLB_ENTRY_CACHE_WB};
     write_tlb_entries(&sram0_tlb_entry_wb,1);
-    msync();
-    isync();
     check_sram0 (SRAM0_BASE + 0x200);
 
     rumboot_printf ("TEST_OK\n");
