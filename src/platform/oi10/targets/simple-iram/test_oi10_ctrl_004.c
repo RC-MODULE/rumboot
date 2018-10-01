@@ -36,8 +36,25 @@
 #include <platform/interrupts.h>
 #include <platform/regs/fields/mpic128.h>
 
+
+/*
+ *  DUAL-TIMER (ARM SP804)  registers
+ */
+/*
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+
+#include <rumboot/testsuite.h>
+
+#include <rumboot/printf.h>
+#include <rumboot/io.h>
+#include <rumboot/irq.h>
+*/
+
 #define TIMER0_CYCLES           1
 #define TIMER1_CYCLES           2
+
 
 static uint32_t check_timer_default_ro_val(uint32_t base_addr)
 {
@@ -64,7 +81,7 @@ static uint32_t check_timer_default_ro_val(uint32_t base_addr)
     rumboot_printf( "ERROR\n" );
     return 1;
 }
-// ||
+/*
 static uint32_t check_timer_default_rw_val( uint32_t base_addr )
 {
     rumboot_printf("Check the default values of the registers:");
@@ -117,6 +134,7 @@ static uint32_t check_timer_default_rw_val( uint32_t base_addr )
     rumboot_printf( "ERROR\n" );
     return 1;
 }
+*/
 
 void sp804_enable( uint32_t base_addr, int index ) {
     int cntrl;
@@ -129,6 +147,7 @@ void sp804_enable( uint32_t base_addr, int index ) {
     cntrl = dcr_read( base_addr + control_reg );
     cntrl |= DIT_CTRL_ENABLE;
     dcr_write( base_addr + control_reg, cntrl );
+
 }
 
 void sp804_stop( uint32_t base_addr, int index ) {
@@ -142,6 +161,7 @@ void sp804_stop( uint32_t base_addr, int index ) {
     cntrl = dcr_read( base_addr + control_reg );
     cntrl = cntrl & ( ~( DIT_CTRL_ENABLE ) );
     dcr_write( base_addr + control_reg, cntrl );
+
 }
 
 int sp804_get_value( uint32_t base_addr, int index ) {
@@ -231,38 +251,36 @@ void sp804_config( uint32_t base_addr, const struct sp804_conf * config, int ind
     }
 }
 
-struct s804_instance_i
-{
+struct s804_instance {
     int timer0_irq;
     int timer1_irq;
     uint32_t base_addr;
     int dit_index;
 };
 
-static void handler0( int irq, void *arg )
-{
-    struct s804_instance_i *a = (struct s804_instance_i *) arg;
-        a->timer0_irq = a->timer0_irq + 1;
+static void handler0( int irq, void *arg ) {
+    struct s804_instance *a = ( struct s804_instance * )arg;
+    a->timer0_irq = a->timer0_irq + 1;
     rumboot_printf( "IRQ 0 arrived  \n" );
+
     rumboot_printf( "sp804_%d timer 0 INT # %d  \n", a->dit_index, a->timer0_irq );
     sp804_clrint( a->base_addr, 0 );
 }
 
-static void handler1( int irq, void *arg )
-{
-    struct s804_instance_i *a = (struct s804_instance_i *) arg;
+static void handler1( int irq, void *arg ) {
+    struct s804_instance *a = ( struct s804_instance * )arg;
     a->timer1_irq = a->timer1_irq + 1;
     rumboot_printf( "IRQ 1 arrived  \n" );
     rumboot_printf( "sp804_%d timer 1 INT # %d  \n", a->dit_index, a->timer1_irq );
     sp804_clrint( a->base_addr, 1 );
+
 }
 
-bool test_dit_timers(struct s804_instance_i ins)
-{
+bool test_dit_timers( uint32_t structure ) {
     int c = 0;
     int d = 0;
 
-    struct s804_instance_i *stru = &ins;
+    struct s804_instance *stru = ( struct s804_instance * )structure;
     uint32_t base_addr = stru->base_addr;
 
     struct sp804_conf config_0 = {
@@ -281,8 +299,7 @@ bool test_dit_timers(struct s804_instance_i ins)
         .load = 200,
         .bgload = 0 };
 
-    for( int i = 0; i < TIMER0_CYCLES + stru->dit_index; i++ )
-    {
+    for( int i = 0; i < TIMER0_CYCLES + stru->dit_index; i++ ) {
         sp804_config( base_addr, &config_0, 0 );
         sp804_enable( base_addr, 0 );
         while( sp804_get_value( base_addr, 0 ) ) {
@@ -297,6 +314,7 @@ bool test_dit_timers(struct s804_instance_i ins)
         };
         d++;
     }
+
     if( stru->timer0_irq == TIMER0_CYCLES + stru->dit_index ) {
         rumboot_printf( "Timer 0 test OK \n" );
     } else {
@@ -305,8 +323,7 @@ bool test_dit_timers(struct s804_instance_i ins)
         return false;
     }
 
-    if( stru->timer1_irq == TIMER1_CYCLES + stru->dit_index )
-    {
+    if( stru->timer1_irq == TIMER1_CYCLES + stru->dit_index ) {
         rumboot_printf( "Timer 1 test OK \n" );
     } else {
         rumboot_printf( "ERROR in Timer 1 test \n" );
@@ -318,65 +335,45 @@ bool test_dit_timers(struct s804_instance_i ins)
 }
 
 static struct s804_instance in[ ] = {
-{
+    {
         .base_addr = DCR_TIMERS_BASE,
-        .dit_index = 0 },
-};
+        .dit_index = 0 }, };
 
 TEST_SUITE_BEGIN(dit_testlist, "SP804 IRQ TEST")
     TEST_ENTRY("SP804_0", test_dit_timers, (uint32_t) &in[0]),
 TEST_SUITE_END();
 
-uint32_t main(void)
-{
-    uint32_t result;
-    int ret;
-
-
-    in.base_addr = DCR_TIMERS_BASE;
-    in.dit_index = 0;
-
-    // Set up interrupt handlers
+int main() {
+// Set up interrupt handlers
+    register int result;
     rumboot_printf( "SP804 test START\n" );
-    rumboot_printf( "SP804 int are clean up\n" );
+ //||
+            //check_timer_default_rw_val(DCR_TIMERS_BASE);
 
-    result = check_timer_default_ro_val(DCR_TIMERS_BASE) ||
-                check_timer_default_rw_val(DCR_TIMERS_BASE);
-
-    if(result)
-    {
-        rumboot_printf("Checked test Failed\n");
-        return 1;
-    }
-
-    rumboot_printf("Checked TEST_OK\n");
-
-    rumboot_printf( "SP804 test START\n" );
-    struct rumboot_irq_entry *tbl = rumboot_irq_create( NULL );
     rumboot_irq_cli();
+    struct rumboot_irq_entry *tbl = rumboot_irq_create( NULL );
 
-//    rumboot_irq_set_handler( tbl, DIT_INT0, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler0, &s804_i );
-//    rumboot_irq_set_handler( tbl, DIT_INT1, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler1, &s804_i );
+    rumboot_irq_set_handler( tbl, DIT_INT0, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler0, &in[ 0 ] );
+    rumboot_irq_set_handler( tbl, DIT_INT1, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler1, &in[ 0 ] );
 
-    rumboot_irq_set_handler( tbl, DIT_INT0, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler0, &in);
-    rumboot_irq_set_handler( tbl, DIT_INT1, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler1, &in);
-
+    /* Activate the table */
     rumboot_irq_table_activate( tbl );
     rumboot_irq_enable( DIT_INT0 );
     rumboot_irq_enable( DIT_INT1 );
     rumboot_irq_sei();
 
+// Run tests and return failed one
 
-    //   result = test_dit_timers(s804_i);
+    result = test_suite_run( NULL, &dit_testlist );
+    rumboot_printf( "%d tests from suite failed\n", result );
 
-    if(!result)
+    rumboot_printf( "Check ro/rw registers\n" );
+    result = check_timer_default_ro_val(DCR_TIMERS_BASE);
+    if(result)
     {
-        rumboot_printf("test error\n");
+        rumboot_printf("Checked TEST_ERROR\n");
         return 1;
     }
 
-    // Run tests and return failed one
-     ret = test_suite_run( NULL, &dit_testlist );
-     rumboot_printf( "%d tests from suite failed\n", ret );
-     return ret;
+    return result;
 }
