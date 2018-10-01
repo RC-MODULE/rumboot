@@ -81,9 +81,10 @@
      * @param size                 data array size
      * @param bc_base_address      base address of MKIO BC controller
      * @param rt_base_address      base address of MKIO RT controller
+     * @param bus_sel              select, what 1553 bus (A or B) to use (first)
      *
      */
-    uint32_t mkio_write_to_rt (uint32_t data_src, uint32_t data_dst, uint32_t size, uint32_t bc_base_address, uint32_t rt_base_address);
+    uint32_t mkio_write_to_rt (uint32_t data_src, uint32_t data_dst, uint32_t size, uint32_t bc_base_address, uint32_t rt_base_address, uint32_t bus_sel);
 
     /**
      * This function is for simple array transaction from RT to BC.
@@ -95,9 +96,10 @@
      * @param size                 data array size
      * @param bc_base_address      base address of MKIO BC controller
      * @param rt_base_address      base address of MKIO RT controller
+     * @param bus_sel              select, what 1553 bus (A or B) to use (first)
      *
      */
-    uint32_t mkio_read_from_rt (uint32_t data_src, uint32_t data_dst, uint32_t size, uint32_t bc_base_address, uint32_t rt_base_address);
+    uint32_t mkio_read_from_rt (uint32_t data_src, uint32_t data_dst, uint32_t size, uint32_t bc_base_address, uint32_t rt_base_address, uint32_t bus_sel);
 
     /**
      * This function is for setting MKIO signals polarity.

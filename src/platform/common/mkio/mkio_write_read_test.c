@@ -91,6 +91,9 @@ uint32_t main ()
     uint32_t data_mid [DATA_SIZE >> 2] __attribute__ ((aligned(4)));
     uint32_t data_dst [DATA_SIZE >> 2] __attribute__ ((aligned(4)));
     
+    //  Bus selection (BUS) - Bus to use for transfer, 0 - Bus A, 1 - Bus B
+    uint32_t BUS = 0;
+    
     rumboot_printf("    mkio_write_read_test\n");
     
     clear_destination_space (data_src, DATA_SIZE);
@@ -104,12 +107,12 @@ uint32_t main ()
     if (mkio_present (MKIO1_BASE) != 0)
         return -2;
 
-    if (mkio_write_to_rt ((uint32_t) (&data_src), (uint32_t) (&data_mid), DATA_SIZE, MKIO0_BASE, MKIO1_BASE) != 0)
+    if (mkio_write_to_rt ((uint32_t) (&data_src), (uint32_t) (&data_mid), DATA_SIZE, MKIO0_BASE, MKIO1_BASE, BUS) != 0)
         return -3;
     cmp_arrays ((uint32_t) (&data_src), (uint32_t) (&data_mid), DATA_SIZE);
     rumboot_printf("mkio_write_to_rt OK\n");
 
-    if (mkio_read_from_rt ((uint32_t) (&data_mid), (uint32_t) (&data_dst), DATA_SIZE, MKIO0_BASE, MKIO1_BASE) != 0)
+    if (mkio_read_from_rt ((uint32_t) (&data_mid), (uint32_t) (&data_dst), DATA_SIZE, MKIO0_BASE, MKIO1_BASE, BUS) != 0)
         return -4;
     cmp_arrays ((uint32_t) (&data_mid), (uint32_t) (&data_dst), DATA_SIZE);
     rumboot_printf("mkio_read_from_rt OK\n");

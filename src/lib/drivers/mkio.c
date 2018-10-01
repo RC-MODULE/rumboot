@@ -102,7 +102,7 @@ void mkio_bm_start_logging (uint32_t base_address, uint32_t ring_buffer_pointer,
     iowrite32 ((BMKEY << 16) | (BMEN << 0), base_address + BMC);
 }
 
-uint32_t mkio_write_to_rt (uint32_t data_src, uint32_t data_dst, uint32_t size, uint32_t bc_base_address, uint32_t rt_base_address)
+uint32_t mkio_write_to_rt (uint32_t data_src, uint32_t data_dst, uint32_t size, uint32_t bc_base_address, uint32_t rt_base_address, uint32_t bus_sel)
 {
     mkio_bc_descriptor         mkio_bc_descriptor        __attribute__ ((aligned(16 << 2)))  ;
     mkio_rt_subaddress_table   mkio_rt_subaddress_table  __attribute__ ((aligned(512))) ;
@@ -139,7 +139,7 @@ uint32_t mkio_write_to_rt (uint32_t data_src, uint32_t data_dst, uint32_t size, 
     rumboot_printf("  mkio_rt_rx_descriptor     0x%x\n", (uint32_t)(&mkio_rt_rx_descriptor   ));
     
     mkio_bc_descriptor.ctrl_word_0      = 0x00000000 | (SUSN << 25);
-    mkio_bc_descriptor.ctrl_word_1      = 0x00000000 | (RTAD1 << 11) | (TR << 10) | (RTSA1 << 5) | (WCMC << 0) ;
+    mkio_bc_descriptor.ctrl_word_1      = 0x00000000 | (bus_sel << 30) | (RTAD1 << 11) | (TR << 10) | (RTSA1 << 5) | (WCMC << 0) ;
     mkio_bc_descriptor.data_pointer     = data_src ;
     mkio_bc_descriptor.result_word      = 0xFFFFFFFF ;
     mkio_bc_descriptor.condition_word   = bc_descriptor_end_of_list;
@@ -177,7 +177,7 @@ uint32_t mkio_write_to_rt (uint32_t data_src, uint32_t data_dst, uint32_t size, 
     return 0;
 }
 
-uint32_t mkio_read_from_rt (uint32_t data_src, uint32_t data_dst, uint32_t size, uint32_t bc_base_address, uint32_t rt_base_address)
+uint32_t mkio_read_from_rt (uint32_t data_src, uint32_t data_dst, uint32_t size, uint32_t bc_base_address, uint32_t rt_base_address, uint32_t bus_sel)
 {
     mkio_bc_descriptor         mkio_bc_descriptor        __attribute__ ((aligned(16 << 2)))  ;
     mkio_rt_subaddress_table   mkio_rt_subaddress_table  __attribute__ ((aligned(512))) ;
@@ -210,7 +210,7 @@ uint32_t mkio_read_from_rt (uint32_t data_src, uint32_t data_dst, uint32_t size,
     rumboot_printf("execute mkio_read_from_rt\n");
     
     mkio_bc_descriptor.ctrl_word_0      = 0x00000000 | (SUSN << 25);
-    mkio_bc_descriptor.ctrl_word_1      = 0x00000000 | (RTAD1 << 11) | (TR << 10) | (RTSA1 << 5) | (WCMC << 0) ;
+    mkio_bc_descriptor.ctrl_word_1      = 0x00000000 | (bus_sel << 30) | (RTAD1 << 11) | (TR << 10) | (RTSA1 << 5) | (WCMC << 0) ;
     mkio_bc_descriptor.data_pointer     = data_dst ;
     mkio_bc_descriptor.result_word      = 0xFFFFFFFF ;
     mkio_bc_descriptor.condition_word   = bc_descriptor_end_of_list;

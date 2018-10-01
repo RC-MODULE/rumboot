@@ -27,7 +27,7 @@
 #include <devices/mkio.h>
 
 //  Single Array Data Size In Bytes
-#define DATA_SIZE   2
+#define DATA_SIZE   4
 
 //  This variable must be seen for irq handler, so it is global
 uint32_t irq_flag;
