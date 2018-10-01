@@ -53,7 +53,7 @@ static uint32_t gspi_check_regs(uint32_t base_addr)
      { "SSPPCellID1",   REGPOKER_READ32, GSPI_SSPPCellID1,  GSPI_SSPPCellID1_DEFAULT,   GSPI_SSPPCellID1_MASK },
      { "SSPPCellID2",   REGPOKER_READ32, GSPI_SSPPCellID2,  GSPI_SSPPCellID2_DEFAULT,   GSPI_SSPPCellID2_MASK },
      { "SSPPCellID3",   REGPOKER_READ32, GSPI_SSPPCellID3,  GSPI_SSPPCellID3_DEFAULT,   GSPI_SSPPCellID3_MASK },
-     { "SSPCR0",        REGPOKER_WRITE32, GSPI_SSPCR0,      0x00,                       GSPI_SSPCR0_MASK },
+//     { "SSPCR0",        REGPOKER_WRITE32, GSPI_SSPCR0,      0x00,                       GSPI_SSPCR0_MASK },
      { "SSPCR1",        REGPOKER_WRITE32, GSPI_SSPCR1,      0x00,                       GSPI_SSPCR1_MASK },
      { "SSPCPSR",       REGPOKER_WRITE32, GSPI_SSPCPSR,     0x00,                       GSPI_SSPCPSR_MASK & ~0x01 },
      { "SSPIMSC",       REGPOKER_WRITE32, GSPI_SSPIMSC,     0x00,                       GSPI_SSPIMSC_MASK },
@@ -154,10 +154,8 @@ static uint32_t gspi_dma_axi(uint32_t base_addr, uint32_t r_mem_addr, uint32_t w
     rumboot_printf("Write to address =%x\n", rumboot_virt_to_dma((void*)w_mem_addr));
 
     gspi_dma_reset(base_addr);
-
-    //gspi_init(base_addr, ssp_param, &conf);
-    //gspi_set_param(base_addr, ssp_param);//turn on SSP controller
     gspi_set_int_mask(base_addr, 0x02); //interrupt masks - unmask rx_fifo not empty
+
 
     pl022_flash_write_enable(base_addr);
     pl022_flash_erase(base_addr);
@@ -263,6 +261,7 @@ static uint32_t gspi_ssp_flash(uint32_t base_addr)
 
     //Read and check data from spi flash
     read_data = pl022_flash_read_data(base_addr);
+    msync();
     if (read_data != TEST_DATA)
     {
         rumboot_printf("read_data = %x\n", read_data);
@@ -311,10 +310,8 @@ int main(void)
     conf.data_size = 8;
     conf.soft_cs = 0;
     pl022_init(GSPI_BASE, &conf);
-    msync();
 
     //set ssp parameters
-//    ssp_param.cpsdvr    = 0x6;
     ssp_param.cpol      = 1;
     ssp_param.cpha      = 1;
     ssp_param.mode      = master_mode;
@@ -323,11 +320,13 @@ int main(void)
     gspi_set_param(GSPI_BASE, ssp_param);//turn on SSP controller
 
 
+    // Initial SRAM0
+    for (int i=0; i<DATA_SIZE; i+=4)
+        iowrite32(0x0, SRAM0_BASE + i);
+
     // Data for check IM0
     for (int i=4; i<DATA_SIZE; i++)
         data_src[i] = TEST_DATA_IM0;
-    iowrite32(0x0, (uint32_t)data_src + DATA_SIZE);
-    msync();
 
     //IM0 - IM0
     test_result += gspi_dma_axi(GSPI_BASE, (uint32_t)data_src, (uint32_t)data_dst, TEST_DATA_IM0);
@@ -365,8 +364,6 @@ int main(void)
         data_src[i] = TEST_DATA_EM2;
         iowrite8(data_src[i], SRAM0_BASE+i);
     }
-    iowrite32(0x0, SRAM0_BASE+DATA_SIZE);
-    msync();
 
 
     //EM2 - IM0
@@ -380,7 +377,7 @@ int main(void)
     iowrite32(PAGE_PROGRAM_COMMAND, SRAM0_BASE);
 
 
-    rumboot_printf("Checking GSPI EEPROM read/write functionality ...\n");
+    rumboot_printf("Checking GSPI FLASH read/write functionality ...\n");
     test_result += gspi_ssp_flash(GSPI_BASE);
 
 
