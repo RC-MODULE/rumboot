@@ -36,22 +36,6 @@
 #include <platform/interrupts.h>
 #include <platform/regs/fields/mpic128.h>
 
-
-/*
- *  DUAL-TIMER (ARM SP804)  registers
- */
-/*
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-
-#include <rumboot/testsuite.h>
-
-#include <rumboot/printf.h>
-#include <rumboot/io.h>
-#include <rumboot/irq.h>
-*/
-
 #define TIMER0_CYCLES           1
 #define TIMER1_CYCLES           2
 
@@ -81,7 +65,7 @@ static uint32_t check_timer_default_ro_val(uint32_t base_addr)
     rumboot_printf( "ERROR\n" );
     return 1;
 }
-/*
+
 static uint32_t check_timer_default_rw_val( uint32_t base_addr )
 {
     rumboot_printf("Check the default values of the registers:");
@@ -92,27 +76,18 @@ static uint32_t check_timer_default_rw_val( uint32_t base_addr )
 
           {   "Timer1Value",    REGPOKER_READ_DCR,  DIT0_REG_VALUE0,         0x00000000, 0xffffffff },
 
-//          {   "Timer1Control",  REGPOKER_READ_DCR,  DIT0_REG_CONTROL0,       0x20,           0x20 },
-//          {   "Timer1Control",  REGPOKER_WRITE_DCR, DIT0_REG_CONTROL0,       0x00,           0x10 },
-
-//          {   "Timer1IntClr",   REGPOKER_READ_DCR,  DIT0_REG_INTCLR0,        0xff,           0xff },
-
-          {   "Timer1RIS",      REGPOKER_READ_DCR,  DIT0_REG_RIS0,           0b0,           0b0 },
-          {   "Timer1MIS",      REGPOKER_READ_DCR,  DIT0_REG_MIS0,           0b0,           0b0 },
+          {   "Timer1RIS",      REGPOKER_READ_DCR,  DIT0_REG_RIS0,           0b0,           0b1 },
+          {   "Timer1MIS",      REGPOKER_READ_DCR,  DIT0_REG_MIS0,           0b0,           0b1 },
 
           {   "Timer1BGLoad",   REGPOKER_READ_DCR,    DIT0_REG_BGLOAD0,      0x00000000,    0xffffffff },
           {   "Timer1BGLoad",   REGPOKER_WRITE_DCR,   DIT0_REG_BGLOAD0,      0x00000000,    0xffffffff },
 
-          {   "Timer2Load",     REGPOKER_READ_DCR,    DIT0_REG_LOAD1,        0x00000000,    0xffffffff },
           {   "Timer2Load",     REGPOKER_WRITE_DCR,   DIT0_REG_LOAD1,        0x00000000,    0xffffffff },
 
           {   "Timer2Value",    REGPOKER_READ_DCR,    DIT0_REG_VALUE1,       0x00000000,    0x00000000 },
 
-//        {   "Timer2Control",  REGPOKER_READ_DCR,    DIT0_REG_CONTROL1,       0x0,            0xff },
-//        {   "Timer2Control",  REGPOKER_WRITE_DCR,   DIT0_REG_CONTROL1,       0x0,            0xff },
-
-          {   "Timer2RIS",      REGPOKER_READ_DCR,    DIT0_REG_RIS1,           0b0,           0b0 },
-          {   "Timer2MIS",      REGPOKER_READ_DCR,    DIT0_REG_MIS1,           0b0,           0b0 },
+          {   "Timer2RIS",      REGPOKER_READ_DCR,    DIT0_REG_RIS1,           0b0,           0b1 },
+          {   "Timer2MIS",      REGPOKER_READ_DCR,    DIT0_REG_MIS1,           0b0,           0b1 },
 
           {   "Timer2BGLoad",   REGPOKER_READ_DCR,    DIT0_REG_BGLOAD1,        0x0,           0xff },
           {   "Timer2BGLoad",   REGPOKER_WRITE_DCR,   DIT0_REG_BGLOAD1,        0x0,           0xff },
@@ -134,12 +109,13 @@ static uint32_t check_timer_default_rw_val( uint32_t base_addr )
     rumboot_printf( "ERROR\n" );
     return 1;
 }
-*/
 
-void sp804_enable( uint32_t base_addr, int index ) {
+void sp804_enable( uint32_t base_addr, int index )
+{
     int cntrl;
     int control_reg;
-    if( index ) {
+    if( index )
+    {
         control_reg = DIT0_REG_CONTROL1;
     } else {
         control_reg = DIT0_REG_CONTROL0;
@@ -147,69 +123,91 @@ void sp804_enable( uint32_t base_addr, int index ) {
     cntrl = dcr_read( base_addr + control_reg );
     cntrl |= DIT_CTRL_ENABLE;
     dcr_write( base_addr + control_reg, cntrl );
-
 }
 
-void sp804_stop( uint32_t base_addr, int index ) {
+void sp804_stop( uint32_t base_addr, int index )
+{
     int cntrl;
     int control_reg;
-    if( index ) {
+    if( index )
+    {
         control_reg = DIT0_REG_CONTROL1;
-    } else {
+    }
+    else
+    {
         control_reg = DIT0_REG_CONTROL0;
     }
     cntrl = dcr_read( base_addr + control_reg );
     cntrl = cntrl & ( ~( DIT_CTRL_ENABLE ) );
     dcr_write( base_addr + control_reg, cntrl );
-
 }
 
-int sp804_get_value( uint32_t base_addr, int index ) {
+int sp804_get_value( uint32_t base_addr, int index )
+{
     int value_reg;
-    if( index ) {
+    if( index )
+    {
         value_reg = DIT0_REG_VALUE1;
-    } else {
+    }
+    else
+    {
         value_reg = DIT0_REG_VALUE0;
     }
     return dcr_read( base_addr + value_reg );
 }
 
-void sp804_clrint( uint32_t base_addr, int index ) {
+void sp804_clrint( uint32_t base_addr, int index )
+{
     int int_clr_reg;
-    if( index ) {
+    if( index )
+    {
         int_clr_reg = DIT0_REG_INTCLR1;
-    } else {
+    }
+    else
+    {
         int_clr_reg = DIT0_REG_INTCLR0;
     }
     dcr_write( base_addr + int_clr_reg, 1 );
 }
 
-void sp804_config( uint32_t base_addr, const struct sp804_conf * config, int index ) {
+void sp804_config( uint32_t base_addr, const struct sp804_conf * config, int index )
+{
     int cntrl = 0;
     // MODE
-    if( config->mode == ONESHOT ) {
+    if( config->mode == ONESHOT )
+    {
         cntrl |= DIT_CTRL_ONESHOT;
         cntrl &= ~DIT_CTRL_PERIODIC;
-    } else if( config->mode == PERIODIC ) {
+    }
+    else if( config->mode == PERIODIC )
+    {
         cntrl &= ~ DIT_CTRL_ONESHOT;
         cntrl |= DIT_CTRL_PERIODIC;
-    } else if( config->mode == FREERUN ) {
+    }
+    else if( config->mode == FREERUN )
+    {
         cntrl &= ~ DIT_CTRL_ONESHOT;
         cntrl &= ~ DIT_CTRL_PERIODIC;
     }
 
     // INT EN
-    if( config->interrupt_enable ) {
+    if( config->interrupt_enable )
+    {
         cntrl |= DIT_CTRL_INTEN;
-    } else {
+    }
+    else
+    {
         cntrl &= ~DIT_CTRL_INTEN;
     }
 
     // CLK DIV
-    if( config->clock_division == 256 ) {
+    if( config->clock_division == 256 )
+    {
         cntrl |= DIT_CTRL_DIV1;
         cntrl &= ~DIT_CTRL_DIV0;
-    } else if( config->clock_division == 16 ) {
+    }
+    else if( config->clock_division == 16 )
+    {
         cntrl &= ~DIT_CTRL_DIV1;
         cntrl |= DIT_CTRL_DIV0;
     } else {
@@ -218,47 +216,59 @@ void sp804_config( uint32_t base_addr, const struct sp804_conf * config, int ind
     }
 
     // SIZE 32
-    if( config->width == 32 ) {
+    if( config->width == 32 )
+    {
         cntrl |= DIT_CTRL_SIZE32;
-    } else {
+    }
+    else
+    {
         cntrl &= ~DIT_CTRL_SIZE32;
     }
 
-    if( index ) {
+    if( index )
+    {
         dcr_write( base_addr + DIT0_REG_CONTROL1, cntrl );
 
         // LOAD
-        if( config->load ) {
+        if( config->load )
+        {
             dcr_write( base_addr + DIT0_REG_LOAD1, config->load );
         }
 
         // BG LOAD
-        if( config->bgload ) {
+        if( config->bgload )
+        {
             dcr_write( base_addr + DIT0_REG_BGLOAD1, config->bgload );
         }
-    } else {
+    }
+    else
+    {
         dcr_write( base_addr + DIT0_REG_CONTROL0, cntrl );
 
         // LOAD
-        if( config->load ) {
+        if( config->load )
+        {
             dcr_write( base_addr + DIT0_REG_LOAD0, config->load );
         }
 
         // BG LOAD
-        if( config->bgload ) {
+        if( config->bgload )
+        {
             dcr_write( base_addr + DIT0_REG_BGLOAD0, config->bgload );
         }
     }
 }
 
-struct s804_instance {
+struct s804_instance
+{
     int timer0_irq;
     int timer1_irq;
     uint32_t base_addr;
     int dit_index;
 };
 
-static void handler0( int irq, void *arg ) {
+static void handler0( int irq, void *arg )
+{
     struct s804_instance *a = ( struct s804_instance * )arg;
     a->timer0_irq = a->timer0_irq + 1;
     rumboot_printf( "IRQ 0 arrived  \n" );
@@ -267,16 +277,17 @@ static void handler0( int irq, void *arg ) {
     sp804_clrint( a->base_addr, 0 );
 }
 
-static void handler1( int irq, void *arg ) {
+static void handler1( int irq, void *arg )
+{
     struct s804_instance *a = ( struct s804_instance * )arg;
     a->timer1_irq = a->timer1_irq + 1;
     rumboot_printf( "IRQ 1 arrived  \n" );
     rumboot_printf( "sp804_%d timer 1 INT # %d  \n", a->dit_index, a->timer1_irq );
     sp804_clrint( a->base_addr, 1 );
-
 }
 
-bool test_dit_timers( uint32_t structure ) {
+bool test_dit_timers( uint32_t structure )
+{
     int c = 0;
     int d = 0;
 
@@ -299,10 +310,12 @@ bool test_dit_timers( uint32_t structure ) {
         .load = 200,
         .bgload = 0 };
 
-    for( int i = 0; i < TIMER0_CYCLES + stru->dit_index; i++ ) {
+    for( int i = 0; i < TIMER0_CYCLES + stru->dit_index; i++ )
+    {
         sp804_config( base_addr, &config_0, 0 );
         sp804_enable( base_addr, 0 );
-        while( sp804_get_value( base_addr, 0 ) ) {
+        while( sp804_get_value( base_addr, 0 ) )
+        {
         };
         c++;
     }
@@ -314,41 +327,45 @@ bool test_dit_timers( uint32_t structure ) {
         };
         d++;
     }
-
-    if( stru->timer0_irq == TIMER0_CYCLES + stru->dit_index ) {
+    if( stru->timer0_irq == TIMER0_CYCLES + stru->dit_index )
+    {
         rumboot_printf( "Timer 0 test OK \n" );
-    } else {
+    }
+    else
+    {
         rumboot_printf( "ERROR in Timer 0 test \n" );
         rumboot_printf( "Interrupts came == %d, should be %d \n", stru->timer0_irq, TIMER0_CYCLES + stru->dit_index );
         return false;
     }
-
-    if( stru->timer1_irq == TIMER1_CYCLES + stru->dit_index ) {
+    if( stru->timer1_irq == TIMER1_CYCLES + stru->dit_index )
+    {
         rumboot_printf( "Timer 1 test OK \n" );
-    } else {
+    }
+    else
+    {
         rumboot_printf( "ERROR in Timer 1 test \n" );
         rumboot_printf( "Interrupts came == %d, should be %d \n", stru->timer1_irq, TIMER1_CYCLES + stru->dit_index );
         return false;
     }
-
     return true;
 }
 
-static struct s804_instance in[ ] = {
+static struct s804_instance in[] =
+{
     {
         .base_addr = DCR_TIMERS_BASE,
-        .dit_index = 0 }, };
+        .dit_index = 0 },
+};
 
 TEST_SUITE_BEGIN(dit_testlist, "SP804 IRQ TEST")
     TEST_ENTRY("SP804_0", test_dit_timers, (uint32_t) &in[0]),
 TEST_SUITE_END();
 
-int main() {
+int main(void)
+{
 // Set up interrupt handlers
     register int result;
     rumboot_printf( "SP804 test START\n" );
- //||
-            //check_timer_default_rw_val(DCR_TIMERS_BASE);
 
     rumboot_irq_cli();
     struct rumboot_irq_entry *tbl = rumboot_irq_create( NULL );
@@ -365,11 +382,12 @@ int main() {
 // Run tests and return failed one
 
     result = test_suite_run( NULL, &dit_testlist );
-    rumboot_printf( "%d tests from suite failed\n", result );
 
+    rumboot_printf( "%d tests from suite failed\n", result );
     rumboot_printf( "Check ro/rw registers\n" );
-    result = check_timer_default_ro_val(DCR_TIMERS_BASE);
-    if(result)
+
+    result = check_timer_default_ro_val(DCR_TIMERS_BASE) || check_timer_default_rw_val(DCR_TIMERS_BASE);
+    if(!result)
     {
         rumboot_printf("Checked TEST_ERROR\n");
         return 1;
