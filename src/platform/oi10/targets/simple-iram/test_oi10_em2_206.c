@@ -453,7 +453,8 @@ uint32_t main(void)
     int          mem_bank;
 
     rumboot_printf("Init EMI...\n");
-    emi_init_impl (DCR_EM2_EMI_BASE, DCR_EM2_PLB6MCIF2_BASE, 0x00);
+    emi_init(DCR_EM2_EMI_BASE);
+    // emi_init_impl (DCR_EM2_EMI_BASE, DCR_EM2_PLB6MCIF2_BASE, 0x00);
     init_interrupts();
     rumboot_printf("Init done.\n");
 
