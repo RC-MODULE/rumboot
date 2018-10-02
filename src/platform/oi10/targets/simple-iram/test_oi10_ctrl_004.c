@@ -39,7 +39,7 @@
 #define TIMER0_CYCLES           1
 #define TIMER1_CYCLES           2
 
-
+#ifdef CHECK_REGS
 static uint32_t check_timer_default_ro_val(uint32_t base_addr)
 {
     rumboot_printf("Check the default values of the registers:");
@@ -109,7 +109,7 @@ static uint32_t check_timer_default_rw_val( uint32_t base_addr )
     rumboot_printf( "ERROR\n" );
     return 1;
 }
-
+#endif
 void sp804_enable( uint32_t base_addr, int index )
 {
     int cntrl;
@@ -361,6 +361,14 @@ TEST_SUITE_BEGIN(dit_testlist, "SP804 IRQ TEST")
     TEST_ENTRY("SP804_0", test_dit_timers, (uint32_t) &in[0]),
 TEST_SUITE_END();
 
+TEST_SUITE_BEGIN(dit_testlist_1, "SP804 IRQ TEST")
+#ifdef CHECK_REGS
+    //check_timers_default_ro_val();
+TEST_ENTRY("SP804_0", check_default_ro_val, (uint32_t, &in[0]));
+TEST_ENTRY("SP804_0", check_default_rw_val, (uint32_t, &in[0]));
+#endif
+TEST_SUITE_END();
+
 int main(void)
 {
 // Set up interrupt handlers
@@ -386,12 +394,7 @@ int main(void)
     rumboot_printf( "%d tests from suite failed\n", result );
     rumboot_printf( "Check ro/rw registers\n" );
 
-    result = check_timer_default_ro_val(DCR_TIMERS_BASE) || check_timer_default_rw_val(DCR_TIMERS_BASE);
-    if(!result)
-    {
-        rumboot_printf("Checked TEST_ERROR\n");
-        return 1;
-    }
+    result = test_suite_run(NULL, &dit_testlist_1);
 
     return result;
 }
