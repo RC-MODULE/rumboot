@@ -46,9 +46,6 @@ struct greth_instance {
     uint32_t* irq_handled;
 };
 
-static uint32_t GRETH0_IRQ_HANDLED = 0;
-static uint32_t GRETH1_IRQ_HANDLED = 0;
-
 #define TEST_VALUE_CLEAR                                0x0
 #define TEST_VALUE_DMA0_FULL_L2C_LINE                   0x11111111
 #define TEST_VALUE_DMA0_QWORD                           0x22222222
@@ -61,11 +58,13 @@ static uint32_t GRETH1_IRQ_HANDLED = 0;
 
 #define TLB_ENTRY_LOCAL   MMU_TLB_ENTRY(  0x000,  0x40000,    0x40000,    MMU_TLBE_DSIZ_1GB,      0b1,    0b1,    0b0,    0b0,    0b1,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
 
-#define source_test_data_rwnitc_sram0 (SRAM0_BASE)
-#define target_test_data_rwnitc_sram0 (SRAM0_BASE + 4 * test_io10_cpu_020_plb6_io_full_l2c_line_size)
+#define DATA_BASE_ADDR (SRAM0_BASE)
 
-#define source_test_data_write_sram0  (SRAM0_BASE + 8 * test_io10_cpu_020_plb6_io_full_l2c_line_size)
-#define target_test_data_write_sram0  (SRAM0_BASE + 12 * test_io10_cpu_020_plb6_io_full_l2c_line_size)
+#define source_test_data_rwnitc_sram0 (DATA_BASE_ADDR)
+#define target_test_data_rwnitc_sram0 (DATA_BASE_ADDR + 4 * test_io10_cpu_020_plb6_io_full_l2c_line_size)
+
+#define source_test_data_write_sram0  (DATA_BASE_ADDR + 8 * test_io10_cpu_020_plb6_io_full_l2c_line_size)
+#define target_test_data_write_sram0  (DATA_BASE_ADDR + 12 * test_io10_cpu_020_plb6_io_full_l2c_line_size)
 
 #define TST_MAC_MSB     0xFFFF
 #define TST_MAC_LSB     0xFFFFFFFF
@@ -92,6 +91,9 @@ greth_descr_t  tx_descriptor_data_[GRETH_MAX_DESCRIPTORS_COUNT] __attribute__((a
 greth_descr_t  rx_descriptor_data_[GRETH_MAX_DESCRIPTORS_COUNT] __attribute__((aligned(1024)));
 static volatile uint8_t __attribute__((section(".data"),aligned(16))) tx_desc_im[0x100] = {0} ;
 static volatile uint8_t __attribute__((section(".data"),aligned(16))) rx_desc_im[0x100] = {0} ;
+
+static uint32_t GRETH0_IRQ_HANDLED = 0;
+static uint32_t GRETH1_IRQ_HANDLED = 0;
 
 static struct greth_instance in[ ] = {
                                         {
@@ -152,6 +154,7 @@ inline void dma2plb6_trace_status(
 
 static void test_procedure_with_gmii(uint32_t base_addr_src_eth, test_io10_cpu_020_plb6_io_data_size data_size, uint32_t source, uint32_t target)
 {
+    rumboot_printf("test_procedure_with_gmii\n");
     uint32_t base_addr_dst_eth;
     uint32_t * eth_hadled_flag_ptr;
 
@@ -169,12 +172,11 @@ static void test_procedure_with_gmii(uint32_t base_addr_src_eth, test_io10_cpu_0
         GRETH1_IRQ_HANDLED = 0;
         eth_hadled_flag_ptr = &GRETH1_IRQ_HANDLED;
     }
-
     rumboot_printf("\nChecking transfer from 0x%X to 0x%x\n", (uint32_t)source, (uint32_t) target);
 
     greth_configure_for_receive( base_addr_dst_eth, (uint32_t *) target, data_size, rx_descriptor_data_, &tst_greth_mac);
     greth_configure_for_transmit( base_addr_src_eth, (uint32_t *) source, data_size, tx_descriptor_data_, &tst_greth_mac);
-
+    msync();
     greth_start_receive( base_addr_dst_eth, true );
     greth_start_transmit( base_addr_src_eth );
 
@@ -185,11 +187,12 @@ static void test_procedure_with_gmii(uint32_t base_addr_src_eth, test_io10_cpu_0
 
 static void test_procedure_with_dma(uint32_t dma_base, test_io10_cpu_020_plb6_io_data_size data_size, uint32_t source, uint32_t target)
 {
+    rumboot_printf("test_procedure_with_dma\n");
     uint64_t src = 0;
     uint64_t dst = 0;
 
-    dma2plb6_setup_info dma_info;
-    channel_status dma_status = { };
+    static dma2plb6_setup_info dma_info;
+    static channel_status dma_status = { };
     transfer_width curent_width = tr_width_quadword;
 
     src = rumboot_virt_to_dma( (volatile void *) source);
@@ -346,7 +349,7 @@ void rwnitc_check (uint32_t source, uint32_t target, uint32_t xor_invertor)
     clear_test_fields(TEST_VALUE_CLEAR, source, target);
 }
 
-void __attribute__((section(".EM0.text"))) write_check(uint32_t source, uint32_t target, uint32_t xor_invertor)
+void write_check(uint32_t source, uint32_t target, uint32_t xor_invertor)
 {
     uint32_t l2c_base = DCR_L2C_BASE;
     rumboot_printf("\n\nwrite_check\n");
@@ -372,6 +375,7 @@ void __attribute__((section(".EM0.text"))) write_check(uint32_t source, uint32_t
     clear_test_fields(TEST_VALUE_CLEAR, source, target);
 
     rumboot_printf("GMII_1 (write_check)\n");
+
     cache_and_modify_data((TEST_VALUE_GMII_FULL_L2C_LINE ^ xor_invertor), source, target);
     check_target_is_invalidated_in_l2c(l2c_base, target, false);
     test_procedure_with_gmii(GRETH_0_BASE, test_io10_cpu_020_plb6_io_full_l2c_line_size, source, target);
@@ -446,50 +450,11 @@ static void handler_eth( int irq, void *arg )
         rumboot_printf( "Unexpected status (0x%x)\n", cur_status );
     }
     greth_clear_status_bits(gr_inst->base_addr, mask);
-    rumboot_printf("Exit from handler\n");
-}
-
-struct rumboot_irq_entry * create_greth01_irq_handlers()
-{
-    rumboot_printf( "Enable GRETH irqs\n" );
-    rumboot_irq_cli();
-    struct rumboot_irq_entry *tbl = rumboot_irq_create( NULL );
-
-    GRETH0_IRQ_HANDLED = 0;
-    GRETH1_IRQ_HANDLED = 0;
-
-    rumboot_irq_set_handler( tbl, ETH0_INT, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler_eth, &in[0] );
-    rumboot_irq_set_handler( tbl, ETH1_INT, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler_eth, &in[1] );
-
-    /* Activate the table */
-    rumboot_irq_table_activate( tbl );
-    rumboot_irq_enable( ETH0_INT );
-    rumboot_irq_enable( ETH1_INT );
-    rumboot_irq_sei();
-
-    return tbl;
-}
-
-void delete_irq_handler(struct rumboot_irq_entry *tbl)
-{
-    rumboot_irq_table_activate(NULL);
-    rumboot_irq_free(tbl);
-}
-
-void init_data ()
-{
-    rumboot_printf ("Init data\n");
-    uint32_t i = 0;
-    for (i = 0; i < test_io10_cpu_020_plb6_io_full_l2c_line_size; i++)
-    {
-        iowrite32(i*i, source_test_data_write_sram0 + i * 4);
-        iowrite32(2*i, source_test_data_rwnitc_sram0 + i * 4);
-    }
     msync();
-    dci(2);
+    rumboot_printf("Exit from eth handler\n");
 }
 
-static void handler( int irq, void *arg ) {
+static void handler_hscb( int irq, void *arg ) {
     //get interrupt source
     rumboot_printf( "IRQ arrived  \n" );
     rumboot_putstring("NON_CRITICAL int handler message\n");
@@ -531,18 +496,23 @@ static void handler( int irq, void *arg ) {
     }
 }
 
-struct rumboot_irq_entry * create_irq_handlers( )
+struct rumboot_irq_entry * create_irq_handlers()
 {
+    rumboot_printf( "Enable GRETH irqs\n" );
     rumboot_irq_cli();
     struct rumboot_irq_entry *tbl = rumboot_irq_create( NULL );
 
-    rumboot_irq_set_handler( tbl, HSCB_UNDER_TEST_INT,          RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler, ( void* )0 );
-    rumboot_irq_set_handler( tbl, HSCB_UNDER_TEST_DMA_INT,      RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler, ( void* )0 );
-    rumboot_irq_set_handler( tbl, HSCB_SUPPLEMENTARY_INT,       RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler, ( void* )0 );
-    rumboot_irq_set_handler( tbl, HSCB_SUPPLEMENTARY_DMA_INT,   RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler, ( void* )0 );
+    rumboot_irq_set_handler( tbl, HSCB_UNDER_TEST_INT,          RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler_hscb, ( void* )0 );
+    rumboot_irq_set_handler( tbl, HSCB_UNDER_TEST_DMA_INT,      RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler_hscb, ( void* )0 );
+    rumboot_irq_set_handler( tbl, HSCB_SUPPLEMENTARY_INT,       RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler_hscb, ( void* )0 );
+    rumboot_irq_set_handler( tbl, HSCB_SUPPLEMENTARY_DMA_INT,   RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler_hscb, ( void* )0 );
+    rumboot_irq_set_handler( tbl, ETH0_INT, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler_eth, &in[0] );
+    rumboot_irq_set_handler( tbl, ETH1_INT, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler_eth, &in[1] );
 
     /* Activate the table */
     rumboot_irq_table_activate( tbl );
+    rumboot_irq_enable( ETH0_INT );
+    rumboot_irq_enable( ETH1_INT );
     rumboot_irq_enable( HSCB_UNDER_TEST_INT );
     rumboot_irq_enable( HSCB_UNDER_TEST_DMA_INT );
     rumboot_irq_enable( HSCB_SUPPLEMENTARY_INT );
@@ -552,7 +522,27 @@ struct rumboot_irq_entry * create_irq_handlers( )
     return tbl;
 }
 
+void delete_irq_handler(struct rumboot_irq_entry *tbl)
+{
+    rumboot_irq_table_activate(NULL);
+    rumboot_irq_free(tbl);
+}
+
+void init_data ()
+{
+    rumboot_printf ("Init data\n");
+    uint32_t i = 0;
+    for (i = 0; i < test_io10_cpu_020_plb6_io_full_l2c_line_size; i++)
+    {
+        iowrite32(i*i, source_test_data_write_sram0 + i * 4);
+        iowrite32(2*i, source_test_data_rwnitc_sram0 + i * 4);
+    }
+    msync();
+    dci(2);
+}
+
 static void test_procedure_with_hscb(uint32_t source, uint32_t target, uint32_t size){
+    rumboot_printf("test_procedure_with_hscb\n");
     int cnt = 0;
 
     hscb0_status = 0;
@@ -624,10 +614,7 @@ int main ()
     write_tlb_entries(&sram0_tlb_entry_local,1);
 
     struct rumboot_irq_entry *tbl;
-    tbl = create_greth01_irq_handlers();
-
-    struct rumboot_irq_entry *tbl_hscb;
-    tbl_hscb = create_irq_handlers();
+    tbl = create_irq_handlers();
 
     prepare_devices();
 
@@ -646,7 +633,6 @@ int main ()
     write_check((uint32_t) source_test_data_write_sram0, (uint32_t)target_test_data_write_sram0, 0x0);
 
     delete_irq_handler(tbl);
-    delete_irq_handler(tbl_hscb);
     rumboot_printf("TEST_OK\n");
     return 0;
 }
