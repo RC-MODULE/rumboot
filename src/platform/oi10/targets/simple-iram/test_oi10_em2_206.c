@@ -165,6 +165,7 @@ static volatile const uint8_t emi_ecnt[8] =
 static irq_flags_t IRQ = 0;
 static rumboot_irq_entry *irq_table = NULL;
 static volatile uint32_t global_irr = 0;
+static uint8_t const_2_ecc;
 
 inline static uint32_t reverse_bytes32(uint32_t data)
 {
@@ -376,10 +377,10 @@ uint32_t check_emi(uint32_t bank)
     int              typ      = EMI_TYPE(bank);
     /* sd - Single error in data, sc - Single error in ECC  */
     /* dd - Double error in data, de - Double error in ECC  */
-    mkerr_param_t    mke_sd   = {bank, SET_LATER, 1, EMI_BITS_D24_D31},
-                     mke_se   = {bank, SET_LATER, 2, EMI_BITS_ED0_ED7},
-                     mke_dd   = {bank, SET_LATER, 0, EMI_BITS_D16_D23},
-                     mke_de   = {bank, SET_LATER, 0, EMI_BITS_ED0_ED7};
+    mkerr_param_t    mke_sd   = {bank, const_2_ecc, 1, EMI_BITS_D24_D31},
+                     mke_se   = {bank, const_2_ecc, 2, EMI_BITS_ED0_ED7},
+                     mke_dd   = {bank, const_2_ecc, 0, EMI_BITS_D16_D23},
+                     mke_de   = {bank, const_2_ecc, 0, EMI_BITS_ED0_ED7};
 
 
     base += BASE_OFFSET;
@@ -421,13 +422,6 @@ uint32_t check_emi(uint32_t bank)
                 !result ? "ok" : "error");
         TEST_ASSERT(data32 == long_tpl[i], "READ ERROR");
     }
-
-    rumboot_printf("Generate ECC codes...\n");
-    mke_sd.ecc = calc_hamming_ecc(reverse_bytes32(CONST_2));
-    mke_se.ecc = mke_sd.ecc;
-    mke_dd.ecc = mke_sd.ecc;
-    mke_de.ecc = mke_dd.ecc;
-    rumboot_printf("Generated.\n");
 
     rumboot_printf(" *** Make single error in data... \n");
     EMI_WRITE(emi_ecnt[bank], 0x00000000);
@@ -474,6 +468,10 @@ uint32_t main(void)
     // emi_init_impl (DCR_EM2_EMI_BASE, DCR_EM2_PLB6MCIF2_BASE, 0x00);
     init_interrupts();
     rumboot_printf("Init done.\n");
+
+    rumboot_printf("Generate ECC codes...\n");
+    const_2_ecc = calc_hamming_ecc(reverse_bytes32(CONST_2));
+    rumboot_printf("Generated.\n");
 
     FOREACH_BANK(mem_bank, FIRST_BANK, LAST_BANK)
     {
