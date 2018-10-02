@@ -70,11 +70,11 @@ struct rumboot_irq_entry * create_sram_irq_handler()
 
     EMI_SRAM0_IRQ_HANDLED = 0;
 
-    rumboot_irq_set_handler( tbl, SRAM_INT, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler_emi, NULL );
+    rumboot_irq_set_handler( tbl, EMI_CNTR_INT_2, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler_emi, NULL );
 
     /* Activate the table */
     rumboot_irq_table_activate( tbl );
-    rumboot_irq_enable( SRAM_INT );
+    rumboot_irq_enable( EMI_CNTR_INT_2 );
     rumboot_irq_sei();
 
     return tbl;
