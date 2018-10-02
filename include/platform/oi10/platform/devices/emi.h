@@ -13,24 +13,33 @@
 #include <platform/regs/fields/emi.h>
 
 
+/* From LDS */
+extern char SRAM0_MEMORY_SIZE[];
+extern char SDRAM_MEMORY_SIZE[];
+extern char SSRAM_MEMORY_SIZE[];
+extern char PLRAM_MEMORY_SIZE[];
+extern char SRAM1_MEMORY_SIZE[];
+extern char NOR_MEMORY_SIZE[];
+
+
 //bank0
 #define EM2_BANK0_SIZE          0x20000000
-#define SRAM0_SIZE              0x100000  //1MB  //EM2_BANK0_SIZE
+#define SRAM0_SIZE              ((uint32_t)SRAM0_MEMORY_SIZE)
 //bank1
 #define EM2_BANK1_SIZE          0x20000000
-#define SDRAM_SIZE              0x4000000 //64MB //EM2_BANK1_SIZE
+#define SDRAM_SIZE              ((uint32_t)SDRAM_MEMORY_SIZE)
 //bank2
 #define EM2_BANK2_SIZE          0x10000000
-#define SSRAM_SIZE              0x400000  //4MB  //EM2_BANK2_SIZE
+#define SSRAM_SIZE              ((uint32_t)SSRAM_MEMORY_SIZE)
 //bank3
 #define EM2_BANK3_SIZE          0x10000000
-#define PIPELINED_SIZE          0x400000  //4MB  //EM2_BANK3_SIZE
+#define PIPELINED_SIZE          ((uint32_t)PLRAM_MEMORY_SIZE)
 //bank4
 #define EM2_BANK4_SIZE          0x10000000
-#define SRAM1_SIZE              0x400000  //4MB  //EM2_BANK4_SIZE
+#define SRAM1_SIZE              ((uint32_t)SRAM1_MEMORY_SIZE)
 //bank5
 #define EM2_BANK5_SIZE          0x10000000
-#define NOR_SIZE                0x400000  //4MB  //EM2_BANK5_SIZE
+#define NOR_SIZE                ((uint32_t)NOR_MEMORY_SIZE)
 
 #define HAMMING_MATRIX          0b10000100001100011101010011000111, \
                                 0b00110000001111000010101100001011, \

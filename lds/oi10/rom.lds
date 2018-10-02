@@ -1,14 +1,4 @@
-MEMORY {
-    SRAM0 (rwx) : ORIGIN = 0x00000000, LENGTH = 0x100000,
-    SDRAM (rwx) : ORIGIN = 0x20000000, LENGTH = 0x4000000,
-    SSRAM (rwx) : ORIGIN = 0x40000000, LENGTH = 0x400000,
-    PLRAM (rwx) : ORIGIN = 0x50000000, LENGTH = 0x400000,
-    SRAM1 (rwx) : ORIGIN = 0x60000000, LENGTH = 0x400000,
-    NOR (rx)    : ORIGIN = 0x70000000, LENGTH = 0x400000,
-    IM0 (rwx)   : ORIGIN = 0x80000000, LENGTH = 0x20000
-    IM1 (rwx)   : ORIGIN = 0x80020000, LENGTH = 0x20000
-    ROM (rx)    : ORIGIN = 0xFFFF0000, LENGTH = 0x10000
-}
+INCLUDE oi10/memory.lds.h
 
 SECTIONS {
 
@@ -59,47 +49,26 @@ SECTIONS {
        *(.rumboot_platform_runtime_info);
     }
 
-    .im1_heap 0x80020000 (NOLOAD) : {
-        rumboot_im1_heap_start = .;
-        . = . + 0x20000; /* 128k heap */
-        rumboot_im1_heap_end = .;
-    } > IM1
+    rumboot_im1_heap_start      = IM1_MEMORY_BASE;
+    rumboot_im1_heap_end        = IM1_MEMORY_BASE + IM1_MEMORY_SIZE;
 
-    .sram0_heap  (NOLOAD) : {
-        rumboot_sram0_heap_start = .;
-        . = . + 0x20000; /* 128k heap */
-        rumboot_sram0_heap_end = .;
-    } > SRAM0
+    rumboot_sram0_heap_start    = SRAM0_MEMORY_BASE;
+    rumboot_sram0_heap_end      = SRAM0_MEMORY_BASE + SRAM0_MEMORY_SIZE;
 
-    .sdram_heap  (NOLOAD) : {
-        rumboot_sdram_heap_start = .;
-        . = . + 0x80000; /* 512k heap */
-        rumboot_sdram_heap_end = .;
-    } > SDRAM
+    rumboot_sdram_heap_start    = SDRAM_MEMORY_BASE;
+    rumboot_sdram_heap_end      = SDRAM_MEMORY_BASE + SDRAM_MEMORY_SIZE;
 
-    .ssram_heap  (NOLOAD) : {
-        rumboot_ssram_heap_start = .;
-        . = . + 0x200000; /* 2М heap */
-        rumboot_ssram_heap_end = .;
-    } > SSRAM
+    rumboot_ssram_heap_start    = SSRAM_MEMORY_BASE;
+    rumboot_ssram_heap_end      = SSRAM_MEMORY_BASE + SSRAM_MEMORY_SIZE;
 
-    .plram_heap  (NOLOAD) : {
-        rumboot_plram_heap_start = .;
-        . = . + 0x200000; /* 2М heap */
-        rumboot_plram_heap_end = .;
-    } > PLRAM
+    rumboot_plram_heap_start    = PLRAM_MEMORY_BASE;
+    rumboot_plram_heap_end      = PLRAM_MEMORY_BASE + PLRAM_MEMORY_SIZE;
 
-    .sram1_heap  (NOLOAD) : {
-        rumboot_sram1_heap_start = .;
-        . = . + 0x200000; /* 2М heap */
-        rumboot_sram1_heap_end = .;
-    } > SRAM1
+    rumboot_sram1_heap_start    = SRAM1_MEMORY_BASE;
+    rumboot_sram1_heap_end      = SRAM1_MEMORY_BASE + SRAM1_MEMORY_SIZE;
 
-    .nor_heap  (NOLOAD) : {
-        rumboot_nor_heap_start = .;
-        . = . + 0x200000; /* 2М heap */
-        rumboot_nor_heap_end = .;
-    } > NOR
+    rumboot_nor_heap_start      = NOR_MEMORY_BASE;
+    rumboot_nor_heap_end        = NOR_MEMORY_BASE + NOR_MEMORY_SIZE;
 
     /DISCARD/ : {
         *(.rela.*)
