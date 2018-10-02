@@ -17,6 +17,7 @@
 #include <rumboot/bootsrc/spiflash.h>
 #include <rumboot/bootsrc/physmap.h>
 #include <rumboot/bootsrc/sdio.h>
+#include <rumboot/bootsrc/boilerplate.h>
 
 #define BOOTM_SELFTEST     (1 << 1)
 #define BOOTM_HOST         (1 << 2)
@@ -135,7 +136,7 @@ static const struct rumboot_bootsource arr[] = {
                 .name = "SDIO (CD: X)",
                 .base = SDIO_0_BASE,
                 .freq_khz = 100000,
-                .plugin = &g_bootmodule_sdio,
+                .plugin = &g_bootmodule_boilerplate,
         },
         {
                 .name = "SPI0 (CS: internal)",
