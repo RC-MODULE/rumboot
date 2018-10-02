@@ -121,6 +121,13 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
     rumboot_bootrom_unit_test(
         ID 0
+        TAG sdio
+        MEMTAG SD_IMAGE
+        TAGOFFSET 0
+    )
+
+    rumboot_bootrom_unit_test(
+        ID 1
         TAG spi0_cs0
         MEMTAG SPI0_CONF
         TAGOFFSET 0
@@ -128,14 +135,14 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     )
 
     rumboot_bootrom_unit_test(
-        ID 1
+        ID 2
         TAG spi0_cs1
         MEMTAG SPI0_CONF
         TAGOFFSET 1
     )
 
     rumboot_bootrom_unit_test(
-        ID 2
+        ID 3
         TAG nor
         MEMTAG NOR_IMAGE
         TAGOFFSET 0

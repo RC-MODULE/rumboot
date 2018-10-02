@@ -46,6 +46,7 @@
 #define GRETH_0_BASE            0xC002A000
 #define GRETH_1_BASE            0xC003A000
 #define GSPI_0_BASE             0xC002B000
+#define SDIO_0_BASE             0xC002C000
 #define GSPI_1_BASE             0xC003B000
 #define LSCB0_BASE              0xC0020000
 #define LSCB1_BASE              0xC0030000

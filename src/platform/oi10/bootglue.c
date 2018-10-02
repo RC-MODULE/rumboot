@@ -16,6 +16,7 @@
 #include <rumboot/boot.h>
 #include <rumboot/bootsrc/spiflash.h>
 #include <rumboot/bootsrc/physmap.h>
+#include <rumboot/bootsrc/sdio.h>
 
 #define BOOTM_SELFTEST     (1 << 1)
 #define BOOTM_HOST         (1 << 2)
@@ -84,9 +85,58 @@ static void spi0_gcs(const struct rumboot_bootsource *src, void *pdata, int sele
 //                iowrite32((1 << 4), GPIO0_BASE + GPIO_WR_DATA_SET1);
 //        }
 }
+#include <platform/devices/emi.h>
+#include <platform/regs/fields/emi.h>
+#include <platform/regs/regs_emi.h>
+#include <platform/devices/plb6mcif2.h>
+
+static bool emi_enable(const struct rumboot_bootsource *src, void *pdata)
+{
+        plb6mcif2_simple_init( DCR_EM2_PLB6MCIF2_BASE,  0x00);
+
+
+        emi_bank_cfg b5_cfg =
+    {
+        //SS5
+        {
+            BTYP_NOR,
+            PTYP_NO_PAGES,
+            SRDY_EXT_RDY_NOT_USE,
+            TWR_0,
+            SST_Flow_Through,
+            TSSOE_1,
+            TSOE_1,
+            TCYC_8,
+            0, //T_RDY
+            TDEL_0
+        },
+        //SD5
+        {
+            CSP_256,
+            SDS_2M,
+            CL_3,
+            TRDL_1,
+            SI_EXT_INIT,
+            TRCD_5,
+            TRAS_9
+        }
+    };
+    emi_set_bank_cfg(DCR_EM2_PLB6MCIF2_BASE, emi_b5_nor, &b5_cfg);
+    dcr_write(DCR_EM2_EMI_BASE + EMI_FLCNTRL, 0x17);
+    emi_set_ecc (DCR_EM2_PLB6MCIF2_BASE, emi_bank_all, emi_ecc_off);
+    dcr_write(DCR_EM2_PLB6MCIF2_BASE + EMI_BUSEN, 0x01);
+
+    return true;
+}
 
 
 static const struct rumboot_bootsource arr[] = {
+        {
+                .name = "SDIO (CD: X)",
+                .base = SDIO_0_BASE,
+                .freq_khz = 100000,
+                .plugin = &g_bootmodule_sdio,
+        },
         {
                 .name = "SPI0 (CS: internal)",
                 .base = GSPI_0_BASE,
@@ -105,8 +155,10 @@ static const struct rumboot_bootsource arr[] = {
         {
                 .name = "NOR (CS: 5)",
                 .base = NOR_BASE,
+                .enable = emi_enable,
                 .plugin = &g_bootmodule_physmap,
         },
+        #endif
 };
 
 
