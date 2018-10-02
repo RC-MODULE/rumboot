@@ -404,7 +404,7 @@ uint32_t greth_get_status(uint32_t base_addr);
  * \brief Runs transaction for reading data by EDCL interface
  * \param base_addr: base address of GRETH
  */
-void greth_start_edcl_rd(uint32_t base_addr);
+void greth_start_edcl_transfer(uint32_t base_addr);
 
 /**
  * @}

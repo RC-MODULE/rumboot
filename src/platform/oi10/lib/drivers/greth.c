@@ -415,10 +415,10 @@ void greth_start_transmit(uint32_t base_addr)
     set_greth_ctrl(base_addr, &greth_info);
 }
 
-void greth_start_edcl_rd(uint32_t base_addr)
+void greth_start_edcl_transfer(uint32_t base_addr)
 {
     greth_ctrl_struct_t greth_info;
-    rumboot_printf("Start EDCL read transaction (0x%X)\n", base_addr);
+    rumboot_printf("Start EDCL transaction (0x%X)\n", base_addr);
 
     new_greth_ctrl_struct(&greth_info);
     greth_info.promiscuous_mode       = true;
