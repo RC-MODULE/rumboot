@@ -48,12 +48,12 @@ SECTIONS {
 
         /* This is where stacks start */
         rumboot_platform_stack_area_start = .;
-        . = . + 0x7f00; /* 32k stack */
+        . = . + 0x7e00; /* 32k stack */
         /* This is where stacks end */
         rumboot_platform_stack_area_end = .;
     } > IM0
 
-    .runtime 0x8001ff00 (NOLOAD) : {
+    .runtime 0x8001fe00 (NOLOAD) : {
        /* Runtime info is at the very top of iram */
        rumboot_platform_runtime_info = .;
        *(.rumboot_platform_runtime_info);
