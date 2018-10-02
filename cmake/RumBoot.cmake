@@ -1,6 +1,20 @@
 set(RUMBOOT_ONEVALUE_ARGS SNAPSHOT LDS PREFIX NAME BOOTROM CHECKPOINTS RESTORE TIMEOUT_CTEST VARIABLE CONFIGURATION)
 set(RUMBOOT_MULVALUE_ARGS FILES IRUN_FLAGS CFLAGS TESTGROUP LDFLAGS PREPCMD CHECKCMD FEATURES TIMEOUT LOAD DEPENDS PACKIMAGE_FLAGS)
 
+find_program(PYTHON_EXECUTABLE
+  NAMES python3 python3.4 python3.6 python3.1 python3.5 python3.2 python3.3
+  HINTS /usr/local/bin
+)
+
+if (NOT PYTHON_EXECUTABLE)
+  message(FATAL_ERROR "Failed to find useable python3")
+else()
+  message(STATUS "Found python3: ${PYTHON_EXECUTABLE}")
+endif()
+
+# Broken on RHEL
+#find_package(PythonInterp 3.0 REQUIRED)
+
 
 macro(rumboot_add_configuration name)
   message(STATUS "Adding configuration ${name}")

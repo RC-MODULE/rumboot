@@ -81,19 +81,6 @@ if(NOT RUMBOOT_DISABLE_CCACHE)
   find_program(CCACHE_FOUND ccache)
 endif()
 
-find_program(PYTHON_EXECUTABLE
-  NAMES python3 python3.4 python3.6 python3.1 python3.5 python3.2 python3.3
-  HINTS /usr/local/bin
-)
-
-if (NOT PYTHON_EXECUTABLE)
-  message(FATAL_ERROR "Failed to find useable python3")
-else()
-  message(STATUS "Found python3: ${PYTHON_EXECUTABLE}")
-endif()
-
-# Broken on RHEL
-#find_package(PythonInterp 3.0 REQUIRED)
 
 macro(find_rumboot_packimage)
   find_file(RUMBOOT_PACKIMAGE
