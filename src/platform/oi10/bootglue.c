@@ -158,7 +158,6 @@ static const struct rumboot_bootsource arr[] = {
                 .enable = emi_enable,
                 .plugin = &g_bootmodule_physmap,
         },
-        #endif
 };
 
 
