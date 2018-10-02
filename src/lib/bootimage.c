@@ -82,7 +82,7 @@ int32_t rumboot_bootimage_check_data(struct rumboot_bootheader *hdr)
 	uint32_t checksum = crc32(0, hdr->data, hdr->datalen);
 	if (checksum != hdr->data_crc32) {
 		dbg_boot(hdr->device, "Data CRC32 mismatch: expected: 0x%x calculated: %x",
-			checksum, hdr->data_crc32
+			hdr->data_crc32, checksum 
 		);
 	}
 
