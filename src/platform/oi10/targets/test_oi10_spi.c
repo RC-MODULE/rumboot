@@ -53,7 +53,7 @@ static uint32_t gspi_check_regs(uint32_t base_addr)
      { "SSPPCellID1",   REGPOKER_READ32, GSPI_SSPPCellID1,  GSPI_SSPPCellID1_DEFAULT,   GSPI_SSPPCellID1_MASK },
      { "SSPPCellID2",   REGPOKER_READ32, GSPI_SSPPCellID2,  GSPI_SSPPCellID2_DEFAULT,   GSPI_SSPPCellID2_MASK },
      { "SSPPCellID3",   REGPOKER_READ32, GSPI_SSPPCellID3,  GSPI_SSPPCellID3_DEFAULT,   GSPI_SSPPCellID3_MASK },
-//     { "SSPCR0",        REGPOKER_WRITE32, GSPI_SSPCR0,      0x00,                       GSPI_SSPCR0_MASK },
+     { "SSPCR0",        REGPOKER_WRITE32, GSPI_SSPCR0,      0x00,                       GSPI_SSPCR0_MASK },
      { "SSPCR1",        REGPOKER_WRITE32, GSPI_SSPCR1,      0x00,                       GSPI_SSPCR1_MASK },
      { "SSPCPSR",       REGPOKER_WRITE32, GSPI_SSPCPSR,     0x00,                       GSPI_SSPCPSR_MASK & ~0x01 },
      { "SSPIMSC",       REGPOKER_WRITE32, GSPI_SSPIMSC,     0x00,                       GSPI_SSPIMSC_MASK },
@@ -153,7 +153,6 @@ static uint32_t gspi_dma_axi(uint32_t base_addr, uint32_t r_mem_addr, uint32_t w
     rumboot_printf("Read from address =%x\n", rumboot_virt_to_dma((void*)r_mem_addr));
     rumboot_printf("Write to address =%x\n", rumboot_virt_to_dma((void*)w_mem_addr));
 
-    gspi_dma_reset(base_addr);
     gspi_set_int_mask(base_addr, 0x02); //interrupt masks - unmask rx_fifo not empty
 
 
@@ -304,6 +303,7 @@ int main(void)
     rumboot_irq_enable( GSPI_INT );
     rumboot_irq_sei();
 
+    gspi_dma_reset(GSPI_BASE);
     //initial ssp
     conf.ssp_clk = 100000000;
     conf.spi_clk = 20000000;
