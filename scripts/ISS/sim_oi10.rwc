@@ -1,0 +1,22 @@
+socket timeout 10000
+# configure L2 cache
+prd alter l2 dcrbase = 0x80000600
+prd alter l2 size = 262144
+# deny access to all memory
+memacc use physical
+memacc add 0x00000000 0x3FFFFFFFFFF NA
+# reset chip
+reset chip
+write sspcr  0x12345670
+write uspcr  0x12345670
+write ispcr  0x12345670
+
+# prepare BOOT ROM to load binary
+memacc add 0xFFFF0000 0xFFFFFFFF RW 1 MEM 0x3FFFFFF0000
+write tlb 240 3 EPN 0xFFFFF000 V 0x1 TS 0x0 S 0x00 T 0x0000 E+RPN 0x3FFFFFFF000 IL1ID b11 U0123 b0000 WIMG b0111 E 0x0 UXWR b000 SXWR b111 BE0_5 0x-
+write tlb 0 0 EPN 0xFFFF0000 V 0x1 TS 0x0 S 0x03 T 0x0000 E+RPN 0x3FFFFFF0000 IL1ID b11 U0123 b0000 WIMG b0111 E 0x0 UXWR b000 SXWR b111 BE0_5 0x-
+
+# prepare IMO to load binary
+memacc add 0x80000000 0x8001FFFF RW 1 MEM 0x1080000000
+write tlb 128 0 EPN 0x80000000 V 0x1 TS 0x0 S 0x03 T 0x0000 E+RPN 0x01080000000 IL1ID b11 U0123 b0000 WIMG b0111 E 0x0 UXWR b000 SXWR b111 BE0_5 0x-
+write tlb 129 0 EPN 0x80010000 V 0x1 TS 0x0 S 0x03 T 0x0000 E+RPN 0x01080010000 IL1ID b11 U0123 b0000 WIMG b0111 E 0x0 UXWR b000 SXWR b111 BE0_5 0x-
