@@ -316,7 +316,7 @@ function(add_rumboot_target)
   endif()
 
   if (TARGET_LDS AND EXISTS ${TARGET_LDS})
-    set(ldf -T${TARGET_LDS})
+    set(ldf -T${TARGET_LDS} -L${CMAKE_SOURCE_DIR}/lds)
   else()
     set(ldf )
   endif()
