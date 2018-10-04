@@ -578,8 +578,41 @@ endif()
     add_rumboot_target(
           CONFIGURATION IRAM
           FILES test_oi10_em2_201.c
-          CFLAGS -DEXT_MEM_BASE=SDRAM_BASE
-          PREFIX sdram
+          CFLAGS -DEXT_MEM_BASE=SDRAM_BASE -DCSP=CSP_256 -DSDS=SDS_8M
+          IRUN_FLAGS +SDR_CSP=8
+          PREFIX sdram_csp256
+        )
+
+    add_rumboot_target(
+          CONFIGURATION IRAM
+          FILES test_oi10_em2_201.c
+          CFLAGS -DEXT_MEM_BASE=SDRAM_BASE -DCSP=CSP_512 -DSDS=SDS_16M
+          IRUN_FLAGS +SDR_CSP=9
+          PREFIX sdram_csp512
+        )
+
+    add_rumboot_target(
+          CONFIGURATION IRAM
+          FILES test_oi10_em2_201.c
+          CFLAGS -DEXT_MEM_BASE=SDRAM_BASE -DCSP=CSP_1024 -DSDS=SDS_32M
+          IRUN_FLAGS +SDR_CSP=10
+          PREFIX sdram_csp1024
+        )
+
+    add_rumboot_target(
+          CONFIGURATION IRAM
+          FILES test_oi10_em2_201.c
+          CFLAGS -DEXT_MEM_BASE=SDRAM_BASE -DCSP=CSP_2048 -DSDS=SDS_64M
+          IRUN_FLAGS +SDR_CSP=11
+          PREFIX sdram_csp2048
+        )
+
+    add_rumboot_target(
+          CONFIGURATION IRAM
+          FILES test_oi10_em2_201.c
+          CFLAGS -DEXT_MEM_BASE=SDRAM_BASE -DCSP=CSP_4096 -DSDS=SDS_128M
+          IRUN_FLAGS +SDR_CSP=12
+          PREFIX sdram_csp4096
         )
         
     add_rumboot_target(
