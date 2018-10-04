@@ -74,13 +74,18 @@ SECTIONS {
         *(.rela.*)
         *(.got2)
         *(.got)
+        *(.got2.*)
+        *(.got.*)
         libc.a ( * )
         libm.a ( * )
         libgcc.a ( * )
         /* Make sure data & bss go to hell */
         *(.data)
+        *(.data.*)
         *(.bss)
         *(.bss.*)
+        *(.sdata)
+        *(.sdata.*)
         *(COMMON)
     }
 
