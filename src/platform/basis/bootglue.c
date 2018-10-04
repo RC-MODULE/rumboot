@@ -7,6 +7,7 @@
 #include <rumboot/bootsrc/spiflash.h>
 #include <rumboot/bootsrc/eeprom.h>
 #include <rumboot/bootsrc/boilerplate.h>
+#include <rumboot/bootsrc/sdio.h>
 #include <platform/regs/sctl.h>
 
 
@@ -97,7 +98,7 @@ static const struct rumboot_bootsource arr[] = {
                 .name = "SDIO0 (CD: GPIO0_X)",
                 .base = SDIO0_BASE,
                 .freq_khz = 100000,
-                .plugin = &g_bootmodule_boilerplate,
+                .plugin = &g_bootmodule_sdio,
         },
         {
                 .name = "SPI0 (CS: GPIO0_4)",
@@ -239,5 +240,5 @@ int rumboot_platform_exec(struct rumboot_bootheader *hdr)
 
 void rumboot_platform_print_summary(struct rumboot_config *conf)
 {
-    
+
 }

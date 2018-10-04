@@ -107,12 +107,12 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
   rumboot_bootrom_add_components(IRAM_SPL ROM)
 
 
-#  rumboot_bootrom_unit_test(
-#      ID 0
-#      TAG sdio0
-#      MEMTAG SDIO0_CONF
-#      TAGOFFSET 0
-#  )
+  rumboot_bootrom_unit_test(
+      ID 0
+      TAG sdio0
+      MEMTAG SDIO0_CONF
+      TAGOFFSET 0
+  )
 
   rumboot_bootrom_unit_test(
       ID 1
