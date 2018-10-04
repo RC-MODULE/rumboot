@@ -7,7 +7,7 @@
 
 
 /*MSR access*/
-static inline void msr_write( uint32_t const wval ) {
+static inline __attribute__((always_inline)) void msr_write( uint32_t const wval ) {
     asm volatile (
         "mtmsr %0 \n\t"
         ::  "r"(wval)
@@ -15,7 +15,7 @@ static inline void msr_write( uint32_t const wval ) {
     );
 }
 
-static inline uint32_t msr_read() {
+static inline __attribute__((always_inline)) uint32_t msr_read() {
     uint32_t rval = 0;
     asm volatile (
         "mfmsr %0 \n\t"
@@ -43,28 +43,28 @@ static inline uint32_t msr_read() {
 })
 
 
-inline static void dcbf( void* const addr ) {
+static inline __attribute__((always_inline)) void dcbf( void* const addr ) {
     asm volatile (
         "dcbf 0, %0\n\t"
         ::  "r"(addr)
     );
 }
 
-inline static void dcbi( void* const addr ) {
+static inline __attribute__((always_inline)) void dcbi( void* const addr ) {
     asm volatile (
         "dcbi 0, %0\n\t"
         ::  "r"(addr)
     );
 }
 
-inline static void dcbz( void* const addr ) {
+static inline __attribute__((always_inline)) void dcbz( void* const addr ) {
     asm volatile (
         "dcbz 0, %0\n\t"
         ::  "r"(addr)
     );
 }
 
-inline static void dcbst( void* const addr ) {
+static inline __attribute__((always_inline)) void dcbst( void* const addr ) {
     asm volatile (
         "dcbst 0, %0\n\t"
         ::"r"(addr)
