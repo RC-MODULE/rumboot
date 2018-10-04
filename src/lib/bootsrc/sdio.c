@@ -127,7 +127,7 @@ static bool sdio_request_start(uint32_t base, struct sdio_request *rq)
         /* Do we have data transfer ? */
         uint32_t cmd_ctrl = (rq->cmd << 16) | (rq->idx << 12) | (rq->crc << 13) | (rq->resp << 10) | (0x11);
         if (rq->buf) {
-                uint32_t buf_num = 1;
+                uint32_t buf_num = 0;
                 iowrite32((buf_num << 2), base + SDIO_SDR_ADDRESS_REG);
                 /* 1 block, 512 bytes */
                 iowrite32(((1 << 8) | (1 << 0)), base + SDIO_SDR_CARD_BLOCK_SET_REG);
@@ -261,34 +261,6 @@ static bool sdio_request_execute(uintptr_t base, struct sdio_request *rq)
         ret = wait(base, SPISDIO_SDIO_INT_STATUS_CH1_FINISH | SPISDIO_SDIO_INT_STATUS_BUF_FINISH);
         if (!ret) {
                 sd_dbg(NULL, "RESULT (DMA2AXI): %d", ret);
-                return false;
-        }
-
-        /* Now, we have a data transfer here */
-#if 0
-struct sdio_event dma_event = {
-        .type		= CH1_DMA_DONE_HANDLE,
-        .flag		= SPISDIO_SDIO_INT_STATUS_CH1_FINISH,
-        .response	= DSSR_CHANNEL_TR_DONE
-};
-
-struct sdio_event event = {
-        .type		= TRAN_FINISH_HANDLE,
-        .response	= SDR_TRAN_FIFO_FINISH,
-        .flag		= SPISDIO_SDIO_INT_STATUS_BUF_FINISH
-};
-
-#endif
-
-        ret = wait(base, SPISDIO_SDIO_INT_STATUS_CH0_FINISH);
-        if (!ret) {
-                sd_dbg(NULL, "RESULT (DMA2AXI A): %d", ret);
-                return false;
-        }
-
-        ret = wait(base, SDR_TRAN_FIFO_FINISH);
-        if (!ret) {
-                sd_dbg(NULL, "RESULT (DMA2AXI B): %d", ret);
                 return false;
         }
 
