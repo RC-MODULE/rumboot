@@ -6,6 +6,7 @@
 #include <platform/devices.h>
 
 #define SAVE_MEM_ADDR	save_data /* IM0_BASE + 0x0001E000 */
+#define SAVE_MEM_SIZE   0x80
 
 .macro check_reg_value rN
 	rumboot_putstring "\rN "
@@ -16,6 +17,10 @@
     bne cr7, test_error
 .endm
 
+.section ".data.save_data","aw",@progbits
+
+save_data:
+.space SAVE_MEM_SIZE, 0x00
 
 .section ".text","ax",@progbits
 
@@ -145,9 +150,7 @@ rumboot_entry_point:
 	b test_ok
 
 test_ok:
-    load_const r15, 0x8001e000
-    load_const r16, 0x80
-    rumboot_issdump r15, r16
+    rumboot_issdump SAVE_MEM_ADDR, SAVE_MEM_SIZE
     rumboot_putstring "\nTEST OK\n"
     test_event		EVENT_OK
     load_const r3,	RESULT_OK
@@ -164,9 +167,6 @@ finish:
 
 
 
-.section ".issdata","aw",@progbits
-
-save_data:
 
 
 
