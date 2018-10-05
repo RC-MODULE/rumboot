@@ -186,7 +186,7 @@ static uint32_t sdio_get_events(uintptr_t base)
 
 static bool wait(uintptr_t base, uint32_t flag)
 {
-        bool ret;
+        bool ret = false;
         uint32_t status = 0;
         uint32_t start = rumboot_platform_get_uptime();
 
