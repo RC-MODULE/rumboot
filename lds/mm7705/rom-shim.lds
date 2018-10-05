@@ -32,6 +32,7 @@ SECTIONS
   . = . + 0x7fa0; /* 60k stack */
 
   /* This is where stacks end */
+  . = ALIGN(8);
   rumboot_platform_stack_area_end = .;
  } > IM0
 

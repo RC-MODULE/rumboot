@@ -8,7 +8,7 @@ file(GLOB PLATFORM_SOURCES
 
 macro(RUMBOOT_PLATFORM_SET_COMPILER_FLAGS)
     set(RUMBOOT_COMMON_FLAGS "-DRUMBOOT_NO_IRQ_MACROS -mcpu=476fp -gdwarf-2 -m32 -ffreestanding -Os -mbig-endian -fno-zero-initialized-in-bss")
-    set(CMAKE_C_FLAGS "${RUMBOOT_COMMON_FLAGS} -mstrict-align -Wall -fdata-sections -ffunction-sections ")
+    set(CMAKE_C_FLAGS "${RUMBOOT_COMMON_FLAGS} -mstrict-align -fdata-sections -ffunction-sections ")
     set(CMAKE_ASM_FLAGS ${RUMBOOT_COMMON_FLAGS})
     set(CMAKE_EXE_LINKER_FLAGS "-fno-zero-initialized-in-bss -e rumboot_main -Wl,--oformat=elf32-powerpc -static -nostartfiles -Wl,--gc-sections")
     set(CMAKE_DUMP_FLAGS -S -EB -M476,32)
@@ -17,11 +17,11 @@ endmacro()
 
 rumboot_add_configuration(
   ROM
+  PREFIX rom
   LDS mm7705/rom-shim.lds
   FILES ${CMAKE_SOURCE_DIR}/src/lib/bootheader_legacy.c
   CFLAGS -DRUMBOOT_ONLY_STACK
   #LDFLAGS -Wl,--start-group -lgcc -lc -lm -Wl,--end-group
-  PREFIX PRIMARY
   FEATURES PACKIMAGE
 )
 
@@ -30,16 +30,19 @@ rumboot_add_configuration(
   SPL
   LDS mm7705/spl.lds
   FILES ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c
-  CFLAGS -DRUMBOOT_NEWLIB_PRINTF
+  CFLAGS
   LDFLAGS -Wl,--start-group -lgcc -lc -lm -Wl,--end-group
-  FEATURES PACKIMAGE SECONDARY
+  PREFIX spl
+  FEATURES PACKIMAGE
 )
 
 rumboot_add_configuration(
   IRAM
   DEFAULT
   LDS mm7705/ram.lds
-  CFLAGS -DRUMBOOT_NEWLIB_PRINTF
+  PREFIX iram
+  CFLAGS
+  FEATURES PACKIMAGE
   LDFLAGS -Wl,--start-group -lgcc -lc -lm -Wl,--end-group
 )
 
@@ -49,16 +52,18 @@ macro(rumboot_platform_generate_stuff_for_taget product)
 endmacro()
 
 
+include(${CMAKE_SOURCE_DIR}/cmake/bootrom.cmake)
+
 macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
-  add_rumboot_target(
-    FILES common/bootrom/bootrom.c
-    CONFIGURATION ROM
-    NAME loader)
+  rumboot_bootrom_add_components(SPL ROM)
 
-  add_rumboot_target_dir(common/spl
-      CONFIGURATION SPL
-      PREFIX spl)
+  rumboot_bootrom_unit_test(
+      ID 0
+      CONFIGURATION ROM
+      TAG sdio
+      FULL YES
+  )
 
   foreach(target ${RUMBOOT_TARGETS_C} ${RUMBOOT_TARGETS_S})
     add_rumboot_target(

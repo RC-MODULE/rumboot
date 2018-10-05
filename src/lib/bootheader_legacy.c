@@ -35,6 +35,6 @@ struct legacy_bootheader
 
 static const __attribute__((used)) __attribute__((section(".header")))
 struct legacy_bootheader hdr = {
-	.magic		= BOOTHEADER_MAGIC__BOOT_IMAGE_VALID,
+	.magic		= BOOTHEADER_MAGIC__HOST_IMAGE_VALID,
 	.entry0	= (uint32_t) &rumboot_main,
 };

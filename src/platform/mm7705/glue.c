@@ -156,11 +156,26 @@ void rumboot_platform_setup()
 static bool sdio_enable(const struct rumboot_bootsource *src, void *pdata)
 {
         uint32_t afsel;
-#ifdef MM7705_USE_MPW
-	afsel = ioread32(LSIF1_MGPIO7__ + 0x420) | 0b11110;
-	iowrite32(afsel, LSIF1_MGPIO7__ + 0x420);
-#endif
 
+#ifdef MM7705_USE_MPW
+        rumboot_putstring("Patching SDIO registers...");
+        iowrite32(0xff, 0x3c067000 + 0x420);
+        rumboot_putstring("DONE\n");
+
+        rumboot_putstring("Patching GRETH/EDCL registers...");
+        iowrite32(0xff, 0x3C060000 + 0x420);
+        iowrite32(0xff, 0x3C061000 + 0x420);
+        iowrite32(0xff, 0x3C062000 + 0x420);
+        iowrite32(0xff, 0x3C063000 + 0x420);
+        iowrite32(0xff, 0x3C064000 + 0x420);
+        iowrite32(0xff, 0x3C065000 + 0x420);
+        iowrite32(0xff, 0x3C066000 + 0x420);
+        iowrite32(0xff, 0x3C067000 + 0x420);
+        rumboot_putstring("DONE\n");
+#else
+        iowrite32(0xff, LSIF1_MGPIO4_BASE + 0x420);
+
+#endif
         return true;
 }
 
@@ -177,6 +192,7 @@ static const struct rumboot_bootsource arr[] = {
                 .plugin = &g_bootmodule_sdio,
                 .enable = sdio_enable,
                 .disable = sdio_disable,
+                .offset = 16384,
         },
         { /*Sentinel*/ }
 };
@@ -201,8 +217,7 @@ void *rumboot_platform_get_spl_area(size_t *size)
 int rumboot_platform_exec(struct rumboot_bootheader *hdr)
 {
         /* No-op, this chip has only one core */
-        while (1) ; ;
-        return 0;
+        return rumboot_bootimage_execute_ep((void *) hdr->entry_point[0]);
 }
 
 void rumboot_platform_read_config(struct rumboot_config *conf)
@@ -219,5 +234,4 @@ void rumboot_platform_selftest(struct rumboot_config *conf)
 
 void rumboot_platform_print_summary(struct rumboot_config *conf)
 {
-    
 }

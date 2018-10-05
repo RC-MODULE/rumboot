@@ -3,8 +3,8 @@
 
 
 /**
- * \defgroup platform_mpw_proto_register_map Register Map
- * \ingroup platform_mpw_proto
+ * \defgroup platform_mm7705_register_map Register Map
+ * \ingroup platform_mm7705
  * This file contains physical addresses of devices present in SoC.
  * For developers: Please, keep the list sorted by device address
  * and formatted properly.
@@ -16,7 +16,17 @@
  *
  */
 
+#ifdef MM7705_USE_MPW
+    #define SDIO_BASE          0x3C06A000
+    #define SDIO_SIZE           SDIO_PLB6_SIZE
 
+    #define SPI_CTRL0_BASE      0x3C03E000
+    #define SPI_CTRL0_SIZE      SPI_CTRL0_PLB6_SIZE
+    #define UART0_BASE             0x3C034000
+    #define SPI_CTRL1_BASE      0x3C05A000
+    #define LSIF1_MGPIO7__       0x3C067000
+    #define LSIF1_MGPIO4__      0x3C06B000
+#else
 
 #define BOOT_ROM_BASE              0xFFFC0000
 #define BOOT_ROM_SIZE              0x00040000
@@ -189,7 +199,7 @@
 #define EM0_PHY_BASE        0x3800E000
 #define EM1_PHY_BASE        0x3800F000
 
-
+#endif
 /**
  * @}
  */
