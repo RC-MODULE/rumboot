@@ -87,7 +87,7 @@ int32_t rumboot_bootimage_check_data(struct rumboot_bootheader *hdr);
 
  struct rumboot_bootsource {
    const char *name;
-   uint32_t base;
+   uintptr_t base;
    uint64_t offset;
    uint32_t freq_khz;
    uint32_t slave_addr;
