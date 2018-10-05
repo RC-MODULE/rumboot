@@ -140,8 +140,8 @@ greth_descr_t*  rx_descriptor_data_;
 uint8_t* test_data_im0_src;
 uint8_t* test_data_im0_dst;
 
-uint8_t* test_data_im1_src;//  = (uint8_t *)( IM1_BASE_MIRROR );
-uint8_t* test_data_im1_dst;//  = (uint8_t *)( IM1_BASE_MIRROR +   GRETH_TEST_DATA_LEN_BYTES );
+uint8_t* test_data_im1_src;
+uint8_t* test_data_im1_dst;
 uint8_t* test_data_em2_src  = (uint8_t *)( SRAM0_BASE + 0x100 + GRETH_TEST_DATA_MISALIGN_EM2);
 uint8_t* test_data_em2_dst  = (uint8_t *)( SRAM0_BASE + 0x100 + GRETH_TEST_DATA_LEN_BYTES + GRETH_TEST_DATA_MISALIGN_EM2);
 
@@ -253,6 +253,31 @@ uint8_t * get_src_dst_data_ptr(bool src_dst, uint32_t bank_num)
     return data_ptr;
 }
 
+void add_pading (uint8_t* addr, uint32_t len, uint8_t value)
+{
+    uint32_t misalign;
+
+    rumboot_printf("Padding array at addresses [0x%X : 0x%X]\n", (uint32_t) addr, (uint32_t)addr + len -1);
+
+    //paddign at start of array
+    misalign = (uint32_t)addr & 0x00000003;
+    while (misalign>0)
+    {
+        rumboot_printf("MEM[0x%X] = 0\n", (uint32_t)addr - misalign);
+        *(addr - misalign) = value;
+        misalign--;
+    }
+
+    //paddign at end of array
+    misalign = 3 - (((uint32_t)addr + len - 1) & 0x00000003);
+    while (misalign>0)
+    {
+        rumboot_printf("MEM[0x%X] = 0\n", (uint32_t)addr + len + misalign - 1);
+        *(addr + len + misalign - 1) = value;
+        misalign--;
+    }
+}
+
 void prepare_test_data(uint32_t src_bank, uint32_t dst_bank)
 {
     uint32_t i=0;
@@ -266,11 +291,16 @@ void prepare_test_data(uint32_t src_bank, uint32_t dst_bank)
     rumboot_putstring("Allocate from im0");
     test_data_im0_src = (uint8_t* )rumboot_malloc_from_heap_misaligned(0, GRETH_TEST_DATA_LEN_BYTES, 0, GRETH_TEST_DATA_MISALIGN_IM0);
     test_data_im0_dst = (uint8_t* )rumboot_malloc_from_heap_misaligned(0, GRETH_TEST_DATA_LEN_BYTES, 0, GRETH_TEST_DATA_MISALIGN_IM0);
+    //add_pading(test_data_im0_src, GRETH_TEST_DATA_LEN_BYTES, 0);
+    //add_pading(test_data_im0_dst, GRETH_TEST_DATA_LEN_BYTES, 0);
 
     rumboot_putstring("Allocate from im1 for src");
     test_data_im1_src = (uint8_t* )rumboot_malloc_from_heap_misaligned(1, GRETH_TEST_DATA_LEN_BYTES, 0, GRETH_TEST_DATA_MISALIGN_IM1);
+    //add_pading(test_data_im1_src, GRETH_TEST_DATA_LEN_BYTES, 0);
+
     rumboot_putstring("Allocate from im1 for dst");
     test_data_im1_dst = (uint8_t* )rumboot_malloc_from_heap_misaligned(1, GRETH_TEST_DATA_LEN_BYTES, 0, GRETH_TEST_DATA_MISALIGN_IM1);
+    //add_pading(test_data_im1_dst, GRETH_TEST_DATA_LEN_BYTES, 0);
 /*
     rumboot_putstring("Allocate from em2 for src");
     test_data_em2_src = (uint8_t* )rumboot_malloc_from_heap_misaligned(1, GRETH_TEST_DATA_LEN_BYTES, 0, GRETH_TEST_DATA_MISALIGN_EM2);
@@ -330,6 +360,8 @@ void prepare_test_data(uint32_t src_bank, uint32_t dst_bank)
         {
             test_data_em2_src[i] = test_data_im0_src[i];
         }
+        //add_pading(test_data_em2_src, GRETH_TEST_DATA_LEN_BYTES, 0);
+        //add_pading(test_data_em2_dst, GRETH_TEST_DATA_LEN_BYTES, 0);
     }
     rumboot_putstring("Preparing data finished");
 }
