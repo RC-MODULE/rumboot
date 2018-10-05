@@ -12,8 +12,8 @@
 #define WD_REG_LOAD             0x00
 #define WD_REG_VALUE            0x04
 #define WD_REG_CONTROL          0x08
-#define WD_REG_INTCLR           0x0C
 #define WD_REG_RIS              0x10
+#define WD_REG_INTCLR           0x0C
 #define WD_REG_MIS              0x14
 #define WD_REG_LOCK             0xC0
 #define WD_REG_ITCR             0xF0
