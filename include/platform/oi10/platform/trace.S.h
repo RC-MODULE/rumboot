@@ -61,9 +61,9 @@
 .macro rumboot_putdump start_addr, length_in_bytes, tmp_reg=r5, tmp_reg_msr=r6
     disable_ext_irq     \tmp_reg, \tmp_reg_msr
 
-    load_const          \tmp_reg, \start_addr
+    load_addr           \tmp_reg, \start_addr
     mtspr               SPR_SPRG3, \tmp_reg
-    load_const          \tmp_reg, \length_in_bytes
+    load_size           \tmp_reg, \length_in_bytes
     mtspr               SPR_SPRG4, \tmp_reg
     load_const          \tmp_reg, EVENT_TRACE_DUMP
     rumboot_event_arg1_ EVENT_TESTEVENT, \tmp_reg
@@ -87,9 +87,9 @@
 .macro rumboot_issdump start_addr, length_in_bytes, tmp_reg=r5, tmp_reg_msr=r6
     disable_ext_irq     \tmp_reg, \tmp_reg_msr
 
-    load_const          \tmp_reg, \start_addr
+    load_addr           \tmp_reg, \start_addr
     mtspr               SPR_SPRG3, \tmp_reg
-    load_const          \tmp_reg, \length_in_bytes
+    load_size           \tmp_reg, \length_in_bytes
     mtspr               SPR_SPRG4, \tmp_reg
     load_const          \tmp_reg, TEST_EVENT_CREATE_ISS_DUMP
     rumboot_event_arg1_ EVENT_TESTEVENT, \tmp_reg
