@@ -142,8 +142,8 @@ uint8_t* test_data_im0_dst;
 
 uint8_t* test_data_im1_src;
 uint8_t* test_data_im1_dst;
-uint8_t* test_data_em2_src  = (uint8_t *)( SRAM0_BASE + 0x100 + GRETH_TEST_DATA_MISALIGN_EM2);
-uint8_t* test_data_em2_dst  = (uint8_t *)( SRAM0_BASE + 0x100 + GRETH_TEST_DATA_LEN_BYTES + GRETH_TEST_DATA_MISALIGN_EM2);
+uint8_t* test_data_em2_src;//  = (uint8_t *)( SRAM0_BASE + 0x100 + GRETH_TEST_DATA_MISALIGN_EM2);
+uint8_t* test_data_em2_dst;//  = (uint8_t *)( SRAM0_BASE + 0x100 + GRETH_TEST_DATA_LEN_BYTES + GRETH_TEST_DATA_MISALIGN_EM2);
 
 /*
  * Registers access checks
@@ -301,12 +301,12 @@ void prepare_test_data(uint32_t src_bank, uint32_t dst_bank)
     rumboot_putstring("Allocate from im1 for dst");
     test_data_im1_dst = (uint8_t* )rumboot_malloc_from_heap_misaligned(1, GRETH_TEST_DATA_LEN_BYTES, 0, GRETH_TEST_DATA_MISALIGN_IM1);
     //add_pading(test_data_im1_dst, GRETH_TEST_DATA_LEN_BYTES, 0);
-/*
+
     rumboot_putstring("Allocate from em2 for src");
     test_data_em2_src = (uint8_t* )rumboot_malloc_from_heap_misaligned(1, GRETH_TEST_DATA_LEN_BYTES, 0, GRETH_TEST_DATA_MISALIGN_EM2);
     rumboot_putstring("Allocate from em2 for dst");
     test_data_em2_dst = (uint8_t* )rumboot_malloc_from_heap_misaligned(1, GRETH_TEST_DATA_LEN_BYTES, 0, GRETH_TEST_DATA_MISALIGN_EM2);
-*/
+
     rumboot_putstring("Fill im0 src array");
     test_data_im0_src[i++] = (uint8_t)((tst_greth_mac.mac_lsb & 0x00FF0000) >> 16);
     test_data_im0_src[i++] = (uint8_t)((tst_greth_mac.mac_lsb & 0xFF000000) >> 24);
