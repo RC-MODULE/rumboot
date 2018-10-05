@@ -208,11 +208,9 @@ int main(void)
 
     rumboot_putstring("WRITE NOR\n");
     rumboot_putstring("Next assertion is expected behaviour!");
-    test_event(EVENT_INJECT_NOR_0); //DATA_SE = 0xBABA0000
     nor_write32(0xBABA0001, ADDR_NOR_SE);
     isync();
 
-    test_event(EVENT_INJECT_NOR_7); //DATA_DE = 0xBABA0007
     nor_write32(0xBABA0001, ADDR_NOR_DE);
     isync();
 
