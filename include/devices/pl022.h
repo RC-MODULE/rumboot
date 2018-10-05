@@ -45,10 +45,6 @@ struct pl022_config {
  * @param conf
  */
 
-#define SSP_SYS_FREQ_HZ 500000000
-//clock divider
-#define CPSDVR  2
-
 typedef enum{
     ssp_int = (0x1 << 0),
     gspi_int = (0x1 << 1),
@@ -185,49 +181,49 @@ void pl022_clear_rx_buf(uint32_t base);
  * @param base_address   SSP base address
  * @return              Raw interrupt status
  */
-uint32_t gspi_get_ris(uint32_t base_address);
+uint32_t pl022_get_ris(uint32_t base_address);
 /**
  * Read of Masked interrupt status register
  * @param base_address   SSP base address
  * @return              Masked interrupt status
  */
-uint32_t gspi_get_mis(uint32_t base_address);
+uint32_t pl022_get_mis(uint32_t base_address);
 /**
  * Read of status register
  * @param base_addr   SSP base address
  * @return               Status
  */
-uint32_t gspi_get_ssp_status(uint32_t base_addr);
+uint32_t pl022_get_ssp_status(uint32_t base_addr);
 /**
  * Set or clear Interrupt mask
  * @param base_address   SSP base address
  * @param mask           interrupt mask
  */
-void gspi_set_int_mask(uint32_t base_address, uint16_t mask);
+void pl022_set_int_mask(uint32_t base_address, uint16_t mask);
 /**
  * Enable DMA
  * @param base_addr   SSP base address
  * @param enabled        parameters of dma enable
  */
-void gspi_dma_enable(uint32_t base_addr, ssp_dma_enable enabled);
+void pl022_dma_enable(uint32_t base_addr, ssp_dma_enable enabled);
 /**
  * Write in data register
  * @param base_address   SSP base address
  * @param word           data
  */
-void gspi_send_word(uint32_t base_address, uint32_t word);
+void pl022_send_word(uint32_t base_address, uint32_t word);
 /**
  * Read from data register
  * @param base_address   SSP base address
  * @return               read data
  */
-uint32_t gspi_get_word(uint32_t base_address);
+uint32_t pl022_get_word(uint32_t base_address);
 /**
  * Set parameters of SSP
  * @param base_address   SSP base address
  * @param params         parameters of SSP: cpol, cpha, mode, loopback, fr_format
  */
-void gspi_set_param(uint32_t base_address, ssp_params params);
+void pl022_set_param(uint32_t base_address, ssp_params params);
 
 
 //dma function

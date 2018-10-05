@@ -227,7 +227,7 @@ void gspi_dma_reset(uint32_t base_addr)
         ;
 }
 
-void gspi_dma_enable(uint32_t base_addr, ssp_dma_enable enabled)
+void pl022_dma_enable(uint32_t base_addr, ssp_dma_enable enabled)
 {
     iowrite32(enabled, base_addr + GSPI_SSPDMACR);
 }
@@ -237,17 +237,17 @@ void gspi_dma_set_irq_mask(uint32_t base_addr, ssp_dma_interrupt interrupt)
     iowrite32(interrupt, base_addr + GSPI_IRQMASKS); //set irq masks
 }
 
-uint32_t gspi_get_ris(uint32_t base_address)
+uint32_t pl022_get_ris(uint32_t base_address)
 {
     return ioread32(base_address + GSPI_SSPRIS);
 }
 
-uint32_t gspi_get_mis(uint32_t base_address)
+uint32_t pl022_get_mis(uint32_t base_address)
 {
     return ioread32(base_address + GSPI_SSPMIS);
 }
 
-uint32_t gspi_get_ssp_status(uint32_t base_addr)
+uint32_t pl022_get_ssp_status(uint32_t base_addr)
 {
     return (ioread32(base_addr + GSPI_SSPSR));
 }
@@ -257,12 +257,12 @@ uint32_t gspi_get_dma_status(uint32_t base_addr)
     return (ioread32(base_addr + GSPI_STATUS));
 }
 
-void gspi_set_int_mask(uint32_t base_address, uint16_t mask)
+void pl022_set_int_mask(uint32_t base_address, uint16_t mask)
 {
     iowrite32(mask, base_address + GSPI_SSPIMSC);
 }
 
-void gspi_send_word(uint32_t base_address, uint32_t word)
+void pl022_send_word(uint32_t base_address, uint32_t word)
 {
     //check transmit FIFO full
     if(ioread32(base_address + GSPI_SSPSR) & TNF) // transmit FIFO is not full
@@ -274,7 +274,7 @@ void gspi_send_word(uint32_t base_address, uint32_t word)
     }
 }
 
-uint32_t gspi_get_word(uint32_t base_address)
+uint32_t pl022_get_word(uint32_t base_address)
 {
     uint32_t  word = 0x00;
     //check receive FIFO empty
@@ -319,7 +319,7 @@ void gspi_dma_set_param(uint32_t base_addr, dma_params param)
              base_addr + GSPI_AXI_PARAMS);
 }
 
-void gspi_set_param(uint32_t base_address, ssp_params params)
+void pl022_set_param(uint32_t base_address, ssp_params params)
 {
     uint32_t cr0;
     //disable ssp
