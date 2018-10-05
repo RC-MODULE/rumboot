@@ -34,7 +34,7 @@
 #ifdef __PPC__
 #define format_response(x) (x)
 #else
-#define format_response(x) (((x) & 0xff) << 24 | ((x) & 0xff00) << 8 | ((x) & 0xff0000) >> 8 | ((x) >> 24) & 0xff)
+#define format_response(x) (((x) & 0xff) << 24 | ((x) & 0xff00) << 8 | ((x) & 0xff0000) >> 8 | (((x) >> 24) & 0xff))
 #endif
 
 enum sd_card_type {
@@ -289,7 +289,6 @@ static uint32_t calc_div(uint32_t freq_base_khz, uint32_t freq_sdio_khz)
 
 static int sd_read_block(const struct rumboot_bootsource *src, void *pdata, void *ram, uint64_t offset)
 {
-        int ret = 0;
         struct sdio_private_data *sd_pdata = pdata;
 
         if (offset % 512 != 0) {
