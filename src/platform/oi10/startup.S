@@ -304,22 +304,17 @@ rumboot_reset_handler:
     mtspr       SPR_SSPCR, r3
 
 setup_boot_tlb_entries:
-// We must put currently used TLB entries into shadow TLB.
-// Simple read would be enough in our case
-    load_addr   r3, boot_tlb_entries
-    lwz         r3, 0(r3)
-
 // Program invalidation of all TLB entries is very slow. Let's skip it in tests.
 // All entries are invalidated from testbench during core reset.
-//    bl          ppc470s_invalidate_all_tlb_entries_nosnoop
+#ifdef CMAKE_BUILD_TYPE_PRODUCTION
+    bl          ppc470s_invalidate_all_tlb_entries_nosnoop
+#endif
 
     ppc470s_set_mem_window  r3, MEM_WINDOW_1
 
     load_addr   r3, boot_tlb_entries
     load_const  r4, BOOT_TLB_ENTRIES_N
-    /*next line instead of bl ppc470s_write_tlb_entries*/
-    bl          ppc470s_invalidate_all_tlb_entries_nosnoop
-//    bl          ppc470s_write_tlb_entries
+    bl          ppc470s_write_tlb_entries
 
 #ifdef TEST_ENABLE_INTERRUPTS_CHECKING
 enable_itrpts:
