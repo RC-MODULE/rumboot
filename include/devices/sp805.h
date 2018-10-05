@@ -52,24 +52,23 @@
  * @{
  */
 
-/*
-#define DIT_CTRL_ENABLE     (1<<7)
-#define DIT_CTRL_PERIODIC   (1<<6)
-#define DIT_CTRL_INTEN      (1<<5)
-#define DIT_CTRL_DIV1       (1<<3)
-#define DIT_CTRL_DIV0       (1<<2)
-#define DIT_CTRL_SIZE32     (1<<1)
-*/
+//#define DIT_CTRL_ENABLE     (1<<7)
+#define WD_CTRL_PERIODIC   (1<<6)
 
+#define WD_CTRL_DIV1       (1<<3)
+#define WD_CTRL_DIV0       (1<<2)
+
+#define WD_CTRL_SIZE32     (1<<1)
+#define WD_CTRL_INTEN           (1<<5)
 #define WD_CTRL_RESEN           (1<<1)
-#define WD_CTRL_INTEN           0
-/*
-enum sp804_mode{
-    ONESHOT,
-    PERIODIC,
-    FREERUN
+
+enum sp805_mode
+{
+    FREERUN,
+    TEST
 };
-*/
+
+
 
 /**
  *  sp805_conf         : Structure contains configuration parameters
@@ -80,11 +79,12 @@ enum sp804_mode{
  */
 struct sp805_conf
 {
+    int mode;
     int  interrupt_enable;
     int  clock_division;
     int  width;
     int  load;
-    int  bgload;
+//    int  bgload;
 };
 
 /**
