@@ -45,6 +45,7 @@ invalidate_tlb_entry:
 goto_next_tlb_entry:
     addi    r6, r6, 1     //increment iteration index
     bdnz    invalidate_tlb_entry //decrement cnt and check for exit from loop
+    blr
 
 write_tlb_entries:
     mfspr       r9, SPR_RSTCFG
