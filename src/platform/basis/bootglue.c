@@ -11,9 +11,10 @@
 #include <platform/regs/sctl.h>
 
 
-#define BOOTM_SELFTEST     (0 << 1)
+#define BOOTM_SELFTEST     (1 << 0)
 #define BOOTM_HOST         (1 << 1)
-#define BOOTM_FASTUART     (2 << 1)
+#define BOOTM_FASTUART     (1 << 2)
+#define BOOTM_SDIO_CD      (1 << 3)
 
 void rumboot_platform_read_config(struct rumboot_config *conf)
 {
@@ -33,6 +34,17 @@ void rumboot_platform_read_config(struct rumboot_config *conf)
 void rumboot_platform_selftest(struct rumboot_config *conf)
 {
         /* Execute selftest routines */
+}
+
+static bool sdio_enable(const struct rumboot_bootsource *src, void *pdata)
+{
+        uint32_t v;
+
+        v = ioread32(GPIO0_BASE + GPIO_PAD_DIR);
+        v &= ~ BOOTM_SDIO_CD;
+        iowrite32(v, GPIO0_BASE + GPIO_PAD_DIR);
+
+        return !(ioread32(GPIO0_BASE + GPIO_RD_DATA) & BOOTM_SDIO_CD);
 }
 
 static bool spi0_0_enable(const struct rumboot_bootsource *src, void *pdata)
@@ -95,10 +107,11 @@ static void spi0_1_cs(const struct rumboot_bootsource *src, void *pdata, int sel
 
 static const struct rumboot_bootsource arr[] = {
         {
-                .name = "SDIO0 (CD: GPIO0_X)",
+                .name = "SDIO0 (CD: GPIO0_3)",
                 .base = SDIO0_BASE,
                 .freq_khz = 100000,
                 .plugin = &g_bootmodule_sdio,
+                .enable = sdio_enable,
         },
         {
                 .name = "SPI0 (CS: GPIO0_4)",

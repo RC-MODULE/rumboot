@@ -157,7 +157,7 @@ macro(rumboot_bootrom_unit_test)
           FILES common/bootrom/bootsource-test-io.c
           TESTGROUP bootrom
           PREPCMD ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/scripts/wordpattern.py -e big -f pattern.bin -s 16384
-          IRUN_FLAGS ${IRUN_FLAGS}
+          IRUN_FLAGS ${BOOTSOURCE_IRUN_FLAGS}
           CFLAGS -DSOURCE=${BOOTSOURCE_ID} -DEXPECTED=true
           LOAD ${BOOTSOURCE_MEMTAG} ${_commas}pattern.bin
   )
@@ -168,7 +168,7 @@ macro(rumboot_bootrom_unit_test)
           PREFIX "bootrom"
           FILES common/bootrom/unit.c
           TESTGROUP bootrom bootrom-unit
-          IRUN_FLAGS ${IRUN_FLAGS}
+          IRUN_FLAGS ${BOOTSOURCE_IRUN_FLAGS}
           CFLAGS -DSOURCE=${BOOTSOURCE_ID} -DEXPECTED=0
           LOAD ${BOOTSOURCE_MEMTAG} ${_commas}spl-ok
   )
@@ -179,7 +179,7 @@ macro(rumboot_bootrom_unit_test)
           PREFIX "bootrom"
           FILES common/bootrom/unit.c
           TESTGROUP bootrom bootrom-unit
-          IRUN_FLAGS ${IRUN_FLAGS}
+          IRUN_FLAGS ${BOOTSOURCE_IRUN_FLAGS}
           CFLAGS -DSOURCE=${BOOTSOURCE_ID} -DEXPECTED=-EBADDATACRC
           LOAD ${BOOTSOURCE_MEMTAG} ${_commas}spl-fail-bad-data-crc
   )
@@ -191,7 +191,7 @@ macro(rumboot_bootrom_unit_test)
             PREFIX "bootrom"
             FILES common/bootrom/unit.c
             TESTGROUP bootrom bootrom-unit
-            IRUN_FLAGS ${IRUN_FLAGS}
+            IRUN_FLAGS ${BOOTSOURCE_IRUN_FLAGS}
             CFLAGS -DSOURCE=${BOOTSOURCE_ID} -DEXPECTED=-EBADMAGIC
             LOAD ${BOOTSOURCE_MEMTAG} ${_commas}spl-fail-bad-magic
           )
@@ -202,7 +202,7 @@ macro(rumboot_bootrom_unit_test)
             PREFIX "bootrom"
             FILES common/bootrom/unit.c
             TESTGROUP bootrom bootrom-unit
-            IRUN_FLAGS ${IRUN_FLAGS}
+            IRUN_FLAGS ${BOOTSOURCE_IRUN_FLAGS}
             CFLAGS -DSOURCE=${BOOTSOURCE_ID} -DEXPECTED=-EBADVERSION
             LOAD ${BOOTSOURCE_MEMTAG} ${_commas}spl-fail-bad-version
           )
@@ -213,7 +213,7 @@ macro(rumboot_bootrom_unit_test)
             PREFIX "bootrom"
             FILES common/bootrom/unit.c
             TESTGROUP bootrom bootrom-unit
-            IRUN_FLAGS ${IRUN_FLAGS}
+            IRUN_FLAGS ${BOOTSOURCE_IRUN_FLAGS}
             CFLAGS -DSOURCE=${BOOTSOURCE_ID} -DEXPECTED=-EBADHDRCRC
             LOAD ${BOOTSOURCE_MEMTAG} ${_commas}spl-fail-bad-header-crc
           )

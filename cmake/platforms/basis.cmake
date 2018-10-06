@@ -110,8 +110,9 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
   rumboot_bootrom_unit_test(
       ID 0
       TAG sdio0
-      MEMTAG SDIO0_CONF
+      MEMTAG SD0_IMAGE
       TAGOFFSET 0
+      IRUN_FLAGS +select_sdio0 +SD_INSERTED
   )
 
   rumboot_bootrom_unit_test(
