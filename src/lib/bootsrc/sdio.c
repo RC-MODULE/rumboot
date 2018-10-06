@@ -327,9 +327,14 @@ static bool sdio_init(const struct rumboot_bootsource *src, void *pdata)
 
         uint32_t resp = 0;
 
-        /* TODO: Actual clock here */
         uint32_t divl = calc_div(src->freq_khz, 400);
         uint32_t divh = calc_div(src->freq_khz, 10000);
+
+        #ifdef CMAKE_BUILD_TYPE_DEBUG
+        /* simulation speed up */
+        divl = 0;
+        divh = 0;
+        #endif
 
         iowrite32(divl, src->base + SPISDIO_SDIO_CLK_DIVIDE);
         iowrite32(0x1, src->base + SPISDIO_ENABLE);             //sdio-on, spi-off
