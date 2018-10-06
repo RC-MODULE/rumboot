@@ -197,6 +197,7 @@ unexpected_error:
     test_event  EVENT_ERROR
     b endless_loop
 
+
 .section ".init.text","ax",@progbits
 
 .global rumboot_entry_point
@@ -303,6 +304,12 @@ rumboot_reset_handler:
     mtspr       SPR_SSPCR, r3
 
 setup_boot_tlb_entries:
+// Program invalidation of all TLB entries is very slow. Let's skip it in tests.
+// All entries are invalidated from testbench during core reset.
+#ifdef CMAKE_BUILD_TYPE_PRODUCTION
+    bl          ppc470s_invalidate_all_tlb_entries_nosnoop
+#endif
+
     ppc470s_set_mem_window  r3, MEM_WINDOW_1
 
     load_addr   r3, boot_tlb_entries
