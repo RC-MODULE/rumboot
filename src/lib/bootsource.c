@@ -140,7 +140,7 @@ int bootsource_try_source_once(const struct rumboot_bootsource *src, void *pdata
         int ret = 0;
 
         if (!bootsource_init(src, pdata)) {
-                return false;
+                return -EBADSOURCE;
         }
 
         *offset = round_up_to_align(*offset, src->plugin->align);
