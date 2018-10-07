@@ -82,6 +82,7 @@ struct sdio_request {
         void *			buf;
         bool			is_acmd;
         bool			is_read;
+        int                     int_buf_num;
 };
 
 struct sdio_private_data {
@@ -131,8 +132,7 @@ static bool sdio_request_start(uint32_t base, struct sdio_request *rq)
         /* Do we have data transfer ? */
         uint32_t cmd_ctrl = (rq->cmd << 16) | (rq->idx << 12) | (rq->crc << 13) | (rq->resp << 10) | 0x11;
         if (rq->buf) {
-                uint32_t buf_num = 0;
-                iowrite32((buf_num << 2), base + SDIO_SDR_ADDRESS_REG);
+                iowrite32((rq->int_buf_num << 2), base + SDIO_SDR_ADDRESS_REG);
                 /* 1 block, 512 bytes */
                 iowrite32(((1 << 8) | (1 << 0)), base + SDIO_SDR_CARD_BLOCK_SET_REG);
                 cmd_ctrl |= 1 << 14; /* Enable data transfer for this cmd */
@@ -242,9 +242,8 @@ static bool sdio_request_execute(uintptr_t base, struct sdio_request *rq)
         sd_dbg(NULL, "Transfer complete, starting");
 
         /* Now, copy data to buffer */
-        uint32_t buf_num = 0;
         const int size = DCDTR_1_VAL_512;
-        iowrite32(BUFER_TRANS_START | buf_num, base + SDIO_BUF_TRAN_CTRL_REG);
+        iowrite32(BUFER_TRANS_START | rq->int_buf_num, base + SDIO_BUF_TRAN_CTRL_REG);
         iowrite32(size, base + SDIO_DCDTR_1);
         iowrite32((uintptr_t) rq->buf, base + SDIO_DCDSAR_1);
         iowrite32(DCCR_1_VAL, base + SDIO_DCCR_1);
@@ -307,8 +306,9 @@ static int sd_read_block(const struct rumboot_bootsource *src, void *pdata, void
                 .arg		= (uint32_t) real_offset,
                 .buf            = ram,
                 .is_read        = true,
-                .cmd55_arg = 0,
-                .is_acmd   =0,
+                .cmd55_arg      = 0,
+                .is_acmd        = 0,
+                .int_buf_num    = 0,
         };
 
         if (!sdio_request_execute(src->base, &rq)) {
