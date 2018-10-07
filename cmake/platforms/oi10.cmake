@@ -23,7 +23,7 @@ macro(RUMBOOT_PLATFORM_SET_COMPILER_FLAGS)
     set(CMAKE_C_FLAGS "${RUMBOOT_COMMON_FLAGS} -mstrict-align -Wall -Werror -fdata-sections -ffunction-sections")
     set(CMAKE_ASM_FLAGS "${RUMBOOT_COMMON_FLAGS}")
     set(CMAKE_EXE_LINKER_FLAGS "-nostartfiles -static -Wl,--gc-sections -Wl,--oformat=elf32-powerpc")
-    set(CMAKE_DUMP_FLAGS -S -EB -M476,32)
+    set(CMAKE_DUMP_FLAGS -EB -M476,32)
 endmacro()
 
 rumboot_add_configuration(
@@ -123,8 +123,9 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     rumboot_bootrom_unit_test(
         ID 0
         TAG sdio
-        MEMTAG SD_IMAGE
+        MEMTAG SD0_BOOT_IMAGE
         TAGOFFSET 0
+        IRUN_FLAGS +select_sdio0 +BOOT_SD_CD=0
     )
 
     rumboot_bootrom_unit_test(
@@ -148,6 +149,38 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         MEMTAG NOR_IMAGE
         TAGOFFSET 0
     )
+
+    rumboot_bootrom_integration_test(ROM
+        NAME "host-mockup"
+        IRUN_FLAGS +BOOT_HOST=1
+        LOAD
+          HOSTMOCK  spl-ok
+    )
+
+    rumboot_bootrom_integration_test(ROM
+        NAME "sdio-ok"
+        IRUN_FLAGS +BOOT_SD_CD=0 +select_sdio0
+        LOAD
+          SD0_BOOT_IMAGE spl-ok
+          SPI0_CONF spl-fail,spl-fail
+          HOSTMOCK  spl-fail
+    )
+
+    rumboot_bootrom_integration_test(ROM
+        NAME "spi-cs0-ok"
+        LOAD
+          SPI0_CONF spl-ok,spl-fail
+          HOSTMOCK  spl-fail
+    )
+
+    rumboot_bootrom_integration_test(ROM
+        NAME "spi-cs1-ok"
+        LOAD
+          SPI0_CONF spl-fail,spl-ok
+          HOSTMOCK  spl-fail
+    )
+
+
 
     #Add lprobe sample scripts
     add_rumboot_target_dir(common/lua/
