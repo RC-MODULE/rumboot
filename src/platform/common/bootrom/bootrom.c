@@ -8,24 +8,21 @@
 #include <rumboot/platform.h>
 
 
-static inline const char *bool_param(bool param)
+static inline void dump_parameter(const char *fmt, int param)
 {
-        return param ? "enabled" : "disabled";
+        if (param < 0) {
+                return;
+        }
+        rumboot_printf(fmt, (param == 0) ? "disabled" : "enabled");
 }
 
 void rumboot_platform_dump_config(struct rumboot_config *conf, size_t maxsize) {
         rumboot_printf("--- RumBoot Configuration ---\n");
-        rumboot_printf("Force Host Mode: %s\n", bool_param(conf->hostmode));
-        rumboot_printf("Selftest:        %s\n", bool_param(conf->selftest));
-        if (conf->has_edcl) {
-                rumboot_printf("EDCL/RMAP:       %s\n", bool_param(conf->edcl));
-        }
-        if (conf->legacyboot) {
-                rumboot_printf("Legacy BBP boot: enabled\n");
-        }
+        dump_parameter("Force Host Mode: %s\n", conf->hostmode);
+        dump_parameter("Selftest:        %s\n", conf->selftest);
+        dump_parameter("EDCL/RMAP:       %s\n", conf->edcl);
         rumboot_printf("UART speed:      %d bps\n", conf->baudrate);
         rumboot_printf("Max SPL size:    %d bytes\n", maxsize);
-
         rumboot_platform_print_summary(conf);
 
         rumboot_printf("---          ---          ---\n");
@@ -82,7 +79,7 @@ int main()
 
         rumboot_platform_perf(NULL);
 
-        if (conf.selftest) {
+        if (conf.selftest > 0) {
                 rumboot_platform_perf("Selftest");
                 rumboot_platform_selftest(&conf);
                 rumboot_platform_perf(NULL);
