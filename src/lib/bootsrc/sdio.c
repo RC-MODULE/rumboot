@@ -306,7 +306,7 @@ static int sd_read_block(const struct rumboot_bootsource *src, void *pdata, void
                 .resp		= SDIO_RESPONSE_R1367,
                 .crc		= 1,
                 .idx		= 1,
-                .arg		= real_offset,
+                .arg		= (uint32_t) real_offset,
                 .buf            = ram,
                 .is_read        = true,
                 .cmd55_arg = 0,
