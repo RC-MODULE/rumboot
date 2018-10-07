@@ -143,9 +143,8 @@ int32_t rumboot_bootimage_check_data(struct rumboot_bootheader *hdr);
 
  struct rumboot_config {
          bool	hostmode;
-         bool	selftest;
-         bool   has_edcl;
-         bool	edcl;
+         int	selftest;
+         int	edcl;
          bool	legacyboot;
          int	baudrate;
  };
