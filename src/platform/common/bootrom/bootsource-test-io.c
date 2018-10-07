@@ -104,11 +104,11 @@ int main()
 	int errors = 0;
 
 	/* Normal aligned reads */
-	errors += check_once_from_offset(src, pdata, hdr, 0);
+	errors += check_once_from_offset(src, pdata, hdr, src->offset);
 	/* Check misaligned reads */
-	errors += check_once_from_offset(src, pdata, hdr, src->plugin->align + 1);
+	errors += check_once_from_offset(src, pdata, hdr, src->offset + src->plugin->align + 1);
 	/* Random reads */
-	errors += check_once_from_offset(src, pdata, hdr, src->plugin->align ? src->plugin->align : 33);
+	errors += check_once_from_offset(src, pdata, hdr, src->offset + (src->plugin->align ? src->plugin->align : 33));
 
 	/* TODO: Check reads without init */
 	rumboot_printf("total errors: %d\n", errors);
