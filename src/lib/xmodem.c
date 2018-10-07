@@ -76,7 +76,7 @@ int xmodem_get(unsigned char *dest, int destsz)
                         if (trychar) {
                                 rumboot_platform_putchar(trychar);
                         }
-                        if ((c = rumboot_platform_getchar(DLY_1S * 2) >= 0)) {
+                        if ((c = rumboot_platform_getchar(DLY_1S) >= 0)) {
                                 switch (c) {
                                 case SOH:
                                         bufsz = 128;
