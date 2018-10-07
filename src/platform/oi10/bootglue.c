@@ -24,6 +24,7 @@
 #define BOOTM_HOST         (1 << 1)
 #define BOOTM_FASTUART     (1 << 2)
 #define BOOTM_SDIO_CD      (1 << 3)
+#define BOOTM_SPI_CS       (1 << 4)
 #define BOOTM_CPU_ECC      (1 << 5)
 #define BOOTM_EMI_ECC      (1 << 6)
 #define BOOTM_NOR_BOOT     (1 << 7)
@@ -74,33 +75,29 @@ void rumboot_platform_selftest(struct rumboot_config *conf)
 }
 
 
+#include <regs/regs_gpio_pl061.h>
+
 static bool spi0_gcs_enable(const struct rumboot_bootsource *src, void *pdata)
 {
+        uint32_t v = ioread32(GPIO_0_BASE + GPIO_DIR);
+        iowrite32(v | 1<<4, GPIO_0_BASE + GPIO_DIR);
+        iowrite32(1 << 4, GPIO_0_BASE + GPIO_DATA + (1 << (4 + 2)));
         return true;
-//        uint32_t v;
-//
-//        v = ioread32(GPIO0_BASE + GPIO_PAD_DIR);
-//        v &= ~(1 << 4);
-//        iowrite32(v, GPIO0_BASE + GPIO_PAD_DIR);
 }
 
 static void spi0_gcs_disable(const struct rumboot_bootsource *src, void *pdata)
 {
-//        uint32_t v;
-//
-//        v = ioread32(GPIO0_BASE + GPIO_PAD_DIR);
-//        v &= ~(1 << 4);
-//        iowrite32(v, GPIO0_BASE + GPIO_PAD_DIR);
+        uint32_t v = ioread32(GPIO_0_BASE + GPIO_DIR);
+        v &= ~(1<<4);
+        iowrite32(v, GPIO_0_BASE + GPIO_DIR);
+        iowrite32(1 << 4, GPIO_0_BASE + GPIO_DATA + (1 << (4 + 2)));
 }
 
 static void spi0_gcs(const struct rumboot_bootsource *src, void *pdata, int select)
 {
-//        if (!select) {
-//                iowrite32(~(1 << 4), GPIO0_BASE + GPIO_WR_DATA_SET0);
-//        } else {
-//                iowrite32((1 << 4), GPIO0_BASE + GPIO_WR_DATA_SET1);
-//        }
+        iowrite32(select << 4, GPIO_0_BASE + (1 << (4 + 2)));
 }
+
 #include <platform/devices/emi.h>
 #include <platform/regs/fields/emi.h>
 #include <platform/regs/regs_emi.h>

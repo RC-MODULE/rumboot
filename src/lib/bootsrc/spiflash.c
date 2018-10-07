@@ -17,6 +17,7 @@ struct spiflash_private_data {
 static void spi_cs(const struct rumboot_bootsource *src, void *pdata, int select)
 {
 	if (src->chipselect) {
+		pl022_internal_cs(src->base, 1); /* Make sure internal CS is '1' */
 		src->chipselect(src, pdata, select);
 	} else {
 		pl022_internal_cs(src->base, select);
