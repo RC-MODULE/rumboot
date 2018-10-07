@@ -11,6 +11,7 @@
 #include <platform/arch/ppc/ppc_476fp_itrpt_fields.h>
 #include <platform/ppc470s/mmu.h>
 #include <platform/devices/mpic128.h>
+#include <devices/gpio_pl061.h>
 #include <platform/devices.h>
 #include <platform/regs/sctl.h>
 #include <rumboot/boot.h>
@@ -19,10 +20,10 @@
 #include <rumboot/bootsrc/sdio.h>
 #include <rumboot/bootsrc/boilerplate.h>
 
-#define BOOTM_SELFTEST     (1 << 1)
-#define BOOTM_HOST         (1 << 2)
-#define BOOTM_FASTUART     (1 << 3)
-#define BOOTM_SDIO_CD      (1 << 4)
+#define BOOTM_SLOWUART     (1 << 0)
+#define BOOTM_HOST         (1 << 1)
+#define BOOTM_FASTUART     (1 << 2)
+#define BOOTM_SDIO_CD      (1 << 3)
 #define BOOTM_CPU_ECC      (1 << 5)
 #define BOOTM_EMI_ECC      (1 << 6)
 #define BOOTM_NOR_BOOT     (1 << 7)
@@ -31,26 +32,40 @@ void rumboot_platform_read_config(struct rumboot_config *conf)
 {
         uint32_t bootm = dcr_read(DCR_SCTL_BASE + SCTL_BOOTM);
 
-        /* TODO: 19200 & 9600 */
-        if (bootm & BOOTM_FASTUART) {
-                conf->baudrate = 6250000;
+        if (bootm & BOOTM_SLOWUART) {
+                if (bootm & BOOTM_FASTUART) {
+                        conf->baudrate = 6250000;
+                } else {
+                        conf->baudrate = 115200;
+                }
         } else {
-                conf->baudrate = 115200;
+                if (bootm & BOOTM_FASTUART) {
+                        conf->baudrate = 19200;
+                } else {
+                        conf->baudrate = 9600;
+                }
         }
         conf->hostmode = (bootm & BOOTM_HOST);
-        conf->selftest = (bootm & BOOTM_SELFTEST);
+        conf->legacyboot = 0;
+        conf->selftest = -1;
+        conf->edcl = 1;
 }
 
 void rumboot_platform_print_summary(struct rumboot_config *conf)
 {
         uint32_t bootm = dcr_read(DCR_SCTL_BASE + SCTL_BOOTM);
 
+        rumboot_printf("SD Card:         %s\n",
+                       bootm & BOOTM_SDIO_CD ? "Not inserted" : "Inserted");
+
         rumboot_printf("CPU ECC:         %s\n",
-                bootm & BOOTM_CPU_ECC ? "enabled" : "disabled");
+                       bootm & BOOTM_CPU_ECC ? "enabled" : "disabled");
 
         rumboot_printf("NOR/SRAM ECC:    %s\n",
-                bootm & BOOTM_EMI_ECC ? "disabled" : "enabled");
+                       bootm & BOOTM_EMI_ECC ? "disabled" : "enabled");
 
+        rumboot_printf("Direct NOR boot: %s\n",
+                       bootm & BOOTM_NOR_BOOT ? "disabled" : "enabled");
 }
 
 void rumboot_platform_selftest(struct rumboot_config *conf)
@@ -93,50 +108,56 @@ static void spi0_gcs(const struct rumboot_bootsource *src, void *pdata, int sele
 
 static bool emi_enable(const struct rumboot_bootsource *src, void *pdata)
 {
-        plb6mcif2_simple_init( DCR_EM2_PLB6MCIF2_BASE,  0x00);
-
-
+        plb6mcif2_simple_init(DCR_EM2_PLB6MCIF2_BASE, 0x00);
+        #if 0
         emi_bank_cfg b5_cfg =
-    {
-        //SS5
         {
-            BTYP_NOR,
-            PTYP_NO_PAGES,
-            SRDY_EXT_RDY_NOT_USE,
-            TWR_0,
-            SST_Flow_Through,
-            TSSOE_1,
-            TSOE_1,
-            TCYC_8,
-            0, //T_RDY
-            TDEL_0
-        },
-        //SD5
-        {
-            CSP_256,
-            SDS_2M,
-            CL_3,
-            TRDL_1,
-            SI_EXT_INIT,
-            TRCD_5,
-            TRAS_9
-        }
-    };
-    emi_set_bank_cfg(DCR_EM2_PLB6MCIF2_BASE, emi_b5_nor, &b5_cfg);
-    dcr_write(DCR_EM2_EMI_BASE + EMI_FLCNTRL, 0x17);
-    emi_set_ecc (DCR_EM2_PLB6MCIF2_BASE, emi_bank_all, emi_ecc_off);
-    dcr_write(DCR_EM2_PLB6MCIF2_BASE + EMI_BUSEN, 0x01);
-
-    return true;
+                //SS5
+                {
+                        BTYP_NOR,
+                        PTYP_NO_PAGES,
+                        SRDY_EXT_RDY_NOT_USE,
+                        TWR_0,
+                        SST_Flow_Through,
+                        TSSOE_1,
+                        TSOE_1,
+                        TCYC_8,
+                        0, //T_RDY
+                        TDEL_0
+                },
+                //SD5
+                {
+                        CSP_256,
+                        SDS_2M,
+                        CL_3,
+                        TRDL_1,
+                        SI_EXT_INIT,
+                        TRCD_5,
+                        TRAS_9
+                }
+        };
+        emi_set_bank_cfg(DCR_EM2_PLB6MCIF2_BASE, emi_b5_nor, &b5_cfg);
+        dcr_write(DCR_EM2_EMI_BASE + EMI_FLCNTRL, 0x17);
+        emi_set_ecc(DCR_EM2_PLB6MCIF2_BASE, emi_bank_all, emi_ecc_off);
+        dcr_write(DCR_EM2_PLB6MCIF2_BASE + EMI_BUSEN, 0x01);
+        #endif
+        return true;
 }
 
+static bool sdio_enable(const struct rumboot_bootsource *src, void *pdata)
+{
+        gpio_set_direction(GPIO_0_BASE, GPIO_PIN_3, direction_in);
+        return !(gpio_get_data(GPIO_0_BASE) & BOOTM_SDIO_CD);
+}
 
 static const struct rumboot_bootsource arr[] = {
         {
-                .name = "SDIO (CD: X)",
+                .name = "SDIO (CD: GPIO0_3)",
                 .base = SDIO_0_BASE,
                 .freq_khz = 100000,
                 .plugin = &g_bootmodule_sdio,
+                .enable = sdio_enable,
+                .offset = 8192,
         },
         {
                 .name = "SPI0 (CS: internal)",
@@ -145,7 +166,7 @@ static const struct rumboot_bootsource arr[] = {
                 .plugin = &g_bootmodule_spiflash,
         },
         {
-                .name = "SPI0 (CS: GPIO0_5)",
+                .name = "SPI0 (CS: GPIO0_4)",
                 .base = GSPI_0_BASE,
                 .freq_khz = 100000,
                 .plugin = &g_bootmodule_spiflash,
