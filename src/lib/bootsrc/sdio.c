@@ -27,10 +27,6 @@
 #define sd_dbg(src, msg, ...)
 #endif
 
-/**
- * sd_card_type Type card enumeration
- */
-
 #ifdef __PPC__
 #define format_response(x) (x)
 #else
@@ -40,16 +36,18 @@
 enum sd_card_type {
         SDIO_CARD_UNKNOWN = 0,
         SDIO_CARD_OLD,
-        SDIO_CARD_SDHC,
+        SDIO_CARD_MMC, /* TODO: These need CMD1 to correctly initialize: http://patrickleyman.be/blog/sd-card-c-driver-init/ */
         SDIO_CARD_SDSC,
-        SDIO_CARD_SDXC,
-        SDIO_CARD_SDUC,
+        SDIO_CARD_SDHC,
+        SDIO_CARD_SDXC, /* TODO: Needs moar testing. TODO: Find out how to tell the difference between these two */
+        SDIO_CARD_SDUC, /* TODO: Reserved. No cards on the market. Yet. */
         SDIO_CARD_MAX,
 };
 
 const char *const sd_card_type_names[] = {
         [SDIO_CARD_UNKNOWN] = "Unknown/Invalid",
         [SDIO_CARD_OLD] = "Ancient Relic (Where did u dig it up?)",
+        [SDIO_CARD_MMC]  = "MMC Card (Blast from the past?)",
         [SDIO_CARD_SDHC] = "SDHC Card",
         [SDIO_CARD_SDSC] = "SDSC Card",
         [SDIO_CARD_SDXC] = "SDXC Card",
@@ -373,7 +371,7 @@ static bool sdio_init(const struct rumboot_bootsource *src, void *pdata)
                 temp->cardtype = SDIO_CARD_UNKNOWN;
         }
 
-        /* Send inquiry (A)CMD41 */
+        /* First, try CMD41 to initialize the card */
         rq.cmd = 41;
         rq.resp = SDIO_RESPONSE_R1367;
         rq.is_acmd = 1;
