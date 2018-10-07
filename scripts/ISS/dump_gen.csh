@@ -20,6 +20,7 @@ set TEST_NAME=$2
 set SCRIPT_DIR=$3
 set LOG_DIR=$PWD
 set CMD_PATH=${LOG_DIR}/${TEST_NAME}.cmd
+set DMP_PATH=${LOG_DIR}/test_iss_data_gold.dmp
 
 if ( -f test_iss_data.dmp) then
     set lines=`cat test_iss_data.dmp`
@@ -44,6 +45,9 @@ set RWCD=./rwcd
 set INIT_BIN_START_ADDR=0xFFFF0000
 set BIN_START_ADDR=0x80000000
 set ASM_STEP=130000
+
+rm -f ${CMD_PATH}
+rm -f ${DMP_PATH}
 
 echo "Run simulator"
 
@@ -76,7 +80,7 @@ while ($tmp > 0)
     endif
 end
 
-echo "save mem "${LOG_DIR}"/test_iss_data_gold.dmp "${COMPARE_MEM_START_ADDR} ${COMPARE_MEM_LEN_BYTES} >> ${CMD_PATH}
+echo "save mem "${DMP_PATH}" "${COMPARE_MEM_START_ADDR} ${COMPARE_MEM_LEN_BYTES} >> ${CMD_PATH}
 
 sleep 1
 echo "Run RiscWatch"
