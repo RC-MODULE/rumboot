@@ -71,12 +71,18 @@ function(add_rumboot_target)
     set(lprobe_flags)
   endif()
 
+  set(maplist)
+
   if (NOT TARGET_BOOTROM)
     set(bootrom_flags +BOOTROM=${rumboot_fulldir}/${product}.hex)
+    set(maplist ${rumboot_fulldir}/${product}.dmp)
   else()
       generate_product_name(bproduct ${TARGET_BOOTROM})
       set(bootrom_flags
           +BOOTROM=${rumboot_fulldir}/${bproduct}.hex
+      )
+    set(maplist
+        ${rumboot_fulldir}/${bproduct}.dmp
     )
   endif()
 
@@ -94,11 +100,16 @@ function(add_rumboot_target)
           if (trglist)
             set(trglist "${trglist},")
           endif()
+          if (maplist)
+            set(maplist "${maplist},")
+          endif()
           generate_product_name(tproduct ${trg})
           if (${trg} STREQUAL "SELF")
             set(trglist "${trglist}${rumboot_fulldir}/${product}.bin")
+            set(maplist "${maplist}${rumboot_fulldir}/${product}.dmp")
           elseif(TARGET ${tproduct})
             set(trglist "${trglist}${rumboot_fulldir}/${tproduct}.bin")
+            set(maplist "${maplist}${rumboot_fulldir}/${tproduct}.dmp")
           else()
             set(trglist "${trglist}${trg}")
           endif()
@@ -145,7 +156,7 @@ function(add_rumboot_target)
         ${bootrom_flags}
         ${lprobe_flags}
         ${timeout_flags}
-        +BOOTMAP=${rumboot_fulldir}/${product}.dmp
+        +BOOTMAP=${maplist}
         ${loadflags}
         ${TARGET_IRUN_FLAGS}
     )
