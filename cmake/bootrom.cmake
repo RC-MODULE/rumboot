@@ -222,11 +222,10 @@ macro(rumboot_bootrom_unit_test)
 
 endmacro()
 
-macro(rumboot_bootrom_integration_test name romconf)
+macro(rumboot_bootrom_integration_test romconf)
   add_rumboot_target(
-          NAME ${name}
           CONFIGURATION ${romconf}
-          PREFIX "bootrom"
+          PREFIX "bootrom-integration"
           BOOTROM bootrom-loader
           TESTGROUP bootrom bootrom-integration
           FEATURES NOCODE ${CONFIGURATION_${romconf}_FEATURES}
