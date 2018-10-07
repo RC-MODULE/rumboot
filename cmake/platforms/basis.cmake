@@ -110,9 +110,9 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
   rumboot_bootrom_unit_test(
       ID 0
       TAG sdio0
-      MEMTAG SD0_IMAGE
+      MEMTAG SD0_BOOT_IMAGE
       TAGOFFSET 0
-      IRUN_FLAGS +select_sdio0 +SD_INSERTED
+      IRUN_FLAGS +select_sdio0 +BOOT_SD_CD=0
   )
 
   rumboot_bootrom_unit_test(
@@ -155,6 +155,15 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       TAG i2c0_53
       MEMTAG I2C0_CONF
       TAGOFFSET 3
+  )
+
+  rumboot_bootrom_integration_test(ROM
+      NAME "sdio-ok"
+      IRUN_FLAGS +BOOT_SD_CD=0 +select_sdio0
+      LOAD
+        SD0_BOOT_IMAGE spl-ok
+        SPI0_CONF spl-fail,spl-fail
+        HOSTMOCK  spl-fail
   )
 
 

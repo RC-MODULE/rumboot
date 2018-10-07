@@ -112,6 +112,7 @@ static const struct rumboot_bootsource arr[] = {
                 .freq_khz = 100000,
                 .plugin = &g_bootmodule_sdio,
                 .enable = sdio_enable,
+                .offset = 8192,
         },
         {
                 .name = "SPI0 (CS: GPIO0_4)",
