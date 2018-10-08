@@ -87,6 +87,8 @@
                                          MEMTYPE_ENABLE_SDRAM               \
                                     )
 
+#define NOINLINE                    __attribute__((noinline))
+
 /* Utility (function) macros */
 #define EMI_TYPE(BANK)              (emi_get_bank_cfg_cached(BANK)          \
                                         -> ssx_cfg.BTYP)
@@ -135,6 +137,8 @@ typedef struct
     uint32_t    ecnt53;
     uint32_t    h1addr;
     uint32_t    h2addr;
+    uint32_t    h1cmrr;
+    uint32_t    h2cmrr;
 } emi_ckregs_t;
 
 /* Global vars */
@@ -183,11 +187,13 @@ inline static void reset_interrupts(void)
     IRQ        = 0x00000000;
 }
 
+/* NOINLINE */
 uint32_t emi_read(uint32_t emi_addr)
 {
     return dcr_read(EMIA(emi_addr));
 }
 
+/* NOINLINE */
 void emi_write(uint32_t emi_addr, uint32_t emi_data)
 {
     dcr_write(EMIA(emi_addr),(emi_data));
@@ -209,7 +215,8 @@ uint32_t emi_wait_irq(uint32_t usecs, uint32_t irq_mask)
 
 void emi_irq_handler( int irq, void *arg )
 {
-    rumboot_printf("IRQ #%d received.\n", irq);
+    rumboot_printf("IRQ #%d received (Return address: 0x%X).\n",
+            irq, spr_read(SPR_SRR0));
     if(irq < 32) irq = 32;  /* trim IRQ number */
     if(irq > 63) irq = 63;  /* trim IRQ number */
     IRQ |= (1 << (irq - 32));
@@ -251,6 +258,7 @@ void init_interrupts(void)
     rumboot_putstring ("\tIRQ have been initialized.\n");
 }
 
+NOINLINE
 void emi_read_ckregs(volatile emi_ckregs_t *regs, uint32_t bank)
 {
     regs->eccval = emi_read(EMI_ECCRDR);
@@ -258,7 +266,21 @@ void emi_read_ckregs(volatile emi_ckregs_t *regs, uint32_t bank)
     regs->ecnt53 = emi_read(EMI_ECNT53);
     regs->h1addr = emi_read(EMI_H1ADR );
     regs->h2addr = emi_read(EMI_H2ADR );
+    regs->h1cmrr = emi_read(EMI_H1CMR );
+    regs->h2cmrr = emi_read(EMI_H2CMR );
     regs->cntval = GET_ECNT(bank, regs->ecnt20, regs->ecnt53);
+}
+
+NOINLINE
+void emi_clear_ckregs(int bank)
+{
+    if(bank + 1) /* not -1 */
+        emi_write(emi_ecnt[bank], 0x00000000);
+    emi_write(EMI_H1ADR, HXADR_DFLT);
+    emi_write(EMI_H2ADR, HXADR_DFLT);
+    emi_write(EMI_H1CMR, 0x00000000);
+    emi_write(EMI_H2CMR, 0x00000000);
+
 }
 
 /* Make single error */
@@ -286,19 +308,21 @@ uint32_t check_emi_mkserr(  uint32_t        val,
     rumboot_printf("Writing 0x%X to 0x%X...\n", val ^ err, base);
     iowrite32(val ^ err, base);
     msync();
-    tmp = emi_read(EMI_WECR);       /* EMI Sync */
+    // tmp = emi_read(EMI_WECR);       /* EMI Sync */
     emi_write(EMI_WECR, emi_read(EMI_WECR) | (1 << params.bwe));
     rumboot_printf("Writing 0x%X to 0x%X...\n", val, base);
     iowrite32(val, base);
     msync();
-    tmp = emi_read(EMI_WECR);       /* EMI Sync */
+    // tmp = emi_read(EMI_WECR);       /* EMI Sync */
     emi_write(EMI_WECR, WECR_DFLT);
     rumboot_printf("Reading from 0x%X...\n", base);
     readed = ioread32(base);
+    msync();
+    udelay(50);
     emi_wait_irq(5000, ALL_INTERRUPTS);
     emi_read_ckregs(&regs, (uint32_t)params.bnk);
-    rumboot_printf("ECNT20=0x%X, ECNT53=0x%X, H1ADR=0x%X, H2ADR=0x%X\n",
-            regs.ecnt20, regs.ecnt53, regs.h1addr, regs.h2addr);
+    rumboot_printf("ECNT20=0x%X, ECNT53=0x%X, H1ADR=0x%X, H2ADR=0x%X, H1CMR=0x%X, H2CMR=0x%X\n",
+            regs.ecnt20, regs.ecnt53, regs.h1addr, regs.h2addr, regs.h1cmrr, regs.h2cmrr);
     rumboot_printf("READED: 0x%X (ECC=0x%X, ECNT=%d) after single error.\n",
             readed, regs.eccval, regs.cntval);
     TEST_ASSERT(result = (readed == exp),
@@ -348,19 +372,21 @@ uint32_t check_emi_mkderr(  uint32_t        val,
     rumboot_printf("Writing 0x%X to 0x%X...\n", val ^ err, base);
     iowrite32(val ^ err, base);
     msync();
-    tmp = emi_read(EMI_WECR);       /* EMI Sync */
+    // tmp = emi_read(EMI_WECR);       /* EMI Sync */
     emi_write(EMI_WECR, emi_read(EMI_WECR) | (1 << params.bwe));
     rumboot_printf("Writing 0x%X to 0x%X...\n", val, base);
     iowrite32(val, base);
     msync();
-    tmp = emi_read(EMI_WECR);       /* EMI Sync */
+    // tmp = emi_read(EMI_WECR);       /* EMI Sync */
     emi_write(EMI_WECR, WECR_DFLT);
     rumboot_printf("Reading from 0x%X...\n", base);
     readed = ioread32(base);
+    msync();
+    udelay(50);
     emi_wait_irq(5000, ALL_INTERRUPTS);
     emi_read_ckregs(&regs, (uint32_t)params.bnk);
-    rumboot_printf("ECNT20=0x%X, ECNT53=0x%X, H1ADR=0x%X, H2ADR=0x%X\n",
-            regs.ecnt20, regs.ecnt53, regs.h1addr, regs.h2addr);
+    rumboot_printf("ECNT20=0x%X, ECNT53=0x%X, H1ADR=0x%X, H2ADR=0x%X, H1CMR=0x%X, H2CMR=0x%X\n",
+            regs.ecnt20, regs.ecnt53, regs.h1addr, regs.h2addr, regs.h1cmrr, regs.h2cmrr);
     rumboot_printf("READED: 0x%X (ECC=0x%X, ECNT=%d) after single error.\n",
             readed, regs.eccval, regs.cntval);
     TEST_ASSERT(result = (readed == exp),
@@ -444,35 +470,28 @@ uint32_t check_emi(uint32_t bank)
     }
 
     rumboot_printf(" *** Make single error in data... \n");
-    emi_write(emi_ecnt[bank], 0x00000000);
-    emi_write(EMI_H1ADR, HXADR_DFLT);
-    emi_write(EMI_H2ADR, HXADR_DFLT);
+    emi_clear_ckregs(bank);
     status |= check_emi_mkserr( CONST_2,
                                 CONST_2,
                                 MK_ERR_1,
                                 mke_sd);
 
     rumboot_printf(" *** Make single error in ECC...\n");
-    emi_write(EMI_H1ADR, HXADR_DFLT);
-    emi_write(EMI_H2ADR, HXADR_DFLT);
+    emi_clear_ckregs(-1);
     status |= check_emi_mkserr( CONST_2 ^ MK_ERR_1,
                                 CONST_2,
                                 MK_ERR_1,
                                 mke_se);
 
     rumboot_printf(" *** Make double error in data...\n");
-    emi_write(emi_ecnt[bank], 0x00000000);
-    emi_write(EMI_H1ADR, HXADR_DFLT);
-    emi_write(EMI_H2ADR, HXADR_DFLT);
+    emi_clear_ckregs(bank);
     status |= check_emi_mkderr( CONST_2,
                                 CONST_2 ^ MK_ERR_2,
                                 MK_ERR_2,
                                 mke_dd);
 
     rumboot_printf(" *** Make double error in ECC...\n");
-    emi_write(emi_ecnt[bank], 0x00000000);
-    emi_write(EMI_H1ADR, HXADR_DFLT);
-    emi_write(EMI_H2ADR, HXADR_DFLT);
+    emi_clear_ckregs(-1);
     status |= check_emi_mkderr( CONST_2,
                                 CONST_2,
                                 MK_ERR_2,
@@ -502,6 +521,7 @@ uint32_t main(void)
     const_2_ecc[1] = calc_hamming_ecc(reverse_bytes32(CONST_2 ^ MK_ERR_2));
     rumboot_printf("Generated.\n");
 
+    test_result |= check_emi(4);
     FOREACH_BANK(mem_bank, FIRST_BANK, LAST_BANK)
     {
         rumboot_printf(" ---------- Bank #%d... ----------\n", mem_bank);
