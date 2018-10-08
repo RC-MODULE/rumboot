@@ -320,14 +320,15 @@ int main(void)
     pl022_set_param(GSPI_BASE, ssp_param);//turn on SSP controller
 
 
-    // Initial SRAM0
-    for (int i=0; i<DATA_SIZE; i+=4)
-        iowrite32(0x0, SRAM0_BASE + i);
 
-    // Data for check IM0
-    for (int i=4; i<DATA_SIZE; i++)
-        data_src[i] = TEST_DATA_IM0;
-
+//    // Initial SRAM0
+//    for (int i=0; i<DATA_SIZE; i+=4)
+//        iowrite32(0x0, SRAM0_BASE + i);
+//
+//    // Data for check IM0
+//    for (int i=4; i<DATA_SIZE; i++)
+//        data_src[i] = TEST_DATA_IM0;
+    memset((void*)(data_src+4), TEST_DATA_IM0, BYTE_NUMBER);
     //IM0 - IM0
     test_result += gspi_dma_axi(GSPI_BASE, (uint32_t)data_src, (uint32_t)data_dst, TEST_DATA_IM0);
     iowrite32(PAGE_PROGRAM_COMMAND, (uint32_t)data_src);
@@ -336,15 +337,11 @@ int main(void)
     iowrite32(PAGE_PROGRAM_COMMAND, (uint32_t)data_src);
     //IM0 - EM2
     test_result += gspi_dma_axi(GSPI_BASE, (uint32_t)data_src, (SRAM0_BASE + DATA_SIZE), TEST_DATA_IM0);
-    iowrite32(PAGE_PROGRAM_COMMAND, (uint32_t)data_src);
 
 
     // Data for check IM1
-    for (int i=4; i<DATA_SIZE; i++)
-        data_src[i] = TEST_DATA_IM1;
-    // Copy data in IM1
-    memcpy((void*)IM1_BASE, data_src, sizeof(data_src));
-
+    iowrite32(PAGE_PROGRAM_COMMAND, IM1_BASE);
+    memset((void*)(IM1_BASE+4), TEST_DATA_IM1, BYTE_NUMBER);
     //IM1 - IM0
     test_result += gspi_dma_axi(GSPI_BASE, IM1_BASE, (uint32_t)data_dst, TEST_DATA_IM1);
     iowrite32(PAGE_PROGRAM_COMMAND, IM1_BASE);
@@ -357,26 +354,21 @@ int main(void)
 
 
     // Data for check EM2
-    iowrite32(PAGE_PROGRAM_COMMAND, SRAM0_BASE);
-    // Copy data in EM2
-    for (int i=4; i<DATA_SIZE; i++)
-    {
-        data_src[i] = TEST_DATA_EM2;
-        iowrite8(data_src[i], SRAM0_BASE+i);
-    }
-
-
+    iowrite32(PAGE_PROGRAM_COMMAND, SSRAM_BASE);
+    memset((void*)(SSRAM_BASE+4), TEST_DATA_EM2, BYTE_NUMBER);
+    msync();
     //EM2 - IM0
-    test_result += gspi_dma_axi(GSPI_BASE, SRAM0_BASE, (uint32_t)data_dst, TEST_DATA_EM2);
-    iowrite32(PAGE_PROGRAM_COMMAND, SRAM0_BASE);
+    test_result += gspi_dma_axi(GSPI_BASE, SSRAM_BASE, (uint32_t)data_dst, TEST_DATA_EM2);
+    iowrite32(PAGE_PROGRAM_COMMAND, SSRAM_BASE);
     //EM2 - IM1
-    test_result += gspi_dma_axi(GSPI_BASE, SRAM0_BASE, (IM1_BASE + DATA_SIZE), TEST_DATA_EM2);
-    iowrite32(PAGE_PROGRAM_COMMAND, SRAM0_BASE);
+    test_result += gspi_dma_axi(GSPI_BASE, SSRAM_BASE, (IM1_BASE + DATA_SIZE), TEST_DATA_EM2);
+    iowrite32(PAGE_PROGRAM_COMMAND, SSRAM_BASE);
     //EM2 - EM2
-    test_result += gspi_dma_axi(GSPI_BASE, SRAM0_BASE, (SRAM0_BASE + DATA_SIZE), TEST_DATA_EM2);
-    iowrite32(PAGE_PROGRAM_COMMAND, SRAM0_BASE);
+    test_result += gspi_dma_axi(GSPI_BASE, SSRAM_BASE, (SRAM0_BASE + DATA_SIZE), TEST_DATA_EM2);
+    iowrite32(PAGE_PROGRAM_COMMAND, SSRAM_BASE);
 
 
+    gspi_dma_reset(GSPI_BASE);
     rumboot_printf("Checking GSPI FLASH read/write functionality ...\n");
     test_result += gspi_ssp_flash(GSPI_BASE);
 
