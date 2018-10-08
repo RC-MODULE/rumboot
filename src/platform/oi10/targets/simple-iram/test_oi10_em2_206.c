@@ -75,7 +75,6 @@
 /* Config */
 #define CONST_1                     0xBABA0001
 #define CONST_2                     0xF00D4BEE
-#define CHECK_ECC_CODE              0x10
 #define MK_ERR_1                    0x00000001
 #define MK_ERR_2                    0x00001100
 #define BASE_OFFSET                 0x00000100
