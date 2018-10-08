@@ -14,6 +14,11 @@
 #include <platform/regs/regs_plb6mcif2.h>
 #include <platform/regs/regs_mclfir.h>
 #include <platform/regs/regs_emi.h>
+#include <platform/arch/ppc/ppc_476fp_mmu_fields.h>
+#include <platform/arch/ppc/ppc_476fp_mmu.h>
+#include <platform/ppc470s/mmu/mem_window.h>
+
+#define TLB_ENTRY   MMU_TLB_ENTRY( 0x020, 0x80070, 0x80070, MMU_TLBE_DSIZ_64KB, 0b1, 0b1, 0b0, 0b1, 0b0, 0b1, MMU_TLBE_E_BIG_END, 0b0,0b0,0b0, 0b1,0b1,0b1, 0b0, 0b0, 0b0, MEM_WINDOW_SHARED, MMU_TLBWE_WAY_UND, MMU_TLBWE_BE_UND, 0b1 )
 
 void check_plb6mcif2(const uint32_t base_address)
 {
@@ -190,6 +195,9 @@ void check_emi(const uint32_t base_address)
 
 int main()
 {
+    static const tlb_entry local_tlb = {TLB_ENTRY};
+    write_tlb_entries(&local_tlb, 1);
+
     rumboot_printf("\nCHECK PLB6MCIF2\n\n");
     check_plb6mcif2 (DCR_EM2_PLB6MCIF2_BASE);
     rumboot_printf("\nCHECK EMI\n\n");
