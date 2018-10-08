@@ -320,14 +320,7 @@ int main(void)
     pl022_set_param(GSPI_BASE, ssp_param);//turn on SSP controller
 
 
-
-//    // Initial SRAM0
-//    for (int i=0; i<DATA_SIZE; i+=4)
-//        iowrite32(0x0, SRAM0_BASE + i);
-//
 //    // Data for check IM0
-//    for (int i=4; i<DATA_SIZE; i++)
-//        data_src[i] = TEST_DATA_IM0;
     memset((void*)(data_src+4), TEST_DATA_IM0, BYTE_NUMBER);
     //IM0 - IM0
     test_result += gspi_dma_axi(GSPI_BASE, (uint32_t)data_src, (uint32_t)data_dst, TEST_DATA_IM0);
