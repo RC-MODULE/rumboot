@@ -16,8 +16,8 @@
 #define DCDTR_1_VAL_512             0x200
 #define DCCR_1_VAL                  0x00020F01
 
-#define SDIO_TIMEOUT_US      20000000
-#define SDIO_ATTEMPTS_NUMBER 8
+#define SDIO_TIMEOUT_US      80000000
+#define SDIO_ATTEMPTS_NUMBER 4
 //#define DEBUG
 
 
@@ -47,7 +47,7 @@ enum sd_card_type {
 const char *const sd_card_type_names[] = {
         [SDIO_CARD_UNKNOWN] = "Unknown/Invalid",
         [SDIO_CARD_OLD] = "Ancient Relic (Where did u dig it up?)",
-        [SDIO_CARD_MMC]  = "MMC Card (Blast from the past?)",
+        [SDIO_CARD_MMC] = "MMC Card (Blast from the past?)",
         [SDIO_CARD_SDHC] = "SDHC Card",
         [SDIO_CARD_SDSC] = "SDSC Card",
         [SDIO_CARD_SDXC] = "SDXC Card",
@@ -72,26 +72,29 @@ struct sd_cid {
 
 struct sdio_request {
         /* Params */
-        uint32_t		cmd;
-        uint32_t		resp;
-        uint32_t		crc;
-        uint32_t		idx;
-        uint32_t		arg;
-        uint32_t		cmd55_arg;
+        uint32_t	cmd;
+        uint32_t	resp;
+        uint32_t	crc;
+        uint32_t	idx;
+        uint32_t	arg;
+        uint32_t	cmd55_arg;
 
-        void *			buf;
-        bool			is_acmd;
-        bool			is_read;
-        int                     int_buf_num;
+        void *		buf;
+        bool		is_acmd;
+        bool		is_read;
+        int		int_buf_num;
+        int             data_lanes;
 };
 
 struct sdio_private_data {
         const struct rumboot_bootsource *	src;
         enum sd_card_type			cardtype;
         char					ident[16];
+        uint32_t                                ocr;
         union {
                 struct sd_cid	cid;
                 uint32_t	regs[4];
+                unsigned char   bytes[16];
         } cid;
 };
 
@@ -102,10 +105,11 @@ static bool sdio_request_execute(uintptr_t base, struct sdio_request *rq);
 static bool card_reset(uintptr_t base)
 {
         struct sdio_request rq = {
-                .cmd		= 0,
-                .resp		= SDIO_RESPONSE_NONE,
-                .crc		= 0,
-                .idx		= 0,
+                .cmd	= 0,
+                .resp	= SDIO_RESPONSE_NONE,
+                .crc	= 0,
+                .idx	= 0,
+                .data_lanes = 0,
         };
 
         /* Send cmd0 a few times */
@@ -116,11 +120,12 @@ static bool card_reset(uintptr_t base)
 static bool card_start_acmd(uintptr_t base, uint32_t arg)
 {
         struct sdio_request rq = {
-                .cmd		= 55, /* CMD 55 */
-                .resp		= SDIO_RESPONSE_NONE,
-                .crc		= 1,
-                .idx		= 1,
-                .arg            = arg
+                .cmd	= 55,         /* CMD 55 */
+                .resp	= SDIO_RESPONSE_NONE,
+                .crc	= 1,
+                .idx	= 1,
+                .arg	= arg,
+                .data_lanes = 0,
         };
 
         /* Send cmd0 a few times */
@@ -129,14 +134,16 @@ static bool card_start_acmd(uintptr_t base, uint32_t arg)
 
 static bool sdio_request_start(uint32_t base, struct sdio_request *rq)
 {
+        uint32_t lanes = (rq->data_lanes == 4) ? 1 : 0;
+        uint32_t cmd_ctrl = (rq->cmd << 16) | (rq->idx << 12) | (rq->crc << 13) | (rq->resp << 10) | 1 << 4 | lanes;
+
         /* Do we have data transfer ? */
-        uint32_t cmd_ctrl = (rq->cmd << 16) | (rq->idx << 12) | (rq->crc << 13) | (rq->resp << 10) | 0x11;
         if (rq->buf) {
                 iowrite32((rq->int_buf_num << 2), base + SDIO_SDR_ADDRESS_REG);
                 /* 1 block, 512 bytes */
                 iowrite32(((1 << 8) | (1 << 0)), base + SDIO_SDR_CARD_BLOCK_SET_REG);
                 cmd_ctrl |= 1 << 14; /* Enable data transfer for this cmd */
-                cmd_ctrl |= rq->is_read ? ( 1 << 8) : 0;
+                cmd_ctrl |= rq->is_read ? (1 << 8) : 0;
         }
 
         iowrite32(rq->arg, base + SDIO_SDR_CMD_ARGUMENT_REG);
@@ -147,12 +154,14 @@ static bool sdio_request_start(uint32_t base, struct sdio_request *rq)
 static uint32_t sdio_get_events(uintptr_t base)
 {
         uint32_t status;
+
         status = ioread32(base + SDIO_INT_STATUS);
 
         if (status & SPISDIO_SDIO_INT_STATUS_CAR_ERR) {
                 sd_dbg(NULL, "sdio event: Card error");
                 iowrite32(SDR_TRAN_SDC_ERR, base + SDIO_SDR_BUF_TRAN_RESP_REG);
-        };
+        }
+        ;
 
         if (status & SPISDIO_SDIO_INT_STATUS_CMD_DONE) {
                 sd_dbg(NULL, "sdio event: command complete");
@@ -171,7 +180,7 @@ static uint32_t sdio_get_events(uintptr_t base)
 
         if (status & SPISDIO_SDIO_INT_STATUS_BUF_FINISH) {
                 sd_dbg(NULL, "sdio event: buf finish");
-                iowrite32((1<<0), base + SDIO_SDR_BUF_TRAN_RESP_REG);
+                iowrite32((1 << 0), base + SDIO_SDR_BUF_TRAN_RESP_REG);
         }
 
         if (status & SPISDIO_SDIO_INT_STATUS_TRAN_DONE) {
@@ -200,7 +209,6 @@ static bool wait(uintptr_t base, uint32_t flag)
                         ret = true;
                         break;
                 }
-
         } while ((rumboot_platform_get_uptime() - start) < SDIO_TIMEOUT_US);
 
         if (((rumboot_platform_get_uptime() - start) > SDIO_TIMEOUT_US)) {
@@ -214,8 +222,8 @@ static bool sdio_request_execute(uintptr_t base, struct sdio_request *rq)
         bool ret = false;
 
         sd_dbg(NULL, "SDIO START %sCMD: %d idx %x resp %x crc %x arg %x",
-                       rq->is_acmd ? "A" : "",
-                       rq->cmd, rq->idx, rq->resp, rq->crc, rq->arg);
+               rq->is_acmd ? "A" : "",
+               rq->cmd, rq->idx, rq->resp, rq->crc, rq->arg);
 
         if (rq->is_acmd) {
                 if (!card_start_acmd(base, rq->cmd55_arg)) {
@@ -245,7 +253,7 @@ static bool sdio_request_execute(uintptr_t base, struct sdio_request *rq)
         const int size = DCDTR_1_VAL_512;
         iowrite32(BUFER_TRANS_START | rq->int_buf_num, base + SDIO_BUF_TRAN_CTRL_REG);
         iowrite32(size, base + SDIO_DCDTR_1);
-        iowrite32((uintptr_t) rq->buf, base + SDIO_DCDSAR_1);
+        iowrite32((uintptr_t)rq->buf, base + SDIO_DCDSAR_1);
         iowrite32(DCCR_1_VAL, base + SDIO_DCCR_1);
 
         ret = wait(base, SPISDIO_SDIO_INT_STATUS_CH1_FINISH | SPISDIO_SDIO_INT_STATUS_BUF_FINISH);
@@ -258,6 +266,20 @@ static bool sdio_request_execute(uintptr_t base, struct sdio_request *rq)
 }
 
 
+
+
+static bool isprintable(const char s)
+{
+    if((s>='A' && s<='Z') ||
+       (s>='a' && s<='z') ||
+       (s>='!' && s<='?'))
+    {
+       return true;
+    }
+
+    return false;
+}
+
 static void parse_cid(const struct rumboot_bootsource *src, void *pdata)
 {
         struct sdio_private_data *pd = pdata;
@@ -267,13 +289,13 @@ static void parse_cid(const struct rumboot_bootsource *src, void *pdata)
         size_t i;
 
         for (i = 0; i < 2; i++)
-                if (isascii(cid->oid[i])) {
+                if (isprintable(cid->oid[i])) {
                         *ptr++ = cid->oid[i];
                 }
 
         *ptr++ = ' ';
         for (i = 0; i < 5; i++)
-                if (isascii(cid->pnm[i])) {
+                if (isprintable(cid->pnm[i])) {
                         *ptr++ = cid->pnm[i];
                 }
         *ptr++ = 0;
@@ -303,36 +325,133 @@ static int sd_read_block(const struct rumboot_bootsource *src, void *pdata, void
                 .resp		= SDIO_RESPONSE_R1367,
                 .crc		= 1,
                 .idx		= 1,
-                .arg		= (uint32_t) real_offset,
-                .buf            = ram,
-                .is_read        = true,
-                .cmd55_arg      = 0,
-                .is_acmd        = 0,
-                .int_buf_num    = 0,
+                .arg		= (uint32_t)real_offset,
+                .buf		= ram,
+                .is_read	= true,
+                .cmd55_arg	= 0,
+                .is_acmd	= 0,
+                .int_buf_num	= 0,
+                /* MMC cards don't work in 4-lane mode */
+                .data_lanes     = (sd_pdata->cardtype == SDIO_CARD_MMC) ? 1 : 4,
         };
 
         if (!sdio_request_execute(src->base, &rq)) {
                 return -1;
         }
+
         return 512;
 }
 
+
+static bool card_init_sd(const struct rumboot_bootsource *src, void *pdata)
+{
+        struct sdio_private_data *temp = pdata;
+        bool initialized = false;
+        struct sdio_request rq = {
+                .is_acmd = 0,
+                .is_read = 0,
+                .data_lanes = 0,
+        };
+
+        /* First, try CMD41 to initialize the card */
+        rq.cmd = 41;
+        rq.resp = SDIO_RESPONSE_R1367;
+        rq.is_acmd = 1;
+        rq.crc = 1;
+        rq.idx = 1;
+        rq.cmd55_arg = 0;
+
+        rq.arg = 0x80ff8000;
+        if (temp->cardtype != SDIO_CARD_OLD) {                 /* Do not set HC bit for old cards, it may confuse them */
+                rq.arg |= 0x40000000;
+        }
+
+        for (int i = 0; i < SDIO_ATTEMPTS_NUMBER; i++) {
+                if (!sdio_request_execute(src->base, &rq)) {
+                        continue;
+                }
+                temp->cid.regs[3] = format_response(ioread32(src->base + SDIO_SDR_RESPONSE1_REG));
+                temp->cid.regs[2] = format_response(ioread32(src->base + SDIO_SDR_RESPONSE2_REG));
+                temp->cid.regs[1] = format_response(ioread32(src->base + SDIO_SDR_RESPONSE3_REG));
+                temp->cid.regs[0] = format_response(ioread32(src->base + SDIO_SDR_RESPONSE4_REG));
+                sd_dbg(src, "SDIO_SDR_RESPONSE1_REG[1]=0x%x", temp->cid.regs[3]);
+                sd_dbg(src, "SDIO_SDR_RESPONSE1_REG[2]=0x%x", temp->cid.regs[2]);
+                sd_dbg(src, "SDIO_SDR_RESPONSE1_REG[3]=0x%x", temp->cid.regs[1]);
+                sd_dbg(src, "SDIO_SDR_RESPONSE1_REG[4]=0x%x", temp->cid.regs[0]);
+
+                temp->ocr = ioread32(src->base + SDIO_SDR_RESPONSE1_REG);
+                if ((temp->ocr & (1 << 31))) {
+                        initialized = true;
+                        break;
+                }
+                mdelay(250);
+        }
+
+        if (!(temp->ocr & (1 << 31))) {
+                dbg_boot(src, "Card didn't leave busy state: OCR %x", temp->ocr);
+        }
+
+        if (temp->cardtype != SDIO_CARD_OLD) {
+                temp->cardtype = (temp->ocr & (1 << 30)) ? SDIO_CARD_SDHC : SDIO_CARD_SDSC;
+        }
+
+        return initialized;
+}
+
+static bool card_init_mmc(const struct rumboot_bootsource *src, void *pdata)
+{
+        struct sdio_private_data *temp = pdata;
+        bool initialized = false;
+        struct sdio_request rq = {
+                .is_acmd = 0,
+                .is_read = 0,
+                .data_lanes = 0,
+        };
+
+        /* Try CMD1 for MMC cards */
+        /* Perhaps it's an MMC card? Try CMD1 */
+        rq.cmd = 1;
+        rq.resp = SDIO_RESPONSE_R1367;
+        rq.is_acmd = 0;
+        rq.crc = 0;
+        rq.idx = 1;
+        rq.arg = 0x80ff8000;
+        for (int i = 0; i < SDIO_ATTEMPTS_NUMBER * 2; i++) {
+                if (!sdio_request_execute(src->base, &rq)) {
+                        continue;
+                }
+                temp->ocr = ioread32(src->base + SDIO_SDR_RESPONSE1_REG);
+                if ((temp->ocr & (1 << 31))) {
+                        initialized = true;
+                        temp->cardtype = SDIO_CARD_MMC;
+                        break;
+                }
+                mdelay(250);
+        }
+
+        if (!(temp->ocr & (1 << 31))) {
+                dbg_boot(src, "Card didn't leave busy state");
+        }
+
+        return initialized;
+}
+
+
+
 static bool sdio_init(const struct rumboot_bootsource *src, void *pdata)
 {
-
         struct sdio_private_data *temp = pdata;
 
-
-        uint32_t resp = 0;
+        bool initialized = 0;
 
         uint32_t divl = calc_div(src->freq_khz, 400);
         uint32_t divh = calc_div(src->freq_khz, 10000);
 
-        #ifdef CMAKE_BUILD_TYPE_DEBUG
+#ifdef CMAKE_BUILD_TYPE_DEBUG
         /* simulation speed up */
         divl = 0;
         divh = 0;
-        #endif
+#endif
 
         iowrite32(divl, src->base + SPISDIO_SDIO_CLK_DIVIDE);
         iowrite32(0x1, src->base + SPISDIO_ENABLE);             //sdio-on, spi-off
@@ -346,10 +465,10 @@ static bool sdio_init(const struct rumboot_bootsource *src, void *pdata)
         iowrite32(0x16F, src->base + SDIO_SDR_ERROR_ENABLE_REG);
 
         struct sdio_request rq = {
-                .cmd		= 0,
-                .resp		= SDIO_RESPONSE_NONE,
-                .crc		= 0,
-                .idx		= 0,
+                .cmd	= 0,
+                .resp	= SDIO_RESPONSE_NONE,
+                .crc	= 0,
+                .idx	= 0,
         };
 
         if (!card_reset(src->base)) {
@@ -371,39 +490,18 @@ static bool sdio_init(const struct rumboot_bootsource *src, void *pdata)
                 temp->cardtype = SDIO_CARD_UNKNOWN;
         }
 
-        /* First, try CMD41 to initialize the card */
-        rq.cmd = 41;
-        rq.resp = SDIO_RESPONSE_R1367;
-        rq.is_acmd = 1;
-        rq.crc = 1;
-        rq.idx = 1;
-        rq.cmd55_arg = 0;
 
-        rq.arg = 0x80ff8000;
-        if (temp->cardtype != SDIO_CARD_OLD) {                 /* Do not set HC bit for old cards, it may confuse them */
-                rq.arg |= 0x40000000;
+        initialized = card_init_sd(src, pdata);
+        if (!initialized) {
+                if (!card_reset(src->base)) {
+                        return false;
+                }
+                initialized = card_init_mmc(src, pdata);
         }
 
-        for (int i = 0; i < SDIO_ATTEMPTS_NUMBER; i++) {
-                if (!sdio_request_execute(src->base, &rq)) {
-                        continue;
-                }
-                resp = ioread32(src->base + SDIO_SDR_RESPONSE1_REG);
-                if ((resp & (1 << 31))) {
-                        break;
-                }
-                mdelay(250);
-        }
-
-        if (!(resp & (1 << 31))) {
-                dbg_boot(src, "Card didn't leave busy state");
+        if (!initialized) {
                 return false;
         }
-
-        if (temp->cardtype != SDIO_CARD_OLD) {
-                temp->cardtype = (resp & (1 << 30)) ? SDIO_CARD_SDHC : SDIO_CARD_SDSC;
-        }
-
 
         rq.cmd = 2;
         rq.is_acmd = 0;
@@ -427,6 +525,7 @@ static bool sdio_init(const struct rumboot_bootsource *src, void *pdata)
         sd_dbg(src, "SDIO_SDR_RESPONSE1_REG[2]=0x%x", temp->cid.regs[2]);
         sd_dbg(src, "SDIO_SDR_RESPONSE1_REG[3]=0x%x", temp->cid.regs[1]);
         sd_dbg(src, "SDIO_SDR_RESPONSE1_REG[4]=0x%x", temp->cid.regs[0]);
+        sd_dbg(src, "Card CID %08x%08x%08x%08x", temp->cid.regs[0],temp->cid.regs[1],temp->cid.regs[2],temp->cid.regs[3]);
 
 
         if ((temp->cardtype >= SDIO_CARD_MAX) || (temp->cardtype < 0)) {
@@ -447,7 +546,9 @@ static bool sdio_init(const struct rumboot_bootsource *src, void *pdata)
                 return false;
         }
 
-        uint32_t rca = ioread32(src->base + SDIO_SDR_RESPONSE1_REG) >> 16;
+        uint32_t rca = ioread32(src->base + SDIO_SDR_RESPONSE1_REG);
+
+        rca = rca >> 16;
 
         rq.cmd = 7;
         rq.is_acmd = 0;
@@ -461,17 +562,33 @@ static bool sdio_init(const struct rumboot_bootsource *src, void *pdata)
                 return false;
         }
 
-        rq.cmd = 6;
-        rq.is_acmd = 1;
+        /* Switch the card into 512 byte blocks mode */
+        rq.cmd = 16;
+        rq.is_acmd = 0;
         rq.resp = SDIO_RESPONSE_R1367;
         rq.idx = 1;
         rq.crc = 1;
-        rq.arg = 2;
-        rq.cmd55_arg = rca << 16;
+        rq.arg = 512;
+
 
         if (!sdio_request_execute(src->base, &rq)) {
-                dbg_boot(src, "ACMD6 Failed ");
+                dbg_boot(src, "CMD16 Failed ");
                 return false;
+        }
+
+        if (temp->cardtype != SDIO_CARD_MMC) {
+                rq.cmd = 6;
+                rq.is_acmd = 1;
+                rq.resp = SDIO_RESPONSE_R1367;
+                rq.idx = 1;
+                rq.crc = 1;
+                rq.arg = 2;
+                rq.cmd55_arg = rca << 16;
+
+                if (!sdio_request_execute(src->base, &rq)) {
+                        dbg_boot(src, "ACMD6 Failed ");
+                        return false;
+                }
         }
 
         iowrite32(divh, src->base + SPISDIO_SDIO_CLK_DIVIDE);
