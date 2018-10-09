@@ -36,10 +36,10 @@ static uint32_t read_flash_status (uint32_t base_addr)
 
     return (ioread32(addr)); //read data from rx fifo
 }
-#define WRITE_ADDR_SPI(i, dummy)  iowrite8(0x00, addr);;//write data to SPI - write address
+#define WRITE_ADDR_SPI(i, dummy)  iowrite8(0x00, addr);//write data to SPI - write address
 #define READ_DATA_STAFF(i, dummy)  (void)ioread8(addr); //read data from SPI - staff
-#define WRITE_ADDR_SPI(i, dummy)  iowrite8(0x00, addr);;//write data to SPI - write address
-#define WRITE_DATA_STAFF(i, dummy)  iowrite8(0xFF, addr);;//write data to SPI - write address
+#define WRITE_ADDR_SPI(i, dummy)  iowrite8(0x00, addr);//write data to SPI - write address
+#define WRITE_DATA_STAFF(i, dummy)  iowrite8(0xFF, addr);//write data to SPI - write address
 
 void pl022_flash_erase(uint32_t base_addr)
 {
