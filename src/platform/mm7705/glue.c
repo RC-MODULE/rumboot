@@ -59,21 +59,6 @@ uint32_t rumboot_platform_get_uptime()
         return value / TIMER_TICKS_PER_US;
 }
 
-void __attribute__((noreturn)) rumboot_platform_panic(const char *why, ...)
-{
-        va_list ap;
-
-        va_start(ap, why);
-        printf("PANIC: ");
-        vprintf(why, ap);
-        va_end(ap);
-        exit(1);
-}
-
-void rumboot_platform_trace(void *pc)
-{
-        /* stack tracing code here */
-}
 
 void rumboot_platform_event_raise(enum rumboot_simulation_event event, uint32_t *data, uint32_t len)
 {
@@ -136,20 +121,10 @@ uint32_t rumboot_arch_irq_enable()
         return 0;
 }
 
-void rumboot_platform_request_file(const char *plusarg, uint32_t addr)
-{
-}
-
-void rumboot_platform_dump_region(const char *filename, uint32_t addr, uint32_t len)
-{
-}
-
-void rumboot_platform_perf(const char *tag)
-{
-}
 
 void rumboot_platform_setup()
 {
+        iowrite32((char)'X', UART0_BASE + PL011_UARTDR);
         enable_fpu();
 }
 

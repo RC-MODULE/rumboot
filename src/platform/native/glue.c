@@ -58,7 +58,8 @@ uint32_t rumboot_platform_get_uptime()
 
 static int shmid;
 static int the_ipc_id;
-static void detach() {
+static void detach()
+{
         rumboot_printf("Detaching from shared memory\n");
         shmdt(rumboot_platform_runtime_info);
         /* This is very hacky. It looks like the shared memory is released
@@ -76,7 +77,7 @@ static void detach() {
                         perror("shmctl: ");
                         exit(1);
                 }
-       }
+        }
 }
 
 static void *create_shared_memory(const char *skey, int id, size_t size)
@@ -155,8 +156,8 @@ void rumboot_platform_setup()
                 }
 
                 if (c == '?') {
-                       rumboot_printf("FATAL: Missing required argument");
-                       exit(1);
+                        rumboot_printf("FATAL: Missing required argument");
+                        exit(1);
                 }
 
                 switch (c) {
@@ -196,25 +197,37 @@ void rumboot_platform_setup()
         /* No - op */
 }
 
-void __attribute__((noreturn)) rumboot_platform_panic(const char *why, ...)
-{
-        va_list ap;
-
-        va_start(ap, why);
-        printf("PANIC: ");
-        vprintf(why, ap);
-        va_end(ap);
-        exit(1);
-}
-
-void rumboot_platform_trace(void *pc)
-{
-        /* stack tracing code here */
-}
-
 void rumboot_platform_event_raise(enum rumboot_simulation_event event, uint32_t *data, uint32_t len)
 {
-        exit(event);
+        switch (event) {
+        case EVENT_TERM:
+                exit(data[0]);
+                break;
+        case EVENT_UPLOAD: {
+                const char *plusarg = (void *)data[0];
+                void *addr = (void *)data[1];
+                if (strcmp(plusarg, "HOSTMOCK") == 0) {
+                        if (!hfile) {
+                                return;
+                        }
+                        FILE *fd = fopen(hfile, "r");
+                        if (!fd) {
+                                return;
+                        }
+                        size_t sz;
+                        fseek(fd, 0, SEEK_END);
+                        sz = ftell(fd);
+                        fseek(fd, 0, SEEK_SET);
+                        fread((void *)addr, sz, 1, fd);
+                        fclose(fd);
+                        hfile = strtok(NULL, ",");
+                }
+
+                break;
+        }
+        default:
+                break;
+        }
 }
 
 void rumboot_platform_putchar(uint8_t c)
@@ -238,7 +251,7 @@ uint32_t rumboot_arch_irq_enable()
         return 0;
 }
 
-
+#if 0
 void rumboot_platform_request_file(const char *plusarg, uint32_t addr)
 {
         if (strcmp(plusarg, "HOSTMOCK") == 0) {
@@ -267,7 +280,7 @@ void rumboot_platform_perf(const char *tag)
 {
 }
 
-
+#endif
 const struct rumboot_bootsource *rumboot_platform_get_bootsources()
 {
         return arr;
@@ -428,5 +441,4 @@ uint32_t rumboot_virt_to_dma(volatile void *addr)
 
 void rumboot_platform_print_summary(struct rumboot_config *conf)
 {
-    
 }
