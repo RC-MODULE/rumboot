@@ -469,6 +469,7 @@ static bool sdio_init(const struct rumboot_bootsource *src, void *pdata)
                 .resp	= SDIO_RESPONSE_NONE,
                 .crc	= 0,
                 .idx	= 0,
+                .data_lanes = 0,
         };
 
         if (!card_reset(src->base)) {
@@ -597,8 +598,19 @@ static bool sdio_init(const struct rumboot_bootsource *src, void *pdata)
 
 static void sdio_deinit(const struct rumboot_bootsource *src, void *pdata)
 {
-        uint32_t reg = ioread32(src->base + SPISDIO_ENABLE);
+        /* reset the card */
+        struct sdio_request rq = {
+                .cmd	= 0,
+                .resp	= SDIO_RESPONSE_NONE,
+                .crc	= 0,
+                .idx	= 0,
+                .data_lanes = 0,
+        };
 
+        sdio_request_execute(src->base, &rq);
+
+        /* Disable SDIO */
+        uint32_t reg = ioread32(src->base + SPISDIO_ENABLE);
         iowrite32(reg & ~(1 << 1), src->base + SPISDIO_ENABLE);
 }
 
