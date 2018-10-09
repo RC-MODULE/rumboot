@@ -20,7 +20,7 @@ rumboot_add_configuration(
   PREFIX rom
   LDS mm7705/rom-shim.lds
   FILES ${CMAKE_SOURCE_DIR}/src/lib/bootheader_legacy.c
-  CFLAGS -DRUMBOOT_ONLY_STACK
+  CFLAGS -DRUMBOOT_ONLY_STACK -DMM7705_USE_MPW
   #LDFLAGS -Wl,--start-group -lgcc -lc -lm -Wl,--end-group
   FEATURES PACKIMAGE
 )
@@ -30,7 +30,7 @@ rumboot_add_configuration(
   SPL
   LDS mm7705/spl.lds
   FILES ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c
-  CFLAGS
+  CFLAGS -DMM7705_USE_MPW
   LDFLAGS -Wl,--start-group -lgcc -lc -lm -Wl,--end-group
   PREFIX spl
   FEATURES PACKIMAGE
@@ -41,7 +41,7 @@ rumboot_add_configuration(
   DEFAULT
   LDS mm7705/ram.lds
   PREFIX iram
-  CFLAGS
+  CFLAGS -DMM7705_USE_MPW
   FEATURES PACKIMAGE
   LDFLAGS -Wl,--start-group -lgcc -lc -lm -Wl,--end-group
 )
