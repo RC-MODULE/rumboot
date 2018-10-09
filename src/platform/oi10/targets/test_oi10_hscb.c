@@ -181,6 +181,18 @@ static uint32_t check_hscb_regs( uint32_t base_addr ) {
 #ifndef DATA_SIZE_1
 #define DATA_SIZE_1 0x20
 #endif
+#ifndef DATA_SIZE_2
+#define DATA_SIZE_2 0x18
+#endif
+#ifndef DATA_SIZE_3
+#define DATA_SIZE_3 0x28
+#endif
+#ifndef DATA_SIZE_4
+#define DATA_SIZE_4 0x38
+#endif
+#ifndef DATA_SIZE_5
+#define DATA_SIZE_5 0x30
+#endif
 //Here are defined addresses, for using different memories use addresses from defines above
 //Note that for current memory (say, IM0 for IRAM configuration) you should use CURRENT_MEMORY_* addresses
 //in order not to erase code
@@ -197,6 +209,76 @@ static uint32_t check_hscb_regs( uint32_t base_addr ) {
 #define RX_DATA_ADDR_1   CURRENT_MEMORY_RX_1 //Here we have Mem0 address from chain Mem1->SW1->SW0->Mem0
 #endif
 
+#ifdef HSCB_SHORT_TEST
+
+    #ifndef TX_0_HEAP_NAME
+    #define TX_0_HEAP_NAME "IM0"
+    #endif
+
+    #ifndef RX_0_HEAP_NAME
+    #define RX_0_HEAP_NAME "IM0"
+    #endif
+
+    #ifndef TX_1_HEAP_NAME
+    #define TX_1_HEAP_NAME "IM0"
+    #endif
+
+    #ifndef RX_1_HEAP_NAME
+    #define RX_1_HEAP_NAME "IM0"
+    #endif
+
+#else
+
+    #ifndef TX_0_HEAP_NAME
+    #define TX_0_HEAP_NAME "IM0"
+    #endif
+
+    #ifndef RX_0_HEAP_NAME
+    #define RX_0_HEAP_NAME "SSRAM"
+    #endif
+
+    #ifndef TX_1_HEAP_NAME
+    #define TX_1_HEAP_NAME "IM0"
+    #endif
+
+    #ifndef RX_1_HEAP_NAME
+    #define RX_1_HEAP_NAME "IM1"
+    #endif
+
+    #ifndef TX_2_HEAP_NAME
+    #define TX_2_HEAP_NAME "SSRAM"
+    #endif
+
+    #ifndef RX_2_HEAP_NAME
+    #define RX_2_HEAP_NAME "IM1"
+    #endif
+
+    #ifndef TX_3_HEAP_NAME
+    #define TX_3_HEAP_NAME "IM1"
+    #endif
+
+    #ifndef RX_3_HEAP_NAME
+    #define RX_3_HEAP_NAME "SSRAM"
+    #endif
+
+    #ifndef TX_4_HEAP_NAME
+    #define TX_4_HEAP_NAME "IM1"
+    #endif
+
+    #ifndef RX_4_HEAP_NAME
+    #define RX_4_HEAP_NAME "IM0"
+    #endif
+
+    #ifndef TX_5_HEAP_NAME
+    #define TX_5_HEAP_NAME "SSRAM"
+    #endif
+
+    #ifndef RX_5_HEAP_NAME
+    #define RX_5_HEAP_NAME "IM0"
+    #endif
+
+#endif
+
 #ifndef DATA_INITIAL_VALUE
 #define DATA_INITIAL_VALUE 0
 #endif
@@ -209,36 +291,40 @@ static uint32_t check_hscb_regs( uint32_t base_addr ) {
 #define INCREMENT_1 -1
 #endif
 
+#ifndef INCREMENT_2
+#define INCREMENT_2 2
+#endif
+
+#ifndef INCREMENT_3
+#define INCREMENT_3 -2
+#endif
+
+#ifndef INCREMENT_4
+#define INCREMENT_4 3
+#endif
+
+#ifndef INCREMENT_5
+#define INCREMENT_5 -3
+#endif
+
 #ifdef HSCB_SHORT_TEST
 #define COUNT_AREAS 4
 #else
 #define COUNT_AREAS 12
 #endif
 
-extern char rumboot_im0_heap_start;
-extern char rumboot_im0_heap_end;
-extern char rumboot_im1_heap_start;
-extern char rumboot_im1_heap_end;
-extern char rumboot_sram0_heap_start;
-extern char rumboot_sram0_heap_end;
-extern char rumboot_sdram_heap_start;
-extern char rumboot_sdram_heap_end;
-extern char rumboot_ssram_heap_start;
-extern char rumboot_ssram_heap_end;
-extern char rumboot_plram_heap_start;
-extern char rumboot_plram_heap_end;
-extern char rumboot_sram1_heap_start;
-extern char rumboot_sram1_heap_end;
-extern char rumboot_nor_heap_start;
-extern char rumboot_nor_heap_end;
+#define DESCRIPTOR_TABLES_COUNT 4
+#define DEFAULT_HEAP_ID 0
 
-static volatile uint8_t __attribute__((section(".data"),aligned(8))) tx_desc_0_im[0x100] = {0} ;
-static volatile uint8_t __attribute__((section(".data"),aligned(8))) tx_desc_1_im[0x100] = {0} ;
-static volatile uint8_t __attribute__((section(".data"),aligned(8))) rx_desc_0_im[0x100] = {0} ;
-static volatile uint8_t __attribute__((section(".data"),aligned(8))) rx_desc_1_im[0x100] = {0} ;
+//static volatile uint8_t __attribute__((section(".data"),aligned(8))) tx_desc_0_im[0x100] = {0} ;
+//static volatile uint8_t __attribute__((section(".data"),aligned(8))) tx_desc_1_im[0x100] = {0} ;
+//static volatile uint8_t __attribute__((section(".data"),aligned(8))) rx_desc_0_im[0x100] = {0} ;
+//static volatile uint8_t __attribute__((section(".data"),aligned(8))) rx_desc_1_im[0x100] = {0} ;
 
-static volatile uint8_t*  data_areas[COUNT_AREAS];/*from odd to even*/
-static volatile uint32_t*  data_areas_sizes;
+//static volatile hscb_packed_descr_struct_t __attribute__((section(".data"),aligned(8))) static_descriptors[DESCRIPTOR_TABLES_COUNT][2];
+
+//static uint8_t*  data_areas[COUNT_AREAS];/*from even to odd*/
+//static uint32_t  data_area_sizes[COUNT_AREAS/2] = {0x10, 0x10};
 
 static volatile uint32_t hscb0_status;
 static volatile uint32_t hscb1_status;
@@ -247,7 +333,6 @@ static volatile uint32_t hscb1_dma_status;
 static volatile bool hscb0_link_established;
 static volatile bool hscb1_link_established;
 
-hscb_instance_t  hscb_cfg[2];
 
 static void handler( int irq, void *arg ) {
     //get interrupt source
@@ -291,114 +376,7 @@ static void handler( int irq, void *arg ) {
     }
 }
 
-int get_heap_id_and_register_if_undefined(const char* heap_name, void* heap_start, void* heap_end){
-    int heap_id;
-
-    heap_id = rumboot_malloc_heap_by_name(heap_name);
-    if(heap_id < 0){
-        rumboot_malloc_register_heap( heap_name, heap_start, heap_end );
-        heap_id = rumboot_malloc_heap_by_name(heap_name);
-    }
-    return heap_id;
-}
-
-int get_heap_id_for_address(uint32_t address){
-    int heap_id;
-    rumboot_putstring("get_heap_id_for_address ");
-    rumboot_puthex(address);
-    switch (address){
-        case IM0_BASE:
-            heap_id = get_heap_id_and_register_if_undefined("IM0", &rumboot_im0_heap_start, &rumboot_im0_heap_end);
-            rumboot_putstring("IM0");
-            break;
-        case IM1_BASE:
-            heap_id = get_heap_id_and_register_if_undefined("IM1", &rumboot_im1_heap_start, &rumboot_im1_heap_end);
-            rumboot_putstring("IM1");
-            break;
-        case SRAM0_BASE:
-            heap_id = get_heap_id_and_register_if_undefined("SRAM0", &rumboot_sram0_heap_start, &rumboot_sram0_heap_end);
-            rumboot_putstring("SRAM0");
-            break;
-        case SDRAM_BASE:
-            heap_id = get_heap_id_and_register_if_undefined("SDRAM", &rumboot_sdram_heap_start, &rumboot_sdram_heap_end);
-            rumboot_putstring("SDRAM");
-            break;
-        case SSRAM_BASE:
-            heap_id = get_heap_id_and_register_if_undefined("SSRAM", &rumboot_ssram_heap_start, &rumboot_ssram_heap_end);
-            rumboot_putstring("SSRAM");
-            break;
-        case PIPELINED_BASE:
-            heap_id = get_heap_id_and_register_if_undefined("PLRAM", &rumboot_plram_heap_start, &rumboot_plram_heap_end);
-            rumboot_putstring("PLRAM");
-            break;
-        case SRAM1_BASE:
-            heap_id = get_heap_id_and_register_if_undefined("SRAM1", &rumboot_sram1_heap_start, &rumboot_sram1_heap_end);
-            rumboot_putstring("SRAM1");
-            break;
-        case NOR_BASE:
-            heap_id = get_heap_id_and_register_if_undefined("NOR", &rumboot_nor_heap_start, &rumboot_nor_heap_end);
-            rumboot_putstring("NOR");
-            break;
-        default: {
-            heap_id = -1;
-            rumboot_printf("Cannot find the specified memory base address among available ones, address: 0x%x", address);
-            TEST_ASSERT(heap_id > 0, "Heap was not set. Exiting...");
-        }
-    }
-    return heap_id;
-}
-
-void prepare_memory_areas(volatile uint8_t** data_areas, volatile uint32_t* data_areas_sizes){
-    int heap_id;
-    int i;
-#ifdef HSCB_SHORT_TEST
-    uint32_t memory_area_addresses[COUNT_AREAS] = {TX_DATA_ADDR_0,RX_DATA_ADDR_0,TX_DATA_ADDR_1,RX_DATA_ADDR_1};
-    uint32_t memory_areas_sizes[COUNT_AREAS/2] = {DATA_SIZE_0, DATA_SIZE_1};
-#else
-    uint32_t memory_area_addresses[COUNT_AREAS] = { TX_DATA_ADDR_0,
-                                                    RX_DATA_ADDR_0,
-                                                    TX_DATA_ADDR_1,
-                                                    RX_DATA_ADDR_1,
-                                                    TX_DATA_ADDR_2,
-                                                    RX_DATA_ADDR_2,
-                                                    TX_DATA_ADDR_3,
-                                                    RX_DATA_ADDR_3,
-                                                    TX_DATA_ADDR_4,
-                                                    RX_DATA_ADDR_4,
-                                                    TX_DATA_ADDR_5,
-                                                    RX_DATA_ADDR_5,};// TODO: add addresses
-    uint32_t memory_areas_sizes[COUNT_AREAS/2] = {DATA_SIZE_0, DATA_SIZE_1, DATA_SIZE_2};// TODO: add addresses
-#endif
-    data_areas_sizes = memory_areas_sizes;
-    for (i = 0; i < COUNT_AREAS; ++i){
-        heap_id = get_heap_id_for_address(memory_area_addresses[i]);
-        data_areas[i] = rumboot_malloc_from_heap_aligned(heap_id, memory_areas_sizes[i >> 1], 0x8);
-        data_areas_sizes[i >> 1] = memory_areas_sizes[i >> 1];
-//        rumboot_putstring("data_areas[i] == ");
-//        rumboot_puthex(data_areas[i]);
-    }
-}
-
-void prepare_descriptor_areas(hscb_packed_descr_struct_t ** array_of_descriptors, uint32_t len_of_array, uint32_t* count_of_descriptors){
-    uint32_t i;
-    for(i = 0; i < len_of_array; ++i)
-        array_of_descriptors[i] = rumboot_malloc_from_heap_aligned(0,
-                sizeof(hscb_packed_descr_struct_t) * ( count_of_descriptors[i] + 1 ),
-                0x8);
-}
-
-static void set_test_data(uint32_t base_addr, uint32_t length, int increment){
-    uint8_t data = DATA_INITIAL_VALUE;
-    if ((base_addr >= NOR_BASE) && (base_addr <= IM0_BASE))
-        rumboot_putstring("Oops! NOR initialization is still a To-Do in this test!");
-    else
-    for(uint32_t i = 0; i < length; ++i){
-        iowrite8(data,(base_addr+i));
-        data += increment;
-    }
-}
-
-struct rumboot_irq_entry * create_irq_handlers(hscb_instance_t* hscb_inst)
+struct rumboot_irq_entry * create_irq_handlers()
 {
     rumboot_irq_cli();
     struct rumboot_irq_entry *tbl = rumboot_irq_create( NULL );
@@ -425,40 +403,210 @@ void delete_irq_handlers(struct rumboot_irq_entry *tbl)
     rumboot_irq_free(tbl);
 }
 
-inline static void print_hscb_descriptor(uint32_t addr){
+
+uint32_t prepare_memory_areas(uint8_t*** data_areas, uint32_t** data_area_sizes){
+    int i;
+#ifdef HSCB_SHORT_TEST
+    char* memory_heap_names[] = {TX_0_HEAP_NAME,RX_0_HEAP_NAME,TX_1_HEAP_NAME,RX_1_HEAP_NAME};
+    uint32_t memory_area_sizes[] = {DATA_SIZE_0, DATA_SIZE_1};
+#else
+    char* memory_heap_names[] =  {      TX_0_HEAP_NAME,
+                                        RX_0_HEAP_NAME,
+                                        TX_1_HEAP_NAME,
+                                        RX_1_HEAP_NAME,
+                                        TX_2_HEAP_NAME,
+                                        RX_2_HEAP_NAME,
+                                        RX_3_HEAP_NAME,
+                                        TX_3_HEAP_NAME,
+                                        RX_4_HEAP_NAME,
+                                        TX_4_HEAP_NAME,
+                                        RX_5_HEAP_NAME,
+                                        TX_5_HEAP_NAME,};
+    uint32_t memory_area_sizes[] = {    DATA_SIZE_0,
+                                        DATA_SIZE_1,
+                                        DATA_SIZE_2,
+                                        DATA_SIZE_3,
+                                        DATA_SIZE_4,
+                                        DATA_SIZE_5};
+#endif
+    uint32_t count_of_memory_areas = sizeof(memory_heap_names)/sizeof(memory_heap_names[0]);
+
+    TEST_ASSERT((count_of_memory_areas >> 1) == sizeof(memory_area_sizes)/sizeof(memory_area_sizes[0]),
+            "A pair of memory areas must correspond to a single memory_area_size");
+
+    rumboot_putstring("prepare_memory_areas");
+    *data_areas = rumboot_malloc_from_heap_aligned(DEFAULT_HEAP_ID,
+                count_of_memory_areas * sizeof(uint8_t*),
+                0x8);
+    TEST_ASSERT(((*data_areas) != NULL), "Cannot allocate from default heap!");
+    for (i = 0; i < count_of_memory_areas; ++i){
+        (*data_areas)[i] = rumboot_malloc_from_named_heap_aligned(memory_heap_names[i], memory_area_sizes[i >> 1], 0x8);
+        if((*data_areas)[i] == NULL){
+            rumboot_putstring("Cannot allocate from heap with name ");
+            rumboot_putstring((const char * const)&(memory_heap_names[i]));
+            TEST_ASSERT(((*data_areas)[i] != NULL), "Cannot work without this memory ;( Exiting...");
+        }
+        rumboot_puthex(i);
+        rumboot_puthex((uint32_t)(*data_areas)[i]);
+
+    }
+    rumboot_putstring("end prepare_memory_areas");
+    for(i = 0; i < (count_of_memory_areas >> 1); ++i){
+        (*data_area_sizes)[i] = memory_area_sizes[i];
+//        rumboot_putstring("data_areas[i] == ");
+//        rumboot_puthex(data_areas[i]);
+    }
+    return count_of_memory_areas;
+}
+
+static void set_test_data(uint32_t base_addr, uint32_t length, int increment){
+    uint8_t data = DATA_INITIAL_VALUE;
+    if ((base_addr >= NOR_BASE) && (base_addr <= NOR_BASE + NOR_SIZE))
+        rumboot_putstring("Oops! NOR initialization is still a To-Do in this test!");
+    else
+    for(uint32_t i = 0; i < length; ++i){
+        iowrite8(data,(base_addr+i));
+        data += increment;
+    }
+}
+
+void set_test_data_multiple(    uint8_t** data_areas,
+                                uint32_t* data_area_sizes,
+                                uint32_t  count_of_memory_areas){
+    int i;
+#ifdef HSCB_SHORT_TEST
+    uint32_t increments[] = {   INCREMENT_0,
+                                0,
+                                INCREMENT_1,
+                                0};
+#else
+    uint32_t increments[] = {   INCREMENT_0,
+                                0,
+                                INCREMENT_1,
+                                0,
+                                INCREMENT_2,
+                                0,
+                                INCREMENT_3,
+                                0,
+                                INCREMENT_4,
+                                0,
+                                INCREMENT_5,
+                                0,};
+#endif
+    TEST_ASSERT((count_of_memory_areas == (sizeof(increments) / sizeof(increments[0]))),
+            "Size of increments array does not correspond the count of data areas");
+    rumboot_putstring("set_test_data_multiple");
+    for(i = 0; i < count_of_memory_areas; ++i){
+        rumboot_puthex(i);
+        set_test_data((uint32_t)(data_areas + i),data_area_sizes[i >> 1],increments[i]);
+    }
+    rumboot_putstring("end set_test_data_multiple");
+}
+
+void prepare_descriptor_areas(
+        hscb_packed_descr_struct_t ***  array_of_descriptors,
+        uint32_t*                       counts_of_descriptors,
+        uint32_t                        counts_of_descriptor_tables){
+
+    uint32_t i;
+    rumboot_putstring("prepare_descriptor_areas");
+    *array_of_descriptors = rumboot_malloc_from_heap_aligned(DEFAULT_HEAP_ID,
+                counts_of_descriptor_tables * sizeof(hscb_packed_descr_struct_t*),
+                0x8);
+    TEST_ASSERT(((*array_of_descriptors) != NULL), "Cannot allocate from default heap!");
+    for(i = 0; i < counts_of_descriptor_tables; ++i){
+        (*array_of_descriptors)[i] = rumboot_malloc_from_heap_aligned(DEFAULT_HEAP_ID,
+                ( hscb_get_tbl_len_by_count(counts_of_descriptors[i])),
+                0x8);
+        TEST_ASSERT(((*array_of_descriptors)[i] != NULL), "Cannot allocate from default heap!");
+        rumboot_puthex(i);
+        rumboot_puthex((uint32_t)(*array_of_descriptors)[i]);
+        rumboot_puthex(counts_of_descriptors[i]);
+    }
+    rumboot_putstring("end prepare_descriptor_areas");
+}
+
+inline static void print_hscb_descriptor(volatile hscb_packed_descr_struct_t* descriptor){
     rumboot_printf("descriptor address: \n%x\nfirst word == \n%x\nsecond word == \n%x\n",
-            addr,hscb_change_endian(*((uint32_t*)addr)),hscb_change_endian(*(((uint32_t*)addr)+1)));
+            &descriptor,hscb_change_endian(descriptor->start_address),hscb_change_endian(descriptor->length_attr));
+}
+void init_hscb_cfg( uint8_t**                         data_areas,
+                    uint32_t*                       data_area_sizes,
+                    hscb_packed_descr_struct_t**    hscb_descr,
+                    uint32_t*                       count_of_descriptors,
+                    uint32_t                        count_descr_tables,
+                    bool                            change_endian){
+    int i,j;
+    uint32_t count_of_processed_descriptors = 0;
+    rumboot_putstring("init_hscb_cfg");
+    for (i = 0; i < count_descr_tables; ++i){
+        for (j = 0; j < count_of_descriptors[i]; ++j){
+            rumboot_puthex((i << 16) | j );
+            rumboot_puthex((uint32_t)(data_areas[i + (j << 2)]));
+            (hscb_descr + count_of_processed_descriptors)[j]->start_address = (change_endian) ? HSCB_CHANGE_ENDIAN_WORD((uint32_t)(data_areas[(i << 2) + j]))
+                                                                                     : (uint32_t)(data_areas[(i << 2) + j]);
+            (hscb_descr + count_of_processed_descriptors)[j]->length_attr =  HSCB_CREATE_DESCRIPTOR_LEN_ATTR_ENDIAN_EXE(
+                                             data_area_sizes[(i >> 1) + (j << 1)],
+                                             HSCB_ACT_TRAN,
+                                             HSCB_ACT0_LAST,
+                                             HSCB_DESCR_ITRPT_ON,
+                                             HSCB_DESCR_VALID,
+                                             change_endian) ;
+        }
+        hscb_descr[i][count_of_descriptors[i]].start_address = 0;
+        hscb_descr[i][count_of_descriptors[i]].length_attr = 0;
+        count_of_processed_descriptors += count_of_descriptors[i] ;
+    }
+    rumboot_putstring("end init_hscb_cfg");
+}
+
+void set_descriptor_tables( uint32_t base_addr,
+                            uint32_t supplementary_base_addr,
+                            hscb_packed_descr_struct_t** hscb_descr,
+                            uint32_t* descr_table_length,
+                            uint32_t count_descr_tables){
+    int i;
+    rumboot_putstring("set_descriptor_tables");
+    for (i = 0; i < (count_descr_tables >> 1); ++i){
+        rumboot_putstring ("i = ");
+        rumboot_puthex(i);
+        rumboot_putstring("descr_table_length[i]");
+        rumboot_puthex(descr_table_length[i]);
+        rumboot_putstring("hscb_get_tbl_len_by_count(descr_table_length[i])");
+        rumboot_puthex(hscb_get_tbl_len_by_count(descr_table_length[i]));
+        hscb_set_rdma_tbl_size(base_addr, hscb_get_tbl_len_by_count(descr_table_length[i]));
+
+        rumboot_putstring("hscb_descr[i << 1]");
+        print_hscb_descriptor(hscb_descr[i << 1]);
+        rumboot_putstring("rumboot_virt_to_dma(&hscb_descr[i << 1])");
+        rumboot_puthex(rumboot_virt_to_dma(&hscb_descr[i << 1]));
+        hscb_set_rdma_sys_addr(base_addr, rumboot_virt_to_dma(&hscb_descr[i << 1]));
+
+        hscb_set_wdma_tbl_size(supplementary_base_addr, hscb_get_tbl_len_by_count(descr_table_length[i]));
+
+        rumboot_putstring("hscb_descr[(i << 1) + 1]");
+        print_hscb_descriptor(hscb_descr[(i << 1) + 1]);
+        rumboot_putstring("rumboot_virt_to_dma(&hscb_descr[(i << 1) + 1])");
+        rumboot_puthex(rumboot_virt_to_dma(&hscb_descr[(i << 1) + 1]));
+        hscb_set_wdma_sys_addr(supplementary_base_addr, rumboot_virt_to_dma(&hscb_descr[(i << 1) + 1]));
+    }
+    rumboot_putstring("end set_descriptor_tables");
 }
 
 #ifdef HSCB_SHORT_TEST
-void init_hscb_cfg_short(hscb_instance_t* hscb_inst)
-{
-    hscb_inst[0].src_hscb_base_addr   = HSCB_UNDER_TEST_BASE;
-    hscb_inst[0].dst_hscb_base_addr   = HSCB_SUPPLEMENTARY_BASE;
-    hscb_inst[0].src_addr             = (uint32_t*)data_areas[0];
-    hscb_inst[0].dst_addr             = (uint32_t*)data_areas[3];
-    hscb_inst[0].src_size             = data_areas_sizes[0];
-    hscb_inst[0].dst_size             = data_areas_sizes[1];
-    hscb_inst[0].tx_descr_addr        = (uint32_t)tx_desc_0_im;
-    hscb_inst[0].rx_descr_addr        = (uint32_t)rx_desc_1_im;
 
-    hscb_inst[1].src_hscb_base_addr   = HSCB_SUPPLEMENTARY_BASE;
-    hscb_inst[1].dst_hscb_base_addr   = HSCB_UNDER_TEST_BASE;
-    hscb_inst[1].src_addr             = (uint32_t*)data_areas[2];
-    hscb_inst[1].dst_addr             = (uint32_t*)data_areas[1];
-    hscb_inst[1].src_size             = data_areas_sizes[1];
-    hscb_inst[1].dst_size             = data_areas_sizes[0];
-    hscb_inst[1].tx_descr_addr        = (uint32_t)tx_desc_1_im;
-    hscb_inst[1].rx_descr_addr        = (uint32_t)rx_desc_0_im;
+static uint32_t check_hscb_short_func(
+        uint32_t    base_addr,
+        uint32_t    supplementary_base_addr,
+        uint8_t **  data_areas,
+        uint32_t*   data_area_sizes,
+        uint32_t    data_areas_count){
 
-}
-
-static uint32_t check_hscb_short_func(){
-    rumboot_printf("Check functionality...\n");
-
-    rumboot_putstring( "------- HSCB Short ACCESS test -------\n" );
-    // Local variables
+    hscb_packed_descr_struct_t** descriptors = NULL;
+    uint32_t descriptor_counts[] = {1, 1, 1, 1};
+    hscb_packed_descr_struct_t* descriptor_pointer;
     int i = 0;
+    int j = 0;
     int cnt = 0;
     hscb_descr_struct_t hscb_descr;
 
@@ -470,45 +618,56 @@ static uint32_t check_hscb_short_func(){
     uint8_t expected_data = 0;
     uint8_t obtained_data = 0;
 
-    init_hscb_cfg_short(hscb_cfg);
+    rumboot_printf("Check functionality...\n");
 
-//    rumboot_putstring("(uint32_t)(hscb_cfg[0].dst_addr)");
-//    rumboot_puthex((uint32_t)(hscb_cfg[0].dst_addr));
-    TEST_ASSERT(!(((uint32_t)(hscb_cfg[0].dst_addr) >= NOR_BASE) && ((uint32_t)(hscb_cfg[0].dst_addr) < NOR_BASE +NOR_SIZE)),
-        "RX_DATA_ADDR_0 - destination address cannot be NOR!");
-//    rumboot_putstring("(uint32_t)(hscb_cfg[1].dst_addr)");
-//    rumboot_puthex((uint32_t)(hscb_cfg[1].dst_addr));
-    TEST_ASSERT(!(((uint32_t)(hscb_cfg[1].dst_addr) >= NOR_BASE) && ((uint32_t)(hscb_cfg[1].dst_addr) < NOR_BASE +NOR_SIZE)),
-        "RX_DATA_ADDR_1 - destination address cannot be NOR!");
+    rumboot_putstring( "------- HSCB Short ACCESS test -------\n" );
 
+    rumboot_putstring("address of descriptor_counts");
+    rumboot_puthex((uint32_t)descriptor_counts);
+    prepare_descriptor_areas(&descriptors,descriptor_counts,DESCRIPTOR_TABLES_COUNT);
+    rumboot_putstring("address of descriptors");
+    rumboot_puthex((uint32_t)descriptors);
+    init_hscb_cfg( data_areas, data_area_sizes, descriptors, descriptor_counts,DESCRIPTOR_TABLES_COUNT, HSCB_ROTATE_BYTES_ENABLE);
+    rumboot_putstring("printing descriptors in cycle");
 
-    // Set data for HSCB0
-//    rumboot_putstring("(uint32_t)hscb_cfg[0].src_addr == ");
-//    rumboot_puthex((uint32_t)hscb_cfg[0].src_addr);
-//    rumboot_putstring("(uint32_t)hscb_cfg[0].dst_addr == ");
-//    rumboot_puthex((uint32_t)hscb_cfg[0].dst_addr);
-    set_test_data((uint32_t)hscb_cfg[0].src_addr,hscb_cfg[0].src_size,INCREMENT_0);
-    set_test_data((uint32_t)hscb_cfg[0].dst_addr,hscb_cfg[0].dst_size,0);
-    // Set data for HSCB1
-//    rumboot_putstring("(uint32_t)(hscb_cfg[1].src_addr) == ");
-//    rumboot_puthex((uint32_t)(hscb_cfg[1].src_addr));
-//    rumboot_putstring("(uint32_t)(hscb_cfg[1].dst_addr) == ");
-//    rumboot_puthex((uint32_t)(hscb_cfg[1].dst_addr));
-    set_test_data((uint32_t)(hscb_cfg[1].src_addr),hscb_cfg[1].src_size,INCREMENT_1);
-    set_test_data((uint32_t)(hscb_cfg[1].dst_addr),hscb_cfg[1].dst_size,0);
-    msync();
-    hscb_config_for_receive_and_transmit(&hscb_cfg[0]);
-    hscb_config_for_receive_and_transmit(&hscb_cfg[1]);
-    print_hscb_descriptor(hscb_cfg[0].tx_descr_addr);
-    print_hscb_descriptor(hscb_cfg[0].rx_descr_addr);
-    print_hscb_descriptor(hscb_cfg[1].tx_descr_addr);
-    print_hscb_descriptor(hscb_cfg[1].rx_descr_addr);
+    for (i = 0; i < DESCRIPTOR_TABLES_COUNT; ++i){
+        rumboot_puthex(i);
+        rumboot_puthex(descriptor_counts[i]);
+        rumboot_puthex((uint32_t)(descriptors[i]));
+        for(j = 0; j < descriptor_counts[i]; ++j){
+            rumboot_puthex((i << 16) | j);
+            rumboot_puthex((uint32_t)(&(descriptors[i][j])));
+            rumboot_puthex(descriptors[i][j].start_address);
+            rumboot_puthex(descriptors[i][j].length_attr);
+        }
+    }
+    rumboot_putstring("end printing descriptors in cycle");
+    descriptor_pointer = descriptors[0];
+    print_hscb_descriptor(descriptor_pointer);//TX0
+    descriptor_pointer = descriptors[1];
+    print_hscb_descriptor(descriptor_pointer);//RX0
+    descriptor_pointer = descriptors[2];
+    print_hscb_descriptor(descriptor_pointer);//TX1
+    descriptor_pointer = descriptors[3];
+    print_hscb_descriptor(descriptor_pointer);//RX1
+
+    set_descriptor_tables(base_addr, supplementary_base_addr, descriptors,descriptor_counts,DESCRIPTOR_TABLES_COUNT);
+    hscb_set_max_speed(base_addr);
+    hscb_set_max_speed(supplementary_base_addr);
+    descriptor_pointer = descriptors[0];
+    print_hscb_descriptor(descriptor_pointer);//TX0
+    descriptor_pointer = descriptors[1];
+    print_hscb_descriptor(descriptor_pointer);//RX0
+    descriptor_pointer = descriptors[2];
+    print_hscb_descriptor(descriptor_pointer);//TX1
+    descriptor_pointer = descriptors[3];
+    print_hscb_descriptor(descriptor_pointer);//RX1
 
     // Enable HSCB0 and HSCB1
-    iowrite32((1 << HSCB_IRQ_MASK_ACTIVE_LINK_i),    hscb_cfg[0].src_hscb_base_addr + HSCB_IRQ_MASK);
-    iowrite32((1 << HSCB_IRQ_MASK_ACTIVE_LINK_i),    hscb_cfg[1].src_hscb_base_addr + HSCB_IRQ_MASK);
-    iowrite32((1 << HSCB_SETTINGS_EN_HSCB_i),        hscb_cfg[0].src_hscb_base_addr + HSCB_SETTINGS);
-    iowrite32((1 << HSCB_SETTINGS_EN_HSCB_i),        hscb_cfg[1].src_hscb_base_addr + HSCB_SETTINGS);
+    iowrite32((1 << HSCB_IRQ_MASK_ACTIVE_LINK_i),    base_addr + HSCB_IRQ_MASK);
+    iowrite32((1 << HSCB_IRQ_MASK_ACTIVE_LINK_i),    supplementary_base_addr + HSCB_IRQ_MASK);
+    iowrite32((1 << HSCB_SETTINGS_EN_HSCB_i),        base_addr + HSCB_SETTINGS);
+    iowrite32((1 << HSCB_SETTINGS_EN_HSCB_i),        supplementary_base_addr + HSCB_SETTINGS);
     // Wait connecting
     rumboot_putstring( "Wait HSCB0 and HSCB1 enable\n" );
     while (!(hscb0_link_established & hscb1_link_established)){
@@ -526,10 +685,10 @@ static uint32_t check_hscb_short_func(){
     rumboot_putstring( "HSCB link has enabled\n" );
     // Enable DMA for HSCB0 and HSCB1
     rumboot_putstring( "Start work!\n" );
-    hscb_run_wdma(hscb_cfg[0].src_hscb_base_addr);
-    hscb_run_wdma(hscb_cfg[1].src_hscb_base_addr);
-    hscb_run_rdma(hscb_cfg[0].src_hscb_base_addr);
-    hscb_run_rdma(hscb_cfg[1].src_hscb_base_addr);
+    hscb_run_wdma(base_addr);
+    hscb_run_wdma(supplementary_base_addr);
+    hscb_run_rdma(base_addr);
+    hscb_run_rdma(supplementary_base_addr);
     msync();
     rumboot_putstring( "Wait HSCB0 and HSCB1 finish work\n" );
     while (!(hscb0_dma_status & hscb1_dma_status)){
@@ -546,13 +705,13 @@ static uint32_t check_hscb_short_func(){
 
     rumboot_putstring( "Finish work!\n" );
     rumboot_putstring( "HSCB1 to HSCB0 descriptor #1\n" );
-    hscb_descr = hscb_get_descr_from_mem(hscb_cfg[0].rx_descr_addr, HSCB_ROTATE_BYTES_ENABLE);
+    hscb_descr = hscb_get_descr_from_mem((uint32_t)(&descriptors[3][0]), HSCB_ROTATE_BYTES_ENABLE);
     rumboot_putstring( "Length:" );
     rumboot_puthex (hscb_descr.length);
     for (i = 0; i < hscb_descr.length; ++i) {
-        expected_data = ioread8(((uint32_t)(hscb_cfg[1].src_addr)) + i);
-        obtained_data = ioread8(((uint32_t)(hscb_cfg[0].dst_addr)) + i);
-        rumboot_puthex(((uint32_t)(hscb_cfg[0].dst_addr)) + i);
+        expected_data = ioread8(descriptors[2][0].start_address + i);
+        obtained_data = ioread8(descriptors[3][0].start_address + i);
+        rumboot_puthex(descriptors[3][0].start_address + i);
         rumboot_putstring("Expected data: ");
         rumboot_puthex(expected_data);
         rumboot_putstring("Obtained data: ");
@@ -561,13 +720,13 @@ static uint32_t check_hscb_short_func(){
     }
 
     rumboot_putstring( "HSCB0 to HSCB1 descriptor #1\n" );
-    hscb_descr = hscb_get_descr_from_mem(hscb_cfg[1].rx_descr_addr, HSCB_ROTATE_BYTES_ENABLE);
+    hscb_descr = hscb_get_descr_from_mem((uint32_t)(&descriptors[1][0]), HSCB_ROTATE_BYTES_ENABLE);
     rumboot_putstring( "Length:" );
     rumboot_puthex (hscb_descr.length);
     for (i = 0; i < hscb_descr.length; ++i) {
-        expected_data = ioread8(((uint32_t)(hscb_cfg[0].src_addr)) + i);
-        obtained_data = ioread8(((uint32_t)(hscb_cfg[1].dst_addr)) + i);
-        rumboot_puthex(((uint32_t)(hscb_cfg[1].dst_addr)) + i);
+        expected_data = ioread8(descriptors[0][0].start_address + i);
+        obtained_data = ioread8(descriptors[1][0].start_address + i);
+        rumboot_puthex(descriptors[1][0].start_address  + i);
         rumboot_putstring("Expected data: ");
         rumboot_puthex(expected_data);
         rumboot_putstring("Obtained data: ");
@@ -578,69 +737,79 @@ static uint32_t check_hscb_short_func(){
     return 0;
 }
 #else
-void init_hscb_cfg( hscb_packed_descr_struct_t** hscb_descr,
-                    uint32_t* descr_table_length,
-                    uint32_t count_descr_tables,
-//                    uint8** data_areas,
-                    bool change_endian){
-    int i,j;
-    for (i = 0; i < count_descr_tables; ++i){
-        for (j = 0; j < descr_table_length[i]; ++j){
-            hscb_descr[i][j].start_address = (change_endian) ? HSCB_CHANGE_ENDIAN_WORD(data_areas[(i << 2)    ])
-                                                                                     : data_areas[(i << 2)    ];
-        }
-        hscb0_descr_tx[i].start_address = (change_endian) ? HSCB_CHANGE_ENDIAN_WORD(data_areas[(i << 2)    ])
-                                                                                  : data_areas[(i << 2)    ];
-        hscb0_descr_tx[i].length_attr = HSCB_CREATE_DESCRIPTOR_LEN_ATTR_ENDIAN_EXE(
-                                             data_areas_sizes[(i << 1)],
-                                             HSCB_ACT_TRAN,
-                                             HSCB_ACT0_LAST,
-                                             HSCB_DESCR_ITRPT_ON,
-                                             HSCB_DESCR_VALID,
-                                             change_endian) ;
-        hscb1_descr_rx[i].start_address = (change_endian) ? HSCB_CHANGE_ENDIAN_WORD(data_areas[(i << 2) + 1])
-                                                                                  : data_areas[(i << 2) + 1];
-        hscb1_descr_rx[i].length_attr = HSCB_CREATE_DESCRIPTOR_LEN_ATTR_ENDIAN_EXE(
-                                             data_areas_sizes[(i << 1)],
-                                             HSCB_ACT_TRAN,
-                                             HSCB_ACT0_LAST,
-                                             HSCB_DESCR_ITRPT_ON,
-                                             HSCB_DESCR_VALID,
-                                             change_endian) ;
-        hscb1_descr_tx[i].start_address = (change_endian) ? HSCB_CHANGE_ENDIAN_WORD(data_areas[(i << 2) + 2])
-                                                                                  : data_areas[(i << 2) + 2];
-        hscb1_descr_tx[i].length_attr = HSCB_CREATE_DESCRIPTOR_LEN_ATTR_ENDIAN_EXE(
-                                             data_areas_sizes[(i << 1) + 1],
-                                             HSCB_ACT_TRAN,
-                                             HSCB_ACT0_LAST,
-                                             HSCB_DESCR_ITRPT_ON,
-                                             HSCB_DESCR_VALID,
-                                             change_endian) ;
-        hscb0_descr_rx[i].start_address = (change_endian) ? HSCB_CHANGE_ENDIAN_WORD(data_areas[(i << 2) + 3])
-                                                                                  : data_areas[(i << 2) + 3];
-        hscb0_descr_rx[i].length_attr = HSCB_CREATE_DESCRIPTOR_LEN_ATTR_ENDIAN_EXE(
-                                             data_areas_sizes[(i << 1) + 1],
-                                             HSCB_ACT_TRAN,
-                                             HSCB_ACT0_LAST,
-                                             HSCB_DESCR_ITRPT_ON,
-                                             HSCB_DESCR_VALID,
-                                             change_endian) ;
-    }
-}
 
-static uint32_t check_hscb_func(){
-    const DESCRIPTOR_TABLES_COUNT = 4;
+static uint32_t check_hscb_func(uint32_t base_addr, uint32_t supplementary_base_addr){
     hscb_packed_descr_struct_t* descriptors[DESCRIPTOR_TABLES_COUNT];
     uint32_t descriptor_counts[DESCRIPTOR_TABLES_COUNT] = {3, 3, 3, 3};
-    prepare_descriptor_areas(descriptors,DESCRIPTOR_TABLES_COUNT,descriptor_counts);
-    init_hscb_cfg()
-    return 0;
+    int cnt = 0;
+    int i;
+    hscb_descr_struct_t hscb_descr;
+
+    hscb0_status = 0;
+    hscb1_status = 0;
+    hscb0_dma_status = 0;
+    hscb1_dma_status = 0;
+
+    uint8_t expected_data = 0;
+    uint8_t obtained_data = 0;
+
+    prepare_descriptor_areas(descriptors,descriptor_counts,DESCRIPTOR_TABLES_COUNT);
+    init_hscb_cfg(descriptors, descriptor_counts, DESCRIPTOR_TABLES_COUNT, HSCB_ROTATE_BYTES_ENABLE);
+
+    set_descriptor_tables(base_addr, supplementary_base_addr, descriptors,descriptor_counts,DESCRIPTOR_TABLES_COUNT);
+    hscb_set_max_speed(base_addr);
+    hscb_set_max_speed(supplementary_base_addr);
+        // Enable HSCB0 and HSCB1
+    iowrite32((1 << HSCB_IRQ_MASK_ACTIVE_LINK_i),    base_addr + HSCB_IRQ_MASK);
+    iowrite32((1 << HSCB_IRQ_MASK_ACTIVE_LINK_i),    supplementary_base_addr + HSCB_IRQ_MASK);
+    iowrite32((1 << HSCB_SETTINGS_EN_HSCB_i),        base_addr + HSCB_SETTINGS);
+    iowrite32((1 << HSCB_SETTINGS_EN_HSCB_i),        supplementary_base_addr + HSCB_SETTINGS);
+    msync();
+    rumboot_putstring( "Wait HSCB0 and HSCB1 finish work\n" );
+    while (!(hscb0_dma_status & hscb1_dma_status)){
+        if (cnt == MAX_ATTEMPTS) {
+            rumboot_putstring( "Wait interrupt Time-out\n" );
+            return 1;
+        }
+        else
+            cnt += 1;
+    }
+    cnt = 0;
+    hscb0_dma_status = 0;
+    hscb1_dma_status = 0;
+
+    rumboot_putstring( "HSCB link has enabled\n" );
+    // Enable DMA for HSCB0 and HSCB1
+    rumboot_putstring( "Start work!\n" );
+    hscb_run_wdma(base_addr);
+    hscb_run_wdma(supplementary_base_addr);
+    hscb_run_rdma(base_addr);
+    hscb_run_rdma(supplementary_base_addr);
+    msync();
+    rumboot_putstring( "Wait HSCB0 and HSCB1 finish work\n" );
+    while (!(hscb0_dma_status & hscb1_dma_status)){
+        if (cnt == MAX_ATTEMPTS) {
+            rumboot_putstring( "Wait interrupt Time-out\n" );
+            return 1;
+        }
+        else
+            cnt += 1;
+    }
+    cnt = 0;
+    hscb0_dma_status = 0;
+    hscb1_dma_status = 0;
+    rumboot_putstring( "Finish work!\n" );
+
+   return 0;
 }
 #endif
 
 int main() {
     uint32_t result = 0x0;
     struct rumboot_irq_entry *tbl;
+    uint32_t count_of_memory_areas;
+    uint8_t** data_areas = NULL;
+    uint32_t* data_area_sizes = NULL;
 
     rumboot_printf( "Check HSCB (0x%x) \n", HSCB_UNDER_TEST_BASE );
 
@@ -652,14 +821,15 @@ int main() {
     hscb_sw_rst(HSCB_SUPPLEMENTARY_BASE);
     hscb_adma_sw_rst(HSCB_SUPPLEMENTARY_BASE);
 #endif
-    emi_init(DCR_EM2_EMI_BASE);
-    tbl = create_irq_handlers(hscb_cfg);
+//    emi_init(DCR_EM2_EMI_BASE);
+    tbl = create_irq_handlers();
 
-    prepare_memory_areas(data_areas, data_areas_sizes);
+    count_of_memory_areas = prepare_memory_areas(&data_areas, &data_area_sizes);
+    set_test_data_multiple(data_areas, data_area_sizes, count_of_memory_areas);
 #ifdef HSCB_SHORT_TEST
-    result += check_hscb_short_func();
+    result += check_hscb_short_func(HSCB_UNDER_TEST_BASE, HSCB_SUPPLEMENTARY_BASE, data_areas, data_area_sizes, count_of_memory_areas);
 #else
-    result += check_hscb_func();
+    result += check_hscb_func(HSCB_UNDER_TEST_BASE, HSCB_SUPPLEMENTARY_BASE);
 #endif
     delete_irq_handlers(tbl);
 
