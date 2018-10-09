@@ -1256,6 +1256,11 @@ endif()
       PREFIX uart1
     )
 
+    add_rumboot_target(
+        CONFIGURATION IRAM
+        CFLAGS -DENDIAN_HARD_CHECK
+        FILES test_oi10_endianness.c
+    )
 endmacro()
 
 
