@@ -20,7 +20,10 @@ int main()
 	#endif
 	rumboot_printf("Hello, I'm bootsource unit test for %d\n", SOURCE);
 	rumboot_printf("I'm expecting boot to complete with error code %d\n", EXPECTED);
-	int ret = (EXPECTED == bootsource_try_by_id(SOURCE, pdata, hdr, SIZE)) ? 0 : 1;
-	rumboot_printf("Got code %d\n", ret);
-	return ret;
+    int ret = bootsource_try_by_id(SOURCE, pdata, hdr, SIZE);
+	rumboot_printf("bootsource_try_by_id returned %d, expecting %d\n", ret, EXPECTED);
+	if (ret == EXPECTED) {
+		return 0;
+	}
+	return 1;
 }
