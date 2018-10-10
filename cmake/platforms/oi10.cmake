@@ -3,6 +3,7 @@ set(RUMBOOT_PLATFORM_DEFAULT_SNAPSHOT default)
 
 file(GLOB PLATFORM_SOURCES
     ${CMAKE_SOURCE_DIR}/src/lib/eventsystem/eventchannel-memory.c
+    ${CMAKE_SOURCE_DIR}/src/lib/eventsystem/io-eventchannel.c
     ${CMAKE_SOURCE_DIR}/src/lib/drivers/uart_pl011.c
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/*.c
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/lib/drivers/irq-mpic128.c
