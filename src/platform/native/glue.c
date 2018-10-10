@@ -17,6 +17,13 @@
 #include <rumboot/testsuite.h>
 #include <sys/types.h>
 #include <sys/shm.h>
+#include <poll.h>
+#include <stdio.h>
+#include <unistd.h>
+
+
+
+
 
 
 int g_argc = 0;
@@ -235,9 +242,30 @@ void rumboot_platform_putchar(uint8_t c)
         putc(c, stdout);
 }
 
+int ngetc()
+{
+    char c;
+    struct pollfd pollfds;
+    pollfds.fd = STDIN_FILENO;
+    pollfds.events = POLLIN;
+
+    poll(&pollfds, 1, 0);
+
+    if(pollfds.revents & POLLIN)
+    {
+            //Bonus points to the persons that can tell me if
+            //read() will change the value of '*c' if an error
+            //occurs during the read
+        read(STDIN_FILENO, &c, 1);
+        return (int) c;
+    }
+
+    return -1;
+}
+
 int rumboot_platform_getchar(uint32_t timeout_us)
 {
-        return (uint8_t)getc(stdin);
+        return(ngetc());
 }
 
 
