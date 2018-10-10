@@ -19,6 +19,7 @@
 #include <rumboot/bootsrc/physmap.h>
 #include <rumboot/bootsrc/sdio.h>
 #include <rumboot/bootsrc/boilerplate.h>
+#include <regs/regs_gpio_pl061.h>
 
 #define BOOTM_SLOWUART     (1 << 0)
 #define BOOTM_HOST         (1 << 1)
@@ -79,7 +80,7 @@ void rumboot_platform_selftest(struct rumboot_config *conf)
 }
 
 
-#include <regs/regs_gpio_pl061.h>
+
 
 static bool spi0_gcs_enable(const struct rumboot_bootsource *src, void *pdata)
 {
@@ -227,8 +228,7 @@ void rumboot_platform_enter_host_mode()
         dump_greth_parameters(1, GRETH_1_BASE);
 
         /* TODO: Set BOOT PIN */
-        iowrite32(BOOTM_HOST, GPIO_0_BASE + GPIO_DATA + BOOTM_HOST << 2);
-        return true;
+        iowrite32(BOOTM_HOST, GPIO_0_BASE + GPIO_DATA + (BOOTM_HOST << 2));
 }
 
 const struct rumboot_bootsource *rumboot_platform_get_bootsources()
