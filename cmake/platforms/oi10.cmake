@@ -36,7 +36,7 @@ rumboot_add_configuration(
     PREFIX rom
     FEATURES ROMGEN
     FILES ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/startup.S
-    TIMEOUT_CTEST 7200
+    TIMEOUT_CTEST 14400
 )
 
 rumboot_add_configuration(
