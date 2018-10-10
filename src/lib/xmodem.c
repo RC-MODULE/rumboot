@@ -1,156 +1,172 @@
+/*
+ * Adapted from avr-liberty project
+ * (c) Pascal Stang - Copyright (C) 2006
+ * This code is distributed under the GNU Public License
+ * which can be found at http://www.gnu.org/licenses/gpl.txt
+ */
+
 #include <string.h>
-#include <stdio.h>
+#include <rumboot/printf.h>
 #include <rumboot/xmodem.h>
 #include <rumboot/platform.h>
-#include <rumboot/timer.h>
-#include <stdint.h>
-
-#define SOH  0x01
-#define STX  0x02
-#define EOT  0x04
-#define ACK  0x06
-#define NAK  0x15
-#define CAN  0x18
-#define CTRLZ 0x1A
-
-#define DLY_1S 1000000UL
-#define MAXRETRANS 25
 
 
-unsigned short crc16(const unsigned char *buf, int sz)
+#define XMODEM_BUFFER_SIZE		1024
+
+uint16_t crc_xmodem_update(uint16_t crc, uint8_t data)
 {
-        unsigned short crc = 0;
+	int i;
 
-        while (--sz >= 0) {
-                int i;
-                crc ^= (unsigned short)*buf++ << 8;
-                for (i = 0; i < 8; i++)
-                        if (crc & 0x8000) {
-                                crc = crc << 1 ^ 0x1021;
-                        } else {
-                                crc <<= 1;
-                        }
-        }
-        return crc;
+	crc = crc ^ ((uint16_t)data << 8);
+	for (i=0; i<8; i++)
+	{
+		if(crc & 0x8000)
+			crc = (crc << 1) ^ 0x1021;
+		else
+			crc <<= 1;
+	}
+
+	return crc;
 }
 
-
-static int check(int crc, const unsigned char *buf, int sz)
+int xmodem_chksum(int crcflag, const unsigned char *buffer, int size)
 {
-        if (crc) {
-                unsigned short crc = crc16(buf, sz);
-                unsigned short tcrc = (buf[sz] << 8) + buf[sz + 1];
-                if (crc == tcrc) {
-                        return 1;
-                }
-        } else {
-                int i;
-                unsigned char cks = 0;
-                for (i = 0; i < sz; ++i)
-                        cks += buf[i];
-                if (cks == buf[sz]) {
-                        return 1;
-                }
-        }
+	if(crcflag)
+	{
+		unsigned short crc=0;
+		unsigned short pktcrc = (buffer[size]<<8)+buffer[size+1];
+		while(size--)
+			crc = crc_xmodem_update(crc, *buffer++);
+		if(crc == pktcrc)
+			return 1;
+	}
+	else
+	{
+		int i;
+		unsigned char cksum = 0;
+		for(i=0; i<size; ++i)
+		{
+			cksum += buffer[i];
+		}
+		if(cksum == buffer[size])
+			return 1;
+	}
 
-        return 0;
+	return 0;
 }
 
-static void flushinput(void)
+void xmodem_flush_input(void)
 {
-        while (rumboot_platform_getchar(0) >= 0);
+	while(rumboot_platform_getchar(XMODEM_TIMEOUT_DELAY) >= 0);
 }
 
-int xmodem_get(unsigned char *dest, int destsz)
+size_t xmodem_get( char *to, size_t maxszs)
 {
-        unsigned char xbuff[1030]; /* 1024 for XModem 1k + 3 head chars + 2 crc + nul */
-        unsigned char *p;
-        int bufsz, crc = 0;
-        unsigned char trychar = 'C';
-        unsigned char packetno = 1;
-        int i, c, len = 0;
-        int retry, retrans = MAXRETRANS;
+	unsigned char xmbuf[XMODEM_BUFFER_SIZE+6];
+	unsigned char seqnum=1;
+	unsigned short pktsize=128;
+	unsigned char response='C';
+	char retry=XMODEM_RETRY_LIMIT;
+	unsigned char crcflag=0;
+	unsigned long totalbytes=0;
+	int i,c;
+	size_t pos = 0;
 
-        for (;; ) {
-                for (retry = 0; retry < 160; ++retry) {
-                        if (trychar) {
-                                rumboot_platform_putchar(trychar);
-                        }
-                        if ((c = rumboot_platform_getchar(DLY_1S) >= 0)) {
-                                switch (c) {
-                                case SOH:
-                                        bufsz = 128;
-                                        goto start_recv;
-                                case STX:
-                                        bufsz = 1024;
-                                        goto start_recv;
-                                case EOT:
-                                        flushinput();
-                                        rumboot_platform_putchar(ACK);
-                                        return len; /* normal end */
-                                case CAN:
-                                        if ((c = rumboot_platform_getchar(DLY_1S)) == CAN) {
-                                                flushinput();
-                                                rumboot_platform_putchar(ACK);
-                                                return -1; /* canceled by remote */
-                                        }
-                                        break;
-                                default:
-                                        break;
-                                }
-                        }
-                }
-                if (trychar == 'C') {
-                        trychar = NAK;
-                        continue;
-                }
-                flushinput();
-                rumboot_platform_putchar(CAN);
-                rumboot_platform_putchar(CAN);
-                rumboot_platform_putchar(CAN);
-                return -2; /* sync error */
+	while(retry > 0)
+	{
+		rumboot_platform_putchar(response);
+		if( (c = rumboot_platform_getchar(XMODEM_TIMEOUT_DELAY)) >= 0)
+		{
+			switch(c)
+			{
+			case SOH:
+				pktsize = 128;
+				break;
+			#if(XMODEM_BUFFER_SIZE>=1024)
+			case STX:
+				pktsize = 1024;
+				break;
+			#endif
+			case EOT:
+				xmodem_flush_input();
+				rumboot_platform_putchar(ACK);
+				return totalbytes;
+			case CAN:
+				if((c = rumboot_platform_getchar(XMODEM_TIMEOUT_DELAY)) == CAN)
+				{
+					xmodem_flush_input();
+					rumboot_platform_putchar(ACK);
+					return XMODEM_ERROR_REMOTECANCEL;
+				}
+			default:
+				break;
+			}
+		}
+		else
+		{
+			retry--;
+			continue;
+		}
 
-start_recv:
-                if (trychar == 'C') {
-                        crc = 1;
-                }
-                trychar = 0;
-                p = xbuff;
-                *p++ = c;
-                for (i = 0; i < (bufsz + (crc ? 1 : 0) + 3); ++i) {
-                        if ((c = rumboot_platform_getchar(DLY_1S)) < 0) {
-                                goto reject;
-                        }
-                        *p++ = c;
-                }
+		if(response == 'C') crcflag = 1;
+		xmbuf[0] = c;
+		for(i=0; i<(pktsize+crcflag+4-1); i++)
+		{
+			if((c = rumboot_platform_getchar(XMODEM_TIMEOUT_DELAY)) >= 0)
+			{
+				xmbuf[1+i] = c;
+			}
+			else
+			{
+				retry--;
+				xmodem_flush_input();
+				response = NAK;
+				break;
+			}
+		}
+		if(i<(pktsize+crcflag+4-1))
+			continue;
 
-                if (xbuff[1] == (unsigned char)(~xbuff[2]) &&
-                    (xbuff[1] == packetno || xbuff[1] == (unsigned char)packetno - 1) &&
-                    check(crc, &xbuff[3], bufsz)) {
-                        if (xbuff[1] == packetno) {
-                                unsigned int count = destsz - len;
-                                if (count > bufsz) {
-                                        count = bufsz;
-                                }
-                                if (count > 0) {
-                                        memcpy (&dest[len], &xbuff[3], count);
-                                        len += count;
-                                }
-                                ++packetno;
-                                retrans = MAXRETRANS + 1;
-                        }
-                        if (--retrans <= 0) {
-                                flushinput();
-                                rumboot_platform_putchar(CAN);
-                                rumboot_platform_putchar(CAN);
-                                rumboot_platform_putchar(CAN);
-                                return -3; /* too many retry error */
-                        }
-                        rumboot_platform_putchar(ACK);
-                        continue;
-                }
-reject:
-                flushinput();
-                rumboot_platform_putchar(NAK);
-        }
+		if(	(xmbuf[1] == (unsigned char)(~xmbuf[2])) &&		// sequence number was transmitted w/o error
+			xmodem_chksum(crcflag, &xmbuf[3], pktsize) )	// packet is not corrupt
+		{
+			if(xmbuf[1] == seqnum)
+			{
+				// write/deliver data
+				memcpy(&to[pos], &xmbuf[3], pktsize);
+				pos += pktsize;
+				totalbytes += pktsize;
+				seqnum++;
+				retry = XMODEM_RETRY_LIMIT;
+				response = ACK;
+				continue;
+			}
+			else if(xmbuf[1] == (unsigned char)(seqnum-1))
+			{
+				response = ACK;
+				continue;
+			}
+			else
+			{
+				xmodem_flush_input();
+				rumboot_platform_putchar(CAN);
+				rumboot_platform_putchar(CAN);
+				rumboot_platform_putchar(CAN);
+				return XMODEM_ERROR_OUTOFSYNC;
+			}
+		}
+		else
+		{
+			retry--;
+			xmodem_flush_input();
+			response = NAK;
+			continue;
+		}
+	}
+
+	xmodem_flush_input();
+	rumboot_platform_putchar(CAN);
+	rumboot_platform_putchar(CAN);
+	rumboot_platform_putchar(CAN);
+	return XMODEM_ERROR_RETRYEXCEED;
 }

@@ -6,7 +6,8 @@
 #include <rumboot/macros.h>
 #include <rumboot/boot.h>
 #include <rumboot/platform.h>
-
+#include <rumboot/xmodem.h>
+#include <rumboot/timer.h>
 
 static inline void dump_parameter(const char *fmt, int param)
 {
@@ -33,10 +34,32 @@ static void hostmode_loop(void *pdata)
 {
         size_t maxsize;
         struct rumboot_bootheader *hdr = rumboot_platform_get_spl_area(&maxsize);
-        rumboot_printf("boot: Entering host mode loop\n");
+        dbg_boot(NULL, "Entering host mode loop");
+        dbg_boot(NULL, "Hit 'X' for xmodem upload");
         void *data;
         int ret;
         while (1) {
+                int c = rumboot_platform_getchar(10000);
+                if (c == 'X') {
+                        int ret = xmodem_get((void *) hdr, maxsize);
+                        mdelay(250);
+                        rumboot_printf("\n\n\n");
+                        if (ret > 0) {
+                                dbg_boot(NULL, "Received a payload of %d bytes, executing in 1 second", ret);
+                                mdelay(100);
+                        } else {
+                                dbg_boot(NULL, "xmodem upload failed with code %d", ret);
+                        }
+                }
+
+                if (c == 'e') {
+                        dbg_boot(NULL, "M'aiq the Liar: There are absolutely no easter eggs in bootrom code.");
+                }
+
+                if (c == 'E') {
+                        dbg_boot(NULL, "M'aiq the Liar: I used to write shitty code for production like you, then I took an arrow to the knee.");
+                }
+
                 rumboot_platform_request_file("HOSTMOCK", (uint32_t) hdr);
                 if (hdr->device) {
                         hdr->device = NULL;

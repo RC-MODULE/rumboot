@@ -24,6 +24,8 @@
     #define SPI_CTRL0_SIZE      SPI_CTRL0_PLB6_SIZE
     #define UART0_BASE             0x3C034000
     #define SPI_CTRL1_BASE      0x3C05A000
+    #define LSIF1_MGPIO0__       0x3C040000
+
     #define LSIF1_MGPIO7__       0x3C067000
     #define LSIF1_MGPIO4__      0x3C06B000
 #else

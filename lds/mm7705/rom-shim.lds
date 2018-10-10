@@ -12,6 +12,7 @@ SECTIONS
     *(.text)
     *(.text.*)
     *(.rodata)
+    *(.rodata.*)
   } > ROM_SHIM
 
  .rw : {
@@ -24,7 +25,6 @@ SECTIONS
   . = ALIGN(8);
 
   rumboot_platform_heap_start = .;
-  . = . + 0x8000; /* 60k heap */
   rumboot_platform_heap_end = .;
 
   /* This is where stacks start */
@@ -32,6 +32,9 @@ SECTIONS
   . = . + 0x7fa0; /* 60k stack */
 
   /* This is where stacks end */
+  rumboot_platform_runtime_info = .;
+  *(.rumboot_platform_runtime_info);
+
   . = ALIGN(8);
   rumboot_platform_stack_area_end = .;
  } > IM0
@@ -43,6 +46,7 @@ SECTIONS
      libgcc.a ( * )
      /* Make sure data & bss go to hell */
      *(.data)
+     *(.data.*)
      *(.bss)
      *(.bss.*)
      *(COMMON)
