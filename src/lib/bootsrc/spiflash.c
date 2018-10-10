@@ -107,7 +107,6 @@ static void spiflash_deinit(const struct rumboot_bootsource *src, void *pdata)
 static size_t spiflash_read(const struct rumboot_bootsource* src, void* pdata, void* to, size_t offset, size_t length)
 {
 	spi_cs(src, pdata, 0);
-	rumboot_printf("boot: %s: Reading %d bytes from offset 0x%x\n", src->name, length, offset);
 	spiflash_read_flash(src->base, offset, to, length);
 	spi_cs(src, pdata, 1);
 	return length;
