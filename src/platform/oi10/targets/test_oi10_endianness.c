@@ -149,7 +149,7 @@ void check_IM0_PROG ()
 
     uint32_t im0_array_mirror = (uint32_t) im0_array - IM0_BASE + IM0_BASE_MIRROR;
     check_mem_le_prog (im0_array_mirror);
-	}
+}
 
 void check_IM1_PROG ()
 {
@@ -301,6 +301,38 @@ void check_mem_load_hard (uint32_t addr_mem, uint32_t code_event)
     test_event (code_event);
 }
 
+void check_IM0_HARD ()
+{
+    iowrite8 (0x01 , im0_array[0]);
+    iowrite8 (0x23 , im0_array[1]);
+    iowrite8 (0x45 , im0_array[2]);
+    iowrite8 (0x67 , im0_array[3]);
+
+    //IM0 BigeEndian (default)
+    rumboot_printf("Check IM0\n");
+    rumboot_printf("Check BigEndian\n");
+    check_mem_load_hard ((uint32_t)im0_array, EVENT_CHK_LOAD_IM0_BE);
+
+    //IM0 LittleEndian
+    rumboot_printf("Check LittleEndian\n");
+
+    static const tlb_entry im0_tlb_entry_little_0 = {TLB_ENTRY_IM0_LITTLE_MIRROR_0};
+       write_tlb_entries(&im0_tlb_entry_little_0,1);
+
+    static const tlb_entry im0_tlb_entry_little_1 = {TLB_ENTRY_IM0_LITTLE_MIRROR_1};
+       write_tlb_entries(&im0_tlb_entry_little_1,1);
+
+    uint32_t im0_array_mirror = (uint32_t) im0_array - IM0_BASE + IM0_BASE_MIRROR;
+    check_mem_load_hard ((uint32_t)im0_array_mirror, EVENT_CHK_LOAD_IM0_LE);
+
+    //return big
+    static const tlb_entry im0_tlb_entry_big_0 = {TLB_ENTRY_IM0_BIG_MIRROR_0};
+       write_tlb_entries(&im0_tlb_entry_big_0,1);
+
+    static const tlb_entry im0_tlb_entry_big_1 = {TLB_ENTRY_IM0_BIG_MIRROR_1};
+       write_tlb_entries(&im0_tlb_entry_big_1,1);
+}
+
 void check_IM1_HARD ()
 {
     //init data in IM1
@@ -313,13 +345,11 @@ void check_IM1_HARD ()
     rumboot_printf("BigEndian\n");
     static const tlb_entry im1_tlb_entry_big = {TLB_ENTRY_IM1_BIG};
     write_tlb_entries(&im1_tlb_entry_big ,1);
-    isync(); msync();
     check_mem_load_hard (IM1_BASE, EVENT_CHK_LOAD_IM1_BE);
 
     rumboot_printf("LittleEndian\n");
     static const tlb_entry im1_tlb_entry_little = {TLB_ENTRY_IM1_LITTLE};
     write_tlb_entries(&im1_tlb_entry_little,1);
-    isync(); msync();
     check_mem_load_hard (IM1_BASE, EVENT_CHK_LOAD_IM1_LE);
 
     //return big
@@ -505,7 +535,7 @@ int main ()
  * store:
  *  tolko SSRAM, NOR
  */
-
+   check_IM0_HARD ();
    check_IM1_HARD ();
    check_SRAM0_HARD ();
    check_NOR_HARD ();
