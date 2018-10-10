@@ -92,42 +92,42 @@ static inline void iowrite8(uint8_t const value, uint32_t const base_addr);
 
 #ifndef RUMBOOT_ARCH_HAS_IO
 
-static inline uint64_t ioread64(uint32_t const base_addr)
+static __attribute__((no_instrument_function)) inline uint64_t ioread64(uint32_t const base_addr)
 {
     return *((volatile uint64_t*)(base_addr));
 }
 
-static inline void iowrite64(uint64_t const value, uint32_t const base_addr)
+static __attribute__((no_instrument_function)) inline void iowrite64(uint64_t const value, uint32_t const base_addr)
 {
     *((volatile uint64_t*)(base_addr)) = value;
 }
 
-static inline uint32_t ioread32(uint32_t const base_addr)
+static __attribute__((no_instrument_function)) inline uint32_t ioread32(uint32_t const base_addr)
 {
     return *((volatile uint32_t*)(base_addr));
 }
 
-static inline void iowrite32(uint32_t const value, uint32_t const base_addr)
+static __attribute__((no_instrument_function)) inline void iowrite32(uint32_t const value, uint32_t const base_addr)
 {
     *((volatile uint32_t*)(base_addr)) = value;
 }
 
-static inline uint16_t ioread16(uint32_t const base_addr)
+static __attribute__((no_instrument_function)) inline uint16_t ioread16(uint32_t const base_addr)
 {
     return *((volatile uint16_t*)(base_addr));
 }
 
-static inline void iowrite16(uint16_t const value, uint32_t const base_addr)
+static __attribute__((no_instrument_function)) inline void iowrite16(uint16_t const value, uint32_t const base_addr)
 {
     *((volatile uint16_t*)(base_addr)) = value;
 }
 
-static inline uint8_t ioread8(uint32_t const base_addr)
+static __attribute__((no_instrument_function)) inline uint8_t ioread8(uint32_t const base_addr)
 {
     return *((volatile uint8_t*)(base_addr));
 }
 
-static inline void iowrite8(uint8_t const value, uint32_t const base_addr)
+static __attribute__((no_instrument_function)) inline void iowrite8(uint8_t const value, uint32_t const base_addr)
 {
     *((volatile uint8_t*)(base_addr)) = value;
 }

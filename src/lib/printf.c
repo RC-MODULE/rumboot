@@ -47,7 +47,7 @@
 static const char *lower_digits = "0123456789abcdefghijklmnopqrstuvwxyz";
 static const char *upper_digits = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-static size_t strnlen(const char *s, size_t count)
+static  __attribute__((no_instrument_function)) size_t strnlen(const char *s, size_t count)
 {
 	const char *sc;
 
@@ -55,7 +55,7 @@ static size_t strnlen(const char *s, size_t count)
 	return sc - s;
 }
 
-static int rumboot_skip_atoi(const char **s)
+static  __attribute__((no_instrument_function)) int rumboot_skip_atoi(const char **s)
 {
 	int i = 0;
 
@@ -63,7 +63,7 @@ static int rumboot_skip_atoi(const char **s)
 	return i;
 }
 
-static void rumboot_number(long num, int base, int size, int precision, int type)
+static  __attribute__((no_instrument_function)) void rumboot_number(long num, int base, int size, int precision, int type)
 {
 	char c, sign, tmp[66];
 	const char *dig = lower_digits;
@@ -128,7 +128,7 @@ static void rumboot_number(long num, int base, int size, int precision, int type
 
 }
 
-void eaddr(unsigned char *addr, int size, int precision, int type)
+ __attribute__((no_instrument_function)) void eaddr(unsigned char *addr, int size, int precision, int type)
 {
 	char tmp[24];
 	const char *dig = lower_digits;
@@ -148,7 +148,7 @@ void eaddr(unsigned char *addr, int size, int precision, int type)
 
 }
 
-static void iaddr(unsigned char *addr, int size, int precision, int type)
+static  __attribute__((no_instrument_function)) void iaddr(unsigned char *addr, int size, int precision, int type)
 {
 	char tmp[24];
 	int i, n, len;
@@ -187,7 +187,7 @@ char *ecvtbuf(double arg, int ndigits, int *decpt, int *sign, char *buf);
 char *fcvtbuf(double arg, int ndigits, int *decpt, int *sign, char *buf);
 static void rumboot_bufcpy(char *d, char *s, int count);
 
-void rumboot_bufcpy(char *pd, char *ps, int count)
+ __attribute__((no_instrument_function)) void rumboot_bufcpy(char *pd, char *ps, int count)
 {
 	char *pe = ps + count;
 
@@ -195,7 +195,7 @@ void rumboot_bufcpy(char *pd, char *ps, int count)
 		*pd++ = *ps++;
 }
 
-static void parse_float(double value, char *buffer, char fmt, int precision)
+static  __attribute__((no_instrument_function)) void parse_float(double value, char *buffer, char fmt, int precision)
 {
 	int decpt, sign, exp, pos;
 	char *fdigits = NULL;
@@ -280,7 +280,7 @@ static void parse_float(double value, char *buffer, char fmt, int precision)
 	*buffer = '\0';
 }
 
-static void decimal_point(char *buffer)
+static  __attribute__((no_instrument_function)) void decimal_point(char *buffer)
 {
 	while (*buffer) {
 		if (*buffer == '.') return;
@@ -302,7 +302,7 @@ static void decimal_point(char *buffer)
 	}
 }
 
-static void cropzeros(char *buffer)
+static  __attribute__((no_instrument_function)) void cropzeros(char *buffer)
 {
 	char *stop;
 
@@ -317,7 +317,7 @@ static void cropzeros(char *buffer)
 	}
 }
 
-static char *flt(char *str, double num, int size, int precision, char fmt, int flags)
+static  __attribute__((no_instrument_function)) char *flt(char *str, double num, int size, int precision, char fmt, int flags)
 {
 	char tmp[80];
 	char c, sign;
@@ -368,7 +368,7 @@ static char *flt(char *str, double num, int size, int precision, char fmt, int f
 
 #endif
 
-int rumboot_vprintf(const char *fmt, va_list args)
+__attribute__((no_instrument_function)) int rumboot_vprintf(const char *fmt, va_list args)
 {
 	int len;
 	unsigned long num;
@@ -520,7 +520,7 @@ repeat:
 
 
 #if  !defined(RUMBOOT_PRINTF_ACCEL) && !defined(RUMBOOT_NEWLIB_PRINTF)
-void rumboot_printf(const char *fmt, ...)
+ __attribute__((no_instrument_function)) void rumboot_printf(const char *fmt, ...)
 {
 	va_list args;
 

@@ -7,7 +7,8 @@
 #include <rumboot/boot.h>
 #include <platform/devices.h>
 #include <rumboot/bootsrc/sdio.h>
-
+#include <devices/uart_pl011.h>
+#include <rumboot/printf.h>
 
 #define IBM_BIT_INDEX(size, index)    (((size) - 1) - ((index) % (size)))
 #define ITRPT_XSR_FP_e  50
@@ -60,9 +61,13 @@ uint32_t rumboot_platform_get_uptime()
 }
 
 
-void rumboot_platform_event_raise(enum rumboot_simulation_event event, uint32_t *data, uint32_t len)
+ __attribute__((no_instrument_function)) void rumboot_platform_event_raise(enum rumboot_simulation_event event, uint32_t *data, uint32_t len)
 {
+        if (event == EVENT_TRACE) {
+                rumboot_printf("TRACE: %d %x\n", data[1], data[0]);
+        }
 }
+
 
 #define PL011_UARTDR  0x0
 #define PL011_UARTFR  0x018
@@ -71,7 +76,7 @@ void rumboot_platform_event_raise(enum rumboot_simulation_event event, uint32_t 
 #define PL011_TXFE_i  7
 #define PL011_TXRIS_i 5
 
-static int tx_fifo_ready(uint32_t base_addr)
+static int  __attribute__((no_instrument_function)) tx_fifo_ready(uint32_t base_addr)
 {
         if (ioread32(base_addr + PL011_UARTFR) & (1 << PL011_TXFE_i)) {
                 return 0;
@@ -90,20 +95,28 @@ static int tx_fifo_ready(uint32_t base_addr)
         return -1;
 }
 
-void rumboot_platform_putchar(uint8_t c)
+
+void  __attribute__((no_instrument_function)) rumboot_platform_putchar(uint8_t c)
 {
         if (c == '\n') {
                 rumboot_platform_putchar('\r');
         }
 
-        if (tx_fifo_ready(UART0_BASE) == 0) {
-                iowrite32((char)c, UART0_BASE + PL011_UARTDR);
-        }
+        while (tx_fifo_ready(UART0_BASE));;
+        iowrite32(c, UART0_BASE + PL011_UARTDR);
 }
+
 
 int rumboot_platform_getchar(uint32_t timeout_us)
 {
-        return (uint8_t)getc(stdin);
+        uint32_t start = rumboot_platform_get_uptime();
+
+        while (rumboot_platform_get_uptime() - start < timeout_us) {
+                if (!uart_check_rfifo_empty(UART0_BASE)) {
+                        return ioread32(UART0_BASE + PL011_UARTDR) & 0xFF;
+                }
+        }
+        return -1;
 }
 
 
@@ -124,8 +137,9 @@ uint32_t rumboot_arch_irq_enable()
 
 void rumboot_platform_setup()
 {
-        iowrite32((char)'X', UART0_BASE + PL011_UARTDR);
         enable_fpu();
+        uart_init(UART0_BASE, UART_word_length_8bit, 115200, UART_parity_no, 0, 0);
+       uart_rx_enable(UART0_BASE, 1);
 }
 
 static bool sdio_enable(const struct rumboot_bootsource *src, void *pdata)
@@ -133,11 +147,9 @@ static bool sdio_enable(const struct rumboot_bootsource *src, void *pdata)
         uint32_t afsel;
 
 #ifdef MM7705_USE_MPW
-        rumboot_putstring("Patching SDIO registers...");
         iowrite32(0xff, 0x3c067000 + 0x420);
-        rumboot_putstring("DONE\n");
 
-        rumboot_putstring("Patching GRETH/EDCL registers...");
+        iowrite32(0xff, 0x3C040000 + 0x420);
         iowrite32(0xff, 0x3C060000 + 0x420);
         iowrite32(0xff, 0x3C061000 + 0x420);
         iowrite32(0xff, 0x3C062000 + 0x420);
@@ -146,7 +158,6 @@ static bool sdio_enable(const struct rumboot_bootsource *src, void *pdata)
         iowrite32(0xff, 0x3C065000 + 0x420);
         iowrite32(0xff, 0x3C066000 + 0x420);
         iowrite32(0xff, 0x3C067000 + 0x420);
-        rumboot_putstring("DONE\n");
 #else
         iowrite32(0xff, LSIF1_MGPIO4_BASE + 0x420);
 
