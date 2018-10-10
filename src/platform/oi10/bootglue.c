@@ -67,6 +67,10 @@ void rumboot_platform_print_summary(struct rumboot_config *conf)
 
         rumboot_printf("Direct NOR boot: %s\n",
                        bootm & BOOTM_NOR_BOOT ? "disabled" : "enabled");
+
+        uint32_t v = ioread32(GPIO_0_BASE + GPIO_DIR);
+        iowrite32(v | BOOTM_HOST, GPIO_0_BASE + GPIO_DIR);
+
 }
 
 void rumboot_platform_selftest(struct rumboot_config *conf)
@@ -157,6 +161,12 @@ static const struct rumboot_bootsource arr[] = {
                 .offset = 8192,
         },
         {
+                .name = "NOR (CS: 5)",
+                .base = NOR_BASE,
+                .enable = emi_enable,
+                .plugin = &g_bootmodule_physmap,
+        },
+        {
                 .name = "SPI0 (CS: internal)",
                 .base = GSPI_0_BASE,
                 .freq_khz = 100000,
@@ -171,18 +181,54 @@ static const struct rumboot_bootsource arr[] = {
                 .disable = spi0_gcs_disable,
                 .chipselect = spi0_gcs,
         },
-        {
-                .name = "NOR (CS: 5)",
-                .base = NOR_BASE,
-                .enable = emi_enable,
-                .plugin = &g_bootmodule_physmap,
-        },
 };
 
 
+
+union u64 {
+        uint8_t bytes[8];
+        uint64_t dword;
+};
+
+union u32 {
+    uint8_t bytes[4];
+    uint32_t word;
+};
+
+#define EDCL_IP                             0x1C
+#define EDCL_MAC_MSB                        0x28
+#define EDCL_MAC_LSB                        0x2C
+
+static void dump_greth_parameters(int i, uintptr_t base)
+{
+        union u64 macaddr;
+        union u32 ip;
+        macaddr.dword = ioread64(base + EDCL_MAC_MSB);
+        ip.word = ioread32(base + EDCL_IP);
+        dbg_boot(NULL, "GRETH%d EDCL MAC: %x:%x:%x:%x:%x:%x IP: %d.%d.%d.%d",
+                i,
+                macaddr.bytes[2],
+                macaddr.bytes[3],
+                macaddr.bytes[4],
+                macaddr.bytes[5],
+                macaddr.bytes[6],
+                macaddr.bytes[7],
+                ip.bytes[0],
+                ip.bytes[1],
+                ip.bytes[2],
+                ip.bytes[3]
+        );
+
+}
+
 void rumboot_platform_enter_host_mode()
 {
-        /* TODO: Set GPIO pin */
+        dump_greth_parameters(0, GRETH_0_BASE);
+        dump_greth_parameters(1, GRETH_1_BASE);
+
+        /* TODO: Set BOOT PIN */
+        iowrite32(BOOTM_HOST, GPIO_0_BASE + GPIO_DATA + BOOTM_HOST << 2);
+        return true;
 }
 
 const struct rumboot_bootsource *rumboot_platform_get_bootsources()

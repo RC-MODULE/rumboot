@@ -133,6 +133,13 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
     rumboot_bootrom_unit_test(
         ID 1
+        TAG nor
+        MEMTAG NOR_IMAGE
+        TAGOFFSET 0
+    )
+
+    rumboot_bootrom_unit_test(
+        ID 2
         TAG spi0_cs0
         MEMTAG SPI0_CONF
         TAGOFFSET 0
@@ -140,18 +147,22 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     )
 
     rumboot_bootrom_unit_test(
-        ID 2
+        ID 3
         TAG spi0_cs1
         MEMTAG SPI0_CONF
         TAGOFFSET 1
     )
 
-    rumboot_bootrom_unit_test(
-        ID 3
-        TAG nor
-        MEMTAG NOR_IMAGE
-        TAGOFFSET 0
+    rumboot_bootrom_integration_test(ROM
+        NAME "host-mockup-fallthough"
+        IRUN_FLAGS
+        LOAD
+          SD0_BOOT_IMAGE spl-fail
+          SPI0_CONF spl-fail-bad-magic,spl-fail-bad-magic
+          NOR_IMAGE spl-fail-bad-magic
+          HOSTMOCK  spl-ok
     )
+
 
     rumboot_bootrom_integration_test(ROM
         NAME "host-mockup"
