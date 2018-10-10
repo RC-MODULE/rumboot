@@ -12,9 +12,9 @@
 #include <platform/devices/emi.h>
 #include <platform/interrupts.h>
 
-#define RUMBOOT_ASSERT_WARN_ONLY
+#define NOR_SELFCHECKING_DISABLE
 #include <platform/devices/nor_1636RR4.h>
-#undef RUMBOOT_ASSERT_WARN_ONLY
+#undef NOR_SELFCHECKING_DISABLE
 
 #include <platform/regs/regs_mclfir.h>
 #include <platform/regs/regs_emi.h>
@@ -257,7 +257,6 @@ int main(void)
     emi_init(DCR_EM2_EMI_BASE);
     emi_set_ecc(DCR_EM2_EMI_BASE, emi_bank_all, emi_ecc_on);
 
-
     rumboot_irq_cli();
     struct rumboot_irq_entry *tbl = rumboot_irq_create( NULL );
 
@@ -288,35 +287,52 @@ int main(void)
     dcr_write(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_ERR_MSK_AND1, 0x0100003F);
     dcr_write(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_LFIR_MSK_AND, 0x3FFFFFFF);
 
-
     rumboot_putstring("WRITE SRAM0\n");
-    test_event(EVENT_INJECT_SRAM0_0); //DATA_SE = 0xBABA0000
-    iowrite32(0xBABA0001, ADDR_SRAM0_SE);
-    isync();
 
-    test_event(EVENT_INJECT_SRAM0_7); //DATA_DE = 0xBABA0007
+    iowrite32(0xBABA0001, ADDR_SRAM0_SE);
     iowrite32(0xBABA0001, ADDR_SRAM0_DE);
-    isync();
+    msync();
+    dcr_write((DCR_EM2_EMI_BASE + EMI_WECR), 0x10);
+
+    iowrite32(0xBABA0000, ADDR_SRAM0_SE);
+    msync();
+
+    iowrite32(0xBABA0007, ADDR_SRAM0_DE);
+    msync();
+
+    dcr_write((DCR_EM2_EMI_BASE + EMI_WECR), 0x00);
 
 
     rumboot_putstring("WRITE SSRAM\n");
-    test_event(EVENT_INJECT_SSRAM_0); //DATA_SE = 0xBABA0000
-    iowrite32(0xBABA0001, ADDR_SSRAM_SE);
-    isync();
 
-    test_event(EVENT_INJECT_SSRAM_7); //DATA_SE = 0xBABA0007
+    iowrite32(0xBABA0001, ADDR_SSRAM_SE);
     iowrite32(0xBABA0001, ADDR_SSRAM_DE);
-    isync();
+    msync();
+    dcr_write((DCR_EM2_EMI_BASE + EMI_WECR), 0x10);
+
+    iowrite32(0xBABA0000, ADDR_SSRAM_SE);
+    msync();
+
+    iowrite32(0xBABA0007, ADDR_SSRAM_DE);
+    msync();
+
+    dcr_write((DCR_EM2_EMI_BASE + EMI_WECR), 0x00);
 
 
     rumboot_putstring("WRITE SDRAM\n");
-    test_event(EVENT_INJECT_SDRAM_0); //DATA_SE = 0xBABA0000
-    iowrite32(0xBABA0001, ADDR_SDRAM_SE);
-    isync();
 
-    test_event(EVENT_INJECT_SDRAM_7); //DATA_SE = 0xBABA0007
+    iowrite32(0xBABA0001, ADDR_SDRAM_SE);
     iowrite32(0xBABA0001, ADDR_SDRAM_DE);
-    isync();
+    msync();
+    dcr_write((DCR_EM2_EMI_BASE + EMI_WECR), 0x10);
+
+    iowrite32(0xBABA0000, ADDR_SDRAM_SE);
+    msync();
+
+    iowrite32(0xBABA0007, ADDR_SDRAM_DE);
+    msync();
+
+    dcr_write((DCR_EM2_EMI_BASE + EMI_WECR), 0x00);
 
 
     //Software error injection for NOR
@@ -326,10 +342,10 @@ int main(void)
     rumboot_putstring("WRITE NOR\n");
     rumboot_putstring("Next assertion is expected behaviour!");
     nor_write32(0xBABA0000, ADDR_NOR_SE);
-    isync();
+    msync();
 
     nor_write32(0xBABA0007, ADDR_NOR_DE);
-    isync();
+    msync();
 
     udelay(5);
 
