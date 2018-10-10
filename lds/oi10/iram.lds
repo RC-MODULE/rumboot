@@ -12,6 +12,10 @@ SECTIONS {
         *(.rodata.*)
         *(.data)
         *(.data.*)
+        *(.sdata)
+        *(.sdata.*)
+        *(.sdata2)
+        *(.sdata2.*)
 
         /* ROM sections copy */
         *(*.init.text)
@@ -20,6 +24,9 @@ SECTIONS {
         rumboot_platform_bss_start = .;
         *(.bss)
         *(.bss.*)
+        *(.sbss)
+        *(.sbss.*)
+        *(COMMON)
         rumboot_platform_bss_end = .;
 
         . = ALIGN(32);

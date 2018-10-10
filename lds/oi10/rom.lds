@@ -72,20 +72,24 @@ SECTIONS {
 
     /DISCARD/ : {
         *(.rela.*)
-        *(.got2)
         *(.got)
-        *(.got2.*)
         *(.got.*)
+        *(.got2)
+        *(.got2.*)
         libc.a ( * )
         libm.a ( * )
         libgcc.a ( * )
         /* Make sure data & bss go to hell */
         *(.data)
         *(.data.*)
-        *(.bss)
-        *(.bss.*)
         *(.sdata)
         *(.sdata.*)
+        *(.sdata2)
+        *(.sdata2.*)
+        *(.bss)
+        *(.bss.*)
+        *(.sbss)
+        *(.sbss.*)
         *(COMMON)
     }
 
