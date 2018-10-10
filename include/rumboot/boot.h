@@ -139,7 +139,8 @@ int32_t rumboot_bootimage_check_data(struct rumboot_bootheader *hdr);
 #define ETOOBIG        8
 #define EBADSOURCE     9
 #define EIO            10
-#define EMAXERROR      11
+#define ETOHOST        11
+#define EMAXERROR      12
 
  struct rumboot_config {
          bool	hostmode;

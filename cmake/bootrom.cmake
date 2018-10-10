@@ -107,7 +107,7 @@ macro(rumboot_bootrom_add_components spl_conf romconf)
      FILES common/bootrom/spl.c
      NAME jump_host
      CONFIGURATION ${spl_conf}
-     CFLAGS -DEXITCODE=-1
+     CFLAGS -DEXITCODE=-ETOHOST
      PACKIMAGE_FLAGS ${ARGN} -c
      FEATURES STUB PACKIMAGE
      VARIABLE SPL_JUMP_HOST
@@ -158,7 +158,7 @@ macro(rumboot_bootrom_unit_test)
           TESTGROUP bootrom
           PREPCMD ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/scripts/wordpattern.py -e big -f pattern.bin -s 16384
           IRUN_FLAGS ${BOOTSOURCE_IRUN_FLAGS}
-          CFLAGS -DSOURCE=${BOOTSOURCE_ID} -DEXPECTED=true
+          CFLAGS -DSOURCE=${BOOTSOURCE_ID}
           LOAD ${BOOTSOURCE_MEMTAG} ${_commas}pattern.bin
   )
 

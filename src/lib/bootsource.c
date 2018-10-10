@@ -148,7 +148,6 @@ int bootsource_try_source_once(const struct rumboot_bootsource *src, void *pdata
         ret = bootsource_load_img(src, pdata, dst, maxsize, offset);
         if (ret != 0) {
                 dbg_boot(src, "Error: %s (%d)", rumboot_strerror(-ret), -ret);
-                ret = -EBADSOURCE;
                 goto bailout;
         }
 
@@ -203,7 +202,7 @@ void bootsource_try_chain(void *pdata, struct rumboot_bootheader *hdr, size_t ma
                         continue;
                 }
 
-                if ((ret < 0) && (ret != -EBADSOURCE)) {
+                if (ret == -ETOHOST) {
                         break;
                 }
 

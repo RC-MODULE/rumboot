@@ -5,6 +5,7 @@
 #include <rumboot/platform.h>
 #include <rumboot/macros.h>
 #include <stdlib.h>
+#include <rumboot/boot.h>
 
 #ifdef RUMBOOT_NATIVE
 #include <unistd.h>
