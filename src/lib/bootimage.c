@@ -55,7 +55,7 @@ ssize_t rumboot_bootimage_check_header(struct rumboot_bootheader *hdr, void **da
 	/* Warn about possible incompatibilities */
 	if (hdr->chip_rev != RUMBOOT_PLATFORM_CHIPREV) {
 		dbg_boot(hdr->device, "WARNING: Chip Revision mismatch: Expecting %d, have %d",
-		RUMBOOT_PLATFORM_CHIPREV, hdr->chip_rev)
+		RUMBOOT_PLATFORM_CHIPREV, hdr->chip_rev);
 	}
 
 	int hdrcrclen = (int ) ((void *) &(hdr->header_crc32) - (void *)hdr);
@@ -82,7 +82,7 @@ int32_t rumboot_bootimage_check_data(struct rumboot_bootheader *hdr)
 	uint32_t checksum = crc32(0, hdr->data, hdr->datalen);
 	if (checksum != hdr->data_crc32) {
 		dbg_boot(hdr->device, "Data CRC32 mismatch: expected: 0x%x calculated: %x",
-			hdr->data_crc32, checksum 
+			hdr->data_crc32, checksum
 		);
 	}
 

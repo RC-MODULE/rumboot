@@ -66,7 +66,7 @@ int32_t rumboot_bootimage_check_data(struct rumboot_bootheader *hdr);
  * @}
  */
 
-#define dbg_boot(src, msg, ...) rumboot_printf("boot: %s: " msg "\n", src ? ((struct rumboot_bootsource *) src)->name : "host", ## __VA_ARGS__);
+#define dbg_boot(src, msg, ...) rumboot_printf("boot: %s: " msg "\n", src ? ((struct rumboot_bootsource *) src)->name : "host", ## __VA_ARGS__)
 
  #define DBG_ASSERT(statement, message) \
    { \
