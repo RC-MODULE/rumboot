@@ -180,6 +180,11 @@ static const struct rumboot_bootsource arr[] = {
 };
 
 
+void rumboot_platform_enter_host_mode()
+{
+        /* TODO: Set GPIO pin */
+}
+
 const struct rumboot_bootsource *rumboot_platform_get_bootsources()
 {
         return arr;
@@ -193,8 +198,7 @@ bool rumboot_platform_check_entry_points(struct rumboot_bootheader *hdr)
 
 int rumboot_platform_exec(struct rumboot_bootheader *hdr)
 {
-        /* No-op, this chip has only one core */
-        return 0;
+        return rumboot_bootimage_execute_ep((void *) hdr->entry_point[0]);
 }
 
 void *rumboot_platform_get_spl_area(size_t *size)

@@ -221,3 +221,8 @@ void rumboot_platform_selftest(struct rumboot_config *conf)
 void rumboot_platform_print_summary(struct rumboot_config *conf)
 {
 }
+
+void rumboot_platform_enter_host_mode()
+{
+
+}

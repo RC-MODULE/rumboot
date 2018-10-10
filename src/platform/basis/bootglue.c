@@ -229,6 +229,12 @@ static const struct rumboot_bootsource arr[] = {
 };
 
 
+/* TODO: Set pin and */
+void rumboot_platform_enter_host_mode()
+{
+
+}
+
 void *rumboot_platform_get_spl_area(size_t *size)
 {
         *size = (&rumboot_platform_spl_end - &rumboot_platform_spl_start);

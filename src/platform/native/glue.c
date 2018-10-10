@@ -442,3 +442,8 @@ uint32_t rumboot_virt_to_dma(volatile void *addr)
 void rumboot_platform_print_summary(struct rumboot_config *conf)
 {
 }
+
+void rumboot_platform_enter_host_mode()
+{
+
+}

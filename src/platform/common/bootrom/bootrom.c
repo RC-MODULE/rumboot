@@ -35,6 +35,7 @@ static void hostmode_loop(void *pdata)
         size_t maxsize;
         struct rumboot_bootheader *hdr = rumboot_platform_get_spl_area(&maxsize);
         dbg_boot(NULL, "Entering host mode loop");
+        rumboot_platform_enter_host_mode();
         dbg_boot(NULL, "Hit 'X' for xmodem upload");
         void *data;
         int ret;
@@ -54,10 +55,6 @@ static void hostmode_loop(void *pdata)
 
                 if (c == 'e') {
                         dbg_boot(NULL, "M'aiq the Liar: There are absolutely no easter eggs in bootrom code.");
-                }
-
-                if (c == 'E') {
-                        dbg_boot(NULL, "M'aiq the Liar: I used to write shitty code for production like you, then I took an arrow to the knee.");
                 }
 
                 rumboot_platform_request_file("HOSTMOCK", (uint32_t) hdr);
@@ -91,6 +88,8 @@ int main()
 {
         size_t maxsize;
         struct rumboot_bootheader *hdr = rumboot_platform_get_spl_area(&maxsize);
+        /* Initialize SPL execution counter */
+        rumboot_platform_runtime_info->persistent[0] = 0;
         rumboot_platform_perf("Config printout");
         #define PDATA_SIZE 128
         char pdata[PDATA_SIZE];
