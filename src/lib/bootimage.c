@@ -84,9 +84,10 @@ int32_t rumboot_bootimage_check_data(struct rumboot_bootheader *hdr)
 		dbg_boot(hdr->device, "Data CRC32 mismatch: expected: 0x%x calculated: %x",
 			hdr->data_crc32, checksum
 		);
+        return -EBADDATACRC;
 	}
 
-	return (checksum != hdr->data_crc32);
+	return 0;
 }
 
 int rumboot_bootimage_execute_ep(void *ep)
