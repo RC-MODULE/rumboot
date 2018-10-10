@@ -113,7 +113,9 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 #       FILES bare-rom/gtube-spr-check.S
 #   )
 
-    rumboot_bootrom_add_components(IRAM_SPL ROM)
+    rumboot_bootrom_add_components(IRAM_SPL ROM
+      -a 4096
+    )
     #  rumboot_bootrom_unit_test(
     #      ID 0
     #      TAG sdio0
