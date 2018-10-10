@@ -3,6 +3,7 @@ SET(RUMBOOT_ARCH ppc)
 file(GLOB PLATFORM_SOURCES
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/*.c
     ${CMAKE_SOURCE_DIR}/src/lib/drivers/irq-mpic128.c
+    ${CMAKE_SOURCE_DIR}/src/lib/drivers/uart_pl011.c
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/*.S
 )
 
@@ -30,7 +31,7 @@ rumboot_add_configuration(
   SPL
   LDS mm7705/spl.lds
   FILES ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c
-  CFLAGS -DMM7705_USE_MPW
+  CFLAGS -DMM7705_USE_MPW -DRUMBOOT_NOINIT
   LDFLAGS -Wl,--start-group -lgcc -lc -lm -Wl,--end-group
   PREFIX spl
   FEATURES PACKIMAGE
