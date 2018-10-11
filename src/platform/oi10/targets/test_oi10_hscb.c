@@ -341,10 +341,7 @@ static void handler( int irq, void *arg ) {
 //    rumboot_puthex (irq);
     if (irq == HSCB_UNDER_TEST_INT) {
         rumboot_putstring("HSCB_0_IRQ\n");
-        hscb0_status = hscb_get_status(HSCB_UNDER_TEST_BASE);
-        if(!hscb0_link_established)
-            hscb0_link_established = hscb0_status & (1 << HSCB_STATUS_ACTIVE_LINK_i);
-        rumboot_puthex (hscb0_status );
+        rumboot_puthex (hscb_get_status(HSCB_UNDER_TEST_BASE) );
     }
     if (irq == HSCB_UNDER_TEST_DMA_INT) {
         rumboot_putstring("HSCB_0_DMA_IRQ\n");
@@ -358,21 +355,17 @@ static void handler( int irq, void *arg ) {
     }
     if (irq == HSCB_SUPPLEMENTARY_INT) {
         rumboot_putstring("HSCB_1_IRQ\n");
-        hscb1_status = hscb_get_status(HSCB_SUPPLEMENTARY_BASE);
-        if(!hscb1_link_established)
-            hscb1_link_established = hscb1_status & (1 << HSCB_STATUS_ACTIVE_LINK_i);
-        rumboot_puthex (hscb1_status);
+        rumboot_puthex (hscb_get_status(HSCB_SUPPLEMENTARY_BASE));
     }
     if (irq == HSCB_SUPPLEMENTARY_DMA_INT) {
         rumboot_putstring("HSCB_1_DMA_IRQ\n");
         hscb1_dma_status = hscb_get_adma_ch_status(HSCB_SUPPLEMENTARY_BASE );
-        isync();
-        msync();
         rumboot_puthex(hscb1_dma_status);
         if (hscb1_dma_status & HSCB_ADMA_CH_STATUS_RDMA_IRQ_mask)
             hscb1_dma_status = hscb_get_rdma_status(HSCB_SUPPLEMENTARY_BASE);
         else if (hscb1_dma_status & HSCB_ADMA_CH_STATUS_WDMA_IRQ_mask)
             hscb1_dma_status = hscb_get_wdma_status(HSCB_SUPPLEMENTARY_BASE);
+        rumboot_puthex(hscb1_dma_status);
     }
 }
 
@@ -515,7 +508,7 @@ void set_test_data_multiple(    uint8_t** data_areas,
                                 INCREMENT_4,
                                 0,
                                 INCREMENT_5,
-                                0,};
+                                0};
 #endif
     TEST_ASSERT((count_of_memory_areas == (sizeof(increments) / sizeof(increments[0]))),
             "Size of increments array does not correspond the count of data areas");
@@ -654,7 +647,6 @@ static uint32_t check_hscb_short_func(
 
     rumboot_printf("Check functionality...\n");
 
-    rumboot_putstring( "------- HSCB Short ACCESS test -------\n" );
 
     rumboot_putstring("address of descriptor_counts");
     rumboot_puthex((uint32_t)descriptor_counts);
@@ -691,20 +683,27 @@ static uint32_t check_hscb_short_func(
     iowrite32((1 << HSCB_SETTINGS_EN_HSCB_i),        base_addr + HSCB_SETTINGS);
     iowrite32((1 << HSCB_SETTINGS_EN_HSCB_i),        supplementary_base_addr + HSCB_SETTINGS);
     // Wait connecting
-    rumboot_putstring( "Wait HSCB0 and HSCB1 enable\n" );
-    while (!(hscb0_link_established & hscb1_link_established)){
-        if (cnt == MAX_ATTEMPTS) {
-            rumboot_putstring( "Wait interrupt Time-out\n" );
-            return 1;
-        }
-        else
-            cnt += 1;
+    rumboot_putstring( "Waiting for HSCB0 and HSCB1 link establishing\n" );
+//    while (!(hscb0_link_established & hscb1_link_established)){
+//        if (cnt == MAX_ATTEMPTS) {
+//            rumboot_putstring( "Wait interrupt Time-out\n" );
+//            return 1;
+//        }
+//        else
+//            cnt += 1;
+//    }
+//    cnt = 0;
+//    hscb0_status = 0;
+//    hscb1_status = 0;
+    if(!(   hscb_wait_status(base_addr,                 (HSCB_STATE_RUN << HSCB_STATUS_STATE_i)) &
+            hscb_wait_status(supplementary_base_addr,   (HSCB_STATE_RUN << HSCB_STATUS_STATE_i)))){
+        rumboot_putstring( "Wait HSCB RUN state Time-out\n" );
+        rumboot_printf("HSCB(0x%x) status: 0x%x\n", base_addr, hscb_get_status(base_addr));
+        rumboot_printf("HSCB(0x%x) status: 0x%x\n", supplementary_base_addr, hscb_get_status(base_addr));
+        return 1;
     }
-    cnt = 0;
-    hscb0_status = 0;
-    hscb1_status = 0;
 
-    rumboot_putstring( "HSCB link has enabled\n" );
+    rumboot_putstring( "HSCB link has been enabled\n" );
     // Enable DMA for HSCB0 and HSCB1
     rumboot_putstring( "Start work!\n" );
     hscb_run_wdma(base_addr);
@@ -736,13 +735,18 @@ static uint32_t check_hscb_short_func(
     for (i = 0; i < hscb_descr.length; ++i) {
         expected_data = ioread8(hscb_descr.start_address + i);
         obtained_data = ioread8(hscb_descr.start_address + i);
-        rumboot_puthex(hscb_descr.start_address + i);
-        rumboot_putstring("Expected data: ");
-        rumboot_puthex(expected_data);
-        rumboot_putstring("Obtained data: ");
-        rumboot_puthex (obtained_data);
-        TEST_ASSERT ((obtained_data == expected_data), "Data compare ERROR!!!\n" );
+        if((obtained_data != expected_data)){
+            rumboot_putstring("Data compare ERROR!!!\n");
+            rumboot_puthex(hscb_descr.start_address + i);
+            rumboot_putstring("Expected data: ");
+            rumboot_puthex(expected_data);
+            rumboot_putstring("Obtained data: ");
+            rumboot_puthex (obtained_data);
+            return 1;
+        }
+//        TEST_ASSERT ((obtained_data == expected_data), "Data compare ERROR!!!\n" );
     }
+    rumboot_putstring( "HSCB1 to HSCB0 descriptor #1: successfully checked.\n" );
 
     rumboot_putstring( "HSCB0 to HSCB1 descriptor #1\n" );
     rumboot_puthex((uint32_t)(*(descriptors + 1)));
@@ -752,19 +756,29 @@ static uint32_t check_hscb_short_func(
     for (i = 0; i < hscb_descr.length; ++i) {
         expected_data = ioread8(hscb_descr.start_address + i);
         obtained_data = ioread8(hscb_descr.start_address + i);
-        rumboot_puthex(hscb_descr.start_address  + i);
-        rumboot_putstring("Expected data: ");
-        rumboot_puthex(expected_data);
-        rumboot_putstring("Obtained data: ");
-        rumboot_puthex (obtained_data);
-        TEST_ASSERT ((obtained_data == expected_data), "Data compare ERROR!!!\n" );
+        if((obtained_data != expected_data)){
+            rumboot_putstring("Data compare ERROR!!!\n");
+            rumboot_puthex(hscb_descr.start_address  + i);
+            rumboot_putstring("Expected data: ");
+            rumboot_puthex(expected_data);
+            rumboot_putstring("Obtained data: ");
+            rumboot_puthex (obtained_data);
+            return 1;
+        }
+//        TEST_ASSERT ((obtained_data == expected_data), "Data compare ERROR!!!\n" );
     }
+    rumboot_putstring( "HSCB0 to HSCB1 descriptor #1: successfully checked.\n" );
 
     return 0;
 }
 #else
 
-static uint32_t check_hscb_func(uint32_t base_addr, uint32_t supplementary_base_addr){
+static uint32_t check_hscb_func(
+        uint32_t base_addr,
+        uint32_t supplementary_base_addr,
+        uint8_t **  data_areas,
+        uint32_t*   data_area_sizes,
+        uint32_t    data_areas_count){
     hscb_packed_descr_struct_t* descriptors[DESCRIPTOR_TABLES_COUNT];
     uint32_t descriptor_counts[DESCRIPTOR_TABLES_COUNT] = {3, 3, 3, 3};
     int cnt = 0;
@@ -778,9 +792,10 @@ static uint32_t check_hscb_func(uint32_t base_addr, uint32_t supplementary_base_
 
     uint8_t expected_data = 0;
     uint8_t obtained_data = 0;
+    rumboot_putstring( "------- HSCB ACCESS test -------\n" );
 
-    prepare_descriptor_areas(descriptors,descriptor_counts,DESCRIPTOR_TABLES_COUNT);
-    init_hscb_cfg(descriptors, descriptor_counts, DESCRIPTOR_TABLES_COUNT, HSCB_ROTATE_BYTES_ENABLE);
+    prepare_descriptor_areas(&descriptors,descriptor_counts,DESCRIPTOR_TABLES_COUNT);
+    init_hscb_cfg( data_areas, data_area_sizes, descriptors, descriptor_counts,DESCRIPTOR_TABLES_COUNT, HSCB_ROTATE_BYTES_ENABLE);
 
     set_descriptor_tables(base_addr, supplementary_base_addr, descriptors,descriptor_counts,DESCRIPTOR_TABLES_COUNT);
     hscb_set_max_speed(base_addr);
@@ -792,7 +807,7 @@ static uint32_t check_hscb_func(uint32_t base_addr, uint32_t supplementary_base_
     iowrite32((1 << HSCB_SETTINGS_EN_HSCB_i),        supplementary_base_addr + HSCB_SETTINGS);
     msync();
     rumboot_putstring( "Wait HSCB0 and HSCB1 finish work\n" );
-    while (!(hscb0_dma_status & hscb1_dma_status)){
+    while (!(hscb0_link_established & hscb1_link_established)){
         if (cnt == MAX_ATTEMPTS) {
             rumboot_putstring( "Wait interrupt Time-out\n" );
             return 1;
@@ -847,7 +862,7 @@ int main() {
     hscb_sw_rst(HSCB_SUPPLEMENTARY_BASE);
     hscb_adma_sw_rst(HSCB_SUPPLEMENTARY_BASE);
 #endif
-//    emi_init(DCR_EM2_EMI_BASE);
+    emi_init(DCR_EM2_EMI_BASE);
     tbl = create_irq_handlers();
 
     count_of_memory_areas = prepare_memory_areas(&data_areas, &data_area_sizes);
