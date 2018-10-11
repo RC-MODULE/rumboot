@@ -14,10 +14,6 @@ static void reg_write( uint32_t base, uint32_t reg_offset, uint32_t value ) {
     iowrite32( value, base + reg_offset );
 }
 
-static uint32_t reg_read( uint32_t base, uint32_t reg_offset ) {
-    return ioread32( base + reg_offset );
-}
-
 static void reg_set( uint32_t base, uint32_t reg_offset, uint32_t value ) {
     uint32_t reg = ioread32( base + reg_offset );
 
@@ -69,14 +65,6 @@ void gpio_interrupt_setup( uint32_t base_address, uint8_t value, bool enabled, g
     }
 }
 
-uint8_t gpio_get_ris( uint32_t base_address ) {
-    return reg_read( base_address, GPIO_RIS );
-}
-
-uint8_t gpio_get_mis( uint32_t base_address ) {
-    return reg_read( base_address, GPIO_MIS );
-}
-
 void gpio_clear_edge_int( uint32_t base_address, uint8_t value ) {
     reg_write( base_address, GPIO_IC, value );
 }
@@ -92,28 +80,7 @@ void gpio_set_port_direction( uint32_t base_address, gpio_pin_dir dir ) {
     reg_write( base_address, GPIO_DIR, dir );
 }
 
-void gpio_set_control_mode( uint32_t base_address, uint8_t value, gpio_ctrl_mode mode ) {
-    if( mode == hardware_mode ) //== 1
-        reg_set( base_address, GPIO_AFSEL, value );
-    else //software mode ==0
-    reg_clear( base_address, GPIO_AFSEL, value );
-}
-
-void gpio_set_port_hw_control_mode( uint32_t base_address ) {
-    reg_set( base_address, GPIO_AFSEL, HW_MODE_PIN_ALL );
-}
-
-void gpio_set_pin( uint32_t base_address, uint8_t pin_number, uint8_t value ) {
-    *( volatile uint8_t* )( base_address + ( 1 << ( pin_number + 2 ) ) ) = ( value << pin_number );
-}
-
 //return 8bit
 uint8_t gpio_get_data( uint32_t base_address ) {
     return *( volatile uint8_t* )( base_address + GPIO_ADDR_MASK );
-}
-//return value of specified pin
-uint8_t gpio_get_pin( uint32_t base_address, uint8_t pin_number ) {
-    uint8_t raw_val;
-    raw_val = *( volatile uint8_t* )( base_address + ( 1 << ( pin_number + 2 ) ) );
-    return ( raw_val >> pin_number );
 }
