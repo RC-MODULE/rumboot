@@ -9,7 +9,6 @@
 
 uint32_t hscb_change_endian (uint32_t data_in){
     uint32_t data_out = 0;
-    rumboot_puthex(data_in);
 
     data_out = data_in << 24 & 0xff000000;
     data_out = data_out | (data_in << 8  & 0x00ff0000);
@@ -191,8 +190,6 @@ hscb_descr_struct_t hscb_get_descr_from_mem(uint32_t sys_addr, bool endian)
 {
     uint32_t desc_data;
     hscb_descr_struct_t result;
-    rumboot_putstring( "Get descriptor " );
-    rumboot_puthex (sys_addr);
     if (endian)
     {
         desc_data = hscb_change_endian(ioread32(sys_addr));
@@ -219,7 +216,7 @@ uint32_t hscb_get_status(uint32_t base_addr)
 }
 
 inline uint32_t hscb_get_tbl_len_by_count(uint32_t count){
-    return (count + 1) << 3;
+    return sizeof(hscb_packed_descr_struct_t) * (count + 1) ;
 }
 
 void hscb_set_irq_mask(uint32_t base_addr, uint32_t mask)
