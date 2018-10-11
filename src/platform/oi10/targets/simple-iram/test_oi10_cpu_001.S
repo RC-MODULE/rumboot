@@ -56,7 +56,8 @@ setup_tlb:
     bl          ppc470s_write_tlb_entries
 
 check_cpu_ppc_prog_model_24:    /*check sequential flow*/
-    rumboot_putstring "Start test...\n"
+    test_event_send_test_id "test_oi10_cpu_001"
+    // rumboot_putstring "Start test...\n"
     mtxer       R_ZERO
     test_event  EVENT_CHECK_CPU_PPC_PROG_MODEL_24_SEQ
 
