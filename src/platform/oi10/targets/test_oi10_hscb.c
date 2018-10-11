@@ -459,10 +459,33 @@ uint32_t prepare_memory_areas(uint8_t*** data_areas, uint32_t** data_area_sizes)
     return count_of_memory_areas;
 }
 
-static void set_test_data(uint32_t base_addr, uint32_t length, int increment){
+static void set_test_data(uint32_t base_addr, uint32_t length, int increment,bool nor_change_endian){
     uint8_t data = DATA_INITIAL_VALUE;
-    if ((base_addr >= NOR_BASE) && (base_addr <= NOR_BASE + NOR_SIZE))
-        rumboot_putstring("Oops! NOR initialization is still a To-Do in this test!");
+    if ((base_addr >= NOR_BASE) && (base_addr <= NOR_BASE + NOR_SIZE)){
+        /*TODO: check me*/
+        uint32_t data32 = 0;
+        for(uint32_t i = 0; i < ((length >> 2) << 2); i += 4){
+            data32 |= data << 24;
+            data += increment;
+            data32 |= data << 16;
+            data += increment;
+            data32 |= data << 8;
+            data += increment;
+            data32 |= data;
+            if(nor_change_endian)
+                data32 = HSCB_CHANGE_ENDIAN_WORD(data32);
+            nor_write32(data32, base_addr + i);
+            data32 = 0;
+        }
+        for(uint32_t i = 1; i <= (length % 4); ++i){
+            data32 |= data << ((4 - i) << 3);
+            data += increment;
+        }
+        if(nor_change_endian)
+            data32 = HSCB_CHANGE_ENDIAN_WORD(data32);
+        nor_write32(data32, base_addr + ((length >> 2) << 2));
+        data32 = 0;
+    }
     else
     for(uint32_t i = 0; i < length; ++i){
         iowrite8(data,(base_addr+i));
@@ -472,7 +495,8 @@ static void set_test_data(uint32_t base_addr, uint32_t length, int increment){
 
 void set_test_data_multiple(    uint8_t** data_areas,
                                 uint32_t* data_area_sizes,
-                                uint32_t  count_of_memory_areas){
+                                uint32_t  count_of_memory_areas,
+                                bool nor_change_endian){
     int i;
 #ifdef HSCB_SHORT_TEST
     uint32_t increments[] = {   INCREMENT_0,
@@ -498,7 +522,8 @@ void set_test_data_multiple(    uint8_t** data_areas,
     rumboot_putstring("set_test_data_multiple");
     for(i = 0; i < count_of_memory_areas; ++i){
         rumboot_puthex(i);
-        set_test_data((uint32_t)(data_areas + i),data_area_sizes[i >> 1],increments[i]);
+        rumboot_puthex((uint32_t)(*(data_areas + i)));
+        set_test_data((uint32_t)(*(data_areas + i)),data_area_sizes[i >> 1],increments[i],nor_change_endian);
     }
     rumboot_putstring("end set_test_data_multiple");
 }
@@ -513,6 +538,7 @@ void prepare_descriptor_areas(
     *array_of_descriptors = rumboot_malloc_from_heap_aligned(DEFAULT_HEAP_ID,
                 counts_of_descriptor_tables * sizeof(hscb_packed_descr_struct_t*),
                 0x8);
+    rumboot_puthex((uint32_t)*array_of_descriptors);
     TEST_ASSERT(((*array_of_descriptors) != NULL), "Cannot allocate from default heap!");
     for(i = 0; i < counts_of_descriptor_tables; ++i){
         (*array_of_descriptors)[i] = rumboot_malloc_from_heap_aligned(DEFAULT_HEAP_ID,
@@ -526,11 +552,11 @@ void prepare_descriptor_areas(
     rumboot_putstring("end prepare_descriptor_areas");
 }
 
-inline static void print_hscb_descriptor(volatile hscb_packed_descr_struct_t* descriptor){
+inline static void print_hscb_descriptor(hscb_packed_descr_struct_t descriptor){
     rumboot_printf("descriptor address: \n%x\nfirst word == \n%x\nsecond word == \n%x\n",
-            &descriptor,hscb_change_endian(descriptor->start_address),hscb_change_endian(descriptor->length_attr));
+            &descriptor,hscb_change_endian(descriptor.start_address),hscb_change_endian(descriptor.length_attr));
 }
-void init_hscb_cfg( uint8_t**                         data_areas,
+void init_hscb_cfg( uint8_t**                       data_areas,
                     uint32_t*                       data_area_sizes,
                     hscb_packed_descr_struct_t**    hscb_descr,
                     uint32_t*                       count_of_descriptors,
@@ -542,19 +568,23 @@ void init_hscb_cfg( uint8_t**                         data_areas,
     for (i = 0; i < count_descr_tables; ++i){
         for (j = 0; j < count_of_descriptors[i]; ++j){
             rumboot_puthex((i << 16) | j );
-            rumboot_puthex((uint32_t)(data_areas[i + (j << 2)]));
-            (hscb_descr + count_of_processed_descriptors)[j]->start_address = (change_endian) ? HSCB_CHANGE_ENDIAN_WORD((uint32_t)(data_areas[(i << 2) + j]))
-                                                                                     : (uint32_t)(data_areas[(i << 2) + j]);
-            (hscb_descr + count_of_processed_descriptors)[j]->length_attr =  HSCB_CREATE_DESCRIPTOR_LEN_ATTR_ENDIAN_EXE(
-                                             data_area_sizes[(i >> 1) + (j << 1)],
+            rumboot_puthex((uint32_t)((&(*(hscb_descr + i))[j])));
+            (*(hscb_descr + i))[j].start_address =
+                    (change_endian)  ? HSCB_CHANGE_ENDIAN_WORD((uint32_t)(*(data_areas + i + j)))
+                                     : (uint32_t)(*(data_areas + i + j));
+            (*(hscb_descr + i))[j].length_attr =
+                    HSCB_CREATE_DESCRIPTOR_LEN_ATTR_ENDIAN_EXE(
+                                             data_area_sizes[(i + (j * count_descr_tables)) >> 1],
                                              HSCB_ACT_TRAN,
                                              HSCB_ACT0_LAST,
                                              HSCB_DESCR_ITRPT_ON,
                                              HSCB_DESCR_VALID,
                                              change_endian) ;
         }
-        hscb_descr[i][count_of_descriptors[i]].start_address = 0;
-        hscb_descr[i][count_of_descriptors[i]].length_attr = 0;
+        rumboot_puthex(count_of_descriptors[i]);
+        rumboot_puthex((uint32_t)(&(*(hscb_descr + i))[count_of_descriptors[i]]));
+        (*(hscb_descr + i))[count_of_descriptors[i]].start_address = 0;
+        (*(hscb_descr + i))[count_of_descriptors[i]].length_attr = 0;
         count_of_processed_descriptors += count_of_descriptors[i] ;
     }
     rumboot_putstring("end init_hscb_cfg");
@@ -565,31 +595,36 @@ void set_descriptor_tables( uint32_t base_addr,
                             hscb_packed_descr_struct_t** hscb_descr,
                             uint32_t* descr_table_length,
                             uint32_t count_descr_tables){
-    int i;
+
     rumboot_putstring("set_descriptor_tables");
-    for (i = 0; i < (count_descr_tables >> 1); ++i){
-        rumboot_putstring ("i = ");
-        rumboot_puthex(i);
-        rumboot_putstring("descr_table_length[i]");
-        rumboot_puthex(descr_table_length[i]);
-        rumboot_putstring("hscb_get_tbl_len_by_count(descr_table_length[i])");
-        rumboot_puthex(hscb_get_tbl_len_by_count(descr_table_length[i]));
-        hscb_set_rdma_tbl_size(base_addr, hscb_get_tbl_len_by_count(descr_table_length[i]));
 
-        rumboot_putstring("hscb_descr[i << 1]");
-        print_hscb_descriptor(hscb_descr[i << 1]);
-        rumboot_putstring("rumboot_virt_to_dma(&hscb_descr[i << 1])");
-        rumboot_puthex(rumboot_virt_to_dma(&hscb_descr[i << 1]));
-        hscb_set_rdma_sys_addr(base_addr, rumboot_virt_to_dma(&hscb_descr[i << 1]));
+    rumboot_putstring("descr_table_length[0]");
+    rumboot_puthex(descr_table_length[0]);
+    rumboot_putstring("hscb_get_tbl_len_by_count(descr_table_length[0])");
+    rumboot_puthex(hscb_get_tbl_len_by_count(descr_table_length[0]));
 
-        hscb_set_wdma_tbl_size(supplementary_base_addr, hscb_get_tbl_len_by_count(descr_table_length[i]));
+    hscb_set_rdma_tbl_size(base_addr, hscb_get_tbl_len_by_count(descr_table_length[0]));
+    hscb_set_wdma_tbl_size(base_addr, hscb_get_tbl_len_by_count(descr_table_length[3]));
 
-        rumboot_putstring("hscb_descr[(i << 1) + 1]");
-        print_hscb_descriptor(hscb_descr[(i << 1) + 1]);
-        rumboot_putstring("rumboot_virt_to_dma(&hscb_descr[(i << 1) + 1])");
-        rumboot_puthex(rumboot_virt_to_dma(&hscb_descr[(i << 1) + 1]));
-        hscb_set_wdma_sys_addr(supplementary_base_addr, rumboot_virt_to_dma(&hscb_descr[(i << 1) + 1]));
-    }
+    rumboot_putstring("(*(hscb_descr + 0))[0]");
+    print_hscb_descriptor((*(hscb_descr + 0))[0]);
+    rumboot_putstring("rumboot_virt_to_dma((*(hscb_descr + 0)))");
+    rumboot_puthex(rumboot_virt_to_dma((*(hscb_descr + 0))));
+
+    hscb_set_rdma_sys_addr(base_addr, rumboot_virt_to_dma((*(hscb_descr + 0))));
+    hscb_set_wdma_sys_addr(base_addr, rumboot_virt_to_dma((*(hscb_descr + 3))));
+
+    hscb_set_wdma_tbl_size(supplementary_base_addr, hscb_get_tbl_len_by_count(descr_table_length[1]));
+    hscb_set_rdma_tbl_size(supplementary_base_addr, hscb_get_tbl_len_by_count(descr_table_length[2]));
+
+    rumboot_putstring("(*(hscb_descr + 1))[0]");
+    print_hscb_descriptor((*(hscb_descr + 1))[0]);
+    rumboot_putstring("rumboot_virt_to_dma((*(hscb_descr + 1)))");
+    rumboot_puthex(rumboot_virt_to_dma((*(hscb_descr + 1))));
+
+    hscb_set_wdma_sys_addr(supplementary_base_addr, rumboot_virt_to_dma((*(hscb_descr + 1))));
+    hscb_set_rdma_sys_addr(supplementary_base_addr, rumboot_virt_to_dma((*(hscb_descr + 2))));
+
     rumboot_putstring("end set_descriptor_tables");
 }
 
@@ -604,7 +639,6 @@ static uint32_t check_hscb_short_func(
 
     hscb_packed_descr_struct_t** descriptors = NULL;
     uint32_t descriptor_counts[] = {1, 1, 1, 1};
-    hscb_packed_descr_struct_t* descriptor_pointer;
     int i = 0;
     int j = 0;
     int cnt = 0;
@@ -636,32 +670,20 @@ static uint32_t check_hscb_short_func(
         rumboot_puthex((uint32_t)(descriptors[i]));
         for(j = 0; j < descriptor_counts[i]; ++j){
             rumboot_puthex((i << 16) | j);
-            rumboot_puthex((uint32_t)(&(descriptors[i][j])));
-            rumboot_puthex(descriptors[i][j].start_address);
-            rumboot_puthex(descriptors[i][j].length_attr);
+            rumboot_puthex((uint32_t)((*(descriptors + i))+j));
+            rumboot_puthex((*(descriptors + i))[j].start_address);
+            rumboot_puthex((*(descriptors + i))[j].length_attr);
         }
     }
     rumboot_putstring("end printing descriptors in cycle");
-    descriptor_pointer = descriptors[0];
-    print_hscb_descriptor(descriptor_pointer);//TX0
-    descriptor_pointer = descriptors[1];
-    print_hscb_descriptor(descriptor_pointer);//RX0
-    descriptor_pointer = descriptors[2];
-    print_hscb_descriptor(descriptor_pointer);//TX1
-    descriptor_pointer = descriptors[3];
-    print_hscb_descriptor(descriptor_pointer);//RX1
+    print_hscb_descriptor((*(descriptors + 0))[0]);//TX0
+    print_hscb_descriptor((*(descriptors + 1))[0]);//RX0
+    print_hscb_descriptor((*(descriptors + 2))[0]);//TX1
+    print_hscb_descriptor((*(descriptors + 3))[0]);//RX1
 
     set_descriptor_tables(base_addr, supplementary_base_addr, descriptors,descriptor_counts,DESCRIPTOR_TABLES_COUNT);
     hscb_set_max_speed(base_addr);
     hscb_set_max_speed(supplementary_base_addr);
-    descriptor_pointer = descriptors[0];
-    print_hscb_descriptor(descriptor_pointer);//TX0
-    descriptor_pointer = descriptors[1];
-    print_hscb_descriptor(descriptor_pointer);//RX0
-    descriptor_pointer = descriptors[2];
-    print_hscb_descriptor(descriptor_pointer);//TX1
-    descriptor_pointer = descriptors[3];
-    print_hscb_descriptor(descriptor_pointer);//RX1
 
     // Enable HSCB0 and HSCB1
     iowrite32((1 << HSCB_IRQ_MASK_ACTIVE_LINK_i),    base_addr + HSCB_IRQ_MASK);
@@ -705,13 +727,16 @@ static uint32_t check_hscb_short_func(
 
     rumboot_putstring( "Finish work!\n" );
     rumboot_putstring( "HSCB1 to HSCB0 descriptor #1\n" );
-    hscb_descr = hscb_get_descr_from_mem((uint32_t)(&descriptors[3][0]), HSCB_ROTATE_BYTES_ENABLE);
+    rumboot_puthex((uint32_t)(&(*(descriptors + 3))[0]));
+    hscb_descr = hscb_get_descr_from_mem((uint32_t)(&(*(descriptors + 3))[0]), HSCB_ROTATE_BYTES_ENABLE);
+    rumboot_putstring( "Start addr:" );
+    rumboot_puthex (hscb_descr.start_address);
     rumboot_putstring( "Length:" );
     rumboot_puthex (hscb_descr.length);
     for (i = 0; i < hscb_descr.length; ++i) {
-        expected_data = ioread8(descriptors[2][0].start_address + i);
-        obtained_data = ioread8(descriptors[3][0].start_address + i);
-        rumboot_puthex(descriptors[3][0].start_address + i);
+        expected_data = ioread8(hscb_descr.start_address + i);
+        obtained_data = ioread8(hscb_descr.start_address + i);
+        rumboot_puthex(hscb_descr.start_address + i);
         rumboot_putstring("Expected data: ");
         rumboot_puthex(expected_data);
         rumboot_putstring("Obtained data: ");
@@ -720,13 +745,14 @@ static uint32_t check_hscb_short_func(
     }
 
     rumboot_putstring( "HSCB0 to HSCB1 descriptor #1\n" );
-    hscb_descr = hscb_get_descr_from_mem((uint32_t)(&descriptors[1][0]), HSCB_ROTATE_BYTES_ENABLE);
+    rumboot_puthex((uint32_t)(*(descriptors + 1)));
+    hscb_descr = hscb_get_descr_from_mem((uint32_t)(*(descriptors + 1)), HSCB_ROTATE_BYTES_ENABLE);
     rumboot_putstring( "Length:" );
     rumboot_puthex (hscb_descr.length);
     for (i = 0; i < hscb_descr.length; ++i) {
-        expected_data = ioread8(descriptors[0][0].start_address + i);
-        obtained_data = ioread8(descriptors[1][0].start_address + i);
-        rumboot_puthex(descriptors[1][0].start_address  + i);
+        expected_data = ioread8(hscb_descr.start_address + i);
+        obtained_data = ioread8(hscb_descr.start_address + i);
+        rumboot_puthex(hscb_descr.start_address  + i);
         rumboot_putstring("Expected data: ");
         rumboot_puthex(expected_data);
         rumboot_putstring("Obtained data: ");
@@ -825,7 +851,7 @@ int main() {
     tbl = create_irq_handlers();
 
     count_of_memory_areas = prepare_memory_areas(&data_areas, &data_area_sizes);
-    set_test_data_multiple(data_areas, data_area_sizes, count_of_memory_areas);
+    set_test_data_multiple(data_areas, data_area_sizes, count_of_memory_areas, HSCB_ROTATE_BYTES_DISABLE);
 #ifdef HSCB_SHORT_TEST
     result += check_hscb_short_func(HSCB_UNDER_TEST_BASE, HSCB_SUPPLEMENTARY_BASE, data_areas, data_area_sizes, count_of_memory_areas);
 #else
