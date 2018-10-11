@@ -138,7 +138,7 @@ uint32_t rumboot_arch_irq_enable()
 void rumboot_platform_setup()
 {
         enable_fpu();
-        uart_init(UART0_BASE, UART_word_length_8bit, 115200, UART_parity_no, 0, 0);
+       uart_init(UART0_BASE, UART_word_length_8bit, 115200, 100000000UL, UART_parity_no, 0, 0);
        uart_rx_enable(UART0_BASE, 1);
 }
 
