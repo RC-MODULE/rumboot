@@ -68,8 +68,8 @@ typedef struct hscb_descr_struct
  */
 typedef struct hscb_packed_descr_struct
 {
-    uint32_t    start_address;
     uint32_t    length_attr;
+    uint32_t    start_address;
 }hscb_packed_descr_struct_t;
 
 /**
@@ -284,6 +284,7 @@ void hscb_configure_for_transmit(uint32_t base_addr, uint32_t src_data_addr, uin
 void hscb_configure_for_receive(uint32_t base_addr, uint32_t dst_data_addr, uint32_t len, uint32_t desc_addr);
 void hscb_run_rdma(uint32_t base_addr);
 void hscb_run_wdma(uint32_t base_addr);
+void hscb_set_max_speed(uint32_t base_addr);
 void hscb_enable(uint32_t base_addr);
 void hscb_config_for_receive_and_transmit(hscb_instance_t* hscb_inst);
 
