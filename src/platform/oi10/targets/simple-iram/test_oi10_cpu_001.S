@@ -130,62 +130,46 @@ check_cpu_ppc_prog_model_26:    /*check conditional branch*/
     b           test_error
 
 bc_ble:
-    putchar     'l'
-    putchar     'e'
-    putchar     ' '
+    rumboot_putstring "le\n"
     ble+   cr0, bc_beq
     b			test_error
 
 bc_beq:
-    putchar     'e'
-    putchar     'q'
-    putchar     ' '
+    rumboot_putstring "eq\n"
     cmpw   cr0, R_DATA, R_DATA
     beq+   cr0, bc_bgt
     b           test_error
 
 bc_bgt:
-    putchar     'g'
-    putchar     't'
-    putchar     ' '
+    rumboot_putstring "gt\n"
     cmpw   cr0, R_DATA, R_ZERO
     bgt+   cr0, bc_bge
     b			test_error
 
 bc_bge:
-    putchar		'g'
-    putchar		'e'
-    putchar		' '
+    rumboot_putstring "ge\n"
     bge+   cr0, bc_bnl
     b           test_error
 
 bc_bnl:
-    putchar     'n'
-    putchar     'l'
-    putchar     ' '
+    rumboot_putstring "nl\n"
     cmpw   cr0, R_DATA, R_ZERO
     bnl+   cr0, bc_bne
     b           test_error
 
 bc_bne:
-    putchar		'n'
-    putchar		'e'
-    putchar		' '
+    rumboot_putstring "ne\n"
     bne+   cr0, bc_bng
     b           test_error
 
 bc_bng:
-    putchar     'n'
-    putchar     'g'
-    putchar     ' '
+    rumboot_putstring "ng\n"
     cmpw   cr0, R_ZERO, R_DATA
     bng+   cr0, bc_bso
     b           test_error
 
 bc_bso:
-    putchar     's'
-    putchar     'o'
-    putchar     ' '
+    rumboot_putstring "so\n"
     load_const  R_MASK, 0x7FFFFFFF
     load_const  R_TEMP, 0x00000002
     /* operands considered as signed, see PowerISA, 3.3.7 */
@@ -194,9 +178,7 @@ bc_bso:
     b           test_error
 
 bc_bns:
-    putchar     'n'
-    putchar     's'
-    putchar     ' '
+    rumboot_putstring "ns\n"
     /* SO bit of XER is not cleared automatically */
     mtxer       R_ZERO
     addco.      R_DATA, R_ONES, R_ZERO
@@ -212,17 +194,14 @@ check_cpu_ppc_prog_model_27:    /*check XL-branch*/
     b           test_error
 
 bic_blelr:
-    putchar     'l'
-    putchar     'e'
-    putchar     ' '
+    rumboot_putstring "le\n"
     load_addr   R_ADDR, bic_beqlr
     mtlr        R_ADDR
     blelr+ cr0
     b           test_error
 
 bic_beqlr:
-    putchar     'e'
-    putchar     'q'
+    rumboot_putstring "eq\n"
     putchar     ' '
     load_addr   R_ADDR, bic_bgtlr
     mtlr        R_ADDR
@@ -232,9 +211,7 @@ bic_beqlr:
     b           test_error
 
 bic_bgtlr:
-    putchar     'g'
-    putchar     't'
-    putchar     ' '
+    rumboot_putstring "gt\n"
     load_addr   R_ADDR, bic_bgelr
     mtlr        R_ADDR
     cmpw  cr0,  R_INCR, R_ZERO
@@ -242,18 +219,14 @@ bic_bgtlr:
     b           test_error
 
 bic_bgelr:
-    putchar     'g'
-    putchar     'e'
-    putchar     ' '
+    rumboot_putstring "ge\n"
     load_addr   R_ADDR, bic_bnllr
     mtlr        R_ADDR
     bgelr+ cr0
     b           test_error
 
 bic_bnllr:
-    putchar     'n'
-    putchar     'l'
-    putchar     ' '
+    rumboot_putstring "nl\n"
     load_addr   R_ADDR, bic_bnelr
     mtlr        R_ADDR
     cmpw   cr0, R_ONES, R_ZERO
@@ -261,18 +234,14 @@ bic_bnllr:
     b           test_error
 
 bic_bnelr:
-    putchar     'n'
-    putchar     'e'
-    putchar     ' '
+    rumboot_putstring "ne\n"
     load_addr   R_ADDR, bic_bnglr
     mtlr        R_ADDR
     bnelr+ cr0
     b           test_error
 
 bic_bnglr:
-    putchar     'n'
-    putchar     'g'
-    putchar     ' '
+    rumboot_putstring "ng\n"
     load_addr   R_ADDR, bic_bsolr
     mtlr        R_ADDR
     cmpw   cr0, R_ZERO, R_ONES
@@ -280,9 +249,7 @@ bic_bnglr:
     b           test_error
 
 bic_bsolr:
-    putchar     's'
-    putchar     'o'
-    putchar     ' '
+    rumboot_putstring "so\n"
     load_addr   R_ADDR, bic_bnslr
     mtlr        R_ADDR
     load_const  R_TEMP, 0x80000000
@@ -291,9 +258,7 @@ bic_bsolr:
     b           test_error
 
 bic_bnslr:
-    putchar     'n'
-    putchar     's'
-    putchar     ' '
+    rumboot_putstring "ns\n"
     load_addr   R_ADDR, bic_bdz
     mtlr        R_ADDR
     mtxer       R_ZERO
@@ -327,9 +292,7 @@ bic_bdnz_loop:
 
 bic_bltctr:
     rumboot_putstring "test cond branch to ctr:\n"
-    putchar     'l'
-    putchar     't'
-    putchar     ' '
+    rumboot_putstring "lt\n"
     load_addr   R_ADDR, bic_blectr
     mtctr       R_ADDR
     cmpw   cr0, R_ZERO, R_INCR
@@ -337,9 +300,7 @@ bic_bltctr:
     b           test_error
 
 bic_blectr:
-    putchar     'l'
-    putchar     'e'
-    putchar     ' '
+    rumboot_putstring "le\n"
     load_addr   R_ADDR, bic_beqctr
     mtctr       R_ADDR
     cmpw   cr0, R_ZERO, R_INCR
@@ -347,9 +308,7 @@ bic_blectr:
     b           test_error
 
 bic_beqctr:
-    putchar     'e'
-    putchar     'q'
-    putchar     ' '
+    rumboot_putstring "eq\n"
     load_addr   R_ADDR, bic_bgtctr
     mtctr       R_ADDR
     cmpw   cr0, R_INCR, R_INCR
@@ -357,9 +316,7 @@ bic_beqctr:
     b           test_error
 
 bic_bgtctr:
-    putchar     'g'
-    putchar     't'
-    putchar     ' '
+    rumboot_putstring "gt\n"
     load_addr   R_ADDR, bic_bgectr
     mtctr       R_ADDR
     cmpw   cr0, R_INCR, R_ZERO
@@ -367,9 +324,7 @@ bic_bgtctr:
     b           test_error
 
 bic_bgectr:
-    putchar     'g'
-    putchar     'e'
-    putchar     ' '
+    rumboot_putstring "ge\n"
     load_addr   R_ADDR, bic_bnlctr
     mtctr       R_ADDR
     cmpw   cr0, R_INCR, R_ZERO
@@ -377,9 +332,7 @@ bic_bgectr:
     b           test_error
 
 bic_bnlctr:
-    putchar     'n'
-    putchar     'l'
-    putchar     ' '
+    rumboot_putstring "nl\n"
     load_addr   R_ADDR, bic_bnectr
     mtctr       R_ADDR
     cmpw   cr0, R_INCR, R_ZERO
@@ -387,9 +340,7 @@ bic_bnlctr:
     b           test_error
 
 bic_bnectr:
-    putchar     'n'
-    putchar     'e'
-    putchar     ' '
+    rumboot_putstring "ne\n"
     load_addr   R_ADDR, bic_bngctr
     mtctr       R_ADDR
     cmpw   cr0, R_ONES, R_ZERO
@@ -397,9 +348,7 @@ bic_bnectr:
     b           test_error
 
 bic_bngctr:
-    putchar     'n'
-    putchar     'g'
-    putchar     ' '
+    rumboot_putstring "ng\n"
     load_addr   R_ADDR, bic_bsoctr
     mtctr       R_ADDR
     cmpw   cr0, R_ZERO, R_ONES
@@ -407,9 +356,7 @@ bic_bngctr:
     b           test_error
 
 bic_bsoctr:
-    putchar     's'
-    putchar     'o'
-    putchar     ' '
+    rumboot_putstring "so\n"
     load_addr   R_ADDR, bic_bnsctr
     mtctr       R_ADDR
     load_const  R_MASK, 0x7FFFFFFF
@@ -419,9 +366,7 @@ bic_bsoctr:
     b           test_error
 
 bic_bnsctr:
-    putchar     'n'
-    putchar     's'
-    putchar     ' '
+    rumboot_putstring "ns\n"
     load_addr   R_ADDR, test_ok
     mtctr       R_ADDR
     mtxer       R_ZERO
