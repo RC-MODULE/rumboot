@@ -62,6 +62,10 @@ uint32_t rumboot_platform_get_uptime()
         return 0;
 }
 
+void rumboot_platform_init_loader(struct rumboot_config *conf)
+{
+    
+}
 
 static int shmid;
 static int the_ipc_id;

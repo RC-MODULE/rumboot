@@ -160,4 +160,5 @@ int32_t rumboot_bootimage_check_data(struct rumboot_bootheader *hdr);
  void *rumboot_platform_get_spl_area(size_t *size);
  int rumboot_bootimage_execute_ep(void *ep);
  void rumboot_platform_enter_host_mode();
+ void rumboot_platform_init_loader(struct rumboot_config *conf);
 #endif /* end of include guard: BOOTHEADER_H */

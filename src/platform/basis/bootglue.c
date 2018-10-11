@@ -36,6 +36,11 @@ void rumboot_platform_selftest(struct rumboot_config *conf)
         /* Execute selftest routines */
 }
 
+void rumboot_platform_init_loader(struct rumboot_config *conf)
+{
+        
+}
+
 static bool sdio_enable(const struct rumboot_bootsource *src, void *pdata)
 {
         uint32_t v;

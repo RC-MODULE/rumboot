@@ -21,6 +21,13 @@
 #include <rumboot/bootsrc/boilerplate.h>
 #include <regs/regs_gpio_pl061.h>
 
+#include <platform/devices/emi.h>
+#include <platform/regs/fields/emi.h>
+#include <platform/regs/regs_emi.h>
+#include <platform/devices/plb6mcif2.h>
+#include <devices/uart_pl011.h>
+
+
 #define BOOTM_SLOWUART     (1 << 0)
 #define BOOTM_HOST         (1 << 1)
 #define BOOTM_FASTUART     (1 << 2)
@@ -29,6 +36,17 @@
 #define BOOTM_CPU_ECC      (1 << 5)
 #define BOOTM_EMI_ECC      (1 << 6)
 #define BOOTM_NOR_BOOT     (1 << 7)
+
+
+void rumboot_platform_init_loader(struct rumboot_config *conf)
+{
+        /* Set HOST pin to output */
+        uint32_t v = ioread32(GPIO_0_BASE + GPIO_DIR);
+        iowrite32(v | BOOTM_HOST, GPIO_0_BASE + GPIO_DIR);
+        /* Initialize UART */
+        uart_init(UART0_BASE, UART_word_length_8bit, conf->baudrate, 100000000UL, UART_parity_no, 0, 0);
+        uart_rx_enable(UART0_BASE, 1);
+}
 
 void rumboot_platform_read_config(struct rumboot_config *conf)
 {
@@ -69,17 +87,12 @@ void rumboot_platform_print_summary(struct rumboot_config *conf)
         rumboot_printf("Direct NOR boot: %s\n",
                        bootm & BOOTM_NOR_BOOT ? "disabled" : "enabled");
 
-        uint32_t v = ioread32(GPIO_0_BASE + GPIO_DIR);
-        iowrite32(v | BOOTM_HOST, GPIO_0_BASE + GPIO_DIR);
-
 }
 
 void rumboot_platform_selftest(struct rumboot_config *conf)
 {
         /* Execute selftest routines */
 }
-
-
 
 
 static bool spi0_gcs_enable(const struct rumboot_bootsource *src, void *pdata)
@@ -103,10 +116,6 @@ static void spi0_gcs(const struct rumboot_bootsource *src, void *pdata, int sele
         iowrite32(select << 4, GPIO_0_BASE + (1 << (4 + 2)));
 }
 
-#include <platform/devices/emi.h>
-#include <platform/regs/fields/emi.h>
-#include <platform/regs/regs_emi.h>
-#include <platform/devices/plb6mcif2.h>
 
 static bool emi_enable(const struct rumboot_bootsource *src, void *pdata)
 {

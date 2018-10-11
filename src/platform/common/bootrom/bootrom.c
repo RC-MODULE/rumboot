@@ -94,9 +94,10 @@ int main()
         #define PDATA_SIZE 128
         char pdata[PDATA_SIZE];
 
-        rumboot_print_logo();
         struct rumboot_config conf;
         rumboot_platform_read_config(&conf);
+        rumboot_platform_init_loader(&conf);
+        rumboot_print_logo();
         rumboot_platform_dump_config(&conf, maxsize);
 
         rumboot_platform_perf(NULL);
