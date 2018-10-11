@@ -357,16 +357,16 @@ void hscb_get_axi_params(uint32_t base_addr, hscb_axi_params_cfg_t* cfg)
 
 void hscb_set_rdma_settings(uint32_t base_addr, hscb_rwdma_settings_t* settings)
 {
-    iowrite32( ( settings->rw_desc_int       << HSCB_RWDMA_SETTINGS_DESC_INT_i )          |
-               ( settings->rw_desc_end       << HSCB_RWDMA_SETTINGS_DESC_END_i )          |
-               ( settings->rw_bad_desc       << HSCB_RWDMA_SETTINGS_BAD_DESC_i )          |
-               ( settings->rw_axi_error      << HSCB_RWDMA_SETTINGS_RW_AXI_ERROR_i )      |
-               ( settings->rw_buf_full       << HSCB_RWDMA_SETTINGS_RW_BUF_FULL_i )       |
-               ( settings->rw_buf_empty      << HSCB_RWDMA_SETTINGS_RW_BUF_EMPTY_i )      |
-               ( settings->en_rwdma          << HSCB_RWDMA_SETTINGS_EN_RWDMA_i )          |
-               ( settings->en_rwdma_desc_tbl << HSCB_RWDMA_SETTINGS_EN_RWDMA_DESC_TBL_i ) |
-               ( settings->rwdma_long_len    << HSCB_RWDMA_SETTINGS_RWDMA_LONG_LEN_i )    |
-               ( settings->cancel_rwdma      << HSCB_RWDMA_SETTINGS_CANCEL_RWDMA_i ),
+    iowrite32( ( settings->rw_desc_int       << HSCB_XDMA_SETTINGS_X_DESC_INT_i )          |
+               ( settings->rw_desc_end       << HSCB_XDMA_SETTINGS_X_DESC_END_i )          |
+               ( settings->rw_bad_desc       << HSCB_XDMA_SETTINGS_X_BAD_DESC_i )          |
+               ( settings->rw_axi_error      << HSCB_XDMA_SETTINGS_X_AXI_ERROR_i )      |
+               ( settings->rw_buf_full       << HSCB_XDMA_SETTINGS_X_BUF_FULL_i )       |
+               ( settings->rw_buf_empty      << HSCB_XDMA_SETTINGS_X_BUF_EMPTY_i )      |
+               ( settings->en_rwdma          << HSCB_XDMA_SETTINGS_EN_XDMA_i )          |
+               ( settings->en_rwdma_desc_tbl << HSCB_XDMA_SETTINGS_EN_XDMA_DESC_TBL_i ) |
+               ( settings->rwdma_long_len    << HSCB_XDMA_SETTINGS_XDMA_LONG_LEN_i )    |
+               ( settings->cancel_rwdma      << HSCB_XDMA_SETTINGS_CANCEL_XDMA_i ),
                 base_addr + HSCB_RDMA_SETTINGS         );
 }
 
@@ -374,30 +374,30 @@ void hscb_get_rdma_settings(uint32_t base_addr, hscb_rwdma_settings_t* settings)
 {
     uint32_t val;
     val = ioread32(base_addr+ HSCB_RDMA_SETTINGS);
-    settings->rw_desc_int       = ( val & HSCB_RWDMA_SETTINGS_DESC_INT_mask )          >> HSCB_RWDMA_SETTINGS_DESC_INT_i;
-    settings->rw_desc_end       = ( val & HSCB_RWDMA_SETTINGS_DESC_END_mask )          >> HSCB_RWDMA_SETTINGS_DESC_END_i;
-    settings->rw_bad_desc       = ( val & HSCB_RWDMA_SETTINGS_BAD_DESC_mask )          >> HSCB_RWDMA_SETTINGS_BAD_DESC_i;
-    settings->rw_axi_error      = ( val & HSCB_RWDMA_SETTINGS_RW_AXI_ERROR_mask )      >> HSCB_RWDMA_SETTINGS_RW_AXI_ERROR_i;
-    settings->rw_buf_full       = ( val & HSCB_RWDMA_SETTINGS_RW_BUF_FULL_mask )       >> HSCB_RWDMA_SETTINGS_RW_BUF_FULL_i;
-    settings->rw_buf_empty      = ( val & HSCB_RWDMA_SETTINGS_RW_BUF_EMPTY_mask )      >> HSCB_RWDMA_SETTINGS_RW_BUF_EMPTY_i;
-    settings->en_rwdma          = ( val & HSCB_RWDMA_SETTINGS_EN_RWDMA_mask )          >> HSCB_RWDMA_SETTINGS_EN_RWDMA_i;
-    settings->en_rwdma_desc_tbl = ( val & HSCB_RWDMA_SETTINGS_EN_RWDMA_DESC_TBL_mask ) >> HSCB_RWDMA_SETTINGS_EN_RWDMA_DESC_TBL_i;
-    settings->rwdma_long_len    = ( val & HSCB_RWDMA_SETTINGS_RWDMA_LONG_LEN_mask )    >> HSCB_RWDMA_SETTINGS_RWDMA_LONG_LEN_i;
-    settings->cancel_rwdma      = ( val & HSCB_RWDMA_SETTINGS_CANCEL_RWDMA_mask )      >> HSCB_RWDMA_SETTINGS_CANCEL_RWDMA_i;
+    settings->rw_desc_int       = ( val & HSCB_XDMA_SETTINGS_X_DESC_INT_mask )          >> HSCB_XDMA_SETTINGS_X_DESC_INT_i;
+    settings->rw_desc_end       = ( val & HSCB_XDMA_SETTINGS_X_DESC_END_mask )          >> HSCB_XDMA_SETTINGS_X_DESC_END_i;
+    settings->rw_bad_desc       = ( val & HSCB_XDMA_SETTINGS_X_BAD_DESC_mask )          >> HSCB_XDMA_SETTINGS_X_BAD_DESC_i;
+    settings->rw_axi_error      = ( val & HSCB_XDMA_SETTINGS_X_AXI_ERROR_mask )      >> HSCB_XDMA_SETTINGS_X_AXI_ERROR_i;
+    settings->rw_buf_full       = ( val & HSCB_XDMA_SETTINGS_X_BUF_FULL_mask )       >> HSCB_XDMA_SETTINGS_X_BUF_FULL_i;
+    settings->rw_buf_empty      = ( val & HSCB_XDMA_SETTINGS_X_BUF_EMPTY_mask )      >> HSCB_XDMA_SETTINGS_X_BUF_EMPTY_i;
+    settings->en_rwdma          = ( val & HSCB_XDMA_SETTINGS_EN_XDMA_mask )          >> HSCB_XDMA_SETTINGS_EN_XDMA_i;
+    settings->en_rwdma_desc_tbl = ( val & HSCB_XDMA_SETTINGS_EN_XDMA_DESC_TBL_mask ) >> HSCB_XDMA_SETTINGS_EN_XDMA_DESC_TBL_i;
+    settings->rwdma_long_len    = ( val & HSCB_XDMA_SETTINGS_XDMA_LONG_LEN_mask )    >> HSCB_XDMA_SETTINGS_XDMA_LONG_LEN_i;
+    settings->cancel_rwdma      = ( val & HSCB_XDMA_SETTINGS_CANCEL_XDMA_mask )      >> HSCB_XDMA_SETTINGS_CANCEL_XDMA_i;
 }
 
 void hscb_set_wdma_settings(uint32_t base_addr, hscb_rwdma_settings_t* settings)
 {
-    iowrite32( ( settings->rw_desc_int       << HSCB_RWDMA_SETTINGS_DESC_INT_i )          |
-               ( settings->rw_desc_end       << HSCB_RWDMA_SETTINGS_DESC_END_i )          |
-               ( settings->rw_bad_desc       << HSCB_RWDMA_SETTINGS_BAD_DESC_i )          |
-               ( settings->rw_axi_error      << HSCB_RWDMA_SETTINGS_RW_AXI_ERROR_i )      |
-               ( settings->rw_buf_full       << HSCB_RWDMA_SETTINGS_RW_BUF_FULL_i )       |
-               ( settings->rw_buf_empty      << HSCB_RWDMA_SETTINGS_RW_BUF_EMPTY_i )      |
-               ( settings->en_rwdma          << HSCB_RWDMA_SETTINGS_EN_RWDMA_i )          |
-               ( settings->en_rwdma_desc_tbl << HSCB_RWDMA_SETTINGS_EN_RWDMA_DESC_TBL_i ) |
-               ( settings->rwdma_long_len    << HSCB_RWDMA_SETTINGS_RWDMA_LONG_LEN_i )    |
-               ( settings->cancel_rwdma      << HSCB_RWDMA_SETTINGS_CANCEL_RWDMA_i ),
+    iowrite32( ( settings->rw_desc_int       << HSCB_XDMA_SETTINGS_X_DESC_INT_i )          |
+               ( settings->rw_desc_end       << HSCB_XDMA_SETTINGS_X_DESC_END_i )          |
+               ( settings->rw_bad_desc       << HSCB_XDMA_SETTINGS_X_BAD_DESC_i )          |
+               ( settings->rw_axi_error      << HSCB_XDMA_SETTINGS_X_AXI_ERROR_i )      |
+               ( settings->rw_buf_full       << HSCB_XDMA_SETTINGS_X_BUF_FULL_i )       |
+               ( settings->rw_buf_empty      << HSCB_XDMA_SETTINGS_X_BUF_EMPTY_i )      |
+               ( settings->en_rwdma          << HSCB_XDMA_SETTINGS_EN_XDMA_i )          |
+               ( settings->en_rwdma_desc_tbl << HSCB_XDMA_SETTINGS_EN_XDMA_DESC_TBL_i ) |
+               ( settings->rwdma_long_len    << HSCB_XDMA_SETTINGS_XDMA_LONG_LEN_i )    |
+               ( settings->cancel_rwdma      << HSCB_XDMA_SETTINGS_CANCEL_XDMA_i ),
                 base_addr + HSCB_WDMA_SETTINGS         );
 }
 
@@ -405,16 +405,16 @@ void hscb_get_wdma_settings(uint32_t base_addr, hscb_rwdma_settings_t* settings)
 {
     uint32_t val;
     val = ioread32(base_addr+ HSCB_WDMA_SETTINGS);
-    settings->rw_desc_int       = ( val & HSCB_RWDMA_SETTINGS_DESC_INT_mask )          >> HSCB_RWDMA_SETTINGS_DESC_INT_i;
-    settings->rw_desc_end       = ( val & HSCB_RWDMA_SETTINGS_DESC_END_mask )          >> HSCB_RWDMA_SETTINGS_DESC_END_i;
-    settings->rw_bad_desc       = ( val & HSCB_RWDMA_SETTINGS_BAD_DESC_mask )          >> HSCB_RWDMA_SETTINGS_BAD_DESC_i;
-    settings->rw_axi_error      = ( val & HSCB_RWDMA_SETTINGS_RW_AXI_ERROR_mask )      >> HSCB_RWDMA_SETTINGS_RW_AXI_ERROR_i;
-    settings->rw_buf_full       = ( val & HSCB_RWDMA_SETTINGS_RW_BUF_FULL_mask )       >> HSCB_RWDMA_SETTINGS_RW_BUF_FULL_i;
-    settings->rw_buf_empty      = ( val & HSCB_RWDMA_SETTINGS_RW_BUF_EMPTY_mask )      >> HSCB_RWDMA_SETTINGS_RW_BUF_EMPTY_i;
-    settings->en_rwdma          = ( val & HSCB_RWDMA_SETTINGS_EN_RWDMA_mask )          >> HSCB_RWDMA_SETTINGS_EN_RWDMA_i;
-    settings->en_rwdma_desc_tbl = ( val & HSCB_RWDMA_SETTINGS_EN_RWDMA_DESC_TBL_mask ) >> HSCB_RWDMA_SETTINGS_EN_RWDMA_DESC_TBL_i;
-    settings->rwdma_long_len    = ( val & HSCB_RWDMA_SETTINGS_RWDMA_LONG_LEN_mask )    >> HSCB_RWDMA_SETTINGS_RWDMA_LONG_LEN_i;
-    settings->cancel_rwdma      = ( val & HSCB_RWDMA_SETTINGS_CANCEL_RWDMA_mask )      >> HSCB_RWDMA_SETTINGS_CANCEL_RWDMA_i;
+    settings->rw_desc_int       = ( val & HSCB_XDMA_SETTINGS_X_DESC_INT_mask )          >> HSCB_XDMA_SETTINGS_X_DESC_INT_i;
+    settings->rw_desc_end       = ( val & HSCB_XDMA_SETTINGS_X_DESC_END_mask )          >> HSCB_XDMA_SETTINGS_X_DESC_END_i;
+    settings->rw_bad_desc       = ( val & HSCB_XDMA_SETTINGS_X_BAD_DESC_mask )          >> HSCB_XDMA_SETTINGS_X_BAD_DESC_i;
+    settings->rw_axi_error      = ( val & HSCB_XDMA_SETTINGS_X_AXI_ERROR_mask )      >> HSCB_XDMA_SETTINGS_X_AXI_ERROR_i;
+    settings->rw_buf_full       = ( val & HSCB_XDMA_SETTINGS_X_BUF_FULL_mask )       >> HSCB_XDMA_SETTINGS_X_BUF_FULL_i;
+    settings->rw_buf_empty      = ( val & HSCB_XDMA_SETTINGS_X_BUF_EMPTY_mask )      >> HSCB_XDMA_SETTINGS_X_BUF_EMPTY_i;
+    settings->en_rwdma          = ( val & HSCB_XDMA_SETTINGS_EN_XDMA_mask )          >> HSCB_XDMA_SETTINGS_EN_XDMA_i;
+    settings->en_rwdma_desc_tbl = ( val & HSCB_XDMA_SETTINGS_EN_XDMA_DESC_TBL_mask ) >> HSCB_XDMA_SETTINGS_EN_XDMA_DESC_TBL_i;
+    settings->rwdma_long_len    = ( val & HSCB_XDMA_SETTINGS_XDMA_LONG_LEN_mask )    >> HSCB_XDMA_SETTINGS_XDMA_LONG_LEN_i;
+    settings->cancel_rwdma      = ( val & HSCB_XDMA_SETTINGS_CANCEL_XDMA_mask )      >> HSCB_XDMA_SETTINGS_CANCEL_XDMA_i;
 }
 
 bool hscb_wait_status(uint32_t base_addr, uint32_t status)
