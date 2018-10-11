@@ -61,12 +61,13 @@ typedef enum {
  * brief Init UART
  * @param base_addr base address of UART
  * @param wlen word length
+ * @param uart_sys_freq_hz system frequency in hertzs
  * @param baud_rate baud rate
  * @param parity parity
  * @param int_mask interrupt mask
  * @param loopback loopback
  */
-void uart_init(uint32_t base_addr, UART_word_length wlen, uint32_t baud_rate, UART_parity parity, short int int_mask, int loopback);
+void uart_init(uint32_t base_addr, UART_word_length wlen, uint32_t uart_sys_freq_hz, uint32_t baud_rate, UART_parity parity, short int int_mask, int loopback);
 
 /**
  * brief Enable UART
@@ -122,22 +123,32 @@ void uart_fifos_set_level(uint32_t base_addr, UART_RX_FIFO_LEVEL rx_fifo_level, 
 /**
  * brief Set baudrate for UART
  * @param base_adr base address of UART
+ * @param uart_sys_freq_hz system frequency in hertzs
  * @param baudrate_hz baudrate frequency in Hz
  */
-void uart_set_baudrate(uint32_t  base_addr, uint32_t baudrate_hz);
+void uart_set_baudrate(uint32_t  base_addr, uint32_t uart_sys_freq_hz, uint32_t baudrate_hz);
 
 /**
  * brief Put char via UART
  * @param base_adr base address of UART
  * @param test_char char to be put to UART
+ * @param timeout_us_operation timeout in microseconds
  */
-void uart_putc(uint32_t  base_addr,unsigned char test_char);
+int8_t uart_putc(uint32_t  base_addr, unsigned char test_char, uint32_t timeout_us);
 
 /**
  * brief Get char from UART
  * @param base_adr base address of UART
+ * @param timeout_us operation timeout in microseconds
  */
-char uart_getc(uint32_t  base_addr);
+char uart_getc(uint32_t  base_addr, uint32_t timeout_us);
+
+/**
+ * brief Waiting while UART busy
+ * @param base_adr base address of UART
+ * @param timeout_us operation timeout in microseconds
+ */
+uint32_t uart_wait_busy(uint32_t base_addr, uint32_t timeout_us);
 
 /**
  * brief Check UART RFIFO FULL
