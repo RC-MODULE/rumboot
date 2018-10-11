@@ -186,23 +186,23 @@ bc_bns:
     b           test_error
 
 check_cpu_ppc_prog_model_27:    /*check XL-branch*/
-    rumboot_putstring "test conditional branch to lr (XL-branch)\n -> "
+    rumboot_putstring   "test conditional branch to lr (XL-branch):\n"
+    rumboot_putstring   "lt\n"
     load_addr   R_ADDR, bic_blelr
     mtlr        R_ADDR
-    cmpw   cr0, R_ZERO, R_ADDR
+    cmpw   cr0, R_ZERO, R_INCR
     bltlr+ cr0
     b           test_error
 
 bic_blelr:
-    rumboot_putstring "le\n"
+    rumboot_putstring   "le\n"
     load_addr   R_ADDR, bic_beqlr
     mtlr        R_ADDR
     blelr+ cr0
     b           test_error
 
 bic_beqlr:
-    rumboot_putstring "eq\n"
-    putchar     ' '
+    rumboot_putstring   "eq\n"
     load_addr   R_ADDR, bic_bgtlr
     mtlr        R_ADDR
     load_const  R_TEMP, 0x00000001
@@ -229,7 +229,7 @@ bic_bnllr:
     rumboot_putstring "nl\n"
     load_addr   R_ADDR, bic_bnelr
     mtlr        R_ADDR
-    cmpw   cr0, R_ONES, R_ZERO
+    cmpw   cr0, R_INCR, R_ZERO
     bnllr+ cr0
     b           test_error
 
@@ -244,7 +244,7 @@ bic_bnglr:
     rumboot_putstring "ng\n"
     load_addr   R_ADDR, bic_bsolr
     mtlr        R_ADDR
-    cmpw   cr0, R_ZERO, R_ONES
+    cmpw   cr0, R_ZERO, R_INCR
     bnglr+ cr0
     b           test_error
 
