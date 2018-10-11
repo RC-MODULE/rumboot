@@ -291,7 +291,7 @@ bic_bdnz_loop:
     b           test_error
 
 bic_bltctr:
-    rumboot_putstring "test cond branch to ctr:\n"
+    rumboot_putstring "test conditional branch to ctr:\n"
     rumboot_putstring "lt\n"
     load_addr   R_ADDR, bic_blectr
     mtctr       R_ADDR
@@ -351,7 +351,7 @@ bic_bngctr:
     rumboot_putstring "ng\n"
     load_addr   R_ADDR, bic_bsoctr
     mtctr       R_ADDR
-    cmpw   cr0, R_ZERO, R_ONES
+    cmpw   cr0, R_ZERO, R_INCR
     bngctr+     cr0
     b           test_error
 
