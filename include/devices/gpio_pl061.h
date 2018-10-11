@@ -35,62 +35,59 @@ typedef enum {
 } gpio_ctrl_mode;
 
 
-typedef enum {
-    GPIO_PIN_0 = ( 1 << 0 ),
-    GPIO_PIN_1 = ( 1 << 1 ),
-    GPIO_PIN_2 = ( 1 << 2 ),
-    GPIO_PIN_3 = ( 1 << 3 ),
-    GPIO_PIN_4 = ( 1 << 4 ),
-    GPIO_PIN_5 = ( 1 << 5 ),
-    GPIO_PIN_6 = ( 1 << 6 ),
-    GPIO_PIN_7 = ( 1 << 7 )
-} gpio_pin_t;
-
-typedef enum {
-    GIO_PIN_0_OUT = 1,
-    GIO_PIN_1_OUT = ( 1 << 1 ),
-    GIO_PIN_2_OUT = ( 1 << 2 ),
-    GIO_PIN_3_OUT = ( 1 << 3 ),
-    GIO_PIN_4_OUT = ( 1 << 4 ),
-    GIO_PIN_5_OUT = ( 1 << 5 ),
-    GIO_PIN_6_OUT = ( 1 << 6 ),
-    GIO_PIN_7_OUT = ( 1 << 7 ),
-    GIO_PIN_ALL_OUT = 0xFF,
-    GIO_PIN_ALL_IN = 0x00
-
-} gpio_pin_dir;
-
 /**
- * Setups GPIO interrupt
+ * Enable( GPIO interrupt
  * @param base_address device base address
- * @param value
- * @param enabled
+ * @param pin_offset
  * @param int_type
  */
-void gpio_interrupt_setup( uint32_t base_address, uint8_t value, bool enabled, gpio_int_type int_type );
+void gpio_int_enable( uint32_t base_address, uint32_t pin_offset, gpio_int_type int_type );
 
+/**
+ * Disable GPIO interrupt
+ * @param base_address device base address
+ * @param pin_offset
+ */
+void gpio_int_disable( uint32_t base_address, uint32_t pin_offset );
 
 /**
  * Clears edge interrupt
  * @param base_address device base address
- * @param value
+ * @param pin_offset
  */
-void gpio_clear_edge_int( uint32_t base_address, uint8_t value );
+void gpio_int_clear( uint32_t base_address, uint32_t pin_offset );
 
 /**
  * Setups direction
  * @param base_address device base address
- * @param value
+ * @param pin_offset
  * @param dir
  */
-void gpio_set_direction( uint32_t base_address, uint8_t value, gpio_pin_direction dir );
+void gpio_set_direction( uint32_t base_address, uint32_t pin_offset, gpio_pin_direction dir );
 
 /**
- * Setups predefined direction
+ * Gets direction
  * @param base_address device base address
- * @param dir
+ * @param pin_offset
+ * @return
  */
-void gpio_set_port_direction( uint32_t base_address, gpio_pin_dir dir );
+gpio_pin_direction gpio_get_direction( uint32_t base_address,  uint32_t pin_offset );
+
+/**
+ * Gets value
+ * @param base_address device base address
+ * @param pin_offset
+ * @return
+ */
+bool gpio_get_value( uint32_t base_address, uint32_t pin_offset );
+
+/**
+ * Setups value
+ * @param base_address device base address
+ * @param pin_offset
+ * @param value
+ */
+void gpio_set_value( uint32_t base_address, uint32_t pin_offset, bool value );
 
 /**
  * Gets all pins data
@@ -98,6 +95,5 @@ void gpio_set_port_direction( uint32_t base_address, gpio_pin_dir dir );
  * @return
  */
 uint8_t gpio_get_data( uint32_t base_address );
-
 
 #endif /* DEVICES_GPIO_PL061_H */
