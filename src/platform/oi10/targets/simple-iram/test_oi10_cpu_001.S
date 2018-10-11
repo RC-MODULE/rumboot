@@ -7,14 +7,30 @@
 
 #define MIRROR_MEM	0xFFF00000
 
-#define	ADDR26MASK	0x03FFFFFC
-#define LK			0x00000001
-#define AA			0x00000002
-#define B_OP		0x48000000
+/* Registers aliases */
+#define R_ARG0                  r3
+#define R_ARG1                  r4
+#define R_RETV                  R_ARG0
+#define R_ADDR                  r20     /* Unified address       */
+#define R_DATA                  r21     /* Unified data          */
+#define R_INCR                  r22     /* Increment value       */
+#define R_MASK                  r25     /* Unified mask          */
+#define R_EXPV                  r26     /* Expected value        */
+#define R_TEMP                  r27     /* Temp value            */
+#define R_BACK                  r28     /* Common backup         */
+#define R_BKLR                  r29     /* Holds LR copy         */
+#define R_ZERO                  r30     /* Holds 0x00000000      */
+#define R_ONES                  r31     /* Holds 0xFFFFFFFF      */
+
+
+#define	ADDR26MASK  0x03FFFFFC
+#define LK          0x00000001
+#define AA          0x00000002
+#define B_OP        0x48000000
 
 /* Branch opcode synthesis */
-.macro ppc_branch	bAddr, bFlg=0
-	.long	B_OP + \bAddr - IM0_BASE + (MIRROR_MEM & ADDR26MASK) + ((\bFlg) & 3)
+.macro ppc_branch   bAddr, bFlg=0
+    .long   B_OP + \bAddr - IM0_BASE + (MIRROR_MEM & ADDR26MASK) + ((\bFlg) & 3)
 .endm
 
 .global main
@@ -22,416 +38,353 @@
 .section ".text","ax",@progbits
 
 main:
-	mflr		r3				/* Save */
-	mtspr		SPR_SPRG8,	r3	/*  LR  */
-	b			setup_tlb
+    load_const  R_ZERO, 0x00000000
+    load_const  R_ONES, 0xFFFFFFFF
+    load_const  R_INCR  0x00000001
+    mflr        R_BKLR
+    b           setup_tlb
 
 tlb_entries:
  /*			MMU_TLB_ENTRY(  ERPN,   RPN,        EPN,        DSIZ,                   IL1I,   IL1D,   W,      I,      M,      G,      E,                      UX, UW, UR,     SX, SW, SR      DULXE,  IULXE,      TS,     TID,                WAY,                BID,              V   )*/
     .long	MMU_TLB_ENTRY(  0x010,  0x80000,    0xFFF00,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND, 0b1 )
     .long	MMU_TLB_ENTRY(  0x010,  0x80010,    0xFFF10,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND, 0b1 )
-	.set TLB_ENTRIES_N, (.-tlb_entries)/MMU_TLB_ENTRY_SIZE
+    .set TLB_ENTRIES_N, (.-tlb_entries)/MMU_TLB_ENTRY_SIZE
 
 setup_tlb:
-    load_addr   r3, tlb_entries
-    load_const  r4, TLB_ENTRIES_N
+    load_addr   R_ARG0, tlb_entries
+    load_const  R_ARG1, TLB_ENTRIES_N
     bl          ppc470s_write_tlb_entries
 
 check_cpu_ppc_prog_model_24:    /*check sequential flow*/
-	rumboot_putstring "Start test...\n", r15, r16
-    load_const	r3,	0x00000000
-    mtxer		r3
-    test_event	EVENT_CHECK_CPU_PPC_PROG_MODEL_24_SEQ, r15, r16
+    test_event_send_test_id "test_oi10_cpu_001"
+    // rumboot_putstring "Start test...\n"
+    mtxer       R_ZERO
+    test_event  EVENT_CHECK_CPU_PPC_PROG_MODEL_24_SEQ
 
 check_cpu_ppc_prog_model_25:    /*check unconditional branch*/
-    rumboot_putstring	"Unconditional branch:\n align: 3 ", r15, r16
-    b			bu_b3
-    test_event	EVENT_ERROR, r15, r16
-    b 			test_error
+    rumboot_putstring	"Unconditional branch:\n align: "
+    rumboot_putstring   "3"
+    b           bu_b3
+    b           test_error
 
 .align 3
 bu_b3:
-    putchar		'4', r15, r16
-    putchar		' ', r15, r16
-    b			bu_b4
-    b			test_error
+    rumboot_putstring   "4"
+    b           bu_b4
+    b           test_error
 
 .align 4
 bu_b4:
-    putchar		'5', r15, r16
-    putchar		' ', r15, r16
-    b			bu_b5
-    b			test_error
+    rumboot_putstring   "5"
+    b           bu_b5
+    b           test_error
 
 .align 5
 bu_b5:
-    putchar		'6', r15, r16
-    putchar		' ', r15, r16
-    b			bu_b6
-    b			test_error
+    rumboot_putstring   "6"
+    b           bu_b6
+    b           test_error
 
 .align 6
 bu_b6:
-    b			bu_bl
-    b			test_error
+    b           bu_bl
+    b           test_error
 
 
 bu_bl:
-	rumboot_putstring "\ntest bl/ba ... ", r15, r16
-	load_const	r3,		0x0001
-    bl			bu_blr
-    cmpwi cr5,	r3,		0x0000
-    beq+  cr5,	bu_bla
-    b			test_error
+    rumboot_putstring "test bl/ba ... "
+    addi        R_DATA, R_ZERO, 0x0001
+    bl          bu_blr
+    cmpw   cr4, R_DATA, R_ZERO
+    beq+   cr4, bu_bla
+    b           test_error
 
 bu_end:
-	rumboot_putstring "ok!\n", r15, r16
-    b			check_cpu_ppc_prog_model_26
+    rumboot_putstring "bl/ba ok!\n"
+    b           check_cpu_ppc_prog_model_26
 
 bu_ba:
-	ppc_branch	bu_end,	AA
-	b			test_error
+    ppc_branch  bu_end, AA
+    b           test_error
 
 
 bu_bla:
-	load_const	r3,		0x0001
-    ppc_branch	bu_blr,	AA|LK
-    cmpwi cr6,	r3,		0x0000
-    beq+  cr6,	bu_ba
-    b			test_error
+    addi        R_DATA, R_ZERO, 0x0001
+    ppc_branch  bu_blr,	AA|LK
+    cmpw   cr5, R_DATA, R_ZERO
+    beq+   cr5, bu_ba
+    b           test_error
 
 bu_blr:
-	xor			r3,	r3,	r3 /* Clear r3 */
+    xor         R_DATA, R_DATA, R_DATA  /* Clear register */
     blr
-    b			test_error
+    b           test_error
 
 
 check_cpu_ppc_prog_model_26:    /*check conditional branch*/
-	rumboot_putstring "\ntest conditional branch\n -> ", r15, r16
+    rumboot_putstring "test conditional branch:\n"
 
-    load_const	r4,	0x00000000
-    load_const	r5,	0x00000001
+    addi        R_DATA, R_ZERO, 0x0001
 
-    cmpw cr0,	r4, r5
-    blt			bc_ble
-    b			test_error
+    cmpw   cr0, R_ZERO, R_DATA
+    blt         bc_ble
+    b           test_error
 
 bc_ble:
-	putchar		'l', r15, r16
-	putchar		'e', r15, r16
-	putchar		' ', r15, r16
-    ble			bc_beq
+    rumboot_putstring "le\n"
+    ble+   cr0, bc_beq
     b			test_error
 
 bc_beq:
-	putchar		'e', r15, r16
-	putchar		'q', r15, r16
-	putchar		' ', r15, r16
-    cmpw cr0,	r5,	r5
-    beq			bc_bgt
-    b			test_error
+    rumboot_putstring "eq\n"
+    cmpw   cr0, R_DATA, R_DATA
+    beq+   cr0, bc_bgt
+    b           test_error
 
 bc_bgt:
-	putchar		'g', r15, r16
-	putchar		't', r15, r16
-	putchar		' ', r15, r16
-    cmpw cr0,	r5, r4
-    bgt			bc_bge
+    rumboot_putstring "gt\n"
+    cmpw   cr0, R_DATA, R_ZERO
+    bgt+   cr0, bc_bge
     b			test_error
 
 bc_bge:
-	putchar		'g', r15, r16
-	putchar		'e', r15, r16
-	putchar		' ', r15, r16
-    bge			bc_bnl
-    b			test_error
+    rumboot_putstring "ge\n"
+    bge+   cr0, bc_bnl
+    b           test_error
 
 bc_bnl:
-	putchar		'n', r15, r16
-	putchar		'l', r15, r16
-	putchar		' ', r15, r16
-    cmp cr0,	r5,	r4
-    bnl			bc_bne
-    b			test_error
+    rumboot_putstring "nl\n"
+    cmpw   cr0, R_DATA, R_ZERO
+    bnl+   cr0, bc_bne
+    b           test_error
 
 bc_bne:
-	putchar		'n', r15, r16
-	putchar		'e', r15, r16
-	putchar		' ', r15, r16
-    bne			bc_bng
-    b			test_error
+    rumboot_putstring "ne\n"
+    bne+   cr0, bc_bng
+    b           test_error
 
 bc_bng:
-	putchar		'n', r15, r16
-	putchar		'g', r15, r16
-	putchar		' ', r15, r16
-    cmp cr0,	r4,	r5
-    bng			bc_bso
-    b			test_error
+    rumboot_putstring "ng\n"
+    cmpw   cr0, R_ZERO, R_DATA
+    bng+   cr0, bc_bso
+    b           test_error
 
 bc_bso:
-	putchar		's', r15, r16
-	putchar		'o', r15, r16
-	putchar		' ', r15, r16
-    load_const	r6,	0x7FFFFFFF
-    load_const	r7,	0x00000002
-	/*operands considered as signed, see PowerISA, 3.3.7*/
-    addco.		r8,	r6,	r7
-    bso bc_bns
-    b test_error
+    rumboot_putstring "so\n"
+    load_const  R_MASK, 0x7FFFFFFF
+    load_const  R_TEMP, 0x00000002
+    /* operands considered as signed, see PowerISA, 3.3.7 */
+    addco.      R_DATA, R_MASK, R_TEMP
+    bso+   cr0, bc_bns
+    b           test_error
 
 bc_bns:
-	putchar		'n', r15, r16
-	putchar		's', r15, r16
-	putchar		' ', r15, r16
-    load_const	r6,	0xFFFFFFFF
-    load_const	r7,	0x00000000
-    /*SO bit of XER is not cleared automatically*/
-    mtxer		r7
-    addco.		r8,	r6,	r7
-    bns			check_cpu_ppc_prog_model_27
-    b			test_error
-
+    rumboot_putstring "ns\n"
+    /* SO bit of XER is not cleared automatically */
+    mtxer       R_ZERO
+    addco.      R_DATA, R_ONES, R_ZERO
+    bns+   cr0, check_cpu_ppc_prog_model_27
+    b           test_error
 
 check_cpu_ppc_prog_model_27:    /*check XL-branch*/
-	rumboot_putstring "\ntest conditional branch to lr (XL-branch)\n -> ", r15, r16
-	load_addr	r6,	bic_blelr
-    mtlr		r6
-    cmpw  cr0,	r4, r5
-    bltlr cr0
-    b			test_error
+    rumboot_putstring   "test conditional branch to lr (XL-branch):\n"
+    rumboot_putstring   "lt\n"
+    load_addr   R_ADDR, bic_blelr
+    mtlr        R_ADDR
+    cmpw   cr0, R_ZERO, R_INCR
+    bltlr+ cr0
+    b           test_error
 
 bic_blelr:
-	putchar		'l', r15, r16
-	putchar		'e', r15, r16
-	putchar		' ', r15, r16
-	load_addr	r6,	bic_beqlr
-    mtlr		r6
-    blelr cr0
-    b			test_error
+    rumboot_putstring   "le\n"
+    load_addr   R_ADDR, bic_beqlr
+    mtlr        R_ADDR
+    blelr+ cr0
+    b           test_error
 
 bic_beqlr:
-	putchar		'e', r15, r16
-	putchar		'q', r15, r16
-	putchar		' ', r15, r16
-	load_addr	r6,	bic_bgtlr
-    mtlr		r6
-    load_const	r6,	0x00000001
-    cmpw  cr0,	r6,	r5
-    beqlr cr0
-    b			test_error
+    rumboot_putstring   "eq\n"
+    load_addr   R_ADDR, bic_bgtlr
+    mtlr        R_ADDR
+    load_const  R_TEMP, 0x00000001
+    cmpw   cr0, R_INCR, R_TEMP
+    beqlr+ cr0
+    b           test_error
 
 bic_bgtlr:
-	putchar 'g', r15, r16
-	putchar 't', r15, r16
-	putchar ' ', r15, r16
-	load_addr	r6,	bic_bgelr
-    mtlr		r6
-    cmpw  cr0,	r5,	r1
+    rumboot_putstring "gt\n"
+    load_addr   R_ADDR, bic_bgelr
+    mtlr        R_ADDR
+    cmpw  cr0,  R_INCR, R_ZERO
     bgtlr cr0
-    b			test_error
+    b           test_error
 
 bic_bgelr:
-	putchar		'g', r15, r16
-	putchar		'e', r15, r16
-	putchar		' ', r15, r16
-	load_addr	r6,	bic_bnllr
-    mtlr		r6
-    bgelr cr0
-    b			test_error
+    rumboot_putstring "ge\n"
+    load_addr   R_ADDR, bic_bnllr
+    mtlr        R_ADDR
+    bgelr+ cr0
+    b           test_error
 
 bic_bnllr:
-	putchar		'n', r15, r16
-	putchar		'l', r15, r16
-	putchar		' ', r15, r16
-	load_addr	r6,	bic_bnelr
-    mtlr		r6
-    cmpw  cr0,	r5,	r4
-    bnllr cr0
-    b			test_error
+    rumboot_putstring "nl\n"
+    load_addr   R_ADDR, bic_bnelr
+    mtlr        R_ADDR
+    cmpw   cr0, R_INCR, R_ZERO
+    bnllr+ cr0
+    b           test_error
 
 bic_bnelr:
-	putchar		'n', r15, r16
-	putchar		'e', r15, r16
-	putchar		' ', r15, r16
-	load_addr	r6,	bic_bnglr
-    mtlr		r6
-    bnelr cr0
-    b			test_error
+    rumboot_putstring "ne\n"
+    load_addr   R_ADDR, bic_bnglr
+    mtlr        R_ADDR
+    bnelr+ cr0
+    b           test_error
 
 bic_bnglr:
-	putchar		'n', r15, r16
-	putchar		'g', r15, r16
-	putchar		' ', r15, r16
-	load_addr	r6,	bic_bsolr
-    mtlr		r6
-    cmpw  cr0,	r4,	r5
-    bnglr cr0
-    b			test_error
+    rumboot_putstring "ng\n"
+    load_addr   R_ADDR, bic_bsolr
+    mtlr        R_ADDR
+    cmpw   cr0, R_ZERO, R_INCR
+    bnglr+ cr0
+    b           test_error
 
 bic_bsolr:
-	putchar		's', r15, r16
-	putchar		'o', r15, r16
-	putchar		' ', r15, r16
-	load_addr	r6,	bic_bnslr
-    mtlr		r6
-    load_const	r6,	0xFFFFFFFF
-    load_const	r7,	0x80000000
-    addco.		r8,	r6,	r7
-    bsolr cr0
-    b			test_error
+    rumboot_putstring "so\n"
+    load_addr   R_ADDR, bic_bnslr
+    mtlr        R_ADDR
+    load_const  R_TEMP, 0x80000000
+    addco.      R_DATA, R_ONES, R_TEMP
+    bsolr+ cr0
+    b           test_error
 
 bic_bnslr:
-	putchar		'n', r15, r16
-	putchar		's', r15, r16
-	putchar		' ', r15, r16
-	load_addr	r6,	bic_bdz
-    mtlr		r6
-    load_const	r6,	0xFFFFFFFF
-    mtxer		r4
-    addco.		r8,	r5,	r4
-    bnslr cr0
-    b			test_error
+    rumboot_putstring "ns\n"
+    load_addr   R_ADDR, bic_bdz
+    mtlr        R_ADDR
+    mtxer       R_ZERO
+    addco.      R_DATA, R_ONES, R_ZERO
+    bnslr+ cr0
+    b           test_error
 
 bic_bdz:
 bic_bdz:
-    rumboot_putstring "\ntest bdz/bdnz... ", r15, r16
-    load_const	r6,	0x0003
-    mtctr		r6
+    rumboot_putstring "test bdz/bdnz...\n"
+    load_const  R_DATA, 0x0003
+    mtctr       R_DATA
 bic_bdz_loop:
-	addi		r6,	r6,	-1
-    bdz			bic_bdz_stop
-    b			bic_bdz_loop
+    addi        R_DATA, R_DATA, -1
+    bdz         bic_bdz_stop
+    b           bic_bdz_loop
 bic_bdz_stop:
-	cmpwi cr5,	r6,	0x0000
-	beq+  cr5,	bic_bdnz
-	b			test_error
+    cmpw   cr3, R_DATA, R_ZERO
+    beq+   cr3, bic_bdnz
+    b			test_error
 
 bic_bdnz:
-    load_const	r6,	0x0003
-    mtctr		r6
+    load_const  R_DATA, 0x0003
+    mtctr       R_DATA
 bic_bdnz_loop:
-	addi		r6,	r6,	-1
-	bdnz		bic_bdnz_loop
-	beq+  cr6,	bic_bltctr
-	b			test_error
+    addi        R_DATA, R_DATA, -1
+    bdnz        bic_bdnz_loop
+    cmpw   cr4, R_DATA, R_ZERO
+    beq+   cr4, bic_bltctr
+    b           test_error
 
 bic_bltctr:
-	rumboot_putstring "\ntest cond branch to ctr -> lt ", r15, r16
-	load_addr	r6,	bic_blectr
-    mtctr		r6
-    cmpw   cr0,	r4,	r5
-    bltctr cr0
-    b			test_error
+    rumboot_putstring "test conditional branch to ctr:\n"
+    rumboot_putstring "lt\n"
+    load_addr   R_ADDR, bic_blectr
+    mtctr       R_ADDR
+    cmpw   cr0, R_ZERO, R_INCR
+    bltctr+     cr0
+    b           test_error
 
 bic_blectr:
-	putchar		'l', r15, r16
-	putchar		'e', r15, r16
-	putchar		' ', r15, r16
-	load_addr	r6,	bic_beqctr
-    mtctr		r6
-    cmpw   cr0,	r4,	r5
-    blectr cr0
-    b			test_error
+    rumboot_putstring "le\n"
+    load_addr   R_ADDR, bic_beqctr
+    mtctr       R_ADDR
+    cmpw   cr0, R_ZERO, R_INCR
+    blectr+     cr0
+    b           test_error
 
 bic_beqctr:
-	putchar		'e', r15, r16
-	putchar		'q', r15, r16
-	putchar		' ', r15, r16
-	load_addr	r6,	bic_bgtctr
-    mtctr		r6
-    load_const	r5,	0x00000001
-    cmpw   cr0,	r5,	r5
-    beqctr cr0
-    b			test_error
+    rumboot_putstring "eq\n"
+    load_addr   R_ADDR, bic_bgtctr
+    mtctr       R_ADDR
+    cmpw   cr0, R_INCR, R_INCR
+    beqctr+     cr0
+    b           test_error
 
 bic_bgtctr:
-	putchar		'g', r15, r16
-	putchar		't', r15, r16
-	putchar		' ', r15, r16
-	load_addr	r6,	bic_bgectr
-    mtctr		r6
-    cmpw   cr0,	r5,	r4
-    bgtctr cr0
-    b			test_error
+    rumboot_putstring "gt\n"
+    load_addr   R_ADDR, bic_bgectr
+    mtctr       R_ADDR
+    cmpw   cr0, R_INCR, R_ZERO
+    bgtctr+     cr0
+    b           test_error
 
 bic_bgectr:
-	putchar		'g', r15, r16
-	putchar		'e', r15, r16
-	putchar		' ', r15, r16
-	load_addr	r6,	bic_bnlctr
-    mtctr		r6
-    cmpw   cr0,	r5,	r4
-    bgectr cr0
-    b			test_error
+    rumboot_putstring "ge\n"
+    load_addr   R_ADDR, bic_bnlctr
+    mtctr       R_ADDR
+    cmpw   cr0, R_INCR, R_ZERO
+    bgectr+     cr0
+    b           test_error
 
 bic_bnlctr:
-	putchar		'n', r15, r16
-	putchar		'l', r15, r16
-	putchar		' ', r15, r16
-	load_addr	r6,	bic_bnectr
-    mtctr		r6
-    cmpw   cr0,	r5,	r4
-    bnlctr cr0
-    b			test_error
+    rumboot_putstring "nl\n"
+    load_addr   R_ADDR, bic_bnectr
+    mtctr       R_ADDR
+    cmpw   cr0, R_INCR, R_ZERO
+    bnlctr+     cr0
+    b           test_error
 
 bic_bnectr:
-	putchar		'n', r15, r16
-	putchar		'e', r15, r16
-	putchar		' ', r15, r16
-	load_addr	r6,	bic_bngctr
-    mtctr		r6
-    cmpw   cr0,	r5,	r4
-    bnectr cr0
-    b			test_error
+    rumboot_putstring "ne\n"
+    load_addr   R_ADDR, bic_bngctr
+    mtctr       R_ADDR
+    cmpw   cr0, R_ONES, R_ZERO
+    bnectr+     cr0
+    b           test_error
 
 bic_bngctr:
-	putchar		'n', r15, r16
-	putchar		'g', r15, r16
-	putchar		' ', r15, r16
-	load_addr	r6,	bic_bsoctr
-    mtctr		r6
-    cmpw   cr0,	r4,	r5
-    bngctr cr0
-    b			test_error
+    rumboot_putstring "ng\n"
+    load_addr   R_ADDR, bic_bsoctr
+    mtctr       R_ADDR
+    cmpw   cr0, R_ZERO, R_INCR
+    bngctr+     cr0
+    b           test_error
 
 bic_bsoctr:
-	putchar		's', r15, r16
-	putchar		'o', r15, r16
-	putchar		' ', r15, r16
-	load_addr	r6,	bic_bnsctr
-    mtctr		r6
-    load_const	r6,	0x7FFFFFFF
-    load_const	r7,	0x00000002
-    addco.		r8,	r6,	r7
-    bsoctr cr0
-    b			test_error
+    rumboot_putstring "so\n"
+    load_addr   R_ADDR, bic_bnsctr
+    mtctr       R_ADDR
+    load_const  R_MASK, 0x7FFFFFFF
+    load_const  R_TEMP, 0x00000002
+    addco.      R_DATA, R_MASK, R_TEMP
+    bsoctr+     cr0
+    b           test_error
 
 bic_bnsctr:
-	putchar		'n', r15, r16
-	putchar		's', r15, r16
-	putchar		' ', r15, r16
-	load_addr	r6,	test_ok
-    mtctr		r6
-    load_const	r6,	0xFFFFFFFF
-    mtxer		r4
-    addco.		r8,	r6,	r4
-    bnsctr cr0
-    b			test_error
+    rumboot_putstring "ns\n"
+    load_addr   R_ADDR, test_ok
+    mtctr       R_ADDR
+    mtxer       R_ZERO
+    addco.      R_DATA, R_ONES, R_ZERO
+    bnsctr+     cr0
+    b           test_error
 
 test_error:
-	rumboot_putstring "\nTEST ERROR\n", r15, r16
-	test_event		EVENT_ERROR, r15, r16
-	load_const	r3,	RESULT_ERROR
-	b finish
+    rumboot_putstring "\nTEST ERROR\n"
+    load_const  R_RETV, RESULT_ERROR
+    b finish
 
 test_ok:
-	rumboot_putstring "\nTEST OK\n", r15, r16
-	test_event		EVENT_OK, r15, r16
-	load_const	r3,	RESULT_OK
+    rumboot_putstring "\nTEST OK\n"
+    load_const  R_RETV, RESULT_OK
 
 finish:
-	mfspr		r4,	SPR_SPRG8	/* Restore */
-	mtlr		r4				/*   LR    */
-	blr
+    mtlr        R_BKLR
+    blr         /* RETURN */
 
