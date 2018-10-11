@@ -751,16 +751,16 @@ END_ENUM( hscb_rotate_bytes_t )
     (((word) >>  8) & 0x0000ff00) | \
     (((word) >> 24) & 0x000000ff)
 
-#define HSCB_CREATE_DESCRIPTOR_LEN_ATTR_ENDIAN_EXE (length,act,act0,ie,valid,change_endian) \
+#define HSCB_CREATE_DESCRIPTOR_LEN_ATTR_ENDIAN_EXE(length,act,act0,ie,valid,change_endian) \
     (change_endian) ?   \
         HSCB_CHANGE_ENDIAN_WORD( \
-             HSCB_CREATE_DESCRIPTOR_LEN_ATTR_ENDIAN_EXE( \
+             HSCB_CREATE_DESCRIPTOR_LEN_ATTR( \
                      length, \
                      act, \
                      act0, \
                      ie, \
                      valid) ) \
-        :   HSCB_CREATE_DESCRIPTOR_LEN_ATTR_ENDIAN_EXE( \
+        :   HSCB_CREATE_DESCRIPTOR_LEN_ATTR( \
                      length, \
                      act, \
                      act0, \
