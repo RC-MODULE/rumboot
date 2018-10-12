@@ -255,11 +255,30 @@ bool wait_for_tx_cts_int(uint32_t timeout)
 
 uint32_t test_uart(uint32_t UART_TRANSMITTER_BASE, uint32_t UART_RECEIVER_BASE)
 {
+    static const uart_init_params transmitter_init_params =
+    {
+        UART_word_length_8bit,
+        UART_SYS_FREQ_HZ,
+        6250000,
+        UART_parity_no,
+        0x022,
+        0
+    };
+    static const uart_init_params receiver_init_params =
+    {
+        UART_word_length_8bit,
+        UART_SYS_FREQ_HZ,
+        6250000,
+        UART_parity_no,
+        0x410,
+        0
+    };
+
     rumboot_printf("------- Test UART -------\n");
     rumboot_printf("UART_BASE = 0x%x\n", UART_RECEIVER_BASE);
 
 
-    uart_init(UART_TRANSMITTER_BASE, UART_word_length_8bit, UART_SYS_FREQ_HZ, 6250000, UART_parity_no, 0x022, 0);
+    uart_init(UART_TRANSMITTER_BASE, &transmitter_init_params);
     uart_fifos_set_level(UART_TRANSMITTER_BASE, UART_RX_FIFO_LEVEL_GT_7_8, UART_TX_FIFO_LEVEL_LT_1_8);
     uart_fifos_enable(UART_TRANSMITTER_BASE, true);
     uart_rts_cts_enable(UART_TRANSMITTER_BASE, true);
@@ -267,7 +286,7 @@ uint32_t test_uart(uint32_t UART_TRANSMITTER_BASE, uint32_t UART_RECEIVER_BASE)
     uart_enable(UART_TRANSMITTER_BASE, true);
 
 
-    uart_init(UART_RECEIVER_BASE, UART_word_length_8bit, UART_SYS_FREQ_HZ, 6250000, UART_parity_no, 0x410, 0);
+    uart_init(UART_RECEIVER_BASE, &receiver_init_params);
     uart_fifos_set_level(UART_RECEIVER_BASE, UART_RX_FIFO_LEVEL_GT_7_8, UART_TX_FIFO_LEVEL_LT_1_8);
     uart_fifos_enable(UART_RECEIVER_BASE, true);
     uart_rts_cts_enable(UART_RECEIVER_BASE, true);
