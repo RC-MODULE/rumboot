@@ -78,65 +78,81 @@
 uint8_t __attribute__((section(".data"))) im0_array [IM0_ARR_SIZE] = {0};
 
 
-void check_mem_be_prog (uint32_t base_addr)
+void check_mem_be_prog (uint32_t base_addr, uint32_t value)
 {
     rumboot_printf("load\n");
-    iowrite8 (0x01 ,  base_addr + 0x00);
-    iowrite8 (0x23 ,  base_addr + 0x01);
-    iowrite8 (0x45 ,  base_addr + 0x02);
-    iowrite8 (0x67 ,  base_addr + 0x03);
-    TEST_ASSERT ( ioread32 ( base_addr) == 0x01234567, "ERROR: this not BigEnd" );
+    iowrite8 ((value & 0xFF000000) >> 24 ,  base_addr);
+    iowrite8 ((value & 0x00FF0000) >> 16,  base_addr + 0x01);
+    iowrite8 ((value & 0x0000FF00) >> 8,  base_addr + 0x02);
+    iowrite8 ((value & 0x000000FF) ,  base_addr + 0x03);
+    msync();
+    TEST_ASSERT ( ioread32 ( base_addr) == value, "ERROR: this not BigEnd" );
 
     rumboot_printf("store\n");
-    iowrite32 (0x89ABCDEF , base_addr + 0x04);
-    TEST_ASSERT ( ioread8 ( base_addr+ 0x04) == 0x89, "ERROR: this not BigEnd" );
-    TEST_ASSERT ( ioread8 ( base_addr + 0x05) == 0xAB, "ERROR: this not BigEnd" );
-    TEST_ASSERT ( ioread8 ( base_addr + 0x06) == 0xCD, "ERROR: this not BigEnd" );
-    TEST_ASSERT ( ioread8 ( base_addr + 0x07) == 0xEF, "ERROR: this not BigEnd" );
+    iowrite32 (value , base_addr + 0x04);
+    msync();
+    TEST_ASSERT ( ioread8 ( base_addr+ 0x04) == (value & 0xFF000000) >> 24, "ERROR: this not BigEnd" );
+    TEST_ASSERT ( ioread8 ( base_addr + 0x05) == (value & 0x00FF0000) >> 16, "ERROR: this not BigEnd" );
+    TEST_ASSERT ( ioread8 ( base_addr + 0x06) == (value & 0x0000FF00) >> 8, "ERROR: this not BigEnd" );
+    TEST_ASSERT ( ioread8 ( base_addr + 0x07) == (value & 0x000000FF), "ERROR: this not BigEnd" );
+
+    //clear values
+    iowrite32 (0x00 , base_addr + 0);
+    iowrite32 (0x00 , base_addr + 0x04);
+    msync();
 }
 
-void check_mem_le_prog (uint32_t base_addr)
+void check_mem_le_prog (uint32_t base_addr, uint32_t value)
 {
     rumboot_printf("load\n");
-    iowrite8 (0x01 , base_addr + 0x00);
-    iowrite8 (0x23 , base_addr + 0x01);
-    iowrite8 (0x45 , base_addr + 0x02);
-    iowrite8 (0x67 , base_addr + 0x03);
-    TEST_ASSERT ( ioread32 (base_addr) == 0x67452301, "ERROR: this not LittleEnd" );
+    iowrite8 ((value & 0x000000FF) , base_addr);
+    iowrite8 ((value & 0x0000FF00) >> 8 , base_addr + 0x01);
+    iowrite8 ((value & 0x00FF0000) >> 16, base_addr + 0x02);
+    iowrite8 ((value & 0xFF000000) >> 24, base_addr + 0x03);
+    msync();
+    TEST_ASSERT ( ioread32 (base_addr) == value, "ERROR: this not LittleEnd" );
 
     rumboot_printf("store\n");
-    iowrite32 (0x89ABCDEF , base_addr + 0x04);
-    TEST_ASSERT ( ioread8 (base_addr + 0x04) == 0xEF, "ERROR: this not LittleEnd" );
-    TEST_ASSERT ( ioread8 (base_addr + 0x05) == 0xCD, "ERROR: this not LittleEnd" );
-    TEST_ASSERT ( ioread8 (base_addr + 0x06) == 0xAB, "ERROR: this not LittleEnd" );
-    TEST_ASSERT ( ioread8 (base_addr + 0x07) == 0x89, "ERROR: this not LittleEnd" );
+    iowrite32 (value , base_addr + 0x04);
+    msync();
+    TEST_ASSERT ( ioread8 (base_addr + 0x04) == (value & 0x000000FF), "ERROR: this not LittleEnd" );
+    TEST_ASSERT ( ioread8 (base_addr + 0x05) == (value & 0x0000FF00) >> 8, "ERROR: this not LittleEnd" );
+    TEST_ASSERT ( ioread8 (base_addr + 0x06) == (value & 0x00FF0000) >> 16, "ERROR: this not LittleEnd" );
+    TEST_ASSERT ( ioread8 (base_addr + 0x07) == (value & 0xFF000000) >> 24, "ERROR: this not LittleEnd" );
+
+    //clear values
+    iowrite32 (0x00 , base_addr + 0);
+    iowrite32 (0x00 , base_addr + 0x04);
+    msync();
 }
 
-void check_mem_nor_be_prog (uint32_t base_addr)
+void check_mem_nor_be_prog (uint32_t base_addr, uint32_t value)
 {
     rumboot_printf("store\n");
-    nor_write32 (0x01234567 , base_addr + 0x00 );
-    TEST_ASSERT ( ioread8 (base_addr + 0x00) == 0x01, "ERROR: this not BigEnd" );
-    TEST_ASSERT ( ioread8 (base_addr + 0x01) == 0x23, "ERROR: this not BigEnd" );
-    TEST_ASSERT ( ioread8 (base_addr + 0x02) == 0x45, "ERROR: this not BigEnd" );
-    TEST_ASSERT ( ioread8 (base_addr + 0x03) == 0x67, "ERROR: this not BigEnd" );
+    nor_write32 (value , base_addr);
+    msync();
+    TEST_ASSERT ( ioread8 ( base_addr+ 0) == (value & 0xFF000000) >> 24, "ERROR: this not BigEnd" );
+    TEST_ASSERT ( ioread8 ( base_addr + 0x01) == (value & 0x00FF0000) >> 16, "ERROR: this not BigEnd" );
+    TEST_ASSERT ( ioread8 ( base_addr + 0x02) == (value & 0x0000FF00) >> 8, "ERROR: this not BigEnd" );
+    TEST_ASSERT ( ioread8 ( base_addr + 0x03) == (value & 0x000000FF), "ERROR: this not BigEnd" );
 }
 
-void check_mem_nor_le_prog (uint32_t base_addr)
+void check_mem_nor_le_prog (uint32_t base_addr, uint32_t value)
 {
     rumboot_printf("store\n");
-    nor_write32 (0x89ABCDEF , base_addr + 0x04 );
-    TEST_ASSERT ( ioread8 (base_addr + 0x04) == 0xEF, "ERROR: this not LittleEnd" );
-    TEST_ASSERT ( ioread8 (base_addr + 0x05) == 0xCD, "ERROR: this not LittleEnd" );
-    TEST_ASSERT ( ioread8 (base_addr + 0x06) == 0xAB, "ERROR: this not LittleEnd" );
-    TEST_ASSERT ( ioread8 (base_addr + 0x07) == 0x89, "ERROR: this not LittleEnd" );
+    nor_write32 (value , base_addr);
+    msync();
+    TEST_ASSERT ( ioread8 (base_addr) == (value & 0x000000FF), "ERROR: this not LittleEnd" );
+    TEST_ASSERT ( ioread8 (base_addr + 0x01) == (value & 0x0000FF00) >> 8, "ERROR: this not LittleEnd" );
+    TEST_ASSERT ( ioread8 (base_addr + 0x02) == (value & 0x00FF0000) >> 16, "ERROR: this not LittleEnd" );
+    TEST_ASSERT ( ioread8 (base_addr + 0x03) == (value & 0xFF000000) >> 24, "ERROR: this not LittleEnd" );
 }
 
 void check_IM0_PROG ()
 {
     //IM0 BigeEndian (default)
     rumboot_printf("Check IM0 BigEndian\n");
-    check_mem_be_prog ((uint32_t) im0_array);
+    check_mem_be_prog ((uint32_t) im0_array, 0x01020304);
 
     //IM0 LittleEndian
     rumboot_printf("Check IM0 LittleEndian\n");
@@ -148,21 +164,21 @@ void check_IM0_PROG ()
        write_tlb_entries(&im0_tlb_entry_little_1,1);
 
     uint32_t im0_array_mirror = (uint32_t) im0_array - IM0_BASE + IM0_BASE_MIRROR;
-    check_mem_le_prog (im0_array_mirror);
+    check_mem_le_prog (im0_array_mirror, 0x01020304);
 }
 
 void check_IM1_PROG ()
 {
     //IM1 BigeEndian (default)
     rumboot_printf("Check IM1 BigEndian\n");
-    check_mem_be_prog (IM1_BASE);
+    check_mem_be_prog (IM1_BASE, 0x22334455);
 
     //IM1 Little Endian
     static const tlb_entry im1_tlb_entry_little = {TLB_ENTRY_IM1_LITTLE};
     write_tlb_entries(&im1_tlb_entry_little,1);
 
     rumboot_printf("Check IM1 LittleEndian\n");
-    check_mem_le_prog (IM1_BASE);
+    check_mem_le_prog (IM1_BASE + 0x8, 0x22334455);
 
     static const tlb_entry im1_tlb_entry_big = {TLB_ENTRY_IM1_BIG};
     write_tlb_entries(&im1_tlb_entry_big,1);
@@ -172,7 +188,7 @@ void check_SRAM0_PROG ()
 {
     //SRAM0 BigEndian (default)
     rumboot_printf("Check SRAM0 BigEndian\n");
-    check_mem_be_prog (SRAM0_BASE);
+    check_mem_be_prog (SRAM0_BASE, 0x33445566);
 
    //SRAM0 LittleEndian
     rumboot_printf("Check SRAM0 LittleEndian\n");
@@ -180,14 +196,14 @@ void check_SRAM0_PROG ()
     static const tlb_entry sram0_tlb_entry_little = {TLB_ENTRY_SRAM0_LITTLE};
     write_tlb_entries(&sram0_tlb_entry_little,1);
 
-    check_mem_le_prog (SRAM0_BASE);
+    check_mem_le_prog (SRAM0_BASE + 0x8, 0x33445566);
 	}
 
 void check_NOR_PROG ()
 {
     //NOR BigEndian (default)
     rumboot_printf("Check NOR BigEndian\n");
-    check_mem_nor_be_prog (NOR_BASE);
+    check_mem_nor_be_prog (NOR_BASE, 0x44556677);
 
     //NOR LittleEndian
     rumboot_printf("Check NOR LittleEndian\n");
@@ -195,7 +211,7 @@ void check_NOR_PROG ()
     static const tlb_entry nor_tlb_entry_little = {TLB_ENTRY_SRAM1_NOR_LITTLE};
     write_tlb_entries(&nor_tlb_entry_little,1);
 
-    check_mem_nor_le_prog (NOR_BASE+0x4);
+    check_mem_nor_le_prog (NOR_BASE+0x4, 0x44556677);
 	}
 
 void check_SRAM1_PROG ()
@@ -206,7 +222,7 @@ void check_SRAM1_PROG ()
     static const tlb_entry sram1_tlb_entry_big = {TLB_ENTRY_SRAM1_NOR_BIG};
     write_tlb_entries(&sram1_tlb_entry_big,1);
 
-    check_mem_be_prog (SRAM1_BASE);
+    check_mem_be_prog (SRAM1_BASE, 0x55667788);
 
    //SRAM1 LittleEndian
     rumboot_printf("Check SRAM1 LittleEndian\n");
@@ -214,7 +230,7 @@ void check_SRAM1_PROG ()
     static const tlb_entry sram1_tlb_entry_little = {TLB_ENTRY_SRAM1_NOR_LITTLE};
     write_tlb_entries(&sram1_tlb_entry_little,1);
 
-    check_mem_le_prog (SRAM1_BASE);
+    check_mem_le_prog (SRAM1_BASE+0x8, 0x66778899);
 	}
 
 void check_SDRAM_PROG ()
@@ -225,7 +241,7 @@ void check_SDRAM_PROG ()
      static const tlb_entry sdram_tlb_entry_big = {TLB_ENTRY_SDRAM_BIG};
      write_tlb_entries(&sdram_tlb_entry_big,1);
 
-     check_mem_be_prog (SDRAM_BASE);
+     check_mem_be_prog (SDRAM_BASE, 0x778899AA);
 
     //SDRAM LittleEndian
      rumboot_printf("Check SDRAM LittleEndian\n");
@@ -233,7 +249,7 @@ void check_SDRAM_PROG ()
      static const tlb_entry sdram_tlb_entry_little = {TLB_ENTRY_SDRAM_LITTLE};
      write_tlb_entries(&sdram_tlb_entry_little,1);
 
-     check_mem_le_prog (SDRAM_BASE);
+     check_mem_le_prog (SDRAM_BASE+0x8, 0x778899AA);
     }
 
 void check_SSRAM_PROG ()
@@ -244,7 +260,7 @@ void check_SSRAM_PROG ()
      static const tlb_entry ssram_tlb_entry_big = {TLB_ENTRY_SSRAM_BIG};
      write_tlb_entries(&ssram_tlb_entry_big,1);
 
-     check_mem_be_prog (SSRAM_BASE);
+     check_mem_be_prog (SSRAM_BASE, 0x8899AABB);
 
      //SSRAM LittleEndian
       rumboot_printf("Check SSRAM LittleEndian\n");
@@ -252,7 +268,7 @@ void check_SSRAM_PROG ()
       static const tlb_entry ssram_tlb_entry_little = {TLB_ENTRY_SSRAM_LITTLE};
       write_tlb_entries(&ssram_tlb_entry_little,1);
 
-      check_mem_le_prog (SSRAM_BASE);
+      check_mem_le_prog (SSRAM_BASE+0x8, 0x8899AABB);
 	}
 
 void check_PRAM_PROG ()
@@ -263,7 +279,7 @@ void check_PRAM_PROG ()
      static const tlb_entry pram_tlb_entry_big = {TLB_ENTRY_PRAM_BIG};
      write_tlb_entries(&pram_tlb_entry_big,1);
 
-     check_mem_be_prog (PIPELINED_BASE);
+     check_mem_be_prog (PIPELINED_BASE, 0x99AABBCC);
 
      //PRAM LittleEndian
       rumboot_printf("Check PRAM LittleEndian\n");
@@ -271,7 +287,7 @@ void check_PRAM_PROG ()
       static const tlb_entry pram_tlb_entry_little = {TLB_ENTRY_PRAM_LITTLE};
       write_tlb_entries(&pram_tlb_entry_little,1);
 
-      check_mem_le_prog (PIPELINED_BASE);
+      check_mem_le_prog (PIPELINED_BASE + 0x8, 0x99AABBCC);
 	}
 
 #ifdef ENDIAN_HARD_CHECK
