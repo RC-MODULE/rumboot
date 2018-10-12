@@ -87,7 +87,7 @@ bool gpio_get_value( uint32_t base_address, uint32_t pin_offset );
  * @param pin_offset
  * @param value
  */
-void gpio_set_value( uint32_t base_address, uint32_t pin_offset, bool value );
+void gpio_set_value( uint32_t base_address, uint32_t pin_offset, uint8_t value );
 
 /**
  * Gets all pins data

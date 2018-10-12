@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 #include <platform/test_assert.h>
 #include <platform/common_macros/common_macros.h>
@@ -95,9 +96,9 @@ bool gpio_get_value( uint32_t base_address, uint32_t pin_offset ){
     return ( raw_val >> pin_offset );
 }
 
-void gpio_set_value( uint32_t base_address, uint32_t pin_offset, bool value ){
+void gpio_set_value( uint32_t base_address, uint32_t pin_offset, uint8_t value ){
     TEST_ASSERT(pin_offset < (1 << 8), "ERROR!!! No such GPIO port exists");
-    *( volatile bool* )( base_address + ( 1 << ( pin_offset + 2 ) ) ) = ( value << pin_offset );
+    *( volatile uint8_t* )( base_address + ( 1 << ( pin_offset + 2 ) ) ) = ( value << pin_offset );
 
 }
 
