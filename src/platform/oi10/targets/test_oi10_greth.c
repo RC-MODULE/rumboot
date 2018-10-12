@@ -19,7 +19,7 @@
 
 #include <platform/devices/greth.h>
 
-#define GRETH_TEST_DATA_LEN_BYTES   120
+#define GRETH_TEST_DATA_LEN_BYTES   128
 #define GRETH_EDCL_DATA_LEN_BYTES          16
 
 #define GRETH_TEST_DATA_MISALIGN_IM0  3
