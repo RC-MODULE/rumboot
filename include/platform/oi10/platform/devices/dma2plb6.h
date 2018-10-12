@@ -145,4 +145,14 @@ void dma2plb6_disable_o_slv_err_interrupt(uint32_t base_addr);
 
 void dma2plb6_disable_channel(uint32_t base_addr, DmaChannel channel);
 
+void dma2plb6_disable_all_channel(uint32_t const base_addr);
+
+void dma2plb6_mcpy_init(dma2plb6_setup_info const * const setup_info);
+
+void dma2plb6_enable_channel(uint32_t const base_addr, DmaChannel const channel);
+
+void dma2plb6_enable_all_channels(uint32_t const base_addr);
+
+void dma2plb6_clear_status_reg(uint32_t const base_addr);
+
 #endif // DMA2PLB6_H_
