@@ -79,7 +79,7 @@ static volatile uint32_t IRQ;
 
 static void handler( int irq, void *arg ) {
     rumboot_printf( "IRQ arrived  \n" );
-    gpio_clear_edge_int( GPIO_X_BASE, 0xFF );
+    gpio_int_clear( GPIO_X_BASE, 0xFF );
     rumboot_printf( "Clear interrupts\n" );
     IRQ = 1;
 }
@@ -123,10 +123,10 @@ static uint32_t check_gpio_func( uint32_t base_addr, uint32_t GPIODIR_value ) {
 
     //init GPIO_W
     iowrite32( 0x00, base_addr + GPIO_AFSEL ); //gpio to gpio mode
-    gpio_set_port_direction( base_addr, GPIODIR_value);
+    gpio_set_direction( base_addr, GPIODIR_value, direction_out);
     iowrite32( 0x00, base_addr + GPIO_ADDR_MASK ); //write data to output
 
-    gpio_interrupt_setup( base_addr, 0xff, true, both_edge );
+    gpio_int_enable( base_addr, 0xff, both_edge );
 
     if (GPIODIR_value == 0xAA)
         for (int i = 0; i<4; i++)
