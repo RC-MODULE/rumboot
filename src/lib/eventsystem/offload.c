@@ -94,7 +94,10 @@ __attribute__((no_instrument_function)) void *memcpy(void *d, const void *s, siz
 	deliver(EVENT_STACKTRACE, (uint32_t) __builtin_frame_address(0));
 	exit(1);
 }
+
+
 #else
+
 __attribute__((no_instrument_function))
 __attribute__((noreturn))
 void rumboot_platform_panic(const char *why, ...)
@@ -110,4 +113,17 @@ void rumboot_platform_panic(const char *why, ...)
    }
    exit(1);
 }
+
+__attribute__((no_instrument_function)) int rumboot_memcheck32(void *src, void *dst, size_t sz)
+{
+  rumboot_platform_panic("NOT IMPLEMENTED");
+  return 123;
+}
+
+__attribute__((no_instrument_function)) int rumboot_memfill32(void *addr, size_t sz, int val, int incr)
+{
+	rumboot_platform_panic("NOT IMPLEMENTED");
+    return 123;
+}
+
 #endif

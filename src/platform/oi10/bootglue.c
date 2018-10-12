@@ -20,7 +20,7 @@
 #include <rumboot/bootsrc/sdio.h>
 #include <rumboot/bootsrc/boilerplate.h>
 #include <regs/regs_gpio_pl061.h>
-
+#include <regs/regs_uart_pl011.h>
 #include <platform/devices/emi.h>
 #include <platform/regs/fields/emi.h>
 #include <platform/regs/regs_emi.h>
@@ -43,9 +43,17 @@ void rumboot_platform_init_loader(struct rumboot_config *conf)
         /* Set HOST pin to output */
         uint32_t v = ioread32(GPIO_0_BASE + GPIO_DIR);
         iowrite32(v | BOOTM_HOST, GPIO_0_BASE + GPIO_DIR);
+
         /* Initialize UART */
-        uart_init(UART0_BASE, UART_word_length_8bit, conf->baudrate, 100000000UL, UART_parity_no, 0, 0);
-        uart_rx_enable(UART0_BASE, 1);
+        uart_init(UART0_BASE, UART_word_length_8bit, 6250000, UART_SYS_FREQ_HZ, UART_parity_no, 0x022, 0);
+        uart_fifos_set_level(UART0_BASE, UART_RX_FIFO_LEVEL_GT_7_8, UART_TX_FIFO_LEVEL_LT_1_8);
+        uart_fifos_enable(UART0_BASE, true);
+        uart_rts_cts_enable(UART0_BASE, false);
+        uart_tx_enable(UART0_BASE, true);
+        uart_enable(UART0_BASE, true);
+
+        /* Send sync byte */
+        rumboot_platform_putchar(0x55);
 }
 
 void rumboot_platform_read_config(struct rumboot_config *conf)
@@ -261,3 +269,31 @@ void *rumboot_platform_get_spl_area(size_t *size)
         *size = (&rumboot_platform_spl_end - &rumboot_platform_spl_start);
         return (void *)&rumboot_platform_spl_start;
 }
+
+#ifndef CMAKE_BUILD_TYPE_DEBUG
+void  __attribute__((no_instrument_function)) rumboot_platform_putchar(uint8_t c)
+{
+        if (c == '\n') {
+                rumboot_platform_putchar('\r');
+        }
+        uint32_t arg[] = {1, 1};
+        rumboot_platform_event_raise(EVENT_PERF_FUNC, arg, 2);
+
+        uart_putc(UART0_BASE, 'c', 100000);
+//        while (uart_check_tfifo_full(UART0_BASE));;
+//        iowrite32(c, UART0_BASE + UARTDR);
+}
+
+
+int rumboot_platform_getchar(uint32_t timeout_us)
+{
+        uint32_t start = rumboot_platform_get_uptime();
+
+        while (rumboot_platform_get_uptime() - start < timeout_us) {
+                if (!uart_check_rfifo_empty(UART0_BASE)) {
+                        return ioread32(UART0_BASE + UARTDR) & 0xFF;
+                }
+        }
+        return -1;
+}
+#endif

@@ -79,9 +79,6 @@ SET(EXTRA_COMMON_FLAGS "${EXTRA_COMMON_FLAGS} -DCMAKE_BUILD_TYPE=\\\"${CMAKE_BUI
 SET(EXTRA_COMMON_FLAGS "${EXTRA_COMMON_FLAGS} -DRUMBOOT_PLATFORM=\\\"${RUMBOOT_PLATFORM}\\\"")
 SET(EXTRA_COMMON_FLAGS "${EXTRA_COMMON_FLAGS} -DRUMBOOT_ARCH=\\\"${RUMBOOT_ARCH}\\\"")
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${EXTRA_COMMON_FLAGS}")
-set(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} ${EXTRA_COMMON_FLAGS}")
-
 if(NOT RUMBOOT_DISABLE_CCACHE)
   find_program(CCACHE_FOUND ccache)
 endif()
@@ -204,6 +201,23 @@ ADD_SOURCE("src/lib/malloc.c")
 ADD_SOURCE("src/lib/xmodem.c")
 ADD_SOURCE("src/lib/eventsystem/wrappers.c")
 ADD_SOURCE("src/lib/eventsystem/offload.c")
+
+if (NOT RUMBOOT_PLATFORM STREQUAL "native")
+  if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    ADD_SOURCE("src/lib/eventsystem/eventchannel-memory.c")
+    ADD_SOURCE("src/lib/eventsystem/io-eventchannel.c")
+    set(EXTRA_COMMON_FLAGS "${EXTRA_COMMON_FLAGS} -DRUMBOOT_PRINTF_ACCEL")
+  elseif(CMAKE_BUILD_TYPE STREQUAL "Production")
+    ADD_SOURCE(src/lib/eventsystem/eventchannel-memory.c)
+  elseif(CMAKE_BUILD_TYPE STREQUAL "PostProduction")
+    ADD_SOURCE(src/lib/eventsystem/eventchannel-serial.c)
+  endif()
+endif()
+
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${EXTRA_COMMON_FLAGS}")
+set(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} ${EXTRA_COMMON_FLAGS}")
+
+
 if (RUMBOOT_PLATFORM MATCHES native)
     ADD_SOURCE("src/rumboot_main_native.c")
     ADD_SOURCE("src/lib/bootsrc/file.c")

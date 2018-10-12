@@ -61,14 +61,6 @@ uint32_t rumboot_platform_get_uptime()
 }
 
 
- __attribute__((no_instrument_function)) void rumboot_platform_event_raise(enum rumboot_simulation_event event, uint32_t *data, uint32_t len)
-{
-        if (event == EVENT_TRACE) {
-                rumboot_printf("TRACE: %d %x\n", data[1], data[0]);
-        }
-}
-
-
 #define PL011_UARTDR  0x0
 #define PL011_UARTFR  0x018
 #define PL011_UARTRIS 0x03C

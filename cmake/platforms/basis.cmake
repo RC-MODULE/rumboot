@@ -13,7 +13,7 @@ rumboot_add_configuration(
   SNAPSHOT default
   LDS basis/rom.lds
   LDFLAGS "-e rumboot_reset_handler"
-  CFLAGS -DRUMBOOT_ONLY_STACK -DRUMBOOT_PRINTF_ACCEL
+  CFLAGS -DRUMBOOT_ONLY_STACK
   PREFIX ROM
   TIMEOUT_CTEST 200000
   FEATURES ROMGEN
@@ -24,7 +24,7 @@ rumboot_add_configuration(
   SNAPSHOT default
   LDS basis/rom-with-data.lds
   LDFLAGS "-e rumboot_reset_handler"
-  CFLAGS -DRUMBOOT_PRINTF_ACCEL -DRUMBOOT_DATA_FROM_ROM
+  CFLAGS  -DRUMBOOT_DATA_FROM_ROM
   PREFIX DROM
   TIMEOUT_CTEST 1000
   FEATURES ROMGEN COVERAGE
@@ -37,7 +37,7 @@ rumboot_add_configuration (
   PREFIX iram
   LDFLAGS -Wl,--start-group -lgcc -lc -lm -Wl,--end-group "-e rumboot_main"
   FILES ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c
-  CFLAGS -DRUMBOOT_PRINTF_ACCEL
+  CFLAGS
   BOOTROM bootrom-stub
   TIMEOUT_CTEST 200000
   FEATURES LUA COVERAGE PACKIMAGE
@@ -49,7 +49,7 @@ rumboot_add_configuration (
     CONFIGURATION IRAM
     PREFIX spl
     LDFLAGS -Wl,--start-group -lgcc -lc -lm -Wl,--end-group "-e main"
-    CFLAGS -DRUMBOOT_PRINTF_ACCEL -DRUMBOOT_NOINIT
+    CFLAGS  -DRUMBOOT_NOINIT
     FEATURES COVERAGE PACKIMAGE
 )
 
@@ -59,7 +59,7 @@ rumboot_add_configuration (
   PREFIX iram_with_ddr
   LDFLAGS -Wl,--start-group -lgcc -lc -lm -Wl,--end-group "-e rumboot_main"
   FILES ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c
-  CFLAGS -DRUMBOOT_PRINTF_ACCEL -DRUMBOOT_BASIS_ENABLE_DDR
+  CFLAGS  -DRUMBOOT_BASIS_ENABLE_DDR
   BOOTROM bootrom-stub-mirror
   TIMEOUT_CTEST 200000
   FEATURES LUA COVERAGE PACKIMAGE
@@ -72,7 +72,7 @@ rumboot_add_configuration (
   PREFIX iram-mirror
   LDFLAGS -Wl,--start-group -lgcc -lc -lm -Wl,--end-group "-e rumboot_main"
   FILES ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c
-  CFLAGS -DRUMBOOT_PRINTF_ACCEL -DRUMBOOT_BASIS_ENABLE_MIRROR -DRUMBOOT_BASIS_ENABLE_DDR
+  CFLAGS  -DRUMBOOT_BASIS_ENABLE_MIRROR -DRUMBOOT_BASIS_ENABLE_DDR
   BOOTROM bootrom-stub-mirror
   TIMEOUT_CTEST 200000
   FEATURES LUA COVERAGE PACKIMAGE
@@ -1364,8 +1364,6 @@ file(GLOB PLATFORM_SOURCES
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/*.c
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/startup.S
     ${CMAKE_SOURCE_DIR}/src/lib/drivers/irq-gic.c
-    ${CMAKE_SOURCE_DIR}/src/lib/eventsystem/eventchannel-memory.c
-    ${CMAKE_SOURCE_DIR}/src/lib/eventsystem/io-eventchannel.c
     ${CMAKE_SOURCE_DIR}/src/lib/drivers/irq-proxy-gic-cdnpcie.c
     ${CMAKE_SOURCE_DIR}/src/lib/eventsystem-memory.c
     ${CMAKE_SOURCE_DIR}/src/lib/drivers/ddr_test_lib.c

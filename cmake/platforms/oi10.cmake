@@ -2,8 +2,6 @@ SET(RUMBOOT_ARCH ppc)
 set(RUMBOOT_PLATFORM_DEFAULT_SNAPSHOT default)
 
 file(GLOB PLATFORM_SOURCES
-    ${CMAKE_SOURCE_DIR}/src/lib/eventsystem/eventchannel-memory.c
-    ${CMAKE_SOURCE_DIR}/src/lib/eventsystem/io-eventchannel.c
     ${CMAKE_SOURCE_DIR}/src/lib/drivers/uart_pl011.c
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/*.c
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/lib/drivers/irq-mpic128.c
@@ -31,7 +29,7 @@ rumboot_add_configuration(
     ROM
     DEFAULT
     LDS oi10/rom.lds
-    CFLAGS -DRUMBOOT_ONLY_STACK -DRUMBOOT_PRINTF_ACCEL
+    CFLAGS -DRUMBOOT_ONLY_STACK ${DEBUG_DEFINES}
     LDFLAGS "-e rumboot_entry_point"
     PREFIX rom
     FEATURES ROMGEN
@@ -64,7 +62,7 @@ rumboot_add_configuration (
     PREFIX iram
     LDFLAGS -Wl,--start-group -lgcc -lc -lm -Wl,--end-group "-e rumboot_main"
     FILES ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/startup.S ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c
-    CFLAGS -DRUMBOOT_PRINTF_ACCEL
+    CFLAGS ${DEBUG_DEFINES}
     BOOTROM bootrom-stub
     FEATURES LUA COVERAGE PACKIMAGE
     LOAD IM0BIN SELF
@@ -77,7 +75,7 @@ rumboot_add_configuration (
     LDS oi10/iram-spl.lds
     PREFIX spl
     LDFLAGS -Wl,--start-group -lgcc -lc -lm -Wl,--end-group "-e main"
-    CFLAGS -DRUMBOOT_PRINTF_ACCEL -DRUMBOOT_NOINIT
+    CFLAGS ${DEBUG_DEFINES} -DRUMBOOT_NOINIT
     FEATURES COVERAGE PACKIMAGE
 )
 
@@ -133,9 +131,18 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
     rumboot_bootrom_unit_test(
         ID 1
-        TAG nor
+        TAG nor-no-ecc
         MEMTAG NOR_IMAGE
         TAGOFFSET 0
+        IRUN_FLAGS +BOOT_EMI_ECC=0
+    )
+
+    rumboot_bootrom_unit_test(
+        ID 1
+        TAG nor-with-ecc
+        MEMTAG NOR_IMAGE
+        TAGOFFSET 0
+        IRUN_FLAGS +BOOT_EMI_ECC=1
     )
 
     rumboot_bootrom_unit_test(
@@ -176,8 +183,27 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         IRUN_FLAGS +BOOT_SD_CD=0 +select_sdio0
         LOAD
           SD0_BOOT_IMAGE spl-ok
+          NOR_IMAGE spl-fail
           SPI0_CONF spl-fail,spl-fail
           HOSTMOCK  spl-fail
+    )
+
+    rumboot_bootrom_integration_test(ROM
+        NAME "nor-with-ecc-ok"
+        LOAD
+          SD0_BOOT_IMAGE spl-fail-bad-magic
+          SPI0_CONF spl-fail-bad-magic,spl-fail-bad-magic
+          NOR_IMAGE spl-ok
+          HOSTMOCK  spl-fail
+        IRUN_FLAGS +BOOT_EMI_ECC=1
+    )
+
+    rumboot_bootrom_integration_test(ROM
+        NAME "nor-no-ecc-ok"
+        LOAD
+          SPI0_CONF spl-fail,spl-fail
+          HOSTMOCK  spl-fail
+        IRUN_FLAGS +BOOT_EMI_ECC=0
     )
 
     rumboot_bootrom_integration_test(ROM
