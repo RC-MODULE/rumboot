@@ -57,17 +57,23 @@ typedef enum {
 }UART_TX_FIFO_LEVEL;
 
 
+typedef struct
+{
+    UART_word_length wlen;
+    uint32_t uart_sys_freq_hz;
+    uint32_t baud_rate;
+    UART_parity parity;
+    short int int_mask;
+    int loopback;
+} uart_init_params;
+
+
 /**
  * brief Init UART
  * @param base_addr base address of UART
- * @param wlen word length
- * @param uart_sys_freq_hz system frequency in hertzs
- * @param baud_rate baud rate
- * @param parity parity
- * @param int_mask interrupt mask
- * @param loopback loopback
+ * @param init_params pointer to initialization parameters
  */
-void uart_init(uint32_t base_addr, UART_word_length wlen, uint32_t uart_sys_freq_hz, uint32_t baud_rate, UART_parity parity, short int int_mask, int loopback);
+void uart_init(uint32_t base_addr, const uart_init_params* init_params);
 
 /**
  * brief Enable UART

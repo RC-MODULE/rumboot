@@ -50,13 +50,13 @@ static void uart_set_word_length(uint32_t base_addr, UART_word_length word_lengt
 static void uart_set_parity(uint32_t base_addr, UART_parity parity);
 
 
-void uart_init(uint32_t base_addr, UART_word_length wlen, uint32_t uart_sys_freq_hz, uint32_t baud_rate, UART_parity parity, short int int_mask, int loopback){
-    uart_set_baudrate(base_addr, uart_sys_freq_hz, baud_rate);
-    uart_set_word_length(base_addr,wlen);
-    if(loopback == 0x1)//loopback
-        uart_loopback_enable(base_addr,loopback);
-    uart_set_parity(base_addr,parity);
-    uart_set_interrupt_mask(base_addr, int_mask);
+void uart_init(uint32_t base_addr, const uart_init_params* init_params){
+    uart_set_baudrate(base_addr, init_params->uart_sys_freq_hz, init_params->baud_rate);
+    uart_set_word_length(base_addr, init_params->wlen);
+    if(init_params->loopback == 0x1)//loopback
+        uart_loopback_enable(base_addr, init_params->loopback);
+    uart_set_parity(base_addr, init_params->parity);
+    uart_set_interrupt_mask(base_addr, init_params->int_mask);
 }
 
 void uart_enable(uint32_t base_addr, bool enabled){
