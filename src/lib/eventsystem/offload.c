@@ -24,6 +24,10 @@ OpHandlerMemset: memset addr 0x8001fd38 chr 0xba4e1074 len 0x8001fe74
 
 #ifdef RUMBOOT_PRINTF_ACCEL
 
+#ifndef CMAKE_BUILD_TYPE_DEBUG
+	#error "Simulation offloading should not be enabled for production builds"
+#endif
+
  __attribute__((no_instrument_function)) __attribute__((optimize("-O0"))) void do_memset(void *ptr, ...)
 {
 	deliver(EVENT_MEMSET, (uint32_t)__builtin_frame_address(0));
