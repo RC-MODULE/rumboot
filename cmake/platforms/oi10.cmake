@@ -220,6 +220,26 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
           HOSTMOCK  spl-fail
     )
 
+    rumboot_bootrom_integration_test(ROM
+        NAME "serial-9600"
+        IRUN_FLAGS +BOOT_SLOWUART=1 +BOOT_FASTUART=0 +UART0_SPEED=9600 +UART0_STOP_ON_MATCH +UART0_STOP_ON_MISMATCH
+        TIMEOUT 10 ms
+    )
+    rumboot_bootrom_integration_test(ROM
+        NAME "serial-19200"
+        IRUN_FLAGS +BOOT_SLOWUART=1 +BOOT_FASTUART=1 +UART0_SPEED=19200 +UART0_STOP_ON_MATCH +UART0_STOP_ON_MISMATCH
+        TIMEOUT 10 ms
+    )
+    rumboot_bootrom_integration_test(ROM
+        NAME "serial-115200"
+        IRUN_FLAGS +BOOT_SLOWUART=0 +BOOT_FASTUART=0 +UART0_SPEED=115200 +UART0_STOP_ON_MATCH +UART0_STOP_ON_MISMATCH
+        TIMEOUT 10 ms
+    )
+    rumboot_bootrom_integration_test(ROM
+        NAME "serial-6500000"
+        IRUN_FLAGS +BOOT_SLOWUART=0 +BOOT_FASTUART=1 +UART0_SPEED=6500000 +UART0_STOP_ON_MATCH +UART0_STOP_ON_MISMATCH
+        TIMEOUT 10 ms
+    )
 
 
     #Add lprobe sample scripts

@@ -45,22 +45,22 @@ void rumboot_platform_init_loader(struct rumboot_config *conf)
         iowrite32(v | BOOTM_HOST, GPIO_0_BASE + GPIO_DIR);
 
         /* Initialize UART */
-        uart_init(UART0_BASE, UART_word_length_8bit, 6250000, UART_SYS_FREQ_HZ, UART_parity_no, 0x022, 0);
+        uart_init(UART0_BASE, UART_word_length_8bit, UART_SYS_FREQ_HZ, conf->baudrate, UART_parity_no, 0x0, 0);
         uart_fifos_set_level(UART0_BASE, UART_RX_FIFO_LEVEL_GT_7_8, UART_TX_FIFO_LEVEL_LT_1_8);
         uart_fifos_enable(UART0_BASE, true);
         uart_rts_cts_enable(UART0_BASE, false);
         uart_tx_enable(UART0_BASE, true);
         uart_enable(UART0_BASE, true);
 
-        /* Send sync byte */
-        rumboot_platform_putchar(0x55);
+        /* Send sync byte. This way it will work for debug builds */
+        iowrite32(0x55, UART0_BASE + UARTDR);
 }
 
 void rumboot_platform_read_config(struct rumboot_config *conf)
 {
         uint32_t bootm = dcr_read(DCR_SCTL_BASE + SCTL_BOOTM);
 
-        if (bootm & BOOTM_SLOWUART) {
+        if (! (bootm & BOOTM_SLOWUART)) {
                 if (bootm & BOOTM_FASTUART) {
                         conf->baudrate = 6250000;
                 } else {
@@ -276,12 +276,12 @@ void  __attribute__((no_instrument_function)) rumboot_platform_putchar(uint8_t c
         if (c == '\n') {
                 rumboot_platform_putchar('\r');
         }
-        uint32_t arg[] = {1, 1};
-        rumboot_platform_event_raise(EVENT_PERF_FUNC, arg, 2);
+//        uint32_t arg[] = {1, 1};
+//        rumboot_platform_event_raise(EVENT_PERF_FUNC, arg, 2);
 
-        uart_putc(UART0_BASE, 'c', 100000);
-//        while (uart_check_tfifo_full(UART0_BASE));;
-//        iowrite32(c, UART0_BASE + UARTDR);
+//        uart_putc(UART0_BASE, 'c', 100000);
+        while (uart_check_tfifo_full(UART0_BASE));;
+        iowrite32(c, UART0_BASE + UARTDR);
 }
 
 
