@@ -255,7 +255,7 @@ bool wait_for_tx_cts_int(uint32_t timeout)
 
 uint32_t test_uart(uint32_t UART_TRANSMITTER_BASE, uint32_t UART_RECEIVER_BASE)
 {
-    static const uart_init_params transmitter_init_params =
+    static const struct uart_init_params transmitter_init_params =
     {
         .wlen = UART_word_length_8bit,
         .uart_sys_freq_hz = UART_SYS_FREQ_HZ,
@@ -268,7 +268,7 @@ uint32_t test_uart(uint32_t UART_TRANSMITTER_BASE, uint32_t UART_RECEIVER_BASE)
         .loopback = false
     };
 
-    static const uart_init_params receiver_init_params =
+    static const struct uart_init_params receiver_init_params =
     {
         .wlen = UART_word_length_8bit,
         .uart_sys_freq_hz = UART_SYS_FREQ_HZ,
