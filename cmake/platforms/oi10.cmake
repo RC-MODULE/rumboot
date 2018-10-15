@@ -59,7 +59,6 @@ rumboot_add_configuration(
 rumboot_add_configuration(
     SUPPLEMENTARY
     LDS oi10/rom.lds
-    CFLAGS -DRUMBOOT_PRINTF_ACCEL
     SNAPSHOT default
     PREFIX supplementary
     FEATURES STUB
