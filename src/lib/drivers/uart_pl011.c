@@ -46,11 +46,11 @@ static bool reg_check(uint32_t base, uint32_t reg_offset, uint32_t value)
 }
 
 
-static void uart_set_word_length(uint32_t base_addr, UART_word_length word_length);
-static void uart_set_parity(uint32_t base_addr, UART_parity parity);
+static void uart_set_word_length(uint32_t base_addr, enum UART_word_length word_length);
+static void uart_set_parity(uint32_t base_addr, enum UART_parity parity);
 
 
-void uart_init(uint32_t base_addr, const uart_init_params* init_params){
+void uart_init(uint32_t base_addr, const struct uart_init_params* init_params){
 
     uart_set_baudrate(base_addr, init_params->uart_sys_freq_hz, init_params->baud_rate);
     uart_set_word_length(base_addr, init_params->wlen);
@@ -113,7 +113,7 @@ void uart_loopback_enable(uint32_t base_addr, bool enabled){
     }
 }
 
-static void uart_set_parity(uint32_t base_addr, UART_parity parity){
+static void uart_set_parity(uint32_t base_addr, enum UART_parity parity){
     switch(parity){
     case UART_parity_no:
         //clear bit 1 and 2
@@ -140,11 +140,11 @@ void uart_fifos_enable(uint32_t base_addr, bool enabled){
     }
 }
 
-void uart_fifos_set_rx_fifo_level(uint32_t base_addr, UART_RX_FIFO_LEVEL rx_fifo_level){
+void uart_fifos_set_rx_fifo_level(uint32_t base_addr, enum UART_RX_FIFO_LEVEL rx_fifo_level){
     reg_set(base_addr, UARTIFLS, (rx_fifo_level << 3));
 }
 
-void uart_fifos_set_tx_fifo_level(uint32_t base_addr, UART_TX_FIFO_LEVEL tx_fifo_level){
+void uart_fifos_set_tx_fifo_level(uint32_t base_addr, enum UART_TX_FIFO_LEVEL tx_fifo_level){
     reg_set(base_addr, UARTIFLS, tx_fifo_level);
 }
 
@@ -169,7 +169,7 @@ void uart_set_baudrate(uint32_t base_addr, uint32_t uart_sys_freq_hz, uint32_t b
     reg_write(base_addr, UARTFBRD, divisor_f);
 }
 
-static void uart_set_word_length(uint32_t base_addr, UART_word_length word_length){
+static void uart_set_word_length(uint32_t base_addr, enum UART_word_length word_length){
     reg_clear(base_addr, UARTLCR_H, UARTLCR_H__WLEN);
     reg_set(base_addr, UARTLCR_H, (word_length << UARTLCR_H__WLEN_SHIFT));
 }
