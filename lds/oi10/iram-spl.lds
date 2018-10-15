@@ -38,7 +38,7 @@ SECTIONS {
 
         rumboot_im0_heap_start = .;
         rumboot_im0_heap_end = .;
-    } > IM1
+    } > IM0
 
     .stacks (NOLOAD) : {
         /* This is where stacks start */
