@@ -41,20 +41,22 @@ typedef enum {
 }UART_parity;
 
 typedef enum {
+    UART_RX_FIFO_LEVEL_NONE   = -1,
     UART_RX_FIFO_LEVEL_GT_1_8 = 0,
     UART_RX_FIFO_LEVEL_GT_1_4 = 1,
     UART_RX_FIFO_LEVEL_GT_1_2 = 2,
     UART_RX_FIFO_LEVEL_GT_3_4 = 3,
-    UART_RX_FIFO_LEVEL_GT_7_8 = 4,
-}UART_RX_FIFO_LEVEL;
+    UART_RX_FIFO_LEVEL_GT_7_8 = 4
+} UART_RX_FIFO_LEVEL;
 
 typedef enum {
+    UART_TX_FIFO_LEVEL_NONE   = -1,
     UART_TX_FIFO_LEVEL_LT_1_8 = 0,
     UART_TX_FIFO_LEVEL_LT_1_4 = 1,
     UART_TX_FIFO_LEVEL_LT_1_2 = 2,
     UART_TX_FIFO_LEVEL_LT_3_4 = 3,
-    UART_TX_FIFO_LEVEL_LT_7_8 = 4,
-}UART_TX_FIFO_LEVEL;
+    UART_TX_FIFO_LEVEL_LT_7_8 = 4
+} UART_TX_FIFO_LEVEL;
 
 
 typedef struct
@@ -63,8 +65,11 @@ typedef struct
     uint32_t uart_sys_freq_hz;
     uint32_t baud_rate;
     UART_parity parity;
+    UART_RX_FIFO_LEVEL rx_fifo_level;
+    UART_TX_FIFO_LEVEL tx_fifo_level;
     short int int_mask;
-    int loopback;
+    bool use_rts_cts;
+    bool loopback;
 } uart_init_params;
 
 
@@ -119,12 +124,19 @@ void uart_rts_cts_enable(uint32_t base_addr, bool enabled);
 void uart_fifos_enable(uint32_t  base_addr, bool enabled);
 
 /**
- * brief Set UART fifos level
+ * brief Set UART rx fifo level
  * @param base_adr base address of UART
  * @param rx_fifo_level Trigger level of RX FIFO
+ */
+void uart_fifos_set_rx_fifo_level(uint32_t base_addr, UART_RX_FIFO_LEVEL rx_fifo_level);
+
+/**
+ * brief Set UART tx fifo level
+ * @param base_adr base address of UART
  * @param tx_fifo_level Trigger level of TX FIFO
  */
-void uart_fifos_set_level(uint32_t base_addr, UART_RX_FIFO_LEVEL rx_fifo_level, UART_TX_FIFO_LEVEL tx_fifo_level);
+void uart_fifos_set_tx_fifo_level(uint32_t base_addr, UART_TX_FIFO_LEVEL tx_fifo_level);
+
 
 /**
  * brief Set baudrate for UART

@@ -51,12 +51,34 @@ static void uart_set_parity(uint32_t base_addr, UART_parity parity);
 
 
 void uart_init(uint32_t base_addr, const uart_init_params* init_params){
+
     uart_set_baudrate(base_addr, init_params->uart_sys_freq_hz, init_params->baud_rate);
     uart_set_word_length(base_addr, init_params->wlen);
-    if(init_params->loopback == 0x1)//loopback
+
+    if(init_params->loopback)//loopback
         uart_loopback_enable(base_addr, init_params->loopback);
+
     uart_set_parity(base_addr, init_params->parity);
     uart_set_interrupt_mask(base_addr, init_params->int_mask);
+
+    if (init_params->rx_fifo_level != UART_RX_FIFO_LEVEL_NONE)
+    {
+        uart_fifos_set_rx_fifo_level(base_addr, init_params->rx_fifo_level);
+    }
+
+    if (init_params->tx_fifo_level != UART_TX_FIFO_LEVEL_NONE)
+    {
+        uart_fifos_set_tx_fifo_level(base_addr, init_params->tx_fifo_level);
+    }
+
+    if ((init_params->rx_fifo_level != UART_RX_FIFO_LEVEL_NONE) ||
+        (init_params->tx_fifo_level != UART_TX_FIFO_LEVEL_NONE))
+    {
+        uart_fifos_enable(base_addr, true);
+    }
+
+    if (init_params->use_rts_cts)
+        uart_rts_cts_enable(base_addr, true);
 }
 
 void uart_enable(uint32_t base_addr, bool enabled){
@@ -118,8 +140,12 @@ void uart_fifos_enable(uint32_t base_addr, bool enabled){
     }
 }
 
-void uart_fifos_set_level(uint32_t base_addr, UART_RX_FIFO_LEVEL rx_fifo_level, UART_TX_FIFO_LEVEL tx_fifo_level){
-    reg_write(base_addr, UARTIFLS, (rx_fifo_level << 3) | tx_fifo_level);
+void uart_fifos_set_rx_fifo_level(uint32_t base_addr, UART_RX_FIFO_LEVEL rx_fifo_level){
+    reg_set(base_addr, UARTIFLS, (rx_fifo_level << 3));
+}
+
+void uart_fifos_set_tx_fifo_level(uint32_t base_addr, UART_TX_FIFO_LEVEL tx_fifo_level){
+    reg_set(base_addr, UARTIFLS, tx_fifo_level);
 }
 
 void uart_rts_cts_enable(uint32_t base_addr, bool enabled){
