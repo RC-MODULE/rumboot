@@ -35,7 +35,6 @@ rumboot_add_configuration(
     FEATURES ROMGEN
     FILES ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/startup.S
     TIMEOUT_CTEST 0
-    TIMEOUT 500 ms
 )
 
 #Temporary hack, before we figure out what to do next.
@@ -52,7 +51,8 @@ rumboot_add_configuration(
     SNAPSHOT default
     PREFIX bare-rom
     FEATURES ROMGEN
-    TIMEOUT_CTEST 7200
+    TIMEOUT_CTEST 0
+    TIMEOUT 2 ms
 )
 
 rumboot_add_configuration(
