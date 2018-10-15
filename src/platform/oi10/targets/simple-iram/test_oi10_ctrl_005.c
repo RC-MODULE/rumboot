@@ -59,7 +59,6 @@ struct s805_instance_i {
 static uint32_t check_watchdog_default_ro_val(uint32_t base_addr)
 {
     rumboot_printf("Check the default values of the registers:");
-
     struct regpoker_checker check_default_array[] = {
           {   "WD_REG_PERIPHID0",   REGPOKER_READ_DCR,    WD_REG_PERIPHID0,         0x05,           0xff   },
           {   "WD_REG_PERIPHID1",   REGPOKER_READ_DCR,    WD_REG_PERIPHID1,         0x18,           0xff   },
@@ -115,14 +114,6 @@ static uint32_t check_watchdog_default_rw_val( uint32_t base_addr, uint32_t reg_
     return 1;
 }
 #endif
-
-/*
-uint32_t interrupt_interval(uint32_t wd_reg_load, unt32_t effective_watchdog_clock)
-{
-    int result = dcr_read(DCR_BASE_ADDR + wd_reg_load +1) * effective_watchdog_clock;
-    return result;
-}
-*/
 
 void sp805_enable( uint32_t base_addr, int index )
 {
@@ -213,38 +204,21 @@ void sp805_config( uint32_t base_addr, const struct sp805_conf * config, int ind
     if( index ) //if RESEN == 1
     {
         dcr_write( base_addr + WD_REG_CONTROL, cntrl );
-
         // LOAD
         if( config->load )
         {
             dcr_write( base_addr + WD_REG_LOAD, config->load );
         }
-
         // BG LOAD
-
-        /*
-        if( config->bgload )
-        {
-            dcr_write( base_addr + DIT0_REG_BGLOAD1, config->bgload );
-        }
-        */
     }
     else
     {
         dcr_write( base_addr + WD_REG_CONTROL, cntrl );
-
         // LOAD
         if( config->load )
         {
             dcr_write( base_addr + WD_REG_LOAD, config->load );
         }
-/*
-        // BG LOAD
-        if( config->bgload )
-        {
-            dcr_write( base_addr + DIT0_REG_BGLOAD0, config->bgload );
-        }
-        */
     }
 }
 
@@ -256,71 +230,6 @@ static void handler0( int irq, void *arg )
     rumboot_printf( "sp805_%d watchdog INT # %d  \n", a->wd_index, a->wd_irq );
     sp805_clrint( a->base_addr, 0 );
 }
-
-/*
-bool test_dit_timers( uint32_t structure ) {
-    int c = 0;
-    int d = 0;
-
-    struct s804_instance *stru = ( struct s804_instance * )structure;
-    uint32_t base_addr = stru->base_addr;
-
-    struct sp804_conf config_0 = {
-        .mode = ONESHOT,
-        .interrupt_enable = 1,
-        .clock_division = 1,
-        .width = 32,
-        .load = 100,
-        .bgload = 0 };
-
-    struct sp804_conf config_1 = {
-        .mode = ONESHOT,
-        .interrupt_enable = 1,
-        .clock_division = 1,
-        .width = 32,
-        .load = 200,
-        .bgload = 0 };
-
-    for( int i = 0; i < TIMER0_CYCLES + stru->dit_index; i++ ) {
-        sp804_config( base_addr, &config_0, 0 );
-        sp804_enable( base_addr, 0 );
-        if( config->bgload )
-        {
-            dcr_write( base_addr + DIT0_REG_BGLOAD1, config->bgload );
-        }
-
-        while( sp804_get_value( base_addr, 0 ) ) {
-        };
-        c++;
-    }
-
-    for( int i = 0; i < TIMER1_CYCLES + stru->dit_index; i++ ) {
-        sp804_config( base_addr, &config_1, 1 );
-        sp804_enable( base_addr, 1 );
-        while( sp804_get_value( base_addr, 1 ) ) {
-        };
-        d++;
-    }
-
-    if( stru->timer0_irq == TIMER0_CYCLES + stru->dit_index ) {
-        rumboot_printf( "Timer 0 test OK \n" );
-    } else {
-        rumboot_printf( "ERROR in Timer 0 test \n" );
-        rumboot_printf( "Interrupts came == %d, should be %d \n", stru->timer0_irq, TIMER0_CYCLES + stru->dit_index );
-        return false;
-    }
-
-    if( stru->timer1_irq == TIMER1_CYCLES + stru->dit_index ) {
-        rumboot_printf( "Timer 1 test OK \n" );
-    } else {
-        rumboot_printf( "ERROR in Timer 1 test \n" );
-        rumboot_printf( "Interrupts came == %d, should be %d \n", stru->timer1_irq, TIMER1_CYCLES + stru->dit_index );
-        return false;
-    }
-
-    return true;
-}
-*/
 
 static bool wd_test( uint32_t structure)
 {
@@ -334,39 +243,19 @@ static bool wd_test( uint32_t structure)
            .clock_division = 1,
            .width = 32,
            .load = 100,
-          // .bgload = 0
     };
-
-    struct sp805_conf config_TEST =
-    {
-            .mode = TEST,
-            .interrupt_enable = 1,
-            .clock_division = 1,
-            .width = 32,
-            .load = 100,
-              // .bgload = 0
-    };
-
     dcr_write(DCR_WATCHDOG_BASE + WD_REG_LOCK, 0x1ACCE551);
 
     for(i = 0; i < TIMER_CYCLES + stru->wd_index; i++)
     {
-//        sp805_get_value(stru->base_addr, 0);
         sp805_config( base_addr, &config_FREE_RUN, 0 );
         sp805_enable( base_addr, 1 );
 
-        if(stru->wd_index == WD_CTRL_INTEN) //)
+        if(stru->wd_index == WD_CTRL_INTEN)
         {
             rumboot_printf("Watchdog load value %d\n", stru->wd_index);
         }
-        rumboot_printf("base_addr %d\n", base_addr);
         sp805_enable(stru->base_addr, 1);
-    }
-
-    for(i = 0; i < TIMER_CYCLES + stru->wd_index; i++)
-    {
-        sp805_config(base_addr, &config_TEST, 1);
-        sp805_enable(base_addr, 1);
     }
     return true;
 }
@@ -378,7 +267,6 @@ static bool wd_test2( uint32_t structure)
     int i;
 
     dcr_write(DCR_WATCHDOG_BASE + WD_REG_LOCK, 0x1ACCE551);
-
     for(i = 0; i < TIMER_CYCLES + stru->wd_index; i++)
     {
         if(stru->wd_index == WD_REG_ITCR)
@@ -416,41 +304,12 @@ TEST_SUITE_BEGIN(wd_testlist2, "SP805 IRQ TEST")
     TEST_ENTRY("SP805_2", wd_test2, (uint32_t) &in[0]),
 TEST_SUITE_END();
 
-
 TEST_SUITE_BEGIN(wd_testlist, "SP805 IRQ TEST")
-//TEST_ENTRY("SP805_0", wd_test, (uint32_t, &_in[0]));
 #ifdef CHECK_REGS
-    //check_timers_default_ro_val();
-
 TEST_ENTRY("SP805_0", check_default_ro_val, (uint32_t, &in[0]));
 TEST_ENTRY("SP805_0", check_default_rw_val, (uint32_t, &in[0]));
 #endif
 TEST_SUITE_END();
-
-
-/*
-void sp805_config( uint32_t base_addr, const struct sp805_conf * config, int index )
-{
-    int cntrl = 0;
-    // MODE
-    if( config->mode == ONESHOT )
-    {
-        cntrl |= DIT_CTRL_ONESHOT;
-        cntrl &= ~DIT_CTRL_PERIODIC;
-    } else if( config->mode == PERIODIC ) {
-        cntrl &= ~ DIT_CTRL_ONESHOT;
-        cntrl |= DIT_CTRL_PERIODIC;
-    } else if( config->mode == FREERUN ) {
-        cntrl &= ~ DIT_CTRL_ONESHOT;
-        cntrl &= ~ DIT_CTRL_PERIODIC;
-    }
-
-
-bool test_wd(struct s804_instance_i ins)
-{
-
-}
-*/
 
 uint32_t main(void)
 {
@@ -469,58 +328,19 @@ uint32_t main(void)
     struct rumboot_irq_entry *tbl = rumboot_irq_create( NULL );
     rumboot_printf( "SP805 int are clean up\n" );
 
-    result = test_suite_run( NULL, &wd_testlist );
-
-    //  rumboot_printf( "%d tests from suite failed\n", result );
-
-    /*
-    if(result)
-    {
-        rumboot_printf("Checked test Failed\n");
-        return 1;
-    }
-*/
-
     rumboot_printf("Checked TEST_OK\n");
     rumboot_printf( "SP805 test START\n" );
     rumboot_irq_cli();
 
     rumboot_irq_set_handler( tbl, WDT_INT, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler0, &in[0]);
-
     /* Activate the table */
     rumboot_irq_table_activate( tbl );
     rumboot_irq_enable( WDT_INT);
 
-    result = test_suite_run(NULL, &wd_testlist1);
-    result = test_suite_run(NULL, &wd_testlist);
-
-    //dcr_write(WD_REG_VALUE, -1);
-
-    //result = dcr_read(DCR_WATCHDOG_BASE);
-    rumboot_printf("RESULT %d\n", result);
-
-    result = test_suite_run(NULL, &wd_testlist2);
-
-    rumboot_printf("RESULT wd_test2: %d\n", result);
-
-    //rumboot_printf("WD_REG_VALUE %d\n", result);
-
-//    rumboot_printf("WD_REG_CONTROL %d\n", WD_REG_CONTROL);
-   /*
-    rumboot_printf("WD_REG_INTCLR %d\n", WD_REG_INTCLR);
-    rumboot_printf("WD_REG_RIS %d\n", WD_REG_RIS);
-    rumboot_printf("WD_REG_MIS %d\n", WD_REG_MIS);
-    rumboot_printf("WD_REG_LOCK %d\n", WD_REG_LOCK);
-    rumboot_printf("WD_REG_ITCR %d\n", WD_REG_ITCR);
-    rumboot_printf("WD_REG_ITOP %d\n", WD_REG_ITOP);
-*/
-    //dcr_write(DCR_WATCHDOG_BASE+WD_REG_CONTROL, 0x1);
-
-    //result = read(DCR_WATCHDOG_BASE+WD_REG_CONTROL);
+    result = test_suite_run(NULL, &wd_testlist1) ||
+            test_suite_run(NULL, &wd_testlist) ||
+            test_suite_run(NULL, &wd_testlist2);
 
    rumboot_printf("Checked TEST_OK\n");
-
-
-
      return result;
 }
