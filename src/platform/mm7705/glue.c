@@ -128,7 +128,6 @@ uint32_t rumboot_arch_irq_enable()
 
 void rumboot_platform_init_loader(struct rumboot_config *conf)
 {
-        uart_init(UART0_BASE, UART_word_length_8bit, conf->baudrate, 100000000UL, UART_parity_no, 0, 0);
         uart_rx_enable(UART0_BASE, 1);
 }
 

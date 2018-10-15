@@ -45,12 +45,19 @@ void rumboot_platform_init_loader(struct rumboot_config *conf)
         iowrite32(v | BOOTM_HOST, GPIO_0_BASE + GPIO_DIR);
 
         /* Initialize UART */
-        uart_init(UART0_BASE, UART_word_length_8bit, UART_SYS_FREQ_HZ, conf->baudrate, UART_parity_no, 0x0, 0);
-        uart_fifos_set_level(UART0_BASE, UART_RX_FIFO_LEVEL_GT_7_8, UART_TX_FIFO_LEVEL_LT_1_8);
-        uart_fifos_enable(UART0_BASE, true);
-        uart_rts_cts_enable(UART0_BASE, false);
-        uart_tx_enable(UART0_BASE, true);
-        uart_enable(UART0_BASE, true);
+        struct uart_init_params sparams =
+        {
+            .wlen = UART_word_length_8bit,
+            .uart_sys_freq_hz = UART_SYS_FREQ_HZ,
+            .parity = UART_parity_no,
+            .rx_fifo_level = UART_RX_FIFO_LEVEL_GT_7_8,
+            .tx_fifo_level = UART_TX_FIFO_LEVEL_LT_1_8,
+            .int_mask = 0x0,
+            .use_rts_cts = false,
+            .loopback = false
+        };
+        sparams.baud_rate = conf->baudrate;
+        uart_init(UART0_BASE, &sparams);
 
         /* Send sync byte. This way it will work for debug builds */
         iowrite32(0x55, UART0_BASE + UARTDR);
