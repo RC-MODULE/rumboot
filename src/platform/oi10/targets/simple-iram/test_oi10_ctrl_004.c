@@ -389,12 +389,13 @@ int main(void)
 
 // Run tests and return failed one
 
-    result = test_suite_run( NULL, &dit_testlist );
+    result = test_suite_run( NULL, &dit_testlist ) ||
+            test_suite_run(NULL, &dit_testlist_1);
 
-    rumboot_printf( "%d tests from suite failed\n", result );
-    rumboot_printf( "Check ro/rw registers\n" );
+   // rumboot_printf( "%d tests from suite failed\n", result );
+   // rumboot_printf( "Check ro/rw registers\n" );
 
-    result = test_suite_run(NULL, &dit_testlist_1);
+//    result = test_suite_run(NULL, &dit_testlist_1);
 
     return result;
 }
