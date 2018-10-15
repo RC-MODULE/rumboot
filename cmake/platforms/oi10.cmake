@@ -34,7 +34,15 @@ rumboot_add_configuration(
     PREFIX rom
     FEATURES ROMGEN
     FILES ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/startup.S
-    TIMEOUT_CTEST 14400
+    TIMEOUT_CTEST 0
+    TIMEOUT 500 ms
+)
+
+#Temporary hack, before we figure out what to do next.
+rumboot_add_configuration(
+    BOOTROM
+    CONFIGURATION ROM
+    LDS oi10/bootrom.lds
 )
 
 rumboot_add_configuration(
@@ -119,7 +127,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 #       FILES bare-rom/gtube-spr-check.S
 #   )
 
-    rumboot_bootrom_add_components(IRAM_SPL ROM
+    rumboot_bootrom_add_components(IRAM_SPL BOOTROM
       -a 4096
     )
     #  rumboot_bootrom_unit_test(
@@ -168,7 +176,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         TAGOFFSET 1
     )
 
-    rumboot_bootrom_integration_test(ROM
+    rumboot_bootrom_integration_test(BOOTROM
         NAME "host-mockup-fallthough"
         IRUN_FLAGS
         LOAD
@@ -179,14 +187,14 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     )
 
 
-    rumboot_bootrom_integration_test(ROM
+    rumboot_bootrom_integration_test(BOOTROM
         NAME "host-mockup"
         IRUN_FLAGS +BOOT_HOST=1
         LOAD
           HOSTMOCK  spl-ok
     )
 
-    rumboot_bootrom_integration_test(ROM
+    rumboot_bootrom_integration_test(BOOTROM
         NAME "sdio-ok"
         IRUN_FLAGS +BOOT_SD_CD=0 +select_sdio0
         LOAD
@@ -196,7 +204,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
           HOSTMOCK  spl-fail
     )
 
-    rumboot_bootrom_integration_test(ROM
+    rumboot_bootrom_integration_test(BOOTROM
         NAME "nor-with-ecc-ok"
         LOAD
           SD0_BOOT_IMAGE spl-fail-bad-magic
@@ -206,7 +214,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         IRUN_FLAGS +BOOT_EMI_ECC=1
     )
 
-    rumboot_bootrom_integration_test(ROM
+    rumboot_bootrom_integration_test(BOOTROM
         NAME "nor-no-ecc-ok"
         LOAD
           SPI0_CONF spl-fail,spl-fail
@@ -214,36 +222,36 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         IRUN_FLAGS +BOOT_EMI_ECC=0
     )
 
-    rumboot_bootrom_integration_test(ROM
+    rumboot_bootrom_integration_test(BOOTROM
         NAME "spi-cs0-ok"
         LOAD
           SPI0_CONF spl-ok,spl-fail
           HOSTMOCK  spl-fail
     )
 
-    rumboot_bootrom_integration_test(ROM
+    rumboot_bootrom_integration_test(BOOTROM
         NAME "spi-cs1-ok"
         LOAD
           SPI0_CONF spl-fail,spl-ok
           HOSTMOCK  spl-fail
     )
 
-    rumboot_bootrom_integration_test(ROM
+    rumboot_bootrom_integration_test(BOOTROM
         NAME "serial-9600"
         IRUN_FLAGS +BOOT_SLOWUART=1 +BOOT_FASTUART=0 +UART0_SPEED=9600 +UART0_STOP_ON_MATCH +UART0_STOP_ON_MISMATCH
         TIMEOUT 10 ms
     )
-    rumboot_bootrom_integration_test(ROM
+    rumboot_bootrom_integration_test(BOOTROM
         NAME "serial-19200"
         IRUN_FLAGS +BOOT_SLOWUART=1 +BOOT_FASTUART=1 +UART0_SPEED=19200 +UART0_STOP_ON_MATCH +UART0_STOP_ON_MISMATCH
         TIMEOUT 10 ms
     )
-    rumboot_bootrom_integration_test(ROM
+    rumboot_bootrom_integration_test(BOOTROM
         NAME "serial-115200"
         IRUN_FLAGS +BOOT_SLOWUART=0 +BOOT_FASTUART=0 +UART0_SPEED=115200 +UART0_STOP_ON_MATCH +UART0_STOP_ON_MISMATCH
         TIMEOUT 10 ms
     )
-    rumboot_bootrom_integration_test(ROM
+    rumboot_bootrom_integration_test(BOOTROM
         NAME "serial-6500000"
         IRUN_FLAGS +BOOT_SLOWUART=0 +BOOT_FASTUART=1 +UART0_SPEED=6500000 +UART0_STOP_ON_MATCH +UART0_STOP_ON_MISMATCH
         TIMEOUT 10 ms
