@@ -257,21 +257,28 @@ uint32_t test_uart(uint32_t UART_TRANSMITTER_BASE, uint32_t UART_RECEIVER_BASE)
 {
     static const uart_init_params transmitter_init_params =
     {
-        UART_word_length_8bit,
-        UART_SYS_FREQ_HZ,
-        6250000,
-        UART_parity_no,
-        0x022,
-        0
+        .wlen = UART_word_length_8bit,
+        .uart_sys_freq_hz = UART_SYS_FREQ_HZ,
+        .baud_rate = 6250000,
+        .parity = UART_parity_no,
+        .rx_fifo_level = UART_RX_FIFO_LEVEL_GT_7_8,
+        .tx_fifo_level = UART_TX_FIFO_LEVEL_LT_1_8,
+        .int_mask = 0x022,
+        .use_rts_cts = true,
+        .loopback = false
     };
+
     static const uart_init_params receiver_init_params =
     {
-        UART_word_length_8bit,
-        UART_SYS_FREQ_HZ,
-        6250000,
-        UART_parity_no,
-        0x410,
-        0
+        .wlen = UART_word_length_8bit,
+        .uart_sys_freq_hz = UART_SYS_FREQ_HZ,
+        .baud_rate = 6250000,
+        .parity = UART_parity_no,
+        .rx_fifo_level = UART_RX_FIFO_LEVEL_GT_7_8,
+        .tx_fifo_level = UART_TX_FIFO_LEVEL_LT_1_8,
+        .int_mask = 0x410,
+        .use_rts_cts = true,
+        .loopback = false
     };
 
     rumboot_printf("------- Test UART -------\n");
@@ -279,17 +286,11 @@ uint32_t test_uart(uint32_t UART_TRANSMITTER_BASE, uint32_t UART_RECEIVER_BASE)
 
 
     uart_init(UART_TRANSMITTER_BASE, &transmitter_init_params);
-    uart_fifos_set_level(UART_TRANSMITTER_BASE, UART_RX_FIFO_LEVEL_GT_7_8, UART_TX_FIFO_LEVEL_LT_1_8);
-    uart_fifos_enable(UART_TRANSMITTER_BASE, true);
-    uart_rts_cts_enable(UART_TRANSMITTER_BASE, true);
     uart_tx_enable(UART_TRANSMITTER_BASE, true);
     uart_enable(UART_TRANSMITTER_BASE, true);
 
 
     uart_init(UART_RECEIVER_BASE, &receiver_init_params);
-    uart_fifos_set_level(UART_RECEIVER_BASE, UART_RX_FIFO_LEVEL_GT_7_8, UART_TX_FIFO_LEVEL_LT_1_8);
-    uart_fifos_enable(UART_RECEIVER_BASE, true);
-    uart_rts_cts_enable(UART_RECEIVER_BASE, true);
     uart_rx_enable(UART_RECEIVER_BASE, true);
     uart_enable(UART_RECEIVER_BASE, true);
 
