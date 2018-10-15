@@ -189,6 +189,7 @@ static void process_irq(int id)
 	}
 }
 
+
 void rumboot_irq_core_dispatch(uint32_t ctrl, uint32_t type, uint32_t id)
 {
 	const struct rumboot_irq_controller *ctl = rumboot_irq_controller_by_id(ctrl);
