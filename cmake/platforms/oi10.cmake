@@ -56,6 +56,14 @@ rumboot_add_configuration(
 )
 
 
+rumboot_add_configuration(
+    SUPPLEMENTARY
+    LDS oi10/rom.lds
+    SNAPSHOT default
+    PREFIX supplementary
+    FEATURES STUB
+)
+
 rumboot_add_configuration (
     IRAM
     LDS oi10/iram.lds
@@ -315,6 +323,42 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     add_rumboot_target_dir(simple-iram/
         CONFIGURATION IRAM
         PREFIX simple-iram
+    )
+
+    add_rumboot_target(
+        CONFIGURATION SUPPLEMENTARY
+        LDS oi10/test_oi10_cpu_038_im1.lds
+        FILES test_oi10_cpu_038_helper.c
+        CFLAGS -DTEST_OI10_CPU_038_ARRAY_SIZE=0x7C00
+        NAME "test_oi10_cpu_038_helper_im1"
+    )
+
+    add_rumboot_target(
+        CONFIGURATION SUPPLEMENTARY
+        LDS oi10/test_oi10_cpu_038_im0.lds
+        FILES test_oi10_cpu_038_helper.c
+        CFLAGS -DTEST_OI10_CPU_038_ARRAY_SIZE=0x7C00
+        NAME "test_oi10_cpu_038_helper_im0"
+    )
+
+    add_rumboot_target(
+        CONFIGURATION IRAM
+        FILES test_oi10_cpu_038.c
+        PREFIX simple-iram
+        CFLAGS -DIM_BASE=IM1_BASE
+        NAME "test_oi10_cpu_038_im1"
+        LOAD IM0BIN SELF
+             IMBIN supplementary-test_oi10_cpu_038_helper_im1
+    )
+
+    add_rumboot_target(
+        CONFIGURATION IRAM
+        FILES test_oi10_cpu_038.c
+        PREFIX simple-iram
+        CFLAGS -DTEST_OI10_CPU_038_IM0 -DIM_BASE=IM1_BASE
+        NAME "test_oi10_cpu_038_im0"
+        LOAD IM0BIN SELF
+             IMBIN supplementary-test_oi10_cpu_038_helper_im0
     )
 
     add_rumboot_target_dir(uart_data_logger/
