@@ -1,7 +1,7 @@
 #ifndef MACROS_H
 #define MACROS_H
 
-#define ARRAY_SIZE( array ) (sizeof(array) / sizeof(array[0]))
+#define ARRAY_SIZE( array )             (sizeof(array) / sizeof(array[0]))
 
 #ifdef __ASSEMBLER__
 #define DECLARE_CONST( name, value )    .equiv name, value
@@ -27,8 +27,8 @@
 #define END_ENUM( enum_name )           } enum_name;
 #endif
 
-#define __stringify_1(x...)	#x
-#define __stringify(x...) __stringify_1(x)
+#define __stringify_1(x...)             #x
+#define __stringify(x...)               __stringify_1(x)
 
 #define SET_ALL_BITS( val )             ((val) = -1)
 #define CLEAR_ALL_BITS( val )           ((val) = 0)

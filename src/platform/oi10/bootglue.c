@@ -19,6 +19,7 @@
 #include <rumboot/bootsrc/physmap.h>
 #include <rumboot/bootsrc/sdio.h>
 #include <rumboot/bootsrc/boilerplate.h>
+#include <platform/bootm.h>
 #include <regs/regs_gpio_pl061.h>
 #include <regs/regs_uart_pl011.h>
 #include <platform/devices/emi.h>
@@ -26,16 +27,6 @@
 #include <platform/regs/regs_emi.h>
 #include <platform/devices/plb6mcif2.h>
 #include <devices/uart_pl011.h>
-
-
-#define BOOTM_SLOWUART     (1 << 0)
-#define BOOTM_HOST         (1 << 1)
-#define BOOTM_FASTUART     (1 << 2)
-#define BOOTM_SDIO_CD      (1 << 3)
-#define BOOTM_SPI_CS       (1 << 4)
-#define BOOTM_CPU_ECC      (1 << 5)
-#define BOOTM_EMI_ECC      (1 << 6)
-#define BOOTM_NOR_BOOT     (1 << 7)
 
 
 void rumboot_platform_init_loader(struct rumboot_config *conf)
@@ -68,7 +59,7 @@ void rumboot_platform_init_loader(struct rumboot_config *conf)
 
 void rumboot_platform_read_config(struct rumboot_config *conf)
 {
-        uint32_t bootm = dcr_read(DCR_SCTL_BASE + SCTL_BOOTM);
+        uint32_t bootm = dcr_read(DCR_SCTL_BASE + SCTL_SYS_BOOT_CFG);
 
         if (! (bootm & BOOTM_SLOWUART)) {
                 if (bootm & BOOTM_FASTUART) {
@@ -91,7 +82,7 @@ void rumboot_platform_read_config(struct rumboot_config *conf)
 
 void rumboot_platform_print_summary(struct rumboot_config *conf)
 {
-        uint32_t bootm = dcr_read(DCR_SCTL_BASE + SCTL_BOOTM);
+        uint32_t bootm = dcr_read(DCR_SCTL_BASE + SCTL_SYS_BOOT_CFG);
 
         rumboot_printf("SD Card:         %s\n",
                        bootm & BOOTM_SDIO_CD ? "Not inserted" : "Inserted");
