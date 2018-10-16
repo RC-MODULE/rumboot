@@ -42,6 +42,19 @@ static inline __attribute__((always_inline)) uint32_t msr_read() {
     rval;\
 })
 
+static inline __attribute__((always_inline)) void icbi( void* const addr ) {
+    asm volatile (
+        "icbi 0, %0\n\t"
+        ::  "r"(addr)
+    );
+}
+
+static inline __attribute__((always_inline)) void icread( void* const addr ) {
+    asm volatile (
+        "icread 0, %0\n\t"
+        ::  "r"(addr)
+    );
+}
 
 static inline __attribute__((always_inline)) void dcbf( void* const addr ) {
     asm volatile (
