@@ -18,7 +18,6 @@ ppc470s_invalidate_all_tlb_entries_nosnoop:
     mtspr SPR_CTR, r6
     load_const r6, 0          //iteration index = 0
     load_const r9, 0          //r9 = 0
-    load_const r5, 0xFFFFF800 //EPN+V+TS+DSIZ+BLTD of the only valid entry for now, let's skip it
 
 invalidate_tlb_entry:
 //Calculate current entry way and index
@@ -28,8 +27,6 @@ invalidate_tlb_entry:
 
 //Read entry value
     tlbre   r8, r7, 0
-    xor.   r10, r8, r5
-    beq-    goto_next_tlb_entry
     andi.   r10, r8, reg_field(20, 1) //if (tlbentry[V] == 0) goto_next_tlb_entry;
     beq     goto_next_tlb_entry
 
