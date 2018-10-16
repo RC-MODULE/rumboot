@@ -314,7 +314,8 @@ setup_boot_tlb_entries:
     bl          ppc470s_invalidate_all_tlb_entries_nosnoop
 #endif
 
-    ppc470s_set_mem_window  r3, MEM_WINDOW_1
+    load_const  r3, MEM_WINDOW_1
+    mtspr SPR_PID, r3
 
     load_addr   r3, boot_tlb_entries
     load_const  r4, BOOT_TLB_ENTRIES_N
