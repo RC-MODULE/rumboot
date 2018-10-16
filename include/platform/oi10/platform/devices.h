@@ -37,6 +37,7 @@
 #define NOR_BASE                EM2_BANK5_BASE
 #define IM0_BASE                0x80000000
 #define IM1_BASE                0x80020000
+#define IM2_BASE                0x80040000
 #define MKIO0_BASE              0xC0020000
 #define GPIO_0_BASE             0xC0028000
 #define MKIO1_BASE              0xC0030000
