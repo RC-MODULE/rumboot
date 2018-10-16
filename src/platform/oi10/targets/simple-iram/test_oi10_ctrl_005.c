@@ -263,7 +263,6 @@ static bool wd_test( uint32_t structure)
 static bool wd_test2( uint32_t structure)
 {
     struct s805_instance *stru = ( struct s805_instance * )structure;
-   // uint32_t base_addr = stru->base_addr;
     int i;
 
     dcr_write(DCR_WATCHDOG_BASE + WD_REG_LOCK, 0x1ACCE551);
@@ -281,7 +280,6 @@ static bool wd_test2( uint32_t structure)
             }
         }
     }
-    //rumboot_printf("base_addr %d\n", base_addr);
     i = dcr_read(DCR_WATCHDOG_BASE+WD_REG_ITCR);
     rumboot_printf("WD_REG_ITCR %d\n", i);
     sp805_enable(stru->base_addr, 0);
