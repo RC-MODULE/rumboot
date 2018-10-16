@@ -58,7 +58,10 @@ void rumboot_platform_init_loader(struct rumboot_config *conf)
         };
         sparams.baud_rate = conf->baudrate;
         uart_init(UART0_BASE, &sparams);
-
+        uart_tx_enable(UART0_BASE, true);
+        uart_rx_enable(UART0_BASE, true);
+        uart_enable(UART0_BASE, true);
+        
         /* Send sync byte. This way it will work for debug builds */
         iowrite32(0x55, UART0_BASE + UARTDR);
 }
