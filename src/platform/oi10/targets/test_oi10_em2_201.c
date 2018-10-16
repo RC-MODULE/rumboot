@@ -125,15 +125,6 @@ int check_sram0(uint32_t base_addr)
     return 0;
 }
 
-#define stmw(base, shift)\
-    asm volatile (\
-        "addis 29, 0, %0 \n\t"\
-        "stmw 30, %1(29) \n\t"\
-        ::"i"(base), "i"(shift)\
-    )
-
-
-
 /*
  * NOR (2.1.2 of PPC_SRAM_SDRAM_slave0_testplan.docx)
  */
@@ -217,6 +208,18 @@ uint32_t dma2plb6_get_bytesize(transfer_width transfer_width_code)
     return 0;
 }
 
+#define stmw(base, shift)\
+    asm volatile (\
+        "addis 30, 0,  0x0101 \n\t"\
+        "addi  30, 30, 0x0101 \n\t"\
+        "addis 31, 0,  0x0202 \n\t"\
+        "addi  31, 31, 0x0202 \n\t"\
+        "addis 29, 0, %0 \n\t"\
+        "stmw 30, %1(29) \n\t"\
+        ::"i"(base), "i"(shift)\
+    )
+
+
 int check_sdram(uint32_t base_addr, sdx_csp_t csp, sdx_sds_t sds, sdx_cl_t cl)
 {
 #define SDRAM_TRDL_SPACE    2
@@ -227,39 +230,13 @@ int check_sdram(uint32_t base_addr, sdx_csp_t csp, sdx_sds_t sds, sdx_cl_t cl)
     sdx_trcd_t trcd_arr[SDRAM_TRCD_SPACE] = {TRCD_2, TRCD_5};
     sdx_tras_t tras_arr[SDRAM_TRAS_SPACE] = {TRAS_4, TRAS_11};
     emi_sdx_reg_cfg sdx_sdram;
-    //uint32_t k, l, m;
-
-    dma2plb6_setup_info dma_info_default = {
-                                                    .base_addr = DCR_DMAPLB6_BASE,
-                                                    .source_adr = 0,//(uint64_t)test_dma2plb6_0_data_src,
-                                                    .dest_adr = 0,//(uint64_t)test_dma2plb6_0_data_dst,
-                                                    .priority = priority_medium_low,
-                                                    .striding_info.striding = striding_none,
-                                                    .tc_int_enable = true,
-                                                    .err_int_enable = true,
-                                                    .int_mode = int_mode_level_wait_clr,
-                                                    .channel = channel0,
-                                                    .rw_transfer_size = rw_tr_size_8q,
-                                                    .transfer_width = tr_width_word,
-                                                    .count = 0x00,
-                                                    .snp_mode = snp_mode_off
-                                                };
-    channel_status status;
-
-    prepare_sdram_data();
-
-    dma_info_default.source_adr = rumboot_virt_to_phys(test_dma2plb6_0_data_src);
-    rumboot_printf("source_adr = 0x%X\n", dma_info_default.source_adr);
-    dma_info_default.dest_adr   = rumboot_virt_to_phys(test_dma2plb6_0_data_dst);
-    rumboot_printf("dest_adr = 0x%X\n", dma_info_default.dest_adr);
-    dma_info_default.count = test_dma2plb6_0_data_size/dma2plb6_get_bytesize(dma_info_default.transfer_width);
-    rumboot_printf("count = %d\n", dma_info_default.count);
+//    uint32_t k, l, m;
 
     rumboot_printf("Checking SDRAM (0x%X)\n", base_addr);
 //    for (k=0; k<SDRAM_TRDL_SPACE ; k++)
 //        for (l=0; l<SDRAM_TRCD_SPACE ; l++)
 //            for (m=0; m<SDRAM_TRAS_SPACE ; m++)
-//            {
+            {
                 sdx_sdram.CSP   = csp;
                 sdx_sdram.SDS   = sds;
                 sdx_sdram.CL    = cl;
@@ -267,11 +244,11 @@ int check_sdram(uint32_t base_addr, sdx_csp_t csp, sdx_sds_t sds, sdx_cl_t cl)
                 sdx_sdram.T_RCD = trcd_arr[0];
                 sdx_sdram.T_RAS = tras_arr[0];
                 emi_update_sdx(&sdx_sdram);
-                dma2plb6_single_copy(&dma_info_default, &status);
-                //stmw( ((SDRAM_BASE & 0xFFFF0000)>>16), (0x0400 - 2) );
-                //iowrite32(0xBABADEDA, SDRAM_BASE + 0x400 - 2);
-                rumboot_virt_to_phys(test_dma2plb6_0_data_src);
-//            }
+
+                stmw( ((SDRAM_BASE & 0xFFFF0000)>>16), (0x0400 - 4) );
+                //check_wrrd(TEST_ADDR_0, (k<<16) | l);
+                //check_wrrd(TEST_ADDR_1, ~((m<<16) | k));
+            }
     return 0;
 }
 
