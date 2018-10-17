@@ -18,32 +18,24 @@ ppc470s_invalidate_all_tlb_entries_nosnoop:
     mtspr SPR_CTR, r6
     load_const r6, 0          //iteration index = 0
     load_const r9, 0          //r9 = 0
+    lis        r7, 0x8000                   //clear current entry index
+    load_const r8, (MMU_TLBE_DSIZ_16MB    << MMU_TLBE_TAG_DSIZ_i   )
 
+.align 4
 invalidate_tlb_entry:
 //Calculate current entry way and index
-    load_const r7, 0                   //clear current entry index
-    load_const r8, (MMU_TLBE_DSIZ_16MB    << MMU_TLBE_TAG_DSIZ_i   )
     copy_field(r7, 33, 34, r6, 54)  //r7[33:34] = r6[54:55] current way
     copy_field(r7, 40, 47, r6, 56)  //r7[40:47] = r6[56:63] current index
     copy_field(r8, 32, 39, r6, 56)  //r8[32:39] = r6[56:63] current index
 
-//Read entry value
-//    tlbre   r8, r7, 0
-//    andi.   r10, r8, reg_field(20, 1) //if (tlbentry[V] == 0) goto_next_tlb_entry;
-//    beq     goto_next_tlb_entry
-
-//    copy_field(r8, 20, 20, r9, 0) //clear V bit r8[20] = r9[0]. r9 must be zero here
-
 //Invalidate entry, even if bolted entry: (r8[60] == 1 && r7[33:34] == 0b00).
-    oris    r7, r7, 0x8000       //set way assignement type for tlbwe. RA[36] is already 0, RA[32] = 1
-    //MMUCR[STID] = tlbentry[TID]. This is done automatically in tlbre
     tlbwe   r8, r7, 0
     tlbwe   r9, r7, 1
     tlbwe   r9, r7, 2
 
 goto_next_tlb_entry:
     addi    r6, r6, 1     //increment iteration index
-    bdnz    invalidate_tlb_entry //decrement cnt and check for exit from loop
+    bdnz+   invalidate_tlb_entry //decrement cnt and check for exit from loop
     blr
 
 write_tlb_entries:
