@@ -1980,6 +1980,13 @@ endif()
     )
 
 
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES test_oi10_plb6_axi.c
+      CFLAGS -DCHECK_PLB6_AXI_SINGLE
+      PREFIX p6axi_single
+    )
+
 endmacro()
 
 
