@@ -80,7 +80,7 @@
 #define BASE_OFFSET                 0x00000100
 #define WECR_DFLT                   0x00000000
 #define ENABLED_MEM_TYPES           (                                       \
-                                     /*  MEMTYPE_ENABLE_SRAM        | */    \
+                                         MEMTYPE_ENABLE_SRAM        |       \
                                          MEMTYPE_ENABLE_SSRAM       |       \
                                          MEMTYPE_ENABLE_PIPELINE    |       \
                                          MEMTYPE_ENABLE_SDRAM               \
@@ -511,7 +511,7 @@ uint32_t main(void)
 
     rumboot_printf("Init EMI...\n");
     emi_init(DCR_EM2_EMI_BASE);
-    // emi_init_impl (DCR_EM2_EMI_BASE, DCR_EM2_PLB6MCIF2_BASE, 0x00);
+    /* emi_init_impl (DCR_EM2_EMI_BASE, DCR_EM2_PLB6MCIF2_BASE, 0x00); */
     init_interrupts();
     rumboot_printf("Init done.\n");
 
@@ -520,7 +520,7 @@ uint32_t main(void)
     const_2_ecc[1] = calc_hamming_ecc(reverse_bytes32(CONST_2 ^ MK_ERR_2));
     rumboot_printf("Generated.\n");
 
-    test_result |= check_emi(4);
+    /* test_result |= check_emi(4); */
     FOREACH_BANK(mem_bank, FIRST_BANK, LAST_BANK)
     {
         rumboot_printf(" ---------- Bank #%d... ----------\n", mem_bank);
