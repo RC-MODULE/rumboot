@@ -242,6 +242,7 @@ rumboot_reset_handler:
     load_const  r29,0x00000000
     load_const  r30,0x00000000
     load_const  r31,0x00000000
+    mtcrf 0xFF, r0 /*Removing rubbish or x-values from CR*/
 
 /* TODO: Remove timer clk bugfix */
 #define DCR_SCTL_BASE_          0x80090000
