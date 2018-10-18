@@ -114,7 +114,7 @@ int main()
 
 
         rumboot_platform_perf("Boot chain");
-        bootsource_try_chain((void*) &pdata, hdr, maxsize);
+        bootsource_try_chain(pdata, hdr, maxsize);
         rumboot_platform_perf(NULL);
 
         hostmode_loop(pdata);
