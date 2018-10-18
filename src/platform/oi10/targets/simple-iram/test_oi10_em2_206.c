@@ -13,6 +13,8 @@
 #include <rumboot/platform.h>
 #include <rumboot/macros.h>
 
+#include <platform/common_macros/common_macros.h>
+
 #include <platform/test_assert.h>
 #include <platform/test_event_c.h>
 #include <platform/test_event_codes.h>
@@ -21,6 +23,8 @@
 
 #include <platform/arch/ppc/ppc_476fp_config.h>
 #include <platform/arch/ppc/ppc_476fp_lib_c.h>
+#include <platform/arch/ppc/ppc_476fp_mmu_fields.h>
+#include <platform/arch/ppc/ppc_476fp_mmu.h>
 
 #include <platform/devices.h>
 #include <platform/devices/plb6mcif2.h>
@@ -170,8 +174,16 @@ static irq_flags_t IRQ = 0;
 static rumboot_irq_entry *irq_table = NULL;
 static volatile uint32_t global_irr = 0;
 static uint8_t const_2_ecc[2];
-
-
+static tlb_entry em2_noexec_entries[] =
+{
+    {
+        MMU_TLB_ENTRY(0,0x00000,0x00000,MMU_TLBE_DSIZ_1GB,
+            1,1,0,1,0,0, MMU_TLBE_E_BIG_END,
+        /*  UX,UW,UR, SX,SW,SR  */
+            0, 0, 0,  0, 1, 1, 0,0,0, MEM_WINDOW_0,
+            MMU_TLBWE_WAY_3, MMU_TLBWE_BE_UND,1)
+    }
+};
 inline static uint32_t reverse_bytes32(uint32_t data)
 {
     return  ((data & 0xFF000000) >> 0x18) |
@@ -419,9 +431,10 @@ uint32_t check_emi(uint32_t bank)
     uint32_t         status   = TEST_OK,
                      result   = TEST_OK,
                      hstsr    = 0,
-                     data32;
+                     data32   = 0;
     uintptr_t        base     = emi_bank_bases[bank];
     int              typ      = EMI_TYPE(bank);
+
     /* sd - Single error in data, sc - Single error in ECC  */
     /* dd - Double error in data, de - Double error in ECC  */
     mkerr_param_t    mke_sd   = {bank, const_2_ecc[0], 1, EMI_BITS_D24_D31},
@@ -429,8 +442,6 @@ uint32_t check_emi(uint32_t bank)
                      mke_dd   = {bank, const_2_ecc[0], 0, EMI_BITS_D16_D23},
                      mke_de   = {bank, const_2_ecc[1], 0, EMI_BITS_ED0_ED7};
 
-
-    base += BASE_OFFSET;
     if(typ & ~7) typ = 7;
     rumboot_printf(" *** CHECK BANK #%d (type %d=%s) *** \n",
             bank, typ, btyp_descr[typ]);
@@ -443,7 +454,14 @@ uint32_t check_emi(uint32_t bank)
 
     emi_write(EMI_WECR,  WECR_DFLT);
     hstsr = emi_read(EMI_HSTSR);
-    if(!GET_BIT(hstsr, bank)) ECC_ON(bank);
+    if(!GET_BIT(hstsr, bank))
+    {
+        ECC_ON(bank);
+        iowrite32(0x00000000, base);
+    }
+
+    base += BASE_OFFSET;
+
     /* Reset single error counter */
     emi_write(emi_ecnt[bank], 0);
 
@@ -510,6 +528,10 @@ uint32_t main(void)
     int          mem_bank;
 
     rumboot_printf("Init EMI...\n");
+    write_tlb_entries(em2_noexec_entries, 1);
+    tlbsync();
+    msync();
+    isync();
     emi_init(DCR_EM2_EMI_BASE);
     /* emi_init_impl (DCR_EM2_EMI_BASE, DCR_EM2_PLB6MCIF2_BASE, 0x00); */
     init_interrupts();
