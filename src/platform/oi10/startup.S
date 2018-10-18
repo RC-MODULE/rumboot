@@ -103,13 +103,17 @@ rumboot_irq_hdr:
     mfcr        r0
     stw         r0, 28(r1)
     mfctr       r0
+    /* TODO: remove setting CTR and LR to 0x00000000. It's only for modeling (https://jira.module.ru/jira/browse/OI10-205) */
+    load_const  r3, 0x00000000
+    mtctr       r3
+    mtlr        r3
     stw         r0, 24(r1)
     mfxer       r0
     stw         r0, 20(r1)
 
     load_const  r3, 0
     load_const  r4, RUMBOOT_IRQ_TYPE_NORMAL
-    load_const  r5, RUMBOOT_IRQ_IRQ /* TODO remove unused param id */
+    load_const  r5, RUMBOOT_IRQ_IRQ /* TODO: remove unused param id */
     bl          rumboot_irq_core_dispatch
 
     lwz         r0, 20(r1)
