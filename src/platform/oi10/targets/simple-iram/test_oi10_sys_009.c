@@ -20,15 +20,34 @@
 #include <platform/arch/ppc/ppc_476fp_timer_fields.h>
 #include <platform/arch/ppc/ppc_476fp_lib_c.h>
 #include <platform/arch/ppc/ppc_476fp_config.h>
+#include <platform/arch/ppc/ppc_476fp_mmu_fields.h>
+#include <platform/arch/ppc/ppc_476fp_mmu.h>
+#include <platform/ppc470s/mmu/mem_window.h>
 
+#include <platform/devices.h>
+#include <platform/devices/emi.h>
+#include <platform/regs/regs_emi.h>
+#include <platform/regs/fields/emi.h>
 
-   typedef enum
-       {
-       TEC_CHECK_DEBUG_GRPHLTR_GRPHLTS = TEST_EVENT_CODE_MIN,
-       TEC_CHECK_DEBUG_GRP0,
-       TEC_CHECK_DEBUG_GRP1,
-       TEC_CHECK_DEBUG_LDBO,
-       TEC_CHECK_DEBUG_MACHINECHECK,
+#define PHY2RPN(ADDR)      	(((ADDR) & 0xFFFFF000) >> 12)
+#define ADDR2EPN			PHY2RPN
+
+#define PHY_BASE			(SSRAM_BASE)
+
+#define ICACHEWR_TEST_DATA	(0x1234)
+#define ICACHEWR_TEST_ADDR	(PHY_BASE)
+
+#define FASTWR_DATA_ADDR  	(PHY_BASE + 0x100)
+#define FASTWR_DATA0		(0x12345678)
+#define FASTWR_DATA1 		(0xC0DEBEEF)
+#define FASTWR_DATA2		(0x55555555)
+#define FASTWR_DATA3		(0xAAAAAAAA)
+
+/*                          MMU_TLB_ENTRY( ERPN, RPN,              EPN,               DSIZ,              IL1I,IL1D,W,I,M,G,E,                 UX,UW,UR,SX,SW,SR DULXE,IULXE,TS,TID,         WAY,              BID,             V )*/
+#define TLB_ENTRY_CACHE_ON  MMU_TLB_ENTRY( 0x000,PHY2RPN(PHY_BASE),ADDR2EPN(PHY_BASE),MMU_TLBE_DSIZ_64KB,0,   0,   1,0,1,0,MMU_TLBE_E_BIG_END,0, 0, 0, 1, 1, 1, 0,    0,    0, MEM_WINDOW_0,MMU_TLBWE_WAY_UND,MMU_TLBWE_BE_UND,1 )
+
+typedef enum {
+       TEC_CHECK_DEBUG_MACHINECHECK = TEST_EVENT_CODE_MIN,
        TEC_CHECK_DEBUG_MASKOUT,
        TEC_CHECK_DEBUG_HALT,
        TEC_CHECK_DEBUG_UNCONDEVENT,
@@ -42,67 +61,181 @@
        TEC_CHECK_DEBUG_DBIMASK,
        TEC_CHECK_DEBUG_ICACHEWR,
        TEC_CHECK_DEBUG_FASTWR
-   } test_event_code;
+} test_event_code;
 
-
-   typedef enum
-   	{
+typedef enum {
    	TEST_DATA_PROGG     = 0xFFFFFFFF,
-   	TEST_DATA_OK        = 0x00000001,
+   	TEST_DATA_OK        = 0x12345678,
 	TEST_DATA_EVENT     = 0x00000002,
    	TEST_DATA_ERROR     = 0x8E5917E8
-   } test_data;
+} test_data;
+
+static const tlb_entry tlb_entry_cache_on = {TLB_ENTRY_CACHE_ON};
 
 int check_dbdr ()
 {
-		volatile uint32_t *data;
-	    enum rumboot_simulation_event rumboot_event;
-	    rumboot_event = rumboot_platform_event_get(&data);
-		if (rumboot_event != EVENT_TESTEVENT ){
-			rumboot_printf("Error event!\n");
-			return 1;
-		}
+	volatile uint32_t *data;
+	enum rumboot_simulation_event rumboot_event;
+	uint32_t dbdr;
 
-		if (data [0] != TEST_DATA_EVENT){
-			rumboot_printf("Error event!\n");
-			return 1;
-		}
-		/*schitay dbdr*/
-		uint32_t dbdr = spr_read(SPR_DBDR);
-		if (dbdr != TEST_DATA_OK ){
-			rumboot_printf("Error DBDR_TEST!\n");
-			return 1;
-		}
+	rumboot_event = rumboot_platform_event_get(&data);
+	if (rumboot_event != EVENT_TESTEVENT ){
+		rumboot_printf("Error event!\n");
+		return 1;
+	}
 
-		/*prover' dbdr*/
-		spr_write(SPR_DBDR, TEST_DATA_PROGG);
-		test_event(TEC_CHECK_DEBUG_DBDR );
-		return 0;
+	if (data [0] != TEST_DATA_EVENT){
+		rumboot_printf("Error event!\n");
+		return 1;
+	}
+
+	/*read dbdr*/
+	dbdr = spr_read(SPR_DBDR);
+	if (dbdr != TEST_DATA_OK ){
+		rumboot_printf("Error DBDR_TEST!\n");
+		return 1;
+	}
+
+	/*write dbdr for test*/
+	spr_write(SPR_DBDR, TEST_DATA_PROGG);
+	test_event(TEC_CHECK_DEBUG_DBDR );
+	return 0;
 }
 
 int check_stuff ()
 {
+	volatile uint32_t *data;
+    enum rumboot_simulation_event rumboot_event;
+	uint32_t stuff;
 
-	rumboot_printf("Hello STUFF!\n");
+//	rumboot_printf("Hello STUFF!\n");
 
+	spr_write(SPR_DBDR, TEST_DATA_OK);
+
+	rumboot_platform_event_clear();
 	test_event(TEC_CHECK_DEBUG_STUFF );
+
+    rumboot_event = rumboot_platform_event_get(&data);
+	if (rumboot_event != EVENT_TESTEVENT ){
+		rumboot_printf("Error event!\n");
+		return 1;
+	}
+
+	if (data [0] != TEST_DATA_EVENT){
+		rumboot_printf("Error event!\n");
+		return 1;
+	}
+
+	//mfspr r4, SPR_DBDR
+	//mtspr SPR_USPRG0, r4
+
+	stuff = spr_read(SPR_USPRG0);
+    if (stuff != TEST_DATA_OK ){
+            rumboot_printf("The stuff instruction check failed!\n");
+            return 1;
+    }
+
+//    rumboot_printf("The stuff instruction check done!\n");
+	return 0;
+}
+
+int check_icachewr ()
+{
+	volatile uint32_t *data;
+    enum rumboot_simulation_event rumboot_event;
+    uint32_t test_data, i;
+    volatile uint32_t *stuff = (uint32_t*)(ICACHEWR_TEST_ADDR);
+
+//   	stuff[0] = 0x3B801234;
+//   	stuff[1] = 0x7F8043A6;
+    for (i=0; i < 8; i++)
+    	stuff[i] = 0x60000000;  //nop
+    msync();
+    isync();
+
+	spr_write(SPR_USPRG0, &stuff[0]);
+
+	rumboot_platform_event_clear();
+	test_event(TEC_CHECK_DEBUG_ICACHEWR );
+
+    rumboot_event = rumboot_platform_event_get(&data);
+
+	rumboot_printf("ICACHEWR: got event!\n");
+
+	if (rumboot_event != EVENT_TESTEVENT ){
+		rumboot_printf("Error event!\n");
+		return 1;
+	}
+
+	if (data [0] != TEST_DATA_EVENT){
+		rumboot_printf("Error event!\n");
+		return 1;
+	}
+
+	test_data = spr_read(SPR_USPRG0);
+	rumboot_printf("SPR_USPRG0 = 0x%X\n", test_data);
+
+    if (test_data != ICACHEWR_TEST_DATA ){
+            rumboot_printf("The icachewr instruction check failed!\n");
+            return 1;
+    }
+
+    rumboot_printf("ICACHEWR: Test done.\n");
+	return 0;
+}
+
+int check_fastwr ()
+{
+	volatile uint32_t *data, *test_data;
+    enum rumboot_simulation_event rumboot_event;
+
+    rumboot_printf("FASTWR: Test started...\n");
+
+	rumboot_platform_event_clear();
+	test_event(TEC_CHECK_DEBUG_FASTWR );
+
+    rumboot_event = rumboot_platform_event_get(&data);
+
+	rumboot_printf("FASTWR: got event!\n");
+
+	if (rumboot_event != EVENT_TESTEVENT ){
+		rumboot_printf("Error event!\n");
+		return 1;
+	}
+
+	if (data [0] != TEST_DATA_EVENT){
+		rumboot_printf("Error event!\n");
+		return 1;
+	}
+
+    test_data = (uint32_t *)(FASTWR_DATA_ADDR);
+    TEST_ASSERT(test_data[0] == FASTWR_DATA0, "Invalid value in test_data[0]");
+    TEST_ASSERT(test_data[1] == FASTWR_DATA1, "Invalid value in test_data[1]");
+    TEST_ASSERT(test_data[2] == FASTWR_DATA2, "Invalid value in test_data[2]");
+    TEST_ASSERT(test_data[3] == FASTWR_DATA3, "Invalid value in test_data[3]");
+
+    rumboot_printf("FASTWR: Test done.\n");
 	return 0;
 }
 
 int main()
 {
+	int result = 0;
+
 	test_event_send_test_id("test_oi10_sys_009");
 
-    rumboot_printf("Hello world from IRAM!\n");
-int result = 0;
+	rumboot_printf("Init EMI2...\n");
+    emi_init(DCR_EM2_EMI_BASE);
 
-	result += check_dbdr ();
+    rumboot_printf("Cache on...\n");
+    write_tlb_entries(&tlb_entry_cache_on, 1);
 
+	result += check_dbdr();
+	result += check_stuff();
+	result += check_icachewr();
+	result += check_fastwr();
 
-	result += check_stuff ();
-
-
-
+	rumboot_printf("TEST %s!\n", result ? "ERROR" : "OK");
 
     return result;
 }
