@@ -146,17 +146,17 @@ int bootsource_try_source_once(const struct rumboot_bootsource *src, void *pdata
         *offset = round_up_to_align(*offset, src->plugin->align);
         dbg_boot(src, "Reading image from offset %d", *offset);
         ret = bootsource_load_img(src, pdata, dst, maxsize, offset);
+        /* Deinit here before error checking, since we may execute the image next */
+        bootsource_deinit(src, pdata);
         if (ret != 0) {
                 dbg_boot(src, "Error: %s (%d)", rumboot_strerror(-ret), -ret);
                 goto bailout;
         }
-
         dbg_boot(src, "Image validated, executing...");
         dst->magic = 0x0;
         ret = rumboot_platform_exec(dst);
         dbg_boot(src, "Back in rom, code %d, will now %s", ret, describe_next_step(ret));
 bailout:
-        bootsource_deinit(src, pdata);
         return ret;
 }
 
@@ -196,7 +196,6 @@ void bootsource_try_chain(void *pdata, struct rumboot_bootheader *hdr, size_t ma
                 size_t offset = src->offset;
                 ret = 0;
                 ret = bootsource_try_single(src, pdata, hdr, maxsize, &offset);
-
                 if (ret > 0) {
                         src = find_source_by_id(ret - 1);
                         continue;
