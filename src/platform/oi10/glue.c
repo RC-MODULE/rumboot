@@ -83,8 +83,8 @@ void rumboot_platform_setup() {
     msr_write( msr_old_value );
 
 #ifdef CMAKE_BUILD_TYPE_DEBUG
-    rumboot_putstring( "NOPs for bctr prefetch: WARNING!!! WRITING 8 * 0x00000000 to SRAM0_BASE!!!\n" );
-    for( int i = 0; i < 8; i++ ) {
+    rumboot_putstring( "NOPs for bctr prefetch: WARNING!!! WRITING 16 * 0x00000000 to SRAM0_BASE!!!\n" );
+    for( int i = 0; i < 16; i++ ) {
         iowrite32( 0x00000000, SRAM0_BASE + (i*4) );
     }
 #endif
