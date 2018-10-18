@@ -11,7 +11,7 @@
 #define SPIFLASH_WRITEENABLE   0x06
 #define SPIFLASH_BLOCK64ERASE  0xD8
 
-void pl022_flash_write_enable(uint32_t base_addr)
+void pl022_flash_write_enable(uint32_t const base_addr)
 {
     iowrite32(SPIFLASH_WRITEENABLE, base_addr+GSPI_SSPDR); //write data to SPI - command write enable
 
@@ -21,7 +21,7 @@ void pl022_flash_write_enable(uint32_t base_addr)
     (void)ioread32(base_addr+GSPI_SSPDR);  //read data from rx fifo
 }
 
-static uint32_t read_flash_status (uint32_t base_addr)
+static uint32_t read_flash_status (uint32_t const base_addr)
 {
     uint32_t addr = base_addr+GSPI_SSPDR;
     iowrite32(SPIFLASH_READSTAT, addr); //write data to SPI - command read status
@@ -35,7 +35,7 @@ static uint32_t read_flash_status (uint32_t base_addr)
     return (ioread32(addr)); //read data from rx fifo
 }
 
-void pl022_flash_erase(uint32_t base_addr)
+void pl022_flash_erase(uint32_t const base_addr)
 {
     uint32_t addr = base_addr+GSPI_SSPDR;
 
@@ -50,7 +50,7 @@ void pl022_flash_erase(uint32_t base_addr)
         {}
 }
 
-void pl022_flash_write_data(uint32_t const base_addr, uint32_t data)
+void pl022_flash_write_data(uint32_t const base_addr, uint32_t const data)
 {
     uint32_t addr =  base_addr+GSPI_SSPDR;
     iowrite8(SPIFLASH_PAGEPROG, addr); //write data to SPI - command write

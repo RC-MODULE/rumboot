@@ -1,9 +1,9 @@
+#ifndef PL022_FLASH_H
+#define PL022_FLASH_H
+
 #include <stdbool.h>
 #include <stdint.h>
 #include <stddef.h>
-
-#ifndef PL022_FLASH_H
-#define PL022_FLASH_H
 
 void pl022_flash_write_enable(uint32_t base_addr);
 void pl022_flash_erase(uint32_t base_addr);

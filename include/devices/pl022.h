@@ -1,9 +1,9 @@
+#ifndef PL022_H
+#define PL022_H
+
 #include <stdbool.h>
 #include <stdint.h>
 #include <stddef.h>
-
-#ifndef PL022_H
-#define PL022_H
 
 /**
  * \defgroup devices_pl022 PL022 SSP library
@@ -45,7 +45,7 @@ struct pl022_config {
  * @param conf
  */
 
-typedef enum{
+enum ssp_dma_interrupt{
     ssp_int = (0x1 << 0),
     gspi_int = (0x1 << 1),
     end_buf_write = (0x1 << 2),
@@ -53,62 +53,62 @@ typedef enum{
     err_read = (0x1 << 4),
     err_write = (0x1 << 5),
     overflow_buf_write = (0x1 << 6)
-}ssp_dma_interrupt;
+};
 
-typedef enum{
+enum ssp_dma_enable{
     disable = 0x0,
     transmit = 0x1,
     receive = 0x2,
     all = 0x3
-}ssp_dma_enable;
+};
 
-typedef enum{
+enum ssp_mode{
     master_mode = 0,
     slave_mode = 1
-}ssp_mode;
+};
 
-typedef enum{
+enum ssp_frame_format{
     ssp_motorola_fr_form = 0x00,
     ssp_ti_fr_form = 0x01,
     ssp_nmw_fr_form = 0x02
-}ssp_frame_format;
+};
 
-typedef struct{
+struct ssp_params{
     uint8_t cpol;//spol
     uint8_t cpha;//sph
-    ssp_mode mode;
+    enum ssp_mode mode;
     bool loopback;
-    ssp_frame_format fr_format;
-}ssp_params;
+    enum ssp_frame_format fr_format;
+};
 
-typedef enum{
+enum dma_mode{
     circle_buf = 0,
     base_mode = 1
-}dma_mode;
+};
 
-typedef enum{
+enum dma_endianness{
     lsb = 0,
     msb = 1
-}dma_endianness;
+};
 
 
-typedef struct{
-    dma_endianness endian_read;
+struct dma_params{
+    enum dma_endianness endian_read;
     uint8_t arlen;
-    dma_endianness endian_write;
+    enum dma_endianness endian_write;
     uint8_t awlen;
-}dma_params;
+};
 
 
 //global functions
-void pl022_init(uint32_t base, struct pl022_config *conf);
+void pl022_init(uint32_t base, struct pl022_config const *conf);
 /**
  * Calculate the divisors and set SSP speed
  * @param  base base address
  * @param  conf pointer to ssp configuration structure
  * @return
  */
-int pl022_set_speed(uint32_t base, struct pl022_config *conf);
+int pl022_set_speed(uint32_t base, struct pl022_config const *conf);
 /**
  * Software control over 'internal' chip-select line
  * FIXME: Not yet implemented
@@ -149,7 +149,7 @@ void pl022_dump_fifo_state(uint32_t base);
  * @param  len   the length of the buffers
  * @return       returns the number of bytes transferred
  */
-int pl022_xfer(uint32_t base, unsigned char *wrbuf, unsigned char *rdbuf, size_t len);
+int pl022_xfer(uint32_t base, unsigned char const *wrbuf, unsigned char *rdbuf, size_t len);
 
 /**
  * Transfer data via SSP with a timeout. If no activity (sending or receiving)
@@ -164,7 +164,7 @@ int pl022_xfer(uint32_t base, unsigned char *wrbuf, unsigned char *rdbuf, size_t
  * @return the number of bytes transferred or -1 on timeout
  */
 
-int pl022_xfer_timeout(uint32_t base, unsigned char *wrbuf, unsigned char *rdbuf, size_t len, uint32_t timeout);
+int pl022_xfer_timeout(uint32_t base, unsigned char const *wrbuf, unsigned char *rdbuf, size_t len, uint32_t timeout);
 /**
  * Clears the RX FIFO
  * @param base SSP base address
@@ -205,7 +205,7 @@ void pl022_set_int_mask(uint32_t base_address, uint16_t mask);
  * @param base_addr   SSP base address
  * @param enabled        parameters of dma enable
  */
-void pl022_dma_enable(uint32_t base_addr, ssp_dma_enable enabled);
+void pl022_dma_enable(uint32_t base_addr, enum ssp_dma_enable enabled);
 /**
  * Write in data register
  * @param base_address   SSP base address
@@ -223,7 +223,7 @@ uint32_t pl022_get_word(uint32_t base_address);
  * @param base_address   SSP base address
  * @param params         parameters of SSP: cpol, cpha, mode, loopback, fr_format
  */
-void pl022_set_param(uint32_t base_address, ssp_params params);
+void pl022_set_param(uint32_t base_address, struct ssp_params const * params);
 
 
 //dma function
@@ -231,44 +231,44 @@ void pl022_set_param(uint32_t base_address, ssp_params params);
  * Reset DMA
  * @param base_address   SSP base address
  */
-void gspi_dma_reset(uint32_t base_addr);
+void pl022_dma_reset(uint32_t base_addr);
 /**
  * Set interrupt mask of DMA
  * @param base_addr   SSP base address
  * @param interrupt           interrupt mask
  */
-void gspi_dma_set_irq_mask(uint32_t base_addr, ssp_dma_interrupt interrupt);
+void pl022_dma_set_irq_mask(uint32_t base_addr, enum ssp_dma_interrupt interrupt);
 /**
  * Read of DMA status register
  * @param base_addr   SSP base address
  * @return               DMA Status
  */
-uint32_t gspi_get_dma_status(uint32_t base_addr);
+uint32_t pl022_get_dma_status(uint32_t base_addr);
 /**
  * Set start and end address of buffer of read DMA for 8-bit data
  * @param base_addr   SSP base address
  * @param r_addr      start address of buffer of read DMA
  * @param byte_n      number of bytes
  */
-void gspi_dma_set_read_addr(uint32_t base_addr, uint32_t* r_addr, uint32_t byte_n);
+void pl022_dma_set_read_addr(uint32_t base_addr, uint32_t const * r_addr, uint32_t byte_n);
 /**
  * Set start and end address of buffer of write DMA for 8-bit data
  * @param base_addr   SSP base address
  * @param r_addr      start address of buffer of write DMA
  * @param byte_n      number of bytes
  */
-void gspi_dma_set_write_addr(uint32_t base_addr, uint32_t* w_addr, uint32_t byte_n);//for 8-bit data
+void pl022_dma_set_write_addr(uint32_t base_addr, uint32_t const * w_addr, uint32_t byte_n);//for 8-bit data
 /**
  * Set mode of DMA
  * @param base_address   SSP base address
  * @param mode           circular or basic mode
  */
-void gspi_dma_set_mode(uint32_t base_addr, dma_mode mode);
+void pl022_dma_set_mode(uint32_t base_addr, enum dma_mode mode);
 /**
  * Set parameters of DMA
  * @param base_addr   SSP base address
  * @param param       parameters of channel of read/write: endianness, length of data in a package
  */
-void gspi_dma_set_param(uint32_t base_addr, dma_params param);
+void pl022_dma_set_param(uint32_t base_addr, struct dma_params const * param);
 
 #endif /* end of include guard: PL022_H */
