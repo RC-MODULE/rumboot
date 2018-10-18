@@ -514,6 +514,6 @@ void emi_init (uint32_t const emi_dcr_base)
     emi_init_impl (emi_dcr_base, DCR_EM2_PLB6MCIF2_BASE, 0x00);
 #ifdef CMAKE_BUILD_TYPE_DEBUG
     iowrite32(0x00000000, SDRAM_BASE); // touch sdram to prevent warnings in simulation console
-    rumboot_putstring( "Touching SDRAM: WARNING!!! WRITING 0x00000000 to SDRAM_BASE!!!" );
+    rumboot_putstring( "Touching SDRAM: WARNING!!! WRITING 0x00000000 to SDRAM_BASE!!!\n" );
 #endif
 }
