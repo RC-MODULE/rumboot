@@ -61,7 +61,7 @@ void rumboot_platform_init_loader(struct rumboot_config *conf)
         uart_tx_enable(UART0_BASE, true);
         uart_rx_enable(UART0_BASE, true);
         uart_enable(UART0_BASE, true);
-        
+
         /* Send sync byte. This way it will work for debug builds */
         iowrite32(0x55, UART0_BASE + UARTDR);
 }
@@ -209,6 +209,7 @@ static const struct rumboot_bootsource arr[] = {
                 .disable = spi0_gcs_disable,
                 .chipselect = spi0_gcs,
         },
+        { /* sentinel */ }
 };
 
 
