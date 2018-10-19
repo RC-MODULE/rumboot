@@ -35,20 +35,12 @@ invalidate_tlb_entry:
 
 //Invalidate entry, even if bolted entry: (r8[60] == 1 && r7[33:34] == 0b00).
     tlbwe   r8, r3, 0
-    tlbwe   r9, r3, 1
-    tlbwe   r9, r3, 2
 
     tlbwe   r8, r4, 0
-    tlbwe   r9, r4, 1
-    tlbwe   r9, r4, 2
 
     tlbwe   r8, r5, 0
-    tlbwe   r9, r5, 1
-    tlbwe   r9, r5, 2
 
     tlbwe   r8, r7, 0
-    tlbwe   r9, r7, 1
-    tlbwe   r9, r7, 2
 
 goto_next_tlb_entry:
     bdnz+   invalidate_tlb_entry //decrement cnt and check for exit from loop
