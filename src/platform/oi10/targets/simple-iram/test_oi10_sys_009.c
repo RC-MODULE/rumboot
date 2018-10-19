@@ -102,6 +102,35 @@ int check_dbdr ()
 	return 0;
 }
 
+int check_jdcr ()
+{
+	volatile uint32_t *data;
+    enum rumboot_simulation_event rumboot_event;
+	uint32_t dbdr;
+
+	spr_write(SPR_DBDR, TEST_DATA_ERROR);
+
+	rumboot_platform_event_clear();
+	test_event(TEC_CHECK_DEBUG_JDCR_STO );
+	rumboot_event = rumboot_platform_event_get(&data);
+	if (rumboot_event != EVENT_TESTEVENT ){
+		rumboot_printf("Error event!\n");
+		return 1;
+	}
+
+	if (data [0] != TEST_DATA_EVENT){
+		rumboot_printf("Error event!\n");
+		return 1;
+	}
+	dbdr = spr_read(SPR_DBDR);
+	if (dbdr != TEST_DATA_OK ){
+		rumboot_printf("Error JDCR_STO!\n");
+		return 1;
+	}
+
+	return 0;
+}
+
 int check_stuff ()
 {
 	volatile uint32_t *data;
@@ -220,8 +249,6 @@ int check_fastwr ()
 
 int main()
 {
-	int result = 0;
-
 	test_event_send_test_id("test_oi10_sys_009");
 
 	rumboot_printf("Init EMI2...\n");
@@ -230,12 +257,28 @@ int main()
     rumboot_printf("Cache on...\n");
     write_tlb_entries(&tlb_entry_cache_on, 1);
 
-	result += check_dbdr();
-	result += check_stuff();
-	result += check_icachewr();
-	result += check_fastwr();
+	if(check_dbdr()) {
+		rumboot_printf("DBDR test failed!");
+		return 1;
+	}
+	if(check_jdcr()) {
+		rumboot_printf("JDCR test failed!");
+		return 1;
+	}
+	if(check_stuff()) {
+		rumboot_printf("STUFF test failed!");
+		return 1;
+	}
+	if(check_icachewr()) {
+		rumboot_printf("ICACHEWR test failed!");
+		return 1;
+	}
+	if(check_fastwr()) {
+		rumboot_printf("FASTWR test failed!");
+		return 1;
+	}
 
-	rumboot_printf("TEST %s!\n", result ? "ERROR" : "OK");
+	rumboot_printf("TEST OK\n");
 
-    return result;
+    return 0;
 }
