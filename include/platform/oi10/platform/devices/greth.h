@@ -14,6 +14,7 @@
 
 #include <rumboot/printf.h>
 #include <rumboot/io.h>
+#include <rumboot/platform.h>
 
 #include <platform/devices.h>
 #include <platform/regs/regs_greth.h>
@@ -167,7 +168,7 @@ typedef struct greth_rx_tx_descr
  * Default EDCL MAC addresses and IP at OI-10 platform
  */
 #define EDCLMAC_MSB     0xEC17
-#define EDCLMAC_LSB     0x66770500
+#define EDCLMAC_LSB     0x660E1000
 #define EDCLIP      0xC0A80130
 #define EDCLIP0     (EDCLIP | EDCLADDRL0)
 #define EDCLIP1     (EDCLIP | EDCLADDRL1)
