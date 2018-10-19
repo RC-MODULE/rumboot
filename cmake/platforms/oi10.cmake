@@ -443,8 +443,8 @@ endif()
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES test_oi10_greth.c
-      CFLAGS -DGRETH_BASE=GRETH_0_BASE -DEDCL_TEST_ADDR=EDCL_TEST_ADDR_IM0
-      PREFIX greth0-edcl-im0
+      CFLAGS -DGRETH_BASE=GRETH_0_BASE -DEDCL_TEST_ADDR=EDCL_TEST_ADDR_IM2
+      PREFIX greth0-edcl-im2
     )
 
     add_rumboot_target(
@@ -464,8 +464,8 @@ endif()
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES test_oi10_greth.c
-      CFLAGS -DGRETH_BASE=GRETH_1_BASE -DEDCL_TEST_ADDR=EDCL_TEST_ADDR_IM0
-      PREFIX greth1-edcl-im0
+      CFLAGS -DGRETH_BASE=GRETH_1_BASE -DEDCL_TEST_ADDR=EDCL_TEST_ADDR_IM2
+      PREFIX greth1-edcl-im2
     )
 
     add_rumboot_target(
@@ -485,29 +485,29 @@ endif()
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES test_oi10_greth.c
-      CFLAGS -DGRETH_BASE=GRETH_0_BASE -DSRC_BANK=0 -DDST_BANK=0
-      PREFIX greth0-im0-im0
+      CFLAGS -DGRETH_BASE=GRETH_0_BASE -DSRC_BANK=2 -DDST_BANK=2
+      PREFIX greth0-im2-im2
     )
 
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES test_oi10_greth.c
-      CFLAGS -DGRETH_BASE=GRETH_0_BASE -DSRC_BANK=0 -DDST_BANK=1
-      PREFIX greth0-im0-im1
+      CFLAGS -DGRETH_BASE=GRETH_0_BASE -DSRC_BANK=2 -DDST_BANK=1
+      PREFIX greth0-im2-im1
     )
 
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES test_oi10_greth.c
-      CFLAGS -DGRETH_BASE=GRETH_0_BASE -DSRC_BANK=0 -DDST_BANK=2
-      PREFIX greth0-im0-em2
+      CFLAGS -DGRETH_BASE=GRETH_0_BASE -DSRC_BANK=2 -DDST_BANK=3
+      PREFIX greth0-im2-em2
     )
 
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES test_oi10_greth.c
-      CFLAGS -DGRETH_BASE=GRETH_0_BASE -DSRC_BANK=1 -DDST_BANK=0
-      PREFIX greth0-im1-im0
+      CFLAGS -DGRETH_BASE=GRETH_0_BASE -DSRC_BANK=1 -DDST_BANK=2
+      PREFIX greth0-im1-im2
     )
 
     add_rumboot_target(
@@ -520,57 +520,57 @@ endif()
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES test_oi10_greth.c
-      CFLAGS -DGRETH_BASE=GRETH_0_BASE -DSRC_BANK=1 -DDST_BANK=2
+      CFLAGS -DGRETH_BASE=GRETH_0_BASE -DSRC_BANK=1 -DDST_BANK=3
       PREFIX greth0-im1-em2
     )
     
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES test_oi10_greth.c
-      CFLAGS -DGRETH_BASE=GRETH_0_BASE -DSRC_BANK=2 -DDST_BANK=0
-      PREFIX greth0-em2-im0
+      CFLAGS -DGRETH_BASE=GRETH_0_BASE -DSRC_BANK=3 -DDST_BANK=2
+      PREFIX greth0-em2-im2
     )
 
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES test_oi10_greth.c
-      CFLAGS -DGRETH_BASE=GRETH_0_BASE -DSRC_BANK=2 -DDST_BANK=1
+      CFLAGS -DGRETH_BASE=GRETH_0_BASE -DSRC_BANK=3 -DDST_BANK=1
       PREFIX greth0-em2-im1
     )
 
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES test_oi10_greth.c
-      CFLAGS -DGRETH_BASE=GRETH_0_BASE -DSRC_BANK=2 -DDST_BANK=2
+      CFLAGS -DGRETH_BASE=GRETH_0_BASE -DSRC_BANK=3 -DDST_BANK=3
       PREFIX greth0-em2-em2
     )
     
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES test_oi10_greth.c
-      CFLAGS -DGRETH_BASE=GRETH_1_BASE -DSRC_BANK=0 -DDST_BANK=0
-      PREFIX greth1-im0-im0
+      CFLAGS -DGRETH_BASE=GRETH_1_BASE -DSRC_BANK=2 -DDST_BANK=2
+      PREFIX greth1-im2-im2
     )
 
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES test_oi10_greth.c
-      CFLAGS -DGRETH_BASE=GRETH_1_BASE -DSRC_BANK=0 -DDST_BANK=1
-      PREFIX greth1-im0-im1
+      CFLAGS -DGRETH_BASE=GRETH_1_BASE -DSRC_BANK=2 -DDST_BANK=1
+      PREFIX greth1-im2-im1
     )
 
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES test_oi10_greth.c
-      CFLAGS -DGRETH_BASE=GRETH_1_BASE -DSRC_BANK=0 -DDST_BANK=2
-      PREFIX greth1-im0-em2
+      CFLAGS -DGRETH_BASE=GRETH_1_BASE -DSRC_BANK=2 -DDST_BANK=3
+      PREFIX greth1-im2-em2
     )
 
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES test_oi10_greth.c
-      CFLAGS -DGRETH_BASE=GRETH_1_BASE -DSRC_BANK=1 -DDST_BANK=0
-      PREFIX greth1-im1-im0
+      CFLAGS -DGRETH_BASE=GRETH_1_BASE -DSRC_BANK=1 -DDST_BANK=2
+      PREFIX greth1-im1-im2
     )
 
     add_rumboot_target(
@@ -583,28 +583,28 @@ endif()
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES test_oi10_greth.c
-      CFLAGS -DGRETH_BASE=GRETH_1_BASE -DSRC_BANK=1 -DDST_BANK=2
+      CFLAGS -DGRETH_BASE=GRETH_1_BASE -DSRC_BANK=1 -DDST_BANK=3
       PREFIX greth1-im1-em2
     )
     
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES test_oi10_greth.c
-      CFLAGS -DGRETH_BASE=GRETH_1_BASE -DSRC_BANK=2 -DDST_BANK=0
-      PREFIX greth1-em2-im0
+      CFLAGS -DGRETH_BASE=GRETH_1_BASE -DSRC_BANK=3 -DDST_BANK=2
+      PREFIX greth1-em2-im2
     )
 
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES test_oi10_greth.c
-      CFLAGS -DGRETH_BASE=GRETH_1_BASE -DSRC_BANK=2 -DDST_BANK=1
+      CFLAGS -DGRETH_BASE=GRETH_1_BASE -DSRC_BANK=3 -DDST_BANK=1
       PREFIX greth1-em2-im1
     )
 
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES test_oi10_greth.c
-      CFLAGS -DGRETH_BASE=GRETH_1_BASE -DSRC_BANK=2 -DDST_BANK=2
+      CFLAGS -DGRETH_BASE=GRETH_1_BASE -DSRC_BANK=3 -DDST_BANK=3
       PREFIX greth1-em2-em2
     )
     #---GRETH tests finish---
