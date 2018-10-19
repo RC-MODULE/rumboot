@@ -23,7 +23,7 @@ void greth_set_tx_descriptor(uint32_t const base_addr, greth_descr_t volatile * 
     rumboot_printf("MEM[0x%x]: 0x%x\n", (uint32_t)tx_descr, ioread32((uint32_t) tx_descr));
     rumboot_printf("MEM[0x%x]: 0x%x\n", (uint32_t)tx_descr+4, ioread32((uint32_t) tx_descr+4));
 #endif
-    iowrite32((uint32_t)tx_descr, base_addr + TRANSMIT_DESCR_PTR);
+    iowrite32(rumboot_virt_to_dma(tx_descr), base_addr + TRANSMIT_DESCR_PTR);
 }
 
 void greth_set_rx_descriptor(uint32_t const base_addr, greth_descr_t volatile * const rx_descr)
@@ -33,7 +33,7 @@ void greth_set_rx_descriptor(uint32_t const base_addr, greth_descr_t volatile * 
     rumboot_printf("MEM[0x%x]: 0x%x\n", (uint32_t)rx_descr,   ioread32((uint32_t) rx_descr));
     rumboot_printf("MEM[0x%x]: 0x%x\n", (uint32_t)rx_descr+4, ioread32((uint32_t) rx_descr+4));
 #endif
-    iowrite32((uint32_t)rx_descr, base_addr + RECEIVER_DESCR_PTR);
+    iowrite32(rumboot_virt_to_dma(rx_descr), base_addr + RECEIVER_DESCR_PTR);
 }
 
 bool greth_reset(uint32_t base_addr)
