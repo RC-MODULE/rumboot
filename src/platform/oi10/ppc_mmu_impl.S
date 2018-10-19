@@ -14,37 +14,36 @@ returns nothing*/
 .global write_tlb_entries
 .global ppc470s_invalidate_all_tlb_entries_nosnoop
 ppc470s_invalidate_all_tlb_entries_nosnoop:
-    load_const r6, 1024       //set counter to 1024 iterations (there are 1024 TLB entries)
+    load_const  r6, 256       //set counter to 1024 iterations (there are 1024 TLB entries)
     mtspr SPR_CTR, r6
-    load_const r6, 0          //iteration index = 0
-    load_const r9, 0          //r9 = 0
-    load_const r5, 0xFFFFF800 //EPN+V+TS+DSIZ+BLTD of the only valid entry for now, let's skip it
+    lis         r6, 0x100      //iteration index = 0
+    load_const  r9, 0          //r9 = 0
+    load_const  r8, (MMU_TLBE_DSIZ_16MB    << MMU_TLBE_TAG_DSIZ_i   )
+    lis         r3, 0x8000
+    lis         r4, 0xa000
+    lis         r5, 0xc000
+    lis         r7, 0xe000
 
+.align 4
 invalidate_tlb_entry:
 //Calculate current entry way and index
-    load_const r7, 0                   //clear current entry index
-    copy_field(r7, 33, 34, r6, 54)  //r7[33:34] = r6[54:55] current way
-    copy_field(r7, 40, 47, r6, 56)  //r7[40:47] = r6[56:63] current index
-
-//Read entry value
-    tlbre   r8, r7, 0
-    xor.   r10, r8, r5
-    beq-    goto_next_tlb_entry
-    andi.   r10, r8, reg_field(20, 1) //if (tlbentry[V] == 0) goto_next_tlb_entry;
-    beq     goto_next_tlb_entry
-
-    copy_field(r8, 20, 20, r9, 0) //clear V bit r8[20] = r9[0]. r9 must be zero here
+    add     r8, r8, r6
+    copy_field(r3, 40, 47, r8, 32)
+    copy_field(r4, 40, 47, r8, 32)
+    copy_field(r5, 40, 47, r8, 32)
+    copy_field(r7, 40, 47, r8, 32)
 
 //Invalidate entry, even if bolted entry: (r8[60] == 1 && r7[33:34] == 0b00).
-    oris    r7, r7, 0x8000       //set way assignement type for tlbwe. RA[36] is already 0, RA[32] = 1
-    //MMUCR[STID] = tlbentry[TID]. This is done automatically in tlbre
+    tlbwe   r8, r3, 0
+
+    tlbwe   r8, r4, 0
+
+    tlbwe   r8, r5, 0
+
     tlbwe   r8, r7, 0
-    tlbwe   r9, r7, 1
-    tlbwe   r9, r7, 2
 
 goto_next_tlb_entry:
-    addi    r6, r6, 1     //increment iteration index
-    bdnz    invalidate_tlb_entry //decrement cnt and check for exit from loop
+    bdnz+   invalidate_tlb_entry //decrement cnt and check for exit from loop
     blr
 
 write_tlb_entries:
