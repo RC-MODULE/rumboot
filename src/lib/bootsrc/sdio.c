@@ -253,14 +253,18 @@ static bool sdio_request_execute(uintptr_t base, struct sdio_request *rq)
         const int size = DCDTR_1_VAL_512;
         iowrite32(BUFER_TRANS_START | rq->int_buf_num, base + SDIO_BUF_TRAN_CTRL_REG);
         iowrite32(size, base + SDIO_DCDTR_1);
-        iowrite32((uintptr_t)rq->buf, base + SDIO_DCDSAR_1);
+        iowrite32(rumboot_virt_to_dma(rq->buf), base + SDIO_DCDSAR_1);
         iowrite32(DCCR_1_VAL, base + SDIO_DCCR_1);
 
         ret = wait(base, SPISDIO_SDIO_INT_STATUS_CH1_FINISH | SPISDIO_SDIO_INT_STATUS_BUF_FINISH);
         if (!ret) {
                 sd_dbg(NULL, "RESULT (DMA2AXI): %d", ret);
-                return false;
         }
+
+        #ifdef __PPC__
+        /* FixMe: Use cross-platform barrier sync functions here */
+        asm("msync");
+        #endif
 
         return ret;
 }
