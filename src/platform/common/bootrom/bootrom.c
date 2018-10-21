@@ -46,7 +46,7 @@ static void hostmode_loop(void *pdata)
                         mdelay(250);
                         rumboot_printf("\n\n\n");
                         if (ret > 0) {
-                                dbg_boot(NULL, "Received a payload of %d bytes, executing in 1 second", ret);
+                                dbg_boot(NULL, "Received a payload of %d bytes, executing in 100ms", ret);
                                 mdelay(100);
                         } else {
                                 dbg_boot(NULL, "xmodem upload failed with code %d", ret);
@@ -56,8 +56,13 @@ static void hostmode_loop(void *pdata)
                 if (c == 'e') {
                         dbg_boot(NULL, "M'aiq the Liar: There are absolutely no easter eggs in bootrom code.");
                 }
-
                 rumboot_platform_request_file("HOSTMOCK", (uint32_t) hdr);
+
+                #ifdef __PPC__
+                /* FixMe: Use cross-platform barrier sync functions here */
+                asm("msync");
+                #endif
+
                 if (hdr->device) {
                         hdr->device = NULL;
                 }
