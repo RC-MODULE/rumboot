@@ -3,14 +3,13 @@
 
 #include <rumboot/macros.h>
 
-#define MACRO_BEGIN     do {
-#define MACRO_END       } while( 0 )
+#define MACRO_BEGIN         do {
+#define MACRO_END           } while( 0 )
 
-#define __STRINGIZE_HELPER( val )   #val
-#define STRINGIZE( val )            __STRINGIZE_HELPER( val )
+#define STRINGIZE( val... ) __stringify_1( val )
 
-#define __CAT( p1, p2 ) p1##p2
-#define CAT( p1, p2 )   __CAT( p1, p2 )
+#define __CAT( p1, p2 )     p1##p2
+#define CAT( p1, p2 )       __CAT( p1, p2 )
 
 
 #define APPLY( X, p ) X( p )
