@@ -75,6 +75,11 @@ MEM10_START_ADDR=0x70000000
 MEM10_START_EXT=0x000
 MEM10_LEN=0x00800000
 MEM10_SPEED=0
+# NOR mirror
+MEM11_START_ADDR=0x7F800000
+MEM11_START_EXT=0x000
+MEM11_LEN=0x00800000
+MEM11_SPEED=0
 ################################################################################
 # The INTERRUPT_CTRL_TYPE option specifies the type of interrupt controller
 # modeled by the ISS.  If INTERRUPT_CTRL_TYPE is set to 0 single UIC controller
