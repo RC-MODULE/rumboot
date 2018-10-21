@@ -14,6 +14,19 @@
 #define ITRPT_XSR_FP_e  50
 #define ITRPT_XSR_FP_i IBM_BIT_INDEX(64, ITRPT_XSR_FP_e)
 
+
+int64_t rumboot_virt_to_phys(volatile void *addr)
+{
+    return (uint32_t) addr; /* FixMe: ... */
+}
+
+uint32_t rumboot_virt_to_dma(volatile void *addr)
+{
+    //FixMe: Use TLB stuff here
+    uint64_t ret = addr; //get_physical_addr( (uint32_t)  addr, 0);
+    return (uint32_t) (ret & 0xFFFFFFFF);
+}
+
 void msr_write(uint32_t const wval)
 {
         __asm volatile
