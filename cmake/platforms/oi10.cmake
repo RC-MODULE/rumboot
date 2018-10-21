@@ -121,6 +121,11 @@ endmacro()
 
 include(${CMAKE_SOURCE_DIR}/cmake/bootrom.cmake)
 
+set(ROM_9600_OPTS +BOOT_SLOWUART=1 +BOOT_FASTUART=0 +UART0_SPEED=9600)
+set(ROM_19200_OPTS +BOOT_SLOWUART=1 +BOOT_FASTUART=1 +UART0_SPEED=19200)
+set(ROM_115200_OPTS +BOOT_SLOWUART=0 +BOOT_FASTUART=0 +UART0_SPEED=115200)
+set(ROM_6500K_OPTS +BOOT_SLOWUART=0 +BOOT_FASTUART=1 +UART0_SPEED=6250000)
+
 macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 #   Example for adding a single bare-rom test
 #   add_rumboot_target(
@@ -143,7 +148,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         TAG sdio
         MEMTAG SD0_BOOT_IMAGE
         TAGOFFSET 0
-        IRUN_FLAGS +select_sdio0 +BOOT_SD_CD=0
+        IRUN_FLAGS +select_sdio0 +BOOT_SD_CD=0 ${ROM_6500K_OPTS}
     )
 
     rumboot_bootrom_unit_test(
@@ -151,7 +156,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         TAG nor-no-ecc
         MEMTAG NOR_IMAGE
         TAGOFFSET 0
-        IRUN_FLAGS +BOOT_EMI_ECC=0
+        IRUN_FLAGS +BOOT_EMI_ECC=0 ${ROM_6500K_OPTS}
     )
 
     rumboot_bootrom_unit_test(
@@ -159,7 +164,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         TAG nor-with-ecc
         MEMTAG NOR_IMAGE
         TAGOFFSET 0
-        IRUN_FLAGS +BOOT_EMI_ECC=1
+        IRUN_FLAGS +BOOT_EMI_ECC=1 ${ROM_6500K_OPTS}
     )
 
     rumboot_bootrom_unit_test(
@@ -168,6 +173,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         MEMTAG SPI0_CONF
         TAGOFFSET 0
         FULL YES
+        IRUN_FLAGS ${ROM_6500K_OPTS}
     )
 
     rumboot_bootrom_unit_test(
@@ -175,11 +181,12 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         TAG spi0_cs1
         MEMTAG SPI0_CONF
         TAGOFFSET 1
+        IRUN_FLAGS ${ROM_6500K_OPTS}
     )
 
     rumboot_bootrom_integration_test(BROM
         NAME "host-mockup-fallthough"
-        IRUN_FLAGS
+        IRUN_FLAGS ${ROM_6500K_OPTS}
         LOAD
           SD0_BOOT_IMAGE spl-fail
           SPI0_CONF spl-fail-bad-magic,spl-fail-bad-magic
@@ -190,14 +197,14 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
     rumboot_bootrom_integration_test(BROM
         NAME "host-mockup"
-        IRUN_FLAGS +BOOT_HOST=1
+        IRUN_FLAGS +BOOT_HOST=1 ${ROM_6500K_OPTS}
         LOAD
           HOSTMOCK  spl-ok
     )
 
     rumboot_bootrom_integration_test(BROM
         NAME "sdio-ok"
-        IRUN_FLAGS +BOOT_SD_CD=0 +select_sdio0
+        IRUN_FLAGS +BOOT_SD_CD=0 +select_sdio0 ${ROM_6500K_OPTS}
         LOAD
           SD0_BOOT_IMAGE spl-ok
           NOR_IMAGE spl-fail
@@ -207,6 +214,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
     rumboot_bootrom_integration_test(BROM
         NAME "nor-with-ecc-ok"
+        IRUN_FLAGS ${ROM_6500K_OPTS}
         LOAD
           SD0_BOOT_IMAGE spl-fail-bad-magic
           SPI0_CONF spl-fail-bad-magic,spl-fail-bad-magic
@@ -220,11 +228,12 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         LOAD
           SPI0_CONF spl-fail,spl-fail
           HOSTMOCK  spl-fail
-        IRUN_FLAGS +BOOT_EMI_ECC=0
+        IRUN_FLAGS +BOOT_EMI_ECC=0 ${ROM_6500K_OPTS}
     )
 
     rumboot_bootrom_integration_test(BROM
         NAME "spi-cs0-ok"
+        IRUN_FLAGS ${ROM_6500K_OPTS}
         LOAD
           SPI0_CONF spl-ok,spl-fail
           HOSTMOCK  spl-fail
@@ -232,6 +241,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
     rumboot_bootrom_integration_test(BROM
         NAME "spi-cs1-ok"
+        IRUN_FLAGS ${ROM_6500K_OPTS}
         LOAD
           SPI0_CONF spl-fail,spl-ok
           HOSTMOCK  spl-fail
@@ -239,22 +249,22 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
     rumboot_bootrom_integration_test(BROM
         NAME "serial-9600"
-        IRUN_FLAGS +BOOT_SLOWUART=1 +BOOT_FASTUART=0 +UART0_SPEED=9600 +UART0_STOP_ON_MATCH +UART0_STOP_ON_MISMATCH
+        IRUN_FLAGS ${ROM_9600_OPTS} +UART0_STOP_ON_MATCH +UART0_STOP_ON_MISMATCH
         TIMEOUT 10 ms
     )
     rumboot_bootrom_integration_test(BROM
         NAME "serial-19200"
-        IRUN_FLAGS +BOOT_SLOWUART=1 +BOOT_FASTUART=1 +UART0_SPEED=19200 +UART0_STOP_ON_MATCH +UART0_STOP_ON_MISMATCH
+        IRUN_FLAGS ${ROM_19200_OPTS} +UART0_STOP_ON_MATCH +UART0_STOP_ON_MISMATCH
         TIMEOUT 10 ms
     )
     rumboot_bootrom_integration_test(BROM
         NAME "serial-115200"
-        IRUN_FLAGS +BOOT_SLOWUART=0 +BOOT_FASTUART=0 +UART0_SPEED=115200 +UART0_STOP_ON_MATCH +UART0_STOP_ON_MISMATCH
+        IRUN_FLAGS ${ROM_115200_OPTS} +UART0_STOP_ON_MATCH +UART0_STOP_ON_MISMATCH
         TIMEOUT 10 ms
     )
     rumboot_bootrom_integration_test(BROM
         NAME "serial-6500000"
-        IRUN_FLAGS +BOOT_SLOWUART=0 +BOOT_FASTUART=1 +UART0_SPEED=6500000 +UART0_STOP_ON_MATCH +UART0_STOP_ON_MISMATCH
+        IRUN_FLAGS ${ROM_6500K_OPTS} +UART0_STOP_ON_MATCH +UART0_STOP_ON_MISMATCH
         TIMEOUT 10 ms
     )
 
