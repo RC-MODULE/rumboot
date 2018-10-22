@@ -47,7 +47,7 @@
 /*                          MMU_TLB_ENTRY( ERPN, RPN,              EPN,               DSIZ,              IL1I,IL1D,W,I,M,G,E,                 UX,UW,UR,SX,SW,SR DULXE,IULXE,TS,TID,         WAY,              BID,             V )*/
 #define TLB_ENTRY_CACHE_ON  MMU_TLB_ENTRY( 0x000,PHY2RPN(PHY_BASE),ADDR2EPN(PHY_BASE),MMU_TLBE_DSIZ_64KB,0,   0,   1,0,1,0,MMU_TLBE_E_BIG_END,0, 0, 0, 1, 1, 1, 0,    0,    0, MEM_WINDOW_0,MMU_TLBWE_WAY_UND,MMU_TLBWE_BE_UND,1 )
 
-typedef enum {
+enum {
        TEC_CHECK_DEBUG_MACHINECHECK = TEST_EVENT_CODE_MIN,
        TEC_CHECK_DEBUG_MASKOUT,
        TEC_CHECK_DEBUG_HALT,
@@ -64,7 +64,7 @@ typedef enum {
        TEC_CHECK_DEBUG_FASTWR
 } test_event_code;
 
-typedef enum {
+enum {
    	TEST_DATA_PROGG     = 0xFFFFFFFF,
    	TEST_DATA_OK        = 0x12345678,
 	TEST_DATA_EVENT     = 0x00000002,
