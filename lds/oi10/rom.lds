@@ -26,6 +26,12 @@ SECTIONS {
     .rw : {
         . = ALIGN(8);
 
+        rumboot_platform_spl_start = .;
+        . = . + 0x10000; /* spl image start */
+        rumboot_platform_spl_end = .;
+
+        . = ALIGN(8);
+
         rumboot_im0_heap_start = .;
         . = . + 0x8000; /* 32k heap */
         rumboot_im0_heap_end = .;
@@ -43,10 +49,6 @@ SECTIONS {
        *(.rumboot_platform_runtime_info);
     }
 
-
-    /* SPL should be in IM1 */
-    rumboot_platform_spl_start = IM1_MEMORY_BASE;
-    rumboot_platform_spl_end = IM1_MEMORY_BASE + IM1_MEMORY_SIZE;
 
     rumboot_im1_heap_start      = IM1_MEMORY_BASE;
     rumboot_im1_heap_end        = IM1_MEMORY_BASE + IM1_MEMORY_SIZE;
