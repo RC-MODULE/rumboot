@@ -162,6 +162,28 @@ int check_jdcr ()
 	return 0;
 }
 
+int check_dbimask ()
+{
+	uint32_t dbdr;
+
+	spr_write(SPR_DBDR, TEST_DATA_ERROR);
+
+	rumboot_platform_event_clear();
+	rumboot_printf("send TEC_CHECK_DEBUG_DBIMASK\n");
+	test_event(TEC_CHECK_DEBUG_DBIMASK );
+//	if(event_get()) return 1;
+//	rumboot_printf("got event\n");
+
+	dbdr = spr_read(SPR_DBDR);
+	if (dbdr != TEST_DATA_OK ){
+		rumboot_printf("DBIMASK check failed!\n");
+		return 1;
+	}
+	rumboot_printf("DBIMASK check done!\n");
+
+	return 0;
+}
+
 int check_stuff ()
 {
 	uint32_t stuff;
@@ -252,6 +274,10 @@ int main()
 	}
 	if(check_jdcr()) {
 		rumboot_printf("JDCR test failed!");
+		return 1;
+	}
+	if(check_dbimask()) {
+		rumboot_printf("DBIMask test failed!");
 		return 1;
 	}
 	if(check_stuff()) {
