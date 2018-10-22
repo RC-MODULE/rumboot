@@ -36,7 +36,7 @@ void check_plb6mcif2(const uint32_t base_address)
         {"PLB6MCIF2_MAXMEM",    REGPOKER_READ_DCR, PLB6MCIF2_MAXMEM,    0xC0000000,          0xffffffff},  //default: [0:1]= 0b11
         {"PLB6MCIF2_MR0CF",     REGPOKER_READ_DCR, PLB6MCIF2_MR0CF,     0x01,                0xffffffff},
         {"PLB6MCIF2_MR1CF",     REGPOKER_READ_DCR, PLB6MCIF2_MR1CF,     0x00,                0xffffffff},
-        {"PLB6MCIF2_MR2CF",     REGPOKER_READ_DCR, PLB6MCIF2_MR2CF,     0x00,                0xffffffff},
+        {"PLB6MCIF2_MR2CF",     REGPOKER_READ_DCR, PLB6MCIF2_MR2CF,     0x07f80001,           0xffffffff},
         {"PLB6MCIF2_MR3CF",     REGPOKER_READ_DCR, PLB6MCIF2_MR3CF,     0xfff80001,          0xffffffff},
         {"PLB6MCIF2_P6BMTAG1",  REGPOKER_READ_DCR, PLB6MCIF2_P6BMTAG1,  0x00,                0xffffffff},
         {"PLB6MCIF2_P6BMTAG2",  REGPOKER_READ_DCR, PLB6MCIF2_P6BMTAG2,  0x00,                0xffffffff},
@@ -95,7 +95,7 @@ void check_mclfir(const uint32_t base_address)
         {"MCLFIR_MC_ERR_WOF1",           REGPOKER_READ_DCR, MCLFIR_MC_ERR_WOF1,           0x00,          0xffffffff},
         {"MCLFIR_MC_LFIR",               REGPOKER_READ_DCR, MCLFIR_MC_LFIR,               0x00,          0xffffffff},
         {"MCLFIR_MC_LFIR_MSK",           REGPOKER_READ_DCR, MCLFIR_MC_LFIR_MSK,           0xC0000000,    0xffffffff},
-        {"MCLFIR_MC_CONSOL_STAT",        REGPOKER_READ_DCR, MCLFIR_MC_CONSOL_STAT,        0x00100000,    0xffffffff},
+        {"MCLFIR_MC_CONSOL_STAT",        REGPOKER_READ_DCR, MCLFIR_MC_CONSOL_STAT,        0x00f00000,    0xffffffff},
         {"MCLFIR_MC_CONSOL_STAT_TRIG",   REGPOKER_READ_DCR, MCLFIR_MC_CONSOL_STAT_TRIG,   0x00,          0xffffffff},
         {"MCLFIR_MC_CONSOL_STAT_MSK",    REGPOKER_READ_DCR, MCLFIR_MC_CONSOL_STAT_MSK,    0xFFF08000,    0xffffffff},
         {"MCLFIR_MC_CONSOL_STATSUM",     REGPOKER_READ_DCR, MCLFIR_MC_CONSOL_STATSUM,     0x00,          0xffffffff},
