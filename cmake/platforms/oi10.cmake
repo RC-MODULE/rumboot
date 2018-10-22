@@ -145,6 +145,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
     rumboot_bootrom_unit_test(
         ID 0
+        CONFIGURATION BROM
         TAG sdio
         MEMTAG SD0_BOOT_IMAGE
         TAGOFFSET 0
@@ -153,6 +154,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
     rumboot_bootrom_unit_test(
         ID 1
+        CONFIGURATION BROM
         TAG nor-no-ecc
         MEMTAG NOR_IMAGE
         TAGOFFSET 0
@@ -161,6 +163,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
     rumboot_bootrom_unit_test(
         ID 1
+        CONFIGURATION BROM
         TAG nor-with-ecc
         MEMTAG NOR_IMAGE
         TAGOFFSET 0
@@ -169,6 +172,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
     rumboot_bootrom_unit_test(
         ID 2
+        CONFIGURATION BROM
         TAG spi0_cs0
         MEMTAG SPI0_CONF
         TAGOFFSET 0
@@ -178,6 +182,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
     rumboot_bootrom_unit_test(
         ID 3
+        CONFIGURATION BROM
         TAG spi0_cs1
         MEMTAG SPI0_CONF
         TAGOFFSET 1
@@ -205,6 +210,8 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     rumboot_bootrom_integration_test(BROM
         NAME "host-edcl"
         IRUN_FLAGS +BOOT_HOST=1 ${ROM_6500K_OPTS}
+        LOAD
+          EDCLHOST  spl-ok
     )
 
 #    rumboot_bootrom_integration_test(BROM
