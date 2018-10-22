@@ -203,6 +203,21 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     )
 
     rumboot_bootrom_integration_test(BROM
+        NAME "host-edcl"
+        IRUN_FLAGS +BOOT_HOST=1 ${ROM_6500K_OPTS}
+    )
+
+#    rumboot_bootrom_integration_test(BROM
+#        NAME "host-rmap"
+#        IRUN_FLAGS +BOOT_HOST=1 ${ROM_6500K_OPTS}
+#    )
+
+#    rumboot_bootrom_integration_test(BROM
+#        NAME "host-uart"
+#        IRUN_FLAGS +BOOT_HOST=1 ${ROM_6500K_OPTS}
+#    )
+
+    rumboot_bootrom_integration_test(BROM
         NAME "sdio-ok"
         IRUN_FLAGS +BOOT_SD_CD=0 +select_sdio0 ${ROM_6500K_OPTS}
         LOAD
