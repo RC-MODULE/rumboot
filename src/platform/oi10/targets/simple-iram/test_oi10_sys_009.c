@@ -18,6 +18,7 @@
 #include <platform/trace.h>
 #include <platform/test_assert.h>
 #include <platform/arch/ppc/ppc_476fp_timer_fields.h>
+#include <platform/arch/ppc/ppc_476fp_debug_fields.h>
 #include <platform/arch/ppc/ppc_476fp_lib_c.h>
 #include <platform/arch/ppc/ppc_476fp_config.h>
 #include <platform/arch/ppc/ppc_476fp_mmu_fields.h>
@@ -72,27 +73,32 @@ typedef enum {
 
 static const tlb_entry tlb_entry_cache_on = {TLB_ENTRY_CACHE_ON};
 
-int check_dbdr ()
+int event_get()
 {
-	volatile uint32_t *data;
 	enum rumboot_simulation_event rumboot_event;
-	uint32_t dbdr;
-
+	volatile uint32_t *data;
 	rumboot_event = rumboot_platform_event_get(&data);
 	if (rumboot_event != EVENT_TESTEVENT ){
 		rumboot_printf("Error event!\n");
 		return 1;
 	}
-
 	if (data [0] != TEST_DATA_EVENT){
 		rumboot_printf("Error event!\n");
 		return 1;
 	}
+	return 0;
+}
+
+int check_dbdr ()
+{
+	uint32_t dbdr;
+
+	if(event_get()) return 1;
 
 	/*read dbdr*/
 	dbdr = spr_read(SPR_DBDR);
 	if (dbdr != TEST_DATA_OK ){
-		rumboot_printf("Error DBDR_TEST!\n");
+		rumboot_printf("DBDR check failed!\n");
 		return 1;
 	}
 
@@ -104,27 +110,46 @@ int check_dbdr ()
 
 int check_jdcr ()
 {
-	volatile uint32_t *data;
-    enum rumboot_simulation_event rumboot_event;
-	uint32_t dbdr;
+	uint32_t dbdr, dbsr;
 
 	spr_write(SPR_DBDR, TEST_DATA_ERROR);
 
 	rumboot_platform_event_clear();
+	rumboot_printf("send TEC_CHECK_DEBUG_JDCR_STO\n");
 	test_event(TEC_CHECK_DEBUG_JDCR_STO );
-	rumboot_event = rumboot_platform_event_get(&data);
-	if (rumboot_event != EVENT_TESTEVENT ){
-		rumboot_printf("Error event!\n");
+	if(event_get()) return 1;
+	rumboot_printf("got event\n");
+
+	dbdr = spr_read(SPR_DBDR);
+	if (dbdr != TEST_DATA_OK ){
+		rumboot_printf("JDCR[STO] check failed!\n");
 		return 1;
 	}
 
-	if (data [0] != TEST_DATA_EVENT){
-		rumboot_printf("Error event!\n");
+	rumboot_platform_event_clear();
+	rumboot_printf("send TEC_CHECK_DEBUG_JDCR_UDE\n");
+	test_event(TEC_CHECK_DEBUG_JDCR_UDE );
+	if(event_get()) return 1;
+	rumboot_printf("got event\n");
+
+	dbsr = spr_read(SPR_DBSR_RC);
+	spr_write(SPR_DBSR_RC,0);
+	if (!(dbsr & (1 << DEBUG_DBSR_UDE_i)) ){
+		rumboot_printf("DBSR UDE is not set from JDCR!\n");
 		return 1;
 	}
-	dbdr = spr_read(SPR_DBDR);
-	if (dbdr != TEST_DATA_OK ){
-		rumboot_printf("Error JDCR_STO!\n");
+
+	spr_write(SPR_DBSR_W,1 << DEBUG_DBSR_UDE_i);
+
+	rumboot_platform_event_clear();
+	rumboot_printf("send TEC_CHECK_DEBUG_JDCR_RSDBSR\n");
+	test_event(TEC_CHECK_DEBUG_JDCR_RSDBSR );
+	if(event_get()) return 1;
+	rumboot_printf("got event\n");
+
+	dbsr = spr_read(SPR_DBSR_RC);
+	if (dbsr){
+		rumboot_printf("DBSR reset check failed!\n");
 		return 1;
 	}
 
@@ -133,27 +158,14 @@ int check_jdcr ()
 
 int check_stuff ()
 {
-	volatile uint32_t *data;
-    enum rumboot_simulation_event rumboot_event;
 	uint32_t stuff;
-
-//	rumboot_printf("Hello STUFF!\n");
 
 	spr_write(SPR_DBDR, TEST_DATA_OK);
 
 	rumboot_platform_event_clear();
 	test_event(TEC_CHECK_DEBUG_STUFF );
 
-    rumboot_event = rumboot_platform_event_get(&data);
-	if (rumboot_event != EVENT_TESTEVENT ){
-		rumboot_printf("Error event!\n");
-		return 1;
-	}
-
-	if (data [0] != TEST_DATA_EVENT){
-		rumboot_printf("Error event!\n");
-		return 1;
-	}
+	if(event_get()) return 1;
 
 	//mfspr r4, SPR_DBDR
 	//mtspr SPR_USPRG0, r4
@@ -164,19 +176,14 @@ int check_stuff ()
             return 1;
     }
 
-//    rumboot_printf("The stuff instruction check done!\n");
 	return 0;
 }
 
 int check_icachewr ()
 {
-	volatile uint32_t *data;
-    enum rumboot_simulation_event rumboot_event;
     uint32_t test_data, i;
     volatile uint32_t *stuff = (uint32_t*)(ICACHEWR_TEST_ADDR);
 
-//   	stuff[0] = 0x3B801234;
-//   	stuff[1] = 0x7F8043A6;
     for (i=0; i < 8; i++)
     	stuff[i] = 0x60000000;  //nop
     msync();
@@ -187,19 +194,8 @@ int check_icachewr ()
 	rumboot_platform_event_clear();
 	test_event(TEC_CHECK_DEBUG_ICACHEWR );
 
-    rumboot_event = rumboot_platform_event_get(&data);
-
+	if(event_get()) return 1;
 	rumboot_printf("ICACHEWR: got event!\n");
-
-	if (rumboot_event != EVENT_TESTEVENT ){
-		rumboot_printf("Error event!\n");
-		return 1;
-	}
-
-	if (data [0] != TEST_DATA_EVENT){
-		rumboot_printf("Error event!\n");
-		return 1;
-	}
 
 	test_data = spr_read(SPR_USPRG0);
 	rumboot_printf("SPR_USPRG0 = 0x%X\n", test_data);
@@ -215,27 +211,14 @@ int check_icachewr ()
 
 int check_fastwr ()
 {
-	volatile uint32_t *data, *test_data;
-    enum rumboot_simulation_event rumboot_event;
-
+    uint32_t *test_data;
     rumboot_printf("FASTWR: Test started...\n");
 
 	rumboot_platform_event_clear();
 	test_event(TEC_CHECK_DEBUG_FASTWR );
 
-    rumboot_event = rumboot_platform_event_get(&data);
-
+	if(event_get()) return 1;
 	rumboot_printf("FASTWR: got event!\n");
-
-	if (rumboot_event != EVENT_TESTEVENT ){
-		rumboot_printf("Error event!\n");
-		return 1;
-	}
-
-	if (data [0] != TEST_DATA_EVENT){
-		rumboot_printf("Error event!\n");
-		return 1;
-	}
 
     test_data = (uint32_t *)(FASTWR_DATA_ADDR);
     TEST_ASSERT(test_data[0] == FASTWR_DATA0, "Invalid value in test_data[0]");
