@@ -45,6 +45,11 @@ uint32_t const EVENT_REL_RD_DATA_PAR      = TEST_EVENT_CODE_MIN + 11;
 bool     volatile  IRQ_EXPECT = false;
 uint32_t volatile  rel_event_code = 0x00;
 
+static void irq_expect ()
+{
+    IRQ_EXPECT = true;
+    msync();
+}
 
 static void trace_emi_irq_regs ()
 {
@@ -80,7 +85,6 @@ void emi_irq_clear ()
 
 void wait_irq ()
 {
-    rumboot_printf("wait_irq\n");
     uint32_t i = 0, timeout = 100;
     while (IRQ_EXPECT && (i < timeout)) i++;
     if (i >= timeout)
@@ -179,20 +183,17 @@ int main ()
     test_event(EVENT_ERR_ADR_RS_PTY);
 
     rumboot_printf("Write transaction\n");
-    IRQ_EXPECT = true;
+    irq_expect();
     iowrite32(test_data, SRAM0_BASE + 0xC);
-    msync();
     wait_irq();
 
-    msync(); dci(2);
     rumboot_printf("Inject err in ADR_RS_PTY\n");
     test_event(EVENT_ERR_ADR_RS_PTY);
 
     rumboot_printf("Read transaction\n");
-    IRQ_EXPECT = true;
+    irq_expect();
     read_data = ioread32(SRAM0_BASE + 0xC);
     rumboot_printf("read data = %x\n", read_data);
-    msync();
     wait_irq();
 //*******************************************************************************************************
 
@@ -205,19 +206,17 @@ int main ()
     test_event(EVENT_ERR_BE_PTY);
 
     rumboot_printf("Write transaction\n");
-    IRQ_EXPECT = true;
+    irq_expect();
     iowrite32(test_data, SRAM0_BASE + 0xC);
-    msync();
     wait_irq();
 
     rumboot_printf("Inject err in BE_PTY\n");
     test_event(EVENT_ERR_BE_PTY);
 
     rumboot_printf("Read transaction\n");
-    IRQ_EXPECT = true;
+    irq_expect();
     read_data = ioread32(SRAM0_BASE + 0xC);
     rumboot_printf("read data = %x\n", read_data);
-    msync();
     wait_irq();
 //*******************************************************************************************************
 
@@ -230,19 +229,17 @@ int main ()
     test_event(EVENT_ERR_CMD_PTY);
 
     rumboot_printf("Write transaction\n");
-    IRQ_EXPECT = true;
+    irq_expect();
     iowrite32(test_data, SRAM0_BASE + 0xC);
-    msync();
     wait_irq();
 
     rumboot_printf("Inject err in CMD_PTY\n");
     test_event(EVENT_ERR_CMD_PTY);
 
     rumboot_printf("Read transaction\n");
-    IRQ_EXPECT = true;
+    irq_expect();
     read_data = ioread32(SRAM0_BASE + 0xC);
     rumboot_printf("read data = %x\n", read_data);
-    msync();
     wait_irq();
 //*******************************************************************************************************
 
@@ -277,9 +274,8 @@ int main ()
     test_event(EVENT_ERR_WR_DATA_PAR);
 
     rumboot_printf("Write transaction\n");
-    IRQ_EXPECT = true;
+    irq_expect();
     iowrite32(test_data, SRAM0_BASE + 0xC);
-    msync();
     wait_irq();
 //*******************************************************************************************************
 
@@ -292,11 +288,9 @@ int main ()
     test_event(EVENT_ERR_RD_DATA_PAR);
 
     rumboot_printf("Read transaction\n");
-    //IRQ_EXPECT = true;
     read_data = ioread32(SRAM0_BASE + 0xC);
     rumboot_printf("read data = %x\n", read_data);
     msync();
-    //wait_irq();
 //*******************************************************************************************************
 
     rumboot_printf ("TEST OK\n");
