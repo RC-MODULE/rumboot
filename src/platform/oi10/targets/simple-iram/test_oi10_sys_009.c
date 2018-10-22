@@ -159,12 +159,6 @@ int check_jdcr ()
 	if(event_get()) return 1;
 	rumboot_printf("got event\n");
 
-	rumboot_platform_event_clear();
-	rumboot_printf("send TEC_CHECK_DEBUG_SYSTEMSTATUS\n");
-	test_event(TEC_CHECK_DEBUG_SYSTEMSTATUS );
-	if(event_get()) return 1;
-	rumboot_printf("got event\n");
-
 	return 0;
 }
 
