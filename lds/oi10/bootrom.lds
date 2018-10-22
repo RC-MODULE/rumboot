@@ -46,7 +46,7 @@ SECTIONS {
 
     /* SPL should be in IM1 */
     rumboot_platform_spl_start = IM1_MEMORY_BASE;
-    rumboot_platform_spl_end = IM2_MEMORY_BASE + IM2_MEMORY_SIZE;
+    rumboot_platform_spl_end = IM1_MEMORY_BASE + IM1_MEMORY_SIZE;
 
     rumboot_im1_heap_start      = IM1_MEMORY_BASE;
     rumboot_im1_heap_end        = IM1_MEMORY_BASE + IM1_MEMORY_SIZE;
