@@ -27,6 +27,6 @@ write tlb 128 0 EPN 0x80000000 V 0x1 TS 0x0 S 0x03 T 0x0000 E+RPN 0x00000000000 
 write tlb 128 0 V 0x0
 write tlb 129 0 EPN 0x80010000 V 0x1 TS 0x0 S 0x03 T 0x0000 E+RPN 0x00000000000 IL1ID b11 U0123 b0000 WIMG b0111 E 0x0 UXWR b000 SXWR b111 BE0_5 0x-
 write tlb 129 0 V 0x0
-asmstep 2300
+asmstep 3000
 # memset rumboot_platform_runtime to 0x00 for IRAM code
 memfill 0x8001FE00 0x200 0x00
