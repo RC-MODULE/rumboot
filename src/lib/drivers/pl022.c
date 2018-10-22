@@ -182,7 +182,7 @@ int pl022_xfer_timeout(uint32_t base, unsigned char *wrbuf, unsigned char *rdbuf
 		}
 
 		if ((written < len) && (pl022_tx_avail(base))) {
-			iowrite32(*wrbuf++, base + PL022_DR);
+			iowrite32(wrbuf ? *wrbuf++ : 0, base + PL022_DR);
 			written++;
 			lastop = rumboot_platform_get_uptime();
 		}

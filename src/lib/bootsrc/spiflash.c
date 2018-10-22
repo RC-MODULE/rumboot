@@ -77,7 +77,7 @@ void spiflash_read_flash(uint32_t base, uint32_t offset, unsigned char *dest, in
    cmd[3] = (unsigned char) ((offset >> 0)  & 0xff);
 
    pl022_xfer(base, cmd, cmd, ARRAY_SIZE(cmd));
-   pl022_xfer(base, dest, dest, len);
+   pl022_xfer(base, NULL, dest, len);
 
 }
 
