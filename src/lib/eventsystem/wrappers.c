@@ -60,3 +60,9 @@ void rumboot_platform_relocate_runtime(uint32_t addr)
 {
     rumboot_platform_event_raise(EVENT_RELOCATE_RUNTIME, &addr, 1);
 }
+
+void rumboot_platform_sv_event(const char *name)
+{
+	uint32_t ptr[] = { (uint32_t) name };
+    rumboot_platform_event_raise(EVENT_GENERIC, ptr, 1);
+}

@@ -53,6 +53,7 @@ enum rumboot_simulation_event {
     EVENT_RELOCATE_RUNTIME, /** Request to poll a different cell for runtime structure */
     EVENT_MEMFILLSEQ, /** Fill the memory with 32-bit incrementing values */
     EVENT_MEMCHECKSEQ, /** Check that memory filled with 32-bit incrementing values */
+    EVENT_GENERIC, /** Generic SystemVerilog event trigger */
 };
 
 
@@ -221,6 +222,11 @@ void rumboot_platform_sim_restore(const char *filename);
  */
 void rumboot_platform_relocate_runtime(uint32_t addr);
 
+/**
+ * Trigger a generic SV event
+ * @param name event name
+ */
+void rumboot_platform_sv_event(const char *name);
 
 /**
  * Returns 64-bit physical address from a virtual 32-bit
