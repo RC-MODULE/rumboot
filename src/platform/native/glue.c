@@ -64,7 +64,7 @@ uint32_t rumboot_platform_get_uptime()
 
 void rumboot_platform_init_loader(struct rumboot_config *conf)
 {
-    
+
 }
 
 static int shmid;
@@ -208,32 +208,47 @@ void rumboot_platform_setup()
         /* No - op */
 }
 
+
+static void upload(void *addr)
+{
+        if (!hfile) {
+                return;
+        }
+        FILE *fd = fopen(hfile, "r");
+        if (!fd) {
+                return;
+        }
+        size_t sz;
+        fseek(fd, 0, SEEK_END);
+        sz = ftell(fd);
+        fseek(fd, 0, SEEK_SET);
+        fread((void *)addr, sz, 1, fd);
+        fclose(fd);
+        hfile = strtok(NULL, ",");
+}
+
 void rumboot_platform_event_raise(enum rumboot_simulation_event event, uint32_t *data, uint32_t len)
 {
         switch (event) {
         case EVENT_TERM:
                 exit(data[0]);
                 break;
+        case EVENT_GENERIC: {
+                size_t tmp;
+                const char *plusarg = (void *)data[0];
+                void *addr = rumboot_platform_get_spl_area(&tmp);
+                if (strcmp(plusarg, "HOST") == 0) {
+                        upload(addr);
+                }
+                break;
+        }
         case EVENT_UPLOAD: {
+                size_t dummy;
                 const char *plusarg = (void *)data[0];
                 void *addr = (void *)data[1];
                 if (strcmp(plusarg, "HOSTMOCK") == 0) {
-                        if (!hfile) {
-                                return;
-                        }
-                        FILE *fd = fopen(hfile, "r");
-                        if (!fd) {
-                                return;
-                        }
-                        size_t sz;
-                        fseek(fd, 0, SEEK_END);
-                        sz = ftell(fd);
-                        fseek(fd, 0, SEEK_SET);
-                        fread((void *)addr, sz, 1, fd);
-                        fclose(fd);
-                        hfile = strtok(NULL, ",");
+                        upload(addr);
                 }
-
                 break;
         }
         default:
@@ -324,11 +339,17 @@ bool rumboot_platform_check_entry_points(struct rumboot_bootheader *hdr)
         return true;
 }
 
+static void *spl_area;
 void *rumboot_platform_get_spl_area(size_t *size)
 {
 #define SIZE  4096 * 1024
         *size = SIZE;
-        return malloc(SIZE);
+        if (spl_area) {
+                return spl_area;
+        }
+        spl_area = malloc(SIZE);
+        printf("malloc spl are: %x\n", spl_area);
+        return spl_area;
 }
 
 void rumboot_platform_read_config(struct rumboot_config *conf)

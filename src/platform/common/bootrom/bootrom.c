@@ -40,13 +40,13 @@ static void hostmode_loop(void *pdata)
         void *data;
         int ret;
 
-        rumboot_platform_sv_event("HOST");
-        #ifdef __PPC__
-        /* FixMe: Use cross-platform barrier sync functions here */
-        asm("msync");
-        #endif
-
         while (1) {
+                rumboot_platform_sv_event("HOST");
+                #ifdef __PPC__
+                /* FixMe: Use cross-platform barrier sync functions here */
+                asm("msync");
+                #endif
+
                 int c = rumboot_platform_getchar(10000);
                 if (c == 'X') {
                         int ret = xmodem_get((void *) hdr, maxsize);
