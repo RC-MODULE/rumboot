@@ -32,8 +32,12 @@ int main()
 	rumboot_platform_sim_save("testbench.simulator_state");
 	rumboot_platform_request_file("IM0BIN", (uint32_t)hdr);
 
-	rumboot_printf("STUB: Executing SPL image. Magic: 0x%x Entry: 0x%x\n",
-		       hdr->magic, hdr->entry_point[0]);
+    #ifdef __PPC__
+    asm("msync");
+    #endif
+
+    rumboot_printf("STUB: Executing SPL image from %x. Magic: 0x%x Entry: 0x%x\n",
+		       (uint32_t) hdr, hdr->magic, hdr->entry_point[0]);
 
 	int (*ram_main)();
 	ram_main = (void *)hdr->entry_point[0];
