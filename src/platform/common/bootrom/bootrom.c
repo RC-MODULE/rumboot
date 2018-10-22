@@ -39,6 +39,13 @@ static void hostmode_loop(void *pdata)
         dbg_boot(NULL, "Hit 'X' for xmodem upload");
         void *data;
         int ret;
+
+        rumboot_platform_sv_event("HOST");
+        #ifdef __PPC__
+        /* FixMe: Use cross-platform barrier sync functions here */
+        asm("msync");
+        #endif
+
         while (1) {
                 int c = rumboot_platform_getchar(10000);
                 if (c == 'X') {
@@ -56,12 +63,6 @@ static void hostmode_loop(void *pdata)
                 if (c == 'e') {
                         dbg_boot(NULL, "M'aiq the Liar: There are absolutely no easter eggs in bootrom code.");
                 }
-                rumboot_platform_request_file("HOSTMOCK", (uint32_t) hdr);
-
-                #ifdef __PPC__
-                /* FixMe: Use cross-platform barrier sync functions here */
-                asm("msync");
-                #endif
 
                 if (hdr->device) {
                         hdr->device = NULL;
