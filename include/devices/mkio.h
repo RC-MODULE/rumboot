@@ -30,7 +30,7 @@
      * This function display core BCSL and IRQ registers values with rumboot_printf function
      *
      * @param base_address             base address of MKIO controller
-     * 
+     *
      */
     void mkio_report_bc_status (uint32_t base_address);
 
@@ -140,7 +140,7 @@
 
 /** @}*/
 
-typedef volatile struct __attribute__ ((__packed__))
+struct __attribute__ ((__packed__)) mkio_bc_descriptor
 {
     //-----------------------------------------------------
     //      [31] Must be 0 to identify as descriptor
@@ -198,7 +198,7 @@ typedef volatile struct __attribute__ ((__packed__))
     //      [23:16] RT 2 Status Bits (RT2ST) - Status bits from receiving RT in RT-to-RT transfer, otherwise 0
     //          Same bit pattern as for RTST below
     //      [15:8] RT Status Bits (RTST) - Status bits from RT (transmitting RT in RT-to-RT transfer)
-    //          15 - Message error, 14 - Instrumentation bit or reserved bit set, 13 - Service request, 
+    //          15 - Message error, 14 - Instrumentation bit or reserved bit set, 13 - Service request,
     //          12 - Broadcast command received, 11 - Busy bit, 10 - Subsystem flag, 9 - Dynamic bus control acceptance, 8 - Terminal
     //          flag
     //      [7:4] Retry count (RETCNT) - Number of retries performed
@@ -219,9 +219,9 @@ typedef volatile struct __attribute__ ((__packed__))
     uint32_t branch_address      : 32;
     uint32_t reserved_0          : 32;
     uint32_t reserved_1          : 32;
-} mkio_bc_descriptor;
+};
 
-typedef volatile struct __attribute__ ((__packed__))
+struct __attribute__ ((__packed__)) mkio_rt_subaddress_table
 {
     //-----------------------------------------------------
     //      [31 : 19] Reserved - set to 0 for forward compatibility
@@ -253,8 +253,8 @@ typedef volatile struct __attribute__ ((__packed__))
     uint32_t sa0_rx_descriptor_pointer         : 32;
     //-----------------------------------------------------
     uint32_t sa0_reserved                      : 32;
-    
-    
+
+
     //-----------------------------------------------------
     //  Add more sabaddress table entries, if necessary
     //    But not more than 32
@@ -263,20 +263,20 @@ typedef volatile struct __attribute__ ((__packed__))
     uint32_t sa1_tx_descriptor_pointer         : 32;
     uint32_t sa1_rx_descriptor_pointer         : 32;
     uint32_t sa1_reserved                      : 32;
-    
+
     uint32_t sa2_ctrl_word                     : 32;
     uint32_t sa2_tx_descriptor_pointer         : 32;
     uint32_t sa2_rx_descriptor_pointer         : 32;
     uint32_t sa2_reserved                      : 32;
-    
+
     uint32_t sa3_ctrl_word                     : 32;
     uint32_t sa3_tx_descriptor_pointer         : 32;
     uint32_t sa3_rx_descriptor_pointer         : 32;
     uint32_t sa3_reserved                      : 32;
-    
-} mkio_rt_subaddress_table;
 
-typedef volatile struct __attribute__ ((__packed__))
+};
+
+struct __attribute__ ((__packed__)) mkio_rt_descriptor
 {
     //-----------------------------------------------------
     //      [31] Data valid (DV) - Should be set to 0 by software before and set to 1 by hardware after transfer.
@@ -306,7 +306,7 @@ typedef volatile struct __attribute__ ((__packed__))
     //      or 0x0000003 to indicate end of list
     //-----------------------------------------------------
     uint32_t next_descriptor_pointer     : 32;
-} mkio_rt_descriptor;
+};
 
 typedef enum mkio_bus
 {
@@ -314,19 +314,28 @@ typedef enum mkio_bus
     MKIO_BUS_B  = 0b1
 } mkio_bus_t;
 
-typedef struct mkio_instance
+struct __attribute__ ((__packed__)) mkio_rt_sa_table
 {
-    uint32_t            src_mkio_base_addr;
-    uint32_t            dst_mkio_base_addr;
-    uint32_t*           src_addr;
-    uint32_t*           dst_addr;
-    mkio_bc_descriptor* bc_desr;
-    mkio_rt_descriptor* rt_descr;
+    uint32_t sa_ctrl_word                     : 32;
+    uint32_t sa_tx_descriptor_pointer         : 32;
+    uint32_t sa_rx_descriptor_pointer         : 32;
+    uint32_t sa_reserved                      : 32;
+};
+
+struct mkio_instance
+{
+    uint32_t                                src_mkio_base_addr;
+    uint32_t                                dst_mkio_base_addr;
+    uint32_t*                               src_addr;
+    uint32_t*                               dst_addr;
+    struct mkio_bc_descriptor volatile *    bc_desr;
+    struct mkio_rt_descriptor volatile *    rt_descr;
     uint32_t            size;
     mkio_bus_t          bus;
-}mkio_instance_t;
+    struct mkio_rt_sa_table volatile *      rt_sa_tbl;
+};
 
-typedef struct mkio_irqe_struct
+struct mkio_irqe
 {
     bool    bceve;
     bool    bcde;
@@ -337,16 +346,7 @@ typedef struct mkio_irqe_struct
     bool    bmde;
     bool    bmtoe;
     bool    all;
-}mkio_irqe_t;
-
-
-typedef volatile struct __attribute__ ((__packed__))
-{
-    uint32_t sa_ctrl_word                     : 32;
-    uint32_t sa_tx_descriptor_pointer         : 32;
-    uint32_t sa_rx_descriptor_pointer         : 32;
-    uint32_t sa_reserved                      : 32;
-} mkio_rt_sa_table_t;
+};
 
 typedef enum mkio_bc_schedule_state
 {
@@ -361,8 +361,8 @@ typedef enum mkio_bc_schedule_state
 
 #define MKIO_TIMEOUT    100
 
-void mkio_prepare_rt_descr(uint32_t base_addr, uint32_t* data_ptr, uint32_t size, mkio_rt_descriptor* mkio_rt_rx_descriptor);
-void mkio_prepare_bc_descr(uint32_t base_addr, uint32_t* data_ptr, uint32_t size, mkio_bc_descriptor* descr_ptr, mkio_bus_t bus);
+void mkio_prepare_rt_descr(uint32_t base_addr, uint32_t* data_ptr, uint32_t size, struct mkio_rt_descriptor volatile* mkio_rt_rx_descriptor, struct mkio_rt_sa_table volatile* rt_sa_tbl);
+void mkio_prepare_bc_descr(uint32_t base_addr, uint32_t* data_ptr, uint32_t size, struct mkio_bc_descriptor volatile* descr_ptr, mkio_bus_t bus);
 void mkio_bc_run_schedule (uint32_t base_address);
 void mkio_rt_run_schedule (uint32_t base_address);
 void mkio_set_bcrd(uint32_t base_address, uint32_t bc_irq_ring_addr);
