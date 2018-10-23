@@ -85,16 +85,16 @@ void rumboot_platform_print_summary(struct rumboot_config *conf)
         uint32_t bootm = dcr_read(DCR_SCTL_BASE + SCTL_SYS_BOOT_CFG);
 
         rumboot_printf("SD Card:         %s\n",
-                       bootm & BOOTM_SDIO_CD ? "Not inserted" : "Inserted");
+                       (bootm & BOOTM_SDIO_CD) ? "Not inserted" : "Inserted");
 
         rumboot_printf("CPU ECC:         %s\n",
-                       bootm & BOOTM_CPU_ECC ? "enabled" : "disabled");
+                       (bootm & BOOTM_CPU_ECC) ? "enabled" : "disabled");
 
         rumboot_printf("NOR/SRAM ECC:    %s\n",
-                       bootm & BOOTM_EMI_ECC ? "disabled" : "enabled");
+                       (bootm & BOOTM_EMI_ECC) ? "enabled" : "disabled");
 
         rumboot_printf("Direct NOR boot: %s\n",
-                       bootm & BOOTM_NOR_BOOT ? "disabled" : "enabled");
+                       (bootm & BOOTM_NOR_BOOT) ? "disabled" : "enabled");
 
 }
 
