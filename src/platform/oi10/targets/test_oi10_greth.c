@@ -326,11 +326,7 @@ void prepare_test_data(uint32_t src_bank, uint32_t dst_bank)
         test_data_im2_src = (uint8_t* )rumboot_malloc_from_heap_misaligned(2, GRETH_TEST_DATA_LEN_BYTES, 0, GRETH_TEST_DATA_MISALIGN_IM2);
 
         rumboot_putstring("Fill im2 src array");
-        //memcpy(test_data_im2_src, test_data_im1_src, GRETH_TEST_DATA_LEN_BYTES);
-        for (i=0; i<GRETH_TEST_DATA_LEN_BYTES; i++)
-        {
-            test_data_im2_src[i] = test_data_im1_src[i];
-        }
+        memcpy(test_data_im2_src, test_data_im1_src, GRETH_TEST_DATA_LEN_BYTES);
     }
 
     if (dst_bank==2)
@@ -351,11 +347,7 @@ void prepare_test_data(uint32_t src_bank, uint32_t dst_bank)
         test_data_em2_src = (uint8_t* )rumboot_malloc_from_heap_misaligned(3, GRETH_TEST_DATA_LEN_BYTES, 0, GRETH_TEST_DATA_MISALIGN_EM2);
 
         rumboot_putstring("Fill em2 src array");
-        //    memcpy(test_data_em2_src, test_data_im0_src, sizeof(test_data_im0_src));
-        for (i=0; i<GRETH_TEST_DATA_LEN_BYTES; i++)
-        {
-            test_data_em2_src[i] = test_data_im1_src[i];
-        }
+        memcpy(test_data_em2_src, test_data_im1_src, GRETH_TEST_DATA_LEN_BYTES);
     }
 
     if (dst_bank==3)
