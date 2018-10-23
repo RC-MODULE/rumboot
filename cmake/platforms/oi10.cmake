@@ -239,7 +239,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         IRUN_FLAGS ${ROM_6500K_OPTS}
         LOAD
           SD0_BOOT_IMAGE spl-fail-bad-magic
-          SPI0_CONF spl-fail-bad-magic,spl-fail-bad-magic
+          SPI0_CONF spl-fail,spl-fail
           NOR_IMAGE spl-ok
           HOSTMOCK  spl-fail
         IRUN_FLAGS +BOOT_EMI_ECC=1
@@ -248,7 +248,9 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     rumboot_bootrom_integration_test(BROM
         NAME "nor-no-ecc-ok"
         LOAD
-          SPI0_CONF spl-fail,spl-fail
+          SD0_BOOT_IMAGE spl-fail-bad-magic
+          SPI0_CONF spl-fail-bad-magic,spl-fail-bad-magic
+          NOR_IMAGE spl-ok
           HOSTMOCK  spl-fail
         IRUN_FLAGS +BOOT_EMI_ECC=0 ${ROM_6500K_OPTS}
     )
@@ -265,7 +267,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         NAME "spi-cs1-ok"
         IRUN_FLAGS ${ROM_6500K_OPTS}
         LOAD
-          SPI0_CONF spl-fail,spl-ok
+          SPI0_CONF spl-fail-bad-magic,spl-ok
           HOSTMOCK  spl-fail
     )
 
