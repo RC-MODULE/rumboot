@@ -39,27 +39,32 @@ static int check_data(void *ptr, size_t offset, size_t len)
 
 static int check_read(const struct rumboot_bootsource *src, void *pdata, void *dst, size_t offset, size_t length, size_t expected)
 {
+    int ret = 1;
+
 	dbg_boot(src, "reading %d from offset %d, expecting %d", length, offset, expected);
 	if (!bootsource_init(src, pdata)) {
 		dbg_boot(src, "Initialization failed ;(");
-		return 1;
+		goto bailout;
 	}
 
-	size_t ret = bootsource_read(src, pdata, dst, src->offset + offset, length);
-	if (ret == 0 && offset % src->plugin->align) {
+	size_t sz = bootsource_read(src, pdata, dst, src->offset + offset, length);
+	if (sz == 0 && (offset % src->plugin->align)) {
 		/* Caught misaligned read */
-	 	return 0;
+		ret = 0;
+		goto bailout;
 	}
 
 	if (ret != expected) {
 		dbg_boot(src, "Expected to read %d, but read only %d bytes", expected, ret);
-		return 1;
+		ret = 1;
+		goto bailout;
 	}
 
-	int errors = check_data(dst, offset, ret);
+	ret = check_data(dst, offset, ret);
 
+bailout:
 	bootsource_deinit(src, pdata);
-	return errors;
+	return ret;
 }
 
 
