@@ -208,10 +208,17 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     )
 
     rumboot_bootrom_integration_test(BROM
-        NAME "host-edcl"
-        IRUN_FLAGS +BOOT_HOST=1 ${ROM_6500K_OPTS}
+        NAME "host-edcl-0"
+        IRUN_FLAGS +BOOT_HOST=1 ${ROM_6500K_OPTS} +edcl_loader0
         LOAD
-          EDCLHOST  spl-ok
+          edcl_image  spl-ok
+    )
+
+    rumboot_bootrom_integration_test(BROM
+        NAME "host-edcl-1"
+        IRUN_FLAGS +BOOT_HOST=1 ${ROM_6500K_OPTS} +edcl_loader1
+        LOAD
+          edcl_image spl-ok
     )
 
 #    rumboot_bootrom_integration_test(BROM
