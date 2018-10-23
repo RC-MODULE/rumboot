@@ -7,6 +7,7 @@
 #include <rumboot/irq.h>
 #include <rumboot/printf.h>
 #include <rumboot/platform.h>
+#include <rumboot/rumboot.h>
 #include <rumboot/regpoker.h>
 #include <rumboot/macros.h>
 
@@ -60,12 +61,13 @@ uint16_t test_mkio_data_im0_src[MKIO_TEST_LEN_IN_WORDS] = {
                                                             0x7FFF
                                                     };
 
-uint16_t* test_mkio_data_im1_src   = (uint16_t *)( IM1_BASE );
-uint16_t* test_mkio_data_im1_dst   = (uint16_t *)( IM1_BASE + MKIO_TEST_DATA_SIZE);
+uint16_t* test_mkio_data_im1_src;//   = (uint16_t *)( IM1_BASE );
+uint16_t* test_mkio_data_im1_dst;//   = (uint16_t *)( IM1_BASE + MKIO_TEST_DATA_SIZE);
 
-mkio_bc_descriptor* mkio_bc_desr  = (mkio_bc_descriptor*)(IM1_BASE + 2 * MKIO_TEST_DATA_SIZE);
-mkio_rt_descriptor* mkio_rt_descr = (mkio_rt_descriptor*)(IM1_BASE + 2 * MKIO_TEST_DATA_SIZE + sizeof(mkio_bc_descriptor));
+struct mkio_bc_descriptor volatile* mkio_bc_desr;//  = (mkio_bc_descriptor*)(IM1_BASE + 2 * MKIO_TEST_DATA_SIZE);
+struct mkio_rt_descriptor volatile* mkio_rt_descr;// = (mkio_rt_descriptor*)(IM1_BASE + 2 * MKIO_TEST_DATA_SIZE + sizeof(mkio_bc_descriptor));
 
+struct mkio_rt_sa_table volatile*   rt_sa_tbl;// = (mkio_rt_sa_table_t *)rumboot_malloc_from_heap_aligned(1, sizeof(mkio_rt_sa_table_t)*2, 512);
 
 /*
  * Registers access checks
@@ -128,7 +130,7 @@ volatile bool mkio_handler = false;
 static void handler_mkio( int irq, void *arg )
 {
     uint32_t cur_status;
-    mkio_instance_t* mkio_inst = (mkio_instance_t* ) arg;
+    struct mkio_instance volatile* mkio_inst = (struct mkio_instance volatile* ) arg;
     rumboot_printf( "MKIO(0x%X) IRQ arrived\n", mkio_inst->src_mkio_base_addr);
     cur_status = ioread32(mkio_inst->src_mkio_base_addr + IRQ);
     rumboot_printf( "IRQ = 0x%X\n", cur_status);
@@ -137,7 +139,7 @@ static void handler_mkio( int irq, void *arg )
 }
 
 
-struct rumboot_irq_entry * create_irq_handlers(mkio_instance_t* mkio_inst)
+struct rumboot_irq_entry * create_irq_handlers(struct mkio_instance volatile* mkio_inst)
 {
     rumboot_printf( "Create irq handlers\n" );
     rumboot_irq_cli();
@@ -145,13 +147,13 @@ struct rumboot_irq_entry * create_irq_handlers(mkio_instance_t* mkio_inst)
 
     if (mkio_inst->src_mkio_base_addr==MKIO0_BASE)
     {
-        rumboot_irq_set_handler( tbl, MKIO0_INT, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler_mkio, mkio_inst );
+        rumboot_irq_set_handler( tbl, MKIO0_INT, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler_mkio, (void*)mkio_inst );
         rumboot_irq_table_activate( tbl );
         rumboot_irq_enable( MKIO0_INT );
     }
     else
     {
-        rumboot_irq_set_handler( tbl, MKIO1_INT, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler_mkio, mkio_inst );
+        rumboot_irq_set_handler( tbl, MKIO1_INT, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler_mkio, (void*)mkio_inst );
         rumboot_irq_table_activate( tbl );
         rumboot_irq_enable( MKIO1_INT );
     }
@@ -168,10 +170,19 @@ void delete_irq_handlers(struct rumboot_irq_entry *tbl)
 void prepare_test_data()
 {
     rumboot_putstring("Preparing source test data\n");
+
+    test_mkio_data_im1_src = (uint16_t *)rumboot_malloc_from_heap_aligned(1, MKIO_TEST_DATA_SIZE, 2);
+    test_mkio_data_im1_dst = (uint16_t *)rumboot_malloc_from_heap_aligned(1, MKIO_TEST_DATA_SIZE, 2);
+
+    mkio_bc_desr  = (struct mkio_bc_descriptor volatile*)rumboot_malloc_from_heap_aligned(1, sizeof(struct mkio_bc_descriptor), 128);
+    mkio_rt_descr = (struct mkio_rt_descriptor volatile*)rumboot_malloc_from_heap_aligned(1, sizeof(struct mkio_rt_descriptor), 128);
+
+    rt_sa_tbl = (struct mkio_rt_sa_table volatile*)rumboot_malloc_from_heap_aligned(1, sizeof(struct mkio_rt_sa_table)*2, 512);
+
     memcpy(test_mkio_data_im1_src, test_mkio_data_im0_src, sizeof(test_mkio_data_im0_src));
 }
 
-void init_mkio_cfg(mkio_instance_t* mkio_inst, uint32_t bc_base_addr, uint32_t rt_base_addr, uint16_t* src_addr, uint16_t* dst_addr, mkio_bc_descriptor* bc_descr_addr, mkio_rt_descriptor* rt_descr_addr, uint32_t size, mkio_bus_t bus)
+void init_mkio_cfg(struct mkio_instance * mkio_inst, uint32_t bc_base_addr, uint32_t rt_base_addr, uint16_t* src_addr, uint16_t* dst_addr, struct mkio_bc_descriptor volatile* bc_descr_addr, struct mkio_rt_descriptor volatile* rt_descr_addr, uint32_t size, mkio_bus_t bus, struct mkio_rt_sa_table volatile* rt_sa_tbl)
 {
     mkio_inst->src_mkio_base_addr   = bc_base_addr;
     mkio_inst->dst_mkio_base_addr   = rt_base_addr;
@@ -181,20 +192,23 @@ void init_mkio_cfg(mkio_instance_t* mkio_inst, uint32_t bc_base_addr, uint32_t r
     mkio_inst->rt_descr             = rt_descr_addr;
     mkio_inst->size                 = size;
     mkio_inst->bus                  = bus;
+    mkio_inst->rt_sa_tbl            = rt_sa_tbl;
+
 }
 
-void configure_mkio(mkio_instance_t* mkio_cfg)
+void configure_mkio(struct mkio_instance * mkio_cfg)
 {
-    uint32_t mkio_irq_ring_buffer [16] __attribute__ ((aligned(64)));
+    uint32_t* mkio_irq_ring_buffer;
+    mkio_irq_ring_buffer = (uint32_t *)rumboot_malloc_from_heap_aligned(1, 16 * sizeof(uint32_t), 64);
 
     mkio_prepare_bc_descr(mkio_cfg->src_mkio_base_addr, mkio_cfg->src_addr, mkio_cfg->size, mkio_cfg->bc_desr, mkio_cfg->bus);
-    mkio_prepare_rt_descr(mkio_cfg->dst_mkio_base_addr, mkio_cfg->dst_addr, mkio_cfg->size, mkio_cfg->rt_descr);
+    mkio_prepare_rt_descr(mkio_cfg->dst_mkio_base_addr, mkio_cfg->dst_addr, mkio_cfg->size, mkio_cfg->rt_descr, mkio_cfg->rt_sa_tbl);
 
     mkio_enable_all_irq(mkio_cfg->src_mkio_base_addr);
-    mkio_set_bcrd(mkio_cfg->src_mkio_base_addr, rumboot_virt_to_dma(&mkio_irq_ring_buffer));
+    mkio_set_bcrd(mkio_cfg->src_mkio_base_addr, rumboot_virt_to_dma(mkio_irq_ring_buffer));
 }
 
-void run_mkio_transfers_via_external_loopback(mkio_instance_t* mkio_cfg)
+void run_mkio_transfers_via_external_loopback(struct mkio_instance * mkio_cfg)
 {
     check_mkio_txinh_idle_via_gpio();
     configure_mkio(mkio_cfg);
@@ -270,7 +284,7 @@ int main(void)
 #endif
 
 #ifdef CHECK_MKIO_FUNC
-    mkio_instance_t mkio_cfg;
+    struct mkio_instance mkio_cfg;
     struct rumboot_irq_entry *tbl;
     uint32_t bc_base_addr;
     uint32_t rt_base_addr;
@@ -281,7 +295,7 @@ int main(void)
     bc_base_addr = MKIO_BASE;
     rt_base_addr = (MKIO_BASE==MKIO0_BASE) ? MKIO1_BASE : MKIO0_BASE;
     rumboot_printf("Start MKIO functional test\nBC: 0x%X\nRT: 0x%X\n", bc_base_addr, rt_base_addr);
-    init_mkio_cfg(&mkio_cfg, bc_base_addr, rt_base_addr, test_mkio_data_im1_src, test_mkio_data_im1_dst, mkio_bc_desr, mkio_rt_descr, MKIO_TEST_DATA_SIZE, MKIO_BUS);
+    init_mkio_cfg(&mkio_cfg, bc_base_addr, rt_base_addr, test_mkio_data_im1_src, test_mkio_data_im1_dst, mkio_bc_desr, mkio_rt_descr, MKIO_TEST_DATA_SIZE, MKIO_BUS, rt_sa_tbl);
     tbl = create_irq_handlers(&mkio_cfg);
 
     run_mkio_transfers_via_external_loopback(&mkio_cfg);
