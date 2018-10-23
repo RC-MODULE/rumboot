@@ -54,8 +54,8 @@ static int check_read(const struct rumboot_bootsource *src, void *pdata, void *d
 		goto bailout;
 	}
 
-	if (ret != expected) {
-		dbg_boot(src, "Expected to read %d, but read only %d bytes", expected, ret);
+	if (sz != expected) {
+		dbg_boot(src, "Expected to read %d, but read only %d bytes", expected, sz);
 		ret = 1;
 		goto bailout;
 	}
