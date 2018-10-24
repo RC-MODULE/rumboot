@@ -395,7 +395,18 @@ void check_NOR_HARD ()
     write_tlb_entries(&nor_tlb_entry_big ,1);
     //init
     rumboot_printf("Check Load\n");
-    check_mem_load_hard (NOR_BASE + 0x8, EVENT_CHK_LOAD_NOR_BE,0xFF789531);
+    rumboot_printf ( "DATA = %x\n", ioread32(NOR_BASE + 0x8) );
+    asm volatile
+        (
+            "lwz 7, 0(%0)\n\t"
+            ::"r"(NOR_BASE + 0x8)
+        );
+    test_event (EVENT_CHK_LOAD_NOR_BE);
+    //clear values
+    iowrite32 (0x00 , NOR_BASE + 0);
+    iowrite32 (0x00 , NOR_BASE + 0x04);
+    msync();
+    //check_mem_load_hard (NOR_BASE + 0x8, EVENT_CHK_LOAD_NOR_BE,0xFF789531);
     rumboot_printf("Check Store \n");
     check_NOR_store_hard (NOR_BASE + 0xC, EVENT_CHK_STORE_NOR_BE, 0x89ABCDEF);
 
@@ -404,7 +415,18 @@ void check_NOR_HARD ()
     write_tlb_entries(&nor_tlb_entry_little ,1);
     //init
     rumboot_printf("Check Load\n");
-    check_mem_load_hard (NOR_BASE + 0x10, EVENT_CHK_LOAD_NOR_LE, 0xFF789531 );
+    rumboot_printf ( "DATA = %x\n", ioread32(NOR_BASE + 0x10) );
+    asm volatile
+        (
+            "lwz 7, 0(%0)\n\t"
+            ::"r"(NOR_BASE + 0x10)
+        );
+    test_event (EVENT_CHK_LOAD_NOR_LE);
+    //clear values
+    iowrite32 (0x00 , NOR_BASE + 0);
+    iowrite32 (0x00 , NOR_BASE + 0x04);
+    msync();
+    //check_mem_load_hard (NOR_BASE + 0x10, EVENT_CHK_LOAD_NOR_LE, 0xFF789531 );
     rumboot_printf("Check Store \n");
     check_NOR_store_hard (NOR_BASE + 0x14, EVENT_CHK_STORE_NOR_LE, 0x89ABCDEF);
 
@@ -456,7 +478,19 @@ void check_SSRAM_HARD ()
     static tlb_entry ssram_tlb_entry_big = {TLB_ENTRY_SSRAM_BIG};
     write_tlb_entries(&ssram_tlb_entry_big,1);
     rumboot_printf("Check Load SSRAM \n");
-    check_mem_load_hard (SSRAM_BASE, EVENT_CHK_LOAD_SSRAM_BE, 0x89ABCDEF);
+    rumboot_printf ( "DATA = %x\n", ioread32(SSRAM_BASE) );
+    asm volatile
+        (
+            "lwz 7, 0(%0)\n\t"
+            ::"r"(SSRAM_BASE)
+        );
+    test_event (EVENT_CHK_LOAD_SSRAM_BE);
+
+    //clear values
+   // iowrite32 (0x00 , SSRAM_BASE + 0);
+   // iowrite32 (0x00 , SSRAM_BASE + 0x04);
+  //  msync();
+    //check_mem_load_hard (SSRAM_BASE, EVENT_CHK_LOAD_SSRAM_BE, 0x89ABCDEF);
     rumboot_printf("Check Store SSRAM \n");
     check_mem_store_hard (SSRAM_BASE, EVENT_CHK_STORE_SSRAM_BE,0x89ABCDEF);
 
@@ -464,7 +498,19 @@ void check_SSRAM_HARD ()
     static tlb_entry ssram_tlb_entry_little = {TLB_ENTRY_SSRAM_LITTLE};
     write_tlb_entries(&ssram_tlb_entry_little ,1);
     rumboot_printf("Check Load SSRAM \n");
-    check_mem_load_hard (SSRAM_BASE, EVENT_CHK_LOAD_SSRAM_LE, 0x89ABCDEF);
+    rumboot_printf ( "DATA = %x\n", ioread32(SSRAM_BASE) );
+    asm volatile
+        (
+            "lwz 7, 0(%0)\n\t"
+            ::"r"(SSRAM_BASE)
+        );
+    test_event (EVENT_CHK_LOAD_SSRAM_LE);
+
+    //clear values
+    //iowrite32 (0x00 , SSRAM_BASE + 0);
+   // iowrite32 (0x00 , SSRAM_BASE + 0x04);
+    //msync();
+    //check_mem_load_hard (SSRAM_BASE, EVENT_CHK_LOAD_SSRAM_LE, 0x89ABCDEF);
     rumboot_printf("Check Store SSRAM \n");
     check_mem_store_hard (SSRAM_BASE, EVENT_CHK_STORE_SSRAM_LE,0x89ABCDEF);
 
