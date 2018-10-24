@@ -112,6 +112,7 @@ int check_jdcr ()
 {
 	uint32_t dbdr, dbsr;
 
+	rumboot_printf("JDSR check start!\n");
 	spr_write(SPR_DBDR, TEST_DATA_ERROR);
 
 	rumboot_platform_event_clear();
@@ -133,13 +134,23 @@ int check_jdcr ()
 	rumboot_printf("got event\n");
 
 	dbsr = spr_read(SPR_DBSR_RC);
-	spr_write(SPR_DBSR_RC,0);
+	spr_write(SPR_DBSR_RC,0xFFFFFFFF); //clear dbsr
 	if (!(dbsr & (1 << DEBUG_DBSR_UDE_i)) ){
 		rumboot_printf("DBSR UDE is not set from JDCR!\n");
 		return 1;
 	}
+	dbsr = spr_read(SPR_DBSR_RC);
+	if (dbsr){
+		rumboot_printf("DBSR is not clear (DBSR = 0x%X)!\n", dbsr);
+		return 1;
+	}
 
 	spr_write(SPR_DBSR_W,1 << DEBUG_DBSR_UDE_i);
+	dbsr = spr_read(SPR_DBSR_RC);
+	if (!(dbsr & (1 << DEBUG_DBSR_UDE_i)) ){
+		rumboot_printf("DBSR UDE is not writen!\n");
+		return 1;
+	}
 
 	rumboot_platform_event_clear();
 	rumboot_printf("send TEC_CHECK_DEBUG_JDCR_RSDBSR\n");
@@ -159,6 +170,7 @@ int check_jdcr ()
 	if(event_get()) return 1;
 	rumboot_printf("got event\n");
 
+	rumboot_printf("JDSR check done!\n");
 	return 0;
 }
 
@@ -166,6 +178,7 @@ int check_dbimask ()
 {
 	uint32_t dbdr;
 
+	rumboot_printf("DBIMASK check start!\n");
 	spr_write(SPR_DBDR, TEST_DATA_ERROR);
 
 	rumboot_platform_event_clear();
@@ -180,6 +193,29 @@ int check_dbimask ()
 		return 1;
 	}
 	rumboot_printf("DBIMASK check done!\n");
+
+	return 0;
+}
+
+int check_dbomask ()
+{
+//	uint32_t dbdr;
+
+	rumboot_printf("DBOMASK check start!\n");
+//	spr_write(SPR_DBDR, TEST_DATA_ERROR);
+
+	rumboot_platform_event_clear();
+	rumboot_printf("send TEC_CHECK_DEBUG_MASKOUT\n");
+	test_event(TEC_CHECK_DEBUG_MASKOUT );
+	if(event_get()) return 1;
+	rumboot_printf("got event\n");
+
+//	dbdr = spr_read(SPR_DBDR);
+//	if (dbdr != TEST_DATA_OK ){
+//		rumboot_printf("DBIMASK check failed!\n");
+//		return 1;
+//	}
+	rumboot_printf("DBOMASK check done!\n");
 
 	return 0;
 }
@@ -278,6 +314,10 @@ int main()
 	}
 	if(check_dbimask()) {
 		rumboot_printf("DBIMask test failed!");
+		return 1;
+	}
+	if(check_dbomask()) {
+		rumboot_printf("DBOMask test failed!");
 		return 1;
 	}
 	if(check_stuff()) {
