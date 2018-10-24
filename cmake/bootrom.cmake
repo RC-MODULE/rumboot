@@ -4,7 +4,7 @@ macro(rumboot_bootrom_add_components spl_conf romconf)
       NAME "loader"
       CONFIGURATION ${romconf}
       FILES common/bootrom/bootrom.c
-      FEATURES STUB ${ROM_EXTRAFEATURES}
+      FEATURES STUB ${ROM_EXTRAFEATURES} CPACK
   )
 
   add_rumboot_target(
