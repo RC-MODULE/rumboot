@@ -42,6 +42,8 @@
 #define MEM_BASE                    SSRAM_BASE
 #define PHY_BASE                    MEM_BASE
 #define DCU_BASE                    0xFFF80000
+#define TRANSFER_DST                PHY_BASE
+#define TRANSFER_SRC                cache_fill_data
 
 /* Constants */
 #define NOTHING                     0x00000000
@@ -51,6 +53,7 @@
 #define ENABLED                     !DISABLED
 #define L1_LINES                    256
 #define L1_LINE_SIZE                32
+#define L1_LINE_WORDS               (L1_LINE_SIZE / sizeof(uint32_t))
 #define USED_CACHE_LINES            8
 #define L1_WAYS                     4
 #define L1_WAY_DATA_SIZE            (L1_LINE_SIZE * L1_LINES)
@@ -135,14 +138,14 @@
                     0xAAAAAAAA,0xAAAAAAAA,0xAAAAAAAA,0xAAAAAAAA
 
 /* Compound cache ways data */
-#define DATA_WAY_0  {{D_W0L0}},{{D_W0L1}},{{D_W0L2}},{{D_W0L3}},    \
-                    {{D_W0L4}},{{D_W0L5}},{{D_W0L6}},{{D_W0L7}}
-#define DATA_WAY_1  {{D_W1L0}},{{D_W1L1}},{{D_W1L2}},{{D_W1L3}},    \
-                    {{D_W1L4}},{{D_W1L5}},{{D_W1L6}},{{D_W1L7}}
-#define DATA_WAY_2  {{D_W2L0}},{{D_W2L1}},{{D_W2L2}},{{D_W2L3}},    \
-                    {{D_W2L4}},{{D_W2L5}},{{D_W2L6}},{{D_W2L7}}
-#define DATA_WAY_3  {{D_W3L0}},{{D_W3L1}},{{D_W3L2}},{{D_W3L3}},    \
-                    {{D_W3L4}},{{D_W3L5}},{{D_W3L6}},{{D_W3L7}}
+#define DATA_WAY_0  {D_W0L0},{D_W0L1},{D_W0L2},{D_W0L3},    \
+                    {D_W0L4},{D_W0L5},{D_W0L6},{D_W0L7}
+#define DATA_WAY_1  {D_W1L0},{D_W1L1},{D_W1L2},{D_W1L3},    \
+                    {D_W1L4},{D_W1L5},{D_W1L6},{D_W1L7}
+#define DATA_WAY_2  {D_W2L0},{D_W2L1},{D_W2L2},{D_W2L3},    \
+                    {D_W2L4},{D_W2L5},{D_W2L6},{D_W2L7}
+#define DATA_WAY_3  {D_W3L0},{D_W3L1},{D_W3L2},{D_W3L3},    \
+                    {D_W3L4},{D_W3L5},{D_W3L6},{D_W3L7}
 
 
 /* Functions */
@@ -154,14 +157,14 @@
 #define ADDR2EPN                        PHY2RPN20
 #define WAY_OFFSET(WAY)                 (L1_WAY_DATA_SIZE * (WAY))
 #define CALC_REL_ADDR(A1,A2)            ((A2) - (A1))
-#define CALC_ADDR(WAY,INDEX,OFFT)       (((WAY)   << 13) | \
-                                         ((INDEX) << 5 ) | \
-                                         ((OFFT)  << 2 )   \
-                                        )
-#define MK_TRF_ENTRY(WAY)               {CAST_ADDR(DCU_BASE                 \
+                                        /* WA(Y), INDE(X), WOR(D)*/
+#define CALC_ADDR(Y,X,D)                ((((Y) & 0x03) << 0x0D) |           \
+                                         (((X) & 0xFF) << 0x05) |           \
+                                         (((D) & 0x07) << 0x02))
+#define MK_TRF_ENTRY(WAY)               {CAST_ADDR(TRANSFER_DST             \
                                             + WAY_OFFSET(WAY)),             \
-                                         CAST_ADDR(cache_fill_data[WAY]),   \
-                                         USED_WAY_SPACE, L1_ALIGN_BYTES}
+                                         CAST_ADDR(TRANSFER_SRC[WAY]),   \
+                                         L1_WAY_DATA_SIZE, USED_WAY_SPACE}
 
 
 #define CACHE_DATA_LINE_BY_WAY_INDEX(WAY,INDEX,WORD,DATA_OFFSET)    \
@@ -202,10 +205,6 @@
 
 
 /* Types and structures definitions */
-typedef struct
-{
-    uint32_t    word[L1_LINE_SIZE / sizeof(uint32_t)];
-} cache_line_t;
 
 typedef struct
 {
@@ -215,8 +214,10 @@ typedef struct
     uint32_t     dsz;   /* Data size            */
 } transfer_info_t;
 
-/* Variables declarations */
+typedef uint32_t cache_fill_t[L1_WAYS][USED_CACHE_LINES][L1_LINE_WORDS];
+typedef uint32_t cache_data_t[L1_WAYS][L1_LINES        ][L1_LINE_WORDS];
 
+/* Variables declarations */
 static const
 tlb_entry cached_mirror_entries[] =
 {       /*             ERPN,  RPN,                 EPN  */
@@ -232,7 +233,8 @@ tlb_entry cached_mirror_entries[] =
 
 static const
 MAY_BE_NOT_USED
-cache_line_t    cache_fill_data[L1_WAYS][USED_CACHE_LINES] =
+/* uint32_t    cache_fill_data[L1_WAYS][USED_CACHE_LINES][L1_LINE_WORDS] = */
+cache_fill_t    cache_fill_data =
 {
     {DATA_WAY_0},
     {DATA_WAY_1},
@@ -241,7 +243,6 @@ cache_line_t    cache_fill_data[L1_WAYS][USED_CACHE_LINES] =
 };
 
 static const
-MAY_BE_NOT_USED
 transfer_info_t cache_transfer_info[L1_WAYS] =
 {
         MK_TRF_ENTRY(0),
@@ -251,22 +252,66 @@ transfer_info_t cache_transfer_info[L1_WAYS] =
 };
 
 MAY_BE_NOT_USED
-void dcu_transfer_data(transfer_info_t *trfinfo)
+void dcu_transfer_data(const transfer_info_t *trfinfo)
 {
-    /* align address */
-    uint32_t    aa = CAST_UINT(trfinfo->dst) + trfinfo->dsz;
-    rumboot_printf(
-            " + Copy of %d bytes cache data from 0x%X"
-            " to cached RAM at 0x%X...\n",
-            trfinfo->dsz,
-            CAST_UINT(trfinfo->src),
-            CAST_UINT(trfinfo->dsz));
+    /* a4a - address for align, s4a - size for align */
+    uint32_t    a4a = CAST_UINT(trfinfo->dst) + trfinfo->dsz,
+                s4a = trfinfo->asz - trfinfo->dsz;
+    static char memcpy_msg[] =
+                    " + Copy of %d bytes cache data from 0x%X"
+                    " to cached RAM at 0x%X...\n",
+                memset_msg[] =
+                    " - Fill by zero %d bytes in cached RAM at 0x%X...\n";
+    rumboot_printf(memcpy_msg, trfinfo->dsz,
+            CAST_UINT(trfinfo->src), CAST_UINT(trfinfo->dst));
     memcpy(trfinfo->dst, trfinfo->src, trfinfo->dsz);
-    rumboot_printf(
-            " - Fill by zero %d bytes in cached RAM at 0x%X...\n",
-            trfinfo->asz - trfinfo->dsz, aa);
-    memset(CAST_ADDR(aa), NOTHING, trfinfo->asz - trfinfo->dsz);
+    rumboot_printf(memset_msg, s4a, a4a);
+    memset(CAST_ADDR(a4a), NOTHING, s4a);
 
+}
+
+uint32_t dcu_check_data(cache_fill_t *s, cache_data_t *t)
+{
+    uint32_t     result = TEST_OK,
+                 status = 0,
+                 way    = 0,
+                 line   = 0,
+                 word   = 0,
+                 readed = 0,
+                 needed = 0;
+    volatile
+    uint32_t     cached = 0;
+    for(way = 0; way < L1_WAYS; way++)
+    {
+        rumboot_printf("*** Way %d/%d ***\n", way, L1_WAYS - 1);
+        for(line = 0; line < USED_CACHE_LINES; line++)
+        {
+            rumboot_printf(" + Line %d/%d...\n",
+                    line, USED_CACHE_LINES - 1);
+            for(word = 0; word < L1_LINE_WORDS; word++)
+            {
+                needed = (*s)[way][line][word];
+                cached = (*t)[way][line][word];
+                readed = dcread(CALC_ADDR(way,line,word));
+                isync();
+                result = (needed == cached);
+                status |= !result;
+                if(!result)
+                    rumboot_printf("At way:%d,line:%d,word:%d -->\n",
+                            way,line,word);
+                TEST_ASSERT(result,"Invalid data in cached memory!\n");
+                result = (needed == readed);
+                status |= !result;
+                if(!result)
+                    rumboot_printf("At way:%d,line:%d,word:%d -->\n",
+                            way,line,word);
+                TEST_ASSERT(result,"Invalid data in DCU memory!\n");
+            }
+        }
+    }
+    rumboot_printf("DCU check data %s!\n",
+            (!status)?"success":"failed");
+    return status;
 }
 
 uint32_t main(void)
@@ -274,9 +319,6 @@ uint32_t main(void)
     uint32_t         status = TEST_OK,
                      result = 0,
                      way    = 0;
-
-    /* Cached Way Data Pointers*/
-    uintptr_t        cwdp[L1_WAYS];
 
     rumboot_putstring("Test started...\n");
 
@@ -287,156 +329,17 @@ uint32_t main(void)
 
     write_tlb_entries(cached_mirror_entries, 1);
 
+    rumboot_printf(
+        "Transfer template data to cached memory at 0x%X...\n",
+        TRANSFER_DST);
+    for(way = 0; way < L1_WAYS; way++)
+        dcu_transfer_data(cache_transfer_info + way);
+    rumboot_printf("Transfer done.\n");
 
-    for(way = 0; way < 4; way++)
-    {
-        cwdp[way] = DCU_BASE + WAY_OFFSET(way);
-        rumboot_printf(
-                " + Copy of %d bytes cache data from 0x%X"
-                " to cached RAM at 0x%X...\n",
-                USED_WAY_SPACE,
-                CAST_UINT(cache_fill_data[way]),
-                cwdp[way]);
-        memcpy( CAST_ADDR(cwdp[way]),
-                CAST_ADDR(cache_fill_data[way]),
-                USED_WAY_SPACE);
-        rumboot_printf(
-                " - Fill by zero %d bytes in cached RAM at 0x%X...\n",
-                L1_ALIGN_BYTES,
-                cwdp[way] + USED_WAY_SPACE);
-        memset( CAST_ADDR(cwdp[way] + USED_WAY_SPACE),
-                NOTHING, L1_ALIGN_BYTES);
-    }
-
-
-    /*
-     * Write 8 cache lines
-     * index = INDEX field = Set in cache
-     * pointer = test data offset
-     */
-    MAY_BE_NOT_USED
-    void cache_0_abcd(uint32_t addr, uint32_t test_data_pointer)
-    {
-    #if DISABLED
-        rumboot_printf("Caching PPC0.SRAM A,B,C,D (Even index < 128)\n");
-        CACHE_LINE_BY_WAY_ADDR_EVEN(0,addr+0,test_data_pointer + 0x00);  /*AB A=00, CD A=02, BW MSB*/
-        CACHE_LINE_BY_WAY_ADDR_EVEN(1,addr+0,test_data_pointer + 0x04);  /*AB A=00, CD A=02, BW LSB*/
-        CACHE_LINE_BY_WAY_ADDR_EVEN(0,addr+1,test_data_pointer + 0x08);  /*AB A=01, CD A=03, BW MSB*/
-        CACHE_LINE_BY_WAY_ADDR_EVEN(1,addr+1,test_data_pointer + 0x0C);  /*AB A=01, CD A=03, BW LSB*/
-        CACHE_LINE_BY_WAY_ADDR_EVEN(2,addr+2,test_data_pointer + 0x10);  /*AB A=02, CD A=00, BW MSB => EvenIndexHighNotLow=1*/
-        CACHE_LINE_BY_WAY_ADDR_EVEN(3,addr+2,test_data_pointer + 0x14);  /*AB A=02, CD A=00, BW LSB => EvenIndexHighNotLow=1*/
-        CACHE_LINE_BY_WAY_ADDR_EVEN(2,addr+3,test_data_pointer + 0x18);  /*AB A=03, CD A=01, BW MSB => EvenIndexHighNotLow=1*/
-        CACHE_LINE_BY_WAY_ADDR_EVEN(3,addr+3,test_data_pointer + 0x1C);  /*AB A=03, CD A=01, BW LSB => EvenIndexHighNotLow=1*/
-    #endif
-    }
-
-    MAY_BE_NOT_USED
-    void cache_1_abcd(uint32_t addr, uint32_t test_data_pointer)
-    {
-    #if DISABLED
-        rumboot_printf("Caching PPC1.SRAM A,B,C,D (Even index < 128)\n");
-        CACHE_LINE_BY_WAY_ADDR_EVEN(0,addr+0,test_data_pointer + 0x00);  /*AB A=00, CD A=02, BW MSB*/
-        CACHE_LINE_BY_WAY_ADDR_EVEN(1,addr+0,test_data_pointer + 0x04);  /*AB A=00, CD A=02, BW LSB*/
-        CACHE_LINE_BY_WAY_ADDR_EVEN(0,addr+1,test_data_pointer + 0x08);  /*AB A=01, CD A=03, BW MSB*/
-        CACHE_LINE_BY_WAY_ADDR_EVEN(1,addr+1,test_data_pointer + 0x0C);  /*AB A=01, CD A=03, BW LSB*/
-        CACHE_LINE_BY_WAY_ADDR_EVEN(2,addr+2,test_data_pointer + 0x10);  /*AB A=02, CD A=00, BW MSB => EvenIndexHighNotLow=1*/
-        CACHE_LINE_BY_WAY_ADDR_EVEN(3,addr+2,test_data_pointer + 0x14);  /*AB A=02, CD A=00, BW LSB => EvenIndexHighNotLow=1*/
-        CACHE_LINE_BY_WAY_ADDR_EVEN(2,addr+3,test_data_pointer + 0x18);  /*AB A=03, CD A=01, BW MSB => EvenIndexHighNotLow=1*/
-        CACHE_LINE_BY_WAY_ADDR_EVEN(3,addr+3,test_data_pointer + 0x1C);  /*AB A=03, CD A=01, BW LSB => EvenIndexHighNotLow=1*/
-    #endif
-    }
-
-    MAY_BE_NOT_USED
-    void cache_0_efgh(uint32_t addr, uint32_t test_data_pointer)
-    {
-    #if DISABLED
-        rumboot_printf("Caching PPC0.SRAM E,F,G,H (Even index >= 128)\n");
-        CACHE_LINE_BY_WAY_ADDR_ODD(0,addr+0,test_data_pointer + 0x00);  /*AB A=00, CD A=02, BW MSB*/
-        CACHE_LINE_BY_WAY_ADDR_ODD(1,addr+0,test_data_pointer + 0x04);  /*AB A=00, CD A=02, BW LSB*/
-        CACHE_LINE_BY_WAY_ADDR_ODD(0,addr+1,test_data_pointer + 0x08);  /*AB A=01, CD A=03, BW MSB*/
-        CACHE_LINE_BY_WAY_ADDR_ODD(1,addr+1,test_data_pointer + 0x0C);  /*AB A=01, CD A=03, BW LSB*/
-        CACHE_LINE_BY_WAY_ADDR_ODD(2,addr+2,test_data_pointer + 0x10);  /*AB A=02, CD A=00, BW MSB => EvenIndexHighNotLow=1*/
-        CACHE_LINE_BY_WAY_ADDR_ODD(3,addr+2,test_data_pointer + 0x14);  /*AB A=02, CD A=00, BW LSB => EvenIndexHighNotLow=1*/
-        CACHE_LINE_BY_WAY_ADDR_ODD(2,addr+3,test_data_pointer + 0x18);  /*AB A=03, CD A=01, BW MSB => EvenIndexHighNotLow=1*/
-        CACHE_LINE_BY_WAY_ADDR_ODD(3,addr+3,test_data_pointer + 0x1C);  /*AB A=03, CD A=01, BW LSB => EvenIndexHighNotLow=1*/
-    #endif
-    }
-
-    MAY_BE_NOT_USED
-    void cache_1_efgh(uint32_t addr, uint32_t test_data_pointer)
-    {
-    #if DISABLED
-        rumboot_printf("Caching PPC1.SRAM E,F,G,H (Even index >= 128)\n");
-        CACHE_LINE_BY_WAY_ADDR_ODD(0,addr+0,test_data_pointer + 0x00);  /*AB A=00, CD A=02, BW MSB*/
-        CACHE_LINE_BY_WAY_ADDR_ODD(1,addr+0,test_data_pointer + 0x04);  /*AB A=00, CD A=02, BW LSB*/
-        CACHE_LINE_BY_WAY_ADDR_ODD(0,addr+1,test_data_pointer + 0x08);  /*AB A=01, CD A=03, BW MSB*/
-        CACHE_LINE_BY_WAY_ADDR_ODD(1,addr+1,test_data_pointer + 0x0C);  /*AB A=01, CD A=03, BW LSB*/
-        CACHE_LINE_BY_WAY_ADDR_ODD(2,addr+2,test_data_pointer + 0x10);  /*AB A=02, CD A=00, BW MSB => EvenIndexHighNotLow=1*/
-        CACHE_LINE_BY_WAY_ADDR_ODD(3,addr+2,test_data_pointer + 0x14);  /*AB A=02, CD A=00, BW LSB => EvenIndexHighNotLow=1*/
-        CACHE_LINE_BY_WAY_ADDR_ODD(2,addr+3,test_data_pointer + 0x18);  /*AB A=03, CD A=01, BW MSB => EvenIndexHighNotLow=1*/
-        CACHE_LINE_BY_WAY_ADDR_ODD(3,addr+3,test_data_pointer + 0x1C);  /*AB A=03, CD A=01, BW LSB => EvenIndexHighNotLow=1*/
-    #endif
-    }
-
-    // write valid non-cacheable
-    /*
-    write_tlb_entries(&em0_tlb_entry_non_cacheable_valid,1);
-    if((SPR_PIR_read() == 0) ||                                     //it's PPC0
-    ( (SPR_PIR_read() == 1) && (get_slp_status() & 0x1) ))      //it's PPC1 and PPC0 is sleep
-    {
-     trace_msg("Start ddr init\n");
-     ddr_init_impl( DdrHlbId_Em0,
-             DdrInitMode_ViolateSpecWaitRequirements,
-             DdrEccMode_Off,
-             DdrPmMode_DisableAllPowerSavingFeatures,
-             DdrBurstLength_4,
-             DdrPartialWriteMode_ReadModifyWrite);
-     DDR_INIT_DONE = true;
-     trace_msg("ddr initialized\n");
-    }
-    else
-     wait_ddr_init_done();
-    //write invalid non-cacheable
-    write_tlb_entries(&em0_tlb_entry_non_cacheable_invalid,1);
-    //write valid cacheable
-    write_tlb_entries(&em0_tlb_entry_cacheable_valid,1);
-    msync();
-    isync();
-    */
-
-    //START TEST
-    /*
-    if(SPR_PIR_read() == 0)
-    {
-     cache_0_abcd(0x00,test_data_pointer+0x00);
-     cache_0_abcd(0x04,test_data_pointer+0x20);
-     cache_0_abcd(0x08,test_data_pointer+0x40);
-     cache_0_abcd(0x0C,test_data_pointer+0x60);
-
-     cache_0_efgh(0x00,test_data_pointer+0x00);
-     cache_0_efgh(0x04,test_data_pointer+0x20);
-     cache_0_efgh(0x08,test_data_pointer+0x40);
-     cache_0_efgh(0x0C,test_data_pointer+0x60);
-    }
-    else
-    {
-     cache_1_efgh(0x00,test_data_pointer+0x00);
-     cache_1_efgh(0x04,test_data_pointer+0x20);
-     cache_1_efgh(0x08,test_data_pointer+0x40);
-     cache_1_efgh(0x0C,test_data_pointer+0x60);
-
-     cache_1_abcd(0x00,test_data_pointer+0x00);
-     cache_1_abcd(0x04,test_data_pointer+0x20);
-     cache_1_abcd(0x08,test_data_pointer+0x40);
-     cache_1_abcd(0x0C,test_data_pointer+0x60);
-    }
-    */
-    // test_event(EVENT_CACHING_DONE);
+    status |= dcu_check_data(CAST_ADDR(TRANSFER_SRC),CAST_ADDR(DCU_BASE));
 
     rumboot_printf("TEST %s!\n", !status ? "OK" : "ERROR");
 
     return status;
 }
-
-
 
