@@ -25,7 +25,7 @@ int main()
 
     struct rumboot_irq_entry *tbl = rumboot_irq_create(NULL);
     rumboot_irq_table_activate(tbl);
-    rumboot_irq_enable(0);
+    rumboot_irq_enable(USE_SWINT);
 
     rumboot_printf("Firing IRQ\n");
 	rumboot_irq_swint(USE_SWINT);;
