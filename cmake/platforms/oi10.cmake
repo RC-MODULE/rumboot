@@ -139,7 +139,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 #   )
 
     rumboot_bootrom_add_components(IRAM_SPL BROM
-      -a 512
+      -a 512 -z 512
     )
     #  rumboot_bootrom_unit_test(
     #      ID 0
