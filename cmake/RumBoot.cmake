@@ -126,6 +126,13 @@ macro(generate_stuff_for_target product)
     set(packimage_cmd ${PYTHON_EXECUTABLE} ${RUMBOOT_PACKIMAGE} -f ${product}${PACKIMAGE_EXT} ${TARGET_PACKIMAGE_FLAGS})
   endif()
 
+  list (FIND TARGET_FEATURES "CPACK" _index)
+
+  if (NOT ${_index} EQUAL -1)
+      #Package it!
+      install(TARGETS ${product} RUNTIME DESTINATION rumboot)
+  endif()
+
   if (NOT RUMBOOT_PLATFORM STREQUAL "native")
       add_custom_command(
         OUTPUT ${product}.dmp
@@ -141,6 +148,12 @@ macro(generate_stuff_for_target product)
         COMMENT "Generating binary image ${product}.bin"
         DEPENDS ${product}
       )
+
+      if (NOT ${_index} EQUAL -1)
+        install(FILES ${CMAKE_BINARY_DIR}/${product}.dmp DESTINATION rumboot)
+        install(FILES ${CMAKE_BINARY_DIR}/${product}.bin DESTINATION rumboot)
+        install(FILES ${CMAKE_BINARY_DIR}/${product}.map DESTINATION rumboot)
+      endif()
 
       add_custom_target(
         ${product}.all ALL
@@ -326,12 +339,8 @@ function(add_rumboot_target)
   endif()
 
   target_link_libraries(${product} ${CONFIGURATION_${TARGET_CONFIGURATION}_LDFLAGS} ${ldf} -Wl,-Map,${product}.map)
-  install(TARGETS ${product} RUNTIME DESTINATION rumboot)
 
   generate_stuff_for_target(${product})
-  install(FILES ${CMAKE_BINARY_DIR}/${product}.dmp DESTINATION rumboot)
-  install(FILES ${CMAKE_BINARY_DIR}/${product}.bin DESTINATION rumboot)
-  install(FILES ${CMAKE_BINARY_DIR}/${product}.map DESTINATION rumboot)
 
   rumboot_platform_generate_stuff_for_taget(${product})
 
