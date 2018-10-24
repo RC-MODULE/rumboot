@@ -56,12 +56,13 @@ static void hostmode_loop(void *pdata)
                                 dbg_boot(NULL, "Received a payload of %d bytes, executing in 100ms", ret);
                                 mdelay(100);
                         } else {
-                                dbg_boot(NULL, "xmodem upload failed with code %d", ret);
+                                dbg_boot(NULL, "Upload via xmodem failed with code %d", ret);
                         }
                 }
 
                 if (c == 'e') {
                         dbg_boot(NULL, "M'aiq the Liar: There are absolutely no easter eggs in bootrom code.");
+                        rumboot_platform_sv_event("EASTER_EGG");
                 }
 
                 if (hdr->device) {
@@ -72,10 +73,11 @@ static void hostmode_loop(void *pdata)
                         continue;
                 }
                 if (len < 0) {
-                        dbg_boot(NULL, "validation failed: %s\n", rumboot_strerror(len));
+                        dbg_boot(NULL, "Validation failed: %s\n", rumboot_strerror(len));
                         hdr->magic = 0;
                         continue;
                 }
+                dbg_boot(NULL, "Header validation complete");
                 if (0 == rumboot_bootimage_check_data(hdr)) {
                         hdr->magic = 0x0;
                         ret = rumboot_platform_exec(hdr);
