@@ -19,12 +19,12 @@
 
 #include <platform/devices/greth.h>
 
-#define GRETH_TEST_DATA_LEN_BYTES   128
+#define GRETH_TEST_DATA_LEN_BYTES   250
 #define GRETH_EDCL_DATA_LEN_BYTES    16
 
-#define GRETH_TEST_DATA_MISALIGN_IM1  3
-#define GRETH_TEST_DATA_MISALIGN_IM2  3
-#define GRETH_TEST_DATA_MISALIGN_EM2  3
+#define GRETH_TEST_DATA_MISALIGN_IM1  0
+#define GRETH_TEST_DATA_MISALIGN_IM2  0
+#define GRETH_TEST_DATA_MISALIGN_EM2  0
 
 #define EDCL_TEST_ADDR_IM1  (IM1_BASE + 0x4000 + 0x100)
 #define EDCL_TEST_ADDR_IM2  (IM2_BASE + 0x4000 + 0x100)
@@ -289,9 +289,9 @@ void prepare_test_data(uint32_t src_bank, uint32_t dst_bank)
     rx_descriptor_data_ = (greth_descr_t*) rumboot_malloc_from_heap_aligned(1, 3*sizeof(greth_descr_t), 1024);
 
     rumboot_putstring("Allocate from im1 for src");
-    test_data_im1_src = (uint8_t* )rumboot_malloc_from_heap_misaligned(1, GRETH_TEST_DATA_LEN_BYTES, 0, GRETH_TEST_DATA_MISALIGN_IM1);
+    test_data_im1_src = (uint8_t* )rumboot_malloc_from_heap_misaligned(1, GRETH_TEST_DATA_LEN_BYTES, 4, GRETH_TEST_DATA_MISALIGN_IM1);
     rumboot_putstring("Allocate from im1 for dst");
-    test_data_im1_dst = (uint8_t* )rumboot_malloc_from_heap_misaligned(1, GRETH_TEST_DATA_LEN_BYTES, 0, GRETH_TEST_DATA_MISALIGN_IM1);
+    test_data_im1_dst = (uint8_t* )rumboot_malloc_from_heap_misaligned(1, GRETH_TEST_DATA_LEN_BYTES, 4, GRETH_TEST_DATA_MISALIGN_IM1);
 
     rumboot_putstring("Fill im1 src array");
     test_data_im1_src[i++] = (uint8_t)((tst_greth_mac.mac_lsb & 0x00FF0000) >> 16);
@@ -323,7 +323,7 @@ void prepare_test_data(uint32_t src_bank, uint32_t dst_bank)
     if (src_bank==2)
     {
         rumboot_putstring("Allocate from im2 for src");
-        test_data_im2_src = (uint8_t* )rumboot_malloc_from_heap_misaligned(2, GRETH_TEST_DATA_LEN_BYTES, 0, GRETH_TEST_DATA_MISALIGN_IM2);
+        test_data_im2_src = (uint8_t* )rumboot_malloc_from_heap_misaligned(2, GRETH_TEST_DATA_LEN_BYTES, 4, GRETH_TEST_DATA_MISALIGN_IM2);
 
         rumboot_putstring("Fill im2 src array");
         memcpy(test_data_im2_src, test_data_im1_src, GRETH_TEST_DATA_LEN_BYTES);
@@ -332,7 +332,7 @@ void prepare_test_data(uint32_t src_bank, uint32_t dst_bank)
     if (dst_bank==2)
     {
         rumboot_putstring("Allocate from im2 for dst");
-        test_data_im2_dst = (uint8_t* )rumboot_malloc_from_heap_misaligned(2, GRETH_TEST_DATA_LEN_BYTES, 0, GRETH_TEST_DATA_MISALIGN_IM2);
+        test_data_im2_dst = (uint8_t* )rumboot_malloc_from_heap_misaligned(2, GRETH_TEST_DATA_LEN_BYTES, 4, GRETH_TEST_DATA_MISALIGN_IM2);
     }
 
     if ((src_bank==3) || (dst_bank==3))
@@ -344,7 +344,7 @@ void prepare_test_data(uint32_t src_bank, uint32_t dst_bank)
     if (src_bank==3)
     {
         rumboot_putstring("Allocate from em2 for src");
-        test_data_em2_src = (uint8_t* )rumboot_malloc_from_heap_misaligned(3, GRETH_TEST_DATA_LEN_BYTES, 0, GRETH_TEST_DATA_MISALIGN_EM2);
+        test_data_em2_src = (uint8_t* )rumboot_malloc_from_heap_misaligned(3, GRETH_TEST_DATA_LEN_BYTES, 4, GRETH_TEST_DATA_MISALIGN_EM2);
 
         rumboot_putstring("Fill em2 src array");
         memcpy(test_data_em2_src, test_data_im1_src, GRETH_TEST_DATA_LEN_BYTES);
@@ -353,7 +353,7 @@ void prepare_test_data(uint32_t src_bank, uint32_t dst_bank)
     if (dst_bank==3)
     {
         rumboot_putstring("Allocate from em2 for dst");
-        test_data_em2_dst = (uint8_t* )rumboot_malloc_from_heap_misaligned(3, GRETH_TEST_DATA_LEN_BYTES, 0, GRETH_TEST_DATA_MISALIGN_EM2);
+        test_data_em2_dst = (uint8_t* )rumboot_malloc_from_heap_misaligned(3, GRETH_TEST_DATA_LEN_BYTES, 4, GRETH_TEST_DATA_MISALIGN_EM2);
     }
 
     rumboot_putstring("Preparing data finished");
