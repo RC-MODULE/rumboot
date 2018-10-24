@@ -3,6 +3,15 @@
 
 /* Include doxygen.h to make sure that documentation gets updated  */
 #include "../../doxygen.h"
+
+#define RUMBOOT_IRQ_EDGE    (1 << 1)
+#define RUMBOOT_IRQ_LEVEL   (0 << 1)
+#define RUMBOOT_IRQ_POS     (0)
+#define RUMBOOT_IRQ_NEG     (0)
+#define RUMBOOT_IRQ_HIGH    (0)
+#define RUMBOOT_IRQ_LOW     (0)
+
+
 #if 0
 static inline void rumboot_arch_irq_dump_cpsr()
 {
@@ -14,37 +23,32 @@ static inline void rumboot_arch_irq_dump_cpsr()
 
 #endif
 
-static inline void rumboot_arch_irq_enable()
+static inline uint32_t rumboot_arch_irq_enable()
 {
+    uint32_t result;
+    asm volatile ("MRS %0, cpsr" : "=r" (result) );
     asm volatile ("cpsie i" : : : "memory");
-}
-
-
-static inline int rumboot_arch_irq_disable(void)
-{
-    int result = 0;
-    int tmp = 0;
-    asm volatile (
-        "mrs %0, cpsr\n"
-        "orr %1, %0, #0xC0\n"
-        "msr cpsr_c, %1\n"
-        : "=r" (result), "+r" (tmp)
-        );
     return result;
 }
 
-static inline int rumboot_arch_irq_setstate(int pri_mask)
+
+static inline uint32_t rumboot_arch_irq_disable()
 {
-    uint32_t tmp;
-    asm volatile (
-        "mrs  %0, cpsr\n"
-        "and  %0, #0x3f\n"
-        "orr  %1, %0\n"
-        "msr cpsr_c, %1\n"
-        : "=r" (tmp)
-        : "r" (pri_mask)
-        );
-    return 0;
+    uint32_t result;
+    asm volatile ("MRS %0, cpsr" : "=r" (result) );
+    asm volatile ("cpsid i" : : : "memory");
+    return result;
+
+}
+
+static inline uint32_t rumboot_arch_irq_setstate(uint32_t new_state)
+{
+    uint32_t result;
+
+    asm volatile ("MRS %0, cpsr" : "=r" (result) );
+    asm volatile ("MSR cpsr, %0" : : "r" (new_state) : "memory");
+
+    return result;
 }
 
 static inline void arm_vbar_set(uint32_t addr)
@@ -68,9 +72,9 @@ static inline uint32_t arm_vbar_get()
 }
 
 #define RUMBOOT_ATOMIC_BLOCK() \
-     for(int mask = rumboot_arch_irq_disable(), flag = 1; \
+     for(uint32_t old_state = rumboot_arch_irq_disable(), flag = 1; \
          flag;\
-         flag = rumboot_arch_irq_setstate(mask))
+         rumboot_arch_irq_setstate(old_state), flag = 0)
 
 
 #endif /* end of include guard: ARM_IRQ_MACROS_H */

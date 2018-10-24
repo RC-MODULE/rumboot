@@ -10,7 +10,7 @@
  *  - Init SDIO
  *  - Deinit SDIO
  *  - Read data from SDIO
- *  - Read data from SDIO n 
+ *  - Read data from SDIO n
  *
  * \code{.c}
  * #include <devices/sdio.h>
@@ -23,7 +23,7 @@
  * @{
  */
 
-#include <rumboot/bootsource.h>
+#include <rumboot/boot.h>
 
 /**
  * SD card initialization

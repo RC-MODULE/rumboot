@@ -1,179 +1,240 @@
-#include <devices/mgeth.h>
-#include <devices/mdma.h>
-
-#include <regs/regs_mgeth.h>
-
-#include <stdbool.h>
-#include <stdint.h>
-
-#include <rumboot/io.h>
+#include <stdio.h>
 #include <rumboot/printf.h>
-#include <rumboot/timer.h>
+#include <rumboot/io.h>
+#include <regs/regs_mgeth.h>
+#include <devices/mdma_chan_api.h>
+#include <devices/mgeth.h>
 
-void mgeth_init(const uint32_t base, const struct mgeth_conf *conf)
+int mgeth_init_sgmii(uint32_t sgmii_base_addr, uint32_t sctl_base_addr)
 {
-	uint8_t is_full_duplex = conf->is_full_duplex ? 1 : 0;
+	uint32_t
+		sgmii_ctrl_stat_val,
+		OFFSET_SPCS_0, OFFSET_SPCS_1, OFFSET_SPCS_2, OFFSET_SPCS_3,
+		OFFSET_TXS_0, OFFSET_TXS_1, OFFSET_TXS_2, OFFSET_TXS_3,
+		OFFSET_CM,
+		OFFSET_RXS_0, OFFSET_RXS_1, OFFSET_RXS_2, OFFSET_RXS_3;
 
-	uint32_t ctrl = (is_full_duplex << MGETH_FULL_DUPLEX_i) | (conf->speed << MGETH_SPEED_i);
+	DBG_print("Start.");
 
-	iowrite32(ctrl, base + MGETH_CONTROL);
-}
+	sgmii_ctrl_stat_val = ioread32(sctl_base_addr + 0x14);
 
-void mgeth_deinit(const uint32_t base)
-{
-	iowrite32(0x0, base + MGETH_CONTROL);
-}
-
-#define NORMAL_DESC_SIZE 8
-#define PITCH_DESC_SIZE 16
-int mgeth_transmit_data_throught_mdma(uint32_t base1, uint32_t base2, volatile void *dest, volatile void *src, size_t len)
-{
-	//CONFIG DMA
-	uint8_t desc_type = LONG;
-	bool irq_en = true;
-	uint16_t desc_gap = (desc_type == NORMAL) ? NORMAL_DESC_SIZE : PITCH_DESC_SIZE;
-
-	rumboot_printf("Config mgeth0.\n");
-	size_t num_txdescriptors = 1;
-	struct mdma_config cfg0 = { .desc_type		= desc_type,.desc_gap	       = desc_gap, .irq_en = irq_en,
-				    .num_rxdescriptors	= 0,	    .num_txdescriptors = num_txdescriptors };
-	volatile struct mdma_device *mgeth0 = mdma_create(base1 + 0x900, &cfg0);
-	mgeth0->type = MDMA_MGETH;
-	mdma_configure(mgeth0, &cfg0);
-	
-	rumboot_printf("Config mgeth1.\n");
-	size_t num_rxdescriptors = 1;
-	struct mdma_config cfg1 = { .desc_type		= desc_type,	    .desc_gap	       = desc_gap, .irq_en = irq_en,
-				    .num_rxdescriptors	= num_rxdescriptors,.num_txdescriptors = 0 };
-	volatile struct mdma_device *mgeth1 = mdma_create(base2 + 0x100, &cfg1);
-	mgeth1->type = MDMA_MGETH;
-	mdma_configure(mgeth1, &cfg1);
-
-	//Create transactions
-	//We can fragment data in junks and transmit in several transactions!
-	volatile struct mdma_transaction *t0 = NULL;
-	volatile struct mdma_transaction *t1 = NULL;
-	size_t transaction_count = 1;
-	while (transaction_count--) {
-		rumboot_printf("Create transaction.\n");
-		rumboot_printf("Destination: %x, source: %x, length: %x\n", dest, src, len);
-		t0 = mdma_transaction_create(mgeth0, dest, src, len);
-		t1 = mdma_transaction_create(mgeth1, dest, src, len);
-
-		//Push transaction to queue
-		rumboot_printf("Queue transaction.\n");
-		//mdma_transaction_dump(t);
-		if (mdma_transaction_queue((struct mdma_transaction *)t0) < 0) {
-			return -1;
-		}
-		if (mdma_transaction_queue((struct mdma_transaction *)t1) < 0) {
-			return -1;
-		}
-		t0++;
-		t1++;
+	if (sgmii_ctrl_stat_val)
+	{
+		DBG_print("ERROR: SGMII_CTRL_STAT value before setting is not zero (0x%X)!", sgmii_ctrl_stat_val);
+		DBG_print("End (With ERROR!); Return: 1!");
+		return 1;
 	}
 
-	//Init DMA
-	rumboot_printf("Init MDMA1, base addr: %x.\n", mgeth1->base);
-	mdma_init(mgeth1);
+	OFFSET_SPCS_0 = sgmii_base_addr + 0x0200;
+	OFFSET_SPCS_1 = sgmii_base_addr + 0x0600;
+	OFFSET_SPCS_2 = sgmii_base_addr + 0x0A00;
+	OFFSET_SPCS_3 = sgmii_base_addr + 0x0E00;
+	OFFSET_TXS_0  = sgmii_base_addr + 0x0000;
+	OFFSET_TXS_1  = sgmii_base_addr + 0x0400;
+	OFFSET_TXS_2  = sgmii_base_addr + 0x0800;
+	OFFSET_TXS_3  = sgmii_base_addr + 0x0C00;
+	OFFSET_CM     = sgmii_base_addr + 0x1000;
+	OFFSET_RXS_0  = sgmii_base_addr + 0x0100;
+	OFFSET_RXS_1  = sgmii_base_addr + 0x0500;
+	OFFSET_RXS_2  = sgmii_base_addr + 0x0900;
+	OFFSET_RXS_3  = sgmii_base_addr + 0x0D00;
 
-	rumboot_printf("Init MDMA0, base addr: %x.\n", mgeth0->base);
-	mdma_init(mgeth0);
+	DBG_print("=== config SGMII_PHY ===");
+	DBG_print("=== config SGMII_PHY OFFSET_SPCS ===");
 
-	rumboot_printf("Check - if mdma is ready.\n");
-	size_t timeout_us = 1000;
-	while (!mdma_is_finished(mgeth1)) {
-		if (!timeout_us) {
-			return -1;
-		}
-		udelay(1);
-		timeout_us--;
+	iowrite32(0x00000140, OFFSET_SPCS_0 + 0x00);
+	iowrite32(0x00000140, OFFSET_SPCS_1 + 0x00);
+	iowrite32(0x00000140, OFFSET_SPCS_2 + 0x00);
+	iowrite32(0x00000140, OFFSET_SPCS_3 + 0x00);
+
+	DBG_print("=== config SGMII_PHY OFFSET_TXS ===");
+
+	iowrite32(0x40803004, OFFSET_TXS_0 + 0x00);
+	iowrite32(0x40803004, OFFSET_TXS_1 + 0x00);
+	iowrite32(0x40803004, OFFSET_TXS_2 + 0x00);
+	iowrite32(0x40803004, OFFSET_TXS_3 + 0x00);
+
+	DBG_print("=== config SGMII_PHY OFFSET_CM ===");
+
+	iowrite32(0x00130000, OFFSET_CM + 0x04);
+	iowrite32(0x710001F0, OFFSET_CM + 0x08);
+	iowrite32(0x00000002, OFFSET_CM + 0x0C);
+	iowrite32(0x07000000, OFFSET_CM + 0x20);
+
+	DBG_print("=== config SGMII_PHY OFFSET_RXS ===");
+
+	iowrite32(0x0000CEA6, OFFSET_RXS_0 + 0x08);
+	iowrite32(0x0000CEA6, OFFSET_RXS_1 + 0x08);
+	iowrite32(0x0000CEA6, OFFSET_RXS_2 + 0x08);
+	iowrite32(0x0000CEA6, OFFSET_RXS_3 + 0x08);
+
+	DBG_print("=== SGMII_PHY enable ===");
+
+	iowrite32(0x1, sctl_base_addr + 0x14);
+
+	DBG_print("=== wait SGMII PLL_LOCK & SGMII PHY_RDY ===");
+
+	while (sgmii_ctrl_stat_val != 0x000001F1)
+	{
+		sgmii_ctrl_stat_val = ioread32(sctl_base_addr + 0x14);
+
+		DBG_print("SCTL register SGMII_CTRL_STAT: 0x%X", sgmii_ctrl_stat_val);
 	}
 
-	//Remove transactions
-	transaction_count = 1;
-	while (transaction_count--) {
-		rumboot_printf("Remove transaction.\n");
-		mdma_transaction_remove((struct mdma_transaction *)t0);
-		mdma_transaction_remove((struct mdma_transaction *)t1);
-		t0++;
-		t1++;
-	}
-
-	mdma_remove(mgeth0);
-	mdma_remove(mgeth1);
-
+	DBG_print("End; Return: 0.");
 
 	return 0;
 }
 
-int mgeth_init_sgmii()
+void mgeth_reset(uint32_t base_addr)
 {
-	uint32_t	read_data,
-							OFFSET_SGMII,
-							OFFSET_SPCS_0,
-							OFFSET_SPCS_1,
-							OFFSET_SPCS_2,
-							OFFSET_SPCS_3,
-							OFFSET_TXS_0,
-							OFFSET_TXS_1,
-							OFFSET_TXS_2,
-							OFFSET_TXS_3,
-							OFFSET_CM,
-							OFFSET_RXS_0,
-							OFFSET_RXS_1,
-							OFFSET_RXS_2,
-							OFFSET_RXS_3
-							;
-	 OFFSET_SGMII   = 0x01086000;
+	DBG_print("Start; base_addr = 0x%X.", base_addr);
 
-	 OFFSET_SPCS_0  = OFFSET_SGMII + 0x0200;
-	 OFFSET_SPCS_1  = OFFSET_SGMII + 0x0600;
-	 OFFSET_SPCS_2  = OFFSET_SGMII + 0x0A00;
-	 OFFSET_SPCS_3  = OFFSET_SGMII + 0x0E00;
-	 OFFSET_TXS_0   = OFFSET_SGMII + 0x0000;
-	 OFFSET_TXS_1   = OFFSET_SGMII + 0x0400;
-	 OFFSET_TXS_2   = OFFSET_SGMII + 0x0800;
-	 OFFSET_TXS_3   = OFFSET_SGMII + 0x0C00;
-	 OFFSET_CM      = OFFSET_SGMII + 0x1000;
-	 OFFSET_RXS_0   = OFFSET_SGMII + 0x0100;
-	 OFFSET_RXS_1   = OFFSET_SGMII + 0x0500;
-	 OFFSET_RXS_2   = OFFSET_SGMII + 0x0900;
-	 OFFSET_RXS_3   = OFFSET_SGMII + 0x0D00;
+	iowrite32(0x1, base_addr + MGETH_SW_RST);
 
-	rumboot_printf("=== config SGMII_PHY ===\n");
-	rumboot_printf("=== config SGMII_PHY OFFSET_SPCS ===\n");
-	iowrite32(0x00000140,OFFSET_SPCS_0 + 0x00);
-	iowrite32(0x00000140,OFFSET_SPCS_1 + 0x00);
-	iowrite32(0x00000140,OFFSET_SPCS_2 + 0x00);
-	iowrite32(0x00000140,OFFSET_SPCS_3 + 0x00);
+	while (ioread32(base_addr + MGETH_SW_RST) & 0x1);
 
-	rumboot_printf("=== config SGMII_PHY OFFSET_TXS ===\n");
-	iowrite32(0x40803004,OFFSET_TXS_0 + 0x00);
-	iowrite32(0x40803004,OFFSET_TXS_1 + 0x00);
-	iowrite32(0x40803004,OFFSET_TXS_2 + 0x00);
-	iowrite32(0x40803004,OFFSET_TXS_3 + 0x00);
+	DBG_print("End.");
+}
 
-	rumboot_printf("=== config SGMII_PHY OFFSET_CM ===\n");
-	iowrite32(0x00130000,OFFSET_CM + 0x04);
-	iowrite32(0x710001f0,OFFSET_CM + 0x08);
-	iowrite32(0x00000002,OFFSET_CM + 0x0C);
-	iowrite32(0x07000000,OFFSET_CM + 0x20);
+void mgeth_init(const uint32_t base, const struct mgeth_conf *conf)
+{
+	uint32_t ctrl, ctrl_set = 0x0;
 
-	rumboot_printf("=== config SGMII_PHY OFFSET_RXS ===\n");
-	iowrite32(0x0000CEA6,OFFSET_RXS_0 + 0x08);
-	iowrite32(0x0000CEA6,OFFSET_RXS_1 + 0x08);
-	iowrite32(0x0000CEA6,OFFSET_RXS_2 + 0x08);
-	iowrite32(0x0000CEA6,OFFSET_RXS_3 + 0x08);
+	DBG_print("Start; base = 0x%X.", base);
 
-	rumboot_printf("=== SGMII_PHY enable ===\n");
-	iowrite32(0x1, 0x0108D014);
-	read_data = 0x0;
-	rumboot_printf("=== wait SGMII PLL_LOCK & SGMII PHY_RDY  ===");
-	while (read_data != 0x000001F1) {
-			read_data = ioread32(0x0108D014);
-			rumboot_printf("SCTL register SGMII_CTRL_STAT: %x\n", read_data);
+	if (conf->is_full_duplex)
+		ctrl_set |= 0x1; // full_duplex (0 bit)
+
+	ctrl_set |= conf->speed << 1; // speed (2 - 1 bits)
+
+	DBG_print("ctrl_set = 0x%X", ctrl_set);
+
+	ctrl = ioread32(base + MGETH_CONTROL);
+
+	DBG_print("ctrl = 0x%X", ctrl);
+
+	ctrl &= ~0x7;
+	ctrl |= ctrl_set;
+
+	DBG_print("ctrl = 0x%X", ctrl);
+
+	iowrite32(ctrl, base + MGETH_CONTROL);
+
+	DBG_print("End.");
+}
+
+struct mdma_chan *mgeth_transfer(uint32_t base, void *data, size_t len, bool use_interrupt, bool send)
+{
+	struct mdma_chan *chan;
+	struct mdma_cfg cfg;
+	uint32_t off = send ? MGETH_SEND_CH_0 : MGETH_RECV_CH_0;
+	int ret;
+
+	DBG_print("Start; base = 0x%X; send = %d.", base, send);
+
+	cfg.mode = use_interrupt ? MDMA_CHAN_INTERRUPT : MDMA_CHAN_POLLING;
+	cfg.desc_kind = LONG_DESC;
+	cfg.heap_id = 0;
+	cfg.burst_width = MDMA_BURST_WIDTH4; // Fixed for ETH
+	cfg.event_indx = -1; // Fixed for ETH
+	cfg.add_info = true; // Fixed for ETH (for custom)
+	cfg.addr_inc = true;
+
+	chan = mdma_chan_create((void *)(base + off), &cfg);
+	if (!chan)
+	{
+		DBG_print("ERROR: Failed create DMA channel!");
+		DBG_print("End (With ERROR!); Return: NULL!");
+		return NULL;
 	}
 
-  return 0;
+	ret = mdma_trans_create(chan, MDMA_TRANS_QUEUE);
+	if (ret)
+	{
+		DBG_print("ERROR: Failed create DMA transaction (ret = %d)!", ret);
+		mdma_chan_destroy(chan);
+		DBG_print("End (With ERROR!); Return: NULL!");
+		return NULL;
+	}
+
+	ret = mdma_trans_add_group(chan, data, len, 0x800, true);
+	if (ret)
+	{
+		DBG_print("ERROR: Failed add group to DMA transfer (ret = %d)!", ret);
+		mdma_chan_destroy(chan);
+		DBG_print("End (With ERROR!); Return: NULL!");
+		return NULL;
+	}
+
+	ret = mdma_chan_config(chan);
+	if (ret)
+	{
+		DBG_print("ERROR: Failed DMA channel configuration (ret = %d)!", ret);
+		mdma_chan_destroy(chan);
+		DBG_print("End (With ERROR!); Return: NULL!");
+		return NULL;
+	}
+
+	if (!use_interrupt)
+	{
+		ret = mdma_chan_start(chan);
+		if (ret)
+		{
+			DBG_print("ERROR: Failed start DMA channel (ret = %d)!", ret);
+			mdma_chan_destroy(chan);
+			DBG_print("End (With ERROR!); Return: NULL!");
+			return NULL;
+		}
+	}
+
+	DBG_print("End; Return: 0x%X.", chan);
+
+	return chan;
+}
+
+struct mdma_chan *mgeth_transmit(uint32_t base, void *data, size_t len, bool use_interrupt)
+{
+	return mgeth_transfer(base, data, len, use_interrupt, true);
+}
+
+struct mdma_chan *mgeth_receive(uint32_t base, void *data, size_t len, bool use_interrupt)
+{
+	return mgeth_transfer(base, data, len, use_interrupt, false);
+}
+
+int mgeth_wait_transfer_complete(struct mdma_chan *chan, int timeout)
+{
+	int ret;
+
+	DBG_print("Start; chan = 0x%X; timeout = %d.", chan, timeout);
+
+	ret = mdma_chan_wait_trans_end(chan, timeout);
+	if (ret)
+	{
+		DBG_print("ERROR: Failed wait transfer complete (ret = %d)!", ret);
+		DBG_print("End (With ERROR!); Return: %d!", ret);
+		return ret;
+	}
+
+	DBG_print("End; Return: %d.", ret);
+
+	return ret;
+}
+
+int mgeth_finish_transfer(struct mdma_chan *chan)
+{
+	int ret;
+
+	DBG_print("Start; chan = 0x%X.", chan);
+
+	ret = mdma_chan_reset(chan);
+	if (ret)
+		DBG_print("WARNING: Failed reset DMA channel (ret = %d)!", ret);
+
+	mdma_chan_destroy(chan);
+
+	DBG_print("End; Return: %d.", ret);
+
+	return ret;
 }

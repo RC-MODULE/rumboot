@@ -43,10 +43,8 @@ static void handler(int irq, void *arg)
 static void i2c__init()
 {
 	//init
-	//iowrite32((0x00),( I2C_BASE + I2C_CTRL));
 	iowrite32((0x13),( I2C_BASE + I2C_PRESCALE));
 	ioread32( I2C_BASE + I2C_ISR); //reset for not masked/incorrect interrupts
-	//data transmit
  	iowrite32((0x00),( I2C_BASE + I2C_STAT_RST));	
 	iowrite32((0x00),( I2C_BASE + I2C_FIFOFIL));	
 }
@@ -58,14 +56,7 @@ static void i2c_master_stop()
 	iowrite32((0x0),(I2C_BASE  + I2C_STAT_RST)); //reset STATRST reg
 }
 
-/*
-static void call_done()
-{
-	iowrite32((0x1),( I2C_BASE + I2C_IER));   // create mask for  interpt expected 
-	iowrite32((0xA0),( I2C_BASE + I2C_TRANSMIT));// A0 = eeprom device address, ee -sensor dev. address
-	iowrite32((0x13),( I2C_BASE + I2C_CTRL)); // start, en, write 
-}
-*/
+
 static void call_trn_empty()
 {
 	iowrite32((0x4),( I2C_BASE + I2C_IER));   // create mask for trn_empty 
@@ -80,35 +71,35 @@ static void call_trn_empty()
 static void call_stop()
 {	
 	iowrite32((0x1),( I2C_BASE + I2C_IER));   // create mask for trn_empty_almost 
-	iowrite32((0x1 ),(I2C_BASE + 0x2c)); //I2C_STAT_RST
+	iowrite32((0x1 ),(I2C_BASE + I2C_STAT_RST));
 	ioread32(I2C_BASE + I2C_STATUS);
-	iowrite32((0x0),(I2C_BASE + 0x2c)); //reset STATRST reg
-	iowrite32((0x1),(I2C_BASE + 0x2c)); //reset STATUS reg 
+	iowrite32((0x0),(I2C_BASE + I2C_STAT_RST)); //reset STATRST reg
+	iowrite32((0x1),(I2C_BASE + I2C_STAT_RST)); //reset STATUS reg 
 	
-	iowrite32((0x0),(I2C_BASE + 0x2c)); //reset STATRST reg
-	iowrite32((0x1),(I2C_BASE + 0x2c)); //reset STATUS reg 
+	iowrite32((0x0),(I2C_BASE + I2C_STAT_RST)); //reset STATRST reg
+	iowrite32((0x1),(I2C_BASE + I2C_STAT_RST)); //reset STATUS reg 
 	iowrite32((0x41),( I2C_BASE + I2C_CTRL));//I2C_CTRL   en, stop
 }
 
 static void call_write()
 {
 	iowrite32((0x4),( I2C_BASE + I2C_IER));   // create mask for trn_empty 
-	iowrite32((0x00),( I2C_BASE + 0x02C));//0x02C	reset I2C_STAT_RST
-	iowrite32((0xA0),( I2C_BASE + 0x18));//I2C_TRANSMIT   ee -sensor dev. address
-	iowrite32((0x00),( I2C_BASE + 0x18)); //first addres
+	iowrite32((0x00),( I2C_BASE + I2C_STAT_RST));//reset I2C_STAT_RST
+	iowrite32((0xA0),( I2C_BASE + I2C_TRANSMIT));//I2C_TRANSMIT   ee -sensor dev. address
+	iowrite32((0x00),( I2C_BASE + I2C_TRANSMIT)); //first addres
 	iowrite32((0x0),( I2C_BASE + I2C_TRANSMIT));  //second address
-	iowrite32((0x13),( I2C_BASE + 0x10));//  I2C_CTRL 0x010   start, en, write 
+	iowrite32((0x13),( I2C_BASE + I2C_CTRL));//  I2C_CTRL 0x010   start, en, write 
 }
 
 static void call_read()
 {
 	iowrite32((0x0),( I2C_BASE + I2C_IER));   // create mask 	
 	iowrite32((0x00010001),( I2C_BASE + I2C_FIFOFIL));
-	iowrite32((0x1),( I2C_BASE + 0x1c)); //NUMBR 
+	iowrite32((0x1),( I2C_BASE + I2C_NUMBER)); //NUMBR 
 	iowrite32((0x20),( I2C_BASE + I2C_IER));   // create mask for rcv_full_alm 	
-	iowrite32((0xA1),( I2C_BASE + 0x18));//I2C_TRANSMIT  A0 -EEPROM dev. address
-	iowrite32((0x1 ),(I2C_BASE +  0x2c));//reset status	
-	iowrite32((0x6B),( I2C_BASE + 0x10));//I2C_CTRL   start, en, read, rpt
+	iowrite32((0xA1),( I2C_BASE + I2C_TRANSMIT));//I2C_TRANSMIT  A0 -EEPROM dev. address
+	iowrite32((0x1 ),(I2C_BASE +  I2C_STAT_RST));//reset status	
+	iowrite32((0x6B),( I2C_BASE + I2C_CTRL));//I2C_CTRL   start, en, read, rpt
 }
 
 

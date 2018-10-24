@@ -24,8 +24,10 @@
 
 #ifdef RUMBOOT_BASIS_ENABLE_MIRROR
         #define IRQ_REAL(n) (IRQ_MIRROR_BASE - 32 + n)
+	#define IRQ_VIRT(n) (n - IRQ_MIRROR_BASE + 32)
 #else
         #define IRQ_REAL(n) (n)
+	#define IRQ_VIRT(n) (n)
 #endif
 
 #define TSNS_INTR                   IRQ_REAL(35)
@@ -53,6 +55,8 @@
 #define MDMA1_IRQ                   IRQ_REAL(65)
 #define MDMA2_IRQ                   IRQ_REAL(66)
 #define MDMA3_IRQ                   IRQ_REAL(67)
+#define MKIO0_IRQ                   IRQ_REAL(68)
+#define MKIO1_IRQ                   IRQ_REAL(69)
 #define GSPI_SDIO0_IRQ              IRQ_REAL(72)
 #define GSPI_SDIO1_IRQ              IRQ_REAL(73)
 #define I2C0_IRQ                    IRQ_REAL(74)
@@ -66,6 +70,9 @@
 #define CAN0_INT                    IRQ_REAL(83)
 #define CAN1_INT                    IRQ_REAL(84)
 #define ARINC_INT                   IRQ_REAL(85)
+#define SGMII_INT                   IRQ_REAL(86)
+
+#define GP_GLOB_INT                 IRQ_REAL(89)
 
 
 /**

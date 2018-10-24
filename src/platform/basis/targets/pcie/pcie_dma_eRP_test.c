@@ -15,7 +15,14 @@
 //    Test duration (RTL): < 300us
 //-----------------------------------------------------------------------------
 
+#include <stdint.h>
+#include <stdlib.h>
+
+#include <rumboot/io.h>
 #include <rumboot/pcie_test_lib.h>
+#include <regs/regs_pcie.h>
+#include <platform/devices.h>
+
 
 #ifndef increase_test_duration
 #define increase_test_duration 0
@@ -70,20 +77,23 @@ uint32_t pcie_dma_transaction ()
     //-------------------------------------------------------------
     //  Create descriptor for PCIe internal DMA controller
     //-------------------------------------------------------------
-    PCIe_DMA_descriptor.axi_base_addr   = (uint32_t) (&data_src);
-    PCIe_DMA_descriptor.pcie_base_addr  = (uint64_t) (uint32_t) (&data_mid);
-    PCIe_DMA_descriptor.transfer_length = 1024;
-    PCIe_DMA_descriptor.control_byte = 1;
+    PCIe_DMA_descriptor.axi_base_addr       = (uint32_t) (&data_src);
+    PCIe_DMA_descriptor.axi_addr_phase      = 0;
+    PCIe_DMA_descriptor.pcie_base_addr      = (uint64_t) (uint32_t) (&data_mid);
+    PCIe_DMA_descriptor.tlp_header_att      = 0;
+    PCIe_DMA_descriptor.transfer_length     = 1024;
+    PCIe_DMA_descriptor.control_byte        = 1;
+    PCIe_DMA_descriptor.next_desc_pointer   = 0;
     //-------------------------------------------------------------
     //  Set parameters for reading descriptor
     //-------------------------------------------------------------
-    rgPCIe_DMA_channel_0_ctrl = 0x2;
-    rgPCIe_DMA_channel_0_sp_l = (uint32_t) (&PCIe_DMA_descriptor);
-    rgPCIe_DMA_channel_0_sp_u = 0;
-    rgPCIe_DMA_channel_0_attr_l = 0;
-    rgPCIe_DMA_channel_0_attr_u = 0;
+    iowrite32 ( 0x2, PCIE_CORE_BASE + PCIe_Core_DMAConfig + PCIe_DMA_channel_0_ctrl  );
+    iowrite32 ((uint32_t) (&PCIe_DMA_descriptor), PCIE_CORE_BASE + PCIe_Core_DMAConfig + PCIe_DMA_channel_0_sp_l  );
+    iowrite32 ( 0x0, PCIE_CORE_BASE + PCIe_Core_DMAConfig + PCIe_DMA_channel_0_sp_u  );
+    iowrite32 ( 0x0, PCIE_CORE_BASE + PCIe_Core_DMAConfig + PCIe_DMA_channel_0_attr_l);
+    iowrite32 ( 0x0, PCIE_CORE_BASE + PCIe_Core_DMAConfig + PCIe_DMA_channel_0_attr_u);
     //  ... and run transaction for writing
-    rgPCIe_DMA_channel_0_ctrl = 0x3;
+    iowrite32 (0x3, PCIE_CORE_BASE + PCIe_Core_DMAConfig + PCIe_DMA_channel_0_ctrl );
     //-------------------------------------------------------------
     //  Wait while transaction complete in our side
     //-------------------------------------------------------------
@@ -96,20 +106,23 @@ uint32_t pcie_dma_transaction ()
     //-------------------------------------------------------------
     //  Create descriptor for PCIe internal DMA controller
     //-------------------------------------------------------------
-    PCIe_DMA_descriptor.axi_base_addr   = (uint32_t) (&data_dst);
-    PCIe_DMA_descriptor.pcie_base_addr  = (uint64_t) (uint32_t) (&data_mid);
-    PCIe_DMA_descriptor.transfer_length = 1024;
-    PCIe_DMA_descriptor.control_byte = 1;
+    PCIe_DMA_descriptor.axi_base_addr       = (uint32_t) (&data_dst);
+    PCIe_DMA_descriptor.axi_addr_phase      = 0;
+    PCIe_DMA_descriptor.pcie_base_addr      = (uint64_t) (uint32_t) (&data_mid);
+    PCIe_DMA_descriptor.tlp_header_att      = 0;
+    PCIe_DMA_descriptor.transfer_length     = 1024;
+    PCIe_DMA_descriptor.control_byte        = 1;
+    PCIe_DMA_descriptor.next_desc_pointer   = 0;
     //-------------------------------------------------------------
     //  Set parameters for reading descriptor
     //-------------------------------------------------------------
-    rgPCIe_DMA_channel_0_ctrl = 0x0;
-    rgPCIe_DMA_channel_0_sp_l = (uint32_t) (&PCIe_DMA_descriptor);
-    rgPCIe_DMA_channel_0_sp_u = 0;
-    rgPCIe_DMA_channel_0_attr_l = 0;
-    rgPCIe_DMA_channel_0_attr_u = 0;
-    //  ... and run transaction for reading
-    rgPCIe_DMA_channel_0_ctrl = 0x1;
+    iowrite32 ( 0x0, PCIE_CORE_BASE + PCIe_Core_DMAConfig + PCIe_DMA_channel_0_ctrl  );
+    iowrite32 ((uint32_t) (&PCIe_DMA_descriptor), PCIE_CORE_BASE + PCIe_Core_DMAConfig + PCIe_DMA_channel_0_sp_l  );
+    iowrite32 ( 0x0, PCIE_CORE_BASE + PCIe_Core_DMAConfig + PCIe_DMA_channel_0_sp_u  );
+    iowrite32 ( 0x0, PCIE_CORE_BASE + PCIe_Core_DMAConfig + PCIe_DMA_channel_0_attr_l);
+    iowrite32 ( 0x0, PCIE_CORE_BASE + PCIe_Core_DMAConfig + PCIe_DMA_channel_0_attr_u);
+    //  ... and run transaction for writing
+    iowrite32 (0x1, PCIE_CORE_BASE + PCIe_Core_DMAConfig + PCIe_DMA_channel_0_ctrl );
     //-------------------------------------------------------------
     //  Wait while transaction complete in our side
     //-------------------------------------------------------------

@@ -18,7 +18,8 @@
 //-----------------------------------------------------------------------------
 #include <stdint.h>
 
-#include <platform/defs_c.h>
+#include <regs/regs_pcie.h>
+#include <platform/devices.h>
 #include <rumboot/io.h>
 
 //-----------------------------------------------------------------------------
@@ -35,7 +36,7 @@
 //-----------------------------------------------------------------------------
 void pcie_soft_reset ()
 {
-    rgSCTL_PCIE_RST = 0x0;
+    iowrite32 (0x0, SCTL_BASE + SCTL_PCIE_RST);
 }
 
 //-----------------------------------------------------------------------------
@@ -81,14 +82,14 @@ uint32_t pcie_simple_turn_on ()
     /*    this PHY settings are only for simulation    */
     /*    and must be removed for real programm        */
     /***************************************************/
-    rgPCIe_Phy_PCS_COM_LOCK_CFG1        = 0x4010;
-    rgPCIe_Phy_PCS_COM_LOCK_CFG2        = 0x0810;
-    rgPCIe_Phy_PCS_GEN3_EIE_LOCK_CFG    = 0x0101;
-    rgPCIe_Phy_PCS_RCV_DET_INH          = 0x000A;
+    iowrite32 (0x4010, PCIE_PHY_BASE + PCIe_Phy_PCS_COM_LOCK_CFG1      );
+    iowrite32 (0x0810, PCIE_PHY_BASE + PCIe_Phy_PCS_COM_LOCK_CFG2      );
+    iowrite32 (0x0101, PCIE_PHY_BASE + PCIe_Phy_PCS_GEN3_EIE_LOCK_CFG  );
+    iowrite32 (0x000A, PCIE_PHY_BASE + PCIe_Phy_PCS_RCV_DET_INH        );
     /***************************************************/
 #endif
 
-    rgSCTL_PCIE_RST = 0x1;
+    iowrite32 (0x1, SCTL_BASE + SCTL_PCIE_RST);
 
 
     //---------------------------------------------------------------
@@ -96,7 +97,7 @@ uint32_t pcie_simple_turn_on ()
     //   Exit with error if emergency timer overflow
     //---------------------------------------------------------------
     timer_cntr = 0;
-    while ((rgSCTL_PCIE_RST & 0x1) == 0)
+    while ((ioread32 (SCTL_BASE + SCTL_PCIE_RST) & 0x1) == 0)
     {
         timer_cntr++;
         if (timer_cntr == PCIE_TEST_LIB_PLL_LOCK_TIMEOUT)
@@ -108,7 +109,7 @@ uint32_t pcie_simple_turn_on ()
     //   Exit with error if emergency timer overflow
     //---------------------------------------------------------------
     timer_cntr = 0;
-    while ((rgPCIe_LocMgmt_i_pl_config_0_reg & 0x1) == 0)
+    while ((ioread32 (PCIE_CORE_BASE + PCIe_Core_LocalMgmt + PCIe_LocMgmt_i_pl_config_0_reg) & 0x1) == 0)
     {
         timer_cntr++;
         if (timer_cntr == PCIE_TEST_LIB_TRAINING_TIMEOUT)
@@ -187,6 +188,7 @@ uint32_t pcie_turn_on_with_options_ep
 )
 {
     uint32_t timer_cntr;
+    uint32_t rdata;
 
 
 #ifndef PCIE_TEST_LIB_SIMSPEEDUP_OFF
@@ -194,10 +196,10 @@ uint32_t pcie_turn_on_with_options_ep
     /*    this PHY settings are only for simulation    */
     /*    and must be removed for real programm        */
     /***************************************************/
-    rgPCIe_Phy_PCS_COM_LOCK_CFG1        = 0x4010;
-    rgPCIe_Phy_PCS_COM_LOCK_CFG2        = 0x0810;
-    rgPCIe_Phy_PCS_GEN3_EIE_LOCK_CFG    = 0x0101;
-    rgPCIe_Phy_PCS_RCV_DET_INH          = 0x000A;
+    iowrite32 (0x4010, PCIE_PHY_BASE + PCIe_Phy_PCS_COM_LOCK_CFG1      );
+    iowrite32 (0x0810, PCIE_PHY_BASE + PCIe_Phy_PCS_COM_LOCK_CFG2      );
+    iowrite32 (0x0101, PCIE_PHY_BASE + PCIe_Phy_PCS_GEN3_EIE_LOCK_CFG  );
+    iowrite32 (0x000A, PCIE_PHY_BASE + PCIe_Phy_PCS_RCV_DET_INH        );
     /***************************************************/
 #endif
 
@@ -205,25 +207,29 @@ uint32_t pcie_turn_on_with_options_ep
     //---------------------------------------------------------------
     //  Disable Link Training
     //---------------------------------------------------------------
-    rgSCTL_PCIE_REG_0 &= 0xFFFFFFEF;
+    rdata = ioread32 (SCTL_BASE + SCTL_PCIE_REG_0) & 0xFFFFFFEF;
+    iowrite32 (rdata, SCTL_BASE + SCTL_PCIE_REG_0);
 
     //---------------------------------------------------------------
     //  Set base options in SCTL
     //---------------------------------------------------------------
     if (usual_settings == 0)
-        rgSCTL_PCIE_REG_0 = (rgSCTL_PCIE_REG_0 & 0xFFFFFFF0) | (sctl_base_opt & 0x0000000D);
+    {
+        rdata = ioread32 (SCTL_BASE + SCTL_PCIE_REG_0) & 0xFFFFFFF0;
+        iowrite32 (rdata | (sctl_base_opt & 0x0000000D), SCTL_BASE + SCTL_PCIE_REG_0);
+    }
 
     //---------------------------------------------------------------
     //  PCIe reset Off
     //---------------------------------------------------------------
-    rgSCTL_PCIE_RST = 0x1;
+    iowrite32 (0x1, SCTL_BASE + SCTL_PCIE_RST);
 
     //---------------------------------------------------------------
     //  Wait until PLL locked
     //   Exit with error if emergency timer overflow
     //---------------------------------------------------------------
     timer_cntr = 0;
-    while ((rgSCTL_PCIE_RST & 0x1) == 0)
+    while ((ioread32 (SCTL_BASE + SCTL_PCIE_RST) & 0x1) == 0)
     {
         timer_cntr++;
         if (timer_cntr == PCIE_TEST_LIB_PLL_LOCK_TIMEOUT)
@@ -239,52 +245,52 @@ uint32_t pcie_turn_on_with_options_ep
         //------------------------------------------------------
         //  Enable access through controller
         //------------------------------------------------------
-        rgPCIe_EP_i_command_status = i_command_status;
+        iowrite32 (i_command_status, PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_EP_i_command_status);
         //------------------------------------------------------
         //  BAR {x} - what high bits of inbound address to mask
         //------------------------------------------------------
-        rgPCIe_EP_i_base_addr_0 = i_base_addr_0;
-        rgPCIe_EP_i_base_addr_1 = i_base_addr_1;
-        rgPCIe_EP_i_base_addr_2 = i_base_addr_2;
-        rgPCIe_EP_i_base_addr_3 = i_base_addr_3;
-        rgPCIe_EP_i_base_addr_4 = i_base_addr_4;
-        rgPCIe_EP_i_base_addr_5 = i_base_addr_5;
+        iowrite32 (i_base_addr_0, PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_EP_i_base_addr_0);
+        iowrite32 (i_base_addr_1, PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_EP_i_base_addr_1);
+        iowrite32 (i_base_addr_2, PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_EP_i_base_addr_2);
+        iowrite32 (i_base_addr_3, PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_EP_i_base_addr_3);
+        iowrite32 (i_base_addr_4, PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_EP_i_base_addr_4);
+        iowrite32 (i_base_addr_5, PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_EP_i_base_addr_5);
         //------------------------------------------------------
         //  Enable BAR {x} for inbound transactions
         //  also set BAR {x} size
         //------------------------------------------------------
-        rgPCIe_LocMgmt_i_pf_0_BAR_config_0_reg = i_pf_0_BAR_config_0_reg;
-        rgPCIe_LocMgmt_i_pf_0_BAR_config_1_reg = i_pf_0_BAR_config_1_reg;
+        iowrite32 (i_pf_0_BAR_config_0_reg, PCIE_CORE_BASE + PCIe_Core_LocalMgmt + PCIe_LocMgmt_i_pf_0_BAR_config_0_reg);
+        iowrite32 (i_pf_0_BAR_config_1_reg, PCIE_CORE_BASE + PCIe_Core_LocalMgmt + PCIe_LocMgmt_i_pf_0_BAR_config_1_reg);
         //------------------------------------------------------
         //  BAR {x} - what to put instead of masked bits
         //------------------------------------------------------
-        rgPCIe_AXI_inregion_ep_bar_0_addr_translation = ep_bar_0_addr_translation;
-        rgPCIe_AXI_inregion_ep_bar_1_addr_translation = ep_bar_1_addr_translation;
-        rgPCIe_AXI_inregion_ep_bar_2_addr_translation = ep_bar_2_addr_translation;
-        rgPCIe_AXI_inregion_ep_bar_3_addr_translation = ep_bar_3_addr_translation;
-        rgPCIe_AXI_inregion_ep_bar_4_addr_translation = ep_bar_4_addr_translation;
-        rgPCIe_AXI_inregion_ep_bar_5_addr_translation = ep_bar_5_addr_translation;
+        iowrite32 (ep_bar_0_addr_translation, PCIE_CORE_BASE + PCIe_Core_AXIConfig + PCIe_AXI_inregion_ep_bar_0_addr_translation);
+        iowrite32 (ep_bar_1_addr_translation, PCIE_CORE_BASE + PCIe_Core_AXIConfig + PCIe_AXI_inregion_ep_bar_1_addr_translation);
+        iowrite32 (ep_bar_2_addr_translation, PCIE_CORE_BASE + PCIe_Core_AXIConfig + PCIe_AXI_inregion_ep_bar_2_addr_translation);
+        iowrite32 (ep_bar_3_addr_translation, PCIE_CORE_BASE + PCIe_Core_AXIConfig + PCIe_AXI_inregion_ep_bar_3_addr_translation);
+        iowrite32 (ep_bar_4_addr_translation, PCIE_CORE_BASE + PCIe_Core_AXIConfig + PCIe_AXI_inregion_ep_bar_4_addr_translation);
+        iowrite32 (ep_bar_5_addr_translation, PCIE_CORE_BASE + PCIe_Core_AXIConfig + PCIe_AXI_inregion_ep_bar_5_addr_translation);
     }
     else
     {
         //------------------------------------------------------
         //  Enable access through controller
         //------------------------------------------------------
-        rgPCIe_EP_i_command_status = 0x07;
+        iowrite32 (0x07, PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_EP_i_command_status);
         //------------------------------------------------------
         //  BAR 1 - what high bits of inbound address to mask
         //------------------------------------------------------
-        rgPCIe_EP_i_base_addr_1 = 0x80000000;
+        iowrite32 (0x80000000, PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_EP_i_base_addr_1);
         //------------------------------------------------------
         //  Enable BAR 0 and BAR 1 for inbound transactions
         //   - maximum BAR size selected - 2 GB
         //   - two BARs cover all memory space
         //------------------------------------------------------
-        rgPCIe_LocMgmt_i_pf_0_BAR_config_0_reg = 0x00009898;
+        iowrite32 (0x00009898, PCIE_CORE_BASE + PCIe_Core_LocalMgmt + PCIe_LocMgmt_i_pf_0_BAR_config_0_reg);
         //------------------------------------------------------
         //  BAR 1 - what to put instead of masked bits
         //------------------------------------------------------
-        rgPCIe_AXI_inregion_ep_bar_1_addr_translation = 0x80000000;
+        iowrite32 (0x80000000, PCIE_CORE_BASE + PCIe_Core_AXIConfig + PCIe_AXI_inregion_ep_bar_1_addr_translation);
     }
 
 
@@ -297,30 +303,31 @@ uint32_t pcie_turn_on_with_options_ep
     //     AXI outbound addr translation setup
     //       - pass 32 bits to bridge, zero none bits
     //------------------------------------------------------
-    rgPCIe_AXI_outregion_0_addr_translation_0 = 0x0000001F;
+    iowrite32 (0x0000001F, PCIE_CORE_BASE + PCIe_Core_AXIConfig + PCIe_AXI_outregion_0_addr_translation_0);
     //------------------------------------------------------
     //     AXI outbound PCIe header descriptor
     //       - configure for memory RW
     //------------------------------------------------------
-    rgPCIe_AXI_outregion_0_header_descriptor_0 = 0x00000002;
+    iowrite32 (0x00000002, PCIE_CORE_BASE + PCIe_Core_AXIConfig + PCIe_AXI_outregion_0_header_descriptor_0);
     //------------------------------------------------------
     //     AXI Outbound Region 0 AXI Region Base Address 0
     //       - none of bits choose region
     //------------------------------------------------------
-    rgPCIe_AXI_outregion_0_region_base_addr = 0x0000001F;
+    iowrite32 (0x0000001F, PCIE_CORE_BASE + PCIe_Core_AXIConfig + PCIe_AXI_outregion_0_region_base_addr);
 
 
     //---------------------------------------------------------------
     //  Enable Link Training
     //---------------------------------------------------------------
-    rgSCTL_PCIE_REG_0 |= 0x00000010;
+    rdata = ioread32 (SCTL_BASE + SCTL_PCIE_REG_0) | 0x00000010;
+    iowrite32 (rdata, SCTL_BASE + SCTL_PCIE_REG_0);
 
     //---------------------------------------------------------------
     //  Wait until training complete
     //   Exit with error if emergency timer overflow
     //---------------------------------------------------------------
     timer_cntr = 0;
-    while ((rgPCIe_LocMgmt_i_pl_config_0_reg & 0x1) == 0)
+    while ((ioread32 (PCIE_CORE_BASE + PCIe_Core_LocalMgmt + PCIe_LocMgmt_i_pl_config_0_reg) & 0x1) == 0)
     {
         timer_cntr++;
         if (timer_cntr == PCIE_TEST_LIB_TRAINING_TIMEOUT)
@@ -391,6 +398,7 @@ uint32_t pcie_turn_on_with_options_rc
 )
 {
     uint32_t timer_cntr;
+    uint32_t rdata;
 
 
 #ifndef PCIE_TEST_LIB_SIMSPEEDUP_OFF
@@ -398,10 +406,10 @@ uint32_t pcie_turn_on_with_options_rc
     /*    this PHY settings are only for simulation    */
     /*    and must be removed for real programm        */
     /***************************************************/
-    rgPCIe_Phy_PCS_COM_LOCK_CFG1        = 0x4010;
-    rgPCIe_Phy_PCS_COM_LOCK_CFG2        = 0x0810;
-    rgPCIe_Phy_PCS_GEN3_EIE_LOCK_CFG    = 0x0101;
-    rgPCIe_Phy_PCS_RCV_DET_INH          = 0x000A;
+    iowrite32 (0x4010, PCIE_PHY_BASE + PCIe_Phy_PCS_COM_LOCK_CFG1      );
+    iowrite32 (0x0810, PCIE_PHY_BASE + PCIe_Phy_PCS_COM_LOCK_CFG2      );
+    iowrite32 (0x0101, PCIE_PHY_BASE + PCIe_Phy_PCS_GEN3_EIE_LOCK_CFG  );
+    iowrite32 (0x000A, PCIE_PHY_BASE + PCIe_Phy_PCS_RCV_DET_INH        );
     /***************************************************/
 #endif
 
@@ -409,27 +417,34 @@ uint32_t pcie_turn_on_with_options_rc
     //---------------------------------------------------------------
     //  Disable Link Training
     //---------------------------------------------------------------
-    rgSCTL_PCIE_REG_0 &= 0xFFFFFFEF;
+    rdata = ioread32 (SCTL_BASE + SCTL_PCIE_REG_0) & 0xFFFFFFEF;
+    iowrite32 (rdata, SCTL_BASE + SCTL_PCIE_REG_0);
 
     //---------------------------------------------------------------
     //  Set base options in SCTL
     //---------------------------------------------------------------
     if (usual_settings == 0)
-        rgSCTL_PCIE_REG_0 = (rgSCTL_PCIE_REG_0 & 0xFFFFFFF0) | (sctl_base_opt & 0x0000000F) | 0x2;
+    {
+        rdata = ioread32 (SCTL_BASE + SCTL_PCIE_REG_0) & 0xFFFFFFF0;
+        iowrite32 (rdata | (sctl_base_opt & 0x0000000F) | 0x2, SCTL_BASE + SCTL_PCIE_REG_0);
+    }
     else
-        rgSCTL_PCIE_REG_0 |= 0x2;
+    {
+        rdata = ioread32 (SCTL_BASE + SCTL_PCIE_REG_0) | 0x2;
+        iowrite32 (rdata, SCTL_BASE + SCTL_PCIE_REG_0);
+    }
 
     //---------------------------------------------------------------
     //  PCIe reset Off
     //---------------------------------------------------------------
-    rgSCTL_PCIE_RST = 0x1;
+    iowrite32 (0x1, SCTL_BASE + SCTL_PCIE_RST);
 
     //---------------------------------------------------------------
     //  Wait until PLL locked
     //   Exit with error if emergency timer overflow
     //---------------------------------------------------------------
     timer_cntr = 0;
-    while ((rgSCTL_PCIE_RST & 0x1) == 0)
+    while ((ioread32 (SCTL_BASE + SCTL_PCIE_RST) & 0x1) == 0)
     {
         timer_cntr++;
         if (timer_cntr == PCIE_TEST_LIB_PLL_LOCK_TIMEOUT)
@@ -441,7 +456,10 @@ uint32_t pcie_turn_on_with_options_rc
     //  Turning high level loopback, if required
     //---------------------------------------------------------------
     if (high_lvl_loopback_mode != 0)
-        rgPCIe_LocMgmt_i_pl_config_0_reg |= 0x80000000;
+    {
+        rdata = ioread32 (PCIE_CORE_BASE + PCIe_Core_LocalMgmt + PCIe_LocMgmt_i_pl_config_0_reg) | 0x80000000;
+        iowrite32 (rdata, PCIE_CORE_BASE + PCIe_Core_LocalMgmt + PCIe_LocMgmt_i_pl_config_0_reg);
+    }
     //---------------------------------------------------------------
     //  Set options in PCIe controller
     //---------------------------------------------------------------
@@ -450,35 +468,35 @@ uint32_t pcie_turn_on_with_options_rc
         //------------------------------------------------------
         //  Enable access through controller
         //------------------------------------------------------
-        rgPCIe_RP_i_command_status = i_command_status;
+        iowrite32 (i_command_status, PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_RP_i_command_status);
         //------------------------------------------------------
         //  BAR {x} - what high bits of inbound address to mask
         //------------------------------------------------------
-        rgPCIe_RP_i_RC_BAR_0 = i_RC_BAR_0;
-        rgPCIe_RP_i_RC_BAR_1 = i_RC_BAR_1;
+        iowrite32 (i_RC_BAR_0, PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_RP_i_RC_BAR_0);
+        iowrite32 (i_RC_BAR_1, PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_RP_i_RC_BAR_1);
         //------------------------------------------------------
         //  Enable BAR {x} for inbound transactions
         //  also set BAR {x} size
         //------------------------------------------------------
-        rgPCIe_LocMgmt_i_rc_BAR_config_reg = i_rc_BAR_config_reg;
+        iowrite32 (i_rc_BAR_config_reg, PCIE_CORE_BASE + PCIe_Core_LocalMgmt + PCIe_LocMgmt_i_rc_BAR_config_reg);
         //------------------------------------------------------
         //  BAR {x} - what to put instead of masked bits
         //------------------------------------------------------
-        rgPCIe_AXI_inregion_rc_bar_0_addr_translation = rc_bar_0_addr_translation;
-        rgPCIe_AXI_inregion_rc_bar_1_addr_translation = rc_bar_1_addr_translation;
+        iowrite32 (rc_bar_0_addr_translation, PCIE_CORE_BASE + PCIe_Core_AXIConfig + PCIe_AXI_inregion_rc_bar_0_addr_translation);
+        iowrite32 (rc_bar_1_addr_translation, PCIE_CORE_BASE + PCIe_Core_AXIConfig + PCIe_AXI_inregion_rc_bar_1_addr_translation);
     }
     else
     {
         //------------------------------------------------------
         //  Enable access through controller
         //------------------------------------------------------
-        rgPCIe_RP_i_command_status = 0x07;
+        iowrite32 (0x07, PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_RP_i_command_status);
         //------------------------------------------------------
         //  Enable BAR 0 for inbound transactions
         //   - BAR size selected - 4 GB
         //   - one BAR 0 cover all memory space
         //------------------------------------------------------
-        rgPCIe_LocMgmt_i_rc_BAR_config_reg = 0x0000011E;
+        iowrite32 (0x0000011E, PCIE_CORE_BASE + PCIe_Core_LocalMgmt + PCIe_LocMgmt_i_rc_BAR_config_reg);
     }
 
 
@@ -491,30 +509,31 @@ uint32_t pcie_turn_on_with_options_rc
     //     AXI outbound addr translation setup
     //       - pass 32 bits to bridge, zero none bits
     //------------------------------------------------------
-    rgPCIe_AXI_outregion_0_addr_translation_0 = 0x0000001F;
+    iowrite32 (0x0000001F, PCIE_CORE_BASE + PCIe_Core_AXIConfig + PCIe_AXI_outregion_0_addr_translation_0);
     //------------------------------------------------------
     //     AXI outbound PCIe header descriptor
     //       - configure for memory RW
     //------------------------------------------------------
-    rgPCIe_AXI_outregion_0_header_descriptor_0 = 0x00000002;
+    iowrite32 (0x00000002, PCIE_CORE_BASE + PCIe_Core_AXIConfig + PCIe_AXI_outregion_0_header_descriptor_0);
     //------------------------------------------------------
     //     AXI Outbound Region 0 AXI Region Base Address 0
     //       - none of bits choose region
     //------------------------------------------------------
-    rgPCIe_AXI_outregion_0_region_base_addr = 0x0000001F;
+    iowrite32 (0x0000001F, PCIE_CORE_BASE + PCIe_Core_AXIConfig + PCIe_AXI_outregion_0_region_base_addr);
 
 
     //---------------------------------------------------------------
     //  Enable Link Training
     //---------------------------------------------------------------
-    rgSCTL_PCIE_REG_0 |= 0x00000010;
+    rdata = ioread32 (SCTL_BASE + SCTL_PCIE_REG_0) | 0x00000010;
+    iowrite32 (rdata, SCTL_BASE + SCTL_PCIE_REG_0);
 
     //---------------------------------------------------------------
     //  Wait until training complete
     //   Exit with error if emergency timer overflow
     //---------------------------------------------------------------
     timer_cntr = 0;
-    while ((rgPCIe_LocMgmt_i_pl_config_0_reg & 0x1) == 0)
+    while ((ioread32 (PCIE_CORE_BASE + PCIe_Core_LocalMgmt + PCIe_LocMgmt_i_pl_config_0_reg) & 0x1) == 0)
     {
         timer_cntr++;
         if (timer_cntr == PCIE_TEST_LIB_TRAINING_TIMEOUT)
@@ -553,10 +572,10 @@ void addr_trans_slv_config
 
     switch (config_type)
     {
-        case 0 : rgADDR_TRANS_SLV_ctrl = 0; break;
+        case 0 : iowrite32 (0, ADDR_TRANS_SLV_BASE + ADDR_TRANS_SLV_ctrl); break;
         case 1 :
         {
-            rgADDR_TRANS_SLV_ctrl = 0;
+            iowrite32 (0, ADDR_TRANS_SLV_BASE + ADDR_TRANS_SLV_ctrl);
             for (uint32_t i = 0; i < 128; i++)
             {
                 *(addr_pointer++)  = (uint32_t) 0x02000000*i | 0x1;
@@ -566,7 +585,7 @@ void addr_trans_slv_config
         }
         case 2 :
         {
-            rgADDR_TRANS_SLV_ctrl = 0;
+            iowrite32 (0, ADDR_TRANS_SLV_BASE + ADDR_TRANS_SLV_ctrl);
             *(addr_pointer++) = (uint32_t) 0x40000000 | 0x1;
             *(addr_pointer++) = (uint32_t) 0x7FFFE000;
             *(addr_pointer++) = (uint32_t) 0xC0000000;
@@ -600,13 +619,13 @@ void addr_trans_mst_config
 
     switch (config_type)
     {
-        case 0 : rgADDR_TRANS_MST_ctrl = 0; break;
+        case 0 : iowrite32 (0, ADDR_TRANS_MST_BASE + ADDR_TRANS_MST_ctrl); break;
         case 1 :
         {
-            rgADDR_TRANS_MST_region0_base = (uint32_t) 0x00000000 | 0x1;
-            rgADDR_TRANS_MST_region0_end =  (uint32_t) 0x3FFFF000;
+            iowrite32 (0x00000000 | 0x1, ADDR_TRANS_MST_BASE + ADDR_TRANS_MST_region0_base);
+            iowrite32 (0x3FFFF000, ADDR_TRANS_MST_BASE + ADDR_TRANS_MST_region0_end);
 
-            rgADDR_TRANS_MST_ctrl = 0;
+            iowrite32 (0, ADDR_TRANS_MST_BASE + ADDR_TRANS_MST_ctrl);
             for (uint32_t i = 0; i < 8; i++)
             {
                 *(addr_pointer++)  = (uint32_t) 0x02000000*i | 0x1;
@@ -651,18 +670,24 @@ void ext_irq_gen_config
     uint32_t Global_IRQ_Mask_l
 )
 {
-    rgEXT_IRQ_GEN_Ctrl              = Ctrl              ;
-    rgEXT_IRQ_GEN_Global_IRQ_Mask_l = Global_IRQ_Mask_l ;
-    rgEXT_IRQ_GEN_Global_IRQ_Mask_h = Global_IRQ_Mask_h ;
-    if (Ctrl & 0x2)
-        rgPCIe_EP_i_msix_ctrl |= 0x80000000;
-    else
-        rgPCIe_EP_i_msix_ctrl &= ~0x80000000;
-    if (Ctrl & 0x4)
-        rgPCIe_EP_i_msix_ctrl |= 0x40000000;
-    else
-        rgPCIe_EP_i_msix_ctrl &= ~0x40000000;
+    uint32_t rdata;
 
+    iowrite32 (Ctrl             , EXT_IRQ_GEN_BASE + EXT_IRQ_GEN_Ctrl             );
+    iowrite32 (Global_IRQ_Mask_l, EXT_IRQ_GEN_BASE + EXT_IRQ_GEN_Global_IRQ_Mask_l);
+    iowrite32 (Global_IRQ_Mask_h, EXT_IRQ_GEN_BASE + EXT_IRQ_GEN_Global_IRQ_Mask_h);
+    
+    rdata = ioread32 (PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_EP_i_msix_ctrl);
+    if (Ctrl & 0x2)
+        iowrite32 (rdata | 0x80000000, PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_EP_i_msix_ctrl);
+    else
+        iowrite32 (rdata & ~0x80000000, PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_EP_i_msix_ctrl);
+    
+    rdata = ioread32 (PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_EP_i_msix_ctrl);
+    if (Ctrl & 0x4)
+        iowrite32 (rdata | 0x40000000, PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_EP_i_msix_ctrl);
+    else
+        iowrite32 (rdata & ~0x40000000, PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_EP_i_msix_ctrl);
+    
     volatile uint32_t* addr_pointer = (uint32_t*) (EXT_IRQ_GEN_BASE + EXT_IRQ_GEN_v0_Message_Address);
     for (int i = 0; i < 64; i++)
     {
@@ -710,7 +735,7 @@ uint32_t pcie_mirror_tests_setup ()
     
     iowrite32 (0x60000000 | 0x1, ADDR_TRANS_MST_BASE + ((2 * 3 + 1) << 2)) ;  //  base address, enable
     iowrite32 (0x6FFFFFFF      , ADDR_TRANS_MST_BASE + ((2 * 3 + 2) << 2)) ;  //  end address
-    iowrite32 (0x50000000      , ADDR_TRANS_MST_BASE + ((2 * 3 + 3) << 2)) ;  //  translate address
+    iowrite32 (0x60000000      , ADDR_TRANS_MST_BASE + ((2 * 3 + 3) << 2)) ;  //  translate address
     
     iowrite32 (0, ADDR_TRANS_MST_BASE);
     

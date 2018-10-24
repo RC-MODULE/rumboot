@@ -4,7 +4,7 @@
 #include <regs/regs_mdio.h>
 #include <rumboot/irq.h>
 #include <rumboot/platform.h>
-#include <rumboot/bootheader.h>
+
 #include <platform/devices.h>
 #include <platform/interrupts.h>
 

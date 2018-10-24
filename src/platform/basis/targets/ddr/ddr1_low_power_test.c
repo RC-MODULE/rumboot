@@ -33,6 +33,8 @@
 #include <platform/devices.h>
 #include <devices/sp804.h>
 
+#include <regs/regs_ddr.h>
+
 #define irq_cntr_ptr 0x00050000
 #define irq_flag_ptr 0x00050008
 

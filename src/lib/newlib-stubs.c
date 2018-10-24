@@ -138,7 +138,7 @@ caddr_t _sbrk(int incr)
 caddr_t _sbrk(int incr)
 {
 	char *prev_heap_end;
-	struct rumboot_heap *hp = &rumboot_platform_runtime_info.heaps[0];
+	struct rumboot_heap *hp = &rumboot_platform_runtime_info->heaps[0];
 
 
 	if ((hp->pos + incr) > hp->end) {

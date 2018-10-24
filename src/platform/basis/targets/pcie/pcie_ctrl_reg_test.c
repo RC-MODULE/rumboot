@@ -7,36 +7,42 @@
 //    - Chech, that RW register work correctly
 //
 //-----------------------------------------------------------------------------
-#include <platform/defs_c.h>
+#include <stdint.h>
+#include <stdlib.h>
+
+#include <rumboot/io.h>
+#include <rumboot/pcie_test_lib.h>
+#include <regs/regs_pcie.h>
+#include <platform/devices.h>
 
 void pcie_reset ()
 {
-    rgSCTL_PCIE_RST = 0x0;
+    iowrite32 (0x0, SCTL_BASE + SCTL_PCIE_RST);
 }
 
 int check_registers ()
 {
-    if ((rgSCTL_PCIE_REG_0 != 0x00000039) | (rgSCTL_PCIE_REG_1 != 0x00000000))
+    if ((ioread32 (SCTL_BASE + SCTL_PCIE_REG_0) != 0x00000039) | (ioread32 (SCTL_BASE + SCTL_PCIE_REG_1) != 0x00000000))
         return -1;
 
-    rgSCTL_PCIE_REG_0 = 0x00000000 ;
-    rgSCTL_PCIE_REG_1 = 0x00000000 ;
-    if ((rgSCTL_PCIE_REG_0 != 0x00000000) | (rgSCTL_PCIE_REG_1 != 0x00000000))
+    iowrite32 (0x00000000, SCTL_BASE + SCTL_PCIE_REG_0);
+    iowrite32 (0x00000000, SCTL_BASE + SCTL_PCIE_REG_1);
+    if ((ioread32 (SCTL_BASE + SCTL_PCIE_REG_0) != 0x00000000) | (ioread32 (SCTL_BASE + SCTL_PCIE_REG_1) != 0x00000000))
         return -1;
 
-    rgSCTL_PCIE_REG_1 = 0xFFFFFFFF ;
-    rgSCTL_PCIE_REG_0 = 0xFFFFFFFF ;
-    if ((rgSCTL_PCIE_REG_0 != 0x04C03EFF) | (rgSCTL_PCIE_REG_1 != 0x00000004))
+    iowrite32 (0xFFFFFFFF, SCTL_BASE + SCTL_PCIE_REG_1);
+    iowrite32 (0xFFFFFFFF, SCTL_BASE + SCTL_PCIE_REG_0);
+    if ((ioread32 (SCTL_BASE + SCTL_PCIE_REG_0) != 0x04C03EFF) | (ioread32 (SCTL_BASE + SCTL_PCIE_REG_1) != 0x00000004))
         return -1;
 
-    rgSCTL_PCIE_REG_1 = 0x55555555 ;
-    rgSCTL_PCIE_REG_0 = 0x55555555 ;
-    if ((rgSCTL_PCIE_REG_1 != 0x00000004) | (rgSCTL_PCIE_REG_0 != 0x04401455))
+    iowrite32 (0x55555555, SCTL_BASE + SCTL_PCIE_REG_1);
+    iowrite32 (0x55555555, SCTL_BASE + SCTL_PCIE_REG_0);
+    if ((ioread32 (SCTL_BASE + SCTL_PCIE_REG_1) != 0x00000004) | (ioread32 (SCTL_BASE + SCTL_PCIE_REG_0) != 0x04401455))
         return -1;
 
-    rgSCTL_PCIE_REG_0 = 0xAAAAAAAA ;
-    rgSCTL_PCIE_REG_1 = 0xAAAAAAAA ;
-    if ((rgSCTL_PCIE_REG_1 != 0x00000000) | (rgSCTL_PCIE_REG_0 != 0x00802AAA))
+    iowrite32 (0xAAAAAAAA, SCTL_BASE + SCTL_PCIE_REG_0);
+    iowrite32 (0xAAAAAAAA, SCTL_BASE + SCTL_PCIE_REG_1);
+    if ((ioread32 (SCTL_BASE + SCTL_PCIE_REG_1) != 0x00000000) | (ioread32 (SCTL_BASE + SCTL_PCIE_REG_0) != 0x00802AAA))
         return -1;
 
     return 0;

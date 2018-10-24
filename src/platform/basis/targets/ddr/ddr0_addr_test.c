@@ -18,6 +18,7 @@
 //-----------------------------------------------------------------------------
 
 #include <rumboot/ddr_test_lib.h>
+#include <platform/devices.h>
 
 uint32_t ddr_addr_shift1_test ()
 {

@@ -22,6 +22,8 @@
 #include <rumboot/pcie_test_lib.h>
 #include <rumboot/ddr_test_lib.h>
 #include <rumboot/io.h>
+#include <regs/regs_pcie.h>
+#include <platform/devices.h>
 
 #if short_test_for_sim == 1
 #define check_amount 0x80
@@ -39,8 +41,8 @@
 void at_slv_mst_config ()
 {
     
-    rgADDR_TRANS_SLV_ctrl = 0;
-    rgADDR_TRANS_MST_ctrl = 0;
+    iowrite32 (0x0, ADDR_TRANS_SLV_BASE + ADDR_TRANS_SLV_ctrl);
+    iowrite32 (0x0, ADDR_TRANS_MST_BASE + ADDR_TRANS_MST_ctrl);
     
     for (volatile uint32_t i = 0; i < 128; i++)
     {

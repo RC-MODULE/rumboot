@@ -1,0 +1,112 @@
+#iss_ppc/pkg/bin/iss470.icf, iss_460_code, iss_460_1.0 11/16/09 10:38:04
+################################################################################
+# The LOCAL_MEM series of options specifies ISS local memory.  Up to 32 local
+# memory regions can be specified.  The memory regions must not overlap.
+# Valid values for address range from 0x0 to 0xFFFFFF00.  36 bit address can
+# be specified only when simulating 440 or 460 processor using the address
+# extension "MEM0_START_EXT" keyword.  Valid values for address extension
+# range from 0x0 to 0xF.  Local memory length ranges from 0x100 to 0xFFFFFF00,
+# and must be a multiple of 0x100.  Valid values for speed range from 0 to
+# 4294967295.  Default values for this option specify 1MB of memory at address
+# 1MBs of memory at address 0xFFF00000.  A keyword value of "none" indicates
+# that no local memory regions should be configured.
+# Following example represents the default values.
+# Example: MEM0_START_ADDR=0x00000000
+#      MEM0_START_EXT=0x00000000
+#          MEM0_LEN=0x100000
+#          MEM0_SPEED=0x0
+#          MEM1_START_ADDR=0xFFF00000
+#      MEM1_START_EXT=0x00000000
+#          MEM1_LEN=0x100000
+#          MEM1_SPEED=0x0
+################################################################################
+# ROM
+MEM0_START_ADDR=0xFFFF0000
+MEM0_START_EXT=0x3FF
+MEM0_LEN=0x00010000
+MEM0_SPEED=0
+# ROM mirror
+MEM1_START_ADDR=0xFFFF0000
+MEM1_START_EXT=0x01F
+MEM1_LEN=0x00010000
+MEM1_SPEED=0
+# IM0
+MEM2_START_ADDR=0x80000000
+MEM2_START_EXT=0x010
+MEM2_LEN=0x00020000
+MEM2_SPEED=0
+# IM1
+MEM3_START_ADDR=0xC0000000
+MEM3_START_EXT=0x020
+MEM3_LEN=0x00020000
+MEM3_SPEED=0
+# IM2
+MEM4_START_ADDR=0xC0040000
+MEM4_START_EXT=0x020
+MEM4_LEN=0x00020000
+MEM4_SPEED=0
+# SRAM0
+MEM5_START_ADDR=0x00000000
+MEM5_START_EXT=0x000
+MEM5_LEN=0x00100000
+MEM5_SPEED=0
+# SDRAM
+MEM6_START_ADDR=0x20000000
+MEM6_START_EXT=0x000
+MEM6_LEN=0x04000000
+MEM6_SPEED=0
+# SSRAM
+MEM7_START_ADDR=0x40000000
+MEM7_START_EXT=0x000
+MEM7_LEN=0x00400000
+MEM7_SPEED=0
+# PLRAM
+MEM8_START_ADDR=0x50000000
+MEM8_START_EXT=0x000
+MEM8_LEN=0x00400000
+MEM8_SPEED=0
+# SRAM1
+MEM9_START_ADDR=0x60000000
+MEM9_START_EXT=0x000
+MEM9_LEN=0x00400000
+MEM9_SPEED=0
+# NOR
+MEM10_START_ADDR=0x70000000
+MEM10_START_EXT=0x000
+MEM10_LEN=0x00800000
+MEM10_SPEED=0
+# NOR mirror
+MEM11_START_ADDR=0x7F800000
+MEM11_START_EXT=0x000
+MEM11_LEN=0x00800000
+MEM11_SPEED=0
+################################################################################
+# The INTERRUPT_CTRL_TYPE option specifies the type of interrupt controller
+# modeled by the ISS.  If INTERRUPT_CTRL_TYPE is set to 0 single UIC controller
+# (found in PPC405GP) will be modeled.  If INTERRUPT_CTRL_TYPE is set to 1
+# dual cascaded UIC controller (found in PPC440GP) will be modeled.  If
+# INTERRUPT_CTRL_TYPE is set to 2 an MPIC controller will be modeled.  Valid
+# values range from 0 to 2.  Default value: 0.
+# Example: INTERRUPT_CTRL_TYPE=2.
+################################################################################
+INTERRUPT_CTRL_TYPE=2
+################################################################################
+# The CONNECT_TO_DEBUGGER option specifies if the ISS will connenct to a
+# RISCWatch debugger.  Valid values are no and yes.  Default value: yes.
+# Example: CONNECT_TO_DEBUGGER=yes.
+################################################################################
+CONNECT_TO_DEBUGGER=yes
+################################################################################
+# The START_PROCESSOR series of options indicate start of a definition for a
+# specified processor core (405/440/460).  At lease a single START_PROCESSOR
+# option must be specified.  Up to 16 START_PROCESSOR options can be specified.
+# Processor specicic options that follow the START_PROCESSOR option modify
+# the default processor statup options.  The START_PROCESSOR series of options
+# do not take option parameters.  There is no default value.
+# Example: START_PROCESSOR=440.
+################################################################################
+START_PROCESSOR=470
+FP_PRESENT=yes
+L2_TYPE=plb6
+#TIMER_CLK_PERIOD=1
+#MPIC_ADDR=0xFFC00000

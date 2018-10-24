@@ -1,6 +1,8 @@
 #ifndef RUMBOOT_H
 #define RUMBOOT_H
 
+#include <stdbool.h>
+
 
 /**
  *
@@ -73,6 +75,8 @@ void *rumboot_malloc_from_heap_aligned(int heap_id, size_t sz, int align);
  */
 void *rumboot_malloc_from_heap_misaligned(int heap_id, size_t length, int align, int misalign);
 
+void rumboot_malloc_update_heaps(bool save);
+
 /**
  * Allocates memory from default heap
  *
@@ -130,6 +134,11 @@ int rumboot_malloc_num_heaps();
  * @return         heap size in bytes
  */
 uint32_t rumboot_malloc_heap_length(int heap_id);
+
+
+void *rumboot_malloc_from_named_heap_misaligned(const char *heap_name, size_t length, int align, int misalign);
+void *rumboot_malloc_from_named_heap(const char *heap_name, size_t length);
+void *rumboot_malloc_from_named_heap_aligned(const char *heap_name, size_t sz, int align);
 
 /**
 * @}

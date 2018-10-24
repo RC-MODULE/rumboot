@@ -2,17 +2,16 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <regs/regs_mdio.h>
-#include <devices/gpio.h>
+#include <regs/regs_gpio_rcm.h>
 #include <rumboot/io.h>
 #include <rumboot/timer.h>
 #include <rumboot/printf.h>
 #include <rumboot/irq.h>
 #include <rumboot/platform.h>
-#include <rumboot/bootheader.h>
 #include <platform/devices.h>
 #include <platform/interrupts.h>
 
-#define TIMEOUT_MDIO_ETH_PHY 24
+#define TIMEOUT_MDIO_ETH_PHY 100
 
 
 static void handler_mdio(int irq, void *arg)
@@ -28,6 +27,12 @@ static void handler_mdio(int irq, void *arg)
 
 bool mdio_phy_intrp_test(uint32_t num_mdio)
 {
+    //GPIO1 --> outputs
+    iowrite32(0xFFFFFFFF, GPIO1_BASE + GPIO_PAD_DIR);
+
+    //GPIO1 --> "1"
+    iowrite32(0xFFFFFFFF, GPIO1_BASE + GPIO_WR_DATA_SET1);
+
     //Switch MGPIO PADS to MDIO
     iowrite32(0x00000000, MGPIO0_BASE + GPIO_SWITCH_SOURCE);
     iowrite32(0x00000000, MGPIO1_BASE + GPIO_SWITCH_SOURCE);
@@ -41,6 +46,8 @@ bool mdio_phy_intrp_test(uint32_t num_mdio)
     //mdc enable
     iowrite32(1 << MDC_EN, MDIO0_BASE + 0x1000*num_mdio + MDIO_EN);
 
+    //GPIO1 --> "0"
+    iowrite32(0x00000000, GPIO1_BASE + GPIO_WR_DATA_SET0);
 
     //Wait intrp from PHY
     uint32_t read_data=ioread32(MDIO0_BASE + 0x1000*num_mdio + MDIO_STATUS);
@@ -111,7 +118,7 @@ bool mdio_test(uint32_t num_mdio)
         return 0;
     }
     if (ioread32(MDIO0_BASE + 0x1000*num_mdio + MDIO_CONTROL) != MDIO_CONTROL_RESET){
-        rumboot_printf("MDIO_PHY_IRQ_STATE reset value is wrong!\n");
+        rumboot_printf("MDIO_CONTROL reset value is wrong!\n");
         return 0;
     }
     if (ioread32(MDIO0_BASE + 0x1000*num_mdio + MDIO_ETH_RST_N) != MDIO_ETH_RST_N_RESET){

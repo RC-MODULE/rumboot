@@ -13,8 +13,9 @@ rumboot_add_configuration(
   SNAPSHOT default
   LDS basis/rom.lds
   LDFLAGS "-e rumboot_reset_handler"
-  CFLAGS -DRUMBOOT_ONLY_STACK -DRUMBOOT_PRINTF_ACCEL
+  CFLAGS -DRUMBOOT_ONLY_STACK
   PREFIX ROM
+  TIMEOUT_CTEST 200000
   FEATURES ROMGEN
 )
 
@@ -23,8 +24,9 @@ rumboot_add_configuration(
   SNAPSHOT default
   LDS basis/rom-with-data.lds
   LDFLAGS "-e rumboot_reset_handler"
-  CFLAGS -DRUMBOOT_PRINTF_ACCEL -DRUMBOOT_DATA_FROM_ROM
+  CFLAGS  -DRUMBOOT_DATA_FROM_ROM
   PREFIX DROM
+  TIMEOUT_CTEST 1000
   FEATURES ROMGEN COVERAGE
 )
 
@@ -35,9 +37,33 @@ rumboot_add_configuration (
   PREFIX iram
   LDFLAGS -Wl,--start-group -lgcc -lc -lm -Wl,--end-group "-e rumboot_main"
   FILES ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c
-  CFLAGS -DRUMBOOT_PRINTF_ACCEL
+  CFLAGS
   BOOTROM bootrom-stub
-  FEATURES LUA COVERAGE
+  TIMEOUT_CTEST 200000
+  FEATURES LUA COVERAGE PACKIMAGE
+  LOAD IM0BIN SELF
+)
+
+rumboot_add_configuration (
+    IRAM_SPL
+    CONFIGURATION IRAM
+    PREFIX spl
+    LDFLAGS -Wl,--start-group -lgcc -lc -lm -Wl,--end-group "-e main"
+    CFLAGS  -DRUMBOOT_NOINIT
+    FEATURES COVERAGE PACKIMAGE
+)
+
+rumboot_add_configuration (
+  IRAM_WITH_DDR
+  LDS basis/iram.lds
+  PREFIX iram_with_ddr
+  LDFLAGS -Wl,--start-group -lgcc -lc -lm -Wl,--end-group "-e rumboot_main"
+  FILES ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c
+  CFLAGS  -DRUMBOOT_BASIS_ENABLE_DDR
+  BOOTROM bootrom-stub-mirror
+  TIMEOUT_CTEST 200000
+  FEATURES LUA COVERAGE PACKIMAGE
+  LOAD IM0BIN SELF
 )
 
 rumboot_add_configuration (
@@ -46,9 +72,11 @@ rumboot_add_configuration (
   PREFIX iram-mirror
   LDFLAGS -Wl,--start-group -lgcc -lc -lm -Wl,--end-group "-e rumboot_main"
   FILES ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c
-  CFLAGS -DRUMBOOT_PRINTF_ACCEL -DRUMBOOT_BASIS_ENABLE_MIRROR -DRUMBOOT_BASIS_ENABLE_DDR
+  CFLAGS  -DRUMBOOT_BASIS_ENABLE_MIRROR -DRUMBOOT_BASIS_ENABLE_DDR
   BOOTROM bootrom-stub-mirror
-  FEATURES LUA COVERAGE
+  TIMEOUT_CTEST 200000
+  FEATURES LUA COVERAGE PACKIMAGE
+  LOAD IM0BIN SELF
 )
 
 rumboot_add_configuration(
@@ -72,12 +100,78 @@ rumboot_add_configuration(
   PREFIX integration
   BOOTROM bootrom-lprobe-stub
   DEPENDS spl-ok spl
+  FEATURES PACKIMAGE
 )
 
+include(${CMAKE_SOURCE_DIR}/cmake/bootrom.cmake)
 
 ### Add tests here ###
 #WARNING! Full regression automatically includes all tests from the short ones
 macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
+
+  rumboot_bootrom_add_components(IRAM_SPL ROM)
+
+
+  rumboot_bootrom_unit_test(
+      ID 0
+      TAG sdio0
+      MEMTAG SD0_BOOT_IMAGE
+      TAGOFFSET 0
+      IRUN_FLAGS +select_sdio0 +BOOT_SD_CD=0
+  )
+
+  rumboot_bootrom_unit_test(
+      ID 1
+      TAG spi0_cs0
+      MEMTAG SPI0_CONF
+      TAGOFFSET 0
+  )
+
+  rumboot_bootrom_unit_test(
+      ID 2
+      TAG spi0_cs1
+      MEMTAG SPI0_CONF
+      TAGOFFSET 1
+  )
+
+  rumboot_bootrom_unit_test(
+      ID 3
+      TAG i2c0_50
+      MEMTAG I2C0_CONF
+      TAGOFFSET 0
+  )
+
+  rumboot_bootrom_unit_test(
+      ID 4
+      TAG i2c0_51
+      MEMTAG I2C0_CONF
+      TAGOFFSET 1
+  )
+
+  rumboot_bootrom_unit_test(
+      ID 5
+      TAG i2c0_52
+      MEMTAG I2C0_CONF
+      TAGOFFSET 2
+  )
+
+  rumboot_bootrom_unit_test(
+      ID 6
+      TAG i2c0_53
+      MEMTAG I2C0_CONF
+      TAGOFFSET 3
+  )
+
+  rumboot_bootrom_integration_test(ROM
+      NAME "sdio-ok"
+      IRUN_FLAGS +BOOT_SD_CD=0 +select_sdio0
+      LOAD
+        SD0_BOOT_IMAGE spl-ok
+        SPI0_CONF spl-fail,spl-fail
+        HOSTMOCK  spl-fail
+  )
+
+
   add_rumboot_target_dir(simple-rom/
     CONFIGURATION ROM
     PREFIX simple-rom)
@@ -91,30 +185,43 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     PREFIX simple-iram-mirror)
 
 
+    add_rumboot_target_dir(sprint/
+        CONFIGURATION IRAM
+        PREFIX simple-iram
+        TESTGROUP sprint
+      )
+
+    add_rumboot_target_dir(sprint/
+        CONFIGURATION IRAM_MIRROR
+        PREFIX simple-iram-mirror
+        TESTGROUP sprint
+    )
+
+
   add_rumboot_target_dir(jenkins/
       CONFIGURATION ROM
       PREFIX jenkins
       TESTGROUP short
     )
 
-    add_rumboot_target_dir(irq/
+    add_rumboot_target_dir(common/irq/
       CONFIGURATION ROM
       PREFIX irq-rom
       TESTGROUP short
     )
 
-    add_rumboot_target_dir(irq/
+    add_rumboot_target_dir(common/irq/
       CONFIGURATION IRAM
       PREFIX irq-iram
       TESTGROUP short
     )
 
-    add_rumboot_target_dir(irq/
+    add_rumboot_target_dir(common/irq/
       CONFIGURATION IRAM_MIRROR
       PREFIX irq-iram-mirror
     )
 
-    add_rumboot_target_dir(lua/
+    add_rumboot_target_dir(common/lua/
       CONFIGURATION LPROBE_CPU
       PREFIX lprobe-cpu
     )
@@ -135,7 +242,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       CFLAGS -DI2C_BASE=I2C1_BASE -DI2C_IRQ=I2C1_IRQ
       PREFIX i2c-1
     )
-	
+
 	 add_rumboot_target_dir(i2c/
       CONFIGURATION IRAM_MIRROR
       CFLAGS -DI2C_BASE=I2C0_BASE -DI2C_IRQ=I2C0_IRQ
@@ -156,23 +263,219 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     )
 	 add_rumboot_target_dir(i2c/multimaster
       CONFIGURATION IRAM_MIRROR
-	  CFLAGS -DI2C_BASE=I2C0_BASE
-	  IRUN_FLAGS +i2c_single_bus
+	    CFLAGS -DI2C_BASE=I2C0_BASE
+	    IRUN_FLAGS +i2c_single_bus
       PREFIX multimaster-mirror
     )
 	add_rumboot_target_dir(arinc/
-      CONFIGURATION IRAM     
+      CONFIGURATION IRAM
       PREFIX arinc
+      TESTGROUP sprint
     )
+
 	add_rumboot_target_dir(arinc/
       CONFIGURATION IRAM_MIRROR
       PREFIX arinc-mirror
     )
-	
-    add_rumboot_target_dir(common/spl-stubs/
+
+	add_rumboot_target_dir(arinc/arinc_ddr/
+      CONFIGURATION IRAM_WITH_DDR
+      CFLAGS -DTX_FREQ=tx_freq_100 -DRX_FREQ=rx_freq_100 -Dheap_0=2 -Dheap_1=0
+      PREFIX arinc_ddr_freq_100_ddr0_IM0
+    )
+	add_rumboot_target_dir(arinc/arinc_ddr/
+       CONFIGURATION IRAM_WITH_DDR
+      CFLAGS -DTX_FREQ=tx_freq_100 -DRX_FREQ=rx_freq_100 -Dheap_0=2 -Dheap_1=1
+      PREFIX arinc_ddr_freq_100_ddr0_IM1
+    )
+	add_rumboot_target_dir(arinc/arinc_ddr/
+       CONFIGURATION IRAM_WITH_DDR
+      CFLAGS -DTX_FREQ=tx_freq_100 -DRX_FREQ=rx_freq_100 -Dheap_0=2 -Dheap_1=2
+      PREFIX arinc_ddr_freq_100_ddr0_ddr0
+    )
+	add_rumboot_target_dir(arinc/arinc_ddr/
+       CONFIGURATION IRAM_WITH_DDR
+      CFLAGS -DTX_FREQ=tx_freq_100 -DRX_FREQ=rx_freq_100 -Dheap_0=2 -Dheap_1=3
+      PREFIX arinc_ddr_freq_100_ddr0_ddr1
+    )
+
+	add_rumboot_target_dir(arinc/arinc_ddr/
+       CONFIGURATION IRAM_WITH_DDR
+      CFLAGS -DTX_FREQ=tx_freq_100 -DRX_FREQ=rx_freq_100 -Dheap_0=3 -Dheap_1=0
+      PREFIX arinc_ddr_freq_100_ddr1_IM0
+    )
+	add_rumboot_target_dir(arinc/arinc_ddr/
+       CONFIGURATION IRAM_WITH_DDR
+      CFLAGS -DTX_FREQ=tx_freq_100 -DRX_FREQ=rx_freq_100 -Dheap_0=3 -Dheap_1=1
+      PREFIX arinc_ddr_freq_100_ddr1_IM1
+    )
+	add_rumboot_target_dir(arinc/arinc_ddr/
+       CONFIGURATION IRAM_WITH_DDR
+      CFLAGS -DTX_FREQ=tx_freq_100 -DRX_FREQ=rx_freq_100 -Dheap_0=3 -Dheap_1=2
+      PREFIX arinc_ddr_freq_100_ddr1_ddr0
+    )
+	add_rumboot_target_dir(arinc/arinc_ddr/
+      CONFIGURATION IRAM_WITH_DDR
+      CFLAGS -DTX_FREQ=tx_freq_100 -DRX_FREQ=rx_freq_100 -Dheap_0=3 -Dheap_1=3
+      PREFIX arinc_ddr_freq_100_ddr1_ddr1
+    )
+
+	add_rumboot_target_dir(arinc/arinc_ddr
+      CONFIGURATION IRAM_MIRROR
+      CFLAGS -DTX_FREQ=tx_freq_12_5 -DRX_FREQ=rx_freq_12_5 -Dheap_0=4 -Dheap_1=4
+      PREFIX arinc-mirror_arinc_ddr_freq_12_5_PCI_0
+    )
+
+	add_rumboot_target_dir(arinc/arinc_ddr
+      CONFIGURATION IRAM_MIRROR
+      CFLAGS -DTX_FREQ=tx_freq_50 -DRX_FREQ=rx_freq_50 -Dheap_0=5 -Dheap_1=5
+      PREFIX arinc-mirror_arinc_ddr_freq_50_PCI_1
+    )
+
+	add_rumboot_target_dir(arinc/arinc_ddr
+      CONFIGURATION IRAM_MIRROR
+      CFLAGS -DTX_FREQ=tx_freq_100 -DRX_FREQ=rx_freq_100 -Dheap_0=4 -Dheap_1=5
+      PREFIX arinc-mirror_arinc_ddr_freq_100_PCI_0_PCI_1
+    )
+	add_rumboot_target_dir(arinc/arinc_ddr
+      CONFIGURATION IRAM_MIRROR
+      CFLAGS -DTX_FREQ=tx_freq_100 -DRX_FREQ=rx_freq_100 -Dheap_0=4 -Dheap_1=5
+      PREFIX arinc-mirror_arinc_ddr_freq_100_PCI_1_PCI_0
+    )
+	add_rumboot_target_dir(arinc/freq/
       CONFIGURATION IRAM
-      PREFIX spl
-      FEATURES STUB
+      CFLAGS -DTX_FREQ=tx_freq_100 -DRX_FREQ=rx_freq_100 -Dheap_0=0 -Dheap_1=0
+      PREFIX arinc_freq_100_IM0
+    )
+	add_rumboot_target_dir(arinc/freq/
+      CONFIGURATION IRAM_WITH_DDR
+      CFLAGS -DTX_FREQ=tx_freq_100 -DRX_FREQ=rx_freq_100 -Dheap_0=0 -Dheap_1=2
+      PREFIX arinc_freq_100_IM0_ddr0
+    )
+	add_rumboot_target_dir(arinc/freq/
+      CONFIGURATION IRAM_WITH_DDR
+      CFLAGS -DTX_FREQ=tx_freq_100 -DRX_FREQ=rx_freq_100 -Dheap_0=0 -Dheap_1=3
+      PREFIX arinc_freq_100_IM0_ddr1
+    )
+
+	add_rumboot_target_dir(arinc/freq/
+      CONFIGURATION IRAM_WITH_DDR
+      CFLAGS -DTX_FREQ=tx_freq_100 -DRX_FREQ=rx_freq_100 -Dheap_0=1 -Dheap_1=0
+      PREFIX arinc_freq_100_IM1_IM0
+    )
+	add_rumboot_target_dir(arinc/freq/
+      CONFIGURATION IRAM_WITH_DDR
+      CFLAGS -DTX_FREQ=tx_freq_100 -DRX_FREQ=rx_freq_100 -Dheap_0=1 -Dheap_1=2
+      PREFIX arinc_freq_100_IM1_ddr0
+    )
+	add_rumboot_target_dir(arinc/freq/
+      CONFIGURATION IRAM_WITH_DDR
+      CFLAGS -DTX_FREQ=tx_freq_100 -DRX_FREQ=rx_freq_100 -Dheap_0=1 -Dheap_1=3
+      PREFIX arinc_freq_100_IM1_ddr1
+    )
+
+	add_rumboot_target_dir(arinc/freq/
+      CONFIGURATION IRAM_MIRROR
+      CFLAGS -DTX_FREQ=tx_freq_100 -DRX_FREQ=rx_freq_100 -Dheap_0=4 -Dheap_1=4
+      PREFIX arinc_freq_100_PCI_0
+    )
+	add_rumboot_target_dir(arinc/freq/
+      CONFIGURATION IRAM_MIRROR
+      CFLAGS -DTX_FREQ=tx_freq_100 -DRX_FREQ=rx_freq_100 -Dheap_0=5 -Dheap_1=5
+      PREFIX arinc_freq_100_PCI_1
+    )
+	add_rumboot_target_dir(arinc/freq/
+      CONFIGURATION IRAM
+      CFLAGS -DTX_FREQ=tx_freq_50 -DRX_FREQ=rx_freq_50 -Dheap_0=1 -Dheap_1=1
+      PREFIX arinc_freq_50_IM1
+    )
+
+	add_rumboot_target_dir(arinc/freq/
+      CONFIGURATION IRAM_WITH_DDR
+      CFLAGS -DTX_FREQ=tx_freq_12_5 -DRX_FREQ=rx_freq_12_5 -Dheap_0=1 -Dheap_1=2
+      PREFIX arinc_freq_12_5_IM1_ddr0
+    )
+	add_rumboot_target_dir(arinc/freq/
+      CONFIGURATION IRAM_WITH_DDR
+      CFLAGS -DTX_FREQ=tx_freq_12_5 -DRX_FREQ=rx_freq_12_5 -Dheap_0=1 -Dheap_1=3
+      PREFIX arinc_freq_12_5_IM1_ddr1
+    )
+	add_rumboot_target_dir(arinc/freq
+      CONFIGURATION IRAM_MIRROR
+      CFLAGS -DTX_FREQ=tx_freq_12_5 -DRX_FREQ=rx_freq_12_5 -Dheap_0=4 -Dheap_1=4
+      PREFIX arinc-mirror_freq_12_5
+    )
+
+	add_rumboot_target_dir(arinc/freq
+      CONFIGURATION IRAM_MIRROR
+      CFLAGS -DTX_FREQ=tx_freq_50 -DRX_FREQ=rx_freq_50 -Dheap_0=5 -Dheap_1=5
+      PREFIX arinc-mirror_freq_50_PCI_1
+    )
+
+	add_rumboot_target_dir(arinc/freq
+      CONFIGURATION IRAM_MIRROR
+      CFLAGS -DTX_FREQ=tx_freq_100 -DRX_FREQ=rx_freq_100 -Dheap_0=4 -Dheap_1=5
+      PREFIX arinc-mirror_freq_100_PCI_0_PCI_1
+    )
+	add_rumboot_target_dir(muart/
+      CONFIGURATION IRAM
+      PREFIX muart-iram
+    )
+	add_rumboot_target_dir(muart/
+      CONFIGURATION IRAM_MIRROR
+      PREFIX muart-mirror
+	)
+	add_rumboot_target_dir(muart/uart_direct
+      CONFIGURATION IRAM
+      PREFIX muart-uart_direct
+	)
+	add_rumboot_target_dir(muart/uart_mirror
+      CONFIGURATION IRAM_MIRROR
+      PREFIX muart-uart_mirror
+	)
+	add_rumboot_target_dir(muart/uart_direct_DDR
+      CONFIGURATION IRAM_WITH_DDR
+      PREFIX muart-direct_DDR
+	)
+	add_rumboot_target_dir(muart/uart_direct_DDR
+      CONFIGURATION IRAM_MIRROR
+      PREFIX muart-mirror_DDR
+	)
+
+#    add_rumboot_target(
+#       CONFIGURATION IRAM_WITH_DDR
+#       FILES muart/muart_AXI_DDR_PCIE.c
+#       PREFIX muart_iram_with_DDR
+#       NAME muart_AXI_DDR_PCIE
+#   )
+
+    add_rumboot_target_dir(mgeth/
+        CONFIGURATION IRAM
+        PREFIX mgeth-iram
+    )
+    add_rumboot_target_dir(mgeth/
+        CONFIGURATION IRAM_MIRROR
+        PREFIX mgeth-mirror
+    )
+    add_rumboot_target_dir(mgeth/geth_direct
+        CONFIGURATION IRAM
+        PREFIX mgeth-geth_direct
+    )
+    add_rumboot_target_dir(mgeth/geth_mirror
+        CONFIGURATION IRAM_MIRROR
+        PREFIX mgeth-geth_mirror
+    )
+    add_rumboot_target_dir(mgeth/geth_direct_ddr
+        CONFIGURATION IRAM_WITH_DDR
+        PREFIX mgeth-geth_direct_ddr
+    )
+
+    add_rumboot_target_dir(basis_stress_test/
+        CONFIGURATION IRAM_MIRROR
+        FILES basis_stress_test/stress_test.c
+        CFLAGS -DRUMBOOT_BASIS_DIRECT_IRAM -DRUMBOOT_BASIS_DMA_MEM_ACCEL=3
+        PREFIX "basis-stress-test"
+        NAME "uart-eth-dma"
     )
 
     add_rumboot_target(
@@ -223,13 +526,6 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       )
 
   add_rumboot_target(
-          CONFIGURATION ROM
-          FILES loader.c
-          PREFIX "bootrom"
-          NAME "production"
-  )
-
-  add_rumboot_target(
           CONFIGURATION IRAM
           FILES common/tools/print-heaps.c
   )
@@ -237,12 +533,49 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
   add_rumboot_target(
           CONFIGURATION IRAM_MIRROR
           FILES common/tools/print-heaps.c
+          TESTGROUP     touchstone
+          CHECKPOINT    testbench.initial
   )
 
   add_rumboot_target(
           CONFIGURATION ROM
           FILES common/tools/print-heaps.c
   )
+
+
+  add_rumboot_target(
+    CONFIGURATION IRAM
+    FILES spi/spi.c
+    CFLAGS -DGSPI_BASE=GSPI0_BASE
+    PREFIX spi-0
+    TESTGROUP sprint
+  )
+
+  add_rumboot_target(
+    CONFIGURATION IRAM
+    FILES spi/spi.c
+    CFLAGS -DGSPI_BASE=GSPI1_BASE
+    PREFIX spi-1
+    TESTGROUP sprint
+  )
+
+  add_rumboot_target(
+    CONFIGURATION IRAM_MIRROR
+    FILES spi/spi.c
+    CFLAGS -DGSPI_BASE=GSPI0_BASE
+    IRUN_FLAGS +select_sdio0
+    PREFIX spi-0-mirror
+    TESTGROUP sprint
+    )
+
+  add_rumboot_target(
+    CONFIGURATION IRAM_MIRROR
+    FILES spi/spi.c
+    CFLAGS -DGSPI_BASE=GSPI1_BASE
+    IRUN_FLAGS +select_sdio0
+    PREFIX spi-1-mirror
+    TESTGROUP sprint
+    )
 
 
   add_rumboot_target(
@@ -251,6 +584,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     CFLAGS -DSDIO_BASE=SDIO0_BASE  -DGSPI_SDIO_IRQ=GSPI_SDIO0_IRQ
     IRUN_FLAGS +select_sdio0
     PREFIX sdio-spi-0
+    TESTGROUP sprint
   )
 
   add_rumboot_target(
@@ -259,6 +593,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     CFLAGS -DSDIO_BASE=SDIO1_BASE  -DGSPI_SDIO_IRQ=GSPI_SDIO1_IRQ
     IRUN_FLAGS +select_sdio1
     PREFIX sdio-spi-1
+    TESTGROUP sprint
   )
 
    add_rumboot_target(
@@ -267,21 +602,25 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     CFLAGS -DSDIO_BASE=SDIO0_BASE   -DGSPI_SDIO_IRQ=GSPI_SDIO0_IRQ
     IRUN_FLAGS +select_sdio0
     PREFIX sdio-spi-0-mirror
+    TESTGROUP sprint
     )
+
    add_rumboot_target(
     CONFIGURATION IRAM_MIRROR
     FILES sdio-spi/sdio_spi.c
     CFLAGS -DSDIO_BASE=SDIO1_BASE  -DGSPI_SDIO_IRQ=GSPI_SDIO1_IRQ
     IRUN_FLAGS +select_sdio1
     PREFIX sdio-spi-1-mirror
+    TESTGROUP sprint
     )
+
   add_rumboot_target(
    CONFIGURATION IRAM
    FILES gpio/gpio.c
    TIMEOUT 300 us
    IRUN_FLAGS +gpio_test
   )
- 
+
   add_rumboot_target(
    CONFIGURATION IRAM
    FILES gpio/gpio_irq.c
@@ -330,7 +669,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
    TIMEOUT 700 us
    IRUN_FLAGS +can_plus_adapter
   )
-  
+
  add_rumboot_target(
    CONFIGURATION IRAM
    FILES can-adapter/can_adapter_2_test.c
@@ -435,8 +774,10 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     CONFIGURATION IRAM
     FILES mdio/mdio_test.c
     NAME mdio_test_1
+    IRUN_FLAGS +mdio_test
     TIMEOUT 300 us
     CFLAGS -DMDIO_NUM=1
+    TESTGROUP sprint
   )
 
   add_rumboot_target(
@@ -461,12 +802,14 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     NAME mdio_test_0
     TIMEOUT 600 us
     CFLAGS -DMDIO_NUM=0
+    TESTGROUP sprint
   )
 
   add_rumboot_target(
     CONFIGURATION IRAM_MIRROR
     FILES mdio/mdio_test.c
     NAME mdio_test_1
+    IRUN_FLAGS +mdio_test
     TIMEOUT 600 us
     CFLAGS -DMDIO_NUM=1
   )
@@ -493,16 +836,15 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     NAME mdio_phy_intrp_test_0
     TIMEOUT 100 us
     CFLAGS -DMDIO_NUM=0
-    IRUN_FLAGS +eth_phy_interrupt
   )
 
   add_rumboot_target(
     CONFIGURATION IRAM
     FILES mdio/mdio_phy_intrp_test.c
     NAME mdio_phy_intrp_test_1
+    IRUN_FLAGS +mdio_test
     TIMEOUT 100 us
     CFLAGS -DMDIO_NUM=1
-    IRUN_FLAGS +eth_phy_interrupt
   )
 
   add_rumboot_target(
@@ -511,7 +853,6 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     NAME mdio_phy_intrp_test_2
     TIMEOUT 100 us
     CFLAGS -DMDIO_NUM=2
-    IRUN_FLAGS +eth_phy_interrupt
   )
 
   add_rumboot_target(
@@ -520,8 +861,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     NAME mdio_phy_intrp_test_3
     TIMEOUT 100 us
     CFLAGS -DMDIO_NUM=3
-    IRUN_FLAGS +eth_phy_interrupt
-  )
+   )
 
   add_rumboot_target(
     CONFIGURATION IRAM_MIRROR
@@ -529,16 +869,15 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     NAME mdio_phy_intrp_test_0
     TIMEOUT 800 us
     CFLAGS -DMDIO_NUM=0
-    IRUN_FLAGS +mirror_eth_phy_interrupt
   )
 
   add_rumboot_target(
     CONFIGURATION IRAM_MIRROR
     FILES mdio/mdio_phy_intrp_test.c
     NAME mdio_phy_intrp_test_1
+    IRUN_FLAGS +mdio_test
     TIMEOUT 800 us
     CFLAGS -DMDIO_NUM=1
-    IRUN_FLAGS +mirror_eth_phy_interrupt
   )
 
   add_rumboot_target(
@@ -547,7 +886,6 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     NAME mdio_phy_intrp_test_2
     TIMEOUT 800 us
     CFLAGS -DMDIO_NUM=2
-    IRUN_FLAGS +mirror_eth_phy_interrupt
   )
 
   add_rumboot_target(
@@ -556,11 +894,43 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     NAME mdio_phy_intrp_test_3
     TIMEOUT 800 us
     CFLAGS -DMDIO_NUM=3
-    IRUN_FLAGS +mirror_eth_phy_interrupt
+   )
+
+  add_rumboot_target(
+    CONFIGURATION IRAM
+    FILES wdt/wdt_crg_iint.c
+    NAME wdt_crg_iint_test
+    TIMEOUT 1000 us
+    TESTGROUP sprint
   )
 
   add_rumboot_target(
-      SNAPSHOT default
+    CONFIGURATION IRAM
+    FILES wdt/wdt_crg_eint.c
+    NAME wdt_crg_eint_test
+    TIMEOUT 1000 us
+    IRUN_FLAGS +wdt_crg_eint_test_flag
+    TESTGROUP sprint
+  )
+
+  add_rumboot_target(
+    CONFIGURATION IRAM_MIRROR
+    FILES wdt/wdt_crg_iint.c
+    NAME wdt_crg_iint_test
+    TIMEOUT 1000 us
+    TESTGROUP sprint
+  )
+
+  add_rumboot_target(
+    CONFIGURATION IRAM_MIRROR
+    FILES wdt/wdt_crg_eint.c
+    NAME wdt_crg_eint_test
+    TIMEOUT 1000 us
+    IRUN_FLAGS +wdt_crg_eint_test_flag
+    TESTGROUP sprint
+  )
+
+  add_rumboot_target(
       CONFIGURATION IRAM
       FILES pcie/pcie_dma_eRP_test.c
       NAME pcie_dma_eRP_test
@@ -569,14 +939,37 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     )
 
   add_rumboot_target(
-      SNAPSHOT default
+      CONFIGURATION IRAM
+      FILES pcie/pcie_irq_eRP_test.c
+      NAME pcie_irq_eRP_test
+      TESTGROUP sprint
+    )
+
+  add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES pcie/pcie_to_pcie_access.c
+      NAME pcie_to_pcie_access
+    )
+
+  add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES pcie/pcie_dma_ddr0_performance_msr.c
+      NAME pcie_dma_ddr0_performance_msr
+    )
+
+  add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES pcie/pcie_dma_ddr1_performance_msr.c
+      NAME pcie_dma_ddr1_performance_msr
+    )
+
+  add_rumboot_target(
       CONFIGURATION IRAM
       FILES pcie/pcie_int_msix_for_mirror.c
       NAME pcie_int_msix_for_mirror
     )
 
   add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM
       FILES pcie/pcie_at_slv_eRP_test_0.c
       NAME pcie_at_slv_eRP_test_0
@@ -584,7 +977,6 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     )
 
   add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM
       FILES pcie/pcie_at_typical_eRP_test_0.c
       NAME pcie_at_typical_eRP_test_0
@@ -592,7 +984,6 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     )
 
   add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM
       FILES pcie/pcie_at_mst_eRP_test_0.c
       NAME pcie_at_mst_eRP_test_0
@@ -600,7 +991,6 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     )
 
   add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM
       FILES pcie/pcie_legacy_eRP_test.c
       NAME pcie_legacy_eRP_test
@@ -609,7 +999,6 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
 if (CMAKE_BUILD_TYPE MATCHES "RTL")
   add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM
       FILES pcie/pcie_mbist_test.c
       NAME pcie_mbist_test
@@ -617,7 +1006,6 @@ if (CMAKE_BUILD_TYPE MATCHES "RTL")
     )
 else()
   add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM
       FILES pcie/pcie_mbist_test.c
       NAME pcie_mbist_test
@@ -625,7 +1013,6 @@ else()
 endif()
 
   add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM
       FILES pcie/ext_int_test.c
       NAME ext_int_test
@@ -669,6 +1056,40 @@ endif()
         NAME "mdma"
     )
 
+   add_rumboot_target(
+       CONFIGURATION IRAM_WITH_DDR
+       FILES mdma_gp/test_suite_event.c mdma_gp/test_suite_base.c
+       PREFIX "direct-event"
+       NAME "mdma_gp_1-1_1-2_1-3_1-4"
+       TESTGROUP mdma_gp
+   )
+
+   add_rumboot_target(
+       CONFIGURATION IRAM_MIRROR
+       FILES mdma_gp/test_suite_event.c mdma_gp/test_suite_base.c
+       PREFIX "mirror-event"
+       NAME "mdma_gp_1-1_1-2_1-3_1-5"
+       TESTGROUP mdma_gp
+   )
+
+  add_rumboot_target(
+      CONFIGURATION IRAM_MIRROR
+      FILES mdma_gp/test_suite_memory.c mdma_gp/test_suite_base.c
+      CFLAGS -DRUMBOOT_BASIS_MEM_ACCEL
+      PREFIX "mirror-memory"
+      NAME "mdma_gp_2-1_2-2_2-3_2-4"
+      TESTGROUP mdma_gp
+  )
+
+  add_rumboot_target(
+      CONFIGURATION IRAM_WITH_DDR
+      FILES mdma_gp/test_suite_memory.c mdma_gp/test_suite_base.c
+      CFLAGS -DRUMBOOT_BASIS_MEM_ACCEL
+      PREFIX "direct-memory"
+      NAME "mdma_gp_2-1_2-2_2-3"
+      TESTGROUP mdma_gp
+  )
+
   add_rumboot_target(
       SNAPSHOT default
       CONFIGURATION IRAM
@@ -676,177 +1097,262 @@ endif()
       NAME i2c_0_read_test_interference
       IRUN_FLAGS +i2c_interference_gen
     )
-    
+
   add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM
       FILES simple-iram/i2c_1_read_test.c
       NAME i2c_1_read_test_interference
       IRUN_FLAGS +i2c_interference_gen
     )
-    
+
   add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM
       FILES pcie/ext_irq_gen_reg_test.c
       NAME ext_irq_gen_reg_test
     )
-    
+
   add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM
       FILES pcie/pcie_ctrl_reg_test.c
       NAME pcie_ctrl_reg_test
     )
-    
+
   add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM
       FILES pcie/pcie_phy_bist_prbs31.S
       NAME pcie_phy_bist_prbs31
     )
-    
+
   add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM
       FILES pcie/pcie_soft_reset_eRP_test.c
       NAME pcie_soft_reset_eRP_test
     )
-    
+
   add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM
       FILES pcie/pcie_core_reg_test.c
       NAME pcie_core_reg_test
     )
-    
+
   add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM
       FILES pcie/pcie_msix_eRP_test.c
       NAME pcie_msix_eRP_test
     )
-    
+
   add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM
       FILES pcie/pcie_phy_reg_test.c
       NAME pcie_phy_reg_test
     )
-    
+
   add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM
       FILES pcie/pcie_turn_on_eRP_test.c
       NAME pcie_turn_on_eRP_test
     )
-    
+
   add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM
       FILES pcie/addr_trans_mst_reg_test.c
       NAME addr_trans_mst_reg_test
     )
-    
+
   add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM
       FILES pcie/addr_trans_slv_reg_test.c
       NAME addr_trans_slv_reg_test
     )
-    
+
   add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM
       FILES ddr/ddr0_addr_test.c
       NAME ddr0_addr_test
     )
-    
+
   add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM
       FILES ddr/ddr1_addr_test.c
       NAME ddr1_addr_test
     )
-    
+
   add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM
       FILES ddr/ddr0_reg_test.c
       NAME ddr0_reg_test
     )
-    
+
   add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM
       FILES ddr/ddr1_reg_test.c
       NAME ddr1_reg_test
     )
-    
+
   add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM
       FILES ddr/ddr0_low_power_test.c
       NAME ddr0_low_power_test
     )
-    
+
   add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM
       FILES ddr/ddr1_low_power_test.c
       NAME ddr1_low_power_test
     )
-    
+
   add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM
       FILES ddr/ddr0_phy_bist_test.S
       NAME ddr0_phy_bist_test
     )
-    
+
   add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM
       FILES ddr/ddr1_phy_bist_test.S
       NAME ddr1_phy_bist_test
     )
-    
+
   add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM
       FILES ddr/ddr0_ddr1_byte_test.c
       NAME ddr0_ddr1_byte_test
     )
-    
+
   add_rumboot_target(
-      SNAPSHOT default
       CONFIGURATION IRAM
       FILES ddr/ddr0_ddr1_turn_on_test.c
       NAME ddr0_ddr1_turn_on_test
     )
-    
-  #RumBoot Integration tests
-#  add_rumboot_target(
-#      CONFIGURATION INTEGRATION
-#      NAME selftest_and_boot_sd
-#      IRUN_FLAGS
-#        +SD_INSERTED
-#        +SD_IMAGE=${rumboot_prefix}spl-ok.bin
-#    )
 
-#  add_rumboot_target(
-#      CONFIGURATION INTEGRATION
-#      NAME selftest_and_boot_spi0
-#      IRUN_FLAGS
-#        +SPI0_0_IMAGE=${rumboot_prefix}spl-ok.bin
-#    )
+  add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES common/mkio/mkio_write_read_test.c
+      NAME mkio_write_read_test
+    )
 
-#  add_rumboot_target(
-#      CONFIGURATION INTEGRATION
-#      NAME selftest_and_boot_spi1
-#      IRUN_FLAGS
-#        +SPI0_1_IMAGE=${rumboot_prefix}spl-ok.bin
-#    )
+  add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES common/mkio/mkio0_irq_test.c
+      NAME mkio0_irq_test
+    )
+
+  add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES common/mkio/mkio1_irq_test.c
+      NAME mkio1_irq_test
+    )
+
+  add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES common/mkio/mkio_polarity_test.c
+      NAME mkio_polarity_test
+    )
+
+  add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES common/mkio/mkio0_events_timestamps_test.c
+      NAME mkio0_events_timestamps_test
+    )
+
+  add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES common/mkio/mkio1_events_timestamps_test.c
+      NAME mkio1_events_timestamps_test
+    )
+
+  add_rumboot_target(
+      CONFIGURATION IRAM_MIRROR
+      PREFIX "mirror"
+      FILES common/mkio/mkio_write_read_test.c
+      NAME mkio_write_read_test
+    )
+
+  add_rumboot_target(
+      CONFIGURATION IRAM_MIRROR
+      PREFIX "mirror"
+      FILES common/mkio/mkio0_irq_test.c
+      NAME mkio0_irq_test
+    )
+
+  add_rumboot_target(
+      CONFIGURATION IRAM_MIRROR
+      PREFIX "mirror"
+      FILES common/mkio/mkio1_irq_test.c
+      NAME mkio1_irq_test
+    )
+
+  add_rumboot_target(
+      CONFIGURATION IRAM_MIRROR
+      PREFIX "mirror"
+      FILES common/mkio/mkio_polarity_test.c
+      NAME mkio_polarity_test
+    )
+
+  add_rumboot_target(
+      CONFIGURATION IRAM_MIRROR
+      PREFIX "mirror"
+      FILES common/mkio/mkio0_events_timestamps_test.c
+      NAME mkio0_events_timestamps_test
+    )
+
+  add_rumboot_target(
+      CONFIGURATION IRAM_MIRROR
+      PREFIX "mirror"
+      FILES common/mkio/mkio1_events_timestamps_test.c
+      NAME mkio1_events_timestamps_test
+    )
+
+  add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES common/mkio/mkio_signal_test.c
+      NAME mkio_signal_test
+      IRUN_FLAGS +mkio_signal_test
+    )
+
+  add_rumboot_target(
+      CONFIGURATION IRAM_MIRROR
+      PREFIX "mirror"
+      FILES common/mkio/mkio_signal_test.c
+      NAME mkio_signal_test
+      IRUN_FLAGS +mkio_signal_test
+    )
+
+  add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES esram/esram_rnd_space_test.c
+      NAME esram_rnd_space_test
+    )
+
+  add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES esram/esram0_heap_rnd_space_test.c
+      NAME esram0_heap_rnd_space_test
+    )
+
+  add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES esram/esram1_heap_rnd_space_test.c
+      NAME esram1_heap_rnd_space_test
+    )
+
+  add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES esram/esram_mia_test.c
+      NAME esram_mia_test
+    )
+
+
+    foreach(conf IRAM IRAM_MIRROR)
+    foreach(dit 0 1 2 3)
+      add_rumboot_target(
+        CONFIGURATION ${conf}
+        NAME sp804-${dit}
+        FILES common/sp804/dit.c
+        CFLAGS -DDIT_BASE=DIT${dit}_BASE -DDIT_TIMINT1=DIT${dit}_TIMINT1 -DDIT_TIMINT2=DIT${dit}_TIMINT2
+      )
+    endforeach()
+    endforeach()
 
 endmacro()
 
@@ -867,6 +1373,7 @@ file(GLOB PLATFORM_SOURCES
     ${CMAKE_SOURCE_DIR}/src/lib/drivers/bisr.c
     ${CMAKE_SOURCE_DIR}/src/lib/drivers/mdio.c
     ${CMAKE_SOURCE_DIR}/src/lib/drivers/nic400_lib.c
+    ${CMAKE_SOURCE_DIR}/src/lib/drivers/gp_timers.c
 )
 
 macro(RUMBOOT_PLATFORM_SET_COMPILER_FLAGS)

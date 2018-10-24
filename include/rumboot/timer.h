@@ -15,4 +15,9 @@ static inline void mdelay(uint32_t ms) {
   udelay(ms * 1000);
 };
 
+#define LOOP_UNTIL_TIMEOUT(timeout_us) \
+        for (uint32_t _start = rumboot_platform_get_uptime(); \
+             rumboot_platform_get_uptime() - _start < timeout_us; \
+             )
+
 #endif

@@ -1,63 +1,98 @@
-#include <rumboot/bootheader.h>
+#include <rumboot/boot.h>
 #include <rumboot/printf.h>
 #include <rumboot/platform.h>
 #include <algo/crc32.h>
+#include <platform/bootheader.h>
 
+/* TODO: Move to error.h */
 
-int32_t rumboot_bootimage_check_header(struct rumboot_bootheader *hdr, void **dataptr)
+static const char *errors[] =
 {
-	rumboot_printf("MAGIC: %x\n", hdr->magic);
+	[0] = "Success",
+	[EBADMAGIC] = "Bad Magic",
+	[EBADVERSION] = "Incompatible header version",
+	[EBADHDRCRC] = "Header CRC32 mismatch",
+	[EBADCHIPID] = "Incorrect ChipId",
+	[EBADENTRY] = "Bad entry point(s)",
+	[EBADHEADER] = "Bad header",
+	[EBADDATACRC] = "Bad data CRC32",
+	[ETOOBIG] = "Image too big",
+	[EBADSOURCE] = "Bad boot source (internal)",
+    [EIO]   = "I/O Error while reading",
+	[EMAXERROR] = "Unknown error",
+};
 
+const char *rumboot_strerror(int err)
+{
+	if (err < 0)
+		err = -err;
+	if (err > EMAXERROR)
+		err = EMAXERROR;
+	return errors[err];
+}
+
+ssize_t rumboot_bootimage_check_header(struct rumboot_bootheader *hdr, void **dataptr)
+{
 	if (hdr->magic != RUMBOOT_HEADER_MAGIC)
-		return -1;
+		return -EBADMAGIC;
 
-	rumboot_printf("NUMBER OF CORES: %x\n", hdr->num_cores);
+    dbg_boot(hdr->device, "--- Boot Image Header ---");
+    dbg_boot(hdr->device, "Magic:            0x%x", hdr->magic);
+    dbg_boot(hdr->device, "Header version:   %d", hdr->version);
 
-	if (hdr->num_cores == 0)
-		return -2;
+	if (hdr->version != RUMBOOT_HEADER_VERSION)
+		return -EBADVERSION;
 
-	rumboot_printf("CRC32: %x\n", hdr->header_crc32);
+    dbg_boot(hdr->device, "Chip Id:          %d", hdr->chip_id);
+    dbg_boot(hdr->device, "Chip Revision:    %d", hdr->chip_rev);
+    dbg_boot(hdr->device, "Data length:      %d", hdr->datalen);
+    dbg_boot(hdr->device, "Header CRC32:     0x%x", hdr->header_crc32);
+    dbg_boot(hdr->device, "Data CRC32:       0x%x", hdr->data_crc32);
+    dbg_boot(hdr->device, "---        ---        ---");
+	if (hdr->chip_id != RUMBOOT_PLATFORM_CHIPID)
+		return -EBADCHIPID;
 
-	if (crc32(0, hdr, sizeof(*hdr) + sizeof(uint32_t) * hdr->num_cores) != hdr->header_crc32)
-		return -3;
+	/* Warn about possible incompatibilities */
+	if (hdr->chip_rev != RUMBOOT_PLATFORM_CHIPREV) {
+		dbg_boot(hdr->device, "WARNING: Chip Revision mismatch: Expecting %d, have %d",
+		RUMBOOT_PLATFORM_CHIPREV, hdr->chip_rev);
+	}
 
-	return 0;
+	int hdrcrclen = (int ) ((void *) &(hdr->header_crc32) - (void *)hdr);
+	uint32_t checksum = crc32(0, hdr, hdrcrclen);
+
+	if ( checksum != hdr->header_crc32) {
+		dbg_boot(hdr->device, "Header CRC32 mismatch: expected: 0x%x calculated: %x",
+			hdr->header_crc32, checksum);
+		return -EBADHDRCRC;
+	}
+
+	if (!rumboot_platform_check_entry_points(hdr))
+		return -EBADENTRY;
+
+	*dataptr = hdr->data;
+	return hdr->datalen;
 }
 
 int32_t rumboot_bootimage_check_data(struct rumboot_bootheader *hdr)
 {
-	int i;
-
 	if (hdr->datalen == 0)
-		return -1;
+		return -EBADDATACRC;
 
-	//Check CRC
-	for (i = 0; i < hdr->num_cores; i++)
-		if (crc32(0, hdr->entry_point, hdr->datalen) != hdr->data_crc32)
-			return -2;
+	uint32_t checksum = crc32(0, hdr->data, hdr->datalen);
+	if (checksum != hdr->data_crc32) {
+		dbg_boot(hdr->device, "Data CRC32 mismatch: expected: 0x%x calculated: %x",
+			hdr->data_crc32, checksum
+		);
+        return -EBADDATACRC;
+	}
 
 	return 0;
 }
 
-int32_t rumboot_bootimage_exec(struct rumboot_bootheader *hdr)
+int rumboot_bootimage_execute_ep(void *ep)
 {
-	int32_t ret;
-
-	//Cover with unit tests
-	rumboot_printf("STUB: Executing SPL image. Magic: 0x%x Entry: 0x%x\n",
-		       hdr->magic, hdr->entry_point[0]);
-
-	void* ptr_to_data = hdr->data;
-
-	ret = rumboot_bootimage_check_header(hdr, &ptr_to_data);
-
-	if (ret < 0)
-		return ret;
-
 	int (*ram_main)();
-	ram_main = (void *)hdr->entry_point[0];
-	ram_main();
-
-	//It must not be!
-	return -1;
+	ram_main = ep;
+	return ram_main();
 }

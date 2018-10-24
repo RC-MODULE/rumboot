@@ -13,6 +13,7 @@
 //-----------------------------------------------------------------------------
 
 #include <rumboot/ddr_test_lib.h>
+#include <platform/devices.h>
 
 int main ()
 {

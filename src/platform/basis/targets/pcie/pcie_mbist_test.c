@@ -15,6 +15,7 @@
 //-----------------------------------------------------------------------------
 
 #include <rumboot/pcie_test_lib.h>
+#include <regs/regs_pcie.h>
 
 #include <stdio.h>
 #include <stdlib.h>

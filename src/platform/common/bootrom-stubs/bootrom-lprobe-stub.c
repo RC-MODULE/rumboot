@@ -4,7 +4,7 @@
 #include <rumboot/printf.h>
 #include <rumboot/platform.h>
 #include <rumboot/macros.h>
-#include <rumboot/bootheader.h>
+#include <rumboot/boot.h>
 #include <rumboot/io.h>
 #include <rumboot/irq.h>
 #include <rumboot/rumboot.h>
@@ -37,7 +37,7 @@ struct lprobe_event {
 
 static inline void parse_event(struct lprobe_event *evt)
 {
-    struct lprobe_event *out = (struct lprobe_event *) rumboot_platform_runtime_info.out.data;
+    struct lprobe_event *out = (struct lprobe_event *) rumboot_platform_runtime_info->out.data;
 
 	out->opcode = evt->opcode;
 
@@ -78,7 +78,7 @@ static inline void parse_event(struct lprobe_event *evt)
 		break;
 	}
 
-	rumboot_platform_runtime_info.out.opcode = EVENT_LPROBE;
+	rumboot_platform_runtime_info->out.opcode = EVENT_LPROBE;
 
 }
 
@@ -98,7 +98,6 @@ int main()
 	while (1) {
 		volatile uint32_t *data;
 		rumboot_platform_event_get(&data);
-		//rumboot_printf("Inbound event %d arg 0x%x\n", evt, data[0]);
 		parse_event((void *)data);
 		rumboot_platform_event_clear();
 	}

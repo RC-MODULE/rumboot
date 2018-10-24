@@ -1,10 +1,9 @@
 #include <platform/arch/ppc/ppc_476fp_asm.h>
 #include <platform/arch/ppc/ppc_476fp_mmu_fields.h>
 #include <platform/arch/ppc/ppc_476fp_ctrl_fields.h>
+#include <platform/trace.S.h>
 
-
-.section ".init.text","ax",@progbits
-
+.section ".mmu.init.text","ax",@progbits
 
 /*Details about trace infrastructure convention see in trace.S.h
 Caller must preserve r3,r4,r8,r9,r10 before calling
@@ -13,14 +12,48 @@ r4 - TLB entries count
 r8,r9,r10 - tmp registers
 returns nothing*/
 .global write_tlb_entries
+.global ppc470s_invalidate_all_tlb_entries_nosnoop
+ppc470s_invalidate_all_tlb_entries_nosnoop:
+    load_const  r6, 256       //set counter to 1024 iterations (there are 1024 TLB entries)
+    mtspr SPR_CTR, r6
+    lis         r6, 0x100      //iteration index = 0
+    load_const  r9, 0          //r9 = 0
+    load_const  r8, (MMU_TLBE_DSIZ_16MB    << MMU_TLBE_TAG_DSIZ_i   )
+    lis         r3, 0x8000
+    lis         r4, 0xa000
+    lis         r5, 0xc000
+    lis         r7, 0xe000
+
+.align 4
+invalidate_tlb_entry:
+//Calculate current entry way and index
+    add     r8, r8, r6
+    copy_field(r3, 40, 47, r8, 32)
+    copy_field(r4, 40, 47, r8, 32)
+    copy_field(r5, 40, 47, r8, 32)
+    copy_field(r7, 40, 47, r8, 32)
+
+//Invalidate entry, even if bolted entry: (r8[60] == 1 && r7[33:34] == 0b00).
+    tlbwe   r8, r3, 0
+
+    tlbwe   r8, r4, 0
+
+    tlbwe   r8, r5, 0
+
+    tlbwe   r8, r7, 0
+
+goto_next_tlb_entry:
+    bdnz+   invalidate_tlb_entry //decrement cnt and check for exit from loop
+    blr
+
 write_tlb_entries:
     mfspr       r9, SPR_RSTCFG
 
     subi        r3, r3, MMU_TLB_ENTRY_FIELD_SIZE
 
 write_next_etry:
-    cmplwi      cr7, r4, 0
-    beq-        cr7, write_tlb_entries_exit
+    cmplwi      r4, 0
+    beq-        write_tlb_entries_exit
 
     lwzu        r8, MMU_TLB_ENTRY_FIELD_SIZE(r3)
     mtspr       SPR_MMUCR, r8
@@ -34,8 +67,7 @@ write_next_etry:
     tlbwe       r8, r10, MMU_TLB_ENTRY_DATA
 
     lwzu        r8, MMU_TLB_ENTRY_FIELD_SIZE(r3)
-/*    copy_field( r8, MMU_MMU_TLB_ENTRY_ATTR_E_e-(MMU_MMU_TLB_ENTRY_ATTR_E_n-1), MMU_MMU_TLB_ENTRY_ATTR_E_e, r9, CTRL_RSTCFG_E_e-(CTRL_RSTCFG_E_n-1) )*/
-    copy_field( r8, MMU_TLBE_ATTR_U_e-(MMU_TLBE_ATTR_U_n-1), MMU_TLBE_ATTR_U_e, r9, CTRL_RSTCFG_U_e-(CTRL_RSTCFG_U_n-1) )
+    copy_field( r8, field_begin( MMU_TLBE_ATTR_U ), MMU_TLBE_ATTR_U_e, r9, field_begin( CTRL_RSTCFG_U ) )
     tlbwe       r8, r10, MMU_TLB_ENTRY_ATTR
 
     subi        r4, r4, 1
@@ -59,86 +91,77 @@ write_tlb_entries_return:
     blr
 
 /*r3 - parameter, 32bit effective address (EA)*/
+/*r4 - TS (translation space)
 /*r4,r3 - result, 42bit real address (int64_t)*/
-/*if return value <0 (bit 31 = 1) then tlb entry was not found*/
-/*r5,r6,r7,r8,r9,r10 - tmp registers*/
+/*if return value <0 then tlb entry was not found*/
+/*r5  - tmp register*/
 .global get_physical_addr
 get_physical_addr:
-    mfMMUCR r10
-    /*clear r10[16:31]*/
-    load_const r9, 0xFFFF0000
-    and r10, r9, r10
-    /*PID->MMUCR[STID]*/
-    mfPID r9
-    andi. r9, r9, 0xFFFF
-    or r10, r9, r10
-    mtspr 946,r10
-    /*save EA*/
-    ori r9, r3,0
-    /*search for tlb entry*/
-    tlbsx. r5,0,r3
-    /*Check tlb entry found (CR[CR0[2]] == 1) 4.8.1. UG*/
-    bne ra_error
-    /*if WS=0 RT[54:63] <= ERPN, RT[32:60] <= tlbentry[EPN(0:19), V, TS, DSIZ(0:5), BLTD]*/
-    tlbre r6, r5, 0
-    srwi r6,r6, 0x4
-    andi. r6,r6,0x3F
-    /*r6[58:63] = DSIZ, swith(DSIZ):*/
-    cmpwi cr7, r6, 0x0
-    beq cr7, dsiz_4k
-    cmpwi cr7, r6, 0x1
-    beq cr7, dsiz_16k
-    cmpwi cr7, r6, 0x3
-    beq cr7, dsiz_64k
-    cmpwi cr7, r6, 0x7
-    beq cr7, dsiz_1m
-    cmpwi cr7, r6, 0xF
-    beq cr7, dsiz_16m
-    cmpwi cr7, r6, 0x1F
-    beq cr7, dsiz_256m
-    cmpwi cr7, r6, 0x3F
-    beq cr7, dsiz_1g
-    /*default - error*/
-    b ra_error
-/*Offset mask  - R8*/
-dsiz_4k:
-    load_const r8, 20
-    b dsiz_done
-dsiz_16k:
-    load_const r8, 18
-    b dsiz_done
-dsiz_64k:
-    load_const r8, 16
-    b dsiz_done
-dsiz_1m:
-    load_const r8, 12
-    b dsiz_done
-dsiz_16m:
-    load_const r8, 8
-    b dsiz_done
-dsiz_256m:
-    load_const r8, 4
-    b dsiz_done
-dsiz_1g:
-    load_const r8, 2
-    b dsiz_done
-dsiz_done:
-    /*if WS=1 RT[32:51] <= RPN, RT[54:63] <= ERPN*/
-    tlbre r6, r5, 1
-    /*r3 <= ERPN*/
-    andi. r3,r6,0x3FF
-    /*clear R6[52:63] by mask, shift RPN*/
-    load_const r7, 0xFFFFF000
-    and r6,r6,r7
-    /*Offset*/
-    load_const r10, 0xFFFFFFFF
-    srw r10, r10, r8
-    and r9,r9,r10
-    /*get R4=RPN(r6) | OFFSET(r9)*/
-    or r4, r6, r9
+    mfspr       r5, SPR_MMUCR
+    copy_field( r5, field_begin( MMU_MMUCR_STS ), MMU_MMUCR_STS_e, r4, IBM_BIT_INDEX( 32, 0 ) )     /* copy STS field */
+
+    load_const  r4, ( 0x0000 << MMU_PID_i )                                                         /* first try with PID == 0x0000 (shared) */
+    copy_field( r5, field_begin( MMU_MMUCR_STID ), MMU_MMUCR_STID_e, r4, field_begin( MMU_PID ) )
+    mtspr       SPR_MMUCR, r5
+    tlbsx.      r4, 0, r3                                                                           /* search for tlb entry */
+    beq+        tlbsx_ok                                                                            /* (CR[CR0[2]] == 1), see 4.8.1. PowerPC 476FP Embedded Processor Core. User's Manual */
+
+    mfspr       r4, SPR_PID                                                                         /* second try with actual PID */
+    copy_field( r5, field_begin( MMU_MMUCR_STID ), MMU_MMUCR_STID_e, r4, field_begin( MMU_PID ) )
+    mtspr       SPR_MMUCR, r5
+    tlbsx.      r4, 0, r3                                                                           /* search for tlb entry */
+    bne-        tlbsx_error                                                                         /* (CR[CR0[2]] == 0), see 4.8.1. PowerPC 476FP Embedded Processor Core. User's Manual */
+
+tlbsx_ok:
+    mr          r5, r3                                                                              /* save EA */
+
+    tlbre       r3, r4, MMU_TLB_ENTRY_TAG                                                           /* RT[32:60] <= tlbentry[EPN(0:19), V, TS, DSIZ(0:5), BLTD] */
+    andi.       r3, r3, ( 0x3F << MMU_TLBE_TAG_DSIZ_i )
+offset_4k:
+    cmpwi       r3, ( MMU_TLBE_DSIZ_4KB << MMU_TLBE_TAG_DSIZ_i )
+    bne         offset_16k
+    clrlwi      r5, r5, 20                                                                          /* RT <= RT & 0x00000FFF */
+    b           offset_done
+offset_16k:
+    cmpwi       r3, ( MMU_TLBE_DSIZ_16KB << MMU_TLBE_TAG_DSIZ_i )
+    bne         offset_64k
+    clrlwi      r5, r5, 18                                                                          /* RT <= RT & 0x00003FFF */
+    b           offset_done
+offset_64k:
+    cmpwi       r3, ( MMU_TLBE_DSIZ_64KB << MMU_TLBE_TAG_DSIZ_i )
+    bne         offset_1m
+    clrlwi      r5, r5, 16                                                                          /* RT <= RT & 0x0000FFFF */
+    b           offset_done
+offset_1m:
+    cmpwi       r3, ( MMU_TLBE_DSIZ_1MB << MMU_TLBE_TAG_DSIZ_i )
+    bne         offset_16m
+    clrlwi      r5, r5, 12                                                                          /* RT <= RT & 0x000FFFFF */
+    b           offset_done
+offset_16m:
+    cmpwi       r3, ( MMU_TLBE_DSIZ_16MB << MMU_TLBE_TAG_DSIZ_i )
+    bne         offset_256m
+    clrlwi      r5, r5, 8                                                                           /* RT <= RT & 0x00FFFFFF */
+    b           offset_done
+offset_256m:
+    cmpwi       r3, ( MMU_TLBE_DSIZ_256MB << MMU_TLBE_TAG_DSIZ_i )
+    bne         offset_1g
+    clrlwi      r5, r5, 4                                                                           /* RT <= RT & 0x0FFFFFFF */
+    b           offset_done
+offset_1g:
+    cmpwi       r3, ( MMU_TLBE_DSIZ_1GB << MMU_TLBE_TAG_DSIZ_i )
+    bne         tlbsx_error /* default */
+    clrlwi      r5, r5, 2                                                                           /* RT <= RT & 0xFFFFFFFF */
+/*  b           offset_done*/
+
+offset_done:
+    tlbre       r4, r4, MMU_TLB_ENTRY_DATA                                                          /* RT[32:51] <= RPN, RT[54:63] <= ERPN*/
+    clrlwi      r3, r4, 22                                                                          /* RT <= ERPN */
+    clrrwi      r4, r4, 12                                                                          /* RT <= RPN */
+    add         r4, r4, r5                                                                          /* RT <= RPN | OFFSET */
     blr
-ra_error:
-    /*return invalid value (< 0) if an error*/
-    load_const r3, -1
+
+tlbsx_error:
+    load_const  r3, -1 /*return invalid value (< 0) if an error*/
     blr
+
 

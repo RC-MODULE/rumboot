@@ -1,6 +1,7 @@
 #include <rumboot/testsuite.h>
 #include <rumboot/printf.h>
 #include <rumboot/platform.h>
+#include <rumboot/rumboot.h>
 
 
 void test_suite_init(struct rumboot_testsuite_results *out)
@@ -26,7 +27,11 @@ int test_suite_run_single(struct rumboot_testsuite_results *out, const struct ru
 
 	tstart = rumboot_platform_get_uptime();
 
+	rumboot_malloc_update_heaps(true);
+
 	bool result = test->check_func(test->baseaddr);
+
+	rumboot_malloc_update_heaps(false);
 
     rumboot_printf("--- %s ---\n", result ? "PASSED" : "FAILED");
 

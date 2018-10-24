@@ -9,7 +9,7 @@
  * These functions should be implemented in the platform support code.
  * Rumboot core modules depend on these for proper operation
  * \code{.c}
- * #include <rumboot/testsuite.h>
+ * #include <rumboot/platform.h>
  * \endcode
  *
  * \defgroup platform_glue_base Basics
@@ -49,6 +49,11 @@ enum rumboot_simulation_event {
     EVENT_PERF_FUNC, /** Perf checkpoint via function addr */
     EVENT_SIM_SAVE, /** Request to save simulation state to file */
     EVENT_SIM_RESTORE, /** Request to load simulation state from a file */
+    EVENT_TESTEVENT, /** Special event to be sent to SystemVerilog part of the test */
+    EVENT_RELOCATE_RUNTIME, /** Request to poll a different cell for runtime structure */
+    EVENT_MEMFILLSEQ, /** Fill the memory with 32-bit incrementing values */
+    EVENT_MEMCHECKSEQ, /** Check that memory filled with 32-bit incrementing values */
+    EVENT_GENERIC, /** Generic SystemVerilog event trigger */
 };
 
 
@@ -209,6 +214,42 @@ void rumboot_platform_sim_save(const char *filename);
 void rumboot_platform_sim_restore(const char *filename);
 
 /**
+ * Request to relocate rumboot_runtime_info structure to a different
+ * location in memory. Once this request is sent all events should use the
+ * new location. Usually it's needed to chainload to a new image with it's own
+ * that will runtime location that be further initialized by image's rumboot_main()
+ * @param addr [description]
+ */
+void rumboot_platform_relocate_runtime(uint32_t addr);
+
+/**
+ * Trigger a generic SV event
+ * @param name event name
+ */
+void rumboot_platform_sv_event(const char *name);
+
+/**
+ * Returns 64-bit physical address from a virtual 32-bit
+ * address on ppc platforms. On ARM just platforms returns
+ * the addr cast to 64-bit.
+ *
+ * This function may return -1 on error.
+ *
+ * @param  addr [description]
+ * @return      [description]
+ */
+int64_t rumboot_virt_to_phys(volatile void *addr);
+
+/**
+ * Returns 32-bit address for dma operations
+ *
+ * @param  addr [description]
+ * @return      [description]
+ */
+uint32_t rumboot_virt_to_dma(volatile void *addr);
+
+
+/**
  * Declares a function to be a constructor (will be called before main())
  * @param  name - function name
  */
@@ -274,6 +315,7 @@ struct rumboot_heap {
     void *start;
     void *end;
     void *pos;
+    void *save;
     const char *name;
 };
 
@@ -314,7 +356,12 @@ struct rumboot_runtime_info {
 /**
  * Global instance of struct rumboot_runtime_info.
  */
-extern struct rumboot_runtime_info rumboot_platform_runtime_info;
+#ifdef RUMBOOT_NATIVE
+extern struct rumboot_runtime_info *rumboot_platform_runtime_info;
+#else
+extern struct rumboot_runtime_info rumboot_platform_runtime;
+#define rumboot_platform_runtime_info (&rumboot_platform_runtime)
+#endif
 
 /**
  * This global variable defined by the linker points to the start of SPL

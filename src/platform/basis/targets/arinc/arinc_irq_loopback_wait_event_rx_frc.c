@@ -2,7 +2,7 @@
 //  This program is for checking ARINC429 transactions and interrupts.
 // 
 //  Test includes:
-//  - ARINC429 transmitters and receivers delivery through the external loopback
+//  - ARINC429 transmitter's and receiver's delivery through the external loopback
 //	- Receiver accept short arrays without checking labels 
 //  - Configured  frequency =100KHz
 //	- Received array is  compared with ethalon values
@@ -23,6 +23,7 @@
 #include <rumboot/printf.h>
 #include <rumboot/io.h>
 #include <devices/arinc.h>
+#include <rumboot/rumboot.h>
 #include <rumboot/irq.h>
 #include <platform/devices.h>
 #include <rumboot/io.h>
@@ -31,12 +32,6 @@
 #include <platform/interrupts.h>
 #include <regs/regs_global_timers.h>
 
-
-#define tx_mem				0x40000
-#define rx_mem				0x50000
-
-#define tx_mem_double		0x60000
-#define rx_mem_double		0x70000
 
 volatile uint32_t rd_data = 0;
 
@@ -95,38 +90,27 @@ static void handler(int irq, void *arg)
 //-------------------------------------------	
 	int_status = -1;
 	if  (chk==1) {
-	while (int_status != 0x00000001){
-	tmp = ioread32(ARINC_BASE + STAT_E_TX);
-	//rumboot_printf("ARINC even tx data_1_status=0x%x\n", tmp); //work_bit =1
-	int_status = 0xBFFFFFFF & tmp;	
-		}			
-	if ( int_status != expected) {
-	rumboot_platform_panic("IRQ: expected %x got %x\n", expected, int_status);
-		}
+	
     int_status = -1;
 	while (int_status != 0x00000001) {	   	
+	//rumboot_printf("ARINC even rx data_1_E_status=0x%x\n", tmp); //signal_bit
+	//tmp = ioread32(ARINC_BASE + STAT_O_RX);
+	//rumboot_printf("ARINC even rx data_1_O_status=0x%x\n", tmp); //signal_bit
 	tmp = ioread32(ARINC_BASE + STAT_E_RX);
-	//rumboot_printf("ARINC even rx data_1_status=0x%x\n", tmp); //signal_bit
-	int_status = 0xDFFFFFFF & tmp;	
+	//rumboot_printf("ARINC even rx data_1_E_status=0x%x\n", tmp); //signal_bit
+	int_status = 0xDFFFFFFF & tmp;
+	expected = 0x00000001;
 		}				
 	if ( int_status != expected) {
 	rumboot_platform_panic("IRQ: expected %x got %x\n", expected, int_status);
-		}   		
+		}  	
 	}	
      else if (chk ==2){
-	expected =	0x00000002; 
-	int_status = -1;		
-	while (int_status != 0x00000002) {		
-	tmp = ioread32(ARINC_BASE + STAT_E_TX);
-	//rumboot_printf("ARINC even tx data_2_status=0x%x\n", tmp); //work_bit =1
-	int_status = 0xBFFFFFFF & tmp;	
-		}					
-	if ( int_status != expected) {
-	rumboot_platform_panic("IRQ: expected %x got %x\n", expected, int_status);
-		}
+	//rumboot_printf("ARINC chk=0x%x\n", chk); //check status		 
+	
     int_status = -1;
-	expected =	0x00000001;   //expected =	0x00000000;  
-	while (int_status != 0x00000001) {   //(int_status != 0x00000000)	
+	expected =	0x00000001;
+	while (int_status != 0x00000001) { 
 	tmp = ioread32(ARINC_BASE + STAT_O_RX);
 	//rumboot_printf("ARINC odd rx data_2_status=0x%x\n", tmp); //signal_bit
 	int_status = 0xDFFFFFFF & tmp;	
@@ -137,16 +121,7 @@ static void handler(int irq, void *arg)
 	}
 	
 	else if  (chk==3) {
-	expected =	0x00000003; 
-	int_status = -1;	
-	while (int_status != 0x00000003){
-	tmp = ioread32(ARINC_BASE + STAT_E_TX);
-	//rumboot_printf("ARINC even tx status_3=0x%x\n", tmp); //work_bit =1
-	int_status = 0xBFFFFFFF & tmp;	
-		}			
-	if ( int_status != expected) {
-	rumboot_platform_panic("IRQ: expected %x got %x\n", expected, int_status);
-		}
+
     int_status = -1;
 	expected =	0x00000001; 
 	while (int_status != 0x00000001) {	   	
@@ -159,19 +134,8 @@ static void handler(int irq, void *arg)
 	rumboot_platform_panic("IRQ: expected %x got %x\n", expected, int_status);
 		}
 	}
-			
-    else if (chk ==4){
-		
-	expected =	0x00000004;
-	int_status = -1;
-	while (int_status != 0x00000004) {			
-	tmp = ioread32(ARINC_BASE + STAT_E_TX);
-	//rumboot_printf("ARINC even tx status=0x%x\n", tmp); //work_bit =1
-	int_status = 0xBFFFFFFF & tmp;	
-		}					
-	if ( int_status != expected) {
-	rumboot_platform_panic("IRQ: expected %x got %x\n", expected, int_status);
-		}
+
+	else if  (chk==4) {
     int_status = -1;
 	expected =	0x00000001; //0x00000000
 	while (int_status != 0x00000001) {	// (int_status != 0x00000000)
@@ -197,21 +161,17 @@ void arinc_init (uint32_t arinc_base_addr){
 	init_axi_mst =0x0;
 	size   = 0x11;
 
-	//void *tx_mem =rumboot_malloc(8192);
+	
 	receiver_number = 0x0;
 //-------------------------------------------------------------------------------------
 //  Set parameters for DMA exchange loopback  connected on chip pins in testbench
 //-------------------------------------------------------------------------------------
 
 	iowrite32(receiver_number,(arinc_base_addr + RNUM_RX)); //receiver ch number
-	iowrite32(tx_mem,(arinc_base_addr + AG_E_TX));    	// dma rd channel memory address
 	iowrite32(size,(arinc_base_addr + SZ_E_TX));    	// dma rd channel size
-	iowrite32(rx_mem,(arinc_base_addr + AG_E_RX));    	// dma wr channel memory address
 	iowrite32(size,(arinc_base_addr + SZ_E_RX));    	// dma wr channel size
 	
-	iowrite32(tx_mem_double,(arinc_base_addr + AG_O_TX));   // dma rd channel memory address
 	iowrite32(size,(arinc_base_addr + SZ_O_TX));    	    // dma rd channel size
-	iowrite32(rx_mem_double,(arinc_base_addr + AG_O_RX));   // dma wr channel memory address
 	iowrite32(size,(arinc_base_addr + SZ_O_RX));    	    // dma wr channel size
 	
 	iowrite32(init_axi_mst,(arinc_base_addr + AXI_CTRL)); //AXI parameters
@@ -224,7 +184,7 @@ void arinc_init (uint32_t arinc_base_addr){
 	tmp = ioread32(GLOBAL_TIMERS + ENABLE);
 	rumboot_printf("GLOBAL_TIMERS_ENABLE=0x%x\n", tmp);
 
-	iowrite32(0x16E,(GLOBAL_TIMERS  + 0x100  + TMR_0_LIMIT));//interval= 1900
+	iowrite32(0x176 /*0x13E*/,(GLOBAL_TIMERS  + 0x100  + TMR_0_LIMIT));//interval= 1900 (0x16E)
 	tmp = ioread32(GLOBAL_TIMERS + 0x100 + TMR_0_LIMIT);
 	rumboot_printf("GLOBAL_TIMERS_TMR_0_LIMIT=0x%x\n", tmp);	
 
@@ -238,12 +198,10 @@ void arinc_init (uint32_t arinc_base_addr){
 
  void call_arinc_irq_even_array()
 {
-	uint32_t enable;
-	enable =0x10001;
+
  
 	arinc_init(ARINC_BASE);
-    iowrite32(enable,ARINC_BASE + CHANNEL_EN); // run transaction
-	rumboot_printf("ARINC START CH0\n");									
+ 								
 }
 void wait_irq() {
 	while(!irq_arrived) { };
@@ -401,30 +359,67 @@ iowrite32(enable,ARINC_BASE + CHANNEL_DIS); // stop transmitter
 
 static bool test_arinc_irq_even_array(uint32_t arg)
 	{
+					
+	uint32_t enable;
+	enable =0x10001;
+
+	rumboot_printf("copy %d bytes\n", sizeof(tx_array32)); 
+	uint32_t *tx_mem = rumboot_malloc_from_heap_aligned(0,  sizeof(tx_array32), 128);	
+	rumboot_printf("tx_mem=0x%x\n", tx_mem ); //check data
+	
+	uint32_t *trg = (uint32_t *) tx_mem;
+	memcpy(trg, tx_array32,sizeof(tx_array32));
+	
+	uint32_t *rx_mem = rumboot_malloc_from_heap_aligned(0, sizeof(tx_array32), 128);
+	rumboot_printf("rx_mem=0x%x\n", rx_mem ); //check data
+
+	uint32_t *tx_mem_double = rumboot_malloc_from_heap_aligned(0, sizeof(tx_array_double), 128);
+	uint32_t *trg_double = (uint32_t *) tx_mem_double;
+	memcpy(trg_double, tx_array_double,sizeof(tx_array_double));
+	rumboot_printf("tx_mem_double=0x%x\n", tx_mem_double );
+
+	 uint32_t *rx_mem_double = rumboot_malloc_from_heap_aligned(0, sizeof(tx_array_double), 128);	
+	rumboot_printf("rx_mem_double=0x%x\n", rx_mem_double );
+	
+	iowrite32((uint32_t) &tx_mem[0],(ARINC_BASE + AG_E_TX));    	// dma rd channel memory address	
+	iowrite32((uint32_t) &rx_mem[0],(ARINC_BASE + AG_E_RX));    	// dma wr channel memory address
+	iowrite32((uint32_t) &tx_mem_double[0],(ARINC_BASE + AG_O_TX)); // dma rd channel memory address	
+	iowrite32((uint32_t) &rx_mem_double[0],(ARINC_BASE + AG_O_RX)); // dma wr channel memory address
 	expected = 0x00000001;
+	
 	call_arinc_irq_even_array();
-	rumboot_printf("ARINC waits interrupt!\n");
+	
+	iowrite32(enable,ARINC_BASE + CHANNEL_EN); // run transaction
+	rumboot_printf("ARINC START CH0\n");
 	
 	wait_irq() ;
-	iowrite32((rx_mem +4),(ARINC_BASE + AG_E_RX)); //mem RX addr update 
-	rumboot_printf("READ DATA ARRAY\n");	
-	rd_data	= 	ioread32(rx_mem);
+	//iowrite32((uint32_t) &rx_mem[1],(ARINC_BASE + AG_E_RX)); //mem RX addr update 
+	rumboot_printf("READ DATA ARRAY\n");
+	 rumboot_printf("ARINC rx_mem[0] addr=0x%x\n",((uint32_t) &rx_mem[0])); //check data
+	rd_data	= ioread32((uint32_t) &rx_mem[0]);
+	iowrite32((uint32_t) &rx_mem[1],(ARINC_BASE + AG_E_RX)); //mem RX addr update 
 	rumboot_printf("ARINC data=0x%x\n", rd_data); //check data
+	
 	if (rd_data != 0x80818283) {
-	 rumboot_printf("ERROR READ EVEN ARRAY 0w\n");
-	 
+	//rumboot_printf("ERROR READ EVEN ARRAY 0w\n");
+	rumboot_printf("ARINC data=0x%x\n", rd_data); //data
+	rd_data	= ioread32((uint32_t) &rx_mem_double[0]);
+	rumboot_printf("ARINC data=0x%x\n", ((uint32_t) &rx_mem_double[0])); //check address
+	}
+	if (rd_data != 0x80818283) {
+	rumboot_printf("ERROR READ EVEN ARRAY 0w\n");	
     return false;
 	}
 	call_frc_first_e_check();
 	call_frc_e_check();			
 	call_arinc_irq_delta_array();
 	wait_irq() ;
-	iowrite32((rx_mem_double +4),(ARINC_BASE + AG_O_RX)); //mem rx_double addr update
-	rd_data	= 	ioread32(rx_mem_double);
+	iowrite32(((uint32_t) &rx_mem_double[1]),(ARINC_BASE + AG_O_RX)); //mem rx_double addr update
+	rd_data	= ioread32((uint32_t) &rx_mem_double[0]);
 	rumboot_printf("ARINC data=0x%x\n", rd_data); //check data
 	if (rd_data != 0x40414243) {
 	rumboot_printf("ERROR READ ODD ARRAY 1w\n");
-
+	rumboot_printf("ARINC data=0x%x\n", rd_data); //check data
     return false;
 	}
 	call_frc_current_e_check();
@@ -432,22 +427,25 @@ static bool test_arinc_irq_even_array(uint32_t arg)
 	expected = 0x00000003;
 	call_arinc_irq_delta_array();
 	wait_irq() ;
-	iowrite32((rx_mem +8),(ARINC_BASE + AG_E_RX)); //mem RX addr update 
-	rd_data	= 	ioread32(rx_mem + 4);
+	iowrite32(((uint32_t) &rx_mem[2]),(ARINC_BASE + AG_E_RX)); //mem RX addr update 
+	
+	rd_data	= 	ioread32((uint32_t) &rx_mem [1]);
 	rumboot_printf("ARINC data=0x%x\n", rd_data); //check data
+	rumboot_printf("ARINC  &rx_mem [1]=0x%x\n", ((uint32_t) &rx_mem [1]));
 		if (rd_data != 0x10818283) {
-	 rumboot_printf("ERROR READ EVEN ARRAY 2w\n");	 
+	rumboot_printf("ERROR READ EVEN ARRAY 2w\n");	 
     return false;
 		}
 	call_frc_current_e_check();	
 	call_frc_e_check();	
 	call_arinc_irq_delta_array();                                                                                                                                                                                                    
 	wait_irq() ;                                     
-	iowrite32((rx_mem_double +8),(ARINC_BASE + AG_O_RX)); //mem rx_double addr update
-	rd_data	= 	ioread32(rx_mem_double + 4);
+	iowrite32(((uint32_t) &rx_mem_double[2]),(ARINC_BASE + AG_O_RX)); //mem rx_double addr update
+	rd_data	= ioread32((uint32_t) &rx_mem_double[1]);
 	rumboot_printf("ARINC data=0x%x\n", rd_data); //check data
+	rumboot_printf("ARINC &rx_mem_double[2]=0x%x\n", ((uint32_t) &rx_mem_double[2])); //check data
 		if (rd_data != 0x20414243) {
-	 rumboot_printf("ERROR READ ODD ARRAY 3w\n");	
+	rumboot_printf("ERROR READ ODD ARRAY 3w\n");	
     return false;
 		}
 	call_frc_current_e_check();	
@@ -465,15 +463,6 @@ TEST_SUITE_END();
 /* Call the whole test suite */
 int main()
 {
-	
-	uint32_t *trg 		 = (uint32_t *) 0x40000;
-	uint32_t *trg_double = (uint32_t *) 0x60000;
-
-	rumboot_printf("copy %d bytes\n", sizeof(tx_array32));  //transmit
-	memcpy(trg, tx_array32,sizeof(tx_array32));
-
-	rumboot_printf("copy %d bytes\n", sizeof(tx_array_double));  //transmit
-	memcpy(trg_double, tx_array_double,sizeof(tx_array32));
 	
 	rumboot_irq_cli(); //Disable all interrupts
 	

@@ -3,12 +3,14 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
 
 INCLUDE(cmake/RumBoot.cmake)
 find_package(Doxygen)
+find_package(Git)
 
 SET(RUMBOOT_PLATFORM "native" CACHE STRING "RumBoot platform to compile for")
 
 if (NOT CMAKE_BUILD_TYPE)
   SET(CMAKE_BUILD_TYPE "Production" CACHE string "BuildType")
 endif()
+set(RUMBOOT_BUILD_TYPE ${CMAKE_BUILD_TYPE})
 
 INCLUDE(cmake/platforms/${RUMBOOT_PLATFORM}.cmake)
 
@@ -64,19 +66,53 @@ if (NOT LUA_VERSION MATCHES "Lua\ 5.1")
 endif()
 
 
-SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Os -g -Wall -fno-omit-frame-pointer")
-SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DRUMBOOT_VERSION=\\\"${GIT_BRANCH}-${GIT_REVISION}\\\"")
+SET(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Os -g -Wall -fno-omit-frame-pointer")
+
+SET(EXTRA_COMMON_FLAGS "${EXTRA_COMMON_FLAGS} -DRUMBOOT_VERSION=\\\"${GIT_BRANCH}-${GIT_REVISION}\\\"")
+
 
 string(TOUPPER ${CMAKE_BUILD_TYPE} CMAKE_BUILD_TYPE_DEF)
 set(CMAKE_BUILD_TYPE_DEF "CMAKE_BUILD_TYPE_${CMAKE_BUILD_TYPE_DEF}")
-SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D${CMAKE_BUILD_TYPE_DEF}")
+SET(EXTRA_COMMON_FLAGS "${EXTRA_COMMON_FLAGS} -D${CMAKE_BUILD_TYPE_DEF}")
 
-SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DCMAKE_BUILD_TYPE=\\\"${CMAKE_BUILD_TYPE}\\\"")
-SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DRUMBOOT_PLATFORM=\\\"${RUMBOOT_PLATFORM}\\\"")
-SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DRUMBOOT_ARCH=\\\"${RUMBOOT_ARCH}\\\"")
+SET(EXTRA_COMMON_FLAGS "${EXTRA_COMMON_FLAGS} -DCMAKE_BUILD_TYPE=\\\"${CMAKE_BUILD_TYPE}\\\"")
+SET(EXTRA_COMMON_FLAGS "${EXTRA_COMMON_FLAGS} -DRUMBOOT_PLATFORM=\\\"${RUMBOOT_PLATFORM}\\\"")
+SET(EXTRA_COMMON_FLAGS "${EXTRA_COMMON_FLAGS} -DRUMBOOT_ARCH=\\\"${RUMBOOT_ARCH}\\\"")
 
 if(NOT RUMBOOT_DISABLE_CCACHE)
   find_program(CCACHE_FOUND ccache)
+endif()
+
+
+macro(find_rumboot_packimage)
+  find_file(RUMBOOT_PACKIMAGE
+    NAMES rumboot_packimage.py rumboot-packimage
+    PATHS ${PROJECT_SOURCE_DIR}/rumboot-packimage.py
+          ${CMAKE_SOURCE_DIR}/rumboot-packimage.py
+  )
+  if("${RUMBOOT_PACKIMAGE}" STREQUAL "${PROJECT_SOURCE_DIR}/rumboot-packimage.py/rumboot_packimage.py")
+    message("rumboot_packimage.py: Using shipped version, so I will update the submodule for you")
+    execute_process(
+      COMMAND ${GIT_EXECUTABLE} submodule update rumboot-packimage.py
+      WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+    )
+  endif()
+endmacro()
+
+find_rumboot_packimage()
+if (RUMBOOT_PACKIMAGE STREQUAL "RUMBOOT_PACKIMAGE-NOTFOUND")
+  message("rumboot-packimage.py not found, trying check it out")
+  execute_process(
+    COMMAND ${GIT_EXECUTABLE} submodule update --init rumboot-packimage.py
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+  )
+  find_rumboot_packimage()
+endif()
+
+if (NOT RUMBOOT_PACKIMAGE STREQUAL "RUMBOOT_PACKIMAGE-NOTFOUND")
+  message("-- Found Rumboot-Packimage.py: ${RUMBOOT_PACKIMAGE}")
+else()
+  message(FATAL_ERROR "Failed to find Rumboot-Packimage.py")
 endif()
 
 message("\n\n ==== RumBoot Configuration summary ====")
@@ -155,10 +191,36 @@ ADD_SOURCE("src/lib/drivers/mdma/descriptor.c")
 ADD_SOURCE("src/lib/drivers/muart.c")
 ADD_SOURCE("src/lib/drivers/eeprom.c")
 ADD_SOURCE("src/lib/drivers/mgeth.c")
-# ADD_SOURCE("src/lib/drivers/bisr.c")
+ADD_SOURCE("src/lib/drivers/mdma_chan_lib.c")
+ADD_SOURCE("src/lib/drivers/wdt.c")
+ADD_SOURCE("src/lib/drivers/mkio.c")
+ADD_SOURCE("src/lib/drivers/pl022.c")
+ADD_SOURCE("src/lib/bootsrc/boilerplate.c")
+ADD_SOURCE("src/lib/bootsrc/physmap.c")
+ADD_SOURCE("src/lib/malloc.c")
+ADD_SOURCE("src/lib/xmodem.c")
+ADD_SOURCE("src/lib/eventsystem/wrappers.c")
+ADD_SOURCE("src/lib/eventsystem/offload.c")
+
+if (NOT RUMBOOT_PLATFORM STREQUAL "native")
+  if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    ADD_SOURCE("src/lib/eventsystem/eventchannel-memory.c")
+    ADD_SOURCE("src/lib/eventsystem/io-eventchannel.c")
+    set(EXTRA_COMMON_FLAGS "${EXTRA_COMMON_FLAGS} -DRUMBOOT_PRINTF_ACCEL")
+  elseif(CMAKE_BUILD_TYPE STREQUAL "Production")
+    ADD_SOURCE(src/lib/eventsystem/eventchannel-memory.c)
+  elseif(CMAKE_BUILD_TYPE STREQUAL "PostProduction")
+    ADD_SOURCE(src/lib/eventsystem/eventchannel-serial.c)
+  endif()
+endif()
+
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${EXTRA_COMMON_FLAGS}")
+set(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} ${EXTRA_COMMON_FLAGS}")
+
 
 if (RUMBOOT_PLATFORM MATCHES native)
     ADD_SOURCE("src/rumboot_main_native.c")
+    ADD_SOURCE("src/lib/bootsrc/file.c")
 else()
     ADD_SOURCE("src/rumboot_main.c")
     ADD_SOURCE("src/lib/newlib-stubs.c")
@@ -190,6 +252,12 @@ endforeach()
     "${CMAKE_CURRENT_BINARY_DIR}/Doxyfile"
   )
 
+if (RUMBOOT_COVERAGE AND RUMBOOT_PLATFORM STREQUAL "native")
+    add_custom_target(coverage
+      COMMAND lcov -c -o coverage.info -d ${PROJECT_BINARY_DIR}
+      COMMAND genhtml -o coverage_report coverage.info
+    )
+endif()
 
 if (DOXYGEN_FOUND)
   add_custom_target(docs COMMAND doxygen > doxygen.log)

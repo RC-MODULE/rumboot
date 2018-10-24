@@ -5,7 +5,8 @@
 //    Test duration (RTL): < 170us
 //-----------------------------------------------------------------------------
 
-#include <platform/defs.h>
+#include <regs/regs_pcie.h>
+#include <platform/devices.h>
 
 .global main
 

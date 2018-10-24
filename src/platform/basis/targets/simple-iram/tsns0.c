@@ -143,7 +143,7 @@ int main(void)
 		GPIO(array_gpio[count], 0xFF, GPIO2_BASE); 
 		if (count == 0)
 		{
-			for(int unsigned i=0;i<100;i++)
+			for(int unsigned i=0;i<200;i++)
 			{
 				if( i & 0x000003FF )
 				{
@@ -155,7 +155,7 @@ int main(void)
 		}
 		else
 		{
-			for(int unsigned i=0;i<20;i++)
+			for(int unsigned i=0;i<40;i++)
 			{
 				if( i & 0x000000FF )
 				{

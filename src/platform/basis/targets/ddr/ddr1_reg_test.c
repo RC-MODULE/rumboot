@@ -19,7 +19,9 @@
 
 #include <rumboot/ddr_test_lib.h>
 #include <rumboot/io.h>
+#include <platform/devices.h>
 
+#include <regs/regs_ddr.h>
 
     const uint32_t data_address_array [4] [384] =
     {

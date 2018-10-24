@@ -1,6 +1,6 @@
 # RumBoot
 # This invocation builds rumboot in native mode and runs the tests
-# if native tests fail - no use to test anything at all
+# if native tests fail - no use to test anything at all${RUMBOOT_ONEVALUE_ARGS}
 
 add_custom_target(rumboot)
 
@@ -13,55 +13,12 @@ if(RUMBOOT_COVERAGE)
   )
 endif()
 
-#TODO: CLEAN UN INTEGRATION STUFF BY INCLUDING RumBoot.cmake
-#TODO: RIGHT HERE.
-macro(add_rumboot_target_dir dir)
-  #TODO: Use RUMBOOT_PLATFORM_TARGET_DIR
-  #TODO: Search and resolve directories in common/ dir
-  file(GLOB RUMBOOT_TARGETS_C ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/targets/${dir}/*.c)
-  file(GLOB RUMBOOT_TARGETS_S ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/targets/${dir}/*.S)
-  file(GLOB RUMBOOT_TARGETS_LUA ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/${dir}/*.lua)
-
-  foreach(target ${RUMBOOT_TARGETS_C} ${RUMBOOT_TARGETS_S} )
-    add_rumboot_target(
-        ${ARGN}
-        FILES ${target}
-    )
-  endforeach()
-endmacro()
-
-# This one builds our rumboot that we're gonna use for the SoC
-# Disabled until the rumboot builds for target are actually supported
-#add_external_component(rumboot rumboot -DRUMBOOT_PLATFORM=basis)
-macro(rumboot_add_configuration name)
-  message(STATUS "Adding configuration ${name}")
-  set(options DEFAULT)
-  set(oneValueArgs SNAPSHOT LDS PREFIX NAME BOOTROM)
-  set(multiValueArgs FILES IRUN_FLAGS CFLAGS TESTGROUP FEATURES TIMEOUT)
-
-  cmake_parse_arguments(CONFIGURATION_${name} "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
-  LIST(APPEND RUMBOOT_CONFIGURATIONS ${name})
-  if (CONFIGURATION_${name}_DEFAULT)
-    set(RUMBOOT_PLATFORM_DEFAULT_CONFIGURATION ${name})
-    message(STATUS "Default configuration set to: ${RUMBOOT_PLATFORM_DEFAULT_CONFIGURATION}")
-  endif()
-endmacro()
-
-macro(config_load_param conf param)
-  if (NOT TARGET_${param})
-    set(TARGET_${param} ${CONFIGURATION_${conf}_${param}})
-  endif()
-endmacro()
-
-macro(config_load_param_append conf param)
-    set(TARGET_${param} ${TARGET_${param}} ${CONFIGURATION_${conf}_${param}})
-endmacro()
 
 function(add_rumboot_target)
   # snapshot lds prefix target
   set(optons "")
-  set(oneValueArgs SNAPSHOT LDS NAME PREFIX CONFIGURATION BOOTROM)
-  set(multiValueArgs FILES IRUN_FLAGS CFLAGS TESTGROUP LDFLAGS CHECKCMD FEATURES TIMEOUT)
+  set(oneValueArgs ${RUMBOOT_ONEVALUE_ARGS})
+  set(multiValueArgs ${RUMBOOT_MULVALUE_ARGS})
 
   cmake_parse_arguments(TARGET "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
@@ -70,11 +27,11 @@ function(add_rumboot_target)
   endif()
 
   foreach(c ${oneValueArgs})
-    config_load_param(${TARGET_CONFIGURATION} ${c})
+    config_load_param(TARGET ${TARGET_CONFIGURATION} ${c})
   endforeach()
 
   foreach(c ${multiValueArgs})
-    config_load_param_append(${TARGET_CONFIGURATION} ${c})
+    config_load_param_append(TARGET ${TARGET_CONFIGURATION} ${c})
   endforeach()
 
   if (NOT TARGET_NAME)
@@ -94,6 +51,8 @@ function(add_rumboot_target)
     return()
   endif()
 
+  add_custom_target(${product})
+
   list (FIND TARGET_FEATURES "STUB" _index)
   if (${_index} GREATER -1)
     return()
@@ -112,18 +71,60 @@ function(add_rumboot_target)
     set(lprobe_flags)
   endif()
 
+  set(maplist)
+
   if (NOT TARGET_BOOTROM)
     set(bootrom_flags +BOOTROM=${rumboot_fulldir}/${product}.hex)
+    set(maplist ${rumboot_fulldir}/${product}.dmp)
   else()
-      set(bproduct rumboot-${RUMBOOT_PLATFORM}-${buildtype}-${TARGET_BOOTROM})
+      generate_product_name(bproduct ${TARGET_BOOTROM})
       set(bootrom_flags
           +BOOTROM=${rumboot_fulldir}/${bproduct}.hex
-          +IM0BIN=${rumboot_fulldir}/${product}.bin
+      )
+    set(maplist
+        ${rumboot_fulldir}/${bproduct}.dmp
     )
   endif()
 
+  set(v 0)
+  set(loadflags "")
+  foreach(l ${TARGET_LOAD})
+    if (v EQUAL 0)
+      set(plus ${l})
+      set(v 1)
+    else()
+      set(trgs ${l})
+      string(REPLACE "," ";" trgs "${trgs}")
+      set(trglist)
+      foreach(trg ${trgs})
+          if (trglist)
+            set(trglist "${trglist},")
+          endif()
+          if (maplist)
+            set(maplist "${maplist},")
+          endif()
+          generate_product_name(tproduct ${trg})
+          if (${trg} STREQUAL "SELF")
+            set(trglist "${trglist}${rumboot_fulldir}/${product}.bin")
+            set(maplist "${maplist}${rumboot_fulldir}/${product}.dmp")
+          elseif(TARGET ${tproduct})
+            set(trglist "${trglist}${rumboot_fulldir}/${tproduct}.bin")
+            set(maplist "${maplist}${rumboot_fulldir}/${tproduct}.dmp")
+          else()
+            set(trglist "${trglist}${trg}")
+          endif()
+      endforeach()
+      set(loadflags "${loadflags} +${plus}=${trglist}")
+      set(v 0)
+    endif()
+  endforeach()
+
   if (NOT "${TARGET_CHECKCMD}" STREQUAL "")
     string(REPLACE ";" " " TARGET_CHECKCMD "${TARGET_CHECKCMD}")
+  endif()
+
+  if (NOT "${TARGET_PREPCMD}" STREQUAL "")
+    string(REPLACE ";" " " TARGET_PREPCMD "${TARGET_PREPCMD}")
   endif()
 
   if (TARGET_TIMEOUT)
@@ -155,10 +156,19 @@ function(add_rumboot_target)
         ${bootrom_flags}
         ${lprobe_flags}
         ${timeout_flags}
-        +BOOTMAP=${rumboot_fulldir}/${product}.dmp
+        +BOOTMAP=${maplist}
+        ${loadflags}
         ${TARGET_IRUN_FLAGS}
     )
 
+    if (TARGET_TESTGROUP)
+      string(REPLACE " " ";" TARGET_TESTGROUP "${TARGET_TESTGROUP}")
+    endif()
+    SET_TESTS_PROPERTIES(rumboot-${TARGET_SNAPSHOT}-${product} PROPERTIES LABELS "full;${TARGET_TESTGROUP}")
+
+    if (TARGET_TIMEOUT_CTEST)
+      SET_TESTS_PROPERTIES(rumboot-${TARGET_SNAPSHOT}-${product} PROPERTIES TIMEOUT "${TARGET_TIMEOUT_CTEST}")
+    endif()
     #FixMe: Hack. ARM ModelManager fucks up simulation with a segfault if
     #No JTAGbsi file is found. That happens even if it's not really running
     #So we always provide a dummy here to be safe.
@@ -193,6 +203,8 @@ function(rumboot_load_build platform buildtype)
 
     set(RUMBOOT_PLATFORM ${platform})
     set(RUMBOOT_PLATFORM_TARGET_DIR ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/targets/)
+    set(RUMBOOT_PLATFORM_COMMON_DIR ${CMAKE_SOURCE_DIR}/src/platform/)
+
     include(${CMAKE_SOURCE_DIR}/cmake/platforms/${platform}.cmake)
 
     RUMBOOT_PLATFORM_ADD_COMPONENTS()

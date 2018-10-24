@@ -24,8 +24,10 @@
 
  #ifndef RUMBOOT_BASIS_ENABLE_MIRROR
     #define BASIS_PHYS(addr) (addr)
+    #define BASIS_VIRT(addr) (addr)
  #else
     #define BASIS_PHYS(addr) (addr + PCIE_BASE)
+    #define BASIS_VIRT(addr) (addr - PCIE_BASE)
  #endif
 
  #define MDMA0_BASE               BASIS_PHYS(0x01010000)
@@ -45,6 +47,7 @@
  #define TSNS_BASE                BASIS_PHYS(0x01032000)
  #define BISR_L2C                 BASIS_PHYS(0x0103E000)
  #define GSPI0_BASE               BASIS_PHYS(0x01040000)
+ #define GSPI1_BASE               BASIS_PHYS(0x01041000)
  #define SDIO0_BASE               BASIS_PHYS(0x01042000)
  #define SDIO1_BASE               BASIS_PHYS(0x01043000)
  #define UART0_BASE               BASIS_PHYS(0x01044000)
@@ -65,6 +68,7 @@
  #define MDIO3_BASE               BASIS_PHYS(0x01083000)
  #define MGPIO0_BASE              BASIS_PHYS(0x01084000)
  #define MGPIO1_BASE              BASIS_PHYS(0x01085000)
+ #define SGMII_PHY                BASIS_PHYS(0x01086000)
  #define GPIO0_BASE               BASIS_PHYS(0x01088000)
  #define GPIO1_BASE               BASIS_PHYS(0x01089000)
  #define GPIO2_BASE               BASIS_PHYS(0x0108A000)
@@ -75,12 +79,14 @@
  #define SCTL_BASE                BASIS_PHYS(0x0108D000)
  #define GLOBAL_TIMERS            BASIS_PHYS(0x0108E000)
  #define WDT_BASE                 BASIS_PHYS(0x0108F000)
- #define DDR0_BASE                BASIS_PHYS(0x01500000)
- #define DDR1_BASE                BASIS_PHYS(0x01502000)
- #define GIC_DIST_BASE            BASIS_PHYS(0x01504000)
- #define GIC_CPUIF_BASE           BASIS_PHYS(0x01505000)
- #define L2C_BASE                 BASIS_PHYS(0x01506000)
- #define NIC400_BASE              BASIS_PHYS(0x01600000)
+ #define MKIO0_BASE               BASIS_PHYS(0x01090000)
+ #define MKIO1_BASE               BASIS_PHYS(0x01091000)
+ #define DDR0_BASE                BASIS_PHYS(0x01100000)
+ #define DDR1_BASE                BASIS_PHYS(0x01102000)
+ #define GIC_DIST_BASE            BASIS_PHYS(0x01104000)
+ #define GIC_CPUIF_BASE           BASIS_PHYS(0x01105000)
+ #define L2C_BASE                 BASIS_PHYS(0x01106000)
+ #define NIC400_BASE              BASIS_PHYS(0x01200000)
 
 
  /**

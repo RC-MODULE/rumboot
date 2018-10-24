@@ -27,7 +27,7 @@ const struct rumboot_irq_controller *rumboot_irq_controller_by_irq(int irq)
 {
 	int i = 0;
 	do {
-		const struct rumboot_irq_controller *ctl = rumboot_platform_runtime_info.irq_ctl_dev[i];
+		const struct rumboot_irq_controller *ctl = rumboot_platform_runtime_info->irq_ctl_dev[i];
 
 		if (!ctl)
 			break;
@@ -46,15 +46,15 @@ const struct rumboot_irq_controller *rumboot_irq_controller_by_id(int id)
 	if ((id > RUMBOOT_PLATFORM_NUM_IRQ_CONTROLLERS) || (id < 0)) {
 			return NULL;
 	}
-	return rumboot_platform_runtime_info.irq_ctl_dev[id];
+	return rumboot_platform_runtime_info->irq_ctl_dev[id];
 }
 
 void rumboot_irq_register_controller(const struct rumboot_irq_controller *ctl)
 {
-	if (rumboot_platform_runtime_info.num_irq_controllers >= RUMBOOT_PLATFORM_NUM_IRQ_CONTROLLERS) {
+	if (rumboot_platform_runtime_info->num_irq_controllers >= RUMBOOT_PLATFORM_NUM_IRQ_CONTROLLERS) {
 		rumboot_platform_panic("irq: Failed to register irq controller %s: Please increase RUMBOOT_PLATFORM_NUM_IRQ_CONTROLLERS\n");
 	}
-	rumboot_platform_runtime_info.irq_ctl_dev[rumboot_platform_runtime_info.num_irq_controllers++] = ctl;
+	rumboot_platform_runtime_info->irq_ctl_dev[rumboot_platform_runtime_info->num_irq_controllers++] = ctl;
 	ctl->init(ctl);
 }
 
@@ -76,7 +76,7 @@ struct rumboot_irq_entry *rumboot_irq_create(struct rumboot_irq_entry *copyfrom)
 	}
 
 	if (copyfrom) {
-		memcpy(tbl, copyfrom, sizeof(*tbl) + (RUMBOOT_PLATFORM_NUM_IRQS + 1));
+		memcpy(tbl, copyfrom, sizeof(*tbl) * (RUMBOOT_PLATFORM_NUM_IRQS + 1));
 	}
 
 	return tbl;
@@ -85,7 +85,7 @@ struct rumboot_irq_entry *rumboot_irq_create(struct rumboot_irq_entry *copyfrom)
 void rumboot_irq_set_default_handler(void (*handler)(int irq))
 {
 	RUMBOOT_ATOMIC_BLOCK() {
-		rumboot_platform_runtime_info.irq_def_hndlr = handler;
+		rumboot_platform_runtime_info->irq_def_hndlr = handler;
 	}
 }
 
@@ -114,7 +114,7 @@ void rumboot_irq_set_handler(struct rumboot_irq_entry *tbl, int irq, uint32_t fl
 void rumboot_irq_table_activate(struct rumboot_irq_entry *tbl)
 {
 	RUMBOOT_ATOMIC_BLOCK() {
-		rumboot_platform_runtime_info.irq_handler_table = tbl;
+		rumboot_platform_runtime_info->irq_handler_table = tbl;
 		if (tbl) {
 			int i = 0;
 			for (i = 0; i < RUMBOOT_PLATFORM_NUM_IRQS; i++)
@@ -125,16 +125,23 @@ void rumboot_irq_table_activate(struct rumboot_irq_entry *tbl)
 	}
 }
 
+void rumboot_irq_swint(uint32_t irq)
+{
+	const struct rumboot_irq_controller *ctl = rumboot_irq_controller_by_irq(irq);
+	irq -= ctl->first;
+	ctl->generate_swint(ctl, irq);
+}
 
 void *rumboot_irq_table_get()
 {
-	return rumboot_platform_runtime_info.irq_handler_table;
+	return rumboot_platform_runtime_info->irq_handler_table;
 }
 
 void rumboot_irq_enable(int irq)
 {
 	struct rumboot_irq_entry *tbl = rumboot_irq_table_get();
 	const struct rumboot_irq_controller *ctl = rumboot_irq_controller_by_irq(irq);
+	irq -= ctl->first;
 	ctl->configure(ctl, irq, tbl[irq].flags, 1);
 }
 
@@ -159,6 +166,7 @@ void rumboot_irq_disable(int irq)
 	if (tbl) {
 		flags = tbl[irq].flags;
 	}
+	irq -= ctl->first;
 	ctl->configure(ctl, irq, flags, 0);
 }
 
@@ -169,8 +177,8 @@ static void process_irq(int id)
 
 	if (tbl && tbl[id].handler) {
 		tbl[id].handler(id, tbl[id].arg);
-	} else if (rumboot_platform_runtime_info.irq_def_hndlr) {
-		rumboot_platform_runtime_info.irq_def_hndlr(id);
+	} else if (rumboot_platform_runtime_info->irq_def_hndlr) {
+		rumboot_platform_runtime_info->irq_def_hndlr(id);
 	} else {
 		if (!tbl) {
 			rumboot_platform_panic("FATAL: Unhandled IRQ %d when no active irq table present\n",
@@ -180,6 +188,7 @@ static void process_irq(int id)
 		}
 	}
 }
+
 
 void rumboot_irq_core_dispatch(uint32_t ctrl, uint32_t type, uint32_t id)
 {

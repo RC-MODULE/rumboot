@@ -17,24 +17,21 @@
 //    Test duration (RTL): < 300us
 //-----------------------------------------------------------------------------
 
-#include <rumboot/pcie_test_lib.h>
-
-#define interrupt_turnaround_duration 4
-
-#include <stdio.h>
-#include <stdlib.h>
 #include <stdint.h>
+#include <stdlib.h>
 
-#include <rumboot/printf.h>
 #include <rumboot/io.h>
+#include <rumboot/pcie_test_lib.h>
+#include <rumboot/printf.h>
 #include <rumboot/irq.h>
 
+#include <regs/regs_pcie.h>
 #include <platform/devices.h>
+
 #include <devices/sp804.h>
 
-#define irq_cntr_ptr 0x00050000
-#define irq_flag_ptr 0x00050008
 
+#define interrupt_turnaround_duration 4
 
 #define pcie_dma_int_gic             55
 #define pcie_dma_int_ext_irq_gen     23
@@ -43,6 +40,9 @@
 
 #define data_dst_ptr 0x00051000
 const long long data_dst [256];
+
+volatile int irq_cntr = 0;
+volatile int irq_flag = 0;
 
 const long long data_src [256] = {
     (long long) 0x0000000000000000l,(long long) 0x0101010101010101l,(long long) 0x0202020202020202l,(long long) 0x0303030303030303l,
@@ -113,7 +113,7 @@ const long long data_src [256] = {
 
 void clear_PCIe_DMA_IRQ_effects ()
 {
-    rgPCIe_DMA_common_udma_int = 0x1;
+    iowrite32 (0x1, PCIE_CORE_BASE + PCIe_Core_DMAConfig + PCIe_DMA_common_udma_int);
 }
 
 //------------------------------------------------------------------------
@@ -142,14 +142,14 @@ uint32_t check_msix_PCIe_DMA_IRQ ()
 
 //------------------------------------------------------------------------
 //  PCIe DMA IRQ handler function.
-//    Increase irq_cntr_ptr to count irq events number
-//    Set irq_flag_ptr main program to acknowledge irq recieving
+//    Increase irq_cntr to count irq events number
+//    Set irq_flag main program to acknowledge irq recieving
 //------------------------------------------------------------------------
 static void PCIe_DMA_IRQ_handler (int irq, void *arg)
 {
 	rumboot_printf("PCIe DMA IRQ happened \n");
-    iowrite32 (ioread32 (irq_cntr_ptr) + 1, irq_cntr_ptr);
-    iowrite32 (1, irq_flag_ptr);
+    irq_cntr += 1;
+    irq_flag = 1;
     clear_PCIe_DMA_IRQ_effects ();
 }
 
@@ -160,26 +160,29 @@ void pcie_dma_transaction ()
     //-------------------------------------------------------------
     //  Create descriptor for PCIe internal DMA controller
     //-------------------------------------------------------------
-    PCIe_DMA_descriptor.axi_base_addr   = (uint32_t) (&data_src);
-    PCIe_DMA_descriptor.pcie_base_addr  = (uint64_t) (uint32_t) (&data_dst);
-    PCIe_DMA_descriptor.transfer_length = 8*256;
-    PCIe_DMA_descriptor.control_byte = 1;
+    PCIe_DMA_descriptor.axi_base_addr       = (uint32_t) (&data_src);
+    PCIe_DMA_descriptor.axi_addr_phase      = 0;
+    PCIe_DMA_descriptor.pcie_base_addr      = (uint64_t) (uint32_t) (&data_dst);
+    PCIe_DMA_descriptor.tlp_header_att      = 0;
+    PCIe_DMA_descriptor.transfer_length     = 8*256;
+    PCIe_DMA_descriptor.control_byte        = 1;
+    PCIe_DMA_descriptor.next_desc_pointer   = 0;
     //-------------------------------------------------------------
     //  Set parameters for reading descriptor
     //-------------------------------------------------------------
-    rgPCIe_DMA_channel_0_ctrl = 0x2;
-    rgPCIe_DMA_channel_0_sp_l = (uint32_t) (&PCIe_DMA_descriptor);
-    rgPCIe_DMA_channel_0_sp_u = 0;
-    rgPCIe_DMA_channel_0_attr_l = 0;
-    rgPCIe_DMA_channel_0_attr_u = 0;
+    iowrite32 ( 0x2, PCIE_CORE_BASE + PCIe_Core_DMAConfig + PCIe_DMA_channel_0_ctrl  );
+    iowrite32 ((uint32_t) (&PCIe_DMA_descriptor), PCIE_CORE_BASE + PCIe_Core_DMAConfig + PCIe_DMA_channel_0_sp_l  );
+    iowrite32 ( 0x0, PCIE_CORE_BASE + PCIe_Core_DMAConfig + PCIe_DMA_channel_0_sp_u  );
+    iowrite32 ( 0x0, PCIE_CORE_BASE + PCIe_Core_DMAConfig + PCIe_DMA_channel_0_attr_l);
+    iowrite32 ( 0x0, PCIE_CORE_BASE + PCIe_Core_DMAConfig + PCIe_DMA_channel_0_attr_u);
     //  ... and run transaction for writing
-    rgPCIe_DMA_channel_0_ctrl = 0x3;
+    iowrite32 (0x3, PCIE_CORE_BASE + PCIe_Core_DMAConfig + PCIe_DMA_channel_0_ctrl );
 }
 
 uint32_t main ()
 {
-    iowrite64 (0, irq_cntr_ptr) ;
-    iowrite64 (0, irq_flag_ptr) ;
+    irq_cntr = 0;
+    irq_flag = 0;
 
     //---------------------------------------------------------
     //  GIC configuration
@@ -224,10 +227,10 @@ uint32_t main ()
         //  Wait interrupt handled by GIC
         //    It should be made at the beginning of previous cycle.
         //---------------------------------------------------------
-        while (ioread32 (irq_flag_ptr) != 1)
+        while (irq_flag != 1)
         {
         }
-        iowrite32 (0, irq_flag_ptr) ;
+        irq_flag = 0;
         //---------------------------------------------------------
         //  Wait MSIX come back
         //    And check it
@@ -256,12 +259,14 @@ uint32_t main ()
 
     }
 
+    
+	// rumboot_printf("  __dbg_0    %d    %d\n", irq_cntr, repeat_number);
     //---------------------------------------------------------
     //  Check, that irq handler was called neccessary times
     //---------------------------------------------------------
-    if (ioread32 (irq_cntr_ptr) != repeat_number)
+    if (irq_cntr != repeat_number)
     {
-        return ioread32 (irq_cntr_ptr);
+        return irq_cntr;
     }
 
     return 0;

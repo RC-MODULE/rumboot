@@ -1,5 +1,4 @@
-#include <rumboot/bootheader.h>
-#include <rumboot/bootsource.h>
+#include <rumboot/boot.h>
 #include <rumboot/printf.h>
 #include <rumboot/platform.h>
 #include <rumboot/macros.h>
@@ -8,98 +7,215 @@
 #include <string.h>
 
 
-
-static bool load_img(const struct rumboot_bootsource *src, void *pdata)
+static size_t round_up_to_align(size_t value, size_t align)
 {
-	uint8_t *read_from = (uint8_t *)(src->base + src->offset);
-	uint8_t *write_to = (uint8_t *)&rumboot_platform_spl_start;
-	char tmp[512];
-
-	//Read header!
-	size_t count = src->read(pdata, &tmp, read_from);
-	if(count < 0)
-		return false;
-
-	struct rumboot_bootheader *hdr = (struct rumboot_bootheader *)&tmp;
-	size_t img_size = hdr->datalen + 66;
-
-	//Reed data image
-	while (img_size > 0) {
-
-		count = src->read(pdata, &tmp, read_from);
-
-		if (count < 0) {
-			rumboot_printf("boot: read from %s failed.\n", src->name);
-			break;
-		}
-		memcpy(write_to, &tmp, count);
-
-		img_size	-= count;
-		write_to	+= count;
-		read_from	+= count;
-	}
-
-	return true;
+        if (!align) {
+                return value;
+        }
+        size_t misalign = value % align;
+        if (misalign) {
+                value += align - misalign;
+        }
+        return value;
 }
 
-bool bootsource_try_single(const struct rumboot_bootsource *src, void *pdata)
+static const char *describe_next_step(int code)
 {
-	bool ret = false;
+        if (code > 0) {
+                return "boot from another device";
+        } else if (code == 0) {
+                return "boot from next device";
+        } else {
+                return "switch to host mode";
+        }
+}
+bool bootsource_init(const struct rumboot_bootsource *src, void *pdata)
+{
+        bool ret = false;
 
-	rumboot_printf("boot: trying to boot from  %s\n", src->name);
+        ret = true;
+        if (src->enable) {
+                ret = src->enable(src, pdata);
+        }
 
-	//DBG_ASSERT(PRIVDATA_SIZE < src->privdatalen, "FATAL: Increase PRIVDATA_SIZE length");
+        if (!ret) {
+                dbg_boot(src, "Failed to enable or media not present");
+                goto gpio_deinit;
+        }
 
-	struct rumboot_bootheader *dst = (struct rumboot_bootheader *)&rumboot_platform_spl_start;
+        ret = true;
+        if (src->plugin->init) {
+                ret = src->plugin->init(src, pdata);
+        }
 
-	ret = src->init_gpio_mux(pdata);
-	if (ret) {
-		rumboot_printf("boot: %s, gpio initialized, okay\n", src->name);
-	} else {
-		rumboot_printf("boot: %s, gpio initialization failed\n", src->name);
-		goto gpio_deinit;
-	}
+        if (!ret) {
+                dbg_boot(src, "Initialization failed");
+                goto deinit;
+        }
 
-	ret = src->init(src, pdata);
-	if (ret) {
-		rumboot_printf("boot: %s initialized, okay\n", src->name);
-	} else {
-		rumboot_printf("boot: %s initialization failed\n", src->name);
-		goto deinit;
-	}
-
-	ret = load_img(src, pdata);
-	if (ret) {
-		rumboot_printf("boot: loaded an image from %s, okay, ", src->name);
-	} else {
-		rumboot_printf("boot: no valid image found in %s\n\n", src->name);
-		goto deinit;
-	}
-
-	rumboot_printf("and... execute!\n");
-
-	/* At this point we have a valid image in IM0 */
-	rumboot_bootimage_exec(dst);
-
-	return true;
+        return true;
 
 deinit:
-	src->deinit(pdata);
+        if (src->plugin->deinit) {
+                src->plugin->deinit(src, pdata);
+        }
 gpio_deinit:
-	src->deinit_gpio_mux(pdata);
-	return false;
+        if (src->disable) {
+                src->disable(src, pdata);
+        }
+        return ret;
 }
 
-bool bootsource_try_chain(const struct rumboot_bootsource *src, void *pdata)
+
+size_t bootsource_read(const struct rumboot_bootsource *src, void *pdata, void *dest, size_t offset, size_t len)
 {
-	bool ret = false;
+        if (src->plugin->align) {
+                if (offset % src->plugin->align) {
+                        dbg_boot(src, "WARN: Refusing to do misaligned read");
+                        return 0;
+                }
+                size_t misalign = len % src->plugin->align;
+                if (misalign) {
+                        len -= misalign;
+                        dbg_boot(src, "WARN: Reducing read size to match alignment requirements");
+                }
+        }
+        return src->plugin->read(src, pdata, dest, offset, len);
+}
 
-	while (src->name) {
-		ret = bootsource_try_single(src, pdata);
-		src++;
+void bootsource_deinit(const struct rumboot_bootsource *src, void *pdata)
+{
+        if (src->plugin->deinit) {
+                src->plugin->deinit(src, pdata);
+        }
+        if (src->disable) {
+                src->disable(src, pdata);
+        }
+}
 
-		if (ret)
-			break;
-	}
-	return ret;
+int bootsource_load_img(const struct rumboot_bootsource *src, void *pdata, struct rumboot_bootheader *hdr, size_t maxsize, size_t *offset)
+{
+        void *data;
+
+        size_t toread = src->plugin->align;
+
+        if (!toread) {
+                toread = sizeof(*hdr);
+        }
+        /* Now, carefully handle alignment. */
+        if ((sizeof(*hdr) > toread)) {
+                toread = sizeof(*hdr);
+                toread = round_up_to_align(toread, src->plugin->align);
+        }
+
+        //Read header!
+        size_t count = bootsource_read(src, pdata, hdr, *offset, toread);
+        if (count < toread) {
+                return -EIO;
+        }
+        hdr->device = src;
+        *offset += count;
+
+        ssize_t len = rumboot_bootimage_check_header(hdr, &data);
+
+        if (len < 0) {
+                return len;
+        }
+
+        len = round_up_to_align(len, src->plugin->align);
+
+        if (len + sizeof(*hdr) > maxsize) {
+                return -ETOOBIG;
+        }
+
+
+        bootsource_read(src, pdata, &hdr->data[count - sizeof(*hdr)], *offset, len);
+        *offset += len;
+        /* No error handling here, let crc32 sort everything out */
+        return rumboot_bootimage_check_data(hdr);
+}
+
+int bootsource_try_source_once(const struct rumboot_bootsource *src, void *pdata, struct rumboot_bootheader *dst, size_t maxsize, size_t *offset)
+{
+        int ret = 0;
+
+        if (!bootsource_init(src, pdata)) {
+                return -EBADSOURCE;
+        }
+
+        *offset = round_up_to_align(*offset, src->plugin->align);
+        dbg_boot(src, "Reading image from offset %d", *offset);
+        ret = bootsource_load_img(src, pdata, dst, maxsize, offset);
+        /* Deinit here before error checking, since we may execute the image next */
+        bootsource_deinit(src, pdata);
+        if (ret != 0) {
+                dbg_boot(src, "Error: %s (%d)", rumboot_strerror(-ret), -ret);
+                goto bailout;
+        }
+        dbg_boot(src, "Image validated, executing...");
+        dst->magic = 0x0;
+        ret = rumboot_platform_exec(dst);
+        dbg_boot(src, "Back in rom, code %d, will now %s", ret, describe_next_step(ret));
+bailout:
+        return ret;
+}
+
+int bootsource_try_single(const struct rumboot_bootsource *src, void *pdata, struct rumboot_bootheader *dst, size_t maxsize, size_t *offset)
+{
+        int ret;
+
+        do {
+                ret = bootsource_try_source_once(src, pdata, dst, maxsize, offset);
+        } while (ret == 0);
+        return ret;
+}
+
+static const struct rumboot_bootsource *find_source_by_id(int bootid)
+{
+        const struct rumboot_bootsource *src = rumboot_platform_get_bootsources();
+        /* We can't index, or we risk getting out-of-bounds */
+        int i = 0;
+        do {
+                if (i++ == bootid) {
+                        break;
+                }
+                src++;
+        } while (src->name);
+        if (!src->name) {
+                return NULL;
+        }
+        return src;
+}
+
+void bootsource_try_chain(void *pdata, struct rumboot_bootheader *hdr, size_t maxsize)
+{
+        int ret;
+        const struct rumboot_bootsource *src = rumboot_platform_get_bootsources();
+
+        while (src && src->name) {
+                size_t offset = src->offset;
+                ret = 0;
+                ret = bootsource_try_single(src, pdata, hdr, maxsize, &offset);
+                if (ret > 0) {
+                        src = find_source_by_id(ret - 1);
+                        continue;
+                }
+
+                if (ret == -ETOHOST) {
+                        break;
+                }
+
+                src++;
+        }
+}
+
+int bootsource_try_by_id(int bootid, void *pdata, struct rumboot_bootheader *hdr, size_t maxsize)
+{
+        const struct rumboot_bootsource *src = find_source_by_id(bootid);
+
+        if (src) {
+                size_t offset = src->offset;
+                return bootsource_try_source_once(src, pdata, hdr, maxsize, &offset);
+        }
+        return -EBADSOURCE;
 }

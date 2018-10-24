@@ -7,8 +7,6 @@
 #include <platform/arch/ppc/ibm_bit_ordering_macros.h>
 
 
-#define reg_field(field_right_bit_num_from_ppc_user_manual, value)\
-    ((value) << IBM_BIT_INDEX( 32, field_right_bit_num_from_ppc_user_manual ))
 #define copy_field( reg_dest,\
                         reg_dest_field_begin,\
                         reg_dest_field_end,\
@@ -17,6 +15,8 @@
     rlwimi  reg_dest, reg_src,\
             (((reg_src_field_begin)%32) + (32 - ((reg_dest_field_begin)%32)))%32,\
             (reg_dest_field_begin)%32, (reg_dest_field_end)%32
+
+#define field_begin( field )  CAT( field,_e ) - ( CAT( field,_n ) - 1 )
 
 .macro  load_const rD, constant
 .if ((\constant & 0xFFFF8000) == 0xFFFF8000) || ((\constant & 0xFFFF8000) == 0x00000000)
@@ -47,6 +47,20 @@
 .macro  store_cr rT, rA, D
     mfcr \rT
     stw \rT,\D(\rA)
+.endm
+
+/* Temp register -vv */
+.macro save_stack tR
+	mtspr	SPR_SPRG7,	r1
+	mflr	\tR
+	mtspr	SPR_SPRG8,	\tR
+.endm
+
+/* Temp register -vv */
+.macro rest_stack tR
+	mfspr	\tR,	SPR_SPRG8
+	mtlr	\tR
+	mfspr	r1,		SPR_SPRG7
 .endm
 
 #define DTLB_ERROR_EA 0x00000000

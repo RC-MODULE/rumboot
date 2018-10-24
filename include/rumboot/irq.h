@@ -16,26 +16,34 @@
 #define RUMBOOT_IRQ_IRQ  0
 #define RUMBOOT_IRQ_FIQ  1
 
-#define RUMBOOT_IRQ_EDGE  (1 << 1)
-#define RUMBOOT_IRQ_LEVEL (0 << 1)
 
 #ifndef __ASSEMBLER__
 
-#ifdef __arm__
+#if defined( __arm__ )
+#include <arch/irq_macros.h>
+#elif defined( __PPC__ ) && !defined(RUMBOOT_NO_IRQ_MACROS)
 #include <arch/irq_macros.h>
 #else
-    /* stubs */
-static inline int rumboot_arch_irq_disable(void)
+
+#define RUMBOOT_IRQ_EDGE    (0)
+#define RUMBOOT_IRQ_LEVEL   (0)
+#define RUMBOOT_IRQ_POS     (0)
+#define RUMBOOT_IRQ_NEG     (0)
+#define RUMBOOT_IRQ_HIGH    (0)
+#define RUMBOOT_IRQ_LOW     (0)
+
+/* stubs */
+static inline uint32_t rumboot_arch_irq_disable( )
 {
     return 0;
 }
 
-static inline void rumboot_arch_irq_enable()
+static inline uint32_t rumboot_arch_irq_enable()
 {
-
+    return 0;
 }
 
-static inline int rumboot_arch_irq_setstate(int pri_mask)
+static inline uint32_t rumboot_arch_irq_setstate(uint32_t new_state)
 {
     return 0;
 }
@@ -125,11 +133,23 @@ static inline int rumboot_arch_irq_setstate(int pri_mask)
          * @param irq id of the irq that is done being serviced
          */
     	void		(*end)(const struct rumboot_irq_controller *dev, uint32_t irq);
+
+        /**
+         * Generate a software interrupt.
+         *
+         * @param generate_swint [description]
+         */
+    	void		(*generate_swint)(const struct rumboot_irq_controller *dev, uint32_t irq);
+
+	void		(*slave_save)(void);
+	void		(*slave_restore)(void);
+
         /**
          * Pointer for implementation-specic data
          * @return [description]
          */
     	void 		*controllerdata;
+
     };
 
     /**
@@ -164,6 +184,14 @@ static inline int rumboot_arch_irq_setstate(int pri_mask)
      */
      void rumboot_irq_set_handler(struct rumboot_irq_entry *tbl, int irq, uint32_t flags,
         void (*handler)(int irq, void *args), void *arg);
+
+    /**
+     * Request controller to generate an interrupt on line irq.
+     * NOTE: Not all IRQ lines may be supported by the controller driver
+     *
+     * @param irq The IRQ line to trigger
+     */
+     void rumboot_irq_swint(uint32_t irq);
 
     /**
      * Set a default IRQ handler. This will be called when an interrupt
@@ -278,13 +306,13 @@ static inline int rumboot_arch_irq_setstate(int pri_mask)
      * ARCH-specific glue: Disable CPU IRQ handling.
      * DO NOT USE DIRECTLY - USE rumboot_irq_cli()
      */
-    static inline int rumboot_arch_irq_disable();
+    static inline uint32_t rumboot_arch_irq_disable();
 
     /**
      * ARCH-specific glue: Enable CPU IRQ handling.
      * DO NOT USE DIRECTLY - USE rumboot_irq_sei()
      */
-    static inline void rumboot_arch_irq_enable();
+    static inline uint32_t rumboot_arch_irq_enable();
 
     /**
      * This function should be called via platform glue code to register
@@ -296,6 +324,8 @@ static inline int rumboot_arch_irq_setstate(int pri_mask)
     /**
     *  @}
     */
+
+   const struct rumboot_irq_controller *rumboot_irq_controller_by_id(int id);
 
 #endif
 

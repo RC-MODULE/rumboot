@@ -12,7 +12,12 @@
 //-----------------------------------------------------------------------------
 #include <stdint.h>
 
-#include <platform/defs_c.h>
+#include <regs/regs_ddr.h>
+#include <regs/regs_crg.h>
+
+#include <platform/devices.h>
+
+#include <rumboot/io.h>
 
 //-----------------------------------------------------------------------------
 //  These defines must be changed for real program
@@ -939,7 +944,7 @@ void config_my_mt41k512m8_107_cl11_bl8 (uint32_t DDRx_BASE)
     (*(volatile int*)(DDRx_BASE + DENALI_CTL_07)) = 0b00000000000000000000000110010000 ;  //  CKE_INACTIVE:RW:0:32:=0x00000190
     (*(volatile int*)(DDRx_BASE + DENALI_CTL_08)) = 0b00000100000000000000100000010110 ;  //  TBST_INT_INTERVAL:RW:24:3:=0x04 ADDITIVE_LAT:RW:16:5:=0x00 WRLAT:RW:8:5:=0x08 CASLAT_LIN:RW:0:6:=0x16
     (*(volatile int*)(DDRx_BASE + DENALI_CTL_09)) = 0b00011100001001110000010100000100 ;  //  TRAS_MIN:RW:24:8:=0x1c TRC:RW:16:8:=0x27 TRRD:RW:8:8:=0x05 TCCD:RW:0:5:=0x04
-    (*(volatile int*)(DDRx_BASE + DENALI_CTL_10)) = 0b00000110000101100000110000000110 ;  //  TRTP:RW:24:8:=0x06 TFAW:RW:16:8:=0x16 TRP:RW:8:8:=0x0c TWTR:RW:0:6:=0x06
+    (*(volatile int*)(DDRx_BASE + DENALI_CTL_10)) = 0b00000110000101100000110000000111 ;  //  TRTP:RW:24:8:=0x06 TFAW:RW:16:8:=0x16 TRP:RW:8:8:=0x0c TWTR:RW:0:6:=0x07
     (*(volatile int*)(DDRx_BASE + DENALI_CTL_11)) = 0b00000000000000000000110000000100 ;  //  TMOD:RW:8:8:=0x0c TMRD:RW:0:8:=0x04
     (*(volatile int*)(DDRx_BASE + DENALI_CTL_12)) = 0b00000100000000001101101101100000 ;  //  TCKE:RW:24:3:=0x04 TRAS_MAX:RW:0:17:=0x00db60
     (*(volatile int*)(DDRx_BASE + DENALI_CTL_13)) = 0b00001100000011000000000000000101 ;  //  TWR:RW:24:6:=0x0c TRCD:RW:16:8:=0x0c WRITEINTERP:RW:8:1:=0x00 TCKESR:RW:0:8:=0x05
@@ -1350,24 +1355,24 @@ uint32_t crg_ddr_init
     uint32_t timer_cntr = 0;
     
     if (
-        (rgCRG_DDR_PLL_FBDIV != pll_fbdiv) ||
-        (rgCRG_DDR_PLL_PSDIV != pll_psdiv)
+        (ioread32 (CRG_DDR_BASE + CRG_PLL_FBDIV) != pll_fbdiv) ||
+        (ioread32 (CRG_DDR_BASE + CRG_PLL_PSDIV) != pll_psdiv)
         )
     {
-        rgCRG_DDR_WR_LOCK   = 0x1ACCE551 ;
-        rgCRG_DDR_PLL_CTRL  = 0x3        ;
-        rgCRG_DDR_PLL_FBDIV = pll_fbdiv  ;
-        rgCRG_DDR_PLL_PSDIV = pll_psdiv  ;
+        iowrite32 (0x1ACCE551, CRG_DDR_BASE + CRG_WR_LOCK);
+        iowrite32 (0x3, CRG_DDR_BASE + CRG_PLL_CTRL);
+        iowrite32 (pll_fbdiv, CRG_DDR_BASE + CRG_PLL_FBDIV);
+        iowrite32 (pll_psdiv, CRG_DDR_BASE + CRG_PLL_PSDIV);
 
-        while ((rgCRG_DDR_PLL_STAT & 0x00000010) == 0)
+        while ((ioread32 (CRG_DDR_BASE + CRG_PLL_STAT) & 0x00000010) == 0)
         {
             timer_cntr++;
             if (timer_cntr == CRG_DDR_TEST_LIB_PLL_LOCK_TIMEOUT)
                 return -1;
         }
 
-        rgCRG_DDR_PLL_CTRL  = 0x0        ;
-        while ((rgCRG_DDR_PLL_STAT & 0x00000011) == 0)
+        iowrite32 (0x0, CRG_DDR_BASE + CRG_PLL_CTRL);
+        while ((ioread32 (CRG_DDR_BASE + CRG_PLL_STAT) & 0x00000011) == 0)
         {
             timer_cntr++;
             if (timer_cntr == CRG_DDR_TEST_LIB_PLL_LOCK_TIMEOUT)

@@ -1,0 +1,3 @@
+[submodule "rumboot-packimage.py"]
+	path = rumboot-packimage.py
+	url = git@git.module.ru:verification-components/rumboot-packimage.py.git

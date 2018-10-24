@@ -26,13 +26,19 @@ static void dummy_configure(const struct rumboot_irq_controller *dev, int irq, u
 
 }
 
+static void dummy_swint(const struct rumboot_irq_controller *dev, uint32_t irq)
+{
+
+}
+
 static const struct rumboot_irq_controller irq_ctl = {
     .first = 0,
     .last  = 31,
     .init = dummy_init,
     .begin = dummy_begin,
     .end = dummy_end,
-    .configure = dummy_configure
+    .configure = dummy_configure,
+    .generate_swint = dummy_swint
 };
 
 

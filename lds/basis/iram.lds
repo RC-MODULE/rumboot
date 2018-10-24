@@ -10,15 +10,20 @@ MEMORY
 SECTIONS
 {
 
+ .header : {
+   KEEP(*(.header))
+ } > IM0
+
  .rwx : {
-  KEEP(*(.header))
+  KEEP(*(.text.startup.rumboot_default_irq_vectors))
+  *(.text.startup)
 
   rumboot_im0_heap_start = .;
-  . = . + 0x4000; /* 16k IM0 heap */
+  . = . + 0x8000; /* 32k IM0 heap */
   rumboot_im0_heap_end = .;
 
-  KEEP(*(.text.startup))
   *(.text)
+  *(.text.*)
   *(.rodata)
   *(.data)
 
@@ -27,7 +32,9 @@ SECTIONS
   *(.bss.*)
   rumboot_platform_bss_end = .;
   *(.data.*)
+  } > IM0
 
+ .stacks (NOLOAD) : {
   /* This is where stacks start */
   rumboot_platform_stack_area_start = .;
 
@@ -70,7 +77,6 @@ SECTIONS
    PROVIDE_HIDDEN (__init_array_end = .);
  } > IM0
 
-
  .runtime 0x7f000 (NOLOAD):
  {
   /* Runtime info is at the very top of iram */
@@ -98,11 +104,5 @@ SECTIONS
    . = . + 0x800000; /* 8Mb DDR0 heap */
    rumboot_ddr1_heap_end = .;
  } > DDR1
-
-
- /DISCARD/ :
- {
-     *(.text.startup)
- }
 
 }

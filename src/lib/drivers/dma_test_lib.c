@@ -9,8 +9,6 @@
 //-----------------------------------------------------------------------------
 #include <stdint.h>
 
-#include <platform/defs_c.h>
-
 //-----------------------------------------------------------------------------
 //  This function is for reversing byte order in one 32bit word
 //  Results value is returned by function

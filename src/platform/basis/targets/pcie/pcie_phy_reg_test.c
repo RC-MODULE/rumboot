@@ -8,7 +8,14 @@
 //
 //    Test duration (RTL): < 150us
 //-----------------------------------------------------------------------------
-#include <platform/defs_c.h>
+
+#include <stdint.h>
+#include <stdlib.h>
+
+#include <rumboot/io.h>
+#include <rumboot/pcie_test_lib.h>
+#include <regs/regs_pcie.h>
+#include <platform/devices.h>
 
 //-------------------------------------------------------------------
 //  Group: Phy Macro Top Level
@@ -117,11 +124,11 @@ int check_read_default_value ()
         //  Group: Phy Macro Top Level
         //    Not all registers are used (and described here too)
         //-------------------------------------------------------------------
-        (rgPCIe_Phy_PCS_CMN_CTRL1              != def_PCIe_Phy_PCS_CMN_CTRL1         ) ||
-        (rgPCIe_Phy_PCS_CMN_CTRL2              != def_PCIe_Phy_PCS_CMN_CTRL2         ) ||
-        (rgPCIe_Phy_PCS_COM_LOCK_CFG1          != def_PCIe_Phy_PCS_COM_LOCK_CFG1     ) ||
-        (rgPCIe_Phy_PCS_GEN3_EIE_LOCK_CFG      != def_PCIe_Phy_PCS_GEN3_EIE_LOCK_CFG ) ||
-        (rgPCIe_Phy_PCS_ISO_CMN_CTRL           != def_PCIe_Phy_PCS_ISO_CMN_CTRL      ) ||
+        (ioread32 (PCIE_PHY_BASE + PCIe_Phy_PCS_CMN_CTRL1         ) != def_PCIe_Phy_PCS_CMN_CTRL1         ) ||
+        (ioread32 (PCIE_PHY_BASE + PCIe_Phy_PCS_CMN_CTRL2         ) != def_PCIe_Phy_PCS_CMN_CTRL2         ) ||
+        (ioread32 (PCIE_PHY_BASE + PCIe_Phy_PCS_COM_LOCK_CFG1     ) != def_PCIe_Phy_PCS_COM_LOCK_CFG1     ) ||
+        (ioread32 (PCIE_PHY_BASE + PCIe_Phy_PCS_GEN3_EIE_LOCK_CFG ) != def_PCIe_Phy_PCS_GEN3_EIE_LOCK_CFG ) ||
+        (ioread32 (PCIE_PHY_BASE + PCIe_Phy_PCS_ISO_CMN_CTRL      ) != def_PCIe_Phy_PCS_ISO_CMN_CTRL      ) ||
 
         (*(volatile int*)(PCIe_Phy_PCS_ISO_TX_CTRL     + 0x000 + PCIE_PHY_BASE) != def_PCIe_Phy_PCS_ISO_TX_CTRL       ) ||
         (*(volatile int*)(PCIe_Phy_PCS_ISO_TX_LPC_LO   + 0x000 + PCIE_PHY_BASE) != def_PCIe_Phy_PCS_ISO_TX_LPC_LO     ) ||
@@ -148,18 +155,18 @@ int check_read_default_value ()
         (*(volatile int*)(PCIe_Phy_PCS_ISO_RX_CTRL     + 0xC00 + PCIE_PHY_BASE) != def_PCIe_Phy_PCS_ISO_RX_CTRL       ) ||
         (*(volatile int*)(PCIe_Phy_PCS_ISO_RX_DATA_HI  + 0xC00 + PCIE_PHY_BASE) != def_PCIe_Phy_PCS_ISO_RX_DATA_HI    ) ||
 
-        (rgPCIe_Phy_PMA_CMN_CTRL               != def_PCIe_Phy_PMA_CMN_CTRL          ) ||
-        (rgPCIe_Phy_PMA_SSM_STATE              != def_PCIe_Phy_PMA_SSM_STATE         ) ||
-        (rgPCIe_Phy_PMA_PSM_STATE_LO           != def_PCIe_Phy_PMA_PSM_STATE_LO      ) ||
-        (rgPCIe_Phy_PMA_ISO_CMN_CTRL           != def_PCIe_Phy_PMA_ISO_CMN_CTRL      ) ||
-        (rgPCIe_Phy_PMA_ISOLATION_CTRL         != def_PCIe_Phy_PMA_ISOLATION_CTRL    ) ||
+        (ioread32 (PCIE_PHY_BASE + PCIe_Phy_PMA_CMN_CTRL       ) != def_PCIe_Phy_PMA_CMN_CTRL          ) ||
+        (ioread32 (PCIE_PHY_BASE + PCIe_Phy_PMA_SSM_STATE      ) != def_PCIe_Phy_PMA_SSM_STATE         ) ||
+        (ioread32 (PCIE_PHY_BASE + PCIe_Phy_PMA_PSM_STATE_LO   ) != def_PCIe_Phy_PMA_PSM_STATE_LO      ) ||
+        (ioread32 (PCIE_PHY_BASE + PCIe_Phy_PMA_ISO_CMN_CTRL   ) != def_PCIe_Phy_PMA_ISO_CMN_CTRL      ) ||
+        (ioread32 (PCIE_PHY_BASE + PCIe_Phy_PMA_ISOLATION_CTRL ) != def_PCIe_Phy_PMA_ISOLATION_CTRL    ) ||
 
-        (rgPCIe_Phy_PMA_XCVR_CTRL              != def_PCIe_Phy_PMA_XCVR_CTRL         ) ||
-        (rgPCIe_Phy_PMA_XCVR_LPBK              != def_PCIe_Phy_PMA_XCVR_LPBK         ) ||
-        (rgPCIe_Phy_PMA_PI_POS                 != def_PCIe_Phy_PMA_PI_POS            ) ||
-        (rgPCIe_Phy_PMA_ISO_TX_LPC_LO          != def_PCIe_Phy_PMA_ISO_TX_LPC_LO     ) ||
-        // (rgPCIe_Phy_PMA_ISO_TX_FSLF            != def_PCIe_Phy_PMA_ISO_TX_FSLF       ) ||  default value not correspond spec
-        (rgPCIe_Phy_PMA_ISO_DATA_HI            != def_PCIe_Phy_PMA_ISO_DATA_HI       ) ||
+        (ioread32 (PCIE_PHY_BASE + PCIe_Phy_PMA_XCVR_CTRL     ) != def_PCIe_Phy_PMA_XCVR_CTRL         ) ||
+        (ioread32 (PCIE_PHY_BASE + PCIe_Phy_PMA_XCVR_LPBK     ) != def_PCIe_Phy_PMA_XCVR_LPBK         ) ||
+        (ioread32 (PCIE_PHY_BASE + PCIe_Phy_PMA_PI_POS        ) != def_PCIe_Phy_PMA_PI_POS            ) ||
+        (ioread32 (PCIE_PHY_BASE + PCIe_Phy_PMA_ISO_TX_LPC_LO ) != def_PCIe_Phy_PMA_ISO_TX_LPC_LO     ) ||
+        // (ioread32 (PCIE_PHY_BASE + PCIe_Phy_PMA_ISO_TX_FSLF   ) != def_PCIe_Phy_PMA_ISO_TX_FSLF       ) ||  default value not correspond spec
+        (ioread32 (PCIE_PHY_BASE + PCIe_Phy_PMA_ISO_DATA_HI   ) != def_PCIe_Phy_PMA_ISO_DATA_HI       ) ||
 
 
         //-------------------------------------------------------------------
@@ -168,38 +175,38 @@ int check_read_default_value ()
         //-------------------------------------------------------------------
 
         //    Registers addresses:
-        (rgPCIe_Phy_PMA_CMN_PID_TYPE           != def_PCIe_Phy_PMA_CMN_PID_TYPE             ) ||
-        (rgPCIe_Phy_PMA_CMN_PID_NUM            != def_PCIe_Phy_PMA_CMN_PID_NUM              ) ||
-        (rgPCIe_Phy_PMA_CMN_PID_REV            != def_PCIe_Phy_PMA_CMN_PID_REV              ) ||
-        (rgPCIe_Phy_PMA_CMN_PID_MFG            != def_PCIe_Phy_PMA_CMN_PID_MFG              ) ||
-        (rgPCIe_Phy_PMA_CMN_PID_NODE           != def_PCIe_Phy_PMA_CMN_PID_NODE             ) ||
-        (rgPCIe_Phy_PMA_CMN_PID_FLV            != def_PCIe_Phy_PMA_CMN_PID_FLV              ) ||
-        (rgPCIe_Phy_PMA_CMN_PID_IOV            != def_PCIe_Phy_PMA_CMN_PID_IOV              ) ||
-        (rgPCIe_Phy_PMA_CMN_PID_METAL          != def_PCIe_Phy_PMA_CMN_PID_METAL            ) ||
-        (rgPCIe_Phy_PMA_CMN_PID_LANES          != def_PCIe_Phy_PMA_CMN_PID_LANES            ) ||
-        // (rgPCIe_Phy_PMA_CMN_SSM_BANDGAP_TMR    != def_PCIe_Phy_PMA_CMN_SSM_BANDGAP_TMR      ) ||
-        // (rgPCIe_Phy_PMA_CMN_SSM_BIAS_TMR       != def_PCIe_Phy_PMA_CMN_SSM_BIAS_TMR         ) ||
-        (rgPCIe_Phy_PMA_CMN_SSM_PLLEN_TMR      != def_PCIe_Phy_PMA_CMN_SSM_PLLEN_TMR        ) ||
-        (rgPCIe_Phy_PMA_CMN_SSM_PLLVREF_TMR    != def_PCIe_Phy_PMA_CMN_SSM_PLLVREF_TMR      ) ||
-        // (rgPCIe_Phy_PMA_CMN_SSM_LANECAL_TMR    != def_PCIe_Phy_PMA_CMN_SSM_LANECAL_TMR      ) ||
-        (rgPCIe_Phy_PMA_CMN_SSM_A1OUT_TMR      != def_PCIe_Phy_PMA_CMN_SSM_A1OUT_TMR        ) ||
-        (rgPCIe_Phy_PMA_CMN_PSC_A0             != def_PCIe_Phy_PMA_CMN_PSC_A0               ) ||
-        (rgPCIe_Phy_PMA_CMN_PSC_A1             != def_PCIe_Phy_PMA_CMN_PSC_A1               ) ||
-        (rgPCIe_Phy_PMA_CMN_PSC_A2             != def_PCIe_Phy_PMA_CMN_PSC_A2               ) ||
-        (rgPCIe_Phy_PMA_CMN_PSC_A4             != def_PCIe_Phy_PMA_CMN_PSC_A4               ) ||
+        (ioread32 (PCIE_PHY_BASE + PCIe_Phy_PMA_CMN_PID_TYPE        ) != def_PCIe_Phy_PMA_CMN_PID_TYPE             ) ||
+        (ioread32 (PCIE_PHY_BASE + PCIe_Phy_PMA_CMN_PID_NUM         ) != def_PCIe_Phy_PMA_CMN_PID_NUM              ) ||
+        (ioread32 (PCIE_PHY_BASE + PCIe_Phy_PMA_CMN_PID_REV         ) != def_PCIe_Phy_PMA_CMN_PID_REV              ) ||
+        (ioread32 (PCIE_PHY_BASE + PCIe_Phy_PMA_CMN_PID_MFG         ) != def_PCIe_Phy_PMA_CMN_PID_MFG              ) ||
+        (ioread32 (PCIE_PHY_BASE + PCIe_Phy_PMA_CMN_PID_NODE        ) != def_PCIe_Phy_PMA_CMN_PID_NODE             ) ||
+        (ioread32 (PCIE_PHY_BASE + PCIe_Phy_PMA_CMN_PID_FLV         ) != def_PCIe_Phy_PMA_CMN_PID_FLV              ) ||
+        (ioread32 (PCIE_PHY_BASE + PCIe_Phy_PMA_CMN_PID_IOV         ) != def_PCIe_Phy_PMA_CMN_PID_IOV              ) ||
+        (ioread32 (PCIE_PHY_BASE + PCIe_Phy_PMA_CMN_PID_METAL       ) != def_PCIe_Phy_PMA_CMN_PID_METAL            ) ||
+        (ioread32 (PCIE_PHY_BASE + PCIe_Phy_PMA_CMN_PID_LANES       ) != def_PCIe_Phy_PMA_CMN_PID_LANES            ) ||
+        // (ioread32 (PCIE_PHY_BASE + PCIe_Phy_PMA_CMN_SSM_BANDGAP_TMR ) != def_PCIe_Phy_PMA_CMN_SSM_BANDGAP_TMR      ) ||
+        // (ioread32 (PCIE_PHY_BASE + PCIe_Phy_PMA_CMN_SSM_BIAS_TMR    ) != def_PCIe_Phy_PMA_CMN_SSM_BIAS_TMR         ) ||
+        (ioread32 (PCIE_PHY_BASE + PCIe_Phy_PMA_CMN_SSM_PLLEN_TMR   ) != def_PCIe_Phy_PMA_CMN_SSM_PLLEN_TMR        ) ||
+        (ioread32 (PCIE_PHY_BASE + PCIe_Phy_PMA_CMN_SSM_PLLVREF_TMR ) != def_PCIe_Phy_PMA_CMN_SSM_PLLVREF_TMR      ) ||
+        // (ioread32 (PCIE_PHY_BASE + PCIe_Phy_PMA_CMN_SSM_LANECAL_TMR ) != def_PCIe_Phy_PMA_CMN_SSM_LANECAL_TMR      ) ||
+        (ioread32 (PCIE_PHY_BASE + PCIe_Phy_PMA_CMN_SSM_A1OUT_TMR   ) != def_PCIe_Phy_PMA_CMN_SSM_A1OUT_TMR        ) ||
+        (ioread32 (PCIE_PHY_BASE + PCIe_Phy_PMA_CMN_PSC_A0          ) != def_PCIe_Phy_PMA_CMN_PSC_A0               ) ||
+        (ioread32 (PCIE_PHY_BASE + PCIe_Phy_PMA_CMN_PSC_A1          ) != def_PCIe_Phy_PMA_CMN_PSC_A1               ) ||
+        (ioread32 (PCIE_PHY_BASE + PCIe_Phy_PMA_CMN_PSC_A2          ) != def_PCIe_Phy_PMA_CMN_PSC_A2               ) ||
+        (ioread32 (PCIE_PHY_BASE + PCIe_Phy_PMA_CMN_PSC_A4          ) != def_PCIe_Phy_PMA_CMN_PSC_A4               ) ||
 
-        // (rgPCIe_Phy_PMA_CMN_PLLCPICAL_CTRL      != def_PCIe_Phy_PMA_CMN_PLLCPICAL_CTRL       ) ||
-        // (rgPCIe_Phy_PMA_CMN_PLLCPICAL_OVRD      != def_PCIe_Phy_PMA_CMN_PLLCPICAL_OVRD       ) ||
-        (rgPCIe_Phy_PMA_CMN_PLLCPICAL_INIT_TMR  != def_PCIe_Phy_PMA_CMN_PLLCPICAL_INIT_TMR   ) ||
-        // (rgPCIe_Phy_PMA_CMN_RXCAL_CTRL          != def_PCIe_Phy_PMA_CMN_RXCAL_CTRL           ) ||
-        // (rgPCIe_Phy_PMA_CMN_RXCAL_OVRD          != def_PCIe_Phy_PMA_CMN_RXCAL_OVRD           ) ||
-        (rgPCIe_Phy_PMA_CMN_RXCAL_INIT_TMR      != def_PCIe_Phy_PMA_CMN_RXCAL_INIT_TMR       ) ||
-        // (rgPCIe_Phy_PMA_CMN_TXPUCAL_CTRL        != def_PCIe_Phy_PMA_CMN_TXPUCAL_CTRL         ) ||
-        // (rgPCIe_Phy_PMA_CMN_TXPUCAL_OVRD        != def_PCIe_Phy_PMA_CMN_TXPUCAL_OVRD         ) ||
-        (rgPCIe_Phy_PMA_CMN_TXPUCAL_INIT_TMR    != def_PCIe_Phy_PMA_CMN_TXPUCAL_INIT_TMR     ) ||
-        // (rgPCIe_Phy_PMA_CMN_TXPDCAL_CTRL        != def_PCIe_Phy_PMA_CMN_TXPDCAL_CTRL         ) ||
-        // (rgPCIe_Phy_PMA_CMN_TXPDCAL_OVRD        != def_PCIe_Phy_PMA_CMN_TXPDCAL_OVRD         ) ||
-        (rgPCIe_Phy_PMA_CMN_TXPDCAL_INIT_TMR    != def_PCIe_Phy_PMA_CMN_TXPDCAL_INIT_TMR     ) ||
+        // (ioread32 (PCIE_PHY_BASE + PCIe_Phy_PMA_CMN_PLLCPICAL_CTRL    ) != def_PCIe_Phy_PMA_CMN_PLLCPICAL_CTRL       ) ||
+        // (ioread32 (PCIE_PHY_BASE + PCIe_Phy_PMA_CMN_PLLCPICAL_OVRD    ) != def_PCIe_Phy_PMA_CMN_PLLCPICAL_OVRD       ) ||
+        (ioread32 (PCIE_PHY_BASE + PCIe_Phy_PMA_CMN_PLLCPICAL_INIT_TMR) != def_PCIe_Phy_PMA_CMN_PLLCPICAL_INIT_TMR   ) ||
+        // (ioread32 (PCIE_PHY_BASE + PCIe_Phy_PMA_CMN_RXCAL_CTRL        ) != def_PCIe_Phy_PMA_CMN_RXCAL_CTRL           ) ||
+        // (ioread32 (PCIE_PHY_BASE + PCIe_Phy_PMA_CMN_RXCAL_OVRD        ) != def_PCIe_Phy_PMA_CMN_RXCAL_OVRD           ) ||
+        (ioread32 (PCIE_PHY_BASE + PCIe_Phy_PMA_CMN_RXCAL_INIT_TMR    ) != def_PCIe_Phy_PMA_CMN_RXCAL_INIT_TMR       ) ||
+        // (ioread32 (PCIE_PHY_BASE + PCIe_Phy_PMA_CMN_TXPUCAL_CTRL      ) != def_PCIe_Phy_PMA_CMN_TXPUCAL_CTRL         ) ||
+        // (ioread32 (PCIE_PHY_BASE + PCIe_Phy_PMA_CMN_TXPUCAL_OVRD      ) != def_PCIe_Phy_PMA_CMN_TXPUCAL_OVRD         ) ||
+        (ioread32 (PCIE_PHY_BASE + PCIe_Phy_PMA_CMN_TXPUCAL_INIT_TMR  ) != def_PCIe_Phy_PMA_CMN_TXPUCAL_INIT_TMR     ) ||
+        // (ioread32 (PCIE_PHY_BASE + PCIe_Phy_PMA_CMN_TXPDCAL_CTRL      ) != def_PCIe_Phy_PMA_CMN_TXPDCAL_CTRL         ) ||
+        // (ioread32 (PCIE_PHY_BASE + PCIe_Phy_PMA_CMN_TXPDCAL_OVRD      ) != def_PCIe_Phy_PMA_CMN_TXPDCAL_OVRD         ) ||
+        (ioread32 (PCIE_PHY_BASE + PCIe_Phy_PMA_CMN_TXPDCAL_INIT_TMR  ) != def_PCIe_Phy_PMA_CMN_TXPDCAL_INIT_TMR     ) ||
 
 
         //-------------------------------------------------------------------

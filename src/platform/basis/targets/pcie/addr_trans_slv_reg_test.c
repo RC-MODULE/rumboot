@@ -10,7 +10,7 @@
 //  Test duration (RTL): < 1.2 ms
 //
 //-----------------------------------------------------------------------------
-#include <platform/defs_c.h>
+#include <platform/devices.h>
 
 #define regions_number         128
 #define registers_number       (regions_number * 3 + 1)

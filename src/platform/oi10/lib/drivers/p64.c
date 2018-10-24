@@ -2,7 +2,7 @@
  * PLB6PLB4 bridge implementation
  */
 
-#include <devices/p64.h>
+#include <platform/devices/p64.h>
 
 void p64_get_configuration( uint32_t const base_addr, p64_cfg * cfg ) {
     uint32_t reg_value;
@@ -37,16 +37,4 @@ void __attribute__((section(".text.rom"),optimize("omit-frame-pointer"))) p64_in
     #include <platform/oi10/platform/devices.h>
     /*enable requests to boot rom mirror (0x00000010_00000000 - 0x0000001F_FFFFFFFF)*/
     p64_set_split_range_address(DCR_PLB6PLB4_0_BASE,0x00000010,0x0000001F);
-}
-
-void __attribute__((section(".text.rom"),optimize("omit-frame-pointer"))) p64_set_split_range_address(
-    uint32_t const base_addr,
-    uint32_t const addrl1,
-    uint32_t const addrh1
-) {
-    p64_dcr_write_P64_ADDRL1( base_addr, addrl1 );
-    /*    TEST_ASSERT(addrl1==p64_dcr_read_P64_ADDRL1(base_addr), "Error setting of ADDRL1 register");*/
-    p64_dcr_write_P64_ADDRH1( base_addr, addrh1 );
-    /*    TEST_ASSERT(addrh1==p64_dcr_read_P64_ADDRH1(base_addr), "Error setting of ADDRH1 register");*/
-    p64_dcr_write_P64_P64CR( base_addr, p64_dcr_read_P64_P64CR( base_addr ) | ( 1 << P64CR_SPEN ) );
 }

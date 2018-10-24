@@ -18,16 +18,17 @@
  * \endcode
  *
  *  Usage example:
+ * \code{.c}
  *
  *  static void handler0(int irq, int base_addr)
  *  {
  *  	rumboot_printf("IRQ 0 arrived  \n");
- *  
+ *
  *      sp804_clrint(base_addr,0);
  *  }
  *    int c = 0;
  *    uint32_t base_addr = BASE_ADDR;
- *  
+ *
  *    struct sp804_conf config_0 = {
  *      .mode             = ONESHOT,
  *      .interrupt_enable = 1      ,
@@ -36,7 +37,7 @@
  *      .load             = 100    ,
  *      .bgload           = 0
  *      };
- *  
+ *
  *    for (int i =0; i<10; i++)
  *    {
  *        sp804_config(base_addr,&config_0,0);
@@ -44,6 +45,7 @@
  *        while(sp804_get_value(base_addr,0)){};
  *        c++;
  *    }
+ * \endcode
  *
  * \addtogroup devices_sp804
  *
@@ -102,7 +104,7 @@ void sp804_enable( uint32_t base_addr, int index);
  *
  *  \details Manualy clears ENABLE bit in CONTROL register of chosen timer.
  */
-void sp804_stop( int base_addr, int index);
+void sp804_stop( uint32_t base_addr, int index);
 
 /**
  *  \brief Get timer value
@@ -113,7 +115,7 @@ void sp804_stop( int base_addr, int index);
  *
  *  \details
  */
-int sp804_get_value( int base_addr, int index);
+int sp804_get_value( uint32_t base_addr, int index);
 
 /**
  *  \brief Clear timer interrupt
@@ -124,7 +126,7 @@ int sp804_get_value( int base_addr, int index);
  *
  *  \details Manualy writes 1 in CLEARINT register of the chosen timer.
  */
-void sp804_clrint( int base_addr, int index);
+void sp804_clrint( uint32_t base_addr, int index);
 
 /**
  *  \brief Config timer

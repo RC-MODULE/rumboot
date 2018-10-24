@@ -3,13 +3,13 @@
 #include <rumboot/irq.h>
 #include <rumboot/platform.h>
 #include <stdlib.h>
+#include <rumboot/printf.h>
 
 extern int main();
 
-#include <rumboot/printf.h>
 struct rumboot_runtime_info
 __attribute__((section(".rumboot_platform_runtime_info")))
-rumboot_platform_runtime_info;
+rumboot_platform_runtime;
 
 
 extern void (*__preinit_array_start []) (void) __attribute__((weak));
@@ -47,20 +47,20 @@ void rumboot_main()
      /* Initialize the runtime info, avoid memset since event system
         is not up yet
      */
-     rumboot_platform_runtime_info.magic = 0xb00bc0de;
-     rumboot_platform_runtime_info.in.opcode  = 0;
-     rumboot_platform_runtime_info.out.opcode = 0;
+     rumboot_platform_runtime_info->magic = 0xb00bc0de;
+     rumboot_platform_runtime_info->in.opcode  = 0;
+     rumboot_platform_runtime_info->out.opcode = 0;
      /* Start event processing ! */
-     rumboot_platform_runtime_info.in.magic  = RUMBOOT_SYNC_MAGIC_IN;
-     rumboot_platform_runtime_info.out.magic = RUMBOOT_SYNC_MAGIC_OUT;
+     rumboot_platform_runtime_info->in.magic  = RUMBOOT_SYNC_MAGIC_IN;
+     rumboot_platform_runtime_info->out.magic = RUMBOOT_SYNC_MAGIC_OUT;
 
 
      /* Clean up everything beyound marker */
-     memset(&rumboot_platform_runtime_info.clean_me_marker, 0x0,
+     memset(&rumboot_platform_runtime.clean_me_marker, 0x0,
           /* Holy fuck this looks is weird */
-          sizeof(rumboot_platform_runtime_info)
-               + ((void *)&rumboot_platform_runtime_info)
-               - ((void *)&rumboot_platform_runtime_info.clean_me_marker)
+          sizeof(rumboot_platform_runtime)
+               + ((void *)&rumboot_platform_runtime)
+               - ((void *)&rumboot_platform_runtime.clean_me_marker)
      );
 
      /* Zero-out BSS, if any */

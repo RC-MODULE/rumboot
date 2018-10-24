@@ -17,7 +17,14 @@
 //    Test duration (RTL): < 220us
 //-----------------------------------------------------------------------------
 
+
+#include <stdint.h>
+#include <stdlib.h>
+
+#include <rumboot/io.h>
 #include <rumboot/pcie_test_lib.h>
+#include <regs/regs_pcie.h>
+#include <platform/devices.h>
 
 #define interrupt_turnaround_duration 20
 #define interrupt_repeat_number 16
@@ -45,8 +52,10 @@ void create_error_transaction ()
 //------------------------------------------------------------------------
 void clear_legacy_int ()
 {
-    rgADDR_TRANS_SLV_ctrl |= 0x1;
-    rgEXT_IRQ_GEN_Global_IRQ_Status_l = 0x20000000;
+    uint32_t rdata;
+    rdata = ioread32 (ADDR_TRANS_SLV_BASE + ADDR_TRANS_SLV_ctrl) | 0x1;
+    iowrite32 (rdata, ADDR_TRANS_SLV_BASE + ADDR_TRANS_SLV_ctrl);
+    iowrite32 (0x20000000, EXT_IRQ_GEN_BASE + EXT_IRQ_GEN_Global_IRQ_Status_l);
     legacy_counter = 0;
 }
 
