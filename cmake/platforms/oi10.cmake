@@ -107,10 +107,15 @@ macro(rumboot_platform_generate_stuff_for_taget product)
             DEPENDS ${product}.bin utils
         )
 
+
         add_custom_target(
             ${product}.hex ALL
             DEPENDS ${product}.hex/image_mem64_0.hex
         )
+        list (FIND TARGET_FEATURES "CPACK" _index)
+        if (${_index} GREATER -1)
+                install(DIRECTORY ${PROJECT_BINARY_DIR}/${product}.hex DESTINATION rumboot)
+        endif()
 
         add_dependencies(${product}.all ${product}.hex)
     endif()
@@ -220,6 +225,12 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         LOAD
           edcl_image spl-ok
     )
+if (NOT RUMBOOT_BUILD_TYPE STREQUAL "Debug")
+    rumboot_bootrom_integration_test(BROM
+        NAME "host-xmodem"
+        IRUN_FLAGS +BOOT_HOST=1 ${ROM_6500K_OPTS} +uart_easter_egg
+    )
+endif()
 
 #    rumboot_bootrom_integration_test(BROM
 #        NAME "host-rmap"
@@ -472,7 +483,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       CFLAGS -DUARTRX_BASE=UART0_BASE -DUARTTX_BASE=UART1_BASE -DUARTRX_INT=UART0_INT -DUARTTX_INT=UART1_INT -DCHECK_REGISTERS
       PREFIX uart0
     )
-    
+
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES test_oi10_uart_000.c
