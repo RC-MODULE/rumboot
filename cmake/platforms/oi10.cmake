@@ -235,6 +235,36 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         LOAD
           edcl_image spl-ok
     )
+
+    rumboot_bootrom_integration_test(BROM
+        NAME "host-rmap-0"
+        IRUN_FLAGS +BOOT_HOST=1 ${ROM_6500K_OPTS} +rmap_master=0
+        LOAD
+          rmap_file spl-ok
+    )
+
+    rumboot_bootrom_integration_test(BROM
+        NAME "host-rmap-1"
+        IRUN_FLAGS +BOOT_HOST=1 ${ROM_6500K_OPTS} +rmap_master=1
+        LOAD
+          rmap_file spl-ok
+    )
+
+    rumboot_bootrom_integration_test(BROM
+        NAME "host-rmap-2"
+        IRUN_FLAGS +BOOT_HOST=1 ${ROM_6500K_OPTS} +rmap_master=2
+        LOAD
+          rmap_file spl-ok
+    )
+
+    rumboot_bootrom_integration_test(BROM
+        NAME "host-rmap-3"
+        IRUN_FLAGS +BOOT_HOST=1 ${ROM_6500K_OPTS} +rmap_master=3
+        LOAD
+          rmap_file spl-ok
+    )
+
+
 if (NOT RUMBOOT_BUILD_TYPE STREQUAL "Debug")
     rumboot_bootrom_integration_test(BROM
         NAME "host-easter-egg"
