@@ -189,12 +189,10 @@ static const struct rumboot_bootsource *find_source_by_id(int bootid)
 
 void bootsource_try_chain(void *pdata, struct rumboot_bootheader *hdr, size_t maxsize)
 {
-        int ret;
         const struct rumboot_bootsource *src = rumboot_platform_get_bootsources();
-
         while (src && src->name) {
+                int ret;
                 size_t offset = src->offset;
-                ret = 0;
                 ret = bootsource_try_single(src, pdata, hdr, maxsize, &offset);
                 if (ret > 0) {
                         src = find_source_by_id(ret - 1);
