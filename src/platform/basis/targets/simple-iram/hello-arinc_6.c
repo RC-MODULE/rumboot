@@ -34,8 +34,8 @@ int main()
   int freq_tx_value = 0xe3008005;
   int freq_rx_value = 0xfc000005;
   int sz_area = 64; //memory of DMA buffer in bytes
-  int sz=1; //the initial size of the buffer
-  int nums_cyc=16; //total of cycles
+  int sz=2; //the initial size of the buffer
+  int nums_cyc=15; //total of cycles
   int index;
   int cycles;
   int cmp = 1;
