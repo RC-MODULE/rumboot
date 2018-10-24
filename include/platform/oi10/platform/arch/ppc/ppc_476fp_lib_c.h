@@ -42,6 +42,17 @@ static inline __attribute__((always_inline)) uint32_t msr_read() {
     rval;\
 })
 
+
+#define dcread( addr ) ({\
+    uint32_t rval = 0;\
+    asm volatile (\
+        "dcread %0, 0, %1 \n\t"\
+        :"=r"(rval)\
+        :"r"(addr)\
+    );\
+    rval;\
+})
+
 static inline __attribute__((always_inline)) void icbi( void* const addr ) {
     asm volatile (
         "icbi 0, %0\n\t"

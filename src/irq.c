@@ -10,10 +10,24 @@
 #include <platform/interrupts.h>
 
 const char *const exception_names[] = {
-	[RUMBOOT_IRQ_UNDEFINED_INSTRUCTION] = "Undefined Instruction",
-	[RUMBOOT_IRQ_PREFETCH_ABORT] = "Prefetch Abort",
-	[RUMBOOT_IRQ_DATA_ABORT] = "Data Abort",
-	[RUMBOOT_IRQ_SOFTWARE_EXCEPTION] = "Software Exception"
+    [RUMBOOT_IRQ_UNDEFINED_INSTRUCTION] = "Undefined Instruction",
+    [RUMBOOT_IRQ_PREFETCH_ABORT] = "Prefetch Abort",
+    [RUMBOOT_IRQ_DATA_ABORT] = "Data Abort",
+    [RUMBOOT_IRQ_SOFTWARE_EXCEPTION] = "Software Exception",
+    [RUMBOOT_IRQ_MACHINE_CHECK] = "Machine Check",
+    [RUMBOOT_IRQ_DATA_STORAGE] = "Data Storage",
+    [RUMBOOT_IRQ_INST_STORAGE] = "Inst Storage",
+    [RUMBOOT_IRQ_ALIGNMENT] = "Alignment",
+    [RUMBOOT_IRQ_PROGRAM] = "Program",
+    [RUMBOOT_IRQ_FP_UNAVAILABLE] = "Floating-Point Unavailable",
+    [RUMBOOT_IRQ_SYSTEM_CALL] = "System Call",
+    [RUMBOOT_IRQ_AP_UNAVAILABLE] = "Auxiliary Processor Unavailable",
+    [RUMBOOT_IRQ_DECREMENTER] = "Decrementer",
+    [RUMBOOT_IRQ_FIXED_INTERVAL_TIMER] = "Fixed-Interval Timer",
+    [RUMBOOT_IRQ_WATCHDOG_TIMER] = "Watchdog Timer",
+    [RUMBOOT_IRQ_DATA_TLB_ERROR] = "Data TLB Error",
+    [RUMBOOT_IRQ_INST_TLB_ERROR] = "Inst TLB Error",
+    [RUMBOOT_IRQ_DEBUG] = "Debug"
 };
 
 struct rumboot_irq_entry {
@@ -77,6 +91,8 @@ struct rumboot_irq_entry *rumboot_irq_create(struct rumboot_irq_entry *copyfrom)
 
 	if (copyfrom) {
 		memcpy(tbl, copyfrom, sizeof(*tbl) * (RUMBOOT_PLATFORM_NUM_IRQS + 1));
+	} else {
+	    memset(tbl, 0, sizeof(*tbl) * (RUMBOOT_PLATFORM_NUM_IRQS + 1));
 	}
 
 	return tbl;

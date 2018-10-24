@@ -19,25 +19,6 @@
 #include <platform/bootm.h>
 #include <rumboot/irq.h>
 
-.global unexpected_itrpt_hdr_base
-.global unexpected_CI_hdr
-.global unexpected_MC_hdr
-.global unexpected_DS_hdr
-.global unexpected_IS_hdr
-.global unexpected_E_hdr
-.global rumboot_irq_hdr
-.global unexpected_A_hdr
-.global unexpected_P_hdr
-.global unexpected_FPU_hdr
-.global unexpected_SC_hdr
-.global unexpected_APU_hdr
-.global unexpected_DEC_hdr
-.global unexpected_FITI_hdr
-.global unexpected_WTI_hdr
-.global unexpected_DTLBE_hdr
-.global unexpected_ITLBE_hdr
-.global unexpected_D_hdr
-.global unexpected_error
 
 .section ".init.rodata","a",@progbits
 
@@ -53,6 +34,7 @@ nor_tlb_entries:
 DECLARE_CONST( ROM_TLB_ENTRIES_N, (.-rom_tlb_entries)/MMU_TLB_ENTRY_SIZE )
     .long   MMU_TLB_ENTRY(  0x000,  0x7FFF0,    0xFFFF0,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b0,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_0,     0b1 )
 DECLARE_CONST( NOR_TLB_ENTRIES_N, (.-nor_tlb_entries)/MMU_TLB_ENTRY_SIZE )
+
 
 .section ".init.start","ax",@progbits
 
@@ -70,69 +52,32 @@ trace_msg_unexpected_itrpt:
 unexpected_itrpt_hdr_base:
 unexpected_CI_hdr:
     bl          trace_msg_unexpected_itrpt
-    rumboot_putstring   "Critical input\n"
+    rumboot_putstring   "Critical Input\n"
     b           unexpected_error
 
 .align 4
 unexpected_MC_hdr:
     bl          trace_msg_unexpected_itrpt
-    rumboot_putstring   "Machine check\n"
+    rumboot_putstring   "Machine Check\n"
     b           unexpected_error
 
 .align 4
 unexpected_DS_hdr:
     bl          trace_msg_unexpected_itrpt
-    rumboot_putstring   "Data storage\n"
+    rumboot_putstring   "Data Storage\n"
     b           unexpected_error
 
 .align 4
 unexpected_IS_hdr:
     bl          trace_msg_unexpected_itrpt
-    rumboot_putstring   "Instruction storage\n"
+    rumboot_putstring   "Instruction Storage\n"
     b           unexpected_error
 
 .align 4
-unexpected_E_hdr:
+unexpected_EI_hdr:
     bl          trace_msg_unexpected_itrpt
-    rumboot_putstring   "External input\n"
+    rumboot_putstring   "External Input\n"
     b           unexpected_error
-
-.align 4
-rumboot_irq_hdr:
-    stwu        r1, -160(r1)
-    stw         r0, 156(r1)
-    stmw        r2, 36(r1)
-    mflr        r0
-    stw         r0, 32(r1)
-    mfcr        r0
-    stw         r0, 28(r1)
-    mfctr       r0
-    /* TODO: remove setting CTR and LR to 0x00000000. It's only for modeling (https://jira.module.ru/jira/browse/OI10-205) */
-    load_const  r3, 0x00000000
-    mtctr       r3
-    mtlr        r3
-    stw         r0, 24(r1)
-    mfxer       r0
-    stw         r0, 20(r1)
-
-    load_const  r3, 0
-    load_const  r4, RUMBOOT_IRQ_TYPE_NORMAL
-    load_const  r5, RUMBOOT_IRQ_IRQ /* TODO: remove unused param id */
-    bl          rumboot_irq_core_dispatch
-
-    lwz         r0, 20(r1)
-    mtxer       r0
-    lwz         r0, 24(r1)
-    mtctr       r0
-    lwz         r0, 28(r1)
-    mtcr        r0
-    lwz         r0, 32(r1)
-    mtlr        r0
-    lmw         r2, 36(r1)
-    lwz         r0, 156(r1)
-    addi        r1, r1, 160
-
-    rfi
 
 .align 4
 unexpected_A_hdr:
@@ -149,19 +94,19 @@ unexpected_P_hdr:
 .align 4
 unexpected_FPU_hdr:
     bl          trace_msg_unexpected_itrpt
-    rumboot_putstring   "Floating point unavailable\n"
+    rumboot_putstring   "Floating-Point Unavailable\n"
     b           unexpected_error
 
 .align 4
 unexpected_SC_hdr:
     bl          trace_msg_unexpected_itrpt
-    rumboot_putstring   "System call\n"
+    rumboot_putstring   "System Call\n"
     b           unexpected_error
 
 .align 4
 unexpected_APU_hdr:
     bl          trace_msg_unexpected_itrpt
-    rumboot_putstring   "Auxiliary processor unavailable\n"
+    rumboot_putstring   "Auxiliary Processor Unavailable\n"
     b           unexpected_error
 
 .align 4
@@ -171,27 +116,27 @@ unexpected_DEC_hdr:
     b           unexpected_error
 
 .align 4
-unexpected_FITI_hdr:
+unexpected_FIT_hdr:
     bl          trace_msg_unexpected_itrpt
-    rumboot_putstring   "Fixed interval timer\n"
+    rumboot_putstring   "Fixed-Interval Timer\n"
     b           unexpected_error
 
 .align 4
-unexpected_WTI_hdr:
+unexpected_WDT_hdr:
     bl          trace_msg_unexpected_itrpt
-    rumboot_putstring   "Watchdog timer\n"
+    rumboot_putstring   "Watchdog Timer\n"
     b           unexpected_error
 
 .align 4
 unexpected_DTLBE_hdr:
     bl          trace_msg_unexpected_itrpt
-    rumboot_putstring   "Data TLB error\n"
+    rumboot_putstring   "Data TLB Error\n"
     b           unexpected_error
 
 .align 4
 unexpected_ITLBE_hdr:
     bl          trace_msg_unexpected_itrpt
-    rumboot_putstring   "Instruction TLB error\n"
+    rumboot_putstring   "Instruction TLB Error\n"
     b           unexpected_error
 
  .align 4
@@ -269,7 +214,7 @@ rumboot_reset_handler:
     mtspr       SPR_IVOR2, r3
     li          r3, unexpected_IS_hdr@l
     mtspr       SPR_IVOR3, r3
-    li          r3, unexpected_E_hdr@l
+    li          r3, unexpected_EI_hdr@l
     mtspr       SPR_IVOR4, r3
     li          r3, unexpected_A_hdr@l
     mtspr       SPR_IVOR5, r3
@@ -283,9 +228,9 @@ rumboot_reset_handler:
     mtspr       SPR_IVOR9, r3
     li          r3, unexpected_DEC_hdr@l
     mtspr       SPR_IVOR10, r3
-    li          r3, unexpected_FITI_hdr@l
+    li          r3, unexpected_FIT_hdr@l
     mtspr       SPR_IVOR11, r3
-    li          r3, unexpected_WTI_hdr@l
+    li          r3, unexpected_WDT_hdr@l
     mtspr       SPR_IVOR12, r3
     li          r3, unexpected_DTLBE_hdr@l
     mtspr       SPR_IVOR13, r3
@@ -516,6 +461,262 @@ setup_stack: /*stack is growing down*/
     b goto_boot_main
 
 .section ".text.rom","ax",@progbits
+
+.macro irq_hdr_prologue
+    stwu        r1, -160(r1)
+    stw         r0, 156(r1)
+    stmw        r2, 36(r1)
+    mflr        r31
+    mfctr       r30
+    mfcr        r29
+    mfxer       r28
+    stmw        r28, 20(r1)
+
+    /* TODO: remove setting CTR and LR to 0x00000000. It's only for modeling (https://jira.module.ru/jira/browse/OI10-205) */
+    load_const  r3, 0x00000000
+    mtctr       r3
+    mtlr        r3
+.endm
+
+.macro irq_hdr_epilogue
+    lmw         r28, 20(r1)
+    mtxer       r28
+    mtcr        r29
+    mtctr       r30
+    mtlr        r31
+    lmw         r2, 36(r1)
+    lwz         r0, 156(r1)
+    addi        r1, r1, 160
+.endm
+
+.global rumboot_itrpt_hdr_base
+.global rumboot_CI_hdr
+.global rumboot_MC_hdr
+.global rumboot_DS_hdr
+.global rumboot_IS_hdr
+.global rumboot_EI_hdr
+.global rumboot_A_hdr
+.global rumboot_P_hdr
+.global rumboot_FPU_hdr
+.global rumboot_SC_hdr
+.global rumboot_APU_hdr
+.global rumboot_DEC_hdr
+.global rumboot_FIT_hdr
+.global rumboot_WDT_hdr
+.global rumboot_DTLBE_hdr
+.global rumboot_ITLBE_hdr
+.global rumboot_D_hdr
+.global rumboot_error
+
+.align 4
+rumboot_itrpt_hdr_base:
+rumboot_CI_hdr:
+    irq_hdr_prologue
+
+    load_const  r3, 0
+    load_const  r4, RUMBOOT_IRQ_TYPE_NORMAL
+    load_const  r5, RUMBOOT_IRQ_IRQ
+    bl          rumboot_irq_core_dispatch
+
+    irq_hdr_epilogue
+
+    rfci
+
+.align 4
+rumboot_MC_hdr:
+    irq_hdr_prologue
+
+    load_const  r3, 0
+    load_const  r4, RUMBOOT_IRQ_TYPE_EXCEPTION
+    load_const  r5, RUMBOOT_IRQ_MACHINE_CHECK
+    bl          rumboot_irq_core_dispatch
+
+    irq_hdr_epilogue
+
+    rfmci
+
+.align 4
+rumboot_DS_hdr:
+    irq_hdr_prologue
+
+    load_const  r3, 0
+    load_const  r4, RUMBOOT_IRQ_TYPE_EXCEPTION
+    load_const  r5, RUMBOOT_IRQ_DATA_STORAGE
+    bl          rumboot_irq_core_dispatch
+
+    irq_hdr_epilogue
+
+    rfi
+
+.align 4
+rumboot_IS_hdr:
+    irq_hdr_prologue
+
+    load_const  r3, 0
+    load_const  r4, RUMBOOT_IRQ_TYPE_EXCEPTION
+    load_const  r5, RUMBOOT_IRQ_INST_STORAGE
+    bl          rumboot_irq_core_dispatch
+
+    irq_hdr_epilogue
+
+    rfi
+
+.align 4
+rumboot_EI_hdr:
+    irq_hdr_prologue
+
+    load_const  r3, 0
+    load_const  r4, RUMBOOT_IRQ_TYPE_NORMAL
+    load_const  r5, RUMBOOT_IRQ_IRQ
+    bl          rumboot_irq_core_dispatch
+
+    irq_hdr_epilogue
+
+    rfi
+
+.align 4
+rumboot_A_hdr:
+    irq_hdr_prologue
+
+    load_const  r3, 0
+    load_const  r4, RUMBOOT_IRQ_TYPE_EXCEPTION
+    load_const  r5, RUMBOOT_IRQ_ALIGNMENT
+    bl          rumboot_irq_core_dispatch
+
+    irq_hdr_epilogue
+
+    rfi
+
+.align 4
+rumboot_P_hdr:
+    irq_hdr_prologue
+
+    load_const  r3, 0
+    load_const  r4, RUMBOOT_IRQ_TYPE_EXCEPTION
+    load_const  r5, RUMBOOT_IRQ_PROGRAM
+    bl          rumboot_irq_core_dispatch
+
+    irq_hdr_epilogue
+
+    rfi
+
+.align 4
+rumboot_FPU_hdr:
+    irq_hdr_prologue
+
+    load_const  r3, 0
+    load_const  r4, RUMBOOT_IRQ_TYPE_EXCEPTION
+    load_const  r5, RUMBOOT_IRQ_FP_UNAVAILABLE
+    bl          rumboot_irq_core_dispatch
+
+    irq_hdr_epilogue
+
+    rfi
+
+.align 4
+rumboot_SC_hdr:
+    irq_hdr_prologue
+
+    load_const  r3, 0
+    load_const  r4, RUMBOOT_IRQ_TYPE_EXCEPTION
+    load_const  r5, RUMBOOT_IRQ_SYSTEM_CALL
+    bl          rumboot_irq_core_dispatch
+
+    irq_hdr_epilogue
+
+    rfi
+
+.align 4
+rumboot_APU_hdr:
+    irq_hdr_prologue
+
+    load_const  r3, 0
+    load_const  r4, RUMBOOT_IRQ_TYPE_EXCEPTION
+    load_const  r5, RUMBOOT_IRQ_AP_UNAVAILABLE
+    bl          rumboot_irq_core_dispatch
+
+    irq_hdr_epilogue
+
+    rfi
+
+.align 4
+rumboot_DEC_hdr:
+    irq_hdr_prologue
+
+    load_const  r3, 0
+    load_const  r4, RUMBOOT_IRQ_TYPE_EXCEPTION
+    load_const  r5, RUMBOOT_IRQ_DECREMENTER
+    bl          rumboot_irq_core_dispatch
+
+    irq_hdr_epilogue
+
+    rfi
+
+.align 4
+rumboot_FIT_hdr:
+    irq_hdr_prologue
+
+    load_const  r3, 0
+    load_const  r4, RUMBOOT_IRQ_TYPE_EXCEPTION
+    load_const  r5, RUMBOOT_IRQ_FIXED_INTERVAL_TIMER
+    bl          rumboot_irq_core_dispatch
+
+    irq_hdr_epilogue
+
+    rfi
+
+.align 4
+rumboot_WDT_hdr:
+    irq_hdr_prologue
+
+    load_const  r3, 0
+    load_const  r4, RUMBOOT_IRQ_TYPE_EXCEPTION
+    load_const  r5, RUMBOOT_IRQ_WATCHDOG_TIMER
+    bl          rumboot_irq_core_dispatch
+
+    irq_hdr_epilogue
+
+    rfci
+
+.align 4
+rumboot_DTLBE_hdr:
+    irq_hdr_prologue
+
+    load_const  r3, 0
+    load_const  r4, RUMBOOT_IRQ_TYPE_EXCEPTION
+    load_const  r5, RUMBOOT_IRQ_DATA_TLB_ERROR
+    bl          rumboot_irq_core_dispatch
+
+    irq_hdr_epilogue
+
+    rfi
+
+.align 4
+rumboot_ITLBE_hdr:
+    irq_hdr_prologue
+
+    load_const  r3, 0
+    load_const  r4, RUMBOOT_IRQ_TYPE_EXCEPTION
+    load_const  r5, RUMBOOT_IRQ_INST_TLB_ERROR
+    bl          rumboot_irq_core_dispatch
+
+    irq_hdr_epilogue
+
+    rfi
+
+ .align 4
+rumboot_D_hdr:
+    irq_hdr_prologue
+
+    load_const  r3, 0
+    load_const  r4, RUMBOOT_IRQ_TYPE_EXCEPTION
+    load_const  r5, RUMBOOT_IRQ_DEBUG
+    bl          rumboot_irq_core_dispatch
+
+    irq_hdr_epilogue
+
+    rfci
+
 
 goto_boot_main:
     /* Initialize the runtime  */

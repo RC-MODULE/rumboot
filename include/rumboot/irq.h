@@ -2,15 +2,31 @@
 #define RUMBOOT_IRQ_H
 
 
-#define RUMBOOT_IRQ_TYPE_NORMAL       0
-#define RUMBOOT_IRQ_TYPE_EXCEPTION    1
-#define RUMBOOT_IRQ_TYPE_SOFT        2
+#define RUMBOOT_IRQ_TYPE_NORMAL         0
+#define RUMBOOT_IRQ_TYPE_EXCEPTION      1
+#define RUMBOOT_IRQ_TYPE_SOFT           2
 
 /* ARM Exception names */
 #define RUMBOOT_IRQ_PREFETCH_ABORT          0
 #define RUMBOOT_IRQ_DATA_ABORT              1
 #define RUMBOOT_IRQ_UNDEFINED_INSTRUCTION   2
 #define RUMBOOT_IRQ_SOFTWARE_EXCEPTION      3
+/* PPC Interrupt names */
+#define RUMBOOT_IRQ_MACHINE_CHECK           4
+#define RUMBOOT_IRQ_DATA_STORAGE            5
+#define RUMBOOT_IRQ_INST_STORAGE            6
+#define RUMBOOT_IRQ_ALIGNMENT               7
+#define RUMBOOT_IRQ_PROGRAM                 8
+#define RUMBOOT_IRQ_FP_UNAVAILABLE          9
+#define RUMBOOT_IRQ_SYSTEM_CALL             10
+#define RUMBOOT_IRQ_AP_UNAVAILABLE          11
+#define RUMBOOT_IRQ_DECREMENTER             12
+#define RUMBOOT_IRQ_FIXED_INTERVAL_TIMER    13
+#define RUMBOOT_IRQ_WATCHDOG_TIMER          14
+#define RUMBOOT_IRQ_DATA_TLB_ERROR          15
+#define RUMBOOT_IRQ_INST_TLB_ERROR          16
+#define RUMBOOT_IRQ_DEBUG                   17
+
 
 /* IRQ Types */
 #define RUMBOOT_IRQ_IRQ  0
