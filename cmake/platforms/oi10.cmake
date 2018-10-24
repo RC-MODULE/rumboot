@@ -134,7 +134,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 #   )
 
     rumboot_bootrom_add_components(IRAM_SPL BROM
-      -a 4096
+      -a 512
     )
     #  rumboot_bootrom_unit_test(
     #      ID 0
@@ -472,6 +472,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       CFLAGS -DUARTRX_BASE=UART0_BASE -DUARTTX_BASE=UART1_BASE -DUARTRX_INT=UART0_INT -DUARTTX_INT=UART1_INT -DCHECK_REGISTERS
       PREFIX uart0
     )
+    
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES test_oi10_uart_000.c
