@@ -223,6 +223,16 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     )
 
     rumboot_bootrom_integration_test(BROM
+        NAME "host-fallthough-rmap"
+        IRUN_FLAGS ${ROM_6500K_OPTS} +rmap_master=0
+        LOAD
+          SD0_BOOT_IMAGE spl-fail
+          SPI0_CONF spl-fail-bad-magic,spl-fail-bad-magic
+          NOR_IMAGE spl-fail-bad-magic
+          rmap_file spl-ok
+    )
+
+    rumboot_bootrom_integration_test(BROM
         NAME "host-edcl-0"
         IRUN_FLAGS +BOOT_HOST=1 ${ROM_6500K_OPTS} +edcl_loader0
         LOAD
@@ -264,7 +274,6 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
           rmap_file spl-ok
     )
 
-
 if (NOT RUMBOOT_BUILD_TYPE STREQUAL "Debug")
     rumboot_bootrom_integration_test(BROM
         NAME "host-easter-egg"
@@ -280,16 +289,6 @@ if (NOT RUMBOOT_BUILD_TYPE STREQUAL "Debug")
           NOR_IMAGE spl-fail-bad-magic
     )
 endif()
-
-#    rumboot_bootrom_integration_test(BROM
-#        NAME "host-rmap"
-#        IRUN_FLAGS +BOOT_HOST=1 ${ROM_6500K_OPTS}
-#    )
-
-#    rumboot_bootrom_integration_test(BROM
-#        NAME "host-uart"
-#        IRUN_FLAGS +BOOT_HOST=1 ${ROM_6500K_OPTS}
-#    )
 
     rumboot_bootrom_integration_test(BROM
         NAME "sdio-ok"
