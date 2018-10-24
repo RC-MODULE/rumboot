@@ -213,6 +213,16 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     )
 
     rumboot_bootrom_integration_test(BROM
+        NAME "host-fallthough-edcl"
+        IRUN_FLAGS ${ROM_6500K_OPTS} +edcl_loader0
+        LOAD
+          SD0_BOOT_IMAGE spl-fail
+          SPI0_CONF spl-fail-bad-magic,spl-fail-bad-magic
+          NOR_IMAGE spl-fail-bad-magic
+          edcl_image  spl-ok
+    )
+
+    rumboot_bootrom_integration_test(BROM
         NAME "host-edcl-0"
         IRUN_FLAGS +BOOT_HOST=1 ${ROM_6500K_OPTS} +edcl_loader0
         LOAD
@@ -227,8 +237,17 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     )
 if (NOT RUMBOOT_BUILD_TYPE STREQUAL "Debug")
     rumboot_bootrom_integration_test(BROM
-        NAME "host-xmodem"
+        NAME "host-easter-egg"
         IRUN_FLAGS +BOOT_HOST=1 ${ROM_6500K_OPTS} +uart_easter_egg
+    )
+
+    rumboot_bootrom_integration_test(BROM
+        NAME "host-fallthough-easter-egg"
+        IRUN_FLAGS ${ROM_6500K_OPTS} +uart_easter_egg
+        LOAD
+          SD0_BOOT_IMAGE spl-fail
+          SPI0_CONF spl-fail-bad-magic,spl-fail-bad-magic
+          NOR_IMAGE spl-fail-bad-magic
     )
 endif()
 
