@@ -6,11 +6,11 @@
 //    - check mkio_inh signals idle
 //    - write data to MKIO0 (RT) with MKIO1 (BC)
 //    - check mkio_inh signals work
-//    - 
-//    - 
+//    -
+//    -
 //
 //
-//    Test duration (RTL): < 
+//    Test duration (RTL): <
 //-----------------------------------------------------------------------------
 
 #include <stdint.h>
@@ -151,12 +151,12 @@ uint32_t check_mkio1_B_inh_active ()
 
 uint32_t mkio_write_to_rt_with_irq (uint32_t data_src, uint32_t data_dst, uint32_t size, uint32_t bc_base_address, uint32_t rt_base_address)
 {
-    mkio_bc_descriptor         mkio_bc_descriptor        __attribute__ ((aligned(16)))  ;
-    mkio_rt_subaddress_table   mkio_rt_subaddress_table  __attribute__ ((aligned(512))) ;
-    mkio_rt_descriptor         mkio_rt_rx_descriptor     __attribute__ ((aligned(16)))  ;
-    
+    struct mkio_bc_descriptor volatile          mkio_bc_descriptor        __attribute__ ((aligned(16)))  ;
+    struct mkio_rt_subaddress_table volatile    mkio_rt_subaddress_table  __attribute__ ((aligned(512))) ;
+    struct mkio_rt_descriptor volatile          mkio_rt_rx_descriptor     __attribute__ ((aligned(16)))  ;
+
     uint32_t mkio_irq_ring_buffer [16] __attribute__ ((aligned(64)));
-    
+
     //  Suspend normally (SUSN) - Always suspends after transfer
     uint32_t SUSN = 0x1;
     //  IRQ after transfer on Error (IRQE_)
@@ -165,7 +165,7 @@ uint32_t mkio_write_to_rt_with_irq (uint32_t data_src, uint32_t data_dst, uint32
     uint32_t IRQN = 1;
     //  Bus selection (BUS) - Bus to use for transfer, 0 - Bus A, 1 - Bus B
     uint32_t BUS = 0;
-    
+
     //  RT Address (RTAD1)
     uint32_t RTAD1 = 0x00;
     //  RT Subaddress (RTSA1)
@@ -175,17 +175,17 @@ uint32_t mkio_write_to_rt_with_irq (uint32_t data_src, uint32_t data_dst, uint32
     //  Word count/Mode code (WCMC)
     //  Word is 2 bytes in MKIO 1553
     uint32_t WCMC = size >> 1;
-    
+
     //  Allow receive transfers to this subaddress
     uint32_t RXEN = 1;
     //  Allow transmit transfers from this subaddress
     uint32_t TXEN = 1;
-    
+
     uint32_t bc_descriptor_end_of_list = 0x800000FF ;
     uint32_t rt_descriptor_end_of_list = 0x00000003 ;
-    
+
     uint32_t unused = 0xDEADBEEF ;
-    
+
 
     rumboot_printf("execute mkio_write_to_rt_with_irq\n");
     rumboot_printf("    data_src %x\n",                 (uint32_t) (&data_src                 ));
@@ -194,7 +194,7 @@ uint32_t mkio_write_to_rt_with_irq (uint32_t data_src, uint32_t data_dst, uint32
     rumboot_printf("    mkio_rt_subaddress_table %x\n", (uint32_t) (&mkio_rt_subaddress_table ));
     rumboot_printf("    mkio_rt_rx_descriptor %x\n",    (uint32_t) (&mkio_rt_rx_descriptor    ));
     rumboot_printf("    mkio_irq_ring_buffer %x\n",     (uint32_t) (&mkio_irq_ring_buffer     ));
-    
+
     if (
             (check_mkio0_A_inh_idle () != 0) |
             (check_mkio0_B_inh_idle () != 0) |
@@ -202,7 +202,7 @@ uint32_t mkio_write_to_rt_with_irq (uint32_t data_src, uint32_t data_dst, uint32
             (check_mkio1_B_inh_idle () != 0)
         )
         return -1;
-    
+
     //-------------------------------------------------------------------------
     //  For 1553 BUS A
     //-------------------------------------------------------------------------
@@ -214,7 +214,7 @@ uint32_t mkio_write_to_rt_with_irq (uint32_t data_src, uint32_t data_dst, uint32
     mkio_bc_descriptor.branch_address   = unused;
     mkio_bc_descriptor.reserved_0       = unused;
     mkio_bc_descriptor.reserved_1       = unused;
-    
+
     //  Subaddress = 0x00 and 0x1F are reserved to identify "mode command"
     //  So, use 0x01 table entrance
     mkio_rt_subaddress_table.sa0_ctrl_word             = unused ;
@@ -225,17 +225,17 @@ uint32_t mkio_write_to_rt_with_irq (uint32_t data_src, uint32_t data_dst, uint32
     mkio_rt_subaddress_table.sa1_tx_descriptor_pointer = 0x00000000 ;
     mkio_rt_subaddress_table.sa1_rx_descriptor_pointer = (uint32_t) (&mkio_rt_rx_descriptor) ;
     mkio_rt_subaddress_table.sa1_reserved              = 0x00000000 ;
-    
+
     mkio_rt_rx_descriptor.ctrl_status_word        = 0x03FFFFFF ;
     mkio_rt_rx_descriptor.data_pointer            = data_dst ;
     mkio_rt_rx_descriptor.next_descriptor_pointer = rt_descriptor_end_of_list ;
-    
+
     //  reset interrupt flag
     irq_flag = 0;
     //  Enable all interrupts in BC controller
     iowrite32 (0xFFFFFFFF, bc_base_address + IRQE);
     iowrite32 ((uint32_t) (&mkio_irq_ring_buffer), bc_base_address + BCRD);
-    
+
     mkio_rt_start_schedule (rt_base_address, (uint32_t) (&mkio_rt_subaddress_table));
     if (
             (check_mkio0_A_inh_idle () != 0) |
@@ -245,7 +245,7 @@ uint32_t mkio_write_to_rt_with_irq (uint32_t data_src, uint32_t data_dst, uint32
         )
         return -1;
     mkio_bc_start_schedule (bc_base_address, (uint32_t) (&mkio_bc_descriptor      ));
-    
+
     if (
             (check_mkio0_A_inh_active () != 0) |
             (check_mkio0_B_inh_active () != 0) |
@@ -253,7 +253,7 @@ uint32_t mkio_write_to_rt_with_irq (uint32_t data_src, uint32_t data_dst, uint32
             (check_mkio1_B_inh_active () != 0)
         )
         return -1;
-    
+
     //  Wait end of transaction with "polling descriptor" mechanism
     while (((mkio_bc_descriptor.result_word & 0x7) != 0) | ((mkio_rt_rx_descriptor.ctrl_status_word & 0x7) != 0))
     {
@@ -261,12 +261,12 @@ uint32_t mkio_write_to_rt_with_irq (uint32_t data_src, uint32_t data_dst, uint32
             ;
     }
     rumboot_printf("bc and rt descriptors closed successfully\n");
-    
+
     //-------------------------------------------------------------------------
     //  For 1553 BUS B
     //-------------------------------------------------------------------------
     BUS = 1;
-    
+
     mkio_bc_descriptor.ctrl_word_0      = 0x00000000 | (IRQE_ << 28) | (IRQN << 27) | (SUSN << 25);
     mkio_bc_descriptor.ctrl_word_1      = 0x00000000 | (BUS << 30) | (RTAD1 << 11) | (TR << 10) | (RTSA1 << 5) | (WCMC << 0) ;
     mkio_bc_descriptor.data_pointer     = data_src ;
@@ -275,7 +275,7 @@ uint32_t mkio_write_to_rt_with_irq (uint32_t data_src, uint32_t data_dst, uint32
     mkio_bc_descriptor.branch_address   = unused;
     mkio_bc_descriptor.reserved_0       = unused;
     mkio_bc_descriptor.reserved_1       = unused;
-    
+
     //  Subaddress = 0x00 and 0x1F are reserved to identify "mode command"
     //  So, use 0x01 table entrance
     mkio_rt_subaddress_table.sa0_ctrl_word             = unused ;
@@ -286,20 +286,20 @@ uint32_t mkio_write_to_rt_with_irq (uint32_t data_src, uint32_t data_dst, uint32
     mkio_rt_subaddress_table.sa1_tx_descriptor_pointer = 0x00000000 ;
     mkio_rt_subaddress_table.sa1_rx_descriptor_pointer = (uint32_t) (&mkio_rt_rx_descriptor) ;
     mkio_rt_subaddress_table.sa1_reserved              = 0x00000000 ;
-    
+
     mkio_rt_rx_descriptor.ctrl_status_word        = 0x03FFFFFF ;
     mkio_rt_rx_descriptor.data_pointer            = data_dst ;
     mkio_rt_rx_descriptor.next_descriptor_pointer = rt_descriptor_end_of_list ;
-    
+
     //  reset interrupt flag
     irq_flag = 0;
     //  Enable all interrupts in BC controller
     iowrite32 (0xFFFFFFFF, bc_base_address + IRQE);
     iowrite32 ((uint32_t) (&mkio_irq_ring_buffer), bc_base_address + BCRD);
-    
+
     mkio_rt_start_schedule (rt_base_address, (uint32_t) (&mkio_rt_subaddress_table));
     mkio_bc_start_schedule (bc_base_address, (uint32_t) (&mkio_bc_descriptor      ));
-    
+
     if (
             (check_mkio0_A_inh_active () != 0) |
             (check_mkio0_B_inh_active () != 0) |
@@ -307,7 +307,7 @@ uint32_t mkio_write_to_rt_with_irq (uint32_t data_src, uint32_t data_dst, uint32
             (check_mkio1_B_inh_active () != 0)
         )
         return -1;
-    
+
     //  Wait end of transaction with "polling descriptor" mechanism
     while (((mkio_bc_descriptor.result_word & 0x7) != 0) | ((mkio_rt_rx_descriptor.ctrl_status_word & 0x7) != 0))
     {
@@ -315,7 +315,7 @@ uint32_t mkio_write_to_rt_with_irq (uint32_t data_src, uint32_t data_dst, uint32
             ;
     }
     rumboot_printf("bc and rt descriptors closed successfully\n");
-    
+
     if (
             (check_mkio0_A_inh_active () != 0) |
             (check_mkio0_B_inh_active () != 0) |
@@ -323,7 +323,7 @@ uint32_t mkio_write_to_rt_with_irq (uint32_t data_src, uint32_t data_dst, uint32
             (check_mkio1_B_inh_active () != 0)
         )
         return -1;
-    
+
     return 0;
 }
 
@@ -334,9 +334,9 @@ uint32_t main ()
 {
     uint32_t data_src [DATA_SIZE >> 2] __attribute__ ((aligned(4)));
     uint32_t data_dst [DATA_SIZE >> 2] __attribute__ ((aligned(4)));
-    
+
     rumboot_printf("    mkio_signal_test\n");
-    
+
     create_etalon_array (data_src, DATA_SIZE);
 
     if (mkio_write_to_rt_with_irq ((uint32_t) (&data_src), (uint32_t) (&data_dst), DATA_SIZE, MKIO0_BASE, MKIO1_BASE) != 0)
