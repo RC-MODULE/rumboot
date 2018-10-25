@@ -71,7 +71,7 @@ loop1_\label:
     //lwzu r13, 4(r2) //load exp datap
     dcread_macro r7,r9
     cmp cr7,0,r3,r7
-    TEST_ASSERT(eq,cr7,"\label run error (data, way 1 word 1)")
+    TEST_ASSERT(eq,cr7,"\label run err:Way1 Word1")
     //cmp cr7,0,r13,r8
     //TEST_ASSERT(eq,cr7,"\label run error (parity,way 0 word 0)")
     addi r9,r9,64//increment 16 words (+2 to index)
@@ -81,7 +81,7 @@ loop1_\label:
     //lwzu r13, 4(r2) //load exp datap
     dcread_macro r7,r11
     cmp cr7,0,r3,r7
-    TEST_ASSERT(eq,cr7,"\label run error (data, way 1 word 0)")
+    TEST_ASSERT(eq,cr7,"\label run err:Way 1 Word0")
     //cmp cr7,0,r13,r8
     //TEST_ASSERT(eq,cr7,"\label run error (parity,way 0 word 1)")
     addi r11,r11,64//increment 16 words (+2 to index)
@@ -91,7 +91,7 @@ loop1_\label:
     //lwzu r13, 4(r2) //load exp datap
     dcread_macro r7,r10
     cmp cr7,0,r3,r7
-    TEST_ASSERT(eq,cr7,"\label run error (data, way 0 word 1)")
+    TEST_ASSERT(eq,cr7,"\label run err:Way0 Word1")
     //cmp cr7,0,r13,r8
     //TEST_ASSERT(eq,cr7,"\label run error (parity,way 1 word 0)")
     addi r10,r10,64//increment 16 words (+2 to index)
@@ -101,7 +101,7 @@ loop1_\label:
     //lwzu r13, 4(r2) //load exp datap
     dcread_macro r7,r5
     cmp cr7,0,r3,r7
-    TEST_ASSERT(eq,cr7,"\label run error (data, way 0 word 0)")
+    TEST_ASSERT(eq,cr7,"\label run err:Way0 Word0")
     //cmp cr7,0,r13,r8
     //TEST_ASSERT(eq,cr7,"\label run error (parity,way 1 word 1)")
     addi r5,r5,64//increment 16 words (+2 to index)
@@ -140,19 +140,19 @@ end_loop1_\label:
 
     dcread_macro r7,r9
     cmp cr7,0,r7,r3
-    TEST_ASSERT(eq,cr7,"\label Addr bus check error (Way 1 Word 1), exp.val: \exp_val")
+    TEST_ASSERT(eq,cr7,"\label Abus:Way1 Word1, exp:\exp_val")
 
     dcread_macro r7,r11
     cmp cr7,0,r7,r4
-    TEST_ASSERT(eq,cr7,"\label Addr bus check error (Way 1 Word 0), exp.val: \exp_val")
+    TEST_ASSERT(eq,cr7,"\label Abus:Way1 Word0, exp:\exp_val")
 
     dcread_macro r7,r10
     cmp cr7,0,r7,r4
-    TEST_ASSERT(eq,cr7,"\label Addr bus check error (Way 0 Word 1), exp.val: \exp_val")
+    TEST_ASSERT(eq,cr7,"\label Abus:Way0 Word1, exp:\exp_val")
 
     dcread_macro r7,r5
     cmp cr7,0,r7,r4
-    TEST_ASSERT(eq,cr7,"\label Addr bus check error (Way 0 Word 0), exp.val: \exp_val")
+    TEST_ASSERT(eq,cr7,"\label Abus:Way0 Word0, exp:\exp_val")
 .endm
 
 
@@ -190,7 +190,7 @@ DCU_DATA_CHECK:
     data_addr Data_abus_A,   WAY2 | INDEX(0x4C) | WORD(4),WAY2 | INDEX(0x4C) | WORD(5),WAY3 | INDEX(0x4C) | WORD(4),WAY3 | INDEX(0x4C) | WORD(5),BankA0 | 0x33
     data_addr Data_abus_A,   WAY2 | INDEX(0x95) | WORD(4),WAY2 | INDEX(0x95) | WORD(5),WAY3 | INDEX(0x95) | WORD(4),WAY3 | INDEX(0x95) | WORD(5),BankA0 | 0xAA
     data_addr Data_abus_A,   WAY0 | INDEX(0x6A) | WORD(0),WAY0 | INDEX(0x6A) | WORD(1),WAY1 | INDEX(0x6A) | WORD(0),WAY1 | INDEX(0x6A) | WORD(1),BankA0 | 0x55
-    rumboot_putstring "Data_abus_A checking OK\n"
+    rumboot_putstring "Abus_A check OK\n"
 
     //Array B run
     data_addr Data_abus_B,   WAY2 | INDEX(0xFF) | WORD(6),WAY2 | INDEX(0xFF) | WORD(7),WAY3 | INDEX(0xFF) | WORD(6),WAY3 | INDEX(0xFF) | WORD(7),BankB0 | 0xFF
@@ -201,7 +201,7 @@ DCU_DATA_CHECK:
     data_addr Data_abus_B,   WAY2 | INDEX(0x4C) | WORD(6),WAY2 | INDEX(0x4C) | WORD(7),WAY3 | INDEX(0x4C) | WORD(6),WAY3 | INDEX(0x4C) | WORD(7),BankB0 | 0x33
     data_addr Data_abus_B,   WAY2 | INDEX(0x95) | WORD(6),WAY2 | INDEX(0x95) | WORD(7),WAY3 | INDEX(0x95) | WORD(6),WAY3 | INDEX(0x95) | WORD(7),BankB0 | 0xAA
     data_addr Data_abus_B,   WAY0 | INDEX(0x6A) | WORD(2),WAY0 | INDEX(0x6A) | WORD(3),WAY1 | INDEX(0x6A) | WORD(2),WAY1 | INDEX(0x6A) | WORD(3),BankB0 | 0x55
-    rumboot_putstring "Data_abus_B checking OK\n"
+    rumboot_putstring "Abus_B check OK\n"
 
     //Array C run
     data_addr Data_abus_C,   WAY0 | INDEX(0xFF) | WORD(4),WAY0 | INDEX(0xFF) | WORD(5),WAY1 | INDEX(0xFF) | WORD(4),WAY1 | INDEX(0xFF) | WORD(5),BankC0 | 0xFF
@@ -212,7 +212,7 @@ DCU_DATA_CHECK:
     data_addr Data_abus_C,   WAY0 | INDEX(0x4C) | WORD(4),WAY0 | INDEX(0x4C) | WORD(5),WAY1 | INDEX(0x4C) | WORD(4),WAY1 | INDEX(0x4C) | WORD(5),BankC0 | 0x33
     data_addr Data_abus_C,   WAY0 | INDEX(0x95) | WORD(4),WAY0 | INDEX(0x95) | WORD(5),WAY1 | INDEX(0x95) | WORD(4),WAY1 | INDEX(0x95) | WORD(5),BankC0 | 0xAA
     data_addr Data_abus_C,   WAY2 | INDEX(0x6A) | WORD(0),WAY2 | INDEX(0x6A) | WORD(1),WAY3 | INDEX(0x6A) | WORD(0),WAY3 | INDEX(0x6A) | WORD(1),BankC0 | 0x55
-    rumboot_putstring "Data_abus_C checking OK\n"
+    rumboot_putstring "Abus_C check OK\n"
 
     //Array D run
     data_addr Data_abus_D,   WAY0 | INDEX(0xFF) | WORD(6),WAY0 | INDEX(0xFF) | WORD(7),WAY1 | INDEX(0xFF) | WORD(6),WAY1 | INDEX(0xFF) | WORD(7),BankD0 | 0xFF
@@ -223,7 +223,7 @@ DCU_DATA_CHECK:
     data_addr Data_abus_D,   WAY0 | INDEX(0x4C) | WORD(6),WAY0 | INDEX(0x4C) | WORD(7),WAY1 | INDEX(0x4C) | WORD(6),WAY1 | INDEX(0x4C) | WORD(7),BankD0 | 0x33
     data_addr Data_abus_D,   WAY0 | INDEX(0x95) | WORD(6),WAY0 | INDEX(0x95) | WORD(7),WAY1 | INDEX(0x95) | WORD(6),WAY1 | INDEX(0x95) | WORD(7),BankD0 | 0xAA
     data_addr Data_abus_D,   WAY2 | INDEX(0x6A) | WORD(2),WAY2 | INDEX(0x6A) | WORD(3),WAY3 | INDEX(0x6A) | WORD(2),WAY3 | INDEX(0x6A) | WORD(3),BankD0 | 0x55
-    rumboot_putstring "Data_abus_D checking OK\n"
+    rumboot_putstring "Abus_D check OK\n"
 
     //Array E run
     data_addr Data_abus_E,   WAY2 | INDEX(0x7F) | WORD(4),WAY2 | INDEX(0x7F) | WORD(5),WAY3 | INDEX(0x7F) | WORD(4),WAY3 | INDEX(0x7F) | WORD(5),BankE0 | 0xFF
@@ -234,7 +234,7 @@ DCU_DATA_CHECK:
     data_addr Data_abus_E,   WAY2 | INDEX(0xCC) | WORD(4),WAY2 | INDEX(0xCC) | WORD(5),WAY3 | INDEX(0xCC) | WORD(4),WAY3 | INDEX(0xCC) | WORD(5),BankE0 | 0x33
     data_addr Data_abus_E,   WAY2 | INDEX(0x15) | WORD(4),WAY2 | INDEX(0x15) | WORD(5),WAY3 | INDEX(0x15) | WORD(4),WAY3 | INDEX(0x15) | WORD(5),BankE0 | 0xAA
     data_addr Data_abus_E,   WAY0 | INDEX(0xEA) | WORD(0),WAY0 | INDEX(0xEA) | WORD(1),WAY1 | INDEX(0xEA) | WORD(0),WAY1 | INDEX(0xEA) | WORD(1),BankE0 | 0x55
-    rumboot_putstring "Data_abus_E checking OK\n"
+    rumboot_putstring "Abus_E check OK\n"
 
     //Array F run
     data_addr Data_abus_F,   WAY2 | INDEX(0x7F) | WORD(6),WAY2 | INDEX(0x7F) | WORD(7),WAY3 | INDEX(0x7F) | WORD(6),WAY3 | INDEX(0x7F) | WORD(7),BankF0 | 0xFF
@@ -245,7 +245,7 @@ DCU_DATA_CHECK:
     data_addr Data_abus_F,   WAY2 | INDEX(0xCC) | WORD(6),WAY2 | INDEX(0xCC) | WORD(7),WAY3 | INDEX(0xCC) | WORD(6),WAY3 | INDEX(0xCC) | WORD(7),BankF0 | 0x33
     data_addr Data_abus_F,   WAY2 | INDEX(0x15) | WORD(6),WAY2 | INDEX(0x15) | WORD(7),WAY3 | INDEX(0x15) | WORD(6),WAY3 | INDEX(0x15) | WORD(7),BankF0 | 0xAA
     data_addr Data_abus_F,   WAY0 | INDEX(0xEA) | WORD(2),WAY0 | INDEX(0xEA) | WORD(3),WAY1 | INDEX(0xEA) | WORD(2),WAY1 | INDEX(0xEA) | WORD(3),BankF0 | 0x55
-    rumboot_putstring "Data_abus_F checking OK\n"
+    rumboot_putstring "Abus_F check OK\n"
 
     //Array G run
     data_addr Data_abus_G,   WAY0 | INDEX(0x7F) | WORD(4),WAY0 | INDEX(0x7F) | WORD(5),WAY1 | INDEX(0x7F) | WORD(4),WAY1 | INDEX(0x7F) | WORD(5),BankG0 | 0xFF
@@ -256,7 +256,7 @@ DCU_DATA_CHECK:
     data_addr Data_abus_G,   WAY0 | INDEX(0xCC) | WORD(4),WAY0 | INDEX(0xCC) | WORD(5),WAY1 | INDEX(0xCC) | WORD(4),WAY1 | INDEX(0xCC) | WORD(5),BankG0 | 0x33
     data_addr Data_abus_G,   WAY0 | INDEX(0x15) | WORD(4),WAY0 | INDEX(0x15) | WORD(5),WAY1 | INDEX(0x15) | WORD(4),WAY1 | INDEX(0x15) | WORD(5),BankG0 | 0xAA
     data_addr Data_abus_G,   WAY2 | INDEX(0xEA) | WORD(0),WAY2 | INDEX(0xEA) | WORD(1),WAY3 | INDEX(0xEA) | WORD(0),WAY3 | INDEX(0xEA) | WORD(1),BankG0 | 0x55
-    rumboot_putstring "Data_abus_G checking OK\n"
+    rumboot_putstring "Abus_G check OK\n"
 
     //Array H run
     data_addr Data_abus_H,   WAY0 | INDEX(0x7F) | WORD(6),WAY0 | INDEX(0x7F) | WORD(7),WAY1 | INDEX(0x7F) | WORD(6),WAY1 | INDEX(0x7F) | WORD(7),BankH0 | 0xFF
@@ -267,7 +267,7 @@ DCU_DATA_CHECK:
     data_addr Data_abus_H,   WAY0 | INDEX(0xCC) | WORD(6),WAY0 | INDEX(0xCC) | WORD(7),WAY1 | INDEX(0xCC) | WORD(6),WAY1 | INDEX(0xCC) | WORD(7),BankH0 | 0x33
     data_addr Data_abus_H,   WAY0 | INDEX(0x15) | WORD(6),WAY0 | INDEX(0x15) | WORD(7),WAY1 | INDEX(0x15) | WORD(6),WAY1 | INDEX(0x15) | WORD(7),BankH0 | 0xAA
     data_addr Data_abus_H,   WAY2 | INDEX(0xEA) | WORD(2),WAY2 | INDEX(0xEA) | WORD(3),WAY3 | INDEX(0xEA) | WORD(2),WAY3 | INDEX(0xEA) | WORD(3),BankH0 | 0x55
-    rumboot_putstring "Data_abus_H checking OK\n"
+    rumboot_putstring "Abus_H check OK\n"
 
 test_ok:
     rumboot_putstring "TEST_OK\n"
