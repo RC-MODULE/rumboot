@@ -38,6 +38,11 @@ int main()
         }
 #endif
 
+#ifdef CRASH_NPE
+        volatile uint32_t *ptr = (uint32_t *) 0;
+        *ptr = 0xdeadc0de;
+#endif
+
 #ifdef TERMINATE_SIMULATION
         do_exit(EXITCODE);
 #endif
