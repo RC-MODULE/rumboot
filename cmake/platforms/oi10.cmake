@@ -37,12 +37,16 @@ rumboot_add_configuration(
     TIMEOUT_CTEST 0
 )
 
+if (RUMBOOT_BUILD_TYPE STREQUAL "Production")
+  set(BOOTROM_IFLAGS +GTUBE_ONLY_PRODUCTION_OPCODES)
+endif()
+
 #Temporary hack, before we figure out what to do next.
 rumboot_add_configuration(
     BROM
     CONFIGURATION ROM
     LDS oi10/bootrom.lds
-    IRUN_FLAGS +BOOTMGR_KEEP_DRIVING=1
+    IRUN_FLAGS +BOOTMGR_KEEP_DRIVING=1 ${BOOTROM_IFLAGS}
 )
 
 rumboot_add_configuration(
