@@ -37,7 +37,7 @@ SECTIONS {
         . = ALIGN(8);
 
         rumboot_im0_heap_start = .;
-        . = . + 0x4000; /* 16k heap */
+        . = . + 0x8000; /* 32k heap */
         rumboot_im0_heap_end = .;
 
         /* This is where stacks start */
