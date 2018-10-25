@@ -57,7 +57,7 @@ rumboot_add_configuration(
     PREFIX bare-rom
     FEATURES ROMGEN
     TIMEOUT_CTEST 0
-    TIMEOUT 2 ms
+    TIMEOUT 10 ms
 )
 
 rumboot_add_configuration(
