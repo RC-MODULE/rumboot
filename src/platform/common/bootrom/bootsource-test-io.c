@@ -97,11 +97,12 @@ int main()
 	#ifndef RUMBOOT_NATIVE
     	struct rumboot_bootheader *hdr = (struct rumboot_bootheader *)&rumboot_platform_spl_start;
 	#else
-		struct rumboot_config conf;
-		rumboot_platform_read_config(&conf);
     	struct rumboot_bootheader *hdr = malloc(SIZE);
 	#endif
-
+	struct rumboot_config conf;
+	rumboot_platform_read_config(&conf);
+	rumboot_platform_init_loader(&conf);
+	
 	const struct rumboot_bootsource *src = &rumboot_platform_get_bootsources()[SOURCE];
 	rumboot_printf("Hello, I'm bootsource io test for %d\n", SOURCE);
 	rumboot_printf("This source blocksize is %d \n", src->plugin->align);
