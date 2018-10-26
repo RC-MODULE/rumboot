@@ -3,6 +3,7 @@
 #include <platform/test_event_c.h>
 #include <platform/trace.h>
 #include <platform/test_assert.h>
+#include <platform/arch/ppc/ppc_476fp_config.h>
 #include <platform/arch/ppc/ppc_476fp_lib_c.h>
 #include <platform/arch/ppc/ppc_476fp_ctrl_fields.h>
 #include <platform/arch/ppc/ppc_476fp_itrpt_fields.h>

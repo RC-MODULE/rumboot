@@ -10,7 +10,7 @@
 
 
 __attribute__((no_instrument_function)) void rumboot_platform_event_raise(enum rumboot_simulation_event event,
-                                                                          uint32_t *data, uint32_t len)
+                                                                          uint32_t const *data, uint32_t len)
 {
         int i;
         if (event == EVENT_TRACE) {

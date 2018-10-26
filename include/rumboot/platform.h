@@ -115,7 +115,7 @@ void rumboot_platform_trace(void *pc);
  * @param len   Length of data (in 32-bit words)
  */
 void rumboot_platform_event_raise(enum rumboot_simulation_event event,
-     uint32_t *data, uint32_t len);
+     uint32_t const *data, uint32_t len);
 
 /**
  * Get the next event from the simulation environment.

@@ -18,13 +18,6 @@
     load_const          \tmp_reg, 0x00000000  // make r0 "all zeros" source
     mtspr               SPR_SPRG0, \tmp_reg
     mtspr               SPR_SPRG1, \tmp_reg
-    mtspr               SPR_SPRG2, \tmp_reg
-    mtspr               SPR_SPRG3, \tmp_reg
-    mtspr               SPR_SPRG4, \tmp_reg
-    mtspr               SPR_SPRG5, \tmp_reg
-    mtspr               SPR_SPRG6, \tmp_reg
-    mtspr               SPR_SPRG7, \tmp_reg
-    mtspr               SPR_SPRG8, \tmp_reg
     load_const          \tmp_reg, 0x0003c0de
     mtspr               SPR_SPRG0, \tmp_reg
 .endm
