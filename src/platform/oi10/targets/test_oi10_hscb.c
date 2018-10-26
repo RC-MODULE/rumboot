@@ -147,33 +147,6 @@ static uint32_t check_hscb_regs( uint32_t base_addr ) {
 }
 #endif
 
-#define CURRENT_MEMORY_RX_0 IM0_BASE
-#define CURRENT_MEMORY_TX_0 IM0_BASE
-#define CURRENT_MEMORY_RX_1 IM0_BASE
-#define CURRENT_MEMORY_TX_1 IM0_BASE
-
-#define IM0_TX_0        IM0_BASE
-#define IM0_TX_1        IM0_BASE
-#define IM0_RX_0        IM0_BASE
-#define IM0_RX_1        IM0_BASE
-
-
-#define IM1_TX_0        IM1_BASE
-#define IM1_TX_1        IM1_BASE
-#define IM1_RX_0        IM1_BASE
-#define IM1_RX_1        IM1_BASE
-
-
-#define SSRAM_TX_0      SSRAM_BASE
-#define SSRAM_TX_1      SSRAM_BASE
-#define SSRAM_RX_0      SSRAM_BASE
-#define SSRAM_RX_1      SSRAM_BASE
-
-
-#define SDRAM_TX_0      SDRAM_BASE
-#define SDRAM_TX_1      SDRAM_BASE
-#define SDRAM_RX_0      SDRAM_BASE
-#define SDRAM_RX_1      SDRAM_BASE
 
 #ifndef DATA_SIZE_0
 #define DATA_SIZE_0 0x10
@@ -193,44 +166,29 @@ static uint32_t check_hscb_regs( uint32_t base_addr ) {
 #ifndef DATA_SIZE_5
 #define DATA_SIZE_5 0x30
 #endif
-//Here are defined addresses, for using different memories use addresses from defines above
-//Note that for current memory (say, IM0 for IRAM configuration) you should use CURRENT_MEMORY_* addresses
-//in order not to erase code
-#ifndef TX_DATA_ADDR_0
-#define TX_DATA_ADDR_0   CURRENT_MEMORY_TX_0 //Here we have Mem0 address from chain Mem0->SW0->SW1->Mem1
-#endif
-#ifndef TX_DATA_ADDR_1
-#define TX_DATA_ADDR_1   CURRENT_MEMORY_TX_1 //Here we have Mem1 address from chain Mem1->SW1->SW0->Mem0
-#endif
-#ifndef RX_DATA_ADDR_0
-#define RX_DATA_ADDR_0   CURRENT_MEMORY_RX_0 //Here we have Mem1 address from chain Mem0->SW0->SW1->Mem1
-#endif
-#ifndef RX_DATA_ADDR_1
-#define RX_DATA_ADDR_1   CURRENT_MEMORY_RX_1 //Here we have Mem0 address from chain Mem1->SW1->SW0->Mem0
-#endif
 
 #ifdef HSCB_SHORT_TEST
 
     #ifndef TX_0_HEAP_NAME
-    #define TX_0_HEAP_NAME "IM0"
+    #define TX_0_HEAP_NAME "IM2"
     #endif
 
     #ifndef RX_0_HEAP_NAME
-    #define RX_0_HEAP_NAME "IM0"
+    #define RX_0_HEAP_NAME "IM2"
     #endif
 
     #ifndef TX_1_HEAP_NAME
-    #define TX_1_HEAP_NAME "IM0"
+    #define TX_1_HEAP_NAME "IM2"
     #endif
 
     #ifndef RX_1_HEAP_NAME
-    #define RX_1_HEAP_NAME "IM0"
+    #define RX_1_HEAP_NAME "IM2"
     #endif
 
 #else
 
     #ifndef TX_0_HEAP_NAME
-    #define TX_0_HEAP_NAME "IM0"
+    #define TX_0_HEAP_NAME "IM2"
     #endif
 
     #ifndef RX_0_HEAP_NAME
@@ -238,7 +196,7 @@ static uint32_t check_hscb_regs( uint32_t base_addr ) {
     #endif
 
     #ifndef TX_1_HEAP_NAME
-    #define TX_1_HEAP_NAME "IM0"
+    #define TX_1_HEAP_NAME "IM2"
     #endif
 
     #ifndef RX_1_HEAP_NAME
@@ -266,7 +224,7 @@ static uint32_t check_hscb_regs( uint32_t base_addr ) {
     #endif
 
     #ifndef RX_4_HEAP_NAME
-    #define RX_4_HEAP_NAME "IM0"
+    #define RX_4_HEAP_NAME "IM2"
     #endif
 
     #ifndef TX_5_HEAP_NAME
@@ -274,7 +232,7 @@ static uint32_t check_hscb_regs( uint32_t base_addr ) {
     #endif
 
     #ifndef RX_5_HEAP_NAME
-    #define RX_5_HEAP_NAME "IM0"
+    #define RX_5_HEAP_NAME "IM2"
     #endif
 
 #endif
@@ -314,17 +272,7 @@ static uint32_t check_hscb_regs( uint32_t base_addr ) {
 #endif
 
 #define DESCRIPTOR_TABLES_COUNT 4
-#define DEFAULT_HEAP_ID 0
-
-//static volatile uint8_t __attribute__((section(".data"),aligned(8))) tx_desc_0_im[0x100] = {0} ;
-//static volatile uint8_t __attribute__((section(".data"),aligned(8))) tx_desc_1_im[0x100] = {0} ;
-//static volatile uint8_t __attribute__((section(".data"),aligned(8))) rx_desc_0_im[0x100] = {0} ;
-//static volatile uint8_t __attribute__((section(".data"),aligned(8))) rx_desc_1_im[0x100] = {0} ;
-
-//static volatile hscb_packed_descr_struct_t __attribute__((section(".data"),aligned(8))) static_descriptors[DESCRIPTOR_TABLES_COUNT][2];
-
-//static uint8_t*  data_areas[COUNT_AREAS];/*from even to odd*/
-//static uint32_t  data_area_sizes[COUNT_AREAS/2] = {0x10, 0x10};
+#define DEFAULT_HEAP_ID 1
 
 static volatile uint32_t hscb0_status;
 static volatile uint32_t hscb1_status;
@@ -332,7 +280,6 @@ static volatile uint32_t hscb0_dma_status;
 static volatile uint32_t hscb1_dma_status;
 static volatile bool hscb0_link_established;
 static volatile bool hscb1_link_established;
-
 
 static void handler( int irq, void *arg ) {
     //get interrupt source
@@ -556,7 +503,6 @@ void init_hscb_cfg( uint8_t**                       data_areas,
                     uint32_t                        count_descr_tables,
                     bool                            change_endian){
     int i,j;
-    uint32_t count_of_processed_descriptors = 0;
     rumboot_putstring("init_hscb_cfg");
     for (i = 0; i < count_descr_tables; ++i){
         for (j = 0; j < count_of_descriptors[i]; ++j){
@@ -578,7 +524,6 @@ void init_hscb_cfg( uint8_t**                       data_areas,
         rumboot_puthex((uint32_t)(&(*(hscb_descr + i))[count_of_descriptors[i]]));
         (*(hscb_descr + i))[count_of_descriptors[i]].start_address = 0;
         (*(hscb_descr + i))[count_of_descriptors[i]].length_attr = 0;
-        count_of_processed_descriptors += count_of_descriptors[i] ;
     }
     rumboot_putstring("end init_hscb_cfg");
 }
@@ -710,8 +655,8 @@ static uint32_t check_hscb_short_func(
         for(j = 0; j < descriptor_counts[i]; ++j){
             rumboot_puthex((i << 16) | j);
             rumboot_puthex((uint32_t)((*(descriptors + i))+j));
-            rumboot_puthex((*(descriptors + i))[j].start_address);
-            rumboot_puthex((*(descriptors + i))[j].length_attr);
+            rumboot_puthex(*((uint32_t*)((*(descriptors + i)) + j)));
+            rumboot_puthex( *((uint32_t*)(((uint32_t)((*(descriptors + i)) + j)) + 4)) );
         }
     }
     rumboot_putstring("end printing descriptors in cycle");
@@ -742,10 +687,10 @@ static uint32_t check_hscb_short_func(
     rumboot_putstring( "HSCB link has been enabled\n" );
     // Enable DMA for HSCB0 and HSCB1
     rumboot_putstring( "Start work!\n" );
-    hscb_run_wdma(base_addr);
-    hscb_run_wdma(supplementary_base_addr);
     hscb_run_rdma(base_addr);
     hscb_run_rdma(supplementary_base_addr);
+    hscb_run_wdma(base_addr);
+    hscb_run_wdma(supplementary_base_addr);
     msync();
     rumboot_putstring( "Wait HSCB0 and HSCB1 finish work\n" );
     while (!(hscb0_dma_status & hscb1_dma_status)){
@@ -805,8 +750,9 @@ static uint32_t check_hscb_func(
         for(j = 0; j < descriptor_counts[i]; ++j){
             rumboot_puthex((i << 16) | j);
             rumboot_puthex((uint32_t)((*(descriptors + i))+j));
-            rumboot_puthex((*(descriptors + i))[j].start_address);
-            rumboot_puthex((*(descriptors + i))[j].length_attr);
+            rumboot_puthex(*((uint32_t*)((*(descriptors + i)) + j)));
+            rumboot_puthex((((uint32_t)((*(descriptors + i)) + j)) + 4));
+            rumboot_puthex( *((uint32_t*)(((uint32_t)((*(descriptors + i)) + j)) + 4)) );
         }
     }
 
@@ -830,10 +776,10 @@ static uint32_t check_hscb_func(
     rumboot_putstring( "HSCB link has enabled\n" );
     // Enable DMA for HSCB0 and HSCB1
     rumboot_putstring( "Start work!\n" );
-    hscb_run_wdma(base_addr);
-    hscb_run_wdma(supplementary_base_addr);
     hscb_run_rdma(base_addr);
     hscb_run_rdma(supplementary_base_addr);
+    hscb_run_wdma(base_addr);
+    hscb_run_wdma(supplementary_base_addr);
     rumboot_putstring( "Wait HSCB0 and HSCB1 finish work\n" );
     while (!(hscb0_dma_status & hscb1_dma_status)){
         if (cnt == MAX_ATTEMPTS) {
