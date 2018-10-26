@@ -36,11 +36,16 @@ static volatile uint64_t test_array[]={
 
 #define CODE_COPY_RUN(ADDRESS) \
     do{ \
+        rumboot_printf("address = %x\n", (uint32_t) ADDRESS); \
         write_blr_l2_line_by_addr(ADDRESS); \
         func* f = (func*)(ADDRESS); \
-        rumboot_printf("Start code from %x\n", (uint32_t) ADDRESS); \
         f(); \
+        icread((void *)ADDRESS); \
+        isync(); \
+        TEST_ASSERT( (ADDRESS >> 13) == (spr_read(SPR_ICDBTRH) >> 13), "Wrong value in SPR_ICDBTRH" ); \
     }while (0);
+
+//rumboot_printf("SPR = %x\n",spr_read(SPR_ICDBTRH)) ;
 
 void write_blr_l2_line_by_addr(uint32_t volatile address)
 {
@@ -50,17 +55,34 @@ void write_blr_l2_line_by_addr(uint32_t volatile address)
     msync();
 }
 
+#define GET_WINDOW(ERPN_TAG) \
+   ( 0x8000 | (((ERPN_TAG) >> 19) << 2) | (((ERPN_TAG) >> 17) & 0x3))
+
+uint32_t get_EA_tag(uint32_t erpn_tag)
+{
+    uint32_t mem_window_number = GET_WINDOW(erpn_tag) & 0x7;
+    if(mem_window_number > 3)
+       return (erpn_tag & 0x7FFFF)-((0x40000000 * (mem_window_number - 4)) >> 13);
+    else
+       return (erpn_tag & 0x7FFFF)-((0x40000000 * mem_window_number) >> 13);
+}
+
 void cache_icu_tag(uint32_t erpn_tag, uint32_t index)
 {
-    uint32_t tag = 0x00;;
+    rumboot_printf("ERPN_TAG = %x\n", erpn_tag);
+    uint32_t tag = get_EA_tag(erpn_tag);
+    rumboot_printf("TAG = %x\n", tag);
+    //set_mem_window(GET_WINDOW(erpn_tag));
 
     CODE_COPY_RUN(GET_ADDR_BY_TAG_INDEX_WORD(tag,index,0));
     CODE_COPY_RUN(GET_ADDR_BY_TAG_INDEX_WORD(tag+1,index,0));
+    rumboot_printf("\n");
 }
 
 bool test_icu_tag_array()
 {
     rumboot_printf("Start test icu tag array\n");
+
 //                   E                 TAG   +   WAY
     cache_icu_tag((0b111111111111111111 << 2) | 0b00,0x0);//array 0
     cache_icu_tag((0b000000000000000000 << 2) | 0b00,0x2);//array 0
@@ -89,8 +111,9 @@ bool test_icu_tag_array()
     cache_icu_tag((0b101010101010101010 << 2) | 0b00,0x94);//array 0
     cache_icu_tag((0b010101010101010101 << 2) | 0b00,0x96);//array 0
     //test_event(EVENT_CACHING_DONE);
+
 //                   E                 TAG   +   WAY
-    cache_icu_tag((0b111111111111111111 << 2) | 0b10,0x0);//array 0
+    cache_icu_tag((0b111111111111111111 << 2) | 0b00,0x0);//array 0
     cache_icu_tag((0b000000000000000000 << 2) | 0b10,0x2);//array 0
     cache_icu_tag((0b001111111111111111 << 2) | 0b10,0x4);//array 0
     cache_icu_tag((0b110000000000000000 << 2) | 0b10,0x6);//array 0
