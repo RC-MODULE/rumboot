@@ -227,7 +227,7 @@ static void upload(void *addr)
         hfile = strtok(NULL, ",");
 }
 
-void rumboot_platform_event_raise(enum rumboot_simulation_event event, uint32_t *data, uint32_t len)
+void rumboot_platform_event_raise(enum rumboot_simulation_event event, uint32_t const *data, uint32_t len)
 {
         switch (event) {
         case EVENT_TERM:
