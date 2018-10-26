@@ -41,17 +41,18 @@ uint8_t __attribute__((section(".text.test_oi10_cpu_021"))) cache_testing_functi
     static const tlb_entry sram0_tlb_entry_cacheable_valid = {TLB_ENTRY_CACHE_VALID};
     static const tlb_entry sram0_tlb_entry_non_cacheable_valid = {TLB_ENTRY_NOCACHE_VALID};
 
-    //step 1 - initial value to EM0
+    //step 1 - initial value to SRAM0
     iowrite32 (TEST_CONST_1, (uint32_t) sram0_data);
     msync();
 
-    //step 2 - switch page to write-through mode
+    //step 2 - switch to cacheable page
     write_tlb_entries(&sram0_tlb_entry_cacheable_valid,1);
 
-    //steps 3, 4 - put data into write-through cacheable page
+    //steps 3, 4 - put data in cacheable page
     iowrite32(TEST_CONST_2, (uint32_t) sram0_data);
     msync();
 
+    //switch to inhibited page
     write_tlb_entries(&sram0_tlb_entry_non_cacheable_valid,1);
     msync();
     isync();
@@ -70,7 +71,7 @@ uint8_t __attribute__((section(".text.test_oi10_cpu_021"))) cache_testing_functi
     }
     msync();
 
-    //steps 8,9 - read from write-back cacheable page
+    //steps 8,9 - read from cacheable page
     write_tlb_entries(&sram0_tlb_entry_cacheable_valid,1);
     msync();
     isync();
@@ -94,6 +95,19 @@ uint8_t __attribute__((section(".text.test_oi10_cpu_021"))) cache_testing_functi
     isync();
     if (ioread32((uint32_t) sram0_data) != TEST_CONST_2) return 6;
     msync();
+
+    //steps 16,17
+    //write in cache
+    dci(2);
+    iowrite32 (TEST_CONST_1, (uint32_t) sram0_data);
+    //inhibit page
+    write_tlb_entries(&sram0_tlb_entry_non_cacheable_valid,1);
+    iowrite32 (TEST_CONST_2, (uint32_t) sram0_data);
+    if (ioread32((uint32_t) sram0_data) != TEST_CONST_2) return 7;
+    //cacheable page
+    write_tlb_entries(&sram0_tlb_entry_cacheable_valid,1);
+    //read from cache
+    if (ioread32((uint32_t) sram0_data) != TEST_CONST_1) return 8;
 
     return 0;
 }
