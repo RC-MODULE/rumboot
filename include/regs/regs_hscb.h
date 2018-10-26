@@ -625,8 +625,8 @@ BEGIN_ENUM( hscb_descr_itrpt_t )
 END_ENUM( hscb_descr_itrpt_t )
 
 BEGIN_ENUM( hscb_descr_validity_t )
-    DECLARE_ENUM_VAL( HSCB_DESCR_VALID,   0b0 )
-    DECLARE_ENUM_VAL( HSCB_DESCR_INVALID,   0b01 )
+    DECLARE_ENUM_VAL( HSCB_DESCR_INVALID,       0b0 )
+    DECLARE_ENUM_VAL( HSCB_DESCR_VALID,         0b1 )
 END_ENUM( hscb_descr_validity_t )
 
 BEGIN_ENUM( hscb_state_machine_t )
