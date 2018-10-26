@@ -61,4 +61,74 @@
 #define RTSYNC_LAST_L_ADDR      0x118
 #define RTSYNC_LAST_H_ADDR      0x11C
 
+#define MKIO_IRQE_BCEVE_i      ( 0 )
+#define MKIO_IRQE_BCEVE_n      ( 1 )
+#define MKIO_IRQE_BCEVE_mask   (1 << MKIO_IRQE_BCEVE_i)
+
+#define MKIO_IRQE_BCDE_i       ( 1 )
+#define MKIO_IRQE_BCDE_n       ( 1 )
+#define MKIO_IRQE_BCDE_mask    (1 << MKIO_IRQE_BCDE_i)
+
+#define MKIO_IRQE_BCWKE_i      ( 2 )
+#define MKIO_IRQE_BCWKE_n      ( 1 )
+#define MKIO_IRQE_BCWKE_mask   (1 << MKIO_IRQE_BCWKE_i)
+
+//7:3 RESERVED
+
+#define MKIO_IRQE_RTEVE_i      ( 8 )
+#define MKIO_IRQE_RTEVE_n      ( 1 )
+#define MKIO_IRQE_RTEVE_mask   ( 1 << MKIO_IRQE_RTEVE_i)
+
+#define MKIO_IRQE_RTDE_i      ( 9 )
+#define MKIO_IRQE_RTDE_n      ( 1 )
+#define MKIO_IRQE_RTDE_mask   ( 1 << MKIO_IRQE_RTDE_i)
+
+#define MKIO_IRQE_RTEE_i     ( 10 )
+#define MKIO_IRQE_RTEE_n     (  1 )
+#define MKIO_IRQE_RTEE_mask  ( 1 << MKIO_IRQE_RTEE_i )
+
+//15:11 RESERVED
+
+#define MKIO_IRQE_BMDE_i     ( 16 )
+#define MKIO_IRQE_BMDE_n     (  1 )
+#define MKIO_IRQE_BMDE_mask  ( 1 << MKIO_IRQE_BMDE_i )
+
+#define MKIO_IRQE_BMTOE_i    ( 17 )
+#define MKIO_IRQE_BMTOE_n    (  1 )
+#define MKIO_IRQE_BMTOE_mask ( 1 << MKIO_IRQE_BMTOE_i )
+
+    //31:18 RESERVED
+
+#define MKIO_BCSL_SCST_i      ( 0 )
+#define MKIO_BCSL_SCST_n      ( 3 )
+#define MKIO_BCSL_SCST_mask   (0x7 << MKIO_BCSL_SCST_i)
+
+#define MKIO_BCSL_SCADL_i      ( 3 )
+#define MKIO_BCSL_SCADL_n      ( 3 )
+#define MKIO_BCSL_SCADL_mask   (0x7 << MKIO_BCSL_SCADL_i)
+
+#define MKIO_BCSL_ASST_i       ( 8 )
+#define MKIO_BCSL_ASST_n       ( 2 )
+#define MKIO_BCSL_ASST_mask    (0x3 << MKIO_BCSL_ASST_i)
+
+    //10 RESERVED
+
+#define MKIO_BCSL_ASADL_i      ( 11 )
+#define MKIO_BCSL_ASADL_n      (  5 )
+#define MKIO_BCSL_ASADL_mask   ( 0x1F << MKIO_BCSL_ASADL_i)
+
+#define MKIO_BCSL_BCCHK_i      ( 16 )
+#define MKIO_BCSL_BCCHK_n      ( 1 )
+#define MKIO_BCSL_BCCHK_mask   ( 1 << MKIO_BCSL_BCCHK_i )
+
+    //27:17 RESERVED
+
+#define MKIO_BCSL_BCFEAT_i      ( 28 )
+#define MKIO_BCSL_BCFEAT_n      (  3 )
+#define MKIO_BCSL_BCFEAT_mask   ( 0x7 << MKIO_BCSL_BCFEAT_i)
+
+#define MKIO_BCSL_BCSUP_i      ( 31 )
+#define MKIO_BCSL_BCSUP_n      (  1 )
+#define MKIO_BCSL_BCSUP_mask   ( 1 << MKIO_BCSL_BCSUP_i)
+
 #endif /* end of include guard: REGS_MKIO_H */

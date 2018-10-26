@@ -89,9 +89,9 @@ uint32_t cmp_arrays (uint32_t address_src, uint32_t address_dst, uint32_t size)
 
 uint32_t mkio_write_to_rt_with_irq (uint32_t data_src, uint32_t data_dst, uint32_t size, uint32_t bc_base_address, uint32_t rt_base_address)
 {
-    mkio_bc_descriptor         mkio_bc_descriptor        __attribute__ ((aligned(16)))  ;
-    mkio_rt_subaddress_table   mkio_rt_subaddress_table  __attribute__ ((aligned(512))) ;
-    mkio_rt_descriptor         mkio_rt_rx_descriptor     __attribute__ ((aligned(16)))  ;
+    struct mkio_bc_descriptor volatile          mkio_bc_descriptor        __attribute__ ((aligned(16)))  ;
+    struct mkio_rt_subaddress_table volatile    mkio_rt_subaddress_table  __attribute__ ((aligned(512))) ;
+    struct mkio_rt_descriptor volatile          mkio_rt_rx_descriptor     __attribute__ ((aligned(16)))  ;
 
     uint32_t mkio_irq_ring_buffer [16] __attribute__ ((aligned(64)));
 

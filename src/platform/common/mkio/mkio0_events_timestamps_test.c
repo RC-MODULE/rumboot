@@ -12,8 +12,8 @@
 //      - write data to MKIO1 (RT) with MKIO0 (BC)
 //      - check MKIOs timestamps values
 //      - check transacrion correct
-//    - 
-//    - 
+//    -
+//    -
 //
 //
 //    Test duration (RTL): < 700 us
@@ -48,7 +48,7 @@ uint32_t rt_validcmd_last_l_addr  = 0;
 uint32_t rt_validcmd_last_h_addr  = 0;
 uint32_t rt_rtsync_last_l_addr    = 0;
 uint32_t rt_rtsync_last_h_addr    = 0;
-    
+
 
 
 //-----------------------------------------------------------------------------
@@ -105,7 +105,7 @@ uint32_t cmp_arrays (uint32_t address_src, uint32_t address_dst, uint32_t size)
 void gp_timer_create_event ()
 {
     uint32_t rdata;
-    
+
     rdata = ioread32 (GLOBAL_TIMERS + TMR_4_STATE);
     iowrite32 (rdata | 0x2, GLOBAL_TIMERS + TMR_4_STATE);
 }
@@ -113,12 +113,12 @@ void gp_timer_create_event ()
 uint32_t mkio_events_timestamps_test (uint32_t data_src, uint32_t data_dst, uint32_t size, uint32_t bc_base_address, uint32_t rt_base_address)
 {
     uint32_t rdata;
-    
-    mkio_bc_descriptor         mkio_bc_descriptor_0      __attribute__ ((aligned(16)))  ;
-    mkio_bc_descriptor         mkio_bc_descriptor_1      __attribute__ ((aligned(16)))  ;
-    mkio_rt_subaddress_table   mkio_rt_subaddress_table  __attribute__ ((aligned(512))) ;
-    mkio_rt_descriptor         mkio_rt_rx_descriptor     __attribute__ ((aligned(16)))  ;
-    
+
+    struct mkio_bc_descriptor volatile          mkio_bc_descriptor_0      __attribute__ ((aligned(16)))  ;
+    struct mkio_bc_descriptor volatile          mkio_bc_descriptor_1      __attribute__ ((aligned(16)))  ;
+    struct mkio_rt_subaddress_table volatile    mkio_rt_subaddress_table  __attribute__ ((aligned(512))) ;
+    struct mkio_rt_descriptor volatile          mkio_rt_rx_descriptor     __attribute__ ((aligned(16)))  ;
+
     //  Wait for external trigger (WTRIG)
     uint32_t WTRIG = 0x1;
     //  Suspend normally (SUSN) - Always suspends after transfer
@@ -127,7 +127,7 @@ uint32_t mkio_events_timestamps_test (uint32_t data_src, uint32_t data_dst, uint
     uint32_t IRQE_ = 0;
     //  IRQ normally (IRQN) - Always interrupts after transfer
     uint32_t IRQN = 0;
-    
+
     //  RT Address (RTAD1)
     uint32_t RTAD1 = 0x00;
     //  0 - transmit (BC->RT), 1 - receive (RT->BC)
@@ -137,17 +137,17 @@ uint32_t mkio_events_timestamps_test (uint32_t data_src, uint32_t data_dst, uint
     //  Word count/Mode code (WCMC)
     //  Word is 2 bytes in MKIO 1553
     uint32_t WCMC = 0x01;
-    
+
     //  Allow receive transfers to this subaddress
     uint32_t RXEN = 1;
     //  Allow transmit transfers from this subaddress
     uint32_t TXEN = 1;
-    
+
     uint32_t bc_descriptor_end_of_list = 0x800000FF ;
     uint32_t rt_descriptor_end_of_list = 0x00000003 ;
-    
+
     uint32_t unused = 0xDEADBEEF ;
-    
+
 
     rumboot_printf("execute mkio_events_timestamps_test\n");
     // rumboot_printf("    data_src %x\n",                 (uint32_t) (&data_src                 ));
@@ -156,7 +156,7 @@ uint32_t mkio_events_timestamps_test (uint32_t data_src, uint32_t data_dst, uint
     // rumboot_printf("    mkio_bc_descriptor_1 %x\n",     (uint32_t) (&mkio_bc_descriptor_1     ));
     // rumboot_printf("    mkio_rt_subaddress_table %x\n", (uint32_t) (&mkio_rt_subaddress_table ));
     // rumboot_printf("    mkio_rt_rx_descriptor %x\n",    (uint32_t) (&mkio_rt_rx_descriptor    ));
-    
+
     //  Configure synchronize command descriptor
     mkio_bc_descriptor_0.ctrl_word_0      = 0x00000000 | (WTRIG << 30) | (IRQE_ << 28) | (IRQN << 27) | (SUSN << 25);
     mkio_bc_descriptor_0.ctrl_word_1      = 0x00000000 | (RTAD1 << 11) | (TR << 10) | (RTSA1 << 5) | (WCMC << 0) ;
@@ -166,12 +166,12 @@ uint32_t mkio_events_timestamps_test (uint32_t data_src, uint32_t data_dst, uint
     mkio_bc_descriptor_0.branch_address   = (uint32_t) (&mkio_bc_descriptor_1);
     mkio_bc_descriptor_0.reserved_0       = unused;
     mkio_bc_descriptor_0.reserved_1       = unused;
-    
+
     RTSA1 = 0x01;
     WCMC = size >> 1;
     TR = 0;
     WTRIG = 0x0;
-    
+
     //  Configure write BC -> RT descriptor
     mkio_bc_descriptor_1.ctrl_word_0      = 0x00000000 | (WTRIG << 30) | (IRQE_ << 28) | (IRQN << 27) | (SUSN << 25);
     mkio_bc_descriptor_1.ctrl_word_1      = 0x00000000 | (RTAD1 << 11) | (TR << 10) | (RTSA1 << 5) | (WCMC << 0) ;
@@ -181,7 +181,7 @@ uint32_t mkio_events_timestamps_test (uint32_t data_src, uint32_t data_dst, uint
     mkio_bc_descriptor_1.branch_address   = unused;
     mkio_bc_descriptor_1.reserved_0       = unused;
     mkio_bc_descriptor_1.reserved_1       = unused;
-    
+
     //  Subaddress = 0x00 and 0x1F are reserved to identify "mode command"
     //  So, use 0x01 table entrance
     mkio_rt_subaddress_table.sa0_ctrl_word             = unused ;
@@ -192,11 +192,11 @@ uint32_t mkio_events_timestamps_test (uint32_t data_src, uint32_t data_dst, uint
     mkio_rt_subaddress_table.sa1_tx_descriptor_pointer = 0x00000000 ;
     mkio_rt_subaddress_table.sa1_rx_descriptor_pointer = (uint32_t) (&mkio_rt_rx_descriptor) ;
     mkio_rt_subaddress_table.sa1_reserved              = 0x00000000 ;
-    
+
     mkio_rt_rx_descriptor.ctrl_status_word        = 0x03FFFFFF ;
     mkio_rt_rx_descriptor.data_pointer            = data_dst ;
     mkio_rt_rx_descriptor.next_descriptor_pointer = rt_descriptor_end_of_list ;
-    
+
     //-----------------------------------------------------------------------------
     //  Check, that timestamp didnt change while no transaction
     //-----------------------------------------------------------------------------
@@ -216,7 +216,7 @@ uint32_t mkio_events_timestamps_test (uint32_t data_src, uint32_t data_dst, uint
     bc_validcmd_last_h_addr  = ioread32 (bc_base_address + VALIDCMD_LAST_H_ADDR );
     bc_rtsync_last_l_addr    = ioread32 (bc_base_address + RTSYNC_LAST_L_ADDR   );
     bc_rtsync_last_h_addr    = ioread32 (bc_base_address + RTSYNC_LAST_H_ADDR   );
-    
+
     mkio_fix_timestamp (rt_base_address);
     if (
        (ioread32 (rt_base_address + VALIDCMD_FIRST_L_ADDR) != rt_validcmd_first_l_addr ) |
@@ -235,21 +235,21 @@ uint32_t mkio_events_timestamps_test (uint32_t data_src, uint32_t data_dst, uint
     rt_rtsync_last_h_addr    = ioread32 (rt_base_address + RTSYNC_LAST_H_ADDR   );
     rumboot_printf("bc and rt timestamps before transaction OK\n");
     //-----------------------------------------------------------------------------
-    
+
     rumboot_printf("start rt and bc schedules\n");
     mkio_rt_start_schedule (rt_base_address, (uint32_t) (&mkio_rt_subaddress_table));
     mkio_bc_start_schedule (bc_base_address, (uint32_t) (&mkio_bc_descriptor_0      ));
-    
+
     //  Wait some time to ensure, that BC didnt start transaction without external trigger
     delay_cycle (200);
     rdata = ioread32 (bc_base_address + BCSL);
     if (((mkio_bc_descriptor_0.result_word & 0x7) == 0) | ((rdata & 0x07) != 0x4))
         return -1;
     rumboot_printf("transaction didnt started before event. OK.\n");
-    
+
     //  create event for BC
     gp_timer_create_event ();
-    
+
     //  Wait end of transaction with "polling descriptor" mechanism
     while (((mkio_bc_descriptor_1.result_word & 0x7) != 0) | ((mkio_rt_rx_descriptor.ctrl_status_word & 0x7) != 0))
     {
@@ -257,7 +257,7 @@ uint32_t mkio_events_timestamps_test (uint32_t data_src, uint32_t data_dst, uint
             ;
     }
     rumboot_printf("bc and rt descriptors closed successfully\n");
-    
+
     //-----------------------------------------------------------------------------
     //  Check, that validcmd timestamp increased with transactions in BC and RT
     //  Check, that rtsync timestamp increased only in RT
@@ -278,7 +278,7 @@ uint32_t mkio_events_timestamps_test (uint32_t data_src, uint32_t data_dst, uint
     bc_validcmd_last_h_addr  = ioread32 (bc_base_address + VALIDCMD_LAST_H_ADDR );
     bc_rtsync_last_l_addr    = ioread32 (bc_base_address + RTSYNC_LAST_L_ADDR   );
     bc_rtsync_last_h_addr    = ioread32 (bc_base_address + RTSYNC_LAST_H_ADDR   );
-    
+
     mkio_fix_timestamp (rt_base_address);
     if (
        (ioread32 (rt_base_address + VALIDCMD_FIRST_L_ADDR) <= rt_validcmd_first_l_addr ) |
@@ -297,7 +297,7 @@ uint32_t mkio_events_timestamps_test (uint32_t data_src, uint32_t data_dst, uint
     rt_rtsync_last_h_addr    = ioread32 (rt_base_address + RTSYNC_LAST_H_ADDR   );
     rumboot_printf("bc and rt timestamps after transaction OK\n");
     //-----------------------------------------------------------------------------
-    
+
     //  trigger first_timestamp for next iterration
     rumboot_printf("arm first_timestamp trigger\n");
     mkio_trig_first_timestamp (bc_base_address);
@@ -313,21 +313,21 @@ uint32_t main ()
 {
     uint32_t data_src [DATA_SIZE >> 2] __attribute__ ((aligned(4)));
     uint32_t data_dst [DATA_SIZE >> 2] __attribute__ ((aligned(4)));
-    
+
     rumboot_printf("    mkio0_events_timestamps_test\n");
-    
+
     clear_destination_space (data_src, DATA_SIZE);
     clear_destination_space (data_dst, DATA_SIZE);
-    
+
     create_etalon_array (data_src, DATA_SIZE);
-    
+
     gp_timer_turn_on ();
-    
+
     if (mkio_present (MKIO0_BASE) != 0)
         return -1;
     if (mkio_present (MKIO1_BASE) != 0)
         return -2;
-    
+
     for (uint32_t i = 0; i < 3; i++)
     {
         if (mkio_events_timestamps_test ((uint32_t) (&data_src), (uint32_t) (&data_dst), DATA_SIZE, MKIO0_BASE, MKIO1_BASE) != 0)
