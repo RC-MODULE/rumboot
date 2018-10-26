@@ -11,34 +11,24 @@
 
 
 static inline __attribute__((always_inline)) void rumboot_putstring_fast( const char * const msg ) {
-    RUMBOOT_ATOMIC_BLOCK() {
-        spr_write( SPR_SPRG3, msg );
-        rumboot_event_arg1_( EVENT_TESTEVENT, EVENT_TRACE_MESSAGE );
-    }
+    uint32_t const event_data[] = { EVENT_TRACE_MESSAGE, (uint32_t)msg };
+    rumboot_platform_event_raise( EVENT_TESTEVENT, event_data, ARRAY_SIZE(event_data) );
 }
 #define rumboot_putstring( msg ) rumboot_putstring_fast( msg )
 
 static inline __attribute__((always_inline)) void rumboot_puthex( uint32_t const hex ) {
-    RUMBOOT_ATOMIC_BLOCK() {
-        spr_write( SPR_SPRG3, hex );
-        rumboot_event_arg1_( EVENT_TESTEVENT, EVENT_TRACE_HEX );
-    }
+    uint32_t const event_data[] = { EVENT_TRACE_HEX, hex };
+    rumboot_platform_event_raise( EVENT_TESTEVENT, event_data, ARRAY_SIZE(event_data) );
 }
 
 static inline __attribute__((always_inline)) void rumboot_putdump( uint32_t const start_addr, uint32_t const length_in_bytes ) {
-    RUMBOOT_ATOMIC_BLOCK() {
-        spr_write( SPR_SPRG3, start_addr );
-        spr_write( SPR_SPRG4, length_in_bytes );
-        rumboot_event_arg1_( EVENT_TESTEVENT, EVENT_TRACE_DUMP );
-    }
+    uint32_t const event_data[] = { EVENT_TRACE_DUMP, start_addr, length_in_bytes };
+    rumboot_platform_event_raise( EVENT_TESTEVENT, event_data, ARRAY_SIZE(event_data) );
 }
 
 static inline __attribute__((always_inline)) void rumboot_issdump( uint32_t const start_addr, uint32_t const length_in_bytes ) {
-    RUMBOOT_ATOMIC_BLOCK() {
-        spr_write( SPR_SPRG3, start_addr );
-        spr_write( SPR_SPRG4, length_in_bytes );
-        rumboot_event_arg1_( EVENT_TESTEVENT, TEST_EVENT_CREATE_ISS_DUMP );
-    }
+    uint32_t const event_data[] = { TEST_EVENT_CREATE_ISS_DUMP, start_addr, length_in_bytes };
+    rumboot_platform_event_raise( EVENT_TESTEVENT, event_data, ARRAY_SIZE(event_data) );
 }
 
 
