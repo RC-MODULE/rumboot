@@ -62,9 +62,6 @@
 #define L1_ALIGN_WORDS              (L1_ALIGN_BYTES / sizeof(uint32_t))
 #define USED_WAY_SPACE              (USED_CACHE_LINES * L1_LINE_SIZE)
 
-#define EM0_CACHED_PAGE             0x80000000
-#define EM0_NOT_CACHED_PAGE         0x40000000
-
 #define MAY_BE_NOT_USED             __attribute__((unused))
 
 /* Cache template fill data */
@@ -165,22 +162,6 @@
                                             + WAY_OFFSET(WAY)),             \
                                          CAST_ADDR(TRANSFER_SRC[WAY]),   \
                                          L1_WAY_DATA_SIZE, USED_WAY_SPACE}
-
-
-#define CACHE_DATA_LINE_BY_WAY_INDEX(WAY,INDEX,WORD,DATA_OFFSET)    \
-    trace_msg("Caching data: WAY | INDEX \n"); \
-    trace_hex(WAY);\
-    trace_hex(INDEX);\
-    /*Minimal caching size is 1 line = 32 bytes = 8 words = 4 doublewords*/ \
-    MEM64(EM0_CACHED_PAGE + (WAY<<23) + (INDEX<<5) + (WORD<<2)) = test_11_data_array64[DATA_OFFSET]; \
-    MEM64(EM0_CACHED_PAGE + (WAY<<23) + (INDEX<<5) + ((WORD+2)<<2)) = test_11_data_array64[DATA_OFFSET+1]; \
-    MEM64(EM0_CACHED_PAGE + (WAY<<23) + (INDEX<<5) + ((WORD+4)<<2)) = test_11_data_array64[DATA_OFFSET+2]; \
-    MEM64(EM0_CACHED_PAGE + (WAY<<23) + (INDEX<<5) + ((WORD+6)<<2)) = test_11_data_array64[DATA_OFFSET+3]; \
-    msync(); \
-    isync(); \
-    /*1st read initiates a caching*/ \
-    COMPARE_VALUES(MEM32(EM0_CACHED_PAGE+ (WAY<<23) + (INDEX<<5) + ((WORD+0)<<2)),test_11_data_array32[DATA_OFFSET*2],"Compare failed at read of first word");
-
 #define REV8(V)         ((((V) & 0x01) << 7)    |   \
                          (((V) & 0x02) << 5)    |   \
                          (((V) & 0x04) << 3)    |   \
@@ -189,20 +170,6 @@
                          (((V) & 0x20) >> 3)    |   \
                          (((V) & 0x40) >> 5)    |   \
                          (((V) & 0x80) >> 7))
-#define A_TO_INDEX_EVEN(A) \
-    REVERSE8( (((A & 0xFC) >> 1) | (A & 0x1) ) << 1)
-#define A_TO_INDEX_ODD(A) \
-    (0x80+REVERSE8( (((A & 0xFC) >> 1) | (A & 0x1) ) << 1))
-
-#define CACHE_LINE_BY_WAY_ADDR_EVEN(WAY,A,DATA_OFFSET) \
-    trace_msg("Sram.A=");\
-    trace_hex(A);\
-    CACHE_DATA_LINE_BY_WAY_INDEX((WAY),(A_TO_INDEX_EVEN((A))),0,(DATA_OFFSET))
-#define CACHE_LINE_BY_WAY_ADDR_ODD(WAY,A,DATA_OFFSET) \
-    trace_msg("Sram.A=");\
-    trace_hex(A);\
-    CACHE_DATA_LINE_BY_WAY_INDEX((WAY),(A_TO_INDEX_ODD((A))),0,(DATA_OFFSET))
-
 
 /* Types and structures definitions */
 
@@ -232,7 +199,6 @@ tlb_entry cached_mirror_entries[] =
 };
 
 static const
-MAY_BE_NOT_USED
 /* uint32_t    cache_fill_data[L1_WAYS][USED_CACHE_LINES][L1_LINE_WORDS] = */
 cache_fill_t    cache_fill_data =
 {
@@ -251,7 +217,6 @@ transfer_info_t cache_transfer_info[L1_WAYS] =
         MK_TRF_ENTRY(3)
 };
 
-MAY_BE_NOT_USED
 void dcu_transfer_data(const transfer_info_t *trfinfo)
 {
     /* a4a - address for align, s4a - size for align */
