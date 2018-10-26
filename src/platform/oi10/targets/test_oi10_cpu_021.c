@@ -107,7 +107,12 @@ uint8_t __attribute__((section(".text.test_oi10_cpu_021"))) cache_testing_functi
     //cacheable page
     write_tlb_entries(&sram0_tlb_entry_cacheable_valid,1);
     //read from cache
-    if (ioread32((uint32_t) sram0_data) != TEST_CONST_1) return 8;
+    if (L2C_INHIBIT_BIT)
+    {
+        if (ioread32((uint32_t) sram0_data) != TEST_CONST_2) return 8;
+    }
+    else
+        if (ioread32((uint32_t) sram0_data) != TEST_CONST_1) return 9;
 
     return 0;
 }

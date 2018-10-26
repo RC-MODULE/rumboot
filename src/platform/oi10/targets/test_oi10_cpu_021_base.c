@@ -110,7 +110,8 @@ int main(void)
             case 5: rumboot_printf("steps 11, 12 - FAIL, reading from cache inhibited page after flush: failed, data not changed.\n"); break;
             case 6: rumboot_printf("steps 13, 14 - FAIL, reading from cacheable page after flush: failed, data not changed.\n"); break;
             case 7: rumboot_printf("steps 15 - FAIL, write in mem\n"); break;
-            case 8: rumboot_printf("steps 16 - FAIL, reading from cacheable page\n"); break;
+            case 8: rumboot_printf("steps 16 - FAIL, reading from cacheable page (cache invalidate)\n"); break;
+            case 9: rumboot_printf("steps 16 - FAIL, reading from cacheable page (cache don't invalidate)\n"); break;
         }
         rumboot_printf("TEST_ERROR\n");
         return 1;
