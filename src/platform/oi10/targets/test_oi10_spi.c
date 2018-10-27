@@ -2,25 +2,30 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <devices/pl022.h>
+#include <devices/pl022_flash.h>
+#include <devices/gpio_pl061.h>
+
 #include <platform/common_macros/common_macros.h>
 #include <platform/test_event_codes.h>
 #include <platform/devices.h>
 #include <platform/trace.h>
+#include <platform/interrupts.h>
+#include <platform/test_assert.h>
+#include <platform/regs/fields/mpic128.h>
+#include <platform/devices/emi.h>
+
 #include <regs/regs_spi.h>
-#include <devices/pl022.h>
-#include <devices/pl022_flash.h>
+#include <regs/regs_gpio_pl061.h>
 
 #include <rumboot/irq.h>
 #include <rumboot/io.h>
 #include <rumboot/printf.h>
-#include <platform/interrupts.h>
-#include <platform/test_assert.h>
-#include <platform/regs/fields/mpic128.h>
 #include <rumboot/regpoker.h>
 #include <rumboot/platform.h>
-#include <regs/regs_gpio_pl061.h>
-#include <devices/gpio_pl061.h>
-#include <platform/devices/emi.h>
+#include <rumboot/timer.h>
+
+
 
 #define BYTE_NUMBER             16
 #define DATA_SIZE               (BYTE_NUMBER+4)
@@ -92,14 +97,14 @@ static uint32_t gspi_check_regs(uint32_t const base_addr)
 
 #endif //GSPI_CHECK_REGS
 
-static volatile uint32_t IRQ;
-static volatile uint32_t SSP_data;
+static volatile uint32_t IRQ = 0;
+static volatile uint32_t SSP_data = 0;
 static volatile uint32_t DMA_write_buffer_end = 0;
 
 static void gspi_irq_handler( int irq, void *arg )
 {
     uint32_t ssp_status = pl022_get_ssp_status(GSPI_BASE);
-    uint32_t dma_status = gspi_get_dma_status(GSPI_BASE);
+    uint32_t dma_status = pl022_get_dma_status(GSPI_BASE);
 
     rumboot_printf( "IRQ arrived  \n" );
     rumboot_printf("GSPI SSPSR is 0x%x\n", ssp_status);
@@ -117,7 +122,9 @@ static void gspi_irq_handler( int irq, void *arg )
 
     rumboot_printf("Clear interrupts\n");
     iowrite32(0x0F, GSPI_BASE + GSPI_SSPICR);
-    rumboot_printf("GSPI STATUS is 0x%x\n", gspi_get_dma_status(GSPI_BASE));
+
+    rumboot_printf("GSPI STATUS is 0x%x\n", pl022_get_dma_status(GSPI_BASE));
+
     IRQ = 1;
 }
 
@@ -157,20 +164,20 @@ static uint32_t gspi_dma_axi(uint32_t const base_addr, uint32_t const r_mem_addr
     pl022_flash_erase(base_addr);
 
     pl022_flash_write_enable(base_addr);
-    gspi_dma_set_irq_mask(base_addr, end_buf_write);
+    pl022_dma_set_irq_mask(base_addr, end_buf_write);
     pl022_dma_enable(base_addr, all);
 
-    gspi_dma_set_mode(base_addr, base_mode);
+    pl022_dma_set_mode(base_addr, base_mode);
 
     //set dma parameters
     dma_param.endian_read  = lsb;
     dma_param.arlen        = 8;
     dma_param.endian_write = lsb;
     dma_param.awlen        = 8;
-    gspi_dma_set_param(base_addr, &dma_param);
+    pl022_dma_set_param(base_addr, &dma_param);
 
-    gspi_dma_set_read_addr(base_addr, (uint32_t*)rumboot_virt_to_dma((void*)r_mem_addr), BYTE_NUMBER);
-    gspi_dma_set_write_addr(base_addr, (uint32_t*)rumboot_virt_to_dma((void*)w_mem_addr), BYTE_NUMBER);
+    pl022_dma_set_read_addr(base_addr, (uint32_t*)rumboot_virt_to_dma((void*)r_mem_addr), BYTE_NUMBER);
+    pl022_dma_set_write_addr(base_addr, (uint32_t*)rumboot_virt_to_dma((void*)w_mem_addr), BYTE_NUMBER);
 
     iowrite32(0x9FFFFFE0, base_addr + GSPI_DMARCNTRL);
     iowrite32(0X9FFFFFE0, base_addr + GSPI_DMAWCNTRL);
@@ -221,7 +228,7 @@ static uint32_t gspi_ssp_flash(uint32_t const base_addr)
 
     uint32_t read_data;
 
-    gspi_dma_set_irq_mask(base_addr, ssp_int); //mask all interrupts except SSP
+    pl022_dma_set_irq_mask(base_addr, ssp_int); //mask all interrupts except SSP
 
 
     rumboot_printf("Check SPI interrupt with loop operation\n");
@@ -237,9 +244,10 @@ static uint32_t gspi_ssp_flash(uint32_t const base_addr)
         return 1;
     }
 
+
     if (SSP_data != TEST_DATA_LOOP)
     {
-        rumboot_printf("SPI loop read error, read data = %x\n", SSP_data);
+        rumboot_printf("SPI loop read error, read data = 0x%x\n", SSP_data);
         return 1;
     }
 
@@ -258,6 +266,7 @@ static uint32_t gspi_ssp_flash(uint32_t const base_addr)
     //Read and check data from spi flash
     read_data = pl022_flash_read_data(base_addr);
     msync();
+
     if (read_data != TEST_DATA)
     {
         rumboot_printf("read_data = %x\n", read_data);
@@ -284,12 +293,12 @@ int main(void)
         (void)(ioread32(GSPI_BASE + GSPI_STATUS)); // clear interrupt
         gpio_set_port_direction(GPIO_1_BASE, GPIO1_X);
         iowrite32( GPIO1_X, GPIO_1_BASE + GPIO_ADDR_MASK );
+        msync();
         TEST_ASSERT((ioread32(GSPI_BASE + GSPI_STATUS) == 0x82), "ERROR!!! GSPI interrupt not set");
         gpio_set_port_direction(GPIO_1_BASE, 0x0);
         (void)(ioread32(GSPI_BASE + GSPI_STATUS)); // clear interrupt
     #endif
 
-    IRQ = 0;
     rumboot_irq_cli();
     struct rumboot_irq_entry *tbl = rumboot_irq_create( NULL );
 
@@ -300,7 +309,7 @@ int main(void)
     rumboot_irq_enable( GSPI_INT );
     rumboot_irq_sei();
 
-    gspi_dma_reset(GSPI_BASE);
+    pl022_dma_reset(GSPI_BASE);
     //initial ssp
     conf.ssp_clk = 100000000;
     conf.spi_clk = 20000000;
@@ -317,7 +326,7 @@ int main(void)
     pl022_set_param(GSPI_BASE, &ssp_param);//turn on SSP controller
 
 
-//    // Data for check IM2
+    // Data for check IM2
     memset((void*)(IM2_BASE+4), TEST_DATA_IM2, BYTE_NUMBER);
     //IM2 - IM2
     iowrite32(PAGE_PROGRAM_COMMAND, IM2_BASE);
@@ -349,7 +358,6 @@ int main(void)
     test_result += gspi_dma_axi(GSPI_BASE, IM1_BASE, (SRAM0_BASE + DATA_SIZE), TEST_DATA_IM1);
 
 
-
     // Data for check EM2
     memset((void*)(SSRAM_BASE+4), TEST_DATA_EM2, BYTE_NUMBER);
     //EM2 - IM2
@@ -366,7 +374,8 @@ int main(void)
     test_result += gspi_dma_axi(GSPI_BASE, SSRAM_BASE, (SRAM0_BASE + DATA_SIZE), TEST_DATA_EM2);
 
 
-    gspi_dma_reset(GSPI_BASE);
+    IRQ = 0;
+    pl022_dma_reset(GSPI_BASE);
     rumboot_printf("Checking GSPI FLASH read/write functionality ...\n");
     test_result += gspi_ssp_flash(GSPI_BASE);
 
