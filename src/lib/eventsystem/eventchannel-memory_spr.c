@@ -26,6 +26,7 @@ __attribute__((no_instrument_function)) void rumboot_platform_event_raise(
         break;
         }
         spr_write( SPR_SPRG1, event );
+        spr_write( SPR_SPRG1, EVENT_NOP );
     }
 }
 
