@@ -186,15 +186,14 @@
     mfspr \reg,SPR_SPRG8
 .endm
 
-.global results
-.section ".issdata","aw",@nobits
+
+
+.section ".data","aw",@nobits
+
 .align 4
 results:
     .space 4096
 
-
-.global event_data
-.section ".data","aw",@nobits
 .align 4
 event_data:
     .space 16
@@ -1709,6 +1708,8 @@ main:
 
 
     load_addr r1, (rumboot_platform_stack_area_end - 8)
+
+    gtube_init
 
     load_addr       r4, event_data
 
