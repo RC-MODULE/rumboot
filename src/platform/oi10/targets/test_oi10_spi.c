@@ -112,8 +112,6 @@ static uint32_t wait_gspi_int()
 {
     unsigned t;
 
-    rumboot_printf ("IRQ = %d\n", IRQ);
-
     for (t=1; t<=GSPI_TIMEOUT; t++){
         if (IRQ)
         {
@@ -128,7 +126,7 @@ static uint32_t wait_gspi_int()
     return 0;
 }
 
-static uint8_t data_src[] = { 0x02, 0x00, 0x00, 0x00, 0x01, 0x02, 0x03, 0x04 };
+static uint8_t data_src[] = { 0x02, 0x00, 0x00, 0x00, 0xDC, 0xFE, 0x34, 0x12 };
 static uint8_t data_dst[4];
 
 ssp_params params = {0x6, 1, 1, ssp_data_size_8, master_mode, false, ssp_motorola_fr_form};
@@ -165,6 +163,7 @@ static uint32_t gspi_dma_axi(uint32_t base_addr, uint32_t* r_mem_addr, uint32_t*
 
     iowrite32(0x01, base_addr + GSPI_AXIR_BUFENA); //enable transmitting
 
+
     while(!DMA_write_buffer_end)
         ;
     DMA_write_buffer_end = 0;
@@ -173,18 +172,19 @@ static uint32_t gspi_dma_axi(uint32_t base_addr, uint32_t* r_mem_addr, uint32_t*
     (void)gspi_eeprom_read_data(base_addr);
     rumboot_printf("Read data from memory =%x\n", ioread32((uint32_t)w_mem_addr));
     rumboot_putstring("Checking data ...\n");
-    if (ioread32((uint32_t)w_mem_addr) != 0x01020304)
+    if (ioread32((uint32_t)w_mem_addr) != TEST_DATA)
     {
         rumboot_putstring("GSPI AXI: SPI data read fail\n");
+        gspi_dma_enable(base_addr, disable);
         return 1;
     }
     rumboot_putstring("Check GSPI AXI: OK\n");
+    gspi_dma_enable(base_addr, disable);
     return 0;
 }
 
 static uint32_t gspi_ssp_eeprom(uint32_t base_addr)
 {
-    IRQ = 0;
     //Read and check ID
     unsigned gspi_sspid;
     gspi_sspid =  (ioread32(base_addr+0xffc) & 0x000000ff)         | ((ioread32(base_addr+0xff8) << 8)  & 0x0000ff00) |
@@ -207,6 +207,7 @@ static uint32_t gspi_ssp_eeprom(uint32_t base_addr)
     rumboot_printf("GSPI SSPSR status is 0x%x\n",  gspi_get_ssp_status(GSPI_BASE));
     gspi_write_data(base_addr, 0x5A); //write data to SPI with IRQ
 
+
     if (wait_gspi_int())
     {
         rumboot_printf("SPI interrupt timeout\n");
@@ -217,7 +218,8 @@ static uint32_t gspi_ssp_eeprom(uint32_t base_addr)
     {
         rumboot_printf("SPI loop read error, read data = %x\n", SSP_data);
         return 1;
-    } //Read and check data
+    }
+    //Read and check data
 
     //Write data to spi eeprom
     params.loopback = false;
@@ -239,7 +241,6 @@ static uint32_t gspi_ssp_eeprom(uint32_t base_addr)
         rumboot_printf("SPI data read fail\n");
         return 1;
     }
-
     return 0;
 }
 
@@ -279,9 +280,9 @@ int main(void)
     //IM0 - IM0
     test_result += gspi_dma_axi(GSPI_BASE, (uint32_t*)data_src, (uint32_t*)data_dst);
     //IM0 - IM1
-    test_result += gspi_dma_axi(GSPI_BASE, (uint32_t*)data_src, (uint32_t*)rumboot_virt_to_dma((void*)IM1_BASE));
+    test_result += gspi_dma_axi(GSPI_BASE, (uint32_t*)data_src, (uint32_t*)rumboot_virt_to_dma((void*)(IM1_BASE + 0x10)));
     //IM0 - EM2
-    test_result += gspi_dma_axi(GSPI_BASE, (uint32_t*)data_src, (uint32_t*)rumboot_virt_to_dma((void*)EM2_BASE));
+    test_result += gspi_dma_axi(GSPI_BASE, (uint32_t*)data_src, (uint32_t*)rumboot_virt_to_dma((void*)(EM2_BASE + 0x10)));
 
     // Copy data in IM1
     memcpy((uint32_t*)rumboot_virt_to_dma((void*)IM1_BASE), data_src, sizeof(data_src));
@@ -289,9 +290,9 @@ int main(void)
     //IM1 - IM0
     test_result += gspi_dma_axi(GSPI_BASE, (uint32_t*)rumboot_virt_to_dma((void*)IM1_BASE), (uint32_t*)data_dst);
     //IM1 - IM1
-    test_result += gspi_dma_axi(GSPI_BASE, (uint32_t*)rumboot_virt_to_dma((void*)IM1_BASE), (uint32_t*)rumboot_virt_to_dma((void*)(IM1_BASE + 16)));
-//    //IM1 - EM2
-    test_result += gspi_dma_axi(GSPI_BASE, (uint32_t*)rumboot_virt_to_dma((void*)IM1_BASE), (uint32_t*)rumboot_virt_to_dma((void*)EM2_BASE));
+    test_result += gspi_dma_axi(GSPI_BASE, (uint32_t*)rumboot_virt_to_dma((void*)IM1_BASE), (uint32_t*)rumboot_virt_to_dma((void*)(IM1_BASE + 0x20)));
+    //IM1 - EM2
+    test_result += gspi_dma_axi(GSPI_BASE, (uint32_t*)rumboot_virt_to_dma((void*)IM1_BASE), (uint32_t*)rumboot_virt_to_dma((void*)(EM2_BASE + 0x20)));
 
     // Copy data in EM2
 
@@ -302,12 +303,15 @@ int main(void)
     //EM2 - IM0
     test_result += gspi_dma_axi(GSPI_BASE, (uint32_t*)rumboot_virt_to_dma((void*)EM2_BASE), (uint32_t*)data_dst);
     //EM2 - IM1
-    test_result += gspi_dma_axi(GSPI_BASE, (uint32_t*)rumboot_virt_to_dma((void*)EM2_BASE), (uint32_t*)rumboot_virt_to_dma((void*)IM1_BASE));
+    test_result += gspi_dma_axi(GSPI_BASE, (uint32_t*)rumboot_virt_to_dma((void*)EM2_BASE), (uint32_t*)rumboot_virt_to_dma((void*)(IM1_BASE + 0x30)));
     //EM2 - EM2
-    test_result += gspi_dma_axi(GSPI_BASE, (uint32_t*)rumboot_virt_to_dma((void*)EM2_BASE), (uint32_t*)rumboot_virt_to_dma((void*)(EM2_BASE + 16)));
+    test_result += gspi_dma_axi(GSPI_BASE, (uint32_t*)rumboot_virt_to_dma((void*)EM2_BASE), (uint32_t*)rumboot_virt_to_dma((void*)(EM2_BASE + 0x30)));
+
+//    gspi_dma_enable(GSPI_BASE, disable);
 
     rumboot_printf("Checking GSPI EEPROM read/write functionality ...\n");
     test_result += gspi_ssp_eeprom(GSPI_BASE);
+
 
     rumboot_irq_table_activate(NULL);
     rumboot_irq_free(tbl);
