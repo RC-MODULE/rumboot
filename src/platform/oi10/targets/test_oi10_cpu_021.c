@@ -33,6 +33,8 @@
 
 #define TEST_CONST_1     0x7E57DA7A
 #define TEST_CONST_2     0xBABADEDA
+#define TEST_CONST_3     0xDEADBEEF
+#define TEST_CONST_4     0xCACECACE
 
 uint32_t __attribute__((section(".data"),aligned(16))) volatile sram0_data[64] = { 0 };
 
@@ -99,20 +101,20 @@ uint8_t __attribute__((section(".text.test_oi10_cpu_021"))) cache_testing_functi
     //steps 16,17
     //write in cache
     dci(2);
-    iowrite32 (TEST_CONST_1, (uint32_t) sram0_data);
+    iowrite32 (TEST_CONST_4, (uint32_t) sram0_data);
     //inhibit page
     write_tlb_entries(&sram0_tlb_entry_non_cacheable_valid,1);
-    iowrite32 (TEST_CONST_2, (uint32_t) sram0_data);
-    if (ioread32((uint32_t) sram0_data) != TEST_CONST_2) return 7;
+    iowrite32 (TEST_CONST_3, (uint32_t) sram0_data);
+    if (ioread32((uint32_t) sram0_data) != TEST_CONST_3) return 7;
     //cacheable page
     write_tlb_entries(&sram0_tlb_entry_cacheable_valid,1);
     //read from cache
     if (L2C_INHIBIT_BIT)
     {
-        if (ioread32((uint32_t) sram0_data) != TEST_CONST_2) return 8;
+        if (ioread32((uint32_t) sram0_data) != TEST_CONST_3) return 8;
     }
     else
-        if (ioread32((uint32_t) sram0_data) != TEST_CONST_1) return 9;
+        if (ioread32((uint32_t) sram0_data) != TEST_CONST_4) return 9;
 
     return 0;
 }
