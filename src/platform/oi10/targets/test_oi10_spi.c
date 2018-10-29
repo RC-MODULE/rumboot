@@ -22,7 +22,7 @@
 #include <devices/gpio_pl061.h>
 #include <platform/devices/emi.h>
 
-#define BYTE_NUMBER             16
+#define BYTE_NUMBER             4
 #define DATA_SIZE               (BYTE_NUMBER+4)
 #define PAGE_PROGRAM_COMMAND    0x02000000
 #define READ_COMMAND            0x03000000
@@ -107,7 +107,7 @@ static void gspi_irq_handler( int irq, void *arg )
 
     if (ssp_status & 0x4)
     {
-        SSP_data = gspi_read_data(GSPI_BASE);
+        SSP_data = gspi_get_word(GSPI_BASE);
     }
 
     if (dma_status & 0x4)
@@ -229,7 +229,7 @@ static uint32_t gspi_ssp_flash(uint32_t base_addr)
 
 
     rumboot_printf("GSPI SSPSR status is 0x%x\n",  gspi_get_ssp_status(GSPI_BASE));
-    gspi_write_data(base_addr, TEST_DATA_LOOP); //write data to SPI with IRQ
+    gspi_send_word(base_addr, TEST_DATA_LOOP); //write data to SPI with IRQ
 
 
     if (wait_gspi_int())
