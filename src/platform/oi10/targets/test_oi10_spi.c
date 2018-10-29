@@ -208,7 +208,7 @@ static uint32_t gspi_ssp_eeprom(uint32_t base_addr)
         return 1;
     }
 
-    gspi_dma_set_irq_mask(base_addr, SSP_INT); //mask all interrupts except SSP
+    gspi_dma_set_irq_mask(base_addr, ssp_int); //mask all interrupts except SSP
 
     //Check SPI interrupt with loop operation
     params.loopback = true;

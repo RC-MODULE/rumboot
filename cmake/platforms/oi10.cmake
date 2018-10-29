@@ -612,13 +612,15 @@ endif()
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES test_oi10_spi.c
-      CFLAGS -DGSPI_BASE=GSPI0_BASE -DGPIO1_X=0x1 -DGSPI_INT=GSPI0_INT -DGSPI_CHECK_REGS IRUN_FLAGS +spi_irq_test
+      CFLAGS -DGSPI_BASE=GSPI0_BASE -DGPIO1_X=0x1 -DGSPI_INT=GSPI0_INT -DGSPI_CHECK_REGS
+      IRUN_FLAGS +spi_irq_test
       PREFIX gspi0
     )
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES test_oi10_spi.c
-      CFLAGS -DGSPI_BASE=GSPI1_BASE -DGPIO1_X=0x2 -DGSPI_INT=GSPI1_INT -DGSPI_CHECK_REGS IRUN_FLAGS +spi_irq_test
+      CFLAGS -DGSPI_BASE=GSPI1_BASE -DGPIO1_X=0x2 -DGSPI_INT=GSPI1_INT -DGSPI_CHECK_REGS
+      IRUN_FLAGS +spi_irq_test
       PREFIX gspi1
     ) 
 
