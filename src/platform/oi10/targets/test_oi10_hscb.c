@@ -170,25 +170,25 @@ static uint32_t check_hscb_regs( uint32_t base_addr ) {
 #ifdef HSCB_SHORT_TEST
 
     #ifndef TX_0_HEAP_NAME
-    #define TX_0_HEAP_NAME "IM2"
+    #define TX_0_HEAP_NAME "IM1"
     #endif
 
     #ifndef RX_0_HEAP_NAME
-    #define RX_0_HEAP_NAME "IM2"
+    #define RX_0_HEAP_NAME "IM1"
     #endif
 
     #ifndef TX_1_HEAP_NAME
-    #define TX_1_HEAP_NAME "IM2"
+    #define TX_1_HEAP_NAME "IM1"
     #endif
 
     #ifndef RX_1_HEAP_NAME
-    #define RX_1_HEAP_NAME "IM2"
+    #define RX_1_HEAP_NAME "IM1"
     #endif
 
 #else
 
     #ifndef TX_0_HEAP_NAME
-    #define TX_0_HEAP_NAME "IM2"
+    #define TX_0_HEAP_NAME "SDRAM"
     #endif
 
     #ifndef RX_0_HEAP_NAME
@@ -196,7 +196,7 @@ static uint32_t check_hscb_regs( uint32_t base_addr ) {
     #endif
 
     #ifndef TX_1_HEAP_NAME
-    #define TX_1_HEAP_NAME "IM2"
+    #define TX_1_HEAP_NAME "SDRAM"
     #endif
 
     #ifndef RX_1_HEAP_NAME
@@ -224,7 +224,7 @@ static uint32_t check_hscb_regs( uint32_t base_addr ) {
     #endif
 
     #ifndef RX_4_HEAP_NAME
-    #define RX_4_HEAP_NAME "IM2"
+    #define RX_4_HEAP_NAME "SDRAM"
     #endif
 
     #ifndef TX_5_HEAP_NAME
@@ -232,7 +232,7 @@ static uint32_t check_hscb_regs( uint32_t base_addr ) {
     #endif
 
     #ifndef RX_5_HEAP_NAME
-    #define RX_5_HEAP_NAME "IM2"
+    #define RX_5_HEAP_NAME "SDRAM"
     #endif
 
 #endif
