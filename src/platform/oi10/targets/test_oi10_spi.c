@@ -87,15 +87,15 @@ static volatile uint32_t DMA_write_buffer_end;
 
 static void gspi_irq_handler( int irq, void *arg )
 {
-    uint32_t ssp_status = ioread32(GSPI_BASE + GSPI_SSPSR);
-    uint32_t dma_status = ioread32(GSPI_BASE + GSPI_STATUS);
+    uint32_t ssp_status = gspi_get_ssp_status(GSPI_BASE);
+    uint32_t dma_status = gspi_get_dma_status(GSPI_BASE);
 
     rumboot_printf( "IRQ arrived  \n" );
     rumboot_printf("GSPI SSPSR is 0x%x\n", ssp_status);
     rumboot_printf("GSPI STATUS is 0x%x\n", dma_status);
 
     if (ssp_status & 0x4)
-        SSP_data = ioread32(GSPI_BASE + GSPI_SSPDR);
+        SSP_data = gspi_read_data(GSPI_BASE);
 
     if (dma_status & 0x4)
         DMA_write_buffer_end = 1;
@@ -125,34 +125,27 @@ static uint32_t wait_gspi_int(){
 }
 
 static uint8_t data_src[] = { 0x02, 0x00, 0x00, 0x00, 0x01, 0x02, 0x03, 0x04 };
-
 static uint8_t data_dst[4];
+
+ssp_params params = {0x6, 1, 1, ssp_data_size_8, master_mode, false, ssp_motorola_fr_form};
+
 
 static uint32_t gspi_dma_axi(uint32_t base_addr, uint32_t* r_mem_addr, uint32_t* w_mem_addr)
 {
     rumboot_printf("Read from address =%x\n", r_mem_addr);
     rumboot_printf("Write to address =%x\n", w_mem_addr);
 
-    gspi_reset(base_addr);
+    gspi_dma_reset(base_addr);
 
-    iowrite32(0xc7, base_addr+GSPI_SSPCR0); //set 8-bit data
-    iowrite32(0x02, base_addr+GSPI_SSPCR1); //turn on SSP controller
-    iowrite32(0x06, base_addr+GSPI_SSPCPSR); //clock prescale
-    iowrite32(0x02, base_addr+GSPI_SSPIMSC); //interrupt masks - unmask rx_fifo not empty
+    gspi_init(base_addr, params); //turn on SSP controller
+    gspi_set_int_mask(base_addr, 0x02); //interrupt masks - unmask rx_fifo not empty
 
+    gspi_eeprom_write_enable(base_addr);
+    gspi_eeprom_erase_init(base_addr);
 
-    spi_eeprom_write_enable(base_addr);
-    spi_eeprom_erase_init(base_addr);
-
-
-    spi_eeprom_write_enable(base_addr);
-
-//    gspi_set_irq_mask(base_addr, 0x04);
-
-    iowrite32(0x04, base_addr + GSPI_IRQMASKS); //set irq masks
-
-//    gspi_dma_enable(base_addr);
-    iowrite32(0x03, base_addr + GSPI_SSPDMACR); //enable DMA
+    gspi_eeprom_write_enable(base_addr);
+    gspi_dma_set_irq_mask(base_addr, end_buf_write);
+    gspi_dma_enable(base_addr, all);
 
     iowrite32(0x01, base_addr + GSPI_AXIR_BUFTYPE); //base mode
     iowrite32(0x108, base_addr + GSPI_AXI_PARAMS); //AXI params
@@ -173,7 +166,7 @@ static uint32_t gspi_dma_axi(uint32_t base_addr, uint32_t* r_mem_addr, uint32_t*
     DMA_write_buffer_end = 0;
 
     rumboot_putstring("Reading data...\n");
-    (void)spi_eeprom_read_data(base_addr);
+    (void)gspi_eeprom_read_data(base_addr);
     rumboot_printf("Read data from memory =%x\n", ioread32((uint32_t)w_mem_addr));
     rumboot_putstring("Checking data ...\n");
     if (ioread32((uint32_t)w_mem_addr) != 0x01020304)
@@ -198,16 +191,14 @@ static uint32_t gspi_ssp_eeprom(uint32_t base_addr)
     }
 
 
-//    gspi_set_irq_mask(base_addr, 0x01); //mask all interrupts except SSP
-    iowrite32(0x01, base_addr + GSPI_IRQMASKS); //mask all interrupts except SSP
+    gspi_dma_set_irq_mask(base_addr, SSP_INT); //mask all interrupts except SSP
 
     //Check SPI interrupt with loop operation
-    iowrite32(0xc7, base_addr+GSPI_SSPCR0); //set 8-bit data
-    iowrite32(0x03, base_addr+GSPI_SSPCR1); //turn on SSP controller, loop operation
-    iowrite32(0x06, base_addr+GSPI_SSPCPSR); //clock prescale
-    iowrite32(0x02, base_addr+GSPI_SSPIMSC); //interrupt masks - unmask rx_fifo not empty
+    params.loopback = true;
+    gspi_init(base_addr, params); //turn on SSP controller, loop operation
+    gspi_set_int_mask(base_addr, 0x02); //interrupt masks - unmask rx_fifo not empty
 
-    iowrite32(0x5a, base_addr+GSPI_SSPDR); //write data to SPI with IRQ
+    gspi_write_data(base_addr, 0x5A); //write data to SPI with IRQ
 
     if (wait_gspi_int())
     {
@@ -224,17 +215,17 @@ static uint32_t gspi_ssp_eeprom(uint32_t base_addr)
 
     //Write data to spi eeprom
     iowrite32(0x02, base_addr+GSPI_SSPCR1); //SSP controller from loop to normal operation
-    iowrite32(0x00, base_addr+GSPI_SSPIMSC); //mask all interrupts
+    gspi_set_int_mask(base_addr, 0x0); //mask all interrupts
 
-    spi_eeprom_write_enable(base_addr);
-    spi_eeprom_erase_init(base_addr);
+    gspi_eeprom_write_enable(base_addr);
+    gspi_eeprom_erase_init(base_addr);
 
-    spi_eeprom_write_enable(base_addr);
-    spi_eeprom_write_data(base_addr, 0x00, TEST_DATA);
+    gspi_eeprom_write_enable(base_addr);
+    gspi_eeprom_write_data(base_addr, 0x00, TEST_DATA);
 
 
     //Read and check data from spi slash
-    if (spi_eeprom_read_data(base_addr) != TEST_DATA)
+    if (gspi_eeprom_read_data(base_addr) != TEST_DATA)
     {
         rumboot_printf("SPI data read fail\n");
         return 1;
@@ -250,14 +241,15 @@ int main(void)
     rumboot_printf("GSPI test has been started ... \n");
 
     #ifdef GSPI_CHECK_REGS
+        rumboot_printf("Checking GSPI registers ...\n");
+        test_result += gspi_check_regs(GSPI_BASE);
+
         rumboot_printf("Checking GSPI interrupt ...\n");
+        (void)(ioread32(GSPI_BASE + GSPI_STATUS)); // clear interrupt
         gpio_set_port_direction(GPIO_1_BASE, GPIO1_X);
         iowrite32( GPIO1_X, GPIO_1_BASE + GPIO_ADDR_MASK );
         TEST_ASSERT((ioread32(GSPI_BASE + GSPI_STATUS) == 0x82), "ERROR!!! GSPI interrupt not set");
         gpio_set_port_direction(GPIO_1_BASE, 0x0);
-
-        rumboot_printf("Checking GSPI registers ...\n");
-        test_result += gspi_check_regs(GSPI_BASE);
     #endif
 
     IRQ = 0;
@@ -275,38 +267,38 @@ int main(void)
     //IM0 - IM0
     test_result += gspi_dma_axi(GSPI_BASE, (uint32_t*)data_src, (uint32_t*)data_dst);
     //IM0 - IM1
-//    test_result += gspi_dma_axi(GSPI_BASE, (uint32_t*)data_src, (uint32_t*)rumboot_virt_to_dma((void*)IM1_BASE));
+    test_result += gspi_dma_axi(GSPI_BASE, (uint32_t*)data_src, (uint32_t*)rumboot_virt_to_dma((void*)IM1_BASE));
     //IM0 - EM2
-//    test_result += gspi_dma_axi(GSPI_BASE, (uint32_t*)data_src, (uint32_t*)rumboot_virt_to_dma((void*)EM2_BASE));
+    test_result += gspi_dma_axi(GSPI_BASE, (uint32_t*)data_src, (uint32_t*)rumboot_virt_to_dma((void*)EM2_BASE));
 
     // Copy data in IM1
 //    memcpy(data_src, (uint32_t*)rumboot_virt_to_dma((uint32_t*)IM1_BASE), sizeof(data_src));
-//    for(int i=0; i <8; i++)
-//    {
-//        rumboot_printf("data_src[%d] =0x%x\n", i, data_src[i]);
-//        rumboot_printf("address = 0x%x\n", (uint32_t)data_src);
-//        iowrite8(data_src[i], IM1_BASE+i);
-//        rumboot_printf("Copy data =%x\n", ioread8(IM1_BASE+i));
-//    }
+    for(int i=0; i <8; i++)
+    {
+        rumboot_printf("data_src[%d] =0x%x\n", i, data_src[i]);
+        rumboot_printf("address = 0x%x\n", (uint32_t)data_src);
+        iowrite8(data_src[i], IM1_BASE+i);
+        rumboot_printf("Copy data =%x\n", ioread8(IM1_BASE+i));
+    }
     //IM1 - IM0
-//    test_result += gspi_dma_axi(GSPI_BASE, (uint32_t*)rumboot_virt_to_dma((void*)IM1_BASE), (uint32_t*)data_dst);
+    test_result += gspi_dma_axi(GSPI_BASE, (uint32_t*)rumboot_virt_to_dma((void*)IM1_BASE), (uint32_t*)data_dst);
     //IM1 - IM1
-//    test_result += gspi_dma_axi(GSPI_BASE, (uint32_t*)rumboot_virt_to_dma((void*)IM1_BASE), (uint32_t*)rumboot_virt_to_dma((void*)IM1_BASE + 16));
+    test_result += gspi_dma_axi(GSPI_BASE, (uint32_t*)rumboot_virt_to_dma((void*)IM1_BASE), (uint32_t*)rumboot_virt_to_dma((void*)IM1_BASE + 16));
 //    //IM1 - EM2
-//    test_result += gspi_dma_axi(GSPI_BASE, (uint32_t*)rumboot_virt_to_dma((void*)IM1_BASE), (uint32_t*)rumboot_virt_to_dma((void*)EM2_BASE));
+    test_result += gspi_dma_axi(GSPI_BASE, (uint32_t*)rumboot_virt_to_dma((void*)IM1_BASE), (uint32_t*)rumboot_virt_to_dma((void*)EM2_BASE));
 
     // Copy data in EM2
-//    for(int i=0; i <8; i++)
-//    {
-//        rumboot_printf("data_src[%d] =0x%x\n", i, data_src[i]);
-//        rumboot_printf("address = 0x%x\n", (uint32_t)data_src);
-//        iowrite8(data_src[i], EM2_BASE+i);
-//        rumboot_printf("Copy data =%x\n", ioread8(EM2_BASE+i));
-//    }
+    for(int i=0; i <8; i++)
+    {
+        rumboot_printf("data_src[%d] =0x%x\n", i, data_src[i]);
+        rumboot_printf("address = 0x%x\n", (uint32_t)data_src);
+        iowrite8(data_src[i], EM2_BASE+i);
+        rumboot_printf("Copy data =%x\n", ioread8(EM2_BASE+i));
+    }
 //    //EM2 - IM0
-//    test_result += gspi_dma_axi(GSPI_BASE, (uint32_t*)rumboot_virt_to_dma((void*)EM2_BASE), (uint32_t*)data_dst);
+    test_result += gspi_dma_axi(GSPI_BASE, (uint32_t*)rumboot_virt_to_dma((void*)EM2_BASE), (uint32_t*)data_dst);
 //    //EM2 - IM1
-//    test_result += gspi_dma_axi(GSPI_BASE, (uint32_t*)rumboot_virt_to_dma((void*)EM2_BASE), (uint32_t*)rumboot_virt_to_dma((void*)IM1_BASE));
+    test_result += gspi_dma_axi(GSPI_BASE, (uint32_t*)rumboot_virt_to_dma((void*)EM2_BASE), (uint32_t*)rumboot_virt_to_dma((void*)IM1_BASE));
 //    //EM2 - EM2
 //    test_result += gspi_dma_axi(GSPI_BASE, (uint32_t*)rumboot_virt_to_dma((void*)EM2_BASE), (uint32_t*)rumboot_virt_to_dma((void*)EM2_BASE + 16));
 
