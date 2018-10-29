@@ -131,7 +131,7 @@ static uint32_t wait_gspi_int()
 static uint8_t data_src[] = { 0x02, 0x00, 0x00, 0x00, 0xDC, 0xFE, 0x34, 0x12 };
 static uint8_t data_dst[4];
 
-ssp_params params = {0x6, 1, 1, ssp_data_size_8, master_mode, false, ssp_motorola_fr_form};
+ssp_params params = {0x6, 1, 1, 7, master_mode, false, ssp_motorola_fr_form};
 
 
 static uint32_t gspi_dma_axi(uint32_t base_addr, uint32_t* r_mem_addr, uint32_t* w_mem_addr)
