@@ -5,8 +5,10 @@
 #include <platform/common_macros/common_macros.h>
 #include <platform/test_event_codes.h>
 #include <platform/devices.h>
-#include <platform/oi10/platform/regs/regs_spi.h>
-#include <platform/oi10/platform/devices/spi.h>
+//#include <platform/oi10/platform/regs/regs_spi.h>
+//#include <platform/oi10/platform/devices/spi.h>
+#include <regs/regs_spi.h>
+#include <devices/pl022.h>
 
 #include <rumboot/irq.h>
 #include <rumboot/io.h>
@@ -143,7 +145,7 @@ static uint32_t gspi_dma_axi(uint32_t base_addr, uint32_t* r_mem_addr, uint32_t*
     gspi_set_int_mask(base_addr, 0x02); //interrupt masks - unmask rx_fifo not empty
 
     gspi_eeprom_write_enable(base_addr);
-    gspi_eeprom_erase_init(base_addr);
+    gspi_eeprom_erase(base_addr);
 
     gspi_eeprom_write_enable(base_addr);
     gspi_dma_set_irq_mask(base_addr, end_buf_write);
@@ -224,12 +226,11 @@ static uint32_t gspi_ssp_eeprom(uint32_t base_addr)
     //Write data to spi eeprom
     params.loopback = false;
     gspi_init(base_addr, params); //turn on SSP controller, loop operation
-//    iowrite32(0x02, base_addr+GSPI_SSPCR1); //SSP controller from loop to normal operation
     gspi_set_int_mask(base_addr, 0x0); //mask all interrupts
 
 
     gspi_eeprom_write_enable(base_addr);
-    gspi_eeprom_erase_init(base_addr);
+    gspi_eeprom_erase(base_addr);
 
 
     gspi_eeprom_write_enable(base_addr);
@@ -307,7 +308,6 @@ int main(void)
     //EM2 - EM2
     test_result += gspi_dma_axi(GSPI_BASE, (uint32_t*)rumboot_virt_to_dma((void*)EM2_BASE), (uint32_t*)rumboot_virt_to_dma((void*)(EM2_BASE + 0x30)));
 
-//    gspi_dma_enable(GSPI_BASE, disable);
 
     rumboot_printf("Checking GSPI EEPROM read/write functionality ...\n");
     test_result += gspi_ssp_eeprom(GSPI_BASE);
