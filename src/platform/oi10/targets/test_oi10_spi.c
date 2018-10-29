@@ -16,8 +16,8 @@
 #include <platform/regs/fields/mpic128.h>
 #include <rumboot/regpoker.h>
 
-#define GSPI_CHECK_REGS
-
+//#define GSPI_CHECK_REGS
+#define TEST_DATA       0xDCFE3412
 
 #ifdef GSPI_CHECK_REGS
 
@@ -75,6 +75,20 @@ static uint32_t gspi_check_regs(uint32_t base_addr)
      { "IRQMASKS",      REGPOKER_WRITE32, GSPI_IRQMASKS,     0x00,                      GSPI_IRQMASKS_MASK },
      { /* Sentinel */ }
     };
+
+//    rumboot_printf("GSPI_DMARCNTRL check:\n");
+//    iowrite32(0xDFFFFFE0, base_addr + GSPI_DMARCNTRL);
+//    rumboot_printf("GSPI_DMARCNTRL = %x:\n", ioread32(base_addr + GSPI_DMARCNTRL));
+//    TEST_ASSERT((ioread32(base_addr + GSPI_DMARCNTRL) == 0xC0000000), "ERROR!!! The value read does not match the recorded value the register GSPI_DMARCNTRL.\n");
+//    iowrite32(0x0FFFFFE0, base_addr + GSPI_DMARCNTRL);
+//    rumboot_printf(" OK\n");
+
+//    rumboot_printf("GSPI_DMAWCNTRL check:\n");
+//    iowrite32(0xDFFFFFE0, base_addr + GSPI_DMAWCNTRL);
+//    rumboot_printf("GSPI_DMAWCNTRL = %x\n", ioread32(base_addr + GSPI_DMAWCNTRL));
+//    TEST_ASSERT((ioread32(base_addr + GSPI_DMAWCNTRL) == 0xC0000000), "ERROR!!! The value read does not match the recorded value the register GSPI_DMAWCNTRL.\n");
+//    iowrite32(0x0FFFFFE0, base_addr + GSPI_DMAWCNTRL);
+//    rumboot_printf(" OK\n");
 
     return rumboot_regpoker_check_array(check_array, base_addr);
 }
@@ -243,81 +257,20 @@ static uint32_t gspi_ssp_eeprom(uint32_t base_addr)
     iowrite32(0x02, base_addr+GSPI_SSPCR1); //SSP controller from loop to normal operation
     iowrite32(0x00, base_addr+GSPI_SSPIMSC); //mask all interrupts
 
-
     spi_eeprom_write_enable(base_addr);
     spi_eeprom_erase_init(base_addr);
 
-
     spi_eeprom_write_enable(base_addr);
-
-    iowrite32(0x02, base_addr+GSPI_SSPDR); //write data to SPI - command write
-    iowrite32(0x00, base_addr+GSPI_SSPDR); //write data to SPI - write address
-    iowrite32(0x00, base_addr+GSPI_SSPDR); //write data to SPI - write address
-    iowrite32(0x00, base_addr+GSPI_SSPDR); //write data to SPI - write address
-    iowrite32(0x12, base_addr+GSPI_SSPDR); //write data to SPI - write data 1
-    iowrite32(0x34, base_addr+GSPI_SSPDR); //write data to SPI - write data 2
-    iowrite32(0xfe, base_addr+GSPI_SSPDR); //write data to SPI - write data 3
-    iowrite32(0xdc, base_addr+GSPI_SSPDR); //write data to SPI - write data 4
-
-    while((ioread32(base_addr+GSPI_SSPSR) & 0x1) == 0) //wait tx fifo empty
-        ;
-
-    (void)ioread32(base_addr+GSPI_SSPDR); //read data from rx fifo
-    (void)ioread32(base_addr+GSPI_SSPDR); //read data from rx fifo
-    (void)ioread32(base_addr+GSPI_SSPDR); //read data from rx fifo
-    (void)ioread32(base_addr+GSPI_SSPDR); //read data from rx fifo
-    (void)ioread32(base_addr+GSPI_SSPDR); //read data from rx fifo
-    (void)ioread32(base_addr+GSPI_SSPDR); //read data from rx fifo
-    (void)ioread32(base_addr+GSPI_SSPDR); //read data from rx fifo
-    (void)ioread32(base_addr+GSPI_SSPDR); //read data from rx fifo
-
-    while ((read_eeprom_status(base_addr) & 0x1) == 0x1) //wait write complete
-        ;
+    spi_eeprom_write_data(base_addr, 0x00, TEST_DATA);
 
 
     //Read and check data from spi slash
-    iowrite32(0x03, base_addr+GSPI_SSPDR); //write data to SPI - command read
-    iowrite32(0x00, base_addr+GSPI_SSPDR); //write data to SPI - read address
-    iowrite32(0x00, base_addr+GSPI_SSPDR); //write data to SPI - read address
-    iowrite32(0x00, base_addr+GSPI_SSPDR); //write data to SPI - read address
-    iowrite32(0xff, base_addr+GSPI_SSPDR); //write data to SPI - staff
-    iowrite32(0xff, base_addr+GSPI_SSPDR); //write data to SPI - staff
-    iowrite32(0xff, base_addr+GSPI_SSPDR); //write data to SPI - staff
-    iowrite32(0xff, base_addr+GSPI_SSPDR); //write data to SPI - staff
-
-    while((ioread32(base_addr+GSPI_SSPSR) & 0x1) == 0) //wait tx fifo empty
-        ;
-
-    (void)ioread32(base_addr+GSPI_SSPDR); //read data from rx fifo
-    (void)ioread32(base_addr+GSPI_SSPDR); //read data from rx fifo
-    (void)ioread32(base_addr+GSPI_SSPDR); //read data from rx fifo
-    (void)ioread32(base_addr+GSPI_SSPDR); //read data from rx fifo
-
-
-    if (ioread32(base_addr+GSPI_SSPDR) != 0x12)
+    spi_eeprom_read_data(base_addr);
+    if (spi_eeprom_read_data(base_addr) != TEST_DATA)
     {
         rumboot_printf("SPI data read fail\n");
         return 1;
     }
-
-    if (ioread32(base_addr+GSPI_SSPDR) != 0x34)
-    {
-        rumboot_printf("SPI data read fail\n");
-        return 1;
-    }
-
-    if (ioread32(base_addr+GSPI_SSPDR) != 0xfe)
-    {
-        rumboot_printf("SPI data read fail\n");
-        return 1;
-    }
-
-    if (ioread32(base_addr+GSPI_SSPDR) != 0xdc)
-    {
-        rumboot_printf("SPI data read fail\n");
-        return 1;
-    }
-
     return 0;
 }
 
