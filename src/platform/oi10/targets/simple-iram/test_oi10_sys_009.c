@@ -25,7 +25,6 @@
 #include <platform/arch/ppc/ppc_476fp_mmu.h>
 #include <platform/ppc470s/mmu/mem_window.h>
 
-#include <platform/devices.h>
 #include <platform/devices/emi.h>
 #include <platform/regs/regs_emi.h>
 #include <platform/regs/fields/emi.h>
@@ -48,15 +47,11 @@
 #define TLB_ENTRY_CACHE_ON  MMU_TLB_ENTRY( 0x000,PHY2RPN(PHY_BASE),ADDR2EPN(PHY_BASE),MMU_TLBE_DSIZ_64KB,0,   0,   1,0,1,0,MMU_TLBE_E_BIG_END,0, 0, 0, 1, 1, 1, 0,    0,    0, MEM_WINDOW_0,MMU_TLBWE_WAY_UND,MMU_TLBWE_BE_UND,1 )
 
 enum {
-       TEC_CHECK_DEBUG_MACHINECHECK = TEST_EVENT_CODE_MIN,
-       TEC_CHECK_DEBUG_MASKOUT,
-       TEC_CHECK_DEBUG_HALT,
-       TEC_CHECK_DEBUG_UNCONDEVENT,
+       TEC_CHECK_DEBUG_MASKOUT = TEST_EVENT_CODE_MIN,
        TEC_CHECK_DEBUG_SYSTEMCONTROL,
        TEC_CHECK_DEBUG_JDCR_STO,
        TEC_CHECK_DEBUG_JDCR_UDE,
        TEC_CHECK_DEBUG_JDCR_RSDBSR,
-       TEC_CHECK_DEBUG_SYSTEMSTATUS,
        TEC_CHECK_DEBUG_STUFF,
        TEC_CHECK_DEBUG_DBDR,
        TEC_CHECK_DEBUG_DBIMASK,
