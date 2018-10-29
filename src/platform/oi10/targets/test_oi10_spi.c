@@ -22,10 +22,11 @@
 #include <devices/gpio_pl061.h>
 #include <platform/devices/emi.h>
 
-#define BYTE_NUMBER             64
+#define BYTE_NUMBER             4
 #define DATA_SIZE               (BYTE_NUMBER+4)
 #define PAGE_PROGRAM_COMMAND    0x02000000
-#define TEST_DATA               0x99
+#define READ_COMMAND            0x03000000
+#define TEST_DATA               0x99887766
 #define TEST_DATA_LOOP          0x3C
 #define TEST_DATA_IM0           0x5A
 #define TEST_DATA_IM1           0xC3
@@ -147,12 +148,10 @@ ssp_params ssp_param = {0x6, 1, 1, 7, master_mode, false, ssp_motorola_fr_form};
 dma_params dma_param = {lsb, 8, lsb, 8};
 struct pl022_config conf;
 
-static uint32_t gspi_dma_axi(uint32_t base_addr, uint32_t* r_mem_addr, uint32_t* w_mem_addr, uint32_t test_data)
+static uint32_t gspi_dma_axi(uint32_t base_addr, uint32_t r_mem_addr, uint32_t w_mem_addr, uint32_t test_data)
 {
-    uint8_t tmp[BYTE_NUMBER];
-
-    rumboot_printf("Read from address =%x\n", r_mem_addr);
-    rumboot_printf("Write to address =%x\n", w_mem_addr);
+    rumboot_printf("Read from address =%x\n", rumboot_virt_to_dma((void*)r_mem_addr));
+    rumboot_printf("Write to address =%x\n", rumboot_virt_to_dma((void*)w_mem_addr));
 
     gspi_dma_reset(base_addr);
 
@@ -169,8 +168,8 @@ static uint32_t gspi_dma_axi(uint32_t base_addr, uint32_t* r_mem_addr, uint32_t*
     gspi_dma_set_mode(base_addr, base_mode);
     gspi_dma_set_param(base_addr, dma_param);
 
-    gspi_dma_set_read_addr(base_addr, r_mem_addr, BYTE_NUMBER);
-    gspi_dma_set_write_addr(base_addr, w_mem_addr, BYTE_NUMBER);
+    gspi_dma_set_read_addr(base_addr, (uint32_t*)rumboot_virt_to_dma((void*)r_mem_addr), BYTE_NUMBER);
+    gspi_dma_set_write_addr(base_addr, (uint32_t*)rumboot_virt_to_dma((void*)w_mem_addr), BYTE_NUMBER);
 
     iowrite32(0x9FFFFFE0, base_addr + GSPI_DMARCNTRL);
     iowrite32(0X9FFFFFE0, base_addr + GSPI_DMAWCNTRL);
@@ -182,7 +181,10 @@ static uint32_t gspi_dma_axi(uint32_t base_addr, uint32_t* r_mem_addr, uint32_t*
     DMA_write_buffer_end = 0;
 
     rumboot_putstring("Reading data...\n");
-    pl022_flash_read_data(base_addr, tmp, BYTE_NUMBER);
+    iowrite32(READ_COMMAND, r_mem_addr);
+
+    iowrite32(0x01, base_addr + GSPI_AXIR_BUFENA); //enable transmitting
+
     while(!DMA_write_buffer_end)
         ;
     DMA_write_buffer_end = 0;
@@ -216,10 +218,7 @@ static uint32_t gspi_ssp_flash(uint32_t base_addr)
         return 1;
     }
 
-    uint8_t read_data[BYTE_NUMBER];
-    uint8_t write_data[BYTE_NUMBER];
-    for(int i = 0; i < BYTE_NUMBER; i++)
-        write_data[i] = TEST_DATA;
+    uint32_t read_data;
 
     gspi_dma_set_irq_mask(base_addr, ssp_int); //mask all interrupts except SSP
 
@@ -257,17 +256,16 @@ static uint32_t gspi_ssp_flash(uint32_t base_addr)
 
 
     pl022_flash_write_enable(base_addr);
-    pl022_flash_write_data(base_addr, write_data, BYTE_NUMBER);
+    pl022_flash_write_data(base_addr, TEST_DATA);
 
     //Read and check data from spi slash
-    pl022_flash_read_data(base_addr, read_data, BYTE_NUMBER);
-    for(int i = 0; i < BYTE_NUMBER; i++)
-        if (read_data[i] != TEST_DATA)
-        {
-            rumboot_printf("read_data = %x\n", read_data[i]);
-            rumboot_printf("SPI data read fail\n");
-            return 1;
-        }
+    read_data = pl022_flash_read_data(base_addr);
+    if (read_data != TEST_DATA)
+    {
+        rumboot_printf("read_data = %x\n", read_data);
+        rumboot_printf("SPI data read fail\n");
+        return 1;
+    }
     return 0;
 }
 
@@ -307,21 +305,17 @@ int main(void)
 
     // Data for check IM0
     for (int i=4; i<DATA_SIZE; i++)
-        data_src[i] = i;
-//    rumboot_putdump( (uint32_t)data_src, sizeof(data_src));
+        data_src[i] = TEST_DATA_IM0;
     iowrite32(0x0, (uint32_t)data_src + DATA_SIZE);
 
     //IM0 - IM0
-    test_result += gspi_dma_axi(GSPI_BASE, (uint32_t*)data_src, (uint32_t*)data_dst, TEST_DATA_IM0);
-    rumboot_putdump( (uint32_t)data_src, sizeof(data_src));
-//    IM0 - IM1
+    test_result += gspi_dma_axi(GSPI_BASE, (uint32_t)data_src, (uint32_t)data_dst, TEST_DATA_IM0);
     iowrite32(PAGE_PROGRAM_COMMAND, (uint32_t)data_src);
-    test_result += gspi_dma_axi(GSPI_BASE, (uint32_t*)data_src, (uint32_t*)rumboot_virt_to_dma((void*)(IM1_BASE + DATA_SIZE)), TEST_DATA_IM0);
-//    rumboot_putdump( (uint32_t)data_src, sizeof(data_src));
+    //IM0 - IM1
+    test_result += gspi_dma_axi(GSPI_BASE, (uint32_t)data_src, (IM1_BASE + DATA_SIZE), TEST_DATA_IM0);
     iowrite32(PAGE_PROGRAM_COMMAND, (uint32_t)data_src);
     //IM0 - EM2
-    test_result += gspi_dma_axi(GSPI_BASE, (uint32_t*)data_src, (uint32_t*)rumboot_virt_to_dma((void*)(SRAM0_BASE + DATA_SIZE)), TEST_DATA_IM0);
-//    rumboot_putdump( (uint32_t)data_src, sizeof(data_src));
+    test_result += gspi_dma_axi(GSPI_BASE, (uint32_t)data_src, (SRAM0_BASE + DATA_SIZE), TEST_DATA_IM0);
     iowrite32(PAGE_PROGRAM_COMMAND, (uint32_t)data_src);
 
 
@@ -329,42 +323,40 @@ int main(void)
     for (int i=4; i<DATA_SIZE; i++)
         data_src[i] = TEST_DATA_IM1;
     // Copy data in IM1
-    memcpy((uint32_t*)rumboot_virt_to_dma((void*)IM1_BASE), data_src, sizeof(data_src));
+    memcpy((void*)IM1_BASE, data_src, sizeof(data_src));
+
     //IM1 - IM0
-//    rumboot_putdump( (uint32_t)data_src, sizeof(data_src));
-    test_result += gspi_dma_axi(GSPI_BASE, (uint32_t*)rumboot_virt_to_dma((void*)IM1_BASE), (uint32_t*)data_dst, TEST_DATA_IM1);
-//    rumboot_putdump( (uint32_t)data_src, sizeof(data_src));
+    test_result += gspi_dma_axi(GSPI_BASE, IM1_BASE, (uint32_t)data_dst, TEST_DATA_IM1);
+    iowrite32(PAGE_PROGRAM_COMMAND, IM1_BASE);
     //IM1 - IM1
-    test_result += gspi_dma_axi(GSPI_BASE, (uint32_t*)rumboot_virt_to_dma((void*)IM1_BASE), (uint32_t*)rumboot_virt_to_dma((void*)(IM1_BASE + DATA_SIZE)), TEST_DATA_IM1);
-    rumboot_putdump( (uint32_t)data_src, sizeof(data_src));
+    test_result += gspi_dma_axi(GSPI_BASE, IM1_BASE, (IM1_BASE + DATA_SIZE), TEST_DATA_IM1);
+    iowrite32(PAGE_PROGRAM_COMMAND, IM1_BASE);
     //IM1 - EM2
-    test_result += gspi_dma_axi(GSPI_BASE, (uint32_t*)rumboot_virt_to_dma((void*)IM1_BASE), (uint32_t*)rumboot_virt_to_dma((void*)(SRAM0_BASE + DATA_SIZE)), TEST_DATA_IM1);
-//    rumboot_putdump( (uint32_t)data_src, sizeof(data_src));
+    test_result += gspi_dma_axi(GSPI_BASE, IM1_BASE, (SRAM0_BASE + DATA_SIZE), TEST_DATA_IM1);
+
 
 
     // Data for check EM2
+    iowrite32(PAGE_PROGRAM_COMMAND, SRAM0_BASE);
     // Copy data in EM2
-    iowrite32(PAGE_PROGRAM_COMMAND, (uint32_t)data_src);
-    for(int i = 0; i <4; i++)
-       iowrite8(data_src[i], SRAM0_BASE+i);
     for (int i=4; i<DATA_SIZE; i++)
     {
         data_src[i] = TEST_DATA_EM2;
         iowrite8(data_src[i], SRAM0_BASE+i);
     }
     iowrite32(0x0, SRAM0_BASE+DATA_SIZE);
-//    rumboot_putdump( (uint32_t)data_src, sizeof(data_src));
+    iowrite32(0x0, SRAM0_BASE+DATA_SIZE+4);
 
 
     //EM2 - IM0
-    test_result += gspi_dma_axi(GSPI_BASE, (uint32_t*)rumboot_virt_to_dma((void*)SRAM0_BASE), (uint32_t*)data_dst, TEST_DATA_EM2);
-//    rumboot_putdump( (uint32_t)data_src, sizeof(data_src));
+    test_result += gspi_dma_axi(GSPI_BASE, SRAM0_BASE, (uint32_t)data_dst, TEST_DATA_EM2);
+    iowrite32(PAGE_PROGRAM_COMMAND, SRAM0_BASE);
     //EM2 - IM1
-    test_result += gspi_dma_axi(GSPI_BASE, (uint32_t*)rumboot_virt_to_dma((void*)SRAM0_BASE), (uint32_t*)rumboot_virt_to_dma((void*)(IM1_BASE + DATA_SIZE)), TEST_DATA_EM2);
-//    rumboot_putdump( (uint32_t)data_src, sizeof(data_src));
+    test_result += gspi_dma_axi(GSPI_BASE, SRAM0_BASE, (IM1_BASE + DATA_SIZE), TEST_DATA_EM2);
+    iowrite32(PAGE_PROGRAM_COMMAND, SRAM0_BASE);
     //EM2 - EM2
-    test_result += gspi_dma_axi(GSPI_BASE, (uint32_t*)rumboot_virt_to_dma((void*)SRAM0_BASE), (uint32_t*)rumboot_virt_to_dma((void*)(SRAM0_BASE + DATA_SIZE)), TEST_DATA_EM2);
-//    rumboot_putdump( (uint32_t)data_src, sizeof(data_src));
+    test_result += gspi_dma_axi(GSPI_BASE, SRAM0_BASE, (SRAM0_BASE + DATA_SIZE), TEST_DATA_EM2);
+    iowrite32(PAGE_PROGRAM_COMMAND, SRAM0_BASE);
 
 
     rumboot_printf("Checking GSPI EEPROM read/write functionality ...\n");
@@ -374,6 +366,5 @@ int main(void)
     rumboot_irq_table_activate(NULL);
     rumboot_irq_free(tbl);
 
-//    rumboot_printf("GSPI test has been finished successfully.\n");
     return test_result;
 }
