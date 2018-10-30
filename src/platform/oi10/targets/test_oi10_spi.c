@@ -144,9 +144,9 @@ static uint32_t wait_gspi_int()
 static uint8_t __attribute__((section(".data.data_src"))) data_src[DATA_SIZE] = { 0x02, 0x00, 0x00, 0x00 };
 static uint8_t __attribute__((section(".data.data_dst"))) data_dst[BYTE_NUMBER];
 
-ssp_params ssp_param;
-dma_params dma_param;
-struct pl022_config conf;
+static struct ssp_params ssp_param;
+static struct dma_params dma_param;
+static struct pl022_config conf;
 
 static uint32_t gspi_dma_axi(uint32_t base_addr, uint32_t r_mem_addr, uint32_t w_mem_addr, uint32_t test_data)
 {
@@ -170,7 +170,7 @@ static uint32_t gspi_dma_axi(uint32_t base_addr, uint32_t r_mem_addr, uint32_t w
     dma_param.arlen        = 8;
     dma_param.endian_write = lsb;
     dma_param.awlen        = 8;
-    gspi_dma_set_param(base_addr, dma_param);
+    gspi_dma_set_param(base_addr, &dma_param);
 
     gspi_dma_set_read_addr(base_addr, (uint32_t*)rumboot_virt_to_dma((void*)r_mem_addr), BYTE_NUMBER);
     gspi_dma_set_write_addr(base_addr, (uint32_t*)rumboot_virt_to_dma((void*)w_mem_addr), BYTE_NUMBER);
@@ -229,7 +229,7 @@ static uint32_t gspi_ssp_flash(uint32_t base_addr)
 
     rumboot_printf("Check SPI interrupt with loop operation\n");
     ssp_param.loopback = true;
-    pl022_set_param(base_addr, ssp_param); //turn on SSP controller, loop opera
+    pl022_set_param(base_addr, &ssp_param); //turn on SSP controller, loop opera
     pl022_set_int_mask(base_addr, 0x02); //interrupt masks - unmask rx_fifo not empty
 
     pl022_send_word(base_addr, TEST_DATA_LOOP); //write data to SPI with IRQ
@@ -249,7 +249,7 @@ static uint32_t gspi_ssp_flash(uint32_t base_addr)
 
     rumboot_printf("Check read and write data to spi flash\n");
     ssp_param.loopback = false;
-    pl022_set_param(base_addr, ssp_param); //turn on SSP controller, loop opera
+    pl022_set_param(base_addr, &ssp_param); //turn on SSP controller, loop opera
     pl022_set_int_mask(base_addr, 0x0); //mask all interrupts
 
     pl022_flash_write_enable(base_addr);
@@ -317,7 +317,7 @@ int main(void)
     ssp_param.mode      = master_mode;
     ssp_param.loopback  = false;
     ssp_param.fr_format = ssp_motorola_fr_form;
-    pl022_set_param(GSPI_BASE, ssp_param);//turn on SSP controller
+    pl022_set_param(GSPI_BASE, &ssp_param);//turn on SSP controller
 
 
 //    // Data for check IM0
