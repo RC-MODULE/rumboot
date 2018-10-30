@@ -14,14 +14,17 @@
 #include <rumboot/io.h>
 #include <rumboot/irq.h>
 
-#include <platform/devices.h>
-#include <platform/interrupts.h>
-#include <platform/arch/ppc/test_macro.h>
 #include <platform/test_event_c.h>
 #include <platform/trace.h>
 #include <platform/test_assert.h>
+#include <platform/devices.h>
+#include <platform/interrupts.h>
+#include <platform/arch/ppc/test_macro.h>
+#include <platform/arch/ppc/ppc_476fp_config.h>
+#include <platform/arch/ppc/ppc_476fp_lib_c.h>
 #include <platform/arch/ppc/ppc_476fp_debug_fields.h>
 #include <platform/arch/ppc/ppc_476fp_itrpt_fields.h>
+#include <platform/arch/ppc/ppc_476fp_ctrl_fields.h>
 
 enum {
        TEC_CHECK_DEBUG_MACHINECHECK = TEST_EVENT_CODE_MIN,
@@ -36,8 +39,6 @@ enum {
 	TEST_DATA_EVENT     = 0x00000002,
    	TEST_DATA_ERROR     = 0x8E5917E8
 } test_data;
-
-static struct rumboot_irq_entry *tbl;
 
 int event_get()
 {
@@ -73,6 +74,7 @@ int check_uncondevent ()
 	uint32_t dbsr;
 	rumboot_printf("DEBUG_UNCONDEVENT check start!\n");
 
+	spr_write(SPR_DBSR_RC,0xFFFFFFFF); //clear dbsr
 	rumboot_printf("send TEC_CHECK_DEBUG_UNCONDEVENT\n");
 	test_event(TEC_CHECK_DEBUG_UNCONDEVENT );
 
@@ -107,40 +109,54 @@ int check_halt ()
 	return 0;
 }
 
-static void check_machinecheck_handler( int irq, void *args ) {
-    rumboot_putstring( "check_machinecheck_handler\n" );
-
-}
-
 int check_machinecheck ()
 {
+	uint32_t const msr_old_value = msr_read();
+	uint32_t const ccr1_old_value = spr_read(SPR_CCR1);;
+
 	rumboot_printf("DEBUG_MACHINECHECK check start!\n");
 
-    rumboot_irq_cli();
-    tbl = rumboot_irq_create(NULL);
-    rumboot_irq_set_handler(tbl, L2C0_MCHKOUT, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, check_machinecheck_handler, NULL);
-    rumboot_irq_table_activate(tbl);
-    rumboot_irq_enable(L2C0_MCHKOUT);
-    rumboot_irq_sei();
-
-
-
-
-
-	rumboot_platform_event_clear();
 	rumboot_printf("send TEC_CHECK_DEBUG_MACHINECHECK\n");
-
-
 	test_event(TEC_CHECK_DEBUG_MACHINECHECK );
-	if(event_get()) return 1;
+
+	//Check C470S_DBGMACHINECHECK via ESR[ISMC]
+	spr_write(SPR_ESR,0x80000000);
+	spr_write(SPR_ESR,0x00000000);
+
+	//Check C470S_DBGMACHINECHECK via MCSR[MCS]
+	spr_write(SPR_MCSR_C,0xFFFFFFFF);
+	spr_write(SPR_MCSR_RW,0x80000000);
+	spr_write(SPR_MCSR_C,0xFFFFFFFF);
+
+	//Other check C470S_DBGMACHINECHECK
+	rumboot_printf("point 0\n");
+	msr_write( (0b1 << ITRPT_XSR_FP_i)   /* MSR[FP] - Floating point available. */
+             | (0b0 << ITRPT_XSR_ME_i)); /* MSR[ME] - Machine check enable.     */
+
+	rumboot_printf("point 1\n");
+	asm volatile ("lfs  1, 0(13)\n\t");
+	asm volatile ("lfs  2, 0(13)\n\t");
+	msync();
+
+	spr_write( SPR_CCR1, ccr1_old_value | (0b11 << CTRL_CCR1_FPRPEI_i)); //Floating-Point Register (FPR) parity error insert.
+
+	isync();
+
+	rumboot_printf("point 2\n");
+	asm volatile ("lfs  1, 0(13)\n\t");
+	asm volatile ("lfs  2, 0(13)\n\t");
+	msync();
+
+	spr_write( SPR_CCR1, ccr1_old_value);
+	isync();
+
+	rumboot_printf("point 3\n");
+	asm volatile ("fcmpu 0, 1, 2\n\t");
+
+	spr_write(SPR_MCSR_C,0xFFFFFFFF);
+	msr_write(msr_old_value);
 
 	rumboot_printf("DEBUG_MACHINECHECK check done!\n");
-/*
-    rumboot_irq_cli();
-    rumboot_irq_table_activate(NULL);
-    rumboot_irq_free(tbl);
-    rumboot_irq_sei();
-*/
 
 	return 0;
 }
