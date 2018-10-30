@@ -98,7 +98,7 @@ static volatile uint32_t DMA_write_buffer_end = 0;
 
 static void gspi_irq_handler( int irq, void *arg )
 {
-    uint32_t ssp_status = gspi_get_ssp_status(GSPI_BASE);
+    uint32_t ssp_status = pl022_get_ssp_status(GSPI_BASE);
     uint32_t dma_status = gspi_get_dma_status(GSPI_BASE);
 
     rumboot_printf( "IRQ arrived  \n" );
@@ -107,7 +107,7 @@ static void gspi_irq_handler( int irq, void *arg )
 
     if (ssp_status & 0x4)
     {
-        SSP_data = gspi_get_word(GSPI_BASE);
+        SSP_data = pl022_get_word(GSPI_BASE);
     }
 
     if (dma_status & 0x4)
@@ -153,7 +153,7 @@ static uint32_t gspi_dma_axi(uint32_t base_addr, uint32_t r_mem_addr, uint32_t w
     rumboot_printf("Read from address =%x\n", rumboot_virt_to_dma((void*)r_mem_addr));
     rumboot_printf("Write to address =%x\n", rumboot_virt_to_dma((void*)w_mem_addr));
 
-    gspi_set_int_mask(base_addr, 0x02); //interrupt masks - unmask rx_fifo not empty
+    pl022_set_int_mask(base_addr, 0x02); //interrupt masks - unmask rx_fifo not empty
 
 
     pl022_flash_write_enable(base_addr);
@@ -161,7 +161,7 @@ static uint32_t gspi_dma_axi(uint32_t base_addr, uint32_t r_mem_addr, uint32_t w
 
     pl022_flash_write_enable(base_addr);
     gspi_dma_set_irq_mask(base_addr, end_buf_write);
-    gspi_dma_enable(base_addr, all);
+    pl022_dma_enable(base_addr, all);
 
     gspi_dma_set_mode(base_addr, base_mode);
 
@@ -200,12 +200,12 @@ static uint32_t gspi_dma_axi(uint32_t base_addr, uint32_t r_mem_addr, uint32_t w
         if (ioread8(addr) != test_data)
         {
             rumboot_putstring("GSPI AXI: SPI data read fail\n");
-            gspi_dma_enable(base_addr, disable);
+            pl022_dma_enable(base_addr, disable);
             return 1;
         }
     }
     rumboot_putstring("Check GSPI AXI: OK\n");
-    gspi_dma_enable(base_addr, disable);
+    pl022_dma_enable(base_addr, disable);
     return 0;
 }
 
@@ -229,10 +229,10 @@ static uint32_t gspi_ssp_flash(uint32_t base_addr)
 
     rumboot_printf("Check SPI interrupt with loop operation\n");
     ssp_param.loopback = true;
-    gspi_set_param(base_addr, ssp_param); //turn on SSP controller, loop opera
-    gspi_set_int_mask(base_addr, 0x02); //interrupt masks - unmask rx_fifo not empty
+    pl022_set_param(base_addr, ssp_param); //turn on SSP controller, loop opera
+    pl022_set_int_mask(base_addr, 0x02); //interrupt masks - unmask rx_fifo not empty
 
-    gspi_send_word(base_addr, TEST_DATA_LOOP); //write data to SPI with IRQ
+    pl022_send_word(base_addr, TEST_DATA_LOOP); //write data to SPI with IRQ
 
     if (wait_gspi_int())
     {
@@ -249,8 +249,8 @@ static uint32_t gspi_ssp_flash(uint32_t base_addr)
 
     rumboot_printf("Check read and write data to spi flash\n");
     ssp_param.loopback = false;
-    gspi_set_param(base_addr, ssp_param); //turn on SSP controller, loop opera
-    gspi_set_int_mask(base_addr, 0x0); //mask all interrupts
+    pl022_set_param(base_addr, ssp_param); //turn on SSP controller, loop opera
+    pl022_set_int_mask(base_addr, 0x0); //mask all interrupts
 
     pl022_flash_write_enable(base_addr);
     pl022_flash_erase(base_addr);
@@ -317,7 +317,7 @@ int main(void)
     ssp_param.mode      = master_mode;
     ssp_param.loopback  = false;
     ssp_param.fr_format = ssp_motorola_fr_form;
-    gspi_set_param(GSPI_BASE, ssp_param);//turn on SSP controller
+    pl022_set_param(GSPI_BASE, ssp_param);//turn on SSP controller
 
 
     // Initial SRAM0
