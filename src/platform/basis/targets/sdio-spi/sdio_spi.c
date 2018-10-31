@@ -26,22 +26,21 @@ unsigned read_data;
 
   //Init SD card
   
-  iowrite32( 0x16f,SDIO_BASE + 0x014);//enable the interrupt and the error flag  
+  iowrite32( 0x16f,SDIO_BASE + 0x014);//enable the interrupt and the error flag 
+  
   iowrite32( 0x0,SDIO_BASE + 0x008); //set CMD0 argument 
   iowrite32( 0x0,SDIO_BASE + 0x004);//set CMD0 index and send out the command
-    read_data=ioread32 (SDIO_BASE+ 0x048);
+     read_data=ioread32 (SDIO_BASE+ 0x048);
+   while (!(read_data&0x004))
+       {read_data=ioread32 (SDIO_BASE+ 0x048);}
+  iowrite32(0x004,SDIO_BASE+ 0x048);
+  
+  iowrite32( 0x0,SDIO_BASE + 0x008); //set CMD0 argument 
+  iowrite32( 0x0,SDIO_BASE + 0x004);//set CMD0 index and send out the command
+      read_data=ioread32 (SDIO_BASE+ 0x048);
   while (!(read_data&0x004))
       {read_data=ioread32 (SDIO_BASE+ 0x048);}
   iowrite32(0x004,SDIO_BASE+ 0x048);
-  
-    iowrite32( 0x16f,SDIO_BASE + 0x014);//enable the interrupt and the error flag  
-  iowrite32( 0x0,SDIO_BASE + 0x008); //set CMD0 argument 
-  iowrite32( 0x0,SDIO_BASE + 0x004);//set CMD0 index and send out the command
-    read_data=ioread32 (SDIO_BASE+ 0x048);
-  while (!(read_data&0x004))
-      {read_data=ioread32 (SDIO_BASE+ 0x048);}
-  iowrite32(0x004,SDIO_BASE+ 0x048);
-  
   
   iowrite32( 0x000001aa,SDIO_BASE + 0x008);//set CMD8 argument  
   iowrite32( 0x00083811,SDIO_BASE + 0x004);//set CMD8 index and send out the command
@@ -59,13 +58,14 @@ unsigned read_data;
       {read_data=ioread32 (SDIO_BASE+ 0x048);}
   iowrite32(0x004,SDIO_BASE+ 0x048);
   
-  iowrite32( 0x80ff8000,SDIO_BASE + 0x008);//set CMD41 argument   
+  iowrite32( 0x00000000,SDIO_BASE + 0x008);//set CMD41 argument   
   iowrite32( 0x00293811,SDIO_BASE + 0x004);//set CMD41 index and send out the command
   //if (!wait_sdio_int_handled(1000)) {trace_msg("SDIO interrupt timeout\n"); return TEST_ERROR;}
     read_data=ioread32 (SDIO_BASE+ 0x048);
   while (!(read_data&0x004))
       {read_data=ioread32 (SDIO_BASE+ 0x048);}
   iowrite32(0x004,SDIO_BASE+ 0x048);
+
   
   iowrite32( 0x00000000,SDIO_BASE + 0x008);//set CMD2 argument  
   iowrite32( 0x00023411,SDIO_BASE + 0x004);//set CMD2 index and send out the command
@@ -211,10 +211,10 @@ int sdio_dma_tr (unsigned int* src_addr, unsigned int* dst_addr)
     {rumboot_printf("SDIO interrupt timeout_4\n");
     return 1;
     }
-//    if (!wait_sdio_int_handled(1000)) 
-//     {rumboot_printf("SDIO interrupt timeout_5\n");
-//     return 1;
-//     }
+   if (!wait_sdio_int_handled(1000)) 
+    {rumboot_printf("SDIO interrupt timeout_5\n");
+    return 1;
+    }
 
   iowrite32(0x00000004,SDIO_BASE + 0x050);
   iowrite32( 0x00000200,SDIO_BASE + 0x044);
