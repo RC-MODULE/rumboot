@@ -30,10 +30,10 @@
 #define EVENT_CHK_MEM_WR_BE                         TEST_EVENT_CODE_MIN + 2
 #define EVENT_CHK_MEM_WR_LE                         TEST_EVENT_CODE_MIN + 3
 
-#define TLB_ENTRY_IM0_LITTLE_MIRROR_0   MMU_TLB_ENTRY(  0x010,  0x80000,    0x80040,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_LITTLE_END,  0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_1,     0b1 )
-#define TLB_ENTRY_IM0_LITTLE_MIRROR_1   MMU_TLB_ENTRY(  0x010,  0x80010,    0x80050,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_LITTLE_END,  0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_2,     0b1 )
-#define TLB_ENTRY_IM0_BIG_MIRROR_0      MMU_TLB_ENTRY(  0x010,  0x80000,    0x80040,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_1,     0b1 )
-#define TLB_ENTRY_IM0_BIG_MIRROR_1      MMU_TLB_ENTRY(  0x010,  0x80010,    0x80050,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_2,     0b1 )
+#define TLB_ENTRY_IM0_LITTLE_MIRROR_0   MMU_TLB_ENTRY(  0x010,  0x80000,    0x80060,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_LITTLE_END,  0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_UND,   0b1 )
+#define TLB_ENTRY_IM0_LITTLE_MIRROR_1   MMU_TLB_ENTRY(  0x010,  0x80010,    0x80070,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_LITTLE_END,  0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_UND,   0b1 )
+#define TLB_ENTRY_IM0_BIG_MIRROR_0      MMU_TLB_ENTRY(  0x010,  0x80000,    0x80060,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_UND,   0b1 )
+#define TLB_ENTRY_IM0_BIG_MIRROR_1      MMU_TLB_ENTRY(  0x010,  0x80010,    0x80070,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_UND,   0b1 )
 #define TLB_ENTRY_IM1_LITTLE            MMU_TLB_ENTRY(  0x020,  0xC0000,    0x80020,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_LITTLE_END,  0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_3,     0b1 )
 #define TLB_ENTRY_IM1_BIG               MMU_TLB_ENTRY(  0x020,  0xC0000,    0x80020,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_3,     0b1 )
 #define TLB_ENTRY_SRAM0_LITTLE          MMU_TLB_ENTRY(  0x000,  0x00000,    0x00000,    MMU_TLBE_DSIZ_1GB,      0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_LITTLE_END,  0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
@@ -47,7 +47,7 @@
 #define TLB_ENTRY_PRAM_BIG              MMU_TLB_ENTRY(  0x000,  0x40000,    0x40000,    MMU_TLBE_DSIZ_1GB,      0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
 #define TLB_ENTRY_SSRAM_LITTLE          MMU_TLB_ENTRY(  0x000,  0x40000,    0x40000,    MMU_TLBE_DSIZ_1GB,      0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_LITTLE_END,  0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
 
-#define IM0_BASE_MIRROR 0x80040000
+#define IM0_BASE_MIRROR 0x80060000
 
 #define IM0_ARR_SIZE   8
 uint8_t __attribute__((section(".data"))) im0_array [IM0_ARR_SIZE] = {0};
@@ -118,8 +118,11 @@ void TLB_LE ()
 
 void print_name_mem (uint32_t addr)
 {
-    if ( (addr >= IM0_BASE)&& (addr < IM0_BASE + 0x00040000)) rumboot_printf ("IM0\n");
-    if ( (addr >= IM1_BASE)&& (addr < IM1_BASE + 0x00040001)) rumboot_printf ("IM1\n");
+    extern char IM0_MEMORY_SIZE[];
+    extern char IM1_MEMORY_SIZE[];
+
+    if ( (addr >= IM0_BASE_MIRROR)&& (addr < IM0_BASE_MIRROR + (uint32_t)IM0_MEMORY_SIZE)) rumboot_printf ("IM0\n");
+    if ( (addr >= IM1_BASE)&& (addr < IM1_BASE + (uint32_t)IM1_MEMORY_SIZE)) rumboot_printf ("IM1\n");
     if ( (addr >= SRAM0_BASE) && (addr < SRAM0_BASE + SRAM0_SIZE) ) rumboot_printf ("SRAM0\n");
     if ( (addr >= NOR_BASE) && (addr < NOR_BASE + NOR_SIZE) ) rumboot_printf ("NOR\n");
     if ( (addr >= SRAM1_BASE) && (addr < SRAM1_BASE + SRAM1_SIZE) ) rumboot_printf ("SRAM1\n");
@@ -202,11 +205,11 @@ void check_NOR_prog (uint32_t base_addr, uint32_t code_event, uint8_t const *con
     }
     else
     {
-        nor_write32 ((*(uint32_t*)data) , base_addr + 0x14);
-        TEST_ASSERT ( ioread8 ( base_addr + 0x14)  == data[3], "ERROR ENDIAN" );
-        TEST_ASSERT ( ioread8 ( base_addr + 0x15)  == data[2], "ERROR ENDIAN" );
-        TEST_ASSERT ( ioread8 ( base_addr + 0x16)  == data[1], "ERROR ENDIAN" );
-        TEST_ASSERT ( ioread8 ( base_addr + 0x17)  == data[0], "ERROR ENDIAN" );
+        nor_write32 ((*(uint32_t*)data) , base_addr + 0x10);
+        TEST_ASSERT ( ioread8 ( base_addr + 0x10)  == data[3], "ERROR ENDIAN" );
+        TEST_ASSERT ( ioread8 ( base_addr + 0x11)  == data[2], "ERROR ENDIAN" );
+        TEST_ASSERT ( ioread8 ( base_addr + 0x12)  == data[1], "ERROR ENDIAN" );
+        TEST_ASSERT ( ioread8 ( base_addr + 0x13)  == data[0], "ERROR ENDIAN" );
     }
 
 #ifdef ENDIAN_HARD_CHECK
@@ -221,15 +224,15 @@ void check_NOR_prog (uint32_t base_addr, uint32_t code_event, uint8_t const *con
     rumboot_printf("Check READ\n");
     if (EVENT == EVENT_CHK_MEM_BE)
     {
-        nor_write32  ((*(uint32_t*)data0) , base_addr + 0x00);
-        nor_write32  ((*(uint32_t*)data1), base_addr + 0x04);
-        TEST_ASSERT ( ioread32 ( base_addr + 0x01) == 0x11223344, "ERROR ENDIAN" );
+        nor_write32  ((*(uint32_t*)data0) , base_addr + 0x04);
+        nor_write32  ((*(uint32_t*)data1), base_addr + 0x08);
+        TEST_ASSERT ( ioread32 ( base_addr + 0x05) == 0x11223344, "ERROR ENDIAN" );
     }
     else
     {
-        nor_write32  ((*(uint32_t*)data0) , base_addr + 0x08);
-        nor_write32  ((*(uint32_t*)data1),   base_addr + 0xC);
-        TEST_ASSERT ( ioread32 ( base_addr + 0x09) == 0x77001122, "ERROR ENDIAN" );
+        nor_write32  ((*(uint32_t*)data0) , base_addr + 0x04);
+        nor_write32  ((*(uint32_t*)data1),   base_addr + 0x08);
+        TEST_ASSERT ( ioread32 ( base_addr + 0x05) == 0x77001122, "ERROR ENDIAN" );
     }
 }
 
@@ -248,9 +251,9 @@ void check_mem_HARD (uint32_t base_addr, uint32_t code_event, uint8_t const *con
     rumboot_printf ( "Check MEM:\n");
     print_name_mem(base_addr);
     rumboot_printf ( "Check data: %x\n", *((uint32_t*)data) );
-    rumboot_printf ( "Check mem: %x\n", ioread32 ( base_addr ) );
+    rumboot_printf ( "Check mem: %x\n", ioread32 ( base_addr + 0x00) );
 
-        TEST_ASSERT ( ioread32 ( base_addr ) == *((uint32_t*)data), "ERROR ENDIAN" );
+        TEST_ASSERT ( ioread32 ( base_addr + 0x00 ) == *((uint32_t*)data), "ERROR ENDIAN" );
 
 }
 #endif
@@ -304,7 +307,7 @@ int main ()
     check_mem_HARD ((uint32_t)im0_array_mirror, EVENT_CHK_MEM_BE, data_0);
     check_mem_HARD (IM1_BASE,       EVENT_CHK_MEM_WR_BE, data_1);
     check_mem_HARD (SRAM0_BASE,     EVENT_CHK_MEM_WR_BE, data_2);
-    check_mem_HARD (NOR_BASE + 0x14,EVENT_CHK_MEM_WR_BE, data_3);
+    check_mem_HARD (NOR_BASE,       EVENT_CHK_MEM_WR_BE, data_3);
     check_mem_HARD (SRAM1_BASE,     EVENT_CHK_MEM_WR_BE, data_4);
     //check_mem_HARD (SDRAM_BASE,     EVENT_CHK_MEM_WR_BE, data_5);
     check_mem_HARD (SSRAM_BASE,     EVENT_CHK_MEM_WR_BE, data_6);
@@ -334,7 +337,7 @@ int main ()
     check_mem_HARD ((uint32_t)im0_array_mirror, EVENT_CHK_MEM_BE, data_0);
     check_mem_HARD (IM1_BASE,       EVENT_CHK_MEM_WR_LE, data_1);
     check_mem_HARD (SRAM0_BASE,     EVENT_CHK_MEM_WR_LE, data_2);
-    check_mem_HARD (NOR_BASE + 0x18,EVENT_CHK_MEM_WR_LE, data_3);
+    check_mem_HARD (NOR_BASE,       EVENT_CHK_MEM_WR_LE, data_3);
     check_mem_HARD (SRAM1_BASE,     EVENT_CHK_MEM_WR_LE, data_4);
    // check_mem_HARD (SDRAM_BASE,     EVENT_CHK_MEM_WR_LE, data_5);
     check_mem_HARD (SSRAM_BASE,     EVENT_CHK_MEM_WR_LE, data_6);
