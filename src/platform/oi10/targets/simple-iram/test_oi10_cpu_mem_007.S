@@ -87,6 +87,7 @@
 .endm
 
 .macro TEST_ICU_LRU_DBUS way, addr
+    load_const r0, 0x00
     load_const r1, \way
     load_const r2, 0x00 //current index
     lis r17, \addr@h
@@ -108,6 +109,7 @@
 .endm
 
 .macro TEST_DCU_LRU_DBUS way, addr
+    load_const r0, 0x00
     load_const r1, \way
     load_const r2, 0x00 //current index
     lis r17, \addr@h
@@ -117,6 +119,12 @@
     slwi r6, r2, IBM_BIT_INDEX(32, 26) //index
     or r5, r5 ,r6
     DCREAD_WRAPPER r25, r0, r5, r26, r27
+
+
+    //Workaround to discard "x" in data parity.
+    load_const r28, 0xFFFFFFF0
+    and r27, r27, r28
+
 
     lwz r18, 0(r17)
     cmp cr7, 0 , r27, r18
@@ -434,6 +442,7 @@ icu_lru_array_data:
 
 
 dcu_lru_array_data:
+/*
 .long 0x00000000
 .long 0x0fc00000
 .long 0xff200000
@@ -444,3 +453,16 @@ dcu_lru_array_data:
 .long 0x00dc0000
 .long 0xf03c0000
 .long 0xfffc0000
+*/
+
+//Array with LRU parity bits
+.long 0x0000c000
+.long 0x0fc0c000
+.long 0xff208000
+.long 0x9ce4c000
+.long 0x5a944000
+.long 0xa5684000
+.long 0x6318c000
+.long 0x00dc8000
+.long 0xf03cc000
+.long 0xfffcc000
