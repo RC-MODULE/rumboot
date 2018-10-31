@@ -23,6 +23,7 @@
 #include <regs/arinc.h>
 #include <rumboot/irq.h>
 #include <platform/devices.h>
+#include <regs/regs_global_timers.h>
 
 void arinc_init_freq(uint32_t tx_freq, uint32_t rx_freq) {
      int i =0;
@@ -40,8 +41,8 @@ void arinc_init_freq(uint32_t tx_freq, uint32_t rx_freq) {
 	iowrite32(rx_freq,(ARINC_BASE + FREQ_RX + i*4));			//freq RX 100MHz	
 		}
 	iowrite32(init_axi_mst,(ARINC_BASE + AXI_CTRL)); 			// AXI parameters	
-	iowrite32(0xffff,(ARINC_BASE + WAIT_TMR_TX));   			// wait  delayed switch after the transmitter start
-	iowrite32(0xffff,(ARINC_BASE + WAIT_SIG_RX));   			// wait delayed switch after the receiver start
+	//iowrite32(0xffff,(ARINC_BASE + WAIT_TMR_TX));   			// wait  delayed switch after the transmitter start
+	//iowrite32(0xffff,(ARINC_BASE + WAIT_SIG_RX));   			// wait delayed switch after the receiver start
 	}
 
 
@@ -94,8 +95,9 @@ int main()
 	uint32_t enable=0xffffffff;
 	uint32_t addr;
 	uint32_t addr_rd;
-	
-	
+	uint32_t frc_L;
+	uint32_t tmp1 = -1;
+	uint32_t  delta;
 	//rumboot_printf("copy %d bytes\n", sizeof(tx_array32));  //transmit
 	uint32_t *tx_mem = rumboot_malloc_from_heap_aligned(heap_0, 128, 4);
 	uint32_t *rx_mem = rumboot_malloc_from_heap_aligned(heap_1,	128, 4);	
@@ -119,8 +121,25 @@ int main()
 
 	arinc_init_freq(TX_FREQ, RX_FREQ);	
     iowrite32(enable,ARINC_BASE + CHANNEL_EN); // run transaction
+    frc_L = ioread32(GLOBAL_TIMERS + FREE_RUN_L); //begin frc count
+	rumboot_printf("frc_L =0x%x\n", frc_L);
 	rumboot_printf("ARINC START \n");
-	 
+	
+	iowrite32(0x1,(GLOBAL_TIMERS  + ENABLE));     //enable signal
+	tmp = ioread32(GLOBAL_TIMERS + ENABLE);
+	rumboot_printf("GLOBAL_TIMERS_ENABLE=0x%x\n", tmp);
+
+	iowrite32(0x176 /*0x13E*/,(GLOBAL_TIMERS  + 0x100  + TMR_0_LIMIT));//interval= 1900 (0x16E)
+	tmp = ioread32(GLOBAL_TIMERS + 0x100 + TMR_0_LIMIT);
+	rumboot_printf("GLOBAL_TIMERS_TMR_0_LIMIT=0x%x\n", tmp);	
+
+	iowrite32(0x10003,(GLOBAL_TIMERS + 0x100 + TMR_0_STATE));//one pass
+	tmp = ioread32(GLOBAL_TIMERS + 0x100 + TMR_0_STATE);
+	rumboot_printf("GLOBAL_TIMERS_TMR_0_STATE=0x%x\n", tmp);
+		
+	iowrite32(0x1,(GLOBAL_TIMERS + FIX_CMD)); //FIX Time of Free Run Counter
+
+	
 	tmp = arinc_status_check16(STAT_E_TX, STAT_E_RX);
 	if (tmp == TEST_ERROR)  {
 		 rumboot_printf(" TEST_ERROR\n");
@@ -141,6 +160,37 @@ for (i = 0; i< 32 ; i++)
 	if (tmp != 0) return TEST_ERROR;
 	}
 	if (tmp == ARINC_OK) {
+	
+	for (i = 0; i< 16 ; i++)
+	{		
+	tmp1 = ioread32(ARINC_BASE + TRF_E_TX + i*4);
+	if (tmp1 <= frc_L) return TEST_ERROR;
+	rumboot_printf("ARINC TRF0_E_TX =0x%x\n", tmp1);
+	tmp = ioread32(ARINC_BASE + TLF_E_TX + i*4);
+	if (tmp != frc_L) return TEST_ERROR;
+	rumboot_printf("ARINC TLF0_E_TX =0x%x\n", tmp);
+	
+	tmp = ioread32(ARINC_BASE + TRL_E_TX + i*4);
+	if (tmp <= frc_L) return TEST_ERROR;
+	delta = tmp -tmp1;
+	rumboot_printf("ARINC TRL0_E_TX =0x%x,delta=0x%x\n", tmp,delta);
+	
+//--------------------------------------------------------
+	tmp1 = ioread32(ARINC_BASE + TRF_E_RX + i*4);
+	if (tmp1 <= frc_L) return TEST_ERROR;
+	rumboot_printf("ARINC TRF0_E_RX =0x%x\n", tmp1);
+ 
+	tmp = ioread32(ARINC_BASE + TLF_E_RX + i*4);
+	if (tmp != frc_L) return TEST_ERROR;
+	rumboot_printf("ARINC TLF0_E_RX =0x%x\n", tmp);
+	
+	tmp = ioread32(ARINC_BASE + TRL_E_RX + i*4);
+	if (tmp <= frc_L) return TEST_ERROR;
+	delta = tmp -tmp1;
+	rumboot_printf("ARINC TRL0_E_RX =0x%x,delta=0x%x\n", tmp, delta);
+	
+	}
+		
 	 rumboot_printf("ARINC LOOPBACK test OK \n");
 	 return TEST_OK;
 	}
@@ -151,6 +201,4 @@ for (i = 0; i< 32 ; i++)
 			rumboot_printf("READ_DATA=0x%x\n", tmp_r);
 			rumboot_printf("ARINC test ERROR!\n");
 			return TEST_ERROR; }
-	
-			
 }
