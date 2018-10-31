@@ -173,13 +173,13 @@
 
 /* Types and structures definitions */
 
-typedef struct
+struct transfer_info_t
 {
     void        *dst;   /* Destination address  */
     void        *src;   /* Destination address  */
     uint32_t     asz;   /* Area size            */
     uint32_t     dsz;   /* Data size            */
-} transfer_info_t;
+};
 
 typedef uint32_t cache_fill_t[L1_WAYS][USED_CACHE_LINES][L1_LINE_WORDS];
 typedef uint32_t cache_data_t[L1_WAYS][L1_LINES        ][L1_LINE_WORDS];
@@ -209,7 +209,7 @@ cache_fill_t    cache_fill_data =
 };
 
 static const
-transfer_info_t cache_transfer_info[L1_WAYS] =
+struct transfer_info_t cache_transfer_info[L1_WAYS] =
 {
         MK_TRF_ENTRY(0),
         MK_TRF_ENTRY(1),
@@ -217,7 +217,7 @@ transfer_info_t cache_transfer_info[L1_WAYS] =
         MK_TRF_ENTRY(3)
 };
 
-void dcu_transfer_data(const transfer_info_t *trfinfo)
+void dcu_transfer_data(const struct transfer_info_t *trfinfo)
 {
     /* a4a - address for align, s4a - size for align */
     uint32_t    a4a = CAST_UINT(trfinfo->dst) + trfinfo->dsz,
