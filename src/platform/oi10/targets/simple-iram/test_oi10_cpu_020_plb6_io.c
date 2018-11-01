@@ -29,11 +29,9 @@
 #include <platform/devices/l2c.h>
 #include <platform/interrupts.h>
 #include <platform/regs/fields/mpic128.h>
-#include <platform/devices/greth.h>
-#include <regs/regs_hscb.h>
-#include <devices/hscb.h>
-
-static void test_procedure_with_hscb(uint32_t source, uint32_t target, uint32_t size);
+//#include <platform/devices/greth.h>
+//#include <regs/regs_hscb.h>
+//#include <devices/hscb.h>
 
 typedef enum {
     test_io10_cpu_020_plb6_io_full_l2c_line_size = 128,
@@ -66,6 +64,7 @@ struct greth_instance {
 #define source_test_data_write_sram0  (DATA_BASE_ADDR + 8 * test_io10_cpu_020_plb6_io_full_l2c_line_size)
 #define target_test_data_write_sram0  (DATA_BASE_ADDR + 12 * test_io10_cpu_020_plb6_io_full_l2c_line_size)
 
+/*
 #define TST_MAC_MSB     0xFFFF
 #define TST_MAC_LSB     0xFFFFFFFF
 
@@ -105,7 +104,7 @@ static struct greth_instance in[ ] = {
                                             .irq_handled = &GRETH1_IRQ_HANDLED
                                         }
                                      };
-
+*/
 static void cache_and_modify_data(uint32_t test_value, uint32_t source, uint32_t target)
 {
     uint32_t i;
@@ -151,7 +150,7 @@ inline void dma2plb6_trace_status(
         rumboot_printf("DMA2PLB6: Unexpected status\n");
     }
 }
-
+/*
 static void test_procedure_with_gmii(uint32_t base_addr_src_eth, test_io10_cpu_020_plb6_io_data_size data_size, uint32_t source, uint32_t target)
 {
     rumboot_printf("test_procedure_with_gmii\n");
@@ -179,12 +178,12 @@ static void test_procedure_with_gmii(uint32_t base_addr_src_eth, test_io10_cpu_0
     msync();
     greth_start_receive( base_addr_dst_eth, true );
     greth_start_transmit( base_addr_src_eth );
-
+    msync();
     TEST_ASSERT(greth_wait_receive_irq(base_addr_dst_eth, eth_hadled_flag_ptr), "Receiving is failed\n");
 
     rumboot_printf("GMII copy completed.\n");
 }
-
+*/
 static void test_procedure_with_dma(uint32_t dma_base, test_io10_cpu_020_plb6_io_data_size data_size, uint32_t source, uint32_t target)
 {
     rumboot_printf("test_procedure_with_dma\n");
@@ -320,6 +319,8 @@ void rwnitc_check (uint32_t source, uint32_t target, uint32_t xor_invertor)
     check_values((TEST_VALUE_DMA0_QWORD ^ xor_invertor), test_io10_cpu_020_plb6_io_qword_size, target);
     clear_test_fields(TEST_VALUE_CLEAR, source, target);
 
+    //commented see OI10-227 (Dryagalkin skazal test ostavit s DMA)
+    /*
     rumboot_printf("GMII_1 (rwnitc_check)\n");
     cache_and_modify_data((TEST_VALUE_GMII_FULL_L2C_LINE  ^ xor_invertor), source, target);
     test_procedure_with_gmii(GRETH_0_BASE,
@@ -347,6 +348,7 @@ void rwnitc_check (uint32_t source, uint32_t target, uint32_t xor_invertor)
     rumboot_printf("test_procedure hscb end\n");
     check_values((TEST_VALUE_HSCB_QWORD ^ xor_invertor), test_io10_cpu_020_plb6_io_qword_size, target);
     clear_test_fields(TEST_VALUE_CLEAR, source, target);
+    */
 }
 
 void write_check(uint32_t source, uint32_t target, uint32_t xor_invertor)
@@ -374,6 +376,7 @@ void write_check(uint32_t source, uint32_t target, uint32_t xor_invertor)
     check_values((TEST_VALUE_DMA0_QWORD ^ xor_invertor), test_io10_cpu_020_plb6_io_qword_size, target);
     clear_test_fields(TEST_VALUE_CLEAR, source, target);
 
+    /*
     rumboot_printf("GMII_1 (write_check)\n");
 
     cache_and_modify_data((TEST_VALUE_GMII_FULL_L2C_LINE ^ xor_invertor), source, target);
@@ -406,6 +409,7 @@ void write_check(uint32_t source, uint32_t target, uint32_t xor_invertor)
     check_target_is_invalidated_in_l2c(l2c_base, target, true);
     check_values((TEST_VALUE_HSCB_QWORD ^ xor_invertor), test_io10_cpu_020_plb6_io_qword_size, target);
     clear_test_fields(TEST_VALUE_CLEAR, source, target);
+    */
 }
 
 static void prepare_devices() {
@@ -417,6 +421,7 @@ static void prepare_devices() {
     isync();
 }
 
+/*
 static void handler_eth( int irq, void *arg )
 {
     uint32_t cur_status;
@@ -509,7 +514,7 @@ struct rumboot_irq_entry * create_irq_handlers()
     rumboot_irq_set_handler( tbl, ETH0_INT, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler_eth, &in[0] );
     rumboot_irq_set_handler( tbl, ETH1_INT, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler_eth, &in[1] );
 
-    /* Activate the table */
+    // Activate the table
     rumboot_irq_table_activate( tbl );
     rumboot_irq_enable( ETH0_INT );
     rumboot_irq_enable( ETH1_INT );
@@ -527,7 +532,7 @@ void delete_irq_handler(struct rumboot_irq_entry *tbl)
     rumboot_irq_table_activate(NULL);
     rumboot_irq_free(tbl);
 }
-
+*/
 void init_data ()
 {
     rumboot_printf ("Init data\n");
@@ -540,7 +545,7 @@ void init_data ()
     msync();
     dci(2);
 }
-
+/*
 static void test_procedure_with_hscb(uint32_t source, uint32_t target, uint32_t size){
     rumboot_printf("test_procedure_with_hscb\n");
     int cnt = 0;
@@ -598,7 +603,7 @@ static void test_procedure_with_hscb(uint32_t source, uint32_t target, uint32_t 
       rumboot_putstring( "NOOOOOOOOO! HSCB dont rst!\n" );  ;
     rumboot_putstring( "Finish work!\n" );
 }
-
+*/
 int main ()
 {
     const uint32_t EVENT_START_MONITOR_PLB6 = 0x00001000;
@@ -612,10 +617,10 @@ int main ()
     rumboot_printf ("Set TLB Entry\n");
     static const tlb_entry sram0_tlb_entry_local = {TLB_ENTRY_LOCAL};
     write_tlb_entries(&sram0_tlb_entry_local,1);
-
+/*
     struct rumboot_irq_entry *tbl;
     tbl = create_irq_handlers();
-
+*/
     prepare_devices();
 
     rumboot_printf("(uint32_t) source_test_data_rwnitc_sram0 == %x\n", (uint32_t) source_test_data_rwnitc_sram0);
@@ -632,7 +637,7 @@ int main ()
     //WRITE checks
     write_check((uint32_t) source_test_data_write_sram0, (uint32_t)target_test_data_write_sram0, 0x0);
 
-    delete_irq_handler(tbl);
+   // delete_irq_handler(tbl);
     rumboot_printf("TEST_OK\n");
     return 0;
 }
