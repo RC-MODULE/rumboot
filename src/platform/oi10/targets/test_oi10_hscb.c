@@ -20,6 +20,7 @@
 #include <regs/regs_hscb.h>
 #include <rumboot/irq.h>
 #include <rumboot/rumboot.h>
+#include <rumboot/memfill.h>
 #include <devices/hscb.h>
 #include <platform/devices/emi.h>
 #include <platform/devices/nor_1636RR4.h>
@@ -188,7 +189,7 @@ static uint32_t check_hscb_regs( uint32_t base_addr ) {
 #else
 
     #ifndef TX_0_HEAP_NAME
-    #define TX_0_HEAP_NAME "SDRAM"
+    #define TX_0_HEAP_NAME "IM2"
     #endif
 
     #ifndef RX_0_HEAP_NAME
@@ -196,7 +197,7 @@ static uint32_t check_hscb_regs( uint32_t base_addr ) {
     #endif
 
     #ifndef TX_1_HEAP_NAME
-    #define TX_1_HEAP_NAME "SDRAM"
+    #define TX_1_HEAP_NAME "IM2"
     #endif
 
     #ifndef RX_1_HEAP_NAME
@@ -224,7 +225,7 @@ static uint32_t check_hscb_regs( uint32_t base_addr ) {
     #endif
 
     #ifndef RX_4_HEAP_NAME
-    #define RX_4_HEAP_NAME "SDRAM"
+    #define RX_4_HEAP_NAME "IM2"
     #endif
 
     #ifndef TX_5_HEAP_NAME
@@ -232,7 +233,7 @@ static uint32_t check_hscb_regs( uint32_t base_addr ) {
     #endif
 
     #ifndef RX_5_HEAP_NAME
-    #define RX_5_HEAP_NAME "SDRAM"
+    #define RX_5_HEAP_NAME "IM2"
     #endif
 
 #endif
@@ -635,12 +636,9 @@ uint32_t hscb_check_data(
         hscb_packed_descr_struct_t  tx_table[],
         uint32_t                    tx_descr_count
         ){
-    int i = 0;
     int j = 0;
     hscb_descr_struct_t hscb_descr_tx;
     hscb_descr_struct_t hscb_descr_rx;
-    uint8_t expected_data = 0;
-    uint8_t obtained_data = 0;
     uint32_t result = 0;
 
     for (j = 0; j < rx_descr_count; ++j){
@@ -652,31 +650,14 @@ uint32_t hscb_check_data(
         rumboot_putstring( "Length:" );
         rumboot_puthex (hscb_descr_rx.length);
         hscb_descr_tx = hscb_get_descr_from_mem((uint32_t)(&(tx_table[j])), HSCB_ROTATE_BYTES_ENABLE);
-        for (i = 0; i < hscb_descr_rx.length; ++i) {
-            expected_data = ioread8(hscb_descr_tx.start_address + i);
-            obtained_data = ioread8(hscb_descr_rx.start_address + i);
-            if((obtained_data != expected_data)){
-                rumboot_putstring("Data compare ERROR!!!");
-                rumboot_puthex(hscb_descr_rx.start_address + i);
-                rumboot_putstring("Expected data: ");
-                rumboot_puthex(expected_data);
-                rumboot_putstring("Obtained data: ");
-                rumboot_puthex (obtained_data);
-                result = 1;
-            }
-#ifdef TEST_OI10_HSCB_FULL_TRACING
-            else{
-                rumboot_puthex(hscb_descr_rx.start_address + i);
-                rumboot_putstring("Expected data: ");
-                rumboot_puthex(expected_data);
-                rumboot_putstring("Obtained data: ");
-                rumboot_puthex (obtained_data);
-            }
-#endif
-        }
+        result = rumboot_memcmp((void *)hscb_descr_tx.start_address, (void *) hscb_descr_rx.start_address,hscb_descr_rx.length);
         rumboot_printf( "Descriptor #%d checked.\n", j );
     }
-    return result;
+    /*Avoiding 4-4 = 0 in multiple checks*/
+    if(result)
+        return 1;
+    else
+        return 0;
 }
 
 #ifdef HSCB_SHORT_TEST
