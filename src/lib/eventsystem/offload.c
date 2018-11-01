@@ -136,11 +136,15 @@ __attribute__((no_instrument_function)) int rumboot_memcmp(void *src, void *dst,
     int data_ok = 0;
     rumboot_memcheck8_src_addr = (uint8_t *)src;
     rumboot_memcheck8_dst_addr = (uint8_t *)dst;
-    for (uint32_t i=0; i<sz; rumboot_memcheck8_src_addr++, rumboot_memcheck8_dst_addr++ )
+    for (uint32_t i=0; i<sz; ++rumboot_memcheck8_src_addr, ++rumboot_memcheck8_dst_addr, ++i )
     {
 #ifdef CMAKE_BUILD_TYPE_DEBUG
         rumboot_printf("Check#%d\n", i);
-        rumboot_printf("src[0x%X]: 0x%x\ndst[0x%X]: 0x%x\n", src_addr, *src_addr, dst_addr, *dst_addr);
+        rumboot_printf("src[0x%X]: 0x%x\ndst[0x%X]: 0x%x\n",
+                rumboot_memcheck8_src_addr,
+                *rumboot_memcheck8_src_addr,
+                rumboot_memcheck8_dst_addr,
+                *rumboot_memcheck8_dst_addr);
 #endif
         if (*rumboot_memcheck8_src_addr!=*rumboot_memcheck8_dst_addr)
         {
