@@ -725,7 +725,7 @@ endif()
                -DHSCB_SUPPLEMENTARY_INT=SW1_HSCB_INT 
                -DHSCB_SUPPLEMENTARY_DMA_INT=SW1_AXI_INT 
                -DHSCB_SHORT_TEST
-               -DTEST_OI10_HSCB_FULL_TRACING
+               #-DTEST_OI10_HSCB_FULL_TRACING
               #-DCHECK_REGS
         FILES test_oi10_hscb.c
         PREFIX "hscb_0"
@@ -741,7 +741,7 @@ endif()
                -DHSCB_SUPPLEMENTARY_INT=SW1_HSCB_INT 
                -DHSCB_SUPPLEMENTARY_DMA_INT=SW1_AXI_INT 
                -DHSCB_SHORT_TEST
-               -DTEST_OI10_HSCB_FULL_TRACING
+               #-DTEST_OI10_HSCB_FULL_TRACING
                -DTX_0_HEAP_NAME="IM1"
                -DTX_1_HEAP_NAME="IM2"
                -DRX_0_HEAP_NAME="IM2"
@@ -802,11 +802,11 @@ endif()
                -DHSCB_UNDER_TEST_DMA_INT=SW0_AXI_INT 
                -DHSCB_SUPPLEMENTARY_INT=SW1_HSCB_INT 
                -DHSCB_SUPPLEMENTARY_DMA_INT=SW1_AXI_INT 
-               -DTEST_OI10_HSCB_FULL_TRACING
+               #-DTEST_OI10_HSCB_FULL_TRACING
               #-DCHECK_REGS
         FILES test_oi10_hscb.c
         PREFIX "hscb_0"
-        NAME test_oi10_hscb_long_sdram_ssram_im1_sdram
+        NAME test_oi10_hscb_long_im2_ssram_im1_im2
     )
 
     add_rumboot_target(
