@@ -43,7 +43,7 @@ void check_plb6mcif2(const uint32_t base_address)
         {"PLB6MCIF2_P6BMTAG3",  REGPOKER_READ_DCR, PLB6MCIF2_P6BMTAG3,  0x00,                0xffffffff},
         {"PLB6MCIF2_PLBASYNC",  REGPOKER_READ_DCR, PLB6MCIF2_PLBASYNC,  0x00,                0xffffffff},
         {"PLB6MCIF2_PLBCFG",    REGPOKER_READ_DCR, PLB6MCIF2_PLBCFG,    0x200000F1,          0xffffffff},
-        {"PLB6MCIF2_PLBORD",    REGPOKER_READ_DCR, PLB6MCIF2_PLBORD,    0x01000000,          0xffffffff},
+        {"PLB6MCIF2_PLBORD",    REGPOKER_READ_DCR, PLB6MCIF2_PLBORD,    0x40000000,          0xffffffff},
         {"PLB6MCIF2_PUABA",     REGPOKER_READ_DCR, PLB6MCIF2_PUABA,     0x00,                0xffffffff},
         {"PLB6MCIF2_RID",       REGPOKER_READ_DCR, PLB6MCIF2_RID,       PLB6MCIF2_WATERMARK, 0xffffffff},
         {"PLB6MCIF2_SR0CF",     REGPOKER_READ_DCR, PLB6MCIF2_SR0CF,     0x00,                0xffffffff},
@@ -73,7 +73,7 @@ void check_plb6mcif2(const uint32_t base_address)
         {"PLB6MCIF2_P6BMTAG3",  REGPOKER_WRITE_DCR, PLB6MCIF2_P6BMTAG3,  0x00,                PLB6MCIF2_P6BMTAG3_MSK},
         {"PLB6MCIF2_PLBASYNC",  REGPOKER_WRITE_DCR, PLB6MCIF2_PLBASYNC,  0x00,                PLB6MCIF2_PLBASYNC_MSK},
         {"PLB6MCIF2_PLBCFG",    REGPOKER_WRITE_DCR, PLB6MCIF2_PLBCFG,    0x200000F1,          PLB6MCIF2_PLBCFG_MSK},
-        {"PLB6MCIF2_PLBORD",    REGPOKER_WRITE_DCR, PLB6MCIF2_PLBORD,    0x01000000,          PLB6MCIF2_PLBORD_MSK},
+        {"PLB6MCIF2_PLBORD",    REGPOKER_WRITE_DCR, PLB6MCIF2_PLBORD,    0x40000000,          PLB6MCIF2_PLBORD_MSK},
         {"PLB6MCIF2_PUABA",     REGPOKER_WRITE_DCR, PLB6MCIF2_PUABA,     0x00,                0xfffffffe},
         {/* Sentinel */ }
     };
