@@ -129,20 +129,16 @@ int check_machinecheck ()
 	spr_write(SPR_MCSR_C,0xFFFFFFFF);
 
 	//Other check C470S_DBGMACHINECHECK
-	rumboot_printf("point 0\n");
 	msr_write( (0b1 << ITRPT_XSR_FP_i)   /* MSR[FP] - Floating point available. */
              | (0b0 << ITRPT_XSR_ME_i)); /* MSR[ME] - Machine check enable.     */
 
-	rumboot_printf("point 1\n");
 	asm volatile ("lfs  1, 0(13)\n\t");
 	asm volatile ("lfs  2, 0(13)\n\t");
 	msync();
 
 	spr_write( SPR_CCR1, ccr1_old_value | (0b11 << CTRL_CCR1_FPRPEI_i)); //Floating-Point Register (FPR) parity error insert.
-
 	isync();
 
-	rumboot_printf("point 2\n");
 	asm volatile ("lfs  1, 0(13)\n\t");
 	asm volatile ("lfs  2, 0(13)\n\t");
 	msync();
@@ -150,7 +146,6 @@ int check_machinecheck ()
 	spr_write( SPR_CCR1, ccr1_old_value);
 	isync();
 
-	rumboot_printf("point 3\n");
 	asm volatile ("fcmpu 0, 1, 2\n\t");
 
 	spr_write(SPR_MCSR_C,0xFFFFFFFF);
