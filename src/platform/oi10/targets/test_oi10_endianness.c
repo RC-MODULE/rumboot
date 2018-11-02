@@ -144,11 +144,7 @@ void check_wr_mem_prog_or_hard (uint32_t base_addr, uint32_t code_event, uint8_t
 
     rumboot_platform_event_raise(EVENT_TESTEVENT, event, ARRAY_SIZE(event) );
 #endif
-    /*
-#ifdef ENDIAN_HARD_CHECK
-    test_event (code_event);
-#endif
-*/
+
     uint32_t EVENT = code_event;
     if (EVENT == EVENT_CHK_MEM_BE)
     {
@@ -307,7 +303,7 @@ int main ()
     check_mem_HARD ((uint32_t)im0_array_mirror, EVENT_CHK_MEM_BE, data_0);
     check_mem_HARD (IM1_BASE,       EVENT_CHK_MEM_WR_BE, data_1);
     check_mem_HARD (SRAM0_BASE,     EVENT_CHK_MEM_WR_BE, data_2);
-    //check_mem_HARD (NOR_BASE,       EVENT_CHK_MEM_WR_BE, data_3);
+    check_mem_HARD (NOR_BASE,       EVENT_CHK_MEM_WR_BE, data_3);
     check_mem_HARD (SRAM1_BASE,     EVENT_CHK_MEM_WR_BE, data_4);
     check_mem_HARD (SDRAM_BASE,     EVENT_CHK_MEM_WR_BE, data_5);
     check_mem_HARD (SSRAM_BASE,     EVENT_CHK_MEM_WR_BE, data_6);
@@ -337,7 +333,7 @@ int main ()
     check_mem_HARD ((uint32_t)im0_array_mirror, EVENT_CHK_MEM_BE, data_0);
     check_mem_HARD (IM1_BASE,       EVENT_CHK_MEM_WR_LE, data_1);
     check_mem_HARD (SRAM0_BASE,     EVENT_CHK_MEM_WR_LE, data_2);
-   // check_mem_HARD (NOR_BASE,       EVENT_CHK_MEM_WR_LE, data_3);
+    check_mem_HARD (NOR_BASE,       EVENT_CHK_MEM_WR_LE, data_3);
     check_mem_HARD (SRAM1_BASE,     EVENT_CHK_MEM_WR_LE, data_4);
     check_mem_HARD (SDRAM_BASE,     EVENT_CHK_MEM_WR_LE, data_5);
     check_mem_HARD (SSRAM_BASE,     EVENT_CHK_MEM_WR_LE, data_6);
