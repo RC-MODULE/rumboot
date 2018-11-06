@@ -109,11 +109,16 @@ int check_halt ()
 	return 0;
 }
 
-void test_MC_hdr() __attribute__ ((aligned(16)));
-void test_MC_hdr()
+void test_MC()
+{
+	rumboot_printf("MACHINECHECK interrupt occurred. It is OK!\n");
+}
+
+void __attribute__ ((aligned(16))) test_MC_hdr()
 {
 	spr_write(SPR_MCSR_C,0xFFFFFFFF);
-	rfmci();
+	asm volatile ("bl test_MC \n\t");
+	asm volatile ("rfmci \n\t");
 }
 
 int check_machinecheck ()
