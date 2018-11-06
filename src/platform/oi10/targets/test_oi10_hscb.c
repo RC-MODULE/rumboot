@@ -403,66 +403,21 @@ uint32_t prepare_memory_areas(uint8_t*** data_areas, uint32_t** data_area_sizes)
     return count_of_memory_areas;
 }
 
-static void set_test_data(uint32_t base_addr, uint32_t length, int increment,bool nor_change_endian){
-    uint8_t data = DATA_INITIAL_VALUE;
-    if ((base_addr >= NOR_BASE) && (base_addr < NOR_BASE + NOR_SIZE)){
-        uint32_t data32 = 0;
-#ifdef TEST_OI10_HSCB_FULL_TRACING
-        rumboot_putstring("NOR usage detected!");
-#endif
-        for(uint32_t i = 0; i < ((length >> 2) << 2); i += 4){
-            data32 |= data << 24;
-            data += increment;
-            data32 |= data << 16;
-            data += increment;
-            data32 |= data << 8;
-            data += increment;
-            data32 |= data;
-            data += increment;
-            if(nor_change_endian)
-                data32 = HSCB_CHANGE_ENDIAN_WORD(data32);
-#ifdef TEST_OI10_HSCB_FULL_TRACING
-            rumboot_puthex(base_addr + i);
-#endif
-            nor_write32(data32, base_addr + i);
-            data32 = 0;
-        }
-        if(length % 4){
-            for(uint32_t i = 1; i <= (length % 4); ++i){
-                data32 |= data << ((4 - i) << 3);
-                data += increment;
-            }
-            if(nor_change_endian)
-                data32 = HSCB_CHANGE_ENDIAN_WORD(data32);
-#ifdef TEST_OI10_HSCB_FULL_TRACING
-            rumboot_puthex(base_addr + ((length >> 2) << 2));
-#endif
-            nor_write32(data32, base_addr + ((length >> 2) << 2));
-            data32 = 0;
-        }
-#ifdef TEST_OI10_HSCB_FULL_TRACING
-        rumboot_putstring("NOR usage detected end!");
-#endif
-    }
-    else
-    for(uint32_t i = 0; i < length; ++i){
-        iowrite8(data,(base_addr+i));
-        data += increment;
-    }
-}
 
 void set_test_data_multiple(    uint8_t** data_areas,
                                 uint32_t* data_area_sizes,
                                 uint32_t  count_of_memory_areas,
                                 bool nor_change_endian){
     int i;
+    uint32_t data_initial_value = 0;
+    int increment = 0;
 #ifdef HSCB_SHORT_TEST
-    uint32_t increments[] = {   INCREMENT_0,
+    int increments[] = {        INCREMENT_0,
                                 0,
                                 INCREMENT_1,
                                 0};
 #else
-    uint32_t increments[] = {   INCREMENT_0,
+    int increments[] = {        INCREMENT_0,
                                 0,
                                 INCREMENT_1,
                                 0,
@@ -483,7 +438,23 @@ void set_test_data_multiple(    uint8_t** data_areas,
         rumboot_puthex(i);
         rumboot_puthex((uint32_t)(*(data_areas + i)));
 #endif
-        set_test_data((uint32_t)(*(data_areas + i)),data_area_sizes[i >> 1],increments[i],nor_change_endian);
+        data_initial_value = (((DATA_INITIAL_VALUE) & 0xff) << 24) |
+                             (((DATA_INITIAL_VALUE +      increments[i] ) & 0xff) << 16)  |
+                             (((DATA_INITIAL_VALUE + (2 * increments[i])) & 0xff) <<  8) |
+                             (((DATA_INITIAL_VALUE + (3 * increments[i])) & 0xff) <<  0);
+        if(nor_change_endian)
+            data_initial_value = HSCB_CHANGE_ENDIAN_WORD(data_initial_value);
+        if(increments[i] >= 0)
+            increment = (((increments[i] ) & 0xff) << 2)  |
+                        (((increments[i] ) & 0xff) << 10) |
+                        (((increments[i] ) & 0xff) << 18) |
+                        (((increments[i] ) & 0xff) << 26);
+        else
+            increment = -(  (((-increments[i] ) & 0xff) << 2)  +
+                            (((-increments[i] ) & 0xff) << 10) +
+                            (((-increments[i] ) & 0xff) << 18) +
+                            (((-increments[i] ) & 0xff) << 26) );
+        rumboot_memfill32((*(data_areas + i)), data_area_sizes[i >> 1], data_initial_value, increment );
     }
 #ifdef TEST_OI10_HSCB_FULL_TRACING
     rumboot_putstring("end set_test_data_multiple");
