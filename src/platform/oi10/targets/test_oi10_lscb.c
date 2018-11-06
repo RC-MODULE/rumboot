@@ -18,6 +18,7 @@
 
 #include <regs/regs_mkio.h>
 #include <devices/mkio.h>
+#include <regs/regs_gpio_pl061.h>
 #include <devices/gpio_pl061.h>
 
 void check_mkio_txinh_idle_via_gpio();
@@ -255,7 +256,7 @@ void check_mkio_txinh_idle_via_gpio()
 {
     uint8_t data;
     rumboot_putstring("Checking initial state of TXINH (HIGH) via GPIO\n");
-    gpio_set_port_direction(GPIO_1_BASE, GIO_PIN_ALL_IN);
+    gpio_set_value_by_mask(GPIO_1_BASE, GPIO_REG_MASK, direction_in);
     data = gpio_get_data(GPIO_1_BASE) & 0x0F;
     TEST_ASSERT(data==0b00001111, "Expected all MK*_TXINH* = 0b1");
     rumboot_putstring("Checking initial state of TXINH (HIGH) via GPIO ... OK\n");
