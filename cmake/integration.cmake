@@ -3,6 +3,7 @@
 # if native tests fail - no use to test anything at all${RUMBOOT_ONEVALUE_ARGS}
 
 add_custom_target(rumboot)
+add_custom_target(tarball)
 
 add_external_component(rumboot-native-tests rumboot NO -DRUMBOOT_PLATFORM=native)
 
@@ -195,6 +196,11 @@ function(rumboot_load_build platform buildtype)
 
     set(RUMBOOT_UTILS_DIR  ${CMAKE_BINARY_DIR}/${rumboot_dirname}/utils PARENT_SCOPE)
     set(RUMBOOT_BINARY_DIR ${CMAKE_BINARY_DIR}/${rumboot_dirname} PARENT_SCOPE)
+
+    add_custom_command(
+        TARGET tarball
+        COMMAND cd ${CMAKE_BINARY_DIR}/${rumboot_dirname} && $(MAKE) package
+      )
 
     add_dependencies(rumboot ${rumboot_dirname})
     #Suck in target information from rumboot, and play a little with SRC_DIR
