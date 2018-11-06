@@ -2,6 +2,7 @@
 #define RUMBOOT_PLATFORM_H
 
 #include <stdint.h>
+#include <stddef.h>
 /**
  *
  * \defgroup platform_glue Platform bindings
