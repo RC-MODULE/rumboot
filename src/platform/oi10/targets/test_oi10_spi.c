@@ -335,11 +335,11 @@ int main(void)
 
         rumboot_printf("Checking GSPI interrupt ...\n");
         (void)(ioread32(GSPI_BASE + GSPI_STATUS)); // clear interrupt
-        gpio_set_port_direction(GPIO_1_BASE, GPIO1_X);
-        iowrite32( GPIO1_X, GPIO_1_BASE + GPIO_ADDR_MASK );
+        gpio_set_direction_by_mask(GPIO_1_BASE, GPIO1_X, direction_out);
+        gpio_set_value_by_mask(GPIO_1_BASE, GPIO_REG_MASK, GPIO1_X);
         msync();
         TEST_ASSERT((ioread32(GSPI_BASE + GSPI_STATUS) == 0x82), "ERROR!!! GSPI interrupt not set");
-        gpio_set_port_direction(GPIO_1_BASE, 0x0);
+        gpio_set_direction_by_mask(GPIO_1_BASE, GPIO_REG_MASK, direction_in);
         (void)(ioread32(GSPI_BASE + GSPI_STATUS)); // clear interrupt
     #endif
 
