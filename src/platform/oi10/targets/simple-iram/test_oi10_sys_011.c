@@ -109,12 +109,25 @@ int check_halt ()
 	return 0;
 }
 
+void test_MC_hdr() __attribute__ ((aligned(16)));
+void test_MC_hdr()
+{
+	spr_write(SPR_MCSR_C,0xFFFFFFFF);
+	rfmci();
+}
+
 int check_machinecheck ()
 {
 	uint32_t const msr_old_value = msr_read();
 	uint32_t const ccr1_old_value = spr_read(SPR_CCR1);;
+	uint32_t const ivor1_old_value = spr_read(SPR_IVOR1);;
 
 	rumboot_printf("DEBUG_MACHINECHECK check start!\n");
+
+	spr_write(SPR_MCSR_C,0xFFFFFFFF);
+	msr_write(msr_old_value | (0b1 << ITRPT_XSR_FP_i)   /* MSR[FP] - Floating point available. */
+                            | (0b1 << ITRPT_XSR_ME_i)); /* MSR[ME] - Machine check enable.     */
+    spr_write(SPR_IVOR1, (uint32_t)&test_MC_hdr & 0x0000FFFF);
 
 	rumboot_printf("send TEC_CHECK_DEBUG_MACHINECHECK\n");
 	test_event(TEC_CHECK_DEBUG_MACHINECHECK );
@@ -122,16 +135,9 @@ int check_machinecheck ()
 	//Check C470S_DBGMACHINECHECK via ESR[ISMC]
 	spr_write(SPR_ESR,0x80000000);
 	spr_write(SPR_ESR,0x00000000);
-
-	//Check C470S_DBGMACHINECHECK via MCSR[MCS]
-	spr_write(SPR_MCSR_C,0xFFFFFFFF);
-	spr_write(SPR_MCSR_RW,0x80000000);
 	spr_write(SPR_MCSR_C,0xFFFFFFFF);
 
-	//Other check C470S_DBGMACHINECHECK
-	msr_write( (0b1 << ITRPT_XSR_FP_i)   /* MSR[FP] - Floating point available. */
-             | (0b0 << ITRPT_XSR_ME_i)); /* MSR[ME] - Machine check enable.     */
-
+    //Other check C470S_DBGMACHINECHECK
 	asm volatile ("lfs  1, 0(13)\n\t");
 	asm volatile ("lfs  2, 0(13)\n\t");
 	msync();
@@ -149,6 +155,7 @@ int check_machinecheck ()
 	asm volatile ("fcmpu 0, 1, 2\n\t");
 
 	spr_write(SPR_MCSR_C,0xFFFFFFFF);
+	spr_write(SPR_IVOR1,ivor1_old_value);
 	msr_write(msr_old_value);
 
 	rumboot_printf("DEBUG_MACHINECHECK check done!\n");
