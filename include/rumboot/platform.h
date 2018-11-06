@@ -54,6 +54,7 @@ enum rumboot_simulation_event {
     EVENT_MEMFILLSEQ, /** Fill the memory with 32-bit incrementing values */
     EVENT_MEMCHECKSEQ, /** Check that memory filled with 32-bit incrementing values */
     EVENT_GENERIC, /** Generic SystemVerilog event trigger */
+    EVENT_MEMCMP, /** memcmp acceleration */
 };
 
 
