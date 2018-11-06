@@ -61,12 +61,16 @@ __attribute__((no_instrument_function)) int rumboot_memcheck32(void *src, void *
   return 0;
 }
 
+ __attribute__((no_instrument_function)) __attribute__((optimize("-O0"))) void do_memcmp(void *ptr0,  ...)
+{
+    deliver(EVENT_MEMCMP, (uint32_t) __builtin_frame_address(0));
+}
+
 __attribute__((no_instrument_function)) int rumboot_memcmp(void *src, void *dst, size_t sz)
 {
-    volatile uint32_t *data;
-    do_memcheckseq(src, dst, sz);
-    rumboot_platform_event_get(&data);
-    return  *data;
+    volatile uint32_t data;
+    do_memcmp(src, dst, sz, &data);
+    return data;
   return 1;
 }
 
