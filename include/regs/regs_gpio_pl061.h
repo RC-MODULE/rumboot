@@ -56,7 +56,8 @@
 #define GPIO_CellID3_DEFAULT         0xB1
 // masks
 #define GPIO_REG_MASK                0xFF
-#define GPIO_ADDR_MASK               (GPIO_REG_MASK << 2)
+#define GPIO_GET_PINS_OFFSET( pins ) ((pins) << 2)
+#define GPIO_ADDR_MASK               GPIO_GET_PINS_OFFSET(GPIO_REG_MASK)
 
 
 #endif /* REGS_GPIO_PL061_H */
