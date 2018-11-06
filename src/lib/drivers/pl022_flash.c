@@ -34,13 +34,13 @@ void pl022_flash_erase(uint32_t const base_addr)
 {
     uint32_t addr = base_addr+GSPI_SSPDR;
 
-    iowrite8(SPIFLASH_BLOCK64ERASE, addr); //sector erase command
+    iowrite32(SPIFLASH_BLOCK64ERASE, addr); //sector erase command
     for (int i =0; i<3; i++)
-        iowrite8(0x00, addr);//write data to SPI - write address
+        iowrite32(0x00, addr);//write data to SPI - write address
     while((ioread32(base_addr+GSPI_SSPSR) & 0x1) == 0) //wait tx fifo empty
         {}
     for (int i =0; i<4; i++)
-        (void)ioread8(addr); //read data from SPI - staff
+        (void)ioread32(addr); //read data from SPI - staff
     while ((read_flash_status(base_addr) & 0x1) == 0x1) //wait write complete
         {}
 }
