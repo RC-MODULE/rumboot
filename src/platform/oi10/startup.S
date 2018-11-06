@@ -157,8 +157,7 @@ unexpected_error:
 rumboot_entry_point:
 rumboot_reset_handler:
 
-    gtube_init
-
+init_gpr:
     load_const  r0, 0x00000000  /* make r0 "all zeros" source*/
     load_const  r1, 0xFFFFFFFF  /* make r1 "all ones" source*/
     load_const  r2, 0x00000000
@@ -191,7 +190,25 @@ rumboot_reset_handler:
     load_const  r29,0x00000000
     load_const  r30,0x00000000
     load_const  r31,0x00000000
-    mtcrf 0xFF, r0 /*Removing rubbish or x-values from CR*/
+
+init_branch_spr:
+    mtspr       SPR_LR, r0
+    mtspr       SPR_CTR, r0
+    mtcr        r0
+    mtspr       SPR_XER, r0
+
+init_sprg:
+    mtspr       SPR_SPRG0, r0
+    mtspr       SPR_SPRG1, r0
+    mtspr       SPR_SPRG2, r0
+    mtspr       SPR_SPRG3, r0
+    mtspr       SPR_SPRG4, r0
+    mtspr       SPR_SPRG5, r0
+    mtspr       SPR_SPRG6, r0
+    mtspr       SPR_SPRG7, r0
+    mtspr       SPR_SPRG8, r0
+    mtspr       SPR_USPRG0, r0
+
 
 /* TODO: Remove timer clk bugfix */
 #define PPC_TMRCLK_SEL_i_       1           /* From http://git.module.ru/OI10/doc/blob/master/spec/design/OI10_SCTL_user_guide.docx */
@@ -202,8 +219,10 @@ rumboot_reset_handler:
     mtdcrx      r3, r4
 /* timer clk bugfix end */
 
-    mtspr       SPR_USPRG0, r0
 
+    gtube_init
+
+init_itrtp_spr:
     lis         r3, unexpected_itrpt_hdr_base@h
     mtspr       SPR_IVPR, r3
     li          r3, unexpected_CI_hdr@l
@@ -250,48 +269,7 @@ rumboot_reset_handler:
     mtspr       SPR_DCESR, r0
     mtspr       SPR_DEAR, r0
 
-    load_const  r3, ((MMU_SUSPCR_ORD_PID_ONLY | MMU_XSPCR_ORD_64KB) << MMU_SSPCR_ORD1_i)\
-                  | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_4KB)    << MMU_SSPCR_ORD2_i)\
-                  | (MMU_XSPCR_ORD_END                              << MMU_SSPCR_ORD3_i)
-    mtspr       SPR_SSPCR, r3
-
-setup_boot_tlb_entries:
-// Program invalidation of all TLB entries is very slow. Let's skip it in tests.
-// All entries are invalidated from testbench during core reset.
-#ifdef CMAKE_BUILD_TYPE_PRODUCTION
-    bl          ppc470s_invalidate_all_tlb_entries_nosnoop
-#endif
-
-    load_const  r3, MEM_WINDOW_1
-    mtspr SPR_PID, r3
-
-    load_const  r3, DCR_SCTL_BASE+SCTL_SYS_BOOT_CFG
-    mfdcrx      r3, r3
-    load_const  r4, BOOTM_NOR_BOOT
-    and.        r3, r4, r3
-    bne         write_rom_tlb_entries
-
-write_nor_tlb_entries:
-    load_addr   r3, nor_tlb_entries
-    load_size   r4, NOR_TLB_ENTRIES_N
-    b           write_xxx_tlb_entries
-
-write_rom_tlb_entries:
-    load_addr   r3, rom_tlb_entries
-    load_size   r4, ROM_TLB_ENTRIES_N
-
-write_xxx_tlb_entries:
-    bl          ppc470s_write_tlb_entries
-
-#ifdef TEST_ENABLE_INTERRUPTS_CHECKING
-enable_itrpts:
-    load_const  r3, (0b1 << ITRPT_XSR_CE_i)\
-                  | (0b1 << ITRPT_XSR_EE_i)\
-                  | (0b1 << ITRPT_XSR_ME_i)
-    mtmsr       r3
-#endif
-
-init_spr:
+init_other_spr:
 /*according to User's Manual ch. 9.4 Initialization Software Requirements*/
     mtspr       SPR_DBCR0, r0       /* disable all debug events*/
 
@@ -352,32 +330,6 @@ init_spr:
                   | (0b0                    << CTRL_CCR2_MCDTO_i)
     mtspr       SPR_CCR2, r3
 
-    load_const  r3, (MMU_XSPCR_ORD_64KB     << MMU_ISPCR_ORD1_i)\
-                  | (MMU_XSPCR_ORD_1MB      << MMU_ISPCR_ORD2_i)\
-                  | (MMU_XSPCR_ORD_4KB      << MMU_ISPCR_ORD3_i)\
-                  | (MMU_XSPCR_ORD_1GB      << MMU_ISPCR_ORD4_i)\
-                  | (MMU_XSPCR_ORD_16KB     << MMU_ISPCR_ORD5_i)\
-                  | (MMU_XSPCR_ORD_16MB     << MMU_ISPCR_ORD6_i)\
-                  | (MMU_XSPCR_ORD_256MB    << MMU_ISPCR_ORD7_i)
-    mtspr       SPR_ISPCR, r3
-
-    load_const  r3, ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_64KB)   << MMU_USPCR_ORD1_i)\
-                  | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_1MB)    << MMU_USPCR_ORD2_i)\
-                  | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_4KB)    << MMU_USPCR_ORD3_i)\
-                  | ((MMU_SUSPCR_ORD_PID_ONLY | MMU_XSPCR_ORD_1GB)  << MMU_USPCR_ORD4_i)\
-                  | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_16KB)   << MMU_USPCR_ORD5_i)\
-                  | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_16MB)   << MMU_USPCR_ORD6_i)\
-                  | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_256MB)  << MMU_USPCR_ORD7_i)
-    mtspr       SPR_USPCR, r3
-
-/*Before editing TLB let's initialize all SPR registers to default values by the spec*/
-/*Most of them have X-state after reset and therefore CPU model cannot work properly*/
-
-    mtspr       SPR_LR, r0
-    mtspr       SPR_CTR, r0
-    mtcr        r0
-    mtspr       SPR_XER, r0
-
     mtspr       SPR_TCR, r0
     mtspr       SPR_TBL_W, r0
     mtspr       SPR_TBU_W, r0
@@ -401,6 +353,63 @@ init_spr:
     mtspr       SPR_DBCR2, r0
     mtspr       SPR_DBDR, r0
     mtspr       SPR_RMPD, r0
+
+    load_const  r3, (MMU_XSPCR_ORD_64KB     << MMU_ISPCR_ORD1_i)\
+                  | (MMU_XSPCR_ORD_1MB      << MMU_ISPCR_ORD2_i)\
+                  | (MMU_XSPCR_ORD_4KB      << MMU_ISPCR_ORD3_i)\
+                  | (MMU_XSPCR_ORD_1GB      << MMU_ISPCR_ORD4_i)\
+                  | (MMU_XSPCR_ORD_16KB     << MMU_ISPCR_ORD5_i)\
+                  | (MMU_XSPCR_ORD_16MB     << MMU_ISPCR_ORD6_i)\
+                  | (MMU_XSPCR_ORD_256MB    << MMU_ISPCR_ORD7_i)
+    mtspr       SPR_ISPCR, r3
+
+    load_const  r3, ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_64KB)   << MMU_USPCR_ORD1_i)\
+                  | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_1MB)    << MMU_USPCR_ORD2_i)\
+                  | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_4KB)    << MMU_USPCR_ORD3_i)\
+                  | ((MMU_SUSPCR_ORD_PID_ONLY | MMU_XSPCR_ORD_1GB)  << MMU_USPCR_ORD4_i)\
+                  | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_16KB)   << MMU_USPCR_ORD5_i)\
+                  | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_16MB)   << MMU_USPCR_ORD6_i)\
+                  | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_256MB)  << MMU_USPCR_ORD7_i)
+    mtspr       SPR_USPCR, r3
+
+    load_const  r3, ((MMU_SUSPCR_ORD_PID_ONLY | MMU_XSPCR_ORD_64KB) << MMU_SSPCR_ORD1_i)\
+                  | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_4KB)    << MMU_SSPCR_ORD2_i)\
+                  | (MMU_XSPCR_ORD_END                              << MMU_SSPCR_ORD3_i)
+    mtspr       SPR_SSPCR, r3
+
+setup_boot_tlb_entries:
+// Program invalidation of all TLB entries is very slow. Let's skip it in tests.
+// All entries are invalidated from testbench during core reset.
+#ifdef CMAKE_BUILD_TYPE_PRODUCTION
+    bl          ppc470s_invalidate_all_tlb_entries_nosnoop
+#endif
+
+    load_const  r3, MEM_WINDOW_1
+    mtspr SPR_PID, r3
+
+    load_const  r3, DCR_SCTL_BASE+SCTL_SYS_BOOT_CFG
+    mfdcrx      r3, r3
+    load_const  r4, BOOTM_NOR_BOOT
+    and.        r3, r4, r3
+    bne         write_rom_tlb_entries
+
+write_nor_tlb_entries:
+    load_addr   r3, nor_tlb_entries
+    load_size   r4, NOR_TLB_ENTRIES_N
+    b           write_xxx_tlb_entries
+
+write_rom_tlb_entries:
+    load_addr   r3, rom_tlb_entries
+    load_size   r4, ROM_TLB_ENTRIES_N
+
+write_xxx_tlb_entries:
+    bl          ppc470s_write_tlb_entries
+
+enable_itrpts:
+    load_const  r3, (0b1 << ITRPT_XSR_CE_i)\
+                  | (0b1 << ITRPT_XSR_EE_i)\
+                  | (0b1 << ITRPT_XSR_ME_i)
+    mtmsr       r3
 
 setup_boot_rom_im0_p64:
     load_const  r3, DCR_PLB6PLB4_0_BASE
@@ -443,11 +452,9 @@ setup_plb6bc:
                   | (0b1 << PLB6BC_CR0_BC_MASK_MSRSP_i)\
                   | (0b1 << PLB6BC_CR0_BC_MASK_SRSNZ_i)
 .align 4
-    mtdcrx      r4, r5
-
-    mtspr       SPR_SSPCR, r6 /* must be set explicitly after segmentation on P6BC has been enabled */
-    //ppc470s_set_mem_window  r7, MEM_WINDOW_0
-    mtspr       SPR_PID, r7
+    mtdcrx      r4, r5          /* enable segmentation on P6BC */
+    mtspr       SPR_SSPCR, r6   /* must be set explicitly after segmentation on P6BC has been enabled */
+    mtspr       SPR_PID, r7     /* ppc470s_set_mem_window  r7, MEM_WINDOW_0 */
     isync
 
 setup_tlb:
