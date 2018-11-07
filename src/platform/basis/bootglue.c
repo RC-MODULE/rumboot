@@ -14,7 +14,9 @@
 #define BOOTM_SELFTEST     (1 << 0)
 #define BOOTM_HOST         (1 << 1)
 #define BOOTM_FASTUART     (1 << 2)
-#define BOOTM_SDIO_CD      (1 << 3)
+#define BOOTM_SDIO0_CD     (1 << 3)
+#define BOOTM_SDIO1_CD     (1 << 4)
+#define BOOTM_SPI1_CS1     (1 << 5)
 
 void rumboot_platform_read_config(struct rumboot_config *conf)
 {
@@ -38,48 +40,31 @@ void rumboot_platform_selftest(struct rumboot_config *conf)
 
 void rumboot_platform_init_loader(struct rumboot_config *conf)
 {
-        
+
 }
 
-static bool sdio_enable(const struct rumboot_bootsource *src, void *pdata)
+static bool sdio0_enable(const struct rumboot_bootsource *src, void *pdata)
 {
         uint32_t v;
 
         v = ioread32(GPIO0_BASE + GPIO_PAD_DIR);
-        v &= ~ BOOTM_SDIO_CD;
+        v &= ~ BOOTM_SDIO0_CD;
         iowrite32(v, GPIO0_BASE + GPIO_PAD_DIR);
 
-        return !(ioread32(GPIO0_BASE + GPIO_RD_DATA) & BOOTM_SDIO_CD);
+        return !(ioread32(GPIO0_BASE + GPIO_RD_DATA) & BOOTM_SDIO0_CD);
 }
 
-static bool spi0_0_enable(const struct rumboot_bootsource *src, void *pdata)
+static bool sdio1_enable(const struct rumboot_bootsource *src, void *pdata)
 {
         uint32_t v;
 
         v = ioread32(GPIO0_BASE + GPIO_PAD_DIR);
-        v |= 1 << 4;
+        v &= ~ BOOTM_SDIO1_CD;
         iowrite32(v, GPIO0_BASE + GPIO_PAD_DIR);
-        iowrite32((1 << 4), GPIO0_BASE + GPIO_WR_DATA_SET1);
-        return true;
+
+        return !(ioread32(GPIO0_BASE + GPIO_RD_DATA) & BOOTM_SDIO1_CD);
 }
 
-static void spi0_0_disable(const struct rumboot_bootsource *src, void *pdata)
-{
-        uint32_t v;
-
-        v = ioread32(GPIO0_BASE + GPIO_PAD_DIR);
-        v &= ~(1 << 4);
-        iowrite32(v, GPIO0_BASE + GPIO_PAD_DIR);
-}
-
-static void spi0_0_cs(const struct rumboot_bootsource *src, void *pdata, int select)
-{
-        if (!select) {
-                iowrite32(~(1 << 4), GPIO0_BASE + GPIO_WR_DATA_SET0);
-        } else {
-                iowrite32((1 << 4), GPIO0_BASE + GPIO_WR_DATA_SET1);
-        }
-}
 
 static bool spi0_1_enable(const struct rumboot_bootsource *src, void *pdata)
 {
@@ -116,17 +101,14 @@ static const struct rumboot_bootsource arr[] = {
                 .base = SDIO0_BASE,
                 .freq_khz = 100000,
                 .plugin = &g_bootmodule_sdio,
-                .enable = sdio_enable,
+                .enable = sdio0_enable,
                 .offset = 8192,
         },
         {
-                .name = "SPI0 (CS: GPIO0_4)",
+                .name = "SPI0 (CS: internal)",
                 .base = GSPI0_BASE,
                 .freq_khz = 100000,
                 .plugin = &g_bootmodule_spiflash,
-                .enable = spi0_0_enable,
-                .disable = spi0_0_disable,
-                .chipselect = spi0_0_cs,
         },
         {
                 .name = "SPI0 (CS: GPIO0_5)",
@@ -166,10 +148,12 @@ static const struct rumboot_bootsource arr[] = {
                 .plugin = &g_bootmodule_eeprom,
         },
         {
-                .name = "SDIO1 (CD: GPIO0_X)",
+                .name = "SDIO1 (CD: GPIO0_4)",
                 .base = SDIO0_BASE,
                 .freq_khz = 100000,
-                .plugin = &g_bootmodule_boilerplate,
+                .plugin = &g_bootmodule_sdio,
+                .enable = sdio1_enable,
+                .offset = 8192
         },
         {
                 .name = "I2C1 (EEPROM @ 0x50)",
@@ -199,37 +183,6 @@ static const struct rumboot_bootsource arr[] = {
                 .freq_khz = 100000,
                 .plugin = &g_bootmodule_eeprom,
         },
-                /* TODO: SPI1 ? */
-
-//g_bootmodule_boilerplate
-#if 0
-        {
-                .name = "SDIO_0",
-                .base = SDIO0_BASE,
-                .freq_khz = SDIO_CLK_FREQ,
-                .privdatalen = 128,
-                .init = sd_init,
-                .deinit = sd_deinit,
-                .read = sd_read,
-
-                .prepare = sdio_init_gpio_mux,
-                .unprepare = sdio_deinit_gpio_mux,
-                .retry = sd_load_again,
-        },
-
-        {
-                .name = "EEPROM",
-                .base = 0,
-                .freq_khz = EEPROM_CLK_FREQ,
-                .privdatalen = 128,
-                .init = eeprom_init,
-                .deinit = eeprom_deinit,
-                .read = eeprom_read,
-                .init_gpio_mux = eeprom_init_gpio_mux,
-                .deinit_gpio_mux = eeprom_deinit_gpio_mux,
-                .load_again = eeprom_load_again,
-        },
-#endif
         { /*Sentinel*/ }
 };
 
