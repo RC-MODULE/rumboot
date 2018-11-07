@@ -339,7 +339,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     )
 	add_rumboot_target_dir(arinc/arinc_ddr
       CONFIGURATION IRAM_MIRROR
-      CFLAGS -DTX_FREQ=tx_freq_100 -DRX_FREQ=rx_freq_100 -Dheap_0=4 -Dheap_1=5
+      CFLAGS -DTX_FREQ=tx_freq_100 -DRX_FREQ=rx_freq_100 -Dheap_0=5 -Dheap_1=4
       PREFIX arinc-mirror_arinc_ddr_freq_100_PCI_1_PCI_0
     )
 	add_rumboot_target_dir(arinc/freq/
