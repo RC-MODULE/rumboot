@@ -127,8 +127,8 @@ void __attribute__ ((aligned(16))) test_MC_hdr()
 int check_machinecheck ()
 {
 	uint32_t const msr_old_value = msr_read();
-	uint32_t const ccr1_old_value = spr_read(SPR_CCR1);;
-	uint32_t const ivor1_old_value = spr_read(SPR_IVOR1);;
+	uint32_t const ccr1_old_value = spr_read(SPR_CCR1);
+	uint32_t const ivor1_old_value = spr_read(SPR_IVOR1);
 
 	rumboot_printf("DEBUG_MACHINECHECK check start!\n");
 
