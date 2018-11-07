@@ -61,7 +61,7 @@ static const int32_t tx_array32[] = {
 
 void arinc_init_freq(uint32_t tx_freq, uint32_t rx_freq) {
      int i =0;
-	uint32_t  init_axi_mst=0x0;
+	//uint32_t  init_axi_mst=0x0;
 	uint32_t size = 0x2;
 	rumboot_printf("===> %x %x\n", tx_freq, rx_freq);
 
@@ -75,7 +75,7 @@ void arinc_init_freq(uint32_t tx_freq, uint32_t rx_freq) {
 	iowrite32(tx_freq,(ARINC_BASE + FREQ_TX + i*4));			//freq TX 100Mhz
 	iowrite32(rx_freq,(ARINC_BASE + FREQ_RX + i*4));			//freq RX 100MHz	
 		}
-	iowrite32(init_axi_mst,(ARINC_BASE + AXI_CTRL)); 			// AXI parameters	
+	//iowrite32(init_axi_mst,(ARINC_BASE + AXI_CTRL)); 			// AXI parameters	
 	//iowrite32(0xffff,(ARINC_BASE + WAIT_TMR_TX));   			// wait  delayed switch after the transmitter start
 	//iowrite32(0xffff,(ARINC_BASE + WAIT_SIG_RX));   			// wait delayed switch after the receiver start		    
 	}
