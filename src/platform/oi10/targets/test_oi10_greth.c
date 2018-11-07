@@ -14,6 +14,7 @@
 
 #include <platform/interrupts.h>
 #include <platform/regs/fields/mpic128.h>
+#include <platform/regs/sctl.h>
 #include <platform/devices/emi.h>
 #include <platform/test_assert.h>
 
@@ -34,13 +35,20 @@
 #define EVENT_CHECK_GRETH1_RX_ER   0x00001001
 #define EVENT_CHECK_GRETH0_RX_COL  0x00001002
 #define EVENT_CHECK_GRETH1_RX_COL  0x00001003
+#define EVENT_CHECK_RUN_HPROT_MONITOR     0x00001004
+#define EVENT_CHECK_STOP_HPROT_MONITOR    0x00001005
 
+//setting non-default EDCLADDRL values
+#define EDCLADDRL0_TEST  0x0
+#define EDCLADDRL1_TEST  0x1
+#define EDCLIP0_TEST     (EDCLIP | EDCLADDRL0_TEST)
+#define EDCLIP1_TEST     (EDCLIP | EDCLADDRL1_TEST)
 
 #define TST_MAC_MSB     0xFFFF
 #define TST_MAC_LSB     0xFFFFFFFF
 greth_mac_t tst_greth_mac       = {TST_MAC_MSB, TST_MAC_LSB};
-greth_mac_t tst_greth_edcl_mac0 = {EDCLMAC_MSB, (EDCLMAC_LSB | EDCLADDRL0) };
-greth_mac_t tst_greth_edcl_mac1 = {EDCLMAC_MSB, (EDCLMAC_LSB | EDCLADDRL1) };
+greth_mac_t tst_greth_edcl_mac0 = {EDCLMAC_MSB, (EDCLMAC_LSB | EDCLADDRL0_TEST) };
+greth_mac_t tst_greth_edcl_mac1 = {EDCLMAC_MSB, (EDCLMAC_LSB | EDCLADDRL1_TEST) };
 
 /*
  * Functions and variables for interrupt handling
@@ -289,9 +297,9 @@ void prepare_test_data(uint32_t src_bank, uint32_t dst_bank)
     rx_descriptor_data_ = (greth_descr_t*) rumboot_malloc_from_heap_aligned(1, 3*sizeof(greth_descr_t), 1024);
 
     rumboot_putstring("Allocate from im1 for src");
-    test_data_im1_src = (uint8_t* )rumboot_malloc_from_heap_misaligned(1, GRETH_TEST_DATA_LEN_BYTES, 4, GRETH_TEST_DATA_MISALIGN_IM1);
+    test_data_im1_src = (uint8_t* )rumboot_malloc_from_heap_misaligned(1, GRETH_TEST_DATA_LEN_BYTES, 16, GRETH_TEST_DATA_MISALIGN_IM1);
     rumboot_putstring("Allocate from im1 for dst");
-    test_data_im1_dst = (uint8_t* )rumboot_malloc_from_heap_misaligned(1, GRETH_TEST_DATA_LEN_BYTES, 4, GRETH_TEST_DATA_MISALIGN_IM1);
+    test_data_im1_dst = (uint8_t* )rumboot_malloc_from_heap_misaligned(1, GRETH_TEST_DATA_LEN_BYTES, 16, GRETH_TEST_DATA_MISALIGN_IM1);
 
     rumboot_putstring("Fill im1 src array");
     test_data_im1_src[i++] = (uint8_t)((tst_greth_mac.mac_lsb & 0x00FF0000) >> 16);
@@ -323,7 +331,7 @@ void prepare_test_data(uint32_t src_bank, uint32_t dst_bank)
     if (src_bank==2)
     {
         rumboot_putstring("Allocate from im2 for src");
-        test_data_im2_src = (uint8_t* )rumboot_malloc_from_heap_misaligned(2, GRETH_TEST_DATA_LEN_BYTES, 4, GRETH_TEST_DATA_MISALIGN_IM2);
+        test_data_im2_src = (uint8_t* )rumboot_malloc_from_heap_misaligned(2, GRETH_TEST_DATA_LEN_BYTES, 16, GRETH_TEST_DATA_MISALIGN_IM2);
 
         rumboot_putstring("Fill im2 src array");
         memcpy(test_data_im2_src, test_data_im1_src, GRETH_TEST_DATA_LEN_BYTES);
@@ -332,7 +340,7 @@ void prepare_test_data(uint32_t src_bank, uint32_t dst_bank)
     if (dst_bank==2)
     {
         rumboot_putstring("Allocate from im2 for dst");
-        test_data_im2_dst = (uint8_t* )rumboot_malloc_from_heap_misaligned(2, GRETH_TEST_DATA_LEN_BYTES, 4, GRETH_TEST_DATA_MISALIGN_IM2);
+        test_data_im2_dst = (uint8_t* )rumboot_malloc_from_heap_misaligned(2, GRETH_TEST_DATA_LEN_BYTES, 16, GRETH_TEST_DATA_MISALIGN_IM2);
     }
 
     if ((src_bank==3) || (dst_bank==3))
@@ -344,7 +352,7 @@ void prepare_test_data(uint32_t src_bank, uint32_t dst_bank)
     if (src_bank==3)
     {
         rumboot_putstring("Allocate from em2 for src");
-        test_data_em2_src = (uint8_t* )rumboot_malloc_from_heap_misaligned(3, GRETH_TEST_DATA_LEN_BYTES, 4, GRETH_TEST_DATA_MISALIGN_EM2);
+        test_data_em2_src = (uint8_t* )rumboot_malloc_from_heap_misaligned(3, GRETH_TEST_DATA_LEN_BYTES, 16, GRETH_TEST_DATA_MISALIGN_EM2);
 
         rumboot_putstring("Fill em2 src array");
         memcpy(test_data_em2_src, test_data_im1_src, GRETH_TEST_DATA_LEN_BYTES);
@@ -353,7 +361,7 @@ void prepare_test_data(uint32_t src_bank, uint32_t dst_bank)
     if (dst_bank==3)
     {
         rumboot_putstring("Allocate from em2 for dst");
-        test_data_em2_dst = (uint8_t* )rumboot_malloc_from_heap_misaligned(3, GRETH_TEST_DATA_LEN_BYTES, 4, GRETH_TEST_DATA_MISALIGN_EM2);
+        test_data_em2_dst = (uint8_t* )rumboot_malloc_from_heap_misaligned(3, GRETH_TEST_DATA_LEN_BYTES, 16, GRETH_TEST_DATA_MISALIGN_EM2);
     }
 
     rumboot_putstring("Preparing data finished");
@@ -437,6 +445,9 @@ void check_transfer_via_external_loopback(uint32_t base_addr_src_eth,  uint8_t *
     uint32_t base_addr_dst_eth;
     uint32_t volatile* eth_handled_flag_ptr;
 
+    test_event(EVENT_CHECK_RUN_HPROT_MONITOR);//checking switch u_nic400_oi10_axi32.hprot_eth_1(0)_s from 0x3 to 0xF (by request from JIRA-78)
+    dcr_write(DCR_SCTL_BASE + SCTL_IFSYS_ETH_HPROT, 0x3F3F3F3F);
+
     TEST_ASSERT((base_addr_src_eth==GRETH_1_BASE)||(base_addr_src_eth==GRETH_0_BASE), "Wrong GRETH base address\n");
     base_addr_dst_eth = base_addr_src_eth==GRETH_0_BASE ? GRETH_1_BASE : GRETH_0_BASE;
 
@@ -468,6 +479,7 @@ void check_transfer_via_external_loopback(uint32_t base_addr_src_eth,  uint8_t *
 
     rumboot_free(tx_descriptor_data_);
     rumboot_free(rx_descriptor_data_);
+    test_event(EVENT_CHECK_STOP_HPROT_MONITOR);
 }
 
 void check_edcl_wr_via_external_loopback(uint32_t base_addr_dst_eth, uint32_t wr_mem_addr, void* data, uint32_t len)
@@ -482,9 +494,9 @@ void check_edcl_wr_via_external_loopback(uint32_t base_addr_dst_eth, uint32_t wr
     TEST_ASSERT((base_addr_dst_eth==GRETH_1_BASE)||(base_addr_dst_eth==GRETH_0_BASE), "Wrong GRETH base address\n");
     if (base_addr_dst_eth==GRETH_1_BASE)
     {
-        edcl_cfg.src_ip   = EDCLIP1;
+        edcl_cfg.src_ip   = EDCLIP1_TEST;
         edcl_cfg.src_mac  = tst_greth_edcl_mac1;
-        edcl_cfg.dst_ip   = EDCLIP1;
+        edcl_cfg.dst_ip   = EDCLIP1_TEST;
         edcl_cfg.dst_mac  = tst_greth_edcl_mac1;
         GRETH0_IRQ_HANDLED = 0;
         base_addr_src_eth = GRETH_0_BASE;
@@ -492,9 +504,9 @@ void check_edcl_wr_via_external_loopback(uint32_t base_addr_dst_eth, uint32_t wr
     }
     else
     {
-        edcl_cfg.src_ip   = EDCLIP0;
+        edcl_cfg.src_ip   = EDCLIP0_TEST;
         edcl_cfg.src_mac  = tst_greth_edcl_mac0;
-        edcl_cfg.dst_ip   = EDCLIP0;
+        edcl_cfg.dst_ip   = EDCLIP0_TEST;
         edcl_cfg.dst_mac  = tst_greth_edcl_mac0;
         GRETH1_IRQ_HANDLED = 0;
         base_addr_src_eth = GRETH_1_BASE;
@@ -532,18 +544,18 @@ void check_edcl_rd_via_external_loopback(uint32_t base_addr_dst_eth, uint32_t rd
     TEST_ASSERT((base_addr_dst_eth==GRETH_1_BASE)||(base_addr_dst_eth==GRETH_0_BASE), "Wrong GRETH base address\n");
     if (base_addr_dst_eth==GRETH_1_BASE)
     {
-        edcl_cfg.src_ip   = EDCLIP1;
+        edcl_cfg.src_ip   = EDCLIP1_TEST;
         edcl_cfg.src_mac  = tst_greth_edcl_mac1;
-        edcl_cfg.dst_ip   = EDCLIP1;
+        edcl_cfg.dst_ip   = EDCLIP1_TEST;
         edcl_cfg.dst_mac  = tst_greth_edcl_mac1;
         GRETH1_IRQ_HANDLED = 0;
         base_addr_src_eth = GRETH_0_BASE;
     }
     else
     {
-        edcl_cfg.src_ip   = EDCLIP0;
+        edcl_cfg.src_ip   = EDCLIP0_TEST;
         edcl_cfg.src_mac  = tst_greth_edcl_mac0;
-        edcl_cfg.dst_ip   = EDCLIP0;
+        edcl_cfg.dst_ip   = EDCLIP0_TEST;
         edcl_cfg.dst_mac  = tst_greth_edcl_mac0;
         GRETH0_IRQ_HANDLED = 0;
         base_addr_src_eth = GRETH_1_BASE;
@@ -674,6 +686,7 @@ int main(void)
     rx_descriptor_data_ = (greth_descr_t*) rumboot_malloc_from_heap_aligned(1, 3*sizeof(greth_descr_t), 1024);
     tx_descriptor_data_ = (greth_descr_t*) rumboot_malloc_from_heap_aligned(1, 3*sizeof(greth_descr_t), 1024);
 
+    dcr_write(DCR_SCTL_BASE + SCTL_IFSYS_ETH_CTRL, (uint32_t) (EDCLADDRL0_TEST | (EDCLADDRL1_TEST << 16)) );//setting non-default edcladdrl values
     check_edcl_wr_via_external_loopback(GRETH_BASE, EDCL_TEST_ADDR, edcl_test_data_im1_wr, GRETH_EDCL_DATA_LEN_BYTES);
     check_edcl_rd_via_external_loopback(GRETH_BASE, EDCL_TEST_ADDR, GRETH_EDCL_DATA_LEN_BYTES);
 
@@ -692,6 +705,7 @@ int main(void)
     delete_greth01_irq_handlers(tbl);
 #else
     rumboot_printf("Start test_oi10_greth. Transmit/receive checks\n");
+    test_event_send_test_id("test_oi10_greth");
     tbl = create_greth01_irq_handlers();
     prepare_test_data(SRC_BANK, DST_BANK);
     check_transfer_via_external_loopback(GRETH_BASE, (uint8_t*)rumboot_virt_to_dma(get_src_dst_data_ptr(GRETH_SRC_DATA_SEL, SRC_BANK)), (uint8_t*)rumboot_virt_to_dma(get_src_dst_data_ptr(GRETH_DST_DATA_SEL, DST_BANK)));
