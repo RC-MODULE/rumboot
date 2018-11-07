@@ -617,14 +617,14 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
   add_rumboot_target(
    CONFIGURATION IRAM
    FILES gpio/gpio.c
-   TIMEOUT 300 us
+   TIMEOUT 500 us
    IRUN_FLAGS +gpio_test
   )
 
   add_rumboot_target(
    CONFIGURATION IRAM
    FILES gpio/gpio_irq.c
-   TIMEOUT 300 us
+   TIMEOUT 500 us
    IRUN_FLAGS +gpio_test
   )
   add_rumboot_target(
