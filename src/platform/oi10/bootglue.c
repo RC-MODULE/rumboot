@@ -76,7 +76,7 @@ void rumboot_platform_read_config(struct rumboot_config *conf)
         }
         conf->hostmode = (bootm & BOOTM_HOST);
         conf->legacyboot = 0;
-        conf->selftest = -1;
+        conf->selftest = (bootm & BOOTM_SELFTEST);
         conf->edcl = 1;
 }
 
@@ -98,69 +98,10 @@ void rumboot_platform_print_summary(struct rumboot_config *conf)
 
 }
 
-void rumboot_platform_selftest(struct rumboot_config *conf)
-{
-        /* Execute selftest routines */
-}
-
-
-static bool spi0_gcs_enable(const struct rumboot_bootsource *src, void *pdata)
-{
-        uint32_t v = ioread32(GPIO_0_BASE + GPIO_DIR);
-        iowrite32(v | 1<<4, GPIO_0_BASE + GPIO_DIR);
-        iowrite32(1 << 4, GPIO_0_BASE + GPIO_DATA + (1 << (4 + 2)));
-        return true;
-}
-
-static void spi0_gcs_disable(const struct rumboot_bootsource *src, void *pdata)
-{
-        uint32_t v = ioread32(GPIO_0_BASE + GPIO_DIR);
-        v &= ~(1<<4);
-        iowrite32(v, GPIO_0_BASE + GPIO_DIR);
-        iowrite32(1 << 4, GPIO_0_BASE + GPIO_DATA + (1 << (4 + 2)));
-}
-
-static void spi0_gcs(const struct rumboot_bootsource *src, void *pdata, int select)
-{
-        iowrite32(select << 4, GPIO_0_BASE + (1 << (4 + 2)));
-}
-
 
 static bool emi_enable(const struct rumboot_bootsource *src, void *pdata)
 {
         plb6mcif2_simple_init(DCR_EM2_PLB6MCIF2_BASE, 0x00);
-        #if 0
-        emi_bank_cfg b5_cfg =
-        {
-                //SS5
-                {
-                        BTYP_NOR,
-                        PTYP_NO_PAGES,
-                        SRDY_EXT_RDY_NOT_USE,
-                        TWR_0,
-                        SST_Flow_Through,
-                        TSSOE_1,
-                        TSOE_1,
-                        TCYC_8,
-                        0, //T_RDY
-                        TDEL_0
-                },
-                //SD5
-                {
-                        CSP_256,
-                        SDS_2M,
-                        CL_3,
-                        TRDL_1,
-                        SI_EXT_INIT,
-                        TRCD_5,
-                        TRAS_9
-                }
-        };
-        emi_set_bank_cfg(DCR_EM2_PLB6MCIF2_BASE, emi_b5_nor, &b5_cfg);
-        dcr_write(DCR_EM2_EMI_BASE + EMI_FLCNTRL, 0x17);
-        emi_set_ecc(DCR_EM2_PLB6MCIF2_BASE, emi_bank_all, emi_ecc_off);
-        dcr_write(DCR_EM2_PLB6MCIF2_BASE + EMI_BUSEN, 0x01);
-        #endif
         return true;
 }
 
@@ -190,15 +131,6 @@ static const struct rumboot_bootsource arr[] = {
                 .base = GSPI_0_BASE,
                 .freq_khz = 100000,
                 .plugin = &g_bootmodule_spiflash,
-        },
-        {
-                .name = "SPI0 (CS: GPIO0_4)",
-                .base = GSPI_0_BASE,
-                .freq_khz = 100000,
-                .plugin = &g_bootmodule_spiflash,
-                .enable = spi0_gcs_enable,
-                .disable = spi0_gcs_disable,
-                .chipselect = spi0_gcs,
         },
         { /* sentinel */ }
 };
