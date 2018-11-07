@@ -27,7 +27,7 @@
 
 void arinc_init_freq(uint32_t tx_freq, uint32_t rx_freq) {
      int i =0;
-	uint32_t  init_axi_mst=0x0;
+	uint32_t  init_axi_mst=0xc060;
 	uint32_t size = 0x2;
 
 //-------------------------------------------------------------------------------------
@@ -157,7 +157,10 @@ for (i = 0; i< 32 ; i++)
 	tmp_r 		= 	ioread32(addr_rd);
 
 	tmp  = tmp -tmp_r;
-	if (tmp != 0) return TEST_ERROR;
+	if (tmp != 0) {
+		rumboot_printf("ARINC addr =0x%x\n", ioread32(addr));
+		rumboot_printf("ARINC addr_rd =0x%x\n", ioread32(addr_rd));	
+		return TEST_ERROR;}
 	}
 	if (tmp == ARINC_OK) {
 	
