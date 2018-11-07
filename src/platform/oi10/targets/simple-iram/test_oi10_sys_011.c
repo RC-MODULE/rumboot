@@ -109,8 +109,11 @@ int check_halt ()
 	return 0;
 }
 
+volatile static uint32_t mc_cnt = 0;
+
 void test_MC()
 {
+	mc_cnt += 1;
 	rumboot_printf("MACHINECHECK interrupt occurred. It is OK!\n");
 }
 
@@ -162,6 +165,8 @@ int check_machinecheck ()
 	spr_write(SPR_MCSR_C,0xFFFFFFFF);
 	spr_write(SPR_IVOR1,ivor1_old_value);
 	msr_write(msr_old_value);
+
+	if(mc_cnt != 1) return 1;
 
 	rumboot_printf("DEBUG_MACHINECHECK check done!\n");
 
