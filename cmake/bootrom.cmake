@@ -224,13 +224,25 @@ endmacro()
 
 macro(rumboot_bootrom_integration_test romconf)
   add_rumboot_target(
-          PREFIX "bootrom-integration"
+          PREFIX "bootrom-integration-no-selftest"
           CONFIGURATION ${romconf}
           BOOTROM bootrom-loader
           TESTGROUP bootrom bootrom-integration
           FEATURES NOCODE ${CONFIGURATION_${romconf}_FEATURES}
           ${ARGN}
   )
+
+  string(REPLACE "IRUN_FLAGS" "IRUN_FLAGS;+BOOT_SELFTEST=1" _tmp "${ARGN}")
+  add_rumboot_target(
+          PREFIX "bootrom-integration-selftest"
+          CONFIGURATION ${romconf}
+          BOOTROM bootrom-loader
+          TESTGROUP bootrom bootrom-integration
+          FEATURES NOCODE ${CONFIGURATION_${romconf}_FEATURES}
+          ${_tmp}
+  )
+
+
 endmacro()
 
 # TODO: Take this one apart

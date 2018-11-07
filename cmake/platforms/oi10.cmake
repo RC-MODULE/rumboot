@@ -194,25 +194,8 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     )
 
     rumboot_bootrom_integration_test(BROM
-        NAME "host-mockup-selftest-fallthough"
-        IRUN_FLAGS ${ROM_6500K_OPTS} +BOOT_SELFTEST=1
-        LOAD
-          SD0_BOOT_IMAGE spl-fail
-          SPI0_CONF spl-fail-bad-magic,spl-fail-bad-magic
-          NOR_IMAGE spl-fail-bad-magic
-          HOSTMOCK  spl-ok
-    )
-
-    rumboot_bootrom_integration_test(BROM
         NAME "host-mockup"
         IRUN_FLAGS +BOOT_HOST=1 ${ROM_6500K_OPTS}
-        LOAD
-          HOSTMOCK  spl-ok
-    )
-
-    rumboot_bootrom_integration_test(BROM
-        NAME "host-mockup-selftest"
-        IRUN_FLAGS +BOOT_HOST=1 ${ROM_6500K_OPTS} +BOOT_SELFTEST=1
         LOAD
           HOSTMOCK  spl-ok
     )
@@ -294,29 +277,11 @@ if (NOT RUMBOOT_BUILD_TYPE STREQUAL "Debug")
           NOR_IMAGE spl-fail-bad-magic
     )
 
-    rumboot_bootrom_integration_test(BROM
-        NAME "host-fallthough-selftest-easter-egg"
-        IRUN_FLAGS ${ROM_6500K_OPTS} +uart_easter_egg +BOOT_SELFTEST=1
-        LOAD
-          SD0_BOOT_IMAGE spl-fail
-          SPI0_CONF spl-fail-bad-magic,spl-fail-bad-magic
-          NOR_IMAGE spl-fail-bad-magic
-    )
 endif()
 
     rumboot_bootrom_integration_test(BROM
         NAME "sdio-ok"
         IRUN_FLAGS +BOOT_SD_CD=0 +select_sdio0 ${ROM_6500K_OPTS}
-        LOAD
-          SD0_BOOT_IMAGE spl-ok
-          NOR_IMAGE spl-fail
-          SPI0_CONF spl-fail,spl-fail
-          HOSTMOCK  spl-fail
-    )
-
-    rumboot_bootrom_integration_test(BROM
-        NAME "sdio-selftest-ok"
-        IRUN_FLAGS +BOOT_SD_CD=0 +select_sdio0 ${ROM_6500K_OPTS} +BOOT_SELFTEST=1
         LOAD
           SD0_BOOT_IMAGE spl-ok
           NOR_IMAGE spl-fail
