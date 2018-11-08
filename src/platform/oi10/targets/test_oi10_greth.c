@@ -172,8 +172,8 @@ void regs_check(uint32_t base_addr)
     if (base_addr==GRETH_1_BASE)
     {
         rumboot_printf("Checking access to GRETH%d(0x%x) registers\n", 1, base_addr);
-        greth_check_array[4].expected = EDCLIP1;
-        greth_check_array[6].expected |= EDCLADDRL1;
+        greth_check_array[2].expected = EDCLIP1;
+        greth_check_array[4].expected |= EDCLADDRL1;
     }
     else
     {
