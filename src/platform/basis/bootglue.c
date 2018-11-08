@@ -32,15 +32,9 @@ void rumboot_platform_read_config(struct rumboot_config *conf)
         conf->selftest = (bootm & BOOTM_SELFTEST);
 }
 
-
-void rumboot_platform_selftest(struct rumboot_config *conf)
-{
-        /* Execute selftest routines */
-}
-
 void rumboot_platform_init_loader(struct rumboot_config *conf)
 {
-
+        iowrite32(1, GLOBAL_TIMERS+0x40); /* Fire up global timers */
 }
 
 static bool sdio0_enable(const struct rumboot_bootsource *src, void *pdata)
@@ -155,42 +149,17 @@ static const struct rumboot_bootsource arr[] = {
                 .enable = sdio1_enable,
                 .offset = 8192
         },
-        {
-                .name = "I2C1 (EEPROM @ 0x50)",
-                .base = I2C1_BASE,
-                .slave_addr = 0x50,
-                .freq_khz = 100000,
-                .plugin = &g_bootmodule_eeprom,
-        },
-        {
-                .name = "I2C1 (EEPROM @ 0x51)",
-                .base = I2C1_BASE,
-                .slave_addr = 0x51,
-                .freq_khz = 100000,
-                .plugin = &g_bootmodule_eeprom,
-        },
-        {
-                .name = "I2C1 (EEPROM @ 0x52)",
-                .base = I2C1_BASE,
-                .slave_addr = 0x52,
-                .freq_khz = 100000,
-                .plugin = &g_bootmodule_eeprom,
-        },
-        {
-                .name = "I2C1 (EEPROM @ 0x53)",
-                .base = I2C1_BASE,
-                .slave_addr = 0x53,
-                .freq_khz = 100000,
-                .plugin = &g_bootmodule_eeprom,
-        },
         { /*Sentinel*/ }
 };
 
 
-/* TODO: Set pin and */
 void rumboot_platform_enter_host_mode()
 {
-
+        uint32_t v;
+        v = ioread32(GPIO0_BASE + GPIO_PAD_DIR);
+        v |=  BOOTM_HOST;
+        iowrite32(v, GPIO0_BASE + GPIO_PAD_DIR);
+        iowrite32(BOOTM_HOST, GPIO0_BASE + GPIO_WR_DATA_SET1);
 }
 
 void *rumboot_platform_get_spl_area(size_t *size)
@@ -212,8 +181,7 @@ bool rumboot_platform_check_entry_points(struct rumboot_bootheader *hdr)
 
 int rumboot_platform_exec(struct rumboot_bootheader *hdr)
 {
-        /* No-op, this chip has only one core */
-        return 0;
+        return rumboot_bootimage_execute_ep((void *) hdr->entry_point[0]);
 }
 
 void rumboot_platform_print_summary(struct rumboot_config *conf)

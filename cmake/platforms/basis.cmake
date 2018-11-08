@@ -48,6 +48,7 @@ rumboot_add_configuration (
     IRAM_SPL
     CONFIGURATION IRAM
     PREFIX spl
+    LDS basis/iram-spl.lds
     LDFLAGS -Wl,--start-group -lgcc -lc -lm -Wl,--end-group "-e main"
     CFLAGS  -DRUMBOOT_NOINIT
     FEATURES COVERAGE PACKIMAGE
@@ -105,11 +106,16 @@ rumboot_add_configuration(
 
 include(${CMAKE_SOURCE_DIR}/cmake/bootrom.cmake)
 
+set(ROM_115200_OPTS +BOOT_FASTUART=0 +UART0_SPEED=115200)
+set(ROM_6500K_OPTS  +BOOT_FASTUART=1 +UART0_SPEED=6250000)
+
 ### Add tests here ###
 #WARNING! Full regression automatically includes all tests from the short ones
 macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
-  rumboot_bootrom_add_components(IRAM_SPL ROM)
+  rumboot_bootrom_add_components(
+    IRAM_SPL ROM
+    -a 512 -z 512)
 
 
   rumboot_bootrom_unit_test(
@@ -117,7 +123,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       TAG sdio0
       MEMTAG SD0_BOOT_IMAGE
       TAGOFFSET 0
-      IRUN_FLAGS +select_sdio0 +BOOT_SD_CD=0
+      IRUN_FLAGS +select_sdio0 +BOOT_SD0_CD=0 ${ROM_6500K_OPTS}
   )
 
   rumboot_bootrom_unit_test(
@@ -125,6 +131,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       TAG spi0_cs0
       MEMTAG SPI0_CONF
       TAGOFFSET 0
+      IRUN_FLAGS ${ROM_6500K_OPTS}
   )
 
   rumboot_bootrom_unit_test(
@@ -132,6 +139,8 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       TAG spi0_cs1
       MEMTAG SPI0_CONF
       TAGOFFSET 1
+      FULL YES
+      IRUN_FLAGS ${ROM_6500K_OPTS}
   )
 
   rumboot_bootrom_unit_test(
@@ -139,6 +148,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       TAG i2c0_50
       MEMTAG I2C0_CONF
       TAGOFFSET 0
+      IRUN_FLAGS ${ROM_6500K_OPTS}
   )
 
   rumboot_bootrom_unit_test(
@@ -146,6 +156,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       TAG i2c0_51
       MEMTAG I2C0_CONF
       TAGOFFSET 1
+      IRUN_FLAGS ${ROM_6500K_OPTS}
   )
 
   rumboot_bootrom_unit_test(
@@ -153,6 +164,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       TAG i2c0_52
       MEMTAG I2C0_CONF
       TAGOFFSET 2
+      IRUN_FLAGS ${ROM_6500K_OPTS}
   )
 
   rumboot_bootrom_unit_test(
@@ -160,17 +172,151 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       TAG i2c0_53
       MEMTAG I2C0_CONF
       TAGOFFSET 3
+      IRUN_FLAGS ${ROM_6500K_OPTS}
+  )
+
+  rumboot_bootrom_unit_test(
+      ID 7
+      TAG sdio1
+      MEMTAG SD1_BOOT_IMAGE
+      TAGOFFSET 0
+      IRUN_FLAGS +select_sdio1 +BOOT_SD1_CD=0 ${ROM_6500K_OPTS}
   )
 
   rumboot_bootrom_integration_test(ROM
-      NAME "sdio-ok"
-      IRUN_FLAGS +BOOT_SD_CD=0 +select_sdio0
+      NAME "sdio0-ok"
+      IRUN_FLAGS +BOOT_SD0_CD=0 +select_sdio0 ${ROM_6500K_OPTS}
       LOAD
         SD0_BOOT_IMAGE spl-ok
         SPI0_CONF spl-fail,spl-fail
+        I2C0_CONF spl-fail,spl-fail,spl-fail,spl-fail
+        SD1_BOOT_IMAGE spl-fail
         HOSTMOCK  spl-fail
   )
 
+  rumboot_bootrom_integration_test(ROM
+      NAME "spi0-cs0-ok"
+      IRUN_FLAGS ${ROM_6500K_OPTS}
+      LOAD
+        SD0_BOOT_IMAGE spl-fail
+        SPI0_CONF spl-ok,spl-fail
+        I2C0_CONF spl-fail,spl-fail,spl-fail,spl-fail
+        SD1_BOOT_IMAGE spl-fail
+        HOSTMOCK  spl-fail
+  )
+
+  rumboot_bootrom_integration_test(ROM
+      NAME "spi0-cs1-ok"
+      IRUN_FLAGS ${ROM_6500K_OPTS}
+      LOAD
+        SD0_BOOT_IMAGE spl-fail
+        SPI0_CONF spl-fail-bad-magic,spl-ok
+        I2C0_CONF spl-fail,spl-fail,spl-fail,spl-fail
+        SD1_BOOT_IMAGE spl-fail
+        HOSTMOCK  spl-fail
+  )
+
+  rumboot_bootrom_integration_test(ROM
+      NAME "i2c0-50"
+      IRUN_FLAGS ${ROM_6500K_OPTS}
+      LOAD
+        SD0_BOOT_IMAGE spl-fail
+        SPI0_CONF spl-fail-bad-magic,spl-fail-bad-magic
+        I2C0_CONF spl-ok,spl-fail,spl-fail,spl-fail
+        SD1_BOOT_IMAGE spl-fail
+        HOSTMOCK  spl-fail
+  )
+
+  rumboot_bootrom_integration_test(ROM
+      NAME "i2c0-51"
+      IRUN_FLAGS ${ROM_6500K_OPTS}
+      LOAD
+        SD0_BOOT_IMAGE spl-fail
+        SPI0_CONF spl-fail-bad-magic,spl-fail-bad-magic
+        I2C0_CONF spl-fail-bad-magic,spl-ok,spl-fail,spl-fail
+        SD1_BOOT_IMAGE spl-fail
+        HOSTMOCK  spl-fail
+  )
+
+  rumboot_bootrom_integration_test(ROM
+      NAME "i2c0-52"
+      IRUN_FLAGS ${ROM_6500K_OPTS}
+      LOAD
+        SD0_BOOT_IMAGE spl-fail
+        SPI0_CONF spl-fail-bad-magic,spl-fail-bad-magic
+        I2C0_CONF spl-fail-bad-magic,spl-fail-bad-magic,spl-ok,spl-fail
+        SD1_BOOT_IMAGE spl-fail
+        HOSTMOCK  spl-fail
+  )
+
+  rumboot_bootrom_integration_test(ROM
+      NAME "i2c0-53"
+      IRUN_FLAGS ${ROM_6500K_OPTS}
+      LOAD
+        SD0_BOOT_IMAGE spl-fail
+        SPI0_CONF spl-fail-bad-magic,spl-fail-bad-magic
+        I2C0_CONF spl-fail-bad-magic,spl-fail-bad-magic,spl-fail-bad-magic,spl-ok
+        SD1_BOOT_IMAGE spl-fail
+        HOSTMOCK  spl-fail
+  )
+
+  rumboot_bootrom_integration_test(ROM
+      NAME "sdio1"
+      IRUN_FLAGS +I2C0_DISABLE ${ROM_6500K_OPTS}
+      LOAD
+        SD0_BOOT_IMAGE spl-fail
+        SPI0_CONF spl-fail-bad-magic,spl-fail-bad-magic
+        I2C0_CONF spl-fail-bad-magic,spl-fail-bad-magic,spl-fail-bad-magic,spl-fail-bad-magic
+        SD1_BOOT_IMAGE spl-ok
+        HOSTMOCK  spl-fail
+  )
+
+  rumboot_bootrom_integration_test(BROM
+      NAME "host-mockup-fallthough"
+      IRUN_FLAGS ${ROM_6500K_OPTS}
+      LOAD
+        SD0_BOOT_IMAGE spl-fail
+        SPI0_CONF spl-fail-bad-magic,spl-fail-bad-magic
+        I2C0_CONF spl-fail-bad-magic,spl-fail-bad-magic,spl-fail-bad-magic,spl-fail-bad-magic
+        SD1_BOOT_IMAGE spl-ok
+        HOSTMOCK  spl-ok
+  )
+
+  rumboot_bootrom_integration_test(BROM
+      NAME "host-mockup"
+      IRUN_FLAGS +BOOT_HOST=1 ${ROM_6500K_OPTS}
+      LOAD
+        HOSTMOCK  spl-ok
+  )
+
+  rumboot_bootrom_integration_test(BROM
+      NAME "serial-115200"
+      IRUN_FLAGS ${ROM_115200_OPTS} +UART0_STOP_ON_MATCH +UART0_STOP_ON_MISMATCH
+      TIMEOUT 10 ms
+  )
+  rumboot_bootrom_integration_test(BROM
+      NAME "serial-6500000"
+      IRUN_FLAGS ${ROM_6500K_OPTS} +UART0_STOP_ON_MATCH +UART0_STOP_ON_MISMATCH
+      TIMEOUT 10 ms
+  )
+
+  if (NOT RUMBOOT_BUILD_TYPE STREQUAL "Debug")
+      rumboot_bootrom_integration_test(BROM
+          NAME "host-easter-egg"
+          IRUN_FLAGS +BOOT_HOST=1 ${ROM_6500K_OPTS} +uart_easter_egg
+      )
+
+      rumboot_bootrom_integration_test(BROM
+          NAME "host-fallthough-easter-egg"
+          IRUN_FLAGS ${ROM_6500K_OPTS} +uart_easter_egg
+          LOAD
+            SD0_BOOT_IMAGE spl-fail
+            SPI0_CONF spl-fail-bad-magic,spl-fail-bad-magic
+            I2C0_CONF spl-fail-bad-magic,spl-fail-bad-magic,spl-fail-bad-magic,spl-fail-bad-magic
+            SD1_BOOT_IMAGE spl-ok
+      )
+
+  endif()
 
   add_rumboot_target_dir(simple-rom/
     CONFIGURATION ROM
