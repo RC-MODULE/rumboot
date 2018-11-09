@@ -112,7 +112,7 @@ uint32_t rumboot_platform_get_uptime();
  * @param  sz   count of bytes to be compared
  * @return      like in memcmp
  */
-int rumboot_memcmp(void *src, void *dst, size_t sz);
+int memcmp(void *src, void *dst, size_t sz);
 
 /**
  * This function is called to trace a function call with a pc value
