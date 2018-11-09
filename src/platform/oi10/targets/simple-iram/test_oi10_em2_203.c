@@ -137,6 +137,12 @@ void check_irq_by_trdy_rd()
     }
 }
 
+void disable_mcheck()
+{
+    uint32_t const msr_old_value = msr_read();
+    msr_write( msr_old_value & ~(0b1 << ITRPT_XSR_ME_i));
+}
+
 int main()
 {
     emi_imr_cfg mask;
@@ -157,6 +163,7 @@ int main()
     check_wr_ext_rdy();//2.3.1 PPC_SRAM_SDRAM_slave0_testplan.docx
     check_rd_ext_rdy();//2.3.1 PPC_SRAM_SDRAM_slave0_testplan.docx
 
+    disable_mcheck();//disabling due to mcheck appears earlier than interrupt from EMI
     check_irq_by_trdy_wr();//2.3.2 PPC_SRAM_SDRAM_slave0_testplan.docx
     check_irq_by_trdy_rd();//2.3.2 PPC_SRAM_SDRAM_slave0_testplan.docx
 
