@@ -621,7 +621,7 @@ uint32_t hscb_check_data(
         rumboot_putstring( "Length:" );
         rumboot_puthex (hscb_descr_rx.length);
         hscb_descr_tx = hscb_get_descr_from_mem((uint32_t)(&(tx_table[j])), HSCB_ROTATE_BYTES_ENABLE);
-        result = rumboot_memcmp((void *)hscb_descr_tx.start_address, (void *) hscb_descr_rx.start_address,hscb_descr_rx.length);
+        result = memcmp((void *)hscb_descr_tx.start_address, (void *) hscb_descr_rx.start_address,hscb_descr_rx.length);
         rumboot_printf( "Descriptor #%d checked.\n", j );
     }
     /*Avoiding 4-4 = 0 in multiple checks*/
