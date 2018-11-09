@@ -18,8 +18,6 @@
 #include <platform/arch/ppc/ppc_476fp_mmu.h>
 #include <platform/ppc470s/mmu/mem_window.h>
 
-#define TLB_ENTRY   MMU_TLB_ENTRY( 0x020, 0x80070, 0x80070, MMU_TLBE_DSIZ_64KB, 0b1, 0b1, 0b0, 0b1, 0b0, 0b1, MMU_TLBE_E_BIG_END, 0b0,0b0,0b0, 0b1,0b1,0b1, 0b0, 0b0, 0b0, MEM_WINDOW_SHARED, MMU_TLBWE_WAY_UND, MMU_TLBWE_BE_UND, 0b1 )
-
 void check_plb6mcif2(const uint32_t base_address)
 {
     rumboot_printf("Check default values\n");
@@ -36,7 +34,7 @@ void check_plb6mcif2(const uint32_t base_address)
         {"PLB6MCIF2_MAXMEM",    REGPOKER_READ_DCR, PLB6MCIF2_MAXMEM,    0xC0000000,          0xffffffff},  //default: [0:1]= 0b11
         {"PLB6MCIF2_MR0CF",     REGPOKER_READ_DCR, PLB6MCIF2_MR0CF,     0x01,                0xffffffff},
         {"PLB6MCIF2_MR1CF",     REGPOKER_READ_DCR, PLB6MCIF2_MR1CF,     0x00,                0xffffffff},
-        {"PLB6MCIF2_MR2CF",     REGPOKER_READ_DCR, PLB6MCIF2_MR2CF,     0x07f80001,           0xffffffff},
+        {"PLB6MCIF2_MR2CF",     REGPOKER_READ_DCR, PLB6MCIF2_MR2CF,     0x07f80001,          0xffffffff},
         {"PLB6MCIF2_MR3CF",     REGPOKER_READ_DCR, PLB6MCIF2_MR3CF,     0xfff80001,          0xffffffff},
         {"PLB6MCIF2_P6BMTAG1",  REGPOKER_READ_DCR, PLB6MCIF2_P6BMTAG1,  0x00,                0xffffffff},
         {"PLB6MCIF2_P6BMTAG2",  REGPOKER_READ_DCR, PLB6MCIF2_P6BMTAG2,  0x00,                0xffffffff},
@@ -80,9 +78,83 @@ void check_plb6mcif2(const uint32_t base_address)
     TEST_ASSERT (rumboot_regpoker_check_array(plb6mcif2_regs_write, base_address) == 0, "TEST ERROR" );
 }
 
+void check_mclfir_wo (uint32_t base_addr)
+{
+    rumboot_printf("Check write-only regs\n");
+
+    dcr_write(base_addr + MCLFIR_MC_ERR0 + 4, 0x80000000);//set 1 bit ([0]) of   MCLFIR_MC_ERR0     register
+    TEST_ASSERT (dcr_read (base_addr + MCLFIR_MC_ERR0) == 0x80000000, "TEST_ERROR"); //0x80000000 as result - indirect     MCLFIR_MC_ERR0_OR  register check
+
+    dcr_write(base_addr + MCLFIR_MC_ERR0 + 2, 0x7fffffff);//reset 1 bit ([0]) of MCLFIR_MC_ERR0     register
+    TEST_ASSERT (dcr_read (base_addr + MCLFIR_MC_ERR0) == 0x00, "TEST_ERROR"); //0x00000000 as result - indirect     MCLFIR_MC_ERR0_AND register check
+
+    dcr_write(base_addr + MCLFIR_MC_ERR1 + 4, 0x80000000);//set 1 bit ([0]) of   MCLFIR_MC_ERR1     register
+    TEST_ASSERT (dcr_read (base_addr + MCLFIR_MC_ERR1) == 0x80000000, "TEST_ERROR"); //0x80000000 as result - indirect     MCLFIR_MC_ERR1_OR  register check
+
+    dcr_write(base_addr + MCLFIR_MC_ERR1 + 2, 0x7fffffff);//reset 1 bit ([0]) of MCLFIR_MC_ERR1     register
+    TEST_ASSERT (dcr_read (base_addr + MCLFIR_MC_ERR1) == 0x00, "TEST_ERROR"); //0x00000000 as result - indirect     MCLFIR_MC_ERR1_AND register check
+
+    dcr_write(base_addr + MCLFIR_MC_ERR_MSK0 + 2, 0x7fffffff);//reset 1 bit ([0]) of MCLFIR_MC_ERR_MSK0     register
+    TEST_ASSERT (dcr_read (base_addr + MCLFIR_MC_ERR_MSK0) == 0x7fffffff, "TEST_ERROR"); //0x7fffffff as result - indirect     MCLFIR_MC_ERR_MSK0_AND register check
+
+    dcr_write(base_addr + MCLFIR_MC_ERR_MSK0 + 4, 0x80000000);//set 1 bit ([0]) of   MCLFIR_MC_ERR_MSK0     register
+    TEST_ASSERT (dcr_read (base_addr + MCLFIR_MC_ERR_MSK0) == 0xffffffff, "TEST_ERROR"); //0xffffffff as result - indirect     MCLFIR_MC_ERR_MSK0_OR  register check
+
+    dcr_write(base_addr + MCLFIR_MC_ERR_MSK1 + 2, 0x7fffffff);//reset 1 bit ([0]) of MCLFIR_MC_ERR_MSK1     register
+    TEST_ASSERT (dcr_read (base_addr + MCLFIR_MC_ERR_MSK1) == 0x7fffffc0, "TEST_ERROR"); //0x7fffffc0 as result - indirect     MCLFIR_MC_ERR_MSK1_AND register check
+
+    dcr_write(base_addr + MCLFIR_MC_ERR_MSK1 + 4, 0x80000000);//set 1 bit ([0]) of   MCLFIR_MC_ERR_MSK1     register
+    TEST_ASSERT (dcr_read (base_addr + MCLFIR_MC_ERR_MSK1) == 0xffffffc0, "TEST_ERROR"); //0xffffffc0 as result - indirect     MCLFIR_MC_ERR_MSK1_OR  register check
+
+    dcr_write(base_addr + MCLFIR_MC_LFIR + 2, 0x80000000);//set 1 bit ([0]) of   MCLFIR_MC_LFIR     register
+    TEST_ASSERT (dcr_read (base_addr + MCLFIR_MC_LFIR) == 0x80000000, "TEST_ERROR"); //0x80000000 as result - indirect     MCLFIR_MC_LFIR_OR  register check
+
+    dcr_write(base_addr + MCLFIR_MC_LFIR + 1, 0x7fffffff);//reset 1 bit ([0]) of MCLFIR_MC_LFIR     register
+    TEST_ASSERT (dcr_read (base_addr + MCLFIR_MC_LFIR) == 0x00, "TEST_ERROR"); //0x00000000 as result - indirect     MCLFIR_MC_LFIR_AND register check
+
+    dcr_write(base_addr + MCLFIR_MC_LFIR_MSK + 1, 0x7fffffff);//reset 1 bit ([0]) of MCLFIR_MC_LFIR_MSK     register
+    TEST_ASSERT (dcr_read (base_addr + MCLFIR_MC_LFIR_MSK) == 0x40000000, "TEST_ERROR"); //0x40000000 as result - indirect     MCLFIR_MC_LFIR_MSK_AND register check
+
+    dcr_write(base_addr + MCLFIR_MC_LFIR_MSK + 2, 0x80000000);//set 1 bit ([0]) of   MCLFIR_MC_LFIR_MSK     register
+    TEST_ASSERT (dcr_read (base_addr + MCLFIR_MC_LFIR_MSK) == 0xc0000000, "TEST_ERROR"); //0xc0000000 as result - indirect     MCLFIR_MC_LFIR_MSK_OR  register check
+
+    dcr_write(base_addr + MCLFIR_MC_CONSOL_STAT + 2, 0x00008000);//set 1 bit ([16]) of   MCLFIR_MC_CONSOL_STAT     register
+    TEST_ASSERT (dcr_read (base_addr + MCLFIR_MC_CONSOL_STAT) == 0x00f08000, "TEST_ERROR"); //0x00108000 as result - indirect      MCLFIR_MC_CONSOL_STAT_OR  register check
+
+    dcr_write(base_addr + MCLFIR_MC_CONSOL_STAT + 1, 0xffff7fff);//reset 1 bit ([16]) of MCLFIR_MC_CONSOL_STAT     register
+    TEST_ASSERT (dcr_read (base_addr + MCLFIR_MC_CONSOL_STAT) == 0x00f00000, "TEST_ERROR"); //0x00100000 as result - indirect      MCLFIR_MC_CONSOL_STAT_AND register check
+
+    dcr_write(base_addr + MCLFIR_MC_CONSOL_STAT_TRIG + 2, 0x00008000);//set 1 bit ([16]) of   MCLFIR_MC_CONSOL_STAT_TRIG     register
+    TEST_ASSERT (dcr_read (base_addr + MCLFIR_MC_CONSOL_STAT_TRIG) == 0x00008000, "TEST_ERROR"); //0x00008000 as result - indirect      MCLFIR_MC_CONSOL_STAT_TRIG_OR  register check
+
+    dcr_write(base_addr + MCLFIR_MC_CONSOL_STAT_TRIG + 1, 0xffff7fff);//reset 1 bit ([16]) of MCLFIR_MC_CONSOL_STAT_TRIG     register
+    TEST_ASSERT (dcr_read (base_addr + MCLFIR_MC_CONSOL_STAT_TRIG) == 0x00, "TEST_ERROR"); //0x00000000 as result - indirect      MCLFIR_MC_CONSOL_STAT_TRIG_AND register check
+
+    dcr_write(base_addr + MCLFIR_MC_CONSOL_STAT_MSK + 1, 0xffff7fff);//reset 1 bit ([16]) of MCLFIR_MC_CONSOL_STAT_MSK     register
+    TEST_ASSERT (dcr_read (base_addr + MCLFIR_MC_CONSOL_STAT_MSK) == 0xfff00000, "TEST_ERROR"); //0xfff00000 as result - indirect      MCLFIR_MC_CONSOL_STAT_MSK_AND register check
+
+    dcr_write(base_addr + MCLFIR_MC_CONSOL_STAT_MSK + 2, 0x00008000);//set 1 bit ([16]) of   MCLFIR_MC_CONSOL_STAT_MSK     register
+    TEST_ASSERT (dcr_read (base_addr + MCLFIR_MC_CONSOL_STAT_MSK) == 0xfff08000, "TEST_ERROR"); //0xfff08000 as result - indirect      MCLFIR_MC_CONSOL_STAT_MSK_OR  register check
+
+    dcr_write(base_addr + MCLFIR_MC_CONSOL_STATSUM + 2, 0x80000000);//set 1 bit ([0]) of   MCLFIR_MC_CONSOL_STATSUM     register
+    TEST_ASSERT (dcr_read (base_addr + MCLFIR_MC_CONSOL_STATSUM) == 0x80000000, "TEST_ERROR"); //0x80000000 as result - indirect     MCLFIR_MC_CONSOL_STATSUM_OR  register check
+
+    dcr_write(base_addr + MCLFIR_MC_CONSOL_STATSUM + 1, 0x7fffffff);//reset 1 bit ([0]) of MCLFIR_MC_CONSOL_STATSUM     register
+    TEST_ASSERT (dcr_read (base_addr + MCLFIR_MC_CONSOL_STATSUM) == 0x00, "TEST_ERROR"); //0x00000000 as result - indirect     MCLFIR_MC_CONSOL_STATSUM_AND register check
+
+    dcr_write(base_addr + MCLFIR_MC_CONSOL_STATSUM_MSK + 2, 0x80000000);//set 1 bit ([0]) of   MCLFIR_MC_CONSOL_STATSUM_MSK     register
+    TEST_ASSERT (dcr_read (base_addr + MCLFIR_MC_CONSOL_STATSUM_MSK) == 0x80000000, "TEST_ERROR"); //0x80000000 as result - indirect     MCLFIR_MC_CONSOL_STATSUM_MSK_OR  register check
+
+    dcr_write(base_addr + MCLFIR_MC_CONSOL_STATSUM_MSK + 1, 0x7fffffff);//reset 1 bit ([0]) of MCLFIR_MC_CONSOL_STATSUM_MSK     register
+    TEST_ASSERT (dcr_read (base_addr + MCLFIR_MC_CONSOL_STATSUM_MSK) == 0x00, "TEST_ERROR"); //0x00000000 as result - indirect     MCLFIR_MC_CONSOL_STATSUM_MSK_AND register check
+
+    //dcr_write(base_addr + MCLFIR_MC_CONSOL_STAT + (tmp>>18), 0xff);//this line of text is not important
+}
+
 void check_mclfir(const uint32_t base_address)
 {
     rumboot_printf("Check default values\n");
+
     static const struct regpoker_checker mclfir_regs_default[] = {
         //      name                       check type          offset                    exp val                  mask
         {"MCLFIR_MC_ERR0",               REGPOKER_READ_DCR, MCLFIR_MC_ERR0,               0x00,          0xffffffff},
@@ -100,9 +172,8 @@ void check_mclfir(const uint32_t base_address)
         {"MCLFIR_MC_CONSOL_STAT_MSK",    REGPOKER_READ_DCR, MCLFIR_MC_CONSOL_STAT_MSK,    0xFFF08000,    0xffffffff},
         {"MCLFIR_MC_CONSOL_STATSUM",     REGPOKER_READ_DCR, MCLFIR_MC_CONSOL_STATSUM,     0x00,          0xffffffff},
         {"MCLFIR_MC_CONSOL_STATSUM_MSK", REGPOKER_READ_DCR, MCLFIR_MC_CONSOL_STATSUM_MSK, 0x80000000,    0xffffffff},
-        {/* Sentinel */ }
+        {  }
     };
-    msync();
     TEST_ASSERT (rumboot_regpoker_check_array(mclfir_regs_default, base_address) == 0, "TEST ERROR" );
 
     rumboot_printf("Check write/read\n");
@@ -115,6 +186,7 @@ void check_mclfir(const uint32_t base_address)
         { }
     };
     TEST_ASSERT (rumboot_regpoker_check_array(mclfir_regs_write, base_address) == 0, "TEST ERROR" );
+    check_mclfir_wo (base_address);
 }
 
 void check_emi(const uint32_t base_address)
@@ -148,7 +220,6 @@ void check_emi(const uint32_t base_address)
         {"EMI_IRR_RST", REGPOKER_READ_DCR, EMI_IRR_RST,   0x00,          0xffffffff},
         {/* Sentinel */ }
     };
-    msync();
     TEST_ASSERT (rumboot_regpoker_check_array(emi_regs_default, base_address) == 0, "TEST ERROR" );
 
     rumboot_printf("Check write/read\n");
@@ -189,21 +260,17 @@ void check_emi(const uint32_t base_address)
         {"EMI_WDADR",   REGPOKER_WRITE_DCR, EMI_WDADR,     0x00,         0xfffffff0},
         {/* Sentinel */ }
     };
-    msync();
     TEST_ASSERT (rumboot_regpoker_check_array(emi_regs_write, base_address) == 0, "TEST ERROR" );
 }
 
 int main()
 {
-    static const tlb_entry local_tlb = {TLB_ENTRY};
-    write_tlb_entries(&local_tlb, 1);
-
+    rumboot_printf("\nCHECK MCLFIR\n\n");
+    check_mclfir (DCR_EM2_MCLFIR_BASE);
     rumboot_printf("\nCHECK PLB6MCIF2\n\n");
     check_plb6mcif2 (DCR_EM2_PLB6MCIF2_BASE);
     rumboot_printf("\nCHECK EMI\n\n");
     check_emi (DCR_EM2_EMI_BASE);
-    rumboot_printf("\nCHECK MCLFIR\n\n");
-    check_mclfir (DCR_EM2_MCLFIR_BASE);
 
     rumboot_printf("TEST OK\n");
     return 0;
