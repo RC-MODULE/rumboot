@@ -27,13 +27,32 @@
 #include <platform/regs/regs_emi.h>
 #include <platform/devices/plb6mcif2.h>
 #include <devices/uart_pl011.h>
+#include <rumboot/irq.h>
 
+
+static void exception_handler(int id, const char *name)
+{
+        rumboot_printf("\n\n\nWE GOT AN EXCEPTION: %d: %s\n", id, name);
+        rumboot_printf("--- Guru Meditation ---\n");
+        rumboot_printf("MSR:  0x%x\n", msr_read());
+        rumboot_printf("SRR0: 0x%x\n", spr_read(SPR_SRR0));
+        rumboot_printf("SRR1: 0x%x\n", spr_read(SPR_SRR1));
+        rumboot_printf("CSRR0: 0x%x\n", spr_read(SPR_CSRR0));
+        rumboot_printf("CSRR1: 0x%x\n", spr_read(SPR_CSRR1));
+        rumboot_printf("MCSRR0: 0x%x\n", spr_read(SPR_MCSRR0));
+        rumboot_printf("MCSRR1: 0x%x\n", spr_read(SPR_MCSRR1));
+        rumboot_printf("---       ---       ---\n");
+        rumboot_platform_panic("Please reset or power-cycle the board\n");
+}
 
 void rumboot_platform_init_loader(struct rumboot_config *conf)
 {
         /* Set HOST pin to output */
         uint32_t v = ioread32(GPIO_0_BASE + GPIO_DIR);
         iowrite32(v | BOOTM_HOST, GPIO_0_BASE + GPIO_DIR);
+
+        /* Set our own handler */
+        rumboot_irq_set_exception_handler(exception_handler);
 
         /* Initialize UART */
         struct uart_init_params sparams =
