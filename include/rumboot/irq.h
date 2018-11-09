@@ -217,6 +217,15 @@ static inline uint32_t rumboot_arch_irq_setstate(uint32_t new_state)
      */
      void rumboot_irq_set_default_handler(void (*handler)(int irq));
 
+     /**
+      * Set user exception handler. This one will be called when an exception
+      * happens. Default handler will only print exception name and panic.
+      * Set this one to provide additional debug information
+      *
+      * @param handler Pointer to exception handler
+      */
+     void rumboot_irq_set_exception_handler(void (*handler)(int id, const char *name));
+
     /**
      * Make the specified irq table active. NULL to deactivate any existing table
      * and disable interrupts.

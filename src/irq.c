@@ -205,6 +205,13 @@ static void process_irq(int id)
 	}
 }
 
+void rumboot_irq_set_exception_handler(void (*handler)(int id, const char *name))
+{
+	RUMBOOT_ATOMIC_BLOCK() {
+		rumboot_platform_runtime_info->irq_exception_hndlr = handler;
+	}
+
+}
 
 void rumboot_irq_core_dispatch(uint32_t ctrl, uint32_t type, uint32_t id)
 {
@@ -219,7 +226,11 @@ void rumboot_irq_core_dispatch(uint32_t ctrl, uint32_t type, uint32_t id)
 		process_irq(id);
 		break;
 	case RUMBOOT_IRQ_TYPE_EXCEPTION:
-		rumboot_platform_panic("EXCEPTION: %s \n", exception_names[id]);
+        if (rumboot_platform_runtime_info->irq_exception_hndlr) {
+			rumboot_platform_runtime_info->irq_exception_hndlr(id, exception_names[id]);
+		} else {
+			rumboot_platform_panic("EXCEPTION: %s \n", exception_names[id]);
+		}
 		break;
 	}
 }
