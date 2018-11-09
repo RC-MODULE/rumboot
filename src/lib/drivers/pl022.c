@@ -176,13 +176,20 @@ int pl022_xfer_timeout(uint32_t const base, unsigned char const *wrbuf, unsigned
 
     while ((read < len) || (written < len)) {
         if ((read < len) && (!pl022_rx_empty(base))) {
-            *rdbuf++ = (unsigned char)(ioread32(base + PL022_DR) & 0xff);
+            unsigned char tmp = (unsigned char)(ioread32(base + PL022_DR) & 0xff);
+            if (rdbuf) {
+                *rdbuf++ = tmp;
+            }
             read++;
             lastop = rumboot_platform_get_uptime();
         }
 
         if ((written < len) && (pl022_tx_avail(base))) {
-            iowrite32(*wrbuf++, base + PL022_DR);
+            unsigned char tmp = 0xff;
+            if (wrbuf) {
+                tmp = *wrbuf++;
+            }
+            iowrite32(tmp, base + PL022_DR);
             written++;
             lastop = rumboot_platform_get_uptime();
         }
@@ -196,20 +203,8 @@ int pl022_xfer_timeout(uint32_t const base, unsigned char const *wrbuf, unsigned
 
 int pl022_xfer(uint32_t const base, unsigned char const *wrbuf, unsigned char *rdbuf, size_t const len)
 {
-    int written = 0;
-    int read = 0;
-
-    while ((read < len) || (written < len)) {
-        if ((read < len) && (!pl022_rx_empty(base))) {
-            *rdbuf++ = (unsigned char)(ioread32(base + PL022_DR) & 0xff);
-            read++;
-        }
-        if ((written < len) && (pl022_tx_avail(base))) {
-            iowrite32(*wrbuf++, base + PL022_DR);
-            written++;
-        }
-    }
-    return pl022_xfer_timeout(base, wrbuf, rdbuf, len, 0);}
+    return pl022_xfer_timeout(base, wrbuf, rdbuf, len, 0);
+}
 
 void pl022_clear_rx_buf(uint32_t const base)
 {
@@ -334,4 +329,3 @@ void pl022_set_param(uint32_t const base_address, struct ssp_params const * cons
     //mode, loopback, enable core
     iowrite32( ( ((params->loopback & 0x1) << LBM_SHIFT) | (params->mode << MS_SHIFT) | SSE ), base_address + GSPI_SSPCR1);
 }
-
