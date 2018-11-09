@@ -38,15 +38,6 @@ BEGIN_ENUM( HSCB_REG )
     DECLARE_ENUM_VAL(   HSCB_INTERVAL,          0x020 ) /**< Interval mezhdu vydachey Time-kodov (v taktakh sistemnoy chastoty) Po umolchaniyu ustanovlen interval 10 mks (dlya chastoty 200 MGts)c */
     DECLARE_ENUM_VAL(   HSCB_TIME_CODE_INNER,   0x024 ) /**< Vnutrenneye (sistemnoye) znacheniye time-code (znachimy tol'ko [7:0]) */
     DECLARE_ENUM_VAL(   HSCB_TIME_CODE_OUTER,   0x028 ) /**< Znacheniye time-code poluchennoye ot drugogo ustroystva: [7:0] - new_code - poluchennoye znacheniye, [15:8] - prev_code - predydushcheye poluchennoye znacheniye */
-    /* Word-based data exchange */
-//  DECLARE_ENUM_VAL(   HSCB_DATA_SEND_H,       0x02C ) /**< . Read only */
-//  DECLARE_ENUM_VAL(   HSCB_DATA_SEND_L,       0x030 ) /**<  */
-//  DECLARE_ENUM_VAL(   HSCB_DSTRB_SEND,        0x034 ) /**<  */
-//  DECLARE_ENUM_VAL(   HSCB_SEND_LEN,          0x038 ) /**<  */
-//  DECLARE_ENUM_VAL(   HSCB_DATA_REC_H,        0x03C ) /**< . Read only */
-//  DECLARE_ENUM_VAL(   HSCB_DATA_REC_L,        0x040 ) /**< . Read only */
-//  DECLARE_ENUM_VAL(   HSCB_DSTRB_REC,         0x044 ) /**< . Read only */
-//  DECLARE_ENUM_VAL(   HSCB_REC_LEN,           0x048 ) /**< . Read only */
     /* RMAP protocol */
     DECLARE_ENUM_VAL(   HSCB_RMAP_PARAMS,       0x04C ) /**< Registr nastroyki parametrov RMAP */
     DECLARE_ENUM_VAL(   HSCB_RMAP_STATUS,       0x050 ) /**< Status soyedineniya RMAP. Read only */
@@ -95,7 +86,7 @@ END_ENUM( HSCB_REG )
  * @{
  */
 BEGIN_ENUM( HSCB_SW_RESET_FIELD )
-    DECLARE_ENUM_VAL(   HSCB_SW_RESET_RST_i,        0 )
+    DECLARE_ENUM_VAL(   HSCB_SW_RESET_RST_i,        0 )         /**< Programmnyi sbros Space Wire */
     DECLARE_ENUM_VAL(   HSCB_SW_RESET_RST_n,        1 )
     DECLARE_ENUM_VAL(   HSCB_SW_RESET_RST_mask,     FIELD_MASK32( HSCB_SW_RESET_RST_i, HSCB_SW_RESET_RST_n ) )
 END_ENUM( HSCB_SW_RESET_FIELD )
@@ -104,10 +95,10 @@ BEGIN_ENUM( HSCB_SETTINGS_FIELD )
     DECLARE_ENUM_VAL(   HSCB_SETTINGS_EN_HSCB_i,        0 )         /**< Vklyucheniye Space Wire interfeysa */
     DECLARE_ENUM_VAL(   HSCB_SETTINGS_EN_HSCB_n,        1 )
     DECLARE_ENUM_VAL(   HSCB_SETTINGS_EN_HSCB_mask,     FIELD_MASK32( HSCB_SETTINGS_EN_HSCB_i, HSCB_SETTINGS_EN_HSCB_n ) )
-    DECLARE_ENUM_VAL(   HSCB_SETTINGS_TX_ENDIAN_i,      1 )
+    DECLARE_ENUM_VAL(   HSCB_SETTINGS_TX_ENDIAN_i,      1 )         /**< Vybor poryadka baitov pri peredache dannyh*/
     DECLARE_ENUM_VAL(   HSCB_SETTINGS_TX_ENDIAN_n,      1 )
     DECLARE_ENUM_VAL(   HSCB_SETTINGS_TX_ENDIAN_mask,   FIELD_MASK32( HSCB_SETTINGS_TX_ENDIAN_i, HSCB_SETTINGS_TX_ENDIAN_n ) )
-    DECLARE_ENUM_VAL(   HSCB_SETTINGS_RX_ENDIAN_i,      2 )
+    DECLARE_ENUM_VAL(   HSCB_SETTINGS_RX_ENDIAN_i,      2 )         /**< Vybor poryadka baitov pri poluchenii dannyh */
     DECLARE_ENUM_VAL(   HSCB_SETTINGS_RX_ENDIAN_n,      1 )
     DECLARE_ENUM_VAL(   HSCB_SETTINGS_RX_ENDIAN_mask,   FIELD_MASK32( HSCB_SETTINGS_RX_ENDIAN_i, HSCB_SETTINGS_RX_ENDIAN_n ) )
     DECLARE_ENUM_VAL(   HSCB_SETTINGS_TIME_MODE_i,      3 )         /**< Rezhim peredachi Time-code */
@@ -128,8 +119,8 @@ BEGIN_ENUM( HSCB_SETTINGS_FIELD )
 END_ENUM( HSCB_SETTINGS_FIELD )
 /** Poryadok bayt dannykh priyomnogo/peredayushchego kanala*/
 BEGIN_ENUM( hscb_rtx_endian_t )
-    DECLARE_ENUM_VAL(   hscb_rtx_endian_big,    1 )
-    DECLARE_ENUM_VAL(   hscb_rtx_endian_little, 0 )
+    DECLARE_ENUM_VAL(   hscb_rtx_endian_big,    1 )                 /**< Big Endian */
+    DECLARE_ENUM_VAL(   hscb_rtx_endian_little, 0 )                 /**< Little Endian */
 END_ENUM( hscb_rtx_endian_t )
 /** Rezhim peredachi Time-code */
 BEGIN_ENUM( hscb_time_mode_t )
@@ -303,7 +294,7 @@ BEGIN_ENUM( hscb_rmap_custom_status_t )
 END_ENUM( hscb_rmap_custom_status_t )
 
 BEGIN_ENUM( HSCB_ADMA_SW_RESET_FIELD )
-    DECLARE_ENUM_VAL(   HSCB_ADMA_SW_RESET_i,       0 )
+    DECLARE_ENUM_VAL(   HSCB_ADMA_SW_RESET_i,       0 ) /**< Programmnyi sbros AXI DMA */
     DECLARE_ENUM_VAL(   HSCB_ADMA_SW_RESET_n,       1 )
     DECLARE_ENUM_VAL(   HSCB_ADMA_SW_RESET_mask,    FIELD_MASK32( HSCB_ADMA_SW_RESET_i, HSCB_ADMA_SW_RESET_n ) )
 END_ENUM( HSCB_ADMA_SW_RESET_FIELD )
@@ -431,15 +422,6 @@ BEGIN_ENUM( HSCB_REG_MASK )
     DECLARE_ENUM_VAL(   HSCB_TIME_CODE_INNER_MASK,  FIELD_MASK32( HSCB_TIME_CODE_INNER_i, HSCB_TIME_CODE_INNER_n ) )
     DECLARE_ENUM_VAL(   HSCB_TIME_CODE_OUTER_MASK,  HSCB_TIME_CODE_OUTER_NEW_CODE_mask
                                                   | HSCB_TIME_CODE_OUTER_PREV_CODE_mask )
-    /* Word-based data exchange */
-//  DECLARE_ENUM_VAL(   HSCB_DATA_SEND_H_MASK,      0xXXXXXXXX )
-//  DECLARE_ENUM_VAL(   HSCB_DATA_SEND_L_MASK,      0xXXXXXXXX )
-//  DECLARE_ENUM_VAL(   HSCB_DSTRB_SEND_MASK,       0xXXXXXXXX )
-//  DECLARE_ENUM_VAL(   HSCB_SEND_LEN_MASK,         0xXXXXXXXX )
-//  DECLARE_ENUM_VAL(   HSCB_DATA_REC_H_MASK,       0xXXXXXXXX )
-//  DECLARE_ENUM_VAL(   HSCB_DATA_REC_L_MASK,       0xXXXXXXXX )
-//  DECLARE_ENUM_VAL(   HSCB_DSTRB_REC_MASK,        0xXXXXXXXX )
-//  DECLARE_ENUM_VAL(   HSCB_REC_LEN_MASK,          0xXXXXXXXX )
     /* RMAP protocol */
     DECLARE_ENUM_VAL(   HSCB_RMAP_PARAMS_MASK,      HSCB_RMAP_PARAMS_TARGET_ADDR_mask
                                                   | HSCB_RMAP_PARAMS_KEY_mask
@@ -519,15 +501,6 @@ BEGIN_ENUM( HSCB_REG_DFLT )
     DECLARE_ENUM_VAL(   HSCB_INTERVAL_DFLT,         0x000007D0 )
     DECLARE_ENUM_VAL(   HSCB_TIME_CODE_INNER_DFLT,  0x00000000 )
     DECLARE_ENUM_VAL(   HSCB_TIME_CODE_OUTER_DFLT,  0x00000000 )
-    /* Word-based data exchange */
-//  DECLARE_ENUM_VAL(   HSCB_DATA_SEND_H_DFLT,      0xXXXXXXXX )
-//  DECLARE_ENUM_VAL(   HSCB_DATA_SEND_L_DFLT,      0xXXXXXXXX )
-//  DECLARE_ENUM_VAL(   HSCB_DSTRB_SEND_DFLT,       0xXXXXXXXX )
-//  DECLARE_ENUM_VAL(   HSCB_SEND_LEN_DFLT,         0xXXXXXXXX )
-//  DECLARE_ENUM_VAL(   HSCB_DATA_REC_H_DFLT,       0xXXXXXXXX )
-//  DECLARE_ENUM_VAL(   HSCB_DATA_REC_L_DFLT,       0xXXXXXXXX )
-//  DECLARE_ENUM_VAL(   HSCB_DSTRB_REC_DFLT,        0xXXXXXXXX )
-//  DECLARE_ENUM_VAL(   HSCB_REC_LEN_DFLT,          0xXXXXXXXX )
     /* RMAP protocol */
     DECLARE_ENUM_VAL(   HSCB_RMAP_PARAMS_DFLT,      0x00017799 )
     DECLARE_ENUM_VAL(   HSCB_RMAP_STATUS_DFLT,      0x00000000 )
