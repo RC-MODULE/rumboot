@@ -59,12 +59,12 @@ typedef struct hscb_descr_struct
 /**
  * hscb_packed_descr_struct: Structure contains descriptor parameters which are used to transmit
  * start_address: 32-bit start address
- * length: Data block length (max 64M-1)
- * act: descr type
- * last: is last packet descriptor
- * ie: interrupt at finish execution
- * err: link fail
- * valid: data is correct
+ * length_attr: [31:6] Data block length (max 64M-1)
+ *              [ 5:4] act1, act2: descr type (0b10 - valid, others not)
+ *                 [3] act0: is last packet descriptor
+ *                 [2] ie: interrupt at finish execution
+ *                 [1] err: link fail
+ *                 [0] valid: data is correct
  */
 typedef struct hscb_packed_descr_struct
 {
