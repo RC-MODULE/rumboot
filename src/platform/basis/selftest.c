@@ -97,6 +97,9 @@ static bool check_pcie_mbist(uint32_t base)
                 rumboot_printf("Error: Timeout waiting for PLL to lock.\n");
                 return false;
         }
+
+        rumboot_printf("MBSIT: PLL now locked\n");
+
         //-----------------------------------------------------------------
         //  Enable MBIST functionality
         //-----------------------------------------------------------------
@@ -130,6 +133,7 @@ static bool check_pcie_mbist(uint32_t base)
                 return false;
         }
 
+        rumboot_printf("MBIST: completed\n");
         //-----------------------------------------------------------------
         //  Check, if MBIST failed
         //-----------------------------------------------------------------
