@@ -56,13 +56,11 @@ void go_dmac(unsigned int base, unsigned int *send, unsigned int *rcv, unsigned 
                 iowrite32(SPI_AXIR_BUFENA, (base + SPI_AXIR_BUFENA_ADDR));         //start AXIR DMA
                 read_data = ioread32(base + SPI_STATUS);
                 rumboot_printf("example_ok\n");
-                while (!(read_data & 0x008)) {
-                        read_data = ioread32(base + SPI_STATUS);
                         while (!(read_data & 0x004)) {
                                 read_data = ioread32(base + SPI_STATUS);
                         }
                 }
-        }
+        
         do {
                 SSPSR = ioread32(base + 0x0c);
         } while (SSPSR & 0x10);
