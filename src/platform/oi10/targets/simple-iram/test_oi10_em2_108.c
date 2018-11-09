@@ -25,8 +25,8 @@
 
 typedef enum
 {
-    flush_off = 0,
-    flush_on = 1
+    wr_rd = 1,
+    rd_o = 0
 } flush_state;
 
 #define SRAM0_OFFSET_WT 0x3000
@@ -70,23 +70,28 @@ void check_sram0_8 (uint32_t addr, flush_state state)
         [30] = 0xee,
         [31] = 0xff,
     };
-
-    //write
     uint32_t i = 0;
-    for (i = 0; i < 32; i++)
-    {
-        iowrite8 (check_arr8[i], addr + i);
-    }
-    //flush
     if (state){
-    dcbf ((void*)addr);
-    msync();
+        //write
+        for (i = 0; i < 32; i++)
+        {
+            iowrite8 (check_arr8[i], addr + i);
+        }
+        //read
+        for (i = 0; i < 32; i++)
+        {
+            TEST_ASSERT (ioread8(addr+i) == check_arr8[i],"ERROR: read value is wrong off flush");
+        }
     }
-    //read
-    for (i = 0; i < 32; i++)
-    {
-        TEST_ASSERT (ioread8(addr+i) == check_arr8[i],"ERROR: read value is wrong");
+
+    else {
+        //read
+        for (i = 0; i < 32; i++)
+        {
+            TEST_ASSERT (ioread8(addr+i) == check_arr8[i],"ERROR: read value is wrong");
+        }
     }
+
 }
 
 void check_sram0_16 (uint32_t addr, flush_state state)
@@ -110,22 +115,28 @@ void check_sram0_16 (uint32_t addr, flush_state state)
         [14] = 0xeeee,
         [15] = 0xffff
     };
-    //write
     uint32_t i = 0;
-    for (i = 0; i < 16; i++)
-    {
-        iowrite16 (check_arr16[i], addr + i*2);
-    }
-    //flush
     if (state){
-    dcbf ((void*)addr);
-    msync();
+                //write
+                for (i = 0; i < 16; i++)
+                {
+                    iowrite16 (check_arr16[i], addr + i*2);
+                }
+                //read
+                for (i = 0; i < 16; i++)
+                {
+                    TEST_ASSERT (ioread16(addr + i*2) == check_arr16[i],"ERROR: read value is wrong off flush");
+                }
     }
-    //read
-    for (i = 0; i < 16; i++)
-    {
-        TEST_ASSERT (ioread16(addr + i*2) == check_arr16[i],"ERROR: read value is wrong");
+
+    else {
+        //read
+        for (i = 0; i < 16; i++)
+        {
+            TEST_ASSERT (ioread16(addr + i*2) == check_arr16[i],"ERROR: read value is wrong");
+        }
     }
+
 }
 
 void check_sram0_32 (uint32_t addr, flush_state state)
@@ -141,22 +152,28 @@ void check_sram0_32 (uint32_t addr, flush_state state)
         [6] = 0x66666666,
         [7] = 0x77777777
     };
-    //write
     uint32_t i = 0;
-    for (i = 0; i < 8; i++)
-    {
-        iowrite32 (check_arr32[i], addr + i*4);
-    }
-    //flush
     if (state){
-    dcbf ((void*)addr);
-    msync();
+                //write
+                for (i = 0; i < 8; i++)
+                {
+                    iowrite32 (check_arr32[i], addr + i*4);
+                }
+                //read
+                for (i = 0; i < 8; i++)
+                {
+                    TEST_ASSERT (ioread32(addr + i*4) == check_arr32[i],"ERROR: read value is wrong off flush");
+                }
     }
-    //read
-    for (i = 0; i < 8; i++)
-    {
-        TEST_ASSERT (ioread32(addr + i*4) == check_arr32[i],"ERROR: read value is wrong");
+
+    else {
+        //read
+        for (i = 0; i < 8; i++)
+        {
+            TEST_ASSERT (ioread32(addr + i*4) == check_arr32[i],"ERROR: read value is wrong");
+        }
     }
+
 }
 
 void check_sram0_64 (uint32_t addr, flush_state state)
@@ -168,27 +185,35 @@ void check_sram0_64 (uint32_t addr, flush_state state)
         [2] = 0x0011223344556677ULL,
         [3] = 0x8899aabbccddeeffULL
     };
-    //write
     uint32_t i = 0;
-    for (i = 0; i < 4; i++)
-    {
-        iowrite64 (check_arr64[i], addr + i * 8);
-    }
-    //flush
     if (state){
-    dcbf ((void*)addr);
-    msync();
+                //write
+                for (i = 0; i < 4; i++)
+                {
+                    iowrite64 (check_arr64[i], addr + i * 8);
+                }
+
+                //read
+                for (i = 0; i < 4; i++)
+                {
+                    TEST_ASSERT (ioread64(addr + i*8) == check_arr64[i],"ERROR: read value is wrong off flush");
+                }
+
+        }
+
+    else{
+        //read
+        for (i = 0; i < 4; i++)
+        {
+            TEST_ASSERT (ioread64(addr + i*8) == check_arr64[i],"ERROR: read value is wrong");
+        }
     }
-    //read
-    for (i = 0; i < 4; i++)
-    {
-        TEST_ASSERT (ioread64(addr + i*8) == check_arr64[i],"ERROR: read value is wrong");
-    }
+
 }
 
 void check_sram0 (const uint32_t addr, flush_state state)
 {
-    rumboot_printf ("START CHECK W/R SRAM0\n");
+    rumboot_printf ("START CHECK SRAM0\n");
     rumboot_printf ("START ADDR = %x\n", addr);
 
     rumboot_printf ("SIZE_8\n");
@@ -205,6 +230,7 @@ void check_sram0 (const uint32_t addr, flush_state state)
 
     rumboot_printf ("CHECK W/R SRAM0 SUCCESSFUL\n");
 }
+
 
 /*                          MMU_TLB_ENTRY(  ERPN,   RPN,        EPN,        DSIZ,                   IL1I,   IL1D,   W,      I,      M,      G,      E,                      UX, UW, UR,     SX, SW, SR      DULXE,  IULXE,      TS,     TID,                WAY,                BID,                V   )*/
 #define TLB_ENTRY_CACHE_WT  MMU_TLB_ENTRY(  0x000,  0x00000,    0x00000,    MMU_TLBE_DSIZ_1GB,      0b0,    0b0,    0b1,    0b0,    0b1,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,     MMU_TLBWE_WAY_3,      MMU_TLBWE_BE_UND,   0b1 )
@@ -230,24 +256,27 @@ int main ()
     rumboot_printf ("CACHE WT\n");
     static const tlb_entry sram0_tlb_entry_wt = {TLB_ENTRY_CACHE_WT};
     write_tlb_entries(&sram0_tlb_entry_wt,1);
-    msync();
-    isync();
-    check_sram0 (SRAM0_BASE +  SRAM0_OFFSET_WT + 1, flush_off);
-    dci(2);
 
+    rumboot_printf ("WRITE and READ \n");
+    check_sram0 (SRAM0_BASE +  SRAM0_OFFSET_WT + 1, wr_rd);
+    dcbf ((void*)addr); //flush
+
+    rumboot_printf ("READ ONLY \n");
+    check_sram0 (SRAM0_BASE +  SRAM0_OFFSET_WT + 1, rd_o);
+
+    dci (2);
 
     rumboot_printf ("CACHE WB\n");
     static const tlb_entry sram0_tlb_entry_wb = {TLB_ENTRY_CACHE_WB};
     write_tlb_entries(&sram0_tlb_entry_wb,1);
-    msync();
-    isync();
-    check_sram0 (SRAM0_BASE +  SRAM0_OFFSET_WB + 2, flush_on);
-    dci(2);
 
-    msync();
-    isync();
-    check_sram0 (SRAM0_BASE + SRAM0_OFFSET_WB + 3, flush_off);
-    dci(2);
+    rumboot_printf ("WRITE and READ \n");
+    check_sram0 (SRAM0_BASE +  SRAM0_OFFSET_WB + 2, wr_rd);
+    dcbf ((void*)addr);//flush
+    dci (2);
+    rumboot_printf ("READ ONLY \n");
+    check_sram0 (SRAM0_BASE + SRAM0_OFFSET_WB + 2, rd_o);
+
 
     rumboot_printf ("TEST_OK\n");
     return 0;
