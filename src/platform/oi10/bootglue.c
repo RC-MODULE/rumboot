@@ -34,11 +34,11 @@ static void exception_handler(int id, const char *name)
 {
         rumboot_printf("\n\n\nWE GOT AN EXCEPTION: %d: %s\n", id, name);
         rumboot_printf("--- Guru Meditation ---\n");
-        rumboot_printf("MSR:  0x%x\n", msr_read());
-        rumboot_printf("SRR0: 0x%x\n", spr_read(SPR_SRR0));
-        rumboot_printf("SRR1: 0x%x\n", spr_read(SPR_SRR1));
-        rumboot_printf("CSRR0: 0x%x\n", spr_read(SPR_CSRR0));
-        rumboot_printf("CSRR1: 0x%x\n", spr_read(SPR_CSRR1));
+        rumboot_printf("MSR:    0x%x\n", msr_read());
+        rumboot_printf("SRR0:   0x%x\n", spr_read(SPR_SRR0));
+        rumboot_printf("SRR1:   0x%x\n", spr_read(SPR_SRR1));
+        rumboot_printf("CSRR0:  0x%x\n", spr_read(SPR_CSRR0));
+        rumboot_printf("CSRR1:  0x%x\n", spr_read(SPR_CSRR1));
         rumboot_printf("MCSRR0: 0x%x\n", spr_read(SPR_MCSRR0));
         rumboot_printf("MCSRR1: 0x%x\n", spr_read(SPR_MCSRR1));
         rumboot_printf("---       ---       ---\n");
@@ -229,10 +229,7 @@ void  __attribute__((no_instrument_function)) rumboot_platform_putchar(uint8_t c
         if (c == '\n') {
                 rumboot_platform_putchar('\r');
         }
-//        uint32_t arg[] = {1, 1};
-//        rumboot_platform_event_raise(EVENT_PERF_FUNC, arg, 2);
 
-//        uart_putc(UART0_BASE, 'c', 100000);
         while (uart_check_tfifo_full(UART0_BASE));;
         iowrite32(c, UART0_BASE + UARTDR);
 }
