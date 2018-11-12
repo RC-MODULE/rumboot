@@ -5,6 +5,11 @@ set(RUMBOOT_PLATFORM_DEFAULT_LDS basis/rom.lds)
 set(RUMBOOT_PLATFORM_DEFAULT_SNAPSHOT default)
 
 
+if (RUMBOOT_BUILD_TYPE STREQUAL "Production")
+  set(BOOTROM_IFLAGS +BOOTMGR_KEEP_DRIVING=1 +GTUBE_ONLY_PRODUCTION_OPCODES)
+else()
+  set(BOOTROM_IFLAGS )  
+endif()
 
 #These are configurations for our binaries
 rumboot_add_configuration(
@@ -16,6 +21,7 @@ rumboot_add_configuration(
   CFLAGS -DRUMBOOT_ONLY_STACK
   PREFIX ROM
   TIMEOUT_CTEST 200000
+  IRUN_FLAGS ${BOOTROM_IFLAGS}
   FEATURES ROMGEN
 )
 
