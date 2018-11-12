@@ -90,6 +90,7 @@
 #include <platform/test_assert.h>
 #include <platform/devices/emi.h>
 #include <platform/devices/greth.h>
+#include <regs/regs_gpio_pl061.h>
 #include <devices/gpio_pl061.h>
 
 #define TEST_EVENT_CHECK_EMI_ACTIVE     0x00001000
@@ -138,17 +139,17 @@ void check_gpio()
 {
     test_event(TEST_EVENT_CHECK_GPIO_HIZ);
 
-    gpio_set_port_direction(GPIO_0_BASE, GIO_PIN_ALL_OUT);
-    gpio_set_port_direction(GPIO_1_BASE, GIO_PIN_ALL_OUT);
+    gpio_set_direction_by_mask( GPIO_0_BASE, GPIO_REG_MASK, direction_out );
+    gpio_set_direction_by_mask( GPIO_1_BASE, GPIO_REG_MASK, direction_out );
     for (int i=0; i<8; i++)
     {
-        gpio_set_pin(GPIO_0_BASE, i, 0);
-        gpio_set_pin(GPIO_1_BASE, i, 0);
+        gpio_set_value(GPIO_0_BASE, i, false);
+        gpio_set_value(GPIO_1_BASE, i, false);
     }
     test_event(TEST_EVENT_CHECK_GPIO_ACTIVE);
 
-    gpio_set_port_direction(GPIO_0_BASE, GIO_PIN_ALL_IN);
-    gpio_set_port_direction(GPIO_1_BASE, GIO_PIN_ALL_IN);
+    gpio_set_direction_by_mask( GPIO_0_BASE, GPIO_REG_MASK, direction_in );
+    gpio_set_direction_by_mask( GPIO_1_BASE, GPIO_REG_MASK, direction_in );
     test_event(TEST_EVENT_CHECK_GPIO_HIZ);
 }
 
