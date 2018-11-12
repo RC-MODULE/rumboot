@@ -1552,11 +1552,15 @@ macro(rumboot_platform_generate_stuff_for_taget product)
       DEPENDS ${product}.hex/image_mem64_0.hex
     )
 
-    add_dependencies(${product}.all ${product}.hex)
+    list (FIND TARGET_FEATURES "CPACK" _index)
+    if (${_index} GREATER -1)
+            install(DIRECTORY ${PROJECT_BINARY_DIR}/${product}.hex DESTINATION rumboot)
+    endif()
 
+    add_dependencies(${product}.all ${product}.hex)
   endif()
 
-  install(DIRECTORY ${CMAKE_BINARY_DIR}/${product}.rcf DESTINATION rumboot/rcf)
+
 endmacro()
 
 
