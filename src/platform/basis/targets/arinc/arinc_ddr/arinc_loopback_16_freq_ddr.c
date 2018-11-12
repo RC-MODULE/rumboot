@@ -119,7 +119,8 @@ int main()
 	
 	}
 
-	arinc_init_freq(TX_FREQ, RX_FREQ);	
+	arinc_init_freq(TX_FREQ, RX_FREQ);
+	iowrite32(1,ARINC_BASE + TEST_FRC_TS); // test mode for FREE COUNTER
     iowrite32(enable,ARINC_BASE + CHANNEL_EN); // run transaction
     frc_L = ioread32(GLOBAL_TIMERS + FREE_RUN_L); //begin frc count
 	rumboot_printf("frc_L =0x%x\n", frc_L);
@@ -158,40 +159,50 @@ for (i = 0; i< 32 ; i++)
 
 	tmp  = tmp -tmp_r;
 	if (tmp != 0) {
-		rumboot_printf("ARINC addr =0x%x\n", ioread32(addr));
-		rumboot_printf("ARINC addr_rd =0x%x\n", ioread32(addr_rd));	
-		return TEST_ERROR;}
+	rumboot_printf("ARINC addr =0x%x\n", ioread32(addr));
+	rumboot_printf("ARINC addr_rd =0x%x\n", ioread32(addr_rd));
+		return  TEST_ERROR;}
 	}
 	if (tmp == ARINC_OK) {
 	
 	for (i = 0; i< 16 ; i++)
 	{		
 	tmp1 = ioread32(ARINC_BASE + TRF_E_TX + i*4);
-	if (tmp1 <= frc_L) return TEST_ERROR;
+	if (tmp1 <= frc_L) {
+	rumboot_printf("frc_L=0x%x\n", frc_L);	
+	rumboot_printf("ARINC TRF_E_TX=0x%x\n", tmp1);	
+	return TEST_ERROR;}
 	rumboot_printf("ARINC TRF0_E_TX =0x%x\n", tmp1);
 	tmp = ioread32(ARINC_BASE + TLF_E_TX + i*4);
-	if (tmp != frc_L) return TEST_ERROR;
+	if (tmp <= frc_L) {		
+	rumboot_printf("ARINC TLF0_E_TX =0x%x\n", tmp);	
+	return TEST_ERROR; }
 	rumboot_printf("ARINC TLF0_E_TX =0x%x\n", tmp);
 	
 	tmp = ioread32(ARINC_BASE + TRL_E_TX + i*4);
-	if (tmp <= frc_L) return TEST_ERROR;
+	if (tmp <= frc_L) {
+		rumboot_printf("ARINC TLF0_E_TX =0x%x\n", tmp);		
+	return TEST_ERROR; }
 	delta = tmp -tmp1;
 	rumboot_printf("ARINC TRL0_E_TX =0x%x,delta=0x%x\n", tmp,delta);
 	
 //--------------------------------------------------------
 	tmp1 = ioread32(ARINC_BASE + TRF_E_RX + i*4);
-	if (tmp1 <= frc_L) return TEST_ERROR;
+	if (tmp1 <= frc_L) {
+	rumboot_printf("ARINC TRF0_E_RX =0x%x\n", tmp1);
+	return TEST_ERROR;}
 	rumboot_printf("ARINC TRF0_E_RX =0x%x\n", tmp1);
  
 	tmp = ioread32(ARINC_BASE + TLF_E_RX + i*4);
-	if (tmp != frc_L) return TEST_ERROR;
+	if (tmp <= frc_L) return TEST_ERROR;
 	rumboot_printf("ARINC TLF0_E_RX =0x%x\n", tmp);
 	
 	tmp = ioread32(ARINC_BASE + TRL_E_RX + i*4);
-	if (tmp <= frc_L) return TEST_ERROR;
+	if (tmp <= frc_L) {
+	rumboot_printf("ARINC TRL0_E_RX =0x%x\n", tmp);	
+	return TEST_ERROR;}	
 	delta = tmp -tmp1;
 	rumboot_printf("ARINC TRL0_E_RX =0x%x,delta=0x%x\n", tmp, delta);
-	
 	}
 		
 	 rumboot_printf("ARINC LOOPBACK test OK \n");
