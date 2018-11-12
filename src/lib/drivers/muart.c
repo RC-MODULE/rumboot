@@ -91,10 +91,8 @@ void muart_disable(uint32_t base)
 void muart_write_char(uint32_t base, char ch)
 {
     while ((ioread32(base + MUART_FIFO_STATE) & 0x7ff0000) >= 0x3ff0000) {
-        rumboot_printf(" muart_write_char fifo state: %x\n",
-                       ioread32(base + MUART_FIFO_STATE));
     };
-    iowrite8((uint8_t)ch, base + MUART_DTRANS);
+    iowrite32((uint8_t)ch, base + MUART_DTRANS);
 }
 
 char muart_read_char(uint32_t base)
@@ -103,9 +101,8 @@ char muart_read_char(uint32_t base)
         uint32_t reg;
 
         while (((reg=ioread32(base + MUART_FIFO_STATE)) & 0xfff) == 0) {
-            rumboot_printf("muart_read_char fifo state: %x\n", reg);
         }
-	ch = ioread8(base + MUART_DREC);
+	ch = ioread32(base + MUART_DREC);
 	return ch;
 }
 
