@@ -121,7 +121,7 @@ static bool check_pcie_mbist(uint32_t base)
         //  Wait MBIST done
         //-----------------------------------------------------------------
         done = 0;
-        LOOP_UNTIL_TIMEOUT(100000) {
+        LOOP_UNTIL_TIMEOUT(1000) {
                 if ((ioread32(SCTL_BASE + SCTL_PCIE_REG_0) & 0x02000000) == 0x02000000) {
                         done = 1;
                         break;
