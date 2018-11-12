@@ -317,6 +317,36 @@ BEGIN_ENUM( HSCB_ADMA_CH_STATUS_FIELD )
     DECLARE_ENUM_VAL(   HSCB_ADMA_CH_STATUS_WDMA_IRQ_mask,  FIELD_MASK32( HSCB_ADMA_CH_STATUS_WDMA_IRQ_i, HSCB_ADMA_CH_STATUS_WDMA_IRQ_n ) )
 END_ENUM( HSCB_ADMA_CH_STATUS_FIELD )
 
+BEGIN_ENUM( HSCB_XDMA_STATUS_FIELD )
+    DECLARE_ENUM_VAL(   HSCB_XDMA_STATUS_DESC_INT_i,      0 )     /**< Zakoncheno vypolneniye deskriptora kanala chteniya s 1 v pole Int */
+    DECLARE_ENUM_VAL(   HSCB_XDMA_STATUS_DESC_INT_n,      1 )
+    DECLARE_ENUM_VAL(   HSCB_XDMA_STATUS_DESC_INT_mask,   FIELD_MASK32( HSCB_XDMA_STATUS_DESC_INT_i, HSCB_XDMA_STATUS_DESC_INT_n ) )
+    DECLARE_ENUM_VAL(   HSCB_XDMA_STATUS_DESC_END_i,      1 )     /**< Zakoncheno vypolneniye ostanovki XDMA */
+    DECLARE_ENUM_VAL(   HSCB_XDMA_STATUS_DESC_END_n,      1 )
+    DECLARE_ENUM_VAL(   HSCB_XDMA_STATUS_DESC_END_mask,   FIELD_MASK32( HSCB_XDMA_STATUS_DESC_END_i, HSCB_XDMA_STATUS_DESC_END_n ) )
+    DECLARE_ENUM_VAL(   HSCB_XDMA_STATUS_BAD_DESC_i,      2 )     /**< Deskriptor kanala chteniya pomechen kak vypolnennyy (compl) */
+    DECLARE_ENUM_VAL(   HSCB_XDMA_STATUS_BAD_DESC_n,      1 )
+    DECLARE_ENUM_VAL(   HSCB_XDMA_STATUS_BAD_DESC_mask,   FIELD_MASK32( HSCB_XDMA_STATUS_BAD_DESC_i, HSCB_XDMA_STATUS_BAD_DESC_n ) )
+    DECLARE_ENUM_VAL(   HSCB_XDMA_STATUS_AXI_ERROR_i,     5 )     /**< Signal preryvaniya pri vozniknovenii oshibki na sistemnoy shine (RRESP = SLVERR) kanal chteniya */
+    DECLARE_ENUM_VAL(   HSCB_XDMA_STATUS_AXI_ERROR_n,     1 )
+    DECLARE_ENUM_VAL(   HSCB_XDMA_STATUS_AXI_ERROR_mask,  FIELD_MASK32( HSCB_XDMA_STATUS_AXI_ERROR_i, HSCB_XDMA_STATUS_AXI_ERROR_n ) )
+    DECLARE_ENUM_VAL(   HSCB_XDMA_STATUS_BUF_FULL_i,      6 )     /**< Bufer kanala chteniya polon */
+    DECLARE_ENUM_VAL(   HSCB_XDMA_STATUS_BUF_FULL_n,      1 )
+    DECLARE_ENUM_VAL(   HSCB_XDMA_STATUS_BUF_FULL_mask,   FIELD_MASK32( HSCB_XDMA_STATUS_BUF_FULL_i, HSCB_XDMA_STATUS_BUF_FULL_n ) )
+    DECLARE_ENUM_VAL(   HSCB_XDMA_STATUS_BUF_EMPTY_i,     7 )     /**< Bufer kanala chteniya pust */
+    DECLARE_ENUM_VAL(   HSCB_XDMA_STATUS_BUF_EMPTY_n,     1 )
+    DECLARE_ENUM_VAL(   HSCB_XDMA_STATUS_BUF_EMPTY_mask,  FIELD_MASK32( HSCB_XDMA_STATUS_BUF_EMPTY_i, HSCB_XDMA_STATUS_BUF_EMPTY_n ) )
+    DECLARE_ENUM_VAL(   HSCB_XDMA_STATUS_ACTIVE_TRANS_i,    8 )     /**< Priznak aktivnoy AXI-tranzaktsii: yesli v tekushchiy momeont vypolnyayetsya khotya by odna AXI-tranzaktsiya, to dannyy bit nakhoditsya v sostoyanii "1", v protivnom sluchaye ? v sostoyanii "0". */
+    DECLARE_ENUM_VAL(   HSCB_XDMA_STATUS_ACTIVE_TRANS_n,    1 )
+    DECLARE_ENUM_VAL(   HSCB_XDMA_STATUS_ACTIVE_TRANS_mask, FIELD_MASK32( HSCB_XDMA_STATUS_ACTIVE_TRANS_i, HSCB_XDMA_STATUS_ACTIVE_TRANS_n ) )
+    DECLARE_ENUM_VAL(   HSCB_XDMA_STATUS_ACT_REQ_i,         12 )     /**< Nalichiye aktivnykh (ne zavershennykh) zaprosov na chteniye dannykh */
+    DECLARE_ENUM_VAL(   HSCB_XDMA_STATUS_ACT_REQ_n,         1 )
+    DECLARE_ENUM_VAL(   HSCB_XDMA_STATUS_ACT_REQ_mask,      FIELD_MASK32( HSCB_XDMA_STATUS_ACT_REQ_i, HSCB_XDMA_STATUS_ACT_REQ_n ) )
+    DECLARE_ENUM_VAL(   HSCB_XDMA_STATUS_CNT_WORD_i,        16 )     /**< Kolichestvo slov v bufere dannykh kanala chteniya */
+    DECLARE_ENUM_VAL(   HSCB_XDMA_STATUS_CNT_WORD_n,        7 )
+    DECLARE_ENUM_VAL(   HSCB_XDMA_STATUS_CNT_WORD_mask,     FIELD_MASK32( HSCB_XDMA_STATUS_CNT_WORD_i, HSCB_XDMA_STATUS_CNT_WORD_n ) )
+END_ENUM( HSCB_XDMA_STATUS_FIELD )
+
 BEGIN_ENUM( HSCB_XDMA_SETTINGS_FIELD )
     DECLARE_ENUM_VAL(   HSCB_XDMA_SETTINGS_X_DESC_INT_i,              0 )     /**< Maska preryvaniya "Zakoncheno vypolneniye deskriptora kanala chteniya (zapisi) s 1 v pole Int" */
     DECLARE_ENUM_VAL(   HSCB_XDMA_SETTINGS_X_DESC_INT_n,              1 )
@@ -438,6 +468,23 @@ BEGIN_ENUM( HSCB_REG_MASK )
     DECLARE_ENUM_VAL(   HSCB_AWLOCK_MASK,           0x00000003 )
     DECLARE_ENUM_VAL(   HSCB_ARBURST_MASK,          0x00000003 )
     DECLARE_ENUM_VAL(   HSCB_AWBURST_MASK,          0x00000003 )
+    /* Read DMA */
+    DECLARE_ENUM_VAL(   HSCB_RDMA_STATUS_MASK,      HSCB_XDMA_STATUS_DESC_INT_mask
+                                                  | HSCB_XDMA_STATUS_DESC_END_mask
+                                                  | HSCB_XDMA_STATUS_BAD_DESC_mask
+                                                  | HSCB_XDMA_STATUS_AXI_ERROR_mask
+                                                  | HSCB_XDMA_STATUS_BUF_FULL_mask
+                                                  | HSCB_XDMA_STATUS_BUF_EMPTY_mask
+                                                  | HSCB_XDMA_STATUS_ACTIVE_TRANS_mask
+                                                  | HSCB_XDMA_STATUS_ACT_REQ_mask
+                                                  | HSCB_XDMA_STATUS_CNT_WORD_mask )
+    /* Write DMA */
+    DECLARE_ENUM_VAL(   HSCB_WDMA_STATUS_MASK,      HSCB_XDMA_STATUS_DESC_INT_mask
+                                                  | HSCB_XDMA_STATUS_DESC_END_mask
+                                                  | HSCB_XDMA_STATUS_BAD_DESC_mask
+                                                  | HSCB_XDMA_STATUS_AXI_ERROR_mask
+                                                  | HSCB_XDMA_STATUS_BUF_FULL_mask
+                                                  | HSCB_XDMA_STATUS_BUF_EMPTY_mask )
     /* Read/Write DMA */
     DECLARE_ENUM_VAL(   HSCB_XDMA_SETTINGS_MASK,    HSCB_XDMA_SETTINGS_X_DESC_INT_mask
                                                   | HSCB_XDMA_SETTINGS_X_DESC_END_mask
