@@ -48,6 +48,7 @@ enum MUART_MODE {
         RS_232 = 0,
         RS_485,
         RS_422,
+        RS_TTL
 };
 
 //Structure contains configuration parameters
@@ -70,7 +71,7 @@ struct muart_conf {
  * @param value
  */
 void set_reg(uint32_t base, uint32_t reg_offset, uint32_t value);
- 
+
 /**
  * brief Init MUART
  * @param base base address of MUART
