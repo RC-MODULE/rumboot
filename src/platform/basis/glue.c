@@ -125,26 +125,3 @@ void rumboot_platform_setup()
         sp804_config(DIT3_BASE, &conf_str, 1);
         sp804_enable(DIT3_BASE, 1);
 }
-
-#ifndef CMAKE_BUILD_TYPE_DEBUG
-void  __attribute__((no_instrument_function)) rumboot_platform_putchar(uint8_t c)
-{
-        if (c == '\n') {
-                rumboot_platform_putchar('\r');
-        }
-
-}
-
-
-int rumboot_platform_getchar(uint32_t timeout_us)
-{
-        uint32_t start = rumboot_platform_get_uptime();
-
-        while (rumboot_platform_get_uptime() - start < timeout_us) {
-//                if (!uart_check_rfifo_empty(UART0_BASE)) {
-//                        return ioread32(UART0_BASE + UARTDR) & 0xFF;
-//                }
-        }
-        return -1;
-}
-#endif

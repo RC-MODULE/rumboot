@@ -9,7 +9,8 @@
 #include <rumboot/bootsrc/boilerplate.h>
 #include <rumboot/bootsrc/sdio.h>
 #include <platform/regs/sctl.h>
-
+#include <devices/muart.h>
+#include <regs/regs_muart.h>
 
 #define BOOTM_SELFTEST     (1 << 0)
 #define BOOTM_HOST         (1 << 1)
@@ -23,7 +24,7 @@ void rumboot_platform_read_config(struct rumboot_config *conf)
         uint32_t bootm = ioread32(SCTL_BASE + SCTL_BOOTM);
 
         if (bootm & BOOTM_FASTUART) {
-                conf->baudrate = 6000000;
+                conf->baudrate = 6250000;
         } else {
                 conf->baudrate = 115200;
         }
@@ -35,6 +36,18 @@ void rumboot_platform_read_config(struct rumboot_config *conf)
 void rumboot_platform_init_loader(struct rumboot_config *conf)
 {
         iowrite32(1, GLOBAL_TIMERS+0x40); /* Fire up global timers */
+        struct muart_conf uconf;
+        uconf.wlen = WL_8;
+        uconf.stp2 = STP1;
+        uconf.is_even = false;
+        uconf.is_parity = false;
+        uconf.mode = RS_TTL;
+        uconf.is_loopback = 0;
+        uconf.baud_rate = conf->baudrate;  // bod/s (bdiv=4)
+        uconf.is_dma = 0;
+        muart_init(UART0_BASE, &uconf);
+        muart_enable(UART0_BASE);
+        muart_write_char(UART0_BASE, 0x55);
 }
 
 static bool sdio0_enable(const struct rumboot_bootsource *src, void *pdata)
@@ -188,3 +201,25 @@ void rumboot_platform_print_summary(struct rumboot_config *conf)
 {
 
 }
+
+
+#ifndef CMAKE_BUILD_TYPE_DEBUG
+void  __attribute__((no_instrument_function)) rumboot_platform_putchar(uint8_t ch)
+{
+        while ((ioread32(UART0_BASE + MUART_FIFO_STATE) & 0x7ff0000) >= 0x3ff0000);
+        iowrite32(ch, UART0_BASE + MUART_DTRANS);
+}
+
+
+int rumboot_platform_getchar(uint32_t timeout_us)
+{
+        int ch = -1;
+        uint32_t reg;
+
+        while (((reg=ioread32(UART0_BASE + MUART_FIFO_STATE)) & 0xfff) == 0) {
+        }
+	ch = ioread32(UART0_BASE + MUART_DREC);
+	return ch;
+
+}
+#endif
