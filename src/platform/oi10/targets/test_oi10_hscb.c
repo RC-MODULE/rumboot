@@ -17,11 +17,11 @@
 #include <platform/trace.h>
 #include <platform/test_assert.h>
 #include <platform/interrupts.h>
-#include <regs/regs_hscb.h>
+#include <platform/regs/regs_hscb.h>
 #include <rumboot/irq.h>
 #include <rumboot/rumboot.h>
 #include <rumboot/memfill.h>
-#include <devices/hscb.h>
+#include <platform/devices/hscb.h>
 #include <platform/devices/emi.h>
 #include <platform/devices/nor_1636RR4.h>
 
