@@ -213,13 +213,13 @@ void  __attribute__((no_instrument_function)) rumboot_platform_putchar(uint8_t c
 
 int rumboot_platform_getchar(uint32_t timeout_us)
 {
-        int ch = -1;
-        uint32_t reg;
-
-        while (((reg=ioread32(UART0_BASE + MUART_FIFO_STATE)) & 0xfff) == 0) {
+        uint32_t start = rumboot_platform_get_uptime();
+        while (rumboot_platform_get_uptime() - start < timeout_us) {
+                if ((ioread32(UART0_BASE + MUART_FIFO_STATE)) & 0xfff) {
+                        return ioread32(UART0_BASE + MUART_DREC);
+                }
         }
-	ch = ioread32(UART0_BASE + MUART_DREC);
-	return ch;
+	return -1;
 
 }
 #endif
