@@ -111,31 +111,47 @@ int check_halt ()
 
 volatile static uint32_t mc_cnt = 0;
 
-void test_MC()
+static void exception_handler(int id, const char *name)
 {
-	mc_cnt += 1;
-	rumboot_printf("MACHINECHECK interrupt occurred. It is OK!\n");
-}
-
-void __attribute__ ((aligned(16))) test_MC_hdr()
-{
-	spr_write(SPR_MCSR_C,0xFFFFFFFF);
-	asm volatile ("bl test_MC \n\t");
-	asm volatile ("rfmci \n\t");
+    rumboot_printf("\nWE GOT AN EXCEPTION: %d: %s\n", id, name);
+    if(id == RUMBOOT_IRQ_MACHINE_CHECK)
+    {
+        rumboot_printf("It is OK!\n");
+        rumboot_printf("MSR:  0x%x\n", msr_read());
+        rumboot_printf("MCSR: 0x%x\n", spr_read(SPR_MCSR_C));
+        rumboot_printf("MCSRR0: 0x%x\n", spr_read(SPR_MCSRR0));
+        rumboot_printf("MCSRR1: 0x%x\n", spr_read(SPR_MCSRR1));
+	    mc_cnt += 1;
+	    spr_write(SPR_MCSR_C,0xFFFFFFFF);
+    }
+    else
+    {
+        rumboot_printf("--- Guru Meditation ---\n");
+        rumboot_printf("MSR:  0x%x\n", msr_read());
+        rumboot_printf("SRR0: 0x%x\n", spr_read(SPR_SRR0));
+        rumboot_printf("SRR1: 0x%x\n", spr_read(SPR_SRR1));
+        rumboot_printf("CSRR0: 0x%x\n", spr_read(SPR_CSRR0));
+        rumboot_printf("CSRR1: 0x%x\n", spr_read(SPR_CSRR1));
+        rumboot_printf("MCSRR0: 0x%x\n", spr_read(SPR_MCSRR0));
+        rumboot_printf("MCSRR1: 0x%x\n", spr_read(SPR_MCSRR1));
+        rumboot_printf("---       ---       ---\n");
+      	rumboot_platform_panic("Please reset or power-cycle the board\n");
+    }
 }
 
 int check_machinecheck ()
 {
 	uint32_t const msr_old_value = msr_read();
 	uint32_t const ccr1_old_value = spr_read(SPR_CCR1);
-	uint32_t const ivor1_old_value = spr_read(SPR_IVOR1);
 
 	rumboot_printf("DEBUG_MACHINECHECK check start!\n");
 
 	spr_write(SPR_MCSR_C,0xFFFFFFFF);
 	msr_write(msr_old_value | (0b1 << ITRPT_XSR_FP_i)   /* MSR[FP] - Floating point available. */
                             | (0b1 << ITRPT_XSR_ME_i)); /* MSR[ME] - Machine check enable.     */
-    spr_write(SPR_IVOR1, (uint32_t)&test_MC_hdr & 0x0000FFFF);
+
+	/* Set our own handler */
+    rumboot_irq_set_exception_handler(exception_handler);
 
 	rumboot_printf("send TEC_CHECK_DEBUG_MACHINECHECK\n");
 	test_event(TEC_CHECK_DEBUG_MACHINECHECK );
@@ -163,7 +179,6 @@ int check_machinecheck ()
 	asm volatile ("fcmpu 0, 1, 2\n\t");
 
 	spr_write(SPR_MCSR_C,0xFFFFFFFF);
-	spr_write(SPR_IVOR1,ivor1_old_value);
 	msr_write(msr_old_value);
 
 	if(mc_cnt != 1) return 1;
