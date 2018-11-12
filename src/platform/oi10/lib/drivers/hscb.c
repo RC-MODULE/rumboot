@@ -5,7 +5,7 @@
  *      Author: r.galiulin
  */
 
-#include <devices/hscb.h>
+#include <platform/devices/hscb.h>
 
 uint32_t hscb_change_endian (uint32_t data_in){
     uint32_t data_out = 0;
@@ -31,98 +31,6 @@ void hscb_convert_to_bytes (uint32_t* data_in, uint8_t* data_out, uint32_t len) 
         data_out[i+6] = data_in[i/4] >> 16;
         data_out[i+7] = data_in[i/4] >> 24;
         }
-}
-
-uint32_t hscb_set_desc (uint32_t sys_addr, uint32_t len, uint32_t desc_addr, uint8_t* data_in, bool act0, bool interrupt, bool valid, bool endian){
-    int i = 0;
-    uint32_t tmp = 0;
-    uint32_t desc_data = 0;
-    rumboot_putstring ("Set descriptor ");
-    rumboot_puthex (sys_addr);
-    if (len == 0) {
-        iowrite32(0x01000000, sys_addr);// "Stop" descriptor
-    }
-    else {
-        desc_data = len << 6;// Set length
-        desc_data = desc_data | 0x00000020;
-        if (act0) desc_data = desc_data | 0x00000008;
-        if (interrupt) desc_data = desc_data | 0x00000004;
-        if (valid) desc_data = desc_data | 0x00000001;
-            if (endian)
-                iowrite32(hscb_change_endian(desc_data), sys_addr);
-            else
-                iowrite32(desc_data, sys_addr);
-    }
-    sys_addr += 4;
-
-    if (len == 0) {
-        iowrite32(0x00000000, sys_addr);// "Stop" descriptor
-        iowrite32(0x00000000,sys_addr+4);// "Stop" descriptor
-        sys_addr += 8;
-        return sys_addr;
-    }
-    else {
-            if (endian)
-                iowrite32(hscb_change_endian(desc_addr), sys_addr);
-            else
-                iowrite32(desc_addr,sys_addr);
-    }
-    sys_addr += 4;
-
-    tmp = (len / 4 + 2)*4;
-
-
-
-        for (i=0;i<=tmp;i++){
-            if (i <= len){
-                iowrite8(data_in[i], desc_addr++);
-            }
-            else
-                iowrite8(0, desc_addr++);
-        }
-    return sys_addr;
-}
-
-uint32_t hscb_get_desc (uint32_t sys_addr, uint8_t* data_out, uint32_t* len,  bool* act0, bool* interrupt, bool* end, bool* valid, bool endian){
-    int i = 0;
-    uint32_t desc_addr = 0;
-    uint32_t desc_data = 0;
-    uint32_t desc_len = 0;
-    rumboot_putstring( "Get descriptor " );
-    rumboot_puthex (sys_addr);
-    if (endian)
-        desc_data = hscb_change_endian(ioread32(sys_addr));
-
-    else
-        desc_data = ioread32(sys_addr);
-
-    sys_addr += 4;
-
-    if (endian)
-        desc_addr = hscb_change_endian(ioread32(sys_addr));
-    else
-        desc_addr = ioread32(sys_addr);
-
-    sys_addr += 4;
-    desc_len = desc_data >> 6;
-    *len = desc_len;
-    if(desc_data & 0x00000010){
-        *act0      = 0;
-        *interrupt = 0;
-        *end       = 0;
-        *valid     = 0;
-        if(desc_data & 0x00000008) *act0      = 1;
-        if(desc_data & 0x00000004) *interrupt = 1;
-        if(desc_data & 0x00000002) *end       = 1;
-        if(desc_data & 0x00000001) *valid     = 1;
-        for (i=0;i<=desc_len-1;i++){
-            data_out[i] = ioread8(desc_addr++);
-        }
-    }
-    else {
-        sys_addr = 0xffffffff;
-    }
-    return sys_addr;
 }
 
 bool hscb_sw_rst(uint32_t base_addr)
