@@ -66,7 +66,7 @@ uint64_t test_data_array[] =
 void CACHE_DATA_LINE_BY_TAG_INDEX (uint32_t TAG, uint32_t INDEX)
 {
     uint32_t addr = (0x00 | ((TAG)<<14) | ((INDEX)<<5) | (0<<2));
-    rumboot_printf("Address = 0x%x (tag = 0x%x, index = 0x%x)\n", addr, TAG, INDEX );
+    rumboot_printf("Address = 0x%x (tag = 0x%x)\n", addr, TAG );
     msync();
     /*Minimal caching size is 1 line = 32 bytes = 8 words = 4 doublewords*/
     for (int i = 0; i < 4; i++)
@@ -113,33 +113,33 @@ void check_dcu_tag()
 
      rumboot_printf("\nSRAM0\n");
      cache_data((0x3E), 0x00);
-     cache_data((0x00), 0x04);
-     cache_data((0x15), 0x08);
-     cache_data((0x2A), 0x0C);
+     cache_data((0x00), 0x01);
+     cache_data((0x15), 0x02);
+     cache_data((0x2A), 0x03);
 
      rumboot_printf("\nSDRAM\n");
-     cache_data((0x8FFE), 0x00);
-     cache_data((0x8000), 0x04);
-     cache_data((0x8AAA), 0x08);
-     cache_data((0x8555), 0x0C);
+     cache_data((0x8FFE), 0x04);
+     cache_data((0x8000), 0x05);
+     cache_data((0x8AAA), 0x06);
+     cache_data((0x8555), 0x07);
 
      rumboot_printf("\nSSRAM\n");
-     cache_data((0x100FE), 0x00);
-     cache_data((0x10000), 0x04);
-     cache_data((0x100AA), 0x08);
-     cache_data((0x10055), 0x0C);
+     cache_data((0x100FE), 0x08);
+     cache_data((0x10000), 0x09);
+     cache_data((0x100AA), 0x0A);
+     cache_data((0x10055), 0x0B);
 
      rumboot_printf("\nPIPELINED\n");
-     cache_data((0x140FE), 0x00);
-     cache_data((0x14000), 0x04);
-     cache_data((0x140AA), 0x08);
-     cache_data((0x14055), 0x0C);
+     cache_data((0x140FE), 0x0C);
+     cache_data((0x14000), 0x0D);
+     cache_data((0x140AA), 0x0E);
+     cache_data((0x14055), 0x0F);
 
      rumboot_printf("\nSRAM1\n");
-     cache_data((0x180FE), 0x00);
-     cache_data((0x18000), 0x04);
-     cache_data((0x180AA), 0x08);
-     cache_data((0x18055), 0x0C);
+     cache_data((0x180FE), 0x10);
+     cache_data((0x18000), 0x11);
+     cache_data((0x180AA), 0x12);
+     cache_data((0x18055), 0x13);
 }
 
 int main()
