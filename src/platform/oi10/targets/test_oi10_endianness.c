@@ -248,6 +248,10 @@ void check_mem_HARD (uint32_t base_addr, uint32_t code_event, uint8_t const *con
             data[0],data[1],data[2],data[3] };
 
     rumboot_platform_event_raise(EVENT_TESTEVENT, event, ARRAY_SIZE(event) );
+
+    if ( (base_addr >= NOR_BASE) && (base_addr < NOR_BASE + NOR_SIZE) )  udelay(30) ;
+    //mdelay(20);
+
     msync();
     rumboot_printf ( "Check mem: %x\n", ioread32 ( base_addr + 0x00) );
     msync();
