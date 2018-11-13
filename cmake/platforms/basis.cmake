@@ -112,8 +112,8 @@ rumboot_add_configuration(
 
 include(${CMAKE_SOURCE_DIR}/cmake/bootrom.cmake)
 
-set(ROM_115200_OPTS +BOOT_FASTUART=0 +UART0_SPEED=115200)
-set(ROM_6500K_OPTS  +BOOT_FASTUART=1 +UART0_SPEED=6250000)
+set(ROM_115200_OPTS +BOOT_FASTUART=0 +UART0_SPEED=115200  +I2C0_SLV_DISABLE)
+set(ROM_6500K_OPTS  +BOOT_FASTUART=1 +UART0_SPEED=6250000 +I2C0_SLV_DISABLE)
 
 ### Add tests here ###
 #WARNING! Full regression automatically includes all tests from the short ones
@@ -267,8 +267,9 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
   )
 
   rumboot_bootrom_integration_test(ROM
-      NAME "sdio1"
-      IRUN_FLAGS +I2C0_DISABLE ${ROM_6500K_OPTS}
+      NAME "sdio1-ok"
+      IRUN_FLAGS
+      IRUN_FLAGS +BOOT_SD1_CD=0 +select_sdio1 +I2C0_DISABLE ${ROM_6500K_OPTS}
       LOAD
         SD0_BOOT_IMAGE spl-fail
         SPI0_CONF spl-fail-bad-magic,spl-fail-bad-magic
