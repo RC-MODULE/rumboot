@@ -12,6 +12,7 @@ macro(rumboot_bootrom_add_components spl_conf romconf)
       NAME ok
       FILES common/bootrom/spl.c
       CFLAGS -DTERMINATE_SIMULATION -DEXITCODE=0
+      FEATURES STUB PACKIMAGE
       PACKIMAGE_FLAGS ${ARGN} -c
       VARIABLE SPL_OK
   )
@@ -21,6 +22,7 @@ macro(rumboot_bootrom_add_components spl_conf romconf)
       NAME ok-check2
       FILES common/bootrom/spl.c
       CFLAGS -DTERMINATE_SIMULATION -DEXITCODE=0 -DSPL_COUNT_CHECK=2
+      FEATURES STUB PACKIMAGE
       PACKIMAGE_FLAGS ${ARGN} -c
       VARIABLE SPL_OK_CHECK2
   )
@@ -30,6 +32,7 @@ macro(rumboot_bootrom_add_components spl_conf romconf)
       NAME ok-check1
       FILES common/bootrom/spl.c
       CFLAGS -DTERMINATE_SIMULATION -DEXITCODE=0 -DSPL_COUNT_CHECK=1
+      FEATURES STUB PACKIMAGE
       PACKIMAGE_FLAGS ${ARGN} -c
       VARIABLE SPL_OK_CHECK1
   )
@@ -39,6 +42,7 @@ macro(rumboot_bootrom_add_components spl_conf romconf)
       NAME fail
       FILES common/bootrom/spl.c
       CFLAGS -DTERMINATE_SIMULATION -DEXITCODE=1
+      FEATURES STUB PACKIMAGE
       PACKIMAGE_FLAGS ${ARGN} -c
       VARIABLE SPL_FAIL
   )
