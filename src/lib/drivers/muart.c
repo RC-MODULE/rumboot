@@ -36,45 +36,41 @@ void muart_init(const uint32_t base, const struct muart_conf *conf)
 {
         uint32_t ctrl = 0;
         uint32_t bdiv = ioread32(base + MUART_BDIV);
-/*
-rumboot_printf("CONF dum= %x\n", conf->dum);
-rumboot_printf("CONF wlen= %x\n", conf->wlen);
-rumboot_printf("CONF stp2= %x\n", conf->stp2);
-rumboot_printf("CONF is_even= %x\n", conf->is_even);
-rumboot_printf("CONF is_parity= %x\n", conf->is_parity);
-rumboot_printf("CONF mode= %x\n", conf->mode);
-rumboot_printf("CONF is_loopback= %x\n", conf->is_loopback);
-rumboot_printf("CONF baud_rate= %x\n", conf->baud_rate);
-rumboot_printf("CONF is_dma= %x\n", conf->is_dma);
-*/
 
+        ctrl |= (conf->wlen << MUART_WLEN_i);
+        ctrl |= (conf->stp2 << MUART_STP2_i);
 
-	ctrl |= (conf->wlen << MUART_WLEN_i);
-	ctrl |= (conf->stp2 << MUART_STP2_i);
+        if (conf->is_even) {
+                ctrl |= (1 << MUART_EPS_i);
+        }
+        if (conf->is_loopback) {
+                ctrl |= (1 << MUART_LBE_i);
+        }
+        if (conf->is_parity) {
+                ctrl |= (1 << MUART_PEN_i);
+        }
 
-	if (conf->is_even) ctrl |= (1 << MUART_EPS_i);
-	if (conf->is_loopback) ctrl |= (1 << MUART_LBE_i);
-        if (conf->is_parity) ctrl |= (1 << MUART_PEN_i);
-
-	if( conf->mode == RS_232 ) {
-		ctrl |= (1 << MUART_RTSen_i) | (1 << MUART_CTSen_i);
+        if (conf->mode == RS_232) {
+                ctrl |= (1 << MUART_RTSen_i) | (1 << MUART_CTSen_i);
                 ctrl |= (conf->mode << MUART_MDS_i);
-        }else if( conf->mode == RS_485) {
-		ctrl |= (1 << MUART_RTSen_i) & ~(1 << MUART_CTSen_i);
+        } else if (conf->mode == RS_485) {
+                ctrl |= (1 << MUART_RTSen_i) & ~(1 << MUART_CTSen_i);
                 ctrl |= (conf->mode << MUART_MDS_i);
-        }else if( conf->mode == RS_422) {
-            NULL; // 0 in filds RTSen, CTSen, MDS
+        } else if (conf->mode == RS_422) {
+                NULL; // 0 in filds RTSen, CTSen, MDS
         }
 
         if (conf->is_dma) {
-            ctrl &= ~(1 << MUART_APB_MD);
-            ctrl |= (1 << MUART_DUM_i);
-        } else ctrl |= (1 << MUART_APB_MD);
+                ctrl &= ~(1 << MUART_APB_MD);
+                ctrl |= (1 << MUART_DUM_i);
+        } else {
+                ctrl |= (1 << MUART_APB_MD);
+        }
 
-	set_reg(base, MUART_CTRL, ctrl);
+        set_reg(base, MUART_CTRL, ctrl);
 
-    bdiv = calc_bdiv(conf->baud_rate,8);
-    set_reg(base, MUART_BDIV, bdiv);
+        bdiv = calc_bdiv(conf->baud_rate, 8);
+        set_reg(base, MUART_BDIV, bdiv);
 }
 
 void muart_enable(uint32_t base)
