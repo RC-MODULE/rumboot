@@ -19,6 +19,7 @@
 #include <platform/arch/ppc/ppc_476fp_lib_c.h>
 #include <platform/arch/ppc/ppc_476fp_mmu_fields.h>
 #include <platform/arch/ppc/ppc_476fp_mmu.h>
+#include <platform/arch/ppc/ppc_476fp_itrpt_fields.h>
 #include <platform/ppc470s/mmu/mem_window.h>
 #include <platform/devices/emi.h>
 
@@ -71,6 +72,9 @@ void check_sram0_8 (const uint32_t addr)
         [31] = 0xff,
     };
 
+    // flush
+    dcbf((void*)addr);
+    
     //write
     rumboot_printf ("write\n");
     uint32_t i = 0;
@@ -81,7 +85,7 @@ void check_sram0_8 (const uint32_t addr)
     msync();
 
     //flush
-    dcbf((void*)addr);
+    // dcbf((void*)addr); // moved flush up, did, 12.11.18
 
     rumboot_printf ("read\n");
     //read
@@ -113,6 +117,9 @@ void check_sram0_16 (const uint32_t addr)
         [15] = 0xffff
     };
 
+    // flush
+    dcbf((void*)addr);
+    
     rumboot_printf ("write\n");
     uint32_t i = 0;
     for (i = 0; i < 16; i++)
@@ -122,7 +129,7 @@ void check_sram0_16 (const uint32_t addr)
     msync();
 
     //flush
-    dcbf((void*)addr);
+    //dcbf((void*)addr);
 
     rumboot_printf ("read\n");
     for (i = 0; i < 16; i++)
@@ -145,6 +152,9 @@ void check_sram0_32 (uint32_t addr)
         [7] = 0x77777777
     };
 
+    // flush
+    dcbf((void*)addr);
+    
     rumboot_printf ("write\n");
     uint32_t i = 0;
     for (i = 0; i < 8; i++)
@@ -154,9 +164,9 @@ void check_sram0_32 (uint32_t addr)
     msync();
 
     //flush
-    dcbf((void*)addr);
+    //dcbf((void*)addr);
 
-    rumboot_printf ("write\n");
+    rumboot_printf ("read\n");
     //read
     for (i = 0; i < 8; i++)
     {
@@ -174,6 +184,9 @@ void check_sram0_64 (uint32_t addr)
         [3] = 0x8899aabbccddeeffULL
     };
 
+    // flush
+    dcbf((void*)addr);
+    
     rumboot_printf ("write\n");
     uint32_t i = 0;
     for (i = 0; i < 4; i++)
@@ -183,12 +196,46 @@ void check_sram0_64 (uint32_t addr)
     msync();
 
     //flush
-    dcbf((void*)addr);
+    //dcbf((void*)addr);
 
     rumboot_printf ("read\n");
     for (i = 0; i < 4; i++)
     {
         TEST_ASSERT (ioread64(addr + i*8) == check_arr64[i],"ERROR: read value is wrong");
+    }
+}
+
+void check_sram0_64d (uint32_t addr)
+{
+    double check_arr64[] =
+//    uint64_t check_arr64[] =
+    {
+        [0] = 0x1.1223344556677p-1022, //0x0011223344556677,
+        [1] = -0x1.9aabbccddeeffp-886, //0x8899aabbccddeeff,
+        [2] = 0x1.1223344556677p-1022, //0x0011223344556677,
+        [3] = -0x1.9aabbccddeeffp-886 //0x8899aabbccddeeff
+    };
+
+    //flush
+    dcbf((void*)addr);
+
+    rumboot_printf ("write\n");
+    uint32_t i = 0;
+    for (i = 0; i < 4; i++)
+    {
+        iowrite64d (check_arr64[i], addr + i * 8);
+//        iowrite64d ((double) check_arr64[i], addr + i * 8);
+    }
+    msync();
+
+    //flush
+    //dcbf((void*)addr);
+
+    rumboot_printf ("read\n");
+    for (i = 0; i < 4; i++)
+    {
+        TEST_ASSERT (ioread64d(addr + i*8) == check_arr64[i],"ERROR: read value is wrong");
+//        TEST_ASSERT ((uint64_t) ioread64d(addr + i*8) == check_arr64[i],"ERROR: read value is wrong");
     }
 }
 
@@ -207,7 +254,8 @@ void check_sram0 (const uint32_t addr)
     check_sram0_32(addr + 64);
 
     rumboot_printf ("SIZE_64\n");
-    check_sram0_64(addr + 96);
+    check_sram0_64d(addr + 96);
+//    check_sram0_64(addr + 96);
 
     rumboot_printf ("CHECK W/R SRAM0 SUCCESSFUL\n");
 }
@@ -217,9 +265,12 @@ void check_sram0 (const uint32_t addr)
 #define TLB_ENTRY_CACHE_WB  MMU_TLB_ENTRY(  0x000,  0x00000,    0x00000,    MMU_TLBE_DSIZ_1GB,      0b0,    0b0,    0b0,    0b0,    0b1,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
 
 int main ()
-{
+{  
     emi_init(DCR_EM2_EMI_BASE);
+    init_data (SRAM0_BASE + 0x100);
     init_data (SRAM0_BASE + 0x200);
+    msync();
+    msr_write(msr_read() | (0b1 << ITRPT_XSR_FP_i)); // FPU enable
 
     rumboot_printf ("CACHE OFF\n");
     check_sram0 (SRAM0_BASE);

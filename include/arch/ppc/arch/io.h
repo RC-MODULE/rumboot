@@ -12,6 +12,14 @@
 #define RUMBOOT_ARCH_HAS_IO
 
 
+static inline __attribute__((no_instrument_function)) __attribute__((always_inline)) double __attribute__((optimize("no-delete-null-pointer-checks"))) ioread64d( uint32_t const base_addr ) {
+    return *( ( volatile double* )( base_addr ) );
+}
+
+static inline __attribute__((no_instrument_function)) __attribute__((always_inline)) void __attribute__((optimize("no-delete-null-pointer-checks"))) iowrite64d( double const value, uint32_t const base_addr ) {
+    *( ( volatile double* )( base_addr ) ) = value;
+}
+
 static inline __attribute__((no_instrument_function)) __attribute__((always_inline)) uint64_t __attribute__((optimize("no-delete-null-pointer-checks"))) ioread64( uint32_t const base_addr ) {
     return *( ( volatile uint64_t* )( base_addr ) );
 }

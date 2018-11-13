@@ -38,6 +38,18 @@
 
  /* These forward declarations are needed for additional sanity-checking */
 /**
+ * Read a 64-bit double value from memory location base_addr
+ * @param  base_addr
+ * @return value
+ */
+static inline double ioread64d(uint32_t const base_addr); 
+/**
+ * Write a 64-bit double value to memory location base_addr
+ * @param value     value
+ * @param base_addr base_addr
+ */
+static inline void iowrite64d(double const value, uint32_t const base_addr);
+/**
  * Read a 64-bit value from memory location base_addr
  * @param  base_addr
  * @return value
@@ -91,6 +103,16 @@ static inline void iowrite8(uint8_t const value, uint32_t const base_addr);
 #endif
 
 #ifndef RUMBOOT_ARCH_HAS_IO
+
+static __attribute__((no_instrument_function)) inline double ioread64d(uint32_t const base_addr)
+{
+    return *((volatile double*)(base_addr));
+}
+
+static __attribute__((no_instrument_function)) inline void iowrite64d(double const value, uint32_t const base_addr)
+{
+    *((volatile double*)(base_addr)) = value;
+}
 
 static __attribute__((no_instrument_function)) inline uint64_t ioread64(uint32_t const base_addr)
 {
