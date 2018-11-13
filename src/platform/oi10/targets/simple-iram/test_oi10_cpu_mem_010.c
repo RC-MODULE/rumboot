@@ -32,13 +32,40 @@
 #define TLB_ENTRY_CACHE_VALID_0           MMU_TLB_ENTRY(  0x000,  0x00000,    0x00000,    MMU_TLBE_DSIZ_1GB,      0b0,    0b0,    0b1,    0b0,    0b1,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
 #define TLB_ENTRY_CACHE_VALID_1           MMU_TLB_ENTRY(  0x000,  0x40000,    0x40000,    MMU_TLBE_DSIZ_1GB,      0b0,    0b0,    0b1,    0b0,    0b1,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
 
+
+//tag array
+uint32_t test_tag_array[] =
+{
+    //sram
+    0x00,
+    0x04,
+    0x08,
+    0x10,
+    0x20,
+    //sdram
+    0x10000,
+    0x10040,
+    0x10080,
+    0x10100,
+    0x10200,
+    0x10400,
+    0x10800,
+    //ssram
+    0x10000,
+    //pipe
+    0x28000,
+    //sram1
+    0x30000,
+};
+uint32_t LEN_TAG_ARR = sizeof(test_tag_array) / sizeof (uint32_t);
+
 //data array
 uint64_t test_data_array[] =
 {
-        0xFFFFFFFFFFFFFFFF,
-        0xFFFFFFFF00000000,
-        0x00000000FFFFFFFF,
-        0xF0F0F0F0F0F0F0F0
+    0x1234ABCDFFFFFFFF,
+    0x1111111122222222,
+    0x3333333344444444,
+    0x5555555566666666
 };
 
 #define REVERSE8(X) \
@@ -62,10 +89,14 @@ uint64_t test_data_array[] =
  * [18:0] = TAG
  * [31:29] = 0
  */
+uint32_t calc_addr (uint32_t tag, uint32_t index)
+{
+    return (0x00 | ((tag)<<13) | ((index)<<5) | (0<<2));
+}
 
 void CACHE_DATA_LINE_BY_TAG_INDEX (uint32_t TAG, uint32_t INDEX)
 {
-    uint32_t addr = (0x00 | ((TAG)<<14) | ((INDEX)<<5) | (0<<2));
+    uint32_t addr = calc_addr(TAG, INDEX);
     rumboot_printf("Address = 0x%x (tag = 0x%x)\n", addr, TAG );
     msync();
     /*Minimal caching size is 1 line = 32 bytes = 8 words = 4 doublewords*/
@@ -74,72 +105,34 @@ void CACHE_DATA_LINE_BY_TAG_INDEX (uint32_t TAG, uint32_t INDEX)
     msync();
     /*1st read initiates a caching*/
     TEST_ASSERT(ioread32(addr) == ioread32((uint32_t)test_data_array), "Compare failed");
+
+
+    rumboot_printf("dcread...\n");
     msync();
+    uint32_t dcread_data = dcread (addr & 0x7FFC);
+    isync();
+    TEST_ASSERT(dcread_data == ioread32((uint32_t)test_data_array), "Compare failed");
+    uint32_t reg = spr_read(SPR_DCDBTRH);
+    rumboot_printf("SPR_DCDBTRH = %x, TAG = %x\n\n",reg,  reg >> 13);
 }
 
 void cache_data(uint32_t tag, uint32_t addr)
 {
     uint32_t index = TAG_A_TO_INDEX(addr);
-    if(index & 1) //ODD
-    {
-        if(index >=128)
-        {
-            CACHE_DATA_LINE_BY_TAG_INDEX(tag,(index));
-            CACHE_DATA_LINE_BY_TAG_INDEX(tag+1,(index));
-        }
-        else
-        {
-            CACHE_DATA_LINE_BY_TAG_INDEX(tag,(index+128));
-            CACHE_DATA_LINE_BY_TAG_INDEX(tag+1,(index+128));
-        }
-    }
-    else//EVEN
-    {
-        if(index >=128)
-        {
-            CACHE_DATA_LINE_BY_TAG_INDEX(tag,(index-128));
-            CACHE_DATA_LINE_BY_TAG_INDEX(tag+1,(index-128));
-        }
-        else
-        {
-            CACHE_DATA_LINE_BY_TAG_INDEX(tag,(index));
-            CACHE_DATA_LINE_BY_TAG_INDEX(tag+1,(index));
-        }
-    }
+    if((index & 1) && (index < 128)) index+=128;
+    if( (!(index & 1)) && (index >=128) ) index -= 128;
+
+    CACHE_DATA_LINE_BY_TAG_INDEX(tag,(index));
 }
 
 void check_dcu_tag()
 {
-
-     rumboot_printf("\nSRAM0\n");
-     cache_data((0x3E), 0x00);
-     cache_data((0x00), 0x01);
-     cache_data((0x15), 0x02);
-     cache_data((0x2A), 0x03);
-
-     rumboot_printf("\nSDRAM\n");
-     cache_data((0x8FFE), 0x04);
-     cache_data((0x8000), 0x05);
-     cache_data((0x8AAA), 0x06);
-     cache_data((0x8555), 0x07);
-
-     rumboot_printf("\nSSRAM\n");
-     cache_data((0x100FE), 0x08);
-     cache_data((0x10000), 0x09);
-     cache_data((0x100AA), 0x0A);
-     cache_data((0x10055), 0x0B);
-
-     rumboot_printf("\nPIPELINED\n");
-     cache_data((0x140FE), 0x0C);
-     cache_data((0x14000), 0x0D);
-     cache_data((0x140AA), 0x0E);
-     cache_data((0x14055), 0x0F);
-
-     rumboot_printf("\nSRAM1\n");
-     cache_data((0x180FE), 0x10);
-     cache_data((0x18000), 0x11);
-     cache_data((0x180AA), 0x12);
-     cache_data((0x18055), 0x13);
+    rumboot_printf("\nCheck_dcu_tag\n");
+    uint32_t i = 0;
+    for (i = 0; i < LEN_TAG_ARR; i++)
+    {
+        cache_data(test_tag_array[i], i);
+    }
 }
 
 int main()
