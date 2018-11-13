@@ -50,6 +50,7 @@ uint32_t test_tag_array[] =
     0x10200,
     0x10400,
     0x10800,
+    0x10FFC,
     //ssram
     0x10000,
     //pipe
