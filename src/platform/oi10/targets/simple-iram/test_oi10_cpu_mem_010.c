@@ -115,6 +115,7 @@ void CACHE_DATA_LINE_BY_TAG_INDEX (uint32_t TAG, uint32_t INDEX)
     TEST_ASSERT(dcread_data == ioread32((uint32_t)test_data_array), "Compare failed");
     uint32_t reg = spr_read(SPR_DCDBTRH);
     rumboot_printf("SPR_DCDBTRH = %x, TAG = %x\n\n",reg,  reg >> 13);
+    TEST_ASSERT((reg >> 13) == TAG, "TEST_ERROR: wrong tag in SPR_DCDBTRH");
 }
 
 void cache_data(uint32_t tag, uint32_t addr)
