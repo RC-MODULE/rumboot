@@ -22,6 +22,11 @@
 
 .section ".init.rodata","a",@progbits
 
+.align 3
+const_0: 
+    .long 0x00000000
+    .long 0x00000000
+
 .align 2
 rom_tlb_entries:
 nor_tlb_entries:
@@ -405,10 +410,50 @@ write_rom_tlb_entries:
 write_xxx_tlb_entries:
     bl          ppc470s_write_tlb_entries
 
+init_fpu_regs:
+    load_const  r3, (0b1 << ITRPT_XSR_FP_i) /* enable fpu */
+    mtmsr       r3
+
+    load_addr   r3, const_0
+
+    lfd         f0, 0(r3) 
+    lfd         f1, 0(r3)
+    lfd         f2, 0(r3)
+    lfd         f3, 0(r3)
+    lfd         f4, 0(r3)
+    lfd         f5, 0(r3)
+    lfd         f6, 0(r3)
+    lfd         f7, 0(r3)
+    lfd         f8, 0(r3)
+    lfd         f9, 0(r3)
+    lfd         f10, 0(r3)
+    lfd         f11, 0(r3)
+    lfd         f12, 0(r3)
+    lfd         f13, 0(r3)
+    lfd         f14, 0(r3)
+    lfd         f15, 0(r3)
+
+    lfd         f16, 0(r3)
+    lfd         f17, 0(r3)
+    lfd         f18, 0(r3)
+    lfd         f19, 0(r3)
+    lfd         f20, 0(r3)
+    lfd         f21, 0(r3)
+    lfd         f22, 0(r3)
+    lfd         f23, 0(r3)
+    lfd         f24, 0(r3)
+    lfd         f25, 0(r3)
+    lfd         f26, 0(r3)
+    lfd         f27, 0(r3)
+    lfd         f28, 0(r3)
+    lfd         f29, 0(r3)
+    lfd         f30, 0(r3)
+    lfd         f31, 0(r3)
+
 enable_itrpts:
     load_const  r3, (0b1 << ITRPT_XSR_CE_i)\
                   | (0b1 << ITRPT_XSR_EE_i)\
-                  | (0b1 << ITRPT_XSR_ME_i)
+                  | (0b1 << ITRPT_XSR_ME_i) /* enable interrupts, disable fpu */
     mtmsr       r3
 
 setup_boot_rom_im0_p64:
