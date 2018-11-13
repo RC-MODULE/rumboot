@@ -8,7 +8,7 @@ set(RUMBOOT_PLATFORM_DEFAULT_SNAPSHOT default)
 if (RUMBOOT_BUILD_TYPE STREQUAL "Production")
   set(BOOTROM_IFLAGS +BOOTMGR_KEEP_DRIVING=1 +GTUBE_ONLY_PRODUCTION_OPCODES)
 else()
-  set(BOOTROM_IFLAGS )  
+  set(BOOTROM_IFLAGS )
 endif()
 
 #These are configurations for our binaries
@@ -572,26 +572,32 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 	add_rumboot_target_dir(muart/
       CONFIGURATION IRAM
       PREFIX muart-iram
+      IRUN_FLAGS +uart_test
     )
 	add_rumboot_target_dir(muart/
       CONFIGURATION IRAM_MIRROR
       PREFIX muart-mirror
+      IRUN_FLAGS +uart_test
 	)
 	add_rumboot_target_dir(muart/uart_direct
       CONFIGURATION IRAM
       PREFIX muart-uart_direct
+      IRUN_FLAGS +uart_test
 	)
 	add_rumboot_target_dir(muart/uart_mirror
       CONFIGURATION IRAM_MIRROR
       PREFIX muart-uart_mirror
+      IRUN_FLAGS +uart_test
 	)
 	add_rumboot_target_dir(muart/uart_direct_DDR
       CONFIGURATION IRAM_WITH_DDR
       PREFIX muart-direct_DDR
+      IRUN_FLAGS +uart_test
 	)
 	add_rumboot_target_dir(muart/uart_direct_DDR
       CONFIGURATION IRAM_MIRROR
       PREFIX muart-mirror_DDR
+      IRUN_FLAGS +uart_test
 	)
 
 #    add_rumboot_target(
@@ -628,6 +634,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         CFLAGS -DRUMBOOT_BASIS_DIRECT_IRAM -DRUMBOOT_BASIS_DMA_MEM_ACCEL=3
         PREFIX "basis-stress-test"
         NAME "uart-eth-dma"
+        IRUN_FLAGS +uart_test
     )
 
     add_rumboot_target(
