@@ -221,6 +221,19 @@ macro(rumboot_bootrom_unit_test)
             CFLAGS -DSOURCE=${BOOTSOURCE_ID} -DEXPECTED=-EBADHDRCRC
             LOAD ${BOOTSOURCE_MEMTAG} ${_commas}spl-fail-bad-header-crc
           )
+
+          #TODO: This should have it's own section
+          if (RUMBOOT_BUILD_TYPE STREQUAL "Production")
+            add_rumboot_target(
+              NAME "unit-serial-test"
+              CONFIGURATION ${BOOTSOURCE_CONFIGURATION}
+              PREFIX "bootrom"
+              FILES common/bootrom/serial.c
+              TESTGROUP bootrom bootrom-unit
+              IRUN_FLAGS ${BOOTSOURCE_IRUN_FLAGS} +uart_easter_egg
+              LOAD ${BOOTSOURCE_MEMTAG} ${_commas}spl-fail-bad-header-crc
+            )
+          endif()
   endif()
 
 
