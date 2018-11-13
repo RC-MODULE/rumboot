@@ -244,33 +244,13 @@ void check_mem_HARD (uint32_t base_addr, uint32_t code_event, uint8_t const *con
     print_name_mem(base_addr);
     rumboot_printf ( "Check data: %x\n", *((uint32_t*)data) );
 
-    //int i = 0;
-    //int iter = 0;
-
     uint32_t event [] = {
             code_event,
             base_addr,
             data[0],data[1],data[2],data[3] };
 
     rumboot_platform_event_raise(EVENT_TESTEVENT, event, ARRAY_SIZE(event) );
-   /* uint32_t event_1 [] = {
-            code_event,
-            base_addr,
-            data_1[0],data_1[1],data_1[2],data_1[3] };
-    rumboot_platform_event_raise(EVENT_TESTEVENT, event_1, ARRAY_SIZE(event) );
-    msync();*/
-    //rumboot_printf ( "Check mem: %x\n", ioread32 ( base_addr) );
-    //if ( (base_addr >= NOR_BASE) && (base_addr < NOR_BASE + NOR_SIZE) )  udelay(30) ;
-    //udelay(20);
 
-/*do
-{
-    rumboot_printf ( "Check mem: %x\n", ioread32 ( base_addr) );
-    i++;
-    iter  = i;
-    rumboot_printf ( "Check iter: %x\n", iter );
-}
-while ( ioread32 ( base_addr ) != *((uint32_t*)data) );*/
 
 
     //msync();
