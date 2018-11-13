@@ -194,6 +194,7 @@ void check_NOR_prog (uint32_t base_addr, uint32_t code_event, uint8_t const *con
     rumboot_printf("Check WRITE\n");
     nor_write32 ((*(uint32_t*)data) , base_addr + 0x10);
     msync();
+
 #ifdef ENDIAN_HARD_CHECK
     uint32_t event [] = {
             code_event,
@@ -202,6 +203,7 @@ void check_NOR_prog (uint32_t base_addr, uint32_t code_event, uint8_t const *con
 
     rumboot_platform_event_raise(EVENT_TESTEVENT, event, ARRAY_SIZE(event) );
 #endif
+
     uint32_t EVENT = code_event;
     if (EVENT == EVENT_CHK_MEM_BE)
     {
@@ -242,8 +244,8 @@ void check_mem_HARD (uint32_t base_addr, uint32_t code_event, uint8_t const *con
     print_name_mem(base_addr);
     rumboot_printf ( "Check data: %x\n", *((uint32_t*)data) );
 
-    int i = 0;
-    int iter = 0;
+    //int i = 0;
+    //int iter = 0;
 
     uint32_t event [] = {
             code_event,
@@ -257,24 +259,24 @@ void check_mem_HARD (uint32_t base_addr, uint32_t code_event, uint8_t const *con
             data_1[0],data_1[1],data_1[2],data_1[3] };
     rumboot_platform_event_raise(EVENT_TESTEVENT, event_1, ARRAY_SIZE(event) );
     msync();*/
-    rumboot_printf ( "Check mem: %x\n", ioread32 ( base_addr) );
+    //rumboot_printf ( "Check mem: %x\n", ioread32 ( base_addr) );
     //if ( (base_addr >= NOR_BASE) && (base_addr < NOR_BASE + NOR_SIZE) )  udelay(30) ;
     //udelay(20);
 
-do
+/*do
 {
     rumboot_printf ( "Check mem: %x\n", ioread32 ( base_addr) );
     i++;
     iter  = i;
     rumboot_printf ( "Check iter: %x\n", iter );
 }
-while ( ioread32 ( base_addr ) != *((uint32_t*)data) );
+while ( ioread32 ( base_addr ) != *((uint32_t*)data) );*/
 
 
-    msync();
+    //msync();
     rumboot_printf ( "Check mem: %x\n", ioread32 ( base_addr) );
-    msync();
-    //TEST_ASSERT ( ioread32 ( base_addr ) == *((uint32_t*)data), "ERROR ENDIAN" );
+    //msync();
+    TEST_ASSERT ( ioread32 ( base_addr ) == *((uint32_t*)data), "ERROR ENDIAN" );
 
 }
 #endif
