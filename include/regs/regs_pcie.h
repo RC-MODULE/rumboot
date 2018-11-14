@@ -545,7 +545,7 @@
 #define PCIe_Phy_PMA_CMN_SSM_PLLEN_TMR                0x0000*2 + 0x022*4
 #define PCIe_Phy_PMA_CMN_SSM_PLLVREF_TMR              0x0000*2 + 0x024*4
 #define PCIe_Phy_PMA_CMN_SSM_LANECAL_TMR              0x0000*2 + 0x028*4
-#define PCIe_Phy_PMA_CMN_SSM_A1OUT_TMR                0x0000*2 + 0x021*4
+#define PCIe_Phy_PMA_CMN_SSM_A1OUT_TMR                0x0000*2 + 0x030*4
 #define PCIe_Phy_PMA_CMN_PSC_A0                       0x0000*2 + 0x040*4
 #define PCIe_Phy_PMA_CMN_PSC_A1                       0x0000*2 + 0x041*4
 #define PCIe_Phy_PMA_CMN_PSC_A2                       0x0000*2 + 0x042*4
