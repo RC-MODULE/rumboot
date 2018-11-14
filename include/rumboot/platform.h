@@ -2,6 +2,7 @@
 #define RUMBOOT_PLATFORM_H
 
 #include <stdint.h>
+#include <stddef.h>
 /**
  *
  * \defgroup platform_glue Platform bindings
@@ -54,6 +55,7 @@ enum rumboot_simulation_event {
     EVENT_MEMFILLSEQ, /** Fill the memory with 32-bit incrementing values */
     EVENT_MEMCHECKSEQ, /** Check that memory filled with 32-bit incrementing values */
     EVENT_GENERIC, /** Generic SystemVerilog event trigger */
+    EVENT_MEMCMP, /** memcmp acceleration */
 };
 
 
@@ -98,6 +100,19 @@ void rumboot_platform_setup();
  */
 uint32_t rumboot_platform_get_uptime();
 
+/**
+ * Returns value like memcmp, comparing bytewise memory
+ * regions from addresses src and dst of size sz.
+ * Unlike memcmp it compares everything up to the end of
+ * specified memory regions, provides tracing and
+ * can be accelerated in SystemVerilog while modelling
+ *
+ * @param  src  first memory area address
+ * @param  dst  second memory area address
+ * @param  sz   count of bytes to be compared
+ * @return      like in memcmp
+ */
+int memcmp(const void *src, const void *dst, size_t sz);
 
 /**
  * This function is called to trace a function call with a pc value

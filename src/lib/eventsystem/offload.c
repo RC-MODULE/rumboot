@@ -61,6 +61,19 @@ __attribute__((no_instrument_function)) int rumboot_memcheck32(void *src, void *
   return 0;
 }
 
+ __attribute__((no_instrument_function)) __attribute__((optimize("-O0"))) void do_memcmp(const void *ptr0,  ...)
+{
+    deliver(EVENT_MEMCMP, (uint32_t) __builtin_frame_address(0));
+}
+
+__attribute__((no_instrument_function)) int memcmp(const void *src, const void *dst, size_t sz)
+{
+    volatile uint32_t data;
+    do_memcmp(src, dst, sz, &data);
+    return data;
+  return 1;
+}
+
 __attribute__((no_instrument_function)) __attribute__((optimize("-O0"))) void do_memcpy(void *ptr, ...)
 {
    deliver(EVENT_MEMCPY, (uint32_t) __builtin_frame_address(0));
@@ -118,6 +131,37 @@ __attribute__((no_instrument_function)) int rumboot_memcheck32(void *src, void *
 {
   rumboot_platform_panic("NOT IMPLEMENTED");
   return 123;
+}
+
+__attribute__((no_instrument_function)) int memcmp(const void *src, const void *dst, size_t sz)
+{
+    uint8_t * rumboot_memcheck8_src_addr;
+    uint8_t * rumboot_memcheck8_dst_addr;
+    int data_ok = 0;
+    rumboot_memcheck8_src_addr = (uint8_t *)src;
+    rumboot_memcheck8_dst_addr = (uint8_t *)dst;
+    for (uint32_t i=0; i<sz; ++rumboot_memcheck8_src_addr, ++rumboot_memcheck8_dst_addr, ++i )
+    {
+#ifdef CMAKE_BUILD_TYPE_DEBUG
+        rumboot_printf("Check#%d\n", i);
+        rumboot_printf("src[0x%X]: 0x%x\ndst[0x%X]: 0x%x\n",
+                rumboot_memcheck8_src_addr,
+                *rumboot_memcheck8_src_addr,
+                rumboot_memcheck8_dst_addr,
+                *rumboot_memcheck8_dst_addr);
+#endif
+        if (*rumboot_memcheck8_src_addr!=*rumboot_memcheck8_dst_addr)
+        {
+            rumboot_printf("Data error:\nsrc[0x%X]: 0x%x\ndst[0x%X]: 0x%x\n",
+                    rumboot_memcheck8_src_addr,
+                    *rumboot_memcheck8_src_addr,
+                    rumboot_memcheck8_dst_addr,
+                    *rumboot_memcheck8_dst_addr);
+            if(!data_ok)
+                data_ok = (*rumboot_memcheck8_src_addr) - (*rumboot_memcheck8_dst_addr);
+        }
+    }
+    return data_ok;
 }
 
 __attribute__((no_instrument_function)) int rumboot_memfill32(void *addr, size_t sz, int val, int incr)
