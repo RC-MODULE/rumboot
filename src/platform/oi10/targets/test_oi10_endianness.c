@@ -36,6 +36,8 @@
 #define TLB_ENTRY_IM0_BIG_MIRROR_1      MMU_TLB_ENTRY(  0x010,  0x80010,    0x80070,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_UND,   0b1 )
 #define TLB_ENTRY_IM1_LITTLE            MMU_TLB_ENTRY(  0x020,  0xC0000,    0x80020,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_LITTLE_END,  0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_3,     0b1 )
 #define TLB_ENTRY_IM1_BIG               MMU_TLB_ENTRY(  0x020,  0xC0000,    0x80020,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_3,     0b1 )
+#define TLB_ENTRY_IM2_BIG               MMU_TLB_ENTRY(  0x020,  0xC0040,    0x80040,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_5,     0b1 )
+#define TLB_ENTRY_IM2_LITTLE            MMU_TLB_ENTRY(  0x020,  0xC0040,    0x80040,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_LITTLE_END,  0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_5,     0b1 )
 #define TLB_ENTRY_SRAM0_LITTLE          MMU_TLB_ENTRY(  0x000,  0x00000,    0x00000,    MMU_TLBE_DSIZ_1GB,      0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_LITTLE_END,  0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
 #define TLB_ENTRY_SRAM0_BIG             MMU_TLB_ENTRY(  0x000,  0x00000,    0x00000,    MMU_TLBE_DSIZ_1GB,      0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
 #define TLB_ENTRY_SRAM1_NOR_LITTLE      MMU_TLB_ENTRY(  0x000,  0x40000,    0x40000,    MMU_TLBE_DSIZ_1GB,      0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_LITTLE_END,  0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
@@ -62,11 +64,13 @@ void TLB_BE ()
             {TLB_ENTRY_IM0_BIG_MIRROR_1}
     };
         write_tlb_entries(im0_tlb_entry_big,2);
-
    //IM1
     static const tlb_entry im1_tlb_entry_big = {TLB_ENTRY_IM1_BIG};
         write_tlb_entries(&im1_tlb_entry_big ,1);
-   //SRAM0
+    //IM2
+     static const tlb_entry im2_tlb_entry_big = {TLB_ENTRY_IM2_BIG};
+         write_tlb_entries(&im2_tlb_entry_big ,1);
+    //SRAM0
     static tlb_entry sram0_tlb_entry_big = {TLB_ENTRY_SRAM0_BIG};
         write_tlb_entries(&sram0_tlb_entry_big ,1);
     //NOR
@@ -94,10 +98,12 @@ void TLB_LE ()
             {TLB_ENTRY_IM0_LITTLE_MIRROR_1}
     };
         write_tlb_entries(im0_tlb_entry_little,2);
-
     //IM1
     static const tlb_entry im1_tlb_entry_little = {TLB_ENTRY_IM1_LITTLE};
         write_tlb_entries(&im1_tlb_entry_little,1);
+    //IM2
+    static const tlb_entry im2_tlb_entry_little = {TLB_ENTRY_IM2_LITTLE};
+        write_tlb_entries(&im2_tlb_entry_little,1);
     //SRAM0
     static tlb_entry sram0_tlb_entry_little = {TLB_ENTRY_SRAM0_LITTLE};
         write_tlb_entries(&sram0_tlb_entry_little ,1);
@@ -122,9 +128,11 @@ void print_name_mem (uint32_t addr)
 {
     extern char IM0_MEMORY_SIZE[];
     extern char IM1_MEMORY_SIZE[];
+    extern char IM2_MEMORY_SIZE[];
 
     if ( (addr >= IM0_BASE_MIRROR)&& (addr < IM0_BASE_MIRROR + (uint32_t)IM0_MEMORY_SIZE)) rumboot_printf ("IM0\n");
     if ( (addr >= IM1_BASE)       && (addr < IM1_BASE + (uint32_t)IM1_MEMORY_SIZE))        rumboot_printf ("IM1\n");
+    if ( (addr >= IM2_BASE)       && (addr < IM2_BASE + (uint32_t)IM2_MEMORY_SIZE))        rumboot_printf ("IM2\n");
     if ( (addr >= SRAM0_BASE)     && (addr < SRAM0_BASE + SRAM0_SIZE) )                    rumboot_printf ("SRAM0\n");
     if ( (addr >= NOR_BASE)       && (addr < NOR_BASE + NOR_SIZE) )                        rumboot_printf ("NOR\n");
     if ( (addr >= SRAM1_BASE)     && (addr < SRAM1_BASE + SRAM1_SIZE) )                    rumboot_printf ("SRAM1\n");
@@ -287,12 +295,15 @@ int main ()
     static uint8_t const data_15[4] = {0x16, 0x70, 0x01, 0x80};
     static uint8_t const data_16[4] = {0x08, 0x38, 0x14, 0x30};
     static uint8_t const data_17[4] = {0x34, 0x08, 0x15, 0x31};
+    static uint8_t const data_18[4] = {0x04, 0x26, 0x85, 0x92};
+    static uint8_t const data_19[4] = {0x22, 0x41, 0x99, 0x22};
 
     rumboot_printf("=========> Check BigEndian\n");
     rumboot_printf("=========> Check WRITE\n");
     TLB_BE ();
     check_wr_mem_prog_or_hard (im0_array_mirror,    EVENT_CHK_MEM_BE, data_0);
     check_wr_mem_prog_or_hard (IM1_BASE,            EVENT_CHK_MEM_BE, data_1);
+    check_wr_mem_prog_or_hard (IM2_BASE,            EVENT_CHK_MEM_BE, data_18);
     check_wr_mem_prog_or_hard (SRAM0_BASE,          EVENT_CHK_MEM_BE, data_2);
     check_wr_mem_prog_or_hard (SRAM1_BASE,          EVENT_CHK_MEM_BE, data_4);
     check_wr_mem_prog_or_hard (SDRAM_BASE,          EVENT_CHK_MEM_BE, data_5);
@@ -301,6 +312,7 @@ int main ()
     rumboot_printf("=========> Check READ\n");
     check_rd_mem_prog_not_nor (im0_array_mirror,    EVENT_CHK_MEM_BE, data_10);
     check_rd_mem_prog_not_nor (IM1_BASE,            EVENT_CHK_MEM_BE, data_11);
+    check_rd_mem_prog_not_nor (IM2_BASE,            EVENT_CHK_MEM_BE, data_19);
     check_rd_mem_prog_not_nor (SRAM0_BASE,          EVENT_CHK_MEM_BE, data_12);
     check_rd_mem_prog_not_nor (SRAM1_BASE,          EVENT_CHK_MEM_BE, data_14);
     check_rd_mem_prog_not_nor (SDRAM_BASE,          EVENT_CHK_MEM_BE, data_15);
@@ -312,6 +324,7 @@ int main ()
     rumboot_printf("=========> Check WRITE HARD\n");
     check_mem_HARD (im0_array_mirror,   EVENT_CHK_MEM_WR_BE, data_0);
     check_mem_HARD (IM1_BASE,           EVENT_CHK_MEM_WR_BE, data_1);
+    check_mem_HARD (IM2_BASE,           EVENT_CHK_MEM_WR_BE, data_18);
     check_mem_HARD (SRAM0_BASE,         EVENT_CHK_MEM_WR_BE, data_2);
     check_mem_HARD (NOR_BASE,           EVENT_CHK_MEM_WR_BE, data_3);
     check_mem_HARD (SRAM1_BASE,         EVENT_CHK_MEM_WR_BE, data_4);
@@ -325,6 +338,7 @@ int main ()
     TLB_LE ();
     check_wr_mem_prog_or_hard (im0_array_mirror,    EVENT_CHK_MEM_LE, data_10);
     check_wr_mem_prog_or_hard (IM1_BASE,            EVENT_CHK_MEM_LE, data_11);
+    check_wr_mem_prog_or_hard (IM2_BASE,            EVENT_CHK_MEM_LE, data_18);
     check_wr_mem_prog_or_hard (SRAM0_BASE,          EVENT_CHK_MEM_LE, data_12);
     check_wr_mem_prog_or_hard (SRAM1_BASE,          EVENT_CHK_MEM_LE, data_14);
     check_wr_mem_prog_or_hard (SDRAM_BASE,          EVENT_CHK_MEM_LE, data_15);
@@ -333,6 +347,7 @@ int main ()
     rumboot_printf("=========> Check READ\n");
     check_rd_mem_prog_not_nor (im0_array_mirror,    EVENT_CHK_MEM_LE, data_0);
     check_rd_mem_prog_not_nor (IM1_BASE,            EVENT_CHK_MEM_LE, data_1);
+    check_rd_mem_prog_not_nor (IM2_BASE,            EVENT_CHK_MEM_LE, data_19);
     check_rd_mem_prog_not_nor (SRAM0_BASE,          EVENT_CHK_MEM_LE, data_2);
     check_rd_mem_prog_not_nor (SRAM1_BASE,          EVENT_CHK_MEM_LE, data_4);
     check_rd_mem_prog_not_nor (SDRAM_BASE,          EVENT_CHK_MEM_LE, data_5);
@@ -342,8 +357,9 @@ int main ()
     check_NOR_prog (NOR_BASE + 0x10, EVENT_CHK_MEM_LE, data_3, data_8, data_9);
 #ifdef ENDIAN_HARD_CHECK
     rumboot_printf("=========> Check WRITE HARD\n");
-    check_mem_HARD (im0_array_mirror,   EVENT_CHK_MEM_WR_LE, data_0);
+    check_mem_HARD (im0_array_mirror,   EVENT_CHK_MEM_WR_LE, data_10);
     check_mem_HARD (IM1_BASE,           EVENT_CHK_MEM_WR_LE, data_11);
+    check_mem_HARD (IM2_BASE,           EVENT_CHK_MEM_WR_LE, data_18);
     check_mem_HARD (SRAM0_BASE,         EVENT_CHK_MEM_WR_LE, data_12);
     check_mem_HARD (NOR_BASE,           EVENT_CHK_MEM_WR_LE, data_13);
     check_mem_HARD (SRAM1_BASE,         EVENT_CHK_MEM_WR_LE, data_14);
