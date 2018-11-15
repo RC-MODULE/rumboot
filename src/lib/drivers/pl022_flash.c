@@ -16,7 +16,7 @@ void pl022_flash_write_enable(uint32_t const base_addr)
     (void)ioread32(base_addr+GSPI_SSPDR);  //read data from rx fifo
 }
 
-uint32_t read_flash_status (uint32_t const base_addr)
+uint32_t pl022_flash_read_status (uint32_t const base_addr)
 {
     uint32_t addr = base_addr+GSPI_SSPDR;
     iowrite32(SPIFLASH_READSTAT, addr); //write data to SPI - command read status
@@ -41,6 +41,6 @@ void pl022_flash_erase(uint32_t const base_addr)
         {}
     for (int i =0; i<4; i++)
         (void)ioread32(addr); //read data from SPI - staff
-    while ((read_flash_status(base_addr) & 0x1) == 0x1) //wait write complete
+    while ((pl022_flash_read_status(base_addr) & 0x1) == 0x1) //wait write complete
         {}
 }
