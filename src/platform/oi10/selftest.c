@@ -55,9 +55,9 @@ TEST_ENTRY("uart0-id-registers", check_pl011_regs, UART0_BASE),
 TEST_ENTRY("uart1-id-registers", check_pl011_regs, UART1_BASE),
 TEST_SUITE_END();
 
-void rumboot_platform_selftest(struct rumboot_config *conf)
+int rumboot_platform_selftest(struct rumboot_config *conf)
 {
         /* Execute selftest routines */
         int ret = test_suite_run(NULL, &selftest);
-        rumboot_printf("selftest: %d test from suite failed\n", ret);
+        return ret;
 }

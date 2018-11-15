@@ -231,9 +231,18 @@ macro(rumboot_bootrom_unit_test)
               FILES common/bootrom/serial.c
               TESTGROUP bootrom bootrom-unit
               IRUN_FLAGS ${BOOTSOURCE_IRUN_FLAGS} +uart_easter_egg
-              LOAD ${BOOTSOURCE_MEMTAG} ${_commas}spl-fail-bad-header-crc
             )
           endif()
+          
+          add_rumboot_target(
+            NAME "unit-selftest"
+            CONFIGURATION ${BOOTSOURCE_CONFIGURATION}
+            PREFIX "bootrom"
+            FILES common/bootrom/selftest.c
+            TESTGROUP bootrom bootrom-unit
+            IRUN_FLAGS ${BOOTSOURCE_IRUN_FLAGS}
+          )
+
   endif()
 
 

@@ -220,9 +220,10 @@ void rumboot_platform_read_config(struct rumboot_config *conf)
 }
 
 
-void rumboot_platform_selftest(struct rumboot_config *conf)
+int rumboot_platform_selftest(struct rumboot_config *conf)
 {
         /* Execute selftest routines */
+        return 0;
 }
 
 void rumboot_platform_print_summary(struct rumboot_config *conf)

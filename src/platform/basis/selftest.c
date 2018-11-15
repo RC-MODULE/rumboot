@@ -179,10 +179,9 @@ TEST_ENTRY("PCIe MBIST", check_pcie_mbist, SCTL_BASE + SCTL_BISR_L2C),
 TEST_ENTRY("L2C BISR", check_bisr, SCTL_BASE + SCTL_BISR_L2C),
 TEST_SUITE_END();
 
-void rumboot_platform_selftest(struct rumboot_config *conf)
+int rumboot_platform_selftest(struct rumboot_config *conf)
 {
         /* Execute selftest routines */
         int ret = test_suite_run(NULL, &selftest);
-
-        rumboot_printf("selftest: %d test from suite failed\n", ret);
+        return ret;
 }

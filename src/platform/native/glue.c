@@ -382,9 +382,9 @@ TEST_ENTRY("shit-o-test-5", mytest, 0),
 TEST_ENTRY("shit-o-test-6", mytest, 0),
 TEST_SUITE_END();
 
-void rumboot_platform_selftest(struct rumboot_config *conf)
+int rumboot_platform_selftest(struct rumboot_config *conf)
 {
-        test_suite_run(NULL, &selftest);
+        return test_suite_run(NULL, &selftest);
 }
 
 

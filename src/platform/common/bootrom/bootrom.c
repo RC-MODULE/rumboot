@@ -111,9 +111,11 @@ int main()
         rumboot_platform_perf(NULL);
 
         if (conf.selftest > 0) {
+                int ret;
                 rumboot_platform_perf("Selftest");
-                rumboot_platform_selftest(&conf);
+                ret = rumboot_platform_selftest(&conf);
                 rumboot_platform_perf(NULL);
+                rumboot_printf("selftest: %d test from suite failed\n", ret);
         }
 
         if (conf.hostmode) {
