@@ -165,6 +165,8 @@ int check_jdcr ()
 	if(event_get()) return 1;
 	rumboot_printf("got event\n");
 
+	spr_write(SPR_DBSR_RC,0xFFFFFFFF); //clear dbsr
+
 	rumboot_printf("JDSR check done!\n");
 	return 0;
 }
@@ -194,10 +196,10 @@ int check_dbimask ()
 
 int check_dbomask ()
 {
-//	uint32_t dbdr;
+	uint32_t dbdr;
 
 	rumboot_printf("DBOMASK check start!\n");
-//	spr_write(SPR_DBDR, TEST_DATA_ERROR);
+	spr_write(SPR_DBDR, TEST_DATA_ERROR);
 
 	rumboot_platform_event_clear();
 	rumboot_printf("send TEC_CHECK_DEBUG_MASKOUT\n");
@@ -205,13 +207,15 @@ int check_dbomask ()
 	if(event_get()) return 1;
 	rumboot_printf("got event\n");
 
-//	dbdr = spr_read(SPR_DBDR);
-//	if (dbdr != TEST_DATA_OK ){
-//		rumboot_printf("DBIMASK check failed!\n");
-//		return 1;
-//	}
-	rumboot_printf("DBOMASK check done!\n");
+	dbdr = spr_read(SPR_DBDR);
+	if (dbdr != TEST_DATA_OK ){
+		rumboot_printf("DBIMASK check failed!\n");
+		return 1;
+	}
 
+	spr_write(SPR_DBSR_RC,0xFFFFFFFF); //clear dbsr
+
+	rumboot_printf("DBOMASK check done!\n");
 	return 0;
 }
 
