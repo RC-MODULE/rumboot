@@ -87,7 +87,7 @@ static bool check_pcie_mbist(uint32_t base)
         iowrite32(0x1, SCTL_BASE + SCTL_PCIE_RST);
 
         int done = 0;
-        LOOP_UNTIL_TIMEOUT(100000) {
+        LOOP_UNTIL_TIMEOUT(10000) {
                 if ((ioread32(SCTL_BASE + SCTL_PCIE_RST) & 0x1) == 0x1) {
                         done = 1;
                         break;
@@ -110,6 +110,7 @@ static bool check_pcie_mbist(uint32_t base)
         //    This "if" is used like delay function
         //-----------------------------------------------------------------
         if ((ioread32(SCTL_BASE + SCTL_PCIE_REG_0) & 0x04000000) != 0x04000000) {
+                asm("nop");
         }
 
         //-----------------------------------------------------------------
@@ -121,7 +122,7 @@ static bool check_pcie_mbist(uint32_t base)
         //  Wait MBIST done
         //-----------------------------------------------------------------
         done = 0;
-        LOOP_UNTIL_TIMEOUT(1000) {
+        LOOP_UNTIL_TIMEOUT(10000) {
                 if ((ioread32(SCTL_BASE + SCTL_PCIE_REG_0) & 0x02000000) == 0x02000000) {
                         done = 1;
                         break;
