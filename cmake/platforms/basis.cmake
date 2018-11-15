@@ -6,9 +6,9 @@ set(RUMBOOT_PLATFORM_DEFAULT_SNAPSHOT default)
 
 
 if (RUMBOOT_BUILD_TYPE STREQUAL "Production")
-  set(BOOTROM_IFLAGS +BOOTMGR_KEEP_DRIVING=1 +GTUBE_ONLY_PRODUCTION_OPCODES)
+  set(BOOTROM_IFLAGS +pcie_mbist_model +BOOTMGR_KEEP_DRIVING=1 +GTUBE_ONLY_PRODUCTION_OPCODES)
 else()
-  set(BOOTROM_IFLAGS )
+  set(BOOTROM_IFLAGS +pcie_mbist_model)
 endif()
 
 #These are configurations for our binaries
