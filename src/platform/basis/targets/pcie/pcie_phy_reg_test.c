@@ -93,23 +93,23 @@
 #define def_PCIe_Phy_PMA_TX_HBDC_PRE_PREM_OVRD      0x0000
 #define def_PCIe_Phy_PMA_TX_HBDC_MAIN_INITM_OVRD    0x0000
 // SU
-#define def_PCIe_Phy_PMA_TX_RCVDET_CTRL             0x00FA
+#define def_PCIe_Phy_PMA_TX_RCVDET_CTRL             0x1388
 #define def_PCIe_Phy_PMA_TX_BIST_CTRL               0x0000
 #define def_PCIe_Phy_PMA_TX_BIST_UDDWR              0x0000
 // SU
-#define def_PCIe_Phy_PMA_RX_IQPI_ILL_CAL_CTRL            0x0002
+#define def_PCIe_Phy_PMA_RX_IQPI_ILL_CAL_CTRL            0x0000
 #define def_PCIe_Phy_PMA_RX_IQPI_ILL_CAL_START           0x0000
 #define def_PCIe_Phy_PMA_RX_IQPI_ILL_CAL_INIT_TMR        0x02EE
 #define def_PCIe_Phy_PMA_RX_IQPI_ILL_CAL_ITER_TMR        0x0080
 // SU
-#define def_PCIe_Phy_PMA_RX_IQPI_ILL_LOCK_CALCNT_START0  0x0010
+#define def_PCIe_Phy_PMA_RX_IQPI_ILL_LOCK_CALCNT_START0  0x013F
 // SU
-#define def_PCIe_Phy_PMA_RX_EPI_ILL_CAL_CTRL             0x0002
+#define def_PCIe_Phy_PMA_RX_EPI_ILL_CAL_CTRL             0x0000
 #define def_PCIe_Phy_PMA_RX_EPI_ILL_CAL_START            0x0000
 #define def_PCIe_Phy_PMA_RX_EPI_ILL_CAL_INIT_TMR         0x02EE
 #define def_PCIe_Phy_PMA_RX_EPI_ILL_CAL_ITER_TMR         0x0080
 // SU
-#define def_PCIe_Phy_PMA_RX_EPI_ILL_LOCK_CALCNT_START0   0x0010
+#define def_PCIe_Phy_PMA_RX_EPI_ILL_LOCK_CALCNT_START0   0x013F
 #define def_PCIe_Phy_PMA_RX_CDRLF_CNFG                   0x018E
 #define def_PCIe_Phy_PMA_RX_CDRLF_CNFG2                  0x1133
 #define def_PCIe_Phy_PMA_RX_CDRLF_MGN_DIAG               0x0000
