@@ -91,15 +91,6 @@ void wait_irq ()
       TEST_ASSERT (0, "ERROR: wait_irq is timeout");
 }
 
-static void sram_handler ()
-{
-    rumboot_printf("sram_handler\n");
-    TEST_ASSERT (IRQ_EXPECT, "Not expected interrupt (SRAM)");
-    IRQ_EXPECT = false;
-    trace_emi_irq_regs ();
-    emi_irq_clear ();
-}
-
 static void emi_cntr_0_handler ()
 {
     rumboot_printf("emi_cntr_0_handler\n");
@@ -145,14 +136,12 @@ int main ()
 
     rumboot_irq_cli();
     struct rumboot_irq_entry *tbl = rumboot_irq_create( NULL );
-    rumboot_irq_set_handler( tbl, SRAM_INT, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, sram_handler, ( void* )0 );
     rumboot_irq_set_handler( tbl, EMI_CNTR_INT_0, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, emi_cntr_0_handler, ( void* )0 );
     rumboot_irq_set_handler( tbl, EMI_CNTR_INT_1, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, emi_cntr_1_handler, ( void* )0 );
     rumboot_irq_set_handler( tbl, EMI_CNTR_INT_2, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, emi_cntr_2_handler, ( void* )0 );
     rumboot_irq_set_handler( tbl, EMI_CNTR_INT_3, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, emi_cntr_3_handler, ( void* )0 );
     /* Activate the table */
     rumboot_irq_table_activate( tbl );
-    rumboot_irq_enable( SRAM_INT );
     rumboot_irq_enable( EMI_CNTR_INT_0 );
     rumboot_irq_enable( EMI_CNTR_INT_1 );
     rumboot_irq_enable( EMI_CNTR_INT_2 );
