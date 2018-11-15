@@ -248,15 +248,19 @@ static uint32_t pl022_flash_read_data(uint32_t const base_addr)
     for (int i =0; i<4; i++)
         (void)ioread32(addr); //read data from SPI - staff
 
-    data = (ioread32(addr) && 0x000000FF);
-    data = data | ((ioread32(addr) << 8) && 0x0000FF00);
-    data = data | ((ioread32(addr) << 16) && 0x00FF0000);
-    data = data | ((ioread32(addr) << 24) && 0xFF000000);
+    data = (ioread32(addr) & 0x000000FF);
+    data = data | ((ioread32(addr) << 8) & 0x0000FF00);
+    data = data | ((ioread32(addr) << 16) & 0x00FF0000);
+    data = data | ((ioread32(addr) << 24) & 0xFF000000);
     return data;
 }
 
 static uint32_t gspi_ssp_flash(uint32_t const base_addr)
 {
+    rumboot_printf("Checking GSPI FLASH read/write functionality ...\n");
+
+    IRQ = 0;
+
     //Read and check ID
     unsigned gspi_sspid;
     gspi_sspid =  (ioread32(base_addr+0xffc) & 0x000000ff)         | ((ioread32(base_addr+0xff8) << 8)  & 0x0000ff00) |
@@ -318,6 +322,27 @@ static uint32_t gspi_ssp_flash(uint32_t const base_addr)
     return 0;
 }
 
+static uint32_t gspi_dma_axi_mem(uint32_t const base_addr, uint32_t const r_mem_addr, uint32_t const test_data) {
+    rumboot_printf("Checking GSPI DMA read/write functionality ...\n");
+
+    uint32_t result = 0;
+
+    memset((void*)(r_mem_addr+4), test_data, BYTE_NUMBER);
+    //r_mem_addr - IM2
+    iowrite32(PAGE_PROGRAM_COMMAND, r_mem_addr);
+    msync();
+    result += gspi_dma_axi(base_addr, r_mem_addr, (IM2_BASE + DATA_SIZE), test_data);
+    //r_mem_addr - IM1
+    iowrite32(PAGE_PROGRAM_COMMAND, r_mem_addr);
+    msync();
+    result += gspi_dma_axi(base_addr, r_mem_addr, (IM1_BASE + DATA_SIZE), test_data);
+    //r_mem_addr - EM2
+    iowrite32(PAGE_PROGRAM_COMMAND, r_mem_addr);
+    msync();
+    result += gspi_dma_axi(base_addr, r_mem_addr, (SRAM0_BASE + DATA_SIZE), test_data);
+
+    return result;
+}
 
 int main(void)
 {
@@ -357,60 +382,12 @@ int main(void)
     ssp_param.fr_format = ssp_motorola_fr_form;
     pl022_set_param(GSPI_BASE, &ssp_param);//turn on SSP controller
 
+    test_result += gspi_dma_axi_mem(GSPI_BASE, IM2_BASE, TEST_DATA_IM2);
+    test_result += gspi_dma_axi_mem(GSPI_BASE, IM1_BASE, TEST_DATA_IM1);
+    test_result += gspi_dma_axi_mem(GSPI_BASE, SSRAM_BASE, TEST_DATA_EM2);
 
-    // Data for check IM2
-    memset((void*)(IM2_BASE+4), TEST_DATA_IM2, BYTE_NUMBER);
-    //IM2 - IM2
-    iowrite32(PAGE_PROGRAM_COMMAND, IM2_BASE);
-    msync();
-    test_result += gspi_dma_axi(GSPI_BASE, IM2_BASE, (IM2_BASE + DATA_SIZE), TEST_DATA_IM2);
-    //IM2 - IM1
-    iowrite32(PAGE_PROGRAM_COMMAND, IM2_BASE);
-    msync();
-    test_result += gspi_dma_axi(GSPI_BASE, IM2_BASE, (IM1_BASE + DATA_SIZE), TEST_DATA_IM2);
-    //IM2 - EM2
-    iowrite32(PAGE_PROGRAM_COMMAND, IM2_BASE);
-    msync();
-    test_result += gspi_dma_axi(GSPI_BASE, IM2_BASE, (SRAM0_BASE + DATA_SIZE), TEST_DATA_IM2);
-
-
-    // Data for check IM1
-    memset((void*)(IM1_BASE+4), TEST_DATA_IM1, BYTE_NUMBER);
-    //IM1 - IM2
-    iowrite32(PAGE_PROGRAM_COMMAND, IM1_BASE);
-    msync();
-    test_result += gspi_dma_axi(GSPI_BASE, IM1_BASE, (IM2_BASE + DATA_SIZE), TEST_DATA_IM1);
-    //IM1 - IM1
-    iowrite32(PAGE_PROGRAM_COMMAND, IM1_BASE);
-    msync();
-    test_result += gspi_dma_axi(GSPI_BASE, IM1_BASE, (IM1_BASE + DATA_SIZE), TEST_DATA_IM1);
-    //IM1 - EM2
-    iowrite32(PAGE_PROGRAM_COMMAND, IM1_BASE);
-    msync();
-    test_result += gspi_dma_axi(GSPI_BASE, IM1_BASE, (SRAM0_BASE + DATA_SIZE), TEST_DATA_IM1);
-
-
-    // Data for check EM2
-    memset((void*)(SSRAM_BASE+4), TEST_DATA_EM2, BYTE_NUMBER);
-    //EM2 - IM2
-    iowrite32(PAGE_PROGRAM_COMMAND, SSRAM_BASE);
-    msync();
-    test_result += gspi_dma_axi(GSPI_BASE, SSRAM_BASE, (IM2_BASE + DATA_SIZE), TEST_DATA_EM2);
-    //EM2 - IM1
-    iowrite32(PAGE_PROGRAM_COMMAND, SSRAM_BASE);
-    msync();
-    test_result += gspi_dma_axi(GSPI_BASE, SSRAM_BASE, (IM1_BASE + DATA_SIZE), TEST_DATA_EM2);
-    //EM2 - EM2
-    iowrite32(PAGE_PROGRAM_COMMAND, SSRAM_BASE);
-    msync();
-    test_result += gspi_dma_axi(GSPI_BASE, SSRAM_BASE, (SRAM0_BASE + DATA_SIZE), TEST_DATA_EM2);
-
-
-    IRQ = 0;
     pl022_dma_reset(GSPI_BASE);
-    rumboot_printf("Checking GSPI FLASH read/write functionality ...\n");
     test_result += gspi_ssp_flash(GSPI_BASE);
-
 
     rumboot_irq_table_activate(NULL);
     rumboot_irq_free(tbl);
