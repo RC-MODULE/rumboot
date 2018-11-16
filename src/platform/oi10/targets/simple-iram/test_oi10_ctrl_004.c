@@ -358,10 +358,7 @@ static struct s804_instance in[] =
 };
 
 TEST_SUITE_BEGIN(dit_testlist, "SP804 IRQ TEST")
-    TEST_ENTRY("SP804_0", test_dit_timers, (uint32_t) &in[0]),
-TEST_SUITE_END();
-
-TEST_SUITE_BEGIN(dit_testlist_1, "SP804 IRQ TEST")
+TEST_ENTRY("SP804_0", test_dit_timers, (uint32_t) &in[0]),
 #ifdef CHECK_REGS
     //check_timers_default_ro_val();
 TEST_ENTRY("SP804_0", check_default_ro_val, (uint32_t, &in[0]));
@@ -389,13 +386,18 @@ int main(void)
 
 // Run tests and return failed one
 
-    result = test_suite_run( NULL, &dit_testlist ) ||
-            test_suite_run(NULL, &dit_testlist_1);
+    result = test_suite_run( NULL, &dit_testlist );
 
    // rumboot_printf( "%d tests from suite failed\n", result );
    // rumboot_printf( "Check ro/rw registers\n" );
 
 //    result = test_suite_run(NULL, &dit_testlist_1);
 
+    if(!result)
+    {
+        rumboot_printf("Checked TEST_OK\n");
+        return 0;
+    }
+    rumboot_printf("Checked TEST_ERROR\n");
     return result;
 }
