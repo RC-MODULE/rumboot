@@ -15,15 +15,19 @@
 #include <rumboot/platform.h>
 #include <platform/test_assert.h>
 #include <platform/devices/emi.h>
+#include <platform/devices/l2c.h>
 #include <rumboot/irq.h>
 #include <platform/interrupts.h>
 #include <platform/regs/fields/mpic128.h>
+#include <platform/arch/ppc/ppc_476fp_config.h>
+#include <platform/arch/ppc/ppc_476fp_lib_c.h>
+
 
 
 #define TEST_BANK_IDX    emi_b0_sram0
 #define TEST_BANK_BASE   SRAM0_BASE
 #define TEST_LEN         3
-#define TEST_TRDY        (0x400 - 0x258)
+#define TEST_TRDY        (0x400 - 0x258) //0x258 = 600 / 600 * 10ns = 6us
 
 #define TEST_EVENT_MAKE_PULSE_ON_RDY_An     0x0000003E
 
@@ -59,14 +63,28 @@ static void handler_emi( int irq, void *arg )
         rumboot_printf( "TRDY interrupt request at reading\n");
     }
     emi_clear_irr(DCR_EM2_EMI_BASE, &irr);
-    rumboot_printf("Exit from handler\n");
+//    rumboot_printf("Exit from handler\n");
 }
 
-struct rumboot_irq_entry * create_sram_irq_handler()
+static void handler_l2c_mcheck(int id, const char *name)
 {
-    rumboot_printf( "Enable SRAM irq\n" );
+    uint32_t tmp;
+    rumboot_printf( "L2C_MCHECK arrived\n");
+    rumboot_printf( "L2FERR = 0x%x\n", l2c_l2_read(DCR_L2C_BASE, L2C_L2FERR));//L2FERR is RC reg type
+    tmp = l2c_l2_read(DCR_L2C_BASE, L2C_L2PLBSTAT1);
+    rumboot_printf( "L2PLBSTAT1 = 0x%x\n", tmp);//L2PLBSTAT1 is W1 reg type
+    l2c_l2_write(DCR_L2C_BASE, L2C_L2PLBSTAT1, tmp);
+    rumboot_printf( "MCSR = 0x%X\n", spr_read(SPR_MCSR_RW));
+    spr_write(SPR_MCSR_C, 0xFFFFFFFF);
+}
+
+struct rumboot_irq_entry * create_handlers()
+{
+    rumboot_printf( "Create handlers for SRAM irq and L2C Machine Check\n" );
     rumboot_irq_cli();
     struct rumboot_irq_entry *tbl = rumboot_irq_create( NULL );
+
+    rumboot_irq_set_exception_handler(handler_l2c_mcheck);
 
     EMI_SRAM0_IRQ_HANDLED = 0;
 
@@ -114,33 +132,33 @@ void wait_sram_irq(uint32_t exp_status)
 {
     #define EMI_IRQ_TIMEOUT 100
     uint32_t timeout_cnt = 0;
-    while ( (EMI_SRAM0_IRQ_HANDLED!=exp_status) && (timeout_cnt++ < EMI_IRQ_TIMEOUT) );
+    while ( (EMI_SRAM0_IRQ_HANDLED!=exp_status) && (timeout_cnt++ < EMI_IRQ_TIMEOUT) ){};
     TEST_ASSERT(EMI_SRAM0_IRQ_HANDLED==exp_status, "IRQ is timed out!");
 }
 
 void check_irq_by_trdy_wr()
 {
+    EMI_SRAM0_IRQ_HANDLED = 0;
+    rumboot_printf("\nWaiting TRDY IRQ at writing\n");
     iowrite32(test_data[0], test_addr[0]);
-    rumboot_printf("Waiting TRDY IRQ at writing\n");
     wait_sram_irq(TEST_EMI_IRQ_WR);
 }
 
 void check_irq_by_trdy_rd()
 {
     uint32_t rd;
+    EMI_SRAM0_IRQ_HANDLED = 0;
+    rumboot_printf("\nWaiting TRDY IRQ at reading\n");
     rd = ioread32(test_addr[0]);
     wait_sram_irq(TEST_EMI_IRQ_RD);
+    rumboot_printf("rd = 0x%X\n", rd);
+    /*
     if (rd!=test_data[0])
     {
         rumboot_printf("Data error!\nExpected: 0x%X\nActual: 0x%X\n", test_data[0], rd);
         TEST_ASSERT(0, "test_oi10_em2_203 is failed!\n");
     }
-}
-
-void disable_mcheck()
-{
-    uint32_t const msr_old_value = msr_read();
-    msr_write( msr_old_value & ~(0b1 << ITRPT_XSR_ME_i));
+    */
 }
 
 int main()
@@ -158,12 +176,13 @@ int main()
     mask.MRDYR = true;
     mask.MRDYW = true;
     emi_set_int_mask(DCR_EM2_EMI_BASE, &mask);
-    tbl = create_sram_irq_handler();
+    tbl = create_handlers();
+
+    memset((uint8_t *) SRAM0_BASE, 0, 32*sizeof(uint32_t));
 
     check_wr_ext_rdy();//2.3.1 PPC_SRAM_SDRAM_slave0_testplan.docx
     check_rd_ext_rdy();//2.3.1 PPC_SRAM_SDRAM_slave0_testplan.docx
 
-    disable_mcheck();//disabling due to mcheck appears earlier than interrupt from EMI
     check_irq_by_trdy_wr();//2.3.2 PPC_SRAM_SDRAM_slave0_testplan.docx
     check_irq_by_trdy_rd();//2.3.2 PPC_SRAM_SDRAM_slave0_testplan.docx
 
