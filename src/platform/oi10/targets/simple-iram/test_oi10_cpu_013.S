@@ -18,8 +18,8 @@
 #define CVR3                r14,r15,r16     /* Check Value Regs triade */
 #define P4A0(OFFSET)        (DCR_PLB4AHB_0_BASE + (OFFSET))
 
-.macro check_value_013_0 reg, exp, name
-    check_value CVR3, P4A0(\reg), \exp, \name
+.macro check_reset_value devn reg, exp
+    check_value CVR3, P4A\devn\()(\reg), \exp, "PLB4AHB_\nevn\()_\reg"
 .endm
 
 .section ".text","ax",@progbits
@@ -33,17 +33,17 @@ main:
 p4ahb_0:
     rumboot_putstring "Check default values...\n"
 
-    check_value_013_0   REVID           REVID_VALUE             "PLB4AHB_0_REVID"
-    check_value_013_0   SEAR_ADDRUPPER  SEAR_ADDRUPPER_VALUE    "PLB4AHB_0_SEAR_ADDRUPPER"
-    check_value_013_0   SEAR_ADDRLOWER  SEAR_ADDRLOWER_VALUE    "PLB4AHB_0_SEAR_ADDRLOWER"
-    check_value_013_0   SESR            SESR_VALUE              "PLB4AHB_0_SESR"
-    check_value_013_0   TOP_ADDR        TOP_ADDR_VALUE          "PLB4AHB_0_TOP_ADDR"
-    check_value_013_0   BOT_ADDR        BOT_ADDR_VALUE          "PLB4AHB_0_BOT_ADDR"
-    check_value_013_0   ATTRS           ATTRS_VALUE             "PLB4AHB_0_ATTRS"
-    check_value_013_0   CONTROL         CONTROL_VALUE           "PLB4AHB_0_CONTROL"
-    check_value_013_0   ERR_ST          ERR_ST_VALUE            "PLB4AHB_0_ERR_ST"
-    check_value_013_0   ERR_ADDR        ERR_ADDR_VALUE          "PLB4AHB_0_ERR_ADDR"
-    check_value_013_0   INT_MSK         INT_MSK_VALUE           "PLB4AHB_0_INT_MSK"
+    check_reset_value   REVID           REVID_VALUE
+    check_reset_value   SEAR_ADDRUPPER  SEAR_ADDRUPPER_VALUE
+    check_reset_value   SEAR_ADDRLOWER  SEAR_ADDRLOWER_VALUE
+    check_reset_value   SESR            SESR_VALUE
+    check_reset_value   TOP_ADDR        TOP_ADDR_VALUE
+    check_reset_value   BOT_ADDR        BOT_ADDR_VALUE
+    check_reset_value   ATTRS           ATTRS_VALUE
+    check_reset_value   CONTROL         CONTROL_VALUE
+    check_reset_value   ERR_ST          ERR_ST_VALUE
+    check_reset_value   ERR_ADDR        ERR_ADDR_VALUE
+    check_reset_value   INT_MSK         INT_MSK_VALUE
 
     rumboot_putstring "Done!\n"
 
