@@ -2,7 +2,7 @@
 #define DIT_LIB_H
 
 /**
- * \defgroup devices_sp805 SP804 'WD' WATCHDOG
+ * \defgroup devices_sp805 'WD' WATCHDOG
  * \ingroup devices
  *
  *  Watchdog block function libriary.
@@ -29,7 +29,7 @@
  *    int c = 0;
  *    uint32_t base_addr = BASE_ADDR;
  *
- *    struct sp804_conf config_0 = {
+ *    struct sp805_conf config_0 = {
  *      .mode             = ONESHOT,
  *      .interrupt_enable = 1      ,
  *      .clock_division   = 1      ,
@@ -38,21 +38,8 @@
  *      .bgload           = 0
  *      };
  *
- *    for (int i =0; i<10; i++)
- *    {
- *        sp804_config(base_addr,&config_0,0);
- *        sp804_enable(base_addr,0);
- *        while(sp804_get_value(base_addr,0)){};
- *        c++;
- *    }
- * \endcode
- *
- * \addtogroup devices_sp805
- *
- * @{
- */
+*/
 
-//#define DIT_CTRL_ENABLE     (1<<7)
 #define WD_CTRL_PERIODIC   (1<<6)
 
 #define WD_CTRL_DIV1       (1<<3)
@@ -79,7 +66,7 @@ enum sp805_mode
  */
 struct sp805_conf
 {
-    int mode;
+    enum sp805_mode mode;
     int  interrupt_enable;
     int  clock_division;
     int  width;
