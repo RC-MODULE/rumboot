@@ -241,7 +241,6 @@ void init_interrupts(void)
     static
     uint32_t    irq_list[] =
     {
-        SRAM_INT,
         EMI_CNTR_INT_0,
         EMI_CNTR_INT_1,
         EMI_CNTR_INT_2,
