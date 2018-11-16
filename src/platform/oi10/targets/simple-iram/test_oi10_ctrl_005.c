@@ -294,15 +294,9 @@ static struct s805_instance in[] =
     },
 };
 
-TEST_SUITE_BEGIN(wd_testlist1, "SP805 IRQ TEST")
-    TEST_ENTRY("SP805_0", wd_test, (uint32_t) &in[0]),
-TEST_SUITE_END();
-
-TEST_SUITE_BEGIN(wd_testlist2, "SP805 IRQ TEST")
-    TEST_ENTRY("SP805_2", wd_test2, (uint32_t) &in[0]),
-TEST_SUITE_END();
-
 TEST_SUITE_BEGIN(wd_testlist, "SP805 IRQ TEST")
+TEST_ENTRY("SP805_0", wd_test, (uint32_t) &in[0]),
+TEST_ENTRY("SP805_0", wd_test2, (uint32_t) &in[0]),
 #ifdef CHECK_REGS
 TEST_ENTRY("SP805_0", check_default_ro_val, (uint32_t, &in[0]));
 TEST_ENTRY("SP805_0", check_default_rw_val, (uint32_t, &in[0]));
@@ -324,21 +318,19 @@ uint32_t main(void)
     register uint32_t result;
     rumboot_printf( "SP805 test START\n" );
     struct rumboot_irq_entry *tbl = rumboot_irq_create( NULL );
-    rumboot_printf( "SP805 int are clean up\n" );
-
-    rumboot_printf("Checked TEST_OK\n");
-    rumboot_printf( "SP805 test START\n" );
     rumboot_irq_cli();
-
     rumboot_irq_set_handler( tbl, WDT_INT, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler0, &in[0]);
     /* Activate the table */
     rumboot_irq_table_activate( tbl );
     rumboot_irq_enable( WDT_INT);
 
-    result = test_suite_run(NULL, &wd_testlist1) ||
-            test_suite_run(NULL, &wd_testlist) ||
-            test_suite_run(NULL, &wd_testlist2);
+    result = test_suite_run(NULL, &wd_testlist);
 
-   rumboot_printf("Checked TEST_OK\n");
+     if(!result)
+     {
+         rumboot_printf("Checked TEST_OK\n");
+         return 0;
+     }
+     rumboot_printf("Checked TEST_ERROR\n");
      return result;
 }
