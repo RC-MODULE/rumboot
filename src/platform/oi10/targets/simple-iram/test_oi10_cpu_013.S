@@ -15,9 +15,12 @@
 #include <platform/arch/ppc/test_macro_asm.S.h>
 #include <platform/regs/regs_plb4ahb.h>
 
-#define CVR3					r14,r15,r16 	/* Check Value Regs triade */
-#define P4A0(OFFSET)			(DCR_PLB4AHB_0_BASE + (OFFSET))
+#define CVR3                r14,r15,r16     /* Check Value Regs triade */
+#define P4A0(OFFSET)        (DCR_PLB4AHB_0_BASE + (OFFSET))
 
+.macro check_value_013_0 reg, exp, name
+    check_value CVR3, P4A0(\reg), \exp, \name
+.endm
 
 .section ".text","ax",@progbits
 
@@ -30,17 +33,17 @@ main:
 p4ahb_0:
     rumboot_putstring "Check default values...\n"
 
-    check_value CVR3, P4A0(REVID         ), REVID_VALUE,			"PLB4AHB_0_REVID"
-    check_value CVR3, P4A0(SEAR_ADDRUPPER), SEAR_ADDRUPPER_VALUE,	"PLB4AHB_0_SEAR_ADDRUPPER"
-    check_value CVR3, P4A0(SEAR_ADDRLOWER), SEAR_ADDRLOWER_VALUE,	"PLB4AHB_0_SEAR_ADDRLOWER"
-    check_value CVR3, P4A0(SESR          ), SESR_VALUE,				"PLB4AHB_0_SESR"
-    check_value CVR3, P4A0(TOP_ADDR      ), TOP_ADDR_VALUE,			"PLB4AHB_0_TOP_ADDR"
-    check_value CVR3, P4A0(BOT_ADDR      ), BOT_ADDR_VALUE,			"PLB4AHB_0_BOT_ADDR"
-    check_value CVR3, P4A0(ATTRS         ), ATTRS_VALUE,			"PLB4AHB_0_ATTRS"
-    check_value CVR3, P4A0(CONTROL       ), CONTROL_VALUE,			"PLB4AHB_0_CONTROL"
-    check_value CVR3, P4A0(ERR_ST        ), ERR_ST_VALUE,			"PLB4AHB_0_ERR_ST"
-    check_value CVR3, P4A0(ERR_ADDR      ), ERR_ADDR_VALUE,			"PLB4AHB_0_ERR_ADDR"
-    check_value CVR3, P4A0(INT_MSK       ), INT_MSK_VALUE,			"PLB4AHB_0_INT_MSK"
+    check_value_013_0   REVID           REVID_VALUE             "PLB4AHB_0_REVID"
+    check_value_013_0   SEAR_ADDRUPPER  SEAR_ADDRUPPER_VALUE    "PLB4AHB_0_SEAR_ADDRUPPER"
+    check_value_013_0   SEAR_ADDRLOWER  SEAR_ADDRLOWER_VALUE    "PLB4AHB_0_SEAR_ADDRLOWER"
+    check_value_013_0   SESR            SESR_VALUE              "PLB4AHB_0_SESR"
+    check_value_013_0   TOP_ADDR        TOP_ADDR_VALUE          "PLB4AHB_0_TOP_ADDR"
+    check_value_013_0   BOT_ADDR        BOT_ADDR_VALUE          "PLB4AHB_0_BOT_ADDR"
+    check_value_013_0   ATTRS           ATTRS_VALUE             "PLB4AHB_0_ATTRS"
+    check_value_013_0   CONTROL         CONTROL_VALUE           "PLB4AHB_0_CONTROL"
+    check_value_013_0   ERR_ST          ERR_ST_VALUE            "PLB4AHB_0_ERR_ST"
+    check_value_013_0   ERR_ADDR        ERR_ADDR_VALUE          "PLB4AHB_0_ERR_ADDR"
+    check_value_013_0   INT_MSK         INT_MSK_VALUE           "PLB4AHB_0_INT_MSK"
 
     rumboot_putstring "Done!\n"
 
@@ -95,15 +98,15 @@ p4ahb_0_loop_0:
     bne- cr6,   test_error
 
 test_ok:
-	rumboot_putstring "TEST OK\n"
-	test_event		EVENT_OK
-	load_const r3,	RESULT_OK
+	rumboot_putstring  "TEST OK\n"
+	test_event         EVENT_OK
+	load_const r3,     RESULT_OK
 	b finish
 
 test_error:
-	rumboot_putstring "TEST ERROR\n"
-	test_event		EVENT_ERROR
-	load_const r3,	RESULT_ERROR
+	rumboot_putstring  "TEST ERROR\n"
+	test_event         EVENT_ERROR
+	load_const r3,     RESULT_ERROR
 
 finish:
 	blr
