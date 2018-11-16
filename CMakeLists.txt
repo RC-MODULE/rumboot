@@ -12,6 +12,10 @@ if (NOT CMAKE_BUILD_TYPE)
 endif()
 set(RUMBOOT_BUILD_TYPE ${CMAKE_BUILD_TYPE})
 
+if (NOT RUMBOOT_SOC_BUILD_TYPE)
+    set(RUMBOOT_SOC_BUILD_TYPE POSTLAYOUT)
+endif()
+
 INCLUDE(cmake/platforms/${RUMBOOT_PLATFORM}.cmake)
 
 if (CROSS_COMPILE)
@@ -119,6 +123,7 @@ message("\n\n ==== RumBoot Configuration summary ====")
 
 message("Platform:           ${RUMBOOT_PLATFORM}")
 message("Architecture:       ${RUMBOOT_ARCH}")
+message("SoC Build Type:     ${RUMBOOT_SOC_BUILD_TYPE}")
 if (CROSS_COMPILE)
   message("Target triplet:     ${CROSS_COMPILE}")
 endif()
@@ -163,6 +168,7 @@ endif()
 
 RUMBOOT_PLATFORM_PRINT_SUMMARY()
 
+SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DRUMBOOT_SOC_${RUMBOOT_SOC_BUILD_TYPE}")
 message("C Flags:            ${CMAKE_C_FLAGS}")
 message("ASM Flags:          ${CMAKE_ASM_FLAGS}")
 

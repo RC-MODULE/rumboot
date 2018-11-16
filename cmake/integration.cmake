@@ -192,8 +192,10 @@ function(rumboot_load_build platform buildtype)
         -DRUMBOOT_TRACE=${RUMBOOT_TRACE}
         -DRUMBOOT_COVERAGE=${RUMBOOT_COVERAGE}
         -DRUMBOOT_PROFILE=${RUMBOOT_PROFILE}
+        -DRUMBOOT_SOC_BUILD_TYPE=${CMAKE_BUILD_TYPE}
     )
 
+    set(RUMBOOT_SOC_BUILD_TYPE ${CMAKE_BUILD_TYPE})
     set(RUMBOOT_UTILS_DIR  ${CMAKE_BINARY_DIR}/${rumboot_dirname}/utils PARENT_SCOPE)
     set(RUMBOOT_BINARY_DIR ${CMAKE_BINARY_DIR}/${rumboot_dirname} PARENT_SCOPE)
 
