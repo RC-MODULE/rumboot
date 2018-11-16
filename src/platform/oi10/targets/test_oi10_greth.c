@@ -201,40 +201,6 @@ void mdio_check(uint32_t base_addr)
     TEST_ASSERT(greth_mdio_read(base_addr, ETH_PHY_ADDR, ETH_PHY_EXTSTATUS )==ETH_PHY_EXTSTATUS_DEFAULT , "Error at mdio reading ETH_PHY_EXTSTATUS  register\n");
 }
 
-/*
- * Memory functions
- */
-bool mem_cmp(void volatile * const src, void volatile * const dst, uint32_t len)
-{
-    uint8_t * src_addr;
-    uint8_t * dst_addr;
-    bool data_ok = true;
-    src_addr = (uint8_t *)src; dst_addr = (uint8_t *)dst;
-    for (uint32_t i=0; i<len; i++)
-    {
-#ifdef ETH_DEBUG
-        rumboot_printf("Check#%d\n", i);
-        rumboot_printf("src[0x%X]: 0x%x\ndst[0x%X]: 0x%x\n", src_addr, *src_addr, dst_addr, *dst_addr);
-#endif
-        if (*src_addr!=*dst_addr)
-        {
-            rumboot_printf("Data error:\nsrc[0x%X]: 0x%x\ndst[0x%X]: 0x%x\n", src_addr, *src_addr, dst_addr, *dst_addr);
-            data_ok = false;
-        }
-        src_addr++; dst_addr++;
-    }
-    return data_ok;
-}
-
-void mem_clr(void volatile * const ptr, uint32_t len)
-{
-    uint32_t * addr = (uint32_t *) ptr;
-    for (uint32_t i=0; i<len; i++)
-    {
-        *addr = 0xFFFFFFFF; addr++;
-    }
-}
-
 #define GRETH_SRC_DATA_SEL  true
 #define GRETH_DST_DATA_SEL  false
 
@@ -257,31 +223,6 @@ uint8_t * get_src_dst_data_ptr(bool src_dst, uint32_t bank_num)
             break;
     }
     return data_ptr;
-}
-
-void add_pading (uint8_t* addr, uint32_t len, uint8_t value)
-{
-    uint32_t misalign;
-
-    rumboot_printf("Padding array at addresses [0x%X : 0x%X]\n", (uint32_t) addr, (uint32_t)addr + len -1);
-
-    //paddign at start of array
-    misalign = (uint32_t)addr & 0x00000003;
-    while (misalign>0)
-    {
-        rumboot_printf("MEM[0x%X] = 0\n", (uint32_t)addr - misalign);
-        *(addr - misalign) = value;
-        misalign--;
-    }
-
-    //paddign at end of array
-    misalign = 3 - (((uint32_t)addr + len - 1) & 0x00000003);
-    while (misalign>0)
-    {
-        rumboot_printf("MEM[0x%X] = 0\n", (uint32_t)addr + len + misalign - 1);
-        *(addr + len + misalign - 1) = value;
-        misalign--;
-    }
 }
 
 void prepare_test_data(uint32_t src_bank, uint32_t dst_bank)
@@ -471,9 +412,9 @@ void check_transfer_via_external_loopback(uint32_t base_addr_src_eth,  uint8_t *
     greth_start_transmit( base_addr_src_eth );
 
     TEST_ASSERT(greth_wait_receive_irq(base_addr_dst_eth, eth_handled_flag_ptr), "Receiving is failed\n");
-    TEST_ASSERT(mem_cmp(test_data_src, test_data_dst, GRETH_TEST_DATA_LEN_BYTES), "Data compare error!\n");
+    TEST_ASSERT(memcmp(test_data_src, test_data_dst, GRETH_TEST_DATA_LEN_BYTES)==0, "Data compare error!\n");
 
-    mem_clr(test_data_dst, GRETH_TEST_DATA_LEN_BYTES);
+    memset(test_data_dst, 0, GRETH_TEST_DATA_LEN_BYTES);
 
     rumboot_free(tx_descriptor_data_);
     rumboot_free(rx_descriptor_data_);
@@ -527,7 +468,7 @@ void check_edcl_wr_via_external_loopback(uint32_t base_addr_dst_eth, uint32_t wr
     greth_start_edcl_transfer( base_addr_src_eth );
 
     TEST_ASSERT(greth_wait_receive_irq(base_addr_src_eth, eth_handled_flag_ptr), "Receiving EDCL response failed\n");
-    TEST_ASSERT(mem_cmp(data, (uint8_t*) wr_mem_addr, len), "Data error at EDCL WR operation!");
+    TEST_ASSERT(memcmp(data, (uint8_t*) wr_mem_addr, len)==0, "Data error at EDCL WR operation!");
 }
 
 void check_edcl_rd_via_external_loopback(uint32_t base_addr_dst_eth, uint32_t rd_mem_addr, uint32_t len)
@@ -575,7 +516,7 @@ void check_edcl_rd_via_external_loopback(uint32_t base_addr_dst_eth, uint32_t rd
 
     eth_handled_flag_ptr = (base_addr_src_eth==GRETH_0_BASE) ? &GRETH0_IRQ_HANDLED : &GRETH1_IRQ_HANDLED;
     TEST_ASSERT(greth_wait_receive_irq(base_addr_src_eth, eth_handled_flag_ptr), "Receiving EDCL response failed\n");
-    TEST_ASSERT(mem_cmp((uint8_t*) rd_mem_addr, (uint8_t*)(&test_data_resp[13]), len), "Data compare error at EDCL RD operation!\n");
+    TEST_ASSERT(memcmp((uint8_t*) rd_mem_addr, (uint8_t*)(&test_data_resp[13]), len)==0, "Data compare error at EDCL RD operation!\n");
 }
 
 void check_rx_er(uint32_t base_addr)
