@@ -16,7 +16,7 @@ void go_dmac(unsigned int base, unsigned int *send, unsigned int *rcv, unsigned 
         unsigned int read_data;
         unsigned int x;
 
-        iowrite32(0xDF, GPIO0_BASE + 0x20);//SET0
+        //iowrite32(0xDF, GPIO0_BASE + 0x20);//SET0
 //iowrite32(0x20,GPIO0_BASE+0x08);//DIRECTION
 
         if (amount <= 8) {
@@ -65,5 +65,5 @@ void go_dmac(unsigned int base, unsigned int *send, unsigned int *rcv, unsigned 
                 SSPSR = ioread32(base + 0x0c);
         } while (SSPSR & 0x10);
 
-        iowrite32(0x20, GPIO0_BASE + 0x1c);//SET1
+        //iowrite32(0x20, GPIO0_BASE + 0x1c);//SET1
 };
