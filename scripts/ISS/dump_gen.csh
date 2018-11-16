@@ -73,17 +73,39 @@ echo "load bin "${BUILD_DIR}"/rumboot-oi10-Debug/rumboot-oi10-Debug-bootrom-stub
 echo "exec "${SCRIPT_DIR}"/postload_oi10.rwc" >> ${CMD_PATH}
 #end workaround
 
-@ MAX_ASMSTEP = 65535
-@ tmp = ${ASM_STEP}
-while ($tmp > 0)
-    if ($tmp > $MAX_ASMSTEP) then
-        echo "asmstep "$MAX_ASMSTEP >> ${CMD_PATH}
-        @ tmp = ${ASM_STEP} - $MAX_ASMSTEP
-    else
-        echo "asmstep "$tmp >> ${CMD_PATH}
-        @ tmp = 0
-    endif
-end
+#@ MAX_ASMSTEP = 65535
+#@ tmp = ${ASM_STEP}
+#while ($tmp > 0)
+#    if ($tmp > $MAX_ASMSTEP) then
+#        echo "asmstep "$MAX_ASMSTEP >> ${CMD_PATH}
+#        @ tmp = ${ASM_STEP} - $MAX_ASMSTEP
+#    else
+#        echo "asmstep "$tmp >> ${CMD_PATH}
+#        @ tmp = 0
+#    endif
+#end
+
+set TEST1_PATH=${LOG_DIR}/test_data1.dmp
+set TEST2_PATH=${LOG_DIR}/test_data2.dmp
+
+rm -f ${TEST1_PATH}
+rm -f ${TEST2_PATH}
+
+echo "#<memcpy>" >> ${CMD_PATH}
+echo "bp set 0x80001250" >> ${CMD_PATH}
+echo "#<_exit + ??>" >> ${CMD_PATH}
+echo "bp set 0x800015E8" >> ${CMD_PATH}
+echo "run" >> ${CMD_PATH}
+echo "create src" >> ${CMD_PATH}
+echo "create dst" >> ${CMD_PATH}
+echo "create len" >> ${CMD_PATH}
+echo "set src = R4" >> ${CMD_PATH}
+echo "set dst = R3" >> ${CMD_PATH}
+echo "set len = R5" >> ${CMD_PATH}
+echo "memcopy src dst len" >> ${CMD_PATH}
+echo "run" >> ${CMD_PATH}
+echo "save mem "${TEST1_PATH}" 0x80002a8c 0x80" >> ${CMD_PATH}
+echo "save mem "${TEST2_PATH}" 0x80002b0c 0x80" >> ${CMD_PATH}
 
 echo "save mem "${DMP_PATH}" "${COMPARE_MEM_START_ADDR} ${COMPARE_MEM_LEN_BYTES} >> ${CMD_PATH}
 
