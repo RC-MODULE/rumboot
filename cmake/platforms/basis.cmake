@@ -5,10 +5,14 @@ set(RUMBOOT_PLATFORM_DEFAULT_LDS basis/rom.lds)
 set(RUMBOOT_PLATFORM_DEFAULT_SNAPSHOT default)
 
 
+if (RUMBOOT_SOC_BUILD_TYPE STREQUAL "RTL")
+  set(RTLFLAGS +pcie_mbist_model)
+endif()
+
 if (RUMBOOT_BUILD_TYPE STREQUAL "Production")
-  set(BOOTROM_IFLAGS +pcie_mbist_model +BOOTMGR_KEEP_DRIVING=1 +GTUBE_ONLY_PRODUCTION_OPCODES)
+  set(BOOTROM_IFLAGS ${RTLFLAGS} +BOOTMGR_KEEP_DRIVING=1 +GTUBE_ONLY_PRODUCTION_OPCODES)
 else()
-  set(BOOTROM_IFLAGS +pcie_mbist_model)
+  set(BOOTROM_IFLAGS ${RTLFLAGS})
 endif()
 
 #These are configurations for our binaries
@@ -1166,20 +1170,12 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       IRUN_FLAGS +pcie_legacy_int_elab
     )
 
-if (CMAKE_BUILD_TYPE MATCHES "RTL")
   add_rumboot_target(
       CONFIGURATION IRAM
       FILES pcie/pcie_mbist_test.c
       NAME pcie_mbist_test
-      IRUN_FLAGS +pcie_mbist_model
+      IRUN_FLAGS ${RTLFLAGS}
     )
-else()
-  add_rumboot_target(
-      CONFIGURATION IRAM
-      FILES pcie/pcie_mbist_test.c
-      NAME pcie_mbist_test
-    )
-endif()
 
   add_rumboot_target(
       CONFIGURATION IRAM
