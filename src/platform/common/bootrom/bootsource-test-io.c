@@ -60,7 +60,7 @@ static int check_read(const struct rumboot_bootsource *src, void *pdata, void *d
 		goto bailout;
 	}
 
-	ret = check_data(dst, offset, ret);
+	ret = check_data(dst, offset, expected);
 
 bailout:
 	bootsource_deinit(src, pdata);
@@ -102,7 +102,7 @@ int main()
 	struct rumboot_config conf;
 	rumboot_platform_read_config(&conf);
 	rumboot_platform_init_loader(&conf);
-	
+
 	const struct rumboot_bootsource *src = &rumboot_platform_get_bootsources()[SOURCE];
 	rumboot_printf("Hello, I'm bootsource io test for %d\n", SOURCE);
 	rumboot_printf("This source blocksize is %d \n", src->plugin->align);
@@ -110,9 +110,9 @@ int main()
 	int errors = 0;
 
 	/* Normal aligned reads */
-	errors += check_once_from_offset(src, pdata, hdr, 0);
+//	errors += check_once_from_offset(src, pdata, hdr, 0);
 	/* Check misaligned reads */
-	errors += check_once_from_offset(src, pdata, hdr, src->plugin->align + 1);
+//	errors += check_once_from_offset(src, pdata, hdr, src->plugin->align + 1);
 	/* Random reads */
 	errors += check_once_from_offset(src, pdata, hdr, (src->plugin->align ? src->plugin->align : 33));
 
