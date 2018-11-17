@@ -29,8 +29,10 @@
 #include <platform/devices.h>
 #include <platform/devices/plb6mcif2.h>
 #include <platform/devices/emi.h>
-#include <platform/devices/nor_1636RR4.h>
+#include <platform/devices/l2c.h>
+
 #include <platform/regs/regs_emi.h>
+#include <platform/regs/regs_l2c_l2.h>
 #include <platform/regs/fields/emi.h>
 
 #include <platform/interrupts.h>
@@ -235,6 +237,15 @@ void emi_irq_handler( int irq, void *arg )
     emi_write(EMI_IRR_RST, IRR_RST_ALL);    /* Reset interrupts */
 }
 
+static void ex_handler(int exid, const char *exname)
+{
+    rumboot_printf(
+            "\n >>> EXCEPTION #%d (%s) at 0x%X with MCSR=0x%X! <<<\n",
+            exid, exname, spr_read(SPR_MCSRR0), spr_read(SPR_MCSR_RW));
+    spr_write(SPR_MCSR_C, ~0);
+    l2c_l2_write(DCR_L2C_BASE, L2C_L2PLBSTAT1, ~0);
+}
+
 void init_interrupts(void)
 {
     uint32_t    *irq_item;
@@ -264,6 +275,7 @@ void init_interrupts(void)
     /* Unmask all interrupts */
     emi_write(EMI_IMR, IMR_UNMASK_ALL);
     // spr_write(SPR_SPRG7, 0);
+    rumboot_irq_set_exception_handler(ex_handler);
 
     rumboot_putstring ("\tIRQ have been initialized.\n");
 }
@@ -284,7 +296,7 @@ void emi_read_ckregs(volatile emi_ckregs_t *regs, uint32_t bank)
 NOINLINE
 void emi_clear_ckregs(int bank)
 {
-    if(bank + 1) /* not -1 */
+    if(bank + 1) /* is not -1 */
         emi_write(emi_ecnt[bank], 0x00000000);
     emi_write(EMI_H1ADR, HXADR_DFLT);
     emi_write(EMI_H2ADR, HXADR_DFLT);
