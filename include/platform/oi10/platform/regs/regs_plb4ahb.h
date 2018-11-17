@@ -12,7 +12,7 @@
 
 
 /* see cpu/units/plb4xahb_v001/verilog/rtl_dcr_addr/PLB4XAHB.defines.v */
-/* #define UNIDIRECTIONAL_BRIDGE */
+#define UNIDIRECTIONAL_BRIDGE
 
 /* PLB2AHB */
 #define REVID                   0x0
