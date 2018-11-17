@@ -131,6 +131,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       MEMTAG SD0_BOOT_IMAGE
       TAGOFFSET 0
       IRUN_FLAGS +select_sdio0 +BOOT_SD0_CD=0 ${ROM_6500K_OPTS}
+      ENDIAN little
   )
 
   rumboot_bootrom_unit_test(
@@ -139,6 +140,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       MEMTAG SPI0_CONF
       TAGOFFSET 0
       IRUN_FLAGS ${ROM_6500K_OPTS}
+      ENDIAN little
   )
 
   rumboot_bootrom_unit_test(
@@ -148,6 +150,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       TAGOFFSET 1
       FULL YES
       IRUN_FLAGS ${ROM_6500K_OPTS}
+      ENDIAN little
   )
 
   rumboot_bootrom_unit_test(
@@ -156,6 +159,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       MEMTAG I2C0_CONF
       TAGOFFSET 0
       IRUN_FLAGS ${ROM_6500K_OPTS}
+      ENDIAN little
   )
 
   rumboot_bootrom_unit_test(
@@ -164,6 +168,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       MEMTAG I2C0_CONF
       TAGOFFSET 1
       IRUN_FLAGS ${ROM_6500K_OPTS}
+      ENDIAN little
   )
 
   rumboot_bootrom_unit_test(
@@ -172,6 +177,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       MEMTAG I2C0_CONF
       TAGOFFSET 2
       IRUN_FLAGS ${ROM_6500K_OPTS}
+      ENDIAN little
   )
 
   rumboot_bootrom_unit_test(
@@ -180,6 +186,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       MEMTAG I2C0_CONF
       TAGOFFSET 3
       IRUN_FLAGS ${ROM_6500K_OPTS}
+      ENDIAN little
   )
 
   rumboot_bootrom_unit_test(
@@ -188,6 +195,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       MEMTAG SD1_BOOT_IMAGE
       TAGOFFSET 0
       IRUN_FLAGS +select_sdio1 +BOOT_SD1_CD=0 ${ROM_6500K_OPTS}
+      ENDIAN little
   )
 
   rumboot_bootrom_integration_test(ROM

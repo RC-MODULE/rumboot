@@ -140,7 +140,7 @@ endmacro()
 
 macro(rumboot_bootrom_unit_test)
   set(options DEFAULT)
-  set(oneValueArgs   ID TAG MEMTAG TAGOFFSET CONFIGURATION FULL)
+  set(oneValueArgs   ID TAG MEMTAG TAGOFFSET CONFIGURATION FULL ENDIAN)
   set(multiValueArgs IRUN_FLAGS)
 
   cmake_parse_arguments(BOOTSOURCE "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
@@ -160,7 +160,7 @@ macro(rumboot_bootrom_unit_test)
           PREFIX "bootrom"
           FILES common/bootrom/bootsource-test-io.c
           TESTGROUP bootrom
-          PREPCMD ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/scripts/wordpattern.py -e big -f pattern.bin -s 16384
+          PREPCMD ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/scripts/wordpattern.py -e ${BOOTSOURCE_ENDIAN} -f pattern.bin -s 16384
           IRUN_FLAGS ${BOOTSOURCE_IRUN_FLAGS}
           CFLAGS -DSOURCE=${BOOTSOURCE_ID}
           LOAD ${BOOTSOURCE_MEMTAG} ${_commas}pattern.bin
@@ -233,7 +233,7 @@ macro(rumboot_bootrom_unit_test)
               IRUN_FLAGS ${BOOTSOURCE_IRUN_FLAGS} +uart_easter_egg
             )
           endif()
-          
+
           add_rumboot_target(
             NAME "unit-selftest"
             CONFIGURATION ${BOOTSOURCE_CONFIGURATION}
