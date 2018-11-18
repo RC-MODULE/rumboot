@@ -78,6 +78,7 @@ int st_bisr_analyze(uintptr_t base)
 }
 
 
+/* Takes 1059562.50 ns on NETLIST */
 static bool check_pcie_mbist(uint32_t base)
 {
         //-----------------------------------------------------------------
@@ -87,7 +88,7 @@ static bool check_pcie_mbist(uint32_t base)
         iowrite32(0x1, SCTL_BASE + SCTL_PCIE_RST);
 
         int done = 0;
-        LOOP_UNTIL_TIMEOUT(10000) {
+        LOOP_UNTIL_TIMEOUT(5000) {
                 if ((ioread32(SCTL_BASE + SCTL_PCIE_RST) & 0x1) == 0x1) {
                         done = 1;
                         break;
@@ -122,7 +123,7 @@ static bool check_pcie_mbist(uint32_t base)
         //  Wait MBIST done
         //-----------------------------------------------------------------
         done = 0;
-        LOOP_UNTIL_TIMEOUT(10000) {
+        LOOP_UNTIL_TIMEOUT(5000) {
                 if ((ioread32(SCTL_BASE + SCTL_PCIE_REG_0) & 0x02000000) == 0x02000000) {
                         done = 1;
                         break;
