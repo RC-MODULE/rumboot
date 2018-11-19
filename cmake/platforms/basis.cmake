@@ -736,7 +736,6 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     CONFIGURATION IRAM_MIRROR
     FILES spi/spi.c
     CFLAGS -DGSPI_BASE=GSPI0_BASE
-    IRUN_FLAGS +select_sdio0
     PREFIX spi-0-mirror
     TESTGROUP sprint
     )
@@ -745,7 +744,6 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     CONFIGURATION IRAM_MIRROR
     FILES spi/spi.c
     CFLAGS -DGSPI_BASE=GSPI1_BASE
-    IRUN_FLAGS +select_sdio0
     PREFIX spi-1-mirror
     TESTGROUP sprint
     )
