@@ -255,25 +255,12 @@ int check_sdram(uint32_t base_addr, sdx_csp_t csp, sdx_sds_t sds, sdx_cl_t cl)
 /*
  * SSRAM (2.1.4 PPPC_SRAM_SDRAM_slave0_testplan.docx)
  */
-int check_ssram(uint32_t base_addr)
+int check_ssram(uint32_t base_addr, ssx_sst_t sst_val, ssx_tssoe_t tssoe_val)
 {
-    #define SSRAM_SST_TSSOE_SPACE 2
-
-    const uint32_t bank = 2;
-    uint32_t event_code = EVENT_CHECK_SSRAM_SST_TSSOE_FT;
-
-    ssx_sst_t sst_arr[SSRAM_SST_TSSOE_SPACE] = {SST_Flow_Through, SST_Pipelined};
-    ssx_tssoe_t tssoe_arr[SSRAM_SST_TSSOE_SPACE] = {TSSOE_1, TSSOE_2};
-
-    rumboot_printf("Checking SSRAM (0x%X)\n", base_addr);
-
-    for (int i=0; i<SSRAM_SST_TSSOE_SPACE; i++)
-    {
-        emi_update_sst_tssoe(bank, sst_arr[i], tssoe_arr[i]);
-        test_event(event_code++);
-        check_wrrd(TEST_ADDR_0, 0x55555555<<i     );
-        check_wrrd(TEST_ADDR_1, 0x55555555<<(i+1) );
-    }
+    emi_update_sst_tssoe(emi_b2_ssram, sst_val, tssoe_val);
+    test_event((sst_val==SST_Flow_Through) ? EVENT_CHECK_SSRAM_SST_TSSOE_FT : EVENT_CHECK_SSRAM_SST_TSSOE_PIPE);
+    check_wrrd(TEST_ADDR_0, 0x55555555      );
+    check_wrrd(TEST_ADDR_1, 0x55555555 << 1 );
     return 0;
 }
 
@@ -306,7 +293,7 @@ int main()
 #endif
             break;
         case SSRAM_BASE:
-            ret = check_ssram(EXT_MEM_BASE);
+            ret = check_ssram(EXT_MEM_BASE, SSRAM_SST, SSRAM_TSSOE);
             break;
         case PIPELINED_BASE:
             ret = check_pipelined(EXT_MEM_BASE);
