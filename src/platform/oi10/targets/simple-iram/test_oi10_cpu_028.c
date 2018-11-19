@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <platform/test_event_c.h>
-#include <platform/trace.h>
 #include <platform/test_assert.h>
 #include <platform/arch/ppc/ppc_476fp_config.h>
 #include <platform/arch/ppc/ppc_476fp_lib_c.h>
@@ -14,6 +13,7 @@
 #include <platform/regs/regs_srammc2plb4.h>
 #include <platform/regs/regs_p64.h>
 #include <platform/interrupts.h>
+#include <rumboot/printf.h>
 #include <rumboot/irq.h>
 
 
@@ -64,7 +64,7 @@ static struct rumboot_irq_entry *tbl;
 
 
 static void disable_parity_checks() {
-    rumboot_putstring( "disable_parity_checks\n" );
+    rumboot_printf( "disable_parity_checks\n" );
 
     spr_write( SPR_CCR0, spr_read( SPR_CCR0 )
                        & ~( (0b1 << CTRL_CCR0_PRE_i) | (0b1 << CTRL_CCR0_CRPE_i) ) );
@@ -83,7 +83,7 @@ static void disable_parity_checks() {
 
 
 static void enable_parity_checks() {
-    rumboot_putstring( "enable_parity_checks\n" );
+    rumboot_printf( "enable_parity_checks\n" );
 
     spr_write( SPR_CCR0, spr_read( SPR_CCR0)
                        | (0b1 << CTRL_CCR0_PRE_i) | (0b1 << CTRL_CCR0_CRPE_i) );
@@ -113,7 +113,7 @@ static void check_parity_enabled() {
 
 
 static void ppc0_w_pe_handler( int irq, void *args ) {
-    rumboot_putstring( "ppc0_w_pe_handler\n" );
+    rumboot_printf( "ppc0_w_pe_handler\n" );
 
     TEST_ASSERT( ( ADDR[ CHECK_PARITY_PPC0_W ] ^ TEST_MASK ) == TEST_VALUE, "Masked test value read error" );
     ADDR[ CHECK_PARITY_PPC0_W ] = HANDLER_CALLED;
@@ -127,7 +127,7 @@ static void ppc0_w_pe_handler( int irq, void *args ) {
 static void check_ppc0_w_pe_detection() {
     const uint32_t l2cpumcken = l2c_l2_read( DCR_L2C_BASE, L2C_L2CPUMCKEN );
 
-    rumboot_putstring( "check_ppc0_w_pe_detection\n" );
+    rumboot_printf( "check_ppc0_w_pe_detection\n" );
 
     rumboot_irq_cli();
     rumboot_irq_set_handler( tbl, L2C0_MCHKOUT, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, ppc0_w_pe_handler, NULL );
@@ -150,7 +150,7 @@ static void check_ppc0_w_pe_detection() {
 }
 
 static void l2c0_w_pe_handler( int irq, void *args ) {
-    rumboot_putstring( "l2c0_w_pe_handler\n" );
+    rumboot_printf( "l2c0_w_pe_handler\n" );
 
     TEST_ASSERT( ( ADDR[ CHECK_PARITY_L2C0_W ] ^ TEST_MASK ) == TEST_VALUE, "Masked test value read error" );
     ADDR[ CHECK_PARITY_L2C0_W ] = HANDLER_CALLED;
@@ -159,7 +159,7 @@ static void l2c0_w_pe_handler( int irq, void *args ) {
 }
 
 static void check_l2c0_w_pe_detection() {
-    rumboot_putstring( "check_l2c0_w_pe_detection\n" );
+    rumboot_printf( "check_l2c0_w_pe_detection\n" );
 
     rumboot_irq_cli();
     rumboot_irq_set_handler( tbl, PLB6PLB40_O_0_BR6TO4_INTR, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, l2c0_w_pe_handler, NULL );
@@ -174,7 +174,7 @@ static void check_l2c0_w_pe_detection() {
 
 
 static void p6bc_w_pe_handler( int irq, void *args ) {
-    rumboot_putstring( "p6bc_w_pe_handler\n" );
+    rumboot_printf( "p6bc_w_pe_handler\n" );
 
     TEST_ASSERT( ( ADDR[ CHECK_PARITY_P6BC_W ] ^ TEST_MASK ) == TEST_VALUE, "Masked test value read error" );
     ADDR[ CHECK_PARITY_P6BC_W ] = HANDLER_CALLED;
@@ -183,7 +183,7 @@ static void p6bc_w_pe_handler( int irq, void *args ) {
 }
 
 static void check_p6bc_w_pe_detection() {
-    rumboot_putstring( "check_p6bc_w_pe_detection\n" );
+    rumboot_printf( "check_p6bc_w_pe_detection\n" );
 
     rumboot_irq_cli();
     rumboot_irq_set_handler( tbl, PLB6PLB40_O_0_BR6TO4_INTR, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, p6bc_w_pe_handler, NULL );
@@ -199,7 +199,7 @@ static void check_p6bc_w_pe_detection() {
 
 
 /*static void plb6plb4_w_pe_handler( int irq, void *args ) {
-    rumboot_putstring( "plb6plb4_w_pe_handler\n" );
+    rumboot_printf( "plb6plb4_w_pe_handler\n" );
 
     TEST_ASSERT( ( ADDR[ CHECK_PARITY_PLB6PLB4_W ] ^ TEST_MASK ) == TEST_VALUE, "Masked test value read error" );
     ADDR[ CHECK_PARITY_PLB6PLB4_W ] = HANDLER_CALLED;
@@ -208,7 +208,7 @@ static void check_p6bc_w_pe_detection() {
 }
 
 static void check_plb6plb4_w_pe_detection() {
-    rumboot_putstring( "check_plb6plb4_w_pe_detection\n" );
+    rumboot_printf( "check_plb6plb4_w_pe_detection\n" );
 
     rumboot_irq_cli();
     rumboot_irq_set_handler( tbl, PLB6PLB40_O_0_BR6TO4_INTR, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, plb6plb4_w_pe_handler, NULL );
@@ -224,14 +224,14 @@ static void check_plb6plb4_w_pe_detection() {
 
 
 /*static void ppc0_r_pe_handler( int irq, void *args ) {
-    rumboot_putstring( "ppc0_r_pe_handler\n" );
+    rumboot_printf( "ppc0_r_pe_handler\n" );
 
     TEST_ASSERT( ADDR[ CHECK_PARITY_PPC0_R ] == TEST_VALUE, "Test value read error" );
     ADDR[ CHECK_PARITY_PPC0_R ] = HANDLER_CALLED;
 }
 
 static void check_ppc0_r_pe_detection() {
-    rumboot_putstring( "check_ppc0_r_pe_detection\n" );
+    rumboot_printf( "check_ppc0_r_pe_detection\n" );
 
     rumboot_irq_cli();
     rumboot_irq_set_handler( tbl, irq_source_Machine_check, 0, ppc0_r_pe_handler, NULL );
@@ -264,7 +264,7 @@ static void check_ppc0_r_pe_detection() {
 
 
 static void l2c0_r_pe_handler( int irq, void *args ) {
-    rumboot_putstring( "l2c0_r_pe_handler\n" );
+    rumboot_printf( "l2c0_r_pe_handler\n" );
 
     TEST_ASSERT( ADDR[ CHECK_PARITY_L2C0_R ] == TEST_VALUE, "Test value read error" );
     ADDR[ CHECK_PARITY_L2C0_R ] = HANDLER_CALLED;
@@ -275,7 +275,7 @@ static void l2c0_r_pe_handler( int irq, void *args ) {
 static void check_l2c0_r_pe_detection() {
     uint32_t l2plbmcken1 = l2c_l2_read( DCR_L2C_BASE, L2C_L2PLBMCKEN1 );
 
-    rumboot_putstring( "check_l2c0_r_pe_detection\n" );
+    rumboot_printf( "check_l2c0_r_pe_detection\n" );
 
     rumboot_irq_cli();
     rumboot_irq_set_handler( tbl, L2C0_MCHKOUT, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, l2c0_r_pe_handler, NULL );
@@ -299,7 +299,7 @@ static void check_l2c0_r_pe_detection() {
 
 
 static void p6bc_r_pe_handler( int irq, void *args ) {
-    rumboot_putstring( "p6bc_r_pe_handler\n" );
+    rumboot_printf( "p6bc_r_pe_handler\n" );
 
     TEST_ASSERT( ADDR[ CHECK_PARITY_P6BC_R ] == TEST_VALUE, "Test value read error" );
     ADDR[ CHECK_PARITY_P6BC_R ] = HANDLER_CALLED;
@@ -310,7 +310,7 @@ static void p6bc_r_pe_handler( int irq, void *args ) {
 static void check_p6bc_r_pe_detection() {
     uint32_t l2plbmcken1 = l2c_l2_read( DCR_L2C_BASE, L2C_L2PLBMCKEN1 );
 
-    rumboot_putstring( "check_p6bc_r_pe_detection\n" );
+    rumboot_printf( "check_p6bc_r_pe_detection\n" );
 
     rumboot_irq_cli();
     rumboot_irq_set_handler( tbl, L2C0_MCHKOUT, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, p6bc_r_pe_handler, NULL );
@@ -334,7 +334,7 @@ static void check_p6bc_r_pe_detection() {
 
 
 /*static void plb6plb4_r_pe_handler( int irq, void *args ) {
-    rumboot_putstring( "plb6plb4_r_pe_handler\n" );
+    rumboot_printf( "plb6plb4_r_pe_handler\n" );
 
     TEST_ASSERT( ADDR[ CHECK_PARITY_PLB6PLB4_R ] == TEST_VALUE, "Test value read error" );
     ADDR[ CHECK_PARITY_PLB6PLB4_R ] = HANDLER_CALLED;
@@ -343,7 +343,7 @@ static void check_p6bc_r_pe_detection() {
 }
 
 static void check_plb6plb4_r_pe_detection() {
-    rumboot_putstring( "check_plb6plb4_r_pe_detection\n" );
+    rumboot_printf( "check_plb6plb4_r_pe_detection\n" );
 
     rumboot_irq_cli();
     rumboot_irq_set_handler( tbl, PLB6PLB40_O_0_BR6TO4_INTR, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, plb6plb4_r_pe_handler, NULL );
@@ -361,7 +361,7 @@ static void check_plb6plb4_r_pe_detection() {
 
 
 static void srammc2plb4_r_pe_handler( int irq, void *args ) {
-    rumboot_putstring( "srammc2plb4_r_pe_handler\n" );
+    rumboot_printf( "srammc2plb4_r_pe_handler\n" );
 
     TEST_ASSERT( ADDR[ CHECK_PARITY_SRAMMC2PLB4_R ] == TEST_VALUE, "Test value read error" );
     ADDR[ CHECK_PARITY_SRAMMC2PLB4_R ] = HANDLER_CALLED;
@@ -372,7 +372,7 @@ static void srammc2plb4_r_pe_handler( int irq, void *args ) {
 static void check_srammc2plb4_r_pe_detection() {
     uint32_t l2plbmcken1 = l2c_l2_read( DCR_L2C_BASE, L2C_L2PLBMCKEN1 );
 
-    rumboot_putstring( "check_srammc2plb4_r_pe_detection\n" );
+    rumboot_printf( "check_srammc2plb4_r_pe_detection\n" );
 
     rumboot_irq_cli();
     rumboot_irq_set_handler( tbl, L2C0_MCHKOUT, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, srammc2plb4_r_pe_handler, NULL );
@@ -396,7 +396,7 @@ static void check_srammc2plb4_r_pe_detection() {
 
 
 static void srammc2plb4_w_pe_handler( int irq, void *args ) {
-    rumboot_putstring( "srammc2plb4_w_pe_handler\n" );
+    rumboot_printf( "srammc2plb4_w_pe_handler\n" );
 
 //    TEST_ASSERT( ( ADDR[ CHECK_PARITY_SRAMMC2PLB4_W ] ^ TEST_MASK ) == TEST_VALUE, "Masked test value read error" );
 //    TEST_ASSERT( ADDR[ CHECK_PARITY_SRAMMC2PLB4_W ] == TEST_VALUE, "Test value read error" );
@@ -408,7 +408,7 @@ static void srammc2plb4_w_pe_handler( int irq, void *args ) {
 static void check_srammc2plb4_w_pe_detection() {
     uint32_t l2plbmcken1 = l2c_l2_read( DCR_L2C_BASE, L2C_L2PLBMCKEN1 );
 
-    rumboot_putstring( "check_srammc2plb4_w_pe_detection\n" );
+    rumboot_printf( "check_srammc2plb4_w_pe_detection\n" );
 
     rumboot_irq_cli();
     rumboot_irq_set_handler( tbl, L2C0_MCHKOUT, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, srammc2plb4_w_pe_handler, NULL );
@@ -430,9 +430,19 @@ static void check_srammc2plb4_w_pe_detection() {
     l2c_l2_write( DCR_L2C_BASE, L2C_L2PLBMCKEN1, l2plbmcken1 );
 }
 
+static void exception_handler(int const id, char const * const name ) {
+    rumboot_printf( "Exception: %s\n", name );
+    TEST_ASSERT( (id == RUMBOOT_IRQ_MACHINE_CHECK)
+              && (spr_read(SPR_MCSR_RW) == ( (0b1 << ITRPT_MCSR_MCS_i)
+                                           | (0b1 << ITRPT_MCSR_L2_i) )),
+                 "Unexpected exception" );
+    spr_write( SPR_MCSR_C, spr_read(SPR_MCSR_RW) );
+}
 
 int main() {
     test_event_send_test_id( "test_oi10_cpu_028" );
+
+    rumboot_irq_set_exception_handler(exception_handler);
 
     disable_parity_checks();
     check_parity_disabled();
