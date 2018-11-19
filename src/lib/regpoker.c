@@ -74,6 +74,16 @@ int rumboot_regpoker_check_array( const struct regpoker_checker *array, uint32_t
             WRITECHECK( REGPOKER_WRITE16, 16 );
             WRITECHECK( REGPOKER_WRITE32, 32 );
             WRITECHECK( REGPOKER_WRITE64, 64 );
+
+            #undef ioread8
+            #undef ioread16
+            #undef ioread32
+            #undef ioread64
+            #undef iowrite8
+            #undef iowrite16
+            #undef iowrite32
+            #undef iowrite64
+
 #ifdef __PPC__
     #define ioread32( address )     dcr_read( address )
     #define iowrite32( v, address ) dcr_write( address, v )
