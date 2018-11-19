@@ -5,17 +5,40 @@
 #include <rumboot/regpoker.h>
 
 
-uint32_t virtualregs[] = {
+static uint32_t virtualregs[] = {
 	0xdeadc0de,
 	0x0badb00b,
 	0x00ffc0de,
 };
 
-struct regpoker_checker check_array[] = {
+
+static uint64_t cv;
+static uint64_t custread(uintptr_t base)
+{
+	return cv;
+}
+
+void custwrite(uint64_t value, uintptr_t addr)
+{
+	cv = value;
+}
+
+static struct regpoker_checker check_array[] = {
 	{ "reg1",  REGPOKER_READ32, 0x88000, 0xdeadc0de, ~0 },
 	{ "reg2",  REGPOKER_READ32, 0x88000, 0x0badb00b, ~0 },
 	{ "reg3",  REGPOKER_READ32, 0x88000, 0xc0de, 0xffff },
 	{ "reg3",  REGPOKER_WRITE32, 0x88000, 0, ~0 },
+
+	{ "reg_cust8",  REGPOKER_READ8, 0x88000, 0, ~0, custread, custwrite },
+	{ "reg_cust16",  REGPOKER_READ16, 0x88000, 0, ~0, custread, custwrite },
+	{ "reg_cust32",  REGPOKER_READ32, 0x88000, 0, ~0, custread, custwrite },
+	{ "reg_cust64",  REGPOKER_READ64, 0x88000, 0, ~0, custread, custwrite },
+
+	{ "reg_cust8",  REGPOKER_WRITE8, 0x88000, 0, ~0, custread, custwrite },
+	{ "reg_cust16",  REGPOKER_WRITE16, 0x88000, 0, ~0, custread, custwrite },
+	{ "reg_cust32",  REGPOKER_WRITE32, 0x88000, 0, ~0, custread, custwrite },
+	{ "reg_cust64",  REGPOKER_WRITE64, 0x88000, 0, ~0, custread, custwrite },
+
 	{ /* Sentinel */ }
 };
 

@@ -56,6 +56,16 @@ int rumboot_regpoker_check_array( const struct regpoker_checker *array, uint32_t
 
     while( array->tp != REGPOKER_EOL ) {
         switch( array->tp ) {
+            #define ioread8(address) (array->readfunc ? array->readfunc(address) : ioread8(address))
+            #define ioread16(address) (array->readfunc ? array->readfunc(address) : ioread16(address))
+            #define ioread32(address) (array->readfunc ? array->readfunc(address) : ioread32(address))
+            #define ioread64(address) (array->readfunc ? array->readfunc(address) : ioread64(address))
+
+            #define iowrite8( v, address ) (array->writefunc ? array->writefunc(v, address) :  iowrite8(v, address))
+            #define iowrite16( v, address ) (array->writefunc ? array->writefunc(v, address) : iowrite16(v, address))
+            #define iowrite32( v, address ) (array->writefunc ? array->writefunc(v, address) : iowrite32(v, address))
+            #define iowrite64( v, address ) (array->writefunc ? array->writefunc(v, address) : iowrite64(v, address))
+
             READCHECK( REGPOKER_READ8, 8 );
             READCHECK( REGPOKER_READ16, 16 );
             READCHECK( REGPOKER_READ32, 32 );

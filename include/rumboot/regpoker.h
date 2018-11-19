@@ -36,9 +36,11 @@ enum checker_type {
 struct regpoker_checker {
     const char *        name;
     enum checker_type   tp;
-    uint32_t            base;
+    uintptr_t           base;
     uint64_t            expected;
     uint64_t            mask;
+    uint64_t (*readfunc)(uintptr_t base);
+    void (*writefunc)(uint64_t value, uintptr_t addr);
 };
 
 
