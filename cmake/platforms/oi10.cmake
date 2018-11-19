@@ -618,8 +618,15 @@ endif()
     add_rumboot_target(
           CONFIGURATION IRAM
           FILES test_oi10_em2_201.c
-          CFLAGS -DEXT_MEM_BASE=SSRAM_BASE
-          PREFIX ssram
+          CFLAGS -DEXT_MEM_BASE=SSRAM_BASE -DSSRAM_SST=SST_Flow_Through -DSSRAM_TSSOE=TSSOE_1
+          PREFIX ssram-ft
+        )
+
+    add_rumboot_target(
+          CONFIGURATION IRAM
+          FILES test_oi10_em2_201.c
+          CFLAGS -DEXT_MEM_BASE=SSRAM_BASE -DSSRAM_SST=SST_Pipelined  -DSSRAM_TSSOE=TSSOE_2
+          PREFIX ssram-pipe
         )
 
     add_rumboot_target(
