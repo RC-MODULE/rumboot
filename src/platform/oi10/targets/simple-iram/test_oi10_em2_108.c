@@ -213,7 +213,7 @@ void check_sram0_64 (uint32_t addr, flush_state state)
 
 void check_sram0 (const uint32_t addr, flush_state state)
 {
-    rumboot_printf ("START CHECK SRAM0\n");
+    rumboot_printf ("START CHECK (SRAM0)\n");;
     rumboot_printf ("START ADDR = %x\n", addr);
 
     rumboot_printf ("SIZE_8\n");
@@ -228,7 +228,7 @@ void check_sram0 (const uint32_t addr, flush_state state)
     rumboot_printf ("SIZE_64\n");
     check_sram0_64(addr + 96, state);
 
-    rumboot_printf ("CHECK W/R SRAM0 SUCCESSFUL\n");
+    rumboot_printf ("CHECK SUCCESSFUL\n");
 }
 
 
@@ -253,30 +253,39 @@ int main ()
       iowrite32 (0x00, addr + i*4);
     dci(2);
 
+    //***********************************
     rumboot_printf ("CACHE WT\n");
     static const tlb_entry sram0_tlb_entry_wt = {TLB_ENTRY_CACHE_WT};
     write_tlb_entries(&sram0_tlb_entry_wt,1);
 
+    addr = SRAM0_BASE +  SRAM0_OFFSET_WT + 1;
+
     rumboot_printf ("WRITE and READ \n");
-    check_sram0 (SRAM0_BASE +  SRAM0_OFFSET_WT + 1, wr_rd);
-    dcbf ((void*)addr); //flush
+    check_sram0 (addr, wr_rd);
 
-    rumboot_printf ("READ ONLY \n");
-    check_sram0 (SRAM0_BASE +  SRAM0_OFFSET_WT + 1, rd_o);
-
+    rumboot_printf ("INVALIDATE \n");
     dci (2);
 
+    rumboot_printf ("READ ONLY \n");
+    check_sram0 (addr, rd_o);
+    //************************************
+    dci (2);
+    //************************************
     rumboot_printf ("CACHE WB\n");
     static const tlb_entry sram0_tlb_entry_wb = {TLB_ENTRY_CACHE_WB};
     write_tlb_entries(&sram0_tlb_entry_wb,1);
 
-    rumboot_printf ("WRITE and READ \n");
-    check_sram0 (SRAM0_BASE +  SRAM0_OFFSET_WB + 2, wr_rd);
-    dcbf ((void*)addr);//flush
-    dci (2);
-    rumboot_printf ("READ ONLY \n");
-    check_sram0 (SRAM0_BASE + SRAM0_OFFSET_WB + 2, rd_o);
+    addr = SRAM0_BASE +  SRAM0_OFFSET_WB + 2;
 
+    rumboot_printf ("WRITE and READ \n");
+    check_sram0 (addr, wr_rd);
+
+    rumboot_printf ("FLUSH \n");
+    dcbf ((void*)addr); dci(2); //flush
+
+    rumboot_printf ("READ ONLY \n");
+    check_sram0 (addr, rd_o);
+    //************************************
 
     rumboot_printf ("TEST_OK\n");
     return 0;
