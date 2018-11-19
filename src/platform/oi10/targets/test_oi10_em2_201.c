@@ -257,8 +257,9 @@ int check_sdram(uint32_t base_addr, sdx_csp_t csp, sdx_sds_t sds, sdx_cl_t cl)
  */
 int check_ssram(uint32_t base_addr, ssx_sst_t sst_val, ssx_tssoe_t tssoe_val)
 {
+    rumboot_putstring("Start checking SSRAM\n");
     emi_update_sst_tssoe(emi_b2_ssram, sst_val, tssoe_val);
-    test_event((sst_val==SST_Flow_Through) ? EVENT_CHECK_SSRAM_SST_TSSOE_FT : EVENT_CHECK_SSRAM_SST_TSSOE_PIPE);
+    test_event(EVENT_CHECK_SSRAM_SST_TSSOE_FT);
     check_wrrd(TEST_ADDR_0, 0x55555555      );
     check_wrrd(TEST_ADDR_1, 0x55555555 << 1 );
     return 0;
@@ -277,7 +278,7 @@ int check_pipelined(uint32_t base_addr)
 
 int main()
 {
-    int ret;
+    int ret = 0;
     rumboot_printf("Start test_oi10_em2_201 (0x%X)\n", EXT_MEM_BASE);
     test_event_send_test_id("test_oi10_em2_201");
     emi_init(DCR_EM2_EMI_BASE);
@@ -293,7 +294,9 @@ int main()
 #endif
             break;
         case SSRAM_BASE:
+#ifdef SSRAM_SST
             ret = check_ssram(EXT_MEM_BASE, SSRAM_SST, SSRAM_TSSOE);
+#endif
             break;
         case PIPELINED_BASE:
             ret = check_pipelined(EXT_MEM_BASE);
