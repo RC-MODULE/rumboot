@@ -30,12 +30,11 @@
  *    uint32_t base_addr = BASE_ADDR;
  *
  *    struct sp805_conf config_0 = {
- *      .mode             = ONESHOT,
+ *      .mode             = FREERUN,
  *      .interrupt_enable = 1      ,
  *      .clock_division   = 1      ,
  *      .width            = 32     ,
  *      .load             = 100    ,
- *      .bgload           = 0
  *      };
  * \endcode
  *
