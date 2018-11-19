@@ -37,8 +37,12 @@
  *      .load             = 100    ,
  *      .bgload           = 0
  *      };
+ * \endcode
  *
-*/
+ * \addtogroup devices_sp805
+ *
+ * @{
+ */
 
 #define WD_CTRL_PERIODIC   (1<<6)
 
@@ -55,15 +59,6 @@ enum sp805_mode
     TEST
 };
 
-
-
-/**
- *  sp805_conf         : Structure contains configuration parameters
- *  interrupt_enable   - Interrupts enabled
- *  width              - Width of the counter - 32 or 16
- *  load               - Load value to count from (won't be writen to corresponding reg if zero )
- *  bgload             - Background Load value to count from (won't be writen to corresponding reg if zero )
- */
 struct sp805_conf
 {
     enum sp805_mode mode;
@@ -71,7 +66,6 @@ struct sp805_conf
     int  clock_division;
     int  width;
     int  load;
-//    int  bgload;
 };
 
 /**
