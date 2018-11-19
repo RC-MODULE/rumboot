@@ -305,15 +305,6 @@ TEST_SUITE_END();
 
 uint32_t main(void)
 {
-    /*
-     *  sp805_conf         : Structure contains configuration parameters
-     *  sp805_mode         - Chose counting mode - Oneshot, Periodic or Freerun
-     *  interrupt_enable   - Interrupts enabled
-     *  width              - Width of the counter - 32
-     *  load               - Load value to count from (won't be writen to corresponding reg if zero )
-     *  bgload             - Background Load value to count from (won't be writen to corresponding reg if zero )
-     */
-
     // Set up interrupt handlers
     register uint32_t result;
     rumboot_printf( "SP805 test START\n" );
