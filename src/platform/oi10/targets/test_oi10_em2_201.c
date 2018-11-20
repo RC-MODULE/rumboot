@@ -259,7 +259,7 @@ int check_ssram(uint32_t base_addr, ssx_sst_t sst_val, ssx_tssoe_t tssoe_val)
 {
     rumboot_putstring("Start checking SSRAM\n");
     emi_update_sst_tssoe(emi_b2_ssram, sst_val, tssoe_val);
-    test_event(EVENT_CHECK_SSRAM_SST_TSSOE_FT);
+    test_event((sst_val==SST_Flow_Through) ? EVENT_CHECK_SSRAM_SST_TSSOE_FT : EVENT_CHECK_SSRAM_SST_TSSOE_PIPE);
     check_wrrd(TEST_ADDR_0, 0x55555555      );
     check_wrrd(TEST_ADDR_1, 0x55555555 << 1 );
     return 0;
@@ -282,7 +282,7 @@ int main()
     rumboot_printf("Start test_oi10_em2_201 (0x%X)\n", EXT_MEM_BASE);
     test_event_send_test_id("test_oi10_em2_201");
     emi_init(DCR_EM2_EMI_BASE);
-    emi_set_ecc(DCR_EM2_EMI_BASE, emi_bank_all, emi_ecc_on);
+    emi_set_ecc(DCR_EM2_EMI_BASE, emi_bank_all, emi_ecc_off);
     switch (EXT_MEM_BASE)
     {
         case SRAM0_BASE:
