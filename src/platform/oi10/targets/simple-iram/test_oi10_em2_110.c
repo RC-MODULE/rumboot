@@ -26,8 +26,9 @@
 #include <platform/regs/regs_emi.h>
 #include <platform/regs/regs_mclfir.h>
 #include <platform/interrupts.h>
+#include <platform/devices/l2c.h>
 
-#define NE_ADDR_SRAM0 0x1000000
+#define NE_ADDR_SRAM0 (SRAM0_BASE + SRAM0_SIZE)
 
 uint32_t const EVENT_ERR_ADR_RS_PTY       = TEST_EVENT_CODE_MIN + 0;
 uint32_t const EVENT_REL_ADR_RS_PTY       = TEST_EVENT_CODE_MIN + 1;
@@ -53,12 +54,14 @@ static void irq_expect ()
 
 static void trace_emi_irq_regs ()
 {
-    rumboot_printf("EMI_IRR = 0x%x\n", dcr_read (DCR_EM2_EMI_BASE + EMI_IRR));
-    rumboot_printf("EMI_RREQADR = 0x%x\n", dcr_read (DCR_EM2_EMI_BASE + EMI_RREQADR));
-    rumboot_printf("EMI_WREQADR = 0x%x\n", dcr_read (DCR_EM2_EMI_BASE + EMI_WREQADR));
-    rumboot_printf("EMI_WDADR = 0x%x\n",   dcr_read (DCR_EM2_EMI_BASE + EMI_WDADR));
-    rumboot_printf("MCLFIR_ERR0 = 0x%x\n", dcr_read (DCR_EM2_MCLFIR_BASE + MCLFIR_MC_ERR0));
-    rumboot_printf("MCLFIR_ERR1 = 0x%x\n", dcr_read (DCR_EM2_MCLFIR_BASE + MCLFIR_MC_ERR1));
+/*
+    rumboot_printf("EMI_IRR = %x\n", dcr_read (DCR_EM2_EMI_BASE + EMI_IRR));
+    rumboot_printf("EMI_RREQADR = %x\n", dcr_read (DCR_EM2_EMI_BASE + EMI_RREQADR));
+    rumboot_printf("EMI_WREQADR = %x\n", dcr_read (DCR_EM2_EMI_BASE + EMI_WREQADR));
+    rumboot_printf("EMI_WDADR = %x\n",   dcr_read (DCR_EM2_EMI_BASE + EMI_WDADR));
+    rumboot_printf("MCLFIR_ERR0 = %x\n", dcr_read (DCR_EM2_MCLFIR_BASE + MCLFIR_MC_ERR0));
+    rumboot_printf("MCLFIR_ERR1 = %x\n", dcr_read (DCR_EM2_MCLFIR_BASE + MCLFIR_MC_ERR1));
+*/
 }
 
 void release_signal ()
@@ -127,6 +130,14 @@ static void emi_cntr_3_handler ()
     emi_irq_clear ();
 }
 
+static void exception_handler(int id, const char *name)
+{
+    rumboot_printf("Not worry, is expected MCHKOUT\n");
+
+    spr_write(SPR_MCSR_C, ~0);
+    l2c_l2_write(DCR_L2C_BASE, L2C_L2PLBSTAT1, ~0);
+}
+
 int main ()
 {
     test_event_send_test_id("test_oi10_em2_110");
@@ -148,11 +159,19 @@ int main ()
     rumboot_irq_enable( EMI_CNTR_INT_3 );
     rumboot_irq_sei();
 
+    rumboot_irq_set_exception_handler(exception_handler);
+ /*   uint32_t const msr_old_value = msr_read();
+
+    msr_write( msr_old_value & ~(
+
+                               (0b1 << ITRPT_XSR_ME_i)
+                               ));
+*/
 //*******************************************************************************************************
     rumboot_printf ("10.1 Check write/read in non-existent address\n");
     uint32_t ne_addr = NE_ADDR_SRAM0,
              test_data = 0xBABADEDA;
-    uint32_t read_data;
+    //uint32_t read_data;
 
     iowrite32 (0x00, SRAM0_BASE);
     iowrite32 (test_data, ne_addr);
@@ -161,9 +180,11 @@ int main ()
     TEST_ASSERT (ioread32(SRAM0_BASE)    == test_data, "Not expected EMI behavior");
     TEST_ASSERT (ioread32(NE_ADDR_SRAM0) == test_data, "Not expected EMI behavior");
     rumboot_printf ("Done! Behavior of the EMI is correct\n");
+
 //*******************************************************************************************************
 
 //*******************************************************************************************************
+
     rumboot_printf ("10.2 Error in M_ADR_RS_PTY\n");
     iowrite32(0x00, SRAM0_BASE + 0xC); //Init memory
     rel_event_code = EVENT_REL_ADR_RS_PTY;
@@ -181,9 +202,10 @@ int main ()
 
     rumboot_printf("Read transaction\n");
     irq_expect();
-    read_data = ioread32(SRAM0_BASE + 0xC);
-    rumboot_printf("read data = %x\n", read_data);
+    //read_data = ioread32(SRAM0_BASE + 0xC);
+    rumboot_printf("read data = %x\n", ioread32(SRAM0_BASE + 0xC));
     wait_irq();
+
 //*******************************************************************************************************
 
 //*******************************************************************************************************
@@ -204,12 +226,14 @@ int main ()
 
     rumboot_printf("Read transaction\n");
     irq_expect();
-    read_data = ioread32(SRAM0_BASE + 0xC);
-    rumboot_printf("read data = %x\n", read_data);
+    //read_data = ioread32(SRAM0_BASE + 0xC);
+    rumboot_printf("read data = %x\n", ioread32(SRAM0_BASE + 0xC));
     wait_irq();
+
 //*******************************************************************************************************
 
 //*******************************************************************************************************
+
     rumboot_printf ("10.4 Error in M_CMD_PTY\n");
     iowrite32(0x00, SRAM0_BASE + 0xC); //Init memory
     rel_event_code = EVENT_REL_CMD_PTY;
@@ -227,9 +251,10 @@ int main ()
 
     rumboot_printf("Read transaction\n");
     irq_expect();
-    read_data = ioread32(SRAM0_BASE + 0xC);
-    rumboot_printf("read data = %x\n", read_data);
+    //read_data = ioread32(SRAM0_BASE + 0xC);
+    rumboot_printf("read data = %x\n", ioread32(SRAM0_BASE + 0xC));
     wait_irq();
+
 //*******************************************************************************************************
 
 //*******************************************************************************************************
@@ -248,8 +273,8 @@ int main ()
     test_event(EVENT_ERR_COMP_CMD_PTY);
 
     rumboot_printf("Read transaction\n");
-    read_data = ioread32(SRAM0_BASE + 0xC);
-    rumboot_printf("read data = %x\n", read_data);
+    //read_data = ioread32(SRAM0_BASE + 0xC);
+    rumboot_printf("read data = %x\n", ioread32(SRAM0_BASE + 0xC));
     msync();
 
 //*******************************************************************************************************
@@ -277,8 +302,8 @@ int main ()
     test_event(EVENT_ERR_RD_DATA_PAR);
 
     rumboot_printf("Read transaction\n");
-    read_data = ioread32(SRAM0_BASE + 0xC);
-    rumboot_printf("read data = %x\n", read_data);
+    //read_data = ioread32(SRAM0_BASE + 0xC);
+    rumboot_printf("read data = %x\n", ioread32(SRAM0_BASE + 0xC));
     msync();
 //*******************************************************************************************************
 
