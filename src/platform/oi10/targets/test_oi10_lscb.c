@@ -10,6 +10,7 @@
 #include <rumboot/rumboot.h>
 #include <rumboot/regpoker.h>
 #include <rumboot/macros.h>
+#include <rumboot/timer.h>
 
 #include <platform/devices.h>
 #include <platform/interrupts.h>
@@ -168,44 +169,24 @@ void delete_irq_handlers(struct rumboot_irq_entry *tbl)
     rumboot_irq_free(tbl);
 }
 
-void prepare_test_data(int heap_id)
+void prepare_test_data(char* heap_name)
 {
-    char* heap_name;
     rumboot_putstring("Preparing source test data\n");
 
-    switch (heap_id)
-    {
-        case 1:
-            heap_name = "IM1";
-            break;
-        case 2:
-            heap_name = "IM2";
-            break;
-        case 3:
-            heap_name = "SSRAM";
-            emi_init(DCR_EM2_EMI_BASE);
-            break;
-        default:
-            TEST_ASSERT(0, "Wrong heap_id value int mkio func test");
-    }
+    emi_init(DCR_EM2_EMI_BASE);
 
     test_mkio_data_src = (uint16_t *)rumboot_malloc_from_named_heap_aligned(heap_name, MKIO_TEST_DATA_SIZE, 2);
-//    rumboot_printf("test_mkio_data_src from addr 0x%X\n", (uint32_t) test_mkio_data_src);
 
     test_mkio_data_dst = (uint16_t *)rumboot_malloc_from_named_heap_aligned(heap_name, MKIO_TEST_DATA_SIZE, 2);
-//    rumboot_printf("test_mkio_data_dst from addr 0x%X\n", (uint32_t) test_mkio_data_dst);
 
     mkio_bc_desr  = (struct mkio_bc_descriptor volatile*)rumboot_malloc_from_named_heap_aligned(heap_name, sizeof(struct mkio_bc_descriptor), 128);
     memset((uint32_t*)mkio_bc_desr, 0, sizeof(struct mkio_bc_descriptor));
-//    rumboot_printf("mkio_bc_desr from addr 0x%X\n", (uint32_t) mkio_bc_desr);
 
     mkio_rt_descr = (struct mkio_rt_descriptor volatile*)rumboot_malloc_from_named_heap_aligned(heap_name, sizeof(struct mkio_rt_descriptor), 128);
     memset((uint32_t*)mkio_rt_descr, 0, sizeof(struct mkio_rt_descriptor));
-//    rumboot_printf("mkio_rt_descr from addr 0x%X\n", (uint32_t) mkio_rt_descr);
 
     rt_sa_tbl = (struct mkio_rt_sa_table volatile*)rumboot_malloc_from_named_heap_aligned(heap_name, sizeof(struct mkio_rt_sa_table)*2, 512);
     memset((uint32_t*)rt_sa_tbl, 0, sizeof(struct mkio_rt_sa_table)*2);
-//    rumboot_printf("rt_sa_tbl from addr 0x%X\n", (uint32_t) rt_sa_tbl);
 
     memcpy(test_mkio_data_src, test_mkio_data_im0_src, sizeof(test_mkio_data_im0_src));
 }
@@ -290,12 +271,12 @@ void check_mkio_txinh_idle_via_gpio()
 
 void check_mkio_txinh_switch_via_gpio(uint8_t exp_state)
 {
-#define MKI_TX_INH_TIMEOUT  100
+#define MKI_TX_INH_TIMEOUT_US  50
     uint8_t data;
-    uint32_t timeout_cnt = 0;
+    uint32_t _start = rumboot_platform_get_uptime();
     rumboot_printf("Checking {MK1_TXINHB, MK1_TXINHA, MK0_TXINHB, MK0_TXINHA} switch to 0x%X\n", exp_state);
     data = gpio_get_data(GPIO_1_BASE) & 0x0F;
-    while ((data != exp_state) && (timeout_cnt<MKI_TX_INH_TIMEOUT))
+    while ((data != exp_state) && (rumboot_platform_get_uptime() - _start<MKI_TX_INH_TIMEOUT_US))
     {
         data = gpio_get_data(GPIO_1_BASE) & 0x0F;
     }
