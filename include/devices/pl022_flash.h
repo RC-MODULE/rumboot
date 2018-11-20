@@ -16,7 +16,7 @@ enum spiflash_command {
 
 
 void pl022_flash_write_enable(uint32_t base_addr);
-uint32_t read_flash_status(uint32_t base_addr);
+uint32_t pl022_flash_read_status(uint32_t base_addr);
 void pl022_flash_erase(uint32_t base_addr);
 
 

@@ -609,6 +609,21 @@ endif()
     )
     #---GRETH tests finish---
 
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES test_oi10_spi.c
+      CFLAGS -DGSPI_BASE=GSPI_0_BASE -DGSPI_INT=GSPI0_INT -DGSPI_CHECK_REGS -DGPIO1_X=0x1
+      IRUN_FLAGS +spi_irq_test
+      PREFIX gspi0
+    )
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES test_oi10_spi.c
+      CFLAGS -DGSPI_BASE=GSPI_1_BASE -DGSPI_INT=GSPI1_INT -DGSPI_CHECK_REGS -DGPIO1_X=0x2
+      IRUN_FLAGS +spi_irq_test
+      PREFIX gspi1
+    ) 
+
     add_rumboot_target_dir(bare-rom/
         CONFIGURATION BAREROM
     )
