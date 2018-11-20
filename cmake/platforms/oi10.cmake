@@ -619,6 +619,7 @@ endif()
           CONFIGURATION IRAM
           FILES test_oi10_em2_201.c
           CFLAGS -DEXT_MEM_BASE=SSRAM_BASE -DSSRAM_SST=SST_Flow_Through -DSSRAM_TSSOE=TSSOE_1
+          IRUN_FLAGS +SSRAM_FT=1
           PREFIX ssram-ft
         )
 
