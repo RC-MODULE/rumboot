@@ -233,13 +233,14 @@ void run_mkio_transfers_via_external_loopback(struct mkio_instance * mkio_cfg)
 
 void wait_mkio_irq()
 {
-#define MKIO_TR_TIMEOUT 1000
-    uint32_t timeout_cnt = 0;
+#define MKIO_TR_TIMEOUT_US 1000
+    uint32_t _start = rumboot_platform_get_uptime();
     rumboot_putstring("Waiting MKIO interrupt...\n");
-    while ((mkio_handler==false) && (timeout_cnt++<MKIO_TR_TIMEOUT)){};
-    TEST_ASSERT(timeout_cnt<MKIO_TR_TIMEOUT, "Failed to waiting MKIO interrupt");
+    while ((mkio_handler==false) && (rumboot_platform_get_uptime() - _start < MKIO_TR_TIMEOUT_US)){};
+    TEST_ASSERT(rumboot_platform_get_uptime() - _start < MKIO_TR_TIMEOUT_US, "Failed to waiting MKIO interrupt");
     rumboot_putstring("Waiting MKIO interrupt... OK\n");
 }
+
 void mem_cmp(uint16_t* src, uint16_t* dst, uint32_t size)
 {
     uint32_t i = 0;
