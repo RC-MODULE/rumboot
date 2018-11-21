@@ -640,6 +640,7 @@ DEFINE_CHECK(error_counter) /* 2.2.4 */
     EMI_WRITE(EMI_WECR, 0);
     rumboot_printf("Reading from 0x%X...\n", CHECK_ADDR(bank));
     readed = ioread32(CHECK_ADDR(bank));
+    msync();
     eccval = EMI_READ(EMI_ECCRDR);
     rumboot_printf("READED: 0x%X (ECC=0x%X) after single error.\n",
             readed, eccval);
@@ -673,6 +674,7 @@ DEFINE_CHECK(single_interrupts) /* 2.2.5 */
     volatile
     uint32_t readed = 0,
              tmp    = 0;
+    uint8_t  eccval = 0;
     tmp ^= tmp; /* Prevent compiler warning */
     if(IS_NOR(bank))
     {
@@ -710,11 +712,14 @@ DEFINE_CHECK(single_interrupts) /* 2.2.5 */
     EMI_WRITE(EMI_WECR, 0);
     rumboot_printf("Reading from 0x%X...\n", CHECK_ADDR(bank));
     readed = ioread32(CHECK_ADDR(bank));
-    rumboot_printf("READED: 0x%X after single error.\n", readed);
+    msync();
+    eccval = EMI_READ(EMI_ECCRDR);
+    rumboot_printf("READED: 0x%X (ECC=0x%X) after single error.\n",
+            readed, eccval);
     result = (readed == CHECK_CONST);
     TEST_ASSERT(result, "EMI: Single error repair fails.");
     status |= !result;
-    result = (EMI_READ(EMI_ECCRDR) == CHECK_ECC_CODE);
+    result = (eccval == CHECK_ECC_CODE);
     TEST_ASSERT(result, "EMI: Wrong ECC-code after single error.");
     status |= !result;
     result = (READ_ECNT(bank) == 1);
@@ -742,7 +747,10 @@ DEFINE_CHECK(single_interrupts) /* 2.2.5 */
     EMI_WRITE(EMI_WECR, 0);
     rumboot_printf("Reading from 0x%X...\n", CHECK_ADDR(bank));
     readed = ioread32(CHECK_ADDR(bank));
-    rumboot_printf("READED: 0x%X after double error.\n", readed);
+    msync();
+    eccval = EMI_READ(EMI_ECCRDR);
+    rumboot_printf("READED: 0x%X (ECC=0x%X) after double error.\n",
+            readed, eccval);
     result = (readed == (CHECK_CONST ^ MK_ERR_2));
     TEST_ASSERT(result, "EMI: Wrong value after double error.");
     status |= !result;
