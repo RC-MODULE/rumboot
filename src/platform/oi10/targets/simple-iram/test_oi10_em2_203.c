@@ -10,6 +10,7 @@
 
 #include <rumboot/printf.h>
 #include <rumboot/io.h>
+#include <rumboot/timer.h>
 
 #include <platform/devices.h>
 #include <rumboot/platform.h>
@@ -32,6 +33,7 @@
 #define TEST_EVENT_MAKE_PULSE_ON_RDY_An     0x0000003E
 
 static uint32_t volatile EMI_SRAM0_IRQ_HANDLED = 0;
+static uint32_t volatile UNEXPECTED_MC = 0;
 #define TEST_EMI_IRQ_WR     1
 #define TEST_EMI_IRQ_RD     2
 
@@ -66,7 +68,7 @@ static void handler_emi( int irq, void *arg )
 //    rumboot_printf("Exit from handler\n");
 }
 
-static void handler_l2c_mcheck(int id, const char *name)
+static void handler_l2c_irq(int irq, void *arg)
 {
     uint32_t tmp;
     rumboot_printf( "L2C_MCHECK arrived\n");
@@ -74,8 +76,28 @@ static void handler_l2c_mcheck(int id, const char *name)
     tmp = l2c_l2_read(DCR_L2C_BASE, L2C_L2PLBSTAT1);
     rumboot_printf( "L2PLBSTAT1 = 0x%x\n", tmp);//L2PLBSTAT1 is W1 reg type
     l2c_l2_write(DCR_L2C_BASE, L2C_L2PLBSTAT1, tmp);
+}
+
+static void handler_l2c_exception(int id, const char *name)
+{
+    emi_irr_cfg irr;
+    rumboot_printf( "L2C exception handling\n");
     rumboot_printf( "MCSR = 0x%X\n", spr_read(SPR_MCSR_RW));
     spr_write(SPR_MCSR_C, 0xFFFFFFFF);
+
+    rumboot_putstring("Checking EMI_IRR");
+    emi_get_irr(DCR_EM2_EMI_BASE, &irr);
+    if (irr.IRDYR==true)
+    {
+        UNEXPECTED_MC = 0;
+        EMI_SRAM0_IRQ_HANDLED = TEST_EMI_IRQ_RD;
+        rumboot_printf( "Received expected MCHECK at reading\n");
+    }
+    else
+    {
+        UNEXPECTED_MC = 1;
+    }
+    emi_clear_irr(DCR_EM2_EMI_BASE, &irr);
 }
 
 struct rumboot_irq_entry * create_handlers()
@@ -84,15 +106,17 @@ struct rumboot_irq_entry * create_handlers()
     rumboot_irq_cli();
     struct rumboot_irq_entry *tbl = rumboot_irq_create( NULL );
 
-    rumboot_irq_set_exception_handler(handler_l2c_mcheck);
+    rumboot_irq_set_exception_handler(handler_l2c_exception);
 
     EMI_SRAM0_IRQ_HANDLED = 0;
 
     rumboot_irq_set_handler( tbl, EMI_CNTR_INT_2, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler_emi, NULL );
+    rumboot_irq_set_handler( tbl, L2C0_MCHKOUT, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler_l2c_irq, NULL );
 
     /* Activate the table */
     rumboot_irq_table_activate( tbl );
     rumboot_irq_enable( EMI_CNTR_INT_2 );
+    rumboot_irq_enable( L2C0_MCHKOUT );
     rumboot_irq_sei();
 
     return tbl;
@@ -130,9 +154,9 @@ void check_rd_ext_rdy()
 
 void wait_sram_irq(uint32_t exp_status)
 {
-    #define EMI_IRQ_TIMEOUT 100
-    uint32_t timeout_cnt = 0;
-    while ( (EMI_SRAM0_IRQ_HANDLED!=exp_status) && (timeout_cnt++ < EMI_IRQ_TIMEOUT) ){};
+    #define EMI_IRQ_TIMEOUT_US 20
+    uint32_t _start = rumboot_platform_get_uptime();
+    while ( (EMI_SRAM0_IRQ_HANDLED!=exp_status) && (rumboot_platform_get_uptime() - _start < EMI_IRQ_TIMEOUT_US) ){};
     TEST_ASSERT(EMI_SRAM0_IRQ_HANDLED==exp_status, "IRQ is timed out!");
 }
 
@@ -142,6 +166,7 @@ void check_irq_by_trdy_wr()
     rumboot_printf("\nWaiting TRDY IRQ at writing\n");
     iowrite32(test_data[0], test_addr[0]);
     wait_sram_irq(TEST_EMI_IRQ_WR);
+    TEST_ASSERT(UNEXPECTED_MC==0, "Received unexpected MCHECK exception\n");
 }
 
 void check_irq_by_trdy_rd()
@@ -159,6 +184,7 @@ void check_irq_by_trdy_rd()
         TEST_ASSERT(0, "test_oi10_em2_203 is failed!\n");
     }
     */
+    TEST_ASSERT(UNEXPECTED_MC==0, "Received unexpected MCHECK exception\n");
 }
 
 int main()
