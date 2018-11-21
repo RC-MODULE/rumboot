@@ -38,6 +38,7 @@
 #define INIT_ERROR              TEST_ERROR
 #define NUMBER_OF_BANKS         6
 #define IRR_RST_ALL             0x0001FFFF
+#define IRR_MASK_ALL            IRR_RST_ALL
 #define EMI_RFC_RP_DIV_1        0b11110011110011
 #define EMI_RFC_RP_DIV_2        0b01111001111001
 #define EMI_RFC_RP_MASK         0x8FFF
@@ -92,6 +93,8 @@
 #define DOUBLE_ERR_FLAG(BANK)   (BIT(((BANK) << 1) + 1))
 #define ECC_ON(BANK)            EMI_WRITE(EMI_HSTSR, EMI_READ(EMI_HSTSR) |  (1 << (BANK)));
 #define ECC_OFF(BANK)           EMI_WRITE(EMI_HSTSR, EMI_READ(EMI_HSTSR) & ~(1 << (BANK)));
+#define IS_NOR(BANK)            (EMI_TYPE(BANK) == BTYP_NOR)
+#define IS_SDRAM(BANK)          (EMI_TYPE(BANK) == BTYP_SDRAM)
 #define CHECK_ADDR8(BANK)       (emi_bank_bases[BANK] + CHECK_OFFSET8)
 #define CHECK_ADDR16(BANK)      (emi_bank_bases[BANK] + CHECK_OFFSET16)
 #define CHECK_ADDR32(BANK)      (emi_bank_bases[BANK] + CHECK_OFFSET32)
@@ -170,13 +173,14 @@ int is_irq(void)
 void clear_all_irqs(void)
 {
     int i;
+    global_irr = 0x00000000;
     for(i=0; i<8; i++) IRQ[i] = 0;
 }
 
 void emi_irq_handler( int irq, void *arg )
 {
     rumboot_printf("IRQ #%d received (IRR=0x%X).\n",
-            irq, (global_irr = EMI_READ(EMI_IRR)));
+            irq, global_irr |= (EMI_READ(EMI_IRR) & IRR_MASK_ALL));
     IRQ[irq >> 5] = BIT(irq & 0x1F);
     /* Reset interrupts */
     EMI_WRITE(EMI_IRR_RST, IRR_RST_ALL);
@@ -203,6 +207,9 @@ DEFINE_INIT(interrupts)
         EMI_CNTR_INT_2,
         EMI_CNTR_INT_3,
         PLB6_INT,
+        MCLFIR_REC_INT,
+        MCLFIR_UNREC_INT,
+        MCLFIR_INFST_INT,
         ~0
     };
     rumboot_putstring ("\tStart IRQ initialization...\n");
@@ -278,13 +285,15 @@ DEFINE_CHECK(rfc)   /* 2.2.1 */
         MK_RFC(EMI_RFC_RP_DIV_2,TRFC_13)
     };
 
-    if(EMI_TYPE(bank) != BTYP_SDRAM)
+    if(!IS_SDRAM(bank))
     {
         rumboot_printf("Bank %d is not SDRAM. Check skipped.\n", bank);
         return TEST_OK;
     }
 
     /* Force bank switch */
+    iowrite32(0x00000000, CHECK_ADDR(bank));
+    msync();
     readed32 = ioread32(CHECK_ADDR(bank));
 
     for(rfcp = rfc+1; cnt < rfc[0]; rfcp++,cnt++)
@@ -354,12 +363,14 @@ DEFINE_CHECK(hstsr_ecc_on)  /* 2.2.2 */
     volatile
     uint32_t tmp    = 0;
     tmp ^= tmp; /* Prevent compiler warning */
-    if(EMI_TYPE(bank) == BTYP_NOR)
+    if(IS_NOR(bank))
     {
         rumboot_printf("Using alternative check method for NOR RAM.\n");
         return CHECK_FUNC(hstsr_ecc_on_nor)(CF_ARGS);
     }
     /* Force bank switch */
+    iowrite32(0x00000000, CHECK_ADDR(bank));
+    msync();
     readed = ioread32(CHECK_ADDR(bank));
     EMI_WRITE(EMI_WECR, 0);
     hstsr = EMI_READ(EMI_HSTSR);
@@ -416,7 +427,6 @@ DEFINE_CHECK(hstsr_ecc_on)  /* 2.2.2 */
     /* ----------------- */
 
     /* Reset interrupts */
-    global_irr = 0x00000000;
     clear_all_irqs();
 
     /* Make double error */
@@ -462,12 +472,14 @@ DEFINE_CHECK(hstsr_ecc_off) /* 2.2.3 */
     volatile
     uint32_t tmp    = 0;
     tmp ^= tmp; /* Prevent compiler warning */
-    if(EMI_TYPE(bank) == BTYP_NOR)
+    if(IS_NOR(bank))
     {
         rumboot_printf("Using alternative check method for NOR RAM.\n");
         return CHECK_FUNC(hstsr_ecc_off_nor)(CF_ARGS);
     }
     /* Force bank switch */
+    iowrite32(0x00000000, CHECK_ADDR(bank));
+    msync();
     readed = ioread32(CHECK_ADDR(bank));
     EMI_WRITE(EMI_WECR, 0);
     hstsr = EMI_READ(EMI_HSTSR);
@@ -524,7 +536,6 @@ DEFINE_CHECK(hstsr_ecc_off) /* 2.2.3 */
     /* ----------------- */
 
     /* Reset interrupts */
-    global_irr = 0x00000000;
     clear_all_irqs();
 
     /* Make double error */
@@ -581,7 +592,7 @@ DEFINE_CHECK(error_counter) /* 2.2.4 */
     uint32_t readed = 0,
              tmp    = 0;
 
-    if(EMI_TYPE(bank) == BTYP_NOR)
+    if(IS_NOR(bank))
     {
         rumboot_printf("NOR RAM is not supported, skipping it.\n");
         return TEST_OK;
@@ -589,6 +600,8 @@ DEFINE_CHECK(error_counter) /* 2.2.4 */
     tmp ^= tmp; /* Prevent compiler warning */
 
     /* Force bank switch */
+    iowrite32(0x00000000, CHECK_ADDR(bank));
+    msync();
     readed = ioread32(CHECK_ADDR(bank));
     EMI_WRITE(EMI_WECR, 0);
     hstsr = EMI_READ(EMI_HSTSR);
@@ -597,16 +610,21 @@ DEFINE_CHECK(error_counter) /* 2.2.4 */
     EMI_WRITE(emi_ecnt[bank], 0);
 
     /* Make single error */
-    rumboot_putstring("Make single error...\n");
+    rumboot_putstring(" +++ Make single error...\n");
     clear_all_irqs();
+    rumboot_printf("Writing 0x%X to 0x%X...\n",
+            CHECK_CONST ^ MK_ERR_1, CHECK_ADDR(bank));
     iowrite32(CHECK_CONST ^ MK_ERR_1, CHECK_ADDR(bank));
     msync();
     tmp = EMI_READ(EMI_WECR);
     EMI_WRITE(EMI_WECR, EMI_READ(EMI_WECR) | BIT(EMI_BITS_D24_D31));
+    rumboot_printf("Writing 0x%X to 0x%X...\n",
+            CHECK_CONST, CHECK_ADDR(bank));
     iowrite32(CHECK_CONST, CHECK_ADDR(bank));
     msync();
     tmp = EMI_READ(EMI_WECR);
     EMI_WRITE(EMI_WECR, 0);
+    rumboot_printf("Reading from 0x%X...\n", CHECK_ADDR(bank));
     readed = ioread32(CHECK_ADDR(bank));
     rumboot_printf("READED: 0x%X after single error.\n", readed);
     result = (readed == CHECK_CONST);
@@ -624,7 +642,6 @@ DEFINE_CHECK(error_counter) /* 2.2.4 */
     /* ----------------- */
 
     /* Reset interrupts */
-    global_irr = 0x00000000;
     clear_all_irqs();
 
     EMI_WRITE(EMI_HSTSR, hstsr);
@@ -633,8 +650,103 @@ DEFINE_CHECK(error_counter) /* 2.2.4 */
 
 DEFINE_CHECK(single_interrupts) /* 2.2.5 */
 {
-    rumboot_putstring("Check is not implemented!\n");
-    return TEST_OK;
+    uint32_t hstsr,
+             ssi,
+             result = TEST_OK,
+             status = TEST_OK;
+    volatile
+    uint32_t readed = 0,
+             tmp    = 0;
+    tmp ^= tmp; /* Prevent compiler warning */
+    if(IS_NOR(bank))
+    {
+        rumboot_printf("NOR RAM is not supported, skipping it.\n");
+        return TEST_OK;
+    }
+    /* Force bank switch */
+    iowrite32(0x00000000, CHECK_ADDR(bank));
+    msync();
+    readed = ioread32(CHECK_ADDR(bank));
+    EMI_WRITE(EMI_WECR, 0);
+
+    hstsr = EMI_READ(EMI_HSTSR);
+    ssi   = EMI_READ((EMI_REG)emi_ss[bank]);
+
+    if(!GET_BIT(hstsr, bank)) ECC_ON(bank);
+    /* Reset single error counter */
+    EMI_WRITE(emi_ecnt[bank], 0);
+
+    /* Make single error */
+    rumboot_putstring(" +++ Make single error...\n");
+    clear_all_irqs();
+    EMI_WRITE((EMI_REG)emi_ss[bank], ssi | BIT(EMI_SSx_SRDY_i));
+    rumboot_printf("Writing 0x%X to 0x%X...\n",
+            CHECK_CONST ^ MK_ERR_1, CHECK_ADDR(bank));
+    iowrite32(CHECK_CONST ^ MK_ERR_1, CHECK_ADDR(bank));
+    msync();
+    tmp = EMI_READ(EMI_WECR);
+    EMI_WRITE(EMI_WECR, EMI_READ(EMI_WECR) | BIT(EMI_BITS_D24_D31));
+    rumboot_printf("Writing 0x%X to 0x%X...\n",
+            CHECK_CONST, CHECK_ADDR(bank));
+    iowrite32(CHECK_CONST, CHECK_ADDR(bank));
+    msync();
+    tmp = EMI_READ(EMI_WECR);
+    EMI_WRITE(EMI_WECR, 0);
+    rumboot_printf("Reading from 0x%X...\n", CHECK_ADDR(bank));
+    readed = ioread32(CHECK_ADDR(bank));
+    rumboot_printf("READED: 0x%X after single error.\n", readed);
+    result = (readed == CHECK_CONST);
+    TEST_ASSERT(result, "EMI: Single error repair fails.");
+    status |= !result;
+    result = (EMI_READ(EMI_ECCRDR) == CHECK_ECC_CODE);
+    TEST_ASSERT(result, "EMI: Wrong ECC-code after single error.");
+    status |= !result;
+    result = (READ_ECNT(bank) == 1);
+    TEST_ASSERT(result, "EMI: Wrong single error counter value.");
+    status |= !result;
+    result = (global_irr & SINGLE_ERR_FLAG(bank));
+    TEST_ASSERT(result, "EMI: Single error interrupt flag not risen.");
+    status |= !result;
+    /* ----------------- */
+
+    /* Make double error */
+    rumboot_putstring(" +++ Make double error...\n");
+    clear_all_irqs();
+    rumboot_printf("Writing 0x%X to 0x%X...\n",
+            CHECK_CONST ^ MK_ERR_2, CHECK_ADDR(bank));
+    iowrite32(CHECK_CONST ^ MK_ERR_2, CHECK_ADDR(bank));
+    msync();
+    tmp = EMI_READ(EMI_WECR);
+    EMI_WRITE(EMI_WECR, EMI_READ(EMI_WECR) | BIT(EMI_BITS_D16_D23));
+    rumboot_printf("Writing 0x%X to 0x%X...\n",
+            CHECK_CONST, CHECK_ADDR(bank));
+    iowrite32(CHECK_CONST, CHECK_ADDR(bank));
+    msync();
+    tmp = EMI_READ(EMI_WECR);
+    EMI_WRITE(EMI_WECR, 0);
+    rumboot_printf("Reading from 0x%X...\n", CHECK_ADDR(bank));
+    readed = ioread32(CHECK_ADDR(bank));
+    rumboot_printf("READED: 0x%X after double error.\n", readed);
+    result = (readed == (CHECK_CONST ^ MK_ERR_2));
+    TEST_ASSERT(result, "EMI: Wrong value after double error.");
+    status |= !result;
+    result = (EMI_READ(EMI_ECCRDR) == CHECK_ECC_CODE);
+    TEST_ASSERT(result, "EMI: Wrong ECC-code after double error.");
+    status |= !result;
+    result = (READ_ECNT(bank) == 1);
+    TEST_ASSERT(result, "EMI: Wrong single error counter value.");
+    status |= !result;
+    result = (!(global_irr & SINGLE_ERR_FLAG(bank)));
+    TEST_ASSERT(result, "EMI: Unexpected single error interrupt flag risen.");
+    status |= !result;
+    result = (global_irr & DOUBLE_ERR_FLAG(bank));
+    TEST_ASSERT(result, "EMI: Double error interrupt flag not risen.");
+    status |= !result;
+    /* ----------------- */
+
+    EMI_WRITE((EMI_REG)emi_ss[bank], ssi);
+    EMI_WRITE(EMI_HSTSR, hstsr);
+    return status;
 }
 
 DEFINE_CHECK(double_interrupts) /* 2.2.6 */
@@ -662,7 +774,7 @@ int main(void)
         rumboot_printf("\n\n *** Check EMI: (%s) *** \n", test->desc);
         FOREACH_BANK(bank,active,NUMBER_OF_BANKS,ENABLED_EM_BANKS)
         {
-            rumboot_printf("%s bank #%d (type: %d - %s)...\n",
+            rumboot_printf(" ---> %s bank #%d (type: %d - %s)...\n",
                     active?"Check":"Skip", bank,
                     EMI_TYPE(bank), btyp_descr[EMI_TYPE(bank)]);
             if(!active) continue;
@@ -670,7 +782,7 @@ int main(void)
             clear_all_irqs();
             EMI_WRITE(EMI_IRR_RST, IRR_RST_ALL);
             test_result = test->test(test, bank);
-            rumboot_printf("%s!\n", test_result ? "Fail" : "Success");
+            rumboot_printf("%s!\n\n", test_result ? "Fail" : "Success");
             test_status |= test_result;
         }
         rumboot_printf(" ************************ \n");
