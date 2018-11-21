@@ -95,11 +95,6 @@
 
 #define TEST_EVENT_CHECK_EMI_ACTIVE     0x00001000
 #define TEST_EVENT_CHECK_EMI_HIZ        0x00001001
-#define TEST_EVENT_CHECK_GPIO_ACTIVE    0x00001002
-#define TEST_EVENT_CHECK_GPIO_HIZ       0x00001003
-#define TEST_EVENT_CHECK_MDIO           0x00001004
-#define TEST_EVENT_CHECK_OTHERS         0x00001005
-#define TEST_EVENT_CHECK_SPI            0x00001006
 #define TEST_EVENT_FORCE_HOLDIn         0x00001007
 
 const uint32_t test_data = 0xDEADBA11;
@@ -134,46 +129,6 @@ void hw_check_emi_ports()
 
 }
 
-
-void check_gpio()
-{
-    test_event(TEST_EVENT_CHECK_GPIO_HIZ);
-
-    gpio_set_direction_by_mask( GPIO_0_BASE, GPIO_REG_MASK, direction_out );
-    gpio_set_direction_by_mask( GPIO_1_BASE, GPIO_REG_MASK, direction_out );
-    for (int i=0; i<8; i++)
-    {
-        gpio_set_value(GPIO_0_BASE, i, false);
-        gpio_set_value(GPIO_1_BASE, i, false);
-    }
-    test_event(TEST_EVENT_CHECK_GPIO_ACTIVE);
-
-    gpio_set_direction_by_mask( GPIO_0_BASE, GPIO_REG_MASK, direction_in );
-    gpio_set_direction_by_mask( GPIO_1_BASE, GPIO_REG_MASK, direction_in );
-    test_event(TEST_EVENT_CHECK_GPIO_HIZ);
-}
-
-void check_mdio()
-{
-    test_event(TEST_EVENT_CHECK_MDIO);
-    TEST_ASSERT(greth_mdio_read(GRETH_0_BASE, ETH_PHY_ADDR, ETH_PHY_ID0 )==ETH_PHY_ID0_DEFAULT, "Error at mdio reading ETH0_PHY_ID0 register\n");
-    TEST_ASSERT(greth_mdio_read(GRETH_1_BASE, ETH_PHY_ADDR, ETH_PHY_ID0 )==ETH_PHY_ID0_DEFAULT, "Error at mdio reading ETH1_PHY_ID0 register\n");
-}
-
-void check_spi()
-{
-    test_event(TEST_EVENT_CHECK_SPI);
-    iowrite32(0x1, 0xC002C000 + 0x300);//SDIO0_ENABLE to switch in HiZ
-    iowrite32(0x1, 0xC003C000 + 0x300);//SDIO0_ENABLE to switch in HiZ
-    iowrite32(0x0, 0xC002C000 + 0x300);//SDIO0_ENABLE to switch in act
-    iowrite32(0x0, 0xC003C000 + 0x300);//SDIO0_ENABLE to switch in act
-}
-
-void check_others()
-{
-    test_event(TEST_EVENT_CHECK_OTHERS);
-}
-
 int main()
 {
     rumboot_printf("Start test_oi10_em2_208\n");
@@ -182,10 +137,6 @@ int main()
     emi_init(DCR_EM2_EMI_BASE);
     check_emi_ports();
     hw_check_emi_ports();
-//    check_gpio();
-//    check_mdio();
-//    check_spi();
-//    check_others();
 
     return 0;
 }
