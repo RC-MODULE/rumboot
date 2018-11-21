@@ -341,7 +341,7 @@ void emi_init_impl (uint32_t const emi_dcr_base, uint32_t const plb6mcif2_dcr_ba
            CSP_2048,
            SDS_64M,
            CL_3,
-           TRDL_1,
+           TRDL_2,
            SI_CPU_INIT,
            TRCD_2,
            TRAS_5
