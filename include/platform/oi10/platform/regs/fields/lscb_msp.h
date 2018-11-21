@@ -8,7 +8,7 @@
 #ifndef LSCB_MSP_H_
 #define LSCB_MSP_H_
 
-#include <platform/common_macros/common_macros.h>
+#include <rumboot/macros.h>
 
 BEGIN_ENUM( IMR_FIELD )
     DECLARE_ENUM_VAL(IMR_M_EOM_i,               0x00)

@@ -8,7 +8,7 @@
 #ifndef REGS_LSCB_H_
 #define REGS_LSCB_H_
 
-#include <platform/common_macros/common_macros.h>
+#include <rumboot/macros.h>
 
 BEGIN_ENUM( MSP_REG )
     DECLARE_ENUM_VAL( MSP_IMR,              0x00 )
