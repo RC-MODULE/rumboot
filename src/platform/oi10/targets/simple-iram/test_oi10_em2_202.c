@@ -179,11 +179,12 @@ void clear_all_irqs(void)
 
 void emi_irq_handler( int irq, void *arg )
 {
-    rumboot_printf("IRQ #%d received (IRR=0x%X).\n",
-            irq, global_irr |= (EMI_READ(EMI_IRR) & IRR_MASK_ALL));
+    uint32_t irr = (EMI_READ(EMI_IRR) & IRR_MASK_ALL);
+    rumboot_printf("IRQ #%d received (IRR=0x%X).\n", irq, irr);
     IRQ[irq >> 5] = BIT(irq & 0x1F);
     /* Reset interrupts */
-    EMI_WRITE(EMI_IRR_RST, IRR_RST_ALL);
+    EMI_WRITE(EMI_IRR_RST, irr);
+    global_irr |= irr;
 }
 
 static void ex_handler(int exid, const char *exname)
@@ -193,6 +194,18 @@ static void ex_handler(int exid, const char *exname)
             exid, exname, spr_read(SPR_MCSRR0), spr_read(SPR_MCSR_RW));
     spr_write(SPR_MCSR_C, ~0);
     l2c_l2_write(DCR_L2C_BASE, L2C_L2PLBSTAT1, ~0);
+}
+
+void dump_mem_16words(uint32_t *dumpaddr)
+{
+    rumboot_printf(
+            "At 0x%X-0x%X: "
+            "0x%X, 0x%X, 0x%X, 0x%X, "
+            "0x%X, 0x%X, 0x%X, 0x%X\n",
+            ((uintptr_t) dumpaddr),
+            ((uintptr_t) dumpaddr) + (8 * sizeof(uint32_t)) - 1,
+            dumpaddr[0], dumpaddr[1], dumpaddr[2], dumpaddr[3],
+            dumpaddr[4], dumpaddr[5], dumpaddr[6], dumpaddr[7]);
 }
 
 /* Initializations */
@@ -255,12 +268,12 @@ DEFINE_CHECK(hstsr_ecc_off_nor);
 
 /* Checklist. Put your tests here. */
 BEGIN_TESTS(tests)
-    CHECK_ITEM(rfc,                     "regeneration configure"    ),
-    CHECK_ITEM(hstsr_ecc_on,            "mode control reg (ECC ON)" ),
-    CHECK_ITEM(hstsr_ecc_off,           "mode control reg (ECC OFF)"),
-    CHECK_ITEM(error_counter,           "single error counter"      ),
-    CHECK_ITEM(single_interrupts,       "single interrupts"         ),
-    CHECK_ITEM(double_interrupts,       "double interrupts"         ),
+    CHECK_ITEM(rfc,                 "2.2.1 - regeneration configure"    ),
+    CHECK_ITEM(hstsr_ecc_on,        "2.2.2 - mode control reg (ECC ON)" ),
+    CHECK_ITEM(hstsr_ecc_off,       "2.2.3 - mode control reg (ECC OFF)"),
+    CHECK_ITEM(error_counter,       "2.2.4 - single error counter"      ),
+    CHECK_ITEM(single_interrupts,   "2.2.5 - single interrupts"         ),
+    CHECK_ITEM(double_interrupts,   "2.2.6 - double interrupts"         ),
 END_TESTS;
 
 /* Checks */
@@ -591,6 +604,7 @@ DEFINE_CHECK(error_counter) /* 2.2.4 */
     volatile
     uint32_t readed = 0,
              tmp    = 0;
+    uint8_t  eccval = 0;
 
     if(IS_NOR(bank))
     {
@@ -626,11 +640,13 @@ DEFINE_CHECK(error_counter) /* 2.2.4 */
     EMI_WRITE(EMI_WECR, 0);
     rumboot_printf("Reading from 0x%X...\n", CHECK_ADDR(bank));
     readed = ioread32(CHECK_ADDR(bank));
-    rumboot_printf("READED: 0x%X after single error.\n", readed);
+    eccval = EMI_READ(EMI_ECCRDR);
+    rumboot_printf("READED: 0x%X (ECC=0x%X) after single error.\n",
+            readed, eccval);
     result = (readed == CHECK_CONST);
     TEST_ASSERT(result, "EMI: Single error repair fails.");
     status |= !result;
-    result = (EMI_READ(EMI_ECCRDR) == CHECK_ECC_CODE);
+    result = (eccval == CHECK_ECC_CODE);
     TEST_ASSERT(result, "EMI: Wrong ECC-code after single error.");
     status |= !result;
     result = (READ_ECNT(bank) == 1);
@@ -783,6 +799,7 @@ int main(void)
             EMI_WRITE(EMI_IRR_RST, IRR_RST_ALL);
             test_result = test->test(test, bank);
             rumboot_printf("%s!\n\n", test_result ? "Fail" : "Success");
+            dump_mem_16words(NULL);
             test_status |= test_result;
         }
         rumboot_printf(" ************************ \n");
