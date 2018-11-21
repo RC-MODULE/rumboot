@@ -744,6 +744,118 @@ endif()
         NAME mkio_polarity_test
       )
 
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES test_oi10_lscb.c
+      CFLAGS -DMKIO_BASE=MKIO0_BASE -DCHECK_MKIO_REGS
+      PREFIX mkio0-regs
+    )
+
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES test_oi10_lscb.c
+      CFLAGS -DMKIO_BASE=MKIO1_BASE -DCHECK_MKIO_REGS
+      PREFIX mkio1-regs
+    )
+
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES test_oi10_lscb.c
+      CFLAGS -DMKIO_BASE=MKIO0_BASE -DCHECK_MKIO_FUNC -DMKIO_BUS=MKIO_BUS_A -DTEST_BANK="IM1"
+      IRUN_FLAGS +mkio_signal_test
+      PREFIX mkio0-im1-func-a
+    )
+
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES test_oi10_lscb.c
+      CFLAGS -DMKIO_BASE=MKIO1_BASE -DCHECK_MKIO_FUNC -DMKIO_BUS=MKIO_BUS_A -DTEST_BANK="IM1"
+      IRUN_FLAGS +mkio_signal_test
+      PREFIX mkio1-im1-func-a
+    )
+
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES test_oi10_lscb.c
+      CFLAGS -DMKIO_BASE=MKIO0_BASE -DCHECK_MKIO_FUNC -DMKIO_BUS=MKIO_BUS_B -DTEST_BANK="IM1"
+      IRUN_FLAGS +mkio_signal_test
+      PREFIX mkio0-im1-func-b
+    )
+
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES test_oi10_lscb.c
+      CFLAGS -DMKIO_BASE=MKIO1_BASE -DCHECK_MKIO_FUNC -DMKIO_BUS=MKIO_BUS_B -DTEST_BANK="IM1"
+      IRUN_FLAGS +mkio_signal_test
+      PREFIX mkio1-im1-func-b
+    )
+
+
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES test_oi10_lscb.c
+      CFLAGS -DMKIO_BASE=MKIO0_BASE -DCHECK_MKIO_FUNC -DMKIO_BUS=MKIO_BUS_A -DTEST_BANK="IM2"
+      IRUN_FLAGS +mkio_signal_test
+      PREFIX mkio0-im2-func-a
+    )
+
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES test_oi10_lscb.c
+      CFLAGS -DMKIO_BASE=MKIO1_BASE -DCHECK_MKIO_FUNC -DMKIO_BUS=MKIO_BUS_A -DTEST_BANK="IM2"
+      IRUN_FLAGS +mkio_signal_test
+      PREFIX mkio1-im2-func-a
+    )
+
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES test_oi10_lscb.c
+      CFLAGS -DMKIO_BASE=MKIO0_BASE -DCHECK_MKIO_FUNC -DMKIO_BUS=MKIO_BUS_B -DTEST_BANK="IM2"
+      IRUN_FLAGS +mkio_signal_test
+      PREFIX mkio0-im2-func-b
+    )
+
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES test_oi10_lscb.c
+      CFLAGS -DMKIO_BASE=MKIO1_BASE -DCHECK_MKIO_FUNC -DMKIO_BUS=MKIO_BUS_B -DTEST_BANK="IM2"
+      IRUN_FLAGS +mkio_signal_test
+      PREFIX mkio1-im2-func-b
+    )
+
+
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES test_oi10_lscb.c
+      CFLAGS -DMKIO_BASE=MKIO0_BASE -DCHECK_MKIO_FUNC -DMKIO_BUS=MKIO_BUS_A -DTEST_BANK="SSRAM"
+      IRUN_FLAGS +mkio_signal_test
+      PREFIX mkio0-em2-func-a
+    )
+
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES test_oi10_lscb.c
+      CFLAGS -DMKIO_BASE=MKIO1_BASE -DCHECK_MKIO_FUNC -DMKIO_BUS=MKIO_BUS_A -DTEST_BANK="SSRAM"
+      IRUN_FLAGS +mkio_signal_test
+      PREFIX mkio1-em2-func-a
+    )
+
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES test_oi10_lscb.c
+      CFLAGS -DMKIO_BASE=MKIO0_BASE -DCHECK_MKIO_FUNC -DMKIO_BUS=MKIO_BUS_B -DTEST_BANK="SSRAM"
+      IRUN_FLAGS +mkio_signal_test
+      PREFIX mkio0-em2-func-b
+    )
+
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES test_oi10_lscb.c
+      CFLAGS -DMKIO_BASE=MKIO1_BASE -DCHECK_MKIO_FUNC -DMKIO_BUS=MKIO_BUS_B -DTEST_BANK="SSRAM"
+      IRUN_FLAGS +mkio_signal_test
+      PREFIX mkio1-em2-func-b
+    )
+
 
     add_rumboot_target(
       CONFIGURATION IRAM
