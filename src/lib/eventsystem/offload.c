@@ -17,12 +17,13 @@ OpHandlerMemset: memset addr 0x8001fd38 chr 0xba4e1074 len 0x8001fe74
 
  */
 
- static __attribute__((no_instrument_function)) void deliver(enum rumboot_simulation_event event, uint32_t data)
- {
- 	rumboot_platform_event_raise(event, &data, 1);
- }
 
 #ifdef RUMBOOT_PRINTF_ACCEL
+
+static __attribute__((no_instrument_function)) void deliver(enum rumboot_simulation_event event, uint32_t data)
+{
+   rumboot_platform_event_raise(event, &data, 1);
+}
 
 #ifndef CMAKE_BUILD_TYPE_DEBUG
 	#error "Simulation offloading should not be enabled for production builds"
