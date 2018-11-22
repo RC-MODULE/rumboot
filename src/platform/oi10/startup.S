@@ -524,8 +524,8 @@ setup_stack: /*stack is growing down*/
     mfxer       r28
     stmw        r28, 20(r1)
 
-    /* TODO: remove setting CTR and LR to 0x00000000. It's only for modeling (https://jira.module.ru/jira/browse/OI10-205) */
-    load_const  r3, 0x00000000
+    /* TODO: remove setting CTR and LR to Program interrupt handler. It's only for modeling (https://jira.module.ru/jira/browse/OI10-205) */
+    load_addr   r3, rumboot_P_hdr
     mtctr       r3
     mtlr        r3
 .endm
@@ -558,7 +558,6 @@ setup_stack: /*stack is growing down*/
 .global rumboot_DTLBE_hdr
 .global rumboot_ITLBE_hdr
 .global rumboot_D_hdr
-.global rumboot_error
 
 .align 4
 rumboot_itrpt_hdr_base:

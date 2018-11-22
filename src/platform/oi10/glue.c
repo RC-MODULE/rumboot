@@ -82,17 +82,6 @@ void rumboot_platform_setup() {
 
     msr_write( msr_old_value );
 
-#ifdef CMAKE_BUILD_TYPE_DEBUG
-    rumboot_putstring( "NOPs for bctr prefetch: WARNING!!! WRITING trap + 15*0x00000000 to SRAM0_BASE!!!\n" );
-    iowrite32( (31 << IBM_BIT_INDEX(32, 5))     /* tw opcode Pri */
-             | (31 << IBM_BIT_INDEX(32, 10))    /* TO */
-             | (0  << IBM_BIT_INDEX(32, 15))    /* RA */
-             | (0  << IBM_BIT_INDEX(32, 20))    /* RB */
-             | (4  << IBM_BIT_INDEX(32, 30)),   /* tw opcode Ext */
-               SRAM0_BASE );
-    memset( (void*)(SRAM0_BASE+4), 0x00, 15*sizeof(uint32_t) );
-#endif
-
     extern char rumboot_im0_heap_start;
     extern char rumboot_im0_heap_end;
     rumboot_malloc_register_heap( "IM0", &rumboot_im0_heap_start, &rumboot_im0_heap_end );
