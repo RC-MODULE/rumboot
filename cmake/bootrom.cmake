@@ -243,6 +243,15 @@ macro(rumboot_bootrom_unit_test)
             IRUN_FLAGS ${BOOTSOURCE_IRUN_FLAGS}
           )
 
+          add_rumboot_target(
+            NAME "unit-exception"
+            CONFIGURATION ${BOOTSOURCE_CONFIGURATION}
+            PREFIX "bootrom"
+            FILES common/bootrom/exception.c
+            TESTGROUP bootrom bootrom-unit
+            IRUN_FLAGS ${BOOTSOURCE_IRUN_FLAGS} +exception_check
+          )
+
   endif()
 
 
