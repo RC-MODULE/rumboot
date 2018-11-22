@@ -299,17 +299,8 @@ int main ()
     static uint8_t const data_19[4] = {0x22, 0x41, 0x99, 0x22};
 
     rumboot_printf("=========> Check BigEndian\n");
-    rumboot_printf("=========> Check WRITE\n");
     TLB_BE ();
-    check_wr_mem_prog_or_hard (im0_array_mirror,    EVENT_CHK_MEM_BE, data_0);
-    check_wr_mem_prog_or_hard (IM1_BASE,            EVENT_CHK_MEM_BE, data_1);
-    check_wr_mem_prog_or_hard (IM2_BASE,            EVENT_CHK_MEM_BE, data_18);
-    check_wr_mem_prog_or_hard (SRAM0_BASE,          EVENT_CHK_MEM_BE, data_2);
-    check_wr_mem_prog_or_hard (SRAM1_BASE,          EVENT_CHK_MEM_BE, data_4);
-    check_wr_mem_prog_or_hard (SDRAM_BASE,          EVENT_CHK_MEM_BE, data_5);
-    check_wr_mem_prog_or_hard (SSRAM_BASE,          EVENT_CHK_MEM_BE, data_6);
-    check_wr_mem_prog_or_hard (PIPELINED_BASE,      EVENT_CHK_MEM_BE, data_7);
-    rumboot_printf("=========> Check READ\n");
+    rumboot_printf("=========> Check LOAD\n");
     check_rd_mem_prog_not_nor (im0_array_mirror,    EVENT_CHK_MEM_BE, data_10);
     check_rd_mem_prog_not_nor (IM1_BASE,            EVENT_CHK_MEM_BE, data_11);
     check_rd_mem_prog_not_nor (IM2_BASE,            EVENT_CHK_MEM_BE, data_19);
@@ -318,6 +309,15 @@ int main ()
     check_rd_mem_prog_not_nor (SDRAM_BASE,          EVENT_CHK_MEM_BE, data_15);
     check_rd_mem_prog_not_nor (SSRAM_BASE,          EVENT_CHK_MEM_BE, data_16);
     check_rd_mem_prog_not_nor (PIPELINED_BASE,      EVENT_CHK_MEM_BE, data_17);
+    rumboot_printf("=========> Check STORE\n");
+    check_wr_mem_prog_or_hard (im0_array_mirror,    EVENT_CHK_MEM_BE, data_0);
+    check_wr_mem_prog_or_hard (IM1_BASE,            EVENT_CHK_MEM_BE, data_1);
+    check_wr_mem_prog_or_hard (IM2_BASE,            EVENT_CHK_MEM_BE, data_18);
+    check_wr_mem_prog_or_hard (SRAM0_BASE,          EVENT_CHK_MEM_BE, data_2);
+    check_wr_mem_prog_or_hard (SRAM1_BASE,          EVENT_CHK_MEM_BE, data_4);
+    check_wr_mem_prog_or_hard (SDRAM_BASE,          EVENT_CHK_MEM_BE, data_5);
+    check_wr_mem_prog_or_hard (SSRAM_BASE,          EVENT_CHK_MEM_BE, data_6);
+    check_wr_mem_prog_or_hard (PIPELINED_BASE,      EVENT_CHK_MEM_BE, data_7);
     rumboot_printf("=========> Check NOR\n");
     check_NOR_prog (NOR_BASE, EVENT_CHK_MEM_BE, data_13, data_8, data_9);
 #ifdef ENDIAN_HARD_CHECK
@@ -334,17 +334,8 @@ int main ()
 #endif
 
     rumboot_printf("=========> Check LittleEndian\n");
-    rumboot_printf("=========> Check WRITE\n");
     TLB_LE ();
-    check_wr_mem_prog_or_hard (im0_array_mirror,    EVENT_CHK_MEM_LE, data_10);
-    check_wr_mem_prog_or_hard (IM1_BASE,            EVENT_CHK_MEM_LE, data_11);
-    check_wr_mem_prog_or_hard (IM2_BASE,            EVENT_CHK_MEM_LE, data_18);
-    check_wr_mem_prog_or_hard (SRAM0_BASE,          EVENT_CHK_MEM_LE, data_12);
-    check_wr_mem_prog_or_hard (SRAM1_BASE,          EVENT_CHK_MEM_LE, data_14);
-    check_wr_mem_prog_or_hard (SDRAM_BASE,          EVENT_CHK_MEM_LE, data_15);
-    check_wr_mem_prog_or_hard (SSRAM_BASE,          EVENT_CHK_MEM_LE, data_16);
-    check_wr_mem_prog_or_hard (PIPELINED_BASE,      EVENT_CHK_MEM_LE, data_17);
-    rumboot_printf("=========> Check READ\n");
+    rumboot_printf("=========> Check LOAD\n");
     check_rd_mem_prog_not_nor (im0_array_mirror,    EVENT_CHK_MEM_LE, data_0);
     check_rd_mem_prog_not_nor (IM1_BASE,            EVENT_CHK_MEM_LE, data_1);
     check_rd_mem_prog_not_nor (IM2_BASE,            EVENT_CHK_MEM_LE, data_19);
@@ -353,6 +344,15 @@ int main ()
     check_rd_mem_prog_not_nor (SDRAM_BASE,          EVENT_CHK_MEM_LE, data_5);
     check_rd_mem_prog_not_nor (SSRAM_BASE,          EVENT_CHK_MEM_LE, data_6);
     check_rd_mem_prog_not_nor (PIPELINED_BASE,      EVENT_CHK_MEM_LE, data_7);
+    rumboot_printf("=========> Check STORE\n");
+    check_wr_mem_prog_or_hard (im0_array_mirror,    EVENT_CHK_MEM_LE, data_10);
+    check_wr_mem_prog_or_hard (IM1_BASE,            EVENT_CHK_MEM_LE, data_11);
+    check_wr_mem_prog_or_hard (IM2_BASE,            EVENT_CHK_MEM_LE, data_18);
+    check_wr_mem_prog_or_hard (SRAM0_BASE,          EVENT_CHK_MEM_LE, data_12);
+    check_wr_mem_prog_or_hard (SRAM1_BASE,          EVENT_CHK_MEM_LE, data_14);
+    check_wr_mem_prog_or_hard (SDRAM_BASE,          EVENT_CHK_MEM_LE, data_15);
+    check_wr_mem_prog_or_hard (SSRAM_BASE,          EVENT_CHK_MEM_LE, data_16);
+    check_wr_mem_prog_or_hard (PIPELINED_BASE,      EVENT_CHK_MEM_LE, data_17);
     rumboot_printf("=========> Check NOR\n");
     check_NOR_prog (NOR_BASE + 0x10, EVENT_CHK_MEM_LE, data_3, data_8, data_9);
 #ifdef ENDIAN_HARD_CHECK
