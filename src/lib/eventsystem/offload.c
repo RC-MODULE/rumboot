@@ -115,8 +115,6 @@ __attribute__((no_instrument_function))
 __attribute__((noreturn))
 void rumboot_platform_panic(const char *why, ...)
 {
-   deliver(EVENT_STACKTRACE, (uint32_t) __builtin_frame_address(0));
-
    if (why) {
 	   va_list ap;
 	   rumboot_printf("PANIC: ");

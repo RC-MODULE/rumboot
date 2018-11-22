@@ -1540,7 +1540,7 @@ file(GLOB PLATFORM_SOURCES
 )
 
 macro(RUMBOOT_PLATFORM_SET_COMPILER_FLAGS)
-    SET(RUMBOOT_COMMON_FLAGS "-mcpu=cortex-a5 -mfpu=vfpv3-d16 -mfloat-abi=hard -marm -ffreestanding -Os -Werror -Wno-error=cpp")
+    SET(RUMBOOT_COMMON_FLAGS "-mcpu=cortex-a5 -mapcs-frame -mfpu=vfpv3-d16 -mfloat-abi=hard -marm -ffreestanding -Wno-error=cpp")
     SET(CMAKE_C_FLAGS "${RUMBOOT_COMMON_FLAGS} -Wall -fdata-sections -ffunction-sections -DRUMBOOT_PLATFORM_NUM_HEAPS=8")
     SET(CMAKE_ASM_FLAGS ${RUMBOOT_COMMON_FLAGS})
     SET(CMAKE_OBJCOPY_FLAGS --gap-fill 0x00 --pad-to 32768)
