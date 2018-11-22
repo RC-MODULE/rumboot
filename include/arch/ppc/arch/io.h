@@ -11,20 +11,32 @@
 
 #define RUMBOOT_ARCH_HAS_IO
 
+#define ALLOW_NULL_ADDR( base_addr ) asm volatile ( "":"=r"( base_addr ):"0"( base_addr ) )
 
-static inline __attribute__((no_instrument_function)) __attribute__((always_inline)) double __attribute__((optimize("no-delete-null-pointer-checks"))) ioread64d( uint32_t const base_addr ) {
-    return *( ( volatile double* )( base_addr ) );
+static inline __attribute__((no_instrument_function)) __attribute__((always_inline)) double ioread64d( uint32_t const base_addr ) {
+    double rval = 0;
+    asm volatile (
+        "lfdx %0, 0, %1 \n\t"
+        :   "=f"(rval)
+        :   "r"(base_addr)
+    );
+    return rval;
 }
 
-static inline __attribute__((no_instrument_function)) __attribute__((always_inline)) void __attribute__((optimize("no-delete-null-pointer-checks"))) iowrite64d( double const value, uint32_t const base_addr ) {
-    *( ( volatile double* )( base_addr ) ) = value;
+static inline __attribute__((no_instrument_function)) __attribute__((always_inline)) void iowrite64d( double const value, uint32_t const base_addr ) {
+    asm volatile (
+        "stfdx %0, 0, %1 \n\t"
+        ::  "f"(value), "r"(base_addr)
+    );
 }
 
-static inline __attribute__((no_instrument_function)) __attribute__((always_inline)) uint64_t __attribute__((optimize("no-delete-null-pointer-checks"))) ioread64( uint32_t const base_addr ) {
+static inline __attribute__((no_instrument_function)) __attribute__((always_inline)) uint64_t ioread64( uint32_t register base_addr ) {
+    ALLOW_NULL_ADDR( base_addr );
     return *( ( volatile uint64_t* )( base_addr ) );
 }
 
-static inline __attribute__((no_instrument_function)) __attribute__((always_inline)) void __attribute__((optimize("no-delete-null-pointer-checks"))) iowrite64( uint64_t const value, uint32_t const base_addr ) {
+static inline __attribute__((no_instrument_function)) __attribute__((always_inline)) void iowrite64( uint64_t const value, uint32_t register base_addr ) {
+    ALLOW_NULL_ADDR( base_addr );
     *( ( volatile uint64_t* )( base_addr ) ) = value;
 }
 
