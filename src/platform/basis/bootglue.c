@@ -107,7 +107,7 @@ static void exception_handler(int id, const char *name)
 {
         rumboot_printf("\n\n\nWE GOT AN EXCEPTION: %d: %s\n", id, name);
         rumboot_printf("--- Guru Meditation ---\n");
-        rumboot_printf("  -   Registers   -\n");
+        rumboot_printf("  -   Registers     -\n");
         rumboot_printf("CPSR: 0x%x \n", get_cpsr());
         rumboot_printf("APSR: 0x%x \n", __get_APSR());
         rumboot_printf("VBAR: 0x%x \n", arm_vbar_get());
