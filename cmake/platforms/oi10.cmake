@@ -1257,10 +1257,18 @@ endif()
     )
 
     add_rumboot_target(
-        CONFIGURATION IRAM
-        CFLAGS -DENDIAN_HARD_CHECK
-        FILES test_oi10_endianness.c
+      CONFIGURATION IRAM
+      FILES test_oi10_endianness.c
+      NAME "test_oi10_endianness_soft"
     )
+
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      CFLAGS -DENDIAN_HARD_CHECK
+      FILES test_oi10_endianness.c
+      NAME "test_oi10_endianness_soft_and_hard"
+    )
+
 endmacro()
 
 
