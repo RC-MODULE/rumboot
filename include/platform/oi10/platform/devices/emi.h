@@ -169,7 +169,7 @@ void emi_clear_irr      (uint32_t emi_dcr_base, emi_irr_cfg const * irr);
 
 /* a.gurov */
 uint8_t calc_hamming_ecc(uint32_t data);
-emi_bank_cfg
+emi_bank_cfg const
     *emi_get_bank_cfg_cached(emi_bank_num num_bank);
 
 #endif /* EMI_H_ */
