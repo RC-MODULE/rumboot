@@ -23,7 +23,7 @@
 .section ".init.rodata","a",@progbits
 
 .align 3
-const_0: 
+const_0:
     .long 0x00000000
     .long 0x00000000
 
@@ -213,16 +213,6 @@ init_sprg:
     mtspr       SPR_SPRG7, r0
     mtspr       SPR_SPRG8, r0
     mtspr       SPR_USPRG0, r0
-
-
-/* TODO: Remove timer clk bugfix */
-#define PPC_TMRCLK_SEL_i_       1           /* From http://git.module.ru/OI10/doc/blob/master/spec/design/OI10_SCTL_user_guide.docx */
-    load_const  r3, DCR_SCTL_BASE+SCTL_PPC_SYS_CONF
-    mfdcrx      r4, r3
-    load_const  r5, (1 << PPC_TMRCLK_SEL_i_)
-    or          r4, r4, r5
-    mtdcrx      r3, r4
-/* timer clk bugfix end */
 
 
     gtube_init
@@ -416,7 +406,7 @@ init_fpu_regs:
 
     load_addr   r3, const_0
 
-    lfd         f0, 0(r3) 
+    lfd         f0, 0(r3)
     lfd         f1, 0(r3)
     lfd         f2, 0(r3)
     lfd         f3, 0(r3)
