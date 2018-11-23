@@ -2158,7 +2158,7 @@ void write_sram_content_hi_to_lo(const uint64_t value, uint32_t * EA_collection)
 bool read_compare_sram_content_lo_to_hi(const uint64_t value, uint32_t * EA_collection)
 {
     uint32_t i;
-    rumboot_printf("Read & compare (Address LOW->HIGH)\n%x\n", EA_collection[0]);
+    rumboot_printf("Read & compare (Address LOW->HIGH)\n0x%x\n", EA_collection[0]);
     for (i = 0; i <= A_MAX; i++)
         if(
             (ioread64(EA_collection[i]) != value) ||
@@ -2210,7 +2210,7 @@ void check(uint32_t * EA_collection, uint32_t event_code)
      *   read 11..1
      */
 
-   // test_event(event_code);
+   // test_event(event_code); //hardware check
     TEST_ASSERT(read_compare_sram_content_lo_to_hi(0x0000000000000000,EA_collection), "read 00..0 fail");
     write_sram_content_lo_to_hi(0xFFFFFFFFFFFFFFFF, EA_collection);
     TEST_ASSERT(read_compare_sram_content_lo_to_hi(0xFFFFFFFFFFFFFFFF,EA_collection), "read 11..1 fail");
@@ -2235,15 +2235,14 @@ void check(uint32_t * EA_collection, uint32_t event_code)
 
 void cache_all_from(uint32_t start_addr)
 {
-    rumboot_printf("Caching data...\n");
+    rumboot_printf("Caching data (it's long operation)...\n");
     uint32_t addr = start_addr;
     for (int i = 0; i < 1024; i++)
     {
-        rumboot_printf("ind = %x\n", i);
         dcbt((void *)addr);
-        isync(); msync();
         addr += 32;
     }
+    msync();
 }
 
 int main()
@@ -2254,8 +2253,6 @@ int main()
 
      rumboot_printf("Init sram0\n");
      memset(SRAM0_CACHED_PAGE, 0x00, 0x10000);
-     rumboot_printf ("DATA = %x\n", ioread32(SRAM0_CACHED_PAGE));
-     rumboot_printf ("DATA = %x\n", ioread32(SRAM0_CACHED_PAGE + 0x10000 - 0x4));
 
      rumboot_printf("Set tlb\n");
      static const tlb_entry tlb_entry_cacheable_valid = {TLB_ENTRY_CACHE_VALID};
@@ -2280,22 +2277,7 @@ int main()
      check((uint32_t *)sram_G_addr,TEST_EVENT_CHECK_SRAM_G);
      rumboot_printf("SRAM_H start\n");
      check((uint32_t *)sram_H_addr,TEST_EVENT_CHECK_SRAM_H);
-     rumboot_printf("SRAM_E start\n");
-     check((uint32_t *)sram_E_addr,TEST_EVENT_CHECK_SRAM_E);
-     rumboot_printf("SRAM_F start\n");
-     check((uint32_t *)sram_F_addr,TEST_EVENT_CHECK_SRAM_F);
-     rumboot_printf("SRAM_G start\n");
-     check((uint32_t *)sram_G_addr,TEST_EVENT_CHECK_SRAM_G);
-     rumboot_printf("SRAM_H start\n");
-     check((uint32_t *)sram_H_addr,TEST_EVENT_CHECK_SRAM_H);
-     rumboot_printf("SRAM_A start\n");
-     check((uint32_t *)sram_A_addr,TEST_EVENT_CHECK_SRAM_A);
-     rumboot_printf("SRAM_B start\n");
-     check((uint32_t *)sram_B_addr,TEST_EVENT_CHECK_SRAM_B);
-     rumboot_printf("SRAM_C start\n");
-     check((uint32_t *)sram_C_addr,TEST_EVENT_CHECK_SRAM_C);
-     rumboot_printf("SRAM_D start\n");
-     check((uint32_t *)sram_D_addr,TEST_EVENT_CHECK_SRAM_D);
 
+     rumboot_printf("TEST OK\n");
      return 0;
 }
