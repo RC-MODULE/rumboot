@@ -16,11 +16,14 @@ int main()
         rumboot_platform_read_config(&conf);
         rumboot_platform_init_loader(&conf);
 
-#ifdef __PPC__
+#if defined(__PPC__)
         asm ("sc");
-#endif
-#ifdef __ARM__
+#elif defined(__arm__)
         asm volatile (".word 0xf7f0a000\n");
+#elif defined(RUMBOOT_NATIVE)
+        kill(getpid(), SIGILL);
+#else
+        #error "Not supported on this architecture"
 #endif
 
         return 1;
