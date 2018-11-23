@@ -180,7 +180,8 @@ void clear_all_irqs(void)
 void emi_irq_handler( int irq, void *arg )
 {
     uint32_t irr = (EMI_READ(EMI_IRR) & IRR_MASK_ALL);
-    rumboot_printf("IRQ #%d received (IRR=0x%X).\n", irq, irr);
+    rumboot_printf("IRQ #%d received at 0x%X (IRR=0x%X).\n",
+            irq, spr_read(SPR_SRR0), irr);
     IRQ[irq >> 5] = BIT(irq & 0x1F);
     /* Reset interrupts */
     EMI_WRITE(EMI_IRR_RST, irr);
@@ -194,18 +195,6 @@ static void ex_handler(int exid, const char *exname)
             exid, exname, spr_read(SPR_MCSRR0), spr_read(SPR_MCSR_RW));
     spr_write(SPR_MCSR_C, ~0);
     l2c_l2_write(DCR_L2C_BASE, L2C_L2PLBSTAT1, ~0);
-}
-
-void dump_mem_16words(uint32_t *dumpaddr)
-{
-    rumboot_printf(
-            "At 0x%X-0x%X: "
-            "0x%X, 0x%X, 0x%X, 0x%X, "
-            "0x%X, 0x%X, 0x%X, 0x%X\n",
-            ((uintptr_t) dumpaddr),
-            ((uintptr_t) dumpaddr) + (8 * sizeof(uint32_t)) - 1,
-            dumpaddr[0], dumpaddr[1], dumpaddr[2], dumpaddr[3],
-            dumpaddr[4], dumpaddr[5], dumpaddr[6], dumpaddr[7]);
 }
 
 /* Initializations */
@@ -807,7 +796,6 @@ int main(void)
             EMI_WRITE(EMI_IRR_RST, IRR_RST_ALL);
             test_result = test->test(test, bank);
             rumboot_printf("%s!\n\n", test_result ? "Fail" : "Success");
-            dump_mem_16words(NULL);
             test_status |= test_result;
         }
         rumboot_printf(" ************************ \n");
