@@ -981,7 +981,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     FILES mdio/mdio_test.c
     NAME mdio_test_1
     IRUN_FLAGS +mdio_test
-    TIMEOUT 600 us
+    TIMEOUT 4000 us
     CFLAGS -DMDIO_NUM=1
   )
 
@@ -989,7 +989,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     CONFIGURATION IRAM_MIRROR
     FILES mdio/mdio_test.c
     NAME mdio_test_2
-    TIMEOUT 600 us
+    TIMEOUT 4000 us
     CFLAGS -DMDIO_NUM=2
   )
 
@@ -997,7 +997,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     CONFIGURATION IRAM_MIRROR
     FILES mdio/mdio_test.c
     NAME mdio_test_3
-    TIMEOUT 600 us
+    TIMEOUT 4000 us
     CFLAGS -DMDIO_NUM=3
   )
 
