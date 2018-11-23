@@ -103,15 +103,10 @@ int main(void)
     {
         switch (result) // result == error code
         {
-            case 1: rumboot_printf("steps 6,7 - FAIL, reading from cache inhibited page: failed, data not changed (cache is off).\n"); break;
-            case 2: rumboot_printf("steps 6,7 - FAIL, reading from cache inhibited page: failed, data not changed (cache is on).\n"); break;
-            case 3: rumboot_printf("steps 6,7 - FAIL, reading from cache inhibited page: failed, data changed.\n"); break;
-            case 4: rumboot_printf("steps 8,9 - FAIL, reading from cacheable page: failed, data not changed.\n"); break;
-            case 5: rumboot_printf("steps 11, 12 - FAIL, reading from cache inhibited page after flush: failed, data not changed.\n"); break;
-            case 6: rumboot_printf("steps 13, 14 - FAIL, reading from cacheable page after flush: failed, data not changed.\n"); break;
-            case 7: rumboot_printf("steps 15 - FAIL, write in mem\n"); break;
-            case 8: rumboot_printf("steps 16 - FAIL, reading from cacheable page (cache invalidate)\n"); break;
-            case 9: rumboot_printf("steps 16 - FAIL, reading from cacheable page (cache don't invalidate)\n"); break;
+            case 1: rumboot_printf("COMPARE FAIL: step 7\n"); break;
+            case 2: rumboot_printf("COMPARE FAIL: step 11\n"); break;
+            case 3: rumboot_printf("COMPARE FAIL: step 15\n"); break;
+            case 4: rumboot_printf("COMPARE FAIL: step 17\n"); break;
         }
         rumboot_printf("TEST_ERROR\n");
         return 1;
