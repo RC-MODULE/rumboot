@@ -82,21 +82,16 @@ void print_backtrace(void)
         uint32_t pc = *(((uint32_t*)topfp) -0);
 
 
-        if ( i == 0 ) pos = pc;
-        if (fp != 0)
-          pos = lr;
-        else
-          pos = pc;
+        pos = lr - 4;
 
-        pos -= 4;
 
-        rumboot_printf("FRAME[%d] ADDRESS: 0x%x | FP: 0x%x SP: 0x%x LR: 0x%x PC: 0x%x\n",
+        rumboot_printf("frame[%d] address: 0x%x (FP: 0x%x SP: 0x%x LR: 0x%x PC: 0x%x)\n",
         i, pos, fp, sp, lr, pc);
         if (fp == 0)
           break;
         if ((fp < (uint32_t)&rumboot_platform_stack_area_start) ||
             (fp > (uint32_t)&rumboot_platform_stack_area_end)) {
-                rumboot_printf("Next frame looks really invalid, will stop here, sorry\n");
+                rumboot_printf("Next frame looks invalid, we'll stop here, sorry\n");
                 break;
         }
         topfp = fp;
@@ -114,6 +109,7 @@ static void exception_handler(int id, const char *name)
         rumboot_printf("  -   Stack trace   -\n");
         print_backtrace();
         rumboot_printf("---       ---       ---\n");
+        rumboot_platform_sv_event("EXCEPTION");
         rumboot_platform_panic("Please reset or power-cycle the board\n");
 }
 
