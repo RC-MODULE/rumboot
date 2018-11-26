@@ -8,8 +8,10 @@
 #include <rumboot/timer.h>
 
 #include <platform/common_macros/common_macros.h>
+#include <platform/arch/ppc/ppc_476fp_config.h>
 #include <platform/devices.h>
 #include <platform/devices/emi.h>
+#include <platform/devices/l2c.h>
 #include <platform/interrupts.h>
 
 #define NOR_SELFCHECKING_DISABLE
@@ -398,11 +400,36 @@ bool check_data()
 }
 
 
+static void exception_handler(int const id, char const * const name ) {
+    rumboot_printf( "Exception: %s\n", name );
+    TEST_ASSERT( (id == RUMBOOT_IRQ_MACHINE_CHECK)
+              && (spr_read(SPR_MCSR_RW) == ( (0b1 << ITRPT_MCSR_MCS_i)
+                                           | (0b1 << ITRPT_MCSR_L2_i) ))
+              && (l2c_l2_read(DCR_L2C_BASE, L2C_L2FERR) == (0b1 << 9)),
+                 "Unexpected exception" );
+
+    rumboot_printf("L2MCK = 0x%x\n", l2c_l2_read(DCR_L2C_BASE, L2C_L2MCK));
+    rumboot_printf("L2FERR = 0x%x\n", l2c_l2_read(DCR_L2C_BASE, L2C_L2FERR));
+    rumboot_printf("L2INT = 0x%x\n", l2c_l2_read(DCR_L2C_BASE, L2C_L2INT));
+
+    rumboot_printf("L2C_L2PLBSTAT0 = 0x%x\n", l2c_l2_read(DCR_L2C_BASE, L2C_L2PLBSTAT0));
+    rumboot_printf("L2C_L2PLBSTAT1 = 0x%x\n", l2c_l2_read(DCR_L2C_BASE, L2C_L2PLBSTAT1));
+
+    l2c_l2_write( DCR_L2C_BASE, L2C_L2PLBSTAT0, 0xFFFFFFFF );
+    l2c_l2_write( DCR_L2C_BASE, L2C_L2PLBSTAT1, 0xFFFFFFFF );
+
+    spr_write( SPR_MCSR_C, spr_read(SPR_MCSR_RW) );
+}
+
+
 int main(void) 
 {
     uint32_t test_result = 0;
 
     test_event_send_test_id("test_oi10_em2_205");
+
+
+    rumboot_irq_set_exception_handler(exception_handler);
 
 
     emi_init(DCR_EM2_EMI_BASE);
