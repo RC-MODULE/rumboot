@@ -203,6 +203,32 @@ function(rumboot_load_build platform buildtype)
         -DRUMBOOT_SOC_BUILD_TYPE=${CMAKE_BUILD_TYPE}
     )
 
+    if (RUMBOOT_PACKAGED)
+      message(STATUS "Downloading CI package: ${RUMBOOT_PACKAGE_URL}")
+      if (NOT RUMBOOT_PACKAGE_URL)
+        message(FATAL_ERROR "Please set RUMBOOT_PACKAGE_URL to the CI location")
+      endif()
+      if (NOT RUMBOOT_BUILD_TYPE STREQUAL "Production")
+        message(FATAL_ERROR "Please specify -DRUMBOOT_BUILD_TYPE=Production to test prepackaged rumboot")
+      endif()
+      file(DOWNLOAD
+        ${RUMBOOT_PACKAGE_URL}
+        ${CMAKE_BINARY_DIR}/rumboot-from-ci.tgz
+        SHOW_PROGRESS
+        STATUS _DL_STATUS
+      )
+      list(GET _DL_STATUS 0 _status)
+      if (NOT _status STREQUAL "0")
+        message(FATAL_ERROR "Failed to download rumboot CI package: ${RUMBOOT_PACKAGE_URL}")
+      endif()
+
+      add_custom_command(
+          TARGET rumboot
+          COMMAND tar vxpf ${CMAKE_BINARY_DIR}/rumboot-from-ci.tgz --strip-components=1
+          WORKING_DIRECTORY ${rumboot_fulldir}
+        )
+    endif()
+
     set(RUMBOOT_SOC_BUILD_TYPE ${CMAKE_BUILD_TYPE})
     set(RUMBOOT_UTILS_DIR  ${CMAKE_BINARY_DIR}/${rumboot_dirname}/utils PARENT_SCOPE)
     set(RUMBOOT_BINARY_DIR ${CMAKE_BINARY_DIR}/${rumboot_dirname} PARENT_SCOPE)
