@@ -575,13 +575,14 @@ endif()
           PREFIX sram0
         )     
 
-#    add_rumboot_target(
-#          CONFIGURATION IRAM
-#          FILES test_oi10_em2_201.c
-#          CFLAGS -DEXT_MEM_BASE=SDRAM_BASE -DCSP=CSP_1024 -DSDS=SDS_32M -DCL=CL_3
+    add_rumboot_target(
+          CONFIGURATION IRAM
+          FILES test_oi10_em2_201.c
+          CFLAGS -DEXT_MEM_BASE=SDRAM_BASE -DCSP=CSP_1024 -DSDS=SDS_32M -DCL=CL_3
 #          IRUN_FLAGS +define+x8 +define+den512Mb
-#          PREFIX sdram_csp1024
-#        )
+          IRUN_FLAGS +define+den256Mb +define+sg75 +define+x8           
+          PREFIX sdram_csp1024
+        )
 
     add_rumboot_target(
           CONFIGURATION IRAM
