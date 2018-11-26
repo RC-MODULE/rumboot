@@ -211,13 +211,13 @@ int check_sdram_2_1_3(uint32_t base_addr, sdx_csp_t csp, sdx_sds_t sds, sdx_cl_t
 #define SDRAM_TRCD_SPACE    2
 #define SDRAM_TRAS_SPACE    2
 
-//    sdx_trdl_t trdl_arr[SDRAM_TRDL_SPACE] = {TRDL_1, TRDL_2};
-//    sdx_trcd_t trcd_arr[SDRAM_TRCD_SPACE] = {TRCD_2, TRCD_5};
+    sdx_trdl_t trdl_arr[SDRAM_TRDL_SPACE] = {TRDL_1, TRDL_2};
+    sdx_trcd_t trcd_arr[SDRAM_TRCD_SPACE] = {TRCD_2, TRCD_5};
     sdx_tras_t tras_arr[SDRAM_TRAS_SPACE] = {TRAS_4, TRAS_11};
     emi_bank_cfg sdram_cfg;
 
-//    uint32_t k;
-//    uint32_t l;
+    uint32_t k;
+    uint32_t l;
     uint32_t m;
 
     void (*sdram_oper_from_emi)() = (void *)SSRAM_BASE;
@@ -240,8 +240,8 @@ int check_sdram_2_1_3(uint32_t base_addr, sdx_csp_t csp, sdx_sds_t sds, sdx_cl_t
     rumboot_printf("Checking SDRAM (0x%X)\n");
     emi_get_bank_cfg(DCR_EM2_EMI_BASE, emi_b1_sdram, &sdram_cfg);
 
-    //for (k=0; k<SDRAM_TRDL_SPACE ; k++)
-        //for (l=0; l<SDRAM_TRCD_SPACE ; l++)
+    for (k=0; k<SDRAM_TRDL_SPACE ; k++)
+        for (l=0; l<SDRAM_TRCD_SPACE ; l++)
             for (m=0; m<SDRAM_TRAS_SPACE ; m++)
             {
 
@@ -250,8 +250,8 @@ int check_sdram_2_1_3(uint32_t base_addr, sdx_csp_t csp, sdx_sds_t sds, sdx_cl_t
                 sdram_cfg.sdx_cfg.SDS   = sds;
                 sdram_cfg.sdx_cfg.CL    = cl;
 
-//                sdram_cfg.sdx_cfg.T_RDL = trdl_arr[k];
-//                sdram_cfg.sdx_cfg.T_RCD = trcd_arr[l];
+                sdram_cfg.sdx_cfg.T_RDL = trdl_arr[k];
+                sdram_cfg.sdx_cfg.T_RCD = trcd_arr[l];
                 sdram_cfg.sdx_cfg.T_RAS = tras_arr[m];
                 emi_update_sdx(&sdram_cfg.sdx_cfg);
 
@@ -299,7 +299,6 @@ int check_sdram_2_1_5(uint32_t base_addr, sdx_sds_t sds)
     sdram_oper_from_emi();
     return 0;
 }
-
 
 /*
  * SSRAM (2.1.4 PPPC_SRAM_SDRAM_slave0_testplan.docx)
