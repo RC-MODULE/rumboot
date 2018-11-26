@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <string.h>
 
 #include <rumboot/testsuite.h>
 
@@ -16,14 +17,28 @@
 #include <platform/devices/nor_1636RR4.h>
 #include <platform/devices/dma2plb6.h>
 
+#include <platform/arch/ppc/ppc_476fp_mmu_fields.h>
+#include <platform/arch/ppc/ppc_476fp_mmu.h>
+#include <platform/ppc470s/mmu/mem_window.h>
+
+
 #define EVENT_CHECK_SRAM0_TSOE_TCYC       0x0000003E
 #define EVENT_CHECK_NOR_TSOE_TCYC         0x0000003F
 #define EVENT_CHECK_SRAM1_TSOE_TCYC       0x00000040
 #define EVENT_CHECK_SSRAM_SST_TSSOE_FT    0x00000041
 #define EVENT_CHECK_SSRAM_SST_TSSOE_PIPE  0x00000042
+#define EVENT_CHECK_SDRAM_2_1_3           0x00000043
+#define EVENT_CHECK_SDRAM_2_1_5           0x00000044
 
 #define TEST_ADDR_0  (base_addr +  0x4)
 #define TEST_ADDR_1  (base_addr + 0x10)
+
+#define SDRAM_TEST_ADDR (SDRAM_BASE + 0x4000)
+
+/*                       MMU_TLB_ENTRY(  ERPN,   RPN,        EPN,        DSIZ,                   IL1I,   IL1D,   W,      I,      M,      G,      E,                      UX, UW, UR,     SX, SW, SR      DULXE,  IULXE,      TS,     TID,                WAY,                BID,                V   )*/
+#define TLB_ENTRY_SDRAM0 MMU_TLB_ENTRY(  0x000,  0x00000,    0x00000,    MMU_TLBE_DSIZ_1GB,      0b0,    0b1,    0b1,    0b0,    0b1,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
+#define TLB_ENTRY_SDRAM1 MMU_TLB_ENTRY(  0x000,  0x40000,    0x40000,    MMU_TLBE_DSIZ_1GB,      0b0,    0b1,    0b1,    0b0,    0b1,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
+
 
 void refresh_timings(emi_bank_num bank_num)
 {
@@ -170,87 +185,121 @@ void emi_update_sdx(emi_sdx_reg_cfg* sdx)
     //report_bank_cfg(&bank_cfg);
 }
 
-#define DMA2PLB6_DATA_SIZE (128)
-uint32_t* test_dma2plb6_0_data_src;
-uint32_t* test_dma2plb6_0_data_dst = (uint32_t*)(SDRAM_BASE + 0x0400 - 4);
-size_t test_dma2plb6_0_data_size = DMA2PLB6_DATA_SIZE;
+void sdram_oper()
+{
+    (void)ioread32(SDRAM_TEST_ADDR - 4);
+    (void)ioread32(SDRAM_TEST_ADDR - 0);
+    msync();
 
-void prepare_sdram_data()
+    iowrite32(0xBABADEDA, SDRAM_TEST_ADDR - 4);
+    iowrite32(0xBABADEDA, SDRAM_TEST_ADDR - 0);
+    msync();
+}
+/*
+void mem_set32(uint32_t addr, uint32_t len_bytes, uint32_t val)
 {
     uint32_t i;
-    test_dma2plb6_0_data_src = (uint32_t*) rumboot_malloc_from_heap_aligned(0, test_dma2plb6_0_data_size, 4);
-    for (i=0; i<test_dma2plb6_0_data_size/sizeof(uint32_t); i++)
+    for (i=0; i<len_bytes; i+=4)
     {
-        *(test_dma2plb6_0_data_src + i) = (i+1) | ((i+1) << 8) | ((i+1) << 16) | ((i+1) << 24);
-        rumboot_printf("MEM[0x%X] = 0x%X\n", (uint32_t)(test_dma2plb6_0_data_src + i), *(test_dma2plb6_0_data_src + i));
+        iowrite32(val, addr + i);
     }
 }
-
-uint32_t dma2plb6_get_bytesize(transfer_width transfer_width_code)
-{
-    switch(transfer_width_code){
-    case tr_width_byte:
-        return 1;
-        break;
-    case tr_width_halfword:
-        return 2;
-        break;
-    case tr_width_word:
-        return 4;
-        break;
-    case tr_width_doubleword:
-        return 8;
-        break;
-    case tr_width_quadword:
-        return 16;
-        break;
-    }
-    return 0;
-}
-
-#define stmw(base, shift)\
-    asm volatile (\
-        "addis 30, 0,  0x0101 \n\t"\
-        "addi  30, 30, 0x0101 \n\t"\
-        "addis 31, 0,  0x0202 \n\t"\
-        "addi  31, 31, 0x0202 \n\t"\
-        "addis 29, 0, %0 \n\t"\
-        "stmw 30, %1(29) \n\t"\
-        ::"i"(base), "i"(shift)\
-    )
-
-
-int check_sdram(uint32_t base_addr, sdx_csp_t csp, sdx_sds_t sds, sdx_cl_t cl)
+*/
+int check_sdram_2_1_3(uint32_t base_addr, sdx_csp_t csp, sdx_sds_t sds, sdx_cl_t cl)
 {
 #define SDRAM_TRDL_SPACE    2
 #define SDRAM_TRCD_SPACE    2
 #define SDRAM_TRAS_SPACE    2
 
-    sdx_trdl_t trdl_arr[SDRAM_TRDL_SPACE] = {TRDL_1, TRDL_2};
-    sdx_trcd_t trcd_arr[SDRAM_TRCD_SPACE] = {TRCD_2, TRCD_5};
+//    sdx_trdl_t trdl_arr[SDRAM_TRDL_SPACE] = {TRDL_1, TRDL_2};
+//    sdx_trcd_t trcd_arr[SDRAM_TRCD_SPACE] = {TRCD_2, TRCD_5};
     sdx_tras_t tras_arr[SDRAM_TRAS_SPACE] = {TRAS_4, TRAS_11};
-    emi_sdx_reg_cfg sdx_sdram;
-//    uint32_t k, l, m;
+    emi_bank_cfg sdram_cfg;
 
-    rumboot_printf("Checking SDRAM (0x%X)\n", base_addr);
-//    for (k=0; k<SDRAM_TRDL_SPACE ; k++)
-//        for (l=0; l<SDRAM_TRCD_SPACE ; l++)
-//            for (m=0; m<SDRAM_TRAS_SPACE ; m++)
+//    uint32_t k;
+//    uint32_t l;
+    uint32_t m;
+
+    void (*sdram_oper_from_emi)() = (void *)SSRAM_BASE;
+
+    static const tlb_entry sdram_tlb_entry[2] = { {TLB_ENTRY_SDRAM0},
+                                                  {TLB_ENTRY_SDRAM1} };
+
+    memset((void*) SRAM0_BASE, 0, 128);
+    memset((void*) (SSRAM_BASE), 0, 0x2000);
+    //mem_set32(SDRAM_TEST_ADDR - 0x80, 256, 0);
+    memset((void*) (SDRAM_TEST_ADDR - 0x80), 0, 256);
+    memcpy(sdram_oper_from_emi, sdram_oper, (uint32_t)check_sdram_2_1_3 - (uint32_t)sdram_oper);
+    msync();
+
+    write_tlb_entries(sdram_tlb_entry, 2);
+
+    rumboot_putstring("Touching sdram_oper_from_emi()\n");
+    icbt(sdram_oper_from_emi);
+
+    rumboot_printf("Checking SDRAM (0x%X)\n");
+    emi_get_bank_cfg(DCR_EM2_EMI_BASE, emi_b1_sdram, &sdram_cfg);
+
+    //for (k=0; k<SDRAM_TRDL_SPACE ; k++)
+        //for (l=0; l<SDRAM_TRCD_SPACE ; l++)
+            for (m=0; m<SDRAM_TRAS_SPACE ; m++)
             {
-                sdx_sdram.CSP   = csp;
-                sdx_sdram.SDS   = sds;
-                sdx_sdram.CL    = cl;
-                sdx_sdram.T_RDL = trdl_arr[0];
-                sdx_sdram.T_RCD = trcd_arr[0];
-                sdx_sdram.T_RAS = tras_arr[0];
-                emi_update_sdx(&sdx_sdram);
 
-                stmw( ((SDRAM_BASE & 0xFFFF0000)>>16), (0x0400 - 4) );
-                //check_wrrd(TEST_ADDR_0, (k<<16) | l);
-                //check_wrrd(TEST_ADDR_1, ~((m<<16) | k));
+                rumboot_putstring("Update EMI_SDRAM\n");
+                sdram_cfg.sdx_cfg.CSP   = csp;
+                sdram_cfg.sdx_cfg.SDS   = sds;
+                sdram_cfg.sdx_cfg.CL    = cl;
+
+//                sdram_cfg.sdx_cfg.T_RDL = trdl_arr[k];
+//                sdram_cfg.sdx_cfg.T_RCD = trcd_arr[l];
+                sdram_cfg.sdx_cfg.T_RAS = tras_arr[m];
+                emi_update_sdx(&sdram_cfg.sdx_cfg);
+
+                rumboot_putstring("Execute access to memory\n");
+                test_event(EVENT_CHECK_SDRAM_2_1_3);
+                sdram_oper_from_emi();
             }
     return 0;
 }
+
+int check_sdram_2_1_5(uint32_t base_addr, sdx_sds_t sds)
+{
+    emi_bank_cfg sdram_cfg;
+
+    void (*sdram_oper_from_emi)() = (void *)SSRAM_BASE;
+
+    static const tlb_entry sdram_tlb_entry[2] = { {TLB_ENTRY_SDRAM0},
+                                                  {TLB_ENTRY_SDRAM1} };
+
+    memset((void*) SRAM0_BASE, 0, 128);
+    memset((void*) (SSRAM_BASE), 0, 0x2000);
+    //mem_set32(SDRAM_TEST_ADDR - 0x80, 256, 0);
+    memset((void*) (SDRAM_TEST_ADDR - 0x80), 0, 256);
+    memcpy(sdram_oper_from_emi, sdram_oper, (uint32_t)check_sdram_2_1_3 - (uint32_t)sdram_oper);
+    msync();
+
+    write_tlb_entries(sdram_tlb_entry, 2);
+
+    rumboot_putstring("Touching sdram_oper_from_emi()\n");
+    icbt(sdram_oper_from_emi);
+
+    rumboot_printf("Checking SDRAM (0x%X)\n");
+    emi_get_bank_cfg(DCR_EM2_EMI_BASE, emi_b1_sdram, &sdram_cfg);
+
+    rumboot_putstring("Update EMI_SDRAM\n");
+    sdram_cfg.sdx_cfg.SDS   = sds;
+
+    sdram_cfg.sdx_cfg.T_RDL = TRDL_2;
+    sdram_cfg.sdx_cfg.T_RCD = TRCD_2;
+    sdram_cfg.sdx_cfg.T_RAS = TRAS_4;
+    emi_update_sdx(&sdram_cfg.sdx_cfg);
+
+    rumboot_putstring("Execute access to memory\n");
+    test_event(EVENT_CHECK_SDRAM_2_1_5);
+    sdram_oper_from_emi();
+    return 0;
+}
+
 
 /*
  * SSRAM (2.1.4 PPPC_SRAM_SDRAM_slave0_testplan.docx)
@@ -289,9 +338,13 @@ int main()
             ret = check_sram0(EXT_MEM_BASE);
             break;
         case SDRAM_BASE:
-#ifdef SDS
-            ret = check_sdram(EXT_MEM_BASE, CSP, SDS, CL_3);
+#ifdef CHECK_2_1_3
+            ret = check_sdram_2_1_3(EXT_MEM_BASE, CSP, SDS, CL);
 #endif
+#ifdef CHECK_2_1_5
+            ret = check_sdram_2_1_5(EXT_MEM_BASE, SDS);
+#endif
+
             break;
         case SSRAM_BASE:
 #ifdef SSRAM_SST
