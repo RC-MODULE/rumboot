@@ -173,16 +173,16 @@ void emi_update_sdx(emi_sdx_reg_cfg* sdx)
 {
     emi_bank_cfg bank_cfg;
     emi_get_bank_cfg(DCR_EM2_EMI_BASE, emi_b1_sdram, &bank_cfg);
-    //rumboot_printf("SDRAM bank configuration before updating\n");
-    //report_bank_cfg(&bank_cfg);
+//    rumboot_printf("SDRAM bank configuration before updating\n");
+//    report_bank_cfg(&bank_cfg);
 
     bank_cfg.sdx_cfg = *sdx;
     emi_set_bank_cfg(DCR_EM2_EMI_BASE, emi_b1_sdram, &bank_cfg);
     refresh_timings(emi_b1_sdram);
 
     emi_get_bank_cfg(DCR_EM2_EMI_BASE, emi_b1_sdram, &bank_cfg);
-    //rumboot_printf("SDRAM bank configuration after updating\n");
-    //report_bank_cfg(&bank_cfg);
+//    rumboot_printf("SDRAM bank configuration after updating\n");
+//    report_bank_cfg(&bank_cfg);
 }
 
 void sdram_oper()
