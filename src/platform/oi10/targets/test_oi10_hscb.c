@@ -128,7 +128,7 @@ static uint32_t check_hscb_regs( uint32_t base_addr ) {
                                                                                                          & ~HSCB_XDMA_SETTINGS_CANCEL_XDMA_mask },
         {   "HSCB_RDMA_SYS_ADDR",   REGPOKER_WRITE32,   HSCB_RDMA_SYS_ADDR,     HSCB_RDMA_SYS_ADDR_DFLT,    HSCB_XDMA_SYS_ADDR_MASK     },
         {   "HSCB_RDMA_TBL_SIZE",   REGPOKER_WRITE32,   HSCB_RDMA_TBL_SIZE,     HSCB_RDMA_TBL_SIZE_DFLT,    HSCB_XDMA_TBL_SIZE_MASK     },
-        {   "HSCB_RDMA_DESC_ADDR",  REGPOKER_WRITE32,   HSCB_RDMA_DESC_ADDR,    HSCB_RDMA_DESC_ADDR_DFLT,   HSCB_XDMA_DESC_ADDR_MASK    },
+/*        {   "HSCB_RDMA_DESC_ADDR",  REGPOKER_WRITE32,   HSCB_RDMA_DESC_ADDR,    HSCB_RDMA_DESC_ADDR_DFLT,   HSCB_XDMA_DESC_ADDR_MASK    },*///according to discussion in OI10-84
         {   "HSCB_WDMA_SETTINGS",   REGPOKER_WRITE32,   HSCB_WDMA_SETTINGS,     HSCB_WDMA_SETTINGS_DFLT,    HSCB_XDMA_SETTINGS_MASK
                                                                                                          & ~HSCB_XDMA_SETTINGS_EN_XDMA_mask
                                                                                                          & ~HSCB_XDMA_SETTINGS_CANCEL_XDMA_mask },
@@ -702,6 +702,12 @@ static uint32_t check_hscb_short_func(
     hscb_run_wdma(base_addr);
     hscb_run_wdma(supplementary_base_addr);
     msync();
+    if(rumboot_virt_to_dma((*(descriptors + 0)) + 1) != ioread32(base_addr + HSCB_RDMA_DESC_ADDR)){
+        rumboot_printf("Expected value of descriptor address == 0x%x, obtained value == 0x%x.",
+                            rumboot_virt_to_dma((*(descriptors + 0)) + 1),
+                            ioread32(base_addr + HSCB_RDMA_DESC_ADDR));
+        result += 1;
+    }
     rumboot_putstring( "Wait HSCB0 and HSCB1 finish work\n" );
     while (!(hscb0_dma_status & hscb1_dma_status)){
         if (cnt == MAX_ATTEMPTS) {
@@ -779,6 +785,12 @@ static uint32_t check_hscb_func(
     hscb_run_rdma(supplementary_base_addr);
     hscb_run_wdma(base_addr);
     hscb_run_wdma(supplementary_base_addr);
+    if(rumboot_virt_to_dma((*(descriptors + 0)) + 3) != ioread32(base_addr + HSCB_RDMA_DESC_ADDR)){
+        rumboot_printf("Expected value of descriptor address == 0x%x, obtained value == 0x%x.",
+                            rumboot_virt_to_dma((*(descriptors + 0)) + 1),
+                            ioread32(base_addr + HSCB_RDMA_DESC_ADDR));
+        result += 1;
+    }
     rumboot_putstring( "Wait HSCB0 and HSCB1 finish work\n" );
     while (!(hscb0_dma_status & hscb1_dma_status)){
         if (cnt == MAX_ATTEMPTS) {
