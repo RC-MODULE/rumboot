@@ -148,7 +148,7 @@ static uint32_t check_hscb_regs( uint32_t base_addr ) {
 }
 #endif
 
-
+#ifdef HSCB_FUNC_TEST
 #ifndef DATA_SIZE_0
 #define DATA_SIZE_0 0x10
 #endif
@@ -835,24 +835,31 @@ static uint32_t check_hscb_func(
     return result;
 }
 #endif
+#endif
 
 int main() {
     uint32_t result = 0x0;
-    struct rumboot_irq_entry *tbl;
-    uint32_t count_of_memory_areas;
-    uint8_t** data_areas = NULL;
-    uint32_t* data_area_sizes = NULL;
 
-    rumboot_printf( "Check HSCB (0x%x) \n", HSCB_UNDER_TEST_BASE );
 
 #ifdef CHECK_REGS
+    rumboot_printf( "Checking regs of HSCB (0x%x) \n", HSCB_UNDER_TEST_BASE );
     result += check_hscb_default_val( HSCB_UNDER_TEST_BASE );
     result += check_hscb_regs( HSCB_UNDER_TEST_BASE );
+#ifdef HSCB_FUNC_TEST
+    rumboot_printf( "Checking base functions of HSCB (0x%x) and HSCB (0x%x)\n",
+            HSCB_UNDER_TEST_BASE, HSCB_SUPPLEMENTARY_BASE);
     hscb_sw_rst(HSCB_UNDER_TEST_BASE);
     hscb_adma_sw_rst(HSCB_UNDER_TEST_BASE);
     hscb_sw_rst(HSCB_SUPPLEMENTARY_BASE);
     hscb_adma_sw_rst(HSCB_SUPPLEMENTARY_BASE);
 #endif
+#endif
+#ifdef HSCB_FUNC_TEST
+    struct rumboot_irq_entry *tbl;
+    uint32_t count_of_memory_areas;
+    uint8_t** data_areas = NULL;
+    uint32_t* data_area_sizes = NULL;
+
     emi_init(DCR_EM2_EMI_BASE);
     tbl = create_irq_handlers();
 
@@ -867,6 +874,6 @@ int main() {
     free_2D_arrays((void **)data_areas, count_of_memory_areas);
     rumboot_free(data_areas);
     rumboot_free(data_area_sizes);
-
+#endif
     return result;
 }
