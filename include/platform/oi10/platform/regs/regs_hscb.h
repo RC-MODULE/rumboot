@@ -664,6 +664,10 @@ BEGIN_ENUM( hscb_rotate_bytes_t )
     DECLARE_ENUM_VAL( HSCB_ROTATE_BYTES_ENABLE,    0b1 )
 END_ENUM( hscb_rotate_bytes_t )
 
+BEGIN_ENUM( hscb_status_for_preparing_rmap_packet_t )
+    DECLARE_ENUM_NEXT(PREPARE_RMAP_PACKET_OK)
+    DECLARE_ENUM_NEXT(PREPARE_RMAP_PACKET_ADDR_CHAIN_IS_NULL)
+END_ENUM( hscb_status_for_preparing_rmap_packet_t )
 
 #define HSCB_CREATE_DESCRIPTOR_LEN_ATTR(length,act,act0,ie,valid)  (\
     (((length) << HSCB_RD_DESCR_LENGTH_i) & HSCB_RD_DESCR_LENGTH_mask)   | \
