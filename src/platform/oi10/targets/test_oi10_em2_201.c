@@ -29,6 +29,7 @@
 #define EVENT_CHECK_SSRAM_SST_TSSOE_PIPE  0x00000042
 #define EVENT_CHECK_SDRAM_2_1_3           0x00000043
 #define EVENT_CHECK_SDRAM_2_1_5           0x00000044
+#define EVENT_CHECK_PIPE                  0x00000045
 
 #define TEST_ADDR_0  (base_addr +  0x4)
 #define TEST_ADDR_1  (base_addr + 0x10)
@@ -43,12 +44,15 @@
 void refresh_timings(emi_bank_num bank_num)
 {
     //for refreshing timings at some bank we have to make access to some other bank
+    rumboot_putstring("Refresh timings\n");
     switch (bank_num)
     {
         case emi_b0_sram0:
+            dcbi((void *)SRAM1_BASE);
             ioread32(SRAM1_BASE);
             break;
         default:
+            dcbi((void *)SRAM0_BASE);
             ioread32(SRAM0_BASE);
             break;
     }
@@ -185,6 +189,15 @@ void emi_update_sdx(emi_sdx_reg_cfg* sdx)
 //    report_bank_cfg(&bank_cfg);
 }
 
+void mem_set32(uint32_t addr, uint32_t len_bytes, uint32_t val)
+{
+    uint32_t i;
+    for (i=0; i<len_bytes; i+=4)
+    {
+        iowrite32(val, addr + i);
+    }
+}
+
 void sdram_oper()
 {
     (void)ioread32(SDRAM_TEST_ADDR - 4);
@@ -195,30 +208,24 @@ void sdram_oper()
     iowrite32(0xBABADEDA, SDRAM_TEST_ADDR - 0);
     msync();
 }
-/*
-void mem_set32(uint32_t addr, uint32_t len_bytes, uint32_t val)
-{
-    uint32_t i;
-    for (i=0; i<len_bytes; i+=4)
-    {
-        iowrite32(val, addr + i);
-    }
-}
-*/
-int check_sdram_2_1_3(uint32_t base_addr, sdx_csp_t csp, sdx_sds_t sds, sdx_cl_t cl)
+
+int check_sdram_2_1_3(uint32_t base_addr, sdx_csp_t csp, sdx_sds_t sds)
 {
 #define SDRAM_TRDL_SPACE    2
 #define SDRAM_TRCD_SPACE    2
 #define SDRAM_TRAS_SPACE    2
+#define SDRAM_CL_SPACE      2
 
     sdx_trdl_t trdl_arr[SDRAM_TRDL_SPACE] = {TRDL_1, TRDL_2};
     sdx_trcd_t trcd_arr[SDRAM_TRCD_SPACE] = {TRCD_2, TRCD_5};
     sdx_tras_t tras_arr[SDRAM_TRAS_SPACE] = {TRAS_4, TRAS_11};
+    //sdx_tras_t CL_arr[SDRAM_CL_SPACE]     = {CL_2, CL_3};
     emi_bank_cfg sdram_cfg;
 
     uint32_t k;
     uint32_t l;
     uint32_t m;
+    //uint32_t i;
 
     void (*sdram_oper_from_emi)() = (void *)SSRAM_BASE;
 
@@ -227,8 +234,20 @@ int check_sdram_2_1_3(uint32_t base_addr, sdx_csp_t csp, sdx_sds_t sds, sdx_cl_t
 
     memset((void*) SRAM0_BASE, 0, 128);
     memset((void*) (SSRAM_BASE), 0, 0x2000);
-    //mem_set32(SDRAM_TEST_ADDR - 0x80, 256, 0);
-    memset((void*) (SDRAM_TEST_ADDR - 0x80), 0, 256);
+
+    rumboot_printf("Checking SDRAM\n");
+
+    rumboot_putstring("Update EMI_SDRAM\n");
+    emi_get_bank_cfg(DCR_EM2_EMI_BASE, emi_b1_sdram, &sdram_cfg);
+    sdram_cfg.sdx_cfg.CSP   = csp;
+    sdram_cfg.sdx_cfg.SDS   = sds;
+    emi_set_bank_cfg(DCR_EM2_EMI_BASE, emi_b1_sdram, &sdram_cfg);
+    refresh_timings(emi_b1_sdram);
+
+    rumboot_putstring("Preinit test memory\n");
+    mem_set32(SDRAM_TEST_ADDR - 0x80, 256, 0);
+    //memset((void*) (SDRAM_TEST_ADDR - 0x80), 0, 256);
+
     memcpy(sdram_oper_from_emi, sdram_oper, (uint32_t)check_sdram_2_1_3 - (uint32_t)sdram_oper);
     msync();
 
@@ -237,28 +256,23 @@ int check_sdram_2_1_3(uint32_t base_addr, sdx_csp_t csp, sdx_sds_t sds, sdx_cl_t
     rumboot_putstring("Touching sdram_oper_from_emi()\n");
     icbt(sdram_oper_from_emi);
 
-    rumboot_printf("Checking SDRAM (0x%X)\n");
-    emi_get_bank_cfg(DCR_EM2_EMI_BASE, emi_b1_sdram, &sdram_cfg);
+    //for (i=0; i<SDRAM_CL_SPACE; i++)
+        for (k=0; k<SDRAM_TRDL_SPACE ; k++)
+            for (l=0; l<SDRAM_TRCD_SPACE ; l++)
+                for (m=0; m<SDRAM_TRAS_SPACE ; m++)
+                {
+                    rumboot_putstring("Update EMI_SDRAM\n");
+                    //sdram_cfg.sdx_cfg.CL    = CL_arr[i];
+                    sdram_cfg.sdx_cfg.T_RDL = trdl_arr[k];
+                    sdram_cfg.sdx_cfg.T_RCD = trcd_arr[l];
+                    sdram_cfg.sdx_cfg.T_RAS = tras_arr[m];
+                    emi_set_bank_cfg(DCR_EM2_EMI_BASE, emi_b1_sdram, &sdram_cfg);
+                    refresh_timings(emi_b1_sdram);
 
-    for (k=0; k<SDRAM_TRDL_SPACE ; k++)
-        for (l=0; l<SDRAM_TRCD_SPACE ; l++)
-            for (m=0; m<SDRAM_TRAS_SPACE ; m++)
-            {
-
-                rumboot_putstring("Update EMI_SDRAM\n");
-                sdram_cfg.sdx_cfg.CSP   = csp;
-                sdram_cfg.sdx_cfg.SDS   = sds;
-                sdram_cfg.sdx_cfg.CL    = cl;
-
-                sdram_cfg.sdx_cfg.T_RDL = trdl_arr[k];
-                sdram_cfg.sdx_cfg.T_RCD = trcd_arr[l];
-                sdram_cfg.sdx_cfg.T_RAS = tras_arr[m];
-                emi_update_sdx(&sdram_cfg.sdx_cfg);
-
-                rumboot_putstring("Execute access to memory\n");
-                test_event(EVENT_CHECK_SDRAM_2_1_3);
-                sdram_oper_from_emi();
-            }
+                    rumboot_putstring("Execute access to memory\n");
+                    test_event(EVENT_CHECK_SDRAM_2_1_3);
+                    sdram_oper_from_emi();
+                }
     return 0;
 }
 
@@ -271,10 +285,25 @@ int check_sdram_2_1_5(uint32_t base_addr, sdx_sds_t sds)
     static const tlb_entry sdram_tlb_entry[2] = { {TLB_ENTRY_SDRAM0},
                                                   {TLB_ENTRY_SDRAM1} };
 
+
     memset((void*) SRAM0_BASE, 0, 128);
     memset((void*) (SSRAM_BASE), 0, 0x2000);
-    //mem_set32(SDRAM_TEST_ADDR - 0x80, 256, 0);
-    memset((void*) (SDRAM_TEST_ADDR - 0x80), 0, 256);
+
+    rumboot_printf("Checking SDRAM\n");
+
+    rumboot_putstring("Update EMI_SDRAM\n");
+    emi_get_bank_cfg(DCR_EM2_EMI_BASE, emi_b1_sdram, &sdram_cfg);
+    sdram_cfg.sdx_cfg.SDS   = sds;
+    sdram_cfg.sdx_cfg.T_RDL = TRDL_2;
+    sdram_cfg.sdx_cfg.T_RCD = TRCD_2;
+    sdram_cfg.sdx_cfg.T_RAS = TRAS_4;
+    emi_set_bank_cfg(DCR_EM2_EMI_BASE, emi_b1_sdram, &sdram_cfg);
+    refresh_timings(emi_b1_sdram);
+
+    rumboot_putstring("Preinit test memory\n");
+    mem_set32(SDRAM_TEST_ADDR - 0x80, 256, 0);
+    //memset((void*) (SDRAM_TEST_ADDR - 0x80), 0, 256);
+
     memcpy(sdram_oper_from_emi, sdram_oper, (uint32_t)check_sdram_2_1_3 - (uint32_t)sdram_oper);
     msync();
 
@@ -282,17 +311,6 @@ int check_sdram_2_1_5(uint32_t base_addr, sdx_sds_t sds)
 
     rumboot_putstring("Touching sdram_oper_from_emi()\n");
     icbt(sdram_oper_from_emi);
-
-    rumboot_printf("Checking SDRAM (0x%X)\n");
-    emi_get_bank_cfg(DCR_EM2_EMI_BASE, emi_b1_sdram, &sdram_cfg);
-
-    rumboot_putstring("Update EMI_SDRAM\n");
-    sdram_cfg.sdx_cfg.SDS   = sds;
-
-    sdram_cfg.sdx_cfg.T_RDL = TRDL_2;
-    sdram_cfg.sdx_cfg.T_RCD = TRCD_2;
-    sdram_cfg.sdx_cfg.T_RAS = TRAS_4;
-    emi_update_sdx(&sdram_cfg.sdx_cfg);
 
     rumboot_putstring("Execute access to memory\n");
     test_event(EVENT_CHECK_SDRAM_2_1_5);
@@ -319,6 +337,7 @@ int check_ssram(uint32_t base_addr, ssx_sst_t sst_val, ssx_tssoe_t tssoe_val)
 int check_pipelined(uint32_t base_addr)
 {
     rumboot_printf("Checking PIPELINED (0x%X)\n", base_addr);
+    test_event(EVENT_CHECK_PIPE);
     check_wrrd(TEST_ADDR_0, 0x55555555 );
     check_wrrd(TEST_ADDR_1, 0xAAAAAAAA );
     return 0;
@@ -338,7 +357,7 @@ int main()
             break;
         case SDRAM_BASE:
 #ifdef CHECK_2_1_3
-            ret = check_sdram_2_1_3(EXT_MEM_BASE, CSP, SDS, CL);
+            ret = check_sdram_2_1_3(EXT_MEM_BASE, CSP, SDS);
 #endif
 #ifdef CHECK_2_1_5
             ret = check_sdram_2_1_5(EXT_MEM_BASE, SDS);
