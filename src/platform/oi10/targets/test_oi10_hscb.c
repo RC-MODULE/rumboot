@@ -378,6 +378,9 @@ uint32_t prepare_memory_areas(uint8_t*** data_areas, uint32_t** data_area_sizes)
     *data_areas = rumboot_malloc_from_heap_aligned(DEFAULT_HEAP_ID,
                 count_of_memory_areas * sizeof(uint8_t*),
                 0x8);
+    *data_area_sizes = rumboot_malloc_from_heap_aligned(DEFAULT_HEAP_ID,
+                count_of_memory_areas * sizeof(uint8_t*),
+                0x8);
     TEST_ASSERT(((*data_areas) != NULL), "Cannot allocate from default heap!");
     for (i = 0; i < count_of_memory_areas; ++i){
         (*data_areas)[i] = rumboot_malloc_from_named_heap_aligned(memory_heap_names[i], memory_area_sizes[i >> 1], 0x8);
@@ -631,6 +634,15 @@ uint32_t hscb_check_data(
         return 0;
 }
 
+void free_2D_arrays(void **  data_areas, uint32_t    data_areas_count)
+{
+    if(data_areas_count <= 0)
+        return;
+    for(int i = 0; i < data_areas_count; ++i)
+        rumboot_free(*(data_areas + data_areas_count));
+    rumboot_free(data_areas);
+}
+
 #ifdef HSCB_SHORT_TEST
 
 static uint32_t check_hscb_short_func(
@@ -691,6 +703,7 @@ static uint32_t check_hscb_short_func(
         rumboot_putstring( "Wait HSCB RUN state Time-out\n" );
         rumboot_printf("HSCB(0x%x) status: 0x%x\n", base_addr, hscb_get_status(base_addr));
         rumboot_printf("HSCB(0x%x) status: 0x%x\n", supplementary_base_addr, hscb_get_status(base_addr));
+        free_2D_arrays((void **)descriptors, DESCRIPTOR_TABLES_COUNT);
         return 1;
     }
 
@@ -702,9 +715,9 @@ static uint32_t check_hscb_short_func(
     hscb_run_wdma(base_addr);
     hscb_run_wdma(supplementary_base_addr);
     msync();
-    if(rumboot_virt_to_dma((*(descriptors + 0)) + 1) != ioread32(base_addr + HSCB_RDMA_DESC_ADDR)){
+    if(rumboot_virt_to_dma((*(descriptors + 0)) + descriptor_counts[0]) != ioread32(base_addr + HSCB_RDMA_DESC_ADDR)){
         rumboot_printf("Expected value of descriptor address == 0x%x, obtained value == 0x%x.",
-                            rumboot_virt_to_dma((*(descriptors + 0)) + 1),
+                            rumboot_virt_to_dma((*(descriptors + 0)) + descriptor_counts[0]),
                             ioread32(base_addr + HSCB_RDMA_DESC_ADDR));
         result += 1;
     }
@@ -712,6 +725,7 @@ static uint32_t check_hscb_short_func(
     while (!(hscb0_dma_status & hscb1_dma_status)){
         if (cnt == MAX_ATTEMPTS) {
             rumboot_putstring( "Wait interrupt Time-out\n" );
+            free_2D_arrays((void **)descriptors, DESCRIPTOR_TABLES_COUNT);
             return 1;
         }
         else
@@ -731,7 +745,7 @@ static uint32_t check_hscb_short_func(
     rumboot_puthex((uint32_t)(*(descriptors + 1)));
     result += hscb_check_data(*(descriptors + 1), descriptor_counts[1], *(descriptors + 0), descriptor_counts[0]);
     rumboot_putstring( "HSCB0 to HSCB1 descriptors: checked.\n" );
-
+    free_2D_arrays((void **)descriptors, DESCRIPTOR_TABLES_COUNT);
     return result;
 }
 #else
@@ -775,6 +789,7 @@ static uint32_t check_hscb_func(
         rumboot_putstring( "Wait HSCB RUN state Time-out\n" );
         rumboot_printf("HSCB(0x%x) status: 0x%x\n", base_addr, hscb_get_status(base_addr));
         rumboot_printf("HSCB(0x%x) status: 0x%x\n", supplementary_base_addr, hscb_get_status(base_addr));
+        free_2D_arrays((void **)descriptors, DESCRIPTOR_TABLES_COUNT);
         return 1;
     }
 
@@ -785,9 +800,9 @@ static uint32_t check_hscb_func(
     hscb_run_rdma(supplementary_base_addr);
     hscb_run_wdma(base_addr);
     hscb_run_wdma(supplementary_base_addr);
-    if(rumboot_virt_to_dma((*(descriptors + 0)) + 3) != ioread32(base_addr + HSCB_RDMA_DESC_ADDR)){
+    if(rumboot_virt_to_dma((*(descriptors + 0)) + descriptor_counts[0]) != ioread32(base_addr + HSCB_RDMA_DESC_ADDR)){
         rumboot_printf("Expected value of descriptor address == 0x%x, obtained value == 0x%x.",
-                            rumboot_virt_to_dma((*(descriptors + 0)) + 1),
+                            rumboot_virt_to_dma((*(descriptors + 0)) + descriptor_counts[0]),
                             ioread32(base_addr + HSCB_RDMA_DESC_ADDR));
         result += 1;
     }
@@ -795,6 +810,7 @@ static uint32_t check_hscb_func(
     while (!(hscb0_dma_status & hscb1_dma_status)){
         if (cnt == MAX_ATTEMPTS) {
             rumboot_putstring( "Wait interrupt Time-out\n" );
+            free_2D_arrays((void **)descriptors, DESCRIPTOR_TABLES_COUNT);
             return 1;
         }
         else
@@ -815,6 +831,7 @@ static uint32_t check_hscb_func(
     rumboot_puthex((uint32_t)(*(descriptors + 1)));
     result += hscb_check_data(*(descriptors + 1), descriptor_counts[1], *(descriptors + 0), descriptor_counts[0]);
     rumboot_putstring( "HSCB0 to HSCB1 descriptors: checked.\n" );
+    free_2D_arrays((void **)descriptors, DESCRIPTOR_TABLES_COUNT);
     return result;
 }
 #endif
@@ -847,8 +864,9 @@ int main() {
     result += check_hscb_func(HSCB_UNDER_TEST_BASE, HSCB_SUPPLEMENTARY_BASE, data_areas, data_area_sizes, count_of_memory_areas);
 #endif
     delete_irq_handlers(tbl);
-
-    //result += check_gpio_func( HSCB_UNDER_TEST_BASE, 0x2A );
+    free_2D_arrays((void **)data_areas, count_of_memory_areas);
+    rumboot_free(data_areas);
+    rumboot_free(data_area_sizes);
 
     return result;
 }
