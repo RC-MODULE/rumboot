@@ -242,7 +242,7 @@ void check_emi(const uint32_t base_address)
         {"EMI_ECNT20",  REGPOKER_WRITE_DCR, EMI_ECNT20,    0x00,         0x00ffffff},
         {"EMI_ECNT53",  REGPOKER_WRITE_DCR, EMI_ECNT53,    0x00,         0x00ffffff},
         {"EMI_BUSEN",   REGPOKER_WRITE_DCR, EMI_BUSEN,     0x00,         0x00000001},
-        {"EMI_WECR",    REGPOKER_WRITE_DCR, EMI_WECR,      0x00,         0x000000ff},
+        {"EMI_WECR",    REGPOKER_WRITE_DCR, EMI_WECR,      0x00,         0x0000007f},
         {"EMI_FLCNTRL", REGPOKER_WRITE_DCR, EMI_FLCNTRL,   0x1C,         0x0000001f},
         {"EMI_IMR",     REGPOKER_WRITE_DCR, EMI_IMR,       0x00,         0x0001ffff},
         {"EMI_IRR",     REGPOKER_WRITE_DCR, EMI_IRR,       0x00,         0x0001ffff},
