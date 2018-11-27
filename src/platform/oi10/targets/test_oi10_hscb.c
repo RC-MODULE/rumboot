@@ -94,7 +94,7 @@ static uint32_t check_hscb_default_val( uint32_t base_addr ) {
 }
 
 static uint32_t check_hscb_regs( uint32_t base_addr ) {
-    rumboot_printf("Check WRITE/READ registers:");
+    rumboot_printf("Check WRITE/READ registers:\n");
 
     struct regpoker_checker check_rw_array[] = {
         {   "HSCB_SW_RESET",        REGPOKER_WRITE32,   HSCB_SW_RESET,          (0b1 << HSCB_SW_RESET_RST_i),
@@ -697,12 +697,12 @@ static uint32_t check_hscb_short_func(
     iowrite32((1 << HSCB_SETTINGS_EN_HSCB_i),        base_addr + HSCB_SETTINGS);
     iowrite32((1 << HSCB_SETTINGS_EN_HSCB_i),        supplementary_base_addr + HSCB_SETTINGS);
     // Wait connecting
-    rumboot_putstring( "Waiting for HSCB0 and HSCB1 link establishing\n" );
+    rumboot_printf( "Waiting for HSCB%x and HSCB%x link establishing\n", base_addr, supplementary_base_addr);
     if(!(   hscb_wait_status(base_addr,                 (HSCB_STATE_RUN << HSCB_STATUS_STATE_i)) &
             hscb_wait_status(supplementary_base_addr,   (HSCB_STATE_RUN << HSCB_STATUS_STATE_i)))){
         rumboot_putstring( "Wait HSCB RUN state Time-out\n" );
-        rumboot_printf("HSCB(0x%x) status: 0x%x\n", base_addr, hscb_get_status(base_addr));
-        rumboot_printf("HSCB(0x%x) status: 0x%x\n", supplementary_base_addr, hscb_get_status(base_addr));
+        rumboot_printf("HSCB%x status: 0x%x\n", base_addr, hscb_get_status(base_addr));
+        rumboot_printf("HSCB%x status: 0x%x\n", supplementary_base_addr, hscb_get_status(base_addr));
         free_2D_arrays((void **)descriptors, DESCRIPTOR_TABLES_COUNT);
         return 1;
     }
@@ -721,7 +721,7 @@ static uint32_t check_hscb_short_func(
                             ioread32(base_addr + HSCB_RDMA_DESC_ADDR));
         result += 1;
     }
-    rumboot_putstring( "Wait HSCB0 and HSCB1 finish work\n" );
+    rumboot_printf( "Wait HSCB%x and HSCB%x finish work\n", base_addr, supplementary_base_addr );
     while (!(hscb0_dma_status & hscb1_dma_status)){
         if (cnt == MAX_ATTEMPTS) {
             rumboot_putstring( "Wait interrupt Time-out\n" );
@@ -736,15 +736,15 @@ static uint32_t check_hscb_short_func(
     hscb1_dma_status = 0;
 
     rumboot_putstring( "Finish work!\n" );
-    rumboot_putstring( "HSCB1 to HSCB0 descriptors checking\n" );
+    rumboot_printf( "HSCB%x to HSCB%x descriptors checking\n", supplementary_base_addr, base_addr );
     rumboot_puthex((uint32_t)(*(descriptors + 3)));
     result += hscb_check_data(*(descriptors + 3), descriptor_counts[3], *(descriptors + 2), descriptor_counts[2]);
-    rumboot_putstring( "HSCB1 to HSCB0 descriptors: checked.\n" );
+    rumboot_printf( "HSCB%x to HSCB%x descriptors: checked.\n", supplementary_base_addr, base_addr  );
 
-    rumboot_putstring( "HSCB0 to HSCB1 descriptors checking\n" );
+    rumboot_printf( "HSCB%x to HSCB%x descriptors checking\n", base_addr, supplementary_base_addr );
     rumboot_puthex((uint32_t)(*(descriptors + 1)));
     result += hscb_check_data(*(descriptors + 1), descriptor_counts[1], *(descriptors + 0), descriptor_counts[0]);
-    rumboot_putstring( "HSCB0 to HSCB1 descriptors: checked.\n" );
+    rumboot_printf( "HSCB%x to HSCB%x descriptors: checked.\n", base_addr, supplementary_base_addr );
     free_2D_arrays((void **)descriptors, DESCRIPTOR_TABLES_COUNT);
     return result;
 }
@@ -783,12 +783,12 @@ static uint32_t check_hscb_func(
     iowrite32((1 << HSCB_IRQ_MASK_ACTIVE_LINK_i),    supplementary_base_addr + HSCB_IRQ_MASK);
     iowrite32((1 << HSCB_SETTINGS_EN_HSCB_i),        base_addr + HSCB_SETTINGS);
     iowrite32((1 << HSCB_SETTINGS_EN_HSCB_i),        supplementary_base_addr + HSCB_SETTINGS);
-    rumboot_putstring( "Waiting for HSCB0 and HSCB1 link establishing\n" );
+    rumboot_printf( "Waiting for HSCB%x and HSCB%x link establishing\n", base_addr, supplementary_base_addr);
     if(!(   hscb_wait_status(base_addr,                 (HSCB_STATE_RUN << HSCB_STATUS_STATE_i)) &
             hscb_wait_status(supplementary_base_addr,   (HSCB_STATE_RUN << HSCB_STATUS_STATE_i)))){
         rumboot_putstring( "Wait HSCB RUN state Time-out\n" );
-        rumboot_printf("HSCB(0x%x) status: 0x%x\n", base_addr, hscb_get_status(base_addr));
-        rumboot_printf("HSCB(0x%x) status: 0x%x\n", supplementary_base_addr, hscb_get_status(base_addr));
+        rumboot_printf("HSCB%x status: 0x%x\n", base_addr, hscb_get_status(base_addr));
+        rumboot_printf("HSCB%x status: 0x%x\n", supplementary_base_addr, hscb_get_status(base_addr));
         free_2D_arrays((void **)descriptors, DESCRIPTOR_TABLES_COUNT);
         return 1;
     }
@@ -806,7 +806,7 @@ static uint32_t check_hscb_func(
                             ioread32(base_addr + HSCB_RDMA_DESC_ADDR));
         result += 1;
     }
-    rumboot_putstring( "Wait HSCB0 and HSCB1 finish work\n" );
+    rumboot_printf( "Wait HSCB%x and HSCB%x finish work\n", base_addr, supplementary_base_addr );
     while (!(hscb0_dma_status & hscb1_dma_status)){
         if (cnt == MAX_ATTEMPTS) {
             rumboot_putstring( "Wait interrupt Time-out\n" );
@@ -822,15 +822,15 @@ static uint32_t check_hscb_func(
     rumboot_putstring( "Finish work!\n" );
 
 
-    rumboot_putstring( "HSCB1 to HSCB0 descriptors checking\n" );
+    rumboot_printf( "HSCB%x to HSCB%x descriptors checking\n", supplementary_base_addr, base_addr );
     rumboot_puthex((uint32_t)(*(descriptors + 3)));
     result += hscb_check_data(*(descriptors + 3), descriptor_counts[3], *(descriptors + 2), descriptor_counts[2]);
-    rumboot_putstring( "HSCB1 to HSCB0 descriptors: checked.\n" );
+    rumboot_printf( "HSCB%x to HSCB%x descriptors: checked.\n", supplementary_base_addr, base_addr  );
 
-    rumboot_putstring( "HSCB0 to HSCB1 descriptors checking\n" );
+    rumboot_printf( "HSCB%x to HSCB%x descriptors checking\n", base_addr, supplementary_base_addr );
     rumboot_puthex((uint32_t)(*(descriptors + 1)));
     result += hscb_check_data(*(descriptors + 1), descriptor_counts[1], *(descriptors + 0), descriptor_counts[0]);
-    rumboot_putstring( "HSCB0 to HSCB1 descriptors: checked.\n" );
+    rumboot_printf( "HSCB%x to HSCB%x descriptors: checked.\n", base_addr, supplementary_base_addr );
     free_2D_arrays((void **)descriptors, DESCRIPTOR_TABLES_COUNT);
     return result;
 }
