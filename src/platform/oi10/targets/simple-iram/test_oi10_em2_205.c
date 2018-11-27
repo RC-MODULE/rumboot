@@ -426,23 +426,12 @@ int main(void)
 {
     uint32_t test_result = 0;
 
-    test_event_send_test_id("test_oi10_em2_205");
+   rumboot_irq_set_exception_handler(exception_handler);
 
-
-    rumboot_irq_set_exception_handler(exception_handler);
-
+   memset((uint8_t*)SRAM0_BASE, 0x00, 0x100000);
 
     emi_init(DCR_EM2_EMI_BASE);
     emi_set_ecc(DCR_EM2_EMI_BASE, emi_bank_all, emi_ecc_on);
-
-    {
-        //Initialize SRAM0 memory
-        for( int i = 0; i < 16; i++ )
-        {
-            iowrite32( 0x00000000, SRAM0_BASE + (i*4) );
-        }
-    }
-
 
     rumboot_irq_cli();
     struct rumboot_irq_entry *tbl = rumboot_irq_create( NULL );
