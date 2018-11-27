@@ -163,8 +163,21 @@ char *btyp_descr[8] =
     "PIPELINE", "UNKNOWN5", "SDRAM",    "UNKNOWN7"
 };
   /* Check templates 32 bits */
-uint32_t    long_tpl[] = {0xDEBA0001, 0xDEDA0001, 0xDEDA0101, 0xDEDA0100};
-  /* Check templates 8 bits */
+uint32_t    long_tpl[] =
+{
+    0xDEBA0001 ^ 0xFF000000,
+    0xDEDA0001 ^ 0x00FF0000,
+    0xDEDA0101 ^ 0x0000FF00,
+    0xDEDA0100 ^ 0x000000FF
+};
+uint32_t    mask_tpl[] =
+{
+    0xFF000000,
+    0x00FF0000,
+    0x0000FF00,
+    0x000000FF
+};
+/* Check templates 8 bits */
 uint8_t     byte_tpl[] = {0xDE, 0xDA, 0x01, 0x00};
 static volatile const uint8_t emi_ecnt_b[8] = {0,8,16,0,8,16,0,0};
 static volatile const uint8_t emi_ecnt[8] =
@@ -440,7 +453,7 @@ uint32_t check_emi(uint32_t bank)
 {
     int              i;
     uint32_t         status   = TEST_OK,
-                     result   = TEST_OK,
+                     result   = 0,
                      hstsr    = 0,
                      data32   = 0;
     uintptr_t        base     = emi_bank_bases[bank];
@@ -460,8 +473,9 @@ uint32_t check_emi(uint32_t bank)
     /* Force bank switch */
     rumboot_printf("Writing 0x%X to 0x%X...\n", 0x00000000, base);
     iowrite32(0x00000000, base);
-    rumboot_printf("Reading from 0x%X...\n", base);
+    rumboot_printf("Try to read from 0x%X...\n", base);
     data32 = ioread32(base);
+    msync();
 
     emi_write(EMI_WECR,  WECR_DFLT);
     hstsr = emi_read(EMI_HSTSR);
@@ -476,26 +490,37 @@ uint32_t check_emi(uint32_t bank)
     /* Reset single error counter */
     emi_write(emi_ecnt[bank], 0);
 
-    rumboot_printf("Writing 0x%X to 0x%X...\n", CONST_1, base);
-    iowrite32(CONST_1, base);
-    rumboot_printf("Reading from 0x%X...\n", base);
-    rumboot_printf("READED DATA = 0x%X\n", ioread32(base));
-
+    /* Store32 */
     for(i = 0; i < 4; i++)
     {
-        rumboot_printf("writing byte: 0x%X, to 0x%X\n",
-                byte_tpl[i], base + i);
-        iowrite8(byte_tpl[i], base + i);
-        msync();
-        rumboot_printf("Reading from 0x%X...\n", base);
-        data32 = ioread32(base);
-        rumboot_printf("readed 0x%X, from 0x%X\n", data32, base);
-        CMP_EQ(data32, long_tpl[i], result, status);
-        rumboot_printf("%d: At 0x%X, Expected: 0x%X, Actual: 0x%X -> %s\n",
-                i, base, long_tpl[i], data32,
-                !result ? "ok" : "error");
-        TEST_ASSERT(data32 == long_tpl[i], "READ ERROR");
+        rumboot_printf(" +++ Store word 0x%X to 0x%X...\n",
+                long_tpl[i], base + i * sizeof(uintptr_t));
+        iowrite32(long_tpl[i], base + i * sizeof(uintptr_t));
     }
+
+    /* Store8 */
+    for(i = 0; i < 4; i++)
+    {
+        rumboot_printf(" +++ Store byte: 0x%X to 0x%X\n",
+                byte_tpl[i], base + i * sizeof(uintptr_t) + i);
+        iowrite8(byte_tpl[i], base + i * sizeof(uintptr_t) + i);
+    }
+
+    /* Load32 */
+    for(i = 0; i < 4; i++)
+    {
+        uintptr_t   addr = (base + (i * sizeof(uintptr_t))),
+                    expv = long_tpl[i] ^ mask_tpl[i];
+        rumboot_printf(" +++ Load word from 0x%X...\n", long_tpl[i], addr);
+        data32 = ioread32(addr);
+        rumboot_printf("Readed 0x%X, from 0x%X\n", data32, addr);
+        CMP_EQ(data32, expv, result, status);
+        rumboot_printf("%d: At 0x%X, Expected: 0x%X, Actual: 0x%X -> %s\n",
+                i, addr, expv, data32,
+                !result ? "ok" : "error");
+        TEST_ASSERT(data32 == expv, "READ ERROR");
+    }
+
 
     rumboot_printf(" *** Make single error in data... \n");
     emi_clear_ckregs(bank);
@@ -556,12 +581,12 @@ uint32_t main(void)
     /* test_result |= check_emi(4); */
     FOREACH_BANK(mem_bank, FIRST_BANK, LAST_BANK)
     {
-        rumboot_printf(" ---------- Bank #%d... ----------\n", mem_bank);
+        rumboot_printf(" ------------ Bank #%d... ------------\n", mem_bank);
         if(ENABLED_MEM_TYPES & (1 << EMI_TYPE(mem_bank)))
             test_result |= check_emi(mem_bank);
         else
             rumboot_printf("This bank is disabled! Skipping it.\n");
-        rumboot_printf(" ---------------------------------\n");
+        rumboot_printf(" ------------------------------------\n");
     }
 
     rumboot_putstring(!test_result ? "TEST OK!\n":"TEST_ERROR!\n");
