@@ -706,7 +706,6 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
   add_rumboot_target(
           CONFIGURATION IRAM_MIRROR
           FILES common/tools/print-heaps.c
-          CHECKPOINT    testbench.initial
   )
 
   add_rumboot_target(
