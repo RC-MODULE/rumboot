@@ -578,17 +578,15 @@ endif()
     add_rumboot_target(
           CONFIGURATION IRAM
           FILES test_oi10_em2_201.c
-          CFLAGS -DEXT_MEM_BASE=SDRAM_BASE -DCSP=CSP_1024 -DSDS=SDS_32M -DCL=CL_3
-#          IRUN_FLAGS +define+x8 +define+den512Mb
-          IRUN_FLAGS +define+den256Mb +define+sg75 +define+x8           
+          CFLAGS -DEXT_MEM_BASE=SDRAM_BASE -DCSP=CSP_1024 -DSDS=SDS_64M -DCHECK_2_1_3
+          IRUN_FLAGS +sdram_col10_row14
           PREFIX sdram_csp1024
         )
 
     add_rumboot_target(
           CONFIGURATION IRAM
           FILES test_oi10_em2_201.c
-          CFLAGS -DEXT_MEM_BASE=SDRAM_BASE -DCSP=CSP_2048 -DSDS=SDS_64M -DCL=CL_3 -DCHECK_2_1_3
-          IRUN_FLAGS +define+x16 +define+den512Mb
+          CFLAGS -DEXT_MEM_BASE=SDRAM_BASE -DCSP=CSP_2048 -DSDS=SDS_64M -DCHECK_2_1_3
           PREFIX sdram_csp2048
         )
 
@@ -596,8 +594,23 @@ endif()
           CONFIGURATION IRAM
           FILES test_oi10_em2_201.c
           CFLAGS -DEXT_MEM_BASE=SDRAM_BASE -DSDS=SDS_64M -DCHECK_2_1_5
-          IRUN_FLAGS +define+x16 +define+den512Mb
           PREFIX sdram_sds64M
+        )
+
+    add_rumboot_target(
+          CONFIGURATION IRAM
+          FILES test_oi10_em2_201.c
+          CFLAGS -DEXT_MEM_BASE=SDRAM_BASE -DSDS=SDS_128M -DCHECK_2_1_5
+          IRUN_FLAGS +sdram_col11_row14
+          PREFIX sdram_sds128M
+        )
+
+    add_rumboot_target(
+          CONFIGURATION IRAM
+          FILES test_oi10_em2_201.c
+          CFLAGS -DEXT_MEM_BASE=SDRAM_BASE -DSDS=SDS_256M -DCHECK_2_1_5
+          IRUN_FLAGS +sdram_col11_row15
+          PREFIX sdram_sds256M
         )
 
     add_rumboot_target(
