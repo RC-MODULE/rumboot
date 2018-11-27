@@ -39,10 +39,13 @@
 #define NUMBER_OF_BANKS         6
 #define IRR_RST_ALL             0x0001FFFF
 #define IRR_MASK_ALL            IRR_RST_ALL
+#define EMI_TRDY_VAL            0x02FF
+#define EMI_TCYC_VAL_0          17
 #define EMI_RFC_RP_DIV_1        0b11110011110011
 #define EMI_RFC_RP_DIV_2        0b01111001111001
 #define EMI_RFC_RP_MASK         0x8FFF
 #define EMI_RFC_TRFC_MASK       0x0007
+#define EMI_TRDY_MASK           (0x03FF << EMI_SSx_T_RDY_i)
 #define IMR_UNMASK_ALL          IRR_RST_ALL
 #define IRQ_FLAGS               (RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH)
 #define EMI_BITS_D0_D7          EMI_WECR_BWE0_i
@@ -84,10 +87,16 @@
 #define EMI_READ(ADDR)          dcr_read (EMIA(ADDR))
 #define EMI_WRITE(ADDR,DATA)    dcr_write(EMIA(ADDR),(DATA))
 #define EMI_TYPE(BANK)          emi_get_bank_cfg_cached(bank)->ssx_cfg.BTYP
-#define MK_RFC(RP,TRFC)         ((((RP)   & 0x8FFF) << EMI_RFC_RP_i  ) |    \
+#define GET_BANK_SS(BANK)       ((EMI_REG)(emi_ss[(BANK)]))
+#define GET_TRDY(SSI)           (((SSI) & EMI_TRDY_MASK) >> EMI_SSx_T_RDY_i)
+#define SET_TRDY(SSI,TRDY)      ((((SSI) | BIT(EMI_SSx_SRDY_i)) & ~EMI_TRDY_MASK)  | \
+                                    (((TRDY) << EMI_SSx_T_RDY_i) & EMI_TRDY_MASK))
+#define GET_TCYC(SSI)           (EMI_TCYC_VAL_0 - \
+                                    (((SSI) >> EMI_SSx_T_CYC_i) & 0x0F))
+#define MK_RFC(RP,TRFC)         ((((RP)   & 0x8FFF) << EMI_RFC_RP_i  ) |             \
                                  (((TRFC) & 0x0007) << EMI_RFC_TRFC_i))
 #define MASK_ECNT(BANK)         (0xFF >> emi_ecnt_b[BANK])
-#define READ_ECNT(BANK)         ((uint8_t)((EMI_READ(emi_ecnt[BANK])        \
+#define READ_ECNT(BANK)         ((uint8_t)((EMI_READ(emi_ecnt[BANK])    \
                                     >> emi_ecnt_b[BANK]) & 0xFF))
 #define SINGLE_ERR_FLAG(BANK)   (BIT(((BANK) << 1) + 0))
 #define DOUBLE_ERR_FLAG(BANK)   (BIT(((BANK) << 1) + 1))
@@ -177,6 +186,26 @@ void clear_all_irqs(void)
     for(i=0; i<8; i++) IRQ[i] = 0;
 }
 
+void emi_set_ssi(uint32_t *ssiop, uint32_t trdy_val, uint32_t bank)
+{
+    uint32_t    nssi; /* New SSi */
+    /* ssiop - SSi Original Pointer */
+    *ssiop = EMI_READ((EMI_REG)emi_ss[bank]);
+    EMI_WRITE((EMI_REG)emi_ss[bank],
+            (*ssiop | BIT(EMI_SSx_SRDY_i)) | SET_TRDY(*ssiop, trdy_val));
+    nssi = EMI_READ(GET_BANK_SS(bank));
+    rumboot_printf(
+            "OLD SS%d=0x%X, OLD EMI_SS%d.T_RDY=%d,"
+            " OLD EMI_SS%d.T_CYC=%dclk,\n",
+            bank,   *ssiop,
+            bank,   GET_TRDY(*ssiop),
+            bank,   GET_TCYC(*ssiop));
+    rumboot_printf(
+            "NEW SS%d=0x%X, NEW EMI_SS%d.T_RDY=%d \n",
+            bank,   nssi,
+            bank,   GET_TRDY(nssi));
+}
+
 void emi_irq_handler( int irq, void *arg )
 {
     uint32_t irr = (EMI_READ(EMI_IRR) & IRR_MASK_ALL);
@@ -214,7 +243,7 @@ DEFINE_INIT(interrupts)
         MCLFIR_INFST_INT,
         ~0
     };
-    rumboot_putstring ("\tStart IRQ initialization...\n");
+    rumboot_printf ("\tStart IRQ initialization...\n");
 
     clear_all_irqs();
     rumboot_irq_cli();
@@ -233,7 +262,7 @@ DEFINE_INIT(interrupts)
 
     rumboot_irq_set_exception_handler(ex_handler);
 
-    rumboot_putstring ("\tIRQ have been initialized.\n");
+    rumboot_printf ("\tIRQ have been initialized.\n");
 
     return INIT_OK;
 }
@@ -306,7 +335,7 @@ DEFINE_CHECK(rfc)   /* 2.2.1 */
         EMI_WRITE(EMI_RFC, *rfcp);
 
         /* 8 bits */
-        rumboot_putstring("8 bits...\n");
+        rumboot_printf("8 bits...\n");
         iowrite8(CHECK_CONST8, CHECK_ADDR8(bank));
         msync();
         readed8 = ioread8(CHECK_ADDR8(bank));
@@ -316,7 +345,7 @@ DEFINE_CHECK(rfc)   /* 2.2.1 */
         /* ------ */
 
         /* 16 bits */
-        rumboot_putstring("16 bits...\n");
+        rumboot_printf("16 bits...\n");
         iowrite16(CHECK_CONST16, CHECK_ADDR16(bank));
         msync();
         readed16 = ioread16(CHECK_ADDR16(bank));
@@ -326,7 +355,7 @@ DEFINE_CHECK(rfc)   /* 2.2.1 */
         /* ------- */
 
         /* 32 bits */
-        rumboot_putstring("32 bits...\n");
+        rumboot_printf("32 bits...\n");
         iowrite32(CHECK_CONST32, CHECK_ADDR32(bank));
         msync();
         readed32 = ioread32(CHECK_ADDR32(bank));
@@ -336,7 +365,7 @@ DEFINE_CHECK(rfc)   /* 2.2.1 */
         /* ------- */
 
         /* 64 bits */
-        rumboot_putstring("64 bits...\n");
+        rumboot_printf("64 bits...\n");
         iowrite64(CHECK_CONST64, CHECK_ADDR64(bank));
         msync();
         readed64 = ioread64(CHECK_ADDR64(bank));
@@ -345,11 +374,11 @@ DEFINE_CHECK(rfc)   /* 2.2.1 */
         status |= !result;
         /* ------- */
 
-        rumboot_putstring("Done.\n");
+        rumboot_printf("Done.\n");
     }
 
     rfc_saved = EMI_READ(EMI_RFC);
-    rumboot_putstring("Check SDRAM complete.\n");
+    rumboot_printf("Check SDRAM complete.\n");
 
     EMI_WRITE(EMI_RFC, rfc_saved);
     return status;
@@ -382,7 +411,7 @@ DEFINE_CHECK(hstsr_ecc_on)  /* 2.2.2 */
     EMI_WRITE(emi_ecnt[bank], 0);
 
     /* Regular write/read */
-    rumboot_putstring("First stage: Regular write/read (ECC ON)...\n");
+    rumboot_printf("First stage: Regular write/read (ECC ON)...\n");
     rumboot_printf("Writing at 0x%X <- 0x%X...\n",
             CHECK_ADDR(bank), CHECK_CONST);
     iowrite32(CHECK_CONST, CHECK_ADDR(bank));
@@ -393,7 +422,7 @@ DEFINE_CHECK(hstsr_ecc_on)  /* 2.2.2 */
     msync();
     eccval = EMI_READ(EMI_ECCRDR);
     rumboot_printf("READED: 0x%X (ECC=0x%X) after regular write.\n",
-            eccval, readed);
+            readed, eccval);
     result = (readed == CHECK_CONST);
     TEST_ASSERT(result, "EMI: Regular write/read error.");
     status |= !result;
@@ -406,7 +435,7 @@ DEFINE_CHECK(hstsr_ecc_on)  /* 2.2.2 */
     /* ------------- */
 
     /* Make single error */
-    rumboot_putstring("Second stage: Make single error...\n");
+    rumboot_printf("Second stage: Make single error...\n");
     clear_all_irqs();
     iowrite32(CHECK_CONST ^ MK_ERR_1, CHECK_ADDR(bank));
     msync();
@@ -420,7 +449,7 @@ DEFINE_CHECK(hstsr_ecc_on)  /* 2.2.2 */
     msync();
     eccval = EMI_READ(EMI_ECCRDR);
     rumboot_printf("READED: 0x%X (ECC=0x%X) after single error.\n",
-            eccval, readed);
+            readed, eccval);
     result = (readed == CHECK_CONST);
     TEST_ASSERT(result, "EMI: Single error repair fails.");
     status |= !result;
@@ -439,7 +468,7 @@ DEFINE_CHECK(hstsr_ecc_on)  /* 2.2.2 */
     clear_all_irqs();
 
     /* Make double error */
-    rumboot_putstring("Third stage: Make double error...\n");
+    rumboot_printf("Third stage: Make double error...\n");
     iowrite32(CHECK_CONST ^ MK_ERR_2, CHECK_ADDR(bank));
     msync();
     tmp = EMI_READ(EMI_WECR);
@@ -452,7 +481,7 @@ DEFINE_CHECK(hstsr_ecc_on)  /* 2.2.2 */
     msync();
     eccval = EMI_READ(EMI_ECCRDR);
     rumboot_printf("READED: 0x%X (ECC=0x%X) after double error.\n",
-            eccval, readed);
+            readed, eccval);
     result = (readed == (CHECK_CONST ^ MK_ERR_2));
     TEST_ASSERT(result, "EMI: Wrong value after double error.");
     status |= !result;
@@ -501,7 +530,7 @@ DEFINE_CHECK(hstsr_ecc_off) /* 2.2.3 */
     EMI_WRITE(emi_ecnt[bank], 0);
 
     /* Regular write/read */
-    rumboot_putstring("First stage: Regular write/read (ECC OFF)...\n");
+    rumboot_printf("First stage: Regular write/read (ECC OFF)...\n");
     rumboot_printf("Writing at 0x%X <- 0x%X...\n",
             CHECK_ADDR(bank), CHECK_CONST);
     iowrite32(CHECK_CONST, CHECK_ADDR(bank));
@@ -512,7 +541,7 @@ DEFINE_CHECK(hstsr_ecc_off) /* 2.2.3 */
     msync();
     eccval = EMI_READ(EMI_ECCRDR);
     rumboot_printf("READED: 0x%X (ECC=0x%X) after regular write.\n",
-            eccval, readed);
+            readed, eccval);
     result = (readed == CHECK_CONST);
     TEST_ASSERT(result, "EMI: Regular write/read error.");
     status |= !result;
@@ -526,7 +555,7 @@ DEFINE_CHECK(hstsr_ecc_off) /* 2.2.3 */
     /* ------------- */
 
     /* Make single error */
-    rumboot_putstring("Second stage: Make single error...\n");
+    rumboot_printf("Second stage: Make single error...\n");
     iowrite32(CHECK_CONST ^ MK_ERR_1, CHECK_ADDR(bank));
     msync();
     tmp = EMI_READ(EMI_WECR);
@@ -539,7 +568,7 @@ DEFINE_CHECK(hstsr_ecc_off) /* 2.2.3 */
     msync();
     eccval = EMI_READ(EMI_ECCRDR);
     rumboot_printf("READED: 0x%X (ECC=0x%X) after single error.\n",
-            eccval, readed);
+            readed, eccval);
     result = (readed == (CHECK_CONST ^ MK_ERR_1));
     TEST_ASSERT(result, "EMI: Single error repair fails.");
     status |= !result;
@@ -558,7 +587,7 @@ DEFINE_CHECK(hstsr_ecc_off) /* 2.2.3 */
     clear_all_irqs();
 
     /* Make double error */
-    rumboot_putstring("Third stage: Make double error...\n");
+    rumboot_printf("Third stage: Make double error...\n");
     iowrite32(CHECK_CONST ^ MK_ERR_2, CHECK_ADDR(bank));
     msync();
     tmp = EMI_READ(EMI_WECR);
@@ -571,7 +600,7 @@ DEFINE_CHECK(hstsr_ecc_off) /* 2.2.3 */
     msync();
     eccval = EMI_READ(EMI_ECCRDR);
     rumboot_printf("READED: 0x%X (ECC=0x%X) after double error.\n",
-            eccval, readed);
+            readed, eccval);
     result = (readed == (CHECK_CONST ^ MK_ERR_2));
     TEST_ASSERT(result, "EMI: Wrong value after double error.");
     status |= !result;
@@ -595,13 +624,13 @@ DEFINE_CHECK(hstsr_ecc_off) /* 2.2.3 */
 
 DEFINE_CHECK(hstsr_ecc_on_nor)  /* 2.2.2 for NOR */
 {
-    rumboot_putstring("Check of NOR RAM is not implemented!\n");
+    rumboot_printf("Check of NOR RAM is not implemented!\n");
     return TEST_OK;
 }
 
 DEFINE_CHECK(hstsr_ecc_off_nor) /* 2.2.3 for NOR */
 {
-    rumboot_putstring("Check of NOR RAM is not implemented!\n");
+    rumboot_printf("Check of NOR RAM is not implemented!\n");
     return TEST_OK;
 }
 
@@ -634,7 +663,7 @@ DEFINE_CHECK(error_counter) /* 2.2.4 */
     EMI_WRITE(emi_ecnt[bank], 0);
 
     /* Make single error */
-    rumboot_putstring(" +++ Make single error...\n");
+    rumboot_printf(" +++ Make single error...\n");
     clear_all_irqs();
     rumboot_printf("Writing 0x%X to 0x%X...\n",
             CHECK_CONST ^ MK_ERR_1, CHECK_ADDR(bank));
@@ -699,16 +728,15 @@ DEFINE_CHECK(single_interrupts) /* 2.2.5 */
     EMI_WRITE(EMI_WECR, 0);
 
     hstsr = EMI_READ(EMI_HSTSR);
-    ssi   = EMI_READ((EMI_REG)emi_ss[bank]);
 
     if(!GET_BIT(hstsr, bank)) ECC_ON(bank);
     /* Reset single error counter */
     EMI_WRITE(emi_ecnt[bank], 0);
+    emi_set_ssi(&ssi, EMI_TRDY_VAL, bank);
 
     /* Make single error */
-    rumboot_putstring(" +++ Make single error...\n");
+    rumboot_printf(" +++ Make single error...\n");
     clear_all_irqs();
-    EMI_WRITE((EMI_REG)emi_ss[bank], ssi | BIT(EMI_SSx_SRDY_i));
     rumboot_printf("Writing 0x%X to 0x%X...\n",
             CHECK_CONST ^ MK_ERR_1, CHECK_ADDR(bank));
     iowrite32(CHECK_CONST ^ MK_ERR_1, CHECK_ADDR(bank));
@@ -742,7 +770,7 @@ DEFINE_CHECK(single_interrupts) /* 2.2.5 */
     /* ----------------- */
 
     /* Make double error */
-    rumboot_putstring(" +++ Make double error...\n");
+    rumboot_printf(" +++ Make double error...\n");
     clear_all_irqs();
     rumboot_printf("Writing 0x%X to 0x%X...\n",
             CHECK_CONST ^ MK_ERR_2, CHECK_ADDR(bank));
@@ -807,16 +835,16 @@ DEFINE_CHECK(double_interrupts) /* 2.2.6 */
     EMI_WRITE(EMI_WECR, 0);
 
     hstsr = EMI_READ(EMI_HSTSR);
-    ssi   = EMI_READ((EMI_REG)emi_ss[bank]);
 
     if(!GET_BIT(hstsr, bank)) ECC_ON(bank);
     /* Reset single error counter */
     EMI_WRITE(emi_ecnt[bank], 0);
 
+    emi_set_ssi(&ssi, EMI_TRDY_VAL, bank);
+
     /* Make single error */
-    rumboot_putstring(" +++ Make single error...\n");
+    rumboot_printf(" +++ Make single error...\n");
     clear_all_irqs();
-    EMI_WRITE((EMI_REG)emi_ss[bank], ssi | BIT(EMI_SSx_SRDY_i));
     rumboot_printf("Writing 0x%X to 0x%X...\n",
             CHECK_CONST ^ MK_ERR_1, CHECK_ADDR(bank));
     iowrite32(CHECK_CONST ^ MK_ERR_1, CHECK_ADDR(bank));
@@ -850,7 +878,7 @@ DEFINE_CHECK(double_interrupts) /* 2.2.6 */
     /* ----------------- */
 
     /* Make double error */
-    rumboot_putstring(" +++ Make double error...\n");
+    rumboot_printf(" +++ Make double error...\n");
     clear_all_irqs();
     rumboot_printf("Writing 0x%X to 0x%X...\n",
             CHECK_CONST ^ MK_ERR_2, CHECK_ADDR(bank));
@@ -922,10 +950,10 @@ int main(void)
             rumboot_printf("%s!\n\n", test_result ? "Fail" : "Success");
             test_status |= test_result;
         }
-        rumboot_printf(" ************************ \n");
+        rumboot_printf(" ******************************************** \n");
     }
 
-    rumboot_putstring(!test_status ? "TEST OK!\n" : "TEST ERROR!\n");
+    rumboot_printf("TEST %s!\n", !test_status ? "OK" : "ERROR");
 
     return test_status;
 }
