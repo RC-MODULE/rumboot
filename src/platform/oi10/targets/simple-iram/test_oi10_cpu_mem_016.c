@@ -2115,7 +2115,8 @@ static const uint32_t sram_H_addr[256] = {
     0x00000FF8  //A=0XFF way 0000, index 0X7F, word 0X06
 };
 
-#define TLB_ENTRY_CACHE_VALID           MMU_TLB_ENTRY(  0x000,  0x00000,    0x00000,    MMU_TLBE_DSIZ_1GB,     0b1,    0b0,    0b1,    0b0,    0b1,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
+//                                      MMU_TLB_ENTRY(  ERPN,   RPN,        EPN,        DSIZ,                  IL1I,   IL1D,   W,      I,      M,      G,      E,                      UX, UW, UR,     SX, SW, SR      DULXE,  IULXE,      TS,     TID,                WAY,                BID,                V   )
+#define TLB_ENTRY_CACHE_VALID           MMU_TLB_ENTRY(  0x000,  0x00000,    0x00000,    MMU_TLBE_DSIZ_1GB,     0b1,    0b0,    0b1,    0b0,    0b1,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
 
 typedef enum{
       TEST_EVENT_CHECK_SRAM_A = TEST_EVENT_CODE_MIN + 0,
@@ -2125,7 +2126,8 @@ typedef enum{
       TEST_EVENT_CHECK_SRAM_E = TEST_EVENT_CODE_MIN + 4,
       TEST_EVENT_CHECK_SRAM_F = TEST_EVENT_CODE_MIN + 5,
       TEST_EVENT_CHECK_SRAM_G = TEST_EVENT_CODE_MIN + 6,
-      TEST_EVENT_CHECK_SRAM_H = TEST_EVENT_CODE_MIN + 7
+      TEST_EVENT_CHECK_SRAM_H = TEST_EVENT_CODE_MIN + 7,
+      TEST_EVENT_VERIFY       = TEST_EVENT_CODE_MIN + 8
     }test_event_code;
 
 #define SRAM0_CACHED_PAGE            0x00000000
@@ -2209,8 +2211,9 @@ void check(uint32_t * EA_collection, uint32_t event_code)
      *   write 11..1
      *   read 11..1
      */
+    rumboot_printf("Send check event\n");
+    test_event(event_code); //hardware check
 
-   // test_event(event_code); //hardware check
     TEST_ASSERT(read_compare_sram_content_lo_to_hi(0x0000000000000000,EA_collection), "read 00..0 fail");
     write_sram_content_lo_to_hi(0xFFFFFFFFFFFFFFFF, EA_collection);
     TEST_ASSERT(read_compare_sram_content_lo_to_hi(0xFFFFFFFFFFFFFFFF,EA_collection), "read 11..1 fail");
@@ -2247,6 +2250,8 @@ void cache_all_from(uint32_t start_addr)
 
 int main()
 {
+     test_event_send_test_id("test_oi10_cpu_mem_016");
+
      rumboot_printf("Start test\n");
      rumboot_printf("EMI init\n");
      emi_init(DCR_EM2_EMI_BASE);
@@ -2257,6 +2262,9 @@ int main()
      rumboot_printf("Set tlb\n");
      static const tlb_entry tlb_entry_cacheable_valid = {TLB_ENTRY_CACHE_VALID};
      write_tlb_entries(&tlb_entry_cacheable_valid, 1);
+
+     rumboot_printf("Send event verify\n");
+     test_event(TEST_EVENT_VERIFY);
 
      //START TEST
      cache_all_from (SRAM0_CACHED_PAGE);
