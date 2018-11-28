@@ -97,7 +97,7 @@ static void handler_l2c_exception(int id, const char *name)
     {
         UNEXPECTED_MC = 1;
     }
-    emi_clear_irr(DCR_EM2_EMI_BASE, &irr);
+    //emi_clear_irr(DCR_EM2_EMI_BASE, &irr);
 }
 
 struct rumboot_irq_entry * create_handlers()
