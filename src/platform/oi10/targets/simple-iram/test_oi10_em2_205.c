@@ -69,7 +69,11 @@ enum emi_error_irq_source
 
 volatile enum emi_error_irq_source   error_irq_source;
 
-volatile bool emi_error_int_occured = false;
+volatile bool emi_single_error_int_occured = false;
+volatile bool emi_double_error_int_occured = false;
+
+volatile bool emi_recoverable_error_int_occured = false;
+volatile bool emi_unrecoverable_error_int_occured = false;
 
 const uint32_t ERROR_WAIT_TIMEOUT = 1000;
 
@@ -122,6 +126,11 @@ static void irq_handler( int irq, void *arg ) {
                     break;
             }
 
+            dcr_write(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_ERR_ACTION0, 0x00000000);
+            dcr_write(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_ERR_ACTION1, 0x00000000);
+
+            emi_single_error_int_occured = true;
+
             break;
 
         case EMI_CNTR_INT_1:
@@ -166,6 +175,11 @@ static void irq_handler( int irq, void *arg ) {
                     break;
             }
 
+            dcr_write(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_ERR_ACTION0, 0xFFFFFFFF);
+            dcr_write(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_ERR_ACTION1, 0xFFFFFFFF);
+
+            emi_double_error_int_occured = true;
+
             break;
 
 //        case EMI_CNTR_INT_2:
@@ -190,6 +204,8 @@ static void irq_handler( int irq, void *arg ) {
             dcr_write(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_ERR_AND1, 0x00000000);
             dcr_write(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_LFIR_AND, 0x00000000);
 
+            emi_recoverable_error_int_occured = true;
+
             break;
 
         case MCLFIR_UNREC_INT:
@@ -204,14 +220,14 @@ static void irq_handler( int irq, void *arg ) {
             dcr_write(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_ERR_AND1, 0x00000000);
             dcr_write(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_LFIR_AND, 0x00000000);
 
+            emi_unrecoverable_error_int_occured = true;
+
             break;
 
         default:
             rumboot_putstring("Unexpected interrupt occured!\n");
             break;
     }
-
-    emi_error_int_occured = true;
 }
 
 
@@ -222,14 +238,14 @@ bool check_data()
     dcr_write(DCR_EM2_EMI_BASE + EMI_ECNT20, 0x00); //clear reg
     dcr_write(DCR_EM2_EMI_BASE + EMI_ECNT53, 0x00); //clear reg
 
-    rumboot_putstring("Checking SRAM0 ... \n");
+    rumboot_putstring("Checking SRAM0 single error ... \n");
 
     error_irq_source = emi_single_error_irq_source_SRAM0;
 
     reg = ioread32(ADDR_SRAM0_SE);
 
-    TEST_WAIT_ASSERT(emi_error_int_occured == true, ERROR_WAIT_TIMEOUT, "SRAM0: single error interrupt waiting timeout.");
-    emi_error_int_occured = false;
+    TEST_WAIT_ASSERT(emi_single_error_int_occured == true, ERROR_WAIT_TIMEOUT, "SRAM0: single error interrupt waiting timeout.");
+    emi_single_error_int_occured = false;
 
     stat = dcr_read(DCR_EM2_EMI_BASE + EMI_ECNT20);
     TEST_ASSERT(stat == 0x000001, "SRAM0: invalid value in STATUS_IRQ");
@@ -244,13 +260,19 @@ bool check_data()
         return false;
     }
 
+    TEST_WAIT_ASSERT(emi_recoverable_error_int_occured == true, ERROR_WAIT_TIMEOUT, "SRAM0: recoverable error interrupt waiting timeout.");
+    emi_recoverable_error_int_occured = false;
+
+
+
+    rumboot_putstring("Checking SRAM0 double error ... \n");
 
     error_irq_source = emi_double_error_irq_source_SRAM0;
 
     reg = ioread32(ADDR_SRAM0_DE);
 
-    TEST_WAIT_ASSERT(emi_error_int_occured == true, ERROR_WAIT_TIMEOUT, "SRAM0: double error interrupt waiting timeout.");
-    emi_error_int_occured = false;
+    TEST_WAIT_ASSERT(emi_double_error_int_occured == true, ERROR_WAIT_TIMEOUT, "SRAM0: double error interrupt waiting timeout.");
+    emi_double_error_int_occured = false;
 
     stat = dcr_read(DCR_EM2_EMI_BASE + EMI_ECNT20);
     TEST_ASSERT(stat == 0x000000, "SRAM0: invalid value in STATUS_IRQ.");
@@ -264,16 +286,19 @@ bool check_data()
         return false;
     }
 
+    TEST_WAIT_ASSERT(emi_unrecoverable_error_int_occured == true, ERROR_WAIT_TIMEOUT, "SRAM0: unrecoverable error interrupt waiting timeout.");
+    emi_unrecoverable_error_int_occured = false;
 
 
-    rumboot_putstring("Checking SSRAM ... \n");
+
+    rumboot_putstring("Checking SSRAM single error ... \n");
 
     error_irq_source = emi_single_error_irq_source_SSRAM;
 
     reg = ioread32(ADDR_SSRAM_SE);
 
-    TEST_WAIT_ASSERT(emi_error_int_occured == true, ERROR_WAIT_TIMEOUT, "SSRAM: single error interrupt waiting timeout.");
-    emi_error_int_occured = false;
+    TEST_WAIT_ASSERT(emi_single_error_int_occured == true, ERROR_WAIT_TIMEOUT, "SSRAM: single error interrupt waiting timeout.");
+    emi_single_error_int_occured = false;
 
     stat = dcr_read(DCR_EM2_EMI_BASE + EMI_ECNT20);
     TEST_ASSERT(stat == 0x10000, "SSRAM: invalid value in STATUS_IRQ");
@@ -288,13 +313,19 @@ bool check_data()
         return false;
     }
 
+    TEST_WAIT_ASSERT(emi_recoverable_error_int_occured == true, ERROR_WAIT_TIMEOUT, "SSRAM: recoverable error interrupt waiting timeout.");
+    emi_recoverable_error_int_occured = false;
+
+
+
+    rumboot_putstring("Checking SSRAM double error ... \n");
 
     error_irq_source = emi_double_error_irq_source_SSRAM;
 
     reg = ioread32(ADDR_SSRAM_DE);
 
-    TEST_WAIT_ASSERT(emi_error_int_occured == true, ERROR_WAIT_TIMEOUT, "SSRAM: double error interrupt waiting timeout.");
-    emi_error_int_occured = false;
+    TEST_WAIT_ASSERT(emi_double_error_int_occured == true, ERROR_WAIT_TIMEOUT, "SSRAM: double error interrupt waiting timeout.");
+    emi_double_error_int_occured = false;
 
     stat = dcr_read(DCR_EM2_EMI_BASE + EMI_ECNT20);
     TEST_ASSERT(stat == 0x00, "SSRAM: invalid value in STATUS_IRQ.");
@@ -308,16 +339,19 @@ bool check_data()
         return false;
     }
 
+    TEST_WAIT_ASSERT(emi_unrecoverable_error_int_occured == true, ERROR_WAIT_TIMEOUT, "SSRAM: unrecoverable error interrupt waiting timeout.");
+    emi_unrecoverable_error_int_occured = false;
 
 
-    rumboot_putstring("Checking SDRAM ... \n");
+
+    rumboot_putstring("Checking SDRAM single error ... \n");
 
     error_irq_source = emi_single_error_irq_source_SDRAM;
 
     reg = ioread32(ADDR_SDRAM_SE);
 
-    TEST_WAIT_ASSERT(emi_error_int_occured == true, ERROR_WAIT_TIMEOUT, "SDRAM: single error interrupt waiting timeout.");
-    emi_error_int_occured = false;
+    TEST_WAIT_ASSERT(emi_single_error_int_occured == true, ERROR_WAIT_TIMEOUT, "SDRAM: single error interrupt waiting timeout.");
+    emi_single_error_int_occured = false;
 
     stat = dcr_read(DCR_EM2_EMI_BASE + EMI_ECNT20);
     TEST_ASSERT(stat == 0x100, "SDRAM: invalid value in STATUS_IRQ");
@@ -332,13 +366,19 @@ bool check_data()
         return false;
     }
 
+    TEST_WAIT_ASSERT(emi_recoverable_error_int_occured == true, ERROR_WAIT_TIMEOUT, "SDRAM: recoverable error interrupt waiting timeout.");
+    emi_recoverable_error_int_occured = false;
+
+
+
+    rumboot_putstring("Checking SDRAM double error ... \n");
 
     error_irq_source = emi_double_error_irq_source_SDRAM;
 
     reg = ioread32(ADDR_SDRAM_DE);
 
-    TEST_WAIT_ASSERT(emi_error_int_occured == true, ERROR_WAIT_TIMEOUT, "SDRAM: double error interrupt waiting timeout.");
-    emi_error_int_occured = false;
+    TEST_WAIT_ASSERT(emi_double_error_int_occured == true, ERROR_WAIT_TIMEOUT, "SDRAM: double error interrupt waiting timeout.");
+    emi_double_error_int_occured = false;
 
     stat = dcr_read(DCR_EM2_EMI_BASE + EMI_ECNT20);
     TEST_ASSERT(stat == 0x00, "SDRAM: invalid value in STATUS_IRQ.");
@@ -352,16 +392,19 @@ bool check_data()
         return false;
     }
 
+    TEST_WAIT_ASSERT(emi_unrecoverable_error_int_occured == true, ERROR_WAIT_TIMEOUT, "SDRAM: unrecoverable error interrupt waiting timeout.");
+    emi_unrecoverable_error_int_occured = false;
 
 
-    rumboot_putstring("Checking NOR ... \n");
+
+    rumboot_putstring("Checking NOR single error ... \n");
 
     error_irq_source = emi_single_error_irq_source_NOR;
 
     reg = ioread32(ADDR_NOR_SE);
 
-    TEST_WAIT_ASSERT(emi_error_int_occured == true, ERROR_WAIT_TIMEOUT, "NOR: single error interrupt waiting timeout.");
-    emi_error_int_occured = false;
+    TEST_WAIT_ASSERT(emi_single_error_int_occured == true, ERROR_WAIT_TIMEOUT, "NOR: single error interrupt waiting timeout.");
+    emi_single_error_int_occured = false;
 
     stat = dcr_read(DCR_EM2_EMI_BASE + EMI_ECNT53);
     TEST_ASSERT(stat == 0x010000, "NOR: invalid value in STATUS_IRQ.");
@@ -376,13 +419,19 @@ bool check_data()
         return false;
     }
 
+    TEST_WAIT_ASSERT(emi_recoverable_error_int_occured == true, ERROR_WAIT_TIMEOUT, "NOR: recoverable error interrupt waiting timeout.");
+    emi_recoverable_error_int_occured = false;
+
+
+
+    rumboot_putstring("Checking NOR double error ... \n");
 
     error_irq_source = emi_double_error_irq_source_NOR;
 
     reg = ioread32(ADDR_NOR_DE);
 
-    TEST_WAIT_ASSERT(emi_error_int_occured == true, ERROR_WAIT_TIMEOUT, "NOR: double error interrupt waiting timeout.");
-    emi_error_int_occured = false;
+    TEST_WAIT_ASSERT(emi_double_error_int_occured == true, ERROR_WAIT_TIMEOUT, "NOR: double error interrupt waiting timeout.");
+    emi_double_error_int_occured = false;
 
     stat = dcr_read(DCR_EM2_EMI_BASE + EMI_ECNT53);
     TEST_ASSERT(stat == 0x00, "NOR: invalid value in STATUS_IRQ.");
@@ -395,6 +444,9 @@ bool check_data()
         rumboot_printf("Actual = 0x%x\n", reg);
         return false;
     }
+
+    TEST_WAIT_ASSERT(emi_unrecoverable_error_int_occured == true, ERROR_WAIT_TIMEOUT, "NOR: recoverable error interrupt waiting timeout.");
+    emi_unrecoverable_error_int_occured = false;
 
     return true;
 }
@@ -426,9 +478,9 @@ int main(void)
 {
     uint32_t test_result = 0;
 
-   rumboot_irq_set_exception_handler(exception_handler);
+    rumboot_irq_set_exception_handler(exception_handler);
 
-   memset((uint8_t*)SRAM0_BASE, 0x00, 0x100000);
+    memset((uint8_t*)SRAM0_BASE, 0x00, 0x1000);
 
     emi_init(DCR_EM2_EMI_BASE);
     emi_set_ecc(DCR_EM2_EMI_BASE, emi_bank_all, emi_ecc_on);
