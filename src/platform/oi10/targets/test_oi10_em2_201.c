@@ -227,7 +227,7 @@ int check_sdram_2_1_3(uint32_t base_addr, sdx_csp_t csp, sdx_sds_t sds)
     uint32_t m;
     //uint32_t i;
 
-    void (*sdram_oper_from_emi)() = (void *)SSRAM_BASE;
+    void (*sdram_oper_from_emi)() = (void *)(SSRAM_BASE + 0x100);
 
     static const tlb_entry sdram_tlb_entry[2] = { {TLB_ENTRY_SDRAM0},
                                                   {TLB_ENTRY_SDRAM1} };
@@ -280,7 +280,7 @@ int check_sdram_2_1_5(uint32_t base_addr, sdx_sds_t sds)
 {
     emi_bank_cfg sdram_cfg;
 
-    void (*sdram_oper_from_emi)() = (void *)SSRAM_BASE;
+    void (*sdram_oper_from_emi)() = (void *)(SSRAM_BASE + 0x100);
 
     static const tlb_entry sdram_tlb_entry[2] = { {TLB_ENTRY_SDRAM0},
                                                   {TLB_ENTRY_SDRAM1} };
@@ -350,6 +350,10 @@ int main()
     test_event_send_test_id("test_oi10_em2_201");
     emi_init(DCR_EM2_EMI_BASE);
     emi_set_ecc(DCR_EM2_EMI_BASE, emi_bank_all, emi_ecc_off);
+
+    memset((void *)SRAM0_BASE, 0, sizeof(uint32_t));
+    memset((void *)SSRAM_BASE, 0, sizeof(uint32_t));
+
     switch (EXT_MEM_BASE)
     {
         case SRAM0_BASE:
