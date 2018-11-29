@@ -37,6 +37,13 @@ void change_mode_pll(int mode)
 
 }
 
+void change_divmode(int ch_div)
+{
+	iowrite32(ch_div, CRG_SYS_BASE + CRG_CKDIVMODE0);
+	iowrite32(0x00000001, CRG_SYS_BASE + CRG_CKUPDATE);
+}
+
+
 void wait_ready_pll()
 {
 	int pll_r, pll_ch;
@@ -63,7 +70,8 @@ int main(void)
 	rumboot_printf("Changing PRDIV and PSDIV\n");
 
 	change_mode_pll(0x3);
-	change_pll(1499, 9, 0);		//Change freq 16*(1500/10*1)=2400Mhz , PRDIV =10, PSDIV=1;
+	change_pll(499, 3, 0);	//Change freq 16*(500/4*1)=2000MHz , PRDIV =4, PSDIV=1;
+	change_divmode(0x3);	//Change freq 2000 / 4 = 500MHz
 	change_mode_pll(0x0);
 	wait_ready_pll();
 	
@@ -78,7 +86,8 @@ int main(void)
 	//wait_ready_pll();
 
 	change_mode_pll(0x3);
-	change_pll(499, 3, 0);		//Change freq 16*(500/4*1)=2000Mhz , PRDIV =4, PSDIV=1;
+	change_pll(299, 2, 0);		//Change freq 16*(300/3*1)=1600Mhz , PRDIV =3, PSDIV=1;
+	change_divmode(0x3);		//Change freq 1600 / 4 = 400MHz
 	change_mode_pll(0x0);
 	wait_ready_pll();
 	
@@ -88,7 +97,8 @@ int main(void)
 	//wait_ready_pll();
 	
 	change_mode_pll(0x3);
-	change_pll(219, 1, 0);		//Change freq 16*(220/2*1)=1760Mhz , PRDIV =2, PSDIV=1;
+	change_pll(224, 1, 0);		//Change freq 16*(225/2*1)=1800Mhz , PRDIV =2, PSDIV=1;
+	change_divmode(0x8);		//Change freq 1800 / 9 = 200MHz
 	change_mode_pll(0x0);
 	wait_ready_pll();
 
