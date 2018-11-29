@@ -25,7 +25,7 @@
 #include <platform/devices/emi.h>
 
 
-#define DATA_SIZE   (124 * 1024) //124 KB
+#define DATA_SIZE   (252 * 1024) //252 KB
 #define BASE_ADDR    SRAM0_BASE
 
 int main (void)
