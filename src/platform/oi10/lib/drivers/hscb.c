@@ -601,7 +601,7 @@ uint32_t hscb_prepare_rmap_packet(hscb_rmap_packet_raw_configuration_t rmap_pack
         hscb_rmap_packet_ready_for_transmit_t* rmap_packet_ready)
 {
     hscb_descr_struct_t descr = {};
-    rmap_packet_ready->count_areas = 0;
+    uint32_t initial_data_area_index = rmap_packet_ready->count_areas;
     bool is_target_sw_addr_chain_supplied = (rmap_packet_raw.target_addr_chain.length > 0);
     bool is_reply_sw_addr_chain_supplied = (rmap_packet_raw.reply_addr_chain.length > 0);
     bool is_data_chain_supplied = (rmap_packet_raw.data_chain.length > 0);
@@ -716,7 +716,7 @@ uint32_t hscb_prepare_rmap_packet(hscb_rmap_packet_raw_configuration_t rmap_pack
                                                                   =  (uint8_t)((rmap_packet_raw.data_chain.length >>  0) & 0xFF);
 
     /*We skip a chain of Target SW addresses if it is supplied*/
-    index_for_header_CRC = (is_target_sw_addr_chain_supplied) ? 1 : 0;
+    index_for_header_CRC = (is_target_sw_addr_chain_supplied) ? initial_data_area_index + 1 : initial_data_area_index;
     /*We calculate CRC starting with Target Logical Address*/
     for( int i = 0; i < rmap_packet_ready->data_area_sizes[index_for_header_CRC]; ++i )
         temporary_CRC = hscb_RMAP_CalculateCRC(temporary_CRC, rmap_packet_ready->data_areas[index_for_header_CRC][i]);
@@ -784,7 +784,6 @@ uint32_t hscb_prepare_rmap_packet(hscb_rmap_packet_raw_configuration_t rmap_pack
         descr.change_endian = rmap_packet_raw.change_endian;
         hscb_set_descr_in_mem(descr, (uint32_t)(rmap_packet_ready->array_of_descriptors + rmap_packet_ready->count_areas));
         rmap_packet_ready->count_areas++;
-
     }
 
     hscb_set_empty_descr_in_mem( (uint32_t)(rmap_packet_ready->array_of_descriptors + rmap_packet_ready->count_areas),
