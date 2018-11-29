@@ -22,7 +22,8 @@
 #define WAY2   (reg_field(18,2))
 #define WAY3   (reg_field(18,3))
 
-#define DCDBTRH_MASK   0xFFFFEFFF //19th bit - valid, non-mapped onto memory
+//#define DCDBTRH_MASK   0xFFFFEFFF //19th bit - valid, non-mapped onto memory
+#define DCDBTRH_MASK   0xFFFFFFFF
 
 #define INDEX(index) \
     (reg_field(26,index))
