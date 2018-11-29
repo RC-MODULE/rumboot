@@ -37,22 +37,43 @@
 #define INIT_OK                 TEST_OK
 #define INIT_ERROR              TEST_ERROR
 #define NUMBER_OF_BANKS         6
-#define IRR_RST_ALL             0x0001FFFF
-#define IRR_MASK_ALL            IRR_RST_ALL
-#define EMI_TRDY_VAL            0x02FF
+#define EMI_TRDY_VAL            8
 #define EMI_TCYC_VAL_0          17
+#define EMI_TRDY_VAL_0          0x0400
 #define EMI_RFC_RP_DIV_1        0b11110011110011
 #define EMI_RFC_RP_DIV_2        0b01111001111001
 #define EMI_RFC_RP_MASK         0x8FFF
 #define EMI_RFC_TRFC_MASK       0x0007
 #define EMI_TRDY_MASK           (0x03FF << EMI_SSx_T_RDY_i)
-#define IMR_UNMASK_ALL          IRR_RST_ALL
-#define IRQ_FLAGS               (RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH)
 #define EMI_BITS_D0_D7          EMI_WECR_BWE0_i
 #define EMI_BITS_D8_D15         EMI_WECR_BWE1_i
 #define EMI_BITS_D16_D23        EMI_WECR_BWE2_i
 #define EMI_BITS_D24_D31        EMI_WECR_BWE3_i
 #define EMI_BITS_ED0_ED7        EMI_WECR_BWE4_i
+#define IRR_RST_ALL             0x0001FFFF
+#define IRR_RST_SINGLE          ((1 << EMI_IMR_ME1B0_i)  |  \
+                                 (1 << EMI_IMR_ME1B1_i)  |  \
+                                 (1 << EMI_IMR_ME1B2_i)  |  \
+                                 (1 << EMI_IMR_ME1B3_i)  |  \
+                                 (1 << EMI_IMR_ME1B4_i)  |  \
+                                 (1 << EMI_IMR_ME1B5_i))
+#define IRR_RST_DOUBLE          ((1 << EMI_IMR_ME2B0_i)  |  \
+                                 (1 << EMI_IMR_ME2B1_i)  |  \
+                                 (1 << EMI_IMR_ME2B2_i)  |  \
+                                 (1 << EMI_IMR_ME2B3_i)  |  \
+                                 (1 << EMI_IMR_ME2B4_i)  |  \
+                                 (1 << EMI_IMR_ME2B5_i))
+#define IRR_RST_RDY             ((1 << EMI_IMR_MRDYR_i)  |  \
+                                 (1 << EMI_IMR_MRDYW_i))
+#define IRR_MASK_ALL            IRR_RST_ALL
+#define IMR_UNMASK_ALL          IRR_RST_ALL
+#define IMR_UNMASK_SINGLE       IRR_RST_SINGLE
+#define IMR_UNMASK_DOUBLE       IRR_RST_DOUBLE
+#define IRQ_CNT_SINGLE          0
+#define IRQ_CNT_DOUBLE          1
+#define IRQ_CNT_RDY             2
+#define IRQ_CNT_OTHER           3
+#define IRQ_FLAGS               (RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH)
 #define EMBANKS(A,B,C,D,E,F)    (!!(A) << 0) |  \
                                 (!!(B) << 1) |  \
                                 (!!(C) << 2) |  \
@@ -90,7 +111,8 @@
 #define GET_BANK_SS(BANK)       ((EMI_REG)(emi_ss[(BANK)]))
 #define GET_TRDY(SSI)           (((SSI) & EMI_TRDY_MASK) >> EMI_SSx_T_RDY_i)
 #define SET_TRDY(SSI,TRDY)      ((((SSI) | BIT(EMI_SSx_SRDY_i)) & ~EMI_TRDY_MASK)  | \
-                                    (((TRDY) << EMI_SSx_T_RDY_i) & EMI_TRDY_MASK))
+                                    (((EMI_TRDY_VAL_0 - (TRDY)) \
+                                        << EMI_SSx_T_RDY_i) & EMI_TRDY_MASK))
 #define GET_TCYC(SSI)           (EMI_TCYC_VAL_0 - \
                                     (((SSI) >> EMI_SSx_T_CYC_i) & 0x0F))
 #define MK_RFC(RP,TRFC)         ((((RP)   & 0x8FFF) << EMI_RFC_RP_i  ) |             \
@@ -104,6 +126,11 @@
 #define ECC_OFF(BANK)           EMI_WRITE(EMI_HSTSR, EMI_READ(EMI_HSTSR) & ~(1 << (BANK)));
 #define IS_NOR(BANK)            (EMI_TYPE(BANK) == BTYP_NOR)
 #define IS_SDRAM(BANK)          (EMI_TYPE(BANK) == BTYP_SDRAM)
+#define IS_SSRAM(BANK)          (EMI_TYPE(BANK) == BTYP_SSRAM)
+#define IS_SRAM(BANK)           (EMI_TYPE(BANK) == BTYP_SSRAM)
+#define IS_NOT_SDRAM(BANK)      (EMI_TYPE(BANK) != BTYP_SDRAM)
+#define IS_NOT_SSRAM(BANK)      (EMI_TYPE(BANK) != BTYP_SSRAM)
+#define IS_NOT_SRAM(BANK)       (EMI_TYPE(BANK) != BTYP_SRAM)
 #define CHECK_ADDR8(BANK)       (emi_bank_bases[BANK] + CHECK_OFFSET8)
 #define CHECK_ADDR16(BANK)      (emi_bank_bases[BANK] + CHECK_OFFSET16)
 #define CHECK_ADDR32(BANK)      (emi_bank_bases[BANK] + CHECK_OFFSET32)
@@ -133,8 +160,15 @@ struct ckinfo_t
     char        *desc;
 };
 
-typedef struct ckinfo_t             ckinfo_t;
-typedef struct rumboot_irq_entry    rumboot_irq_entry;
+union u8x4_t
+{
+    uint32_t    w;
+    uint8_t     b[4];
+};
+
+typedef struct   ckinfo_t           ckinfo_t;
+typedef struct   rumboot_irq_entry  rumboot_irq_entry;
+typedef union    u8x4_t             u8x4_t;
 typedef volatile uint32_t           irq_flags_t;
 typedef volatile uint64_t           vuint64_t;
 typedef volatile uint32_t           vuint32_t;
@@ -142,9 +176,11 @@ typedef volatile uint16_t           vuint16_t;
 typedef volatile uint8_t            vuint8_t;
 
 /* Global variables */
+static const uint8_t other_banks[8] = {4,2,1,2,0,5,255,255};
 static irq_flags_t IRQ[8] = {0,0,0,0,0,0,0,0};
 static rumboot_irq_entry *irq_table = NULL;
 static volatile uint32_t global_irr = 0;
+static volatile u8x4_t irq_cnt;
 /* Data tables, for register calculation, depending on bank */
 static volatile const uint8_t emi_ss[8] =
     {EMI_SS0, EMI_SS1, EMI_SS2, EMI_SS3, EMI_SS4, EMI_SS5, 0,0};
@@ -183,7 +219,16 @@ void clear_all_irqs(void)
 {
     int i;
     global_irr = 0x00000000;
+    irq_cnt.w  = 0x00000000;
     for(i=0; i<8; i++) IRQ[i] = 0;
+    EMI_WRITE(EMI_IRR_RST, IRR_RST_ALL);
+}
+
+volatile uint32_t emi_switch_bank(uint32_t bank)
+{
+    iowrite32(0x00000000, CHECK_ADDR(bank)); /* Anti-X */
+    msync();
+    return ioread32(CHECK_ADDR(bank)); /* Switch bank */
 }
 
 void emi_set_ssi(uint32_t *ssiop, uint32_t trdy_val, uint32_t bank)
@@ -212,8 +257,25 @@ void emi_irq_handler( int irq, void *arg )
     rumboot_printf("IRQ #%d received at 0x%X (IRR=0x%X).\n",
             irq, spr_read(SPR_SRR0), irr);
     IRQ[irq >> 5] = BIT(irq & 0x1F);
-    /* Reset interrupts */
-    EMI_WRITE(EMI_IRR_RST, irr);
+    switch(irq)
+    {
+        case EMI_CNTR_INT_0:
+            EMI_WRITE(EMI_IRR_RST, IRR_RST_SINGLE);
+            irq_cnt.b[0]++;
+            break;
+        case EMI_CNTR_INT_1:
+            EMI_WRITE(EMI_IRR_RST, IRR_RST_DOUBLE);
+            irq_cnt.b[1]++;
+            break;
+        case EMI_CNTR_INT_2:
+            EMI_WRITE(EMI_IRR_RST, IRR_RST_RDY);
+            irq_cnt.b[2]++;
+            break;
+        default:
+            EMI_WRITE(EMI_IRR_RST, irr);
+            irq_cnt.b[3]++;
+            break;
+    }
     global_irr |= irr;
 }
 
@@ -316,16 +378,13 @@ DEFINE_CHECK(rfc)   /* 2.2.1 */
         MK_RFC(EMI_RFC_RP_DIV_2,TRFC_13)
     };
 
-    if(!IS_SDRAM(bank))
+    if(IS_NOT_SDRAM(bank))
     {
         rumboot_printf("Bank %d is not SDRAM. Check skipped.\n", bank);
         return TEST_OK;
     }
 
-    /* Force bank switch */
-    iowrite32(0x00000000, CHECK_ADDR(bank));
-    msync();
-    readed32 = ioread32(CHECK_ADDR(bank));
+    emi_switch_bank(bank);
 
     for(rfcp = rfc+1; cnt < rfc[0]; rfcp++,cnt++)
     {
@@ -400,10 +459,8 @@ DEFINE_CHECK(hstsr_ecc_on)  /* 2.2.2 */
         rumboot_printf("Using alternative check method for NOR RAM.\n");
         return CHECK_FUNC(hstsr_ecc_on_nor)(CF_ARGS);
     }
-    /* Force bank switch */
-    iowrite32(0x00000000, CHECK_ADDR(bank));
-    msync();
-    readed = ioread32(CHECK_ADDR(bank));
+
+    emi_switch_bank(bank);
     EMI_WRITE(EMI_WECR, 0);
     hstsr = EMI_READ(EMI_HSTSR);
     if(!GET_BIT(hstsr, bank)) ECC_ON(bank);
@@ -519,10 +576,8 @@ DEFINE_CHECK(hstsr_ecc_off) /* 2.2.3 */
         rumboot_printf("Using alternative check method for NOR RAM.\n");
         return CHECK_FUNC(hstsr_ecc_off_nor)(CF_ARGS);
     }
-    /* Force bank switch */
-    iowrite32(0x00000000, CHECK_ADDR(bank));
-    msync();
-    readed = ioread32(CHECK_ADDR(bank));
+
+    emi_switch_bank(bank);
     EMI_WRITE(EMI_WECR, 0);
     hstsr = EMI_READ(EMI_HSTSR);
     if(GET_BIT(hstsr, bank)) ECC_OFF(bank);
@@ -652,10 +707,7 @@ DEFINE_CHECK(error_counter) /* 2.2.4 */
     }
     tmp ^= tmp; /* Prevent compiler warning */
 
-    /* Force bank switch */
-    iowrite32(0x00000000, CHECK_ADDR(bank));
-    msync();
-    readed = ioread32(CHECK_ADDR(bank));
+    emi_switch_bank(bank);
     EMI_WRITE(EMI_WECR, 0);
     hstsr = EMI_READ(EMI_HSTSR);
     if(!GET_BIT(hstsr, bank)) ECC_ON(bank);
@@ -709,6 +761,7 @@ DEFINE_CHECK(single_interrupts) /* 2.2.5 */
 {
     uint32_t hstsr,
              ssi,
+             imr,
              result = TEST_OK,
              status = TEST_OK;
     volatile
@@ -716,18 +769,21 @@ DEFINE_CHECK(single_interrupts) /* 2.2.5 */
              tmp    = 0;
     uint8_t  eccval = 0;
     tmp ^= tmp; /* Prevent compiler warning */
-    if(IS_NOR(bank))
+    if(IS_NOT_SRAM(bank))
     {
-        rumboot_printf("NOR RAM is not supported, skipping it.\n");
+        rumboot_printf("Bank #%d is not %s. Check skipped.\n",
+                bank, btyp_descr[BTYP_SRAM]);
         return TEST_OK;
     }
-    /* Force bank switch */
-    iowrite32(0x00000000, CHECK_ADDR(bank));
-    msync();
-    readed = ioread32(CHECK_ADDR(bank));
+
+    emi_switch_bank(bank);
     EMI_WRITE(EMI_WECR, 0);
 
-    hstsr = EMI_READ(EMI_HSTSR);
+    hstsr   = EMI_READ(EMI_HSTSR);
+    imr     = EMI_READ(EMI_IMR);
+
+    /* Mask double error interrupt */
+    EMI_WRITE(EMI_IMR, IMR_UNMASK_ALL ^ IMR_UNMASK_DOUBLE);
 
     if(!GET_BIT(hstsr, bank)) ECC_ON(bank);
     /* Reset single error counter */
@@ -749,6 +805,7 @@ DEFINE_CHECK(single_interrupts) /* 2.2.5 */
     msync();
     tmp = EMI_READ(EMI_WECR);
     EMI_WRITE(EMI_WECR, 0);
+    emi_switch_bank(other_banks[bank]);
     rumboot_printf("Reading from 0x%X...\n", CHECK_ADDR(bank));
     readed = ioread32(CHECK_ADDR(bank));
     msync();
@@ -764,9 +821,18 @@ DEFINE_CHECK(single_interrupts) /* 2.2.5 */
     result = (READ_ECNT(bank) == 1);
     TEST_ASSERT(result, "EMI: Wrong single error counter value.");
     status |= !result;
-    result = (global_irr & SINGLE_ERR_FLAG(bank));
-    TEST_ASSERT(result, "EMI: Single error interrupt flag not risen.");
+    result = (irq_cnt.b[IRQ_CNT_SINGLE] == 1);
+    TEST_ASSERT(result, "EMI: Single error interrupt not happen.");
     status |= !result;
+    result = !irq_cnt.b[IRQ_CNT_DOUBLE];
+    TEST_ASSERT(result, "EMI: Unexpected double error interrupt happen.");
+    status |= !result;
+    result = !!irq_cnt.b[IRQ_CNT_RDY];
+    TEST_ASSERT(result, "EMI: Read/write ready interrupt not happen.");
+    status |= !result;
+    rumboot_printf("IRQ Counters -> #56=%d,#57=%d,#58=%d,Other=%d\n",
+            (uint32_t)irq_cnt.b[0], (uint32_t)irq_cnt.b[1],
+            (uint32_t)irq_cnt.b[2], (uint32_t)irq_cnt.b[3]);
     /* ----------------- */
 
     /* Make double error */
@@ -784,6 +850,7 @@ DEFINE_CHECK(single_interrupts) /* 2.2.5 */
     msync();
     tmp = EMI_READ(EMI_WECR);
     EMI_WRITE(EMI_WECR, 0);
+    emi_switch_bank(other_banks[bank]);
     rumboot_printf("Reading from 0x%X...\n", CHECK_ADDR(bank));
     readed = ioread32(CHECK_ADDR(bank));
     msync();
@@ -799,16 +866,24 @@ DEFINE_CHECK(single_interrupts) /* 2.2.5 */
     result = (READ_ECNT(bank) == 1);
     TEST_ASSERT(result, "EMI: Wrong single error counter value.");
     status |= !result;
-    result = (!(global_irr & SINGLE_ERR_FLAG(bank)));
-    TEST_ASSERT(result, "EMI: Unexpected single error interrupt flag risen.");
+    result = !irq_cnt.b[IRQ_CNT_SINGLE];
+    TEST_ASSERT(result, "EMI: Unexpected single error interrupt happen.");
     status |= !result;
-    result = (global_irr & DOUBLE_ERR_FLAG(bank));
-    TEST_ASSERT(result, "EMI: Double error interrupt flag not risen.");
+    result = !irq_cnt.b[IRQ_CNT_DOUBLE];
+    TEST_ASSERT(result, "EMI: Unexpected double error interrupt happen.");
     status |= !result;
+    result = !!irq_cnt.b[IRQ_CNT_RDY];
+    TEST_ASSERT(result, "EMI: Read/write ready interrupt not happen.");
+    status |= !result;
+    rumboot_printf("IRQ Counters -> #56=%d,#57=%d,#58=%d,Other=%d\n",
+            (uint32_t)irq_cnt.b[0], (uint32_t)irq_cnt.b[1],
+            (uint32_t)irq_cnt.b[2], (uint32_t)irq_cnt.b[3]);
+    clear_all_irqs();
     /* ----------------- */
 
     EMI_WRITE((EMI_REG)emi_ss[bank], ssi);
     EMI_WRITE(EMI_HSTSR, hstsr);
+    EMI_WRITE(EMI_IMR,   imr);
     return status;
 }
 
@@ -816,6 +891,7 @@ DEFINE_CHECK(double_interrupts) /* 2.2.6 */
 {
     uint32_t hstsr,
              ssi,
+             imr,
              result = TEST_OK,
              status = TEST_OK;
     volatile
@@ -823,23 +899,25 @@ DEFINE_CHECK(double_interrupts) /* 2.2.6 */
              tmp    = 0;
     uint8_t  eccval = 0;
     tmp ^= tmp; /* Prevent compiler warning */
-    if(IS_NOR(bank))
+    if(IS_NOT_SRAM(bank))
     {
-        rumboot_printf("NOR RAM is not supported, skipping it.\n");
+        rumboot_printf("Bank #%d is not %s. Check skipped.\n",
+                bank, btyp_descr[BTYP_SRAM]);
         return TEST_OK;
     }
-    /* Force bank switch */
-    iowrite32(0x00000000, CHECK_ADDR(bank));
-    msync();
-    readed = ioread32(CHECK_ADDR(bank));
+
+    emi_switch_bank(bank);
     EMI_WRITE(EMI_WECR, 0);
 
-    hstsr = EMI_READ(EMI_HSTSR);
+    hstsr   = EMI_READ(EMI_HSTSR);
+    imr     = EMI_READ(EMI_IMR);
+
+    /* Mask single error interrupt */
+    EMI_WRITE(EMI_IMR, IMR_UNMASK_ALL ^ IMR_UNMASK_SINGLE);
 
     if(!GET_BIT(hstsr, bank)) ECC_ON(bank);
     /* Reset single error counter */
     EMI_WRITE(emi_ecnt[bank], 0);
-
     emi_set_ssi(&ssi, EMI_TRDY_VAL, bank);
 
     /* Make single error */
@@ -857,6 +935,7 @@ DEFINE_CHECK(double_interrupts) /* 2.2.6 */
     msync();
     tmp = EMI_READ(EMI_WECR);
     EMI_WRITE(EMI_WECR, 0);
+    emi_switch_bank(other_banks[bank]);
     rumboot_printf("Reading from 0x%X...\n", CHECK_ADDR(bank));
     readed = ioread32(CHECK_ADDR(bank));
     msync();
@@ -872,9 +951,18 @@ DEFINE_CHECK(double_interrupts) /* 2.2.6 */
     result = (READ_ECNT(bank) == 1);
     TEST_ASSERT(result, "EMI: Wrong single error counter value.");
     status |= !result;
-    result = (global_irr & SINGLE_ERR_FLAG(bank));
-    TEST_ASSERT(result, "EMI: Single error interrupt flag not risen.");
+    result = !irq_cnt.b[IRQ_CNT_SINGLE];
+    TEST_ASSERT(result, "EMI: Unexpected single error interrupt happen.");
     status |= !result;
+    result = !irq_cnt.b[IRQ_CNT_DOUBLE];
+    TEST_ASSERT(result, "EMI: Unexpected double error interrupt happen.");
+    status |= !result;
+    result = !!irq_cnt.b[IRQ_CNT_RDY];
+    TEST_ASSERT(result, "EMI: Read/write ready interrupt not happen.");
+    status |= !result;
+    rumboot_printf("IRQ Counters -> #56=%d,#57=%d,#58=%d,Other=%d\n",
+            (uint32_t)irq_cnt.b[0], (uint32_t)irq_cnt.b[1],
+            (uint32_t)irq_cnt.b[2], (uint32_t)irq_cnt.b[3]);
     /* ----------------- */
 
     /* Make double error */
@@ -892,6 +980,7 @@ DEFINE_CHECK(double_interrupts) /* 2.2.6 */
     msync();
     tmp = EMI_READ(EMI_WECR);
     EMI_WRITE(EMI_WECR, 0);
+    emi_switch_bank(other_banks[bank]);
     rumboot_printf("Reading from 0x%X...\n", CHECK_ADDR(bank));
     readed = ioread32(CHECK_ADDR(bank));
     msync();
@@ -907,16 +996,24 @@ DEFINE_CHECK(double_interrupts) /* 2.2.6 */
     result = (READ_ECNT(bank) == 1);
     TEST_ASSERT(result, "EMI: Wrong single error counter value.");
     status |= !result;
-    result = (!(global_irr & SINGLE_ERR_FLAG(bank)));
-    TEST_ASSERT(result, "EMI: Unexpected single error interrupt flag risen.");
+    result = !irq_cnt.b[IRQ_CNT_SINGLE];
+    TEST_ASSERT(result, "EMI: Unexpected single error interrupt happen.");
     status |= !result;
-    result = (global_irr & DOUBLE_ERR_FLAG(bank));
-    TEST_ASSERT(result, "EMI: Double error interrupt flag not risen.");
+    result = !!irq_cnt.b[IRQ_CNT_DOUBLE];
+    TEST_ASSERT(result, "EMI: Double error interrupt not happen.");
     status |= !result;
+    result = !!irq_cnt.b[IRQ_CNT_RDY];
+    TEST_ASSERT(result, "EMI: Read/write ready interrupt not happen.");
+    status |= !result;
+    rumboot_printf("IRQ Counters -> #56=%d,#57=%d,#58=%d,Other=%d\n",
+            (uint32_t)irq_cnt.b[0], (uint32_t)irq_cnt.b[1],
+            (uint32_t)irq_cnt.b[2], (uint32_t)irq_cnt.b[3]);
+    clear_all_irqs();
     /* ----------------- */
 
     EMI_WRITE((EMI_REG)emi_ss[bank], ssi);
     EMI_WRITE(EMI_HSTSR, hstsr);
+    EMI_WRITE(EMI_IMR,   imr);
     return status;
 }
 
