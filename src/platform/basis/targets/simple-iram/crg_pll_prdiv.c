@@ -97,8 +97,8 @@ int main(void)
 	//wait_ready_pll();
 	
 	change_mode_pll(0x3);
-	change_pll(224, 1, 0);		//Change freq 16*(225/2*1)=1800Mhz , PRDIV =2, PSDIV=1;
-	change_divmode(0x8);		//Change freq 1800 / 9 = 200MHz
+	change_pll(249, 1, 0);		//Change freq 16*(250/2*1)=2000Mhz , PRDIV =2, PSDIV=1;
+	change_divmode(0x9);		//Change freq 2000 / 10 = 200MHz
 	change_mode_pll(0x0);
 	wait_ready_pll();
 
