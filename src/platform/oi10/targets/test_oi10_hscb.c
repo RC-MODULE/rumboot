@@ -26,7 +26,6 @@
 #include <platform/devices/nor_1636RR4.h>
 
 
-#define GPIO_REG_MASK   0xFFFFFFFF
 #define MAX_ATTEMPTS 100000
 
 
