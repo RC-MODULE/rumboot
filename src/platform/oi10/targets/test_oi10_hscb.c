@@ -497,7 +497,7 @@ void prepare_descriptor_areas(
 #ifdef TEST_OI10_HSCB_FULL_TRACING
 inline static void print_hscb_descriptor(hscb_packed_descr_struct_t descriptor){
     rumboot_printf("descriptor address: \n%x\nstart_address == \n%x\nlength_attr == \n%x\n",
-            &descriptor,hscb_change_endian(descriptor.start_address),hscb_change_endian(descriptor.length_attr));
+            &descriptor,hscb_change_endian(descriptor.start_address, true),hscb_change_endian(descriptor.length_attr, true));
 }
 
 void print_hscb_descriptors_in_cycle(   hscb_packed_descr_struct_t**    descriptors,
