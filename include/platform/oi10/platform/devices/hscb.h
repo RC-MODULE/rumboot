@@ -41,7 +41,7 @@
  * start_address: 32-bit start address
  * length: Data block length (max 64M-1)
  * act: descr type
- * last: is last packet descriptor
+ * act0: is last packet descriptor
  * ie: interrupt at finish execution
  * err: link fail
  * valid: data is correct
@@ -55,6 +55,7 @@ typedef struct hscb_descr_struct
     bool        ie;
     bool        err;
     bool        valid;
+    bool        change_endian;
 }hscb_descr_struct_t;
 
 /**
@@ -189,15 +190,13 @@ typedef struct{
  * target_logical_addr:         Target Logical Address
  * instruction:                 RMAP instruction field
  * key:                         RMAP key field (must match the corresponding value in the Target)
- * targer_prid_insr_key:        pointer to a preallocated array that will contain target, protocol id, instruction and key
- * reply_addr_chain:            address chain that leads from the Target back to Initiator, memory allocation must not be on stack (may be used further)
+ * reply_addr_chain:            address chain that leads from the Target back to Initiator,
+ *                                  memory allocation must not be on stack (may be used further) and must be only 0,4,8 or 12 bytes
  * initiator_logical_addr:      Initiator Logical Address
  * transaction_id:              RMAP transaction unique identifier
  * ext_addr:                    extended physical address in the current system
  * addr:                        lower 32 bits of physical address in the current system
  * length:                      data length in bytes
- * end_of_header:               pointer to a preallocated array that will contain
- *                              initiator logical address, transaction ID, Extended and ordinary Address bytes, Data Length and Header CRC
  * data_crc:                    pointer to Data CRC
  * change_endian:               swap_bytes within a 32bit word
  */
@@ -206,14 +205,13 @@ typedef struct{
     uint8_t                         target_logical_addr;
     uint8_t                         instruction;
     uint8_t                         key;
-    uint8_t*                        targer_prid_insr_key;
     hscb_uint8_array_with_length_t  reply_addr_chain;
     uint8_t                         initiator_logical_addr;
     uint16_t                        transaction_id;
     uint8_t                         ext_addr;
     uint32_t                        addr;
     uint32_t                        length;
-    uint8_t*                        end_of_header;
+    hscb_uint8_array_with_length_t  data_chain;
     uint8_t*                        data_crc;
     bool                            change_endian;
 }hscb_rmap_packet_raw_configuration_t;
@@ -228,7 +226,6 @@ typedef struct{
  */
 typedef struct{
     hscb_packed_descr_struct_t *    array_of_descriptors;
-    uint32_t                        count_of_descriptors;
     uint8_t**                       data_areas;
     uint32_t*                       data_area_sizes;
     uint32_t                        count_areas;
@@ -240,7 +237,7 @@ typedef struct{
  * \return              Function returns data word with reversed byte order
  */
 
-uint32_t hscb_change_endian (uint32_t data_in);
+uint32_t hscb_change_endian (uint32_t data_in, bool change_endian);
 
 /**
  * \brief Convert two 4-byte data words to 8 1-byte words function
