@@ -518,3 +518,178 @@ void emi_init (uint32_t const emi_dcr_base)
     rumboot_putstring( "Touching SDRAM: WARNING!!! WRITING 0x00000000 to SDRAM_BASE!!!\n" );
 #endif
 }
+
+void emi_init_impl_ext_cfg (uint32_t const emi_dcr_base, uint32_t const plb6mcif2_dcr_base, uint32_t const puaba, emi_bank_cfg* cfg )
+{
+    //init bridge
+    plb6mcif2_simple_init( plb6mcif2_dcr_base,  puaba );
+
+    //init bank0 - SRAM0
+    emi_set_bank_cfg(emi_dcr_base, emi_b0_sram0, cfg + 0);
+
+    //init bank1 - SDRAM
+    emi_set_bank_cfg(emi_dcr_base, emi_b1_sdram, cfg + 1);
+
+    emi_rfc_cfg emi_rfc =
+    {
+            TRFC_7,
+            0b11110011110011,//RP
+    };
+    emi_set_rfc(emi_dcr_base, &emi_rfc);
+
+    //init bank2 - SSRAM
+    emi_set_bank_cfg(emi_dcr_base, emi_b2_ssram, cfg + 2);
+
+    //init bank3 - PIPELINED
+    emi_set_bank_cfg(emi_dcr_base, emi_b3_pipelined, cfg + 3);
+
+    //init bank4 - SRAM1
+    emi_set_bank_cfg(emi_dcr_base, emi_b4_sram1, cfg + 4);
+
+    //init bank5 - NOR
+    emi_set_bank_cfg(emi_dcr_base, emi_b5_nor, cfg + 5);
+    dcr_write(DCR_EM2_EMI_BASE + EMI_FLCNTRL, 0x17);
+
+    emi_set_ecc (emi_dcr_base, emi_bank_all, emi_ecc_off);
+    dcr_write(emi_dcr_base + EMI_BUSEN, 0x01);
+
+    /* Current config */
+    for (int i=0; i<6; i++)
+    {
+        bank_config_cache[i] = cfg + i;
+    }
+}
+
+void prepare_default_emi_cfg(emi_bank_cfg* cfg)
+{
+    //bank0 - SRAM0
+    (cfg + 0)->ssx_cfg.BTYP   = BTYP_SRAM;
+    (cfg + 0)->ssx_cfg.PTYP   = PTYP_NO_PAGES;
+    (cfg + 0)->ssx_cfg.SRDY   = SRDY_EXT_RDY_NOT_USE;
+    (cfg + 0)->ssx_cfg.TWR    = TWR_0;
+    (cfg + 0)->ssx_cfg.SST    = SST_Flow_Through;
+    (cfg + 0)->ssx_cfg.T_SSOE = TSSOE_1;
+    (cfg + 0)->ssx_cfg.T_SOE  = TSOE_1;
+    (cfg + 0)->ssx_cfg.T_CYC  = TCYC_2;
+    (cfg + 0)->ssx_cfg.T_RDY  = 0;
+    (cfg + 0)->ssx_cfg.T_DEL  = TDEL_0;
+
+    (cfg + 0)->sdx_cfg.CSP    = CSP_256;
+    (cfg + 0)->sdx_cfg.CSP    = SDS_2M;
+    (cfg + 0)->sdx_cfg.CSP    = CL_3;
+    (cfg + 0)->sdx_cfg.CSP    = TRDL_1;
+    (cfg + 0)->sdx_cfg.CSP    = SI_EXT_INIT;
+    (cfg + 0)->sdx_cfg.CSP    = TRCD_5;
+    (cfg + 0)->sdx_cfg.CSP    = TRAS_9;
+
+    //bank1 - SDRAM
+   (cfg + 1)->ssx_cfg.BTYP   = BTYP_SDRAM;
+   (cfg + 1)->ssx_cfg.PTYP   = PTYP_NO_PAGES;
+   (cfg + 1)->ssx_cfg.SRDY   = SRDY_EXT_RDY_NOT_USE;
+   (cfg + 1)->ssx_cfg.TWR    = TWR_0;
+   (cfg + 1)->ssx_cfg.SST    = SST_Flow_Through;
+   (cfg + 1)->ssx_cfg.T_SSOE = TSSOE_1;
+   (cfg + 1)->ssx_cfg.T_SOE  = TSOE_1;
+   (cfg + 1)->ssx_cfg.T_CYC  = TCYC_8;
+   (cfg + 1)->ssx_cfg.T_RDY  = 0;
+   (cfg + 1)->ssx_cfg.T_DEL  = TDEL_0;
+
+   (cfg + 1)->sdx_cfg.CSP    = CSP_2048;
+   (cfg + 1)->sdx_cfg.CSP    = SDS_64M;
+   (cfg + 1)->sdx_cfg.CSP    = CL_3;
+   (cfg + 1)->sdx_cfg.CSP    = TRDL_2;
+   (cfg + 1)->sdx_cfg.CSP    = SI_CPU_INIT;
+   (cfg + 1)->sdx_cfg.CSP    = TRCD_2;
+   (cfg + 1)->sdx_cfg.CSP    = TRAS_5;
+
+    //bank2 - SSRAM
+    (cfg + 2)->ssx_cfg.BTYP   = BTYP_SSRAM;
+    (cfg + 2)->ssx_cfg.PTYP   = PTYP_NO_PAGES;
+    (cfg + 2)->ssx_cfg.SRDY   = SRDY_EXT_RDY_NOT_USE;
+    (cfg + 2)->ssx_cfg.TWR    = TWR_0;
+    (cfg + 2)->ssx_cfg.SST    = SST_Pipelined;
+    (cfg + 2)->ssx_cfg.T_SSOE = TSSOE_2;
+    (cfg + 2)->ssx_cfg.T_SOE  = TSOE_1;
+    (cfg + 2)->ssx_cfg.T_CYC  = TCYC_8;
+    (cfg + 2)->ssx_cfg.T_RDY  = 0;
+    (cfg + 2)->ssx_cfg.T_DEL  = TDEL_0;
+
+    (cfg + 2)->sdx_cfg.CSP    = CSP_256;
+    (cfg + 2)->sdx_cfg.CSP    = SDS_2M;
+    (cfg + 2)->sdx_cfg.CSP    = CL_3;
+    (cfg + 2)->sdx_cfg.CSP    = TRDL_1;
+    (cfg + 2)->sdx_cfg.CSP    = SI_EXT_INIT;
+    (cfg + 2)->sdx_cfg.CSP    = TRCD_5;
+    (cfg + 2)->sdx_cfg.CSP    = TRAS_9;
+
+    //bank3 - PIPELINED
+    (cfg + 3)->ssx_cfg.BTYP   = BTYP_PIPERDY;
+    (cfg + 3)->ssx_cfg.PTYP   = PTYP_NO_PAGES;
+    (cfg + 3)->ssx_cfg.SRDY   = SRDY_EXT_RDY_NOT_USE;
+    (cfg + 3)->ssx_cfg.TWR    = TWR_0;
+    (cfg + 3)->ssx_cfg.SST    = SST_Pipelined;
+    (cfg + 3)->ssx_cfg.T_SSOE = TSSOE_1;
+    (cfg + 3)->ssx_cfg.T_SOE  = TSOE_1;
+    (cfg + 3)->ssx_cfg.T_CYC  = TCYC_8;
+    (cfg + 3)->ssx_cfg.T_RDY  = 0;
+    (cfg + 3)->ssx_cfg.T_DEL  = TDEL_0;
+
+    (cfg + 3)->sdx_cfg.CSP    = CSP_256;
+    (cfg + 3)->sdx_cfg.CSP    = SDS_2M;
+    (cfg + 3)->sdx_cfg.CSP    = CL_3;
+    (cfg + 3)->sdx_cfg.CSP    = TRDL_1;
+    (cfg + 3)->sdx_cfg.CSP    = SI_EXT_INIT;
+    (cfg + 3)->sdx_cfg.CSP    = TRCD_5;
+    (cfg + 3)->sdx_cfg.CSP    = TRAS_9;
+
+    //bank4 - SRAM1
+    (cfg + 4)->ssx_cfg.BTYP   = BTYP_SRAM;
+    (cfg + 4)->ssx_cfg.PTYP   = PTYP_NO_PAGES;
+    (cfg + 4)->ssx_cfg.SRDY   = SRDY_EXT_RDY_NOT_USE;
+    (cfg + 4)->ssx_cfg.TWR    = TWR_0;
+    (cfg + 4)->ssx_cfg.SST    = SST_Flow_Through;
+    (cfg + 4)->ssx_cfg.T_SSOE = TSSOE_1;
+    (cfg + 4)->ssx_cfg.T_SOE  = TSOE_1;
+    (cfg + 4)->ssx_cfg.T_CYC  = TCYC_2;
+    (cfg + 4)->ssx_cfg.T_RDY  = 0;
+    (cfg + 4)->ssx_cfg.T_DEL  = TDEL_0;
+
+    (cfg + 4)->sdx_cfg.CSP    = CSP_256;
+    (cfg + 4)->sdx_cfg.CSP    = SDS_2M;
+    (cfg + 4)->sdx_cfg.CSP    = CL_3;
+    (cfg + 4)->sdx_cfg.CSP    = TRDL_1;
+    (cfg + 4)->sdx_cfg.CSP    = SI_EXT_INIT;
+    (cfg + 4)->sdx_cfg.CSP    = TRCD_5;
+    (cfg + 4)->sdx_cfg.CSP    = TRAS_9;
+
+    //bank5 - NOR
+    (cfg + 5)->ssx_cfg.BTYP   = BTYP_NOR;
+    (cfg + 5)->ssx_cfg.PTYP   = PTYP_NO_PAGES;
+    (cfg + 5)->ssx_cfg.SRDY   = SRDY_EXT_RDY_NOT_USE;
+    (cfg + 5)->ssx_cfg.TWR    = TWR_0;
+    (cfg + 5)->ssx_cfg.SST    = SST_Flow_Through;
+    (cfg + 5)->ssx_cfg.T_SSOE = TSSOE_1;
+    (cfg + 5)->ssx_cfg.T_SOE  = TSOE_1;
+    (cfg + 5)->ssx_cfg.T_CYC  = TCYC_8;
+    (cfg + 5)->ssx_cfg.T_RDY  = 0;
+    (cfg + 5)->ssx_cfg.T_DEL  = TDEL_0;
+
+    (cfg + 5)->sdx_cfg.CSP    =  CSP_256;
+    (cfg + 5)->sdx_cfg.CSP    =  SDS_2M;
+    (cfg + 5)->sdx_cfg.CSP    =  CL_3;
+    (cfg + 5)->sdx_cfg.CSP    =  TRDL_1;
+    (cfg + 5)->sdx_cfg.CSP    =  SI_EXT_INIT;
+    (cfg + 5)->sdx_cfg.CSP    =  TRCD_5;
+    (cfg + 5)->sdx_cfg.CSP    =  TRAS_9;
+}
+
+
+void emi_init_ext_cfg (uint32_t const emi_dcr_base, emi_bank_cfg* cfg )
+{
+    emi_init_impl_ext_cfg (emi_dcr_base, DCR_EM2_PLB6MCIF2_BASE, 0x00, cfg);
+#ifdef CMAKE_BUILD_TYPE_DEBUG
+    iowrite32(0x00000000, SDRAM_BASE); // touch sdram to prevent warnings in simulation console
+    rumboot_putstring( "Touching SDRAM: WARNING!!! WRITING 0x00000000 to SDRAM_BASE!!!\n" );
+#endif
+}
+
