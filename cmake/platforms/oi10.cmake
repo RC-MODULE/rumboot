@@ -578,16 +578,31 @@ endif()
     add_rumboot_target(
           CONFIGURATION IRAM
           FILES test_oi10_em2_201.c
-          CFLAGS -DEXT_MEM_BASE=SDRAM_BASE -DCSP=CSP_1024 -DSDS=SDS_64M -DCHECK_2_1_3
+          CFLAGS -DEXT_MEM_BASE=SDRAM_BASE -DCSP=CSP_1024 -DSDS=SDS_64M -DCHECK_2_1_3 -DCL=CL_2
           IRUN_FLAGS +sdram_col10_row14
-          PREFIX sdram-csp1024
+          PREFIX sdram-csp1024-cl2
         )
 
     add_rumboot_target(
           CONFIGURATION IRAM
           FILES test_oi10_em2_201.c
-          CFLAGS -DEXT_MEM_BASE=SDRAM_BASE -DCSP=CSP_2048 -DSDS=SDS_64M -DCHECK_2_1_3
-          PREFIX sdram-csp2048
+          CFLAGS -DEXT_MEM_BASE=SDRAM_BASE -DCSP=CSP_2048 -DSDS=SDS_64M -DCHECK_2_1_3 -DCL=CL_2
+          PREFIX sdram-csp2048-cl2
+        )
+
+    add_rumboot_target(
+          CONFIGURATION IRAM
+          FILES test_oi10_em2_201.c
+          CFLAGS -DEXT_MEM_BASE=SDRAM_BASE -DCSP=CSP_1024 -DSDS=SDS_64M -DCHECK_2_1_3 -DCL=CL_3
+          IRUN_FLAGS +sdram_col10_row14
+          PREFIX sdram-csp1024-cl3
+        )
+
+    add_rumboot_target(
+          CONFIGURATION IRAM
+          FILES test_oi10_em2_201.c
+          CFLAGS -DEXT_MEM_BASE=SDRAM_BASE -DCSP=CSP_2048 -DSDS=SDS_64M -DCHECK_2_1_3 -DCL=CL_3
+          PREFIX sdram-csp2048-cl3
         )
 
     add_rumboot_target(
