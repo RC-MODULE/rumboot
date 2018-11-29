@@ -39,9 +39,6 @@
 
 
 /* Integer constant macros */
-#define EVENT_INJECT_ERR_S          TEST_EVENT_CODE_MIN + 0
-#define EVENT_INJECT_ERR_D          TEST_EVENT_CODE_MIN + 1
-#define EVENT_CHK_IRQ		        TEST_EVENT_CODE_MIN + 2
 #define EMI_BASE                    DCR_EM2_EMI_BASE
 #define IRR_RST_ALL                 0x0001FFFF
 #define HXADR_DFLT                  0xFFFFFFF0
