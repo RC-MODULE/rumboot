@@ -14,14 +14,14 @@
 #include <rumboot/io.h>
 #include <rumboot/irq.h>
 
+#include <arch/ppc_476fp_config.h>
+#include <arch/ppc_476fp_lib_c.h>
 #include <platform/test_event_c.h>
 #include <platform/trace.h>
 #include <platform/test_assert.h>
 #include <platform/devices.h>
 #include <platform/interrupts.h>
 #include <platform/arch/ppc/test_macro.h>
-#include <platform/arch/ppc/ppc_476fp_config.h>
-#include <platform/arch/ppc/ppc_476fp_lib_c.h>
 #include <platform/arch/ppc/ppc_476fp_debug_fields.h>
 #include <platform/arch/ppc/ppc_476fp_itrpt_fields.h>
 #include <platform/arch/ppc/ppc_476fp_ctrl_fields.h>
@@ -37,7 +37,8 @@ enum {
    	TEST_DATA_PROGG     = 0xFFFFFFFF,
    	TEST_DATA_OK        = 0x12345678,
 	TEST_DATA_EVENT     = 0x00000002,
-   	TEST_DATA_ERROR     = 0x8E5917E8
+   	TEST_DATA_ERROR     = 0x8E5917E8,
+   	TEST_DATA_UNDEF     = 0x8E591794,
 } test_data;
 
 int event_get()
@@ -139,10 +140,13 @@ static void exception_handler(int id, const char *name)
     }
 }
 
+long for_test = TEST_DATA_UNDEF;
+
 int check_machinecheck ()
 {
 	uint32_t const msr_old_value = msr_read();
 	uint32_t const ccr1_old_value = spr_read(SPR_CCR1);
+	uint32_t addr = (uint32_t)&for_test;
 
 	rumboot_printf("DEBUG_MACHINECHECK check start!\n");
 
@@ -162,15 +166,23 @@ int check_machinecheck ()
 	spr_write(SPR_MCSR_C,0xFFFFFFFF);
 
     //Other check C470S_DBGMACHINECHECK
-	asm volatile ("lfs  1, 0(13)\n\t");
-	asm volatile ("lfs  2, 0(13)\n\t");
+	asm volatile (
+			"lfs  1, 0(%0)\n\t"
+			"lfs  2, 0(%0)\n\t"
+			::"r"(addr)
+			: "memory"
+	);
 	msync();
 
 	spr_write( SPR_CCR1, ccr1_old_value | (0b11 << CTRL_CCR1_FPRPEI_i)); //Floating-Point Register (FPR) parity error insert.
 	isync();
 
-	asm volatile ("lfs  1, 0(13)\n\t");
-	asm volatile ("lfs  2, 0(13)\n\t");
+	asm volatile (
+			"lfs  1, 0(%0)\n\t"
+			"lfs  2, 0(%0)\n\t"
+			::"r"(addr)
+			: "memory"
+	);
 	msync();
 
 	spr_write( SPR_CCR1, ccr1_old_value);
