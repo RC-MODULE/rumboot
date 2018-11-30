@@ -88,7 +88,7 @@
 #define CHECK_OFFSET8           (CHECK_OFFSET + ((2 * 4) + 3))
 #define CHECK_OFFSET16          (CHECK_OFFSET + ((3 * 4) + 2))
 #define CHECK_OFFSET32          CHECK_OFFSET
-#define CHECK_OFFSET64          (CHECK_OFFSET + ((4 * 4) + 2))
+#define CHECK_OFFSET64          (CHECK_OFFSET + ((4 * 4) + 0))
 #define CHECK_CONST8            0xE5
 #define CHECK_CONST16           0xCAFE
 #define CHECK_CONST32           0xF00D4BEE
@@ -103,6 +103,7 @@
 #define CF_ARGS                 ckinfo,bank
 
 /* Function and block definition macros */
+#define ALIGN(AV)               __attribute__ ((aligned (AV)))
 #define BIT(N)                  (1 << (N))
 #define EMIA(ADDR)              (EMI_BASE + ADDR)
 #define EMI_READ(ADDR)          dcr_read (EMIA(ADDR))
@@ -170,7 +171,9 @@ typedef struct   ckinfo_t           ckinfo_t;
 typedef struct   rumboot_irq_entry  rumboot_irq_entry;
 typedef union    u8x4_t             u8x4_t;
 typedef volatile uint32_t           irq_flags_t;
-typedef volatile uint64_t           vuint64_t;
+typedef volatile
+        union {  uint64_t u;
+                 double   d;}       vuint64_t ALIGN(8);
 typedef volatile uint32_t           vuint32_t;
 typedef volatile uint16_t           vuint16_t;
 typedef volatile uint8_t            vuint8_t;
@@ -281,9 +284,22 @@ void emi_irq_handler( int irq, void *arg )
 
 static void ex_handler(int exid, const char *exname)
 {
+    uintptr_t   ret_addr;
+    uint32_t    syndrome;
+    switch(exid)
+    {
+    case RUMBOOT_IRQ_MACHINE_CHECK:
+        ret_addr = spr_read(SPR_MCSRR0);
+        syndrome = spr_read(SPR_MCSR_RW);
+        break;
+    default:
+        ret_addr = spr_read(SPR_SRR0);
+        syndrome = spr_read(SPR_ESR);
+        break;
+    }
     rumboot_printf(
-            "\n >>> EXCEPTION #%d (%s) at 0x%X with MCSR=0x%X! <<<\n",
-            exid, exname, spr_read(SPR_MCSRR0), spr_read(SPR_MCSR_RW));
+            "\n >>> EXCEPTION #%d (%s) at 0x%X with syndrome=0x%X! <<<\n",
+            exid, exname, ret_addr, syndrome);
     spr_write(SPR_MCSR_C, ~0);
     l2c_l2_write(DCR_L2C_BASE, L2C_L2PLBSTAT1, ~0);
 }
@@ -335,6 +351,12 @@ DEFINE_INIT(emi_hw)
     return INIT_OK;
 }
 
+DEFINE_INIT(ppc_hw)
+{
+    msr_write(msr_read() | BIT(ITRPT_XSR_FP_i)); // FPU enable
+    return  !(msr_read() & BIT(ITRPT_XSR_FP_i));
+}
+
 DEFINE_CHECK(rfc);
 DEFINE_CHECK(hstsr_ecc_on);
 DEFINE_CHECK(hstsr_ecc_off);
@@ -361,21 +383,22 @@ DEFINE_CHECK(rfc)   /* 2.2.1 */
 {
     uint32_t  rfc_saved = 0,
               cnt       = 0,
-              result    = TEST_OK,
+              result    = 0,
               status    = TEST_OK;
     uint32_t *rfcp      = NULL;
     vuint8_t  readed8   = 0;
     vuint16_t readed16  = 0;
     vuint32_t readed32  = 0;
-    vuint64_t readed64  = 0;
+    vuint64_t readed64  = {0},
+              data64    = {0};
     static
     uint32_t rfc[] =
     {
-        4,
-        MK_RFC(EMI_RFC_RP_DIV_1,TRFC_6 ),
-        MK_RFC(EMI_RFC_RP_DIV_1,TRFC_13),
-        MK_RFC(EMI_RFC_RP_DIV_2,TRFC_6 ),
-        MK_RFC(EMI_RFC_RP_DIV_2,TRFC_13)
+        4,  /* Number of items */
+        MK_RFC(EMI_RFC_RP_DIV_1, TRFC_6 ),
+        MK_RFC(EMI_RFC_RP_DIV_1, TRFC_13),
+        MK_RFC(EMI_RFC_RP_DIV_2, TRFC_6 ),
+        MK_RFC(EMI_RFC_RP_DIV_2, TRFC_13)
     };
 
     if(IS_NOT_SDRAM(bank))
@@ -386,15 +409,20 @@ DEFINE_CHECK(rfc)   /* 2.2.1 */
 
     emi_switch_bank(bank);
 
-    for(rfcp = rfc+1; cnt < rfc[0]; rfcp++,cnt++)
+    /* Fill region by zeros (Anti-X) */
+    for(cnt = 0; cnt < 16; cnt++)
+        iowrite32(0x00000000,
+                CHECK_ADDR32(bank) + (cnt * sizeof(uint32_t)));
+
+    for(rfcp = rfc+1, cnt = 0; cnt < rfc[0]; rfcp++, cnt++)
     {
-        rumboot_printf("Check SDRAM: RP=0x%X, TRFC=0x%X\n...\n",
+        rumboot_printf("Check SDRAM: RP=0x%X, TRFC=0x%X...\n",
                 (*rfcp >> EMI_RFC_RP_i  ) & EMI_RFC_RP_MASK,
                 (*rfcp >> EMI_RFC_TRFC_i) & EMI_RFC_TRFC_MASK);
         EMI_WRITE(EMI_RFC, *rfcp);
 
         /* 8 bits */
-        rumboot_printf("8 bits...\n");
+        rumboot_printf("-> 8 bits...\n");
         iowrite8(CHECK_CONST8, CHECK_ADDR8(bank));
         msync();
         readed8 = ioread8(CHECK_ADDR8(bank));
@@ -404,7 +432,7 @@ DEFINE_CHECK(rfc)   /* 2.2.1 */
         /* ------ */
 
         /* 16 bits */
-        rumboot_printf("16 bits...\n");
+        rumboot_printf("-> 16 bits...\n");
         iowrite16(CHECK_CONST16, CHECK_ADDR16(bank));
         msync();
         readed16 = ioread16(CHECK_ADDR16(bank));
@@ -414,7 +442,7 @@ DEFINE_CHECK(rfc)   /* 2.2.1 */
         /* ------- */
 
         /* 32 bits */
-        rumboot_printf("32 bits...\n");
+        rumboot_printf("-> 32 bits...\n");
         iowrite32(CHECK_CONST32, CHECK_ADDR32(bank));
         msync();
         readed32 = ioread32(CHECK_ADDR32(bank));
@@ -424,16 +452,17 @@ DEFINE_CHECK(rfc)   /* 2.2.1 */
         /* ------- */
 
         /* 64 bits */
-        rumboot_printf("64 bits...\n");
-        iowrite64(CHECK_CONST64, CHECK_ADDR64(bank));
+        rumboot_printf("-> 64 bits...\n");
+        data64.u = CHECK_CONST64;
+        iowrite64d(data64.d, CHECK_ADDR64(bank));
         msync();
-        readed64 = ioread64(CHECK_ADDR64(bank));
-        result = (readed64 == CHECK_CONST64);
+        readed64.d = ioread64d(CHECK_ADDR64(bank));
+        result = (readed64.u == CHECK_CONST64);
         TEST_ASSERT(result, "EMI_SDRAM: Write/read 64 bits failed.");
         status |= !result;
         /* ------- */
 
-        rumboot_printf("Done.\n");
+        rumboot_printf("Done.\n\n");
     }
 
     rfc_saved = EMI_READ(EMI_RFC);
@@ -1025,8 +1054,9 @@ int main(void)
                  init_result = INIT_OK;
     ckinfo_t    *test;
 
-    DO_INIT(init_result, emi_hw);
-    DO_INIT(init_result, interrupts);
+    DO_INIT(init_result, ppc_hw);       /* Init PPC hardware    */
+    DO_INIT(init_result, emi_hw);       /* Init EMI hardware    */
+    DO_INIT(init_result, interrupts);   /* Init interrupts      */
 
     // test_event_send_test_id("test_oi10_em2_202");
 
