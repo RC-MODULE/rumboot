@@ -179,9 +179,7 @@ echo "save mem "${DMP_PATH}" "${COMPARE_MEM_START_ADDR} ${COMPARE_MEM_LEN_BYTES}
 sleep 1
 echo "Run RiscWatch"
 cd ${RW_PATH}
-#${RWCD} ${CMD_PATH}
-echo ${CMD_PATH}
-./rwppc
+${RWCD} ${CMD_PATH}
 
 sleep 1
 echo "Compare dumps..."
