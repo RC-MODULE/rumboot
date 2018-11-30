@@ -132,6 +132,14 @@
 #define DESCRIPTOR_TABLES_COUNT 4
 #define DEFAULT_HEAP_ID 1
 
+#ifndef COUNT_PACKETS
+#define COUNT_PACKETS 3
+#endif
+
+#ifndef DEFAULT_HEAP_NAME_FOR_REPLY_ADDR
+#define DEFAULT_HEAP_NAME_FOR_REPLY_ADDR
+#endif
+
 static volatile uint32_t hscb0_status;
 static volatile uint32_t hscb1_status;
 static volatile uint32_t hscb0_dma_status;
@@ -488,17 +496,42 @@ uint32_t hscb_check_data(
         return 0;
 }
 
+uint32_t generate_some_raw_rmap_packets(hscb_rmap_packet_raw_configuration_t* raw_rmap_packets)
+{
+    int i = COUNT_PACKETS;
+    uint32_t reply_addr_length = 0;
+    switch(COUNT_PACKETS)
+    {
+        case 1:
+        {
+            --i;
+            raw_rmap_packets[i].target_addr_chain.array = NULL;
+            raw_rmap_packets[i].target_addr_chain.length = 0;
+            raw_rmap_packets[i].target_logical_addr = HSCB_RMAP_DEFAULT_TARGET_LOGICAL_ADDRESS;
+            reply_addr_length = HSCB_RMAP_PACKET_REPLY_ADDR_12B;
+            raw_rmap_packets[i].instruction =
+                    (HSCB_RMAP_PACKET_WRITE             << HSCB_RMAP_PACKET_INSTRUCTION_FIELD_WRITE_i)
+                  | (HSCB_RMAP_PACKET_VERIFY            << HSCB_RMAP_PACKET_INSTRUCTION_FIELD_VERIFY_DATA_i)
+                  | (HSCB_RMAP_PACKET_REPLY             << HSCB_RMAP_PACKET_INSTRUCTION_FIELD_W_REPLY_i)
+                  | (HSCB_RMAP_PACKET_INCREMENT         << HSCB_RMAP_PACKET_INSTRUCTION_FIELD_INCREMENT_i)
+                  | (HSCB_RMAP_PACKET_TYPE_COMMAND      << HSCB_RMAP_PACKET_INSTRUCTION_FIELD_PACKET_TYPE_i)
+                  | (reply_addr_length    << HSCB_RMAP_PACKET_INSTRUCTION_FIELD_REPLY_ADDR_LEN_i);
+            raw_rmap_packets[i].key = HSCB_RMAP_DEFAULT_KEY;
+            raw_rmap_packets[i].reply_addr_chain.length = reply_addr_length << 2;
+            raw_rmap_packets[i].reply_addr_chain.array = rumboot_malloc_
+        } break;
+        default: return 1;
+    }
+    return 0;
+}
+
 static uint32_t check_rmap_func(
-        uint32_t base_addr,
-        uint32_t supplementary_base_addr,
-        uint8_t **  data_areas,
-        uint32_t*   data_area_sizes,
-        uint32_t    data_areas_count){
+        uint32_t supplementary_base_addr){
     hscb_packed_descr_struct_t** descriptors = NULL;
     uint32_t descriptor_counts[DESCRIPTOR_TABLES_COUNT] = {3, 3, 3, 3};
     int cnt = 0;
     int result = 0;
-
+    hscb_rmap_packet_raw_configuration_t* raw_rmap_packets = NULL;
     hscb0_status = 0;
     hscb1_status = 0;
     hscb0_dma_status = 0;
@@ -506,80 +539,89 @@ static uint32_t check_rmap_func(
 
     rumboot_putstring( "------- HSCB RMAP test -------\n" );
 
-    prepare_descriptor_areas(&descriptors,descriptor_counts,DESCRIPTOR_TABLES_COUNT);
-    init_hscb_cfg( data_areas, data_area_sizes, descriptors, descriptor_counts,DESCRIPTOR_TABLES_COUNT, HSCB_ROTATE_BYTES_ENABLE);
-
-#ifdef TEST_OI10_HSCB_FULL_TRACING
-    print_hscb_descriptors_in_cycle(descriptors, descriptor_counts, DESCRIPTOR_TABLES_COUNT);
-#endif
-
-    set_descriptor_tables(base_addr, supplementary_base_addr, descriptors,descriptor_counts,DESCRIPTOR_TABLES_COUNT);
-    hscb_set_max_speed(base_addr);
-    hscb_set_max_speed(supplementary_base_addr);
-        // Enable HSCB0 and HSCB1
-    iowrite32((1 << HSCB_IRQ_MASK_ACTIVE_LINK_i),    base_addr + HSCB_IRQ_MASK);
-    iowrite32((1 << HSCB_IRQ_MASK_ACTIVE_LINK_i),    supplementary_base_addr + HSCB_IRQ_MASK);
-    iowrite32((1 << HSCB_SETTINGS_EN_HSCB_i),        base_addr + HSCB_SETTINGS);
-    iowrite32((1 << HSCB_SETTINGS_EN_HSCB_i),        supplementary_base_addr + HSCB_SETTINGS);
-    rumboot_putstring( "Waiting for HSCB0 and HSCB1 link establishing\n" );
-    if(!(   hscb_wait_status(base_addr,                 (HSCB_STATE_RUN << HSCB_STATUS_STATE_i)) &
-            hscb_wait_status(supplementary_base_addr,   (HSCB_STATE_RUN << HSCB_STATUS_STATE_i)))){
-        rumboot_putstring( "Wait HSCB RUN state Time-out\n" );
-        rumboot_printf("HSCB(0x%x) status: 0x%x\n", base_addr, hscb_get_status(base_addr));
-        rumboot_printf("HSCB(0x%x) status: 0x%x\n", supplementary_base_addr, hscb_get_status(base_addr));
+    raw_rmap_packets = rumboot_malloc_from_heap_aligned(
+            DEFAULT_HEAP_ID,
+            sizeof(hscb_rmap_packet_raw_configuration_t) * COUNT_PACKETS, 0);
+    if(!raw_rmap_packets)
+    {
+        rumboot_putstring("Cannot allocate memory from default heap for raw RMAP packets, exiting.");
         return 1;
     }
-
-    rumboot_putstring( "HSCB link has enabled\n" );
-    // Enable DMA for HSCB0 and HSCB1
-    rumboot_putstring( "Start work!\n" );
-    hscb_run_rdma(base_addr);
-    hscb_run_rdma(supplementary_base_addr);
-    hscb_run_wdma(base_addr);
-    hscb_run_wdma(supplementary_base_addr);
-    rumboot_putstring( "Wait HSCB0 and HSCB1 finish work\n" );
-    while (!(hscb0_dma_status & hscb1_dma_status)){
-        if (cnt == MAX_ATTEMPTS) {
-            rumboot_putstring( "Wait interrupt Time-out\n" );
-            return 1;
-        }
-        else
-            cnt += 1;
-    }
-    cnt = 0;
-    hscb0_dma_status = 0;
-    hscb1_dma_status = 0;
-    rumboot_putstring( "Finish work!\n" );
-
-
-    rumboot_putstring( "HSCB1 to HSCB0 descriptors checking\n" );
-    rumboot_puthex((uint32_t)(*(descriptors + 3)));
-    result += hscb_check_data(*(descriptors + 3), descriptor_counts[3], *(descriptors + 2), descriptor_counts[2]);
-    rumboot_putstring( "HSCB1 to HSCB0 descriptors: checked.\n" );
-
-    rumboot_putstring( "HSCB0 to HSCB1 descriptors checking\n" );
-    rumboot_puthex((uint32_t)(*(descriptors + 1)));
-    result += hscb_check_data(*(descriptors + 1), descriptor_counts[1], *(descriptors + 0), descriptor_counts[0]);
-    rumboot_putstring( "HSCB0 to HSCB1 descriptors: checked.\n" );
+    generate_some_raw_rmap_packets(raw_rmap_packets);
+//    prepare_descriptor_areas(&descriptors,descriptor_counts,DESCRIPTOR_TABLES_COUNT);
+//    init_hscb_cfg( data_areas, data_area_sizes, descriptors, descriptor_counts,DESCRIPTOR_TABLES_COUNT, HSCB_ROTATE_BYTES_ENABLE);
+//
+//#ifdef TEST_OI10_HSCB_FULL_TRACING
+//    print_hscb_descriptors_in_cycle(descriptors, descriptor_counts, DESCRIPTOR_TABLES_COUNT);
+//#endif
+//
+//    set_descriptor_tables(base_addr, supplementary_base_addr, descriptors,descriptor_counts,DESCRIPTOR_TABLES_COUNT);
+//    hscb_set_max_speed(base_addr);
+//    hscb_set_max_speed(supplementary_base_addr);
+//        // Enable HSCB0 and HSCB1
+//    iowrite32((1 << HSCB_IRQ_MASK_ACTIVE_LINK_i),    base_addr + HSCB_IRQ_MASK);
+//    iowrite32((1 << HSCB_IRQ_MASK_ACTIVE_LINK_i),    supplementary_base_addr + HSCB_IRQ_MASK);
+//    iowrite32((1 << HSCB_SETTINGS_EN_HSCB_i),        base_addr + HSCB_SETTINGS);
+//    iowrite32((1 << HSCB_SETTINGS_EN_HSCB_i),        supplementary_base_addr + HSCB_SETTINGS);
+//    rumboot_putstring( "Waiting for HSCB0 and HSCB1 link establishing\n" );
+//    if(!(   hscb_wait_status(base_addr,                 (HSCB_STATE_RUN << HSCB_STATUS_STATE_i)) &
+//            hscb_wait_status(supplementary_base_addr,   (HSCB_STATE_RUN << HSCB_STATUS_STATE_i)))){
+//        rumboot_putstring( "Wait HSCB RUN state Time-out\n" );
+//        rumboot_printf("HSCB(0x%x) status: 0x%x\n", base_addr, hscb_get_status(base_addr));
+//        rumboot_printf("HSCB(0x%x) status: 0x%x\n", supplementary_base_addr, hscb_get_status(base_addr));
+//        return 1;
+//    }
+//
+//    rumboot_putstring( "HSCB link has enabled\n" );
+//    // Enable DMA for HSCB0 and HSCB1
+//    rumboot_putstring( "Start work!\n" );
+//    hscb_run_rdma(base_addr);
+//    hscb_run_rdma(supplementary_base_addr);
+//    hscb_run_wdma(base_addr);
+//    hscb_run_wdma(supplementary_base_addr);
+//    rumboot_putstring( "Wait HSCB0 and HSCB1 finish work\n" );
+//    while (!(hscb0_dma_status & hscb1_dma_status)){
+//        if (cnt == MAX_ATTEMPTS) {
+//            rumboot_putstring( "Wait interrupt Time-out\n" );
+//            return 1;
+//        }
+//        else
+//            cnt += 1;
+//    }
+//    cnt = 0;
+//    hscb0_dma_status = 0;
+//    hscb1_dma_status = 0;
+//    rumboot_putstring( "Finish work!\n" );
+//
+//
+//    rumboot_putstring( "HSCB1 to HSCB0 descriptors checking\n" );
+//    rumboot_puthex((uint32_t)(*(descriptors + 3)));
+//    result += hscb_check_data(*(descriptors + 3), descriptor_counts[3], *(descriptors + 2), descriptor_counts[2]);
+//    rumboot_putstring( "HSCB1 to HSCB0 descriptors: checked.\n" );
+//
+//    rumboot_putstring( "HSCB0 to HSCB1 descriptors checking\n" );
+//    rumboot_puthex((uint32_t)(*(descriptors + 1)));
+//    result += hscb_check_data(*(descriptors + 1), descriptor_counts[1], *(descriptors + 0), descriptor_counts[0]);
+//    rumboot_putstring( "HSCB0 to HSCB1 descriptors: checked.\n" );
     return result;
 }
 
 int main() {
     uint32_t result = 0x0;
     struct rumboot_irq_entry *tbl;
-    uint32_t count_of_memory_areas;
-    uint8_t** data_areas = NULL;
-    uint32_t* data_area_sizes = NULL;
+//    uint32_t count_of_memory_areas;
+//    uint8_t** data_areas = NULL;
+//    uint32_t* data_area_sizes = NULL;
 
-    rumboot_printf( "Check HSCB (0x%x) \n", HSCB_UNDER_TEST_BASE );
+    rumboot_printf( "Check HSCB RMAP (0x%x) \n", HSCB_UNDER_TEST_BASE );
 
     emi_init(DCR_EM2_EMI_BASE);
     tbl = create_irq_handlers();
 
-    count_of_memory_areas = prepare_memory_areas(&data_areas, &data_area_sizes);
-    set_test_data_multiple(data_areas, data_area_sizes, count_of_memory_areas, HSCB_ROTATE_BYTES_DISABLE);
+//    count_of_memory_areas = prepare_memory_areas(&data_areas, &data_area_sizes);
+//    set_test_data_multiple(data_areas, data_area_sizes, count_of_memory_areas, HSCB_ROTATE_BYTES_DISABLE);
 
-    result += check_rmap_func(HSCB_UNDER_TEST_BASE, HSCB_SUPPLEMENTARY_BASE, data_areas, data_area_sizes, count_of_memory_areas);
+    result += check_rmap_func(HSCB_SUPPLEMENTARY_BASE);
     delete_irq_handlers(tbl);
 
     //result += check_gpio_func( HSCB_UNDER_TEST_BASE, 0x2A );
