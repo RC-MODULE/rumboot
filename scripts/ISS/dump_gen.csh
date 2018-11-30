@@ -172,8 +172,8 @@ echo " run" >> ${CMD_PATH}
 echo " set addr = IAR" >> ${CMD_PATH}
 echo "endwhile" >> ${CMD_PATH}
 echo "" >> ${CMD_PATH}
-echo "save mem "${TEST1_PATH}" 0x80002a8c 0x80" >> ${CMD_PATH}
-echo "save mem "${TEST2_PATH}" 0x80002b0c 0x80" >> ${CMD_PATH}
+echo "save mem "${TEST1_PATH}" 0x80002c18 0x80" >> ${CMD_PATH}
+echo "save mem "${TEST2_PATH}" 0x80002c98 0x80" >> ${CMD_PATH}
 echo "save mem "${DMP_PATH}" "${COMPARE_MEM_START_ADDR} ${COMPARE_MEM_LEN_BYTES} >> ${CMD_PATH}
 
 sleep 1
