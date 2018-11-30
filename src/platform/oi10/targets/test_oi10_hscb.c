@@ -283,35 +283,39 @@ static volatile bool hscb1_link_established;
 
 static void handler( int irq, void *arg ) {
     //get interrupt source
-    rumboot_printf( "HSCB IRQ arrived  \n" );
+    rumboot_printf( "IRQ arrived  \n" );
 //    rumboot_puthex (irq);
     if (irq == HSCB_UNDER_TEST_INT) {
-        rumboot_putstring("HSCB_0_IRQ\n");
-        rumboot_puthex (hscb_get_status(HSCB_UNDER_TEST_BASE) );
+        rumboot_printf("HSCB_IRQ (0x%x), status : 0x%x\n",
+                HSCB_UNDER_TEST_BASE,
+                hscb_get_status(HSCB_UNDER_TEST_BASE));
     }
     if (irq == HSCB_UNDER_TEST_DMA_INT) {
-        rumboot_putstring("HSCB_0_DMA_IRQ\n");
         hscb0_dma_status = hscb_get_adma_ch_status(HSCB_UNDER_TEST_BASE );
-        rumboot_puthex(hscb0_dma_status);
+        rumboot_printf("HSCB_DMA_IRQ (0x%x), AXI DMA channel status : 0x%x\nDetailed HSCB DMA status : ",
+                HSCB_UNDER_TEST_BASE,
+                hscb0_dma_status);
         if (hscb0_dma_status & HSCB_ADMA_CH_STATUS_RDMA_IRQ_mask)
             hscb0_dma_status = hscb_get_rdma_status(HSCB_UNDER_TEST_BASE);
         else if (hscb0_dma_status & HSCB_ADMA_CH_STATUS_WDMA_IRQ_mask)
             hscb0_dma_status = hscb_get_wdma_status(HSCB_UNDER_TEST_BASE);
-        rumboot_puthex(hscb0_dma_status);
+        rumboot_printf("0x%x\n", hscb0_dma_status);
     }
     if (irq == HSCB_SUPPLEMENTARY_INT) {
-        rumboot_putstring("HSCB_1_IRQ\n");
-        rumboot_puthex (hscb_get_status(HSCB_SUPPLEMENTARY_BASE));
+        rumboot_printf("HSCB_IRQ (0x%x), status : 0x%x\n",
+                HSCB_SUPPLEMENTARY_BASE,
+                hscb_get_status(HSCB_SUPPLEMENTARY_BASE));
     }
     if (irq == HSCB_SUPPLEMENTARY_DMA_INT) {
-        rumboot_putstring("HSCB_1_DMA_IRQ\n");
         hscb1_dma_status = hscb_get_adma_ch_status(HSCB_SUPPLEMENTARY_BASE );
-        rumboot_puthex(hscb1_dma_status);
+        rumboot_printf("HSCB_DMA_IRQ (0x%x), AXI DMA channel status : 0x%x\nDetailed HSCB DMA status : ",
+                HSCB_SUPPLEMENTARY_BASE,
+                hscb1_dma_status);
         if (hscb1_dma_status & HSCB_ADMA_CH_STATUS_RDMA_IRQ_mask)
             hscb1_dma_status = hscb_get_rdma_status(HSCB_SUPPLEMENTARY_BASE);
         else if (hscb1_dma_status & HSCB_ADMA_CH_STATUS_WDMA_IRQ_mask)
             hscb1_dma_status = hscb_get_wdma_status(HSCB_SUPPLEMENTARY_BASE);
-        rumboot_puthex(hscb1_dma_status);
+        rumboot_printf("0x%x\n", hscb1_dma_status);
     }
 }
 
@@ -696,12 +700,12 @@ static uint32_t check_hscb_short_func(
     iowrite32((1 << HSCB_SETTINGS_EN_HSCB_i),        base_addr + HSCB_SETTINGS);
     iowrite32((1 << HSCB_SETTINGS_EN_HSCB_i),        supplementary_base_addr + HSCB_SETTINGS);
     // Wait connecting
-    rumboot_printf( "Waiting for HSCB%x and HSCB%x link establishing\n", base_addr, supplementary_base_addr);
+    rumboot_printf( "Waiting for HSCB (0x%x) and HSCB (0x%x) link establishing\n", base_addr, supplementary_base_addr);
     if(!(   hscb_wait_status(base_addr,                 (HSCB_STATE_RUN << HSCB_STATUS_STATE_i)) &
             hscb_wait_status(supplementary_base_addr,   (HSCB_STATE_RUN << HSCB_STATUS_STATE_i)))){
         rumboot_putstring( "Wait HSCB RUN state Time-out\n" );
-        rumboot_printf("HSCB%x status: 0x%x\n", base_addr, hscb_get_status(base_addr));
-        rumboot_printf("HSCB%x status: 0x%x\n", supplementary_base_addr, hscb_get_status(base_addr));
+        rumboot_printf("HSCB (0x%x) status: 0x%x\n", base_addr, hscb_get_status(base_addr));
+        rumboot_printf("HSCB (0x%x) status: 0x%x\n", supplementary_base_addr, hscb_get_status(base_addr));
         free_2D_arrays((void **)descriptors, DESCRIPTOR_TABLES_COUNT);
         return 1;
     }
@@ -720,7 +724,7 @@ static uint32_t check_hscb_short_func(
                             ioread32(base_addr + HSCB_RDMA_DESC_ADDR));
         result += 1;
     }
-    rumboot_printf( "Wait HSCB%x and HSCB%x finish work\n", base_addr, supplementary_base_addr );
+    rumboot_printf( "Wait HSCB (0x%x) and HSCB (0x%x) finish work\n", base_addr, supplementary_base_addr );
     while (!(hscb0_dma_status & hscb1_dma_status)){
         if (cnt == MAX_ATTEMPTS) {
             rumboot_putstring( "Wait interrupt Time-out\n" );
@@ -735,15 +739,15 @@ static uint32_t check_hscb_short_func(
     hscb1_dma_status = 0;
 
     rumboot_putstring( "Finish work!\n" );
-    rumboot_printf( "HSCB%x to HSCB%x descriptors checking\n", supplementary_base_addr, base_addr );
+    rumboot_printf( "HSCB (0x%x) to HSCB (0x%x) descriptors checking\n", supplementary_base_addr, base_addr );
     rumboot_puthex((uint32_t)(*(descriptors + 3)));
     result += hscb_check_data(*(descriptors + 3), descriptor_counts[3], *(descriptors + 2), descriptor_counts[2]);
-    rumboot_printf( "HSCB%x to HSCB%x descriptors: checked.\n", supplementary_base_addr, base_addr  );
+    rumboot_printf( "HSCB (0x%x) to HSCB (0x%x) descriptors: checked.\n", supplementary_base_addr, base_addr  );
 
-    rumboot_printf( "HSCB%x to HSCB%x descriptors checking\n", base_addr, supplementary_base_addr );
+    rumboot_printf( "HSCB (0x%x) to HSCB (0x%x) descriptors checking\n", base_addr, supplementary_base_addr );
     rumboot_puthex((uint32_t)(*(descriptors + 1)));
     result += hscb_check_data(*(descriptors + 1), descriptor_counts[1], *(descriptors + 0), descriptor_counts[0]);
-    rumboot_printf( "HSCB%x to HSCB%x descriptors: checked.\n", base_addr, supplementary_base_addr );
+    rumboot_printf( "HSCB (0x%x) to HSCB (0x%x) descriptors: checked.\n", base_addr, supplementary_base_addr );
     free_2D_arrays((void **)descriptors, DESCRIPTOR_TABLES_COUNT);
     return result;
 }
@@ -782,12 +786,12 @@ static uint32_t check_hscb_func(
     iowrite32((1 << HSCB_IRQ_MASK_ACTIVE_LINK_i),    supplementary_base_addr + HSCB_IRQ_MASK);
     iowrite32((1 << HSCB_SETTINGS_EN_HSCB_i),        base_addr + HSCB_SETTINGS);
     iowrite32((1 << HSCB_SETTINGS_EN_HSCB_i),        supplementary_base_addr + HSCB_SETTINGS);
-    rumboot_printf( "Waiting for HSCB%x and HSCB%x link establishing\n", base_addr, supplementary_base_addr);
+    rumboot_printf( "Waiting for HSCB (0x%x) and HSCB (0x%x) link establishing\n", base_addr, supplementary_base_addr);
     if(!(   hscb_wait_status(base_addr,                 (HSCB_STATE_RUN << HSCB_STATUS_STATE_i)) &
             hscb_wait_status(supplementary_base_addr,   (HSCB_STATE_RUN << HSCB_STATUS_STATE_i)))){
         rumboot_putstring( "Wait HSCB RUN state Time-out\n" );
-        rumboot_printf("HSCB%x status: 0x%x\n", base_addr, hscb_get_status(base_addr));
-        rumboot_printf("HSCB%x status: 0x%x\n", supplementary_base_addr, hscb_get_status(base_addr));
+        rumboot_printf("HSCB (0x%x) status: 0x%x\n", base_addr, hscb_get_status(base_addr));
+        rumboot_printf("HSCB (0x%x) status: 0x%x\n", supplementary_base_addr, hscb_get_status(base_addr));
         free_2D_arrays((void **)descriptors, DESCRIPTOR_TABLES_COUNT);
         return 1;
     }
@@ -805,7 +809,7 @@ static uint32_t check_hscb_func(
                             ioread32(base_addr + HSCB_RDMA_DESC_ADDR));
         result += 1;
     }
-    rumboot_printf( "Wait HSCB%x and HSCB%x finish work\n", base_addr, supplementary_base_addr );
+    rumboot_printf( "Wait HSCB (0x%x) and HSCB (0x%x) finish work\n", base_addr, supplementary_base_addr );
     while (!(hscb0_dma_status & hscb1_dma_status)){
         if (cnt == MAX_ATTEMPTS) {
             rumboot_putstring( "Wait interrupt Time-out\n" );
@@ -821,15 +825,15 @@ static uint32_t check_hscb_func(
     rumboot_putstring( "Finish work!\n" );
 
 
-    rumboot_printf( "HSCB%x to HSCB%x descriptors checking\n", supplementary_base_addr, base_addr );
+    rumboot_printf( "HSCB (0x%x) to HSCB (0x%x) descriptors checking\n", supplementary_base_addr, base_addr );
     rumboot_puthex((uint32_t)(*(descriptors + 3)));
     result += hscb_check_data(*(descriptors + 3), descriptor_counts[3], *(descriptors + 2), descriptor_counts[2]);
-    rumboot_printf( "HSCB%x to HSCB%x descriptors: checked.\n", supplementary_base_addr, base_addr  );
+    rumboot_printf( "HSCB (0x%x) to HSCB (0x%x) descriptors: checked.\n", supplementary_base_addr, base_addr  );
 
-    rumboot_printf( "HSCB%x to HSCB%x descriptors checking\n", base_addr, supplementary_base_addr );
+    rumboot_printf( "HSCB (0x%x) to HSCB (0x%x) descriptors checking\n", base_addr, supplementary_base_addr );
     rumboot_puthex((uint32_t)(*(descriptors + 1)));
     result += hscb_check_data(*(descriptors + 1), descriptor_counts[1], *(descriptors + 0), descriptor_counts[0]);
-    rumboot_printf( "HSCB%x to HSCB%x descriptors: checked.\n", base_addr, supplementary_base_addr );
+    rumboot_printf( "HSCB (0x%x) to HSCB (0x%x) descriptors: checked.\n", base_addr, supplementary_base_addr );
     free_2D_arrays((void **)descriptors, DESCRIPTOR_TABLES_COUNT);
     return result;
 }
