@@ -101,31 +101,51 @@ set TEST2_PATH=${LOG_DIR}/test_data2.dmp
 rm -f ${TEST1_PATH}
 rm -f ${TEST2_PATH}
 
-echo "bpmode hw step" >> ${CMD_PATH}
-
-if ( "${MEMSET_BOOT_ADDR}" != "" ) then
-echo "bp set ihw 0x${MEMSET_BOOT_ADDR}" >> ${CMD_PATH}
-endif
-
-if ( "${MEMSET_ADDR}" != "" ) then
-echo "bp set ihw 0x${MEMSET_ADDR}" >> ${CMD_PATH}
-endif
-
-if ( "${MEMCPY_ADDR}" != "" ) then
-echo "bp set ihw 0x${MEMCPY_ADDR}" >> ${CMD_PATH}
-endif
-
-echo "bp set ihw 0x${EXIT_ADDR}" >> ${CMD_PATH}
-echo "run" >> ${CMD_PATH}
+echo "" >> ${CMD_PATH}
 echo "create src" >> ${CMD_PATH}
 echo "create dst" >> ${CMD_PATH}
 echo "create len" >> ${CMD_PATH}
 echo "create val" >> ${CMD_PATH}
 echo "create addr" >> ${CMD_PATH}
-echo "set addr = IAR" >> ${CMD_PATH}
-echo "while (addr != 0x${EXIT_ADDR})" >> ${CMD_PATH}
 if ( "${MEMSET_BOOT_ADDR}" != "" ) then
-echo " if (addr == 0x${MEMSET_BOOT_ADDR})" >> ${CMD_PATH}
+echo "create rom_memset" >> ${CMD_PATH}
+endif
+if ( "${MEMSET_ADDR}" != "" ) then
+echo "create memset" >> ${CMD_PATH}
+endif
+if ( "${MEMCPY_ADDR}" != "" ) then
+echo "create memcpy" >> ${CMD_PATH}
+endif
+echo "create exit_addr" >> ${CMD_PATH}
+echo "" >> ${CMD_PATH}
+if ( "${MEMSET_BOOT_ADDR}" != "" ) then
+echo "set rom_memset = 0x${MEMSET_BOOT_ADDR}" >> ${CMD_PATH}
+endif
+if ( "${MEMSET_ADDR}" != "" ) then
+echo "set memset = 0x${MEMSET_ADDR}" >> ${CMD_PATH}
+endif
+if ( "${MEMCPY_ADDR}" != "" ) then
+echo "set memcpy = 0x${MEMCPY_ADDR}" >> ${CMD_PATH}
+endif
+echo "set exit_addr = 0x${EXIT_ADDR}" >> ${CMD_PATH}
+echo "" >> ${CMD_PATH}
+echo "bpmode hw step" >> ${CMD_PATH}
+if ( "${MEMSET_BOOT_ADDR}" != "" ) then
+echo "bp set ihw rom_memset" >> ${CMD_PATH}
+endif
+if ( "${MEMSET_ADDR}" != "" ) then
+echo "bp set ihw memset" >> ${CMD_PATH}
+endif
+if ( "${MEMCPY_ADDR}" != "" ) then
+echo "bp set ihw memcpy" >> ${CMD_PATH}
+endif
+echo "bp set ihw exit_addr" >> ${CMD_PATH}
+echo "run" >> ${CMD_PATH}
+echo "" >> ${CMD_PATH}
+echo "set addr = IAR" >> ${CMD_PATH}
+echo "while (addr != exit_addr)" >> ${CMD_PATH}
+if ( "${MEMSET_BOOT_ADDR}" != "" ) then
+echo " if (addr == rom_memset)" >> ${CMD_PATH}
 echo "  set dst = R3" >> ${CMD_PATH}
 echo "  set val = R4" >> ${CMD_PATH}
 echo "  set len = R5" >> ${CMD_PATH}
@@ -133,7 +153,7 @@ echo "  memfill dst len val" >> ${CMD_PATH}
 echo " endif" >> ${CMD_PATH}
 endif
 if ( "${MEMSET_ADDR}" != "" ) then
-echo " if (addr == 0x${MEMSET_ADDR})" >> ${CMD_PATH}
+echo " if (addr == memset)" >> ${CMD_PATH}
 echo "  set dst = R3" >> ${CMD_PATH}
 echo "  set val = R4" >> ${CMD_PATH}
 echo "  set len = R5" >> ${CMD_PATH}
@@ -141,7 +161,7 @@ echo "  memfill dst len val" >> ${CMD_PATH}
 echo " endif" >> ${CMD_PATH}
 endif
 if ( "${MEMCPY_ADDR}" != "" ) then
-echo " if (addr == 0x${MEMCPY_ADDR})" >> ${CMD_PATH}
+echo " if (addr == memcpy)" >> ${CMD_PATH}
 echo "  set dst = R3" >> ${CMD_PATH}
 echo "  set src = R4" >> ${CMD_PATH}
 echo "  set len = R5" >> ${CMD_PATH}
@@ -151,16 +171,17 @@ endif
 echo " run" >> ${CMD_PATH}
 echo " set addr = IAR" >> ${CMD_PATH}
 echo "endwhile" >> ${CMD_PATH}
-
+echo "" >> ${CMD_PATH}
 echo "save mem "${TEST1_PATH}" 0x80002a8c 0x80" >> ${CMD_PATH}
 echo "save mem "${TEST2_PATH}" 0x80002b0c 0x80" >> ${CMD_PATH}
-
 echo "save mem "${DMP_PATH}" "${COMPARE_MEM_START_ADDR} ${COMPARE_MEM_LEN_BYTES} >> ${CMD_PATH}
 
 sleep 1
 echo "Run RiscWatch"
 cd ${RW_PATH}
-${RWCD} ${CMD_PATH}
+#${RWCD} ${CMD_PATH}
+echo ${CMD_PATH}
+./rwppc
 
 sleep 1
 echo "Compare dumps..."
