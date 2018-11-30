@@ -683,6 +683,9 @@ BEGIN_ENUM( hscb_rmap_packet_second_section_t)
     DECLARE_ENUM_VAL(HSCB_RMAP_KEY_i, 3)
 END_ENUM( hscb_rmap_packet_second_section_t)
 
+DECLARE_CONST(HSCB_RMAP_DEFAULT_KEY, 0x77)
+DECLARE_CONST(HSCB_RMAP_DEFAULT_TARGET_LOGICAL_ADDRESS, 0x99)
+
 BEGIN_ENUM( hscb_rmap_packet_fourth_section_t)
     DECLARE_ENUM_VAL(HSCB_RMAP_INITIATOR_LOGICAL_ADDR_i, 0)
     DECLARE_ENUM_VAL(HSCB_RMAP_TRANSACTION_ID_MS_i, 1)
@@ -774,7 +777,7 @@ END_ENUM( hscb_rmap_packet_instruction_verify_t )
 
 BEGIN_ENUM( hscb_rmap_packet_instruction_command_t)
     DECLARE_ENUM_VAL(   HSCB_RMAP_PACKET_READ,              0b0 )
-    DECLARE_ENUM_VAL(   HSCB_RMAP_PACKET_WRIE,              0b1 )
+    DECLARE_ENUM_VAL(   HSCB_RMAP_PACKET_WRITE,             0b1 )
 END_ENUM( hscb_rmap_packet_instruction_command_t )
 
 BEGIN_ENUM( hscb_rmap_packet_instruction_pack_type_t)
