@@ -16,6 +16,7 @@
 #include <rumboot/platform.h>
 #include <rumboot/io.h>
 #include <rumboot/printf.h>
+#include <rumboot/rumboot.h>
 #include <platform/devices.h>
 #include <platform/trace.h>
 #include <platform/regs/regs_hscb.h>
@@ -40,7 +41,7 @@
  * start_address: 32-bit start address
  * length: Data block length (max 64M-1)
  * act: descr type
- * last: is last packet descriptor
+ * act0: is last packet descriptor
  * ie: interrupt at finish execution
  * err: link fail
  * valid: data is correct
@@ -54,6 +55,7 @@ typedef struct hscb_descr_struct
     bool        ie;
     bool        err;
     bool        valid;
+    bool        change_endian;
 }hscb_descr_struct_t;
 
 /**
@@ -172,7 +174,62 @@ typedef struct hscb_axi_params_cfg
     hscb_axi_arwburst_t awburst;
 }hscb_axi_params_cfg_t;
 
+/**
+ * hscb_uint8_array_with_length_t: Structure contains a pointer to an array and its length
+ * array:         pointer to an array
+ * length:        length of an array
+ */
+typedef struct{
+    uint8_t* array;
+    uint32_t length;
+}hscb_uint8_array_with_length_t;
 
+/**
+ * hscb_rmap_packet_raw_configuration_t: Structure contains all you need to setup an RMAP packet
+ * target_addr_chain:           array of Target SW Addresses, memory allocation must not be on stack (may be used further)
+ * target_logical_addr:         Target Logical Address
+ * instruction:                 RMAP instruction field
+ * key:                         RMAP key field (must match the corresponding value in the Target)
+ * reply_addr_chain:            address chain that leads from the Target back to Initiator,
+ *                                  memory allocation must not be on stack (may be used further) and must be only 0,4,8 or 12 bytes
+ * initiator_logical_addr:      Initiator Logical Address
+ * transaction_id:              RMAP transaction unique identifier
+ * ext_addr:                    extended physical address in the current system
+ * addr:                        lower 32 bits of physical address in the current system
+ * length:                      data length in bytes
+ * data_crc:                    pointer to Data CRC
+ * change_endian:               swap_bytes within a 32bit word
+ */
+typedef struct{
+    hscb_uint8_array_with_length_t  target_addr_chain;
+    uint8_t                         target_logical_addr;
+    uint8_t                         instruction;
+    uint8_t                         key;
+    hscb_uint8_array_with_length_t  reply_addr_chain;
+    uint8_t                         initiator_logical_addr;
+    uint16_t                        transaction_id;
+    uint8_t                         ext_addr;
+    uint32_t                        addr;
+    uint32_t                        length;
+    hscb_uint8_array_with_length_t  data_chain;
+    uint8_t*                        data_crc;
+    bool                            change_endian;
+}hscb_rmap_packet_raw_configuration_t;
+
+/**
+ * hscb_rmap_packet_ready_for_transmit_t: Structure contains an RMAP packet as a set of memory areas on heaps and corresponding descriptors
+ * array_of_descriptors:        array of chained descriptors that make HSCB transmit an RMAP packet
+ * count_of_descriptors:        count of descriptors in array_of_descriptors
+ * data_areas:                  array of pointers to data areas allocated on heaps and to be transmitted as a part of an RMAP packet
+ * data_area_sizes:             array of sizes of areas in data_areas
+ * count_areas:                 count of data areas in data_areas
+ */
+typedef struct{
+    hscb_packed_descr_struct_t *    array_of_descriptors;
+    uint8_t**                       data_areas;
+    uint32_t*                       data_area_sizes;
+    uint32_t                        count_areas;
+}hscb_rmap_packet_ready_for_transmit_t;
 
 /**
  * \brief Change endianness in 4-byte word function
@@ -180,7 +237,7 @@ typedef struct hscb_axi_params_cfg
  * \return              Function returns data word with reversed byte order
  */
 
-uint32_t hscb_change_endian (uint32_t data_in);
+uint32_t hscb_change_endian (uint32_t data_in, bool change_endian);
 
 /**
  * \brief Convert two 4-byte data words to 8 1-byte words function
@@ -195,7 +252,7 @@ void hscb_convert_to_bytes (uint32_t* data_in, uint8_t* data_out, uint32_t len);
  * \param[in] sys_addr address in memory for placing descriptor
  * \param[in] pointer on read data descriptor
  */
-void hscb_set_descr_in_mem(uint32_t sys_addr, uint32_t src_data_addr, uint32_t len);
+void hscb_set_single_descr_in_mem(uint32_t sys_addr, uint32_t src_data_addr, uint32_t len);
 
 /**
  * \brief Get descriptor from memory
@@ -256,6 +313,8 @@ void hscb_set_max_speed(uint32_t base_addr);
 void hscb_enable(uint32_t base_addr);
 void hscb_config_for_receive_and_transmit(hscb_instance_t* hscb_inst);
 
+uint32_t hscb_prepare_rmap_packet(hscb_rmap_packet_raw_configuration_t rmap_packet_raw,
+        hscb_rmap_packet_ready_for_transmit_t* rmap_packet_ready);
 
 #define HSCB_SW_RESET_TIMEOUT   100
 #define HSCB_TIMEOUT            100
