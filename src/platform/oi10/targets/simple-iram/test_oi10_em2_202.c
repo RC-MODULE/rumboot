@@ -229,9 +229,11 @@ void clear_all_irqs(void)
 
 volatile uint32_t emi_switch_bank(uint32_t bank)
 {
-    iowrite32(0x00000000, CHECK_ADDR(bank)); /* Anti-X */
+#ifdef CMAKE_BUILD_TYPE_DEBUG
+    memset( (void*)CHECK_ADDR32(bank), 0x00, 16*sizeof(uint32_t) ); /* Anti-X */
     msync();
-    return ioread32(CHECK_ADDR(bank)); /* Switch bank */
+#endif
+    return ioread32(CHECK_ADDR32(bank)); /* Switch bank */
 }
 
 void emi_set_ssi(uint32_t *ssiop, uint32_t trdy_val, uint32_t bank)
@@ -409,10 +411,10 @@ DEFINE_CHECK(rfc)   /* 2.2.1 */
 
     emi_switch_bank(bank);
 
-    /* Fill region by zeros (Anti-X) */
-    for(cnt = 0; cnt < 16; cnt++)
-        iowrite32(0x00000000,
-                CHECK_ADDR32(bank) + (cnt * sizeof(uint32_t)));
+#ifdef CMAKE_BUILD_TYPE_DEBUG
+    memset( (void*)CHECK_ADDR32(bank), 0x00, 16*sizeof(uint32_t) ); /* Anti-X */
+    msync();
+#endif
 
     for(rfcp = rfc+1, cnt = 0; cnt < rfc[0]; rfcp++, cnt++)
     {
