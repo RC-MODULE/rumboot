@@ -32,6 +32,29 @@ else
     exit 1
 endif
 
+set DMPOBJ_PATH="${LOG_DIR}/../rumboot-oi10-Debug/${TEST_NAME}.dmp"
+set DMPOBJ_BOOT_PATH="${LOG_DIR}/../rumboot-oi10-Debug/rumboot-oi10-Debug-bootrom-stub.dmp"
+
+if ( -f ${DMPOBJ_PATH}) then
+set MEMSET_ADDR=`grep "<memset>:" ${DMPOBJ_PATH} | cut -c 1-8`
+set MEMCPY_ADDR=`grep "<memcpy>:" ${DMPOBJ_PATH} | cut -c 1-8`
+set EXIT_ADDR=`grep "<_exit+" ${DMPOBJ_PATH} | cut -c 1-8`
+else
+    echo "ERROR: ${DMPOBJ_PATH} not found"
+    exit 1
+endif
+if ( -f ${DMPOBJ_BOOT_PATH}) then
+set MEMSET_BOOT_ADDR=`grep "<memset>:" ${DMPOBJ_BOOT_PATH} | cut -c 1-8`
+else
+    echo "ERROR: ${DMPOBJ_BOOT_PATH} not found"
+    exit 1
+endif
+
+if ("${EXIT_ADDR}" == "") then
+    echo "ERROR: exit address not found"
+    exit 1
+endif
+
 echo "Start Script"
 
 #Variables for working with ISS and RiscWatch
@@ -40,7 +63,6 @@ set ISS=${ISS_PATH}/ppciss
 set ICF_PATH=${SCRIPT_DIR}/iss_oi10.icf
 set RW_PATH=/opt/pcad/RISCWatch
 set RWCD=./rwcd
-
 
 set INIT_BIN_START_ADDR=0xFFFF0000
 set BIN_START_ADDR=0x80000000
@@ -73,37 +95,63 @@ echo "load bin "${BUILD_DIR}"/rumboot-oi10-Debug/rumboot-oi10-Debug-bootrom-stub
 echo "exec "${SCRIPT_DIR}"/postload_oi10.rwc" >> ${CMD_PATH}
 #end workaround
 
-#@ MAX_ASMSTEP = 65535
-#@ tmp = ${ASM_STEP}
-#while ($tmp > 0)
-#    if ($tmp > $MAX_ASMSTEP) then
-#        echo "asmstep "$MAX_ASMSTEP >> ${CMD_PATH}
-#        @ tmp = ${ASM_STEP} - $MAX_ASMSTEP
-#    else
-#        echo "asmstep "$tmp >> ${CMD_PATH}
-#        @ tmp = 0
-#    endif
-#end
-
 set TEST1_PATH=${LOG_DIR}/test_data1.dmp
 set TEST2_PATH=${LOG_DIR}/test_data2.dmp
 
 rm -f ${TEST1_PATH}
 rm -f ${TEST2_PATH}
 
-echo "#<memcpy>" >> ${CMD_PATH}
-echo "bp set 0x80001250" >> ${CMD_PATH}
-echo "#<_exit + ??>" >> ${CMD_PATH}
-echo "bp set 0x800015E8" >> ${CMD_PATH}
+echo "bpmode hw step" >> ${CMD_PATH}
+
+if ( "${MEMSET_BOOT_ADDR}" != "" ) then
+echo "bp set ihw 0x${MEMSET_BOOT_ADDR}" >> ${CMD_PATH}
+endif
+
+if ( "${MEMSET_ADDR}" != "" ) then
+echo "bp set ihw 0x${MEMSET_ADDR}" >> ${CMD_PATH}
+endif
+
+if ( "${MEMCPY_ADDR}" != "" ) then
+echo "bp set ihw 0x${MEMCPY_ADDR}" >> ${CMD_PATH}
+endif
+
+echo "bp set ihw 0x${EXIT_ADDR}" >> ${CMD_PATH}
 echo "run" >> ${CMD_PATH}
 echo "create src" >> ${CMD_PATH}
 echo "create dst" >> ${CMD_PATH}
 echo "create len" >> ${CMD_PATH}
-echo "set src = R4" >> ${CMD_PATH}
-echo "set dst = R3" >> ${CMD_PATH}
-echo "set len = R5" >> ${CMD_PATH}
-echo "memcopy src dst len" >> ${CMD_PATH}
-echo "run" >> ${CMD_PATH}
+echo "create val" >> ${CMD_PATH}
+echo "create addr" >> ${CMD_PATH}
+echo "set addr = IAR" >> ${CMD_PATH}
+echo "while (addr != 0x${EXIT_ADDR})" >> ${CMD_PATH}
+if ( "${MEMSET_BOOT_ADDR}" != "" ) then
+echo " if (addr == 0x${MEMSET_BOOT_ADDR})" >> ${CMD_PATH}
+echo "  set dst = R3" >> ${CMD_PATH}
+echo "  set val = R4" >> ${CMD_PATH}
+echo "  set len = R5" >> ${CMD_PATH}
+echo "  memfill dst len val" >> ${CMD_PATH}
+echo " endif" >> ${CMD_PATH}
+endif
+if ( "${MEMSET_ADDR}" != "" ) then
+echo " if (addr == 0x${MEMSET_ADDR})" >> ${CMD_PATH}
+echo "  set dst = R3" >> ${CMD_PATH}
+echo "  set val = R4" >> ${CMD_PATH}
+echo "  set len = R5" >> ${CMD_PATH}
+echo "  memfill dst len val" >> ${CMD_PATH}
+echo " endif" >> ${CMD_PATH}
+endif
+if ( "${MEMCPY_ADDR}" != "" ) then
+echo " if (addr == 0x${MEMCPY_ADDR})" >> ${CMD_PATH}
+echo "  set dst = R3" >> ${CMD_PATH}
+echo "  set src = R4" >> ${CMD_PATH}
+echo "  set len = R5" >> ${CMD_PATH}
+echo "  memcopy src dst len" >> ${CMD_PATH}
+echo " endif" >> ${CMD_PATH}
+endif
+echo " run" >> ${CMD_PATH}
+echo " set addr = IAR" >> ${CMD_PATH}
+echo "endwhile" >> ${CMD_PATH}
+
 echo "save mem "${TEST1_PATH}" 0x80002a8c 0x80" >> ${CMD_PATH}
 echo "save mem "${TEST2_PATH}" 0x80002b0c 0x80" >> ${CMD_PATH}
 
