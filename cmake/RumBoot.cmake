@@ -1,4 +1,4 @@
-set(RUMBOOT_ONEVALUE_ARGS SNAPSHOT LDS PREFIX NAME BOOTROM CHECKPOINTS RESTORE TIMEOUT_CTEST VARIABLE CONFIGURATION)
+set(RUMBOOT_ONEVALUE_ARGS SNAPSHOT LDS PREFIX NAME BOOTROM CHECKPOINTS RESTORE TIMEOUT_CTEST VARIABLE CONFIGURATION APPEND)
 set(RUMBOOT_MULVALUE_ARGS FILES IRUN_FLAGS CFLAGS TESTGROUP LDFLAGS PREPCMD CHECKCMD FEATURES TIMEOUT LOAD DEPENDS PACKIMAGE_FLAGS)
 
 find_program(PYTHON_EXECUTABLE
@@ -119,7 +119,7 @@ macro(generate_stuff_for_target product)
   endif()
   list (FIND TARGET_FEATURES "PACKIMAGE" _index)
   if (${_index} EQUAL -1)
-    set(packimage_cmd true)
+    set(packimage_cmd)
   elseif (NOT TARGET_PACKIMAGE_FLAGS)
     set(packimage_cmd ${PYTHON_EXECUTABLE} ${RUMBOOT_PACKIMAGE} -f ${product}${PACKIMAGE_EXT} -c)
   else()
@@ -144,10 +144,28 @@ macro(generate_stuff_for_target product)
       add_custom_command(
         OUTPUT ${product}.bin
         COMMAND ${CROSS_COMPILE}-objcopy ${CMAKE_OBJCOPY_FLAGS} -O binary ${product} ${product}.bin
-        COMMAND ${packimage_cmd}
         COMMENT "Generating binary image ${product}.bin"
         DEPENDS ${product}
       )
+
+      if (TARGET_APPEND)
+        add_custom_command(
+          APPEND
+          OUTPUT ${product}.bin
+          COMMAND cat ${TARGET_APPEND} >> ${product}.bin &&  truncate -s +1  ${product}.bin
+          COMMENT "Appending ${TARGET_APPEND} to ${product}"
+        )
+      endif()
+
+      if (packimage_cmd)
+        add_custom_command(
+          APPEND
+          OUTPUT ${product}.bin
+          COMMAND ${packimage_cmd}
+          COMMENT "Writing header checksums to ${product}"
+        )
+      endif()
+
 
       if (NOT ${_index} EQUAL -1)
         install(FILES ${CMAKE_BINARY_DIR}/${product}.dmp DESTINATION rumboot)
@@ -207,7 +225,7 @@ macro(populate_dependencies target)
 endmacro()
 
 
-macro(locate_source_file file)
+macro(locate_source_file list f)
 
   #Extra seat-belts
   if (EXISTS ${RUMBOOT_PLATFORM_TARGET_DIR}/${f} AND
@@ -216,11 +234,11 @@ macro(locate_source_file file)
     endif()
 
   if (EXISTS ${RUMBOOT_PLATFORM_TARGET_DIR}/${f})
-        LIST(APPEND trg ${RUMBOOT_PLATFORM_TARGET_DIR}/${f})
+        LIST(APPEND ${list} ${RUMBOOT_PLATFORM_TARGET_DIR}/${f})
   elseif(EXISTS ${RUMBOOT_PLATFORM_COMMON_DIR}/${f})
-        LIST(APPEND trg ${RUMBOOT_PLATFORM_COMMON_DIR}/${f})
+        LIST(APPEND ${list} ${RUMBOOT_PLATFORM_COMMON_DIR}/${f})
   elseif(EXISTS ${f})
-        LIST(APPEND trg ${f})
+        LIST(APPEND ${list} ${f})
   else()
     message(FATAL_ERROR "Can't find file ${f} for target ${TARGET_NAME}")
   endif()
@@ -293,7 +311,7 @@ function(add_rumboot_target)
   set(${name} TRUE PARENT_SCOPE)
 
   foreach(f ${TARGET_FILES})
-    locate_source_file(${f})
+    locate_source_file(trg ${f})
   endforeach()
 
   foreach(f ${trg})
@@ -339,6 +357,11 @@ function(add_rumboot_target)
   endif()
 
   target_link_libraries(${product} ${CONFIGURATION_${TARGET_CONFIGURATION}_LDFLAGS} ${ldf} -Wl,-Map,${product}.map)
+
+  if (TARGET_APPEND)
+    locate_source_file(_append_list ${TARGET_APPEND})
+    set(TARGET_APPEND ${_append_list})
+  endif()
 
   generate_stuff_for_target(${product})
 

@@ -121,6 +121,7 @@ add_rumboot_target(
     BOOTROM prefix-name
     PACKIMAGE_FLAGS flags
     VARIABLE PATHVAR
+    APPEND filename
     FEATURES [STUB] [LUA] [COVERAGE] [LPROBE] [PACKIMAGE] [PACKIMAGE] [ROMGEN] [NOCODE] [COVERAGE]
     LOAD
         PLUSARG TARGET
@@ -169,6 +170,8 @@ add_rumboot_target(
 - DEPENDS - Указывает на зависимые цели, которые надо собрать перед сборкой/запуском данной цели (С указанием префикса. Цель из директивы BOOTROM дублировать здесь не требуется, если BOOTROM требуется для данной конфигурации, то он будет собран всегда)
 
 - VARIABLE - Устанавливает переменную, имя которой передано аргументом в абсолютный путь к компилируемому ELF файлу в директории сборке (без .bin/.dmp).
+
+- APPEND - Содержимое указанного файла будет записано в конец .bin файла. (Для тестирования ini-конфигуратора и тому подобных вещей) 
 
 - LOAD - Перечисляет загружаемые .bin файлы. Аргумент принимает пары значний PLUSARG и TARGET.
     * PLUSARG - имя PLUSARG переменной, куда будет помещен путь к BIN файлу.
