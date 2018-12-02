@@ -1507,8 +1507,15 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         CONFIGURATION IRAM_SPL
         FILES configtool/ini_loader.c
         APPEND configtool/hello.ini
-        NAME ini_loader
+        NAME bconfig_test
       )
+
+    add_rumboot_target(
+          CONFIGURATION IRAM_SPL
+          FILES configtool/ini_loader.c
+          NAME basisconfig
+          FEATURES STUB
+        )
 
     foreach(conf IRAM IRAM_MIRROR)
     foreach(dit 0 1 2 3)
