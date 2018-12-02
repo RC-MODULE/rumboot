@@ -168,7 +168,7 @@ function(add_rumboot_target)
     SET_TESTS_PROPERTIES(rumboot-${TARGET_SNAPSHOT}-${product} PROPERTIES LABELS "full;${TARGET_TESTGROUP}")
 
     if (TARGET_TIMEOUT_CTEST)
-      SET_TESTS_PROPERTIES(rumboot-${TARGET_SNAPSHOT}-${product} PROPERTIES TIMEOUT "${TARGET_TIMEOUT_CTEST}")
+      hdl_test_set_timeout(rumboot-${TARGET_SNAPSHOT}-${product} "${TARGET_TIMEOUT_CTEST}")
     endif()
 
     if (HDL_TEST_TIMEOUT)
