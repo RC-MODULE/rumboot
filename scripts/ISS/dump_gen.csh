@@ -51,7 +51,7 @@ rm -f ${DMP_PATH}
 
 echo "Run simulator"
 
-xterm -e ${ISS} ${ICF_PATH} & 
+${ISS} ${ICF_PATH} & 
 
 echo "Create ISS command file"
 

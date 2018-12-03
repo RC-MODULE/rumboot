@@ -17,7 +17,7 @@
 #include <platform/test_assert.h>
 #include <rumboot/io.h>
 
-static emi_bank_cfg *bank_config_cache[6];
+static emi_bank_cfg const *bank_config_cache[6];
 
 uint8_t calc_hamming_ecc(uint32_t data)
 {
@@ -35,7 +35,7 @@ uint8_t calc_hamming_ecc(uint32_t data)
     return result;
 }
 
-emi_bank_cfg *emi_get_bank_cfg_cached(emi_bank_num num_bank)
+emi_bank_cfg const *emi_get_bank_cfg_cached(emi_bank_num num_bank)
 {
     return bank_config_cache[num_bank];
 }
@@ -290,7 +290,7 @@ void emi_init_impl (uint32_t const emi_dcr_base, uint32_t const plb6mcif2_dcr_ba
     plb6mcif2_simple_init( plb6mcif2_dcr_base,  puaba );
 
     //init bank0 - SRAM0
-    static emi_bank_cfg b0_cfg =
+    static emi_bank_cfg const b0_cfg =
     {
        //SS0
        {
@@ -321,7 +321,7 @@ void emi_init_impl (uint32_t const emi_dcr_base, uint32_t const plb6mcif2_dcr_ba
     //init bank1 - SDRAM
     //setting parameters by comment:
     //(https://jira.module.ru/jira/browse/OI10-116?focusedCommentId=43530&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-43530)
-    static emi_bank_cfg b1_cfg =
+    static emi_bank_cfg const b1_cfg =
     {
        //SS1
        {
@@ -349,7 +349,7 @@ void emi_init_impl (uint32_t const emi_dcr_base, uint32_t const plb6mcif2_dcr_ba
     };
     emi_set_bank_cfg(emi_dcr_base, emi_b1_sdram, &b1_cfg);
 
-    emi_rfc_cfg emi_rfc =
+    static const emi_rfc_cfg emi_rfc =
     {
             TRFC_7,
             0b11110011110011,//RP
@@ -357,7 +357,7 @@ void emi_init_impl (uint32_t const emi_dcr_base, uint32_t const plb6mcif2_dcr_ba
     emi_set_rfc(emi_dcr_base, &emi_rfc);
 
     //init bank2 - SSRAM
-    static emi_bank_cfg b2_cfg =
+    static emi_bank_cfg const b2_cfg =
     {
        //SS2
        {
@@ -386,7 +386,7 @@ void emi_init_impl (uint32_t const emi_dcr_base, uint32_t const plb6mcif2_dcr_ba
     emi_set_bank_cfg(emi_dcr_base, emi_b2_ssram, &b2_cfg);
 
     //init bank3 - PIPELINED
-    static emi_bank_cfg b3_cfg =
+    static emi_bank_cfg const b3_cfg =
     {
        //SS3
        {
@@ -415,7 +415,7 @@ void emi_init_impl (uint32_t const emi_dcr_base, uint32_t const plb6mcif2_dcr_ba
     emi_set_bank_cfg(emi_dcr_base, emi_b3_pipelined, &b3_cfg);
 
     //init bank4 - SRAM1
-    static emi_bank_cfg b4_cfg =
+    static emi_bank_cfg const b4_cfg =
     {
        //SS4
        {
@@ -444,7 +444,7 @@ void emi_init_impl (uint32_t const emi_dcr_base, uint32_t const plb6mcif2_dcr_ba
     emi_set_bank_cfg(emi_dcr_base, emi_b4_sram1, &b4_cfg);
 
     //init bank5 - NOR
-    static emi_bank_cfg b5_cfg =
+     static emi_bank_cfg const b5_cfg =
     {
         //SS5
         {
@@ -482,6 +482,7 @@ void emi_init_impl (uint32_t const emi_dcr_base, uint32_t const plb6mcif2_dcr_ba
     bank_config_cache[3] = &b3_cfg;
     bank_config_cache[4] = &b4_cfg;
     bank_config_cache[5] = &b5_cfg;
+    msync();
 }
 
 void emi_set_ecc (uint32_t const emi_dcr_base, emi_bank_num const num_bank, emi_ecc_status const ecc_stat)
