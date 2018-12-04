@@ -5,20 +5,26 @@ MEMORY
 
 SECTIONS
 {
-    .rwx : {
-        . = 0x0;
-        KEEP(*(.text.test_oi10_cpu_021))
-    
-        *(.text)
-        *(.text.*)
-    
-        *(.rodata)
-        *(.rodata.*)
-        *(.data)
-        *(.data.*)
-         *(.sbss)
-         *(.sbss.*)
-    } > SRAM0
+  .rwx : {
+    . = 0x0;
+    KEEP(*(.text.test))
+    *(.text)
+    *(.text.*)
+
+    *(.rodata)
+    *(.rodata.*)
+    *(.data)
+     *(.sbss)
+     *(.sbss.*)
+ 
+    /* ROM sections copy */
+    *(*.init.text)
+    /* ROM sections copy end */
+        
+    . = 0x1000;
+    KEEP(*(.data.test))
+    *(.data.*)
+ } > SRAM0
 
  .runtime 0x8001ff00 (NOLOAD): {
     /* Runtime info is at the very top of iram */
