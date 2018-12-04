@@ -959,7 +959,6 @@ endif()
         NAME test_oi10_hscb_reg
     )
 
-
     add_rumboot_target(
         CONFIGURATION IRAM
         CFLAGS -DHSCB_UNDER_TEST_BASE=HSCB3_BASE
@@ -967,6 +966,20 @@ endif()
         FILES test_oi10_hscb.c
         PREFIX "hscb_3"
         NAME test_oi10_hscb_reg
+    )
+
+    add_rumboot_target(
+        CONFIGURATION IRAM
+        CFLAGS -DHSCB_UNDER_TEST_BASE=HSCB0_BASE 
+               -DHSCB_SUPPLEMENTARY_BASE=HSCB1_BASE 
+               -DHSCB_UNDER_TEST_INT=SW0_HSCB_INT 
+               -DHSCB_UNDER_TEST_DMA_INT=SW0_AXI_INT 
+               -DHSCB_SUPPLEMENTARY_INT=SW1_HSCB_INT 
+               -DHSCB_SUPPLEMENTARY_DMA_INT=SW1_AXI_INT 
+               #-DTEST_OI10_HSCB_FULL_TRACING
+        FILES test_oi10_hscb.c
+        PREFIX "hscb_0_rmap"
+        NAME test_oi10_hscb_rmap
     )
 
     add_rumboot_target(
