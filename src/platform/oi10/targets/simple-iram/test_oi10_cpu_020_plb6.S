@@ -244,8 +244,8 @@ test_error:
     load_const  r3,  RESULT_ERROR
 
 finish:
-    mfspr       r3, SPR_USPRG0  /* LR */
-    mtlr        r3              /* Restore */
+    mfspr       r5, SPR_USPRG0  /* LR */
+    mtlr        r5              /* Restore */
     blr
 
 .section ".data","aw",@progbits
