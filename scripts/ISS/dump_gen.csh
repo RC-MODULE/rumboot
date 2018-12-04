@@ -66,14 +66,13 @@ set RWCD=./rwcd
 
 set INIT_BIN_START_ADDR=0xFFFF0000
 set BIN_START_ADDR=0x80000000
-set ASM_STEP=130000
 
 rm -f ${CMD_PATH}
 rm -f ${DMP_PATH}
 
 echo "Run simulator"
 
-${ISS} ${ICF_PATH} & 
+${ISS} ${ICF_PATH} &
 
 echo "Create ISS command file"
 
@@ -94,12 +93,6 @@ echo "memacc add 0x7FFF0000 0xFFFFFFFF RW 1 MEM 0x007FFF0000" >> ${CMD_PATH}
 echo "load bin "${BUILD_DIR}"/rumboot-oi10-Debug/rumboot-oi10-Debug-bootrom-stub.bin "${INIT_BIN_START_ADDR} >> ${CMD_PATH}
 echo "exec "${SCRIPT_DIR}"/postload_oi10.rwc" >> ${CMD_PATH}
 #end workaround
-
-set TEST1_PATH=${LOG_DIR}/test_data1.dmp
-set TEST2_PATH=${LOG_DIR}/test_data2.dmp
-
-rm -f ${TEST1_PATH}
-rm -f ${TEST2_PATH}
 
 echo "" >> ${CMD_PATH}
 echo "create src" >> ${CMD_PATH}
@@ -172,8 +165,6 @@ echo " run" >> ${CMD_PATH}
 echo " set addr = IAR" >> ${CMD_PATH}
 echo "endwhile" >> ${CMD_PATH}
 echo "" >> ${CMD_PATH}
-echo "save mem "${TEST1_PATH}" 0x80002c18 0x80" >> ${CMD_PATH}
-echo "save mem "${TEST2_PATH}" 0x80002c98 0x80" >> ${CMD_PATH}
 echo "save mem "${DMP_PATH}" "${COMPARE_MEM_START_ADDR} ${COMPARE_MEM_LEN_BYTES} >> ${CMD_PATH}
 
 sleep 1
