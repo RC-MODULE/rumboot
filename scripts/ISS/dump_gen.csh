@@ -16,7 +16,9 @@ if ("$3" == "")  then
 endif
 
 set BUILD_DIR=$1
+set BIN_DIR=${BUILD_DIR}/rumboot-oi10-Debug
 set TEST_NAME=$2
+set STUB_NAME=rumboot-oi10-Debug-bootrom-stub
 set SCRIPT_DIR=$3
 set LOG_DIR=$PWD
 set CMD_PATH=${LOG_DIR}/${TEST_NAME}.cmd
@@ -32,13 +34,13 @@ else
     exit 1
 endif
 
-set DMPOBJ_PATH="${LOG_DIR}/../rumboot-oi10-Debug/${TEST_NAME}.dmp"
-set DMPOBJ_BOOT_PATH="${LOG_DIR}/../rumboot-oi10-Debug/rumboot-oi10-Debug-bootrom-stub.dmp"
+set DMPOBJ_PATH=${BIN_DIR}/${TEST_NAME}.dmp
+set DMPOBJ_BOOT_PATH=${BIN_DIR}/${STUB_NAME}.dmp
 
 if ( -f ${DMPOBJ_PATH}) then
-set MEMSET_ADDR=`grep "<memset>:" ${DMPOBJ_PATH} | cut -c 1-8`
-set MEMCPY_ADDR=`grep "<memcpy>:" ${DMPOBJ_PATH} | cut -c 1-8`
-set EXIT_ADDR=`grep "<_exit+" ${DMPOBJ_PATH} | cut -c 1-8`
+    set MEMSET_ADDR=`grep "<memset>:" ${DMPOBJ_PATH} | cut -c 1-8`
+    set MEMCPY_ADDR=`grep "<memcpy>:" ${DMPOBJ_PATH} | cut -c 1-8`
+    set EXIT_ADDR=`grep "<_exit>:" ${DMPOBJ_PATH} | cut -c 1-8`
 else
     echo "ERROR: ${DMPOBJ_PATH} not found"
     exit 1
@@ -78,19 +80,19 @@ echo "Create ISS command file"
 
 echo "exec "${SCRIPT_DIR}"/sim_oi10.rwc" >> ${CMD_PATH}
 
-echo "load bin "${BUILD_DIR}"/rumboot-oi10-Debug/rumboot-oi10-Debug-bootrom-stub.bin "${INIT_BIN_START_ADDR} >> ${CMD_PATH}
-echo "load bin "${BUILD_DIR}"/rumboot-oi10-Debug/"${TEST_NAME}".bin "${BIN_START_ADDR} >> ${CMD_PATH}
+echo "load bin "${BIN_DIR}"/"${STUB_NAME}".bin "${INIT_BIN_START_ADDR} >> ${CMD_PATH}
+echo "load bin "${BIN_DIR}"/"${TEST_NAME}".bin "${BIN_START_ADDR} >> ${CMD_PATH}
 
 #triple bootrom (workaround)
 echo "write tlb 0 0 V 0x0" >> ${CMD_PATH}
 #for ROM mirror
 echo "write tlb 0 0 EPN 0xFFFF0000 V 0x1 TS 0x0 S 0x03 T 0x0000 E+RPN 0x01FFFFF0000 IL1ID b11 U0123 b0000 WIMG b0111 E 0x0 UXWR b000 SXWR b111 BE0_5 0x-" >> ${CMD_PATH}
 echo "memacc add 0xFFFF0000 0xFFFFFFFF RW 1 MEM 0x1FFFFF0000" >> ${CMD_PATH}
-echo "load bin "${BUILD_DIR}"/rumboot-oi10-Debug/rumboot-oi10-Debug-bootrom-stub.bin "${INIT_BIN_START_ADDR} >> ${CMD_PATH}
+echo "load bin "${BIN_DIR}"/"${STUB_NAME}".bin "${INIT_BIN_START_ADDR} >> ${CMD_PATH}
 #for NOR mirror
 echo "write tlb 0 0 EPN 0xFFFF0000 V 0x1 TS 0x0 S 0x03 T 0x0000 E+RPN 0x0007FFF0000 IL1ID b11 U0123 b0000 WIMG b0111 E 0x0 UXWR b000 SXWR b111 BE0_5 0x-" >> ${CMD_PATH}
 echo "memacc add 0x7FFF0000 0xFFFFFFFF RW 1 MEM 0x007FFF0000" >> ${CMD_PATH}
-echo "load bin "${BUILD_DIR}"/rumboot-oi10-Debug/rumboot-oi10-Debug-bootrom-stub.bin "${INIT_BIN_START_ADDR} >> ${CMD_PATH}
+echo "load bin "${BIN_DIR}"/"${STUB_NAME}".bin "${INIT_BIN_START_ADDR} >> ${CMD_PATH}
 echo "exec "${SCRIPT_DIR}"/postload_oi10.rwc" >> ${CMD_PATH}
 #end workaround
 
