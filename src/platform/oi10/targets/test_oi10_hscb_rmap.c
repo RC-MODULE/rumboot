@@ -130,6 +130,11 @@
 #define DATA_SIZE_5 0x33
 #endif
 
+#ifndef REPLY_ADDR_SIZE_0
+#define REPLY_ADDR_SIZE_0 0xc
+#endif
+
+
 #define DEFAULT_HEAP_ID 1
 
 #ifndef DEFAULT_HEAP_NAME_FOR_REPLY_ADDR
@@ -278,63 +283,26 @@ uint32_t prepare_memory_areas(uint8_t*** data_areas, uint32_t** data_area_sizes)
     return count_of_memory_areas;
 }
 
-
-void set_test_data_multiple(    uint8_t** data_areas,
-                                uint32_t* data_area_sizes,
-                                uint32_t  count_of_memory_areas,
-                                bool nor_change_endian){
-    int i;
+static void set_test_data(void* addr, uint32_t length, int incr_val, uint32_t initial_value){
     uint32_t data_initial_value = 0;
     int increment = 0;
-#ifdef HSCB_SHORT_TEST
-    int increments[] = {        INCREMENT_0,
-                                0,
-                                INCREMENT_1,
-                                0};
-#else
-    int increments[] = {        INCREMENT_0,
-                                0,
-                                INCREMENT_1,
-                                0,
-                                INCREMENT_2,
-                                0,
-                                INCREMENT_3,
-                                0,
-                                INCREMENT_4,
-                                0,
-                                INCREMENT_5,
-                                0};
-#endif
-    TEST_ASSERT((count_of_memory_areas == (sizeof(increments) / sizeof(increments[0]))),
-            "Size of increments array does not correspond the count of data areas");
-    rumboot_putstring("set_test_data_multiple");
-    for(i = 0; i < count_of_memory_areas; ++i){
-#ifdef TEST_OI10_HSCB_FULL_TRACING
-        rumboot_puthex(i);
-        rumboot_puthex((uint32_t)(*(data_areas + i)));
-#endif
-        data_initial_value = (((DATA_INITIAL_VALUE) & 0xff) << 24) |
-                             (((DATA_INITIAL_VALUE +      increments[i] ) & 0xff) << 16)  |
-                             (((DATA_INITIAL_VALUE + (2 * increments[i])) & 0xff) <<  8) |
-                             (((DATA_INITIAL_VALUE + (3 * increments[i])) & 0xff) <<  0);
-        if(nor_change_endian)
-            data_initial_value = HSCB_CHANGE_ENDIAN_WORD(data_initial_value);
-        if(increments[i] >= 0)
-            increment = (((increments[i] ) & 0xff) << 2)  |
-                        (((increments[i] ) & 0xff) << 10) |
-                        (((increments[i] ) & 0xff) << 18) |
-                        (((increments[i] ) & 0xff) << 26);
-        else
-            increment = -(  (((-increments[i] ) & 0xff) << 2)  +
-                            (((-increments[i] ) & 0xff) << 10) +
-                            (((-increments[i] ) & 0xff) << 18) +
-                            (((-increments[i] ) & 0xff) << 26) );
-        rumboot_memfill32((*(data_areas + i)), data_area_sizes[i >> 1], data_initial_value, increment );
-    }
-#ifdef TEST_OI10_HSCB_FULL_TRACING
-    rumboot_putstring("end set_test_data_multiple");
-#endif
+    data_initial_value = (((initial_value                      ) & 0xff) << 24) |
+                         (((initial_value +      incr_val ) & 0xff) << 16)  |
+                         (((initial_value + (2 * incr_val)) & 0xff) <<  8) |
+                         (((initial_value + (3 * incr_val)) & 0xff) <<  0);
+    if(incr_val >= 0)
+        increment = (((incr_val ) & 0xff) << 2)  |
+                    (((incr_val ) & 0xff) << 10) |
+                    (((incr_val ) & 0xff) << 18) |
+                    (((incr_val ) & 0xff) << 26);
+    else
+        increment = -(  (((-incr_val ) & 0xff) << 2)  +
+                        (((-incr_val ) & 0xff) << 10) +
+                        (((-incr_val ) & 0xff) << 18) +
+                        (((-incr_val ) & 0xff) << 26) );
+    rumboot_memfill32(addr, length, data_initial_value, increment );
 }
+
 
 #ifdef TEST_OI10_HSCB_FULL_TRACING
 inline static void print_hscb_descriptor(hscb_packed_descr_struct_t descriptor){
@@ -429,14 +397,13 @@ enum{
 uint32_t generate_some_raw_rmap_packets(hscb_rmap_packet_raw_configuration_t* raw_rmap_packets, const uint32_t length)
 {
     int i = length;
-    uint32_t reply_addr_length = 0;
     bool change_endian = true;
     switch(COUNT_PACKETS)
     {
         case 1:
         {
             --i;
-            raw_rmap_packets[i].reply_addr_chain.length = reply_addr_length << 2;
+            raw_rmap_packets[i].reply_addr_chain.length = REPLY_ADDR_SIZE_0;
             raw_rmap_packets[i].reply_addr_chain.array
                 = rumboot_malloc_from_named_heap(DEFAULT_HEAP_NAME_FOR_REPLY_ADDR,
                         raw_rmap_packets[i].reply_addr_chain.length);
@@ -450,6 +417,7 @@ uint32_t generate_some_raw_rmap_packets(hscb_rmap_packet_raw_configuration_t* ra
                 = rumboot_virt_to_dma( rumboot_malloc_from_named_heap(RX_0_HEAP_NAME,
                         raw_rmap_packets[i].data_chain.length));
 
+            /*Careful with the following checks in a common case!*/
             if((!raw_rmap_packets[i].reply_addr_chain.array)
                  || (!raw_rmap_packets[i].data_chain.array)
                  || (!raw_rmap_packets[i].addr))
@@ -457,6 +425,18 @@ uint32_t generate_some_raw_rmap_packets(hscb_rmap_packet_raw_configuration_t* ra
                 free_mem_from_raw_rmap_packets(raw_rmap_packets, length);
                 return UNABLE_TO_ALLOCATE_MEMORY;
             }
+
+            set_test_data(
+                    raw_rmap_packets[i].data_chain.array,
+                    raw_rmap_packets[i].data_chain.length,
+                    INCREMENT_0,
+                    DATA_INITIAL_VALUE);
+
+            set_test_data(
+                    raw_rmap_packets[i].reply_addr_chain.array,
+                    raw_rmap_packets[i].reply_addr_chain.length,
+                    INCREMENT_0,
+                    DATA_INITIAL_VALUE);
 
             raw_rmap_packets[i].ext_addr = 0x0;
 
