@@ -38,6 +38,7 @@
 
 #define TIMER0_CYCLES           1
 #define TIMER1_CYCLES           2
+#define TIMER_CYCLES            60
 
 #ifdef CHECK_REGS
 static uint32_t check_timer_default_ro_val(uint32_t base_addr)
@@ -350,6 +351,57 @@ bool test_dit_timers( uint32_t structure )
     return true;
 }
 
+static bool test_dit_timers1( uint32_t structure)
+{
+    struct s804_instance *stru = ( struct s804_instance * )structure;
+    uint32_t base_addr = stru->base_addr;
+    int i;
+    struct sp804_conf config_FREE_RUN =
+    {
+           .mode = FREERUN,
+           .interrupt_enable = 1,
+           .clock_division = 1,
+           .width = 32,
+           .load = 100,
+    };
+    for(i = 0; i < TIMER_CYCLES + stru->dit_index; i++)
+    {
+        sp804_config( base_addr, &config_FREE_RUN, 0 );
+        sp804_enable( base_addr, 1 );
+
+        if(stru->dit_index == DIT_CTRL_INTEN)
+        {
+            rumboot_printf("Timers load value %d\n", stru->dit_index);
+        }
+        sp804_enable(stru->base_addr, 1);
+    }
+    return true;
+}
+
+static bool test_dit_timers2( uint32_t structure)
+{
+    struct s804_instance *stru = ( struct s804_instance * )structure;
+    int i;
+    for(i = 0; i < TIMER_CYCLES + stru->dit_index; i++)
+    {
+        if(stru->dit_index == DIT_REG_ITCR)
+        {
+            rumboot_printf("Timers DIT_REG_ITCR %d\n", stru->dit_index);
+        }
+        else
+        {
+            if(stru->dit_index == DIT_REG_ITOP)
+            {
+                rumboot_printf("Timers DIT_REG_ITOR %d\n", stru->dit_index);
+            }
+        }
+    }
+    i = dcr_read(DCR_TIMERS_BASE + DIT_REG_ITCR);
+    rumboot_printf("DIT_REG_ITCR %d\n", i);
+    sp804_enable(stru->base_addr, 0);
+    return true;
+}
+
 static struct s804_instance in[] =
 {
     {
@@ -359,6 +411,8 @@ static struct s804_instance in[] =
 
 TEST_SUITE_BEGIN(dit_testlist, "SP804 IRQ TEST")
 TEST_ENTRY("SP804_0", test_dit_timers, (uint32_t) &in[0]),
+TEST_ENTRY("SP804_0", test_dit_timers1, (uint32_t) &in[0]),
+TEST_ENTRY("SP804_0", test_dit_timers2, (uint32_t) &in[0]),
 #ifdef CHECK_REGS
     //check_timers_default_ro_val();
 TEST_ENTRY("SP804_0", check_default_ro_val, (uint32_t, &in[0]));
@@ -388,16 +442,12 @@ int main(void)
 
     result = test_suite_run( NULL, &dit_testlist );
 
-   // rumboot_printf( "%d tests from suite failed\n", result );
-   // rumboot_printf( "Check ro/rw registers\n" );
-
-//    result = test_suite_run(NULL, &dit_testlist_1);
-
     if(!result)
     {
         rumboot_printf("Checked TEST_OK\n");
         return 0;
     }
     rumboot_printf("Checked TEST_ERROR\n");
+
     return result;
 }
