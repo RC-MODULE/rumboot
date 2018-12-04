@@ -1,12 +1,10 @@
 INCLUDE oi10/memory.lds.h
 
 SECTIONS
-{
-
-    
+{    
   .rwx : {
-      . = 0x0;
-      KEEP(*(.text.check_cpu_ppc_038))
+    . = 0x0;
+    KEEP(*(.text.test))
     *(.text)
     *(.text.*)
 
@@ -15,8 +13,13 @@ SECTIONS
     *(.data)
      *(.sbss)
      *(.sbss.*)
+ 
+    /* ROM sections copy */
+    *(*.init.text)
+    /* ROM sections copy end */
+        
     . = 0x1000;
-    KEEP(*(.data.test_oi10_cpu_038))
+    KEEP(*(.data.test))
     *(.data.*)
  } > IM1
 
