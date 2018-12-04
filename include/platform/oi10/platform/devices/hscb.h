@@ -196,8 +196,7 @@ typedef struct{
  * transaction_id:              RMAP transaction unique identifier
  * ext_addr:                    extended physical address in the current system
  * addr:                        lower 32 bits of physical address in the current system
- * length:                      data length in bytes
- * data_crc:                    pointer to Data CRC
+ * data_chain:                  data chain; use only its length field for Read transactions
  * change_endian:               swap_bytes within a 32bit word
  */
 typedef struct{
@@ -210,9 +209,7 @@ typedef struct{
     uint16_t                        transaction_id;
     uint8_t                         ext_addr;
     uint32_t                        addr;
-    uint32_t                        length;
     hscb_uint8_array_with_length_t  data_chain;
-    uint8_t*                        data_crc;
     bool                            change_endian;
 }hscb_rmap_packet_raw_configuration_t;
 
