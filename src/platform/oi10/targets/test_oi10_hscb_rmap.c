@@ -23,28 +23,10 @@
 #include <platform/devices/hscb.h>
 #include <platform/devices/emi.h>
 #include <platform/devices/nor_1636RR4.h>
+#include <platform/common_macros/common_macros.h>
 
 
 #define MAX_ATTEMPTS 100000
-
-#ifndef DATA_SIZE_0
-#define DATA_SIZE_0 0x10
-#endif
-#ifndef DATA_SIZE_1
-#define DATA_SIZE_1 0x20
-#endif
-#ifndef DATA_SIZE_2
-#define DATA_SIZE_2 0x18
-#endif
-#ifndef DATA_SIZE_3
-#define DATA_SIZE_3 0x28
-#endif
-#ifndef DATA_SIZE_4
-#define DATA_SIZE_4 0x38
-#endif
-#ifndef DATA_SIZE_5
-#define DATA_SIZE_5 0x30
-#endif
 
 
 #ifndef TX_0_HEAP_NAME
@@ -123,29 +105,54 @@
 #define INCREMENT_5 -3
 #endif
 
-#ifdef HSCB_SHORT_TEST
-#define COUNT_AREAS 4
-#else
-#define COUNT_AREAS 12
-#endif
-
 #define DESCRIPTOR_TABLES_COUNT 4
-#define DEFAULT_HEAP_ID 1
 
 #ifndef COUNT_PACKETS
-#define COUNT_PACKETS 3
+#define COUNT_PACKETS 1
 #endif
 
+#ifndef DATA_SIZE_0
+#define DATA_SIZE_0 0x13
+#endif
+#ifndef DATA_SIZE_1
+#define DATA_SIZE_1 0x22
+#endif
+#ifndef DATA_SIZE_2
+#define DATA_SIZE_2 0x19
+#endif
+#ifndef DATA_SIZE_3
+#define DATA_SIZE_3 0x27
+#endif
+#ifndef DATA_SIZE_4
+#define DATA_SIZE_4 0x36
+#endif
+#ifndef DATA_SIZE_5
+#define DATA_SIZE_5 0x33
+#endif
+
+#define DEFAULT_HEAP_ID 1
+
 #ifndef DEFAULT_HEAP_NAME_FOR_REPLY_ADDR
-#define DEFAULT_HEAP_NAME_FOR_REPLY_ADDR
+#define DEFAULT_HEAP_NAME_FOR_REPLY_ADDR "IM2"
+#endif
+
+#ifndef DEFAULT_HEAP_NAME_FOR_DATA
+#define DEFAULT_HEAP_NAME_FOR_DATA "IM2"
+#endif
+
+#ifndef DEFAULT_HEAP_NAME_FOR_RMAP_HEADER
+#define DEFAULT_HEAP_NAME_FOR_RMAP_HEADER "IM2"
+#endif
+
+
+#ifndef DEFAULT_INITIATOR_LOGICAL_ADDRESS
+#define DEFAULT_INITIATOR_LOGICAL_ADDRESS HSCB_RMAP_DEFAULT_LOGICAL_ADDRESS
 #endif
 
 static volatile uint32_t hscb0_status;
 static volatile uint32_t hscb1_status;
-static volatile uint32_t hscb0_dma_status;
-static volatile uint32_t hscb1_dma_status;
-static volatile bool hscb0_link_established;
-static volatile bool hscb1_link_established;
+static volatile uint32_t hscb_under_test_dma_status;
+static volatile uint32_t hscb_supplementary_dma_status;
 
 static void handler( int irq, void *arg ) {
     //get interrupt source
@@ -157,13 +164,13 @@ static void handler( int irq, void *arg ) {
     }
     if (irq == HSCB_UNDER_TEST_DMA_INT) {
         rumboot_putstring("HSCB_0_DMA_IRQ\n");
-        hscb0_dma_status = hscb_get_adma_ch_status(HSCB_UNDER_TEST_BASE );
-        rumboot_puthex(hscb0_dma_status);
-        if (hscb0_dma_status & HSCB_ADMA_CH_STATUS_RDMA_IRQ_mask)
-            hscb0_dma_status = hscb_get_rdma_status(HSCB_UNDER_TEST_BASE);
-        else if (hscb0_dma_status & HSCB_ADMA_CH_STATUS_WDMA_IRQ_mask)
-            hscb0_dma_status = hscb_get_wdma_status(HSCB_UNDER_TEST_BASE);
-        rumboot_puthex(hscb0_dma_status);
+        hscb_under_test_dma_status = hscb_get_adma_ch_status(HSCB_UNDER_TEST_BASE );
+        rumboot_puthex(hscb_under_test_dma_status);
+        if (hscb_under_test_dma_status & HSCB_ADMA_CH_STATUS_RDMA_IRQ_mask)
+            hscb_under_test_dma_status = hscb_get_rdma_status(HSCB_UNDER_TEST_BASE);
+        else if (hscb_under_test_dma_status & HSCB_ADMA_CH_STATUS_WDMA_IRQ_mask)
+            hscb_under_test_dma_status = hscb_get_wdma_status(HSCB_UNDER_TEST_BASE);
+        rumboot_puthex(hscb_under_test_dma_status);
     }
     if (irq == HSCB_SUPPLEMENTARY_INT) {
         rumboot_putstring("HSCB_1_IRQ\n");
@@ -171,13 +178,13 @@ static void handler( int irq, void *arg ) {
     }
     if (irq == HSCB_SUPPLEMENTARY_DMA_INT) {
         rumboot_putstring("HSCB_1_DMA_IRQ\n");
-        hscb1_dma_status = hscb_get_adma_ch_status(HSCB_SUPPLEMENTARY_BASE );
-        rumboot_puthex(hscb1_dma_status);
-        if (hscb1_dma_status & HSCB_ADMA_CH_STATUS_RDMA_IRQ_mask)
-            hscb1_dma_status = hscb_get_rdma_status(HSCB_SUPPLEMENTARY_BASE);
-        else if (hscb1_dma_status & HSCB_ADMA_CH_STATUS_WDMA_IRQ_mask)
-            hscb1_dma_status = hscb_get_wdma_status(HSCB_SUPPLEMENTARY_BASE);
-        rumboot_puthex(hscb1_dma_status);
+        hscb_supplementary_dma_status = hscb_get_adma_ch_status(HSCB_SUPPLEMENTARY_BASE );
+        rumboot_puthex(hscb_supplementary_dma_status);
+        if (hscb_supplementary_dma_status & HSCB_ADMA_CH_STATUS_RDMA_IRQ_mask)
+            hscb_supplementary_dma_status = hscb_get_rdma_status(HSCB_SUPPLEMENTARY_BASE);
+        else if (hscb_supplementary_dma_status & HSCB_ADMA_CH_STATUS_WDMA_IRQ_mask)
+            hscb_supplementary_dma_status = hscb_get_wdma_status(HSCB_SUPPLEMENTARY_BASE);
+        rumboot_puthex(hscb_supplementary_dma_status);
     }
 }
 
@@ -496,15 +503,71 @@ uint32_t hscb_check_data(
         return 0;
 }
 
-uint32_t generate_some_raw_rmap_packets(hscb_rmap_packet_raw_configuration_t* raw_rmap_packets)
+void free_mem_from_raw_rmap_packets(hscb_rmap_packet_raw_configuration_t* raw_rmap_packets, const uint32_t length)
 {
-    int i = COUNT_PACKETS;
+    for(int i = 0; i < length; ++i)
+    {
+        if(raw_rmap_packets[i].data_chain.array){
+            rumboot_free(raw_rmap_packets[i].data_chain.array);
+            raw_rmap_packets[i].data_chain.array = NULL;
+            raw_rmap_packets[i].data_chain.length = 0;
+        }
+        if(raw_rmap_packets[i].reply_addr_chain.array)
+        {
+            rumboot_free(raw_rmap_packets[i].reply_addr_chain.array);
+            raw_rmap_packets[i].reply_addr_chain.array = NULL;
+            raw_rmap_packets[i].reply_addr_chain.length = 0;
+        }
+        if(raw_rmap_packets[i].target_addr_chain.array)
+        {
+            rumboot_free(raw_rmap_packets[i].target_addr_chain.array);
+            raw_rmap_packets[i].target_addr_chain.array = NULL;
+            raw_rmap_packets[i].target_addr_chain.length = 0;
+        }
+    }
+    rumboot_free(raw_rmap_packets);
+}
+
+enum{
+    OK,
+    UNSUPPORTED_COUNT_PACKETS,
+    UNABLE_TO_ALLOCATE_MEMORY
+}generate_some_raw_rmap_packets_result;
+
+uint32_t generate_some_raw_rmap_packets(hscb_rmap_packet_raw_configuration_t* raw_rmap_packets, const uint32_t length)
+{
+    int i = length;
     uint32_t reply_addr_length = 0;
+    bool change_endian = true;
     switch(COUNT_PACKETS)
     {
         case 1:
         {
             --i;
+            raw_rmap_packets[i].reply_addr_chain.length = reply_addr_length << 2;
+            raw_rmap_packets[i].reply_addr_chain.array
+                = rumboot_malloc_from_named_heap(DEFAULT_HEAP_NAME_FOR_REPLY_ADDR,
+                        raw_rmap_packets[i].reply_addr_chain.length);
+
+            raw_rmap_packets[i].data_chain.length = DATA_SIZE_0;
+            raw_rmap_packets[i].data_chain.array
+                = rumboot_malloc_from_named_heap(DEFAULT_HEAP_NAME_FOR_DATA,
+                        raw_rmap_packets[i].reply_addr_chain.length);
+
+            raw_rmap_packets[i].addr
+                = rumboot_virt_to_dma( rumboot_malloc_from_named_heap(RX_0_HEAP_NAME,
+                        raw_rmap_packets[i].data_chain.length));
+
+            if((!raw_rmap_packets[i].reply_addr_chain.array)
+                 || (!raw_rmap_packets[i].data_chain.array)
+                 || (!raw_rmap_packets[i].addr))
+            {
+                free_mem_from_raw_rmap_packets(raw_rmap_packets, length);
+                return UNABLE_TO_ALLOCATE_MEMORY;
+            }
+
+            raw_rmap_packets[i].ext_addr = 0x0;
+
             raw_rmap_packets[i].target_addr_chain.array = NULL;
             raw_rmap_packets[i].target_addr_chain.length = 0;
             raw_rmap_packets[i].target_logical_addr = HSCB_RMAP_DEFAULT_TARGET_LOGICAL_ADDRESS;
@@ -517,25 +580,161 @@ uint32_t generate_some_raw_rmap_packets(hscb_rmap_packet_raw_configuration_t* ra
                   | (HSCB_RMAP_PACKET_TYPE_COMMAND      << HSCB_RMAP_PACKET_INSTRUCTION_FIELD_PACKET_TYPE_i)
                   | (reply_addr_length    << HSCB_RMAP_PACKET_INSTRUCTION_FIELD_REPLY_ADDR_LEN_i);
             raw_rmap_packets[i].key = HSCB_RMAP_DEFAULT_KEY;
-            raw_rmap_packets[i].reply_addr_chain.length = reply_addr_length << 2;
-            raw_rmap_packets[i].reply_addr_chain.array = rumboot_malloc_
+            raw_rmap_packets[i].initiator_logical_addr = DEFAULT_INITIATOR_LOGICAL_ADDRESS;
+            raw_rmap_packets[i].transaction_id = i;
+            raw_rmap_packets[i].change_endian = change_endian;
         } break;
-        default: return 1;
+        default: return UNSUPPORTED_COUNT_PACKETS;
     }
-    return 0;
+    return OK;
+}
+
+uint32_t count_of_necessary_descriptors(
+        hscb_rmap_packet_raw_configuration_t* raw_rmap_packets,
+        uint32_t count_packets)
+{
+    uint32_t counter = 0;
+    for(int i = 0; i < count_packets; ++i)
+    {
+        count += 2 //two mandatory chains of fields in RMAP packet header
+                + ((raw_rmap_packets[i].target_addr_chain.length > 0) ? 1 : 0)//Target Addr chain is supplied
+                + ((raw_rmap_packets[i].reply_addr_chain.length > 0) ? 1 : 0)//Reply Addr chain is supplied
+                + (((raw_rmap_packets[i].data_chain.length > 0) &&
+                        (raw_rmap_packets[i].instruction
+                    & (HSCB_RMAP_PACKET_INSTRUCTION_FIELD_WRITE_mask
+                     | HSCB_RMAP_PACKET_INSTRUCTION_FIELD_VERIFY_DATA_mask))) ? 2 : 0);// Data with CRC is supplied
+    }
+    return ++counter;//Reserve 1 place for terminating descriptor
+}
+
+void free_mem_from_ready_rmap_packets(hscb_rmap_packet_ready_for_transmit_t* ready_rmap_packets)
+{
+    for(int i = 0; i < ready_rmap_packets->count_areas; ++i)
+    {
+        if(ready_rmap_packets->data_areas[i])
+            rumboot_free(ready_rmap_packets->data_areas[i]);
+    }
+    if(ready_rmap_packets->data_areas)
+        rumboot_free(ready_rmap_packets->data_areas);
+    if(ready_rmap_packets->array_of_descriptors)
+        rumboot_free(ready_rmap_packets->array_of_descriptors);
+    if(ready_rmap_packets->data_area_sizes)
+        rumboot_free(ready_rmap_packets->data_area_sizes);
+}
+
+uint32_t packing_for_rmap(
+        hscb_rmap_packet_ready_for_transmit_t* ready_rmap_packets,
+        hscb_rmap_packet_raw_configuration_t* raw_rmap_packets,
+        uint32_t count_packets)
+{
+    uint32_t result = OK;
+    uint32_t count_descriptors = count_of_necessary_descriptors(raw_rmap_packets, count_packets);
+
+    ready_rmap_packets->array_of_descriptors = rumboot_malloc_from_heap(DEFAULT_HEAP_ID,
+            sizeof(hscb_packed_descr_struct_t) * count_packets);
+    if(!ready_rmap_packets->array_of_descriptors)
+        return UNABLE_TO_ALLOCATE_MEMORY;
+
+    ready_rmap_packets->data_areas = rumboot_malloc_from_heap(DEFAULT_HEAP_ID,
+            sizeof(ready_rmap_packets->data_areas) * count_packets);
+    if(!ready_rmap_packets->data_areas)
+    {
+        rumboot_free(ready_rmap_packets->array_of_descriptors);
+        return UNABLE_TO_ALLOCATE_MEMORY;
+    }
+
+    ready_rmap_packets->data_area_sizes = rumboot_malloc_from_heap(DEFAULT_HEAP_ID,
+            sizeof(*ready_rmap_packets->data_area_sizes) * count_packets);
+
+    if(!ready_rmap_packets->data_area_sizes)
+    {
+        rumboot_free(ready_rmap_packets->array_of_descriptors);
+        rumboot_free(ready_rmap_packets->data_areas);
+        return UNABLE_TO_ALLOCATE_MEMORY;
+    }
+
+    for(int i = 0, counter_of_fields = 0; i < count_packets; ++i)
+    {
+        /*Target SW Address*/
+        if(raw_rmap_packets[i].target_addr_chain.length &&
+                raw_rmap_packets[i].target_addr_chain.array)
+            ++counter_of_fields;
+
+        /*first mandatory part of RMAP packet header*/
+        ready_rmap_packets->data_area_sizes[counter_of_fields] = 4;
+        ready_rmap_packets->data_areas[counter_of_fields]
+              = rumboot_malloc_from_named_heap(DEFAULT_HEAP_NAME_FOR_RMAP_HEADER,
+                      ready_rmap_packets->data_area_sizes[counter_of_fields]);
+        ++counter_of_fields;
+
+        /*reply address chain*/
+        if(raw_rmap_packets[i].reply_addr_chain.length &&
+                raw_rmap_packets[i].reply_addr_chain.array)
+            ++counter_of_fields;
+
+        /*second mandatory part of RMAP packet header*/
+        ready_rmap_packets->data_area_sizes[counter_of_fields] = 12;
+        ready_rmap_packets->data_areas[counter_of_fields]
+              = rumboot_malloc_from_named_heap(DEFAULT_HEAP_NAME_FOR_RMAP_HEADER,
+                      ready_rmap_packets->data_area_sizes[counter_of_fields]);
+        ++counter_of_fields;
+
+        /*Data CRC*/
+        if(raw_rmap_packets[i].data_chain.length &&
+                raw_rmap_packets[i].data_chain.array)
+        {
+            ++counter_of_fields;
+            ready_rmap_packets->data_area_sizes[counter_of_fields] = 1;
+            ready_rmap_packets->data_areas[counter_of_fields]
+                  = rumboot_malloc_from_named_heap(DEFAULT_HEAP_NAME_FOR_RMAP_HEADER,
+                          ready_rmap_packets->data_area_sizes[counter_of_fields]);
+            ++counter_of_fields;
+        }
+
+        result = hscb_prepare_rmap_packet(raw_rmap_packets[i], ready_rmap_packets);
+        switch(result)
+        {
+            case OK:; break;
+            case UNABLE_TO_ALLOCATE_MEMORY:
+            {
+                free_mem_from_ready_rmap_packets(ready_rmap_packets);
+                rumboot_printf("packing_for_rmap: unable to allocate memory for target address chain, reply address chain or data (either Rx or TX area).");
+                return result;
+            } break;
+            default:
+            {
+                free_mem_from_ready_rmap_packets(ready_rmap_packets);
+                rumboot_printf("packing_for_rmap: unexpected return value == %x", result);
+                return result;
+            }
+        }
+    }
+
+    return result;
+}
+
+uint32_t prepare_receiving_areas(
+        hscb_rmap_packet_ready_for_transmit_t* receiving_rmap_packets,
+        hscb_rmap_packet_raw_configuration_t* raw_rmap_packets,
+        uint32_t count_packets)
+{
+
+    return OK;
 }
 
 static uint32_t check_rmap_func(
         uint32_t supplementary_base_addr){
-    hscb_packed_descr_struct_t** descriptors = NULL;
-    uint32_t descriptor_counts[DESCRIPTOR_TABLES_COUNT] = {3, 3, 3, 3};
+//    hscb_packed_descr_struct_t** descriptors = NULL;
+//    uint32_t descriptor_counts[DESCRIPTOR_TABLES_COUNT] = {3, 3, 3, 3};
     int cnt = 0;
     int result = 0;
     hscb_rmap_packet_raw_configuration_t* raw_rmap_packets = NULL;
+    hscb_rmap_packet_ready_for_transmit_t ready_rmap_packets = {0};
+    hscb_rmap_packet_ready_for_transmit_t receiving_rmap_packets = {0};
     hscb0_status = 0;
     hscb1_status = 0;
-    hscb0_dma_status = 0;
-    hscb1_dma_status = 0;
+    hscb_under_test_dma_status = 0;
+    hscb_supplementary_dma_status = 0;
 
     rumboot_putstring( "------- HSCB RMAP test -------\n" );
 
@@ -547,51 +746,64 @@ static uint32_t check_rmap_func(
         rumboot_putstring("Cannot allocate memory from default heap for raw RMAP packets, exiting.");
         return 1;
     }
-    generate_some_raw_rmap_packets(raw_rmap_packets);
-//    prepare_descriptor_areas(&descriptors,descriptor_counts,DESCRIPTOR_TABLES_COUNT);
-//    init_hscb_cfg( data_areas, data_area_sizes, descriptors, descriptor_counts,DESCRIPTOR_TABLES_COUNT, HSCB_ROTATE_BYTES_ENABLE);
-//
-//#ifdef TEST_OI10_HSCB_FULL_TRACING
-//    print_hscb_descriptors_in_cycle(descriptors, descriptor_counts, DESCRIPTOR_TABLES_COUNT);
-//#endif
-//
-//    set_descriptor_tables(base_addr, supplementary_base_addr, descriptors,descriptor_counts,DESCRIPTOR_TABLES_COUNT);
-//    hscb_set_max_speed(base_addr);
-//    hscb_set_max_speed(supplementary_base_addr);
-//        // Enable HSCB0 and HSCB1
-//    iowrite32((1 << HSCB_IRQ_MASK_ACTIVE_LINK_i),    base_addr + HSCB_IRQ_MASK);
-//    iowrite32((1 << HSCB_IRQ_MASK_ACTIVE_LINK_i),    supplementary_base_addr + HSCB_IRQ_MASK);
-//    iowrite32((1 << HSCB_SETTINGS_EN_HSCB_i),        base_addr + HSCB_SETTINGS);
-//    iowrite32((1 << HSCB_SETTINGS_EN_HSCB_i),        supplementary_base_addr + HSCB_SETTINGS);
-//    rumboot_putstring( "Waiting for HSCB0 and HSCB1 link establishing\n" );
-//    if(!(   hscb_wait_status(base_addr,                 (HSCB_STATE_RUN << HSCB_STATUS_STATE_i)) &
-//            hscb_wait_status(supplementary_base_addr,   (HSCB_STATE_RUN << HSCB_STATUS_STATE_i)))){
-//        rumboot_putstring( "Wait HSCB RUN state Time-out\n" );
-//        rumboot_printf("HSCB(0x%x) status: 0x%x\n", base_addr, hscb_get_status(base_addr));
-//        rumboot_printf("HSCB(0x%x) status: 0x%x\n", supplementary_base_addr, hscb_get_status(base_addr));
-//        return 1;
-//    }
-//
-//    rumboot_putstring( "HSCB link has enabled\n" );
-//    // Enable DMA for HSCB0 and HSCB1
-//    rumboot_putstring( "Start work!\n" );
-//    hscb_run_rdma(base_addr);
-//    hscb_run_rdma(supplementary_base_addr);
-//    hscb_run_wdma(base_addr);
-//    hscb_run_wdma(supplementary_base_addr);
-//    rumboot_putstring( "Wait HSCB0 and HSCB1 finish work\n" );
-//    while (!(hscb0_dma_status & hscb1_dma_status)){
-//        if (cnt == MAX_ATTEMPTS) {
-//            rumboot_putstring( "Wait interrupt Time-out\n" );
-//            return 1;
-//        }
-//        else
-//            cnt += 1;
-//    }
-//    cnt = 0;
-//    hscb0_dma_status = 0;
-//    hscb1_dma_status = 0;
-//    rumboot_putstring( "Finish work!\n" );
+    memset(raw_rmap_packets, 0, sizeof(hscb_rmap_packet_raw_configuration_t) * COUNT_PACKETS);
+    switch (generate_some_raw_rmap_packets(raw_rmap_packets, COUNT_PACKETS))
+    {
+        case OK:; break;
+        case UNSUPPORTED_COUNT_PACKETS:
+        {
+            rumboot_printf("generate_some_raw_rmap_packets: unsupported count of predefined packets");
+            return 1;
+        } break;
+        case UNABLE_TO_ALLOCATE_MEMORY:
+        {
+            rumboot_printf("generate_some_raw_rmap_packets: unable to allocate memory for target address chain, reply address chain or data (either Rx or TX area).");
+            return 1;
+        } break;
+        default:
+        {
+            rumboot_printf("generate_some_raw_rmap_packets: unexpected return value");
+            return 1;
+        }
+    }
+    packing_for_rmap(&ready_rmap_packets, raw_rmap_packets, COUNT_PACKETS);
+    prepare_receiving_areas(&receiving_rmap_packets, raw_rmap_packets, COUNT_PACKETS);
+
+#ifdef TEST_OI10_HSCB_FULL_TRACING
+    print_hscb_descriptors_in_cycle(ready_rmap_packets.array_of_descriptors, descriptor_counts, DESCRIPTOR_TABLES_COUNT);
+#endif
+
+    hscb_set_rdma_tbl_size(supplementary_base_addr, hscb_get_tbl_len_by_count(ready_rmap_packets.count_areas - 1));
+    hscb_set_rdma_sys_addr(supplementary_base_addr, rumboot_virt_to_dma((uint32_t *) ready_rmap_packets.array_of_descriptors));
+
+    // Enable HSCB0 and HSCB1
+    iowrite32((1 << HSCB_IRQ_MASK_ACTIVE_LINK_i),    supplementary_base_addr + HSCB_IRQ_MASK);
+    iowrite32((1 << HSCB_SETTINGS_EN_HSCB_i),        supplementary_base_addr + HSCB_SETTINGS);
+    rumboot_putstring( "Waiting for HSCB0 and HSCB1 link establishing\n" );
+    if(!(   hscb_wait_status(supplementary_base_addr,   (HSCB_STATE_RUN << HSCB_STATUS_STATE_i)))){
+        rumboot_putstring( "Wait HSCB RUN state Time-out\n" );
+        rumboot_printf("HSCB(0x%x) status: 0x%x\n", supplementary_base_addr, hscb_get_status(base_addr));
+        return 1;
+    }
+
+    rumboot_putstring( "HSCB link has enabled\n" );
+    // Enable DMA for HSCB0 and HSCB1
+    rumboot_putstring( "Start work!\n" );
+    hscb_run_rdma(supplementary_base_addr);
+    hscb_run_wdma(supplementary_base_addr);
+    rumboot_putstring( "Wait HSCB0 and HSCB1 finish work\n" );
+    while (!(hscb_under_test_dma_status & hscb_supplementary_dma_status)){
+        if (cnt == MAX_ATTEMPTS) {
+            rumboot_putstring( "Wait interrupt Time-out\n" );
+            return 1;
+        }
+        else
+            cnt += 1;
+    }
+    cnt = 0;
+    hscb_under_test_dma_status = 0;
+    hscb_supplementary_dma_status = 0;
+    rumboot_putstring( "Finish work!\n" );
 //
 //
 //    rumboot_putstring( "HSCB1 to HSCB0 descriptors checking\n" );
@@ -615,7 +827,7 @@ int main() {
 
     rumboot_printf( "Check HSCB RMAP (0x%x) \n", HSCB_UNDER_TEST_BASE );
 
-    emi_init(DCR_EM2_EMI_BASE);
+//    emi_init(DCR_EM2_EMI_BASE);
     tbl = create_irq_handlers();
 
 //    count_of_memory_areas = prepare_memory_areas(&data_areas, &data_area_sizes);
