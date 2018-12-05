@@ -58,6 +58,7 @@
 #define EMI_BITS_D16_D23            EMI_WECR_BWE2_i
 #define EMI_BITS_D24_D31            EMI_WECR_BWE3_i
 #define EMI_BITS_ED0_ED7            EMI_WECR_BWE4_i
+#define COMMON_EMI_REGS             (-1)
 
 #define TEST_OK                     0x00000000
 #define TEST_ERROR                  0x00000001
@@ -108,6 +109,8 @@
                                     )
 #define SINGLE_ERR_FLAG(BANK)       (1 << (((BANK) << 1) + 0))
 #define DOUBLE_ERR_FLAG(BANK)       (1 << (((BANK) << 1) + 1))
+#define SHIFT_ERR(ERR,IDX)          ((ERR) << ((IDX) << 3))
+#define GEN_ECC(VAL)                calc_hamming_ecc(reverse_bytes32(VAL))
 #define ECC_ON(BANK)                emi_write(EMI_HSTSR, \
                                         emi_read(EMI_HSTSR) |  (1 << (BANK)));
 #define ECC_OFF(BANK)               emi_write(EMI_HSTSR, \
@@ -180,7 +183,8 @@ uint32_t    mask_tpl[] =
     0x000000FF
 };
 /* Check templates 8 bits */
-uint8_t     byte_tpl[] = {0xDE, 0xDA, 0x01, 0x00};
+uint8_t     byte_tpl1[] = {0xDE, 0xDA, 0x01, 0x00};
+uint8_t     byte_tpl2[] = {0x55, 0xAA, 0x33, 0xCC};
 static volatile const uint8_t emi_ecnt_b[8] = {0,8,16,0,8,16,0,0};
 static volatile const uint8_t emi_ecnt[8] =
     {
@@ -190,7 +194,7 @@ static volatile const uint8_t emi_ecnt[8] =
 static irq_flags_t IRQ = 0;
 static rumboot_irq_entry *irq_table = NULL;
 static volatile uint32_t global_irr = 0;
-static uint8_t const_2_ecc[2];
+static uint8_t const_2_ecc[12];
 static tlb_entry em2_noexec_entries[] =
 {
     {
@@ -329,10 +333,10 @@ uint32_t check_emi_mkserr(  mke_info_t     *info,
     uintptr_t    base32   = 0,
                  base8    = 0;
     volatile
-    emi_ckregs_t regs;
-    volatile
     uint32_t     readed   = 0,
                  tmp      = 0;
+    volatile
+    emi_ckregs_t regs1, regs2;
 
     base32  = emi_bank_bases[params.bnk];
     base32 += (BASE_OFFSET + (info->idx * sizeof(uintptr_t)));
@@ -352,32 +356,36 @@ uint32_t check_emi_mkserr(  mke_info_t     *info,
     msync();
     // tmp = emi_read(EMI_WECR);       /* EMI Sync */
     emi_write(EMI_WECR, WECR_DFLT);
+    rumboot_printf("Writing byte 0x%X to 0x%X...\n",
+            byte_tpl2[info->idx], base8);
+    iowrite8(byte_tpl2[info->idx], base8);
+    msync();
+    emi_wait_irq(200, ALL_INTERRUPTS);
+    emi_read_ckregs(&regs1, (uint32_t)params.bnk);
     rumboot_printf("Reading from 0x%X...\n", base32);
     readed = ioread32(base32);
     msync();
-    udelay(50);
-    emi_wait_irq(5000, ALL_INTERRUPTS);
-    emi_read_ckregs(&regs, (uint32_t)params.bnk);
+    emi_read_ckregs(&regs2, (uint32_t)params.bnk);
     rumboot_printf("ECNT20=0x%X, ECNT53=0x%X, H1ADR=0x%X, H2ADR=0x%X, H1CMR=0x%X, H2CMR=0x%X\n",
-            regs.ecnt20, regs.ecnt53, regs.h1addr, regs.h2addr, regs.h1cmrr, regs.h2cmrr);
-    rumboot_printf("READED: 0x%X (ECC=0x%X, ECNT=%d) after single error.\n",
-            readed, regs.eccval, regs.cntval);
+            regs1.ecnt20, regs1.ecnt53, regs1.h1addr, regs1.h2addr, regs1.h1cmrr, regs1.h2cmrr);
+    rumboot_printf("READED: 0x%X (ECC=0x%X/0x%X, ECNT=%d) after single error.\n",
+            readed, regs1.eccval, regs2.eccval, regs1.cntval);
     TEST_ASSERT(result = (readed == info->exp),
             "EMI: Single error repair fails.");
     status |= !result;
-    TEST_ASSERT(result = (regs.eccval == (uint32_t)params.ecc),
+    TEST_ASSERT(result = (regs1.eccval == (uint32_t)params.ecc),
             "EMI: Wrong ECC-code after single error.");
     status |= !result;
-    TEST_ASSERT(result = (regs.cntval == (uint32_t)params.cnt),
+    TEST_ASSERT(result = (regs1.cntval == (uint32_t)params.cnt),
             "EMI: Wrong single error counter value.");
     status |= !result;
     TEST_ASSERT(result = (global_irr & SINGLE_ERR_FLAG(params.bnk)),
             "EMI: Single error interrupt flag not risen.");
     status |= !result;
-    TEST_ASSERT(result = (regs.h1addr == (base32 & ERR_ADDR_MASK)),
+    TEST_ASSERT(result = (regs1.h1addr == (base32 & ERR_ADDR_MASK)),
             "EMI: Wrong value of H1ADR after single error.");
     status |= !result;
-    TEST_ASSERT(result = (regs.h2addr == HXADR_DFLT),
+    TEST_ASSERT(result = (regs1.h2addr == HXADR_DFLT),
             "EMI: Wrong value of H2ADR after single error.");
     status |= !result;
 
@@ -393,10 +401,10 @@ uint32_t check_emi_mkderr(  mke_info_t     *info,
     uintptr_t    base32   = 0,
                  base8    = 0;
     volatile
-    emi_ckregs_t regs;
-    volatile
     uint32_t     readed   = 0,
                  tmp      = 0;
+    volatile
+    emi_ckregs_t regs1, regs2;
 
     base32  = emi_bank_bases[params.bnk];
     base32 += (BASE_OFFSET + (info->idx * sizeof(uintptr_t)));
@@ -416,23 +424,27 @@ uint32_t check_emi_mkderr(  mke_info_t     *info,
     msync();
     // tmp = emi_read(EMI_WECR);       /* EMI Sync */
     emi_write(EMI_WECR, WECR_DFLT);
+    rumboot_printf("Writing byte 0x%X to 0x%X...\n",
+            byte_tpl2[info->idx], base8);
+    iowrite8(byte_tpl2[info->idx], base8);
+    msync();
+    emi_wait_irq(200, ALL_INTERRUPTS);
+    emi_read_ckregs(&regs1, (uint32_t)params.bnk);
     rumboot_printf("Reading from 0x%X...\n", base32);
     readed = ioread32(base32);
     msync();
-    udelay(50);
-    emi_wait_irq(5000, ALL_INTERRUPTS);
-    emi_read_ckregs(&regs, (uint32_t)params.bnk);
+    emi_read_ckregs(&regs2, (uint32_t)params.bnk);
     rumboot_printf("ECNT20=0x%X, ECNT53=0x%X, H1ADR=0x%X, H2ADR=0x%X, H1CMR=0x%X, H2CMR=0x%X\n",
-            regs.ecnt20, regs.ecnt53, regs.h1addr, regs.h2addr, regs.h1cmrr, regs.h2cmrr);
-    rumboot_printf("READED: 0x%X (ECC=0x%X, ECNT=%d) after single error.\n",
-            readed, regs.eccval, regs.cntval);
+            regs1.ecnt20, regs1.ecnt53, regs1.h1addr, regs1.h2addr, regs1.h1cmrr, regs1.h2cmrr);
+    rumboot_printf("READED: 0x%X (ECC=0x%X/0x%X, ECNT=%d) after double error.\n",
+            readed, regs1.eccval, regs2.eccval, regs1.cntval);
     TEST_ASSERT(result = (readed == info->exp),
             "EMI: Wrong value after double error.");
     status |= !result;
-    TEST_ASSERT(result = (regs.eccval == (uint32_t)params.ecc),
+    TEST_ASSERT(result = (regs1.eccval == (uint32_t)params.ecc),
             "EMI: Wrong ECC-code after double error.");
     status |= !result;
-    TEST_ASSERT(result = (regs.cntval == (uint32_t)params.cnt),
+    TEST_ASSERT(result = (regs1.cntval == (uint32_t)params.cnt),
             "EMI: Wrong single error counter value.");
     status |= !result;
     TEST_ASSERT(result = (!(global_irr & SINGLE_ERR_FLAG(params.bnk))),
@@ -441,10 +453,10 @@ uint32_t check_emi_mkderr(  mke_info_t     *info,
     TEST_ASSERT(result = (global_irr & DOUBLE_ERR_FLAG(params.bnk)),
             "EMI: Double error interrupt flag not risen.");
     status |= !result;
-    TEST_ASSERT(result = (regs.h1addr == HXADR_DFLT),
+    TEST_ASSERT(result = (regs1.h1addr == HXADR_DFLT),
             "EMI: Wrong value of H1ADR after double error.");
     status |= !result;
-    TEST_ASSERT(result = (regs.h2addr == (base32 & ERR_ADDR_MASK)),
+    TEST_ASSERT(result = (regs1.h2addr == (base32 & ERR_ADDR_MASK)),
             "EMI: Wrong value of H2ADR after double error.");
     status |= !result;
 
@@ -462,33 +474,33 @@ uint32_t check_emi(uint32_t bank)
     int              typ      = EMI_TYPE(bank);
     mke_info_t       mke_info = {0,0,0,0};
 
-    mkerr_param_t   mke_d1[] =
-    {
-        {bank, const_2_ecc[0], 1, EMI_BITS_D0_D7  },
-        {bank, const_2_ecc[0], 1, EMI_BITS_D8_D15 },
-        {bank, const_2_ecc[0], 1, EMI_BITS_D16_D23},
-        {bank, const_2_ecc[0], 1, EMI_BITS_D24_D31},
+    mkerr_param_t   mke_d1[4] =
+    {   /* Mod1 data */
+        {bank, const_2_ecc[8], 1, EMI_BITS_D24_D31},
+        {bank, const_2_ecc[8], 2, EMI_BITS_D16_D23},
+        {bank, const_2_ecc[8], 3, EMI_BITS_D8_D15 },
+        {bank, const_2_ecc[8], 4, EMI_BITS_D0_D7  },
     },
-                    mke_e1[] =
-    {
-        {bank, const_2_ecc[0], 2, EMI_BITS_ED0_ED7},
-        {bank, const_2_ecc[0], 2, EMI_BITS_ED0_ED7},
-        {bank, const_2_ecc[0], 2, EMI_BITS_ED0_ED7},
-        {bank, const_2_ecc[0], 2, EMI_BITS_ED0_ED7},
+                    mke_d2[4] =
+    {   /* Mod2 data */
+        {bank, const_2_ecc[8], 0, EMI_BITS_D24_D31},
+        {bank, const_2_ecc[8], 0, EMI_BITS_D16_D23},
+        {bank, const_2_ecc[8], 0, EMI_BITS_D8_D15 },
+        {bank, const_2_ecc[8], 0, EMI_BITS_D0_D7  },
     },
-                     mke_d2[] =
-    {
-        {bank, const_2_ecc[0], 0, EMI_BITS_D0_D7  },
-        {bank, const_2_ecc[0], 0, EMI_BITS_D8_D15 },
-        {bank, const_2_ecc[0], 0, EMI_BITS_D16_D23},
-        {bank, const_2_ecc[0], 0, EMI_BITS_D24_D31},
+                    mke_e1[4] =
+    {   /* Mod1 ECC */
+        {bank, const_2_ecc[0], 1, EMI_BITS_ED0_ED7},
+        {bank, const_2_ecc[1], 2, EMI_BITS_ED0_ED7},
+        {bank, const_2_ecc[2], 3, EMI_BITS_ED0_ED7},
+        {bank, const_2_ecc[3], 4, EMI_BITS_ED0_ED7},
     },
-                     mke_e2[] =
-    {
-        {bank, const_2_ecc[1], 0, EMI_BITS_ED0_ED7},
-        {bank, const_2_ecc[1], 0, EMI_BITS_ED0_ED7},
-        {bank, const_2_ecc[1], 0, EMI_BITS_ED0_ED7},
-        {bank, const_2_ecc[1], 0, EMI_BITS_ED0_ED7},
+                     mke_e2[4] =
+    {   /* Mod2 ECC */
+        {bank, const_2_ecc[4], 0, EMI_BITS_ED0_ED7},
+        {bank, const_2_ecc[5], 0, EMI_BITS_ED0_ED7},
+        {bank, const_2_ecc[6], 0, EMI_BITS_ED0_ED7},
+        {bank, const_2_ecc[7], 0, EMI_BITS_ED0_ED7},
     };
 
     if(typ & ~7) typ = 7;
@@ -527,8 +539,8 @@ uint32_t check_emi(uint32_t bank)
     for(i = 0; i < 4; i++)
     {
         rumboot_printf(" +++ Store byte: 0x%X to 0x%X\n",
-                byte_tpl[i], base + i * sizeof(uintptr_t) + i);
-        iowrite8(byte_tpl[i], base + i * sizeof(uintptr_t) + i);
+                byte_tpl1[i], base + i * sizeof(uintptr_t) + i);
+        iowrite8(byte_tpl1[i], base + i * sizeof(uintptr_t) + i);
     }
 
     /* Load32 */
@@ -545,60 +557,71 @@ uint32_t check_emi(uint32_t bank)
                 !result ? "ok" : "error");
         TEST_ASSERT(data32 == expv, "READ ERROR");
     }
-    /* --------------------------------------------------- */
 
-    rumboot_printf("---------------------------------------------------\n");
+    rumboot_printf("-----------------------------------\n");
 
     /* Mod1 Data */
+    rumboot_printf(" === Make single error in data === \n");
     for(i = 0; i < 4; i++)
     {
         mke_info.idx = i;
         mke_info.val = CONST_2;
         mke_info.exp = CONST_2;
-        mke_info.err = MK_ERR_1 << (i << 3);
-        rumboot_printf(" *** A+%d Make single error in data... \n", i);
-        emi_clear_ckregs(bank);
+        mke_info.err = SHIFT_ERR(MK_ERR_1, i);
+        ((uint8_t*)(&mke_info.exp))[i] = byte_tpl2[i];
+        rumboot_printf(" *** Mod1 data A+%d... \n", i);
+        emi_clear_ckregs(COMMON_EMI_REGS);
         status |= check_emi_mkserr(&mke_info,
                                     mke_d1[i]);
+        rumboot_printf(" ================================= \n");
     }
 
-    /* Mod2 Data */
+    /* Mod2 data */
+    rumboot_printf(" === Make double error in data === \n");
     for(i = 0; i < 4; i++)
     {
         mke_info.idx = i;
         mke_info.val = CONST_2;
-        mke_info.exp = CONST_2 ^ (MK_ERR_2 << (i << 3));
-        mke_info.err = MK_ERR_2 << (i << 3);
-        rumboot_printf(" *** A+%d Make single error in ECC...\n", i);
-        emi_clear_ckregs(-1);
-        status |= check_emi_mkserr(&mke_info,
+        mke_info.exp = CONST_2 ^ SHIFT_ERR(MK_ERR_2, i);
+        mke_info.err = SHIFT_ERR(MK_ERR_2, i);
+        ((uint8_t*)(&mke_info.exp))[i] = byte_tpl2[i];
+        rumboot_printf(" *** Mod2 data A+%d...\n", i);
+        emi_clear_ckregs(bank);
+        status |= check_emi_mkderr(&mke_info,
                                     mke_d2[i]);
+        rumboot_printf(" ================================= \n");
     }
 
     /* Mod1 ECC */
+    rumboot_printf(" === Make single error in ECC === \n");
     for(i = 0; i < 4; i++)
     {
         mke_info.idx = i;
         mke_info.val = CONST_2;
-        mke_info.exp = CONST_2 ^ MK_ERR_1;
-        mke_info.err = MK_ERR_1;
-        rumboot_printf(" *** A+%d Make double error in data...\n", i);
-        emi_clear_ckregs(bank);
-        status |= check_emi_mkderr(&mke_info,
+        mke_info.exp = CONST_2 ^ SHIFT_ERR(MK_ERR_1, i);
+        mke_info.err = SHIFT_ERR(MK_ERR_1, i);
+        ((uint8_t*)(&mke_info.exp))[i] = byte_tpl2[i];
+        rumboot_printf(" *** Mod1 ECC A+%d...\n", i);
+        emi_clear_ckregs(COMMON_EMI_REGS);
+        status |= check_emi_mkserr(&mke_info,
                                     mke_e1[i]);
+        rumboot_printf(" ================================= \n");
     }
 
     /* Mod2 ECC */
+    rumboot_printf(" === Make double error in ECC === \n");
     for(i = 0; i < 4; i++)
     {
         mke_info.idx = i;
         mke_info.val = CONST_2;
         mke_info.exp = CONST_2;
-        mke_info.err = MK_ERR_2;
-        rumboot_printf(" *** A+%d Make double error in ECC...\n", i);
-        emi_clear_ckregs(-1);
+        mke_info.err = SHIFT_ERR(MK_ERR_2, i);
+        ((uint8_t*)(&mke_info.exp))[i] = byte_tpl2[i];
+        rumboot_printf(" *** Mod2 ECC A+%d...\n", i);
+        emi_clear_ckregs(bank);
         status |= check_emi_mkderr(&mke_info,
                                     mke_e2[i]);
+        rumboot_printf(" ================================= \n");
     }
 
     reset_interrupts();
@@ -625,8 +648,18 @@ uint32_t main(void)
     rumboot_printf("Init done.\n");
 
     rumboot_printf("Generate ECC codes...\n");
-    const_2_ecc[0] = calc_hamming_ecc(reverse_bytes32(CONST_2           ));
-    const_2_ecc[1] = calc_hamming_ecc(reverse_bytes32(CONST_2 ^ MK_ERR_2));
+    const_2_ecc[0x00] = GEN_ECC(CONST_2 ^ (MK_ERR_1 << 0x00));
+    const_2_ecc[0x01] = GEN_ECC(CONST_2 ^ (MK_ERR_1 << 0x08));
+    const_2_ecc[0x02] = GEN_ECC(CONST_2 ^ (MK_ERR_1 << 0x10));
+    const_2_ecc[0x03] = GEN_ECC(CONST_2 ^ (MK_ERR_1 << 0x18));
+    const_2_ecc[0x04] = GEN_ECC(CONST_2 ^ (MK_ERR_2 << 0x00));
+    const_2_ecc[0x05] = GEN_ECC(CONST_2 ^ (MK_ERR_2 << 0x08));
+    const_2_ecc[0x06] = GEN_ECC(CONST_2 ^ (MK_ERR_2 << 0x10));
+    const_2_ecc[0x07] = GEN_ECC(CONST_2 ^ (MK_ERR_2 << 0x18));
+    const_2_ecc[0x08] = GEN_ECC(CONST_2                     );
+    const_2_ecc[0x09] = 0x00;
+    const_2_ecc[0x0A] = 0x00;
+    const_2_ecc[0x0B] = 0xFF;
     rumboot_printf("Generated.\n");
 
     /* test_result |= check_emi(4); */
