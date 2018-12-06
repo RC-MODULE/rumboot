@@ -111,6 +111,7 @@ static uint32_t check_timer_default_rw_val( uint32_t base_addr )
     return 1;
 }
 #endif
+/*
 void sp804_enable( uint32_t base_addr, int index )
 {
     int cntrl;
@@ -259,7 +260,7 @@ void sp804_config( uint32_t base_addr, const struct sp804_conf * config, int ind
         }
     }
 }
-
+*/
 struct s804_instance
 {
     int timer0_irq;
