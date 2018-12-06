@@ -197,7 +197,7 @@ uint32_t check_external_interrupts(void)
 uint32_t main(void)
 {
     test_event_send_test_id(TEST_STRING_ID);
-    /* msr_write(msr_read() | BIT(ITRPT_XSR_CE_i) | BIT(ITRPT_XSR_EE_i)); */
+    msr_write(msr_read() | BIT(ITRPT_XSR_CE_i) | BIT(ITRPT_XSR_EE_i));
     init_interrupts();
 
     return print_result(check_external_interrupts());
