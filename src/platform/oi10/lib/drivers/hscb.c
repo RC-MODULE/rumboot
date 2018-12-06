@@ -617,7 +617,7 @@ uint32_t hscb_prepare_rmap_packet(hscb_rmap_packet_raw_configuration_t rmap_pack
                                       = rmap_packet_raw.target_addr_chain.array;
         rmap_packet_ready->data_area_sizes[rmap_packet_ready->count_areas]
                                       = rmap_packet_raw.target_addr_chain.length;
-        descr.start_address = (uint32_t)rmap_packet_ready->data_areas[rmap_packet_ready->count_areas];
+        descr.start_address = rumboot_virt_to_dma(rmap_packet_ready->data_areas[rmap_packet_ready->count_areas]);
         descr.length        = rmap_packet_ready->data_area_sizes[rmap_packet_ready->count_areas];
         descr.act           = HSCB_ACT_TRAN;
         descr.act0          = HSCB_ACT0_NOLAST;
@@ -660,7 +660,7 @@ uint32_t hscb_prepare_rmap_packet(hscb_rmap_packet_raw_configuration_t rmap_pack
     rmap_packet_ready->data_areas[rmap_packet_ready->count_areas][HSCB_RMAP_INSTRUCTION_i] = rmap_packet_raw.instruction;
     rmap_packet_ready->data_areas[rmap_packet_ready->count_areas][HSCB_RMAP_KEY_i] = rmap_packet_raw.key;
 
-    descr.start_address = (uint32_t)rmap_packet_ready->data_areas[rmap_packet_ready->count_areas];
+    descr.start_address = rumboot_virt_to_dma(rmap_packet_ready->data_areas[rmap_packet_ready->count_areas]);
     descr.length        = rmap_packet_ready->data_area_sizes[rmap_packet_ready->count_areas];
     descr.act           = HSCB_ACT_TRAN;
     descr.act0          = HSCB_ACT0_NOLAST;
@@ -677,8 +677,8 @@ uint32_t hscb_prepare_rmap_packet(hscb_rmap_packet_raw_configuration_t rmap_pack
         rmap_packet_ready->data_areas[rmap_packet_ready->count_areas]
                                       = rmap_packet_raw.reply_addr_chain.array;
         rmap_packet_ready->data_area_sizes[rmap_packet_ready->count_areas]
-                                      = rmap_packet_raw.target_addr_chain.length;
-        descr.start_address = (uint32_t)rmap_packet_ready->data_areas[rmap_packet_ready->count_areas];
+                                      = rmap_packet_raw.reply_addr_chain.length;
+        descr.start_address = rumboot_virt_to_dma(rmap_packet_ready->data_areas[rmap_packet_ready->count_areas]);
         descr.length        = rmap_packet_ready->data_area_sizes[rmap_packet_ready->count_areas];
         descr.act           = HSCB_ACT_TRAN;
         descr.act0          = HSCB_ACT0_NOLAST;
@@ -736,7 +736,7 @@ uint32_t hscb_prepare_rmap_packet(hscb_rmap_packet_raw_configuration_t rmap_pack
 
     rmap_packet_ready->data_areas[rmap_packet_ready->count_areas][HSCB_RMAP_HEADER_CRC8_i] = temporary_CRC;
 
-    descr.start_address = (uint32_t)rmap_packet_ready->data_areas[rmap_packet_ready->count_areas];
+    descr.start_address = rumboot_virt_to_dma(rmap_packet_ready->data_areas[rmap_packet_ready->count_areas]);
     descr.length        = rmap_packet_ready->data_area_sizes[rmap_packet_ready->count_areas];
     descr.act           = HSCB_ACT_TRAN;
     descr.act0          = (is_data_chain_supplied) ? HSCB_ACT0_NOLAST : HSCB_ACT0_LAST;
@@ -759,7 +759,7 @@ uint32_t hscb_prepare_rmap_packet(hscb_rmap_packet_raw_configuration_t rmap_pack
                                       = rmap_packet_raw.data_chain.array;
         rmap_packet_ready->data_area_sizes[rmap_packet_ready->count_areas]
                                       = rmap_packet_raw.data_chain.length;
-        descr.start_address = (uint32_t)rmap_packet_ready->data_areas[rmap_packet_ready->count_areas];
+        descr.start_address = rumboot_virt_to_dma(rmap_packet_ready->data_areas[rmap_packet_ready->count_areas]);
         descr.length        = rmap_packet_ready->data_area_sizes[rmap_packet_ready->count_areas];
         descr.act           = HSCB_ACT_TRAN;
         descr.act0          = HSCB_ACT0_NOLAST;
@@ -775,7 +775,7 @@ uint32_t hscb_prepare_rmap_packet(hscb_rmap_packet_raw_configuration_t rmap_pack
         rmap_packet_ready->count_areas++;
 
         rmap_packet_ready->data_areas[rmap_packet_ready->count_areas][0] = temporary_CRC;
-        descr.start_address = (uint32_t)rmap_packet_ready->data_areas[rmap_packet_ready->count_areas];
+        descr.start_address = rumboot_virt_to_dma(rmap_packet_ready->data_areas[rmap_packet_ready->count_areas]);
         descr.length        = rmap_packet_ready->data_area_sizes[rmap_packet_ready->count_areas];
         descr.act           = HSCB_ACT_TRAN;
         descr.act0          = HSCB_ACT0_LAST;
