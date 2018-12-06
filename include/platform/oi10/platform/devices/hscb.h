@@ -246,10 +246,25 @@ void hscb_convert_to_bytes (uint32_t* data_in, uint8_t* data_out, uint32_t len);
 
 /**
  * \brief Set descriptor in memory
- * \param[in] sys_addr address in memory for placing descriptor
- * \param[in] pointer on read data descriptor
+ * \param[in] sys_addr      address in memory for placing descriptor
+ * \param[in] src_data_addr address of data for using in descriptor
+ * \param[in] len           length of data for using in descriptor
  */
 void hscb_set_single_descr_in_mem(uint32_t sys_addr, uint32_t src_data_addr, uint32_t len);
+
+/**
+ * \brief Set an empty descriptor in memory
+ * \param[in] sys_addr      address in memory for placing descriptor
+ * \param[in] change_endian flag if we need to swap bytes before writing them to memory
+ */
+void hscb_set_empty_descr_in_mem(uint32_t sys_addr, bool change_endian);
+
+/**
+ * \brief Set a single unpacked descriptor in memory
+ * \param[in] descr         HSCB descriptor as an unpacked structure
+ * \param[in] sys_addr      address in memory for placing descriptor
+ */
+void hscb_set_descr_in_mem(hscb_descr_struct_t descr, uint32_t sys_addr);
 
 /**
  * \brief Get descriptor from memory
