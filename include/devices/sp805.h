@@ -75,7 +75,7 @@ struct sp805_conf
  *
  *  \details Manualy sets ENABLE bit in CONTROL register of chosen timer.
  */
-void sp805_enable( uint32_t base_addr, int index);
+void sp805_enable( uint32_t base_addr);
 
 /**
  *  \brief Stop watchdog
@@ -85,7 +85,7 @@ void sp805_enable( uint32_t base_addr, int index);
  *
  *  \details Manualy clears ENABLE bit in CONTROL register of chosen timer.
  */
-void sp805_stop( uint32_t base_addr, int index);
+void sp805_stop( uint32_t base_addr);
 
 /**
  *  \brief Get watchdog value
@@ -96,7 +96,7 @@ void sp805_stop( uint32_t base_addr, int index);
  *
  *  \details
  */
-int sp805_get_value( uint32_t base_addr, int index);
+int sp805_get_value( uint32_t base_addr);
 
 /**
  *  \brief Clear watchdog interrupt
@@ -107,7 +107,7 @@ int sp805_get_value( uint32_t base_addr, int index);
  *
  *  \details Manualy writes 1 in CLEARINT register of the chosen timer.
  */
-void sp805_clrint( uint32_t base_addr, int index);
+void sp805_clrint( uint32_t base_addr);
 
 /**
  *  \brief Config watchdog
@@ -120,7 +120,7 @@ void sp805_clrint( uint32_t base_addr, int index);
  *  \details Sets CONTROl register of the chosen watchdog due to input structure values,
  *   sets LOAD and BgLoad values if they are non-zero.
  */
-void sp805_config( uint32_t base_addr, const struct sp805_conf * config, int index);
+void sp805_config( uint32_t base_addr, const struct sp805_conf * config);
 
 /**
  * @}
