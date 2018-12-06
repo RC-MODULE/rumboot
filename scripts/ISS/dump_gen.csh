@@ -15,10 +15,16 @@ if ("$3" == "")  then
   exit 1
 endif
 
+if ("$4" == "")  then
+  echo "ERROR: third argument is empty, need set PRODUCT_PREFIX"
+  exit 1
+endif
+
 set BUILD_DIR=$1
-set BIN_DIR=${BUILD_DIR}/rumboot-oi10-Debug
+set PRODUCT_PREFIX=$4
+set BIN_DIR=${BUILD_DIR}/${PRODUCT_PREFIX}
 set TEST_NAME=$2
-set STUB_NAME=rumboot-oi10-Debug-bootrom-stub
+set STUB_NAME=${PRODUCT_PREFIX}-bootrom-stub
 set SCRIPT_DIR=$3
 set LOG_DIR=$PWD
 set CMD_PATH=${LOG_DIR}/${TEST_NAME}.cmd
