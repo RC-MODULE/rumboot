@@ -7,39 +7,25 @@
 
 #include <stdio.h>
 #include <stdint.h>
-#include <string.h>
 
 #include <rumboot/io.h>
 #include <rumboot/irq.h>
 #include <rumboot/printf.h>
-
 #include <platform/arch/ppc/ppc_476fp_lib_c.h>
 #include <platform/common_macros/common_macros.h>
-#include <platform/test_event_codes.h>
-#include <platform/test_assert.h>
 #include <rumboot/regpoker.h>
-#include <rumboot/printf.h>
-#include <rumboot/io.h>
 #include <arch/irq_macros.h>
 #include <platform/devices.h>
 #include <rumboot/macros.h>
 #include <platform/arch/ppc/test_macro.h>
 #include <devices/sp805.h>
 #include <platform/interrupts.h>
-
 #include <rumboot/testsuite.h>
 #include <platform/regs/regs_mpic128.h>
-#include <platform/devices/mpic128.h>
-
 #include <regs/regs_sp805.h>
-
-#include <platform/regs/regs_mpic128.h>
-#include <platform/devices/mpic128.h>
 #include <rumboot/testsuite.h>
 #include <platform/devices.h>
-
 #include <rumboot/platform.h>
-#include <platform/regs/fields/mpic128.h>
 
 #define TIMER_CYCLES 60
 
@@ -114,15 +100,15 @@ static uint32_t check_watchdog_default_rw_val( uint32_t base_addr, uint32_t reg_
     return 1;
 }
 #endif
-
-void sp805_enable( uint32_t base_addr, int index )
+/*
+void sp805_enable( uint32_t base_addr )
 {
     int cntrl;
     int control_reg;
-    if( index )
-    {
+    //if( index )
+   // {
         control_reg = WD_CTRL_RESEN;
-    }
+   // }
     cntrl = dcr_read( base_addr + control_reg );
     cntrl |= WD_CTRL_RESEN;
 
@@ -130,41 +116,41 @@ void sp805_enable( uint32_t base_addr, int index )
     dcr_write( base_addr + control_reg, cntrl);
 }
 
-void sp805_stop( uint32_t base_addr, int index )
+void sp805_stop( uint32_t base_addr)
 {
     int cntrl;
     int control_reg;
-    if( index )
-    {
+    //if( index )
+    //{
         control_reg = WD_REG_CONTROL;
-    }
+   // }
     cntrl = dcr_read( base_addr + control_reg );
     //
     cntrl = cntrl & ( ~( WD_CTRL_RESEN ) );
     dcr_write( base_addr + control_reg, cntrl );
 }
 
-int sp805_get_value( uint32_t base_addr, int index )
+int sp805_get_value( uint32_t base_addr)
 {
     int value_reg;
-    if( index )
-    {
+    //if( index )
+    //{
         value_reg = WD_REG_VALUE;
-    }
+   // }
     return dcr_read( base_addr + value_reg );
 }
 
-void sp805_clrint( uint32_t base_addr, int index )
+void sp805_clrint( uint32_t base_addr)
 {
     int int_clr_reg;
-    if( index )
-    {
+    //if( index )
+    //{
         int_clr_reg = WD_REG_INTCLR;
-    }
+   // }
     dcr_write( base_addr + int_clr_reg, 1 );
 }
 
-void sp805_config( uint32_t base_addr, const struct sp805_conf * config, int index )
+void sp805_config( uint32_t base_addr, const struct sp805_conf * config)
 {
     int cntrl = 0;
     // INT EN
@@ -201,8 +187,8 @@ void sp805_config( uint32_t base_addr, const struct sp805_conf * config, int ind
         cntrl &= ~WD_CTRL_SIZE32;
     }
     ///enable/disable watchdog
-    if( index ) //if RESEN == 1
-    {
+    //if( index ) //if RESEN == 1
+    //{
         dcr_write( base_addr + WD_REG_CONTROL, cntrl );
         // LOAD
         if( config->load )
@@ -210,7 +196,8 @@ void sp805_config( uint32_t base_addr, const struct sp805_conf * config, int ind
             dcr_write( base_addr + WD_REG_LOAD, config->load );
         }
         // BG LOAD
-    }
+    //}
+        /*
     else
     {
         dcr_write( base_addr + WD_REG_CONTROL, cntrl );
@@ -220,15 +207,16 @@ void sp805_config( uint32_t base_addr, const struct sp805_conf * config, int ind
             dcr_write( base_addr + WD_REG_LOAD, config->load );
         }
     }
-}
 
+}
+*/
 static void handler0( int irq, void *arg )
 {
     struct s805_instance_i *a = (struct s805_instance_i *) arg;
     a->wd_irq = a->wd_irq + 1;
     rumboot_printf( "IRQ 0 arrived  \n" );
     rumboot_printf( "sp805_%d watchdog INT # %d  \n", a->wd_index, a->wd_irq );
-    sp805_clrint( a->base_addr, 0 );
+    sp805_clrint( a->base_addr);
 }
 
 static bool wd_test( uint32_t structure)
@@ -248,14 +236,14 @@ static bool wd_test( uint32_t structure)
 
     for(i = 0; i < TIMER_CYCLES + stru->wd_index; i++)
     {
-        sp805_config( base_addr, &config_FREE_RUN, 0 );
-        sp805_enable( base_addr, 1 );
+        sp805_config( base_addr, &config_FREE_RUN);
+        sp805_enable( base_addr );
 
         if(stru->wd_index == WD_CTRL_INTEN)
         {
             rumboot_printf("Watchdog load value %d\n", stru->wd_index);
         }
-        sp805_enable(stru->base_addr, 1);
+        sp805_enable(stru->base_addr);
     }
     return true;
 }
@@ -314,6 +302,7 @@ uint32_t main(void)
     /* Activate the table */
     rumboot_irq_table_activate( tbl );
     rumboot_irq_enable( WDT_INT);
+    rumboot_irq_sei();
 
     result = test_suite_run(NULL, &wd_testlist);
 
