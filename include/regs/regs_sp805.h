@@ -15,8 +15,9 @@
 #define WD_REG_RIS              0x10
 #define WD_REG_INTCLR           0x0C
 #define WD_REG_MIS              0x14
-#define WD_REG_LOCK             0xC0
-#define WD_REG_ITCR             0xF0
+#define WD_REG_LOCK             0xC00
+
+#define WD_REG_ITCR             0xF00
 #define WD_REG_ITOP             0xF04
 
 #define WD_REG_PERIPHID0        0xFE0
