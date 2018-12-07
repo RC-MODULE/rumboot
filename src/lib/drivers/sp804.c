@@ -20,9 +20,9 @@ void sp804_enable( uint32_t base_addr, int index)
     else{
         control_reg = DIT0_REG_CONTROL0;
     }
-    cntrl =  ioread32(base_addr+control_reg);
+    cntrl =  dcr_read(base_addr+control_reg);
     cntrl |= DIT_CTRL_ENABLE;
-    iowrite32(cntrl,base_addr+control_reg);
+    dcr_write(cntrl,base_addr+control_reg);
 
 }
 
@@ -37,9 +37,9 @@ void sp804_stop( uint32_t base_addr, int index)
     else{
         control_reg = DIT0_REG_CONTROL0;
     }
-    cntrl = ioread32(base_addr+control_reg);
+    cntrl = dcr_read(base_addr+control_reg);
     cntrl = cntrl & (~(DIT_CTRL_ENABLE));
-    iowrite32(cntrl,base_addr+control_reg);
+    dcr_write(cntrl,base_addr+control_reg);
 
 }
 
@@ -53,7 +53,7 @@ int sp804_get_value( uint32_t base_addr, int index)
     else{
         value_reg = DIT0_REG_VALUE0;
     }
-    return ioread32(base_addr+value_reg);
+    return dcr_read(base_addr+value_reg);
 }
 
 
@@ -67,7 +67,7 @@ void sp804_clrint( uint32_t base_addr, int index)
     else{
         int_clr_reg = DIT0_REG_INTCLR0;
     }
-    iowrite32( 1,base_addr+ int_clr_reg);
+    dcr_write( 1,base_addr+ int_clr_reg);
 }
 
 
@@ -123,33 +123,33 @@ void sp804_config( uint32_t base_addr, const struct sp804_conf * config, int ind
 
 
     if (index){
-        iowrite32( cntrl, base_addr+DIT0_REG_CONTROL1);
+        dcr_write( cntrl, base_addr+DIT0_REG_CONTROL1);
 
         // LOAD
         if (config->load)
         {
-            iowrite32(config->load,base_addr+DIT0_REG_LOAD1);
+            dcr_write(config->load,base_addr+DIT0_REG_LOAD1);
         }
 
         // BG LOAD
         if (config->bgload)
         {
-            iowrite32(config->bgload,base_addr+DIT0_REG_BGLOAD1);
+            dcr_write(config->bgload,base_addr+DIT0_REG_BGLOAD1);
         }
     }
     else{
-        iowrite32( cntrl, base_addr+DIT0_REG_CONTROL0);
+        dcr_write( cntrl, base_addr+DIT0_REG_CONTROL0);
 
         // LOAD
         if (config->load)
         {
-            iowrite32(config->load,base_addr+DIT0_REG_LOAD0);
+            dcr_write(config->load,base_addr+DIT0_REG_LOAD0);
         }
 
         // BG LOAD
         if (config->bgload)
         {
-            iowrite32(config->bgload,base_addr+DIT0_REG_BGLOAD0);
+            dcr_write(config->bgload,base_addr+DIT0_REG_BGLOAD0);
         }
     }
 
