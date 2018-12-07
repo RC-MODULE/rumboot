@@ -1,5 +1,13 @@
-#ifndef DIT_LIB_H
-#define DIT_LIB_H
+#ifndef WD_LIB_H
+#define WD_LIB_H
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+
+#include <platform/devices.h>
+#include <rumboot/io.h>
+#include <rumboot/printf.h>
 
 /**
  * \defgroup devices_sp805 'WD' WATCHDOG
@@ -49,8 +57,8 @@
 #define WD_CTRL_DIV0       (1<<2)
 
 #define WD_CTRL_SIZE32     (1<<1)
-#define WD_CTRL_INTEN           (1<<5)
-#define WD_CTRL_RESEN           (1<<1)
+#define WD_CTRL_INTEN      (1<<5)
+#define WD_CTRL_RESEN      (1<<1)
 
 enum sp805_mode
 {
