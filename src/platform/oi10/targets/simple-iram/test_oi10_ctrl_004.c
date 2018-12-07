@@ -12,22 +12,10 @@
 #include <rumboot/io.h>
 #include <rumboot/irq.h>
 #include <rumboot/printf.h>
-
-#include <platform/arch/ppc/ppc_476fp_lib_c.h>
-#include <platform/common_macros/common_macros.h>
-#include <platform/test_event_codes.h>
-#include <platform/test_assert.h>
 #include <rumboot/regpoker.h>
-#include <rumboot/printf.h>
-#include <rumboot/io.h>
 #include <arch/irq_macros.h>
-#include <platform/devices.h>
-#include <platform/arch/ppc/test_macro.h>
 #include <devices/sp804.h>
 #include <platform/interrupts.h>
-
-#include <platform/regs/regs_mpic128.h>
-#include <platform/devices/mpic128.h>
 #include <rumboot/testsuite.h>
 #include <platform/devices.h>
 #include <regs/regs_sp804.h>
@@ -276,20 +264,15 @@ int main(void)
 // Set up interrupt handlers
     register int result;
     rumboot_printf( "SP804 test START\n" );
-
     rumboot_irq_cli();
     struct rumboot_irq_entry *tbl = rumboot_irq_create( NULL );
-
     rumboot_irq_set_handler( tbl, DIT_INT0, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler0, &in[ 0 ] );
     rumboot_irq_set_handler( tbl, DIT_INT1, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler1, &in[ 0 ] );
-
     /* Activate the table */
     rumboot_irq_table_activate( tbl );
     rumboot_irq_enable( DIT_INT0 );
     rumboot_irq_enable( DIT_INT1 );
     rumboot_irq_sei();
-
-// Run tests and return failed one
 
     result = test_suite_run( NULL, &dit_testlist );
 
@@ -299,6 +282,5 @@ int main(void)
         return 0;
     }
     rumboot_printf("Checked TEST_ERROR\n");
-
     return result;
 }
