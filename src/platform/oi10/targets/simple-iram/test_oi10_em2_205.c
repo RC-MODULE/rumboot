@@ -80,9 +80,6 @@ const uint32_t ERROR_WAIT_TIMEOUT = 1000;
 
 static void irq_handler( int irq, void *arg ) {
 
-//    rumboot_printf("\n\nirq = 0x%x\n", irq);
-//    rumboot_printf("error_irq_source = 0x%x\n", error_irq_source);
-
     switch (irq) {
         case EMI_CNTR_INT_0:
             rumboot_putstring("EMI_CNTR_INT_0 occured.\n");
@@ -91,7 +88,6 @@ static void irq_handler( int irq, void *arg ) {
             {
                 case emi_single_error_irq_source_SRAM0:
 
-//                    rumboot_printf("EMI_IRR = 0x%x\n", dcr_read(DCR_EM2_EMI_BASE + EMI_IRR));
                     TEST_ASSERT(dcr_read(DCR_EM2_EMI_BASE + EMI_IRR) == 0x000001, "SRAM0: expected single error.");
                     dcr_write(DCR_EM2_EMI_BASE + EMI_IRR_RST, 0x0001);
 
@@ -99,7 +95,6 @@ static void irq_handler( int irq, void *arg ) {
 
                 case emi_single_error_irq_source_SSRAM:
 
-//                    rumboot_printf("EMI_IRR = 0x%x\n", dcr_read(DCR_EM2_EMI_BASE + EMI_IRR));
                     TEST_ASSERT(dcr_read(DCR_EM2_EMI_BASE + EMI_IRR) == 0x000010, "SSRAM: expected single error.");
                     dcr_write(DCR_EM2_EMI_BASE + EMI_IRR_RST, 0x0010);
 
@@ -107,7 +102,6 @@ static void irq_handler( int irq, void *arg ) {
 
                 case emi_single_error_irq_source_SDRAM:
 
-//                    rumboot_printf("EMI_IRR = 0x%x\n", dcr_read(DCR_EM2_EMI_BASE + EMI_IRR));
                     TEST_ASSERT(dcr_read(DCR_EM2_EMI_BASE + EMI_IRR) == 0x000004, "SDRAM: expected single error.");
                     dcr_write(DCR_EM2_EMI_BASE + EMI_IRR_RST, 0x0004);
 
@@ -115,7 +109,6 @@ static void irq_handler( int irq, void *arg ) {
 
                 case emi_single_error_irq_source_NOR:
 
-//                    rumboot_printf("EMI_IRR = 0x%x\n", dcr_read(DCR_EM2_EMI_BASE + EMI_IRR));
                     TEST_ASSERT(dcr_read(DCR_EM2_EMI_BASE + EMI_IRR) == 0x000400, "NOR: expected single error.");
                     dcr_write(DCR_EM2_EMI_BASE + EMI_IRR_RST, 0x0400);
 
@@ -125,9 +118,6 @@ static void irq_handler( int irq, void *arg ) {
                     rumboot_putstring("Unexpected EMI error irq source.");
                     break;
             }
-
-            dcr_write(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_ERR_ACTION0, 0x00000000);
-            dcr_write(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_ERR_ACTION1, 0x00000000);
 
             emi_single_error_int_occured = true;
 
@@ -140,7 +130,6 @@ static void irq_handler( int irq, void *arg ) {
             {
                 case emi_double_error_irq_source_SRAM0:
 
-//                    rumboot_printf("EMI_IRR = 0x%x\n", dcr_read(DCR_EM2_EMI_BASE + EMI_IRR));
                     TEST_ASSERT(dcr_read(DCR_EM2_EMI_BASE + EMI_IRR) == 0x000002, "SRAM0: expected single error.");
                     dcr_write(DCR_EM2_EMI_BASE + EMI_IRR_RST, 0x0002);
 
@@ -148,7 +137,6 @@ static void irq_handler( int irq, void *arg ) {
 
                 case emi_double_error_irq_source_SSRAM:
 
-//                    rumboot_printf("EMI_IRR = 0x%x\n", dcr_read(DCR_EM2_EMI_BASE + EMI_IRR));
                     TEST_ASSERT(dcr_read(DCR_EM2_EMI_BASE + EMI_IRR) == 0x000020, "SSRAM: expected single error.");
                     dcr_write(DCR_EM2_EMI_BASE + EMI_IRR_RST, 0x0020);
 
@@ -156,7 +144,6 @@ static void irq_handler( int irq, void *arg ) {
 
                 case emi_double_error_irq_source_SDRAM:
 
-//                    rumboot_printf("EMI_IRR = 0x%x\n", dcr_read(DCR_EM2_EMI_BASE + EMI_IRR));
                     TEST_ASSERT(dcr_read(DCR_EM2_EMI_BASE + EMI_IRR) == 0x000008, "SDRAM: expected single error.");
                     dcr_write(DCR_EM2_EMI_BASE + EMI_IRR_RST, 0x0008);
 
@@ -164,7 +151,6 @@ static void irq_handler( int irq, void *arg ) {
 
                 case emi_double_error_irq_source_NOR:
 
-//                    rumboot_printf("EMI_IRR = 0x%x\n", dcr_read(DCR_EM2_EMI_BASE + EMI_IRR));
                     TEST_ASSERT(dcr_read(DCR_EM2_EMI_BASE + EMI_IRR) == 0x000800, "NOR: expected single error.");
                     dcr_write(DCR_EM2_EMI_BASE + EMI_IRR_RST, 0x0800);
 
@@ -175,34 +161,21 @@ static void irq_handler( int irq, void *arg ) {
                     break;
             }
 
-            dcr_write(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_ERR_ACTION0, 0xFFFFFFFF);
-            dcr_write(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_ERR_ACTION1, 0xFFFFFFFF);
-
             emi_double_error_int_occured = true;
 
             break;
 
-//        case EMI_CNTR_INT_2:
-//            rumboot_putstring("EMI_CNTR_INT_2 occured.\n");
-//
-//            break;
-//
-//        case EMI_CNTR_INT_3:
-//            rumboot_putstring("EMI_CNTR_INT_3 occured.\n");
-//
-//            break;
-
         case MCLFIR_REC_INT:
             rumboot_putstring("MCLFIR_REC_INT occured.\n");
 
-//            rumboot_printf("MCLFIR_MC_ERR0 = 0x%x\n", dcr_read(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_ERR0));
-//            rumboot_printf("MCLFIR_MC_ERR1 = 0x%x\n", dcr_read(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_ERR1));
-//            rumboot_printf("MCLFIR_MC_LFIR = 0x%x\n", dcr_read(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_LFIR));
-            TEST_ASSERT(dcr_read(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_LFIR) == 0x80000000, "Expected recoverable error.");
+            TEST_ASSERT((dcr_read(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_LFIR) & 0x80000000) == 0x80000000, "Expected recoverable error.");
 
             dcr_write(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_ERR_AND0, 0x00000000);
             dcr_write(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_ERR_AND1, 0x00000000);
             dcr_write(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_LFIR_AND, 0x00000000);
+
+            dcr_write(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_ERR_ACTION0, 0x00000090);
+            dcr_write(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_ERR_ACTION1, 0x00002400);
 
             emi_recoverable_error_int_occured = true;
 
@@ -211,14 +184,14 @@ static void irq_handler( int irq, void *arg ) {
         case MCLFIR_UNREC_INT:
             rumboot_putstring("MCLFIR_UNREC_INT occured.\n");
 
-//            rumboot_printf("MCLFIR_MC_ERR0 = 0x%x\n", dcr_read(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_ERR0));
-//            rumboot_printf("MCLFIR_MC_ERR1 = 0x%x\n", dcr_read(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_ERR1));
-//            rumboot_printf("MCLFIR_MC_LFIR = 0x%x\n", dcr_read(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_LFIR));
-            TEST_ASSERT(dcr_read(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_LFIR) == 0x40000000, "Expected unrecoverable error.");
+            TEST_ASSERT((dcr_read(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_LFIR) & 0x40000000) == 0x40000000, "Expected unrecoverable error.");
 
             dcr_write(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_ERR_AND0, 0x00000000);
             dcr_write(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_ERR_AND1, 0x00000000);
             dcr_write(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_LFIR_AND, 0x00000000);
+
+            dcr_write(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_ERR_ACTION0, 0x00000000);
+            dcr_write(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_ERR_ACTION1, 0x00000000);
 
             emi_unrecoverable_error_int_occured = true;
 
@@ -490,8 +463,6 @@ int main(void)
 
     rumboot_irq_set_handler( tbl, EMI_CNTR_INT_0, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, irq_handler, ( void* )0 );
     rumboot_irq_set_handler( tbl, EMI_CNTR_INT_1, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, irq_handler, ( void* )0 );
-//    rumboot_irq_set_handler( tbl, EMI_CNTR_INT_2, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, irq_handler, ( void* )0 );
-//    rumboot_irq_set_handler( tbl, EMI_CNTR_INT_3, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, irq_handler, ( void* )0 );
 
     rumboot_irq_set_handler( tbl, MCLFIR_REC_INT,   RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, irq_handler, ( void* )0 );
     rumboot_irq_set_handler( tbl, MCLFIR_UNREC_INT, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, irq_handler, ( void* )0 );
@@ -500,8 +471,6 @@ int main(void)
     rumboot_irq_table_activate( tbl );
     rumboot_irq_enable( EMI_CNTR_INT_0 );
     rumboot_irq_enable( EMI_CNTR_INT_1 );
-//    rumboot_irq_enable( EMI_CNTR_INT_2 );
-//    rumboot_irq_enable( EMI_CNTR_INT_3 );
     rumboot_irq_enable( MCLFIR_REC_INT );
     rumboot_irq_enable( MCLFIR_UNREC_INT );
     rumboot_irq_sei();
@@ -574,8 +543,6 @@ int main(void)
     nor_write32(0xBABA0007, ADDR_NOR_DE);
     msync();
 
-
-//    udelay(5);
 
     rumboot_putstring("CHECK\n");
     if (!check_data())
