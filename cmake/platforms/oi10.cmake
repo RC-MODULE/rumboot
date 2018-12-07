@@ -18,6 +18,8 @@ file(GLOB PLATFORM_SOURCES
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/lib/drivers/dma2plb6.c
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/lib/drivers/emi.c
     ${CMAKE_SOURCE_DIR}/src/lib/drivers/gpio_pl061.c
+    ${CMAKE_SOURCE_DIR}/src/lib/drivers/sp805.c
+    ${CMAKE_SOURCE_DIR}/src/lib/drivers/sp804.c
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/lib/drivers/l2c.c
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/lib/drivers/hscb.c
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/lib/drivers/greth.c
