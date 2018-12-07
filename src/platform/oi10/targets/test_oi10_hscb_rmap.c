@@ -300,6 +300,7 @@ static void set_test_data(void* addr, uint32_t length, int incr_val, uint32_t in
                         (((-incr_val ) & 0xff) << 10) +
                         (((-incr_val ) & 0xff) << 18) +
                         (((-incr_val ) & 0xff) << 26) );
+    /*TODO: adapt to misaligned sizes, use memfill8*/
     rumboot_memfill32(addr, length, data_initial_value, increment );
 }
 
@@ -429,7 +430,7 @@ uint32_t generate_some_raw_rmap_packets(hscb_rmap_packet_raw_configuration_t* ra
             raw_rmap_packets[i].data_chain.length = DATA_SIZE_0;
             raw_rmap_packets[i].data_chain.array
                 = rumboot_malloc_from_named_heap(tx_0_heap_name,
-                        raw_rmap_packets[i].reply_addr_chain.length);
+                        raw_rmap_packets[i].data_chain.length);
 
 
             raw_rmap_packets[i].addr
@@ -727,7 +728,7 @@ uint32_t prepare_receiving_areas(
         descr.ie            = HSCB_DESCR_ITRPT_OFF;
         descr.valid         = HSCB_DESCR_VALID;
         descr.change_endian = raw_rmap_packets[receiving_rmap_packets->count_areas].change_endian;
-        hscb_set_descr_in_mem(descr, (uint32_t) (receiving_rmap_packets->array_of_descriptors [receiving_rmap_packets->count_areas]));
+        hscb_set_descr_in_mem(descr, (uint32_t) (receiving_rmap_packets->array_of_descriptors + receiving_rmap_packets->count_areas));
     }
     hscb_set_empty_descr_in_mem(
             (uint32_t) (receiving_rmap_packets->array_of_descriptors + receiving_rmap_packets->count_areas),
