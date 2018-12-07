@@ -7,21 +7,14 @@
 
 #include <stdio.h>
 #include <stdint.h>
-
 #include <rumboot/io.h>
 #include <rumboot/irq.h>
 #include <rumboot/printf.h>
-#include <platform/arch/ppc/ppc_476fp_lib_c.h>
-#include <platform/common_macros/common_macros.h>
 #include <rumboot/regpoker.h>
-#include <arch/irq_macros.h>
 #include <platform/devices.h>
-#include <rumboot/macros.h>
-#include <platform/arch/ppc/test_macro.h>
 #include <devices/sp805.h>
 #include <platform/interrupts.h>
 #include <rumboot/testsuite.h>
-#include <platform/regs/regs_mpic128.h>
 #include <regs/regs_sp805.h>
 #include <rumboot/testsuite.h>
 #include <platform/devices.h>
@@ -193,7 +186,7 @@ uint32_t main(void)
     /* Activate the table */
     rumboot_irq_table_activate( tbl );
     rumboot_irq_enable( WDT_INT);
-    //rumboot_irq_sei();
+    rumboot_irq_sei();
 
     result = test_suite_run(NULL, &wd_testlist);
 
