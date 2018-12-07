@@ -27,6 +27,7 @@
 #include <platform/devices.h>
 #include <rumboot/platform.h>
 
+
 #define TIMER_CYCLES 60
 
 struct s805_instance
@@ -85,7 +86,7 @@ static uint32_t check_watchdog_default_rw_val( uint32_t base_addr, uint32_t reg_
     {   "WdogLock",      REGPOKER_READ_DCR,    WD_REG_LOAD,           0x00000000, 0xffffffff },
     {   "WdogLock",      REGPOKER_WRITE_DCR,   WD_REG_LOAD,           0x00000000, 0xffffffff },
 
-    {   "WdogITCR",     REGPOKER_READ_DCR,    WD_REG_ITCR,            0b0,           0b1 },
+    {   "WdogITCR",      REGPOKER_READ_DCR,    WD_REG_ITCR,           0b0,           0b1 },
 
     { }
       };
@@ -100,116 +101,7 @@ static uint32_t check_watchdog_default_rw_val( uint32_t base_addr, uint32_t reg_
     return 1;
 }
 #endif
-/*
-void sp805_enable( uint32_t base_addr )
-{
-    int cntrl;
-    int control_reg;
-    //if( index )
-   // {
-        control_reg = WD_CTRL_RESEN;
-   // }
-    cntrl = dcr_read( base_addr + control_reg );
-    cntrl |= WD_CTRL_RESEN;
 
-    cntrl = dcr_read( base_addr + control_reg );
-    dcr_write( base_addr + control_reg, cntrl);
-}
-
-void sp805_stop( uint32_t base_addr)
-{
-    int cntrl;
-    int control_reg;
-    //if( index )
-    //{
-        control_reg = WD_REG_CONTROL;
-   // }
-    cntrl = dcr_read( base_addr + control_reg );
-    //
-    cntrl = cntrl & ( ~( WD_CTRL_RESEN ) );
-    dcr_write( base_addr + control_reg, cntrl );
-}
-
-int sp805_get_value( uint32_t base_addr)
-{
-    int value_reg;
-    //if( index )
-    //{
-        value_reg = WD_REG_VALUE;
-   // }
-    return dcr_read( base_addr + value_reg );
-}
-
-void sp805_clrint( uint32_t base_addr)
-{
-    int int_clr_reg;
-    //if( index )
-    //{
-        int_clr_reg = WD_REG_INTCLR;
-   // }
-    dcr_write( base_addr + int_clr_reg, 1 );
-}
-
-void sp805_config( uint32_t base_addr, const struct sp805_conf * config)
-{
-    int cntrl = 0;
-    // INT EN
-    if( config->interrupt_enable )
-    {
-        cntrl |= WD_CTRL_INTEN;
-    }
-    else
-    {
-        cntrl &= ~WD_CTRL_INTEN;
-    }
-    // CLK DIV
-    if( config->clock_division == 256 )
-    {
-        cntrl |= WD_CTRL_DIV1;
-        cntrl &= ~WD_CTRL_DIV0;
-    }
-    else if( config->clock_division == 16 )
-    {
-        cntrl &= ~WD_CTRL_DIV1;
-        cntrl |= WD_CTRL_DIV0;
-    } else {
-        cntrl &= ~WD_CTRL_DIV1;
-        cntrl &= ~WD_CTRL_DIV0;
-    }
-
-    // SIZE 32
-    if( config->width == 32 )
-    {
-        cntrl |= WD_CTRL_SIZE32;
-    }
-    else
-    {
-        cntrl &= ~WD_CTRL_SIZE32;
-    }
-    ///enable/disable watchdog
-    //if( index ) //if RESEN == 1
-    //{
-        dcr_write( base_addr + WD_REG_CONTROL, cntrl );
-        // LOAD
-        if( config->load )
-        {
-            dcr_write( base_addr + WD_REG_LOAD, config->load );
-        }
-        // BG LOAD
-    //}
-        /*
-    else
-    {
-        dcr_write( base_addr + WD_REG_CONTROL, cntrl );
-        // LOAD
-        if( config->load )
-        {
-            dcr_write( base_addr + WD_REG_LOAD, config->load );
-        }
-    }
-
-}
-*/
 static void handler0( int irq, void *arg )
 {
     struct s805_instance_i *a = (struct s805_instance_i *) arg;
@@ -233,7 +125,6 @@ static bool wd_test( uint32_t structure)
            .load = 100,
     };
     dcr_write(DCR_WATCHDOG_BASE + WD_REG_LOCK, 0x1ACCE551);
-
     for(i = 0; i < TIMER_CYCLES + stru->wd_index; i++)
     {
         sp805_config( base_addr, &config_FREE_RUN);
@@ -270,7 +161,7 @@ static bool wd_test2( uint32_t structure)
     }
     i = dcr_read(DCR_WATCHDOG_BASE+WD_REG_ITCR);
     rumboot_printf("WD_REG_ITCR %d\n", i);
-    sp805_enable(stru->base_addr, 0);
+    sp805_enable(stru->base_addr);
     return true;
 }
 
@@ -302,7 +193,7 @@ uint32_t main(void)
     /* Activate the table */
     rumboot_irq_table_activate( tbl );
     rumboot_irq_enable( WDT_INT);
-    rumboot_irq_sei();
+    //rumboot_irq_sei();
 
     result = test_suite_run(NULL, &wd_testlist);
 
