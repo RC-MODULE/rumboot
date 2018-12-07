@@ -1,6 +1,15 @@
 #ifndef DIT_LIB_H
 #define DIT_LIB_H
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+
+#include <platform/devices.h>
+#include <regs/regs_sp804.h>
+#include <devices/sp804.h>
+#include <rumboot/io.h>
+#include <rumboot/printf.h>
 /**
  * \defgroup devices_sp804 SP804 'DIT' Timer
  * \ingroup devices
