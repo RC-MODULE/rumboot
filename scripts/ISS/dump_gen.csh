@@ -80,7 +80,10 @@ rm -f ${DMP_PATH}
 
 echo "Run simulator"
 
-${ISS} ${ICF_PATH} &
+set USER_PORT_MIN=1024
+set ISS_DEBUGGER_PORT=`expr $$ + ${USER_PORT_MIN}`
+
+${ISS} -P ${ISS_DEBUGGER_PORT} ${ICF_PATH} &
 
 echo "Create ISS command file"
 
@@ -178,7 +181,7 @@ echo "save mem "${DMP_PATH}" "${COMPARE_MEM_START_ADDR} ${COMPARE_MEM_LEN_BYTES}
 sleep 1
 echo "Run RiscWatch"
 cd ${RW_PATH}
-${RWCD} ${CMD_PATH}
+${RWCD} -tport ${ISS_DEBUGGER_PORT} ${CMD_PATH}
 
 sleep 1
 echo "Compare dumps..."
