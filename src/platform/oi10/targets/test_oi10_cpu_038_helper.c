@@ -40,6 +40,7 @@ int __attribute__((section(".text.test"))) check_cpu_ppc_038(void)
         R1 += 4;
     }
     msync();
+
     /*stage 2*/
     rumboot_printf("Stage 2, read and compare offsets\n");
     R1 = val_A;
@@ -53,7 +54,7 @@ int __attribute__((section(".text.test"))) check_cpu_ppc_038(void)
         }
         R1 += 4;
     }
-    msync();
+
     /*stage 3*/
     rumboot_printf("Stage 3, write inverted offset\n");
     R1 = val_A;
@@ -67,6 +68,7 @@ int __attribute__((section(".text.test"))) check_cpu_ppc_038(void)
         R1 +=4;
     }
     msync();
+
     /*stage 4*/
     rumboot_printf("Stage 4, read and compare inverted offset\n");
     R1 = val_A;
@@ -80,7 +82,6 @@ int __attribute__((section(".text.test"))) check_cpu_ppc_038(void)
         }
         R1 += 4;
     }
-    msync();
 
     rumboot_printf("TEST OK\n");
     return TEST_OK;
