@@ -705,7 +705,7 @@ static uint32_t check_hscb_short_func(
             hscb_wait_status(supplementary_base_addr,   (HSCB_STATE_RUN << HSCB_STATUS_STATE_i)))){
         rumboot_putstring( "Wait HSCB RUN state Time-out\n" );
         rumboot_printf("HSCB (0x%x) status: 0x%x\n", base_addr, hscb_get_status(base_addr));
-        rumboot_printf("HSCB (0x%x) status: 0x%x\n", supplementary_base_addr, hscb_get_status(base_addr));
+        rumboot_printf("HSCB (0x%x) status: 0x%x\n", supplementary_base_addr, hscb_get_status(supplementary_base_addr));
         free_2D_arrays((void **)descriptors, DESCRIPTOR_TABLES_COUNT);
         return 1;
     }
@@ -791,7 +791,7 @@ static uint32_t check_hscb_func(
             hscb_wait_status(supplementary_base_addr,   (HSCB_STATE_RUN << HSCB_STATUS_STATE_i)))){
         rumboot_putstring( "Wait HSCB RUN state Time-out\n" );
         rumboot_printf("HSCB (0x%x) status: 0x%x\n", base_addr, hscb_get_status(base_addr));
-        rumboot_printf("HSCB (0x%x) status: 0x%x\n", supplementary_base_addr, hscb_get_status(base_addr));
+        rumboot_printf("HSCB (0x%x) status: 0x%x\n", supplementary_base_addr, hscb_get_status(supplementary_base_addr));
         free_2D_arrays((void **)descriptors, DESCRIPTOR_TABLES_COUNT);
         return 1;
     }
