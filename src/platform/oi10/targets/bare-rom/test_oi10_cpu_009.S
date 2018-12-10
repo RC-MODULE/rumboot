@@ -362,7 +362,7 @@ rumboot_entry_point:
     mtspr       SPR_TBU_W,  R_ZERO
     mtspr       SPR_DEC,    R_ZERO
     mtspr       SPR_DECAR,  R_ZERO
-    load_const  R_DATA,   (0b1  << TIMER_TSR_EVW_i)\
+    load_const  R_DATA,   (0b1  << TIMER_TSR_ENW_i)\
                         | (0b1  << TIMER_TSR_WIS_i)\
                         | (0b1  << TIMER_TSR_DIS_i)\
                         | (0b1  << TIMER_TSR_FIS_i)
