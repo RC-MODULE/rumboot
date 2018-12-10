@@ -25,9 +25,7 @@
 #include <platform/devices/emi.h>
 #include <platform/devices/dma2plb6.h>
 #include <platform/devices/nor_1636RR4.h>
-/*
- * Registers access checks
- */
+
 
 
 #define GRETH_TEST_DATA_LEN_BYTES   250
@@ -62,9 +60,8 @@ greth_mac_t tst_greth_mac       = {TST_MAC_MSB, TST_MAC_LSB};
 greth_mac_t tst_greth_edcl_mac0 = {EDCLMAC_MSB, (EDCLMAC_LSB | EDCLADDRL0_TEST) };
 greth_mac_t tst_greth_edcl_mac1 = {EDCLMAC_MSB, (EDCLMAC_LSB | EDCLADDRL1_TEST) };
 
-/*
- * Functions and variables for interrupt handling
- */
+
+
 static uint32_t volatile GRETH0_IRQ_HANDLED = 0;
 static uint32_t volatile GRETH1_IRQ_HANDLED = 0;
 
@@ -134,7 +131,6 @@ struct rumboot_irq_entry * create_greth01_irq_handlers()
     rumboot_irq_set_handler( tbl, ETH0_INT, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler_eth, &in[0] );
     rumboot_irq_set_handler( tbl, ETH1_INT, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler_eth, &in[1] );
 
-    /* Activate the table */
     rumboot_irq_table_activate( tbl );
     rumboot_irq_enable( ETH0_INT );
     rumboot_irq_enable( ETH1_INT );
@@ -149,9 +145,8 @@ void delete_greth01_irq_handlers(struct rumboot_irq_entry *tbl)
     rumboot_irq_free(tbl);
 }
 
-/*
- * Test data and descriptors
- */
+
+
 uint32_t edcl_seq_number = 0;
 uint8_t* edcl_test_data_im0_wr;
 
@@ -163,38 +158,6 @@ uint8_t* test_data_im0_src;
 uint8_t* test_data_im0_dst;
 
 
-
-/*
- * Registers access checks
- */
-struct regpoker_checker greth_check_array[] = {
-    { "CTRL              ",  REGPOKER_READ32,  CTRL              , 0x98000090, 0xFE007CFF },
-    { "MDIO_CTRL         ",  REGPOKER_READ32,  MDIO_CTRL         , 0x01E10140, 0xFFFFFFCF },
-    { "EDCL_IP           ",  REGPOKER_READ32,  EDCL_IP           , EDCLIP0, ~0 },
-    { "EDCL_MAC_MSB      ",  REGPOKER_READ32,  EDCL_MAC_MSB      , EDCLMAC_MSB, 0xffff },
-    { "EDCL_MAC_LSB      ",  REGPOKER_READ32,  EDCL_MAC_LSB      , EDCLMAC_LSB, ~0 },
-    { "EDCL_IP           ",  REGPOKER_WRITE32, EDCL_IP           , 0, ~0 },
-    { "EDCL_MAC_MSB      ",  REGPOKER_WRITE32, EDCL_MAC_MSB      , 0, 0xffff },
-    { "EDCL_MAC_LSB      ",  REGPOKER_WRITE32, EDCL_MAC_LSB      , 0, ~0 }
-};
-
-void regs_check(uint32_t base_addr)
-{
-    if (base_addr==GRETH_1_BASE)
-    {
-        rumboot_printf("Checking access to GRETH%d(0x%x) registers\n", 1, base_addr);
-        greth_check_array[2].expected = EDCLIP1;
-        greth_check_array[4].expected |= EDCLADDRL1;
-    }
-    else
-    {
-        rumboot_printf("Checking access to GRETH%d(0x%x) registers\n", 0, base_addr);
-    }
-    TEST_ASSERT(rumboot_regpoker_check_array(greth_check_array, base_addr)==0, "Failed to check GRETH registers\n");
-}
-/*
- * MDIO checks
- */
 void mdio_check(uint32_t base_addr)
 {
     rumboot_printf("MDIO check for GRETH%d(0x%x)\n", GET_GRETH_IDX(base_addr), base_addr);
@@ -215,28 +178,6 @@ void mdio_check(uint32_t base_addr)
 #define GRETH_SRC_DATA_SEL  true
 #define GRETH_DST_DATA_SEL  false
 
-
-/*
-uint8_t * get_src_dst_data_ptr(bool src_dst, uint32_t bank_num)
-{
-    uint8_t* data_ptr = (uint8_t *) 0;
-    switch (bank_num)
-    {
-        case 1:
-            data_ptr = (src_dst==GRETH_SRC_DATA_SEL) ? test_data_im0_src : test_data_im0_dst;
-            break;
-        case 2:
-            data_ptr = (src_dst==GRETH_SRC_DATA_SEL) ? test_data_im2_src : test_data_im2_dst;
-            break;
-        case 3:
-            data_ptr = (src_dst==GRETH_SRC_DATA_SEL) ? test_data_em2_src : test_data_em2_dst;
-            break;
-        default:
-            TEST_ASSERT(0, "Wrong bank index");
-            break;
-    }
-    return data_ptr;
-}*/
 
 
 void prepare_test_data()
@@ -356,15 +297,12 @@ void prepare_test_edcl_data(edcl_test_data_struct_t* edcl_cfg, uint32_t* test_ed
 
 
 
-/*
- * Checks transfers which uses different memory blocks
- */
 void check_transfer_via_external_loopback(uint32_t base_addr_src_eth,  uint8_t * test_data_src, uint8_t * test_data_dst)
 {
     uint32_t base_addr_dst_eth;
     uint32_t volatile* eth_handled_flag_ptr;
 
-    test_event(EVENT_CHECK_RUN_HPROT_MONITOR);//checking switch u_nic400_oi10_axi32.hprot_eth_1(0)_s from 0x3 to 0xF (by request from JIRA-78)
+    //test_event(EVENT_CHECK_RUN_HPROT_MONITOR);//checking switch u_nic400_oi10_axi32.hprot_eth_1(0)_s from 0x3 to 0xF (by request from JIRA-78)
     //dcr_write(DCR_SCTL_BASE + SCTL_IFSYS_ETH_HPROT, 0x3F3F3F3F);
 
     TEST_ASSERT((base_addr_src_eth==GRETH_1_BASE)||(base_addr_src_eth==GRETH_0_BASE), "Wrong GRETH base address\n");
@@ -398,7 +336,7 @@ void check_transfer_via_external_loopback(uint32_t base_addr_src_eth,  uint8_t *
 
     rumboot_free(tx_descriptor_data_);
     rumboot_free(rx_descriptor_data_);
-    test_event(EVENT_CHECK_STOP_HPROT_MONITOR);
+    //test_event(EVENT_CHECK_STOP_HPROT_MONITOR);
 }
 
 void check_edcl_wr_via_external_loopback(uint32_t base_addr_dst_eth, uint32_t wr_mem_addr, void* data, uint32_t len)
@@ -505,7 +443,7 @@ void check_rx_er(uint32_t base_addr)
     uint32_t base_addr_dst_eth;
     uint32_t base_addr_src_eth;
     uint32_t volatile* eth_handled_flag_ptr;
-    uint32_t event_code;
+    //uint32_t event_code;
 
     TEST_ASSERT((base_addr==GRETH_1_BASE)||(base_addr==GRETH_0_BASE), "Wrong GRETH base address\n");
     if (base_addr==GRETH_1_BASE)
@@ -514,7 +452,7 @@ void check_rx_er(uint32_t base_addr)
         base_addr_src_eth = GRETH_0_BASE;
         GRETH1_IRQ_HANDLED = 0;
         eth_handled_flag_ptr = &GRETH1_IRQ_HANDLED;
-        event_code = EVENT_CHECK_GRETH1_RX_ER;
+        //event_code = EVENT_CHECK_GRETH1_RX_ER;
     }
     else
     {
@@ -522,7 +460,7 @@ void check_rx_er(uint32_t base_addr)
         base_addr_src_eth = GRETH_1_BASE;
         GRETH0_IRQ_HANDLED = 0;
         eth_handled_flag_ptr = &GRETH0_IRQ_HANDLED;
-        event_code = EVENT_CHECK_GRETH0_RX_ER;
+        //event_code = EVENT_CHECK_GRETH0_RX_ER;
     }
 
     prepare_test_data(1, 1);
@@ -530,7 +468,7 @@ void check_rx_er(uint32_t base_addr)
     greth_configure_for_receive( base_addr_dst_eth, (uint8_t*)rumboot_virt_to_dma(test_data_im0_dst), GRETH_TEST_DATA_LEN_BYTES, rx_descriptor_data_, &tst_greth_mac);
     greth_configure_for_transmit( base_addr_src_eth, (uint8_t*)rumboot_virt_to_dma(test_data_im0_src), GRETH_TEST_DATA_LEN_BYTES, tx_descriptor_data_, &tst_greth_mac);
 
-    test_event(event_code);
+    //test_event(event_code);
     greth_start_receive( base_addr_dst_eth, true );
     greth_start_transmit( base_addr_src_eth );
 
@@ -544,21 +482,21 @@ void check_rx_col(uint32_t base_src_addr)
 {
     uint32_t base_addr_dst_eth;
     uint32_t volatile* eth_handled_flag_ptr;
-    uint32_t event_code;
+    //uint32_t event_code;
 
     if (base_src_addr==GRETH_0_BASE)
     {
         base_addr_dst_eth = GRETH_1_BASE;
         GRETH1_IRQ_HANDLED = 0;
         eth_handled_flag_ptr = &GRETH1_IRQ_HANDLED;
-        event_code = EVENT_CHECK_GRETH0_RX_COL;
+        //event_code = EVENT_CHECK_GRETH0_RX_COL;
     }
     else
     {
         base_addr_dst_eth = GRETH_0_BASE;
         GRETH0_IRQ_HANDLED = 0;
         eth_handled_flag_ptr = &GRETH0_IRQ_HANDLED;
-        event_code = EVENT_CHECK_GRETH1_RX_COL;
+        //event_code = EVENT_CHECK_GRETH1_RX_COL;
     }
 
     prepare_test_data(1, 1);
@@ -566,7 +504,7 @@ void check_rx_col(uint32_t base_src_addr)
     greth_configure_for_transmit( base_src_addr, (uint8_t*)rumboot_virt_to_dma(test_data_im0_src), GRETH_TEST_DATA_LEN_BYTES, tx_descriptor_data_, &tst_greth_mac);
     greth_configure_for_receive( base_addr_dst_eth, (uint8_t*)rumboot_virt_to_dma(test_data_im0_dst), GRETH_TEST_DATA_LEN_BYTES, rx_descriptor_data_, &tst_greth_mac);
 
-    test_event(event_code);
+    //test_event(event_code);
 
     greth_start_receive(base_addr_dst_eth, true);
     greth_start_transmit(base_src_addr);
@@ -578,7 +516,22 @@ void check_rx_col(uint32_t base_src_addr)
 }
 
 
-/*
+static void test_oi10_greth (){
+	struct rumboot_irq_entry *tbl;
+    rumboot_printf("Start test_oi10_greth. Transmit/receive checks\n");
+    //test_event_send_test_id("test_oi10_greth");
+    tbl = create_greth01_irq_handlers();
+    prepare_test_data();
+    check_transfer_via_external_loopback(GRETH_0_BASE, (uint8_t*)rumboot_virt_to_dma(test_data_im0_src), (uint8_t*)rumboot_virt_to_dma(test_data_im0_dst));
+    delete_greth01_irq_handlers(tbl);
+}
+
+
+
+
+
+//-------------------------------------------------------------------------------------------------
+
 #define SHOW_STATUS(status) switch(status){ \
                 case error_alignnment: \
                 case error_scatter_alignment: \
@@ -596,7 +549,6 @@ void check_rx_col(uint32_t base_src_addr)
                     rumboot_printf("DMA2PLB6: Error write request\n"); \
                     break; \
                 }
-
 
 
 #define TEST_DATA_SIZE 128
@@ -624,8 +576,8 @@ void check_rx_col(uint32_t base_src_addr)
 struct regpoker_checker greth_check_array[] = {
     { "CTRL              ",  REGPOKER_READ32,  CTRL              , 0x98000090, 0xFE007CFF },
     { "MDIO_CTRL         ",  REGPOKER_READ32,  MDIO_CTRL         , 0x01E10140, 0xFFFFFFCF },
-    { "TRANSMIT_DESCR_PTR",  REGPOKER_READ32,  TRANSMIT_DESCR_PTR, 0x0, 0x3F8 },
-    { "RECEIVER_DESCR_PTR",  REGPOKER_READ32,  RECEIVER_DESCR_PTR, 0x0, 0x3F8 },
+    { "TRANSMIT_DESCR_PTR",  REGPOKER_READ8,  TRANSMIT_DESCR_PTR, 0x0, 0x3F8 },
+    { "RECEIVER_DESCR_PTR",  REGPOKER_READ8,  RECEIVER_DESCR_PTR, 0x0, 0x3F8 },
     { "EDCL_IP           ",  REGPOKER_READ32,  EDCL_IP           , EDCLIP , ~0 },
     { "EDCL_MAC_MSB      ",  REGPOKER_READ32,  EDCL_MAC_MSB      , EDCLMAC_MSB, 0xffff },
     { "EDCL_MAC_LSB      ",  REGPOKER_READ32,  EDCL_MAC_LSB      , EDCLMAC_LSB, ~0 },
@@ -650,7 +602,6 @@ void regs_check(uint32_t base_addr)
     }
     TEST_ASSERT(rumboot_regpoker_check_array(greth_check_array, base_addr)==0, "Failed to check GRETH registers\n");
 }
-
 
 
 
@@ -853,7 +804,7 @@ static void dword_plb_axi_test (uint32_t base_addr, uint32_t offc){
     tdata=0x1;
     do {
         temp = ioread64(base_addr+i+offc);
-        //rumboot_printf("[dword_plb_axi_test] read data 0x%x in addr 0x%x \n", (uint32_t)(temp>>32), (uint32_t)(temp&0xFFFFFFFF), base_addr+i+offc);
+        //rumboot_printf("[dword_plb_axi_test] read data 0x%x%x in addr 0x%x \n", (uint32_t)(temp>>32), (uint32_t)(temp&0xFFFFFFFF), base_addr+i+offc);
         if (tdata != temp){
             rumboot_printf("[dword_plb_axi_test] Memory comparison failed exp 0x%x act 0x%x \n", (uint32_t)(tdata>>32), (uint32_t)(tdata&0xFFFFFFFF) , (uint32_t)(temp>>32), (uint32_t)(temp&0xFFFFFFFF));
             TEST_ASSERT(0, "");
@@ -894,48 +845,21 @@ static void single_plb6_axi_test (uint32_t base_addr) {
     dword_plb_axi_test (base_addr, 0x6);
     dword_plb_axi_test (base_addr, 0x7);
 }
-*/
 
 
-static void test_oi10_greth (){
-	struct rumboot_irq_entry *tbl;
-    rumboot_printf("Start test_oi10_greth. Transmit/receive checks\n");
-    test_event_send_test_id("test_oi10_greth");
-    tbl = create_greth01_irq_handlers();
-    prepare_test_data();
-    check_transfer_via_external_loopback(GRETH_0_BASE, (uint8_t*)rumboot_virt_to_dma(test_data_im0_src), (uint8_t*)rumboot_virt_to_dma(test_data_im0_dst));
-    delete_greth01_irq_handlers(tbl);
-}
+
+
 
 int main(void)
 {
 
-
-
 	test_oi10_greth ();
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*
     #ifdef CHECK_PLB6_AXI_SINGLE
         rumboot_putstring("Start test_plb6_axi_greth. Apply access to GRETH0 regs for checking PLB6->AXI convertion for single transactions\n");
         regs_check(GRETH_0_BASE);
         rumboot_printf("End check GRETH registers. \n");
     #endif
-
-
 
     single_plb6_axi_test (IM1_BASE);
 
@@ -959,6 +883,10 @@ int main(void)
                                             dst_im1,
                                             src_im1_physical,
                                             dst_im1_physical) == true, "IM1-to-IM1 failed");
-*/
+
+
+    test_oi10_greth ();
+
+    rumboot_putstring("TEST complete");
     return 0;
 }
