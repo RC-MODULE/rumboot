@@ -322,11 +322,12 @@ void print_hscb_descriptors_in_cycle(   hscb_packed_descr_struct_t**    descript
         rumboot_puthex(descriptor_counts[i]);
         rumboot_puthex((uint32_t)(descriptors + i));
         for(j = 0; j < descriptor_counts[i]; ++j){
-            rumboot_puthex((i << 16) | j);
-            rumboot_puthex((uint32_t)((*(descriptors + i))+j));
-            rumboot_puthex(*((uint32_t*)((*(descriptors + i)) + j)));
-            rumboot_puthex((((uint32_t)((*(descriptors + i)) + j)) + 4));
-            rumboot_puthex( *((uint32_t*)(((uint32_t)((*(descriptors + i)) + j)) + 4)) );
+            rumboot_printf("%x: MEM(0x%x) == 0x%x, MEM(0x%x) == 0x%x\n",
+                    ((i << 16) | j),
+                    (uint32_t)((*(descriptors + i))+j),
+                    *((uint32_t*)((*(descriptors + i)) + j)),
+                    (((uint32_t)((*(descriptors + i)) + j)) + 4),
+                    *((uint32_t*)(((uint32_t)((*(descriptors + i)) + j)) + 4)));
         }
     }
     rumboot_putstring("end printing descriptors in cycle");
@@ -709,6 +710,12 @@ uint32_t prepare_receiving_areas(
                   )
                 + raw_rmap_packets[receiving_rmap_packets->count_areas].reply_addr_chain.length;
 
+        for(int i = 0;
+                (raw_rmap_packets[receiving_rmap_packets->count_areas].reply_addr_chain.array[i] == 0)  &&
+                        (i < (raw_rmap_packets[receiving_rmap_packets->count_areas].reply_addr_chain.length - 1));
+                ++i)
+            receiving_rmap_packets->data_area_sizes[receiving_rmap_packets->count_areas]--;
+
         receiving_rmap_packets->data_areas[receiving_rmap_packets->count_areas]
               = rumboot_malloc_from_named_heap_aligned(default_heap_for_receiving,
                       receiving_rmap_packets->data_area_sizes[receiving_rmap_packets->count_areas], 8);
@@ -824,7 +831,7 @@ static uint32_t check_rmap_func(
 
     hscb_set_rdma_tbl_size(supplementary_base_addr, hscb_get_tbl_len_by_count(ready_rmap_packets.count_areas - 1));
     hscb_set_rdma_sys_addr(supplementary_base_addr, rumboot_virt_to_dma((uint32_t *) ready_rmap_packets.array_of_descriptors));
-    hscb_set_wdma_tbl_size(supplementary_base_addr, hscb_get_tbl_len_by_count(receiving_rmap_packets.count_areas - 1));
+    hscb_set_wdma_tbl_size(supplementary_base_addr, hscb_get_tbl_len_by_count(receiving_rmap_packets.count_areas));
     hscb_set_wdma_sys_addr(supplementary_base_addr, rumboot_virt_to_dma((uint32_t *) receiving_rmap_packets.array_of_descriptors));
 
     // Enable HSCB0 and HSCB1
