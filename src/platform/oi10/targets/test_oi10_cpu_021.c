@@ -78,36 +78,39 @@ uint8_t __attribute__((section(".text.test"))) cache_testing_function()
         {if (ioread32((uint32_t) sram0_data) != BASE_INIT_VALUE) return 1;}
     };
 
-    //8
     const uint32_t const_B = 0xBBBBBBBB;
-    rumboot_printf("8. B = 0x%x\n", const_B);
+    if (L2C_WRITE_MODE_BIT)
+    {
+        //8
+        rumboot_printf("8. B = 0x%x\n", const_B);
 
-    //9
-    rumboot_printf("9. Wrte B in 0x%x\n", addr);
-    iowrite32(const_B, addr);
-    msync();
+        //9
+        rumboot_printf("9. Write B in 0x%x\n", addr);
+        iowrite32(const_B, addr);
+        msync();
+    }
+    else
+        rumboot_printf("8. Skip for this test (available for WT only)\n9. Skip for this test (available for WT only)\n");
 
     //10
-    rumboot_printf("10. Cache off. Read from 0x%x\n", addr);
+    rumboot_printf("10. Cache on. Read from 0x%x\n", addr);
     write_tlb_entries(&sram0_tlb_entry_cacheable_valid,1); //cache on
     read_data = ioread32 (addr);
     msync();
 
     //11
     rumboot_printf("11. Check read data\n");
-    if (L2C_INHIBIT_BIT)
+    if (read_data != const_A) return 2;
+
+    if (L2C_WRITE_MODE_BIT)
     {
-      if (read_data != const_B) return 2;
+        //12
+        rumboot_printf("12. Write A in 0x%x\n", addr);
+        iowrite32(const_A, addr);
+        msync();
     }
     else
-    {
-      if (read_data != const_A) return 2;
-    }
-
-    //12
-    rumboot_printf("12. Write A in 0x%x\n", addr);
-    iowrite32(const_A, addr);
-    msync();
+        rumboot_printf("12. Skip for this test (available for WT only)\n");
 
     //13
     rumboot_printf("13. Flush (0x%x)\n", addr);
