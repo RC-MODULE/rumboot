@@ -977,7 +977,7 @@ endif()
                -DHSCB_SUPPLEMENTARY_INT=SW1_HSCB_INT 
                -DHSCB_SUPPLEMENTARY_DMA_INT=SW1_AXI_INT 
                #-DTEST_OI10_HSCB_FULL_TRACING
-        FILES test_oi10_hscb.c
+        FILES test_oi10_hscb_rmap.c
         PREFIX "hscb_0_rmap"
         NAME test_oi10_hscb_rmap
     )
