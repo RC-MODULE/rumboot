@@ -35,7 +35,7 @@
 #include <platform/regs/regs_emi.h>
 #include <platform/regs/fields/emi.h>
 
-uint32_t test_15_data_array64[32] = {0};
+double test_15_data_array64[4] = {0};
 
 #define MEM_CACHED_PAGE            0x00000000
 
@@ -48,16 +48,24 @@ uint32_t test_15_data_array64[32] = {0};
 #define EVENT_CHECK_MASK_MEM_G     (TEST_EVENT_CODE_MIN+6)
 #define EVENT_CHECK_MASK_MEM_H     (TEST_EVENT_CODE_MIN+7)
 
-#define CACHE_DATA_LINE_BY_WAY_INDEX(WAY,INDEX,WORD,DATA_OFFSET) \
-    rumboot_printf("Caching data: WAY | INDEX (0x%x | 0x%x)\n", (WAY), (INDEX)); \
-    /*Minimal caching size is 1 line = 32 bytes = 8 (WORD)s = 4 double(WORD)s*/ \
-    iowrite64(test_15_data_array64[DATA_OFFSET], MEM_CACHED_PAGE + ((WAY)<<13) + ((INDEX)<<5) + ((WORD)<<2)); \
-    iowrite64(test_15_data_array64[DATA_OFFSET+1], MEM_CACHED_PAGE + ((WAY)<<13) + ((INDEX)<<5) + (((WORD)+2)<<2)); \
-    iowrite64(test_15_data_array64[DATA_OFFSET+2], MEM_CACHED_PAGE + ((WAY)<<13) + ((INDEX)<<5) + (((WORD)+4)<<2)); \
-    iowrite64(test_15_data_array64[DATA_OFFSET+3], MEM_CACHED_PAGE + ((WAY)<<13) + ((INDEX)<<5) + (((WORD)+6)<<2)); \
-    msync(); \
-    /*1st read initiates a caching*/ \
-    TEST_ASSERT (ioread32(MEM_CACHED_PAGE+ ((WAY)<<13) + ((INDEX)<<5) + (((WORD)+0)<<2)) == (uint32_t) test_15_data_array64[DATA_OFFSET*2],"TEST ERROR: Compare failed at read of first (WORD)");
+void fpu_enable (void)
+{
+    msr_write(msr_read() | (0b1 << ITRPT_XSR_FP_i));
+}
+
+void CACHE_DATA_LINE_BY_WAY_INDEX(uint32_t WAY, uint32_t INDEX, uint32_t WORD)
+{
+    uint32_t addr = MEM_CACHED_PAGE + (WAY<<13) + (INDEX<<5) + (WORD<<2);
+    rumboot_printf("Caching data: way (0x%x), index (0x%x), word (0x%x), addr = 0x%x\n", WAY, INDEX, WORD, addr);
+    /*Minimal caching size is 1 line = 32 bytes = 8 (WORD)s = 4 double(WORD)s*/
+    iowrite64d(test_15_data_array64[0], addr);
+    iowrite64d(test_15_data_array64[1], addr + 0x8);
+    iowrite64d(test_15_data_array64[2], addr + 0x10);
+    iowrite64d(test_15_data_array64[3], addr + 0x18);
+    msync();
+    /*1st read initiates a caching*/
+    TEST_ASSERT (ioread64(addr) == test_15_data_array64[0],"TEST ERROR: Compare failed at read of first (WORD)");
+}
 
 #define MODIFY_BYTE_BY_WAY_INDEX(WAY,INDEX, BYTE, VALUE) \
     iowrite8((uint8_t)(VALUE), MEM_CACHED_PAGE + ((WAY)<<13) + ((INDEX)<<5) + ((BYTE)<<0)); \
@@ -236,10 +244,10 @@ void run_bw(array_sram sram, uint32_t event)
         /*
          * 1. place in cache expected data sequence (zeros)
          */
-        CACHE_DATA_LINE_BY_WAY_INDEX(0,index,0, 0);
-        CACHE_DATA_LINE_BY_WAY_INDEX(1,index,0, 0);
-        CACHE_DATA_LINE_BY_WAY_INDEX(2,index,0, 0);
-        CACHE_DATA_LINE_BY_WAY_INDEX(3,index,0, 0);
+        CACHE_DATA_LINE_BY_WAY_INDEX (0,index, 0);
+        CACHE_DATA_LINE_BY_WAY_INDEX (1,index, 0);
+        CACHE_DATA_LINE_BY_WAY_INDEX (2,index, 0);
+        CACHE_DATA_LINE_BY_WAY_INDEX (3,index, 0);
         /*
          * 2. For each MASK
          */
@@ -258,12 +266,13 @@ void run_bw(array_sram sram, uint32_t event)
 }
 
 //                                      MMU_TLB_ENTRY(  ERPN,   RPN,        EPN,        DSIZ,                  IL1I,   IL1D,   W,      I,      M,      G,      E,                      UX, UW, UR,     SX, SW, SR      DULXE,  IULXE,      TS,     TID,                WAY,                BID,                V   )
-#define TLB_ENTRY_CACHE_VALID           MMU_TLB_ENTRY(  0x000,  0x00000,    0x00000,    MMU_TLBE_DSIZ_1GB,     0b1,    0b0,    0b1,    0b0,    0b1,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
+#define TLB_ENTRY_CACHE_VALID           MMU_TLB_ENTRY(  0x000,  0x00000,    0x00000,    MMU_TLBE_DSIZ_1GB,     0b1,    0b0,    0b1,    0b0,    0b1,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
 
 int main ( void )
 {
      rumboot_printf("test started\n");
      emi_init(DCR_EM2_EMI_BASE);
+     fpu_enable();
 
      rumboot_printf("Init sram0\n");
      memset(MEM_CACHED_PAGE, 0x00, 0x10000);
