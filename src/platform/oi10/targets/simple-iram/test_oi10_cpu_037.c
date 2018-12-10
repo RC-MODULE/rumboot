@@ -84,6 +84,10 @@ void check_exception ()
     if ((value >> FPU_FPSCR_UE_i)     & 1) rumboot_printf("=========> Floating-point underflow exception enable [58]\n");//58
     if ((value >> FPU_FPSCR_ZE_i)     & 1) rumboot_printf("=========> Floating-point zero divide exception enable [59]\n");//59
     if ((value >> FPU_FPSCR_XE_i)     & 1) rumboot_printf("=========> Floating-point inexact exception enable [60]\n");//60
+    if (((value >> FPU_FPSCR_RN_i)    & 0b11) == 0b00) rumboot_printf("=========>  Round to nearest [62:63]\n");//62:63
+    if (((value >> FPU_FPSCR_RN_i)    & 0b11) == 0b01) rumboot_printf("=========>  Round toward zero [62:63]\n");//62:63
+    if (((value >> FPU_FPSCR_RN_i)    & 0b11) == 0b10) rumboot_printf("=========>  Round toward + infinity [62:63]\n");//62:63
+    if (((value >> FPU_FPSCR_RN_i)    & 0b11) == 0b11) rumboot_printf("=========>   Round toward - infinity [62:63]\n");//62:63
 }
 
 void clearing_bits ()
@@ -197,20 +201,12 @@ void clearing_bits ()
                    ( "mtfsb0 %0 \n\t"
                          :: "i"  (28)
                                );
-  /*  asm volatile
-                   ( "mtfsb0 %0 \n\t"
-                         :: "i"  (3)
-                               );
-    asm volatile
-                   ( "mtfsb0 %0 \n\t"
-                         :: "i"  (3)
-                               );*/
 
 }
 
 void set_one ()
 {
-    rumboot_printf("======> SET ONE \n");
+    rumboot_printf("======> Exceptions are enabled \n");
     asm volatile
                    ( "mtfsb1 %0 \n\t"
                          :: "i"  (24)
@@ -233,6 +229,58 @@ void set_one ()
                                );
 }
 
+void Round_to_Nearest()
+{
+    rumboot_printf("Round to Nearest\n");
+    asm volatile
+                   ( "mtfsb0 %0 \n\t"
+                         :: "i"  (30)
+                               );
+    asm volatile
+                   ( "mtfsb0 %0 \n\t"
+                         :: "i"  (31)
+                               );
+}
+
+void Round_toward_Zero ()
+{
+    rumboot_printf("Round toward Zero\n");
+    asm volatile
+                   ( "mtfsb0 %0 \n\t"
+                         :: "i"  (30)
+                               );
+    asm volatile
+                   ( "mtfsb1 %0 \n\t"
+                         :: "i"  (31)
+                               );
+}
+
+void Round_toward_pos_Infinity ()
+{
+    rumboot_printf("Round toward + Infinity\n");
+    asm volatile
+                   ( "mtfsb1 %0 \n\t"
+                         :: "i"  (30)
+                               );
+    asm volatile
+                   ( "mtfsb0 %0 \n\t"
+                         :: "i"  (31)
+                               );
+}
+
+void Round_toward_neg_Infinity ()
+{
+    rumboot_printf("Round toward - Infinity\n");
+    asm volatile
+                   ( "mtfsb1 %0 \n\t"
+                         :: "i"  (30)
+                               );
+    asm volatile
+                   ( "mtfsb1 %0 \n\t"
+                         :: "i"  (31)
+                               );
+}
+
 void check_OX ()
 {
     rumboot_printf("TEST OX\n");
@@ -242,28 +290,25 @@ void check_OX ()
     clearing_bits ();
     read_fpu ();
     check_exception ();
+
     set_one ();
     result_sum = FPSCR_1 + FPSCR_2;
     read_fpu ();
     check_exception ();
     clearing_bits ();
-   /* rumboot_printf("TEST OX set = 1 \n");
-    set_one ();
-    result_sum = FPSCR_1 + FPSCR_2;
-    read_fpu ();
-    check_exception ();*/
 }
 
 void check_UX ()
 {
     rumboot_printf("TEST UX\n");
     result_sum = FPSCR_3/FPSCR_7;
-    //if (result_sum == 0.0e-38 ) rumboot_printf("result_sum = 0 \n");
+    //if (result_sum == 0.0e-38 ) rumboot_printf("result_sum %e\n", result_sum);
     read_fpu ();
     check_exception ();
     clearing_bits ();
     read_fpu ();
     check_exception ();
+
     set_one ();
     result_sum = FPSCR_3/FPSCR_7;
     read_fpu ();
@@ -280,6 +325,7 @@ void check_ZX ()
     clearing_bits ();
     read_fpu ();
     check_exception ();
+
     set_one ();
     result_sum = FPSCR_1/FPSCR_5;
     read_fpu ();
@@ -296,6 +342,7 @@ void check_XX ()
     clearing_bits ();
     read_fpu ();
     check_exception ();
+
     set_one ();
     result_sum = FPSCR_1;;
     read_fpu ();
@@ -307,8 +354,8 @@ void check_sqrt ()
 {
     set_one ();
     rumboot_printf("TEST SQRT\n");
-   volatile float FPSCR_8 = - INFINITY;
-   volatile float result_sum_sqrt;
+    volatile float FPSCR_8 = - INFINITY;
+    volatile float result_sum_sqrt;
     asm volatile
                 (
                         "fsqrt %0, %1 \n\t"
@@ -316,9 +363,7 @@ void check_sqrt ()
                         : "f"  (FPSCR_8)
                 );
 
-
-    rumboot_printf("TEST SQRT %f\n", result_sum_sqrt);
-    rumboot_printf("TEST SQRT %g\n", result_sum_sqrt);
+    rumboot_printf("TEST SQRT %e\n", result_sum_sqrt);
     read_fpu ();
 
     check_exception ();
@@ -329,16 +374,19 @@ void check_sqrt ()
 
 void check_inf_division ()
 {
+    set_one ();
     rumboot_printf("TEST INFINITY division\n");
     result_sum = FPSCR_9/FPSCR_10;
     read_fpu ();
     check_exception ();
     clearing_bits ();
+    set_one ();
     rumboot_printf("TEST INFINITY subtraction\n");
     result_sum = FPSCR_9 - FPSCR_10;
     read_fpu ();
     check_exception ();
     clearing_bits ();
+    set_one ();
     rumboot_printf("TEST infinity multiply zero\n");
     result_sum = FPSCR_9*FPSCR_5;
     read_fpu ();
@@ -359,50 +407,43 @@ void check_zero_division ()
 
 void check_comparison ()
 {
-    //float FPSCR = -0.0e-3;
-   // set_one ();
     rumboot_printf("TEST comparison\n");
     rumboot_printf("TEST negative\n");
-    //result_sum = FPSCR_11 - FPSCR_5;
     if (FPSCR_11 < FPSCR_5) rumboot_printf("Test negative ok \n");
     read_fpu ();
     check_exception ();
     rumboot_printf("TEST positive\n");
-    //result_sum = FPSCR_12 - FPSCR_11;
     if (FPSCR_12 > FPSCR_11) rumboot_printf("Test positive ok \n");
     read_fpu ();
     check_exception ();
     rumboot_printf("TEST zero\n");
-    //result_sum = FPSCR_5 + FPSCR_5;
     if (FPSCR_5 == FPSCR_5) rumboot_printf("Test zero ok \n");
     read_fpu ();
     check_exception ();
 
     rumboot_printf("TEST NaN\n");
     result_sum = FPSCR_5 * FPSCR_10;
-    //if (FPSCR_13 == FPSCR_13) rumboot_printf("Test NaN ok \n");
     rumboot_printf("TEST NaN %e\n", result_sum);
     read_fpu ();
     check_exception ();
 
 
     rumboot_printf("TEST VXVC\n");
-    result_sum = FPSCR_13 + FPSCR_10;
-    if (FPSCR_13 == FPSCR_10) rumboot_printf("Test VXVC ok \n");
+//    result_sum = FPSCR_13 + FPSCR_10;
+//    if (FPSCR_13 == FPSCR_10) rumboot_printf("Test VXVC ok \n");
+//
+//
+//    rumboot_printf("TEST VXVC %e\n", result_sum);
 
-
-    rumboot_printf("TEST VXVC %e\n", result_sum);
-
-    volatile float FPSCR = C_S_NEG_NAN_MAX;
-    volatile float FPSCR_9 = -1.99777e20;
-    volatile float result_com;
+    volatile float FPSCR = 0.0e-38;
+    volatile float FPSCR_9 = INFINITY;
+    volatile float result_com = FPSCR * FPSCR_9;
+    volatile float result_com_0 = FPSCR + FPSCR_9;
      asm volatile
                  (
                          "fcmpo %0, %1, %2 \n\t"
                          :
-                         :"i" (6), "f"  (FPSCR_9), "f"  (FPSCR)
-
-                         //: "f"  (FPSCR)
+                         :"i" (6), "f"  (result_com), "f"  (result_com_0)
                  );
      rumboot_printf("TEST VXVC %e\n", result_com);
     read_fpu ();
@@ -410,10 +451,19 @@ void check_comparison ()
     clearing_bits ();
 }
 
-
 void Integer_convert()
 {
     rumboot_printf("Integer convert\n");
+    set_one ();
+    volatile float FPSCR_7 = INFINITY;
+    volatile long long int result_conv;
+     asm volatile
+                 (
+                         "fctid %0, %1 \n\t"
+                         : "=f" (result_conv)
+                         : "f"  (FPSCR_7)
+                 );
+
 
     read_fpu ();
     check_exception ();
@@ -423,14 +473,54 @@ void Integer_convert()
 void software_defined_condition ()
 {
     rumboot_printf("software-defined condition\n");
-    result_sum =  log10f (FPSCR_11);
-     rumboot_printf("TEST software %e\n", result_sum);
-     result_sum =  log10f (FPSCR_10);
-      rumboot_printf("TEST software %e\n", result_sum);
+      asm volatile
+                     ( "mtfsb1 %0 \n\t"
+                           :: "i"  (21)
+                                 );
+      read_fpu ();
+      check_exception ();
+      clearing_bits ();
+
+      asm volatile
+                     ( "mtfsb0 %0 \n\t"
+                           :: "i"  (21)
+                                 );
+
     read_fpu ();
     check_exception ();
     clearing_bits ();
 }
+
+void check_round ()
+{
+    set_one ();
+
+    volatile double FPSCR_0 = 1.19159013186231589874e+308;
+    volatile float res_com1;
+    volatile float res_com2;
+    volatile float res_com3;
+    volatile float res_com4;
+    Round_to_Nearest();
+    res_com1 = FPSCR_0;
+
+    Round_toward_Zero();
+    res_com2 = FPSCR_0;
+
+    Round_toward_pos_Infinity ();
+    res_com3 = FPSCR_0;
+
+    Round_toward_neg_Infinity ();
+    res_com4 = FPSCR_0;
+
+    if (res_com1 != res_com4) rumboot_printf("Test ok 1vs4\n");
+    if (res_com3 != res_com4) rumboot_printf("Test ok 3vs4\n");
+    if (res_com2 != res_com3) rumboot_printf("Test ok 2vs3\n");
+    if (res_com3 != res_com1) rumboot_printf("Test ok 3vs1\n");
+    rumboot_printf("Round data1: %g\n", FPSCR_0);
+
+
+}
+
 
 //static void exception_handler(int const id, char const * const name ) {
 //    rumboot_printf( "Exception: %s\n", name );
@@ -447,30 +537,28 @@ int main ()
     enable_fpu();
  //   rumboot_irq_set_exception_handler(exception_handler);
 
-   // check_exception ();
-//    rumboot_printf("Before enable_fpu \n");
-//    enable_fpu();
-//    rumboot_printf("After enable_fpu\n");
-   // double FPSCR_0 = M_LN2LO;
-   // double FPSCR = M_PI;
    rumboot_printf("TEST START\n");
 
    read_fpu ();
    check_exception ();
 
     //rumboot_irq_sei();
+//    check_OX ();
+//    check_UX ();
+//    check_ZX ();
+//    check_XX ();
+//    check_sqrt ();
+//    check_inf_division ();
+//    check_zero_division ();
+    //check_comparison ();
+    //Integer_convert();
+    //software_defined_condition ();
+    check_round ();
 
-    check_OX ();
-    check_UX ();
-    check_ZX ();
-    check_XX ();
-    set_one ();
-    check_sqrt ();
-    check_inf_division ();
-    check_zero_division ();
-    check_comparison ();
-    Integer_convert();
-    software_defined_condition ();
+
+    read_fpu ();
+    check_exception ();
+
     rumboot_printf("TEST OK\n");
    return 0;
 }
