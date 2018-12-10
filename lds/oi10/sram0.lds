@@ -14,16 +14,15 @@ SECTIONS
     *(.rodata)
     *(.rodata.*)
     *(.data)
-     *(.sbss)
-     *(.sbss.*)
+    *(.data.*)
  
     /* ROM sections copy */
     *(*.init.text)
     /* ROM sections copy end */
-        
-    . = 0x1000;
-    KEEP(*(.data.test))
-    *(.data.*)
+    
+    *(.sbss)
+    *(.sbss.*)   
+    
  } > SRAM0
 
  .runtime 0x8001ff00 (NOLOAD): {
