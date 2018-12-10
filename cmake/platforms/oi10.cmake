@@ -684,7 +684,7 @@ endif()
         CONFIGURATION SUPPLEMENTARY
         LDS oi10/test_oi10_cpu_038_im1.lds
         FILES test_oi10_cpu_038_helper.c
-        CFLAGS -shared -DTEST_OI10_CPU_038_ARRAY_SIZE=0x7C00
+        CFLAGS -DTEST_OI10_CPU_038_ARRAY_SIZE=0x7C00
         NAME "test_oi10_cpu_038_helper_im1"
     )
 
@@ -701,7 +701,7 @@ endif()
         LDS oi10/sram0.lds
         FILES test_oi10_cpu_038_helper.c
         CFLAGS -DTEST_OI10_CPU_038_ARRAY_SIZE=0xFC00
-        NAME "test_oi10_cpu_038_helper_sram0"
+        NAME "test_oi10_cpu_038_helper_em2"
     )
     
     add_rumboot_target(
@@ -729,9 +729,9 @@ endif()
         FILES test_oi10_cpu_038.c
         PREFIX simple-iram
         CFLAGS -DEMI_INIT -DM_BASE=SRAM0_BASE
-        NAME "test_oi10_cpu_038_sram0"
+        NAME "test_oi10_cpu_038_em2"
         LOAD IM0BIN SELF
-             MBIN supplementary-test_oi10_cpu_038_helper_sram0
+             MBIN supplementary-test_oi10_cpu_038_helper_em2
     )
     
     add_rumboot_target_dir(uart_data_logger/
