@@ -522,37 +522,27 @@ void check_round ()
 }
 
 
-//static void exception_handler(int const id, char const * const name ) {
-//    rumboot_printf( "Exception: %s\n", name );
-//    TEST_ASSERT( (id == RUMBOOT_IRQ_PROGRAM)
-//              && (spr_read(SPR_MCSR_RW) == ( (0b1 << ITRPT_MCSR_MCS_i)
-//                                           | (0b1 << ITRPT_MCSR_L2_i) )),
-//                "Unexpected exception" );
-//    spr_write( SPR_MCSR_C, spr_read(SPR_MCSR_RW) );
-//}
-
 
 int main ()
 {
     enable_fpu();
- //   rumboot_irq_set_exception_handler(exception_handler);
+
 
    rumboot_printf("TEST START\n");
 
    read_fpu ();
    check_exception ();
 
-    //rumboot_irq_sei();
-//    check_OX ();
-//    check_UX ();
-//    check_ZX ();
-//    check_XX ();
-//    check_sqrt ();
-//    check_inf_division ();
-//    check_zero_division ();
-    //check_comparison ();
-    //Integer_convert();
-    //software_defined_condition ();
+    check_OX ();
+    check_UX ();
+    check_ZX ();
+    check_XX ();
+    check_sqrt ();
+    check_inf_division ();
+    check_zero_division ();
+    check_comparison ();
+    Integer_convert();
+    software_defined_condition ();
     check_round ();
 
 
