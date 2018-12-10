@@ -2,11 +2,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
-
-#include <rumboot/io.h>
 #include <rumboot/printf.h>
-
-#include <platform/common_macros/common_macros.h>
 #include <rumboot/regpoker.h>
 #include <rumboot/printf.h>
 #include <rumboot/io.h>
@@ -20,7 +16,7 @@ static uint8_t dcr_check_ctrl_regs_ro(uint32_t base_addr)
      struct regpoker_checker check_array[] = {
      { "KMBIST_CHAIN_SF_i", REGPOKER_READ_DCR, KMBIST_CHAIN_SF_0 << 6, 0b0, 0b1 },
      { "KMBIST_CHAIN_SF_i", REGPOKER_READ_DCR, KMBIST_CHAIN_SF_0 << 5, 0b0, 0b1 },
-     { "PPC_SYS_CONF", REGPOKER_READ_DCR, PPC_SYS_CONF << 3 , 0b0, 0b1 },
+     { "PPC_SYS_CONF", REGPOKER_READ_DCR, PPC_SYS_CONF << 3, 0b0, 0b1 },
      {  }
     };
       if( rumboot_regpoker_check_array( check_array, base_addr ) == 0 )
@@ -39,11 +35,11 @@ static int dcr_check_ctrl_regs_rw(uint32_t base_addr)
 
     struct regpoker_checker check_array[] = {
     { "KMBIST_CHAIN_SF_i", REGPOKER_READ_DCR, KMBIST_CHAIN_SF_0 << 3, 0b0, 0b1 },
-    { "KMBIST_CHAIN_SF_i", REGPOKER_WRITE_DCR, KMBIST_CHAIN_SF_0 << 3, 0b0, 0b1 },
+   // { "KMBIST_CHAIN_SF_i", REGPOKER_WRITE_DCR, KMBIST_CHAIN_SF_0 << 3, 0b0, 0b1 },
     { "PPC_SYS_CONF", REGPOKER_READ_DCR, PPC_SYS_CONF << 4, 0b0, 0b1},
-    { "PPC_SYS_CONF", REGPOKER_WRITE_DCR, PPC_SYS_CONF << 4, 0b1, 0b1},
+  //  { "PPC_SYS_CONF", REGPOKER_WRITE_DCR, PPC_SYS_CONF << 4, 0b1, 0b1},
     { "PPC_SYS_CONF", REGPOKER_READ_DCR, PPC_SYS_CONF << 5, 0b0, 0b1},
-    { "PPC_SYS_CONF", REGPOKER_WRITE_DCR, PPC_SYS_CONF << 5, 0b1, 0b1},
+  //  { "PPC_SYS_CONF", REGPOKER_WRITE_DCR, PPC_SYS_CONF << 5, 0b1, 0b1},
     };
     if( rumboot_regpoker_check_array( check_array, base_addr ) == 0 ) {
            rumboot_printf( "OK\n" );
@@ -118,7 +114,7 @@ static int AXI_check_regs64(uint32_t base_addr)
 */
 int main(void)
 {
-   register int result = 0;
+   register int result;
    rumboot_printf("Check write/read ctrl register values\n");
 
    result = dcr_check_ctrl_regs_ro(DCR_SCTL_BASE) ||
