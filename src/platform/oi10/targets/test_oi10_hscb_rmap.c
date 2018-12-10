@@ -320,7 +320,7 @@ void print_hscb_descriptors_in_cycle(   hscb_packed_descr_struct_t**    descript
     for (i = 0; i < descriptor_tables_count; ++i){
         rumboot_puthex(i);
         rumboot_puthex(descriptor_counts[i]);
-        rumboot_puthex((uint32_t)(descriptors[i]));
+        rumboot_puthex((uint32_t)(descriptors + i));
         for(j = 0; j < descriptor_counts[i]; ++j){
             rumboot_puthex((i << 16) | j);
             rumboot_puthex((uint32_t)((*(descriptors + i))+j));
@@ -424,18 +424,18 @@ uint32_t generate_some_raw_rmap_packets(hscb_rmap_packet_raw_configuration_t* ra
             reply_addr_length = HSCB_RMAP_PACKET_REPLY_ADDR_12B;
             raw_rmap_packets[i].reply_addr_chain.length = reply_addr_length << 2;
             raw_rmap_packets[i].reply_addr_chain.array
-                = rumboot_malloc_from_named_heap(default_heap_name_for_reply_addr,
-                        raw_rmap_packets[i].reply_addr_chain.length);
+                = rumboot_malloc_from_named_heap_aligned(default_heap_name_for_reply_addr,
+                        raw_rmap_packets[i].reply_addr_chain.length, 8);
 
             raw_rmap_packets[i].data_chain.length = DATA_SIZE_0;
             raw_rmap_packets[i].data_chain.array
-                = rumboot_malloc_from_named_heap(tx_0_heap_name,
-                        raw_rmap_packets[i].data_chain.length);
+                = rumboot_malloc_from_named_heap_aligned(tx_0_heap_name,
+                        raw_rmap_packets[i].data_chain.length, 8);
 
 
             raw_rmap_packets[i].addr
-                = rumboot_virt_to_dma( rumboot_malloc_from_named_heap(rx_0_heap_name,
-                        raw_rmap_packets[i].data_chain.length));
+                = rumboot_virt_to_dma( rumboot_malloc_from_named_heap_aligned(rx_0_heap_name,
+                        raw_rmap_packets[i].data_chain.length, 8));
             raw_rmap_packets[i].ext_addr = 0; //here we have 32bit AXI address space
 
             /*Careful with the following checks in a common case!*/
@@ -529,8 +529,8 @@ uint32_t packing_for_rmap(
     if(!ready_rmap_packets->array_of_descriptors)
         return UNABLE_TO_ALLOCATE_MEMORY;
 
-    ready_rmap_packets->data_areas = rumboot_malloc_from_heap(DEFAULT_HEAP_ID,
-            sizeof(ready_rmap_packets->data_areas) * count_descriptors);
+    ready_rmap_packets->data_areas = rumboot_malloc_from_heap_aligned(DEFAULT_HEAP_ID,
+            sizeof(ready_rmap_packets->data_areas) * count_descriptors,8);
     if(!ready_rmap_packets->data_areas)
     {
         rumboot_free(ready_rmap_packets->array_of_descriptors);
@@ -538,8 +538,8 @@ uint32_t packing_for_rmap(
         return UNABLE_TO_ALLOCATE_MEMORY;
     }
 
-    ready_rmap_packets->data_area_sizes = rumboot_malloc_from_heap(DEFAULT_HEAP_ID,
-            sizeof(*ready_rmap_packets->data_area_sizes) * count_descriptors);
+    ready_rmap_packets->data_area_sizes = rumboot_malloc_from_heap_aligned(DEFAULT_HEAP_ID,
+            sizeof(*ready_rmap_packets->data_area_sizes) * count_descriptors, 8);
 
     if(!ready_rmap_packets->data_area_sizes)
     {
@@ -560,8 +560,8 @@ uint32_t packing_for_rmap(
         /*first mandatory part of RMAP packet header*/
         ready_rmap_packets->data_area_sizes[counter_of_fields] = 4;
         ready_rmap_packets->data_areas[counter_of_fields]
-              = rumboot_malloc_from_named_heap(default_heap_name_for_rmap_header,
-                      ready_rmap_packets->data_area_sizes[counter_of_fields]);
+              = rumboot_malloc_from_named_heap_aligned(default_heap_name_for_rmap_header,
+                      ready_rmap_packets->data_area_sizes[counter_of_fields], 8);
         if(!ready_rmap_packets->data_areas[counter_of_fields])
         {
             rumboot_free(ready_rmap_packets->data_areas[counter_of_fields]);
@@ -579,8 +579,8 @@ uint32_t packing_for_rmap(
         /*second mandatory part of RMAP packet header*/
         ready_rmap_packets->data_area_sizes[counter_of_fields] = 12;
         ready_rmap_packets->data_areas[counter_of_fields]
-              = rumboot_malloc_from_named_heap(default_heap_name_for_rmap_header,
-                      ready_rmap_packets->data_area_sizes[counter_of_fields]);
+              = rumboot_malloc_from_named_heap_aligned(default_heap_name_for_rmap_header,
+                      ready_rmap_packets->data_area_sizes[counter_of_fields], 8);
         if(!ready_rmap_packets->data_areas[counter_of_fields])
         {
             rumboot_free(ready_rmap_packets->data_areas[counter_of_fields]);
@@ -599,8 +599,8 @@ uint32_t packing_for_rmap(
             ++counter_of_fields;
             ready_rmap_packets->data_area_sizes[counter_of_fields] = 1;
             ready_rmap_packets->data_areas[counter_of_fields]
-                  = rumboot_malloc_from_named_heap(default_heap_name_for_rmap_header,
-                          ready_rmap_packets->data_area_sizes[counter_of_fields]);
+                  = rumboot_malloc_from_named_heap_aligned(default_heap_name_for_rmap_header,
+                          ready_rmap_packets->data_area_sizes[counter_of_fields], 8);
             if(!ready_rmap_packets->data_areas[counter_of_fields])
             {
                 rumboot_free(ready_rmap_packets->data_areas[counter_of_fields]);
@@ -668,16 +668,16 @@ uint32_t prepare_receiving_areas(
     if(!receiving_rmap_packets->array_of_descriptors)
         return UNABLE_TO_ALLOCATE_MEMORY;
 
-    receiving_rmap_packets->data_areas = rumboot_malloc_from_heap(DEFAULT_HEAP_ID,
-            sizeof(receiving_rmap_packets->data_areas) * count_descriptors);
+    receiving_rmap_packets->data_areas = rumboot_malloc_from_heap_aligned(DEFAULT_HEAP_ID,
+            sizeof(receiving_rmap_packets->data_areas) * count_descriptors, 8);
     if(!receiving_rmap_packets->data_areas)
     {
         rumboot_free(receiving_rmap_packets->array_of_descriptors);
         return UNABLE_TO_ALLOCATE_MEMORY;
     }
 
-    receiving_rmap_packets->data_area_sizes = rumboot_malloc_from_heap(DEFAULT_HEAP_ID,
-            sizeof(*receiving_rmap_packets->data_area_sizes) * count_descriptors);
+    receiving_rmap_packets->data_area_sizes = rumboot_malloc_from_heap_aligned(DEFAULT_HEAP_ID,
+            sizeof(*receiving_rmap_packets->data_area_sizes) * count_descriptors, 8);
 
     if(!receiving_rmap_packets->data_area_sizes)
     {
@@ -710,8 +710,8 @@ uint32_t prepare_receiving_areas(
                 + raw_rmap_packets[receiving_rmap_packets->count_areas].reply_addr_chain.length;
 
         receiving_rmap_packets->data_areas[receiving_rmap_packets->count_areas]
-              = rumboot_malloc_from_named_heap(default_heap_for_receiving,
-                      receiving_rmap_packets->data_area_sizes[receiving_rmap_packets->count_areas]);
+              = rumboot_malloc_from_named_heap_aligned(default_heap_for_receiving,
+                      receiving_rmap_packets->data_area_sizes[receiving_rmap_packets->count_areas], 8);
         if(!receiving_rmap_packets->data_areas[receiving_rmap_packets->count_areas])
         {
             rumboot_free(receiving_rmap_packets->data_areas[receiving_rmap_packets->count_areas]);
