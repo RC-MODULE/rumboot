@@ -119,7 +119,7 @@ uint8_t __attribute__((section(".text.test"))) cache_testing_function()
 
     //14
     rumboot_printf("14. Cache off. Read from 0x%x\n", addr);
-    write_tlb_entries(&sram0_tlb_entry_cacheable_valid,1); //cache off
+    write_tlb_entries(&sram0_tlb_entry_non_cacheable_valid,1); //cache off
     read_data = ioread32 (addr);
     msync();
 
