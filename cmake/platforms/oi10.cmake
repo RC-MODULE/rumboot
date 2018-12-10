@@ -698,7 +698,7 @@ endif()
     
     add_rumboot_target(
         CONFIGURATION SUPPLEMENTARY
-        LDS oi10/sram0.lds
+        LDS oi10/test_oi10_cpu_038_sram0.lds
         FILES test_oi10_cpu_038_helper.c
         CFLAGS -DTEST_OI10_CPU_038_ARRAY_SIZE=0xFC00
         NAME "test_oi10_cpu_038_helper_em2"
