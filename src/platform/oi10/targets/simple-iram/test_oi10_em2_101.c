@@ -1,11 +1,13 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
+
 #include <rumboot/printf.h>
 #include <rumboot/platform.h>
 #include <rumboot/macros.h>
 #include <rumboot/io.h>
 #include <rumboot/regpoker.h>
+
 #include <platform/test_assert.h>
 #include <platform/devices.h>
 #include <platform/trace.h>
@@ -14,6 +16,7 @@
 #include <platform/regs/regs_plb6mcif2.h>
 #include <platform/regs/regs_mclfir.h>
 #include <platform/regs/regs_emi.h>
+#include <platform/devices/emi.h>
 #include <platform/arch/ppc/ppc_476fp_mmu_fields.h>
 #include <platform/arch/ppc/ppc_476fp_mmu.h>
 #include <platform/ppc470s/mmu/mem_window.h>
@@ -148,7 +151,6 @@ void check_mclfir_wo (uint32_t base_addr)
     dcr_write(base_addr + MCLFIR_MC_CONSOL_STATSUM_MSK + 1, 0x7fffffff);//reset 1 bit ([0]) of MCLFIR_MC_CONSOL_STATSUM_MSK     register
     TEST_ASSERT (dcr_read (base_addr + MCLFIR_MC_CONSOL_STATSUM_MSK) == 0x00, "TEST_ERROR"); //0x00000000 as result - indirect     MCLFIR_MC_CONSOL_STATSUM_MSK_AND register check
 
-    //dcr_write(base_addr + MCLFIR_MC_CONSOL_STAT + (tmp>>18), 0xff);//this line of text is not important
 }
 
 void check_mclfir(const uint32_t base_address)
@@ -263,14 +265,22 @@ void check_emi(const uint32_t base_address)
     TEST_ASSERT (rumboot_regpoker_check_array(emi_regs_write, base_address) == 0, "TEST ERROR" );
 }
 
+#define EVENT_INIT_SRAM0  TEST_EVENT_CODE_MIN
+
 int main()
 {
-    rumboot_printf("\nCHECK MCLFIR\n\n");
-    check_mclfir (DCR_EM2_MCLFIR_BASE);
+    //workaround (init 4KB SRAM0)
+    test_event_send_test_id("test_oi10_em2_101");
+    test_event ( EVENT_INIT_SRAM0 );
+
     rumboot_printf("\nCHECK PLB6MCIF2\n\n");
     check_plb6mcif2 (DCR_EM2_PLB6MCIF2_BASE);
+
     rumboot_printf("\nCHECK EMI\n\n");
     check_emi (DCR_EM2_EMI_BASE);
+
+    rumboot_printf("\nCHECK MCLFIR\n\n");
+    check_mclfir (DCR_EM2_MCLFIR_BASE);
 
     rumboot_printf("TEST OK\n");
     return 0;
