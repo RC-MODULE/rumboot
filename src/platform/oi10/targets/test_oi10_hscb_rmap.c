@@ -404,9 +404,18 @@ void free_mem_from_raw_rmap_packets(hscb_rmap_packet_raw_configuration_t* raw_rm
 }
 
 enum{
-    OK,
-    UNSUPPORTED_COUNT_PACKETS,
-    UNABLE_TO_ALLOCATE_MEMORY
+    OK = 0,
+    UNSUPPORTED_COUNT_PACKETS = (1 << 0),
+    UNABLE_TO_ALLOCATE_MEMORY = (1 << 1),
+    REPLY_ADDR_CHAIN_MISMATCH_IN_REPLY = (1 << 2),
+    REPLY_INITIATOR_LOGICAL_ADDRESS_MISMATCH = (1 << 3),
+    REPLY_PROTOCOL_ID_MISMATCH = (1 << 4),
+    REPLY_INSTRUCTION_MISMATCH = (1 << 5),
+    REPLY_STATUS_MISMATCH = (1 << 6),
+    REPLY_TARGET_LOGICAL_ADDRESS_MISMATCH = (1 << 7),
+    REPLY_DATA_LENGTH_MISMATCH = (1 << 8),
+    REPLY_HEADER_CRC_MISMATCH = (1 << 9),
+    REPLY_DATA_CRC_MISMATCH = (1 << 10)
 }generate_some_raw_rmap_packets_result;
 
 uint32_t generate_some_raw_rmap_packets(hscb_rmap_packet_raw_configuration_t* raw_rmap_packets, const uint32_t length)
@@ -478,6 +487,14 @@ uint32_t generate_some_raw_rmap_packets(hscb_rmap_packet_raw_configuration_t* ra
         default: return UNSUPPORTED_COUNT_PACKETS;
     }
     return OK;
+}
+
+uint32_t get_reply_addr_actual_length(hscb_uint8_array_with_length_t reply_addr)
+{
+    uint32_t length = reply_addr.length;
+    for( int i = 0; (reply_addr.array[i] == 0) && (i < (reply_addr.length - 1)); ++i)
+        --length;
+    return length;
 }
 
 uint32_t count_of_necessary_TX_descriptors(
@@ -708,13 +725,7 @@ uint32_t prepare_receiving_areas(
                             + 1//Data CRC
                         )
                   )
-                + raw_rmap_packets[receiving_rmap_packets->count_areas].reply_addr_chain.length;
-
-        for(int i = 0;
-                (raw_rmap_packets[receiving_rmap_packets->count_areas].reply_addr_chain.array[i] == 0)  &&
-                        (i < (raw_rmap_packets[receiving_rmap_packets->count_areas].reply_addr_chain.length - 1));
-                ++i)
-            receiving_rmap_packets->data_area_sizes[receiving_rmap_packets->count_areas]--;
+                + get_reply_addr_actual_length(raw_rmap_packets[receiving_rmap_packets->count_areas].reply_addr_chain);
 
         receiving_rmap_packets->data_areas[receiving_rmap_packets->count_areas]
               = rumboot_malloc_from_named_heap_aligned(default_heap_for_receiving,
@@ -745,7 +756,36 @@ uint32_t prepare_receiving_areas(
 
     return result;
 }
-
+//
+//static uint32_t check_single_reply(
+//        hscb_uint8_array_with_length_t received_rmap_packet,
+//        hscb_rmap_packet_raw_configuration_t raw_rmap_packet,
+//        uint32_t expected_status
+//        )
+//{
+//    uint32_t result = OK;
+//    uint32_t reply_addr_actual_length = get_reply_addr_actual_length(raw_rmap_packet.reply_addr_chain);
+//    uint32_t start_addr = raw_rmap_packet.reply_addr_chain.length - reply_addr_actual_length;
+//
+//    for(int i = start_addr; i < raw_rmap_packet.reply_addr_chain.length; ++i)
+//    {
+//        if(received_rmap_packet.array[i - start_addr] != raw_rmap_packet.reply_addr_chain.array[i])
+//            result |= REPLY_ADDR_CHAIN_MISMATCH_IN_REPLY;
+//    }
+//    result |= ((received_rmap_packet.array[reply_addr_actual_length + HSCB_RMAP_REPLY_INITIATOR_LOGICAL_ADDR_i] == raw_rmap_packet.initiator_logical_addr)
+//                ? OK : REPLY_INITIATOR_LOGICAL_ADDRESS_MISMATCH)
+//            | ((received_rmap_packet.array[reply_addr_actual_length + HSCB_RMAP_REPLY_PROTOCOL_ID_i] == HSCB_RMAP_PROTOCOL_ID)
+//                ? OK : REPLY_PROTOCOL_ID_MISMATCH)
+//            | ((received_rmap_packet.array[reply_addr_actual_length + HSCB_RMAP_REPLY_INSTRUCTION_i] == raw_rmap_packet.instruction)
+//                ? OK : REPLY_INSTRUCTION_MISMATCH)
+//            | ((received_rmap_packet.array[reply_addr_actual_length + HSCB_RMAP_REPLY_STATUS_i] == expected_status)
+//                ? OK : REPLY_STATUS_MISMATCH)
+//            | ((received_rmap_packet.array[reply_addr_actual_length + HSCB_RMAP_REPLY_TARGET_LOGICAL_ADDR_i] == raw_rmap_packet.target_logical_addr)
+//                ? OK : REPLY_TARGET_LOGICAL_ADDRESS_MISMATCH)
+//                ;
+//    return result;
+//}
+//
 static uint32_t check_rmap_func(
         uint32_t supplementary_base_addr){
     int cnt = 0;
