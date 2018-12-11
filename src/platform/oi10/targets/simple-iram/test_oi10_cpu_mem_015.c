@@ -23,7 +23,6 @@
 #include <platform/trace.h>
 
 #include <platform/common_macros/common_macros.h>
-
 #include <platform/arch/ppc/ppc_476fp_config.h>
 #include <platform/arch/ppc/ppc_476fp_lib_c.h>
 #include <platform/arch/ppc/ppc_476fp_mmu_fields.h>
@@ -39,33 +38,34 @@ double test_15_data_array64[4] = {0};
 
 #define MEM_CACHED_PAGE            0x00000000
 
-#define EVENT_CHECK_MASK_MEM_A     (TEST_EVENT_CODE_MIN+0)
-#define EVENT_CHECK_MASK_MEM_B     (TEST_EVENT_CODE_MIN+1)
-#define EVENT_CHECK_MASK_MEM_C     (TEST_EVENT_CODE_MIN+2)
-#define EVENT_CHECK_MASK_MEM_D     (TEST_EVENT_CODE_MIN+3)
-#define EVENT_CHECK_MASK_MEM_E     (TEST_EVENT_CODE_MIN+4)
-#define EVENT_CHECK_MASK_MEM_F     (TEST_EVENT_CODE_MIN+5)
-#define EVENT_CHECK_MASK_MEM_G     (TEST_EVENT_CODE_MIN+6)
-#define EVENT_CHECK_MASK_MEM_H     (TEST_EVENT_CODE_MIN+7)
+typedef enum{
+    EVENT_CHECK_MASK_MEM_A = TEST_EVENT_CODE_MIN + 0,
+    EVENT_CHECK_MASK_MEM_B = TEST_EVENT_CODE_MIN + 1,
+    EVENT_CHECK_MASK_MEM_C = TEST_EVENT_CODE_MIN + 2,
+    EVENT_CHECK_MASK_MEM_D = TEST_EVENT_CODE_MIN + 3,
+    EVENT_CHECK_MASK_MEM_E = TEST_EVENT_CODE_MIN + 4,
+    EVENT_CHECK_MASK_MEM_F = TEST_EVENT_CODE_MIN + 5,
+    EVENT_CHECK_MASK_MEM_G = TEST_EVENT_CODE_MIN + 6,
+    EVENT_CHECK_MASK_MEM_H = TEST_EVENT_CODE_MIN + 7,
+    TEST_EVENT_VERIFY      = TEST_EVENT_CODE_MIN + 8
+}test_event_code;
 
-void fpu_enable (void)
-{
-    msr_write(msr_read() | (0b1 << ITRPT_XSR_FP_i));
-}
+typedef struct {
+    uint32_t way;
+    uint32_t index;
+    uint32_t word;
+}way_index_word;
 
-void CACHE_DATA_LINE_BY_WAY_INDEX(uint32_t WAY, uint32_t INDEX, uint32_t WORD)
-{
-    uint32_t addr = MEM_CACHED_PAGE + (WAY<<13) + (INDEX<<5) + (WORD<<2);
-    rumboot_printf("Caching data: way (0x%x), index (0x%x), word (0x%x), addr = 0x%x\n", WAY, INDEX, WORD, addr);
-    /*Minimal caching size is 1 line = 32 bytes = 8 (WORD)s = 4 double(WORD)s*/
-    iowrite64d(test_15_data_array64[0], addr);
-    iowrite64d(test_15_data_array64[1], addr + 0x8);
-    iowrite64d(test_15_data_array64[2], addr + 0x10);
-    iowrite64d(test_15_data_array64[3], addr + 0x18);
-    msync();
-    /*1st read initiates a caching*/
-    TEST_ASSERT (ioread64(addr) == test_15_data_array64[0],"TEST ERROR: Compare failed at read of first (WORD)");
-}
+typedef enum {
+    SRAM_A,
+    SRAM_B,
+    SRAM_C,
+    SRAM_D,
+    SRAM_E,
+    SRAM_F,
+    SRAM_G,
+    SRAM_H
+}array_sram;
 
 #define MODIFY_BYTE_BY_WAY_INDEX(WAY,INDEX, BYTE, VALUE) \
     iowrite8((uint8_t)(VALUE), MEM_CACHED_PAGE + ((WAY)<<13) + ((INDEX)<<5) + ((BYTE)<<0)); \
@@ -86,24 +86,24 @@ void CACHE_DATA_LINE_BY_WAY_INDEX(uint32_t WAY, uint32_t INDEX, uint32_t WORD)
 #define A_TO_INDEX(A) \
     REVERSE8( (((A & 0xFC) >> 1) | (A & 0x1) ) << 1)
 
-//same arrays
+void fpu_enable (void)
+{
+    msr_write(msr_read() | (0b1 << ITRPT_XSR_FP_i));
+}
 
-typedef struct {
-    uint32_t way;
-    uint32_t index;
-    uint32_t word;
-}way_index_word;
-
-typedef enum {
-    SRAM_A,
-    SRAM_B,
-    SRAM_C,
-    SRAM_D,
-    SRAM_E,
-    SRAM_F,
-    SRAM_G,
-    SRAM_H
-}array_sram;
+void CACHE_DATA_LINE_BY_WAY_INDEX(uint32_t WAY, uint32_t INDEX, uint32_t WORD)
+{
+    uint32_t addr = MEM_CACHED_PAGE + (WAY<<13) + (INDEX<<5) + (WORD<<2);
+    rumboot_printf("Caching data: way (0x%x), index (0x%x), word (0x%x), addr = 0x%x\n", WAY, INDEX, WORD, addr);
+    /*Minimal caching size is 1 line = 32 bytes = 8 (WORD)s = 4 double(WORD)s*/
+    iowrite64d(test_15_data_array64[0], addr);
+    iowrite64d(test_15_data_array64[1], addr + 0x8);
+    iowrite64d(test_15_data_array64[2], addr + 0x10);
+    iowrite64d(test_15_data_array64[3], addr + 0x18);
+    msync();
+    /*1st read initiates a caching*/
+    TEST_ASSERT (ioread64d(addr) == test_15_data_array64[0],"TEST ERROR: Compare failed at read of first (WORD)");
+}
 
 static inline void write_sram_with_mask(uint32_t wayF, uint32_t wayS,uint32_t index,uint32_t word,uint32_t value)
 {
@@ -270,7 +270,9 @@ void run_bw(array_sram sram, uint32_t event)
 
 int main ( void )
 {
-     rumboot_printf("test started\n");
+    test_event_send_test_id("test_oi10_cpu_mem_015");
+
+     rumboot_printf("Emi init\n");
      emi_init(DCR_EM2_EMI_BASE);
      fpu_enable();
 
@@ -281,7 +283,11 @@ int main ( void )
      static const tlb_entry tlb_entry_cacheable_valid = {TLB_ENTRY_CACHE_VALID};
      write_tlb_entries(&tlb_entry_cacheable_valid, 1);
 
+     rumboot_printf("Send event verify\n");
+     test_event(TEST_EVENT_VERIFY);
+
      //START TEST
+     rumboot_printf("Start test\n");
      run_bw(SRAM_A, EVENT_CHECK_MASK_MEM_A);
      run_bw(SRAM_B, EVENT_CHECK_MASK_MEM_B);
      run_bw(SRAM_C, EVENT_CHECK_MASK_MEM_C);
