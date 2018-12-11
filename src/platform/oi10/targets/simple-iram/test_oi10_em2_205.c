@@ -174,7 +174,7 @@ static void irq_handler( int irq, void *arg ) {
             dcr_write(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_ERR_AND1, 0x00000000);
             dcr_write(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_LFIR_AND, 0x00000000);
 
-            dcr_write(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_ERR_ACTION0, 0x00000090);
+            dcr_write(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_ERR_ACTION0, 0x00000020);
             dcr_write(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_ERR_ACTION1, 0x00002400);
 
             emi_recoverable_error_int_occured = true;
