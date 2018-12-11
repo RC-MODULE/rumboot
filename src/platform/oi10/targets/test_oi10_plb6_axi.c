@@ -25,8 +25,7 @@
 #include <platform/devices/emi.h>
 #include <platform/devices/dma2plb6.h>
 #include <platform/devices/nor_1636RR4.h>
-
-
+#include <platform/devices/hscb.h>
 
 #define GRETH_TEST_DATA_LEN_BYTES   250
 #define GRETH_EDCL_DATA_LEN_BYTES    16
@@ -60,7 +59,51 @@ greth_mac_t tst_greth_mac       = {TST_MAC_MSB, TST_MAC_LSB};
 greth_mac_t tst_greth_edcl_mac0 = {EDCLMAC_MSB, (EDCLMAC_LSB | EDCLADDRL0_TEST) };
 greth_mac_t tst_greth_edcl_mac1 = {EDCLMAC_MSB, (EDCLMAC_LSB | EDCLADDRL1_TEST) };
 
+#ifdef CHECK_AXI_PLB6_BURST
+//initial data in IM0 (will be copy to source ETH areas)
+struct test_pattern_t
+{
+    uint32_t word0[4];
+    uint32_t word1[4];
+};
+#define PERIPH_TEST_DATA_LEN 256
+#define PERIPH_TEST_DATA_LEN_BYTES (PERIPH_TEST_DATA_LEN * sizeof(uint32_t))
+#define SOURCE_DATA_ARR_SIZE    (PERIPH_TEST_DATA_LEN * sizeof(uint32_t)/sizeof(struct test_pattern_t))
+#define PERIPH_TEST_PATTERN_0    0x5A5A5A5A
+#define PERIPH_TEST_PATTERN_1    0xA5A5A5A5
+static struct test_pattern_t test_hscbx_src_data[SOURCE_DATA_ARR_SIZE] = {[0 ... SOURCE_DATA_ARR_SIZE-1] = {
+                                                                                                    .word0 = {PERIPH_TEST_PATTERN_0, PERIPH_TEST_PATTERN_1, PERIPH_TEST_PATTERN_0, PERIPH_TEST_PATTERN_1},
+                                                                                                    .word1 = {PERIPH_TEST_PATTERN_1, PERIPH_TEST_PATTERN_0, PERIPH_TEST_PATTERN_1, PERIPH_TEST_PATTERN_0}
+                                                                                                 }
+                                                                };
 
+static hscb_instance_t  hscb_cfg[4];
+static volatile bool hscb_handler[4] = {false, false, false, false};
+
+
+static uint32_t* test_hscb0_data_im0_src;
+static uint32_t* test_hscb0_data_im0_dst;
+
+static uint32_t* test_hscb1_data_im0_src;
+static uint32_t* test_hscb1_data_im0_dst;
+
+static uint32_t* test_hscb2_data_im1_src;
+static uint32_t* test_hscb2_data_im1_dst;
+
+static uint32_t* test_hscb3_data_im1_src;
+static uint32_t* test_hscb3_data_im1_dst;
+
+static uint32_t* HSCB0_TX_DESCR_ADDR;
+static uint32_t* HSCB0_RX_DESCR_ADDR;
+static uint32_t* HSCB1_TX_DESCR_ADDR;
+static uint32_t* HSCB1_RX_DESCR_ADDR;
+
+static uint32_t* HSCB2_TX_DESCR_ADDR;
+static uint32_t* HSCB2_RX_DESCR_ADDR;
+static uint32_t* HSCB3_TX_DESCR_ADDR;
+static uint32_t* HSCB3_RX_DESCR_ADDR;
+
+#endif
 
 static uint32_t volatile GRETH0_IRQ_HANDLED = 0;
 static uint32_t volatile GRETH1_IRQ_HANDLED = 0;
@@ -106,6 +149,27 @@ static void handler_eth( int irq, void *arg )
     rumboot_printf("Exit from handler\n");
 }
 
+#ifdef CHECK_AXI_PLB6_BURST
+static void handler_hscb( int irq, void *arg )
+{
+    uint32_t adma_ch_status_src;
+    hscb_instance_t* hscb_inst = (hscb_instance_t* ) arg;
+    uint32_t idx;
+    adma_ch_status_src = hscb_get_adma_ch_status(hscb_inst->src_hscb_base_addr);
+    idx = GET_HSCB_IDX_BY_ADDR(hscb_inst->src_hscb_base_addr);
+    rumboot_printf( "HSCB%d(0x%X) ADMA_IRQ status: 0x%X\n", idx, hscb_inst->src_hscb_base_addr, adma_ch_status_src);
+    if (adma_ch_status_src & HSCB_ADMA_CH_STATUS_WDMA_IRQ_mask)
+    {
+        rumboot_printf( "Detected WDMA_IRQ status: 0x%X\n", hscb_get_wdma_status(hscb_inst->src_hscb_base_addr));
+    }
+    else
+    {
+        TEST_ASSERT(0, "Unexpected IRQ status");
+    }
+
+    hscb_handler[idx] = true;
+}
+#endif
 
 static struct greth_instance in[ ] = {
                                         {
@@ -118,6 +182,71 @@ static struct greth_instance in[ ] = {
                                         }
                                      };
 
+#ifdef CHECK_AXI_PLB6_BURST
+void init_hscb_cfg(hscb_instance_t* hscb_inst)
+{
+    (hscb_inst + 0)->src_hscb_base_addr   = HSCB0_BASE;
+    (hscb_inst + 0)->dst_hscb_base_addr   = HSCB1_BASE;
+    (hscb_inst + 0)->src_addr             = test_hscb0_data_im0_src;
+    (hscb_inst + 0)->dst_addr             = test_hscb0_data_im0_dst;
+    (hscb_inst + 0)->src_size             = sizeof(test_hscbx_src_data);
+    (hscb_inst + 0)->dst_size             = sizeof(test_hscbx_src_data);
+    (hscb_inst + 0)->tx_descr_addr        = (uint32_t)HSCB0_TX_DESCR_ADDR;
+    (hscb_inst + 0)->rx_descr_addr        = (uint32_t)HSCB0_RX_DESCR_ADDR;
+
+    (hscb_inst + 1)->src_hscb_base_addr   = HSCB1_BASE;
+    (hscb_inst + 1)->dst_hscb_base_addr   = HSCB0_BASE;
+    (hscb_inst + 1)->src_addr             = test_hscb1_data_im0_src;
+    (hscb_inst + 1)->dst_addr             = test_hscb1_data_im0_dst;
+    (hscb_inst + 1)->src_size             = sizeof(test_hscbx_src_data);
+    (hscb_inst + 1)->dst_size             = sizeof(test_hscbx_src_data);
+    (hscb_inst + 1)->tx_descr_addr        = (uint32_t)HSCB1_TX_DESCR_ADDR;
+    (hscb_inst + 1)->rx_descr_addr        = (uint32_t)HSCB1_RX_DESCR_ADDR;
+
+    (hscb_inst + 2)->src_hscb_base_addr   = HSCB2_BASE;
+    (hscb_inst + 2)->dst_hscb_base_addr   = HSCB3_BASE;
+    (hscb_inst + 2)->src_addr             = test_hscb2_data_im1_src;
+    (hscb_inst + 2)->dst_addr             = test_hscb2_data_im1_dst;
+    (hscb_inst + 2)->src_size             = sizeof(test_hscbx_src_data);
+    (hscb_inst + 2)->dst_size             = sizeof(test_hscbx_src_data);
+    (hscb_inst + 2)->tx_descr_addr        = (uint32_t)HSCB2_TX_DESCR_ADDR;
+    (hscb_inst + 2)->rx_descr_addr        = (uint32_t)HSCB2_RX_DESCR_ADDR;
+
+    (hscb_inst + 3)->src_hscb_base_addr   = HSCB3_BASE;
+    (hscb_inst + 3)->dst_hscb_base_addr   = HSCB2_BASE;
+    (hscb_inst + 3)->src_addr             = test_hscb3_data_im1_src;
+    (hscb_inst + 3)->dst_addr             = test_hscb3_data_im1_dst;
+    (hscb_inst + 3)->src_size             = sizeof(test_hscbx_src_data);
+    (hscb_inst + 3)->dst_size             = sizeof(test_hscbx_src_data);
+    (hscb_inst + 3)->tx_descr_addr        = (uint32_t)HSCB3_TX_DESCR_ADDR;
+    (hscb_inst + 3)->rx_descr_addr        = (uint32_t)HSCB3_RX_DESCR_ADDR;
+}
+
+struct rumboot_irq_entry * create_hscb_irq_handlers(hscb_instance_t* hscb_inst)
+{
+    rumboot_printf( "Create hscb irq handlers\n" );
+    rumboot_irq_cli();
+    struct rumboot_irq_entry *tbl = rumboot_irq_create( NULL );
+
+
+    init_hscb_cfg(hscb_inst);
+    rumboot_irq_set_handler( tbl, SW0_AXI_INT, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler_hscb, &hscb_inst[0] );
+    rumboot_irq_set_handler( tbl, SW1_AXI_INT, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler_hscb, &hscb_inst[1] );
+    rumboot_irq_set_handler( tbl, SW2_AXI_INT, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler_hscb, &hscb_inst[2] );
+    rumboot_irq_set_handler( tbl, SW3_AXI_INT, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler_hscb, &hscb_inst[3] );
+
+    /* Activate the table */
+    rumboot_irq_table_activate( tbl );
+    rumboot_irq_enable( SW0_AXI_INT );
+    rumboot_irq_enable( SW1_AXI_INT );
+    rumboot_irq_enable( SW2_AXI_INT );
+    rumboot_irq_enable( SW3_AXI_INT );
+
+    rumboot_irq_sei();
+
+    return tbl;
+}
+#endif
 
 struct rumboot_irq_entry * create_greth01_irq_handlers()
 {
@@ -139,7 +268,7 @@ struct rumboot_irq_entry * create_greth01_irq_handlers()
     return tbl;
 }
 
-void delete_greth01_irq_handlers(struct rumboot_irq_entry *tbl)
+void delete_irq_handlers(struct rumboot_irq_entry *tbl)
 {
     rumboot_irq_table_activate(NULL);
     rumboot_irq_free(tbl);
@@ -222,6 +351,34 @@ void prepare_test_data()
         test_data_im0_src[i] = i;
         i++;
     }
+#ifdef CHECK_AXI_PLB6_BURST
+    test_hscb0_data_im0_src = (uint32_t*)rumboot_malloc_from_heap_aligned(0, PERIPH_TEST_DATA_LEN_BYTES, sizeof(uint32_t));
+    test_hscb0_data_im0_dst = (uint32_t*)rumboot_malloc_from_heap_aligned(0, PERIPH_TEST_DATA_LEN_BYTES, sizeof(uint32_t));
+
+    test_hscb1_data_im0_src = (uint32_t*)rumboot_malloc_from_heap_aligned(0, PERIPH_TEST_DATA_LEN_BYTES, sizeof(uint32_t));
+    test_hscb1_data_im0_dst = (uint32_t*)rumboot_malloc_from_heap_aligned(0, PERIPH_TEST_DATA_LEN_BYTES, sizeof(uint32_t));
+
+    test_hscb2_data_im1_src = (uint32_t*)rumboot_malloc_from_heap_aligned(1, PERIPH_TEST_DATA_LEN_BYTES, sizeof(uint32_t));
+    test_hscb2_data_im1_dst = (uint32_t*)rumboot_malloc_from_heap_aligned(1, PERIPH_TEST_DATA_LEN_BYTES, sizeof(uint32_t));
+
+    test_hscb3_data_im1_src = (uint32_t*)rumboot_malloc_from_heap_aligned(1, PERIPH_TEST_DATA_LEN_BYTES, sizeof(uint32_t));
+    test_hscb3_data_im1_dst = (uint32_t*)rumboot_malloc_from_heap_aligned(1, PERIPH_TEST_DATA_LEN_BYTES, sizeof(uint32_t));
+
+    memcpy(test_hscb0_data_im0_src,  test_hscbx_src_data, sizeof(test_hscbx_src_data));
+    memcpy(test_hscb1_data_im0_src,  test_hscbx_src_data, sizeof(test_hscbx_src_data));
+    memcpy(test_hscb2_data_im1_src,  test_hscbx_src_data, sizeof(test_hscbx_src_data));
+    memcpy(test_hscb3_data_im1_src,  test_hscbx_src_data, sizeof(test_hscbx_src_data));
+
+    HSCB0_TX_DESCR_ADDR = (uint32_t*)rumboot_malloc_from_heap_aligned(1, 0x40, sizeof(uint32_t));
+    HSCB0_RX_DESCR_ADDR = (uint32_t*)rumboot_malloc_from_heap_aligned(1, 0x40, sizeof(uint32_t));
+    HSCB1_TX_DESCR_ADDR = (uint32_t*)rumboot_malloc_from_heap_aligned(1, 0x40, sizeof(uint32_t));
+    HSCB1_RX_DESCR_ADDR = (uint32_t*)rumboot_malloc_from_heap_aligned(1, 0x40, sizeof(uint32_t));
+
+    HSCB2_TX_DESCR_ADDR = (uint32_t*)rumboot_malloc_from_heap_aligned(1, 0x40, sizeof(uint32_t));
+    HSCB2_RX_DESCR_ADDR = (uint32_t*)rumboot_malloc_from_heap_aligned(1, 0x40, sizeof(uint32_t));
+    HSCB3_TX_DESCR_ADDR = (uint32_t*)rumboot_malloc_from_heap_aligned(1, 0x40, sizeof(uint32_t));
+    HSCB3_RX_DESCR_ADDR = (uint32_t*)rumboot_malloc_from_heap_aligned(1, 0x40, sizeof(uint32_t));
+#endif
 
     rumboot_putstring("Preparing data finished");
 }
@@ -275,7 +432,7 @@ void test_oi10_greth (){
     tbl = create_greth01_irq_handlers();
     prepare_test_data();
     check_transfer_via_external_loopback(GRETH_0_BASE, (uint8_t*)rumboot_virt_to_dma(test_data_im0_src), (uint8_t*)rumboot_virt_to_dma(test_data_im0_dst));
-    delete_greth01_irq_handlers(tbl);
+    delete_irq_handlers(tbl);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -587,6 +744,82 @@ void single_plb6_axi_test (uint32_t base_addr) {
     dword_plb_axi_test (base_addr, 0x6);
     dword_plb_axi_test (base_addr, 0x7);
 }
+#ifdef CHECK_AXI_PLB6_BURST
+void run_hscb_transfers_via_external_loopback(hscb_instance_t* hscb_inst)
+{
+    int i;
+    //run wdma
+    for (i=0; i<4; i++)
+        hscb_run_wdma((hscb_inst+i)->src_hscb_base_addr);
+    //run rdma
+    for (i=0; i<4; i++)
+        hscb_run_rdma((hscb_inst+i)->src_hscb_base_addr);
+}
+
+void test_oi10_hscb()
+{
+    struct rumboot_irq_entry *tbl;
+    rumboot_printf("Start test_oi10_hscb. Transmit/receive checks\n");
+    //test_event_send_test_id("test_oi10_greth");
+    tbl = create_greth01_irq_handlers();
+    prepare_test_data();
+    check_transfer_via_external_loopback(GRETH_0_BASE, (uint8_t*)rumboot_virt_to_dma(test_data_im0_src), (uint8_t*)rumboot_virt_to_dma(test_data_im0_dst));
+    delete_irq_handlers(tbl);
+}
+
+void configure_hscb(hscb_instance_t* hscb_inst, hscb_axi_arwlen_t       hscb_axi_arwlen)
+{
+    int i;
+    hscb_axi_params_cfg_t axi_params_cfg;
+    rumboot_printf("\n---\nApply software reset HSCBs\n");
+    for (i=0; i<4; i++)
+    {
+        hscb_sw_rst((hscb_inst+i)->src_hscb_base_addr);
+        hscb_adma_sw_rst((hscb_inst+i)->src_hscb_base_addr);
+    }
+
+    //config
+    for (i=0; i<4; i++)
+    {
+        hscb_config_for_receive_and_transmit(hscb_inst + i);
+        hscb_get_axi_params((hscb_inst+i)->src_hscb_base_addr, &axi_params_cfg);
+        axi_params_cfg.arlen = hscb_axi_arwlen;
+        axi_params_cfg.awlen = hscb_axi_arwlen;
+        hscb_set_axi_params((hscb_inst+i)->src_hscb_base_addr, &axi_params_cfg);
+    }
+
+    //enable
+    for (i=0; i<4; i++)
+        hscb_enable((hscb_inst+i)->src_hscb_base_addr);
+
+    //wait status
+    for (i=0; i<4; i++)
+        TEST_ASSERT(hscb_wait_status((hscb_inst+i)->src_hscb_base_addr, HSCB_STATUS_ACTIVE_LINK_mask), "Failed to waiting ACTIVE_LINK on HSCB");
+}
+
+void hscb_memcmp(hscb_instance_t* hscb_cfg)
+{
+#define HSCB_TO_VAL     1000
+    uint32_t timeout = 0;
+
+    while(
+           ((hscb_handler[0]==false) ||
+            (hscb_handler[1]==false) ||
+            (hscb_handler[2]==false) ||
+            (hscb_handler[3]==false)) && (timeout++ < 1000)
+            );
+
+    for (int i=0; i<4; i++)
+        rumboot_printf("hscb_handler[%d] = %d\n", i, hscb_handler[i]);
+
+    TEST_ASSERT(timeout<HSCB_TO_VAL, "HSCB finish is timed out");
+
+    TEST_ASSERT(memcmp((hscb_cfg + 0)->src_addr, (hscb_cfg + 1)->dst_addr, sizeof(test_hscbx_src_data))==0, "HSCB0->1 data compare error!\n");
+    TEST_ASSERT(memcmp((hscb_cfg + 1)->src_addr, (hscb_cfg + 0)->dst_addr, sizeof(test_hscbx_src_data))==0, "HSCB1->0 data compare error!\n");
+    TEST_ASSERT(memcmp((hscb_cfg + 2)->src_addr, (hscb_cfg + 3)->dst_addr, sizeof(test_hscbx_src_data))==0, "HSCB2->3 data compare error!\n");
+    TEST_ASSERT(memcmp((hscb_cfg + 3)->src_addr, (hscb_cfg + 2)->dst_addr, sizeof(test_hscbx_src_data))==0, "HSCB3->2 data compare error!\n");
+}
+#endif
 
 int main(void)
 {
@@ -627,7 +860,30 @@ int main(void)
 #endif
 
 #ifdef CHECK_AXI_PLB6_BURST
-    //test_oi10_greth ();
+    struct rumboot_irq_entry *tbl;
+
+    #define ARWLEN_ARR_SIZE     7
+    hscb_axi_arwlen_t       hscb_axi_arwlen_arr[ARWLEN_ARR_SIZE] = {
+            HSCB_ARWLEN_1,
+            HSCB_ARWLEN_2,
+            HSCB_ARWLEN_4,
+            HSCB_ARWLEN_7,
+            HSCB_ARWLEN_8,
+            HSCB_ARWLEN_12,
+            HSCB_ARWLEN_16
+                                                     };
+    rumboot_printf("Start test_oi10_hscb. Transmit/receive checks\n");
+    prepare_test_data();
+    tbl = create_hscb_irq_handlers(hscb_cfg);
+
+    for (int i=0; i<ARWLEN_ARR_SIZE; i++)
+    {
+        configure_hscb(hscb_cfg, hscb_axi_arwlen_arr[i]);
+        run_hscb_transfers_via_external_loopback(hscb_cfg);
+        hscb_memcmp(hscb_cfg);
+    }
+
+    delete_irq_handlers(tbl);
 #endif
 
 
