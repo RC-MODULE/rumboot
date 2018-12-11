@@ -27,9 +27,12 @@
 #define DEC_PERIOD  0x800
 
 enum {
-    TEC_START_CHECK_WD_MODE = TEST_EVENT_CODE_MIN,
-    TEC_START_CHECK_FIX_MODE,
-    TEC_START_CHECK_DEC_MODE,
+    TEC_START_CHECK_WD_MODE_CPU_CLK = TEST_EVENT_CODE_MIN,
+    TEC_START_CHECK_WD_MODE_CPU_CLK_4,
+    TEC_START_CHECK_FIX_MODE_CPU_CLK,
+    TEC_START_CHECK_FIX_MODE_CPU_CLK_4,
+    TEC_START_CHECK_DEC_MODE_CPU_CLK,
+    TEC_START_CHECK_DEC_MODE_CPU_CLK_4,
     TEC_START_CHECK_FREQUENCY_CPU_CLK,
     TEC_START_CHECK_FREQUENCY_CPU_CLK_4
 } test_event_code;
@@ -79,17 +82,17 @@ int check_from_CPU_CLK()
     WD_cnt  = 0;
 
     spr_write(SPR_CCR1,CTRL_CCR1_TSS_CPU_clock << CTRL_CCR1_TSS_i);
+
     test_event(TEC_START_CHECK_FREQUENCY_CPU_CLK);
+    test_event(TEC_START_CHECK_DEC_MODE_CPU_CLK);
+    test_event(TEC_START_CHECK_FIX_MODE_CPU_CLK);
+    test_event(TEC_START_CHECK_WD_MODE_CPU_CLK);
 
     spr_write(SPR_TBL_W,0);
     spr_write(SPR_TBU_W,0);
 
     spr_write(SPR_TCR, 0);
     spr_write(SPR_TSR_RC, 0xFFFFFFFF);
-
-    test_event(TEC_START_CHECK_DEC_MODE);
-    test_event(TEC_START_CHECK_FIX_MODE);
-    test_event(TEC_START_CHECK_WD_MODE);
 
     spr_write(SPR_DEC, DEC_PERIOD);
     spr_write(SPR_DECAR, DEC_PERIOD);
@@ -126,17 +129,17 @@ int check_from_EXT_CLK()
     WD_cnt  = 0;
 
     spr_write(SPR_CCR1,CTRL_CCR1_TSS_alt_clock << CTRL_CCR1_TSS_i);
+
     test_event(TEC_START_CHECK_FREQUENCY_CPU_CLK_4);
+    test_event(TEC_START_CHECK_DEC_MODE_CPU_CLK_4);
+    test_event(TEC_START_CHECK_FIX_MODE_CPU_CLK_4);
+    test_event(TEC_START_CHECK_WD_MODE_CPU_CLK_4);
 
     spr_write(SPR_TBL_W,0);
     spr_write(SPR_TBU_W,0);
 
     spr_write(SPR_TCR, 0);
     spr_write(SPR_TSR_RC, 0xFFFFFFFF);
-
-    test_event(TEC_START_CHECK_DEC_MODE);
-    test_event(TEC_START_CHECK_FIX_MODE);
-    test_event(TEC_START_CHECK_WD_MODE);
 
     spr_write(SPR_DEC, DEC_PERIOD);
     spr_write(SPR_DECAR, DEC_PERIOD);
