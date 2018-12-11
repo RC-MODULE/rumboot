@@ -1987,6 +1987,28 @@ endif()
       PREFIX p6axi_single
     )
 
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES test_oi10_plb6_axi.c
+      CFLAGS -DCHECK_PLB6_AXI_BURST
+      PREFIX p6axi_burst
+    )
+
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES test_oi10_plb6_axi.c
+      CFLAGS -DCHECK_AXI_PLB6_SINGLE
+      PREFIX axip6_single
+    )
+
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES test_oi10_plb6_axi.c
+      CFLAGS -DCHECK_AXI_PLB6_BURST
+      PREFIX axip6_burst
+    )
+
+
 endmacro()
 
 

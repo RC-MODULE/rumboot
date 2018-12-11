@@ -268,7 +268,7 @@ void check_transfer_via_external_loopback(uint32_t base_addr_src_eth,  uint8_t *
     //test_event(EVENT_CHECK_STOP_HPROT_MONITOR);
 }
 
-static void test_oi10_greth (){
+void test_oi10_greth (){
 	struct rumboot_irq_entry *tbl;
     rumboot_printf("Start test_oi10_greth. Transmit/receive checks\n");
     //test_event_send_test_id("test_oi10_greth");
@@ -350,7 +350,6 @@ void regs_check(uint32_t base_addr)
 }
 
 
-/*
 static void fill(uint64_t *s, uint64_t pattern, uint32_t size_in_bytes)
 {
     uint32_t i;
@@ -407,9 +406,8 @@ static uint32_t compare(uint32_t s_addr, uint32_t d_addr,uint32_t size_in_bytes)
     }
     return true;
 }
-*/
-/*
-static uint32_t check_dma2plb6_0_mem_to_mem(uint32_t source_ea, uint32_t dest_ea, uint64_t source_phys, uint64_t dest_phys)
+
+uint32_t check_dma2plb6_0_mem_to_mem(uint32_t source_ea, uint32_t dest_ea, uint64_t source_phys, uint64_t dest_phys)
 {
     dma2plb6_setup_info dma_info;
     channel_status status = {};
@@ -454,8 +452,8 @@ static uint32_t check_dma2plb6_0_mem_to_mem(uint32_t source_ea, uint32_t dest_ea
     }
     return true;
 }
-*/
-/*
+
+
 static void byte_plb_axi_test (uint32_t base_addr){
     uint32_t i = 0;
     uint8_t temp = 0;
@@ -475,8 +473,8 @@ static void byte_plb_axi_test (uint32_t base_addr){
         i++;
     } while (i!=0x100);
 }
-*/
-/*
+
+
 static void hword_plb_axi_test (uint32_t base_addr, uint32_t offc){
     uint32_t i = 0;
     uint16_t tdata = 0x1;
@@ -503,9 +501,7 @@ static void hword_plb_axi_test (uint32_t base_addr, uint32_t offc){
         i+=2;
     } while (tdata!=0x0);
 }
-*/
 
-/*
 static void word_plb_axi_test (uint32_t base_addr, uint32_t offc){
     uint32_t i = 0;
     uint32_t tdata = 0x1;
@@ -532,8 +528,8 @@ static void word_plb_axi_test (uint32_t base_addr, uint32_t offc){
         i+=4;
     } while (tdata!=0x0);
 }
-*/
-/*
+
+
 static void dword_plb_axi_test (uint32_t base_addr, uint32_t offc){
     uint32_t i = 0;
     uint64_t tdata = 0x1;
@@ -560,9 +556,8 @@ static void dword_plb_axi_test (uint32_t base_addr, uint32_t offc){
         i+=8;
     } while (tdata!=0x0);
 }
-*/
-/*
-static void single_plb6_axi_test (uint32_t base_addr) {
+
+void single_plb6_axi_test (uint32_t base_addr) {
     byte_plb_axi_test (base_addr);
 
     hword_plb_axi_test (base_addr, 0x0);
@@ -592,21 +587,19 @@ static void single_plb6_axi_test (uint32_t base_addr) {
     dword_plb_axi_test (base_addr, 0x6);
     dword_plb_axi_test (base_addr, 0x7);
 }
-*/
 
 int main(void)
 {
 
-	test_oi10_greth ();
-/*
-    #ifdef CHECK_PLB6_AXI_SINGLE
-        rumboot_putstring("Start test_plb6_axi_greth. Apply access to GRETH0 regs for checking PLB6->AXI convertion for single transactions\n");
-        regs_check(GRETH_0_BASE);
-        rumboot_printf("End check GRETH registers. \n");
-    #endif
-
+#ifdef CHECK_PLB6_AXI_SINGLE
+    rumboot_putstring("Start test_plb6_axi_greth. Apply access to GRETH0 regs for checking PLB6->AXI convertion for single transactions\n");
+    regs_check(GRETH_0_BASE);
+    rumboot_printf("End check GRETH registers. \n");
     single_plb6_axi_test (IM1_BASE);
+#endif
 
+
+#ifdef CHECK_PLB6_AXI_BURST
     uint32_t src_im1, dst_im1;
     volatile uint64_t src_im1_physical, dst_im1_physical;
 
@@ -627,10 +620,17 @@ int main(void)
                                             dst_im1,
                                             src_im1_physical,
                                             dst_im1_physical) == true, "IM1-to-IM1 failed");
+#endif
 
-
+#ifdef CHECK_AXI_PLB6_SINGLE
     test_oi10_greth ();
-*/
+#endif
+
+#ifdef CHECK_AXI_PLB6_BURST
+    //test_oi10_greth ();
+#endif
+
+
     rumboot_putstring("TEST complete");
     return 0;
 }
