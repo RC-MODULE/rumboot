@@ -84,6 +84,9 @@ int check_from_CPU_CLK()
     spr_write(SPR_TBL_W,0);
     spr_write(SPR_TBU_W,0);
 
+    spr_write(SPR_TCR, 0);
+    spr_write(SPR_TSR_RC, 0xFFFFFFFF);
+
     test_event(TEC_START_CHECK_DEC_MODE);
     test_event(TEC_START_CHECK_FIX_MODE);
     test_event(TEC_START_CHECK_WD_MODE);
@@ -128,6 +131,9 @@ int check_from_EXT_CLK()
     spr_write(SPR_TBL_W,0);
     spr_write(SPR_TBU_W,0);
 
+    spr_write(SPR_TCR, 0);
+    spr_write(SPR_TSR_RC, 0xFFFFFFFF);
+
     test_event(TEC_START_CHECK_DEC_MODE);
     test_event(TEC_START_CHECK_FIX_MODE);
     test_event(TEC_START_CHECK_WD_MODE);
@@ -148,6 +154,7 @@ int check_from_EXT_CLK()
                      | TIMER_TCR_WRC_No_WD_reset  << TIMER_TCR_WRC_i);
 
     spr_write(SPR_TSR_W, 1 << TIMER_TSR_ENW_i);
+
 
     rumboot_printf("Waiting for interrupts.\n");
     while(1){
