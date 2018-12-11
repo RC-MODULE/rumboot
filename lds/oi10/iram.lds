@@ -59,7 +59,7 @@ SECTIONS {
     rumboot_im2_heap_start      = IM2_MEMORY_BASE;
     rumboot_im2_heap_end        = IM2_MEMORY_BASE + IM2_MEMORY_SIZE;
 
-    rumboot_sram0_heap_start    = SRAM0_MEMORY_BASE;
+    rumboot_sram0_heap_start    = SRAM0_MEMORY_BASE + 4;
     rumboot_sram0_heap_end      = SRAM0_MEMORY_BASE + SRAM0_MEMORY_SIZE;
 
     rumboot_sdram_heap_start    = SDRAM_MEMORY_BASE;
