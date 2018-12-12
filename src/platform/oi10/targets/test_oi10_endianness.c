@@ -23,12 +23,17 @@
 #include <platform/devices/emi.h>
 #include <platform/devices/nor_1636RR4.h>
 
+#define EVENT_CHK_NOR_STORE_BE                      TEST_EVENT_CODE_MIN + 0
+#define EVENT_CHK_NOR_STORE_LE                      TEST_EVENT_CODE_MIN + 1
 
-#define EVENT_CHK_MEM_BE                            TEST_EVENT_CODE_MIN + 0
-#define EVENT_CHK_MEM_LE                            TEST_EVENT_CODE_MIN + 1
+#define EVENT_CHK_NOR_LOAD_BE                       TEST_EVENT_CODE_MIN + 2
+#define EVENT_CHK_NOR_LOAD_LE                       TEST_EVENT_CODE_MIN + 3
 
-#define EVENT_CHK_MEM_WR_BE                         TEST_EVENT_CODE_MIN + 2
-#define EVENT_CHK_MEM_WR_LE                         TEST_EVENT_CODE_MIN + 3
+#define EVENT_CHK_MEM_STORE_BE                      TEST_EVENT_CODE_MIN + 4
+#define EVENT_CHK_MEM_STORE_LE                      TEST_EVENT_CODE_MIN + 5
+
+#define EVENT_CHK_MEM_LOAD_BE                       TEST_EVENT_CODE_MIN + 6
+#define EVENT_CHK_MEM_LOAD_LE                       TEST_EVENT_CODE_MIN + 7
 
 /*                                      MMU_TLB_ENTRY(  ERPN,   RPN,        EPN,        DSIZ,                   IL1I,   IL1D,   W,      I,      M,      G,      E,                      UX, UW, UR,     SX, SW, SR      DULXE,  IULXE,      TS,     TID,                WAY,                BID,                V   )*/
 #define TLB_ENTRY_IM0_LITTLE_MIRROR_0   MMU_TLB_ENTRY(  0x010,  0x80000,    0x80060,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_LITTLE_END,  0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_UND,   0b1 )
@@ -144,136 +149,182 @@ void print_name_mem (uint32_t addr)
     if ( (addr >= PIPELINED_BASE) && (addr < PIPELINED_BASE + PIPELINED_SIZE) )            rumboot_printf ("PIPELINED\n");
 }
 
-void check_wr_mem_prog_or_hard (uint32_t base_addr, uint32_t code_event, uint8_t const *const data )
+void check_load (uint32_t base_addr, uint32_t code_event, uint8_t const *const data )
 {
     rumboot_printf ( "Check MEM:");
     print_name_mem(base_addr);
-    iowrite32 ((*(uint32_t*)data) , base_addr);
-    msync();
-#ifdef ENDIAN_HARD_CHECK
-    uint32_t event [] = {
-            code_event,
-            base_addr,
-            data[0],data[1],data[2],data[3] };
 
-    rumboot_platform_event_raise(EVENT_TESTEVENT, event, ARRAY_SIZE(event) );
+    iowrite8 (data[0] ,        base_addr + 0x00);
+    iowrite8 (data[1] ,        base_addr + 0x01);
+    iowrite8 (data[2] ,        base_addr + 0x02);
+    iowrite8 (data[3] ,        base_addr + 0x03);
+    msync();
+
+#ifdef ENDIAN_HARD_CHECK
+
+       uint32_t event [] = {
+               code_event,
+               base_addr};
+
+       rumboot_platform_event_raise(EVENT_TESTEVENT, event, ARRAY_SIZE(event) );
+
 #endif
 
-    uint32_t EVENT = code_event;
-    if (EVENT == EVENT_CHK_MEM_BE)
-    {
-        TEST_ASSERT ( ioread8 ( base_addr + 0x00) == data[0], "ERROR ENDIAN" );
-        TEST_ASSERT ( ioread8 ( base_addr + 0x01) == data[1], "ERROR ENDIAN" );
-        TEST_ASSERT ( ioread8 ( base_addr + 0x02) == data[2], "ERROR ENDIAN" );
-        TEST_ASSERT ( ioread8 ( base_addr + 0x03) == data[3], "ERROR ENDIAN" );
-    }
-    else
-    {
-        TEST_ASSERT ( ioread8 ( base_addr + 0x00) == data[3], "ERROR ENDIAN" );
-        TEST_ASSERT ( ioread8 ( base_addr + 0x01) == data[2], "ERROR ENDIAN" );
-        TEST_ASSERT ( ioread8 ( base_addr + 0x02) == data[1], "ERROR ENDIAN" );
-        TEST_ASSERT ( ioread8 ( base_addr + 0x03) == data[0], "ERROR ENDIAN" );
-    }
+       rumboot_printf ( "Check SOFT\n");
+
+       register uint32_t gpr;
+       asm volatile
+       (
+          "lis 7, 0\n\t"
+          "lwz 7, 0(%1)\n\t"
+          "mr %0, 7\n\t"
+          : "=r"(gpr)
+          : "r"(base_addr)
+          : "r7"
+       );
+
+       rumboot_printf ( "gpr %x\n",gpr );
+
+       if (code_event == EVENT_CHK_MEM_LOAD_BE)
+       {  TEST_ASSERT ( gpr == (   (data[0] << 24)
+                                 | (data[1] << 16)
+                                 | (data[2] << 8)
+                                 | (data[3] << 0) ), "ERROR ENDIAN" );
+       }
+       else
+       {
+           TEST_ASSERT ( gpr == (  (data[3] << 24)
+                                 | (data[2] << 16)
+                                 | (data[1] << 8)
+                                 | (data[0] << 0) ), "ERROR ENDIAN" );
+       }
 }
 
-void check_rd_mem_prog_not_nor (uint32_t base_addr, uint32_t code_event, uint8_t const *const data)
-{
-    rumboot_printf ( "Check MEM:" );
-    print_name_mem(base_addr);
-    uint32_t EVENT = code_event;
-    if (EVENT == EVENT_CHK_MEM_BE)
-    {
-        iowrite8 (data[0] ,        base_addr + 0x00);
-        iowrite8 (data[1] ,        base_addr + 0x01);
-        iowrite8 (data[2] ,        base_addr + 0x02);
-        iowrite8 (data[3] ,        base_addr + 0x03);
-    }
-    else
-    {
-        iowrite8 (data[3] ,        base_addr + 0x00);
-        iowrite8 (data[2] ,        base_addr + 0x01);
-        iowrite8 (data[1] ,        base_addr + 0x02);
-        iowrite8 (data[0] ,        base_addr + 0x03);
-    }
-    msync();
-    TEST_ASSERT ( ioread32 ( base_addr) == *((uint32_t*)data), "ERROR ENDIAN" );
-
-}
-
-void check_NOR_prog (uint32_t base_addr, uint32_t code_event, uint8_t const *const data, uint8_t const *const data0, uint8_t const *const data1)
+void check_store (uint32_t base_addr, uint32_t code_event, uint8_t const *const data)
 {
     rumboot_printf ( "Check MEM:");
     print_name_mem(base_addr);
-    rumboot_printf("Check WRITE\n");
-    nor_write32 ((*(uint32_t*)data) , base_addr);
-    msync();
+    uint32_t const data_value = (*(uint32_t*)data);
 
 #ifdef ENDIAN_HARD_CHECK
-    uint32_t event [] = {
-            code_event,
-            base_addr,
-            data[0],data[1],data[2],data[3] };
 
-    rumboot_platform_event_raise(EVENT_TESTEVENT, event, ARRAY_SIZE(event) );
+       uint32_t event [] = {
+               code_event,
+               base_addr};
+
+       rumboot_platform_event_raise(EVENT_TESTEVENT, event, ARRAY_SIZE(event) );
 #endif
+       rumboot_printf ( "Check SOFT\n");
 
-    uint32_t EVENT = code_event;
-    if (EVENT == EVENT_CHK_MEM_BE)
-    {
-        TEST_ASSERT ( ioread8 ( base_addr + 0x00)  == data[0], "ERROR ENDIAN" );
-        TEST_ASSERT ( ioread8 ( base_addr + 0x01)  == data[1], "ERROR ENDIAN" );
-        TEST_ASSERT ( ioread8 ( base_addr + 0x02)  == data[2], "ERROR ENDIAN" );
-        TEST_ASSERT ( ioread8 ( base_addr + 0x03)  == data[3], "ERROR ENDIAN" );
-    }
-    else
-    {
-        TEST_ASSERT ( ioread8 ( base_addr + 0x00)  == data[3], "ERROR ENDIAN" );
-        TEST_ASSERT ( ioread8 ( base_addr + 0x01)  == data[2], "ERROR ENDIAN" );
-        TEST_ASSERT ( ioread8 ( base_addr + 0x02)  == data[1], "ERROR ENDIAN" );
-        TEST_ASSERT ( ioread8 ( base_addr + 0x03)  == data[0], "ERROR ENDIAN" );
-    }
+       asm volatile
+       (
+           "lis 7, 0\n\t"
+           "mr 7, %1\n\t"
+           "stw 7, 0(%0)\n\t"
+           "msync \n\t"
+           "lis 7, 0\n\t"
+           ::"r"(base_addr),"r"(data_value)
+           : "r7"
+       );
 
-
-    rumboot_printf("Check READ\n");
-    nor_write32  ((*(uint32_t*)data0), base_addr + 0x04);
-    nor_write32  ((*(uint32_t*)data1), base_addr + 0x08);
-    msync();
-    if (EVENT == EVENT_CHK_MEM_BE)
-    {
-        TEST_ASSERT ( ioread32 ( base_addr + 0x05) == ( (data0[1] << 24)
-                                                      | (data0[2] << 16)
-                                                      | (data0[3] << 8)
-                                                      | (data1[0] << 0) ), "ERROR ENDIAN" );
-    }
-    else
-    {
-        TEST_ASSERT ( ioread32 ( base_addr + 0x05) == ( (data1[3] << 24)
-                                                      | (data0[0] << 16)
-                                                      | (data0[1] << 8)
-                                                      | (data0[2] << 0) ), "ERROR ENDIAN" );
-    }
+       if (code_event == EVENT_CHK_MEM_STORE_BE)
+       {
+           TEST_ASSERT ( ioread8 ( base_addr + 0x00)  == data[0], "ERROR ENDIAN" );
+           TEST_ASSERT ( ioread8 ( base_addr + 0x01)  == data[1], "ERROR ENDIAN" );
+           TEST_ASSERT ( ioread8 ( base_addr + 0x02)  == data[2], "ERROR ENDIAN" );
+           TEST_ASSERT ( ioread8 ( base_addr + 0x03)  == data[3], "ERROR ENDIAN" );
+       }
+       else
+       {
+           TEST_ASSERT ( ioread8 ( base_addr + 0x00)  == data[3], "ERROR ENDIAN" );
+           TEST_ASSERT ( ioread8 ( base_addr + 0x01)  == data[2], "ERROR ENDIAN" );
+           TEST_ASSERT ( ioread8 ( base_addr + 0x02)  == data[1], "ERROR ENDIAN" );
+           TEST_ASSERT ( ioread8 ( base_addr + 0x03)  == data[0], "ERROR ENDIAN" );
+       }
 }
 
-
-#ifdef ENDIAN_HARD_CHECK
-void check_mem_HARD (uint32_t base_addr, uint32_t code_event, uint8_t const *const data )
+void check_nor_load (uint32_t base_addr, uint32_t code_event,  uint8_t const *const data0, uint8_t const *const data1)
 {
+       rumboot_printf("Check LOAD\n");
 
-    rumboot_printf ( "Check MEM:");
-    print_name_mem(base_addr);
+       nor_write32  ((*(uint32_t*)data0), base_addr );
+       nor_write32  ((*(uint32_t*)data1), base_addr + 0x04);
+       msync();
 
-    uint32_t event [] = {
-            code_event,
-            base_addr,
-            data[0],data[1],data[2],data[3] };
+#ifdef ENDIAN_HARD_CHECK
 
-    rumboot_platform_event_raise(EVENT_TESTEVENT, event, ARRAY_SIZE(event) );
+       uint32_t event [] = {
+               code_event,
+               base_addr + 1};
 
-    TEST_ASSERT ( ioread32 ( base_addr ) == *((uint32_t*)data), "ERROR ENDIAN" );
+       rumboot_platform_event_raise(EVENT_TESTEVENT, event, ARRAY_SIZE(event) );
 
-}
 #endif
 
+       rumboot_printf ( "Check SOFT\n");
+
+       register uint32_t gpr;
+
+       asm volatile
+       (
+          "lis 7, 0\n\t"
+          "lwz 7, 0(%1)\n\t"
+          "mr %0, 7\n\t"
+          : "=r"(gpr)
+          : "r"(base_addr + 1)
+          : "r7"
+       );
+
+       if (code_event == EVENT_CHK_MEM_LOAD_BE)
+       {
+           TEST_ASSERT ( gpr == ( (data0[1] << 24)
+                                                         | (data0[2] << 16)
+                                                         | (data0[3] << 8)
+                                                         | (data1[0] << 0) ), "ERROR ENDIAN" );
+       }
+       else
+       {
+           TEST_ASSERT ( gpr == ( (data1[3] << 24)
+                                                         | (data0[0] << 16)
+                                                         | (data0[1] << 8)
+                                                         | (data0[2] << 0) ), "ERROR ENDIAN" );
+       }
+}
+
+void check_nor_store (uint32_t base_addr, uint32_t code_event, uint8_t const *const data)
+{
+       rumboot_printf("Check STORE\n");
+       uint32_t const data_value = (*(uint32_t*)data);
+       nor_write32   (data_value, base_addr);
+       rumboot_printf ( "Check SOFT\n");
+
+       if (code_event == EVENT_CHK_NOR_STORE_BE)
+       {
+           TEST_ASSERT ( ioread8 ( base_addr + 0x00)  == data[0], "ERROR ENDIAN" );
+           TEST_ASSERT ( ioread8 ( base_addr + 0x01)  == data[1], "ERROR ENDIAN" );
+           TEST_ASSERT ( ioread8 ( base_addr + 0x02)  == data[2], "ERROR ENDIAN" );
+           TEST_ASSERT ( ioread8 ( base_addr + 0x03)  == data[3], "ERROR ENDIAN" );
+       }
+       else
+       {
+           TEST_ASSERT ( ioread8 ( base_addr + 0x00)  == data[3], "ERROR ENDIAN" );
+           TEST_ASSERT ( ioread8 ( base_addr + 0x01)  == data[2], "ERROR ENDIAN" );
+           TEST_ASSERT ( ioread8 ( base_addr + 0x02)  == data[1], "ERROR ENDIAN" );
+           TEST_ASSERT ( ioread8 ( base_addr + 0x03)  == data[0], "ERROR ENDIAN" );
+       }
+#ifdef ENDIAN_HARD_CHECK
+
+       uint32_t event [] = {
+               code_event,
+               base_addr,
+               data_value
+       };
+
+       rumboot_platform_event_raise(EVENT_TESTEVENT, event, ARRAY_SIZE(event) );
+
+#endif
+
+}
 
 int main ()
 {
@@ -298,79 +349,56 @@ int main ()
     static uint8_t const data_15[4] = {0x16, 0x70, 0x01, 0x80};
     static uint8_t const data_16[4] = {0x08, 0x38, 0x14, 0x30};
     static uint8_t const data_17[4] = {0x34, 0x08, 0x15, 0x31};
-    static uint8_t const data_18[4] = {0x04, 0x26, 0x85, 0x92};
-    static uint8_t const data_19[4] = {0x22, 0x41, 0x99, 0x22};
 
-    rumboot_printf("=========> Check BigEndian\n");
+    rumboot_printf("\nCheck BigEndian\n");
     TLB_BE ();
-    rumboot_printf("=========> Check LOAD\n");
-    check_rd_mem_prog_not_nor (im0_array_mirror,    EVENT_CHK_MEM_BE, data_10);
-    //check_rd_mem_prog_not_nor (IM1_BASE,            EVENT_CHK_MEM_BE, data_11);
-    //check_rd_mem_prog_not_nor (IM2_BASE,            EVENT_CHK_MEM_BE, data_19);
-    check_rd_mem_prog_not_nor (SRAM0_BASE,          EVENT_CHK_MEM_BE, data_12);
-    check_rd_mem_prog_not_nor (SRAM1_BASE,          EVENT_CHK_MEM_BE, data_14);
-    check_rd_mem_prog_not_nor (SDRAM_BASE,          EVENT_CHK_MEM_BE, data_15);
-    check_rd_mem_prog_not_nor (SSRAM_BASE,          EVENT_CHK_MEM_BE, data_16);
-    check_rd_mem_prog_not_nor (PIPELINED_BASE,      EVENT_CHK_MEM_BE, data_17);
-    rumboot_printf("=========> Check STORE\n");
-    check_wr_mem_prog_or_hard (im0_array_mirror,    EVENT_CHK_MEM_BE, data_0);
-    //check_wr_mem_prog_or_hard (IM1_BASE,            EVENT_CHK_MEM_BE, data_1);
-    //check_wr_mem_prog_or_hard (IM2_BASE,            EVENT_CHK_MEM_BE, data_18);
-    check_wr_mem_prog_or_hard (SRAM0_BASE,          EVENT_CHK_MEM_BE, data_2);
-    check_wr_mem_prog_or_hard (SRAM1_BASE,          EVENT_CHK_MEM_BE, data_4);
-    check_wr_mem_prog_or_hard (SDRAM_BASE,          EVENT_CHK_MEM_BE, data_5);
-    check_wr_mem_prog_or_hard (SSRAM_BASE,          EVENT_CHK_MEM_BE, data_6);
-    check_wr_mem_prog_or_hard (PIPELINED_BASE,      EVENT_CHK_MEM_BE, data_7);
-    rumboot_printf("=========> Check NOR\n");
-    check_NOR_prog (NOR_BASE, EVENT_CHK_MEM_BE, data_13, data_8, data_9);
-#ifdef ENDIAN_HARD_CHECK
-    rumboot_printf("=========> Check WRITE HARD\n");
-    check_mem_HARD (im0_array_mirror,   EVENT_CHK_MEM_WR_BE, data_0);
-    //check_mem_HARD (IM1_BASE,           EVENT_CHK_MEM_WR_BE, data_1);
-    //check_mem_HARD (IM2_BASE,           EVENT_CHK_MEM_WR_BE, data_18);
-    check_mem_HARD (SRAM0_BASE,         EVENT_CHK_MEM_WR_BE, data_2);
-    check_mem_HARD (NOR_BASE,           EVENT_CHK_MEM_WR_BE, data_3);
-    check_mem_HARD (SRAM1_BASE,         EVENT_CHK_MEM_WR_BE, data_4);
-    check_mem_HARD (SDRAM_BASE,         EVENT_CHK_MEM_WR_BE, data_5);
-    check_mem_HARD (SSRAM_BASE,         EVENT_CHK_MEM_WR_BE, data_6);
-    check_mem_HARD (PIPELINED_BASE,     EVENT_CHK_MEM_WR_BE, data_7);
-#endif
 
-    rumboot_printf("=========> Check LittleEndian\n");
+    rumboot_printf("\nCheck LOAD\n");
+        check_load (im0_array_mirror,    EVENT_CHK_MEM_LOAD_BE, data_1);
+        check_load (SRAM0_BASE,          EVENT_CHK_MEM_LOAD_BE, data_2);
+        check_load (SRAM1_BASE,          EVENT_CHK_MEM_LOAD_BE, data_3);
+        check_load (SDRAM_BASE,          EVENT_CHK_MEM_LOAD_BE, data_4);
+        check_load (SSRAM_BASE,          EVENT_CHK_MEM_LOAD_BE, data_5);
+        check_load (PIPELINED_BASE,      EVENT_CHK_MEM_LOAD_BE, data_6);
+
+    rumboot_printf("\nCheck STORE\n");
+        check_store (im0_array_mirror,    EVENT_CHK_MEM_STORE_BE, data_7);
+        check_store (SRAM0_BASE,          EVENT_CHK_MEM_STORE_BE, data_8);
+        check_store (SRAM1_BASE,          EVENT_CHK_MEM_STORE_BE, data_9);
+        check_store (SDRAM_BASE,          EVENT_CHK_MEM_STORE_BE, data_10);
+        check_store (SSRAM_BASE,          EVENT_CHK_MEM_STORE_BE, data_11);
+        check_store (PIPELINED_BASE,      EVENT_CHK_MEM_STORE_BE, data_12);
+
+    rumboot_printf("\nCheck NOR\n");
+    check_nor_load (NOR_BASE, EVENT_CHK_MEM_LOAD_BE, data_8, data_9);
+    check_nor_store (NOR_BASE + 0x08, EVENT_CHK_NOR_STORE_BE, data_10);
+
+    rumboot_printf("\nCheck LittleEndian\n");
     TLB_LE ();
-    rumboot_printf("=========> Check LOAD\n");
-    check_rd_mem_prog_not_nor (im0_array_mirror,    EVENT_CHK_MEM_LE, data_0);
-    check_rd_mem_prog_not_nor (IM1_BASE,            EVENT_CHK_MEM_LE, data_1);
-    check_rd_mem_prog_not_nor (IM2_BASE,            EVENT_CHK_MEM_LE, data_19);
-    check_rd_mem_prog_not_nor (SRAM0_BASE,          EVENT_CHK_MEM_LE, data_2);
-    check_rd_mem_prog_not_nor (SRAM1_BASE,          EVENT_CHK_MEM_LE, data_4);
-    check_rd_mem_prog_not_nor (SDRAM_BASE,          EVENT_CHK_MEM_LE, data_5);
-    check_rd_mem_prog_not_nor (SSRAM_BASE,          EVENT_CHK_MEM_LE, data_6);
-    check_rd_mem_prog_not_nor (PIPELINED_BASE,      EVENT_CHK_MEM_LE, data_7);
-    rumboot_printf("=========> Check STORE\n");
-    check_wr_mem_prog_or_hard (im0_array_mirror,    EVENT_CHK_MEM_LE, data_10);
-    check_wr_mem_prog_or_hard (IM1_BASE,            EVENT_CHK_MEM_LE, data_11);
-    check_wr_mem_prog_or_hard (IM2_BASE,            EVENT_CHK_MEM_LE, data_18);
-    check_wr_mem_prog_or_hard (SRAM0_BASE,          EVENT_CHK_MEM_LE, data_12);
-    check_wr_mem_prog_or_hard (SRAM1_BASE,          EVENT_CHK_MEM_LE, data_14);
-    check_wr_mem_prog_or_hard (SDRAM_BASE,          EVENT_CHK_MEM_LE, data_15);
-    check_wr_mem_prog_or_hard (SSRAM_BASE,          EVENT_CHK_MEM_LE, data_16);
-    check_wr_mem_prog_or_hard (PIPELINED_BASE,      EVENT_CHK_MEM_LE, data_17);
-    rumboot_printf("=========> Check NOR\n");
-    check_NOR_prog (NOR_BASE + 0x10, EVENT_CHK_MEM_LE, data_3, data_8, data_9);
-#ifdef ENDIAN_HARD_CHECK
-    rumboot_printf("=========> Check WRITE HARD\n");
-    check_mem_HARD (im0_array_mirror,   EVENT_CHK_MEM_WR_LE, data_10);
-    check_mem_HARD (IM1_BASE,           EVENT_CHK_MEM_WR_LE, data_11);
-    check_mem_HARD (IM2_BASE,           EVENT_CHK_MEM_WR_LE, data_18);
-    check_mem_HARD (SRAM0_BASE,         EVENT_CHK_MEM_WR_LE, data_12);
-    check_mem_HARD (NOR_BASE,           EVENT_CHK_MEM_WR_LE, data_13);
-    check_mem_HARD (SRAM1_BASE,         EVENT_CHK_MEM_WR_LE, data_14);
-    check_mem_HARD (SDRAM_BASE,         EVENT_CHK_MEM_WR_LE, data_15);
-    check_mem_HARD (SSRAM_BASE,         EVENT_CHK_MEM_WR_LE, data_16);
-    check_mem_HARD (PIPELINED_BASE,     EVENT_CHK_MEM_WR_LE, data_17);
-#endif
 
+    rumboot_printf("\nCheck LOAD\n");
+    check_load (im0_array_mirror,    EVENT_CHK_MEM_LOAD_LE, data_10);
+    check_load (IM1_BASE,            EVENT_CHK_MEM_LOAD_LE, data_11);
+    check_load (IM2_BASE,            EVENT_CHK_MEM_LOAD_LE, data_12);
+    check_load (SRAM0_BASE,          EVENT_CHK_MEM_LOAD_LE, data_13);
+    check_load (SRAM1_BASE,          EVENT_CHK_MEM_LOAD_LE, data_14);
+    check_load (SDRAM_BASE,          EVENT_CHK_MEM_LOAD_LE, data_15);
+    check_load (SSRAM_BASE,          EVENT_CHK_MEM_LOAD_LE, data_16);
+    check_load (PIPELINED_BASE,      EVENT_CHK_MEM_LOAD_LE, data_17);
+
+    rumboot_printf("\nCheck STORE\n");
+    check_store (im0_array_mirror,    EVENT_CHK_MEM_STORE_LE, data_1);
+    check_store (IM1_BASE,            EVENT_CHK_MEM_STORE_LE, data_1);
+    check_store (IM2_BASE,            EVENT_CHK_MEM_STORE_LE, data_2);
+    check_store (SRAM0_BASE,          EVENT_CHK_MEM_STORE_LE, data_3);
+    check_store (SRAM1_BASE,          EVENT_CHK_MEM_STORE_LE, data_4);
+    check_store (SDRAM_BASE,          EVENT_CHK_MEM_STORE_LE, data_5);
+    check_store (SSRAM_BASE,          EVENT_CHK_MEM_STORE_LE, data_6);
+    check_store (PIPELINED_BASE,      EVENT_CHK_MEM_STORE_LE, data_7);
+
+    rumboot_printf("\nCheck NOR\n");
+    check_nor_load (NOR_BASE + 0x10, EVENT_CHK_MEM_LOAD_LE, data_10, data_11);
+    check_nor_store (NOR_BASE + 0x18, EVENT_CHK_NOR_STORE_LE, data_0);
     rumboot_printf("TEST OK\n");
     return 0;
 }
