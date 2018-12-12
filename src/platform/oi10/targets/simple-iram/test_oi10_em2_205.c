@@ -93,12 +93,14 @@ static void irq_handler( int irq, void *arg ) {
 
                     break;
 
+
                 case emi_single_error_irq_source_SSRAM:
 
                     TEST_ASSERT(dcr_read(DCR_EM2_EMI_BASE + EMI_IRR) == 0x000010, "SSRAM: expected single error.");
                     dcr_write(DCR_EM2_EMI_BASE + EMI_IRR_RST, 0x0010);
 
                     break;
+
 
                 case emi_single_error_irq_source_SDRAM:
 
@@ -107,12 +109,14 @@ static void irq_handler( int irq, void *arg ) {
 
                     break;
 
+
                 case emi_single_error_irq_source_NOR:
 
                     TEST_ASSERT(dcr_read(DCR_EM2_EMI_BASE + EMI_IRR) == 0x000400, "NOR: expected single error.");
                     dcr_write(DCR_EM2_EMI_BASE + EMI_IRR_RST, 0x0400);
 
                     break;
+
 
                 default:
                     rumboot_putstring("Unexpected EMI error irq source.");
@@ -122,6 +126,7 @@ static void irq_handler( int irq, void *arg ) {
             emi_single_error_int_occured = true;
 
             break;
+
 
         case EMI_CNTR_INT_1:
             rumboot_putstring("EMI_CNTR_INT_1 occured.\n");
@@ -135,12 +140,14 @@ static void irq_handler( int irq, void *arg ) {
 
                     break;
 
+
                 case emi_double_error_irq_source_SSRAM:
 
                     TEST_ASSERT(dcr_read(DCR_EM2_EMI_BASE + EMI_IRR) == 0x000020, "SSRAM: expected single error.");
                     dcr_write(DCR_EM2_EMI_BASE + EMI_IRR_RST, 0x0020);
 
                     break;
+
 
                 case emi_double_error_irq_source_SDRAM:
 
@@ -149,12 +156,14 @@ static void irq_handler( int irq, void *arg ) {
 
                     break;
 
+
                 case emi_double_error_irq_source_NOR:
 
                     TEST_ASSERT(dcr_read(DCR_EM2_EMI_BASE + EMI_IRR) == 0x000800, "NOR: expected single error.");
                     dcr_write(DCR_EM2_EMI_BASE + EMI_IRR_RST, 0x0800);
 
                     break;
+
 
                 default:
                     rumboot_putstring("Unexpected EMI error irq source.");
@@ -165,6 +174,7 @@ static void irq_handler( int irq, void *arg ) {
 
             break;
 
+
         case MCLFIR_REC_INT:
             rumboot_putstring("MCLFIR_REC_INT occured.\n");
 
@@ -174,12 +184,10 @@ static void irq_handler( int irq, void *arg ) {
             dcr_write(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_ERR_AND1, 0x00000000);
             dcr_write(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_LFIR_AND, 0x00000000);
 
-            dcr_write(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_ERR_ACTION0, 0x00000020);
-            dcr_write(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_ERR_ACTION1, 0x00002400);
-
             emi_recoverable_error_int_occured = true;
 
             break;
+
 
         case MCLFIR_UNREC_INT:
             rumboot_putstring("MCLFIR_UNREC_INT occured.\n");
@@ -190,12 +198,10 @@ static void irq_handler( int irq, void *arg ) {
             dcr_write(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_ERR_AND1, 0x00000000);
             dcr_write(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_LFIR_AND, 0x00000000);
 
-            dcr_write(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_ERR_ACTION0, 0x00000000);
-            dcr_write(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_ERR_ACTION1, 0x00000000);
-
             emi_unrecoverable_error_int_occured = true;
 
             break;
+
 
         default:
             rumboot_putstring("Unexpected interrupt occured!\n");
@@ -212,6 +218,9 @@ bool check_data()
     dcr_write(DCR_EM2_EMI_BASE + EMI_ECNT53, 0x00); //clear reg
 
     rumboot_putstring("Checking SRAM0 single error ... \n");
+
+    dcr_write(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_ERR_ACTION0, 0x00000000);
+    dcr_write(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_ERR_ACTION1, 0x00000000);
 
     error_irq_source = emi_single_error_irq_source_SRAM0;
 
@@ -240,6 +249,9 @@ bool check_data()
 
     rumboot_putstring("Checking SRAM0 double error ... \n");
 
+    dcr_write(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_ERR_ACTION0, 0xFFFFFFFF);
+    dcr_write(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_ERR_ACTION1, 0xFFFFFFFF);
+
     error_irq_source = emi_double_error_irq_source_SRAM0;
 
     reg = ioread32(ADDR_SRAM0_DE);
@@ -265,6 +277,9 @@ bool check_data()
 
 
     rumboot_putstring("Checking SSRAM single error ... \n");
+
+    dcr_write(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_ERR_ACTION0, 0x00000000);
+    dcr_write(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_ERR_ACTION1, 0x00000000);
 
     error_irq_source = emi_single_error_irq_source_SSRAM;
 
@@ -293,6 +308,9 @@ bool check_data()
 
     rumboot_putstring("Checking SSRAM double error ... \n");
 
+    dcr_write(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_ERR_ACTION0, 0xFFFFFFFF);
+    dcr_write(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_ERR_ACTION1, 0xFFFFFFFF);
+
     error_irq_source = emi_double_error_irq_source_SSRAM;
 
     reg = ioread32(ADDR_SSRAM_DE);
@@ -318,6 +336,9 @@ bool check_data()
 
 
     rumboot_putstring("Checking SDRAM single error ... \n");
+
+    dcr_write(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_ERR_ACTION0, 0x00000000);
+    dcr_write(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_ERR_ACTION1, 0x00000000);
 
     error_irq_source = emi_single_error_irq_source_SDRAM;
 
@@ -346,6 +367,9 @@ bool check_data()
 
     rumboot_putstring("Checking SDRAM double error ... \n");
 
+    dcr_write(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_ERR_ACTION0, 0xFFFFFFFF);
+    dcr_write(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_ERR_ACTION1, 0xFFFFFFFF);
+
     error_irq_source = emi_double_error_irq_source_SDRAM;
 
     reg = ioread32(ADDR_SDRAM_DE);
@@ -371,6 +395,9 @@ bool check_data()
 
 
     rumboot_putstring("Checking NOR single error ... \n");
+
+    dcr_write(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_ERR_ACTION0, 0x00000000);
+    dcr_write(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_ERR_ACTION1, 0x00000000);
 
     error_irq_source = emi_single_error_irq_source_NOR;
 
@@ -398,6 +425,9 @@ bool check_data()
 
 
     rumboot_putstring("Checking NOR double error ... \n");
+
+    dcr_write(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_ERR_ACTION0, 0xFFFFFFFF);
+    dcr_write(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_ERR_ACTION1, 0xFFFFFFFF);
 
     error_irq_source = emi_double_error_irq_source_NOR;
 
