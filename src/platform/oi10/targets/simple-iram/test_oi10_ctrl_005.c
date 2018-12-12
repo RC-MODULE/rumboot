@@ -16,10 +16,7 @@
 #include <platform/interrupts.h>
 #include <rumboot/testsuite.h>
 #include <regs/regs_sp805.h>
-#include <rumboot/testsuite.h>
-#include <platform/devices.h>
 #include <rumboot/platform.h>
-
 
 #define TIMER_CYCLES 60
 
@@ -117,7 +114,7 @@ static bool wd_test( uint32_t structure)
            .width = 32,
            .load = 100,
     };
-    dcr_write(DCR_WATCHDOG_BASE + WD_REG_LOCK, 0x1ACCE551);
+    dcr_write(base_addr + WD_REG_LOCK, 0x1ACCE551);
     for(i = 0; i < TIMER_CYCLES + stru->wd_index; i++)
     {
         sp805_config( base_addr, &config_FREE_RUN);
@@ -127,7 +124,7 @@ static bool wd_test( uint32_t structure)
         {
             rumboot_printf("Watchdog load value %d\n", stru->wd_index);
         }
-        sp805_enable(stru->base_addr);
+        sp805_enable(base_addr);
     }
     return true;
 }
@@ -135,14 +132,15 @@ static bool wd_test( uint32_t structure)
 static bool wd_test2( uint32_t structure)
 {
     struct s805_instance *stru = ( struct s805_instance * )structure;
+    uint32_t base_addr = stru->base_addr;
     int i;
 
-    dcr_write(DCR_WATCHDOG_BASE + WD_REG_LOCK, 0x1ACCE551);
+    dcr_write(base_addr + WD_REG_LOCK, 0x1ACCE551);
     for(i = 0; i < TIMER_CYCLES + stru->wd_index; i++)
     {
         if(stru->wd_index == WD_REG_ITCR)
         {
-            rumboot_printf("Watchdog WD_REG_ITCR %d\n", stru->wd_index);
+             rumboot_printf("Watchdog WD_REG_ITCR %d\n", stru->wd_index);
         }
         else
         {
@@ -152,7 +150,7 @@ static bool wd_test2( uint32_t structure)
             }
         }
     }
-    i = dcr_read(DCR_WATCHDOG_BASE+WD_REG_ITCR);
+    i = dcr_read(base_addr + WD_REG_ITCR);
     rumboot_printf("WD_REG_ITCR %d\n", i);
     sp805_enable(stru->base_addr);
     return true;
@@ -189,12 +187,5 @@ uint32_t main(void)
     rumboot_irq_sei();
 
     result = test_suite_run(NULL, &wd_testlist);
-
-     if(!result)
-     {
-         rumboot_printf("Checked TEST_OK\n");
-         return 0;
-     }
-     rumboot_printf("Checked TEST_ERROR\n");
-     return result;
+    return (!result) ? rumboot_printf("CHECKED TEST_OK\n"), 1: rumboot_printf("CHECKED TEST_ERROR\n"), 0;
 }
