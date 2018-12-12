@@ -19,10 +19,7 @@
 #include <rumboot/testsuite.h>
 #include <platform/devices.h>
 #include <regs/regs_sp804.h>
-
 #include <rumboot/platform.h>
-#include <platform/interrupts.h>
-#include <platform/regs/fields/mpic128.h>
 
 #define TIMER0_CYCLES           1
 #define TIMER1_CYCLES           2
@@ -112,18 +109,18 @@ static void handler0( int irq, void *arg )
 {
     struct s804_instance *a = ( struct s804_instance * )arg;
     a->timer0_irq = a->timer0_irq + 1;
-    rumboot_printf( "IRQ 0 arrived  \n" );
-    rumboot_printf( "sp804_%d timer 0 INT # %d  \n", a->dit_index, a->timer0_irq );
-    sp804_clrint( a->base_addr, 0 );
+    rumboot_printf("IRQ 0 arrived\n");
+    rumboot_printf("sp804_%d timer 0 INT # %d  \n", a->dit_index, a->timer0_irq);
+    sp804_clrint( a->base_addr, 0);
 }
 
 static void handler1( int irq, void *arg )
 {
     struct s804_instance *a = ( struct s804_instance * )arg;
     a->timer1_irq = a->timer1_irq + 1;
-    rumboot_printf( "IRQ 1 arrived  \n" );
-    rumboot_printf( "sp804_%d timer 1 INT # %d  \n", a->dit_index, a->timer1_irq );
-    sp804_clrint( a->base_addr, 1 );
+    rumboot_printf("IRQ 1 arrived\n");
+    rumboot_printf("sp804_%d timer 1 INT # %d  \n", a->dit_index, a->timer1_irq);
+    sp804_clrint( a->base_addr, 1);
 }
 
 bool test_dit_timers( uint32_t structure )
@@ -152,9 +149,9 @@ bool test_dit_timers( uint32_t structure )
 
     for( int i = 0; i < TIMER0_CYCLES + stru->dit_index; i++ )
     {
-        sp804_config( base_addr, &config_0, 0 );
-        sp804_enable( base_addr, 0 );
-        while( sp804_get_value( base_addr, 0 ) )
+        sp804_config(base_addr, &config_0, 0);
+        sp804_enable(base_addr, 0);
+        while(sp804_get_value(base_addr, 0))
         {
         };
         c++;
@@ -167,6 +164,7 @@ bool test_dit_timers( uint32_t structure )
         };
         d++;
     }
+
     if( stru->timer0_irq == TIMER0_CYCLES + stru->dit_index )
     {
         rumboot_printf( "Timer 0 test OK \n" );
@@ -190,36 +188,10 @@ bool test_dit_timers( uint32_t structure )
     return true;
 }
 
-static bool test_dit_timers1( uint32_t structure)
-{
-    struct s804_instance *stru = ( struct s804_instance * )structure;
-    uint32_t base_addr = stru->base_addr;
-    int i;
-    struct sp804_conf config_FREE_RUN =
-    {
-           .mode = FREERUN,
-           .interrupt_enable = 1,
-           .clock_division = 1,
-           .width = 32,
-           .load = 100,
-    };
-    for(i = 0; i < TIMER_CYCLES + stru->dit_index; i++)
-    {
-        sp804_config( base_addr, &config_FREE_RUN, 0 );
-        sp804_enable( base_addr, 1 );
-
-        if(stru->dit_index == DIT_CTRL_INTEN)
-        {
-            rumboot_printf("Timers load value %d\n", stru->dit_index);
-        }
-        sp804_enable(stru->base_addr, 1);
-    }
-    return true;
-}
-
 static bool test_dit_timers2( uint32_t structure)
 {
     struct s804_instance *stru = ( struct s804_instance * )structure;
+    uint32_t base_addr = stru->base_addr;
     int i;
     for(i = 0; i < TIMER_CYCLES + stru->dit_index; i++)
     {
@@ -235,7 +207,7 @@ static bool test_dit_timers2( uint32_t structure)
             }
         }
     }
-    i = dcr_read(DCR_TIMERS_BASE + DIT_REG_ITCR);
+    i = dcr_read(base_addr + DIT_REG_ITCR);
     rumboot_printf("DIT_REG_ITCR %d\n", i);
     sp804_enable(stru->base_addr, 0);
     return true;
@@ -249,11 +221,9 @@ static struct s804_instance in[] =
 };
 
 TEST_SUITE_BEGIN(dit_testlist, "SP804 IRQ TEST")
-TEST_ENTRY("SP804_0", test_dit_timers, (uint32_t) &in[0]),
-TEST_ENTRY("SP804_0", test_dit_timers1, (uint32_t) &in[0]),
 TEST_ENTRY("SP804_0", test_dit_timers2, (uint32_t) &in[0]),
+TEST_ENTRY("SP804_0", test_dit_timers, (uint32_t) &in[0]),
 #ifdef CHECK_REGS
-    //check_timers_default_ro_val();
 TEST_ENTRY("SP804_0", check_default_ro_val, (uint32_t, &in[0]));
 TEST_ENTRY("SP804_0", check_default_rw_val, (uint32_t, &in[0]));
 #endif
@@ -261,7 +231,6 @@ TEST_SUITE_END();
 
 int main(void)
 {
-// Set up interrupt handlers
     register int result;
     rumboot_printf( "SP804 test START\n" );
     rumboot_irq_cli();
@@ -273,14 +242,6 @@ int main(void)
     rumboot_irq_enable( DIT_INT0 );
     rumboot_irq_enable( DIT_INT1 );
     rumboot_irq_sei();
-
     result = test_suite_run( NULL, &dit_testlist );
-
-    if(!result)
-    {
-        rumboot_printf("Checked TEST_OK\n");
-        return 0;
-    }
-    rumboot_printf("Checked TEST_ERROR\n");
-    return result;
+    return (!result) ? rumboot_printf("CHECKED TEST_OK\n"), 1  : rumboot_printf("CHECKED TEST_ERROR\n"), 0;
 }
