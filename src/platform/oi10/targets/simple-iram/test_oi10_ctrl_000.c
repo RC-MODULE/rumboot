@@ -4,19 +4,49 @@
 #include <string.h>
 #include <rumboot/printf.h>
 #include <rumboot/regpoker.h>
-#include <rumboot/printf.h>
 #include <rumboot/io.h>
+#include <rumboot/testsuite.h>
 #include <platform/devices.h>
+#include <rumboot/irq.h>
+#include <platform/interrupts.h>
+#include <rumboot/platform.h>
 #include <platform/oi10/platform/regs/regs_sctl.h>
 
-static uint8_t dcr_check_ctrl_regs_ro(uint32_t base_addr)
+//#include <platform/regs/regs_sctl.h>
+//#include <rumboot/include/regs/regs_sctl.h>
+
+/*
+#include <stdio.h>
+#include <stdint.h>
+#include <rumboot/io.h>
+#include <rumboot/irq.h>
+#include <rumboot/printf.h>
+#include <rumboot/regpoker.h>
+#include <platform/devices.h>
+#include <devices/sp805.h>
+#include <platform/interrupts.h>
+#include <rumboot/testsuite.h>
+#include <regs/regs_sp805.h>
+#include <rumboot/platform.h>
+*/
+
+/*
+struct ctrl_instance_i {
+    int sctl_irq;
+    uint32_t base_addr;
+    int sctl_index;
+} sctl_i;
+*/
+
+//#ifdef CHECK_REGS
+static uint8_t check_ctrl_regs_ro(uint32_t base_addr)
 {   
     rumboot_printf("Checking sctl registers default value...\n");
-
-     struct regpoker_checker check_array[] = {
-     { "KMBIST_CHAIN_SF_i", REGPOKER_READ_DCR, KMBIST_CHAIN_SF_0 << 6, 0b0, 0b1 },
-     { "KMBIST_CHAIN_SF_i", REGPOKER_READ_DCR, KMBIST_CHAIN_SF_0 << 5, 0b0, 0b1 },
-     { "PPC_SYS_CONF", REGPOKER_READ_DCR, PPC_SYS_CONF << 3, 0b0, 0b1 },
+    struct regpoker_checker check_array[] = {
+     { "PPC_SYS_CONF", REGPOKER_READ_DCR, PPC_SYS_CONF, 0x0, 0x1 },
+   //  { "KMBIST_CHAIN_SF_i", REGPOKER_READ_DCR, KMBIST_CHAIN_SF_0, 0b00000, 0b11111 },
+   //  { "KMBIST_CHAIN_SF_i", REGPOKER_READ_DCR, KMBIST_CHAIN_SF_0, 0b000000, 0b111111 },
+     { "PPC_SYS_CONF", REGPOKER_READ_DCR, PPC_SYS_CONF, 0b000, 0b111 },
      {  }
     };
       if( rumboot_regpoker_check_array( check_array, base_addr ) == 0 )
@@ -28,18 +58,25 @@ static uint8_t dcr_check_ctrl_regs_ro(uint32_t base_addr)
       return 1;
 }
 
-
-static int dcr_check_ctrl_regs_rw(uint32_t base_addr)
+static int check_ctrl_regs_rw(uint32_t base_addr)
 {
     rumboot_printf("Checking sctl registers for rw value...\n");
 
     struct regpoker_checker check_array[] = {
-    { "KMBIST_CHAIN_SF_i", REGPOKER_READ_DCR, KMBIST_CHAIN_SF_0 << 3, 0b0, 0b1 },
-   // { "KMBIST_CHAIN_SF_i", REGPOKER_WRITE_DCR, KMBIST_CHAIN_SF_0 << 3, 0b0, 0b1 },
-    { "PPC_SYS_CONF", REGPOKER_READ_DCR, PPC_SYS_CONF << 4, 0b0, 0b1},
-  //  { "PPC_SYS_CONF", REGPOKER_WRITE_DCR, PPC_SYS_CONF << 4, 0b1, 0b1},
-    { "PPC_SYS_CONF", REGPOKER_READ_DCR, PPC_SYS_CONF << 5, 0b0, 0b1},
+  //  { "KMBIST_CHAIN_SF_i", REGPOKER_READ_DCR, KMBIST_CHAIN_SF_0, 0b0000, 0b1111 },
+  //  { "KMBIST_CHAIN_SF_I", REGPOKER_WRITE_DCR, KMBIST_CHAIN_SF_0, 0b000,   0b1 },
+   // { "KMBIST_CHAIN_SF_i", REGPOKER_READ_DCR, KMBIST_CHAIN_SF_0, 0b0000, 0b1111 },
+   // { "KMBIST_CHAIN_SF_i", REGPOKER_WRITE_DCR, KMBIST_CHAIN_SF_0, 0b000,   0b111 },
+    { "PPC_SYS_CONF", REGPOKER_READ_DCR, PPC_SYS_CONF, 0b1000, 0b1111},
+   // { "PPC_SYS_CONF", REGPOKER_WRITE_DCR, PPC_SYS_CONF, 0b00000, 0b11000 },
+
+    /*
+    { "PPC_SYS_CONF", REGPOKER_READ_DCR, PPC_SYS_CONF << 4, 0b000, 0b111 },
+    { "PPC_SYS_CONF", REGPOKER_WRITE_DCR, PPC_SYS_CONF << 4, 0b1, 0b1},
+    { "PPC_SYS_CONF", REGPOKER_READ_DCR, PPC_SYS_CONF << 5, 0b0, 0b1 },
   //  { "PPC_SYS_CONF", REGPOKER_WRITE_DCR, PPC_SYS_CONF << 5, 0b1, 0b1},
+    */
+
     };
     if( rumboot_regpoker_check_array( check_array, base_addr ) == 0 ) {
            rumboot_printf( "OK\n" );
@@ -48,6 +85,27 @@ static int dcr_check_ctrl_regs_rw(uint32_t base_addr)
     rumboot_printf( "ERROR\n" );
     return 1;
 }
+//#endif
+/*
+static struct sctl_instance in[] =
+{
+    {
+        .base_addr = DCR_SCTL_BASE,
+        .sctl_index = 0
+    },
+};
+*/
+/*
+static void handler0( int irq, void *arg )
+{
+    struct ctrl_instance_i *a = (struct ctrl_instance_i *) arg;
+    a->ctrl_irq = a->ctrl_irq + 1;
+    rumboot_printf( "IRQ 0 arrived  \n" );
+    rumboot_printf( "ctrl_%d PROGRAM PPC INT # %d  \n", a->ctrl_index, a->ctrl_irq );
+    //sp805_clrint( a->base_addr);
+}
+*/
+
 /*
 static int AXI_check_regs64(uint32_t base_addr)
 {
@@ -112,18 +170,22 @@ static int AXI_check_regs64(uint32_t base_addr)
     return 1;
 }
 */
+/*
+TEST_SUITE_BEGIN(sctl_testlist, "SCTL TEST")
+#ifdef CHECK_REGS
+TEST_ENTRY("sctl ro", check_ctrl_regs_ro, (uint32_t, &in[0])),
+TEST_ENTRY("sctl rw", check_ctrl_regs_rw, (uint32_t, &in[1])),
+#endif
+TEST_SUITE_END();
+*/
 int main(void)
 {
+
    register int result;
    rumboot_printf("Check write/read ctrl register values\n");
 
-   result = dcr_check_ctrl_regs_ro(DCR_SCTL_BASE) ||
-   dcr_check_ctrl_regs_rw(DCR_SCTL_BASE);
-
-       //AXIx_check_ID_regs(DCR_CTRL_BASE) ||
-       //      AXIx_check_ID_regs(AXI64HSIFS_CTRL_BASE) ||
-       //      AXI_check_regs32(AXI32HSIFS_CTRL_BASE) ||
-       //      AXI_check_regs64(AXI64HSIFS_CTRL_BASE);
+   result = check_ctrl_regs_ro(DCR_SCTL_BASE) ||
+   check_ctrl_regs_rw(DCR_SCTL_BASE);
 
    if(!result)
    {
@@ -132,5 +194,22 @@ int main(void)
    }
 
    rumboot_printf("Checked TEST_ERROR\n");
-   return result;
+  // return result;
+
+
+  //  register uint32_t result;
+  //  rumboot_printf( "SCTL test START\n" );
+
+    /* struct rumboot_irq_entry *tbl = rumboot_irq_create( NULL );
+    rumboot_irq_cli();
+    rumboot_irq_set_handler( tbl, RUMBOOT_IRQ_PROGRAM, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler0, &in[0]);
+    // Activate the table //
+    rumboot_irq_table_activate( tbl );
+    rumboot_irq_enable( RUMBOOT_IRQ_PROGRAM);
+    rumboot_irq_sei();
+    */
+
+   // result = test_suite_run(NULL, &sctl_testlist);
+
+    return (!result) ? rumboot_printf("CHECKED TEST_OK\n"), 1: rumboot_printf("CHECKED TEST_ERROR\n"), 0;
 }
