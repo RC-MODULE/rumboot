@@ -51,6 +51,8 @@
 #define ADDR_NOR_DE                             NOR_BASE + 0x10100
 
 #define BABA0001_ECC                            0x7A
+#define BABA0000_ECC                            0x36
+#define BABA0007_ECC                            0x67
 
 
 enum emi_error_irq_source
@@ -216,9 +218,6 @@ bool check_data()
 
     dcr_write(DCR_EM2_EMI_BASE + EMI_ECNT20, 0x00); //clear reg
     dcr_write(DCR_EM2_EMI_BASE + EMI_ECNT53, 0x00); //clear reg
-
-    dcr_write(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_ERR_ACTION0, 0x00000420);
-    dcr_write(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_ERR_ACTION1, 0x00000000);
 
     rumboot_putstring("Checking SRAM0 single error ... \n");
 
@@ -434,6 +433,227 @@ bool check_data()
 }
 
 
+bool check_data_ECC()
+{
+    uint32_t reg = 0, stat = 0;
+
+    dcr_write(DCR_EM2_EMI_BASE + EMI_ECNT20, 0x00); //clear reg
+    dcr_write(DCR_EM2_EMI_BASE + EMI_ECNT53, 0x00); //clear reg
+
+    rumboot_putstring("Checking SRAM0 single error ... \n");
+
+    error_irq_source = emi_single_error_irq_source_SRAM0;
+
+    reg = ioread32(ADDR_SRAM0_SE);
+
+    TEST_WAIT_ASSERT(emi_single_error_int_occured == true, ERROR_WAIT_TIMEOUT, "SRAM0: single error interrupt waiting timeout.");
+    emi_single_error_int_occured = false;
+
+    stat = dcr_read(DCR_EM2_EMI_BASE + EMI_ECNT20);
+    TEST_ASSERT(stat == 0x000001, "SRAM0: invalid value in STATUS_IRQ");
+    dcr_write(DCR_EM2_EMI_BASE + EMI_ECNT20, 0x00);
+
+    if (reg != 0xBABA0000)
+    {
+        rumboot_putstring("ECC ERROR SRAM0 (Single error)\n");
+        rumboot_printf("ADDR = 0x%x\n", ADDR_SRAM0_SE);
+        rumboot_printf("Expected = 0x%x\n", 0xBABA0000);
+        rumboot_printf("Actual = 0x%x\n",reg);
+        return false;
+    }
+
+    TEST_WAIT_ASSERT(emi_recoverable_error_int_occured == true, ERROR_WAIT_TIMEOUT, "SRAM0: recoverable error interrupt waiting timeout.");
+    emi_recoverable_error_int_occured = false;
+
+
+
+    rumboot_putstring("Checking SRAM0 double error ... \n");
+
+    error_irq_source = emi_double_error_irq_source_SRAM0;
+
+    reg = ioread32(ADDR_SRAM0_DE);
+
+    TEST_WAIT_ASSERT(emi_double_error_int_occured == true, ERROR_WAIT_TIMEOUT, "SRAM0: double error interrupt waiting timeout.");
+    emi_double_error_int_occured = false;
+
+    stat = dcr_read(DCR_EM2_EMI_BASE + EMI_ECNT20);
+    TEST_ASSERT(stat == 0x000000, "SRAM0: invalid value in STATUS_IRQ.");
+
+    if (reg != 0xBABA0001) //see .svh
+    {
+        rumboot_putstring("ECC ERROR SRAM0 (Double error)\n");
+        rumboot_printf("ADDR = 0x%x\n", ADDR_SRAM0_DE);
+        rumboot_printf("Expected = 0x%x\n", 0xBABA0001);
+        rumboot_printf("Actual = 0x%x\n", reg);
+        return false;
+    }
+
+    TEST_WAIT_ASSERT(emi_unrecoverable_error_int_occured == true, ERROR_WAIT_TIMEOUT, "SRAM0: unrecoverable error interrupt waiting timeout.");
+    emi_unrecoverable_error_int_occured = false;
+
+
+
+    rumboot_putstring("Checking SSRAM single error ... \n");
+
+    error_irq_source = emi_single_error_irq_source_SSRAM;
+
+    reg = ioread32(ADDR_SSRAM_SE);
+
+    TEST_WAIT_ASSERT(emi_single_error_int_occured == true, ERROR_WAIT_TIMEOUT, "SSRAM: single error interrupt waiting timeout.");
+    emi_single_error_int_occured = false;
+
+    stat = dcr_read(DCR_EM2_EMI_BASE + EMI_ECNT20);
+    TEST_ASSERT(stat == 0x10000, "SSRAM: invalid value in STATUS_IRQ");
+    dcr_write(DCR_EM2_EMI_BASE + EMI_ECNT20, 0x00);
+
+    if (reg != 0xBABA0000)
+    {
+        rumboot_putstring("ECC ERROR SSRAM (Single error)\n");
+        rumboot_printf("ADDR = 0x%x\n", ADDR_SSRAM_SE);
+        rumboot_printf("Expected = 0x%x\n", 0xBABA0000);
+        rumboot_printf("Actual = 0x%x\n",reg);
+        return false;
+    }
+
+    TEST_WAIT_ASSERT(emi_recoverable_error_int_occured == true, ERROR_WAIT_TIMEOUT, "SSRAM: recoverable error interrupt waiting timeout.");
+    emi_recoverable_error_int_occured = false;
+
+
+
+    rumboot_putstring("Checking SSRAM double error ... \n");
+
+    error_irq_source = emi_double_error_irq_source_SSRAM;
+
+    reg = ioread32(ADDR_SSRAM_DE);
+
+    TEST_WAIT_ASSERT(emi_double_error_int_occured == true, ERROR_WAIT_TIMEOUT, "SSRAM: double error interrupt waiting timeout.");
+    emi_double_error_int_occured = false;
+
+    stat = dcr_read(DCR_EM2_EMI_BASE + EMI_ECNT20);
+    TEST_ASSERT(stat == 0x00, "SSRAM: invalid value in STATUS_IRQ.");
+
+    if (reg != 0xBABA0001) //see .svh
+    {
+        rumboot_putstring("ECC ERROR SSRAM (Double error)\n");
+        rumboot_printf("ADDR = 0x%x\n", ADDR_SSRAM_DE);
+        rumboot_printf("Expected = 0x%x\n", 0xBABA0001);
+        rumboot_printf("Actual = 0x%x\n", reg);
+        return false;
+    }
+
+    TEST_WAIT_ASSERT(emi_unrecoverable_error_int_occured == true, ERROR_WAIT_TIMEOUT, "SSRAM: unrecoverable error interrupt waiting timeout.");
+    emi_unrecoverable_error_int_occured = false;
+
+
+
+    rumboot_putstring("Checking SDRAM single error ... \n");
+
+    error_irq_source = emi_single_error_irq_source_SDRAM;
+
+    reg = ioread32(ADDR_SDRAM_SE);
+
+    TEST_WAIT_ASSERT(emi_single_error_int_occured == true, ERROR_WAIT_TIMEOUT, "SDRAM: single error interrupt waiting timeout.");
+    emi_single_error_int_occured = false;
+
+    stat = dcr_read(DCR_EM2_EMI_BASE + EMI_ECNT20);
+    TEST_ASSERT(stat == 0x100, "SDRAM: invalid value in STATUS_IRQ");
+    dcr_write(DCR_EM2_EMI_BASE + EMI_ECNT20, 0x00);
+
+    if (reg != 0xBABA0000)
+    {
+        rumboot_putstring("ECC ERROR SDRAM (Single error)\n");
+        rumboot_printf("ADDR = 0x%x\n", ADDR_SDRAM_SE);
+        rumboot_printf("Expected = 0x%x\n", 0xBABA0000);
+        rumboot_printf("Actual = 0x%x\n",reg);
+        return false;
+    }
+
+    TEST_WAIT_ASSERT(emi_recoverable_error_int_occured == true, ERROR_WAIT_TIMEOUT, "SDRAM: recoverable error interrupt waiting timeout.");
+    emi_recoverable_error_int_occured = false;
+
+
+
+    rumboot_putstring("Checking SDRAM double error ... \n");
+
+    error_irq_source = emi_double_error_irq_source_SDRAM;
+
+    reg = ioread32(ADDR_SDRAM_DE);
+
+    TEST_WAIT_ASSERT(emi_double_error_int_occured == true, ERROR_WAIT_TIMEOUT, "SDRAM: double error interrupt waiting timeout.");
+    emi_double_error_int_occured = false;
+
+    stat = dcr_read(DCR_EM2_EMI_BASE + EMI_ECNT20);
+    TEST_ASSERT(stat == 0x00, "SDRAM: invalid value in STATUS_IRQ.");
+
+    if (reg != 0xBABA0001) //see .svh
+    {
+        rumboot_putstring("ECC ERROR SDRAM (Double error)\n");
+        rumboot_printf("ADDR = 0x%x\n", ADDR_SDRAM_DE);
+        rumboot_printf("Expected = 0x%x\n", 0xBABA0001);
+        rumboot_printf("Actual = 0x%x\n", reg);
+        return false;
+    }
+
+    TEST_WAIT_ASSERT(emi_unrecoverable_error_int_occured == true, ERROR_WAIT_TIMEOUT, "SDRAM: unrecoverable error interrupt waiting timeout.");
+    emi_unrecoverable_error_int_occured = false;
+
+
+
+    rumboot_putstring("Checking NOR single error ... \n");
+
+    error_irq_source = emi_single_error_irq_source_NOR;
+
+    reg = ioread32(ADDR_NOR_SE);
+
+    TEST_WAIT_ASSERT(emi_single_error_int_occured == true, ERROR_WAIT_TIMEOUT, "NOR: single error interrupt waiting timeout.");
+    emi_single_error_int_occured = false;
+
+    stat = dcr_read(DCR_EM2_EMI_BASE + EMI_ECNT53);
+    TEST_ASSERT(stat == 0x010000, "NOR: invalid value in STATUS_IRQ.");
+    dcr_write(DCR_EM2_EMI_BASE + EMI_ECNT53, 0x00);
+
+    if (reg != 0xBABA0000)
+    {
+        rumboot_putstring("ECC ERROR NOR (Single error)\n");
+        rumboot_printf("ADDR = 0x%x\n", ADDR_NOR_SE);
+        rumboot_printf("Expected = 0x%x\n", 0xBABA0000);
+        rumboot_printf("Actual = 0x%x\n", reg);
+        return false;
+    }
+
+    TEST_WAIT_ASSERT(emi_recoverable_error_int_occured == true, ERROR_WAIT_TIMEOUT, "NOR: recoverable error interrupt waiting timeout.");
+    emi_recoverable_error_int_occured = false;
+
+
+
+    rumboot_putstring("Checking NOR double error ... \n");
+
+    error_irq_source = emi_double_error_irq_source_NOR;
+
+    reg = ioread32(ADDR_NOR_DE);
+
+    TEST_WAIT_ASSERT(emi_double_error_int_occured == true, ERROR_WAIT_TIMEOUT, "NOR: double error interrupt waiting timeout.");
+    emi_double_error_int_occured = false;
+
+    stat = dcr_read(DCR_EM2_EMI_BASE + EMI_ECNT53);
+    TEST_ASSERT(stat == 0x00, "NOR: invalid value in STATUS_IRQ.");
+
+    if (reg != 0xBABA0001) //see .svh
+    {
+        rumboot_putstring("ECC ERROR NOR (Double error)\n");
+        rumboot_printf("ADDR = 0x%x\n", ADDR_NOR_DE);
+        rumboot_printf("Expected = 0x%x\n", 0xBABA0001);
+        rumboot_printf("Actual = 0x%x\n", reg);
+        return false;
+    }
+
+    TEST_WAIT_ASSERT(emi_unrecoverable_error_int_occured == true, ERROR_WAIT_TIMEOUT, "NOR: recoverable error interrupt waiting timeout.");
+    emi_unrecoverable_error_int_occured = false;
+
+    return true;
+}
+
+
 static void exception_handler(int const id, char const * const name ) {
     rumboot_printf( "Exception: %s\n", name );
     TEST_ASSERT( (id == RUMBOOT_IRQ_MACHINE_CHECK)
@@ -491,6 +711,9 @@ int main(void)
     dcr_write(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_ERR_MSK_AND0, 0x00000000);
     dcr_write(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_ERR_MSK_AND1, 0x0100003F);
     dcr_write(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_LFIR_MSK_AND, 0x3FFFFFFF);
+
+    dcr_write(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_ERR_ACTION0, 0x00000420);
+    dcr_write(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_ERR_ACTION1, 0x00000000);
 
 
     rumboot_putstring("WRITE SRAM0\n");
@@ -556,6 +779,76 @@ int main(void)
     rumboot_putstring("CHECK\n");
     if (!check_data())
         test_result = 1;
+
+
+
+    rumboot_putstring("WRITE SRAM0 ECC\n");
+
+    iowrite32(0xBABA0001, ADDR_SRAM0_SE);
+    iowrite32(0xBABA0001, ADDR_SRAM0_DE);
+    msync();
+    dcr_write((DCR_EM2_EMI_BASE + EMI_WECR), 0x0F);
+
+    iowrite32(0xBABA0000, ADDR_SRAM0_SE);
+    msync();
+
+    iowrite32(0xBABA0007, ADDR_SRAM0_DE);
+    msync();
+
+    dcr_write((DCR_EM2_EMI_BASE + EMI_WECR), 0x00);
+
+
+    rumboot_putstring("WRITE SSRAM ECC\n");
+
+    iowrite32(0xBABA0001, ADDR_SSRAM_SE);
+    iowrite32(0xBABA0001, ADDR_SSRAM_DE);
+    msync();
+    dcr_write((DCR_EM2_EMI_BASE + EMI_WECR), 0x0F);
+
+    iowrite32(0xBABA0000, ADDR_SSRAM_SE);
+    msync();
+
+    iowrite32(0xBABA0007, ADDR_SSRAM_DE);
+    msync();
+
+    dcr_write((DCR_EM2_EMI_BASE + EMI_WECR), 0x00);
+
+
+    rumboot_putstring("WRITE SDRAM ECC\n");
+
+    iowrite32(0xBABA0001, ADDR_SDRAM_SE);
+    iowrite32(0xBABA0001, ADDR_SDRAM_DE);
+    msync();
+    dcr_write((DCR_EM2_EMI_BASE + EMI_WECR), 0x0F);
+
+    iowrite32(0xBABA0000, ADDR_SDRAM_SE);
+    msync();
+
+    iowrite32(0xBABA0007, ADDR_SDRAM_DE);
+    msync();
+
+    dcr_write((DCR_EM2_EMI_BASE + EMI_WECR), 0x00);
+
+
+    //Software error injection for NOR ECC
+    dcr_write(DCR_EM2_EMI_BASE + EMI_ECCWRR, BABA0000_ECC);
+    dcr_write(DCR_EM2_EMI_BASE + EMI_FLCNTRL,  (dcr_read(DCR_EM2_EMI_BASE + EMI_FLCNTRL) & 0x1C)  | ECC_CTRL_CNT_ECCWRR);
+
+    rumboot_putstring("WRITE NOR ECC\n");
+    nor_write32(0xBABA0001, ADDR_NOR_SE);
+    msync();
+
+    dcr_write(DCR_EM2_EMI_BASE + EMI_ECCWRR, BABA0007_ECC);
+    dcr_write(DCR_EM2_EMI_BASE + EMI_FLCNTRL,  (dcr_read(DCR_EM2_EMI_BASE + EMI_FLCNTRL) & 0x1C)  | ECC_CTRL_CNT_ECCWRR);
+
+    nor_write32(0xBABA0001, ADDR_NOR_DE);
+    msync();
+
+
+    rumboot_putstring("CHECK ECC\n");
+    if (!check_data_ECC())
+        test_result = 1;
+
 
 
     rumboot_irq_table_activate( NULL );
