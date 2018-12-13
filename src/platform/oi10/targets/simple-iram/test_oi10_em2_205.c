@@ -48,7 +48,9 @@
 #define ADDR_SDRAM_DE                           SDRAM_BASE + 0x10100
 
 #define ADDR_NOR_SE                             NOR_BASE + 0x10000
+#define ADDR_NOR_SE_2                           NOR_BASE + 0x10010
 #define ADDR_NOR_DE                             NOR_BASE + 0x10100
+#define ADDR_NOR_DE_2                           NOR_BASE + 0x10110
 
 #define BABA0001_ECC                            0x7A
 #define BABA0000_ECC                            0x36
@@ -603,7 +605,7 @@ bool check_data_ECC()
 
     error_irq_source = emi_single_error_irq_source_NOR;
 
-    reg = ioread32(ADDR_NOR_SE);
+    reg = ioread32(ADDR_NOR_SE_2);
 
     TEST_WAIT_ASSERT(emi_single_error_int_occured == true, ERROR_WAIT_TIMEOUT, "NOR: single error interrupt waiting timeout.");
     emi_single_error_int_occured = false;
@@ -615,7 +617,7 @@ bool check_data_ECC()
     if (reg != 0xBABA0000)
     {
         rumboot_putstring("ECC ERROR NOR (Single error)\n");
-        rumboot_printf("ADDR = 0x%x\n", ADDR_NOR_SE);
+        rumboot_printf("ADDR = 0x%x\n", ADDR_NOR_SE_2);
         rumboot_printf("Expected = 0x%x\n", 0xBABA0000);
         rumboot_printf("Actual = 0x%x\n", reg);
         return false;
@@ -630,7 +632,7 @@ bool check_data_ECC()
 
     error_irq_source = emi_double_error_irq_source_NOR;
 
-    reg = ioread32(ADDR_NOR_DE);
+    reg = ioread32(ADDR_NOR_DE_2);
 
     TEST_WAIT_ASSERT(emi_double_error_int_occured == true, ERROR_WAIT_TIMEOUT, "NOR: double error interrupt waiting timeout.");
     emi_double_error_int_occured = false;
@@ -641,7 +643,7 @@ bool check_data_ECC()
     if (reg != 0xBABA0001) //see .svh
     {
         rumboot_putstring("ECC ERROR NOR (Double error)\n");
-        rumboot_printf("ADDR = 0x%x\n", ADDR_NOR_DE);
+        rumboot_printf("ADDR = 0x%x\n", ADDR_NOR_DE_2);
         rumboot_printf("Expected = 0x%x\n", 0xBABA0001);
         rumboot_printf("Actual = 0x%x\n", reg);
         return false;
@@ -835,13 +837,13 @@ int main(void)
     dcr_write(DCR_EM2_EMI_BASE + EMI_FLCNTRL,  (dcr_read(DCR_EM2_EMI_BASE + EMI_FLCNTRL) & 0x1C)  | ECC_CTRL_CNT_ECCWRR);
 
     rumboot_putstring("WRITE NOR ECC\n");
-    nor_write32(0xBABA0001, ADDR_NOR_SE);
+    nor_write32(0xBABA0001, ADDR_NOR_SE_2);
     msync();
 
     dcr_write(DCR_EM2_EMI_BASE + EMI_ECCWRR, BABA0007_ECC);
     dcr_write(DCR_EM2_EMI_BASE + EMI_FLCNTRL,  (dcr_read(DCR_EM2_EMI_BASE + EMI_FLCNTRL) & 0x1C)  | ECC_CTRL_CNT_ECCWRR);
 
-    nor_write32(0xBABA0001, ADDR_NOR_DE);
+    nor_write32(0xBABA0001, ADDR_NOR_DE_2);
     msync();
 
 
