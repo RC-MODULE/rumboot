@@ -2,6 +2,8 @@
 #include <stdint.h>
 #include <string.h>
 
+#define RUMBOOT_ASSERT_WARN_ONLY
+
 #include <rumboot/io.h>
 #include <rumboot/irq.h>
 #include <rumboot/printf.h>
@@ -142,6 +144,7 @@
 #define CHECK_ITEM(NAME,DESC)   {CHECK_FUNC(NAME),DESC}
 #define DEFINE_CHECK(NAME)      uint32_t CHECK_FUNC(NAME)       \
                                 (ckinfo_t* ckinfo, uint32_t bank)
+#define CAST_ADDR(ADDR)         ((void*)(ADDR))
 #define DEFINE_INIT(NAME)       uint32_t INIT_FUNC(NAME) (void)
 #define BEGIN_TESTS(VAR)        ckinfo_t VAR[]={
 #define END_TESTS               CHECKLIST_TERMINATOR}
@@ -153,6 +156,16 @@
                                     I++, A = (((L) >> I) & 1))
 #define DO_INIT(RES,FUNC)       if(!!(RES = init__ ## FUNC ())) \
                                 return test_result
+
+
+
+struct irq_sp_t /* IRQ Sub-Process descriptor */
+{
+    uint8_t       bank;
+    uint8_t       cmpv;
+    uint8_t       newv; /* not used */
+    uint8_t       flag;
+};
 
 
 struct ckinfo_t
@@ -167,6 +180,7 @@ union u8x4_t
     uint8_t     b[4];
 };
 
+typedef struct   irq_sp_t           irq_pp_t;
 typedef struct   ckinfo_t           ckinfo_t;
 typedef struct   rumboot_irq_entry  rumboot_irq_entry;
 typedef union    u8x4_t             u8x4_t;
@@ -180,10 +194,12 @@ typedef volatile uint8_t            vuint8_t;
 
 /* Global variables */
 static const uint8_t other_banks[8] = {4,2,1,2,0,5,255,255};
+static const uint8_t errcnt_vals[4] = {0x01,0x04,0x08,0x10}; /* for 2.2.4 */
 static irq_flags_t IRQ[8] = {0,0,0,0,0,0,0,0};
-static rumboot_irq_entry *irq_table = NULL;
-static volatile uint32_t global_irr = 0;
-static volatile u8x4_t irq_cnt;
+static rumboot_irq_entry   *irq_table = NULL;
+static volatile uint32_t    global_irr = 0;
+static volatile u8x4_t      irq_cnt;
+static struct   irq_sp_t    g_sp_info  = {0,0,0,0};
 /* Data tables, for register calculation, depending on bank */
 static volatile const uint8_t emi_ss[8] =
     {EMI_SS0, EMI_SS1, EMI_SS2, EMI_SS3, EMI_SS4, EMI_SS5, 0,0};
@@ -258,7 +274,12 @@ void emi_set_ssi(uint32_t *ssiop, uint32_t trdy_val, uint32_t bank)
 
 void emi_irq_handler( int irq, void *arg )
 {
+    volatile
+    uint32_t tmp = 0;
     uint32_t irr = (EMI_READ(EMI_IRR) & IRR_MASK_ALL);
+    struct irq_sp_t *inf = (struct irq_sp_t*)arg;
+    uint8_t cnt;
+    tmp ^= 0;
     rumboot_printf("IRQ #%d received at 0x%X (IRR=0x%X).\n",
             irq, spr_read(SPR_SRR0), irr);
     IRQ[irq >> 5] = BIT(irq & 0x1F);
@@ -267,6 +288,21 @@ void emi_irq_handler( int irq, void *arg )
         case EMI_CNTR_INT_0:
             EMI_WRITE(EMI_IRR_RST, IRR_RST_SINGLE);
             irq_cnt.b[0]++;
+            if(inf->flag & 1)
+            {
+                cnt = READ_ECNT(inf->bank);
+                if(cnt == inf->cmpv)
+                {
+                    rumboot_printf(
+                            " Ooops! In bank %d"
+                            " error counter is %d"
+                            " -- clear it!\n",
+                            ((uint32_t)(inf->bank)),
+                            ((uint32_t)(cnt)));
+                    EMI_WRITE(emi_ecnt[inf->bank], 0);
+                    tmp = EMI_READ(EMI_WECR);
+                }
+            }
             break;
         case EMI_CNTR_INT_1:
             EMI_WRITE(EMI_IRR_RST, IRR_RST_DOUBLE);
@@ -330,7 +366,7 @@ DEFINE_INIT(interrupts)
     irq_table = rumboot_irq_create( NULL );
     FOREACH_IRQ(irq_item, irq_list)
         rumboot_irq_set_handler(irq_table, *irq_item,
-            IRQ_FLAGS, emi_irq_handler, NULL);
+            IRQ_FLAGS, emi_irq_handler, CAST_ADDR(&g_sp_info));
 
     /* Activate the table */
     rumboot_irq_table_activate(irq_table);
@@ -722,14 +758,19 @@ DEFINE_CHECK(hstsr_ecc_off_nor) /* 2.2.3 for NOR */
 
 DEFINE_CHECK(error_counter) /* 2.2.4 */
 {
-    uint32_t hstsr,
-             result = TEST_OK,
-             status = TEST_OK;
+    uint32_t status = TEST_OK,
+             eccsta = 0,
+             datsta = 0,
+             cntsta = 0,
+             hstsr  = 0,
+             idx    = 0,
+             cnt    = 0;
     volatile
     uint32_t readed = 0,
              tmp    = 0;
     uint8_t  eccval = 0,
-             cntval = 0;;
+             cntval = 0,
+             cntexp = 0;
 
     if(IS_NOR(bank))
     {
@@ -760,25 +801,38 @@ DEFINE_CHECK(error_counter) /* 2.2.4 */
     msync();
     tmp = EMI_READ(EMI_WECR);
     EMI_WRITE(EMI_WECR, 0);
-    rumboot_printf("Reading from 0x%X...\n", CHECK_ADDR(bank));
-    readed = ioread32(CHECK_ADDR(bank));
-    msync();
-    eccval = EMI_READ(EMI_ECCRDR);
-    cntval = READ_ECNT(bank);
-    rumboot_printf("READED: 0x%X (ECC=0x%X) after single error.\n",
-            readed, eccval);
-    result = (readed == CHECK_CONST);
-    TEST_ASSERT(result, "EMI: Single error repair fails.");
-    status |= !result;
-    result = (eccval == CHECK_ECC_CODE);
-    TEST_ASSERT(result, "EMI: Wrong ECC-code after single error.");
-    status |= !result;
-    result = (cntval == 1);
-    TEST_ASSERT(result, "EMI: Wrong single error counter value.");
-    status |= !result;
-    result = (global_irr & SINGLE_ERR_FLAG(bank));
-    TEST_ASSERT(result, "EMI: Single error interrupt flag not risen.");
-    status |= !result;
+    rumboot_printf("Reading from 0x%X in iterations...\n", CHECK_ADDR(bank));
+    g_sp_info.bank = (uint8_t)(bank & 0xFF);
+    g_sp_info.flag = 0x01;
+    for(idx = 0; idx < 4; idx++)
+    {
+        uint32_t cntlim = ((uint32_t)(errcnt_vals[idx]));
+        g_sp_info.cmpv = errcnt_vals[idx];
+        datsta = eccsta = cntsta = 0;
+        /* Reset single error counter */
+        EMI_WRITE(emi_ecnt[bank], 0);
+        for(cnt = 0; cnt <= cntlim; cnt++)
+        {
+            cntexp = ((cnt + 1) != cntlim)
+                    ? cnt + 1 : cnt + 1 - cntlim;
+            rumboot_printf(" ### Read %d/%d\n",
+                    cnt + 1, (uint32_t)(errcnt_vals[idx]) + 1);
+            readed = ioread32(CHECK_ADDR(bank));
+            msync();
+            eccval = EMI_READ(EMI_ECCRDR);
+            cntval = READ_ECNT(bank);
+            datsta |= !(readed == CHECK_CONST);
+            eccsta |= !(eccval == CHECK_ECC_CODE);
+            cntsta |= !(cntval == cntexp);
+            rumboot_printf("Error count = %d (expected: %d)\n",
+                    cntval, cntexp);
+        }
+        status |= (datsta || eccsta || cntsta);
+        TEST_ASSERT(!datsta, "EMI: Single error repair fails.");
+        TEST_ASSERT(!eccsta, "EMI: Wrong ECC-code after single error.");
+        TEST_ASSERT(!cntsta, "EMI: Wrong single error counter value.");
+    }
+    g_sp_info.flag = 0x00;
     /* ----------------- */
 
     /* Reset interrupts */
