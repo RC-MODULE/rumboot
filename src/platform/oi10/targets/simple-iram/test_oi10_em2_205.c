@@ -217,10 +217,10 @@ bool check_data()
     dcr_write(DCR_EM2_EMI_BASE + EMI_ECNT20, 0x00); //clear reg
     dcr_write(DCR_EM2_EMI_BASE + EMI_ECNT53, 0x00); //clear reg
 
-    rumboot_putstring("Checking SRAM0 single error ... \n");
-
-    dcr_write(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_ERR_ACTION0, 0x00000000);
+    dcr_write(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_ERR_ACTION0, 0x00000420);
     dcr_write(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_ERR_ACTION1, 0x00000000);
+
+    rumboot_putstring("Checking SRAM0 single error ... \n");
 
     error_irq_source = emi_single_error_irq_source_SRAM0;
 
@@ -249,9 +249,6 @@ bool check_data()
 
     rumboot_putstring("Checking SRAM0 double error ... \n");
 
-    dcr_write(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_ERR_ACTION0, 0xFFFFFFFF);
-    dcr_write(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_ERR_ACTION1, 0xFFFFFFFF);
-
     error_irq_source = emi_double_error_irq_source_SRAM0;
 
     reg = ioread32(ADDR_SRAM0_DE);
@@ -277,9 +274,6 @@ bool check_data()
 
 
     rumboot_putstring("Checking SSRAM single error ... \n");
-
-    dcr_write(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_ERR_ACTION0, 0x00000000);
-    dcr_write(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_ERR_ACTION1, 0x00000000);
 
     error_irq_source = emi_single_error_irq_source_SSRAM;
 
@@ -308,9 +302,6 @@ bool check_data()
 
     rumboot_putstring("Checking SSRAM double error ... \n");
 
-    dcr_write(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_ERR_ACTION0, 0xFFFFFFFF);
-    dcr_write(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_ERR_ACTION1, 0xFFFFFFFF);
-
     error_irq_source = emi_double_error_irq_source_SSRAM;
 
     reg = ioread32(ADDR_SSRAM_DE);
@@ -336,9 +327,6 @@ bool check_data()
 
 
     rumboot_putstring("Checking SDRAM single error ... \n");
-
-    dcr_write(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_ERR_ACTION0, 0x00000000);
-    dcr_write(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_ERR_ACTION1, 0x00000000);
 
     error_irq_source = emi_single_error_irq_source_SDRAM;
 
@@ -367,9 +355,6 @@ bool check_data()
 
     rumboot_putstring("Checking SDRAM double error ... \n");
 
-    dcr_write(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_ERR_ACTION0, 0xFFFFFFFF);
-    dcr_write(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_ERR_ACTION1, 0xFFFFFFFF);
-
     error_irq_source = emi_double_error_irq_source_SDRAM;
 
     reg = ioread32(ADDR_SDRAM_DE);
@@ -395,9 +380,6 @@ bool check_data()
 
 
     rumboot_putstring("Checking NOR single error ... \n");
-
-    dcr_write(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_ERR_ACTION0, 0x00000000);
-    dcr_write(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_ERR_ACTION1, 0x00000000);
 
     error_irq_source = emi_single_error_irq_source_NOR;
 
@@ -425,9 +407,6 @@ bool check_data()
 
 
     rumboot_putstring("Checking NOR double error ... \n");
-
-    dcr_write(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_ERR_ACTION0, 0xFFFFFFFF);
-    dcr_write(DCR_EM2_MCLFIR_BASE + MCLFIR_MC_ERR_ACTION1, 0xFFFFFFFF);
 
     error_irq_source = emi_double_error_irq_source_NOR;
 
