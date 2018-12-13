@@ -4,7 +4,6 @@
  *  Created on: Nov 16, 2018
  *      Author: m.smolina
  */
-#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -20,27 +19,39 @@
 #include <platform/arch/ppc/ppc_476fp_fpu_const.h>
 
 
-double FPSCR_1 = M_LN2LO;
-double FPSCR_2 = 1.99999e39;
-float FPSCR_3 = 1.123456789999e-38;
-float FPSCR_4 = 1.123456789999e-50;
-float FPSCR_5 = 0.0e-38;
-float FPSCR_6 = 0.121e37;
-float FPSCR_7 = 1.1e3;
-float FPSCR_8 = C_S_NEG_NAN_MAX;
-double FPSCR_9 = INFINITY;
-double FPSCR_10 = INFINITY;
-float FPSCR_11 = -1.99777e20;
-float FPSCR_12 = +1.99999e20;
-double FPSCR_13 = C_D_NEG_NAN_MAX;
+double FPSCR_d = 1.99999e39;
+float FPSCR_f = 1.123456789999e-38;
+float FPSCR_ZERO = 0.0e-38;
+float FPSCR_UND = 1.1e3;
+float FPSCR_NaN_F = C_S_NEG_NAN_MAX;
+float FPSCR_neg = -1.99777e20;
+float FPSCR_pos = +1.99999e20;
+double FPSCR_NaN_D = C_D_NEG_NAN_MAX;
+volatile double FPSCR_Round = 1.19159013186231589874e+308;
+volatile float res_com1;
+volatile float res_com2;
+volatile float res_com3;
+volatile float res_com4;
 float result_sum;
+volatile union {
+    uint64_t u;
+    double d;
+} const FPSCR_INF_POS = { .u =  C_D_POS_INF };
+volatile union {
+    uint32_t u;
+    float f;
+} const FPSCR_SQRT = { .u = C_S_NEG_INF };
+
+union {
+    uint32_t u;
+    float f;
+} const FPSCR_CONV = { .u = C_S_POS_INF };
+volatile uint64_t value = 0x0;
 
 static void enable_fpu()
 {
     msr_write(msr_read() | (1 << ITRPT_XSR_FP_i));
 }
-
-volatile uint64_t value = 0x0;
 
 void read_fpu ()
 {
@@ -284,15 +295,13 @@ void Round_toward_neg_Infinity ()
 void check_OX ()
 {
     rumboot_printf("TEST OX\n");
-    result_sum = FPSCR_1 + FPSCR_2;
+    result_sum = FPSCR_d + FPSCR_d;
     read_fpu ();
     check_exception ();
     clearing_bits ();
-    read_fpu ();
-    check_exception ();
 
     set_one ();
-    result_sum = FPSCR_1 + FPSCR_2;
+    result_sum = FPSCR_d + FPSCR_d;
     read_fpu ();
     check_exception ();
     clearing_bits ();
@@ -301,16 +310,14 @@ void check_OX ()
 void check_UX ()
 {
     rumboot_printf("TEST UX\n");
-    result_sum = FPSCR_3/FPSCR_7;
-    //if (result_sum == 0.0e-38 ) rumboot_printf("result_sum %e\n", result_sum);
+    result_sum = FPSCR_f/FPSCR_UND;
     read_fpu ();
     check_exception ();
     clearing_bits ();
-    read_fpu ();
-    check_exception ();
+
 
     set_one ();
-    result_sum = FPSCR_3/FPSCR_7;
+    result_sum = FPSCR_f/FPSCR_UND;
     read_fpu ();
     check_exception ();
     clearing_bits ();
@@ -319,15 +326,13 @@ void check_UX ()
 void check_ZX ()
 {
     rumboot_printf("TEST ZX\n");
-    result_sum = FPSCR_1/FPSCR_5;
+    result_sum = FPSCR_d/FPSCR_ZERO;
     read_fpu ();
     check_exception ();
     clearing_bits ();
-    read_fpu ();
-    check_exception ();
 
     set_one ();
-    result_sum = FPSCR_1/FPSCR_5;
+    result_sum = FPSCR_d/FPSCR_ZERO;
     read_fpu ();
     check_exception ();
     clearing_bits ();
@@ -336,15 +341,13 @@ void check_ZX ()
 void check_XX ()
 {
     rumboot_printf("TEST XX\n");
-    result_sum = FPSCR_1;
+    result_sum = FPSCR_d;
     read_fpu ();
     check_exception ();
     clearing_bits ();
-    read_fpu ();
-    check_exception ();
 
     set_one ();
-    result_sum = FPSCR_1;;
+    result_sum = FPSCR_d;;
     read_fpu ();
     check_exception ();
     clearing_bits ();
@@ -354,41 +357,40 @@ void check_sqrt ()
 {
     set_one ();
     rumboot_printf("TEST SQRT\n");
-    volatile float FPSCR_8 = - INFINITY;
+
+
     volatile float result_sum_sqrt;
     asm volatile
                 (
                         "fsqrt %0, %1 \n\t"
                         : "=f" (result_sum_sqrt)
-                        : "f"  (FPSCR_8)
+                        : "f"  (FPSCR_SQRT.f)
                 );
 
-    rumboot_printf("TEST SQRT %e\n", result_sum_sqrt);
     read_fpu ();
-
     check_exception ();
     clearing_bits ();
 
 
 }
 
-void check_inf_division ()
+void check_infinity ()
 {
     set_one ();
     rumboot_printf("TEST INFINITY division\n");
-    result_sum = FPSCR_9/FPSCR_10;
+    result_sum = FPSCR_INF_POS.d/FPSCR_INF_POS.d;
     read_fpu ();
     check_exception ();
     clearing_bits ();
     set_one ();
     rumboot_printf("TEST INFINITY subtraction\n");
-    result_sum = FPSCR_9 - FPSCR_10;
+    result_sum = FPSCR_INF_POS.d - FPSCR_INF_POS.d;
     read_fpu ();
     check_exception ();
     clearing_bits ();
     set_one ();
     rumboot_printf("TEST infinity multiply zero\n");
-    result_sum = FPSCR_9*FPSCR_5;
+    result_sum = FPSCR_INF_POS.d*FPSCR_ZERO;
     read_fpu ();
     check_exception ();
     clearing_bits ();
@@ -397,55 +399,44 @@ void check_inf_division ()
 void check_zero_division ()
 {
     rumboot_printf("TEST zero division\n");
-    result_sum = FPSCR_5 / FPSCR_5;
+    result_sum = FPSCR_ZERO / FPSCR_ZERO;
     read_fpu ();
     check_exception ();
     clearing_bits ();
-    read_fpu ();
-    check_exception ();
+
 }
 
 void check_comparison ()
 {
     rumboot_printf("TEST comparison\n");
     rumboot_printf("TEST negative\n");
-    if (FPSCR_11 < FPSCR_5) rumboot_printf("Test negative ok \n");
+    if (FPSCR_neg < FPSCR_ZERO) rumboot_printf("Test negative ok \n");
     read_fpu ();
     check_exception ();
     rumboot_printf("TEST positive\n");
-    if (FPSCR_12 > FPSCR_11) rumboot_printf("Test positive ok \n");
+    if (FPSCR_pos > FPSCR_ZERO) rumboot_printf("Test positive ok \n");
     read_fpu ();
     check_exception ();
     rumboot_printf("TEST zero\n");
-    if (FPSCR_5 == FPSCR_5) rumboot_printf("Test zero ok \n");
+    if (FPSCR_ZERO == FPSCR_ZERO) rumboot_printf("Test zero ok \n");
     read_fpu ();
     check_exception ();
 
     rumboot_printf("TEST NaN\n");
-    result_sum = FPSCR_5 * FPSCR_10;
-    rumboot_printf("TEST NaN %e\n", result_sum);
+    result_sum = FPSCR_ZERO * FPSCR_INF_POS.d;
     read_fpu ();
     check_exception ();
 
 
     rumboot_printf("TEST VXVC\n");
-//    result_sum = FPSCR_13 + FPSCR_10;
-//    if (FPSCR_13 == FPSCR_10) rumboot_printf("Test VXVC ok \n");
-//
-//
-//    rumboot_printf("TEST VXVC %e\n", result_sum);
-
-    volatile float FPSCR = 0.0e-38;
-    volatile float FPSCR_9 = INFINITY;
-    volatile float result_com = FPSCR * FPSCR_9;
-    volatile float result_com_0 = FPSCR + FPSCR_9;
+    volatile float result_com = FPSCR_ZERO * FPSCR_INF_POS.d;
+    volatile float result_com_0 = FPSCR_ZERO + FPSCR_INF_POS.d;
      asm volatile
                  (
                          "fcmpo %0, %1, %2 \n\t"
                          :
                          :"i" (6), "f"  (result_com), "f"  (result_com_0)
                  );
-     rumboot_printf("TEST VXVC %e\n", result_com);
     read_fpu ();
     check_exception ();
     clearing_bits ();
@@ -455,13 +446,13 @@ void Integer_convert()
 {
     rumboot_printf("Integer convert\n");
     set_one ();
-    volatile float FPSCR_7 = INFINITY;
+
     volatile long long int result_conv;
      asm volatile
                  (
                          "fctid %0, %1 \n\t"
                          : "=f" (result_conv)
-                         : "f"  (FPSCR_7)
+                         : "f"  (FPSCR_CONV.f)
                  );
 
 
@@ -472,7 +463,7 @@ void Integer_convert()
 
 void software_defined_condition ()
 {
-    rumboot_printf("software-defined condition\n");
+    rumboot_printf("Software-defined condition\n");
       asm volatile
                      ( "mtfsb1 %0 \n\t"
                            :: "i"  (21)
@@ -493,31 +484,23 @@ void software_defined_condition ()
 
 void check_round ()
 {
-    set_one ();
 
-    volatile double FPSCR_0 = 1.19159013186231589874e+308;
-    volatile float res_com1;
-    volatile float res_com2;
-    volatile float res_com3;
-    volatile float res_com4;
     Round_to_Nearest();
-    res_com1 = FPSCR_0;
+    res_com1 = FPSCR_Round;
 
     Round_toward_Zero();
-    res_com2 = FPSCR_0;
+    res_com2 = FPSCR_Round;
 
     Round_toward_pos_Infinity ();
-    res_com3 = FPSCR_0;
+    res_com3 = FPSCR_Round;
 
     Round_toward_neg_Infinity ();
-    res_com4 = FPSCR_0;
+    res_com4 = FPSCR_Round;
 
     if (res_com1 != res_com4) rumboot_printf("Test ok 1vs4\n");
     if (res_com3 != res_com4) rumboot_printf("Test ok 3vs4\n");
     if (res_com2 != res_com3) rumboot_printf("Test ok 2vs3\n");
     if (res_com3 != res_com1) rumboot_printf("Test ok 3vs1\n");
-    rumboot_printf("Round data1: %g\n", FPSCR_0);
-
 
 }
 
@@ -538,7 +521,7 @@ int main ()
     check_ZX ();
     check_XX ();
     check_sqrt ();
-    check_inf_division ();
+    check_infinity ();
     check_zero_division ();
     check_comparison ();
     Integer_convert();
