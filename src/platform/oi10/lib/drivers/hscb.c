@@ -502,14 +502,6 @@ void hscb_config_for_receive_and_transmit(hscb_instance_t* hscb_inst)
     hscb_set_max_speed(hscb_inst->src_hscb_base_addr);
 }
 
-/*
-  Name  : CRC-8
-  Poly  : 0x07    x^8 + x^2 + x^1 + x^0
-  Init  : 0x00
-  Revert: false
-  XorOut: 0x00
-  Check : 0xF7 ("123456789")
-*/
 uint8_t hscb_crc8(uint8_t prev_crc, uint8_t byte)
 {
     uint8_t crc = prev_crc;
@@ -523,12 +515,50 @@ uint8_t hscb_crc8(uint8_t prev_crc, uint8_t byte)
     return crc;
 }
 
-/**
- * The first parameter contains fields for filling an RMAP packet,
- * the second one contains preallocated memory areas for fixed length fields and pointers to be set
- * with start addresses of variable length chains to be transmitted and
- * preallocated memory areas for descriptors
- */
+uint8_t hscb_rmap_make_reply_instruction(uint8_t instruction)
+{
+    return (instruction & ((uint8_t)((~HSCB_RMAP_PACKET_INSTRUCTION_FIELD_PACKET_TYPE_mask)
+            | (HSCB_RMAP_PACKET_TYPE_REPLY << HSCB_RMAP_PACKET_INSTRUCTION_FIELD_PACKET_TYPE_i))));
+}
+uint32_t hscb_rmap_get_reply_addr_actual_length(hscb_uint8_array_with_length_t reply_addr)
+{
+    uint32_t length = reply_addr.length;
+    for( int i = 0; (reply_addr.array[i] == 0) && (i < (reply_addr.length - 1)); ++i)
+        --length;
+    return length;
+}
+
+uint8_t hscb_rmap_get_reply_byte(   hscb_uint8_array_with_length_t  rmap_reply,
+                                    uint32_t                        start_index,
+                                    hscb_rmap_reply_packet_fields_t required_field)
+{
+    return rmap_reply.array[start_index + required_field];
+}
+
+
+uint32_t hscb_rmap_reply_get_data_len(   hscb_uint8_array_with_length_t  rmap_reply,
+                                                uint32_t                        start_index)
+{
+    return ((hscb_rmap_get_reply_byte(rmap_reply, start_index, HSCB_RMAP_REPLY_DATA_LEN_2_i)) << 16)
+          | ((hscb_rmap_get_reply_byte(rmap_reply, start_index, HSCB_RMAP_REPLY_DATA_LEN_1_i)) << 8)
+          | ((hscb_rmap_get_reply_byte(rmap_reply, start_index, HSCB_RMAP_REPLY_DATA_LEN_0_i)));
+}
+
+uint32_t hscb_rmap_reply_calculate_length(  hscb_uint8_array_with_length_t  rmap_reply,
+                                            uint32_t                        reply_addr_chain_length)
+{
+    uint32_t length_of_reply_packet = reply_addr_chain_length;
+    if (hscb_rmap_get_reply_byte(rmap_reply, reply_addr_chain_length, HSCB_RMAP_REPLY_INSTRUCTION_i)
+                                & HSCB_RMAP_PACKET_INSTRUCTION_FIELD_WRITE_mask)
+        length_of_reply_packet += 8;
+    else
+    {
+        uint32_t reply_data_length = hscb_rmap_reply_get_data_len(rmap_reply, reply_addr_chain_length);
+        length_of_reply_packet += 12 + ((reply_data_length) ? 1 : 0) + reply_data_length;
+    }
+    return length_of_reply_packet;
+}
+
 uint32_t hscb_prepare_rmap_packet(hscb_rmap_packet_raw_configuration_t rmap_packet_raw,
         hscb_rmap_packet_ready_for_transmit_t* rmap_packet_ready)
 {
