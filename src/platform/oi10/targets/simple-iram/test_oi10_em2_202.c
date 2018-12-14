@@ -299,8 +299,10 @@ void emi_irq_handler( int irq, void *arg )
                             " -- clear it!\n",
                             ((uint32_t)(inf->bank)),
                             ((uint32_t)(cnt)));
+                    msync();
                     EMI_WRITE(emi_ecnt[inf->bank], 0);
                     tmp = EMI_READ(EMI_WECR);
+                    inf->flag = 0x00;
                 }
             }
             break;
@@ -385,7 +387,10 @@ DEFINE_INIT(interrupts)
 
 DEFINE_INIT(emi_hw)
 {
+    uint32_t init_addr = 0x00000000;
     emi_init(DCR_EM2_EMI_BASE);
+    memset(CAST_ADDR(init_addr), 0, 4096); /* Anti-X */
+    msync();
     return INIT_OK;
 }
 
@@ -803,20 +808,21 @@ DEFINE_CHECK(error_counter) /* 2.2.4 */
     EMI_WRITE(EMI_WECR, 0);
     rumboot_printf("Reading from 0x%X in iterations...\n", CHECK_ADDR(bank));
     g_sp_info.bank = (uint8_t)(bank & 0xFF);
-    g_sp_info.flag = 0x01;
     for(idx = 0; idx < 4; idx++)
     {
         uint32_t cntlim = ((uint32_t)(errcnt_vals[idx]));
-        g_sp_info.cmpv = errcnt_vals[idx];
         datsta = eccsta = cntsta = 0;
+        g_sp_info.cmpv  = errcnt_vals[idx];
+        g_sp_info.flag  = 0x01;
         /* Reset single error counter */
         EMI_WRITE(emi_ecnt[bank], 0);
-        for(cnt = 0; cnt <= cntlim; cnt++)
+        rumboot_printf("Check error count limit %d...\n", cntlim);
+        for(cntexp = 1, cnt = 0; cnt <= cntlim; cnt++, cntexp++)
         {
-            cntexp = ((cnt + 1) != cntlim)
-                    ? cnt + 1 : cnt + 1 - cntlim;
             rumboot_printf(" ### Read %d/%d\n",
                     cnt + 1, (uint32_t)(errcnt_vals[idx]) + 1);
+            if((cntexp == cntlim) && (g_sp_info.flag & 1))
+                cntexp = 0;
             readed = ioread32(CHECK_ADDR(bank));
             msync();
             eccval = EMI_READ(EMI_ECCRDR);
