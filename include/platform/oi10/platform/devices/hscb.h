@@ -211,6 +211,7 @@ typedef struct{
     uint32_t                        addr;
     hscb_uint8_array_with_length_t  data_chain;
     bool                            change_endian;
+    uint32_t                        expected_reply_status;
 }hscb_rmap_packet_raw_configuration_t;
 
 /**
@@ -324,7 +325,33 @@ void hscb_run_wdma(uint32_t base_addr);
 void hscb_set_max_speed(uint32_t base_addr);
 void hscb_enable(uint32_t base_addr);
 void hscb_config_for_receive_and_transmit(hscb_instance_t* hscb_inst);
-
+uint8_t hscb_rmap_get_reply_byte(   hscb_uint8_array_with_length_t  rmap_reply,
+                                    uint32_t                        start_index,
+                                    hscb_rmap_reply_packet_fields_t required_field);
+uint32_t hscb_rmap_get_reply_addr_actual_length(hscb_uint8_array_with_length_t reply_addr);
+uint32_t hscb_rmap_reply_calculate_length(  hscb_uint8_array_with_length_t  rmap_reply,
+                                            uint32_t                        reply_addr_chain_length);
+uint8_t hscb_rmap_get_reply_byte(   hscb_uint8_array_with_length_t  rmap_reply,
+                                    uint32_t                        start_index,
+                                    hscb_rmap_reply_packet_fields_t required_field);
+uint32_t hscb_rmap_reply_get_data_len(   hscb_uint8_array_with_length_t  rmap_reply,
+                                                uint32_t                        start_index);
+uint8_t hscb_rmap_make_reply_instruction(uint8_t instruction);
+/*
+  Name  : CRC-8
+  Poly  : 0x07    x^8 + x^2 + x^1 + x^0
+  Init  : 0x00
+  Revert: false
+  XorOut: 0x00
+  Check : 0xF7 ("123456789")
+*/
+uint8_t hscb_crc8(uint8_t prev_crc, uint8_t byte);
+/**
+ * The first parameter contains fields for filling an RMAP packet,
+ * the second one contains preallocated memory areas for fixed length fields and pointers to be set
+ * with start addresses of variable length chains to be transmitted and
+ * preallocated memory areas for descriptors
+ */
 uint32_t hscb_prepare_rmap_packet(hscb_rmap_packet_raw_configuration_t rmap_packet_raw,
         hscb_rmap_packet_ready_for_transmit_t* rmap_packet_ready);
 
