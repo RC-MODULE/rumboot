@@ -272,6 +272,11 @@ int check_sdram_2_1_3(uint32_t base_addr, sdx_csp_t csp, sdx_sds_t sds, sdx_sds_
                 rumboot_putstring("Execute access to memory\n");
                 test_event(EVENT_CHECK_SDRAM_2_1_3);
                 sdram_oper_from_emi();
+
+                dcbi((void *)SDRAM_TEST_ADDR - 4);
+                TEST_ASSERT(0xBABADEDA==ioread32(SDRAM_TEST_ADDR - 4), "Data error");
+                dcbi((void *)SDRAM_TEST_ADDR - 0);
+                TEST_ASSERT(0xBABADEDA==ioread32(SDRAM_TEST_ADDR - 0), "Data error");
             }
 
     return 0;
@@ -397,6 +402,7 @@ int main()
             rumboot_printf("Wrong base address 0x%X", EXT_MEM_BASE);
             return 1;
     }
+    rumboot_putstring("\n\n>>>test_oi10_em2_201 is OK<<<\n");
     return ret;
 }
 
