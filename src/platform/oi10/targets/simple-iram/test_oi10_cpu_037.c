@@ -62,11 +62,7 @@ union {
     float f;
 } const FPSCR_CONV = { .u = C_S_POS_INF };
 
-volatile union {
-    uint32_t w[2];
-    uint64_t u;
-    double d;
-} const FPSCR_NaN_D = { .u =  C_D_NEG_NAN_MAX };
+ud64_t FPSCR_NaN_D = { .u =  C_D_NEG_NAN_MAX };
 
 volatile uint64_t value = 0x0;
 
@@ -475,6 +471,31 @@ void Integer_convert()
     volatile ud64_t  result_conv,
                      conv,
                      conv1;
+    FPSCR_NaN_D.u = C_D_POS_NAN_MIN;
+    asm volatile
+                (
+                     "fctid %0, %1 \n\t"
+                     : "=d" (result_conv.d)
+                     : "d"  (FPSCR_NaN_D.d)
+                     : "memory"
+                );
+    FPSCR_NaN_D.u = C_D_POS_NAN_MAX;
+    asm volatile
+                (
+                     "fctid %0, %1 \n\t"
+                     : "=d" (result_conv.d)
+                     : "d"  (FPSCR_NaN_D.d)
+                     : "memory"
+                );
+    FPSCR_NaN_D.u = C_D_NEG_NAN_MIN;
+    asm volatile
+                (
+                     "fctid %0, %1 \n\t"
+                     : "=d" (result_conv.d)
+                     : "d"  (FPSCR_NaN_D.d)
+                     : "memory"
+                );
+    FPSCR_NaN_D.u = C_D_NEG_NAN_MAX;
     asm volatile
                 (
                      "fctid %0, %1 \n\t"
