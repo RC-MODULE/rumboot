@@ -72,7 +72,10 @@ volatile uint64_t value = 0x0;
 
 static void enable_fpu()
 {
-    msr_write(msr_read() | (1 << ITRPT_XSR_FP_i));
+    msr_write(msr_read()            |
+            (1 << ITRPT_XSR_FP_i)   |
+            (1 << ITRPT_XSR_FE0_i)  |
+            (1 << ITRPT_XSR_FE1_i)  );
 }
 
 void read_fpu ()
@@ -490,7 +493,7 @@ void Integer_convert()
                      : "=d" (conv.d)
                      : "d"  (result_conv.d)
                 );
-    result_d.d = FPSCR_INF_POS.d * FPSCR_ZERO;
+    result_d.d = FPSCR_INF_POS.d * 0.0;
     rumboot_printf("Integer convert result 0x%X_%X\n",
             conv.w[0], conv.w[1]);
     read_fpu ();
