@@ -837,7 +837,7 @@ endif()
                -DRX_1_HEAP_NAME="SDRAM"
               #-DCHECK_REGS
         FILES test_oi10_hscb.c
-        PREFIX "hscb_4em"
+        PREFIX "hscb_em"
         NAME test_oi10_hscb_ssram_sram1_plram_sdram
     )
 
@@ -858,7 +858,7 @@ endif()
                -DRX_1_HEAP_NAME="PLRAM"
               #-DCHECK_REGS
         FILES test_oi10_hscb.c
-        PREFIX "hscb_4em"
+        PREFIX "hscb_em"
         NAME test_oi10_hscb_sdram_ssram_sram1_plram
     )
 
@@ -879,7 +879,7 @@ endif()
                -DRX_1_HEAP_NAME="SRAM1"
               #-DCHECK_REGS
         FILES test_oi10_hscb.c
-        PREFIX "hscb_4em"
+        PREFIX "hscb_em"
         NAME test_oi10_hscb_plram_sdram_ssram_sram1
     )
 
@@ -900,7 +900,7 @@ endif()
                -DRX_1_HEAP_NAME="SSRAM"
               #-DCHECK_REGS
         FILES test_oi10_hscb.c
-        PREFIX "hscb_4em"
+        PREFIX "hscb_em"
         NAME test_oi10_hscb_sram1_plram_sdram_ssram
     )
 
@@ -1071,6 +1071,27 @@ endif()
         FILES test_oi10_hscb.c
         PREFIX "hscb_em"
         NAME test_oi10_hscb_sram1_sram1
+    )
+    
+    add_rumboot_target(
+        CONFIGURATION IRAM
+        CFLAGS -DHSCB_UNDER_TEST_BASE=HSCB0_BASE
+               -DHSCB_SUPPLEMENTARY_BASE=HSCB1_BASE
+               -DHSCB_UNDER_TEST_INT=SW0_HSCB_INT
+               -DHSCB_UNDER_TEST_DMA_INT=SW0_AXI_INT
+               -DHSCB_SUPPLEMENTARY_INT=SW1_HSCB_INT
+               -DHSCB_SUPPLEMENTARY_DMA_INT=SW1_AXI_INT
+               -DHSCB_FUNC_TEST
+               -DHSCB_SHORT_TEST
+               #-DTEST_OI10_HSCB_FULL_TRACING
+               -DTX_0_HEAP_NAME="SRAM0"
+               -DRX_0_HEAP_NAME="SSRAM"
+               -DTX_1_HEAP_NAME="SRAM1"
+               -DRX_1_HEAP_NAME="PLRAM"
+              #-DCHECK_REGS
+        FILES test_oi10_hscb.c
+        PREFIX "hscb_em"
+        NAME test_oi10_hscb_sram0_ssram_sram1_plram
     )
     
     add_rumboot_target(
