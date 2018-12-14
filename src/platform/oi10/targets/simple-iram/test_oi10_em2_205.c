@@ -789,12 +789,12 @@ int main(void)
     iowrite32(0xBABA0001, ADDR_SRAM0_SE);
     iowrite32(0xBABA0001, ADDR_SRAM0_DE);
     msync();
-    dcr_write((DCR_EM2_EMI_BASE + EMI_WECR), 0x0F);
+    dcr_write((DCR_EM2_EMI_BASE + EMI_WECR), 0x2F);
 
-    iowrite32(0xBABA0000, ADDR_SRAM0_SE);
+    iowrite32(0x7E000000, ADDR_SRAM0_SE);
     msync();
 
-    iowrite32(0xBABA0007, ADDR_SRAM0_DE);
+    iowrite32(0x1A000000, ADDR_SRAM0_DE);
     msync();
 
     dcr_write((DCR_EM2_EMI_BASE + EMI_WECR), 0x00);
@@ -805,12 +805,12 @@ int main(void)
     iowrite32(0xBABA0001, ADDR_SSRAM_SE);
     iowrite32(0xBABA0001, ADDR_SSRAM_DE);
     msync();
-    dcr_write((DCR_EM2_EMI_BASE + EMI_WECR), 0x0F);
+    dcr_write((DCR_EM2_EMI_BASE + EMI_WECR), 0x2F);
 
-    iowrite32(0xBABA0000, ADDR_SSRAM_SE);
+    iowrite32(0x7E000000, ADDR_SSRAM_SE);
     msync();
 
-    iowrite32(0xBABA0007, ADDR_SSRAM_DE);
+    iowrite32(0x1A000000, ADDR_SSRAM_DE);
     msync();
 
     dcr_write((DCR_EM2_EMI_BASE + EMI_WECR), 0x00);
@@ -821,12 +821,12 @@ int main(void)
     iowrite32(0xBABA0001, ADDR_SDRAM_SE);
     iowrite32(0xBABA0001, ADDR_SDRAM_DE);
     msync();
-    dcr_write((DCR_EM2_EMI_BASE + EMI_WECR), 0x0F);
+    dcr_write((DCR_EM2_EMI_BASE + EMI_WECR), 0x2F);
 
-    iowrite32(0xBABA0000, ADDR_SDRAM_SE);
+    iowrite32(0x7E000000, ADDR_SDRAM_SE);
     msync();
 
-    iowrite32(0xBABA0007, ADDR_SDRAM_DE);
+    iowrite32(0x1A000000, ADDR_SDRAM_DE);
     msync();
 
     dcr_write((DCR_EM2_EMI_BASE + EMI_WECR), 0x00);
