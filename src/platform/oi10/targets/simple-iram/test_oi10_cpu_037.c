@@ -23,10 +23,8 @@ double FPSCR_d = 1.99999e39;
 float FPSCR_f = 1.123456789999e-38;
 float FPSCR_ZERO = 0.0e-38;
 float FPSCR_UND = 1.1e3;
-float FPSCR_NaN_F = C_S_NEG_NAN_MAX;
 float FPSCR_neg = -1.99777e20;
 float FPSCR_pos = +1.99999e20;
-double FPSCR_NaN_D = C_D_NEG_NAN_MAX;
 volatile double FPSCR_Round = 1.19159013186231589874e+308;
 volatile float res_com1;
 volatile float res_com2;
@@ -37,6 +35,7 @@ volatile union {
     uint64_t u;
     double d;
 } const FPSCR_INF_POS = { .u =  C_D_POS_INF };
+
 volatile union {
     uint32_t u;
     float f;
@@ -46,6 +45,12 @@ union {
     uint32_t u;
     float f;
 } const FPSCR_CONV = { .u = C_S_POS_INF };
+
+volatile union {
+    uint64_t u;
+    double d;
+} const FPSCR_NaN_D = { .u =  C_D_NEG_NAN_MAX };
+
 volatile uint64_t value = 0x0;
 
 static void enable_fpu()
@@ -447,14 +452,16 @@ void Integer_convert()
     rumboot_printf("Integer convert\n");
     set_one ();
 
-    volatile long long int result_conv;
+    volatile int64_t result_conv;
      asm volatile
                  (
                          "fctid %0, %1 \n\t"
-                         : "=f" (result_conv)
-                         : "f"  (FPSCR_CONV.f)
+                         : "= f" (result_conv)
+                         : "f"  (FPSCR_NaN_D.d)
+                         : "memory"
                  );
 
+     rumboot_printf("Integer convert result %X\n",result_conv );
 
     read_fpu ();
     check_exception ();
@@ -516,17 +523,17 @@ int main ()
    read_fpu ();
    check_exception ();
 
-    check_OX ();
-    check_UX ();
-    check_ZX ();
-    check_XX ();
-    check_sqrt ();
-    check_infinity ();
-    check_zero_division ();
-    check_comparison ();
+//    check_OX ();
+//    check_UX ();
+//    check_ZX ();
+//    check_XX ();
+//    check_sqrt ();
+//    check_infinity ();
+//    check_zero_division ();
+//    check_comparison ();
     Integer_convert();
-    software_defined_condition ();
-    check_round ();
+//    software_defined_condition ();
+//    check_round ();
 
 
     read_fpu ();
