@@ -450,9 +450,11 @@ void check_comparison ()
 void Integer_convert()
 {
     rumboot_printf("Integer convert\n");
-    set_one ();
+    //set_one ();
 
     volatile int64_t result_conv;
+    volatile int64_t conv;
+    volatile int64_t conv1;
      asm volatile
                  (
                          "fctid %0, %1 \n\t"
@@ -462,7 +464,25 @@ void Integer_convert()
                  );
 
      rumboot_printf("Integer convert result %X\n",result_conv );
-
+     read_fpu ();
+     check_exception ();
+     asm volatile
+                 (
+                         "fsqrt %0, %1 \n\t"
+                         : "=f" (conv)
+                         : "f"  (result_conv)
+                 );
+     result_sum = FPSCR_INF_POS.d*FPSCR_ZERO;
+     rumboot_printf("Integer convert result %X\n",conv );
+     read_fpu ();
+     check_exception ();
+     asm volatile
+                 (
+                         "fsqrt %0, %1 \n\t"
+                         : "=f" (conv1)
+                         : "f"  (result_sum)
+                 );
+     rumboot_printf("Integer convert result %X\n",conv1 );
     read_fpu ();
     check_exception ();
     clearing_bits ();
