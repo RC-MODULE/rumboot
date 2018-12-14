@@ -19,6 +19,21 @@
 #include <platform/arch/ppc/ppc_476fp_fpu_const.h>
 
 
+typedef union
+{
+    uint32_t w[2]; // for print
+    uint64_t u;
+     int64_t i;
+    double   d;
+} ud64_t;
+
+typedef union
+{
+    uint32_t u;
+     int32_t i;
+    float    f;
+} uf32_t;
+
 double FPSCR_d = 1.99999e39;
 float FPSCR_f = 1.123456789999e-38;
 float FPSCR_ZERO = 0.0e-38;
@@ -31,6 +46,7 @@ volatile float res_com2;
 volatile float res_com3;
 volatile float res_com4;
 float result_sum;
+ud64_t result_d;
 volatile union {
     uint64_t u;
     double d;
@@ -47,6 +63,7 @@ union {
 } const FPSCR_CONV = { .u = C_S_POS_INF };
 
 volatile union {
+    uint32_t w[2];
     uint64_t u;
     double d;
 } const FPSCR_NaN_D = { .u =  C_D_NEG_NAN_MAX };
@@ -452,37 +469,40 @@ void Integer_convert()
     rumboot_printf("Integer convert\n");
     //set_one ();
 
-    volatile int64_t result_conv;
-    volatile int64_t conv;
-    volatile int64_t conv1;
-     asm volatile
-                 (
-                         "fctid %0, %1 \n\t"
-                         : "= f" (result_conv)
-                         : "f"  (FPSCR_NaN_D.d)
-                         : "memory"
-                 );
+    volatile ud64_t  result_conv,
+                     conv,
+                     conv1;
+    asm volatile
+                (
+                     "fctid %0, %1 \n\t"
+                     : "=d" (result_conv.d)
+                     : "d"  (FPSCR_NaN_D.d)
+                     : "memory"
+                );
 
-     rumboot_printf("Integer convert result %X\n",result_conv );
-     read_fpu ();
-     check_exception ();
-     asm volatile
-                 (
-                         "fsqrt %0, %1 \n\t"
-                         : "=f" (conv)
-                         : "f"  (result_conv)
-                 );
-     result_sum = FPSCR_INF_POS.d*FPSCR_ZERO;
-     rumboot_printf("Integer convert result %X\n",conv );
-     read_fpu ();
-     check_exception ();
-     asm volatile
-                 (
-                         "fsqrt %0, %1 \n\t"
-                         : "=f" (conv1)
-                         : "f"  (result_sum)
-                 );
-     rumboot_printf("Integer convert result %X\n",conv1 );
+    rumboot_printf("Integer convert result 0x%X_%X\n",
+         result_conv.w[0], result_conv.w[1]);
+    read_fpu ();
+    check_exception ();
+    asm volatile
+                (
+                     "fsqrt %0, %1 \n\t"
+                     : "=d" (conv.d)
+                     : "d"  (result_conv.d)
+                );
+    result_d.d = FPSCR_INF_POS.d * FPSCR_ZERO;
+    rumboot_printf("Integer convert result 0x%X_%X\n",
+            conv.w[0], conv.w[1]);
+    read_fpu ();
+    check_exception ();
+    asm volatile
+                (
+                     "fsqrt %0, %1 \n\t"
+                     : "=d" (conv1.d)
+                     : "d"  (result_d.d)
+                );
+    rumboot_printf("Integer convert result 0x%X_%X\n",
+            conv1.w[0], conv1.w[1]);
     read_fpu ();
     check_exception ();
     clearing_bits ();
