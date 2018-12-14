@@ -53,8 +53,8 @@
 #define ADDR_NOR_DE_2                           NOR_BASE + 0x10110
 
 #define BABA0001_ECC                            0x7A
-#define BABA0000_ECC                            0x36
-#define BABA0007_ECC                            0x67
+#define BABA0001_ECC_1bit                       0x7B
+#define BABA0001_ECC_2bit                       0x7F
 
 
 enum emi_error_irq_source
@@ -614,11 +614,11 @@ bool check_data_ECC()
     TEST_ASSERT(stat == 0x010000, "NOR: invalid value in STATUS_IRQ.");
     dcr_write(DCR_EM2_EMI_BASE + EMI_ECNT53, 0x00);
 
-    if (reg != 0xBABA0000)
+    if (reg != 0xBABA0001)
     {
         rumboot_putstring("ECC ERROR NOR (Single error)\n");
         rumboot_printf("ADDR = 0x%x\n", ADDR_NOR_SE_2);
-        rumboot_printf("Expected = 0x%x\n", 0xBABA0000);
+        rumboot_printf("Expected = 0x%x\n", 0xBABA0001);
         rumboot_printf("Actual = 0x%x\n", reg);
         return false;
     }
@@ -833,14 +833,14 @@ int main(void)
 
 
     //Software error injection for NOR ECC
-    dcr_write(DCR_EM2_EMI_BASE + EMI_ECCWRR, BABA0000_ECC);
+    dcr_write(DCR_EM2_EMI_BASE + EMI_ECCWRR, BABA0001_ECC_1bit);
     dcr_write(DCR_EM2_EMI_BASE + EMI_FLCNTRL,  (dcr_read(DCR_EM2_EMI_BASE + EMI_FLCNTRL) & 0x1C)  | ECC_CTRL_CNT_ECCWRR);
 
     rumboot_putstring("WRITE NOR ECC\n");
     nor_write32(0xBABA0001, ADDR_NOR_SE_2);
     msync();
 
-    dcr_write(DCR_EM2_EMI_BASE + EMI_ECCWRR, BABA0007_ECC);
+    dcr_write(DCR_EM2_EMI_BASE + EMI_ECCWRR, BABA0001_ECC_2bit);
     dcr_write(DCR_EM2_EMI_BASE + EMI_FLCNTRL,  (dcr_read(DCR_EM2_EMI_BASE + EMI_FLCNTRL) & 0x1C)  | ECC_CTRL_CNT_ECCWRR);
 
     nor_write32(0xBABA0001, ADDR_NOR_DE_2);
