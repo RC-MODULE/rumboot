@@ -455,11 +455,11 @@ bool check_data_ECC()
     TEST_ASSERT(stat == 0x000001, "SRAM0: invalid value in STATUS_IRQ");
     dcr_write(DCR_EM2_EMI_BASE + EMI_ECNT20, 0x00);
 
-    if (reg != 0xBABA0000)
+    if (reg != 0xBABA0001)
     {
         rumboot_putstring("ECC ERROR SRAM0 (Single error)\n");
         rumboot_printf("ADDR = 0x%x\n", ADDR_SRAM0_SE);
-        rumboot_printf("Expected = 0x%x\n", 0xBABA0000);
+        rumboot_printf("Expected = 0x%x\n", 0xBABA0001);
         rumboot_printf("Actual = 0x%x\n",reg);
         return false;
     }
@@ -508,11 +508,11 @@ bool check_data_ECC()
     TEST_ASSERT(stat == 0x10000, "SSRAM: invalid value in STATUS_IRQ");
     dcr_write(DCR_EM2_EMI_BASE + EMI_ECNT20, 0x00);
 
-    if (reg != 0xBABA0000)
+    if (reg != 0xBABA0001)
     {
         rumboot_putstring("ECC ERROR SSRAM (Single error)\n");
         rumboot_printf("ADDR = 0x%x\n", ADDR_SSRAM_SE);
-        rumboot_printf("Expected = 0x%x\n", 0xBABA0000);
+        rumboot_printf("Expected = 0x%x\n", 0xBABA0001);
         rumboot_printf("Actual = 0x%x\n",reg);
         return false;
     }
@@ -561,11 +561,11 @@ bool check_data_ECC()
     TEST_ASSERT(stat == 0x100, "SDRAM: invalid value in STATUS_IRQ");
     dcr_write(DCR_EM2_EMI_BASE + EMI_ECNT20, 0x00);
 
-    if (reg != 0xBABA0000)
+    if (reg != 0xBABA0001)
     {
         rumboot_putstring("ECC ERROR SDRAM (Single error)\n");
         rumboot_printf("ADDR = 0x%x\n", ADDR_SDRAM_SE);
-        rumboot_printf("Expected = 0x%x\n", 0xBABA0000);
+        rumboot_printf("Expected = 0x%x\n", 0xBABA0001);
         rumboot_printf("Actual = 0x%x\n",reg);
         return false;
     }
