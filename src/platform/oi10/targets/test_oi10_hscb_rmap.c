@@ -26,7 +26,7 @@
 #include <platform/common_macros/common_macros.h>
 
 
-#define MAX_ATTEMPTS 100000
+#define MAX_ATTEMPTS 1000
 
 
 #ifndef TX_0_HEAP_NAME
@@ -332,7 +332,8 @@ enum{
     SOURCE_AND_DEST_LENGTH_MISMATCH = (1 << 13),
     SOURCE_AND_DEST_DATA_MISMATCH = (1 << 14),
     REPLY_ARRAY_IS_NULL = (1 << 15),
-    REPLY_CALCULATED_AND_ACTUAL_LENGTH_MISMATCH = (1 << 16)
+    REPLY_CALCULATED_AND_ACTUAL_LENGTH_MISMATCH = (1 << 16),
+    RESERVED_FIELD_MISMATCH = (1 << 17)
 }generate_some_raw_rmap_packets_result;
 
 uint32_t generate_some_raw_rmap_packets(hscb_rmap_packet_raw_configuration_t* raw_rmap_packets, const uint32_t length)
@@ -340,7 +341,6 @@ uint32_t generate_some_raw_rmap_packets(hscb_rmap_packet_raw_configuration_t* ra
     int i = length;
     bool change_endian = true;
     uint32_t reply_addr_length = 0;
-    char default_heap_name_for_reply_addr[] = DEFAULT_HEAP_NAME_FOR_REPLY_ADDR;
     switch(COUNT_PACKETS)
     {
         case 2:
@@ -348,6 +348,9 @@ uint32_t generate_some_raw_rmap_packets(hscb_rmap_packet_raw_configuration_t* ra
 //            char rx_1_heap_name[] = RX_1_HEAP_NAME;
             char tx_1_heap_name[] = TX_1_HEAP_NAME;
             --i;
+
+            raw_rmap_packets[i].data_chain.length = DATA_SIZE_1;
+            raw_rmap_packets[i].data_chain.array = NULL;
 
             raw_rmap_packets[i].addr
                 = rumboot_virt_to_dma( rumboot_malloc_from_named_heap_aligned(tx_1_heap_name,
@@ -371,9 +374,6 @@ uint32_t generate_some_raw_rmap_packets(hscb_rmap_packet_raw_configuration_t* ra
             raw_rmap_packets[i].reply_addr_chain.length = reply_addr_length << 2;
             raw_rmap_packets[i].reply_addr_chain.array = NULL;
 
-            raw_rmap_packets[i].data_chain.length = DATA_SIZE_1;
-            raw_rmap_packets[i].data_chain.array = NULL;
-
             raw_rmap_packets[i].target_addr_chain.array = NULL;
             raw_rmap_packets[i].target_addr_chain.length = 0;
             raw_rmap_packets[i].target_logical_addr = HSCB_RMAP_DEFAULT_TARGET_LOGICAL_ADDRESS;
@@ -389,6 +389,7 @@ uint32_t generate_some_raw_rmap_packets(hscb_rmap_packet_raw_configuration_t* ra
         }
         case 1:
         {
+            char default_heap_name_for_reply_addr[] = DEFAULT_HEAP_NAME_FOR_REPLY_ADDR;
             char rx_0_heap_name[] = RX_0_HEAP_NAME;
             char tx_0_heap_name[] = TX_0_HEAP_NAME;
             --i;
@@ -445,7 +446,8 @@ uint32_t generate_some_raw_rmap_packets(hscb_rmap_packet_raw_configuration_t* ra
             raw_rmap_packets[i].transaction_id = i;
             raw_rmap_packets[i].change_endian = change_endian;
             raw_rmap_packets[i].expected_reply_status = HSCB_RMAP_REPLY_STATUS_OK;
-        } break;
+        }
+        break;
         default: return UNSUPPORTED_COUNT_PACKETS;
     }
     return OK;
@@ -772,6 +774,8 @@ void print_error_status_on_rmap_reply_result(uint32_t result)
         rumboot_printf("RMAP reply: current reply array is NULL\n");
     if(result & REPLY_CALCULATED_AND_ACTUAL_LENGTH_MISMATCH)
         rumboot_printf("RMAP reply: actually received and calculated length of RMAP reply packet mismatch\n");
+    if(result & RESERVED_FIELD_MISMATCH)
+        rumboot_printf("RMAP reply: Read reply reserved field is non-zero\n");
 }
 static uint32_t check_results(
         hscb_rmap_packet_ready_for_transmit_t received_rmap_packets,
@@ -785,7 +789,7 @@ static uint32_t check_results(
     uint32_t start_addr;
     uint32_t reply_packet_number = 0;
     uint8_t  instruction;
-    uint8_t  crc8;
+    uint8_t  header_crc8;
     hscb_uint8_array_with_length_t current_reply;
     hscb_uint8_array_with_length_t source_data = {0};
     hscb_uint8_array_with_length_t destination_data = {0};
@@ -857,26 +861,44 @@ static uint32_t check_results(
                         ;
             if(instruction & HSCB_RMAP_PACKET_INSTRUCTION_FIELD_WRITE_mask)
             {
-                crc8 = 0;
+                header_crc8 = 0;
                 for(uint32_t i = reply_addr_actual_length; i < (reply_addr_actual_length + HSCB_RMAP_REPLY_RESERVED_R_HEADER_CRC8_W_i); ++i)
                 {
-                    crc8 = hscb_crc8(crc8, current_reply.array[i]);
+                    header_crc8 = hscb_crc8(header_crc8, current_reply.array[i]);
 #ifdef TEST_OI10_HSCB_FULL_TRACING
-                    rumboot_printf("header crc8: array[%d] == 0x%x, crc8 == 0x%x\n", i, current_reply.array[i], crc8);
+                    rumboot_printf("header crc8: array[%d] == 0x%x, crc8 == 0x%x\n", i, current_reply.array[i], header_crc8);
 #endif
                 }
-                result |= (hscb_rmap_get_reply_byte(current_reply,reply_addr_actual_length,HSCB_RMAP_REPLY_RESERVED_R_HEADER_CRC8_W_i) == crc8)
+                result |= (hscb_rmap_get_reply_byte(current_reply,reply_addr_actual_length,HSCB_RMAP_REPLY_RESERVED_R_HEADER_CRC8_W_i) == header_crc8)
                         ? OK : HEADER_CRC_MISMATCH;
             }else{
-                crc8 = 0;
+                uint8_t data_crc8 = 0;
+                header_crc8 = 0;
                 for(uint32_t i = reply_addr_actual_length; i < (reply_addr_actual_length + HSCB_RMAP_REPLY_HEADER_CRC8_R_i); ++i)
-                    crc8 = hscb_crc8(crc8, current_reply.array[i]);
+                {
+                    header_crc8 = hscb_crc8(header_crc8, current_reply.array[i]);
+#ifdef TEST_OI10_HSCB_FULL_TRACING
+                    rumboot_printf("header crc8: array[%d] == 0x%x, crc8 == 0x%x\n", i, current_reply.array[i], header_crc8);
+#endif
+                }
+                for(uint32_t i = reply_addr_actual_length + HSCB_RMAP_REPLY_DATA_START_i;
+                        i < (reply_addr_actual_length + HSCB_RMAP_REPLY_DATA_START_i
+                                + hscb_rmap_reply_get_data_len(current_reply,reply_addr_actual_length)); ++i)
+                {
+                    data_crc8 = hscb_crc8(data_crc8, current_reply.array[i]);
+#ifdef TEST_OI10_HSCB_FULL_TRACING
+                    rumboot_printf("data crc8: array[%d] == 0x%x, crc8 == 0x%x\n", i, current_reply.array[i], data_crc8);
+#endif
+                }
                 result |=   ((hscb_rmap_get_reply_byte(current_reply,reply_addr_actual_length,HSCB_RMAP_REPLY_RESERVED_R_HEADER_CRC8_W_i) == 0)
-                              ? OK : HEADER_CRC_MISMATCH)
+                              ? OK : RESERVED_FIELD_MISMATCH)
                           | ((hscb_rmap_reply_get_data_len(current_reply,reply_addr_actual_length) == raw_rmap_packets[j].data_chain.length)
                               ? OK : DATA_LENGTH_MISMATCH)
-                          | (hscb_rmap_get_reply_byte(current_reply,reply_addr_actual_length,HSCB_RMAP_REPLY_RESERVED_R_HEADER_CRC8_W_i) == crc8)
-                              ? OK : DATA_CRC_MISMATCH
+                          | ((hscb_rmap_get_reply_byte(current_reply,reply_addr_actual_length,HSCB_RMAP_REPLY_HEADER_CRC8_R_i) == header_crc8)
+                              ? OK : HEADER_CRC_MISMATCH)
+                          | ((hscb_rmap_get_reply_byte(current_reply,reply_addr_actual_length,HSCB_RMAP_REPLY_DATA_START_i
+                                  + hscb_rmap_reply_get_data_len(current_reply,reply_addr_actual_length)) == data_crc8)
+                              ? OK : DATA_CRC_MISMATCH)
                                 ;
             }
             /*Here we skip all write commands and cover all read commands*/
