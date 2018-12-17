@@ -523,6 +523,8 @@ uint8_t hscb_rmap_make_reply_instruction(uint8_t instruction)
 uint32_t hscb_rmap_get_reply_addr_actual_length(hscb_uint8_array_with_length_t reply_addr)
 {
     uint32_t length = reply_addr.length;
+    if(length == 0)
+        return length;
     for( int i = 0; (reply_addr.array[i] == 0) && (i < (reply_addr.length - 1)); ++i)
         --length;
     return length;
