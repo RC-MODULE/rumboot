@@ -1,6 +1,5 @@
 #ifndef DIT_LIB_H
 #define DIT_LIB_H
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -105,6 +104,7 @@ struct sp804_conf{
  */
 void sp804_enable( uint32_t base_addr, int index);
 
+
 /**
  *  \brief Stop timer
  *
@@ -114,6 +114,7 @@ void sp804_enable( uint32_t base_addr, int index);
  *  \details Manualy clears ENABLE bit in CONTROL register of chosen timer.
  */
 void sp804_stop( uint32_t base_addr, int index);
+
 
 /**
  *  \brief Get timer value
@@ -125,6 +126,7 @@ void sp804_stop( uint32_t base_addr, int index);
  *  \details
  */
 int sp804_get_value( uint32_t base_addr, int index);
+
 
 /**
  *  \brief Clear timer interrupt
@@ -149,6 +151,7 @@ void sp804_clrint( uint32_t base_addr, int index);
  *   sets LOAD and BgLoad values if they are non-zero.
  */
 void sp804_config( uint32_t base_addr, const struct sp804_conf * config, int index);
+
 
 /**
  * @}
