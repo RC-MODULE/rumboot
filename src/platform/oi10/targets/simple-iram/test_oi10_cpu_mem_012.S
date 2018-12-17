@@ -10,6 +10,10 @@
 #include <platform/arch/ppc/test_macro_asm.S.h>
 #include <platform/regs/regs_plb6plb4.h>
 
+DECLARE_CONST ( TEST_MPW_CPU_MEM_012_EVENT_START, TEST_EVENT_CODE_MIN )
+DECLARE_CONST ( TEST_MPW_CPU_MEM_012_EVENT_VERIFY, TEST_EVENT_CODE_MIN + 1 )
+DECLARE_CONST ( TEST_MPW_CPU_MEM_012_EVENT_FINISHED, TEST_EVENT_CODE_MIN + 2 )
+
 .macro insert_nop_0
 .endm
 
@@ -111,6 +115,10 @@
 .global main
 
 main:
+    test_event_send_test_id "test_oi10_cpu_mem_012"
+    rumboot_putstring "\nSend event verify\n"
+    test_event TEST_MPW_CPU_MEM_012_EVENT_VERIFY
+
 //according to User's Manual ch. 9.4 Initialization Software Requirements
     load_const  r0, 0x00000000 //DBCR0 value
     mtspr       SPR_DBCR0, r0       //DBCR0 clear
@@ -147,7 +155,7 @@ main:
     mtspr       SPR_USPCR, r0
 
     load_const r0, 0
-    //test_event TEST_MPW_CPU_MEM_012_EVENT_START
+
     b bht_check
 
     bht_check:
@@ -156,11 +164,15 @@ main:
     ori r3, r3, ((1 << IBM_BIT_INDEX(32, 20)))
     mtspr SPR_CCR0, r3
 
+    test_event TEST_MPW_CPU_MEM_012_EVENT_START
+
     check_set_bits:
+    rumboot_putstring "check set bits\n"
     load_const r1, 5 //value for branch conditional
     load_const r2, 5 //value for branch conditional
     load_const r3, 0 //counter
     load_const r4, 6 //stop counter
+
     cmp cr0, 0, r1, r2 //r1==r2 for creation branch taken
 
     set_bht_array_bits 0, 0x4000 //mem[0][15:14]
@@ -175,6 +187,8 @@ main:
     set_bht_array_bits 9, 0xA000 //mem[1][13:12]
 
     check_clr_bits:
+    rumboot_putstring "check clr bits\n"
+
     load_const r1, 6
     load_const r4, 4
     cmp cr0, 0, r1, r2 //r1!=r2 for creation branch not-taken
@@ -190,11 +204,9 @@ main:
     clr_bht_array_bits 8, 0x11000 //mem[4][15:14]
     clr_bht_array_bits 9, 0x12000 //mem[1][13:12]
 
-    //test_event EVENT_FINISHED
-    test_ok:
-    rumboot_putstring "\nTEST OK\n"
-    test_event      EVENT_OK
-    load_const r3,  RESULT_OK
+    test_finished:
+    rumboot_putstring "\nTEST FINISHED\n"
+    test_event      TEST_MPW_CPU_MEM_012_EVENT_FINISHED
     b infinite_loop
 
     infinite_loop:
