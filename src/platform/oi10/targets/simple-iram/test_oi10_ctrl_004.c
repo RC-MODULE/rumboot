@@ -14,12 +14,14 @@
 #include <rumboot/printf.h>
 #include <rumboot/regpoker.h>
 #include <arch/irq_macros.h>
-#include <devices/sp804.h>
+#include <devices/sp804dit.h>
+//#include <devices/sp804.h>
 #include <platform/interrupts.h>
 #include <rumboot/testsuite.h>
 #include <platform/devices.h>
 #include <regs/regs_sp804.h>
 #include <rumboot/platform.h>
+
 
 #define TIMER0_CYCLES           1
 #define TIMER1_CYCLES           2
@@ -111,7 +113,7 @@ static void handler0( int irq, void *arg )
     a->timer0_irq = a->timer0_irq + 1;
     rumboot_printf("IRQ 0 arrived\n");
     rumboot_printf("sp804_%d timer 0 INT # %d  \n", a->dit_index, a->timer0_irq);
-    sp804_clrint( a->base_addr, 0);
+    sp804_clrint_dit( a->base_addr, 0);
 }
 
 static void handler1( int irq, void *arg )
@@ -120,7 +122,7 @@ static void handler1( int irq, void *arg )
     a->timer1_irq = a->timer1_irq + 1;
     rumboot_printf("IRQ 1 arrived\n");
     rumboot_printf("sp804_%d timer 1 INT # %d  \n", a->dit_index, a->timer1_irq);
-    sp804_clrint( a->base_addr, 1);
+    sp804_clrint_dit( a->base_addr, 1);
 }
 
 bool test_dit_timers( uint32_t structure )
@@ -149,18 +151,18 @@ bool test_dit_timers( uint32_t structure )
 
     for( int i = 0; i < TIMER0_CYCLES + stru->dit_index; i++ )
     {
-        sp804_config(base_addr, &config_0, 0);
-        sp804_enable(base_addr, 0);
-        while(sp804_get_value(base_addr, 0))
+        sp804_config_dit(base_addr, &config_0, 0);
+        sp804_enable_dit(base_addr, 0);
+        while(sp804_get_value_dit(base_addr, 0))
         {
         };
         c++;
     }
 
     for( int i = 0; i < TIMER1_CYCLES + stru->dit_index; i++ ) {
-        sp804_config( base_addr, &config_1, 1 );
-        sp804_enable( base_addr, 1 );
-        while( sp804_get_value( base_addr, 1 ) ) {
+        sp804_config_dit( base_addr, &config_1, 1 );
+        sp804_enable_dit( base_addr, 1 );
+        while( sp804_get_value_dit( base_addr, 1 ) ) {
         };
         d++;
     }
@@ -187,7 +189,7 @@ bool test_dit_timers( uint32_t structure )
     }
     return true;
 }
-
+/*
 static bool test_dit_timers2( uint32_t structure)
 {
     struct s804_instance *stru = ( struct s804_instance * )structure;
@@ -209,20 +211,21 @@ static bool test_dit_timers2( uint32_t structure)
     }
     i = dcr_read(base_addr + DIT_REG_ITCR);
     rumboot_printf("DIT_REG_ITCR %d\n", i);
-    sp804_enable(stru->base_addr, 0);
+    sp804_enable_dit(stru->base_addr, 0);
     return true;
 }
-
+*/
 static struct s804_instance in[] =
 {
     {
         .base_addr = DCR_TIMERS_BASE,
-        .dit_index = 0 },
+        .dit_index = 0,
+    },
 };
 
 TEST_SUITE_BEGIN(dit_testlist, "SP804 IRQ TEST")
-TEST_ENTRY("SP804_0", test_dit_timers2, (uint32_t) &in[0]),
 TEST_ENTRY("SP804_0", test_dit_timers, (uint32_t) &in[0]),
+//TEST_ENTRY("SP804_0", test_dit_timers2, (uint32_t) &in[0]),
 #ifdef CHECK_REGS
 TEST_ENTRY("SP804_0", check_default_ro_val, (uint32_t, &in[0]));
 TEST_ENTRY("SP804_0", check_default_rw_val, (uint32_t, &in[0]));
@@ -235,13 +238,20 @@ int main(void)
     rumboot_printf( "SP804 test START\n" );
     rumboot_irq_cli();
     struct rumboot_irq_entry *tbl = rumboot_irq_create( NULL );
-    rumboot_irq_set_handler( tbl, DIT_INT0, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler0, &in[ 0 ] );
-    rumboot_irq_set_handler( tbl, DIT_INT1, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler1, &in[ 0 ] );
+    rumboot_irq_set_handler( tbl, DIT_INT0, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler0, &in[0]);
+    rumboot_irq_set_handler( tbl, DIT_INT1, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler1, &in[0]);
     /* Activate the table */
     rumboot_irq_table_activate( tbl );
     rumboot_irq_enable( DIT_INT0 );
     rumboot_irq_enable( DIT_INT1 );
     rumboot_irq_sei();
     result = test_suite_run( NULL, &dit_testlist );
-    return (!result) ? rumboot_printf("CHECKED TEST_OK\n"), 1  : rumboot_printf("CHECKED TEST_ERROR\n"), 0;
+    if(!result)
+    {
+        rumboot_printf("Checked TEST_OK\n");
+        return result;
+    }
+    rumboot_printf("Checked TEST_ERROR\n");
+    return result;
 }
+
