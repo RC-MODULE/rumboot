@@ -1,3 +1,4 @@
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -10,7 +11,7 @@
 
 
 
-void sp804_enable( uint32_t base_addr, int index)
+void sp804_enable_dit( uint32_t base_addr, int index)
 {
     int cntrl ;
     int control_reg;
@@ -27,7 +28,7 @@ void sp804_enable( uint32_t base_addr, int index)
 }
 
 
-void sp804_stop( uint32_t base_addr, int index)
+void sp804_stop_dit( uint32_t base_addr, int index)
 {
     int cntrl ;
     int control_reg;
@@ -44,7 +45,7 @@ void sp804_stop( uint32_t base_addr, int index)
 }
 
 
-int sp804_get_value( uint32_t base_addr, int index)
+int sp804_get_value_dit( uint32_t base_addr, int index)
 {
     int value_reg;
     if (index){
@@ -58,7 +59,7 @@ int sp804_get_value( uint32_t base_addr, int index)
 
 
 
-void sp804_clrint( uint32_t base_addr, int index)
+void sp804_clrint_dit( uint32_t base_addr, int index)
 {
     int int_clr_reg;
     if (index){
@@ -72,7 +73,7 @@ void sp804_clrint( uint32_t base_addr, int index)
 
 
 
-void sp804_config( uint32_t base_addr, const struct sp804_conf * config, int index)
+void sp804_config_dit( uint32_t base_addr, const struct sp804_conf * config, int index)
 {
     int cntrl = 0;
     // MODE
