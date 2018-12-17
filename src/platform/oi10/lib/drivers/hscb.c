@@ -568,7 +568,7 @@ uint32_t hscb_prepare_rmap_packet(hscb_rmap_packet_raw_configuration_t rmap_pack
     uint32_t initial_data_area_index = rmap_packet_ready->count_areas;
     bool is_target_sw_addr_chain_supplied = (rmap_packet_raw.target_addr_chain.length > 0);
     bool is_reply_sw_addr_chain_supplied = (rmap_packet_raw.reply_addr_chain.length > 0);
-    bool is_data_chain_supplied = (rmap_packet_raw.data_chain.length > 0);
+    bool is_data_chain_supplied = (rmap_packet_raw.data_chain.array != 0);
     uint32_t index_for_header_CRC = 0;
     uint8_t  temporary_CRC = 0;
 
