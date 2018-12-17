@@ -37,14 +37,14 @@
 #define RX_0_HEAP_NAME "IM2"
 #endif
 
-//#ifndef TX_1_HEAP_NAME
-//#define TX_1_HEAP_NAME "IM2"
-//#endif
-//
-//#ifndef RX_1_HEAP_NAME
-//#define RX_1_HEAP_NAME "IM1"
-//#endif
-//
+#ifndef TX_1_HEAP_NAME
+#define TX_1_HEAP_NAME "IM2"
+#endif
+
+#ifndef RX_1_HEAP_NAME
+#define RX_1_HEAP_NAME "IM1"
+#endif
+
 //#ifndef TX_2_HEAP_NAME
 //#define TX_2_HEAP_NAME "SSRAM"
 //#endif
@@ -85,10 +85,10 @@
 #define INCREMENT_0 1
 #endif
 
-//#ifndef INCREMENT_1
-//#define INCREMENT_1 -1
-//#endif
-//
+#ifndef INCREMENT_1
+#define INCREMENT_1 -1
+#endif
+
 //#ifndef INCREMENT_2
 //#define INCREMENT_2 2
 //#endif
@@ -108,15 +108,15 @@
 #define DESCRIPTOR_TABLES_COUNT 4
 
 #ifndef COUNT_PACKETS
-#define COUNT_PACKETS 1
+#define COUNT_PACKETS 2
 #endif
 
 #ifndef DATA_SIZE_0
 #define DATA_SIZE_0 0x13
 #endif
-//#ifndef DATA_SIZE_1
-//#define DATA_SIZE_1 0x22
-//#endif
+#ifndef DATA_SIZE_1
+#define DATA_SIZE_1 0x22
+#endif
 //#ifndef DATA_SIZE_2
 //#define DATA_SIZE_2 0x19
 //#endif
@@ -343,6 +343,50 @@ uint32_t generate_some_raw_rmap_packets(hscb_rmap_packet_raw_configuration_t* ra
     char default_heap_name_for_reply_addr[] = DEFAULT_HEAP_NAME_FOR_REPLY_ADDR;
     switch(COUNT_PACKETS)
     {
+        case 2:
+        {
+//            char rx_1_heap_name[] = RX_1_HEAP_NAME;
+            char tx_1_heap_name[] = TX_1_HEAP_NAME;
+            --i;
+
+            raw_rmap_packets[i].addr
+                = rumboot_virt_to_dma( rumboot_malloc_from_named_heap_aligned(tx_1_heap_name,
+                        raw_rmap_packets[i].data_chain.length, 8));
+            raw_rmap_packets[i].ext_addr = 0; //here we have 32bit AXI address space
+
+            /*Careful with the following checks in a common case!*/
+            if((!raw_rmap_packets[i].addr))
+            {
+                free_mem_from_raw_rmap_packets(raw_rmap_packets, length);
+                return UNABLE_TO_ALLOCATE_MEMORY;
+            }
+
+            set_test_data(
+                    (void*)raw_rmap_packets[i].addr,
+                    raw_rmap_packets[i].data_chain.length,
+                    INCREMENT_1,
+                    DATA_INITIAL_VALUE);
+
+            reply_addr_length = HSCB_RMAP_PACKET_REPLY_ADDR_0B;
+            raw_rmap_packets[i].reply_addr_chain.length = reply_addr_length << 2;
+            raw_rmap_packets[i].reply_addr_chain.array = NULL;
+
+            raw_rmap_packets[i].data_chain.length = DATA_SIZE_1;
+            raw_rmap_packets[i].data_chain.array = NULL;
+
+            raw_rmap_packets[i].target_addr_chain.array = NULL;
+            raw_rmap_packets[i].target_addr_chain.length = 0;
+            raw_rmap_packets[i].target_logical_addr = HSCB_RMAP_DEFAULT_TARGET_LOGICAL_ADDRESS;
+            raw_rmap_packets[i].instruction =
+                    (HSCB_RMAP_COMMAND_READ_INCREMENTING_ADDRESS    << HSCB_RMAP_PACKET_INSTRUCTION_RMAP_COMMAND_i)
+                  | (HSCB_RMAP_PACKET_TYPE_COMMAND                  << HSCB_RMAP_PACKET_INSTRUCTION_FIELD_PACKET_TYPE_i)
+                  | (reply_addr_length    << HSCB_RMAP_PACKET_INSTRUCTION_FIELD_REPLY_ADDR_LEN_i);
+            raw_rmap_packets[i].key = HSCB_RMAP_DEFAULT_KEY;
+            raw_rmap_packets[i].initiator_logical_addr = DEFAULT_INITIATOR_LOGICAL_ADDRESS;
+            raw_rmap_packets[i].transaction_id = i;
+            raw_rmap_packets[i].change_endian = change_endian;
+            raw_rmap_packets[i].expected_reply_status = HSCB_RMAP_REPLY_STATUS_OK;
+        }
         case 1:
         {
             char rx_0_heap_name[] = RX_0_HEAP_NAME;
@@ -546,11 +590,41 @@ uint32_t packing_for_rmap(
         result = hscb_prepare_rmap_packet(raw_rmap_packets[i], ready_rmap_packets);
         switch(result)
         {
-            case OK: rumboot_printf("hscb_prepare_rmap_packet: OK\n"); break;
-            case UNABLE_TO_ALLOCATE_MEMORY:
+            case PREPARE_RMAP_PACKET_OK: rumboot_printf("hscb_prepare_rmap_packet: OK\n"); break;
+            case PREPARE_RMAP_PACKET_ADDR_CHAIN_IS_NULL:
             {
                 free_mem_from_ready_rmap_packets(ready_rmap_packets);
-                rumboot_printf("packing_for_rmap: unable to allocate memory for target address chain, reply address chain or data (either Rx or Tx area).\n");
+                rumboot_printf("packing_for_rmap: target SpaceWire addresses array is NULL, but its length is not zero\n");
+                return result;
+            } break;
+            case PREPARE_RMAP_PACKET_REPLY_ADDR_CHAIN_IS_NULL:
+            {
+                free_mem_from_ready_rmap_packets(ready_rmap_packets);
+                rumboot_printf("packing_for_rmap: reply SpaceWire addresses array is NULL, but its length is not zero\n");
+                return result;
+            } break;
+            case PREPARE_RMAP_PACKET_REPLY_ADDR_CHAIN_TOO_LONG:
+            {
+                free_mem_from_ready_rmap_packets(ready_rmap_packets);
+                rumboot_printf("packing_for_rmap: reply SpaceWire addresses array is NULL, but its length is not zero\n");
+                return result;
+            } break;
+            case PREPARE_RMAP_PACKET_REPLY_ADDR_CHAIN_WRONG_SIZE:
+            {
+                free_mem_from_ready_rmap_packets(ready_rmap_packets);
+                rumboot_printf("packing_for_rmap: reply SpaceWire addresses array has unsupported length\n");
+                return result;
+            } break;
+            case PREPARE_RMAP_PACKET_DATA_LEN_OVERFLOW:
+            {
+                free_mem_from_ready_rmap_packets(ready_rmap_packets);
+                rumboot_printf("packing_for_rmap: SpaceWire RMAP data length is above upper limit of 16MB-1\n");
+                return result;
+            } break;
+            case PREPARE_RMAP_PACKET_DATA_CHAIN_IS_NULL:
+            {
+                free_mem_from_ready_rmap_packets(ready_rmap_packets);
+                rumboot_printf("packing_for_rmap: SpaceWire RMAP data field is NULL but its length is not zero for a Write or RMW command\n");
                 return result;
             } break;
             default:
