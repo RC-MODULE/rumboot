@@ -20,18 +20,6 @@
 
 #define TIMER_CYCLES 60
 
-struct s805_instance
-{
-    uint32_t base_addr;
-    int wd_index;
-};
-
-struct s805_instance_i {
-    int wd_irq;
-    uint32_t base_addr;
-    int wd_index;
-} s805_i;
-
 #ifdef CHECK_REGS
 static uint32_t check_watchdog_default_ro_val(uint32_t base_addr)
 {
@@ -92,15 +80,31 @@ static uint32_t check_watchdog_default_rw_val( uint32_t base_addr, uint32_t reg_
 }
 #endif
 
+struct s805_instance {
+    int wd_irq;
+    uint32_t base_addr;
+    int wd_index;
+};
+
 static void handler0( int irq, void *arg )
 {
-    struct s805_instance_i *a = (struct s805_instance_i *) arg;
+    struct s805_instance *a = (struct s805_instance *) arg;
     a->wd_irq = a->wd_irq + 1;
     rumboot_printf( "IRQ 0 arrived  \n" );
     rumboot_printf( "sp805_%d watchdog INT # %d  \n", a->wd_index, a->wd_irq );
     sp805_clrint( a->base_addr);
 }
-
+/*
+static void handler0( int irq)
+{
+    //struct s805_instance *a = (struct s805_instance *) arg;
+   // a->wd_irq = a->wd_irq + 1;
+    rumboot_printf( "IRQ 0 arrived  \n" );
+    rumboot_printf( "sp805_watchdog INT # %d \n", irq);
+  //rumboot_printf( "sp805_%d watchdog INT # %d  \n", a->wd_index, a->wd_irq );
+    sp805_clrint_dit( DCR_WATCHDOG_BASE);
+}
+*/
 static bool wd_test( uint32_t structure)
 {
     struct s805_instance *stru = ( struct s805_instance * )structure;
@@ -167,9 +171,13 @@ static struct s805_instance in[] =
 TEST_SUITE_BEGIN(wd_testlist, "SP805 IRQ TEST")
 TEST_ENTRY("SP805_0", wd_test, (uint32_t) &in[0]),
 TEST_ENTRY("SP805_0", wd_test2, (uint32_t) &in[0]),
+//TEST_ENTRY("SP805_0", wd_test, (uint32_t) DCR_WATCHDOG_BASE),
+//TEST_ENTRY("SP805_0", wd_test2, (uint32_t) DCR_WATCHDOG_BASE),
 #ifdef CHECK_REGS
 TEST_ENTRY("SP805_0", check_default_ro_val, (uint32_t, &in[0]));
 TEST_ENTRY("SP805_0", check_default_rw_val, (uint32_t, &in[0]));
+//TEST_ENTRY("SP805_0", check_default_ro_val, (uint32_t DCR_WATCHDOG_BASE));
+//TEST_ENTRY("SP805_0", check_default_rw_val, (uint32_t DCR_WATCHDOG_BASE));
 #endif
 TEST_SUITE_END();
 
@@ -181,11 +189,19 @@ uint32_t main(void)
     struct rumboot_irq_entry *tbl = rumboot_irq_create( NULL );
     rumboot_irq_cli();
     rumboot_irq_set_handler( tbl, WDT_INT, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler0, &in[0]);
+   // rumboot_irq_set_handler( tbl, WDT_INT, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler0, 0);
     /* Activate the table */
     rumboot_irq_table_activate( tbl );
     rumboot_irq_enable( WDT_INT);
     rumboot_irq_sei();
 
     result = test_suite_run(NULL, &wd_testlist);
-    return (!result) ? rumboot_printf("CHECKED TEST_OK\n"), 1: rumboot_printf("CHECKED TEST_ERROR\n"), 0;
+
+    if(!result)
+    {
+        rumboot_printf("Checked TEST_OK\n");
+        return result;
+    }
+    rumboot_printf("Checked TEST_ERROR\n");
+    return result;
 }
