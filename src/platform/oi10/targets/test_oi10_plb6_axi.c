@@ -66,7 +66,7 @@ struct test_pattern_t
     uint32_t word0[4];
     uint32_t word1[4];
 };
-#define PERIPH_TEST_DATA_LEN 256
+#define PERIPH_TEST_DATA_LEN 16
 #define PERIPH_TEST_DATA_LEN_BYTES (PERIPH_TEST_DATA_LEN * sizeof(uint32_t))
 #define SOURCE_DATA_ARR_SIZE    (PERIPH_TEST_DATA_LEN * sizeof(uint32_t)/sizeof(struct test_pattern_t))
 #define PERIPH_TEST_PATTERN_0    0x5A5A5A5A
@@ -352,27 +352,27 @@ void prepare_test_data()
         i++;
     }
 #ifdef CHECK_AXI_PLB6_BURST
-    test_hscb0_data_im0_src = (uint32_t*)rumboot_malloc_from_heap_aligned(0, PERIPH_TEST_DATA_LEN_BYTES, sizeof(uint32_t));
-    test_hscb0_data_im0_dst = (uint32_t*)rumboot_malloc_from_heap_aligned(0, PERIPH_TEST_DATA_LEN_BYTES, sizeof(uint32_t));
+    test_hscb0_data_im0_src = (uint32_t*)rumboot_malloc_from_heap_aligned(0, PERIPH_TEST_DATA_LEN_BYTES, 16/*sizeof(uint32_t)*/);
+    test_hscb0_data_im0_dst = (uint32_t*)rumboot_malloc_from_heap_aligned(0, PERIPH_TEST_DATA_LEN_BYTES, 16/*sizeof(uint32_t)*/);
 
-    test_hscb1_data_im0_src = (uint32_t*)rumboot_malloc_from_heap_aligned(0, PERIPH_TEST_DATA_LEN_BYTES, sizeof(uint32_t));
-    test_hscb1_data_im0_dst = (uint32_t*)rumboot_malloc_from_heap_aligned(0, PERIPH_TEST_DATA_LEN_BYTES, sizeof(uint32_t));
+    test_hscb1_data_im0_src = (uint32_t*)rumboot_malloc_from_heap_aligned(0, PERIPH_TEST_DATA_LEN_BYTES, 16/*sizeof(uint32_t)*/);
+    test_hscb1_data_im0_dst = (uint32_t*)rumboot_malloc_from_heap_aligned(0, PERIPH_TEST_DATA_LEN_BYTES, 16/*sizeof(uint32_t)*/);
 
-    test_hscb2_data_im1_src = (uint32_t*)rumboot_malloc_from_heap_aligned(1, PERIPH_TEST_DATA_LEN_BYTES, sizeof(uint32_t));
-    test_hscb2_data_im1_dst = (uint32_t*)rumboot_malloc_from_heap_aligned(1, PERIPH_TEST_DATA_LEN_BYTES, sizeof(uint32_t));
+    test_hscb2_data_im1_src = (uint32_t*)rumboot_malloc_from_heap_aligned(1, PERIPH_TEST_DATA_LEN_BYTES, 16/*sizeof(uint32_t)*/);
+    test_hscb2_data_im1_dst = (uint32_t*)rumboot_malloc_from_heap_aligned(1, PERIPH_TEST_DATA_LEN_BYTES, 16/*sizeof(uint32_t)*/);
 
-    test_hscb3_data_im1_src = (uint32_t*)rumboot_malloc_from_heap_aligned(1, PERIPH_TEST_DATA_LEN_BYTES, sizeof(uint32_t));
-    test_hscb3_data_im1_dst = (uint32_t*)rumboot_malloc_from_heap_aligned(1, PERIPH_TEST_DATA_LEN_BYTES, sizeof(uint32_t));
+    test_hscb3_data_im1_src = (uint32_t*)rumboot_malloc_from_heap_aligned(1, PERIPH_TEST_DATA_LEN_BYTES, 16/*sizeof(uint32_t)*/);
+    test_hscb3_data_im1_dst = (uint32_t*)rumboot_malloc_from_heap_aligned(1, PERIPH_TEST_DATA_LEN_BYTES, 16/*sizeof(uint32_t)*/);
 
     memcpy(test_hscb0_data_im0_src,  test_hscbx_src_data, sizeof(test_hscbx_src_data));
     memcpy(test_hscb1_data_im0_src,  test_hscbx_src_data, sizeof(test_hscbx_src_data));
     memcpy(test_hscb2_data_im1_src,  test_hscbx_src_data, sizeof(test_hscbx_src_data));
     memcpy(test_hscb3_data_im1_src,  test_hscbx_src_data, sizeof(test_hscbx_src_data));
 
-    HSCB0_TX_DESCR_ADDR = (uint32_t*)rumboot_malloc_from_heap_aligned(1, 0x40, sizeof(uint32_t));
-    HSCB0_RX_DESCR_ADDR = (uint32_t*)rumboot_malloc_from_heap_aligned(1, 0x40, sizeof(uint32_t));
-    HSCB1_TX_DESCR_ADDR = (uint32_t*)rumboot_malloc_from_heap_aligned(1, 0x40, sizeof(uint32_t));
-    HSCB1_RX_DESCR_ADDR = (uint32_t*)rumboot_malloc_from_heap_aligned(1, 0x40, sizeof(uint32_t));
+    HSCB0_TX_DESCR_ADDR = (uint32_t*)rumboot_malloc_from_heap_aligned(0, 0x40, sizeof(uint32_t));
+    HSCB0_RX_DESCR_ADDR = (uint32_t*)rumboot_malloc_from_heap_aligned(0, 0x40, sizeof(uint32_t));
+    HSCB1_TX_DESCR_ADDR = (uint32_t*)rumboot_malloc_from_heap_aligned(0, 0x40, sizeof(uint32_t));
+    HSCB1_RX_DESCR_ADDR = (uint32_t*)rumboot_malloc_from_heap_aligned(0, 0x40, sizeof(uint32_t));
 
     HSCB2_TX_DESCR_ADDR = (uint32_t*)rumboot_malloc_from_heap_aligned(1, 0x40, sizeof(uint32_t));
     HSCB2_RX_DESCR_ADDR = (uint32_t*)rumboot_malloc_from_heap_aligned(1, 0x40, sizeof(uint32_t));
@@ -770,7 +770,7 @@ void test_oi10_hscb()
 void configure_hscb(hscb_instance_t* hscb_inst, hscb_axi_arwlen_t       hscb_axi_arwlen)
 {
     int i;
-    hscb_axi_params_cfg_t axi_params_cfg;
+    //hscb_axi_params_cfg_t axi_params_cfg;
     rumboot_printf("\n---\nApply software reset HSCBs\n");
     for (i=0; i<4; i++)
     {
@@ -782,10 +782,10 @@ void configure_hscb(hscb_instance_t* hscb_inst, hscb_axi_arwlen_t       hscb_axi
     for (i=0; i<4; i++)
     {
         hscb_config_for_receive_and_transmit(hscb_inst + i);
-        hscb_get_axi_params((hscb_inst+i)->src_hscb_base_addr, &axi_params_cfg);
-        axi_params_cfg.arlen = hscb_axi_arwlen;
-        axi_params_cfg.awlen = hscb_axi_arwlen;
-        hscb_set_axi_params((hscb_inst+i)->src_hscb_base_addr, &axi_params_cfg);
+//        hscb_get_axi_params((hscb_inst+i)->src_hscb_base_addr, &axi_params_cfg);
+//        axi_params_cfg.arlen = hscb_axi_arwlen;
+//        axi_params_cfg.awlen = hscb_axi_arwlen;
+//        hscb_set_axi_params((hscb_inst+i)->src_hscb_base_addr, &axi_params_cfg);
     }
 
     //enable
@@ -872,16 +872,17 @@ int main(void)
             HSCB_ARWLEN_12,
             HSCB_ARWLEN_16
                                                      };
+
     rumboot_printf("Start test_oi10_hscb. Transmit/receive checks\n");
     prepare_test_data();
     tbl = create_hscb_irq_handlers(hscb_cfg);
 
-    for (int i=0; i<ARWLEN_ARR_SIZE; i++)
-    {
-        configure_hscb(hscb_cfg, hscb_axi_arwlen_arr[i]);
+//    for (int i=0; i<ARWLEN_ARR_SIZE; i++)
+//    {
+        configure_hscb(hscb_cfg, hscb_axi_arwlen_arr[0]);
         run_hscb_transfers_via_external_loopback(hscb_cfg);
         hscb_memcmp(hscb_cfg);
-    }
+//    }
 
     delete_irq_handlers(tbl);
 #endif
