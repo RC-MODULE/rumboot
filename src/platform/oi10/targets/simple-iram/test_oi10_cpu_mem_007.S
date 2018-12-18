@@ -329,29 +329,21 @@ test_oi10_cpu_mem_007:
     test_event TEC_INIT_LRU_ARRAYS_DBUS_CHECK
 
     rumboot_putstring "TEST_ICU_LRU_DBUS icu_lru_array_data\n"
-    rumboot_putstring "TEST_ICU_LRU_DBUS icu_lru_array_data 0\n"
     TEST_ICU_LRU_DBUS 0, icu_lru_array_data
-
-    rumboot_putstring "TEST_ICU_LRU_DBUS icu_lru_array_data 1\n"
     TEST_ICU_LRU_DBUS 1, icu_lru_array_data
-
-    rumboot_putstring "TEST_ICU_LRU_DBUS icu_lru_array_data 2\n"
     TEST_ICU_LRU_DBUS 2, icu_lru_array_data
-
-    rumboot_putstring "TEST_ICU_LRU_DBUS icu_lru_array_data 3\n"
     TEST_ICU_LRU_DBUS 3, icu_lru_array_data
 
     rumboot_putstring "TEST_DCU_LRU_DBUS dcu_lru_array_data\n"
-    rumboot_putstring "TEST_DCU_LRU_DBUS dcu_lru_array_data 0\n"
     TEST_DCU_LRU_DBUS 0, dcu_lru_array_data
 
-    rumboot_putstring "TEST_DCU_LRU_DBUS dcu_lru_array_data 1\n"
+    //rumboot_putstring "TEST_DCU_LRU_DBUS dcu_lru_array_data 1\n"
     TEST_DCU_LRU_DBUS 1, dcu_lru_array_data
 
-    rumboot_putstring "TEST_DCU_LRU_DBUS dcu_lru_array_data 2\n"
+    //rumboot_putstring "TEST_DCU_LRU_DBUS dcu_lru_array_data 2\n"
     TEST_DCU_LRU_DBUS 2, dcu_lru_array_data
 
-    rumboot_putstring "TEST_DCU_LRU_DBUS dcu_lru_array_data 3\n"
+    //rumboot_putstring "TEST_DCU_LRU_DBUS dcu_lru_array_data 3\n"
     TEST_DCU_LRU_DBUS 3, dcu_lru_array_data
 
 test_ok:
@@ -443,34 +435,30 @@ dcu_lru_array_data:
 */
 
 icu_lru_array_data:
+/*
 .long 0x00000000
+.long 0x0fc00000
+.long 0x0f3c0000
+.long 0x0ccc6000
+.long 0x0aa84008 ???
+.long 0x5554a000
+.long 0xc3308008
+.long 0xe0c0e008
+.long 0x103ce008
+.long 0x0ffce008
+*/
 
-//.long 0x0fc00000
+//Array with LRU parity bits
+.long 0x00000000
 .long 0xefc04000
-
-//.long 0x0f3c0000
 .long 0x1f3c4000
-
-//.long 0x0ccc6000
 .long 0x3ccc0000
-
-//.long 0x0aa84008 ???
-.long 0xaaa88008
-
-//.long 0x5554a000
+.long 0xaaa8a008
 .long 0x55548000
-
-//.long 0xc3308008
-.long 0xc3300008
-
-//.long 0xe0c0e008
-.long 0xe0c04008
-
-//.long 0x103ce008
-.long 0x103c4008
-
-//.long 0x0ffce008
-.long 0xfffc0008
+.long 0xc3302008
+.long 0xe0c06008
+.long 0x103c6008
+.long 0xfffc2008
 
 
 dcu_lru_array_data:
