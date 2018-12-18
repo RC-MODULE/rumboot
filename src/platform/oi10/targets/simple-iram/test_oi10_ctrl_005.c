@@ -94,17 +94,7 @@ static void handler0( int irq, void *arg )
     rumboot_printf( "sp805_%d watchdog INT # %d  \n", a->wd_index, a->wd_irq );
     sp805_clrint( a->base_addr);
 }
-/*
-static void handler0( int irq)
-{
-    //struct s805_instance *a = (struct s805_instance *) arg;
-   // a->wd_irq = a->wd_irq + 1;
-    rumboot_printf( "IRQ 0 arrived  \n" );
-    rumboot_printf( "sp805_watchdog INT # %d \n", irq);
-  //rumboot_printf( "sp805_%d watchdog INT # %d  \n", a->wd_index, a->wd_irq );
-    sp805_clrint_dit( DCR_WATCHDOG_BASE);
-}
-*/
+
 static bool wd_test( uint32_t structure)
 {
     struct s805_instance *stru = ( struct s805_instance * )structure;
@@ -171,13 +161,9 @@ static struct s805_instance in[] =
 TEST_SUITE_BEGIN(wd_testlist, "SP805 IRQ TEST")
 TEST_ENTRY("SP805_0", wd_test, (uint32_t) &in[0]),
 TEST_ENTRY("SP805_0", wd_test2, (uint32_t) &in[0]),
-//TEST_ENTRY("SP805_0", wd_test, (uint32_t) DCR_WATCHDOG_BASE),
-//TEST_ENTRY("SP805_0", wd_test2, (uint32_t) DCR_WATCHDOG_BASE),
 #ifdef CHECK_REGS
 TEST_ENTRY("SP805_0", check_default_ro_val, (uint32_t, &in[0]));
 TEST_ENTRY("SP805_0", check_default_rw_val, (uint32_t, &in[0]));
-//TEST_ENTRY("SP805_0", check_default_ro_val, (uint32_t DCR_WATCHDOG_BASE));
-//TEST_ENTRY("SP805_0", check_default_rw_val, (uint32_t DCR_WATCHDOG_BASE));
 #endif
 TEST_SUITE_END();
 
@@ -189,7 +175,6 @@ uint32_t main(void)
     struct rumboot_irq_entry *tbl = rumboot_irq_create( NULL );
     rumboot_irq_cli();
     rumboot_irq_set_handler( tbl, WDT_INT, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler0, &in[0]);
-   // rumboot_irq_set_handler( tbl, WDT_INT, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler0, 0);
     /* Activate the table */
     rumboot_irq_table_activate( tbl );
     rumboot_irq_enable( WDT_INT);
