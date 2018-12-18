@@ -11,7 +11,7 @@
 
 
 
-void sp804_enable_dit( uint32_t base_addr, int index)
+void sp804_enable( uint32_t base_addr, int index)
 {
     int cntrl ;
     int control_reg;
@@ -23,12 +23,12 @@ void sp804_enable_dit( uint32_t base_addr, int index)
     }
     cntrl =  dcr_read(base_addr+control_reg);
     cntrl |= DIT_CTRL_ENABLE;
-    dcr_write(cntrl,base_addr+control_reg);
+    dcr_write(base_addr+control_reg, cntrl);
 
 }
 
 
-void sp804_stop_dit( uint32_t base_addr, int index)
+void sp804_stop( uint32_t base_addr, int index)
 {
     int cntrl ;
     int control_reg;
@@ -40,12 +40,12 @@ void sp804_stop_dit( uint32_t base_addr, int index)
     }
     cntrl = dcr_read(base_addr+control_reg);
     cntrl = cntrl & (~(DIT_CTRL_ENABLE));
-    dcr_write(cntrl,base_addr+control_reg);
+    dcr_write(base_addr+control_reg, cntrl);
 
 }
 
 
-int sp804_get_value_dit( uint32_t base_addr, int index)
+int sp804_get_value( uint32_t base_addr, int index)
 {
     int value_reg;
     if (index){
@@ -59,7 +59,7 @@ int sp804_get_value_dit( uint32_t base_addr, int index)
 
 
 
-void sp804_clrint_dit( uint32_t base_addr, int index)
+void sp804_clrint( uint32_t base_addr, int index)
 {
     int int_clr_reg;
     if (index){
@@ -68,12 +68,12 @@ void sp804_clrint_dit( uint32_t base_addr, int index)
     else{
         int_clr_reg = DIT0_REG_INTCLR0;
     }
-    dcr_write( 1,base_addr+ int_clr_reg);
+    dcr_write(base_addr+ int_clr_reg, 1);
 }
 
 
 
-void sp804_config_dit( uint32_t base_addr, const struct sp804_conf * config, int index)
+void sp804_config( uint32_t base_addr, const struct sp804_conf * config, int index)
 {
     int cntrl = 0;
     // MODE
@@ -124,34 +124,33 @@ void sp804_config_dit( uint32_t base_addr, const struct sp804_conf * config, int
 
 
     if (index){
-        dcr_write( cntrl, base_addr+DIT0_REG_CONTROL1);
+        dcr_write(base_addr+DIT0_REG_CONTROL1, cntrl);
 
         // LOAD
         if (config->load)
         {
-            dcr_write(config->load,base_addr+DIT0_REG_LOAD1);
+            dcr_write(base_addr+DIT0_REG_LOAD1, config->load);
         }
 
         // BG LOAD
         if (config->bgload)
         {
-            dcr_write(config->bgload,base_addr+DIT0_REG_BGLOAD1);
+            dcr_write(base_addr+DIT0_REG_BGLOAD1, config->bgload);
         }
     }
     else{
-        dcr_write( cntrl, base_addr+DIT0_REG_CONTROL0);
+        dcr_write(base_addr+DIT0_REG_CONTROL0, cntrl);
 
         // LOAD
         if (config->load)
         {
-            dcr_write(config->load,base_addr+DIT0_REG_LOAD0);
+            dcr_write(base_addr+DIT0_REG_LOAD0, config->load);
         }
 
         // BG LOAD
         if (config->bgload)
         {
-            dcr_write(config->bgload,base_addr+DIT0_REG_BGLOAD0);
+            dcr_write(base_addr+DIT0_REG_BGLOAD0, config->bgload);
         }
     }
-
 }
