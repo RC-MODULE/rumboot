@@ -89,10 +89,10 @@
 #define INCREMENT_1 -1
 #endif
 
-//#ifndef INCREMENT_2
-//#define INCREMENT_2 2
-//#endif
-//
+#ifndef INCREMENT_2
+#define INCREMENT_2 2
+#endif
+
 //#ifndef INCREMENT_3
 //#define INCREMENT_3 -2
 //#endif
@@ -334,175 +334,300 @@ enum{
     RESERVED_FIELD_MISMATCH = (1 << 17)
 }generate_some_raw_rmap_packets_result;
 
-uint32_t generate_some_raw_rmap_packets(hscb_rmap_packet_raw_configuration_t* raw_rmap_packets, const uint32_t length)
+uint32_t generate_RMW_RMAP_packet(hscb_rmap_packet_raw_configuration_t* raw_rmap_packets, uint32_t index, bool change_endian,  const uint32_t length)
 {
-    int i = length;
-    bool change_endian = true;
     uint32_t reply_addr_length = 0;
     char default_heap_name_for_reply_addr[] = DEFAULT_HEAP_NAME_FOR_REPLY_ADDR;
-    switch(COUNT_PACKETS)
+    char rx_2_heap_name[] = RX_2_HEAP_NAME;
+    char tx_2_heap_name[] = TX_2_HEAP_NAME;
+
+    raw_rmap_packets[index].data_chain.length = 6;
+    raw_rmap_packets[index].data_chain.array
+        = rumboot_malloc_from_named_heap_aligned(tx_2_heap_name,
+                raw_rmap_packets[index].data_chain.length, 8);
+
+    raw_rmap_packets[index].addr
+        = rumboot_virt_to_dma( rumboot_malloc_from_named_heap_aligned(rx_2_heap_name,
+                raw_rmap_packets[index].data_chain.length >> 1, 8));
+    raw_rmap_packets[index].ext_addr = 0; //here we have 32bit AXI address space
+
+    reply_addr_length = HSCB_RMAP_PACKET_REPLY_ADDR_12B;
+    raw_rmap_packets[index].reply_addr_chain.length = reply_addr_length << 2;
+    raw_rmap_packets[index].reply_addr_chain.array
+        = rumboot_malloc_from_named_heap_aligned(default_heap_name_for_reply_addr,
+                raw_rmap_packets[index].reply_addr_chain.length, 8);
+
+    /*Careful with the following checks in a common case!*/
+    if((!raw_rmap_packets[index].reply_addr_chain.array)
+         || (!raw_rmap_packets[index].data_chain.array)
+         || (!raw_rmap_packets[index].addr))
+    {
+        free_mem_from_raw_rmap_packets(raw_rmap_packets, length);
+        return UNABLE_TO_ALLOCATE_MEMORY;
+    }
+
+    set_test_data(
+            (void*)raw_rmap_packets[index].addr,
+            raw_rmap_packets[index].data_chain.length >> 1,
+            0,
+            0x33);
+
+    set_test_data(
+            raw_rmap_packets[index].data_chain.array,
+            raw_rmap_packets[index].data_chain.length >> 1,
+            0,
+            0xCC);
+
+    set_test_data(
+            raw_rmap_packets[index].data_chain.array + (raw_rmap_packets[index].data_chain.length >> 1),
+            raw_rmap_packets[index].data_chain.length >> 1,
+            0,
+            0x55);
+
+    set_test_data(
+            raw_rmap_packets[index].reply_addr_chain.array,
+            raw_rmap_packets[index].reply_addr_chain.length,
+            0,
+            0);
+
+    raw_rmap_packets[index].target_addr_chain.array = NULL;
+    raw_rmap_packets[index].target_addr_chain.length = 0;
+    raw_rmap_packets[index].target_logical_addr = HSCB_RMAP_DEFAULT_TARGET_LOGICAL_ADDRESS;
+    raw_rmap_packets[index].instruction =
+            (HSCB_RMAP_COMMAND_RMW_INCREMENTING_ADDRESS     << HSCB_RMAP_PACKET_INSTRUCTION_RMAP_COMMAND_i)
+          | (HSCB_RMAP_PACKET_TYPE_COMMAND                  << HSCB_RMAP_PACKET_INSTRUCTION_FIELD_PACKET_TYPE_i)
+          | (reply_addr_length    << HSCB_RMAP_PACKET_INSTRUCTION_FIELD_REPLY_ADDR_LEN_i);
+    raw_rmap_packets[index].key = HSCB_RMAP_DEFAULT_KEY;
+    raw_rmap_packets[index].initiator_logical_addr = 00;
+    raw_rmap_packets[index].transaction_id = index;
+    raw_rmap_packets[index].change_endian = change_endian;
+    raw_rmap_packets[index].expected_reply_status = HSCB_RMAP_REPLY_STATUS_OK;
+    return OK;
+}
+
+uint32_t generate_RRI_RMAP_packet(hscb_rmap_packet_raw_configuration_t* raw_rmap_packets, uint32_t index, bool change_endian,  const uint32_t length)
+{
+    uint32_t reply_addr_length = 0;
+//    char default_heap_name_for_reply_addr[] = DEFAULT_HEAP_NAME_FOR_REPLY_ADDR;
+//    char rx_1_heap_name[] = RX_1_HEAP_NAME;
+    char tx_1_heap_name[] = TX_1_HEAP_NAME;
+
+    raw_rmap_packets[index].data_chain.length = DATA_SIZE_1;
+    raw_rmap_packets[index].data_chain.array = NULL;
+
+    raw_rmap_packets[index].addr
+        = rumboot_virt_to_dma( rumboot_malloc_from_named_heap_aligned(tx_1_heap_name,
+                raw_rmap_packets[index].data_chain.length, 8));
+    raw_rmap_packets[index].ext_addr = 0; //here we have 32bit AXI address space
+
+    /*Careful with the following checks in a common case!*/
+    if((!raw_rmap_packets[index].addr))
+    {
+        free_mem_from_raw_rmap_packets(raw_rmap_packets, length);
+        return UNABLE_TO_ALLOCATE_MEMORY;
+    }
+
+    set_test_data(
+            (void*)raw_rmap_packets[index].addr,
+            raw_rmap_packets[index].data_chain.length,
+            INCREMENT_1,
+            DATA_INITIAL_VALUE);
+
+    reply_addr_length = HSCB_RMAP_PACKET_REPLY_ADDR_0B;
+    raw_rmap_packets[index].reply_addr_chain.length = reply_addr_length << 2;
+    raw_rmap_packets[index].reply_addr_chain.array = NULL;
+
+    raw_rmap_packets[index].target_addr_chain.array = NULL;
+    raw_rmap_packets[index].target_addr_chain.length = 0;
+    raw_rmap_packets[index].target_logical_addr = HSCB_RMAP_DEFAULT_TARGET_LOGICAL_ADDRESS;
+    raw_rmap_packets[index].instruction =
+            (HSCB_RMAP_COMMAND_READ_INCREMENTING_ADDRESS    << HSCB_RMAP_PACKET_INSTRUCTION_RMAP_COMMAND_i)
+          | (HSCB_RMAP_PACKET_TYPE_COMMAND                  << HSCB_RMAP_PACKET_INSTRUCTION_FIELD_PACKET_TYPE_i)
+          | (reply_addr_length    << HSCB_RMAP_PACKET_INSTRUCTION_FIELD_REPLY_ADDR_LEN_i);
+    raw_rmap_packets[index].key = HSCB_RMAP_DEFAULT_KEY;
+    raw_rmap_packets[index].initiator_logical_addr = DEFAULT_INITIATOR_LOGICAL_ADDRESS;
+    raw_rmap_packets[index].transaction_id = index;
+    raw_rmap_packets[index].change_endian = change_endian;
+    raw_rmap_packets[index].expected_reply_status = HSCB_RMAP_REPLY_STATUS_OK;
+    return OK;
+}
+
+
+uint32_t generate_RRS_RMAP_packet(hscb_rmap_packet_raw_configuration_t* raw_rmap_packets, uint32_t index, bool change_endian,  const uint32_t length)
+{
+    uint32_t reply_addr_length = 0;
+//    char default_heap_name_for_reply_addr[] = DEFAULT_HEAP_NAME_FOR_REPLY_ADDR;
+//    char rx_1_heap_name[] = RX_1_HEAP_NAME;
+    char tx_1_heap_name[] = TX_1_HEAP_NAME;
+
+    raw_rmap_packets[index].data_chain.length = DATA_SIZE_1;
+    raw_rmap_packets[index].data_chain.array = NULL;
+
+    raw_rmap_packets[index].addr
+        = rumboot_virt_to_dma( rumboot_malloc_from_named_heap_aligned(tx_1_heap_name,
+                raw_rmap_packets[index].data_chain.length, 8));
+    raw_rmap_packets[index].ext_addr = 0; //here we have 32bit AXI address space
+
+    /*Careful with the following checks in a common case!*/
+    if((!raw_rmap_packets[index].addr))
+    {
+        free_mem_from_raw_rmap_packets(raw_rmap_packets, length);
+        return UNABLE_TO_ALLOCATE_MEMORY;
+    }
+
+    set_test_data(
+            (void*)raw_rmap_packets[index].addr,
+            raw_rmap_packets[index].data_chain.length,
+            0,
+            0xda);
+
+    reply_addr_length = HSCB_RMAP_PACKET_REPLY_ADDR_0B;
+    raw_rmap_packets[index].reply_addr_chain.length = reply_addr_length << 2;
+    raw_rmap_packets[index].reply_addr_chain.array = NULL;
+
+    raw_rmap_packets[index].target_addr_chain.array = NULL;
+    raw_rmap_packets[index].target_addr_chain.length = 0;
+    raw_rmap_packets[index].target_logical_addr = HSCB_RMAP_DEFAULT_TARGET_LOGICAL_ADDRESS;
+    raw_rmap_packets[index].instruction =
+            (HSCB_RMAP_COMMAND_READ_SINGLE_ADDRESS          << HSCB_RMAP_PACKET_INSTRUCTION_RMAP_COMMAND_i)
+          | (HSCB_RMAP_PACKET_TYPE_COMMAND                  << HSCB_RMAP_PACKET_INSTRUCTION_FIELD_PACKET_TYPE_i)
+          | (reply_addr_length    << HSCB_RMAP_PACKET_INSTRUCTION_FIELD_REPLY_ADDR_LEN_i);
+    raw_rmap_packets[index].key = HSCB_RMAP_DEFAULT_KEY;
+    raw_rmap_packets[index].initiator_logical_addr = DEFAULT_INITIATOR_LOGICAL_ADDRESS;
+    raw_rmap_packets[index].transaction_id = index;
+    raw_rmap_packets[index].change_endian = change_endian;
+    raw_rmap_packets[index].expected_reply_status = HSCB_RMAP_REPLY_STATUS_OK;
+    return OK;
+}
+
+
+uint32_t generate_W_V_R_I_RMAP_packet(hscb_rmap_packet_raw_configuration_t* raw_rmap_packets, uint32_t index, bool change_endian,  const uint32_t length)
+{
+    uint32_t reply_addr_length = 0;
+    char default_heap_name_for_reply_addr[] = DEFAULT_HEAP_NAME_FOR_REPLY_ADDR;
+    char rx_0_heap_name[] = RX_0_HEAP_NAME;
+    char tx_0_heap_name[] = TX_0_HEAP_NAME;
+
+    reply_addr_length = HSCB_RMAP_PACKET_REPLY_ADDR_12B;
+    raw_rmap_packets[index].reply_addr_chain.length = reply_addr_length << 2;
+    raw_rmap_packets[index].reply_addr_chain.array
+        = rumboot_malloc_from_named_heap_aligned(default_heap_name_for_reply_addr,
+                raw_rmap_packets[index].reply_addr_chain.length, 8);
+
+    raw_rmap_packets[index].data_chain.length = DATA_SIZE_0;
+    raw_rmap_packets[index].data_chain.array
+        = rumboot_malloc_from_named_heap_aligned(tx_0_heap_name,
+                raw_rmap_packets[index].data_chain.length, 8);
+
+
+    raw_rmap_packets[index].addr
+        = rumboot_virt_to_dma( rumboot_malloc_from_named_heap_aligned(rx_0_heap_name,
+                raw_rmap_packets[index].data_chain.length, 8));
+    raw_rmap_packets[index].ext_addr = 0; //here we have 32bit AXI address space
+
+    set_test_data(
+            raw_rmap_packets[index].data_chain.array,
+            raw_rmap_packets[index].data_chain.length,
+            INCREMENT_0,
+            DATA_INITIAL_VALUE);
+
+    set_test_data(
+            raw_rmap_packets[index].reply_addr_chain.array,
+            raw_rmap_packets[index].reply_addr_chain.length,
+            INCREMENT_0,
+            DATA_INITIAL_VALUE);
+
+    raw_rmap_packets[index].target_addr_chain.array = NULL;
+    raw_rmap_packets[index].target_addr_chain.length = 0;
+    raw_rmap_packets[index].target_logical_addr = HSCB_RMAP_DEFAULT_TARGET_LOGICAL_ADDRESS;
+    raw_rmap_packets[index].instruction =
+            (HSCB_RMAP_COMMAND_WRITE_INCR_ADDR_VERIFY_REPLY          << HSCB_RMAP_PACKET_INSTRUCTION_RMAP_COMMAND_i)
+          | (HSCB_RMAP_PACKET_TYPE_COMMAND      << HSCB_RMAP_PACKET_INSTRUCTION_FIELD_PACKET_TYPE_i)
+          | (reply_addr_length    << HSCB_RMAP_PACKET_INSTRUCTION_FIELD_REPLY_ADDR_LEN_i);
+    raw_rmap_packets[index].key = HSCB_RMAP_DEFAULT_KEY;
+    raw_rmap_packets[index].initiator_logical_addr = DEFAULT_INITIATOR_LOGICAL_ADDRESS;
+    raw_rmap_packets[index].transaction_id = index;
+    raw_rmap_packets[index].change_endian = change_endian;
+    raw_rmap_packets[index].expected_reply_status = HSCB_RMAP_REPLY_STATUS_OK;
+    return OK;
+}
+
+uint32_t generate_WnVnR_S_RMAP_packet(hscb_rmap_packet_raw_configuration_t* raw_rmap_packets, uint32_t index, bool change_endian,  const uint32_t length)
+{
+    uint32_t reply_addr_length = 0;
+    char default_heap_name_for_reply_addr[] = DEFAULT_HEAP_NAME_FOR_REPLY_ADDR;
+    char rx_0_heap_name[] = RX_0_HEAP_NAME;
+    char tx_0_heap_name[] = TX_0_HEAP_NAME;
+
+    reply_addr_length = HSCB_RMAP_PACKET_REPLY_ADDR_12B;
+    raw_rmap_packets[index].reply_addr_chain.length = reply_addr_length << 2;
+    raw_rmap_packets[index].reply_addr_chain.array
+        = rumboot_malloc_from_named_heap_aligned(default_heap_name_for_reply_addr,
+                raw_rmap_packets[index].reply_addr_chain.length, 8);
+
+    raw_rmap_packets[index].data_chain.length = DATA_SIZE_0;
+    raw_rmap_packets[index].data_chain.array
+        = rumboot_malloc_from_named_heap_aligned(tx_0_heap_name,
+                raw_rmap_packets[index].data_chain.length, 8);
+
+
+    raw_rmap_packets[index].addr
+        = rumboot_virt_to_dma( rumboot_malloc_from_named_heap_aligned(rx_0_heap_name,
+                raw_rmap_packets[index].data_chain.length, 8));
+    raw_rmap_packets[index].ext_addr = 0; //here we have 32bit AXI address space
+
+    set_test_data(
+            raw_rmap_packets[index].data_chain.array,
+            raw_rmap_packets[index].data_chain.length,
+            INCREMENT_0,
+            DATA_INITIAL_VALUE);
+
+    set_test_data(
+            raw_rmap_packets[index].reply_addr_chain.array,
+            raw_rmap_packets[index].reply_addr_chain.length,
+            INCREMENT_2,
+            DATA_INITIAL_VALUE);
+
+    raw_rmap_packets[index].target_addr_chain.array = NULL;
+    raw_rmap_packets[index].target_addr_chain.length = 0;
+    raw_rmap_packets[index].target_logical_addr = HSCB_RMAP_DEFAULT_TARGET_LOGICAL_ADDRESS;
+    raw_rmap_packets[index].instruction =
+            (HSCB_RMAP_COMMAND_WRITE_SINGLE_ADDR_DONT_VERIFY_NO_REPLY          << HSCB_RMAP_PACKET_INSTRUCTION_RMAP_COMMAND_i)
+          | (HSCB_RMAP_PACKET_TYPE_COMMAND      << HSCB_RMAP_PACKET_INSTRUCTION_FIELD_PACKET_TYPE_i)
+          | (reply_addr_length    << HSCB_RMAP_PACKET_INSTRUCTION_FIELD_REPLY_ADDR_LEN_i);
+    raw_rmap_packets[index].key = HSCB_RMAP_DEFAULT_KEY;
+    raw_rmap_packets[index].initiator_logical_addr = DEFAULT_INITIATOR_LOGICAL_ADDRESS;
+    raw_rmap_packets[index].transaction_id = index;
+    raw_rmap_packets[index].change_endian = change_endian;
+    raw_rmap_packets[index].expected_reply_status = HSCB_RMAP_REPLY_STATUS_OK;
+    return OK;
+}
+
+uint32_t generate_some_raw_rmap_packets(hscb_rmap_packet_raw_configuration_t* raw_rmap_packets, const uint32_t length)
+{
+    bool change_endian = true;
+    uint32_t i = length;
+    uint32_t result = 0;
+    switch(length)
     {
         case 3:
         {
-            char rx_2_heap_name[] = RX_2_HEAP_NAME;
-            char tx_2_heap_name[] = TX_2_HEAP_NAME;
-            --i;
-
-            raw_rmap_packets[i].data_chain.length = 6;
-            raw_rmap_packets[i].data_chain.array
-                = rumboot_malloc_from_named_heap_aligned(tx_2_heap_name,
-                        raw_rmap_packets[i].data_chain.length, 8);
-
-            raw_rmap_packets[i].addr
-                = rumboot_virt_to_dma( rumboot_malloc_from_named_heap_aligned(rx_2_heap_name,
-                        raw_rmap_packets[i].data_chain.length >> 1, 8));
-            raw_rmap_packets[i].ext_addr = 0; //here we have 32bit AXI address space
-
-            reply_addr_length = HSCB_RMAP_PACKET_REPLY_ADDR_12B;
-            raw_rmap_packets[i].reply_addr_chain.length = reply_addr_length << 2;
-            raw_rmap_packets[i].reply_addr_chain.array
-                = rumboot_malloc_from_named_heap_aligned(default_heap_name_for_reply_addr,
-                        raw_rmap_packets[i].reply_addr_chain.length, 8);
-
-            /*Careful with the following checks in a common case!*/
-            if((!raw_rmap_packets[i].reply_addr_chain.array)
-                 || (!raw_rmap_packets[i].data_chain.array)
-                 || (!raw_rmap_packets[i].addr))
-            {
-                free_mem_from_raw_rmap_packets(raw_rmap_packets, length);
-                return UNABLE_TO_ALLOCATE_MEMORY;
-            }
-
-            set_test_data(
-                    (void*)raw_rmap_packets[i].addr,
-                    raw_rmap_packets[i].data_chain.length >> 1,
-                    0,
-                    0x33);
-
-            set_test_data(
-                    raw_rmap_packets[i].data_chain.array,
-                    raw_rmap_packets[i].data_chain.length >> 1,
-                    0,
-                    0xCC);
-
-            set_test_data(
-                    raw_rmap_packets[i].data_chain.array + (raw_rmap_packets[i].data_chain.length >> 1),
-                    raw_rmap_packets[i].data_chain.length >> 1,
-                    0,
-                    0x55);
-
-            set_test_data(
-                    raw_rmap_packets[i].reply_addr_chain.array,
-                    raw_rmap_packets[i].reply_addr_chain.length,
-                    0,
-                    0);
-
-            raw_rmap_packets[i].target_addr_chain.array = NULL;
-            raw_rmap_packets[i].target_addr_chain.length = 0;
-            raw_rmap_packets[i].target_logical_addr = HSCB_RMAP_DEFAULT_TARGET_LOGICAL_ADDRESS;
-            raw_rmap_packets[i].instruction =
-                    (HSCB_RMAP_COMMAND_RMW_INCREMENTING_ADDRESS     << HSCB_RMAP_PACKET_INSTRUCTION_RMAP_COMMAND_i)
-                  | (HSCB_RMAP_PACKET_TYPE_COMMAND                  << HSCB_RMAP_PACKET_INSTRUCTION_FIELD_PACKET_TYPE_i)
-                  | (reply_addr_length    << HSCB_RMAP_PACKET_INSTRUCTION_FIELD_REPLY_ADDR_LEN_i);
-            raw_rmap_packets[i].key = HSCB_RMAP_DEFAULT_KEY;
-            raw_rmap_packets[i].initiator_logical_addr = 00;
-            raw_rmap_packets[i].transaction_id = i;
-            raw_rmap_packets[i].change_endian = change_endian;
-            raw_rmap_packets[i].expected_reply_status = HSCB_RMAP_REPLY_STATUS_OK;
+            result |= generate_RMW_RMAP_packet(raw_rmap_packets, --i, change_endian, length);
+            if (result != OK)
+                return result;
         }
         case 2:
         {
-//            char rx_1_heap_name[] = RX_1_HEAP_NAME;
-            char tx_1_heap_name[] = TX_1_HEAP_NAME;
-            --i;
-
-            raw_rmap_packets[i].data_chain.length = DATA_SIZE_1;
-            raw_rmap_packets[i].data_chain.array = NULL;
-
-            raw_rmap_packets[i].addr
-                = rumboot_virt_to_dma( rumboot_malloc_from_named_heap_aligned(tx_1_heap_name,
-                        raw_rmap_packets[i].data_chain.length, 8));
-            raw_rmap_packets[i].ext_addr = 0; //here we have 32bit AXI address space
-
-            /*Careful with the following checks in a common case!*/
-            if((!raw_rmap_packets[i].addr))
-            {
-                free_mem_from_raw_rmap_packets(raw_rmap_packets, length);
-                return UNABLE_TO_ALLOCATE_MEMORY;
-            }
-
-            set_test_data(
-                    (void*)raw_rmap_packets[i].addr,
-                    raw_rmap_packets[i].data_chain.length,
-                    INCREMENT_1,
-                    DATA_INITIAL_VALUE);
-
-            reply_addr_length = HSCB_RMAP_PACKET_REPLY_ADDR_0B;
-            raw_rmap_packets[i].reply_addr_chain.length = reply_addr_length << 2;
-            raw_rmap_packets[i].reply_addr_chain.array = NULL;
-
-            raw_rmap_packets[i].target_addr_chain.array = NULL;
-            raw_rmap_packets[i].target_addr_chain.length = 0;
-            raw_rmap_packets[i].target_logical_addr = HSCB_RMAP_DEFAULT_TARGET_LOGICAL_ADDRESS;
-            raw_rmap_packets[i].instruction =
-                    (HSCB_RMAP_COMMAND_READ_INCREMENTING_ADDRESS    << HSCB_RMAP_PACKET_INSTRUCTION_RMAP_COMMAND_i)
-                  | (HSCB_RMAP_PACKET_TYPE_COMMAND                  << HSCB_RMAP_PACKET_INSTRUCTION_FIELD_PACKET_TYPE_i)
-                  | (reply_addr_length    << HSCB_RMAP_PACKET_INSTRUCTION_FIELD_REPLY_ADDR_LEN_i);
-            raw_rmap_packets[i].key = HSCB_RMAP_DEFAULT_KEY;
-            raw_rmap_packets[i].initiator_logical_addr = DEFAULT_INITIATOR_LOGICAL_ADDRESS;
-            raw_rmap_packets[i].transaction_id = i;
-            raw_rmap_packets[i].change_endian = change_endian;
-            raw_rmap_packets[i].expected_reply_status = HSCB_RMAP_REPLY_STATUS_OK;
+            result |= generate_RRI_RMAP_packet(raw_rmap_packets, --i, change_endian, length);
+            if (result != OK)
+                return result;
         }
         case 1:
         {
-            char rx_0_heap_name[] = RX_0_HEAP_NAME;
-            char tx_0_heap_name[] = TX_0_HEAP_NAME;
-            --i;
-            reply_addr_length = HSCB_RMAP_PACKET_REPLY_ADDR_12B;
-            raw_rmap_packets[i].reply_addr_chain.length = reply_addr_length << 2;
-            raw_rmap_packets[i].reply_addr_chain.array
-                = rumboot_malloc_from_named_heap_aligned(default_heap_name_for_reply_addr,
-                        raw_rmap_packets[i].reply_addr_chain.length, 8);
+            result |= generate_W_V_R_I_RMAP_packet(raw_rmap_packets, --i, change_endian, length);
+            if (result != OK)
+                return result;
 
-            raw_rmap_packets[i].data_chain.length = DATA_SIZE_0;
-            raw_rmap_packets[i].data_chain.array
-                = rumboot_malloc_from_named_heap_aligned(tx_0_heap_name,
-                        raw_rmap_packets[i].data_chain.length, 8);
-
-
-            raw_rmap_packets[i].addr
-                = rumboot_virt_to_dma( rumboot_malloc_from_named_heap_aligned(rx_0_heap_name,
-                        raw_rmap_packets[i].data_chain.length, 8));
-            raw_rmap_packets[i].ext_addr = 0; //here we have 32bit AXI address space
-
-            set_test_data(
-                    raw_rmap_packets[i].data_chain.array,
-                    raw_rmap_packets[i].data_chain.length,
-                    INCREMENT_0,
-                    DATA_INITIAL_VALUE);
-
-            set_test_data(
-                    raw_rmap_packets[i].reply_addr_chain.array,
-                    raw_rmap_packets[i].reply_addr_chain.length,
-                    INCREMENT_0,
-                    DATA_INITIAL_VALUE);
-
-            raw_rmap_packets[i].target_addr_chain.array = NULL;
-            raw_rmap_packets[i].target_addr_chain.length = 0;
-            raw_rmap_packets[i].target_logical_addr = HSCB_RMAP_DEFAULT_TARGET_LOGICAL_ADDRESS;
-            raw_rmap_packets[i].instruction =
-                    (HSCB_RMAP_PACKET_WRITE             << HSCB_RMAP_PACKET_INSTRUCTION_FIELD_WRITE_i)
-                  | (HSCB_RMAP_PACKET_VERIFY            << HSCB_RMAP_PACKET_INSTRUCTION_FIELD_VERIFY_DATA_i)
-                  | (HSCB_RMAP_PACKET_REPLY             << HSCB_RMAP_PACKET_INSTRUCTION_FIELD_W_REPLY_i)
-                  | (HSCB_RMAP_PACKET_INCREMENT         << HSCB_RMAP_PACKET_INSTRUCTION_FIELD_INCREMENT_i)
-                  | (HSCB_RMAP_PACKET_TYPE_COMMAND      << HSCB_RMAP_PACKET_INSTRUCTION_FIELD_PACKET_TYPE_i)
-                  | (reply_addr_length    << HSCB_RMAP_PACKET_INSTRUCTION_FIELD_REPLY_ADDR_LEN_i);
-            raw_rmap_packets[i].key = HSCB_RMAP_DEFAULT_KEY;
-            raw_rmap_packets[i].initiator_logical_addr = DEFAULT_INITIATOR_LOGICAL_ADDRESS;
-            raw_rmap_packets[i].transaction_id = i;
-            raw_rmap_packets[i].change_endian = change_endian;
-            raw_rmap_packets[i].expected_reply_status = HSCB_RMAP_REPLY_STATUS_OK;
         }
         break;
         default: return UNSUPPORTED_COUNT_PACKETS;
