@@ -26,19 +26,19 @@
 #include <platform/common_macros/common_macros.h>
 
 
-#define MAX_ATTEMPTS 1000
+#define MAX_ATTEMPTS 100000
 
 
 #ifndef TX_0_HEAP_NAME
-#define TX_0_HEAP_NAME "IM1"
+#define TX_0_HEAP_NAME "NOR"
 #endif
 
 #ifndef RX_0_HEAP_NAME
-#define RX_0_HEAP_NAME "IM2"
+#define RX_0_HEAP_NAME "SRAM0"
 #endif
 
 #ifndef TX_1_HEAP_NAME
-#define TX_1_HEAP_NAME "IM2"
+#define TX_1_HEAP_NAME "SRAM1"
 #endif
 
 #ifndef RX_1_HEAP_NAME
@@ -106,18 +106,18 @@
 //#endif
 
 #ifndef COUNT_PACKETS
-#define COUNT_PACKETS 3
+#define COUNT_PACKETS 2
 #endif
 
 #ifndef DATA_SIZE_0
-#define DATA_SIZE_0 0x13
+#define DATA_SIZE_0 0xFF
 #endif
 #ifndef DATA_SIZE_1
-#define DATA_SIZE_1 0x22
+#define DATA_SIZE_1 0x220
 #endif
-//#ifndef DATA_SIZE_2
-//#define DATA_SIZE_2 0x19
-//#endif
+#ifndef DATA_SIZE_2
+#define DATA_SIZE_2 0x20
+#endif
 //#ifndef DATA_SIZE_3
 //#define DATA_SIZE_3 0x27
 //#endif
@@ -316,6 +316,7 @@ enum{
     OK = 0,
     UNSUPPORTED_COUNT_PACKETS = (1 << 0),
     UNABLE_TO_ALLOCATE_MEMORY = (1 << 1),
+    NO_REPLIES_ARE_EXPECTED = 3,
     REPLY_ADDR_CHAIN_MISMATCH_IN_REPLY = (1 << 2),
     INITIATOR_LOGICAL_ADDRESS_MISMATCH = (1 << 3),
     PROTOCOL_ID_MISMATCH = (1 << 4),
@@ -452,7 +453,6 @@ uint32_t generate_RRI_RMAP_packet(hscb_rmap_packet_raw_configuration_t* raw_rmap
     return OK;
 }
 
-
 uint32_t generate_RRS_RMAP_packet(hscb_rmap_packet_raw_configuration_t* raw_rmap_packets, uint32_t index, bool change_endian,  const uint32_t length)
 {
     uint32_t reply_addr_length = 0;
@@ -500,7 +500,6 @@ uint32_t generate_RRS_RMAP_packet(hscb_rmap_packet_raw_configuration_t* raw_rmap
     return OK;
 }
 
-
 uint32_t generate_W_V_R_I_RMAP_packet(hscb_rmap_packet_raw_configuration_t* raw_rmap_packets, uint32_t index, bool change_endian,  const uint32_t length)
 {
     uint32_t reply_addr_length = 0;
@@ -521,8 +520,8 @@ uint32_t generate_W_V_R_I_RMAP_packet(hscb_rmap_packet_raw_configuration_t* raw_
 
 
     raw_rmap_packets[index].addr
-        = rumboot_virt_to_dma( rumboot_malloc_from_named_heap_aligned(rx_0_heap_name,
-                raw_rmap_packets[index].data_chain.length, 8));
+        = rumboot_virt_to_dma( rumboot_malloc_from_named_heap_misaligned(rx_0_heap_name,
+                raw_rmap_packets[index].data_chain.length, 8, 5));
     raw_rmap_packets[index].ext_addr = 0; //here we have 32bit AXI address space
 
     set_test_data(
@@ -565,7 +564,7 @@ uint32_t generate_WnVnR_S_RMAP_packet(hscb_rmap_packet_raw_configuration_t* raw_
         = rumboot_malloc_from_named_heap_aligned(default_heap_name_for_reply_addr,
                 raw_rmap_packets[index].reply_addr_chain.length, 8);
 
-    raw_rmap_packets[index].data_chain.length = DATA_SIZE_0;
+    raw_rmap_packets[index].data_chain.length = DATA_SIZE_2;
     raw_rmap_packets[index].data_chain.array
         = rumboot_malloc_from_named_heap_aligned(tx_0_heap_name,
                 raw_rmap_packets[index].data_chain.length, 8);
@@ -610,12 +609,12 @@ uint32_t generate_some_raw_rmap_packets(hscb_rmap_packet_raw_configuration_t* ra
     uint32_t result = 0;
     switch(length)
     {
-        case 3:
-        {
-            result |= generate_RMW_RMAP_packet(raw_rmap_packets, --i, change_endian, length);
-            if (result != OK)
-                return result;
-        }
+//        case 3:
+//        {
+//            result |= generate_RMW_RMAP_packet(raw_rmap_packets, --i, change_endian, length);
+//            if (result != OK)
+//                return result;
+//        }
         case 2:
         {
             result |= generate_RRI_RMAP_packet(raw_rmap_packets, --i, change_endian, length);
@@ -834,7 +833,7 @@ uint32_t count_of_necessary_RX_descriptors(
         counter += (raw_rmap_packets[i].instruction
                     & HSCB_RMAP_PACKET_INSTRUCTION_FIELD_W_REPLY_mask) ? 1 : 0;// Data with CRC is supplied
     }
-    return ((counter) ? (counter + 1) : (counter + 2));//Reserve 1 place for terminating descriptor
+    return ((counter) ? (counter + 1) : (counter));//Reserve 1 place for terminating descriptor
 }
 
 uint32_t prepare_receiving_areas(
@@ -847,6 +846,8 @@ uint32_t prepare_receiving_areas(
     hscb_descr_struct_t descr;
     rumboot_printf("prepare_receiving_areas start\n");
     uint32_t count_descriptors = count_of_necessary_RX_descriptors(raw_rmap_packets, count_packets);
+    if(count_descriptors == 0)
+        return NO_REPLIES_ARE_EXPECTED;
 
     receiving_rmap_packets->array_of_descriptors = rumboot_malloc_from_heap_aligned(DEFAULT_HEAP_ID,
             sizeof(hscb_packed_descr_struct_t) * count_descriptors, 8);
@@ -1154,9 +1155,12 @@ static uint32_t check_results(
 }
 
 static uint32_t check_rmap_func(
+        uint32_t base_addr,
         uint32_t supplementary_base_addr){
     uint32_t cnt = 0;
     uint32_t result = 0;
+    uint32_t rmap_status = 0;
+    uint32_t rmap_c_status = 0;
     hscb_rmap_packet_raw_configuration_t* raw_rmap_packets = NULL;
     hscb_rmap_packet_ready_for_transmit_t ready_rmap_packets = {0};
     hscb_rmap_packet_ready_for_transmit_t receiving_rmap_packets = {0};
@@ -1164,6 +1168,7 @@ static uint32_t check_rmap_func(
     hscb1_status = 0;
     hscb_under_test_dma_status = 0;
     hscb_supplementary_dma_status = 0;
+    bool do_we_receive_anything = true;
 
     rumboot_putstring( "------- HSCB RMAP test -------\n" );
 
@@ -1218,6 +1223,11 @@ static uint32_t check_rmap_func(
     switch(prepare_receiving_areas(&receiving_rmap_packets, raw_rmap_packets, COUNT_PACKETS))
     {
         case OK: rumboot_printf("prepare_receiving_areas: OK\n"); break;
+        case NO_REPLIES_ARE_EXPECTED:
+        {
+            rumboot_printf("prepare_receiving_areas: no replies are expected.\n");
+            do_we_receive_anything = false;
+        }break;
         case UNABLE_TO_ALLOCATE_MEMORY:
         {
             free_mem_from_ready_rmap_packets(&ready_rmap_packets);
@@ -1238,10 +1248,13 @@ static uint32_t check_rmap_func(
 
     hscb_set_rdma_tbl_size(supplementary_base_addr, hscb_get_tbl_len_by_count(ready_rmap_packets.count_areas - 1));
     hscb_set_rdma_sys_addr(supplementary_base_addr, rumboot_virt_to_dma((uint32_t *) ready_rmap_packets.array_of_descriptors));
-    hscb_set_wdma_tbl_size(supplementary_base_addr, hscb_get_tbl_len_by_count(receiving_rmap_packets.count_areas));
-    hscb_set_wdma_sys_addr(supplementary_base_addr, rumboot_virt_to_dma((uint32_t *) receiving_rmap_packets.array_of_descriptors));
+    if(do_we_receive_anything)
+    {
+        hscb_set_wdma_tbl_size(supplementary_base_addr, hscb_get_tbl_len_by_count(receiving_rmap_packets.count_areas));
+        hscb_set_wdma_sys_addr(supplementary_base_addr, rumboot_virt_to_dma((uint32_t *) receiving_rmap_packets.array_of_descriptors));
+    }
 
-    // Enable HSCB0 and HSCB1
+    // Enable supplementary HSCB
     iowrite32((1 << HSCB_IRQ_MASK_ACTIVE_LINK_i),    supplementary_base_addr + HSCB_IRQ_MASK);
     iowrite32((1 << HSCB_SETTINGS_EN_HSCB_i),        supplementary_base_addr + HSCB_SETTINGS);
     rumboot_printf( "Waiting for supplementary HSCB(0x%x) link establishing\n",
@@ -1256,20 +1269,27 @@ static uint32_t check_rmap_func(
     // Enable DMA for supplementary HSCB
     rumboot_putstring( "Start work!\n" );
     hscb_run_rdma(supplementary_base_addr);
-    hscb_run_wdma(supplementary_base_addr);
-    rumboot_putstring( "Wait supplementary HSCB finish work\n" );
-    while (!(hscb_supplementary_dma_status)){
-        if (cnt == MAX_ATTEMPTS) {
-            rumboot_putstring( "Wait interrupt Time-out\n" );
-            return 1;
+    if(do_we_receive_anything)
+    {
+        hscb_run_wdma(supplementary_base_addr);
+        rumboot_putstring( "Wait supplementary HSCB finish work\n" );
+        while (!(hscb_supplementary_dma_status)){
+            if (cnt == MAX_ATTEMPTS) {
+                rumboot_putstring( "Wait interrupt Time-out\n" );
+                return 1;
+            }
+            else
+                cnt += 1;
         }
-        else
-            cnt += 1;
+        rumboot_putstring( "Finish work!\n" );
     }
     cnt = 0;
     hscb_under_test_dma_status = 0;
     hscb_supplementary_dma_status = 0;
-    rumboot_putstring( "Finish work!\n" );
+    rmap_status = ioread32(base_addr + HSCB_RMAP_STATUS);
+    rmap_c_status = ioread32(base_addr + HSCB_RMAP_C_STATUS);
+    rumboot_printf("rmap_status == 0x%x, rmap_c_status == 0x%x\n", rmap_status, rmap_c_status);
+
 #ifdef TEST_OI10_HSCB_FULL_TRACING
     print_hscb_rmap_packets_via_putdump(receiving_rmap_packets);
 #endif
@@ -1289,7 +1309,7 @@ int main() {
     tbl = create_irq_handlers();
 
 
-    result += check_rmap_func(HSCB_SUPPLEMENTARY_BASE);
+    result += check_rmap_func(HSCB_UNDER_TEST_BASE, HSCB_SUPPLEMENTARY_BASE);
     delete_irq_handlers(tbl);
 
 
