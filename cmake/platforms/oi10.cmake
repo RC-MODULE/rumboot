@@ -1088,7 +1088,160 @@ endif()
       PREFIX mkio1-em2-func-b
     )
 
+#    add_rumboot_target(
+#        CONFIGURATION IRAM
+#        FILES common/mkio/mkio0_events_timestamps_test.c
+#        NAME mkio0_events_timestamps_test
+#      )
+#
+#    add_rumboot_target(
+#        CONFIGURATION IRAM
+#        FILES common/mkio/mkio1_events_timestamps_test.c
+#        NAME mkio1_events_timestamps_test
+#      )
 
+#    add_rumboot_target(
+#        CONFIGURATION IRAM
+#        FILES common/mkio/mkio_signal_test.c
+#        NAME mkio_signal_test
+#        IRUN_FLAGS +mkio_signal_test
+#      )
+
+    add_rumboot_target(
+        CONFIGURATION SUPPLEMENTARY
+        LDS oi10/sram0.lds
+        FILES test_oi10_cpu_021.c
+        NAME "test_oi10_cpu_021_wt_100"
+        CFLAGS -DL2C_IL1I_BIT=1 -DL2C_IL1D_BIT=1 -DL2C_WRITE_MODE_BIT=1 -DL2C_INHIBIT_BIT=0 -DL2C_MEMORY_COHERENCE_BIT=1
+    )
+    add_rumboot_target(
+        CONFIGURATION IRAM
+        FILES test_oi10_cpu_021_base.c
+        NAME "test_oi10_cpu_021_wt_100"
+        LOAD IM0BIN SELF
+             SRAM0BIN supplementary-test_oi10_cpu_021_wt_100
+    )
+    
+    add_rumboot_target(
+        CONFIGURATION SUPPLEMENTARY
+        LDS oi10/sram0.lds
+        FILES test_oi10_cpu_021.c
+        NAME "test_oi10_cpu_021_wt_101"
+        CFLAGS -DL2C_IL1I_BIT=0 -DL2C_IL1D_BIT=1 -DL2C_WRITE_MODE_BIT=1 -DL2C_INHIBIT_BIT=0 -DL2C_MEMORY_COHERENCE_BIT=1
+    )
+    add_rumboot_target(
+        CONFIGURATION IRAM
+        FILES test_oi10_cpu_021_base.c
+        NAME "test_oi10_cpu_021_wt_101"
+        LOAD IM0BIN SELF
+             SRAM0BIN supplementary-test_oi10_cpu_021_wt_101
+    )
+    
+    add_rumboot_target(
+        CONFIGURATION SUPPLEMENTARY
+        LDS oi10/sram0.lds
+        FILES test_oi10_cpu_021.c
+        NAME "test_oi10_cpu_021_wt_110"
+        CFLAGS -DL2C_IL1I_BIT=1 -DL2C_IL1D_BIT=0 -DL2C_WRITE_MODE_BIT=1 -DL2C_INHIBIT_BIT=0 -DL2C_MEMORY_COHERENCE_BIT=1
+    )
+    add_rumboot_target(
+        CONFIGURATION IRAM
+        FILES test_oi10_cpu_021_base.c
+        NAME "test_oi10_cpu_021_wt_110"
+        LOAD IM0BIN SELF
+             SRAM0BIN supplementary-test_oi10_cpu_021_wt_110
+    )
+    
+    add_rumboot_target(
+        CONFIGURATION SUPPLEMENTARY
+        LDS oi10/sram0.lds
+        FILES test_oi10_cpu_021.c
+        NAME "test_oi10_cpu_021_wt_111"
+        CFLAGS -DL2C_IL1I_BIT=0 -DL2C_IL1D_BIT=0 -DL2C_WRITE_MODE_BIT=1 -DL2C_INHIBIT_BIT=0 -DL2C_MEMORY_COHERENCE_BIT=1
+    )
+    add_rumboot_target(
+        CONFIGURATION IRAM
+        FILES test_oi10_cpu_021_base.c
+        NAME "test_oi10_cpu_021_wt_111"
+        LOAD IM0BIN SELF
+             SRAM0BIN supplementary-test_oi10_cpu_021_wt_111
+    )
+   
+   add_rumboot_target(
+        CONFIGURATION SUPPLEMENTARY
+        LDS oi10/sram0.lds
+        FILES test_oi10_cpu_021.c
+        NAME "test_oi10_cpu_021_wb_000"
+        CFLAGS -DL2C_IL1I_BIT=1 -DL2C_IL1D_BIT=1 -DL2C_WRITE_MODE_BIT=0 -DL2C_INHIBIT_BIT=1 -DL2C_MEMORY_COHERENCE_BIT=0
+    )
+    add_rumboot_target(
+        CONFIGURATION IRAM
+        FILES test_oi10_cpu_021_base.c
+        NAME "test_oi10_cpu_021_wb_000"
+        LOAD IM0BIN SELF
+             SRAM0BIN supplementary-test_oi10_cpu_021_wb_000
+    )
+     
+    add_rumboot_target(
+        CONFIGURATION SUPPLEMENTARY
+        LDS oi10/sram0.lds
+        FILES test_oi10_cpu_021.c
+        NAME "test_oi10_cpu_021_wb_100"
+        CFLAGS -DL2C_IL1I_BIT=1 -DL2C_IL1D_BIT=1 -DL2C_WRITE_MODE_BIT=0 -DL2C_INHIBIT_BIT=0 -DL2C_MEMORY_COHERENCE_BIT=1
+    )
+    add_rumboot_target(
+        CONFIGURATION IRAM
+        FILES test_oi10_cpu_021_base.c
+        NAME "test_oi10_cpu_021_wb_100"
+        LOAD IM0BIN SELF
+             SRAM0BIN supplementary-test_oi10_cpu_021_wb_100
+    )
+    
+    add_rumboot_target(
+        CONFIGURATION SUPPLEMENTARY
+        LDS oi10/sram0.lds
+        FILES test_oi10_cpu_021.c
+        NAME "test_oi10_cpu_021_wb_101"
+        CFLAGS -DL2C_IL1I_BIT=0 -DL2C_IL1D_BIT=1 -DL2C_WRITE_MODE_BIT=0 -DL2C_INHIBIT_BIT=0 -DL2C_MEMORY_COHERENCE_BIT=1
+    )
+    add_rumboot_target(
+        CONFIGURATION IRAM
+        FILES test_oi10_cpu_021_base.c
+        NAME "test_oi10_cpu_021_wb_101"
+        LOAD IM0BIN SELF
+             SRAM0BIN supplementary-test_oi10_cpu_021_wb_101
+    )
+ 
+    add_rumboot_target(
+        CONFIGURATION SUPPLEMENTARY
+        LDS oi10/sram0.lds
+        FILES test_oi10_cpu_021.c
+        NAME "test_oi10_cpu_021_wb_110"
+        CFLAGS -DL2C_IL1I_BIT=1 -DL2C_IL1D_BIT=0 -DL2C_WRITE_MODE_BIT=0 -DL2C_INHIBIT_BIT=0 -DL2C_MEMORY_COHERENCE_BIT=1
+    )
+    add_rumboot_target(
+        CONFIGURATION IRAM
+        FILES test_oi10_cpu_021_base.c
+        NAME "test_oi10_cpu_021_wb_110"
+        LOAD IM0BIN SELF
+             SRAM0BIN supplementary-test_oi10_cpu_021_wb_110
+    )
+    
+    add_rumboot_target(
+        CONFIGURATION SUPPLEMENTARY
+        LDS oi10/sram0.lds
+        FILES test_oi10_cpu_021.c
+        NAME "test_oi10_cpu_021_wb_111"
+        CFLAGS -DL2C_IL1I_BIT=0 -DL2C_IL1D_BIT=0 -DL2C_WRITE_MODE_BIT=0 -DL2C_INHIBIT_BIT=0 -DL2C_MEMORY_COHERENCE_BIT=1
+    )
+    add_rumboot_target(
+        CONFIGURATION IRAM
+        FILES test_oi10_cpu_021_base.c
+        NAME "test_oi10_cpu_021_wb_111"
+        LOAD IM0BIN SELF
+             SRAM0BIN supplementary-test_oi10_cpu_021_wb_111
+    )      
+    
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES test_oi10_uart_000.c
