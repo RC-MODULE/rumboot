@@ -10,6 +10,10 @@
 #include <platform/arch/ppc/test_macro_asm.S.h>
 #include <platform/regs/regs_plb6plb4.h>
 
+.section ".text","ax",@progbits
+
+.global main
+
 DECLARE_CONST ( TEST_MPW_CPU_MEM_012_EVENT_START, TEST_EVENT_CODE_MIN )
 DECLARE_CONST ( TEST_MPW_CPU_MEM_012_EVENT_VERIFY, TEST_EVENT_CODE_MIN + 1 )
 DECLARE_CONST ( TEST_MPW_CPU_MEM_012_EVENT_FINISHED, TEST_EVENT_CODE_MIN + 2 )
@@ -110,104 +114,64 @@ DECLARE_CONST ( TEST_MPW_CPU_MEM_012_EVENT_FINISHED, TEST_EVENT_CODE_MIN + 2 )
     finish_check_clr_\lbl:
 .endm
 
-.section ".text","ax",@progbits
-
-.global main
-
 main:
     test_event_send_test_id "test_oi10_cpu_mem_012"
     rumboot_putstring "\nSend event verify\n"
-    test_event TEST_MPW_CPU_MEM_012_EVENT_VERIFY
-
-//according to User's Manual ch. 9.4 Initialization Software Requirements
-    load_const  r0, 0x00000000 //DBCR0 value
-    mtspr       SPR_DBCR0, r0       //DBCR0 clear
-
-//Setup DBSR
-    mfspr       r0, SPR_DBSR_RC        //read current DBSR
-    mtspr       SPR_DBSR_RC, r0        //clear all valid bits
-
-//CCR0                 ITE                 PRE                  CRPE               ICS                  DAPUIB               ICWRIDX                 DTB                  FLSTA                DQWPM                 IQWPM
-    load_const  r0, reg_field(0, 0b0) | reg_field(1, 0b1) | reg_field(4, 0b0) | reg_field(10, 0b0) | reg_field(11, 0b0) | reg_field(15, 0b0000) | reg_field(16, 0b0) | reg_field(23, 0b0) | reg_field(29, 0b00) | reg_field(30, 0b1)
-    mtspr       SPR_CCR0, r0
-
-//CCR1                GPRPEI             FPRPEI                 ICDPEI              ICLPEI                ICTPEI                DCDPEI               DCLPEI                 DCTPEI              MMUTPEI              MMUDPEI                 TSS                 DPC                    TCS
-    load_const  0, reg_field(1, 0b00) | reg_field(3, 0b00) | reg_field(5, 0b00) | reg_field(7, 0b00) | reg_field(9, 0b00) | reg_field(11, 0b00) | reg_field(13, 0b00) | reg_field(15, 0b00) | reg_field(16, 0b0) | reg_field(17, 0b0) | reg_field(19, 0b0) | reg_field(21, 0b0) | reg_field(23, 0b00)
-    mtspr       SPR_CCR1, r0
-
-//CCR2                 DSTG                  DLFPD            DSTI                  PMUD               DCSTGW                STGCTR                  DISTG               SPC5C1               MCDTO
-    load_const  r0, reg_field(1, 0b00) | reg_field(2, 0b0) | reg_field(4, 0b0) | reg_field(9, 0b0) | reg_field(11, 0b0) | reg_field(15, 0b0000) | reg_field(16, 0b0) | reg_field(20, 0b0) | reg_field(21, 0b0)
-    mtspr       SPR_CCR2, r0
-
-    load_const  r0, (0b0 << MMU_MMUBE0_VBE0_i) | (0b0 << MMU_MMUBE0_VBE1_i) | (0b0 << MMU_MMUBE0_VBE2_i)
-    mtspr       SPR_MMUBE0, r0
-
-    load_const  r0, (0b0 << MMU_MMUBE1_VBE3_i) | (0b0 << MMU_MMUBE1_VBE4_i) | (0b0 << MMU_MMUBE1_VBE5_i)
-    mtspr       SPR_MMUBE1, r0
-
-    load_const  r0, ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_64KB) << MMU_SSPCR_ORD1_i) | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_4KB) << MMU_SSPCR_ORD2_i) | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_256MB) << MMU_SSPCR_ORD3_i) | ((MMU_SUSPCR_ORD_PID_ONLY | MMU_XSPCR_ORD_1GB) << MMU_SSPCR_ORD4_i) | (MMU_XSPCR_ORD_END << MMU_SSPCR_ORD5_i)
-    mtspr       SPR_SSPCR, r0
-
-    load_const  r0, (MMU_XSPCR_ORD_64KB << MMU_SSPCR_ORD1_i) | (MMU_XSPCR_ORD_4KB << MMU_SSPCR_ORD2_i) | (MMU_XSPCR_ORD_256MB << MMU_SSPCR_ORD3_i) | (MMU_XSPCR_ORD_1GB << MMU_SSPCR_ORD4_i) | (MMU_XSPCR_ORD_END << MMU_SSPCR_ORD5_i)
-    mtspr       SPR_ISPCR, r0
-
-    load_const  r0, ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_64KB) << MMU_SSPCR_ORD1_i) | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_4KB) << MMU_SSPCR_ORD2_i) | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_256MB) << MMU_SSPCR_ORD3_i) | ((MMU_SUSPCR_ORD_PID_ONLY | MMU_XSPCR_ORD_1GB) << MMU_SSPCR_ORD4_i) | (MMU_XSPCR_ORD_END << MMU_SSPCR_ORD5_i)
-    mtspr       SPR_USPCR, r0
-
-    load_const r0, 0
 
     b bht_check
 
-    bht_check:
+bht_check:
     //disable GHR
     mfspr r3, SPR_CCR0
     ori r3, r3, ((1 << IBM_BIT_INDEX(32, 20)))
     mtspr SPR_CCR0, r3
 
-    test_event TEST_MPW_CPU_MEM_012_EVENT_START
-
-    check_set_bits:
-    rumboot_putstring "check set bits\n"
+check_set_bits:
     load_const r1, 5 //value for branch conditional
     load_const r2, 5 //value for branch conditional
     load_const r3, 0 //counter
     load_const r4, 6 //stop counter
 
+    test_event TEST_MPW_CPU_MEM_012_EVENT_VERIFY
+
+    rumboot_putstring "check set bits\n"
+
     cmp cr0, 0, r1, r2 //r1==r2 for creation branch taken
 
-    set_bht_array_bits 0, 0x4000 //mem[0][15:14]
-    set_bht_array_bits 1, 0x4020 //mem[2][13:12]
-    set_bht_array_bits 2, 0x8040 //mem[256][11:10]
-    set_bht_array_bits 3, 0x8080 //mem[128][9:8]
-    set_bht_array_bits 4, 0x8100 //mem[64][7:6]
-    set_bht_array_bits 5, 0x8200 //mem[32][5:4]
-    set_bht_array_bits 6, 0x8400 //mem[16][3:2]
-    set_bht_array_bits 7, 0x8800 //mem[8][1:0]
-    set_bht_array_bits 8, 0x9000 //mem[4][15:14]
-    set_bht_array_bits 9, 0xA000 //mem[1][13:12]
+    set_bht_array_bits 0, 0x4000 //mem[256][15:14]
+    set_bht_array_bits 1, 0x4020 //mem[258][13:12]
+    set_bht_array_bits 2, 0x8040 //mem[128][11:10]
+    set_bht_array_bits 3, 0x8080 //mem[384][9:8]
+    set_bht_array_bits 4, 0x8100 //mem[320][7:6]
+    set_bht_array_bits 5, 0x8200 //mem[288][5:4]
+    set_bht_array_bits 6, 0x8400 //mem[272][3:2]
+    set_bht_array_bits 7, 0x8800 //mem[264][1:0]
+    set_bht_array_bits 8, 0x9000 //mem[260][15:14]
+    set_bht_array_bits 9, 0xA000 //mem[257][13:12]
 
-    check_clr_bits:
-    rumboot_putstring "check clr bits\n"
-
+check_clr_bits:
     load_const r1, 6
     load_const r4, 4
+
+    rumboot_putstring "check clear bits\n"
+
     cmp cr0, 0, r1, r2 //r1!=r2 for creation branch not-taken
 
-    clr_bht_array_bits 0, 0xC000 //mem[0][15:14]
-    clr_bht_array_bits 1, 0xC020 //mem[2][13:12]
-    clr_bht_array_bits 2, 0x10040 //mem[256][11:10]
-    clr_bht_array_bits 3, 0x10080 //mem[128][9:8]
-    clr_bht_array_bits 4, 0x10100 //mem[64][7:6]
-    clr_bht_array_bits 5, 0x10200 //mem[32][5:4]
-    clr_bht_array_bits 6, 0x10400 //mem[16][3:2]
-    clr_bht_array_bits 7, 0x10800 //mem[8][1:0]
-    clr_bht_array_bits 8, 0x11000 //mem[4][15:14]
-    clr_bht_array_bits 9, 0x12000 //mem[1][13:12]
+    clr_bht_array_bits 0, 0xC000  //mem[256][15:14]
+    clr_bht_array_bits 1, 0xC020  //mem[258][13:12]
+    clr_bht_array_bits 2, 0x10040 //mem[128][11:10]
+    clr_bht_array_bits 3, 0x10080 //mem[384][9:8]
+    clr_bht_array_bits 4, 0x10100 //mem[320][7:6]
+    clr_bht_array_bits 5, 0x10200 //mem[288][5:4]
+    clr_bht_array_bits 6, 0x10400 //mem[272][3:2]
+    clr_bht_array_bits 7, 0x10800 //mem[264][1:0]
+    clr_bht_array_bits 8, 0x11000 //mem[260][15:14]
+    clr_bht_array_bits 9, 0x12000 //mem[257][13:12]
 
-    test_finished:
+test_finished:
     rumboot_putstring "\nTEST FINISHED\n"
     test_event      TEST_MPW_CPU_MEM_012_EVENT_FINISHED
     b infinite_loop
 
-    infinite_loop:
-        b infinite_loop
+infinite_loop:
+    b infinite_loop
