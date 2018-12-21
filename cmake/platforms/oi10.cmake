@@ -571,7 +571,7 @@ endif()
     add_rumboot_target(
           CONFIGURATION IRAM
           FILES test_oi10_em2_201.c
-          CFLAGS -DEXT_MEM_BASE=SRAM0_BASE -DSW_ASSERTS_ONLY
+          CFLAGS -DEXT_MEM_BASE=SRAM0_BASE -DSW_ASSERTS_ONLY -DNOR_SELFCHECKING_DISABLE
           PREFIX sram0-sw-asserts
         )     
 
@@ -660,7 +660,7 @@ endif()
     add_rumboot_target(
           CONFIGURATION IRAM
           FILES test_oi10_em2_201.c
-          CFLAGS -DEXT_MEM_BASE=NOR_BASE -DSW_ASSERTS_ONLY
+          CFLAGS -DEXT_MEM_BASE=NOR_BASE -DSW_ASSERTS_ONLY -DNOR_SELFCHECKING_DISABLE
           PREFIX nor-sw-asserts
         )
     
@@ -756,7 +756,7 @@ endif()
     add_rumboot_target(
           CONFIGURATION IRAM
           FILES test_oi10_em2_201.c
-          CFLAGS -DEXT_MEM_BASE=NOR_BASE
+          CFLAGS -DEXT_MEM_BASE=NOR_BASE -DNOR_SELFCHECKING_DISABLE
           PREFIX nor-sw-hw-asserts
         )
 
