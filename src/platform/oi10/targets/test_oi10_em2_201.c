@@ -235,9 +235,12 @@ int check_sdram_2_1_3(uint32_t base_addr, sdx_csp_t csp, sdx_sds_t sds, sdx_sds_
     uint32_t m;
 
     void (*sdram_oper_from_emi)() = (void *)(SSRAM_BASE + 0x100);
-
+    /*
     static const tlb_entry sdram_tlb_entry[2] = { {TLB_ENTRY_SDRAM0},
                                                   {TLB_ENTRY_SDRAM1} };
+    */
+
+    static const tlb_entry sdram_tlb_entry[1] = { {TLB_ENTRY_SDRAM1} };
 
     memset((void*) SRAM0_BASE, 0, 128);
     memset((void*) (SSRAM_BASE), 0, 0x2000);
@@ -258,7 +261,7 @@ int check_sdram_2_1_3(uint32_t base_addr, sdx_csp_t csp, sdx_sds_t sds, sdx_sds_
     memcpy(sdram_oper_from_emi, sdram_oper, (uint32_t)check_sdram_2_1_3 - (uint32_t)sdram_oper);
     msync();
 
-    write_tlb_entries(sdram_tlb_entry, 2);
+    write_tlb_entries(sdram_tlb_entry, 1);
 
     rumboot_putstring("Touching sdram_oper_from_emi()\n");
     icbt(sdram_oper_from_emi);
@@ -281,10 +284,10 @@ int check_sdram_2_1_3(uint32_t base_addr, sdx_csp_t csp, sdx_sds_t sds, sdx_sds_
 #endif
                 sdram_oper_from_emi();
 
-                dcbi((void *)SDRAM_TEST_ADDR - 4);
-                TEST_ASSERT(0xBABADEDA==ioread32(SDRAM_TEST_ADDR - 4), "Data error");
-                dcbi((void *)SDRAM_TEST_ADDR - 0);
-                TEST_ASSERT(0xBABADEDA==ioread32(SDRAM_TEST_ADDR - 0), "Data error");
+                //dcbi((void *)SDRAM_TEST_ADDR - 4);
+                //TEST_ASSERT(0xBABADEDA==ioread32(SDRAM_TEST_ADDR - 4), "Data error");
+                //dcbi((void *)SDRAM_TEST_ADDR - 0);
+                //TEST_ASSERT(0xBABADEDA==ioread32(SDRAM_TEST_ADDR - 0), "Data error");
             }
 
     return 0;
