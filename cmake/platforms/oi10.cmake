@@ -567,12 +567,108 @@ endif()
         FILES common/irq/irq-defhandler.c
         PREFIX "irq-iram"
     )
+
+    add_rumboot_target(
+          CONFIGURATION IRAM
+          FILES test_oi10_em2_201.c
+          CFLAGS -DEXT_MEM_BASE=SRAM0_BASE -DSW_ASSERTS_ONLY
+          PREFIX sram0-sw-asserts
+        )     
+
+    add_rumboot_target(
+          CONFIGURATION IRAM
+          FILES test_oi10_em2_201.c
+          CFLAGS -DEXT_MEM_BASE=SDRAM_BASE -DCSP=CSP_1024 -DSDS=SDS_64M -DCHECK_2_1_3 -DCL=CL_2 -DSW_ASSERTS_ONLY
+          IRUN_FLAGS +sdram_col10_row14
+          PREFIX sdram-csp1024-cl2-sw-asserts
+        )
+
+    add_rumboot_target(
+          CONFIGURATION IRAM
+          FILES test_oi10_em2_201.c
+          CFLAGS -DEXT_MEM_BASE=SDRAM_BASE -DCSP=CSP_2048 -DSDS=SDS_64M -DCHECK_2_1_3 -DCL=CL_2 -DSW_ASSERTS_ONLY
+          PREFIX sdram-csp2048-cl2-sw-asserts
+        )
+
+    add_rumboot_target(
+          CONFIGURATION IRAM
+          FILES test_oi10_em2_201.c
+          CFLAGS -DEXT_MEM_BASE=SDRAM_BASE -DCSP=CSP_1024 -DSDS=SDS_64M -DCHECK_2_1_3 -DCL=CL_3 -DSW_ASSERTS_ONLY
+          IRUN_FLAGS +sdram_col10_row14
+          PREFIX sdram-csp1024-cl3-sw-asserts
+        )
+
+    add_rumboot_target(
+          CONFIGURATION IRAM
+          FILES test_oi10_em2_201.c
+          CFLAGS -DEXT_MEM_BASE=SDRAM_BASE -DCSP=CSP_2048 -DSDS=SDS_64M -DCHECK_2_1_3 -DCL=CL_3 -DSW_ASSERTS_ONLY
+          PREFIX sdram-csp2048-cl3-sw-asserts
+        )
+
+    add_rumboot_target(
+          CONFIGURATION IRAM
+          FILES test_oi10_em2_201.c
+          CFLAGS -DEXT_MEM_BASE=SDRAM_BASE -DSDS=SDS_64M -DCHECK_2_1_5 -DSW_ASSERTS_ONLY
+          PREFIX sdram-sds64M-sw-asserts
+        )
+
+    add_rumboot_target(
+          CONFIGURATION IRAM
+          FILES test_oi10_em2_201.c
+          CFLAGS -DEXT_MEM_BASE=SDRAM_BASE -DSDS=SDS_128M -DCHECK_2_1_5 -DSW_ASSERTS_ONLY
+          IRUN_FLAGS +sdram_col11_row14
+          PREFIX sdram-sds128M-sw-asserts
+        )
+
+    add_rumboot_target(
+          CONFIGURATION IRAM
+          FILES test_oi10_em2_201.c
+          CFLAGS -DEXT_MEM_BASE=SDRAM_BASE -DSDS=SDS_256M -DCHECK_2_1_5 -DSW_ASSERTS_ONLY
+          IRUN_FLAGS +sdram_col11_row15
+          PREFIX sdram-sds256M-sw-asserts
+        )
+
+    add_rumboot_target(
+          CONFIGURATION IRAM
+          FILES test_oi10_em2_201.c
+          CFLAGS -DEXT_MEM_BASE=SSRAM_BASE -DSSRAM_SST=SST_Flow_Through -DSSRAM_TSSOE=TSSOE_1 -DSW_ASSERTS_ONLY
+          IRUN_FLAGS +SSRAM_FT=1
+          PREFIX ssram-ft-sw-asserts
+        )
+
+    add_rumboot_target(
+          CONFIGURATION IRAM
+          FILES test_oi10_em2_201.c
+          CFLAGS -DEXT_MEM_BASE=SSRAM_BASE -DSSRAM_SST=SST_Pipelined  -DSSRAM_TSSOE=TSSOE_2 -DSW_ASSERTS_ONLY
+          PREFIX ssram-pipe-sw-asserts
+        )
+
+    add_rumboot_target(
+          CONFIGURATION IRAM
+          FILES test_oi10_em2_201.c
+          CFLAGS -DEXT_MEM_BASE=PIPELINED_BASE -DSW_ASSERTS_ONLY
+          PREFIX pipelined-sw-asserts
+        )
+
+    add_rumboot_target(
+          CONFIGURATION IRAM
+          FILES test_oi10_em2_201.c
+          CFLAGS -DEXT_MEM_BASE=SRAM1_BASE
+          PREFIX sram1-sw-asserts
+        )     
+
+    add_rumboot_target(
+          CONFIGURATION IRAM
+          FILES test_oi10_em2_201.c
+          CFLAGS -DEXT_MEM_BASE=NOR_BASE -DSW_ASSERTS_ONLY
+          PREFIX nor-sw-asserts
+        )
     
     add_rumboot_target(
           CONFIGURATION IRAM
           FILES test_oi10_em2_201.c
           CFLAGS -DEXT_MEM_BASE=SRAM0_BASE
-          PREFIX sram0
+          PREFIX sram0-sw-hw-asserts
         )     
 
     add_rumboot_target(
@@ -580,14 +676,14 @@ endif()
           FILES test_oi10_em2_201.c
           CFLAGS -DEXT_MEM_BASE=SDRAM_BASE -DCSP=CSP_1024 -DSDS=SDS_64M -DCHECK_2_1_3 -DCL=CL_2
           IRUN_FLAGS +sdram_col10_row14
-          PREFIX sdram-csp1024-cl2
+          PREFIX sdram-csp1024-cl2-sw-hw-asserts
         )
 
     add_rumboot_target(
           CONFIGURATION IRAM
           FILES test_oi10_em2_201.c
           CFLAGS -DEXT_MEM_BASE=SDRAM_BASE -DCSP=CSP_2048 -DSDS=SDS_64M -DCHECK_2_1_3 -DCL=CL_2
-          PREFIX sdram-csp2048-cl2
+          PREFIX sdram-csp2048-cl2-sw-hw-asserts
         )
 
     add_rumboot_target(
@@ -595,21 +691,21 @@ endif()
           FILES test_oi10_em2_201.c
           CFLAGS -DEXT_MEM_BASE=SDRAM_BASE -DCSP=CSP_1024 -DSDS=SDS_64M -DCHECK_2_1_3 -DCL=CL_3
           IRUN_FLAGS +sdram_col10_row14
-          PREFIX sdram-csp1024-cl3
+          PREFIX sdram-csp1024-cl3-sw-hw-asserts
         )
 
     add_rumboot_target(
           CONFIGURATION IRAM
           FILES test_oi10_em2_201.c
           CFLAGS -DEXT_MEM_BASE=SDRAM_BASE -DCSP=CSP_2048 -DSDS=SDS_64M -DCHECK_2_1_3 -DCL=CL_3
-          PREFIX sdram-csp2048-cl3
+          PREFIX sdram-csp2048-cl3-sw-hw-asserts
         )
 
     add_rumboot_target(
           CONFIGURATION IRAM
           FILES test_oi10_em2_201.c
           CFLAGS -DEXT_MEM_BASE=SDRAM_BASE -DSDS=SDS_64M -DCHECK_2_1_5
-          PREFIX sdram-sds64M
+          PREFIX sdram-sds64M-sw-hw-asserts
         )
 
     add_rumboot_target(
@@ -617,7 +713,7 @@ endif()
           FILES test_oi10_em2_201.c
           CFLAGS -DEXT_MEM_BASE=SDRAM_BASE -DSDS=SDS_128M -DCHECK_2_1_5
           IRUN_FLAGS +sdram_col11_row14
-          PREFIX sdram-sds128M
+          PREFIX sdram-sds128M-sw-hw-asserts
         )
 
     add_rumboot_target(
@@ -625,7 +721,7 @@ endif()
           FILES test_oi10_em2_201.c
           CFLAGS -DEXT_MEM_BASE=SDRAM_BASE -DSDS=SDS_256M -DCHECK_2_1_5
           IRUN_FLAGS +sdram_col11_row15
-          PREFIX sdram-sds256M
+          PREFIX sdram-sds256M-sw-hw-asserts
         )
 
     add_rumboot_target(
@@ -633,35 +729,35 @@ endif()
           FILES test_oi10_em2_201.c
           CFLAGS -DEXT_MEM_BASE=SSRAM_BASE -DSSRAM_SST=SST_Flow_Through -DSSRAM_TSSOE=TSSOE_1
           IRUN_FLAGS +SSRAM_FT=1
-          PREFIX ssram-ft
+          PREFIX ssram-ft-sw-hw-asserts
         )
 
     add_rumboot_target(
           CONFIGURATION IRAM
           FILES test_oi10_em2_201.c
           CFLAGS -DEXT_MEM_BASE=SSRAM_BASE -DSSRAM_SST=SST_Pipelined  -DSSRAM_TSSOE=TSSOE_2
-          PREFIX ssram-pipe
+          PREFIX ssram-pipe-sw-hw-asserts
         )
 
     add_rumboot_target(
           CONFIGURATION IRAM
           FILES test_oi10_em2_201.c
           CFLAGS -DEXT_MEM_BASE=PIPELINED_BASE
-          PREFIX pipelined
+          PREFIX pipelined-sw-hw-asserts
         )
 
     add_rumboot_target(
           CONFIGURATION IRAM
           FILES test_oi10_em2_201.c
           CFLAGS -DEXT_MEM_BASE=SRAM1_BASE
-          PREFIX sram1
+          PREFIX sram1-sw-hw-asserts
         )     
 
     add_rumboot_target(
           CONFIGURATION IRAM
           FILES test_oi10_em2_201.c
           CFLAGS -DEXT_MEM_BASE=NOR_BASE
-          PREFIX nor
+          PREFIX nor-sw-hw-asserts
         )
 
     #---GRETH tests start---

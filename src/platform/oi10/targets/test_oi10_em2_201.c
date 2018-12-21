@@ -128,7 +128,9 @@ int check_sram0(uint32_t base_addr)
     const ssx_tsoe_t test_tsoe_arr[SRAM0_TSOE_SPACE] = {TSOE_1, TSOE_2};
     const ssx_tcyc_t test_tcyc_arr[SRAM0_TCYC_SPACE] = {TCYC_2, TCYC_3, TCYC_4, TCYC_5};
 
+#ifndef  SW_ASSERTS_ONLY
     uint32_t event_code = (base_addr==SRAM0_BASE) ? EVENT_CHECK_SRAM0_TSOE_TCYC : EVENT_CHECK_SRAM1_TSOE_TCYC;
+#endif
     emi_bank_num bank = (base_addr==SRAM0_BASE) ? emi_b0_sram0 : emi_b4_sram1;
 
     rumboot_printf("Checking SRAM0/SRAM1 (0x%X)\n", base_addr);
@@ -138,7 +140,9 @@ int check_sram0(uint32_t base_addr)
         {
             emi_update_tcyc_tsoe(bank, test_tsoe_arr[i], test_tcyc_arr[j]);
             rumboot_printf("Setting tcyc / tsoe: %d / %d\n", test_tcyc_arr[j], test_tsoe_arr[i]);
+#ifndef  SW_ASSERTS_ONLY
             test_event(event_code);
+#endif
             check_wrrd(TEST_ADDR_0, (i<<16) | j);
             check_wrrd(TEST_ADDR_1, ~((i<<16) | j));
         }
@@ -163,7 +167,9 @@ int check_nor(uint32_t base_addr)
         {
             emi_update_tcyc_tsoe(emi_b5_nor, test_tsoe_arr[i], test_tcyc_arr[j]);
             rumboot_printf("Setting tcyc / tsoe: %d / %d\n", test_tcyc_arr[j], test_tsoe_arr[i]);
+#ifndef  SW_ASSERTS_ONLY
             test_event(EVENT_CHECK_NOR_TSOE_TCYC);
+#endif
             check_wrrd(TEST_ADDR_0, (i<<16) | j);
             check_wrrd(TEST_ADDR_1, ~((i<<16) | j));
             nor_erase_sect(TEST_ADDR_0);
@@ -270,7 +276,9 @@ int check_sdram_2_1_3(uint32_t base_addr, sdx_csp_t csp, sdx_sds_t sds, sdx_sds_
                 refresh_timings(emi_b1_sdram);
 
                 rumboot_putstring("Execute access to memory\n");
+#ifndef  SW_ASSERTS_ONLY
                 test_event(EVENT_CHECK_SDRAM_2_1_3);
+#endif
                 sdram_oper_from_emi();
 
                 dcbi((void *)SDRAM_TEST_ADDR - 4);
@@ -319,7 +327,9 @@ int check_sdram_2_1_5(uint32_t base_addr, sdx_sds_t sds)
     icbt(sdram_oper_from_emi);
 
     rumboot_putstring("Execute access to memory\n");
+#ifndef  SW_ASSERTS_ONLY
     test_event(EVENT_CHECK_SDRAM_2_1_5);
+#endif
     sdram_oper_from_emi();
     return 0;
 }
@@ -331,7 +341,9 @@ int check_ssram(uint32_t base_addr, ssx_sst_t sst_val, ssx_tssoe_t tssoe_val)
 {
     rumboot_putstring("Start checking SSRAM\n");
     emi_update_sst_tssoe(emi_b2_ssram, sst_val, tssoe_val);
+#ifndef  SW_ASSERTS_ONLY
     test_event((sst_val==SST_Flow_Through) ? EVENT_CHECK_SSRAM_SST_TSSOE_FT : EVENT_CHECK_SSRAM_SST_TSSOE_PIPE);
+#endif
     check_wrrd(TEST_ADDR_0, 0x55555555      );
     check_wrrd(TEST_ADDR_1, 0x55555555 << 1 );
     return 0;
@@ -343,7 +355,9 @@ int check_ssram(uint32_t base_addr, ssx_sst_t sst_val, ssx_tssoe_t tssoe_val)
 int check_pipelined(uint32_t base_addr)
 {
     rumboot_printf("Checking PIPELINED (0x%X)\n", base_addr);
+#ifndef  SW_ASSERTS_ONLY
     test_event(EVENT_CHECK_PIPE);
+#endif
     check_wrrd(TEST_ADDR_0, 0x55555555 );
     check_wrrd(TEST_ADDR_1, 0xAAAAAAAA );
     return 0;
@@ -353,7 +367,9 @@ int main()
 {
     int ret = 0;
     rumboot_printf("Start test_oi10_em2_201 (0x%X)\n", EXT_MEM_BASE);
+#ifndef  SW_ASSERTS_ONLY
     test_event_send_test_id("test_oi10_em2_201");
+#endif
 
     memset((void *)SRAM0_BASE, 0, sizeof(uint32_t));
     memset((void *)SSRAM_BASE, 0, sizeof(uint32_t));
