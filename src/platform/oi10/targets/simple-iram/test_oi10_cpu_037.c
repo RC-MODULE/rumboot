@@ -17,6 +17,7 @@
 #include <rumboot/irq.h>
 #include <platform/arch/ppc/ppc_476fp_fpu_fields.h>
 #include <platform/arch/ppc/ppc_476fp_fpu_const.h>
+#include <platform/test_event_c.h>
 
 
 typedef union
@@ -530,6 +531,8 @@ void check_round ()
 
 int main ()
 {
+    rumboot_memfill8_modelling((void*)SRAM0_BASE, 0x1000, 0x00, 0x00); //workaround (init 4KB SRAM0)
+
     enable_fpu();
 
 
