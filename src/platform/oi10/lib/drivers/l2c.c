@@ -382,8 +382,9 @@ bool l2c_arracc_get_data_by_address( uint32_t base, uint32_t ext_phys_addr, uint
     bool valid = false;
 
     rumboot_printf( "l2c_arracc_get_data_by_address\n" );
-    rumboot_printf( "address upper == %x\n", ext_phys_addr );
-    rumboot_printf( "address lower == %x\n", phys_addr);
+    //rumboot_printf( "address upper == %x\n", ext_phys_addr );
+    //rumboot_printf( "address lower == %x\n", phys_addr);
+    rumboot_printf( "address == %x_%x\n", ext_phys_addr, phys_addr );
     if( l2c_arracc_get_way_by_address( base, ext_phys_addr, phys_addr, &cache_way ) ) {
         valid = l2c_arracc_data_read_by_way( base, ext_phys_addr, phys_addr, cache_way, data64 );
     } else {
