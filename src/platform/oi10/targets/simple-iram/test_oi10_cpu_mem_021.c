@@ -25,8 +25,8 @@
 #include <platform/test_event_codes.h>
 #include <platform/test_assert.h>
 
-#include <platform/arch/ppc/ppc_476fp_config.h>
-#include <platform/arch/ppc/ppc_476fp_lib_c.h>
+#include <arch/ppc_476fp_config.h>
+#include <arch/ppc_476fp_lib_c.h>
 #include <platform/arch/ppc/ppc_476fp_mmu.h>
 #include <platform/arch/ppc/ppc_476fp_mmu_fields.h>
 
@@ -186,8 +186,9 @@ static void mem_write32(uint32_t val, uint32_t ptr)
     g_cnfg1 = L2C_READ(L2C_L2CNFG1);
 }
 
-static int32_t l2c_read_tag(uintptr_t       addr,
-                            u64_u32x2_t    *tag_addr,
+MAY_NOT_BE_USED
+static int32_t l2c_read_lru(uintptr_t       addr,
+                            u64_u32x2_t    *lru_addr,
                             int32_t        *way_out)
 {
     uint32_t way, tries, result, l2c_addr32;
@@ -211,7 +212,7 @@ static int32_t l2c_read_tag(uintptr_t       addr,
         if(tries && l2c_stat)
         {
             *way_out = way;
-            tag_addr->u64 = ((uint64_t)(result & L2C_TAG_ADDR_MASK))
+            lru_addr->u64 = ((uint64_t)(result & L2C_TAG_ADDR_MASK))
                             << L2C_TAG_ENTRY_SHIFT_LO;
             return l2c_stat;
         } else if(!tries)
