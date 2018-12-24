@@ -870,7 +870,7 @@ int main(void)
     struct rumboot_irq_entry *tbl;
 
     #define ARWLEN_ARR_SIZE       4
-    #define ARWBURST_ARR_SIZE     3
+    #define ARWBURST_ARR_SIZE     1
 
     hscb_axi_arwlen_t       hscb_axi_arwlen_arr[ARWLEN_ARR_SIZE] = {
             HSCB_ARWLEN_2,
@@ -879,25 +879,21 @@ int main(void)
             HSCB_ARWLEN_16
                                                      };
 
-    hscb_axi_arwburst_t       hscb_axi_arwburst[ARWBURST_ARR_SIZE] = {
-            HSCB_ARWBURST_FIXED,
-            HSCB_ARWBURST_INCR,
-            HSCB_ARWBURST_WRAP
-                                                     };
-
     rumboot_printf("Start test_oi10_hscb. Transmit/receive checks\n");
     prepare_test_data();
     tbl = create_hscb_irq_handlers(hscb_cfg);
 
+    rumboot_printf("Check with ARWLEN: 0x%x / ARWBURST: 0x%x\n", HSCB_ARWLEN_1, HSCB_ARWBURST_FIXED);
+    configure_hscb(hscb_cfg, HSCB_ARWLEN_1, HSCB_ARWBURST_FIXED);
+    run_hscb_transfers_via_external_loopback(hscb_cfg);
+    hscb_memcmp(hscb_cfg);
+
     for (int i=0; i<ARWLEN_ARR_SIZE; i++)
     {
-        for (int j=0; j<ARWBURST_ARR_SIZE; j++)
-        {
-            rumboot_printf("Check with ARWLEN: 0x%x / ARWBURST: 0x%x\n", hscb_axi_arwlen_arr[i], hscb_axi_arwburst[j]);
-            configure_hscb(hscb_cfg, hscb_axi_arwlen_arr[i], hscb_axi_arwburst[j]);
-            run_hscb_transfers_via_external_loopback(hscb_cfg);
-            hscb_memcmp(hscb_cfg);
-        }
+        rumboot_printf("Check with ARWLEN: 0x%x / ARWBURST: 0x%x\n", hscb_axi_arwlen_arr[i], HSCB_ARWBURST_INCR);
+        configure_hscb(hscb_cfg, hscb_axi_arwlen_arr[i], HSCB_ARWBURST_INCR);
+        run_hscb_transfers_via_external_loopback(hscb_cfg);
+        hscb_memcmp(hscb_cfg);
     }
 
     delete_irq_handlers(tbl);
