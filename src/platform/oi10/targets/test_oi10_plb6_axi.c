@@ -869,16 +869,13 @@ int main(void)
 #ifdef CHECK_AXI_PLB6_BURST
     struct rumboot_irq_entry *tbl;
 
-    #define ARWLEN_ARR_SIZE       7
+    #define ARWLEN_ARR_SIZE       4
     #define ARWBURST_ARR_SIZE     3
 
     hscb_axi_arwlen_t       hscb_axi_arwlen_arr[ARWLEN_ARR_SIZE] = {
-            HSCB_ARWLEN_1,
             HSCB_ARWLEN_2,
             HSCB_ARWLEN_4,
-            HSCB_ARWLEN_7,
             HSCB_ARWLEN_8,
-            HSCB_ARWLEN_12,
             HSCB_ARWLEN_16
                                                      };
 
