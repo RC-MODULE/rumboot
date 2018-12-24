@@ -767,10 +767,10 @@ void test_oi10_hscb()
     delete_irq_handlers(tbl);
 }
 
-void configure_hscb(hscb_instance_t* hscb_inst, hscb_axi_arwlen_t       hscb_axi_arwlen)
+void configure_hscb(hscb_instance_t* hscb_inst, hscb_axi_arwlen_t hscb_axi_arwlen, hscb_axi_arwburst_t hscb_axi_arwburst)
 {
     int i;
-    //hscb_axi_params_cfg_t axi_params_cfg;
+    hscb_axi_params_cfg_t axi_params_cfg;
     rumboot_printf("\n---\nApply software reset HSCBs\n");
     for (i=0; i<4; i++)
     {
@@ -782,10 +782,12 @@ void configure_hscb(hscb_instance_t* hscb_inst, hscb_axi_arwlen_t       hscb_axi
     for (i=0; i<4; i++)
     {
         hscb_config_for_receive_and_transmit(hscb_inst + i);
-//        hscb_get_axi_params((hscb_inst+i)->src_hscb_base_addr, &axi_params_cfg);
-//        axi_params_cfg.arlen = hscb_axi_arwlen;
-//        axi_params_cfg.awlen = hscb_axi_arwlen;
-//        hscb_set_axi_params((hscb_inst+i)->src_hscb_base_addr, &axi_params_cfg);
+        hscb_get_axi_params((hscb_inst+i)->src_hscb_base_addr, &axi_params_cfg);
+        axi_params_cfg.arlen   = hscb_axi_arwlen;
+        axi_params_cfg.awlen   = hscb_axi_arwlen;
+        axi_params_cfg.arburst = hscb_axi_arwburst;
+        axi_params_cfg.awburst = hscb_axi_arwburst;
+        hscb_set_axi_params((hscb_inst+i)->src_hscb_base_addr, &axi_params_cfg);
     }
 
     //enable
@@ -818,6 +820,11 @@ void hscb_memcmp(hscb_instance_t* hscb_cfg)
     TEST_ASSERT(memcmp((hscb_cfg + 1)->src_addr, (hscb_cfg + 0)->dst_addr, sizeof(test_hscbx_src_data))==0, "HSCB1->0 data compare error!\n");
     TEST_ASSERT(memcmp((hscb_cfg + 2)->src_addr, (hscb_cfg + 3)->dst_addr, sizeof(test_hscbx_src_data))==0, "HSCB2->3 data compare error!\n");
     TEST_ASSERT(memcmp((hscb_cfg + 3)->src_addr, (hscb_cfg + 2)->dst_addr, sizeof(test_hscbx_src_data))==0, "HSCB3->2 data compare error!\n");
+
+    memset((hscb_cfg + 0)->dst_addr, 0, sizeof(test_hscbx_src_data));
+    memset((hscb_cfg + 1)->dst_addr, 0, sizeof(test_hscbx_src_data));
+    memset((hscb_cfg + 2)->dst_addr, 0, sizeof(test_hscbx_src_data));
+    memset((hscb_cfg + 3)->dst_addr, 0, sizeof(test_hscbx_src_data));
 }
 #endif
 
@@ -862,7 +869,9 @@ int main(void)
 #ifdef CHECK_AXI_PLB6_BURST
     struct rumboot_irq_entry *tbl;
 
-    #define ARWLEN_ARR_SIZE     7
+    #define ARWLEN_ARR_SIZE       7
+    #define ARWBURST_ARR_SIZE     3
+
     hscb_axi_arwlen_t       hscb_axi_arwlen_arr[ARWLEN_ARR_SIZE] = {
             HSCB_ARWLEN_1,
             HSCB_ARWLEN_2,
@@ -873,16 +882,26 @@ int main(void)
             HSCB_ARWLEN_16
                                                      };
 
+    hscb_axi_arwburst_t       hscb_axi_arwburst[ARWBURST_ARR_SIZE] = {
+            HSCB_ARWBURST_FIXED,
+            HSCB_ARWBURST_INCR,
+            HSCB_ARWBURST_WRAP
+                                                     };
+
     rumboot_printf("Start test_oi10_hscb. Transmit/receive checks\n");
     prepare_test_data();
     tbl = create_hscb_irq_handlers(hscb_cfg);
 
-//    for (int i=0; i<ARWLEN_ARR_SIZE; i++)
-//    {
-        configure_hscb(hscb_cfg, hscb_axi_arwlen_arr[0]);
-        run_hscb_transfers_via_external_loopback(hscb_cfg);
-        hscb_memcmp(hscb_cfg);
-//    }
+    for (int i=0; i<ARWLEN_ARR_SIZE; i++)
+    {
+        for (int j=0; j<ARWBURST_ARR_SIZE; j++)
+        {
+            rumboot_printf("Check with ARWLEN: 0b%b / ARWBURST: 0b%b\n", hscb_axi_arwlen_arr[i], hscb_axi_arwburst[j]);
+            configure_hscb(hscb_cfg, hscb_axi_arwlen_arr[i], hscb_axi_arwburst[j]);
+            run_hscb_transfers_via_external_loopback(hscb_cfg);
+            hscb_memcmp(hscb_cfg);
+        }
+    }
 
     delete_irq_handlers(tbl);
 #endif
