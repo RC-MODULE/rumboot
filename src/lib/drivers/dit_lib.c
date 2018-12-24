@@ -20,7 +20,7 @@ void sp804_enable( uint32_t base_addr, int index)
     else{
         control_reg = DIT0_REG_CONTROL0;
     }
-    cntrl =  dcr_read(base_addr+control_reg);
+    cntrl =  ioread32(base_addr+control_reg);
     cntrl |= DIT_CTRL_ENABLE;
     iowrite32(cntrl,base_addr+control_reg);
 
