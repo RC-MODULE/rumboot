@@ -30,7 +30,7 @@
 
 
 #ifndef TX_0_HEAP_NAME
-#define TX_0_HEAP_NAME "NOR"
+#define TX_0_HEAP_NAME "IM1"
 #endif
 
 #ifndef RX_0_HEAP_NAME
@@ -846,6 +846,9 @@ uint32_t prepare_receiving_areas(
     hscb_descr_struct_t descr;
     rumboot_printf("prepare_receiving_areas start\n");
     uint32_t count_descriptors = count_of_necessary_RX_descriptors(raw_rmap_packets, count_packets);
+#ifdef TEST_OI10_HSCB_FULL_TRACING
+    rumboot_printf("expected count of descriptors == 0x%x\n", count_descriptors);
+#endif
     if(count_descriptors == 0)
         return NO_REPLIES_ARE_EXPECTED;
 
@@ -919,6 +922,9 @@ uint32_t prepare_receiving_areas(
     hscb_set_empty_descr_in_mem(
             (uint32_t) (receiving_rmap_packets->array_of_descriptors + receiving_rmap_packets->count_areas),
             descr.change_endian);
+#ifdef TEST_OI10_HSCB_FULL_TRACING
+    rumboot_printf("obtained count of descriptors == 0x%x\n", receiving_rmap_packets->count_areas);
+#endif
     TEST_ASSERT(((receiving_rmap_packets->count_areas + 1) == count_descriptors), "prepare_receiving_areas: count of descriptors and areas mismatch");
     rumboot_printf("prepare_receiving_areas end\n");
 
