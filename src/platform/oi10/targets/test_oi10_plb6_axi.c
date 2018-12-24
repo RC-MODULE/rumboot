@@ -869,25 +869,27 @@ int main(void)
 #ifdef CHECK_AXI_PLB6_BURST
     struct rumboot_irq_entry *tbl;
 
-    #define ARWLEN_ARR_SIZE       4
-    #define ARWBURST_ARR_SIZE     1
+    #define ARWLEN_ARR_SIZE       7
 
     hscb_axi_arwlen_t       hscb_axi_arwlen_arr[ARWLEN_ARR_SIZE] = {
+            HSCB_ARWLEN_1,
             HSCB_ARWLEN_2,
             HSCB_ARWLEN_4,
+            HSCB_ARWLEN_7,
             HSCB_ARWLEN_8,
+            HSCB_ARWLEN_14,
             HSCB_ARWLEN_16
                                                      };
 
     rumboot_printf("Start test_oi10_hscb. Transmit/receive checks\n");
     prepare_test_data();
     tbl = create_hscb_irq_handlers(hscb_cfg);
-
+/*
     rumboot_printf("Check with ARWLEN: 0x%x / ARWBURST: 0x%x\n", HSCB_ARWLEN_1, HSCB_ARWBURST_FIXED);
     configure_hscb(hscb_cfg, HSCB_ARWLEN_1, HSCB_ARWBURST_FIXED);
     run_hscb_transfers_via_external_loopback(hscb_cfg);
     hscb_memcmp(hscb_cfg);
-
+*/
     for (int i=0; i<ARWLEN_ARR_SIZE; i++)
     {
         rumboot_printf("Check with ARWLEN: 0x%x / ARWBURST: 0x%x\n", hscb_axi_arwlen_arr[i], HSCB_ARWBURST_INCR);
