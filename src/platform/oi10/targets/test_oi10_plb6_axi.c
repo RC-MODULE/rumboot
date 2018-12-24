@@ -66,7 +66,7 @@ struct test_pattern_t
     uint32_t word0[4];
     uint32_t word1[4];
 };
-#define PERIPH_TEST_DATA_LEN 16
+#define PERIPH_TEST_DATA_LEN 250
 #define PERIPH_TEST_DATA_LEN_BYTES (PERIPH_TEST_DATA_LEN * sizeof(uint32_t))
 #define SOURCE_DATA_ARR_SIZE    (PERIPH_TEST_DATA_LEN * sizeof(uint32_t)/sizeof(struct test_pattern_t))
 #define PERIPH_TEST_PATTERN_0    0x5A5A5A5A
@@ -877,12 +877,12 @@ int main(void)
     prepare_test_data();
     tbl = create_hscb_irq_handlers(hscb_cfg);
 
-//    for (int i=0; i<ARWLEN_ARR_SIZE; i++)
-//    {
-        configure_hscb(hscb_cfg, hscb_axi_arwlen_arr[0]);
+    for (int i=0; i<ARWLEN_ARR_SIZE; i++)
+    {
+        configure_hscb(hscb_cfg, hscb_axi_arwlen_arr[i]);
         run_hscb_transfers_via_external_loopback(hscb_cfg);
         hscb_memcmp(hscb_cfg);
-//    }
+    }
 
     delete_irq_handlers(tbl);
 #endif
