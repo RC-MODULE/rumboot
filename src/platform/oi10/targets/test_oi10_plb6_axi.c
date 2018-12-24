@@ -877,12 +877,12 @@ int main(void)
     prepare_test_data();
     tbl = create_hscb_irq_handlers(hscb_cfg);
 
-    for (int i=0; i<ARWLEN_ARR_SIZE; i++)
-    {
-        configure_hscb(hscb_cfg, hscb_axi_arwlen_arr[i]);
+//    for (int i=0; i<ARWLEN_ARR_SIZE; i++)
+//    {
+        configure_hscb(hscb_cfg, hscb_axi_arwlen_arr[0]);
         run_hscb_transfers_via_external_loopback(hscb_cfg);
         hscb_memcmp(hscb_cfg);
-    }
+//    }
 
     delete_irq_handlers(tbl);
 #endif
