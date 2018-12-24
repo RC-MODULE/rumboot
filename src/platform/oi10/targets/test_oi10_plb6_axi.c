@@ -893,7 +893,7 @@ int main(void)
     {
         for (int j=0; j<ARWBURST_ARR_SIZE; j++)
         {
-            rumboot_printf("Check with ARWLEN: 0b%b / ARWBURST: 0b%b\n", hscb_axi_arwlen_arr[i], hscb_axi_arwburst[j]);
+            rumboot_printf("Check with ARWLEN: 0x%x / ARWBURST: 0x%x\n", hscb_axi_arwlen_arr[i], hscb_axi_arwburst[j]);
             configure_hscb(hscb_cfg, hscb_axi_arwlen_arr[i], hscb_axi_arwburst[j]);
             run_hscb_transfers_via_external_loopback(hscb_cfg);
             hscb_memcmp(hscb_cfg);
