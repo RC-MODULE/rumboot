@@ -68,7 +68,7 @@ echo "Start Script"
 #Variables for working with ISS and RiscWatch
 set ISS_PATH=/opt/pcad/RISCWatch/IBM/ppc-mc-iss/linux/model
 set ISS=${ISS_PATH}/ppciss
-set ICF_PATH=${SCRIPT_DIR}/iss_oi10.icf
+set ICF_PATH=${LOG_DIR}/iss_oi10.icf
 set RW_PATH=/opt/pcad/RISCWatch
 set RWCD=./rwcd
 
@@ -81,9 +81,13 @@ rm -f ${DMP_PATH}
 echo "Run simulator"
 
 set USER_PORT_MIN=1024
-set ISS_DEBUGGER_PORT=`expr $$ + ${USER_PORT_MIN}`
+set DEBUGGER_PORT_MAX=6470
+set ISS_DEBUGGER_PORT=`expr $$ % \( ${DEBUGGER_PORT_MAX} - ${USER_PORT_MIN} \) + ${USER_PORT_MIN}`
 
-${ISS} -P ${ISS_DEBUGGER_PORT} ${ICF_PATH} &
+cat ${SCRIPT_DIR}/iss_oi10.icf >> ${ICF_PATH}
+echo "DEBUGGER_PORT_NUM="${ISS_DEBUGGER_PORT} >> ${ICF_PATH}
+
+${ISS} ${ICF_PATH} &
 
 echo "Create ISS command file"
 
@@ -189,10 +193,12 @@ cd ${LOG_DIR}
 
 sed -i '1,4d' test_iss_data_gold.dmp
 diff -Biw test_iss_data_gold.dmp test_iss_data.dmp > diff_log.txt
-if ( -z diff_log.txt )  then
+if ( $? != 0 ) then
+    exit 1
+else if ( -z diff_log.txt )  then
     echo "SUCCESSFULL: dumps are equal"
     exit 0
-  else
+else
     echo "ERROR: dumps not equal, see diff_log.txt"
     exit 1
 endif
