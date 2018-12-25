@@ -541,6 +541,16 @@ uint8_t hscb_crc8(uint8_t prev_crc, uint8_t byte)
     return RMAP_CRCTable[prev_crc ^ byte];
 }
 
+uint8_t hscb_calculate_crc8( uint32_t start_addr, uint32_t length)
+{
+    uint8_t crc8 = 0;
+    for(uint32_t addr = start_addr; addr < (uint32_t) (start_addr + length); ++addr)
+    {
+        crc8 = hscb_crc8(crc8, ioread8(addr));
+    }
+    return crc8;
+}
+
 uint8_t hscb_rmap_make_reply_instruction(uint8_t instruction)
 {
     return (instruction & ((uint8_t)((~HSCB_RMAP_PACKET_INSTRUCTION_FIELD_PACKET_TYPE_mask)
