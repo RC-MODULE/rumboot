@@ -24,9 +24,17 @@
 #include <platform/devices/emi.h>
 #include <platform/devices/nor_1636RR4.h>
 #include <platform/common_macros/common_macros.h>
+#include <platform/test_event_c.h>
+#include <platform/arch/ppc/ppc_476fp_mmu.h>
 
+                          //          MMU_TLB_ENTRY(  ERPN,   RPN,        EPN,        DSIZ,                   IL1I,   IL1D,   W,      I,      M,      G,      E,                      UX, UW, UR,     SX, SW, SR      DULXE,  IULXE,      TS,     TID,                WAY,                BID,                V   )
+#define TLB_ENTRY_EM_1stGB_NO_EXEC   {MMU_TLB_ENTRY(  0x000,  0x00000,    0x00000,    MMU_TLBE_DSIZ_1GB,      0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b0,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )}
+#define TLB_ENTRY_EM_2ndGB_NO_EXEC   {MMU_TLB_ENTRY(  0x000,  0x40000,    0x40000,    MMU_TLBE_DSIZ_1GB,      0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b0,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )}
 
-#define MAX_ATTEMPTS 100000
+static const tlb_entry em_anti_x_tlb_entries[] =   {TLB_ENTRY_EM_1stGB_NO_EXEC,
+                                                    TLB_ENTRY_EM_2ndGB_NO_EXEC};
+
+#define MAX_ATTEMPTS 10000
 
 
 #ifndef TX_0_HEAP_NAME
@@ -34,11 +42,11 @@
 #endif
 
 #ifndef RX_0_HEAP_NAME
-#define RX_0_HEAP_NAME "SRAM0"
+#define RX_0_HEAP_NAME "SRAM1"
 #endif
 
 #ifndef TX_1_HEAP_NAME
-#define TX_1_HEAP_NAME "SRAM1"
+#define TX_1_HEAP_NAME "NOR"
 #endif
 
 #ifndef RX_1_HEAP_NAME
@@ -78,7 +86,7 @@
 //#endif
 
 #ifndef DATA_INITIAL_VALUE
-#define DATA_INITIAL_VALUE 0
+#define DATA_INITIAL_VALUE 0x80
 #endif
 
 #ifndef INCREMENT_0
@@ -106,14 +114,14 @@
 //#endif
 
 #ifndef COUNT_PACKETS
-#define COUNT_PACKETS 2
+#define COUNT_PACKETS 3
 #endif
 
 #ifndef DATA_SIZE_0
-#define DATA_SIZE_0 0xFF
+#define DATA_SIZE_0 0xF
 #endif
 #ifndef DATA_SIZE_1
-#define DATA_SIZE_1 0x220
+#define DATA_SIZE_1 0x20
 #endif
 #ifndef DATA_SIZE_2
 #define DATA_SIZE_2 0x20
@@ -221,7 +229,10 @@ void delete_irq_handlers(struct rumboot_irq_entry *tbl)
     rumboot_irq_free(tbl);
 }
 
-
+static inline uint32_t min(uint32_t val1, uint32_t val2)
+{
+    return (val1 > val2) ? val2 : val1;
+}
 static void set_test_data(void* addr, uint32_t length, int incr_val, uint32_t initial_value){
     uint32_t data_initial_value = 0;
     int increment = 0;
@@ -609,12 +620,12 @@ uint32_t generate_some_raw_rmap_packets(hscb_rmap_packet_raw_configuration_t* ra
     uint32_t result = 0;
     switch(length)
     {
-//        case 3:
-//        {
-//            result |= generate_RMW_RMAP_packet(raw_rmap_packets, --i, change_endian, length);
-//            if (result != OK)
-//                return result;
-//        }
+        case 3:
+        {
+            result |= generate_RMW_RMAP_packet(raw_rmap_packets, --i, change_endian, length);
+            if (result != OK)
+                return result;
+        }
         case 2:
         {
             result |= generate_RRI_RMAP_packet(raw_rmap_packets, --i, change_endian, length);
@@ -1094,6 +1105,9 @@ static uint32_t check_results(
                               ? OK : DATA_CRC_MISMATCH)
                                 ;
             }
+#ifdef TEST_OI10_HSCB_FULL_TRACING
+            rumboot_printf("Before checking instruction\n");
+#endif
             /*Here we skip all write commands and cover all read commands*/
             switch((raw_rmap_packets[j].instruction &
                     HSCB_RMAP_PACKET_INSTRUCTION_RMAP_COMMAND_mask) >> HSCB_RMAP_PACKET_INSTRUCTION_RMAP_COMMAND_i)
@@ -1138,8 +1152,11 @@ static uint32_t check_results(
             return (result | UNSUPPORTED_INSTRUCITON);
         }
 
+#ifdef TEST_OI10_HSCB_FULL_TRACING
+        rumboot_printf("Before checking memory\n");
+#endif
         result |= (source_data.length == destination_data.length) ? OK : SOURCE_AND_DEST_LENGTH_MISMATCH;
-        for(uint32_t i = 0; (i < destination_data.length) && (i < source_data.length); ++i)
+        for(uint32_t i = 0; (i < min(destination_data.length,source_data.length)); ++i)
             if(((raw_rmap_packets[j].instruction & HSCB_RMAP_PACKET_INSTRUCTION_RMAP_COMMAND_mask)
                     >> HSCB_RMAP_PACKET_INSTRUCTION_RMAP_COMMAND_i)
                     == HSCB_RMAP_COMMAND_RMW_INCREMENTING_ADDRESS)
@@ -1152,7 +1169,8 @@ static uint32_t check_results(
             }
             else
                 if(source_data.array[i] != destination_data.array[i])
-                    result |= SOURCE_AND_DEST_DATA_MISMATCH;
+                    result |= (memcmp(source_data.array, destination_data.array,
+                            min(destination_data.length,source_data.length)) ? SOURCE_AND_DEST_DATA_MISMATCH : OK);
         print_error_status_on_rmap_reply_result(result);
         common_result |= result;
         result = OK;
@@ -1299,6 +1317,7 @@ static uint32_t check_rmap_func(
 #ifdef TEST_OI10_HSCB_FULL_TRACING
     print_hscb_rmap_packets_via_putdump(receiving_rmap_packets);
 #endif
+    emi_init(DCR_EM2_EMI_BASE);
 
     result |= check_results(receiving_rmap_packets,raw_rmap_packets,COUNT_PACKETS);
 
@@ -1311,7 +1330,12 @@ int main() {
 
     rumboot_printf( "Check HSCB RMAP (0x%x) \n", HSCB_UNDER_TEST_BASE );
 
-//    emi_init(DCR_EM2_EMI_BASE);
+    test_event_memfill8_modelling((void*)SRAM0_BASE,0x1000,0,0);
+    msync();
+    isync();
+    write_tlb_entries(em_anti_x_tlb_entries,2);
+    msync();
+    isync();
     tbl = create_irq_handlers();
 
 
@@ -1319,5 +1343,5 @@ int main() {
     delete_irq_handlers(tbl);
 
 
-    return result;
+    return (result) ? 1 : 0;
 }
