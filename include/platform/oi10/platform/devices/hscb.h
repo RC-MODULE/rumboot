@@ -346,6 +346,7 @@ uint8_t hscb_rmap_make_reply_instruction(uint8_t instruction);
   Check : 0xF7 ("123456789")
 */
 uint8_t hscb_crc8(uint8_t prev_crc, uint8_t byte);
+uint8_t hscb_calculate_crc8( uint32_t start_addr, uint32_t length);
 /**
  * The first parameter contains fields for filling an RMAP packet,
  * the second one contains preallocated memory areas for fixed length fields and pointers to be set
