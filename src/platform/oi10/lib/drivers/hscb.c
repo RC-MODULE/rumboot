@@ -786,13 +786,12 @@ uint32_t hscb_prepare_rmap_packet(hscb_rmap_packet_raw_configuration_t rmap_pack
         descr.change_endian = rmap_packet_raw.change_endian;
         hscb_set_descr_in_mem(descr, (uint32_t)(rmap_packet_ready->array_of_descriptors + rmap_packet_ready->count_areas));
 
-        temporary_CRC = 0;
-        for( int i = 0; i < rmap_packet_ready->data_area_sizes[rmap_packet_ready->count_areas]; ++i )
-            temporary_CRC = hscb_crc8(temporary_CRC, rmap_packet_ready->data_areas[rmap_packet_ready->count_areas][i]);
-
+        temporary_CRC = hscb_calculate_crc8((uint32_t)rmap_packet_ready->data_areas[rmap_packet_ready->count_areas],
+                                            rmap_packet_ready->data_area_sizes[rmap_packet_ready->count_areas]);
         rmap_packet_ready->count_areas++;
 
         rmap_packet_ready->data_areas[rmap_packet_ready->count_areas][0] = temporary_CRC;
+
         descr.start_address = rumboot_virt_to_dma(rmap_packet_ready->data_areas[rmap_packet_ready->count_areas]);
         descr.length        = rmap_packet_ready->data_area_sizes[rmap_packet_ready->count_areas];
         descr.act           = HSCB_ACT_TRAN;
