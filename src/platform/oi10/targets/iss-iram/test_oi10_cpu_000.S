@@ -17,18 +17,32 @@
     bne cr7, test_error
 .endm
 
-.section ".data.save_data","aw",@progbits
 
+.section ".data","aw",@nobits
+
+.align 4
 save_data:
-.space SAVE_MEM_SIZE, 0x00
+    .space SAVE_MEM_SIZE, 0x00
+
+
+.section ".data","aw",@progbits
+
+.align 4
+event_data:
+    .long TEST_EVENT_CREATE_ISS_DUMP
+    .long save_data
+    .long SAVE_MEM_SIZE
+#define EVENT_DATA_SIZE 3
 
 .section ".text","ax",@progbits
 
 .global main
 
 main:
+    full_prologue
+    mtctr       r1  // save stack ptr
     test_event_send_test_id "test_iss_base"
-	save_stack r29
+
 	b rumboot_entry_point
 
 origin_values:
@@ -147,22 +161,27 @@ rumboot_entry_point:
 	check_reg_value	r31
 	rumboot_putstring "Done!\n"
 
+    mfctr       r1  // restore stack ptr
+
+    load_const  r3, EVENT_TESTEVENT
+    load_addr   r4, event_data
+    load_const  r5, EVENT_DATA_SIZE
+    bl          rumboot_platform_event_raise
+
 	b test_ok
 
 test_ok:
-    rumboot_issdump SAVE_MEM_ADDR, SAVE_MEM_SIZE
-    rumboot_putstring "\nTEST OK\n"
-    test_event		EVENT_OK
-    load_const r3,	RESULT_OK
+    rumboot_putstring "TEST OK\n"
+    load_const  r3, RESULT_OK
     b finish
 
 test_error:
-    rumboot_putstring "\nTEST ERROR\n"
-    test_event		EVENT_ERROR
-    load_const r3,	RESULT_ERROR
+    gtube_init
+    rumboot_putstring "TEST ERROR\n"
+    load_const  r3, RESULT_ERROR
 
 finish:
-	rest_stack r29
+    full_epilogue
     blr
 
 

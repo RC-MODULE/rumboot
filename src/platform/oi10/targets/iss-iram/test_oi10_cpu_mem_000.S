@@ -193,10 +193,15 @@
 .align 4
 results:
     .space 4096
+#define RESULTS_SIZE 0x680
 
+.section ".data","aw",@progbits
 .align 4
 event_data:
-    .space 16
+    .long TEST_EVENT_CREATE_ISS_DUMP
+    .long results
+    .long RESULTS_SIZE
+#define EVENT_DATA_SIZE 3
 
 
 .global main
@@ -286,9 +291,12 @@ test_oi10_cpu_mem_000_data_sliding_zero:
 
 
 main:
+    full_prologue
+    mtctr       r1  // save stack ptr
+
     test_event_send_test_id "test_iss_base"
 
-    load_addr r31, results
+    load_addr   r31, results
     mtspr SPR_VRSAVE, r31
 
     clear_regs_with_1
@@ -1706,39 +1714,26 @@ main:
 
     msync
 
-
-    load_addr r1, (rumboot_platform_stack_area_end - 8)
-
     gtube_init
 
-    load_addr       r4, event_data
+    mfctr       r1  // restore stack ptr
 
-    load_const      r3, TEST_EVENT_CREATE_ISS_DUMP
-    stw             r3, 0(r4)
-    load_addr       r3, results
-    stw             r3, 4(r4)
-    load_const      r3, 0x680
-    stw             r3, 8(r4)
-
-    load_const      r3, 0x11
-    load_const      r5, 0x3
-
-    bl rumboot_platform_event_raise
+    load_const  r3, EVENT_TESTEVENT
+    load_addr   r4, event_data
+    load_const  r5, EVENT_DATA_SIZE
+    bl          rumboot_platform_event_raise
 
 
-    .align 4
-    b test_ok
+test_ok:
+    rumboot_putstring "TEST OK\n"
+    load_const  r3, RESULT_OK
+    b finish
 
 test_error:
     gtube_init
     rumboot_putstring "TEST ERROR\n"
-    test_event EVENT_ERROR
+    load_const  r3, RESULT_ERROR
 
 finish:
-    b finish
-
-test_ok:
-    gtube_init
-    rumboot_putstring "TEST OK\n"
-    test_event EVENT_OK
-    b finish
+    full_epilogue
+    blr

@@ -5,27 +5,18 @@
 #include <platform/trace.S.h>
 #include <platform/devices.h>
 
-#define SAVE_ADDR	save_data /* IM0_BASE + 0x0001E000 */
 
-#define TMP_REG		29
-#define INF_REG		30
+#define SAVE_ADDR       save_data
+#define SAVE_MEM_SIZE   0x0200
+
+#define TMP_REG		4
+#define INF_REG		5
 #define RES_REG		3
 #define REGS_AS1 	7,6
 #define REGS_AS2 	8,7
 #define REGS_ASB	8,6,7
-#define DUMP_SIZE	0x0200
 
 #define ppc_nop xori 0,0,0
-
-.macro zero_memory vAddr vSize
-	load_addr	r4,	(\vAddr) - 4
-	load_const	r5,	(\vSize) / 4
-	mtctr		r5
-	xor			r5,	r5,	r5
-51:
-	stwu		r5,	4(r4)
-	bdnz		51b
-.endm
 
 /* check macro for operations with mask "opcode RA, RS, UI" */
 .macro LOGIC_RA_RS_UI_CHECK	opcode,   \
@@ -175,16 +166,33 @@
 .endm
 
 
-.section ".text","ax",@progbits
+.section ".data","aw",@nobits
 
+.align 4
+save_data:
+    .space SAVE_MEM_SIZE, 0x00
+
+
+.section ".data","aw",@progbits
+
+.align 4
+event_data:
+    .long TEST_EVENT_CREATE_ISS_DUMP
+    .long save_data
+    .long SAVE_MEM_SIZE
+#define EVENT_DATA_SIZE 3
+
+
+.section ".text","ax",@progbits
 
 .global main
 main:
+    mflr        r3
+    mtspr       SPR_VRSAVE, r3
+
     test_event_send_test_id "test_iss_base"
 	rumboot_putstring "Start testing...\n"
-	rumboot_putstring "Clearing array... "
-	zero_memory	SAVE_ADDR,	DUMP_SIZE
-	rumboot_putstring "done.\n"
+
     load_const	RES_REG,	SAVE_ADDR - 4
     load_const	r0,			0x00000000
 
@@ -308,9 +316,10 @@ main:
     LOGIC_RA_RS_CHECK		neg,      REGS_AS1,	0xAA55AA55,				0x10, 0
     LOGIC_RA_RS_CHECK		neg.,     REGS_AS1,	0xAA55AA55,				0x11, 0
 
-    load_addr   r15,    save_data
-    load_const  r16,    DUMP_SIZE
-    _rumboot_issdump    r15, r16
+    load_const  r3, EVENT_TESTEVENT
+    load_addr   r4, event_data
+    load_const  r5, EVENT_DATA_SIZE
+    bl          rumboot_platform_event_raise
 
     b test_ok
 
@@ -325,12 +334,9 @@ test_ok:
     load_const  r3,     RESULT_OK
 
 finish:
-	blr
-
-
-.section ".issdata","aw",@progbits
-
-save_data:
+    mfspr       r5, SPR_VRSAVE
+    mtlr        r5
+    blr
 
 
 

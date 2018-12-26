@@ -504,33 +504,6 @@ setup_stack: /*stack is growing down*/
 
 .section ".text.rom","ax",@progbits
 
-.macro irq_hdr_prologue
-    stwu        r1, -160(r1)
-    stw         r0, 156(r1)
-    stmw        r2, 36(r1)
-    mflr        r31
-    mfctr       r30
-    mfcr        r29
-    mfxer       r28
-    stmw        r28, 20(r1)
-
-    /* TODO: remove setting CTR and LR to Program interrupt handler. It's only for modeling (https://jira.module.ru/jira/browse/OI10-205) */
-    load_addr   r3, rumboot_P_hdr
-    mtctr       r3
-    mtlr        r3
-.endm
-
-.macro irq_hdr_epilogue
-    lmw         r28, 20(r1)
-    mtxer       r28
-    mtcr        r29
-    mtctr       r30
-    mtlr        r31
-    lmw         r2, 36(r1)
-    lwz         r0, 156(r1)
-    addi        r1, r1, 160
-.endm
-
 .global rumboot_itrpt_hdr_base
 .global rumboot_CI_hdr
 .global rumboot_MC_hdr
@@ -552,209 +525,209 @@ setup_stack: /*stack is growing down*/
 .align 4
 rumboot_itrpt_hdr_base:
 rumboot_CI_hdr:
-    irq_hdr_prologue
+    full_prologue
 
     load_const  r3, 0
     load_const  r4, RUMBOOT_IRQ_TYPE_NORMAL
     load_const  r5, RUMBOOT_IRQ_IRQ
     bl          rumboot_irq_core_dispatch
 
-    irq_hdr_epilogue
+    full_epilogue
 
     rfci
 
 .align 4
 rumboot_MC_hdr:
-    irq_hdr_prologue
+    full_prologue
 
     load_const  r3, 0
     load_const  r4, RUMBOOT_IRQ_TYPE_EXCEPTION
     load_const  r5, RUMBOOT_IRQ_MACHINE_CHECK
     bl          rumboot_irq_core_dispatch
 
-    irq_hdr_epilogue
+    full_epilogue
 
     rfmci
 
 .align 4
 rumboot_DS_hdr:
-    irq_hdr_prologue
+    full_prologue
 
     load_const  r3, 0
     load_const  r4, RUMBOOT_IRQ_TYPE_EXCEPTION
     load_const  r5, RUMBOOT_IRQ_DATA_STORAGE
     bl          rumboot_irq_core_dispatch
 
-    irq_hdr_epilogue
+    full_epilogue
 
     rfi
 
 .align 4
 rumboot_IS_hdr:
-    irq_hdr_prologue
+    full_prologue
 
     load_const  r3, 0
     load_const  r4, RUMBOOT_IRQ_TYPE_EXCEPTION
     load_const  r5, RUMBOOT_IRQ_INST_STORAGE
     bl          rumboot_irq_core_dispatch
 
-    irq_hdr_epilogue
+    full_epilogue
 
     rfi
 
 .align 4
 rumboot_EI_hdr:
-    irq_hdr_prologue
+    full_prologue
 
     load_const  r3, 0
     load_const  r4, RUMBOOT_IRQ_TYPE_NORMAL
     load_const  r5, RUMBOOT_IRQ_IRQ
     bl          rumboot_irq_core_dispatch
 
-    irq_hdr_epilogue
+    full_epilogue
 
     rfi
 
 .align 4
 rumboot_A_hdr:
-    irq_hdr_prologue
+    full_prologue
 
     load_const  r3, 0
     load_const  r4, RUMBOOT_IRQ_TYPE_EXCEPTION
     load_const  r5, RUMBOOT_IRQ_ALIGNMENT
     bl          rumboot_irq_core_dispatch
 
-    irq_hdr_epilogue
+    full_epilogue
 
     rfi
 
 .align 4
 rumboot_P_hdr:
-    irq_hdr_prologue
+    full_prologue
 
     load_const  r3, 0
     load_const  r4, RUMBOOT_IRQ_TYPE_EXCEPTION
     load_const  r5, RUMBOOT_IRQ_PROGRAM
     bl          rumboot_irq_core_dispatch
 
-    irq_hdr_epilogue
+    full_epilogue
 
     rfi
 
 .align 4
 rumboot_FPU_hdr:
-    irq_hdr_prologue
+    full_prologue
 
     load_const  r3, 0
     load_const  r4, RUMBOOT_IRQ_TYPE_EXCEPTION
     load_const  r5, RUMBOOT_IRQ_FP_UNAVAILABLE
     bl          rumboot_irq_core_dispatch
 
-    irq_hdr_epilogue
+    full_epilogue
 
     rfi
 
 .align 4
 rumboot_SC_hdr:
-    irq_hdr_prologue
+    full_prologue
 
     load_const  r3, 0
     load_const  r4, RUMBOOT_IRQ_TYPE_EXCEPTION
     load_const  r5, RUMBOOT_IRQ_SYSTEM_CALL
     bl          rumboot_irq_core_dispatch
 
-    irq_hdr_epilogue
+    full_epilogue
 
     rfi
 
 .align 4
 rumboot_APU_hdr:
-    irq_hdr_prologue
+    full_prologue
 
     load_const  r3, 0
     load_const  r4, RUMBOOT_IRQ_TYPE_EXCEPTION
     load_const  r5, RUMBOOT_IRQ_AP_UNAVAILABLE
     bl          rumboot_irq_core_dispatch
 
-    irq_hdr_epilogue
+    full_epilogue
 
     rfi
 
 .align 4
 rumboot_DEC_hdr:
-    irq_hdr_prologue
+    full_prologue
 
     load_const  r3, 0
     load_const  r4, RUMBOOT_IRQ_TYPE_EXCEPTION
     load_const  r5, RUMBOOT_IRQ_DECREMENTER
     bl          rumboot_irq_core_dispatch
 
-    irq_hdr_epilogue
+    full_epilogue
 
     rfi
 
 .align 4
 rumboot_FIT_hdr:
-    irq_hdr_prologue
+    full_prologue
 
     load_const  r3, 0
     load_const  r4, RUMBOOT_IRQ_TYPE_EXCEPTION
     load_const  r5, RUMBOOT_IRQ_FIXED_INTERVAL_TIMER
     bl          rumboot_irq_core_dispatch
 
-    irq_hdr_epilogue
+    full_epilogue
 
     rfi
 
 .align 4
 rumboot_WDT_hdr:
-    irq_hdr_prologue
+    full_prologue
 
     load_const  r3, 0
     load_const  r4, RUMBOOT_IRQ_TYPE_EXCEPTION
     load_const  r5, RUMBOOT_IRQ_WATCHDOG_TIMER
     bl          rumboot_irq_core_dispatch
 
-    irq_hdr_epilogue
+    full_epilogue
 
     rfci
 
 .align 4
 rumboot_DTLBE_hdr:
-    irq_hdr_prologue
+    full_prologue
 
     load_const  r3, 0
     load_const  r4, RUMBOOT_IRQ_TYPE_EXCEPTION
     load_const  r5, RUMBOOT_IRQ_DATA_TLB_ERROR
     bl          rumboot_irq_core_dispatch
 
-    irq_hdr_epilogue
+    full_epilogue
 
     rfi
 
 .align 4
 rumboot_ITLBE_hdr:
-    irq_hdr_prologue
+    full_prologue
 
     load_const  r3, 0
     load_const  r4, RUMBOOT_IRQ_TYPE_EXCEPTION
     load_const  r5, RUMBOOT_IRQ_INST_TLB_ERROR
     bl          rumboot_irq_core_dispatch
 
-    irq_hdr_epilogue
+    full_epilogue
 
     rfi
 
  .align 4
 rumboot_D_hdr:
-    irq_hdr_prologue
+    full_prologue
 
     load_const  r3, 0
     load_const  r4, RUMBOOT_IRQ_TYPE_EXCEPTION
     load_const  r5, RUMBOOT_IRQ_DEBUG
     bl          rumboot_irq_core_dispatch
 
-    irq_hdr_epilogue
+    full_epilogue
 
     rfci
 
