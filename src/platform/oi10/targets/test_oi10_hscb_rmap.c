@@ -24,6 +24,7 @@
 #include <platform/devices/emi.h>
 #include <platform/devices/nor_1636RR4.h>
 #include <platform/common_macros/common_macros.h>
+#include <platform/test_event_c.h>
 #include <platform/arch/ppc/ppc_476fp_mmu.h>
 
                           //          MMU_TLB_ENTRY(  ERPN,   RPN,        EPN,        DSIZ,                   IL1I,   IL1D,   W,      I,      M,      G,      E,                      UX, UW, UR,     SX, SW, SR      DULXE,  IULXE,      TS,     TID,                WAY,                BID,                V   )
@@ -113,7 +114,7 @@ static const tlb_entry em_anti_x_tlb_entries[] =   {TLB_ENTRY_EM_1stGB_NO_EXEC,
 //#endif
 
 #ifndef COUNT_PACKETS
-#define COUNT_PACKETS 3
+#define COUNT_PACKETS 1
 #endif
 
 #ifndef DATA_SIZE_0
@@ -360,20 +361,20 @@ uint32_t generate_RMW_RMAP_packet(hscb_rmap_packet_raw_configuration_t* raw_rmap
     rumboot_memfill8(
             (void*)raw_rmap_packets[index].addr,
             raw_rmap_packets[index].data_chain.length >> 1,
-            0,
-            0x33);
+            0x33,
+            0);
 
     rumboot_memfill8(
             raw_rmap_packets[index].data_chain.array,
             raw_rmap_packets[index].data_chain.length >> 1,
-            0,
-            0xCC);
+            0xCC,
+            0);
 
     rumboot_memfill8(
             raw_rmap_packets[index].data_chain.array + (raw_rmap_packets[index].data_chain.length >> 1),
             raw_rmap_packets[index].data_chain.length >> 1,
-            0,
-            0x55);
+            0x55,
+            0);
 
     rumboot_memfill8(
             raw_rmap_packets[index].reply_addr_chain.array,
@@ -421,8 +422,8 @@ uint32_t generate_RRI_RMAP_packet(hscb_rmap_packet_raw_configuration_t* raw_rmap
     rumboot_memfill8(
             (void*)raw_rmap_packets[index].addr,
             raw_rmap_packets[index].data_chain.length,
-            INCREMENT_1,
-            DATA_INITIAL_VALUE);
+            DATA_INITIAL_VALUE,
+            INCREMENT_1);
 
     reply_addr_length = HSCB_RMAP_PACKET_REPLY_ADDR_0B;
     raw_rmap_packets[index].reply_addr_chain.length = reply_addr_length << 2;
@@ -468,8 +469,8 @@ uint32_t generate_RRS_RMAP_packet(hscb_rmap_packet_raw_configuration_t* raw_rmap
     rumboot_memfill8(
             (void*)raw_rmap_packets[index].addr,
             raw_rmap_packets[index].data_chain.length,
-            0,
-            0xda);
+            0xda,
+            INCREMENT_2);
 
     reply_addr_length = HSCB_RMAP_PACKET_REPLY_ADDR_0B;
     raw_rmap_packets[index].reply_addr_chain.length = reply_addr_length << 2;
@@ -517,14 +518,14 @@ uint32_t generate_W_V_R_I_RMAP_packet(hscb_rmap_packet_raw_configuration_t* raw_
     rumboot_memfill8(
             raw_rmap_packets[index].data_chain.array,
             raw_rmap_packets[index].data_chain.length,
-            INCREMENT_0,
-            DATA_INITIAL_VALUE);
+            DATA_INITIAL_VALUE,
+            INCREMENT_0);
 
     rumboot_memfill8(
             raw_rmap_packets[index].reply_addr_chain.array,
             raw_rmap_packets[index].reply_addr_chain.length,
-            INCREMENT_0,
-            DATA_INITIAL_VALUE);
+            DATA_INITIAL_VALUE,
+            INCREMENT_2);
 
     raw_rmap_packets[index].target_addr_chain.array = NULL;
     raw_rmap_packets[index].target_addr_chain.length = 0;
@@ -568,14 +569,14 @@ uint32_t generate_WnVnR_S_RMAP_packet(hscb_rmap_packet_raw_configuration_t* raw_
     rumboot_memfill8(
             raw_rmap_packets[index].data_chain.array,
             raw_rmap_packets[index].data_chain.length,
-            INCREMENT_0,
-            DATA_INITIAL_VALUE);
+            DATA_INITIAL_VALUE,
+            INCREMENT_0);
 
     rumboot_memfill8(
             raw_rmap_packets[index].reply_addr_chain.array,
             raw_rmap_packets[index].reply_addr_chain.length,
-            INCREMENT_2,
-            DATA_INITIAL_VALUE);
+            DATA_INITIAL_VALUE,
+            INCREMENT_2);
 
     raw_rmap_packets[index].target_addr_chain.array = NULL;
     raw_rmap_packets[index].target_addr_chain.length = 0;
@@ -599,21 +600,21 @@ uint32_t generate_some_raw_rmap_packets(hscb_rmap_packet_raw_configuration_t* ra
     uint32_t result = 0;
     switch(length)
     {
-        case 3:
-        {
-            result |= generate_RMW_RMAP_packet(raw_rmap_packets, --i, change_endian, length);
-            if (result != OK)
-                return result;
-        }
-        case 2:
-        {
-            result |= generate_RRI_RMAP_packet(raw_rmap_packets, --i, change_endian, length);
-            if (result != OK)
-                return result;
-        }
+//        case 3:
+//        {
+//            result |= generate_RMW_RMAP_packet(raw_rmap_packets, --i, change_endian, length);
+//            if (result != OK)
+//                return result;
+//        }
+//        case 2:
+//        {
+//            result |= generate_RMW_RMAP_packet(raw_rmap_packets, --i, change_endian, length);
+//            if (result != OK)
+//                return result;
+//        }
         case 1:
         {
-            result |= generate_W_V_R_I_RMAP_packet(raw_rmap_packets, --i, change_endian, length);
+            result |= generate_RRS_RMAP_packet(raw_rmap_packets, --i, change_endian, length);
             if (result != OK)
                 return result;
 
@@ -865,19 +866,21 @@ uint32_t prepare_receiving_areas(
         return UNABLE_TO_ALLOCATE_MEMORY;
     }
 
+    receiving_rmap_packets->count_areas = 0;
 
-    for(receiving_rmap_packets->count_areas = 0;
-            receiving_rmap_packets->count_areas < count_packets;
-            ++receiving_rmap_packets->count_areas)
+    for(uint32_t i = 0; i < count_packets; ++i)
     {
+        if(!(raw_rmap_packets[i].instruction
+                    & HSCB_RMAP_PACKET_INSTRUCTION_FIELD_W_REPLY_mask))
+            continue;
 
         receiving_rmap_packets->data_area_sizes[receiving_rmap_packets->count_areas] =
-                  ((raw_rmap_packets[receiving_rmap_packets->count_areas].instruction
+                  ((raw_rmap_packets[i].instruction
                     & HSCB_RMAP_PACKET_INSTRUCTION_FIELD_WRITE_mask)
                     ? 8  //write reply has 8 bytes in mandatory header
                     : 12 //read and RMW replies have 12 bytes in mandatory header
-                      + ((raw_rmap_packets[receiving_rmap_packets->count_areas].data_chain.length >>
-                              ((((raw_rmap_packets[receiving_rmap_packets->count_areas].instruction
+                      + ((raw_rmap_packets[i].data_chain.length >>
+                              ((((raw_rmap_packets[i].instruction
                               & HSCB_RMAP_PACKET_INSTRUCTION_RMAP_COMMAND_mask)
                                       >> HSCB_RMAP_PACKET_INSTRUCTION_RMAP_COMMAND_i)
                                       == HSCB_RMAP_COMMAND_RMW_INCREMENTING_ADDRESS)
@@ -886,7 +889,7 @@ uint32_t prepare_receiving_areas(
                             + 1//Data CRC
                         )
                   )
-                + hscb_rmap_get_reply_addr_actual_length(raw_rmap_packets[receiving_rmap_packets->count_areas].reply_addr_chain);
+                + hscb_rmap_get_reply_addr_actual_length(raw_rmap_packets[i].reply_addr_chain);
 
         receiving_rmap_packets->data_areas[receiving_rmap_packets->count_areas]
               = rumboot_malloc_from_named_heap_aligned(default_heap_for_receiving,
@@ -898,16 +901,16 @@ uint32_t prepare_receiving_areas(
             free_mem_from_ready_rmap_packets(receiving_rmap_packets);
             return UNABLE_TO_ALLOCATE_MEMORY;
         }
-//        receiving_rmap_packets->array_of_descriptors[receiving_rmap_packets->count_areas].start_address
-//            = (uint32_t)
         descr.start_address = rumboot_virt_to_dma(receiving_rmap_packets->data_areas[receiving_rmap_packets->count_areas]);
         descr.length        = receiving_rmap_packets->data_area_sizes[receiving_rmap_packets->count_areas];
         descr.act           = HSCB_ACT_TRAN;
         descr.act0          = HSCB_ACT0_NOLAST;
         descr.ie            = HSCB_DESCR_ITRPT_OFF;
         descr.valid         = HSCB_DESCR_VALID;
-        descr.change_endian = raw_rmap_packets[receiving_rmap_packets->count_areas].change_endian;
+        descr.change_endian = raw_rmap_packets[i].change_endian;
         hscb_set_descr_in_mem(descr, (uint32_t) (receiving_rmap_packets->array_of_descriptors + receiving_rmap_packets->count_areas));
+
+        ++receiving_rmap_packets->count_areas;
     }
     hscb_set_empty_descr_in_mem(
             (uint32_t) (receiving_rmap_packets->array_of_descriptors + receiving_rmap_packets->count_areas),
@@ -946,16 +949,19 @@ void print_error_status_on_rmap_reply_result(uint32_t result)
     if(result & UNSUPPORTED_INSTRUCITON)
         rumboot_printf("RMAP reply: unsupported RMAP instruction detected\n");
     if(result & SOURCE_AND_DEST_LENGTH_MISMATCH)
-        rumboot_printf("RMAP reply: memory action check: calculated source and destination length mismatch\n");
+        rumboot_printf("check_results: memory action check: calculated source and destination length mismatch\n");
     if(result & SOURCE_AND_DEST_DATA_MISMATCH)
-        rumboot_printf("RMAP reply: memory action check: source and destination data mismatch\n");
+        rumboot_printf("check_results: memory action check: source and destination data mismatch\n");
     if(result & REPLY_ARRAY_IS_NULL)
         rumboot_printf("RMAP reply: current reply array is NULL\n");
     if(result & REPLY_CALCULATED_AND_ACTUAL_LENGTH_MISMATCH)
         rumboot_printf("RMAP reply: actually received and calculated length of RMAP reply packet mismatch\n");
     if(result & RESERVED_FIELD_MISMATCH)
         rumboot_printf("RMAP reply: Read reply reserved field is non-zero\n");
+    if(!result)
+        rumboot_printf("check_results: everything is OK in this packet\n");
 }
+
 static uint32_t check_results(
         hscb_rmap_packet_ready_for_transmit_t received_rmap_packets,
         hscb_rmap_packet_raw_configuration_t* raw_rmap_packets,
@@ -1081,8 +1087,7 @@ static uint32_t check_results(
                     destination_data.array = (destination_data.length)
                             ? (received_rmap_packets.data_areas[reply_packet_number]
                                + reply_addr_actual_length
-                               + HSCB_RMAP_REPLY_DATA_START_i
-                               + (destination_data.length - 4))
+                               + HSCB_RMAP_REPLY_DATA_START_i)
                                     : NULL;
                 }break;
             case HSCB_RMAP_COMMAND_READ_INCREMENTING_ADDRESS:
@@ -1090,8 +1095,11 @@ static uint32_t check_results(
                     source_data.array = (void *)raw_rmap_packets[j].addr;
                     source_data.length = raw_rmap_packets[j].data_chain.length;
                     destination_data.length = hscb_rmap_reply_get_data_len(current_reply, reply_addr_actual_length);
-                    destination_data.array = (received_rmap_packets.data_areas[reply_packet_number]
-                                                                   + reply_addr_actual_length + HSCB_RMAP_REPLY_DATA_START_i);
+                    destination_data.array = (destination_data.length)
+                            ? (received_rmap_packets.data_areas[reply_packet_number]
+                               + reply_addr_actual_length
+                               + HSCB_RMAP_REPLY_DATA_START_i)
+                                    : NULL;
                 }break;
             case HSCB_RMAP_COMMAND_RMW_INCREMENTING_ADDRESS:
                 {
@@ -1117,21 +1125,27 @@ static uint32_t check_results(
         rumboot_printf("check_results: before checking memory\n");
 #endif
         result |= (source_data.length == destination_data.length) ? OK : SOURCE_AND_DEST_LENGTH_MISMATCH;
-        for(uint32_t i = 0; (i < min(destination_data.length,source_data.length)); ++i)
-            if(((raw_rmap_packets[j].instruction & HSCB_RMAP_PACKET_INSTRUCTION_RMAP_COMMAND_mask)
-                    >> HSCB_RMAP_PACKET_INSTRUCTION_RMAP_COMMAND_i)
-                    == HSCB_RMAP_COMMAND_RMW_INCREMENTING_ADDRESS)
-            {
+        if(((raw_rmap_packets[j].instruction & HSCB_RMAP_PACKET_INSTRUCTION_RMAP_COMMAND_mask)
+                >> HSCB_RMAP_PACKET_INSTRUCTION_RMAP_COMMAND_i)
+                == HSCB_RMAP_COMMAND_RMW_INCREMENTING_ADDRESS)
+        {
+            for(uint32_t i = 0; (i < min(destination_data.length,source_data.length)); ++i)
                 if(((source_data.array[i] & (~raw_rmap_packets[j].data_chain.array[i + destination_data.length]))
                         | (raw_rmap_packets[j].data_chain.array[i + destination_data.length]
                                & raw_rmap_packets[j].data_chain.array[i]))
                         != (destination_data.array[i]))
                     result |= SOURCE_AND_DEST_DATA_MISMATCH;
-            }
+        }
+        else
+            if(((raw_rmap_packets[j].instruction & HSCB_RMAP_PACKET_INSTRUCTION_RMAP_COMMAND_mask)
+                >> HSCB_RMAP_PACKET_INSTRUCTION_RMAP_COMMAND_i)
+                == HSCB_RMAP_COMMAND_READ_SINGLE_ADDRESS)
+                for(uint32_t i = 0; (i < (min(destination_data.length,source_data.length) >> 2)); ++i)
+                    result |= (*((uint32_t*)(source_data.array)) == *((uint32_t*)(destination_data.array + 4)))
+                        ? OK : SOURCE_AND_DEST_DATA_MISMATCH ;
             else
-                if(source_data.array[i] != destination_data.array[i])
-                    result |= (memcmp(source_data.array, destination_data.array,
-                            min(destination_data.length,source_data.length)) ? SOURCE_AND_DEST_DATA_MISMATCH : OK);
+                result |= (memcmp(source_data.array, destination_data.array,
+                        min(destination_data.length,source_data.length)) ? SOURCE_AND_DEST_DATA_MISMATCH : OK);
         print_error_status_on_rmap_reply_result(result);
         common_result |= result;
         result = OK;
@@ -1290,6 +1304,9 @@ int main() {
     struct rumboot_irq_entry *tbl;
 
     rumboot_printf( "Check HSCB RMAP (0x%x) \n", HSCB_UNDER_TEST_BASE );
+
+    //crc8 calculation speedup
+    test_event_send_test_id("test_oi10_hscb_rmap");
 
     rumboot_memfill8_modelling((void*)SRAM0_BASE,0x1000,0,0);
     msync();
