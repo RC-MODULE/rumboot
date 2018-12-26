@@ -2,27 +2,28 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <rumboot/io.h>
+#include <rumboot/irq.h>
+#include <rumboot/printf.h>
+
 #include <platform/common_macros/common_macros.h>
 #include <platform/test_event_codes.h>
 #include <platform/devices.h>
+#include <platform/interrupts.h>
 #include <platform/arch/ppc/ppc_476fp_config.h>
 #include <platform/arch/ppc/ppc_476fp_lib_c.h>
-
-#include <rumboot/io.h>
-#include <rumboot/printf.h>
-
 #include <platform/devices/ltrace.h>
+#include <platform/regs/regs_l2c_l2.h>
 #include <platform/test_event_c.h>
 #include <platform/test_assert.h>
 
 
-
 #define EVENT_LTRACE0_CHECK_DATA    0x0000000099
-#define IM0_ADDR_CELL               0x0004FFFC
+#define IM0_ADDR_CELL               0x8004FFFC
 
 #define LTRACE_RAW_ADDRESS(LTRACE_ADDRESS) (((uint32_t)((LTRACE_ADDRESS).address & 0x0FFF)) | ((uint32_t)(((LTRACE_ADDRESS).range & 0x0003) << 30)))
 
-const uint32_t LOOP_COUNTER = 1;
+const uint32_t LOOP_COUNTER = 128;
 
 void loop(uint32_t count)
 {
@@ -634,7 +635,7 @@ static int test_ltrace(LTRACE_CONDITION_TYPE condition_type,
     ltrace_disable(DCR_LTRACE_BASE);
 
     //rumboot_printf("LTRACE clear \n");
-    ltrace_clear_status(DCR_LTRACE_BASE);
+    ltrace_clear_status(DCR_LTRACE_BASE, 0xFC000000);
 
     //rumboot_printf("LTRACE init \n");
     ltrace_init(DCR_LTRACE_BASE,
@@ -696,7 +697,7 @@ static int test_ltrace(LTRACE_CONDITION_TYPE condition_type,
     TEST_ASSERT((ltrace_get_status(DCR_LTRACE_BASE) & LTRACE_STATUS_RUNNING) == 0x00, "Tracing is still running!");
 
     //rumboot_printf("LTRACE get status (complete) \n");
-    TEST_ASSERT((ltrace_get_status(DCR_LTRACE_BASE) & LTRACE_STATUS_COMPLETE) == LTRACE_STATUS_COMPLETE, "Tracing does not terminated!");
+    //TEST_ASSERT((ltrace_get_status(DCR_LTRACE_BASE) & LTRACE_STATUS_COMPLETE) == LTRACE_STATUS_COMPLETE, "Tracing does not terminated!");
 
     //rumboot_printf("LTRACE get status (address 1 wrapped) \n");
     TEST_ASSERT((ltrace_get_status(DCR_LTRACE_BASE) & LTRACE_STATUS_ADDRESS1_WRAPPED) == 0x00, "Trace address 1 wrapped!");
@@ -707,7 +708,7 @@ static int test_ltrace(LTRACE_CONDITION_TYPE condition_type,
         TEST_ASSERT((ltrace_get_status(DCR_LTRACE_BASE) & LTRACE_STATUS_ADDRESS2_WRAPPED) == 0x00, "Trace address 2 wrapped!");
     }
 
-    test_event(EVENT_CHECK_LTRACE0_INT);
+    //test_event(EVENT_CHECK_LTRACE0_INT);
 
     //rumboot_printf("LTRACE disable \n");
     ltrace_disable(DCR_LTRACE_BASE);
@@ -723,10 +724,10 @@ static int test_ltrace(LTRACE_CONDITION_TYPE condition_type,
     uint8_t last_buffer_used = (ltrace_get_status(DCR_LTRACE_BASE) & (1 << IBM_BIT_INDEX(31, 4)));
 
 //    rumboot_printf("Last address1 is ");
-//    trace_hex(last_address);
+//    rumboot_printf("last_address = 0x%x\n", last_address);
 //
 //    rumboot_printf("Last address2 is ");
-//    trace_hex(last_address2);
+//    rumboot_printf("last_address2 = 0x%x\n", last_address2);
 
     last_address = (last_buffer_used == 0x1)?last_address2:last_address;
 
@@ -780,20 +781,23 @@ static int test_ltrace(LTRACE_CONDITION_TYPE condition_type,
         trace_address.address++;
         i += 2;
 
+//        rumboot_printf("last_address = 0x%x\n", last_address);
+//        rumboot_printf("trace_address.address = 0x%x\n", trace_address.address - 1);
+
     } while (1);
 
 
     //TODO: How to verify trace data?
     //TEST_ASSERT(data.value0.stop_bit == 0x1, "Stop bit not equal to 0x1");
 
+    rumboot_putstring("Writing address of received data to memory\n");
+    iowrite32((uint32_t)data, IM0_ADDR_CELL);
+    msync();
 
-    iowrite32((uint32_t)&data, IM0_ADDR_CELL);
-    isync();
-
-//    rumboot_printf("data address =");
-//    trace_hex(MEM32(IM0_ADDR_CELL));
-//
-//    trace_dump((uint32_t)&data, 1024);
+//    rumboot_printf("IM0_ADDR_CELL = 0x%x\n", IM0_ADDR_CELL);
+//    rumboot_printf("IM0_ADDR = 0x%x\n", ioread32(IM0_ADDR_CELL));
+//    rumboot_printf("IM0_DATA = 0x%x%x\n", ioread32(ioread32(IM0_ADDR_CELL)), ioread32(ioread32(IM0_ADDR_CELL)));
+//    rumboot_printf("data = 0x%x%x\n", data[0], data[1]);
 
 
     test_event(EVENT_LTRACE0_CHECK_DATA);
@@ -1214,6 +1218,12 @@ static int test_ltrace1_bank_on_trigger_int_on(uint32_t cond1_or,
 }
 */
 
+static void irq_handler( int irq, void *arg ) {
+
+    TEST_ASSERT((ltrace_get_status(DCR_LTRACE_BASE) & LTRACE_STATUS_COMPLETE) == LTRACE_STATUS_COMPLETE, "Tracing does not terminated!");
+    ltrace_clear_status(DCR_LTRACE_BASE, (1 << IBM_BIT_INDEX(32, 1)));
+}
+
 
 int main()
 {
@@ -1243,6 +1253,23 @@ int main()
     uint32_t condcomp3_mask_l = 0x00000000;
     uint32_t compression_mask_h = 0x00000000;
     uint32_t compression_mask_l = 0x00000000;
+
+
+    test_event_send_test_id("test_oi10_cpu_026");
+
+    memset((uint32_t*)SRAM0_BASE, 0x00, 128);
+
+
+    rumboot_irq_cli();
+    struct rumboot_irq_entry *tbl = rumboot_irq_create( NULL );
+
+    rumboot_irq_set_handler( tbl, LTRACE_COMPLETE_0, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, irq_handler, ( void* )0 );
+
+    /* Activate the table */
+    rumboot_irq_table_activate( tbl );
+    rumboot_irq_enable( LTRACE_COMPLETE_0 );
+    rumboot_irq_sei();
+
 
     //rumboot_printf("Configure L2C Debug\n");
     dcr_write(DCR_L2C_BASE + L2C_L2DBGSEL, 0x22222222);
@@ -1972,7 +1999,10 @@ int main()
                                          compression_mask_l);
 */
 
+    rumboot_irq_table_activate( NULL );
+    rumboot_irq_free( tbl );
 
+    rumboot_putstring("Test has been finished successfully.\n");
 
     return 0;
 }
