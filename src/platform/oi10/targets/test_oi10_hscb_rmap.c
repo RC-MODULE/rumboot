@@ -113,10 +113,6 @@ static const tlb_entry em_anti_x_tlb_entries[] =   {TLB_ENTRY_EM_1stGB_NO_EXEC,
 //#define INCREMENT_5 -3
 //#endif
 
-#ifndef COUNT_PACKETS
-#define COUNT_PACKETS 1
-#endif
-
 #ifndef DATA_SIZE_0
 #define DATA_SIZE_0 0xF
 #endif
@@ -593,35 +589,30 @@ uint32_t generate_WnVnR_S_RMAP_packet(hscb_rmap_packet_raw_configuration_t* raw_
     return OK;
 }
 
+uint32_t (*generate_RMAP_packet_functions[]) (hscb_rmap_packet_raw_configuration_t* raw_rmap_packets, uint32_t index, bool change_endian,  const uint32_t length)
+        ={
+                generate_RRS_RMAP_packet,
+                generate_WnVnR_S_RMAP_packet,
+                generate_W_V_R_I_RMAP_packet,
+                generate_RMW_RMAP_packet,
+                generate_RRI_RMAP_packet,
+        };
+
+#ifndef COUNT_PACKETS
+#define COUNT_PACKETS sizeof(generate_RMAP_packet_functions)/sizeof(*generate_RMAP_packet_functions)
+#endif
+
 uint32_t generate_some_raw_rmap_packets(hscb_rmap_packet_raw_configuration_t* raw_rmap_packets, const uint32_t length)
 {
     bool change_endian = true;
-    uint32_t i = length;
     uint32_t result = 0;
-    switch(length)
-    {
-//        case 3:
-//        {
-//            result |= generate_RMW_RMAP_packet(raw_rmap_packets, --i, change_endian, length);
-//            if (result != OK)
-//                return result;
-//        }
-//        case 2:
-//        {
-//            result |= generate_RMW_RMAP_packet(raw_rmap_packets, --i, change_endian, length);
-//            if (result != OK)
-//                return result;
-//        }
-        case 1:
+    for(uint32_t i = 0; i < sizeof(generate_RMAP_packet_functions)/sizeof(*generate_RMAP_packet_functions); ++i  )
         {
-            result |= generate_RRS_RMAP_packet(raw_rmap_packets, --i, change_endian, length);
+            result |= generate_RMAP_packet_functions[i](raw_rmap_packets, i, change_endian, length);
             if (result != OK)
                 return result;
 
         }
-        break;
-        default: return UNSUPPORTED_COUNT_PACKETS;
-    }
     return OK;
 }
 
