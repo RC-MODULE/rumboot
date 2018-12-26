@@ -21,13 +21,9 @@
 #define TEST_ERROR 1
 #define TEST_OK 0
 
-//const uint32_t __attribute__((section(".text"))) array_size = TEST_OI10_CPU_039_ARRAY_SIZE;
-//const uint32_t __attribute__((section(".text"))) val_A = 0x0;
-//uint32_t __attribute__((section(".data.test"))) mass[TEST_OI10_CPU_039_ARRAY_SIZE] = { 0xffffffff };
-
 int __attribute__((section(".text.test"))) check_cpu_ppc_039(void)
 {
-    const uint32_t array_size = TEST_OI10_CPU_039_ARRAY_SIZE;
+    const uint32_t num_elem = TEST_OI10_CPU_039_ARRAY_SIZE / 4;
     const uint32_t val_A = 0x0;
     const uint32_t data_base_address = SRAM0_BASE + 0x8000;
 
@@ -38,7 +34,7 @@ int __attribute__((section(".text.test"))) check_cpu_ppc_039(void)
     /*stage 1*/
     rumboot_printf("Stage 1, write offsets\n");
 
-    for(i = 0, R1 = val_A; i < array_size; i++, R1+=4)
+    for(i = 0, R1 = val_A; i < num_elem; i++, R1+=4)
     {
         iowrite32( R1, data_base_address + 4*i);
         msync();
@@ -46,7 +42,7 @@ int __attribute__((section(".text.test"))) check_cpu_ppc_039(void)
 
     /*stage 2*/
     rumboot_printf("Stage 2, read and compare offsets\n");
-    for(i = (array_size - 1),  R1 = (val_A + 4 * (array_size - 1)); i >= 0; i--, R1-=4)
+    for(i = (num_elem - 1),  R1 = (val_A + 4 * (num_elem - 1)); i >= 0; i--, R1-=4)
     {
         R2 = ioread32(data_base_address + 4*i);
         msync();
@@ -61,7 +57,7 @@ int __attribute__((section(".text.test"))) check_cpu_ppc_039(void)
     /*stage 3*/
     rumboot_printf("Stage 3, write inverted offset\n");
     R1 = val_A;
-    for(i = 0; i < array_size; i++)
+    for(i = 0; i < num_elem; i++)
     {
         iowrite32( ~R1, data_base_address + 4*i);
         R1 +=4;
@@ -70,8 +66,8 @@ int __attribute__((section(".text.test"))) check_cpu_ppc_039(void)
 
     /*stage 4*/
     rumboot_printf("Stage 4, read and compare inverted offset\n");
-    R1 = val_A + 4 * (array_size - 1);
-    for(i = array_size -1 ; i >= 0; i--)
+    R1 = val_A + 4 * (num_elem - 1);
+    for(i = num_elem -1 ; i >= 0; i--)
     {
         R2 = ioread32(data_base_address + 4*i);
         if( (~R1) != (R2) )
