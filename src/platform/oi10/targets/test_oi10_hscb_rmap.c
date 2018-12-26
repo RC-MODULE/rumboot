@@ -61,22 +61,22 @@ static const tlb_entry em_anti_x_tlb_entries[] =   {TLB_ENTRY_EM_1stGB_NO_EXEC,
 #define RX_2_HEAP_NAME "IM1"
 #endif
 
-//#ifndef TX_3_HEAP_NAME
-//#define TX_3_HEAP_NAME "IM1"
-//#endif
+#ifndef TX_3_HEAP_NAME
+#define TX_3_HEAP_NAME "IM1"
+#endif
 //
 //#ifndef RX_3_HEAP_NAME
 //#define RX_3_HEAP_NAME "SSRAM"
 //#endif
-//
-//#ifndef TX_4_HEAP_NAME
-//#define TX_4_HEAP_NAME "IM1"
-//#endif
-//
-//#ifndef RX_4_HEAP_NAME
-//#define RX_4_HEAP_NAME "IM2"
-//#endif
-//
+
+#ifndef TX_4_HEAP_NAME
+#define TX_4_HEAP_NAME "IM1"
+#endif
+
+#ifndef RX_4_HEAP_NAME
+#define RX_4_HEAP_NAME "IM2"
+#endif
+
 //#ifndef TX_5_HEAP_NAME
 //#define TX_5_HEAP_NAME "SSRAM"
 //#endif
@@ -101,14 +101,14 @@ static const tlb_entry em_anti_x_tlb_entries[] =   {TLB_ENTRY_EM_1stGB_NO_EXEC,
 #define INCREMENT_2 2
 #endif
 
-//#ifndef INCREMENT_3
-//#define INCREMENT_3 -2
-//#endif
-//
-//#ifndef INCREMENT_4
-//#define INCREMENT_4 3
-//#endif
-//
+#ifndef INCREMENT_3
+#define INCREMENT_3 -2
+#endif
+
+#ifndef INCREMENT_4
+#define INCREMENT_4 3
+#endif
+
 //#ifndef INCREMENT_5
 //#define INCREMENT_5 -3
 //#endif
@@ -122,12 +122,12 @@ static const tlb_entry em_anti_x_tlb_entries[] =   {TLB_ENTRY_EM_1stGB_NO_EXEC,
 #ifndef DATA_SIZE_2
 #define DATA_SIZE_2 0x20
 #endif
-//#ifndef DATA_SIZE_3
-//#define DATA_SIZE_3 0x27
-//#endif
-//#ifndef DATA_SIZE_4
-//#define DATA_SIZE_4 0x36
-//#endif
+#ifndef DATA_SIZE_3
+#define DATA_SIZE_3 0x27
+#endif
+#ifndef DATA_SIZE_4
+#define DATA_SIZE_4 0x36
+#endif
 //#ifndef DATA_SIZE_5
 //#define DATA_SIZE_5 0x33
 //#endif
@@ -322,7 +322,7 @@ enum{
     RESERVED_FIELD_MISMATCH = (1 << 17)
 }generate_some_raw_rmap_packets_result;
 
-uint32_t generate_RMW_RMAP_packet(hscb_rmap_packet_raw_configuration_t* raw_rmap_packets, uint32_t index, bool change_endian,  const uint32_t length)
+uint32_t RMW(hscb_rmap_packet_raw_configuration_t* raw_rmap_packets, uint32_t index, bool change_endian,  const uint32_t length)
 {
     uint32_t reply_addr_length = 0;
     char default_heap_name_for_reply_addr[] = DEFAULT_HEAP_NAME_FOR_REPLY_ADDR;
@@ -393,7 +393,7 @@ uint32_t generate_RMW_RMAP_packet(hscb_rmap_packet_raw_configuration_t* raw_rmap
     return OK;
 }
 
-uint32_t generate_RRI_RMAP_packet(hscb_rmap_packet_raw_configuration_t* raw_rmap_packets, uint32_t index, bool change_endian,  const uint32_t length)
+uint32_t RRI(hscb_rmap_packet_raw_configuration_t* raw_rmap_packets, uint32_t index, bool change_endian,  const uint32_t length)
 {
     uint32_t reply_addr_length = 0;
 //    char default_heap_name_for_reply_addr[] = DEFAULT_HEAP_NAME_FOR_REPLY_ADDR;
@@ -440,14 +440,14 @@ uint32_t generate_RRI_RMAP_packet(hscb_rmap_packet_raw_configuration_t* raw_rmap
     return OK;
 }
 
-uint32_t generate_RRS_RMAP_packet(hscb_rmap_packet_raw_configuration_t* raw_rmap_packets, uint32_t index, bool change_endian,  const uint32_t length)
+uint32_t RRS(hscb_rmap_packet_raw_configuration_t* raw_rmap_packets, uint32_t index, bool change_endian,  const uint32_t length)
 {
     uint32_t reply_addr_length = 0;
 //    char default_heap_name_for_reply_addr[] = DEFAULT_HEAP_NAME_FOR_REPLY_ADDR;
 //    char rx_1_heap_name[] = RX_1_HEAP_NAME;
-    char tx_1_heap_name[] = TX_1_HEAP_NAME;
+    char tx_1_heap_name[] = TX_3_HEAP_NAME;
 
-    raw_rmap_packets[index].data_chain.length = DATA_SIZE_1;
+    raw_rmap_packets[index].data_chain.length = DATA_SIZE_3;
     raw_rmap_packets[index].data_chain.array = NULL;
 
     raw_rmap_packets[index].addr
@@ -466,7 +466,7 @@ uint32_t generate_RRS_RMAP_packet(hscb_rmap_packet_raw_configuration_t* raw_rmap
             (void*)raw_rmap_packets[index].addr,
             raw_rmap_packets[index].data_chain.length,
             0xda,
-            INCREMENT_2);
+            INCREMENT_3);
 
     reply_addr_length = HSCB_RMAP_PACKET_REPLY_ADDR_0B;
     raw_rmap_packets[index].reply_addr_chain.length = reply_addr_length << 2;
@@ -487,7 +487,7 @@ uint32_t generate_RRS_RMAP_packet(hscb_rmap_packet_raw_configuration_t* raw_rmap
     return OK;
 }
 
-uint32_t generate_W_V_R_I_RMAP_packet(hscb_rmap_packet_raw_configuration_t* raw_rmap_packets, uint32_t index, bool change_endian,  const uint32_t length)
+uint32_t W_V_RI(hscb_rmap_packet_raw_configuration_t* raw_rmap_packets, uint32_t index, bool change_endian,  const uint32_t length)
 {
     uint32_t reply_addr_length = 0;
     char default_heap_name_for_reply_addr[] = DEFAULT_HEAP_NAME_FOR_REPLY_ADDR;
@@ -534,16 +534,17 @@ uint32_t generate_W_V_R_I_RMAP_packet(hscb_rmap_packet_raw_configuration_t* raw_
     raw_rmap_packets[index].initiator_logical_addr = DEFAULT_INITIATOR_LOGICAL_ADDRESS;
     raw_rmap_packets[index].transaction_id = index;
     raw_rmap_packets[index].change_endian = change_endian;
-    raw_rmap_packets[index].expected_reply_status = HSCB_RMAP_REPLY_STATUS_OK;
+    raw_rmap_packets[index].expected_reply_status = (raw_rmap_packets[index].data_chain.length > 256)
+            ? HSCB_RMAP_REPLY_STATUS_VERIFY_BUFFER_OVERRUN : HSCB_RMAP_REPLY_STATUS_OK;
     return OK;
 }
 
-uint32_t generate_WnVnR_S_RMAP_packet(hscb_rmap_packet_raw_configuration_t* raw_rmap_packets, uint32_t index, bool change_endian,  const uint32_t length)
+uint32_t WnVnRS(hscb_rmap_packet_raw_configuration_t* raw_rmap_packets, uint32_t index, bool change_endian,  const uint32_t length)
 {
     uint32_t reply_addr_length = 0;
     char default_heap_name_for_reply_addr[] = DEFAULT_HEAP_NAME_FOR_REPLY_ADDR;
-    char rx_0_heap_name[] = RX_0_HEAP_NAME;
-    char tx_0_heap_name[] = TX_0_HEAP_NAME;
+    char rx_0_heap_name[] = RX_4_HEAP_NAME;
+    char tx_0_heap_name[] = TX_4_HEAP_NAME;
 
     reply_addr_length = HSCB_RMAP_PACKET_REPLY_ADDR_12B;
     raw_rmap_packets[index].reply_addr_chain.length = reply_addr_length << 2;
@@ -551,7 +552,7 @@ uint32_t generate_WnVnR_S_RMAP_packet(hscb_rmap_packet_raw_configuration_t* raw_
         = rumboot_malloc_from_named_heap_aligned(default_heap_name_for_reply_addr,
                 raw_rmap_packets[index].reply_addr_chain.length, 8);
 
-    raw_rmap_packets[index].data_chain.length = DATA_SIZE_2;
+    raw_rmap_packets[index].data_chain.length = DATA_SIZE_4;
     raw_rmap_packets[index].data_chain.array
         = rumboot_malloc_from_named_heap_aligned(tx_0_heap_name,
                 raw_rmap_packets[index].data_chain.length, 8);
@@ -566,13 +567,13 @@ uint32_t generate_WnVnR_S_RMAP_packet(hscb_rmap_packet_raw_configuration_t* raw_
             raw_rmap_packets[index].data_chain.array,
             raw_rmap_packets[index].data_chain.length,
             DATA_INITIAL_VALUE,
-            INCREMENT_0);
+            INCREMENT_3);
 
     rumboot_memfill8(
             raw_rmap_packets[index].reply_addr_chain.array,
             raw_rmap_packets[index].reply_addr_chain.length,
             DATA_INITIAL_VALUE,
-            INCREMENT_2);
+            INCREMENT_4);
 
     raw_rmap_packets[index].target_addr_chain.array = NULL;
     raw_rmap_packets[index].target_addr_chain.length = 0;
@@ -591,11 +592,15 @@ uint32_t generate_WnVnR_S_RMAP_packet(hscb_rmap_packet_raw_configuration_t* raw_
 
 uint32_t (*generate_RMAP_packet_functions[]) (hscb_rmap_packet_raw_configuration_t* raw_rmap_packets, uint32_t index, bool change_endian,  const uint32_t length)
         ={
-                generate_RRS_RMAP_packet,
-                generate_WnVnR_S_RMAP_packet,
-                generate_W_V_R_I_RMAP_packet,
-                generate_RMW_RMAP_packet,
-                generate_RRI_RMAP_packet,
+#ifdef RMAP_PACKET_LIST
+                RMAP_PACKET_LIST
+#else
+                RRS,
+                WnVnRS,
+                W_V_RI,
+                RMW,
+                RRI,
+#endif
         };
 
 #ifndef COUNT_PACKETS
@@ -1115,6 +1120,8 @@ static uint32_t check_results(
 #ifdef TEST_OI10_HSCB_FULL_TRACING
         rumboot_printf("check_results: before checking memory\n");
 #endif
+        if(raw_rmap_packets[j].expected_reply_status == HSCB_RMAP_REPLY_STATUS_OK)
+        {
         result |= (source_data.length == destination_data.length) ? OK : SOURCE_AND_DEST_LENGTH_MISMATCH;
         if(((raw_rmap_packets[j].instruction & HSCB_RMAP_PACKET_INSTRUCTION_RMAP_COMMAND_mask)
                 >> HSCB_RMAP_PACKET_INSTRUCTION_RMAP_COMMAND_i)
@@ -1137,6 +1144,7 @@ static uint32_t check_results(
             else
                 result |= (memcmp(source_data.array, destination_data.array,
                         min(destination_data.length,source_data.length)) ? SOURCE_AND_DEST_DATA_MISMATCH : OK);
+        }
         print_error_status_on_rmap_reply_result(result);
         common_result |= result;
         result = OK;
