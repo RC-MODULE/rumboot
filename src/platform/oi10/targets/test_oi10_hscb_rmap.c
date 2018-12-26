@@ -804,8 +804,7 @@ uint32_t WnV_RI_sram1(hscb_rmap_packet_raw_configuration_t* raw_rmap_packets, ui
     raw_rmap_packets[index].initiator_logical_addr = DEFAULT_INITIATOR_LOGICAL_ADDRESS;
     raw_rmap_packets[index].transaction_id = index;
     raw_rmap_packets[index].change_endian = change_endian;
-    raw_rmap_packets[index].expected_reply_status = (raw_rmap_packets[index].data_chain.length > 256)
-            ? HSCB_RMAP_REPLY_STATUS_VERIFY_BUFFER_OVERRUN : HSCB_RMAP_REPLY_STATUS_OK;
+    raw_rmap_packets[index].expected_reply_status = HSCB_RMAP_REPLY_STATUS_OK;
     return OK;
 }
 
