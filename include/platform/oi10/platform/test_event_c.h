@@ -23,6 +23,19 @@ static inline __attribute__((always_inline)) void test_event_send_test_id( char 
     rumboot_platform_event_raise( EVENT_TESTEVENT, event_data, ARRAY_SIZE(event_data) );
 }
 
+#ifdef RUMBOOT_PRINTF_ACCEL
+static __attribute__((no_instrument_function)) void test_event_do_deliver(enum sys_event_code event, uint32_t stack_pointer)
+{
+    uint32_t const event_data[] = { event, stack_pointer };
+    rumboot_platform_event_raise( EVENT_TESTEVENT, event_data, ARRAY_SIZE(event_data) );
+}
+
+static inline __attribute__((no_instrument_function)) void test_event_deliver(enum sys_event_code event, uint32_t stack_pointer)
+{
+    test_event_do_deliver(event, stack_pointer);
+}
+
+#endif
 
 /**
  * The function fills memory sequentially with val that is incremented each time by incr s
