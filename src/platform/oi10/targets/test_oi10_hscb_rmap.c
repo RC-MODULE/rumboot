@@ -1122,28 +1122,28 @@ static uint32_t check_results(
 #endif
         if(raw_rmap_packets[j].expected_reply_status == HSCB_RMAP_REPLY_STATUS_OK)
         {
-        result |= (source_data.length == destination_data.length) ? OK : SOURCE_AND_DEST_LENGTH_MISMATCH;
-        if(((raw_rmap_packets[j].instruction & HSCB_RMAP_PACKET_INSTRUCTION_RMAP_COMMAND_mask)
-                >> HSCB_RMAP_PACKET_INSTRUCTION_RMAP_COMMAND_i)
-                == HSCB_RMAP_COMMAND_RMW_INCREMENTING_ADDRESS)
-        {
-            for(uint32_t i = 0; (i < min(destination_data.length,source_data.length)); ++i)
-                if(((source_data.array[i] & (~raw_rmap_packets[j].data_chain.array[i + destination_data.length]))
-                        | (raw_rmap_packets[j].data_chain.array[i + destination_data.length]
-                               & raw_rmap_packets[j].data_chain.array[i]))
-                        != (destination_data.array[i]))
-                    result |= SOURCE_AND_DEST_DATA_MISMATCH;
-        }
-        else
+            result |= (source_data.length == destination_data.length) ? OK : SOURCE_AND_DEST_LENGTH_MISMATCH;
             if(((raw_rmap_packets[j].instruction & HSCB_RMAP_PACKET_INSTRUCTION_RMAP_COMMAND_mask)
-                >> HSCB_RMAP_PACKET_INSTRUCTION_RMAP_COMMAND_i)
-                == HSCB_RMAP_COMMAND_READ_SINGLE_ADDRESS)
-                for(uint32_t i = 0; (i < (min(destination_data.length,source_data.length) >> 2)); ++i)
-                    result |= (*((uint32_t*)(source_data.array)) == *((uint32_t*)(destination_data.array + 4)))
-                        ? OK : SOURCE_AND_DEST_DATA_MISMATCH ;
+                    >> HSCB_RMAP_PACKET_INSTRUCTION_RMAP_COMMAND_i)
+                    == HSCB_RMAP_COMMAND_RMW_INCREMENTING_ADDRESS)
+            {
+                for(uint32_t i = 0; (i < min(destination_data.length,source_data.length)); ++i)
+                    if(((source_data.array[i] & (~raw_rmap_packets[j].data_chain.array[i + destination_data.length]))
+                            | (raw_rmap_packets[j].data_chain.array[i + destination_data.length]
+                                   & raw_rmap_packets[j].data_chain.array[i]))
+                            != (destination_data.array[i]))
+                        result |= SOURCE_AND_DEST_DATA_MISMATCH;
+            }
             else
-                result |= (memcmp(source_data.array, destination_data.array,
-                        min(destination_data.length,source_data.length)) ? SOURCE_AND_DEST_DATA_MISMATCH : OK);
+                if(((raw_rmap_packets[j].instruction & HSCB_RMAP_PACKET_INSTRUCTION_RMAP_COMMAND_mask)
+                    >> HSCB_RMAP_PACKET_INSTRUCTION_RMAP_COMMAND_i)
+                    == HSCB_RMAP_COMMAND_READ_SINGLE_ADDRESS)
+                    for(uint32_t i = 0; (i < (min(destination_data.length,source_data.length) >> 2)); ++i)
+                        result |= (*((uint32_t*)(source_data.array)) == *((uint32_t*)(destination_data.array + 4)))
+                            ? OK : SOURCE_AND_DEST_DATA_MISMATCH ;
+                else
+                    result |= (memcmp(source_data.array, destination_data.array,
+                            min(destination_data.length,source_data.length)) ? SOURCE_AND_DEST_DATA_MISMATCH : OK);
         }
         print_error_status_on_rmap_reply_result(result);
         common_result |= result;
