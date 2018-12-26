@@ -541,6 +541,23 @@ uint8_t hscb_crc8(uint8_t prev_crc, uint8_t byte)
     return RMAP_CRCTable[prev_crc ^ byte];
 }
 
+#ifdef RUMBOOT_PRINTF_ACCEL
+#include <platform/test_event_c.h>
+#include <rumboot/macros.h>
+DECLARE_CONST(TEST_EVENT_SW_RMAP_CRC8, TEST_EVENT_CODE_MIN + 0)
+
+static __attribute__((no_instrument_function)) __attribute__((optimize("-O0"))) void do_hscb_calculate_crc8(uint32_t ptr, ...)
+{
+   test_event_deliver(TEST_EVENT_SW_RMAP_CRC8, (uint32_t)__builtin_frame_address(0));
+}
+
+__attribute__((no_instrument_function)) uint8_t hscb_calculate_crc8( uint32_t start_addr, uint32_t length)
+{
+    volatile uint8_t data;
+    do_hscb_calculate_crc8(start_addr, length, &data);
+    return data;
+}
+#else
 uint8_t hscb_calculate_crc8( uint32_t start_addr, uint32_t length)
 {
     uint8_t crc8 = 0;
@@ -550,6 +567,7 @@ uint8_t hscb_calculate_crc8( uint32_t start_addr, uint32_t length)
     }
     return crc8;
 }
+#endif
 
 uint8_t hscb_rmap_make_reply_instruction(uint8_t instruction)
 {
