@@ -69,11 +69,17 @@ struct test_pattern_t
 #define PERIPH_TEST_DATA_LEN 250
 #define PERIPH_TEST_DATA_LEN_BYTES (PERIPH_TEST_DATA_LEN * sizeof(uint32_t))
 #define SOURCE_DATA_ARR_SIZE    (PERIPH_TEST_DATA_LEN * sizeof(uint32_t)/sizeof(struct test_pattern_t))
-#define PERIPH_TEST_PATTERN_0    0x5A5A5A5A
-#define PERIPH_TEST_PATTERN_1    0xA5A5A5A5
+#define PERIPH_TEST_PATTERN_0    0x01020304
+#define PERIPH_TEST_PATTERN_1    0x05060708
+#define PERIPH_TEST_PATTERN_2    0x09101112
+#define PERIPH_TEST_PATTERN_3    0x13141516
+#define PERIPH_TEST_PATTERN_4    0x17181920
+#define PERIPH_TEST_PATTERN_5    0x21222324
+#define PERIPH_TEST_PATTERN_6    0x25262728
+#define PERIPH_TEST_PATTERN_7    0x29303132
 static struct test_pattern_t test_hscbx_src_data[SOURCE_DATA_ARR_SIZE] = {[0 ... SOURCE_DATA_ARR_SIZE-1] = {
-                                                                                                    .word0 = {PERIPH_TEST_PATTERN_0, PERIPH_TEST_PATTERN_1, PERIPH_TEST_PATTERN_0, PERIPH_TEST_PATTERN_1},
-                                                                                                    .word1 = {PERIPH_TEST_PATTERN_1, PERIPH_TEST_PATTERN_0, PERIPH_TEST_PATTERN_1, PERIPH_TEST_PATTERN_0}
+                                                                                                    .word0 = {PERIPH_TEST_PATTERN_0, PERIPH_TEST_PATTERN_1, PERIPH_TEST_PATTERN_2, PERIPH_TEST_PATTERN_3},
+                                                                                                    .word1 = {PERIPH_TEST_PATTERN_4, PERIPH_TEST_PATTERN_5, PERIPH_TEST_PATTERN_6, PERIPH_TEST_PATTERN_7}
                                                                                                  }
                                                                 };
 
