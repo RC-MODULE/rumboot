@@ -63,12 +63,12 @@ void ltrace_init(const uint32_t base_address,
 
 uint32_t ltrace_get_status(const uint32_t base_address)
 {
-    return (dcr_read(base_address + LTR_TS) & 0xF8000000);
+    return (dcr_read(base_address + LTR_TS) & 0xFC000000);
 }
 
-void ltrace_clear_status(const uint32_t base_address)
+void ltrace_clear_status(const uint32_t base_address, const uint32_t value)
 {
-    dcr_clear(base_address + LTR_TS, 0xF8000000);
+    dcr_clear(base_address + LTR_TS, ~(value & 0xFC000000));
 }
 
 uint32_t ltrace_get_last_address1(const uint32_t base_address)

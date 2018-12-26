@@ -77,7 +77,7 @@ void ltrace_init(const uint32_t base_address,
                   uint32_t complete_enable);
 
 uint32_t ltrace_get_status(const uint32_t base_address);
-void ltrace_clear_status(const uint32_t base_address);
+void ltrace_clear_status(const uint32_t base_address, const uint32_t value);
 
 uint32_t ltrace_get_last_address1(const uint32_t base_address);
 uint32_t ltrace_get_last_address2(const uint32_t base_address);
