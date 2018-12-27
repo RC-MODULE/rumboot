@@ -289,12 +289,36 @@
 .endm
 
 
+.section ".data","aw",@progbits
+
+.align 4
+vars:
+vars_fp:
+    .rept 0x0060 / SIZEOF_DOUBLE
+        .quad C_D_POS_ZERO
+    .endr
+
+.align 4
+save_data:
+    .rept 0x0400 / SIZEOF_DWORD
+        .quad C_D_POS_ZERO
+    .endr
+
+.align 4
+event_data:
+    .long TEST_EVENT_CREATE_ISS_DUMP
+    .long save_data
+save_data_size:
+    .long 0
+#define EVENT_DATA_SIZE 3
+
+
 .section ".text","ax",@progbits
 
 .global main
 
 main:
-    save_stack  R_STKB
+    full_prologue
     test_event_send_test_id "test_iss_base"
 
     rumboot_putstring "Init test...\n"
@@ -638,40 +662,25 @@ test_end:
 test_end_cont:
     rest_srr
 
-    load_addr   R_DMPA, DUMP_ADDR
-    /*                  Addr    Bytes   Temp    */
-    _rumboot_issdump    R_DMPA, R_DMPB, R_DMPC
+    load_addr   R_ADDR, save_data_size
+    stw         R_DMPB, 0(R_ADDR)
+    load_const  r3, EVENT_TESTEVENT
+    load_addr   r4, event_data
+    load_const  r5, EVENT_DATA_SIZE
+    bl          rumboot_platform_event_raise
 
     beq+ cr6,           test_ok
 
 
 test_error:
     rumboot_putstring "TEST ERROR\n"
-    test_event  EVENT_ERROR
     load_const  R_RETV, RESULT_ERROR
     b finish
 
 test_ok:
     rumboot_putstring "TEST OK\n"
-    test_event  EVENT_OK
     load_const  R_RETV, RESULT_OK
 
 finish:
-    rest_stack          R_STKB
+    full_epilogue
     blr
-
-
-.section ".data","aw",@progbits
-
-.align 4
-vars:
-vars_fp:
-    .rept 0x0060 / SIZEOF_DOUBLE
-        .quad C_D_POS_ZERO
-    .endr
-
-save_data:
-    .rept 0x0400 / SIZEOF_DWORD
-        .quad C_D_POS_ZERO
-    .endr
-

@@ -7,10 +7,11 @@
 #include <platform/devices.h>
 
 
-#define SAVE_ADDR	save_data /* IM0_BASE + 0x0001E000 */
+#define SAVE_ADDR       save_data
+#define SAVE_MEM_SIZE   0x0100
 
-#define TMP_REG		29
-#define INF_REG		30
+#define TMP_REG		4
+#define INF_REG		5
 #define REGS_AS 	7,6
 #define REGS_ASB	8,6,7
 
@@ -193,22 +194,34 @@
 	rumboot_putstring "done!\n"
 .endm
 
+
+.section ".data","aw",@nobits
+
+.align 4
+save_data:
+    .space SAVE_MEM_SIZE, 0x00
+
+
+.section ".data","aw",@progbits
+
+.align 4
+event_data:
+    .long TEST_EVENT_CREATE_ISS_DUMP
+    .long save_data
+    .long SAVE_MEM_SIZE
+#define EVENT_DATA_SIZE 3
+
+
 .global main
 
 .section ".text","ax",@progbits
 main:
+    mflr        r3
+    mtspr       SPR_VRSAVE, r3
+
     test_event_send_test_id "test_iss_base"
-	rumboot_putstring "Start testing...\n"
-	load_const	r5, 0x00000000
-	load_addr	r3,	SAVE_ADDR - 4
-	mr			r4,	r3
-.rept 128
-    stwu		r5, 4(r4)
-.endr
-    mr			r4,	r3
-.rept 128
-    lwz			r5,	4(r4)
-.endr
+    rumboot_putstring "Start testing...\n"
+    load_addr   r3, SAVE_ADDR - 4
 
 /*	LOGIC_RA_RS_UI_CHECK opcode,  (ra,rs),    rs_val, ui_val, cmd_cnv, addr_reg */
     LOGIC_RA_RS_UI_CHECK andi.,   REGS_AS,    RS_VAL, UI_VAL, 0x00,    3
@@ -246,65 +259,23 @@ main:
     LOGIC_RA_RS_CHECK    cntlzw., REGS_AS,    RS_VAL,         0x05,    3
     LOGIC_RA_RS_CHECK    prtyw,   REGS_AS,    RS_VAL,         0x06,    3
 
-    load_addr   r15,    save_data
-    load_const  r16,    0x0100
-    _rumboot_issdump    r15, r16
+    load_const  r3, EVENT_TESTEVENT
+    load_addr   r4, event_data
+    load_const  r5, EVENT_DATA_SIZE
+    bl          rumboot_platform_event_raise
 
     b test_ok
 
-
 test_ok:
-	rumboot_putstring "TEST OK\n"
-	load_const r3,	RESULT_OK
-	b finish
+    rumboot_putstring "TEST OK\n"
+    load_const  r3, RESULT_OK
+    b finish
 
 test_error:
     rumboot_putstring "TEST ERROR\n"
-    load_const r3,	RESULT_ERROR
+    load_const  r3, RESULT_ERROR
 
 finish:
-	blr
-
-/*
-.align 2
-iss_mem:
-	.long 0x00000A50
-	.long 0x0A500000
-	.long 0xAA55FA5F
-	.long 0xFA5FAA55
-	.long 0xAA55F00F
-	.long 0xF00FAA55
-	.long 0x0A500A50
-	.long 0x0A500A50
-	.long 0xFA5FFA5F
-	.long 0xFA5FFA5F
-	.long 0xF00FF00F
-	.long 0xF00FF00F
-	.long 0xF5AFF5AF
-	.long 0xF5AFF5AF
-	.long 0x05A005A0
-	.long 0x05A005A0
-	.long 0x0FF00FF0
-	.long 0x0FF00FF0
-	.long 0xA005A005
-	.long 0xA005A005
-	.long 0xAFF5AFF5
-	.long 0xAFF5AFF5
-	.long 0x00000000
-	.long 0x00000055
-	.long 0x00000055
-	.long 0xFFFFAA55
-	.long 0xFFFFAA55
-	.long 0x00000000
-	.long 0x00000000
-	.long 0x00000000
-	.long 0x00000000
-	.long 0x00000000
-*/
-
-.section ".issdata","aw",@progbits
-
-save_data:
-
-
-
+    mfspr       r5, SPR_VRSAVE
+    mtlr        r5
+    blr

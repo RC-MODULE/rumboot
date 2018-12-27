@@ -131,5 +131,31 @@ alignment_int_handler:
     tlbwe   \rA, \rB, 2
 .endm
 
+.macro full_prologue
+    stwu        r1, -160(r1)
+    stw         r0, 156(r1)
+    stmw        r2, 36(r1)
+    mflr        r31
+    mfctr       r30
+    mfcr        r29
+    mfxer       r28
+    stmw        r28, 20(r1)
+
+    /* TODO: remove setting CTR and LR to Program interrupt handler. It's only for modeling (https://jira.module.ru/jira/browse/OI10-205) */
+    load_addr   r3, rumboot_P_hdr
+    mtctr       r3
+    mtlr        r3
+.endm
+
+.macro full_epilogue
+    lmw         r28, 20(r1)
+    mtxer       r28
+    mtcr        r29
+    mtctr       r30
+    mtlr        r31
+    lmw         r2, 36(r1)
+    lwz         r0, 156(r1)
+    addi        r1, r1, 160
+.endm
 
 #endif // PPC_476FP_ASM_H

@@ -17,8 +17,4 @@ rumboot_entry_point:
     load_const r5, 0x70075
     rumboot_puthex r5
     rumboot_putdump (BOOTROM_BASE+0xf000), 0x1000
-    load_const r5, BOOTROM_BASE
-    ori r5, r5, 0xf000
-    load_const r6, 0x1000
-    _rumboot_issdump r5, r6
     exit 0
