@@ -43,8 +43,8 @@
 const MEM_WINDOW test_windows[] =
 {
     MEM_WINDOW_0,
-    MEM_WINDOW_1,
-    MEM_WINDOW_2,
+    //MEM_WINDOW_1,
+    //MEM_WINDOW_2,
     MEM_WINDOW_3
 };
 
@@ -168,7 +168,6 @@ int main(void)
     rumboot_printf("Start memory initialization...\n");
     for ( i = 0; i < ARRAY_SIZE(test_windows); i++)
     {
-        rumboot_printf("set window = %x\n", i);
         set_mem_window(test_windows[i]);
         for (uint32_t j = 0; j < ARRAY_SIZE(test_addr); j++)
         {
@@ -188,7 +187,6 @@ int main(void)
 
     for ( i = 0; i < ARRAY_SIZE(test_windows); i++)
     {
-        rumboot_printf("set window = %x\n", i);
         set_mem_window(test_windows[i]);
         for (uint32_t j = 0; j < ARRAY_SIZE(test_addr); j++)
         {
