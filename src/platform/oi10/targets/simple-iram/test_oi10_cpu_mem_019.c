@@ -36,13 +36,8 @@
 #include <platform/regs/regs_emi.h>
 #include <platform/regs/fields/emi.h>
 
-//0x00000000_00000000ULL - 0x00000001_FFFFFFFFULL - SRAM_SDRAM EM2
-
-#define L2C_SIZE        (256*1024)
-#define L2C_WAY_SIZE    128
 #define L2C_TIMEOUT     0x00000020
-
-#define ADDR_ARRAY_LEN  12
+#define L2C_WAY_SIZE    128
 #define DATA_LEN        (L2C_WAY_SIZE >> 3)
 
 const MEM_WINDOW test_windows[] =
@@ -58,13 +53,13 @@ const uint32_t test_addr[] = {
     0x0000FF80,
     0x3FFF0000,
     0x00FF0080,
-    0x3F000080,
-    0x0F0F0F80,
+    0x3F000000,
+    0x0F0F0F00,
     0x60F0F080,
     0x33333380,
     0x55555580,
-    0x6CCCCC80,
     0x6AAAAA80,
+    0x6CCCCC80,
     0x6FFFFF80
 };
 
@@ -170,7 +165,7 @@ int main(void)
     TEST_ASSERT((data & 0x1),"L2C Array Initialization Complete Event did not occur!");
     msync();
 
-    rumboot_printf("Start memory initialization... ");
+    rumboot_printf("Start memory initialization...\n");
     for ( i = 0; i < ARRAY_SIZE(test_windows); i++)
     {
         rumboot_printf("set window = %x\n", i);
@@ -184,7 +179,7 @@ int main(void)
             msync();
         }
     }
-    rumboot_printf("done\n");
+    rumboot_printf("Memory initialization done\n");
 
     rumboot_printf("Start TLB entries initialization... ");
     write_tlb_entries(tlb_entry_wt, ARRAY_SIZE(tlb_entry_wt));
@@ -195,7 +190,7 @@ int main(void)
     {
         rumboot_printf("set window = %x\n", i);
         set_mem_window(test_windows[i]);
-        for (uint32_t j = 0; j < ADDR_ARRAY_LEN; j++)
+        for (uint32_t j = 0; j < ARRAY_SIZE(test_addr); j++)
         {
             check_read_write_via_l2carracc(j);
         }
