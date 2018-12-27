@@ -125,7 +125,7 @@ bool test_dit_timers( uint32_t structure )
     int c = 0;
     int d = 0;
 
-    struct s804_instance *stru = ( struct s804_instance * )structure;
+    struct s804_instance *stru = (struct s804_instance *)structure;
     uint32_t base_addr = stru->base_addr;
 
     struct sp804_conf config_0 = {
@@ -144,42 +144,39 @@ bool test_dit_timers( uint32_t structure )
         .load = 200,
         .bgload = 0 };
 
-    for( int i = 0; i < TIMER0_CYCLES + stru->dit_index; i++ )
+    for(int i = 0; i < TIMER0_CYCLES + stru->dit_index; i++)
     {
         sp804_config(base_addr, &config_0, 0);
         sp804_enable(base_addr, 0);
         while(sp804_get_value(base_addr, 0))
-        {
-        };
-        c++;
+        {};c++;
     }
 
-    for( int i = 0; i < TIMER1_CYCLES + stru->dit_index; i++ ) {
-        sp804_config( base_addr, &config_1, 1 );
-        sp804_enable( base_addr, 1 );
-        while( sp804_get_value( base_addr, 1 ) ) {
-        };
-        d++;
+    for(int i = 0; i < TIMER1_CYCLES + stru->dit_index; i++) {
+        sp804_config(base_addr, &config_1, 1);
+        sp804_enable(base_addr, 1);
+        while( sp804_get_value(base_addr, 1))
+        {};d++;
     }
 
-    if( stru->timer0_irq == TIMER0_CYCLES + stru->dit_index )
+    if(stru->timer0_irq == TIMER0_CYCLES + stru->dit_index)
     {
-        rumboot_printf( "Timer 0 test OK \n" );
+        rumboot_printf("Timer 0 test OK \n");
     }
     else
     {
-        rumboot_printf( "ERROR in Timer 0 test \n" );
-        rumboot_printf( "Interrupts came == %d, should be %d \n", stru->timer0_irq, TIMER0_CYCLES + stru->dit_index );
+        rumboot_printf("ERROR in Timer 0 test \n");
+        rumboot_printf("Interrupts came == %d, should be %d \n", stru->timer0_irq, TIMER0_CYCLES + stru->dit_index);
         return false;
     }
-    if( stru->timer1_irq == TIMER1_CYCLES + stru->dit_index )
+    if(stru->timer1_irq == TIMER1_CYCLES + stru->dit_index)
     {
-        rumboot_printf( "Timer 1 test OK \n" );
+        rumboot_printf("Timer 1 test OK \n");
     }
     else
     {
-        rumboot_printf( "ERROR in Timer 1 test \n" );
-        rumboot_printf( "Interrupts came == %d, should be %d \n", stru->timer1_irq, TIMER1_CYCLES + stru->dit_index );
+        rumboot_printf("ERROR in Timer 1 test \n");
+        rumboot_printf("Interrupts came == %d, should be %d \n", stru->timer1_irq, TIMER1_CYCLES + stru->dit_index);
         return false;
     }
     return true;
@@ -187,10 +184,33 @@ bool test_dit_timers( uint32_t structure )
 
 static bool test_dit_timers2( uint32_t structure)
 {
-    struct s804_instance *stru = ( struct s804_instance * )structure;
+    struct s804_instance *stru = (struct s804_instance *)structure;
     uint32_t base_addr = stru->base_addr;
     int i;
-    for(i = 0; i < TIMER_CYCLES + stru->dit_index; i++)
+
+    dcr_write(base_addr + DIT_REG_ITCR, 0x0);
+    for(i = 0; i < TIMER0_CYCLES + stru->dit_index; i++)
+    {
+        if(stru->dit_index == DIT_REG_ITCR)
+        {
+            rumboot_printf("Timers DIT_REG_ITCR %d\n", stru->dit_index);
+        }
+
+        else
+        {
+            if(stru->dit_index == DIT_REG_ITOP)
+            {
+                rumboot_printf("Timers DIT_REG_ITOR %d\n", stru->dit_index);
+            }
+       }
+
+       i = dcr_read(base_addr + DIT_REG_ITOP);
+       rumboot_printf("DIT_REG_ITCR %d\n", i);
+       sp804_enable(stru->base_addr, 0);
+    }
+
+    dcr_write(base_addr + DIT_REG_ITCR, 0x1);
+    for(i = 0; i < TIMER1_CYCLES + stru->dit_index; i++)
     {
         if(stru->dit_index == DIT_REG_ITCR)
         {
@@ -203,11 +223,12 @@ static bool test_dit_timers2( uint32_t structure)
                 rumboot_printf("Timers DIT_REG_ITOR %d\n", stru->dit_index);
             }
         }
+        i = dcr_read(base_addr + DIT_REG_ITOP);
+        rumboot_printf("DIT_REG_ITCR %d\n", i);
+        sp804_enable(stru->base_addr, 1);
+        return true;
     }
-    i = dcr_read(base_addr + DIT_REG_ITCR);
-    rumboot_printf("DIT_REG_ITCR %d\n", i);
-    sp804_enable(stru->base_addr, 0);
-    return true;
+return false;
 }
 
 static struct s804_instance in[] =
