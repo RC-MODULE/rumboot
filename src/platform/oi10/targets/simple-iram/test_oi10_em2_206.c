@@ -121,6 +121,7 @@
 /* (B)ank, (F)irst, (L)ast */
 #define FOREACH_BANK(B,F,L)         for(B = F; B <= L; B++)
 #define FOREACH_IRQ(ITEM,LIST)      for(ITEM = LIST; ~*ITEM; ITEM++)
+#define MOD_BYTE(WORD,IDX,BYTE)     ((uint8_t*)(&(WORD)))[(IDX)] = (BYTE)
 
 /* Custom types definitions */
 typedef struct rumboot_irq_entry    rumboot_irq_entry;
@@ -160,7 +161,7 @@ uintptr_t emi_bank_bases[8] =
     EM2_BANK4_BASE, EM2_BANK5_BASE, 0,0
 };
 /* Memory banks types descriptions */
-char *btyp_descr[8] =
+static char *btyp_descr[8] =
 {
 /*   0           1           2           3          */
     "SRAM",     "NOR",      "SSRAM",    "UNKNOWN3",
@@ -168,19 +169,33 @@ char *btyp_descr[8] =
     "PIPELINE", "UNKNOWN5", "SDRAM",    "UNKNOWN7"
 };
   /* Check templates 32 bits */
-uint32_t    long_tpl[] =
+static const uint32_t    long_tpl[] =
 {
     0xDEBA0001 ^ 0xFF000000,
     0xDEDA0001 ^ 0x00FF0000,
     0xDEDA0101 ^ 0x0000FF00,
     0xDEDA0100 ^ 0x000000FF
 };
-uint32_t    mask_tpl[] =
+static const uint32_t    mask_tpl[] =
 {
     0xFF000000,
     0x00FF0000,
     0x0000FF00,
     0x000000FF
+};
+static const uint32_t mke1_4_ecc[4] =
+{  /* ECC 0x11 (0x10 ^ 0x01) */
+    0xF00D4B25,
+    0xF00DBAEE,
+    0xF0FC4BEE,
+    0xF70D4BEE
+};
+static const uint32_t mke2_4_ecc[4] =
+{  /* ECC 0x54 (0x10 ^ 0x44) */
+    0xF00D4B2B,
+    0xF00DC9EE,
+    0xF0D04BEE,
+    0xF71D4BEE
 };
 /* Check templates 8 bits */
 uint8_t     byte_tpl1[] = {0xDE, 0xDA, 0x01, 0x00};
@@ -194,7 +209,7 @@ static volatile const uint8_t emi_ecnt[8] =
 static irq_flags_t IRQ = 0;
 static rumboot_irq_entry *irq_table = NULL;
 static volatile uint32_t global_irr = 0;
-static uint8_t const_2_ecc[12];
+static uint8_t const_2_ecc[16];
 static tlb_entry em2_noexec_entries[] =
 {
     {
@@ -364,12 +379,12 @@ uint32_t check_emi_mkserr(  mke_info_t     *info,
     emi_read_ckregs(&regs1, (uint32_t)params.bnk);
     rumboot_printf("Reading from 0x%X...\n", base32);
     readed = ioread32(base32);
-    msync();
+    // msync();
     emi_read_ckregs(&regs2, (uint32_t)params.bnk);
     rumboot_printf("ECNT20=0x%X, ECNT53=0x%X, H1ADR=0x%X, H2ADR=0x%X, H1CMR=0x%X, H2CMR=0x%X\n",
             regs1.ecnt20, regs1.ecnt53, regs1.h1addr, regs1.h2addr, regs1.h1cmrr, regs1.h2cmrr);
-    rumboot_printf("READED: 0x%X (ECC=0x%X/0x%X, ECNT=%d) after single error.\n",
-            readed, regs1.eccval, regs2.eccval, regs1.cntval);
+    rumboot_printf("READED: 0x%X, EXP: 0x%X (ECC=0x%X/0x%X, ECNT=%d) after single error.\n",
+            readed, info->exp, regs1.eccval, regs2.eccval, regs1.cntval);
     TEST_ASSERT(result = (readed == info->exp),
             "EMI: Single error repair fails.");
     status |= !result;
@@ -432,12 +447,12 @@ uint32_t check_emi_mkderr(  mke_info_t     *info,
     emi_read_ckregs(&regs1, (uint32_t)params.bnk);
     rumboot_printf("Reading from 0x%X...\n", base32);
     readed = ioread32(base32);
-    msync();
+    // msync();
     emi_read_ckregs(&regs2, (uint32_t)params.bnk);
     rumboot_printf("ECNT20=0x%X, ECNT53=0x%X, H1ADR=0x%X, H2ADR=0x%X, H1CMR=0x%X, H2CMR=0x%X\n",
             regs1.ecnt20, regs1.ecnt53, regs1.h1addr, regs1.h2addr, regs1.h1cmrr, regs1.h2cmrr);
-    rumboot_printf("READED: 0x%X (ECC=0x%X/0x%X, ECNT=%d) after double error.\n",
-            readed, regs1.eccval, regs2.eccval, regs1.cntval);
+    rumboot_printf("READED: 0x%X, EXP: 0x%X (ECC=0x%X/0x%X, ECNT=%d) after double error.\n",
+            readed, info->exp, regs1.eccval, regs2.eccval, regs1.cntval);
     TEST_ASSERT(result = (readed == info->exp),
             "EMI: Wrong value after double error.");
     status |= !result;
@@ -476,31 +491,31 @@ uint32_t check_emi(uint32_t bank)
 
     mkerr_param_t   mke_d1[4] =
     {   /* Mod1 data */
-        {bank, const_2_ecc[8], 1, EMI_BITS_D24_D31},
-        {bank, const_2_ecc[8], 2, EMI_BITS_D16_D23},
-        {bank, const_2_ecc[8], 3, EMI_BITS_D8_D15 },
-        {bank, const_2_ecc[8], 4, EMI_BITS_D0_D7  },
+        {bank, const_2_ecc[0x08], 1, EMI_BITS_D24_D31},
+        {bank, const_2_ecc[0x08], 2, EMI_BITS_D16_D23},
+        {bank, const_2_ecc[0x08], 3, EMI_BITS_D8_D15 },
+        {bank, const_2_ecc[0x08], 4, EMI_BITS_D0_D7  },
     },
                     mke_d2[4] =
     {   /* Mod2 data */
-        {bank, const_2_ecc[8], 0, EMI_BITS_D24_D31},
-        {bank, const_2_ecc[8], 0, EMI_BITS_D16_D23},
-        {bank, const_2_ecc[8], 0, EMI_BITS_D8_D15 },
-        {bank, const_2_ecc[8], 0, EMI_BITS_D0_D7  },
+        {bank, const_2_ecc[0x08], 0, EMI_BITS_D24_D31},
+        {bank, const_2_ecc[0x08], 0, EMI_BITS_D16_D23},
+        {bank, const_2_ecc[0x08], 0, EMI_BITS_D8_D15 },
+        {bank, const_2_ecc[0x08], 0, EMI_BITS_D0_D7  },
     },
                     mke_e1[4] =
     {   /* Mod1 ECC */
-        {bank, const_2_ecc[0], 1, EMI_BITS_ED0_ED7},
-        {bank, const_2_ecc[1], 2, EMI_BITS_ED0_ED7},
-        {bank, const_2_ecc[2], 3, EMI_BITS_ED0_ED7},
-        {bank, const_2_ecc[3], 4, EMI_BITS_ED0_ED7},
+        {bank, const_2_ecc[0x09], 1, EMI_BITS_ED0_ED7},
+        {bank, const_2_ecc[0x09], 2, EMI_BITS_ED0_ED7},
+        {bank, const_2_ecc[0x09], 3, EMI_BITS_ED0_ED7},
+        {bank, const_2_ecc[0x09], 4, EMI_BITS_ED0_ED7},
     },
                      mke_e2[4] =
     {   /* Mod2 ECC */
-        {bank, const_2_ecc[4], 0, EMI_BITS_ED0_ED7},
-        {bank, const_2_ecc[5], 0, EMI_BITS_ED0_ED7},
-        {bank, const_2_ecc[6], 0, EMI_BITS_ED0_ED7},
-        {bank, const_2_ecc[7], 0, EMI_BITS_ED0_ED7},
+        {bank, const_2_ecc[0x0A], 0, EMI_BITS_ED0_ED7},
+        {bank, const_2_ecc[0x0A], 0, EMI_BITS_ED0_ED7},
+        {bank, const_2_ecc[0x0A], 0, EMI_BITS_ED0_ED7},
+        {bank, const_2_ecc[0x0A], 0, EMI_BITS_ED0_ED7},
     };
 
     if(typ & ~7) typ = 7;
@@ -548,7 +563,7 @@ uint32_t check_emi(uint32_t bank)
     {
         uintptr_t   addr = (base + (i * sizeof(uintptr_t))),
                     expv = long_tpl[i] ^ mask_tpl[i];
-        rumboot_printf(" +++ Load word from 0x%X...\n", long_tpl[i], addr);
+        rumboot_printf(" +++ Load word from 0x%X...\n", addr);
         data32 = ioread32(addr);
         rumboot_printf("Readed 0x%X, from 0x%X\n", data32, addr);
         CMP_EQ(data32, expv, result, status);
@@ -568,11 +583,10 @@ uint32_t check_emi(uint32_t bank)
         mke_info.val = CONST_2;
         mke_info.exp = CONST_2;
         mke_info.err = SHIFT_ERR(MK_ERR_1, i);
-        ((uint8_t*)(&mke_info.exp))[i] = byte_tpl2[i];
+        MOD_BYTE(mke_info.exp, i, byte_tpl2[i]);
         rumboot_printf(" *** Mod1 data A+%d... \n", i);
         emi_clear_ckregs(COMMON_EMI_REGS);
-        status |= check_emi_mkserr(&mke_info,
-                                    mke_d1[i]);
+        status |= check_emi_mkserr(&mke_info, mke_d1[i]);
         rumboot_printf(" ================================= \n");
     }
 
@@ -584,11 +598,10 @@ uint32_t check_emi(uint32_t bank)
         mke_info.val = CONST_2;
         mke_info.exp = CONST_2 ^ SHIFT_ERR(MK_ERR_2, i);
         mke_info.err = SHIFT_ERR(MK_ERR_2, i);
-        ((uint8_t*)(&mke_info.exp))[i] = byte_tpl2[i];
+        MOD_BYTE(mke_info.exp, i, byte_tpl2[i]);
         rumboot_printf(" *** Mod2 data A+%d...\n", i);
         emi_clear_ckregs(bank);
-        status |= check_emi_mkderr(&mke_info,
-                                    mke_d2[i]);
+        status |= check_emi_mkderr(&mke_info, mke_d2[i]);
         rumboot_printf(" ================================= \n");
     }
 
@@ -598,13 +611,12 @@ uint32_t check_emi(uint32_t bank)
     {
         mke_info.idx = i;
         mke_info.val = CONST_2;
-        mke_info.exp = CONST_2 ^ SHIFT_ERR(MK_ERR_1, i);
-        mke_info.err = SHIFT_ERR(MK_ERR_1, i);
-        ((uint8_t*)(&mke_info.exp))[i] = byte_tpl2[i];
+        mke_info.exp = CONST_2;
+        mke_info.err = CONST_2 ^ mke1_4_ecc[i];
+        MOD_BYTE(mke_info.exp, i, byte_tpl2[i]);
         rumboot_printf(" *** Mod1 ECC A+%d...\n", i);
         emi_clear_ckregs(COMMON_EMI_REGS);
-        status |= check_emi_mkserr(&mke_info,
-                                    mke_e1[i]);
+        status |= check_emi_mkserr(&mke_info, mke_e1[i]);
         rumboot_printf(" ================================= \n");
     }
 
@@ -615,12 +627,11 @@ uint32_t check_emi(uint32_t bank)
         mke_info.idx = i;
         mke_info.val = CONST_2;
         mke_info.exp = CONST_2;
-        mke_info.err = SHIFT_ERR(MK_ERR_2, i);
-        ((uint8_t*)(&mke_info.exp))[i] = byte_tpl2[i];
+        mke_info.err = CONST_2 ^ mke2_4_ecc[i];
+        MOD_BYTE(mke_info.exp, i, byte_tpl2[i]);
         rumboot_printf(" *** Mod2 ECC A+%d...\n", i);
         emi_clear_ckregs(bank);
-        status |= check_emi_mkderr(&mke_info,
-                                    mke_e2[i]);
+        status |= check_emi_mkderr(&mke_info, mke_e2[i]);
         rumboot_printf(" ================================= \n");
     }
 
@@ -635,7 +646,7 @@ uint32_t check_emi(uint32_t bank)
 uint32_t main(void)
 {
     uint32_t     test_result    = TEST_OK;
-    int          mem_bank;
+    int          mem_bank, i;
 
     rumboot_printf("Init EMI...\n");
     write_tlb_entries(em2_noexec_entries, 1);
@@ -643,23 +654,27 @@ uint32_t main(void)
     msync();
     isync();
     emi_init(DCR_EM2_EMI_BASE);
+    memset(0x00000000, 0, 4 * 1024);
     /* emi_init_impl (DCR_EM2_EMI_BASE, DCR_EM2_PLB6MCIF2_BASE, 0x00); */
     init_interrupts();
     rumboot_printf("Init done.\n");
 
     rumboot_printf("Generate ECC codes...\n");
-    const_2_ecc[0x00] = GEN_ECC(CONST_2 ^ (MK_ERR_1 << 0x00));
-    const_2_ecc[0x01] = GEN_ECC(CONST_2 ^ (MK_ERR_1 << 0x08));
-    const_2_ecc[0x02] = GEN_ECC(CONST_2 ^ (MK_ERR_1 << 0x10));
-    const_2_ecc[0x03] = GEN_ECC(CONST_2 ^ (MK_ERR_1 << 0x18));
-    const_2_ecc[0x04] = GEN_ECC(CONST_2 ^ (MK_ERR_2 << 0x00));
-    const_2_ecc[0x05] = GEN_ECC(CONST_2 ^ (MK_ERR_2 << 0x08));
-    const_2_ecc[0x06] = GEN_ECC(CONST_2 ^ (MK_ERR_2 << 0x10));
-    const_2_ecc[0x07] = GEN_ECC(CONST_2 ^ (MK_ERR_2 << 0x18));
-    const_2_ecc[0x08] = GEN_ECC(CONST_2                     );
-    const_2_ecc[0x09] = 0x00;
-    const_2_ecc[0x0A] = 0x00;
-    const_2_ecc[0x0B] = 0xFF;
+    for(i = 0; i < 4; i++)
+    {
+        const_2_ecc[0 + i] = GEN_ECC(
+                mke1_4_ecc[i] | SHIFT_ERR(byte_tpl2[i], i));
+        const_2_ecc[4 + i] = GEN_ECC(
+                mke2_4_ecc[i] | SHIFT_ERR(byte_tpl2[i], i));
+    }
+    const_2_ecc[0x08] = GEN_ECC(CONST_2      );
+    const_2_ecc[0x09] = GEN_ECC(mke1_4_ecc[0]);
+    const_2_ecc[0x0A] = GEN_ECC(mke2_4_ecc[0]);
+    const_2_ecc[0x0B] = 0x00;
+    const_2_ecc[0x0C] = 0x00;
+    const_2_ecc[0x0D] = 0x00;
+    const_2_ecc[0x0E] = 0x00;
+    const_2_ecc[0x0F] = 0xFF;
     rumboot_printf("Generated.\n");
 
     /* test_result |= check_emi(4); */
