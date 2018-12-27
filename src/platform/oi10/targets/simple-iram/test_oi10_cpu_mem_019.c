@@ -45,83 +45,60 @@
 #define ADDR_ARRAY_LEN  12
 #define DATA_LEN        (L2C_WAY_SIZE >> 3)
 
-
-const uint64_t test_phys_addr[ADDR_ARRAY_LEN] = {
-    0x000000100ULL,
-    0x0000FFF80ULL,
-    0x00FF00F80ULL,
-    0x0CCCCCC80ULL,
-    0x0AAAAAA80ULL,
-    0x010F0F080ULL,
-    0x10F0F0F00ULL,
-    0x1B00FF000ULL,
-    0x133333300ULL,
-    0x155555500ULL,
-    0x10FF00000ULL,
-    0x10FFFFF80ULL
+const MEM_WINDOW test_windows[] =
+{
+    MEM_WINDOW_0,
+    MEM_WINDOW_1,
+    MEM_WINDOW_2,
+    MEM_WINDOW_3
 };
 
-const uint32_t test_addr[ADDR_ARRAY_LEN] = {
-    0x00010100,
-    0x0002FF80,
-    0x00030F80,
-    0x0004CC80,
-    0x0005AA80,
-    0x0006F080,
-    0x00070F00,
-    0x0008F000,
-    0x00093300,
-    0x000A5500,
-    0x000B0000,
-    0x000CFF80,
+const uint32_t test_addr[] = {
+    0x00000000,
+    0x0000FF80,
+    0x3FFF0000,
+    0x00FF0080,
+    0x3F000080,
+    0x0F0F0F80,
+    0x60F0F080,
+    0x33333380,
+    0x55555580,
+    0x6CCCCC80,
+    0x6AAAAA80,
+    0x6FFFFF80
 };
 
-/*                           MMU_TLB_ENTRY( ERPN, RPN,    EPN,    DSIZ,              IL1I,IL1D,W,I,M,G,E,                 UX,UW,UR,SX,SW,SR DULXE,IULXE,TS,TID,              WAY,              BID,             V )*/
-#define TLB_ENTRY0_CACHE_WT  MMU_TLB_ENTRY( 0x000,0x00000,0x00010,MMU_TLBE_DSIZ_64KB,1,   1,   1,0,1,1,MMU_TLBE_E_BIG_END,0, 0, 0, 1, 1, 1, 0,    0,    0, MEM_WINDOW_SHARED,MMU_TLBWE_WAY_UND,MMU_TLBWE_BE_UND,1 )
-#define TLB_ENTRY1_CACHE_WT  MMU_TLB_ENTRY( 0x000,0x000F0,0x00020,MMU_TLBE_DSIZ_64KB,1,   1,   1,0,1,1,MMU_TLBE_E_BIG_END,0, 0, 0, 1, 1, 1, 0,    0,    0, MEM_WINDOW_SHARED,MMU_TLBWE_WAY_UND,MMU_TLBWE_BE_UND,1 )
-#define TLB_ENTRY2_CACHE_WT  MMU_TLB_ENTRY( 0x000,0x0FF00,0x00030,MMU_TLBE_DSIZ_64KB,1,   1,   1,0,1,1,MMU_TLBE_E_BIG_END,0, 0, 0, 1, 1, 1, 0,    0,    0, MEM_WINDOW_SHARED,MMU_TLBWE_WAY_UND,MMU_TLBWE_BE_UND,1 )
-#define TLB_ENTRY3_CACHE_WT  MMU_TLB_ENTRY( 0x000,0xCCCC0,0x00040,MMU_TLBE_DSIZ_64KB,1,   1,   1,0,1,1,MMU_TLBE_E_BIG_END,0, 0, 0, 1, 1, 1, 0,    0,    0, MEM_WINDOW_SHARED,MMU_TLBWE_WAY_UND,MMU_TLBWE_BE_UND,1 )
-#define TLB_ENTRY4_CACHE_WT  MMU_TLB_ENTRY( 0x000,0xAAAA0,0x00050,MMU_TLBE_DSIZ_64KB,1,   1,   1,0,1,1,MMU_TLBE_E_BIG_END,0, 0, 0, 1, 1, 1, 0,    0,    0, MEM_WINDOW_SHARED,MMU_TLBWE_WAY_UND,MMU_TLBWE_BE_UND,1 )
-#define TLB_ENTRY5_CACHE_WT  MMU_TLB_ENTRY( 0x000,0x10F00,0x00060,MMU_TLBE_DSIZ_64KB,1,   1,   1,0,1,1,MMU_TLBE_E_BIG_END,0, 0, 0, 1, 1, 1, 0,    0,    0, MEM_WINDOW_SHARED,MMU_TLBWE_WAY_UND,MMU_TLBWE_BE_UND,1 )
-#define TLB_ENTRY6_CACHE_WT  MMU_TLB_ENTRY( 0x001,0x0F0F0,0x00070,MMU_TLBE_DSIZ_64KB,1,   1,   1,0,1,1,MMU_TLBE_E_BIG_END,0, 0, 0, 1, 1, 1, 0,    0,    0, MEM_WINDOW_SHARED,MMU_TLBWE_WAY_UND,MMU_TLBWE_BE_UND,1 )
-#define TLB_ENTRY7_CACHE_WT  MMU_TLB_ENTRY( 0x001,0xB00F0,0x00080,MMU_TLBE_DSIZ_64KB,1,   1,   1,0,1,1,MMU_TLBE_E_BIG_END,0, 0, 0, 1, 1, 1, 0,    0,    0, MEM_WINDOW_SHARED,MMU_TLBWE_WAY_UND,MMU_TLBWE_BE_UND,1 )
-#define TLB_ENTRY8_CACHE_WT  MMU_TLB_ENTRY( 0x001,0x33330,0x00090,MMU_TLBE_DSIZ_64KB,1,   1,   1,0,1,1,MMU_TLBE_E_BIG_END,0, 0, 0, 1, 1, 1, 0,    0,    0, MEM_WINDOW_SHARED,MMU_TLBWE_WAY_UND,MMU_TLBWE_BE_UND,1 )
-#define TLB_ENTRY9_CACHE_WT  MMU_TLB_ENTRY( 0x001,0x55550,0x000A0,MMU_TLBE_DSIZ_64KB,1,   1,   1,0,1,1,MMU_TLBE_E_BIG_END,0, 0, 0, 1, 1, 1, 0,    0,    0, MEM_WINDOW_SHARED,MMU_TLBWE_WAY_UND,MMU_TLBWE_BE_UND,1 )
-#define TLB_ENTRY10_CACHE_WT MMU_TLB_ENTRY( 0x001,0x0FF00,0x000B0,MMU_TLBE_DSIZ_64KB,1,   1,   1,0,1,1,MMU_TLBE_E_BIG_END,0, 0, 0, 1, 1, 1, 0,    0,    0, MEM_WINDOW_SHARED,MMU_TLBWE_WAY_UND,MMU_TLBWE_BE_UND,1 )
-#define TLB_ENTRY11_CACHE_WT MMU_TLB_ENTRY( 0x001,0x0FFF0,0x000C0,MMU_TLBE_DSIZ_64KB,1,   1,   1,0,1,1,MMU_TLBE_E_BIG_END,0, 0, 0, 1, 1, 1, 0,    0,    0, MEM_WINDOW_SHARED,MMU_TLBWE_WAY_UND,MMU_TLBWE_BE_UND,1 )
+/*                           MMU_TLB_ENTRY(  ERPN,     RPN,         EPN,          DSIZ,              IL1I,   IL1D,    W,      I,  M,G,E,                 UX,UW,UR,SX,SW,SR DULXE,IULXE,TS,TID,              WAY,              BID,             V )*/
+#define TLB_ENTRY0_CACHE_WT  MMU_TLB_ENTRY(  0x000,  0x00000,    0x00000,    MMU_TLBE_DSIZ_1GB,      0b1,    0b1,    0b1,    0b0,    0b1,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
+#define TLB_ENTRY1_CACHE_WT  MMU_TLB_ENTRY(  0x000,  0x40000,    0x40000,    MMU_TLBE_DSIZ_1GB,      0b1,    0b1,    0b1,    0b0,    0b1,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
+#define TLB_ENTRY2_CACHE_WT  MMU_TLB_ENTRY(  0x000,  0x80000,    0x00000,    MMU_TLBE_DSIZ_1GB,      0b1,    0b1,    0b1,    0b0,    0b1,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_1,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
+#define TLB_ENTRY3_CACHE_WT  MMU_TLB_ENTRY(  0x000,  0xc0000,    0x40000,    MMU_TLBE_DSIZ_1GB,      0b1,    0b1,    0b1,    0b0,    0b1,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_1,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
+#define TLB_ENTRY4_CACHE_WT  MMU_TLB_ENTRY(  0x001,  0x00000,    0x00000,    MMU_TLBE_DSIZ_1GB,      0b1,    0b1,    0b1,    0b0,    0b1,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_2,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
+#define TLB_ENTRY5_CACHE_WT  MMU_TLB_ENTRY(  0x001,  0x40000,    0x40000,    MMU_TLBE_DSIZ_1GB,      0b1,    0b1,    0b1,    0b0,    0b1,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_2,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
+#define TLB_ENTRY6_CACHE_WT  MMU_TLB_ENTRY(  0x001,  0x80000,    0x00000,    MMU_TLBE_DSIZ_1GB,      0b1,    0b1,    0b1,    0b0,    0b1,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_3,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
+#define TLB_ENTRY7_CACHE_WT  MMU_TLB_ENTRY(  0x001,  0xc0000,    0x40000,    MMU_TLBE_DSIZ_1GB,      0b1,    0b1,    0b1,    0b0,    0b1,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_3,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
 
 #define CREATE_DWORD(addr,i) (((addr << 12) + i) | ( ( 0x000000000000BEEFULL + ( i << 16 ) ) << 32 ))
 
 volatile uint64_t *cashed_data;
-volatile uint64_t ref_data[DATA_LEN] = {0};
 
 void check_read_write_via_l2carracc(int indx)
 {
     int i;
-    uint32_t ext_phys_addr,phys_addr;
+    uint32_t ext_phys_addr = (uint32_t) (rumboot_virt_to_phys( (void *)test_addr[indx] ) >> 32),
+             phys_addr = (uint32_t)(rumboot_virt_to_phys( (void *)test_addr[indx] ) & 0xFFFFFFFF);
 
-    ext_phys_addr = (uint32_t)(test_phys_addr[indx] >> 32);
-    phys_addr = (uint32_t)(test_phys_addr[indx] & 0xFFFFFFFF);
-
-    rumboot_printf("Init data... ");
+    rumboot_printf("Init cache data... ");
 
     cashed_data = (volatile uint64_t *)test_addr[indx];
 
     for (i = 0; i < DATA_LEN; i++)
     {
         cashed_data[i] = CREATE_DWORD(test_addr[indx],i);
-        dcbst((uint64_t *)&cashed_data[i]);
+        dcbst((void *)&cashed_data[i]);
     }
     msync();
     rumboot_printf("done\n");
-
-    rumboot_printf("Start reading... ");
-    for (i = 0; i < DATA_LEN; i++ )
-    {
-        ref_data[i] = cashed_data[i];
-    }
-    msync();
-    rumboot_printf("done\n\n");
 
     int32_t cache_way = -1;
     rumboot_printf("l2c get way\n");
@@ -150,7 +127,7 @@ void check_read_write_via_l2carracc(int indx)
         }
         rumboot_printf("tag info == %x\n", tag_data);
 
-        rumboot_printf ("tag validation...");
+        rumboot_printf ("tag validation... ");
         uint32_t tmp_tag = (1 << 31) + (((ext_phys_addr << 16) + ((phys_addr) >> 16)) << 3);
         TEST_ASSERT(tag_data == tmp_tag,"TEST ERROR: invalid tag");
         rumboot_printf("done\n");
@@ -166,26 +143,25 @@ void check_read_write_via_l2carracc(int indx)
         rumboot_printf("data_h == %x\n", (uint32_t) (l2c_data >> 32));
         rumboot_printf("data_l == %x\n", (uint32_t) l2c_data);
 
-        rumboot_printf ("data validation...");
-        TEST_ASSERT(l2c_data == ref_data[i],"TEST ERROR: invalid tag");
+        rumboot_printf ("data validation... ");
+        TEST_ASSERT(l2c_data == cashed_data[i],"TEST ERROR: invalid data");
         rumboot_printf("done\n\n");
     }
 }
 
 int main(void)
 {
-    int i;
-    volatile uint32_t data;
-
-    static const tlb_entry tlb_entry[ADDR_ARRAY_LEN] =
-       {{TLB_ENTRY0_CACHE_WT}, {TLB_ENTRY1_CACHE_WT}, {TLB_ENTRY2_CACHE_WT}, {TLB_ENTRY3_CACHE_WT},
+    static const tlb_entry tlb_entry_wt[] =
+       {
+        {TLB_ENTRY0_CACHE_WT}, {TLB_ENTRY1_CACHE_WT}, {TLB_ENTRY2_CACHE_WT}, {TLB_ENTRY3_CACHE_WT},
         {TLB_ENTRY4_CACHE_WT}, {TLB_ENTRY5_CACHE_WT}, {TLB_ENTRY6_CACHE_WT}, {TLB_ENTRY7_CACHE_WT},
-        {TLB_ENTRY8_CACHE_WT}, {TLB_ENTRY9_CACHE_WT}, {TLB_ENTRY10_CACHE_WT},{TLB_ENTRY11_CACHE_WT}};
+       };
 
     emi_init(DCR_EM2_EMI_BASE);
 
+    volatile uint32_t data;
     data = l2c_l2_read (DCR_L2C_BASE, L2C_L2ISTAT);
-    i = 0;
+    int i = 0;
     while (((data & 0x1) != 1) && (i < L2C_TIMEOUT))
     {
         data = l2c_l2_read (DCR_L2C_BASE, L2C_L2ISTAT);
@@ -194,20 +170,35 @@ int main(void)
     TEST_ASSERT((data & 0x1),"L2C Array Initialization Complete Event did not occur!");
     msync();
 
-    rumboot_printf("Start TLB entries initialization... ");
-    write_tlb_entries(tlb_entry, ADDR_ARRAY_LEN);
-    rumboot_printf("done\n");
-
     rumboot_printf("Start memory initialization... ");
-    for (i = 0; i < ADDR_ARRAY_LEN; ++i)
+    for ( i = 0; i < ARRAY_SIZE(test_windows); i++)
     {
-        memset((uint32_t *)test_addr[i], 0, L2C_WAY_SIZE);
+        rumboot_printf("set window = %x\n", i);
+        set_mem_window(test_windows[i]);
+        for (uint32_t j = 0; j < ARRAY_SIZE(test_addr); j++)
+        {
+            for (uint32_t k = 0; k < (L2C_WAY_SIZE >> 2); k++)
+            {
+               iowrite32(0x00, test_addr[j] + 4*k);
+            }
+            msync();
+        }
     }
     rumboot_printf("done\n");
 
-    for (i = 0; i < ADDR_ARRAY_LEN; ++i)
+    rumboot_printf("Start TLB entries initialization... ");
+    write_tlb_entries(tlb_entry_wt, ARRAY_SIZE(tlb_entry_wt));
+    rumboot_printf("done\n");
+
+
+    for ( i = 0; i < ARRAY_SIZE(test_windows); i++)
     {
-        check_read_write_via_l2carracc(i);
+        rumboot_printf("set window = %x\n", i);
+        set_mem_window(test_windows[i]);
+        for (uint32_t j = 0; j < ADDR_ARRAY_LEN; j++)
+        {
+            check_read_write_via_l2carracc(j);
+        }
     }
 
     rumboot_printf("TEST OK\n");
