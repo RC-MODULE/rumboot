@@ -207,13 +207,18 @@ void mem_set32(uint32_t addr, uint32_t len_bytes, uint32_t val)
 
 void sdram_oper()
 {
-    (void)ioread32(SDRAM_TEST_ADDR - 4);
-    (void)ioread32(SDRAM_TEST_ADDR - 0);
-    msync();
+    uint32_t buf0;
+    uint32_t buf1;
 
     iowrite32(0xBABADEDA, SDRAM_TEST_ADDR - 4);
-    iowrite32(0xBABADEDA, SDRAM_TEST_ADDR - 0);
+    iowrite32(0xDEDABABA, SDRAM_TEST_ADDR - 0);
     msync();
+
+    buf0 = ioread32(SDRAM_TEST_ADDR - 4);
+    buf1 = ioread32(SDRAM_TEST_ADDR - 0);
+    msync();
+
+    TEST_ASSERT(((buf0==0xBABADEDA) && (buf1==0xDEDABABA)), "SDRAM data error!");
 }
 
 int check_sdram_2_1_3(uint32_t base_addr, sdx_csp_t csp, sdx_sds_t sds, sdx_sds_t cl)
