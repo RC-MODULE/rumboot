@@ -18,7 +18,7 @@
 #include <regs/regs_sp805.h>
 #include <rumboot/platform.h>
 
-#define TIMER_CYCLES 60
+#define TIMER_CYCLES 40
 
 #ifdef CHECK_REGS
 static uint32_t check_watchdog_default_ro_val(uint32_t base_addr)
@@ -86,20 +86,20 @@ struct s805_instance {
     int wd_index;
 };
 
-static void handler0( int irq, void *arg )
+static void handler0(int irq, void *arg)
 {
     struct s805_instance *a = (struct s805_instance *) arg;
     a->wd_irq = a->wd_irq + 1;
-    rumboot_printf( "IRQ 0 arrived  \n" );
-    rumboot_printf( "sp805_%d watchdog INT # %d  \n", a->wd_index, a->wd_irq );
+    rumboot_printf("IRQ 0 arrived  \n");
+    rumboot_printf("sp805_%d watchdog INT # %d  \n", a->wd_index, a->wd_irq);
     sp805_clrint( a->base_addr);
 }
 
 static bool wd_test( uint32_t structure)
 {
-    struct s805_instance *stru = ( struct s805_instance * )structure;
+    struct s805_instance *stru = (struct s805_instance *)structure;
     uint32_t base_addr = stru->base_addr;
-    int i;
+    int i, c = 0;
     struct sp805_conf config_FREE_RUN =
     {
            .mode = FREERUN,
@@ -108,46 +108,58 @@ static bool wd_test( uint32_t structure)
            .width = 32,
            .load = 100,
     };
+
     dcr_write(base_addr + WD_REG_LOCK, 0x1ACCE551);
+
     for(i = 0; i < TIMER_CYCLES + stru->wd_index; i++)
     {
-        sp805_config( base_addr, &config_FREE_RUN);
-        sp805_enable( base_addr );
-
+        sp805_config(base_addr, &config_FREE_RUN);
+        sp805_enable(base_addr);
         if(stru->wd_index == WD_CTRL_INTEN)
         {
-            rumboot_printf("Watchdog load value %d\n", stru->wd_index);
+            while(sp805_get_value(base_addr))
+            {};c++;
         }
-        sp805_enable(base_addr);
+    }
+    if(stru->wd_irq == stru->wd_index)
+    {
+        rumboot_printf("Watchdog 0 test OK \n");
+    }
+    else
+    {
+         rumboot_printf("ERROR in Watchdog test \n");
+         rumboot_printf("Interrupts came == %d, should be %d \n", stru->wd_irq, TIMER_CYCLES + stru->wd_index);
+         return false;
     }
     return true;
 }
 
-static bool wd_test2( uint32_t structure)
+static bool wd_test2(uint32_t structure)
 {
     struct s805_instance *stru = ( struct s805_instance * )structure;
     uint32_t base_addr = stru->base_addr;
     int i;
-
     dcr_write(base_addr + WD_REG_LOCK, 0x1ACCE551);
+    dcr_write(base_addr + WD_REG_ITCR, 0x1);
     for(i = 0; i < TIMER_CYCLES + stru->wd_index; i++)
     {
         if(stru->wd_index == WD_REG_ITCR)
         {
-             rumboot_printf("Watchdog WD_REG_ITCR %d\n", stru->wd_index);
+            rumboot_printf("Timers WD_REG_ITCR %d\n", stru->wd_index);
         }
         else
         {
             if(stru->wd_index == WD_REG_ITOP)
             {
-                rumboot_printf("Watchdog WD_REG_ITOR %d\n", stru->wd_index);
+                rumboot_printf("Timers WD_REG_ITOR %d\n", stru->wd_index);
             }
         }
+        i = dcr_read(base_addr + WD_REG_ITCR);
+        rumboot_printf("WD_REG_ITCR %d\n", i);
+        sp805_enable(stru->base_addr);
+        return true;
     }
-    i = dcr_read(base_addr + WD_REG_ITCR);
-    rumboot_printf("WD_REG_ITCR %d\n", i);
-    sp805_enable(stru->base_addr);
-    return true;
+    return false;
 }
 
 static struct s805_instance in[] =
@@ -171,13 +183,13 @@ uint32_t main(void)
 {
     // Set up interrupt handlers
     register uint32_t result;
-    rumboot_printf( "SP805 test START\n" );
-    struct rumboot_irq_entry *tbl = rumboot_irq_create( NULL );
+    rumboot_printf("SP805 test START\n");
+    struct rumboot_irq_entry *tbl = rumboot_irq_create(NULL);
     rumboot_irq_cli();
-    rumboot_irq_set_handler( tbl, WDT_INT, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler0, &in[0]);
+    rumboot_irq_set_handler(tbl, WDT_INT, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler0, &in[0]);
     /* Activate the table */
-    rumboot_irq_table_activate( tbl );
-    rumboot_irq_enable( WDT_INT);
+    rumboot_irq_table_activate(tbl);
+    rumboot_irq_enable(WDT_INT);
     rumboot_irq_sei();
 
     result = test_suite_run(NULL, &wd_testlist);
