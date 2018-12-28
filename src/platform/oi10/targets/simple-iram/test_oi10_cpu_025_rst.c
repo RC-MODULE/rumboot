@@ -13,9 +13,7 @@
 #include <rumboot/macros.h>
 #include <platform/test_event_c.h>
 #include <rumboot/irq.h>
-<<<<<<< Updated upstream
 #include <platform/arch/ppc/ppc_476fp_debug_fields.h>
-=======
 #include <platform/trace.h>
 #include <platform/test_assert.h>
 #include <platform/devices.h>
@@ -194,5 +192,4 @@ int main ()
     rumboot_printf("TEST OK\n");
     return 0;
 }
->>>>>>> Stashed changes
 
