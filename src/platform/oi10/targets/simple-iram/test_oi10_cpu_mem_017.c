@@ -195,6 +195,8 @@ int main()
 
     test_event_send_test_id("test_oi10_cpu_mem_017");
 
+    memset((void*)SRAM0_BASE, 0x00, 0x8000); //workaround
+
     static const tlb_entry tlb_entries[] =
        {
         {TLB_ENTRY0_INV}, {TLB_ENTRY1_INV}, {TLB_ENTRY2_INV}, {TLB_ENTRY3_INV},
