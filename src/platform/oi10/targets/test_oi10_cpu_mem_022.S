@@ -36,15 +36,15 @@ working_function:
     msync
 .align 4
 loop:
-    lwz     r19, 4(r10)
-    lwz     r20, 4(r11)
-    lwz     r21, 4(r12)
-    lwz     r22, 4(r13)
-    lwz     r23, 4(r14)
-    lwz     r24, 4(r15)
-    lwz     r25, 4(r16)
-    lwz     r26, 4(r17)
-    lwz     r27, 4(r18)
+    lwzu     r19, 4(r10)
+    lwzu     r20, 4(r11)
+    lwzu     r21, 4(r12)
+    lwzu     r22, 4(r13)
+    lwzu     r23, 4(r14)
+    lwzu     r24, 4(r15)
+    lwzu     r25, 4(r16)
+    lwzu     r26, 4(r17)
+    lwzu     r27, 4(r18)
     bdnz    loop
 //stack restore
     addi    r11,r31,16
