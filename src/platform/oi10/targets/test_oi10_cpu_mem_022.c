@@ -45,7 +45,7 @@ static uint32_t test_data[] =
 };
 
 /*                            MMU_TLB_ENTRY(  ERPN,   RPN,        EPN,        DSIZ,                   IL1I,   IL1D,   W,      I,      M,      G,      E,                      UX, UW, UR,     SX, SW, SR      DULXE,  IULXE,      TS,     TID,                WAY,                BID,                V   )*/
-#define TLB_ENTRY_CACHE_ON    MMU_TLB_ENTRY(  0x000,  0x40000,    0x40000,    MMU_TLBE_DSIZ_1GB,      0b0,    0b0,    0b0,    0b0,    0b1,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
+#define TLB_ENTRY_CACHE_ON    MMU_TLB_ENTRY(  0x000,  0x40000,    0x40000,    MMU_TLBE_DSIZ_1GB,      0b1,    0b1,    0b0,    0b0,    0b1,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
 static const tlb_entry em_tlb_entry_cache_on = {TLB_ENTRY_CACHE_ON};
 
 extern void working_function(uint32_t** addr, uint32_t length_in_words);
@@ -59,15 +59,15 @@ int main()
 {
     uint32_t* rdf_buf[9];
     uint32_t* wdf_buf;
-    register uint32_t current_word;
-    register uint32_t rdf0_word;
-    register uint32_t rdf1_word;
-    register uint32_t rdf2_word;
-    register uint32_t rdf3_word;
-    register uint32_t rdf4_word;
-    register uint32_t rdf5_word;
-    register uint32_t rdf6_word;
-    register uint32_t rdf7_word;
+//    register uint32_t current_word;
+//    register uint32_t rdf0_word;
+//    register uint32_t rdf1_word;
+//    register uint32_t rdf2_word;
+//    register uint32_t rdf3_word;
+//    register uint32_t rdf4_word;
+//    register uint32_t rdf5_word;
+//    register uint32_t rdf6_word;
+//    register uint32_t rdf7_word;
 //    register uint32_t rdf0_addr;
     uint32_t  result = 0;
     emi_init(DCR_EM2_EMI_BASE);
@@ -92,93 +92,93 @@ int main()
     msync();
     isync();
     working_function(rdf_buf, (sizeof(test_data) >> 2));
-    for(uint32_t addr = 0; addr < sizeof(test_data); addr += 4)
-    {
-        current_word = ioread32((uint32_t)(test_data + addr));
+//    for(uint32_t addr = 0; addr < sizeof(test_data); addr += 4)
+//    {
+//        current_word = ioread32((uint32_t)(test_data + addr));
+////        asm(
+//////                ".align 16\n\t"
+////                "lwzux %0, %1, %2 \n\t"
+////                : "=r"(rdf0_word)
+////                : "r"(addr),
+////                  "r"(rdf0_addr)
+////        );
 //        asm(
-////                ".align 16\n\t"
-//                "lwzux %0, %1, %2 \n\t"
-//                : "=r"(rdf0_word)
+//                ".align 4\n\t"
+//                "lwzux %0, %8, %9 \n\t"
+//                "lwzux %1, %8, %10\n\t"
+//                "lwzux %2, %8, %11\n\t"
+//                "lwzux %3, %8, %12\n\t"
+//                "lwzux %4, %8, %13\n\t"
+//                "lwzux %5, %8, %14\n\t"
+//                "lwzux %6, %8, %15\n\t"
+//                "lwzux %7, %8, %16\n\t"
+//                : "=r"(rdf0_word),
+//                  "=r"(rdf1_word),
+//                  "=r"(rdf2_word),
+//                  "=r"(rdf3_word),
+//                  "=r"(rdf4_word),
+//                  "=r"(rdf5_word),
+//                  "=r"(rdf6_word),
+//                  "=r"(rdf7_word)
 //                : "r"(addr),
-//                  "r"(rdf0_addr)
+//                  "r"(rdf_buf[0]),
+//                  "r"(rdf_buf[1]),
+//                  "r"(rdf_buf[2]),
+//                  "r"(rdf_buf[3]),
+//                  "r"(rdf_buf[4]),
+//                  "r"(rdf_buf[5]),
+//                  "r"(rdf_buf[6]),
+//                  "r"(rdf_buf[7])
 //        );
-        asm(
-                ".align 4\n\t"
-                "lwzux %0, %8, %9 \n\t"
-                "lwzux %1, %8, %10\n\t"
-                "lwzux %2, %8, %11\n\t"
-                "lwzux %3, %8, %12\n\t"
-                "lwzux %4, %8, %13\n\t"
-                "lwzux %5, %8, %14\n\t"
-                "lwzux %6, %8, %15\n\t"
-                "lwzux %7, %8, %16\n\t"
-                : "=r"(rdf0_word),
-                  "=r"(rdf1_word),
-                  "=r"(rdf2_word),
-                  "=r"(rdf3_word),
-                  "=r"(rdf4_word),
-                  "=r"(rdf5_word),
-                  "=r"(rdf6_word),
-                  "=r"(rdf7_word)
-                : "r"(addr),
-                  "r"(rdf_buf[0]),
-                  "r"(rdf_buf[1]),
-                  "r"(rdf_buf[2]),
-                  "r"(rdf_buf[3]),
-                  "r"(rdf_buf[4]),
-                  "r"(rdf_buf[5]),
-                  "r"(rdf_buf[6]),
-                  "r"(rdf_buf[7])
-        );
-        if(current_word != rdf0_word)
-        {
-            result = 1;
-            rumboot_printf("rdf: data mismatch: test_data[0x%x] == 0x%x, rdf_buf[0][0x%x] == 0x%x",
-                    addr,current_word, addr, rdf0_word);
-        }
-        if(current_word != rdf1_word)
-        {
-            result = 1;
-            rumboot_printf("rdf: data mismatch: test_data[0x%x] == 0x%x, rdf_buf[1][0x%x] == 0x%x",
-                    addr,current_word, addr, rdf1_word);
-        }
-        if(current_word != rdf2_word)
-        {
-            result = 1;
-            rumboot_printf("rdf: data mismatch: test_data[0x%x] == 0x%x, rdf_buf[2][0x%x] == 0x%x",
-                    addr,current_word, addr, rdf2_word);
-        }
-        if(current_word != rdf3_word)
-        {
-            result = 1;
-            rumboot_printf("rdf: data mismatch: test_data[0x%x] == 0x%x, rdf_buf[3][0x%x] == 0x%x",
-                    addr,current_word, addr, rdf3_word);
-        }
-        if(current_word != rdf4_word)
-        {
-            result = 1;
-            rumboot_printf("rdf: data mismatch: test_data[0x%x] == 0x%x, rdf_buf[4][0x%x] == 0x%x",
-                    addr,current_word, addr, rdf4_word);
-        }
-        if(current_word != rdf5_word)
-        {
-            result = 1;
-            rumboot_printf("rdf: data mismatch: test_data[0x%x] == 0x%x, rdf_buf[5][0x%x] == 0x%x",
-                    addr,current_word, addr, rdf5_word);
-        }
-        if(current_word != rdf6_word)
-        {
-            result = 1;
-            rumboot_printf("rdf: data mismatch: test_data[0x%x] == 0x%x, rdf_buf[6][0x%x] == 0x%x",
-                    addr,current_word, addr, rdf6_word);
-        }
-        if(current_word != rdf7_word)
-        {
-            result = 1;
-            rumboot_printf("rdf: data mismatch: test_data[0x%x] == 0x%x, rdf_buf[7][0x%x] == 0x%x",
-                    addr,current_word, addr, rdf7_word);
-        }
-    }
+//        if(current_word != rdf0_word)
+//        {
+//            result = 1;
+//            rumboot_printf("rdf: data mismatch: test_data[0x%x] == 0x%x, rdf_buf[0][0x%x] == 0x%x",
+//                    addr,current_word, addr, rdf0_word);
+//        }
+//        if(current_word != rdf1_word)
+//        {
+//            result = 1;
+//            rumboot_printf("rdf: data mismatch: test_data[0x%x] == 0x%x, rdf_buf[1][0x%x] == 0x%x",
+//                    addr,current_word, addr, rdf1_word);
+//        }
+//        if(current_word != rdf2_word)
+//        {
+//            result = 1;
+//            rumboot_printf("rdf: data mismatch: test_data[0x%x] == 0x%x, rdf_buf[2][0x%x] == 0x%x",
+//                    addr,current_word, addr, rdf2_word);
+//        }
+//        if(current_word != rdf3_word)
+//        {
+//            result = 1;
+//            rumboot_printf("rdf: data mismatch: test_data[0x%x] == 0x%x, rdf_buf[3][0x%x] == 0x%x",
+//                    addr,current_word, addr, rdf3_word);
+//        }
+//        if(current_word != rdf4_word)
+//        {
+//            result = 1;
+//            rumboot_printf("rdf: data mismatch: test_data[0x%x] == 0x%x, rdf_buf[4][0x%x] == 0x%x",
+//                    addr,current_word, addr, rdf4_word);
+//        }
+//        if(current_word != rdf5_word)
+//        {
+//            result = 1;
+//            rumboot_printf("rdf: data mismatch: test_data[0x%x] == 0x%x, rdf_buf[5][0x%x] == 0x%x",
+//                    addr,current_word, addr, rdf5_word);
+//        }
+//        if(current_word != rdf6_word)
+//        {
+//            result = 1;
+//            rumboot_printf("rdf: data mismatch: test_data[0x%x] == 0x%x, rdf_buf[6][0x%x] == 0x%x",
+//                    addr,current_word, addr, rdf6_word);
+//        }
+//        if(current_word != rdf7_word)
+//        {
+//            result = 1;
+//            rumboot_printf("rdf: data mismatch: test_data[0x%x] == 0x%x, rdf_buf[7][0x%x] == 0x%x",
+//                    addr,current_word, addr, rdf7_word);
+//        }
+//    }
 
     return result;
 }
