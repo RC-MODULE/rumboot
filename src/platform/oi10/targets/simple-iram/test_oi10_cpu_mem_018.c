@@ -1316,6 +1316,8 @@ int main()
 
     test_event_send_test_id("test_oi10_cpu_mem_018");
 
+    rumboot_memfill8_modelling((void*)SRAM0_BASE, 0x8000, 0x00, 0x00); //workaround (init 32KB SRAM0)
+
     static const tlb_entry tlb_entries[] =
        {
         {TLB_ENTRY0_INV}, {TLB_ENTRY1_INV}, {TLB_ENTRY2_INV}, {TLB_ENTRY3_INV},
