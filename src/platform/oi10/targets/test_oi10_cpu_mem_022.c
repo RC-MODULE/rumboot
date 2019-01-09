@@ -9,6 +9,7 @@
 #include <platform/devices/emi.h>
 #include <rumboot/rumboot.h>
 #include <platform/arch/ppc/ppc_476fp_mmu.h>
+#include <platform/test_event_c.h>
 
 static uint32_t test_data[] =
 {
@@ -44,12 +45,19 @@ static uint32_t test_data[] =
 };
 
 /*                            MMU_TLB_ENTRY(  ERPN,   RPN,        EPN,        DSIZ,                   IL1I,   IL1D,   W,      I,      M,      G,      E,                      UX, UW, UR,     SX, SW, SR      DULXE,  IULXE,      TS,     TID,                WAY,                BID,                V   )*/
-#define TLB_ENTRY_CACHE_ON    MMU_TLB_ENTRY(  0x000,  0x40000,    0x40000,    MMU_TLBE_DSIZ_1GB,      0b1,    0b1,    0b0,    0b0,    0b1,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
+#define TLB_ENTRY_CACHE_ON    MMU_TLB_ENTRY(  0x000,  0x40000,    0x40000,    MMU_TLBE_DSIZ_1GB,      0b0,    0b0,    0b0,    0b0,    0b1,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
 static const tlb_entry em_tlb_entry_cache_on = {TLB_ENTRY_CACHE_ON};
+
+extern void working_function(uint32_t** addr, uint32_t length_in_words);
+//{
+//    for(int i = 0; i < 10; ++i)
+//        msync();
+//    return;
+//}
 
 int main()
 {
-    uint32_t* rdf_buf[8];
+    uint32_t* rdf_buf[9];
     uint32_t* wdf_buf;
     register uint32_t current_word;
     register uint32_t rdf0_word;
@@ -63,12 +71,15 @@ int main()
 //    register uint32_t rdf0_addr;
     uint32_t  result = 0;
     emi_init(DCR_EM2_EMI_BASE);
+    rumboot_memfill8_modelling((void*)SRAM0_BASE,0x1000,0,0);
+
     for(uint32_t i = 0; i < 8; ++i)
     {
         rdf_buf[i] = rumboot_malloc_from_named_heap_aligned("SSRAM", sizeof(test_data), 64);
         if((rdf_buf[i] == NULL))
             return 1;
     }
+    rdf_buf[8] = test_data;
 //    rdf0_addr = (uint32_t)rdf_buf[0];
     wdf_buf = rumboot_malloc_from_named_heap_aligned("SSRAM", sizeof(test_data), 64);
     if( (wdf_buf == NULL))
@@ -80,6 +91,7 @@ int main()
     write_tlb_entries(&em_tlb_entry_cache_on, 1);
     msync();
     isync();
+    working_function(rdf_buf, (sizeof(test_data) >> 2));
     for(uint32_t addr = 0; addr < sizeof(test_data); addr += 4)
     {
         current_word = ioread32((uint32_t)(test_data + addr));
