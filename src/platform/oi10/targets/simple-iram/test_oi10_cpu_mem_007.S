@@ -336,14 +336,8 @@ test_oi10_cpu_mem_007:
 
     rumboot_putstring "TEST_DCU_LRU_DBUS dcu_lru_array_data\n"
     TEST_DCU_LRU_DBUS 0, dcu_lru_array_data
-
-    //rumboot_putstring "TEST_DCU_LRU_DBUS dcu_lru_array_data 1\n"
     TEST_DCU_LRU_DBUS 1, dcu_lru_array_data
-
-    //rumboot_putstring "TEST_DCU_LRU_DBUS dcu_lru_array_data 2\n"
     TEST_DCU_LRU_DBUS 2, dcu_lru_array_data
-
-    //rumboot_putstring "TEST_DCU_LRU_DBUS dcu_lru_array_data 3\n"
     TEST_DCU_LRU_DBUS 3, dcu_lru_array_data
 
 test_ok:
