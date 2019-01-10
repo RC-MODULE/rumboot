@@ -87,7 +87,8 @@ int main()
 
     for(uint32_t i = 0; i < COUNT_AREAS ; ++i)
     {
-        memcpy(rdf_buf[i],test_data, sizeof(test_data));
+        rumboot_memfill8(rdf_buf[i], sizeof(test_data), (uint8_t)(i & 0xFF), 0);
+//        memcpy(rdf_buf[i],test_data, sizeof(test_data));
     }
 //    rdf_buf[COUNT_AREAS - 1] = test_data;
     write_tlb_entries(&em_tlb_entry_cache_on, 1);
