@@ -24,12 +24,14 @@
 #include <platform/regs/regs_l2c_l2.h>
 #include <platform/regs/fields/emi.h>
 
+#include <platform/interrupts.h>
+
+#define NOR_SELFCHECKING_DISABLE 1
 #include <platform/devices.h>
 #include <platform/devices/plb6mcif2.h>
 #include <platform/devices/emi.h>
 #include <platform/devices/l2c.h>
-
-#include <platform/interrupts.h>
+#include <platform/devices/nor_1636RR4.h>
 
 
 /* Integer constant macros */
@@ -53,6 +55,7 @@
 #define EMI_BITS_D24_D31        EMI_WECR_BWE3_i
 #define EMI_BITS_ED0_ED7        EMI_WECR_BWE4_i
 #define IRR_RST_ALL             0x0001FFFF
+#define ECC_CTRL_MASK           0x03
 #define IRR_RST_SINGLE          ((1 << EMI_IMR_ME1B0_i)  |  \
                                  (1 << EMI_IMR_ME1B1_i)  |  \
                                  (1 << EMI_IMR_ME1B2_i)  |  \
@@ -85,8 +88,9 @@
 
 /* Config */
 /*                      ENABLED BANK -> |0|1|2|3|4|5| */
-#define ENABLED_EM_BANKS        EMBANKS( 1,1,1,1,1,0 )
-#define CHECK_OFFSET            0x00000100
+#define ENABLED_EM_BANKS        EMBANKS( 1,1,1,1,1,1 )
+#define DEFAULT_OFFSET          0x00000100
+#define CHECK_OFFSET            offset
 #define CHECK_OFFSET8           (CHECK_OFFSET + ((2 * 4) + 3))
 #define CHECK_OFFSET16          (CHECK_OFFSET + ((3 * 4) + 2))
 #define CHECK_OFFSET32          CHECK_OFFSET
@@ -111,6 +115,7 @@
 #define EMI_READ(ADDR)          dcr_read (EMIA(ADDR))
 #define EMI_WRITE(ADDR,DATA)    dcr_write(EMIA(ADDR),(DATA))
 #define EMI_TYPE(BANK)          emi_get_bank_cfg_cached(bank)->ssx_cfg.BTYP
+#define GEN_ECC(VAL)            calc_hamming_ecc(reverse_bytes32(VAL))
 #define GET_BANK_SS(BANK)       ((EMI_REG)(emi_ss[(BANK)]))
 #define GET_TRDY(SSI)           (((SSI) & EMI_TRDY_MASK) >> EMI_SSx_T_RDY_i)
 #define SET_TRDY(SSI,TRDY)      ((((SSI) | BIT(EMI_SSx_SRDY_i)) & ~EMI_TRDY_MASK)  | \
@@ -131,6 +136,7 @@
 #define IS_SDRAM(BANK)          (EMI_TYPE(BANK) == BTYP_SDRAM)
 #define IS_SSRAM(BANK)          (EMI_TYPE(BANK) == BTYP_SSRAM)
 #define IS_SRAM(BANK)           (EMI_TYPE(BANK) == BTYP_SSRAM)
+#define IS_NOT_NOR(BANK)        (EMI_TYPE(BANK) != BTYP_NOR)
 #define IS_NOT_SDRAM(BANK)      (EMI_TYPE(BANK) != BTYP_SDRAM)
 #define IS_NOT_SSRAM(BANK)      (EMI_TYPE(BANK) != BTYP_SSRAM)
 #define IS_NOT_SRAM(BANK)       (EMI_TYPE(BANK) != BTYP_SRAM)
@@ -227,6 +233,16 @@ static const char *btyp_descr[8] =
         "PIPELINE", "UNKNOWN5", "SDRAM",    "UNKNOWN7"
     };
 
+static void (*writer32)(uint32_t, uint32_t) = NULL;
+
+inline static uint32_t reverse_bytes32(uint32_t data)
+{
+    return  ((data & 0xFF000000) >> 0x18) |
+            ((data & 0x00FF0000) >> 0x08) |
+            ((data & 0x0000FF00) << 0x08) |
+            ((data & 0x000000FF) << 0x18) ;
+}
+
 int is_irq(void)
 {
     int r, i;
@@ -245,9 +261,14 @@ void clear_all_irqs(void)
 
 volatile uint32_t emi_switch_bank(uint32_t bank)
 {
+    uint32_t offset = DEFAULT_OFFSET;
 #ifdef CMAKE_BUILD_TYPE_DEBUG
-    memset( (void*)CHECK_ADDR32(bank), 0x00, 16*sizeof(uint32_t) ); /* Anti-X */
-    msync();
+    if(IS_NOT_NOR(bank))
+    {
+        memset(CAST_ADDR(CHECK_ADDR32(bank)),
+                0, 16 * sizeof(uint32_t)); /* Anti-X */
+        msync();
+    }
 #endif
     return ioread32(CHECK_ADDR32(bank)); /* Switch bank */
 }
@@ -294,7 +315,8 @@ void emi_irq_handler( int irq, void *arg )
                 if(cnt == inf->cmpv)
                 {
                     rumboot_printf(
-                            " Ooops! In bank %d"
+                            "IRQ handler says>"
+                            " Ooops! In bank #%d"
                             " error counter is %d"
                             " -- clear it!\n",
                             ((uint32_t)(inf->bank)),
@@ -427,6 +449,7 @@ DEFINE_CHECK(rfc)   /* 2.2.1 */
     uint32_t  rfc_saved = 0,
               cnt       = 0,
               result    = 0,
+              offset    = DEFAULT_OFFSET,
               status    = TEST_OK;
     uint32_t *rfcp      = NULL;
     vuint8_t  readed8   = 0;
@@ -518,6 +541,7 @@ DEFINE_CHECK(rfc)   /* 2.2.1 */
 DEFINE_CHECK(hstsr_ecc_on)  /* 2.2.2 */
 {
     uint32_t     hstsr,
+                 offset = DEFAULT_OFFSET,
                  result = TEST_OK,
                  status = TEST_OK;
     volatile
@@ -635,6 +659,7 @@ DEFINE_CHECK(hstsr_ecc_on)  /* 2.2.2 */
 DEFINE_CHECK(hstsr_ecc_off) /* 2.2.3 */
 {
     uint32_t     hstsr,
+                 offset = DEFAULT_OFFSET,
                  result = TEST_OK,
                  status = TEST_OK;
     volatile
@@ -764,6 +789,7 @@ DEFINE_CHECK(hstsr_ecc_off_nor) /* 2.2.3 for NOR */
 DEFINE_CHECK(error_counter) /* 2.2.4 */
 {
     uint32_t status = TEST_OK,
+             offset = DEFAULT_OFFSET,
              eccsta = 0,
              datsta = 0,
              cntsta = 0,
@@ -777,11 +803,6 @@ DEFINE_CHECK(error_counter) /* 2.2.4 */
              cntval = 0,
              cntexp = 0;
 
-    if(IS_NOR(bank))
-    {
-        rumboot_printf("NOR RAM is not supported, skipping it.\n");
-        return TEST_OK;
-    }
     tmp ^= tmp; /* Prevent compiler warning */
 
     emi_switch_bank(bank);
@@ -794,16 +815,31 @@ DEFINE_CHECK(error_counter) /* 2.2.4 */
     /* Make single error */
     rumboot_printf(" +++ Make single error...\n");
     clear_all_irqs();
-    rumboot_printf("Writing 0x%X to 0x%X...\n",
-            CHECK_CONST ^ MK_ERR_1, CHECK_ADDR(bank));
-    iowrite32(CHECK_CONST ^ MK_ERR_1, CHECK_ADDR(bank));
-    msync();
-    tmp = EMI_READ(EMI_WECR);
-    EMI_WRITE(EMI_WECR, EMI_READ(EMI_WECR) | BIT(EMI_BITS_D24_D31));
-    rumboot_printf("Writing 0x%X to 0x%X...\n",
-            CHECK_CONST, CHECK_ADDR(bank));
-    iowrite32(CHECK_CONST, CHECK_ADDR(bank));
-    msync();
+    if(IS_NOR(bank))
+    {
+        rumboot_printf( "This bank type is NOR! "
+                        "Using alternative write method.\n");
+        EMI_WRITE(EMI_ECCWRR, CHECK_ECC_CODE);
+        EMI_WRITE(EMI_FLCNTRL,
+                (EMI_READ(EMI_FLCNTRL) & ~ECC_CTRL_MASK)
+                | ECC_CTRL_CNT_ECCWRR);
+        rumboot_printf("Writing 0x%X to NOR at 0x%X...\n",
+                CHECK_CONST ^ MK_ERR_1, CHECK_ADDR(bank));
+        nor_write32(CHECK_CONST ^ MK_ERR_1, CHECK_ADDR(bank));
+        // msync();
+    } else
+    {
+        rumboot_printf("Writing 0x%X to 0x%X...\n",
+                CHECK_CONST ^ MK_ERR_1, CHECK_ADDR(bank));
+        iowrite32(CHECK_CONST ^ MK_ERR_1, CHECK_ADDR(bank));
+        // msync();
+        tmp = EMI_READ(EMI_WECR);
+        EMI_WRITE(EMI_WECR, EMI_READ(EMI_WECR) | BIT(EMI_BITS_D24_D31));
+        rumboot_printf("Writing 0x%X to 0x%X...\n",
+                CHECK_CONST, CHECK_ADDR(bank));
+        iowrite32(CHECK_CONST, CHECK_ADDR(bank));
+        // msync();
+    }
     tmp = EMI_READ(EMI_WECR);
     EMI_WRITE(EMI_WECR, 0);
     rumboot_printf("Reading from 0x%X in iterations...\n", CHECK_ADDR(bank));
@@ -853,6 +889,7 @@ DEFINE_CHECK(single_interrupts) /* 2.2.5 */
     uint32_t hstsr,
              ssi,
              imr,
+             offset = DEFAULT_OFFSET,
              result = TEST_OK,
              status = TEST_OK;
     volatile
@@ -983,6 +1020,7 @@ DEFINE_CHECK(double_interrupts) /* 2.2.6 */
     uint32_t hstsr,
              ssi,
              imr,
+             offset = DEFAULT_OFFSET,
              result = TEST_OK,
              status = TEST_OK;
     volatile
@@ -1135,6 +1173,7 @@ int main(void)
             /* Reset interrupts */
             clear_all_irqs();
             EMI_WRITE(EMI_IRR_RST, IRR_RST_ALL);
+            writer32 = iowrite32;
             test_result = test->test(test, bank);
             rumboot_printf("%s!\n\n", test_result ? "Fail" : "Success");
             test_status |= test_result;
