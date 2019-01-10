@@ -22,6 +22,10 @@ working_function:
     lwz     r16, 24(r3)
     lwz     r17, 28(r3)
     lwz     r18, 32(r3)
+    lwz     r9,  36(r3)
+    lwz     r8,  40(r3)
+//    lwz     r7,  44(r3)
+
     addi    r10, r10, -4
     addi    r11, r11, -4
     addi    r12, r12, -4
@@ -31,6 +35,9 @@ working_function:
     addi    r16, r16, -4
     addi    r17, r17, -4
     addi    r18, r18, -4
+    addi    r9 , r9 , -4
+    addi    r8 , r8 , -4
+//    addi    r7 , r7 , -4
     mtctr   r4
 
     msync
@@ -40,11 +47,16 @@ loop:
     lwzu     r20, 4(r11)
     lwzu     r21, 4(r12)
     lwzu     r22, 4(r13)
+
     lwzu     r23, 4(r14)
     lwzu     r24, 4(r15)
     lwzu     r25, 4(r16)
     lwzu     r26, 4(r17)
+
     lwzu     r27, 4(r18)
+    lwzu     r19, 4(r9 )
+    lwzu     r20, 4(r8 )
+//    lwzu     r21, 4(r7 )
     bdnz    loop
 //stack restore
     addi    r11,r31,16
