@@ -269,9 +269,7 @@ void check_emi(const uint32_t base_address)
 
 int main()
 {
-    //workaround (init 4KB SRAM0)
-    test_event_send_test_id("test_oi10_em2_101");
-    test_event ( EVENT_INIT_SRAM0 );
+    rumboot_memfill8_modelling((void*)SRAM0_BASE, 0x1000, 0x00, 0x00); //workaround (init 4KB SRAM0)
 
     rumboot_printf("\nCHECK PLB6MCIF2\n\n");
     check_plb6mcif2 (DCR_EM2_PLB6MCIF2_BASE);

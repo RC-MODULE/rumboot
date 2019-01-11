@@ -22,9 +22,9 @@
 #define SRAM0_OFFSET_1 0x1000
 #define SRAM0_OFFSET_2 0x2000
 
-void check_sram0_8 (const uint32_t addr)
+void check_sram0_8 (uint32_t const addr)
 {
-    uint8_t check_arr8[] =
+    static uint8_t const check_arr8[] =
     {
         [0] = 0x00,
         [1] = 0x11,
@@ -66,6 +66,7 @@ void check_sram0_8 (const uint32_t addr)
     {
         iowrite8 (check_arr8[i], addr + i);
     }
+    msync();
 
     //read
     for (i = 0; i < 32; i++)
@@ -74,9 +75,9 @@ void check_sram0_8 (const uint32_t addr)
     }
 }
 
-void check_sram0_16 (const uint32_t addr)
+void check_sram0_16 (uint32_t const addr)
 {
-    uint16_t check_arr16[] =
+    static uint16_t const check_arr16[] =
     {
         [0] = 0x0000,
         [1] = 0x1111,
@@ -101,6 +102,7 @@ void check_sram0_16 (const uint32_t addr)
     {
         iowrite16 (check_arr16[i], addr + i*2);
     }
+    msync();
 
     //read
     for (i = 0; i < 16; i++)
@@ -109,9 +111,9 @@ void check_sram0_16 (const uint32_t addr)
     }
 }
 
-void check_sram0_32 (uint32_t addr)
+void check_sram0_32 (uint32_t const addr)
 {
-    uint32_t check_arr32[] =
+    static uint32_t const check_arr32[] =
     {
         [0] = 0x00000000,
         [1] = 0x11111111,
@@ -128,6 +130,7 @@ void check_sram0_32 (uint32_t addr)
     {
         iowrite32 (check_arr32[i], addr + i*4);
     }
+    msync();
 
     //read
     for (i = 0; i < 8; i++)
@@ -136,9 +139,9 @@ void check_sram0_32 (uint32_t addr)
     }
 }
 
-void check_sram0_64 (uint32_t addr)
+void check_sram0_64 (uint32_t const addr)
 {
-    uint64_t check_arr64[] =
+    static uint64_t const check_arr64[] =
     {
         [0] = 0x0011223344556677ULL,
         [1] = 0x8899aabbccddeeffULL,
@@ -151,6 +154,7 @@ void check_sram0_64 (uint32_t addr)
     {
         iowrite64 (check_arr64[i], addr + i * 8);
     }
+    msync();
 
     //read
     for (i = 0; i < 4; i++)
