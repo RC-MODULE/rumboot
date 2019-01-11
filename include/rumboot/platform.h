@@ -244,20 +244,6 @@ void rumboot_platform_sv_event(const char *name);
 void* rumboot_memfill8(void *addr, size_t sz, uint8_t val, int8_t incr);
 
 /**
- * The function fills memory sequentially with val that is incremented each time by incr s
- * tarting from address pointed by addr until all sz bytes are filled.
- * The function is intended for usage only with a model for providing anti-x workaround.
- * If RUMBOOT_PRINTF_ACCEL is not defined, the function is nop.
- *
- * @param  addr start address
- * @param  sz   count of bytes
- * @param  val  starting value
- * @param  incr increment
- * @return      pointer to the start of the filled area
- */
-void rumboot_memfill8_modelling(void *addr, size_t sz, uint8_t val, int8_t incr);
-
-/**
  * Returns 64-bit physical address from a virtual 32-bit
  * address on ppc platforms. On ARM just platforms returns
  * the addr cast to 64-bit.
