@@ -189,11 +189,3 @@ __attribute__((no_instrument_function)) int rumboot_memfill32(void *addr, size_t
 
 #endif
 
-__attribute__((no_instrument_function))
-void rumboot_memfill8_modelling(void *addr, size_t sz, uint8_t val, int8_t incr)
-{
-#ifdef RUMBOOT_PRINTF_ACCEL
-    rumboot_memfill8(addr, sz, val, incr);
-#endif
-    return;
-}
