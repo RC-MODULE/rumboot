@@ -43,20 +43,40 @@ working_function:
     msync
 .align 4
 loop:
-    lwzu     r19, 4(r10)
-    lwzu     r20, 4(r11)
-    lwzu     r21, 4(r12)
-    lwzu     r22, 4(r13)
+    lwzu    r19, 4(r10)
+    mfctr   r4
+    andi.   r5, r4, 1
+    bne     odd
+    andi.   r5, r4, 4
+    bne     it_is_three_or_two
 
-    lwzu     r23, 4(r14)
-    lwzu     r24, 4(r15)
-    lwzu     r25, 4(r16)
-    lwzu     r26, 4(r17)
+.align 8
+    lwzu    r20, 4(r11)
+    lwzu    r21, 4(r12)
+    andi.   r5, r4, 2
+    bne     it_is_two
 
-    lwzu     r27, 4(r18)
-    lwzu     r19, 4(r9 )
-    lwzu     r20, 4(r8 )
-//    lwzu     r21, 4(r7 )
+.align 8
+    lwzu    r22, 4(r13)
+    lwzu    r23, 4(r14)
+
+    lwzu    r24, 4(r15)
+    lwzu    r25, 4(r16)
+
+.align 8
+odd:
+//zero or odd
+    lwzu    r26, 4(r17)
+    lwzu    r27, 4(r18)
+    andi.   r5, r4, 2
+    bne     it_is_three_or_two
+
+.align 8
+    lwzu    r19, 4(r9 )
+//    lwzu    r21, 4(r7 )
+it_is_three_or_two:
+    lwzu    r20, 4(r8 )
+it_is_two:
     bdnz    loop
 //stack restore
     addi    r11,r31,16
