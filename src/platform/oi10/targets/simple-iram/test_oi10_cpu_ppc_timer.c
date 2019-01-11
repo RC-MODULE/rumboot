@@ -83,6 +83,9 @@ int check_from_CPU_CLK()
 
     spr_write(SPR_CCR1,CTRL_CCR1_TSS_CPU_clock << CTRL_CCR1_TSS_i);
 
+    spr_write(SPR_DEC, 0);
+    spr_write(SPR_DECAR, 0);
+
     test_event(TEC_START_CHECK_FREQUENCY_CPU_CLK);
     test_event(TEC_START_CHECK_DEC_MODE_CPU_CLK);
     test_event(TEC_START_CHECK_FIX_MODE_CPU_CLK);
@@ -129,6 +132,9 @@ int check_from_EXT_CLK()
     WD_cnt  = 0;
 
     spr_write(SPR_CCR1,CTRL_CCR1_TSS_alt_clock << CTRL_CCR1_TSS_i);
+
+    spr_write(SPR_DEC, 0);
+    spr_write(SPR_DECAR, 0);
 
     test_event(TEC_START_CHECK_FREQUENCY_CPU_CLK_4);
     test_event(TEC_START_CHECK_DEC_MODE_CPU_CLK_4);
