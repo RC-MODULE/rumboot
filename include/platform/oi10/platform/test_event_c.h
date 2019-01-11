@@ -24,4 +24,26 @@ static inline __attribute__((always_inline)) void test_event_send_test_id( char 
 }
 
 
+/**
+ * The function fills memory sequentially with val that is incremented each time by incr s
+ * tarting from address pointed by addr until all sz bytes are filled.
+ * The function is intended for usage only with a model for providing anti-x workaround.
+ * If RUMBOOT_PRINTF_ACCEL is not defined, the function is nop.
+ *
+ * @param  addr start address
+ * @param  sz   count of bytes
+ * @param  val  starting value
+ * @param  incr increment
+ * @return      pointer to the start of the filled area
+ */
+static inline __attribute__((no_instrument_function))
+void rumboot_memfill8_modelling(void *addr, size_t sz, uint8_t val, int8_t incr)
+{
+#ifdef RUMBOOT_PRINTF_ACCEL
+    rumboot_memfill8(addr, sz, val, incr);
+#endif
+    return;
+}
+
+
 #endif /* TEST_EVENT_C_H_ */
