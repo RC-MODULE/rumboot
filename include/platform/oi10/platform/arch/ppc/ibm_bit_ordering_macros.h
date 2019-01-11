@@ -14,5 +14,8 @@
 #define reg_field(field_right_bit_num_from_ppc_user_manual, value)\
     ((value) << IBM_BIT_INDEX( 32, field_right_bit_num_from_ppc_user_manual ))
 
+#define reg_field64(field_right_bit_num_from_ppc_user_manual, value)\
+    ((value) << IBM_BIT_INDEX( 64, field_right_bit_num_from_ppc_user_manual ))
+
 
 #endif /* IBM_BIT_ORDERING_MACROS_H_ */
