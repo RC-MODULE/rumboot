@@ -26,9 +26,19 @@
                       //MMU_TLB_ENTRY(  ERPN,   RPN,        EPN,        DSIZ,                   IL1I,   IL1D,    W,      I,      M,      G,        E,                   UX, UW, UR,     SX, SW, SR      DULXE,  IULXE,      TS,      TID,               WAY,                BID,                V   )
 #define TLB_ENTRY_WB    MMU_TLB_ENTRY(  0x000,  0x00000,    0x00000,    MMU_TLBE_DSIZ_1GB,      0b0,    0b0,    0b0,    0b0,    0b1,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
 
+#define START_ADDR      SRAM0_BASE
 #define DATA_SIZE       0x8000 // 32KB
 #define WORD_NUM        0x400  // 1024 (DATA_SIZE/32)
+#define CACHE_LINE_SIZE 32     // L1
 #define GET_DATA(x)     ((x << 16) + x)
+
+void init_test_data (void)
+{
+    memset(START_ADDR, 0x00, DATA_SIZE);
+    for (uint32_t ind = 0, addr = START_ADDR; ind < WORD_NUM; ind++ , addr += CACHE_LINE_SIZE)
+        iowrite32(GET_DATA(ind), addr);
+    msync();
+}
 
 int main (void)
 {
@@ -36,22 +46,19 @@ int main (void)
     emi_init(DCR_EM2_EMI_BASE);
 
     rumboot_printf("Init data\n");
-    memset(SRAM0_BASE, 0x00, DATA_SIZE);
     //1024 words, align 32
-    for (uint32_t ind = 0, addr = SRAM0_BASE; ind < WORD_NUM; ind++ , addr += 32)
-        iowrite32(GET_DATA(ind), addr);
-    msync();
+    init_test_data();
     rumboot_printf("Data initialized\n");
 
     rumboot_printf("Set tlb (l1, l2 cache on)\n");
     static const tlb_entry sram0_tlb_entry_write_back = {TLB_ENTRY_WB};
     write_tlb_entries(&sram0_tlb_entry_write_back, 1);
 
-    rumboot_printf("Read, modification and check with dcread\n");
+    rumboot_printf("Read, modification, write and check with dcread\n");
     rumboot_printf("Number of words = 0x%x\n", WORD_NUM);
-    for (uint32_t ind = 0, addr = SRAM0_BASE; ind < WORD_NUM; ind++ , addr += 32)
+    for (uint32_t ind = 0, addr = START_ADDR; ind < WORD_NUM; ind++ , addr += CACHE_LINE_SIZE)
     {
-        rumboot_printf("word = %x\n", ind);
+        rumboot_printf("word = %x, addr = %x\n", ind, addr);
         //read and modification
         uint32_t exp_data = ~(ioread32(addr)),
                  act_data = 0x00;
@@ -67,7 +74,7 @@ int main (void)
                  reg_DCDBTRL = spr_read(SPR_DCDBTRL);
 
         TEST_ASSERT( exp_data == act_data,                "TEST ERROR: Invalid cache data");
-        TEST_ASSERT( (reg_DCDBTRH >> 13) == (addr >> 13), "TEST_ERROR: Invalid tag addr in DCDBTRH");
+        TEST_ASSERT( (reg_DCDBTRH >> 13) == (addr >> 13), "TEST_ERROR: Invalid tag in DCDBTRH");
         TEST_ASSERT( (reg_DCDBTRH & 0x1000) == 0x1000,    "TEST_ERROR: Valid bit in DCDBTRH[12] not expected");
 
         /*
