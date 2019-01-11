@@ -6,8 +6,13 @@
 #include <platform/test_assert.S.h>
 #include <platform/devices.h>
 #include <platform/arch/ppc/test_macro_asm.S.h>
+/* CCR0, CCR1, CCR2 fields */
 #include <platform/arch/ppc/ppc_476fp_ctrl_fields.h>
+/* MSR fields */
+#include <platform/arch/ppc/ppc_476fp_itrpt_fields.h>
 
+
+#define reg_field32 reg_field
 
 #define VAL_MAGIC   0xBED4DEAD
 #define BEG_ADDRX   0xFFFE0000  /*      Last 64k page   */
@@ -61,40 +66,54 @@
 #define R_ZERO      r30         /* 0x00000000                       */
 #define R_ONES      r31         /* 0xFFFFFFFF                       */
 
-#define CONST_CCR0    reg_field( 0, 0b0   ) /* ITE     */ \
-                    | reg_field( 1, 0b1   ) /* PRE     */ \
-                    | reg_field( 4, 0b1   ) /* CRPE    */ \
-                    | reg_field(10, 0b0   ) /* ICS     */ \
-                    | reg_field(11, 0b0   ) /* DAPUIB  */ \
-                    | reg_field(15, 0b0000) /* ICWRIDX */ \
-                    | reg_field(16, 0b0   ) /* DTB     */ \
-                    | reg_field(23, 0b0   ) /* FLSTA   */ \
-                    | reg_field(29, 0b00  ) /* DQWPM   */ \
-                    | reg_field(30, 0b1   ) /* IQWPM   */
+#define CONST_MSR     reg_field64(ITRPT_XSR_WE_e,  0b0   )  \
+                    | reg_field64(ITRPT_XSR_CE_e,  0b1   )  \
+                    | reg_field64(ITRPT_XSR_EE_e,  0b1   )  \
+                    | reg_field64(ITRPT_XSR_PR_e,  0b0   )  \
+                    | reg_field64(ITRPT_XSR_FP_e,  0b0   )  \
+                    | reg_field64(ITRPT_XSR_ME_e,  0b1   )  \
+                    | reg_field64(ITRPT_XSR_FE0_e, 0b0   )  \
+                    | reg_field64(ITRPT_XSR_DWE_e, 0b0   )  \
+                    | reg_field64(ITRPT_XSR_DE_e,  0b0   )  \
+                    | reg_field64(ITRPT_XSR_FE1_e, 0b0   )  \
+                    | reg_field64(ITRPT_XSR_IS_e,  0b0   )  \
+                    | reg_field64(ITRPT_XSR_DS_e,  0b0   )  \
+                    | reg_field64(ITRPT_XSR_PMM_e, 0b0   )
 
-#define CONST_CCR1    reg_field( 1, 0b00  ) /* GPRPEI  */ \
-                    | reg_field( 3, 0b00  ) /* FPRPEI  */ \
-                    | reg_field( 5, 0b00  ) /* ICDPEI  */ \
-                    | reg_field( 7, 0b00  ) /* ICLPEI  */ \
-                    | reg_field( 9, 0b00  ) /* ICTPEI  */ \
-                    | reg_field(11, 0b00  ) /* DCDPEI  */ \
-                    | reg_field(13, 0b00  ) /* DCLPEI  */ \
-                    | reg_field(15, 0b00  ) /* DCTPEI  */ \
-                    | reg_field(16, 0b0   ) /* MMUTPEI */ \
-                    | reg_field(17, 0b0   ) /* MMUDPEI */ \
-                    | reg_field(19, 0b0   ) /* TSS     */ \
-                    | reg_field(21, 0b0   ) /* DPC     */ \
-                    | reg_field(23, 0b00  ) /* TCS     */
+#define CONST_CCR0    reg_field32( 0, 0b0   ) /* ITE     */ \
+                    | reg_field32( 1, 0b1   ) /* PRE     */ \
+                    | reg_field32( 4, 0b1   ) /* CRPE    */ \
+                    | reg_field32(10, 0b0   ) /* ICS     */ \
+                    | reg_field32(11, 0b0   ) /* DAPUIB  */ \
+                    | reg_field32(15, 0b0000) /* ICWRIDX */ \
+                    | reg_field32(16, 0b0   ) /* DTB     */ \
+                    | reg_field32(23, 0b0   ) /* FLSTA   */ \
+                    | reg_field32(29, 0b00  ) /* DQWPM   */ \
+                    | reg_field32(30, 0b1   ) /* IQWPM   */
 
-#define CONST_CCR2    reg_field( 1, 0b00  ) /* DSTG    */ \
-                    | reg_field( 2, 0b0   ) /* DLFPD   */ \
-                    | reg_field( 4, 0b0   ) /* DSTI    */ \
-                    | reg_field( 9, 0b0   ) /* PMUD    */ \
-                    | reg_field(11, 0b0   ) /* DCSTGW  */ \
-                    | reg_field(15, 0b0000) /* STGCTR  */ \
-                    | reg_field(16, 0b0   ) /* DISTG   */ \
-                    | reg_field(20, 0b0   ) /* SPC5C1  */ \
-                    | reg_field(21, 0b0   ) /* MCDTO   */
+#define CONST_CCR1    reg_field32( 1, 0b00  ) /* GPRPEI  */ \
+                    | reg_field32( 3, 0b00  ) /* FPRPEI  */ \
+                    | reg_field32( 5, 0b00  ) /* ICDPEI  */ \
+                    | reg_field32( 7, 0b00  ) /* ICLPEI  */ \
+                    | reg_field32( 9, 0b00  ) /* ICTPEI  */ \
+                    | reg_field32(11, 0b00  ) /* DCDPEI  */ \
+                    | reg_field32(13, 0b00  ) /* DCLPEI  */ \
+                    | reg_field32(15, 0b00  ) /* DCTPEI  */ \
+                    | reg_field32(16, 0b0   ) /* MMUTPEI */ \
+                    | reg_field32(17, 0b0   ) /* MMUDPEI */ \
+                    | reg_field32(19, 0b0   ) /* TSS     */ \
+                    | reg_field32(21, 0b0   ) /* DPC     */ \
+                    | reg_field32(23, 0b00  ) /* TCS     */
+
+#define CONST_CCR2    reg_field32( 1, 0b00  ) /* DSTG    */ \
+                    | reg_field32( 2, 0b0   ) /* DLFPD   */ \
+                    | reg_field32( 4, 0b0   ) /* DSTI    */ \
+                    | reg_field32( 9, 0b0   ) /* PMUD    */ \
+                    | reg_field32(11, 0b0   ) /* DCSTGW  */ \
+                    | reg_field32(15, 0b0000) /* STGCTR  */ \
+                    | reg_field32(16, 0b0   ) /* DISTG   */ \
+                    | reg_field32(20, 0b0   ) /* SPC5C1  */ \
+                    | reg_field32(21, 0b0   ) /* MCDTO   */
 
 #define CONST_MMUBE0  (0b0 << MMU_MMUBE0_VBE0_i) \
                     | (0b0 << MMU_MMUBE0_VBE1_i) \
@@ -170,15 +189,32 @@ rumboot_entry_point:
         load_const  \RN,    0x00000000
     .endr
 
-
+    nand        R_ONES, R_ZERO, R_ZERO
 
     rumboot_putstring "Init SPRs...\n"
+
+/* Setup interrupt/exception handler */
+    lis         R_TEMP,     exception_handler@h
+    li          R_ADDR,     exception_handler@l
+    mtspr       SPR_IVPR,   R_TEMP
+    .irp        r_ivor,                                         \
+                SPR_IVOR0,  SPR_IVOR1,  SPR_IVOR2,  SPR_IVOR3,  \
+                SPR_IVOR4,  SPR_IVOR5,  SPR_IVOR6,  SPR_IVOR7,  \
+                SPR_IVOR8,  SPR_IVOR9,  SPR_IVOR10, SPR_IVOR11, \
+                SPR_IVOR12, SPR_IVOR13, SPR_IVOR14, SPR_IVOR15
+        mtspr   \r_ivor,    R_ADDR
+    .endr
+
 /* according to User's Manual ch. 9.4 Initialization Software Requirements */
     mtspr       SPR_DBCR0, R_ZERO   /* DBCR0 clear */
 
 /* Setup DBSR */
     mfspr       R_TEMP, SPR_DBSR_RC     /* read current DBSR    */
     mtspr       SPR_DBSR_RC, R_TEMP     /* clear all valid bits */
+
+/* Setup MSR  */
+    load_const  R_TEMP, CONST_MSR
+    mtmsr       R_TEMP
 
     load_spr    R_TEMP, SPR_CCR0,   CONST_CCR0,
     load_spr    R_TEMP, SPR_CCR1,   CONST_CCR1,
@@ -214,7 +250,8 @@ rumboot_entry_point:
         mtspr   \nSPR,      R_ZERO
     .endr
 
-    .irp        nSPR,       lr,cr,ctr,xer
+    .irp        nSPR,       lr,cr,ctr,xer,          \
+                            sprg4,sprg5,sprg6,sprg7
         mt\nSPR             R_ZERO
     .endr
 
@@ -222,22 +259,17 @@ rumboot_entry_point:
     mtspr       SPR_MCSR_C, R_ONES
     mtspr       SPR_TSR_RC, R_ONES
 
-    lis         R_TEMP,     exception_handler@h
-    li          R_ADDR,     exception_handler@l
-    mtspr       SPR_IVPR,   R_TEMP
-    .irp        r_ivor,                                         \
-                SPR_IVOR0,  SPR_IVOR1,  SPR_IVOR2,  SPR_IVOR3,  \
-                SPR_IVOR4,  SPR_IVOR5,  SPR_IVOR6,  SPR_IVOR7,  \
-                SPR_IVOR8,  SPR_IVOR9,  SPR_IVOR10, SPR_IVOR11, \
-                SPR_IVOR12, SPR_IVOR13, SPR_IVOR14, SPR_IVOR15
-        mtspr   \r_ivor,    R_ADDR
-    .endr
-
     b           setup_tlb
 
 .align 4
 exception_handler:
     rumboot_putstring   "Unexpected exception!\n"
+    rumboot_putstring   "MCSR is:\n"
+    mfspr       R_TEMP, SPR_MCSR_RW
+    rumboot_puthex      R_TEMP
+    rumboot_putstring   "MCSRR0 is:\n"
+    mfspr       R_TEMP, SPR_MCSRR0
+    rumboot_puthex      R_TEMP
     clr_cr  cr6,        eq
     b       test_end
 
