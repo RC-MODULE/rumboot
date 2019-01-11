@@ -109,6 +109,16 @@ __attribute__((no_instrument_function)) void *memcpy(void *d, const void *s, siz
 	exit(1);
 }
 
+ __attribute__((no_instrument_function)) __attribute__((optimize("-O0"))) void do_memfillseq8(void *ptr, ...)
+{
+    deliver(EVENT_MEMFILL8, (uint32_t)__builtin_frame_address(0));
+}
+
+__attribute__((no_instrument_function)) __attribute__((optimize("-O0"))) void* rumboot_memfill8(void *addr, size_t sz, uint8_t val, int8_t incr)
+{
+    do_memfillseq8(addr,sz,val,incr);
+    return addr;
+}
 
 #else
 
@@ -163,6 +173,14 @@ __attribute__((no_instrument_function)) int memcmp(const void *src, const void *
     return data_ok;
 }
 
+__attribute__((no_instrument_function))
+void* rumboot_memfill8(void *addr, size_t sz, uint8_t val, int8_t incr)
+{
+    for(uint32_t current_addr = 0; current_addr < sz; ++current_addr, val+=incr)
+        iowrite8(val,current_addr);
+    return addr;
+}
+
 __attribute__((no_instrument_function)) int rumboot_memfill32(void *addr, size_t sz, int val, int incr)
 {
 	rumboot_platform_panic("NOT IMPLEMENTED");
@@ -170,3 +188,4 @@ __attribute__((no_instrument_function)) int rumboot_memfill32(void *addr, size_t
 }
 
 #endif
+

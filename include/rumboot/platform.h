@@ -56,6 +56,7 @@ enum rumboot_simulation_event {
     EVENT_MEMCHECKSEQ, /** Check that memory filled with 32-bit incrementing values */
     EVENT_GENERIC, /** Generic SystemVerilog event trigger */
     EVENT_MEMCMP, /** memcmp acceleration */
+    EVENT_MEMFILL8, /** memfill8 acceleration */
 };
 
 
@@ -229,6 +230,18 @@ void rumboot_platform_relocate_runtime(uint32_t addr);
  * @param name event name
  */
 void rumboot_platform_sv_event(const char *name);
+
+/**
+ * The function fills memory sequentially with val that is incremented each time by incr s
+ * tarting from address pointed by addr until all sz bytes are filled
+ *
+ * @param  addr start address
+ * @param  sz   count of bytes
+ * @param  val  starting value
+ * @param  incr increment
+ * @return      pointer to the start of the filled area
+ */
+void* rumboot_memfill8(void *addr, size_t sz, uint8_t val, int8_t incr);
 
 /**
  * Returns 64-bit physical address from a virtual 32-bit
