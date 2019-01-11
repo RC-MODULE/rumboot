@@ -455,8 +455,6 @@ fill_utlb_loop:
     addi        R_CNTR,     R_CNTR,     0x0001
     bne+  cr2,  fill_utlb_loop
     rumboot_putstring       "Filled.\n"
-    tlbsync
-    msync
     isync
     blr
 
