@@ -27,19 +27,28 @@
 #define reg_field32     reg_field
 
 #define VAL_MAGIC       0xBED4DEAD
-#define BEG_ADDRX       0xFFFE0000  /*      Last 64k page   */
-#define BEG_ADDR0       0xFFFE0000  /* Skip last 64k page   */
-#define END_ADDR0       0xFF000000
-#define BEG_ADDR1       0xFEFF0000  /* 11111110_11111111    */
-#define END_ADDR1       0xFE000000  /* 11111110_00000000    */
-#define BEG_ADDR2       0xFDFF0000  /* 11111101_11111111    */
-#define END_ADDR2       0xFD000000  /* 11111101_00000000    */
-#define BEG_ADDR3       0xFBFF0000  /* 11111011_11111111    */
-#define END_ADDR3       0xFB000000  /* 11111011_00000000    */
-#define PHY_ADDR0       0xFFFF0000
-#define PHY_ADDRE       0x000003FF
-#define CNT_INIT0       0x00000000
-#define CNT_INIT1       0x00000001
+
+#define BEG_ADDRA       0xFFFF0000  /* 11111111_11111111        */
+#define END_ADDRA       0xFF800000  /* 11111111_10000000        */
+/* Skip 2 entries for addresses 0x80000000-0x8001FFFF (way 0)   */
+#define BEG_ADDRB       0xFF7D0000  /* 11111111_01111101        */
+#define END_ADDRB       0xFF000000  /* 11111111_00000000        */
+
+#define BEG_ADDR1       0xFEFF0000  /* 11111110_11111111        */
+#define END_ADDR1       0xFE000000  /* 11111110_00000000        */
+
+#define BEG_ADDR2       0xFDFF0000  /* 11111101_11111111        */
+#define END_ADDR2       0xFD000000  /* 11111101_00000000        */
+
+#define BEG_ADDR3       0xFBFF0000  /* 11111011_11111111        */
+#define END_ADDR3       0xFB000000  /* 11111011_00000000        */
+
+#define PHY_ADDR0       0x80000000
+#define PHY_ADDRE       0x00000010
+
+#define CNT_INI00       0x00000000
+#define CNT_INI01       0x00000001
+#define CNT_INI82       0x00000082
 
 #define MMU_WAY_0       MMU_TLBWE_WAY_0
 #define MMU_WAY_1       MMU_TLBWE_WAY_1
@@ -79,58 +88,10 @@
 #define R_ZERO          r30         /* 0x00000000                       */
 #define R_ONES          r31         /* 0xFFFFFFFF                       */
 
-#define CONST_MSR         reg_field64(ITRPT_XSR_WE_e,  0b0   )  \
-                        | reg_field64(ITRPT_XSR_CE_e,  0b1   )  \
-                        | reg_field64(ITRPT_XSR_EE_e,  0b1   )  \
-                        | reg_field64(ITRPT_XSR_PR_e,  0b0   )  \
-                        | reg_field64(ITRPT_XSR_FP_e,  0b0   )  \
-                        | reg_field64(ITRPT_XSR_ME_e,  0b1   )  \
-                        | reg_field64(ITRPT_XSR_FE0_e, 0b0   )  \
-                        | reg_field64(ITRPT_XSR_DWE_e, 0b0   )  \
-                        | reg_field64(ITRPT_XSR_DE_e,  0b0   )  \
-                        | reg_field64(ITRPT_XSR_FE1_e, 0b0   )  \
-                        | reg_field64(ITRPT_XSR_IS_e,  0b0   )  \
-                        | reg_field64(ITRPT_XSR_DS_e,  0b0   )  \
-                        | reg_field64(ITRPT_XSR_PMM_e, 0b0   )
-
-#define CONST_CCR0        reg_field32( 0, 0b0   ) /* ITE     */ \
-                        | reg_field32( 1, 0b1   ) /* PRE     */ \
-                        | reg_field32( 4, 0b1   ) /* CRPE    */ \
-                        | reg_field32(10, 0b0   ) /* ICS     */ \
-                        | reg_field32(11, 0b0   ) /* DAPUIB  */ \
-                        | reg_field32(15, 0b0000) /* ICWRIDX */ \
-                        | reg_field32(16, 0b0   ) /* DTB     */ \
-                        | reg_field32(23, 0b0   ) /* FLSTA   */ \
-                        | reg_field32(29, 0b00  ) /* DQWPM   */ \
-                        | reg_field32(30, 0b1   ) /* IQWPM   */
-
-#define CONST_CCR1        reg_field32( 1, 0b00  ) /* GPRPEI  */ \
-                        | reg_field32( 3, 0b00  ) /* FPRPEI  */ \
-                        | reg_field32( 5, 0b00  ) /* ICDPEI  */ \
-                        | reg_field32( 7, 0b00  ) /* ICLPEI  */ \
-                        | reg_field32( 9, 0b00  ) /* ICTPEI  */ \
-                        | reg_field32(11, 0b00  ) /* DCDPEI  */ \
-                        | reg_field32(13, 0b00  ) /* DCLPEI  */ \
-                        | reg_field32(15, 0b00  ) /* DCTPEI  */ \
-                        | reg_field32(16, 0b0   ) /* MMUTPEI */ \
-                        | reg_field32(17, 0b0   ) /* MMUDPEI */ \
-                        | reg_field32(19, 0b0   ) /* TSS     */ \
-                        | reg_field32(21, 0b0   ) /* DPC     */ \
-                        | reg_field32(23, 0b00  ) /* TCS     */
-
-#define CONST_CCR2        reg_field32( 1, 0b00  ) /* DSTG    */ \
-                        | reg_field32( 2, 0b0   ) /* DLFPD   */ \
-                        | reg_field32( 4, 0b0   ) /* DSTI    */ \
-                        | reg_field32( 9, 0b0   ) /* PMUD    */ \
-                        | reg_field32(11, 0b0   ) /* DCSTGW  */ \
-                        | reg_field32(15, 0b0000) /* STGCTR  */ \
-                        | reg_field32(16, 0b0   ) /* DISTG   */ \
-                        | reg_field32(20, 0b0   ) /* SPC5C1  */ \
-                        | reg_field32(21, 0b0   ) /* MCDTO   */
 
 #define CONST_MMUBE0      (0b0 << MMU_MMUBE0_VBE0_i) \
-                        | (0b0 << MMU_MMUBE0_VBE1_i) \
-                        | (0b0 << MMU_MMUBE0_VBE2_i)
+                        | (0b1 << MMU_MMUBE0_VBE1_i) \
+                        | (0b1 << MMU_MMUBE0_VBE2_i)
 
 #define CONST_MMUBE1      (0b0 << MMU_MMUBE1_VBE3_i) \
                         | (0b0 << MMU_MMUBE1_VBE4_i) \
@@ -149,13 +110,14 @@
                         | ((                          MMU_XSPCR_ORD_END  ) << MMU_SSPCR_ORD3_i)
 
 #define FILL_ATTR       MMU_TLBE_ATTR(  1, 1,               /* IL1I, IL1D   */  \
-                                        0, 1, 0, 1,         /* W, I, M, G,  */  \
+                                        0, 1, 0, 0,         /* W, I, M, G,  */  \
                                         MMU_TLBE_E_BIG_END, /* Endianness   */  \
                                         1, 0, 1,            /* UX, UW, UR   */  \
                                         1, 0, 1,            /* SX, SW, SR   */  \
                                         0, 0)
 
 .macro fill_utlb vWay, vAttr, aBeg, aEnd, aStep, vCntInit, vFill, vEFill
+fill_\()\aBeg\()_\()\aEnd\():   /* For debug purpose */
     rumboot_putstring       "Fill UTLB-entries for way \vWay from \aBeg to \aEnd\()...\n"
     load_const  R_CNTR,     \vCntInit
     load_const  R_MASK,     0xFFFF0000
@@ -172,33 +134,47 @@
 .endm
 
 .macro check_read_pages aEnd, aBeg, aStep, vExp
+read_\()\aBeg\()_\()\aEnd\():   /* For debug purpose */
     rumboot_putstring       "Read from \aBeg to \aEnd\()...\n"
     load_const  R_BEGA,     \aBeg
     load_const  R_ENDA,     \aEnd
     load_const  R_STEP,     \aStep
     load_const  R_EXPV,     \vExp
-    load_const  R_AIDX,     0xF000
+//  load_const  R_AIDX,     0xF000
+    li          R_AIDX,     magic_data@l
     bl          read_pages_loop
 .endm
 
-.macro push_lr rTmp
-    mflr        \rTmp
+.macro push_spr spReg rTmp=R_TEMP
+    mf\spReg    \rTmp
     stwu        \rTmp,  (-SIZEOF_WORD)(R_STKP)
 .endm
 
-.macro pop_lr rTmp
+.macro push_sprn spReg rTmp=R_TEMP
+    mfspr       \rTmp,  \spReg
+    stwu        \rTmp,  (-SIZEOF_WORD)(R_STKP)
+.endm
+
+.macro pop_spr spReg rTmp=R_TEMP
     lwz         \rTmp,  0(R_STKP)
     addi        R_STKP, R_STKP, SIZEOF_WORD
-    mtlr        \rTmp
+    mt\spReg    \rTmp
+.endm
+
+.macro pop_sprn spReg rTmp=R_TEMP
+    lwz         \rTmp,  0(R_STKP)
+    addi        R_STKP, R_STKP, SIZEOF_WORD
+    mtspr       \spReg, \rTmp
 .endm
 
 .section ".text","ax",@progbits
 
+.global main
 main:
 
     load_const  R_ZERO, 0x00000000
     nand        R_ONES, R_ZERO, R_ZERO
-    push_lr     R_TEMP
+    push_spr    lr
 
     /* Clear listed GP registers */
     .irp RN,    3,  4,  5,  6,  7,  8,  9,  10, 11, \
@@ -207,33 +183,13 @@ main:
         mr      \RN,    R_ZERO
     .endr
 
+    b           setup_tlb
+
 .align 2
 magic_data:
     .long VAL_MAGIC
 
-//  rumboot_putstring "Init SPRs...\n"
-
-/* Setup MSR  */
-//  load_const  R_TEMP, CONST_MSR
-//  mtmsr       R_TEMP
-
-//  load_spr    R_TEMP, SPR_CCR0,   CONST_CCR0,
-//  load_spr    R_TEMP, SPR_CCR1,   CONST_CCR1,
-//  load_spr    R_TEMP, SPR_CCR2,   CONST_CCR2,
-//  load_spr    R_TEMP, SPR_MMUBE0, CONST_MMUBE0,
-//  load_spr    R_TEMP, SPR_MMUBE1, CONST_MMUBE1,
-//  load_spr    R_TEMP, SPR_SSPCR,  CONST_SSPCR,
-//  load_spr    R_TEMP, SPR_ISPCR,  CONST_ISPCR,
-//  load_spr    R_TEMP, SPR_USPCR,  CONST_USPCR,
-
-
 /*
-    Before editing TLB let's initialize all SPR registers to default values by the spec
-    Most of them have X-state after reset and therefore CPU model cannot work properly
-*/
-
-    b           setup_tlb
-
 .align 4
 exception_handler:
     rumboot_putstring   "Unexpected exception!\n"
@@ -245,65 +201,81 @@ exception_handler:
     rumboot_puthex      R_TEMP
     clr_cr  cr6,        eq
     b       test_end
+*/
 
 .align 2
 tlb_entries:
 /*          MMU_TLB_ENTRY(ERPN,  RPN,     EPN,     DSIZ,               IL1I,IL1D, W,I,M,G, E,                  UX, UW, UR,  SX, SW, SR   DULXE,IULXE, TS,  TID,               WAY,             BID,              V   ) */
-/* Invalidate initial TLB entry */
-    .long   MMU_TLB_ENTRY(0x000, 0x00000, 0xFFFFF, MMU_TLBE_DSIZ_4KB,  0b0, 0b0,  0,0,0,0, MMU_TLBE_E_BIG_END, 0b0,0b0,0b0, 0b0,0b0,0b0, 0b0,  0b0,   0b0, MEM_WINDOW_SHARED, MMU_TLBWE_WAY_3, MMU_TLBWE_BE_UND, 0b0 )
-/* TLB entry to remap 64KB page BOOTROM from 0x000003ff_ffff0000-0x000003ff_ffffffff to 0xffff0000-0xffffffff */
-    .long   MMU_TLB_ENTRY(0x3FF, 0xFFFF0, 0xFFFF0, MMU_TLBE_DSIZ_64KB, 0b1, 0b1,  0,1,0,1, MMU_TLBE_E_BIG_END, 0b1,0b0,0b1, 0b1,0b0,0b1, 0b0,  0b0,   0b0, MEM_WINDOW_SHARED, MMU_TLBWE_WAY_0, MMU_TLBWE_BE_UND, 0b1 )
+/* Invalidate TLB entries of remap 128KB pages IM1 from 0x00000020_C0000000-0x00000020_C001FFFF to 0x80020000-0x8003FFFF*/
+    .long   MMU_TLB_ENTRY(0x01F, 0xFFFF0, 0xFFFF0, MMU_TLBE_DSIZ_64KB, 0b1, 0b1,  0,1,0,0, MMU_TLBE_E_BIG_END, 0b0,0b0,0b0, 0b1,0b0,0b1, 0b0,  0b0,   0b0, MEM_WINDOW_SHARED, MMU_TLBWE_WAY_0, MMU_TLBWE_BE_0,   0b0 )
+    .long   MMU_TLB_ENTRY(0x020, 0xC0000, 0x80020, MMU_TLBE_DSIZ_64KB, 0b1, 0b1,  0,1,0,0, MMU_TLBE_E_BIG_END, 0b0,0b0,0b0, 0b1,0b1,0b1, 0b0,  0b0,   0b0, MEM_WINDOW_SHARED, MMU_TLBWE_WAY_0, MMU_TLBWE_BE_3,   0b0 )
+    .long   MMU_TLB_ENTRY(0x020, 0xC0010, 0x80030, MMU_TLBE_DSIZ_64KB, 0b1, 0b1,  0,1,0,0, MMU_TLBE_E_BIG_END, 0b0,0b0,0b0, 0b1,0b1,0b1, 0b0,  0b0,   0b0, MEM_WINDOW_SHARED, MMU_TLBWE_WAY_0, MMU_TLBWE_BE_4,   0b0 )
+    .long   MMU_TLB_ENTRY(0x020, 0xC0040, 0x80040, MMU_TLBE_DSIZ_64KB, 0b1, 0b1,  0,1,0,0, MMU_TLBE_E_BIG_END, 0b0,0b0,0b0, 0b1,0b1,0b1, 0b0,  0b0,   0b0, MEM_WINDOW_SHARED, MMU_TLBWE_WAY_0, MMU_TLBWE_BE_5,   0b0 )
+.set tlb_entries_count, (.-tlb_entries)/MMU_TLB_ENTRY_SIZE
 
 
 setup_tlb:
-    rumboot_putstring   "Setup TLB...\n"
+    rumboot_putstring   "Invalidate bolted TLB entries...\n"
     load_addr   R_ARG0, tlb_entries
-    load_const  R_ARG1, 0x0002
-    // bl          write_tlb_entries
-
+    load_const  R_ARG1, tlb_entries_count
+    bl          write_tlb_entries
+    push_sprn   SPR_MMUBE1
+    push_sprn   SPR_MMUBE0
+    load_spr    R_TEMP, SPR_MMUBE0,   CONST_MMUBE0,
+    load_spr    R_TEMP, SPR_MMUBE1,   CONST_MMUBE1,
 
     rumboot_putstring       "Run subtests...\n"
     set_cr      cr6,        eq
 
     rumboot_putstring       "Filling UTLB-entries...\n"
 
-//    fill_utlb   MMU_WAY_0,  /*  WAY         */ \
-//                FILL_ATTR,  /*  TLB ATTR    */ \
-//                BEG_ADDR0,  /*  EPN BEGIN   */ \
-//                END_ADDR0,  /*  EPN END     */ \
-//                FILL_STEP,  /*  EPN STEP    */ \
-//                CNT_INIT1,  /*  CNT INIT    */ \
-//                PHY_ADDR0,  /*  RPN FILL    */ \
-//                PHY_ADDRE   /* eRPN FILL    */
+    fill_utlb   MMU_WAY_0,  /*  WAY         */ \
+                FILL_ATTR,  /*  TLB ATTR    */ \
+                BEG_ADDRA,  /*  EPN BEGIN   */ \
+                END_ADDRA,  /*  EPN END     */ \
+                FILL_STEP,  /*  EPN STEP    */ \
+                CNT_INI00,  /*  CNT INIT    */ \
+                PHY_ADDR0,  /*  RPN FILL    */ \
+                PHY_ADDRE   /* eRPN FILL    */
 
-//    fill_utlb   MMU_WAY_1,  /*  WAY         */ \
-//                FILL_ATTR,  /*  TLB ATTR    */ \
-//                BEG_ADDR1,  /*  EPN BEGIN   */ \
-//                END_ADDR1,  /*  EPN END     */ \
-//                FILL_STEP,  /*  EPN STEP    */ \
-//                CNT_INIT0,  /*  CNT INIT    */ \
-//                PHY_ADDR0,  /*  RPN FILL    */ \
-//                PHY_ADDRE   /* eRPN FILL    */
+    fill_utlb   MMU_WAY_0,  /*  WAY         */ \
+                FILL_ATTR,  /*  TLB ATTR    */ \
+                BEG_ADDRB,  /*  EPN BEGIN   */ \
+                END_ADDRB,  /*  EPN END     */ \
+                FILL_STEP,  /*  EPN STEP    */ \
+                CNT_INI82,  /*  CNT INIT    */ \
+                PHY_ADDR0,  /*  RPN FILL    */ \
+                PHY_ADDRE   /* eRPN FILL    */
 
-//    fill_utlb   MMU_WAY_2,  /*  WAY         */ \
-//                FILL_ATTR,  /*  TLB ATTR    */ \
-//                BEG_ADDR2,  /*  EPN BEGIN   */ \
-//                END_ADDR2,  /*  EPN END     */ \
-//                FILL_STEP,  /*  EPN STEP    */ \
-//                CNT_INIT0,  /*  CNT INIT    */ \
-//                PHY_ADDR0,  /*  RPN FILL    */ \
-//                PHY_ADDRE   /* eRPN FILL    */
+    fill_utlb   MMU_WAY_1,  /*  WAY         */ \
+                FILL_ATTR,  /*  TLB ATTR    */ \
+                BEG_ADDR1,  /*  EPN BEGIN   */ \
+                END_ADDR1,  /*  EPN END     */ \
+                FILL_STEP,  /*  EPN STEP    */ \
+                CNT_INI00,  /*  CNT INIT    */ \
+                PHY_ADDR0,  /*  RPN FILL    */ \
+                PHY_ADDRE   /* eRPN FILL    */
 
-//    fill_utlb   MMU_WAY_3,  /*  WAY         */ \
-//                FILL_ATTR,  /*  TLB ATTR    */ \
-//                BEG_ADDR3,  /*  EPN BEGIN   */ \
-//                END_ADDR3,  /*  EPN END     */ \
-//                FILL_STEP,  /*  EPN STEP    */ \
-//                CNT_INIT0,  /*  CNT INIT    */ \
-//                PHY_ADDR0,  /*  RPN FILL    */ \
-//                PHY_ADDRE   /* eRPN FILL    */
+    fill_utlb   MMU_WAY_2,  /*  WAY         */ \
+                FILL_ATTR,  /*  TLB ATTR    */ \
+                BEG_ADDR2,  /*  EPN BEGIN   */ \
+                END_ADDR2,  /*  EPN END     */ \
+                FILL_STEP,  /*  EPN STEP    */ \
+                CNT_INI00,  /*  CNT INIT    */ \
+                PHY_ADDR0,  /*  RPN FILL    */ \
+                PHY_ADDRE   /* eRPN FILL    */
+
+    fill_utlb   MMU_WAY_3,  /*  WAY         */ \
+                FILL_ATTR,  /*  TLB ATTR    */ \
+                BEG_ADDR3,  /*  EPN BEGIN   */ \
+                END_ADDR3,  /*  EPN END     */ \
+                FILL_STEP,  /*  EPN STEP    */ \
+                CNT_INI00,  /*  CNT INIT    */ \
+                PHY_ADDR0,  /*  RPN FILL    */ \
+                PHY_ADDRE   /* eRPN FILL    */
 
 fill_end:
+
     rumboot_putstring       "Filling UTLB-entries complete.\n"
 
     mfspr       R_SAV0,     SPR_SRR0
@@ -317,7 +289,9 @@ fill_end:
     rfi
 
 test_end:
-    pop_lr      R_TEMP
+    pop_sprn    SPR_MMUBE0
+    pop_sprn    SPR_MMUBE1
+    pop_spr     lr
     bne- cr6,   test_error
 
 test_ok:
@@ -381,10 +355,16 @@ read_pages_start:
 
     rumboot_putstring   "Check read memory pages...\n"
 
+    /* Way 3 */
     check_read_pages    BEG_ADDR3,  END_ADDR3,  READ_STEP,  VAL_MAGIC
+    /* Way 2 */
     check_read_pages    BEG_ADDR2,  END_ADDR2,  READ_STEP,  VAL_MAGIC
+    /* Way 1 */
     check_read_pages    BEG_ADDR1,  END_ADDR1,  READ_STEP,  VAL_MAGIC
-    check_read_pages    BEG_ADDRX,  END_ADDR0,  READ_STEP,  VAL_MAGIC
+    /* Way 0 */
+    check_read_pages    BEG_ADDRB,  END_ADDRB,  READ_STEP,  VAL_MAGIC
+    /* Way 0 */
+    check_read_pages    BEG_ADDRA,  END_ADDRA,  READ_STEP,  VAL_MAGIC
 
     rumboot_putstring   "complete.\n"
 
