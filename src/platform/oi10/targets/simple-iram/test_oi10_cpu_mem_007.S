@@ -36,7 +36,7 @@
     load_const r0, 0x00
     load_const r1, \way
     load_const r2, \index
-    load_const r17, 32
+    load_const r17, 31
     slwi r5, r1, IBM_BIT_INDEX(32, 18)    //way
     slwi r6, r2, IBM_BIT_INDEX(32, 26)    //index
     or r5, r5 ,r6
@@ -45,11 +45,15 @@
     andis. r28, r28, 0x0FC0
     srwi r28, r28, 22
 
-    MOD r18, r2, r17
     cmpi cr7, 0, r2, 0x80
     blt cr7, 1f
+    subi r2, r2, 0x80
+    MOD r18, r2, r17
     ori r18, r18, 0x20
+    b 2f
 1:
+    MOD r18, r2, r17
+2:
     cmp cr7, 0, r28, r18
     TEST_ASSERT(eq, cr7, "Wrong value in icu lru array for way \way and index \index")
 .endm
@@ -58,7 +62,7 @@
     load_const r0, 0x00
     load_const r1, \way
     load_const r2, \index
-    load_const r17, 32
+    load_const r17, 31
     load_const r19, 2
     slwi r5, r1, IBM_BIT_INDEX(32, 18) //way
     slwi r6, r2, IBM_BIT_INDEX(32, 26) //index
@@ -68,20 +72,26 @@
     andis. r27, r27, 0x0FC0
     srwi r27, r27, 22
 
-    MOD r18, r2, r17
-
     MOD r20, r2, r19
 
     cmpi cr7, 0, r2, 0x80
-    bge cr7, 1f
-    cmpi cr7, 0, r20, 0x00
-    beq cr7, 2f
+    blt cr7, 1f
+    subi r2, r2, 0x80
+    MOD r18, r2, r17
+    bgt cr7, 2f
     ori r18, r18, 0x20
+    b 3f
 1:
-    cmpi cr7, 0, r20, 0x01
-    beq cr7, 2f
+    MOD r18, r2, r17
+    cmpi cr7, 0, r20, 0x00
+    beq cr7, 3f
     ori r18, r18, 0x20
+    b 3f
 2:
+    cmpi cr7, 0, r20, 0x01
+    beq cr7, 3f
+    ori r18, r18, 0x20
+3:
     cmp cr7, 0 , r27, r18
     TEST_ASSERT(eq, cr7, "Wrong value in dcu lru array for way \way and index \index")
 .endm
