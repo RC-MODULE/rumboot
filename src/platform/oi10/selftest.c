@@ -49,8 +49,15 @@ static bool check_pl011_regs(uint32_t arg)
     return (rumboot_regpoker_check_array(check_uart_regs, arg) == 0);
 }
 
+static bool check_kmbist(uint32_t arg)
+{
+    dcr_write(0x16, arg);
+    while( ! (dcr_read(arg) & (1<<6) ));;
+    return ! (dcr_read(arg) & (1<<5) );
+}
 
 TEST_SUITE_BEGIN(selftest, "selftest")
+TEST_ENTRY("kmbist-0", check_kmbist, DCR_SCTL_BASE + 0x4),
 TEST_ENTRY("uart0-id-registers", check_pl011_regs, UART0_BASE),
 TEST_ENTRY("uart1-id-registers", check_pl011_regs, UART1_BASE),
 TEST_SUITE_END();
