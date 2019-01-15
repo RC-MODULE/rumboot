@@ -948,33 +948,6 @@ endif()
         PREFIX "hscb_3"
         NAME test_oi10_hscb_reg
     )
-    add_rumboot_target(
-        CONFIGURATION IRAM
-        CFLAGS -DMKIO0_IRQ=MKIO0_INT -DMKIO1_IRQ=MKIO1_INT
-        FILES common/mkio/mkio_write_read_test.c
-        NAME mkio_write_read_test
-      )
-
-    add_rumboot_target(
-        CONFIGURATION IRAM
-        CFLAGS -DMKIO0_IRQ=MKIO0_INT -DMKIO1_IRQ=MKIO1_INT
-        FILES common/mkio/mkio0_irq_test.c
-        NAME mkio0_irq_test
-      )
-
-    add_rumboot_target(
-        CONFIGURATION IRAM
-        CFLAGS -DMKIO0_IRQ=MKIO0_INT -DMKIO1_IRQ=MKIO1_INT
-        FILES common/mkio/mkio1_irq_test.c
-        NAME mkio1_irq_test
-      )
-
-    add_rumboot_target(
-        CONFIGURATION IRAM
-        CFLAGS -DMKIO0_IRQ=MKIO0_INT -DMKIO1_IRQ=MKIO1_INT
-        FILES common/mkio/mkio_polarity_test.c
-        NAME mkio_polarity_test
-      )
 
     add_rumboot_target(
       CONFIGURATION IRAM
