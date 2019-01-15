@@ -19,7 +19,7 @@
 #define BOOTM_FASTUART     (1 << 2)
 #define BOOTM_SDIO0_CD     (1 << 3)
 #define BOOTM_SDIO1_CD     (1 << 4)
-#define BOOTM_SPI1_CS1     (1 << 5)
+#define BOOTM_SPI0_CS1     (1 << 5)
 
 void rumboot_platform_read_config(struct rumboot_config *conf)
 {
