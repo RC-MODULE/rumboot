@@ -5,6 +5,7 @@
 #include <rumboot/platform.h>
 #include <rumboot/macros.h>
 #include <rumboot/io.h>
+#include <rumboot/memfill.h>
 #include <platform/devices.h>
 #include <platform/devices/emi.h>
 #include <rumboot/rumboot.h>
@@ -45,7 +46,7 @@ static uint32_t test_data[] =
 };
 
 /*                            MMU_TLB_ENTRY(  ERPN,   RPN,        EPN,        DSIZ,                   IL1I,   IL1D,   W,      I,      M,      G,      E,                      UX, UW, UR,     SX, SW, SR      DULXE,  IULXE,      TS,     TID,                WAY,                BID,                V   )*/
-#define TLB_ENTRY_CACHE_ON    MMU_TLB_ENTRY(  0x000,  0x40000,    0x40000,    MMU_TLBE_DSIZ_1GB,      0b0,    0b1,    0b0,    0b0,    0b1,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
+#define TLB_ENTRY_CACHE_ON    MMU_TLB_ENTRY(  0x000,  0x40000,    0x40000,    MMU_TLBE_DSIZ_1GB,      0b1,    0b1,    0b0,    0b0,    0b1,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
 static const tlb_entry em_tlb_entry_cache_on = {TLB_ENTRY_CACHE_ON};
 
 extern void working_function(uint32_t** addr, uint32_t length_in_words);
@@ -70,16 +71,19 @@ int main()
 //    register uint32_t rdf7_word;
 //    register uint32_t rdf0_addr;
     uint32_t  result = 0;
+    uint32_t    count_nops = 0;
     emi_init(DCR_EM2_EMI_BASE);
     rumboot_memfill8_modelling((void*)SRAM0_BASE,0x1000,0,0);
     rumboot_memfill8_modelling((void*)SSRAM_BASE,0x10000,0,0);
+    rumboot_memfill32((void*)IM1_BASE, 0x1000,0,1);
 
-    for(uint32_t i = 0; i < COUNT_AREAS; ++i)
+    for(uint32_t i = 1; i < COUNT_AREAS; ++i)
     {
         rdf_buf[i] = rumboot_malloc_from_named_heap_aligned("SSRAM", sizeof(test_data), 64);
         if((rdf_buf[i] == NULL))
             return 1;
     }
+        rdf_buf[0] = rumboot_malloc_from_named_heap_aligned("IM1", sizeof(test_data), 64);
 //    rdf0_addr = (uint32_t)rdf_buf[0];
     wdf_buf = rumboot_malloc_from_named_heap_aligned("SSRAM", sizeof(test_data), 64);
     if( (wdf_buf == NULL))
@@ -94,7 +98,29 @@ int main()
     write_tlb_entries(&em_tlb_entry_cache_on, 1);
     msync();
     isync();
-    working_function(rdf_buf, (sizeof(test_data) >> 2));
+
+    for(int i = 0; i < 20; ++i)
+    {
+        switch(i % 11)
+        {
+            case 10:    ++count_nops;
+            case 9:     ++count_nops;
+            case 8:     ++count_nops;
+            case 7:     ++count_nops;
+            case 6:     ++count_nops;
+            case 5:     ++count_nops;
+            case 4:     ++count_nops;
+            case 3:     ++count_nops;
+            case 2:     ++count_nops;
+            case 1:     ++count_nops;
+        }
+        working_function(rdf_buf, (sizeof(test_data) >> 2));
+        ici(0);
+        dci(2);
+        isync();
+//        buf += count_nops;
+
+    }
 //    for(uint32_t addr = 0; addr < sizeof(test_data); addr += 4)
 //    {
 //        current_word = ioread32((uint32_t)(test_data + addr));

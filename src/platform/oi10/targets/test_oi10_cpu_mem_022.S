@@ -13,6 +13,11 @@ working_function:
     stw     r31,12(r1)
     mr      r31,r1
 
+    //disable GHR
+    mfspr r5, SPR_CCR0
+    ori r5, r5, ((1 << IBM_BIT_INDEX(32, 20)))
+    mtspr SPR_CCR0, r5
+
     lwz     r10,  0(r3)
     lwz     r11,  4(r3)
     lwz     r12,  8(r3)
@@ -44,9 +49,11 @@ working_function:
 .align 4
 loop:
     lwzu    r19, 4(r10)
+    lwz     r20, 0(r1)
     mfctr   r4
     andi.   r5, r4, 1
     bne     odd
+    lwz     r21, 0(r1)
     andi.   r5, r4, 4
     bne     it_is_three_or_two
 
