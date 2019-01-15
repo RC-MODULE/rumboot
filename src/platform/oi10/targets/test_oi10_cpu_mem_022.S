@@ -42,47 +42,83 @@ working_function:
     addi    r18, r18, -4
     addi    r9 , r9 , -4
     addi    r8 , r8 , -4
-//    addi    r7 , r7 , -4
+    li      r6 , -1
+    addi    r7 , 0  , -4
     mtctr   r4
 
     msync
 .align 4
 loop:
-    lwzu    r19, 4(r10)
-    lwz     r20, 0(r1)
+    lwzu    r19,  4(r10)
+    xor     r19,    r19, r6
+    stw     r19, -4(r10)
+    lwz     r20,  0(r1)
     mfctr   r4
-    andi.   r5, r4, 1
+    andi.   r5,     r4, 1
     bne     odd
     lwz     r21, 0(r1)
     andi.   r5, r4, 4
     bne     it_is_three_or_two
 
 .align 8
-    lwzu    r20, 4(r11)
-    lwzu    r21, 4(r12)
+    lwzu    r20,  4(r11)
+    xor     r20,    r20, r6
+    stw     r20, -4(r11)
+    lwzu    r21,  4(r12)
+    xor     r21,    r21, r6
+    stw     r21, -4(r12)
     andi.   r5, r4, 2
     bne     it_is_two
 
 .align 8
-    lwzu    r22, 4(r13)
-    lwzu    r23, 4(r14)
+    lwzu    r22,  4(r13)
+    lwzu    r23,  4(r14)
+    xor     r22,    r22, r6
+    xor     r23,    r23, r6
+    stw     r22, -4(r13)
+    stw     r23, -4(r14)
 
-    lwzu    r24, 4(r15)
-    lwzu    r25, 4(r16)
+    lwzu    r24,  4(r15)
+    lwzu    r25,  4(r16)
+    xor     r24,    r24, r6
+    xor     r25,    r25, r6
+    stw     r24, -4(r15)
+    stw     r25, -4(r16)
+    andi.   r5, r4, 8
+    bne     odd
+//    dcbf    r10,    r7,  0
+    dcbf    r11,    r7,  0
+    dcbf    r12,    r7,  0
+    dcbf    r13,    r7,  0
+    dcbf    r14,    r7,  0
+    dcbf    r15,    r7,  0
+    dcbf    r16,    r7,  0
+    dcbf    r17,    r7,  0
+    dcbf    r18,    r7,  0
+    dcbf    r9 ,    r7,  0
+    dcbf    r8 ,    r7,  0
 
 .align 8
 odd:
 //zero or odd
     lwzu    r26, 4(r17)
     lwzu    r27, 4(r18)
+    xor     r26,   r26, r6
+    xor     r27,   r27, r6
+    stw     r24, -4(r17)
+    stw     r25, -4(r18)
     andi.   r5, r4, 2
     bne     it_is_three_or_two
 
 .align 8
-    lwzu    r19, 4(r9 )
+    lwzu    r19,  4(r9 )
+    xor     r19,    r19, r6
+    stw     r19, -4(r9 )
 //    lwzu    r21, 4(r7 )
 it_is_three_or_two:
-    lwzu    r20, 4(r8 )
+    lwzu    r20,  4(r8 )
+    xor     r20,    r20, r6
+    stw     r20, -4(r8 )
 it_is_two:
     bdnz    loop
 //stack restore
