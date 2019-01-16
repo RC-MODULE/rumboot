@@ -2,6 +2,7 @@ SET(RUMBOOT_ARCH native)
 
 file(GLOB PLATFORM_SOURCES
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/*.c
+    ${CMAKE_SOURCE_DIR}/src/arch/native/exception.c
     ${CMAKE_SOURCE_DIR}/src/lib/drivers/irq-dummy.c
 )
 
