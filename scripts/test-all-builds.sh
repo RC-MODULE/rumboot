@@ -1,5 +1,5 @@
 #!/bin/bash
-PLATFORMS="native oi10 basis"
+PLATFORMS="native oi10 basis bbp3"
 mkdir build-test
 cd build-test
 
@@ -23,6 +23,7 @@ for p in ${PLATFORMS}; do
 done
 
 test mm7705 PostProduction
+test zed PostProduction
 
 
 done
