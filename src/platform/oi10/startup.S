@@ -330,7 +330,7 @@ init_other_spr:
     mtspr       SPR_TBU_W, r0
     mtspr       SPR_DEC, r0
     mtspr       SPR_DECAR, r0
-    load_const  r3, (0b1    << TIMER_TSR_EVW_i)\
+    load_const  r3, (0b1    << TIMER_TSR_ENW_i)\
                   | (0b1    << TIMER_TSR_WIS_i)\
                   | (0b1    << TIMER_TSR_DIS_i)\
                   | (0b1    << TIMER_TSR_FIS_i)
