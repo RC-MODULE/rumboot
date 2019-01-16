@@ -209,6 +209,7 @@ ADD_SOURCE("src/lib/xmodem.c")
 ADD_SOURCE("src/lib/eventsystem/wrappers.c")
 ADD_SOURCE("src/lib/eventsystem/offload.c")
 ADD_SOURCE("src/lib/ini.c")
+ADD_SOURCE("src/lib/drivers/uart_pl011.c")
 
 if (NOT RUMBOOT_PLATFORM STREQUAL "native")
   if (CMAKE_BUILD_TYPE STREQUAL "Debug")

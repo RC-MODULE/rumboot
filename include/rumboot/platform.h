@@ -265,6 +265,22 @@ uint32_t rumboot_virt_to_dma(volatile void *addr);
 
 
 /**
+ * Architecture-specific code that prints out
+ * a stack-trace.
+ */
+void rumboot_arch_stacktrace(void);
+
+/**
+ * Architecture-specific code that prints out useful info
+ * when an exception happens (like registers, stacktrace).
+ * For ROM code this is set as default exception handler.
+ *
+ * @param id   exception id
+ * @param name exception description
+ */
+void rumboot_arch_exception(int id, const char *name);
+
+/**
  * Declares a function to be a constructor (will be called before main())
  * @param  name - function name
  */

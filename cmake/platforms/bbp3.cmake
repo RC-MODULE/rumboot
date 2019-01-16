@@ -74,6 +74,7 @@ endif()
 
 file(GLOB PLATFORM_SOURCES
     ${CMAKE_SOURCE_DIR}/src/arch/arm/startup.S
+    ${CMAKE_SOURCE_DIR}/src/arch/arm/exception.c
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/*.c
     ${CMAKE_SOURCE_DIR}/src/lib/drivers/irq-gic.c
     ${CMAKE_SOURCE_DIR}/src/lib/eventsystem-memory.c

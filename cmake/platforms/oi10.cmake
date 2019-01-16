@@ -2,7 +2,7 @@ SET(RUMBOOT_ARCH ppc)
 set(RUMBOOT_PLATFORM_DEFAULT_SNAPSHOT default)
 
 file(GLOB PLATFORM_SOURCES
-    ${CMAKE_SOURCE_DIR}/src/lib/drivers/uart_pl011.c
+    ${CMAKE_SOURCE_DIR}/src/arch/ppc/exception.c
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/*.c
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/lib/drivers/irq-mpic128.c
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/lib/drivers/p64.c
@@ -367,7 +367,7 @@ endif()
         NAME "stub"
         FEATURES STUB
     )
-    
+
     add_rumboot_target(
         CONFIGURATION ROM
         CFLAGS -DUSE_SWINT=132
@@ -396,7 +396,7 @@ endif()
         FILES common/irq/irq-defhandler.c
         PREFIX "irq-iram"
     )
-    
+
     #---GRETH tests start---
     add_rumboot_target(
       CONFIGURATION IRAM
@@ -453,7 +453,7 @@ endif()
       CFLAGS -DGRETH_BASE=GRETH_0_BASE -DEDCL_TEST_ADDR=EDCL_TEST_ADDR_IM1
       PREFIX greth0-edcl-im1
     )
-    
+
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES test_oi10_greth.c
@@ -474,14 +474,14 @@ endif()
       CFLAGS -DGRETH_BASE=GRETH_1_BASE -DEDCL_TEST_ADDR=EDCL_TEST_ADDR_IM1
       PREFIX greth1-edcl-im1
     )
-    
+
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES test_oi10_greth.c
       CFLAGS -DGRETH_BASE=GRETH_1_BASE -DEDCL_TEST_ADDR=EDCL_TEST_ADDR_EM2
       PREFIX greth1-edcl-em2
     )
-    
+
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES test_oi10_greth.c
@@ -523,7 +523,7 @@ endif()
       CFLAGS -DGRETH_BASE=GRETH_0_BASE -DSRC_BANK=1 -DDST_BANK=3
       PREFIX greth0-im1-em2
     )
-    
+
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES test_oi10_greth.c
@@ -544,7 +544,7 @@ endif()
       CFLAGS -DGRETH_BASE=GRETH_0_BASE -DSRC_BANK=3 -DDST_BANK=3
       PREFIX greth0-em2-em2
     )
-    
+
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES test_oi10_greth.c
@@ -586,7 +586,7 @@ endif()
       CFLAGS -DGRETH_BASE=GRETH_1_BASE -DSRC_BANK=1 -DDST_BANK=3
       PREFIX greth1-im1-em2
     )
-    
+
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES test_oi10_greth.c
@@ -718,12 +718,12 @@ endif()
 
     add_rumboot_target(
         CONFIGURATION IRAM
-        CFLAGS -DHSCB_UNDER_TEST_BASE=HSCB0_BASE 
-               -DHSCB_SUPPLEMENTARY_BASE=HSCB1_BASE 
-               -DHSCB_UNDER_TEST_INT=SW0_HSCB_INT 
-               -DHSCB_UNDER_TEST_DMA_INT=SW0_AXI_INT 
-               -DHSCB_SUPPLEMENTARY_INT=SW1_HSCB_INT 
-               -DHSCB_SUPPLEMENTARY_DMA_INT=SW1_AXI_INT 
+        CFLAGS -DHSCB_UNDER_TEST_BASE=HSCB0_BASE
+               -DHSCB_SUPPLEMENTARY_BASE=HSCB1_BASE
+               -DHSCB_UNDER_TEST_INT=SW0_HSCB_INT
+               -DHSCB_UNDER_TEST_DMA_INT=SW0_AXI_INT
+               -DHSCB_SUPPLEMENTARY_INT=SW1_HSCB_INT
+               -DHSCB_SUPPLEMENTARY_DMA_INT=SW1_AXI_INT
                -DHSCB_FUNC_TEST
                -DHSCB_SHORT_TEST
                #-DTEST_OI10_HSCB_FULL_TRACING
@@ -735,12 +735,12 @@ endif()
 
     add_rumboot_target(
         CONFIGURATION IRAM
-        CFLAGS -DHSCB_UNDER_TEST_BASE=HSCB0_BASE 
-               -DHSCB_SUPPLEMENTARY_BASE=HSCB1_BASE 
-               -DHSCB_UNDER_TEST_INT=SW0_HSCB_INT 
-               -DHSCB_UNDER_TEST_DMA_INT=SW0_AXI_INT 
-               -DHSCB_SUPPLEMENTARY_INT=SW1_HSCB_INT 
-               -DHSCB_SUPPLEMENTARY_DMA_INT=SW1_AXI_INT 
+        CFLAGS -DHSCB_UNDER_TEST_BASE=HSCB0_BASE
+               -DHSCB_SUPPLEMENTARY_BASE=HSCB1_BASE
+               -DHSCB_UNDER_TEST_INT=SW0_HSCB_INT
+               -DHSCB_UNDER_TEST_DMA_INT=SW0_AXI_INT
+               -DHSCB_SUPPLEMENTARY_INT=SW1_HSCB_INT
+               -DHSCB_SUPPLEMENTARY_DMA_INT=SW1_AXI_INT
                -DHSCB_FUNC_TEST
                -DHSCB_SHORT_TEST
                #-DTEST_OI10_HSCB_FULL_TRACING
@@ -756,12 +756,12 @@ endif()
 
     add_rumboot_target(
         CONFIGURATION IRAM
-        CFLAGS -DHSCB_UNDER_TEST_BASE=HSCB0_BASE 
-               -DHSCB_SUPPLEMENTARY_BASE=HSCB1_BASE 
-               -DHSCB_UNDER_TEST_INT=SW0_HSCB_INT 
-               -DHSCB_UNDER_TEST_DMA_INT=SW0_AXI_INT 
-               -DHSCB_SUPPLEMENTARY_INT=SW1_HSCB_INT 
-               -DHSCB_SUPPLEMENTARY_DMA_INT=SW1_AXI_INT 
+        CFLAGS -DHSCB_UNDER_TEST_BASE=HSCB0_BASE
+               -DHSCB_SUPPLEMENTARY_BASE=HSCB1_BASE
+               -DHSCB_UNDER_TEST_INT=SW0_HSCB_INT
+               -DHSCB_UNDER_TEST_DMA_INT=SW0_AXI_INT
+               -DHSCB_SUPPLEMENTARY_INT=SW1_HSCB_INT
+               -DHSCB_SUPPLEMENTARY_DMA_INT=SW1_AXI_INT
                -DTX_0_HEAP_NAME="SDRAM"
                -DTX_1_HEAP_NAME="SDRAM"
                -DRX_0_HEAP_NAME="SDRAM"
@@ -778,12 +778,12 @@ endif()
 
     add_rumboot_target(
         CONFIGURATION IRAM
-        CFLAGS -DHSCB_UNDER_TEST_BASE=HSCB1_BASE 
-               -DHSCB_SUPPLEMENTARY_BASE=HSCB0_BASE 
-               -DHSCB_UNDER_TEST_INT=SW1_HSCB_INT 
-               -DHSCB_UNDER_TEST_DMA_INT=SW1_AXI_INT 
-               -DHSCB_SUPPLEMENTARY_INT=SW0_HSCB_INT 
-               -DHSCB_SUPPLEMENTARY_DMA_INT=SW0_AXI_INT 
+        CFLAGS -DHSCB_UNDER_TEST_BASE=HSCB1_BASE
+               -DHSCB_SUPPLEMENTARY_BASE=HSCB0_BASE
+               -DHSCB_UNDER_TEST_INT=SW1_HSCB_INT
+               -DHSCB_UNDER_TEST_DMA_INT=SW1_AXI_INT
+               -DHSCB_SUPPLEMENTARY_INT=SW0_HSCB_INT
+               -DHSCB_SUPPLEMENTARY_DMA_INT=SW0_AXI_INT
                -DTX_0_HEAP_NAME="IM1"
                -DTX_1_HEAP_NAME="SDRAM"
                -DRX_0_HEAP_NAME="SSRAM"
@@ -800,12 +800,12 @@ endif()
 
     add_rumboot_target(
         CONFIGURATION IRAM
-        CFLAGS -DHSCB_UNDER_TEST_BASE=HSCB0_BASE 
-               -DHSCB_SUPPLEMENTARY_BASE=HSCB1_BASE 
-               -DHSCB_UNDER_TEST_INT=SW0_HSCB_INT 
-               -DHSCB_UNDER_TEST_DMA_INT=SW0_AXI_INT 
-               -DHSCB_SUPPLEMENTARY_INT=SW1_HSCB_INT 
-               -DHSCB_SUPPLEMENTARY_DMA_INT=SW1_AXI_INT 
+        CFLAGS -DHSCB_UNDER_TEST_BASE=HSCB0_BASE
+               -DHSCB_SUPPLEMENTARY_BASE=HSCB1_BASE
+               -DHSCB_UNDER_TEST_INT=SW0_HSCB_INT
+               -DHSCB_UNDER_TEST_DMA_INT=SW0_AXI_INT
+               -DHSCB_SUPPLEMENTARY_INT=SW1_HSCB_INT
+               -DHSCB_SUPPLEMENTARY_DMA_INT=SW1_AXI_INT
                -DHSCB_FUNC_TEST
                #-DTEST_OI10_HSCB_FULL_TRACING
               #-DCHECK_REGS
@@ -816,12 +816,12 @@ endif()
 
     add_rumboot_target(
         CONFIGURATION IRAM
-        CFLAGS -DHSCB_UNDER_TEST_BASE=HSCB2_BASE 
-               -DHSCB_SUPPLEMENTARY_BASE=HSCB3_BASE 
-               -DHSCB_UNDER_TEST_INT=SW2_HSCB_INT 
-               -DHSCB_UNDER_TEST_DMA_INT=SW2_AXI_INT 
-               -DHSCB_SUPPLEMENTARY_INT=SW3_HSCB_INT 
-               -DHSCB_SUPPLEMENTARY_DMA_INT=SW3_AXI_INT 
+        CFLAGS -DHSCB_UNDER_TEST_BASE=HSCB2_BASE
+               -DHSCB_SUPPLEMENTARY_BASE=HSCB3_BASE
+               -DHSCB_UNDER_TEST_INT=SW2_HSCB_INT
+               -DHSCB_UNDER_TEST_DMA_INT=SW2_AXI_INT
+               -DHSCB_SUPPLEMENTARY_INT=SW3_HSCB_INT
+               -DHSCB_SUPPLEMENTARY_DMA_INT=SW3_AXI_INT
                -DHSCB_FUNC_TEST
                -DHSCB_SHORT_TEST
                #-DTEST_OI10_HSCB_FULL_TRACING
@@ -833,12 +833,12 @@ endif()
 
     add_rumboot_target(
         CONFIGURATION IRAM
-        CFLAGS -DHSCB_UNDER_TEST_BASE=HSCB2_BASE 
-               -DHSCB_SUPPLEMENTARY_BASE=HSCB3_BASE 
-               -DHSCB_UNDER_TEST_INT=SW2_HSCB_INT 
-               -DHSCB_UNDER_TEST_DMA_INT=SW2_AXI_INT 
-               -DHSCB_SUPPLEMENTARY_INT=SW3_HSCB_INT 
-               -DHSCB_SUPPLEMENTARY_DMA_INT=SW3_AXI_INT 
+        CFLAGS -DHSCB_UNDER_TEST_BASE=HSCB2_BASE
+               -DHSCB_SUPPLEMENTARY_BASE=HSCB3_BASE
+               -DHSCB_UNDER_TEST_INT=SW2_HSCB_INT
+               -DHSCB_UNDER_TEST_DMA_INT=SW2_AXI_INT
+               -DHSCB_SUPPLEMENTARY_INT=SW3_HSCB_INT
+               -DHSCB_SUPPLEMENTARY_DMA_INT=SW3_AXI_INT
                -DHSCB_FUNC_TEST
                -DHSCB_SHORT_TEST
                #-DTEST_OI10_HSCB_FULL_TRACING
@@ -854,12 +854,12 @@ endif()
 
     add_rumboot_target(
         CONFIGURATION IRAM
-        CFLAGS -DHSCB_UNDER_TEST_BASE=HSCB2_BASE 
-               -DHSCB_SUPPLEMENTARY_BASE=HSCB3_BASE 
-               -DHSCB_UNDER_TEST_INT=SW2_HSCB_INT 
-               -DHSCB_UNDER_TEST_DMA_INT=SW2_AXI_INT 
-               -DHSCB_SUPPLEMENTARY_INT=SW3_HSCB_INT 
-               -DHSCB_SUPPLEMENTARY_DMA_INT=SW3_AXI_INT 
+        CFLAGS -DHSCB_UNDER_TEST_BASE=HSCB2_BASE
+               -DHSCB_SUPPLEMENTARY_BASE=HSCB3_BASE
+               -DHSCB_UNDER_TEST_INT=SW2_HSCB_INT
+               -DHSCB_UNDER_TEST_DMA_INT=SW2_AXI_INT
+               -DHSCB_SUPPLEMENTARY_INT=SW3_HSCB_INT
+               -DHSCB_SUPPLEMENTARY_DMA_INT=SW3_AXI_INT
                -DTX_0_HEAP_NAME="SDRAM"
                -DTX_1_HEAP_NAME="SDRAM"
                -DRX_0_HEAP_NAME="SDRAM"
@@ -876,12 +876,12 @@ endif()
 
     add_rumboot_target(
         CONFIGURATION IRAM
-        CFLAGS -DHSCB_UNDER_TEST_BASE=HSCB3_BASE 
-               -DHSCB_SUPPLEMENTARY_BASE=HSCB2_BASE 
-               -DHSCB_UNDER_TEST_INT=SW3_HSCB_INT 
-               -DHSCB_UNDER_TEST_DMA_INT=SW3_AXI_INT 
-               -DHSCB_SUPPLEMENTARY_INT=SW2_HSCB_INT 
-               -DHSCB_SUPPLEMENTARY_DMA_INT=SW2_AXI_INT 
+        CFLAGS -DHSCB_UNDER_TEST_BASE=HSCB3_BASE
+               -DHSCB_SUPPLEMENTARY_BASE=HSCB2_BASE
+               -DHSCB_UNDER_TEST_INT=SW3_HSCB_INT
+               -DHSCB_UNDER_TEST_DMA_INT=SW3_AXI_INT
+               -DHSCB_SUPPLEMENTARY_INT=SW2_HSCB_INT
+               -DHSCB_SUPPLEMENTARY_DMA_INT=SW2_AXI_INT
                -DTX_0_HEAP_NAME="IM1"
                -DTX_1_HEAP_NAME="SDRAM"
                -DRX_0_HEAP_NAME="SSRAM"
@@ -898,12 +898,12 @@ endif()
 
     add_rumboot_target(
         CONFIGURATION IRAM
-        CFLAGS -DHSCB_UNDER_TEST_BASE=HSCB2_BASE 
-               -DHSCB_SUPPLEMENTARY_BASE=HSCB3_BASE 
-               -DHSCB_UNDER_TEST_INT=SW2_HSCB_INT 
-               -DHSCB_UNDER_TEST_DMA_INT=SW2_AXI_INT 
-               -DHSCB_SUPPLEMENTARY_INT=SW3_HSCB_INT 
-               -DHSCB_SUPPLEMENTARY_DMA_INT=SW3_AXI_INT 
+        CFLAGS -DHSCB_UNDER_TEST_BASE=HSCB2_BASE
+               -DHSCB_SUPPLEMENTARY_BASE=HSCB3_BASE
+               -DHSCB_UNDER_TEST_INT=SW2_HSCB_INT
+               -DHSCB_UNDER_TEST_DMA_INT=SW2_AXI_INT
+               -DHSCB_SUPPLEMENTARY_INT=SW3_HSCB_INT
+               -DHSCB_SUPPLEMENTARY_DMA_INT=SW3_AXI_INT
                -DHSCB_FUNC_TEST
                #-DTEST_OI10_HSCB_FULL_TRACING
               #-DCHECK_REGS
@@ -914,7 +914,7 @@ endif()
 
     add_rumboot_target(
         CONFIGURATION IRAM
-        CFLAGS -DHSCB_UNDER_TEST_BASE=HSCB0_BASE 
+        CFLAGS -DHSCB_UNDER_TEST_BASE=HSCB0_BASE
                -DCHECK_REGS
         FILES test_oi10_hscb.c
         PREFIX "hscb_0"
@@ -923,7 +923,7 @@ endif()
 
     add_rumboot_target(
         CONFIGURATION IRAM
-        CFLAGS -DHSCB_UNDER_TEST_BASE=HSCB1_BASE 
+        CFLAGS -DHSCB_UNDER_TEST_BASE=HSCB1_BASE
                -DCHECK_REGS
         FILES test_oi10_hscb.c
         PREFIX "hscb_1"
@@ -932,7 +932,7 @@ endif()
 
     add_rumboot_target(
         CONFIGURATION IRAM
-        CFLAGS -DHSCB_UNDER_TEST_BASE=HSCB2_BASE 
+        CFLAGS -DHSCB_UNDER_TEST_BASE=HSCB2_BASE
                -DCHECK_REGS
         FILES test_oi10_hscb.c
         PREFIX "hscb_2"
@@ -942,7 +942,7 @@ endif()
 
     add_rumboot_target(
         CONFIGURATION IRAM
-        CFLAGS -DHSCB_UNDER_TEST_BASE=HSCB3_BASE 
+        CFLAGS -DHSCB_UNDER_TEST_BASE=HSCB3_BASE
                -DCHECK_REGS
         FILES test_oi10_hscb.c
         PREFIX "hscb_3"
@@ -1094,7 +1094,7 @@ endif()
         LOAD IM0BIN SELF
              SRAM0BIN supplementary-test_oi10_cpu_021_wt_100
     )
-    
+
     add_rumboot_target(
         CONFIGURATION SUPPLEMENTARY
         LDS oi10/sram0.lds
@@ -1109,7 +1109,7 @@ endif()
         LOAD IM0BIN SELF
              SRAM0BIN supplementary-test_oi10_cpu_021_wt_101
     )
-    
+
     add_rumboot_target(
         CONFIGURATION SUPPLEMENTARY
         LDS oi10/sram0.lds
@@ -1124,7 +1124,7 @@ endif()
         LOAD IM0BIN SELF
              SRAM0BIN supplementary-test_oi10_cpu_021_wt_110
     )
-    
+
     add_rumboot_target(
         CONFIGURATION SUPPLEMENTARY
         LDS oi10/sram0.lds
@@ -1139,7 +1139,7 @@ endif()
         LOAD IM0BIN SELF
              SRAM0BIN supplementary-test_oi10_cpu_021_wt_111
     )
-   
+
    add_rumboot_target(
         CONFIGURATION SUPPLEMENTARY
         LDS oi10/sram0.lds
@@ -1154,7 +1154,7 @@ endif()
         LOAD IM0BIN SELF
              SRAM0BIN supplementary-test_oi10_cpu_021_wb_000
     )
-     
+
     add_rumboot_target(
         CONFIGURATION SUPPLEMENTARY
         LDS oi10/sram0.lds
@@ -1169,7 +1169,7 @@ endif()
         LOAD IM0BIN SELF
              SRAM0BIN supplementary-test_oi10_cpu_021_wb_100
     )
-    
+
     add_rumboot_target(
         CONFIGURATION SUPPLEMENTARY
         LDS oi10/sram0.lds
@@ -1184,7 +1184,7 @@ endif()
         LOAD IM0BIN SELF
              SRAM0BIN supplementary-test_oi10_cpu_021_wb_101
     )
- 
+
     add_rumboot_target(
         CONFIGURATION SUPPLEMENTARY
         LDS oi10/sram0.lds
@@ -1199,7 +1199,7 @@ endif()
         LOAD IM0BIN SELF
              SRAM0BIN supplementary-test_oi10_cpu_021_wb_110
     )
-    
+
     add_rumboot_target(
         CONFIGURATION SUPPLEMENTARY
         LDS oi10/sram0.lds
@@ -1213,8 +1213,8 @@ endif()
         NAME "test_oi10_cpu_021_wb_111"
         LOAD IM0BIN SELF
              SRAM0BIN supplementary-test_oi10_cpu_021_wb_111
-    )      
-    
+    )
+
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES test_oi10_uart_000.c

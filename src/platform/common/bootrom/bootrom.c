@@ -8,6 +8,7 @@
 #include <rumboot/platform.h>
 #include <rumboot/xmodem.h>
 #include <rumboot/timer.h>
+#include <rumboot/irq.h>
 
 static inline void dump_parameter(const char *fmt, int param)
 {
@@ -95,6 +96,10 @@ static void hostmode_loop(void *pdata)
 int main()
 {
         size_t maxsize;
+
+        /* Set our own handler */
+        rumboot_irq_set_exception_handler(rumboot_arch_exception);
+
         struct rumboot_bootheader *hdr = rumboot_platform_get_spl_area(&maxsize);
         /* Initialize SPL execution counter */
         rumboot_platform_runtime_info->persistent[0] = 0;
