@@ -9,6 +9,8 @@
 #include <rumboot/bootsrc/sdio.h>
 #include <rumboot/printf.h>
 #include <rumboot/irq.h>
+#include <regs/regs_gpio_pl061.h>
+#include <regs/regs_uart_pl011.h>
 
 //#define BOOTM_SELFTEST     (1 << 0)
 //#define BOOTM_HOST         (1 << 1)
@@ -203,22 +205,26 @@ int rumboot_platform_selftest(struct rumboot_config *conf)
 
 
 #ifndef CMAKE_BUILD_TYPE_DEBUG
-void __attribute__((no_instrument_function)) rumboot_platform_putchar(uint8_t ch)
+void  __attribute__((no_instrument_function)) rumboot_platform_putchar(uint8_t c)
 {
-//        while ((ioread32(UART0_BASE + MUART_FIFO_STATE) & 0x7ff0000) >= 0x3ff0000);
-//        iowrite32(ch, UART0_BASE + MUART_DTRANS);
+        if (c == '\n') {
+                rumboot_platform_putchar('\r');
+        }
+
+        while (uart_check_tfifo_full(UART0_BASE));;
+        iowrite32(c, UART0_BASE + UARTDR);
 }
 
 
 int rumboot_platform_getchar(uint32_t timeout_us)
 {
-//        uint32_t start = rumboot_platform_get_uptime();
-//
-//        while (rumboot_platform_get_uptime() - start < timeout_us) {
-//                if ((ioread32(UART0_BASE + MUART_FIFO_STATE)) & 0xfff) {
-//                        return ioread32(UART0_BASE + MUART_DREC);
-//                }
-//        }
-//        return -1;
+        uint32_t start = rumboot_platform_get_uptime();
+
+        while (rumboot_platform_get_uptime() - start < timeout_us) {
+                if (!uart_check_rfifo_empty(UART0_BASE)) {
+                        return ioread32(UART0_BASE + UARTDR) & 0xFF;
+                }
+        }
+        return -1;
 }
 #endif
