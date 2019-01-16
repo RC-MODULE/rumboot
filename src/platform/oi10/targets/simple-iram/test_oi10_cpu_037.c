@@ -199,10 +199,7 @@ void clearing_bits ()
                    ( "mtfsb0 %0 \n\t"
                          :: "i"  (19)
                                );
-    asm volatile
-                   ( "mtfsb0 %0 \n\t"
-                         :: "i"  (20)
-                               );
+
     asm volatile
                    ( "mtfsb0 %0 \n\t"
                          :: "i"  (21)
@@ -265,7 +262,7 @@ void set_one ()
 
 void Round_to_Nearest()
 {
-    rumboot_printf("Round to Nearest\n");
+    rumboot_printf("Set rounding to nearest\n");
     asm volatile
                    ( "mtfsb0 %0 \n\t"
                          :: "i"  (30)
@@ -278,7 +275,7 @@ void Round_to_Nearest()
 
 void Round_toward_Zero ()
 {
-    rumboot_printf("Round toward Zero\n");
+    rumboot_printf("Set rounding to zero\n");
     asm volatile
                    ( "mtfsb0 %0 \n\t"
                          :: "i"  (30)
@@ -291,7 +288,7 @@ void Round_toward_Zero ()
 
 void Round_toward_pos_Infinity ()
 {
-    rumboot_printf("Round toward + Infinity\n");
+    rumboot_printf("Set rounding to + infinity\n");
     asm volatile
                    ( "mtfsb1 %0 \n\t"
                          :: "i"  (30)
@@ -304,7 +301,7 @@ void Round_toward_pos_Infinity ()
 
 void Round_toward_neg_Infinity ()
 {
-    rumboot_printf("Round toward - Infinity\n");
+    rumboot_printf("Set rounding to - infinity\n");
     asm volatile
                    ( "mtfsb1 %0 \n\t"
                          :: "i"  (30)
@@ -526,7 +523,6 @@ void check_round ()
     if (res_com3 != res_com1) rumboot_printf("Test ok 3vs1\n");
 
 }
-
 
 
 int main ()
