@@ -2,7 +2,7 @@ SET(RUMBOOT_ARCH arm)
 SET(RUMBOOT_PLATFORM bbp3)
 
 set(RUMBOOT_PLATFORM_DEFAULT_LDS bbp3/rom.lds)
-set(RUMBOOT_PLATFORM_DEFAULT_SNAPSHOT default)
+set(RUMBOOT_PLATFORM_DEFAULT_SNAPSHOT boot)
 
 
 if (RUMBOOT_BUILD_TYPE STREQUAL "Production")
@@ -15,7 +15,7 @@ endif()
 rumboot_add_configuration(
   ROM
   DEFAULT
-  SNAPSHOT default
+  SNAPSHOT boot
   LDS bbp3/rom.lds
   LDFLAGS "-e rumboot_reset_handler"
   CFLAGS -DRUMBOOT_ONLY_STACK
@@ -62,6 +62,10 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     IRAM_SPL ROM
     -a 512 -z 512)
 
+    add_rumboot_target(
+        CONFIGURATION ROM
+        FILES hello.c
+      )
 endmacro()
 
 if (CMAKE_VERILOG_RULES_LOADED)
@@ -69,8 +73,8 @@ if (CMAKE_VERILOG_RULES_LOADED)
 endif()
 
 file(GLOB PLATFORM_SOURCES
+    ${CMAKE_SOURCE_DIR}/src/arch/arm/startup.S
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/*.c
-    ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/startup.S
     ${CMAKE_SOURCE_DIR}/src/lib/drivers/irq-gic.c
     ${CMAKE_SOURCE_DIR}/src/lib/eventsystem-memory.c
     ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c
