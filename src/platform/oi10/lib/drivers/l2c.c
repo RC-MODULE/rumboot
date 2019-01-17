@@ -195,16 +195,16 @@ void l2c_pmu_set_cx( uint32_t const pmu_dcr_base, L2C_PMUREG const dcr_index, ui
 #define L2C_ARRACCADR_TAG_LRU_ADDR_FIELD(addr)          reg_field( 30,( ( (addr) >> 7) & L2C_CACHE_LINE_ADDR_MSK ) )
 #define L2C_ARRACCADR_DATA_ARRAY_ADDR_FIELD(addr)       reg_field( 31,( ( (addr) >> 6) & L2C_L2ARRACCADR_ADR_MSK ) )
 
-#define L2C_TAG_ADDRESS_OFFSET                          (17)
+#define L2C_TAG_ADDRESS_OFFSET                          (16) //16 for 256 KB, old value = 17 (512 KB)
 #define L2C_TAG_ADDRESS_MSK                             0x1FFFFFF
 #define L2C_TAG_CACHE_STATE_MSK                         0x7
 #define L2C_TAG_CACHE_STATE_INVALID                     0x0
 #define L2C_TAG_ADDRESS_FROM_64BIT(addr)                (( (addr) & ( (uint64_t)L2C_TAG_ADDRESS_MSK << L2C_TAG_ADDRESS_OFFSET ) ) >> L2C_TAG_ADDRESS_OFFSET)
-#define L2C_TAG_ADDRESS_FROM_ARRACCDO0(val)             ( ( (val) & (L2C_TAG_ADDRESS_MSK << 4) ) >> 4)
+#define L2C_TAG_ADDRESS_FROM_ARRACCDO0(val)             ( ( (val) & (L2C_TAG_ADDRESS_MSK << 3) ) >> 3) //3 for 256, 4 for 512
 #define L2C_TAG_CACHE_STATE_FROM_ARRACCDO0(val)         ( ((val) >> IBM_BIT_INDEX(32, 2)) & L2C_TAG_CACHE_STATE_MSK )
 #define L2C_TAG_CACHE_STATE_INVALID_VAL                 0x0
 
-#define L2C_EXT_ADDR_MSK                                    0x3FF
+#define L2C_EXT_ADDR_MSK                                0x3FF
 
 #define DEFINE_L2MCKEN_EXTINT      (1 << 11)
 #define DEFINE_L2MCKEN_PLBINT0     (1 << 10)
