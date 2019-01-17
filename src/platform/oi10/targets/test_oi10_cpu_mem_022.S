@@ -42,7 +42,7 @@ working_function:
     addi    r18, r18, -4
     addi    r9 , r9 , -4
     addi    r8 , r8 , -4
-    li      r6 , -1
+    li      r6 , 0
     addi    r7 , 0  , -4
     mtctr   r4
 
