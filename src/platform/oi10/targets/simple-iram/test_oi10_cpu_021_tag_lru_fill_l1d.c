@@ -34,7 +34,7 @@
 
 void init_test_data (void)
 {
-    memset(START_ADDR, 0x00, DATA_SIZE);
+    rumboot_memfill8_modelling((void*)START_ADDR,  DATA_SIZE, 0x00, 0x00);
     for (uint32_t ind = 0, addr = START_ADDR; ind < WORD_NUM; ind++ , addr += CACHE_LINE_SIZE)
         iowrite32(GET_DATA(ind), addr);
     msync();
