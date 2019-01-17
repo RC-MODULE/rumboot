@@ -75,7 +75,6 @@ static void enable_fpu()
 }
 
 
-
 void read_fpu ()
 {
     register double double_value;
@@ -318,12 +317,18 @@ void check_OX ()
     result_sum = FPSCR_d + FPSCR_d;
     read_fpu ();
     check_exception ();
+
+    TEST_ASSERT (( ((value >> FPU_FPSCR_FX_i)& 1)&&((value >> FPU_FPSCR_OX_i)& 1)&&((value >> FPU_FPSCR_XX_i)& 1)&&((value >> FPU_FPSCR_FI_i)& 1)&&((value >> FPU_FPSCR_FG_i)& 1)&&((value >> FPU_FPSCR_FU_i)& 1)) == 1, "ERROR status bits for check OX");
+
     clearing_bits ();
 
     set_one ();
     result_sum = FPSCR_d + FPSCR_d;
     read_fpu ();
     check_exception ();
+
+    TEST_ASSERT (( ((value >> FPU_FPSCR_FX_i)& 1)&&((value >> FPU_FPSCR_FEX_i)& 1)&&((value >> FPU_FPSCR_OX_i)& 1)&&((value >> FPU_FPSCR_XX_i)& 1)&&((value >> FPU_FPSCR_FI_i)& 1)&&((value >> FPU_FPSCR_FG_i)& 1)) == 1, "ERROR status bits for check OX and exception enable");
+
     clearing_bits ();
 }
 
@@ -333,6 +338,7 @@ void check_UX ()
     result_sum = FPSCR_f/FPSCR_UND;
     read_fpu ();
     check_exception ();
+    TEST_ASSERT (( ((value >> FPU_FPSCR_FX_i)& 1)&&((value >> FPU_FPSCR_UX_i)& 1)&&((value >> FPU_FPSCR_XX_i)& 1)&&((value >> FPU_FPSCR_FI_i)& 1)&&((value >> FPU_FPSCR_FPRF_i)& 1)&&((value >> FPU_FPSCR_FG_i)& 1))==1, "ERROR status bits for check UX" );
     clearing_bits ();
 
 
@@ -340,6 +346,7 @@ void check_UX ()
     result_sum = FPSCR_f/FPSCR_UND;
     read_fpu ();
     check_exception ();
+    TEST_ASSERT (( ((value >> FPU_FPSCR_FX_i)& 1)&&((value >> FPU_FPSCR_FEX_i)& 1)&&((value >> FPU_FPSCR_UX_i)& 1)&&((value >> FPU_FPSCR_XX_i)& 1)&&((value >> FPU_FPSCR_FR_i)& 1)&&((value >> FPU_FPSCR_FI_i)& 1)&&((value >> FPU_FPSCR_FG_i)& 1))==1, "ERROR status bits for check UX and exception enable" );
     clearing_bits ();
 }
 
@@ -349,12 +356,14 @@ void check_ZX ()
     result_sum = FPSCR_d/FPSCR_ZERO;
     read_fpu ();
     check_exception ();
+    TEST_ASSERT(( ((value >> FPU_FPSCR_FX_i)& 1)&& ((value >> FPU_FPSCR_ZX_i)& 1)&&((value >> FPU_FPSCR_FG_i)& 1)&&((value >> FPU_FPSCR_FU_i)& 1))== 1, "ERROR status bits for check ZX" );
     clearing_bits ();
 
     set_one ();
     result_sum = FPSCR_d/FPSCR_ZERO;
     read_fpu ();
     check_exception ();
+    TEST_ASSERT(( ((value >> FPU_FPSCR_FX_i)& 1)&&((value >> FPU_FPSCR_FEX_i)& 1)&&((value >> FPU_FPSCR_OX_i)& 1)&&((value >> FPU_FPSCR_ZX_i)& 1)&&((value >> FPU_FPSCR_XX_i)& 1)&&((value >> FPU_FPSCR_FI_i)& 1)&&((value >> FPU_FPSCR_FG_i)& 1))== 1, "ERROR status bits for check ZX and exception enable" );
     clearing_bits ();
 }
 
@@ -364,12 +373,14 @@ void check_XX ()
     result_sum = FPSCR_d;
     read_fpu ();
     check_exception ();
+    TEST_ASSERT(( ((value >> FPU_FPSCR_FX_i)& 1)&&((value >> FPU_FPSCR_OX_i)& 1)&&((value >> FPU_FPSCR_XX_i)& 1)&&((value >> FPU_FPSCR_FI_i)& 1)&&((value >> FPU_FPSCR_FG_i)& 1)&&((value >> FPU_FPSCR_FU_i)& 1))== 1, "ERROR status bits for check XX" );
     clearing_bits ();
 
     set_one ();
     result_sum = FPSCR_d;;
     read_fpu ();
     check_exception ();
+    TEST_ASSERT(( ((value >> FPU_FPSCR_FX_i)& 1)&&((value >> FPU_FPSCR_FEX_i)& 1)&&((value >> FPU_FPSCR_OX_i)& 1)&&((value >> FPU_FPSCR_XX_i)& 1)&&((value >> FPU_FPSCR_FI_i)& 1)&&((value >> FPU_FPSCR_FG_i)& 1) )== 1, "ERROR status bits for check XX and exception enable" );
     clearing_bits ();
 }
 
@@ -377,7 +388,6 @@ void check_sqrt ()
 {
     set_one ();
     rumboot_printf("TEST SQRT\n");
-
 
     volatile float result_sum_sqrt;
     asm volatile
@@ -389,30 +399,32 @@ void check_sqrt ()
 
     read_fpu ();
     check_exception ();
+    TEST_ASSERT(( ((value >> FPU_FPSCR_FX_i)& 1)&&((value >> FPU_FPSCR_FEX_i)& 1)&&((value >> FPU_FPSCR_VX_i)& 1)&&((value >> FPU_FPSCR_VXSQRT_i) & 1))== 1, "ERROR status bits for check SQRT and exception enable" );
     clearing_bits ();
-
-
 }
 
 void check_infinity ()
 {
     set_one ();
-    rumboot_printf("TEST INFINITY division\n");
+    rumboot_printf("TEST infinity division\n");
     result_sum = FPSCR_INF_POS.d/FPSCR_INF_POS.d;
     read_fpu ();
     check_exception ();
+    TEST_ASSERT(( ((value >> FPU_FPSCR_FX_i)& 1)&&((value >> FPU_FPSCR_FEX_i)& 1)&&((value >> FPU_FPSCR_VX_i)& 1)&&((value >> FPU_FPSCR_VXIDI_i)& 1)&&((value >> FPU_FPSCR_FG_i)& 1)&&((value >> FPU_FPSCR_FU_i)& 1))== 1, "ERROR status bits for check infinity division and exception enable" );
     clearing_bits ();
     set_one ();
-    rumboot_printf("TEST INFINITY subtraction\n");
+    rumboot_printf("TEST infinity subtraction\n");
     result_sum = FPSCR_INF_POS.d - FPSCR_INF_POS.d;
     read_fpu ();
     check_exception ();
+    TEST_ASSERT(( ((value >> FPU_FPSCR_FX_i)& 1)&&((value >> FPU_FPSCR_FEX_i)& 1)&&((value >> FPU_FPSCR_VX_i)& 1)&&((value >> FPU_FPSCR_VXISI_i)  & 1)&&((value >> FPU_FPSCR_FG_i)& 1)&&((value >> FPU_FPSCR_FU_i)& 1))== 1, "ERROR status bits for check infinity subtraction and exception enable" );
     clearing_bits ();
     set_one ();
     rumboot_printf("TEST infinity multiply zero\n");
     result_sum = FPSCR_INF_POS.d*FPSCR_ZERO;
     read_fpu ();
     check_exception ();
+    TEST_ASSERT(( ((value >> FPU_FPSCR_FX_i)& 1)&&((value >> FPU_FPSCR_FEX_i)& 1)&&((value >> FPU_FPSCR_VX_i)& 1)&&((value >> FPU_FPSCR_VXIMZ_i)& 1)&& ((value >> FPU_FPSCR_FE_i)& 1))== 1, "ERROR status bits for check infinity multiply and exception enable" );
     clearing_bits ();
 }
 
@@ -422,8 +434,8 @@ void check_zero_division ()
     result_sum = FPSCR_ZERO / FPSCR_ZERO;
     read_fpu ();
     check_exception ();
+    TEST_ASSERT(( ((value >> FPU_FPSCR_FX_i)& 1)&& ((value >> FPU_FPSCR_VX_i)& 1)&&((value >> FPU_FPSCR_VXZDZ_i)& 1)&&((value >> FPU_FPSCR_FPRF_i)& 1)&&((value >> FPU_FPSCR_FU_i)& 1) )== 1, "ERROR status bits for check zero division and exception enable" );
     clearing_bits ();
-
 }
 
 void check_comparison ()
@@ -433,20 +445,23 @@ void check_comparison ()
     if (FPSCR_neg < FPSCR_ZERO) rumboot_printf("Test negative ok \n");
     read_fpu ();
     check_exception ();
+    TEST_ASSERT(( (value >> FPU_FPSCR_FL_i)& 1)== 1, "ERROR status bits for check negative" );
     rumboot_printf("TEST positive\n");
     if (FPSCR_pos > FPSCR_ZERO) rumboot_printf("Test positive ok \n");
     read_fpu ();
     check_exception ();
+    TEST_ASSERT(( (value >> FPU_FPSCR_FG_i)& 1)== 1, "ERROR status bits for check  positive" );
     rumboot_printf("TEST zero\n");
     if (FPSCR_ZERO == FPSCR_ZERO) rumboot_printf("Test zero ok \n");
     read_fpu ();
     check_exception ();
+    TEST_ASSERT(( (value >> FPU_FPSCR_FE_i)& 1)== 1, "ERROR status bits for check zero" );
 
     rumboot_printf("TEST NaN\n");
     result_sum = FPSCR_ZERO * FPSCR_INF_POS.d;
     read_fpu ();
     check_exception ();
-
+    TEST_ASSERT(( ((value >> FPU_FPSCR_FX_i)& 1)&&((value >> FPU_FPSCR_VX_i)& 1)&&((value >> FPU_FPSCR_VXIMZ_i)& 1)&&((value >> FPU_FPSCR_FPRF_i)& 1)&&((value >> FPU_FPSCR_FU_i)& 1))== 1, "ERROR status bits for check NaN" );
 
     rumboot_printf("TEST VXVC\n");
     volatile float result_com = FPSCR_ZERO * FPSCR_INF_POS.d;
@@ -460,6 +475,7 @@ void check_comparison ()
     read_fpu ();
     check_exception ();
     clearing_bits ();
+    TEST_ASSERT(( ((value >> FPU_FPSCR_FX_i)& 1)&&((value >> FPU_FPSCR_VX_i)& 1)&&((value >> FPU_FPSCR_VXIMZ_i)& 1)&&((value >> FPU_FPSCR_VXVC_i)& 1)&&((value >> FPU_FPSCR_FU_i)& 1) )== 1, "ERROR status bits for check VXVC" );
 }
 
 void Integer_convert()
@@ -478,6 +494,7 @@ void Integer_convert()
 
     read_fpu ();
     check_exception ();
+    TEST_ASSERT(( ((value >> FPU_FPSCR_FX_i)& 1)&&((value >> FPU_FPSCR_VX_i)& 1)&&((value >> FPU_FPSCR_VXSNAN_i) & 1)&&((value >> FPU_FPSCR_VXCVI_i)& 1) )== 1, "ERROR status bits for check integer convert" );
     clearing_bits ();
 }
 
@@ -488,18 +505,20 @@ void software_defined_condition ()
                      ( "mtfsb1 %0 \n\t"
                            :: "i"  (21)
                                  );
-      read_fpu ();
-      check_exception ();
-      clearing_bits ();
+	 read_fpu ();
+	 check_exception ();
+	 TEST_ASSERT(( ((value >> FPU_FPSCR_FX_i)& 1)&&((value >> FPU_FPSCR_VX_i)& 1)&&((value >> FPU_FPSCR_VXSOFT_i) & 1) )== 1, "ERROR status bits for check software-defined condition" );
+	 clearing_bits ();
 
-      asm volatile
-                     ( "mtfsb0 %0 \n\t"
-                           :: "i"  (21)
-                                 );
+	  asm volatile
+					 ( "mtfsb0 %0 \n\t"
+						   :: "i"  (21)
+								 );
 
-    read_fpu ();
-    check_exception ();
-    clearing_bits ();
+     read_fpu ();
+     check_exception ();
+     TEST_ASSERT(( ((value >> FPU_FPSCR_VXSOFT_i) & 1) )== 0, "ERROR status bits for check software-defined condition" );
+     clearing_bits ();
 }
 
 void check_round ()
@@ -517,11 +536,10 @@ void check_round ()
     Round_toward_neg_Infinity ();
     res_com4 = FPSCR_Round;
 
-    if (res_com1 != res_com4) rumboot_printf("Test ok 1vs4\n");
-    if (res_com3 != res_com4) rumboot_printf("Test ok 3vs4\n");
-    if (res_com2 != res_com3) rumboot_printf("Test ok 2vs3\n");
-    if (res_com3 != res_com1) rumboot_printf("Test ok 3vs1\n");
-
+    TEST_ASSERT((res_com1 != res_com4), "ERROR round to nearest for check res_com1 != res_com4 " );
+    TEST_ASSERT((res_com3 != res_com4), "ERROR round to zero for check res_com3 != res_com4 " );
+    TEST_ASSERT((res_com2 != res_com3), "ERROR round to + infinity for check res_com3 != res_com4 " );
+    TEST_ASSERT((res_com3 = res_com1), "ERROR round to - infinity for check res_com3 = res_com1 " );
 }
 
 
@@ -548,7 +566,6 @@ int main ()
     Integer_convert();
     software_defined_condition ();
     check_round ();
-
 
     read_fpu ();
     check_exception ();
