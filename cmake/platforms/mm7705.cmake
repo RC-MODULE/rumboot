@@ -2,6 +2,7 @@ SET(RUMBOOT_ARCH ppc)
 
 file(GLOB PLATFORM_SOURCES
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/*.c
+    ${CMAKE_SOURCE_DIR}/src/arch/ppc/exception.c
     ${CMAKE_SOURCE_DIR}/src/lib/drivers/irq-mpic128.c
     ${CMAKE_SOURCE_DIR}/src/lib/drivers/uart_pl011.c
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/*.S

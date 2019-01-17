@@ -8,8 +8,9 @@
 #ifndef PPC_ARCH_IO_H
 #define PPC_ARCH_IO_H
 
-
 #define RUMBOOT_ARCH_HAS_IO
+
+#include <arch/ppc_476fp_lib_c.h>
 
 #define ALLOW_NULL_ADDR( base_addr ) asm volatile ( "":"=r"( base_addr ):"0"( base_addr ) )
 
@@ -124,6 +125,7 @@ static inline __attribute__((no_instrument_function)) __attribute__((always_inli
     asm volatile (\
         "lwsync \n\t"\
     )
+
 
 
 #endif /* PPC_ARCH_IO_H */

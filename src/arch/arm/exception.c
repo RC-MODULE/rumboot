@@ -1,6 +1,8 @@
 #include <stdint.h>
 #include <rumboot/irq.h>
 #include <rumboot/platform.h>
+#include <rumboot/io.h>
+
 static inline int get_cpsr()
 {
     int result = 0;

@@ -2,7 +2,8 @@
 #include <rumboot/irq.h>
 #include <rumboot/platform.h>
 #include <rumboot/printf.h>
-#include <platform/arch/ppc/ppc_476fp_config.h>
+#include <arch/ppc_476fp_config.h>
+#include <rumboot/io.h>
 
 void rumboot_arch_stacktrace(void)
 {

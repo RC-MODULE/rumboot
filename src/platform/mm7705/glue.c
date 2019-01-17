@@ -23,30 +23,10 @@ int64_t rumboot_virt_to_phys(volatile void *addr)
 uint32_t rumboot_virt_to_dma(volatile void *addr)
 {
     //FixMe: Use TLB stuff here
-    uint64_t ret = addr; //get_physical_addr( (uint32_t)  addr, 0);
+    uint64_t ret = (uint64_t) addr; //get_physical_addr( (uint32_t)  addr, 0);
     return (uint32_t) (ret & 0xFFFFFFFF);
 }
 
-void msr_write(uint32_t const wval)
-{
-        __asm volatile
-        (
-                "mtmsr %0 \n\t"
-                ::"r" (wval)
-        );
-}
-
-uint32_t msr_read()
-{
-        uint32_t rval = 0;
-        __asm volatile
-        (
-                "mfmsr %0 \n\t"
-                : "=r" (rval)
-        );
-
-        return rval;
-}
 
 static void enable_fpu()
 {
