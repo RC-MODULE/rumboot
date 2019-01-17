@@ -62,7 +62,7 @@ static const tlb_entry em_anti_x_tlb_entries[] =   {TLB_ENTRY_EM_1stGB_NO_EXEC,
 #endif
 
 #ifndef TX_3_HEAP_NAME
-#define TX_3_HEAP_NAME "IM1"
+#define TX_3_HEAP_NAME "IM2"
 #endif
 //
 //#ifndef RX_3_HEAP_NAME
