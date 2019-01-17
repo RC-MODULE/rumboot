@@ -88,8 +88,6 @@ int main(void)
 
     emi_init(DCR_EM2_EMI_BASE);
 
-    test_event_send_test_id("test_oi10_em2_102");
-
     rumboot_printf("Copying code from IM0 to SRAM0 memory ... \n");
 
     uint32_t check_instruction_read_access_sram0_start_addr = (uint32_t)&check_instruction_read_access_sram0_initial;
