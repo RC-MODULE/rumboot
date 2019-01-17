@@ -11,6 +11,8 @@
 #include <rumboot/irq.h>
 #include <regs/regs_gpio_pl061.h>
 #include <regs/regs_uart_pl011.h>
+#include <devices/uart_pl011.h>
+#include <rumboot/bootsrc/physmap.h>
 
 //#define BOOTM_SELFTEST     (1 << 0)
 //#define BOOTM_HOST         (1 << 1)
@@ -19,14 +21,20 @@
 //#define BOOTM_SDIO1_CD     (1 << 4)
 //#define BOOTM_SPI1_CS1     (1 << 5)
 
+
+static inline int is_silent()
+{
+        return false;
+}
+
 void rumboot_platform_read_config(struct rumboot_config *conf)
 {
 //        uint32_t bootm = ioread32(SCTL_BASE + SCTL_BOOTM);
 //
 //        if (bootm & BOOTM_FASTUART) {
-//                conf->baudrate = 6250000;
+        conf->baudrate = 6250000;
 //        } else {
-//                conf->baudrate = 115200;
+        //conf->baudrate = 115200;
 //        }
 //
 //        conf->hostmode = (bootm & BOOTM_HOST);
@@ -37,48 +45,75 @@ void rumboot_platform_read_config(struct rumboot_config *conf)
 
 void rumboot_platform_init_loader(struct rumboot_config *conf)
 {
-        rumboot_irq_set_exception_handler(rumboot_arch_exception);
+        /* Initialize UART */
+        if (!is_silent()) {
+                struct uart_init_params sparams =
+                {
+                        .wlen			= UART_word_length_8bit,
+                        .uart_sys_freq_hz	= 128000000,
+                        .parity			= UART_parity_no,
+                        .rx_fifo_level		= UART_RX_FIFO_LEVEL_GT_7_8,
+                        .tx_fifo_level		= UART_TX_FIFO_LEVEL_LT_1_8,
+                        .int_mask		= 0x0,
+                        .use_rts_cts		= false,
+                        .loopback		= false
+                };
+                sparams.baud_rate = conf->baudrate;
+                uart_init(UART0_Base, &sparams);
+                uart_tx_enable(UART0_Base, true);
+                uart_rx_enable(UART0_Base, true);
+                uart_enable(UART0_Base, true);
+
+                /* Send sync byte. This way it will work for debug builds */
+                iowrite32(0x55, UART0_Base + UARTDR);
+        }
 }
 
 
-static bool spi0_1_enable(const struct rumboot_bootsource *src, void *pdata)
+#define SPI_CS0 (1 << 0)
+static bool spi0_enable(const struct rumboot_bootsource *src, void *pdata)
 {
-        uint32_t v;
-
-//        v = ioread32(GPIO0_BASE + GPIO_PAD_DIR);
-//        v |= 1 << 5;
-//        iowrite32(v, GPIO0_BASE + GPIO_PAD_DIR);
-//        iowrite32((1 << 5), GPIO0_BASE + GPIO_WR_DATA_SET1);
+        uint32_t v = ioread32(GPIOE_Base + GPIO_DIR);
+        iowrite32(v | SPI_CS0, GPIOE_Base + GPIO_DIR);
         return true;
 }
 
-static void spi0_1_disable(const struct rumboot_bootsource *src, void *pdata)
+static void spi0_disable(const struct rumboot_bootsource *src, void *pdata)
 {
         uint32_t v;
 
-//        v = ioread32(GPIO0_BASE + GPIO_PAD_DIR);
-//        v &= ~(1 << 5);
-//        iowrite32(v, GPIO0_BASE + GPIO_PAD_DIR);
+        v = ioread32(GPIOE_Base + GPIO_DIR);
+        v &= ~SPI_CS0;
+        iowrite32(v, GPIOE_Base + GPIO_DIR);
 }
 
-static void spi0_1_cs(const struct rumboot_bootsource *src, void *pdata, int select)
+static void spi0_cs(const struct rumboot_bootsource *src, void *pdata, int select)
 {
-//        if (!select) {
-//                iowrite32(~(1 << 5), GPIO0_BASE + GPIO_WR_DATA_SET0);
-//        } else {
-//                iowrite32((1 << 5), GPIO0_BASE + GPIO_WR_DATA_SET1);
-//        }
+        if (!select) {
+                iowrite32(0, GPIOE_Base + GPIO_DATA + (SPI_CS0 << 2));
+        } else {
+                iowrite32(SPI_CS0, GPIOE_Base + GPIO_DATA + (SPI_CS0 << 2));
+        }
 }
 
-static const struct rumboot_bootsource arr[] = {
+static const struct rumboot_bootsource spi_boot[] = {
         {
-                .name = "SPI0 (CS: ???)",
+                .name = "SPI0 (CS: GPE0)",
                 .base = SPI0_Base,
-                .freq_khz = 100000,
+                .freq_khz = 128000,
                 .plugin = &g_bootmodule_spiflash,
-                .enable = spi0_1_enable,
-                .disable = spi0_1_disable,
-                .chipselect = spi0_1_cs,
+                .enable = spi0_enable,
+                .disable = spi0_disable,
+                .chipselect = spi0_cs,
+        },
+        { /*Sentinel*/ }
+};
+
+static const struct rumboot_bootsource emi_boot[] = {
+        {
+                .name = "EMI",
+                .base = EMI_MEM_Base,
+                .plugin = &g_bootmodule_physmap,
         },
         { /*Sentinel*/ }
 };
@@ -87,11 +122,6 @@ static const struct rumboot_bootsource arr[] = {
 void rumboot_platform_enter_host_mode()
 {
         uint32_t v;
-
-//        v = ioread32(GPIO0_BASE + GPIO_PAD_DIR);
-//        v |= BOOTM_HOST;
-//        iowrite32(v, GPIO0_BASE + GPIO_PAD_DIR);
-//        iowrite32(BOOTM_HOST, GPIO0_BASE + GPIO_WR_DATA_SET1);
 }
 
 void *rumboot_platform_get_spl_area(size_t *size)
@@ -102,7 +132,7 @@ void *rumboot_platform_get_spl_area(size_t *size)
 
 const struct rumboot_bootsource *rumboot_platform_get_bootsources()
 {
-        return arr;
+        return spi_boot;
 }
 
 bool rumboot_platform_check_entry_points(struct rumboot_bootheader *hdr)
@@ -123,13 +153,17 @@ void rumboot_platform_print_summary(struct rumboot_config *conf)
 
 int rumboot_platform_selftest(struct rumboot_config *conf)
 {
-  return 0;
+        return 0;
 }
 
 
 #ifndef CMAKE_BUILD_TYPE_DEBUG
-void  __attribute__((no_instrument_function)) rumboot_platform_putchar(uint8_t c)
+void __attribute__((no_instrument_function)) rumboot_platform_putchar(uint8_t c)
 {
+        if (is_silent()) {
+                return;
+        }
+
         if (c == '\n') {
                 rumboot_platform_putchar('\r');
         }
@@ -141,6 +175,11 @@ void  __attribute__((no_instrument_function)) rumboot_platform_putchar(uint8_t c
 
 int rumboot_platform_getchar(uint32_t timeout_us)
 {
+        if (is_silent()) {
+                delay_us(timeout_us);
+                return -1;
+        }
+
         uint32_t start = rumboot_platform_get_uptime();
 
         while (rumboot_platform_get_uptime() - start < timeout_us) {

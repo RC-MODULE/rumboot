@@ -57,6 +57,7 @@
 
 #define CORB_Base       0x00340000
 
-#define TRNSMT_Base     0x003C_0000
+#define TRNSMT_Base     0x003C0000
 
+#define EMI_MEM_Base    0x40000000
 #endif

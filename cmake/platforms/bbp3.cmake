@@ -51,21 +51,44 @@ rumboot_add_configuration (
 
 include(${CMAKE_SOURCE_DIR}/cmake/bootrom.cmake)
 
-set(ROM_115200_OPTS +BOOT_FASTUART=0 +UART0_SPEED=115200  +I2C0_SLV_DISABLE)
-set(ROM_6500K_OPTS  +BOOT_FASTUART=1 +UART0_SPEED=6250000 +I2C0_SLV_DISABLE)
+set(ROM_115200_OPTS +BOOT_FASTUART=0 +UART0_SPEED=115200 )
+set(ROM_6500K_OPTS  +BOOT_FASTUART=1 +UART0_SPEED=6250000)
 
 ### Add tests here ###
 #WARNING! Full regression automatically includes all tests from the short ones
 macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
-  rumboot_bootrom_add_components(
-    IRAM_SPL ROM
-    -a 512 -z 512)
+    rumboot_bootrom_add_components(
+      IRAM_SPL ROM
+      -a 512 -z 512)
+
+    rumboot_bootrom_unit_test(
+        ID 0
+        CONFIGURATION ROM
+        TAG spi0_cs0
+        MEMTAG SPI0_CONF
+        TAGOFFSET 0
+        FULL YES
+        IRUN_FLAGS ${ROM_6500K_OPTS}
+        ENDIAN little
+    )
+
+    rumboot_bootrom_integration_test(BROM
+        NAME "serial-115200"
+        IRUN_FLAGS ${ROM_115200_OPTS} +UART0_STOP_ON_MATCH +UART0_STOP_ON_MISMATCH
+        TIMEOUT 10 ms
+    )
+    rumboot_bootrom_integration_test(BROM
+        NAME "serial-6500000"
+        IRUN_FLAGS ${ROM_6500K_OPTS} +UART0_STOP_ON_MATCH +UART0_STOP_ON_MISMATCH
+        TIMEOUT 10 ms
+    )
 
     add_rumboot_target(
         CONFIGURATION ROM
         FILES hello.c
       )
+
 endmacro()
 
 if (CMAKE_VERILOG_RULES_LOADED)
