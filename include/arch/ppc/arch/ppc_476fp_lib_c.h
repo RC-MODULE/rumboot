@@ -66,6 +66,13 @@ static inline __attribute__((always_inline)) void icbt( void* const addr ) {
     );
 }
 
+static inline __attribute__((always_inline)) void icbtls( void* const addr ) {
+    asm volatile (
+        "icbtls 0, 0, %0\n\t"
+        ::  "r"(addr)
+    );
+}
+
 static inline __attribute__((always_inline)) void icread( void* const addr ) {
     asm volatile (
         "icread 0, %0\n\t"
@@ -107,6 +114,15 @@ static inline __attribute__((always_inline)) void dcbt( void* const addr ) {
         ::"r"(addr)
     );
 }
+
+static inline __attribute__((always_inline)) void dcbtls( void* const addr ) {
+    asm volatile (
+        "dcbtls 0, 0, %0\n\t"
+        ::"r"(addr)
+    );
+}
+
+
 /* These instruction calls must be placed in the same function
  * where called.
  * It cannot be wrapped within an inline function, because
