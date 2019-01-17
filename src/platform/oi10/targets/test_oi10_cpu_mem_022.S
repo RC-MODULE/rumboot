@@ -9,8 +9,9 @@
 
 working_function:
 //stack
-    stwu    r1,-16(r1)
-    stw     r31,12(r1)
+    stwu    r1,-104(r1)
+    stw     r31,100(r1)
+    stmw    r27, 20(r1)
     mr      r31,r1
 
     //disable GHR
@@ -122,7 +123,8 @@ it_is_three_or_two:
 it_is_two:
     bdnz    loop
 //stack restore
-    addi    r11,r31,16
+    addi    r11,r31,104
     lwz     r31,-4(r11)
+    lmw     r27,-84(r11)
     mr      r1,r11
     blr
