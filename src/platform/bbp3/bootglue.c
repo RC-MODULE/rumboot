@@ -111,7 +111,7 @@ static const struct rumboot_bootsource spi_boot[] = {
 
 static const struct rumboot_bootsource emi_boot[] = {
         {
-                .name = "EMI",
+                .name = "NOR",
                 .base = EMI_MEM_Base,
                 .plugin = &g_bootmodule_physmap,
         },
@@ -132,7 +132,7 @@ void *rumboot_platform_get_spl_area(size_t *size)
 
 const struct rumboot_bootsource *rumboot_platform_get_bootsources()
 {
-        return spi_boot;
+        return emi_boot;
 }
 
 bool rumboot_platform_check_entry_points(struct rumboot_bootheader *hdr)
