@@ -49,6 +49,7 @@ rumboot_add_configuration (
     FEATURES COVERAGE PACKIMAGE
 )
 
+
 include(${CMAKE_SOURCE_DIR}/cmake/bootrom.cmake)
 
 set(ROM_115200_OPTS +BOOT_FASTUART=0 +UART0_SPEED=115200 )
@@ -94,6 +95,17 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         IRUN_FLAGS ${ROM_6500K_OPTS} +UART0_STOP_ON_MATCH +UART0_STOP_ON_MISMATCH
         TIMEOUT 10 ms
     )
+
+
+        rumboot_bootrom_integration_test(BROM
+            NAME "host"
+            IRUN_FLAGS ${ROM_6500K_OPTS}
+            LOAD
+              SD0_BOOT_IMAGE spl-fail
+              SPI0_CONF spl-fail-bad-magic,spl-fail-bad-magic
+              NOR_IMAGE spl-fail-bad-magic
+              HOSTMOCK  spl-ok
+        )
 
     add_rumboot_target(
         CONFIGURATION ROM
