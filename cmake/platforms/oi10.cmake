@@ -1761,6 +1761,20 @@ endif()
     )
 
     add_rumboot_target(
+        CONFIGURATION SUPPLEMENTARY
+        LDS oi10/sram0.lds
+        FILES test_oi10_cpu_021_wb_cache_size.c
+        NAME "test_oi10_cpu_021_wb_cache_size"
+    )
+    add_rumboot_target(
+        CONFIGURATION IRAM
+        FILES test_oi10_cpu_021_wb_cache_size_base.c
+        NAME "test_oi10_cpu_021_wb_cache_size"
+        LOAD IM0BIN SELF
+             MBIN supplementary-test_oi10_cpu_021_wb_cache_size
+    )
+
+    add_rumboot_target(
       CONFIGURATION IRAM
       FILES test_oi10_uart_000.c
       CFLAGS -DUARTRX_BASE=UART0_BASE -DUARTTX_BASE=UART1_BASE -DUARTRX_INT=UART0_INT -DUARTTX_INT=UART1_INT -DCHECK_REGISTERS
