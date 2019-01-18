@@ -1,8 +1,7 @@
 OUTPUT_ARCH(ARM)
 MEMORY
 {
-  AMB0 (rx) : ORIGIN = 0x00000, LENGTH = 0x0003E000
-  AMB1 (rxw): ORIGIN = 0x40000, LENGTH = 0x00040000
+  IRAM (rxw): ORIGIN = 0x0008000, LENGTH = 0x78000
 }
 
 SECTIONS
@@ -10,7 +9,7 @@ SECTIONS
 
  .header : {
    KEEP(*(.header))
- } > AMB1
+ } > IRAM
 
 
  .preinit_array     :
@@ -18,7 +17,7 @@ SECTIONS
    PROVIDE_HIDDEN (__preinit_array_start = .);
    KEEP (*(.preinit_array*))
    PROVIDE_HIDDEN (__preinit_array_end = .);
- } > AMB1
+ } > IRAM
 
  .init_array :
  {
@@ -26,11 +25,11 @@ SECTIONS
    KEEP (*(SORT(.init_array.*)))
    KEEP (*(.init_array*))
    PROVIDE_HIDDEN (__init_array_end = .);
- } > AMB1
+ } > IRAM
 
  .rwx : {
-  rumboot_AMB1_heap_start = .;
-  rumboot_AMB1_heap_end = .;
+  rumboot_IRAM_heap_start = .;
+  rumboot_IRAM_heap_end = .;
 
   *(.text)
   *(.text.*)
@@ -45,7 +44,7 @@ SECTIONS
   rumboot_platform_spl_start = .;
 
   rumboot_platform_spl_end = .;
-  } > AMB1
+  } > IRAM
 
  .runtime 0x7f000 (NOLOAD):
  {
