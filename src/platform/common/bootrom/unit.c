@@ -18,6 +18,7 @@ int main()
 #endif
 
 	struct rumboot_config conf;
+    rumboot_platform_runtime_info->persistent[0] = 0;
 	rumboot_platform_read_config(&conf);
 	rumboot_platform_init_loader(&conf);
 	rumboot_printf("Hello, I'm bootsource unit test for %d\n", SOURCE);
