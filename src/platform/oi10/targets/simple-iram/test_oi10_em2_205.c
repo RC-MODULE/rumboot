@@ -7,8 +7,8 @@
 #include <rumboot/printf.h>
 #include <rumboot/timer.h>
 
+#include <arch/ppc_476fp_config.h>
 #include <platform/common_macros/common_macros.h>
-#include <platform/arch/ppc/ppc_476fp_config.h>
 #include <platform/devices.h>
 #include <platform/devices/emi.h>
 #include <platform/devices/l2c.h>
@@ -678,7 +678,7 @@ static void exception_handler(int const id, char const * const name ) {
 }
 
 
-int main(void) 
+int main(void)
 {
     uint32_t test_result = 0;
 
