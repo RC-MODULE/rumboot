@@ -51,19 +51,12 @@
  * @{
  */
 
-#define WD_CTRL_PERIODIC   (1<<6)
-
-#define WD_CTRL_DIV1       (1<<3)
-#define WD_CTRL_DIV0       (1<<2)
-
-#define WD_CTRL_SIZE32     (1<<1)
-#define WD_CTRL_INTEN      (1<<5)
+#define WD_CTRL_INTEN      1
 #define WD_CTRL_RESEN      (1<<1)
 
 enum sp805_mode
 {
-    FREERUN,
-    TEST
+    FREERUN
 };
 
 struct sp805_conf
@@ -74,6 +67,14 @@ struct sp805_conf
     int  width;
     int  load;
 };
+
+/**
+ *  \brief unlock r/w for all regs
+ *  \
+ *  \param [in] base_addr Choose exact sp805 unit by setting its base address
+ *
+*/
+void sp805_unlock_access(uint32_t base_addr);
 
 /**
  *  \brief Start watchdog
