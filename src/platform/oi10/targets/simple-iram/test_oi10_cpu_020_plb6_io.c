@@ -13,11 +13,11 @@
 #include <rumboot/macros.h>
 #include <rumboot/io.h>
 #include <rumboot/irq.h>
+#include <arch/ppc_476fp_lib_c.h>
 #include <platform/test_assert.h>
 #include <platform/devices.h>
 #include <platform/trace.h>
 #include <platform/test_event_c.h>
-#include <platform/arch/ppc/ppc_476fp_lib_c.h>
 #include <platform/arch/ppc/ppc_476fp_mmu_fields.h>
 #include <platform/arch/ppc/ppc_476fp_mmu.h>
 #include <platform/arch/ppc/test_macro.h>
@@ -51,8 +51,6 @@ struct greth_instance {
 #define TEST_VALUE_GMII_QWORD                           0xBABA0000
 #define TEST_VALUE_HSCB_FULL_L2C_LINE                   0x37BA0000
 #define TEST_VALUE_HSCB_QWORD                           0xDEDA0000
-#define L2C_TAG_CACHE_STATE_INVALID                     0x0
-#define L2C_TAG_CACHE_STATE_FROM_ARRACCDO0(val)         ( ((val) >> IBM_BIT_INDEX(32, 2)) & 0x7)
 
 #define TLB_ENTRY_LOCAL   MMU_TLB_ENTRY(  0x000,  0x40000,    0x40000,    MMU_TLBE_DSIZ_1GB,      0b1,    0b1,    0b0,    0b0,    0b1,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
 
