@@ -2,6 +2,7 @@
 #include <rumboot/irq.h>
 #include <rumboot/platform.h>
 #include <rumboot/io.h>
+#include <rumboot/printf.h>
 
 static inline int get_cpsr()
 {
@@ -19,12 +20,12 @@ __attribute__( ( always_inline ) ) static inline uint32_t __get_APSR(void)
   return(result);
 }
 
-__attribute__( ( always_inline ) ) static inline  void set_cpsr(uint32_t cpsr)
+__attribute__( ( inline ) ) static inline  void set_cpsr(uint32_t cpsr)
 {
   asm volatile ("MSR cpsr, %0" : : "r" (cpsr) : "memory");
 }
 
-static __attribute__( ( always_inline ) ) uint32_t __get_FP_usr(void)
+static __attribute__( ( inline ) ) uint32_t __get_FP_usr(void)
 {
   uint32_t cpsr = get_cpsr();
   uint32_t result;
