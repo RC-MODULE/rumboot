@@ -2,8 +2,8 @@
 #include <rumboot/platform.h>
 #include <rumboot/macros.h>
 #include <arch/irq_macros.h>
-#include <platform/arch/ppc/ppc_476fp_config.h>
-#include <platform/arch/ppc/ppc_476fp_lib_c.h>
+#include <arch/ppc_476fp_config.h>
+#include <arch/ppc_476fp_lib_c.h>
 
 
 __attribute__((no_instrument_function)) void rumboot_platform_event_raise(

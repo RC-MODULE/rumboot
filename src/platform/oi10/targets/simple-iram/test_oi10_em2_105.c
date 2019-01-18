@@ -13,11 +13,11 @@
 #include <rumboot/macros.h>
 #include <rumboot/io.h>
 #include <rumboot/regpoker.h>
+#include <arch/ppc_476fp_lib_c.h>
 #include <platform/test_assert.h>
 #include <platform/devices.h>
 #include <platform/trace.h>
 #include <platform/test_event_c.h>
-#include <platform/arch/ppc/ppc_476fp_lib_c.h>
 #include <platform/devices/emi.h>
 #include <platform/devices/nor_1636RR4.h>
 

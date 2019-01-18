@@ -2,8 +2,8 @@
 #define PPC_IRQ_MACROS_H
 
 
+#include <arch/ppc_476fp_lib_c.h>
 #include <platform/arch/ppc/ppc_476fp_itrpt_fields.h>
-#include <platform/arch/ppc/ppc_476fp_lib_c.h>
 #include <platform/regs/fields/mpic128.h>
 
 

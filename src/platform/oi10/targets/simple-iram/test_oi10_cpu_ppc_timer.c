@@ -12,8 +12,10 @@
 #include <rumboot/macros.h>
 #include <rumboot/io.h>
 #include <rumboot/irq.h>
-#include <platform/devices.h>
 
+#include <arch/ppc_476fp_config.h>
+#include <arch/ppc_476fp_lib_c.h>
+#include <platform/devices.h>
 #include <platform/arch/ppc/test_macro.h>
 #include <platform/test_event_c.h>
 #include <platform/trace.h>
@@ -21,8 +23,6 @@
 #include <platform/arch/ppc/ppc_476fp_ctrl_fields.h>
 #include <platform/arch/ppc/ppc_476fp_timer_fields.h>
 #include <platform/arch/ppc/ppc_476fp_debug_fields.h>
-#include <platform/arch/ppc/ppc_476fp_lib_c.h>
-#include <platform/arch/ppc/ppc_476fp_config.h>
 
 #define DEC_PERIOD  0x800
 
