@@ -14,31 +14,32 @@
 #include <devices/uart_pl011.h>
 #include <rumboot/bootsrc/physmap.h>
 
-//#define BOOTM_SELFTEST     (1 << 0)
-//#define BOOTM_HOST         (1 << 1)
-//#define BOOTM_FASTUART     (1 << 2)
-//#define BOOTM_SDIO0_CD     (1 << 3)
-//#define BOOTM_SDIO1_CD     (1 << 4)
-//#define BOOTM_SPI1_CS1     (1 << 5)
+#define BOOTM_HOST         (1 << 0)
+#define BOOTM_SILENT       (1 << 1)
+#define BOOTM_EMI          (1 << 2)
+#define BOOTM_NMC          (1 << 3)
+#define BOOTM_EMI_BIS      (1 << 4)
 
+#define BOOTM_NM0          (1 << 0)
+#define BOOTM_NM1          (1 << 1)
+
+
+
+static inline uint32_t bootm() {
+        return 0;
+}
 
 static inline int is_silent()
 {
-        return false;
+        return bootm() & BOOTM_SILENT;
 }
 
 void rumboot_platform_read_config(struct rumboot_config *conf)
 {
-//        uint32_t bootm = ioread32(SCTL_BASE + SCTL_BOOTM);
-//
-//        if (bootm & BOOTM_FASTUART) {
-        conf->baudrate = 6250000;
-//        } else {
-        //conf->baudrate = 115200;
-//        }
-//
-//        conf->hostmode = (bootm & BOOTM_HOST);
-//        conf->selftest = (bootm & BOOTM_SELFTEST);
+        conf->baudrate = 115200;
+        conf->selftest = -1;
+        conf->edcl = 1; /* EDCL Always on */
+        conf->hostmode = (bootm() & BOOTM_HOST);
 }
 
 
@@ -69,6 +70,15 @@ void rumboot_platform_init_loader(struct rumboot_config *conf)
         }
 }
 
+static bool emi_enable(const struct rumboot_bootsource *src, void *pdata)
+{
+        /* EMI BIS must be high! */
+        bool ret = (bootm() & BOOTM_EMI_BIS);
+        if (!ret) {
+                dbg_boot(src, "EMI_BIS pin low, skipping NOR boot");
+        }
+        return ret;
+}
 
 #define SPI_CS0 (1 << 0)
 static bool spi0_enable(const struct rumboot_bootsource *src, void *pdata)
@@ -114,6 +124,7 @@ static const struct rumboot_bootsource emi_boot[] = {
                 .name = "NOR",
                 .base = EMI_MEM_Base,
                 .plugin = &g_bootmodule_physmap,
+                .enable = &emi_enable
         },
         { /*Sentinel*/ }
 };
@@ -121,7 +132,7 @@ static const struct rumboot_bootsource emi_boot[] = {
 
 void rumboot_platform_enter_host_mode()
 {
-        uint32_t v;
+        //uint32_t v;
 }
 
 void *rumboot_platform_get_spl_area(size_t *size)
@@ -132,7 +143,7 @@ void *rumboot_platform_get_spl_area(size_t *size)
 
 const struct rumboot_bootsource *rumboot_platform_get_bootsources()
 {
-        return emi_boot;
+        return (bootm() & BOOTM_EMI) ? emi_boot : spi_boot;
 }
 
 bool rumboot_platform_check_entry_points(struct rumboot_bootheader *hdr)
@@ -148,6 +159,11 @@ int rumboot_platform_exec(struct rumboot_bootheader *hdr)
 
 void rumboot_platform_print_summary(struct rumboot_config *conf)
 {
+        rumboot_printf("NMC Boot Mode:   %s\n",
+                (bootm() & BOOTM_NMC) ? "Disabled" : "Enabled");
+        rumboot_printf("NMC Cores:       %s%s\n",
+                (bootm() & BOOTM_NM0) ? "[NM0]" : "",
+                (bootm() & BOOTM_NM1) ? "[NM1]" : "");
 }
 
 
