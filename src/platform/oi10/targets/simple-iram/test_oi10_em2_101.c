@@ -8,11 +8,11 @@
 #include <rumboot/io.h>
 #include <rumboot/regpoker.h>
 
+#include <arch/ppc_476fp_lib_c.h>
 #include <platform/test_assert.h>
 #include <platform/devices.h>
 #include <platform/trace.h>
 #include <platform/test_event_c.h>
-#include <platform/arch/ppc/ppc_476fp_lib_c.h>
 #include <platform/regs/regs_plb6mcif2.h>
 #include <platform/regs/regs_mclfir.h>
 #include <platform/regs/regs_emi.h>

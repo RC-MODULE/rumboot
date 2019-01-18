@@ -12,11 +12,11 @@
 #include <rumboot/platform.h>
 #include <rumboot/macros.h>
 #include <rumboot/io.h>
+#include <arch/ppc_476fp_lib_c.h>
 #include <platform/test_assert.h>
 #include <platform/devices.h>
 #include <platform/trace.h>
 #include <platform/test_event_c.h>
-#include <platform/arch/ppc/ppc_476fp_lib_c.h>
 #include <platform/devices/emi.h>
 
 #define SRAM0_OFFSET_1 0x1000

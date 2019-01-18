@@ -11,17 +11,17 @@
 #include <rumboot/printf.h>
 #include <rumboot/io.h>
 #include <rumboot/timer.h>
-
-#include <platform/devices.h>
 #include <rumboot/platform.h>
+#include <rumboot/irq.h>
+
+#include <arch/ppc_476fp_config.h>
+#include <arch/ppc_476fp_lib_c.h>
+#include <platform/devices.h>
 #include <platform/test_assert.h>
 #include <platform/devices/emi.h>
 #include <platform/devices/l2c.h>
-#include <rumboot/irq.h>
 #include <platform/interrupts.h>
 #include <platform/regs/fields/mpic128.h>
-#include <platform/arch/ppc/ppc_476fp_config.h>
-#include <platform/arch/ppc/ppc_476fp_lib_c.h>
 
 
 

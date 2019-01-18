@@ -12,11 +12,11 @@
 #include <rumboot/platform.h>
 #include <rumboot/macros.h>
 #include <rumboot/io.h>
+#include <arch/ppc_476fp_lib_c.h>
 #include <platform/test_assert.h>
 #include <platform/devices.h>
 #include <platform/trace.h>
 #include <platform/test_event_c.h>
-#include <platform/arch/ppc/ppc_476fp_lib_c.h>
 #include <platform/arch/ppc/ppc_476fp_mmu_fields.h>
 #include <platform/arch/ppc/ppc_476fp_mmu.h>
 #include <platform/arch/ppc/ppc_476fp_itrpt_fields.h>
@@ -74,7 +74,7 @@ void check_sram0_8 (const uint32_t addr)
 
     // flush
     dcbf((void*)addr);
-    
+
     //write
     rumboot_printf ("write\n");
     uint32_t i = 0;
@@ -119,7 +119,7 @@ void check_sram0_16 (const uint32_t addr)
 
     // flush
     dcbf((void*)addr);
-    
+
     rumboot_printf ("write\n");
     uint32_t i = 0;
     for (i = 0; i < 16; i++)
@@ -154,7 +154,7 @@ void check_sram0_32 (uint32_t addr)
 
     // flush
     dcbf((void*)addr);
-    
+
     rumboot_printf ("write\n");
     uint32_t i = 0;
     for (i = 0; i < 8; i++)
@@ -186,7 +186,7 @@ void check_sram0_64 (uint32_t addr)
 
     // flush
     dcbf((void*)addr);
-    
+
     rumboot_printf ("write\n");
     uint32_t i = 0;
     for (i = 0; i < 4; i++)
@@ -265,7 +265,7 @@ void check_sram0 (const uint32_t addr)
 #define TLB_ENTRY_CACHE_WB  MMU_TLB_ENTRY(  0x000,  0x00000,    0x00000,    MMU_TLBE_DSIZ_1GB,      0b0,    0b0,    0b0,    0b0,    0b1,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
 
 int main ()
-{  
+{
     emi_init(DCR_EM2_EMI_BASE);
     init_data (SRAM0_BASE + 0x100);
     init_data (SRAM0_BASE + 0x200);

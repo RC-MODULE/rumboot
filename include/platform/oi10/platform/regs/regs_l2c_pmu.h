@@ -70,7 +70,7 @@ END_ENUM( L2C_PMUREG )
     mfdcrx  \reg_result, \reg_result
 .endm
 #else
-#include <platform/arch/ppc/ppc_476fp_lib_c.h>
+#include <arch/ppc_476fp_lib_c.h>
 static inline void l2c_pmu_write( uint32_t const base_addr, L2C_PMUREG const reg, uint32_t const value ) {
     dcr_write( base_addr+L2C_PMUDCRAI, (uint32_t const)reg );
     dcr_write( base_addr+L2C_PMUDCRDI, value );

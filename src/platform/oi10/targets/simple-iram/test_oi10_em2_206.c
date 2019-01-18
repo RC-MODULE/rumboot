@@ -13,7 +13,8 @@
 #include <rumboot/platform.h>
 #include <rumboot/macros.h>
 
-#include <platform/common_macros/common_macros.h>
+#include <arch/ppc_476fp_config.h>
+#include <arch/ppc_476fp_lib_c.h>
 
 #include <platform/test_assert.h>
 #include <platform/test_event_c.h>
@@ -21,8 +22,6 @@
 #include <platform/test_assert.h>
 #include <platform/trace.h>
 
-#include <platform/arch/ppc/ppc_476fp_config.h>
-#include <platform/arch/ppc/ppc_476fp_lib_c.h>
 #include <platform/arch/ppc/ppc_476fp_mmu_fields.h>
 #include <platform/arch/ppc/ppc_476fp_mmu.h>
 
