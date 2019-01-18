@@ -17,7 +17,7 @@
 #include <platform/devices/l2c.h>
 #include <platform/trace.h>
 #include <platform/test_event_c.h>
-#include <platform/arch/ppc/ppc_476fp_lib_c.h>
+#include <arch/ppc_476fp_lib_c.h>
 #include <platform/arch/ppc/ppc_476fp_mmu_fields.h>
 #include <platform/arch/ppc/ppc_476fp_mmu.h>
 #include <platform/ppc470s/mmu/mem_window.h>
@@ -36,7 +36,7 @@ typedef void func();
 #define CACHE_LINE_SIZE 32     // L1
 #define CODE_BLR_INSTR  0x4E800020
 
-void init_test_data (uint32_t data_addr)
+static void init_test_data (uint32_t data_addr)
 {
     rumboot_memfill8_modelling((void*)START_ADDR,  DATA_SIZE, 0x00, 0x00);
     for (uint32_t ind = 0, addr = START_ADDR; ind < WORD_NUM - 1; ind++ , addr += CACHE_LINE_SIZE)
@@ -49,7 +49,7 @@ void init_test_data (uint32_t data_addr)
     msync();
 }
 
-void check_with_icread(uint32_t expected_val)
+static bool check_with_icread(uint32_t expected_val)
 {
     uint32_t reg_ICDBDR0, reg_ICDBTRL, reg_ICDBTRH;
     rumboot_printf("Number of elements = 0x%x\n", WORD_NUM);
@@ -61,19 +61,37 @@ void check_with_icread(uint32_t expected_val)
         reg_ICDBTRH = spr_read(SPR_ICDBTRH);
 
         rumboot_printf("ind = %x, addr = %x\n", ind, addr);
-        TEST_ASSERT((reg_ICDBTRH & 0x1000) == 0x1000, "TEST ERROR: Valid bit in ICDBTRH[12] not expected");  //tag valid bit
-        TEST_ASSERT((reg_ICDBTRH>>13) == (addr >> 13), "Invalid tag in ICDBTRH"); //check tag
+        if ((reg_ICDBTRH & 0x1000) != 0x1000 )
+        {
+            rumboot_printf ("ERROR: Valid bit in ICDBTRH[12] not expected\n");  //tag valid bit
+            return false;
+        }
+        if ((reg_ICDBTRH >> 13) != (addr >> 13) )
+        {
+            rumboot_printf ("ERROR: Invalid tag in ICDBTRH\n"); //check tag
+            return false;
+        }
         if (ind != WORD_NUM - 1)
         {
-            TEST_ASSERT(expected_val == reg_ICDBDR0, "TEST ERROR: Invalid instruction code in ICDBDR0"); //check instruction code
+            if (expected_val != reg_ICDBDR0 ) {
+                rumboot_printf ("ERROR: Invalid instruction code in ICDBDR0\n"); //check instruction code
+                return false;
+            }
         }
         else //check last elem
         {
             reg_ICDBTRL = spr_read(SPR_ICDBTRL);
-            TEST_ASSERT(CODE_BLR_INSTR == reg_ICDBDR0, "TEST ERROR: Invalid instruction code in ICDBDR0");     //check instruction code
-            TEST_ASSERT((reg_ICDBTRL & 0xF0000000) == 0xF0000000, "TEST ERROR: Invalid LRUV in ICDBTRL"); //check LRUV bits
+            if (CODE_BLR_INSTR != reg_ICDBDR0) {
+                rumboot_printf ("ERROR: Invalid instruction code in ICDBDR0\n");     //check instruction code
+                return false;
+            }
+            if ( (reg_ICDBTRL & 0xF0000000) != 0xF0000000) {
+                rumboot_printf ("ERROR: Invalid LRUV in ICDBTRL\n"); //check LRUV bits
+                return false;
+            }
         }
     }
+    return true;
 }
 
 int main (void)
@@ -126,7 +144,11 @@ int main (void)
 
 //*******************************************
     rumboot_printf("Check with icread\n");
-    check_with_icread (ioread32(data_p));
+    if ( !check_with_icread (ioread32(data_p)) )
+    {
+        rumboot_printf("TEST ERROR\n");
+        return 1;
+    }
 
     rumboot_printf("TEST OK\n");
     return 0;

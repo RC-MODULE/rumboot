@@ -17,7 +17,7 @@
 #include <platform/devices/l2c.h>
 #include <platform/trace.h>
 #include <platform/test_event_c.h>
-#include <platform/arch/ppc/ppc_476fp_lib_c.h>
+#include <arch/ppc_476fp_lib_c.h>
 #include <platform/arch/ppc/ppc_476fp_mmu_fields.h>
 #include <platform/arch/ppc/ppc_476fp_mmu.h>
 #include <platform/ppc470s/mmu/mem_window.h>
@@ -34,7 +34,7 @@
 #define CACHE_LINE_SIZE 128          // L2
 #define GET_DATA(x)     ((x << 16) + x)
 
-void init_test_data (void)
+static void init_test_data (void)
 {
     rumboot_memfill8_modelling((void*)START_ADDR,  DATA_SIZE, 0x00, 0x00);
     for (uint32_t ind = 0, addr = START_ADDR; ind < WORD_NUM; ind++ , addr += CACHE_LINE_SIZE)
@@ -42,10 +42,11 @@ void init_test_data (void)
     msync();
 }
 
-void check_mem (void)
+static bool check_mem (void)
 {
     rumboot_printf("Number of words = 0x%x\n", WORD_NUM);
     uint32_t lru_bits_tmp = 1;
+
     for (uint32_t ind = 0, addr = START_ADDR; ind < WORD_NUM; ind++ , addr += CACHE_LINE_SIZE)
     {
         rumboot_printf("word = %x, ", ind);
@@ -65,8 +66,8 @@ void check_mem (void)
         int32_t cache_way = -1;
         if (l2c_arracc_get_way_by_address( DCR_L2C_BASE, ext_phys_addr, phys_addr, &cache_way ) == false)
         {
-            rumboot_printf("==> Error reading (way) via L2ARRACC* <==\n");
-            TEST_ASSERT(0, "TEST_ERROR");
+            rumboot_printf("ERROR: reading (way) via L2ARRACC*\n");
+            return false;
         }
         rumboot_printf("cache way = %x\n", cache_way);
 
@@ -74,33 +75,74 @@ void check_mem (void)
         uint32_t tag_data = 0;
         if (l2c_arracc_tag_info_read_by_way (DCR_L2C_BASE, ext_phys_addr, phys_addr, cache_way, &tag_data) == false)
         {
-            rumboot_printf("==> Error reading (tag) via L2ARRACC* <==\n");
-            TEST_ASSERT(0, "TEST_ERROR");
+            rumboot_printf("ERROR: reading (tag) via L2ARRACC*\n");
+            return false;
         }
         uint32_t exp_tag = (3 << 30) + (((ext_phys_addr << 16) + ((phys_addr) >> 16)) << 3); //cache state[31:29] == 0b110 == modified
         if (tag_data != exp_tag)
         {
             rumboot_printf("exp_tag = %x\nact_tag = %x\n", exp_tag, tag_data);
-            TEST_ASSERT(0, "TEST ERROR: invalid tag");
+            rumboot_printf("ERROR: invalid tag\n");
+            return false;
         }
 
         //get lru
         uint32_t lru_data = 0;
         if (l2c_arracc_lru_info_read_by_way (DCR_L2C_BASE, ext_phys_addr, phys_addr, cache_way, &lru_data) == false)
         {
-            rumboot_printf("==> Error reading (lru) via L2ARRACC* <==\n");
-            TEST_ASSERT(0, "TEST_ERROR");
+            rumboot_printf("ERROR: reading (lru) via L2ARRACC*\n");
+            return false;
         }
 
         if (ind%0x200 == 0)
         {
-            TEST_ASSERT((lru_data & 0xf8000000) != lru_bits_tmp, "TEST ERROR: lru bits not changed");
+            if( (lru_data & 0xf8000000) == lru_bits_tmp )
+            {
+                rumboot_printf ("ERROR: lru bits not changed\n");
+                return false;
+            }
             lru_bits_tmp = lru_data & 0xf8000000;
+
+            switch (cache_way)
+            {
+            case 0:
+                if ( (lru_data & 0x3FC) != (1 << 9) )
+                {
+                    rumboot_printf ("ERROR: inclusive bits (way0) not correct\n");
+                    return false;
+                }
+                break;
+            case 1:
+                if ( (lru_data & 0x3FC) != ((1 << 9) | (1 << 7)) )
+                {
+                    rumboot_printf ("ERROR: inclusive bits (way1) not correct\n");
+                    return false;
+                }
+                break;
+            case 2:
+                if ( (lru_data & 0x3FC) != ((1 << 9) | (1 << 7) | (1 << 5)) )
+                {
+                    rumboot_printf ("ERROR: inclusive bits (way2) not correct\n");
+                    return false;
+                }
+                break;
+            case 3:
+                if ( (lru_data & 0x3FC) != ((1 << 9) | (1 << 7) | (1 << 5) | (1 << 3)) )
+                {
+                    rumboot_printf ("ERROR: inclusive bits (way3) not correct\n");
+                    return false;
+                }
+                break;
+            }
         }
         else
-            TEST_ASSERT((lru_data & 0xf8000000) == lru_bits_tmp, "TEST ERROR: lru bits changed (not expected)");
+            if ( (lru_data & 0xf8000000) != lru_bits_tmp )
+            {
+                rumboot_printf ("ERROR: lru bits changed (not expected)\n");
+            }
 
     }
+    return true;
 }
 
 int main (void)
@@ -118,7 +160,10 @@ int main (void)
 
     rumboot_printf("Read, modification and check with L2C Array Interface\n");
 
-    check_mem ();
+    if ( !check_mem () ) {
+        rumboot_printf ("TEST ERROR\n");
+        return 1;
+    }
 
     rumboot_printf("TEST OK\n");
     return 0;

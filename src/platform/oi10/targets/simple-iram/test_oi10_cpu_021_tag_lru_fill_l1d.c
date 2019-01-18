@@ -17,7 +17,7 @@
 #include <platform/devices/l2c.h>
 #include <platform/trace.h>
 #include <platform/test_event_c.h>
-#include <platform/arch/ppc/ppc_476fp_lib_c.h>
+#include <arch/ppc_476fp_lib_c.h>
 #include <platform/arch/ppc/ppc_476fp_mmu_fields.h>
 #include <platform/arch/ppc/ppc_476fp_mmu.h>
 #include <platform/ppc470s/mmu/mem_window.h>
@@ -32,7 +32,7 @@
 #define CACHE_LINE_SIZE 32     // L1
 #define GET_DATA(x)     ((x << 16) + x)
 
-void init_test_data (void)
+static void init_test_data (void)
 {
     rumboot_memfill8_modelling((void*)START_ADDR,  DATA_SIZE, 0x00, 0x00);
     for (uint32_t ind = 0, addr = START_ADDR; ind < WORD_NUM; ind++ , addr += CACHE_LINE_SIZE)
@@ -73,9 +73,20 @@ int main (void)
         uint32_t reg_DCDBTRH = spr_read(SPR_DCDBTRH),
                  reg_DCDBTRL = spr_read(SPR_DCDBTRL);
 
-        TEST_ASSERT( exp_data == act_data,                "TEST ERROR: Invalid cache data");
-        TEST_ASSERT( (reg_DCDBTRH >> 13) == (addr >> 13), "TEST_ERROR: Invalid tag in DCDBTRH");
-        TEST_ASSERT( (reg_DCDBTRH & 0x1000) == 0x1000,    "TEST_ERROR: Valid bit in DCDBTRH[12] not expected");
+        if ( exp_data != act_data) {
+            rumboot_printf ("TEST ERROR: Invalid cache data\n");
+            return 1;
+        }
+
+        if ( (reg_DCDBTRH >> 13) != (addr >> 13) ) {
+            rumboot_printf ("TEST_ERROR: Invalid tag in DCDBTRH\n");
+            return 1;
+        }
+
+        if ( (reg_DCDBTRH & 0x1000) != 0x1000 ) {
+            rumboot_printf ("TEST_ERROR: Valid bit in DCDBTRH[12] not expected\n");
+            return 1;
+        }
 
         /*
          * addr = [0x0000 - 0x2000), way[14:13] = 0b00, LRUV = 0b1000
@@ -84,8 +95,11 @@ int main (void)
          * addr = [0x6000 - 0x8000), way[14:13] = 0b11, LRUV = 0b1111
          * >> supa formula:
         */
-        //                LRUV                              ( WAY = {0,1,2,3}  )
-        TEST_ASSERT( (reg_DCDBTRL >> 28) == ( (0xF << (3 - ((addr >> 13) & 0x3))) & 0xF), "TEST_ERROR: Invalid LRUV in DCDBTRL");
+        //                LRUV                      ( WAY = {0,1,2,3}  )
+        if( (reg_DCDBTRL >> 28) != ( (0xF << (3 - ((addr >> 13) & 0x3))) & 0xF) ) {
+            rumboot_printf ("TEST_ERROR: Invalid LRUV in DCDBTRL\n");
+            return 1;
+        }
     }
 
     rumboot_printf("TEST OK\n");
