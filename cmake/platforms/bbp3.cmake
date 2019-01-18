@@ -73,6 +73,17 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         ENDIAN little
     )
 
+    rumboot_bootrom_unit_test(
+        ID 0
+        CONFIGURATION ROM
+        TAG nor_cs0
+        MEMTAG NOR_IMAGE
+        TAGOFFSET 0
+        FULL YES
+        IRUN_FLAGS ${ROM_6500K_OPTS}
+        ENDIAN little
+    )
+
     rumboot_bootrom_integration_test(BROM
         NAME "serial-115200"
         IRUN_FLAGS ${ROM_115200_OPTS} +UART0_STOP_ON_MATCH +UART0_STOP_ON_MISMATCH
