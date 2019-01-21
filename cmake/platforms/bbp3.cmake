@@ -18,7 +18,7 @@ rumboot_add_configuration(
   SNAPSHOT boot
   LDS bbp3/rom.lds
   LDFLAGS "-e rumboot_reset_handler"
-  CFLAGS -DRUMBOOT_ONLY_STACK
+  CFLAGS -DRUMBOOT_ONLY_STACK -marm
   PREFIX ROM
   TIMEOUT_CTEST 200000
   TIMEOUT 100 ms
@@ -32,7 +32,7 @@ rumboot_add_configuration (
   PREFIX iram
   LDFLAGS -Wl,--start-group -lgcc -lc -lm -Wl,--end-group "-e rumboot_main"
   FILES ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c
-  CFLAGS
+  CFLAGS -marm
   BOOTROM bootrom-stub
   TIMEOUT_CTEST 200000
   FEATURES LUA COVERAGE PACKIMAGE
@@ -129,7 +129,7 @@ file(GLOB PLATFORM_SOURCES
 )
 
 macro(RUMBOOT_PLATFORM_SET_COMPILER_FLAGS)
-    SET(RUMBOOT_COMMON_FLAGS "-mcpu=cortex-a5 -mapcs-frame -mfpu=vfpv3-d16 -mfloat-abi=hard -marm -ffreestanding -Wno-error=cpp")
+    SET(RUMBOOT_COMMON_FLAGS "-mcpu=cortex-a5 -mapcs-frame -mfpu=vfpv3-d16 -mfloat-abi=hard -ffreestanding -Wno-error=cpp")
     SET(CMAKE_C_FLAGS "${RUMBOOT_COMMON_FLAGS} -Wall -fdata-sections -ffunction-sections -DRUMBOOT_PLATFORM_NUM_HEAPS=8")
     SET(CMAKE_ASM_FLAGS ${RUMBOOT_COMMON_FLAGS})
     SET(CMAKE_OBJCOPY_FLAGS --gap-fill 0x00 --pad-to 32768)
