@@ -26,7 +26,6 @@ void rumboot_platform_dump_config(struct rumboot_config *conf, size_t maxsize) {
         rumboot_printf("UART speed:      %d bps\n", conf->baudrate);
         rumboot_printf("Max SPL size:    %d bytes\n", maxsize);
         rumboot_platform_print_summary(conf);
-
         rumboot_printf("---          ---          ---\n");
 }
 
@@ -35,9 +34,9 @@ static void hostmode_loop(void *pdata)
 {
         size_t maxsize;
         struct rumboot_bootheader *hdr = rumboot_platform_get_spl_area(&maxsize);
-        dbg_boot(NULL, "Entering host mode loop");
+        dbg_boot(NULL, "Entering Host Mode");
         rumboot_platform_enter_host_mode();
-        dbg_boot(NULL, "Hit 'X' for xmodem upload");
+        dbg_boot(NULL, "Hit 'X' for X-Modem upload");
         void *data;
         int ret;
 
@@ -54,10 +53,10 @@ static void hostmode_loop(void *pdata)
                         mdelay(250);
                         rumboot_printf("\n\n\n");
                         if (ret > 0) {
-                                dbg_boot(NULL, "Received a payload of %d bytes, executing in 100ms", ret);
+                                dbg_boot(NULL, "Received %d bytes, executing in 100ms", ret);
                                 mdelay(100);
                         } else {
-                                dbg_boot(NULL, "Upload via xmodem failed with code %d", ret);
+                                dbg_boot(NULL, "Upload failed, code %d", ret);
                         }
                 }
 
@@ -74,11 +73,10 @@ static void hostmode_loop(void *pdata)
                         continue;
                 }
                 if (len < 0) {
-                        dbg_boot(NULL, "Validation failed: %s\n", rumboot_strerror(len));
+                        dbg_boot(NULL, "Header error: %s\n", rumboot_strerror(len));
                         hdr->magic = 0;
                         continue;
                 }
-                dbg_boot(NULL, "Header validation complete");
                 if (0 == rumboot_bootimage_check_data(hdr)) {
                         hdr->magic = 0x0;
                         ret = rumboot_platform_exec(hdr);
@@ -87,7 +85,7 @@ static void hostmode_loop(void *pdata)
                                 bootsource_try_by_id(ret - 1, pdata, hdr, maxsize);
                         }
                 } else {
-                        rumboot_printf("boot: Data CRC32 mismatch\n");
+                        dbg_boot(NULL, "Data CRC32 mismatch\n");
                 }
         }
 }
@@ -103,7 +101,7 @@ int main()
         struct rumboot_bootheader *hdr = rumboot_platform_get_spl_area(&maxsize);
         /* Initialize SPL execution counter */
         rumboot_platform_runtime_info->persistent[0] = 0;
-        rumboot_platform_perf("Config printout");
+        rumboot_platform_perf("Config");
         #define PDATA_SIZE 128
         char pdata[PDATA_SIZE];
 
@@ -120,7 +118,7 @@ int main()
                 rumboot_platform_perf("Selftest");
                 ret = rumboot_platform_selftest(&conf);
                 rumboot_platform_perf(NULL);
-                rumboot_printf("selftest: %d test from suite failed\n", ret);
+                rumboot_printf("selftest: %d test(s) from suite failed\n", ret);
         }
 
         if (conf.hostmode) {
@@ -128,7 +126,7 @@ int main()
         }
 
 
-        rumboot_platform_perf("Boot chain");
+        rumboot_platform_perf("Boot");
         bootsource_try_chain(pdata, hdr, maxsize);
         rumboot_platform_perf(NULL);
 

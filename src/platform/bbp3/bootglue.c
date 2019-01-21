@@ -134,7 +134,7 @@ static const struct rumboot_bootsource emi_boot[] = {
 
 void rumboot_platform_enter_host_mode()
 {
-        greth_dump_edcl_params(0, GRETH_Base);
+        //greth_dump_edcl_params(0, GRETH_Base);
 }
 
 void *rumboot_platform_get_spl_area(size_t *size)
@@ -161,11 +161,13 @@ int rumboot_platform_exec(struct rumboot_bootheader *hdr)
 
 void rumboot_platform_print_summary(struct rumboot_config *conf)
 {
+#if 0
         rumboot_printf("NMC Boot Mode:   %s\n",
                 (bootm() & BOOTM_NMC) ? "Disabled" : "Enabled");
         rumboot_printf("NMC Cores:       %s%s\n",
                 (bootm() & BOOTM_NM0) ? "[NM0]" : "",
                 (bootm() & BOOTM_NM1) ? "[NM1]" : "");
+#endif
 }
 
 

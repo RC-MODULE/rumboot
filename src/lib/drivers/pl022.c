@@ -44,13 +44,18 @@ int pl022_set_speed(uint32_t const base, struct pl022_config const * const conf)
     /* cpsdvsr = 254 & scr = 255 */
     min_tclk = spi_rate(rate, CPSDVR_MAX, SCR_MAX);
 
+
+#ifdef DEBUG
     if (freq > max_tclk)
         rumboot_printf("pl022: Max speed that can be programmed is %d Hz, you requested %d\n",
             max_tclk, freq);
+#endif
 
     if (freq < min_tclk) {
+#ifdef DEBUG
             rumboot_printf("pl022: Requested frequency: %d Hz is less than minimum possible %d Hz\n",
             freq, min_tclk);
+#endif
         return -1;
     }
 
@@ -90,8 +95,10 @@ int pl022_set_speed(uint32_t const base, struct pl022_config const * const conf)
         scr = SCR_MIN;
     }
 
+#ifdef DEBUG
     if (!best_freq)
         rumboot_printf("pl022: Matching cpsdvsr and scr not found for %d Hz rate \n", freq);
+#endif
 
     iowrite32((best_cpsdvsr & 0xFF), base + PL022_CPSR);
 
