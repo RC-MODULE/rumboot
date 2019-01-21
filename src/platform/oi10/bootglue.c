@@ -28,7 +28,7 @@
 #include <platform/devices/plb6mcif2.h>
 #include <devices/uart_pl011.h>
 #include <rumboot/irq.h>
-
+#include <devices/greth_edcl.h>
 
 void rumboot_platform_init_loader(struct rumboot_config *conf)
 {
@@ -138,47 +138,10 @@ static const struct rumboot_bootsource arr[] = {
 };
 
 
-
-union u64 {
-        uint8_t bytes[8];
-        uint64_t dword;
-};
-
-union u32 {
-    uint8_t bytes[4];
-    uint32_t word;
-};
-
-#define EDCL_IP                             0x1C
-#define EDCL_MAC_MSB                        0x28
-#define EDCL_MAC_LSB                        0x2C
-
-static void dump_greth_parameters(int i, uintptr_t base)
-{
-        union u64 macaddr;
-        union u32 ip;
-        macaddr.dword = ioread64(base + EDCL_MAC_MSB);
-        ip.word = ioread32(base + EDCL_IP);
-        dbg_boot(NULL, "GRETH%d EDCL MAC: %x:%x:%x:%x:%x:%x IP: %d.%d.%d.%d",
-                i,
-                macaddr.bytes[2],
-                macaddr.bytes[3],
-                macaddr.bytes[4],
-                macaddr.bytes[5],
-                macaddr.bytes[6],
-                macaddr.bytes[7],
-                ip.bytes[0],
-                ip.bytes[1],
-                ip.bytes[2],
-                ip.bytes[3]
-        );
-
-}
-
 void rumboot_platform_enter_host_mode()
 {
-        dump_greth_parameters(0, GRETH_0_BASE);
-        dump_greth_parameters(1, GRETH_1_BASE);
+        greth_dump_edcl_params(0, GRETH_0_BASE);
+        greth_dump_edcl_params(1, GRETH_1_BASE);
 
         /* TODO: Set BOOT PIN */
         iowrite32(BOOTM_HOST, GPIO_0_BASE + GPIO_DATA + (BOOTM_HOST << 2));

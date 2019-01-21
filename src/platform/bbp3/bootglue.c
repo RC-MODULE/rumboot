@@ -13,6 +13,8 @@
 #include <regs/regs_uart_pl011.h>
 #include <devices/uart_pl011.h>
 #include <rumboot/bootsrc/physmap.h>
+#include <rumboot/timer.h>
+#include <devices/greth_edcl.h>
 
 #define BOOTM_HOST         (1 << 0)
 #define BOOTM_SILENT       (1 << 1)
@@ -26,7 +28,7 @@
 
 
 static inline uint32_t bootm() {
-        return 0;
+        return ioread32(SCTL_Base);
 }
 
 static inline int is_silent()
@@ -132,7 +134,7 @@ static const struct rumboot_bootsource emi_boot[] = {
 
 void rumboot_platform_enter_host_mode()
 {
-        //uint32_t v;
+        greth_dump_edcl_params(0, GRETH_Base);
 }
 
 void *rumboot_platform_get_spl_area(size_t *size)
@@ -174,6 +176,7 @@ int rumboot_platform_selftest(struct rumboot_config *conf)
 
 
 #ifndef CMAKE_BUILD_TYPE_DEBUG
+
 void __attribute__((no_instrument_function)) rumboot_platform_putchar(uint8_t c)
 {
         if (is_silent()) {
@@ -192,7 +195,7 @@ void __attribute__((no_instrument_function)) rumboot_platform_putchar(uint8_t c)
 int rumboot_platform_getchar(uint32_t timeout_us)
 {
         if (is_silent()) {
-                delay_us(timeout_us);
+                udelay(timeout_us);
                 return -1;
         }
 
