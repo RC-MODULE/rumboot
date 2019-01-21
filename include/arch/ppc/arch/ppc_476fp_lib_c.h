@@ -66,6 +66,13 @@ static inline __attribute__((always_inline)) void icbt( void* const addr ) {
     );
 }
 
+static inline __attribute__((always_inline)) void icblc( void* const addr ) {
+    asm volatile (
+        "icblc 0, 0, %0\n\t"
+        ::  "r"(addr)
+    );
+}
+
 static inline __attribute__((always_inline)) void icbtls( void* const addr ) {
     asm volatile (
         "icbtls 0, 0, %0\n\t"
@@ -111,6 +118,13 @@ static inline __attribute__((always_inline)) void dcbst( void* const addr ) {
 static inline __attribute__((always_inline)) void dcbt( void* const addr ) {
     asm volatile (
         "dcbt 0, 0, %0\n\t"
+        ::"r"(addr)
+    );
+}
+
+static inline __attribute__((always_inline)) void dcblc( void* const addr ) {
+    asm volatile (
+        "dcblc 0, 0, %0\n\t"
         ::"r"(addr)
     );
 }
