@@ -11,6 +11,7 @@
 #include <rumboot/regpoker.h>
 #include <rumboot/testsuite.h>
 #include <platform/devices.h>
+#include <rumboot/timer.h>
 
 #define     UARTPeriphID0_MSK   0xFF
 #define     UARTPeriphID1_MSK   0xFF
@@ -52,12 +53,14 @@ static bool check_pl011_regs(uint32_t arg)
 static bool check_kmbist(uint32_t arg)
 {
     uint32_t timeout = 3000; /* us */
-    dcr_write(0x16, arg);
+    dcr_write(arg, 0x16);
     LOOP_UNTIL_TIMEOUT(timeout) {
         if ((dcr_read(arg) & (1<<6) ))
             break;
     }
-    return ! (dcr_read(arg) & (1<<5) );
+    bool result = ! (dcr_read(arg) & (1<<5) );
+    dcr_write(arg, 0);
+    return result;
 }
 
 TEST_SUITE_BEGIN(selftest, "selftest")
