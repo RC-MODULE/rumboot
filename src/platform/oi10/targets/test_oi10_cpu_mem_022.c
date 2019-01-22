@@ -115,7 +115,7 @@ int main()
 //            case 1:     ++count_nops;
 //        }
         working_function(rdf_buf, (sizeof(test_data) >> 2));
-        for(uint32_t addr = 0; addr < sizeof(test_data); addr+=0x80)
+        for(uint32_t addr = 0; addr < sizeof(test_data); addr+=0x20)
             for(uint32_t j = 1; j < COUNT_AREAS; ++j)
                 dcbf(addr + rdf_buf[j]);
         ici(0);
@@ -127,7 +127,7 @@ int main()
 //            rumboot_putdump((uint32_t)rdf_buf[j], sizeof(test_data));
             result |= memcmp(rdf_buf[j], test_data, sizeof(test_data));
             result |= (ioread32((uint32_t)rdf_buf[j] + sizeof(test_data)) == ((j & 0xff) | ((j & 0xff) << 8) | ((j & 0xff) << 16) | ((j & 0xff) << 24)));
-            rumboot_printf("rdf[%d]: result == 0x%x", j, result);
+            rumboot_printf("rdf[%d]: result == 0x%x\n", j, result);
         }
 //        buf += count_nops;
 
@@ -220,5 +220,5 @@ int main()
 //        }
 //    }
 
-    return result;
+    return ((result & 0xff) | ((result >> 8) & 0xff) | ((result >> 16) & 0xff) | ((result >> 24) & 0xff));
 }
