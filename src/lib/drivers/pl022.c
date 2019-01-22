@@ -33,19 +33,19 @@ int pl022_set_speed(uint32_t const base, struct pl022_config const * const conf)
 {
     /* Lets calculate the frequency parameters */
     uint16_t cpsdvsr = CPSDVR_MIN, scr = SCR_MIN;
-    uint32_t rate, max_tclk, min_tclk, freq, best_freq = 0, best_cpsdvsr = 0,
+    uint32_t rate, min_tclk, freq, best_freq = 0, best_cpsdvsr = 0,
         best_scr = 0, tmp, found = 0;
 
     freq = conf->spi_clk;
     rate = conf->ssp_clk;
 
-    /* cpsdvscr = 2 & scr 0 */
-    max_tclk = spi_rate(rate, CPSDVR_MIN, SCR_MIN);
     /* cpsdvsr = 254 & scr = 255 */
     min_tclk = spi_rate(rate, CPSDVR_MAX, SCR_MAX);
 
-
 #ifdef DEBUG
+    /* cpsdvscr = 2 & scr 0 */
+    uint32_t max_tclk = spi_rate(rate, CPSDVR_MIN, SCR_MIN);
+
     if (freq > max_tclk)
         rumboot_printf("pl022: Max speed that can be programmed is %d Hz, you requested %d\n",
             max_tclk, freq);
