@@ -32,7 +32,7 @@ uint32_t rumboot_virt_to_dma(volatile void *addr)
 uint32_t rumboot_platform_get_uptime()
 {
         //TODO: Figure out proper clock
-        return (0xFFFFFFFF - sp804_get_value(DIT_Base, 1)) / 6.25;
+        return (0xFFFFFFFF - sp804_get_value(DIT_Base, 1)) / 8.32;
 }
 
 
