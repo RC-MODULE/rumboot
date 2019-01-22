@@ -136,6 +136,14 @@ macro(rumboot_bootrom_add_components spl_conf romconf)
      PACKIMAGE_FLAGS -s chip_rev 99 -c
      VARIABLE SPL_OK_BAD_REV
    )
+
+   add_rumboot_target(
+     FILES common/bootrom/timer.c
+     NAME timer
+     PREFIX bootrom-unit
+     CONFIGURATION ${romconf}
+   )
+
 endmacro()
 
 macro(rumboot_bootrom_unit_test)
