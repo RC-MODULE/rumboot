@@ -520,6 +520,15 @@ static void fill(uint64_t *s, uint64_t pattern, uint32_t size_in_bytes)
         s[i] = pattern;
 }
 
+
+static void fill_incremental(uint64_t *s, uint64_t pattern, uint32_t size_in_bytes)
+{
+
+    uint32_t i;
+    for (i = 0; i < (size_in_bytes>>3); i++)
+        s[i] = (pattern+i);
+}
+
 static uint32_t dma2plb6_get_bytesize(transfer_width transfer_width_code)
 {
     switch(transfer_width_code){
@@ -591,7 +600,7 @@ uint32_t check_dma2plb6_0_mem_to_mem(uint32_t source_ea, uint32_t dest_ea, uint6
             rumboot_printf("transfer_width = 0x%x\n", dma_info.transfer_width);
 
             rumboot_printf("fill source area\n");
-            fill((uint64_t *)source_ea, fill_word, TEST_DATA_SIZE);
+            fill_incremental((uint64_t *)source_ea, fill_word, TEST_DATA_SIZE);
 
             rumboot_printf("fill dest area\n");
             fill((uint64_t *)dest_ea, 0x0, TEST_DATA_SIZE);
