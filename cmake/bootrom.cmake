@@ -137,12 +137,14 @@ macro(rumboot_bootrom_add_components spl_conf romconf)
      VARIABLE SPL_OK_BAD_REV
    )
 
+  if (NOT RUMBOOT_PLATFORM STREQUAL "native")
    add_rumboot_target(
      FILES common/bootrom/timer.c
      NAME timer
      PREFIX bootrom-unit
      CONFIGURATION ${romconf}
    )
+  endif()
 
 endmacro()
 
