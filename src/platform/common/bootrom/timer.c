@@ -6,12 +6,14 @@
 #include <stdbool.h>
 #include <rumboot/timer.h>
 
+#define THRESHOLD 10
 int main()
 {
 	rumboot_printf("Hello, I'll check if timers are properly configured\n");
 
-	uint32_t sim_start, sim_end, diff, t_diff, t_start, t_end;
-	uint32_t delta;
+	uint32_t sim_start, sim_end, t_start, t_end;
+	int32_t diff, t_diff;
+	int32_t delta;
 
 	rumboot_sim_get_realtime(&sim_start);
 	rumboot_sim_get_realtime(&sim_end);
@@ -28,8 +30,8 @@ int main()
 	delta = diff - delta;
 	rumboot_printf("2 timer reads take %d ns, approx %d ns per read\n", delta, delta/2);
 
-	uint32_t delay;
-	for (delay = 100; delay < 300; delay += 100) {
+	int32_t delay;
+	for (delay = 100; delay < 500; delay += 100) {
 		t_start = rumboot_platform_get_uptime();
 		rumboot_sim_get_realtime(&sim_start);
 		udelay(delay);
@@ -37,8 +39,16 @@ int main()
 		t_end = rumboot_platform_get_uptime();
 		diff = sim_end - sim_start;
 		t_diff = t_end - t_start;
-		rumboot_printf("%d us delay: Took %d ns modelling, %d ns timer\n", delay, diff - delta, t_diff * 1000 - delta);
-		/* TODO: Error checking */
+		int32_t error = 100 - (((diff-delta) * 100) / (t_diff * 1000 - delta));
+		rumboot_printf("%d us delay: Took %d ns modelling, %d ns timer, %d%% error\n",
+			delay,
+			diff - delta,
+			t_diff * 1000 - delta,
+			error);
+		if (error > 10) {
+			rumboot_printf("Error exceeds a threshold of 10%%. Your timer setup is likely fucked up\n");
+			return 1;
+		}
 	}
 
 	return 0;
