@@ -20,7 +20,6 @@
 
 #define TIMER0_CYCLES           1
 #define TIMER1_CYCLES           2
-#define TIMER_CYCLES            60
 
 #ifdef CHECK_REGS
 static uint32_t check_timer_default_ro_val(uint32_t base_addr)
@@ -99,34 +98,32 @@ struct s804_instance
     int timer0_irq;
     int timer1_irq;
     uint32_t base_addr;
-    int dit_index;
 };
 
 static void handler0( int irq, void *arg )
 {
-    struct s804_instance *a = ( struct s804_instance * )arg;
-    a->timer0_irq = a->timer0_irq + 1;
+    struct s804_instance *a = (struct s804_instance *)arg;
+    a->timer0_irq = a->timer0_irq;
     rumboot_printf("IRQ 0 arrived\n");
-    rumboot_printf("sp804_%d timer 0 INT # %d  \n", a->dit_index, a->timer0_irq);
     sp804_clrint( a->base_addr, 0);
 }
 
 static void handler1( int irq, void *arg )
 {
-    struct s804_instance *a = ( struct s804_instance * )arg;
-    a->timer1_irq = a->timer1_irq + 1;
+    struct s804_instance *a = (struct s804_instance *)arg;
+    a->timer1_irq = a->timer1_irq;
     rumboot_printf("IRQ 1 arrived\n");
-    rumboot_printf("sp804_%d timer 1 INT # %d  \n", a->dit_index, a->timer1_irq);
-    sp804_clrint( a->base_addr, 1);
+    sp804_clrint(a->base_addr, 1);
 }
 
-bool test_dit_timers( uint32_t structure )
-{
+bool test_dit_timers( uint32_t structure ) {
     int c = 0;
     int d = 0;
 
-    struct s804_instance *stru = (struct s804_instance *)structure;
+    struct s804_instance *stru = ( struct s804_instance * )structure;
     uint32_t base_addr = stru->base_addr;
+    stru->timer0_irq = 0;
+    stru->timer1_irq = 0;
 
     struct sp804_conf config_0 = {
         .mode = ONESHOT,
@@ -144,98 +141,101 @@ bool test_dit_timers( uint32_t structure )
         .load = 200,
         .bgload = 0 };
 
-    for(int i = 0; i < TIMER0_CYCLES + stru->dit_index; i++)
+    for( int i = 0; i < TIMER0_CYCLES; i++)
     {
-        sp804_config(base_addr, &config_0, 0);
-        sp804_enable(base_addr, 0);
-        while(sp804_get_value(base_addr, 0))
-        {};c++;
+        sp804_config( base_addr, &config_0, 0 );
+        sp804_enable( base_addr, 0 );
+        while( sp804_get_value( base_addr, 0 ) ) {
+        };
+        c++;
+        stru->timer0_irq++;
     }
 
-    for(int i = 0; i < TIMER1_CYCLES + stru->dit_index; i++) {
-        sp804_config(base_addr, &config_1, 1);
-        sp804_enable(base_addr, 1);
-        while( sp804_get_value(base_addr, 1))
-        {};d++;
+    for( int i = 0; i < TIMER1_CYCLES; i++)
+    {
+        sp804_config( base_addr, &config_1, 1 );
+        sp804_enable( base_addr, 1 );
+        while(sp804_get_value(base_addr, 1)) {
+        };
+        d++;
+        stru->timer1_irq++;
     }
 
-    if(stru->timer0_irq == TIMER0_CYCLES + stru->dit_index)
+    if(stru->timer0_irq == TIMER0_CYCLES)
     {
         rumboot_printf("Timer 0 test OK \n");
+        rumboot_printf("Counted interrupts is: %d\n", stru->timer0_irq);
     }
     else
     {
         rumboot_printf("ERROR in Timer 0 test \n");
-        rumboot_printf("Interrupts came == %d, should be %d \n", stru->timer0_irq, TIMER0_CYCLES + stru->dit_index);
+        rumboot_printf("Interrupts came == %d, should be %d \n", stru->timer0_irq, TIMER0_CYCLES);
         return false;
     }
-    if(stru->timer1_irq == TIMER1_CYCLES + stru->dit_index)
+    if(stru->timer1_irq == TIMER1_CYCLES)
     {
         rumboot_printf("Timer 1 test OK \n");
+        rumboot_printf("Counted interrupts is: %d\n", stru->timer1_irq);
     }
     else
     {
         rumboot_printf("ERROR in Timer 1 test \n");
-        rumboot_printf("Interrupts came == %d, should be %d \n", stru->timer1_irq, TIMER1_CYCLES + stru->dit_index);
+        rumboot_printf("Interrupts came == %d, should be %d \n", stru->timer1_irq, TIMER1_CYCLES);
         return false;
-    }
-    return true;
+     }
+     return true;
 }
 
+//TEST MODE
 static bool test_dit_timers2( uint32_t structure)
 {
     struct s804_instance *stru = (struct s804_instance *)structure;
     uint32_t base_addr = stru->base_addr;
     int i;
+    int c = 0;
+    int d = 0;
 
-    dcr_write(base_addr + DIT_REG_ITCR, 0x0);
-    for(i = 0; i < TIMER0_CYCLES + stru->dit_index; i++)
+    dcr_write(base_addr + DIT_REG_ITCR, 0b1);
+    for(i = 0; i < TIMER0_CYCLES; i++)
     {
-        if(stru->dit_index == DIT_REG_ITCR)
+        rumboot_printf("Test mode enabled %d: OK\n", i);
+        while(sp804_get_value(base_addr, 0))
+        {};d++;
+        stru->timer0_irq++;
+        if(dcr_read(base_addr + DIT_REG_ITCR))
         {
-            rumboot_printf("Timers DIT_REG_ITCR %d\n", stru->dit_index);
-        }
-
-        else
-        {
-            if(stru->dit_index == DIT_REG_ITOP)
-            {
-                rumboot_printf("Timers DIT_REG_ITOR %d\n", stru->dit_index);
-            }
-       }
-
-       i = dcr_read(base_addr + DIT_REG_ITOP);
-       rumboot_printf("DIT_REG_ITCR %d\n", i);
-       sp804_enable(stru->base_addr, 0);
-    }
-
-    dcr_write(base_addr + DIT_REG_ITCR, 0x1);
-    for(i = 0; i < TIMER1_CYCLES + stru->dit_index; i++)
-    {
-        if(stru->dit_index == DIT_REG_ITCR)
-        {
-            rumboot_printf("Timers DIT_REG_ITCR %d\n", stru->dit_index);
+            rumboot_printf("Timer 0 DIT_REG_ITOP is %d\n", dcr_read(base_addr + DIT_REG_ITOP));
         }
         else
         {
-            if(stru->dit_index == DIT_REG_ITOP)
-            {
-                rumboot_printf("Timers DIT_REG_ITOR %d\n", stru->dit_index);
-            }
+            rumboot_printf("Timer 0 DIT_REG_ITOR %d\n", dcr_read(base_addr + DIT_REG_ITOP));
+            return false;
         }
-        i = dcr_read(base_addr + DIT_REG_ITOP);
-        rumboot_printf("DIT_REG_ITCR %d\n", i);
-        sp804_enable(stru->base_addr, 1);
-        return true;
     }
-return false;
+    for(i = 0; i < TIMER1_CYCLES; i++)
+    {
+        rumboot_printf("Test mode enabled %d: OK\n", i);
+        while(sp804_get_value(base_addr, 1))
+        {};c++;
+        stru->timer1_irq++;
+        if(dcr_read(base_addr + DIT_REG_ITCR))
+        {
+            rumboot_printf("Timer 1 DIT_REG_ITOP is %d\n", dcr_read(base_addr + DIT_REG_ITOP));
+            rumboot_printf("Counted interrupts is: %d\n", stru->timer1_irq);
+        }
+        else
+        {
+            rumboot_printf("Timer 1 DIT_REG_ITOR %d\n", dcr_read(base_addr + DIT_REG_ITOP));
+            return false;
+        }
+    }
+    return true;
 }
 
 static struct s804_instance in[] =
 {
     {
         .base_addr = DCR_TIMERS_BASE,
-        .dit_index = 0,
     },
 };
 
@@ -266,9 +266,12 @@ int main(void)
     if(!result)
     {
         rumboot_printf("Checked TEST_OK\n");
+    }
+    else
+    {
+        rumboot_printf("Checked TEST_ERROR\n");
         return result;
     }
-    rumboot_printf("Checked TEST_ERROR\n");
     return result;
 }
 
