@@ -30,14 +30,17 @@
 #define PTRN_INC_1 0x1
 #define PTRN_INC_2 0x2
 
-#define START_ADDR          (SRAM0_BASE + 0x8000)
+#define START_ADDR          (SRAM0_BASE + 0x10000)
 #define DATA_SIZE           0x40000  //256KB
 #define NUM_WORDS           (DATA_SIZE/4)
 #define L2C_LINE_SIZE       128
 #define GET_EXP_DATA(addr, inc)  ( ((addr - START_ADDR) >> 2)  * inc )
 
+#define EVENT_START_CHECK_O_M_ADDR   TEST_EVENT_CODE_MIN + 0
+#define EVENT_END_CHECK_O_M_ADDR     TEST_EVENT_CODE_MIN + 1
+
                                     //MMU_TLB_ENTRY(  ERPN,   RPN,        EPN,        DSIZ,                   IL1I,  IL1D,   W,     I,     M,     G,      E,                      UX, UW, UR,     SX, SW, SR      DULXE,  IULXE,      TS,     TID,                WAY,                BID,               V   )
-#define TLB_ENTRY_CACHE_WB_VALID      MMU_TLB_ENTRY(  0x000,  0x00000,    0x00000,    MMU_TLBE_DSIZ_1GB,      0b0,   0b0,    0b0,   0b0,   0b1,   0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,  0b1 )
+#define TLB_ENTRY_CACHE_WB_VALID      MMU_TLB_ENTRY(  0x000,  0x00000,    0x00000,    MMU_TLBE_DSIZ_1GB,      0b1,   0b1,    0b0,   0b0,   0b1,   0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,  0b1 )
 
 static bool read_and_check (uint32_t base_addr, uint32_t size_b, uint32_t data_inc)
 {
@@ -45,7 +48,7 @@ static bool read_and_check (uint32_t base_addr, uint32_t size_b, uint32_t data_i
     {
         rumboot_printf ("i = %x, ", i);
         uint32_t addr = base_addr + 8*i;
-        uint64_t rdata = ioread64(addr);
+        uint64_t  rdata = ioread64(addr);
         rumboot_printf ("addr = %x\n", addr);
 
         if ( (((uint32_t)(rdata >> 32)) != GET_EXP_DATA(addr, data_inc)) || ( ((uint32_t)(rdata & 0xFFFFFFFF)) != GET_EXP_DATA((addr+0x4), data_inc)) )
@@ -89,7 +92,7 @@ static bool read_and_check (uint32_t base_addr, uint32_t size_b, uint32_t data_i
             rumboot_printf("l2c_data_h = %x\n", (uint32_t)(l2c_data >> 32));
             rumboot_printf("l2c_data_l = %x\n\n", (uint32_t) l2c_data );
 
-            //return false;
+            return false;
         }
     }
     return true;
@@ -112,9 +115,9 @@ bool __attribute__((section(".text.test"))) cache_testing_function()
     if ( !read_and_check (START_ADDR, L2C_LINE_SIZE, PTRN_INC_1)) return false;
 
     rumboot_printf ("3. Read and check L2C Line Size (check L2C.O_M_ADDR)\n");
-    //test_event(EVENT_START_CHECK_O_M_ADDR);
+    test_event(EVENT_START_CHECK_O_M_ADDR);
     if ( !read_and_check (START_ADDR, L2C_LINE_SIZE, PTRN_INC_1)) return false;
-    //test_event(EVENT_END_CHECK_O_M_ADDR);
+    test_event(EVENT_END_CHECK_O_M_ADDR);
 
     rumboot_printf ("4. Rewrite L2C Line Size (pattern 2)\n");
     for (uint32_t i = 0, d = 0x00; i < (L2C_LINE_SIZE/4); i++, d += PTRN_INC_2)
@@ -122,9 +125,9 @@ bool __attribute__((section(".text.test"))) cache_testing_function()
     msync();
 
     rumboot_printf ("5. Read and check L2C Line Size (check L2C.O_M_ADDR)\n");
-    //test_event(EVENT_START_CHECK_O_M_ADDR);
+    test_event(EVENT_START_CHECK_O_M_ADDR);
     if ( !read_and_check (START_ADDR, L2C_LINE_SIZE, PTRN_INC_2)) return false;
-    //test_event(EVENT_END_CHECK_O_M_ADDR);
+    test_event(EVENT_END_CHECK_O_M_ADDR);
 
     rumboot_printf ("6. Rewrite L2C Line Size (pattern 1)\n");
     for (uint32_t i = 0, d = 0x00; i < (L2C_LINE_SIZE/4); i++, d += PTRN_INC_1)
@@ -135,9 +138,9 @@ bool __attribute__((section(".text.test"))) cache_testing_function()
     if ( !read_and_check (START_ADDR, DATA_SIZE, PTRN_INC_1)) return false;
 
     rumboot_printf ("8. Read and check mem, size = 0x%x (check L2C.O_M_ADDR)\n", DATA_SIZE);
-    //test_event(EVENT_START_CHECK_O_M_ADDR);
+    test_event(EVENT_START_CHECK_O_M_ADDR);
     if ( !read_and_check (START_ADDR, DATA_SIZE, PTRN_INC_1)) return false;
-    //test_event(EVENT_END_CHECK_O_M_ADDR);
+    test_event(EVENT_END_CHECK_O_M_ADDR);
 
     rumboot_printf ("9. Rewrite mem (pattern 2)\n");
     for (uint32_t i = 0, d = 0x00; i < NUM_WORDS; i++, d += PTRN_INC_2)
@@ -145,9 +148,9 @@ bool __attribute__((section(".text.test"))) cache_testing_function()
     msync();
 
     rumboot_printf ("10. Read and check mem, size = 0x%x (check L2C.O_M_ADDR)\n", DATA_SIZE);
-    //test_event(EVENT_START_CHECK_O_M_ADDR);
+    test_event(EVENT_START_CHECK_O_M_ADDR);
     if ( !read_and_check (START_ADDR, DATA_SIZE, PTRN_INC_2)) return false;
-    //test_event(EVENT_END_CHECK_O_M_ADDR);
+    test_event(EVENT_END_CHECK_O_M_ADDR);
 
     rumboot_printf ("11. Read and check new L2C Line Size\n");
     if ( !read_and_check ((START_ADDR + DATA_SIZE), L2C_LINE_SIZE, PTRN_INC_1)) return false;
@@ -158,9 +161,9 @@ bool __attribute__((section(".text.test"))) cache_testing_function()
     msync();
 
     rumboot_printf ("13. Read and check new L2C Line Size\n");
-    //test_event(EVENT_START_CHECK_O_M_ADDR);
+    test_event(EVENT_START_CHECK_O_M_ADDR);
     if ( !read_and_check ((START_ADDR + DATA_SIZE), L2C_LINE_SIZE, PTRN_INC_2)) return false;
-    //test_event(EVENT_END_CHECK_O_M_ADDR);
+    test_event(EVENT_END_CHECK_O_M_ADDR);
 
 
     rumboot_printf ("Testing function completed\n");
