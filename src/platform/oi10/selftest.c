@@ -51,13 +51,23 @@ static bool check_pl011_regs(uint32_t arg)
 
 static bool check_kmbist(uint32_t arg)
 {
+    uint32_t timeout = 3000; /* us */
     dcr_write(0x16, arg);
-    while( ! (dcr_read(arg) & (1<<6) ));;
+    LOOP_UNTIL_TIMEOUT(timeout) {
+        if ((dcr_read(arg) & (1<<6) ))
+            break;
+    }
     return ! (dcr_read(arg) & (1<<5) );
 }
 
 TEST_SUITE_BEGIN(selftest, "selftest")
-TEST_ENTRY("kmbist-0", check_kmbist, DCR_SCTL_BASE + 0x4),
+TEST_ENTRY("kmbist-0-ppc", check_kmbist, DCR_SCTL_BASE + 0x4),
+TEST_ENTRY("kmbist-1-itrace-ltrace", check_kmbist, DCR_SCTL_BASE + 0x8),
+TEST_ENTRY("kmbist-2-sw", check_kmbist, DCR_SCTL_BASE + 0xC),
+TEST_ENTRY("kmbist-3-eth", check_kmbist, DCR_SCTL_BASE + 0x10),
+TEST_ENTRY("kmbist-4-spi-sdio", check_kmbist, DCR_SCTL_BASE + 0x14),
+TEST_ENTRY("kmbist-5-im1", check_kmbist, DCR_SCTL_BASE + 0x18),
+TEST_ENTRY("kmbist-6-im2", check_kmbist, DCR_SCTL_BASE + 0x1C),
 TEST_ENTRY("uart0-id-registers", check_pl011_regs, UART0_BASE),
 TEST_ENTRY("uart1-id-registers", check_pl011_regs, UART1_BASE),
 TEST_SUITE_END();
