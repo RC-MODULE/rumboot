@@ -109,7 +109,7 @@ uint32_t rumboot_platform_get_uptime();
  *
  * @param rt Where to place the result
  */
-void rumboot_sim_get_realtime(const uint32_t *rt);
+void rumboot_sim_get_realtime(uint32_t *rt);
 
 /**
  * This function is called to trace a function call with a pc value

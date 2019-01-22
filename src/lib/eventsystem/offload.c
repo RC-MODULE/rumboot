@@ -120,14 +120,14 @@ __attribute__((no_instrument_function)) __attribute__((optimize("-O0"))) void* r
     return addr;
 }
 
- __attribute__((no_instrument_function)) void rumboot_sim_get_realtime(const uint32_t *rt)
+ __attribute__((no_instrument_function)) void rumboot_sim_get_realtime(uint32_t *rt)
 {
     deliver(EVENT_REALTIME, (uint32_t) rt);
 }
 
 #else
 
-__attribute__((no_instrument_function)) void rumboot_sim_get_realtime(const uint32_t *rt)
+__attribute__((no_instrument_function)) void rumboot_sim_get_realtime(uint32_t *rt)
 {
    *rt = rumboot_platform_get_uptime();
 }
