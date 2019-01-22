@@ -41,7 +41,6 @@ void sp804_stop( uint32_t base_addr, int index)
     cntrl = dcr_read(base_addr+control_reg);
     cntrl = cntrl & (~(DIT_CTRL_ENABLE));
     dcr_write(base_addr+control_reg, cntrl);
-
 }
 
 
