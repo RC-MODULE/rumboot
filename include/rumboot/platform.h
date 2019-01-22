@@ -57,6 +57,7 @@ enum rumboot_simulation_event {
     EVENT_GENERIC, /** Generic SystemVerilog event trigger */
     EVENT_MEMCMP, /** memcmp acceleration */
     EVENT_MEMFILL8, /** memfill8 acceleration */
+    EVENT_REALTIME, /** Get $realtime. Timer tests only! */
 };
 
 
@@ -101,6 +102,14 @@ void rumboot_platform_setup();
  */
 uint32_t rumboot_platform_get_uptime();
 
+/**
+ *  Get the $realtime from simulation environment.
+ *  _WARNING_: DO NOT USE THIS IN YOUR CODE, UNLESS YOU ARE VERIFYING TIMERS
+ *  AGAINST MODELLING TIME!!! Use rumboot_platform_get_uptime();
+ *
+ * @param rt Where to place the result
+ */
+void rumboot_sim_get_realtime(const uint32_t *rt);
 
 /**
  * This function is called to trace a function call with a pc value
