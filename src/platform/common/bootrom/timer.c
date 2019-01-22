@@ -11,7 +11,7 @@ int main()
 	rumboot_printf("Hello, I'll check if timers are properly configured\n");
 
 	uint32_t sim_start, sim_end, diff, t_diff, t_start, t_end;
-	uint32_t jitter, delta;
+	uint32_t delta;
 
 	rumboot_sim_get_realtime(&sim_start);
 	rumboot_sim_get_realtime(&sim_end);
