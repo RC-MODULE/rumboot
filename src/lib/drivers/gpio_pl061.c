@@ -12,40 +12,48 @@
 #include <regs/regs_gpio_pl061.h>
 
 
-static inline __attribute__((always_inline)) void ioset32( uint32_t const value, uint32_t const address ) {
-    iowrite32( (ioread32( address ) & GPIO_REG_MASK) | value, address );
+static inline __attribute__((always_inline)) void reg_write( uint8_t const value, uint32_t const address ) {
+    iowrite32( value, address );
 }
 
-static inline __attribute__((always_inline)) void ioclear32( uint32_t const value, uint32_t const address ) {
-    iowrite32( (ioread32( address ) & GPIO_REG_MASK) & ~value, address );
+static inline __attribute__((always_inline)) uint8_t reg_read( uint32_t const address ) {
+    return (uint8_t)( ioread32(address) & GPIO_REG_MASK );
+}
+
+static inline __attribute__((always_inline)) void reg_set( uint8_t const value, uint32_t const address ) {
+    reg_write( reg_read(address) | value, address );
+}
+
+static inline __attribute__((always_inline)) void reg_clear( uint8_t const value, uint32_t const address ) {
+    reg_write( reg_read(address) & ~value, address );
 }
 
 
 void gpio_int_enable_by_mask( uint32_t const base_address, uint8_t const pins_mask, gpio_int_type const int_type ) {
     switch( int_type ) {
-    case level:
-        ioset32( pins_mask, base_address+GPIO_IS );     /* set level triggered */
+    case gpio_int_level:
+        reg_set( pins_mask, base_address+GPIO_IS );     /* set level triggered */
         break;
-    case rising_edge:
-        ioclear32( pins_mask, base_address+GPIO_IS );   /* set edge triggered */
-        ioclear32( pins_mask, base_address+GPIO_IBE );  /* disable both edges */
-        ioset32( pins_mask, base_address+GPIO_IEV );    /* setup rising edge */
+    case gpio_int_rising_edge:
+        reg_clear( pins_mask, base_address+GPIO_IS );   /* set edge triggered */
+        reg_clear( pins_mask, base_address+GPIO_IBE );  /* disable both edges */
+        reg_set( pins_mask, base_address+GPIO_IEV );    /* setup rising edge */
         break;
-    case falling_edge:
-        ioclear32( pins_mask, base_address+GPIO_IS );   /* set edge triggered */
-        ioclear32( pins_mask, base_address+GPIO_IBE );  /* disable both edges */
-        ioclear32( pins_mask, base_address+GPIO_IEV );  /* setup falling edge */
+    case gpio_int_falling_edge:
+        reg_clear( pins_mask, base_address+GPIO_IS );   /* set edge triggered */
+        reg_clear( pins_mask, base_address+GPIO_IBE );  /* disable both edges */
+        reg_clear( pins_mask, base_address+GPIO_IEV );  /* setup falling edge */
         break;
-    case both_edge:
-        ioclear32( pins_mask, base_address+GPIO_IS );   /* set edge triggered */
-        ioset32( pins_mask, base_address+GPIO_IBE );    /* enable both edges */
+    case gpio_int_both_edge:
+        reg_clear( pins_mask, base_address+GPIO_IS );   /* set edge triggered */
+        reg_set( pins_mask, base_address+GPIO_IBE );    /* enable both edges */
         break;
     default:
         TEST_ASSERT( 0, "Unsupported interrupt type" );
         return;
     }
 
-    ioset32( pins_mask, base_address+GPIO_IE );         /* enable interrupt */
+    reg_set( pins_mask, base_address+GPIO_IE );         /* enable interrupt */
 }
 
 void gpio_int_enable( uint32_t const base_address, uint32_t const pin_offset, gpio_int_type const int_type ) {
@@ -56,7 +64,7 @@ void gpio_int_enable( uint32_t const base_address, uint32_t const pin_offset, gp
 
 
 void gpio_int_disable_by_mask( uint32_t const base_address, uint8_t const pins_mask ) {
-    ioclear32( pins_mask, base_address+GPIO_IE );
+    reg_clear( pins_mask, base_address+GPIO_IE );
 }
 
 void gpio_int_disable( uint32_t const base_address, uint32_t const pin_offset ) {
@@ -67,7 +75,7 @@ void gpio_int_disable( uint32_t const base_address, uint32_t const pin_offset ) 
 
 
 void gpio_int_clear_by_mask( uint32_t const base_address, uint8_t const pins_mask ) {
-    iowrite32( pins_mask, base_address+GPIO_IC );
+    reg_write( pins_mask, base_address+GPIO_IC );
 }
 
 void gpio_int_clear( uint32_t const base_address, uint32_t const pin_offset ) {
@@ -78,8 +86,9 @@ void gpio_int_clear( uint32_t const base_address, uint32_t const pin_offset ) {
 
 
 void gpio_set_direction_by_mask( uint32_t const base_address, uint8_t const pins_mask, gpio_pin_direction const dir ) {
-    if( dir == direction_out )  ioset32( pins_mask, base_address+GPIO_DIR );
-    else /* direction_in */     ioclear32( pins_mask, base_address+GPIO_DIR );
+    if(      dir == gpio_pin_direction_0in_1out )   reg_write( pins_mask, base_address+GPIO_DIR );
+    else if( dir == gpio_pin_direction_in )         reg_clear( pins_mask, base_address+GPIO_DIR );
+    else /*  dir == gpio_pin_direction_out */       reg_set(   pins_mask, base_address+GPIO_DIR );
 }
 
 void gpio_set_direction( uint32_t const base_address, uint32_t const pin_offset, gpio_pin_direction const dir ) {
@@ -96,8 +105,9 @@ gpio_pin_direction gpio_get_direction( uint32_t const base_address,  uint32_t co
 
 
 void gpio_set_ctrl_mode_by_mask( uint32_t const base_address, uint8_t const pins_mask, gpio_ctrl_mode const ctrl_mode ) {
-    if( ctrl_mode == software_mode )    ioclear32( pins_mask, base_address+GPIO_AFSEL );
-    else /* hardware_mode */            ioset32( pins_mask, base_address+GPIO_AFSEL );
+    if(      ctrl_mode == gpio_ctrl_mode_0sw_1hw )  reg_write( pins_mask, base_address+GPIO_AFSEL );
+    else if( ctrl_mode == gpio_ctrl_mode_sw )       reg_clear( pins_mask, base_address+GPIO_AFSEL );
+    else /*  ctrl_mode == gpio_ctrl_mode_hw */      reg_set(   pins_mask, base_address+GPIO_AFSEL );
 }
 
 void gpio_set_ctrl_mode( uint32_t const base_address, uint32_t const pin_offset, gpio_ctrl_mode const ctrl_mode ) {
@@ -109,12 +119,12 @@ void gpio_set_ctrl_mode( uint32_t const base_address, uint32_t const pin_offset,
 gpio_ctrl_mode gpio_get_ctrl_mode( uint32_t const base_address,  uint32_t const pin_offset ) {
     TEST_ASSERT( pin_offset < GPIO_PIN_N, "ERROR!!! No such GPIO port exists" );
 
-    return (gpio_ctrl_mode)( (0b1 << pin_offset) & (ioread32( base_address+GPIO_AFSEL ) & GPIO_REG_MASK) );
+    return (gpio_ctrl_mode)( (0b1 << pin_offset) & reg_read(base_address+GPIO_AFSEL) );
 }
 
 
 void gpio_set_value_by_mask( uint32_t const base_address, uint8_t const pins_mask, uint8_t const pins_value ) {
-    iowrite32( pins_value, base_address+GPIO_DATA + GPIO_GET_PINS_OFFSET( pins_mask ) );
+    reg_write( pins_value, base_address+GPIO_DATA + GPIO_GET_PINS_OFFSET( pins_mask ) );
 }
 
 void gpio_set_value( uint32_t const base_address, uint32_t const pin_offset, bool const value ) {
@@ -126,9 +136,9 @@ void gpio_set_value( uint32_t const base_address, uint32_t const pin_offset, boo
 bool gpio_get_value( uint32_t const base_address, uint32_t const pin_offset ) {
     TEST_ASSERT( pin_offset < GPIO_PIN_N, "ERROR!!! No such GPIO port exists" );
 
-    return (bool)( (ioread32( base_address+GPIO_DATA + GPIO_GET_PINS_OFFSET(0b1 << pin_offset) ) & GPIO_REG_MASK) >> pin_offset );
+    return (bool)( reg_read( base_address+GPIO_DATA + GPIO_GET_PINS_OFFSET(0b1 << pin_offset) ) >> pin_offset );
 }
 
 uint8_t gpio_get_data( uint32_t const base_address ) {
-    return (uint8_t)( ioread32( base_address+GPIO_DATA + GPIO_ADDR_MASK ) & GPIO_REG_MASK );
+    return reg_read( base_address+GPIO_DATA + GPIO_ADDR_MASK );
 }

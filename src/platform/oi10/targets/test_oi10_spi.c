@@ -121,7 +121,7 @@ static void gspi_irq_handler( int irq, void* arg ) {
 
     if( dma_status & gspi_int ) {
         GSPI_ext = 1;
-        gpio_set_direction_by_mask( GPIO_1_BASE, GPIO_REG_MASK, direction_in );
+        gpio_set_direction_by_mask( GPIO_1_BASE, GPIO_REG_MASK, gpio_pin_direction_in );
     }
 
     msync();
@@ -327,7 +327,7 @@ static uint32_t gspi_ext_int( uint32_t const base_addr ) {
     pl022_get_dma_status( base_addr ); // clear interrupt
     pl022_dma_set_irq_mask( base_addr, gspi_int );
 
-    gpio_set_direction_by_mask( GPIO_1_BASE, GPIO1_X, direction_out );
+    gpio_set_direction_by_mask( GPIO_1_BASE, GPIO1_X, gpio_pin_direction_out );
     gpio_set_value_by_mask( GPIO_1_BASE, GPIO_REG_MASK, GPIO1_X );
     msync();
 

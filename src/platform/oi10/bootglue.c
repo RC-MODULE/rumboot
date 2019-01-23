@@ -109,7 +109,7 @@ static bool emi_enable(const struct rumboot_bootsource *src, void *pdata)
 
 static bool sdio_enable(const struct rumboot_bootsource *src, void *pdata)
 {
-        gpio_set_direction(GPIO_0_BASE, 3, direction_in);
+        gpio_set_direction(GPIO_0_BASE, 3, gpio_pin_direction_in);
         return !(gpio_get_data(GPIO_0_BASE) & BOOTM_SDIO_CD);
 }
 
