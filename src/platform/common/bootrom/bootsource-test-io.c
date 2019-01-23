@@ -99,6 +99,8 @@ int main()
 	#else
     	struct rumboot_bootheader *hdr = malloc(SIZE);
 	#endif
+
+	rumboot_irq_set_exception_handler(rumboot_arch_exception);
 	struct rumboot_config conf;
 	rumboot_platform_read_config(&conf);
 	rumboot_platform_init_loader(&conf);
@@ -110,9 +112,9 @@ int main()
 	int errors = 0;
 
 	/* Normal aligned reads */
-//	errors += check_once_from_offset(src, pdata, hdr, 0);
+	errors += check_once_from_offset(src, pdata, hdr, 0);
 	/* Check misaligned reads */
-//	errors += check_once_from_offset(src, pdata, hdr, src->plugin->align + 1);
+	errors += check_once_from_offset(src, pdata, hdr, src->plugin->align + 1);
 	/* Random reads */
 	errors += check_once_from_offset(src, pdata, hdr, (src->plugin->align ? src->plugin->align : 33));
 
