@@ -11,11 +11,11 @@
 
 int main()
 {
-        rumboot_printf("Hello, I will check exception handling.\n");
         rumboot_irq_set_exception_handler(rumboot_arch_exception);
         struct rumboot_config conf;
         rumboot_platform_read_config(&conf);
         rumboot_platform_init_loader(&conf);
+        rumboot_printf("Hello, I will check exception handling.\n");
 
 #if defined(__PPC__)
         asm ("sc");
