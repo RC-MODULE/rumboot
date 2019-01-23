@@ -16,7 +16,7 @@ int main()
 #else
     struct rumboot_bootheader *hdr = malloc(SIZE);
 #endif
-
+    rumboot_irq_set_exception_handler(rumboot_arch_exception);
 	struct rumboot_config conf;
     rumboot_platform_runtime_info->persistent[0] = 0;
 	rumboot_platform_read_config(&conf);
