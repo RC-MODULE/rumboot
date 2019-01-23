@@ -122,11 +122,13 @@ int main()
         dci(2);
         isync();
 //        rumboot_putdump((uint32_t)test_data, sizeof(test_data));
+        for(uint32_t i = 0; i < sizeof(test_data) >> 2; ++i)
+            test_data[i] ^= 0xFFFFFFFF;
         for(uint32_t j = 0; j < COUNT_AREAS; ++j)
         {
 //            rumboot_putdump((uint32_t)rdf_buf[j], sizeof(test_data));
             result |= memcmp(rdf_buf[j], test_data, sizeof(test_data));
-            result |= (ioread32((uint32_t)rdf_buf[j] + sizeof(test_data)) == ((j & 0xff) | ((j & 0xff) << 8) | ((j & 0xff) << 16) | ((j & 0xff) << 24)));
+//            result |= (ioread32((uint32_t)rdf_buf[j] + sizeof(test_data)) == ((j & 0xff) | ((j & 0xff) << 8) | ((j & 0xff) << 16) | ((j & 0xff) << 24)));
             rumboot_printf("rdf[%d]: result == 0x%x\n", j, result);
         }
 //        buf += count_nops;
