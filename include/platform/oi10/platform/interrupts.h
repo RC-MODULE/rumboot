@@ -56,7 +56,8 @@
 #define SW3_AXI_INT                 (51)
 #define ETH0_INT                    (52)
 #define ETH1_INT                    (53)
-/* 54-55 reserved */
+#define AXI_MSIF_INT                (54)
+/* 55 reserved */
 #define EMI_CNTR_INT_0              (56)
 #define EMI_CNTR_INT_1              (57)
 #define EMI_CNTR_INT_2              (58)
