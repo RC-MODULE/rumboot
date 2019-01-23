@@ -176,6 +176,8 @@ static uint32_t check_gpio_func( uint32_t base_addr, uint32_t GPIODIR_value ) {
 
 
 int main() {
+    rumboot_memfill8_modelling((void*)SRAM0_BASE, 0x1000, 0x00, 0x00); //workaround (init 4KB SRAM0)
+
     uint32_t result = 0x0;
 
     rumboot_printf( "Check GPIO (0x%x) \n", GPIO_X_BASE );
