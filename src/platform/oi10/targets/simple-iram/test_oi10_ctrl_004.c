@@ -251,9 +251,8 @@ TEST_SUITE_END();
 int main(void)
 {
     register int result;
-    rumboot_printf( "SP804 test START\n" );
-    rumboot_irq_cli();
     struct rumboot_irq_entry *tbl = rumboot_irq_create( NULL );
+    rumboot_irq_cli();
     rumboot_irq_set_handler( tbl, DIT_INT0, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler0, &in[0]);
     rumboot_irq_set_handler( tbl, DIT_INT1, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler1, &in[0]);
     /* Activate the table */
