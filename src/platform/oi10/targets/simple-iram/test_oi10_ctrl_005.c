@@ -186,6 +186,7 @@ TEST_SUITE_END();
 uint32_t main(void)
 {
     register int result;
+    rumboot_printf("SP805 test START\n");
     struct rumboot_irq_entry *tbl = rumboot_irq_create(NULL);
     rumboot_irq_cli();
     rumboot_irq_set_handler(tbl, WDT_INT, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler0, &in[0]);
@@ -194,17 +195,6 @@ uint32_t main(void)
     /* Activate Watchdog Interrupt */
     rumboot_irq_enable(WDT_INT);
     rumboot_irq_sei();
-
     result = test_suite_run(NULL, &wd_testlist);
-
-    if(!result)
-    {
-        rumboot_printf("Checked TEST_OK\n");
-    }
-    else
-    {
-        rumboot_printf("Checked TEST_ERROR\n");
-        return result;
-    }
     return result;
 }
