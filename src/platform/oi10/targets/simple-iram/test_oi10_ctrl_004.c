@@ -251,6 +251,7 @@ TEST_SUITE_END();
 int main(void)
 {
     register int result;
+    rumboot_printf("SP804 test START\n");
     struct rumboot_irq_entry *tbl = rumboot_irq_create( NULL );
     rumboot_irq_cli();
     rumboot_irq_set_handler( tbl, DIT_INT0, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler0, &in[0]);
@@ -260,17 +261,7 @@ int main(void)
     rumboot_irq_enable( DIT_INT0 );
     rumboot_irq_enable( DIT_INT1 );
     rumboot_irq_sei();
-
     result = test_suite_run( NULL, &dit_testlist );
-    if(!result)
-    {
-        rumboot_printf("Checked TEST_OK\n");
-    }
-    else
-    {
-        rumboot_printf("Checked TEST_ERROR\n");
-        return result;
-    }
     return result;
 }
 
