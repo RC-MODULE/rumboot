@@ -185,9 +185,7 @@ TEST_SUITE_END();
 
 uint32_t main(void)
 {
-    // Set up interrupt handlers
-    register uint32_t result;
-    rumboot_printf("SP805 test START\n");
+    register int result;
     struct rumboot_irq_entry *tbl = rumboot_irq_create(NULL);
     rumboot_irq_cli();
     rumboot_irq_set_handler(tbl, WDT_INT, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler0, &in[0]);
