@@ -22,11 +22,13 @@
 #define R_ARG3          r6  /* Fourth argument      */
 #define R_DCRA          r20 /* DCR address          */
 #define R_ADDR          r21 /* Unified address      */
-#define R_DATA          r22 /* Readed data          */
+#define R_DATA          r22 /* Read data            */
 #define R_EXPV          r23 /* Expected value       */
 #define R_MASK          r24 /* Unified mask         */
-#define R_SHFT          r25 /* Shift value          */
-#define R_TERM          r26 /* Termination value    */
+#define R_OMSK          r25 /* Or mask              */
+#define R_AMSK          r26 /* And mask             */
+#define R_SHFT          r27 /* Shift value          */
+#define R_TERM          r28 /* Termination value    */
 #define R_ZERO          r30 /* Holds 0x00000000     */
 #define R_ONES          r31 /* Holds 0xFFFFFFFF     */
 
@@ -34,6 +36,7 @@
 #define P4A0(OFFSET)    (DCR_PLB4AHB_0_BASE + (OFFSET))
 
 .macro check_rst_value reg, exp, regname
+    rumboot_putstring "Register \regname\()...\n"
     check_value CVR3, P4A0(\reg), \exp, "PLB4AHB_0_\regname"
 .endm
 
@@ -58,19 +61,23 @@ p4ahb_0:
     check_rst_value TOP_ADDR        TOP_ADDR_VALUE          "TOP_ADDR"
     check_rst_value BOT_ADDR        BOT_ADDR_VALUE          "BOT_ADDR"
     check_rst_value ATTRS           ATTRS_VALUE             "ATTRS"
+/*  For bidirection mode
     check_rst_value CONTROL         CONTROL_VALUE           "CONTROL"
     check_rst_value ERR_ST          ERR_ST_VALUE            "ERR_ST"
     check_rst_value ERR_ADDR        ERR_ADDR_VALUE          "ERR_ADDR"
     check_rst_value INT_MSK         INT_MSK_VALUE           "INT_MSK"
+*/
 
     rumboot_putstring "Done!\n"
 
+
 running_0_1_p4ahb_0:
-    load_const  R_DCRA, P4A0(CONTROL)
+    rumboot_putstring "Running 1...\n"
+    load_const  R_DCRA, P4A0(TOP_ADDR)  /* Victim register */
     mtdcrx      R_DCRA, R_ZERO
     mfdcrx      R_DATA, R_DCRA
     cmpw  cr7,  R_DATA, R_ZERO
-    TEST_ASSERT(eq,cr7,"Read/write error in DCR_PLB4AHB_0_CONTROL (running 1 init)")
+    TEST_ASSERT(eq,cr7,"Read/write error in DCR_PLB4AHB_0_TOP_ADDR (running 1 init)")
 
 p4ahb_0_running_1:
     load_const  R_EXPV, 0x00000001
@@ -79,35 +86,50 @@ p4ahb_0_loop_1:
     mtdcrx      R_DCRA, R_EXPV
     mfdcrx      R_DATA, R_DCRA
     cmpw cr7,   R_DATA, R_EXPV
-    TEST_ASSERT(eq,cr7,"Read/write error in DCR_PLB4AHB_0_CONTROL (running 1)")
+    TEST_ASSERT(eq,cr7,"Read/write error in DCR_PLB4AHB_0_TOP_ADDR (running 1)")
     cmpw cr0,   R_EXPV, R_TERM
-    beq- cr0,   p4ahb_0_running_0
+    beq- cr0,   p4ahb_0_running_1_done
     slw         R_EXPV, R_EXPV, R_SHFT
     b           p4ahb_0_loop_1
-
-p4ahb_0_running_0:
-    load_const  R_EXPV, 0x000000FF
+p4ahb_0_running_1_done:
+    /* Check bit 0x80000000 */
+    load_const  R_EXPV, 0x80000000
     mtdcrx      R_DCRA, R_EXPV
     mfdcrx      R_DATA, R_DCRA
     cmpw cr7,   R_DATA, R_EXPV
-    TEST_ASSERT(eq,cr7,"Read/write error in DCR_PLB4AHB_0_CONTROL (running 0 init)")
+    TEST_ASSERT(eq,cr7,"Read/write error in DCR_PLB4AHB_0_TOP_ADDR (running 1)")
 
-    load_const  R_EXPV, 0x000000FE
-    load_const  R_TERM, 0x0000007F
-    load_const  R_MASK, 0x000000FF
+p4ahb_0_running_0:
+    rumboot_putstring "Running 0...\n"
+    load_const  R_EXPV, 0x800000FF
+    load_const  R_TERM, 0x8000007F
+    load_const  R_OMSK, 0x80000001
+    load_const  R_AMSK, 0x800000FF
+    mtdcrx      R_DCRA, R_EXPV
+    mfdcrx      R_DATA, R_DCRA
+    cmpw cr7,   R_DATA, R_EXPV
+    TEST_ASSERT(eq,cr7,"Read/write error in DCR_PLB4AHB_0_TOP_ADDR (running 0 init)")
+    load_const  R_EXPV, 0x800000FE
 p4ahb_0_loop_0:
     mtdcrx      R_DCRA, R_EXPV
     mfdcrx      R_DATA, R_DCRA
     cmpw cr7,   R_DATA, R_EXPV
-    TEST_ASSERT(eq,cr7,"Read/write error in DCR_PLB4AHB_0_CONTROL (running 0)")
+    TEST_ASSERT(eq,cr7,"Read/write error in DCR_PLB4AHB_0_TOP_ADDR (running 0)")
     cmpw cr0,   R_EXPV, R_TERM
-    beq- cr0,   p4ahb_0_done
+    beq- cr0,   p4ahb_0_running_0_done
     slw         R_EXPV, R_EXPV, R_SHFT
-    ori         R_EXPV, R_EXPV, 0x0001
-    and         R_EXPV, R_EXPV, R_MASK
+    or          R_EXPV, R_EXPV, R_OMSK
+    and         R_EXPV, R_EXPV, R_AMSK
     b           p4ahb_0_loop_0
+p4ahb_0_running_0_done:
+    /* Check bit 0x80000000 */
+    load_const  R_EXPV, 0x000000FF
+    mtdcrx      R_DCRA, R_EXPV
+    mfdcrx      R_DATA, R_DCRA
+    cmpw cr7,   R_DATA, R_EXPV
+    TEST_ASSERT(eq,cr7,"Read/write error in DCR_PLB4AHB_0_TOP_ADDR (running 0)")
 
- p4ahb_0_done:
+p4ahb_0_done:
     rumboot_putstring "p4ahb_0 running 0/1 done!\n"
 
 test_end:
