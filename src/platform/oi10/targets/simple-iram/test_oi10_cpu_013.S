@@ -24,7 +24,7 @@
 #define R_ADDR          r21 /* Unified address      */
 #define R_DATA          r22 /* Read data            */
 #define R_EXPV          r23 /* Expected value       */
-#define R_MASK          r24 /* Unified mask         */
+#define R_BACK          r24 /* Backup register      */
 #define R_OMSK          r25 /* Or mask              */
 #define R_AMSK          r26 /* And mask             */
 #define R_SHFT          r27 /* Shift value          */
@@ -70,10 +70,10 @@ p4ahb_0:
 
     rumboot_putstring "Done!\n"
 
-
 running_0_1_p4ahb_0:
     rumboot_putstring "Running 1...\n"
     load_const  R_DCRA, P4A0(TOP_ADDR)  /* Victim register */
+    mfdcrx      R_BACK, R_DCRA          /* Backup register */
     mtdcrx      R_DCRA, R_ZERO
     mfdcrx      R_DATA, R_DCRA
     cmpw  cr7,  R_DATA, R_ZERO
@@ -130,6 +130,7 @@ p4ahb_0_running_0_done:
     TEST_ASSERT(eq,cr7,"Read/write error in DCR_PLB4AHB_0_TOP_ADDR (running 0)")
 
 p4ahb_0_done:
+    mtdcrx      R_DCRA, R_BACK  /* Restore register */
     rumboot_putstring "p4ahb_0 running 0/1 done!\n"
 
 test_end:
