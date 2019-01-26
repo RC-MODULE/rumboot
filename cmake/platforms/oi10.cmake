@@ -297,23 +297,42 @@ endif()
 
     rumboot_bootrom_integration_test(BROM
         NAME "nor-with-ecc-ok"
-        IRUN_FLAGS ${ROM_6500K_OPTS}
+        IRUN_FLAGS ${ROM_6500K_OPTS} +BOOT_EMI_ECC=1
         LOAD
           SD0_BOOT_IMAGE spl-fail-bad-magic
           SPI0_CONF spl-fail,spl-fail
           NOR_IMAGE spl-ok
           HOSTMOCK  spl-fail
-        IRUN_FLAGS +BOOT_EMI_ECC=1
     )
 
     rumboot_bootrom_integration_test(BROM
         NAME "nor-no-ecc-ok"
+        IRUN_FLAGS +BOOT_EMI_ECC=0 ${ROM_6500K_OPTS}
         LOAD
           SD0_BOOT_IMAGE spl-fail-bad-magic
           SPI0_CONF spl-fail-bad-magic,spl-fail-bad-magic
           NOR_IMAGE spl-ok
           HOSTMOCK  spl-fail
-        IRUN_FLAGS +BOOT_EMI_ECC=0 ${ROM_6500K_OPTS}
+    )
+
+    rumboot_bootrom_integration_test(BROM
+        NAME "nor-with-ecc-ok-direct"
+        IRUN_FLAGS +BOOT_EMI_ECC=1 ${ROM_6500K_OPTS} +BOOT_NOR=0
+        LOAD
+          SD0_BOOT_IMAGE spl-fail-bad-magic
+          SPI0_CONF spl-fail,spl-fail
+          NOR_IMAGE spl-ok
+          HOSTMOCK  spl-fail
+    )
+
+    rumboot_bootrom_integration_test(BROM
+        NAME "nor-no-ecc-ok-direct"
+        IRUN_FLAGS +BOOT_EMI_ECC=0 ${ROM_6500K_OPTS} +BOOT_NOR=0
+        LOAD
+          SD0_BOOT_IMAGE spl-fail-bad-magic
+          SPI0_CONF spl-fail-bad-magic,spl-fail-bad-magic
+          NOR_IMAGE spl-ok
+          HOSTMOCK  spl-fail
     )
 
     rumboot_bootrom_integration_test(BROM
