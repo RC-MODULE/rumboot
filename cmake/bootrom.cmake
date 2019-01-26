@@ -137,6 +137,16 @@ macro(rumboot_bootrom_add_components spl_conf romconf)
      VARIABLE SPL_OK_BAD_REV
    )
 
+  if (RUMBOOT_ARCH STREQUAL "ppc")
+   add_rumboot_target(
+     FILES common/bootrom/ppc-pid-test.c
+     NAME pid-test
+     CONFIGURATION ${spl_conf}
+     FEATURES STUB PACKIMAGE
+     VARIABLE SPL_PID_TEST
+   )
+ endif()
+
   if (NOT RUMBOOT_PLATFORM STREQUAL "native")
    add_rumboot_target(
      FILES common/bootrom/timer.c
@@ -199,6 +209,19 @@ macro(rumboot_bootrom_unit_test)
   )
 
   if (BOOTSOURCE_FULL)
+    if (RUMBOOT_ARCH STREQUAL "ppc")
+      add_rumboot_target(
+              NAME "unit-${BOOTSOURCE_TAG}-ppc-pid-test"
+              CONFIGURATION ${BOOTSOURCE_CONFIGURATION}
+              PREFIX "bootrom"
+              FILES common/bootrom/unit.c
+              CFLAGS -DSOURCE=${BOOTSOURCE_ID} -DEXPECTED=0
+              TESTGROUP bootrom bootrom-unit
+              IRUN_FLAGS ${BOOTSOURCE_IRUN_FLAGS}
+              LOAD ${BOOTSOURCE_MEMTAG} ${_commas}spl-pid-test
+            )
+    endif()
+
     add_rumboot_target(
             NAME "unit-${BOOTSOURCE_TAG}-bad-magic"
             CONFIGURATION ${BOOTSOURCE_CONFIGURATION}
