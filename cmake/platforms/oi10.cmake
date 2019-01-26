@@ -31,7 +31,7 @@ rumboot_add_configuration(
     ROM
     DEFAULT
     LDS oi10/rom.lds
-    CFLAGS -DRUMBOOT_ONLY_STACK ${DEBUG_DEFINES}
+    CFLAGS -DRUMBOOT_ONLY_STACK
     LDFLAGS "-e rumboot_entry_point"
     PREFIX rom
     FEATURES ROMGEN
@@ -47,6 +47,7 @@ endif()
 rumboot_add_configuration(
     BROM
     CONFIGURATION ROM
+    CFLAGS ${CONFIGURATION_ROM_CFLAGS} -DUTLB_EXT_MEM_NOR_ONLY
     LDS oi10/bootrom.lds
     IRUN_FLAGS +BOOTMGR_KEEP_DRIVING=1 ${BOOTROM_IFLAGS}
 )
@@ -85,7 +86,6 @@ rumboot_add_configuration (
     PREFIX iram
     LDFLAGS -Wl,--start-group -lgcc -lc -lm -Wl,--end-group "-e rumboot_main"
     FILES ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/startup.S ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c
-    CFLAGS ${DEBUG_DEFINES}
     BOOTROM bootrom-stub
     FEATURES LUA COVERAGE PACKIMAGE
     LOAD IM0BIN SELF
@@ -98,7 +98,7 @@ rumboot_add_configuration (
     LDS oi10/iram-spl.lds
     PREFIX spl
     LDFLAGS -Wl,--start-group -lgcc -lc -lm -Wl,--end-group "-e main"
-    CFLAGS ${DEBUG_DEFINES} -DRUMBOOT_NOINIT
+    CFLAGS -DRUMBOOT_NOINIT
     FEATURES COVERAGE PACKIMAGE
 )
 
