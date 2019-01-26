@@ -6,6 +6,7 @@
 #include <stdbool.h>
 #include <alloca.h>
 #include <rumboot/timer.h>
+#include <rumboot/io.h>
 
 int main(int argc, char const *argv[]) {
     struct rumboot_config conf;
