@@ -6,7 +6,7 @@
 #define PPC_476FP_MMU_FIELDS_H
 
 
-#include <platform/common_macros/common_macros.h>
+#include <rumboot/macros.h>
 #include <platform/arch/ppc/ibm_bit_ordering_macros.h>
 
 

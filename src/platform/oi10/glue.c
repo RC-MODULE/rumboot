@@ -82,6 +82,16 @@ void rumboot_platform_setup() {
 
     msr_write( msr_old_value );
 
+    /* Enable MEM_WINDOW */
+    spr_write( SPR_SSPCR, ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_64KB)   << MMU_SSPCR_ORD1_i)
+                        | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_1MB)    << MMU_SSPCR_ORD2_i)
+                        | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_4KB)    << MMU_SSPCR_ORD3_i)
+                        | ((MMU_SUSPCR_ORD_PID_ONLY | MMU_XSPCR_ORD_1GB)  << MMU_SSPCR_ORD4_i)
+                        | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_16KB)   << MMU_SSPCR_ORD5_i)
+                        | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_16MB)   << MMU_SSPCR_ORD6_i)
+                        | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_256MB)  << MMU_SSPCR_ORD7_i) );
+    set_mem_window(MEM_WINDOW_0);
+
     extern char rumboot_im0_heap_start;
     extern char rumboot_im0_heap_end;
     rumboot_malloc_register_heap( "IM0", &rumboot_im0_heap_start, &rumboot_im0_heap_end );

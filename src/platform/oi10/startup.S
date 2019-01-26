@@ -361,7 +361,7 @@ init_other_spr:
     load_const  r3, ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_64KB)   << MMU_USPCR_ORD1_i)\
                   | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_1MB)    << MMU_USPCR_ORD2_i)\
                   | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_4KB)    << MMU_USPCR_ORD3_i)\
-                  | ((MMU_SUSPCR_ORD_PID_ONLY | MMU_XSPCR_ORD_1GB)  << MMU_USPCR_ORD4_i)\
+                  | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_1GB)    << MMU_USPCR_ORD4_i)\
                   | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_16KB)   << MMU_USPCR_ORD5_i)\
                   | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_16MB)   << MMU_USPCR_ORD6_i)\
                   | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_256MB)  << MMU_USPCR_ORD7_i)
@@ -457,12 +457,12 @@ setup_plb6bc:
     load_const  r6, ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_64KB)   << MMU_SSPCR_ORD1_i)\
                   | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_1MB)    << MMU_SSPCR_ORD2_i)\
                   | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_4KB)    << MMU_SSPCR_ORD3_i)\
-                  | ((MMU_SUSPCR_ORD_PID_ONLY | MMU_XSPCR_ORD_1GB)  << MMU_SSPCR_ORD4_i)\
+                  | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_1GB)    << MMU_SSPCR_ORD4_i)\
                   | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_16KB)   << MMU_SSPCR_ORD5_i)\
                   | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_16MB)   << MMU_SSPCR_ORD6_i)\
                   | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_256MB)  << MMU_SSPCR_ORD7_i)
 
-    load_const  r7, MEM_WINDOW_0
+    load_const  r7, MEM_WINDOW_SHARED
 
     load_const  r3, DCR_PLB6_BC_BASE
 
