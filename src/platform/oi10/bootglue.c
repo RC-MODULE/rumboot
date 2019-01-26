@@ -98,6 +98,9 @@ void rumboot_platform_print_summary(struct rumboot_config *conf)
         rumboot_printf("Direct NOR boot: %s\n",
                        (bootm & BOOTM_NOR_BOOT) ? "disabled" : "enabled");
 
+        rumboot_printf("Reset cause:     SCTL: 0x%x SPR_DBCR0: 0x%x\n",
+                        dcr_read(DCR_CRG_BASE + 0x40), spr_read(SPR_DBCR0));
+
 }
 
 
@@ -160,6 +163,8 @@ bool rumboot_platform_check_entry_points(struct rumboot_bootheader *hdr)
 
 int rumboot_platform_exec(struct rumboot_bootheader *hdr)
 {
+        /* Make sure PID is 0 */
+        set_mem_window(MEM_WINDOW_SHARED);
         return rumboot_bootimage_execute_ep((void *) hdr->entry_point[0]);
 }
 
