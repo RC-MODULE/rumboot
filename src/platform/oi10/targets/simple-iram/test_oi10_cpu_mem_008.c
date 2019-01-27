@@ -85,12 +85,16 @@ static void init_block(uint8_t way, uint32_t ind)
 }
 
 static void mem_init(void) {
+    set_mem_window (MEM_WINDOW_0);
     init_block(0b00, 0x00);
     init_block(0b00, 0x80);
-    set_mem_window (MEM_WINDOW_3);
     init_block(0b01, 0x00);
     init_block(0b01, 0x80);
-    set_mem_window (MEM_WINDOW_0);
+    set_mem_window (MEM_WINDOW_3);
+    init_block(0b10, 0x00);
+    init_block(0b10, 0x80);
+    init_block(0b11, 0x00);
+    init_block(0b11, 0x80);
 }
 
 static void cache_icu_tag(uint8_t way, uint32_t ind)
@@ -108,9 +112,8 @@ static void cache_icu_tag(uint8_t way, uint32_t ind)
         icread( (void *) ((uint32_t) phys_addr) );
         isync();
         uint32_t reg_spr_icdbtrh = spr_read(SPR_ICDBTRH);
-
+        rumboot_printf("SPR_ICDBTRH = %x, tag = %x\n", reg_spr_icdbtrh, reg_spr_icdbtrh >> 13);
         if( (((uint32_t)phys_addr) >> 13) != (reg_spr_icdbtrh >> 13)) {
-            rumboot_printf("tag (SPR_ICDBTRH) = %x\n", reg_spr_icdbtrh >> 13);
             TEST_ASSERT(0,"ERROR: Wrong tag in SPR_ICDBTRH");
         }
         TEST_ASSERT( ((uint32_t) (phys_addr >> 32)) == (reg_spr_icdbtrh & 1), "ERROR: Ext addr value in SPR_ICDBTRH" );
@@ -120,12 +123,16 @@ static void cache_icu_tag(uint8_t way, uint32_t ind)
 static bool test_icu_tag_array()
 {
     rumboot_printf("Start test icu tag array\n");
+    set_mem_window (MEM_WINDOW_0);
     cache_icu_tag(0b00, 0x00);
     cache_icu_tag(0b00, 0x80);
-    set_mem_window (MEM_WINDOW_3);
     cache_icu_tag(0b01, 0x00);
     cache_icu_tag(0b01, 0x80);
-    set_mem_window (MEM_WINDOW_0);
+    set_mem_window (MEM_WINDOW_3);
+    cache_icu_tag(0b10, 0x00);
+    cache_icu_tag(0b10, 0x80);
+    cache_icu_tag(0b11, 0x00);
+    cache_icu_tag(0b11, 0x80);
 
     return true;
 }
