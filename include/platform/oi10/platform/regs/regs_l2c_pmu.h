@@ -12,6 +12,7 @@
 #include <platform/common_macros/common_macros.h>
 #include <platform/arch/ppc/ibm_bit_ordering_macros.h>
 #include <platform/regs/regs_l2c.h>
+#include <platform/regs/fields/l2c_pmu.h>
 
 /*  <-- ./units/cpu/units/ppc476l2c_v001/verilog/rtl/PPC476L2C_L2CORE.v
    // Performance Monitor Outputs
