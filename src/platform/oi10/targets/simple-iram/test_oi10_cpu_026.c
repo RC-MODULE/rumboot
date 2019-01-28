@@ -23,7 +23,7 @@
 
 #define LTRACE_RAW_ADDRESS(LTRACE_ADDRESS) (((uint32_t)((LTRACE_ADDRESS).address & 0x0FFF)) | ((uint32_t)(((LTRACE_ADDRESS).range & 0x0003) << 30)))
 
-const uint32_t LOOP_COUNTER = 128;
+const uint32_t LOOP_COUNTER = 512;
 
 void loop(uint32_t count)
 {
@@ -1270,6 +1270,7 @@ int main()
     rumboot_irq_enable( LTRACE_COMPLETE_0 );
     rumboot_irq_sei();
 
+    spr_write(SPR_CCR0, (spr_read(SPR_CCR0) | (1 << IBM_BIT_INDEX(32, 0))) & ~(1 << IBM_BIT_INDEX(32, 16)));
 
     //rumboot_printf("Configure L2C Debug\n");
     dcr_write(DCR_L2C_BASE + L2C_L2DBGSEL, 0x22222222);
