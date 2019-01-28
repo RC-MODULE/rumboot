@@ -42,6 +42,11 @@
 
 #define DATA_CACHE_VAL 0x1234ABCD
 
+BEGIN_ENUM( DCU_BANK_TYPE )
+DECLARE_ENUM_VAL( bank_ABCD,    0x00 )
+DECLARE_ENUM_VAL( bank_EFGH,    0x01 )
+END_ENUM( DCU_BANK_TYPE )
+
 //tag array
 uint32_t test_tag_array[] =
 {
@@ -72,25 +77,50 @@ uint32_t test_tag_array[] =
 #define MOVE1TO6(X) (((X&(1<<1))<<5) |  ((X&0x7C)>>1) | (X & 1))
 #define TAG_A_TO_INDEX(A)  (REVERSE8(MOVE1TO6(A) << 1))
 
-/*
- * erpn - 0 or 1 for em0
- * tag - 0..0x7FFFF
- * erpn_tag:
- * [28:19] = ERPN, (may be 0 or 1 only for EM2, see tlb entries)
- * [18:0] = TAG
- * [31:29] = 0
- */
 static uint32_t calc_addr (uint32_t tag, uint32_t index)
 {
     return (0x00 | ((tag)<<13) | ((index)<<5) | (0<<2));
 }
 
-static void init_block(uint8_t way, uint32_t base_ind)
+static uint32_t calc_index (uint32_t index, DCU_BANK_TYPE tag_bank)
+{
+    if (tag_bank == bank_ABCD)
+    {
+        if(index & 1) //ODD
+        {
+            if(index < 128)
+                return (index + 128);
+        }
+        else//EVEN
+        {
+            if(index >=128)
+                return (index - 128);
+        }
+    };
+
+    if (tag_bank == bank_EFGH)
+    {
+        if(index & 1) //ODD
+        {
+            if(index >=128)
+                return (index - 128);
+        }
+        else//EVEN
+        {
+            if(index < 128)
+                return (index + 128);
+        }
+    }
+    return index;
+}
+
+static void init_block(uint8_t way, uint32_t base_ind, DCU_BANK_TYPE bank_type)
 {
     for (uint32_t i = 0, ind = base_ind; i < ARRAY_SIZE(test_tag_array); i++, ind++ )
     {
         uint32_t tag = test_tag_array[i] | way;
         uint32_t index = TAG_A_TO_INDEX(ind);
+        index = calc_index (index, bank_type);
 
         uint32_t addr = calc_addr(tag, index);
 
@@ -112,21 +142,28 @@ static void init_block(uint8_t way, uint32_t base_ind)
 }
 
 static void mem_init(void) {
-    init_block(0b00, 0x00);
-    init_block(0b01, 0x80);
-    set_mem_window(MEM_WINDOW_3);
-    init_block(0b10, 0x00);
-    init_block(0b11, 0x80);
     set_mem_window(MEM_WINDOW_0);
+    init_block (0b00, 0x00, bank_ABCD);
+    init_block (0b01, 0x00, bank_ABCD);
+    set_mem_window(MEM_WINDOW_3);
+    init_block (0b10, 0x00, bank_ABCD);
+    init_block (0b11, 0x00, bank_ABCD);
+    set_mem_window(MEM_WINDOW_0);
+    init_block (0b00, 0x00, bank_EFGH);
+    init_block (0b01, 0x00, bank_EFGH);
+    set_mem_window(MEM_WINDOW_3);
+    init_block (0b10, 0x00, bank_EFGH);
+    init_block (0b11, 0x00, bank_EFGH);
 }
 
 
-void cache_dcu_tag(uint8_t way, uint32_t base_ind)
+void cache_dcu_tag(uint8_t way, uint32_t base_ind, DCU_BANK_TYPE bank_type)
 {
     for (uint32_t i = 0, ind = base_ind; i < ARRAY_SIZE(test_tag_array); i++, ind++)
     {
         uint32_t tag = test_tag_array[i] | way;
         uint32_t index = TAG_A_TO_INDEX(ind);
+        index = calc_index (index, bank_type);
 
         uint32_t addr = calc_addr(tag, index);
         uint64_t phys_addr = rumboot_virt_to_phys((void*)addr);
@@ -152,15 +189,21 @@ void cache_dcu_tag(uint8_t way, uint32_t base_ind)
     }
 }
 
-static bool test_dcu_tag_array()
+static bool test_dcu_tag_array(void)
 {
     rumboot_printf("Start test dcu tag array\n");
-    cache_dcu_tag(0b00, 0x00);
-    cache_dcu_tag(0b01, 0x80);
-    set_mem_window(MEM_WINDOW_3);
-    cache_dcu_tag(0b10, 0x00);
-    cache_dcu_tag(0b11, 0x80);
     set_mem_window(MEM_WINDOW_0);
+    cache_dcu_tag (0b00, 0x00, bank_ABCD);
+    cache_dcu_tag (0b01, 0x00, bank_ABCD);
+    set_mem_window(MEM_WINDOW_3);
+    cache_dcu_tag (0b10, 0x00, bank_ABCD);
+    cache_dcu_tag (0b11, 0x00, bank_ABCD);
+    set_mem_window(MEM_WINDOW_0);
+    cache_dcu_tag (0b00, 0x00, bank_EFGH);
+    cache_dcu_tag (0b01, 0x00, bank_EFGH);
+    set_mem_window(MEM_WINDOW_3);
+    cache_dcu_tag (0b10, 0x00, bank_EFGH);
+    cache_dcu_tag (0b11, 0x00, bank_EFGH);
 
     return true;
 }
