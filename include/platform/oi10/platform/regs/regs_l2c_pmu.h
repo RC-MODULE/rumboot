@@ -42,71 +42,72 @@
    assign       L2C_EVENT[27]    = plb_PlbSnoopRetry;
 */
 
-#define L2EV_L2LwarxComplete        0
-#define L2EV_L2StwcxSuccess         1
-#define L2EV_L2MissEviction         2
-#define L2EV_L2MissDFetch           3
-#define L2EV_L2MissIFetch           4
-#define L2EV_L2MissStore            5
-#define L2EV_L2HitDFetch            6
-#define L2EV_L2HitIFetch            7
-#define L2EV_L2HitStore             8
-#define L2EV_L2ReadAfterWrite       9
-#define L2EV_L2WriteAfterWrite      10
-#define L2EV_PlbMasterCmd           11
-#define L2EV_PlbMasterRead          12
-#define L2EV_PlbMasterRWITM         13
-#define L2EV_PlbMasterDclaim        14
-#define L2EV_PlbMasterWrite         15
-#define L2EV_PlbReadOccupancy       16  /* L2C_EVENT[16:19] */
-#define L2EV_PlbMasterIntvnM        17
-#define L2EV_PlbMasterIntvnS        18
-#define L2EV_PlbMasterMemData       19
-#define L2EV_PlbSnoopCmd            20
-#define L2EV_PlbSnoopL2Cmd          21
-#define L2EV_PlbSnoopHitIntvn       22
-#define L2EV_PlbSnoopHit            23
-#define L2EV_PlbSnoopRetry          24
-
+BEGIN_ENUM( L2C_EVENT )
+    DECLARE_ENUM_VAL(   L2EV_L2LwarxComplete,       0   )
+    DECLARE_ENUM_VAL(   L2EV_L2StwcxSuccess,        1   )
+    DECLARE_ENUM_VAL(   L2EV_L2MissEviction,        2   )
+    DECLARE_ENUM_VAL(   L2EV_L2MissDFetch,          3   )
+    DECLARE_ENUM_VAL(   L2EV_L2MissIFetch,          4   )
+    DECLARE_ENUM_VAL(   L2EV_L2MissStore,           5   )
+    DECLARE_ENUM_VAL(   L2EV_L2HitDFetch,           6   )
+    DECLARE_ENUM_VAL(   L2EV_L2HitIFetch,           7   )
+    DECLARE_ENUM_VAL(   L2EV_L2HitStore,            8   )
+    DECLARE_ENUM_VAL(   L2EV_L2ReadAfterWrite,      9   )
+    DECLARE_ENUM_VAL(   L2EV_L2WriteAfterWrite,    10   )
+    DECLARE_ENUM_VAL(   L2EV_PlbMasterCmd,         11   )
+    DECLARE_ENUM_VAL(   L2EV_PlbMasterRead,        12   )
+    DECLARE_ENUM_VAL(   L2EV_PlbMasterRWITM,       13   )
+    DECLARE_ENUM_VAL(   L2EV_PlbMasterDclaim,      14   )
+    DECLARE_ENUM_VAL(   L2EV_PlbMasterWrite,       15   )
+    DECLARE_ENUM_VAL(   L2EV_PlbReadOccupancy,     16   ) /* L2C_EVENT[16:19] */
+    DECLARE_ENUM_VAL(   L2EV_PlbMasterIntvnM,      17   )
+    DECLARE_ENUM_VAL(   L2EV_PlbMasterIntvnS,      18   )
+    DECLARE_ENUM_VAL(   L2EV_PlbMasterMemData,     19   )
+    DECLARE_ENUM_VAL(   L2EV_PlbSnoopCmd,          20   )
+    DECLARE_ENUM_VAL(   L2EV_PlbSnoopL2Cmd,        21   )
+    DECLARE_ENUM_VAL(   L2EV_PlbSnoopHitIntvn,     22   )
+    DECLARE_ENUM_VAL(   L2EV_PlbSnoopHit,          23   )
+    DECLARE_ENUM_VAL(   L2EV_PlbSnoopRetry,        24   )
+END_ENUM( L2C_PMUREG )
 
 BEGIN_ENUM( L2C_PMUREG )
-    DECLARE_ENUM_VAL(   L2C_PMUGS0,     0x000   )
-    DECLARE_ENUM_VAL(   L2C_PMUGC0,     0x004   )
-    DECLARE_ENUM_VAL(   L2C_PMUIS0,     0x010   )
-    DECLARE_ENUM_VAL(   L2C_PMUIE0,     0x014   )
-    DECLARE_ENUM_VAL(   L2C_PMUREVID,   0xC00   )
-    DECLARE_ENUM_VAL(   L2C_PMULC0,     0x800   )
-    DECLARE_ENUM_VAL(   L2C_PMUC0,      0x808   )
-    DECLARE_ENUM_VAL(   L2C_PMULC1,     0x810   )
-    DECLARE_ENUM_VAL(   L2C_PMUC1,      0x818   )
-    DECLARE_ENUM_VAL(   L2C_PMULC2,     0x820   )
-    DECLARE_ENUM_VAL(   L2C_PMUC2,      0x828   )
-    DECLARE_ENUM_VAL(   L2C_PMULC3,     0x830   )
-    DECLARE_ENUM_VAL(   L2C_PMUC3,      0x838   )
-    DECLARE_ENUM_VAL(   L2C_PMULC4,     0x900   )
-    DECLARE_ENUM_VAL(   L2C_PMUC4,      0x908   )
-    DECLARE_ENUM_VAL(   L2C_PMULC5,     0x910   )
-    DECLARE_ENUM_VAL(   L2C_PMUC5,      0x918   )
-    DECLARE_ENUM_VAL(   L2C_PMULC6,     0x920   )
-    DECLARE_ENUM_VAL(   L2C_PMUC6,      0x928   )
-    DECLARE_ENUM_VAL(   L2C_PMULC7,     0x930   )
-    DECLARE_ENUM_VAL(   L2C_PMUC7,      0x938   )
-    DECLARE_ENUM_VAL(   L2C_PMULC8,     0xA00   )
-    DECLARE_ENUM_VAL(   L2C_PMUC8,      0xA08   )
-    DECLARE_ENUM_VAL(   L2C_PMULC9,     0xA10   )
-    DECLARE_ENUM_VAL(   L2C_PMUC9,      0xA18   )
-    DECLARE_ENUM_VAL(   L2C_PMULC10,    0xA20   )
-    DECLARE_ENUM_VAL(   L2C_PMUC10,     0xA28   )
-    DECLARE_ENUM_VAL(   L2C_PMULC11,    0xA30   )
-    DECLARE_ENUM_VAL(   L2C_PMUC11,     0xA38   )
-    DECLARE_ENUM_VAL(   L2C_PMULC12,    0xB00   )
-    DECLARE_ENUM_VAL(   L2C_PMUC12,     0xB08   )
-    DECLARE_ENUM_VAL(   L2C_PMULC13,    0xB10   )
-    DECLARE_ENUM_VAL(   L2C_PMUC13,     0xB18   )
-    DECLARE_ENUM_VAL(   L2C_PMULC14,    0xB20   )
-    DECLARE_ENUM_VAL(   L2C_PMUC14,     0xB28   )
-    DECLARE_ENUM_VAL(   L2C_PMULC15,    0xB30   )
-    DECLARE_ENUM_VAL(   L2C_PMUC15,     0xB38   )
+    DECLARE_ENUM_VAL(   L2C_PMUGS0,             0x000   )
+    DECLARE_ENUM_VAL(   L2C_PMUGC0,             0x004   )
+    DECLARE_ENUM_VAL(   L2C_PMUIS0,             0x010   )
+    DECLARE_ENUM_VAL(   L2C_PMUIE0,             0x014   )
+    DECLARE_ENUM_VAL(   L2C_PMUREVID,           0xC00   )
+    DECLARE_ENUM_VAL(   L2C_PMULC0,             0x800   )
+    DECLARE_ENUM_VAL(   L2C_PMUC0,              0x808   )
+    DECLARE_ENUM_VAL(   L2C_PMULC1,             0x810   )
+    DECLARE_ENUM_VAL(   L2C_PMUC1,              0x818   )
+    DECLARE_ENUM_VAL(   L2C_PMULC2,             0x820   )
+    DECLARE_ENUM_VAL(   L2C_PMUC2,              0x828   )
+    DECLARE_ENUM_VAL(   L2C_PMULC3,             0x830   )
+    DECLARE_ENUM_VAL(   L2C_PMUC3,              0x838   )
+    DECLARE_ENUM_VAL(   L2C_PMULC4,             0x900   )
+    DECLARE_ENUM_VAL(   L2C_PMUC4,              0x908   )
+    DECLARE_ENUM_VAL(   L2C_PMULC5,             0x910   )
+    DECLARE_ENUM_VAL(   L2C_PMUC5,              0x918   )
+    DECLARE_ENUM_VAL(   L2C_PMULC6,             0x920   )
+    DECLARE_ENUM_VAL(   L2C_PMUC6,              0x928   )
+    DECLARE_ENUM_VAL(   L2C_PMULC7,             0x930   )
+    DECLARE_ENUM_VAL(   L2C_PMUC7,              0x938   )
+    DECLARE_ENUM_VAL(   L2C_PMULC8,             0xA00   )
+    DECLARE_ENUM_VAL(   L2C_PMUC8,              0xA08   )
+    DECLARE_ENUM_VAL(   L2C_PMULC9,             0xA10   )
+    DECLARE_ENUM_VAL(   L2C_PMUC9,              0xA18   )
+    DECLARE_ENUM_VAL(   L2C_PMULC10,            0xA20   )
+    DECLARE_ENUM_VAL(   L2C_PMUC10,             0xA28   )
+    DECLARE_ENUM_VAL(   L2C_PMULC11,            0xA30   )
+    DECLARE_ENUM_VAL(   L2C_PMUC11,             0xA38   )
+    DECLARE_ENUM_VAL(   L2C_PMULC12,            0xB00   )
+    DECLARE_ENUM_VAL(   L2C_PMUC12,             0xB08   )
+    DECLARE_ENUM_VAL(   L2C_PMULC13,            0xB10   )
+    DECLARE_ENUM_VAL(   L2C_PMUC13,             0xB18   )
+    DECLARE_ENUM_VAL(   L2C_PMULC14,            0xB20   )
+    DECLARE_ENUM_VAL(   L2C_PMUC14,             0xB28   )
+    DECLARE_ENUM_VAL(   L2C_PMULC15,            0xB30   )
+    DECLARE_ENUM_VAL(   L2C_PMUC15,             0xB38   )
 END_ENUM( L2C_PMUREG )
 
 
