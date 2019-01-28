@@ -68,7 +68,7 @@ BEGIN_ENUM( L2C_EVENT )
     DECLARE_ENUM_VAL(   L2EV_PlbSnoopHitIntvn,     22   )
     DECLARE_ENUM_VAL(   L2EV_PlbSnoopHit,          23   )
     DECLARE_ENUM_VAL(   L2EV_PlbSnoopRetry,        24   )
-END_ENUM( L2C_PMUREG )
+END_ENUM( L2C_EVENT )
 
 BEGIN_ENUM( L2C_PMUREG )
     DECLARE_ENUM_VAL(   L2C_PMUGS0,             0x000   )
