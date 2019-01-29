@@ -11,6 +11,7 @@
 #include <platform/arch/ppc/ppc_476fp_mmu.h>
 #include <rumboot/rumboot.h>
 #include <platform/test_assert.h>
+#include <platform/arch/ppc/ppc_476fp_l1c_fields.h>
 
 
 /*                            MMU_TLB_ENTRY(  ERPN,   RPN,        EPN,        DSIZ,                   IL1I,   IL1D,   W,      I,      M,      G,      E,                      UX, UW, UR,     SX, SW, SR      DULXE,  IULXE,      TS,     TID,                WAY,                BID,                V   )*/
@@ -19,8 +20,78 @@ static const tlb_entry em_tlb_entry_cache_on = {TLB_ENTRY_CACHE_ON};
 
 #define COUNT_AREAS 5
 
-uint32_t compare_cached_functions(uint32_t* prev, uint32_t* curr){
-    return 0;
+bool get_way_by_addr(uint32_t CT, void* addr, int32_t* cache_way)
+{
+    uint64_t    phys_addr = 0;
+    uint32_t    reg_ICDBTRH;
+    uint32_t    reg_ICDBTRL;
+    bool        tag_valid;
+
+    phys_addr = (uint64_t)rumboot_virt_to_phys(addr);
+    if(CT == 2)
+    {
+        return l2c_arracc_get_way_by_address(DCR_L2C_BASE,
+                    (uint32_t)((phys_addr >> 32) & 0xffffffff),
+                    (uint32_t)((phys_addr      ) & 0xffffffff),
+                    cache_way
+                    );
+    } else if(CT == 0)
+    {
+        *cache_way = -1;
+        do{
+            ( int32_t )( *cache_way )++;
+            icread((uint32_t*)(((uint32_t)addr & (ICREAD_EA_L1I_INDEX_mask | ICREAD_EA_WORD_ADDR_mask))
+                    | (((*cache_way) << ICREAD_EA_L1I_WAY_i) & ICREAD_EA_L1I_WAY_mask)));
+            isync();
+            reg_ICDBTRL = spr_read(SPR_ICDBTRL);
+            reg_ICDBTRH = spr_read(SPR_ICDBTRH);
+            tag_valid = (reg_ICDBTRH & ICDBTRH_VALID_mask);
+            rumboot_printf("cache_way == %d\naddr == 0x%x\nicread (0x%x)\nICDBTRH == 0x%x\nICDBTRL == 0x%x\nvalid == %d\n",
+                    *cache_way,
+                    (uint32_t)addr,
+                    (uint32_t*)(((uint32_t)addr & (ICREAD_EA_L1I_INDEX_mask | ICREAD_EA_WORD_ADDR_mask))
+                            | (((*cache_way) << ICREAD_EA_L1I_WAY_i) & ICREAD_EA_L1I_WAY_mask)),
+                    reg_ICDBTRH,
+                    reg_ICDBTRL,
+                    tag_valid);
+        }while( ( (*cache_way) < (L2C_COUNT_WAYS - 1))
+                 && ( !( (tag_valid)
+                     &&( ( ( (reg_ICDBTRH & ICDBTRH_TAG_EXT_ADDR_mask) >> ICDBTRH_TAG_EXT_ADDR_i) == (uint32_t)((phys_addr >> 32) & 0xffffffff) )
+                       &&( (reg_ICDBTRH & ICDBTRH_TAG_ADDR_mask) == ( phys_addr & ICDBTRH_TAG_ADDR_mask ) )
+                       )
+                     ) )
+              );
+        if( tag_valid && ( ( ( (reg_ICDBTRH & ICDBTRH_TAG_EXT_ADDR_mask) >> ICDBTRH_TAG_EXT_ADDR_i) == (uint32_t)((phys_addr >> 32) & 0xffffffff) )
+                       &&( (reg_ICDBTRH & ICDBTRH_TAG_ADDR_mask) == ( phys_addr & ICDBTRH_TAG_ADDR_mask ) )
+                       ) )
+            return true;
+    }
+    return false;
+}
+
+uint32_t get_locks(uint32_t CT, void* addr, uint32_t cache_way)
+{
+    uint32_t result = -1;
+    uint64_t phys_addr = rumboot_virt_to_phys(addr);
+    uint32_t L2C_LRU_info;
+    if(CT == 2)
+    {
+        if(l2c_arracc_lru_info_read_by_way(DCR_L2C_BASE,
+                    (uint32_t)((phys_addr >> 32) & 0xffffffff),
+                    (uint32_t)((phys_addr      ) & 0xffffffff),
+                    cache_way,
+                    &L2C_LRU_info
+                    ))
+        {
+            result = ( L2C_LRU_info & L2C_L2ARRACCDO0_LRU_LOCK_BITS_mask ) >> L2C_L2ARRACCDO0_LRU_LOCK_BITS_i;
+        }
+    } else if(CT == 0)
+    {
+        icread((uint32_t*)((uint32_t)addr & (ICREAD_EA_L1I_INDEX_mask | ICREAD_EA_WORD_ADDR_mask)));
+        isync();
+        result = (spr_read(SPR_ICDBTRL) & ICDBTRL_LOCK_mask) >> ICDBTRL_LOCK_i;
+    }
+    return result;
 }
 
 //uint32_t overlocking_detected = 0;
@@ -44,12 +115,11 @@ int main()
     uint32_t    ctr_value = 0;
     /*cached_function[way] = number in test_function_buf*/
     uint32_t    cached_functions[4] = {0xffffffff,0xffffffff,0xffffffff,0xffffffff};
-    uint32_t    cached_functions_prev[4] = {0xffffffff,0xffffffff,0xffffffff,0xffffffff};
-    uint64_t    phys_addr = 0;
     int32_t     cache_way = -1;
     uint32_t    L2C_replacement_count = 0;
-    int32_t     L2C_replacement_way = -1;
-    uint32_t    ct_field = 2;
+    int32_t     not_in_cache_function_number = -1;
+    uint32_t    ct_field = 0;
+    uint32_t    locks;
 
     emi_init(DCR_EM2_EMI_BASE);
     rumboot_memfill8_modelling((void*)SRAM0_BASE,0x1000,0,0);
@@ -70,56 +140,51 @@ int main()
     msync();
     isync();
 
-    rumboot_printf("Initial function calling and caching without locking\n");
-    for(uint32_t i = 0; i < COUNT_AREAS; ++i)
+    for(ct_field = 0; ct_field < 3; ct_field += 2)
     {
-        ctr_value = test_function_buf[i]();
-        rumboot_printf("function[%d] ctr == 0x%x\n", i, ctr_value);
-    }
-    for(uint32_t j = 0; j < L2C_COUNT_WAYS + 1; ++j)
-    {
-        L2C_replacement_count = 0;
-        rumboot_printf("Let's check what functions are in cache.\n");
-        for(uint32_t i = 0; i < COUNT_AREAS; ++i)
-        {
-            phys_addr = (uint64_t)rumboot_virt_to_phys(test_function_buf[i]);
-            cached_functions_prev[cache_way] = cached_functions[cache_way];
-            if(l2c_arracc_get_way_by_address(DCR_L2C_BASE,
-                    (uint32_t)((phys_addr >> 32) & 0xffffffff),
-                    (uint32_t)((phys_addr      ) & 0xffffffff),
-                    &cache_way
-                    ))
-            {
-                TEST_ASSERT(((cache_way >= 0) && (cache_way < L2C_COUNT_WAYS)),"Cache way is not in allowed range, although the function said it should be OK");
-                cached_functions[cache_way] = i;
-                rumboot_printf("function[%d] way == 0x%x\n", cached_functions[cache_way], cache_way);
-            }
-            else
-            {
-                ++L2C_replacement_count;
-                L2C_replacement_way = i;
-                rumboot_printf("function[%d] at 0x%x is not in L2C\n", L2C_replacement_way, (uint32_t)test_function_buf[L2C_replacement_way]);
-            }
-        }
-        TEST_ASSERT((L2C_replacement_count == 1), "Other than one count of functions was replaced.");
-        TEST_ASSERT((L2C_replacement_way == (j%4)), "Unexpected number of replaced function.");
+//    rumboot_printf("Initial function calling and caching without locking, CT == %d.\n", ct_field);
+//    for(uint32_t i = 0; i < COUNT_AREAS; ++i)
+//    {
+//        ctr_value = test_function_buf[i]();
+//        rumboot_printf("function[%d] ctr == 0x%x\n", i, ctr_value);
+//    }
+//    for(uint32_t j = 0; j < L2C_COUNT_WAYS + 1; ++j)
+//    {
+//        L2C_replacement_count = 0;
+//        rumboot_printf("Let's check what functions are in cache.\n");
+//        for(uint32_t i = 0; i < COUNT_AREAS; ++i)
+//        {
+//            if(get_way_by_addr(ct_field, test_function_buf[i], &cache_way))
+//            {
+//                TEST_ASSERT(((cache_way >= 0) && (cache_way < L2C_COUNT_WAYS)),"Cache way is not in allowed range, although the function said it should be OK");
+//                cached_functions[cache_way] = i;
+//                rumboot_printf("function[%d] way == 0x%x\n", cached_functions[cache_way], cache_way);
+//            }
+//            else
+//            {
+//                ++L2C_replacement_count;
+//                not_in_cache_function_number = i;
+//                rumboot_printf("function[%d] at 0x%x is not in Cache\n", not_in_cache_function_number, (uint32_t)test_function_buf[not_in_cache_function_number]);
+//            }
+//        }
+//        TEST_ASSERT((L2C_replacement_count == 1), "Other than one count of functions was replaced.");
+//        if(j < L2C_COUNT_WAYS)
+//            TEST_ASSERT((not_in_cache_function_number == (j%4)), "Unexpected number of replaced function.");
+//
+//        ici(0);
+//        dci(2);
+//        isync();
+//
+//        rumboot_printf("Let's lock one more function in cache.\n");
+//        for(uint32_t i = 0; i < COUNT_AREAS; ++i)
+//        {
+//            ctr_value = test_function_buf[i]();
+//            if(i <= j)
+//                icbtls(ct_field,( void* )ctr_value);
+//        }
+//    }
 
-        compare_cached_functions(cached_functions_prev, cached_functions);
-        ici(0);
-        dci(2);
-        isync();
-
-    //    cached_functions_prev[]
-        rumboot_printf("Let's lock one more function in cache.\n");
-        for(uint32_t i = 0; i < COUNT_AREAS; ++i)
-        {
-            ctr_value = test_function_buf[i]();
-            if(i <= j)
-                icbtls(ct_field,( void* )ctr_value);
-        }
-    }
-
-    rumboot_printf("Secondary function calling without locking\n");
+    rumboot_printf("Secondary function calling: with locking\n");
     for(int32_t j = L2C_COUNT_WAYS - 1; j >= 0; --j)
     {
         ici(0);
@@ -128,58 +193,60 @@ int main()
         for(uint32_t i = 0; i < L2C_COUNT_WAYS; ++i)
         {
             ctr_value = test_function_buf[i]();
-            rumboot_printf("function[%d] ctr == 0x%x\n", i, ctr_value);
             if(i < L2C_COUNT_WAYS)
                 icbtls(ct_field,( void* )ctr_value);
         }
-        rumboot_printf("Let's check what functions are in cache.\n");
+        isync();
+        rumboot_printf("\n iteration %d: Cache prefilled.\n", j);
         L2C_replacement_count = 0;
         for(uint32_t i = 0; i < COUNT_AREAS; ++i)
         {
-            phys_addr = (uint64_t)rumboot_virt_to_phys(test_function_buf[i]);
-            cached_functions_prev[cache_way] = cached_functions[cache_way];
-            if(l2c_arracc_get_way_by_address(DCR_L2C_BASE,
-                    (uint32_t)((phys_addr >> 32) & 0xffffffff),
-                    (uint32_t)((phys_addr      ) & 0xffffffff),
-                    &cache_way
-                    ))
+            if(get_way_by_addr(ct_field, test_function_buf[i], &cache_way))
             {
                 TEST_ASSERT(((cache_way >= 0) && (cache_way < L2C_COUNT_WAYS)),"Cache way is not in allowed range, although the function said it should be OK");
                 cached_functions[cache_way] = i;
-                rumboot_printf("function[%d] way == 0x%x\n", cached_functions[cache_way], cache_way);
             }
             else
             {
                 ++L2C_replacement_count;
-                L2C_replacement_way = i;
-                rumboot_printf("function[%d] at 0x%x is not in L2C\n", L2C_replacement_way, (uint32_t)test_function_buf[L2C_replacement_way]);
+                not_in_cache_function_number = i;
+                rumboot_printf("function[%d] at 0x%x is not in L2C\n", not_in_cache_function_number, (uint32_t)test_function_buf[not_in_cache_function_number]);
             }
         }
         TEST_ASSERT((L2C_replacement_count == 1), "Other than one count of functions was replaced.");
-        rumboot_printf("L2C_replacement_way == %d, j == %d", L2C_replacement_way, j);
-//        TEST_ASSERT((L2C_replacement_way == (j%4)), "Unexpected way of replaced function.");
 
+        cache_way = 0;
+        rumboot_printf("before icblc: locks == 0x%h\n", get_locks(ct_field,test_function_buf[cached_functions[cache_way]],cache_way));
         icblc(ct_field, (test_function_buf[cached_functions[j]]));
+        isync();
+        cache_way = (j+1)%4;
+        rumboot_printf("after icblc: locks == 0x%h\n", get_locks(ct_field,test_function_buf[cached_functions[cache_way]],cache_way));
 
-        ctr_value = test_function_buf[L2C_replacement_way]();
-        rumboot_printf("function[%d] ctr == 0x%x\n", L2C_replacement_way, ctr_value);
+        ctr_value = test_function_buf[not_in_cache_function_number]();
 
-        phys_addr = (uint64_t)rumboot_virt_to_phys(test_function_buf[L2C_replacement_way]);
-        if(l2c_arracc_get_way_by_address(DCR_L2C_BASE,
-                (uint32_t)((phys_addr >> 32) & 0xffffffff),
-                (uint32_t)((phys_addr      ) & 0xffffffff),
-                &cache_way
-                ))
+        if(get_way_by_addr(ct_field, test_function_buf[not_in_cache_function_number], &cache_way))
         {
             TEST_ASSERT(((cache_way >= 0) && (cache_way < L2C_COUNT_WAYS)),"Cache way is not in allowed range, although the function said it should be OK");
-            rumboot_printf("function[%d] way == 0x%x\n", cached_functions[cache_way], cache_way);
+            cached_functions[cache_way] = not_in_cache_function_number;
+            rumboot_printf("function[%d] was cached, way == %d\n", not_in_cache_function_number, cache_way);
+            rumboot_printf("after recaching: locks == 0x%h\n", get_locks(ct_field,test_function_buf[cached_functions[cache_way]],cache_way));
+//            TEST_ASSERT((cache_way == j), "Incorrect way was replaced");
+            result |= !(cache_way == j);
         }
         else
         {
-            rumboot_printf("Didn't find the function[%d] at 0x%x on the expected cache way == %d\n", L2C_replacement_way, (uint32_t)test_function_buf[L2C_replacement_way], j);
+            rumboot_printf("Didn't find the function[%d] at 0x%x on the expected cache way == %d\n", not_in_cache_function_number, (uint32_t)test_function_buf[not_in_cache_function_number], j);
             ++result;
         }
-//        compare_cached_functions(cached_functions_prev, cached_functions);
+    }
+        for(uint32_t i = 0; i < L2C_COUNT_WAYS; ++i)
+        {
+            icblc(ct_field, (test_function_buf[cached_functions[i]]));
+        }
+        cache_way = 0;
+        locks = get_locks(ct_field,test_function_buf[cached_functions[cache_way]],cache_way);
+        rumboot_printf("after all: locks == 0x%h\n", locks);
+        TEST_ASSERT((locks == 0), "After icblc on all ways all locks must be zeros!!!");
     }
     return result;
 }
