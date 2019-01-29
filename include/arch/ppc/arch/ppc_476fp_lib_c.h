@@ -160,6 +160,32 @@ static inline __attribute__((always_inline)) void dcbtls(uint32_t CT, void* cons
         );
 }
 
+static inline __attribute__((always_inline))
+uint32_t stwcx(uint32_t wval, uintptr_t wptr) {
+    uint32_t rval = 0;
+    asm volatile (
+            "stwcx. %1, 0, %2       \n\t"
+            "mfcr   %0              \n\t"
+            "andi.  %0, %0, 0x0F    \n\t"
+        :   "=r"(rval)
+        :   "r"(wval), "r"(wptr)
+        :   "memory"
+    );
+    return rval;
+}
+
+static inline __attribute__((always_inline))
+uint32_t lwarx(uintptr_t wptr) {
+    uint32_t rval = 0;
+    asm volatile (
+        "lwarx %0, 0, %1 \n\t"
+        :   "=r"(rval)
+        :   "r"(wptr)
+        :   "memory"
+    );
+    return rval;
+}
+
 
 /* These instruction calls must be placed in the same function
  * where called.
