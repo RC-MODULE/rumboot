@@ -56,8 +56,7 @@
 #define SW3_AXI_INT                 (51)
 #define ETH0_INT                    (52)
 #define ETH1_INT                    (53)
-#define AXI_MSIF_INT                (54)
-/* 55 reserved */
+/* 54-55 reserved */
 #define EMI_CNTR_INT_0              (56)
 #define EMI_CNTR_INT_1              (57)
 #define EMI_CNTR_INT_2              (58)
@@ -76,6 +75,8 @@
 #define EXT_INT6                    (72)
 #define EXT_INT7                    (73)
 #define WU_INT                      (74)
+#define AXI_MSIF_INT                (75)
+
 /* MPIC128 IRQs */
 #define MPIC128_TIMER_0             (128)
 #define MPIC128_TIMER_1             (129)
