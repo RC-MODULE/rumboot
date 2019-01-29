@@ -67,17 +67,29 @@ static inline __attribute__((always_inline)) void icbt( void* const addr ) {
 }
 
 static inline __attribute__((always_inline)) void icblc(uint32_t CT,  void* const addr ) {
-    asm volatile (
-        "icblc %0, 0, %1\n\t"
-        ::"i"(((CT) == 2)?2:(((CT) == 0)?0:0xff)),   "r"(addr)
-    );
+    if(CT == 2)
+        asm volatile (
+            "icblc 2, 0, %0\n\t"
+            ::"r"(addr)
+        );
+    else if(CT == 0)
+        asm volatile (
+            "icblc 0, 0, %0\n\t"
+            ::"r"(addr)
+        );
 }
 
 static inline __attribute__((always_inline)) void icbtls(uint32_t CT,  void* const addr ) {
-    asm volatile (
-        "icbtls %0, 0, %1\n\t"
-        ::"i"(((CT) == 2)?2:(((CT) == 0)?0:0xff)),   "r"(addr)
-    );
+    if(CT == 2)
+        asm volatile (
+            "icbtls 2, 0, %0\n\t"
+            ::"r"(addr)
+        );
+    else if(CT == 0)
+        asm volatile (
+            "icbtls 0, 0, %0\n\t"
+            ::"r"(addr)
+        );
 }
 
 static inline __attribute__((always_inline)) void icread( void* const addr ) {
@@ -123,17 +135,29 @@ static inline __attribute__((always_inline)) void dcbt( void* const addr ) {
 }
 
 static inline __attribute__((always_inline)) void dcblc(uint32_t CT, void* const addr ) {
-    asm volatile (
-        "dcblc %0, 0, %1\n\t"
-        ::"i"(((CT) == 2)?2:(((CT) == 0)?0:0xff)), "r"(addr)
-    );
+    if(CT == 2)
+        asm volatile (
+            "dcblc 2, 0, %0\n\t"
+            ::"r"(addr)
+        );
+    else if(CT == 0)
+        asm volatile (
+            "dcblc 0, 0, %0\n\t"
+            ::"r"(addr)
+        );
 }
 
 static inline __attribute__((always_inline)) void dcbtls(uint32_t CT, void* const addr ) {
-    asm volatile (
-        "dcbtls %0, 0, %1\n\t"
-        ::"i"(((CT) == 2)?2:(((CT) == 0)?0:0xff)), "r"(addr)
-    );
+    if(CT == 2)
+        asm volatile (
+            "dcbtls 2, 0, %0\n\t"
+            ::"r"(addr)
+        );
+    else if(CT == 0)
+        asm volatile (
+            "dcbtls 0, 0, %0\n\t"
+            ::"r"(addr)
+        );
 }
 
 
