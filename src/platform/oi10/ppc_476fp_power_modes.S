@@ -45,7 +45,7 @@ set_ppc0_sleep_mode_:
     //set SCTL_PPC_SLP_CTRL[PPC0_SLP_TYPE]
     copy_field( r5, IBM_BIT_INDEX(32, 3), IBM_BIT_INDEX(32, 2), \
                 r3, IBM_BIT_INDEX(32, 1) )
-    mtdcrx      r5, r4
+    mtdcrx      r4, r5
 
     cmpwi       r3, SCTL_PPC_SLP_CPU_SLP
     bne         ppc470s_enter_sleep_mode_end_
