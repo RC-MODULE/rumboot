@@ -95,15 +95,18 @@ BEGIN_ENUM( HSCB_SETTINGS_FIELD )
     DECLARE_ENUM_VAL(   HSCB_SETTINGS_EN_HSCB_i,        0 )         /**< Vklyucheniye Space Wire interfeysa */
     DECLARE_ENUM_VAL(   HSCB_SETTINGS_EN_HSCB_n,        1 )
     DECLARE_ENUM_VAL(   HSCB_SETTINGS_EN_HSCB_mask,     FIELD_MASK32( HSCB_SETTINGS_EN_HSCB_i, HSCB_SETTINGS_EN_HSCB_n ) )
-    DECLARE_ENUM_VAL(   HSCB_SETTINGS_TX_ENDIAN_i,      1 )         /**< Vybor poryadka baitov pri peredache dannyh*/
-    DECLARE_ENUM_VAL(   HSCB_SETTINGS_TX_ENDIAN_n,      1 )
-    DECLARE_ENUM_VAL(   HSCB_SETTINGS_TX_ENDIAN_mask,   FIELD_MASK32( HSCB_SETTINGS_TX_ENDIAN_i, HSCB_SETTINGS_TX_ENDIAN_n ) )
-    DECLARE_ENUM_VAL(   HSCB_SETTINGS_RX_ENDIAN_i,      2 )         /**< Vybor poryadka baitov pri poluchenii dannyh */
-    DECLARE_ENUM_VAL(   HSCB_SETTINGS_RX_ENDIAN_n,      1 )
-    DECLARE_ENUM_VAL(   HSCB_SETTINGS_RX_ENDIAN_mask,   FIELD_MASK32( HSCB_SETTINGS_RX_ENDIAN_i, HSCB_SETTINGS_RX_ENDIAN_n ) )
+//    DECLARE_ENUM_VAL(   HSCB_SETTINGS_TX_ENDIAN_i,      1 )         /**< Vybor poryadka baitov pri peredache dannyh*/
+//    DECLARE_ENUM_VAL(   HSCB_SETTINGS_TX_ENDIAN_n,      1 )
+//    DECLARE_ENUM_VAL(   HSCB_SETTINGS_TX_ENDIAN_mask,   FIELD_MASK32( HSCB_SETTINGS_TX_ENDIAN_i, HSCB_SETTINGS_TX_ENDIAN_n ) )
+//    DECLARE_ENUM_VAL(   HSCB_SETTINGS_RX_ENDIAN_i,      2 )         /**< Vybor poryadka baitov pri poluchenii dannyh */
+//    DECLARE_ENUM_VAL(   HSCB_SETTINGS_RX_ENDIAN_n,      1 )
+//    DECLARE_ENUM_VAL(   HSCB_SETTINGS_RX_ENDIAN_mask,   FIELD_MASK32( HSCB_SETTINGS_RX_ENDIAN_i, HSCB_SETTINGS_RX_ENDIAN_n ) )
     DECLARE_ENUM_VAL(   HSCB_SETTINGS_TIME_MODE_i,      3 )         /**< Rezhim peredachi Time-code */
     DECLARE_ENUM_VAL(   HSCB_SETTINGS_TIME_MODE_n,      1 )
     DECLARE_ENUM_VAL(   HSCB_SETTINGS_TIME_MODE_mask,   FIELD_MASK32( HSCB_SETTINGS_TIME_MODE_i, HSCB_SETTINGS_TIME_MODE_n ) )
+    DECLARE_ENUM_VAL(   HSCB_SETTINGS_RESERVE_PATH_i,      4 )         /**< Rezhim peredachi Time-code */
+    DECLARE_ENUM_VAL(   HSCB_SETTINGS_RESERVE_PATH_n,      1 )
+    DECLARE_ENUM_VAL(   HSCB_SETTINGS_RESERVE_PATH_mask,   FIELD_MASK32( HSCB_SETTINGS_RESERVE_PATH_i, HSCB_SETTINGS_RESERVE_PATH_n ) )
     DECLARE_ENUM_VAL(   HSCB_SETTINGS_LOOP_BACK_i,      5 )         /**< Vklyuchen rezhim petli (loopback) */
     DECLARE_ENUM_VAL(   HSCB_SETTINGS_LOOP_BACK_n,      1 )
     DECLARE_ENUM_VAL(   HSCB_SETTINGS_LOOP_BACK_mask,   FIELD_MASK32( HSCB_SETTINGS_LOOP_BACK_i, HSCB_SETTINGS_LOOP_BACK_n ) )
@@ -116,6 +119,9 @@ BEGIN_ENUM( HSCB_SETTINGS_FIELD )
     DECLARE_ENUM_VAL(   HSCB_SETTINGS_RX_FIX_EN_i,      8 )         /**< Vosstanovleniye taktovogo signala priyomnika iz prinimayemykh dannykh. Ustoychivyy priyom vozmozhen tol'ko yesli chastote priyomnika v 4 ili boleye raz prevyshayet chastotu peredatchika */
     DECLARE_ENUM_VAL(   HSCB_SETTINGS_RX_FIX_EN_n,      1 )
     DECLARE_ENUM_VAL(   HSCB_SETTINGS_RX_FIX_EN_mask,   FIELD_MASK32( HSCB_SETTINGS_RX_FIX_EN_i, HSCB_SETTINGS_RX_FIX_EN_n ) )
+    DECLARE_ENUM_VAL(   HSCB_SETTINGS_DISCARD_PERMIT_i,      9 )         /**< Vosstanovleniye taktovogo signala priyomnika iz prinimayemykh dannykh. Ustoychivyy priyom vozmozhen tol'ko yesli chastote priyomnika v 4 ili boleye raz prevyshayet chastotu peredatchika */
+    DECLARE_ENUM_VAL(   HSCB_SETTINGS_DISCARD_PERMIT_n,      1 )
+    DECLARE_ENUM_VAL(   HSCB_SETTINGS_DISCARD_PERMIT_mask,   FIELD_MASK32( HSCB_SETTINGS_DISCARD_PERMIT_i, HSCB_SETTINGS_DISCARD_PERMIT_n ) )
 END_ENUM( HSCB_SETTINGS_FIELD )
 /** Poryadok bayt dannykh priyomnogo/peredayushchego kanala*/
 BEGIN_ENUM( hscb_rtx_endian_t )
@@ -225,10 +231,21 @@ BEGIN_ENUM( HSCB_TIMINGS_FIELD )
 END_ENUM( HSCB_TIMINGS_FIELD )
 
 BEGIN_ENUM( HSCB_TIME_CODE_INNER_FIELD )
-    DECLARE_ENUM_VAL(   HSCB_TIME_CODE_INNER_i,     0 )
-    DECLARE_ENUM_VAL(   HSCB_TIME_CODE_INNER_n,     6 )
-    DECLARE_ENUM_VAL(   HSCB_TIME_CODE_INNER_CONTROL_FLAGS_i,     6 )
-    DECLARE_ENUM_VAL(   HSCB_TIME_CODE_INNER_CONTROL_FLAGS_n,     2 )
+    DECLARE_ENUM_VAL(   HSCB_TIME_CODE_INNER_INIT_CODE_i,     0 )
+    DECLARE_ENUM_VAL(   HSCB_TIME_CODE_INNER_INIT_CODE_n,     6 )
+    DECLARE_ENUM_VAL(   HSCB_TIME_CODE_INNER_INIT_CODE_mask, FIELD_MASK32( HSCB_TIME_CODE_INNER_INIT_CODE_i, HSCB_TIME_CODE_INNER_INIT_CODE_n ) )
+
+    DECLARE_ENUM_VAL(   HSCB_TIME_CODE_INNER_INIT_CODE_CONTROL_FLAGS_i,     6 )
+    DECLARE_ENUM_VAL(   HSCB_TIME_CODE_INNER_INIT_CODE_CONTROL_FLAGS_n,     2 )
+    DECLARE_ENUM_VAL(   HSCB_TIME_CODE_INNER_INIT_CODE_CONTROL_FLAGS_mask, FIELD_MASK32( HSCB_TIME_CODE_INNER_INIT_CODE_CONTROL_FLAGS_i, HSCB_TIME_CODE_INNER_INIT_CODE_CONTROL_FLAGS_n ) )
+
+    DECLARE_ENUM_VAL(   HSCB_TIME_CODE_INNER_CUR_CODE_i,     8 )
+    DECLARE_ENUM_VAL(   HSCB_TIME_CODE_INNER_CUR_CODE_n,     6 )
+    DECLARE_ENUM_VAL(   HSCB_TIME_CODE_INNER_CUR_CODE_mask, FIELD_MASK32( HSCB_TIME_CODE_INNER_CUR_CODE_i, HSCB_TIME_CODE_INNER_CUR_CODE_n ) )
+
+    DECLARE_ENUM_VAL(   HSCB_TIME_CODE_INNER_CUR_CODE_CONTROL_FLAGS_i,    14 )
+    DECLARE_ENUM_VAL(   HSCB_TIME_CODE_INNER_CUR_CODE_CONTROL_FLAGS_n,     2 )
+    DECLARE_ENUM_VAL(   HSCB_TIME_CODE_INNER_CUR_CODE_CONTROL_FLAGS_mask, FIELD_MASK32( HSCB_TIME_CODE_INNER_CUR_CODE_CONTROL_FLAGS_i, HSCB_TIME_CODE_INNER_CUR_CODE_CONTROL_FLAGS_n ) )
 END_ENUM( HSCB_TIME_CODE_INNER_FIELD )
 
 BEGIN_ENUM( HSCB_TIME_CODE_OUTER_FIELD )
@@ -384,13 +401,15 @@ BEGIN_ENUM( HSCB_REG_MASK )
     DECLARE_ENUM_VAL(   HSCB_VERSION_MASK,          0xFFFFFFFF )
     DECLARE_ENUM_VAL(   HSCB_SW_RESET_MASK,         HSCB_SW_RESET_RST_mask )
     DECLARE_ENUM_VAL(   HSCB_SETTINGS_MASK,         HSCB_SETTINGS_EN_HSCB_mask
-                                                  | HSCB_SETTINGS_TX_ENDIAN_mask
-                                                  | HSCB_SETTINGS_RX_ENDIAN_mask
+//                                                  | HSCB_SETTINGS_TX_ENDIAN_mask
+//                                                  | HSCB_SETTINGS_RX_ENDIAN_mask
                                                   | HSCB_SETTINGS_TIME_MODE_mask
+                                                  | HSCB_SETTINGS_RESERVE_PATH_mask
                                                   | HSCB_SETTINGS_LOOP_BACK_mask
                                                   | HSCB_SETTINGS_EN_RMAP_mask
                                                   | HSCB_SETTINGS_EN_TRIM_CLK_mask
-                                                  | HSCB_SETTINGS_RX_FIX_EN_mask )
+                                                  | HSCB_SETTINGS_RX_FIX_EN_mask
+                                                  | HSCB_SETTINGS_DISCARD_PERMIT_mask)
     DECLARE_ENUM_VAL(   HSCB_STATUS_MASK,           HSCB_STATUS_DISCONNECT_ERR_mask
                                                   | HSCB_STATUS_PARITY_ERR_mask
                                                   | HSCB_STATUS_ESC_ERR_mask
@@ -421,7 +440,10 @@ BEGIN_ENUM( HSCB_REG_MASK )
                                                   | HSCB_TIMINGS_SILENCE_TIME_mask )
     /* Time-code */
     DECLARE_ENUM_VAL(   HSCB_INTERVAL_MASK,         0xFFFFFFFF )
-    DECLARE_ENUM_VAL(   HSCB_TIME_CODE_INNER_MASK,  FIELD_MASK32( HSCB_TIME_CODE_INNER_i, HSCB_TIME_CODE_INNER_n ) )
+    DECLARE_ENUM_VAL(   HSCB_TIME_CODE_INNER_MASK,  HSCB_TIME_CODE_INNER_INIT_CODE_mask
+                                                  | HSCB_TIME_CODE_INNER_INIT_CODE_CONTROL_FLAGS_mask
+                                                  | HSCB_TIME_CODE_INNER_CUR_CODE_mask
+                                                  | HSCB_TIME_CODE_INNER_CUR_CODE_CONTROL_FLAGS_mask)
     DECLARE_ENUM_VAL(   HSCB_TIME_CODE_OUTER_MASK,  HSCB_TIME_CODE_OUTER_NEW_CODE_mask
                                                   | HSCB_TIME_CODE_OUTER_PREV_CODE_mask )
     /* RMAP protocol */
@@ -494,14 +516,14 @@ BEGIN_ENUM( HSCB_REG_DFLT )
     DECLARE_ENUM_VAL(   HSCB_ID_DFLT,               0x42435348 )
     DECLARE_ENUM_VAL(   HSCB_VERSION_DFLT,          0x00000102 )
     DECLARE_ENUM_VAL(   HSCB_SW_RESET_DFLT,         0x00000000 )
-    DECLARE_ENUM_VAL(   HSCB_SETTINGS_DFLT,         0x00000000 )
+    DECLARE_ENUM_VAL(   HSCB_SETTINGS_DFLT,         0x00000351 )
     DECLARE_ENUM_VAL(   HSCB_STATUS_DFLT,           0x00000000 )
     DECLARE_ENUM_VAL(   HSCB_IRQ_MASK_DFLT,         0x00000000 )
     DECLARE_ENUM_VAL(   HSCB_TRANS_CLK_DFLT,        0x00C81414 )
     DECLARE_ENUM_VAL(   HSCB_TIMINGS_DFLT,          0xC8A00500 )
     /* Time-code */
     DECLARE_ENUM_VAL(   HSCB_INTERVAL_DFLT,         0x000007D0 )
-    DECLARE_ENUM_VAL(   HSCB_TIME_CODE_INNER_DFLT,  0x00000001 )
+    DECLARE_ENUM_VAL(   HSCB_TIME_CODE_INNER_DFLT,  0x00000101 )
     DECLARE_ENUM_VAL(   HSCB_TIME_CODE_OUTER_DFLT,  0x00000000 )
     /* RMAP protocol */
     DECLARE_ENUM_VAL(   HSCB_RMAP_PARAMS_DFLT,      0x00017799 )
