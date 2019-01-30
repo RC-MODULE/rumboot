@@ -52,8 +52,8 @@ void hscb_set_config(uint32_t base_addr, hscb_cfg_t* cfg)
 {
     uint32_t tmp = 0;
     tmp |= (cfg->en_hscb << HSCB_SETTINGS_EN_HSCB_i);
-    tmp |= (cfg->tx_endian << HSCB_SETTINGS_TX_ENDIAN_i);
-    tmp |= (cfg->rx_endian << HSCB_SETTINGS_RX_ENDIAN_i);
+//    tmp |= (cfg->tx_endian << HSCB_SETTINGS_TX_ENDIAN_i);
+//    tmp |= (cfg->rx_endian << HSCB_SETTINGS_RX_ENDIAN_i);
     tmp |= (cfg->time_mode << HSCB_SETTINGS_TIME_MODE_i);
     tmp |= (cfg->loop_back << HSCB_SETTINGS_LOOP_BACK_i);
     tmp |= (cfg->en_rmap << HSCB_SETTINGS_EN_RMAP_i);
@@ -67,8 +67,8 @@ void hscb_get_config(uint32_t base_addr, hscb_cfg_t* cfg)
     uint32_t settings;
     settings = ioread32(base_addr + HSCB_SETTINGS);
     cfg->en_hscb     = (settings & HSCB_SETTINGS_EN_HSCB_mask)      >> HSCB_SETTINGS_EN_HSCB_i;
-    cfg->tx_endian   = (settings & HSCB_SETTINGS_TX_ENDIAN_mask)    >> HSCB_SETTINGS_TX_ENDIAN_i;
-    cfg->rx_endian   = (settings & HSCB_SETTINGS_RX_ENDIAN_mask)    >> HSCB_SETTINGS_RX_ENDIAN_i;
+//    cfg->tx_endian   = (settings & HSCB_SETTINGS_TX_ENDIAN_mask)    >> HSCB_SETTINGS_TX_ENDIAN_i;
+//    cfg->rx_endian   = (settings & HSCB_SETTINGS_RX_ENDIAN_mask)    >> HSCB_SETTINGS_RX_ENDIAN_i;
     cfg->time_mode   = (settings & HSCB_SETTINGS_TIME_MODE_mask)    >> HSCB_SETTINGS_TIME_MODE_i;
     cfg->loop_back   = (settings & HSCB_SETTINGS_LOOP_BACK_mask)    >> HSCB_SETTINGS_LOOP_BACK_i;
     cfg->en_rmap     = (settings & HSCB_SETTINGS_EN_RMAP_i)         >> HSCB_SETTINGS_EN_RMAP_i;
