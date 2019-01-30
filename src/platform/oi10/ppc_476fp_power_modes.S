@@ -44,7 +44,7 @@ set_ppc0_sleep_mode_:
     mfdcrx      r5, r4      // TODO RMW is point of potential racing
     //set SCTL_PPC_SLP_CTRL[PPC0_SLP_TYPE]
     copy_field( r5, IBM_BIT_INDEX(32, 3), IBM_BIT_INDEX(32, 2), \
-                r3, IBM_BIT_INDEX(32, 30) )
+                r3, IBM_BIT_INDEX(32, 1) )
     mtdcrx      r5, r4
 
     cmpwi       r3, SCTL_PPC_SLP_CPU_SLP
