@@ -33,6 +33,7 @@
 
 #define EVENT_TIME_1                        (TEST_EVENT_CODE_MIN + 0)
 #define EVENT_TIME_2                        (TEST_EVENT_CODE_MIN + 1)
+#define EVENT_START_MONITORS                (TEST_EVENT_CODE_MIN + 2)
 
 #define DELAY                               (0x1000)   // external, MPIC
 #define DELAY2                              (0x10000)  // DEC, FIT, Watchdog
@@ -229,12 +230,18 @@ static void init_handlers()
 
 int main ()
 {
+    test_event_send_test_id("test_oi10_cpu_doze");
+
     rumboot_printf("Init handlers\n");
     init_handlers();
+
     spr_write (SPR_TCR, spr_read (SPR_TCR) & ~(1 << IBM_BIT_INDEX(64, 41)) ); //autoreload disable
 
+    rumboot_printf("Start hw monitors\n");
+    test_event(EVENT_START_MONITORS);
+
     //DEC
-    rumboot_printf("Generate DEC interrupt\n");
+    rumboot_printf("Generate DEC interrupt...\n");
     dec_generate_interrupt(DELAY2);
     test_event(EVENT_TIME_1);
     rumboot_printf("Enter doze mode\n");
@@ -242,7 +249,7 @@ int main ()
     test_event(EVENT_TIME_2);
 
     //FIT
-    rumboot_printf("Generate FIT interrupt\n");
+    rumboot_printf("Generate FIT interrupt...\n");
     fit_generate_interrupt(DELAY2);
     test_event(EVENT_TIME_1);
     rumboot_printf("Enter doze mode\n");
@@ -250,7 +257,7 @@ int main ()
     test_event(EVENT_TIME_2);
 
     //WatchDog
-    rumboot_printf("Generate WD interrupt\n");
+    rumboot_printf("Generate WD interrupt...\n");
     wd_generate_interrupt(DELAY2);
     test_event(EVENT_TIME_1);
     rumboot_printf("Enter doze mode\n");
