@@ -142,47 +142,49 @@ int main()
 
     for(ct_field = 0; ct_field < 3; ct_field += 2)
     {
-//    rumboot_printf("Initial function calling and caching without locking, CT == %d.\n", ct_field);
-//    for(uint32_t i = 0; i < COUNT_AREAS; ++i)
-//    {
-//        ctr_value = test_function_buf[i]();
-//        rumboot_printf("function[%d] ctr == 0x%x\n", i, ctr_value);
-//    }
-//    for(uint32_t j = 0; j < L2C_COUNT_WAYS + 1; ++j)
-//    {
-//        L2C_replacement_count = 0;
-//        rumboot_printf("Let's check what functions are in cache.\n");
-//        for(uint32_t i = 0; i < COUNT_AREAS; ++i)
-//        {
-//            if(get_way_by_addr(ct_field, test_function_buf[i], &cache_way))
-//            {
-//                TEST_ASSERT(((cache_way >= 0) && (cache_way < L2C_COUNT_WAYS)),"Cache way is not in allowed range, although the function said it should be OK");
-//                cached_functions[cache_way] = i;
-//                rumboot_printf("function[%d] way == 0x%x\n", cached_functions[cache_way], cache_way);
-//            }
-//            else
-//            {
-//                ++L2C_replacement_count;
-//                not_in_cache_function_number = i;
-//                rumboot_printf("function[%d] at 0x%x is not in Cache\n", not_in_cache_function_number, (uint32_t)test_function_buf[not_in_cache_function_number]);
-//            }
-//        }
-//        TEST_ASSERT((L2C_replacement_count == 1), "Other than one count of functions was replaced.");
-//        if(j < L2C_COUNT_WAYS)
-//            TEST_ASSERT((not_in_cache_function_number == (j%4)), "Unexpected number of replaced function.");
-//
-//        ici(0);
-//        dci(2);
-//        isync();
-//
-//        rumboot_printf("Let's lock one more function in cache.\n");
-//        for(uint32_t i = 0; i < COUNT_AREAS; ++i)
-//        {
-//            ctr_value = test_function_buf[i]();
-//            if(i <= j)
-//                icbtls(ct_field,( void* )ctr_value);
-//        }
-//    }
+    rumboot_printf("Initial function calling and caching without locking, CT == %d.\n", ct_field);
+    for(uint32_t i = 0; i < COUNT_AREAS; ++i)
+    {
+        ctr_value = test_function_buf[i]();
+        rumboot_printf("function[%d] ctr == 0x%x\n", i, ctr_value);
+    }
+    for(uint32_t j = 0; j < L2C_COUNT_WAYS + 1; ++j)
+    {
+        L2C_replacement_count = 0;
+        rumboot_printf("Let's check what functions are in cache.\n");
+        for(uint32_t i = 0; i < COUNT_AREAS; ++i)
+        {
+            if(get_way_by_addr(ct_field, test_function_buf[i], &cache_way))
+            {
+                TEST_ASSERT(((cache_way >= 0) && (cache_way < L2C_COUNT_WAYS)),"Cache way is not in allowed range, although the function said it should be OK");
+                cached_functions[cache_way] = i;
+                rumboot_printf("function[%d] way == 0x%x\n", cached_functions[cache_way], cache_way);
+            }
+            else
+            {
+                ++L2C_replacement_count;
+                not_in_cache_function_number = i;
+                rumboot_printf("function[%d] at 0x%x is not in Cache\n", not_in_cache_function_number, (uint32_t)test_function_buf[not_in_cache_function_number]);
+            }
+        }
+        TEST_ASSERT((L2C_replacement_count == 1), "Other than one count of functions was replaced.");
+        if(j < L2C_COUNT_WAYS)
+            TEST_ASSERT((not_in_cache_function_number == (j%4)), "Unexpected number of replaced function.");
+
+        ici(0);
+        dci(2);
+        isync();
+
+        rumboot_printf("Let's lock one more function in cache.\n");
+        for(uint32_t i = 0; i < COUNT_AREAS; ++i)
+        {
+            ctr_value = test_function_buf[i]();
+            if(i <= j)
+                icbtls(ct_field,( void* )ctr_value);
+        }
+        cache_way = 0;
+        rumboot_printf("after icbtls: locks == 0x%x\n", get_locks(ct_field,test_function_buf[cached_functions[cache_way]],cache_way));
+    }
 
     rumboot_printf("Secondary function calling: with locking\n");
     for(int32_t j = L2C_COUNT_WAYS - 1; j >= 0; --j)
@@ -216,11 +218,11 @@ int main()
         TEST_ASSERT((L2C_replacement_count == 1), "Other than one count of functions was replaced.");
 
         cache_way = 0;
-        rumboot_printf("before icblc: locks == 0x%h\n", get_locks(ct_field,test_function_buf[cached_functions[cache_way]],cache_way));
+        rumboot_printf("before icblc: locks == 0x%x\n", get_locks(ct_field,test_function_buf[cached_functions[cache_way]],cache_way));
         icblc(ct_field, (test_function_buf[cached_functions[j]]));
         isync();
         cache_way = (j+1)%4;
-        rumboot_printf("after icblc: locks == 0x%h\n", get_locks(ct_field,test_function_buf[cached_functions[cache_way]],cache_way));
+        rumboot_printf("after icblc: locks == 0x%x\n", get_locks(ct_field,test_function_buf[cached_functions[cache_way]],cache_way));
 
         ctr_value = test_function_buf[not_in_cache_function_number]();
 
@@ -229,9 +231,13 @@ int main()
             TEST_ASSERT(((cache_way >= 0) && (cache_way < L2C_COUNT_WAYS)),"Cache way is not in allowed range, although the function said it should be OK");
             cached_functions[cache_way] = not_in_cache_function_number;
             rumboot_printf("function[%d] was cached, way == %d\n", not_in_cache_function_number, cache_way);
-            rumboot_printf("after recaching: locks == 0x%h\n", get_locks(ct_field,test_function_buf[cached_functions[cache_way]],cache_way));
+            rumboot_printf("after recaching: locks == 0x%x\n", get_locks(ct_field,test_function_buf[cached_functions[cache_way]],cache_way));
 //            TEST_ASSERT((cache_way == j), "Incorrect way was replaced");
-            result |= !(cache_way == j);
+            if(!(cache_way == j))
+            {
+                rumboot_printf("ERROR! Cache way lock does not work! Expected way %d to be replaced, but actually replaced way %d.\n",j,cache_way);
+                result |= !(cache_way == j);
+            }
         }
         else
         {
@@ -245,8 +251,11 @@ int main()
         }
         cache_way = 0;
         locks = get_locks(ct_field,test_function_buf[cached_functions[cache_way]],cache_way);
-        rumboot_printf("after all: locks == 0x%h\n", locks);
+        rumboot_printf("after all: locks == 0x%x\n", locks);
         TEST_ASSERT((locks == 0), "After icblc on all ways all locks must be zeros!!!");
+        ici(0);
+        dci(2);
+        isync();
     }
     return result;
 }
