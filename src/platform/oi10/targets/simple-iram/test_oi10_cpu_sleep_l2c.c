@@ -1,0 +1,282 @@
+#include <stdio.h>
+#include <stdint.h>
+#include <string.h>
+
+#include <rumboot/io.h>
+#include <rumboot/irq.h>
+#include <rumboot/printf.h>
+#include <rumboot/timer.h>
+#include <rumboot/platform.h>
+#include <rumboot/macros.h>
+
+#include <platform/test_assert.h>
+#include <platform/test_event_c.h>
+#include <platform/test_event_codes.h>
+#include <platform/test_assert.h>
+#include <platform/trace.h>
+#include <platform/interrupts.h>
+#include <platform/common_macros/common_macros.h>
+
+#include <platform/arch/ppc/ppc_476fp_config.h>
+#include <platform/arch/ppc/ppc_476fp_lib_c.h>
+#include <platform/arch/ppc/ppc_476fp_mmu_fields.h>
+#include <platform/arch/ppc/ppc_476fp_mmu.h>
+#include <platform/arch/ppc/ppc_476fp_power_modes.h>
+
+#include <platform/devices/l2c.h>
+#include <platform/devices.h>
+#include <platform/devices/plb6mcif2.h>
+#include <platform/devices/emi.h>
+
+#include <platform/regs/regs_l2c_l2.h>
+#include <platform/regs/regs_l2c.h>
+#include <platform/regs/sctl.h>
+#include <platform/regs/fields/emi.h>
+
+#define EVENT_TIME_1                        (TEST_EVENT_CODE_MIN + 0)
+#define EVENT_TIME_2                        (TEST_EVENT_CODE_MIN + 1)
+#define EVENT_START_MONITORS                (TEST_EVENT_CODE_MIN + 2)
+
+#define DELAY                               (0x1000)   // external, MPIC
+#define DELAY2                              (0x10000)  // DEC, FIT, Watchdog
+
+void ppc470s_exit_doze_mode_on_noncritical_interrupt()
+{
+    spr_write(SPR_SRR1, spr_read(SPR_SRR1) & ~(1 << IBM_BIT_INDEX(64, 45)));  //xSRR[WE] = 0
+
+    l2c_l2_write( DCR_L2C_BASE, L2C_L2SLEEPREQ, 0 );
+    //We must wait while L2SLEEPSTAT[SnoopIdle] == 1. See L2Cache core databook
+    while(l2c_l2_read( DCR_L2C_BASE, L2C_L2SLEEPSTAT) & reg_field(31, 1)); //while L2SLEEPSTAT[SnoopIdle]
+    isync();
+}
+
+void ppc470s_exit_doze_mode_on_critical_interrupt()
+{
+    spr_write(SPR_CSRR1, spr_read(SPR_CSRR1) & ~(1 << IBM_BIT_INDEX(64, 45))); //xSRR[WE] = 0
+
+    l2c_l2_write( DCR_L2C_BASE, L2C_L2SLEEPREQ, 0 );
+    //We must wait while L2SLEEPSTAT[SnoopIdle] == 1. See L2Cache core databook
+    while(l2c_l2_read( DCR_L2C_BASE, L2C_L2SLEEPSTAT) & reg_field(31, 1)); //while L2SLEEPSTAT[SnoopIdle]
+    isync();
+}
+
+static void msr_ext_int_enable (void){
+    msr_write (msr_read() | (1 << IBM_BIT_INDEX(64, 48) ));
+}
+
+static void msr_crit_int_enable (void){
+    msr_write (msr_read() | (1 << IBM_BIT_INDEX(64, 46) ));
+}
+
+//***************************************************************************************************************
+/*
+ *  DECREMENT BLOCK
+ */
+
+static void dec_reset(void) {
+    spr_write (SPR_DEC, 0x00);
+}
+
+static void dec_clr_exception (void){
+    spr_write (SPR_TSR_RC, 1 << IBM_BIT_INDEX(64, 36)); //TSR[DIS]=0 - clear DEC exceptions
+}
+
+static void dec_interrupt_enable (void){
+    spr_write (SPR_TCR, spr_read (SPR_TCR) | (1 << IBM_BIT_INDEX(64, 37))  );
+}
+
+static void dec_interrupt_disable (void){
+    spr_write (SPR_TCR, spr_read (SPR_TCR) & ~(1 << IBM_BIT_INDEX(64, 37))  );
+}
+
+static void dec_set_value (uint32_t delay) {
+    spr_write (SPR_DEC, delay);
+}
+
+static void dec_generate_interrupt (uint32_t delay)
+{
+    msr_ext_int_enable ();
+    dec_reset();
+    dec_clr_exception();
+    dec_interrupt_enable ();
+    dec_set_value (delay);
+}
+
+static inline void decrementer_handler (void)
+{
+    dec_interrupt_disable ();
+    dec_clr_exception ();
+}
+/*
+ *  DECREMENT BLOCK END
+ */
+//**************************************************************************************************************
+
+//**************************************************************************************************************
+/*
+ *  FIT BLOCK
+ */
+
+static void fit_set_period (uint8_t field_value){ //see TCR[FP]
+    uint32_t tmp =  spr_read(SPR_TCR);
+    tmp &= ~(0b11 << IBM_BIT_INDEX(64, 39) );
+    spr_write(SPR_TCR, tmp | (field_value << IBM_BIT_INDEX(64, 39)));
+}
+
+static void fit_clr_exception (void){
+    spr_write (SPR_TSR_RC, 1 << IBM_BIT_INDEX(64, 37)); //TSR[FIS]=0 - clear FIT exceptions
+}
+
+static void fit_interrupt_enable (void){
+    spr_write (SPR_TCR, spr_read (SPR_TCR) | (1 << IBM_BIT_INDEX(64, 40))  );
+}
+
+static void fit_interrupt_disable (void){
+    spr_write (SPR_TCR, spr_read (SPR_TCR) & ~(1 << IBM_BIT_INDEX(64, 40))  );
+}
+
+static void fit_generate_interrupt (uint32_t delay)
+{
+    msr_ext_int_enable ();
+    fit_set_period (0b11);
+    spr_write(SPR_TBL_W, 0); //reset TBL
+    fit_clr_exception();
+    spr_write(SPR_TBL_W, 0x1000000 - delay); //set TBL
+    fit_interrupt_enable();
+}
+
+static inline void fit_handler (void)
+{
+    fit_interrupt_disable ();
+    fit_clr_exception ();
+}
+
+/*
+ *  FIT BLOCK END
+ */
+//**************************************************************************************************************
+
+//**************************************************************************************************************
+/*
+ *  WATCH DOG BLOCK
+ */
+
+static void wd_clr_exception(void){
+    spr_write (SPR_TSR_RC, (0b1 << IBM_BIT_INDEX(64, 32))   //TSR[ENW]=0 - clear WD next action
+                         | (0b1 << IBM_BIT_INDEX(64, 33))   //TSR[WIS]=0 - clear WD exception
+                         | (0b11 << IBM_BIT_INDEX(64, 35)));//TSR[WRS]=0 - clear WD reset status
+}
+
+static void wd_set_period (uint8_t field_value){ //see TCR[WP]
+    uint32_t tmp =  spr_read(SPR_TCR);
+    tmp &= ~(0b11 << IBM_BIT_INDEX(64, 33) );
+    spr_write(SPR_TCR, tmp | (field_value << IBM_BIT_INDEX(64, 33)));
+}
+
+static void wd_set_reset_control (uint8_t field_value){ //see TCR[WRC]
+    uint32_t tmp =  spr_read(SPR_TCR);
+    tmp &= ~(0b11 << IBM_BIT_INDEX(64, 35) );
+    spr_write(SPR_TCR, tmp | (field_value << IBM_BIT_INDEX(64, 35)));
+}
+
+static void wd_interrupt_enable (void){
+    spr_write (SPR_TCR, spr_read (SPR_TCR) | (1 << IBM_BIT_INDEX(64, 36))  );
+}
+
+static void wd_interrupt_disable (void){
+    spr_write (SPR_TCR, spr_read (SPR_TCR) & ~(1 << IBM_BIT_INDEX(64, 36))  );
+}
+
+static void wd_generate_interrupt(uint32_t delay)
+{
+    wd_set_period(0b00); //TCR[WP]=0b00 - 2pow20 ticks = 0x100000
+    wd_set_reset_control(0b00);
+    spr_write(SPR_TBL_W, 0x00); //reset TBL;
+    wd_clr_exception();
+    spr_write(SPR_TBL_W, 0x100000); //set TBL value that triggers TSR[ENW] to 1
+    spr_write(SPR_TBL_W, 0x100000 - delay); //set TBL
+    msr_crit_int_enable();
+    wd_interrupt_enable();
+}
+
+static void wd_handler()
+{
+    wd_interrupt_disable();
+    wd_clr_exception();
+}
+
+/*
+ *  WATCH DOG BLOCK END
+ */
+//**************************************************************************************************************
+
+static void exception_handler( int id, const char *name )
+{
+    switch (id)
+    {
+    case RUMBOOT_IRQ_DECREMENTER:
+        rumboot_printf("Exception handler (DEC)\n");
+        decrementer_handler ();
+        ppc470s_exit_doze_mode_on_noncritical_interrupt();
+        break;
+    case RUMBOOT_IRQ_FIXED_INTERVAL_TIMER:
+        rumboot_printf("Exception handler (FIT)\n");
+        fit_handler();
+        ppc470s_exit_doze_mode_on_noncritical_interrupt();
+        break;
+    case RUMBOOT_IRQ_WATCHDOG_TIMER:
+        rumboot_printf("Exception handler (WatchDog)\n");
+        wd_handler();
+        ppc470s_exit_doze_mode_on_critical_interrupt();
+        break;
+    default:
+        TEST_ASSERT(0, "TEST ERROR: NON EXPECTED INTERRUPT");
+    }
+}
+
+static void init_handlers()
+{
+    //DEC, FIT, WD
+    rumboot_irq_set_exception_handler(exception_handler);
+}
+
+int main ()
+{
+    test_event_send_test_id("test_oi10_cpu_sleep_l2c");
+
+    rumboot_printf("Init handlers\n");
+    init_handlers();
+
+    spr_write (SPR_TCR, spr_read (SPR_TCR) & ~(1 << IBM_BIT_INDEX(64, 41)) ); //autoreload disable
+
+    rumboot_printf("Start hw monitors\n");
+    test_event(EVENT_START_MONITORS);
+
+    //DEC
+    rumboot_printf("Generate DEC interrupt...\n");
+    dec_generate_interrupt(DELAY2);
+    test_event(EVENT_TIME_1);
+    rumboot_printf("Enter sleep mode\n");
+    ppc470s_enter_sleep_mode(SCTL_PPC_SLP_CPU_L2C_SLP);
+    test_event(EVENT_TIME_2);
+
+    //FIT
+    rumboot_printf("Generate FIT interrupt...\n");
+    fit_generate_interrupt(DELAY2);
+    test_event(EVENT_TIME_1);
+    rumboot_printf("Enter sleep mode\n");
+    ppc470s_enter_sleep_mode(SCTL_PPC_SLP_CPU_L2C_SLP);
+    test_event(EVENT_TIME_2);
+
+    //WatchDog
+    rumboot_printf("Generate WD interrupt...\n");
+    wd_generate_interrupt(DELAY2);
+    test_event(EVENT_TIME_1);
+    rumboot_printf("Enter sleep mode\n");
+    ppc470s_enter_sleep_mode(SCTL_PPC_SLP_CPU_L2C_SLP);
+    test_event(EVENT_TIME_2);
+
+    rumboot_printf("TEST OK\n");
+    return 0;
+}
+
