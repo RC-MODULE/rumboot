@@ -40,29 +40,29 @@ bool get_way_by_addr(uint32_t CT, void* addr, int32_t* cache_way)
         *cache_way = -1;
         do{
             ( int32_t )( *cache_way )++;
-            icread((uint32_t*)(((uint32_t)addr & (ICREAD_EA_L1I_INDEX_mask | ICREAD_EA_WORD_ADDR_mask))
-                    | (((*cache_way) << ICREAD_EA_L1I_WAY_i) & ICREAD_EA_L1I_WAY_mask)));
+            icread((uint32_t*)(((uint32_t)addr & (XCREAD_EA_L1I_INDEX_mask | XCREAD_EA_WORD_ADDR_mask))
+                    | (((*cache_way) << XCREAD_EA_L1I_WAY_i) & XCREAD_EA_L1I_WAY_mask)));
             isync();
             reg_ICDBTRL = spr_read(SPR_ICDBTRL);
             reg_ICDBTRH = spr_read(SPR_ICDBTRH);
-            tag_valid = (reg_ICDBTRH & ICDBTRH_VALID_mask);
+            tag_valid = (reg_ICDBTRH & XCDBTRH_VALID_mask);
             rumboot_printf("cache_way == %d\naddr == 0x%x\nicread (0x%x)\nICDBTRH == 0x%x\nICDBTRL == 0x%x\nvalid == %d\n",
                     *cache_way,
                     (uint32_t)addr,
-                    (uint32_t*)(((uint32_t)addr & (ICREAD_EA_L1I_INDEX_mask | ICREAD_EA_WORD_ADDR_mask))
-                            | (((*cache_way) << ICREAD_EA_L1I_WAY_i) & ICREAD_EA_L1I_WAY_mask)),
+                    (uint32_t*)(((uint32_t)addr & (XCREAD_EA_L1I_INDEX_mask | XCREAD_EA_WORD_ADDR_mask))
+                            | (((*cache_way) << XCREAD_EA_L1I_WAY_i) & XCREAD_EA_L1I_WAY_mask)),
                     reg_ICDBTRH,
                     reg_ICDBTRL,
                     tag_valid);
         }while( ( (*cache_way) < (L2C_COUNT_WAYS - 1))
                  && ( !( (tag_valid)
-                     &&( ( ( (reg_ICDBTRH & ICDBTRH_TAG_EXT_ADDR_mask) >> ICDBTRH_TAG_EXT_ADDR_i) == (uint32_t)((phys_addr >> 32) & 0xffffffff) )
-                       &&( (reg_ICDBTRH & ICDBTRH_TAG_ADDR_mask) == ( phys_addr & ICDBTRH_TAG_ADDR_mask ) )
+                     &&( ( ( (reg_ICDBTRH & XCDBTRH_TAG_EXT_ADDR_mask) >> XCDBTRH_TAG_EXT_ADDR_i) == (uint32_t)((phys_addr >> 32) & 0xffffffff) )
+                       &&( (reg_ICDBTRH & XCDBTRH_TAG_ADDR_mask) == ( phys_addr & XCDBTRH_TAG_ADDR_mask ) )
                        )
                      ) )
               );
-        if( tag_valid && ( ( ( (reg_ICDBTRH & ICDBTRH_TAG_EXT_ADDR_mask) >> ICDBTRH_TAG_EXT_ADDR_i) == (uint32_t)((phys_addr >> 32) & 0xffffffff) )
-                       &&( (reg_ICDBTRH & ICDBTRH_TAG_ADDR_mask) == ( phys_addr & ICDBTRH_TAG_ADDR_mask ) )
+        if( tag_valid && ( ( ( (reg_ICDBTRH & XCDBTRH_TAG_EXT_ADDR_mask) >> XCDBTRH_TAG_EXT_ADDR_i) == (uint32_t)((phys_addr >> 32) & 0xffffffff) )
+                       &&( (reg_ICDBTRH & XCDBTRH_TAG_ADDR_mask) == ( phys_addr & XCDBTRH_TAG_ADDR_mask ) )
                        ) )
             return true;
     }
@@ -87,7 +87,7 @@ uint32_t get_locks(uint32_t CT, void* addr, uint32_t cache_way)
         }
     } else if(CT == 0)
     {
-        icread((uint32_t*)((uint32_t)addr & (ICREAD_EA_L1I_INDEX_mask | ICREAD_EA_WORD_ADDR_mask)));
+        icread((uint32_t*)((uint32_t)addr & (XCREAD_EA_L1I_INDEX_mask | XCREAD_EA_WORD_ADDR_mask)));
         isync();
         result = (spr_read(SPR_ICDBTRL) & ICDBTRL_LOCK_mask) >> ICDBTRL_LOCK_i;
     }
