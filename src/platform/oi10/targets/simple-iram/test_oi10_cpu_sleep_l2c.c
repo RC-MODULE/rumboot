@@ -27,6 +27,7 @@
 #include <platform/devices.h>
 #include <platform/devices/plb6mcif2.h>
 #include <platform/devices/emi.h>
+#include <platform/devices/mpic128.h>
 
 #include <platform/regs/regs_l2c_l2.h>
 #include <platform/regs/regs_l2c.h>
@@ -223,6 +224,29 @@ static void dit0_handler ()
  */
 //**************************************************************************************************************
 
+//**************************************************************************************************************
+/*
+ *  MPIC Timer
+ */
+
+static void  mpic_tim0_generate_interrupt (uint32_t delay)
+{
+    mpic128_timer_init(DCR_MPIC128_BASE, mpic128_timer_freq_SYS_CLK);
+    mpic128_start_timer(DCR_MPIC128_BASE, Mpic128Timer0, delay);
+}
+
+static void mpic_tim0_handler()
+{
+    rumboot_printf("Interrupt handler (MPIC Timer0)\n");
+    mpic128_stop_timer(DCR_MPIC128_BASE, Mpic128Timer0);
+    ppc470s_exit_doze_mode_on_noncritical_interrupt();
+}
+
+/*
+ *  MPIC Timer BLOCK END
+ */
+//**************************************************************************************************************
+
 static void exception_handler( int id, const char *name )
 {
     switch (id)
@@ -243,20 +267,23 @@ static void exception_handler( int id, const char *name )
         ppc470s_exit_sleep_mode_on_critical_interrupt();
         break;
     default:
-        TEST_ASSERT(0, "TEST ERROR: NON EXPECTED INTERRUPT");
+        TEST_ASSERT(0, "TEST ERROR: NON EXPECTED INTERRUPT");c
     }
 }
 
 static void init_handlers()
 {
+    //MPIC, DIT
     rumboot_irq_cli();
     struct rumboot_irq_entry *tbl = rumboot_irq_create( NULL );
 
     rumboot_irq_set_handler( tbl, DIT_INT0, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, dit0_handler, ( void* )0 );
+    rumboot_irq_set_handler( tbl, MPIC128_TIMER_0, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, mpic_tim0_handler, ( void* )0 );
 
     /* Activate the table */
     rumboot_irq_table_activate( tbl );
     rumboot_irq_enable( DIT_INT0 );
+    rumboot_irq_enable( MPIC128_TIMER_0 );
     rumboot_irq_sei();
 
     //DEC, FIT, WD
@@ -274,6 +301,14 @@ int main ()
 
     rumboot_printf("Start hw monitors\n");
     test_event(EVENT_START_MONITORS);
+
+    //MPIC Timer0
+    rumboot_printf("Generate MPIC Timer0 interrupt...\n");
+    mpic_tim0_generate_interrupt(DELAY);
+    test_event(EVENT_TIME_1);
+    rumboot_printf("Enter sleep with L2C mode\n");
+    ppc470s_enter_sleep_mode(SCTL_PPC_SLP_CPU_L2C_SLP);
+    test_event(EVENT_TIME_2);
 
     //DIT0
     rumboot_printf("Generate DIT0 interrupt...\n");
