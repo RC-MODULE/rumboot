@@ -267,7 +267,7 @@ static void exception_handler( int id, const char *name )
         ppc470s_exit_sleep_mode_on_critical_interrupt();
         break;
     default:
-        TEST_ASSERT(0, "TEST ERROR: NON EXPECTED INTERRUPT");c
+        TEST_ASSERT(0, "TEST ERROR: NON EXPECTED INTERRUPT");
     }
 }
 
