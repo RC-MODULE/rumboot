@@ -219,6 +219,20 @@ uint32_t lwarx(uintptr_t wptr) {
 }
 
 
+static inline __attribute__((always_inline)) void dcbtstls(uint32_t CT, void* const addr ) {
+    if(CT == 2)
+        asm volatile (
+            "dcbtstls 2, 0, %0\n\t"
+            ::"r"(addr)
+        );
+    else if(CT == 0)
+        asm volatile (
+            "dcbtstls 0, 0, %0\n\t"
+            ::"r"(addr)
+        );
+}
+
+
 /* These instruction calls must be placed in the same function
  * where called.
  * It cannot be wrapped within an inline function, because
