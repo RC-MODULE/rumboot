@@ -181,6 +181,8 @@ int main()
             ctr_value = test_function_buf[i]();
             if(i <= j)
                 icbtls(ct_field,( void* )ctr_value);
+            lwsync();
+            isync();
         }
         cache_way = 0;
         rumboot_printf("after icbtls: locks == 0x%x\n", get_locks(ct_field,test_function_buf[cached_functions[cache_way]],cache_way));
@@ -197,8 +199,9 @@ int main()
             ctr_value = test_function_buf[i]();
             if(i < L2C_COUNT_WAYS)
                 icbtls(ct_field,( void* )ctr_value);
+            lwsync();
+            isync();
         }
-        isync();
         rumboot_printf("\n iteration %d: Cache prefilled.\n", j);
         L2C_replacement_count = 0;
         for(uint32_t i = 0; i < COUNT_AREAS; ++i)
@@ -220,6 +223,7 @@ int main()
         cache_way = 0;
         rumboot_printf("before icblc: locks == 0x%x\n", get_locks(ct_field,test_function_buf[cached_functions[cache_way]],cache_way));
         icblc(ct_field, (test_function_buf[cached_functions[j]]));
+        lwsync();
         isync();
         cache_way = (j+1)%4;
         rumboot_printf("after icblc: locks == 0x%x\n", get_locks(ct_field,test_function_buf[cached_functions[cache_way]],cache_way));
@@ -248,6 +252,8 @@ int main()
         for(uint32_t i = 0; i < L2C_COUNT_WAYS; ++i)
         {
             icblc(ct_field, (test_function_buf[cached_functions[i]]));
+            lwsync();
+            isync();
         }
         cache_way = 0;
         locks = get_locks(ct_field,test_function_buf[cached_functions[cache_way]],cache_way);
