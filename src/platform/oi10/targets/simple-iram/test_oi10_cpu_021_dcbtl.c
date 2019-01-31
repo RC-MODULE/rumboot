@@ -129,8 +129,9 @@ int main()
     msync();
     isync();
 
-    for(ct_field = 0; ct_field < 3; ct_field += 2)
+    for(uint32_t index = 0; index < 4; ++index)
     {
+        ct_field = index & 2;
         rumboot_printf("Initial data access and caching without locking, CT == %d.\n", ct_field);
         for(uint32_t i = 0; i < COUNT_AREAS; ++i)
         {
@@ -188,7 +189,12 @@ int main()
                 isync();
                 msync();
                 if(i <= j)
-                    dcbtls(ct_field,( void* )test_data_buf[i]);
+                {
+                    if(index & 0x1)
+                        dcbtstls(ct_field,( void* )test_data_buf[i]);
+                    else
+                        dcbtls(ct_field,( void* )test_data_buf[i]);
+                }
                 lwsync();
                 isync();
             }
@@ -208,7 +214,12 @@ int main()
                 isync();
                 msync();
                 if(i < L2C_COUNT_WAYS)
-                    dcbtls(ct_field,( void* )test_data_buf[i]);
+                {
+                    if(index & 0x1)
+                        dcbtstls(ct_field,( void* )test_data_buf[i]);
+                    else
+                        dcbtls(ct_field,( void* )test_data_buf[i]);
+                }
                 lwsync();
                 isync();
             }
