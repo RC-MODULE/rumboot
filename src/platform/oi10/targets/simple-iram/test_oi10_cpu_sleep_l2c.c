@@ -17,7 +17,7 @@
 #include <platform/interrupts.h>
 #include <platform/common_macros/common_macros.h>
 
-#include <platform/arch/ppc/ppc_476fp_config.h>
+#include <arch/ppc_476fp_config.h>
 #include <platform/arch/ppc/ppc_476fp_lib_c.h>
 #include <platform/arch/ppc/ppc_476fp_mmu_fields.h>
 #include <platform/arch/ppc/ppc_476fp_mmu.h>
@@ -33,32 +33,14 @@
 #include <platform/regs/sctl.h>
 #include <platform/regs/fields/emi.h>
 
+#include <devices/sp804.h>
+
 #define EVENT_TIME_1                        (TEST_EVENT_CODE_MIN + 0)
 #define EVENT_TIME_2                        (TEST_EVENT_CODE_MIN + 1)
 #define EVENT_START_MONITORS                (TEST_EVENT_CODE_MIN + 2)
 
-#define DELAY                               (0x1000)   // external, MPIC
+#define DELAY                               (0x2100)   // external, MPIC
 #define DELAY2                              (0x10000)  // DEC, FIT, Watchdog
-
-void ppc470s_exit_doze_mode_on_noncritical_interrupt()
-{
-    spr_write(SPR_SRR1, spr_read(SPR_SRR1) & ~(1 << IBM_BIT_INDEX(64, 45)));  //xSRR[WE] = 0
-
-    l2c_l2_write( DCR_L2C_BASE, L2C_L2SLEEPREQ, 0 );
-    //We must wait while L2SLEEPSTAT[SnoopIdle] == 1. See L2Cache core databook
-    while(l2c_l2_read( DCR_L2C_BASE, L2C_L2SLEEPSTAT) & reg_field(31, 1)); //while L2SLEEPSTAT[SnoopIdle]
-    isync();
-}
-
-void ppc470s_exit_doze_mode_on_critical_interrupt()
-{
-    spr_write(SPR_CSRR1, spr_read(SPR_CSRR1) & ~(1 << IBM_BIT_INDEX(64, 45))); //xSRR[WE] = 0
-
-    l2c_l2_write( DCR_L2C_BASE, L2C_L2SLEEPREQ, 0 );
-    //We must wait while L2SLEEPSTAT[SnoopIdle] == 1. See L2Cache core databook
-    while(l2c_l2_read( DCR_L2C_BASE, L2C_L2SLEEPSTAT) & reg_field(31, 1)); //while L2SLEEPSTAT[SnoopIdle]
-    isync();
-}
 
 static void msr_ext_int_enable (void){
     msr_write (msr_read() | (1 << IBM_BIT_INDEX(64, 48) ));
@@ -210,6 +192,37 @@ static void wd_handler()
  */
 //**************************************************************************************************************
 
+//**************************************************************************************************************
+/*
+ *  DIT0 BLOCK
+ */
+
+static void dit0_generate_interrupt (uint32_t delay)
+{
+    struct sp804_conf config_0 = {
+        .mode = ONESHOT,
+        .interrupt_enable = 1,
+        .clock_division = 1,
+        .width = 32,
+        .load = delay,
+        .bgload = 0 };
+    sp804_config( DCR_TIMERS_BASE, &config_0, 0 );
+    sp804_enable( DCR_TIMERS_BASE, 0 );
+}
+
+static void dit0_handler ()
+{
+    rumboot_printf("Interrupt handler (DIT0)\n");
+    sp804_stop( DCR_TIMERS_BASE, 0 );
+    sp804_clrint( DCR_TIMERS_BASE, 0 );
+    ppc470s_exit_sleep_mode_on_noncritical_interrupt();
+}
+
+/*
+ *  DIT0 BLOCK END
+ */
+//**************************************************************************************************************
+
 static void exception_handler( int id, const char *name )
 {
     switch (id)
@@ -217,17 +230,17 @@ static void exception_handler( int id, const char *name )
     case RUMBOOT_IRQ_DECREMENTER:
         rumboot_printf("Exception handler (DEC)\n");
         decrementer_handler ();
-        ppc470s_exit_doze_mode_on_noncritical_interrupt();
+        ppc470s_exit_sleep_mode_on_noncritical_interrupt();
         break;
     case RUMBOOT_IRQ_FIXED_INTERVAL_TIMER:
         rumboot_printf("Exception handler (FIT)\n");
         fit_handler();
-        ppc470s_exit_doze_mode_on_noncritical_interrupt();
+        ppc470s_exit_sleep_mode_on_noncritical_interrupt();
         break;
     case RUMBOOT_IRQ_WATCHDOG_TIMER:
         rumboot_printf("Exception handler (WatchDog)\n");
         wd_handler();
-        ppc470s_exit_doze_mode_on_critical_interrupt();
+        ppc470s_exit_sleep_mode_on_critical_interrupt();
         break;
     default:
         TEST_ASSERT(0, "TEST ERROR: NON EXPECTED INTERRUPT");
@@ -236,6 +249,16 @@ static void exception_handler( int id, const char *name )
 
 static void init_handlers()
 {
+    rumboot_irq_cli();
+    struct rumboot_irq_entry *tbl = rumboot_irq_create( NULL );
+
+    rumboot_irq_set_handler( tbl, DIT_INT0, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, dit0_handler, ( void* )0 );
+
+    /* Activate the table */
+    rumboot_irq_table_activate( tbl );
+    rumboot_irq_enable( DIT_INT0 );
+    rumboot_irq_sei();
+
     //DEC, FIT, WD
     rumboot_irq_set_exception_handler(exception_handler);
 }
@@ -252,11 +275,19 @@ int main ()
     rumboot_printf("Start hw monitors\n");
     test_event(EVENT_START_MONITORS);
 
+    //DIT0
+    rumboot_printf("Generate DIT0 interrupt...\n");
+    dit0_generate_interrupt(DELAY);
+    test_event(EVENT_TIME_1);
+    rumboot_printf("Enter sleep with L2C mode\n");
+    ppc470s_enter_sleep_mode(SCTL_PPC_SLP_CPU_L2C_SLP);
+    test_event(EVENT_TIME_2);
+
     //DEC
     rumboot_printf("Generate DEC interrupt...\n");
     dec_generate_interrupt(DELAY2);
     test_event(EVENT_TIME_1);
-    rumboot_printf("Enter sleep mode\n");
+    rumboot_printf("Enter sleep with L2C mode\n");
     ppc470s_enter_sleep_mode(SCTL_PPC_SLP_CPU_L2C_SLP);
     test_event(EVENT_TIME_2);
 
@@ -264,7 +295,7 @@ int main ()
     rumboot_printf("Generate FIT interrupt...\n");
     fit_generate_interrupt(DELAY2);
     test_event(EVENT_TIME_1);
-    rumboot_printf("Enter sleep mode\n");
+    rumboot_printf("Enter sleep with L2C mode\n");
     ppc470s_enter_sleep_mode(SCTL_PPC_SLP_CPU_L2C_SLP);
     test_event(EVENT_TIME_2);
 
@@ -272,7 +303,7 @@ int main ()
     rumboot_printf("Generate WD interrupt...\n");
     wd_generate_interrupt(DELAY2);
     test_event(EVENT_TIME_1);
-    rumboot_printf("Enter sleep mode\n");
+    rumboot_printf("Enter sleep with L2C mode\n");
     ppc470s_enter_sleep_mode(SCTL_PPC_SLP_CPU_L2C_SLP);
     test_event(EVENT_TIME_2);
 
