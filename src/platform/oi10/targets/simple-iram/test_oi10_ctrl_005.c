@@ -87,21 +87,19 @@ struct s805_instance {
     uint32_t base_addr;
 };
 
-static uint32_t check_wd_irq()
+static uint32_t check_wd_irq(void)
 {
     uint32_t t;
 
-    rumboot_printf("Wait Watchdog interrupt \n");
     for(t = 0; t <= TIMEOUT; t++)
     {
         if(IRQ)
         {
             IRQ = 0;
-            msync();
             return 0;
         }
     }
-    rumboot_printf( "exit Watchdog interrupt\n");
+    rumboot_printf( "Error! IRQ flag wait timeout! \n" );
     return 1;
 }
 
@@ -112,7 +110,7 @@ static void handler0(int irq, void *arg)
     a->wd_irq = a->wd_irq+1;
     rumboot_printf("sp805 watchdog INT # %d  \n", a->wd_irq);
     sp805_clrint(a->base_addr);
-    IRQ++;
+    IRQ=1;
 }
 
 static bool wd_test( uint32_t structure )
@@ -121,7 +119,6 @@ static bool wd_test( uint32_t structure )
     struct s805_instance *stru = (struct s805_instance *)structure;
     uint32_t base_addr = stru->base_addr;
     stru->wd_irq = 0;
-
     struct sp805_conf config_FREE_RUN =
     {
            .mode = FREERUN,
@@ -145,8 +142,7 @@ static bool wd_test( uint32_t structure )
             c++;
             stru->wd_irq++;
         }
-
-        if(stru->wd_irq == TIMER_CYCLES)
+        if(stru->wd_irq)
         {
             rumboot_printf("Watchdog test OK\n");
             rumboot_printf("Counted interrupts is: %d\n", stru->wd_irq);
@@ -168,13 +164,12 @@ static bool wd_test( uint32_t structure )
 
 static bool wd_test2(uint32_t structure)
 {
-    struct s805_instance *stru = ( struct s805_instance * )structure;
+    struct s805_instance *stru = (struct s805_instance *)structure;
     uint32_t base_addr = stru->base_addr;
     int i, d; d = 0;
     stru->wd_irq = 0;
 
     dcr_write(base_addr + WD_REG_ITCR, 0b1);
-
     if(check_wd_irq())
     {
         rumboot_printf("IRQ ok\n");
@@ -201,11 +196,7 @@ static bool wd_test2(uint32_t structure)
             return false;
         }
     }
-    else
-    {
-        rumboot_printf("IRQ timeout is gone\n");
-        return false;
-    }
+
     return true;
 }
 
