@@ -3,7 +3,7 @@ SET(RUMBOOT_PLATFORM bbp3)
 
 set(RUMBOOT_PLATFORM_DEFAULT_LDS bbp3/rom.lds)
 set(RUMBOOT_PLATFORM_DEFAULT_SNAPSHOT boot)
-
+set(RUMBOOT_NO_SELFTEST true)
 
 if (RUMBOOT_BUILD_TYPE STREQUAL "Production")
   set(BOOTROM_IFLAGS ${RTLFLAGS} +BOOTMGR_KEEP_DRIVING=1 +GTUBE_ONLY_PRODUCTION_OPCODES)
@@ -28,7 +28,7 @@ rumboot_add_configuration(
 
 rumboot_add_configuration (
   IRAM
-  LDS bbp3/iram-spl.lds
+  LDS bbp3/iram.lds
   PREFIX iram
   LDFLAGS -Wl,--start-group -lgcc -lc -lm -Wl,--end-group "-e rumboot_main"
   FILES ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c
@@ -52,12 +52,25 @@ rumboot_add_configuration (
 
 include(${CMAKE_SOURCE_DIR}/cmake/bootrom.cmake)
 
-set(ROM_115200_OPTS +BOOT_FASTUART=0 +UART0_SPEED=115200 )
-set(ROM_6500K_OPTS  +BOOT_FASTUART=1 +UART0_SPEED=6250000)
+set(ROM_115200_OPTS +UART0_SPEED=115200 )
 
 ### Add tests here ###
 #WARNING! Full regression automatically includes all tests from the short ones
 macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
+
+    add_rumboot_target(
+        CONFIGURATION ROM
+        FILES common/bootrom-stubs/bootrom-stub.c
+        PREFIX "bootrom"
+        NAME "stub"
+        FEATURES STUB
+    )
+
+    add_rumboot_target_dir(common/irq/
+      CONFIGURATION IRAM
+      PREFIX iram
+      TESTGROUP short
+    )
 
     rumboot_bootrom_add_components(
       IRAM_SPL ROM
@@ -70,7 +83,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         MEMTAG SPI0_CONF
         TAGOFFSET 0
         FULL YES
-        IRUN_FLAGS ${ROM_6500K_OPTS}
+        IRUN_FLAGS ${ROM_115200_OPTS}
         ENDIAN little
     )
 
@@ -81,31 +94,105 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         MEMTAG NOR_IMAGE
         TAGOFFSET 0
         FULL YES
-        IRUN_FLAGS ${ROM_6500K_OPTS}
+        IRUN_FLAGS ${ROM_115200_OPTS}
         ENDIAN little
     )
 
-    rumboot_bootrom_integration_test(BROM
+    rumboot_bootrom_integration_test(ROM
         NAME "serial-115200"
         IRUN_FLAGS ${ROM_115200_OPTS} +UART0_STOP_ON_MATCH +UART0_STOP_ON_MISMATCH
-        TIMEOUT 10 ms
-    )
-    rumboot_bootrom_integration_test(BROM
-        NAME "serial-6500000"
-        IRUN_FLAGS ${ROM_6500K_OPTS} +UART0_STOP_ON_MATCH +UART0_STOP_ON_MISMATCH
-        TIMEOUT 10 ms
     )
 
 
-        rumboot_bootrom_integration_test(BROM
-            NAME "host"
-            IRUN_FLAGS ${ROM_6500K_OPTS}
+    rumboot_bootrom_integration_test(ROM
+        NAME "host"
+        IRUN_FLAGS ${ROM_115200_OPTS} +BOOT_HOST=1
+        LOAD
+          SPI0_CONF spl-fail-bad-magic,spl-fail-bad-magic
+          NOR_IMAGE spl-fail-bad-magic
+          HOSTMOCK  spl-ok
+    )
+
+    rumboot_bootrom_integration_test(ROM
+        NAME "host-silent"
+        IRUN_FLAGS ${ROM_115200_OPTS} +BOOT_SILENT=1 +BOOT_HOST=1
+        LOAD
+          SPI0_CONF spl-fail-bad-magic,spl-fail-bad-magic
+          NOR_IMAGE spl-fail-bad-magic
+          HOSTMOCK  spl-ok
+    )
+
+    rumboot_bootrom_integration_test(ROM
+        NAME "nor"
+        IRUN_FLAGS ${ROM_115200_OPTS} +BOOT_EMI=1
+        LOAD
+          SPI0_CONF spl-fail,spl-fail
+          NOR_IMAGE spl-ok
+          HOSTMOCK  spl-fail
+    )
+
+    rumboot_bootrom_integration_test(ROM
+        NAME "spi"
+        IRUN_FLAGS ${ROM_115200_OPTS}
+        LOAD
+          SPI0_CONF spl-fail,spl-fail
+          NOR_IMAGE spl-ok
+          HOSTMOCK  spl-fail
+    )
+
+    rumboot_bootrom_integration_test(ROM
+        NAME "nmc-nor"
+        IRUN_FLAGS ${ROM_115200_OPTS} +BOOT_EMI=1 +BOOT_NMC=1 +BOOT_EMI_BIS=1
+        LOAD
+          SPI0_CONF spl-fail,spl-fail
+          NOR_IMAGE spl-ok
+          HOSTMOCK  spl-fail
+    )
+
+    rumboot_bootrom_integration_test(ROM
+        NAME "nmc-spi"
+        IRUN_FLAGS ${ROM_115200_OPTS} +BOOT_NMC=1 +BOOT_EMI_BIS=1
+        LOAD
+          SPI0_CONF spl-fail,spl-fail
+          NOR_IMAGE spl-ok
+          HOSTMOCK  spl-fail
+    )
+
+    rumboot_bootrom_integration_test(ROM
+        NAME "nmc-host"
+        IRUN_FLAGS ${ROM_115200_OPTS} +BOOT_NMC=1 +BOOT_EMI_BIS=0
+        LOAD
+          SPI0_CONF spl-fail,spl-fail
+          NOR_IMAGE spl-fail
+          HOSTMOCK  spl-ok
+    )
+
+
+    if (NOT RUMBOOT_BUILD_TYPE STREQUAL "Debug")
+        rumboot_bootrom_integration_test(ROM
+            NAME "host-easter-egg"
+            IRUN_FLAGS +BOOT_HOST=1 ${ROM_115200_OPTS} +uart_easter_egg
+        )
+
+        rumboot_bootrom_integration_test(ROM
+            NAME "host-fallthough-emi-easter-egg"
+            IRUN_FLAGS ${ROM_115200_OPTS} +uart_easter_egg +BOOT_EMI=1
             LOAD
-              SD0_BOOT_IMAGE spl-fail
               SPI0_CONF spl-fail-bad-magic,spl-fail-bad-magic
               NOR_IMAGE spl-fail-bad-magic
-              HOSTMOCK  spl-ok
         )
+
+        rumboot_bootrom_integration_test(ROM
+            NAME "host-fallthough-spi-easter-egg"
+            IRUN_FLAGS ${ROM_115200_OPTS} +uart_easter_egg
+            LOAD
+              SPI0_CONF spl-fail-bad-magic,spl-fail-bad-magic
+              NOR_IMAGE spl-fail-bad-magic
+        )
+    endif()
+
+
+
 
     add_rumboot_target(
         CONFIGURATION ROM
