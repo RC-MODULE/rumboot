@@ -34,7 +34,7 @@ static void hostmode_loop(void *pdata)
 {
         size_t maxsize;
         struct rumboot_bootheader *hdr = rumboot_platform_get_spl_area(&maxsize);
-        dbg_boot(NULL, "Entering Host Mode");
+        dbg_boot(NULL, "Host Mode, please upload SPL to 0x%x", (uintptr_t) hdr);
         rumboot_platform_enter_host_mode();
         dbg_boot(NULL, "Hit 'X' for X-Modem upload");
         void *data;
