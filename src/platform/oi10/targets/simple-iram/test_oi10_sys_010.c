@@ -28,6 +28,12 @@
 #include <platform/regs/regs_cldcr.h>
 #include <platform/regs/regs_itrace.h>
 
+DECLARE_CONST( ITC0_TC_ITE_e, 0 )
+DECLARE_CONST( ITC0_TC_ITE_i, IBM_BIT_INDEX( 32, ITC0_TC_ITE_e ) )
+
+DECLARE_CONST( ITC0_TC_SS_e,  4 )
+DECLARE_CONST( ITC0_TC_SS_i,  IBM_BIT_INDEX( 32, ITC0_TC_SS_e ) )
+
 enum {
        TEC_CHECK_TRACE_CONFIGURED = TEST_EVENT_CODE_MIN,
        TEC_CHECK_TRACE_IAC,
@@ -92,9 +98,9 @@ static void my_exception_handler(int id, const char *name)
 int check_trace_configured()
 {
 	dcr_write(DCR_CLDCR_BASE+CLDCR_ITRCTRL, (CLDCR_ITRCTRL_CPU_ITEN_PPC0 << CLDCR_ITRCTRL_CPU_ITEN_i));
-        dcr_write(DCR_ITRACE_BASE+ITC0_TC, (1 << IBM_BIT_INDEX( 32, 0 ))
-                                         | (1 << IBM_BIT_INDEX( 32, 4 ))); // Instraction Trace Enable (bit 0).
-                                                                           // Trace information from PowerPC[0] is selected (bit 4).
+        dcr_write(DCR_ITRACE_BASE+ITC0_TC, (1 << ITC0_TC_ITE_i)
+                                         | (1 << ITC0_TC_SS_i)); // Instraction Trace Enable (bit 0).
+                                                                 // Trace information from PowerPC[0] is selected (bit 4).
 
     test_event(TEC_CHECK_TRACE_CONFIGURED);
 
