@@ -120,8 +120,70 @@ uint32_t get_locks(uint32_t pseudo_CT, void* addr, uint32_t cache_way)
     }
     return result;
 }
+/*Global data are not good, I know, but now I have no time and wish to bind test_functions to any interface.*/
+uint32_t    (*test_function_buf[COUNT_AREAS])();
+
 /**********************************************************/
 /*Here we have all testing functions for all the cache instructions*/
+
+/*  test_ici - let's call several functions and check that they are in the cache.
+ * Then let's invalidate the cache and check that all these functions are not more in the cache for L1 and nothing is done for L2*/
+uint32_t test_ici()
+{
+    uint32_t    result = 0;
+    int32_t     cache_way;
+    bool        found_in_cache;
+    rumboot_printf("test_ici start\n");
+    for(uint32_t CT = 0; CT < 3; CT += 2)
+    {
+        rumboot_printf("cached for CT == %d\n", CT);
+        for(uint32_t i = 0; i < L2C_COUNT_WAYS; ++i)
+        {
+            test_function_buf[i]();
+        }
+        rumboot_printf("checking, that all is cached\n", CT);
+        for(uint32_t i = 0; i < L2C_COUNT_WAYS; ++i)
+        {
+            if(!get_way_by_addr(
+                    PSEUDO_CT_DECODING_IS_L1I_mask | CT,
+                    test_function_buf[i],
+                    &cache_way
+                    ))
+            {
+                rumboot_printf("ERROR!!! Did not find any valid cache entry for address 0x%x\n", test_function_buf[i]);
+                result |= 1;
+            }
+        }
+        msync();
+        if(CT & PSEUDO_CT_DECODING_IS_L2_mask)
+            ici(2);
+        else
+            ici(0);
+        isync();
+        for(uint32_t i = 0; i < L2C_COUNT_WAYS; ++i)
+        {
+            found_in_cache = get_way_by_addr(
+                    PSEUDO_CT_DECODING_IS_L1I_mask | CT,
+                    test_function_buf[i],
+                    &cache_way
+                    );
+            if(found_in_cache
+                && (!(CT & PSEUDO_CT_DECODING_IS_L2_mask)))
+            {
+                rumboot_printf("ERROR!!! Found a valid cache entry for address 0x%x after ici(0)\n", test_function_buf[i]);
+                result |= 1;
+            }
+            if((!found_in_cache)
+                && ((CT & PSEUDO_CT_DECODING_IS_L2_mask)))
+            {
+                rumboot_printf("ERROR!!! Did not find any valid cache entry for address 0x%x after ici(2)\n", test_function_buf[i]);
+                result |= 1;
+            }
+        }
+    }
+    rumboot_printf("test_ici finish\n");
+    return result;
+}
 uint32_t test_icbi()
 {
     uint32_t    result = 0;
@@ -187,26 +249,14 @@ uint32_t test_dcblc()
     uint32_t    result = 0;
     return result;
 }
-uint32_t test_ici()
-{
-    uint32_t    result = 0;
-    return result;
-}
 uint32_t test_dci()
 {
     uint32_t    result = 0;
     return result;
 }
-uint32_t test_icread()
-{
-    uint32_t    result = 0;
-    return result;
-}
-uint32_t test_dcread()
-{
-    uint32_t    result = 0;
-    return result;
-}
+/* test_icread and test_dcread separate functions are meaningless -
+ * the corresponding instructions affect only L1* caches and were used quite often during the test
+ */
 uint32_t (*test_cache_functions[])() = {
         test_icbi,
         test_icbt,
@@ -222,9 +272,7 @@ uint32_t (*test_cache_functions[])() = {
         test_dcbtstls,
         test_dcblc,
         test_ici,
-        test_dci,
-        test_icread,
-        test_dcread
+        test_dci
 };
 /**********************************************************/
 
@@ -242,7 +290,6 @@ uint32_t test_function()
 int main()
 {
     uint32_t    result = 0;
-    uint32_t    (*test_function_buf[COUNT_AREAS])();
     uint32_t    function_size = ((uint32_t)main) - ((uint32_t)test_function);
     uint32_t    function_area_size = ((function_size) & 0xffffff80) + 0x180;
 
@@ -270,5 +317,5 @@ int main()
     for(uint32_t i = 0; i < sizeof(test_cache_functions)/sizeof(*test_cache_functions); ++i)
         result |= test_cache_functions[i]();
 
-    return (result >> 24) | (result >> 16) | (result >> 8) | result;
+    return ((result >> 24) | (result >> 16) | (result >> 8) | result);
 }
