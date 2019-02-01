@@ -13,6 +13,7 @@
 #include <rumboot/rumboot.h>
 #include <platform/test_assert.h>
 #include <platform/arch/ppc/ppc_476fp_l1c_fields.h>
+#include <platform/test_event_c.h>
 
 
 /*                            MMU_TLB_ENTRY(  ERPN,   RPN,        EPN,        DSIZ,                   IL1I,   IL1D,   W,      I,      M,      G,      E,                      UX, UW, UR,     SX, SW, SR      DULXE,  IULXE,      TS,     TID,                WAY,                BID,                V   )*/
@@ -48,7 +49,7 @@ bool get_way_by_addr(uint32_t CT, void* addr, int32_t* cache_way)
             reg_DCDBTRL = spr_read(SPR_DCDBTRL);
             reg_DCDBTRH = spr_read(SPR_DCDBTRH);
             tag_valid = (reg_DCDBTRH & XCDBTRH_VALID_mask);
-            rumboot_printf("cache_way == %d\naddr == 0x%x\nicread (0x%x)\nDCDBTRH == 0x%x\nDCDBTRL == 0x%x\nvalid == %d\n",
+            rumboot_printf("\ncache_way == %d\naddr == 0x%x\nicread (0x%x)\nDCDBTRH == 0x%x\nDCDBTRL == 0x%x\nvalid == %d\n",
                     *cache_way,
                     (uint32_t)addr,
                     (uint32_t*)(((uint32_t)addr & (XCREAD_EA_L1I_INDEX_mask | XCREAD_EA_WORD_ADDR_mask))
@@ -128,11 +129,12 @@ int main()
     write_tlb_entries(&em_tlb_entry_cache_on, 1);
     msync();
     isync();
+    test_event_send_test_id("test_oi10_cpu_021_dcbtl");
 
     for(uint32_t index = 0; index < 4; ++index)
     {
         ct_field = index & 2;
-        rumboot_printf("Initial data access and caching without locking, CT == %d.\n", ct_field);
+        rumboot_printf("\nInitial data access and caching without locking, CT == %d, %s.\n", ct_field, (index&1)?"dcbtstls":"dcbtls");
         for(uint32_t i = 0; i < COUNT_AREAS; ++i)
         {
             dcbt(test_data_buf[i]);
@@ -172,7 +174,7 @@ int main()
             if(j < L2C_COUNT_WAYS)
                 if(not_in_cache_function_number != (j%4))
                 {
-                    rumboot_printf("ERROR!!! Unexpected number of replaced data areas == %d\n", not_in_cache_function_number);
+                    rumboot_printf("ERROR!!! Unexpected number of replaced data area == %d\n", not_in_cache_function_number);
                     result |= (not_in_cache_function_number != (j%4));
                 }
 
@@ -183,11 +185,6 @@ int main()
             rumboot_printf("Let's lock one more data in cache.\n");
             for(uint32_t i = 0; i < COUNT_AREAS; ++i)
             {
-                dcbt(test_data_buf[i]);
-                data_value = ioread32((uint32_t)test_data_buf[i]);
-                iowrite32(data_value, (uint32_t)test_data_buf[i]);
-                isync();
-                msync();
                 if(i <= j)
                 {
                     if(index & 0x1)
@@ -197,10 +194,15 @@ int main()
                 }
                 lwsync();
                 isync();
+                dcbt(test_data_buf[i]);
+                data_value = ioread32((uint32_t)test_data_buf[i]);
+                iowrite32(data_value, (uint32_t)test_data_buf[i]);
+                isync();
+                msync();
             }
         }
 
-        rumboot_printf("Secondary data calling: with locking\n");
+        rumboot_printf("\nSecondary data access: with locking\n");
         for(int32_t j = L2C_COUNT_WAYS - 1; j >= 0; --j)
         {
             dci(0);
@@ -208,11 +210,6 @@ int main()
             isync();
             for(uint32_t i = 0; i < L2C_COUNT_WAYS; ++i)
             {
-                dcbt(test_data_buf[i]);
-                data_value = ioread32((uint32_t)test_data_buf[i]);
-                iowrite32(data_value,(uint32_t)test_data_buf[i]);
-                isync();
-                msync();
                 if(i < L2C_COUNT_WAYS)
                 {
                     if(index & 0x1)
@@ -222,6 +219,11 @@ int main()
                 }
                 lwsync();
                 isync();
+                dcbt(test_data_buf[i]);
+                data_value = ioread32((uint32_t)test_data_buf[i]);
+                iowrite32(data_value,(uint32_t)test_data_buf[i]);
+                isync();
+                msync();
             }
             rumboot_printf("\n iteration %d: Cache prefilled.\n", j);
             L2C_replacement_count = 0;
