@@ -40,10 +40,6 @@ SECTIONS
 
   . = ALIGN(8);
 
-  rumboot_IRAM_heap_start = .;
-    /* empty */
-  rumboot_IRAM_heap_end = .;
-
   /* This is where stacks start */
   rumboot_platform_stack_area_start = .;
 

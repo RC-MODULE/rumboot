@@ -11,26 +11,7 @@ SECTIONS
    KEEP(*(.header))
  } > IRAM
 
-
- .preinit_array     :
- {
-   PROVIDE_HIDDEN (__preinit_array_start = .);
-   KEEP (*(.preinit_array*))
-   PROVIDE_HIDDEN (__preinit_array_end = .);
- } > IRAM
-
- .init_array :
- {
-   PROVIDE_HIDDEN (__init_array_start = .);
-   KEEP (*(SORT(.init_array.*)))
-   KEEP (*(.init_array*))
-   PROVIDE_HIDDEN (__init_array_end = .);
- } > IRAM
-
  .rwx : {
-  rumboot_IRAM_heap_start = .;
-  rumboot_IRAM_heap_end = .;
-
   *(.text)
   *(.text.*)
   *(.rodata)
@@ -42,7 +23,6 @@ SECTIONS
   rumboot_platform_bss_end = .;
   *(.data.*)
   rumboot_platform_spl_start = .;
-
   rumboot_platform_spl_end = .;
   } > IRAM
 
@@ -53,4 +33,17 @@ SECTIONS
   *(.rumboot_platform_runtime_info);
  }
 
+ /DISCARD/ :
+ {
+     libc.a ( * )
+     libm.a ( * )
+     libgcc.a ( * )
+     /* Make sure data & bss go to hell */
+     *(.data)
+     *(.data.*)
+     *(.bss)
+     *(.bss.*)
+     *(COMMON)
+ }
+ 
 }
