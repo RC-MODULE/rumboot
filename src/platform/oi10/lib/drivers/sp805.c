@@ -9,12 +9,6 @@
 #include <rumboot/io.h>
 #include <rumboot/printf.h>
 
-
-void sp805_unlock_access(uint32_t base_addr)
-{
-    dcr_write(base_addr + WD_REG_LOCK, 0x1ACCE551);
-}
-
 void sp805_enable(uint32_t base_addr)
 {
     int cntrl;
