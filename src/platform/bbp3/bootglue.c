@@ -20,7 +20,7 @@
 #define BOOTM_SILENT       (1 << 1)
 #define BOOTM_EMI          (1 << 2)
 #define BOOTM_NMC          (1 << 3)
-#define BOOTM_EMI_BIS      (1 << 4)
+#define BOOTM_EMI_BIS      (1 << 8)
 
 #define BOOTM_NM0          (1 << 0)
 #define BOOTM_NM1          (1 << 1)
@@ -33,7 +33,7 @@ static inline uint32_t bootm() {
 
 static inline int is_silent()
 {
-        return bootm() & BOOTM_SILENT;
+        return (bootm() & (BOOTM_SILENT | BOOTM_NMC));
 }
 
 void rumboot_platform_read_config(struct rumboot_config *conf)
@@ -41,7 +41,10 @@ void rumboot_platform_read_config(struct rumboot_config *conf)
         conf->baudrate = 115200;
         conf->selftest = -1;
         conf->edcl = 1; /* EDCL Always on */
-        conf->hostmode = (bootm() & BOOTM_HOST);
+        uint32_t bm = bootm();
+        conf->hostmode = (bm & BOOTM_HOST);
+        if (bm & BOOTM_NMC)
+                conf->hostmode = !(bm & BOOTM_EMI_BIS);
 }
 
 
@@ -72,15 +75,6 @@ void rumboot_platform_init_loader(struct rumboot_config *conf)
         }
 }
 
-static bool emi_enable(const struct rumboot_bootsource *src, void *pdata)
-{
-        /* EMI BIS must be high! */
-        bool ret = (bootm() & BOOTM_EMI_BIS);
-        if (!ret) {
-                dbg_boot(src, "EMI_BIS pin low, skipping NOR boot");
-        }
-        return ret;
-}
 
 #define SPI_CS0 (1 << 0)
 static bool spi0_enable(const struct rumboot_bootsource *src, void *pdata)
@@ -126,7 +120,6 @@ static const struct rumboot_bootsource emi_boot[] = {
                 .name = "NOR",
                 .base = EMI_MEM_Base,
                 .plugin = &g_bootmodule_physmap,
-                .enable = &emi_enable
         },
         { /*Sentinel*/ }
 };
@@ -170,11 +163,10 @@ int rumboot_platform_exec(struct rumboot_bootheader *hdr)
 
 void rumboot_platform_print_summary(struct rumboot_config *conf)
 {
-        rumboot_printf("NMC Boot Mode:   %s\n",
-                (bootm() & BOOTM_NMC) ? "Disabled" : "Enabled");
-        rumboot_printf("NMC Cores:       %s%s\n",
-                (bootm() & BOOTM_NM0) ? "[NM0]" : "",
-                (bootm() & BOOTM_NM1) ? "[NM1]" : "");
+        rumboot_printf("EMI BIS:         %d\n",
+                       (bootm() & BOOTM_EMI_BIS) ? 1 : 0);
+        rumboot_printf("Silent boot:     %s\n",
+                        is_silent() ? "Yes" : "No");
 }
 
 
