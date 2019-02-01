@@ -92,8 +92,9 @@ static void my_exception_handler(int id, const char *name)
 int check_trace_configured()
 {
 	dcr_write(DCR_CLDCR_BASE+CLDCR_ITRCTRL, (CLDCR_ITRCTRL_CPU_ITEN_PPC0 << CLDCR_ITRCTRL_CPU_ITEN_i));
-	dcr_write(DCR_ITRACE_BASE+ITC0_TC, (1 << IBM_BIT_INDEX( 32, 0 ))
-                                 | (1 << IBM_BIT_INDEX( 32, 4 )));
+        dcr_write(DCR_ITRACE_BASE+ITC0_TC, (1 << IBM_BIT_INDEX( 32, 0 ))
+                                         | (1 << IBM_BIT_INDEX( 32, 4 ))); // Instraction Trace Enable (bit 0).
+                                                                           // Trace information from PowerPC[0] is selected (bit 4).
 
     test_event(TEC_CHECK_TRACE_CONFIGURED);
 
