@@ -267,6 +267,7 @@ macro(rumboot_bootrom_unit_test)
             )
           endif()
 
+        if (NOT RUMBOOT_NO_SELFTEST)
           add_rumboot_target(
             NAME "unit-selftest"
             CONFIGURATION ${BOOTSOURCE_CONFIGURATION}
@@ -275,6 +276,7 @@ macro(rumboot_bootrom_unit_test)
             TESTGROUP bootrom bootrom-unit
             IRUN_FLAGS ${BOOTSOURCE_IRUN_FLAGS}
           )
+        endif()
 
           add_rumboot_target(
             NAME "unit-exception"
@@ -300,15 +302,17 @@ macro(rumboot_bootrom_integration_test romconf)
           ${ARGN}
   )
 
-  string(REPLACE "IRUN_FLAGS" "IRUN_FLAGS;+BOOT_SELFTEST=1" _tmp "${ARGN}")
-  add_rumboot_target(
-          PREFIX "bootrom-integration-selftest"
-          CONFIGURATION ${romconf}
-          BOOTROM bootrom-loader
-          TESTGROUP bootrom bootrom-integration
-          FEATURES NOCODE ${CONFIGURATION_${romconf}_FEATURES}
-          ${_tmp}
-  )
+  if (NOT RUMBOOT_NO_SELFTEST)
+      string(REPLACE "IRUN_FLAGS" "IRUN_FLAGS;+BOOT_SELFTEST=1" _tmp "${ARGN}")
+      add_rumboot_target(
+              PREFIX "bootrom-integration-selftest"
+              CONFIGURATION ${romconf}
+              BOOTROM bootrom-loader
+              TESTGROUP bootrom bootrom-integration
+              FEATURES NOCODE ${CONFIGURATION_${romconf}_FEATURES}
+              ${_tmp}
+      )
+  endif()
 
 
 endmacro()
