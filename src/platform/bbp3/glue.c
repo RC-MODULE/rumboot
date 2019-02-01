@@ -39,6 +39,8 @@ uint32_t rumboot_platform_get_uptime()
 /* Comes from startup.S */
 extern char rumboot_default_irq_vectors;
 
+extern char rumboot_IRAM_heap_start;
+extern char rumboot_IRAM_heap_end;
 
 void rumboot_platform_setup()
 {
@@ -49,6 +51,11 @@ void rumboot_platform_setup()
         arm_vbar_set((uint32_t)&rumboot_default_irq_vectors);
         rumboot_irq_register_gic();
 
+
+#ifndef RUMBOOT_ONLY_STACK
+        rumboot_malloc_register_heap("IRAM",
+                                     &rumboot_IRAM_heap_start, &rumboot_IRAM_heap_end);
+#endif
 
         /* Fire timer subsystem */
         struct sp804_conf conf_str;
