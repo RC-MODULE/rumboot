@@ -1,4 +1,3 @@
-//#define RUMBOOT_ASSERT_WARN_ONLY
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
@@ -137,7 +136,6 @@ int main()
         rumboot_printf("\nInitial data access and caching without locking, CT == %d, %s.\n", ct_field, (index&1)?"dcbtstls":"dcbtls");
         for(uint32_t i = 0; i < COUNT_AREAS; ++i)
         {
-            dcbt(test_data_buf[i]);
             data_value = ioread32((uint32_t)test_data_buf[i]);
             iowrite32(data_value, (uint32_t)test_data_buf[i]);
             isync();
@@ -149,7 +147,7 @@ int main()
         for(uint32_t j = 0; j < L2C_COUNT_WAYS + 1; ++j)
         {
             L2C_replacement_count = 0;
-            rumboot_printf("Let's check what functions are in cache.\n");
+            rumboot_printf("Let's check what data pieces are in cache.\n");
             for(uint32_t i = 0; i < COUNT_AREAS; ++i)
             {
                 if(get_way_by_addr(ct_field, test_data_buf[i], &cache_way))
@@ -171,21 +169,22 @@ int main()
                 rumboot_printf("ERROR!!! Other than one count of data areas was replaced: %d\n", L2C_replacement_count);
                 result |= (L2C_replacement_count != 1);
             }
-            if(j < L2C_COUNT_WAYS)
+//            if(j < L2C_COUNT_WAYS)
                 if(not_in_cache_function_number != (j%4))
                 {
                     rumboot_printf("ERROR!!! Unexpected number of replaced data area == %d\n", not_in_cache_function_number);
                     result |= (not_in_cache_function_number != (j%4));
                 }
 
+            msync();
             dci(0);
             dci(2);
-            isync();
+            msync();
 
             rumboot_printf("Let's lock one more data in cache.\n");
             for(uint32_t i = 0; i < COUNT_AREAS; ++i)
             {
-                if(i <= j)
+                if((i <= j) && ((i < L2C_COUNT_WAYS)|| (ct_field == 2)))
                 {
                     if(index & 0x1)
                         dcbtstls(ct_field,( void* )test_data_buf[i]);
@@ -194,36 +193,37 @@ int main()
                 }
                 lwsync();
                 isync();
-                dcbt(test_data_buf[i]);
                 data_value = ioread32((uint32_t)test_data_buf[i]);
                 iowrite32(data_value, (uint32_t)test_data_buf[i]);
                 isync();
                 msync();
             }
+            rumboot_printf("Initial data access after dcbt*ls: locks == 0x%x\n",
+                    get_locks(ct_field,test_data_buf[cached_functions[cache_way]],cache_way));
         }
 
         rumboot_printf("\nSecondary data access: with locking\n");
         for(int32_t j = L2C_COUNT_WAYS - 1; j >= 0; --j)
         {
+        	msync();
             dci(0);
             dci(2);
-            isync();
+            msync();
             for(uint32_t i = 0; i < L2C_COUNT_WAYS; ++i)
             {
-                if(i < L2C_COUNT_WAYS)
+                if((i != j) || (ct_field == 2))
                 {
                     if(index & 0x1)
                         dcbtstls(ct_field,( void* )test_data_buf[i]);
                     else
                         dcbtls(ct_field,( void* )test_data_buf[i]);
+                    msync();
+                    isync();
                 }
-                lwsync();
-                isync();
-                dcbt(test_data_buf[i]);
                 data_value = ioread32((uint32_t)test_data_buf[i]);
                 iowrite32(data_value,(uint32_t)test_data_buf[i]);
-                isync();
                 msync();
+                isync();
             }
             rumboot_printf("\n iteration %d: Cache prefilled.\n", j);
             L2C_replacement_count = 0;
@@ -245,13 +245,21 @@ int main()
 
             cache_way = 0;
             rumboot_printf("before dcblc: locks == 0x%x\n", get_locks(ct_field,test_data_buf[cached_functions[cache_way]],cache_way));
-            dcblc(ct_field, (test_data_buf[cached_functions[j]]));
-            isync();
+            dcblc(ct_field, (test_data_buf[cached_functions[(j + 1)%L2C_COUNT_WAYS]]));
             lwsync();
-            cache_way = (j+1)%4;
-            rumboot_printf("after dcblc: locks == 0x%x\n", get_locks(ct_field,test_data_buf[cached_functions[cache_way]],cache_way));
+            isync();
+            cache_way = (j + 1)%L2C_COUNT_WAYS;
+            rumboot_printf("after dcblc: locks == 0x%x\nLocking way %d instead of %d.\n",
+                    get_locks(ct_field,test_data_buf[cached_functions[cache_way]],cache_way), j,
+                    (j + 1)%L2C_COUNT_WAYS);
 
-            dcbt(test_data_buf[not_in_cache_function_number]);
+            if(index & 0x1)
+                dcbtstls(ct_field,( void* )test_data_buf[cached_functions[j]]);
+            else
+                dcbtls(ct_field,( void* )test_data_buf[cached_functions[j]]);
+            rumboot_printf("after dcbt*ls: locks == 0x%x\n",
+                    get_locks(ct_field,test_data_buf[cached_functions[cache_way]],cache_way));
+
             data_value = ioread32((uint32_t)test_data_buf[not_in_cache_function_number]);
             iowrite32(data_value, (uint32_t)test_data_buf[not_in_cache_function_number]);
             isync();
@@ -264,10 +272,10 @@ int main()
                 rumboot_printf("data[%d] was cached, way == %d\n", not_in_cache_function_number, cache_way);
                 rumboot_printf("after recaching: locks == 0x%x\n", get_locks(ct_field,test_data_buf[cached_functions[cache_way]],cache_way));
     //            TEST_ASSERT((cache_way == j), "Incorrect way was replaced");
-                if(!(cache_way == j))
+                if(!(cache_way == ((j + 1)%L2C_COUNT_WAYS)))
                 {
                     rumboot_printf("ERROR!!! Cache way lock does not work! Expected way %d to be replaced, but actually replaced way %d.\n",j,cache_way);
-                    result |= !(cache_way == j);
+                    result |= !(cache_way == ((j + 1)%L2C_COUNT_WAYS));
                 }
             }
             else
@@ -279,16 +287,17 @@ int main()
         for(uint32_t i = 0; i < L2C_COUNT_WAYS; ++i)
         {
             dcblc(ct_field, (test_data_buf[cached_functions[i]]));
+            lwsync();
+            isync();
         }
-        lwsync();
-        isync();
         cache_way = 0;
         locks = get_locks(ct_field,test_data_buf[cached_functions[cache_way]],cache_way);
         rumboot_printf("after all: locks == 0x%x\n", locks);
         TEST_ASSERT((locks == 0), "After icblc on all ways all locks must be zeros!!!");
+        msync();
         dci(0);
         dci(2);
-        isync();
+        msync();
     }
     return (result >> 24) | (result >> 16) | (result >> 8) | result;
 }
