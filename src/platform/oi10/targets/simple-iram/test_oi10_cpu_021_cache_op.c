@@ -26,7 +26,7 @@ BEGIN_ENUM(PSEUDO_CT_DECODING)
     DECLARE_ENUM_VAL(   PSEUDO_CT_DECODING_IS_L1I_n,         1    )
     DECLARE_ENUM_VAL(   PSEUDO_CT_DECODING_IS_L1I_mask,     FIELD_MASK32( PSEUDO_CT_DECODING_IS_L1I_i, PSEUDO_CT_DECODING_IS_L1I_n ) )
 
-    DECLARE_ENUM_VAL(   PSEUDO_CT_DECODING_IS_L2_i,         0    )
+    DECLARE_ENUM_VAL(   PSEUDO_CT_DECODING_IS_L2_i,         1    )
     DECLARE_ENUM_VAL(   PSEUDO_CT_DECODING_IS_L2_n,         1    )
     DECLARE_ENUM_VAL(   PSEUDO_CT_DECODING_IS_L2_mask,     FIELD_MASK32( PSEUDO_CT_DECODING_IS_L2_i, PSEUDO_CT_DECODING_IS_L2_n ) )
 END_ENUM(PSEUDO_CT_DECODING)
@@ -55,14 +55,21 @@ bool get_way_by_addr(uint32_t pseudo_CT, void* addr, int32_t* cache_way)
             ( int32_t )( *cache_way )++;
             msync();
             if(is_l1i)
+            {
                 icread((uint32_t*)(((uint32_t)addr & (XCREAD_EA_L1I_INDEX_mask | XCREAD_EA_WORD_ADDR_mask))
                         | (((*cache_way) << XCREAD_EA_L1I_WAY_i) & XCREAD_EA_L1I_WAY_mask)));
+                isync();
+                reg_xCDBTRL = spr_read(SPR_ICDBTRL);
+                reg_xCDBTRH = spr_read(SPR_ICDBTRH);
+            }
             else
+            {
                 dcread(((uint32_t*)(((uint32_t)addr & (XCREAD_EA_L1I_INDEX_mask | XCREAD_EA_WORD_ADDR_mask))
                         | (((*cache_way) << XCREAD_EA_L1I_WAY_i) & XCREAD_EA_L1I_WAY_mask))));
-            isync();
-            reg_xCDBTRL = spr_read(SPR_DCDBTRL);
-            reg_xCDBTRH = spr_read(SPR_DCDBTRH);
+                isync();
+                reg_xCDBTRL = spr_read(SPR_DCDBTRL);
+                reg_xCDBTRH = spr_read(SPR_DCDBTRH);
+            }
             tag_valid = (reg_xCDBTRH & XCDBTRH_VALID_mask);
             rumboot_printf("\nget_way_by_addr, CT == %d, %s\ncache_way == %d\naddr == 0x%x\nicread (0x%x)\nxCDBTRH == 0x%x\nxCDBTRL == 0x%x\nvalid == %d\n",
                     CT,
@@ -132,11 +139,12 @@ uint32_t test_ici()
 {
     uint32_t    result = 0;
     int32_t     cache_way;
-    bool        found_in_cache;
+    bool        found_in_L2;
+    bool        found_in_L1;
     rumboot_printf("test_ici start\n");
     for(uint32_t CT = 0; CT < 3; CT += 2)
     {
-        rumboot_printf("cached for CT == %d\n", CT);
+        rumboot_printf("caching for CT == %d\n", CT);
         for(uint32_t i = 0; i < L2C_COUNT_WAYS; ++i)
         {
             test_function_buf[i]();
@@ -150,38 +158,111 @@ uint32_t test_ici()
                     &cache_way
                     ))
             {
-                rumboot_printf("ERROR!!! Did not find any valid cache entry for address 0x%x\n", test_function_buf[i]);
+                rumboot_printf("test_ici ERROR!!! Did not find any valid cache entry for address 0x%x\n", test_function_buf[i]);
                 result |= 1;
             }
         }
         msync();
         if(CT & PSEUDO_CT_DECODING_IS_L2_mask)
+        {
+            isync();
             ici(2);
-        else
+            isync();
+            msync();
+        }
+        if(!(CT & PSEUDO_CT_DECODING_IS_L2_mask))
+        {
+            isync();
             ici(0);
-        isync();
+            isync();
+            msync();
+        }
         for(uint32_t i = 0; i < L2C_COUNT_WAYS; ++i)
         {
-            found_in_cache = get_way_by_addr(
-                    PSEUDO_CT_DECODING_IS_L1I_mask | CT,
+            found_in_L1 = get_way_by_addr(
+                    PSEUDO_CT_DECODING_IS_L1I_mask ,
                     test_function_buf[i],
                     &cache_way
                     );
-            if(found_in_cache
-                && (!(CT & PSEUDO_CT_DECODING_IS_L2_mask)))
+            found_in_L2 = get_way_by_addr(
+                    PSEUDO_CT_DECODING_IS_L1I_mask | PSEUDO_CT_DECODING_IS_L2_mask,
+                    test_function_buf[i],
+                    &cache_way
+                    );
+
+            if(!((found_in_L2 && found_in_L1 && CT) || (found_in_L2 && (!found_in_L1) && (!CT))))
             {
-                rumboot_printf("ERROR!!! Found a valid cache entry for address 0x%x after ici(0)\n", test_function_buf[i]);
-                result |= 1;
-            }
-            if((!found_in_cache)
-                && ((CT & PSEUDO_CT_DECODING_IS_L2_mask)))
-            {
-                rumboot_printf("ERROR!!! Did not find any valid cache entry for address 0x%x after ici(2)\n", test_function_buf[i]);
+                rumboot_printf("test_ici ERROR!!! i == %d: found in L2C: %s, found in L1C: %s, CT == %d\n", i,
+                        (found_in_L2)?"yes":"no",
+                        (found_in_L1)?"yes":"no",
+                        CT);
                 result |= 1;
             }
         }
     }
-    rumboot_printf("test_ici finish\n");
+    rumboot_printf("test_ici finished: %s\n",(result)?"FAIL":"OK");
+    return result;
+}
+uint32_t test_dci()
+{
+    uint32_t    result = 0;
+    int32_t     cache_way;
+    bool        found_in_L2;
+    bool        found_in_L1;
+    uint32_t    first_word;
+    rumboot_printf("test_dci start\n");
+    for(uint32_t CT = 0; CT < 3; CT += 2)
+    {
+        rumboot_printf("caching for CT == %d\nnext are coming first words from data areas, all equal.\n", CT);
+        for(uint32_t i = 0; i < L2C_COUNT_WAYS; ++i)
+        {
+            first_word = ioread32((uint32_t)test_function_buf[i]);
+            rumboot_puthex(first_word);
+        }
+        rumboot_printf("checking, that all is cached\n", CT);
+        for(uint32_t i = 0; i < L2C_COUNT_WAYS; ++i)
+        {
+            if(!get_way_by_addr(
+                    PSEUDO_CT_DECODING_IS_L1I_mask | CT,
+                    test_function_buf[i],
+                    &cache_way
+                    ))
+            {
+                rumboot_printf("test_dci: ERROR!!! Did not find any valid cache entry for address 0x%x\n", test_function_buf[i]);
+                result |= 1;
+            }
+        }
+        msync();
+        if(CT & PSEUDO_CT_DECODING_IS_L2_mask)
+            dci(2);
+        else
+            dci(0);
+        isync();
+        msync();
+        for(uint32_t i = 0; i < L2C_COUNT_WAYS; ++i)
+        {
+            found_in_L1 = get_way_by_addr(
+                    PSEUDO_CT_DECODING_IS_L1I_mask ,
+                    test_function_buf[i],
+                    &cache_way
+                    );
+            found_in_L2 = get_way_by_addr(
+                    PSEUDO_CT_DECODING_IS_L1I_mask | PSEUDO_CT_DECODING_IS_L2_mask,
+                    test_function_buf[i],
+                    &cache_way
+                    );
+
+            if(!(((!found_in_L2) && (!found_in_L1) && CT) || (found_in_L2 && (!found_in_L1) && (!CT))))
+            {
+                rumboot_printf("test_dci: ERROR!!! i == %d: found in L2C: %s, found in L1C: %s, CT == %d\n", i,
+                        (found_in_L2)?"yes":"no",
+                        (found_in_L1)?"yes":"no",
+                        CT);
+                result |= 1;
+            }
+        }
+    }
+    rumboot_printf("test_dci finish\n");
     return result;
 }
 uint32_t test_icbi()
@@ -249,15 +330,12 @@ uint32_t test_dcblc()
     uint32_t    result = 0;
     return result;
 }
-uint32_t test_dci()
-{
-    uint32_t    result = 0;
-    return result;
-}
 /* test_icread and test_dcread separate functions are meaningless -
  * the corresponding instructions affect only L1* caches and were used quite often during the test
  */
 uint32_t (*test_cache_functions[])() = {
+        test_ici,
+        test_dci,
         test_icbi,
         test_icbt,
         test_dcba,
@@ -271,8 +349,6 @@ uint32_t (*test_cache_functions[])() = {
         test_dcbtls,
         test_dcbtstls,
         test_dcblc,
-        test_ici,
-        test_dci
 };
 /**********************************************************/
 
@@ -296,11 +372,6 @@ int main()
     emi_init(DCR_EM2_EMI_BASE);
     rumboot_memfill8_modelling((void*)SRAM0_BASE,0x1000,0,0);
 
-    write_tlb_entries(&em_tlb_entry_cache_on, 1);
-    msync();
-    isync();
-    test_event_send_test_id("test_oi10_cpu_021_cache_op");
-
 
     for(uint32_t i = 0; i < COUNT_AREAS; ++i)
     {
@@ -313,6 +384,11 @@ int main()
         rumboot_memfill8(test_function_buf[i],function_area_size,0,0);
         memcpy(test_function_buf[i], test_function, function_size);
     }
+
+    write_tlb_entries(&em_tlb_entry_cache_on, 1);
+    msync();
+    isync();
+    test_event_send_test_id("test_oi10_cpu_021_cache_op");
 
     for(uint32_t i = 0; i < sizeof(test_cache_functions)/sizeof(*test_cache_functions); ++i)
         result |= test_cache_functions[i]();
