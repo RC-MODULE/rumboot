@@ -197,10 +197,12 @@ int main()
             for(uint32_t i = 0; i < L2C_COUNT_WAYS; ++i)
             {
                 ctr_value = test_function_buf[i]();
-                if(i < L2C_COUNT_WAYS)
+                if((i != j) || (ct_field == 2))
+                {
                     icbtls(ct_field,( void* )ctr_value);
-                lwsync();
-                isync();
+                    lwsync();
+                    isync();
+                }
             }
             rumboot_printf("\n iteration %d: Cache prefilled.\n", j);
             L2C_replacement_count = 0;
@@ -222,11 +224,17 @@ int main()
 
             cache_way = 0;
             rumboot_printf("before icblc: locks == 0x%x\n", get_locks(ct_field,test_function_buf[cached_functions[cache_way]],cache_way));
-            icblc(ct_field, (test_function_buf[cached_functions[j]]));
+            icblc(ct_field, (test_function_buf[cached_functions[(j + 1)%L2C_COUNT_WAYS]]));
             lwsync();
             isync();
-            cache_way = (j+1)%4;
-            rumboot_printf("after icblc: locks == 0x%x\n", get_locks(ct_field,test_function_buf[cached_functions[cache_way]],cache_way));
+            cache_way = (j+1)%L2C_COUNT_WAYS;
+            rumboot_printf("after icblc: locks == 0x%x\nLocking way %d instead of %d.\n",
+                    get_locks(ct_field,test_function_buf[cached_functions[cache_way]],cache_way), j,
+                    (j + 1)%L2C_COUNT_WAYS);
+
+            icbtls(ct_field, (test_function_buf[cached_functions[j]]));
+            rumboot_printf("after icbtls: locks == 0x%x\n",
+                    get_locks(ct_field,test_function_buf[cached_functions[cache_way]],cache_way));
 
             ctr_value = test_function_buf[not_in_cache_function_number]();
 
@@ -237,10 +245,10 @@ int main()
                 rumboot_printf("function[%d] was cached, way == %d\n", not_in_cache_function_number, cache_way);
                 rumboot_printf("after recaching: locks == 0x%x\n", get_locks(ct_field,test_function_buf[cached_functions[cache_way]],cache_way));
     //            TEST_ASSERT((cache_way == j), "Incorrect way was replaced");
-                if(!(cache_way == j))
+                if(!(cache_way == ((j + 1)%L2C_COUNT_WAYS)))
                 {
                     rumboot_printf("ERROR! Cache way lock does not work! Expected way %d to be replaced, but actually replaced way %d.\n",j,cache_way);
-                    result |= !(cache_way == j);
+                    result |= !(cache_way == ((j + 1)%L2C_COUNT_WAYS));
                 }
             }
             else
@@ -263,5 +271,5 @@ int main()
         dci(2);
         isync();
     }
-    return result;
+    return (result >> 24) | (result >> 16) | (result >> 8) | result;
 }
