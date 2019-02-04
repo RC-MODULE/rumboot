@@ -244,8 +244,7 @@ void mpic128_timer_init(uint32_t base_address, mpic128_timer_freq frequency)
 
         case mpic128_timer_freq_SYS_TMRCLK:
         {
-            TEST_ASSERT(0, "SYS_TMRCLK not implemeted");
-            //dcr_write(base_address + MPIC128_TFR, 50*1000*1000); //50MHz;
+            dcr_write(base_address + MPIC128_TFR, (25*1000*1000)/2);//12.5MHz;
         }
         break;
 
