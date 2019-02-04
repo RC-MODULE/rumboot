@@ -28,11 +28,6 @@
 #include <platform/regs/fields/emi.h>
 #include <platform/interrupts.h>
 
-#include <devices/sp804.h>
-
-#define DEC_START_VALUE  0x1000000
-#define MPIC_START_VALUE 0x1000
-
 volatile uint32_t DEC_CONTROL_VALUE = 0;
 volatile uint32_t INT_FLAG = 0;
 
@@ -46,12 +41,26 @@ static void dec_set_value (uint32_t delay) {
 
 static void mpic_tim0_handler()
 {
+    DEC_CONTROL_VALUE = spr_read (SPR_DEC);
     rumboot_printf("Interrupt handler (MPIC Timer0)\n");
     mpic128_stop_timer(DCR_MPIC128_BASE, Mpic128Timer0);
-    DEC_CONTROL_VALUE = spr_read (SPR_DEC);
     dec_set_value (0x00);
     dec_clr_exception();
     INT_FLAG = 1;
+    msync();
+}
+
+static void exception_handler( int id, const char *name )
+{
+    switch (id)
+    {
+    case RUMBOOT_IRQ_DECREMENTER:
+        rumboot_printf("Exception handler (DEC)\n");
+        TEST_ASSERT(0, "TEST ERROR: NON EXPECTED INTERRUPT");
+        break;
+    default:
+        TEST_ASSERT(0, "TEST ERROR: NON EXPECTED INTERRUPT");
+    }
 }
 
 static void init_handlers()
@@ -65,25 +74,56 @@ static void init_handlers()
     rumboot_irq_table_activate( tbl );
     rumboot_irq_enable( MPIC128_TIMER_0 );
     rumboot_irq_sei();
+
+    rumboot_irq_set_exception_handler(exception_handler);
 }
-int main ()
+
+uint32_t get_timers_dif (uint32_t mpic_base, mpic128_timer_freq mpic_clk, mpic128_tim_num const timer_num)
 {
-    init_handlers();
+    #define DEC_START_VALUE  0x100000
+    #define MPIC_START_VALUE 0x1000
 
-    spr_write (SPR_TCR, spr_read (SPR_TCR) & ~(1 << IBM_BIT_INDEX(64, 41)) ); //autoreload disable
-
+    //reset variables
     DEC_CONTROL_VALUE = 0;
     INT_FLAG = 0;
-    mpic128_timer_init(DCR_MPIC128_BASE, mpic128_timer_freq_SYS_CLK);
-    //mpic128_timer_init(DCR_MPIC128_BASE, mpic128_timer_freq_SYS_TMRCLK);
-    dec_clr_exception();
 
-    mpic128_start_timer(DCR_MPIC128_BASE, Mpic128Timer0, MPIC_START_VALUE);
+    //config timers
+    //DEC
+    spr_write (SPR_TCR, spr_read (SPR_TCR) & ~(1 << IBM_BIT_INDEX(64, 41)) ); //autoreload disable
+    dec_set_value (0x00);
+    dec_clr_exception();
+    //MPIC
+    mpic128_timer_init(mpic_base, mpic_clk);
+
+    //start timers
+    msync();
+    mpic128_start_timer(mpic_base, timer_num, MPIC_START_VALUE);
     dec_set_value (DEC_START_VALUE);
 
+    //wait interrupt
     while (INT_FLAG == 0) msync();
-    rumboot_printf("DEC VALUE = %x\nDIFF = %x\n", DEC_CONTROL_VALUE, (DEC_START_VALUE - DEC_CONTROL_VALUE));
 
-    rumboot_printf ("TEST OK\n");
+    return (DEC_START_VALUE - DEC_CONTROL_VALUE);
+}
+
+int main ()
+{
+    test_event_send_test_id("test_oi10_cpu_034");
+
+    rumboot_printf("Init handlers\n\n");
+    init_handlers();
+
+    rumboot_printf("SOURCE = SYS_CLK (20 MHz)\n");
+    uint32_t DIF_SYS_CLK = get_timers_dif(DCR_MPIC128_BASE, mpic128_timer_freq_SYS_CLK, Mpic128Timer0);
+    rumboot_printf("Counts = %x\n\n", DIF_SYS_CLK);
+
+    rumboot_printf("SOURCE = SYS_TMRCLK (12.5 MHz)\n");
+    uint32_t DIF_TMR_CLK = get_timers_dif(DCR_MPIC128_BASE, mpic128_timer_freq_SYS_TMRCLK, Mpic128Timer0);
+    rumboot_printf("Counts = %x\n\n", DIF_TMR_CLK);
+
+    rumboot_printf("Compare...\n");
+    TEST_ASSERT( (DIF_SYS_CLK * 2) < DIF_TMR_CLK,"TEST ERROR");
+
+    rumboot_printf ("TEST OK\n\n");
     return 0;
 }
