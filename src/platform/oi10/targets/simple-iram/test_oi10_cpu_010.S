@@ -130,11 +130,13 @@ plb4arb_1_loop_0:
     TEST_ASSERT(eq,cr7,"Value mismatch: PLB4ARB8M_1_PESR (running 0)")
     mtdcrx      r14,    r21         /* set all bits of PESR */
     cmpw cr0,   r19,    r18
-    beq- cr0,   check_cpu_ppc_plb4arb_2_2
+    /* PLB4ARB_2 was disabled */
+    /* beq- cr0,   check_cpu_ppc_plb4arb_2_2 */
+    beq- cr0,   plb4arb_end
     slw         r18,    r18,    r17
     b           plb4arb_1_loop_0
 
-
+#if 0
 check_cpu_ppc_plb4arb_2_2:
     rumboot_putstring   "Check reset values PLB4ARB8_2...\n"
     check_value CVR3,   P4A8M2(PREV   ), PREV_2_RESET_VAL,  "PLB4ARB8M_2_PREV"
@@ -185,11 +187,12 @@ plb4arb_2_loop_0:
     TEST_ASSERT(eq,cr7,"Value mismatch: PLB4ARB8M_2_PESR (running 0)")
     mtdcrx      r14,    r21         /* set all bits of PESR */
     cmpw cr0,   r19,    r18
-    beq- cr0,   plb4arb_2_end
+    beq- cr0,   plb4arb_end
     slw         r18,    r18,    r17
     b           plb4arb_2_loop_0
+#endif
 
-plb4arb_2_end:
+plb4arb_end:
     rumboot_putstring   "done.\n"
     bne- cr6,   test_error
 
