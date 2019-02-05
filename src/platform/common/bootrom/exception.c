@@ -9,6 +9,10 @@
 #include <rumboot/boot.h>
 #include <rumboot/irq.h>
 
+#ifdef RUMBOOT_NATIVE
+#include <signal.h>
+#endif
+
 int main()
 {
         rumboot_irq_set_exception_handler(rumboot_arch_exception);
