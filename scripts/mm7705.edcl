@@ -1,0 +1,46 @@
+package.path="../lib/?.lua;"..package.path
+fw = require("fw");
+print(edcl_init())
+
+--edcl_upload(0x40000, "hello-world.img")
+edcl_upload(0x40000, "rumboot-mm7705-PostProduction-test-lscb_dump.bin")
+
+os.exit(1)
+
+--[[
+edcl_write(4, 0x3C051000, 0x11111111)
+edcl_write(4, 0x3C051004, 0x22222222)
+edcl_write(4, 0x3C051008, 0x33333333)
+edcl_write(4, 0x3C05100c, 0x44444444)
+edcl_write(4, 0x3C051000, 0x11111111)
+print(string.format("%x", edcl_read(4, 0x3C051000)))
+print(string.format("%x", edcl_read(4, 0x3C051004)))
+print(string.format("%x", edcl_read(4, 0x3C051008)))
+print(string.format("%x", edcl_read(4, 0x3C05100c)))
+]]--
+
+edcl_download(0x3C051000, 'dump_before.bin', 0x1000)
+edcl_write(4, 0x3C051004, 0x22222222)
+edcl_write(4, 0x3C051008, 0x33333333)
+edcl_write(4, 0x3C05100c, 0x44444444)
+edcl_write(4, 0x3C051000, 0x11111111)
+edcl_download(0x3C051000, 'dump_after.bin', 0x1000)
+
+--[[
+print(string.format("%x", edcl_read(4, 0x3C050000)))
+print(string.format("%x", edcl_read(4, 0x3C050000)))
+edcl_write(4, 0x3C050000, 0x80000000)
+print(string.format("%x", edcl_read(4, 0x3C050000)))
+print(string.format("%x", edcl_read(4, 0x3C050000)))
+
+
+edcl_write(4, 0x3C050000, 0xc000ffff)
+print(string.format("%x", edcl_read(4, 0x3C050000)))
+print(string.format("%x", edcl_read(4, 0x3C050000)))
+
+
+edcl_write(4, 0x3C050000, 0x80000000)
+print(string.format("%x", edcl_read(4, 0x3C050000)))
+print(string.format("%x", edcl_read(4, 0x3C050000)))
+
+]]--
