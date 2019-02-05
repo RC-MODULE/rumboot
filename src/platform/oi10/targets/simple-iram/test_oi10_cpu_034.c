@@ -113,7 +113,7 @@ int main ()
     rumboot_printf("Init handlers\n\n");
     init_handlers();
 
-    rumboot_printf("SOURCE = SYS_CLK (20 MHz)\n");
+    rumboot_printf("SOURCE = SYS_CLK (25 MHz)\n");
     uint32_t DIF_SYS_CLK = get_timers_dif(DCR_MPIC128_BASE, mpic128_timer_freq_SYS_CLK, Mpic128Timer0);
     rumboot_printf("Counts = %x\n\n", DIF_SYS_CLK);
 
