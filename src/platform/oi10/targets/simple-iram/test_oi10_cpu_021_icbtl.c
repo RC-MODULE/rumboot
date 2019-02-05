@@ -171,8 +171,10 @@ int main()
             if(j < L2C_COUNT_WAYS)
                 TEST_ASSERT((not_in_cache_function_number == (j%4)), "Unexpected number of replaced function.");
 
+            msync();
             ici(0);
             dci(2);
+            msync();
             isync();
 
             rumboot_printf("Let's lock one more function in cache.\n");
@@ -191,8 +193,10 @@ int main()
         rumboot_printf("Secondary function calling: with locking\n");
         for(int32_t j = L2C_COUNT_WAYS - 1; j >= 0; --j)
         {
+            msync();
             ici(0);
             dci(2);
+            msync();
             isync();
             for(uint32_t i = 0; i < L2C_COUNT_WAYS; ++i)
             {
@@ -247,14 +251,14 @@ int main()
     //            TEST_ASSERT((cache_way == j), "Incorrect way was replaced");
                 if(!(cache_way == ((j + 1)%L2C_COUNT_WAYS)))
                 {
-                    rumboot_printf("ERROR! Cache way lock does not work! Expected way %d to be replaced, but actually replaced way %d.\n",j,cache_way);
+                    rumboot_printf("ERROR!!! Cache way lock does not work! Expected way %d to be replaced, but actually replaced way %d.\n",j,cache_way);
                     result |= !(cache_way == ((j + 1)%L2C_COUNT_WAYS));
                 }
             }
             else
             {
-                rumboot_printf("Didn't find the function[%d] at 0x%x on the expected cache way == %d\n", not_in_cache_function_number, (uint32_t)test_function_buf[not_in_cache_function_number], j);
-                ++result;
+                rumboot_printf("ERROR!!! Didn't find the function[%d] at 0x%x on the expected cache way == %d\n", not_in_cache_function_number, (uint32_t)test_function_buf[not_in_cache_function_number], j);
+                result |= 1;
             }
         }
         for(uint32_t i = 0; i < L2C_COUNT_WAYS; ++i)
@@ -267,8 +271,10 @@ int main()
         locks = get_locks(ct_field,test_function_buf[cached_functions[cache_way]],cache_way);
         rumboot_printf("after all: locks == 0x%x\n", locks);
         TEST_ASSERT((locks == 0), "After icblc on all ways all locks must be zeros!!!");
+        msync();
         ici(0);
         dci(2);
+        msync();
         isync();
     }
     return (result >> 24) | (result >> 16) | (result >> 8) | result;
