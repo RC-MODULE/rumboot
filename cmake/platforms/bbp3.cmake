@@ -76,6 +76,8 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       IRAM_SPL ROM
       -a 512 -z 512)
 
+    rumboot_bootrom_add_common_units(IRAM_SPL ROM)
+    
     rumboot_bootrom_unit_test(
         ID 0
         CONFIGURATION ROM
@@ -135,8 +137,8 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         NAME "spi"
         IRUN_FLAGS ${ROM_115200_OPTS}
         LOAD
-          SPI0_CONF spl-fail,spl-fail
-          NOR_IMAGE spl-ok
+          SPI0_CONF spl-ok,spl-fail
+          NOR_IMAGE spl-fail
           HOSTMOCK  spl-fail
     )
 
@@ -153,8 +155,8 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         NAME "nmc-spi"
         IRUN_FLAGS ${ROM_115200_OPTS} +BOOT_NMC=1 +BOOT_EMI_BIS=1
         LOAD
-          SPI0_CONF spl-fail,spl-fail
-          NOR_IMAGE spl-ok
+          SPI0_CONF spl-ok,spl-fail
+          NOR_IMAGE spl-fail
           HOSTMOCK  spl-fail
     )
 
@@ -166,7 +168,6 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
           NOR_IMAGE spl-fail
           HOSTMOCK  spl-ok
     )
-
 
     if (NOT RUMBOOT_BUILD_TYPE STREQUAL "Debug")
         rumboot_bootrom_integration_test(ROM
@@ -190,9 +191,6 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
               NOR_IMAGE spl-fail-bad-magic
         )
     endif()
-
-
-
 
     add_rumboot_target(
         CONFIGURATION ROM

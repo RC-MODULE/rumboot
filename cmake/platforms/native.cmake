@@ -64,7 +64,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
 
   rumboot_bootrom_add_components(NATIVE_SPL NATIVE)
-
+  rumboot_bootrom_add_common_units(NATIVE_SPL NATIVE)
   add_rumboot_target(
       NAME fileboot
       CONFIGURATION NATIVE

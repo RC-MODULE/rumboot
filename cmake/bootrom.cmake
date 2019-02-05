@@ -1,3 +1,56 @@
+
+macro(rumboot_bootrom_add_common_units spl_conf romconf)
+  if (RUMBOOT_ARCH STREQUAL "ppc")
+   add_rumboot_target(
+     FILES common/bootrom/ppc-pid-test.c
+     NAME pid-test
+     CONFIGURATION ${spl_conf}
+     FEATURES STUB PACKIMAGE
+     VARIABLE SPL_PID_TEST
+   )
+  endif()
+
+  if (NOT RUMBOOT_PLATFORM STREQUAL "native")
+   add_rumboot_target(
+     FILES common/bootrom/timer.c
+     NAME timer
+     PREFIX bootrom-unit
+     CONFIGURATION ${romconf}
+   )
+  endif()
+
+  if (RUMBOOT_BUILD_TYPE STREQUAL "Production")
+    add_rumboot_target(
+      NAME "unit-serial-test"
+      CONFIGURATION ${BOOTSOURCE_CONFIGURATION}
+      PREFIX "bootrom"
+      FILES common/bootrom/serial.c
+      TESTGROUP bootrom bootrom-unit
+      IRUN_FLAGS ${BOOTSOURCE_IRUN_FLAGS} +uart_easter_egg
+    )
+  endif()
+
+  if (NOT RUMBOOT_NO_SELFTEST)
+   add_rumboot_target(
+      NAME "unit-selftest"
+      CONFIGURATION ${BOOTSOURCE_CONFIGURATION}
+      PREFIX "bootrom"
+      FILES common/bootrom/selftest.c
+      TESTGROUP bootrom bootrom-unit
+      IRUN_FLAGS ${BOOTSOURCE_IRUN_FLAGS}
+   )
+  endif()
+
+  add_rumboot_target(
+    NAME "unit-exception"
+    CONFIGURATION ${BOOTSOURCE_CONFIGURATION}
+    PREFIX "bootrom"
+    FILES common/bootrom/exception.c
+    TESTGROUP bootrom bootrom-unit
+    IRUN_FLAGS ${BOOTSOURCE_IRUN_FLAGS} +exception_check
+  )
+endmacro()
+
 macro(rumboot_bootrom_add_components spl_conf romconf)
   add_rumboot_target(
       PREFIX "bootrom"
@@ -137,26 +190,10 @@ macro(rumboot_bootrom_add_components spl_conf romconf)
      VARIABLE SPL_OK_BAD_REV
    )
 
-  if (RUMBOOT_ARCH STREQUAL "ppc")
-   add_rumboot_target(
-     FILES common/bootrom/ppc-pid-test.c
-     NAME pid-test
-     CONFIGURATION ${spl_conf}
-     FEATURES STUB PACKIMAGE
-     VARIABLE SPL_PID_TEST
-   )
- endif()
-
-  if (NOT RUMBOOT_PLATFORM STREQUAL "native")
-   add_rumboot_target(
-     FILES common/bootrom/timer.c
-     NAME timer
-     PREFIX bootrom-unit
-     CONFIGURATION ${romconf}
-   )
-  endif()
+   rumboot_bootrom_add_common_units(${spl_conf} ${romconf})
 
 endmacro()
+
 
 macro(rumboot_bootrom_unit_test)
   set(options DEFAULT)
@@ -255,37 +292,6 @@ macro(rumboot_bootrom_unit_test)
             LOAD ${BOOTSOURCE_MEMTAG} ${_commas}spl-fail-bad-header-crc
           )
 
-          #TODO: This should have it's own section
-          if (RUMBOOT_BUILD_TYPE STREQUAL "Production")
-            add_rumboot_target(
-              NAME "unit-serial-test"
-              CONFIGURATION ${BOOTSOURCE_CONFIGURATION}
-              PREFIX "bootrom"
-              FILES common/bootrom/serial.c
-              TESTGROUP bootrom bootrom-unit
-              IRUN_FLAGS ${BOOTSOURCE_IRUN_FLAGS} +uart_easter_egg
-            )
-          endif()
-
-        if (NOT RUMBOOT_NO_SELFTEST)
-          add_rumboot_target(
-            NAME "unit-selftest"
-            CONFIGURATION ${BOOTSOURCE_CONFIGURATION}
-            PREFIX "bootrom"
-            FILES common/bootrom/selftest.c
-            TESTGROUP bootrom bootrom-unit
-            IRUN_FLAGS ${BOOTSOURCE_IRUN_FLAGS}
-          )
-        endif()
-
-          add_rumboot_target(
-            NAME "unit-exception"
-            CONFIGURATION ${BOOTSOURCE_CONFIGURATION}
-            PREFIX "bootrom"
-            FILES common/bootrom/exception.c
-            TESTGROUP bootrom bootrom-unit
-            IRUN_FLAGS ${BOOTSOURCE_IRUN_FLAGS} +exception_check
-          )
 
   endif()
 
