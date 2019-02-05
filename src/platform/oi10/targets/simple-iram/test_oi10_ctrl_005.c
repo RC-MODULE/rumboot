@@ -19,9 +19,6 @@
 #include <rumboot/platform.h>
 
 #define TIMER_CYCLES 5
-#define TIMEOUT     60
-static volatile uint32_t IRQ;
-
 #ifdef CHECK_REGS
 static uint32_t check_watchdog_default_ro_val(uint32_t base_addr)
 {
@@ -87,22 +84,6 @@ struct s805_instance {
     uint32_t base_addr;
 };
 
-static uint32_t check_wd_irq(void)
-{
-    uint32_t t;
-
-    for(t = 0; t <= TIMEOUT; t++)
-    {
-        if(IRQ)
-        {
-            IRQ = 0;
-            return 0;
-        }
-    }
-    rumboot_printf( "Error! IRQ flag wait timeout! \n" );
-    return 1;
-}
-
 static void handler0(int irq, void *arg)
 {
     struct s805_instance *a = (struct s805_instance *) arg;
@@ -110,7 +91,6 @@ static void handler0(int irq, void *arg)
     a->wd_irq = a->wd_irq+1;
     rumboot_printf("sp805 watchdog INT # %d  \n", a->wd_irq);
     sp805_clrint(a->base_addr);
-    IRQ=1;
 }
 
 static bool wd_test( uint32_t structure )
@@ -118,7 +98,6 @@ static bool wd_test( uint32_t structure )
     int c;
     struct s805_instance *stru = (struct s805_instance *)structure;
     uint32_t base_addr = stru->base_addr;
-    stru->wd_irq = 0;
     struct sp805_conf config_FREE_RUN =
     {
            .mode = FREERUN,
@@ -127,36 +106,26 @@ static bool wd_test( uint32_t structure )
            .width = 32,
            .load = 100,
     };
-    dcr_write(base_addr + WD_REG_ITCR, 0b1);
-    //check for int
-    if(check_wd_irq())
+    //dcr_write(base_addr + WD_REG_ITCR, 0b1);
+    for(int i = 0; i < TIMER_CYCLES; i++)
     {
-        rumboot_printf("IRQ ok\n");
-        for(int i = 0; i < TIMER_CYCLES; i++)
-        {
-            rumboot_printf("Integration normal mode enabled %d: OK\n", i);
-            sp805_config(base_addr, &config_FREE_RUN);
-            sp805_enable(base_addr);
-            while(sp805_get_value(base_addr))
-            {};
-            c++;
-            stru->wd_irq++;
-        }
-        if(stru->wd_irq)
-        {
-            rumboot_printf("Watchdog test OK\n");
-            rumboot_printf("Counted interrupts is: %d\n", stru->wd_irq);
-        }
-        else
-        {
-            rumboot_printf("ERROR in Watchdog test\n");
-            rumboot_printf("Interrupts came == %d, should be %d \n", stru->wd_irq, TIMER_CYCLES);
-            return false;
-        }
+        rumboot_printf("Integration normal mode enabled %d: OK\n", i);
+        sp805_config(base_addr, &config_FREE_RUN);
+        sp805_enable(base_addr);
+        while(sp805_get_value(base_addr))
+        {};
+        c++;
+        stru->wd_irq++;
+    }
+    if(stru->wd_irq == TIMER_CYCLES)
+    {
+        rumboot_printf("Watchdog test OK\n");
+        rumboot_printf("Counted interrupts is: %d\n", stru->wd_irq);
     }
     else
     {
-        rumboot_printf("IRQ timeout is gone\n");
+        rumboot_printf("ERROR in Watchdog test\n");
+        rumboot_printf("Interrupts came == %d, should be %d \n", stru->wd_irq, TIMER_CYCLES);
         return false;
     }
     return true;
@@ -167,36 +136,26 @@ static bool wd_test2(uint32_t structure)
     struct s805_instance *stru = (struct s805_instance *)structure;
     uint32_t base_addr = stru->base_addr;
     int i, d; d = 0;
-    stru->wd_irq = 0;
-
     dcr_write(base_addr + WD_REG_ITCR, 0b1);
-    if(check_wd_irq())
+    for(i = 0; i < TIMER_CYCLES; i++)
     {
-        rumboot_printf("IRQ ok\n");
-
-        for(i = 0; i < TIMER_CYCLES; i++)
-        {
-            rumboot_printf("Integration test mode enabled %d: OK\n", i);
-            while(sp805_get_value(base_addr))
-            {};d++;
-            stru->wd_irq++;
-        }
-
-        if(dcr_read(base_addr + WD_REG_ITCR))
-        {
-            rumboot_printf("Watchdog test OK \n");
-            rumboot_printf("WD_REG_ITOP is: %d\n", dcr_read(base_addr + WD_REG_ITOP));
-            rumboot_printf("Counted interrupts is: %d\n", stru->wd_irq);
-        }
-        else
-        {
-            rumboot_printf("ERROR in Watchdog test \n");
-            rumboot_printf("WD_REG_ITOR is: %d\n", dcr_read(base_addr + WD_REG_ITOP));
-            rumboot_printf("Interrupts came == %d, should be %d \n", stru->wd_irq, TIMER_CYCLES);
-            return false;
-        }
-    }
-
+        rumboot_printf("Integration test mode enabled %d: OK\n", i);
+        while(sp805_get_value(base_addr))
+        {};d++;
+     }
+     if(dcr_read(base_addr + WD_REG_ITCR))
+     {
+         rumboot_printf("Watchdog test OK \n");
+         rumboot_printf("WD_REG_ITOP is: %d\n", dcr_read(base_addr + WD_REG_ITOP));
+         rumboot_printf("Counted interrupts is: %d\n", stru->wd_irq);
+     }
+     else
+     {
+         rumboot_printf("ERROR in Watchdog test \n");
+         rumboot_printf("WD_REG_ITOR is: %d\n", dcr_read(base_addr + WD_REG_ITOP));
+         rumboot_printf("Interrupts came == %d, should be %d \n", stru->wd_irq, TIMER_CYCLES);
+         return false;
+     }
     return true;
 }
 
