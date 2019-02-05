@@ -262,15 +262,15 @@ bool check_data_ecc(uint32_t indx)
         rumboot_printf("ERROR: reading (data) via L2ARRACC*\n");
         return false;
     }
-    exp_ecc = l2c_l2_read( DCR_L2C_BASE, L2C_L2ARRACCDO2 );
+    ecc_err = l2c_l2_read( DCR_L2C_BASE, L2C_L2ARRACCDO2 );
     rumboot_printf("Read raw data: 0x%x_%x\n",(uint32_t)(data_err >>32),(uint32_t)(data_err & 0xFFFFFFFF));
     rumboot_printf("Read ECC: 0x%x\n",ecc_err);
-    if(exp_data == data_err)
+    if(exp_data != data_err)
     {
         rumboot_printf("ERROR: data mismatch!\n");
         return false;
     }
-    if(exp_ecc == exp_ecc)
+    if(exp_ecc != ecc_err)
     {
         rumboot_printf("ERROR: ECC mismatch!\n");
         return false;
@@ -467,12 +467,12 @@ bool check_tag_ecc(uint32_t indx)
     ecc_err = l2c_l2_read( DCR_L2C_BASE, L2C_L2ARRACCDO2 ) >> 1;
     rumboot_printf("Read raw state & tag: 0x%x\n",state_tag_err);
     rumboot_printf("Read ECC: 0x%x\n",ecc_err);
-    if(exp_state_tag == state_tag_err)
+    if(exp_state_tag != state_tag_err)
     {
         rumboot_printf("ERROR: state & tag mismatch!\n");
         return false;
     }
-    if(exp_ecc == exp_ecc)
+    if(exp_ecc != ecc_err)
     {
         rumboot_printf("ERROR: ECC mismatch!\n");
         return false;
