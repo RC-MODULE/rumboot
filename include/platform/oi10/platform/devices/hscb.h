@@ -196,8 +196,7 @@ typedef struct{
  * transaction_id:              RMAP transaction unique identifier
  * ext_addr:                    extended physical address in the current system
  * addr:                        lower 32 bits of physical address in the current system
- * length:                      data length in bytes
- * data_crc:                    pointer to Data CRC
+ * data_chain:                  data chain; use only its length field for Read transactions
  * change_endian:               swap_bytes within a 32bit word
  */
 typedef struct{
@@ -210,10 +209,9 @@ typedef struct{
     uint16_t                        transaction_id;
     uint8_t                         ext_addr;
     uint32_t                        addr;
-    uint32_t                        length;
     hscb_uint8_array_with_length_t  data_chain;
-    uint8_t*                        data_crc;
     bool                            change_endian;
+    uint32_t                        expected_reply_status;
 }hscb_rmap_packet_raw_configuration_t;
 
 /**
@@ -249,10 +247,25 @@ void hscb_convert_to_bytes (uint32_t* data_in, uint8_t* data_out, uint32_t len);
 
 /**
  * \brief Set descriptor in memory
- * \param[in] sys_addr address in memory for placing descriptor
- * \param[in] pointer on read data descriptor
+ * \param[in] sys_addr      address in memory for placing descriptor
+ * \param[in] src_data_addr address of data for using in descriptor
+ * \param[in] len           length of data for using in descriptor
  */
 void hscb_set_single_descr_in_mem(uint32_t sys_addr, uint32_t src_data_addr, uint32_t len);
+
+/**
+ * \brief Set an empty descriptor in memory
+ * \param[in] sys_addr      address in memory for placing descriptor
+ * \param[in] change_endian flag if we need to swap bytes before writing them to memory
+ */
+void hscb_set_empty_descr_in_mem(uint32_t sys_addr, bool change_endian);
+
+/**
+ * \brief Set a single unpacked descriptor in memory
+ * \param[in] descr         HSCB descriptor as an unpacked structure
+ * \param[in] sys_addr      address in memory for placing descriptor
+ */
+void hscb_set_descr_in_mem(hscb_descr_struct_t descr, uint32_t sys_addr);
 
 /**
  * \brief Get descriptor from memory
@@ -312,7 +325,34 @@ void hscb_run_wdma(uint32_t base_addr);
 void hscb_set_max_speed(uint32_t base_addr);
 void hscb_enable(uint32_t base_addr);
 void hscb_config_for_receive_and_transmit(hscb_instance_t* hscb_inst);
-
+uint8_t hscb_rmap_get_reply_byte(   hscb_uint8_array_with_length_t  rmap_reply,
+                                    uint32_t                        start_index,
+                                    hscb_rmap_reply_packet_fields_t required_field);
+uint32_t hscb_rmap_get_reply_addr_actual_length(hscb_uint8_array_with_length_t reply_addr);
+uint32_t hscb_rmap_reply_calculate_length(  hscb_uint8_array_with_length_t  rmap_reply,
+                                            uint32_t                        reply_addr_chain_length);
+uint8_t hscb_rmap_get_reply_byte(   hscb_uint8_array_with_length_t  rmap_reply,
+                                    uint32_t                        start_index,
+                                    hscb_rmap_reply_packet_fields_t required_field);
+uint32_t hscb_rmap_reply_get_data_len(   hscb_uint8_array_with_length_t  rmap_reply,
+                                                uint32_t                        start_index);
+uint8_t hscb_rmap_make_reply_instruction(uint8_t instruction);
+/*
+  Name  : CRC-8
+  Poly  : 0x07    x^8 + x^2 + x^1 + x^0
+  Init  : 0x00
+  Revert: false
+  XorOut: 0x00
+  Check : 0xF7 ("123456789")
+*/
+uint8_t hscb_crc8(uint8_t prev_crc, uint8_t byte);
+uint8_t hscb_calculate_crc8( uint32_t start_addr, uint32_t length);
+/**
+ * The first parameter contains fields for filling an RMAP packet,
+ * the second one contains preallocated memory areas for fixed length fields and pointers to be set
+ * with start addresses of variable length chains to be transmitted and
+ * preallocated memory areas for descriptors
+ */
 uint32_t hscb_prepare_rmap_packet(hscb_rmap_packet_raw_configuration_t rmap_packet_raw,
         hscb_rmap_packet_ready_for_transmit_t* rmap_packet_ready);
 
