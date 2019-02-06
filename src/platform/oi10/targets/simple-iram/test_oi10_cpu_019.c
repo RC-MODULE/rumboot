@@ -16,14 +16,13 @@
 #include <platform/test_event_codes.h>
 #include <platform/interrupts.h>
 
-#include <arch/ppc_476fp_config.h>
-#include <arch/ppc_476fp_lib_c.h>
-
+#include <platform/arch/ppc/ppc_476fp_mmu.h>
 #include <platform/arch/ppc/ppc_476fp_itrpt_fields.h>
 #include <platform/arch/ppc/ppc_476fp_ctrl_fields.h>
 
 #include <platform/devices.h>
 #include <platform/devices/l2c.h>
+#include <platform/devices/dma2plb6.h>
 
 #include <platform/regs/regs_dcrarb.h>
 #include <platform/regs/regs_plb6plb4.h>
@@ -62,6 +61,7 @@
 #define PMULCx_RESET                0x00000000
 #define CMODE_INDEPENDENT           0
 #define CMODE_CHAINED               1
+#define DMA2PLB6_TRANSFER_UNITS     8
 
 
 /* Other macros */
@@ -70,7 +70,7 @@
 #define _GET_UPTIME                 rumboot_platform_get_uptime
 #define RESULT_TPL                  "TEST %s!\n"
 #define EVENT_CLR_EXT_INT           EVENT_CLEAR_EXT_INT
-#define END_GENINT_ENTRY            {NULL,NULL,0,NULL}
+#define GENINT_ENTRY_END            {NULL,NULL,0,NULL}
 
 /* Utility and function macros */
 #define CAST_ADDR(VAL)              ((void*)    (VAL))
@@ -128,12 +128,7 @@ struct genint_entry_t
     int       irqn;
     char     *name;
 };
-struct datacell32_t
-{
-    uint32_t addr, data;
-};
 typedef enum     tesr_bits_t        tesr_bits_t;
-typedef struct   datacell32_t       datacell32_t;
 typedef struct   genint_entry_t     genint_entry_t;
 typedef struct   rumboot_irq_entry  rumboot_irq_entry;
 typedef volatile uint32_t           irq_flags_t;
@@ -141,11 +136,10 @@ typedef volatile uint32_t           irq_flags_t;
 /* Global vars */
 static irq_flags_t        IRQ[IRQ_ARR_SZ];
 static irq_flags_t        ext_int_raised    = 0;
-static volatile
-MAY_BE_NOT_USED
-       datacell32_t      *g_pdatacell       = NULL;
 static rumboot_irq_entry *irq_table         = NULL;
 static volatile void     *g_ptr             = NULL;
+static volatile uint32_t  dma2plb6_src[DMA2PLB6_TRANSFER_UNITS] = {0};
+static volatile uint32_t  dma2plb6_dst[DMA2PLB6_TRANSFER_UNITS] = {0};
 
 
 //--------------------------------------------------------
@@ -267,16 +261,22 @@ void irq_handler( int irq_num, void *arg )
             pmu_reset_all_counters();
             break;
         case DMA2PLB6_DMA_IRQ_0:        /*  3 */
+            dma2plb6_clear_interrupt(DCR_DMAPLB6_BASE, channel0);
             break;
         case DMA2PLB6_DMA_IRQ_1:        /*  4 */
+            dma2plb6_clear_interrupt(DCR_DMAPLB6_BASE, channel1);
             break;
         case DMA2PLB6_DMA_IRQ_2:        /*  5 */
+            dma2plb6_clear_interrupt(DCR_DMAPLB6_BASE, channel2);
             break;
         case DMA2PLB6_DMA_IRQ_3:        /*  6 */
+            dma2plb6_clear_interrupt(DCR_DMAPLB6_BASE, channel3);
             break;
         case DMA2PLB6_SLV_ERR_INT:      /*  7 */
+            test_event(EVENT_CLEAR_SLVERR_INT_0);
             break;
         case O_SYSTEM_HUNG:             /*  8 */
+            test_event(EVENT_CLEAR_SYSTEM_HANG);
             break;
         case PLB6PLB40_O_0_BR6TO4_INTR: /*  9 */
             dcr_write(DCR_PLB6PLB4_0_BASE + TESR, 0x00000000);
@@ -345,6 +345,29 @@ void genint__pmu(void *data)
     pmu_freeze_all_counters(NO);
 }
 
+void genint__dma2plb6(void *data)
+{
+    static
+    dma2plb6_setup_info dma_info =
+    {
+        .base_addr              = DCR_DMAPLB6_BASE,
+        .priority               = priority_medium_low,
+        .striding_info.striding = striding_none,
+        .tc_int_enable          = YES,
+        .err_int_enable         = NO,
+        .int_mode               = int_mode_level_wait_clr,
+        .rw_transfer_size       = rw_tr_size_1q,
+        .transfer_width         = tr_width_word,
+        .count                  = DMA2PLB6_TRANSFER_UNITS
+    };
+
+        dma_info.source_adr     = get_physical_addr(CAST_UINT(dma2plb6_src), 0);
+        dma_info.dest_adr       = get_physical_addr(CAST_UINT(dma2plb6_dst), 0);
+        dma_info.channel        = (DmaChannel)data;
+
+        dma2plb6_mcpy(&dma_info);
+}
+
 void genint__dcr_arb(void *data)
 {
     uint32_t    dcra = CAST_UINT(data) + DCRARB_DACR;
@@ -363,38 +386,68 @@ void genint__p6p4(void *data)
     dcr_write(dcra, temp | BIT(IBM_BIT_INDEX(32, TESR_P6WPE)));
 }
 
-MAY_BE_NOT_USED
-void genint__p4ahb(void *data)
+void genint__hw(void *data)
 {
-//    generate_interrupt(EVENT_SET_P4XAHB_0_INT);
+    test_event(CAST_UINT(data));
 }
 
-//void generate_p4ahb_1_interrupt()
-//{
-//    generate_interrupt(EVENT_SET_P4XAHB_1_INT);
-//}
+void genint__itrace(void *data)
+{
+    /* Temporary stub */
+    irq_handler(ITRACE_COMPLETE, CAST_ADDR(&g_ptr));
+}
 
-//MAY_BE_NOT_USED
-//void generate_p4ahb_2_interrupt()
-//{
-//    generate_interrupt(EVENT_SET_P4XAHB_2_INT);
-//}
+void genint__ltrace(void *data)
+{
+    /* Temporary stub */
+    irq_handler(LTRACE_COMPLETE_0, CAST_ADDR(&g_ptr));
+}
+
 
 struct genint_entry_t intgen_list[] =
 {
-    GENINT_ENTRY(genint__l2c,      DCR_L2C_BASE,        L2C0_INTERRUPTOUT,
+    GENINT_ENTRY(genint__l2c,      DCR_L2C_BASE,            L2C0_INTERRUPTOUT,
             "signal <L2C0_INTERRUPTOUT>"),
-    GENINT_ENTRY(genint__l2c_mchk, DCR_L2C_BASE,        L2C0_MCHKOUT,
+/*  -----------------------------------------------------------------------  */
+    GENINT_ENTRY(genint__l2c_mchk, DCR_L2C_BASE,            L2C0_MCHKOUT,
             "signal <L2C0_MCHKOUT>"),
-    GENINT_ENTRY(genint__pmu,      DCR_L2C_BASE,        PMU0_INTERRUPT,
+/*  -----------------------------------------------------------------------  */
+    GENINT_ENTRY(genint__pmu,      DCR_L2C_BASE,            PMU0_INTERRUPT,
             "L2C PMU #0"),
-    GENINT_ENTRY(genint__p6p4,     DCR_PLB6PLB4_0_BASE, PLB6PLB40_O_0_BR6TO4_INTR,
+/*  -----------------------------------------------------------------------  */
+    GENINT_ENTRY(genint__dma2plb6, channel0,                DMA2PLB6_DMA_IRQ_0,
+            "DMA2PLB6 Channel #0 IRQ"),
+/*  -----------------------------------------------------------------------  */
+    GENINT_ENTRY(genint__dma2plb6, channel1,                DMA2PLB6_DMA_IRQ_1,
+            "DMA2PLB6 Channel #1 IRQ"),
+/*  -----------------------------------------------------------------------  */
+    GENINT_ENTRY(genint__dma2plb6, channel2,                DMA2PLB6_DMA_IRQ_2,
+            "DMA2PLB6 Channel #2 IRQ"),
+/*  -----------------------------------------------------------------------  */
+    GENINT_ENTRY(genint__dma2plb6, channel3,                DMA2PLB6_DMA_IRQ_3,
+            "DMA2PLB6 Channel #3 IRQ"),
+/*  -----------------------------------------------------------------------  */
+    GENINT_ENTRY(genint__hw,       EVENT_SET_SLVERR_INT_0,  DMA2PLB6_SLV_ERR_INT,
+            "signal <DMA2PLB6_SLV_ERR_INT>"),
+/*  -----------------------------------------------------------------------  */
+    GENINT_ENTRY(genint__hw,       EVENT_SET_SYSTEM_HANG,   O_SYSTEM_HUNG,
+            "SYSTEM HUNG"),
+/*  -----------------------------------------------------------------------  */
+    GENINT_ENTRY(genint__p6p4,     DCR_PLB6PLB4_0_BASE,     PLB6PLB40_O_0_BR6TO4_INTR,
             "PLB6PLB4 Bridge #0"),
-    GENINT_ENTRY(genint__p6p4,     DCR_PLB6PLB4_1_BASE, PLB6PLB41_O_BR6TO4_INTR,
+/*  -----------------------------------------------------------------------  */
+    GENINT_ENTRY(genint__p6p4,     DCR_PLB6PLB4_1_BASE,     PLB6PLB41_O_BR6TO4_INTR,
             "PLB6PLB4 Bridge #1"),
-    GENINT_ENTRY(genint__dcr_arb,  DCR_ARB_BASE,        ARB_SYSDCRERR,
+/*  -----------------------------------------------------------------------  */
+    GENINT_ENTRY(genint__dcr_arb,  DCR_ARB_BASE,            ARB_SYSDCRERR,
             "DCR Arbiter"),
-    END_GENINT_ENTRY
+/*  -----------------------------------------------------------------------  */
+    GENINT_ENTRY(genint__itrace,   0,                       ITRACE_COMPLETE,
+            "ITRACE COMPLETE"),
+    GENINT_ENTRY(genint__ltrace,   0,                       LTRACE_COMPLETE_0,
+            "LTRACE COMPLETE 0"),
+/*  -----------------------------------------------------------------------  */
+    GENINT_ENTRY_END
 };
 
 uint32_t check_internal_interrupts(void)
