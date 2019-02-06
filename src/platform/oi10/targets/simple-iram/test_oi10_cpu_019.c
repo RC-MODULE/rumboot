@@ -54,15 +54,18 @@
 #define DCRARB_DACR_TOCNT           IBM_BIT_INDEX(32, 27)
 #define DCRARB_DAESR_EV             IBM_BIT_INDEX(32, 0)
 #define EVM                         ((1 << PMULCx_EVENT_n) - 1)
+#define PMUC_OVF_VAL                (~0)
 #define PMUCC0_FAC                  0x80000000
 #define PMUGC0_PMCC                 (1 << PMUGC0_PMCC_i)
 #define PMUGC0_LFAC                 (1 << PMUGC0_LFAC_i)
 #define PMULCx_FC                   (1 << PMULCx_FC_i)
+#define PMULCx_RESET                0x00000000
 #define CMODE_INDEPENDENT           0
 #define CMODE_CHAINED               1
 
 
 /* Other macros */
+#define ALWAYS_INLINE               __attribute__((always_inline))
 #define MAY_BE_NOT_USED             __attribute__((unused))
 #define _GET_UPTIME                 rumboot_platform_get_uptime
 #define RESULT_TPL                  "TEST %s!\n"
@@ -82,6 +85,7 @@
 #define PMU_SET(REG,VAL)            PMU_WRITE((REG), PMU_READ(REG) |  (VAL))
 #define PMU_CLR(REG,VAL)            PMU_WRITE((REG), PMU_READ(REG) & ~(VAL))
 #define PMU_INV(REG,VAL)            PMU_WRITE((REG), PMU_READ(REG) ^  (VAL))
+#define PMU_TST(REG,VAL)            !!(PMU_READ(REG) & (VAL))
 #define SPR_SET(REG,VAL)            spr_write((REG), spr_read(REG) |  (VAL))
 #define SPR_CLR(REG,VAL)            spr_write((REG), spr_read(REG) & ~(VAL))
 #define SPR_INV(REG,VAL)            spr_write((REG), spr_read(REG) ^  (VAL))
@@ -95,9 +99,9 @@
                                      (((FCM0)  & 1  ) << PMULCx_FCM0_i )  | \
                                      (((CE)    & 1  ) << PMULCx_CE_i   )  | \
                                      (((EVENT) & EVM) << PMULCx_EVENT_i))
-#define PMULCx_EVENT(FC,EVENT)      PMULCx(CMODE_INDEPENDENT, (FC),         \
-                                        DISABLED, DISABLED, DISABLED,       \
-                                        DISABLED, ENABLED, (EVENT))
+#define PMULCx_EVENT(FREEZE,EVENT)  PMULCx(CMODE_INDEPENDENT, (FREEZE),     \
+                                        NO, NO, NO,                         \
+                                        NO, YES, (EVENT))
 
 
 /* Types, enumerations, and structures definitions */
@@ -121,7 +125,7 @@ struct genint_entry_t
 {
     void    (*func)(void*);
     void     *data;
-    uint32_t  irqn;
+    int       irqn;
     char     *name;
 };
 struct datacell32_t
@@ -154,30 +158,41 @@ void pmu_freeze_all_counters(uint32_t freeze)
     else        PMU_CLR(L2C_PMUGC0, PMUGC0_LFAC);
 }
 
-inline static uint32_t print_result(uint32_t test_status)
+ALWAYS_INLINE
+static inline
+void pmu_reset_all_counters(void)
+{
+    PMU_SET(L2C_PMUGC0, PMUGC0_PMCC);
+}
+
+inline static
+uint32_t print_result(uint32_t test_status)
 {
     rumboot_printf(RESULT_TPL, RESULT_STRING(test_status));
     return test_status;
 }
 
-inline static void set_interrupt(irq_flags_t *irqs, uint32_t irq_num)
+inline static
+void set_interrupt(irq_flags_t *irqs, int irq_num)
 {
     irqs[IRQ_ARRIDX(irq_num)]
          |= BIT(IRQ_IDX(irq_num) & 0x1F);
 }
 
-inline static uint32_t get_interrupt(irq_flags_t *irqs, uint32_t irq_num)
+inline static
+uint32_t get_interrupt(irq_flags_t *irqs, int irq_num)
 {
     return !!(irqs[IRQ_ARRIDX(irq_num)]
            & BIT(IRQ_IDX(irq_num) & 0x1F));
 }
 
-inline static void clr_interrupt(irq_flags_t *irqs, uint32_t irq_num)
+inline static
+void clr_interrupt(irq_flags_t *irqs, int irq_num)
 {
     irqs[IRQ_ARRIDX(irq_num)] &= ~BIT(IRQ_IDX(irq_num) & 0x1F);
 }
 
-void clear_all_interrupts(irq_flags_t *irqs)
+static void clear_all_interrupts(irq_flags_t *irqs)
 {
     int i;
     for(i = 0; i < IRQ_ARR_SZ; i++)
@@ -193,7 +208,7 @@ static void ex_handler(int exid, const char *exname)
     l2c_l2_write(DCR_L2C_BASE, L2C_L2PLBSTAT1, ~0);
 }
 
-uint32_t wait_irq(uint32_t usecs, uint32_t irq)
+uint32_t wait_irq(uint32_t usecs, int irq)
 {
     volatile
     uint32_t    tmp;
@@ -208,13 +223,26 @@ uint32_t wait_irq(uint32_t usecs, uint32_t irq)
     return usecs - (_GET_UPTIME() - tmp);
 }
 
+/* Call with negated IRQ number, to process an interruption fail */
 void irq_handler( int irq_num, void *arg )
 {
     volatile
-    uint32_t temp;
-    rumboot_printf("IRQ #%d received (Return address: 0x%X).\n",
-            irq_num, spr_read(SPR_SRR0));
-    set_interrupt(IRQ, irq_num);
+    uint32_t  temp = 0;
+    uint32_t  fail = (irq_num < 0) ? YES : NO;
+
+    if(fail)
+    {
+        irq_num = -irq_num;
+        rumboot_printf("Process fail on IRQ #%d...\n",
+                irq_num);
+    }
+    else
+    {
+        rumboot_printf("IRQ #%d received (Return address: 0x%X).\n",
+                irq_num, spr_read(SPR_SRR0));
+        set_interrupt(IRQ, irq_num);
+    }
+
 #if IRQ_MIN_INTERNAL > 0
     if((irq_num <= IRQ_MAX_INTERNAL) && (irq_num >= IRQ_MIN_INTERNAL))
 #else
@@ -231,6 +259,12 @@ void irq_handler( int irq_num, void *arg )
             l2c_global_mck_disable(DCR_L2C_BASE, EVERYTHING);
             break;
         case PMU0_INTERRUPT:            /*  2 */
+            pmu_freeze_all_counters(YES);
+            PMU_WRITE(L2C_PMULC0, PMULCx_RESET);
+            PMU_CLR(L2C_PMUIE0, BIT(PMUIE0_IE0_i));
+            if(PMU_TST(L2C_PMUIS0, BIT(PMUIS0_ISTAT0_i)))
+                PMU_WRITE(L2C_PMUIS0, BIT(PMUIS0_ISTAT0_i));
+            pmu_reset_all_counters();
             break;
         case DMA2PLB6_DMA_IRQ_0:        /*  3 */
             break;
@@ -271,7 +305,7 @@ void irq_handler( int irq_num, void *arg )
         /* Clear external interrupt signal
            and increment interrupt number   */
         test_event(EVENT_CLR_EXT_INT);
-        ext_int_raised = YES;
+        ext_int_raised = fail ? NO : YES;
     }
 }
 
@@ -279,6 +313,7 @@ void irq_handler( int irq_num, void *arg )
 void genint__l2c(void *data)
 {
     uint32_t temp;
+
     l2c_enable_interrupt(CAST_UINT(data),
             L2C_L2PLBINTEN0, L2PLBINTEN0_IntvnDataPE0);
     l2c_global_enable_interrupt(CAST_UINT(data), L2INTEN_PLBINT0);
@@ -292,17 +327,22 @@ void genint__l2c_mchk(void *data)
     uint32_t temp;
 
     l2c_enable_interrupt(CAST_UINT(data),
-            L2C_L2PLBMCKEN0, L2PLBMCKEN0_IntvnDataPE1);
-    l2c_global_enable_interrupt(CAST_UINT(data), L2MCKEN_PLBINT0);
+            L2C_L2PLBMCKEN0, L2PLBMCKEN0_IntvnDataPE0);
+    l2c_global_mck_enable(CAST_UINT(data), L2MCKEN_PLBINT0);
     temp = l2c_l2_read(CAST_UINT(data), L2C_L2PLBFRC0);
     l2c_l2_write(CAST_UINT(data), L2C_L2PLBFRC0,
-            temp | L2PLBFRC0_IntvnDataPE1);
+            temp | L2PLBFRC0_IntvnDataPE0);
 }
 
 MAY_BE_NOT_USED
 void genint__pmu(void *data)
 {
-
+    pmu_freeze_all_counters(YES);
+    pmu_reset_all_counters();
+    PMU_SET(L2C_PMUIE0, BIT(PMUIE0_IE0_i));
+    PMU_WRITE(L2C_PMULC0, PMULCx_EVENT(NO, L2EV_PlbMasterCmd));
+    PMU_WRITE(L2C_PMUC0, PMUC_OVF_VAL);
+    pmu_freeze_all_counters(NO);
 }
 
 void genint__dcr_arb(void *data)
@@ -342,15 +382,17 @@ void genint__p4ahb(void *data)
 
 struct genint_entry_t intgen_list[] =
 {
-    GENINT_ENTRY(genint__l2c,     DCR_L2C_BASE,        L2C0_INTERRUPTOUT,
-            "L2C0_INTERRUPTOUT"),
-    GENINT_ENTRY(genint__l2c,     DCR_L2C_BASE,        L2C0_MCHKOUT,
-            "L2C0_MCHKOUT"),
-    GENINT_ENTRY(genint__p6p4,    DCR_PLB6PLB4_0_BASE, PLB6PLB40_O_0_BR6TO4_INTR,
+    GENINT_ENTRY(genint__l2c,      DCR_L2C_BASE,        L2C0_INTERRUPTOUT,
+            "signal <L2C0_INTERRUPTOUT>"),
+    GENINT_ENTRY(genint__l2c_mchk, DCR_L2C_BASE,        L2C0_MCHKOUT,
+            "signal <L2C0_MCHKOUT>"),
+    GENINT_ENTRY(genint__pmu,      DCR_L2C_BASE,        PMU0_INTERRUPT,
+            "L2C PMU #0"),
+    GENINT_ENTRY(genint__p6p4,     DCR_PLB6PLB4_0_BASE, PLB6PLB40_O_0_BR6TO4_INTR,
             "PLB6PLB4 Bridge #0"),
-    GENINT_ENTRY(genint__p6p4,    DCR_PLB6PLB4_1_BASE, PLB6PLB41_O_BR6TO4_INTR,
+    GENINT_ENTRY(genint__p6p4,     DCR_PLB6PLB4_1_BASE, PLB6PLB41_O_BR6TO4_INTR,
             "PLB6PLB4 Bridge #1"),
-    GENINT_ENTRY(genint__dcr_arb, DCR_ARB_BASE,        ARB_SYSDCRERR,
+    GENINT_ENTRY(genint__dcr_arb,  DCR_ARB_BASE,        ARB_SYSDCRERR,
             "DCR Arbiter"),
     END_GENINT_ENTRY
 };
@@ -359,10 +401,10 @@ uint32_t check_internal_interrupts(void)
 {
     static
     char        *title  = "Check internal interrupts";
-    uint32_t     status = TEST_OK,
-                 result = 0,
-                 idx    = 0,
-                 irq    = 0;
+    uint32_t     status = TEST_OK;
+    uint32_t     result = 0;
+    int          idx    = 0;
+    int          irq    = 0;
 
     rumboot_printf("%s...\n", title);
     for(idx = 0; intgen_list[idx].func; idx++)
@@ -374,7 +416,10 @@ uint32_t check_internal_interrupts(void)
         wait_irq(IRQ_WAIT_TIMEOUT, irq);
         status |= !(result = get_interrupt(IRQ, irq));
         if(!result)
+        {
             rumboot_printf("While waiting internal interrupt #%d...\n", irq);
+            irq_handler(-irq, CAST_ADDR(&g_ptr));
+        }
         TEST_ASSERT(result, "INTERNAL INTERRUPT NOT RECEIVED!\n");
     }
     rumboot_printf("%s %s!\n", title, !status ? "success" : "failed");
@@ -387,7 +432,7 @@ uint32_t check_external_interrupts(void)
     char            *title  = "Check external interrupts";
     uint32_t         status = TEST_OK,
                      result = 0;
-    uint32_t         irq;
+    int              irq;
 
     rumboot_printf("%s...\n", title);
     for(irq = IRQ_MIN_EXTERNAL; irq < IRQ_MAX_EXTERNAL; irq++)
@@ -402,7 +447,9 @@ uint32_t check_external_interrupts(void)
         status |= !(result = get_interrupt(IRQ, irq));
         clr_interrupt(IRQ, irq);
         if(!result)
+        {
             rumboot_printf("While waiting external interrupt #%d...\n", irq);
+        }
         TEST_ASSERT(result, "EXTERNAL INTERRUPT NOT RECEIVED!\n");
     }
     rumboot_printf("%s %s!\n", title, !status ? "success" : "failed");
@@ -412,7 +459,7 @@ uint32_t check_external_interrupts(void)
 void init_interrupts(void)
 {
     uint32_t    irq;
-    rumboot_printf("\tStart IRQ initialization...\n");
+    rumboot_printf("Start IRQ initialization...\n");
 
     /* Turn on bits 'CE' and 'EE' in MSR (enable interrupts) */
     msr_write(msr_read() | BIT(ITRPT_XSR_CE_i) | BIT(ITRPT_XSR_EE_i));
@@ -432,7 +479,7 @@ void init_interrupts(void)
     rumboot_irq_sei();
     rumboot_irq_set_exception_handler(ex_handler);
 
-    rumboot_printf("\tIRQ have been initialized.\n");
+    rumboot_printf("IRQ have been initialized.\n");
 }
 
 uint32_t main(void)
