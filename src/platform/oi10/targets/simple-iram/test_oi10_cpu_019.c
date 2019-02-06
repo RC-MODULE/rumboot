@@ -285,6 +285,7 @@ void irq_handler( int irq_num, void *arg )
             dcr_write(DCR_PLB6PLB4_1_BASE + TESR, 0x00000000);
             break;
         case PLB4XAHB1_INTR:            /* 11 */
+            test_event(EVENT_CLEAR_P4XAHB_0_INT);
             break;
         case ARB_SYSDCRERR:             /* 12 */
             temp = dcr_read(DCR_ARB_BASE + DCRARB_DAESR);
@@ -386,7 +387,7 @@ void genint__p6p4(void *data)
     dcr_write(dcra, temp | BIT(IBM_BIT_INDEX(32, TESR_P6WPE)));
 }
 
-void genint__hw(void *data)
+void genint__hw_event(void *data)
 {
     test_event(CAST_UINT(data));
 }
@@ -427,10 +428,10 @@ struct genint_entry_t intgen_list[] =
     GENINT_ENTRY(genint__dma2plb6, channel3,                DMA2PLB6_DMA_IRQ_3,
             "DMA2PLB6 Channel #3 IRQ"),
 /*  -----------------------------------------------------------------------  */
-    GENINT_ENTRY(genint__hw,       EVENT_SET_SLVERR_INT_0,  DMA2PLB6_SLV_ERR_INT,
+    GENINT_ENTRY(genint__hw_event, EVENT_SET_SLVERR_INT_0,  DMA2PLB6_SLV_ERR_INT,
             "signal <DMA2PLB6_SLV_ERR_INT>"),
 /*  -----------------------------------------------------------------------  */
-    GENINT_ENTRY(genint__hw,       EVENT_SET_SYSTEM_HANG,   O_SYSTEM_HUNG,
+    GENINT_ENTRY(genint__hw_event, EVENT_SET_SYSTEM_HANG,   O_SYSTEM_HUNG,
             "SYSTEM HUNG"),
 /*  -----------------------------------------------------------------------  */
     GENINT_ENTRY(genint__p6p4,     DCR_PLB6PLB4_0_BASE,     PLB6PLB40_O_0_BR6TO4_INTR,
@@ -438,6 +439,9 @@ struct genint_entry_t intgen_list[] =
 /*  -----------------------------------------------------------------------  */
     GENINT_ENTRY(genint__p6p4,     DCR_PLB6PLB4_1_BASE,     PLB6PLB41_O_BR6TO4_INTR,
             "PLB6PLB4 Bridge #1"),
+/*  -----------------------------------------------------------------------  */
+    GENINT_ENTRY(genint__hw_event, EVENT_SET_P4XAHB_0_INT,  PLB4XAHB1_INTR,
+            "signal <PLB4XAHB_INTR>"),
 /*  -----------------------------------------------------------------------  */
     GENINT_ENTRY(genint__dcr_arb,  DCR_ARB_BASE,            ARB_SYSDCRERR,
             "DCR Arbiter"),
@@ -476,7 +480,7 @@ uint32_t check_internal_interrupts(void)
         TEST_ASSERT(result, "INTERNAL INTERRUPT NOT RECEIVED!\n");
     }
     rumboot_printf("%s %s!\n", title, !status ? "success" : "failed");
-    return TEST_OK;
+    return status;
 }
 
 uint32_t check_external_interrupts(void)
