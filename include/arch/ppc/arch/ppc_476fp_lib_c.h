@@ -66,6 +66,32 @@ static inline __attribute__((always_inline)) void icbt( void* const addr ) {
     );
 }
 
+static inline __attribute__((always_inline)) void icblc(uint32_t CT,  void* const addr ) {
+    if(CT == 2)
+        asm volatile (
+            "icblc 2, 0, %0\n\t"
+            ::"r"(addr)
+        );
+    else if(CT == 0)
+        asm volatile (
+            "icblc 0, 0, %0\n\t"
+            ::"r"(addr)
+        );
+}
+
+static inline __attribute__((always_inline)) void icbtls(uint32_t CT,  void* const addr ) {
+    if(CT == 2)
+        asm volatile (
+            "icbtls 2, 0, %0\n\t"
+            ::"r"(addr)
+        );
+    else if(CT == 0)
+        asm volatile (
+            "icbtls 0, 0, %0\n\t"
+            ::"r"(addr)
+        );
+}
+
 static inline __attribute__((always_inline)) void icread( void* const addr ) {
     asm volatile (
         "icread 0, %0\n\t"
@@ -107,6 +133,60 @@ static inline __attribute__((always_inline)) void dcbt( void* const addr ) {
         ::"r"(addr)
     );
 }
+
+static inline __attribute__((always_inline)) void dcblc(uint32_t CT, void* const addr ) {
+    if(CT == 2)
+        asm volatile (
+            "dcblc 2, 0, %0\n\t"
+            ::"r"(addr)
+        );
+    else if(CT == 0)
+        asm volatile (
+            "dcblc 0, 0, %0\n\t"
+            ::"r"(addr)
+        );
+}
+
+static inline __attribute__((always_inline)) void dcbtls(uint32_t CT, void* const addr ) {
+    if(CT == 2)
+        asm volatile (
+            "dcbtls 2, 0, %0\n\t"
+            ::"r"(addr)
+        );
+    else if(CT == 0)
+        asm volatile (
+            "dcbtls 0, 0, %0\n\t"
+            ::"r"(addr)
+        );
+}
+
+static inline __attribute__((always_inline))
+uint32_t stwcx(uint32_t wval, uintptr_t wptr) {
+    uint32_t rval = 0;
+    asm volatile (
+            "stwcx. %1, 0, %2       \n\t"
+            "mfcr   %0              \n\t"
+            "andi.  %0, %0, 0x0F    \n\t"
+        :   "=r"(rval)
+        :   "r"(wval), "r"(wptr)
+        :   "memory"
+    );
+    return rval;
+}
+
+static inline __attribute__((always_inline))
+uint32_t lwarx(uintptr_t wptr) {
+    uint32_t rval = 0;
+    asm volatile (
+        "lwarx %0, 0, %1 \n\t"
+        :   "=r"(rval)
+        :   "r"(wptr)
+        :   "memory"
+    );
+    return rval;
+}
+
+
 /* These instruction calls must be placed in the same function
  * where called.
  * It cannot be wrapped within an inline function, because
