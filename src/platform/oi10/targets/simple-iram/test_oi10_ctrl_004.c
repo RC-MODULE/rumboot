@@ -181,7 +181,7 @@ static bool test_dit_timers(uint32_t structure)
             rumboot_printf("Interrupts came == %d, should be %d \n", stru->timer1_irq, TIMER1_CYCLES);
             return false;
         }
-    return true;
+    return false;
 }
 
 //TEST MODE
@@ -228,7 +228,7 @@ static bool test_dit_timers2( uint32_t structure)
             return false;
         }
     }
-    return true;
+    return false;
 }
 
 static struct s804_instance in[] =
