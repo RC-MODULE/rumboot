@@ -128,8 +128,6 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     IRAM_SPL ROM
     -a 512 -z 512)
 
-  rumboot_bootrom_add_common_units(IRAM_SPL ROM)
-
   rumboot_bootrom_unit_test(
       ID 0
       TAG sdio0

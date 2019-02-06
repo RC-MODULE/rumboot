@@ -60,7 +60,6 @@ include(${CMAKE_SOURCE_DIR}/cmake/bootrom.cmake)
 macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
   rumboot_bootrom_add_components(SPL ROM)
-  rumboot_bootrom_add_common_units(SPL ROM)
   rumboot_bootrom_unit_test(
       ID 0
       CONFIGURATION ROM
