@@ -17,6 +17,7 @@
 
 uint32_t const EVENT_TEST_DCI       = TEST_EVENT_CODE_MIN + 0;
 uint32_t const EVENT_TEST_ICBI      = TEST_EVENT_CODE_MIN + 1;
+uint32_t const EVENT_TEST_ICBT      = TEST_EVENT_CODE_MIN + 2;
 
 #define COUNT_AREAS 5
 
@@ -330,6 +331,27 @@ uint32_t test_dcba()
 uint32_t test_icbt()
 {
     uint32_t    result = 0;
+    char        test_name[] = "test_icbt";
+    rumboot_printf("%s start\n",test_name);
+    test_event(EVENT_TEST_ICBT);
+    msync();
+    ici(0);
+    dci(2);
+    msync();
+    isync();
+    for(uint32_t CT = 0; CT < 3; CT += 2)
+    {
+        for(uint32_t i = 0; i < L2C_COUNT_WAYS; ++i)
+            icbt(CT,test_function_buf[i]);
+        result |= check_caches(test_function_buf,true,PSEUDO_CT_DECODING_IS_L2_mask,test_name);
+        result |= check_caches(test_function_buf,!((bool)CT),PSEUDO_CT_DECODING_IS_L1I_mask,test_name);
+        msync();
+        ici(0);
+        dci(2);
+        msync();
+        isync();
+    }
+    rumboot_printf("%s finished: %s\n",test_name,(result)?"FAIL":"OK");
     return result;
 }
 uint32_t test_dcbf()
@@ -387,8 +409,8 @@ uint32_t test_dcblc()
  */
 uint32_t (*test_cache_functions[])() = {
 //        test_ici,
-//        test_dci,
-//        test_icbi,
+        test_dci,
+        test_icbi,
         test_dcba,
         test_icbt,
         test_dcbf,
