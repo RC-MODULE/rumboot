@@ -1631,6 +1631,54 @@ endif()
       NAME "test_oi10_endianness_soft_and_hard"
     )
 
+    add_rumboot_target(
+        CONFIGURATION IRAM
+        FILES test_oi10_sdio.c
+        CFLAGS -DSDIO_BASE=SDIO_0_BASE  -DGSPI_SDIO_IRQ=GSPI0_INT -DSDIO_HEAP="IM1"
+        IRUN_FLAGS +select_sdio0
+        PREFIX sdio-spi-0-im1
+    )
+
+    add_rumboot_target(
+        CONFIGURATION IRAM
+        FILES test_oi10_sdio.c
+        CFLAGS -DSDIO_BASE=SDIO_1_BASE  -DGSPI_SDIO_IRQ=GSPI1_INT -DSDIO_HEAP="IM1"
+        IRUN_FLAGS +select_sdio1
+        PREFIX sdio-spi-1-im1
+    )
+
+    add_rumboot_target(
+        CONFIGURATION IRAM
+        FILES test_oi10_sdio.c
+        CFLAGS -DSDIO_BASE=SDIO_0_BASE  -DGSPI_SDIO_IRQ=GSPI0_INT -DSDIO_HEAP="IM2"
+        IRUN_FLAGS +select_sdio0
+        PREFIX sdio-spi-0-im2
+    )
+
+    add_rumboot_target(
+        CONFIGURATION IRAM
+        FILES test_oi10_sdio.c
+        CFLAGS -DSDIO_BASE=SDIO_1_BASE  -DGSPI_SDIO_IRQ=GSPI1_INT -DSDIO_HEAP="IM2"
+        IRUN_FLAGS +select_sdio1
+        PREFIX sdio-spi-1-im2
+    )
+
+    add_rumboot_target(
+        CONFIGURATION IRAM
+        FILES test_oi10_sdio.c
+        CFLAGS -DSDIO_BASE=SDIO_0_BASE  -DGSPI_SDIO_IRQ=GSPI0_INT -DSDIO_HEAP="SRAM0"
+        IRUN_FLAGS +select_sdio0
+        PREFIX sdio-spi-0-sram0
+    )
+
+    add_rumboot_target(
+        CONFIGURATION IRAM
+        FILES test_oi10_sdio.c
+        CFLAGS -DSDIO_BASE=SDIO_1_BASE  -DGSPI_SDIO_IRQ=GSPI1_INT -DSDIO_HEAP="SRAM0"
+        IRUN_FLAGS +select_sdio1
+        PREFIX sdio-spi-1-sram0
+    )
+
 endmacro()
 
 

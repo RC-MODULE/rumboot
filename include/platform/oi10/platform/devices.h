@@ -49,6 +49,7 @@
 #define GSPI_0_BASE             0xC002B000
 #define SDIO_0_BASE             0xC002C000
 #define GSPI_1_BASE             0xC003B000
+#define SDIO_1_BASE             0xC003C000
 #define LSCB0_BASE              0xC0020000
 #define LSCB1_BASE              0xC0030000
 #define HSCB0_BASE              0xC0300000
