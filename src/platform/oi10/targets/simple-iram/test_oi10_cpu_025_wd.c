@@ -46,6 +46,9 @@ static test_check volatile __attribute__((section(".data"))) last_test_check = T
 
 static void generate_wd_reset( TIMER_TCR_WRC const reset_type )
 {
+    rumboot_platform_perf("generate_wd_reset");
+
+
 	spr_write(SPR_TCR,    (TIMER_TCR_WP_2pow21_clocks  << TIMER_TCR_WP_i)
                         | (reset_type                  << TIMER_TCR_WRC_i)
                         | (0b0                         << TIMER_TCR_WIE_i)
@@ -102,7 +105,9 @@ int main()
 {
     test_event_send_test_id( "test_oi10_cpu_025_wd");
 
-    test_event_memfill8_modelling((void*)SRAM0_BASE, 0x1000, 0x00, 0x00); //workaround (init 4KB SRAM0)
+    //memset((void*)SRAM0_BASE, 0x1000, 0x00); //workaround (init 4KB SRAM0)
+
+    rumboot_memfill8_modelling((void*)SRAM0_BASE, 0x1000, 0x00, 0x00); //workaround (init 4KB SRAM0)
 
     rumboot_printf("TEST START\n");
 
