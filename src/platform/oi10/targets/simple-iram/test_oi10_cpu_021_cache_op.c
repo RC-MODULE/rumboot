@@ -28,6 +28,7 @@ BEGIN_ENUM(PSEUDO_CT_DECODING)
     DECLARE_ENUM_VAL(   PSEUDO_CT_DECODING_IS_L1I_i,         0    )
     DECLARE_ENUM_VAL(   PSEUDO_CT_DECODING_IS_L1I_n,         1    )
     DECLARE_ENUM_VAL(   PSEUDO_CT_DECODING_IS_L1I_mask,     FIELD_MASK32( PSEUDO_CT_DECODING_IS_L1I_i, PSEUDO_CT_DECODING_IS_L1I_n ) )
+    DECLARE_ENUM_VAL(   PSEUDO_CT_DECODING_IS_L1D_val,       0    )
 
     DECLARE_ENUM_VAL(   PSEUDO_CT_DECODING_IS_L2_i,         1    )
     DECLARE_ENUM_VAL(   PSEUDO_CT_DECODING_IS_L2_n,         1    )
@@ -43,6 +44,19 @@ bool get_way_by_addr(uint32_t pseudo_CT, void* addr, int32_t* cache_way)
     uint32_t    CT = pseudo_CT & PSEUDO_CT_DECODING_IS_L2_mask;
     bool        is_l1i = pseudo_CT & PSEUDO_CT_DECODING_IS_L1I_mask;
 
+    if(CT == 0)
+    {
+        if(is_l1i)
+        {
+            spr_write(SPR_ICDBTRL,0);
+            spr_write(SPR_ICDBTRH,0);
+        }
+        else
+        {
+            spr_write(SPR_DCDBTRL,0);
+            spr_write(SPR_DCDBTRH,0);
+        }
+    }
     phys_addr = (uint64_t)rumboot_virt_to_phys(addr);
     if(CT == 2)
     {
@@ -133,6 +147,34 @@ uint32_t get_locks(uint32_t pseudo_CT, void* addr, uint32_t cache_way)
 /*Global data are not good, I know, but now I have no time and wish to bind test_functions to any interface.*/
 uint32_t    (*test_function_buf[COUNT_AREAS])();
 
+
+uint32_t check_caches( uint32_t    (*array_of_addr[])(), bool expected_in_cache, uint32_t pseudo_CT, char* test_name){
+    bool        found_in_cache;
+    int32_t     cache_way;
+    uint32_t    result = 0;
+    for(uint32_t i = 0; i < L2C_COUNT_WAYS; ++i)
+    {
+        found_in_cache = get_way_by_addr(
+                pseudo_CT ,
+                (void*)(array_of_addr[i]),
+                &cache_way
+                );
+
+        if(found_in_cache != expected_in_cache)
+        {
+            rumboot_printf("%s ERROR!!! i == %d: found in %s: %s, CT == %d\n",
+                    test_name,
+                    i,
+                    (pseudo_CT & PSEUDO_CT_DECODING_IS_L2_mask)?"L2C":
+                            (pseudo_CT & PSEUDO_CT_DECODING_IS_L1I_mask)?"L1I":"L1D",
+                    (found_in_cache)?"yes":"no",
+                    (pseudo_CT & PSEUDO_CT_DECODING_IS_L2_mask));
+            result |= 1;
+        }
+    }
+    return result;
+}
+
 /**********************************************************/
 /*Here we have all testing functions for all the cache instructions*/
 
@@ -141,10 +183,8 @@ uint32_t    (*test_function_buf[COUNT_AREAS])();
 uint32_t test_ici()
 {
     uint32_t    result = 0;
-    int32_t     cache_way;
-    bool        found_in_L2;
-    bool        found_in_L1;
-    rumboot_printf("test_ici start\n");
+    char        test_name[] = "test_ici";
+    rumboot_printf("%s start\n",test_name);
     for(uint32_t CT = 0; CT < 3; CT += 2)
     {
         rumboot_printf("caching for CT == %d\n", CT);
@@ -152,68 +192,29 @@ uint32_t test_ici()
         {
             test_function_buf[i]();
         }
-        rumboot_printf("checking, that all is cached\n", CT);
-        for(uint32_t i = 0; i < L2C_COUNT_WAYS; ++i)
-        {
-            if(!get_way_by_addr(
-                    PSEUDO_CT_DECODING_IS_L1I_mask | CT,
-                    test_function_buf[i],
-                    &cache_way
-                    ))
-            {
-                rumboot_printf("test_ici ERROR!!! Did not find any valid cache entry for address 0x%x\n", test_function_buf[i]);
-                result |= 1;
-            }
-        }
+        rumboot_printf("Checking, that all is cached\n", CT);
+        result |= check_caches(test_function_buf,true,PSEUDO_CT_DECODING_IS_L1I_mask | CT ,test_name);
         msync();
+        isync();
         if(CT & PSEUDO_CT_DECODING_IS_L2_mask)
-        {
-            isync();
             ici(2);
-            msync();
-            isync();
-        }
         if(!(CT & PSEUDO_CT_DECODING_IS_L2_mask))
-        {
-            isync();
             ici(0);
-            msync();
-            isync();
-        }
-        for(uint32_t i = 0; i < L2C_COUNT_WAYS; ++i)
-        {
-            found_in_L1 = get_way_by_addr(
-                    PSEUDO_CT_DECODING_IS_L1I_mask ,
-                    test_function_buf[i],
-                    &cache_way
-                    );
-            found_in_L2 = get_way_by_addr(
-                    PSEUDO_CT_DECODING_IS_L1I_mask | PSEUDO_CT_DECODING_IS_L2_mask,
-                    test_function_buf[i],
-                    &cache_way
-                    );
+        msync();
+        isync();
 
-            if(!((found_in_L2 && found_in_L1 && CT) || (found_in_L2 && (!found_in_L1) && (!CT))))
-            {
-                rumboot_printf("test_ici ERROR!!! i == %d: found in L2C: %s, found in L1C: %s, CT == %d\n", i,
-                        (found_in_L2)?"yes":"no",
-                        (found_in_L1)?"yes":"no",
-                        CT);
-                result |= 1;
-            }
-        }
+        result |= check_caches(test_function_buf,true,PSEUDO_CT_DECODING_IS_L1I_mask | PSEUDO_CT_DECODING_IS_L2_mask,test_name);
+        result |= check_caches(test_function_buf,(bool)CT,PSEUDO_CT_DECODING_IS_L1I_mask ,test_name);
     }
-    rumboot_printf("test_ici finished: %s\n",(result)?"FAIL":"OK");
+    rumboot_printf("%s finished: %s\n",test_name,(result)?"FAIL":"OK");
     return result;
 }
 uint32_t test_dci()
 {
     uint32_t    result = 0;
-    int32_t     cache_way;
-    bool        found_in_L2;
-    bool        found_in_L1;
     uint32_t    first_word;
-    rumboot_printf("test_dci start\n");
+    char        test_name[] = "test_dci";
+    rumboot_printf("%s start\n",test_name);
     for(uint32_t CT = 0; CT < 3; CT += 2)
     {
         rumboot_printf("caching for CT == %d\nnext are coming first words from data areas, all equal.\n", CT);
@@ -223,107 +224,40 @@ uint32_t test_dci()
             rumboot_puthex(first_word);
         }
         msync();
-        rumboot_printf("checking, that all is cached, CT == %d\n", CT);
-        for(uint32_t i = 0; i < L2C_COUNT_WAYS; ++i)
-        {
-            found_in_L2 = get_way_by_addr(
-                    PSEUDO_CT_DECODING_IS_L2_mask,
-                    test_function_buf[i],
-                    &cache_way
-                    );
-            found_in_L1 = get_way_by_addr(
-                    0 ,
-                    test_function_buf[i],
-                    &cache_way
-                    );
-            if((!found_in_L2) || (!found_in_L1))
-            {
-                rumboot_printf("test_dci: ERROR!!! i == %d: found in L2C: %s, found in L1C: %s, CT == %d\n", i,
-                        (found_in_L2)?"yes":"no",
-                        (found_in_L1)?"yes":"no",
-                        CT);
-                result |= 1;
-            }
-        }
+        rumboot_printf("Checking, that all is cached, CT == %d\n", CT);
+        result |= check_caches(test_function_buf,true,PSEUDO_CT_DECODING_IS_L2_mask,test_name);
+        result |= check_caches(test_function_buf,true,PSEUDO_CT_DECODING_IS_L1D_val,test_name);
         test_event(EVENT_TEST_DCI);
         msync();
         if(CT & PSEUDO_CT_DECODING_IS_L2_mask)
-        {
-            msync();
             dci(2);
-            msync();
-            isync();
-        }
         else
-        {
-            msync();
             dci(0);
-            msync();
-            isync();
-        }
-        for(uint32_t i = 0; i < L2C_COUNT_WAYS; ++i)
-        {
-            found_in_L1 = get_way_by_addr(
-                    0 ,
-                    test_function_buf[i],
-                    &cache_way
-                    );
-            found_in_L2 = get_way_by_addr(
-                    PSEUDO_CT_DECODING_IS_L2_mask,
-                    test_function_buf[i],
-                    &cache_way
-                    );
-
-            /* in the FPUG table 10-3 Cache operations we have information that dci(2) invalidates both
-             * L1D and L2C, however in section 5.5.12 it is specified that
-             * "it is only permissible to perform a dci instruction to the L1 and L2, in that order, followed by an isync."
-             * */
-            if(!(((!found_in_L2) && (found_in_L1) && CT) || (found_in_L2 && (!found_in_L1) && (!CT))))
-            {
-                rumboot_printf("test_dci: ERROR!!! i == %d: found in L2C: %s, found in L1C: %s, CT == %d\n", i,
-                        (found_in_L2)?"yes":"no",
-                        (found_in_L1)?"yes":"no",
-                        CT);
-                result |= 1;
-            }
-        }
+        msync();
+        isync();
+        /* in the FPUG table 10-3 Cache operations we have information that dci(2) invalidates both
+         * L1D and L2C, however in section 5.5.12 it is specified that
+         * "it is only permissible to perform a dci instruction to the L1 and L2, in that order, followed by an isync."
+         * */
+        result |= check_caches(test_function_buf,!((bool)CT),PSEUDO_CT_DECODING_IS_L2_mask,test_name);
+        result |= check_caches(test_function_buf, ((bool)CT),PSEUDO_CT_DECODING_IS_L1D_val,test_name);
     }
-    rumboot_printf("test_dci finished: %s\n",(result)?"FAIL":"OK");
+    rumboot_printf("%s finished: %s\n",test_name,(result)?"FAIL":"OK");
     return result;
 }
 uint32_t test_icbi()
 {
     uint32_t    result = 0;
-    int32_t     cache_way;
-    bool        found_in_L2;
-    bool        found_in_L1;
-    rumboot_printf("test_icbi start\n");
+    char        test_name[] = "test_icbi";
+    rumboot_printf("%s start\n",test_name);
     for(uint32_t i = 0; i < L2C_COUNT_WAYS; ++i)
     {
         test_function_buf[i]();
     }
-    rumboot_printf("checking, that all is cached\n");
-    for(uint32_t i = 0; i < L2C_COUNT_WAYS; ++i)
-    {
-        found_in_L1 = get_way_by_addr(
-                PSEUDO_CT_DECODING_IS_L1I_mask ,
-                test_function_buf[i],
-                &cache_way
-                );
-        found_in_L2 = get_way_by_addr(
-                PSEUDO_CT_DECODING_IS_L1I_mask | PSEUDO_CT_DECODING_IS_L2_mask,
-                test_function_buf[i],
-                &cache_way
-                );
+    rumboot_printf("Checking, that all is cached\n");
+    result |= check_caches(test_function_buf,true,PSEUDO_CT_DECODING_IS_L2_mask,test_name);
+    result |= check_caches(test_function_buf,true,PSEUDO_CT_DECODING_IS_L1I_mask,test_name);
 
-        if((!found_in_L2) || (!found_in_L1) )
-        {
-            rumboot_printf("test_icbi ERROR!!! i == %d: found in L2C: %s, found in L1C: %s\n", i,
-                    (found_in_L2)?"yes":"no",
-                    (found_in_L1)?"yes":"no");
-            result |= 1;
-        }
-    }
     test_event(EVENT_TEST_ICBI);
     msync();
     for(uint32_t i = 0; i < L2C_COUNT_WAYS; ++i)
@@ -332,36 +266,68 @@ uint32_t test_icbi()
         isync();
     }
 
-    for(uint32_t i = 0; i < L2C_COUNT_WAYS; ++i)
-    {
-        found_in_L1 = get_way_by_addr(
-                PSEUDO_CT_DECODING_IS_L1I_mask ,
-                test_function_buf[i],
-                &cache_way
-                );
-        found_in_L2 = get_way_by_addr(
-                PSEUDO_CT_DECODING_IS_L1I_mask | PSEUDO_CT_DECODING_IS_L2_mask,
-                test_function_buf[i],
-                &cache_way
-                );
-
-        if((!found_in_L2) || found_in_L1 )
-        {
-            rumboot_printf("test_icbi ERROR!!! i == %d: found in L2C: %s, found in L1C: %s\n", i,
-                    (found_in_L2)?"yes":"no",
-                    (found_in_L1)?"yes":"no");
-            result |= 1;
-        }
-    }
-    rumboot_printf("test_icbi finished: %s\n",(result)?"FAIL":"OK");
-    return result;
-}
-uint32_t test_icbt()
-{
-    uint32_t    result = 0;
+    result |= check_caches(test_function_buf,true,PSEUDO_CT_DECODING_IS_L2_mask,test_name);
+    result |= check_caches(test_function_buf,false,PSEUDO_CT_DECODING_IS_L1I_mask,test_name);
+    rumboot_printf("%s finished: %s\n",test_name,(result)?"FAIL":"OK");
     return result;
 }
 uint32_t test_dcba()
+{
+    uint32_t    result = 0;
+    char        test_name[] = "test_dcba";
+    rumboot_printf("%s start\n",test_name);
+
+    for(uint32_t i = 0; i < L2C_COUNT_WAYS; ++i)
+    {
+        test_function_buf[i]();
+        dcbt(0,test_function_buf[i]);
+    }
+    rumboot_printf("Checking, that dcba does nothing for cached functions.\n");
+
+    result |= check_caches(test_function_buf, true,PSEUDO_CT_DECODING_IS_L2_mask,test_name);
+    result |= check_caches(test_function_buf, true,PSEUDO_CT_DECODING_IS_L1D_val,test_name);
+    result |= check_caches(test_function_buf, true,PSEUDO_CT_DECODING_IS_L1I_mask,test_name);
+    for(uint32_t i = 0; i < L2C_COUNT_WAYS; ++i)
+    {
+        dcba(test_function_buf[i]);
+    }
+    msync();
+    isync();
+
+    result |= check_caches(test_function_buf, true,PSEUDO_CT_DECODING_IS_L2_mask,test_name);
+    result |= check_caches(test_function_buf, true,PSEUDO_CT_DECODING_IS_L1D_val,test_name);
+    result |= check_caches(test_function_buf, true,PSEUDO_CT_DECODING_IS_L1I_mask,test_name);
+    msync();
+    dci(0);
+    ici(0);
+    dci(2);
+    msync();
+    isync();
+    rumboot_printf("Checking, that dcba does nothing for not yet cached functions.\n");
+
+    result |= check_caches(test_function_buf, false,PSEUDO_CT_DECODING_IS_L2_mask,test_name);
+    result |= check_caches(test_function_buf, false,PSEUDO_CT_DECODING_IS_L1D_val,test_name);
+    result |= check_caches(test_function_buf, false,PSEUDO_CT_DECODING_IS_L1I_mask,test_name);
+    for(uint32_t i = 0; i < L2C_COUNT_WAYS; ++i)
+    {
+        dcba(test_function_buf[i]);
+    }
+    msync();
+    isync();
+
+    result |= check_caches(test_function_buf, false,PSEUDO_CT_DECODING_IS_L2_mask,test_name);
+    result |= check_caches(test_function_buf, false,PSEUDO_CT_DECODING_IS_L1D_val,test_name);
+    result |= check_caches(test_function_buf, false,PSEUDO_CT_DECODING_IS_L1I_mask,test_name);
+    msync();
+    dci(0);
+    dci(2);
+    msync();
+    isync();
+
+    rumboot_printf("%s finished: %s\n",test_name,(result)?"FAIL":"OK");
+    return result;
+}
+uint32_t test_icbt()
 {
     uint32_t    result = 0;
     return result;
@@ -422,9 +388,9 @@ uint32_t test_dcblc()
 uint32_t (*test_cache_functions[])() = {
 //        test_ici,
 //        test_dci,
-        test_icbi,
-        test_icbt,
+//        test_icbi,
         test_dcba,
+        test_icbt,
         test_dcbf,
         test_dcbi,
         test_dcbt,
