@@ -1,9 +1,4 @@
-MEMORY
-{
-    IM0 (rwx)       : ORIGIN = 0x80000000, LENGTH = 0x20000
-    IM1 (rwx)       : ORIGIN = 0x80020000, LENGTH = 0x20000
-    ROM (rx)        : ORIGIN = 0xFFFF0000, LENGTH = 0x10000
-}
+INCLUDE oi10/memory.lds.h
 
 SECTIONS
 {
@@ -25,11 +20,7 @@ SECTIONS
     *(.data.*)
  } > IM1
 
- .runtime 0x8001fe00 (NOLOAD): {
-    /* Runtime info is at the very top of iram */
-    rumboot_platform_runtime_info = .;
-    *(.rumboot_platform_runtime_info);
- }
+ INCLUDE oi10/runtime_section.lds.h
 
  /DISCARD/ :
  {
