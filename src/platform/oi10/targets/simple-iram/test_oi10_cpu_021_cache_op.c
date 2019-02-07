@@ -333,7 +333,6 @@ uint32_t test_icbt()
     uint32_t    result = 0;
     char        test_name[] = "test_icbt";
     rumboot_printf("%s start\n",test_name);
-    test_event(EVENT_TEST_ICBT);
     msync();
     ici(0);
     dci(2);
@@ -341,8 +340,12 @@ uint32_t test_icbt()
     isync();
     for(uint32_t CT = 0; CT < 3; CT += 2)
     {
+        test_event(EVENT_TEST_ICBT);
+        msync();
         for(uint32_t i = 0; i < L2C_COUNT_WAYS; ++i)
             icbt(CT,test_function_buf[i]);
+        isync();
+        msync();
         result |= check_caches(test_function_buf,true,PSEUDO_CT_DECODING_IS_L2_mask,test_name);
         result |= check_caches(test_function_buf,!((bool)CT),PSEUDO_CT_DECODING_IS_L1I_mask,test_name);
         msync();
