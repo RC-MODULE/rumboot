@@ -51,7 +51,7 @@ enum {
 static volatile bool MC_HANDLED;
 
 static volatile uint32_t RESET_REQ_TYPE;
-static volatile uint32_t mc_cnt __attribute__((section("rumboot_platform_runtime.persistent[]")));
+
 enum {
     NXT_RESET_REQ_TYPE = 1,
 };
@@ -63,15 +63,15 @@ void update_reset_req_type ()
     switch(RESET_REQ_TYPE)
     {
     case RESET_REQ_TYPE_CORE:
-        NXT_RESET_REQ_TYPE = RESET_REQ_TYPE_CHIP;
+       // NXT_RESET_REQ_TYPE = RESET_REQ_TYPE_CHIP;
         rumboot_platform_runtime_info->persistent[NXT_RESET_REQ_TYPE] = RESET_REQ_TYPE_CHIP;
         break;
     case RESET_REQ_TYPE_CHIP:
-        NXT_RESET_REQ_TYPE = RESET_REQ_TYPE_SYSTEM;
+        //NXT_RESET_REQ_TYPE = RESET_REQ_TYPE_SYSTEM;
         rumboot_platform_runtime_info->persistent[NXT_RESET_REQ_TYPE] = RESET_REQ_TYPE_SYSTEM;
         break;
     case RESET_REQ_TYPE_SYSTEM:
-        NXT_RESET_REQ_TYPE = RESET_REQ_TYPE_NONE;
+        //NXT_RESET_REQ_TYPE = RESET_REQ_TYPE_NONE;
         rumboot_platform_runtime_info->persistent[NXT_RESET_REQ_TYPE] = RESET_REQ_TYPE_NONE;
         break;
     case RESET_REQ_TYPE_NONE:
@@ -94,7 +94,6 @@ static void exception_handler(int id, const char *name)
     if(id == RUMBOOT_IRQ_MACHINE_CHECK)
     {
         rumboot_printf("It is OK!\n");
-	    mc_cnt += 1;
 	    spr_write(SPR_MCSR_C,0xFFFFFFFF);
         update_reset_req_type ();
         test_event(EVENT_RESET);
@@ -165,29 +164,11 @@ int check_machinecheck ()
 
 	asm volatile ("fcmpu 0, 1, 2\n\t");
 
-//	spr_write(SPR_MCSR_C,0xFFFFFFFF);
-//	msr_write(msr_old_value);
+	spr_write(SPR_MCSR_C,0xFFFFFFFF);
+	msr_write(msr_old_value);
 
-	if(mc_cnt == 1 )
-	{
-	    rumboot_printf("mc_cnt = %x\n", mc_cnt);
-	    rumboot_printf("Error reset type = %x\n", RESET_REQ_TYPE);
-	    return 1;
-	}
-	else if (mc_cnt == 2 )
-	{
-	    rumboot_printf("mc_cnt = %x\n", mc_cnt);
-	    rumboot_printf("Error reset type = %x\n", RESET_REQ_TYPE);
-	    return 2;
-	}
-	else if (mc_cnt == 3 )
-	{
-        rumboot_printf("mc_cnt = %x\n", mc_cnt);
-        rumboot_printf("Error reset type = %x\n", RESET_REQ_TYPE);
-        return 3;
-	}
 
-	return 1;
+	return 0;
 }
 
 
@@ -197,33 +178,35 @@ int main ()
 
     rumboot_printf("TEST START\n");
 
-    rumboot_printf("mc_cnt = %x\n", mc_cnt);
     rumboot_printf("RESET_REQ_TYPE = %x\n", RESET_REQ_TYPE);
     rumboot_printf("NXT_RESET_REQ_TYPE = %x\n", NXT_RESET_REQ_TYPE);
 
     MC_HANDLED = false;
     RESET_REQ_TYPE = NXT_RESET_REQ_TYPE;
-    if((RESET_REQ_TYPE == RESET_REQ_TYPE_NONE)&&(mc_cnt >= 3))
+    if((RESET_REQ_TYPE == RESET_REQ_TYPE_NONE))
     {
         test_event(EVENT_FINISHED);
         rumboot_printf("TEST OK!\n");
         return 0;
     }
-//    else if ( (RESET_REQ_TYPE == RESET_REQ_TYPE_NONE)&&(mc_cnt == 0))
+////    else if ( (RESET_REQ_TYPE == RESET_REQ_TYPE_NONE)&&(mc_cnt == 0))
+////    {
+////        RESET_REQ_TYPE = RESET_REQ_TYPE_CORE;
+////        check_machinecheck ();
+////    }
+//    else if ( (RESET_REQ_TYPE == RESET_REQ_TYPE_CORE))
 //    {
-//        RESET_REQ_TYPE = RESET_REQ_TYPE_CORE;
+//        RESET_REQ_TYPE = RESET_REQ_TYPE_CHIP;
 //        check_machinecheck ();
 //    }
-    else if ( (RESET_REQ_TYPE == RESET_REQ_TYPE_NONE)&&(mc_cnt == 0))
-    {
-        RESET_REQ_TYPE = RESET_REQ_TYPE_CHIP;
-        check_machinecheck ();
-    }
-    else if ((RESET_REQ_TYPE == RESET_REQ_TYPE_CHIP)&&(mc_cnt == 1))
-    {
-        RESET_REQ_TYPE = RESET_REQ_TYPE_SYSTEM;
-        check_machinecheck ();
-    }
+//    else if ((RESET_REQ_TYPE == RESET_REQ_TYPE_CHIP)&&(mc_cnt == 1))
+//    {
+//        RESET_REQ_TYPE = RESET_REQ_TYPE_SYSTEM;
+//        check_machinecheck ();
+//    }
+
+    check_machinecheck ();
+
 
    rumboot_printf("TEST ERROR!\n");
    return 1;
