@@ -64,14 +64,15 @@ void update_reset_req_type ()
     {
     case RESET_REQ_TYPE_CORE:
         NXT_RESET_REQ_TYPE = RESET_REQ_TYPE_CHIP;
-        rumboot_platform_runtime_info->persistent[RESET_REQ_TYPE] = RESET_REQ_TYPE_CHIP;
+        rumboot_platform_runtime_info->persistent[NXT_RESET_REQ_TYPE] = RESET_REQ_TYPE_CHIP;
         break;
     case RESET_REQ_TYPE_CHIP:
         NXT_RESET_REQ_TYPE = RESET_REQ_TYPE_SYSTEM;
-        rumboot_platform_runtime_info->persistent[RESET_REQ_TYPE] = RESET_REQ_TYPE_CHIP;
+        rumboot_platform_runtime_info->persistent[NXT_RESET_REQ_TYPE] = RESET_REQ_TYPE_SYSTEM;
         break;
     case RESET_REQ_TYPE_SYSTEM:
         NXT_RESET_REQ_TYPE = RESET_REQ_TYPE_NONE;
+        rumboot_platform_runtime_info->persistent[NXT_RESET_REQ_TYPE] = RESET_REQ_TYPE_NONE;
         break;
     case RESET_REQ_TYPE_NONE:
         break;
