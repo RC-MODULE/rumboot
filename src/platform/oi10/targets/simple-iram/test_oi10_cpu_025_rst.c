@@ -11,12 +11,14 @@
 #include <rumboot/printf.h>
 #include <rumboot/platform.h>
 #include <rumboot/macros.h>
-#include <platform/test_event_c.h>
 #include <rumboot/irq.h>
+
+#include <platform/test_event_c.h>
 #include <platform/trace.h>
 #include <platform/test_assert.h>
 #include <platform/devices.h>
 #include <platform/interrupts.h>
+
 #include <platform/arch/ppc/ppc_476fp_config.h>
 #include <platform/arch/ppc/ppc_476fp_lib_c.h>
 #include <platform/arch/ppc/ppc_476fp_debug_fields.h>
@@ -24,10 +26,10 @@
 #include <platform/arch/ppc/ppc_476fp_ctrl_fields.h>
 
 BEGIN_ENUM( RST_REQ_TYPE )
-DECLARE_ENUM_VAL (RESET_REQ_TYPE_NONE,   0b00)
 DECLARE_ENUM_VAL (RESET_REQ_TYPE_CORE,   0b01)
 DECLARE_ENUM_VAL (RESET_REQ_TYPE_CHIP,   0b10)
 DECLARE_ENUM_VAL (RESET_REQ_TYPE_SYSTEM, 0b11)
+DECLARE_ENUM_VAL (RESET_REQ_TYPE_NONE,   0b00)
 END_ENUM( RST_REQ_TYPE );
 
 
@@ -43,17 +45,17 @@ enum {
 #define EVENT_RESET                        TEST_EVENT_CODE_MIN + 0
 #define EVENT_FINISHED                     TEST_EVENT_CODE_MIN + 1
 
-static volatile uint32_t RESET_REQ_TYPE __attribute__((section(".data"))) = RESET_REQ_TYPE_CORE;
-static volatile uint32_t NXT_RESET_REQ_TYPE __attribute__((section(".data"))) = RESET_REQ_TYPE_CORE;
+//static volatile uint32_t RESET_REQ_TYPE __attribute__((section(".data")));
+//static volatile uint32_t NXT_RESET_REQ_TYPE __attribute__((section(".data")));
+//static volatile uint32_t mc_cnt __attribute__((section(".data")));
 static volatile bool MC_HANDLED;
 
-//enum {
-//DECLARE_ENUM_VAL( MCSR_L2_e,         42 )
-//DECLARE_ENUM_VAL( MCSR_L2_n,         1 )
-//DECLARE_ENUM_VAL( MCSR_L2_i,         IBM_BIT_INDEX( 64, MCSR_L2_e ) )
-//} MCSR_FIELD;
+static volatile uint32_t RESET_REQ_TYPE;
+static volatile uint32_t mc_cnt __attribute__((section("rumboot_platform_runtime.persistent[]")));
+enum {
+    NXT_RESET_REQ_TYPE = 1,
+};
 
-volatile static uint32_t mc_cnt = 0;
 
 void update_reset_req_type ()
 {
@@ -62,9 +64,11 @@ void update_reset_req_type ()
     {
     case RESET_REQ_TYPE_CORE:
         NXT_RESET_REQ_TYPE = RESET_REQ_TYPE_CHIP;
+        rumboot_platform_runtime_info->persistent[RESET_REQ_TYPE] = RESET_REQ_TYPE_CHIP;
         break;
     case RESET_REQ_TYPE_CHIP:
         NXT_RESET_REQ_TYPE = RESET_REQ_TYPE_SYSTEM;
+        rumboot_platform_runtime_info->persistent[RESET_REQ_TYPE] = RESET_REQ_TYPE_CHIP;
         break;
     case RESET_REQ_TYPE_SYSTEM:
         NXT_RESET_REQ_TYPE = RESET_REQ_TYPE_NONE;
@@ -72,12 +76,8 @@ void update_reset_req_type ()
     case RESET_REQ_TYPE_NONE:
         break;
     }
-    rumboot_printf("Curent reset type = %x\n", RESET_REQ_TYPE);
+    rumboot_printf("Current reset type = %x\n", RESET_REQ_TYPE);
     rumboot_printf("Next reset type = %x\n", NXT_RESET_REQ_TYPE);
-//    trace_msg("Curent reset type = ");
-//    trace_hex(RESET_REQ_TYPE);
-//    trace_msg("Next reset type = ");
-//    trace_hex(NXT_RESET_REQ_TYPE);
 }
 
 static void reset_system (RST_REQ_TYPE dbcr_rst_type)
@@ -93,11 +93,11 @@ static void exception_handler(int id, const char *name)
     if(id == RUMBOOT_IRQ_MACHINE_CHECK)
     {
         rumboot_printf("It is OK!\n");
-        test_event(EVENT_RESET);
-        update_reset_req_type ();
-        reset_system(RESET_REQ_TYPE);
 	    mc_cnt += 1;
 	    spr_write(SPR_MCSR_C,0xFFFFFFFF);
+        update_reset_req_type ();
+        test_event(EVENT_RESET);
+	    reset_system(RESET_REQ_TYPE);
     }
     else
     {
@@ -164,24 +164,30 @@ int check_machinecheck ()
 
 	asm volatile ("fcmpu 0, 1, 2\n\t");
 
-	spr_write(SPR_MCSR_C,0xFFFFFFFF);
-	msr_write(msr_old_value);
+//	spr_write(SPR_MCSR_C,0xFFFFFFFF);
+//	msr_write(msr_old_value);
 
-	if(mc_cnt >= 1)
+	if(mc_cnt == 1 )
 	{
-
-
+	    rumboot_printf("mc_cnt = %x\n", mc_cnt);
+	    rumboot_printf("Error reset type = %x\n", RESET_REQ_TYPE);
 	    return 1;
 	}
+	else if (mc_cnt == 2 )
+	{
+	    rumboot_printf("mc_cnt = %x\n", mc_cnt);
+	    rumboot_printf("Error reset type = %x\n", RESET_REQ_TYPE);
+	    return 2;
+	}
+	else if (mc_cnt == 3 )
+	{
+        rumboot_printf("mc_cnt = %x\n", mc_cnt);
+        rumboot_printf("Error reset type = %x\n", RESET_REQ_TYPE);
+        return 3;
+	}
 
-	rumboot_printf("ERROR! The reset did not happen! \n");
-
-	return 0;
+	return 1;
 }
-
-
-
-
 
 
 int main ()
@@ -190,18 +196,35 @@ int main ()
 
     rumboot_printf("TEST START\n");
 
+    rumboot_printf("mc_cnt = %x\n", mc_cnt);
+    rumboot_printf("RESET_REQ_TYPE = %x\n", RESET_REQ_TYPE);
+    rumboot_printf("NXT_RESET_REQ_TYPE = %x\n", NXT_RESET_REQ_TYPE);
+
     MC_HANDLED = false;
     RESET_REQ_TYPE = NXT_RESET_REQ_TYPE;
-    if(RESET_REQ_TYPE == RESET_REQ_TYPE_NONE)
+    if((RESET_REQ_TYPE == RESET_REQ_TYPE_NONE)&&(mc_cnt >= 3))
     {
-        rumboot_printf("Reset sequence done\n");
+        test_event(EVENT_FINISHED);
+        rumboot_printf("TEST OK!\n");
         return 0;
     }
-    check_machinecheck ();
+//    else if ( (RESET_REQ_TYPE == RESET_REQ_TYPE_NONE)&&(mc_cnt == 0))
+//    {
+//        RESET_REQ_TYPE = RESET_REQ_TYPE_CORE;
+//        check_machinecheck ();
+//    }
+    else if ( (RESET_REQ_TYPE == RESET_REQ_TYPE_NONE)&&(mc_cnt == 0))
+    {
+        RESET_REQ_TYPE = RESET_REQ_TYPE_CHIP;
+        check_machinecheck ();
+    }
+    else if ((RESET_REQ_TYPE == RESET_REQ_TYPE_CHIP)&&(mc_cnt == 1))
+    {
+        RESET_REQ_TYPE = RESET_REQ_TYPE_SYSTEM;
+        check_machinecheck ();
+    }
 
-
-
-    rumboot_printf("TEST ERROR\n");
-    return 0;
+   rumboot_printf("TEST ERROR!\n");
+   return 1;
 }
 
