@@ -52,35 +52,17 @@ static void generate_wd_reset( TIMER_TCR_WRC const reset_type )
                         | (0b0                         << TIMER_TCR_DIE_i)
                         | (0b0                         << TIMER_TCR_FIE_i) );
 
-//    SPR_TCR_write( (TIMER_TCR_WP_2pow20_clocks  << TIMER_TCR_WP_i)
-//                 | (reset_type                  << TIMER_TCR_WRC_i)
-//                 | (0b0                         << TIMER_TCR_WIE_i)
-//                 | (0b0                         << TIMER_TCR_DIE_i)
-//                 | (0b0                         << TIMER_TCR_FIE_i) );
 
     spr_write(SPR_TBL_W,0); //reset TBL
     spr_write(SPR_TSR_RC,  (0b1  << TIMER_TSR_ENW_i )     // clear WD next action
                          | (0b1  << TIMER_TSR_WIS_i)     // clear WD exception
                          | (0b11 << TIMER_TSR_WRS_i) );  // clear WD reset status
 
-
-//    SPR_TBL_W_write(0); //reset TBL
-//    SPR_TSR_RC_write( (0b1  << TIMER_TSR_EVW_i)     // clear WD next action
-//                    | (0b1  << TIMER_TSR_WIS_i)     // clear WD exception
-//                    | (0b11 << TIMER_TSR_WRS_i) );  // clear WD reset status
-
     spr_write( SPR_TBL_W,(0b1 << 20) ); // set TBL value that triggers TSR[ENW] to 1
     spr_write( SPR_TBL_W,(0b0 << 20) ); // prepare for next trigger
     spr_write( SPR_TBL_W,(0b1 << 20) ); // set TBL value that triggers TSR[WIS] to 1
     spr_write( SPR_TBL_W,(0b0 << 20) ); // prepare for next trigger
     spr_write( SPR_TBL_W,(0b1 << 20) ); // set TBL value that triggers reset when TSR[ENW] == 1 and TSR[WIS] == 1
-
-//    SPR_TBL_W_write( (0b1 << 20) ); // set TBL value that triggers TSR[ENW] to 1
-//    SPR_TBL_W_write( (0b0 << 20) ); // prepare for next trigger
-//    SPR_TBL_W_write( (0b1 << 20) ); // set TBL value that triggers TSR[WIS] to 1
-//    SPR_TBL_W_write( (0b0 << 20) ); // prepare for next trigger
-//    SPR_TBL_W_write( (0b1 << 20) ); // set TBL value that triggers reset when TSR[ENW] == 1 and TSR[WIS] == 1
-
 
 }
 
@@ -119,6 +101,8 @@ static void check_wd_system_reset() {
 int main()
 {
     test_event_send_test_id( "test_oi10_cpu_025_wd");
+
+    test_event_memfill8_modelling((void*)SRAM0_BASE, 0x1000, 0x00, 0x00); //workaround (init 4KB SRAM0)
 
     rumboot_printf("TEST START\n");
 
