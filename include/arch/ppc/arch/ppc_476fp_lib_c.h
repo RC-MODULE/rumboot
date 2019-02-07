@@ -59,11 +59,17 @@ static inline __attribute__((always_inline)) void icbi( void* const addr ) {
     );
 }
 
-static inline __attribute__((always_inline)) void icbt( void* const addr ) {
-    asm volatile (
-        "icbt 0, 0, %0\n\t"
-        ::  "r"(addr)
-    );
+static inline __attribute__((always_inline)) void icbt( uint32_t CT, void* const addr ) {
+    if(CT == 2)
+        asm volatile (
+            "icbt 2, 0, %0\n\t"
+            ::"r"(addr)
+        );
+    else if(CT == 0)
+        asm volatile (
+            "icbt 0, 0, %0\n\t"
+            ::"r"(addr)
+        );
 }
 
 static inline __attribute__((always_inline)) void icblc(uint32_t CT,  void* const addr ) {
@@ -127,9 +133,35 @@ static inline __attribute__((always_inline)) void dcbst( void* const addr ) {
     );
 }
 
-static inline __attribute__((always_inline)) void dcbt( void* const addr ) {
+static inline __attribute__((always_inline)) void dcbt( uint32_t TH, void* const addr ) {
+    if(TH == 2)
+        asm volatile (
+            "dcbt 2, 0, %0\n\t"
+            ::"r"(addr)
+        );
+    else if(TH == 0)
+        asm volatile (
+            "dcbt 0, 0, %0\n\t"
+            ::"r"(addr)
+        );
+}
+
+static inline __attribute__((always_inline)) void dcbtst( uint32_t TH, void* const addr ) {
+    if(TH == 2)
+        asm volatile (
+            "dcbtst 2, 0, %0\n\t"
+            ::"r"(addr)
+        );
+    else if(TH == 0)
+        asm volatile (
+            "dcbtst 0, 0, %0\n\t"
+            ::"r"(addr)
+        );
+}
+
+static inline __attribute__((always_inline)) void dcba( void* const addr ) {
     asm volatile (
-        "dcbt 0, 0, %0\n\t"
+        "dcba 0, %0\n\t"
         ::"r"(addr)
     );
 }
