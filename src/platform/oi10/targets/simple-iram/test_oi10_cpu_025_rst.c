@@ -19,8 +19,8 @@
 #include <platform/devices.h>
 #include <platform/interrupts.h>
 
-#include <platform/arch/ppc/ppc_476fp_config.h>
-#include <platform/arch/ppc/ppc_476fp_lib_c.h>
+#include <arch/ppc_476fp_config.h>
+#include <arch/ppc_476fp_lib_c.h>
 #include <platform/arch/ppc/ppc_476fp_debug_fields.h>
 #include <platform/arch/ppc/ppc_476fp_itrpt_fields.h>
 #include <platform/arch/ppc/ppc_476fp_ctrl_fields.h>
@@ -176,20 +176,17 @@ int main ()
 {
     test_event_send_test_id( "test_oi10_cpu_025_rst");
 
-    rumboot_printf("TEST START\n");
     MC_HANDLED = false;
     update_reset_req_type ();
     if((rumboot_platform_runtime_info->persistent[NXT_RESET_REQ_TYPE] == RESET_REQ_TYPE_UNKNOWN))
     {
         test_event(EVENT_FINISHED);
-        rumboot_printf("TEST OK!\n");
         return 0;
     }
 
     check_machinecheck ();
 
 
-   rumboot_printf("TEST ERROR!\n");
    return 1;
 }
 
