@@ -11,7 +11,7 @@ case tag: { \
     /*rumboot_printf( "mask: 0x%x\n", (uint32_t)array->mask );*/ \
     if( (v & (uint##sz##_t)array->mask) != (uint##sz##_t)array->expected ) { \
         fails++; \
-        rumboot_printf( "Read register %s (0x%x): got: 0x%x expected: %x mask: 0x%x\n", \
+        rumboot_printf( "Read register %s (0x%x): got: 0x%x expected: 0x%x mask: 0x%x\n", \
                                        array->name, \
                                              address, \
                                                          v, \
