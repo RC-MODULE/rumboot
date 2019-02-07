@@ -122,11 +122,11 @@ static uint32_t check_gpio_func( uint32_t base_addr, uint32_t GPIODIR_value ) {
     rumboot_irq_sei();
 
     //init GPIO_W
-    gpio_set_ctrl_mode_by_mask( base_addr, GPIO_REG_MASK, software_mode );
-    gpio_set_direction_by_mask( base_addr, GPIODIR_value, direction_out );
+    gpio_set_ctrl_mode_by_mask( base_addr, GPIO_REG_MASK, gpio_ctrl_mode_sw );
+    gpio_set_direction_by_mask( base_addr, GPIODIR_value, gpio_pin_direction_0in_1out );
     gpio_set_value_by_mask( base_addr, GPIO_REG_MASK, 0x00 ); //write data to output
 
-    gpio_int_enable_by_mask( base_addr, GPIO_REG_MASK, both_edge );
+    gpio_int_enable_by_mask( base_addr, GPIO_REG_MASK, gpio_int_both_edge );
 
     if (GPIODIR_value == 0xAA)
         for (int i = 0; i<4; i++)
@@ -176,6 +176,8 @@ static uint32_t check_gpio_func( uint32_t base_addr, uint32_t GPIODIR_value ) {
 
 
 int main() {
+    rumboot_memfill8_modelling((void*)SRAM0_BASE, 0x1000, 0x00, 0x00); //workaround (init 4KB SRAM0)
+
     uint32_t result = 0x0;
 
     rumboot_printf( "Check GPIO (0x%x) \n", GPIO_X_BASE );
@@ -184,11 +186,11 @@ int main() {
     result += check_gpio_default_val( GPIO_X_BASE );
     result += check_gpio_regs( GPIO_X_BASE );
 #endif
-    rumboot_printf("INPUT: GPIO0_0, GPIO0_2, GPIO0_4, GPIO0_6\n");
-    rumboot_printf("OUTPUT: GPIO0_1, GPIO0_3, GPIO0_5, GPIO0_7\n");
+    rumboot_printf("INPUT: 0, 2, 4, 6\n");
+    rumboot_printf("OUTPUT: 1, 3, 5, 7\n");
     result += check_gpio_func( GPIO_X_BASE, 0xAA );
-    rumboot_printf("INPUT: GPIO0_1, GPIO0_3, GPIO0_5, GPIO0_7\n");
-    rumboot_printf("OUTPUT: GPIO0_0, GPIO0_2, GPIO0_4, GPIO0_6\n");
+    rumboot_printf("INPUT: 1, 3, 5, 7\n");
+    rumboot_printf("OUTPUT: 0, 2, 4, 6\n");
     result += check_gpio_func( GPIO_X_BASE, 0x55 );
 
     return result;

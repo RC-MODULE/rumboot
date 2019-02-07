@@ -4,7 +4,6 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-#include <stddef.h>
 
 
 /**
@@ -24,20 +23,22 @@
 
 
 typedef enum {
-    level,
-    rising_edge,
-    falling_edge,
-    both_edge
+    gpio_int_level,
+    gpio_int_rising_edge,
+    gpio_int_falling_edge,
+    gpio_int_both_edge
 } gpio_int_type;
 
 typedef enum {
-    direction_in = 0,
-    direction_out = 1
+    gpio_pin_direction_in = 0,      /**< 1 bits - input direction, 0 bits - unchanged */
+    gpio_pin_direction_out = 1,     /**< 1 bits - output direction, 0 bits - unchanged */
+    gpio_pin_direction_0in_1out = 2 /**< 0 bits - input direction, 1 bits - output direction */
 } gpio_pin_direction;
 
 typedef enum {
-    software_mode = 0,
-    hardware_mode = 1
+    gpio_ctrl_mode_sw = 0,      /**< 1 bits - software mode, 0 bits - unchanged */
+    gpio_ctrl_mode_hw = 1,      /**< 1 bits - hardware mode, 0 bits - unchanged */
+    gpio_ctrl_mode_0sw_1hw = 2  /**< 0 bits - software mode, 1 bits - hardware mode */
 } gpio_ctrl_mode;
 
 
