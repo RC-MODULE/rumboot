@@ -8,6 +8,7 @@
 #ifndef REGS_ITRACE_H_
 #define REGS_ITRACE_H_
 
+#include <platform/regs/fields/itrace.h>
 
 BEGIN_ENUM( ITRACE_TS_FIELD )
 
