@@ -57,6 +57,4 @@ void sp805_config(uint32_t base_addr, const struct sp805_conf * config)
     {
         dcr_write(base_addr + WD_REG_LOAD, config->load);
     }
-
-    dcr_write(base_addr + WD_REG_CONTROL, cntrl);
 }
