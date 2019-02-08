@@ -41,7 +41,9 @@ typedef enum test_check
     TC_SYSTEM_RESET
 } test_check;
 
-static test_check volatile __attribute__((section(".data"))) last_test_check = TC_NONE;
+enum {
+    last_test_check = 1,
+};
 
 
 static void generate_wd_reset( TIMER_TCR_WRC const reset_type )
@@ -72,8 +74,7 @@ static void generate_wd_reset( TIMER_TCR_WRC const reset_type )
 
 static void check_wd_core_reset() {
 	rumboot_printf( "check_wd_core_reset\n" );
-
-    last_test_check = TC_CORE_RESET;
+	rumboot_platform_runtime_info->persistent[last_test_check]= TC_CORE_RESET;
     msync();
 
     test_event( TEC_CHECK_WD_CORE_RESET );
@@ -82,8 +83,7 @@ static void check_wd_core_reset() {
 
 static void check_wd_chip_reset() {
 	rumboot_printf( "check_wd_chip_reset\n" );
-
-    last_test_check = TC_CHIP_RESET;
+	rumboot_platform_runtime_info->persistent[last_test_check] = TC_CHIP_RESET;
     msync();
 
     test_event( TEC_CHECK_WD_CHIP_RESET );
@@ -92,8 +92,7 @@ static void check_wd_chip_reset() {
 
 static void check_wd_system_reset() {
 	rumboot_printf( "check_wd_system_reset\n" );
-
-    last_test_check = TC_SYSTEM_RESET;
+	rumboot_platform_runtime_info->persistent[last_test_check] = TC_SYSTEM_RESET;
     msync();
 
     test_event( TEC_CHECK_WD_SYSTEM_RESET );
@@ -105,11 +104,7 @@ int main()
 {
     test_event_send_test_id( "test_oi10_cpu_025_wd");
 
-    //memset((void*)SRAM0_BASE, 0x1000, 0x00); //workaround (init 4KB SRAM0)
-
     rumboot_memfill8_modelling((void*)SRAM0_BASE, 0x1000, 0x00, 0x00); //workaround (init 4KB SRAM0)
-
-    rumboot_printf("TEST START\n");
 
     msr_write( (0b0 << ITRPT_XSR_WE_i)
              | (0b0 << ITRPT_XSR_CE_i)
@@ -126,15 +121,15 @@ int main()
              | (0b0 << ITRPT_XSR_PMM_i) );
 
     uint32_t reg = 0;
-    switch( last_test_check ) {
+    switch( rumboot_platform_runtime_info->persistent[last_test_check] ) {
         case TC_NONE: {
             check_wd_core_reset();
             break;
         }
         case TC_CORE_RESET: {
         	reg = spr_read (SPR_DBSR_RC);
-            //reg = SPR_DBSR_RC_read();
-            TEST_ASSERT((reg & (1<<28)) && !((reg & (1<<29))), "Error. Invalid value in DBSR[MRR]");
+        	// Under git@git.module.ru:OI10/cpu.git de57269bb7945aaea0b1fc2757708036baf0aa8a
+            TEST_ASSERT((reg & (1<<29)) && !((reg & (1<<28))), "Error. Invalid value in DBSR[MRR]");
             check_wd_chip_reset();
             break;
         }
