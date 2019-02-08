@@ -18,6 +18,8 @@
 uint32_t const EVENT_TEST_DCI       = TEST_EVENT_CODE_MIN + 0;
 uint32_t const EVENT_TEST_ICBI      = TEST_EVENT_CODE_MIN + 1;
 uint32_t const EVENT_TEST_ICBT      = TEST_EVENT_CODE_MIN + 2;
+uint32_t const EVENT_TEST_DCBT      = TEST_EVENT_CODE_MIN + 3;
+uint32_t const EVENT_TEST_DCBZ      = TEST_EVENT_CODE_MIN + 4;
 
 #define COUNT_AREAS 5
 
@@ -370,6 +372,30 @@ uint32_t test_dcbi()
 uint32_t test_dcbt()
 {
     uint32_t    result = 0;
+    char        test_name[] = "test_dcbt";
+    rumboot_printf("%s start\n",test_name);
+    msync();
+    ici(0);
+    dci(2);
+    msync();
+    isync();
+    for(uint32_t CT = 0; CT < 3; CT += 2)
+    {
+        test_event(EVENT_TEST_DCBT);
+        msync();
+        for(uint32_t i = 0; i < L2C_COUNT_WAYS; ++i)
+            dcbt(CT,test_function_buf[i]);
+        isync();
+        msync();
+        result |= check_caches(test_function_buf,true,PSEUDO_CT_DECODING_IS_L2_mask,test_name);
+        result |= check_caches(test_function_buf,!((bool)CT),PSEUDO_CT_DECODING_IS_L1D_val,test_name);
+        msync();
+        dci(0);
+        dci(2);
+        msync();
+        isync();
+    }
+    rumboot_printf("%s finished: %s\n",test_name,(result)?"FAIL":"OK");
     return result;
 }
 uint32_t test_dcbtst()
@@ -380,6 +406,40 @@ uint32_t test_dcbtst()
 uint32_t test_dcbz()
 {
     uint32_t    result = 0;
+    char        test_name[] = "test_dcbz";
+    rumboot_printf("%s start\n",test_name);
+    for(uint32_t i = 0; i < L2C_COUNT_WAYS; ++i)
+    {
+        dcbt(0,test_function_buf[i]);
+    }
+    msync();
+    isync();
+    rumboot_printf("Checking, that all is cached\n");
+    result |= check_caches(test_function_buf,true,PSEUDO_CT_DECODING_IS_L2_mask,test_name);
+    result |= check_caches(test_function_buf,true,PSEUDO_CT_DECODING_IS_L1D_val,test_name);
+    test_event(EVENT_TEST_DCBZ);
+    msync();
+
+    for(uint32_t i = 0; i < L2C_COUNT_WAYS; ++i)
+    {
+        dcbz(test_function_buf[i]);
+    }
+    msync();
+
+    for(uint32_t CT = 0; CT < 3; CT += 2)
+    {
+        for(uint32_t i = 0; i < L2C_COUNT_WAYS; ++i)
+            for(uint32_t addr = 0; addr < L2C_LINE_SIZE; addr += 4)
+                if(ioread32(((uint32_t)test_function_buf[i]) + addr))
+                {
+                    result |= ioread32(((uint32_t)test_function_buf[i]) + addr);
+                    rumboot_printf("%s failed on address 0x%x, CT == %d.\n", test_name, (((uint32_t)test_function_buf[i]) + addr), CT);
+                }
+        dci(0);
+        msync();
+    }
+
+    rumboot_printf("%s finished: %s\n",test_name,(result)?"FAIL":"OK");
     return result;
 }
 uint32_t test_icbtls()
@@ -412,13 +472,13 @@ uint32_t test_dcblc()
  */
 uint32_t (*test_cache_functions[])() = {
 //        test_ici,
-        test_dci,
-        test_icbi,
-        test_dcba,
+//        test_dci,
+//        test_icbi,
+//        test_dcba,
         test_icbt,
+        test_dcbt,
         test_dcbf,
         test_dcbi,
-        test_dcbt,
         test_dcbtst,
         test_dcbz,
         test_icbtls,
