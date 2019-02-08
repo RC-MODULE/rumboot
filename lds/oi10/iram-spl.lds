@@ -48,11 +48,7 @@ SECTIONS {
         rumboot_platform_stack_area_end = .;
     } > IM0
 
-    .runtime 0x8001fe00 (NOLOAD) : {
-        /* Runtime info is at the very top of iram */
-        rumboot_platform_runtime_info = .;
-        *(.rumboot_platform_runtime_info);
-    }
+    INCLUDE oi10/runtime_section.lds.h
 
     /DISCARD/ : {
         *(.init.text)
