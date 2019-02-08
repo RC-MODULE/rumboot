@@ -49,9 +49,9 @@ uint32_t itrace_get_status(uint32_t const base_address)
     return (dcr_read(base_address + ITC0_TS) & 0xF8000000);
 }
 
-void itrace_clear_status(uint32_t const base_address)
+void itrace_clear_status(uint32_t const base_address, uint32_t const value)
 {
-    dcr_clear(base_address + ITC0_TS, 0xF8000000);
+    dcr_clear(base_address + ITC0_TS, ~(value & 0xF8000000));
 }
 
 uint32_t itrace_get_last_address1(uint32_t const base_address)

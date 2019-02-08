@@ -81,7 +81,7 @@ void itrace_init(uint32_t base_address,
                   uint32_t power_down_eDRAM);
 
 uint32_t itrace_get_status(uint32_t base_address);
-void itrace_clear_status(uint32_t base_address);
+void itrace_clear_status(uint32_t base_address, uint32_t value);
 
 uint32_t itrace_get_last_address1(uint32_t base_address);
 uint32_t itrace_get_last_address2(uint32_t base_address);
