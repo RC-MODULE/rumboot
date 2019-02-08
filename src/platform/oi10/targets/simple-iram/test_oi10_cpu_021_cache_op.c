@@ -20,6 +20,7 @@ uint32_t const EVENT_TEST_ICBI      = TEST_EVENT_CODE_MIN + 1;
 uint32_t const EVENT_TEST_ICBT      = TEST_EVENT_CODE_MIN + 2;
 uint32_t const EVENT_TEST_DCBT      = TEST_EVENT_CODE_MIN + 3;
 uint32_t const EVENT_TEST_DCBZ      = TEST_EVENT_CODE_MIN + 4;
+uint32_t const EVENT_TEST_DCBI      = TEST_EVENT_CODE_MIN + 5;
 
 #define COUNT_AREAS 5
 
@@ -367,6 +368,31 @@ uint32_t test_dcbf()
 uint32_t test_dcbi()
 {
     uint32_t    result = 0;
+    char        test_name[] = "test_dcbi";
+    rumboot_printf("%s start\n",test_name);
+    for(uint32_t i = 0; i < L2C_COUNT_WAYS; ++i)
+    {
+        iowrite32(0,(uint32_t)test_function_buf[i]);
+    }
+    rumboot_printf("Checking, that all is cached\n");
+    result |= check_caches(test_function_buf,true,PSEUDO_CT_DECODING_IS_L2_mask,test_name);
+    result |= check_caches(test_function_buf,true,PSEUDO_CT_DECODING_IS_L1D_val,test_name);
+
+    test_event(EVENT_TEST_DCBI);
+    msync();
+    for(uint32_t i = 0; i < L2C_COUNT_WAYS; ++i)
+    {
+        dcbi(test_function_buf[i]);
+    }
+    msync();
+
+    result |= check_caches(test_function_buf,false,PSEUDO_CT_DECODING_IS_L2_mask,test_name);
+    result |= check_caches(test_function_buf,false,PSEUDO_CT_DECODING_IS_L1D_val,test_name);
+    for(uint32_t i = 0; i < L2C_COUNT_WAYS; ++i)
+    {
+        result |= !(ioread32((uint32_t)test_function_buf[i]));
+    }
+    rumboot_printf("%s finished: %s\n",test_name,(result)?"FAIL":"OK");
     return result;
 }
 uint32_t test_dcbt()
@@ -408,15 +434,11 @@ uint32_t test_dcbz()
     uint32_t    result = 0;
     char        test_name[] = "test_dcbz";
     rumboot_printf("%s start\n",test_name);
-    for(uint32_t i = 0; i < L2C_COUNT_WAYS; ++i)
-    {
-        dcbt(0,test_function_buf[i]);
-    }
+    msync();
+    dci(0);
+    dci(2);
     msync();
     isync();
-    rumboot_printf("Checking, that all is cached\n");
-    result |= check_caches(test_function_buf,true,PSEUDO_CT_DECODING_IS_L2_mask,test_name);
-    result |= check_caches(test_function_buf,true,PSEUDO_CT_DECODING_IS_L1D_val,test_name);
     test_event(EVENT_TEST_DCBZ);
     msync();
 
@@ -475,17 +497,17 @@ uint32_t (*test_cache_functions[])() = {
 //        test_dci,
 //        test_icbi,
 //        test_dcba,
-        test_icbt,
-        test_dcbt,
-        test_dcbf,
+//        test_icbt,
+//        test_dcbt,
         test_dcbi,
-        test_dcbtst,
-        test_dcbz,
-        test_icbtls,
-        test_icblc,
-        test_dcbtls,
-        test_dcbtstls,
-        test_dcblc,
+//        test_dcbtst,
+//        test_dcbz,
+//        test_icbtls,
+//        test_icblc,
+//        test_dcbtls,
+//        test_dcbtstls,
+//        test_dcblc,
+//        test_dcbf,
 };
 /**********************************************************/
 
