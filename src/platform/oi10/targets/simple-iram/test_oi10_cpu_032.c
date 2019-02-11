@@ -34,7 +34,7 @@
 #define TLB_ENTRY_EM2_CACHE_WT_0   MMU_TLB_ENTRY(  0x000,  0x00000,    0x00000,    MMU_TLBE_DSIZ_1GB,      0b1,    0b1,    0b1,    0b0,    0b1,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
 #define TLB_ENTRY_EM2_CACHE_WT_1   MMU_TLB_ENTRY(  0x000,  0x40000,    0x40000,    MMU_TLBE_DSIZ_1GB,      0b1,    0b1,    0b1,    0b0,    0b1,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
 
-#define DATA_SIZE   0x4000
+#define DATA_SIZE   0x1000
 #define DATA_OFFSET (DATA_SIZE + DATA_SIZE)
 
 uint32_t src_address_array[] =
@@ -52,14 +52,13 @@ static volatile bool dma2plb6_handler = false;
 
 static void handler_dma2plb6_ch0()
 {
-    rumboot_printf( "DMA2PLB6 IRQ arrived from channel 0\n");
+    rumboot_printf( "irq handler (DMA, ch0)\n");
     dma2plb6_clear_interrupt(DCR_DMAPLB6_BASE, channel0);
     dma2plb6_handler = true;
 }
 
 void init_handlers()
 {
-    rumboot_printf( "Create irq handlers\n" );
     rumboot_irq_cli();
     struct rumboot_irq_entry *tbl = rumboot_irq_create( NULL );
     rumboot_irq_set_handler( tbl, DMA2PLB6_DMA_IRQ_0, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler_dma2plb6_ch0, ( void* ) 0);
@@ -93,33 +92,44 @@ void configure_dma(uint32_t base_addr, DmaChannel channel, uint32_t addr_src, ui
 
 int main ()
 {
+    test_event_send_test_id("test_oi10_cpu_032");
+
     emi_init(DCR_EM2_EMI_BASE);
 
     //init data
     rumboot_printf("Init data\n");
-    rumboot_memfill8((void*)SRAM0_BASE, DATA_SIZE, 0x00, 0x01);
-    rumboot_memfill8((void*)SRAM0_BASE+DATA_OFFSET, DATA_SIZE, 0x00, 0x01);
-    rumboot_memfill8_modelling((void*)(SRAM0_BASE+DATA_SIZE), DATA_SIZE, 0x00, 0x00);
-    rumboot_memfill8_modelling((void*)(SRAM0_BASE+DATA_OFFSET+DATA_SIZE), DATA_SIZE, 0x00, 0x00);
+    for (uint32_t i = 0; i < ARRAY_SIZE(src_address_array); i++)
+    {
+        rumboot_memfill8((void*)src_address_array[i], DATA_SIZE, 0x00, 0x01);
+        rumboot_memfill8((void*)(src_address_array[i]+DATA_OFFSET), DATA_SIZE, 0x00, 0x01);
+        rumboot_memfill8_modelling((void*)(src_address_array[i]+DATA_SIZE), DATA_SIZE, 0x00, 0x00);
+        rumboot_memfill8_modelling((void*)(src_address_array[i]+DATA_OFFSET+DATA_SIZE), DATA_SIZE, 0x00, 0x00);
+    }
+
+    rumboot_printf("Init handlers\n");
+    init_handlers();
 
     rumboot_printf("Set tlb (WT)\n");
     static const tlb_entry em0_tlb_entry_wt[] = {{TLB_ENTRY_EM2_CACHE_WT_0}, {TLB_ENTRY_EM2_CACHE_WT_1}} ;
     write_tlb_entries(em0_tlb_entry_wt,ARRAY_SIZE(em0_tlb_entry_wt));
 
-    for (uint32_t i = 0; i < 1; i++)
+    rumboot_printf("Data size = 0x%x\n", DATA_SIZE);
+    for (uint32_t i = 0; i < ARRAY_SIZE(src_address_array); i++)
     {
-        rumboot_printf("Run DMA\n");
+        rumboot_printf("Start check (addr = 0x%x)\n", src_address_array[i]);
+        rumboot_printf("Start DMA\n");
         configure_dma(DCR_DMAPLB6_BASE, channel0, src_address_array[i], src_address_array[i] + DATA_SIZE, DATA_SIZE);
         dma2plb6_enable_channel(DCR_DMAPLB6_BASE, channel0);
 
-        rumboot_printf("Run write-read\n");
-        uint32_t addr = (SRAM0_BASE + DATA_OFFSET);
+        rumboot_printf("Start write-read\n");
+        uint32_t addr = (src_address_array[i] + DATA_OFFSET);
         while (!dma2plb6_handler)
         {
             iowrite32(ioread32(addr), addr + DATA_SIZE);
             addr+=4;
         }
         dma2plb6_handler = false;
+        rumboot_printf("\n");
     }
 
     rumboot_printf("TEST OK\n");
