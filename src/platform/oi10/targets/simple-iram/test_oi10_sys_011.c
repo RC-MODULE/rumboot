@@ -30,7 +30,8 @@ enum {
        TEC_CHECK_DEBUG_MACHINECHECK = TEST_EVENT_CODE_MIN,
        TEC_CHECK_DEBUG_HALT,
        TEC_CHECK_DEBUG_UNCONDEVENT,
-       TEC_CHECK_DEBUG_SYSTEMSTATUS
+       TEC_CHECK_DEBUG_SYSTEMSTATUS,
+       TEC_CHECK_DEBUG_MASKOUT
 } test_event_code;
 
 enum {
@@ -200,6 +201,30 @@ int check_machinecheck ()
 	return 0;
 }
 
+int check_dbomask ()
+{
+    uint32_t dbdr;
+
+    rumboot_printf("DBOMASK check start!\n");
+    spr_write(SPR_DBDR, TEST_DATA_ERROR);
+
+    rumboot_platform_event_clear();
+    rumboot_printf("send TEC_CHECK_DEBUG_MASKOUT\n");
+    test_event(TEC_CHECK_DEBUG_MASKOUT );
+    if(event_get()) return 1;
+
+    dbdr = spr_read(SPR_DBDR);
+    if (dbdr != TEST_DATA_OK ){
+        rumboot_printf("DBIMASK check failed!\n");
+        return 1;
+    }
+
+    spr_write(SPR_DBSR_RC,0xFFFFFFFF); //clear dbsr
+
+    rumboot_printf("DBOMASK check done!\n");
+    return 0;
+}
+
 int main()
 {
 	test_event_send_test_id("test_oi10_sys_011");
@@ -220,6 +245,10 @@ int main()
 		rumboot_printf("DEBUG_MACHINECHECK test failed!");
 		return 1;
 	}
+    if(check_dbomask()) {
+        rumboot_printf("DBOMask test failed!");
+        return 1;
+    }
 
 	rumboot_printf("TEST OK\n");
     return 0;
