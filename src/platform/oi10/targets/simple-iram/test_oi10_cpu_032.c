@@ -57,15 +57,23 @@ static void handler_dma2plb6_ch0()
     dma2plb6_handler = true;
 }
 
+static void handler_system_hung()
+{
+    rumboot_printf( "irq handler (SYSTEM HUNG)\n");
+    TEST_ASSERT(0, "ERROR! SYSTEM HUNG");
+}
+
 void init_handlers()
 {
     rumboot_irq_cli();
     struct rumboot_irq_entry *tbl = rumboot_irq_create( NULL );
     rumboot_irq_set_handler( tbl, DMA2PLB6_DMA_IRQ_0, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler_dma2plb6_ch0, ( void* ) 0);
+    rumboot_irq_set_handler( tbl, O_SYSTEM_HUNG, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler_system_hung, ( void* ) 0);
 
     /* Activate the table */
     rumboot_irq_table_activate( tbl );
     rumboot_irq_enable( DMA2PLB6_DMA_IRQ_0 );
+    rumboot_irq_enable( O_SYSTEM_HUNG );
     rumboot_irq_sei();
 }
 
