@@ -26,7 +26,10 @@
 
 #include <platform/regs/regs_dcrarb.h>
 #include <platform/regs/regs_plb6plb4.h>
+#include <platform/regs/regs_itrace.h>
+#include <platform/regs/regs_ltrace.h>
 
+/* Config */
 #define TEST_STRING_ID              "test_oi10_cpu_019"
 
 /* Constants macros */
@@ -62,7 +65,8 @@
 #define CMODE_INDEPENDENT           0
 #define CMODE_CHAINED               1
 #define DMA2PLB6_TRANSFER_UNITS     8
-
+#define LTRACE_TC_LTE_BIT           IBM_BIT_INDEX(32,  0)
+#define LTRACE_TC_LTCEN_BIT         IBM_BIT_INDEX(32, 31)
 
 /* Other macros */
 #define ALWAYS_INLINE               __attribute__((always_inline))
@@ -84,11 +88,9 @@
 #define PMU_READ(REG)               l2c_pmu_read(DCR_L2C_BASE,REG)
 #define PMU_SET(REG,VAL)            PMU_WRITE((REG), PMU_READ(REG) |  (VAL))
 #define PMU_CLR(REG,VAL)            PMU_WRITE((REG), PMU_READ(REG) & ~(VAL))
-#define PMU_INV(REG,VAL)            PMU_WRITE((REG), PMU_READ(REG) ^  (VAL))
 #define PMU_TST(REG,VAL)            !!(PMU_READ(REG) & (VAL))
 #define SPR_SET(REG,VAL)            spr_write((REG), spr_read(REG) |  (VAL))
 #define SPR_CLR(REG,VAL)            spr_write((REG), spr_read(REG) & ~(VAL))
-#define SPR_INV(REG,VAL)            spr_write((REG), spr_read(REG) ^  (VAL))
 #define PMULCx(CMODE,FC,    \
         FCS,FCU,FCM1,FCM0,  \
         CE,EVENT)                   ((((CMODE) & 1  ) << PMULCx_CMODE_i)  | \
@@ -137,7 +139,6 @@ typedef volatile uint32_t           irq_flags_t;
 static irq_flags_t        IRQ[IRQ_ARR_SZ];
 static irq_flags_t        ext_int_raised    = 0;
 static rumboot_irq_entry *irq_table         = NULL;
-static volatile void     *g_ptr             = NULL;
 static volatile uint32_t  dma2plb6_src[DMA2PLB6_TRANSFER_UNITS] = {0};
 static volatile uint32_t  dma2plb6_dst[DMA2PLB6_TRANSFER_UNITS] = {0};
 
@@ -195,10 +196,18 @@ static void clear_all_interrupts(irq_flags_t *irqs)
 
 static void ex_handler(int exid, const char *exname)
 {
-    rumboot_printf(
-            "\n >>> EXCEPTION #%d (%s) at 0x%X with MCSR=0x%X! <<<\n",
-            exid, exname, spr_read(SPR_MCSRR0), spr_read(SPR_MCSR_RW));
-    spr_write(SPR_MCSR_C, ~0);
+    if(exid == RUMBOOT_IRQ_MACHINE_CHECK)
+    {
+        rumboot_printf(
+                "\n >>> EXCEPTION #%d (%s) at 0x%X with MCSR=0x%X! <<<\n",
+                exid, exname, spr_read(SPR_MCSRR0), spr_read(SPR_MCSR_RW));
+        spr_write(SPR_MCSR_C, ~0);
+    } else
+    {
+        rumboot_printf(
+                "\n >>> EXCEPTION #%d (%s) at 0x%X <<<\n",
+                exid, exname, spr_read(SPR_SRR0));
+    }
     l2c_l2_write(DCR_L2C_BASE, L2C_L2PLBSTAT1, ~0);
 }
 
@@ -293,8 +302,12 @@ void irq_handler( int irq_num, void *arg )
                 dcr_write(DCR_ARB_BASE + DCRARB_DAESR, temp);
             break;
         case ITRACE_COMPLETE:           /* 13 */
+            dcr_write(DCR_ITRACE_BASE + ITC0_TS,
+                    dcr_read(DCR_ITRACE_BASE + ITC0_TS));
             break;
         case LTRACE_COMPLETE_0:         /* 14 */
+            dcr_write(DCR_LTRACE_BASE + LTR_TS,
+                    dcr_read(DCR_LTRACE_BASE + LTR_TS));
             break;
         default:
             break;
@@ -335,7 +348,6 @@ void genint__l2c_mchk(void *data)
             temp | L2PLBFRC0_IntvnDataPE0);
 }
 
-MAY_BE_NOT_USED
 void genint__pmu(void *data)
 {
     pmu_freeze_all_counters(YES);
@@ -394,14 +406,21 @@ void genint__hw_event(void *data)
 
 void genint__itrace(void *data)
 {
-    /* Temporary stub */
-    irq_handler(ITRACE_COMPLETE, CAST_ADDR(&g_ptr));
+    uint32_t dcra = CAST_UINT(data);
+
+    dcr_write(dcra + ITC0_TC,   BIT(ITC0_TC_ITE_i)          |
+                                BIT(ITC0_TC_ITIM_i));
+    dcr_write(dcra + ITC0_TC,   BIT(ITC0_TC_ITIM_i));
+
 }
 
 void genint__ltrace(void *data)
 {
-    /* Temporary stub */
-    irq_handler(LTRACE_COMPLETE_0, CAST_ADDR(&g_ptr));
+    uint32_t dcra = CAST_UINT(data);
+
+    dcr_write(dcra + LTR_TC,    BIT(LTRACE_TC_LTE_BIT)      |
+                                BIT(LTRACE_TC_LTCEN_BIT));
+    dcr_write(dcra + LTR_TC,    BIT(LTRACE_TC_LTCEN_BIT));
 }
 
 
@@ -417,16 +436,16 @@ struct genint_entry_t intgen_list[] =
             "L2C PMU #0"),
 /*  -----------------------------------------------------------------------  */
     GENINT_ENTRY(genint__dma2plb6, channel0,                DMA2PLB6_DMA_IRQ_0,
-            "DMA2PLB6 Channel #0 IRQ"),
+            "DMA2PLB6 Channel #0"),
 /*  -----------------------------------------------------------------------  */
     GENINT_ENTRY(genint__dma2plb6, channel1,                DMA2PLB6_DMA_IRQ_1,
-            "DMA2PLB6 Channel #1 IRQ"),
+            "DMA2PLB6 Channel #1"),
 /*  -----------------------------------------------------------------------  */
     GENINT_ENTRY(genint__dma2plb6, channel2,                DMA2PLB6_DMA_IRQ_2,
-            "DMA2PLB6 Channel #2 IRQ"),
+            "DMA2PLB6 Channel #2"),
 /*  -----------------------------------------------------------------------  */
     GENINT_ENTRY(genint__dma2plb6, channel3,                DMA2PLB6_DMA_IRQ_3,
-            "DMA2PLB6 Channel #3 IRQ"),
+            "DMA2PLB6 Channel #3"),
 /*  -----------------------------------------------------------------------  */
     GENINT_ENTRY(genint__hw_event, EVENT_SET_SLVERR_INT_0,  DMA2PLB6_SLV_ERR_INT,
             "signal <DMA2PLB6_SLV_ERR_INT>"),
@@ -446,9 +465,9 @@ struct genint_entry_t intgen_list[] =
     GENINT_ENTRY(genint__dcr_arb,  DCR_ARB_BASE,            ARB_SYSDCRERR,
             "DCR Arbiter"),
 /*  -----------------------------------------------------------------------  */
-    GENINT_ENTRY(genint__itrace,   0,                       ITRACE_COMPLETE,
+    GENINT_ENTRY(genint__itrace,   DCR_ITRACE_BASE,         ITRACE_COMPLETE,
             "ITRACE COMPLETE"),
-    GENINT_ENTRY(genint__ltrace,   0,                       LTRACE_COMPLETE_0,
+    GENINT_ENTRY(genint__ltrace,   DCR_LTRACE_BASE,         LTRACE_COMPLETE_0,
             "LTRACE COMPLETE 0"),
 /*  -----------------------------------------------------------------------  */
     GENINT_ENTRY_END
@@ -475,7 +494,7 @@ uint32_t check_internal_interrupts(void)
         if(!result)
         {
             rumboot_printf("While waiting internal interrupt #%d...\n", irq);
-            irq_handler(-irq, CAST_ADDR(&g_ptr));
+            irq_handler(-irq, NULL);
         }
         TEST_ASSERT(result, "INTERNAL INTERRUPT NOT RECEIVED!\n");
     }
@@ -518,8 +537,9 @@ void init_interrupts(void)
     uint32_t    irq;
     rumboot_printf("Start IRQ initialization...\n");
 
-    /* Turn on bits 'CE' and 'EE' in MSR (enable interrupts) */
-    msr_write(msr_read() | BIT(ITRPT_XSR_CE_i) | BIT(ITRPT_XSR_EE_i));
+    /* Turn on bits 'CE', 'EE', and 'DE' in MSR (enable interrupts) */
+    msr_write(msr_read()    | BIT(ITRPT_XSR_CE_i)
+                            | BIT(ITRPT_XSR_EE_i));
 
     clear_all_interrupts(IRQ);
     rumboot_irq_cli();
@@ -527,7 +547,7 @@ void init_interrupts(void)
     irq_table = rumboot_irq_create(NULL);
     for(irq = IRQ_MIN; irq < IRQ_MAX; irq++)
         rumboot_irq_set_handler(irq_table, irq,
-            IRQ_FLAGS, irq_handler, CAST_ADDR(&g_ptr));
+            IRQ_FLAGS, irq_handler, NULL);
 
     /* Activate the table */
     rumboot_irq_table_activate(irq_table);
@@ -544,7 +564,9 @@ uint32_t main(void)
     test_event_send_test_id(TEST_STRING_ID);
     init_interrupts();
 
-    SPR_CLR(SPR_CCR2, 1 << CTRL_CCR2_PMUD_i);
+    SPR_SET(SPR_CCR0, BIT(CTRL_CCR0_ITE_i));
+    SPR_CLR(SPR_CCR0, BIT(CTRL_CCR0_DTB_i));
+    SPR_CLR(SPR_CCR2, BIT(CTRL_CCR2_PMUD_i));
     SPR_CLR(SPR_PMUCC0, PMUCC0_FAC);
 
     return print_result(
@@ -553,7 +575,4 @@ uint32_t main(void)
             check_external_interrupts()
             );
 }
-
-
-
 
