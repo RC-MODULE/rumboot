@@ -70,7 +70,7 @@ static uint32_t check_registers_write( uint32_t base_addr )
           {   "CRG_SYS_RST_CFG0",    REGPOKER_WRITE_DCR,    CRG_SYS_RST_CFG0,         0x00000096,           0x00000fff   },
           {   "CRG_SYS_RST_CFG1",    REGPOKER_WRITE_DCR,    CRG_SYS_RST_CFG1,         0x00960064,           0x0fff0fff   },
           {   "CRG_SYS_RST_CFG2",    REGPOKER_WRITE_DCR,    CRG_SYS_RST_CFG2,         0x0107000E,           0x0107002f   },
-          {   "CRG_SYS_CKUPDATE",    REGPOKER_WRITE_DCR,    CRG_SYS_CKUPDATE,         0x00000000,           0x00000001   },
+          //{   "CRG_SYS_CKUPDATE",    REGPOKER_WRITE_DCR,    CRG_SYS_CKUPDATE,         0x00000000,           0x00000001   },
           {   "CRG_SYS_INTMASK",     REGPOKER_WRITE_DCR,    CRG_SYS_INTMASK,          0x00000000,           0x00000001   },
           //{   "CRG_SYS_INTCLR",      REGPOKER_WRITE_DCR,    CRG_SYS_INTCLR,           0x00000000,           0x00000001   },
           {   "CRG_SYS_CKDIVMODE0",  REGPOKER_WRITE_DCR,    CRG_SYS_CKDIVMODE0,       0x00000000,           0x0000001f   },
