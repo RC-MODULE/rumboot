@@ -26,6 +26,21 @@ typedef enum
     L2INTEN_WACINT2     = (1 << 1),
 } L2INTEN_bits_t;
 
+//L2MCKEN bits
+typedef enum
+{
+    L2MCKEN_EXTINT      = (1 << 11),
+    L2MCKEN_PLBINT0     = (1 << 10),
+    L2MCKEN_PLBINT1     = (1 << 9),
+    L2MCKEN_L2AINT0     = (1 << 8),
+    L2MCKEN_L2AINT1     = (1 << 7),
+    L2MCKEN_L2AINT2     = (1 << 6),
+    L2MCKEN_L1CINT0     = (1 << 5),
+    L2MCKEN_RACINT0     = (1 << 4),
+    L2MCKEN_WACINT0     = (1 << 3),
+    L2MCKEN_WACINT1     = (1 << 2),
+    L2MCKEN_WACINT2     = (1 << 1),
+} L2MCKEN_bits_t;
 
 //L2PLBINTEN0 bits
 typedef enum
