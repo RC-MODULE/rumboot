@@ -1,25 +1,21 @@
 
-macro(rumboot_bootrom_add_common_units spl_conf romconf)
-  if (RUMBOOT_ARCH STREQUAL "ppc")
-   add_rumboot_target(
-     FILES common/bootrom/ppc-pid-test.c
-     NAME pid-test
-     CONFIGURATION ${spl_conf}
-     FEATURES STUB PACKIMAGE
-     VARIABLE SPL_PID_TEST
-   )
-  endif()
+macro(rumboot_bootrom_add_common_units)
+  set(options DEFAULT)
+  set(oneValueArgs   ID TAG MEMTAG TAGOFFSET CONFIGURATION FULL ENDIAN)
+  set(multiValueArgs IRUN_FLAGS)
+
+  cmake_parse_arguments(BOOTSOURCE "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
   if (NOT RUMBOOT_PLATFORM STREQUAL "native")
    add_rumboot_target(
      FILES common/bootrom/timer.c
      NAME timer
      PREFIX bootrom-unit
-     CONFIGURATION ${romconf}
+     CONFIGURATION ${BOOTSOURCE_CONFIGURATION}
    )
   endif()
 
-  if (RUMBOOT_BUILD_TYPE STREQUAL "Production")
+  if (RUMBOOT_BUILD_TYPE STREQUAL "Production" AND NOT RUMBOOT_ARCH STREQUAL "native")
     add_rumboot_target(
       NAME "unit-serial-test"
       CONFIGURATION ${BOOTSOURCE_CONFIGURATION}
@@ -27,6 +23,16 @@ macro(rumboot_bootrom_add_common_units spl_conf romconf)
       FILES common/bootrom/serial.c
       TESTGROUP bootrom bootrom-unit
       IRUN_FLAGS ${BOOTSOURCE_IRUN_FLAGS} +uart_easter_egg
+    )
+
+    add_rumboot_target(
+      NAME "unit-xmodem-test"
+      CONFIGURATION ${BOOTSOURCE_CONFIGURATION}
+      PREFIX "bootrom"
+      FILES common/bootrom/xmodem.c
+      TESTGROUP bootrom bootrom-unit
+      IRUN_FLAGS ${BOOTSOURCE_IRUN_FLAGS}
+      LOAD XMODEM0 spl-ok
     )
   endif()
 
@@ -59,6 +65,16 @@ macro(rumboot_bootrom_add_components spl_conf romconf)
       FILES common/bootrom/bootrom.c
       FEATURES STUB ${ROM_EXTRAFEATURES} CPACK
   )
+
+  if (RUMBOOT_ARCH STREQUAL "ppc")
+   add_rumboot_target(
+     FILES common/bootrom/ppc-pid-test.c
+     NAME pid-test
+     CONFIGURATION ${spl_conf}
+     FEATURES STUB PACKIMAGE
+     VARIABLE SPL_PID_TEST
+   )
+  endif()
 
   add_rumboot_target(
       CONFIGURATION ${spl_conf}
@@ -189,9 +205,6 @@ macro(rumboot_bootrom_add_components spl_conf romconf)
      PACKIMAGE_FLAGS -s chip_rev 99 -c
      VARIABLE SPL_OK_BAD_REV
    )
-
-   rumboot_bootrom_add_common_units(${spl_conf} ${romconf})
-
 endmacro()
 
 
