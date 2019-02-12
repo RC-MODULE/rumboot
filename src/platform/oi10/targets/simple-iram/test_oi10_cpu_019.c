@@ -5,7 +5,9 @@
  *      Author: a.gurov
  */
 
+/*
 #define RUMBOOT_ASSERT_WARN_ONLY
+*/
 
 #include <rumboot/platform.h>
 #include <rumboot/irq.h>
