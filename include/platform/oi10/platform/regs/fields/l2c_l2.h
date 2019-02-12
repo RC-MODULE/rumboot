@@ -8,40 +8,39 @@
 #ifndef L2C_L2_H_
 #define L2C_L2_H_
 
-#include <platform/common_macros/common_macros.h>
+#include <rumboot/macros.h>
 #include <platform/arch/ppc/ibm_bit_ordering_macros.h>
 
 
 BEGIN_ENUM( L2C_L2ARRACCCTL_FIELD )
-    /* Request field [9] */
-    DECLARE_ENUM_VAL(   L2C_L2ARRACCCTL_REQUEST_e,          9     )
+    DECLARE_ENUM_VAL(   L2C_L2ARRACCCTL_REQUEST_e,          9     ) /**< Request field [9] */
     DECLARE_ENUM_VAL(   L2C_L2ARRACCCTL_REQUEST_n,          1     )
     DECLARE_ENUM_VAL(   L2C_L2ARRACCCTL_REQUEST_i,          IBM_BIT_INDEX(32, L2C_L2ARRACCCTL_REQUEST_e) )
-    /* ReadRequestComp field [10] (r/o) */
-    DECLARE_ENUM_VAL(   L2C_L2ARRACCCTL_READREQUESTCOMP_e,  10    )
+
+    DECLARE_ENUM_VAL(   L2C_L2ARRACCCTL_READREQUESTCOMP_e,  10    ) /**< ReadRequestComp field [10] (r/o) */
     DECLARE_ENUM_VAL(   L2C_L2ARRACCCTL_READREQUESTCOMP_n,  1     )
     DECLARE_ENUM_VAL(   L2C_L2ARRACCCTL_READREQUESTCOMP_i,  IBM_BIT_INDEX(32, L2C_L2ARRACCCTL_READREQUESTCOMP_e) )
-    /* WrtRequestComp field [11] (r/o) */
-    DECLARE_ENUM_VAL(   L2C_L2ARRACCCTL_WRTREQUESTCOMP_e,   11    )
+
+    DECLARE_ENUM_VAL(   L2C_L2ARRACCCTL_WRTREQUESTCOMP_e,   11    ) /**< WrtRequestComp field [11] (r/o) */
     DECLARE_ENUM_VAL(   L2C_L2ARRACCCTL_WRTREQUESTCOMP_n,   1     )
     DECLARE_ENUM_VAL(   L2C_L2ARRACCCTL_WRTREQUESTCOMP_i,   IBM_BIT_INDEX(32, L2C_L2ARRACCCTL_WRTREQUESTCOMP_e) )
-    /* BufferID (entire) field [13:15] */
-    DECLARE_ENUM_VAL(   L2C_L2ARRACCCTL_BUFFERID_e,         15    )
+
+    DECLARE_ENUM_VAL(   L2C_L2ARRACCCTL_BUFFERID_e,         15    ) /**< BufferID (entire) field [13:15] */
     DECLARE_ENUM_VAL(   L2C_L2ARRACCCTL_BUFFERID_n,         3     )
     DECLARE_ENUM_VAL(   L2C_L2ARRACCCTL_BUFFERID_i,         IBM_BIT_INDEX(32, L2C_L2ARRACCCTL_BUFFERID_e) )
     DECLARE_ENUM_VAL(   L2C_L2ARRACCCTL_BUFFERID_mask,      FIELD_MASK32(L2C_L2ARRACCCTL_BUFFERID_i, L2C_L2ARRACCCTL_BUFFERID_n) )
-    /* ReqType field [16:19] */
-    DECLARE_ENUM_VAL(   L2C_L2ARRACCCTL_REQTYPE_e,          19    )
+
+    DECLARE_ENUM_VAL(   L2C_L2ARRACCCTL_REQTYPE_e,          19    ) /**< ReqType field [16:19] */
     DECLARE_ENUM_VAL(   L2C_L2ARRACCCTL_REQTYPE_n,          4     )
     DECLARE_ENUM_VAL(   L2C_L2ARRACCCTL_REQTYPE_i,          IBM_BIT_INDEX(32, L2C_L2ARRACCCTL_REQTYPE_e) )
     DECLARE_ENUM_VAL(   L2C_L2ARRACCCTL_REQTYPE_mask,       FIELD_MASK32(L2C_L2ARRACCCTL_REQTYPE_i, L2C_L2ARRACCCTL_REQTYPE_n) )
-    /* L2Way field [22:23] */
-    DECLARE_ENUM_VAL(   L2C_L2ARRACCCTL_L2WAY_e,            23    )
+
+    DECLARE_ENUM_VAL(   L2C_L2ARRACCCTL_L2WAY_e,            23    ) /**< L2Way field [22:23] */
     DECLARE_ENUM_VAL(   L2C_L2ARRACCCTL_L2WAY_n,            2     )
     DECLARE_ENUM_VAL(   L2C_L2ARRACCCTL_L2WAY_i,            IBM_BIT_INDEX(32, L2C_L2ARRACCCTL_L2WAY_e) )
     DECLARE_ENUM_VAL(   L2C_L2ARRACCCTL_L2WAY_mask,         FIELD_MASK32(L2C_L2ARRACCCTL_L2WAY_i, L2C_L2ARRACCCTL_L2WAY_n) )
-    /* MaskDW field [24:31] */
-    DECLARE_ENUM_VAL(   L2C_L2ARRACCCTL_MASKDW_e,           31    )
+
+    DECLARE_ENUM_VAL(   L2C_L2ARRACCCTL_MASKDW_e,           31    ) /**< MaskDW field [24:31] */
     DECLARE_ENUM_VAL(   L2C_L2ARRACCCTL_MASKDW_n,           8     )
     DECLARE_ENUM_VAL(   L2C_L2ARRACCCTL_MASKDW_i,           IBM_BIT_INDEX(32, L2C_L2ARRACCCTL_MASKDW_e) )
     DECLARE_ENUM_VAL(   L2C_L2ARRACCCTL_MASKDW_mask,        FIELD_MASK32(L2C_L2ARRACCCTL_MASKDW_i, L2C_L2ARRACCCTL_MASKDW_n) )
@@ -68,7 +67,7 @@ BEGIN_ENUM( L2C_L2ARRACCCTL_REQTYPE )
     DECLARE_ENUM_VAL(   L2C_L2ARRACCCTL_REQTYPE_WR8WOECC,   0x07  )
 END_ENUM( L2C_L2ARRACCCTL_REQTYPE )
 
-BEGIN_ENUM( L2C_L2ARRACCDO0_LRU_fields )
+BEGIN_ENUM( L2C_L2ARRACCDO0_LRU_FIELD )
     DECLARE_ENUM_VAL(   L2C_L2ARRACCDO0_LRU_LRU_e,          5     )   /**< Tag address */
     DECLARE_ENUM_VAL(   L2C_L2ARRACCDO0_LRU_LRU_n,          6     )
     DECLARE_ENUM_VAL(   L2C_L2ARRACCDO0_LRU_LRU_i,          IBM_BIT_INDEX(32, L2C_L2ARRACCDO0_LRU_LRU_e) )
@@ -93,316 +92,352 @@ BEGIN_ENUM( L2C_L2ARRACCDO0_LRU_fields )
     DECLARE_ENUM_VAL(   L2C_L2ARRACCDO0_LRU_INCL_BITS_n,    8     )
     DECLARE_ENUM_VAL(   L2C_L2ARRACCDO0_LRU_INCL_BITS_i,    IBM_BIT_INDEX(32, L2C_L2ARRACCDO0_LRU_INCL_BITS_e) )
     DECLARE_ENUM_VAL(   L2C_L2ARRACCDO0_LRU_INCL_BITS_mask, FIELD_MASK32( L2C_L2ARRACCDO0_LRU_INCL_BITS_i, L2C_L2ARRACCDO0_LRU_INCL_BITS_n ) )
-END_ENUM( L2C_L2ARRACCDO0_LRU_fields )
+END_ENUM( L2C_L2ARRACCDO0_LRU_FIELD )
 
-//L2MCKEN bits
-BEGIN_ENUM( L2MCKEN_FIELD )
-    DECLARE_ENUM_VAL( L2MCKEN_EXTMCK_e, 20 )
-    DECLARE_ENUM_VAL( L2MCKEN_EXTMCK_i, IBM_BIT_INDEX( 32, L2MCKEN_EXTMCK_e ) )
+/** L2INTEN bits */
+BEGIN_ENUM( L2C_L2INTEN_FIELD )
+    DECLARE_ENUM_VAL(   L2C_L2INTEN_EXTINT_e,   20 )
+    DECLARE_ENUM_VAL(   L2C_L2INTEN_EXTINT_i,   IBM_BIT_INDEX( 32, L2C_L2INTEN_EXTINT_e ) )
 
-    DECLARE_ENUM_VAL( L2MCKEN_PLBMCK0_e, 21 )
-    DECLARE_ENUM_VAL( L2MCKEN_PLBMCK0_i, IBM_BIT_INDEX( 32, L2MCKEN_PLBMCK0_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2INTEN_PLBINT0_e,  21 )
+    DECLARE_ENUM_VAL(   L2C_L2INTEN_PLBINT0_i,  IBM_BIT_INDEX( 32, L2C_L2INTEN_PLBINT0_e ) )
 
-    DECLARE_ENUM_VAL( L2MCKEN_PLBMCK1_e, 22 )
-    DECLARE_ENUM_VAL( L2MCKEN_PLBMCK1_i, IBM_BIT_INDEX( 32, L2MCKEN_PLBMCK1_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2INTEN_PLBINT1_e,  22 )
+    DECLARE_ENUM_VAL(   L2C_L2INTEN_PLBINT1_i,  IBM_BIT_INDEX( 32, L2C_L2INTEN_PLBINT1_e ) )
 
-    DECLARE_ENUM_VAL( L2MCKEN_L2AMCK0_e, 23 )
-    DECLARE_ENUM_VAL( L2MCKEN_L2AMCK0_i, IBM_BIT_INDEX( 32, L2MCKEN_L2AMCK0_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2INTEN_L2AINT0_e,  23 )
+    DECLARE_ENUM_VAL(   L2C_L2INTEN_L2AINT0_i,  IBM_BIT_INDEX( 32, L2C_L2INTEN_L2AINT0_e ) )
 
-    DECLARE_ENUM_VAL( L2MCKEN_L2AMCK1_e, 24 )
-    DECLARE_ENUM_VAL( L2MCKEN_L2AMCK1_i, IBM_BIT_INDEX( 32, L2MCKEN_L2AMCK1_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2INTEN_L2AINT1_e,  24 )
+    DECLARE_ENUM_VAL(   L2C_L2INTEN_L2AINT1_i,  IBM_BIT_INDEX( 32, L2C_L2INTEN_L2AINT1_e ) )
 
-    DECLARE_ENUM_VAL( L2MCKEN_L2AMCK2_e, 25 )
-    DECLARE_ENUM_VAL( L2MCKEN_L2AMCK2_i, IBM_BIT_INDEX( 32, L2MCKEN_L2AMCK2_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2INTEN_L2AINT2_e,  25 )
+    DECLARE_ENUM_VAL(   L2C_L2INTEN_L2AINT2_i,  IBM_BIT_INDEX( 32, L2C_L2INTEN_L2AINT2_e ) )
 
-    DECLARE_ENUM_VAL( L2MCKEN_L1CMCK0_e, 26 )
-    DECLARE_ENUM_VAL( L2MCKEN_L1CMCK0_i, IBM_BIT_INDEX( 32, L2MCKEN_L1CMCK0_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2INTEN_L1CINT0_e,  26 )
+    DECLARE_ENUM_VAL(   L2C_L2INTEN_L1CINT0_i,  IBM_BIT_INDEX( 32, L2C_L2INTEN_L1CINT0_e ) )
 
-    DECLARE_ENUM_VAL( L2MCKEN_RACMCK0_e, 27 )
-    DECLARE_ENUM_VAL( L2MCKEN_RACMCK0_i, IBM_BIT_INDEX( 32, L2MCKEN_RACMCK0_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2INTEN_RACINT0_e,  27 )
+    DECLARE_ENUM_VAL(   L2C_L2INTEN_RACINT0_i,  IBM_BIT_INDEX( 32, L2C_L2INTEN_RACINT0_e ) )
 
-    DECLARE_ENUM_VAL( L2MCKEN_WACMCK0_e, 28 )
-    DECLARE_ENUM_VAL( L2MCKEN_WACMCK0_i, IBM_BIT_INDEX( 32, L2MCKEN_WACMCK0_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2INTEN_WACINT0_e,  28 )
+    DECLARE_ENUM_VAL(   L2C_L2INTEN_WACINT0_i,  IBM_BIT_INDEX( 32, L2C_L2INTEN_WACINT0_e ) )
 
-    DECLARE_ENUM_VAL( L2MCKEN_WACMCK1_e, 29 )
-    DECLARE_ENUM_VAL( L2MCKEN_WACMCK1_i, IBM_BIT_INDEX( 32, L2MCKEN_WACMCK1_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2INTEN_WACINT1_e,  29 )
+    DECLARE_ENUM_VAL(   L2C_L2INTEN_WACINT1_i,  IBM_BIT_INDEX( 32, L2C_L2INTEN_WACINT1_e ) )
 
-    DECLARE_ENUM_VAL( L2MCKEN_WACMCK2_e, 30 )
-    DECLARE_ENUM_VAL( L2MCKEN_WACMCK2_i, IBM_BIT_INDEX( 32, L2MCKEN_WACMCK2_e ) )
-END_ENUM( L2MCKEN_FIELD )
+    DECLARE_ENUM_VAL(   L2C_L2INTEN_WACINT2_e,  30 )
+    DECLARE_ENUM_VAL(   L2C_L2INTEN_WACINT2_i,  IBM_BIT_INDEX( 32, L2C_L2INTEN_WACINT2_e ) )
+END_ENUM( L2C_L2INTEN_FIELD )
 
-//L2ARRSTAT1 bits
-BEGIN_ENUM( L2ARRSTAT1_FIELD )
-    DECLARE_ENUM_VAL( L2ARRSTAT1_MultiHit_e, 19 ) //Multiple hits have been detected in the L2 tag array.
-    DECLARE_ENUM_VAL( L2ARRSTAT1_MultiHit_i, IBM_BIT_INDEX( 32, L2ARRSTAT1_MultiHit_e ) )
+/** L2MCKEN bits */
+BEGIN_ENUM( L2C_L2MCKEN_FIELD )
+    DECLARE_ENUM_VAL(   L2C_L2MCKEN_EXTMCK_e,   20 )
+    DECLARE_ENUM_VAL(   L2C_L2MCKEN_EXTMCK_i,   IBM_BIT_INDEX( 32, L2C_L2MCKEN_EXTMCK_e ) )
 
-    DECLARE_ENUM_VAL( L2ARRSTAT1_TagUE0_e, 20 ) //L2 cache tag array uncorrectable error way 0 (includes data and check bits).
-    DECLARE_ENUM_VAL( L2ARRSTAT1_TagUE0_i, IBM_BIT_INDEX( 32, L2ARRSTAT1_TagUE0_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2MCKEN_PLBMCK0_e,  21 )
+    DECLARE_ENUM_VAL(   L2C_L2MCKEN_PLBMCK0_i,  IBM_BIT_INDEX( 32, L2C_L2MCKEN_PLBMCK0_e ) )
 
-    DECLARE_ENUM_VAL( L2ARRSTAT1_TagUE1_e, 21 ) //L2 cache tag array uncorrectable error way 1 (includes data and check bits).
-    DECLARE_ENUM_VAL( L2ARRSTAT1_TagUE1_i, IBM_BIT_INDEX( 32, L2ARRSTAT1_TagUE1_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2MCKEN_PLBMCK1_e,  22 )
+    DECLARE_ENUM_VAL(   L2C_L2MCKEN_PLBMCK1_i,  IBM_BIT_INDEX( 32, L2C_L2MCKEN_PLBMCK1_e ) )
 
-    DECLARE_ENUM_VAL( L2ARRSTAT1_TagUE2_e, 22 ) //L2 cache tag array uncorrectable error way 2 (includes data and check bits).
-    DECLARE_ENUM_VAL( L2ARRSTAT1_TagUE2_i, IBM_BIT_INDEX( 32, L2ARRSTAT1_TagUE2_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2MCKEN_L2AMCK0_e,  23 )
+    DECLARE_ENUM_VAL(   L2C_L2MCKEN_L2AMCK0_i,  IBM_BIT_INDEX( 32, L2C_L2MCKEN_L2AMCK0_e ) )
 
-    DECLARE_ENUM_VAL( L2ARRSTAT1_TagUE3_e, 23 ) //L2 cache tag array uncorrectable error way 3 (includes data and check bits).
-    DECLARE_ENUM_VAL( L2ARRSTAT1_TagUE3_i, IBM_BIT_INDEX( 32, L2ARRSTAT1_TagUE3_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2MCKEN_L2AMCK1_e,  24 )
+    DECLARE_ENUM_VAL(   L2C_L2MCKEN_L2AMCK1_i,  IBM_BIT_INDEX( 32, L2C_L2MCKEN_L2AMCK1_e ) )
 
-    DECLARE_ENUM_VAL( L2ARRSTAT1_DataUE0_e, 24 ) //L2 cache data array uncorrectable error doubleword 0 (includes data and check bits).
-    DECLARE_ENUM_VAL( L2ARRSTAT1_DataUE0_i, IBM_BIT_INDEX( 32, L2ARRSTAT1_DataUE0_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2MCKEN_L2AMCK2_e,  25 )
+    DECLARE_ENUM_VAL(   L2C_L2MCKEN_L2AMCK2_i,  IBM_BIT_INDEX( 32, L2C_L2MCKEN_L2AMCK2_e ) )
 
-    DECLARE_ENUM_VAL( L2ARRSTAT1_DataUE1_e, 25 ) //L2 cache data array uncorrectable error doubleword 1 (includes data and check bits).
-    DECLARE_ENUM_VAL( L2ARRSTAT1_DataUE1_i, IBM_BIT_INDEX( 32, L2ARRSTAT1_DataUE1_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2MCKEN_L1CMCK0_e,  26 )
+    DECLARE_ENUM_VAL(   L2C_L2MCKEN_L1CMCK0_i,  IBM_BIT_INDEX( 32, L2C_L2MCKEN_L1CMCK0_e ) )
 
-    DECLARE_ENUM_VAL( L2ARRSTAT1_DataUE2_e, 26 ) //L2 cache data array uncorrectable error doubleword 2 (includes data and check bits).
-    DECLARE_ENUM_VAL( L2ARRSTAT1_DataUE2_i, IBM_BIT_INDEX( 32, L2ARRSTAT1_DataUE2_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2MCKEN_RACMCK0_e,  27 )
+    DECLARE_ENUM_VAL(   L2C_L2MCKEN_RACMCK0_i,  IBM_BIT_INDEX( 32, L2C_L2MCKEN_RACMCK0_e ) )
 
-    DECLARE_ENUM_VAL( L2ARRSTAT1_DataUE3_e, 27 ) //L2 cache data array uncorrectable error doubleword 3 (includes data and check bits).
-    DECLARE_ENUM_VAL( L2ARRSTAT1_DataUE3_i, IBM_BIT_INDEX( 32, L2ARRSTAT1_DataUE3_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2MCKEN_WACMCK0_e,  28 )
+    DECLARE_ENUM_VAL(   L2C_L2MCKEN_WACMCK0_i,  IBM_BIT_INDEX( 32, L2C_L2MCKEN_WACMCK0_e ) )
 
-    DECLARE_ENUM_VAL( L2ARRSTAT1_DataUE4_e, 28 ) //L2 cache data array uncorrectable error doubleword 4 (includes data and check bits).
-    DECLARE_ENUM_VAL( L2ARRSTAT1_DataUE4_i, IBM_BIT_INDEX( 32, L2ARRSTAT1_DataUE4_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2MCKEN_WACMCK1_e,  29 )
+    DECLARE_ENUM_VAL(   L2C_L2MCKEN_WACMCK1_i,  IBM_BIT_INDEX( 32, L2C_L2MCKEN_WACMCK1_e ) )
 
-    DECLARE_ENUM_VAL( L2ARRSTAT1_DataUE5_e, 29 ) //L2 cache data array uncorrectable error doubleword 5 (includes data and check bits).
-    DECLARE_ENUM_VAL( L2ARRSTAT1_DataUE5_i, IBM_BIT_INDEX( 32, L2ARRSTAT1_DataUE5_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2MCKEN_WACMCK2_e,  30 )
+    DECLARE_ENUM_VAL(   L2C_L2MCKEN_WACMCK2_i,  IBM_BIT_INDEX( 32, L2C_L2MCKEN_WACMCK2_e ) )
+END_ENUM( L2C_L2MCKEN_FIELD )
 
-    DECLARE_ENUM_VAL( L2ARRSTAT1_DataUE6_e, 30 ) //L2 cache data array uncorrectable error doubleword 6 (includes data and check bits).
-    DECLARE_ENUM_VAL( L2ARRSTAT1_DataUE6_i, IBM_BIT_INDEX( 32, L2ARRSTAT1_DataUE6_e ) )
+/** L2ARRSTAT1 bits */
+BEGIN_ENUM( L2C_L2ARRSTAT1_FIELD )
+    DECLARE_ENUM_VAL(   L2C_L2ARRSTAT1_MultiHit_e,  19 ) /**< Multiple hits have been detected in the L2 tag array. */
+    DECLARE_ENUM_VAL(   L2C_L2ARRSTAT1_MultiHit_i,  IBM_BIT_INDEX( 32, L2C_L2ARRSTAT1_MultiHit_e ) )
 
-    DECLARE_ENUM_VAL( L2ARRSTAT1_DataUE7_e, 31 ) //L2 cache data array uncorrectable error doubleword 7 (includes data and check bits).
-    DECLARE_ENUM_VAL( L2ARRSTAT1_DataUE7_i, IBM_BIT_INDEX( 32, L2ARRSTAT1_DataUE7_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2ARRSTAT1_TagUE0_e,    20 ) /**< L2 cache tag array uncorrectable error way 0 (includes data and check bits). */
+    DECLARE_ENUM_VAL(   L2C_L2ARRSTAT1_TagUE0_i,    IBM_BIT_INDEX( 32, L2C_L2ARRSTAT1_TagUE0_e ) )
+
+    DECLARE_ENUM_VAL(   L2C_L2ARRSTAT1_TagUE1_e,    21 ) /**< L2 cache tag array uncorrectable error way 1 (includes data and check bits). */
+    DECLARE_ENUM_VAL(   L2C_L2ARRSTAT1_TagUE1_i,    IBM_BIT_INDEX( 32, L2C_L2ARRSTAT1_TagUE1_e ) )
+
+    DECLARE_ENUM_VAL(   L2C_L2ARRSTAT1_TagUE2_e,    22 ) /**< L2 cache tag array uncorrectable error way 2 (includes data and check bits). */
+    DECLARE_ENUM_VAL(   L2C_L2ARRSTAT1_TagUE2_i,    IBM_BIT_INDEX( 32, L2C_L2ARRSTAT1_TagUE2_e ) )
+
+    DECLARE_ENUM_VAL(   L2C_L2ARRSTAT1_TagUE3_e,    23 ) /**< L2 cache tag array uncorrectable error way 3 (includes data and check bits). */
+    DECLARE_ENUM_VAL(   L2C_L2ARRSTAT1_TagUE3_i,    IBM_BIT_INDEX( 32, L2C_L2ARRSTAT1_TagUE3_e ) )
+
+    DECLARE_ENUM_VAL(   L2C_L2ARRSTAT1_DataUE0_e,   24 ) /**< L2 cache data array uncorrectable error doubleword 0 (includes data and check bits). */
+    DECLARE_ENUM_VAL(   L2C_L2ARRSTAT1_DataUE0_i,   IBM_BIT_INDEX( 32, L2C_L2ARRSTAT1_DataUE0_e ) )
+
+    DECLARE_ENUM_VAL(   L2C_L2ARRSTAT1_DataUE1_e,   25 ) /**< L2 cache data array uncorrectable error doubleword 1 (includes data and check bits). */
+    DECLARE_ENUM_VAL(   L2C_L2ARRSTAT1_DataUE1_i,   IBM_BIT_INDEX( 32, L2C_L2ARRSTAT1_DataUE1_e ) )
+
+    DECLARE_ENUM_VAL(   L2C_L2ARRSTAT1_DataUE2_e,   26 ) /**< L2 cache data array uncorrectable error doubleword 2 (includes data and check bits). */
+    DECLARE_ENUM_VAL(   L2C_L2ARRSTAT1_DataUE2_i,   IBM_BIT_INDEX( 32, L2C_L2ARRSTAT1_DataUE2_e ) )
+
+    DECLARE_ENUM_VAL(   L2C_L2ARRSTAT1_DataUE3_e,   27 ) /**< L2 cache data array uncorrectable error doubleword 3 (includes data and check bits). */
+    DECLARE_ENUM_VAL(   L2C_L2ARRSTAT1_DataUE3_i,   IBM_BIT_INDEX( 32, L2C_L2ARRSTAT1_DataUE3_e ) )
+
+    DECLARE_ENUM_VAL(   L2C_L2ARRSTAT1_DataUE4_e,   28 ) /**< L2 cache data array uncorrectable error doubleword 4 (includes data and check bits). */
+    DECLARE_ENUM_VAL(   L2C_L2ARRSTAT1_DataUE4_i,   IBM_BIT_INDEX( 32, L2C_L2ARRSTAT1_DataUE4_e ) )
+
+    DECLARE_ENUM_VAL(   L2C_L2ARRSTAT1_DataUE5_e,   29 ) /**< L2 cache data array uncorrectable error doubleword 5 (includes data and check bits). */
+    DECLARE_ENUM_VAL(   L2C_L2ARRSTAT1_DataUE5_i,   IBM_BIT_INDEX( 32, L2C_L2ARRSTAT1_DataUE5_e ) )
+
+    DECLARE_ENUM_VAL(   L2C_L2ARRSTAT1_DataUE6_e,   30 ) /**< L2 cache data array uncorrectable error doubleword 6 (includes data and check bits). */
+    DECLARE_ENUM_VAL(   L2C_L2ARRSTAT1_DataUE6_i,   IBM_BIT_INDEX( 32, L2C_L2ARRSTAT1_DataUE6_e ) )
+
+    DECLARE_ENUM_VAL(   L2C_L2ARRSTAT1_DataUE7_e,   31 ) /**< L2 cache data array uncorrectable error doubleword 7 (includes data and check bits). */
+    DECLARE_ENUM_VAL(   L2C_L2ARRSTAT1_DataUE7_i,   IBM_BIT_INDEX( 32, L2C_L2ARRSTAT1_DataUE7_e ) )
 END_ENUM( L2ARRSTAT1_FIELD )
 
-//L2ARRSTAT2 bits
-BEGIN_ENUM( L2ARRSTAT2_FIELD )
-    DECLARE_ENUM_VAL( L2ARRSTAT2_LruPE0_e, 8 ) //L2 cache LRU array parity error 0.
-    DECLARE_ENUM_VAL( L2ARRSTAT2_LruPE0_i, IBM_BIT_INDEX( 32, L2ARRSTAT2_LruPE0_e ) )
+/** L2ARRSTAT2 bits */
+BEGIN_ENUM( L2C_L2ARRSTAT2_FIELD )
+    DECLARE_ENUM_VAL(   L2C_L2ARRSTAT2_LruPE0_e,    8 ) /**< L2 cache LRU array parity error 0. */
+    DECLARE_ENUM_VAL(   L2C_L2ARRSTAT2_LruPE0_i,    IBM_BIT_INDEX( 32, L2C_L2ARRSTAT2_LruPE0_e ) )
 
-    DECLARE_ENUM_VAL( L2ARRSTAT2_LruPE1_e, 9 ) //L2 cache LRU array parity error 1.
-    DECLARE_ENUM_VAL( L2ARRSTAT2_LruPE1_i, IBM_BIT_INDEX( 32, L2ARRSTAT2_LruPE1_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2ARRSTAT2_LruPE1_e,    9 ) /**< L2 cache LRU array parity error 1. */
+    DECLARE_ENUM_VAL(   L2C_L2ARRSTAT2_LruPE1_i,    IBM_BIT_INDEX( 32, L2C_L2ARRSTAT2_LruPE1_e ) )
 
-    DECLARE_ENUM_VAL( L2ARRSTAT2_LruPE2_e, 10 ) //L2 cache LRU array parity error 2.
-    DECLARE_ENUM_VAL( L2ARRSTAT2_LruPE2_i, IBM_BIT_INDEX( 32, L2ARRSTAT2_LruPE2_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2ARRSTAT2_LruPE2_e,    10 ) /**< L2 cache LRU array parity error 2. */
+    DECLARE_ENUM_VAL(   L2C_L2ARRSTAT2_LruPE2_i,    IBM_BIT_INDEX( 32, L2C_L2ARRSTAT2_LruPE2_e ) )
 
-    DECLARE_ENUM_VAL( L2ARRSTAT2_LruPE3_e, 11 ) //L2 cache LRU array parity error 3.
-    DECLARE_ENUM_VAL( L2ARRSTAT2_LruPE3_i, IBM_BIT_INDEX( 32, L2ARRSTAT2_LruPE3_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2ARRSTAT2_LruPE3_e,    11 ) /**< L2 cache LRU array parity error 3. */
+    DECLARE_ENUM_VAL(   L2C_L2ARRSTAT2_LruPE3_i,    IBM_BIT_INDEX( 32, L2C_L2ARRSTAT2_LruPE3_e ) )
 
-    DECLARE_ENUM_VAL( L2ARRSTAT2_LruPE4_e, 12 ) //L2 cache LRU array parity error 4.
-    DECLARE_ENUM_VAL( L2ARRSTAT2_LruPE4_i, IBM_BIT_INDEX( 32, L2ARRSTAT2_LruPE4_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2ARRSTAT2_LruPE4_e,    12 ) /**< L2 cache LRU array parity error 4. */
+    DECLARE_ENUM_VAL(   L2C_L2ARRSTAT2_LruPE4_i,    IBM_BIT_INDEX( 32, L2C_L2ARRSTAT2_LruPE4_e ) )
 
-    DECLARE_ENUM_VAL( L2ARRSTAT2_LruPE5_e, 13 ) //L2 cache LRU array parity error 5.
-    DECLARE_ENUM_VAL( L2ARRSTAT2_LruPE5_i, IBM_BIT_INDEX( 32, L2ARRSTAT2_LruPE5_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2ARRSTAT2_LruPE5_e,    13 ) /**< L2 cache LRU array parity error 5. */
+    DECLARE_ENUM_VAL(   L2C_L2ARRSTAT2_LruPE5_i,    IBM_BIT_INDEX( 32, L2C_L2ARRSTAT2_LruPE5_e ) )
 
-    DECLARE_ENUM_VAL( L2ARRSTAT2_LruPE6_e, 14 ) //L2 cache LRU array parity error 6.
-    DECLARE_ENUM_VAL( L2ARRSTAT2_LruPE6_i, IBM_BIT_INDEX( 32, L2ARRSTAT2_LruPE6_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2ARRSTAT2_LruPE6_e,    14 ) /**< L2 cache LRU array parity error 6. */
+    DECLARE_ENUM_VAL(   L2C_L2ARRSTAT2_LruPE6_i,    IBM_BIT_INDEX( 32, L2C_L2ARRSTAT2_LruPE6_e ) )
 
-    DECLARE_ENUM_VAL( L2ARRSTAT2_LruPE7_e, 15 ) //L2 cache LRU array parity error 7.
-    DECLARE_ENUM_VAL( L2ARRSTAT2_LruPE7_i, IBM_BIT_INDEX( 32, L2ARRSTAT2_LruPE7_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2ARRSTAT2_LruPE7_e,    15 ) /**< L2 cache LRU array parity error 7. */
+    DECLARE_ENUM_VAL(   L2C_L2ARRSTAT2_LruPE7_i,    IBM_BIT_INDEX( 32, L2C_L2ARRSTAT2_LruPE7_e ) )
 
-    DECLARE_ENUM_VAL( L2ARRSTAT2_LruPE8_e, 16 ) //L2 cache LRU array parity error 8.
-    DECLARE_ENUM_VAL( L2ARRSTAT2_LruPE8_i, IBM_BIT_INDEX( 32, L2ARRSTAT2_LruPE8_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2ARRSTAT2_LruPE8_e,    16 ) /**< L2 cache LRU array parity error 8. */
+    DECLARE_ENUM_VAL(   L2C_L2ARRSTAT2_LruPE8_i,    IBM_BIT_INDEX( 32, L2C_L2ARRSTAT2_LruPE8_e ) )
 
-    DECLARE_ENUM_VAL( L2ARRSTAT2_LruPE9_e, 17 ) //L2 cache LRU array parity error 9.
-    DECLARE_ENUM_VAL( L2ARRSTAT2_LruPE9_i, IBM_BIT_INDEX( 32, L2ARRSTAT2_LruPE9_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2ARRSTAT2_LruPE9_e,    17 ) /**< L2 cache LRU array parity error 9. */
+    DECLARE_ENUM_VAL(   L2C_L2ARRSTAT2_LruPE9_i,    IBM_BIT_INDEX( 32, L2C_L2ARRSTAT2_LruPE9_e ) )
 
-    DECLARE_ENUM_VAL( L2ARRSTAT2_LruPE10_e, 18 ) //L2 cache LRU array parity error 10.
-    DECLARE_ENUM_VAL( L2ARRSTAT2_LruPE10_i, IBM_BIT_INDEX( 32, L2ARRSTAT2_LruPE10_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2ARRSTAT2_LruPE10_e,   18 ) /**< L2 cache LRU array parity error 10. */
+    DECLARE_ENUM_VAL(   L2C_L2ARRSTAT2_LruPE10_i,   IBM_BIT_INDEX( 32, L2C_L2ARRSTAT2_LruPE10_e ) )
 
-    DECLARE_ENUM_VAL( L2ARRSTAT2_LruPE11_e, 19 ) //L2 cache LRU array parity error 11.
-    DECLARE_ENUM_VAL( L2ARRSTAT2_LruPE11_i, IBM_BIT_INDEX( 32, L2ARRSTAT2_LruPE11_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2ARRSTAT2_LruPE11_e,   19 ) /**< L2 cache LRU array parity error 11. */
+    DECLARE_ENUM_VAL(   L2C_L2ARRSTAT2_LruPE11_i,   IBM_BIT_INDEX( 32, L2C_L2ARRSTAT2_LruPE11_e ) )
 
-    DECLARE_ENUM_VAL( L2ARRSTAT2_TagCE0_e, 20 ) //L2 cache tag array correctable error way 0 (includes data and check bits).
-    DECLARE_ENUM_VAL( L2ARRSTAT2_TagCE0_i, IBM_BIT_INDEX( 32, L2ARRSTAT2_TagCE0_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2ARRSTAT2_TagCE0_e,    20 ) /**< L2 cache tag array correctable error way 0 (includes data and check bits). */
+    DECLARE_ENUM_VAL(   L2C_L2ARRSTAT2_TagCE0_i,    IBM_BIT_INDEX( 32, L2C_L2ARRSTAT2_TagCE0_e ) )
 
-    DECLARE_ENUM_VAL( L2ARRSTAT2_TagCE1_e, 21 ) //L2 cache tag array correctable error way 1 (includes data and check bits).
-    DECLARE_ENUM_VAL( L2ARRSTAT2_TagCE1_i, IBM_BIT_INDEX( 32, L2ARRSTAT2_TagCE1_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2ARRSTAT2_TagCE1_e,    21 ) /**< L2 cache tag array correctable error way 1 (includes data and check bits). */
+    DECLARE_ENUM_VAL(   L2C_L2ARRSTAT2_TagCE1_i,    IBM_BIT_INDEX( 32, L2C_L2ARRSTAT2_TagCE1_e ) )
 
-    DECLARE_ENUM_VAL( L2ARRSTAT2_TagCE2_e, 22 ) //L2 cache tag array correctable error way 2 (includes data and check bits).
-    DECLARE_ENUM_VAL( L2ARRSTAT2_TagCE2_i, IBM_BIT_INDEX( 32, L2ARRSTAT2_TagCE2_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2ARRSTAT2_TagCE2_e,    22 ) /**< L2 cache tag array correctable error way 2 (includes data and check bits). */
+    DECLARE_ENUM_VAL(   L2C_L2ARRSTAT2_TagCE2_i,    IBM_BIT_INDEX( 32, L2C_L2ARRSTAT2_TagCE2_e ) )
 
-    DECLARE_ENUM_VAL( L2ARRSTAT2_TagCE3_e, 23 ) //L2 cache tag array correctable error way 3 (includes data and check bits).
-    DECLARE_ENUM_VAL( L2ARRSTAT2_TagCE3_i, IBM_BIT_INDEX( 32, L2ARRSTAT2_TagCE3_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2ARRSTAT2_TagCE3_e,    23 ) /**< L2 cache tag array correctable error way 3 (includes data and check bits). */
+    DECLARE_ENUM_VAL(   L2C_L2ARRSTAT2_TagCE3_i,    IBM_BIT_INDEX( 32, L2C_L2ARRSTAT2_TagCE3_e ) )
 
-    DECLARE_ENUM_VAL( L2ARRSTAT2_DataCE0_e, 24 ) //L2 cache data array correctable error doubleword 0 (includes data and check bits).
-    DECLARE_ENUM_VAL( L2ARRSTAT2_DataCE0_i, IBM_BIT_INDEX( 32, L2ARRSTAT2_DataCE0_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2ARRSTAT2_DataCE0_e,   24 ) /**< L2 cache data array correctable error doubleword 0 (includes data and check bits). */
+    DECLARE_ENUM_VAL(   L2C_L2ARRSTAT2_DataCE0_i,   IBM_BIT_INDEX( 32, L2C_L2ARRSTAT2_DataCE0_e ) )
 
-    DECLARE_ENUM_VAL( L2ARRSTAT2_DataCE1_e, 25 ) //L2 cache data array correctable error doubleword 1 (includes data and check bits).
-    DECLARE_ENUM_VAL( L2ARRSTAT2_DataCE1_i, IBM_BIT_INDEX( 32, L2ARRSTAT2_DataCE1_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2ARRSTAT2_DataCE1_e,   25 ) /**< L2 cache data array correctable error doubleword 1 (includes data and check bits). */
+    DECLARE_ENUM_VAL(   L2C_L2ARRSTAT2_DataCE1_i,   IBM_BIT_INDEX( 32, L2C_L2ARRSTAT2_DataCE1_e ) )
 
-    DECLARE_ENUM_VAL( L2ARRSTAT2_DataCE2_e, 26 ) //L2 cache data array correctable error doubleword 2 (includes data and check bits).
-    DECLARE_ENUM_VAL( L2ARRSTAT2_DataCE2_i, IBM_BIT_INDEX( 32, L2ARRSTAT2_DataCE2_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2ARRSTAT2_DataCE2_e,   26 ) /**< L2 cache data array correctable error doubleword 2 (includes data and check bits). */
+    DECLARE_ENUM_VAL(   L2C_L2ARRSTAT2_DataCE2_i,   IBM_BIT_INDEX( 32, L2C_L2ARRSTAT2_DataCE2_e ) )
 
-    DECLARE_ENUM_VAL( L2ARRSTAT2_DataCE3_e, 27 ) //L2 cache data array correctable error doubleword 3 (includes data and check bits).
-    DECLARE_ENUM_VAL( L2ARRSTAT2_DataCE3_i, IBM_BIT_INDEX( 32, L2ARRSTAT2_DataCE3_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2ARRSTAT2_DataCE3_e,   27 ) /**< L2 cache data array correctable error doubleword 3 (includes data and check bits). */
+    DECLARE_ENUM_VAL(   L2C_L2ARRSTAT2_DataCE3_i,   IBM_BIT_INDEX( 32, L2C_L2ARRSTAT2_DataCE3_e ) )
 
-    DECLARE_ENUM_VAL( L2ARRSTAT2_DataCE4_e, 28 ) //L2 cache data array correctable error doubleword 4 (includes data and check bits).
-    DECLARE_ENUM_VAL( L2ARRSTAT2_DataCE4_i, IBM_BIT_INDEX( 32, L2ARRSTAT2_DataCE4_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2ARRSTAT2_DataCE4_e,   28 ) /**< L2 cache data array correctable error doubleword 4 (includes data and check bits). */
+    DECLARE_ENUM_VAL(   L2C_L2ARRSTAT2_DataCE4_i,   IBM_BIT_INDEX( 32, L2C_L2ARRSTAT2_DataCE4_e ) )
 
-    DECLARE_ENUM_VAL( L2ARRSTAT2_DataCE5_e, 29 ) //L2 cache data array correctable error doubleword 5 (includes data and check bits).
-    DECLARE_ENUM_VAL( L2ARRSTAT2_DataCE5_i, IBM_BIT_INDEX( 32, L2ARRSTAT2_DataCE5_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2ARRSTAT2_DataCE5_e,   29 ) /**< L2 cache data array correctable error doubleword 5 (includes data and check bits). */
+    DECLARE_ENUM_VAL(   L2C_L2ARRSTAT2_DataCE5_i,   IBM_BIT_INDEX( 32, L2C_L2ARRSTAT2_DataCE5_e ) )
 
-    DECLARE_ENUM_VAL( L2ARRSTAT2_DataCE6_e, 30 ) //L2 cache data array correctable error doubleword 6 (includes data and check bits).
-    DECLARE_ENUM_VAL( L2ARRSTAT2_DataCE6_i, IBM_BIT_INDEX( 32, L2ARRSTAT2_DataCE6_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2ARRSTAT2_DataCE6_e,   30 ) /**< L2 cache data array correctable error doubleword 6 (includes data and check bits). */
+    DECLARE_ENUM_VAL(   L2C_L2ARRSTAT2_DataCE6_i,   IBM_BIT_INDEX( 32, L2C_L2ARRSTAT2_DataCE6_e ) )
 
-    DECLARE_ENUM_VAL( L2ARRSTAT2_DataCE7_e, 31 ) //L2 cache data array correctable error doubleword 7 (includes data and check bits).
-    DECLARE_ENUM_VAL( L2ARRSTAT2_DataCE7_i, IBM_BIT_INDEX( 32, L2ARRSTAT2_DataCE7_e ) )
-END_ENUM( L2ARRSTAT2_FIELD )
+    DECLARE_ENUM_VAL(   L2C_L2ARRSTAT2_DataCE7_e,   31 ) /**< L2 cache data array correctable error doubleword 7 (includes data and check bits). */
+    DECLARE_ENUM_VAL(   L2C_L2ARRSTAT2_DataCE7_i,   IBM_BIT_INDEX( 32, L2C_L2ARRSTAT2_DataCE7_e ) )
+END_ENUM( L2C_L2ARRSTAT2_FIELD )
 
-//L2ARRMCKEN1 bits
-BEGIN_ENUM( L2ARRMCKEN1_FIELD )
-    DECLARE_ENUM_VAL( L2ARRMCKEN1_MultiHit_e, 19 ) //Multiple hits have been detected in the L2 tag array.
-    DECLARE_ENUM_VAL( L2ARRMCKEN1_MultiHit_i, IBM_BIT_INDEX( 32, L2ARRMCKEN1_MultiHit_e ) )
+/** L2ARRMCKEN1 bits */
+BEGIN_ENUM( L2C_L2ARRMCKEN1_FIELD )
+    DECLARE_ENUM_VAL(   L2C_L2ARRMCKEN1_MultiHit_e, 19 ) /**< Multiple hits have been detected in the L2 tag array. */
+    DECLARE_ENUM_VAL(   L2C_L2ARRMCKEN1_MultiHit_i, IBM_BIT_INDEX( 32, L2C_L2ARRMCKEN1_MultiHit_e ) )
 
-    DECLARE_ENUM_VAL( L2ARRMCKEN1_TagUE0_e, 20 ) //L2 cache tag array uncorrectable error way 0
-    DECLARE_ENUM_VAL( L2ARRMCKEN1_TagUE0_i, IBM_BIT_INDEX( 32, L2ARRMCKEN1_TagUE0_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2ARRMCKEN1_TagUE0_e,   20 ) /**< L2 cache tag array uncorrectable error way 0 */
+    DECLARE_ENUM_VAL(   L2C_L2ARRMCKEN1_TagUE0_i,   IBM_BIT_INDEX( 32, L2C_L2ARRMCKEN1_TagUE0_e ) )
 
-    DECLARE_ENUM_VAL( L2ARRMCKEN1_TagUE1_e, 21 ) //L2 cache tag array uncorrectable error way 1
-    DECLARE_ENUM_VAL( L2ARRMCKEN1_TagUE1_i, IBM_BIT_INDEX( 32, L2ARRMCKEN1_TagUE1_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2ARRMCKEN1_TagUE1_e,   21 ) /**< L2 cache tag array uncorrectable error way 1 */
+    DECLARE_ENUM_VAL(   L2C_L2ARRMCKEN1_TagUE1_i,   IBM_BIT_INDEX( 32, L2C_L2ARRMCKEN1_TagUE1_e ) )
 
-    DECLARE_ENUM_VAL( L2ARRMCKEN1_TagUE2_e, 22 ) //L2 cache tag array uncorrectable error way 2
-    DECLARE_ENUM_VAL( L2ARRMCKEN1_TagUE2_i, IBM_BIT_INDEX( 32, L2ARRMCKEN1_TagUE2_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2ARRMCKEN1_TagUE2_e,   22 ) /**< L2 cache tag array uncorrectable error way 2 */
+    DECLARE_ENUM_VAL(   L2C_L2ARRMCKEN1_TagUE2_i,   IBM_BIT_INDEX( 32, L2C_L2ARRMCKEN1_TagUE2_e ) )
 
-    DECLARE_ENUM_VAL( L2ARRMCKEN1_TagUE3_e, 23 ) //L2 cache tag array uncorrectable error way 3
-    DECLARE_ENUM_VAL( L2ARRMCKEN1_TagUE3_i, IBM_BIT_INDEX( 32, L2ARRMCKEN1_TagUE3_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2ARRMCKEN1_TagUE3_e,   23 ) /**< L2 cache tag array uncorrectable error way 3 */
+    DECLARE_ENUM_VAL(   L2C_L2ARRMCKEN1_TagUE3_i,   IBM_BIT_INDEX( 32, L2C_L2ARRMCKEN1_TagUE3_e ) )
 
-    DECLARE_ENUM_VAL( L2ARRMCKEN1_DataUE0_e, 24 ) //L2 cache data array uncorrectable error doubleword 0
-    DECLARE_ENUM_VAL( L2ARRMCKEN1_DataUE0_i, IBM_BIT_INDEX( 32, L2ARRMCKEN1_DataUE0_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2ARRMCKEN1_DataUE0_e,  24 ) /**< L2 cache data array uncorrectable error doubleword 0 */
+    DECLARE_ENUM_VAL(   L2C_L2ARRMCKEN1_DataUE0_i,  IBM_BIT_INDEX( 32, L2C_L2ARRMCKEN1_DataUE0_e ) )
 
-    DECLARE_ENUM_VAL( L2ARRMCKEN1_DataUE1_e, 25 ) //L2 cache data array uncorrectable error doubleword 1
-    DECLARE_ENUM_VAL( L2ARRMCKEN1_DataUE1_i, IBM_BIT_INDEX( 32, L2ARRMCKEN1_DataUE1_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2ARRMCKEN1_DataUE1_e,  25 ) /**< L2 cache data array uncorrectable error doubleword 1 */
+    DECLARE_ENUM_VAL(   L2C_L2ARRMCKEN1_DataUE1_i,  IBM_BIT_INDEX( 32, L2C_L2ARRMCKEN1_DataUE1_e ) )
 
-    DECLARE_ENUM_VAL( L2ARRMCKEN1_DataUE2_e, 26 ) //L2 cache data array uncorrectable error doubleword 2
-    DECLARE_ENUM_VAL( L2ARRMCKEN1_DataUE2_i, IBM_BIT_INDEX( 32, L2ARRMCKEN1_DataUE2_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2ARRMCKEN1_DataUE2_e,  26 ) /**< L2 cache data array uncorrectable error doubleword 2 */
+    DECLARE_ENUM_VAL(   L2C_L2ARRMCKEN1_DataUE2_i,  IBM_BIT_INDEX( 32, L2C_L2ARRMCKEN1_DataUE2_e ) )
 
-    DECLARE_ENUM_VAL( L2ARRMCKEN1_DataUE3_e, 27 ) //L2 cache data array uncorrectable error doubleword 3
-    DECLARE_ENUM_VAL( L2ARRMCKEN1_DataUE3_i, IBM_BIT_INDEX( 32, L2ARRMCKEN1_DataUE3_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2ARRMCKEN1_DataUE3_e,  27 ) /**< L2 cache data array uncorrectable error doubleword 3 */
+    DECLARE_ENUM_VAL(   L2C_L2ARRMCKEN1_DataUE3_i,  IBM_BIT_INDEX( 32, L2C_L2ARRMCKEN1_DataUE3_e ) )
 
-    DECLARE_ENUM_VAL( L2ARRMCKEN1_DataUE4_e, 28 ) //L2 cache data array uncorrectable error doubleword 4
-    DECLARE_ENUM_VAL( L2ARRMCKEN1_DataUE4_i, IBM_BIT_INDEX( 32, L2ARRMCKEN1_DataUE4_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2ARRMCKEN1_DataUE4_e,  28 ) /**< L2 cache data array uncorrectable error doubleword 4 */
+    DECLARE_ENUM_VAL(   L2C_L2ARRMCKEN1_DataUE4_i,  IBM_BIT_INDEX( 32, L2C_L2ARRMCKEN1_DataUE4_e ) )
 
-    DECLARE_ENUM_VAL( L2ARRMCKEN1_DataUE5_e, 29 ) //L2 cache data array uncorrectable error doubleword 5
-    DECLARE_ENUM_VAL( L2ARRMCKEN1_DataUE5_i, IBM_BIT_INDEX( 32, L2ARRMCKEN1_DataUE5_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2ARRMCKEN1_DataUE5_e,  29 ) /**< L2 cache data array uncorrectable error doubleword 5 */
+    DECLARE_ENUM_VAL(   L2C_L2ARRMCKEN1_DataUE5_i,  IBM_BIT_INDEX( 32, L2C_L2ARRMCKEN1_DataUE5_e ) )
 
-    DECLARE_ENUM_VAL( L2ARRMCKEN1_DataUE6_e, 30 ) //L2 cache data array uncorrectable error doubleword 6
-    DECLARE_ENUM_VAL( L2ARRMCKEN1_DataUE6_i, IBM_BIT_INDEX( 32, L2ARRMCKEN1_DataUE6_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2ARRMCKEN1_DataUE6_e,  30 ) /**< L2 cache data array uncorrectable error doubleword 6 */
+    DECLARE_ENUM_VAL(   L2C_L2ARRMCKEN1_DataUE6_i,  IBM_BIT_INDEX( 32, L2C_L2ARRMCKEN1_DataUE6_e ) )
 
-    DECLARE_ENUM_VAL( L2ARRMCKEN1_DataUE7_e, 31 ) //L2 cache data array uncorrectable error doubleword 7
-    DECLARE_ENUM_VAL( L2ARRMCKEN1_DataUE7_i, IBM_BIT_INDEX( 32, L2ARRMCKEN1_DataUE7_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2ARRMCKEN1_DataUE7_e,  31 ) /**< L2 cache data array uncorrectable error doubleword 7 */
+    DECLARE_ENUM_VAL(   L2C_L2ARRMCKEN1_DataUE7_i,  IBM_BIT_INDEX( 32, L2C_L2ARRMCKEN1_DataUE7_e ) )
 END_ENUM( L2ARRMCKEN1_FIELD )
 
-//L2ARRMCKEN2 bits
-BEGIN_ENUM( L2ARRMCKEN2_FIELD )
-    DECLARE_ENUM_VAL( L2ARRMCKEN2_LruPE0_e, 8 ) //L2 cache LRU array parity error 0.
-    DECLARE_ENUM_VAL( L2ARRMCKEN2_LruPE0_i, IBM_BIT_INDEX( 32, L2ARRMCKEN2_LruPE0_e ) )
+/** L2ARRMCKEN2 bits */
+BEGIN_ENUM( L2C_L2ARRMCKEN2_FIELD )
+    DECLARE_ENUM_VAL(   L2C_L2ARRMCKEN2_LruPE0_e,   8 ) /**< L2 cache LRU array parity error 0. */
+    DECLARE_ENUM_VAL(   L2C_L2ARRMCKEN2_LruPE0_i,   IBM_BIT_INDEX( 32, L2C_L2ARRMCKEN2_LruPE0_e ) )
 
-    DECLARE_ENUM_VAL( L2ARRMCKEN2_LruPE1_e, 9 ) //L2 cache LRU array parity error 1.
-    DECLARE_ENUM_VAL( L2ARRMCKEN2_LruPE1_i, IBM_BIT_INDEX( 32, L2ARRMCKEN2_LruPE1_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2ARRMCKEN2_LruPE1_e,   9 ) /**< L2 cache LRU array parity error 1. */
+    DECLARE_ENUM_VAL(   L2C_L2ARRMCKEN2_LruPE1_i,   IBM_BIT_INDEX( 32, L2C_L2ARRMCKEN2_LruPE1_e ) )
 
-    DECLARE_ENUM_VAL( L2ARRMCKEN2_LruPE2_e, 10 ) //L2 cache LRU array parity error 2.
-    DECLARE_ENUM_VAL( L2ARRMCKEN2_LruPE2_i, IBM_BIT_INDEX( 32, L2ARRMCKEN2_LruPE2_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2ARRMCKEN2_LruPE2_e,   10 ) /**< L2 cache LRU array parity error 2. */
+    DECLARE_ENUM_VAL(   L2C_L2ARRMCKEN2_LruPE2_i,   IBM_BIT_INDEX( 32, L2C_L2ARRMCKEN2_LruPE2_e ) )
 
-    DECLARE_ENUM_VAL( L2ARRMCKEN2_LruPE3_e, 11 ) //L2 cache LRU array parity error 3.
-    DECLARE_ENUM_VAL( L2ARRMCKEN2_LruPE3_i, IBM_BIT_INDEX( 32, L2ARRMCKEN2_LruPE3_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2ARRMCKEN2_LruPE3_e,   11 ) /**< L2 cache LRU array parity error 3. */
+    DECLARE_ENUM_VAL(   L2C_L2ARRMCKEN2_LruPE3_i,   IBM_BIT_INDEX( 32, L2C_L2ARRMCKEN2_LruPE3_e ) )
 
-    DECLARE_ENUM_VAL( L2ARRMCKEN2_LruPE4_e, 12 ) //L2 cache LRU array parity error 4.
-    DECLARE_ENUM_VAL( L2ARRMCKEN2_LruPE4_i, IBM_BIT_INDEX( 32, L2ARRMCKEN2_LruPE4_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2ARRMCKEN2_LruPE4_e,   12 ) /**< L2 cache LRU array parity error 4. */
+    DECLARE_ENUM_VAL(   L2C_L2ARRMCKEN2_LruPE4_i,   IBM_BIT_INDEX( 32, L2C_L2ARRMCKEN2_LruPE4_e ) )
 
-    DECLARE_ENUM_VAL( L2ARRMCKEN2_LruPE5_e, 13 ) //L2 cache LRU array parity error 5.
-    DECLARE_ENUM_VAL( L2ARRMCKEN2_LruPE5_i, IBM_BIT_INDEX( 32, L2ARRMCKEN2_LruPE5_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2ARRMCKEN2_LruPE5_e,   13 ) /**< L2 cache LRU array parity error 5. */
+    DECLARE_ENUM_VAL(   L2C_L2ARRMCKEN2_LruPE5_i,   IBM_BIT_INDEX( 32, L2C_L2ARRMCKEN2_LruPE5_e ) )
 
-    DECLARE_ENUM_VAL( L2ARRMCKEN2_LruPE6_e, 14 ) //L2 cache LRU array parity error 6.
-    DECLARE_ENUM_VAL( L2ARRMCKEN2_LruPE6_i, IBM_BIT_INDEX( 32, L2ARRMCKEN2_LruPE6_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2ARRMCKEN2_LruPE6_e,   14 ) /**< L2 cache LRU array parity error 6. */
+    DECLARE_ENUM_VAL(   L2C_L2ARRMCKEN2_LruPE6_i,   IBM_BIT_INDEX( 32, L2C_L2ARRMCKEN2_LruPE6_e ) )
 
-    DECLARE_ENUM_VAL( L2ARRMCKEN2_LruPE7_e, 15 ) //L2 cache LRU array parity error 7.
-    DECLARE_ENUM_VAL( L2ARRMCKEN2_LruPE7_i, IBM_BIT_INDEX( 32, L2ARRMCKEN2_LruPE7_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2ARRMCKEN2_LruPE7_e,   15 ) /**< L2 cache LRU array parity error 7. */
+    DECLARE_ENUM_VAL(   L2C_L2ARRMCKEN2_LruPE7_i,   IBM_BIT_INDEX( 32, L2C_L2ARRMCKEN2_LruPE7_e ) )
 
-    DECLARE_ENUM_VAL( L2ARRMCKEN2_LruPE8_e, 16 ) //L2 cache LRU array parity error 8.
-    DECLARE_ENUM_VAL( L2ARRMCKEN2_LruPE8_i, IBM_BIT_INDEX( 32, L2ARRMCKEN2_LruPE8_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2ARRMCKEN2_LruPE8_e,   16 ) /**< L2 cache LRU array parity error 8. */
+    DECLARE_ENUM_VAL(   L2C_L2ARRMCKEN2_LruPE8_i,   IBM_BIT_INDEX( 32, L2C_L2ARRMCKEN2_LruPE8_e ) )
 
-    DECLARE_ENUM_VAL( L2ARRMCKEN2_LruPE9_e, 17 ) //L2 cache LRU array parity error 9.
-    DECLARE_ENUM_VAL( L2ARRMCKEN2_LruPE9_i, IBM_BIT_INDEX( 32, L2ARRMCKEN2_LruPE9_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2ARRMCKEN2_LruPE9_e,   17 ) /**< L2 cache LRU array parity error 9. */
+    DECLARE_ENUM_VAL(   L2C_L2ARRMCKEN2_LruPE9_i,   IBM_BIT_INDEX( 32, L2C_L2ARRMCKEN2_LruPE9_e ) )
 
-    DECLARE_ENUM_VAL( L2ARRMCKEN2_LruPE10_e, 18 ) //L2 cache LRU array parity error 10.
-    DECLARE_ENUM_VAL( L2ARRMCKEN2_LruPE10_i, IBM_BIT_INDEX( 32, L2ARRMCKEN2_LruPE10_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2ARRMCKEN2_LruPE10_e,  18 ) /**< L2 cache LRU array parity error 10. */
+    DECLARE_ENUM_VAL(   L2C_L2ARRMCKEN2_LruPE10_i,  IBM_BIT_INDEX( 32, L2C_L2ARRMCKEN2_LruPE10_e ) )
 
-    DECLARE_ENUM_VAL( L2ARRMCKEN2_LruPE11_e, 19 ) //L2 cache LRU array parity error 11.
-    DECLARE_ENUM_VAL( L2ARRMCKEN2_LruPE11_i, IBM_BIT_INDEX( 32, L2ARRMCKEN2_LruPE11_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2ARRMCKEN2_LruPE11_e,  19 ) /**< L2 cache LRU array parity error 11. */
+    DECLARE_ENUM_VAL(   L2C_L2ARRMCKEN2_LruPE11_i,  IBM_BIT_INDEX( 32, L2C_L2ARRMCKEN2_LruPE11_e ) )
 
-    DECLARE_ENUM_VAL( L2ARRMCKEN2_TagCE0_e, 20 ) //L2 cache tag array correctable error way 0
-    DECLARE_ENUM_VAL( L2ARRMCKEN2_TagCE0_i, IBM_BIT_INDEX( 32, L2ARRMCKEN2_TagCE0_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2ARRMCKEN2_TagCE0_e,   20 ) /**< L2 cache tag array correctable error way 0 */
+    DECLARE_ENUM_VAL(   L2C_L2ARRMCKEN2_TagCE0_i,   IBM_BIT_INDEX( 32, L2C_L2ARRMCKEN2_TagCE0_e ) )
 
-    DECLARE_ENUM_VAL( L2ARRMCKEN2_TagCE1_e, 21 ) //L2 cache tag array correctable error way 1
-    DECLARE_ENUM_VAL( L2ARRMCKEN2_TagCE1_i, IBM_BIT_INDEX( 32, L2ARRMCKEN2_TagCE1_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2ARRMCKEN2_TagCE1_e,   21 ) /**< L2 cache tag array correctable error way 1 */
+    DECLARE_ENUM_VAL(   L2C_L2ARRMCKEN2_TagCE1_i,   IBM_BIT_INDEX( 32, L2C_L2ARRMCKEN2_TagCE1_e ) )
 
-    DECLARE_ENUM_VAL( L2ARRMCKEN2_TagCE2_e, 22 ) //L2 cache tag array correctable error way 2
-    DECLARE_ENUM_VAL( L2ARRMCKEN2_TagCE2_i, IBM_BIT_INDEX( 32, L2ARRMCKEN2_TagCE2_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2ARRMCKEN2_TagCE2_e,   22 ) /**< L2 cache tag array correctable error way 2 */
+    DECLARE_ENUM_VAL(   L2C_L2ARRMCKEN2_TagCE2_i,   IBM_BIT_INDEX( 32, L2C_L2ARRMCKEN2_TagCE2_e ) )
 
-    DECLARE_ENUM_VAL( L2ARRMCKEN2_TagCE3_e, 23 ) //L2 cache tag array correctable error way 3
-    DECLARE_ENUM_VAL( L2ARRMCKEN2_TagCE3_i, IBM_BIT_INDEX( 32, L2ARRMCKEN2_TagCE3_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2ARRMCKEN2_TagCE3_e,   23 ) /**< L2 cache tag array correctable error way 3 */
+    DECLARE_ENUM_VAL(   L2C_L2ARRMCKEN2_TagCE3_i,   IBM_BIT_INDEX( 32, L2C_L2ARRMCKEN2_TagCE3_e ) )
 
-    DECLARE_ENUM_VAL( L2ARRMCKEN2_DataCE0_e, 24 ) //L2 cache data array correctable error doubleword 0
-    DECLARE_ENUM_VAL( L2ARRMCKEN2_DataCE0_i, IBM_BIT_INDEX( 32, L2ARRMCKEN2_DataCE0_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2ARRMCKEN2_DataCE0_e,  24 ) /**< L2 cache data array correctable error doubleword 0 */
+    DECLARE_ENUM_VAL(   L2C_L2ARRMCKEN2_DataCE0_i,  IBM_BIT_INDEX( 32, L2C_L2ARRMCKEN2_DataCE0_e ) )
 
-    DECLARE_ENUM_VAL( L2ARRMCKEN2_DataCE1_e, 25 ) //L2 cache data array correctable error doubleword 1
-    DECLARE_ENUM_VAL( L2ARRMCKEN2_DataCE1_i, IBM_BIT_INDEX( 32, L2ARRMCKEN2_DataCE1_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2ARRMCKEN2_DataCE1_e,  25 ) /**< L2 cache data array correctable error doubleword 1 */
+    DECLARE_ENUM_VAL(   L2C_L2ARRMCKEN2_DataCE1_i,  IBM_BIT_INDEX( 32, L2C_L2ARRMCKEN2_DataCE1_e ) )
 
-    DECLARE_ENUM_VAL( L2ARRMCKEN2_DataCE2_e, 26 ) //L2 cache data array correctable error doubleword 2
-    DECLARE_ENUM_VAL( L2ARRMCKEN2_DataCE2_i, IBM_BIT_INDEX( 32, L2ARRMCKEN2_DataCE2_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2ARRMCKEN2_DataCE2_e,  26 ) /**< L2 cache data array correctable error doubleword 2 */
+    DECLARE_ENUM_VAL(   L2C_L2ARRMCKEN2_DataCE2_i,  IBM_BIT_INDEX( 32, L2C_L2ARRMCKEN2_DataCE2_e ) )
 
-    DECLARE_ENUM_VAL( L2ARRMCKEN2_DataCE3_e, 27 ) //L2 cache data array correctable error doubleword 3
-    DECLARE_ENUM_VAL( L2ARRMCKEN2_DataCE3_i, IBM_BIT_INDEX( 32, L2ARRMCKEN2_DataCE3_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2ARRMCKEN2_DataCE3_e,  27 ) /**< L2 cache data array correctable error doubleword 3 */
+    DECLARE_ENUM_VAL(   L2C_L2ARRMCKEN2_DataCE3_i,  IBM_BIT_INDEX( 32, L2C_L2ARRMCKEN2_DataCE3_e ) )
 
-    DECLARE_ENUM_VAL( L2ARRMCKEN2_DataCE4_e, 28 ) //L2 cache data array correctable error doubleword 4
-    DECLARE_ENUM_VAL( L2ARRMCKEN2_DataCE4_i, IBM_BIT_INDEX( 32, L2ARRMCKEN2_DataCE4_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2ARRMCKEN2_DataCE4_e,  28 ) /**< L2 cache data array correctable error doubleword 4 */
+    DECLARE_ENUM_VAL(   L2C_L2ARRMCKEN2_DataCE4_i,  IBM_BIT_INDEX( 32, L2C_L2ARRMCKEN2_DataCE4_e ) )
 
-    DECLARE_ENUM_VAL( L2ARRMCKEN2_DataCE5_e, 29 ) //L2 cache data array correctable error doubleword 5
-    DECLARE_ENUM_VAL( L2ARRMCKEN2_DataCE5_i, IBM_BIT_INDEX( 32, L2ARRMCKEN2_DataCE5_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2ARRMCKEN2_DataCE5_e,  29 ) /**< L2 cache data array correctable error doubleword 5 */
+    DECLARE_ENUM_VAL(   L2C_L2ARRMCKEN2_DataCE5_i,  IBM_BIT_INDEX( 32, L2C_L2ARRMCKEN2_DataCE5_e ) )
 
-    DECLARE_ENUM_VAL( L2ARRMCKEN2_DataCE6_e, 30 ) //L2 cache data array correctable error doubleword 6
-    DECLARE_ENUM_VAL( L2ARRMCKEN2_DataCE6_i, IBM_BIT_INDEX( 32, L2ARRMCKEN2_DataCE6_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2ARRMCKEN2_DataCE6_e,  30 ) /**< L2 cache data array correctable error doubleword 6 */
+    DECLARE_ENUM_VAL(   L2C_L2ARRMCKEN2_DataCE6_i,  IBM_BIT_INDEX( 32, L2C_L2ARRMCKEN2_DataCE6_e ) )
 
-    DECLARE_ENUM_VAL( L2ARRMCKEN2_DataCE7_e, 31 ) //L2 cache data array correctable error doubleword 7
-    DECLARE_ENUM_VAL( L2ARRMCKEN2_DataCE7_i, IBM_BIT_INDEX( 32, L2ARRMCKEN2_DataCE7_e ) )
-END_ENUM( L2ARRMCKEN2_FIELD )
+    DECLARE_ENUM_VAL(   L2C_L2ARRMCKEN2_DataCE7_e,  31 ) /**< L2 cache data array correctable error doubleword 7 */
+    DECLARE_ENUM_VAL(   L2C_L2ARRMCKEN2_DataCE7_i,  IBM_BIT_INDEX( 32, L2C_L2ARRMCKEN2_DataCE7_e ) )
+END_ENUM( L2C_L2ARRMCKEN2_FIELD )
 
-//L2CPUMCKEN bits
-BEGIN_ENUM( L2CPUMCKEN_FIELD )
-    DECLARE_ENUM_VAL( L2CPUMCKEN_IrReqPE0_e, 20 ) //Parity error on C476_L2CIRDREQPARITY bit 0.
-    DECLARE_ENUM_VAL( L2CPUMCKEN_IrReqPE0_i, IBM_BIT_INDEX( 32, L2CPUMCKEN_IrReqPE0_e ) )
+/** L2CPUMCKEN bits */
+BEGIN_ENUM( L2C_L2CPUMCKEN_FIELD )
+    DECLARE_ENUM_VAL(   L2C_L2CPUMCKEN_IrReqPE0_e,  20 ) /**< Parity error on C476_L2CIRDREQPARITY bit 0. */
+    DECLARE_ENUM_VAL(   L2C_L2CPUMCKEN_IrReqPE0_i,  IBM_BIT_INDEX( 32, L2C_L2CPUMCKEN_IrReqPE0_e ) )
 
-    DECLARE_ENUM_VAL( L2CPUMCKEN_IrReqPE1_e, 21 ) //Parity error on C476_L2CIRDREQPARITY bit 1.
-    DECLARE_ENUM_VAL( L2CPUMCKEN_IrReqPE1_i, IBM_BIT_INDEX( 32, L2CPUMCKEN_IrReqPE1_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2CPUMCKEN_IrReqPE1_e,  21 ) /**< Parity error on C476_L2CIRDREQPARITY bit 1. */
+    DECLARE_ENUM_VAL(   L2C_L2CPUMCKEN_IrReqPE1_i,  IBM_BIT_INDEX( 32, L2C_L2CPUMCKEN_IrReqPE1_e ) )
 
-    DECLARE_ENUM_VAL( L2CPUMCKEN_DrReqPE0_e, 22 ) //Parity error on C476_L2CDRDREQPARITY bit 0.
-    DECLARE_ENUM_VAL( L2CPUMCKEN_DrReqPE0_i, IBM_BIT_INDEX( 32, L2CPUMCKEN_DrReqPE0_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2CPUMCKEN_DrReqPE0_e,  22 ) /**< Parity error on C476_L2CDRDREQPARITY bit 0. */
+    DECLARE_ENUM_VAL(   L2C_L2CPUMCKEN_DrReqPE0_i,  IBM_BIT_INDEX( 32, L2C_L2CPUMCKEN_DrReqPE0_e ) )
 
-    DECLARE_ENUM_VAL( L2CPUMCKEN_DrReqPE1_e, 23 ) //Parity error on C476_L2CDRDREQPARITY bit 1.
-    DECLARE_ENUM_VAL( L2CPUMCKEN_DrReqPE1_i, IBM_BIT_INDEX( 32, L2CPUMCKEN_DrReqPE1_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2CPUMCKEN_DrReqPE1_e,  23 ) /**< Parity error on C476_L2CDRDREQPARITY bit 1. */
+    DECLARE_ENUM_VAL(   L2C_L2CPUMCKEN_DrReqPE1_i, IBM_BIT_INDEX( 32, L2C_L2CPUMCKEN_DrReqPE1_e ) )
 
-    DECLARE_ENUM_VAL( L2CPUMCKEN_DrReqPE2_e, 24 ) //Parity error on C476_L2CDRDREQPARITY bit 2.
-    DECLARE_ENUM_VAL( L2CPUMCKEN_DrReqPE2_i, IBM_BIT_INDEX( 32, L2CPUMCKEN_DrReqPE2_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2CPUMCKEN_DrReqPE2_e,  24 ) /**< Parity error on C476_L2CDRDREQPARITY bit 2. */
+    DECLARE_ENUM_VAL(   L2C_L2CPUMCKEN_DrReqPE2_i,  IBM_BIT_INDEX( 32, L2C_L2CPUMCKEN_DrReqPE2_e ) )
 
-    DECLARE_ENUM_VAL( L2CPUMCKEN_DwReqPE0_e, 25 ) //Parity error on C476_L2CDWWREQPARITY bit 0.
-    DECLARE_ENUM_VAL( L2CPUMCKEN_DwReqPE0_i, IBM_BIT_INDEX( 32, L2CPUMCKEN_DwReqPE0_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2CPUMCKEN_DwReqPE0_e,  25 ) /**< Parity error on C476_L2CDWWREQPARITY bit 0. */
+    DECLARE_ENUM_VAL(   L2C_L2CPUMCKEN_DwReqPE0_i,  IBM_BIT_INDEX( 32, L2C_L2CPUMCKEN_DwReqPE0_e ) )
 
-    DECLARE_ENUM_VAL( L2CPUMCKEN_DwReqPE1_e, 26 ) //Parity error on C476_L2CDWWREQPARITY bit 1.
-    DECLARE_ENUM_VAL( L2CPUMCKEN_DwReqPE1_i, IBM_BIT_INDEX( 32, L2CPUMCKEN_DwReqPE1_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2CPUMCKEN_DwReqPE1_e,  26 ) /**< Parity error on C476_L2CDWWREQPARITY bit 1. */
+    DECLARE_ENUM_VAL(   L2C_L2CPUMCKEN_DwReqPE1_i,  IBM_BIT_INDEX( 32, L2C_L2CPUMCKEN_DwReqPE1_e ) )
 
-    DECLARE_ENUM_VAL( L2CPUMCKEN_DwReqPE2_e, 27 ) //Parity error on C476_L2CDWWREQPARITY bit 2.
-    DECLARE_ENUM_VAL( L2CPUMCKEN_DwReqPE2_i, IBM_BIT_INDEX( 32, L2CPUMCKEN_DwReqPE2_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2CPUMCKEN_DwReqPE2_e,  27 ) /**< Parity error on C476_L2CDWWREQPARITY bit 2. */
+    DECLARE_ENUM_VAL(   L2C_L2CPUMCKEN_DwReqPE2_i,  IBM_BIT_INDEX( 32, L2C_L2CPUMCKEN_DwReqPE2_e ) )
 
-    DECLARE_ENUM_VAL( L2CPUMCKEN_DwDataPE0_e, 28 ) //arity error on C476_L2CDWRDATAPARITY bit 0.
-    DECLARE_ENUM_VAL( L2CPUMCKEN_DwDataPE0_i, IBM_BIT_INDEX( 32, L2CPUMCKEN_DwDataPE0_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2CPUMCKEN_DwDataPE0_e, 28 ) /**< Parity error on C476_L2CDWRDATAPARITY bit 0. */
+    DECLARE_ENUM_VAL(   L2C_L2CPUMCKEN_DwDataPE0_i, IBM_BIT_INDEX( 32, L2C_L2CPUMCKEN_DwDataPE0_e ) )
 
-    DECLARE_ENUM_VAL( L2CPUMCKEN_DwDataPE1_e, 29 ) //arity error on C476_L2CDWRDATAPARITY bit 1.
-    DECLARE_ENUM_VAL( L2CPUMCKEN_DwDataPE1_i, IBM_BIT_INDEX( 32, L2CPUMCKEN_DwDataPE1_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2CPUMCKEN_DwDataPE1_e, 29 ) /**< Parity error on C476_L2CDWRDATAPARITY bit 1. */
+    DECLARE_ENUM_VAL(   L2C_L2CPUMCKEN_DwDataPE1_i, IBM_BIT_INDEX( 32, L2C_L2CPUMCKEN_DwDataPE1_e ) )
 
-    DECLARE_ENUM_VAL( L2CPUMCKEN_DwDataPE2_e, 30 ) //arity error on C476_L2CDWRDATAPARITY bit 2.
-    DECLARE_ENUM_VAL( L2CPUMCKEN_DwDataPE2_i, IBM_BIT_INDEX( 32, L2CPUMCKEN_DwDataPE2_e ) )
+    DECLARE_ENUM_VAL(   L2C_L2CPUMCKEN_DwDataPE2_e, 30 ) /**< Parity error on C476_L2CDWRDATAPARITY bit 2. */
+    DECLARE_ENUM_VAL(   L2C_L2CPUMCKEN_DwDataPE2_i, IBM_BIT_INDEX( 32, L2C_L2CPUMCKEN_DwDataPE2_e ) )
 
-    DECLARE_ENUM_VAL( L2CPUMCKEN_DwDataPE3_e, 31 ) //arity error on C476_L2CDWRDATAPARITY bit 3.
-    DECLARE_ENUM_VAL( L2CPUMCKEN_DwDataPE3_i, IBM_BIT_INDEX( 32, L2CPUMCKEN_DwDataPE3_e ) )
-END_ENUM( L2CPUMCKEN_FIELD )
+    DECLARE_ENUM_VAL(   L2C_L2CPUMCKEN_DwDataPE3_e, 31 ) /**< Parity error on C476_L2CDWRDATAPARITY bit 3. */
+    DECLARE_ENUM_VAL(   L2C_L2CPUMCKEN_DwDataPE3_i, IBM_BIT_INDEX( 32, L2C_L2CPUMCKEN_DwDataPE3_e ) )
+END_ENUM( L2C_L2CPUMCKEN_FIELD )
 
 
 #endif /* L2C_L2_H_ */

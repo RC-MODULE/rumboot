@@ -4,42 +4,38 @@
 #include <stdbool.h>
 #include <platform/regs/regs_l2c_l2.h>
 #include <platform/regs/regs_l2c_pmu.h>
-#include <platform/regs/fields/l2c_l2.h>
 
 
-/*
- * TODO: need to change constants definition in common project manner
- */
 //L2INTEN bits
 typedef enum
 {
-    L2INTEN_EXTINT      = (1 << 11),
-    L2INTEN_PLBINT0     = (1 << 10),
-    L2INTEN_PLBINT1     = (1 << 9),
-    L2INTEN_L2AINT0     = (1 << 8),
-    L2INTEN_L2AINT1     = (1 << 7),
-    L2INTEN_L2AINT2     = (1 << 6),
-    L2INTEN_L1CINT0     = (1 << 5),
-    L2INTEN_RACINT0     = (1 << 4),
-    L2INTEN_WACINT0     = (1 << 3),
-    L2INTEN_WACINT1     = (1 << 2),
-    L2INTEN_WACINT2     = (1 << 1),
+    L2INTEN_EXTINT      = (1 << L2C_L2INTEN_EXTINT_i),
+    L2INTEN_PLBINT0     = (1 << L2C_L2INTEN_PLBINT0_i),
+    L2INTEN_PLBINT1     = (1 << L2C_L2INTEN_PLBINT1_i),
+    L2INTEN_L2AINT0     = (1 << L2C_L2INTEN_L2AINT0_i),
+    L2INTEN_L2AINT1     = (1 << L2C_L2INTEN_L2AINT1_i),
+    L2INTEN_L2AINT2     = (1 << L2C_L2INTEN_L2AINT2_i),
+    L2INTEN_L1CINT0     = (1 << L2C_L2INTEN_L1CINT0_i),
+    L2INTEN_RACINT0     = (1 << L2C_L2INTEN_RACINT0_i),
+    L2INTEN_WACINT0     = (1 << L2C_L2INTEN_WACINT0_i),
+    L2INTEN_WACINT1     = (1 << L2C_L2INTEN_WACINT1_i),
+    L2INTEN_WACINT2     = (1 << L2C_L2INTEN_WACINT2_i),
 } L2INTEN_bits_t;
 
 //L2MCKEN bits
 typedef enum
 {
-    L2MCKEN_EXTINT      = (1 << 11),
-    L2MCKEN_PLBINT0     = (1 << 10),
-    L2MCKEN_PLBINT1     = (1 << 9),
-    L2MCKEN_L2AINT0     = (1 << 8),
-    L2MCKEN_L2AINT1     = (1 << 7),
-    L2MCKEN_L2AINT2     = (1 << 6),
-    L2MCKEN_L1CINT0     = (1 << 5),
-    L2MCKEN_RACINT0     = (1 << 4),
-    L2MCKEN_WACINT0     = (1 << 3),
-    L2MCKEN_WACINT1     = (1 << 2),
-    L2MCKEN_WACINT2     = (1 << 1),
+    L2MCKEN_EXTMCK      = (1 << L2C_L2MCKEN_EXTMCK_i),
+    L2MCKEN_PLBMCK0     = (1 << L2C_L2MCKEN_PLBMCK0_i),
+    L2MCKEN_PLBMCK1     = (1 << L2C_L2MCKEN_PLBMCK1_i),
+    L2MCKEN_L2AMCK0     = (1 << L2C_L2MCKEN_L2AMCK0_i),
+    L2MCKEN_L2AMCK1     = (1 << L2C_L2MCKEN_L2AMCK1_i),
+    L2MCKEN_L2AMCK2     = (1 << L2C_L2MCKEN_L2AMCK2_i),
+    L2MCKEN_L1CMCK0     = (1 << L2C_L2MCKEN_L1CMCK0_i),
+    L2MCKEN_RACMCK0     = (1 << L2C_L2MCKEN_RACMCK0_i),
+    L2MCKEN_WACMCK0     = (1 << L2C_L2MCKEN_WACMCK0_i),
+    L2MCKEN_WACMCK1     = (1 << L2C_L2MCKEN_WACMCK1_i),
+    L2MCKEN_WACMCK2     = (1 << L2C_L2MCKEN_WACMCK2_i),
 } L2MCKEN_bits_t;
 
 //L2PLBINTEN0 bits
@@ -156,34 +152,34 @@ typedef enum
 //PMUIE0 bits
 typedef enum
 {
-    PMUIE0_IE0      = (1 << 31),
-    PMUIE0_IE1      = (1 << 30),
-    PMUIE0_IE2      = (1 << 29),
-    PMUIE0_IE3      = (1 << 28),
-    PMUIE0_IE4      = (1 << 27),
-    PMUIE0_IE5      = (1 << 26),
-    PMUIE0_IE6      = (1 << 25),
-    PMUIE0_IE7      = (1 << 24),
-    PMUIE0_IE8      = (1 << 23),
-    PMUIE0_IE9      = (1 << 22),
-    PMUIE0_IE10     = (1 << 21),
-    PMUIE0_IE11     = (1 << 20),
-    PMUIE0_IE12     = (1 << 19),
-    PMUIE0_IE13     = (1 << 18),
-    PMUIE0_IE14     = (1 << 17),
-    PMUIE0_IE15     = (1 << 16)
+    PMUIE0_IE0      = (1 << L2C_PMUIE0_IE0_i),
+    PMUIE0_IE1      = (1 << L2C_PMUIE0_IE1_i),
+    PMUIE0_IE2      = (1 << L2C_PMUIE0_IE2_i),
+    PMUIE0_IE3      = (1 << L2C_PMUIE0_IE3_i),
+    PMUIE0_IE4      = (1 << L2C_PMUIE0_IE4_i),
+    PMUIE0_IE5      = (1 << L2C_PMUIE0_IE5_i),
+    PMUIE0_IE6      = (1 << L2C_PMUIE0_IE6_i),
+    PMUIE0_IE7      = (1 << L2C_PMUIE0_IE7_i),
+    PMUIE0_IE8      = (1 << L2C_PMUIE0_IE8_i),
+    PMUIE0_IE9      = (1 << L2C_PMUIE0_IE9_i),
+    PMUIE0_IE10     = (1 << L2C_PMUIE0_IE10_i),
+    PMUIE0_IE11     = (1 << L2C_PMUIE0_IE11_i),
+    PMUIE0_IE12     = (1 << L2C_PMUIE0_IE12_i),
+    PMUIE0_IE13     = (1 << L2C_PMUIE0_IE13_i),
+    PMUIE0_IE14     = (1 << L2C_PMUIE0_IE14_i),
+    PMUIE0_IE15     = (1 << L2C_PMUIE0_IE15_i)
 } PMUIE0_bits_t;
 
 //PMULCX bits
 typedef enum
 {
-    PMULCX_CMODE    = (1 << 24),
-    PMULCX_FC0      = (1 << 21),
-    PMULCX_FCS      = (1 << 20),
-    PMULCX_FCU      = (1 << 19),
-    PMULCX_FCM1     = (1 << 18),
-    PMULCX_FCM0     = (1 << 17),
-    PMULCX_CE       = (1 << 16)
+    PMULCX_CMODE    = (1 << L2C_PMULCx_CMODE_i),
+    PMULCX_FC       = (1 << L2C_PMULCx_FC_i),
+    PMULCX_FCS      = (1 << L2C_PMULCx_FCS_i),
+    PMULCX_FCU      = (1 << L2C_PMULCx_FCU_i),
+    PMULCX_FCM1     = (1 << L2C_PMULCx_FCM1_i),
+    PMULCX_FCM0     = (1 << L2C_PMULCx_FCM0_i),
+    PMULCX_CE       = (1 << L2C_PMULCx_CE_i)
 } PMULCX_bits_t;
 
 
@@ -206,5 +202,6 @@ void l2c_pmu_set_CE_bit(uint32_t pmu_dcr_base, L2C_PMUREG dcr_index);
 void l2c_pmu_enable_interrupt(uint32_t pmu_dcr_base, L2C_PMUREG dcr_index, uint32_t mask);
 void l2c_pmu_clear_interrupt(uint32_t pmu_dcr_base);
 void l2c_pmu_set_cx(uint32_t pmu_dcr_base, L2C_PMUREG dcr_index, uint32_t value);
+
 
 #endif  /* L2C_H */

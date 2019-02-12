@@ -9,9 +9,10 @@
 #define REGS_L2C_L2_H
 
 
-#include <platform/common_macros/common_macros.h>
+#include <rumboot/macros.h>
 #include <platform/arch/ppc/ibm_bit_ordering_macros.h>
 #include <platform/regs/regs_l2c.h>
+#include <platform/regs/fields/l2c_l2.h>
 
 
 BEGIN_ENUM( L2C_L2REG )

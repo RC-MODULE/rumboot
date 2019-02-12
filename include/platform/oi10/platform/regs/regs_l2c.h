@@ -9,11 +9,11 @@
 #define REGS_L2C_H
 
 
-#include <platform/common_macros/common_macros.h>
+#include <rumboot/macros.h>
 #include <platform/arch/ppc/ibm_bit_ordering_macros.h>
 
 
-/** SRAMMC2PLB4 registers */
+/** L2C registers */
 BEGIN_ENUM( L2C_REG )
     /* L2 Cache Core Architected DCR */
     DECLARE_ENUM_VAL(   L2C_L2CDCRAI,   0x00    )   /**< D-Cache DCR Address Indirect Register */
@@ -50,7 +50,7 @@ BEGIN_ENUM( L2C_PMUDCRDI_FIELD )
 END_ENUM( L2C_PMUDCRDI_FIELD )
 
 
-/** SRAMMC2PLB4 registers defaults */
+/** L2C registers defaults */
 BEGIN_ENUM( L2C_REG_DFLT )
     /* L2 Cache Core Architected DCR */
     DECLARE_ENUM_VAL(   L2C_L2CDCRAI_DFLT,          0x00000000 )
@@ -61,5 +61,6 @@ BEGIN_ENUM( L2C_REG_DFLT )
 END_ENUM( L2C_REG_DFLT )
 
 DECLARE_CONST(L2C_COUNT_WAYS, 4)
+
 
 #endif /* REGS_L2C_H */
