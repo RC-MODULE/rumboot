@@ -121,21 +121,11 @@ END_ENUM( sys_event_code )
 #define EVENT_FPRS_CLEARED_START_CHECK          0x00000061
 /*test_mpw_cpu_019*/
 #define EVENT_SET_EXT_INT                       0x00000062
-#define EVENT_CLEAR_EXT_INT                     0x00000063
-#define EVENT_SET_SLVERR_INT_0                  0x00000064
-#define EVENT_CLEAR_SLVERR_INT_0                0x00000065
-#define EVENT_SET_SLVERR_INT_1                  0x00000066
-#define EVENT_CLEAR_SLVERR_INT_1                0x00000067
-#define EVENT_SET_SYSTEM_HANG                   0x00000068
-#define EVENT_CLEAR_SYSTEM_HANG                 0x00000069
-#define EVENT_SET_P4XAHB_0_INT                  0x0000006A
-#define EVENT_CLEAR_P4XAHB_0_INT                0x0000006B
-#define EVENT_SET_P4XAHB_1_INT                  0x0000006C
-#define EVENT_CLEAR_P4XAHB_1_INT                0x0000006D
-#define EVENT_SET_DCRARB_INT                    0x0000006E
-#define EVENT_CLEAR_DCRARB_INT                  0x0000006F
-#define EVENT_SET_P4XAHB_2_INT                  0x00000070
-#define EVENT_CLEAR_P4XAHB_2_INT                0x00000071
+#define EVENT_CLR_EXT_INT                       0x00000063
+#define EVENT_SET_INT_INT                       0x00000064
+#define EVENT_CLR_INT_INT                       0x00000065
+#define EVENT_RST_INT_INT                       0x00000066
+#define EVENT_INC_INT_INT                       0x00000067
 /*test_mpw_cpu_mem_002*/
 #define EVENT_INIT_ICU_TAG_ARRAY_ABUS_CHECK     0x00000070
 #define EVENT_INIT_ICU_TAG_ARRAY_DBUS_CHECK     0x00000071
