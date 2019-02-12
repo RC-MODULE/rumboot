@@ -20,7 +20,9 @@
 #include <platform/test_assert.h>
 #include <platform/devices.h>
 #include <platform/devices/emi.h>
+#include <platform/devices/l2c.h>
 #include <platform/interrupts.h>
+
 #include <platform/arch/ppc/ppc_476fp_config.h>
 #include <platform/arch/ppc/ppc_476fp_lib_c.h>
 #include <platform/arch/ppc/ppc_476fp_debug_fields.h>
@@ -28,6 +30,23 @@
 #include <platform/arch/ppc/ppc_476fp_ctrl_fields.h>
 #include <platform/arch/ppc/ppc_476fp_mmu_fields.h>
 #include <platform/arch/ppc/ppc_476fp_mmu.h>
+
+#define EVENT_GENERATE_TLB_MC                   (TEST_EVENT_CODE_MIN + 0)
+#define EVENT_CLEAR_TLB_MC                      (TEST_EVENT_CODE_MIN + 1)
+#define EVENT_GENERATE_IC_MC                    (TEST_EVENT_CODE_MIN + 2)
+#define EVENT_CLEAR_IC_MC                       (TEST_EVENT_CODE_MIN + 3)
+#define EVENT_GENERATE_DC_MC                    (TEST_EVENT_CODE_MIN + 4)
+#define EVENT_CLEAR_DC_MC                       (TEST_EVENT_CODE_MIN + 5)
+#define EVENT_GENERATE_GPR_MC                   (TEST_EVENT_CODE_MIN + 6)
+#define EVENT_CLEAR_GPR_MC                      (TEST_EVENT_CODE_MIN + 7)
+#define EVENT_GENERATE_FPR_MC                   (TEST_EVENT_CODE_MIN + 8)
+#define EVENT_CLEAR_FPR_MC                      (TEST_EVENT_CODE_MIN + 9)
+#define EVENT_GENERATE_IMP_MC                   (TEST_EVENT_CODE_MIN + 10)
+#define EVENT_CLEAR_IMP_MC                      (TEST_EVENT_CODE_MIN + 11)
+#define EVENT_GENERATE_L2_MC                    (TEST_EVENT_CODE_MIN + 12)
+#define EVENT_CLEAR_L2_MC                       (TEST_EVENT_CODE_MIN + 13)
+#define EVENT_GENERATE_DCR_MC                   (TEST_EVENT_CODE_MIN + 14)
+#define EVENT_CLEAR_DCR_MC                      (TEST_EVENT_CODE_MIN + 15)
 
 //                                          MMU_TLB_ENTRY(  ERPN,   RPN,        EPN,        DSIZ,                   IL1I,   IL1D,   W,      I,      M,      G,      E,                      UX, UW, UR,     SX, SW, SR      DULXE,  IULXE,      TS,     TID,                WAY,                BID,              V   )
 #define TLB_ENTRY_EM0_0_NOCACHE_VALID       MMU_TLB_ENTRY(  0x000,  0x00000,    0x00000,    MMU_TLBE_DSIZ_1GB,      0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,  MMU_TLBWE_BE_UND,   0b1 )
@@ -41,7 +60,6 @@
 #define UNEXIST_DCR_ADDR                0x00
 #define TEST_MPW_CPU_025_PPC_TIMEOUT    100
 
-
 static const tlb_entry bootrom_mirror           = {TLB_ENTRY_BOOTROM_MIRROR_0};
 static const tlb_entry em0_0_cache_on_valid     = {TLB_ENTRY_EM0_0_CACHE_VALID};
 static const tlb_entry em0_0_cache_off_valid    = {TLB_ENTRY_EM0_0_NOCACHE_VALID};
@@ -53,10 +71,6 @@ volatile uint32_t MC_HANDLED __attribute__((section(".data")))   = 0;
 
 uint32_t value = 0;
 
-//void __attribute__((section(".text"), aligned(0x100))) cached_func_from_EM0()
-//{
-//    rumboot_printf("execute cached_func_from_EM0\n");
-//}
 typedef void func();
 extern uint32_t cached_func[], func_size;
 
@@ -77,6 +91,17 @@ asm  (
   "func_size:                       \n\t"
   "   .long (.-cached_func)         \n\t"
 );
+
+static void load_code_in_cache(uint32_t start_addr, uint32_t code_size)
+{
+    uint32_t cur_addr;
+    rumboot_printf("Caching exception generation code\n");
+    for (cur_addr=start_addr; cur_addr<start_addr+code_size; cur_addr+=0x80)
+    {
+        rumboot_printf("icbt %x\n", cur_addr);
+        icbt((void* const)cur_addr);
+    }
+}
 
 void __attribute__((section(".text"))) cached_func_from_EM0()
 {
@@ -107,6 +132,7 @@ static void gen_IC_exception_asm()
     func* func_test = (func*)rumboot_malloc_from_named_heap_aligned( "SRAM0", func_size, 8 );
     memcpy( func_test, cached_func, func_size );
     msync();
+    load_code_in_cache((uint32_t)func_test, func_size);
     asm volatile   (
         "icbi 0,%0\n\t"
         "msync\n\t"
@@ -116,7 +142,7 @@ static void gen_IC_exception_asm()
         "msync\n\t"
         "mtspr %3, %2\n\t"
         "isync\n\t"
-        ::"r"((uint32_t) func_test), "r"(0b10 << CTRL_CCR1_ICDPEI_i), "r"(0), "i"(SPR_CCR1)
+        ::"r"((uint32_t) func_test), "r"(0b11 << CTRL_CCR1_ICDPEI_i), "r"(0), "i"(SPR_CCR1)
         :
     );
     rumboot_printf("Check value\n");
@@ -124,16 +150,7 @@ static void gen_IC_exception_asm()
     rumboot_printf("value = %x\n", value);
 }
 
-static void load_code_in_cache(uint32_t start_addr, uint32_t code_size)
-{
-    uint32_t cur_addr;
-    rumboot_printf("Caching exception generation code\n");
-    for (cur_addr=start_addr; cur_addr<start_addr+code_size; cur_addr+=0x80)
-    {
-        rumboot_printf("icbt %x\n", cur_addr);
-        icbt((void* const)cur_addr);
-    }
-}
+
 
 inline static void enable_machine_check()
 {
@@ -163,7 +180,7 @@ static void check_mc_status_CCR1(uint32_t mc_interrupt_status)
     }
     else if (mc_interrupt_status & (1<<ITRPT_MCSR_IC_i))
     {
-        spr_write(SPR_CCR1 , spr_read(SPR_CCR1) | (1 << CTRL_CCR1_DPC_i));
+        spr_write(SPR_CCR1 , spr_read(SPR_CCR1) | (1 << CTRL_CCR1_DPC_i)); //disable L1 parity checking
         isync();
 
         SET_BIT(MC_HANDLED, ITRPT_MCSR_IC_i);
@@ -176,11 +193,6 @@ static void check_mc_status_CCR1(uint32_t mc_interrupt_status)
 
         SET_BIT(MC_HANDLED, ITRPT_MCSR_DC_i);
         rumboot_printf("detected 'D-cache error' interrupt\n");
-    }
-    else if (mc_interrupt_status & (1<<ITRPT_MCSR_GPR_i))
-    {
-        SET_BIT(MC_HANDLED, ITRPT_MCSR_GPR_i);
-        rumboot_printf("detected 'GPR parity error' interrupt\n");
     }
     else if (mc_interrupt_status & (1<<ITRPT_MCSR_FPR_i))
     {
@@ -254,7 +266,6 @@ void test_setup_CCR1()
     write_tlb_entries(&em0_0_cache_on_valid,1);//set em0_0 cache_on tlb_entry
 }
 
-
 static void generate_TLB_mc()
 {
     rumboot_printf("Check 'UTLB parity error' generation with CCR1_MMUPEI field\n");
@@ -269,13 +280,11 @@ static void generate_TLB_mc()
     test_tlb_addr = ioread32 (BOOTROM_BASE);
     rumboot_printf("test_tlb_addr = %d\n",test_tlb_addr);
 
-
 }
 
 static void generate_IC_mc()
 {
     rumboot_printf("Check 'I-cache asynchronous error' generation with CCR1_ICPEI field\n");
-    load_code_in_cache((uint32_t)gen_IC_exception_asm, 0x40);
     gen_IC_exception_asm();
 }
 
@@ -304,28 +313,6 @@ static void generate_DC_mc()
 
 }
 
-static void generate_GPR_mc()
-{
-    rumboot_printf("Check 'GPR parity error' generation with CCR1_GPRPEI field\n");
-    uint32_t data = 0x7E57DA7A;
-    asm volatile   (
-        "lwz 3, 0(%0)\n\t"
-        "lwz 4, 0(%0)\n\t"
-        "msync\n\t"
-        "mtspr %3, %1 \n\t"
-        "isync\n\t"
-        "lwz 3, 0(%0)\n\t"
-        "lwz 4, 0(%0)\n\t"
-        "msync\n\t"
-        "mtspr %3, %2 \n\t"
-        "isync\n\t"
-        "cmp 0, 0, 3, 4\n\t"
-        ::"r"((uint32_t) &data), "r"(0b11 << CTRL_CCR1_GPRPEI_i), "r"(0), "i"(SPR_CCR1)
-        :"3","4"
-    );
-    rumboot_printf("data = %d\n",data);
-}
-
 static void generate_FPR_mc()
 {
     rumboot_printf("Check 'FPR parity error' generation with CCR1_FPRPEI field\n");
@@ -348,7 +335,7 @@ static void generate_FPR_mc()
         :"1","2"
     );
     msr_write(msr_old_value);
-    ici (0); dci(0); dci(2);
+
 }
 
 static void generate_DCR_mc()
@@ -389,9 +376,6 @@ void check_mc_with_CCR1(ITRPT_MCSR_FIELD MCSR_bit)
         case ITRPT_MCSR_DC_i:     generate_DC_mc();
                             rumboot_printf("wait interrupt from MCSR_DC\n");
                             break;
-        case ITRPT_MCSR_GPR_i:    generate_GPR_mc();
-                                  rumboot_printf("wait interrupt from MCSR_GPR\n");
-                            break;
         case ITRPT_MCSR_FPR_i:    generate_FPR_mc();
                             rumboot_printf("wait interrupt from MCSR_FPR\n");
                             break;
@@ -406,23 +390,133 @@ void check_mc_with_CCR1(ITRPT_MCSR_FIELD MCSR_bit)
     wait_interrupt(MCSR_bit);
 }
 
+void check_mc_status_inj(uint32_t mc_interrupt_status_inj)
+{
+    TEST_ASSERT(mc_interrupt_status_inj & (1 << ITRPT_MCSR_MCS_i), "Failed to set machine check interrupt");
+    if (mc_interrupt_status_inj & (1<<ITRPT_MCSR_TLB_i))
+    {
+        SET_BIT(MC_HANDLED, ITRPT_MCSR_TLB_i);
+        test_event(EVENT_CLEAR_TLB_MC);
+        rumboot_printf("detected 'UTLB parity error' interrupt\n");
+    }
+    else if (mc_interrupt_status_inj & (1<<ITRPT_MCSR_IC_i))
+    {
+        SET_BIT(MC_HANDLED, ITRPT_MCSR_IC_i);
+        test_event(EVENT_CLEAR_IC_MC);
+        rumboot_printf("detected 'I-cache asynchronous error' interrupt\n");
+    }
+    else if (mc_interrupt_status_inj & (1<<ITRPT_MCSR_DC_i))
+    {
+        SET_BIT(MC_HANDLED, ITRPT_MCSR_DC_i);
+        test_event(EVENT_CLEAR_DC_MC);
+        rumboot_printf("detected 'D-cache error' interrupt\n");
+    }
+    else if (mc_interrupt_status_inj & (1<<ITRPT_MCSR_GPR_i))
+    {
+        SET_BIT(MC_HANDLED, ITRPT_MCSR_GPR_i);
+        test_event(EVENT_CLEAR_GPR_MC);
+        rumboot_printf("detected 'GPR parity error' interrupt\n");
+    }
+    else if (mc_interrupt_status_inj & (1<<ITRPT_MCSR_FPR_i))
+    {
+        SET_BIT(MC_HANDLED, ITRPT_MCSR_FPR_i);
+        test_event(EVENT_CLEAR_FPR_MC);
+        rumboot_printf("detected 'FPR parity error' interrupt\n");
+    }
+    else if (mc_interrupt_status_inj & (1<<ITRPT_MCSR_L2_i))
+    {
+        SET_BIT(MC_HANDLED, ITRPT_MCSR_L2_i);
+        test_event(EVENT_CLEAR_L2_MC);
+        rumboot_printf("detected 'Error reported through the L2 cache' interrupt\n");
+    }
+    else if (mc_interrupt_status_inj & (1<<ITRPT_MCSR_DCR_i))
+    {
+        SET_BIT(MC_HANDLED, ITRPT_MCSR_DCR_i);
+        test_event(EVENT_CLEAR_DCR_MC);
+        rumboot_printf("detected 'DCR timeout' interrupt\n");
+    }
+    else if (mc_interrupt_status_inj & (1<<ITRPT_MCSR_IMP_i))
+    {
+        SET_BIT(MC_HANDLED, ITRPT_MCSR_IMP_i);
+        test_event(EVENT_CLEAR_IMP_MC);
+        rumboot_printf("detected 'Imprecise machine check' interrupt\n");
+    }
+    else
+    {
+        rumboot_printf("unexpected machine check interrupt\n");
+        rumboot_printf("MCSR = %x\n", mc_interrupt_status_inj);
+        test_event(EVENT_ERROR);
+    }
+}
+
+void machine_check_interrupt_handler_inj(int id, const char *name)
+{
+    rumboot_printf("\nWE GOT AN EXCEPTION: %d: %s\n", id, name);
+    if(id == RUMBOOT_IRQ_MACHINE_CHECK) {
+        uint32_t mc_interrupt_status_inj;
+        mc_interrupt_status_inj = spr_read(SPR_MCSR_RW);
+        check_mc_status_inj(mc_interrupt_status_inj);
+        exit_from_machine_check_interrupt(mc_interrupt_status_inj);
+    } else {
+        rumboot_printf("--- Guru Meditation ---\n");
+        rumboot_printf("MSR:  0x%x\n", msr_read());
+        rumboot_printf("SRR0: 0x%x\n", spr_read(SPR_SRR0));
+        rumboot_printf("SRR1: 0x%x\n", spr_read(SPR_SRR1));
+        rumboot_printf("CSRR0: 0x%x\n", spr_read(SPR_CSRR0));
+        rumboot_printf("CSRR1: 0x%x\n", spr_read(SPR_CSRR1));
+        rumboot_printf("MCSRR0: 0x%x\n", spr_read(SPR_MCSRR0));
+        rumboot_printf("MCSRR1: 0x%x\n", spr_read(SPR_MCSRR1));
+        rumboot_printf("---       ---       ---\n");
+        rumboot_platform_panic("Please reset or power-cycle the board\n");
+    }
+}
+
+void test_setup_inj()
+{
+    rumboot_printf("Check interrupts created by injectors\n");
+    MC_HANDLED = 0;
+    spr_write(SPR_CCR2 , spr_read(SPR_CCR2) | (1 << CTRL_CCR2_MCDTO_i)); //enable_machine_check_on_dcr_timeout
+    setup_machine_check_interrupt(machine_check_interrupt_handler_inj);
+    //L2C0_L2MCKEN_DCR_write(1 << L2MCKEN_EXTMCK_i);//enable only ext_mck to prevent any unwanted interrupts
+    //L2C1_L2MCKEN_DCR_write(1 << L2MCKEN_EXTMCK_i);//enable only ext_mck to prevent any unwanted interrupts
+}
+
+void check_mc_with_injector(uint32_t event_code, ITRPT_MCSR_FIELD MCSR_bit)
+{
+    enable_machine_check();
+    test_event(event_code);
+
+    //(MCSR_bit==ITRPT_MCSR_IMP_i) ? wait_MCSR_value(MCSR_bit):
+    wait_interrupt(MCSR_bit);
+}
+
 int main ()
 {
-    //test_event_send_test_id( "test_oi10_cpu_025_rst");
+    test_event_send_test_id( "test_oi10_cpu_025_ppc");
 
     rumboot_memfill8_modelling((void*)SRAM0_BASE, 0x1000, 0x00, 0x00); //workaround (init 4KB SRAM0)
 
     rumboot_printf("TEST START\n");
 
-    test_setup_CCR1();
+    test_setup_inj();
+    check_mc_with_injector( EVENT_GENERATE_TLB_MC, ITRPT_MCSR_TLB_i  );
+    check_mc_with_injector( EVENT_GENERATE_IC_MC,  ITRPT_MCSR_IC_i   );
+    check_mc_with_injector( EVENT_GENERATE_DC_MC,  ITRPT_MCSR_DC_i   );
+    check_mc_with_injector( EVENT_GENERATE_GPR_MC, ITRPT_MCSR_GPR_i  );
+    check_mc_with_injector( EVENT_GENERATE_FPR_MC, ITRPT_MCSR_FPR_i  );
+    //check_mc_with_injector( EVENT_GENERATE_IMP_MC, ITRPT_MCSR_IMP_i  ); //???
+    check_mc_with_injector( EVENT_GENERATE_L2_MC,  ITRPT_MCSR_L2_i   );
+    check_mc_with_injector( EVENT_GENERATE_DCR_MC, ITRPT_MCSR_DCR_i  );
 
-    //check_mc_with_CCR1(ITRPT_MCSR_IC_i);    // mc ic
-    //check_mc_with_CCR1(ITRPT_MCSR_DCR_i);   // mc.
-    check_mc_with_CCR1(ITRPT_MCSR_FPR_i);   // mc
-    //check_mc_with_CCR1(ITRPT_MCSR_DC_i);      // mc
-    //check_mc_with_CCR1(ITRPT_MCSR_TLB_i);   //not mc
-    check_mc_with_CCR1(ITRPT_MCSR_GPR_i);   // not mc
-    //check_mc_with_CCR1(ITRPT_MCSR_L2_i);   // not mc
+    ici (0); dci(0); dci(2);
+
+    test_setup_CCR1();
+    check_mc_with_CCR1(ITRPT_MCSR_TLB_i);
+    check_mc_with_CCR1(ITRPT_MCSR_IC_i);
+    check_mc_with_CCR1(ITRPT_MCSR_DC_i);
+    check_mc_with_CCR1(ITRPT_MCSR_FPR_i);
+    check_mc_with_CCR1(ITRPT_MCSR_DCR_i);
+    check_mc_with_CCR1(ITRPT_MCSR_L2_i);
 
 
     rumboot_printf("TEST OK\n");
