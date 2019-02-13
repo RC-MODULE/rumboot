@@ -310,6 +310,7 @@ void irq_handler( int irq_num, void *arg )
                     dcr_read(DCR_LTRACE_BASE + LTR_TS));
             break;
         default:
+            test_event(EVENT_CLR_INT_INT);
             break;
         }
     }
