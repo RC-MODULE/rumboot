@@ -12,7 +12,6 @@
 int main()
 {
         	 			void *data;
-								char pdata[512];
 								size_t maxsize;
 #ifndef RUMBOOT_NATIVE
 								struct rumboot_bootheader *hdr = rumboot_platform_get_spl_area(&maxsize);
@@ -28,6 +27,10 @@ int main()
 								rumboot_platform_putchar('X');
 								while (rumboot_platform_getchar(1000) != 'X');;
 								int ret = xmodem_get((void *) hdr, maxsize);
+
+								if (ret <= 0)
+									return 1;
+
 								ssize_t len = rumboot_bootimage_check_header(hdr, &data);
 								if (len == -EBADMAGIC) {
 																dbg_boot(NULL, "Bad magic");
