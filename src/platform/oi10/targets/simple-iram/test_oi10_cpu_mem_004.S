@@ -16,7 +16,7 @@
 
 #define ICU_DATA_RDBUS_CHECK_DATA_LEN    15
 
-#define DATA_ARR_TEST_VAL0(way, idx, word_addr)     (((word_addr & 0x3)  << 8) + idx)    //(word_add[1:0]<<8) + idx
+#define DATA_ARR_TEST_VAL0(way, idx, word_addr)     (((word_addr & 0x3)  << 8) + (idx << 16))    //(word_add[1:0]<<8) + (idx << 16)
 #define DATA_ARR_TEST_VAL1(way, idx, word_addr)     (((way << 1) + ((word_addr & 0x4) >> 2)) << IBM_BIT_INDEX(32, 7)) //(2*way + word_addr[2] << IBM_BIT_INDEX(32, 7))
 
 .macro check_icu_dataarr_addr_bus way, idx, word_addr
@@ -26,22 +26,22 @@
     icread r0, r3
     isync
 
-    load_const r5, DATA_ARR_TEST_VAL0(\way, \idx, \word_addr)
-    mfspr r4, SPR_ICDBDR0
-//    trace_msg "actual   ICDBDR0: "
-//    trace_hex r4
-//    trace_msg "expected ICDBDR0: "
-//    trace_hex r5
-    cmp cr7, 0, r4, r5
+    load_const r8, DATA_ARR_TEST_VAL0(\way, \idx, \word_addr)
+    mfspr r7, SPR_ICDBDR0
+//    rumboot_putstring "actual   ICDBDR0: "
+//    rumboot_puthex r7
+//    rumboot_putstring "expected ICDBDR0: "
+//    rumboot_puthex r8
+    cmp cr7, 0, r7, r8
     TEST_ASSERT(eq, cr7, "ICU dataarr addr bus error in ICDBTR0. idx=\idx  way=\way   word_addr=\word_addr")
 
-    load_const r5, DATA_ARR_TEST_VAL1(\way, \idx, \word_addr)
-    mfspr r4, SPR_ICDBDR1
-//    trace_msg "actual   ICDBDR1: "
-//    trace_hex r4
-//    trace_msg "expected ICDBDR1: "
-//    trace_hex r5
-    cmp cr7, 0, r4, r5
+    load_const r8, DATA_ARR_TEST_VAL1(\way, \idx, \word_addr)
+    mfspr r7, SPR_ICDBDR1
+//    rumboot_putstring "actual   ICDBDR1: "
+//    rumboot_puthex r7
+//    rumboot_putstring "expected ICDBDR1: "
+//    rumboot_puthex r8
+    cmp cr7, 0, r7, r8
     TEST_ASSERT(eq, cr7, "ICU dataarr addr bus error in ICDBTR1. idx=\idx  way=\way   word_addr=\word_addr")
 .endm
 
@@ -68,20 +68,20 @@
     icread r0, r3
     isync
     mfspr r4, SPR_ICDBDR0
-//    trace_msg "actual   ICDBDR0: "
-//    trace_hex r4
-//    trace_msg "expected ICDBDR0: "
-//    trace_hex r6
+//    rumboot_putstring "actual   ICDBDR0: "
+//    rumboot_puthex r4
+//    rumboot_putstring "expected ICDBDR0: "
+//    rumboot_puthex r6
     cmp cr7, 0, r4, r6
     TEST_ASSERT(eq, cr7, "\msg (ICDBDR0)")
 
     //lwz r6, 0(\rS1) //load expected values
     //isync
     mfspr r4, SPR_ICDBDR1
-//    trace_msg "actual   ICDBDR1: "
-//    trace_hex r4
-//    trace_msg "expected ICDBDR1: "
-//    trace_hex r7
+//    rumboot_putstring "actual   ICDBDR1: "
+//    rumboot_puthex r4
+//    rumboot_putstring "expected ICDBDR1: "
+//    rumboot_puthex r7
     cmp cr7, 0, r4, r7
     TEST_ASSERT(eq, cr7, "\msg (ICDBDR1)")
 .endm
