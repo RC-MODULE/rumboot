@@ -96,7 +96,7 @@ static void load_code_in_cache(uint32_t start_addr, uint32_t code_size)
 {
     uint32_t cur_addr;
     rumboot_printf("Caching exception generation code\n");
-    for (cur_addr=start_addr; cur_addr<start_addr+code_size; cur_addr+=0x80)
+    for (cur_addr=start_addr; cur_addr<start_addr+code_size; cur_addr+=0x100)
     {
         rumboot_printf("icbt %x\n", cur_addr);
         icbt((void* const)cur_addr);
@@ -177,10 +177,12 @@ static void check_mc_status_CCR1(uint32_t mc_interrupt_status)
         write_tlb_entries(&bootrom_mirror,1);//fix tlb errors
         SET_BIT(MC_HANDLED, ITRPT_MCSR_TLB_i);
         rumboot_printf("detected 'UTLB parity error' interrupt\n");
+        //write_tlb_entries(&em0_0_cache_on_valid,1);
     }
     else if (mc_interrupt_status & (1<<ITRPT_MCSR_IC_i))
     {
-        spr_write(SPR_CCR1 , spr_read(SPR_CCR1) | (1 << CTRL_CCR1_DPC_i)); //disable L1 parity checking
+        ici (0); dci(0); dci(2);
+        //spr_write(SPR_CCR1 , spr_read(SPR_CCR1) | (1 << CTRL_CCR1_DPC_i));
         isync();
 
         SET_BIT(MC_HANDLED, ITRPT_MCSR_IC_i);
@@ -499,24 +501,22 @@ int main ()
     rumboot_printf("TEST START\n");
 
     test_setup_inj();
-    check_mc_with_injector( EVENT_GENERATE_TLB_MC, ITRPT_MCSR_TLB_i  );
-    check_mc_with_injector( EVENT_GENERATE_IC_MC,  ITRPT_MCSR_IC_i   );
-    check_mc_with_injector( EVENT_GENERATE_DC_MC,  ITRPT_MCSR_DC_i   );
-    check_mc_with_injector( EVENT_GENERATE_GPR_MC, ITRPT_MCSR_GPR_i  );
-    check_mc_with_injector( EVENT_GENERATE_FPR_MC, ITRPT_MCSR_FPR_i  );
-    //check_mc_with_injector( EVENT_GENERATE_IMP_MC, ITRPT_MCSR_IMP_i  ); //???
-    check_mc_with_injector( EVENT_GENERATE_L2_MC,  ITRPT_MCSR_L2_i   );
-    check_mc_with_injector( EVENT_GENERATE_DCR_MC, ITRPT_MCSR_DCR_i  );
+//    check_mc_with_injector( EVENT_GENERATE_TLB_MC, ITRPT_MCSR_TLB_i  );
+//    check_mc_with_injector( EVENT_GENERATE_IC_MC,  ITRPT_MCSR_IC_i   );
+//    check_mc_with_injector( EVENT_GENERATE_DC_MC,  ITRPT_MCSR_DC_i   );
+//    check_mc_with_injector( EVENT_GENERATE_GPR_MC, ITRPT_MCSR_GPR_i  );
+//    check_mc_with_injector( EVENT_GENERATE_FPR_MC, ITRPT_MCSR_FPR_i  );
+    check_mc_with_injector( EVENT_GENERATE_IMP_MC, ITRPT_MCSR_IMP_i  ); //???
+//    check_mc_with_injector( EVENT_GENERATE_L2_MC,  ITRPT_MCSR_L2_i   );
+//    check_mc_with_injector( EVENT_GENERATE_DCR_MC, ITRPT_MCSR_DCR_i  );
 
-    ici (0); dci(0); dci(2);
-
-    test_setup_CCR1();
-    check_mc_with_CCR1(ITRPT_MCSR_TLB_i);
-    check_mc_with_CCR1(ITRPT_MCSR_IC_i);
-    check_mc_with_CCR1(ITRPT_MCSR_DC_i);
-    check_mc_with_CCR1(ITRPT_MCSR_FPR_i);
-    check_mc_with_CCR1(ITRPT_MCSR_DCR_i);
-    check_mc_with_CCR1(ITRPT_MCSR_L2_i);
+//    test_setup_CCR1();
+//    check_mc_with_CCR1(ITRPT_MCSR_TLB_i);
+//    check_mc_with_CCR1(ITRPT_MCSR_IC_i);
+//    check_mc_with_CCR1(ITRPT_MCSR_DC_i);
+//    check_mc_with_CCR1(ITRPT_MCSR_FPR_i);
+//    check_mc_with_CCR1(ITRPT_MCSR_DCR_i);
+//    check_mc_with_CCR1(ITRPT_MCSR_L2_i);
 
 
     rumboot_printf("TEST OK\n");
