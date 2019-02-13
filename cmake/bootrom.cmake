@@ -36,7 +36,7 @@ macro(rumboot_bootrom_add_common_units)
     )
   endif()
 
-  if (NOT RUMBOOT_NO_SELFTEST)
+  if (NOT RUMBOOT_NO_SELFTEST AND NOT RUMBOOT_ARCH STREQUAL "native")
    add_rumboot_target(
       NAME "unit-selftest"
       CONFIGURATION ${BOOTSOURCE_CONFIGURATION}
@@ -47,14 +47,16 @@ macro(rumboot_bootrom_add_common_units)
    )
   endif()
 
-  add_rumboot_target(
-    NAME "unit-exception"
-    CONFIGURATION ${BOOTSOURCE_CONFIGURATION}
-    PREFIX "bootrom"
-    FILES common/bootrom/exception.c
-    TESTGROUP bootrom bootrom-unit
-    IRUN_FLAGS ${BOOTSOURCE_IRUN_FLAGS} +exception_check
-  )
+  if (NOT RUMBOOT_ARCH STREQUAL "native")
+    add_rumboot_target(
+      NAME "unit-exception"
+      CONFIGURATION ${BOOTSOURCE_CONFIGURATION}
+      PREFIX "bootrom"
+      FILES common/bootrom/exception.c
+      TESTGROUP bootrom bootrom-unit
+      IRUN_FLAGS ${BOOTSOURCE_IRUN_FLAGS} +exception_check
+    )
+  endif()
 endmacro()
 
 macro(rumboot_bootrom_add_components spl_conf romconf)
