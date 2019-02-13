@@ -76,6 +76,11 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       IRAM_SPL ROM
       -a 512 -z 512)
 
+    rumboot_bootrom_add_common_units(
+        CONFIGURATION ROM
+        IRUN_FLAGS ${ROM_115200_OPTS}
+    )
+
     rumboot_bootrom_unit_test(
         ID 0
         CONFIGURATION ROM
@@ -112,6 +117,16 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
           NOR_IMAGE spl-fail-bad-magic
           HOSTMOCK  spl-ok
     )
+
+    rumboot_bootrom_integration_test(ROM
+        NAME "host-xmodem"
+        IRUN_FLAGS ${ROM_115200_OPTS} +BOOT_HOST=1
+        LOAD
+          SPI0_CONF spl-fail-bad-magic,spl-fail-bad-magic
+          NOR_IMAGE spl-fail-bad-magic
+          XMODEM0   spl-ok
+    )
+
 
     rumboot_bootrom_integration_test(ROM
         NAME "host-silent"
