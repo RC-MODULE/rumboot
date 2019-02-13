@@ -177,7 +177,6 @@ static void check_mc_status_CCR1(uint32_t mc_interrupt_status)
         write_tlb_entries(&bootrom_mirror,1);//fix tlb errors
         SET_BIT(MC_HANDLED, ITRPT_MCSR_TLB_i);
         rumboot_printf("detected 'UTLB parity error' interrupt\n");
-        //write_tlb_entries(&em0_0_cache_on_valid,1);
     }
     else if (mc_interrupt_status & (1<<ITRPT_MCSR_IC_i))
     {
@@ -479,8 +478,17 @@ void test_setup_inj()
     MC_HANDLED = 0;
     spr_write(SPR_CCR2 , spr_read(SPR_CCR2) | (1 << CTRL_CCR2_MCDTO_i)); //enable_machine_check_on_dcr_timeout
     setup_machine_check_interrupt(machine_check_interrupt_handler_inj);
-    //L2C0_L2MCKEN_DCR_write(1 << L2MCKEN_EXTMCK_i);//enable only ext_mck to prevent any unwanted interrupts
-    //L2C1_L2MCKEN_DCR_write(1 << L2MCKEN_EXTMCK_i);//enable only ext_mck to prevent any unwanted interrupts
+}
+
+static void wait_MCSR_value(ITRPT_MCSR_FIELD MCSR_bit)
+{
+    uint32_t t = 0;
+    while (!(spr_read(SPR_MCSR_RW) & (1 << MCSR_bit)) && t++<TEST_MPW_CPU_025_PPC_TIMEOUT);
+    TEST_ASSERT(spr_read(SPR_MCSR_RW) & (1 << MCSR_bit), "Failed waiting MCSR value!");
+    spr_write(SPR_MCSR_C , 1 << MCSR_bit);
+    rumboot_printf("Writing 0x00 to ESR\n");
+    spr_write(SPR_ESR , 0x00);
+    if (MCSR_bit==ITRPT_MCSR_IMP_i) test_event(EVENT_CLEAR_IMP_MC);
 }
 
 void check_mc_with_injector(uint32_t event_code, ITRPT_MCSR_FIELD MCSR_bit)
@@ -488,8 +496,7 @@ void check_mc_with_injector(uint32_t event_code, ITRPT_MCSR_FIELD MCSR_bit)
     enable_machine_check();
     test_event(event_code);
 
-    //(MCSR_bit==ITRPT_MCSR_IMP_i) ? wait_MCSR_value(MCSR_bit):
-    wait_interrupt(MCSR_bit);
+    (MCSR_bit==ITRPT_MCSR_IMP_i) ? wait_MCSR_value(MCSR_bit):wait_interrupt(MCSR_bit);
 }
 
 int main ()
@@ -498,27 +505,23 @@ int main ()
 
     rumboot_memfill8_modelling((void*)SRAM0_BASE, 0x1000, 0x00, 0x00); //workaround (init 4KB SRAM0)
 
-    rumboot_printf("TEST START\n");
-
     test_setup_inj();
-//    check_mc_with_injector( EVENT_GENERATE_TLB_MC, ITRPT_MCSR_TLB_i  );
-//    check_mc_with_injector( EVENT_GENERATE_IC_MC,  ITRPT_MCSR_IC_i   );
-//    check_mc_with_injector( EVENT_GENERATE_DC_MC,  ITRPT_MCSR_DC_i   );
-//    check_mc_with_injector( EVENT_GENERATE_GPR_MC, ITRPT_MCSR_GPR_i  );
-//    check_mc_with_injector( EVENT_GENERATE_FPR_MC, ITRPT_MCSR_FPR_i  );
-    check_mc_with_injector( EVENT_GENERATE_IMP_MC, ITRPT_MCSR_IMP_i  ); //???
-//    check_mc_with_injector( EVENT_GENERATE_L2_MC,  ITRPT_MCSR_L2_i   );
-//    check_mc_with_injector( EVENT_GENERATE_DCR_MC, ITRPT_MCSR_DCR_i  );
+    check_mc_with_injector( EVENT_GENERATE_TLB_MC, ITRPT_MCSR_TLB_i  );
+    check_mc_with_injector( EVENT_GENERATE_IC_MC,  ITRPT_MCSR_IC_i   );
+    check_mc_with_injector( EVENT_GENERATE_DC_MC,  ITRPT_MCSR_DC_i   );
+    check_mc_with_injector( EVENT_GENERATE_GPR_MC, ITRPT_MCSR_GPR_i  );
+    check_mc_with_injector( EVENT_GENERATE_FPR_MC, ITRPT_MCSR_FPR_i  );
+    check_mc_with_injector( EVENT_GENERATE_IMP_MC, ITRPT_MCSR_IMP_i  );
+    check_mc_with_injector( EVENT_GENERATE_L2_MC,  ITRPT_MCSR_L2_i   );
+    check_mc_with_injector( EVENT_GENERATE_DCR_MC, ITRPT_MCSR_DCR_i  );
 
-//    test_setup_CCR1();
-//    check_mc_with_CCR1(ITRPT_MCSR_TLB_i);
-//    check_mc_with_CCR1(ITRPT_MCSR_IC_i);
-//    check_mc_with_CCR1(ITRPT_MCSR_DC_i);
-//    check_mc_with_CCR1(ITRPT_MCSR_FPR_i);
-//    check_mc_with_CCR1(ITRPT_MCSR_DCR_i);
-//    check_mc_with_CCR1(ITRPT_MCSR_L2_i);
+    test_setup_CCR1();
+    check_mc_with_CCR1(ITRPT_MCSR_TLB_i);
+    check_mc_with_CCR1(ITRPT_MCSR_IC_i);
+    check_mc_with_CCR1(ITRPT_MCSR_DC_i);
+    check_mc_with_CCR1(ITRPT_MCSR_FPR_i);
+    check_mc_with_CCR1(ITRPT_MCSR_DCR_i);
+    check_mc_with_CCR1(ITRPT_MCSR_L2_i);
 
-
-    rumboot_printf("TEST OK\n");
     return 0;
 }
