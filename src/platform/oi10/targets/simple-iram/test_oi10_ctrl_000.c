@@ -61,5 +61,5 @@ int main(void)
 
    result = check_ctrl_regs_ro(DCR_SCTL_BASE)
            || check_ctrl_regs_rw(DCR_SCTL_BASE);
-   return (!result) ? rumboot_printf("CHECKED TEST_OK\n"), result: rumboot_printf("CHECKED TEST_ERROR\n"), result;
+   return result;
 }
