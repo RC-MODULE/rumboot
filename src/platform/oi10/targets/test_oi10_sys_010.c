@@ -20,13 +20,27 @@
 #include <platform/trace.h>
 #include <platform/test_assert.h>
 #include <platform/devices.h>
+#include <platform/devices/emi.h>
 #include <platform/interrupts.h>
 #include <platform/arch/ppc/test_macro.h>
 #include <platform/arch/ppc/ppc_476fp_debug_fields.h>
 #include <platform/arch/ppc/ppc_476fp_itrpt_fields.h>
 #include <platform/arch/ppc/ppc_476fp_ctrl_fields.h>
+#include <platform/arch/ppc/ppc_476fp_mmu.h>
 #include <platform/regs/regs_cldcr.h>
 #include <platform/regs/regs_itrace.h>
+
+
+
+#define TLB_ENTRY_CACHE           MMU_TLB_ENTRY( 0x000, 0x00000, 0x00000, MMU_TLBE_DSIZ_4KB, 0b0,  0b0, 0b1, 0b0, 0b0, 0b0, MMU_TLBE_E_BIG_END, 0b0,0b0,0b0, 0b1,0b1,0b1, 0b0,   0b0,  0b0, MEM_WINDOW_0, MMU_TLBWE_WAY_3,   MMU_TLBWE_BE_UND, 0b1 )
+#define TLB_ENTRY_INV             MMU_TLB_ENTRY( 0x000, 0x00000, 0x00000, MMU_TLBE_DSIZ_1GB, 0b1,  0b1, 0b0, 0b1, 0b0, 0b0, MMU_TLBE_E_BIG_END, 0b0,0b0,0b0, 0b1,0b1,0b1, 0b0,   0b0,  0b0, MEM_WINDOW_0, MMU_TLBWE_WAY_3,   MMU_TLBWE_BE_UND, 0b0 )
+
+typedef void func(void);
+
+#define FUNC_ADDR       (SRAM0_BASE + 0x00)
+
+func* trace_bt_func = (func*)(FUNC_ADDR);
+
 
 DECLARE_CONST( ITC0_TC_ITE_e, 0 )
 DECLARE_CONST( ITC0_TC_ITE_i, IBM_BIT_INDEX( 32, ITC0_TC_ITE_e ) )
@@ -599,11 +613,7 @@ int check_trace_bt()
 
 	test_event(TEC_CHECK_TRACE_BT);
 
-    asm volatile (
-    	"b  check_trace_bt_event\n\t"
-    	"nop \n\t"
-    	"check_trace_bt_event: \n\t"
-    );
+    trace_bt_func();
 
     if(!test_func()) return 1;
 
@@ -630,11 +640,7 @@ int check_trace_bt()
 					   | (0 << DEBUG_DBCR0_FT_i));
     isync();
 
-    asm volatile (
-    	"b  check_trace_bt_event2\n\t"
-    	"nop \n\t"
-    	"check_trace_bt_event2: \n\t"
-    );
+    trace_bt_func();
 
    	return test_func();
 }
@@ -673,6 +679,22 @@ int check_trace_icmp()
 int main()
 {
 	test_event_send_test_id("test_oi10_sys_010");
+
+    emi_init(DCR_EM2_EMI_BASE);
+
+    rumboot_memfill8_modelling((void*)SRAM0_BASE, 0x1000, 0x00, 0x00); //workaround (init 4KB)
+
+    rumboot_platform_request_file("SBIN", SRAM0_BASE);
+
+    static const tlb_entry tlb_entries[] =
+       {
+        {TLB_ENTRY_INV},
+        {TLB_ENTRY_CACHE}
+       };
+
+    rumboot_printf("Start TLB entries initialization... ");
+    write_tlb_entries(tlb_entries, ARRAY_SIZE(tlb_entries));
+    rumboot_printf("Done.\n");
 
     /* Set our own handler */
     rumboot_irq_set_exception_handler(my_exception_handler);

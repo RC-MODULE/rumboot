@@ -1728,6 +1728,22 @@ endif()
         PREFIX sdio-spi-1-sram0
     )
 
+    add_rumboot_target(
+        CONFIGURATION SUPPLEMENTARY
+        LDS oi10/sram0.lds
+        FILES test_oi10_sys_010_func.c
+        NAME "test_oi10_sys_010_func"
+    )
+
+    add_rumboot_target(
+        CONFIGURATION IRAM
+        FILES test_oi10_sys_010.c
+        PREFIX simple-iram
+        NAME "test_oi10_sys_010"
+        LOAD IM0BIN SELF
+             SBIN supplementary-test_oi10_sys_010_func
+    )
+
 endmacro()
 
 
