@@ -26,12 +26,11 @@ int main()
 								rumboot_platform_init_loader(&conf);
 								rumboot_platform_sv_event("HOST");
 								rumboot_platform_putchar('X');
-								while (rumboot_platform_getchar(1000) != 'X') ; ;
-								rumboot_printf("%x\n", maxsize);
+								while (rumboot_platform_getchar(1000) != 'X');;
 								int ret = xmodem_get((void *) hdr, maxsize);
 								ssize_t len = rumboot_bootimage_check_header(hdr, &data);
 								if (len == -EBADMAGIC) {
-																dbg_boot(NULL, "Bad magic");									
+																dbg_boot(NULL, "Bad magic");
 																return 1;
 								}
 
