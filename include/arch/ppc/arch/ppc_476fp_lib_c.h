@@ -59,44 +59,23 @@ static inline __attribute__((always_inline)) void icbi( void* const addr ) {
     );
 }
 
-static inline __attribute__((always_inline)) void icbt( uint32_t CT, void* const addr ) {
-    if(CT == 2)
-        asm volatile (
-            "icbt 2, 0, %0\n\t"
-            ::"r"(addr)
-        );
-    else if(CT == 0)
-        asm volatile (
-            "icbt 0, 0, %0\n\t"
-            ::"r"(addr)
-        );
-}
+#define icbt( CT, addr )\
+    asm volatile (\
+        "icbt %0, 0, %1\n\t"\
+        ::  "i"(CT), "r"(addr)\
+    )
 
-static inline __attribute__((always_inline)) void icblc(uint32_t CT,  void* const addr ) {
-    if(CT == 2)
-        asm volatile (
-            "icblc 2, 0, %0\n\t"
-            ::"r"(addr)
-        );
-    else if(CT == 0)
-        asm volatile (
-            "icblc 0, 0, %0\n\t"
-            ::"r"(addr)
-        );
-}
+#define icblc( CT, addr )\
+    asm volatile (\
+        "icblc %0, 0, %1\n\t"\
+        ::  "i"(CT), "r"(addr)\
+    )
 
-static inline __attribute__((always_inline)) void icbtls(uint32_t CT,  void* const addr ) {
-    if(CT == 2)
-        asm volatile (
-            "icbtls 2, 0, %0\n\t"
-            ::"r"(addr)
-        );
-    else if(CT == 0)
-        asm volatile (
-            "icbtls 0, 0, %0\n\t"
-            ::"r"(addr)
-        );
-}
+#define icbtls( CT, addr )\
+    asm volatile (\
+        "icbtls %0, 0, %1\n\t"\
+        ::  "i"(CT), "r"(addr)\
+    )
 
 static inline __attribute__((always_inline)) void icread( void* const addr ) {
     asm volatile (
@@ -133,31 +112,17 @@ static inline __attribute__((always_inline)) void dcbst( void* const addr ) {
     );
 }
 
-static inline __attribute__((always_inline)) void dcbt( uint32_t TH, void* const addr ) {
-    if(TH == 2)
-        asm volatile (
-            "dcbt 2, 0, %0\n\t"
-            ::"r"(addr)
-        );
-    else if(TH == 0)
-        asm volatile (
-            "dcbt 0, 0, %0\n\t"
-            ::"r"(addr)
-        );
-}
+#define dcbt( TH, addr )\
+    asm volatile (\
+        "dcbt %0, 0, %1\n\t"\
+        ::  "i"(TH), "r"(addr)\
+    )
 
-static inline __attribute__((always_inline)) void dcbtst( uint32_t TH, void* const addr ) {
-    if(TH == 2)
-        asm volatile (
-            "dcbtst 2, 0, %0\n\t"
-            ::"r"(addr)
-        );
-    else if(TH == 0)
-        asm volatile (
-            "dcbtst 0, 0, %0\n\t"
-            ::"r"(addr)
-        );
-}
+#define dcbtst( TH, addr )\
+    asm volatile (\
+        "dcbtst %0, 0, %1\n\t"\
+        ::  "i"(TH), "r"(addr)\
+    )
 
 static inline __attribute__((always_inline)) void dcba( void* const addr ) {
     asm volatile (
@@ -166,31 +131,23 @@ static inline __attribute__((always_inline)) void dcba( void* const addr ) {
     );
 }
 
-static inline __attribute__((always_inline)) void dcblc(uint32_t CT, void* const addr ) {
-    if(CT == 2)
-        asm volatile (
-            "dcblc 2, 0, %0\n\t"
-            ::"r"(addr)
-        );
-    else if(CT == 0)
-        asm volatile (
-            "dcblc 0, 0, %0\n\t"
-            ::"r"(addr)
-        );
-}
+#define dcblc( CT, addr )\
+    asm volatile (\
+        "dcblc %0, 0, %1\n\t"\
+        ::  "i"(CT), "r"(addr)\
+    )
 
-static inline __attribute__((always_inline)) void dcbtls(uint32_t CT, void* const addr ) {
-    if(CT == 2)
-        asm volatile (
-            "dcbtls 2, 0, %0\n\t"
-            ::"r"(addr)
-        );
-    else if(CT == 0)
-        asm volatile (
-            "dcbtls 0, 0, %0\n\t"
-            ::"r"(addr)
-        );
-}
+#define dcbtls( CT, addr )\
+    asm volatile (\
+        "dcbtls %0, 0, %1\n\t"\
+        ::  "i"(CT), "r"(addr)\
+    )
+
+#define dcbtstls( CT, addr )\
+    asm volatile (\
+        "dcbtstls %0, 0, %1\n\t"\
+        ::  "i"(CT), "r"(addr)\
+    )
 
 static inline __attribute__((always_inline))
 uint32_t stwcx(uint32_t wval, uintptr_t wptr) {
@@ -216,20 +173,6 @@ uint32_t lwarx(uintptr_t wptr) {
         :   "memory"
     );
     return rval;
-}
-
-
-static inline __attribute__((always_inline)) void dcbtstls(uint32_t CT, void* const addr ) {
-    if(CT == 2)
-        asm volatile (
-            "dcbtstls 2, 0, %0\n\t"
-            ::"r"(addr)
-        );
-    else if(CT == 0)
-        asm volatile (
-            "dcbtstls 0, 0, %0\n\t"
-            ::"r"(addr)
-        );
 }
 
 
