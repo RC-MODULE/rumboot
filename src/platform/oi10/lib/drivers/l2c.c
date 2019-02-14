@@ -501,7 +501,9 @@ bool l2c_arracc_get_way_by_address( uint32_t base, uint32_t ext_phys_addr, uint3
     if( ( L2C_TAG_ADDRESS_FROM_ARRACCDO0(tag_info) == L2C_TAG_ADDRESS_FROM_64BIT( addr64 ) ) && tag_valid ) {
         valid = true;
     } else {
+#ifdef L2C_TRACE_DEBUG_MSG
         rumboot_printf( "Tag address not found in Tag array.\n" );
+#endif
         valid = false;
     }
     return valid;
@@ -520,7 +522,9 @@ bool l2c_arracc_get_data_by_address( uint32_t base, uint32_t ext_phys_addr, uint
     if( l2c_arracc_get_way_by_address( base, ext_phys_addr, phys_addr, &cache_way ) ) {
         valid = l2c_arracc_data_read_by_way( base, ext_phys_addr, phys_addr, cache_way, data64 );
     } else {
+#ifdef L2C_TRACE_DEBUG_MSG
         rumboot_printf( "Tag address not found in Tag array.\n" );
+#endif
     }
     return valid;
 }
@@ -540,7 +544,9 @@ bool l2c_arracc_set_data_by_address( uint32_t base, uint32_t ext_phys_addr, uint
     if( l2c_arracc_get_way_by_address( base, ext_phys_addr, phys_addr, &cache_way ) ) {
         valid = l2c_arracc_data_write_by_way( base, ext_phys_addr, phys_addr, cache_way, data64 );
     } else {
+#ifdef L2C_TRACE_DEBUG_MSG
         rumboot_printf( "Tag address not found in Tag array.\n" );
+#endif
     }
     return valid;
 }
