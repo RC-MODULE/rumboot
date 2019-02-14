@@ -43,7 +43,7 @@
 #define IRQ_MIN_INTERNAL            0
 #define IRQ_MAX_INTERNAL            31
 #define IRQ_MIN_EXTERNAL            32
-#define IRQ_MAX_EXTERNAL            95
+#define IRQ_MAX_EXTERNAL            127
 #define IRQ_MIN                     (USE_INTERNAL_INTERRUPTS ? 0 : 32)
 #define IRQ_MAX                     ((IRQ_MAX_EXTERNAL > IRQ_MAX_INTERNAL) ? \
                                       IRQ_MAX_EXTERNAL : IRQ_MAX_INTERNAL)
