@@ -15,14 +15,18 @@
 #include <platform/test_event_c.h>
 
 
-uint32_t const EVENT_TEST_DCI       = TEST_EVENT_CODE_MIN + 0;
-uint32_t const EVENT_TEST_ICBI      = TEST_EVENT_CODE_MIN + 1;
-uint32_t const EVENT_TEST_ICBT      = TEST_EVENT_CODE_MIN + 2;
-uint32_t const EVENT_TEST_DCBT      = TEST_EVENT_CODE_MIN + 3;
-uint32_t const EVENT_TEST_DCBZ      = TEST_EVENT_CODE_MIN + 4;
-uint32_t const EVENT_TEST_DCBI      = TEST_EVENT_CODE_MIN + 5;
-uint32_t const EVENT_TEST_DCBF      = TEST_EVENT_CODE_MIN + 6;
-uint32_t const EVENT_TEST_DCBST     = TEST_EVENT_CODE_MIN + 7;
+uint32_t const EVENT_TEST_DCI               = TEST_EVENT_CODE_MIN +  0;
+uint32_t const EVENT_TEST_ICBI              = TEST_EVENT_CODE_MIN +  1;
+uint32_t const EVENT_TEST_ICBT              = TEST_EVENT_CODE_MIN +  2;
+uint32_t const EVENT_TEST_DCBT              = TEST_EVENT_CODE_MIN +  3;
+uint32_t const EVENT_TEST_DCBZ              = TEST_EVENT_CODE_MIN +  4;
+uint32_t const EVENT_TEST_DCBI              = TEST_EVENT_CODE_MIN +  5;
+uint32_t const EVENT_TEST_DCBF              = TEST_EVENT_CODE_MIN +  6;
+uint32_t const EVENT_TEST_DCBST             = TEST_EVENT_CODE_MIN +  7;
+uint32_t const EVENT_TEST_DCBTST            = TEST_EVENT_CODE_MIN +  8;
+uint32_t const EVENT_TEST_ICBTLS_ICBLC      = TEST_EVENT_CODE_MIN +  9;
+uint32_t const EVENT_TEST_DCBTLS_DCBLC      = TEST_EVENT_CODE_MIN + 10;
+uint32_t const EVENT_TEST_DCBTSTLS_DCBLC    = TEST_EVENT_CODE_MIN + 11;
 
 #define COUNT_AREAS 5
 
@@ -45,7 +49,9 @@ bool get_valid_way_by_addr(uint32_t pseudo_CT, void* addr, int32_t* cache_way)
 {
     uint64_t    phys_addr = 0;
     uint32_t    reg_xCDBTRH;
+#ifdef L2C_TRACE_DEBUG_MSG
     uint32_t    reg_xCDBTRL;
+#endif
     bool        tag_valid;
     uint32_t    CT = pseudo_CT & PSEUDO_CT_DECODING_IS_L2_mask;
     bool        is_l1i = pseudo_CT & PSEUDO_CT_DECODING_IS_L1I_mask;
@@ -68,7 +74,9 @@ bool get_valid_way_by_addr(uint32_t pseudo_CT, void* addr, int32_t* cache_way)
     *cache_way = -1;
     if(CT == 2)
     {
+#ifdef L2C_TRACE_DEBUG_MSG
         rumboot_printf("l2c_arracc_get_valid_way_by_address(0x%x)\n",addr);
+#endif
         if( l2c_arracc_get_way_by_address(DCR_L2C_BASE,
                     (uint32_t)((phys_addr >> 32) & 0xffffffff),
                     (uint32_t)((phys_addr      ) & 0xffffffff),
@@ -95,7 +103,9 @@ bool get_valid_way_by_addr(uint32_t pseudo_CT, void* addr, int32_t* cache_way)
                 icread((uint32_t*)(((uint32_t)addr & (XCREAD_EA_L1I_INDEX_mask | XCREAD_EA_WORD_ADDR_mask))
                         | (((*cache_way) << XCREAD_EA_L1I_WAY_i) & XCREAD_EA_L1I_WAY_mask)));
                 isync();
+#ifdef L2C_TRACE_DEBUG_MSG
                 reg_xCDBTRL = spr_read(SPR_ICDBTRL);
+#endif
                 reg_xCDBTRH = spr_read(SPR_ICDBTRH);
             }
             else
@@ -103,10 +113,13 @@ bool get_valid_way_by_addr(uint32_t pseudo_CT, void* addr, int32_t* cache_way)
                 dcread(((uint32_t*)(((uint32_t)addr & (XCREAD_EA_L1I_INDEX_mask | XCREAD_EA_WORD_ADDR_mask))
                         | (((*cache_way) << XCREAD_EA_L1I_WAY_i) & XCREAD_EA_L1I_WAY_mask))));
                 isync();
+#ifdef L2C_TRACE_DEBUG_MSG
                 reg_xCDBTRL = spr_read(SPR_DCDBTRL);
+#endif
                 reg_xCDBTRH = spr_read(SPR_DCDBTRH);
             }
             tag_valid = (reg_xCDBTRH & XCDBTRH_VALID_mask);
+#ifdef L2C_TRACE_DEBUG_MSG
             rumboot_printf("\nget_valid_way_by_addr, CT == %d, %s\ncache_way == %d\naddr == 0x%x\nicread (0x%x)\nxCDBTRH == 0x%x\nxCDBTRL == 0x%x\nvalid == %d\n",
                     CT,
                     CT ? "" : (is_l1i ? "L1I" : "L1D"),
@@ -117,6 +130,7 @@ bool get_valid_way_by_addr(uint32_t pseudo_CT, void* addr, int32_t* cache_way)
                     reg_xCDBTRH,
                     reg_xCDBTRL,
                     tag_valid);
+#endif
         }while( ( (*cache_way) < (L2C_COUNT_WAYS - 1))
                  && ( !( (tag_valid)
                      &&( ( ( (reg_xCDBTRH & XCDBTRH_TAG_EXT_ADDR_mask) >> XCDBTRH_TAG_EXT_ADDR_i) == (uint32_t)((phys_addr >> 32) & 0xffffffff) )
@@ -159,7 +173,8 @@ uint32_t get_locks(uint32_t pseudo_CT, void* addr, uint32_t cache_way)
         else
             dcread((uint32_t*)((uint32_t)addr & (XCREAD_EA_L1I_INDEX_mask | XCREAD_EA_WORD_ADDR_mask)));
         isync();
-        result = (spr_read(SPR_DCDBTRL) & DCDBTRL_LOCK_mask) >> DCDBTRL_LOCK_i;
+        result = (is_l1i) ? (spr_read(SPR_ICDBTRL) & ICDBTRL_LOCK_mask) >> ICDBTRL_LOCK_i
+                : (spr_read(SPR_DCDBTRL) & DCDBTRL_LOCK_mask) >> DCDBTRL_LOCK_i;
     }
     return result;
 }
@@ -378,6 +393,7 @@ uint32_t test_icbt()
 uint32_t test_dcbi_dcbf(uint32_t is_dcbi, char* test_name)
 {
     uint32_t    result = 0;
+    rumboot_printf("%s start\n",test_name);
     msync();
     dci(0);
     dci(2);
@@ -386,7 +402,51 @@ uint32_t test_dcbi_dcbf(uint32_t is_dcbi, char* test_name)
     for(uint32_t i = 0; i < L2C_COUNT_WAYS; ++i)
     {
         ioread32((uint32_t)test_function_buf[i]);
-        iowrite32(0,(uint32_t)test_function_buf[i]);
+        iowrite32(is_dcbi,(uint32_t)test_function_buf[i]);
+    }
+    msync();
+    rumboot_printf("Checking, that everything is cached.\n");
+    result |= check_caches(test_function_buf,true,PSEUDO_CT_DECODING_IS_L2_mask,test_name);
+    result |= check_caches(test_function_buf,true,PSEUDO_CT_DECODING_IS_L1D_val,test_name);
+
+    test_event((is_dcbi)?EVENT_TEST_DCBI : EVENT_TEST_DCBF);
+    /*M - WWK*/
+    msync();
+    for(uint32_t i = 0; i < L2C_COUNT_WAYS; ++i)
+    {
+        if(is_dcbi)
+            dcbi(test_function_buf[i]);
+        else
+            dcbf(test_function_buf[i]);
+    }
+    msync();
+
+    result |= check_caches(test_function_buf,false,PSEUDO_CT_DECODING_IS_L2_mask,test_name);
+    result |= check_caches(test_function_buf,false,PSEUDO_CT_DECODING_IS_L1D_val,test_name);
+
+    test_event((is_dcbi)?EVENT_TEST_DCBI : EVENT_TEST_DCBF);
+    /*I - Flush*/
+    msync();
+    for(uint32_t i = 0; i < L2C_COUNT_WAYS; ++i)
+    {
+        if(is_dcbi)
+            dcbi(test_function_buf[i]);
+        else
+            dcbf(test_function_buf[i]);
+    }
+    msync();
+
+    result |= check_caches(test_function_buf,false,PSEUDO_CT_DECODING_IS_L2_mask,test_name);
+    result |= check_caches(test_function_buf,false,PSEUDO_CT_DECODING_IS_L1D_val,test_name);
+    for(uint32_t i = 0; i < L2C_COUNT_WAYS; ++i)
+        if(ioread32((uint32_t)(test_function_buf[i])) != is_dcbi)
+        {
+            rumboot_printf("ERROR!!! test_function_buf[%d] mismatch: found 0x%x\n",i,ioread32((uint32_t)(test_function_buf[i])));
+            result |= 1;
+        }
+    for(uint32_t i = 0; i < L2C_COUNT_WAYS; ++i)
+    {
+        ioread32((uint32_t)test_function_buf[i]);
     }
     msync();
     rumboot_printf("Checking, that everything is cached.\n");
@@ -403,79 +463,27 @@ uint32_t test_dcbi_dcbf(uint32_t is_dcbi, char* test_name)
             dcbf(test_function_buf[i]);
     }
     msync();
-
-    result |= check_caches(test_function_buf,false,PSEUDO_CT_DECODING_IS_L2_mask,test_name);
-    result |= check_caches(test_function_buf,false,PSEUDO_CT_DECODING_IS_L1D_val,test_name);
-    for(uint32_t i = 0; i < L2C_COUNT_WAYS; ++i)
-    {
-        result |= !(ioread32((uint32_t)test_function_buf[i]));
-    }
-
-    test_event((is_dcbi)?EVENT_TEST_DCBI : EVENT_TEST_DCBF);
-    msync();
-    for(uint32_t i = 0; i < L2C_COUNT_WAYS; ++i)
-    {
-        if(is_dcbi)
-            dcbi(test_function_buf[i]);
-        else
-            dcbf(test_function_buf[i]);
-    }
-    msync();
-
-    result |= check_caches(test_function_buf,false,PSEUDO_CT_DECODING_IS_L2_mask,test_name);
-    result |= check_caches(test_function_buf,false,PSEUDO_CT_DECODING_IS_L1D_val,test_name);
-    for(uint32_t i = 0; i < L2C_COUNT_WAYS; ++i)
-    {
-        result |= !(ioread32((uint32_t)test_function_buf[i]));
-    }
-    for(uint32_t i = 0; i < L2C_COUNT_WAYS; ++i)
-    {
-        ioread32((uint32_t)test_function_buf[i]);
-    }
-    msync();
-    rumboot_printf("Checking, that everything is cached.\n");
-    result |= check_caches(test_function_buf,true,PSEUDO_CT_DECODING_IS_L2_mask,test_name);
-    result |= check_caches(test_function_buf,true,PSEUDO_CT_DECODING_IS_L1D_val,test_name);
-
-    test_event((is_dcbi)?EVENT_TEST_DCBI : EVENT_TEST_DCBF);
-    msync();
-    for(uint32_t i = 0; i < L2C_COUNT_WAYS; ++i)
-    {
-        if(is_dcbi)
-            dcbi(test_function_buf[i]);
-        else
-            dcbf(test_function_buf[i]);
-    }
-    msync();
     msync();
     dci(0);
     dci(2);
     msync();
     isync();
+    rumboot_printf("%s finished: %s\n",test_name,(result)?"FAIL":"OK");
     return result;
 }
 uint32_t test_dcbf()
 {
-    uint32_t    result = 0;
     char        test_name[] = "test_dcbf";
-    rumboot_printf("%s start\n",test_name);
-    result = test_dcbi_dcbf(0, test_name);
-    rumboot_printf("%s finished: %s\n",test_name,(result)?"FAIL":"OK");
-    return result;
+    return test_dcbi_dcbf(0, test_name);
 }
 uint32_t test_dcbi()
 {
-    uint32_t    result = 0;
     char        test_name[] = "test_dcbi";
-    rumboot_printf("%s start\n",test_name);
-    result = test_dcbi_dcbf(1, test_name);
-    rumboot_printf("%s finished: %s\n",test_name,(result)?"FAIL":"OK");
-    return result;
+    return test_dcbi_dcbf(1, test_name);
 }
-uint32_t test_dcbt()
+uint32_t test_dcbt_dcbtst(uint32_t is_dcbt, char* test_name)
 {
     uint32_t    result = 0;
-    char        test_name[] = "test_dcbt";
     rumboot_printf("%s start\n",test_name);
     msync();
     ici(0);
@@ -484,10 +492,13 @@ uint32_t test_dcbt()
     isync();
     for(uint32_t CT = 0; CT < 3; CT += 2)
     {
-        test_event(EVENT_TEST_DCBT);
+        test_event( (is_dcbt) ? EVENT_TEST_DCBT : EVENT_TEST_DCBTST);
         msync();
         for(uint32_t i = 0; i < L2C_COUNT_WAYS; ++i)
-            dcbt(CT,test_function_buf[i]);
+            if(is_dcbt)
+                dcbt(CT,test_function_buf[i]);
+            else
+                dcbtst(CT,test_function_buf[i]);
         isync();
         msync();
         result |= check_caches(test_function_buf,true,PSEUDO_CT_DECODING_IS_L2_mask,test_name);
@@ -501,21 +512,33 @@ uint32_t test_dcbt()
     rumboot_printf("%s finished: %s\n",test_name,(result)?"FAIL":"OK");
     return result;
 }
+uint32_t test_dcbt()
+{
+    char        test_name[] = "test_dcbt";
+    return test_dcbt_dcbtst(1, test_name);
+}
 uint32_t test_dcbtst()
 {
-    uint32_t    result = 0;
-    return result;
+    char        test_name[] = "test_dcbtst";
+    return test_dcbt_dcbtst(0, test_name);
 }
 uint32_t test_dcbz()
 {
     uint32_t    result = 0;
     char        test_name[] = "test_dcbz";
     rumboot_printf("%s start\n",test_name);
+    for(uint32_t i = 0; i < L2C_COUNT_WAYS; ++i)
+    {
+        ioread32((uint32_t)test_function_buf[i]);
+    }
+
     msync();
     dci(0);
     dci(2);
     msync();
     isync();
+    result |= check_caches(test_function_buf,false,PSEUDO_CT_DECODING_IS_L2_mask,test_name);
+    result |= check_caches(test_function_buf,false,PSEUDO_CT_DECODING_IS_L1D_val,test_name);
     test_event(EVENT_TEST_DCBZ);
     msync();
 
@@ -525,6 +548,8 @@ uint32_t test_dcbz()
     }
     msync();
 
+    result |= check_caches(test_function_buf,true,PSEUDO_CT_DECODING_IS_L2_mask,test_name);
+    result |= check_caches(test_function_buf,false,PSEUDO_CT_DECODING_IS_L1D_val,test_name);
     for(uint32_t CT = 0; CT < 3; CT += 2)
     {
         for(uint32_t i = 0; i < L2C_COUNT_WAYS; ++i)
@@ -541,30 +566,160 @@ uint32_t test_dcbz()
     rumboot_printf("%s finished: %s\n",test_name,(result)?"FAIL":"OK");
     return result;
 }
-uint32_t test_icbtls()
+BEGIN_ENUM(xCBTxLS)
+    DECLARE_ENUM_VAL(   xCBTxLS_ICBTLS,         1    )
+    DECLARE_ENUM_VAL(   xCBTxLS_DCBTLS,         2    )
+    DECLARE_ENUM_VAL(   xCBTxLS_DCBTSTLS,       4    )
+END_ENUM(xCBTxLS)
+
+uint32_t test_xcbtls_xcblc(xCBTxLS opcode_type,char* test_name)
 {
     uint32_t    result = 0;
+    uint32_t    locks = 0;
+    int32_t     cache_way = -1;
+    bool        found_in_L1 = false;
+    rumboot_printf("%s start\n",test_name);
+    for(uint32_t CT = 0; CT < 3; CT += 2)
+    {
+        rumboot_printf("%s: start with CT == %d.\n", test_name, CT);
+        msync();
+        if(opcode_type == xCBTxLS_ICBTLS)
+            ici(0);
+        else
+            dci(0);
+        dci(2);
+        msync();
+        isync();
+
+        result |= check_caches(test_function_buf,false,PSEUDO_CT_DECODING_IS_L2_mask,test_name);
+        result |= check_caches(test_function_buf,false,PSEUDO_CT_DECODING_IS_L1I_mask,test_name);
+        switch(opcode_type)
+        {
+            case xCBTxLS_ICBTLS: test_event(EVENT_TEST_ICBTLS_ICBLC); break;
+            case xCBTxLS_DCBTLS: test_event(EVENT_TEST_DCBTLS_DCBLC); break;
+            case xCBTxLS_DCBTSTLS: test_event(EVENT_TEST_DCBTSTLS_DCBLC); break;
+            default:
+            {
+                rumboot_printf("%s: ERROR!!! Unknown opcode == 0x%x.\n", test_name,opcode_type);
+                return 1;
+            }
+         }
+        for(uint32_t i = 0; i < L2C_COUNT_WAYS; ++i)
+        {
+            switch(opcode_type)
+            {
+                case xCBTxLS_ICBTLS: icbtls(CT, test_function_buf[i]); break;
+                case xCBTxLS_DCBTLS: dcbtls(CT, test_function_buf[i]); break;
+                case xCBTxLS_DCBTSTLS: dcbtstls(CT, test_function_buf[i]); break;
+                default:
+                {
+                    rumboot_printf("%s: ERROR!!! Unknown opcode == 0x%x.\n", test_name,opcode_type);
+                    return 1;
+                }
+             }
+            lwsync();
+            isync();
+            locks = get_locks((CT | ((opcode_type == xCBTxLS_ICBTLS) ? PSEUDO_CT_DECODING_IS_L1I_mask : PSEUDO_CT_DECODING_IS_L1D_val)),
+                        test_function_buf[i],
+                        i);
+            if(locks ^ (1 << ((L2C_COUNT_WAYS - 1) - i)))
+            {
+                switch(opcode_type)
+                {
+                    case xCBTxLS_ICBTLS:
+                        rumboot_printf("ERROR!!! For test_function_buf[%d] after icbtls locks are 0x%x.\n", i, locks);
+                        break;
+                    case xCBTxLS_DCBTLS:
+                        rumboot_printf("ERROR!!! For test_function_buf[%d] after dcbtls locks are 0x%x.\n", i, locks);
+                        break;
+                    case xCBTxLS_DCBTSTLS:
+                        rumboot_printf("ERROR!!! For test_function_buf[%d] after dcbtstls locks are 0x%x.\n", i, locks);
+                        break;
+                    default:
+                    {
+                        rumboot_printf("%s: ERROR!!! Unknown opcode == 0x%x.\n", test_name,opcode_type);
+                        return 1;
+                    }
+                 }
+                result |= locks ^ (1 << ((L2C_COUNT_WAYS - 1) - i));
+            }
+            if(!get_valid_way_by_addr(
+                PSEUDO_CT_DECODING_IS_L2_mask ,
+                (void*)(test_function_buf[i]),
+                &cache_way
+                ))
+            {
+                rumboot_printf("%s ERROR!!! i == %d: found in %s: %s, CT == %d\n",
+                               test_name, i, "L2C", "no", (PSEUDO_CT_DECODING_IS_L2_mask));
+                result |= 1;
+            }
+            found_in_L1 = get_valid_way_by_addr(
+                ((opcode_type == xCBTxLS_ICBTLS) ? PSEUDO_CT_DECODING_IS_L1I_mask : PSEUDO_CT_DECODING_IS_L1D_val) ,
+                (void*)(test_function_buf[i]),
+                &cache_way
+                );
+            if(found_in_L1 == (bool)(CT == 2))
+            {
+                rumboot_printf("%s ERROR!!! i == %d: found in %s: %s, CT == %d\n",
+                               test_name, i, (opcode_type == xCBTxLS_ICBTLS) ? "L1I" : "L1D", (found_in_L1)? "yes":"no",
+                               (((opcode_type == xCBTxLS_ICBTLS) ? PSEUDO_CT_DECODING_IS_L1I_mask : PSEUDO_CT_DECODING_IS_L1D_val)));
+                result |= 1;
+            }
+            if(opcode_type == xCBTxLS_ICBTLS)
+                icblc(CT, test_function_buf[i]);
+            else
+                dcblc(CT, test_function_buf[i]);
+            lwsync();
+            isync();
+            locks = get_locks((CT | ((opcode_type == xCBTxLS_ICBTLS) ? PSEUDO_CT_DECODING_IS_L1I_mask : PSEUDO_CT_DECODING_IS_L1D_val)),
+                        test_function_buf[i],
+                        i);
+            if(locks)
+            {
+                rumboot_printf("ERROR!!! For test_function_buf[%d] after %s locks are 0x%x.\n", i,
+                        ((opcode_type == xCBTxLS_ICBTLS) ? "icblc" : "dcblc"),locks);
+                result |= locks;
+            }
+            if(!get_valid_way_by_addr(
+                PSEUDO_CT_DECODING_IS_L2_mask ,
+                (test_function_buf[i]),
+                &cache_way
+                ))
+            {
+                rumboot_printf("%s ERROR!!! i == %d: found in %s: %s, CT == %d\n",
+                               test_name, i, "L2C", "no", (PSEUDO_CT_DECODING_IS_L2_mask));
+                result |= 1;
+            }
+            found_in_L1 = get_valid_way_by_addr(
+                ((opcode_type == xCBTxLS_ICBTLS) ? PSEUDO_CT_DECODING_IS_L1I_mask : PSEUDO_CT_DECODING_IS_L1D_val) ,
+                (void*)(test_function_buf[i]),
+                &cache_way
+                );
+            if((found_in_L1 && (CT == 2)) || (!found_in_L1 && (CT != 2)))
+            {
+                rumboot_printf("%s ERROR!!! i == %d: found in %s: %s, CT == %d\n",
+                               test_name, i, (opcode_type == xCBTxLS_ICBTLS) ? "L1I" : "L1D", (found_in_L1)? "yes":"no",
+                               (((opcode_type == xCBTxLS_ICBTLS) ? PSEUDO_CT_DECODING_IS_L1I_mask : PSEUDO_CT_DECODING_IS_L1D_val)));
+                result |= 1;
+            }
+        }
+    }
+    rumboot_printf("%s finished: %s\n",test_name,(result)?"FAIL":"OK");
     return result;
 }
-uint32_t test_icblc()
-{
-    uint32_t    result = 0;
-    return result;
+uint32_t test_icbtls_icblc(){
+    char        test_name[] = "test_icbtls_icblc";
+    return test_xcbtls_xcblc(xCBTxLS_ICBTLS,test_name);
 }
-uint32_t test_dcbtls()
+uint32_t test_dcbtls_dcblc()
 {
-    uint32_t    result = 0;
-    return result;
+    char        test_name[] = "test_dcbtls_dcblc";
+    return test_xcbtls_xcblc(xCBTxLS_DCBTLS,test_name);
 }
-uint32_t test_dcbtstls()
+uint32_t test_dcbtstls_dcblc()
 {
-    uint32_t    result = 0;
-    return result;
-}
-uint32_t test_dcblc()
-{
-    uint32_t    result = 0;
-    return result;
+    char        test_name[] = "test_dcbtstls_dcblc";
+    return test_xcbtls_xcblc(xCBTxLS_DCBTSTLS,test_name);
 }
 uint32_t test_dcbst()
 {
@@ -632,22 +787,24 @@ uint32_t test_dcbst()
  * the corresponding instructions affect only L1* caches and were used quite often during the test
  */
 uint32_t (*test_cache_functions[])() = {
-//        test_ici,
-//        test_dci,
-//        test_icbi,
-//        test_dcba,
-//        test_icbt,
-//        test_dcbt,
-        test_dcbi,
-//        test_dcbtst,
-//        test_dcbz,
-//        test_icbtls,
-//        test_icblc,
-//        test_dcbtls,
-//        test_dcbtstls,
-//        test_dcblc,
+#ifdef TEST_OI10_CPU_021_CACHE_OP_LIST
+        TEST_OI10_CPU_021_CACHE_OP_LIST
+#else
+        test_ici,
+        test_dci,
+        test_icbi,
+        test_dcba,
+        test_icbt,
+        test_dcbt,
+        test_dcbtst,
+        test_dcbz,
+        test_icbtls_icblc,
+        test_dcbtls_dcblc,
+        test_dcbtstls_dcblc,
         test_dcbst,
+        test_dcbi,
         test_dcbf
+#endif
 };
 /**********************************************************/
 
