@@ -84,23 +84,23 @@ volatile static uint32_t l2c_DataUE_cnt = 0, l2c_DataCE_cnt = 0;
 volatile static uint32_t l2c_TagUE_cnt = 0, l2c_TagCE_cnt = 0;
 static struct rumboot_irq_entry *tbl;
 
-#define L2C_INTERRUPT_MASK ((1 << L2MCKEN_L2AMCK1_i) | (1 << L2MCKEN_L2AMCK2_i) | (1 << L2MCKEN_L1CMCK0_i))
+#define L2C_INTERRUPT_MASK ((1 << L2C_L2MCKEN_L2AMCK1_i) | (1 << L2C_L2MCKEN_L2AMCK2_i) | (1 << L2C_L2MCKEN_L1CMCK0_i))
 
-#define L2C_DATA_UE_MASK ((1 << L2ARRSTAT1_DataUE0_i) | (1 << L2ARRSTAT1_DataUE1_i) | \
-                          (1 << L2ARRSTAT1_DataUE2_i) | (1 << L2ARRSTAT1_DataUE3_i) | \
-                          (1 << L2ARRSTAT1_DataUE4_i) | (1 << L2ARRSTAT1_DataUE5_i) | \
-                          (1 << L2ARRSTAT1_DataUE6_i) | (1 << L2ARRSTAT1_DataUE7_i))
+#define L2C_DATA_UE_MASK ((1 << L2C_L2ARRSTAT1_DataUE0_i) | (1 << L2C_L2ARRSTAT1_DataUE1_i) | \
+                          (1 << L2C_L2ARRSTAT1_DataUE2_i) | (1 << L2C_L2ARRSTAT1_DataUE3_i) | \
+                          (1 << L2C_L2ARRSTAT1_DataUE4_i) | (1 << L2C_L2ARRSTAT1_DataUE5_i) | \
+                          (1 << L2C_L2ARRSTAT1_DataUE6_i) | (1 << L2C_L2ARRSTAT1_DataUE7_i))
 
-#define L2C_DATA_CE_MASK ((1 << L2ARRSTAT2_DataCE0_i) | (1 << L2ARRSTAT2_DataCE1_i) | \
-                          (1 << L2ARRSTAT2_DataCE2_i) | (1 << L2ARRSTAT2_DataCE3_i) | \
-                          (1 << L2ARRSTAT2_DataCE4_i) | (1 << L2ARRSTAT2_DataCE5_i) | \
-                          (1 << L2ARRSTAT2_DataCE6_i) | (1 << L2ARRSTAT2_DataCE7_i))
+#define L2C_DATA_CE_MASK ((1 << L2C_L2ARRSTAT2_DataCE0_i) | (1 << L2C_L2ARRSTAT2_DataCE1_i) | \
+                          (1 << L2C_L2ARRSTAT2_DataCE2_i) | (1 << L2C_L2ARRSTAT2_DataCE3_i) | \
+                          (1 << L2C_L2ARRSTAT2_DataCE4_i) | (1 << L2C_L2ARRSTAT2_DataCE5_i) | \
+                          (1 << L2C_L2ARRSTAT2_DataCE6_i) | (1 << L2C_L2ARRSTAT2_DataCE7_i))
 
-#define L2C_TAG_UE_MASK  ((1 << L2ARRSTAT1_TagUE0_i) | (1 << L2ARRSTAT1_TagUE1_i) | \
-                          (1 << L2ARRSTAT1_TagUE2_i) | (1 << L2ARRSTAT1_TagUE3_i))
+#define L2C_TAG_UE_MASK  ((1 << L2C_L2ARRSTAT1_TagUE0_i) | (1 << L2C_L2ARRSTAT1_TagUE1_i) | \
+                          (1 << L2C_L2ARRSTAT1_TagUE2_i) | (1 << L2C_L2ARRSTAT1_TagUE3_i))
 
-#define L2C_TAG_CE_MASK  ((1 << L2ARRSTAT2_TagCE0_i) | (1 << L2ARRSTAT2_TagCE1_i) | \
-                          (1 << L2ARRSTAT2_TagCE2_i) | (1 << L2ARRSTAT2_TagCE3_i))
+#define L2C_TAG_CE_MASK  ((1 << L2C_L2ARRSTAT2_TagCE0_i) | (1 << L2C_L2ARRSTAT2_TagCE1_i) | \
+                          (1 << L2C_L2ARRSTAT2_TagCE2_i) | (1 << L2C_L2ARRSTAT2_TagCE3_i))
 
 bool check_data_ecc(uint32_t indx)
 {
@@ -498,21 +498,21 @@ static void l2c0_mchkout_handler(int irq, void *args) {
     if(L2MCK & (~L2C_INTERRUPT_MASK)) rumboot_printf("Unexpected L2C interrupt (L2MCK = 0x%x)\n", L2MCK);
     TEST_ASSERT( !(L2MCK & (~L2C_INTERRUPT_MASK)), "Unexpected L2C interrupt" );
 
-    if(L2MCK & (1 << L2MCKEN_L2AMCK1_i)) {
+    if(L2MCK & (1 << L2C_L2MCKEN_L2AMCK1_i)) {
         uint32_t L2ARRSTAT1 = l2c_l2_read( DCR_L2C_BASE, L2C_L2ARRSTAT1 );
         if(L2ARRSTAT1 & L2C_DATA_UE_MASK) l2c_DataUE_cnt += 1;
         if(L2ARRSTAT1 & L2C_TAG_UE_MASK) l2c_TagUE_cnt += 1;
         l2c_l2_write( DCR_L2C_BASE, L2C_L2ARRSTAT1, L2ARRSTAT1);
         //rumboot_printf("L2ARRSTAT1 = 0x%x\n", L2ARRSTAT1);
     }
-    if(L2MCK & (1 << L2MCKEN_L2AMCK2_i)) {
+    if(L2MCK & (1 << L2C_L2MCKEN_L2AMCK2_i)) {
         uint32_t L2ARRSTAT2 = l2c_l2_read( DCR_L2C_BASE, L2C_L2ARRSTAT2 );
         if(L2ARRSTAT2 & L2C_DATA_CE_MASK) l2c_DataCE_cnt += 1;
         if(L2ARRSTAT2 & L2C_TAG_CE_MASK) l2c_TagCE_cnt += 1;
         l2c_l2_write( DCR_L2C_BASE, L2C_L2ARRSTAT2, L2ARRSTAT2);
         //rumboot_printf("L2ARRSTAT2 = 0x%x\n", L2ARRSTAT2);
     }
-    if(L2MCK & (1 << L2MCKEN_L1CMCK0_i)) {
+    if(L2MCK & (1 << L2C_L2MCKEN_L1CMCK0_i)) {
         uint32_t L2CPUSTAT = l2c_l2_read( DCR_L2C_BASE, L2C_L2CPUSTAT );
         l2c_l2_write( DCR_L2C_BASE, L2C_L2CPUSTAT, L2CPUSTAT);
         //rumboot_printf("L2CPUSTAT = 0x%x\n", L2CPUSTAT);
@@ -521,24 +521,24 @@ static void l2c0_mchkout_handler(int irq, void *args) {
 
 static void L2C_InterruptEnable() {
 
-l2c_l2_write(DCR_L2C_BASE, L2C_L2ARRMCKEN1, ( 1 << L2ARRMCKEN1_TagUE0_i )  | ( 1 << L2ARRMCKEN1_TagUE1_i )
-                                          | ( 1 << L2ARRMCKEN1_TagUE2_i )  | ( 1 << L2ARRMCKEN1_TagUE3_i )
-                                          | ( 1 << L2ARRMCKEN1_DataUE0_i ) | ( 1 << L2ARRMCKEN1_DataUE1_i )
-                                          | ( 1 << L2ARRMCKEN1_DataUE2_i ) | ( 1 << L2ARRMCKEN1_DataUE3_i )
-                                          | ( 1 << L2ARRMCKEN1_DataUE4_i ) | ( 1 << L2ARRMCKEN1_DataUE5_i )
-                                          | ( 1 << L2ARRMCKEN1_DataUE6_i ) | ( 1 << L2ARRMCKEN1_DataUE7_i ));
+l2c_l2_write(DCR_L2C_BASE, L2C_L2ARRMCKEN1, ( 1 << L2C_L2ARRMCKEN1_TagUE0_i )  | ( 1 << L2C_L2ARRMCKEN1_TagUE1_i )
+                                          | ( 1 << L2C_L2ARRMCKEN1_TagUE2_i )  | ( 1 << L2C_L2ARRMCKEN1_TagUE3_i )
+                                          | ( 1 << L2C_L2ARRMCKEN1_DataUE0_i ) | ( 1 << L2C_L2ARRMCKEN1_DataUE1_i )
+                                          | ( 1 << L2C_L2ARRMCKEN1_DataUE2_i ) | ( 1 << L2C_L2ARRMCKEN1_DataUE3_i )
+                                          | ( 1 << L2C_L2ARRMCKEN1_DataUE4_i ) | ( 1 << L2C_L2ARRMCKEN1_DataUE5_i )
+                                          | ( 1 << L2C_L2ARRMCKEN1_DataUE6_i ) | ( 1 << L2C_L2ARRMCKEN1_DataUE7_i ));
 
-l2c_l2_write(DCR_L2C_BASE, L2C_L2ARRMCKEN2, ( 1 << L2ARRMCKEN2_TagCE0_i )  | ( 1 << L2ARRMCKEN2_TagCE1_i )
-                                          | ( 1 << L2ARRMCKEN2_TagCE2_i )  | ( 1 << L2ARRMCKEN2_TagCE3_i )
-                                          | ( 1 << L2ARRMCKEN2_DataCE0_i ) | ( 1 << L2ARRMCKEN2_DataCE1_i )
-                                          | ( 1 << L2ARRMCKEN2_DataCE2_i ) | ( 1 << L2ARRMCKEN2_DataCE3_i )
-                                          | ( 1 << L2ARRMCKEN2_DataCE4_i ) | ( 1 << L2ARRMCKEN2_DataCE5_i )
-                                          | ( 1 << L2ARRMCKEN2_DataCE6_i ) | ( 1 << L2ARRMCKEN2_DataCE7_i ));
+l2c_l2_write(DCR_L2C_BASE, L2C_L2ARRMCKEN2, ( 1 << L2C_L2ARRMCKEN2_TagCE0_i )  | ( 1 << L2C_L2ARRMCKEN2_TagCE1_i )
+                                          | ( 1 << L2C_L2ARRMCKEN2_TagCE2_i )  | ( 1 << L2C_L2ARRMCKEN2_TagCE3_i )
+                                          | ( 1 << L2C_L2ARRMCKEN2_DataCE0_i ) | ( 1 << L2C_L2ARRMCKEN2_DataCE1_i )
+                                          | ( 1 << L2C_L2ARRMCKEN2_DataCE2_i ) | ( 1 << L2C_L2ARRMCKEN2_DataCE3_i )
+                                          | ( 1 << L2C_L2ARRMCKEN2_DataCE4_i ) | ( 1 << L2C_L2ARRMCKEN2_DataCE5_i )
+                                          | ( 1 << L2C_L2ARRMCKEN2_DataCE6_i ) | ( 1 << L2C_L2ARRMCKEN2_DataCE7_i ));
 
-l2c_l2_write(DCR_L2C_BASE, L2C_L2CPUMCKEN,  ( 1 << L2CPUMCKEN_DrReqPE0_i )  | ( 1 << L2CPUMCKEN_DrReqPE1_i ) | ( 1 << L2CPUMCKEN_DrReqPE2_i )
-                                          | ( 1 << L2CPUMCKEN_DwReqPE0_i )  | ( 1 << L2CPUMCKEN_DwReqPE1_i ) | ( 1 << L2CPUMCKEN_DwReqPE2_i )
-                                          | ( 1 << L2CPUMCKEN_DwDataPE0_i ) | ( 1 << L2CPUMCKEN_DwDataPE1_i )
-                                          | ( 1 << L2CPUMCKEN_DwDataPE2_i ) | ( 1 << L2CPUMCKEN_DwDataPE3_i ));
+l2c_l2_write(DCR_L2C_BASE, L2C_L2CPUMCKEN,  ( 1 << L2C_L2CPUMCKEN_DrReqPE0_i )  | ( 1 << L2C_L2CPUMCKEN_DrReqPE1_i ) | ( 1 << L2C_L2CPUMCKEN_DrReqPE2_i )
+                                          | ( 1 << L2C_L2CPUMCKEN_DwReqPE0_i )  | ( 1 << L2C_L2CPUMCKEN_DwReqPE1_i ) | ( 1 << L2C_L2CPUMCKEN_DwReqPE2_i )
+                                          | ( 1 << L2C_L2CPUMCKEN_DwDataPE0_i ) | ( 1 << L2C_L2CPUMCKEN_DwDataPE1_i )
+                                          | ( 1 << L2C_L2CPUMCKEN_DwDataPE2_i ) | ( 1 << L2C_L2CPUMCKEN_DwDataPE3_i ));
 }
 
 int main()
