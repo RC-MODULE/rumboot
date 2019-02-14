@@ -32,7 +32,7 @@
 
 
 
-#define TLB_ENTRY_CACHE           MMU_TLB_ENTRY( 0x000, 0x00000, 0x00000, MMU_TLBE_DSIZ_4KB, 0b0,  0b0, 0b1, 0b0, 0b0, 0b0, MMU_TLBE_E_BIG_END, 0b0,0b0,0b0, 0b1,0b1,0b1, 0b0,   0b0,  0b0, MEM_WINDOW_0, MMU_TLBWE_WAY_3,   MMU_TLBWE_BE_UND, 0b1 )
+#define TLB_ENTRY_CACHE           MMU_TLB_ENTRY( 0x000, 0x00000, 0x00000, MMU_TLBE_DSIZ_1GB, 0b0,  0b0, 0b1, 0b0, 0b0, 0b0, MMU_TLBE_E_BIG_END, 0b0,0b0,0b0, 0b1,0b1,0b1, 0b0,   0b0,  0b0, MEM_WINDOW_0, MMU_TLBWE_WAY_3,   MMU_TLBWE_BE_UND, 0b1 )
 #define TLB_ENTRY_INV             MMU_TLB_ENTRY( 0x000, 0x00000, 0x00000, MMU_TLBE_DSIZ_1GB, 0b1,  0b1, 0b0, 0b1, 0b0, 0b0, MMU_TLBE_E_BIG_END, 0b0,0b0,0b0, 0b1,0b1,0b1, 0b0,   0b0,  0b0, MEM_WINDOW_0, MMU_TLBWE_WAY_3,   MMU_TLBWE_BE_UND, 0b0 )
 
 typedef void func(void);
@@ -613,6 +613,7 @@ int check_trace_bt()
 
 	test_event(TEC_CHECK_TRACE_BT);
 
+    trace_bt_func();
     trace_bt_func();
 
     if(!test_func()) return 1;
