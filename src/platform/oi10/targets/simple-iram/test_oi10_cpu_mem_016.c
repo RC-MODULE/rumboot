@@ -2242,7 +2242,7 @@ void cache_all_from(uint32_t start_addr)
     uint32_t addr = start_addr;
     for (int i = 0; i < 1024; i++)
     {
-        dcbt((void *)addr);
+        dcbt(0, (void *)addr);
         addr += 32;
     }
     msync();
