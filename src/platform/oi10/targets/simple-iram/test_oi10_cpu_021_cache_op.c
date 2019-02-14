@@ -231,9 +231,15 @@ uint32_t test_ici()
         msync();
         isync();
         if(CT & PSEUDO_CT_DECODING_IS_L2_mask)
+        {
+            isync();
             ici(2);
-        if(!(CT & PSEUDO_CT_DECODING_IS_L2_mask))
+        }
+        else
+        {
+            isync();
             ici(0);
+        }
         msync();
         isync();
 
