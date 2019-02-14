@@ -377,16 +377,19 @@ uint32_t test_icbt()
     dci(2);
     msync();
     isync();
-    for(uint32_t CT = 0; CT < 3; CT += 2)
+    for(uint32_t cache_level = 1; cache_level < 3; cache_level++)
     {
         test_event(EVENT_TEST_ICBT);
         msync();
         for(uint32_t i = 0; i < L2C_COUNT_WAYS; ++i)
-            icbt(CT,test_function_buf[i]);
+            if(cache_level == 1)
+                icbt(0,test_function_buf[i]);
+            else
+                icbt(2,test_function_buf[i]);
         isync();
         msync();
         result |= check_caches(test_function_buf,true,PSEUDO_CT_DECODING_IS_L2_mask,test_name);
-        result |= check_caches(test_function_buf,!((bool)CT),PSEUDO_CT_DECODING_IS_L1I_mask,test_name);
+        result |= check_caches(test_function_buf,(cache_level == 1),PSEUDO_CT_DECODING_IS_L1I_mask,test_name);
         msync();
         ici(0);
         dci(2);
@@ -496,19 +499,28 @@ uint32_t test_dcbt_dcbtst(uint32_t is_dcbt, char* test_name)
     dci(2);
     msync();
     isync();
-    for(uint32_t CT = 0; CT < 3; CT += 2)
+    for(uint32_t cache_level = 1; cache_level < 3; cache_level++)
     {
         test_event( (is_dcbt) ? EVENT_TEST_DCBT : EVENT_TEST_DCBTST);
         msync();
         for(uint32_t i = 0; i < L2C_COUNT_WAYS; ++i)
-            if(is_dcbt)
-                dcbt(CT,test_function_buf[i]);
-            else
-                dcbtst(CT,test_function_buf[i]);
+            if(is_dcbt) {
+                if(cache_level == 1) {
+                    dcbt(0,test_function_buf[i]);
+                } else {
+                    dcbt(2,test_function_buf[i]);
+                }
+            } else {
+                if(cache_level == 1) {
+                    dcbtst(0,test_function_buf[i]);
+                } else {
+                    dcbtst(2,test_function_buf[i]);
+                }
+            }
         isync();
         msync();
         result |= check_caches(test_function_buf,true,PSEUDO_CT_DECODING_IS_L2_mask,test_name);
-        result |= check_caches(test_function_buf,!((bool)CT),PSEUDO_CT_DECODING_IS_L1D_val,test_name);
+        result |= check_caches(test_function_buf,(cache_level == 1),PSEUDO_CT_DECODING_IS_L1D_val,test_name);
         msync();
         dci(0);
         dci(2);
@@ -585,9 +597,9 @@ uint32_t test_xcbtls_xcblc(xCBTxLS opcode_type,char* test_name)
     int32_t     cache_way = -1;
     bool        found_in_L1 = false;
     rumboot_printf("%s start\n",test_name);
-    for(uint32_t CT = 0; CT < 3; CT += 2)
+    for(uint32_t cache_level = 1; cache_level < 3; cache_level++)
     {
-        rumboot_printf("%s: start with CT == %d.\n", test_name, CT);
+        rumboot_printf("%s: start with CT == %d.\n", test_name, (cache_level == 1)?0:2);
         msync();
         if(opcode_type == xCBTxLS_ICBTLS)
             ici(0);
@@ -614,9 +626,24 @@ uint32_t test_xcbtls_xcblc(xCBTxLS opcode_type,char* test_name)
         {
             switch(opcode_type)
             {
-                case xCBTxLS_ICBTLS: icbtls(CT, test_function_buf[i]); break;
-                case xCBTxLS_DCBTLS: dcbtls(CT, test_function_buf[i]); break;
-                case xCBTxLS_DCBTSTLS: dcbtstls(CT, test_function_buf[i]); break;
+                case xCBTxLS_ICBTLS:
+                    if(cache_level == 1)
+                        icbtls(0, test_function_buf[i]);
+                    else
+                        icbtls(2, test_function_buf[i]);
+                    break;
+                case xCBTxLS_DCBTLS:
+                    if(cache_level == 1)
+                        dcbtls(0, test_function_buf[i]);
+                    else
+                        dcbtls(2, test_function_buf[i]);
+                    break;
+                case xCBTxLS_DCBTSTLS:
+                    if(cache_level == 1)
+                        dcbtstls(0, test_function_buf[i]);
+                    else
+                        dcbtstls(2, test_function_buf[i]);
+                    break;
                 default:
                 {
                     rumboot_printf("%s: ERROR!!! Unknown opcode == 0x%x.\n", test_name,opcode_type);
@@ -625,7 +652,7 @@ uint32_t test_xcbtls_xcblc(xCBTxLS opcode_type,char* test_name)
              }
             lwsync();
             isync();
-            locks = get_locks((CT | ((opcode_type == xCBTxLS_ICBTLS) ? PSEUDO_CT_DECODING_IS_L1I_mask : PSEUDO_CT_DECODING_IS_L1D_val)),
+            locks = get_locks(((cache_level == 1)?0:2 | ((opcode_type == xCBTxLS_ICBTLS) ? PSEUDO_CT_DECODING_IS_L1I_mask : PSEUDO_CT_DECODING_IS_L1D_val)),
                         test_function_buf[i],
                         i);
             if(locks ^ (1 << ((L2C_COUNT_WAYS - 1) - i)))
@@ -664,20 +691,30 @@ uint32_t test_xcbtls_xcblc(xCBTxLS opcode_type,char* test_name)
                 (void*)(test_function_buf[i]),
                 &cache_way
                 );
-            if(found_in_L1 == (bool)(CT == 2))
+            if((found_in_L1 && (cache_level == 2))
+            || (!found_in_L1 && (cache_level == 1)))
             {
                 rumboot_printf("%s ERROR!!! i == %d: found in %s: %s, CT == %d\n",
                                test_name, i, (opcode_type == xCBTxLS_ICBTLS) ? "L1I" : "L1D", (found_in_L1)? "yes":"no",
                                (((opcode_type == xCBTxLS_ICBTLS) ? PSEUDO_CT_DECODING_IS_L1I_mask : PSEUDO_CT_DECODING_IS_L1D_val)));
                 result |= 1;
             }
-            if(opcode_type == xCBTxLS_ICBTLS)
-                icblc(CT, test_function_buf[i]);
-            else
-                dcblc(CT, test_function_buf[i]);
+            if(opcode_type == xCBTxLS_ICBTLS) {
+                if(cache_level == 1) {
+                    icblc(0, test_function_buf[i]);
+                } else {
+                    icblc(2, test_function_buf[i]);
+                }
+            } else {
+                if(cache_level == 1) {
+                    dcblc(0, test_function_buf[i]);
+                } else {
+                    dcblc(2, test_function_buf[i]);
+                }
+            }
             lwsync();
             isync();
-            locks = get_locks((CT | ((opcode_type == xCBTxLS_ICBTLS) ? PSEUDO_CT_DECODING_IS_L1I_mask : PSEUDO_CT_DECODING_IS_L1D_val)),
+            locks = get_locks(((cache_level == 1)?0:2 | ((opcode_type == xCBTxLS_ICBTLS) ? PSEUDO_CT_DECODING_IS_L1I_mask : PSEUDO_CT_DECODING_IS_L1D_val)),
                         test_function_buf[i],
                         i);
             if(locks)
@@ -701,7 +738,8 @@ uint32_t test_xcbtls_xcblc(xCBTxLS opcode_type,char* test_name)
                 (void*)(test_function_buf[i]),
                 &cache_way
                 );
-            if((found_in_L1 && (CT == 2)) || (!found_in_L1 && (CT != 2)))
+            if((found_in_L1 && (cache_level == 2))
+            || (!found_in_L1 && (cache_level == 1)))
             {
                 rumboot_printf("%s ERROR!!! i == %d: found in %s: %s, CT == %d\n",
                                test_name, i, (opcode_type == xCBTxLS_ICBTLS) ? "L1I" : "L1D", (found_in_L1)? "yes":"no",
