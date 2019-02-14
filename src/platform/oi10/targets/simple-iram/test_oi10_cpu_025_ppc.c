@@ -23,8 +23,8 @@
 #include <platform/devices/l2c.h>
 #include <platform/interrupts.h>
 
-#include <platform/arch/ppc/ppc_476fp_config.h>
-#include <platform/arch/ppc/ppc_476fp_lib_c.h>
+#include <arch/ppc_476fp_config.h>
+#include <arch/ppc_476fp_lib_c.h>
 #include <platform/arch/ppc/ppc_476fp_debug_fields.h>
 #include <platform/arch/ppc/ppc_476fp_itrpt_fields.h>
 #include <platform/arch/ppc/ppc_476fp_ctrl_fields.h>
@@ -58,7 +58,7 @@
 
 
 #define UNEXIST_DCR_ADDR                0x00
-#define TEST_MPW_CPU_025_PPC_TIMEOUT    100
+#define TEST_OI10_CPU_025_PPC_TIMEOUT    100
 
 static const tlb_entry bootrom_mirror           = {TLB_ENTRY_BOOTROM_MIRROR_0};
 static const tlb_entry em0_0_cache_on_valid     = {TLB_ENTRY_EM0_0_CACHE_VALID};
@@ -70,7 +70,6 @@ volatile uint32_t mem_test_data __attribute__((section(".data"))) = 0x5555AAAA;
 volatile uint32_t MC_HANDLED __attribute__((section(".data")))   = 0;
 
 uint32_t value = 0;
-uint32_t HANDLED  = 0;
 
 typedef void func();
 extern uint32_t cached_func[], func_size;
@@ -166,9 +165,7 @@ static void exit_from_machine_check_interrupt(uint32_t MCSR_value)
 
 static void wait_MCSR_value(ITRPT_MCSR_FIELD MCSR_bit)
 {
-    uint32_t t = 0;
-    while (!(spr_read(SPR_MCSR_RW) & (1 << MCSR_bit)) && t++<TEST_MPW_CPU_025_PPC_TIMEOUT);
-    TEST_ASSERT(spr_read(SPR_MCSR_RW) & (1 << MCSR_bit), "Failed waiting MCSR value!");
+    TEST_WAIT_ASSERT (spr_read(SPR_MCSR_RW) & (1 << MCSR_bit), TEST_OI10_CPU_025_PPC_TIMEOUT, "Failed waiting MCSR value!");
     spr_write(SPR_MCSR_C , 1 << MCSR_bit);
     rumboot_printf("Writing 0x00 to ESR\n");
     spr_write(SPR_ESR , 0x00);
@@ -190,16 +187,15 @@ static void check_mc_status_CCR1(uint32_t mc_interrupt_status)
         SET_BIT(MC_HANDLED, ITRPT_MCSR_TLB_i);
         rumboot_printf("detected 'UTLB parity error' interrupt\n");
     }
-    else if (mc_interrupt_status & (1<<ITRPT_MCSR_IC_i))
+    if (mc_interrupt_status & (1<<ITRPT_MCSR_IC_i))
     {
         ici (0); dci(0); dci(2);
-        //spr_write(SPR_CCR1 , spr_read(SPR_CCR1) | (1 << CTRL_CCR1_DPC_i));
         isync();
 
         SET_BIT(MC_HANDLED, ITRPT_MCSR_IC_i);
         rumboot_printf("detected 'I-cache asynchronous error' interrupt\n");
     }
-    else if (mc_interrupt_status & (1<<ITRPT_MCSR_DC_i))
+    if (mc_interrupt_status & (1<<ITRPT_MCSR_DC_i))
     {
         spr_write(SPR_CCR1 , spr_read(SPR_CCR1) | (1 << CTRL_CCR1_DPC_i));
         isync();
@@ -207,32 +203,27 @@ static void check_mc_status_CCR1(uint32_t mc_interrupt_status)
         SET_BIT(MC_HANDLED, ITRPT_MCSR_DC_i);
         rumboot_printf("detected 'D-cache error' interrupt\n");
     }
-    else if (mc_interrupt_status & (1<<ITRPT_MCSR_FPR_i))
+    if (mc_interrupt_status & (1<<ITRPT_MCSR_FPR_i))
     {
         SET_BIT(MC_HANDLED, ITRPT_MCSR_FPR_i);
         rumboot_printf("detected 'FPR parity error' interrupt\n");
     }
 
-    else if ((mc_interrupt_status & (1<<ITRPT_MCSR_IMP_i)) && ( HANDLED == 1))
+    if (mc_interrupt_status & (1<<ITRPT_MCSR_IMP_i))
     {
         SET_BIT(MC_HANDLED, ITRPT_MCSR_IMP_i);
         rumboot_printf("detected 'Imprecise machine check' interrupt\n");
     }
 
-    else if (mc_interrupt_status & (1<<ITRPT_MCSR_L2_i))
+    if (mc_interrupt_status & (1<<ITRPT_MCSR_L2_i))
     {
         SET_BIT(MC_HANDLED, ITRPT_MCSR_L2_i);
         rumboot_printf("detected 'Error reported through the L2 cache' interrupt\n");
     }
-    else if (mc_interrupt_status & (1<<ITRPT_MCSR_DCR_i))
+    if (mc_interrupt_status & (1<<ITRPT_MCSR_DCR_i))
     {
         SET_BIT(MC_HANDLED, ITRPT_MCSR_DCR_i);
         rumboot_printf("detected 'DCR timeout' interrupt\n");
-    }
-    else
-    {
-        rumboot_printf("unexpected machine check interrupt\n");
-        rumboot_printf("MCSR = %x\n",mc_interrupt_status);
     }
     msync();
 }
@@ -291,7 +282,6 @@ static void generate_TLB_mc()
     write_tlb_entries(&bootrom_mirror,1);//set tlb with errors
     test_tlb_addr = ioread32 (BOOTROM_BASE);
     rumboot_printf("test_tlb_addr = %d\n",test_tlb_addr);
-
 }
 
 static void generate_IC_mc()
@@ -352,9 +342,20 @@ static void generate_FPR_mc()
 
 static void generate_DCR_and_IMP_mc()
 {
-    rumboot_printf("Check 'DCR timeout and Imprecise machine check' generation\n");
     spr_write(SPR_CCR2 , spr_read(SPR_CCR2) | (1 << CTRL_CCR2_MCDTO_i)); //enable_machine_check_on_dcr_timeout
     dcr_read(UNEXIST_DCR_ADDR);
+}
+
+static void generate_DCR_mc ()
+{
+    rumboot_printf("Check 'DCR timeout' generation\n");
+    generate_DCR_and_IMP_mc();
+}
+
+static void generate_IMP_mc ()
+{
+    rumboot_printf("Check 'Imprecise machine check' generation\n");
+    generate_DCR_and_IMP_mc();
 }
 
 static void generate_L2C_mc()
@@ -366,12 +367,9 @@ static void generate_L2C_mc()
 
 static void wait_interrupt(ITRPT_MCSR_FIELD MCSR_bit)
 {
-    uint32_t t = 0;
-    while (!(MC_HANDLED & (1 << MCSR_bit)) && t++<TEST_MPW_CPU_025_PPC_TIMEOUT);
+    TEST_WAIT_ASSERT ((MC_HANDLED & (1 << MCSR_bit)), TEST_OI10_CPU_025_PPC_TIMEOUT, "Interrupt handle timeout!");
     rumboot_printf("MC_HANDLED = %x\n",MC_HANDLED);
     rumboot_printf("MCSR_bit = %d\n",MCSR_bit);
-
-    TEST_WAIT_ASSERT ((MC_HANDLED & (1 << MCSR_bit)), 100, "Interrupt handle timeout!");
 }
 
 void check_mc_with_CCR1(ITRPT_MCSR_FIELD MCSR_bit)
@@ -393,14 +391,13 @@ void check_mc_with_CCR1(ITRPT_MCSR_FIELD MCSR_bit)
         case ITRPT_MCSR_FPR_i:    generate_FPR_mc();
                             rumboot_printf("wait interrupt from MCSR_FPR\n");
                             break;
-        case ITRPT_MCSR_DCR_i:    generate_DCR_and_IMP_mc();
+        case ITRPT_MCSR_DCR_i:    generate_DCR_mc ();
                             rumboot_printf("wait interrupt from MCSR_DCR\n");
                             break;
-        case ITRPT_MCSR_IMP_i:    HANDLED = 1;
-                                  generate_DCR_and_IMP_mc();
+        case ITRPT_MCSR_IMP_i:    generate_IMP_mc();
                             rumboot_printf("wait interrupt from MCSR_DCR\n");
                             break;
-        case ITRPT_MCSR_L2_i:    generate_L2C_mc();
+        case ITRPT_MCSR_L2_i:     generate_L2C_mc();
                             rumboot_printf("wait interrupt from MCSR_L2C\n");
                             break;
         default: break;
@@ -497,8 +494,6 @@ void test_setup_inj()
     spr_write(SPR_CCR2 , spr_read(SPR_CCR2) | (1 << CTRL_CCR2_MCDTO_i)); //enable_machine_check_on_dcr_timeout
     setup_machine_check_interrupt(machine_check_interrupt_handler_inj);
 }
-
-
 
 void check_mc_with_injector(uint32_t event_code, ITRPT_MCSR_FIELD MCSR_bit)
 {
