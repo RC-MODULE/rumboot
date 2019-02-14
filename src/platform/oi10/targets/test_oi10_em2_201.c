@@ -269,7 +269,7 @@ int check_sdram_2_1_3(uint32_t base_addr, sdx_csp_t csp, sdx_sds_t sds, sdx_sds_
     write_tlb_entries(sdram_tlb_entry, 1);
 
     rumboot_putstring("Touching sdram_oper_from_emi()\n");
-    icbt(sdram_oper_from_emi);
+    icbt(0, sdram_oper_from_emi);
 
     emi_get_bank_cfg(DCR_EM2_EMI_BASE, emi_b1_sdram, &sdram_cfg);
     for (k=0; k<SDRAM_TRDL_SPACE ; k++)
@@ -332,7 +332,7 @@ int check_sdram_2_1_5(uint32_t base_addr, sdx_sds_t sds)
     write_tlb_entries(sdram_tlb_entry, 2);
 
     rumboot_putstring("Touching sdram_oper_from_emi()\n");
-    icbt(sdram_oper_from_emi);
+    icbt(0, sdram_oper_from_emi);
 
     rumboot_putstring("Execute access to memory\n");
 #ifndef  SW_ASSERTS_ONLY
