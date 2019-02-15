@@ -1730,7 +1730,7 @@ endif()
 
     add_rumboot_target(
         CONFIGURATION SUPPLEMENTARY
-        LDS oi10/sram0.lds
+        LDS oi10/test_oi10_sys_010.lds
         FILES test_oi10_sys_010_func.c
         NAME "test_oi10_sys_010_func"
     )
