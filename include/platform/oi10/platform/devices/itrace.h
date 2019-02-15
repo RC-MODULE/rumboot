@@ -3,8 +3,9 @@
 
 #include <stdint.h>
 
-#include <platform/regs/regs_itrace.h>
+#include <rumboot/macros.h>
 #include <platform/arch/ppc/ibm_bit_ordering_macros.h>
+#include <platform/regs/regs_itrace.h>
 
 
 typedef enum
@@ -40,20 +41,6 @@ typedef enum
 
 DECLARE_CONST( ITRACE_BUFFER_SIZE,  (1 << 14) )//size in dwords
 
-//typedef struct
-//{
-//    union
-//    {
-//        uint16_t raw_data;
-//        struct
-//        {
-//            uint16_t trace_execution_status : 5;
-//            uint16_t trace_branch_status : 3;
-//            uint16_t trace_status : 7;
-//            uint16_t stop_bit : 1;
-//        };
-//    };
-//} ITRACE_DATA;
 
 struct itrace_data
 {

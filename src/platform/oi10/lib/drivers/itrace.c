@@ -1,7 +1,5 @@
-#include <platform/regs/regs_itrace.h>
 #include <platform/devices/itrace.h>
 #include <arch/ppc_476fp_lib_c.h>
-
 
 
 static void dcr_set(uint32_t const dcr_address, uint32_t const value)
