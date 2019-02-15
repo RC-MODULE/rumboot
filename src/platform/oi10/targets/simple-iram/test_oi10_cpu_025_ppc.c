@@ -166,10 +166,14 @@ static void exit_from_machine_check_interrupt(uint32_t MCSR_value)
 static void wait_MCSR_value(ITRPT_MCSR_FIELD MCSR_bit)
 {
     TEST_WAIT_ASSERT (spr_read(SPR_MCSR_RW) & (1 << MCSR_bit), TEST_OI10_CPU_025_PPC_TIMEOUT, "Failed waiting MCSR value!");
+
+    if (MCSR_bit==ITRPT_MCSR_IMP_i) {
+        test_event(EVENT_CLEAR_IMP_MC);
+        rumboot_printf("Writing 0x00 to ESR\n");
+        spr_write(SPR_ESR , 0x00);
+    }
+
     spr_write(SPR_MCSR_C , 1 << MCSR_bit);
-    rumboot_printf("Writing 0x00 to ESR\n");
-    spr_write(SPR_ESR , 0x00);
-    if (MCSR_bit==ITRPT_MCSR_IMP_i) test_event(EVENT_CLEAR_IMP_MC);
 }
 
 static void check_mc_status_CCR1(uint32_t mc_interrupt_status)
@@ -415,53 +419,41 @@ void check_mc_status_inj(uint32_t mc_interrupt_status_inj)
         test_event(EVENT_CLEAR_TLB_MC);
         rumboot_printf("detected 'UTLB parity error' interrupt\n");
     }
-    else if (mc_interrupt_status_inj & (1<<ITRPT_MCSR_IC_i))
+    if (mc_interrupt_status_inj & (1<<ITRPT_MCSR_IC_i))
     {
         SET_BIT(MC_HANDLED, ITRPT_MCSR_IC_i);
         test_event(EVENT_CLEAR_IC_MC);
         rumboot_printf("detected 'I-cache asynchronous error' interrupt\n");
     }
-    else if (mc_interrupt_status_inj & (1<<ITRPT_MCSR_DC_i))
+    if (mc_interrupt_status_inj & (1<<ITRPT_MCSR_DC_i))
     {
         SET_BIT(MC_HANDLED, ITRPT_MCSR_DC_i);
         test_event(EVENT_CLEAR_DC_MC);
         rumboot_printf("detected 'D-cache error' interrupt\n");
     }
-    else if (mc_interrupt_status_inj & (1<<ITRPT_MCSR_GPR_i))
+    if (mc_interrupt_status_inj & (1<<ITRPT_MCSR_GPR_i))
     {
         SET_BIT(MC_HANDLED, ITRPT_MCSR_GPR_i);
         test_event(EVENT_CLEAR_GPR_MC);
         rumboot_printf("detected 'GPR parity error' interrupt\n");
     }
-    else if (mc_interrupt_status_inj & (1<<ITRPT_MCSR_FPR_i))
+    if (mc_interrupt_status_inj & (1<<ITRPT_MCSR_FPR_i))
     {
         SET_BIT(MC_HANDLED, ITRPT_MCSR_FPR_i);
         test_event(EVENT_CLEAR_FPR_MC);
         rumboot_printf("detected 'FPR parity error' interrupt\n");
     }
-    else if (mc_interrupt_status_inj & (1<<ITRPT_MCSR_L2_i))
+    if (mc_interrupt_status_inj & (1<<ITRPT_MCSR_L2_i))
     {
         SET_BIT(MC_HANDLED, ITRPT_MCSR_L2_i);
         test_event(EVENT_CLEAR_L2_MC);
         rumboot_printf("detected 'Error reported through the L2 cache' interrupt\n");
     }
-    else if (mc_interrupt_status_inj & (1<<ITRPT_MCSR_DCR_i))
+    if (mc_interrupt_status_inj & (1<<ITRPT_MCSR_DCR_i))
     {
         SET_BIT(MC_HANDLED, ITRPT_MCSR_DCR_i);
         test_event(EVENT_CLEAR_DCR_MC);
         rumboot_printf("detected 'DCR timeout' interrupt\n");
-    }
-    else if (mc_interrupt_status_inj & (1<<ITRPT_MCSR_IMP_i))
-    {
-        SET_BIT(MC_HANDLED, ITRPT_MCSR_IMP_i);
-        test_event(EVENT_CLEAR_IMP_MC);
-        rumboot_printf("detected 'Imprecise machine check' interrupt\n");
-    }
-    else
-    {
-        rumboot_printf("unexpected machine check interrupt\n");
-        rumboot_printf("MCSR = %x\n", mc_interrupt_status_inj);
-        test_event(EVENT_ERROR);
     }
 }
 
@@ -491,12 +483,14 @@ void test_setup_inj()
 {
     rumboot_printf("Check interrupts created by injectors\n");
     MC_HANDLED = 0;
-    spr_write(SPR_CCR2 , spr_read(SPR_CCR2) | (1 << CTRL_CCR2_MCDTO_i)); //enable_machine_check_on_dcr_timeout
     setup_machine_check_interrupt(machine_check_interrupt_handler_inj);
 }
 
 void check_mc_with_injector(uint32_t event_code, ITRPT_MCSR_FIELD MCSR_bit)
 {
+    if (MCSR_bit == ITRPT_MCSR_DCR_i )
+    spr_write(SPR_CCR2 , spr_read(SPR_CCR2) | (1 << CTRL_CCR2_MCDTO_i)); //enable_machine_check_on_dcr_timeout
+
     enable_machine_check();
     test_event(event_code);
 
