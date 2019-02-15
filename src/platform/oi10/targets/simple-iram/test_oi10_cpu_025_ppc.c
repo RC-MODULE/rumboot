@@ -99,7 +99,7 @@ static void load_code_in_cache(uint32_t start_addr, uint32_t code_size)
     for (cur_addr=start_addr; cur_addr<start_addr+code_size; cur_addr+=0x100)
     {
         rumboot_printf("icbt %x\n", cur_addr);
-        icbt((void* const)cur_addr);
+        icbt(0, (void* const)cur_addr);
     }
 }
 
