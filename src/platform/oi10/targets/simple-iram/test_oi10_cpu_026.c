@@ -6,16 +6,17 @@
 #include <rumboot/irq.h>
 #include <rumboot/printf.h>
 
-#include <platform/common_macros/common_macros.h>
-#include <platform/test_event_codes.h>
-#include <platform/devices.h>
-#include <platform/interrupts.h>
 #include <platform/arch/ppc/ppc_476fp_config.h>
 #include <platform/arch/ppc/ppc_476fp_lib_c.h>
+#include <platform/common_macros/common_macros.h>
+#include <platform/devices.h>
+#include <platform/devices/l2c.h>
 #include <platform/devices/ltrace.h>
-#include <platform/regs/regs_l2c_l2.h>
-#include <platform/test_event_c.h>
+#include <platform/interrupts.h>
 #include <platform/test_assert.h>
+#include <platform/test_event_c.h>
+#include <platform/test_event_codes.h>
+#include <platform/regs/regs_l2c_l2.h>
 
 
 #define EVENT_LTRACE0_CHECK_DATA    0x0000000099
@@ -1273,8 +1274,8 @@ int main()
     spr_write(SPR_CCR0, (spr_read(SPR_CCR0) | (1 << IBM_BIT_INDEX(32, 0))) & ~(1 << IBM_BIT_INDEX(32, 16)));
 
     //rumboot_printf("Configure L2C Debug\n");
-    dcr_write(DCR_L2C_BASE + L2C_L2DBGSEL, 0x22222222);
-    dcr_write(DCR_L2C_BASE + L2C_L2PLBDBG, 0x87654321);
+    l2c_l2_write(DCR_L2C_BASE, L2C_L2DBGSEL, 0x22222222);
+    l2c_l2_write(DCR_L2C_BASE, L2C_L2PLBDBG, 0x87654321);
 
 
     //LTRACE
