@@ -24,10 +24,8 @@
 #include <platform/test_assert.h>
 #include <platform/trace.h>
 
-#include <platform/common_macros/common_macros.h>
-
-#include <platform/arch/ppc/ppc_476fp_config.h>
-#include <platform/arch/ppc/ppc_476fp_lib_c.h>
+#include <arch/ppc_476fp_config.h>
+#include <arch/ppc_476fp_lib_c.h>
 #include <platform/arch/ppc/ppc_476fp_mmu_fields.h>
 #include <platform/arch/ppc/ppc_476fp_mmu.h>
 
