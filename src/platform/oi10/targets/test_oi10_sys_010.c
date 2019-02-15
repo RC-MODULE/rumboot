@@ -37,9 +37,12 @@
 
 typedef void func(void);
 
-#define FUNC_ADDR       (SRAM0_BASE + 0x00)
+#define FUNC_ADDR1      (SRAM0_BASE + 0x0)
+#define FUNC_ADDR2      (SRAM0_BASE + 0x1000)
+#define FUNC_ADDR3      (SRAM0_BASE + 0x3F000)
 
-func* trace_bt_func = (func*)(FUNC_ADDR);
+func* trace_bt_func = (func*)(FUNC_ADDR1);
+func* trace1_bt_func1 = (func*)(FUNC_ADDR2);
 
 
 DECLARE_CONST( ITC0_TC_ITE_e, 0 )
@@ -615,6 +618,8 @@ int check_trace_bt()
 
     trace_bt_func();
     trace_bt_func();
+    trace1_bt_func1();
+    trace1_bt_func1();
 
     if(!test_func()) return 1;
 
@@ -642,6 +647,7 @@ int check_trace_bt()
     isync();
 
     trace_bt_func();
+    trace1_bt_func1();
 
    	return test_func();
 }
@@ -682,8 +688,6 @@ int main()
 	test_event_send_test_id("test_oi10_sys_010");
 
     emi_init(DCR_EM2_EMI_BASE);
-
-    rumboot_memfill8_modelling((void*)SRAM0_BASE, 0x1000, 0x00, 0x00); //workaround (init 4KB)
 
     rumboot_platform_request_file("SBIN", SRAM0_BASE);
 

@@ -1,7 +1,7 @@
 /*
- * test_oi10_sys_010.c
+ * test_oi10_sys_010_func.c
  *
- *  Created on: Nov 07, 2018
+ *  Created on: Feb, 2019
  *      Author: v.fufaev
  */
 #include <stdio.h>
@@ -68,6 +68,135 @@ void __attribute__((section(".text.test"))) trace_bt_func()
         "lab5:                    \n\t"
         "    mtctr r5             \n\t"
         "    mtlr r4              \n\t"
-        :::"3","4","5"
+        :::"r3","r4","r5","r6"
     );
 }
+
+
+void trace1_bt_func1();
+void trace1_bt_func2();
+void trace1_bt_func3();
+void trace1_bt_func4();
+void trace1_bt_func5();
+void trace1_bt_func6();
+void trace2_bt_func1();
+void trace2_bt_func2();
+void trace2_bt_func3();
+void trace2_bt_func4();
+void trace2_bt_func5();
+void trace2_bt_func6();
+
+
+void __attribute__((section(".trace1.funcs"))) trace1_bt_func1()
+{
+    asm volatile (
+        "    bl trace2_bt_func1   \n\t"
+        :::"lr"
+    );
+}
+void __attribute__((section(".trace1.funcs"))) trace1_bt_func2()
+{
+    asm volatile (
+        "    bl trace2_bt_func2   \n\t"
+        :::"lr"
+    );
+}
+void __attribute__((section(".trace1.funcs"))) trace1_bt_func3()
+{
+    asm volatile (
+        "    bl trace2_bt_func3   \n\t"
+        :::"lr"
+    );
+}
+void __attribute__((section(".trace1.funcs"))) trace1_bt_func4()
+{
+    asm volatile (
+        ".set r3, 3               \n\t"
+        "    lis r3,trace2_bt_func4@h    \n\t"
+        "    ori r3,r3,trace2_bt_func4@l \n\t"
+        "    mtctr r3             \n\t"
+        "    bctrl                \n\t"
+        :::"r3","lr","ctr"
+    );
+}
+
+void __attribute__((section(".trace1.funcs"))) trace1_bt_func5()
+{
+    asm volatile (
+        ".set r3, 3               \n\t"
+        "    lis r3,trace2_bt_func5@h    \n\t"
+        "    ori r3,r3,trace2_bt_func5@l \n\t"
+        "    mtctr r3             \n\t"
+        "    bctrl                \n\t"
+        :::"r3","lr","ctr"
+    );
+}
+
+void __attribute__((section(".trace1.funcs"))) trace1_bt_func6()
+{
+    asm volatile (
+        ".set r3, 3               \n\t"
+        "    lis r3,trace2_bt_func6@h    \n\t"
+        "    ori r3,r3,trace2_bt_func6@l \n\t"
+        "    mtctr r3             \n\t"
+        "    bctrl                \n\t"
+        :::"r3","lr","ctr"
+    );
+}
+
+
+void __attribute__((section(".trace2.funcs"))) trace2_bt_func1()
+{
+    asm volatile (
+        "    bl trace1_bt_func2   \n\t"
+        :::"lr"
+    );
+}
+void __attribute__((section(".trace2.funcs"))) trace2_bt_func2()
+{
+    asm volatile (
+        "    bl trace1_bt_func3   \n\t"
+        :::"lr"
+    );
+}
+void __attribute__((section(".trace2.funcs"))) trace2_bt_func3()
+{
+    asm volatile (
+        ".set r3, 3               \n\t"
+        "    lis r3,trace1_bt_func4@h    \n\t"
+        "    ori r3,r3,trace1_bt_func4@l \n\t"
+        "    mtctr r3             \n\t"
+        "    bctrl                \n\t"
+        :::"r3","lr","ctr"
+    );
+}
+
+void __attribute__((section(".trace2.funcs"))) trace2_bt_func4()
+{
+    asm volatile (
+        ".set r3, 3               \n\t"
+        "    lis r3,trace1_bt_func5@h    \n\t"
+        "    ori r3,r3,trace1_bt_func5@l \n\t"
+        "    mtctr r3             \n\t"
+        "    bctrl                \n\t"
+        :::"r3","lr","ctr"
+    );
+}
+
+void __attribute__((section(".trace2.funcs"))) trace2_bt_func5()
+{
+    asm volatile (
+        ".set r3, 3               \n\t"
+        "    lis r3,trace1_bt_func6@h    \n\t"
+        "    ori r3,r3,trace1_bt_func6@l \n\t"
+        "    mtctr r3             \n\t"
+        "    bctrl                \n\t"
+        :::"r3","lr","ctr"
+    );
+}
+
+void __attribute__((section(".trace2.funcs"))) trace2_bt_func6()
+{
+}
+
+
