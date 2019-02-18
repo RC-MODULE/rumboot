@@ -2,12 +2,13 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <arch/ppc/arch/ppc_476fp_config.h>
+#include <arch/ppc/arch/ppc_476fp_lib_c.h>
+
 #include <rumboot/io.h>
 #include <rumboot/irq.h>
 #include <rumboot/printf.h>
 
-#include <platform/arch/ppc/ppc_476fp_config.h>
-#include <platform/arch/ppc/ppc_476fp_lib_c.h>
 #include <platform/common_macros/common_macros.h>
 #include <platform/devices.h>
 #include <platform/devices/l2c.h>
@@ -1219,8 +1220,8 @@ static int test_ltrace1_bank_on_trigger_int_on(uint32_t cond1_or,
 }
 */
 
-static void irq_handler( int irq, void *arg ) {
-
+static void irq_handler( int irq, void *arg )
+{
     TEST_ASSERT((ltrace_get_status(DCR_LTRACE_BASE) & LTRACE_STATUS_COMPLETE) == LTRACE_STATUS_COMPLETE, "Tracing does not terminated!");
     ltrace_clear_status(DCR_LTRACE_BASE, (1 << IBM_BIT_INDEX(32, 1)));
 }
