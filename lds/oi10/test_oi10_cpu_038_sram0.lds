@@ -20,7 +20,7 @@ SECTIONS {
         . = 0x1000;
         KEEP(*(.data.test))
         *(.data.*)
-    } > IM1
+    } > SRAM0
 
     INCLUDE oi10/runtime_section.lds.h
 

@@ -679,7 +679,7 @@ endif()
         CONFIGURATION IRAM
         PREFIX simple-iram
     )
-
+    
     add_rumboot_target(
         CONFIGURATION SUPPLEMENTARY
         LDS oi10/test_oi10_cpu_038_im1.lds
@@ -690,32 +690,50 @@ endif()
 
     add_rumboot_target(
         CONFIGURATION SUPPLEMENTARY
-        LDS oi10/test_oi10_cpu_038_im0.lds
+        LDS oi10/test_oi10_cpu_038_im1.lds
         FILES test_oi10_cpu_038_helper.c
         CFLAGS -DTEST_OI10_CPU_038_ARRAY_SIZE=0x7C00
         NAME "test_oi10_cpu_038_helper_im0"
     )
-
+    
+    add_rumboot_target(
+        CONFIGURATION SUPPLEMENTARY
+        LDS oi10/test_oi10_cpu_038_sram0.lds
+        FILES test_oi10_cpu_038_helper.c
+        CFLAGS -DTEST_OI10_CPU_038_ARRAY_SIZE=0xFC00
+        NAME "test_oi10_cpu_038_helper_em2"
+    )
+    
     add_rumboot_target(
         CONFIGURATION IRAM
         FILES test_oi10_cpu_038.c
         PREFIX simple-iram
-        CFLAGS -DIM_BASE=IM1_BASE
+        CFLAGS -DM_BASE=IM1_BASE
         NAME "test_oi10_cpu_038_im1"
         LOAD IM0BIN SELF
-             IMBIN supplementary-test_oi10_cpu_038_helper_im1
+             MBIN supplementary-test_oi10_cpu_038_helper_im1
     )
 
     add_rumboot_target(
         CONFIGURATION IRAM
         FILES test_oi10_cpu_038.c
         PREFIX simple-iram
-        CFLAGS -DTEST_OI10_CPU_038_IM0 -DIM_BASE=IM1_BASE
+        CFLAGS -DTEST_OI10_CPU_038_IM0 -DM_BASE=IM1_BASE
         NAME "test_oi10_cpu_038_im0"
         LOAD IM0BIN SELF
-             IMBIN supplementary-test_oi10_cpu_038_helper_im0
+             MBIN supplementary-test_oi10_cpu_038_helper_im0
     )
 
+    add_rumboot_target(
+        CONFIGURATION IRAM
+        FILES test_oi10_cpu_038.c
+        PREFIX simple-iram
+        CFLAGS -DEMI_INIT -DM_BASE=SRAM0_BASE
+        NAME "test_oi10_cpu_038_em2"
+        LOAD IM0BIN SELF
+             MBIN supplementary-test_oi10_cpu_038_helper_em2
+    )
+    
     add_rumboot_target_dir(uart_data_logger/
         CONFIGURATION IRAM
         IRUN_FLAGS +use_uart_data_logger
