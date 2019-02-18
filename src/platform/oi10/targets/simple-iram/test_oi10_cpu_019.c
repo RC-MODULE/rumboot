@@ -56,12 +56,12 @@
 #define EMPTY_DCR_ADDRESS           0xFFFFFFFF
 #define DCRARB_DACR_TOCNT           IBM_BIT_INDEX(32, 27)
 #define DCRARB_DAESR_EV             IBM_BIT_INDEX(32, 0)
-#define EVM                         ((1 << PMULCx_EVENT_n) - 1)
+#define EVM                         ((1 << L2C_PMULCx_EVENT_n) - 1)
 #define PMUC_OVF_VAL                (~0)
 #define PMUCC0_FAC                  0x80000000
-#define PMUGC0_PMCC                 (1 << PMUGC0_PMCC_i)
-#define PMUGC0_LFAC                 (1 << PMUGC0_LFAC_i)
-#define PMULCx_FC                   (1 << PMULCx_FC_i)
+#define PMUGC0_PMCC                 (1 << L2C_PMUGC0_PMCC_i)
+#define PMUGC0_LFAC                 (1 << L2C_PMUGC0_LFAC_i)
+#define PMULCx_FC                   (1 << L2C_PMULCx_FC_i)
 #define PMULCx_RESET                0x00000000
 #define CMODE_INDEPENDENT           0
 #define CMODE_CHAINED               1
@@ -94,14 +94,14 @@
 #define SPR_CLR(REG,VAL)            spr_write((REG), spr_read(REG) & ~(VAL))
 #define PMULCx(CMODE,FC,    \
         FCS,FCU,FCM1,FCM0,  \
-        CE,EVENT)                   ((((CMODE) & 1  ) << PMULCx_CMODE_i)  | \
-                                     (((FC)    & 1  ) << PMULCx_FC_i   )  | \
-                                     (((FCS)   & 1  ) << PMULCx_FCS_i  )  | \
-                                     (((FCU)   & 1  ) << PMULCx_FCU_i  )  | \
-                                     (((FCM1)  & 1  ) << PMULCx_FCM1_i )  | \
-                                     (((FCM0)  & 1  ) << PMULCx_FCM0_i )  | \
-                                     (((CE)    & 1  ) << PMULCx_CE_i   )  | \
-                                     (((EVENT) & EVM) << PMULCx_EVENT_i))
+        CE,EVENT)                   ((((CMODE) & 1  ) << L2C_PMULCx_CMODE_i)  | \
+                                     (((FC)    & 1  ) << L2C_PMULCx_FC_i   )  | \
+                                     (((FCS)   & 1  ) << L2C_PMULCx_FCS_i  )  | \
+                                     (((FCU)   & 1  ) << L2C_PMULCx_FCU_i  )  | \
+                                     (((FCM1)  & 1  ) << L2C_PMULCx_FCM1_i )  | \
+                                     (((FCM0)  & 1  ) << L2C_PMULCx_FCM0_i )  | \
+                                     (((CE)    & 1  ) << L2C_PMULCx_CE_i   )  | \
+                                     (((EVENT) & EVM) << L2C_PMULCx_EVENT_i))
 #define PMULCx_EVENT(FREEZE,EVENT)  PMULCx(CMODE_INDEPENDENT, (FREEZE),     \
                                         NO, NO, NO,                         \
                                         NO, YES, (EVENT))
@@ -266,9 +266,9 @@ void irq_handler( int irq_num, void *arg )
         case PMU0_INTERRUPT:            /*  2 */
             pmu_freeze_all_counters(YES);
             PMU_WRITE(L2C_PMULC0, PMULCx_RESET);
-            PMU_CLR(L2C_PMUIE0, BIT(PMUIE0_IE0_i));
-            if(PMU_TST(L2C_PMUIS0, BIT(PMUIS0_ISTAT0_i)))
-                PMU_WRITE(L2C_PMUIS0, BIT(PMUIS0_ISTAT0_i));
+            PMU_CLR(L2C_PMUIE0, BIT(L2C_PMUIE0_IE0_i));
+            if(PMU_TST(L2C_PMUIS0, BIT(L2C_PMUIS0_ISTAT0_i)))
+                PMU_WRITE(L2C_PMUIS0, BIT(L2C_PMUIS0_ISTAT0_i));
             pmu_reset_all_counters();
             break;
         case DMA2PLB6_DMA_IRQ_0:        /*  3 */
@@ -343,7 +343,7 @@ void genint__l2c_mchk(void *data)
 
     l2c_enable_interrupt(CAST_UINT(data),
             L2C_L2PLBMCKEN0, L2PLBMCKEN0_IntvnDataPE0);
-    l2c_global_mck_enable(CAST_UINT(data), L2MCKEN_PLBINT0);
+    l2c_global_mck_enable(CAST_UINT(data), L2MCKEN_PLBMCK0);
     temp = l2c_l2_read(CAST_UINT(data), L2C_L2PLBFRC0);
     l2c_l2_write(CAST_UINT(data), L2C_L2PLBFRC0,
             temp | L2PLBFRC0_IntvnDataPE0);
@@ -353,7 +353,7 @@ void genint__pmu(void *data)
 {
     pmu_freeze_all_counters(YES);
     pmu_reset_all_counters();
-    PMU_SET(L2C_PMUIE0, BIT(PMUIE0_IE0_i));
+    PMU_SET(L2C_PMUIE0, BIT(L2C_PMUIE0_IE0_i));
     PMU_WRITE(L2C_PMULC0, PMULCx_EVENT(NO, L2EV_PlbMasterCmd));
     PMU_WRITE(L2C_PMUC0, PMUC_OVF_VAL);
     pmu_freeze_all_counters(NO);
