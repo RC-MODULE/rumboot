@@ -5,11 +5,12 @@
  *      Author: a.gurov
  */
 
-#ifndef ITRACE_H_
-#define ITRACE_H_
+#ifndef REGS_FIELDS_ITRACE_H_
+#define REGS_FIELDS_ITRACE_H_
 
-#include <platform/common_macros/common_macros.h>
+#include <rumboot/macros.h>
 #include <platform/arch/ppc/ibm_bit_ordering_macros.h>
+
 
 BEGIN_ENUM( ITC0_TC_FIELD )
     DECLARE_ENUM_VAL( ITC0_TC_ITE_e,    0  )
@@ -54,5 +55,20 @@ BEGIN_ENUM( ITC0_CxMH_FIELD )
     DECLARE_ENUM_VAL( ITC0_CxMH_TET1_i, IBM_BIT_INDEX(32, ITC0_CxMH_TET1_e  ))
 END_ENUM( ITC0_CxMH_FIELD )
 
+BEGIN_ENUM( ITC0_ITLA1_FIELD )
+    DECLARE_ENUM_VAL( ITC0_ITLA1_n, 32 )
+    DECLARE_ENUM_VAL( ITC0_ITLA1_e, 31 )
+    DECLARE_ENUM_VAL( ITC0_ITLA1_i, IBM_BIT_INDEX( 32, ITC0_ITLA1_e ) )
+END_ENUM( ITC0_ITLA1_FIELD )
 
-#endif /* ITRACE_H_ */
+BEGIN_ENUM( ITC0_ITLA2_FIELD )
+    DECLARE_ENUM_VAL( ITC0_ITLA2_n,         32 )
+    DECLARE_ENUM_VAL( ITC0_ITLA2_e,         31 )
+    DECLARE_ENUM_VAL( ITC0_ITLA2_i,         IBM_BIT_INDEX( 32, ITC0_ITLA2_e ) )
+    DECLARE_ENUM_VAL( ITC0_ITLA2_VALID_n,   1 )
+    DECLARE_ENUM_VAL( ITC0_ITLA2_VALID_e,   18 )
+    DECLARE_ENUM_VAL( ITC0_ITLA2_VALID_i,   IBM_BIT_INDEX( 32, ITC0_ITLA2_VALID_e ) )
+END_ENUM( ITC0_ITLA2_FIELD )
+
+
+#endif /* REGS_FIELDS_ITRACE_H_ */
