@@ -40,7 +40,7 @@ typedef enum
     EVENT_CHECK_MPIC_TIMER1_INT,
     EVENT_CHECK_MPIC_TIMER2_INT,
     EVENT_CHECK_MPIC_TIMER3_INT,
-    EVENT_CHECK_MPIC_RESET
+	EVENT_CHECK_MPIC_IPI_INT
 } TEST_OI10_CPU_025_EVENT_CODE;
 
 enum {
@@ -57,10 +57,10 @@ volatile uint32_t MPIC_TIMER_NUMBER = 0;
 uint32_t reset_type = 0;
 uint32_t dbcr = 0;
 
-static void check_mpic_reset()
+static void mpic_ipi_generate_interrupt()
 {
     rumboot_printf("Check mpic reset\n");
-    test_event(EVENT_CHECK_MPIC_RESET);
+    test_event( EVENT_CHECK_MPIC_IPI_INT);
 
     dcr_write(DCR_MPIC128_BASE + MPIC128_IPID_PR, (1 << 0));
 
@@ -181,7 +181,7 @@ int main ()
 	if (rumboot_platform_runtime_info->persistent[MPIC_RESET] == 0)
     {
 		rumboot_platform_runtime_info->persistent[MPIC_RESET] = 1;
-        check_mpic_reset();
+		mpic_ipi_generate_interrupt();
     }
 
 	mpic_timer_generate_interrupt(DELAY);
