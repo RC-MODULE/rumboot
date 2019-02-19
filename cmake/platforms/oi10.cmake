@@ -39,6 +39,7 @@ rumboot_add_configuration(
     FEATURES ROMGEN
     FILES ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/startup.S
     TIMEOUT_CTEST 0
+    LOAD BOOTROM_NOR SELF
 )
 
 if (RUMBOOT_BUILD_TYPE STREQUAL "Production")
@@ -679,7 +680,7 @@ endif()
         CONFIGURATION IRAM
         PREFIX simple-iram
     )
-    
+
     add_rumboot_target(
         CONFIGURATION SUPPLEMENTARY
         LDS oi10/test_oi10_cpu_038_im1.lds
@@ -695,7 +696,7 @@ endif()
         CFLAGS -DTEST_OI10_CPU_038_ARRAY_SIZE=0x7C00
         NAME "test_oi10_cpu_038_helper_im0"
     )
-    
+
     add_rumboot_target(
         CONFIGURATION SUPPLEMENTARY
         LDS oi10/test_oi10_cpu_038_sram0.lds
@@ -703,7 +704,7 @@ endif()
         CFLAGS -DTEST_OI10_CPU_038_ARRAY_SIZE=0xFC00
         NAME "test_oi10_cpu_038_helper_em2"
     )
-    
+
     add_rumboot_target(
         CONFIGURATION IRAM
         FILES test_oi10_cpu_038.c
@@ -733,7 +734,7 @@ endif()
         LOAD IM0BIN SELF
              MBIN supplementary-test_oi10_cpu_038_helper_em2
     )
-    
+
     add_rumboot_target_dir(uart_data_logger/
         CONFIGURATION IRAM
         IRUN_FLAGS +use_uart_data_logger
