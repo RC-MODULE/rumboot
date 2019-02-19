@@ -1185,6 +1185,13 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     )
 
   add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES pcie/ext_int_gpio_test.c
+      NAME ext_int_gpio_test
+      IRUN_FLAGS +ext_irq_to_gpio20
+    )
+
+  add_rumboot_target(
       CONFIGURATION ROM
       FILES can/can_loopback.c can/can_loopback.S can/int_send.S can/int_receive.S can/mem_config.S can/test_config.S
       NAME can_loopback
