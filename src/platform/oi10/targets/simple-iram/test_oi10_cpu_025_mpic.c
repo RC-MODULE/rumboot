@@ -66,7 +66,7 @@ static void check_mpic_reset()
 
 }
 
-static void  mpic_tim0_generate_interrupt (uint32_t delay)
+static void  mpic_timer_generate_interrupt (uint32_t delay)
 {
 	uint32_t mpic_timer = rumboot_platform_runtime_info->persistent[MPIC_RESET_TYPE];
 
@@ -90,7 +90,7 @@ static void  mpic_tim0_generate_interrupt (uint32_t delay)
     mpic128_start_timer(DCR_MPIC128_BASE, mpic_timer, delay);
 }
 
-static void mpic_tim0_handler()
+static void mpic_timer_handler()
 {
 	HANDLER_FLAG = 1;
     rumboot_printf("Interrupt handler timer\n");
@@ -132,7 +132,7 @@ static void init_handlers()
 		    rumboot_irq_sei();
 			}
 
-		    rumboot_irq_set_handler( tbl, MPIC128_TIMER_0, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, mpic_tim0_handler, ( void* )0 );
+		    rumboot_irq_set_handler( tbl, MPIC128_TIMER_0, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, mpic_timer_handler, ( void* )0 );
 
 		    /* Activate the table */
 		    rumboot_irq_table_activate( tbl );
@@ -141,7 +141,7 @@ static void init_handlers()
 
 			break;
 		case 1:
-			rumboot_irq_set_handler( tbl, MPIC128_TIMER_1, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, mpic_tim0_handler, ( void* )0 );
+			rumboot_irq_set_handler( tbl, MPIC128_TIMER_1, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, mpic_timer_handler, ( void* )0 );
 
 			/* Activate the table */
 			rumboot_irq_table_activate( tbl );
@@ -149,7 +149,7 @@ static void init_handlers()
 			rumboot_irq_sei();
 			break;
 		case 2:
-		    rumboot_irq_set_handler( tbl, MPIC128_TIMER_2, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, mpic_tim0_handler, ( void* )0 );
+		    rumboot_irq_set_handler( tbl, MPIC128_TIMER_2, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, mpic_timer_handler, ( void* )0 );
 
 		    /* Activate the table */
 		    rumboot_irq_table_activate( tbl );
@@ -157,7 +157,7 @@ static void init_handlers()
 		    rumboot_irq_sei();
 			break;
 		case 3:
-		    rumboot_irq_set_handler( tbl, MPIC128_TIMER_3, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, mpic_tim0_handler, ( void* )0 );
+		    rumboot_irq_set_handler( tbl, MPIC128_TIMER_3, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, mpic_timer_handler, ( void* )0 );
 
 		    /* Activate the table */
 		    rumboot_irq_table_activate( tbl );
@@ -184,7 +184,7 @@ int main ()
         check_mpic_reset();
     }
 
-    mpic_tim0_generate_interrupt(DELAY);
+	mpic_timer_generate_interrupt(DELAY);
     while (HANDLER_FLAG == 0) msync();
 
 
