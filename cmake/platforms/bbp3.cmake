@@ -206,6 +206,14 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     endif()
 
     add_rumboot_target(
+        CONFIGURATION IRAM
+        NAME chain-test
+        LOAD
+          IM0BIN iram-irq-atomics,iram-irq-defhandler
+        FEATURES NOCODE
+      )
+
+    add_rumboot_target(
         CONFIGURATION ROM
         FILES hello.c
       )
