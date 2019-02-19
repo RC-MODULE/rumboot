@@ -64,12 +64,14 @@ rumboot_add_configuration(
     FEATURES ROMGEN
     TIMEOUT_CTEST 0
     TIMEOUT 10 ms
+    LOAD BOOTROM_NOR SELF
 )
 
 rumboot_add_configuration(
   LPROBE_CPU
   PREFIX lprobe-cpu
   BOOTROM bootrom-lprobe-stub
+  LOAD BOOTROM_NOR bootrom-lprobe-stub
   FEATURES LPROBE
   IRUN_FLAGS +LPROBE_MODE=CPU -input ${CMAKE_SOURCE_DIR}/../scripts/lprobe-helper.tcl
 )
@@ -91,7 +93,9 @@ rumboot_add_configuration (
     FILES ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/startup.S ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c
     BOOTROM bootrom-stub
     FEATURES LUA COVERAGE PACKIMAGE
-    LOAD IM0BIN SELF
+    LOAD
+      IM0BIN SELF
+      BOOTROM_NOR bootrom-stub
     TIMEOUT_CTEST 86400
 )
 
