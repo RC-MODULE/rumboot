@@ -1,9 +1,6 @@
 #include <stdint.h>
 #include <rumboot/platform.h>
 
-extern void rumboot_main();
-
-
 #define BOOTHEADER_MAGIC__BOOT_IMAGE_VALID    0xbeefc0de
 #define BOOTHEADER_MAGIC__HOST_IMAGE_VALID    0xdeadc0de
 #define BOOTHEADER_MAGIC__RESUME_IMAGE_VALID  0xdeadbabe

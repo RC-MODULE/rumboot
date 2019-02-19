@@ -2,7 +2,6 @@
 #include <rumboot/boot.h>
 #include <rumboot/platform.h>
 
-extern void rumboot_main();
 extern int main(int argc, const char *argv[]);
 
 static const __attribute__((used)) __attribute__((section(".header")))

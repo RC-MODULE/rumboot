@@ -4,6 +4,8 @@
 #include <rumboot/platform.h>
 #include <stdlib.h>
 #include <rumboot/printf.h>
+#include <stdio.h>
+
 
 extern int main();
 
@@ -20,85 +22,97 @@ extern void (*__init_array_end []) (void) __attribute__((weak));
 extern void _init();
 static void rumboot_init_array (void)
 {
-  size_t count;
-  size_t i;
+        size_t count;
+        size_t i;
 
-  count = __preinit_array_end - __preinit_array_start;
-  for (i = 0; i < count; i++)
-    __preinit_array_start[i] ();
+        count = __preinit_array_end - __preinit_array_start;
+        for (i = 0; i < count; i++)
+                __preinit_array_start[i] ();
 
-  _init();
+        _init();
 
-  count = __init_array_end - __init_array_start;
-  for (i = 0; i < count; i++)
-    __init_array_start[i] ();
+        count = __init_array_end - __init_array_start;
+        for (i = 0; i < count; i++)
+                __init_array_start[i] ();
 }
 
-void rumboot_main()
+int rumboot_main()
 {
-    /*
-     * This is common initialization code needed to bring up proper C environment.
-     * It does the following:
-     * 1. Initialize the global runtime table with sane initial values
-     * 2. Initialize bss section with zeroes (if we're using the BSS)
-     * 3. Calls main() function
-     */
+        /*
+         * This is common initialization code needed to bring up proper C environment.
+         * It does the following:
+         * 1. Initialize the global runtime table with sane initial values
+         * 2. Initialize bss section with zeroes (if we're using the BSS)
+         * 3. Calls main() function
+         */
 
-     /* Initialize the runtime info, avoid memset since event system
-        is not up yet
-     */
-     rumboot_platform_runtime_info->magic = 0xb00bc0de;
-     rumboot_platform_runtime_info->in.opcode  = 0;
-     rumboot_platform_runtime_info->out.opcode = 0;
-     /* Start event processing ! */
-     rumboot_platform_runtime_info->in.magic  = RUMBOOT_SYNC_MAGIC_IN;
-     rumboot_platform_runtime_info->out.magic = RUMBOOT_SYNC_MAGIC_OUT;
+        /* Initialize the runtime info, avoid memset since event system
+           is not up yet
+         */
+        rumboot_platform_runtime_info->magic = 0xb00bc0de;
+        rumboot_platform_runtime_info->in.opcode  = 0;
+        rumboot_platform_runtime_info->out.opcode = 0;
+        /* Start event processing ! */
+        rumboot_platform_runtime_info->in.magic  = RUMBOOT_SYNC_MAGIC_IN;
+        rumboot_platform_runtime_info->out.magic = RUMBOOT_SYNC_MAGIC_OUT;
 
 
-     /* Clean up everything beyound marker */
-     memset(&rumboot_platform_runtime.clean_me_marker, 0x0,
-          /* Holy fuck this looks is weird */
-          sizeof(rumboot_platform_runtime)
+        /* Clean up everything beyound marker */
+        memset(&rumboot_platform_runtime.clean_me_marker, 0x0,
+               /* Holy fuck this looks is weird */
+               sizeof(rumboot_platform_runtime)
                + ((void *)&rumboot_platform_runtime)
                - ((void *)&rumboot_platform_runtime.clean_me_marker)
-     );
+               );
 
-     /* Zero-out BSS, if any */
+        /* Zero-out BSS, if any */
      #ifndef RUMBOOT_ONLY_STACK
-          memset(&rumboot_platform_bss_start, 0x0, &rumboot_platform_bss_end - &rumboot_platform_bss_start);
+        memset(&rumboot_platform_bss_start, 0x0, &rumboot_platform_bss_end - &rumboot_platform_bss_start);
      #endif
 
      #ifdef RUMBOOT_DATA_FROM_ROM
-          uint32_t len = (&rumboot_data_end - &rumboot_data_start);
-          rumboot_printf("Copy %d bytes of .data\n", len);
-          memcpy(&rumboot_data_start, &rumboot_rom_data, len);
+        uint32_t len = (&rumboot_data_end - &rumboot_data_start);
+        rumboot_printf("Copy %d bytes of .data\n", len);
+        memcpy(&rumboot_data_start, &rumboot_rom_data, len);
      #endif
 
-     /* Make sure IRQs are off */
-     rumboot_irq_cli();
+        /* Make sure IRQs are off */
+        rumboot_irq_cli();
 
 
-     /* Call Platform-specific setup code (e.g. init the event system) */
-     rumboot_platform_setup();
+        /* Call Platform-specific setup code (e.g. init the event system) */
+        rumboot_platform_setup();
 
      #ifdef RUMBOOT_ENABLE_ALL_IRQS_ON_START
-     rumboot_irq_enable_all();
+        rumboot_irq_enable_all();
      #endif
 
-     /* Run constructors */
-     rumboot_init_array();
+        /* Run constructors */
+        rumboot_init_array();
 
-     /* Tell environment that we're done with startup */
-     rumboot_platform_perf(NULL);
+        /* Tell environment that we're done with startup */
+        rumboot_platform_perf(NULL);
 
-     /* call main() */
-     int ret = main();
+        /*
+         * This is quite hacky. We do a setjmp before calling main().
+         * _exit() does a longjmp back here with a mangled exit code
+         * on real hardware. We demangle return exit code from here.
+         * This way we can chain post-production tests on one SPI flash
+         * for all our production testing
+         *
+         * The return value is the test_exit_code + 256
+         */
+        int ret = setjmp(rumboot_platform_runtime.exit_trampoline);
+        if (ret == 0) {
+                /* That's how we do it the very first time */
+                ret = main();
+                exit(ret); /* Does a longjmp */
+                /* Never reached */
+        }
 
-     /*  Now, let's handle the exit code from main
-      *  This will also call destructors
-      */
-     exit(ret);
+        /* If we are here, we're back from longjmp */
+        rumboot_platform_perf("Trampoline");
 
-     /* Finally, if we're here - something didn't work out, loop forever */
-     while(1) {}
+        /* De-mangle exit code from trampoline */
+        return ret - 256;
 }

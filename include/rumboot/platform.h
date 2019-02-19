@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <stddef.h>
+#include <setjmp.h>
 /**
  *
  * \defgroup platform_glue Platform bindings
@@ -88,13 +89,23 @@ void rumboot_platform_setup();
   * 1. Initializes the global runtime table with sane initial values
   * 2. Initializes bss section with zeroes (if we're using the BSS)
   * 3. Calls main() function
-  * 4. Collects return code and passes it to exit()
+  * 4. Collects return code and passes it to exit() if we had a return from main
+  * 5. Handles longjump from exit() function
+  * 6. Returns to the caller with the exit code
   *
-  * This function should be called from platform-specific assembly startup file.
+  * This function should be called from platform-specific assembly startup file
+  * or serve as an entry point for SPL images
+  *
+  * For SPL images it returns to ROM loader so that it can handle the exit code
+  * and load the next image
+  *
+  * For ROM images it returns to assembly startup code that should do an
+  * infinite loop/processor halt/something else
+  *
   *
   * \callgraph
   */
- void rumboot_main();
+ int rumboot_main();
 
 /**
  * Returns the current system uptime (useconds)
@@ -393,6 +404,8 @@ struct rumboot_runtime_info {
     void (*irq_exception_hndlr)(int id, const char *name);
     /** Level of function nesting (used by function tracing code) */
     int nestlevel;
+    /** jmp_buf to jump from _exit() to rumboot_main(). Required for chaining tests for production */
+    jmp_buf exit_trampoline;
 } __attribute__((packed));
 
 /**
