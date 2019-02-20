@@ -106,7 +106,6 @@ static void mpic_handler ()
 {
     rumboot_printf("Interrupt handler\n");
     rumboot_platform_perf("reset_system");
-    dcr_write(DCR_MPIC128_BASE + MPIC128_IPID_PR, 0x00);
     reset_type = (rumboot_platform_runtime_info->persistent[MPIC_RESET_TYPE] < 3)?(rumboot_platform_runtime_info->persistent[MPIC_RESET_TYPE]+1):3;
     dbcr = spr_read(SPR_DBCR0)|(reset_type << IBM_BIT_INDEX(64, 35));
     msync();
