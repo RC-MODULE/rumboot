@@ -36,74 +36,76 @@
 #include <platform/devices/l2c.h>
 #include <platform/arch/ppc/ppc_476fp_l1c_fields.h>
 
-/* Config */
-#define CHECK_BASE                  SRAM1_BASE
-#define CHECK_OFFSET                0x0000      //0x0200
-#define L2C_LINE_BYTES              128
+///* Config */
+//#define CHECK_BASE                  SRAM1_BASE
+//#define CHECK_OFFSET                0x0000      //0x0200
+//#define L2C_LINE_BYTES              128
 #define L2C_REQUEST_TRIES           0x80
-
-/* Integer constant macros */
+//
+///* Integer constant macros */
 #define TEST_OK                     0x00000000
-#define TEST_ERROR                  !TEST_OK
-#define BYTE_MASK                   0xFF
-#define NOTHING                     0x00000000
-#define NO                          NOTHING
-#define YES                         (!NO)
-#define FAIL_VALUE                  ~NOTHING
-#define PPC_EXT_ADDR_WIDTH              42
-#define MACHINE_BITS                (sizeof(uintptr_t) << 3)
-/* + L2C specific constants */
-#define L2C_LINE_WORDS              (L2C_LINE_BYTES / sizeof(uintptr_t))
-#define BUFFERID_LRU                L2C_L2ARRACCCTL_BUFFERID_LRU_i
+//#define TEST_ERROR                  !TEST_OK
+//#define BYTE_MASK                   0xFF
+//#define NOTHING                     0x00000000
+//#define NO                          NOTHING
+//#define YES                         (!NO)
+//#define FAIL_VALUE                  ~NOTHING
+//#define PPC_EXT_ADDR_WIDTH              42
+//#define MACHINE_BITS                (sizeof(uintptr_t) << 3)
+///* + L2C specific constants */
+//#define L2C_LINE_WORDS              (L2C_LINE_BYTES / sizeof(uintptr_t))
+//#define BUFFERID_LRU                L2C_L2ARRACCCTL_BUFFERID_LRU_i
 #define BUFFERID_TAG                L2C_L2ARRACCCTL_BUFFERID_TAG_i
-#define BUFFERID_DATA               L2C_L2ARRACCCTL_BUFFERID_DATA_i
+//#define BUFFERID_DATA               L2C_L2ARRACCCTL_BUFFERID_DATA_i
 #define REQTYPE_RD8WOECC            L2C_L2ARRACCCTL_REQTYPE_RD8WOECC
-#define REQTYPE_WR8WTECC            L2C_L2ARRACCCTL_REQTYPE_WR8WTECC
-#define REQTYPE_WR8WOECC            L2C_L2ARRACCCTL_REQTYPE_WR8WOECC
-#define L2C_TAG_ADDR_SHIFT          6
-#define L2C_TAG_STAT_BITS           3
-#define L2C_TAG_STAT_MASK           0x07
-#define L2C_TAG_ADDR_MASK           0x1FFFFFFF
-#define L2C_TAG_STAT_SHIFT          (32 - L2C_TAG_STAT_BITS)
-#define L2C_TAG_ENTRY_SHIFT_LO      ((PPC_EXT_ADDR_WIDTH       \
+//#define REQTYPE_WR8WTECC            L2C_L2ARRACCCTL_REQTYPE_WR8WTECC
+//#define REQTYPE_WR8WOECC            L2C_L2ARRACCCTL_REQTYPE_WR8WOECC
+//#define L2C_TAG_ADDR_SHIFT          6
+//#define L2C_TAG_STAT_BITS           3
+//#define L2C_TAG_STAT_MASK           0x07
+//#define L2C_TAG_ADDR_MASK           0x1FFFFFFF
+//#define L2C_TAG_STAT_SHIFT          (32 - L2C_TAG_STAT_BITS)
+/*#define L2C_TAG_ENTRY_SHIFT_LO      ((PPC_EXT_ADDR_WIDTH       \
                                         - MACHINE_BITS)        \
                                         + L2C_TAG_STAT_BITS)
-#define L2C_TAG_ENTRY_SHIFT_HI      (     L2C_TAG_STAT_BITS)
-
-/* ++ L2C Cache State (debug) Modes */
-#define L2C_CSM_DEFAULT             0x00
-#define L2C_CSM_NO_SL               0x01
-#define L2C_CSM_NO_MU               0x02
-#define L2C_CSM_NO_T                0x04
-#define L2C_CSM_MESI_ONLY           0x07
-
-/* ++ L2C Tag Array Cache State */
-#define L2C_STATE_I                 0b000   /* Invalid              */
-#define L2C_STATE_U                 0b001   /* Undefined (not used) */
-#define L2C_STATE_S                 0b010   /* Shared               */
-#define L2C_STATE_SL                0b011   /* Shared Last          */
-#define L2C_STATE_E                 0b100   /* Exclusive            */
-#define L2C_STATE_T                 0b101   /* Tagged               */
-#define L2C_STATE_M                 0b110   /* Modified             */
-#define L2C_STATE_MU                0b111   /* Modified Unsolicited */
-
-
+*/
+//#define L2C_TAG_ENTRY_SHIFT_HI      (     L2C_TAG_STAT_BITS)
+//
+///* ++ L2C Cache State (debug) Modes */
+//#define L2C_CSM_DEFAULT             0x00
+//#define L2C_CSM_NO_SL               0x01
+//#define L2C_CSM_NO_MU               0x02
+//#define L2C_CSM_NO_T                0x04
+//#define L2C_CSM_MESI_ONLY           0x07
+//
+///* ++ L2C Tag Array Cache State */
+//#define L2C_STATE_I                 0b000   /* Invalid              */
+//#define L2C_STATE_U                 0b001   /* Undefined (not used) */
+//#define L2C_STATE_S                 0b010   /* Shared               */
+//#define L2C_STATE_SL                0b011   /* Shared Last          */
+//#define L2C_STATE_E                 0b100   /* Exclusive            */
+//#define L2C_STATE_T                 0b101   /* Tagged               */
+//#define L2C_STATE_M                 0b110   /* Modified             */
+//#define L2C_STATE_MU                0b111   /* Modified Unsolicited */
+//
+//
 #define MAY_NOT_BE_USED             __attribute__((unused))
 #define ALWAYS_INLINE               __attribute__((always_inline))
-
-/* Utility (function) macros */
+//
+///* Utility (function) macros */
 #define BIT(N)                      (1 << (N))
-#define CAST_ADDR(VAL)              ((void*)(VAL))
+//#define CAST_ADDR(VAL)              ((void*)(VAL))
 #define GEN_REQTYPE(REQTYPE)        (REQTYPE << L2C_L2ARRACCCTL_REQTYPE_i)
 #define GEN_WAY_FIELD(WAY)          ((WAY) << L2C_L2ARRACCCTL_L2WAY_i)
-#define CHECK_ADDR(OFFT)            (CHECK_BASE + CHECK_OFFSET + (OFFT))
-#define GET_BYTE(VAL,BYTE)          (((VAL) >> ((BYTE) << 3)) & BYTE_MASK)
-#define L2C_TAG_XTR_ST(TD)          (((TD) >> L2C_TAG_STAT_SHIFT)      \
+//#define CHECK_ADDR(OFFT)            (CHECK_BASE + CHECK_OFFSET + (OFFT))
+//#define GET_BYTE(VAL,BYTE)          (((VAL) >> ((BYTE) << 3)) & BYTE_MASK)
+/*#define L2C_TAG_XTR_ST(TD)          (((TD) >> L2C_TAG_STAT_SHIFT)      \
                                         & L2C_TAG_STAT_MASK)
 #define L2C_READ(REG)               l2c_l2_read(DCR_L2C_BASE,          \
                                         (L2C_L2REG)(REG))
 #define L2C_WRITE(REG,VAL)          l2c_l2_write(DCR_L2C_BASE,         \
                                         (L2C_L2REG)(REG),(VAL))
+*/
 #define L2C_ARR_RD_TAG_RQ(WAY)      (BIT(L2C_L2ARRACCCTL_REQUEST_i)  | \
                                      BIT(BUFFERID_TAG)               | \
                                      GEN_REQTYPE(REQTYPE_RD8WOECC)   | \
@@ -143,65 +145,6 @@ static uint32_t l2c_read_req[4] =
 
 static volatile uint32_t g_cnfg0 = 0;
 static volatile uint32_t g_cnfg1 = 0;
-
-
-MAY_NOT_BE_USED
-static uint32_t mem_read32(uint32_t ptr)
-{
-    uint32_t readed;
-    rumboot_printf("Reading from 0x%X...\n", CHECK_ADDR(ptr));
-    readed = ioread32(CHECK_ADDR(ptr));
-    g_cnfg1 = L2C_READ(L2C_L2CNFG1);
-    rumboot_printf("Readed: 0x%X (%d).\n", readed, readed);
-    return readed;
-}
-
-MAY_NOT_BE_USED
-static void mem_write32(uint32_t val, uint32_t ptr)
-{
-    rumboot_printf("Writing 0x%X (%d) to 0x%X...\n",
-            val, val, CHECK_ADDR(ptr));
-    iowrite32(val, CHECK_ADDR(ptr));
-    g_cnfg1 = L2C_READ(L2C_L2CNFG1);
-}
-
-MAY_NOT_BE_USED
-static int32_t l2c_read_lru(uintptr_t       addr,
-                            u64_u32x2_t    *lru_addr,
-                            int32_t        *way_out)
-{
-    uint32_t way, tries, result, l2c_addr32;
-    int32_t  l2c_stat;
-    int64_t  l2c_addr64;
-    l2c_addr64  = rumboot_virt_to_phys(CAST_ADDR(addr));
-    l2c_addr32  = (uint32_t)((l2c_addr64 >> L2C_TAG_ADDR_SHIFT)
-                    & l2c_addr_masks[g_cnfg0 & L2C_L2CNFG0_L2SIZE_mask]);
-    L2C_WRITE(L2C_L2ARRACCADR, l2c_addr32);
-    for (way = 0; way < 4; way++)
-    {
-        result = 0;
-        l2c_stat = 0;
-        L2C_WRITE(L2C_L2ARRACCCTL, l2c_read_req[way]);
-        for(tries = L2C_REQUEST_TRIES;
-            (L2C_READ(L2C_L2ARRACCCTL) & L2C_L2ARRACCCTL_REQUEST_mask)
-                    && tries;
-            tries--) {;} /* No body for this 'for' */
-        result = L2C_READ(L2C_L2ARRACCDO0);
-        l2c_stat = L2C_TAG_XTR_ST(result);
-        if(tries && l2c_stat)
-        {
-            *way_out = way;
-            lru_addr->u64 = ((uint64_t)(result & L2C_TAG_ADDR_MASK))
-                            << L2C_TAG_ENTRY_SHIFT_LO;
-            return l2c_stat;
-        } else if(!tries)
-                rumboot_printf(
-                    "L2C tag array request timeout! "
-                    "(way%d, tag=0x%X)\n",
-                    way, result);
-    }
-    return -1;
-}
 
 
 BEGIN_ENUM(PSEUDO_CT_DECODING)
@@ -351,19 +294,33 @@ static inline uint32_t get_addr_by_some_sophisticated_rule(uint32_t index)
 {
     uint32_t start_test_data_index = 2;
     return (((((test_data[index % 12] & l2c_addr_masks[g_cnfg0 & L2C_L2CNFG0_L2SIZE_mask])
-                               + ((index < start_test_data_index)? ((index + 1) << 2 ) : 0))
+                               + (((index % 12) < start_test_data_index)? ((index + 1) << 2 ) : 0))
                                ^ ((index >= 12) ? (1 << 8) : 0)))
             & l2c_addr_masks[g_cnfg0 & L2C_L2CNFG0_L2SIZE_mask]);
 }
 static inline uint32_t get_addr_by_some_more_sophisticated_rule(uint32_t index, uint32_t way)
 {
-    return (SDRAM_BASE + get_addr_by_some_sophisticated_rule(index) + way * l2c_cache_sizes[g_cnfg0 & L2C_L2CNFG0_L2SIZE_mask]/L2C_COUNT_WAYS);
+    return (SDRAM_BASE + get_addr_by_some_sophisticated_rule(index)*L2C_LINE_SIZE/2 + way * l2c_cache_sizes[g_cnfg0 & L2C_L2CNFG0_L2SIZE_mask]);
 }
 uint32_t l2arracc_lru_check(uint32_t base)
 {
     uint32_t result = 0;
+    uint32_t default_data = 0;
     char test_name[] = "l2arracc_lru_check";
     rumboot_printf("%s started\n", test_name);
+
+    l2c_l2_write( base, L2C_L2ARRACCADR, get_addr_by_some_sophisticated_rule(0) );
+    l2c_l2_write( base, L2C_L2ARRACCCTL,
+                  L2C_L2ARRACCCTL_REQUEST_mask
+                | L2C_L2ARRACCCTL_BUFFERID_LRU_mask
+                | (L2C_L2ARRACCCTL_REQTYPE_RD8WOECC << L2C_L2ARRACCCTL_REQTYPE_i)
+        );
+    for(uint32_t tries = L2C_REQUEST_TRIES;
+        (l2c_l2_read(base,L2C_L2ARRACCCTL) & L2C_L2ARRACCCTL_REQUEST_mask)
+                && tries;
+        --tries); /* No body for this 'for' */
+    default_data = l2c_l2_read( base, L2C_L2ARRACCDO0) & L2C_L2ARRACCDO0_LRU_LAYOUT_mask;
+
     /*write cycle*/
     for(uint32_t i = 0; i < ARRAY_SIZE(test_data); ++i)
     {
@@ -402,6 +359,21 @@ uint32_t l2arracc_lru_check(uint32_t base)
 //        else
 //            rumboot_printf("Written data to LRU matches the written data. Written == 0x%x, read == 0x%x, address == 0x%x\n",
 //                    test_data[i] & L2C_L2ARRACCDO0_LRU_LAYOUT_mask, data, get_addr_by_some_sophisticated_rule(i));
+    }
+    /*clear cycle*/
+    for(uint32_t i = 0; i < ARRAY_SIZE(test_data); ++i)
+    {
+        l2c_l2_write( base, L2C_L2ARRACCADR, get_addr_by_some_sophisticated_rule(i));
+        l2c_l2_write( base, L2C_L2ARRACCDI0, default_data);
+        l2c_l2_write( base, L2C_L2ARRACCCTL,
+                      L2C_L2ARRACCCTL_REQUEST_mask
+                    | L2C_L2ARRACCCTL_BUFFERID_LRU_mask
+                    | (L2C_L2ARRACCCTL_REQTYPE_WR8WOECC << L2C_L2ARRACCCTL_REQTYPE_i)
+            );
+        for(uint32_t tries = L2C_REQUEST_TRIES;
+            (l2c_l2_read(base,L2C_L2ARRACCCTL) & L2C_L2ARRACCCTL_REQUEST_mask)
+                    && tries;
+            --tries); /* No body for this 'for' */
     }
 
     rumboot_printf("%s finished: %s\n",test_name,(result)?"FAIL":"OK");
@@ -454,15 +426,36 @@ uint32_t  lru_value_based_lru_check(uint32_t base)
         for(uint32_t j = update_j_index(i,-1); j < L2C_COUNT_WAYS; j = update_j_index(i,j))
             for(uint32_t k = update_k_index(i,j,-1); k < L2C_COUNT_WAYS; k = update_k_index(i,j,k))
             {
-                rumboot_printf("3rd stage: index =%0d, i = %0d, j = %0d, k = %0d\n", i,j,k);
-                dcbt(0, get_addr_by_some_more_sophisticated_rule (index,i));
+                rumboot_printf("3rd stage: index =%d, i = %d, j = %d, k = %d\naddr[i] == 0x%x; addr[j] == 0x%x; addr[k] == 0x%x\n",
+                        index,i,j,k,
+                        get_addr_by_some_more_sophisticated_rule (index,i),
+                        get_addr_by_some_more_sophisticated_rule (index,j),
+                        get_addr_by_some_more_sophisticated_rule (index,k));
+//                dcbt(0, get_addr_by_some_more_sophisticated_rule (index,6 - i - j - k));
+//                isync();
+//                msync();
+                dcbtls(2, get_addr_by_some_more_sophisticated_rule (index,i));
+                isync();
+                msync();
                 //SDRAM_BASE + get_addr_by_some_sophisticated_rule(index) + i * l2c_cache_sizes[g_cnfg0 & L2C_L2CNFG0_L2SIZE_mask]/L2C_COUNT_WAYS);
-                dcbt(0, get_addr_by_some_more_sophisticated_rule (index,j));
+                dcbtls(2, get_addr_by_some_more_sophisticated_rule (index,j));
+                isync();
+                msync();
                 //SDRAM_BASE + get_addr_by_some_sophisticated_rule(index) + j * l2c_cache_sizes[g_cnfg0 & L2C_L2CNFG0_L2SIZE_mask]/L2C_COUNT_WAYS);
-                dcbt(0, get_addr_by_some_more_sophisticated_rule (index,k));
+                dcbtls(2, get_addr_by_some_more_sophisticated_rule (index,k));
+                isync();
+                msync();
+                dcblc(2, get_addr_by_some_more_sophisticated_rule (index,i));
+                dcblc(2, get_addr_by_some_more_sophisticated_rule (index,j));
+                dcblc(2, get_addr_by_some_more_sophisticated_rule (index,k));
+                isync();
+                msync();
 //                SDRAM_BASE + get_addr_by_some_sophisticated_rule(index) + k * l2c_cache_sizes[g_cnfg0 & L2C_L2CNFG0_L2SIZE_mask]/L2C_COUNT_WAYS);
                 index++;
+//                if(index > sizeof(test_data))
+//                    goto loop_exit;
             }
+//loop_exit:
     isync();
     msync();
     rumboot_memfill8(lru_values_array,sizeof(lru_values_array),initial_value,0);
@@ -471,24 +464,23 @@ uint32_t  lru_value_based_lru_check(uint32_t base)
         for(uint32_t j = 0; j < L2C_COUNT_WAYS; ++j)
         {
             addr = get_addr_by_some_more_sophisticated_rule (i,j);
-//            SDRAM_BASE + get_addr_by_some_sophisticated_rule(i) + j * l2c_cache_sizes[g_cnfg0 & L2C_L2CNFG0_L2SIZE_mask]/L2C_COUNT_WAYS;
             array_of_addrs[j] = addr;
         }
         /*4th stage: checking that everything is still cached*/
         result |= check_caches((uint32_t (**)())array_of_addrs, true,PSEUDO_CT_DECODING_IS_L2_mask,"lru_value_based_lru_check");
         /*5th stage: checking that every set of cached areas has a unique LRU value*/
-//        result |= check_unique_lru_value()
         if(l2c_arracc_lru_info_read_by_way(DCR_L2C_BASE,
-                rumboot_virt_to_phys((void *)addr) >> 32,
-                rumboot_virt_to_phys((void *)addr) & 0xFFFFFFFF,
+                (uint32_t)(rumboot_virt_to_phys((void *)addr) >> 32) & 0xFFFFFFFF,
+                (uint32_t)(rumboot_virt_to_phys((void *)addr) & 0xFFFFFFFF),
                 0,&lru_info))
         {
             lru_value = ((lru_info & L2C_L2ARRACCDO0_LRU_LRU_mask) >> L2C_L2ARRACCDO0_LRU_LRU_i);
+            rumboot_printf("addr == 0x%x, lru_info == 0x%x, lru_value == 0x%x\n",addr,lru_info,lru_value);
             if(lru_values_array[lru_value] == initial_value)
                 lru_values_array[lru_value] = lru_value;
             else
             {
-                rumboot_printf("ERROR!!! LRU value == 0x%x already occurred for addr == 0x%x\n",lru_value,addr);
+                rumboot_printf("ERROR!!! LRU value == 0x%x already occurred for addr == 0x%x\nlru_info == 0x%x\n",lru_value,addr,lru_info);
                 result |= 1;
             }
         }
@@ -500,9 +492,9 @@ uint32_t  lru_value_based_lru_check(uint32_t base)
     }
 
     rumboot_printf("Just for information: valid values of LRU:\n");
-    for (uint32_t i = 0; i < LRU_VALUES_COUNT; ++i)
+    for (uint32_t i = 0; i < LRU_VALUES_ARRAY_SIZE; ++i)
     {
-        if(lru_values_array[i] != initial_value)
+//        if(lru_values_array[i] != initial_value)
         rumboot_printf("0x%x\n", lru_values_array[i]);
     }
 
@@ -513,49 +505,20 @@ uint32_t  lru_value_based_lru_check(uint32_t base)
 uint32_t main(void)
 {
     uint32_t     status  = TEST_OK;
-//                 revid   = 0,
-//                 idx     = 0;
-//    uint32_t    addr;
 
     rumboot_printf("Init EMI...\n");
     emi_init(DCR_EM2_EMI_BASE);
-//    revid = L2C_READ(L2C_L2REVID);
-    g_cnfg0 = L2C_READ(L2C_L2CNFG0);
-    g_cnfg1 = L2C_READ(L2C_L2CNFG1);
-//    /*initializing memories under the specified cache lines*/
-//    for(uint32_t i = 0; i < 4; ++i)
-//    {
-//        addr = SSRAM_BASE + (i * l2c_cache_sizes[g_cnfg0 & L2C_L2CNFG0_L2SIZE_mask]/L2C_COUNT_WAYS);
-//        rumboot_memfill32(
-//                SSRAM_BASE + (i * l2c_cache_sizes[g_cnfg0 & L2C_L2CNFG0_L2SIZE_mask]/L2C_COUNT_WAYS),
-//                L2C_LINE_SIZE,
-//                addr, 0);
-//    }
+    g_cnfg0 = l2c_l2_read(DCR_L2C_BASE,L2C_L2CNFG0);
+    g_cnfg1 = l2c_l2_read(DCR_L2C_BASE,L2C_L2CNFG1);
     status |= l2arracc_lru_check(DCR_L2C_BASE);
-//    for(idx = 0; idx < (128 / sizeof(uint32_t)); idx++)
-//        iowrite32(0, CHECK_ADDR(idx * sizeof(uint32_t)));
-//    mem_write32(0x5555AAAA, 0);
-//    rumboot_printf("Init done.\n");
-//    rumboot_printf("Write TLB entries...\n");
     write_tlb_entries(em_tlb_entry_cache_on, 1);
-//    tlbsync();
     msync();
     isync();
     status |= lru_value_based_lru_check(DCR_L2C_BASE);
-//    rumboot_printf("Start checking L2C at DCR base 0x%X (ver:%d, rev:%d)...\n",
-//            DCR_L2C_BASE, revid >> 8 & 0x0FFF, GET_BYTE(revid,0));
-//    rumboot_printf("L2C_L2CNFG0=0x%X, L2C_L2CNFG1=0x%X,%s\n", g_cnfg0, g_cnfg1);
-//    rumboot_printf("Cache size is %dKB\n",
-//            (l2c_cache_sizes[g_cnfg0 & 0x03]) >> 10);
-//
-//    status |= 0;
 
     rumboot_printf("TEST %s!\n", !status ? "OK" : "ERROR");
 
     return status;
 }
-
-
-
 
 
