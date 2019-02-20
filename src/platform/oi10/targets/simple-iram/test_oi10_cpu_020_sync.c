@@ -15,13 +15,10 @@
 #include <platform/test_assert.h>
 #include <platform/trace.h>
 
-#include <platform/common_macros/common_macros.h>
-
 #include <arch/ppc_476fp_config.h>
 #include <arch/ppc_476fp_lib_c.h>
 #include <platform/arch/ppc/ppc_476fp_mmu_fields.h>
 #include <platform/arch/ppc/ppc_476fp_mmu.h>
-#include <platform/arch/ppc/ppc_476fp_power_modes.h>
 
 #include <platform/devices/l2c.h>
 #include <platform/devices.h>
@@ -93,15 +90,15 @@ static void check_block (SYNC_INSTR sync_instr)
     rumboot_printf("if the transactions is completed, the data will be == %x\n", test_data);
     rumboot_printf("rdata1 = %x\n", rdata1);
     rumboot_printf("rdata2 = %x\n", rdata2);
-    if (rdata1 != rdata2)
-        rumboot_printf("transactions not completed\n");
-    else
+    if ((rdata1 == test_data) && (rdata2 == test_data))
         rumboot_printf("transactions completed\n");
+    else
+        rumboot_printf("transactions not completed\n");
 
     if (sync_instr != s_nop)
-        TEST_ASSERT (rdata1 == rdata2, "ERROR: not expected read data (expect rdata1 == rdata2)");
+        TEST_ASSERT ( ((rdata1 == test_data) && (rdata2 == test_data)), "ERROR: not expected read data");
     else
-        TEST_ASSERT (rdata1 != rdata2, "ERROR: not expected read data (expect rdata1 != rdata2)");
+        TEST_ASSERT ( ((rdata1 != test_data) || (rdata2 == test_data)), "ERROR: not expected read data");
 }
 
 static void check_sync_instr (SYNC_INSTR sync_instr)
