@@ -53,6 +53,13 @@ END_ENUM( SYNC_INSTR )
 //                               MMU_TLB_ENTRY(  ERPN,   RPN,        EPN,        DSIZ,                   IL1I,   IL1D,   W,      I,      M,      G,      E,                      UX, UW, UR,     SX, SW, SR      DULXE,  IULXE,      TS,     TID,                WAY,                BID,                V   )
 #define TLB_ENTRY_EM2_CACHE_WT   MMU_TLB_ENTRY(  0x000,  0x00000,    0x00000,    MMU_TLBE_DSIZ_1GB,      0b1,    0b0,    0b0,    0b0,    0b1,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
 
+#define WRITE_SYNCX_READ(X)\
+    iowrite32 (0x00, addr1);\
+    iowrite32 (test_data, addr2);\
+    X;\
+    rdata1 = ioread32(addr1);\
+    rdata2 = ioread32(addr2);
+
 static void check_block (SYNC_INSTR sync_instr)
 {
     uint32_t test_data = 0xBABADEDA;
@@ -63,27 +70,26 @@ static void check_block (SYNC_INSTR sync_instr)
     uint32_t rdata1 = 0,
              rdata2 = 0;
 
-    dci(0);
     memset((void*)SRAM0_BASE, 0x00, 0x80);
 
-    if (sync_instr == s_nop) {
-        iowrite32 (0x00, addr1);
-        iowrite32 (test_data, addr2);
-        rdata1 = ioread32(addr1);
-        rdata2 = ioread32(addr2);
+    switch (sync_instr) {
+        case s_nop:
+            iowrite32 (0x00, addr1);
+            iowrite32 (test_data, addr2);
+            rdata1 = ioread32(addr1);
+            rdata2 = ioread32(addr2);
+            break;
+        case s_msync:  test_event(TEC_START_CHECK_MSYNC);
+            WRITE_SYNCX_READ(msync());                      //s_nop:* + sync command
+            break;
+        case s_lwsync: test_event(TEC_START_CHECK_LWSYNC);
+            WRITE_SYNCX_READ(lwsync());
+            break;
+        case s_mbar:   test_event(TEC_START_CHECK_MBAR);
+            WRITE_SYNCX_READ(mbar());
+            break;
     }
-    else {
-        iowrite32 (0x00, addr1);
-        iowrite32 (test_data, addr2);
-        switch (sync_instr) {
-            case s_msync:  msync();  break;
-            case s_lwsync: lwsync(); break;
-            case s_mbar:   mbar();   break;
-            case s_nop:    break;
-        }
-        rdata1 = ioread32(addr1);
-        rdata2 = ioread32(addr2);
-    }
+
     rumboot_printf("if the transactions is completed, the data will be == %x\n", test_data);
     rumboot_printf("rdata1 = %x\n", rdata1);
     rumboot_printf("rdata2 = %x\n", rdata2);
@@ -102,8 +108,10 @@ static void check_sync_instr (SYNC_INSTR sync_instr)
 {
     rumboot_printf("write/read without sync instruction\n");
     check_block (s_nop);
+    dci(0); dci(2);
     rumboot_printf("write/read with sync instruction\n");
     check_block (sync_instr);
+    dci(0); dci(2);
     rumboot_printf("\n");
 }
 
@@ -169,11 +177,13 @@ int main()
     check_lwarx_stwcx(addr, TEC_START_CHECK_LWARX_L1_MISS_L2_MISS, TEC_START_CHECK_STWCX_L1_MISS_L2_MISS);
 
     rumboot_printf("l1 - hit, l2 - hit\n");
+    dci(0); dci(2);
     addr = test_line2;
     (void) ioread32(addr);
     check_lwarx_stwcx(addr, TEC_START_CHECK_LWARX_L1_HIT_L2_HIT, TEC_START_CHECK_STWCX_L1_HIT_L2_HIT);
 
     rumboot_printf("l1 - hit, l2 - miss\n");
+    dci(0); dci(2);
     addr = test_line3;
     (void) ioread32(addr);
     msync();
@@ -181,6 +191,7 @@ int main()
     check_lwarx_stwcx(addr, TEC_START_CHECK_LWARX_L1_HIT_L2_MISS, TEC_START_CHECK_STWCX_L1_HIT_L2_MISS);
 
     rumboot_printf("l1 - miss, l2 - hit\n");
+    dci(0); dci(2);
     addr = test_line4;
     (void) ioread32(addr);
     dci(0);
