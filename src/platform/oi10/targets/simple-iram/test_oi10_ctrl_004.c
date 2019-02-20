@@ -21,38 +21,114 @@
 #define TIMER0_CYCLES           1
 #define TIMER1_CYCLES           2
 
+//#define CHECK_REGS
 #ifdef CHECK_REGS
-static uint32_t check_timer_default_ro_val(uint32_t base_addr)
+
+#define DIT0_REG_LOAD0_DFLT     0
+#define DIT0_REG_VALUE0_DFLT    0xFFFFFFFF
+#define DIT0_REG_CONTROL0_DFLT  0x20
+#define DIT0_REG_RIS0_DFLT      0
+#define DIT0_REG_MIS0_DFLT      0
+#define DIT0_REG_BGLOAD0_DFLT   0
+
+#define DIT0_REG_LOAD1_DFLT     0
+#define DIT0_REG_VALUE1_DFLT    0xFFFFFFFF
+#define DIT0_REG_CONTROL1_DFLT  0x20
+#define DIT0_REG_RIS1_DFLT      0
+#define DIT0_REG_MIS1_DFLT      0
+#define DIT0_REG_BGLOAD1_DFLT   0
+
+#define DIT_REG_ITCR_DFLT       0
+#define DIT_REG_ITOP_DFLT       0
+#define DIT_REG_PERIPHID0_DFLT  0x4
+#define DIT_REG_PERIPHID1_DFLT  0x18
+#define DIT_REG_PERIPHID2_DFLT  0x14
+#define DIT_REG_PERIPHID3_DFLT  0
+#define DIT_REG_PCELLID0_DFLT   0xD
+#define DIT_REG_PCELLID1_DFLT   0xF0
+#define DIT_REG_PCELLID2_DFLT   0x5
+#define DIT_REG_PCELLID3_DFLT   0xB1
+
+#define DIT0_REG_LOAD0_mask     0xFFFFFFFF
+#define DIT0_REG_VALUE0_mask    0xFFFFFFFF
+#define DIT0_REG_CONTROL0_mask  0xFF
+#define DIT0_REG_RIS0_mask      1
+#define DIT0_REG_MIS0_mask      1
+#define DIT0_REG_BGLOAD0_mask   0xFFFFFFFF
+
+#define DIT0_REG_LOAD1_mask     0xFFFFFFFF
+#define DIT0_REG_VALUE1_mask    0xFFFFFFFF
+#define DIT0_REG_CONTROL1_mask  0xFF
+#define DIT0_REG_RIS1_mask      1
+#define DIT0_REG_MIS1_mask      1
+#define DIT0_REG_BGLOAD1_mask   0xFFFFFFFF
+
+#define DIT_REG_ITCR_mask       1
+#define DIT_REG_ITOP_mask       3
+#define DIT_REG_PERIPHID0_mask  0xFF
+#define DIT_REG_PERIPHID1_mask  0xFF
+#define DIT_REG_PERIPHID2_mask  0xFF
+#define DIT_REG_PERIPHID3_mask  0xFF
+#define DIT_REG_PCELLID0_mask   0xFF
+#define DIT_REG_PCELLID1_mask   0xFF
+#define DIT_REG_PCELLID2_mask   0xFF
+#define DIT_REG_PCELLID3_mask   0xFF
+
+static bool check_timer_default_ro_val(uint32_t base_addr)
 {
     rumboot_printf("Check the default values of the registers:");
 
     struct regpoker_checker check_default_array[] = {
-          {   "DIT_REG_PERIPHID0",   REGPOKER_READ_DCR,    DIT_REG_PERIPHID0,         0x04,           0xff   },
-          {   "DIT_REG_PERIPHID1",   REGPOKER_READ_DCR,    DIT_REG_PERIPHID1,         0x18,           0xff   },
-          {   "DIT_REG_PERIPHID2",   REGPOKER_READ_DCR,    DIT_REG_PERIPHID2,         0x14,           0xff   },
-          {   "DIT_REG_PERIPHID3",   REGPOKER_READ_DCR,    DIT_REG_PERIPHID3,         0x00,           0xff   },
-          {   "DIT_REG_PCELLID0",    REGPOKER_READ_DCR,    DIT_REG_PCELLID0,          0x0D,           0xff   },
-          {   "DIT_REG_PCELLID1",    REGPOKER_READ_DCR,    DIT_REG_PCELLID1,          0xF0,           0xff   },
-          {   "DIT_REG_PCELLID2",    REGPOKER_READ_DCR,    DIT_REG_PCELLID2,          0x05,           0xff   },
-          {   "DIT_REG_PCELLID3",    REGPOKER_READ_DCR,    DIT_REG_PCELLID3,          0xB1,           0xff   },
+/*              name                 test_function         reg_offset             expected_val            mask;
+    uint64_t (*readfunc)(uintptr_t base);
+    void (*writefunc)(uint64_t value, uintptr_t addr);
+};
+*/
+/*        {   "HSCB_ID",              REGPOKER_READ32,    HSCB_ID,                HSCB_ID_DFLT,               HSCB_ID_MASK                },
+ * */
+          {   "DIT0_REG_LOAD0",     REGPOKER_READ_DCR,    DIT0_REG_LOAD0,           DIT0_REG_LOAD0_DFLT,      DIT0_REG_LOAD0_mask },
+          {   "DIT0_REG_VALUE0",    REGPOKER_READ_DCR,    DIT0_REG_VALUE0,          DIT0_REG_VALUE0_DFLT,     DIT0_REG_VALUE0_mask },
+          {   "DIT0_REG_CONTROL0",  REGPOKER_READ_DCR,    DIT0_REG_CONTROL0,        DIT0_REG_CONTROL0_DFLT,   DIT0_REG_CONTROL0_mask },
+          {   "DIT0_REG_RIS0",      REGPOKER_READ_DCR,    DIT0_REG_RIS0,            DIT0_REG_RIS0_DFLT,       DIT0_REG_RIS0_mask },
+          {   "DIT0_REG_MIS0",      REGPOKER_READ_DCR,    DIT0_REG_MIS0,            DIT0_REG_MIS0_DFLT,       DIT0_REG_MIS0_mask },
+          {   "DIT0_REG_BGLOAD0",   REGPOKER_READ_DCR,    DIT0_REG_BGLOAD0,         DIT0_REG_BGLOAD0_DFLT,    DIT0_REG_BGLOAD0_mask },
+
+          {   "DIT0_REG_LOAD1",     REGPOKER_READ_DCR,    DIT0_REG_LOAD1,           DIT0_REG_LOAD1_DFLT,      DIT0_REG_LOAD1_mask },
+          {   "DIT0_REG_VALUE1",    REGPOKER_READ_DCR,    DIT0_REG_VALUE1,          DIT0_REG_VALUE1_DFLT,     DIT0_REG_VALUE1_mask },
+          {   "DIT0_REG_CONTROL1",  REGPOKER_READ_DCR,    DIT0_REG_CONTROL1,        DIT0_REG_CONTROL1_DFLT,   DIT0_REG_CONTROL1_mask },
+          {   "DIT0_REG_RIS1",      REGPOKER_READ_DCR,    DIT0_REG_RIS1,            DIT0_REG_RIS1_DFLT,       DIT0_REG_RIS1_mask },
+          {   "DIT0_REG_MIS1",      REGPOKER_READ_DCR,    DIT0_REG_MIS1,            DIT0_REG_MIS1_DFLT,       DIT0_REG_MIS1_mask },
+          {   "DIT0_REG_BGLOAD1",   REGPOKER_READ_DCR,    DIT0_REG_BGLOAD1,         DIT0_REG_BGLOAD1_DFLT,    DIT0_REG_BGLOAD1_mask },
+
+          {   "DIT_REG_ITCR",       REGPOKER_READ_DCR,    DIT_REG_ITCR,             DIT_REG_ITCR_DFLT,        DIT_REG_ITCR_mask },
+          {   "DIT_REG_ITOP",       REGPOKER_READ_DCR,    DIT_REG_ITOP,             DIT_REG_ITOP_DFLT,        DIT_REG_ITOP_mask },
+          {   "DIT_REG_PERIPHID0",  REGPOKER_READ_DCR,    DIT_REG_PERIPHID0,        DIT_REG_PERIPHID0_DFLT,   DIT_REG_PERIPHID0_mask },
+          {   "DIT_REG_PERIPHID1",  REGPOKER_READ_DCR,    DIT_REG_PERIPHID1,        DIT_REG_PERIPHID1_DFLT,   DIT_REG_PERIPHID1_mask },
+          {   "DIT_REG_PERIPHID2",  REGPOKER_READ_DCR,    DIT_REG_PERIPHID2,        DIT_REG_PERIPHID2_DFLT,   DIT_REG_PERIPHID2_mask },
+          {   "DIT_REG_PERIPHID3",  REGPOKER_READ_DCR,    DIT_REG_PERIPHID3,        DIT_REG_PERIPHID3_DFLT,   DIT_REG_PERIPHID3_mask },
+          {   "DIT_REG_PCELLID0",   REGPOKER_READ_DCR,    DIT_REG_PCELLID0,         DIT_REG_PCELLID0_DFLT,    DIT_REG_PCELLID0_mask  },
+          {   "DIT_REG_PCELLID1",   REGPOKER_READ_DCR,    DIT_REG_PCELLID1,         DIT_REG_PCELLID1_DFLT,    DIT_REG_PCELLID1_mask  },
+          {   "DIT_REG_PCELLID2",   REGPOKER_READ_DCR,    DIT_REG_PCELLID2,         DIT_REG_PCELLID2_DFLT,    DIT_REG_PCELLID2_mask  },
+          {   "DIT_REG_PCELLID3",   REGPOKER_READ_DCR,    DIT_REG_PCELLID3,         DIT_REG_PCELLID3_DFLT,    DIT_REG_PCELLID3_mask  },
           { }
       };
 
     if( rumboot_regpoker_check_array( check_default_array, base_addr ) == 0 )
     {
         rumboot_printf( "OK\n" );
-        return 0;
+        return true;
     }
 
     rumboot_printf( "ERROR\n" );
-    return 1;
+    return false;
 }
 
-static uint32_t check_timer_default_rw_val( uint32_t base_addr )
+static bool check_timer_default_rw_val( uint32_t base_addr )
 {
     rumboot_printf("Check the default values of the registers:");
 
     struct regpoker_checker check_default_array[] = {
+//        {   "HSCB_TIMINGS",         REGPOKER_WRITE32,   HSCB_TIMINGS,           HSCB_TIMINGS_DFLT,          HSCB_TIMINGS_MASK           },
           {   "Timer1Load",     REGPOKER_READ_DCR,  DIT0_REG_LOAD0,          0x00000000, 0xffffffff },
           {   "Timer1Load",     REGPOKER_WRITE_DCR, DIT0_REG_LOAD0,          0x00000000, 0xffffffff },
 
@@ -85,11 +161,11 @@ static uint32_t check_timer_default_rw_val( uint32_t base_addr )
     if( rumboot_regpoker_check_array( check_default_array, base_addr ) == 0 )
     {
         rumboot_printf( "OK\n" );
-        return 0;
+        return true;
     }
 
     rumboot_printf( "ERROR\n" );
-    return 1;
+    return false;
 }
 #endif
 
@@ -117,7 +193,7 @@ static void handler1(int irq, void *arg)
     rumboot_printf("sp804 timer 1 INT # %d \n", a->timer1_irq);
     sp804_clrint(a->base_addr, 1);
 }
-
+__attribute__((unused))
 static bool test_dit_timers(uint32_t structure)
 {
     int c = 0;
@@ -181,10 +257,11 @@ static bool test_dit_timers(uint32_t structure)
             rumboot_printf("Interrupts came == %d, should be %d \n", stru->timer1_irq, TIMER1_CYCLES);
             return false;
         }
-    return false;
+    return true;
 }
 
 //TEST MODE
+__attribute__((unused))
 static bool test_dit_timers2( uint32_t structure)
 {
     struct s804_instance *stru = (struct s804_instance *)structure;
@@ -228,7 +305,7 @@ static bool test_dit_timers2( uint32_t structure)
             return false;
         }
     }
-    return false;
+    return true;
 }
 
 static struct s804_instance in[] =
@@ -239,11 +316,12 @@ static struct s804_instance in[] =
 };
 
 TEST_SUITE_BEGIN(dit_testlist, "SP804 IRQ TEST")
-TEST_ENTRY("SP804_0", test_dit_timers, (uint32_t) &in[0]),
-TEST_ENTRY("SP804_0", test_dit_timers2, (uint32_t) &in[0]),
+TEST_ENTRY("SP804_0", test_dit_timers, DCR_TIMERS_BASE),
+TEST_ENTRY("SP804_0", test_dit_timers2, DCR_TIMERS_BASE),
+//#ifdef CHECK_REGS
 #ifdef CHECK_REGS
-TEST_ENTRY("SP804_0", check_default_ro_val, (uint32_t, &in[0]));
-TEST_ENTRY("SP804_0", check_default_rw_val, (uint32_t, &in[0]));
+TEST_ENTRY("SP804_0_initials_reg_check", check_timer_default_ro_val, DCR_TIMERS_BASE),
+TEST_ENTRY("SP804_0_rw_reg_check", check_timer_default_rw_val, DCR_TIMERS_BASE),
 #endif
 TEST_SUITE_END();
 
