@@ -409,6 +409,15 @@ test_oi10_cpu_mem_001_fmadd_operations:
     msync
     isync
 
+    rumboot_putstring "test_oi10_cpu_mem_001: data memory fill\n"
+#ifdef RUMBOOT_PRINTF_ACCEL
+    load_addr  r3, (SSRAM_BASE)
+    load_size  r4, 0x2000
+    load_const r5, 0x00
+    load_const r6, 0x00
+    bl         rumboot_memfill8
+#endif
+
     rumboot_putstring "test_oi10_cpu_mem_001: memory allocation\n"
     load_addr r3, mem_label
     load_size r4, (end_of_code - code_touch + 256)
