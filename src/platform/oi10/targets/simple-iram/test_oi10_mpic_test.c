@@ -48,6 +48,9 @@ uint32_t arg0 = TEC_CLR_EXT_INT0;
 uint32_t arg1 = TEC_CLR_EXT_INT1;
 uint32_t arg2 = TEC_CLR_EXT_INT2;
 
+uint32_t flagCRandMC = 1;
+uint32_t flagMCandMC = 1;
+
 static void exception_handler(int const id, char const * const name ) {
     rumboot_printf( "Exception: %s\n", name );
     spr_write( SPR_MCSR_C, spr_read(SPR_MCSR_RW) );
@@ -55,9 +58,23 @@ static void exception_handler(int const id, char const * const name ) {
 
 void irq_handler( int irq_num, void *arg )
 {
-    rumboot_printf("IRQ #%d received.\n", irq_num-66);
+    rumboot_printf("IRQ #%d received.\n", irq_num-EXT_INT0);
 //    test_event(*((uint32_t*)arg));
     test_event(TEC_CLR_EXT_INT012);
+    if(irq_num == EXT_INT1)
+    {
+        if(flagCRandMC) {
+            flagCRandMC = 0;
+            test_event(TEC_SET_EXT_INT2);
+        }
+    }
+    if(irq_num == EXT_INT2)
+    {
+        if(flagMCandMC) {
+            flagMCandMC = 0;
+            test_event(TEC_SET_EXT_INT2);
+        }
+    }
 }
 
 int main ()
