@@ -110,7 +110,13 @@ static inline __attribute__((always_inline)) uint32_t mpic128_setup_vp( uint32_t
     return vpvalue;
 }
 
-static uint32_t mpic128_setup_ext_interrupt( uint32_t const base_address, int const irq, uint32_t const sense_polarity ) {
+static uint32_t mpic128_setup_ext_interrupt( uint32_t const base_address, int const irq, uint32_t const sense_polarity_priority ) {
+    uint32_t value = sense_polarity_priority;
+    uint32_t sense_polarity  = CLEAR_BITS_BY_MASK( value, FIELD_MASK32( MPIC128_VP_PRI_i, MPIC128_VP_PRI_n ));
+    value = sense_polarity_priority;
+    mpic128_prior_t priority = (mpic128_prior_t)(CLEAR_BITS_BY_MASK( value, FIELD_MASK32( MPIC128_VP_S_i, MPIC128_VP_S_n )
+                                                                          | FIELD_MASK32( MPIC128_VP_POL_i, MPIC128_VP_POL_n ) ) >> MPIC128_VP_PRI_i);
+    if(priority == MPIC128_PRIOR_0) priority = MPIC128_PRIOR_1; /* set lowest priority to enable interrupts handling */
     uint32_t const interrupt_vpaddr = mpic128_get_interrupt_vpaddr_by_num( irq );
     if( interrupt_vpaddr != MPIC128_XADDR_ERR ) {
         uint32_t const vpaddr = base_address + interrupt_vpaddr;
@@ -119,7 +125,7 @@ static uint32_t mpic128_setup_ext_interrupt( uint32_t const base_address, int co
         uint32_t const interrupt_dstaddr = mpic128_get_interrupt_dstaddr_by_num( irq );
         if( interrupt_dstaddr != MPIC128_XADDR_ERR ) dcr_write( base_address + interrupt_dstaddr, ( 1 << Processor0 ) );
 
-        vpvalue = mpic128_setup_vp( vpvalue, irq, MPIC128_PRIOR_1 ); /* set lowest priority to enable all interrupts handling */
+        vpvalue = mpic128_setup_vp( vpvalue, irq, priority ); /* set lowest priority to enable all interrupts handling */
         if( irq <= MPIC128_INTERRUPT_SOURCE_MAX ) vpvalue = mpic128_setup_interrupt_source( vpvalue, sense_polarity );
         dcr_write( vpaddr, vpvalue );
 
