@@ -58,8 +58,6 @@
 /* Functions */
 #define EVENT_CACHING_DONE              (TEST_EVENT_CODE_MIN + 0)
 #define WORDS2BYTES(WORDS)              ((WORDS) << 2)
-#define CAST_ADDR(VAL)                  ((void*)(VAL))
-#define CAST_FUNC(VAL)                  ((void(*)())(VAL));
 #define PHY2RPN20(ADDR)                 (((ADDR) & 0xFFFFF000) >> 12)
 #define ADDR2EPN                        PHY2RPN20
 
@@ -167,6 +165,8 @@ typedef struct
     uint32_t        fill[FILL_OFFSET];
 } icu_way_data_t;
 
+typedef void(*icu_chain_func)();
+
 /* Variables declarations */
 static const
 tlb_entry cached_mirror_entries[] =
@@ -195,7 +195,7 @@ uint32_t icu_check(icu_way_data_t *ways_data)
     uint32_t         result = TEST_OK,
                      needed = 0,
                      readed = 0;
-    uint32_t        *data   = CAST_ADDR(ways_data);
+    uint32_t        *data   = (uint32_t*)ways_data;
     int              y,x,d; /* wa(y), inde(x), wor(d) */
     for(y = 0; y < 4; y++)
     {
@@ -205,7 +205,7 @@ uint32_t icu_check(icu_way_data_t *ways_data)
             rumboot_printf("\t\tCheck index %d...\n", x);
             for(d = 0; d < 8; d++)
             {
-                icread(CAST_ADDR(CALC_ADDR(y,x,d)));
+                icread((void*)CALC_ADDR(y,x,d));
                 isync(); /* Mandatory after icread! */
                 needed = data[CALC_ADDR(y,x,d) >> 2];
                 readed = spr_read(SPR_ICDBDR0);
@@ -232,7 +232,7 @@ uint32_t main(void)
     uint32_t         status = TEST_OK,
                      result = 0;
 
-    icu_way_data_t   *icu_cached_data    = CAST_ADDR(ICU_BASE);
+    icu_way_data_t   *icu_cached_data    = (icu_way_data_t*)ICU_BASE;
     void            (*icu_cache_start)() = NULL;
 
     rumboot_putstring("Test started...\n");
@@ -250,9 +250,9 @@ uint32_t main(void)
     rumboot_printf("Copy of %d bytes cache data to cached RAM at 0x%X...\n",
             ICU_MEM_SIZE , SSRAM_BASE);
     icu_patch(icu_data, BLR_OP);
-    memcpy(CAST_ADDR(ICU_BASE), CAST_ADDR(icu_data), ICU_MEM_SIZE);
+    memcpy((void*)ICU_BASE, (void*)icu_data, ICU_MEM_SIZE);
     msync();
-    icu_cache_start = CAST_FUNC(icu_cached_data);
+    icu_cache_start = (icu_chain_func)icu_cached_data;
 
     rumboot_printf("Copy done.\n");
 
