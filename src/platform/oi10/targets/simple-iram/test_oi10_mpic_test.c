@@ -63,6 +63,7 @@ void irq_handler( int irq_num, void *arg )
 int main ()
 {
     test_event_send_test_id("test_oi10_mpic_test");
+    rumboot_memfill8_modelling((void*)SRAM0_BASE, 0x1000, 0x00, 0x00); //workaround (init 4KB)
 
     rumboot_printf("Set our own irq handlers... ");
     rumboot_irq_set_exception_handler(exception_handler);
