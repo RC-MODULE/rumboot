@@ -48,26 +48,10 @@ static uint32_t mpic128_begin( const struct rumboot_irq_controller *dev, void *s
 
 static void mpic128_end( const struct rumboot_irq_controller *dev, void *scratch, uint32_t irq ) {
     if( irq != dcr_read( DCR_MPIC128_BASE + MPIC128_SPV ) ) {
-        uint32_t mc_border, cr_border;
-        mc_border = cr_border = dcr_read( DCR_MPIC128_BASE + MPIC128_VITC );
-        mc_border =  (mc_border & FIELD_MASK32( MPIC128_VITC_MCB_i, MPIC128_VITC_MCB_n )) >> MPIC128_VITC_MCB_i;
-        cr_border =  (cr_border & FIELD_MASK32( MPIC128_VITC_CRB_i, MPIC128_VITC_CRB_n )) >> MPIC128_VITC_CRB_i;
-
-        uint32_t value = rumboot_irq_get_flags(irq);
-        mpic128_prior_t priority = (mpic128_prior_t)(CLEAR_BITS_BY_MASK( value, FIELD_MASK32( MPIC128_VP_S_i, MPIC128_VP_S_n )
-                                                                              | FIELD_MASK32( MPIC128_VP_POL_i, MPIC128_VP_POL_n ) ) >> MPIC128_VP_PRI_i);
-        if(priority >= mc_border) {
-            dcr_write( DCR_MPIC128_BASE + MPIC128_EOI_PR, 0 ); /* signal the end of processing for non-spurious interrupt */
-            rumboot_printf( "End: irq=%d, type=MACHINECHECK\n", irq );
-            return;
-        }
-        if(priority >= cr_border) {
-            dcr_write( DCR_MPIC128_BASE + MPIC128_CEOI_PR, 0 ); /* signal the end of processing for non-spurious interrupt */
-            rumboot_printf( "End: irq=%d, type=CRITICAL\n", irq );
-            return;
-        }
-        dcr_write( DCR_MPIC128_BASE + MPIC128_NCEOI_PR, 0 ); /* signal the end of processing for non-spurious interrupt */
-        rumboot_printf( "End: irq=%d, type=NONCRITICAL\n", irq );
+        /* signal the end of processing for non-spurious interrupt */
+        dcr_write( DCR_MPIC128_BASE + MPIC128_EOI_PR, 0 );
+        dcr_write( DCR_MPIC128_BASE + MPIC128_CEOI_PR, 0 );
+        dcr_write( DCR_MPIC128_BASE + MPIC128_NCEOI_PR, 0 );
     }
 }
 
