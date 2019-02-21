@@ -414,7 +414,7 @@ test_oi10_cpu_mem_001_fmadd_operations:
     load_addr  r3, (SSRAM_BASE)
     load_size  r4, 0x2000
     load_const r5, 0x00
-    load_const r6, 0x00
+    load_const r6, 0x01
     bl         rumboot_memfill8
 #endif
 
@@ -427,7 +427,7 @@ test_oi10_cpu_mem_001_fmadd_operations:
 #ifdef RUMBOOT_PRINTF_ACCEL
     load_size  r4, (end_of_code - code_touch + 256)
     load_const r5, 0x00
-    load_const r6, 0x00
+    load_const r6, 0x01
     bl         rumboot_memfill8
 #endif
 
