@@ -80,13 +80,6 @@ static bool check_timer_default_ro_val(uint32_t base_addr)
     rumboot_printf("Check the default values of the registers:");
 
     struct regpoker_checker check_default_array[] = {
-/*              name                 test_function         reg_offset             expected_val            mask;
-    uint64_t (*readfunc)(uintptr_t base);
-    void (*writefunc)(uint64_t value, uintptr_t addr);
-};
-*/
-/*        {   "HSCB_ID",              REGPOKER_READ32,    HSCB_ID,                HSCB_ID_DFLT,               HSCB_ID_MASK                },
- * */
           {   "DIT0_REG_LOAD0",     REGPOKER_READ_DCR,    DIT0_REG_LOAD0,           DIT0_REG_LOAD0_DFLT,      DIT0_REG_LOAD0_mask },
           {   "DIT0_REG_VALUE0",    REGPOKER_READ_DCR,    DIT0_REG_VALUE0,          DIT0_REG_VALUE0_DFLT,     DIT0_REG_VALUE0_mask },
           {   "DIT0_REG_CONTROL0",  REGPOKER_READ_DCR,    DIT0_REG_CONTROL0,        DIT0_REG_CONTROL0_DFLT,   DIT0_REG_CONTROL0_mask },
@@ -129,7 +122,6 @@ static bool check_timer_default_rw_val( uint32_t base_addr )
     rumboot_printf("Check the default values of the registers:");
 
     struct regpoker_checker check_default_array[] = {
-//        {   "HSCB_TIMINGS",         REGPOKER_WRITE32,   HSCB_TIMINGS,           HSCB_TIMINGS_DFLT,          HSCB_TIMINGS_MASK           },
           {   "Timer1Load",     REGPOKER_READ_DCR,  DIT0_REG_LOAD0,          0x00000000, 0xffffffff },
           {   "Timer1Load",     REGPOKER_WRITE_DCR, DIT0_REG_LOAD0,          0x00000000, 0xffffffff },
 
@@ -182,9 +174,7 @@ struct s804_instance
 static void handler0(int irq, void *arg)
 {
     struct s804_instance *a = (struct s804_instance *)arg;
-//    rumboot_printf("handler0: &timer0_irq == 0x%x\n",&(a->timer0_irq));
     (a->timer0_irq)++;
-//    rumboot_printf("handler0: timer0_irq == 0x%x\n",(a->timer0_irq));
     rumboot_printf("IRQ 0 arrived\n");
     rumboot_printf("sp804 timer 0 INT # %d \n", a->timer0_irq);
     if(sp804_get_itcr(a->base_addr))
@@ -196,9 +186,7 @@ static void handler0(int irq, void *arg)
 static void handler1(int irq, void *arg)
 {
     struct s804_instance *a = (struct s804_instance *)arg;
-//    rumboot_printf("handler1: &timer1_irq == 0x%x\n",&(a->timer1_irq));
     (a->timer1_irq)++;
-//    rumboot_printf("handler1: timer1_irq == 0x%x\n",(a->timer1_irq));
     rumboot_printf("IRQ 1 arrived\n");
     rumboot_printf("sp804 timer 1 INT # %d \n", a->timer1_irq);
     if(sp804_get_itcr(a->base_addr))
@@ -299,9 +287,8 @@ static bool test_dit_timers2( uint32_t structure)
         t = 0;
         while((i == ((stru->timer0_irq))) && (t++<TIMER_INT_TIMEOUT))
         {
-            ;//rumboot_printf("stru->timer0_irq == %d, addr of it == 0x%x\n", stru->timer0_irq, &(stru->timer0_irq));
+            ;
         }
-//        result = result && (i == stru->timer0_irq);
         if(((i + 1) != ((stru->timer0_irq))))
         {
             result = 1;
@@ -310,7 +297,6 @@ static bool test_dit_timers2( uint32_t structure)
         }
     }
 
-//    while((stru->timer0_irq < TIMER0_CYCLES) || ((i++) < kinda_timeout));
 
     result |= (((stru->timer0_irq)) == TIMER0_CYCLES)?0:1;
 
@@ -325,7 +311,7 @@ static bool test_dit_timers2( uint32_t structure)
         t = 0;
         while((i == ((stru->timer1_irq))) && (t++<TIMER_INT_TIMEOUT))
         {
-            ;//rumboot_printf("stru->timer1_irq == %d, addr of it == 0x%x\n", stru->timer1_irq, &(stru->timer1_irq));
+            ;
         }
         if(((i + 1) != ((stru->timer1_irq))))
         {
@@ -335,7 +321,6 @@ static bool test_dit_timers2( uint32_t structure)
         }
     }
 
-//    while((stru->timer1_irq < TIMER1_CYCLES) || ((i++) < kinda_timeout));
 
     result |= (((stru->timer1_irq)) == TIMER1_CYCLES)?0:1;
 
@@ -362,7 +347,6 @@ TEST_ENTRY("SP804_0_rw_reg_check", check_timer_default_rw_val, DCR_TIMERS_BASE),
 #endif
 TEST_ENTRY("SP804_0 test mode", test_dit_timers2, (uint32_t) &in[0]),
 TEST_ENTRY("SP804_0", test_dit_timers, (uint32_t) &in[0]),
-//#ifdef CHECK_REGS
 TEST_SUITE_END();
 
 int main(void)
