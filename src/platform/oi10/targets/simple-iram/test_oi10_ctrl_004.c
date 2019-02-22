@@ -362,8 +362,8 @@ static struct s804_instance in[] =
 
 TEST_SUITE_BEGIN(dit_testlist, "SP804 IRQ TEST")
 #ifdef CHECK_REGS
-TEST_ENTRY("SP804_0_initials_reg_check", check_timer_default_ro_val, (uint32_t) &in[0]),
-TEST_ENTRY("SP804_0_rw_reg_check", check_timer_default_rw_val, (uint32_t) &in[0]),
+TEST_ENTRY("SP804_0_initials_reg_check", check_timer_default_ro_val, DCR_TIMERS_BASE),
+TEST_ENTRY("SP804_0_rw_reg_check", check_timer_default_rw_val, DCR_TIMERS_BASE),
 #endif
 TEST_ENTRY("SP804_0 test mode", test_dit_timers2, (uint32_t) &in[0]),
 TEST_ENTRY("SP804_0", test_dit_timers, (uint32_t) &in[0]),
