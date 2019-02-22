@@ -153,3 +153,19 @@ void sp804_config( uint32_t base_addr, const struct sp804_conf * config, int ind
         }
     }
 }
+
+uint32_t sp804_get_itcr(uint32_t base_addr)
+{
+    return dcr_read(base_addr + DIT_REG_ITCR);
+}
+
+void sp804_write_to_itcr(uint32_t base_addr, uint32_t value)
+{
+    dcr_write(base_addr + DIT_REG_ITCR, value);
+}
+
+void sp804_write_to_itop(uint32_t base_addr, uint32_t value)
+{
+    dcr_write(base_addr + DIT_REG_ITOP, value);
+}
+
