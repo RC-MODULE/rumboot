@@ -2,13 +2,14 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <arch/ppc_476fp_lib_c.h>
+
 #include <rumboot/printf.h>
 #include <rumboot/platform.h>
 #include <rumboot/macros.h>
 #include <rumboot/io.h>
 #include <rumboot/memfill.h>
 
-#include <arch/ppc_476fp_lib_c.h>
 #include <platform/arch/ppc/ppc_476fp_mmu.h>
 #include <platform/test_assert.h>
 #include <platform/devices.h>
@@ -20,15 +21,16 @@
 #include <platform/regs/regs_emi.h>
 
 
-#define EVENT_DCU_LRU_MEM0_VALUE_00     (TEST_EVENT_CODE_MIN + 0)
-#define EVENT_DCU_LRU_MEM0_VALUE_34     (TEST_EVENT_CODE_MIN + 1)
-#define EVENT_DCU_LRU_MEM0_VALUE_1E     (TEST_EVENT_CODE_MIN + 2)
-#define EVENT_DCU_LRU_MEM0_VALUE_07     (TEST_EVENT_CODE_MIN + 3)
 
-#define EVENT_DCU_LRU_MEM1_VALUE_00     (TEST_EVENT_CODE_MIN + 4)
-#define EVENT_DCU_LRU_MEM1_VALUE_34     (TEST_EVENT_CODE_MIN + 5)
-#define EVENT_DCU_LRU_MEM1_VALUE_1E     (TEST_EVENT_CODE_MIN + 6)
-#define EVENT_DCU_LRU_MEM1_VALUE_07     (TEST_EVENT_CODE_MIN + 7)
+#define EVENT_DCU_LRU_MEM_EVEN_VALUE_00    (TEST_EVENT_CODE_MIN + 0)
+#define EVENT_DCU_LRU_MEM_EVEN_VALUE_34    (TEST_EVENT_CODE_MIN + 1)
+#define EVENT_DCU_LRU_MEM_EVEN_VALUE_1E    (TEST_EVENT_CODE_MIN + 2)
+#define EVENT_DCU_LRU_MEM_EVEN_VALUE_07    (TEST_EVENT_CODE_MIN + 3)
+
+#define EVENT_DCU_LRU_MEM_ODD_VALUE_00     (TEST_EVENT_CODE_MIN + 4)
+#define EVENT_DCU_LRU_MEM_ODD_VALUE_34     (TEST_EVENT_CODE_MIN + 5)
+#define EVENT_DCU_LRU_MEM_ODD_VALUE_1E     (TEST_EVENT_CODE_MIN + 6)
+#define EVENT_DCU_LRU_MEM_ODD_VALUE_07     (TEST_EVENT_CODE_MIN + 7)
 
 /*
 #define GET_ADDR_BY_TAG_INDEX_WORD(TAG,INDEX,WORD) \
@@ -60,47 +62,80 @@ const uint32_t way3 = ((1 << 13) | (1 << 14));
 
 const uint32_t index19 = (1 << 12);
 
-typedef void (*pWay_func) ();
+const uint32_t blr_instruction  = 0x4E800020;
+
+//const uint32_t mem_size_instr   = 0x00100000;
+const uint32_t mem_size_instr   = 0x00008000;
+//const uint32_t mem_size_instr   = 0x00007800;
+
+const uint32_t mem_size_zero    = 0x00000100;
+
+const uint32_t mem_step         = 0x00008000;
+
+const uint32_t index_count      = 128;
+
 
 
 bool test_dcu_lru_array()
 {
     uint32_t addr;
 
-    for (addr = SRAM0_BASE; addr != (SRAM0_BASE + 0x00100000); addr += /*0x00010000*/ 0x00100000)
+    for (addr = SRAM0_BASE; addr != (SRAM0_BASE + mem_size_instr); addr += mem_step)
     {
-        rumboot_putstring("EVENT_DCU_LRU_MEM0_VALUE_34");
-        (void)ioread32(addr | way0);
-        test_event(EVENT_DCU_LRU_MEM0_VALUE_34);
 
-        rumboot_putstring("EVENT_DCU_LRU_MEM0_VALUE_1E");
-        (void)ioread32(addr | way1);
-        test_event(EVENT_DCU_LRU_MEM0_VALUE_1E);
+        rumboot_printf("addr = 0x%x\n", addr);
 
-        rumboot_putstring("EVENT_DCU_LRU_MEM0_VALUE_07");
-        (void)ioread32(addr | way2);
-        test_event(EVENT_DCU_LRU_MEM0_VALUE_07);
+        rumboot_putstring("Testing MEM_EVEN block ...\n");
 
-        rumboot_putstring("EVENT_DCU_LRU_MEM0_VALUE_00");
-        (void)ioread32(addr | way3);
-        test_event(EVENT_DCU_LRU_MEM0_VALUE_00);
+        for (uint32_t index = 0; index < index_count; index++)
+        {
+
+            rumboot_printf("%d EVENT_ICU_LRU_MEM_EVEN_VALUE_34\n", index);
+
+            test_event((index%2) ? EVENT_DCU_LRU_MEM_ODD_VALUE_34 : EVENT_DCU_LRU_MEM_EVEN_VALUE_34);
+            (void)ioread32(addr | (index << 5) | way0);
+
+            rumboot_printf("%d EVENT_ICU_LRU_MEM_ODD_VALUE_34\n", index);
+
+            test_event((index%2) ? EVENT_DCU_LRU_MEM_EVEN_VALUE_34 : EVENT_DCU_LRU_MEM_ODD_VALUE_34);
+            (void)ioread32(addr | (1 << 12) | (index << 5) | way0);
 
 
-        rumboot_putstring("EVENT_DCU_LRU_MEM0_VALUE_34 (index19)");
-        (void)ioread32(addr | (index19 | way0));
-        test_event(EVENT_DCU_LRU_MEM1_VALUE_34);
 
-        rumboot_putstring("EVENT_DCU_LRU_MEM0_VALUE_1E (index19)");
-        (void)ioread32(addr | (index19 | way1));
-        test_event(EVENT_DCU_LRU_MEM1_VALUE_1E);
+            rumboot_printf("%d EVENT_ICU_LRU_MEM_EVEN_VALUE_1E\n", index);
 
-        rumboot_putstring("EVENT_DCU_LRU_MEM0_VALUE_07 (index19)");
-        (void)ioread32(addr | (index19 | way2));
-        test_event(EVENT_DCU_LRU_MEM1_VALUE_07);
+            test_event((index%2) ? EVENT_DCU_LRU_MEM_ODD_VALUE_1E : EVENT_DCU_LRU_MEM_EVEN_VALUE_1E);
+            (void)ioread32(addr | (index << 5) | way1);
 
-        rumboot_putstring("EVENT_DCU_LRU_MEM0_VALUE_00 (index19)");
-        (void)ioread32(addr | (index19 | way3));
-        test_event(EVENT_DCU_LRU_MEM1_VALUE_00);
+            rumboot_printf("%d EVENT_ICU_LRU_MEM_ODD_VALUE_1E\n", index);
+
+            test_event((index%2) ? EVENT_DCU_LRU_MEM_EVEN_VALUE_1E : EVENT_DCU_LRU_MEM_ODD_VALUE_1E);
+            (void)ioread32(addr | (1 << 12) | (index << 5) | way1);
+
+
+
+            rumboot_printf("%d EVENT_ICU_LRU_MEM_EVEN_VALUE_07\n", index);
+
+            test_event((index%2) ? EVENT_DCU_LRU_MEM_ODD_VALUE_07 : EVENT_DCU_LRU_MEM_EVEN_VALUE_07);
+            (void)ioread32(addr | (index << 5) | way2);
+
+            rumboot_printf("%d EVENT_ICU_LRU_MEM_ODD_VALUE_07\n", index);
+
+            test_event((index%2) ? EVENT_DCU_LRU_MEM_EVEN_VALUE_07 : EVENT_DCU_LRU_MEM_ODD_VALUE_07);
+            (void)ioread32(addr | (1 << 12) | (index << 5) | way2);
+
+
+
+            rumboot_printf("%d EVENT_ICU_LRU_MEM_EVEN_VALUE_00\n", index);
+
+            test_event((index%2) ? EVENT_DCU_LRU_MEM_ODD_VALUE_00 : EVENT_DCU_LRU_MEM_EVEN_VALUE_00);
+            (void)ioread32(addr | (index << 5) | way3);
+
+            rumboot_printf("%d EVENT_ICU_LRU_MEM_ODD_VALUE_00\n", index);
+
+            test_event((index%2) ? EVENT_DCU_LRU_MEM_EVEN_VALUE_00 : EVENT_DCU_LRU_MEM_ODD_VALUE_00);
+            (void)ioread32(addr | (1 << 12) | (index << 5) | way3);
+        }
     }
 
 //    (void)ioread32((SRAM0_BASE + 0x00000040) | way0);
@@ -123,13 +158,19 @@ int main()
     emi_init(DCR_EM2_EMI_BASE);
     rumboot_putstring("EM2 initialized\n");
 
-    rumboot_putstring("Copy values ...\n");
-//    rumboot_memfill32((void*)SRAM0_BASE, 1048576, 0x4e800020, 0);
-    rumboot_memfill32((void*)SRAM0_BASE, 30720, 0x4e800020, 0);
 
-    rumboot_putstring("Copy zeroes ...\n");
-//    rumboot_memfill32((void*)(SRAM0_BASE + 1048576), 256, 0x00000000, 0);
-    rumboot_memfill32((void*)(SRAM0_BASE + 30720), 256, 0x00000000, 0);
+    for (int index = 0; index < index_count; index++)
+    {
+        rumboot_putstring("Copy values ...\n");
+        rumboot_memfill32((void*)(SRAM0_BASE | (index << 5)), (mem_size_instr >> 2), blr_instruction, 0);
+
+//        rumboot_printf("SRAM0_BASE + 0x0 = 0x%x\n", ioread32(SRAM0_BASE | (index << 12) + 0x0));
+
+        rumboot_putstring("Copy zeroes ...\n");
+        rumboot_memfill32((void*)((SRAM0_BASE | (index << 5)) + mem_size_instr), (mem_size_zero >> 2), 0x00000000, 0);
+
+//        rumboot_printf("SRAM0_BASE + mem_size_instr + 0x0 = 0x%x\n", ioread32(SRAM0_BASE + mem_size_instr + 0x0));
+    }
 
 
     static const tlb_entry sram0_tlb_entry_cacheable_valid = {TLB_ENTRY_CACHE_VALID};
