@@ -153,6 +153,11 @@ void sp804_clrint( uint32_t base_addr, int index);
 void sp804_config( uint32_t base_addr, const struct sp804_conf * config, int index);
 
 
+
+uint32_t sp804_get_itcr(uint32_t base_addr);
+void sp804_write_to_itcr(uint32_t base_addr, uint32_t value);
+void sp804_write_to_itop(uint32_t base_addr, uint32_t value);
+
 /**
  * @}
  */
