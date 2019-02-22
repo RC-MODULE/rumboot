@@ -409,10 +409,10 @@ test_oi10_cpu_mem_001_fmadd_operations:
     msync
     isync
 
-    rumboot_putstring "test_oi10_cpu_mem_001: data memory fill\n"
 #ifdef RUMBOOT_PRINTF_ACCEL
-    load_addr  r3, (SSRAM_BASE)
-    load_size  r4, 0x2000
+    rumboot_putstring "test_oi10_cpu_mem_001: data memory fill\n"
+    load_addr  r3, (INITIAL_DATA_POINTER_FMADD)
+    load_size  r4, 0x800
     load_const r5, 0x00
     load_const r6, 0x01
     bl         rumboot_memfill8
@@ -422,9 +422,11 @@ test_oi10_cpu_mem_001_fmadd_operations:
     load_addr r3, mem_label
     load_size r4, (end_of_code - code_touch + 256)
     bl        rumboot_malloc_from_named_heap
+    mr r20, r3
 
-    rumboot_putstring "test_oi10_cpu_mem_001: memory fill\n"
 #ifdef RUMBOOT_PRINTF_ACCEL
+    rumboot_putstring "test_oi10_cpu_mem_001: memory fill\n"
+    mr r3, r20
     load_size  r4, (end_of_code - code_touch + 256)
     load_const r5, 0x00
     load_const r6, 0x01
@@ -432,6 +434,7 @@ test_oi10_cpu_mem_001_fmadd_operations:
 #endif
 
     rumboot_putstring "test_oi10_cpu_mem_001: code copy\n"
+    mr r3, r20
     load_addr  r4, code_touch
     load_size  r5, (end_of_code - code_touch)
     bl         memcpy
