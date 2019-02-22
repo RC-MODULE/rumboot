@@ -19,51 +19,82 @@
 #include <rumboot/platform.h>
 
 #define TIMER_CYCLES 2
+#define CHECK_REGS
 #ifdef CHECK_REGS
-static uint32_t check_watchdog_default_ro_val(uint32_t base_addr)
+#define WD_REG_LOAD_mask        0xffffffff
+#define WD_REG_VALUE_mask       0xffffffff
+#define WD_REG_CONTROL_mask     0x3
+#define WD_REG_RIS_mask         0x1
+#define WD_REG_MIS_mask         0x1
+#define WD_REG_LOCK_mask        0xffffffff
+#define WD_REG_ITCR_mask        0x1
+#define WD_REG_PERIPHID0_mask   0xff
+#define WD_REG_PERIPHID1_mask   0xff
+#define WD_REG_PERIPHID2_mask   0xff
+#define WD_REG_PERIPHID3_mask   0xff
+#define WD_REG_PCELLID0_mask    0xff
+#define WD_REG_PCELLID1_mask    0xff
+#define WD_REG_PCELLID2_mask    0xff
+#define WD_REG_PCELLID3_mask    0xff
+
+#define WD_REG_LOAD_DFLT        0xffffffff
+#define WD_REG_VALUE_DFLT       0xffffffff
+#define WD_REG_CONTROL_DFLT     0
+#define WD_REG_RIS_DFLT         0
+#define WD_REG_MIS_DFLT         0
+#define WD_REG_LOCK_DFLT        0x1ACCE551
+#define WD_REG_ITCR_DFLT        0
+#define WD_REG_PERIPHID0_DFLT   0x5
+#define WD_REG_PERIPHID1_DFLT   0x18
+#define WD_REG_PERIPHID2_DFLT   0x14
+#define WD_REG_PERIPHID3_DFLT   0
+#define WD_REG_PCELLID0_DFLT    0xD
+#define WD_REG_PCELLID1_DFLT    0xF0
+#define WD_REG_PCELLID2_DFLT    0x5
+#define WD_REG_PCELLID3_DFLT    0xB1
+
+static bool check_watchdog_default_ro_val(uint32_t base_addr)
 {
     rumboot_printf("Check the default values of the registers:");
     struct regpoker_checker check_default_array[] = {
-          {   "WD_REG_PERIPHID0",   REGPOKER_READ_DCR,    WD_REG_PERIPHID0,         0x05,           0xff   },
-          {   "WD_REG_PERIPHID1",   REGPOKER_READ_DCR,    WD_REG_PERIPHID1,         0x18,           0xff   },
-          {   "WD_REG_PERIPHID2",   REGPOKER_READ_DCR,    WD_REG_PERIPHID2,         0x14,           0xff   },
-          {   "WD_REG_PERIPHID3",   REGPOKER_READ_DCR,    WD_REG_PERIPHID3,         0x00,           0xff   },
-          {   "WD_REG_PCELLID0",    REGPOKER_READ_DCR,    WD_REG_PCELLID0,          0x0D,           0xff   },
-          {   "WD_REG_PCELLID1",    REGPOKER_READ_DCR,    WD_REG_PCELLID1,          0xF0,           0xff   },
-          {   "WD_REG_PCELLID2",    REGPOKER_READ_DCR,    WD_REG_PCELLID2,          0x05,           0xff   },
-          {   "WD_REG_PCELLID3",    REGPOKER_READ_DCR,    WD_REG_PCELLID3,          0xB1,           0xff   },
+          {   "WD_REG_PERIPHID0",   REGPOKER_READ_DCR,    WD_REG_PERIPHID0,         WD_REG_PERIPHID0_DFLT,           WD_REG_PERIPHID0_mask   },
+          {   "WD_REG_PERIPHID1",   REGPOKER_READ_DCR,    WD_REG_PERIPHID1,         WD_REG_PERIPHID1_DFLT,           WD_REG_PERIPHID1_mask   },
+          {   "WD_REG_PERIPHID2",   REGPOKER_READ_DCR,    WD_REG_PERIPHID2,         WD_REG_PERIPHID2_DFLT,           WD_REG_PERIPHID2_mask   },
+          {   "WD_REG_PERIPHID3",   REGPOKER_READ_DCR,    WD_REG_PERIPHID3,         WD_REG_PERIPHID3_DFLT,           WD_REG_PERIPHID3_mask   },
+          {   "WD_REG_PCELLID0",    REGPOKER_READ_DCR,    WD_REG_PCELLID0,          WD_REG_PCELLID0_DFLT ,           WD_REG_PCELLID0_mask    },
+          {   "WD_REG_PCELLID1",    REGPOKER_READ_DCR,    WD_REG_PCELLID1,          WD_REG_PCELLID1_DFLT ,           WD_REG_PCELLID1_mask    },
+          {   "WD_REG_PCELLID2",    REGPOKER_READ_DCR,    WD_REG_PCELLID2,          WD_REG_PCELLID2_DFLT ,           WD_REG_PCELLID2_mask    },
+          {   "WD_REG_PCELLID3",    REGPOKER_READ_DCR,    WD_REG_PCELLID3,          WD_REG_PCELLID3_DFLT ,           WD_REG_PCELLID3_mask    },
           { }
       };
 
     if( rumboot_regpoker_check_array( check_default_array, base_addr ) == 0 )
     {
         rumboot_printf( "OK\n" );
-        return 0;
+        return true;
     }
 
     rumboot_printf( "ERROR\n" );
-    return 1;
+    return false;
 }
 
-static uint32_t check_watchdog_default_rw_val( uint32_t base_addr)//, uint32_t reg_lock )
+__attribute__((unused))
+static bool check_watchdog_default_rw_val( uint32_t base_addr)//, uint32_t reg_lock )
 {
     rumboot_printf("Check the default values of the registers:");
-    dcr_write(base_addr + WD_REG_LOCK, 0x1ACCE551);
     struct regpoker_checker check_default_array[] = {
-    {   "WdogLoad",      REGPOKER_READ_DCR,    WD_REG_LOAD,           0x00000000,     0xffffffff },
-    {   "WdogLoad",      REGPOKER_WRITE_DCR,   WD_REG_LOAD,           0x00000000,     0xffffffff },
+    {   "WdogLock",      REGPOKER_WRITE_DCR,   WD_REG_LOCK,           WD_REG_LOCK_DFLT,     0                   },
+    {   "WdogLoad",      REGPOKER_READ_DCR,    WD_REG_LOAD,           WD_REG_LOAD_DFLT,     WD_REG_LOAD_mask    },
+    {   "WdogLoad",      REGPOKER_WRITE_DCR,   WD_REG_LOAD,           WD_REG_LOAD_DFLT,     WD_REG_LOAD_mask    },
 
-    {   "WdogValue",     REGPOKER_READ_DCR,    WD_REG_VALUE,          0x00000000,     0xffffffff },
+    {   "WdogValue",     REGPOKER_READ_DCR,    WD_REG_VALUE,          WD_REG_VALUE_DFLT,    WD_REG_VALUE_mask   },
 
-    {   "WdogControl",   REGPOKER_READ_DCR,    WD_REG_CONTROL,        0b00,           0b11 },
-    {   "WdogControl",   REGPOKER_WRITE_DCR,   WD_REG_CONTROL,        0b00,           0b11 },
+    {   "WdogControl",   REGPOKER_READ_DCR,    WD_REG_CONTROL,        WD_REG_CONTROL_DFLT,  WD_REG_CONTROL_mask },
+    {   "WdogControl",   REGPOKER_WRITE_DCR,   WD_REG_CONTROL,        WD_REG_CONTROL_DFLT,  WD_REG_CONTROL_mask },
 
-    {   "WdogMIS",       REGPOKER_READ_DCR,    WD_REG_MIS,            0b0,            0b1 },
+    {   "WdogMIS",       REGPOKER_READ_DCR,    WD_REG_MIS,            WD_REG_MIS_DFLT,      WD_REG_MIS_mask     },
 
-    {   "WdogLock",      REGPOKER_READ_DCR,    WD_REG_LOAD,           0x00000000, 0xffffffff },
-    {   "WdogLock",      REGPOKER_WRITE_DCR,   WD_REG_LOAD,           0x00000000, 0xffffffff },
-
-    {   "WdogITCR",      REGPOKER_READ_DCR,    WD_REG_ITCR,           0b0,           0b1 },
+    {   "WdogITCR",      REGPOKER_READ_DCR,    WD_REG_ITCR,           WD_REG_ITCR_DFLT,     WD_REG_ITCR_mask    },
 
     { }
       };
@@ -71,11 +102,11 @@ static uint32_t check_watchdog_default_rw_val( uint32_t base_addr)//, uint32_t r
     if( rumboot_regpoker_check_array( check_default_array, base_addr ) == 0 )
     {
         rumboot_printf( "OK\n" );
-        return 0;
+        return true;
     }
 
     rumboot_printf( "ERROR\n" );
-    return 1;
+    return false;
 }
 #endif
 
@@ -89,11 +120,13 @@ static void handler0(int irq, void *arg)
     struct s805_instance *a = (struct s805_instance *) arg;
     dcr_write(a->base_addr + WD_REG_LOCK, 0x1ACCE551);
     a->wd_irq = a->wd_irq + 1;
+    rumboot_printf("handler0: structure == 0x%x\n",(uint32_t)arg);
     rumboot_printf("IRQ arrived\n");
     rumboot_printf("sp805 watchdog INT # %d  \n", a->wd_irq);
     sp805_clrint(a->base_addr);
 }
 
+__attribute__((unused))
 static bool wd_test( uint32_t structure )
 {
     int c;
@@ -107,6 +140,7 @@ static bool wd_test( uint32_t structure )
            .width = 32,
            .load = 100,
     };
+    rumboot_printf("wd_test: structure == 0x%x\n",structure);
 
     dcr_write(base_addr + WD_REG_LOCK, 0x1ACCE551);
     dcr_write(base_addr + WD_REG_ITCR, 0b0); //set up normal mode
@@ -133,16 +167,18 @@ static bool wd_test( uint32_t structure )
    //   stru->wd_irq++;
    //   stru->wd_irq += dcr_read(base_addr + WD_REG_ITOP);
     }
-    return false;
+    return true;
 }
 
 //TEST MODE
+__attribute__((unused))
 static bool wd_test2(uint32_t structure)
 {
     struct s805_instance *stru = (struct s805_instance *)structure;
     uint32_t base_addr = stru->base_addr;
     stru->wd_irq = 0;
     int i,d; d = 0;
+    rumboot_printf("wd_test2: structure == 0x%x\n",structure);
     dcr_write(base_addr + WD_REG_LOCK, 0x1ACCE551);
     dcr_write(base_addr + WD_REG_ITCR, 0b1);
     for(i = 0; i < TIMER_CYCLES; i++)
@@ -170,7 +206,7 @@ static bool wd_test2(uint32_t structure)
         rumboot_printf("Interrupts came == %d, should be %d \n", stru->wd_irq, TIMER_CYCLES);
         return false;
     }
-    return false;
+    return true;
 }
 
 static struct s805_instance in[] =
@@ -181,12 +217,12 @@ static struct s805_instance in[] =
 };
 
 TEST_SUITE_BEGIN(wd_testlist, "SP805 IRQ TEST")
-TEST_ENTRY("SP805_0", wd_test, (uint32_t) &in[0]),
-TEST_ENTRY("SP805_0", wd_test2, (uint32_t) &in[0]),
 #ifdef CHECK_REGS
-TEST_ENTRY("SP805_0", check_default_ro_val, (uint32_t, &in[0]));
-TEST_ENTRY("SP805_0", check_default_rw_val, (uint32_t, &in[0]));
+TEST_ENTRY("SP805_0", check_watchdog_default_ro_val, DCR_WATCHDOG_BASE),
+TEST_ENTRY("SP805_0", check_watchdog_default_rw_val, DCR_WATCHDOG_BASE),
 #endif
+//TEST_ENTRY("SP805_0", wd_test, (uint32_t) &in[0]),
+//TEST_ENTRY("SP805_0", wd_test2, (uint32_t) &in[0]),
 TEST_SUITE_END();
 
 uint32_t main(void)
