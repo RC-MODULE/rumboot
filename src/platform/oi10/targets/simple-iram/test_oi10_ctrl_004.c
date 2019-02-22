@@ -177,10 +177,6 @@ struct s804_instance
     uint32_t base_addr;
 };
 
-extern uint32_t sp804_get_itcr(uint32_t base_addr);
-extern uint32_t sp804_write_to_itcr(uint32_t base_addr, uint32_t value);
-extern void sp804_write_to_itop(uint32_t base_addr, uint32_t value);
-
 #define TIMER_INT_TIMEOUT   0x80
 
 static void handler0(int irq, void *arg)
