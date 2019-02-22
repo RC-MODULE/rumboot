@@ -37,7 +37,6 @@ enum {
 //                               MMU_TLB_ENTRY(  ERPN,   RPN,        EPN,        DSIZ,                   IL1I,   IL1D,   W,      I,      M,      G,      E,                      UX, UW, UR,     SX, SW, SR      DULXE,  IULXE,      TS,     TID,                WAY,                BID,                V   )
 #define TLB_ENTRY_SRAM0_NOCACHE  MMU_TLB_ENTRY(  0x000,  0x00000,    0x00000,    MMU_TLBE_DSIZ_1GB,      0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
 #define TLB_ENTRY_SRAM1_CACHE    MMU_TLB_ENTRY(  0x000,  0x40000,    0x40000,    MMU_TLBE_DSIZ_1GB,      0b1,    0b1,    0b0,    0b0,    0b1,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
-#define TLB_ENTRY_SRAM1_NOCACHE  MMU_TLB_ENTRY(  0x000,  0x40000,    0x40000,    MMU_TLBE_DSIZ_1GB,      0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
 
 static void check_addr_in_l2c (uint32_t addr, bool expected)
 {
@@ -46,13 +45,8 @@ static void check_addr_in_l2c (uint32_t addr, bool expected)
     uint32_t tag_data = 0;
     if (l2c_arracc_get_way_by_address( DCR_L2C_BASE, (uint32_t)(phys_addr >> 32), (uint32_t) phys_addr, &cache_way )){
         bool res = l2c_arracc_tag_info_read_by_way (DCR_L2C_BASE, (uint32_t)(phys_addr >> 32), (uint32_t) phys_addr, cache_way, &tag_data);
-        if (expected != res)
-        {
-            if (expected && !res)
-                TEST_ASSERT(0, "Error: data no found in l2c (not expect)");
-            else //if !expected && res
-                TEST_ASSERT((tag_data & 0xE0000000) == 0, "Error: data found in l2c (not expect)");
-        }
+        if(res && !expected)   TEST_ASSERT((tag_data & 0xE0000000) == 0, "Error: data no found in l2c (not expect)");
+        if (!res && expected ) TEST_ASSERT(0, "Error: data no found in l2c (not expect)");
     }
     else TEST_ASSERT(!expected, "ERROR: can't get L2C way");
 }
@@ -161,7 +155,7 @@ int main()
     check_addr_in_l2c (s1_addr0, false);
 
     //L2C -> MEM
-    event_arr[0] = EVENT_CHECK_L2C_L2C_S; event_arr[1] = s0_addr0; event_arr[2] = test_data+4;
+    event_arr[0] = EVENT_CHECK_L2C_MEM_S; event_arr[1] = s0_addr0; event_arr[2] = test_data+4;
     rumboot_platform_event_raise(EVENT_TESTEVENT, event_arr, ARRAY_SIZE(event_arr) );
     rumboot_printf("l2c->mem\n");
     dcbt(0, s1_addr1);
@@ -169,7 +163,9 @@ int main()
     r_data = ioread32(s1_addr1) + 1;
     iowrite32(r_data, s0_addr0);
 
-    rumboot_printf("TEST_OK\n");
+    rumboot_printf("TEST_FINISHED\n");
+    while(1);
+
     return 0;
 }
 
