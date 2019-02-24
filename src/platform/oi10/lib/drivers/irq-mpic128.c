@@ -11,6 +11,9 @@
 #include <platform/regs/regs_mpic128.h>
 
 
+#include <arch/ppc_476fp_config.h>
+#include <arch/ppc_476fp_lib_c.h>
+
 void mpic128_reset( uint32_t base_address ) {
     dcr_write( base_address + MPIC128_GCF0, dcr_read( base_address + MPIC128_GCF0 )
                                           | ( 1 << MPIC128_GCF0_R_i ) );
@@ -36,21 +39,50 @@ static int mpic128_init( const struct rumboot_irq_controller *dev ) {
     return 0; /* We're good */
 }
 
+#define IRQ_TYPE_INDX 0
+#define CSRR1_INDX    1
+#define MSR_INDX      2
+
+#define MC_TYPE  3
+#define CR_TYPE  2
+#define NCR_TYPE 1
+
 static uint32_t mpic128_begin( const struct rumboot_irq_controller *dev, void *scratch ) {
-    uint32_t ack, spv;
+    uint32_t ack, spv, *data;
+    data = scratch;
+    data[CSRR1_INDX] = spr_read(SPR_CSRR1);
+    data[MSR_INDX] = msr_read();
+    msync();
     spv = dcr_read( DCR_MPIC128_BASE + MPIC128_SPV );
     ack = dcr_read( DCR_MPIC128_BASE + MPIC128_IAR_PR );
-    if(ack != spv) return ack;
+    if(ack != spv) {
+        data[IRQ_TYPE_INDX] = MC_TYPE;
+        return ack;
+    }
     ack = dcr_read( DCR_MPIC128_BASE + MPIC128_CIAR_PR );
-    if(ack != spv) return ack;
-    return dcr_read( DCR_MPIC128_BASE + MPIC128_NCIAR_PR );
+    if(ack != spv) {
+        data[IRQ_TYPE_INDX] = CR_TYPE;
+        msr_write(data[CSRR1_INDX]);
+        return ack;
+    }
+    ack = dcr_read( DCR_MPIC128_BASE + MPIC128_NCIAR_PR );
+    data[IRQ_TYPE_INDX] = NCR_TYPE;
+    return ack;
 }
 
 static void mpic128_end( const struct rumboot_irq_controller *dev, void *scratch, uint32_t irq ) {
+    uint32_t *data = scratch;
     if( irq != dcr_read( DCR_MPIC128_BASE + MPIC128_SPV ) ) {
         /* signal the end of processing for non-spurious interrupt */
-        dcr_write( DCR_MPIC128_BASE + MPIC128_EOI_PR, 0 );
-        dcr_write( DCR_MPIC128_BASE + MPIC128_CEOI_PR, 0 );
+        if(data[IRQ_TYPE_INDX] == MC_TYPE) {
+            dcr_write( DCR_MPIC128_BASE + MPIC128_EOI_PR, 0 );
+            return;
+        }
+        if(data[IRQ_TYPE_INDX] == CR_TYPE) {
+            msr_write(data[MSR_INDX]);
+            dcr_write( DCR_MPIC128_BASE + MPIC128_CEOI_PR, 0 );
+            return;
+        }
         dcr_write( DCR_MPIC128_BASE + MPIC128_NCEOI_PR, 0 );
     }
 }
