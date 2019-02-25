@@ -19,7 +19,10 @@
 #include <rumboot/platform.h>
 
 #define TIMER_CYCLES 10
-//#define CHECK_REGS
+
+#define WD_INT_TIMEOUT   0x80
+
+#define CHECK_REGS
 #ifdef CHECK_REGS
 #define WD_REG_LOAD_mask        0xffffffff
 #define WD_REG_VALUE_mask       0xffffffff
@@ -87,7 +90,7 @@ static bool check_watchdog_default_rw_val( uint32_t base_addr)//, uint32_t reg_l
     bool result = false;
     rumboot_printf("Check the default values of the registers:");
     struct regpoker_checker check_default_array[] = {
-    {   "WdogLock",      REGPOKER_WRITE_DCR,   WD_REG_LOCK,           WD_REG_LOCK_DFLT,     0                   },
+    {   "WdogLock",      REGPOKER_READ_DCR,    WD_REG_LOCK,                          0,     0                   },
     {   "WdogLoad",      REGPOKER_READ_DCR,    WD_REG_LOAD,           WD_REG_LOAD_DFLT,     WD_REG_LOAD_mask    },
     {   "WdogLoad",      REGPOKER_WRITE_DCR,   WD_REG_LOAD,           WD_REG_LOAD_DFLT,     WD_REG_LOAD_mask    },
 
@@ -96,9 +99,14 @@ static bool check_watchdog_default_rw_val( uint32_t base_addr)//, uint32_t reg_l
     {   "WdogControl",   REGPOKER_READ_DCR,    WD_REG_CONTROL,        WD_REG_CONTROL_DFLT,  WD_REG_CONTROL_mask },
     {   "WdogControl",   REGPOKER_WRITE_DCR,   WD_REG_CONTROL,        WD_REG_CONTROL_DFLT,  WD_REG_CONTROL_mask },
 
+    {   "WdogRIS",       REGPOKER_READ_DCR,    WD_REG_RIS,            WD_REG_RIS_DFLT,      WD_REG_RIS_mask     },
     {   "WdogMIS",       REGPOKER_READ_DCR,    WD_REG_MIS,            WD_REG_MIS_DFLT,      WD_REG_MIS_mask     },
 
     {   "WdogITCR",      REGPOKER_READ_DCR,    WD_REG_ITCR,           WD_REG_ITCR_DFLT,     WD_REG_ITCR_mask    },
+    {   "WdogITCR",      REGPOKER_WRITE_DCR,   WD_REG_ITCR,           WD_REG_ITCR_DFLT,     WD_REG_ITCR_mask    },
+    {   "WdogLock",      REGPOKER_WRITE_DCR,   WD_REG_LOCK,                          0,     0                   },
+    {   "WdogLock",      REGPOKER_READ_DCR,    WD_REG_LOCK,                          1,     1                   },
+    {   "WdogLock",      REGPOKER_WRITE_DCR,   WD_REG_LOCK,                          0,     0                   },
 
     { }
       };
@@ -146,6 +154,7 @@ static bool wd_test( uint32_t structure )
 {
     struct s805_instance *stru = (struct s805_instance *)structure;
     uint32_t base_addr = stru->base_addr;
+    uint32_t t;
     bool result = true;
     struct sp805_conf config_FREE_RUN =
     {
@@ -163,7 +172,8 @@ static bool wd_test( uint32_t structure )
     {
         sp805_config(base_addr, &config_FREE_RUN);
         sp805_enable(base_addr);
-        while(stru->wd_irq == i){;}
+        t = 0;
+        while((stru->wd_irq == i) && (t<WD_INT_TIMEOUT)){t++;}
 
     }
     if(stru->wd_irq == TIMER_CYCLES)
@@ -186,7 +196,7 @@ static bool wd_test2(uint32_t structure)
     struct s805_instance *stru = (struct s805_instance *)structure;
     uint32_t base_addr = stru->base_addr;
     stru->wd_irq = 0;
-    int i;
+    int i, t;
     bool result = true;
     sp805_unlock_access(base_addr);
     sp805_write_to_itcr(base_addr, 0b1);
@@ -197,7 +207,8 @@ static bool wd_test2(uint32_t structure)
     for(i = 0; i < TIMER_CYCLES; i++)
     {
             sp805_write_to_itop(base_addr,2);
-            while(stru->wd_irq == i){;}
+            t = 0;
+            while((stru->wd_irq == i) && (t<WD_INT_TIMEOUT)){t++;}
     }
     if(stru->wd_irq == TIMER_CYCLES)
     {
