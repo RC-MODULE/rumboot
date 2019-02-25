@@ -4,7 +4,7 @@ set(RUMBOOT_PLATFORM_DEFAULT_SNAPSHOT default)
 if (NOT RUMBOOT_SOC_BUILD_TYPE STREQUAL "RTL")
   set(IRUN_BOOTM_EXTRA_ARGS +BOOT_NOR=0)
 else()
-  set(IRUN_BOOT_EXTRA_ARGS )
+  set(IRUN_BOOTM_EXTRA_ARGS )
 endif()
 
 
@@ -47,7 +47,7 @@ rumboot_add_configuration(
     FILES ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/startup.S
     TIMEOUT_CTEST 0
     LOAD BOOTROM_NOR SELF
-    IRUN_FLAGS ${IRUN_BOOT_EXTRA_ARGS}
+    IRUN_FLAGS ${IRUN_BOOTM_EXTRA_ARGS}
 )
 
 if (RUMBOOT_BUILD_TYPE STREQUAL "Production")
@@ -64,7 +64,7 @@ rumboot_add_configuration(
     FILES ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/startup.S
     TIMEOUT_CTEST 0
     LOAD BOOTROM_NOR SELF
-    IRUN_FLAGS ${IRUN_BOOT_EXTRA_ARGS}
+    IRUN_FLAGS ${IRUN_BOOTM_EXTRA_ARGS}
     CFLAGS -DRUMBOOT_ONLY_STACK ${CONFIGURATION_ROM_CFLAGS} -DUTLB_EXT_MEM_NOR_ONLY
     LDS oi10/bootrom.lds
     IRUN_FLAGS +BOOTMGR_KEEP_DRIVING=1 ${BOOTROM_IFLAGS}
@@ -80,7 +80,7 @@ rumboot_add_configuration(
     TIMEOUT_CTEST 0
     TIMEOUT 10 ms
     LOAD BOOTROM_NOR SELF
-    IRUN_FLAGS ${IRUN_BOOT_EXTRA_ARGS}
+    IRUN_FLAGS ${IRUN_BOOTM_EXTRA_ARGS}
 )
 
 rumboot_add_configuration(
@@ -90,7 +90,7 @@ rumboot_add_configuration(
   LOAD BOOTROM_NOR bootrom-lprobe-stub
   FEATURES LPROBE
   IRUN_FLAGS +LPROBE_MODE=CPU -input ${CMAKE_SOURCE_DIR}/../scripts/lprobe-helper.tcl
-  IRUN_FLAGS ${IRUN_BOOT_EXTRA_ARGS}
+  IRUN_FLAGS ${IRUN_BOOTM_EXTRA_ARGS}
 )
 
 
@@ -114,7 +114,7 @@ rumboot_add_configuration (
       IM0BIN SELF
       BOOTROM_NOR bootrom-stub
     TIMEOUT_CTEST 86400
-    IRUN_FLAGS ${IRUN_BOOT_EXTRA_ARGS}
+    IRUN_FLAGS ${IRUN_BOOTM_EXTRA_ARGS}
 )
 
 rumboot_add_configuration (
