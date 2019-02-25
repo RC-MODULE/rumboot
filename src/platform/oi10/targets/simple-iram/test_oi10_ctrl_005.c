@@ -78,7 +78,6 @@ static bool check_watchdog_default_ro_val(uint32_t base_addr)
     return false;
 }
 
-__attribute__((unused))
 static bool check_watchdog_default_rw_val( uint32_t base_addr)//, uint32_t reg_lock )
 {
     rumboot_printf("Check the default values of the registers:");
@@ -135,7 +134,6 @@ static void handler0(int irq, void *arg)
     }
 }
 
-__attribute__((unused))
 static bool wd_test( uint32_t structure )
 {
     struct s805_instance *stru = (struct s805_instance *)structure;
@@ -175,7 +173,6 @@ static bool wd_test( uint32_t structure )
 }
 
 //TEST MODE
-__attribute__((unused))
 static bool wd_test2(uint32_t structure)
 {
     struct s805_instance *stru = (struct s805_instance *)structure;
