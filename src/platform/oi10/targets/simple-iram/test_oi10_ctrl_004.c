@@ -22,7 +22,7 @@
 #define TIMER1_CYCLES           15
 
 uint32_t count_of_cycles[]  = {TIMER0_CYCLES, TIMER1_CYCLES};
-//#define CHECK_REGS
+#define CHECK_REGS
 #ifdef CHECK_REGS
 
 #define DIT0_REG_LOAD0_DFLT     0
