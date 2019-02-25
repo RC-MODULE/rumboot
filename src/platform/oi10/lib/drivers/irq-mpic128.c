@@ -79,7 +79,7 @@ static void mpic128_end( const struct rumboot_irq_controller *dev, void *scratch
             return;
         }
         if(data[IRQ_TYPE_INDX] == CR_TYPE) {
-            msr_write(data[MSR_INDX]);
+            //msr_write(data[MSR_INDX]);
             dcr_write( DCR_MPIC128_BASE + MPIC128_CEOI_PR, 0 );
             return;
         }
