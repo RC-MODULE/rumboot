@@ -38,6 +38,8 @@ enum {
 #define TLB_ENTRY_SRAM0_NOCACHE  MMU_TLB_ENTRY(  0x000,  0x00000,    0x00000,    MMU_TLBE_DSIZ_1GB,      0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
 #define TLB_ENTRY_SRAM1_CACHE    MMU_TLB_ENTRY(  0x000,  0x40000,    0x40000,    MMU_TLBE_DSIZ_1GB,      0b1,    0b1,    0b0,    0b0,    0b1,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
 
+#define BASE_TEST_DATA_VALUE     0x1ACCE551
+
 static void check_addr_in_l2c (uint32_t addr, bool expected)
 {
     int32_t cache_way = -1;
@@ -51,6 +53,53 @@ static void check_addr_in_l2c (uint32_t addr, bool expected)
     else TEST_ASSERT(!expected, "ERROR: can't get L2C way");
 }
 
+static void check_rd_wr_hard (uint32_t code_ev, uint32_t r_addr, uint32_t w_addr, uint32_t * data)
+{
+    uint32_t event_arr[3];
+    uint32_t r_data = 0x00;
+
+    r_data = ioread32(r_addr);
+    TEST_ASSERT (r_data == *data, "TEST ASSERT: invalid data");
+    (*data)++;
+
+    event_arr[0] = code_ev; event_arr[1] = w_addr; event_arr[2] = *data;
+    rumboot_platform_event_raise(EVENT_TESTEVENT, event_arr, ARRAY_SIZE(event_arr) );
+
+    iowrite32(*data, w_addr);
+    msync();
+}
+
+static void check_rd_wr_soft (uint32_t code_ev, uint32_t r_addr, uint32_t w_addr, uint32_t * data, bool data_l2c_expect)
+{
+    uint32_t event_arr[3];
+    uint32_t r_data = 0x00;
+
+    if (data_l2c_expect)
+    {
+       dcbt(0, r_addr);
+       dcbz((void*) r_addr);
+       TEST_ASSERT(ioread32(r_addr) == 0x00, "TEST_ASSERT: dcbz not set block to zero");
+       dci(2);
+    }
+
+    dcbt(0, r_addr);
+    check_addr_in_l2c (r_addr, data_l2c_expect);
+
+    r_data = ioread32(r_addr);
+    TEST_ASSERT (r_data == *data, "TEST ASSERT: invalid data");
+    (*data)++;
+
+    event_arr[0] = code_ev; event_arr[1] = w_addr; event_arr[2] = *data;
+    rumboot_platform_event_raise(EVENT_TESTEVENT, event_arr, ARRAY_SIZE(event_arr) );
+
+    iowrite32(*data, w_addr);
+    dcbf((void*)w_addr);
+    msync();
+
+    check_addr_in_l2c (w_addr, data_l2c_expect);
+    dci(2);
+}
+
 int main()
 {
     test_event_send_test_id("test_oi10_cpu_020_dcog");
@@ -59,8 +108,6 @@ int main()
 
     //init data
     rumboot_printf("init data\n");
-    uint32_t test_data = 0x1ACCE551;
-    uint32_t r_data = 0x00;
     uint32_t s0_addr0 = (uint32_t) rumboot_malloc_from_named_heap_aligned("SRAM0", 128, 128);
     uint32_t s0_addr1 = (uint32_t) rumboot_malloc_from_named_heap_aligned("SRAM0", 128, 128);
     uint32_t s1_addr0 = (uint32_t) rumboot_malloc_from_named_heap_aligned("SRAM1", 128, 128);
@@ -69,6 +116,8 @@ int main()
     memset((void*)s0_addr1, 0x00, 128);
     memset((void*)s1_addr0, 0x00, 128);
     memset((void*)s1_addr1, 0x00, 128);
+
+    uint32_t test_data = BASE_TEST_DATA_VALUE;
     iowrite32(test_data, s0_addr0);
     dci(2);
 
@@ -77,37 +126,23 @@ int main()
     static const tlb_entry mem_tlb_entrys[] = {{TLB_ENTRY_SRAM0_NOCACHE}, {TLB_ENTRY_SRAM1_CACHE}};
     write_tlb_entries(mem_tlb_entrys, 2);
 
-    uint32_t event_arr[3];
-
     //1. Hard check. Use lwz, stw
     rumboot_printf("HARD CHECK\n");
     //MEM -> MEM
     rumboot_printf("mem->mem\n");
-    event_arr[0] = EVENT_CHECK_MEM_MEM; event_arr[1] = s0_addr1; event_arr[2] = test_data+1;
-    rumboot_platform_event_raise(EVENT_TESTEVENT, event_arr, ARRAY_SIZE(event_arr) );
-    r_data = ioread32(s0_addr0) + 1;
-    iowrite32(r_data, s0_addr1);
+    check_rd_wr_hard(EVENT_CHECK_MEM_MEM, s0_addr0, s0_addr1, &test_data);
 
     //MEM -> L2C
     rumboot_printf("mem->l2c\n");
-    event_arr[0] = EVENT_CHECK_MEM_L2C; event_arr[1] = s1_addr0; event_arr[2] = test_data+2;
-    rumboot_platform_event_raise(EVENT_TESTEVENT, event_arr, ARRAY_SIZE(event_arr) );
-    r_data = ioread32(s0_addr1) + 1;
-    iowrite32(r_data, s1_addr0);
+    check_rd_wr_hard(EVENT_CHECK_MEM_L2C, s0_addr1, s1_addr0, &test_data);
 
     //L2C -> L2C
     rumboot_printf("l2c->l2c\n");
-    event_arr[0] = EVENT_CHECK_L2C_L2C; event_arr[1] = s1_addr1; event_arr[2] = test_data+3;
-    rumboot_platform_event_raise(EVENT_TESTEVENT, event_arr, ARRAY_SIZE(event_arr) );
-    r_data = ioread32(s1_addr0) + 1;
-    iowrite32(r_data, s1_addr1);
+    check_rd_wr_hard(EVENT_CHECK_L2C_L2C, s1_addr0, s1_addr1, &test_data);
 
     //L2C -> MEM
     rumboot_printf("l2c->mem\n");
-    event_arr[0] = EVENT_CHECK_L2C_MEM; event_arr[1] = s0_addr0; event_arr[2] = test_data+4;
-    rumboot_platform_event_raise(EVENT_TESTEVENT, event_arr, ARRAY_SIZE(event_arr) );
-    r_data = ioread32(s1_addr1) + 1;
-    iowrite32(r_data, s0_addr0);
+    check_rd_wr_hard(EVENT_CHECK_L2C_MEM, s1_addr1, s0_addr0, &test_data);
 
     //prepare for soft check
     msync();
@@ -115,6 +150,7 @@ int main()
     memset((void*)s0_addr1, 0x00, 128);
     memset((void*)s1_addr0, 0x00, 128);
     memset((void*)s1_addr1, 0x00, 128);
+    test_data = BASE_TEST_DATA_VALUE;
     iowrite32(test_data, s0_addr0);
     dci(2);
 
@@ -123,45 +159,19 @@ int main()
 
     //MEM -> MEM
     rumboot_printf("mem->mem\n");
-    event_arr[0] = EVENT_CHECK_MEM_MEM_S; event_arr[1] = s0_addr1; event_arr[2] = test_data+1;
-    rumboot_platform_event_raise(EVENT_TESTEVENT, event_arr, ARRAY_SIZE(event_arr) );
-    dcbt(0, s0_addr0); //touch
-    check_addr_in_l2c (s0_addr0, false);
-    r_data = ioread32(s0_addr0) + 1;
-    iowrite32(r_data, s0_addr1);
+    check_rd_wr_soft(EVENT_CHECK_MEM_MEM_S, s0_addr0, s0_addr1, &test_data, false);
 
     //MEM -> L2C
-    event_arr[0] = EVENT_CHECK_MEM_L2C_S; event_arr[1] = s1_addr0; event_arr[2] = test_data+2;
-    rumboot_platform_event_raise(EVENT_TESTEVENT, event_arr, ARRAY_SIZE(event_arr) );
     rumboot_printf("mem->l2c\n");
-    dcbt(0, s0_addr1); //touch
-    check_addr_in_l2c (s0_addr1, false);
-    r_data = ioread32(s0_addr1) + 1;
-    iowrite32(r_data, s1_addr0);
-    dcbf((void*)s1_addr0);
-    dci(2);
-    check_addr_in_l2c (s0_addr1, false);
+    check_rd_wr_soft(EVENT_CHECK_MEM_L2C_S, s0_addr1, s1_addr0, &test_data, false);
 
     //L2C -> L2C
     rumboot_printf("l2c->l2c\n");
-    event_arr[0] = EVENT_CHECK_L2C_L2C_S; event_arr[1] = s1_addr1; event_arr[2] = test_data+3;
-    rumboot_platform_event_raise(EVENT_TESTEVENT, event_arr, ARRAY_SIZE(event_arr) );
-    dcbt(0, s1_addr0);
-    check_addr_in_l2c (s1_addr0, true);
-    r_data = ioread32(s1_addr0) + 1;
-    iowrite32(r_data, s1_addr1);
-    dcbf((void*)s1_addr1);
-    dci(2);
-    check_addr_in_l2c (s1_addr0, false);
+    check_rd_wr_soft(EVENT_CHECK_L2C_L2C_S, s1_addr0, s1_addr1, &test_data, true);
 
     //L2C -> MEM
-    event_arr[0] = EVENT_CHECK_L2C_MEM_S; event_arr[1] = s0_addr0; event_arr[2] = test_data+4;
-    rumboot_platform_event_raise(EVENT_TESTEVENT, event_arr, ARRAY_SIZE(event_arr) );
     rumboot_printf("l2c->mem\n");
-    dcbt(0, s1_addr1);
-    check_addr_in_l2c (s1_addr1, true);
-    r_data = ioread32(s1_addr1) + 1;
-    iowrite32(r_data, s0_addr0);
+    check_rd_wr_soft(EVENT_CHECK_L2C_MEM_S, s1_addr1, s0_addr0, &test_data, true);
 
     rumboot_printf("TEST_FINISHED\n");
     while(1);
