@@ -28,6 +28,8 @@
 #include <platform/devices/mpic128.h>
 
 #include <platform/regs/fields/mpic128.h>
+#include <platform/arch/ppc/ppc_476fp_timer_fields.h>
+#include <platform/arch/ppc/ppc_476fp_ctrl_fields.h>
 
 enum {
     TEC_SET_EXT_INT0 = TEST_EVENT_CODE_MIN,
@@ -52,8 +54,21 @@ enum {
     TEC_CLR_EXT_INT_ALL,
     TEC_SET_EXT_INT4_AFTER_WR_IAR,
     TEC_SET_EXT_INT5_AFTER_WR_IAR,
-    TEC_SET_EXT_INT45_AFTER_WR_IAR
+    TEC_SET_EXT_INT45_AFTER_WR_IAR,
+    TEC_SET_EXT_INT0_AFTER_DEC_TIMER,
+    TEC_SET_EXT_INT3_AFTER_DEC_TIMER,
+    TEC_SET_EXT_INT0_BEFORE_DEC_TIMER,
+    TEC_SET_EXT_INT3_BEFORE_DEC_TIMER,
+    TEC_SET_EXT_INT3_AFTER_WD_TIMER,
+    TEC_SET_EXT_INT5_AFTER_WD_TIMER,
+    TEC_SET_EXT_INT3_BEFORE_WD_TIMER,
+    TEC_SET_EXT_INT5_BEFORE_WD_TIMER,
+    TEC_SET_EXT_INT2_AFTER_WR_CIAR
 } test_event_code;
+
+#define DEC_PERIOD  0x4000
+#define WD_PERIOD   0x100000
+#define WD_TIMEOUT  0x4000
 
 static struct rumboot_irq_entry *tbl = NULL;
 
@@ -65,8 +80,36 @@ uint32_t arg4 = TEC_CLR_EXT_INT4;
 uint32_t arg5 = TEC_CLR_EXT_INT5;
 
 static void exception_handler(int const id, char const * const name ) {
-    rumboot_printf( "Exception: %s\n", name );
-    spr_write( SPR_MCSR_C, spr_read(SPR_MCSR_RW) );
+        switch(id){
+        case RUMBOOT_IRQ_DECREMENTER:
+            rumboot_printf("Decrementer timer IRQ received.\n");
+            spr_write(SPR_TSR_RC, 1 << TIMER_TSR_DIS_i);
+            //spr_write(SPR_TCR, spr_read(SPR_TCR) & (~(1 << TIMER_TCR_DIE_i)));
+            break;
+        case RUMBOOT_IRQ_FIXED_INTERVAL_TIMER:
+            rumboot_printf("Fixed interval timer IRQ received.\n");
+            spr_write(SPR_TSR_RC, 1 << TIMER_TSR_FIS_i);
+            spr_write(SPR_TCR, spr_read(SPR_TCR) & (~(1 << TIMER_TCR_FIE_i)));
+            break;
+        case RUMBOOT_IRQ_WATCHDOG_TIMER:
+            rumboot_printf("Watchdog timer IRQ received.\n");
+            spr_write(SPR_TSR_RC, 1 << TIMER_TSR_WIS_i);
+//            spr_write(SPR_TCR, spr_read(SPR_TCR) & (~(1 << TIMER_TCR_WIE_i)));
+            break;
+        default:
+            rumboot_printf("\nWE GOT AN EXCEPTION: %d: %s\n", id, name);
+            rumboot_printf("--- Guru Meditation ---\n");
+            rumboot_printf("MSR:  0x%x\n", msr_read());
+            rumboot_printf("SRR0: 0x%x\n", spr_read(SPR_SRR0));
+            rumboot_printf("SRR1: 0x%x\n", spr_read(SPR_SRR1));
+            rumboot_printf("CSRR0: 0x%x\n", spr_read(SPR_CSRR0));
+            rumboot_printf("CSRR1: 0x%x\n", spr_read(SPR_CSRR1));
+            rumboot_printf("MCSRR0: 0x%x\n", spr_read(SPR_MCSRR0));
+            rumboot_printf("MCSRR1: 0x%x\n", spr_read(SPR_MCSRR1));
+            rumboot_printf("---       ---       ---\n");
+            rumboot_platform_panic("Please reset or power-cycle the board\n");
+            break;
+        }
 }
 
 void irq_handler( int irq_num, void *arg )
@@ -76,15 +119,74 @@ void irq_handler( int irq_num, void *arg )
 //    test_event(TEC_CLR_EXT_INT_ALL);
 }
 
-int main ()
+void dec_timer_start()
 {
-    test_event_send_test_id("test_oi10_mpic_test");
-    rumboot_memfill8_modelling((void*)SRAM0_BASE, 0x1000, 0x00, 0x00); //workaround (init 4KB)
+    spr_write(SPR_CCR1,CTRL_CCR1_TSS_CPU_clock << CTRL_CCR1_TSS_i);
 
-    rumboot_printf("Set our own irq handlers... ");
-    rumboot_irq_set_exception_handler(exception_handler);
+    spr_write(SPR_DEC, 0);
+    spr_write(SPR_DECAR, 0);
+
+    spr_write(SPR_TBL_W,0);
+    spr_write(SPR_TBU_W,0);
+
+    spr_write(SPR_TCR, 0);
+    spr_write(SPR_TSR_RC, 0xFFFFFFFF);
+
+    spr_write(SPR_DEC, DEC_PERIOD);
+    spr_write(SPR_DECAR, DEC_PERIOD);
+
+    msr_write(msr_read()
+            | 1 << ITRPT_XSR_EE_i   /* MSR[EE] - Externel interrupt. */
+            | 1 << ITRPT_XSR_CE_i); /* MSR[CE] - Critical interrupt. */
+
+    spr_write(SPR_TCR, 0 << TIMER_TCR_WIE_i
+                     | 1 << TIMER_TCR_DIE_i
+                     | 0 << TIMER_TCR_FIE_i
+                     | 1 << TIMER_TCR_ARE_i
+                     | TIMER_TCR_WP_2pow21_clocks << TIMER_TCR_WP_i
+                     | TIMER_TCR_FP_2pow21_clocks << TIMER_TCR_FP_i
+                     | TIMER_TCR_WRC_No_WD_reset  << TIMER_TCR_WRC_i);
+}
+
+void wd_timer_start()
+{
+    spr_write(SPR_CCR1,CTRL_CCR1_TSS_CPU_clock << CTRL_CCR1_TSS_i);
+
+    spr_write(SPR_DEC, 0);
+    spr_write(SPR_DECAR, 0);
+
+    spr_write(SPR_TBL_W,WD_PERIOD - WD_TIMEOUT);
+    spr_write(SPR_TBU_W,0);
+
+    spr_write(SPR_TCR, 0);
+    spr_write(SPR_TSR_RC, 0xFFFFFFFF);
+
+    msr_write(msr_read()
+            | 1 << ITRPT_XSR_EE_i   /* MSR[EE] - Externel interrupt. */
+            | 1 << ITRPT_XSR_CE_i); /* MSR[CE] - Critical interrupt. */
+
+    spr_write(SPR_TCR, 1 << TIMER_TCR_WIE_i
+                     | 0 << TIMER_TCR_DIE_i
+                     | 0 << TIMER_TCR_FIE_i
+                     | 0 << TIMER_TCR_ARE_i
+                     | TIMER_TCR_WP_2pow21_clocks << TIMER_TCR_WP_i
+                     | TIMER_TCR_FP_2pow21_clocks << TIMER_TCR_FP_i
+                     | TIMER_TCR_WRC_No_WD_reset  << TIMER_TCR_WRC_i);
+
+    spr_write(SPR_TSR_W, 1 << TIMER_TSR_ENW_i);
+}
+
+void timer_stop()
+{
+    spr_write(SPR_DECAR, 0);
+    spr_write(SPR_TCR, 0);
+    spr_write(SPR_TSR_RC, 0xFFFFFFFF);
+}
+
+void ext_int_set_level(struct rumboot_irq_entry *tbl)
+{
+    rumboot_printf("Set level sense per interrupt source\n");
     rumboot_irq_cli();
-    tbl = rumboot_irq_create( NULL );
     rumboot_irq_set_handler( tbl, EXT_INT0, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH | RUMBOOT_IRQ_PRIOR_3, irq_handler, &arg0 );
     rumboot_irq_set_handler( tbl, EXT_INT1, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH | RUMBOOT_IRQ_PRIOR_4, irq_handler, &arg1 );
     rumboot_irq_set_handler( tbl, EXT_INT2, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH | RUMBOOT_IRQ_PRIOR_6, irq_handler, &arg2 );
@@ -92,10 +194,32 @@ int main ()
     rumboot_irq_set_handler( tbl, EXT_INT4, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH | RUMBOOT_IRQ_PRIOR_12, irq_handler, &arg4 );
     rumboot_irq_set_handler( tbl, EXT_INT5, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH | RUMBOOT_IRQ_PRIOR_14, irq_handler, &arg5 );
     rumboot_irq_table_activate( tbl );
-    mpic128_set_interrupt_borders( DCR_MPIC128_BASE, MPIC128_PRIOR_11, MPIC128_PRIOR_5 );
-
     rumboot_irq_sei();
-    rumboot_printf("done\n");
+}
+
+void ext_int_set_edge(struct rumboot_irq_entry *tbl)
+{
+    rumboot_printf("Set edge sense per interrupt source\n");
+    rumboot_irq_cli();
+    rumboot_irq_set_handler( tbl, EXT_INT0, RUMBOOT_IRQ_EDGE | RUMBOOT_IRQ_POS | RUMBOOT_IRQ_PRIOR_3, irq_handler, &arg0 );
+    rumboot_irq_set_handler( tbl, EXT_INT1, RUMBOOT_IRQ_EDGE | RUMBOOT_IRQ_POS | RUMBOOT_IRQ_PRIOR_4, irq_handler, &arg1 );
+    rumboot_irq_set_handler( tbl, EXT_INT2, RUMBOOT_IRQ_EDGE | RUMBOOT_IRQ_POS | RUMBOOT_IRQ_PRIOR_6, irq_handler, &arg2 );
+    rumboot_irq_set_handler( tbl, EXT_INT3, RUMBOOT_IRQ_EDGE | RUMBOOT_IRQ_POS | RUMBOOT_IRQ_PRIOR_7, irq_handler, &arg3 );
+    rumboot_irq_set_handler( tbl, EXT_INT4, RUMBOOT_IRQ_EDGE | RUMBOOT_IRQ_POS | RUMBOOT_IRQ_PRIOR_12, irq_handler, &arg4 );
+    rumboot_irq_set_handler( tbl, EXT_INT5, RUMBOOT_IRQ_EDGE | RUMBOOT_IRQ_POS | RUMBOOT_IRQ_PRIOR_14, irq_handler, &arg5 );
+    rumboot_irq_table_activate( tbl );
+    rumboot_irq_sei();
+}
+
+int main ()
+{
+    test_event_send_test_id("test_oi10_mpic_test");
+    rumboot_memfill8_modelling((void*)SRAM0_BASE, 0x1000, 0x00, 0x00); //workaround (init 4KB)
+
+    rumboot_printf("Set our own irq handlers\n");
+    mpic128_set_interrupt_borders( DCR_MPIC128_BASE, MPIC128_PRIOR_11, MPIC128_PRIOR_5 );
+    rumboot_irq_set_exception_handler(exception_handler);
+    tbl = rumboot_irq_create( NULL );
 
     rumboot_printf("---------------- Info ------------------------\n");
     rumboot_printf("IRQ #0 is Non critical Interrupt, priority 3\n"
@@ -107,10 +231,14 @@ int main ()
     rumboot_printf("----------------------------------------------\n");
 
 #define EXT_INT_TEST_COUNT 2
-#define EXT_INT_TIMEOUT 32
+#define EXT_INT_TIMEOUT 48
+#define EXT_INT_TIMEOUT2 320
 
     for (int k = 0; k < EXT_INT_TEST_COUNT; ++k)
     {
+        if((k & 1) == 0) ext_int_set_level(tbl);
+        else  ext_int_set_edge(tbl);
+
         test_event(TEC_SET_EXT_INT0);
         for (int i = 0; i < EXT_INT_TIMEOUT; ++i) { nop(); }
         test_event(TEC_SET_EXT_INT1);
@@ -136,6 +264,7 @@ int main ()
         test_event(TEC_SET_EXT_INT35);
         for (int i = 0; i < EXT_INT_TIMEOUT; ++i) { nop(); }
         test_event(TEC_SET_EXT_INT012345);
+
         for (int i = 0; i < EXT_INT_TIMEOUT; ++i) { nop(); }
         test_event(TEC_SET_EXT_INT4_AFTER_WR_IAR);
         test_event(TEC_SET_EXT_INT3);
@@ -143,6 +272,35 @@ int main ()
         test_event(TEC_SET_EXT_INT45_AFTER_WR_IAR);
         test_event(TEC_SET_EXT_INT3);
         for (int i = 0; i < EXT_INT_TIMEOUT; ++i) { nop(); }
+        test_event(TEC_SET_EXT_INT2_AFTER_WR_CIAR);
+        test_event(TEC_SET_EXT_INT1);
+        for (int i = 0; i < EXT_INT_TIMEOUT; ++i) { nop(); }
+
+        dec_timer_start();
+        test_event(TEC_SET_EXT_INT0_AFTER_DEC_TIMER);
+        for (int i = 0; i < EXT_INT_TIMEOUT2; ++i) { nop(); }
+        test_event(TEC_SET_EXT_INT3_AFTER_DEC_TIMER);
+        for (int i = 0; i < EXT_INT_TIMEOUT2; ++i) { nop(); }
+        test_event(TEC_SET_EXT_INT0_BEFORE_DEC_TIMER);
+        for (int i = 0; i < EXT_INT_TIMEOUT2; ++i) { nop(); }
+        test_event(TEC_SET_EXT_INT3_BEFORE_DEC_TIMER);
+        for (int i = 0; i < EXT_INT_TIMEOUT2; ++i) { nop(); }
+        timer_stop();
+
+        wd_timer_start();
+        test_event(TEC_SET_EXT_INT3_AFTER_WD_TIMER);
+        for (int i = 0; i < EXT_INT_TIMEOUT2; ++i) { nop(); }
+        wd_timer_start();
+        test_event(TEC_SET_EXT_INT5_AFTER_WD_TIMER);
+        for (int i = 0; i < EXT_INT_TIMEOUT2; ++i) { nop(); }
+        wd_timer_start();
+        test_event(TEC_SET_EXT_INT3_BEFORE_WD_TIMER);
+        for (int i = 0; i < EXT_INT_TIMEOUT2; ++i) { nop(); }
+        wd_timer_start();
+        test_event(TEC_SET_EXT_INT5_BEFORE_WD_TIMER);
+        for (int i = 0; i < EXT_INT_TIMEOUT2; ++i) { nop(); }
+        timer_stop();
+
     }
 
     return 0;
