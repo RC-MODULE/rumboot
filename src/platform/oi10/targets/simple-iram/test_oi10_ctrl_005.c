@@ -61,14 +61,21 @@ static bool check_watchdog_default_ro_val(uint32_t base_addr)
     bool result = false;
     rumboot_printf("Check the default values of the registers:");
     struct regpoker_checker check_default_array[] = {
-          {   "WD_REG_PERIPHID0",   REGPOKER_READ_DCR,    WD_REG_PERIPHID0,         WD_REG_PERIPHID0_DFLT,           WD_REG_PERIPHID0_mask   },
-          {   "WD_REG_PERIPHID1",   REGPOKER_READ_DCR,    WD_REG_PERIPHID1,         WD_REG_PERIPHID1_DFLT,           WD_REG_PERIPHID1_mask   },
-          {   "WD_REG_PERIPHID2",   REGPOKER_READ_DCR,    WD_REG_PERIPHID2,         WD_REG_PERIPHID2_DFLT,           WD_REG_PERIPHID2_mask   },
-          {   "WD_REG_PERIPHID3",   REGPOKER_READ_DCR,    WD_REG_PERIPHID3,         WD_REG_PERIPHID3_DFLT,           WD_REG_PERIPHID3_mask   },
-          {   "WD_REG_PCELLID0",    REGPOKER_READ_DCR,    WD_REG_PCELLID0,          WD_REG_PCELLID0_DFLT ,           WD_REG_PCELLID0_mask    },
-          {   "WD_REG_PCELLID1",    REGPOKER_READ_DCR,    WD_REG_PCELLID1,          WD_REG_PCELLID1_DFLT ,           WD_REG_PCELLID1_mask    },
-          {   "WD_REG_PCELLID2",    REGPOKER_READ_DCR,    WD_REG_PCELLID2,          WD_REG_PCELLID2_DFLT ,           WD_REG_PCELLID2_mask    },
-          {   "WD_REG_PCELLID3",    REGPOKER_READ_DCR,    WD_REG_PCELLID3,          WD_REG_PCELLID3_DFLT ,           WD_REG_PCELLID3_mask    },
+        {   "WD_REG_PERIPHID0",   REGPOKER_READ_DCR,    WD_REG_PERIPHID0,         WD_REG_PERIPHID0_DFLT,           WD_REG_PERIPHID0_mask   },
+        {   "WD_REG_PERIPHID1",   REGPOKER_READ_DCR,    WD_REG_PERIPHID1,         WD_REG_PERIPHID1_DFLT,           WD_REG_PERIPHID1_mask   },
+        {   "WD_REG_PERIPHID2",   REGPOKER_READ_DCR,    WD_REG_PERIPHID2,         WD_REG_PERIPHID2_DFLT,           WD_REG_PERIPHID2_mask   },
+        {   "WD_REG_PERIPHID3",   REGPOKER_READ_DCR,    WD_REG_PERIPHID3,         WD_REG_PERIPHID3_DFLT,           WD_REG_PERIPHID3_mask   },
+        {   "WD_REG_PCELLID0",    REGPOKER_READ_DCR,    WD_REG_PCELLID0,          WD_REG_PCELLID0_DFLT ,           WD_REG_PCELLID0_mask    },
+        {   "WD_REG_PCELLID1",    REGPOKER_READ_DCR,    WD_REG_PCELLID1,          WD_REG_PCELLID1_DFLT ,           WD_REG_PCELLID1_mask    },
+        {   "WD_REG_PCELLID2",    REGPOKER_READ_DCR,    WD_REG_PCELLID2,          WD_REG_PCELLID2_DFLT ,           WD_REG_PCELLID2_mask    },
+        {   "WD_REG_PCELLID3",    REGPOKER_READ_DCR,    WD_REG_PCELLID3,          WD_REG_PCELLID3_DFLT ,           WD_REG_PCELLID3_mask    },
+        {   "WdogLock",           REGPOKER_READ_DCR,    WD_REG_LOCK,              0                    ,           0                       },
+        {   "WdogLoad",           REGPOKER_READ_DCR,    WD_REG_LOAD,              WD_REG_LOAD_DFLT,                WD_REG_LOAD_mask    },
+        {   "WdogControl",        REGPOKER_READ_DCR,    WD_REG_CONTROL,           WD_REG_CONTROL_DFLT,             WD_REG_CONTROL_mask },
+        {   "WdogValue",          REGPOKER_READ_DCR,    WD_REG_VALUE,             WD_REG_VALUE_DFLT,               WD_REG_VALUE_mask   },
+        {   "WdogRIS",            REGPOKER_READ_DCR,    WD_REG_RIS,               WD_REG_RIS_DFLT,                 WD_REG_RIS_mask     },
+        {   "WdogMIS",            REGPOKER_READ_DCR,    WD_REG_MIS,               WD_REG_MIS_DFLT,                 WD_REG_MIS_mask     },
+        {   "WdogITCR",           REGPOKER_READ_DCR,    WD_REG_ITCR,              WD_REG_ITCR_DFLT,                WD_REG_ITCR_mask    },
           { }
       };
 
@@ -90,23 +97,13 @@ static bool check_watchdog_default_rw_val( uint32_t base_addr)//, uint32_t reg_l
     bool result = false;
     rumboot_printf("Check the default values of the registers:");
     struct regpoker_checker check_default_array[] = {
-    {   "WdogLock",      REGPOKER_READ_DCR,    WD_REG_LOCK,                          0,     0                   },
-    {   "WdogLoad",      REGPOKER_READ_DCR,    WD_REG_LOAD,           WD_REG_LOAD_DFLT,     WD_REG_LOAD_mask    },
     {   "WdogLoad",      REGPOKER_WRITE_DCR,   WD_REG_LOAD,           WD_REG_LOAD_DFLT,     WD_REG_LOAD_mask    },
 
-    {   "WdogValue",     REGPOKER_READ_DCR,    WD_REG_VALUE,          WD_REG_VALUE_DFLT,    WD_REG_VALUE_mask   },
-
-    {   "WdogControl",   REGPOKER_READ_DCR,    WD_REG_CONTROL,        WD_REG_CONTROL_DFLT,  WD_REG_CONTROL_mask },
     {   "WdogControl",   REGPOKER_WRITE_DCR,   WD_REG_CONTROL,        WD_REG_CONTROL_DFLT,  WD_REG_CONTROL_mask },
 
-    {   "WdogRIS",       REGPOKER_READ_DCR,    WD_REG_RIS,            WD_REG_RIS_DFLT,      WD_REG_RIS_mask     },
-    {   "WdogMIS",       REGPOKER_READ_DCR,    WD_REG_MIS,            WD_REG_MIS_DFLT,      WD_REG_MIS_mask     },
-
-    {   "WdogITCR",      REGPOKER_READ_DCR,    WD_REG_ITCR,           WD_REG_ITCR_DFLT,     WD_REG_ITCR_mask    },
     {   "WdogITCR",      REGPOKER_WRITE_DCR,   WD_REG_ITCR,           WD_REG_ITCR_DFLT,     WD_REG_ITCR_mask    },
     {   "WdogLock",      REGPOKER_WRITE_DCR,   WD_REG_LOCK,                          0,     0                   },
     {   "WdogLock",      REGPOKER_READ_DCR,    WD_REG_LOCK,                          1,     1                   },
-    {   "WdogLock",      REGPOKER_WRITE_DCR,   WD_REG_LOCK,                          0,     0                   },
 
     { }
       };
