@@ -131,6 +131,11 @@ void sp805_clrint( uint32_t base_addr);
  */
 void sp805_config( uint32_t base_addr, const struct sp805_conf * config);
 
+
+uint32_t sp805_get_itcr(uint32_t base_addr);
+void sp805_write_to_itcr(uint32_t base_addr, uint32_t value);
+void sp805_write_to_itop(uint32_t base_addr, uint32_t value);
+void sp805_disable(uint32_t base_addr);
 /**
  * @}
  */
