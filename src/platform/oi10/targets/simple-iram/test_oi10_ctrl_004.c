@@ -18,8 +18,8 @@
 #include <regs/regs_sp804.h>
 #include <rumboot/platform.h>
 
-#define TIMER0_CYCLES           1
-#define TIMER1_CYCLES           2
+#define TIMER0_CYCLES           10
+#define TIMER1_CYCLES           15
 
 uint32_t count_of_cycles[]  = {TIMER0_CYCLES, TIMER1_CYCLES};
 //#define CHECK_REGS
@@ -77,6 +77,7 @@ uint32_t count_of_cycles[]  = {TIMER0_CYCLES, TIMER1_CYCLES};
 
 static bool check_timer_default_ro_val(uint32_t base_addr)
 {
+    bool result = false;
     rumboot_printf("Check the default values of the registers:");
 
     struct regpoker_checker check_default_array[] = {
@@ -110,15 +111,19 @@ static bool check_timer_default_ro_val(uint32_t base_addr)
     if( rumboot_regpoker_check_array( check_default_array, base_addr ) == 0 )
     {
         rumboot_printf( "OK\n" );
-        return true;
+        result = true;
     }
-
-    rumboot_printf( "ERROR\n" );
-    return false;
+    else
+    {
+        rumboot_printf( "ERROR\n" );
+        result = false;
+    }
+    return result;
 }
 
 static bool check_timer_default_rw_val( uint32_t base_addr )
 {
+    bool result = false;
     rumboot_printf("Check the default values of the registers:");
 
     struct regpoker_checker check_default_array[] = {
@@ -154,11 +159,14 @@ static bool check_timer_default_rw_val( uint32_t base_addr )
     if( rumboot_regpoker_check_array( check_default_array, base_addr ) == 0 )
     {
         rumboot_printf( "OK\n" );
-        return true;
+        result = true;
     }
-
-    rumboot_printf( "ERROR\n" );
-    return false;
+    else
+    {
+        rumboot_printf( "ERROR\n" );
+        result = false;
+    }
+    return result;
 }
 #endif
 
@@ -296,12 +304,13 @@ static bool test_dit_timers2( uint32_t structure)
     }
 
 
-    result = result && (stru->timer0_irq == TIMER0_CYCLES);
-
     if(stru->timer0_irq == TIMER0_CYCLES)
         rumboot_printf("TIMER0 test mode: OK\n");
     else
+    {
+        result = false;
         rumboot_printf("TIMER0 test mode: FAIL\nexpected == %d, counted == %d\n",TIMER0_CYCLES,stru->timer0_irq);
+    }
 
     for(i = 0; i < TIMER1_CYCLES; i++)
     {
@@ -319,13 +328,13 @@ static bool test_dit_timers2( uint32_t structure)
         }
     }
 
-
-    result = result && (stru->timer1_irq == TIMER1_CYCLES);
-
     if(stru->timer1_irq == TIMER1_CYCLES)
         rumboot_printf("TIMER1 test mode: OK\n");
     else
+    {
+        result = false;
         rumboot_printf("TIMER1 test mode: FAIL\nexpected == %d, counted == %d\n",TIMER1_CYCLES,stru->timer1_irq);
+    }
     sp804_write_to_itcr(base_addr, 0b0);
 
     return result;
