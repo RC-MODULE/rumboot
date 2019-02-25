@@ -58,3 +58,30 @@ void sp805_config(uint32_t base_addr, const struct sp805_conf * config)
         dcr_write(base_addr + WD_REG_LOAD, config->load);
     }
 }
+
+
+uint32_t sp805_get_itcr(uint32_t base_addr)
+{
+    return dcr_read(base_addr + WD_REG_ITCR);
+}
+
+void sp805_write_to_itcr(uint32_t base_addr, uint32_t value)
+{
+    dcr_write(base_addr + WD_REG_ITCR, value);
+}
+
+void sp805_write_to_itop(uint32_t base_addr, uint32_t value)
+{
+    dcr_write(base_addr + WD_REG_ITOP, value);
+}
+
+void sp805_unlock_access(uint32_t base_addr)
+{
+    dcr_write(base_addr + WD_REG_LOCK, 0x1ACCE551);
+}
+
+void sp805_disable(uint32_t base_addr)
+{
+    dcr_write(base_addr + WD_REG_CONTROL, 0);
+}
+
