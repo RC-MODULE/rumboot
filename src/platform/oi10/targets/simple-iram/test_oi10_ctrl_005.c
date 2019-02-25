@@ -18,7 +18,7 @@
 #include <regs/regs_sp805.h>
 #include <rumboot/platform.h>
 
-#define TIMER_CYCLES 2
+#define TIMER_CYCLES 10
 //#define CHECK_REGS
 #ifdef CHECK_REGS
 #define WD_REG_LOAD_mask        0xffffffff
@@ -55,6 +55,7 @@
 
 static bool check_watchdog_default_ro_val(uint32_t base_addr)
 {
+    bool result = false;
     rumboot_printf("Check the default values of the registers:");
     struct regpoker_checker check_default_array[] = {
           {   "WD_REG_PERIPHID0",   REGPOKER_READ_DCR,    WD_REG_PERIPHID0,         WD_REG_PERIPHID0_DFLT,           WD_REG_PERIPHID0_mask   },
@@ -71,15 +72,19 @@ static bool check_watchdog_default_ro_val(uint32_t base_addr)
     if( rumboot_regpoker_check_array( check_default_array, base_addr ) == 0 )
     {
         rumboot_printf( "OK\n" );
-        return true;
+        result = true;
     }
-
-    rumboot_printf( "ERROR\n" );
-    return false;
+    else
+    {
+        rumboot_printf( "ERROR\n" );
+        result = false;
+    }
+    return result;
 }
 
 static bool check_watchdog_default_rw_val( uint32_t base_addr)//, uint32_t reg_lock )
 {
+    bool result = false;
     rumboot_printf("Check the default values of the registers:");
     struct regpoker_checker check_default_array[] = {
     {   "WdogLock",      REGPOKER_WRITE_DCR,   WD_REG_LOCK,           WD_REG_LOCK_DFLT,     0                   },
@@ -101,11 +106,14 @@ static bool check_watchdog_default_rw_val( uint32_t base_addr)//, uint32_t reg_l
     if( rumboot_regpoker_check_array( check_default_array, base_addr ) == 0 )
     {
         rumboot_printf( "OK\n" );
-        return true;
+        result = true;
     }
-
-    rumboot_printf( "ERROR\n" );
-    return false;
+    else
+    {
+        rumboot_printf( "ERROR\n" );
+        result = false;
+    }
+    return result;
 }
 #endif
 
@@ -124,11 +132,11 @@ static void handler0(int irq, void *arg)
     rumboot_printf("sp805 watchdog INT # %d  \n", a->wd_irq);
     if(sp805_get_itcr(a->base_addr))//if integrated test control is enabled
     {
-        rumboot_printf("handler0: itcr; structure == 0x%x\n",(uint32_t)arg);
+        rumboot_printf("handler0: itcr\n");
         sp805_write_to_itop(a->base_addr,0);
     }
     else{
-        rumboot_printf("handler0: freerun; structure == 0x%x\n",(uint32_t)arg);
+        rumboot_printf("handler0: freerun\n");
         sp805_disable(a->base_addr);
         sp805_clrint(a->base_addr);
     }
@@ -138,6 +146,7 @@ static bool wd_test( uint32_t structure )
 {
     struct s805_instance *stru = (struct s805_instance *)structure;
     uint32_t base_addr = stru->base_addr;
+    bool result = true;
     struct sp805_conf config_FREE_RUN =
     {
            .mode = FREERUN,
@@ -146,7 +155,6 @@ static bool wd_test( uint32_t structure )
            .width = 32,
            .load = 100,
     };
-    rumboot_printf("wd_test: structure == 0x%x\n",structure);
 
     sp805_unlock_access(base_addr);
     sp805_write_to_itcr(base_addr, 0b0); //set up normal mode
@@ -162,14 +170,14 @@ static bool wd_test( uint32_t structure )
     {
         rumboot_printf("Watchdog test OK\n");
         rumboot_printf("Counted interrupts is: %d\n", stru->wd_irq);
-        return true;
     }
     else
     {
         rumboot_printf("ERROR in Watchdog test\n");
         rumboot_printf("Interrupts came == %d, should be %d \n", stru->wd_irq, TIMER_CYCLES);
-        return false;
+        result = false;
     }
+    return result;
 }
 
 //TEST MODE
@@ -179,7 +187,7 @@ static bool wd_test2(uint32_t structure)
     uint32_t base_addr = stru->base_addr;
     stru->wd_irq = 0;
     int i;
-    rumboot_printf("wd_test2: structure == 0x%x\n",structure);
+    bool result = true;
     sp805_unlock_access(base_addr);
     sp805_write_to_itcr(base_addr, 0b1);
     if(sp805_get_itcr(base_addr))
@@ -188,7 +196,7 @@ static bool wd_test2(uint32_t structure)
     }
     for(i = 0; i < TIMER_CYCLES; i++)
     {
-            sp805_write_to_itop(base_addr,1<<1);
+            sp805_write_to_itop(base_addr,2);
             while(stru->wd_irq == i){;}
     }
     if(stru->wd_irq == TIMER_CYCLES)
@@ -196,14 +204,14 @@ static bool wd_test2(uint32_t structure)
         rumboot_printf("Watchdog test OK\n");
         rumboot_printf("WD_REG_ITCR is: %d\n", sp805_get_itcr(base_addr));
         rumboot_printf("Counted interrupts is: %d\n", stru->wd_irq);
-        return true;
     }
     else
     {
         rumboot_printf("ERROR in Watchdog test \n");
         rumboot_printf("Interrupts came == %d, should be %d \n", stru->wd_irq, TIMER_CYCLES);
-        return false;
+        result = false;
     }
+    return result;
 }
 
 static struct s805_instance in[] =
@@ -215,11 +223,11 @@ static struct s805_instance in[] =
 
 TEST_SUITE_BEGIN(wd_testlist, "SP805 IRQ TEST")
 #ifdef CHECK_REGS
-TEST_ENTRY("SP805_0", check_watchdog_default_ro_val, DCR_WATCHDOG_BASE),
-TEST_ENTRY("SP805_0", check_watchdog_default_rw_val, DCR_WATCHDOG_BASE),
+TEST_ENTRY("SP805_0 reg read default", check_watchdog_default_ro_val, DCR_WATCHDOG_BASE),
+TEST_ENTRY("SP805_0 reg rw check", check_watchdog_default_rw_val, DCR_WATCHDOG_BASE),
 #endif
-TEST_ENTRY("SP805_0", wd_test, (uint32_t) &in[0]),
-TEST_ENTRY("SP805_0", wd_test2, (uint32_t) &in[0]),
+TEST_ENTRY("SP805_0 real mode", wd_test, (uint32_t) &in[0]),
+TEST_ENTRY("SP805_0 test mode", wd_test2, (uint32_t) &in[0]),
 TEST_SUITE_END();
 
 uint32_t main(void)
