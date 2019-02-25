@@ -119,7 +119,7 @@ struct s805_instance {
 static void handler0(int irq, void *arg)
 {
     struct s805_instance *a = (struct s805_instance *) arg;
-    dcr_write(a->base_addr + WD_REG_LOCK, 0x1ACCE551);
+    sp805_unlock_access(a->base_addr);
     (a->wd_irq)++;
     rumboot_printf("IRQ arrived\n");
     rumboot_printf("sp805 watchdog INT # %d  \n", a->wd_irq);
@@ -197,15 +197,13 @@ static bool wd_test2(uint32_t structure)
     if(stru->wd_irq == TIMER_CYCLES)
     {
         rumboot_printf("Watchdog test OK\n");
-        rumboot_printf("WD_REG_ITOP is: %d\n", dcr_read(base_addr + WD_REG_ITOP));
-        rumboot_printf("WD_REG_ITCR is: %d\n", dcr_read(base_addr + WD_REG_ITCR));
+        rumboot_printf("WD_REG_ITCR is: %d\n", sp805_get_itcr(base_addr));
         rumboot_printf("Counted interrupts is: %d\n", stru->wd_irq);
         return true;
     }
     else
     {
         rumboot_printf("ERROR in Watchdog test \n");
-        rumboot_printf("WD_REG_ITOP is: %d\n", dcr_read(base_addr + WD_REG_ITOP));
         rumboot_printf("Interrupts came == %d, should be %d \n", stru->wd_irq, TIMER_CYCLES);
         return false;
     }
