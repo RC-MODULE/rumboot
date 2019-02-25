@@ -272,7 +272,7 @@ static bool test_dit_timers2( uint32_t structure)
     uint32_t base_addr = stru->base_addr;
     int i = 0;
     uint32_t t;
-    uint32_t result = 0;
+    bool result = true;
     stru->timer0_irq = 0;
     stru->timer1_irq = 0;
 
@@ -289,14 +289,14 @@ static bool test_dit_timers2( uint32_t structure)
         }
         if((i + 1) != stru->timer0_irq)
         {
-            result = 1;
+            result = false;
             rumboot_printf("TIMER0 did not produce test event #%d, timer0_irq == %d, t == 0x%x\n", i, stru->timer0_irq, t);
             break;
         }
     }
 
 
-    result |= (stru->timer0_irq == TIMER0_CYCLES)?0:1;
+    result = result && (stru->timer0_irq == TIMER0_CYCLES);
 
     if(stru->timer0_irq == TIMER0_CYCLES)
         rumboot_printf("TIMER0 test mode: OK\n");
@@ -313,14 +313,14 @@ static bool test_dit_timers2( uint32_t structure)
         }
         if((i + 1) != stru->timer1_irq)
         {
-            result |= 1;
+            result = false;
             rumboot_printf("TIMER1 did not produce test event #%d, timer1_irq == %d, t == 0x%x\n", i, stru->timer1_irq, t);
             break;
         }
     }
 
 
-    result |= (stru->timer1_irq == TIMER1_CYCLES)?0:1;
+    result = result && (stru->timer1_irq == TIMER1_CYCLES);
 
     if(stru->timer1_irq == TIMER1_CYCLES)
         rumboot_printf("TIMER1 test mode: OK\n");
@@ -328,7 +328,7 @@ static bool test_dit_timers2( uint32_t structure)
         rumboot_printf("TIMER1 test mode: FAIL\nexpected == %d, counted == %d\n",TIMER1_CYCLES,stru->timer1_irq);
     sp804_write_to_itcr(base_addr, 0b0);
 
-    return (result == 0);
+    return result;
 }
 
 static struct s804_instance in[] =
