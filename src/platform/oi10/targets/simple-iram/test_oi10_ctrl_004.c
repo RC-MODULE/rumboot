@@ -281,7 +281,7 @@ static bool test_dit_timers2( uint32_t structure)
 
     for(i = 0; i < TIMER0_CYCLES; i++)
     {
-        sp804_write_to_itop(base_addr, 1 << 0);
+        sp804_write_to_itop(base_addr, 1);
         t = 0;
         while((i == stru->timer0_irq) && (t<TIMER_INT_TIMEOUT))
         {
@@ -305,7 +305,7 @@ static bool test_dit_timers2( uint32_t structure)
 
     for(i = 0; i < TIMER1_CYCLES; i++)
     {
-        sp804_write_to_itop(base_addr, 1 << 1);
+        sp804_write_to_itop(base_addr, 2);
         t = 0;
         while((i == stru->timer1_irq) && (t<TIMER_INT_TIMEOUT))
         {
