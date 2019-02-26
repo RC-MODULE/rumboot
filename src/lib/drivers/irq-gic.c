@@ -99,6 +99,7 @@ static void gic_swint(const struct rumboot_irq_controller *dev, uint32_t irq)
 }
 
 static const struct rumboot_irq_controller irq_ctl = {
+	.name     = "GIC",
 	.first		= 0,
 	.last		= 127,
 	.init		= gic_init,

@@ -142,14 +142,24 @@ static void mpic128_configure( const struct rumboot_irq_controller *dev, int con
     if( (interrupt_vpaddr != MPIC128_XADDR_ERR) && enable ) mpic128_unmask_int( DCR_MPIC128_BASE + interrupt_vpaddr );
 }
 
+void mpic128_adjust_priority(const struct rumboot_irq_controller *dev, uint32_t irq, int priority)
+{
+    /* TODO: Implement me */
+}
+
 static const struct rumboot_irq_controller irq_ctl = {
+    .name  = "MPIC",
     .first = 0,
     .last = MPIC128_INTERRUPT_MAX,
     .init = mpic128_init,
     .begin = mpic128_begin,
     .end = mpic128_end,
     .generate_swint = mpic128_generate_swint,
-    .configure = mpic128_configure
+    .configure = mpic128_configure,
+    .priority_min = 0,
+    .priority_max = 15,
+    .priority_default = 1,
+    .adjust_priority = mpic128_adjust_priority,
 };
 
 void rumboot_irq_register_mpic128() {

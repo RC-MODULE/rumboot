@@ -113,6 +113,8 @@ static inline uint32_t rumboot_arch_irq_setstate(uint32_t new_state)
      * This struct represents an IRQ controller in the system
      */
     struct rumboot_irq_controller {
+        /** Human-readable name for this controller */
+        const char *name;
     	int			first; /** The first IRQ line handled by this controller */
     	int			last; /** The last IRQ line handled by this controller */
 
@@ -157,15 +159,29 @@ static inline uint32_t rumboot_arch_irq_setstate(uint32_t new_state)
          */
     	void		(*generate_swint)(const struct rumboot_irq_controller *dev, uint32_t irq);
 
-	void		(*slave_save)(void);
-	void		(*slave_restore)(void);
+        /**
+         * Deprecated. Do not use.
+         */
+	    void		(*slave_save)(void);
+        /**
+         * Deprecated. Do not use.
+         */
+	    void		(*slave_restore)(void);
+
+
+	    void		(*adjust_priority)(const struct rumboot_irq_controller *dev, uint32_t irq, int priority);
+        /**
+         * Maximum possible interrupt priority supported by this controller
+         */
+        int         priority_max;
 
         /**
-         * Pointer for implementation-specic data
-         * @return [description]
+         * Minimum possible interrupt priority supported by this controller
          */
-    	void 		*controllerdata;
+        int         priority_min;
 
+        /** Default irq line priority (if not set) */
+        int         priority_default;
     };
 
     /**
@@ -200,6 +216,50 @@ static inline uint32_t rumboot_arch_irq_setstate(uint32_t new_state)
      */
      void rumboot_irq_set_handler(struct rumboot_irq_entry *tbl, int irq, uint32_t flags,
         void (*handler)(int irq, void *args), void *arg);
+
+
+     /**
+     * Sets IRQ line priority, greater numbers indentify interrupts to be
+     * serviced first.
+     *
+     * The maximum and minimum priorities are specified in
+     * struct rumboot_irq_controller and should be obtained by
+     * rumboot_irq_prioity_get_max() and rumboot_irq_prioity_get_min() functions
+     *
+     * If the requesed priority if greater than maximum possible or lesser
+     * that minimum possible a warning will be generated and maximum and minimum
+     * priorities will be used instead.
+     *
+     * For convenience, this function returns previous priority value.
+     *
+     * @param tbl      IRQ table to work with. Specify NULL for currently active table
+     * @param irq      IRQ number
+     * @param priority New priority
+     * @return Previous priority
+     */
+     int rumboot_irq_priority_adjust(struct rumboot_irq_entry *tbl, int irq, int priority);
+
+     /**
+      * Returns current IRQ priority for an IRQ line
+      *
+      * @param  tbl IRQ table to work with. Specify NULL for currently active table
+      * @param  irq IRQ number
+      * @return IRQ priority
+      */
+     int rumboot_irq_priority_get(struct rumboot_irq_entry *tbl, int irq);
+
+     /**
+      * Returns the maximum possible priority for the line
+      * @param  irq [description]
+      * @return     [description]
+      */
+     int rumboot_irq_prioity_get_max(int irq);
+     /**
+      * Returns the minimum possible priority for the line
+      * @param  irq [description]
+      * @return     [description]
+      */
+     int rumboot_irq_prioity_get_min(int irq);
 
     /**
      * Request controller to generate an interrupt on line irq.
