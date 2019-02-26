@@ -32,14 +32,14 @@
 
 
 
-#define TLB_ENTRY_CACHE           MMU_TLB_ENTRY( 0x000, 0x00000, 0x00000, MMU_TLBE_DSIZ_1GB, 0b0,  0b0, 0b1, 0b0, 0b0, 0b0, MMU_TLBE_E_BIG_END, 0b0,0b0,0b0, 0b1,0b1,0b1, 0b0,   0b0,  0b0, MEM_WINDOW_0, MMU_TLBWE_WAY_3,   MMU_TLBWE_BE_UND, 0b1 )
-#define TLB_ENTRY_INV             MMU_TLB_ENTRY( 0x000, 0x00000, 0x00000, MMU_TLBE_DSIZ_1GB, 0b1,  0b1, 0b0, 0b1, 0b0, 0b0, MMU_TLBE_E_BIG_END, 0b0,0b0,0b0, 0b1,0b1,0b1, 0b0,   0b0,  0b0, MEM_WINDOW_0, MMU_TLBWE_WAY_3,   MMU_TLBWE_BE_UND, 0b0 )
+#define TLB_ENTRY_CACHE           MMU_TLB_ENTRY( 0x000, 0x40000, 0x40000, MMU_TLBE_DSIZ_1GB, 0b0,  0b0, 0b1, 0b0, 0b0, 0b0, MMU_TLBE_E_BIG_END, 0b0,0b0,0b0, 0b1,0b1,0b1, 0b0,   0b0,  0b0, MEM_WINDOW_0, MMU_TLBWE_WAY_3,   MMU_TLBWE_BE_UND, 0b1 )
+#define TLB_ENTRY_INV             MMU_TLB_ENTRY( 0x000, 0x40000, 0x40000, MMU_TLBE_DSIZ_1GB, 0b1,  0b1, 0b0, 0b1, 0b0, 0b0, MMU_TLBE_E_BIG_END, 0b0,0b0,0b0, 0b1,0b1,0b1, 0b0,   0b0,  0b0, MEM_WINDOW_0, MMU_TLBWE_WAY_3,   MMU_TLBWE_BE_UND, 0b0 )
 
 typedef void func(void);
 
-#define FUNC_ADDR1      (SRAM0_BASE + 0x0)
-#define FUNC_ADDR2      (SRAM0_BASE + 0x1000)
-#define FUNC_ADDR3      (SRAM0_BASE + 0x3F000)
+#define FUNC_ADDR1      (SSRAM_BASE + 0x0)
+#define FUNC_ADDR2      (SSRAM_BASE + 0x1000)
+#define FUNC_ADDR3      (SSRAM_BASE + 0x3F000)
 
 func* trace_bt_func = (func*)(FUNC_ADDR1);
 func* trace1_bt_func1 = (func*)(FUNC_ADDR2);
@@ -689,7 +689,7 @@ int main()
 
     emi_init(DCR_EM2_EMI_BASE);
 
-    rumboot_platform_request_file("SBIN", SRAM0_BASE);
+    rumboot_platform_request_file("SBIN", SSRAM_BASE);
 
     static const tlb_entry tlb_entries[] =
        {

@@ -1,7 +1,4 @@
-MEMORY
-{
-    SRAM0 (rwx)       : ORIGIN = 0x00000000, LENGTH = 0x100000
-}
+INCLUDE oi10/memory.lds.h
 
 SECTIONS
 {
@@ -31,7 +28,7 @@ SECTIONS
 
     . = 0x40000;
 
- } > SRAM0
+ } > SSRAM
 
  .runtime 0x8001ff00 (NOLOAD): {
     /* Runtime info is at the very top of iram */
