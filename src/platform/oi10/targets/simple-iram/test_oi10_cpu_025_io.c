@@ -8,26 +8,36 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
+#include <unistd.h>
+
 #include <rumboot/printf.h>
 #include <rumboot/platform.h>
 #include <rumboot/macros.h>
 #include <rumboot/io.h>
 #include <rumboot/irq.h>
-#include <arch/ppc_476fp_lib_c.h>
+
 #include <platform/test_assert.h>
 #include <platform/devices.h>
 #include <platform/trace.h>
 #include <platform/test_event_c.h>
+#include <platform/interrupts.h>
+
+#include <arch/ppc_476fp_lib_c.h>
 #include <platform/arch/ppc/ppc_476fp_mmu_fields.h>
 #include <platform/arch/ppc/ppc_476fp_mmu.h>
 #include <platform/arch/ppc/test_macro.h>
 #include <platform/ppc470s/mmu/mem_window.h>
+
 #include <platform/devices/emi.h>
+#include <platform/devices/l2c.h>
 #include <platform/devices/dma2plb6.h>
+
+#include <platform/regs/regs_dma2plb6.h>
 #include <platform/regs/regs_plb4plb6.h>
 #include <platform/regs/regs_plb4ahb.h>
-#include <platform/devices/l2c.h>
-#include <platform/interrupts.h>
+#include <platform/regs/regs_plb6bc.h>
+#include <platform/regs/regs_dcrarb.h>
+#include <platform/regs/regs_p64.h>
 #include <platform/regs/fields/mpic128.h>
 #include <platform/regs/regs_l2c_l2.h>
 #include <platform/regs/regs_l2c.h>
@@ -74,10 +84,10 @@
 //            //         MMU_TLB_ENTRY(  ERPN,   RPN,        EPN,        DSIZ,                   IL1I,   IL1D,   W,      I,      M,      G,      E,                      UX, UW, UR,     SX, SW, SR      DULXE,  IULXE,      TS,     TID,                WAY,                BID,                V   )
 //                      {MMU_TLB_ENTRY(  0x011,  0x00000,    0x00000,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b0,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )};
 
-static const tlb_entry fake_tlb_entry =
-            //         MMU_TLB_ENTRY(  ERPN,   RPN,        EPN,        DSIZ,                   IL1I,   IL1D,   W,      I,      M,      G,      E,                      UX, UW, UR,     SX, SW, SR      DULXE,  IULXE,      TS,     TID,                WAY,                BID,                V   )
-                      {MMU_TLB_ENTRY(  0x004,  0x00000,    0x00000,    MMU_TLBE_DSIZ_1GB,      0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )};
-
+//static const tlb_entry fake_tlb_entry =
+            //                   MMU_TLB_ENTRY(  ERPN,   RPN,        EPN,        DSIZ,                   IL1I,   IL1D,   W,      I,      M,      G,      E,                      UX, UW, UR,     SX, SW, SR      DULXE,  IULXE,      TS,     TID,                WAY,                BID,                V   )
+#define TLB_ENTRY_FAKE           MMU_TLB_ENTRY(  0x000,  0x00000,    0x00000,    MMU_TLBE_DSIZ_1GB,      0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
+                               //MMU_TLB_ENTRY(  0x000,  0x00000,    0x00000,    MMU_TLBE_DSIZ_1GB,      0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
 #define CURRENT_CORE_PPC0   0
 #define CURRENT_CORE_PPC1   1
 
@@ -86,46 +96,6 @@ volatile uint32_t MC_HANDLED = 0;
 volatile uint32_t START_SLAVE_CORE_TEST_PART = 0;
 volatile uint32_t FINISH_SLAVE_CORE_TEST_PART = 0;
 
-
-//void slave_core_test_part(uint32_t l2c_dcr_base)
-//{
-//    if (FINISH_SLAVE_CORE_TEST_PART)
-//    {
-//        rumboot_printf("Slave core test part is OK\n");
-//        test_event(EVENT_OK);
-//        return;
-//    }
-//
-//    irq_init_cpu_int_vec();
-//
-//    if (l2c_dcr_base==DCR_L2C_BASE)
-//        irq_set_handler(irq_source_Machine_check, slave_core_interrupt_handler_l2c1);
-//    else
-//        irq_set_handler(irq_source_Machine_check, slave_core_interrupt_handler_l2c0);
-//
-//    msr_write(msr_read() | (1<<ITRPT_XSR_ME_i));
-//
-//    while (!START_SLAVE_CORE_TEST_PART);
-//    rumboot_printf("Generate HANG from slave core\n");
-//    generate_P6BC_O_SYSTEM_HUNG(l2c_dcr_base);
-//    rumboot_printf("exit from slave_core_test_part\n");
-//}
-//
-//void slave_core_interrupt_handler_l2c1()
-//{
-//    //TODO: need to remove magic
-//    L2C1_L2PLBFERR0_DCR_read();
-//    L2C1_L2PLBFRC0_DCR_write(0);
-//    SPR_DBCR0_write(SPR_DBCR0_read() | (0b01 << (63-35)));//reset slave core
-//}
-//
-//void slave_core_interrupt_handler_l2c0()
-//{
-//    //TODO: need to remove magic
-//    L2C0_L2PLBFERR0_DCR_read();
-//    L2C0_L2PLBFRC0_DCR_write(0);
-//    SPR_DBCR0_write(SPR_DBCR0_read() | (0b01 << (63-35)));//reset slave core
-//}
 
 static void exception_handler(int const id, char const * const name ) {
     rumboot_printf( "Exception: %s\n", name );
@@ -214,38 +184,26 @@ void generate_P6BC_O_SYSTEM_HUNG(uint32_t l2c_dcr_base)
     l2c_l2_write(l2c_dcr_base,  L2C_L2PLBMCKEN1 , 0x0);
     l2c_l2_write(l2c_dcr_base, L2C_L2CPUMCKEN,0x0);
     //TODO: need to remove magic
-    //l2c_l2_write(l2c_dcr_base, L2C_L2WACCFG, L2C_L2WACCFG_DCR_read(l2c_dcr_base) | (1 << (31 - 15)));//set DisablePlbErrScrub
-   // dcr_write (DCR_PLB6_BC_BASE + PLB6BC_HCPP, PLB6BC_HCPP_4K);
+    l2c_l2_write(l2c_dcr_base, L2C_L2WACCFG, l2c_l2_read(l2c_dcr_base, L2C_L2WACCFG) | (1 << (31 - 15)));//set DisablePlbErrScrub
+    dcr_write (DCR_PLB6_BC_BASE + PLB6BC_HCPP, PLB6BC_HCPP_4K);
+    static tlb_entry fake_tlb_entry = {TLB_ENTRY_FAKE};
     write_tlb_entries(&fake_tlb_entry,1);
 
-    //MEM32(0x00) = 0xBABAABBA;
+    iowrite32( 0xBABAABBA, 0x00);
     //usleep(80);
 }
 
 void generate_BR6TO4_INTR(uint32_t base_address)
 {
     rumboot_printf("Check BR6TO4_INTR generation\n");
-    //dcr_write(base_address + P64_TESR, 0b1 << ESR_TESR_P6WPE_i);
-}
-
-void generate_PLB4XAHB_INTR(uint32_t plb4plb6_base)
-{
-    //dcr_write(plb4plb6_base + P46_TESR, 0b1 << ESR_TESR_P4APE_i);
+    dcr_write(base_address + P64_TESR, 0b1 << ESR_TESR_P6WPE_i);
 }
 
 void generate_ARB_SYSDCRERR()
 {
-   // dcrarb_set_timeout_counter_control(0x1);//set non-zero value to enable timeout counter // ???????
+    dcr_write(DCR_ARB_BASE + DCRARB_DACR, (0x1 << DCRARB_DACR_TOCNT_i));
     dcr_read(UNEXIST_DCR_ADDR);
 }
-
-//void setup_interrupt(uint32_t interrupt_number, void *interrupt_handler)
-//{
-//    mpic128_unmask_interrupt( MPICx_BASE, interrupt_number );
-//    irq_set_handler(interrupt_number, interrupt_handler);
-//    irq_set_type(interrupt_number, irq_mpic_type_critical);
-//    irq_unmask(interrupt_number);
-//}
 
 void wait_interrupt(uint32_t interrupt_number)
 {
@@ -351,46 +309,44 @@ void P6BC_O_SYSTEM_HUNG_L2C_reg_int_handler()
     rumboot_printf("P6BC_O_SYSTEM_HUNG_L2C1_reg_int_handler\n");
     SET_BIT(MC_HANDLED, O_SYSTEM_HUNG);
     msync();
-    //l2c_l2_write(DCR_L2C_BASE, L2C_L2WACCFG,L2C_L2WACCFG_DCR_read(DCR_L2C_BASE) & ~(1 << (31 - 15)));//clear DisablePlbErrScrub
-    FINISH_SLAVE_CORE_TEST_PART = 1;
+    l2c_l2_write(DCR_L2C_BASE, L2C_L2WACCFG,l2c_l2_read(DCR_L2C_BASE, L2C_L2WACCFG) & ~(1 << (31 - 15)));//clear DisablePlbErrScrub
     msync();
-   // l2c_l2_write( L2C_L2PLBFRC0 ,(1 << L2C_L2PLBFRC0_IntvnDataPE0_i) );//generate interrupt for reset slave core
+    l2c_l2_write(DCR_L2C_BASE, L2C_L2PLBFRC0 ,(1 << L2C_L2PLBFRC0_IntvnDataPE0_i) );//generate interrupt for reset slave core
 }
 
 void P6P4_0_BR6TO4_INTR_reg_int_handler()
 {
     rumboot_printf("P6P4_0_BR6TO4_INTR_reg_int_handler\n");
     SET_BIT(MC_HANDLED, PLB6PLB40_O_0_BR6TO4_INTR);
-    //TEST_ASSERT(p64_dcr_read_P64_ESR(DCR_PLB6PLB4_0_BASE) & (0b1 << ESR_TESR_P6WPE_i), "Wrong value in P6P4_0 ESR reg. Expected ESR[P6BPE]=1\n");
-   // p64_dcr_write_P64_ESR(DCR_PLB6PLB4_0_BASE, (0b1 << ESR_TESR_P6WPE_i));
+    TEST_ASSERT(dcr_read(DCR_PLB6PLB4_0_BASE + P64_ESR) & (0b1 << ESR_TESR_P6WPE_i), "Wrong value in P6P4_0 ESR reg. Expected ESR[P6BPE]=1\n");
+    dcr_write(DCR_PLB6PLB4_0_BASE + P64_ESR, (0b1 << ESR_TESR_P6WPE_i));
 }
 
 void P6P4_1_BR6TO4_INTR_reg_int_handler()
 {
     rumboot_printf("P6P4_1_BR6TO4_INTR_reg_int_handler\n");
     SET_BIT(MC_HANDLED, PLB6PLB41_O_BR6TO4_INTR);
-    //TEST_ASSERT(p64_dcr_read_P64_ESR(DCR_PLB6PLB4_1_BASE) & (0b1 << ESR_TESR_P6WPE_i), "Wrong value in P6P4_1 ESR reg. Expected ESR[P6BPE]=1\n");
-    //p64_dcr_write_P64_ESR(DCR_PLB6PLB4_1_BASE, (0b1 << ESR_TESR_P6WPE_i));
+    TEST_ASSERT(dcr_read(DCR_PLB6PLB4_1_BASE + P64_ESR) & (0b1 << ESR_TESR_P6WPE_i), "Wrong value in P6P4_1 ESR reg. Expected ESR[P6BPE]=1\n");
+    dcr_write(DCR_PLB6PLB4_1_BASE + P64_ESR, (0b1 << ESR_TESR_P6WPE_i));
 }
 
 void ARB_SYSDCRERR_reg_int_handler()
 {
-    //uint32_t daesr_reg;
+    uint32_t daesr_reg;
     rumboot_printf("ARB_SYSDCRERR_reg_int_handler\n");
     SET_BIT(MC_HANDLED, ARB_SYSDCRERR);
-    //daesr_reg = DCRARB_dcr_read_DAESR(DCR_ARB_BASE);
-    //TEST_ASSERT((daesr_reg & (0b1 << DCRARB_DAESR_TE_i)) && (daesr_reg & (0b1 << DCRARB_DAESR_EV_i)), "Failed to set DCRARB DAESR[TE] and DAESR[EV] bit");
-    //dcrarb_clear_daesr();
+    daesr_reg = dcr_read(DCR_ARB_BASE + DCRARB_DAESR); //??
+    TEST_ASSERT((daesr_reg & (0b1 << DCRARB_DAESR_TE_i)) && (daesr_reg & (0b1 << DCRARB_DAESR_EV_i)), "Failed to set DCRARB DAESR[TE] and DAESR[EV] bit");
+    dcr_write(DCR_ARB_BASE + DCRARB_DAESR, 0b1<<DCRARB_DAESR_EV_i); //dcrarb_clear_daesr //??
 }
 
 void test_setup( uint32_t interrupt_number )
 {
 
-
     switch (interrupt_number)
     {
     case O_SYSTEM_HUNG:
-
+                        rumboot_printf("Set handler for O_SYSTEM_HUNG\n");
                         rumboot_irq_cli();
                         tbl = rumboot_irq_create( NULL );
                         rumboot_irq_set_handler( tbl, O_SYSTEM_HUNG, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, P6BC_O_SYSTEM_HUNG_L2C_reg_int_handler, NULL );
@@ -401,6 +357,7 @@ void test_setup( uint32_t interrupt_number )
                         MC_HANDLED = 0;
     break;
     case PLB6PLB40_O_0_BR6TO4_INTR:
+                        rumboot_printf("Set handler for PLB6PLB40_O_0_BR6TO4_INTR \n");
                         rumboot_irq_cli();
                         tbl = rumboot_irq_create( NULL );
                         rumboot_irq_set_handler( tbl, PLB6PLB40_O_0_BR6TO4_INTR, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, P6P4_0_BR6TO4_INTR_reg_int_handler, NULL );
@@ -411,9 +368,10 @@ void test_setup( uint32_t interrupt_number )
                         MC_HANDLED = 0;
     break;
     case PLB6PLB41_O_BR6TO4_INTR:
+                        rumboot_printf("Set handler for PLB6PLB41_O_BR6TO4_INTR\n");
                         rumboot_irq_cli();
                         tbl = rumboot_irq_create( NULL );
-                        //rumboot_irq_set_handler( tbl, PLB6PLB41_O_BR6TO4_INTR, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, critical_interrupt_handler_reg, NULL );
+                        rumboot_irq_set_handler( tbl, PLB6PLB41_O_BR6TO4_INTR, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, P6P4_1_BR6TO4_INTR_reg_int_handler, NULL );
                         rumboot_irq_table_activate( tbl );
                         rumboot_irq_enable( PLB6PLB41_O_BR6TO4_INTR );
                         rumboot_irq_sei();
@@ -421,9 +379,10 @@ void test_setup( uint32_t interrupt_number )
                         MC_HANDLED = 0;
     break;
     case ARB_SYSDCRERR:
+                        rumboot_printf("Set handler for ARB_SYSDCRERR\n");
                         rumboot_irq_cli();
                         tbl = rumboot_irq_create( NULL );
-                        //rumboot_irq_set_handler( tbl, ARB_SYSDCRERR, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, critical_interrupt_handler_reg, NULL );
+                        rumboot_irq_set_handler( tbl, ARB_SYSDCRERR, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, ARB_SYSDCRERR_reg_int_handler, NULL );
                         rumboot_irq_table_activate( tbl );
                         rumboot_irq_enable( ARB_SYSDCRERR );
                         rumboot_irq_sei();
@@ -443,24 +402,20 @@ void check_interrupt_from_io_dev_reg(uint32_t interrupt_number)
                                             rumboot_printf("Check software generation P6BC_O_SYSTEM_HUNG\n");
                                             //setup_interrupt(interrupt_number, P6BC_O_SYSTEM_HUNG_L2C_reg_int_handler);
                                             //generate_P6BC_O_SYSTEM_HUNG(DCR_L2C_BASE);
-                                            START_SLAVE_CORE_TEST_PART = 1;
-                                            break;
+                                            //START_SLAVE_CORE_TEST_PART = 1;
 
+                                            break;
         case PLB6PLB40_O_0_BR6TO4_INTR:
                                             rumboot_printf("Check software generation P6P4_0_BR6TO4_INTR\n");
-                                            //setup_interrupt(interrupt_number, P6P4_0_BR6TO4_INTR_reg_int_handler);
                                             generate_BR6TO4_INTR(DCR_PLB6PLB4_0_BASE);
                                             break;
-
         case PLB6PLB41_O_BR6TO4_INTR:
                                             rumboot_printf("Check software generation P6P4_1_BR6TO4_INTR\n");
-                                            //setup_interrupt(interrupt_number, P6P4_1_BR6TO4_INTR_reg_int_handler);
                                             generate_BR6TO4_INTR(DCR_PLB6PLB4_1_BASE);
                                             break;
 
         case ARB_SYSDCRERR:
                                             rumboot_printf("Check ARB_SYSDCRERR generation\n");
-                                            //setup_interrupt(interrupt_number, ARB_SYSDCRERR_reg_int_handler);
                                             generate_ARB_SYSDCRERR();
                                             break;
 
@@ -471,27 +426,27 @@ void check_interrupt_from_io_dev_reg(uint32_t interrupt_number)
 
     wait_interrupt(interrupt_number);
 }
+
 int main()
 {
+    rumboot_memfill8_modelling((void*)SRAM0_BASE, 0x1000, 0x00, 0x00); //workaround (init 4KB SRAM0)
+       rumboot_printf("Test start!\n");
 
+       MC_HANDLED = 0;
        rumboot_irq_set_exception_handler(exception_handler);
-//    check_interrupt_from_io_dev_inj(irq_source_DMA0_O_S_SLV_ERR_INT);
-//    check_interrupt_from_io_dev_inj(irq_source_DMA1_O_S_SLV_ERR_INT);
+
+//    check_interrupt_from_io_dev_inj(DMA2PLB6_SLV_ERR_INT);
 //    check_interrupt_from_io_dev_inj(O_SYSTEM_HUNG);
 //    check_interrupt_from_io_dev_inj(PLB6PLB40_O_0_BR6TO4_INTR);
 //    check_interrupt_from_io_dev_inj(PLB6PLB41_O_BR6TO4_INTR);
-//    check_interrupt_from_io_dev_inj(irq_source_PLB6PLB4_2_O_BR6TO4_INTR);
-//    check_interrupt_from_io_dev_inj(irq_source_PLB6PLB4_3_O_BR6TO4_INTR);
-//    check_interrupt_from_io_dev_inj(irq_source_PLB4XAHB0_INTR);
-//    check_interrupt_from_io_dev_inj(PLB4XAHB1_INTR);
-//    check_interrupt_from_io_dev_inj(irq_source_PLB4XAHB2_INTR);
 //    check_interrupt_from_io_dev_inj(ARB_SYSDCRERR);
 
-    MC_HANDLED = 0;
-    check_interrupt_from_io_dev_reg(O_SYSTEM_HUNG); //O_SYSTEM_HUNG
+
+    //check_interrupt_from_io_dev_reg(O_SYSTEM_HUNG); //O_SYSTEM_HUNG
     check_interrupt_from_io_dev_reg(PLB6PLB40_O_0_BR6TO4_INTR); //PLB6PLB40_O_0_BR6TO4_INTR
     check_interrupt_from_io_dev_reg(PLB6PLB41_O_BR6TO4_INTR); //PLB6PLB41_O_BR6TO4_INTR
     check_interrupt_from_io_dev_reg(ARB_SYSDCRERR); //ARB_SYSDCRERR
+
 
     return 0;
 }
