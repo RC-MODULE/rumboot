@@ -55,23 +55,22 @@ static void check_addr_in_l2c (uint32_t addr, bool expected)
 
 static void check_rd_wr_hard (uint32_t code_ev, uint32_t r_addr, uint32_t w_addr, uint32_t * data)
 {
-    uint32_t event_arr[3];
+    uint32_t event_arr[4];
     uint32_t r_data = 0x00;
+
+    event_arr[0] = code_ev; event_arr[1] = r_addr, event_arr[2] = w_addr; event_arr[3] = (*data) + 1;
+    rumboot_platform_event_raise(EVENT_TESTEVENT, event_arr, ARRAY_SIZE(event_arr) );
 
     r_data = ioread32(r_addr);
     TEST_ASSERT (r_data == *data, "TEST ASSERT: invalid data");
     (*data)++;
 
-    event_arr[0] = code_ev; event_arr[1] = w_addr; event_arr[2] = *data;
-    rumboot_platform_event_raise(EVENT_TESTEVENT, event_arr, ARRAY_SIZE(event_arr) );
-
     iowrite32(*data, w_addr);
-    msync();
 }
 
 static void check_rd_wr_soft (uint32_t code_ev, uint32_t r_addr, uint32_t w_addr, uint32_t * data, bool data_l2c_expect)
 {
-    uint32_t event_arr[3];
+    uint32_t event_arr[4];
     uint32_t r_data = 0x00;
 
     if (data_l2c_expect)
@@ -85,18 +84,16 @@ static void check_rd_wr_soft (uint32_t code_ev, uint32_t r_addr, uint32_t w_addr
     dcbt(0, r_addr);
     check_addr_in_l2c (r_addr, data_l2c_expect);
 
+    event_arr[0] = code_ev; event_arr[1] = r_addr; event_arr[2] = w_addr; event_arr[3] = (*data) + 1;
+    rumboot_platform_event_raise(EVENT_TESTEVENT, event_arr, ARRAY_SIZE(event_arr) );
+
     r_data = ioread32(r_addr);
     TEST_ASSERT (r_data == *data, "TEST ASSERT: invalid data");
     (*data)++;
 
-    event_arr[0] = code_ev; event_arr[1] = w_addr; event_arr[2] = *data;
-    rumboot_platform_event_raise(EVENT_TESTEVENT, event_arr, ARRAY_SIZE(event_arr) );
-
     iowrite32(*data, w_addr);
     dcbf((void*)w_addr);
     msync();
-
-    check_addr_in_l2c (w_addr, data_l2c_expect);
     dci(2);
 }
 
