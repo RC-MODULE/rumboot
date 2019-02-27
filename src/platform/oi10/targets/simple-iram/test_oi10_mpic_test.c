@@ -185,28 +185,44 @@ void timer_stop()
 
 void ext_int_set_level(struct rumboot_irq_entry *tbl)
 {
-    rumboot_printf("Set level sense per interrupt source\n");
+    rumboot_printf("\n------------------------------------\n"
+                     "Set level sense per interrupt source\n"
+                     "------------------------------------\n");
     rumboot_irq_cli();
-    rumboot_irq_set_handler( tbl, EXT_INT0, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH | RUMBOOT_IRQ_PRIOR_3, irq_handler, &arg0 );
-    rumboot_irq_set_handler( tbl, EXT_INT1, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH | RUMBOOT_IRQ_PRIOR_4, irq_handler, &arg1 );
-    rumboot_irq_set_handler( tbl, EXT_INT2, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH | RUMBOOT_IRQ_PRIOR_6, irq_handler, &arg2 );
-    rumboot_irq_set_handler( tbl, EXT_INT3, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH | RUMBOOT_IRQ_PRIOR_7, irq_handler, &arg3 );
-    rumboot_irq_set_handler( tbl, EXT_INT4, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH | RUMBOOT_IRQ_PRIOR_12, irq_handler, &arg4 );
-    rumboot_irq_set_handler( tbl, EXT_INT5, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH | RUMBOOT_IRQ_PRIOR_14, irq_handler, &arg5 );
+    rumboot_irq_set_handler( tbl, EXT_INT0, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, irq_handler, &arg0 );
+    rumboot_irq_set_handler( tbl, EXT_INT1, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, irq_handler, &arg1 );
+    rumboot_irq_set_handler( tbl, EXT_INT2, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, irq_handler, &arg2 );
+    rumboot_irq_set_handler( tbl, EXT_INT3, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, irq_handler, &arg3 );
+    rumboot_irq_set_handler( tbl, EXT_INT4, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, irq_handler, &arg4 );
+    rumboot_irq_set_handler( tbl, EXT_INT5, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, irq_handler, &arg5 );
+    rumboot_irq_priority_adjust(tbl, EXT_INT0, MPIC128_PRIOR_3);
+    rumboot_irq_priority_adjust(tbl, EXT_INT1, MPIC128_PRIOR_4);
+    rumboot_irq_priority_adjust(tbl, EXT_INT2, MPIC128_PRIOR_6);
+    rumboot_irq_priority_adjust(tbl, EXT_INT3, MPIC128_PRIOR_7);
+    rumboot_irq_priority_adjust(tbl, EXT_INT4, MPIC128_PRIOR_12);
+    rumboot_irq_priority_adjust(tbl, EXT_INT5, MPIC128_PRIOR_14);
     rumboot_irq_table_activate( tbl );
     rumboot_irq_sei();
 }
 
 void ext_int_set_edge(struct rumboot_irq_entry *tbl)
 {
-    rumboot_printf("Set edge sense per interrupt source\n");
+    rumboot_printf("\n------------------------------------\n"
+                     "Set edge sense per interrupt source\n"
+                     "------------------------------------\n");
     rumboot_irq_cli();
-    rumboot_irq_set_handler( tbl, EXT_INT0, RUMBOOT_IRQ_EDGE | RUMBOOT_IRQ_POS | RUMBOOT_IRQ_PRIOR_3, irq_handler, &arg0 );
-    rumboot_irq_set_handler( tbl, EXT_INT1, RUMBOOT_IRQ_EDGE | RUMBOOT_IRQ_POS | RUMBOOT_IRQ_PRIOR_4, irq_handler, &arg1 );
-    rumboot_irq_set_handler( tbl, EXT_INT2, RUMBOOT_IRQ_EDGE | RUMBOOT_IRQ_POS | RUMBOOT_IRQ_PRIOR_6, irq_handler, &arg2 );
-    rumboot_irq_set_handler( tbl, EXT_INT3, RUMBOOT_IRQ_EDGE | RUMBOOT_IRQ_POS | RUMBOOT_IRQ_PRIOR_7, irq_handler, &arg3 );
-    rumboot_irq_set_handler( tbl, EXT_INT4, RUMBOOT_IRQ_EDGE | RUMBOOT_IRQ_POS | RUMBOOT_IRQ_PRIOR_12, irq_handler, &arg4 );
-    rumboot_irq_set_handler( tbl, EXT_INT5, RUMBOOT_IRQ_EDGE | RUMBOOT_IRQ_POS | RUMBOOT_IRQ_PRIOR_14, irq_handler, &arg5 );
+    rumboot_irq_set_handler( tbl, EXT_INT0, RUMBOOT_IRQ_EDGE | RUMBOOT_IRQ_POS, irq_handler, &arg0 );
+    rumboot_irq_set_handler( tbl, EXT_INT1, RUMBOOT_IRQ_EDGE | RUMBOOT_IRQ_POS, irq_handler, &arg1 );
+    rumboot_irq_set_handler( tbl, EXT_INT2, RUMBOOT_IRQ_EDGE | RUMBOOT_IRQ_POS, irq_handler, &arg2 );
+    rumboot_irq_set_handler( tbl, EXT_INT3, RUMBOOT_IRQ_EDGE | RUMBOOT_IRQ_POS, irq_handler, &arg3 );
+    rumboot_irq_set_handler( tbl, EXT_INT4, RUMBOOT_IRQ_EDGE | RUMBOOT_IRQ_POS, irq_handler, &arg4 );
+    rumboot_irq_set_handler( tbl, EXT_INT5, RUMBOOT_IRQ_EDGE | RUMBOOT_IRQ_POS, irq_handler, &arg5 );
+    rumboot_irq_priority_adjust(tbl, EXT_INT0, MPIC128_PRIOR_3);
+    rumboot_irq_priority_adjust(tbl, EXT_INT1, MPIC128_PRIOR_4);
+    rumboot_irq_priority_adjust(tbl, EXT_INT2, MPIC128_PRIOR_6);
+    rumboot_irq_priority_adjust(tbl, EXT_INT3, MPIC128_PRIOR_7);
+    rumboot_irq_priority_adjust(tbl, EXT_INT4, MPIC128_PRIOR_12);
+    rumboot_irq_priority_adjust(tbl, EXT_INT5, MPIC128_PRIOR_14);
     rumboot_irq_table_activate( tbl );
     rumboot_irq_sei();
 }
@@ -301,6 +317,7 @@ int main ()
         for (int i = 0; i < EXT_INT_TIMEOUT2; ++i) { nop(); }
         timer_stop();
 
+        test_event(TEC_CLR_EXT_INT_ALL);
     }
 
     return 0;
