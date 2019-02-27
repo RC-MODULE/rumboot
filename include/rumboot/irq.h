@@ -200,6 +200,9 @@ static inline uint32_t rumboot_arch_irq_setstate(uint32_t new_state)
         stack for every interrupt that is serviced is passed to begin() and end()
         calls */
         size_t scratch_size;
+
+        /** Base address for this controller */
+        uint32_t    base_address;
     };
 
     /**
