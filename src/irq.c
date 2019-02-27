@@ -138,14 +138,10 @@ void rumboot_irq_table_activate(struct rumboot_irq_entry *tbl)
 		rumboot_platform_runtime_info->irq_handler_table = tbl;
 		if (!tbl) {
 			int i = 0;
-			const struct rumboot_irq_controller *ctl = rumboot_irq_controller_by_irq(i);
 			for (i = 0; i < RUMBOOT_PLATFORM_NUM_IRQS; i++) {
 				if (tbl[i].handler) {
 					rumboot_irq_enable(i);
-					if (ctl->adjust_priority) {
-                        ctl->adjust_priority(ctl, i, tbl[i].priority);
-                    }
-			    }
+				}
             }
 		}
 	}
@@ -180,8 +176,10 @@ void rumboot_irq_enable(int irq)
 {
 	struct rumboot_irq_entry *tbl = rumboot_irq_table_fetch(NULL);
 	const struct rumboot_irq_controller *ctl = rumboot_irq_controller_by_irq(irq);
-	irq -= ctl->first;
-	ctl->configure(ctl, irq, tbl[irq].flags, 1);
+	ctl->configure(ctl, irq - ctl->first, tbl[irq].flags, 1);
+    if (ctl->adjust_priority) {
+        ctl->adjust_priority(ctl, irq - ctl->first, tbl[irq].priority);
+    }
 }
 
 void rumboot_irq_enable_all()
@@ -264,9 +262,41 @@ void rumboot_irq_core_dispatch(uint32_t ctrl, uint32_t type, uint32_t id)
 	}
 }
 
+int rumboot_irq_priority_adjust(struct rumboot_irq_entry *tbl, int irq, int priority)
+{
+        int ret;
+        const struct rumboot_irq_controller *ctl = rumboot_irq_controller_by_irq(irq);
+        tbl = rumboot_irq_table_fetch(tbl);
+
+        if (priority > ctl->priority_max) {
+                rumboot_printf("WARN: irq: priority %d is bigger than maximum (%d) for %s",
+                               priority, ctl->priority_max, ctl->name);
+                priority = ctl->priority_max;
+        }
+
+        if (priority < ctl->priority_min) {
+                rumboot_printf("WARN: irq: priority %d is less than minimum (%d) for %s",
+                               priority, ctl->priority_min, ctl->name);
+                priority = ctl->priority_min;
+        }
+
+        ret = tbl[irq].priority;
+        tbl[irq].priority = priority;
+
+        /* If the table is active, adjust priority immediately */
+        if (tbl == rumboot_irq_table_get()) {
+                if (ctl->adjust_priority) {
+                    ctl->adjust_priority(ctl, irq-ctl->first, priority);
+                }
+        }
+
+        /* Return old priority */
+        return ret;
+}
+
 int rumboot_irq_priority_get(struct rumboot_irq_entry *tbl, int irq)
 {
-        return tbl->priority;
+        return tbl[irq].priority;
 }
 
 int rumboot_irq_prioity_get_max(int irq)
