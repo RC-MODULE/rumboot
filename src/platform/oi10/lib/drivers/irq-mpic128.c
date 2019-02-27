@@ -40,8 +40,6 @@ static int mpic128_init( const struct rumboot_irq_controller *dev ) {
 }
 
 #define IRQ_TYPE_INDX 0
-#define CSRR1_INDX    1
-#define MSR_INDX      2
 
 #define MC_TYPE  3
 #define CR_TYPE  2
@@ -50,9 +48,6 @@ static int mpic128_init( const struct rumboot_irq_controller *dev ) {
 static uint32_t mpic128_begin( const struct rumboot_irq_controller *dev, void *scratch ) {
     uint32_t ack, spv, *data;
     data = scratch;
-    data[CSRR1_INDX] = spr_read(SPR_CSRR1);
-    data[MSR_INDX] = msr_read();
-    msync();
     spv = dcr_read( DCR_MPIC128_BASE + MPIC128_SPV );
     ack = dcr_read( DCR_MPIC128_BASE + MPIC128_IAR_PR );
     if(ack != spv) {
@@ -62,7 +57,7 @@ static uint32_t mpic128_begin( const struct rumboot_irq_controller *dev, void *s
     ack = dcr_read( DCR_MPIC128_BASE + MPIC128_CIAR_PR );
     if(ack != spv) {
         data[IRQ_TYPE_INDX] = CR_TYPE;
-        msr_write(data[CSRR1_INDX]);
+        msr_write(spr_read(SPR_CSRR1));
         return ack;
     }
     ack = dcr_read( DCR_MPIC128_BASE + MPIC128_NCIAR_PR );
@@ -79,7 +74,6 @@ static void mpic128_end( const struct rumboot_irq_controller *dev, void *scratch
             return;
         }
         if(data[IRQ_TYPE_INDX] == CR_TYPE) {
-            //msr_write(data[MSR_INDX]);
             dcr_write( DCR_MPIC128_BASE + MPIC128_CEOI_PR, 0 );
             return;
         }
@@ -124,6 +118,12 @@ static inline __attribute__((always_inline)) void mpic128_unmask_int( uint32_t c
                       & ~(1 << MPIC128_VP_MSK_i) );
 }
 
+static inline __attribute__((always_inline)) int mpic128_is_unmasked_int( uint32_t const vp_addr ) {
+    uint32_t vpvalue = dcr_read( vp_addr );
+    if( vpvalue & ( 1 << MPIC128_VP_MSK_i ) ) return 0;
+    return 1;
+}
+
 static inline uint32_t enable_mpic128_vp_modify( uint32_t const vp_addr ) {
     uint32_t vpvalue = dcr_read( vp_addr );
     if( !( vpvalue & ( 1 << MPIC128_VP_MSK_i ) ) || ( vpvalue & ( 1 << MPIC128_VP_ACT_i ) ) ) {
@@ -151,13 +151,7 @@ static inline __attribute__((always_inline)) uint32_t mpic128_setup_vp( uint32_t
     return vpvalue;
 }
 
-static uint32_t mpic128_setup_ext_interrupt( uint32_t const base_address, int const irq, uint32_t const sense_polarity_priority ) {
-    uint32_t value = sense_polarity_priority;
-    uint32_t sense_polarity  = CLEAR_BITS_BY_MASK( value, FIELD_MASK32( MPIC128_VP_PRI_i, MPIC128_VP_PRI_n ));
-    value = sense_polarity_priority;
-    mpic128_prior_t priority = (mpic128_prior_t)(CLEAR_BITS_BY_MASK( value, FIELD_MASK32( MPIC128_VP_S_i, MPIC128_VP_S_n )
-                                                                          | FIELD_MASK32( MPIC128_VP_POL_i, MPIC128_VP_POL_n ) ) >> MPIC128_VP_PRI_i);
-    if(priority == MPIC128_PRIOR_0) priority = MPIC128_PRIOR_1; /* set lowest priority to enable interrupts handling */
+static uint32_t mpic128_setup_ext_interrupt( uint32_t const base_address, int const irq, uint32_t const sense_polarity ) {
     uint32_t const interrupt_vpaddr = mpic128_get_interrupt_vpaddr_by_num( irq );
     if( interrupt_vpaddr != MPIC128_XADDR_ERR ) {
         uint32_t const vpaddr = base_address + interrupt_vpaddr;
@@ -166,7 +160,7 @@ static uint32_t mpic128_setup_ext_interrupt( uint32_t const base_address, int co
         uint32_t const interrupt_dstaddr = mpic128_get_interrupt_dstaddr_by_num( irq );
         if( interrupt_dstaddr != MPIC128_XADDR_ERR ) dcr_write( base_address + interrupt_dstaddr, ( 1 << Processor0 ) );
 
-        vpvalue = mpic128_setup_vp( vpvalue, irq, priority ); /* set lowest priority to enable all interrupts handling */
+        vpvalue = mpic128_setup_vp( vpvalue, irq, MPIC128_PRIOR_1 ); /* set lowest priority to enable all interrupts handling */
         if( irq <= MPIC128_INTERRUPT_SOURCE_MAX ) vpvalue = mpic128_setup_interrupt_source( vpvalue, sense_polarity );
         dcr_write( vpaddr, vpvalue );
 
@@ -191,7 +185,21 @@ static void mpic128_configure( const struct rumboot_irq_controller *dev, int con
 
 void mpic128_adjust_priority(const struct rumboot_irq_controller *dev, uint32_t irq, int priority)
 {
-    /* TODO: Implement me */
+    uint32_t const interrupt_vpaddr = mpic128_get_interrupt_vpaddr_by_num( irq );
+    if( interrupt_vpaddr != MPIC128_XADDR_ERR ) {
+        uint32_t const vpaddr = DCR_MPIC128_BASE + interrupt_vpaddr;
+        int enabled = mpic128_is_unmasked_int(vpaddr);
+        uint32_t vpvalue = enable_mpic128_vp_modify( vpaddr );
+
+        uint32_t const interrupt_dstaddr = mpic128_get_interrupt_dstaddr_by_num( irq );
+        if( interrupt_dstaddr != MPIC128_XADDR_ERR ) dcr_write( DCR_MPIC128_BASE + interrupt_dstaddr, ( 1 << Processor0 ) );
+
+        vpvalue = mpic128_setup_vp( vpvalue, irq, priority );
+        dcr_write( vpaddr, vpvalue );
+
+        if(enabled) mpic128_unmask_int(vpaddr);
+    }
+
 }
 
 static const struct rumboot_irq_controller irq_ctl = {
