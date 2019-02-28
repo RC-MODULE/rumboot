@@ -63,14 +63,6 @@
 
 #define UNEXIST_DCR_ADDR                0x00
 
-//static const tlb_entry bootrom_mirror =
-//            //         MMU_TLB_ENTRY(  ERPN,   RPN,        EPN,        DSIZ,                   IL1I,   IL1D,   W,      I,      M,      G,      E,                      UX, UW, UR,     SX, SW, SR      DULXE,  IULXE,      TS,     TID,                WAY,                BID,                V   )
-//                      {MMU_TLB_ENTRY(  0x011,  0x00000,    0x00000,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b0,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )};
-
-//static const tlb_entry fake_tlb_entry =
-            //                   MMU_TLB_ENTRY(  ERPN,   RPN,        EPN,        DSIZ,                   IL1I,   IL1D,   W,      I,      M,      G,      E,                      UX, UW, UR,     SX, SW, SR      DULXE,  IULXE,      TS,     TID,                WAY,                BID,                V   )
-#define TLB_ENTRY_FAKE           MMU_TLB_ENTRY(  0x010,  0x00000,    0x00000,    MMU_TLBE_DSIZ_1GB,      0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
-#define TLB_ENTRY_OK             MMU_TLB_ENTRY(  0x000,  0x00000,    0x00000,    MMU_TLBE_DSIZ_1GB,      0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b0 )
 
 struct rumboot_irq_entry *tbl;
 volatile uint32_t MC_HANDLED = 0;
@@ -91,41 +83,18 @@ void generate_P6BC_O_SYSTEM_HUNG(uint32_t l2c_dcr_base)
     rumboot_printf("Check O_SYSTEM_HUNG generation\n");
     l2c_pmu_write(l2c_dcr_base, L2C_L2PLBMCKEN1, 0x0);
     l2c_pmu_write(l2c_dcr_base, L2C_L2CPUMCKEN, 0x0);
-    l2c_l2_write(l2c_dcr_base, L2C_L2WACCFG,l2c_l2_read(l2c_dcr_base, L2C_L2WACCFG) | (1 << L2C_L2WACCFG_DisablePlbErrScrub_i));//set DisablePlbErrScrub
+    l2c_l2_write(l2c_dcr_base, L2C_L2RACCFG,l2c_l2_read(l2c_dcr_base, L2C_L2RACCFG) | (1 << L2C_L2RACCFG_DisablePlbErrScrub_i));
+    l2c_l2_write(l2c_dcr_base, L2C_L2WACCFG,l2c_l2_read(l2c_dcr_base, L2C_L2WACCFG) | (1 << L2C_L2WACCFG_DisablePlbErrScrub_i));
     dcr_write(DCR_PLB6_BC_BASE + PLB6BC_HCPP, PLB6BC_HCPP_4K);
 
-    static const tlb_entry tlb_entry_fake [] = {{TLB_ENTRY_OK}, {TLB_ENTRY_FAKE}};
-    write_tlb_entries(tlb_entry_fake ,2);
+    static const tlb_entry tlb_entry_fake[] = {
+//       MMU_TLB_ENTRY(  ERPN,   RPN,        EPN,        DSIZ,                   IL1I,   IL1D,   W,      I,      M,      G,      E,                      UX, UW, UR,     SX, SW, SR      DULXE,  IULXE,      TS,     TID,                WAY,                BID,                V   )
+        {MMU_TLB_ENTRY(  0x040,  0x00000,    0x00000,    MMU_TLBE_DSIZ_1GB,      0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )}
+    };
+    write_tlb_entries( tlb_entry_fake, ARRAY_SIZE(tlb_entry_fake) );
 
-    uint32_t addr = 0;
-    uint32_t addr1 = 0;
-//    channel_status status = {};
-//    dma2plb6_setup_info dma_info = {
-//            .base_addr = DCR_DMAPLB6_BASE,
-//            .source_adr = rumboot_virt_to_phys((void*)addr),
-//            .dest_adr = rumboot_virt_to_phys((void*)addr1),
-//            .priority = priority_medium_low,
-//            .striding_info.striding = striding_none,
-//            .tc_int_enable = true,
-//            .err_int_enable = true,
-//            .int_mode = int_mode_level_wait_clr,
-//            .channel = channel0,
-//            .rw_transfer_size = rw_tr_size_1q,
-//            .transfer_width = tr_width_byte,
-//            .count = 0x1000,
-//            .snp_mode = snp_mode_off
-//    };
-//    dma2plb6_single_copy(&dma_info, &status);
-
-
-
-    while (MC_HANDLED == 0) {
-        iowrite32 (0x00, addr1);
-        addr = ioread32(addr1);
-        rumboot_printf ("OOOOOOOps! addr1 = %x\n", addr1);
-        rumboot_printf ("OOOOOOOps! r_data = %x\n", addr);
-    }
-    rumboot_printf ("waiting...\n");
+    iowrite32 (0x00, 0x00000000);
+    ioread32(0x00000000);
 }
 
 void generate_BR6TO4_INTR(uint32_t base_address)
@@ -196,10 +165,9 @@ void P6BC_O_SYSTEM_HUNG_L2C_reg_int_handler()
 {
     rumboot_printf("P6BC_O_SYSTEM_HUNG_L2C1_reg_int_handler\n");
     SET_BIT(MC_HANDLED, O_SYSTEM_HUNG);
-    msync();
-    l2c_l2_write(DCR_L2C_BASE, L2C_L2WACCFG,l2c_l2_read(DCR_L2C_BASE, L2C_L2WACCFG) & ~(1 << (31 - 15)));//clear DisablePlbErrScrub
-    msync();
-    l2c_l2_write(DCR_L2C_BASE, L2C_L2PLBFRC0 ,(1 << L2C_L2PLBFRC0_IntvnDataPE0_i) );//generate interrupt for reset slave core
+    l2c_l2_write(DCR_L2C_BASE, L2C_L2RACCFG, l2c_l2_read(DCR_L2C_BASE, L2C_L2RACCFG) & ~(1 << L2C_L2RACCFG_DisablePlbErrScrub_i));
+    l2c_l2_write(DCR_L2C_BASE, L2C_L2WACCFG, l2c_l2_read(DCR_L2C_BASE, L2C_L2WACCFG) & ~(1 << L2C_L2WACCFG_DisablePlbErrScrub_i));
+    l2c_l2_write(DCR_L2C_BASE, L2C_L2PLBFRC0,(1 << L2C_L2PLBFRC0_IntvnDataPE0_i) );//generate interrupt for reset slave core
 }
 
 void P6P4_0_BR6TO4_INTR_reg_int_handler()
@@ -418,12 +386,9 @@ int main()
 {
     test_event_send_test_id( "test_oi10_cpu_025_io");
 
-    rumboot_memfill8_modelling((void*)SRAM0_BASE, 0x1000, 0x00, 0x00); //workaround (init 4KB SRAM0)
-       rumboot_printf("Test start!\n");
+    rumboot_irq_set_exception_handler(exception_handler);
 
-       rumboot_irq_set_exception_handler(exception_handler);
-
-       MC_HANDLED = 0;
+    MC_HANDLED = 0;
 
     check_interrupt_from_io_dev_inj(DMA2PLB6_SLV_ERR_INT);
     check_interrupt_from_io_dev_inj(O_SYSTEM_HUNG);
@@ -432,10 +397,10 @@ int main()
     check_interrupt_from_io_dev_inj(ARB_SYSDCRERR);
 
 
-    //check_interrupt_from_io_dev_reg(O_SYSTEM_HUNG);
     check_interrupt_from_io_dev_reg(PLB6PLB40_O_0_BR6TO4_INTR);
     check_interrupt_from_io_dev_reg(PLB6PLB41_O_BR6TO4_INTR);
     check_interrupt_from_io_dev_reg(ARB_SYSDCRERR);
+    check_interrupt_from_io_dev_reg(O_SYSTEM_HUNG);
 
 
     return 0;
