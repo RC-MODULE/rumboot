@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <getopt.h>
 #include <stdint.h>
+#include <string.h>
 
 #define __swap32(value)                                 \
         ((((uint32_t)((value) & 0x000000FF)) << 24) |   \
