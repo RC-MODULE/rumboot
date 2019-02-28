@@ -178,7 +178,7 @@ struct rumboot_irq_entry *rumboot_irq_table_fetch(struct rumboot_irq_entry *tbl)
 
 void rumboot_irq_enable(int irq)
 {
-	struct rumboot_irq_entry *tbl = rumboot_irq_table_get();
+	struct rumboot_irq_entry *tbl = rumboot_irq_table_fetch(NULL);
 	const struct rumboot_irq_controller *ctl = rumboot_irq_controller_by_irq(irq);
 	irq -= ctl->first;
 	ctl->configure(ctl, irq, tbl[irq].flags, 1);
@@ -199,7 +199,7 @@ void rumboot_irq_enable_all()
 void rumboot_irq_disable(int irq)
 {
 	const struct rumboot_irq_controller *ctl = rumboot_irq_controller_by_irq(irq);
-	struct rumboot_irq_entry *tbl = rumboot_irq_table_get();
+	struct rumboot_irq_entry *tbl = rumboot_irq_table_fetch(NULL);
 	int flags = 0;
 
 	if (tbl) {
