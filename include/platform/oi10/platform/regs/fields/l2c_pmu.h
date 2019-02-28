@@ -248,7 +248,7 @@ BEGIN_ENUM( L2C_PMU_EVENT )
     /* Unconnected */
     DECLARE_ENUM_VAL(   PPCEV_NC_5,                30   ) /* PMU0_5_EVENT   */
     /* Unconnected */
-    DECLARE_ENUM_VAL(   PPCEV_NC_5,                31   ) /* PMU0_6_EVENT   */
+    DECLARE_ENUM_VAL(   PPCEV_NC_6,                31   ) /* PMU0_6_EVENT   */
 END_ENUM( L2C_PMU_EVENT )
 
 
