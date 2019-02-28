@@ -58,7 +58,8 @@ const struct rumboot_irq_controller *rumboot_irq_controller_by_irq(int irq)
 const struct rumboot_irq_controller *rumboot_irq_controller_by_id(int id)
 {
 	if ((id > RUMBOOT_PLATFORM_NUM_IRQ_CONTROLLERS) || (id < 0)) {
-			return NULL;
+    	rumboot_platform_panic("irq: Invalid IRQ controller ID: %d (max %d)\n",
+				id, RUMBOOT_PLATFORM_NUM_IRQ_CONTROLLERS);
 	}
 	return rumboot_platform_runtime_info->irq_ctl_dev[id];
 }
