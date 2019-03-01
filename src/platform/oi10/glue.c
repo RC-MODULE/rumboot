@@ -53,6 +53,11 @@ void rumboot_DTLBE_hdr();
 void rumboot_ITLBE_hdr();
 void rumboot_D_hdr();
 
+static void enable_fpu()
+{
+    msr_write(msr_read() | (1 << ITRPT_XSR_FP_i));
+}
+
 void rumboot_platform_setup() {
     /* Disable interrupts on the PPC core */
     uint32_t const msr_old_value = msr_read();
@@ -133,4 +138,6 @@ void rumboot_platform_setup() {
     extern char rumboot_nor_heap_start;
     extern char rumboot_nor_heap_end;
     rumboot_malloc_register_heap("NOR", &rumboot_nor_heap_start, &rumboot_nor_heap_end);
+
+    enable_fpu();
 }
