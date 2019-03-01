@@ -215,6 +215,7 @@ static const struct rumboot_irq_controller irq_ctl = {
     .priority_max = 15,
     .priority_default = 1,
     .adjust_priority = mpic128_adjust_priority,
+    .scratch_size = 4,
     .base_address = DCR_MPIC128_BASE,
 };
 
