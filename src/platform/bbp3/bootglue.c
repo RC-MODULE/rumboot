@@ -134,9 +134,11 @@ static void set_gpio_code(int code)
 
 void rumboot_platform_enter_host_mode()
 {
+        uint32_t maxsize;
         greth_dump_edcl_params(0, GRETH_Base);
         iowrite32(0xff, GPIOA_Base + GPIO_DIR);
-        set_gpio_code(1);
+        struct rumboot_bootheader *hdr = rumboot_platform_get_spl_area(&maxsize);
+        set_gpio_code(hdr->magic);
 }
 
 void *rumboot_platform_get_spl_area(size_t *size)
