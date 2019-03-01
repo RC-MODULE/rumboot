@@ -21,7 +21,7 @@ rumboot_add_configuration(
   CFLAGS -DRUMBOOT_ONLY_STACK -marm
   PREFIX ROM
   TIMEOUT_CTEST 200000
-  TIMEOUT 500 ms
+  TIMEOUT 1500 ms
   IRUN_FLAGS ${BOOTROM_IFLAGS}
   FEATURES ROMGEN
 )
@@ -52,7 +52,7 @@ rumboot_add_configuration (
 
 include(${CMAKE_SOURCE_DIR}/cmake/bootrom.cmake)
 
-set(ROM_115200_OPTS +UART0_SPEED=115200 )
+set(ROM_115200_OPTS +UART0_SPEED=115200)
 
 ### Add tests here ###
 #WARNING! Full regression automatically includes all tests from the short ones
