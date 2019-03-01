@@ -39,8 +39,6 @@
 #define TLB_ENTRY7_INV    MMU_TLB_ENTRY(  0x001,  0xc0000,    0x40000,    MMU_TLBE_DSIZ_1GB,      0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_3,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b0 )
 
 
-#define L2C_TIMEOUT     0x00000020
-
 //SRAM.A[6:0] maximum value. Change for debug purpose
 #define A_MAX 0x7F
 
