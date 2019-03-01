@@ -153,7 +153,7 @@ void P6P4_1_BR6TO4_INTR_inj_int_handler()
 void ARB_SYSDCRERR_inj_int_handler()
 {
     uint32_t daesr_reg;
-    rumboot_printf("ARB_SYSDCRERR_reg_int_handler\n");
+    rumboot_printf("ARB_SYSDCRERR_inj_int_handler\n");
     SET_BIT(MC_HANDLED, ARB_SYSDCRERR);
     daesr_reg = dcr_read(DCR_ARB_BASE + DCRARB_DAESR);
     TEST_ASSERT((daesr_reg & (0b1 << DCRARB_DAESR_TE_i)) && (daesr_reg & (0b1 << DCRARB_DAESR_EV_i)), "Failed to set DCRARB DAESR[TE] and DAESR[EV] bit");
