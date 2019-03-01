@@ -62,8 +62,8 @@ bool l2c_arracc_tag_info_read_by_way( uint32_t const base, uint32_t const ext_ph
         volatile uint32_t* tag_info )
 {
     int32_t  indx = 0;
-    uint32_t volatile l2arraccadr;
-    uint32_t volatile l2arraccctl;
+    uint32_t l2arraccadr;
+    uint32_t l2arraccctl;
     bool valid = false;
 
 #ifdef L2C_TRACE_DEBUG_MSG
@@ -108,8 +108,8 @@ bool l2c_arracc_tag_info_write_by_way_wo_gen_ecc( uint32_t base, uint32_t ext_ph
         uint32_t cache_data, uint32_t ecc_data)
 {
     int indx;
-    uint32_t volatile l2arraccadr;
-    uint32_t volatile l2arraccctl;
+    uint32_t l2arraccadr;
+    uint32_t l2arraccctl;
     bool valid = false;
 
 #ifdef L2C_TRACE_DEBUG_MSG
@@ -152,8 +152,8 @@ bool l2c_arracc_lru_info_read_by_way( uint32_t base, uint32_t ext_phys_addr, uin
         volatile uint32_t* lru_info )
 {
     int indx = 0;
-    uint32_t volatile l2arraccadr;
-    uint32_t volatile l2arraccctl;
+    uint32_t l2arraccadr;
+    uint32_t l2arraccctl;
     bool valid = false;
 
     l2arraccadr = l2c_l2_read (base, L2C_L2ARRACCADR) & ~L2C_L2ARRACCADR_MSK;
@@ -189,8 +189,8 @@ bool l2c_arracc_data_read_by_way( uint32_t base, uint32_t ext_phys_addr, uint32_
         volatile uint64_t* cache_data )
 {
     int indx;
-    uint32_t volatile l2arraccadr;
-    uint32_t volatile l2arraccctl;
+    uint32_t l2arraccadr;
+    uint32_t l2arraccctl;
     bool valid = false;
 
 #ifdef L2C_TRACE_DEBUG_MSG
@@ -238,8 +238,8 @@ bool l2c_arracc_data_write_by_way( uint32_t base, uint32_t ext_phys_addr, uint32
         uint64_t cache_data )
 {
     int indx;
-    uint32_t volatile l2arraccadr;
-    uint32_t volatile l2arraccctl;
+    uint32_t l2arraccadr;
+    uint32_t l2arraccctl;
     bool valid = false;
 
 #ifdef L2C_TRACE_DEBUG_MSG
@@ -282,8 +282,8 @@ bool l2c_arracc_data_write_by_way_wo_gen_ecc( uint32_t base, uint32_t ext_phys_a
         uint64_t cache_data, uint32_t ecc_data)
 {
     int indx;
-    uint32_t volatile l2arraccadr;
-    uint32_t volatile l2arraccctl;
+    uint32_t l2arraccadr;
+    uint32_t l2arraccctl;
     bool valid = false;
 
 #ifdef L2C_TRACE_DEBUG_MSG
@@ -434,8 +434,8 @@ uint64_t l2c_arracc_data_read( uint32_t base, uint32_t ext_phys_addr, uint32_t p
 {
     int indx;
     uint32_t data;
-    uint32_t volatile l2arraccadr;
-    uint32_t volatile l2arraccctl;
+    uint32_t l2arraccadr;
+    uint32_t l2arraccctl;
     int32_t cache_way = L2C_WAY0_NUM - 1;
     uint64_t addr64;
 
@@ -487,8 +487,8 @@ void l2c_arracc_data_write( uint32_t base, uint32_t ext_phys_addr, uint32_t phys
 {
     int indx;
     uint32_t data;
-    uint32_t volatile l2arraccadr;
-    uint32_t volatile l2arraccctl;
+    uint32_t l2arraccadr;
+    uint32_t l2arraccctl;
     int32_t cache_way = L2C_WAY0_NUM - 1;
     uint64_t addr64;
 
