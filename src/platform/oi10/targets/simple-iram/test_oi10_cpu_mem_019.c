@@ -34,7 +34,6 @@
 #include <platform/regs/regs_emi.h>
 #include <platform/regs/fields/emi.h>
 
-#define L2C_TIMEOUT     0x00000020
 #define L2C_WAY_SIZE    128
 #define DATA_LEN        (L2C_WAY_SIZE >> 3)
 
