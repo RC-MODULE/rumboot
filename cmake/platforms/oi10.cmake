@@ -1788,6 +1788,13 @@ endif()
         IRUN_FLAGS +select_sdio1
         PREFIX sdio-spi-1-sram0
     )
+    
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES test_oi10_ctrl_002_2.c
+      IRUN_FLAGS +BOOT_PLL_BYP=1
+      PREFIX crg
+    )
 
     add_rumboot_target(
         CONFIGURATION SUPPLEMENTARY

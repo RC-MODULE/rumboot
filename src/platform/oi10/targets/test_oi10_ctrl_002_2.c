@@ -2,6 +2,8 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <arch/ppc/arch/ppc_476fp_lib_c.h>
+
 #include <rumboot/io.h>
 #include <rumboot/irq.h>
 #include <rumboot/platform.h>
@@ -9,7 +11,6 @@
 #include <rumboot/testsuite.h>
 #include <rumboot/timer.h>
 
-#include <platform/arch/ppc/ppc_476fp_lib_c.h>
 #include <platform/arch/ppc/test_macro.h>
 #include <platform/common_macros/common_macros.h>
 #include <platform/devices.h>
