@@ -1122,15 +1122,15 @@ int __attribute__((section(".text.test"))) main()
                 0x20002000,
                 IAC1);
 */
-//    rumboot_printf("IAC1 stop on trigger, two state interrupt enabled ...\n");
-//    test_itrace(ITRACE_CONDITION_TYPE_CONDITIONS_TIMEOUT_DISABLE,
-//                ITRACE_TRIGGER_MODE_STOP_ON_TRIGGER,
-//                ITRACE_SOURCE_SELECTION_CORE0,
-//                1,
-//                0x00000001,
-//                0x20002000,
-//                0x20002000,
-//                IAC1);
+    rumboot_printf("IAC1 stop on trigger, two state interrupt enabled ...\n");
+    test_itrace(ITRACE_CONDITION_TYPE_CONDITIONS_TIMEOUT_DISABLE,
+                ITRACE_TRIGGER_MODE_STOP_ON_TRIGGER,
+                ITRACE_SOURCE_SELECTION_CORE0,
+                1,
+                0x00000001,
+                0x20002000,
+                0x20002000,
+                IAC1);
 
     rumboot_printf("IAC1 bank on trigger, interrupt disabled ...\n");
     test_itrace(ITRACE_CONDITION_TYPE_COND1,
