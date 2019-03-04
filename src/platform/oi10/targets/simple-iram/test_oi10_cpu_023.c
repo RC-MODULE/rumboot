@@ -71,26 +71,82 @@ static uint32_t dma2plb6_get_bytesize(transfer_width transfer_width_code)
     return 0;
 }
 
+static dma2plb6_setup_info get_default_dma_info(DmaChannel channel, uint32_t* ch_src, uint32_t* ch_dst)
+{
+    dma2plb6_setup_info dma_info;
+
+    dma_info.base_addr = DCR_DMAPLB6_BASE;
+    dma_info.source_adr = rumboot_virt_to_phys(ch_src);
+    dma_info.dest_adr = rumboot_virt_to_phys(ch_dst);
+    dma_info.priority = priority_medium_low;
+    dma_info.striding_info.striding = striding_none;
+    dma_info.tc_int_enable = false;
+    dma_info.err_int_enable = false;
+    dma_info.int_mode = int_mode_level_wait_clr;
+    dma_info.channel = channel;
+    dma_info.transfer_width = tr_width_quadword;
+    dma_info.rw_transfer_size = rw_tr_size_8q;
+    dma_info.count = TEST_DATA_SIZE/dma2plb6_get_bytesize(dma_info.transfer_width);
+
+    return dma_info;
+}
+
+
 static void fill(uint64_t *s, uint64_t pattern, uint32_t size_in_bytes)
 {
     uint32_t i;
-    for (i = 0; i < (size_in_bytes>>3); i++)
-        s[i] = pattern;
+    uint32_t addr;
+
+    for (i = 0; i < (size_in_bytes); i+=8)
+    {
+        addr = (uint32_t)(s) + i;
+        iowrite64(pattern, addr);
+    }
+}
+
+//static void mem_fill(uint32_t* mem, uint64_t pattern, size_t size)
+//{
+//    size_t index = 0;
+//
+//    while(index < size)
+//    {
+//        iowrite64(pattern, (uint32_t)(mem + index/sizeof(mem)));
+//        index += 8;
+//    }
+//}
+
+static void nor_fill(uint32_t* mem, uint64_t pattern, size_t size)
+{
+    size_t index = 0;
+
+    while(index < size)
+    {
+        nor_write32((pattern >> 32), (uint32_t)(mem + index));
+        nor_write32((pattern & 0xffffffff), (uint32_t)(mem + index + 4));
+        index += 8;
+    }
 }
 
 static uint32_t compare(uint32_t s_addr, uint32_t d_addr,uint32_t size_in_bytes)
 {
     uint32_t i;
     for (i = 0; i < size_in_bytes; i+=8){
-        if(ioread64(s_addr + i) != ioread64(d_addr + i))
+
+        uint64_t s_data = ioread64(s_addr + i);
+        uint64_t d_data = ioread64(d_addr + i);
+
+        if(s_data != d_data)
         {
-            rumboot_printf("compare failed, expected value: 0x%x\n", ioread64(s_addr + i));
-            rumboot_printf("read value: 0x%x\n", ioread64(d_addr + i));
+            rumboot_printf("Source addr: 0x%x\n", s_addr + i);
+            rumboot_printf("Destination addr: 0x%x\n", d_addr + i);
+            rumboot_printf("compare failed, expected value: 0x%x%x\n", (uint32_t)(s_data >> 32), (uint32_t)(s_data & 0xFFFFFFFF));
+            rumboot_printf("read value: 0x%x%x\n", (uint32_t)(d_data >> 32), (uint32_t)(d_data & 0xFFFFFFFF));
             return false;
         }
     }
     return true;
 }
+
 
 static uint32_t check_dma2plb6_0_mem_to_mem(uint32_t source_ea, uint32_t dest_ea, uint64_t source_phys, uint64_t dest_phys)
 {
@@ -229,51 +285,6 @@ static uint32_t check_single_channel()
     return 0;
 }
 
-
-
-static dma2plb6_setup_info get_default_dma_info(DmaChannel channel, uint32_t* ch_src, uint32_t* ch_dst)
-{
-    dma2plb6_setup_info dma_info;
-
-    dma_info.base_addr = DCR_DMAPLB6_BASE;
-    dma_info.source_adr = rumboot_virt_to_phys(ch_src);
-    dma_info.dest_adr = rumboot_virt_to_phys(ch_dst);
-    dma_info.priority = priority_medium_low;
-    dma_info.striding_info.striding = striding_none;
-    dma_info.tc_int_enable = false;
-    dma_info.err_int_enable = false;
-    dma_info.int_mode = int_mode_level_wait_clr;
-    dma_info.channel = channel;
-    dma_info.transfer_width = tr_width_quadword;
-    dma_info.rw_transfer_size = rw_tr_size_8q;
-    dma_info.count = TEST_DATA_SIZE/dma2plb6_get_bytesize(dma_info.transfer_width);
-
-    return dma_info;
-}
-
-//static void mem_fill(uint32_t* mem, uint64_t pattern, size_t size)
-//{
-//    size_t index = 0;
-//
-//    while(index < size)
-//    {
-//        iowrite64(pattern, (uint32_t)(mem + index/sizeof(mem)));
-//        index += 8;
-//    }
-//}
-
-static void nor_fill(uint32_t* mem, uint64_t pattern, size_t size)
-{
-    size_t index = 0;
-
-    while(index < size)
-    {
-        nor_write32((pattern >> 32), (uint32_t)(mem + index/sizeof(mem)));
-        nor_write32((pattern && 0xffffffff), (uint32_t)(mem + 4 + index/sizeof(mem)));
-        index += 8;
-    }
-}
-
 static uint32_t check_multiple_channels_4()
 {
     uint32_t* ch0_src = (uint32_t*)(SRAM0_BASE);
@@ -363,7 +374,7 @@ static uint32_t check_multiple_channels_2()
     uint32_t* ch0_src = (uint32_t*)(SRAM1_BASE);
     uint32_t* ch0_dst = (uint32_t*)(SRAM0_BASE + 0x80);
     uint32_t* ch1_src = (uint32_t*)(NOR_BASE);
-    uint32_t* ch1_dst = (uint32_t*)(SRAM0_BASE + 0x80);
+    uint32_t* ch1_dst = (uint32_t*)(SRAM0_BASE + 0x100);
 
     rumboot_putstring("Initializing memory ...\n");
     fill((uint64_t*)ch0_src, fill_word, TEST_DATA_SIZE);
@@ -418,9 +429,6 @@ int main(void)
     emi_init(DCR_EM2_EMI_BASE);
 
     result += check_single_channel();
-
-    return result;
-
     result += check_multiple_channels_4();
     result += check_multiple_channels_2();
 
