@@ -145,9 +145,6 @@
 
 /* Functions */
 #define WORDS2BYTES(WORDS)              ((WORDS) << 2)
-#define CAST_ADDR(VAL)                  ((void*)    (VAL))
-#define CAST_UINT(VAL)                  ((uint32_t) (VAL))
-#define CAST_FUNC(VAL)                  ((void(*)())(VAL));
 #define PHY2RPN20(ADDR)                 (((ADDR) & 0xFFFFF000) >> 12)
 #define ADDR2EPN                        PHY2RPN20
 #define WAY_OFFSET(WAY)                 (L1_WAY_DATA_SIZE * (WAY))
@@ -156,25 +153,19 @@
 #define CALC_ADDR(Y,X,D)                ((((Y) & 0x03) << 0x0D) |           \
                                          (((X) & 0xFF) << 0x05) |           \
                                          (((D) & 0x07) << 0x02))
-#define MK_TRF_ENTRY(WAY)               {CAST_ADDR(TRANSFER_DST             \
-                                            + WAY_OFFSET(WAY)),             \
-                                         CAST_ADDR(TRANSFER_SRC[WAY]),   \
+/* Make transfer info entry
+ * (struct transfer_info_t) */
+#define MK_TRF_ENTRY(DWAY,SWAY)         {(void*)(TRANSFER_DST               \
+                                            + WAY_OFFSET(DWAY)),            \
+                                         (void*)(TRANSFER_SRC[SWAY]),       \
                                          L1_WAY_DATA_SIZE, USED_WAY_SPACE}
-#define REV8(V)         ((((V) & 0x01) << 7)    |   \
-                         (((V) & 0x02) << 5)    |   \
-                         (((V) & 0x04) << 3)    |   \
-                         (((V) & 0x08) << 1)    |   \
-                         (((V) & 0x10) >> 1)    |   \
-                         (((V) & 0x20) >> 3)    |   \
-                         (((V) & 0x40) >> 5)    |   \
-                         (((V) & 0x80) >> 7))
 
 /* Types and structures definitions */
 
 struct transfer_info_t
 {
     void        *dst;   /* Destination address  */
-    void        *src;   /* Destination address  */
+    void        *src;   /* Source      address  */
     uint32_t     asz;   /* Area size            */
     uint32_t     dsz;   /* Data size            */
 };
@@ -207,18 +198,38 @@ cache_fill_t    cache_fill_data =
 };
 
 static const
-struct transfer_info_t cache_transfer_info[L1_WAYS] =
+struct transfer_info_t cache_transfer_info[L1_WAYS][L1_WAYS] =
 {
-        MK_TRF_ENTRY(0),
-        MK_TRF_ENTRY(1),
-        MK_TRF_ENTRY(2),
-        MK_TRF_ENTRY(3)
+    {
+        MK_TRF_ENTRY(0,0),
+        MK_TRF_ENTRY(1,1),
+        MK_TRF_ENTRY(2,2),
+        MK_TRF_ENTRY(3,3)
+    },
+    {
+        MK_TRF_ENTRY(0,1),
+        MK_TRF_ENTRY(1,2),
+        MK_TRF_ENTRY(2,3),
+        MK_TRF_ENTRY(3,0)
+    },
+    {
+        MK_TRF_ENTRY(0,2),
+        MK_TRF_ENTRY(1,3),
+        MK_TRF_ENTRY(2,0),
+        MK_TRF_ENTRY(3,1)
+    },
+    {
+        MK_TRF_ENTRY(0,3),
+        MK_TRF_ENTRY(1,0),
+        MK_TRF_ENTRY(2,1),
+        MK_TRF_ENTRY(3,2)
+    },
 };
 
 void dcu_transfer_data(const struct transfer_info_t *trfinfo)
 {
     /* a4a - address for align, s4a - size for align */
-    uint32_t    a4a = CAST_UINT(trfinfo->dst) + trfinfo->dsz,
+    uint32_t    a4a = (uint32_t)(trfinfo->dst) + trfinfo->dsz,
                 s4a = trfinfo->asz - trfinfo->dsz;
     static char memcpy_msg[] =
                     " + Copy of %d bytes cache data from 0x%X"
@@ -226,10 +237,10 @@ void dcu_transfer_data(const struct transfer_info_t *trfinfo)
                 memset_msg[] =
                     " - Fill by zero %d bytes in cached RAM at 0x%X...\n";
     rumboot_printf(memcpy_msg, trfinfo->dsz,
-            CAST_UINT(trfinfo->src), CAST_UINT(trfinfo->dst));
+            (uint32_t)(trfinfo->src), (uint32_t)(trfinfo->dst));
     memcpy(trfinfo->dst, trfinfo->src, trfinfo->dsz);
     rumboot_printf(memset_msg, s4a, a4a);
-    memset(CAST_ADDR(a4a), NOTHING, s4a);
+    memset((void*)(a4a), NOTHING, s4a);
 
 }
 
@@ -244,6 +255,8 @@ uint32_t dcu_check_data(cache_fill_t *s, cache_data_t *t)
                  needed = 0;
     volatile
     uint32_t     cached = 0;
+
+    dci(0);
     for(way = 0; way < L1_WAYS; way++)
     {
         rumboot_printf("*** Way %d/%d ***\n", way, L1_WAYS - 1);
@@ -281,6 +294,7 @@ uint32_t main(void)
 {
     uint32_t         status = TEST_OK,
                      result = 0,
+                     seq    = 0,
                      way    = 0;
 
     rumboot_putstring("Test started...\n");
@@ -295,11 +309,15 @@ uint32_t main(void)
     rumboot_printf(
         "Transfer template data to cached memory at 0x%X...\n",
         TRANSFER_DST);
-    for(way = 0; way < L1_WAYS; way++)
-        dcu_transfer_data(cache_transfer_info + way);
-    rumboot_printf("Transfer done.\n");
+    for(seq = 0; seq < L1_WAYS; seq++)
+    {
+        rumboot_printf(" +++ Sequence #%d:\n", seq);
+        for(way = 0; way < L1_WAYS; way++)
+            dcu_transfer_data(&cache_transfer_info[seq][way]);
+        rumboot_printf("Transfer done.\n");
 
-    status |= dcu_check_data(CAST_ADDR(TRANSFER_SRC),CAST_ADDR(DCU_BASE));
+        status |= dcu_check_data((void*)(TRANSFER_SRC),(void*)(DCU_BASE));
+    }
 
     rumboot_printf("TEST %s!\n", !status ? "OK" : "ERROR");
 
