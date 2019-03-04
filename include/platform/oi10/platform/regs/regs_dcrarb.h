@@ -8,6 +8,8 @@
 #ifndef REGS_DCRARB_H_
 #define REGS_DCRARB_H_
 
+#include <platform/regs/fields/dcrarb.h>
+
 /* DCR address space, DCRARB */
 
 #define DCRARB_TADDR  0x0

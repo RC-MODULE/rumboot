@@ -6,7 +6,7 @@
 #define __PLB6BC_REG_FIELD_H__
 
 
-#include <platform/common_macros/common_macros.h>
+#include <rumboot/macros.h>
 #include <platform/arch/ppc/ibm_bit_ordering_macros.h>
 
 
