@@ -202,7 +202,10 @@ static inline uint32_t rumboot_arch_irq_setstate(uint32_t new_state)
         size_t scratch_size;
 
         /** Base address for this controller */
-        uint32_t    base_address;
+        uintptr_t    base0;
+        /** Optional secondary base address. Some interrupt controllers e.g. gic have 2 base addresses: (distributor & cpuif) */
+        uintptr_t    base1;
+
     };
 
     /**
