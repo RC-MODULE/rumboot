@@ -14,6 +14,14 @@
 #include <arch/ppc_476fp_config.h>
 #include <arch/ppc_476fp_lib_c.h>
 
+#define MC_TYPE  3
+#define CR_TYPE  2
+#define NCR_TYPE 1
+
+struct mpic128_scratchdata {
+    uint32_t irq_type;
+};
+
 void mpic128_reset( uint32_t base0 ) {
     dcr_write( base0 + MPIC128_GCF0, dcr_read( base0 + MPIC128_GCF0 )
                                           | ( 1 << MPIC128_GCF0_R_i ) );
@@ -39,41 +47,35 @@ static int mpic128_init( const struct rumboot_irq_controller *dev ) {
     return 0; /* We're good */
 }
 
-#define IRQ_TYPE_INDX 0
-
-#define MC_TYPE  3
-#define CR_TYPE  2
-#define NCR_TYPE 1
-
 static uint32_t mpic128_begin( const struct rumboot_irq_controller *dev, void *scratch ) {
-    uint32_t ack, spv, *data;
-    data = scratch;
+    uint32_t ack, spv;
+    struct mpic128_scratchdata *priv = scratch;
     spv = dcr_read( dev->base0 + MPIC128_SPV );
     ack = dcr_read( dev->base0 + MPIC128_IAR_PR );
     if(ack != spv) {
-        data[IRQ_TYPE_INDX] = MC_TYPE;
+        priv->irq_type = MC_TYPE;
         return ack;
     }
     ack = dcr_read( dev->base0 + MPIC128_CIAR_PR );
     if(ack != spv) {
-        data[IRQ_TYPE_INDX] = CR_TYPE;
+        priv->irq_type = CR_TYPE;
         msr_write(spr_read(SPR_CSRR1));
         return ack;
     }
     ack = dcr_read( dev->base0 + MPIC128_NCIAR_PR );
-    data[IRQ_TYPE_INDX] = NCR_TYPE;
+    priv->irq_type = NCR_TYPE;
     return ack;
 }
 
 static void mpic128_end( const struct rumboot_irq_controller *dev, void *scratch, uint32_t irq ) {
-    uint32_t *data = scratch;
+    struct mpic128_scratchdata *priv = scratch;
     if( irq != dcr_read( dev->base0 + MPIC128_SPV ) ) {
         /* signal the end of processing for non-spurious interrupt */
-        if(data[IRQ_TYPE_INDX] == MC_TYPE) {
+        if(priv->irq_type == MC_TYPE) {
             dcr_write( dev->base0 + MPIC128_EOI_PR, 0 );
             return;
         }
-        if(data[IRQ_TYPE_INDX] == CR_TYPE) {
+        if(priv->irq_type == CR_TYPE) {
             dcr_write( dev->base0 + MPIC128_CEOI_PR, 0 );
             return;
         }
@@ -215,7 +217,7 @@ static const struct rumboot_irq_controller irq_ctl = {
     .priority_max = 15,
     .priority_default = 1,
     .adjust_priority = mpic128_adjust_priority,
-    .scratch_size = 4,
+    .scratch_size = sizeof(struct mpic128_scratchdata),
     .base0 = DCR_MPIC128_BASE,
 };
 
