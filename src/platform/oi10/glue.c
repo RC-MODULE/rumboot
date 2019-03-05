@@ -93,7 +93,7 @@ void rumboot_platform_setup() {
                         | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_256MB)  << MMU_SSPCR_ORD7_i) );
     set_mem_window(MEM_WINDOW_0);
 
-    rumboot_memfill8_modelling((void*)SRAM0_BASE, 0x1000, 0x00, 0x00); //workaround (init 4KB SRAM0)
+    //rumboot_memfill8_modelling((void*)SRAM0_BASE, 0x1000, 0x00, 0x00); //workaround (init 4KB SRAM0)
 
     extern char rumboot_im0_heap_start;
     extern char rumboot_im0_heap_end;
