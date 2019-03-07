@@ -759,12 +759,6 @@ endif()
              MBIN supplementary-test_oi10_cpu_038_helper_em2
     )
 
-    add_rumboot_target_dir(uart_data_logger/
-        CONFIGURATION IRAM
-        IRUN_FLAGS +use_uart_data_logger
-        PREFIX uart_data_logger
-    )
-
     add_rumboot_target_dir(iss-iram/
         CONFIGURATION IRAM
         PREFIX iss-iram
