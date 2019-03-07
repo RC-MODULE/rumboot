@@ -48,7 +48,7 @@ bool get_way_by_addr(uint32_t CT, void* addr, int32_t* cache_way)
             reg_DCDBTRL = spr_read(SPR_DCDBTRL);
             reg_DCDBTRH = spr_read(SPR_DCDBTRH);
             tag_valid = (reg_DCDBTRH & XCDBTRH_VALID_mask);
-            rumboot_printf("\ncache_way == %d\naddr == 0x%x\nicread (0x%x)\nDCDBTRH == 0x%x\nDCDBTRL == 0x%x\nvalid == %d\n",
+            rumboot_printf("\ncache_way == %d\naddr == 0x%x\ndcread (0x%x)\nDCDBTRH == 0x%x\nDCDBTRL == 0x%x\nvalid == %d\n",
                     *cache_way,
                     (uint32_t)addr,
                     (uint32_t*)(((uint32_t)addr & (XCREAD_EA_L1I_INDEX_mask | XCREAD_EA_WORD_ADDR_mask))
