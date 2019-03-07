@@ -569,7 +569,6 @@ endif()
       FILES test_oi10_greth.c
       CFLAGS -DGRETH_BASE=GRETH_0_BASE -DSRC_BANK=2 -DDST_BANK=3
       PREFIX greth0-im2-em2
-      FEATURES ISS
     )
 
     add_rumboot_target(
