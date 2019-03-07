@@ -153,6 +153,23 @@ macro(rumboot_platform_generate_stuff_for_taget product)
         add_dependencies(${product}.all ${product}.hex)
     endif()
 
+    list (FIND TARGET_FEATURES "ISS" _index)
+    if (${_index} GREATER -1)
+      add_custom_command(
+        OUTPUT ${product}.gold.bin
+        COMMAND echo THIS_IS_ISS_VOODOO > ${product}.gold.bin
+        COMMAND cat ${product}.gold.bin >> ${product}.bin
+        COMMAND ${packimage_cmd}
+        COMMENT "Generating ISS golden file for ${product}.bin and appending it"
+        DEPENDS ${product}.bin utils
+    )
+    add_custom_target(
+      ${product}.gold ALL
+      DEPENDS ${product}.gold.bin
+    )
+
+  endif()
+
 endmacro()
 
 
@@ -552,6 +569,7 @@ endif()
       FILES test_oi10_greth.c
       CFLAGS -DGRETH_BASE=GRETH_0_BASE -DSRC_BANK=2 -DDST_BANK=3
       PREFIX greth0-im2-em2
+      FEATURES ISS
     )
 
     add_rumboot_target(
