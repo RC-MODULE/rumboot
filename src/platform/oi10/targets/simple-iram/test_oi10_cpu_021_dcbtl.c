@@ -187,9 +187,29 @@ int main()
                 if((i <= j) && ((i < L2C_COUNT_WAYS)|| (ct_field == 2)))
                 {
                     if(index & 0x1)
-                        dcbtstls(ct_field,( void* )test_data_buf[i]);
+                    {
+                        if(ct_field == 0)
+                            dcbtstls(0,( void* )test_data_buf[i]);
+                        else if(ct_field == 2)
+                            dcbtstls(2,( void* )test_data_buf[i]);
+                        else
+                        {
+                            result |= 1;
+                            rumboot_printf("ERROR!!! CT value is different from both 0 and 2!\n");
+                        }
+                    }
                     else
-                        dcbtls(ct_field,( void* )test_data_buf[i]);
+                    {
+                        if(ct_field == 0)
+                            dcbtls(0,( void* )test_data_buf[i]);
+                        else if(ct_field == 2)
+                            dcbtls(2,( void* )test_data_buf[i]);
+                        else
+                        {
+                            result |= 1;
+                            rumboot_printf("ERROR!!! CT value is different from both 0 and 2!\n");
+                        }
+                    }
                 }
                 lwsync();
                 isync();
@@ -214,9 +234,29 @@ int main()
                 if((i != j) || (ct_field == 2))
                 {
                     if(index & 0x1)
-                        dcbtstls(ct_field,( void* )test_data_buf[i]);
+                    {
+                        if(ct_field == 0)
+                            dcbtstls(0,( void* )test_data_buf[i]);
+                        else if(ct_field == 2)
+                            dcbtstls(2,( void* )test_data_buf[i]);
+                        else
+                        {
+                            result |= 1;
+                            rumboot_printf("ERROR!!! CT value is different from both 0 and 2!\n");
+                        }
+                    }
                     else
-                        dcbtls(ct_field,( void* )test_data_buf[i]);
+                    {
+                        if(ct_field == 0)
+                            dcbtls(0,( void* )test_data_buf[i]);
+                        else if(ct_field == 2)
+                            dcbtls(2,( void* )test_data_buf[i]);
+                        else
+                        {
+                            result |= 1;
+                            rumboot_printf("ERROR!!! CT value is different from both 0 and 2!\n");
+                        }
+                    }
                     msync();
                     isync();
                 }
@@ -245,7 +285,17 @@ int main()
 
             cache_way = 0;
             rumboot_printf("before dcblc: locks == 0x%x\n", get_locks(ct_field,test_data_buf[cached_functions[cache_way]],cache_way));
-            dcblc(ct_field, (test_data_buf[cached_functions[(j + 1)%L2C_COUNT_WAYS]]));
+
+            if(ct_field == 0)
+                dcblc(0,test_data_buf[cached_functions[(j + 1)%L2C_COUNT_WAYS]]);
+            else if(ct_field == 2)
+                dcblc(2,test_data_buf[cached_functions[(j + 1)%L2C_COUNT_WAYS]]);
+            else
+            {
+                result |= 1;
+                rumboot_printf("ERROR!!! CT value is different from both 0 and 2!\n");
+            }
+
             lwsync();
             isync();
             cache_way = (j + 1)%L2C_COUNT_WAYS;
@@ -254,9 +304,29 @@ int main()
                     (j + 1)%L2C_COUNT_WAYS);
 
             if(index & 0x1)
-                dcbtstls(ct_field,( void* )test_data_buf[cached_functions[j]]);
+            {
+                if(ct_field == 0)
+                    dcbtstls(0,( void* )test_data_buf[cached_functions[j]]);
+                else if(ct_field == 2)
+                    dcbtstls(2,( void* )test_data_buf[cached_functions[j]]);
+                else
+                {
+                    result |= 1;
+                    rumboot_printf("ERROR!!! CT value is different from both 0 and 2!\n");
+                }
+            }
             else
-                dcbtls(ct_field,( void* )test_data_buf[cached_functions[j]]);
+            {
+                if(ct_field == 0)
+                    dcbtls(0,( void* )test_data_buf[cached_functions[j]]);
+                else if(ct_field == 2)
+                    dcbtls(2,( void* )test_data_buf[cached_functions[j]]);
+                else
+                {
+                    result |= 1;
+                    rumboot_printf("ERROR!!! CT value is different from both 0 and 2!\n");
+                }
+            }
             rumboot_printf("after dcbt*ls: locks == 0x%x\n",
                     get_locks(ct_field,test_data_buf[cached_functions[cache_way]],cache_way));
 
@@ -286,7 +356,15 @@ int main()
         }
         for(uint32_t i = 0; i < L2C_COUNT_WAYS; ++i)
         {
-            dcblc(ct_field, (test_data_buf[cached_functions[i]]));
+            if(ct_field == 0)
+                dcblc(0,test_data_buf[cached_functions[i]]);
+            else if(ct_field == 2)
+                dcblc(2,test_data_buf[cached_functions[i]]);
+            else
+            {
+                result |= 1;
+                rumboot_printf("ERROR!!! CT value is different from both 0 and 2!\n");
+            }
             lwsync();
             isync();
         }
