@@ -8,6 +8,7 @@
 #include <rumboot/printf.h>
 #include <rumboot/irq.h>
 #include <platform/interrupts.h>
+#include <alloca.h>
 
 const char *const exception_names[] = {
     [RUMBOOT_IRQ_UNDEFINED_INSTRUCTION] = "Undefined Instruction",
@@ -34,6 +35,7 @@ struct rumboot_irq_entry {
 	void		(*handler)(int irq, void *arg);
 	void *		arg;
 	uint32_t	flags;
+	int 			priority;
 };
 
 
@@ -109,6 +111,7 @@ void rumboot_irq_set_default_handler(void (*handler)(int irq))
 void rumboot_irq_set_handler(struct rumboot_irq_entry *tbl, int irq, uint32_t flags,
 			     void (*handler)(int irq, void *args), void *arg)
 {
+	const struct rumboot_irq_controller *ctl = rumboot_irq_controller_by_irq(irq);
 	RUMBOOT_ATOMIC_BLOCK() {
 		if (irq > (RUMBOOT_PLATFORM_NUM_IRQS - 1)) {
 			rumboot_platform_panic("IRQ %d is too big\n", irq);
@@ -125,6 +128,7 @@ void rumboot_irq_set_handler(struct rumboot_irq_entry *tbl, int irq, uint32_t fl
 		tbl[irq].handler = handler;
 		tbl[irq].arg = arg;
 		tbl[irq].flags = flags;
+		tbl[irq].priority = ctl->priority_default;
 	}
 }
 
@@ -134,10 +138,11 @@ void rumboot_irq_table_activate(struct rumboot_irq_entry *tbl)
 		rumboot_platform_runtime_info->irq_handler_table = tbl;
 		if (tbl) {
 			int i = 0;
-			for (i = 0; i < RUMBOOT_PLATFORM_NUM_IRQS; i++)
+			for (i = 0; i < RUMBOOT_PLATFORM_NUM_IRQS; i++) {
 				if (tbl[i].handler) {
 					rumboot_irq_enable(i);
 				}
+            }
 		}
 	}
 }
@@ -154,12 +159,27 @@ void *rumboot_irq_table_get()
 	return rumboot_platform_runtime_info->irq_handler_table;
 }
 
+struct rumboot_irq_entry *rumboot_irq_table_fetch(struct rumboot_irq_entry *tbl)
+{
+       if (!tbl) {
+               tbl = rumboot_irq_table_get();
+       }
+
+       if (!tbl) {
+               rumboot_platform_panic("irq: Failed fetch irq table\n");
+       }
+
+       return tbl;
+}
+
 void rumboot_irq_enable(int irq)
 {
-	struct rumboot_irq_entry *tbl = rumboot_irq_table_get();
+	struct rumboot_irq_entry *tbl = rumboot_irq_table_fetch(NULL);
 	const struct rumboot_irq_controller *ctl = rumboot_irq_controller_by_irq(irq);
-	irq -= ctl->first;
-	ctl->configure(ctl, irq, tbl[irq].flags, 1);
+	ctl->configure(ctl, irq - ctl->first, tbl[irq].flags, 1);
+    if (ctl->adjust_priority) {
+        ctl->adjust_priority(ctl, irq - ctl->first, tbl[irq].priority);
+    }
 }
 
 void rumboot_irq_enable_all()
@@ -177,7 +197,7 @@ void rumboot_irq_enable_all()
 void rumboot_irq_disable(int irq)
 {
 	const struct rumboot_irq_controller *ctl = rumboot_irq_controller_by_irq(irq);
-	struct rumboot_irq_entry *tbl = rumboot_irq_table_get();
+	struct rumboot_irq_entry *tbl = rumboot_irq_table_fetch(NULL);
 	int flags = 0;
 
 	if (tbl) {
@@ -211,27 +231,82 @@ void rumboot_irq_set_exception_handler(void (*handler)(int id, const char *name)
 	RUMBOOT_ATOMIC_BLOCK() {
 		rumboot_platform_runtime_info->irq_exception_hndlr = handler;
 	}
-
 }
 
 void rumboot_irq_core_dispatch(uint32_t ctrl, uint32_t type, uint32_t id)
 {
 	const struct rumboot_irq_controller *ctl = rumboot_irq_controller_by_id(ctrl);
+	void *scratch = NULL;
+
+	if (ctl->scratch_size) {
+		/* Only allocate a scratch buffer if controller requests it */
+		scratch = alloca(ctl->scratch_size);
+	}
+
 	switch (type) {
 	case RUMBOOT_IRQ_TYPE_NORMAL:
-		id = ctl->begin(ctl);
+		id = ctl->begin(ctl, scratch);
 		process_irq(id);
-		ctl->end(ctl,id);
+		ctl->end(ctl, scratch, id);
 		break;
 	case RUMBOOT_IRQ_TYPE_SOFT:
 		process_irq(id);
 		break;
 	case RUMBOOT_IRQ_TYPE_EXCEPTION:
-        if (rumboot_platform_runtime_info->irq_exception_hndlr) {
+    if (rumboot_platform_runtime_info->irq_exception_hndlr) {
 			rumboot_platform_runtime_info->irq_exception_hndlr(id, exception_names[id]);
 		} else {
 			rumboot_platform_panic("EXCEPTION: %s \n", exception_names[id]);
 		}
 		break;
 	}
+}
+
+int rumboot_irq_priority_adjust(struct rumboot_irq_entry *tbl, int irq, int priority)
+{
+        int ret;
+        const struct rumboot_irq_controller *ctl = rumboot_irq_controller_by_irq(irq);
+        tbl = rumboot_irq_table_fetch(tbl);
+
+        if (priority > ctl->priority_max) {
+                rumboot_printf("WARN: irq: priority %d is bigger than maximum (%d) for %s",
+                               priority, ctl->priority_max, ctl->name);
+                priority = ctl->priority_max;
+        }
+
+        if (priority < ctl->priority_min) {
+                rumboot_printf("WARN: irq: priority %d is less than minimum (%d) for %s",
+                               priority, ctl->priority_min, ctl->name);
+                priority = ctl->priority_min;
+        }
+
+        ret = tbl[irq].priority;
+        tbl[irq].priority = priority;
+
+        /* If the table is active, adjust priority immediately */
+        if (tbl == rumboot_irq_table_get()) {
+                if (ctl->adjust_priority) {
+                    ctl->adjust_priority(ctl, irq-ctl->first, priority);
+                }
+        }
+
+        /* Return old priority */
+        return ret;
+}
+
+int rumboot_irq_priority_get(struct rumboot_irq_entry *tbl, int irq)
+{
+        return tbl[irq].priority;
+}
+
+int rumboot_irq_prioity_get_max(int irq)
+{
+        const struct rumboot_irq_controller *ctl = rumboot_irq_controller_by_irq(irq);
+        return ctl->priority_max;
+}
+
+int rumboot_irq_prioity_get_min(int irq)
+{
+        const struct rumboot_irq_controller *ctl = rumboot_irq_controller_by_irq(irq);
+        return ctl->priority_min;
 }

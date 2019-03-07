@@ -1,7 +1,6 @@
 #ifndef RUMBOOT_IRQ_H
 #define RUMBOOT_IRQ_H
 
-
 #define RUMBOOT_IRQ_TYPE_NORMAL         0
 #define RUMBOOT_IRQ_TYPE_EXCEPTION      1
 #define RUMBOOT_IRQ_TYPE_SOFT           2
@@ -34,6 +33,7 @@
 
 
 #ifndef __ASSEMBLER__
+#include <stdlib.h>
 
 #if defined( __arm__ )
 #include <arch/irq_macros.h>
@@ -113,6 +113,8 @@ static inline uint32_t rumboot_arch_irq_setstate(uint32_t new_state)
      * This struct represents an IRQ controller in the system
      */
     struct rumboot_irq_controller {
+        /** Human-readable name for this controller */
+        const char *name;
     	int			first; /** The first IRQ line handled by this controller */
     	int			last; /** The last IRQ line handled by this controller */
 
@@ -135,20 +137,33 @@ static inline uint32_t rumboot_arch_irq_setstate(uint32_t new_state)
          */
     	void		(*configure)(const struct rumboot_irq_controller *dev, int irq, uint32_t flags, int enable);
         /**
-         * This function is called by the IRQ subsystem when beginning to
-         * service the IRQ routine. The function should return the next pending
-         * irq number
+         * This function is called by the IRQ subsystem when starting to
+         * service the IRQ routine. The function should return the current pending
+         * irq number.
          *
-         * @param dev    The irq controller device
+         * If the scratch_size is specified, a scratch buffer will
+         * be allocated on the irq stack and passed to this function.
+         * This very buffer will be passed to end() function. User should not
+         * try to free this buffer in any way.
+         *
+         * @param dev      The irq controller device
+         * @param scratch  The scratch buffer pointer
          * @return IRQ ID that is currently being serviced
          */
-    	uint32_t	(*begin)(const struct rumboot_irq_controller *dev);
+    	uint32_t	(*begin)(const struct rumboot_irq_controller *dev, void *scratch);
         /**
          * This function is called by the IRQ subsystem when the subsystem is done
          * servicing the current interrupt.
+         *
+         * If the scratch_size is specified, a scratch buffer will
+         * be allocated on the irq stack and passed to begin() and end() functions.
+         * User should not try to free this buffer in any way.
+         *
+         * @param dev      The irq controller device
+         * @param scratch  The scratch buffer pointer
          * @param irq id of the irq that is done being serviced
          */
-    	void		(*end)(const struct rumboot_irq_controller *dev, uint32_t irq);
+    	void		(*end)(const struct rumboot_irq_controller *dev, void *scratch, uint32_t irq);
 
         /**
          * Generate a software interrupt.
@@ -157,14 +172,39 @@ static inline uint32_t rumboot_arch_irq_setstate(uint32_t new_state)
          */
     	void		(*generate_swint)(const struct rumboot_irq_controller *dev, uint32_t irq);
 
-	void		(*slave_save)(void);
-	void		(*slave_restore)(void);
+        /**
+         * Deprecated. Do not use.
+         */
+	    void		(*slave_save)(void);
+        /**
+         * Deprecated. Do not use.
+         */
+	    void		(*slave_restore)(void);
+
+
+	    void		(*adjust_priority)(const struct rumboot_irq_controller *dev, uint32_t irq, int priority);
+        /**
+         * Maximum possible interrupt priority supported by this controller
+         */
+        int         priority_max;
 
         /**
-         * Pointer for implementation-specic data
-         * @return [description]
+         * Minimum possible interrupt priority supported by this controller
          */
-    	void 		*controllerdata;
+        int         priority_min;
+
+        /** Default irq line priority (if not set) */
+        int         priority_default;
+
+        /** Size of an optional scratch buffer. Scratch buffer is allocated on
+        stack for every interrupt that is serviced is passed to begin() and end()
+        calls */
+        size_t scratch_size;
+
+        /** Base address for this controller */
+        uintptr_t    base0;
+        /** Optional secondary base address. Some interrupt controllers e.g. gic have 2 base addresses: (distributor & cpuif) */
+        uintptr_t    base1;
 
     };
 
@@ -200,6 +240,50 @@ static inline uint32_t rumboot_arch_irq_setstate(uint32_t new_state)
      */
      void rumboot_irq_set_handler(struct rumboot_irq_entry *tbl, int irq, uint32_t flags,
         void (*handler)(int irq, void *args), void *arg);
+
+
+     /**
+     * Sets IRQ line priority, greater numbers indentify interrupts to be
+     * serviced first.
+     *
+     * The maximum and minimum priorities are specified in
+     * struct rumboot_irq_controller and should be obtained by
+     * rumboot_irq_prioity_get_max() and rumboot_irq_prioity_get_min() functions
+     *
+     * If the requesed priority if greater than maximum possible or lesser
+     * that minimum possible a warning will be generated and maximum and minimum
+     * priorities will be used instead.
+     *
+     * For convenience, this function returns previous priority value.
+     *
+     * @param tbl      IRQ table to work with. Specify NULL for currently active table
+     * @param irq      IRQ number
+     * @param priority New priority
+     * @return Previous priority
+     */
+     int rumboot_irq_priority_adjust(struct rumboot_irq_entry *tbl, int irq, int priority);
+
+     /**
+      * Returns current IRQ priority for an IRQ line
+      *
+      * @param  tbl IRQ table to work with. Specify NULL for currently active table
+      * @param  irq IRQ number
+      * @return IRQ priority
+      */
+     int rumboot_irq_priority_get(struct rumboot_irq_entry *tbl, int irq);
+
+     /**
+      * Returns the maximum possible priority for the line
+      * @param  irq [description]
+      * @return     [description]
+      */
+     int rumboot_irq_prioity_get_max(int irq);
+     /**
+      * Returns the minimum possible priority for the line
+      * @param  irq [description]
+      * @return     [description]
+      */
+     int rumboot_irq_prioity_get_min(int irq);
 
     /**
      * Request controller to generate an interrupt on line irq.

@@ -49,7 +49,7 @@ static void msix_proxy_restore(void)
 	return;
 }
 
-static uint32_t msix_proxy_begin(const struct rumboot_irq_controller *dev)
+static uint32_t msix_proxy_begin(const struct rumboot_irq_controller *dev, void *scratch)
 {
 	int irq_start = dev->first;
 	uint32_t tmp;
@@ -72,7 +72,7 @@ static uint32_t msix_proxy_begin(const struct rumboot_irq_controller *dev)
 	return 0;
 }
 
-static void msix_proxy_end(const struct rumboot_irq_controller *dev, uint32_t irq)
+static void msix_proxy_end(const struct rumboot_irq_controller *dev, void *scratch, uint32_t irq)
 {
 	uint32_t tmp;
 

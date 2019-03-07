@@ -30,6 +30,7 @@
  * This function should be called within platform initialization code
  */
 void rumboot_irq_register_mpic128();
+void mpic128_set_interrupt_borders( uint32_t base_address, uint32_t mc_border, uint32_t cr_border );
 
 /**
 * @}
