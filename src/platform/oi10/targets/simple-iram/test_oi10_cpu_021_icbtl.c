@@ -129,7 +129,7 @@ int main()
         /*aligned size + 3 cache lines*/
         test_function_buf[i] = rumboot_malloc_from_named_heap_aligned("SSRAM", function_area_size, 64*1024);
         if((test_function_buf[i] == NULL)){
-            rumboot_printf("Cannot allocate memory from SSRAM\n");
+            rumboot_printf("ERROR!!! Cannot allocate memory from SSRAM\n");
             return 1;
         }
         rumboot_memfill8(test_function_buf[i],function_area_size,0,0);
@@ -182,7 +182,17 @@ int main()
             {
                 ctr_value = test_function_buf[i]();
                 if(i <= j)
-                    icbtls(ct_field,( void* )ctr_value);
+                {
+                    if(ct_field == 0)
+                        icbtls(0,( void* )ctr_value);
+                    else if(ct_field == 2)
+                        icbtls(2,( void* )ctr_value);
+                    else
+                    {
+                        result |= 1;
+                        rumboot_printf("ERROR!!! Unsupported CT value that differ from 0 and 2\n");
+                    }
+                }
                 lwsync();
                 isync();
             }
@@ -203,7 +213,15 @@ int main()
                 ctr_value = test_function_buf[i]();
                 if((i != j) || (ct_field == 2))
                 {
-                    icbtls(ct_field,( void* )ctr_value);
+                    if(ct_field == 0)
+                        icbtls(0,( void* )ctr_value);
+                    else if(ct_field == 2)
+                        icbtls(2,( void* )ctr_value);
+                    else
+                    {
+                        result |= 1;
+                        rumboot_printf("ERROR!!! Unsupported CT value that differ from 0 and 2\n");
+                    }
                     lwsync();
                     isync();
                 }
@@ -228,7 +246,15 @@ int main()
 
             cache_way = 0;
             rumboot_printf("before icblc: locks == 0x%x\n", get_locks(ct_field,test_function_buf[cached_functions[cache_way]],cache_way));
-            icblc(ct_field, (test_function_buf[cached_functions[(j + 1)%L2C_COUNT_WAYS]]));
+            if(ct_field == 0)
+                icblc(0, test_function_buf[cached_functions[(j + 1)%L2C_COUNT_WAYS]]);
+            else if(ct_field == 2)
+                icblc(2, test_function_buf[cached_functions[(j + 1)%L2C_COUNT_WAYS]]);
+            else
+            {
+                result |= 1;
+                rumboot_printf("ERROR!!! Unsupported CT value that differ from 0 and 2\n");
+            }
             lwsync();
             isync();
             cache_way = (j+1)%L2C_COUNT_WAYS;
@@ -236,7 +262,15 @@ int main()
                     get_locks(ct_field,test_function_buf[cached_functions[cache_way]],cache_way), j,
                     (j + 1)%L2C_COUNT_WAYS);
 
-            icbtls(ct_field, (test_function_buf[cached_functions[j]]));
+            if(ct_field == 0)
+                icbtls(0, test_function_buf[cached_functions[j]]);
+            else if(ct_field == 2)
+                icbtls(2, test_function_buf[cached_functions[j]]);
+            else
+            {
+                result |= 1;
+                rumboot_printf("ERROR!!! Unsupported CT value that differ from 0 and 2\n");
+            }
             rumboot_printf("after icbtls: locks == 0x%x\n",
                     get_locks(ct_field,test_function_buf[cached_functions[cache_way]],cache_way));
 
@@ -263,7 +297,15 @@ int main()
         }
         for(uint32_t i = 0; i < L2C_COUNT_WAYS; ++i)
         {
-            icblc(ct_field, (test_function_buf[cached_functions[i]]));
+            if(ct_field == 0)
+                icblc(0, test_function_buf[cached_functions[i]]);
+            else if(ct_field == 2)
+                icblc(2, test_function_buf[cached_functions[i]]);
+            else
+            {
+                result |= 1;
+                rumboot_printf("ERROR!!! Unsupported CT value that differ from 0 and 2\n");
+            }
             lwsync();
             isync();
         }
