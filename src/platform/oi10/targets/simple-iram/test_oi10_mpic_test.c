@@ -79,6 +79,59 @@ uint32_t arg3 = TEC_CLR_EXT_INT3;
 uint32_t arg4 = TEC_CLR_EXT_INT4;
 uint32_t arg5 = TEC_CLR_EXT_INT5;
 
+static int noncritical_int_cnt = 0;
+static int critical_int_cnt    = 0;
+static int mc_int_cnt          = 0;
+
+static int exp_noncritical_int_cnt = 0;
+static int exp_critical_int_cnt    = 0;
+static int exp_mc_int_cnt          = 0;
+
+static void initcnt() {
+    noncritical_int_cnt = 0;
+    critical_int_cnt    = 0;
+    mc_int_cnt          = 0;
+    exp_noncritical_int_cnt = 0;
+    exp_critical_int_cnt    = 0;
+    exp_mc_int_cnt          = 0;
+}
+
+static void int_cnt_inc(int num)
+{
+    switch(num) {
+    case 0:
+    case 1:
+        noncritical_int_cnt += 1;
+        break;
+    case 2:
+    case 3:
+        critical_int_cnt += 1;
+        break;
+    case 4:
+    case 5:
+        mc_int_cnt += 1;
+        break;
+    }
+}
+
+static void exp_int_cnt_inc(int num)
+{
+    switch(num) {
+    case 0:
+    case 1:
+        exp_noncritical_int_cnt += 1;
+        break;
+    case 2:
+    case 3:
+        exp_critical_int_cnt += 1;
+        break;
+    case 4:
+    case 5:
+        exp_mc_int_cnt += 1;
+        break;
+    }
+}
+
 static void exception_handler(int const id, char const * const name ) {
         switch(id){
         case RUMBOOT_IRQ_DECREMENTER:
@@ -114,7 +167,9 @@ static void exception_handler(int const id, char const * const name ) {
 
 void irq_handler( int irq_num, void *arg )
 {
-    rumboot_printf("IRQ #%d received.\n", irq_num-EXT_INT0);
+    int num = irq_num-EXT_INT0;
+    int_cnt_inc(num);
+    rumboot_printf("IRQ #%d received.\n", num);
     test_event(*((uint32_t*)arg));
 //    test_event(TEC_CLR_EXT_INT_ALL);
 }
@@ -229,6 +284,8 @@ void ext_int_set_edge(struct rumboot_irq_entry *tbl)
 
 int main ()
 {
+    int status = 0;
+
     test_event_send_test_id("test_oi10_mpic_test");
     rumboot_memfill8_modelling((void*)SRAM0_BASE, 0x1000, 0x00, 0x00); //workaround (init 4KB)
 
@@ -250,76 +307,138 @@ int main ()
 #define EXT_INT_TIMEOUT 48
 #define EXT_INT_TIMEOUT2 320
 
+    initcnt();
+
     for (int k = 0; k < EXT_INT_TEST_COUNT; ++k)
     {
         if((k & 1) == 0) ext_int_set_level(tbl);
         else  ext_int_set_edge(tbl);
 
+        exp_int_cnt_inc(0);
         test_event(TEC_SET_EXT_INT0);
         for (int i = 0; i < EXT_INT_TIMEOUT; ++i) { nop(); }
+        exp_int_cnt_inc(1);
         test_event(TEC_SET_EXT_INT1);
         for (int i = 0; i < EXT_INT_TIMEOUT; ++i) { nop(); }
+        exp_int_cnt_inc(2);
         test_event(TEC_SET_EXT_INT2);
         for (int i = 0; i < EXT_INT_TIMEOUT; ++i) { nop(); }
+        exp_int_cnt_inc(2);
         test_event(TEC_SET_EXT_INT3);
         for (int i = 0; i < EXT_INT_TIMEOUT; ++i) { nop(); }
+        exp_int_cnt_inc(4);
         test_event(TEC_SET_EXT_INT4);
         for (int i = 0; i < EXT_INT_TIMEOUT; ++i) { nop(); }
+        exp_int_cnt_inc(5);
         test_event(TEC_SET_EXT_INT5);
         for (int i = 0; i < EXT_INT_TIMEOUT; ++i) { nop(); }
+        exp_int_cnt_inc(0);
+        exp_int_cnt_inc(1);
         test_event(TEC_SET_EXT_INT01);
         for (int i = 0; i < EXT_INT_TIMEOUT; ++i) { nop(); }
+        exp_int_cnt_inc(2);
+        exp_int_cnt_inc(3);
         test_event(TEC_SET_EXT_INT23);
         for (int i = 0; i < EXT_INT_TIMEOUT; ++i) { nop(); }
+        exp_int_cnt_inc(4);
+        exp_int_cnt_inc(5);
         test_event(TEC_SET_EXT_INT45);
         for (int i = 0; i < EXT_INT_TIMEOUT; ++i) { nop(); }
+        exp_int_cnt_inc(1);
+        exp_int_cnt_inc(3);
         test_event(TEC_SET_EXT_INT13);
         for (int i = 0; i < EXT_INT_TIMEOUT; ++i) { nop(); }
+        exp_int_cnt_inc(1);
+        exp_int_cnt_inc(5);
         test_event(TEC_SET_EXT_INT15);
         for (int i = 0; i < EXT_INT_TIMEOUT; ++i) { nop(); }
+        exp_int_cnt_inc(3);
+        exp_int_cnt_inc(5);
         test_event(TEC_SET_EXT_INT35);
         for (int i = 0; i < EXT_INT_TIMEOUT; ++i) { nop(); }
+        exp_int_cnt_inc(0);
+        exp_int_cnt_inc(1);
+        exp_int_cnt_inc(2);
+        exp_int_cnt_inc(3);
+        exp_int_cnt_inc(4);
+        exp_int_cnt_inc(5);
         test_event(TEC_SET_EXT_INT012345);
 
         for (int i = 0; i < EXT_INT_TIMEOUT; ++i) { nop(); }
+        exp_int_cnt_inc(4);
+        exp_int_cnt_inc(3);
         test_event(TEC_SET_EXT_INT4_AFTER_WR_IAR);
         test_event(TEC_SET_EXT_INT3);
         for (int i = 0; i < EXT_INT_TIMEOUT; ++i) { nop(); }
+        exp_int_cnt_inc(4);
+        exp_int_cnt_inc(5);
+        exp_int_cnt_inc(3);
         test_event(TEC_SET_EXT_INT45_AFTER_WR_IAR);
         test_event(TEC_SET_EXT_INT3);
         for (int i = 0; i < EXT_INT_TIMEOUT; ++i) { nop(); }
+        exp_int_cnt_inc(2);
+        exp_int_cnt_inc(1);
         test_event(TEC_SET_EXT_INT2_AFTER_WR_CIAR);
         test_event(TEC_SET_EXT_INT1);
         for (int i = 0; i < EXT_INT_TIMEOUT; ++i) { nop(); }
 
         dec_timer_start();
+        exp_int_cnt_inc(0);
         test_event(TEC_SET_EXT_INT0_AFTER_DEC_TIMER);
         for (int i = 0; i < EXT_INT_TIMEOUT2; ++i) { nop(); }
+        exp_int_cnt_inc(3);
         test_event(TEC_SET_EXT_INT3_AFTER_DEC_TIMER);
         for (int i = 0; i < EXT_INT_TIMEOUT2; ++i) { nop(); }
+        exp_int_cnt_inc(0);
         test_event(TEC_SET_EXT_INT0_BEFORE_DEC_TIMER);
         for (int i = 0; i < EXT_INT_TIMEOUT2; ++i) { nop(); }
+        exp_int_cnt_inc(3);
         test_event(TEC_SET_EXT_INT3_BEFORE_DEC_TIMER);
         for (int i = 0; i < EXT_INT_TIMEOUT2; ++i) { nop(); }
         timer_stop();
 
+        exp_int_cnt_inc(3);
         wd_timer_start();
         test_event(TEC_SET_EXT_INT3_AFTER_WD_TIMER);
         for (int i = 0; i < EXT_INT_TIMEOUT2; ++i) { nop(); }
+        exp_int_cnt_inc(5);
         wd_timer_start();
         test_event(TEC_SET_EXT_INT5_AFTER_WD_TIMER);
         for (int i = 0; i < EXT_INT_TIMEOUT2; ++i) { nop(); }
+        exp_int_cnt_inc(3);
         wd_timer_start();
         test_event(TEC_SET_EXT_INT3_BEFORE_WD_TIMER);
         for (int i = 0; i < EXT_INT_TIMEOUT2; ++i) { nop(); }
+        exp_int_cnt_inc(5);
         wd_timer_start();
         test_event(TEC_SET_EXT_INT5_BEFORE_WD_TIMER);
         for (int i = 0; i < EXT_INT_TIMEOUT2; ++i) { nop(); }
         timer_stop();
 
         test_event(TEC_CLR_EXT_INT_ALL);
+        for (int i = 0; i < EXT_INT_TIMEOUT2; ++i) { nop(); }
     }
 
-    return 0;
-}
+    if(exp_noncritical_int_cnt != noncritical_int_cnt)
+    {
+        rumboot_printf("Error! Some noncritical interrupts were not recieved.\n");
+        status += 1;
+    }
+    if(exp_critical_int_cnt != critical_int_cnt)
+    {
+        rumboot_printf("Error! Some critical interrupts were not recieved.\n");
+        status += 1;
+    }
+    if(exp_mc_int_cnt != mc_int_cnt)
+    {
+        rumboot_printf("Error! Some machine check interrupts were not recieved.\n");
+        status += 1;
+    }
 
+    if(status == 0)
+        rumboot_printf("TEST OK\n");
+    else
+        rumboot_printf("TEST ERROR\n");
+
+    return status;
+}
