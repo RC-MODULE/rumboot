@@ -57,10 +57,11 @@ void exit(int status)
 void _exit(int status)
 {
 		#ifndef RUMBOOT_NOINIT
+			/* Normal binary, do a long-jump and return to bootrom */
 			longjmp(rumboot_platform_runtime.exit_trampoline, 256 + status);
-		#else
-			rumboot_printf("\n_exit: System halted, code %d\n", status);
 		#endif
+
+		rumboot_printf("\n_exit: System halted, code %d\n", status);
 		while(1);;
 }
 
