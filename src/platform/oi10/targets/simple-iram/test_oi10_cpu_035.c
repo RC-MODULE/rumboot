@@ -168,7 +168,7 @@ int main(void)
     TEST_ASSERT((t1 > t2),"The performance has not enhanced!");
 
     t1 = (tbl_value[16] + tbl_value[17] + tbl_value[18] + tbl_value[19]) >> 2;
-    t2 = (tbl_value[28] + tbl_value[28] + tbl_value[30] + tbl_value[31]) >> 2;
+    t2 = (tbl_value[28] + tbl_value[29] + tbl_value[30] + tbl_value[31]) >> 2;
     TEST_ASSERT((t1 > (2*t2)),"The performance has not enhanced!");
 
     t1 = (tbl_value[48] + tbl_value[49] + tbl_value[50] + tbl_value[51]) >> 2;
