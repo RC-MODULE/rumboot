@@ -390,10 +390,10 @@ int main()
 
     MC_HANDLED = 0;
 
-    check_interrupt_from_io_dev_inj(DMA2PLB6_SLV_ERR_INT);
+    //check_interrupt_from_io_dev_inj(DMA2PLB6_SLV_ERR_INT);
     check_interrupt_from_io_dev_inj(O_SYSTEM_HUNG);
     check_interrupt_from_io_dev_inj(PLB6PLB40_O_0_BR6TO4_INTR);
-    check_interrupt_from_io_dev_inj(PLB6PLB41_O_BR6TO4_INTR);
+    //check_interrupt_from_io_dev_inj(PLB6PLB41_O_BR6TO4_INTR);
     check_interrupt_from_io_dev_inj(ARB_SYSDCRERR);
 
 
