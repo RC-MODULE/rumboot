@@ -5,16 +5,20 @@
 #include <platform/devices.h>
 #include <rumboot/io.h>
 #include <stdlib.h>
+#include <rumboot/timer.h>
 
 #ifndef USE_SWINT
 #define USE_SWINT 0
 #endif
 
-
 void handler(int irq)
 {
     rumboot_printf("IRQ default handler called\n");
-    exit(0);
+    /* Explicitly terminate simulation  */
+    /* FixMe: Specify an argument for defhandler */
+    uint32_t code = 0;
+    rumboot_platform_event_raise(EVENT_TERM, &code, 1);
+    while(1);;
 }
 
 int main()
@@ -29,9 +33,7 @@ int main()
 
     rumboot_printf("Firing IRQ\n");
 	rumboot_irq_swint(USE_SWINT);;
-
-    rumboot_irq_table_activate(NULL);
-    rumboot_irq_free(tbl);
-
+    udelay(50);
+    rumboot_printf("Timeout waiting for SW interrupt to arrive\n");
     return 1;
 }
