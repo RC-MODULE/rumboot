@@ -219,7 +219,7 @@ uint32_t check_read_from_uart(uint32_t base_addr, const uint8_t* data)
 {
     rumboot_printf("Read:\n");
 
-    uint8_t readval = uart_getc(base_addr, UART_TIMEOUT);
+    int readval = uart_getc(base_addr, UART_TIMEOUT);
     TEST_ASSERT((readval >= 0), "Timeout while reading from UART!\n");
 
     rumboot_printf("UART_BASE+UARTDR = 0x%x\n", base_addr + UARTDR);

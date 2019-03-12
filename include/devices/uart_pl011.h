@@ -152,14 +152,14 @@ void uart_set_baudrate(uint32_t  base_addr, uint32_t uart_sys_freq_hz, uint32_t 
  * @param test_char char to be put to UART
  * @param timeout_us_operation timeout in microseconds
  */
-int8_t uart_putc(uint32_t  base_addr, unsigned char test_char, uint32_t timeout_us);
+int uart_putc(uint32_t  base_addr, uint8_t test_char, uint32_t timeout_us);
 
 /**
  * brief Get char from UART
  * @param base_adr base address of UART
  * @param timeout_us operation timeout in microseconds
  */
-char uart_getc(uint32_t  base_addr, uint32_t timeout_us);
+int uart_getc(uint32_t  base_addr, uint32_t timeout_us);
 
 /**
  * brief Waiting while UART busy
