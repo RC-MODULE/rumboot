@@ -367,6 +367,16 @@ static inline uint32_t rumboot_arch_irq_setstate(uint32_t new_state)
     uint32_t rumboot_irq_get_count(int irq);
 
     /**
+     * Get the context level. 
+     * 0 - Normal program execution
+     * 1 - ISR context
+     * 2 and more - nested ISR context
+     * 
+     * @return int 
+     */
+    int rumboot_irq_get_context();
+
+    /**
      * Disable global interrupt handling by current CPU core
      * Returns previous interrupt status that can be passed to
      * rumboot_irq_setstate()

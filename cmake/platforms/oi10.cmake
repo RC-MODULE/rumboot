@@ -450,6 +450,12 @@ endif()
         PREFIX "irq-rom"
     )
 
+    add_rumboot_target(
+      CONFIGURATION ROM
+      CFLAGS -DUSE_SWINT=132
+      FILES common/irq/irq-context.c
+      PREFIX "irq-context"
+    )
 
     add_rumboot_target(
         CONFIGURATION IRAM
