@@ -24,6 +24,7 @@
 #include <platform/devices.h>
 #include <platform/devices/l2c.h>
 #include <platform/devices/dma2plb6.h>
+#include <platform/devices/mpic128.h>
 
 #include <platform/regs/regs_dcrarb.h>
 #include <platform/regs/regs_plb6plb4.h>
@@ -32,6 +33,13 @@
 
 /* Config */
 #define TEST_STRING_ID              "test_oi10_cpu_019"
+#define IRQ_CR_BEG                  EXT_INT0
+#define IRQ_CR_END                  EXT_INT1
+#define IRQ_MC_BEG                  EXT_INT2
+#define IRQ_MC_END                  EXT_INT3
+#define IRQ_BORDER_NC               MPIC128_PRIOR_3
+#define IRQ_BORDER_CR               MPIC128_PRIOR_8
+#define IRQ_BORDER_MC               MPIC128_PRIOR_12
 
 /* Constants macros */
 #define TEST_OK                     0
@@ -566,17 +574,27 @@ void init_interrupts(void)
     uint32_t    irq;
     rumboot_printf("Start IRQ initialization...\n");
 
-    /* Turn on bits 'CE', 'EE', and 'DE' in MSR (enable interrupts) */
+    /* Turn on bits 'CE', and 'EE' in MSR (enable interrupts) */
     msr_write(msr_read()    | BIT(ITRPT_XSR_CE_i)
                             | BIT(ITRPT_XSR_EE_i));
 
     clear_all_interrupts(IRQ);
     rumboot_irq_cli();
     ext_int_raised = NO;
+    mpic128_set_interrupt_borders(DCR_MPIC128_BASE,
+            IRQ_BORDER_MC, IRQ_BORDER_CR);
     irq_table = rumboot_irq_create(NULL);
     for(irq = IRQ_MIN; irq <= IRQ_MAX; irq++)
         rumboot_irq_set_handler(irq_table, irq,
             IRQ_FLAGS, irq_handler, NULL);
+    for(irq = IRQ_MIN; irq <= IRQ_MAX; irq++)
+    {
+        if((irq >= IRQ_MC_BEG) && (irq <= IRQ_MC_END))
+            rumboot_irq_priority_adjust(irq_table, irq, IRQ_BORDER_MC);
+        else if((irq >= IRQ_CR_BEG) && (irq <= IRQ_CR_END))
+                rumboot_irq_priority_adjust(irq_table, irq, IRQ_BORDER_CR);
+             else rumboot_irq_priority_adjust(irq_table, irq, IRQ_BORDER_NC);
+    }
 
     /* Activate the table */
     rumboot_irq_table_activate(irq_table);
