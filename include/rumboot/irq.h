@@ -302,8 +302,9 @@ static inline uint32_t rumboot_arch_irq_setstate(uint32_t new_state)
      * arrives in the absense of an active IRQ table or with no handler
      * configured.
      * @param handler
+     * @param arg
      */
-     void rumboot_irq_set_default_handler(void (*handler)(int irq));
+     void rumboot_irq_set_default_handler(void (*handler)(int irq, void *arg), void *arg);
 
      /**
       * Set user exception handler. This one will be called when an exception

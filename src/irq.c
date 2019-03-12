@@ -101,10 +101,11 @@ struct rumboot_irq_entry *rumboot_irq_create(struct rumboot_irq_entry *copyfrom)
 	return tbl;
 }
 
-void rumboot_irq_set_default_handler(void (*handler)(int irq))
+void rumboot_irq_set_default_handler(void (*handler)(int irq, void *arg), void *arg)
 {
 	RUMBOOT_ATOMIC_BLOCK() {
 		rumboot_platform_runtime_info->irq_def_hndlr = handler;
+		rumboot_platform_runtime_info->irq_def_arg = arg;		
 	}
 }
 
@@ -209,7 +210,7 @@ static void process_irq(int id)
 	if (tbl && tbl[id].handler) {
 		tbl[id].handler(id, tbl[id].arg);
 	} else if (rumboot_platform_runtime_info->irq_def_hndlr) {
-		rumboot_platform_runtime_info->irq_def_hndlr(id);
+		rumboot_platform_runtime_info->irq_def_hndlr(id, rumboot_platform_runtime_info->irq_def_arg);
 	} else {
 		if (!tbl) {
 			rumboot_platform_panic("FATAL: Unhandled IRQ %d when no active irq table present\n",

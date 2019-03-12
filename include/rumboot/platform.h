@@ -399,7 +399,9 @@ struct rumboot_runtime_info {
     /** Pointer to current active irq table. Do not use directly, use rumboot_irq_table_get() */
     void *irq_handler_table;
     /** Pointer to irq default handler */
-    void (*irq_def_hndlr)(int irq);
+    void (*irq_def_hndlr)(int irq, void *arg);
+    /** User-specified argument for irq_def_arg */
+    void *irq_def_arg;
     /** Pointer to exception handler */
     void (*irq_exception_hndlr)(int id, const char *name);
     /** Level of function nesting (used by function tracing code) */
