@@ -57,7 +57,7 @@ set(ROM_115200_OPTS +UART0_SPEED=115200)
 ### Add tests here ###
 #WARNING! Full regression automatically includes all tests from the short ones
 macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
-
+  if (NOT RUMBOOT_BUILD_TYPE STREQUAL "PostProduction")
     add_rumboot_target(
         CONFIGURATION ROM
         FILES common/bootrom-stubs/bootrom-stub.c
@@ -204,6 +204,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
               NOR_IMAGE spl-fail-bad-magic
         )
     endif()
+  endif()
 
     add_rumboot_target(
         CONFIGURATION IRAM
