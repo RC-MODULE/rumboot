@@ -31,41 +31,42 @@ enum TEST_CRG_STATE
     TEST_CRG_STATE_NRST_SYS
 };
 
-static volatile enum TEST_CRG_STATE state = 0;
-
-//rumboot_platform_runtime_info ri;
 
 
 int main(void)
 {
-    test_event_send_test_id("test_oi10_ctrl_002_2");
+    rumboot_printf("state = %d\n", rumboot_platform_runtime.persistent[0]);
 
-    if (state == TEST_CRG_STATE_NRST_PON)
+    if (rumboot_platform_runtime.persistent[0] == TEST_CRG_STATE_NRST_PON)
         goto label_NRST_PON;
-    else if (state == TEST_CRG_STATE_NRST_SYS)
+    else if (rumboot_platform_runtime.persistent[0] == TEST_CRG_STATE_NRST_SYS)
         goto label_NRST_SYS;
 
 
+    test_event_send_test_id("test_oi10_ctrl_002_2");
+
     rumboot_putstring("Generating NRST_PON reset signal ...\n");
-    state = TEST_CRG_STATE_NRST_PON;
+    rumboot_platform_runtime.persistent[0] = TEST_CRG_STATE_NRST_PON;
+    rumboot_platform_perf("reset_system by NRST_PON");
     test_event(EVENT_OI10_NRST_PON);
-    udelay(100);
+    udelay(10);
 
 label_NRST_PON:
     test_event(EVENT_OI10_CHECK);
-    udelay(10);
+    udelay(1);
     TEST_ASSERT((dcr_read(DCR_CRG_BASE + CRG_SYS_RST_MON) & (1 << 11)) != 0x00 , "Value in RST_MON register is incorrect!");
 
 
     rumboot_putstring("Generating NRST_SYS reset signal ...\n");
-    state = TEST_CRG_STATE_NRST_SYS;
+    rumboot_platform_runtime.persistent[0] = TEST_CRG_STATE_NRST_SYS;
+    rumboot_platform_perf("reset_system by NRST_SYS");
     test_event(EVENT_OI10_NRST_SYS);
-    udelay(100);
+    udelay(10);
 
 label_NRST_SYS:
     test_event(EVENT_OI10_CHECK);
-    udelay(10);
-    TEST_ASSERT((dcr_read(DCR_CRG_BASE + CRG_SYS_RST_MON) & (1 << 11)) != 0x00 , "Value in RST_MON register is incorrect!");
+    udelay(1);
+    TEST_ASSERT((dcr_read(DCR_CRG_BASE + CRG_SYS_RST_MON) & (1 << 10)) != 0x00 , "Value in RST_MON register is incorrect!");
 
 
     rumboot_printf("TEST_OK\n");
