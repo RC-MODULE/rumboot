@@ -83,10 +83,6 @@ int rumboot_main()
         /* Call Platform-specific setup code (e.g. init the event system) */
         rumboot_platform_setup();
 
-     #ifdef RUMBOOT_ENABLE_ALL_IRQS_ON_START
-        rumboot_irq_enable_all();
-     #endif
-
         /* Run constructors */
         rumboot_init_array();
 
@@ -112,6 +108,11 @@ int rumboot_main()
 
         /* If we are here, we're back from longjmp */
         rumboot_platform_perf("Trampoline");
+        
+      #ifdef RUMBOOT_MAIN_NORETURN
+        uint32_t code = ret - 256; 
+        rumboot_platform_event_raise(EVENT_TERM, &code, 1);
+      #endif
 
         /* De-mangle exit code from trampoline */
         return ret - 256;
