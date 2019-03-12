@@ -35,7 +35,7 @@ struct rumboot_irq_entry {
 	void		(*handler)(int irq, void *arg);
 	void *		arg;
 	uint32_t	flags;
-	int 			priority;
+	int 		priority;
 };
 
 
@@ -177,18 +177,12 @@ void rumboot_irq_enable(int irq)
 	struct rumboot_irq_entry *tbl = rumboot_irq_table_fetch(NULL);
 	const struct rumboot_irq_controller *ctl = rumboot_irq_controller_by_irq(irq);
 	ctl->configure(ctl, irq - ctl->first, tbl[irq].flags, 1);
-    if (ctl->adjust_priority) {
-        ctl->adjust_priority(ctl, irq - ctl->first, tbl[irq].priority);
-    }
+	rumboot_irq_priority_adjust(tbl, irq, tbl[irq].priority);
 }
 
 void rumboot_irq_enable_all()
 {
 	int i;
-
-	/* TODO: Iterating over interrupt controllers and their irqs, directly calling
-	 * ctl->configure() will be waaay faster
-	 */
 	for (i = 0; i < RUMBOOT_PLATFORM_NUM_IRQS; i++) {
 		rumboot_irq_enable(i);
 	}
@@ -267,6 +261,11 @@ int rumboot_irq_priority_adjust(struct rumboot_irq_entry *tbl, int irq, int prio
         int ret;
         const struct rumboot_irq_controller *ctl = rumboot_irq_controller_by_irq(irq);
         tbl = rumboot_irq_table_fetch(tbl);
+
+		/* 0 is always considered default priority */
+		if (priority == 0) {
+			priority = ctl->priority_default;
+		}
 
         if (priority > ctl->priority_max) {
                 rumboot_printf("WARN: irq: priority %d is bigger than maximum (%d) for %s",

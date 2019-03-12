@@ -248,9 +248,13 @@ static inline uint32_t rumboot_arch_irq_setstate(uint32_t new_state)
      *
      * The maximum and minimum priorities are specified in
      * struct rumboot_irq_controller and should be obtained by
-     * rumboot_irq_prioity_get_max() and rumboot_irq_prioity_get_min() functions
+     * rumboot_irq_prioity_get_max() and rumboot_irq_prioity_get_min() functions.
+     * 
+     * _WARNING_: 0 is always considered default priority and is overwritten by controller's
+     * default priority when rumboot_irq_priority_adjust() is called. Either internally, or 
+     * within the IRQ subsystem
      *
-     * If the requesed priority if greater than maximum possible or lesser
+     * If the requested priority if greater than maximum possible or lesser
      * that minimum possible a warning will be generated and maximum and minimum
      * priorities will be used instead.
      *
