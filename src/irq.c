@@ -36,6 +36,7 @@ struct rumboot_irq_entry {
 	void *		arg;
 	uint32_t	flags;
 	int 		priority;
+	uint32_t 	count;
 };
 
 
@@ -219,6 +220,18 @@ static void process_irq(int id)
 			rumboot_platform_panic("FATAL: Unhandled IRQ %d\n", id);
 		}
 	}
+	if (tbl) {
+		tbl[id].count++;
+	}
+}
+
+uint32_t rumboot_irq_get_count(int irq) 
+{
+	struct rumboot_irq_entry *tbl = rumboot_irq_table_get();
+	if (tbl && (irq < RUMBOOT_PLATFORM_NUM_IRQS)) {
+		return tbl[irq].count;
+	}
+	return 0;
 }
 
 void rumboot_irq_set_exception_handler(void (*handler)(int id, const char *name))

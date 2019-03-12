@@ -355,6 +355,17 @@ static inline uint32_t rumboot_arch_irq_setstate(uint32_t new_state)
      */
     void *rumboot_irq_table_get();
 
+
+    /**
+     * Fetches the number of times this interrupt has arrived.
+     * All accounting is done in the active irq table and copied
+     * when nesting
+     * 
+     * @param irq 
+     * @return uint32_t 
+     */
+    uint32_t rumboot_irq_get_count(int irq);
+
     /**
      * Disable global interrupt handling by current CPU core
      * Returns previous interrupt status that can be passed to
