@@ -227,7 +227,7 @@ void uart_clear_status(uint32_t base_addr){
     reg_write(base_addr, UARTECR, 0x0); //data is not important
 }
 
-bool uart_putc(uint32_t base_addr, unsigned char test_char, uint32_t timeout_us){
+int8_t uart_putc(uint32_t base_addr, unsigned char test_char, uint32_t timeout_us){
     //single transfer
 
     uint32_t start = rumboot_platform_get_uptime();
@@ -235,22 +235,22 @@ bool uart_putc(uint32_t base_addr, unsigned char test_char, uint32_t timeout_us)
     while (rumboot_platform_get_uptime() - start < timeout_us) {
         if (!uart_check_tfifo_full(base_addr)) {
             reg_write(base_addr, UARTDR, test_char);
-            return true;
+            return 0;
         }
     }
-    return false;
+
+    return -1;
 }
 
-bool uart_getc(uint32_t base_addr, uint32_t timeout_us, char* readval){
+char uart_getc(uint32_t base_addr, uint32_t timeout_us){
     uint32_t start = rumboot_platform_get_uptime();
 
     while (rumboot_platform_get_uptime() - start < timeout_us) {
         if (!uart_check_rfifo_empty(base_addr)) {
-            *readval = reg_read(base_addr, UARTDR) & 0xFF;
-            return true;
+            return reg_read(base_addr, UARTDR) & 0xFF;
         }
     }
-    return false;
+    return -1;
 }
 
 void uart_set_interrupt_mask(uint32_t base_addr, short mask){

@@ -207,7 +207,7 @@ void write_to_uart(uint32_t base_addr, const uint8_t* data, size_t data_len)
     for (uint32_t j = 0; j < data_len; j++)
     {
         rumboot_printf("data_seq_arr[%d] = 0x%x\n", j, data[j]);
-        TEST_ASSERT((uart_putc(base_addr, data[j], UART_TIMEOUT) == true), "Timeout while writing to UART!\n ");
+        TEST_ASSERT((uart_putc(base_addr, data[j], UART_TIMEOUT) != -1), "Timeout while writing to UART!\n ");
     }
     rumboot_printf("Finish Write\n");
 }
@@ -219,9 +219,8 @@ uint32_t check_read_from_uart(uint32_t base_addr, const uint8_t* data)
 {
     rumboot_printf("Read:\n");
 
-    char readval;
-    bool result = uart_getc(base_addr, UART_TIMEOUT, &readval);
-    TEST_ASSERT((result == true), "Timeout while reading from UART!\n");
+    uint8_t readval = uart_getc(base_addr, UART_TIMEOUT);
+    TEST_ASSERT((readval >= 0), "Timeout while reading from UART!\n");
 
     rumboot_printf("UART_BASE+UARTDR = 0x%x\n", base_addr + UARTDR);
     rumboot_printf("readval = 0x%x\n", readval);
