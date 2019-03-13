@@ -64,7 +64,8 @@ enum {
     TEC_SET_EXT_INT5_AFTER_WD_TIMER,
     TEC_SET_EXT_INT3_BEFORE_WD_TIMER,
     TEC_SET_EXT_INT5_BEFORE_WD_TIMER,
-    TEC_SET_EXT_INT2_AFTER_WR_CIAR
+    TEC_SET_EXT_INT2_AFTER_WR_CIAR,
+    TEC_SET_EXT_INT0_WITHOUT_CHECK_TYPE
 } test_event_code;
 
 #define DEC_PERIOD  0x4000
@@ -84,6 +85,8 @@ static int noncritical_int_cnt = 0;
 static int critical_int_cnt    = 0;
 static int mc_int_cnt          = 0;
 static int sw_int_cnt          = 0;
+static int ext_int_cnt         = 0;
+static int tmr_int_cnt         = 0;
 
 static int exp_noncritical_int_cnt = 0;
 static int exp_critical_int_cnt    = 0;
@@ -94,6 +97,9 @@ static void initcnt() {
     critical_int_cnt    = 0;
     mc_int_cnt          = 0;
     sw_int_cnt          = 0;
+    ext_int_cnt         = 0;
+    tmr_int_cnt         = 0;
+
     exp_noncritical_int_cnt = 0;
     exp_critical_int_cnt    = 0;
     exp_mc_int_cnt          = 0;
@@ -115,6 +121,7 @@ static void int_cnt_inc(int num)
         mc_int_cnt += 1;
         break;
     }
+    msync();
 }
 
 static void exp_int_cnt_inc(int num)
@@ -133,6 +140,7 @@ static void exp_int_cnt_inc(int num)
         exp_mc_int_cnt += 1;
         break;
     }
+    msync();
 }
 
 static void exception_handler(int const id, char const * const name ) {
@@ -172,21 +180,41 @@ void irq_handler( int irq_num, void *arg )
 {
     int num = irq_num-EXT_INT0;
     int_cnt_inc(num);
-    rumboot_printf("IRQ #%d received.\n", num);
+    rumboot_printf("irq_handler: IRQ #%d received.\n", num);
     test_event(*((uint32_t*)arg));
-//    test_event(TEC_CLR_EXT_INT_ALL);
+}
+
+void irq_handler2( int irq_num, void *arg )
+{
+    int num = irq_num-EXT_INT0;
+    rumboot_printf("irq_handler2: IRQ #%d received.\n", num);
+    ext_int_cnt += 1;
+    msync();
+    test_event(*((uint32_t*)arg));
 }
 
 void swirq_handler( int irq_num, void *arg )
 {
-    rumboot_printf("IRQ #%d received.\n", irq_num);
+    rumboot_printf("swirq_handler: IRQ #%d received.\n", irq_num);
     sw_int_cnt += 1;
+    msync();
+}
+
+void tmr_handler( int irq_num, void *arg )
+{
+    rumboot_printf("tmr_handler: IRQ #%d received.\n", irq_num);
+    mpic128_stop_timer(DCR_MPIC128_BASE, (uint32_t)arg);
+    tmr_int_cnt += 1;
+    msync();
 }
 
 void def_handler( int irq_num)
 {
-    rumboot_printf("IRQ #%d received.\n", irq_num);
+    rumboot_printf("def_handler: IRQ #%d received.\n", irq_num);
     if (irq_num == MPIC128_IPI_0) sw_int_cnt += 1;
+    if (irq_num == MPIC128_TIMER_0) tmr_int_cnt += 1;
+    msync();
+    mpic128_stop_timer(DCR_MPIC128_BASE, Mpic128Timer0);
 }
 
 
@@ -317,92 +345,257 @@ int main ()
     rumboot_irq_sei();
 
     rumboot_printf("---------------- Info ------------------------\n");
-    rumboot_printf("IRQ #0 is Non critical Interrupt, priority 3\n"
-                   "IRQ #1 is Non critical Interrupt, priority 4\n");
-    rumboot_printf("IRQ #2 is Critical Interrupt, priority 6\n"
-                   "IRQ #3 is Critical Interrupt, priority 7\n");
-    rumboot_printf("IRQ #4 is Machine Check Interrupt, priority 12\n"
-                   "IRQ #5 is Machine Check Interrupt, priority 14\n");
+    rumboot_printf("IRQ #0 is external interrupt #0               \n");
+    rumboot_printf("----------------------------------------------\n");
+
+    rumboot_printf("\n------------------------------------\n"
+                     "Checking adjust priority and interrupt generation\n"
+                     "------------------------------------\n");
+
+    rumboot_printf("Set level sense for interrupt source\n"
+                   "------------------------------------\n");
+    rumboot_irq_set_handler( rumboot_irq_table_get(), EXT_INT0, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, irq_handler2, &arg0 );
+    rumboot_irq_enable(EXT_INT0);
+
+    for(int k=0; k <=1; k++) {
+        if(k==1) {
+            rumboot_printf("Set edge sense for interrupt source\n"
+                           "------------------------------------\n");
+            rumboot_irq_set_handler( rumboot_irq_table_get(), EXT_INT0, RUMBOOT_IRQ_EDGE | RUMBOOT_IRQ_POS, irq_handler2, &arg0 );
+        }
+        for (int i = 2; i <= 8; i += 2)
+        {
+            rumboot_printf("Adjust priority to %d\n", i);
+            rumboot_irq_priority_adjust(rumboot_irq_table_get(), EXT_INT0, i);
+            ext_int_cnt = 0;
+            rumboot_printf("Firing IRQ #0\n");
+            test_event(TEC_SET_EXT_INT0_WITHOUT_CHECK_TYPE);
+            udelay(5);
+            if (ext_int_cnt == 0)
+            {
+                rumboot_printf("IRQ #0 is not arrive!\n");
+                rumboot_printf("TEST ERROR\n");
+                return 1;
+            }
+        }
+        for (int i = 8; i >= 2; i -= 2)
+        {
+            rumboot_printf("Adjust priority to %d\n", i);
+            rumboot_irq_priority_adjust(rumboot_irq_table_get(), EXT_INT0, i);
+            ext_int_cnt = 0;
+            rumboot_printf("Firing IRQ #0\n");
+            test_event(TEC_SET_EXT_INT0_WITHOUT_CHECK_TYPE);
+            udelay(5);
+            if (ext_int_cnt == 0)
+            {
+                rumboot_printf("IRQ #0 is not arrive!\n");
+                rumboot_printf("TEST ERROR\n");
+                return 1;
+            }
+        }
+        for (int i = 8; i <= 14; i += 2)
+        {
+            rumboot_printf("Adjust priority to %d\n", i);
+            rumboot_irq_priority_adjust(rumboot_irq_table_get(), EXT_INT0, i);
+            ext_int_cnt = 0;
+            rumboot_printf("Firing IRQ #0\n");
+            test_event(TEC_SET_EXT_INT0_WITHOUT_CHECK_TYPE);
+            udelay(5);
+            if (ext_int_cnt == 0)
+            {
+                rumboot_printf("IRQ #0 is not arrive!\n");
+                rumboot_printf("TEST ERROR\n");
+                return 1;
+            }
+        }
+        for (int i = 14; i >= 8; i -= 2)
+        {
+            rumboot_printf("Adjust priority to %d\n", i);
+            rumboot_irq_priority_adjust(rumboot_irq_table_get(), EXT_INT0, i);
+            ext_int_cnt = 0;
+            rumboot_printf("Firing IRQ #0\n");
+            test_event(TEC_SET_EXT_INT0_WITHOUT_CHECK_TYPE);
+            udelay(5);
+            if (ext_int_cnt == 0)
+            {
+                rumboot_printf("IRQ #0 is not arrive!\n");
+                rumboot_printf("TEST ERROR\n");
+                return 1;
+            }
+        }
+    }
+
+    rumboot_printf("---------------- Info ------------------------\n");
+    rumboot_printf("IRQ #%d is MPIC128 timer #%d interrupt\n", MPIC128_TIMER_0, Mpic128Timer0);
+    rumboot_printf("----------------------------------------------\n");
+
+#define TMR_COUNT    (0x800)
+
+    rumboot_printf("\n------------------------------------\n"
+                     "Checking adjust priority and interrupt generation\n"
+                     "------------------------------------\n");
+    rumboot_irq_set_handler( rumboot_irq_table_get(), MPIC128_TIMER_0, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, tmr_handler, (void *)Mpic128Timer0 );
+    rumboot_irq_enable(MPIC128_TIMER_0);
+    mpic128_timer_init(DCR_MPIC128_BASE, mpic128_timer_freq_SYS_CLK);
+
+    for(int k=0; k < 1; k++) {
+        for (int i = 2; i <= 8; i += 2)
+        {
+            rumboot_printf("Adjust priority to %d\n", i);
+            rumboot_irq_priority_adjust(rumboot_irq_table_get(), MPIC128_TIMER_0, i);
+            tmr_int_cnt = 0;
+            rumboot_printf("Firing IRQ #%d\n", MPIC128_TIMER_0);
+            mpic128_start_timer(DCR_MPIC128_BASE, Mpic128Timer0, TMR_COUNT);
+            udelay(100);
+            if (tmr_int_cnt == 0)
+            {
+                rumboot_printf("IRQ #%d is not arrive!\n", MPIC128_TIMER_0);
+                rumboot_printf("TEST ERROR\n");
+                return 1;
+            }
+        }
+        for (int i = 8; i >= 2; i -= 2)
+        {
+            rumboot_printf("Adjust priority to %d\n", i);
+            rumboot_irq_priority_adjust(rumboot_irq_table_get(), MPIC128_TIMER_0, i);
+            tmr_int_cnt = 0;
+            rumboot_printf("Firing IRQ #%d\n", MPIC128_TIMER_0);
+            mpic128_start_timer(DCR_MPIC128_BASE, Mpic128Timer0, TMR_COUNT);
+            udelay(100);
+            if (tmr_int_cnt == 0)
+            {
+                rumboot_printf("IRQ #%d is not arrive!\n", MPIC128_TIMER_0);
+                rumboot_printf("TEST ERROR\n");
+                return 1;
+            }
+        }
+        for (int i = 8; i <= 14; i += 2)
+        {
+            rumboot_printf("Adjust priority to %d\n", i);
+            rumboot_irq_priority_adjust(rumboot_irq_table_get(), MPIC128_TIMER_0, i);
+            tmr_int_cnt = 0;
+            rumboot_printf("Firing IRQ #%d\n", MPIC128_TIMER_0);
+            mpic128_start_timer(DCR_MPIC128_BASE, Mpic128Timer0, TMR_COUNT);
+            udelay(100);
+            if (tmr_int_cnt == 0)
+            {
+                rumboot_printf("IRQ #%d is not arrive!\n", MPIC128_TIMER_0);
+                rumboot_printf("TEST ERROR\n");
+                return 1;
+            }
+        }
+        for (int i = 14; i >= 8; i -= 2)
+        {
+            rumboot_printf("Adjust priority to %d\n", i);
+            rumboot_irq_priority_adjust(rumboot_irq_table_get(), MPIC128_TIMER_0, i);
+            tmr_int_cnt = 0;
+            rumboot_printf("Firing IRQ #%d\n", MPIC128_TIMER_0);
+            mpic128_start_timer(DCR_MPIC128_BASE, Mpic128Timer0, TMR_COUNT);
+            udelay(100);
+            if (tmr_int_cnt == 0)
+            {
+                rumboot_printf("IRQ #%d is not arrive!\n", MPIC128_TIMER_0);
+                rumboot_printf("TEST ERROR\n");
+                return 1;
+            }
+        }
+    }
+
+    rumboot_printf("---------------- Info ------------------------\n");
     rumboot_printf("IRQ #%d is SW Interrupt\n", MPIC128_IPI_0);
     rumboot_printf("----------------------------------------------\n");
 
-    initcnt();
-
     rumboot_printf("\n------------------------------------\n"
-                     "Check SW interrupt generation       \n"
+                     "Checking adjust priority and interrupt generation\n"
                      "------------------------------------\n");
     rumboot_printf("Enable SW interrupt\n");
     rumboot_irq_enable(MPIC128_IPI_0);
 
-    for (int k = 2; k <= 14; k += 2)
-    {
-        rumboot_printf("Adjust priority to %d\n", k);
-        rumboot_irq_priority_adjust(rumboot_irq_table_get(), MPIC128_IPI_0, k);
-        sw_int_cnt = 0;
-        rumboot_printf("Firing SW IRQ\n");
-        rumboot_irq_swint(MPIC128_IPI_0);;
-        udelay(5);
-        if (sw_int_cnt == 0)
-        {
-            rumboot_printf("SW interrupt is not arrive!\n");
-            rumboot_printf("TEST ERROR\n");
-            return 1;
+    for(int k=0; k <=1; k++) {
+        if(k==1) {
+            rumboot_printf("Set custom interrupt handler\n"
+                           "------------------------------------\n");
+            rumboot_irq_set_handler( rumboot_irq_table_get(), MPIC128_IPI_0, 0, swirq_handler, NULL );
         }
-    }
-    for (int k = 14; k >= 2; k -= 2)
-    {
-        rumboot_printf("Adjust priority to %d\n", k);
-        rumboot_irq_priority_adjust(rumboot_irq_table_get(), MPIC128_IPI_0, k);
-        sw_int_cnt = 0;
-        rumboot_printf("Firing SW IRQ\n");
-        rumboot_irq_swint(MPIC128_IPI_0);;
-        udelay(5);
-        if (sw_int_cnt == 0)
+        for (int i = 2; i <= 8; i += 2)
         {
-            rumboot_printf("SW interrupt is not arrive!\n");
-            rumboot_printf("TEST ERROR\n");
-            return 1;
+            rumboot_printf("Adjust priority to %d\n", i);
+            rumboot_irq_priority_adjust(rumboot_irq_table_get(), MPIC128_IPI_0, i);
+            sw_int_cnt = 0;
+            rumboot_printf("Firing SW IRQ\n");
+            rumboot_irq_swint(MPIC128_IPI_0);
+            udelay(5);
+            if (sw_int_cnt == 0)
+            {
+                rumboot_printf("SW interrupt is not arrive!\n");
+                rumboot_printf("TEST ERROR\n");
+                return 1;
+            }
+        }
+        for (int i = 8; i >= 2; i -= 2)
+        {
+            rumboot_printf("Adjust priority to %d\n", i);
+            rumboot_irq_priority_adjust(rumboot_irq_table_get(), MPIC128_IPI_0, i);
+            sw_int_cnt = 0;
+            rumboot_printf("Firing SW IRQ\n");
+            rumboot_irq_swint(MPIC128_IPI_0);
+            udelay(5);
+            if (sw_int_cnt == 0)
+            {
+                rumboot_printf("SW interrupt is not arrive!\n");
+                rumboot_printf("TEST ERROR\n");
+                return 1;
+            }
+        }
+        for (int i = 8; i <= 14; i += 2)
+        {
+            rumboot_printf("Adjust priority to %d\n", i);
+            rumboot_irq_priority_adjust(rumboot_irq_table_get(), MPIC128_IPI_0, i);
+            sw_int_cnt = 0;
+            rumboot_printf("Firing SW IRQ\n");
+            rumboot_irq_swint(MPIC128_IPI_0);
+            udelay(5);
+            if (sw_int_cnt == 0)
+            {
+                rumboot_printf("SW interrupt is not arrive!\n");
+                rumboot_printf("TEST ERROR\n");
+                return 1;
+            }
+        }
+        for (int i = 14; i >= 8; i -= 2)
+        {
+            rumboot_printf("Adjust priority to %d\n", i);
+            rumboot_irq_priority_adjust(rumboot_irq_table_get(), MPIC128_IPI_0, i);
+            sw_int_cnt = 0;
+            rumboot_printf("Firing SW IRQ\n");
+            rumboot_irq_swint(MPIC128_IPI_0);
+            udelay(5);
+            if (sw_int_cnt == 0)
+            {
+                rumboot_printf("SW interrupt is not arrive!\n");
+                rumboot_printf("TEST ERROR\n");
+                return 1;
+            }
         }
     }
 
-    rumboot_printf("Set custom interrupt handler\n");
-    rumboot_irq_set_handler( rumboot_irq_table_get(), MPIC128_IPI_0, RUMBOOT_IRQ_EDGE | RUMBOOT_IRQ_POS, swirq_handler, NULL );
-
-    for (int k = 2; k <= 14; k += 2)
-    {
-        rumboot_printf("Adjust priority to %d\n", k);
-        rumboot_irq_priority_adjust(rumboot_irq_table_get(), MPIC128_IPI_0, k);
-        sw_int_cnt = 0;
-        rumboot_printf("Firing SW IRQ\n");
-        rumboot_irq_swint(MPIC128_IPI_0);;
-        udelay(5);
-        if (sw_int_cnt == 0)
-        {
-            rumboot_printf("SW interrupt is not arrive!\n");
-            rumboot_printf("TEST ERROR\n");
-            return 1;
-        }
-    }
-    for (int k = 14; k >= 2; k -= 2)
-    {
-        rumboot_printf("Adjust priority to %d\n", k);
-        rumboot_irq_priority_adjust(rumboot_irq_table_get(), MPIC128_IPI_0, k);
-        sw_int_cnt = 0;
-        rumboot_printf("Firing SW IRQ\n");
-        rumboot_irq_swint(MPIC128_IPI_0);;
-        udelay(5);
-        if (sw_int_cnt == 0)
-        {
-            rumboot_printf("SW interrupt is not arrive!\n");
-            rumboot_printf("TEST ERROR\n");
-            return 1;
-        }
-    }
+    rumboot_printf("---------------- Info ------------------------\n");
+    rumboot_printf("IRQ #0 is Non critical Interrupt, priority 3  \n"
+                   "IRQ #1 is Non critical Interrupt, priority 4  \n");
+    rumboot_printf("IRQ #2 is Critical Interrupt, priority 6      \n"
+                   "IRQ #3 is Critical Interrupt, priority 7      \n");
+    rumboot_printf("IRQ #4 is Machine Check Interrupt, priority 12\n"
+                   "IRQ #5 is Machine Check Interrupt, priority 14\n");
+    rumboot_printf("----------------------------------------------\n");
 
 #define EXT_INT_TEST_COUNT 2
 #define EXT_INT_TIMEOUT 48
 #define EXT_INT_TIMEOUT2 320
 
+    rumboot_printf("\n------------------------------------\n"
+                     "Checking interrupt generation       \n"
+                     "------------------------------------\n");
+    initcnt();
 
     for (int k = 0; k < EXT_INT_TEST_COUNT; ++k)
     {
