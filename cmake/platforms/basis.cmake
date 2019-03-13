@@ -1544,7 +1544,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       CONFIGURATION IRAM
       IRUN_FLAGS +can_plus_adapter 
       FEATURES NOCODE
-       LOAD IM0BIN simple-iram-hello-iram,iram-sp804-0,iram-sp804-1,iram-sp804-2,iram-sp804-3,jenkins-sp804-periph-id,iram-pcie_phy_bist_prbs31,iram-ddr0_phy_bist_test,iram-ddr1_phy_bist_test,iram-esram1_heap_rnd_space_test,iram-bisr_hard_test_clear,iram-can_adapter_0_test,iram-can_adapter_1_test,iram-can_adapter_2_test,mgeth-iram-mgeth_frame_xfer,direct-event-mdma_gp_1-1_1-2_1-3_1-4,iram-mkio_write_read_test,muart-iram-muart_AXI_GIC_dma,arinc_freq_100_IM1_IM0-arinc_loopback_16_freq,multimaster-i2c_multimst_write_random_read,simple-iram-nic400
+       LOAD IM0BIN simple-iram-hello-iram,iram-sp804-0,iram-sp804-1,iram-sp804-2,iram-sp804-3,iram-pcie_phy_bist_prbs31,iram-ddr0_phy_bist_test,iram-ddr1_phy_bist_test,iram-esram1_heap_rnd_space_test,iram-bisr_hard_test_clear,iram-can_adapter_0_test,iram-can_adapter_1_test,iram-can_adapter_2_test,mgeth-iram-mgeth_frame_xfer,direct-event-mdma_gp_1-1_1-2_1-3_1-4,iram-mkio_write_read_test,muart-iram-muart_AXI_GIC_dma,arinc_freq_100_IM1_IM0-arinc_loopback_16_freq,multimaster-i2c_multimst_write_random_read,simple-iram-nic400
       NAME functional-test-chain
     )
 
