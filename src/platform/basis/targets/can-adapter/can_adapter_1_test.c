@@ -61,6 +61,28 @@ int main()
 
     // TEST
     unsigned int read_data;
+    // Init mode ON
+    iowrite32(1 << IMCR, CAN0_BASE + IMCR_REG);
+    iowrite32(1 << IMCR, CAN1_BASE + IMCR_REG);
+    
+    //Wait Init mode ON
+    read_data=ioread32(CAN0_BASE + CAN_MODE_REG);
+    while (!(read_data & 1 << IM))
+     {read_data=ioread32(CAN0_BASE + STATUS_REG);}
+    rumboot_printf("CAN0 in Init Mode!\n");
+    read_data=ioread32(CAN1_BASE + CAN_MODE_REG);
+    while (!(read_data & 1 << IM))
+     {read_data=ioread32(CAN1_BASE + STATUS_REG);}
+    rumboot_printf("CAN1 in Init Mode!\n");
+    
+    //Soft Rst ON
+    iowrite32(5, CAN0_BASE + SOFT_RST_REG);
+    iowrite32(5, CAN1_BASE + SOFT_RST_REG);
+    
+    //Soft Rst OFF
+    iowrite32(0, CAN0_BASE + SOFT_RST_REG);
+    iowrite32(0, CAN1_BASE + SOFT_RST_REG);
+    
 	//Interrupt enable reg init
     iowrite32(1 <<   GBIE | 1 <<   BIIE, CAN0_BASE + INTRP_EN_REG); // Bus idle interrupt enable for CAN0
     iowrite32(1 <<   GBIE | 1 <<   BIIE, CAN1_BASE + INTRP_EN_REG); // Bus idle interrupt enable for CAN1
