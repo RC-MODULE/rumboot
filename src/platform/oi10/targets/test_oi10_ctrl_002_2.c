@@ -35,8 +35,6 @@ enum TEST_CRG_STATE
 
 int main(void)
 {
-    rumboot_printf("state = %d\n", rumboot_platform_runtime.persistent[0]);
-
     if (rumboot_platform_runtime.persistent[0] == TEST_CRG_STATE_NRST_PON)
         goto label_NRST_PON;
     else if (rumboot_platform_runtime.persistent[0] == TEST_CRG_STATE_NRST_SYS)
@@ -45,11 +43,11 @@ int main(void)
 
     test_event_send_test_id("test_oi10_ctrl_002_2");
 
-    rumboot_putstring("Generating NRST_PON reset signal ...\n");
-    rumboot_platform_runtime.persistent[0] = TEST_CRG_STATE_NRST_PON;
-    rumboot_platform_perf("reset_system by NRST_PON");
-    test_event(EVENT_OI10_NRST_PON);
-    udelay(10);
+//    rumboot_putstring("Generating NRST_PON reset signal ...\n");
+//    rumboot_platform_runtime.persistent[0] = TEST_CRG_STATE_NRST_PON;
+//    rumboot_platform_perf("reset_system by NRST_PON");
+//    test_event(EVENT_OI10_NRST_PON);
+//    udelay(10);
 
 label_NRST_PON:
     test_event(EVENT_OI10_CHECK);

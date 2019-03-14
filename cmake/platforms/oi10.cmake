@@ -1792,7 +1792,16 @@ endif()
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES test_oi10_ctrl_002_2.c
-      IRUN_FLAGS +BOOT_PLL_BYP=1
+      IRUN_FLAGS +BOOT_PLL_BYP=1 +TEST_OI10_CTRL_002
+      LOAD IM0BIN SELF,SELF
+      PREFIX crg
+    )
+    
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES test_oi10_ctrl_002_3.c
+      IRUN_FLAGS +TEST_OI10_CTRL_002
+      LOAD IM0BIN SELF,SELF,SELF,SELF,SELF
       PREFIX crg
     )
 
