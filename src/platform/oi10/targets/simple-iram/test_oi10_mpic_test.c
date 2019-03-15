@@ -208,7 +208,7 @@ void tmr_handler( int irq_num, void *arg )
     msync();
 }
 
-void def_handler( int irq_num)
+void def_handler( int irq_num, void *arg)
 {
     rumboot_printf("def_handler: IRQ #%d received.\n", irq_num);
     if (irq_num == MPIC128_IPI_0) sw_int_cnt += 1;
@@ -339,7 +339,7 @@ int main ()
     rumboot_printf("Set our own irq exception handler\n");
     rumboot_irq_set_exception_handler(exception_handler);
     rumboot_printf("Set default interrupt handler\n");
-    rumboot_irq_set_default_handler(def_handler);
+    rumboot_irq_set_default_handler(def_handler, NULL);
     tbl = rumboot_irq_create( NULL );
     rumboot_irq_table_activate( tbl );
     rumboot_irq_sei();
