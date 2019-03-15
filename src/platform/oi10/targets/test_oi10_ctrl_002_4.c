@@ -9,7 +9,7 @@
 #include <rumboot/testsuite.h>
 #include <rumboot/timer.h>
 
-#include <platform/arch/ppc/ppc_476fp_lib_c.h>
+#include <arch/ppc/arch/ppc_476fp_lib_c.h>
 #include <platform/arch/ppc/test_macro.h>
 #include <platform/common_macros/common_macros.h>
 #include <platform/devices.h>
@@ -19,18 +19,17 @@
 #include <platform/test_event_codes.h>
 
 
-const uint32_t EVENT_OI10_NRST_POR      = TEST_EVENT_CODE_MIN + 1;
-const uint32_t EVENT_OI10_CHECK         = TEST_EVENT_CODE_MIN + 2;
+const uint32_t EVENT_OI10_NRST_PON      = TEST_EVENT_CODE_MIN + 1;
+const uint32_t EVENT_OI10_CHECK_DEFAULT = TEST_EVENT_CODE_MIN + 2;
+const uint32_t EVENT_OI10_CHECK_OSC     = TEST_EVENT_CODE_MIN + 3;
 
 const uint32_t CRG_REG_WRITE_ENABLE = 0x1ACCE551;
 
 enum TEST_CRG_STATE
 {
-    TEST_CRG_STATE_NRST_POR = 1,
+    TEST_CRG_STATE_NRST_PON = 1,
     TEST_CRG_STATE_PLL_USE_OSC,
 };
-
-volatile enum TEST_CRG_STATE state = 0;
 
 
 static void handler_crg(int irq, void *arg )
@@ -60,8 +59,6 @@ static void handler_crg(int irq, void *arg )
 
 int main(void)
 {
-    test_event_send_test_id("test_oi10_ctrl_002_4");
-
     rumboot_irq_cli();
     struct rumboot_irq_entry *tbl = rumboot_irq_create( NULL );
 
@@ -83,10 +80,12 @@ int main(void)
     dcr_write(DCR_CRG_BASE + CRG_SYS_WR_LOCK, ~CRG_REG_WRITE_ENABLE);
 
 
-    if (state == TEST_CRG_STATE_NRST_POR)
-        goto label_NRST_POR;
-    else if (state == TEST_CRG_STATE_PLL_USE_OSC)
+    if (rumboot_platform_runtime.persistent[0] == TEST_CRG_STATE_NRST_PON)
+        goto label_NRST_PON;
+    else if (rumboot_platform_runtime.persistent[0] == TEST_CRG_STATE_PLL_USE_OSC)
         goto label_PLL_USE_OSC;
+
+    test_event_send_test_id("test_oi10_ctrl_002_4");
 
 
 //    while ((dcr_read(DCR_CRG_BASE + CRG_SYS_PLL_STAT) & (1 << 0)) != (1 << 0))
@@ -98,10 +97,10 @@ int main(void)
 //    dcr_write(DCR_CRG_BASE + CRG_SYS_WR_LOCK, ~CRG_REG_WRITE_ENABLE);
 
 
-    test_event(EVENT_OI10_NRST_POR);
+//    test_event(EVENT_OI10_NRST_PON);
 
-label_NRST_POR:
-    test_event(EVENT_OI10_CHECK);
+label_NRST_PON:
+    test_event(EVENT_OI10_CHECK_DEFAULT);
     TEST_ASSERT((dcr_read(DCR_CRG_BASE + CRG_SYS_RST_MON) & (1 << 11)) != 0x00 , "Value in RST_MON register is incorrect!");
 
 
@@ -115,9 +114,11 @@ label_NRST_POR:
 
     dcr_write(DCR_CRG_BASE + CRG_SYS_PLL_CTRL, 0x00);
 
+    udelay(1);
+
 
 label_PLL_USE_OSC:
-    test_event(EVENT_OI10_CHECK);
+    test_event(EVENT_OI10_CHECK_OSC);
 
     udelay(10);
 
