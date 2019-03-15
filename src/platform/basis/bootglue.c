@@ -167,7 +167,7 @@ static const struct rumboot_bootsource arr[] = {
 };
 
 
-void rumboot_platform_enter_host_mode()
+void rumboot_platform_enter_host_mode(struct rumboot_config *conf)
 {
         uint32_t v;
 

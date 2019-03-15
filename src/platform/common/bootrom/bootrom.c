@@ -30,12 +30,12 @@ void rumboot_platform_dump_config(struct rumboot_config *conf, size_t maxsize) {
 }
 
 
-static void hostmode_loop(void *pdata)
+static void hostmode_loop(struct rumboot_config *conf, void *pdata)
 {
         size_t maxsize;
         struct rumboot_bootheader *hdr = rumboot_platform_get_spl_area(&maxsize);
         dbg_boot(NULL, "Host Mode, please upload SPL to 0x%x", (uintptr_t) hdr);
-        rumboot_platform_enter_host_mode();
+        rumboot_platform_enter_host_mode(conf);
         dbg_boot(NULL, "Hit 'X' for X-Modem upload");
         void *data;
         int ret;
@@ -122,7 +122,7 @@ int main()
         }
 
         if (conf.hostmode) {
-                hostmode_loop(pdata);
+                hostmode_loop(&conf, pdata);
         }
 
 
@@ -130,7 +130,7 @@ int main()
         bootsource_try_chain(pdata, hdr, maxsize);
         rumboot_platform_perf(NULL);
 
-        hostmode_loop(pdata);
+        hostmode_loop(&conf, pdata);
         /* Never reached. Throw an error if it does */
         return 1;
 }

@@ -48,7 +48,6 @@ void rumboot_platform_read_config(struct rumboot_config *conf)
 }
 
 
-
 void rumboot_platform_init_loader(struct rumboot_config *conf)
 {
         /* Initialize UART */
@@ -72,6 +71,10 @@ void rumboot_platform_init_loader(struct rumboot_config *conf)
 
                 /* Send sync byte. This way it will work for debug builds */
                 iowrite32(0x55, UART0_Base + UARTDR);
+
+                /* Initialize indication GPIO */ 
+                iowrite32(0xff, GPIOA_Base + GPIO_DIR);
+                iowrite32(0, GPIOA_Base + 0x3FC);
         }
 }
 
@@ -124,21 +127,15 @@ static const struct rumboot_bootsource emi_boot[] = {
         { /*Sentinel*/ }
 };
 
-static void set_gpio_code(int code)
-{
-        iowrite32(code & 1, GPIOA_Base + GPIO_DATA + ((1<<0) << 2));
-        iowrite32(code & 2, GPIOA_Base + GPIO_DATA + ((1<<1) << 2));
-        iowrite32(code & 4, GPIOA_Base + GPIO_DATA + ((1<<2) << 2));
-        iowrite32(code & 8, GPIOA_Base + GPIO_DATA + ((1<<3) << 2));
-}
-
-void rumboot_platform_enter_host_mode()
+void rumboot_platform_enter_host_mode(struct rumboot_config *conf)
 {
         uint32_t maxsize;
         greth_dump_edcl_params(0, GRETH_Base);
-        iowrite32(0xff, GPIOA_Base + GPIO_DIR);
+
         struct rumboot_bootheader *hdr = rumboot_platform_get_spl_area(&maxsize);
-        set_gpio_code(hdr->magic);
+        if (!is_silent()) {
+                iowrite32(conf->hostmode ? 0xff : hdr->magic, GPIOA_Base + 0x3FC);
+        }
 }
 
 void *rumboot_platform_get_spl_area(size_t *size)
@@ -167,8 +164,6 @@ void rumboot_platform_print_summary(struct rumboot_config *conf)
 {
         rumboot_printf("EMI BIS:         %d\n",
                        (bootm() & BOOTM_EMI_BIS) ? 1 : 0);
-        rumboot_printf("Silent boot:     %s\n",
-                        is_silent() ? "Yes" : "No");
 }
 
 
