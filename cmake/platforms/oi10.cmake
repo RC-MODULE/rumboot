@@ -372,6 +372,7 @@ endif()
           SPI0_CONF spl-fail,spl-fail
           NOR_IMAGE spl-ok
           HOSTMOCK  spl-fail
+          BOOTROM_NOR bootrom-loader
     )
 
     rumboot_bootrom_integration_test(BROM
@@ -382,6 +383,7 @@ endif()
           SPI0_CONF spl-fail-bad-magic,spl-fail-bad-magic
           NOR_IMAGE spl-ok
           HOSTMOCK  spl-fail
+          BOOTROM_NOR bootrom-loader
     )
 
     rumboot_bootrom_integration_test(BROM
