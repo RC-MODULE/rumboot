@@ -155,16 +155,32 @@ macro(rumboot_platform_generate_stuff_for_taget product)
 
     list (FIND TARGET_FEATURES "ISS" _index)
     if (${_index} GREATER -1)
-      add_custom_command(
-        OUTPUT ${product}.gold.bin
-        COMMAND echo THIS_IS_ISS_VOODOO > ${product}.gold.bin
-        COMMAND cat ${product}.gold.bin >> ${product}.bin
-        COMMAND ${packimage_cmd}
-        COMMENT "Generating ISS golden file for ${product}.bin and appending it"
-        DEPENDS ${product}.bin utils
+    ####################################################################################
+    # NOTICE (!) For Victor Strukov                                                    # 
+    ####################################################################################
+    # REMEMBER TO USE find_program to detect if riscwatch is installed.                #
+    # If not, either exclude ISS tests from build or disable .gold.bin appending logic #
+    # Ditch this notice when done                                                      #
+    ####################################################################################
+    add_custom_command(
+        OUTPUT ${product}.gold.bin ${product}.tmp.bin
+        COMMAND ${CROSS_COMPILE}-objcopy ${CMAKE_OBJCOPY_FLAGS} -O binary ${product} ${product}.tmp.bin
+        #Replace cp with riscwatch command
+        COMMAND cp ${product}.tmp.bin ${product}.gold.bin
+        COMMENT "Generating ISS golden file for ${product}"
+        DEPENDS ${product} utils
     )
     add_custom_target(
       ${product}.gold ALL
+      DEPENDS ${product}.gold.bin
+    )
+
+    add_custom_command(
+      APPEND
+      OUTPUT ${product}.bin
+      COMMAND cat ${product}.gold.bin >> ${product}.bin
+      COMMAND ${packimage_cmd}
+      COMMENT "Appending golden binary to ${product}"
       DEPENDS ${product}.gold.bin
     )
 
