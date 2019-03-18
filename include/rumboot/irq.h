@@ -361,10 +361,18 @@ static inline uint32_t rumboot_arch_irq_setstate(uint32_t new_state)
      * All accounting is done in the active irq table and copied
      * when nesting
      * 
-     * @param irq 
+     * @param irq IRQ number
      * @return uint32_t 
      */
     uint32_t rumboot_irq_get_count(int irq);
+
+    /** Resets irq count information in irq table.
+     *  All accounting is done in the active irq table and copied
+     *  when nesting
+     *
+     *  @param irq IRQ number
+     */
+    void rumboot_irq_reset_count(int irq);
 
     /**
      * Get the context level. 

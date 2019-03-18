@@ -39,6 +39,12 @@ struct rumboot_irq_entry {
 	uint32_t 	count;
 };
 
+static void check_irq_id(int id)
+{
+	if ((id < 0) || (id > RUMBOOT_PLATFORM_NUM_IRQS)) {
+		rumboot_platform_panic("BUG: Invalid IRQ ID %d\n", id);
+	}
+}
 
 const struct rumboot_irq_controller *rumboot_irq_controller_by_irq(int irq)
 {
@@ -174,6 +180,7 @@ struct rumboot_irq_entry *rumboot_irq_table_fetch(struct rumboot_irq_entry *tbl)
        return tbl;
 }
 
+
 void rumboot_irq_enable(int irq)
 {
 	struct rumboot_irq_entry *tbl = rumboot_irq_table_fetch(NULL);
@@ -208,21 +215,13 @@ static void process_irq(int id)
 {
 	struct rumboot_irq_entry *tbl = rumboot_irq_table_get();
 
-	if ((id < 0) || (id > RUMBOOT_PLATFORM_NUM_IRQS)) {
-		rumboot_platform_panic("BUG: Invalid IRQ ID %d\n", id);
-	}
-
+	check_irq_id(id); 
 	if (tbl && tbl[id].handler) {
 		tbl[id].handler(id, tbl[id].arg);
 	} else if (rumboot_platform_runtime_info->irq_def_hndlr) {
 		rumboot_platform_runtime_info->irq_def_hndlr(id, rumboot_platform_runtime_info->irq_def_arg);
 	} else {
-		if (!tbl) {
-			rumboot_platform_panic("FATAL: Unhandled IRQ %d when no active irq table present\n",
-					       id);
-		} else {
 			rumboot_platform_panic("FATAL: Unhandled IRQ %d\n", id);
-		}
 	}
 	if (tbl) {
 		tbl[id].count++;
@@ -232,11 +231,21 @@ static void process_irq(int id)
 uint32_t rumboot_irq_get_count(int irq) 
 {
 	struct rumboot_irq_entry *tbl = rumboot_irq_table_get();
-	if (tbl && (irq < RUMBOOT_PLATFORM_NUM_IRQS)) {
+	check_irq_id(irq); 
+	if (tbl) {
 		return tbl[irq].count;
 	}
 	return 0;
 }
+
+void rumboot_irq_reset_count(int irq)
+{
+	check_irq_id(irq); 
+	struct rumboot_irq_entry *tbl = rumboot_irq_table_get();
+	if (tbl) {
+		tbl[irq].count = 0;
+	}
+} 
 
 void rumboot_irq_set_exception_handler(void (*handler)(int id, const char *name))
 {
