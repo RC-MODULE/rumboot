@@ -208,6 +208,10 @@ static void process_irq(int id)
 {
 	struct rumboot_irq_entry *tbl = rumboot_irq_table_get();
 
+	if ((id < 0) || (id > RUMBOOT_PLATFORM_NUM_IRQS)) {
+		rumboot_platform_panic("BUG: Invalid IRQ ID %d\n", id);
+	}
+
 	if (tbl && tbl[id].handler) {
 		tbl[id].handler(id, tbl[id].arg);
 	} else if (rumboot_platform_runtime_info->irq_def_hndlr) {
