@@ -13,12 +13,15 @@
 #include <rumboot/regpoker.h>
 #include <platform/devices.h>
 #include <devices/sp805.h>
+#include <devices/crg.h>
 #include <platform/interrupts.h>
 #include <rumboot/testsuite.h>
 #include <regs/regs_sp805.h>
 #include <rumboot/platform.h>
+#include <platform/regs/fields/crg.h>
+#include <platform/test_event_c.h>
 
-#define TIMER_CYCLES 10
+#define TIMER_CYCLES 2
 
 #define WD_INT_TIMEOUT   0x80
 
@@ -56,6 +59,7 @@
 #define WD_REG_PCELLID2_DFLT    0x5
 #define WD_REG_PCELLID3_DFLT    0xB1
 
+__attribute__((unused))
 static bool check_watchdog_default_ro_val(uint32_t base_addr)
 {
     bool result = false;
@@ -86,6 +90,7 @@ static bool check_watchdog_default_ro_val(uint32_t base_addr)
     return result;
 }
 
+__attribute__((unused))
 static bool check_watchdog_default_rw_val( uint32_t base_addr)//, uint32_t reg_lock )
 {
     bool result = false;
@@ -128,6 +133,16 @@ struct s805_instance {
 };
 
 
+BEGIN_ENUM(WD_CTRL_005_TEST_PERSISNENT_PROTOCOL)
+DECLARE_ENUM_VAL(WD_CTRL_005_TEST_PERSISNENT_PROTOCOL_MAGIC_FIELD,      0 )
+DECLARE_ENUM_VAL(WD_CTRL_005_TEST_PERSISNENT_PROTOCOL_CRG_CFG2_FIELD,   1 )
+DECLARE_ENUM_VAL(WD_CTRL_005_TEST_PERSISNENT_PROTOCOL_RESULT_FIELD,     2 )
+END_ENUM(WD_CTRL_005_TEST_PERSISNENT_PROTOCOL)
+
+DECLARE_CONST(WD_CTRL_005_TEST_PERSISNENT_PROTOCOL_MAGIC_CODE, 0x177DC0DE)
+
+
+
 static void handler0(int irq, void *arg)
 {
     struct s805_instance *a = (struct s805_instance *) arg;
@@ -142,8 +157,12 @@ static void handler0(int irq, void *arg)
     }
     else{
         rumboot_printf("handler0: freerun\n");
-        sp805_disable(a->base_addr);
-        sp805_clrint(a->base_addr);
+        if(rumboot_platform_runtime_info->persistent[WD_CTRL_005_TEST_PERSISNENT_PROTOCOL_MAGIC_FIELD]
+           != WD_CTRL_005_TEST_PERSISNENT_PROTOCOL_MAGIC_CODE)
+        {
+            sp805_disable(a->base_addr);
+            sp805_clrint(a->base_addr);
+        }
     }
 }
 
@@ -231,17 +250,25 @@ static struct s805_instance in[] =
 
 TEST_SUITE_BEGIN(wd_testlist, "SP805 IRQ TEST")
 #ifdef CHECK_REGS
-TEST_ENTRY("SP805_0 reg read default", check_watchdog_default_ro_val, DCR_WATCHDOG_BASE),
-TEST_ENTRY("SP805_0 reg rw check", check_watchdog_default_rw_val, DCR_WATCHDOG_BASE),
+//TEST_ENTRY("SP805_0 reg read default", check_watchdog_default_ro_val, DCR_WATCHDOG_BASE),
+//TEST_ENTRY("SP805_0 reg rw check", check_watchdog_default_rw_val, DCR_WATCHDOG_BASE),
 #endif
 TEST_ENTRY("SP805_0 real mode", wd_test, (uint32_t) &in[0]),
 TEST_ENTRY("SP805_0 test mode", wd_test2, (uint32_t) &in[0]),
 TEST_SUITE_END();
 
+
+TEST_SUITE_BEGIN(wd_testlist_with_reset, "SP805 IRQ TEST")
+TEST_ENTRY("SP805_0 real mode with reset", wd_test, (uint32_t) &in[0]),
+TEST_SUITE_END();
+
+
 uint32_t main(void)
 {
-    register int result;
+    uint32_t result = 0;
+    uint32_t t = 0;
     rumboot_printf("SP805 test START\n");
+    test_event_send_test_id("test_oi10_ctrl_005");
     struct rumboot_irq_entry *tbl = rumboot_irq_create(NULL);
     rumboot_irq_cli();
     rumboot_irq_set_handler(tbl, WDT_INT, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler0, &in[0]);
@@ -250,8 +277,50 @@ uint32_t main(void)
     /* Activate Watchdog Interrupt */
     rumboot_irq_enable(WDT_INT);
     rumboot_irq_sei();
-    result = test_suite_run(NULL, &wd_testlist);
+    if(WD_CTRL_005_TEST_PERSISNENT_PROTOCOL_MAGIC_CODE
+       != rumboot_platform_runtime_info->persistent[WD_CTRL_005_TEST_PERSISNENT_PROTOCOL_MAGIC_FIELD])
+    {
+        result = test_suite_run(NULL,&wd_testlist);
+        rumboot_platform_runtime_info->persistent[WD_CTRL_005_TEST_PERSISNENT_PROTOCOL_CRG_CFG2_FIELD] = -1;
+        rumboot_platform_runtime_info->persistent[WD_CTRL_005_TEST_PERSISNENT_PROTOCOL_MAGIC_FIELD]
+                                                       = WD_CTRL_005_TEST_PERSISNENT_PROTOCOL_MAGIC_CODE;
+        rumboot_platform_runtime_info->persistent[WD_CTRL_005_TEST_PERSISNENT_PROTOCOL_RESULT_FIELD] = result;
+    }
+    ++rumboot_platform_runtime_info->persistent[WD_CTRL_005_TEST_PERSISNENT_PROTOCOL_CRG_CFG2_FIELD];
+    if(4 > rumboot_platform_runtime_info->persistent[WD_CTRL_005_TEST_PERSISNENT_PROTOCOL_CRG_CFG2_FIELD])
+    {
+        rumboot_printf("In the trans-reset cycle, result is 0x%x, persistent field is 0x%x\n",
+            result,rumboot_platform_runtime_info->persistent[WD_CTRL_005_TEST_PERSISNENT_PROTOCOL_RESULT_FIELD]);
+        t = WD_INT_TIMEOUT;
+        do
+            dcr_write(DCR_CRG_BASE + CRG_WR_LOCK, CRG_UNLOCK_CODE);
+        while(dcr_read(DCR_CRG_BASE + CRG_WR_LOCK) && (--t));
+        if(dcr_read(DCR_CRG_BASE + CRG_WR_LOCK))
+        {
+            rumboot_printf("ERROR!!! cannon unlock CRG!!!\n");
+            result |= 1;
+        }
+        dcr_write(DCR_CRG_BASE + CRG_RST_GFG2,
+                     ((rumboot_platform_runtime_info->persistent[WD_CTRL_005_TEST_PERSISNENT_PROTOCOL_CRG_CFG2_FIELD]
+                                                           << CRG_RST_CFG2_FIELDS_RSTREQ2_MODE_i)
+                             & CRG_RST_CFG2_FIELDS_RSTREQ2_MODE_mask) |
+                       (CRG_RST_CFG2_FIELDS_RSTREQ2_MASK_mask));
+        dcr_write(DCR_CRG_BASE + CRG_WR_LOCK, !CRG_UNLOCK_CODE);
+        sp805_unlock_access(in[0].base_addr);
+        dcr_write(in[0].base_addr + WD_REG_CONTROL,
+                dcr_read(in[0].base_addr + WD_REG_CONTROL) | WD_CTRL_RESEN);
+
+        rumboot_platform_perf("reset_system");
+
+        result |= test_suite_run(NULL,&wd_testlist_with_reset);
+        /*We mustn't be here, the chip must be reset here*/
+        result |= 1;
+    }
+    rumboot_printf("Now we finished with all resets, result is 0x%x, persistent field is 0x%x\n",
+            result,rumboot_platform_runtime_info->persistent[WD_CTRL_005_TEST_PERSISNENT_PROTOCOL_RESULT_FIELD]);
+    rumboot_platform_runtime_info->persistent[WD_CTRL_005_TEST_PERSISNENT_PROTOCOL_MAGIC_FIELD] = 0;
+    rumboot_platform_runtime_info->persistent[WD_CTRL_005_TEST_PERSISNENT_PROTOCOL_RESULT_FIELD] |= result;
     rumboot_irq_table_activate(NULL);
     rumboot_irq_free(tbl);
-    return result;
+    return rumboot_platform_runtime_info->persistent[WD_CTRL_005_TEST_PERSISNENT_PROTOCOL_RESULT_FIELD];
 }
