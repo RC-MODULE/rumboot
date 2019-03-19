@@ -21,7 +21,7 @@
 #include <platform/regs/fields/crg.h>
 #include <platform/test_event_c.h>
 
-#define TIMER_CYCLES 2
+#define TIMER_CYCLES 10
 
 #define WD_INT_TIMEOUT   0x80
 
@@ -250,8 +250,8 @@ static struct s805_instance in[] =
 
 TEST_SUITE_BEGIN(wd_testlist, "SP805 IRQ TEST")
 #ifdef CHECK_REGS
-//TEST_ENTRY("SP805_0 reg read default", check_watchdog_default_ro_val, DCR_WATCHDOG_BASE),
-//TEST_ENTRY("SP805_0 reg rw check", check_watchdog_default_rw_val, DCR_WATCHDOG_BASE),
+TEST_ENTRY("SP805_0 reg read default", check_watchdog_default_ro_val, DCR_WATCHDOG_BASE),
+TEST_ENTRY("SP805_0 reg rw check", check_watchdog_default_rw_val, DCR_WATCHDOG_BASE),
 #endif
 TEST_ENTRY("SP805_0 real mode", wd_test, (uint32_t) &in[0]),
 TEST_ENTRY("SP805_0 test mode", wd_test2, (uint32_t) &in[0]),
