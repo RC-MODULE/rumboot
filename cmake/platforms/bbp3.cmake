@@ -26,6 +26,12 @@ rumboot_add_configuration(
   FEATURES ROMGEN
 )
 
+rumboot_add_configuration(
+  UROM
+  CONFIGURATION ROM
+  CFLAGS -DRUMBOOT_ONLY_STACK -marm -DRUMBOOT_MAIN_NORETURN
+)
+
 rumboot_add_configuration (
   IRAM
   LDS bbp3/iram.lds
@@ -83,7 +89,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
     rumboot_bootrom_unit_test(
         ID 0
-        CONFIGURATION ROM
+        CONFIGURATION UROM
         TAG spi0_cs0
         MEMTAG SPI0_CONF
         TAGOFFSET 0
@@ -94,7 +100,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
     rumboot_bootrom_unit_test(
         ID 0
-        CONFIGURATION ROM
+        CONFIGURATION UROM
         TAG nor_cs0
         MEMTAG NOR_IMAGE
         TAGOFFSET 0
@@ -153,6 +159,15 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
           SPI0_CONF spl-ok,spl-fail
           NOR_IMAGE spl-fail
           HOSTMOCK  spl-fail
+    )
+
+    rumboot_bootrom_integration_test(ROM
+        NAME "spi-fallthrough-host"
+        IRUN_FLAGS ${ROM_115200_OPTS}
+        LOAD
+          SPI0_CONF spl-fail-bad-magic,spl-fail
+          NOR_IMAGE spl-fail
+          HOSTMOCK  spl-ok
     )
 
     rumboot_bootrom_integration_test(ROM
