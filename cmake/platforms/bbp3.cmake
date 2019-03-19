@@ -26,6 +26,7 @@ rumboot_add_configuration(
   FEATURES ROMGEN
 )
 
+# This configuration is for 
 rumboot_add_configuration(
   UROM
   CONFIGURATION ROM
@@ -230,7 +231,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       )
 
     add_rumboot_target(
-        CONFIGURATION ROM
+        CONFIGURATION UROM
         FILES hello.c
       )
 
