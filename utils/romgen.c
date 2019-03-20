@@ -14,6 +14,8 @@
 
 
 struct mem_layout {
+	int start_addr; /* If != 0, add @addr to start */
+	int magic_word; /* If 1, duplicate magic word transaction after the end */
 	int	line_count;
 	int	line_length;
 	int bits_per_byte;
@@ -178,7 +180,7 @@ char *gen_basis_filename(struct mem_layout *layout, const char *dir, int nfile)
 }
 
 struct mem_layout mm7705_rom = {
-	.line_count		= 4096,
+	.line_count		    = 4096,
 	.line_length		= 72,
 	.bits_per_byte      = 8,
 	.adjacement_banks	= 2,
@@ -217,6 +219,7 @@ struct mem_layout basis_rom_new = {
 	.write_line         = write_line_basis,
 };
 
+
 struct mem_layout oi10_rom = {
 	.line_count	       	= 1024,
 	.line_length		= 72,
@@ -237,6 +240,17 @@ struct mem_layout oi10_rom_gen = {
 	.write_line         = write_line_oi10,
 };
 
+struct mem_layout bbp3_boot_emi = {
+	.line_count	       	= 512,
+	.line_length		= 32,
+    .bits_per_byte      = 8,
+	.adjacement_banks	= 1,
+	.inverse_order		= 0,
+	.gen_filename		= gen_basis_filename,
+	.write_line         = write_line_basis,
+	.start_addr			= 0x8000,
+	.magic_word			= 1
+};
 
 struct mem_layout_lookup {
     const char *name;
@@ -248,6 +262,7 @@ struct mem_layout_lookup mem_table[] = {
 	{ "mm7705", &mm7705_rom },
 	{ "oi10",   &oi10_rom },
 	{ "oi10_gen",   &oi10_rom_gen },
+	{ "bbp3bootemi",   &bbp3_boot_emi },
 	{ /* Sentinel */ }
 };
 
@@ -307,6 +322,13 @@ int dump_rcf(const char *inputfile, const char *outdir, struct mem_layout *layou
 			exit(1);
 		}
 		free(filename);
+
+		if (layout->start_addr) {
+			/* Write starting offset to all output files */
+			char tmp[32];
+			sprintf(tmp, "@%x\n", layout->start_addr / (layout->line_length / 8));
+			fwrite(tmp, strlen(tmp), 1, ofd[i]);
+		}
 	}
 
 	/* We take extra parity bit into account here */
@@ -338,6 +360,27 @@ int dump_rcf(const char *inputfile, const char *outdir, struct mem_layout *layou
 			printf("Selecting next descriptor batch @ offset %d, next %d\n", fd_offset, next);
 		}
 	}
+
+	fd_offset = 0;
+	rewind(ifd);
+	if (layout->magic_word) {
+		/* Send the first line again at the starting address */
+		char tmp[32];
+		int k;
+		sprintf(tmp, "\n@%x\n", layout->start_addr / (layout->line_length / 8));
+		for (k = 0; k < layout->adjacement_banks; k++) {
+			int dsc = k + fd_offset;
+			if (layout->inverse_order)
+				dsc = fd_offset + layout->adjacement_banks - k - 1;
+			fwrite(tmp, strlen(tmp), 1, ofd[dsc]);				
+			layout->write_line(layout, ifd, ofd[dsc]);
+			tmp[0]='\n';
+			tmp[1]=0x0;
+			fwrite(tmp, strlen(tmp), 1, ofd[dsc]);				
+	 	}
+	}
+	
+
 	free(output_started);
 	printf("Total %d bytes processed\n", n);
 	for (i = 0; i < rcf_file_count; i++)
