@@ -287,7 +287,7 @@ uint32_t main(void)
         rumboot_platform_runtime_info->persistent[WD_CTRL_005_TEST_PERSISNENT_PROTOCOL_RESULT_FIELD] = result;
     }
     ++rumboot_platform_runtime_info->persistent[WD_CTRL_005_TEST_PERSISNENT_PROTOCOL_CRG_CFG2_FIELD];
-    if(4 > rumboot_platform_runtime_info->persistent[WD_CTRL_005_TEST_PERSISNENT_PROTOCOL_CRG_CFG2_FIELD])
+    if(5 > rumboot_platform_runtime_info->persistent[WD_CTRL_005_TEST_PERSISNENT_PROTOCOL_CRG_CFG2_FIELD])
     {
         rumboot_printf("In the trans-reset cycle, result is 0x%x, persistent field is 0x%x\n",
             result,rumboot_platform_runtime_info->persistent[WD_CTRL_005_TEST_PERSISNENT_PROTOCOL_RESULT_FIELD]);
@@ -304,7 +304,9 @@ uint32_t main(void)
                      ((rumboot_platform_runtime_info->persistent[WD_CTRL_005_TEST_PERSISNENT_PROTOCOL_CRG_CFG2_FIELD]
                                                            << CRG_RST_CFG2_FIELDS_RSTREQ2_MODE_i)
                              & CRG_RST_CFG2_FIELDS_RSTREQ2_MODE_mask) |
-                       (CRG_RST_CFG2_FIELDS_RSTREQ2_MASK_mask));
+                       ((4 > rumboot_platform_runtime_info->persistent[WD_CTRL_005_TEST_PERSISNENT_PROTOCOL_CRG_CFG2_FIELD])
+                               ? (CRG_RST_CFG2_FIELDS_RSTREQ2_MASK_mask)
+                               : 0));
         dcr_write(DCR_CRG_BASE + CRG_WR_LOCK, !CRG_UNLOCK_CODE);
         sp805_unlock_access(in[0].base_addr);
         dcr_write(in[0].base_addr + WD_REG_CONTROL,
