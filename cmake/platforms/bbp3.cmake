@@ -53,7 +53,7 @@ rumboot_add_configuration (
     LDS bbp3/iram-spl.lds
     LDFLAGS -Wl,--start-group -lgcc -lc -lm -Wl,--end-group "-e main"
     CFLAGS  -DRUMBOOT_NOINIT
-    FEATURES COVERAGE PACKIMAGE
+    FEATURES COVERAGE PACKIMAGE SPL
 )
 
 
@@ -124,6 +124,15 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
           NOR_IMAGE spl-fail-bad-magic
           HOSTMOCK  spl-ok
     )
+
+    rumboot_bootrom_integration_test(ROM
+    NAME "host-emi"
+    IRUN_FLAGS ${ROM_115200_OPTS} +BOOT_HOST=1 +boot_arm +arm_image=/home/necromant/Work/BBP3/build/rumboot-bbp3-Debug/rumboot-bbp3-Debug-spl-ok.hex/image_mem64_0.hex
+    LOAD
+      SPI0_CONF spl-fail-bad-magic,spl-fail-bad-magic
+      NOR_IMAGE spl-fail-bad-magic
+)
+
 
     rumboot_bootrom_integration_test(ROM
         NAME "host-xmodem"
@@ -288,6 +297,27 @@ macro(rumboot_platform_generate_stuff_for_taget product)
 
     add_dependencies(${product}.all ${product}.hex)
   endif()
+
+  list (FIND TARGET_FEATURES "SPL" _index)
+  if (${_index} GREATER -1)
+    add_custom_command(
+      OUTPUT ${product}.hex/image_mem64_0.hex
+      COMMAND mkdir -p ${product}.hex
+      COMMAND ${CMAKE_BINARY_DIR}/utils/romgen -l bbp3bootemi -i ${product}.bin -o ${product}.hex
+      COMMENT "Generating Verilog loadable HEX from ${product}.bin"
+      DEPENDS ${product}.bin utils
+    )
+
+    add_custom_target(
+      ${product}.hex ALL
+      DEPENDS ${product}.hex/image_mem64_0.hex
+    )
+
+    add_dependencies(${product}.all ${product}.hex)
+  endif()
+
+
+
 
 
 endmacro()
