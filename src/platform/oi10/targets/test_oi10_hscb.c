@@ -848,14 +848,17 @@ int main() {
     rumboot_printf( "Checking regs of HSCB (0x%x) \n", HSCB_UNDER_TEST_BASE );
     result += check_hscb_default_val( HSCB_UNDER_TEST_BASE );
     result += check_hscb_regs( HSCB_UNDER_TEST_BASE );
+    hscb_sw_rst(HSCB_UNDER_TEST_BASE);
+    hscb_adma_sw_rst(HSCB_UNDER_TEST_BASE);
 #endif
+#ifdef HSCB_FUNC_TEST
     rumboot_printf( "Checking base functions of HSCB (0x%x) and HSCB (0x%x)\n",
             HSCB_UNDER_TEST_BASE, HSCB_SUPPLEMENTARY_BASE);
     hscb_sw_rst(HSCB_UNDER_TEST_BASE);
     hscb_adma_sw_rst(HSCB_UNDER_TEST_BASE);
     hscb_sw_rst(HSCB_SUPPLEMENTARY_BASE);
     hscb_adma_sw_rst(HSCB_SUPPLEMENTARY_BASE);
-#ifdef HSCB_FUNC_TEST
+    
     struct rumboot_irq_entry *tbl;
     uint32_t count_of_memory_areas;
     uint8_t** data_areas = NULL;
