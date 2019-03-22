@@ -276,7 +276,7 @@ int main ( void )
      fpu_enable();
 
      rumboot_printf("Init sram0\n");
-     memset(MEM_CACHED_PAGE, 0x00, 0x10000);
+     rumboot_memfill8_modelling(MEM_CACHED_PAGE, 0x10000, 0x00, 0x00);
 
      rumboot_printf("Set tlb\n");
      static const tlb_entry tlb_entry_cacheable_valid = {TLB_ENTRY_CACHE_VALID};
