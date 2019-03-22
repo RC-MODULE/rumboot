@@ -209,16 +209,6 @@ static irq_flags_t IRQ = 0;
 static rumboot_irq_entry *irq_table = NULL;
 static volatile uint32_t global_irr = 0;
 static uint8_t const_2_ecc[16];
-static tlb_entry em2_noexec_entries[] =
-{
-    {
-        MMU_TLB_ENTRY(0,0x00000,0x00000,MMU_TLBE_DSIZ_1GB,
-            1,1,0,1,0,0, MMU_TLBE_E_BIG_END,
-        /*  UX,UW,UR, SX,SW,SR  */
-            0, 0, 0,  0, 1, 1, 0,0,0, MEM_WINDOW_0,
-            MMU_TLBWE_WAY_3, MMU_TLBWE_BE_UND,1)
-    }
-};
 inline static uint32_t reverse_bytes32(uint32_t data)
 {
     return  ((data & 0xFF000000) >> 0x18) |
@@ -279,7 +269,7 @@ static void ex_handler(int exid, const char *exname)
     l2c_l2_write(DCR_L2C_BASE, L2C_L2PLBSTAT1, ~0);
 }
 
-void init_interrupts(void)
+static void init_interrupts(void)
 {
     uint32_t    *irq_item;
     static
@@ -291,7 +281,7 @@ void init_interrupts(void)
         EMI_CNTR_INT_3,
         ~0
     };
-    rumboot_putstring ("\tStart IRQ initialization...\n");
+    rumboot_putstring ("Init IRQ...\n");
 
     IRQ = 0;
     rumboot_irq_cli();
@@ -310,7 +300,7 @@ void init_interrupts(void)
     // spr_write(SPR_SPRG7, 0);
     rumboot_irq_set_exception_handler(ex_handler);
 
-    rumboot_putstring ("\tIRQ have been initialized.\n");
+    rumboot_putstring ("IRQ initialized\n");
 }
 
 NOINLINE
@@ -642,24 +632,25 @@ uint32_t check_emi(uint32_t bank)
     return status;
 }
 
-uint32_t main(void)
-{
-    uint32_t     test_result    = TEST_OK;
-    int          mem_bank, i;
-
+static void init_emi() {
     rumboot_printf("Init EMI...\n");
-    write_tlb_entries(em2_noexec_entries, 1);
-    tlbsync();
-    msync();
-    isync();
-    emi_init(DCR_EM2_EMI_BASE);
-    memset(0x00000000, 0, 4 * 1024);
-    /* emi_init_impl (DCR_EM2_EMI_BASE, DCR_EM2_PLB6MCIF2_BASE, 0x00); */
-    init_interrupts();
-    rumboot_printf("Init done.\n");
 
+    static struct tlb_entry const em2_nospeculative_tlb_entries[] = {
+    /*   MMU_TLB_ENTRY(  ERPN,   RPN,        EPN,        DSIZ,                   IL1I,   IL1D,   W,      I,      M,      G,      E,                      UX, UW, UR,     SX, SW, SR      DULXE,  IULXE,      TS,     TID,                WAY,                BID,                V   )*/
+        {MMU_TLB_ENTRY(  0x000,  0x00000,    0x00000,    MMU_TLBE_DSIZ_1GB,      0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b0,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )},
+        {MMU_TLB_ENTRY(  0x000,  0x40000,    0x40000,    MMU_TLBE_DSIZ_1GB,      0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b0,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )}
+    };
+    write_tlb_entries(em2_nospeculative_tlb_entries, ARRAY_SIZE(em2_nospeculative_tlb_entries));
+
+    emi_init(DCR_EM2_EMI_BASE);
+
+    rumboot_printf("EMI initialized\n");
+}
+
+static void generate_ecc_codes() {
     rumboot_printf("Generate ECC codes...\n");
-    for(i = 0; i < 4; i++)
+
+    for(int i = 0; i < 4; i++)
     {
         const_2_ecc[0 + i] = GEN_ECC(
                 mke1_4_ecc[i] | SHIFT_ERR(byte_tpl2[i], i));
@@ -674,7 +665,19 @@ uint32_t main(void)
     const_2_ecc[0x0D] = 0x00;
     const_2_ecc[0x0E] = 0x00;
     const_2_ecc[0x0F] = 0xFF;
-    rumboot_printf("Generated.\n");
+
+    rumboot_printf("ECC codes generated.\n");
+}
+
+uint32_t main(void)
+{
+    uint32_t     test_result    = TEST_OK;
+    int          mem_bank;
+
+    init_emi();
+    init_interrupts();
+
+    generate_ecc_codes();
 
     /* test_result |= check_emi(4); */
     FOREACH_BANK(mem_bank, FIRST_BANK, LAST_BANK)
@@ -686,8 +689,6 @@ uint32_t main(void)
             rumboot_printf("This bank is disabled! Skipping it.\n");
         rumboot_printf(" ------------------------------------\n");
     }
-
-    rumboot_putstring(!test_result ? "TEST OK!\n":"TEST_ERROR!\n");
 
     return test_result;
 }
