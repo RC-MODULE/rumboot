@@ -1259,8 +1259,6 @@ int main()
 
     test_event_send_test_id("test_oi10_cpu_026");
 
-    memset((uint32_t*)SRAM0_BASE, 0x00, 128);
-
 
     rumboot_irq_cli();
     struct rumboot_irq_entry *tbl = rumboot_irq_create( NULL );
