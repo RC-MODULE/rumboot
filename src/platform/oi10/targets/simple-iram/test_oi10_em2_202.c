@@ -11,14 +11,13 @@
 #include <rumboot/platform.h>
 #include <rumboot/macros.h>
 
-#include <platform/common_macros/common_macros.h>
-
 #include <platform/test_event_c.h>
 #include <platform/test_event_codes.h>
 #include <platform/test_assert.h>
 
 #include <arch/ppc_476fp_config.h>
 #include <arch/ppc_476fp_lib_c.h>
+#include <platform/arch/ppc/ppc_476fp_mmu.h>
 
 #include <platform/regs/regs_emi.h>
 #include <platform/regs/regs_l2c_l2.h>
@@ -263,15 +262,10 @@ void clear_all_irqs(void)
 volatile uint32_t emi_switch_bank(uint32_t bank)
 {
     uint32_t offset = DEFAULT_OFFSET;
-#ifdef CMAKE_BUILD_TYPE_DEBUG
-    if(IS_NOT_NOR(bank))
-    {
-        memset(CAST_ADDR(CHECK_ADDR32(bank)),
-                0, 16 * sizeof(uint32_t)); /* Anti-X */
-        msync();
-    }
-#endif
-    return ioread32(CHECK_ADDR32(bank)); /* Switch bank */
+
+    if( IS_NOT_NOR(bank) ) rumboot_memfill8_modelling( CAST_ADDR(CHECK_ADDR32(bank)), 16 * sizeof(uint32_t), 0x00, 0x00 );
+
+    return ioread32( CHECK_ADDR32(bank) ); /* Switch bank */
 }
 
 void emi_set_ssi(uint32_t *ssiop, uint32_t trdy_val, uint32_t bank)
@@ -448,10 +442,14 @@ DEFINE_INIT(interrupts)
 
 DEFINE_INIT(emi_hw)
 {
-    uint32_t init_addr = 0x00000000;
+    static tlb_entry const em2_nospeculative_tlb_entries[] = {
+/*       MMU_TLB_ENTRY(  ERPN,   RPN,        EPN,        DSIZ,                   IL1I,   IL1D,   W,      I,      M,      G,      E,                      UX, UW, UR,     SX, SW, SR      DULXE,  IULXE,      TS,     TID,                WAY,                BID,                V   )*/
+        {MMU_TLB_ENTRY(  0x000,  0x00000,    0x00000,    MMU_TLBE_DSIZ_1GB,      0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b0,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )},
+        {MMU_TLB_ENTRY(  0x000,  0x40000,    0x40000,    MMU_TLBE_DSIZ_1GB,      0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b0,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )}
+    };
+    write_tlb_entries( em2_nospeculative_tlb_entries, ARRAY_SIZE(em2_nospeculative_tlb_entries) );
+
     emi_init(DCR_EM2_EMI_BASE);
-    memset(CAST_ADDR(init_addr), 0, 4096); /* Anti-X */
-    msync();
     return INIT_OK;
 }
 
@@ -509,11 +507,6 @@ DEFINE_CHECK(rfc)   /* 2.2.1 */
     }
 
     emi_switch_bank(bank);
-
-#ifdef CMAKE_BUILD_TYPE_DEBUG
-    memset( (void*)CHECK_ADDR32(bank), 0x00, 16*sizeof(uint32_t) ); /* Anti-X */
-    msync();
-#endif
 
     for(rfcp = rfc+1, cnt = 0; cnt < rfc[0]; rfcp++, cnt++)
     {
@@ -1176,8 +1169,6 @@ int main(void)
         }
         rumboot_printf(" ******************************************** \n");
     }
-
-    rumboot_printf("TEST %s!\n", !test_status ? "OK" : "ERROR");
 
     return test_status;
 }
