@@ -14,10 +14,14 @@
 
 #include <platform/devices.h>
 #include <platform/interrupts.h>
-#include <platform/regs/fields/mpic128.h>
+
+/* FixMe: Temporary hack for ppc-specific asserts */
+#ifndef __ppc__
+#include <assert.h>
+#define TEST_ASSERT(expr, why) assert(expr)
+#else
 #include <platform/test_assert.h>
-
-
+#endif
 
 //default values
 #define     UARTRSR_DEFAULT         0x0

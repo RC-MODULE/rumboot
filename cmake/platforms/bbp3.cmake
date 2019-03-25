@@ -2,7 +2,7 @@ SET(RUMBOOT_ARCH arm)
 SET(RUMBOOT_PLATFORM bbp3)
 
 set(RUMBOOT_PLATFORM_DEFAULT_LDS bbp3/rom.lds)
-set(RUMBOOT_PLATFORM_DEFAULT_SNAPSHOT boot)
+set(RUMBOOT_PLATFORM_DEFAULT_SNAPSHOT default)
 set(RUMBOOT_NO_SELFTEST true)
 
 if (RUMBOOT_BUILD_TYPE STREQUAL "Production")
@@ -15,7 +15,7 @@ endif()
 rumboot_add_configuration(
   ROM
   DEFAULT
-  SNAPSHOT boot
+  SNAPSHOT default
   LDS bbp3/rom.lds
   LDFLAGS "-e rumboot_reset_handler"
   CFLAGS -DRUMBOOT_ONLY_STACK -marm
@@ -63,16 +63,18 @@ set(ROM_115200_OPTS +UART0_SPEED=115200)
 
 ### Add tests here ###
 #WARNING! Full regression automatically includes all tests from the short ones
-macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
-  if (NOT RUMBOOT_BUILD_TYPE STREQUAL "PostProduction")
-    add_rumboot_target(
-        CONFIGURATION ROM
-        FILES common/bootrom-stubs/bootrom-stub.c
-        PREFIX "bootrom"
-        NAME "stub"
-        FEATURES STUB
-    )
 
+macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
+
+  add_rumboot_target(
+    CONFIGURATION ROM
+    FILES common/bootrom-stubs/bootrom-stub.c
+    PREFIX "bootrom"
+    NAME "stub"
+    FEATURES STUB
+  )
+
+  if (NOT RUMBOOT_BUILD_TYPE STREQUAL "PostProduction")
     add_rumboot_target_dir(common/irq/
       CONFIGURATION IRAM
       PREFIX iram
@@ -127,11 +129,20 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
     rumboot_bootrom_integration_test(ROM
     NAME "host-emi"
-    IRUN_FLAGS ${ROM_115200_OPTS} +BOOT_HOST=1 +BOOT_EMI_BIS=0 +boot_arm +arm_image=/home/necromant/Work/BBP3/build/rumboot-bbp3-Debug/rumboot-bbp3-Debug-spl-ok.hex/image_mem64_0.hex
+    IRUN_FLAGS ${ROM_115200_OPTS} +BOOT_HOST=1 +BOOT_EMI_BIS=0 +full_boot_mode +boot_arm +arm_image=/home/necromant/Work/BBP3/build/rumboot-bbp3-Debug/rumboot-bbp3-Debug-spl-ok.hex/image_mem64_0.hex
     LOAD
       SPI0_CONF spl-fail-bad-magic,spl-fail-bad-magic
       NOR_IMAGE spl-fail-bad-magic
-)
+    )
+
+    rumboot_bootrom_integration_test(ROM
+    NAME "host-edcl"
+    IRUN_FLAGS ${ROM_115200_OPTS} +BOOT_HOST=1 +BOOT_EMI_BIS=0 +full_boot_mode +boot_arm +arm_image=/home/necromant/Work/BBP3/build/rumboot-bbp3-Debug/rumboot-bbp3-Debug-spl-ok.hex/image_mem64_0.hex
+    SNAPSHOT edcl
+    LOAD
+      SPI0_CONF spl-fail-bad-magic,spl-fail-bad-magic
+      NOR_IMAGE spl-fail-bad-magic
+    )    
 
 
     rumboot_bootrom_integration_test(ROM
@@ -243,6 +254,14 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         CONFIGURATION UROM
         FILES hello.c
       )
+
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES oi10/targets/test_oi10_uart_000.c
+      CFLAGS -DUARTRX_BASE=UART0_Base -DUARTTX_BASE=UART1_Base -DUARTRX_INT=0 -DUARTTX_INT=0 -DCHECK_REGISTERS
+      PREFIX uart0
+    )
+  
 
 endmacro()
 
