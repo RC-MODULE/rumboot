@@ -80,7 +80,7 @@ rumboot_add_configuration(
     PREFIX bare-rom
     FEATURES ROMGEN
     TIMEOUT_CTEST 0
-    TIMEOUT 10 ms
+    TIMEOUT 50 ms
     LOAD BOOTROM_NOR SELF
     IRUN_FLAGS ${IRUN_BOOTM_EXTRA_ARGS}
 )
