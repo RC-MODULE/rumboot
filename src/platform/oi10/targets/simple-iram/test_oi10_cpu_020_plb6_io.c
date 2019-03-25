@@ -24,8 +24,6 @@
 #include <platform/ppc470s/mmu/mem_window.h>
 #include <platform/devices/emi.h>
 #include <platform/devices/dma2plb6.h>
-#include <platform/regs/regs_plb4plb6.h>
-#include <platform/regs/regs_plb4ahb.h>
 #include <platform/devices/l2c.h>
 #include <platform/interrupts.h>
 #include <platform/regs/fields/mpic128.h>
@@ -236,29 +234,6 @@ static void  clear_test_fields (uint32_t clear_value, uint32_t source, uint32_t 
     msync();
 }
 
-static void prepare_snoop_ready_window_in_PLB6_address_space(uint32_t base_address)
-{
-    uint32_t value;
-    //addresses via PLB4PLB6_1
-    dcr_write(base_address + SNOOP_LADDRL0, 0x00000000);
-    dcr_write(base_address + SNOOP_UADDRL0, 0x00000000);
-    dcr_write(base_address + SNOOP_LADDRH0, 0xFFFFFFFF);
-    dcr_write(base_address + SNOOP_UADDRH0, 0x00000003);
-    value = dcr_read(base_address + P46CR);
-    value |= (1 << IBM_BIT_INDEX(32, 23));
-    dcr_write(base_address + P46CR, value);
-    msync();
-}
-
-static void  prepare_plb4xahb_2_upper_address_bits(uint32_t base_address, uint32_t upper_address_bits)
-{
-    uint32_t data = 0;
-    data = dcr_read(base_address + CONTROL);
-    data &= (7 << 3);
-    data |= ((upper_address_bits & 7) << 3);
-    dcr_write(base_address + CONTROL, data);
-}
-
 void check_target_is_invalidated_in_l2c (uint32_t l2c_base, uint32_t target, bool assert)
 {
     uint64_t physical_addr;
@@ -408,15 +383,6 @@ void write_check(uint32_t source, uint32_t target, uint32_t xor_invertor)
     check_values((TEST_VALUE_HSCB_QWORD ^ xor_invertor), test_io10_cpu_020_plb6_io_qword_size, target);
     clear_test_fields(TEST_VALUE_CLEAR, source, target);
     */
-}
-
-static void prepare_devices() {
-
-    prepare_snoop_ready_window_in_PLB6_address_space(DCR_PLB4PLB6_0_BASE);
-    prepare_plb4xahb_2_upper_address_bits(DCR_PLB4AHB_0_BASE, 0x2);
-    dci(2);
-    msync();
-    isync();
 }
 
 /*
@@ -619,7 +585,6 @@ int main ()
     struct rumboot_irq_entry *tbl;
     tbl = create_irq_handlers();
 */
-    prepare_devices();
 
     rumboot_printf("(uint32_t) source_test_data_rwnitc_sram0 == %x\n", (uint32_t) source_test_data_rwnitc_sram0);
     rumboot_printf("(uint32_t) target_test_data_rwnitc_sram0 == %x\n", (uint32_t) target_test_data_rwnitc_sram0);
