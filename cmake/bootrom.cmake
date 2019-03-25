@@ -318,7 +318,7 @@ macro(rumboot_bootrom_integration_test romconf)
           PREFIX "bootrom-integration-no-selftest"
           CONFIGURATION ${romconf}
           BOOTROM bootrom-loader
-          TESTGROUP bootrom bootrom-integration
+          TESTGROUP bootrom bootrom-integration bootrom-integration-no-selftest
           FEATURES NOCODE ${CONFIGURATION_${romconf}_FEATURES}
           ${ARGN}
   )
@@ -329,7 +329,7 @@ macro(rumboot_bootrom_integration_test romconf)
               PREFIX "bootrom-integration-selftest"
               CONFIGURATION ${romconf}
               BOOTROM bootrom-loader
-              TESTGROUP bootrom bootrom-integration
+              TESTGROUP bootrom bootrom-integration bootrom-integration-selftest
               FEATURES NOCODE ${CONFIGURATION_${romconf}_FEATURES}
               ${_tmp}
       )
