@@ -1788,6 +1788,7 @@ endif()
         NAME "test_oi10_sys_010"
         LOAD IM0BIN SELF
              SBIN supplementary-test_oi10_sys_010_func
+    )
 
     add_rumboot_target(
         CONFIGURATION SUPPLEMENTARY
