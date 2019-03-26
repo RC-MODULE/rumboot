@@ -11,6 +11,7 @@
 #include <platform/regs/regs_l2c_l2.h>
 #include <platform/regs/regs_l2c.h>
 #include <arch/ppc_476fp_config.h>
+#include <platform/arch/ppc/ppc_476fp_itrpt_fields.h>
 
 void ppc470s_enter_sleep_mode( SCTL_PPC_SLP_TYPE const sleep_mode );
 void ppc470s_enter_sleep_mode_with_EE( SCTL_PPC_SLP_TYPE const sleep_mode );
@@ -18,10 +19,10 @@ void ppc470s_enter_doze_mode();
 void ppc470s_enter_doze_mode_with_EE();
 
 void ppc470s_exit_doze_mode_on_noncritical_interrupt()
-    {   spr_write(SPR_SRR1, spr_read(SPR_SRR1) & ~(1 << IBM_BIT_INDEX(64, 45)));} //xSRR[WE] = 0
+    {   spr_write(SPR_SRR1, spr_read(SPR_SRR1) & ~(1 << ITRPT_XSR_WE_i));} //xSRR[WE] = 0
 
 void ppc470s_exit_doze_mode_on_critical_interrupt()
-    {   spr_write(SPR_CSRR1, spr_read(SPR_CSRR1) & ~(1 << IBM_BIT_INDEX(64, 45)));} //xSRR[WE] = 0
+    {   spr_write(SPR_CSRR1, spr_read(SPR_CSRR1) & ~(1 << ITRPT_XSR_WE_i));} //xSRR[WE] = 0
 
 void ppc470s_exit_sleep_mode_on_noncritical_interrupt()
     {
