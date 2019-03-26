@@ -98,8 +98,8 @@ void rumboot_platform_setup() {
                         | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_256MB)  << MMU_SSPCR_ORD7_i) );
     set_mem_window(MEM_WINDOW_0);
 
-#if !defined(UTLB_EXT_MEM_NOR_ONLY)     
-    rumboot_memfill8_modelling((void*)SRAM0_BASE, 0x1000, 0x00, 0x00); //workaround (init 4KB SRAM0) 
+#if !defined(UTLB_EXT_MEM_NOR_ONLY)
+    rumboot_memfill8_modelling((void*)SRAM0_BASE, 0x10000, 0x00, 0x00); //workaround (init first 64KB in SRAM0)
 #endif
 
 
