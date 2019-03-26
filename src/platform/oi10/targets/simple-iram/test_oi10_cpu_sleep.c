@@ -22,6 +22,8 @@
 #include <platform/arch/ppc/ppc_476fp_mmu_fields.h>
 #include <platform/arch/ppc/ppc_476fp_mmu.h>
 #include <platform/arch/ppc/ppc_476fp_power_modes.h>
+#include <platform/arch/ppc/ppc_476fp_timer_fields.h>
+#include <platform/arch/ppc/ppc_476fp_itrpt_fields.h>
 
 #include <platform/devices/l2c.h>
 #include <platform/devices.h>
@@ -44,11 +46,11 @@
 #define DELAY2                              (0x10000)  // DEC, FIT, Watchdog
 
 static void msr_ext_int_enable (void){
-    msr_write (msr_read() | (1 << IBM_BIT_INDEX(64, 48) ));
+    msr_write (msr_read() | (1 << ITRPT_XSR_EE_i ));
 }
 
 static void msr_crit_int_enable (void){
-    msr_write (msr_read() | (1 << IBM_BIT_INDEX(64, 46) ));
+    msr_write (msr_read() | (1 << ITRPT_XSR_CE_i ));
 }
 
 //***************************************************************************************************************
@@ -61,15 +63,15 @@ static void dec_reset(void) {
 }
 
 static void dec_clr_exception (void){
-    spr_write (SPR_TSR_RC, 1 << IBM_BIT_INDEX(64, 36)); //TSR[DIS]=0 - clear DEC exceptions
+    spr_write (SPR_TSR_RC, 1 << TIMER_TSR_DIS_i); //TSR[DIS]=0 - clear DEC exceptions
 }
 
 static void dec_interrupt_enable (void){
-    spr_write (SPR_TCR, spr_read (SPR_TCR) | (1 << IBM_BIT_INDEX(64, 37))  );
+    spr_write (SPR_TCR, spr_read (SPR_TCR) | (1 << TIMER_TCR_DIE_i)  );
 }
 
 static void dec_interrupt_disable (void){
-    spr_write (SPR_TCR, spr_read (SPR_TCR) & ~(1 << IBM_BIT_INDEX(64, 37))  );
+    spr_write (SPR_TCR, spr_read (SPR_TCR) & ~(1 << TIMER_TCR_DIE_i)  );
 }
 
 static void dec_set_value (uint32_t delay) {
@@ -102,20 +104,20 @@ static inline void decrementer_handler (void)
 
 static void fit_set_period (uint8_t field_value){ //see TCR[FP]
     uint32_t tmp =  spr_read(SPR_TCR);
-    tmp &= ~(0b11 << IBM_BIT_INDEX(64, 39) );
-    spr_write(SPR_TCR, tmp | (field_value << IBM_BIT_INDEX(64, 39)));
+    tmp &= ~(0b11 << TIMER_TCR_FP_i );
+    spr_write(SPR_TCR, tmp | (field_value << TIMER_TCR_FP_i));
 }
 
 static void fit_clr_exception (void){
-    spr_write (SPR_TSR_RC, 1 << IBM_BIT_INDEX(64, 37)); //TSR[FIS]=0 - clear FIT exceptions
+    spr_write (SPR_TSR_RC, 1 << TIMER_TSR_FIS_i); //TSR[FIS]=0 - clear FIT exceptions
 }
 
 static void fit_interrupt_enable (void){
-    spr_write (SPR_TCR, spr_read (SPR_TCR) | (1 << IBM_BIT_INDEX(64, 40))  );
+    spr_write (SPR_TCR, spr_read (SPR_TCR) | (1 << TIMER_TCR_FIE_i)  );
 }
 
 static void fit_interrupt_disable (void){
-    spr_write (SPR_TCR, spr_read (SPR_TCR) & ~(1 << IBM_BIT_INDEX(64, 40))  );
+    spr_write (SPR_TCR, spr_read (SPR_TCR) & ~(1 << TIMER_TCR_FIE_i)  );
 }
 
 static void fit_generate_interrupt (uint32_t delay)
@@ -145,29 +147,29 @@ static inline void fit_handler (void)
  */
 
 static void wd_clr_exception(void){
-    spr_write (SPR_TSR_RC, (0b1 << IBM_BIT_INDEX(64, 32))   //TSR[ENW]=0 - clear WD next action
-                         | (0b1 << IBM_BIT_INDEX(64, 33))   //TSR[WIS]=0 - clear WD exception
-                         | (0b11 << IBM_BIT_INDEX(64, 35)));//TSR[WRS]=0 - clear WD reset status
+    spr_write (SPR_TSR_RC, (0b1 << TIMER_TSR_ENW_i)   //TSR[ENW]=0 - clear WD next action
+                         | (0b1 << TIMER_TSR_WIS_i)   //TSR[WIS]=0 - clear WD exception
+                         | (0b11 << TIMER_TSR_WRS_i));//TSR[WRS]=0 - clear WD reset status
 }
 
 static void wd_set_period (uint8_t field_value){ //see TCR[WP]
     uint32_t tmp =  spr_read(SPR_TCR);
-    tmp &= ~(0b11 << IBM_BIT_INDEX(64, 33) );
-    spr_write(SPR_TCR, tmp | (field_value << IBM_BIT_INDEX(64, 33)));
+    tmp &= ~(0b11 << TIMER_TCR_WP_i );
+    spr_write(SPR_TCR, tmp | (field_value << TIMER_TCR_WP_i));
 }
 
 static void wd_set_reset_control (uint8_t field_value){ //see TCR[WRC]
     uint32_t tmp =  spr_read(SPR_TCR);
-    tmp &= ~(0b11 << IBM_BIT_INDEX(64, 35) );
-    spr_write(SPR_TCR, tmp | (field_value << IBM_BIT_INDEX(64, 35)));
+    tmp &= ~(0b11 << TIMER_TCR_WRC_i );
+    spr_write(SPR_TCR, tmp | (field_value << TIMER_TCR_WRC_i));
 }
 
 static void wd_interrupt_enable (void){
-    spr_write (SPR_TCR, spr_read (SPR_TCR) | (1 << IBM_BIT_INDEX(64, 36))  );
+    spr_write (SPR_TCR, spr_read (SPR_TCR) | (1 << TIMER_TCR_WIE_i)  );
 }
 
 static void wd_interrupt_disable (void){
-    spr_write (SPR_TCR, spr_read (SPR_TCR) & ~(1 << IBM_BIT_INDEX(64, 36))  );
+    spr_write (SPR_TCR, spr_read (SPR_TCR) & ~(1 << TIMER_TCR_WIE_i)  );
 }
 
 static void wd_generate_interrupt(uint32_t delay)
