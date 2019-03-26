@@ -16,9 +16,9 @@
 #include <platform/interrupts.h>
 
 /* FixMe: Temporary hack for ppc-specific asserts */
-#ifndef __ppc__
+#if !defined( __PPC__ )
 #include <assert.h>
-#define TEST_ASSERT(expr, why) assert(expr)
+#define TEST_ASSERT(expr, why) assert(expr && why)
 #else
 #include <platform/test_assert.h>
 #endif
