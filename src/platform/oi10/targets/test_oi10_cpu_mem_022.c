@@ -55,11 +55,6 @@ extern void working_function(uint32_t** addr, uint32_t length_in_words);
 
 extern void working_function_no_cache(uint32_t** addr, uint32_t length_in_words, uint32_t* test_data_addr);
 
-//{
-//    for(int i = 0; i < 10; ++i)
-//        msync();
-//    return;
-//}
 #define COUNT_AREAS 11
 int main()
 {
@@ -98,12 +93,10 @@ int main()
     dci(2);
     isync();
     rumboot_printf("Main test code sequence finished. Starting checks. Zero is an ok result.\n");
-//        rumboot_putdump((uint32_t)test_data, sizeof(test_data));
     for(uint32_t i = 0; i < sizeof(test_data) >> 2; ++i)
         test_data[i] ^= 0xFFFFFFFF;
     for(uint32_t j = 0; j < COUNT_AREAS; ++j)
     {
-//            rumboot_putdump((uint32_t)rdf_buf[j], sizeof(test_data));
         result |= memcmp(rdf_buf[j], test_data, sizeof(test_data));
         rumboot_printf("rdf[%d]: result == 0x%x\n", j, result);
     }
@@ -117,9 +110,7 @@ int main()
     rumboot_printf("Supplementary test code sequence finished. Starting checks. Zero is an ok result.\n");
     for(uint32_t j = 0; j < COUNT_AREAS; ++j)
     {
-//            rumboot_putdump((uint32_t)rdf_buf[j], sizeof(test_data));
         result |= memcmp(rdf_buf[j], test_data, sizeof(test_data));
-//            result |= (ioread32((uint32_t)rdf_buf[j] + sizeof(test_data)) == ((j & 0xff) | ((j & 0xff) << 8) | ((j & 0xff) << 16) | ((j & 0xff) << 24)));
         rumboot_printf("rdf[%d]: result == 0x%x\n", j, result);
     }
 
