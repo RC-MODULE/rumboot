@@ -83,25 +83,25 @@ END_ENUM( SCTL_IFSYS_ETH_HPROT_FIELD )
 BEGIN_ENUM( SCTL_DEFAULT_VALUES)
     DECLARE_ENUM_VAL( SCTL_PPC_SYS_CONF_dflt,       SCTL_PPC_SYS_CONF_PLB4_DIVMODE_val << SCTL_PPC_SYS_CONF_PLB4_DIVMODE_i )
     DECLARE_ENUM_VAL( SCTL_IFSYS_ETH_CTRL_dflt,     SCTL_IFSYS_ETH_CTRL_EDCLADDR_LSB_1_val << SCTL_IFSYS_ETH_CTRL_EDCLADDR_LSB_1_i )
-    DECLARE_ENUM_VAL( SCTL_IFSYS_ETH_HPROT_dflt,    SCTL_IFSYS_ETH_HPROT_ETH0_W_SIZE2_val << SCTL_IFSYS_ETH_HPROT_ETH0_W_SIZE2_i
-                                                ||  SCTL_IFSYS_ETH_HPROT_ETH0_W_SIZE0_val << SCTL_IFSYS_ETH_HPROT_ETH0_W_SIZE0_i
-                                                ||  SCTL_IFSYS_ETH_HPROT_ETH0_R_SIZE2_val << SCTL_IFSYS_ETH_HPROT_ETH0_R_SIZE2_i
-                                                ||  SCTL_IFSYS_ETH_HPROT_ETH0_R_SIZE0_val << SCTL_IFSYS_ETH_HPROT_ETH0_R_SIZE0_i
-                                                ||  SCTL_IFSYS_ETH_HPROT_ETH1_W_SIZE2_val << SCTL_IFSYS_ETH_HPROT_ETH1_W_SIZE2_i
-                                                ||  SCTL_IFSYS_ETH_HPROT_ETH1_W_SIZE0_val << SCTL_IFSYS_ETH_HPROT_ETH1_W_SIZE0_i
-                                                ||  SCTL_IFSYS_ETH_HPROT_ETH1_R_SIZE2_val << SCTL_IFSYS_ETH_HPROT_ETH1_R_SIZE2_i
-                                                ||  SCTL_IFSYS_ETH_HPROT_ETH1_R_SIZE0_val << SCTL_IFSYS_ETH_HPROT_ETH1_R_SIZE0_i)
+    DECLARE_ENUM_VAL( SCTL_IFSYS_ETH_HPROT_dflt,   ((SCTL_IFSYS_ETH_HPROT_ETH0_W_SIZE2_val << SCTL_IFSYS_ETH_HPROT_ETH0_W_SIZE2_i)
+                                                |   (SCTL_IFSYS_ETH_HPROT_ETH0_W_SIZE0_val << SCTL_IFSYS_ETH_HPROT_ETH0_W_SIZE0_i)
+                                                |   (SCTL_IFSYS_ETH_HPROT_ETH0_R_SIZE2_val << SCTL_IFSYS_ETH_HPROT_ETH0_R_SIZE2_i)
+                                                |   (SCTL_IFSYS_ETH_HPROT_ETH0_R_SIZE0_val << SCTL_IFSYS_ETH_HPROT_ETH0_R_SIZE0_i)
+                                                |   (SCTL_IFSYS_ETH_HPROT_ETH1_W_SIZE2_val << SCTL_IFSYS_ETH_HPROT_ETH1_W_SIZE2_i)
+                                                |   (SCTL_IFSYS_ETH_HPROT_ETH1_W_SIZE0_val << SCTL_IFSYS_ETH_HPROT_ETH1_W_SIZE0_i)
+                                                |   (SCTL_IFSYS_ETH_HPROT_ETH1_R_SIZE2_val << SCTL_IFSYS_ETH_HPROT_ETH1_R_SIZE2_i)
+                                                |   (SCTL_IFSYS_ETH_HPROT_ETH1_R_SIZE0_val << SCTL_IFSYS_ETH_HPROT_ETH1_R_SIZE0_i)))
 END_ENUM( SCTL_DEFAULT_VALUES)
 
 BEGIN_ENUM( SCTL_MASK_VALUES)
     DECLARE_ENUM_VAL( SCTL_KMBIST_CHAIN_SF_mask,         0x7F)
-    DECLARE_ENUM_VAL( SCTL_PPC_SYS_CONF_mask,       SCTL_PPC_SYS_CONF_PLB4_DIVMODE_mask
-                                                ||  SCTL_PPC_SYS_CONF_PPC_SYNC_INFO_mask
-                                                ||  SCTL_PPC_SYS_CONF_MPIC_TMRCLK_SEL_mask)
+    DECLARE_ENUM_VAL( SCTL_PPC_SYS_CONF_mask,      ((SCTL_PPC_SYS_CONF_PLB4_DIVMODE_mask)
+                                                |   (SCTL_PPC_SYS_CONF_PPC_SYNC_INFO_mask)
+                                                |   (SCTL_PPC_SYS_CONF_MPIC_TMRCLK_SEL_mask)))
     DECLARE_ENUM_VAL( SCTL_PPC_SLP_CTRL_mask,   0xf)
     DECLARE_ENUM_VAL( SCTL_PPC_PMU_CTRL_mask,   0x1f)
-    DECLARE_ENUM_VAL( SCTL_IFSYS_ETH_CTRL_mask,     SCTL_IFSYS_ETH_CTRL_EDCLADDR_LSB_0_mask
-                                                ||  SCTL_IFSYS_ETH_CTRL_EDCLADDR_LSB_1_mask)
+    DECLARE_ENUM_VAL( SCTL_IFSYS_ETH_CTRL_mask,    ((SCTL_IFSYS_ETH_CTRL_EDCLADDR_LSB_0_mask)
+                                                |   (SCTL_IFSYS_ETH_CTRL_EDCLADDR_LSB_1_mask)))
     DECLARE_ENUM_VAL( SCTL_IFSYS_ETH_HPROT_mask,    0xffffffff)
 END_ENUM( SCTL_MASK_VALUES)
 
