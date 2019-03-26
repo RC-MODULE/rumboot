@@ -28,6 +28,8 @@
 #include <platform/regs/fields/emi.h>
 #include <platform/interrupts.h>
 
+#define PERMISSIBLE_DIFS 0x200
+
 volatile uint32_t DEC_CONTROL_VALUE = 0;
 volatile uint32_t INT_FLAG = 0;
 
@@ -42,6 +44,7 @@ static void dec_set_value (uint32_t delay) {
 static void mpic_tim0_handler()
 {
     DEC_CONTROL_VALUE = spr_read (SPR_DEC);
+    msync();
     rumboot_printf("Interrupt handler (MPIC Timer0)\n");
     mpic128_stop_timer(DCR_MPIC128_BASE, Mpic128Timer0);
     dec_set_value (0x00);
@@ -78,10 +81,9 @@ static void init_handlers()
     rumboot_irq_set_exception_handler(exception_handler);
 }
 
-uint32_t get_timers_dif (uint32_t mpic_base, mpic128_timer_freq mpic_clk, mpic128_tim_num const timer_num)
+uint32_t get_timers_dif (uint32_t mpic_base, mpic128_timer_freq mpic_clk, mpic128_tim_num const timer_num, uint32_t const mpic_counts)
 {
     #define DEC_START_VALUE  0x100000
-    #define MPIC_START_VALUE 0x1000
 
     //reset variables
     DEC_CONTROL_VALUE = 0;
@@ -96,33 +98,56 @@ uint32_t get_timers_dif (uint32_t mpic_base, mpic128_timer_freq mpic_clk, mpic12
     mpic128_timer_init(mpic_base, mpic_clk);
 
     //start timers
-    msync();
-    mpic128_start_timer(mpic_base, timer_num, MPIC_START_VALUE);
+    msync(); isync();
     dec_set_value (DEC_START_VALUE);
+    mpic128_start_timer(mpic_base, timer_num, mpic_counts);
 
     //wait interrupt
-    while (INT_FLAG == 0) msync();
+    while (INT_FLAG == 0);
 
     return (DEC_START_VALUE - DEC_CONTROL_VALUE);
 }
 
+uint32_t get_compare_dif (uint32_t const mpic_counts)
+{
+    rumboot_printf("START CHECK\n", mpic_counts);
+    rumboot_printf("MPIC count value = 0x%x\n\n", mpic_counts);
+
+    rumboot_printf("SOURCE = SYS_CLK (25 MHz)\n");
+    uint32_t DIF_SYS_CLK = get_timers_dif(DCR_MPIC128_BASE, mpic128_timer_freq_SYS_CLK, Mpic128Timer0, mpic_counts);
+    rumboot_printf("Counts (DIF_SYS_CLK) = %x\n\n", DIF_SYS_CLK);
+
+    rumboot_printf("SOURCE = SYS_TMRCLK (12.5 MHz)\n");
+    uint32_t DIF_TMR_CLK = get_timers_dif(DCR_MPIC128_BASE, mpic128_timer_freq_SYS_TMRCLK, Mpic128Timer0, mpic_counts);
+    rumboot_printf("Counts (DIF_TMR_CLK) = %x\n\n", DIF_TMR_CLK);
+
+    rumboot_printf("Compare\n");
+    if (2 * DIF_SYS_CLK > DIF_TMR_CLK)
+        return  (2 * DIF_SYS_CLK - DIF_TMR_CLK);
+
+    return 0;
+}
+
 int main ()
 {
-    test_event_send_test_id("test_oi10_cpu_034");
-
     rumboot_printf("Init handlers\n\n");
     init_handlers();
 
-    rumboot_printf("SOURCE = SYS_CLK (25 MHz)\n");
-    uint32_t DIF_SYS_CLK = get_timers_dif(DCR_MPIC128_BASE, mpic128_timer_freq_SYS_CLK, Mpic128Timer0);
-    rumboot_printf("Counts = %x\n\n", DIF_SYS_CLK);
+    //low counts
+    uint32_t first_compare_dif = 0;
+    first_compare_dif = get_compare_dif (0x1000);
+    rumboot_printf("Compare_dif (2 * DIF_SYS_CLK - DIF_TMR_CLK) = 0x%x\n\n", first_compare_dif);
 
-    rumboot_printf("SOURCE = SYS_TMRCLK (12.5 MHz)\n");
-    uint32_t DIF_TMR_CLK = get_timers_dif(DCR_MPIC128_BASE, mpic128_timer_freq_SYS_TMRCLK, Mpic128Timer0);
-    rumboot_printf("Counts = %x\n\n", DIF_TMR_CLK);
+    //high counts
+    uint32_t second_compare_dif = 0;
+    second_compare_dif = get_compare_dif (0x8000);
+    rumboot_printf("Compare_dif (2 * DIF_SYS_CLK - DIF_TMR_CLK) = 0x%x\n\n", second_compare_dif);
 
-    rumboot_printf("Compare...\n");
-    TEST_ASSERT( (DIF_SYS_CLK * 2) < DIF_TMR_CLK,"TEST ERROR");
+    //check
+    rumboot_printf("Check compare_difs\n");
+    uint32_t compare_difs = (uint32_t) (abs( (int)(first_compare_dif-second_compare_dif) ));
+    rumboot_printf("compare difs = 0x%x\n", compare_difs);
+    TEST_ASSERT( compare_difs < PERMISSIBLE_DIFS, "TEST ERROR: the values are too different");
 
     rumboot_printf ("TEST OK\n\n");
     return 0;
