@@ -131,7 +131,7 @@ alignment_int_handler:
     tlbwe   \rA, \rB, 2
 .endm
 
-.macro full_prologue
+.macro full_prologue save_csrr=0
     stwu        r1, -160(r1)
     stw         r0, 156(r1)
     stmw        r2, 36(r1)
@@ -139,9 +139,13 @@ alignment_int_handler:
     mfctr       r30
     mfcr        r29
     mfxer       r28
+.if (\save_csrr != 0)
     mfspr       r27, SPR_CSRR0
     mfspr       r26, SPR_CSRR1
     stmw        r26, 12(r1)
+.else
+    stmw        r28, 20(r1)
+.endif
 
     /* TODO: remove setting CTR and LR to Program interrupt handler. It's only for modeling (https://jira.module.ru/jira/browse/OI10-205) */
     load_addr   r3, rumboot_P_hdr
@@ -149,10 +153,14 @@ alignment_int_handler:
     mtlr        r3
 .endm
 
-.macro full_epilogue
+.macro full_epilogue restore_csrr=0
+.if (\restore_csrr != 0)
     lmw         r26, 12(r1)
     mtspr       SPR_CSRR1,r26
     mtspr       SPR_CSRR0,r27
+.else
+    lmw         r28, 20(r1)
+.endif
     mtxer       r28
     mtcr        r29
     mtctr       r30

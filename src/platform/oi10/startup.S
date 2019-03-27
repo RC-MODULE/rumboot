@@ -525,14 +525,14 @@ setup_stack: /*stack is growing down*/
 .align 4
 rumboot_itrpt_hdr_base:
 rumboot_CI_hdr:
-    full_prologue
+    full_prologue   1
 
     load_const  r3, 0
     load_const  r4, RUMBOOT_IRQ_TYPE_NORMAL
     load_const  r5, RUMBOOT_IRQ_IRQ
     bl          rumboot_irq_core_dispatch
 
-    full_epilogue
+    full_epilogue   1
 
     rfci
 
