@@ -1779,6 +1779,11 @@ endif()
              SBIN supplementary-test_oi10_sys_010_func
     )
 
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES test_oi10_cpu_mem_022.c test_oi10_cpu_mem_022.S
+    )
+
 endmacro()
 
 
