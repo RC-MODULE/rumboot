@@ -23,7 +23,7 @@
 #define DATA_ARRAY_ADDRESS_BITS                 15
 #define DATA_ARRAY_SIZE                         (1 << DATA_ARRAY_ADDRESS_BITS)
 
-const uint32_t loop_counter = 8; //512;
+const uint32_t loop_counter = 4096;
 
 /*
 uint32_t inline atomic_fetch_and_nop(uint32_t address)
