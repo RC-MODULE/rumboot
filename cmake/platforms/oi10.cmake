@@ -1798,6 +1798,13 @@ endif()
       FILES simple-iram/test_oi10_em2_204.c
       PREFIX simple-iram
       NAME "test_oi10_em2_204_bootnor"
+    ) 
+
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES test_oi10_cpu_025_wd.c
+      LOAD IM0BIN SELF,SELF,SELF,SELF
+
     )
 
 endmacro()
