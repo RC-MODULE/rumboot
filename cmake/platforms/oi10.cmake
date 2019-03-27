@@ -1792,6 +1792,14 @@ endif()
       NAME "test_oi10_em2_105_bootnor"
     )
 
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      CFLAGS -DBOOT_NOR
+      FILES simple-iram/test_oi10_em2_204.c
+      PREFIX simple-iram
+      NAME "test_oi10_em2_204_bootnor"
+    )
+
 endmacro()
 
 

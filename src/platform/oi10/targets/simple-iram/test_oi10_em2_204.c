@@ -16,6 +16,15 @@
 #include <platform/devices/emi.h>
 #include <platform/devices/nor_1636RR4.h>
 
+
+#ifdef BOOT_NOR
+extern char             ROM_MEMORY_SIZE[];
+#define ROM_IN_NOR_SIZE ((uint32_t)ROM_MEMORY_SIZE)
+#else
+#define ROM_IN_NOR_SIZE (0)
+#endif
+
+
 #define EM2_BANKS_NUM   6
 
 #define SRAM0_WRDATA1  0xFFFFFFFF
@@ -43,25 +52,7 @@ struct em2_banks_cfg
     uint32_t data;
 };
 
-struct em2_banks_cfg em2_cfg1[EM2_BANKS_NUM] = {
-                                            { SRAM0_BASE,     SRAM0_SIZE,     SRAM0_WRDATA1 },
-                                            { SDRAM_BASE,     SDRAM_SIZE,     SDRAM_WRDATA1 },
-                                            { SSRAM_BASE,     SSRAM_SIZE,     SSRAM_WRDATA1 },
-                                            { PIPELINED_BASE, PIPELINED_SIZE, PIPE_WRDATA1  },
-                                            { SRAM1_BASE,     SRAM1_SIZE,     SRAM1_WRDATA1 },
-                                            { NOR_BASE,       NOR_SIZE,       NOR_WRDATA1   },
-                                          };
-
-struct em2_banks_cfg em2_cfg2[EM2_BANKS_NUM] = {
-                                            { SRAM0_BASE,     SRAM0_SIZE,     WRDATA2 },
-                                            { SDRAM_BASE,     SDRAM_SIZE,     WRDATA2 },
-                                            { SSRAM_BASE,     SSRAM_SIZE,     WRDATA2 },
-                                            { PIPELINED_BASE, PIPELINED_SIZE, WRDATA2 },
-                                            { SRAM1_BASE,     SRAM1_SIZE,     WRDATA2 },
-                                            { NOR_BASE,       NOR_SIZE,       WRDATA2 },
-                                          };
-
-void generate_test_data_and_addr_for_bank(struct em2_banks_cfg * const bank_cfg, struct test_data_and_addr * const test_data_and_addr)
+static void generate_test_data_and_addr_for_bank(struct em2_banks_cfg const * const bank_cfg, struct test_data_and_addr * const test_data_and_addr)
 {
     test_data_and_addr->A0 = bank_cfg->base_addr;
     test_data_and_addr->A1 = bank_cfg->base_addr + bank_cfg->size/2 - 4;
@@ -71,18 +62,18 @@ void generate_test_data_and_addr_for_bank(struct em2_banks_cfg * const bank_cfg,
     rumboot_printf("0x%X 0x%X 0x%X 0x%X / 0x%X\n", test_data_and_addr->A0, test_data_and_addr->A1, test_data_and_addr->A2, test_data_and_addr->A3, test_data_and_addr->D);
 }
 
-void generate_test_data_and_addr(struct em2_banks_cfg * const bank_cfg, struct test_data_and_addr * const test_data_and_addr)
+static void generate_test_data_and_addr(struct em2_banks_cfg const * const bank_cfg, struct test_data_and_addr * const test_data_and_addr)
 {
     for (int i=0; i<EM2_BANKS_NUM; i++)
         generate_test_data_and_addr_for_bank( &bank_cfg[i], &test_data_and_addr[i] );
 }
 
-void report_data_error(uint32_t addr, uint32_t exp, uint32_t act)
+static void report_data_error(uint32_t const addr, uint32_t const exp, uint32_t const act)
 {
     rumboot_printf("Data compare error at addr 0x%X!\n Expected: 0x%X\nActual: 0x%X\n", addr, exp, act);
 }
 
-void seq_n_wr_n_rd(uint32_t * const data, uint32_t * const addr, uint32_t const len)
+static void seq_n_wr_n_rd(uint32_t * const data, uint32_t * const addr, uint32_t const len)
 {
     uint32_t rd;
     uint32_t data_i;
@@ -117,7 +108,7 @@ void seq_n_wr_n_rd(uint32_t * const data, uint32_t * const addr, uint32_t const 
     }
 }
 
-void check0(struct test_data_and_addr * const test_data_and_addr)
+static void check0(struct test_data_and_addr * const test_data_and_addr)
 {
 
     rumboot_printf("\n\n---CHECK0---\n\n");
@@ -138,7 +129,7 @@ void check0(struct test_data_and_addr * const test_data_and_addr)
     seq_n_wr_n_rd( &test_data_and_addr[3].D, &test_data_and_addr[3].A1, 1);
 }
 
-void check1(struct test_data_and_addr * const test_data_and_addr)
+static void check1(struct test_data_and_addr * const test_data_and_addr)
 {
     const uint32_t LEN = 2;
     uint32_t addr_arr[LEN];
@@ -189,7 +180,7 @@ void check1(struct test_data_and_addr * const test_data_and_addr)
     seq_n_wr_n_rd( data_arr, addr_arr, LEN);
 }
 
-void check2(struct test_data_and_addr * const test_data_and_addr)
+static void check2(struct test_data_and_addr * const test_data_and_addr)
 {
     const uint32_t LEN = 3;
     uint32_t addr_arr[LEN];
@@ -252,7 +243,7 @@ void check2(struct test_data_and_addr * const test_data_and_addr)
     seq_n_wr_n_rd( data_arr, addr_arr, LEN);
 }
 
-void check3(struct test_data_and_addr * const test_data_and_addr)
+static void check3(struct test_data_and_addr * const test_data_and_addr)
 {
     const uint32_t LEN = 2;
     uint32_t addr_arr[LEN];
@@ -303,7 +294,7 @@ void check3(struct test_data_and_addr * const test_data_and_addr)
     seq_n_wr_n_rd( data_arr, addr_arr, LEN);
 }
 
-void run_checks(struct test_data_and_addr * const test_data_and_addr)
+static void run_checks(struct test_data_and_addr * const test_data_and_addr)
 {
     check0(test_data_and_addr);
     check1(test_data_and_addr);
@@ -313,6 +304,24 @@ void run_checks(struct test_data_and_addr * const test_data_and_addr)
 
 int main()
 {
+    struct em2_banks_cfg const em2_cfg1[EM2_BANKS_NUM] = {
+        { SRAM0_BASE,     SRAM0_SIZE,               SRAM0_WRDATA1 },
+        { SDRAM_BASE,     SDRAM_SIZE,               SDRAM_WRDATA1 },
+        { SSRAM_BASE,     SSRAM_SIZE,               SSRAM_WRDATA1 },
+        { PIPELINED_BASE, PIPELINED_SIZE,           PIPE_WRDATA1  },
+        { SRAM1_BASE,     SRAM1_SIZE,               SRAM1_WRDATA1 },
+        { NOR_BASE,       NOR_SIZE-ROM_IN_NOR_SIZE, NOR_WRDATA1   },
+    };
+
+    struct em2_banks_cfg const em2_cfg2[EM2_BANKS_NUM] = {
+        { SRAM0_BASE,     SRAM0_SIZE,               WRDATA2 },
+        { SDRAM_BASE,     SDRAM_SIZE,               WRDATA2 },
+        { SSRAM_BASE,     SSRAM_SIZE,               WRDATA2 },
+        { PIPELINED_BASE, PIPELINED_SIZE,           WRDATA2 },
+        { SRAM1_BASE,     SRAM1_SIZE,               WRDATA2 },
+        { NOR_BASE,       NOR_SIZE-ROM_IN_NOR_SIZE, WRDATA2 },
+    };
+
     struct test_data_and_addr test_data_and_addr[EM2_BANKS_NUM];
 
     rumboot_printf("Start test_oi10_em2_204\n");
