@@ -21,10 +21,18 @@
 #include <platform/regs/fields/crg.h>
 #include <platform/test_event_c.h>
 #include <platform/test_assert.h>
+#include <arch/ppc_476fp_config.h>
+#include <platform/arch/ppc/ppc_476fp_debug_fields.h>
 
 #define TIMER_CYCLES 10
 
 #define WD_INT_TIMEOUT   0x80
+
+#ifdef TEST_OI10_CTRL_005_HARD
+#define RESET_COUNTS 5
+#else
+#define RESET_COUNTS 4
+#endif
 
 #define CHECK_REGS
 #ifdef CHECK_REGS
@@ -242,67 +250,40 @@ static bool wd_test2(uint32_t structure)
     return result;
 }
 
-static struct s805_instance in[] =
+static bool wd_test_reset(uint32_t structure)
 {
-    {
-        .base_addr = DCR_WATCHDOG_BASE,
-    },
-};
-
-TEST_SUITE_BEGIN(wd_testlist, "SP805 IRQ TEST")
-#ifdef CHECK_REGS
-TEST_ENTRY("SP805_0 reg read default", check_watchdog_default_ro_val, DCR_WATCHDOG_BASE),
-TEST_ENTRY("SP805_0 reg rw check", check_watchdog_default_rw_val, DCR_WATCHDOG_BASE),
-#endif
-TEST_ENTRY("SP805_0 real mode", wd_test, (uint32_t) &in[0]),
-TEST_ENTRY("SP805_0 test mode", wd_test2, (uint32_t) &in[0]),
-TEST_SUITE_END();
-
-
-TEST_SUITE_BEGIN(wd_testlist_with_reset, "SP805 IRQ TEST")
-TEST_ENTRY("SP805_0 real mode with reset", wd_test, (uint32_t) &in[0]),
-TEST_SUITE_END();
-
-
-uint32_t main(void)
-{
-    uint32_t result = 0;
+    struct s805_instance *stru = (struct s805_instance *)structure;
+    uint32_t base_addr = stru->base_addr;
     uint32_t t = 0;
+    bool result = true;
     uint32_t rst_mon_value = 0;
-    rumboot_printf("SP805 test START\n");
-    test_event_send_test_id("test_oi10_ctrl_005");
-    struct rumboot_irq_entry *tbl = rumboot_irq_create(NULL);
-    rumboot_irq_cli();
-    rumboot_irq_set_handler(tbl, WDT_INT, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler0, &in[0]);
-    /* Activate the table */
-    rumboot_irq_table_activate(tbl);
-    /* Activate Watchdog Interrupt */
-    rumboot_irq_enable(WDT_INT);
-    rumboot_irq_sei();
-    if(WD_CTRL_005_TEST_PERSISNENT_PROTOCOL_MAGIC_CODE
-       != rumboot_platform_runtime_info->persistent[WD_CTRL_005_TEST_PERSISNENT_PROTOCOL_MAGIC_FIELD])
-    {
-        result = test_suite_run(NULL,&wd_testlist);
-        rumboot_platform_runtime_info->persistent[WD_CTRL_005_TEST_PERSISNENT_PROTOCOL_CRG_CFG2_FIELD] = -1;
-        rumboot_platform_runtime_info->persistent[WD_CTRL_005_TEST_PERSISNENT_PROTOCOL_MAGIC_FIELD]
-                                                       = WD_CTRL_005_TEST_PERSISNENT_PROTOCOL_MAGIC_CODE;
-        rumboot_platform_runtime_info->persistent[WD_CTRL_005_TEST_PERSISNENT_PROTOCOL_RESULT_FIELD] = result;
-    }
+    uint32_t dbsr_value = 0;
 
     rst_mon_value = dcr_read(DCR_CRG_BASE+CRG_RST_MON);
+    dbsr_value = spr_read(SPR_DBSR);
     rumboot_printf("CRG_RST_MON == 0x%x\n", rst_mon_value);
+    rumboot_printf("SPR_DBSR == 0x%x\n",    dbsr_value);
 
     if(rumboot_platform_runtime_info->persistent[WD_CTRL_005_TEST_PERSISNENT_PROTOCOL_CRG_CFG2_FIELD]
             < 4)
     {
         TEST_ASSERT((rst_mon_value & CRG_RST_MON_FIELDS_RST_REQ2_mask),
                 "No field RST_REQ2 is set in CRG_RST_MON\n");
+        TEST_ASSERT(( ((dbsr_value & (DEBUG_DBSR_MRR_mask)) >> DEBUG_DBSR_MRR_i)
+                == ((rumboot_platform_runtime_info->persistent[WD_CTRL_005_TEST_PERSISNENT_PROTOCOL_CRG_CFG2_FIELD] & 1) ?
+                            DEBUG_DBSR_MRR_VALUES_SYSTEM_RESET
+                        :   DEBUG_DBSR_MRR_VALUES_CHIP_RESET)),
+                "MRR field in DBSR SPR is not set as expected.");
     }
     else if(rumboot_platform_runtime_info->persistent[WD_CTRL_005_TEST_PERSISNENT_PROTOCOL_CRG_CFG2_FIELD]
             == 4)
+    {
         TEST_ASSERT((rst_mon_value & CRG_RST_MON_FIELDS_RST_SYS_MON_mask),
                 "No field RST_SYS_MON is set in CRG_RST_MON\n");
-
+        TEST_ASSERT(( ((dbsr_value & (DEBUG_DBSR_MRR_mask)) >> DEBUG_DBSR_MRR_i)
+                == DEBUG_DBSR_MRR_VALUES_SYSTEM_RESET),
+                "MRR field in DBSR SPR is not set as expected.");
+    }
 
     switch(rumboot_platform_runtime_info->persistent[WD_CTRL_005_TEST_PERSISNENT_PROTOCOL_CRG_CFG2_FIELD])
     {
@@ -329,7 +310,7 @@ uint32_t main(void)
 
     ++rumboot_platform_runtime_info->persistent[WD_CTRL_005_TEST_PERSISNENT_PROTOCOL_CRG_CFG2_FIELD];
 
-    if(5 > rumboot_platform_runtime_info->persistent[WD_CTRL_005_TEST_PERSISNENT_PROTOCOL_CRG_CFG2_FIELD])
+    if(RESET_COUNTS > rumboot_platform_runtime_info->persistent[WD_CTRL_005_TEST_PERSISNENT_PROTOCOL_CRG_CFG2_FIELD])
     {
         rumboot_printf("In the trans-reset cycle, result is 0x%x, persistent field is 0x%x\n",
             result,rumboot_platform_runtime_info->persistent[WD_CTRL_005_TEST_PERSISNENT_PROTOCOL_RESULT_FIELD]);
@@ -350,16 +331,74 @@ uint32_t main(void)
                                ? (CRG_RST_CFG2_FIELDS_RSTREQ2_MASK_mask)
                                : 0));
         dcr_write(DCR_CRG_BASE + CRG_WR_LOCK, !CRG_UNLOCK_CODE);
-        sp805_unlock_access(in[0].base_addr);
-        dcr_write(in[0].base_addr + WD_REG_CONTROL,
-                dcr_read(in[0].base_addr + WD_REG_CONTROL) | WD_CTRL_RESEN);
+        sp805_unlock_access(base_addr);
+        dcr_write(base_addr + WD_REG_CONTROL,
+                dcr_read(base_addr + WD_REG_CONTROL) | WD_CTRL_RESEN);
 
         test_event(TEST_OI10_CTRL_005_CHECK_WDT_IRQ);
         rumboot_platform_perf("reset_system");
 
-        result |= test_suite_run(NULL,&wd_testlist_with_reset);
+        result |= wd_test(structure);
         /*We mustn't be here, the chip must be reset here*/
         result |= 1;
+    }
+    return result;
+}
+
+
+static struct s805_instance in[] =
+{
+    {
+        .base_addr = DCR_WATCHDOG_BASE,
+    },
+};
+
+TEST_SUITE_BEGIN(wd_testlist, "SP805 IRQ TEST")
+#ifdef CHECK_REGS
+TEST_ENTRY("SP805_0 reg read default", check_watchdog_default_ro_val, DCR_WATCHDOG_BASE),
+TEST_ENTRY("SP805_0 reg rw check", check_watchdog_default_rw_val, DCR_WATCHDOG_BASE),
+#endif
+TEST_ENTRY("SP805_0 real mode", wd_test, (uint32_t) &in[0]),
+TEST_ENTRY("SP805_0 test mode", wd_test2, (uint32_t) &in[0]),
+TEST_SUITE_END();
+
+
+TEST_SUITE_BEGIN(wd_testlist_with_reset, "SP805 IRQ TEST")
+TEST_ENTRY("SP805_0 real mode with reset", wd_test_reset, (uint32_t) &in[0]),
+TEST_SUITE_END();
+
+
+uint32_t main(void)
+{
+    uint32_t result = 0;
+    rumboot_printf("SP805 test START\n");
+#ifdef TEST_OI10_CTRL_005_HARD
+    test_event_send_test_id("test_oi10_ctrl_005");
+#endif
+    struct rumboot_irq_entry *tbl = rumboot_irq_create(NULL);
+    rumboot_irq_cli();
+    rumboot_irq_set_handler(tbl, WDT_INT, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler0, &in[0]);
+    /* Activate the table */
+    rumboot_irq_table_activate(tbl);
+    /* Activate Watchdog Interrupt */
+    rumboot_irq_enable(WDT_INT);
+    rumboot_irq_sei();
+    if(WD_CTRL_005_TEST_PERSISNENT_PROTOCOL_MAGIC_CODE
+       != rumboot_platform_runtime_info->persistent[WD_CTRL_005_TEST_PERSISNENT_PROTOCOL_MAGIC_FIELD])
+    {
+        result = test_suite_run(NULL,&wd_testlist);
+        rumboot_platform_runtime_info->persistent[WD_CTRL_005_TEST_PERSISNENT_PROTOCOL_CRG_CFG2_FIELD] = -1;
+        rumboot_platform_runtime_info->persistent[WD_CTRL_005_TEST_PERSISNENT_PROTOCOL_MAGIC_FIELD]
+                                                       = WD_CTRL_005_TEST_PERSISNENT_PROTOCOL_MAGIC_CODE;
+        rumboot_platform_runtime_info->persistent[WD_CTRL_005_TEST_PERSISNENT_PROTOCOL_RESULT_FIELD] = result;
+        result |= test_suite_run(NULL,&wd_testlist_with_reset);
+    }
+    else
+    {
+        TEST_ASSERT(((RESET_COUNTS >= rumboot_platform_runtime_info->persistent[WD_CTRL_005_TEST_PERSISNENT_PROTOCOL_CRG_CFG2_FIELD])
+                        || (-1 == rumboot_platform_runtime_info->persistent[WD_CTRL_005_TEST_PERSISNENT_PROTOCOL_CRG_CFG2_FIELD])),
+                "Something is broken - CRG_CFG2 value in rumboot_platform_runtime_info->persistent area is not in allowed borders!");
+        result |= test_suite_run(NULL,&wd_testlist_with_reset);
     }
     rumboot_printf("Now we finished with all resets, result is 0x%x, persistent field is 0x%x\n",
             result,rumboot_platform_runtime_info->persistent[WD_CTRL_005_TEST_PERSISNENT_PROTOCOL_RESULT_FIELD]);
