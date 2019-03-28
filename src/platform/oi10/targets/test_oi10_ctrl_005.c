@@ -20,6 +20,7 @@
 #include <rumboot/platform.h>
 #include <platform/regs/fields/crg.h>
 #include <platform/test_event_c.h>
+#include <platform/test_assert.h>
 
 #define TIMER_CYCLES 10
 
@@ -141,7 +142,7 @@ END_ENUM(WD_CTRL_005_TEST_PERSISNENT_PROTOCOL)
 
 DECLARE_CONST(WD_CTRL_005_TEST_PERSISNENT_PROTOCOL_MAGIC_CODE, 0x177DC0DE)
 
-
+DECLARE_CONST(TEST_OI10_CTRL_005_CHECK_WDT_IRQ, TEST_EVENT_CODE_MIN)
 
 static void handler0(int irq, void *arg)
 {
@@ -267,6 +268,7 @@ uint32_t main(void)
 {
     uint32_t result = 0;
     uint32_t t = 0;
+    uint32_t rst_mon_value = 0;
     rumboot_printf("SP805 test START\n");
     test_event_send_test_id("test_oi10_ctrl_005");
     struct rumboot_irq_entry *tbl = rumboot_irq_create(NULL);
@@ -286,7 +288,47 @@ uint32_t main(void)
                                                        = WD_CTRL_005_TEST_PERSISNENT_PROTOCOL_MAGIC_CODE;
         rumboot_platform_runtime_info->persistent[WD_CTRL_005_TEST_PERSISNENT_PROTOCOL_RESULT_FIELD] = result;
     }
+
+    rst_mon_value = dcr_read(DCR_CRG_BASE+CRG_RST_MON);
+    rumboot_printf("CRG_RST_MON == 0x%x\n", rst_mon_value);
+
+    if(rumboot_platform_runtime_info->persistent[WD_CTRL_005_TEST_PERSISNENT_PROTOCOL_CRG_CFG2_FIELD]
+            < 4)
+    {
+        TEST_ASSERT((rst_mon_value & CRG_RST_MON_FIELDS_RST_REQ2_mask),
+                "No field RST_REQ2 is set in CRG_RST_MON\n");
+    }
+    else if(rumboot_platform_runtime_info->persistent[WD_CTRL_005_TEST_PERSISNENT_PROTOCOL_CRG_CFG2_FIELD]
+            == 4)
+        TEST_ASSERT((rst_mon_value & CRG_RST_MON_FIELDS_RST_SYS_MON_mask),
+                "No field RST_SYS_MON is set in CRG_RST_MON\n");
+
+
+    switch(rumboot_platform_runtime_info->persistent[WD_CTRL_005_TEST_PERSISNENT_PROTOCOL_CRG_CFG2_FIELD])
+    {
+        case CRG_RST_CFG2_MODE_ARESETn:;
+        case CRG_RST_CFG2_MODE_ARESETn_NRST_SYS:
+        {
+            TEST_ASSERT((rst_mon_value == (CRG_RST_MON_FIELDS_RST_REQ_MODE0_mask
+                                        | CRG_RST_MON_FIELDS_RST_REQ2_mask)),
+                    "Either RST_REQ2 or RST_REQ_MODE0 field or both are not set in CRG_RST_MON this time.\n");
+        } break;
+        case CRG_RST_CFG2_MODE_ARESETn_CRG_RSTN:;
+        case CRG_RST_CFG2_MODE_ALL_RST:
+        {
+            TEST_ASSERT((rst_mon_value == (CRG_RST_MON_FIELDS_RST_REQ_MODE1_mask
+                                        | CRG_RST_MON_FIELDS_RST_REQ2_mask)),
+                    "Either RST_REQ2 or RST_REQ_MODE1 field or both are not set in CRG_RST_MON this time.\n");
+        } break;
+        case 4:
+        {
+            TEST_ASSERT((rst_mon_value == CRG_RST_MON_FIELDS_RST_SYS_MON_mask),
+                    "No field RST_SYS_MON is set in CRG_RST_MON\n");
+        }
+    }
+
     ++rumboot_platform_runtime_info->persistent[WD_CTRL_005_TEST_PERSISNENT_PROTOCOL_CRG_CFG2_FIELD];
+
     if(5 > rumboot_platform_runtime_info->persistent[WD_CTRL_005_TEST_PERSISNENT_PROTOCOL_CRG_CFG2_FIELD])
     {
         rumboot_printf("In the trans-reset cycle, result is 0x%x, persistent field is 0x%x\n",
@@ -312,6 +354,7 @@ uint32_t main(void)
         dcr_write(in[0].base_addr + WD_REG_CONTROL,
                 dcr_read(in[0].base_addr + WD_REG_CONTROL) | WD_CTRL_RESEN);
 
+        test_event(TEST_OI10_CTRL_005_CHECK_WDT_IRQ);
         rumboot_platform_perf("reset_system");
 
         result |= test_suite_run(NULL,&wd_testlist_with_reset);
