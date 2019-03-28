@@ -1237,6 +1237,16 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
    )
 
    add_rumboot_target(
+    CONFIGURATION IRAM
+    FILES mdma_gp/test_suite_event.c mdma_gp/test_suite_base.c
+    PREFIX "direct-event"
+    CFLAGS -DRUMBOOT_BASIS_MDMA_INTERNAL_ONLY
+    NAME "mdma_gp_1-1_1-2_1-3_1-4_internal"
+    TESTGROUP mdma_gp
+  )
+
+
+   add_rumboot_target(
        CONFIGURATION IRAM_MIRROR
        FILES mdma_gp/test_suite_event.c mdma_gp/test_suite_base.c
        PREFIX "mirror-event"
@@ -1544,7 +1554,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     CONFIGURATION IRAM
     IRUN_FLAGS +can_plus_adapter +i2c_single_bus
     FEATURES NOCODE
-     LOAD IM0BIN simple-iram-hello-iram,iram-sp804-0,iram-sp804-1,iram-sp804-2,iram-sp804-3,iram-pcie_phy_bist_prbs31,iram-ddr0_phy_bist_test,iram-ddr1_phy_bist_test,iram-esram1_heap_rnd_space_test,iram-bisr_hard_test_clear,iram-can_adapter_0_test,mgeth-iram-mgeth_frame_xfer,iram-mkio_write_read_test,muart-iram-muart_AXI_GIC_dma,arinc_freq_100_IM1_IM0-arinc_loopback_16_freq,multimaster-i2c_multimst_write_random_read,simple-iram-nic400,iram-can_adapter_1_test,iram-can_adapter_2_test,i2c-0-i2c_array4_write_random_read_stop_rpt,i2c-1-i2c_array4_write_random_read_stop_rpt,direct-event-mdma_gp_1-1_1-2_1-3_1-4
+     LOAD IM0BIN simple-iram-hello-iram,iram-sp804-0,iram-sp804-1,iram-sp804-2,iram-sp804-3,iram-pcie_phy_bist_prbs31,iram-ddr0_phy_bist_test,iram-ddr1_phy_bist_test,iram-esram1_heap_rnd_space_test,iram-bisr_hard_test_clear,iram-can_adapter_0_test,mgeth-iram-mgeth_frame_xfer,iram-mkio_write_read_test,muart-iram-muart_AXI_GIC_dma,arinc_freq_100_IM1_IM0-arinc_loopback_16_freq,multimaster-i2c_multimst_write_random_read,simple-iram-nic400,iram-can_adapter_1_test,iram-can_adapter_2_test,i2c-0-i2c_array4_write_random_read_stop_rpt,i2c-1-i2c_array4_write_random_read_stop_rpt,direct-event-mdma_gp_1-1_1-2_1-3_1-4_internal
     NAME functional-test-chain
   )
 

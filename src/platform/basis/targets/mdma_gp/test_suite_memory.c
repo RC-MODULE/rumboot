@@ -5,6 +5,11 @@ static struct mdma_gp mdma_gp_dev[];
 #ifdef RUMBOOT_BASIS_ENABLE_MIRROR
 #define MEM_SEGMENT_MULT	4
 static char *test_heap[] = {"PCIE-IM0", "PCIE-IM1", "PCIE-DDR0", "PCIE-DDR1"};
+#endif
+
+#ifdef RUMBOOT_BASIS_MDMA_INTERNAL_ONLY
+#define MEM_SEGMENT_MULT	2
+static char *test_heap[] = {"IM0", "IM1", "IM0", "IM1"};
 #else
 #define MEM_SEGMENT_MULT	8
 static char *test_heap[] = {"IM0", "IM1", "DDR0", "DDR1"};
