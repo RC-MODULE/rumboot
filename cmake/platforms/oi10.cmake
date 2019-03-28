@@ -1450,7 +1450,7 @@ endif()
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES test_oi10_ctrl_005.c
-      LOAD IM0BIN SELF,SELF,SELF,SELF,SELF
+      LOAD IM0BIN SELF,SELF,SELF,SELF,SELF,SELF
     )
 
     add_rumboot_target(
