@@ -1237,14 +1237,20 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
    )
 
    add_rumboot_target(
-    CONFIGURATION IRAM
-    FILES mdma_gp/test_suite_event.c mdma_gp/test_suite_base.c
-    PREFIX "direct-event"
-    CFLAGS -DRUMBOOT_BASIS_MDMA_INTERNAL_ONLY
-    NAME "mdma_gp_1-1_1-2_1-3_1-4_internal"
-    TESTGROUP mdma_gp
+       CONFIGURATION IRAM
+       FILES mdma_gp/test_suite_event.c mdma_gp/test_suite_base.c
+       PREFIX "direct-event"
+       NAME "mdma_gp_1-1_1-2_1-3_1-4_internal"
+       TESTGROUP mdma_gp
   )
 
+   add_rumboot_target (
+       CONFIGURATION IRAM
+       FILES mdma_gp/test_suite_memory.c mdma_gp/test_suite_base.c
+       PREFIX "direct-memory"
+       NAME "mdma_gp_2-1_2-2_2-3_internal"
+       TESTGROUP mdma_gp
+   )
 
    add_rumboot_target(
        CONFIGURATION IRAM_MIRROR
