@@ -25,6 +25,7 @@
 #define SPR_DVC2        319
 #define SPR_DCESR       850
 #define SPR_DCRIPR      891
+#define SPR_DBSR        304
 #define SPR_DBCR0       308
 #define SPR_DBCR1       309
 #define SPR_DBCR2       310
