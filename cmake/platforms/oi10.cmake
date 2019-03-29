@@ -1029,6 +1029,19 @@ endif()
         PREFIX simple-iram
     )
 
+if (CMAKE_BUILD_TYPE MATCHES "RTL")
+    add_rumboot_target(
+        CONFIGURATION IRAM
+        FILES test_oi10_ctrl_000.c
+    )
+else()
+    add_rumboot_target(
+        CONFIGURATION IRAM
+        FILES test_oi10_ctrl_000.c
+        CFLAGS -DMBIST_ENABLED
+    )
+endif()
+
     add_rumboot_target(
         CONFIGURATION SUPPLEMENTARY
         LDS oi10/test_oi10_cpu_038_im2.lds
