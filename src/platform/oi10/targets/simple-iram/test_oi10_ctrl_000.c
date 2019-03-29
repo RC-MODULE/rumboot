@@ -10,6 +10,14 @@
 #include <platform/regs/sctl.h>
 #include <rumboot/testsuite.h>
 #include <rumboot/rumboot.h>
+#include <platform/test_event_c.h>
+#include <platform/test_assert.h>
+
+DECLARE_CONST(TEST_OI10_CTRL_000_CHECK_50MHz, TEST_EVENT_CODE_MIN + 0)
+DECLARE_CONST(TEST_OI10_CTRL_000_CHECK_100MHz, TEST_EVENT_CODE_MIN + 1)
+DECLARE_CONST(TEST_OI10_CTRL_000_CHECK_INJECT_ERR, TEST_EVENT_CODE_MIN + 2)
+
+DECLARE_CONST(TEST_OI10_CTRL_000_MBIST_TIMEOUT, 0xffffffff)
 
 static bool check_sctl_regs_ro(uint32_t base_addr)
 {   
@@ -76,54 +84,94 @@ static bool check_sctl_regs_rw(uint32_t base_addr)
 
 DECLARE_CONST(COUNT_MEMORY_AREAS, 8)
 
-uint32_t** allocate_some_memory(const uint32_t heap_id)
-{
-    uint32_t** temporary_pointer = NULL;
-
-    temporary_pointer = rumboot_malloc_from_heap(heap_id, COUNT_MEMORY_AREAS * sizeof(uint32_t*));
-    if(temporary_pointer == NULL)
-        return NULL;
-    else
-    {
-        for(uint32_t i = 0; i < COUNT_MEMORY_AREAS; ++i)
-        {
-            temporary_pointer[i] = rumboot_malloc_from_heap_aligned(heap_id, 128, 128);
-            if(temporary_pointer == NULL)
-                return NULL;
-            memset(temporary_pointer[i], 0, 128);
-        }
-    }
-    return temporary_pointer;
-}
-
-void access_memory(const uint32_t** pointer, const test_data)
-{
-    for(uint32_t i = 0; i < COUNT_MEMORY_AREAS; ++i);
-
-}
-
 static bool check_sctl_plb4_clk_management(const uint32_t base_addr)
 {
-    uint32_t** pointer = allocate_some_memory(0);
-    if (pointer == NULL)
+    bool result = true;
+    uint32_t ppc_sys_conf_value = dcr_read(DCR_SCTL_BASE + SCTL_PPC_SYS_CONF);
+    test_event(TEST_OI10_CTRL_000_CHECK_50MHz);
+    if(SCTL_PPC_SYS_CONF_PLB4_DIVMODE_50MHz != (
+                    (ppc_sys_conf_value & SCTL_PPC_SYS_CONF_PLB4_DIVMODE_mask)
+                        >> SCTL_PPC_SYS_CONF_PLB4_DIVMODE_i))
     {
-        rumboot_printf("Failed to allocate memory");
-        return false;
+        result = false;
+        rumboot_printf("Illegal value of PLB4_DIVMODE field in SCTL_PPC_SYS_CONF register: must be 1 for 50MHz");
     }
-
+    dcr_write(DCR_SCTL_BASE + SCTL_PPC_SYS_CONF,
+            (ppc_sys_conf_value
+                    & (~SCTL_PPC_SYS_CONF_PLB4_DIVMODE_mask))
+                    | SCTL_PPC_SYS_CONF_PLB4_DIVMODE_100MHz);
+    ppc_sys_conf_value = dcr_read(DCR_SCTL_BASE + SCTL_PPC_SYS_CONF);
+    test_event(TEST_OI10_CTRL_000_CHECK_100MHz);
+    if(SCTL_PPC_SYS_CONF_PLB4_DIVMODE_100MHz != (
+                    (ppc_sys_conf_value & SCTL_PPC_SYS_CONF_PLB4_DIVMODE_mask)
+                        >> SCTL_PPC_SYS_CONF_PLB4_DIVMODE_i))
+    {
+        result = false;
+        rumboot_printf("Illegal value of PLB4_DIVMODE field in SCTL_PPC_SYS_CONF register: must be 1 for 100MHz");
+    }
+    dcr_write(DCR_SCTL_BASE + SCTL_PPC_SYS_CONF,
+            (ppc_sys_conf_value
+                    & (~SCTL_PPC_SYS_CONF_PLB4_DIVMODE_mask))
+                    | SCTL_PPC_SYS_CONF_PLB4_DIVMODE_50MHz);
+    return result;
 }
 
+static void send_mbist_inject_event(const uint32_t chain_number)
+{
+    uint32_t const event_data[] = { TEST_OI10_CTRL_000_CHECK_INJECT_ERR, chain_number };
+    rumboot_platform_event_raise( EVENT_TESTEVENT, event_data, ARRAY_SIZE(event_data) );
+}
+
+static bool check_sctl_kmbist_chains(const uint32_t base_addr, const bool with_injections)
+{
+    bool result = true;
+    uint32_t t = 0;
+    uint32_t chain_number = 0;
+    for(uint32_t kmbist_chain = KMBIST_CHAIN_SF_0; kmbist_chain < KMBIST_CHAIN_SF_8; kmbist_chain+=4)
+    {
+        t = TEST_OI10_CTRL_000_MBIST_TIMEOUT;
+        chain_number = ((kmbist_chain - KMBIST_CHAIN_SF_0) / 4) + 1;
+        if(with_injections)
+            send_mbist_inject_event(chain_number);
+
+        dcr_write(base_addr + kmbist_chain, (SCTL_KMBIST_CHAIN_SF_TM_val << SCTL_KMBIST_CHAIN_SF_TM_i)
+                | SCTL_KMBIST_CHAIN_SF_START_mask);
+        rumboot_printf("Started KMBIST_CHAIN number %d\n", chain_number);
+        while((!(dcr_read(base_addr + kmbist_chain) & SCTL_KMBIST_CHAIN_SF_DONE_mask)) && (t))
+        {
+            --t;
+        }
+        TEST_ASSERT(((dcr_read(base_addr + kmbist_chain) & SCTL_KMBIST_CHAIN_SF_DONE_mask) && t),
+                "Timeout occurred while waiting end of KMBIST_CHAIN!");
+        result &= ((bool)(dcr_read(base_addr + kmbist_chain) & SCTL_KMBIST_CHAIN_SF_FAIL_mask)
+                == with_injections);
+    }
+    return result;
+}
+
+static bool check_sctl_kmbist_chains_default(const uint32_t base_addr)
+{
+    return check_sctl_kmbist_chains(base_addr, false);
+}
+
+
+static bool check_sctl_kmbist_chains_inject(const uint32_t base_addr)
+{
+    return check_sctl_kmbist_chains(base_addr, true);
+}
 
 TEST_SUITE_BEGIN(sctl_testlist, "SCTL TEST")
 TEST_ENTRY("SCTL reg read default", check_sctl_regs_ro, DCR_SCTL_BASE),
 TEST_ENTRY("SCTL reg rw check", check_sctl_regs_rw, DCR_SCTL_BASE),
 TEST_ENTRY("SCTL check PLB4 frequency change", check_sctl_plb4_clk_management, DCR_SCTL_BASE),
-//TEST_ENTRY("SP805_0 test mode", wd_test2, (uint32_t) &in[0]),
+TEST_ENTRY("SCTL run KMBIST chains as is", check_sctl_kmbist_chains_default, DCR_SCTL_BASE),
+TEST_ENTRY("SCTL run KMBIST chains with injections", check_sctl_kmbist_chains_inject, DCR_SCTL_BASE),
 TEST_SUITE_END();
 
 int main(void)
 {
    register int result;
+   test_event_send_test_id("test_oi10_ctrl_000");
    rumboot_printf("Check write/read ctrl register values\n");
 
    result = test_suite_run(NULL,&sctl_testlist);
