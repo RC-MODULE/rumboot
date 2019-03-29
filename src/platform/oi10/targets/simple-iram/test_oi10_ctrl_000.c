@@ -9,8 +9,9 @@
 #include <platform/oi10/platform/devices.h>
 #include <platform/regs/sctl.h>
 #include <rumboot/testsuite.h>
+#include <rumboot/rumboot.h>
 
-static bool check_ctrl_regs_ro(uint32_t base_addr)
+static bool check_sctl_regs_ro(uint32_t base_addr)
 {   
     rumboot_printf("Checking sctl registers default value...\n");
     struct regpoker_checker check_array[] =
@@ -40,7 +41,7 @@ static bool check_ctrl_regs_ro(uint32_t base_addr)
       return false;
 }
 
-static bool check_ctrl_regs_rw(uint32_t base_addr)
+static bool check_sctl_regs_rw(uint32_t base_addr)
 {
     rumboot_printf("Checking sctl registers for rw value...\n");
     struct regpoker_checker check_array[] = {
@@ -73,10 +74,50 @@ static bool check_ctrl_regs_rw(uint32_t base_addr)
     return false;
 }
 
+DECLARE_CONST(COUNT_MEMORY_AREAS, 8)
+
+uint32_t** allocate_some_memory(const uint32_t heap_id)
+{
+    uint32_t** temporary_pointer = NULL;
+
+    temporary_pointer = rumboot_malloc_from_heap(heap_id, COUNT_MEMORY_AREAS * sizeof(uint32_t*));
+    if(temporary_pointer == NULL)
+        return NULL;
+    else
+    {
+        for(uint32_t i = 0; i < COUNT_MEMORY_AREAS; ++i)
+        {
+            temporary_pointer[i] = rumboot_malloc_from_heap_aligned(heap_id, 128, 128);
+            if(temporary_pointer == NULL)
+                return NULL;
+            memset(temporary_pointer[i], 0, 128);
+        }
+    }
+    return temporary_pointer;
+}
+
+void access_memory(const uint32_t** pointer, const test_data)
+{
+    for(uint32_t i = 0; i < COUNT_MEMORY_AREAS; ++i);
+
+}
+
+static bool check_sctl_plb4_clk_management(const uint32_t base_addr)
+{
+    uint32_t** pointer = allocate_some_memory(0);
+    if (pointer == NULL)
+    {
+        rumboot_printf("Failed to allocate memory");
+        return false;
+    }
+
+}
+
+
 TEST_SUITE_BEGIN(sctl_testlist, "SCTL TEST")
-TEST_ENTRY("SCTL reg read default", check_ctrl_regs_ro, DCR_SCTL_BASE),
-TEST_ENTRY("SCTL reg rw check", check_ctrl_regs_rw, DCR_SCTL_BASE),
-//TEST_ENTRY("SP805_0 real mode", wd_test, (uint32_t) &in[0]),
+TEST_ENTRY("SCTL reg read default", check_sctl_regs_ro, DCR_SCTL_BASE),
+TEST_ENTRY("SCTL reg rw check", check_sctl_regs_rw, DCR_SCTL_BASE),
+TEST_ENTRY("SCTL check PLB4 frequency change", check_sctl_plb4_clk_management, DCR_SCTL_BASE),
 //TEST_ENTRY("SP805_0 test mode", wd_test2, (uint32_t) &in[0]),
 TEST_SUITE_END();
 
