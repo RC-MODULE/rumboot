@@ -99,7 +99,7 @@ static bool check_sctl_plb4_clk_management(const uint32_t base_addr)
     dcr_write(DCR_SCTL_BASE + SCTL_PPC_SYS_CONF,
             (ppc_sys_conf_value
                     & (~SCTL_PPC_SYS_CONF_PLB4_DIVMODE_mask))
-                    | SCTL_PPC_SYS_CONF_PLB4_DIVMODE_100MHz);
+                    | (SCTL_PPC_SYS_CONF_PLB4_DIVMODE_100MHz << SCTL_PPC_SYS_CONF_PLB4_DIVMODE_i));
     ppc_sys_conf_value = dcr_read(DCR_SCTL_BASE + SCTL_PPC_SYS_CONF);
     test_event(TEST_OI10_CTRL_000_CHECK_100MHz);
     if(SCTL_PPC_SYS_CONF_PLB4_DIVMODE_100MHz != (
@@ -112,7 +112,7 @@ static bool check_sctl_plb4_clk_management(const uint32_t base_addr)
     dcr_write(DCR_SCTL_BASE + SCTL_PPC_SYS_CONF,
             (ppc_sys_conf_value
                     & (~SCTL_PPC_SYS_CONF_PLB4_DIVMODE_mask))
-                    | SCTL_PPC_SYS_CONF_PLB4_DIVMODE_50MHz);
+                    | (SCTL_PPC_SYS_CONF_PLB4_DIVMODE_50MHz << SCTL_PPC_SYS_CONF_PLB4_DIVMODE_i));
     return result;
 }
 
@@ -154,18 +154,21 @@ static bool check_sctl_kmbist_chains_default(const uint32_t base_addr)
     return check_sctl_kmbist_chains(base_addr, false);
 }
 
-
+#ifdef MBIST_ENABLED
 static bool check_sctl_kmbist_chains_inject(const uint32_t base_addr)
 {
     return check_sctl_kmbist_chains(base_addr, true);
 }
+#endif
 
 TEST_SUITE_BEGIN(sctl_testlist, "SCTL TEST")
 TEST_ENTRY("SCTL reg read default", check_sctl_regs_ro, DCR_SCTL_BASE),
 TEST_ENTRY("SCTL reg rw check", check_sctl_regs_rw, DCR_SCTL_BASE),
 TEST_ENTRY("SCTL check PLB4 frequency change", check_sctl_plb4_clk_management, DCR_SCTL_BASE),
 TEST_ENTRY("SCTL run KMBIST chains as is", check_sctl_kmbist_chains_default, DCR_SCTL_BASE),
+#ifdef MBIST_ENABLED
 TEST_ENTRY("SCTL run KMBIST chains with injections", check_sctl_kmbist_chains_inject, DCR_SCTL_BASE),
+#endif
 TEST_SUITE_END();
 
 int main(void)
