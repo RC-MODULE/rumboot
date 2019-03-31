@@ -142,7 +142,6 @@ static void exception_handler(int id, const char *name)
 int main ()
 {
     test_event_send_test_id("test_oi10_em2_110");
-    rumboot_memfill8_modelling((void*)SRAM0_BASE, 0x1000, 0x00, 0x00);
 
     emi_init(DCR_EM2_EMI_BASE);
     emi_irq_unmask ();
@@ -305,6 +304,5 @@ int main ()
     msync();
 //*******************************************************************************************************
 
-    rumboot_printf ("TEST OK\n");
     return 0;
 }
