@@ -193,8 +193,6 @@ int main()
 
     test_event_send_test_id("test_oi10_cpu_mem_017");
 
-    rumboot_memfill8_modelling((void*)SRAM0_BASE, 0x8000, 0x00, 0x00); //workaround (init 32KB SRAM0)
-
     static const tlb_entry tlb_entries[] =
        {
         {TLB_ENTRY0_INV}, {TLB_ENTRY1_INV}, {TLB_ENTRY2_INV}, {TLB_ENTRY3_INV},
@@ -202,7 +200,6 @@ int main()
         {TLB_ENTRY0_CACHE}, {TLB_ENTRY1_CACHE}, {TLB_ENTRY2_CACHE}, {TLB_ENTRY3_CACHE},
         {TLB_ENTRY4_CACHE}, {TLB_ENTRY5_CACHE}, {TLB_ENTRY6_CACHE}, {TLB_ENTRY7_CACHE},
        };
-
 
     emi_init(DCR_EM2_EMI_BASE);
 
@@ -313,6 +310,5 @@ int main()
     cache_tag_efgh((0b000000000000000000 << 2) | 0b10,0x40);//GH A=
     cache_tag_efgh((0b000000000000000000 << 2) | 0b10,0x7F);//GH A=
 
-    rumboot_printf("TEST OK\n");
     return 0;
 }
