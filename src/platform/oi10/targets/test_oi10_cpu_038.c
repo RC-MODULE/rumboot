@@ -34,8 +34,6 @@ int main(void)
 {
     uint32_t result = 1;
 
-    rumboot_memfill8_modelling((void*)SRAM0_BASE, 0x1000, 0x00, 0x00);
-
 #ifdef TEST_OI10_CPU_038_IM0
     //copy IM0 to IM1
     memcpy((void *)IM1_BASE,(void *)IM0_BASE,0x20000);
