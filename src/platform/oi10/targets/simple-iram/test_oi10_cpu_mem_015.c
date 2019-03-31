@@ -35,7 +35,7 @@
 
 double test_15_data_array64[4] = {0};
 
-#define MEM_CACHED_PAGE            0x00000000
+#define MEM_CACHED_PAGE            SRAM0_BASE
 
 typedef enum{
     EVENT_CHECK_MASK_MEM_A = TEST_EVENT_CODE_MIN + 0,
@@ -276,7 +276,6 @@ int main ( void )
      fpu_enable();
 
      rumboot_printf("Init sram0\n");
-     rumboot_memfill8_modelling(MEM_CACHED_PAGE, 0x10000, 0x00, 0x00);
 
      rumboot_printf("Set tlb\n");
      static const tlb_entry tlb_entry_cacheable_valid = {TLB_ENTRY_CACHE_VALID};
@@ -296,6 +295,5 @@ int main ( void )
      run_bw(SRAM_G, EVENT_CHECK_MASK_MEM_G);
      run_bw(SRAM_H, EVENT_CHECK_MASK_MEM_H);
 
-     rumboot_printf("TEST OK\n");
      return 0;
 }
