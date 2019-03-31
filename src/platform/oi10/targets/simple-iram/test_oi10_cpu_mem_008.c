@@ -146,8 +146,6 @@ int main(void)
 
     emi_init(DCR_EM2_EMI_BASE);
 
-    rumboot_memfill8_modelling ((void*)0x00, 0x10000, 0x00, 0x00); //anti x
-
     rumboot_printf("Init mem\n");
     mem_init();
     rumboot_printf("Init mem done\n");
@@ -158,12 +156,7 @@ int main(void)
     };
     write_tlb_entries(tlb_entry_cacheable_valid, ARRAY_SIZE(tlb_entry_cacheable_valid));
 
-    if (!test_icu_tag_array())
-    {
-        rumboot_printf("TEST_ERROR\n");
-        return 1;
-    }
+    if (!test_icu_tag_array()) return 1;
 
-    rumboot_printf("TEST_OK\n");
     return 0;
 }
