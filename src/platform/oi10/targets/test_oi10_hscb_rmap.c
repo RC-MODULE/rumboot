@@ -1580,12 +1580,8 @@ int main() {
     //crc8 calculation speedup
     test_event_send_test_id("test_oi10_hscb_rmap");
 
-    rumboot_memfill8_modelling((void*)SRAM0_BASE,0x1000,0,0);
-    msync();
-    isync();
     write_tlb_entries(em_anti_x_tlb_entries,2);
-    msync();
-    isync();
+
     tbl = create_irq_handlers();
 
 
