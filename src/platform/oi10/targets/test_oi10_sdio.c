@@ -23,7 +23,7 @@ static int init_sd() {
     //Switch to SDIO from GSPI
     // SDIO_SPI = true;
     iowrite32( 0x1, SDIO_BASE + SDIO_ENABLE ); //sdio enable
-    
+
     iowrite32( 0x7c, SDIO_BASE + SDIO_INT_MASKS ); //all sdio interrupts enable
 
     //Init SD card
@@ -38,10 +38,10 @@ static int init_sd() {
     }
     iowrite32( 0x004, SDIO_BASE + 0x048 );
 
-    
+
     iowrite32( 0x0, SDIO_BASE + SDIO_CLK_DIVIDE ); //sdio clock
     udelay(4);  // Because Of A Buggy Clock Divider In SDIO
-    
+
     iowrite32( 0x0, SDIO_BASE + 0x008 ); //set CMD0 argument
     iowrite32( 0x0, SDIO_BASE + 0x004 ); //set CMD0 index and send out the command
     read_data = ioread32( SDIO_BASE + 0x048 );
@@ -253,8 +253,6 @@ int main() {
     int result = 0;
     uint32_t * src_array;
     uint32_t * dst_array;
-
-    rumboot_memfill8_modelling((void*)SRAM0_BASE, 0x1000, 0x00, 0x00); //workaround (init 4KB SRAM0)
 
     init_sd();
     struct rumboot_irq_entry * tbl = init_irq();
