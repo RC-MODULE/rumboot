@@ -1,9 +1,10 @@
 /*
  * test_oi10_cpu_025_mpic.c
  *
- *  Created on: Feb 14, 2019
+ *  Created on: Mar 29, 2019
  *      Author: m.smolina
  */
+
 
 #include <stdio.h>
 #include <stdint.h>
@@ -56,6 +57,8 @@ volatile uint32_t MPIC_TIMER_NUMBER = 0;
 
 uint32_t reset_type = 0;
 uint32_t dbcr = 0;
+
+#define MAGIC 0x3A61C0DE
 
 static void mpic_ipi_generate_interrupt()
 {
@@ -176,9 +179,10 @@ int main ()
 
     init_handlers();
 
-    if (rumboot_platform_runtime_info->persistent[MPIC_RESET] == 0)
+    if (rumboot_platform_runtime_info->persistent[MPIC_RESET] != MAGIC)
     {
-        rumboot_platform_runtime_info->persistent[MPIC_RESET] = 1;
+        rumboot_platform_runtime_info->persistent[MPIC_RESET] = MAGIC;
+        rumboot_platform_runtime_info->persistent[MPIC_RESET_TYPE] = 0;
         mpic_ipi_generate_interrupt();
     }
 
