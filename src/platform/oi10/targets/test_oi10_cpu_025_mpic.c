@@ -123,9 +123,9 @@ static void init_handlers()
     switch (rumboot_platform_runtime_info->persistent[MPIC_RESET_TYPE])
     {
         case 0:
-            if (rumboot_platform_runtime_info->persistent[MPIC_RESET] == 0)
+            if (rumboot_platform_runtime_info->persistent[MPIC_RESET] != MAGIC)
             {
-                rumboot_irq_set_handler( tbl, MPIC128_IPI_0 , RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, mpic_handler, ( void* )0 );
+                rumboot_irq_set_handler( tbl, MPIC128_IPI_0 , RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, mpic_handler, NULL );
 
                 /* Activate the table */
                 rumboot_irq_table_activate( tbl );
@@ -133,7 +133,7 @@ static void init_handlers()
                 rumboot_irq_sei();
             }
 
-            rumboot_irq_set_handler( tbl, MPIC128_TIMER_0, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, mpic_timer_handler, ( void* )0 );
+            rumboot_irq_set_handler( tbl, MPIC128_TIMER_0, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, mpic_timer_handler, NULL );
 
             /* Activate the table */
             rumboot_irq_table_activate( tbl );
@@ -142,7 +142,7 @@ static void init_handlers()
 
             break;
         case 1:
-            rumboot_irq_set_handler( tbl, MPIC128_TIMER_1, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, mpic_timer_handler, ( void* )0 );
+            rumboot_irq_set_handler( tbl, MPIC128_TIMER_1, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, mpic_timer_handler, NULL );
 
             /* Activate the table */
             rumboot_irq_table_activate( tbl );
@@ -150,7 +150,7 @@ static void init_handlers()
             rumboot_irq_sei();
             break;
         case 2:
-            rumboot_irq_set_handler( tbl, MPIC128_TIMER_2, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, mpic_timer_handler, ( void* )0 );
+            rumboot_irq_set_handler( tbl, MPIC128_TIMER_2, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, mpic_timer_handler, NULL );
 
             /* Activate the table */
             rumboot_irq_table_activate( tbl );
@@ -158,7 +158,7 @@ static void init_handlers()
             rumboot_irq_sei();
             break;
         case 3:
-            rumboot_irq_set_handler( tbl, MPIC128_TIMER_3, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, mpic_timer_handler, ( void* )0 );
+            rumboot_irq_set_handler( tbl, MPIC128_TIMER_3, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, mpic_timer_handler, NULL );
 
             /* Activate the table */
             rumboot_irq_table_activate( tbl );
@@ -174,7 +174,13 @@ int main ()
 
     if (rumboot_platform_runtime_info->persistent[MPIC_RESET_TYPE] == 4)
     {
+          rumboot_platform_runtime_info->persistent[MPIC_RESET] = ~MAGIC;
           return 0;
+    }
+
+    if (rumboot_platform_runtime_info->persistent[MPIC_RESET] != MAGIC)
+    {
+        rumboot_platform_runtime_info->persistent[MPIC_RESET_TYPE] = 0;
     }
 
     init_handlers();
@@ -182,12 +188,12 @@ int main ()
     if (rumboot_platform_runtime_info->persistent[MPIC_RESET] != MAGIC)
     {
         rumboot_platform_runtime_info->persistent[MPIC_RESET] = MAGIC;
-        rumboot_platform_runtime_info->persistent[MPIC_RESET_TYPE] = 0;
         mpic_ipi_generate_interrupt();
     }
 
     mpic_timer_generate_interrupt(DELAY);
     while (HANDLER_FLAG == 0) msync();
 
+    rumboot_platform_runtime_info->persistent[MPIC_RESET] = ~MAGIC;
     return 1;
 }
