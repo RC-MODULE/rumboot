@@ -49,10 +49,11 @@ enum {
 #define EVENT_FINISHED                          TEST_EVENT_CODE_MIN + 3
 
 static volatile bool MC_HANDLED;
-
+#define MAGIC 0xADCCC1E0
 
 enum {
-    NXT_RESET_REQ_TYPE = 1,
+    NXT_RESET_REQ_TYPE = 0,
+    NXT_RESET = 1,
 };
 
 void update_reset_req_type ()
@@ -178,16 +179,10 @@ int main ()
 
     MC_HANDLED = false;
 
-    if(rumboot_platform_runtime_info->persistent[NXT_RESET_REQ_TYPE]
-           != (RESET_REQ_TYPE_NONE)
-           && rumboot_platform_runtime_info->persistent[NXT_RESET_REQ_TYPE]
-           != (RESET_REQ_TYPE_CORE)
-           && rumboot_platform_runtime_info->persistent[NXT_RESET_REQ_TYPE]
-           != (RESET_REQ_TYPE_CHIP)
-           && rumboot_platform_runtime_info->persistent[NXT_RESET_REQ_TYPE]
-           != (RESET_REQ_TYPE_SYSTEM) )
+    if(rumboot_platform_runtime_info->persistent[NXT_RESET] != MAGIC)
         {
-        rumboot_printf("Clean\n");
+        rumboot_printf("MAGIC\n");
+        rumboot_platform_runtime_info->persistent[NXT_RESET] = MAGIC;
         rumboot_platform_runtime_info->persistent[NXT_RESET_REQ_TYPE] = RESET_REQ_TYPE_NONE;
         }
 
@@ -195,6 +190,7 @@ int main ()
     update_reset_req_type ();
     if((rumboot_platform_runtime_info->persistent[NXT_RESET_REQ_TYPE] == RESET_REQ_TYPE_UNKNOWN))
     {
+        rumboot_platform_runtime_info->persistent[NXT_RESET] = ~MAGIC;
         test_event(EVENT_FINISHED);
         return 0;
     }
