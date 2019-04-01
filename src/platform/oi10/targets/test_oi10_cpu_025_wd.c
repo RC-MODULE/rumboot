@@ -41,9 +41,11 @@ typedef enum test_check
 } test_check;
 
 enum {
-    last_test_check = 1,
+    last_test_check = 0,
+    test_check_magic = 1,
 };
 
+#define MAGIC 0x7E11012
 
 static void generate_wd_reset( TIMER_TCR_WRC const reset_type )
 {
@@ -114,16 +116,9 @@ int main()
 
     uint32_t reg = 0;
 
-    if(rumboot_platform_runtime_info->persistent[last_test_check]
-           != (TC_NONE)
-           && rumboot_platform_runtime_info->persistent[last_test_check]
-           != (TC_CORE_RESET)
-           && rumboot_platform_runtime_info->persistent[last_test_check]
-           != (TC_CHIP_RESET)
-           && rumboot_platform_runtime_info->persistent[last_test_check]
-           != (TC_SYSTEM_RESET) )
+    if(rumboot_platform_runtime_info->persistent[test_check_magic] != MAGIC )
         {
-        rumboot_printf("Clean\n");
+        rumboot_printf("MAGIC\n");
         rumboot_platform_runtime_info->persistent[last_test_check] = TC_NONE;
         }
 
@@ -150,6 +145,7 @@ int main()
         {
             reg = spr_read (SPR_DBSR_RC);
             TEST_ASSERT((reg & (1<<28)) && (reg & (1<<29)), "Error. Invalid value in DBSR[MRR]");
+            rumboot_platform_runtime_info->persistent[test_check_magic] = ~MAGIC;
             return 0;
         }
     }
