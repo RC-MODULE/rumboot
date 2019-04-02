@@ -5,8 +5,9 @@
  *      Author: a.gurov
  */
 
-#define RUMBOOT_ASSERT_WARN_ONLY
+// #define RUMBOOT_ASSERT_WARN_ONLY
 
+// #define USE_HW_EVENTS
 
 #include <rumboot/platform.h>
 #include <rumboot/irq.h>
@@ -293,7 +294,9 @@ void irq_handler( int irq_num, void *arg )
             break;
         case DMA2PLB6_SLV_ERR_INT:      /*  7 */
         case O_SYSTEM_HUNG:             /*  8 */
+#ifdef USE_HW_EVENTS
             test_event(EVENT_CLR_INT_INT);
+#endif
             break;
         case PLB6PLB40_O_0_BR6TO4_INTR: /*  9 */
             dcr_write(DCR_PLB6PLB4_0_BASE + TESR, 0x00000000);
@@ -318,7 +321,9 @@ void irq_handler( int irq_num, void *arg )
                     dcr_read(DCR_LTRACE_BASE + LTR_TS));
             break;
         default:
+#ifdef USE_HW_EVENTS
             test_event(EVENT_CLR_INT_INT);
+#endif
             break;
         }
     }
@@ -427,6 +432,7 @@ void genint__ltrace(void *data)
     dcr_write(dcra + LTR_TC,    BIT(LTRACE_TC_LTCEN_BIT));
 }
 
+#ifdef USE_HW_EVENTS
 void genint__hw_event(void *data)
 {
     if(int_int_idx > CAST_SINT(data))
@@ -439,7 +445,7 @@ void genint__hw_event(void *data)
             test_event(EVENT_INC_INT_INT);
     test_event(EVENT_SET_INT_INT);
 }
-
+#endif
 
 struct genint_entry_t intgen_list[] =
 {
@@ -464,11 +470,13 @@ struct genint_entry_t intgen_list[] =
     GENINT_ENTRY(genint__dma2plb6, channel3,                DMA2PLB6_DMA_IRQ_3,
             "DMA2PLB6 Channel #3"),
 /*  -----------------------------------------------------------------------  */
+#ifdef USE_HW_EVENTS
     GENINT_ENTRY(genint__hw_event, DMA2PLB6_SLV_ERR_INT,    DMA2PLB6_SLV_ERR_INT,
             "signal <DMA2PLB6_SLV_ERR_INT>"),
 /*  -----------------------------------------------------------------------  */
     GENINT_ENTRY(genint__hw_event, O_SYSTEM_HUNG,           O_SYSTEM_HUNG,
             "SYSTEM HUNG"),
+#endif
 /*  -----------------------------------------------------------------------  */
     GENINT_ENTRY(genint__p6p4,     DCR_PLB6PLB4_0_BASE,     PLB6PLB40_O_0_BR6TO4_INTR,
             "PLB6PLB4 Bridge #0"),
@@ -476,8 +484,10 @@ struct genint_entry_t intgen_list[] =
     GENINT_ENTRY(genint__p6p4,     DCR_PLB6PLB4_1_BASE,     PLB6PLB41_O_BR6TO4_INTR,
             "PLB6PLB4 Bridge #1"),
 /*  -----------------------------------------------------------------------  */
+#ifdef USE_HW_EVENTS
     GENINT_ENTRY(genint__hw_event, PLB4XAHB1_INTR,          PLB4XAHB1_INTR,
             "signal <PLB4XAHB_INTR>"),
+#endif
 /*  -----------------------------------------------------------------------  */
     GENINT_ENTRY(genint__dcr_arb,  DCR_ARB_BASE,            ARB_SYSDCRERR,
             "DCR Arbiter"),
@@ -488,6 +498,7 @@ struct genint_entry_t intgen_list[] =
             "LTRACE COMPLETE 0"),
 /*  -----------------------------------------------------------------------  */
 /*  ---- UNCONNECTED INTERNAL INTERRUPTS <MPIC128_SOURCE_INTI[15:31]> -----  */
+#ifdef USE_HW_EVENTS
     GENINT_ENTRY(genint__hw_event, 15, 15, "<MPIC128_SOURCE_INTI[15]>"),
     GENINT_ENTRY(genint__hw_event, 16, 16, "<MPIC128_SOURCE_INTI[16]>"),
     GENINT_ENTRY(genint__hw_event, 17, 17, "<MPIC128_SOURCE_INTI[17]>"),
@@ -505,6 +516,7 @@ struct genint_entry_t intgen_list[] =
     GENINT_ENTRY(genint__hw_event, 29, 29, "<MPIC128_SOURCE_INTI[29]>"),
     GENINT_ENTRY(genint__hw_event, 30, 30, "<MPIC128_SOURCE_INTI[30]>"),
     GENINT_ENTRY(genint__hw_event, 31, 31, "<MPIC128_SOURCE_INTI[31]>"),
+#endif
     GENINT_ENTRY_END
 };
 
@@ -539,12 +551,13 @@ uint32_t check_internal_interrupts(void)
     return status;
 }
 
+#ifdef USE_HW_EVENTS
 uint32_t check_external_interrupts(void)
 {
     static
     char            *title  = "Check external interrupts";
-    uint32_t         status = TEST_OK,
-                     result = 0;
+    uint32_t         status = TEST_OK;
+    uint32_t         result = 0;
     int              irq;
 
     rumboot_printf("%s...\n", title);
@@ -566,8 +579,10 @@ uint32_t check_external_interrupts(void)
         TEST_ASSERT(result, "EXTERNAL INTERRUPT NOT RECEIVED!\n");
     }
     rumboot_printf("%s %s!\n", title, !status ? "success" : "failed");
+
     return status;
 }
+#endif
 
 void init_interrupts(void)
 {
@@ -608,7 +623,9 @@ void init_interrupts(void)
 
 uint32_t main(void)
 {
+#ifdef USE_HW_EVENTS
     test_event_send_test_id(TEST_STRING_ID);
+#endif
     init_interrupts();
 
     SPR_SET(SPR_CCR0, BIT(CTRL_CCR0_ITE_i));
@@ -618,8 +635,10 @@ uint32_t main(void)
 
     return print_result(
             check_internal_interrupts()
+#ifdef USE_HW_EVENTS
             ||
             check_external_interrupts()
+#endif
             );
 }
 
