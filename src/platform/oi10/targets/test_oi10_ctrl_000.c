@@ -12,15 +12,66 @@
 #include <rumboot/rumboot.h>
 #include <platform/test_event_c.h>
 #include <platform/test_assert.h>
+#include <platform/arch/ppc/ppc_476fp_mmu.h>
 
-DECLARE_CONST(TEST_OI10_CTRL_000_CHECK_50MHz, TEST_EVENT_CODE_MIN + 0)
-DECLARE_CONST(TEST_OI10_CTRL_000_CHECK_100MHz, TEST_EVENT_CODE_MIN + 1)
-DECLARE_CONST(TEST_OI10_CTRL_000_CHECK_INJECT_ERR, TEST_EVENT_CODE_MIN + 2)
+DECLARE_CONST(TEST_OI10_CTRL_000_CHECK_50MHz,       TEST_EVENT_CODE_MIN + 0)
+DECLARE_CONST(TEST_OI10_CTRL_000_CHECK_100MHz,      TEST_EVENT_CODE_MIN + 1)
+DECLARE_CONST(TEST_OI10_CTRL_000_CHECK_INJECT_ERR,  TEST_EVENT_CODE_MIN + 2)
+DECLARE_CONST(TEST_OI10_CTRL_000_RELEASE_ERR,       TEST_EVENT_CODE_MIN + 3)
 
 DECLARE_CONST(TEST_OI10_CTRL_000_MBIST_TIMEOUT, 0xffffffff)
+DECLARE_CONST(IM0_SIZE, 0x20000)
 
-static bool check_sctl_regs_ro(uint32_t base_addr)
-{   
+#ifndef MBIST_RELOCATE
+#define MBIST_RELOCATE 0
+#endif
+
+#ifndef RELOCATE_FROM
+#define RELOCATE_FROM IM0_BASE
+#endif
+
+#ifndef RELOCATE_TO
+#define RELOCATE_TO IM2_BASE
+#endif
+
+#if RELOCATE_TO == RELOCATE_FROM
+#error
+#endif
+
+#if RELOCATE_TO == IM2_BASE
+                       //               MMU_TLB_ENTRY(  ERPN,   RPN,        EPN,                                        DSIZ,                   IL1I,   IL1D,   W,      I,      M,      G,      E,                      UX, UW, UR,     SX, SW, SR      DULXE,  IULXE,      TS,     TID,                WAY,                BID,                V   )
+#define TLB_ENTRY_RELOCATE_TO0          {MMU_TLB_ENTRY(  0x020,  0xC0040,   ( (RELOCATE_FROM >> 12) & 0xFFFFF),         MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_3,     0b1 )}
+#define TLB_ENTRY_RELOCATE_TO1          {MMU_TLB_ENTRY(  0x020,  0xC0050,   (((RELOCATE_FROM >> 12) & 0xFFFFF) + 0x10), MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_4,     0b1 )}
+#define TLB_ENTRY_RELOCATE_TO0_BACK     {MMU_TLB_ENTRY(  0x020,  0xC0040,   ( (RELOCATE_TO >> 12) & 0xFFFFF),           MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_3,     0b1 )}
+#define TLB_ENTRY_RELOCATE_TO1_BACK     {MMU_TLB_ENTRY(  0x020,  0xC0050,   (((RELOCATE_TO >> 12) & 0xFFFFF) + 0x10),   MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_4,     0b1 )}
+#endif
+
+#if RELOCATE_FROM == IM0_BASE
+#define TLB_ENTRY_RELOCATE_FROM0        {MMU_TLB_ENTRY(  0x010,  0x80000,    ( (RELOCATE_TO >> 12) & 0xFFFFF),           MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_1,     0b1 )}
+#define TLB_ENTRY_RELOCATE_FROM1        {MMU_TLB_ENTRY(  0x010,  0x80010,    (((RELOCATE_TO >> 12) & 0xFFFFF) + 0x10),   MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_2,     0b1 )}
+#define TLB_ENTRY_RELOCATE_FROM0_BACK   {MMU_TLB_ENTRY(  0x010,  0x80000,    ( (RELOCATE_FROM >> 12) & 0xFFFFF),         MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_1,     0b1 )}
+#define TLB_ENTRY_RELOCATE_FROM1_BACK   {MMU_TLB_ENTRY(  0x010,  0x80010,    (((RELOCATE_FROM >> 12) & 0xFFFFF) + 0x10), MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_2,     0b1 )}
+#elif RELOCATE_FROM == IM1_BASE
+#define TLB_ENTRY_RELOCATE_FROM0        {MMU_TLB_ENTRY(  0x020,  0xC0000,    ( (RELOCATE_TO >> 12) & 0xFFFFF),           MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_1,     0b1 )}
+#define TLB_ENTRY_RELOCATE_FROM1        {MMU_TLB_ENTRY(  0x020,  0xC0010,    (((RELOCATE_TO >> 12) & 0xFFFFF) + 0x10),   MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_2,     0b1 )}
+#define TLB_ENTRY_RELOCATE_FROM0_BACK   {MMU_TLB_ENTRY(  0x020,  0xC0000,    ( (RELOCATE_FROM >> 12) & 0xFFFFF),         MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_1,     0b1 )}
+#define TLB_ENTRY_RELOCATE_FROM1_BACK   {MMU_TLB_ENTRY(  0x020,  0xC0010,    (((RELOCATE_FROM >> 12) & 0xFFFFF) + 0x10), MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_2,     0b1 )}
+#endif
+
+static const tlb_entry im_switch_tlb_entries[] =        {TLB_ENTRY_RELOCATE_TO0,
+                                                         TLB_ENTRY_RELOCATE_TO1,
+                                                         TLB_ENTRY_RELOCATE_FROM0,
+                                                         TLB_ENTRY_RELOCATE_FROM1};
+static const tlb_entry im_switch_tlb_entries_back[] =   {TLB_ENTRY_RELOCATE_TO0_BACK,
+                                                         TLB_ENTRY_RELOCATE_TO1_BACK,
+                                                         TLB_ENTRY_RELOCATE_FROM0_BACK,
+                                                         TLB_ENTRY_RELOCATE_FROM1_BACK};
+
+
+__attribute__((unused))
+static bool
+check_sctl_regs_ro(uint32_t base_addr)
+{
     rumboot_printf("Checking sctl registers default value...\n");
     struct regpoker_checker check_array[] =
      {
@@ -49,7 +100,9 @@ static bool check_sctl_regs_ro(uint32_t base_addr)
       return false;
 }
 
-static bool check_sctl_regs_rw(uint32_t base_addr)
+__attribute__((unused))
+static bool
+check_sctl_regs_rw(uint32_t base_addr)
 {
     rumboot_printf("Checking sctl registers for rw value...\n");
     struct regpoker_checker check_array[] = {
@@ -84,7 +137,9 @@ static bool check_sctl_regs_rw(uint32_t base_addr)
 
 DECLARE_CONST(COUNT_MEMORY_AREAS, 8)
 
-static bool check_sctl_plb4_clk_management(const uint32_t base_addr)
+__attribute__((unused))
+static bool
+check_sctl_plb4_clk_management(const uint32_t base_addr)
 {
     bool result = true;
     uint32_t ppc_sys_conf_value = dcr_read(DCR_SCTL_BASE + SCTL_PPC_SYS_CONF);
@@ -122,13 +177,31 @@ static void send_mbist_inject_event(const uint32_t chain_number)
     rumboot_platform_event_raise( EVENT_TESTEVENT, event_data, ARRAY_SIZE(event_data) );
 }
 
-static bool check_sctl_kmbist_chains(const uint32_t base_addr, const bool with_injections)
+static void send_mbist_resease_event(const uint32_t chain_number)
+{
+    uint32_t const event_data[] = { TEST_OI10_CTRL_000_RELEASE_ERR, chain_number };
+    rumboot_platform_event_raise( EVENT_TESTEVENT, event_data, ARRAY_SIZE(event_data) );
+}
+
+__attribute__((unused))
+static bool
+check_sctl_kmbist_chains(const uint32_t base_addr, const bool with_injections)
 {
     bool result = true;
     uint32_t t = 0;
     uint32_t chain_number = 0;
-    for(uint32_t kmbist_chain = KMBIST_CHAIN_SF_0; kmbist_chain < KMBIST_CHAIN_SF_8; kmbist_chain+=4)
+    for(uint32_t kmbist_chain = KMBIST_CHAIN_SF_0; kmbist_chain <= KMBIST_CHAIN_SF_0; kmbist_chain+=4)
     {
+        if(MBIST_RELOCATE == kmbist_chain)
+        {
+            memcpy((void *)RELOCATE_TO,(void *)RELOCATE_FROM,IM0_SIZE);
+            rumboot_printf("Copy from 0x%x to 0x%x finished\n", RELOCATE_FROM, RELOCATE_TO);
+            //switch physical addresses IM0<->IM1
+            write_tlb_entries(im_switch_tlb_entries,ARRAY_SIZE(im_switch_tlb_entries));
+
+            rumboot_printf("TLB entries switching finished\n");
+
+        }
         t = TEST_OI10_CTRL_000_MBIST_TIMEOUT;
         chain_number = ((kmbist_chain - KMBIST_CHAIN_SF_0) / 4) + 1;
         if(with_injections)
@@ -143,30 +216,47 @@ static bool check_sctl_kmbist_chains(const uint32_t base_addr, const bool with_i
         }
         TEST_ASSERT(((dcr_read(base_addr + kmbist_chain) & SCTL_KMBIST_CHAIN_SF_DONE_mask) && t),
                 "Timeout occurred while waiting end of KMBIST_CHAIN!");
+        dcr_write(base_addr + kmbist_chain, ((~SCTL_KMBIST_CHAIN_SF_TM_val) << SCTL_KMBIST_CHAIN_SF_TM_i));
         result &= ((bool)(dcr_read(base_addr + kmbist_chain) & SCTL_KMBIST_CHAIN_SF_FAIL_mask)
                 == with_injections);
+        if(with_injections)
+            send_mbist_resease_event(chain_number);
+        if(MBIST_RELOCATE == kmbist_chain)
+        {
+            memcpy((void *)RELOCATE_TO,(void *)RELOCATE_FROM,IM0_SIZE);
+            rumboot_printf("Copy from 0x%x to 0x%x finished\n", RELOCATE_TO, RELOCATE_FROM);
+            write_tlb_entries(im_switch_tlb_entries_back,ARRAY_SIZE(im_switch_tlb_entries_back));
+
+            rumboot_printf("TLB entries switching back finished\n");
+
+
+        }
     }
     return result;
 }
 
-static bool check_sctl_kmbist_chains_default(const uint32_t base_addr)
+__attribute__((unused))
+static bool
+check_sctl_kmbist_chains_default(const uint32_t base_addr)
 {
     return check_sctl_kmbist_chains(base_addr, false);
 }
 
-#ifdef MBIST_ENABLED
-static bool check_sctl_kmbist_chains_inject(const uint32_t base_addr)
+#ifdef ERR_INJ_ENABLED
+__attribute__((unused))
+static bool
+check_sctl_kmbist_chains_inject(const uint32_t base_addr)
 {
     return check_sctl_kmbist_chains(base_addr, true);
 }
 #endif
 
 TEST_SUITE_BEGIN(sctl_testlist, "SCTL TEST")
-TEST_ENTRY("SCTL reg read default", check_sctl_regs_ro, DCR_SCTL_BASE),
-TEST_ENTRY("SCTL reg rw check", check_sctl_regs_rw, DCR_SCTL_BASE),
-TEST_ENTRY("SCTL check PLB4 frequency change", check_sctl_plb4_clk_management, DCR_SCTL_BASE),
-TEST_ENTRY("SCTL run KMBIST chains as is", check_sctl_kmbist_chains_default, DCR_SCTL_BASE),
-#ifdef MBIST_ENABLED
+//TEST_ENTRY("SCTL reg read default", check_sctl_regs_ro, DCR_SCTL_BASE),
+//TEST_ENTRY("SCTL reg rw check", check_sctl_regs_rw, DCR_SCTL_BASE),
+//TEST_ENTRY("SCTL check PLB4 frequency change", check_sctl_plb4_clk_management, DCR_SCTL_BASE),
+//TEST_ENTRY("SCTL run KMBIST chains as is", check_sctl_kmbist_chains_default, DCR_SCTL_BASE),
+#ifdef ERR_INJ_ENABLED
 TEST_ENTRY("SCTL run KMBIST chains with injections", check_sctl_kmbist_chains_inject, DCR_SCTL_BASE),
 #endif
 TEST_SUITE_END();
