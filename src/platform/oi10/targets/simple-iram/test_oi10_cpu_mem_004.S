@@ -16,33 +16,44 @@
 
 #define ICU_DATA_RDBUS_CHECK_DATA_LEN    15
 
-#define DATA_ARR_TEST_VAL0(way, idx, word_addr)     (((word_addr & 0x3)  << 8) + idx)    //(word_add[1:0]<<8) + idx
+#define DATA_ARR_TEST_VAL0(way, idx, word_addr)     ((way << 16) | ((word_addr & 0x3) << 8) + idx)                    //(way << 16) | (word_add[1:0]<<8) + idx
 #define DATA_ARR_TEST_VAL1(way, idx, word_addr)     (((way << 1) + ((word_addr & 0x4) >> 2)) << IBM_BIT_INDEX(32, 7)) //(2*way + word_addr[2] << IBM_BIT_INDEX(32, 7))
 
 .macro check_icu_dataarr_addr_bus way, idx, word_addr
     load_const r3, ((\way << CACHE_WAY_SHIFT) | (\idx << INSTR_IDX_SHIFT) | (\word_addr << WORD_ADDR_SHIFT))
-
+  rumboot_putstring "\ncheck"
+  rumboot_puthex r3
+  load_const    r4, \way
+  rumboot_puthex r4
     //set expected value according test_mpw_cpu_mem_002.svh
     icread r0, r3
     isync
 
     load_const r8, DATA_ARR_TEST_VAL0(\way, \idx, \word_addr)
     mfspr r7, SPR_ICDBDR0
+  //rumboot_putstring "0\n"
+  //load_const    r4, \way
+  rumboot_puthex r7
+  rumboot_puthex r8
 //    rumboot_putstring "actual   ICDBDR0: "
 //    rumboot_puthex r7
 //    rumboot_putstring "expected ICDBDR0: "
 //    rumboot_puthex r8
     cmp cr7, 0, r7, r8
-    TEST_ASSERT(eq, cr7, "ICU dataarr addr bus error in ICDBDR0. idx=\idx  way=\way   word_addr=\word_addr")
+    TEST_ASSERT(eq, cr7, "ICDBDR0 ICU dataarr abus err. I=\idx  W=\way   WA=\word_addr")
 
     load_const r8, DATA_ARR_TEST_VAL1(\way, \idx, \word_addr)
     mfspr r7, SPR_ICDBDR1
+  //rumboot_putstring "1\n"
+  //load_const    r4, \way
+  rumboot_puthex r7
+  rumboot_puthex r8
 //    rumboot_putstring "actual   ICDBDR1: "
 //    rumboot_puthex r7
 //    rumboot_putstring "expected ICDBDR1: "
 //    rumboot_puthex r8
     cmp cr7, 0, r7, r8
-    TEST_ASSERT(eq, cr7, "ICU dataarr addr bus error in ICDBDR1. idx=\idx  way=\way   word_addr=\word_addr")
+    TEST_ASSERT(eq, cr7, "ICDBDR1 ICU dataarr abus err. I=\idx  W=\way   WA=\word_addr")
 .endm
 
 .macro check_icu_dataarr_addr_bus_bank way, word_addr, msg
