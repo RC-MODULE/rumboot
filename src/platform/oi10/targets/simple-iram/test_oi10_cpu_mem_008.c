@@ -48,7 +48,7 @@ typedef void func();
 
 uint32_t test_addr_array [] =
 {
-    0b1111111111111111 << 2,
+    0b0111111111111111 << 2,
     0b0000000000000000 << 2,
     0b0011111111111111 << 2,
     0b1100000000000000 << 2,
@@ -64,7 +64,7 @@ uint32_t test_addr_array [] =
 
 static void init_block(uint8_t way, uint32_t ind)
 {
-    for (uint i = 0, index = ind; i < ARRAY_SIZE(test_addr_array); i++, index += 2 )
+    for (uint i = 0, index = ind; i < ARRAY_SIZE(test_addr_array); i++, index += 4 )
     {
         uint32_t address = GET_ADDR_BY_TAG_INDEX_WORD(test_addr_array[i] | way, index, 0);
         //rumboot_printf("address = %x\n", address);
@@ -99,7 +99,7 @@ static void mem_init(void) {
 
 static void cache_icu_tag(uint8_t way, uint32_t ind)
 {
-    for (uint i = 0, index = ind; i < ARRAY_SIZE(test_addr_array); i++, index += 2 )
+    for (uint i = 0, index = ind; i < ARRAY_SIZE(test_addr_array); i++, index += 4 )
     {
         uint32_t tag = test_addr_array[i] | way;
         uint32_t address = GET_ADDR_BY_TAG_INDEX_WORD(tag, index, 0);
