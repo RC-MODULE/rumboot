@@ -779,6 +779,7 @@ static int test_itrace(ITRACE_CONDITION_TYPE condition_type,
     //rumboot_printf("Disable\n");
     itrace_disable(DCR_ITRACE_BASE);
 
+    uint32_t start_address = 0;
     uint32_t address = 0;
     uint32_t last_address[2] = {itrace_get_last_address1(DCR_ITRACE_BASE),
                                 itrace_get_last_address2(DCR_ITRACE_BASE)};
@@ -816,7 +817,8 @@ static int test_itrace(ITRACE_CONDITION_TYPE condition_type,
                 ? 2 : 1)
                 ; j++)
     {
-        address = ((j & 1) << (DATA_ARRAY_ADDRESS_BITS - 2));
+        start_address = ((j & 1) << (DATA_ARRAY_ADDRESS_BITS - 2));
+        address = start_address;
         i = ((j & 1) << (DATA_ARRAY_ADDRESS_BITS - 1 ));
 //            rumboot_printf("j == %d\n", j);
 //            rumboot_printf("i == %d\n", i);
@@ -839,7 +841,9 @@ static int test_itrace(ITRACE_CONDITION_TYPE condition_type,
 //
 //                itrace_set_data(data[0]);
 
-            if (address == stop_address[j])
+
+//            rumboot_printf("address = 0x%x, stop_address = 0x%x\n", address, stop_address[j]);
+            if ((address >= stop_address[j]) || ((address ^ 0x80000000) >= stop_address[j]))
                 break;
 
 
@@ -848,15 +852,19 @@ static int test_itrace(ITRACE_CONDITION_TYPE condition_type,
             data[i] = itrace_get_raw_data(DCR_ITRACE_BASE);
 
 
-            rumboot_printf("array address = 0x%x\n", address);
-            rumboot_printf("data_address = 0x%x\n", (uint32_t)(&data[i]));
-            rumboot_printf("data[%d] = 0x%x\n", i, data[i]);
+//            rumboot_printf("dcr address = 0x%x\n", address);
+//            rumboot_printf("data_array_address = 0x%x\n", (uint32_t)(&data[i]));
+//            rumboot_printf("data[%d] = 0x%x\n", i, data[i]);
+
 
 
             address ^= 0x80000000;
 //                rumboot_printf("address = 0x%x\n", address);
 
-            if (address == stop_address[j])
+
+
+//            rumboot_printf("address = 0x%x, stop_address = 0x%x\n", address, stop_address[j]);
+            if ((address >= stop_address[j]) || ((address ^ 0x80000000) >= stop_address[j]))
                 break;
 
 
@@ -870,12 +878,18 @@ static int test_itrace(ITRACE_CONDITION_TYPE condition_type,
 //
 //                trace_msg("i+1=");
 //                trace_hex(i+1);
-//
-            rumboot_printf("array address = 0x%x\n", address);
-            rumboot_printf("data_address = 0x%x\n", (uint32_t)(&data[i+1]));
-            rumboot_printf("data[%d] = 0x%x\n", i+1, data[i+1]);
 
 //                msync();
+
+
+
+
+//            rumboot_printf("dcr address = 0x%x\n", address);
+//            rumboot_printf("data_arrray_address = 0x%x\n", (uint32_t)(&data[i+1]));
+//            rumboot_printf("data[%d] = 0x%x\n", i+1, data[i+1]);
+
+
+
             address ^= 0x80000000;
 //                if((i & 0x6) == 0x6)
 //                {
@@ -888,7 +902,7 @@ static int test_itrace(ITRACE_CONDITION_TYPE condition_type,
 
 //                }
 
-            address++;
+            address = start_address | (1 << (i/2));
             i += 2;
 
         } while (1);
