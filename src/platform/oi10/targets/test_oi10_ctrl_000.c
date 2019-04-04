@@ -190,7 +190,7 @@ check_sctl_kmbist_chains(const uint32_t base_addr, const bool with_injections)
     bool result = true;
     uint32_t t = 0;
     uint32_t chain_number = 0;
-    for(uint32_t kmbist_chain = KMBIST_CHAIN_SF_0; kmbist_chain <= KMBIST_CHAIN_SF_0; kmbist_chain+=4)
+    for(uint32_t kmbist_chain = KMBIST_CHAIN_SF_0; kmbist_chain <= KMBIST_CHAIN_SF_8; kmbist_chain+=4)
     {
         if(MBIST_RELOCATE == kmbist_chain)
         {
@@ -252,10 +252,10 @@ check_sctl_kmbist_chains_inject(const uint32_t base_addr)
 #endif
 
 TEST_SUITE_BEGIN(sctl_testlist, "SCTL TEST")
-//TEST_ENTRY("SCTL reg read default", check_sctl_regs_ro, DCR_SCTL_BASE),
-//TEST_ENTRY("SCTL reg rw check", check_sctl_regs_rw, DCR_SCTL_BASE),
-//TEST_ENTRY("SCTL check PLB4 frequency change", check_sctl_plb4_clk_management, DCR_SCTL_BASE),
-//TEST_ENTRY("SCTL run KMBIST chains as is", check_sctl_kmbist_chains_default, DCR_SCTL_BASE),
+TEST_ENTRY("SCTL reg read default", check_sctl_regs_ro, DCR_SCTL_BASE),
+TEST_ENTRY("SCTL reg rw check", check_sctl_regs_rw, DCR_SCTL_BASE),
+TEST_ENTRY("SCTL check PLB4 frequency change", check_sctl_plb4_clk_management, DCR_SCTL_BASE),
+TEST_ENTRY("SCTL run KMBIST chains as is", check_sctl_kmbist_chains_default, DCR_SCTL_BASE),
 #ifdef ERR_INJ_ENABLED
 TEST_ENTRY("SCTL run KMBIST chains with injections", check_sctl_kmbist_chains_inject, DCR_SCTL_BASE),
 #endif
@@ -265,7 +265,6 @@ int main(void)
 {
    register int result;
    test_event_send_test_id("test_oi10_ctrl_000");
-   rumboot_printf("Check write/read ctrl register values\n");
 
    result = test_suite_run(NULL,&sctl_testlist);
    return result;
