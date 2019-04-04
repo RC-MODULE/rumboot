@@ -501,8 +501,6 @@ int main ()
 {
     test_event_send_test_id( "test_oi10_cpu_025_ppc");
 
-    rumboot_memfill8_modelling((void*)SRAM0_BASE, 0x1000, 0x00, 0x00); //workaround (init 4KB SRAM0)
-
     test_setup_inj();
     check_mc_with_injector( EVENT_GENERATE_TLB_MC, ITRPT_MCSR_TLB_i  );
     check_mc_with_injector( EVENT_GENERATE_IC_MC,  ITRPT_MCSR_IC_i   );
