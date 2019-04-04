@@ -16,8 +16,8 @@
 
 #define ICU_DATA_RDBUS_CHECK_DATA_LEN    15
 
-#define DATA_ARR_TEST_VAL0(way, idx, word_addr)     ((way << 16) | ((word_addr & 0x3) << 8) + idx)                    //(way << 16) | (word_add[1:0]<<8) + idx
-#define DATA_ARR_TEST_VAL1(way, idx, word_addr)     (((way << 1) + ((word_addr & 0x4) >> 2)) << IBM_BIT_INDEX(32, 7)) //(2*way + word_addr[2] << IBM_BIT_INDEX(32, 7))
+#define DATA_ARR_TEST_VAL0(way, idx, word_addr)     ((way << 16) | ((word_addr & 0x3) << 8) | idx)                                              //(way << 16) | (word_add[1:0]<<8) + idx
+#define DATA_ARR_TEST_VAL1(way, idx, word_addr)     ((((idx & 0xF) << 4) | ((way << 1) | ((word_addr & 0x4) >> 2))) << IBM_BIT_INDEX(32, 7))    //(((idx << 5) | 2*way) + word_addr[2] << IBM_BIT_INDEX(32, 7))
 
 .macro check_icu_dataarr_addr_bus way, idx, word_addr
     load_const r3, ((\way << CACHE_WAY_SHIFT) | (\idx << INSTR_IDX_SHIFT) | (\word_addr << WORD_ADDR_SHIFT))
