@@ -13,9 +13,29 @@
 #include <platform/interrupts.h>
 #include <platform/test_event_c.h>
 #include <rumboot/timer.h>
+#include <platform/arch/ppc/ppc_476fp_mmu_fields.h>
+#include <platform/arch/ppc/ppc_476fp_mmu.h>
+#include <platform/devices/emi.h>
 
 
 #define DATA_ARRAY_SIZE 128
+
+static void init_emi() {
+    rumboot_printf("Init EMI...\n");
+
+    static struct tlb_entry const em2_nospeculative_tlb_entries[] =
+    {
+    /*   MMU_TLB_ENTRY(  ERPN,   RPN,        EPN,        DSIZ,                   IL1I,   IL1D,   W,      I,      M,      G,      E,                      UX, UW, UR,     SX, SW, SR      DULXE,  IULXE,      TS,     TID,                WAY,                BID,                V   )*/
+        {MMU_TLB_ENTRY(  0x000,  0x00000,    0x00000,    MMU_TLBE_DSIZ_1GB,      0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b0,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )},
+        {MMU_TLB_ENTRY(  0x000,  0x40000,    0x40000,    MMU_TLBE_DSIZ_1GB,      0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b0,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )}
+    };
+
+    write_tlb_entries(em2_nospeculative_tlb_entries, ARRAY_SIZE(em2_nospeculative_tlb_entries));
+
+    emi_init(DCR_EM2_EMI_BASE);
+
+    rumboot_printf("EMI initialized\n");
+}
 
 static int init_sd() {
     uint32_t read_data;
@@ -137,6 +157,7 @@ void prepare_arrays( uint32_t ** src_array, uint32_t ** dst_array ) {
     *dst_array = rumboot_malloc_from_named_heap( SDIO_DST_HEAP, sizeof(uint32_t)*DATA_ARRAY_SIZE );
     for( uint32_t i = 0; i < DATA_ARRAY_SIZE; i++ )
         (*src_array)[ i ] = i + ( i << 8 ) + ( i << 16 ) + ( i << 24 );
+    msync();
 }
 
 static volatile uint32_t SDIO_TRAN_DONE;
@@ -254,6 +275,7 @@ int main() {
     uint32_t * src_array;
     uint32_t * dst_array;
 
+    init_emi();
     init_sd();
     struct rumboot_irq_entry * tbl = init_irq();
 
