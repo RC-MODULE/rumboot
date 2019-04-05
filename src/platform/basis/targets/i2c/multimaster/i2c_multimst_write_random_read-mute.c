@@ -72,6 +72,9 @@ int main()
  if (tmp == I2C_FAILED)
 	{rumboot_printf("I2C STOP test ERROR!\n");	
 	  return TEST_ERROR;}
-	{rumboot_printf("I2C TEST OK \n");	
+	{
+    iowrite32((0x0 ),(I2C_BASE + 0x1000 + I2C_SOFTR));
+	 rumboot_printf("I2C1 ARB soft reset!\n");
+		rumboot_printf("I2C TEST OK \n");	
 	return TEST_OK;} 
 }
