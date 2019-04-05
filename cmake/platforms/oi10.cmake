@@ -371,6 +371,17 @@ endif()
     )
 
     rumboot_bootrom_integration_test(BROM
+        NAME "nor-with-ecc-with-cpu-ecc-ok"
+        IRUN_FLAGS ${ROM_6500K_OPTS} +BOOT_EMI_ECC=1 +BOOT_CPU_ECC=1
+        LOAD
+          SD0_BOOT_IMAGE spl-fail-bad-magic
+          SPI0_CONF spl-fail,spl-fail
+          NOR_IMAGE spl-ok
+          HOSTMOCK  spl-fail
+    )
+
+
+    rumboot_bootrom_integration_test(BROM
         NAME "nor-no-ecc-ok"
         IRUN_FLAGS +BOOT_EMI_ECC=0 ${ROM_6500K_OPTS}
         LOAD
