@@ -1029,7 +1029,7 @@ endif()
         PREFIX simple-iram
     )
 
-if (CMAKE_BUILD_TYPE MATCHES "RTL")
+if (RUMBOOT_SOC_BUILD_TYPE MATCHES "RTL")
     add_rumboot_target(
         CONFIGURATION IRAM
         FILES test_oi10_ctrl_000.c
