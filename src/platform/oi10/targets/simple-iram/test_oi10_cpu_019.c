@@ -7,7 +7,7 @@
 
 // #define RUMBOOT_ASSERT_WARN_ONLY
 
-// #define USE_HW_EVENTS
+// #define USE_HARDWARE_PART
 
 #include <rumboot/platform.h>
 #include <rumboot/irq.h>
@@ -34,10 +34,10 @@
 
 /* Config */
 #define TEST_STRING_ID              "test_oi10_cpu_019"
-#define IRQ_CR_BEG                  EXT_INT0
-#define IRQ_CR_END                  EXT_INT1
-#define IRQ_MC_BEG                  EXT_INT2
-#define IRQ_MC_END                  EXT_INT3
+#define IRQ_CR_BEG                  DMA2PLB6_DMA_IRQ_0
+#define IRQ_CR_END                  DMA2PLB6_DMA_IRQ_1
+#define IRQ_MC_BEG                  DMA2PLB6_DMA_IRQ_2
+#define IRQ_MC_END                  DMA2PLB6_DMA_IRQ_3
 #define IRQ_BORDER_NC               MPIC128_PRIOR_3
 #define IRQ_BORDER_CR               MPIC128_PRIOR_8
 #define IRQ_BORDER_MC               MPIC128_PRIOR_12
@@ -54,8 +54,14 @@
 #define IRQ_MIN_EXTERNAL            32
 #define IRQ_MAX_EXTERNAL            127
 #define IRQ_MIN                     (USE_INTERNAL_INTERRUPTS ? 0 : 32)
+#ifdef  USE_HARDWARE_PART
 #define IRQ_MAX                     ((IRQ_MAX_EXTERNAL > IRQ_MAX_INTERNAL) ? \
                                       IRQ_MAX_EXTERNAL : IRQ_MAX_INTERNAL)
+#else
+#define IRQ_MAX                     IRQ_MAX_INTERNAL
+#endif
+#define IRQ_TYPE_NC                 0
+#define IRQ_TYPE_CR                 1
 #define IRQ_CNT                     (IRQ_MAX - IRQ_MIN + 1)
 #define IRQ_FLAGS                   (RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH)
 #define IRQ_ARR_SZ_CALC             (IRQ_CNT / (sizeof(uint32_t) * 8))
@@ -148,6 +154,7 @@ typedef volatile uint32_t           irq_flags_t;
 /* Global vars */
 static irq_flags_t        IRQ[IRQ_ARR_SZ];
 static irq_flags_t        ext_int_raised    = 0;
+static irq_flags_t        irq_type          = 0;
 static int                int_int_idx       = 0;
 static rumboot_irq_entry *irq_table         = NULL;
 static volatile uint32_t  dma2plb6_src[DMA2PLB6_TRANSFER_UNITS] = {0};
@@ -241,7 +248,7 @@ uint32_t wait_irq(uint32_t usecs, int irq)
 void irq_handler( int irq_num, void *arg )
 {
     volatile
-    uint32_t  temp = 0;
+    uint32_t  temp = 0, srr1, csrr1;
     uint32_t  fail = (irq_num < 0) ? YES : NO;
 
     if(fail)
@@ -252,8 +259,14 @@ void irq_handler( int irq_num, void *arg )
     }
     else
     {
-        rumboot_printf("IRQ #%d received (Return address: 0x%X).\n",
-                irq_num, spr_read(SPR_SRR0));
+        srr1  = spr_read(SPR_SRR1);
+        csrr1 = spr_read(SPR_CSRR1);
+        rumboot_printf("IRQ #%d received"
+                " (SRR0=0x%X, SRR1=0x%X, CSRR0=0x%X, CSRR1=0x%X).\n",
+                irq_num,
+                spr_read(SPR_SRR0),  srr1,
+                spr_read(SPR_CSRR0), csrr1);
+        irq_type = (!!csrr1 << IRQ_TYPE_CR) | (!!srr1 << IRQ_TYPE_NC);
         set_interrupt(IRQ, irq_num);
     }
 
@@ -294,7 +307,7 @@ void irq_handler( int irq_num, void *arg )
             break;
         case DMA2PLB6_SLV_ERR_INT:      /*  7 */
         case O_SYSTEM_HUNG:             /*  8 */
-#ifdef USE_HW_EVENTS
+#ifdef USE_HARDWARE_PART
             test_event(EVENT_CLR_INT_INT);
 #endif
             break;
@@ -321,7 +334,7 @@ void irq_handler( int irq_num, void *arg )
                     dcr_read(DCR_LTRACE_BASE + LTR_TS));
             break;
         default:
-#ifdef USE_HW_EVENTS
+#ifdef USE_HARDWARE_PART
             test_event(EVENT_CLR_INT_INT);
 #endif
             break;
@@ -432,7 +445,7 @@ void genint__ltrace(void *data)
     dcr_write(dcra + LTR_TC,    BIT(LTRACE_TC_LTCEN_BIT));
 }
 
-#ifdef USE_HW_EVENTS
+#ifdef USE_HARDWARE_PART
 void genint__hw_event(void *data)
 {
     if(int_int_idx > CAST_SINT(data))
@@ -470,7 +483,7 @@ struct genint_entry_t intgen_list[] =
     GENINT_ENTRY(genint__dma2plb6, channel3,                DMA2PLB6_DMA_IRQ_3,
             "DMA2PLB6 Channel #3"),
 /*  -----------------------------------------------------------------------  */
-#ifdef USE_HW_EVENTS
+#ifdef USE_HARDWARE_PART
     GENINT_ENTRY(genint__hw_event, DMA2PLB6_SLV_ERR_INT,    DMA2PLB6_SLV_ERR_INT,
             "signal <DMA2PLB6_SLV_ERR_INT>"),
 /*  -----------------------------------------------------------------------  */
@@ -484,7 +497,7 @@ struct genint_entry_t intgen_list[] =
     GENINT_ENTRY(genint__p6p4,     DCR_PLB6PLB4_1_BASE,     PLB6PLB41_O_BR6TO4_INTR,
             "PLB6PLB4 Bridge #1"),
 /*  -----------------------------------------------------------------------  */
-#ifdef USE_HW_EVENTS
+#ifdef USE_HARDWARE_PART
     GENINT_ENTRY(genint__hw_event, PLB4XAHB1_INTR,          PLB4XAHB1_INTR,
             "signal <PLB4XAHB_INTR>"),
 #endif
@@ -498,7 +511,7 @@ struct genint_entry_t intgen_list[] =
             "LTRACE COMPLETE 0"),
 /*  -----------------------------------------------------------------------  */
 /*  ---- UNCONNECTED INTERNAL INTERRUPTS <MPIC128_SOURCE_INTI[15:31]> -----  */
-#ifdef USE_HW_EVENTS
+#ifdef USE_HARDWARE_PART
     GENINT_ENTRY(genint__hw_event, 15, 15, "<MPIC128_SOURCE_INTI[15]>"),
     GENINT_ENTRY(genint__hw_event, 16, 16, "<MPIC128_SOURCE_INTI[16]>"),
     GENINT_ENTRY(genint__hw_event, 17, 17, "<MPIC128_SOURCE_INTI[17]>"),
@@ -537,6 +550,10 @@ uint32_t check_internal_interrupts(void)
         irq = intgen_list[idx].irqn;
         rumboot_printf("[%d]: Generating '%s' interrupt (IRQ #%d)...\n",
                 idx, intgen_list[idx].name, irq);
+        /* Clear SRR1 and CSRR1 */
+        spr_write(SPR_SRR1,  0x00000000);
+        spr_write(SPR_CSRR1, 0x00000000);
+        irq_type = 0;
         intgen_list[idx].func(intgen_list[idx].data);
         wait_irq(IRQ_WAIT_TIMEOUT, irq);
         status |= !(result = get_interrupt(IRQ, irq));
@@ -546,12 +563,19 @@ uint32_t check_internal_interrupts(void)
             irq_handler(-irq, NULL);
         }
         TEST_ASSERT(result, "INTERNAL INTERRUPT NOT RECEIVED!\n");
+        if((irq >= IRQ_MC_BEG) && (irq <= IRQ_MC_END))
+            result = !!(irq_type & BIT(IRQ_TYPE_CR));
+        else if((irq >= IRQ_CR_BEG) && (irq <= IRQ_CR_END))
+                result = !!(irq_type & BIT(IRQ_TYPE_CR));
+        else result = !!(irq_type & BIT(IRQ_TYPE_NC));
+        status |= !result;
+        TEST_ASSERT(result, "INTERUPT TYPE MISMATCH!\n");
     }
     rumboot_printf("%s %s!\n", title, !status ? "success" : "failed");
     return status;
 }
 
-#ifdef USE_HW_EVENTS
+#ifdef USE_HARDWARE_PART
 uint32_t check_external_interrupts(void)
 {
     static
@@ -623,7 +647,7 @@ void init_interrupts(void)
 
 uint32_t main(void)
 {
-#ifdef USE_HW_EVENTS
+#ifdef USE_HARDWARE_PART
     test_event_send_test_id(TEST_STRING_ID);
 #endif
     init_interrupts();
@@ -635,7 +659,7 @@ uint32_t main(void)
 
     return print_result(
             check_internal_interrupts()
-#ifdef USE_HW_EVENTS
+#ifdef USE_HARDWARE_PART
             ||
             check_external_interrupts()
 #endif
