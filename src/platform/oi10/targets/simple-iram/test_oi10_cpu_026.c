@@ -9,6 +9,8 @@
 #include <rumboot/irq.h>
 #include <rumboot/printf.h>
 
+#include <platform/arch/ppc/ppc_476fp_mmu.h>
+#include <platform/arch/ppc/ppc_476fp_mmu_fields.h>
 #include <platform/common_macros/common_macros.h>
 #include <platform/devices.h>
 #include <platform/devices/l2c.h>
@@ -1227,6 +1229,16 @@ static void irq_handler( int irq, void *arg )
 }
 
 
+
+static struct tlb_entry const em2_nospeculative_tlb_entries[] =
+{
+/*   MMU_TLB_ENTRY(  ERPN,   RPN,        EPN,        DSIZ,                   IL1I,   IL1D,   W,      I,      M,      G,      E,                      UX, UW, UR,     SX, SW, SR      DULXE,  IULXE,      TS,     TID,                WAY,                BID,                V   )*/
+    {MMU_TLB_ENTRY(  0x000,  0x00000,    0x00000,    MMU_TLBE_DSIZ_1GB,      0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b0,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )},
+    {MMU_TLB_ENTRY(  0x000,  0x40000,    0x40000,    MMU_TLBE_DSIZ_1GB,      0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b0,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )}
+};
+
+
+
 int main()
 {
     uint32_t complete_stop_mask = 0x01;
@@ -1258,6 +1270,9 @@ int main()
 
 
     test_event_send_test_id("test_oi10_cpu_026");
+
+
+    write_tlb_entries(em2_nospeculative_tlb_entries, ARRAY_SIZE(em2_nospeculative_tlb_entries));
 
 
     rumboot_irq_cli();
