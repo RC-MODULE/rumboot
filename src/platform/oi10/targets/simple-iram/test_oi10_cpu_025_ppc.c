@@ -57,7 +57,7 @@
 #define UNEXIST_DCR_ADDR                0x00
 #define TEST_OI10_CPU_025_PPC_TIMEOUT    100
 
-static const tlb_entry bootrom_mirror           = {TLB_ENTRY_BOOTROM_MIRROR_0};
+//static const tlb_entry bootrom_mirror           = {TLB_ENTRY_BOOTROM_MIRROR_0};
 static const tlb_entry em0_0_cache_on_valid     = {TLB_ENTRY_EM0_0_CACHE_VALID};
 static const tlb_entry em0_0_cache_off_valid    = {TLB_ENTRY_EM0_0_NOCACHE_VALID};
 
@@ -91,8 +91,8 @@ asm  (
 static void load_code_in_cache(uint32_t start_addr, uint32_t code_size)
 {
     uint32_t cur_addr;
-    rumboot_printf("Caching exception generation code\n"); 
-    
+    rumboot_printf("Caching exception generation code\n");
+
     for (cur_addr=start_addr; cur_addr<start_addr+code_size; cur_addr+=L1C_LINE_SIZE)
     {
         rumboot_printf("icbt %x\n", cur_addr);
@@ -158,7 +158,7 @@ static void check_mc_status_soft(uint32_t mc_interrupt_status)
                                                  | (1 << CTRL_CCR1_MMUTPEI_i)));
         isync();
 
-        write_tlb_entries(&bootrom_mirror,1);//fix tlb errors
+        write_tlb_entries(&em0_0_cache_on_valid,1);//restore caching tlb
         SET_BIT(MC_HANDLED, ITRPT_MCSR_TLB_i);
         rumboot_printf("detected 'UTLB parity error' interrupt\n");
     }
@@ -206,6 +206,8 @@ static void check_mc_status_soft(uint32_t mc_interrupt_status)
         dci(0); dci(2);
         msync();
         isync();
+
+        l2c_l2_write( DCR_L2C_BASE, L2C_L2PLBSTAT1, 0xFFFFFFFF );
 
         SET_BIT(MC_HANDLED, ITRPT_MCSR_L2_i);
         rumboot_printf("detected 'Error reported through the L2 cache' interrupt\n");
@@ -269,8 +271,8 @@ static void generate_TLB_mc()
                                             | (0b1 << CTRL_CCR1_MMUTPEI_i)); //enable_mmu_parity_error_insert
     isync();
 
-    write_tlb_entries(&bootrom_mirror,1);//set tlb with errors
-    test_tlb_addr = ioread32 (BOOTROM_BASE);
+    write_tlb_entries(&em0_0_cache_off_valid,1);//set tlb with errors
+    test_tlb_addr = ioread32 (SRAM0_BASE);
     rumboot_printf("test_tlb_addr = %d\n",test_tlb_addr);
 }
 
@@ -302,7 +304,6 @@ static void generate_DC_mc()
 
     rumboot_printf("Check value\n");
     rumboot_printf("value = %x\n", ioread32((uint32_t) data_addr));
-
 }
 
 static void generate_FPR_mc()
@@ -345,45 +346,12 @@ static void generate_IMP_mc ()
     generate_DCR_and_IMP_mc();
 }
 
-//static void generate_L2C_mc()
-//{
-//    rumboot_printf("Check 'L2C error' soft generation\n");
-//    icbt(2, &mem_test_data);
-//    msync();
-//
-//    rumboot_printf("Check value\n");
-//    rumboot_printf("value = %x\n", mem_test_data);
-//}
-static void cached_func_from_EM0()
-{
-    rumboot_printf("execute cached_func_from_EM0\n");
-}
-
-static void gen_exception()
-{
-    rumboot_printf("generate L2C exception\n");
-    asm volatile   (
-        "icbi 0,%0\n\t"
-        "msync\n\t"
-        "mtspr %3, %1\n\t"
-        "isync\n\t"
-        "icbt 0,0,%0\n\t"
-        "msync\n\t"
-        "mtspr %3, %2\n\t"
-        "isync\n\t"
-        ::"r"((uint32_t) cached_func_from_EM0), "r"(2 << CTRL_CCR1_ICDPEI_i), "r"(0), "i"(SPR_CCR1)
-        :
-    );
-    //cached_func_from_EM0();
-}
-
 static void generate_L2C_mc()
 {
-    rumboot_printf("Check 'L2C error' generation with CCR1  field\n");
-//    load_code_in_cache((uint32_t)gen_exception, 0x40);
-    gen_exception();
+    rumboot_printf("Check 'L2C error' soft generation \n");
+    dcbi((void*)&mem_test_data);
+    msync();
 }
-
 
 static void wait_interrupt(ITRPT_MCSR_FIELD MCSR_bit)
 {
@@ -517,23 +485,23 @@ int main ()
 {
     test_event_send_test_id( "test_oi10_cpu_025_ppc");
 
-//    test_setup_inj();
-//    check_mc_with_injector( EVENT_GENERATE_TLB_MC, ITRPT_MCSR_TLB_i  );
-//    check_mc_with_injector( EVENT_GENERATE_IC_MC,  ITRPT_MCSR_IC_i   );
-//    check_mc_with_injector( EVENT_GENERATE_DC_MC,  ITRPT_MCSR_DC_i   );
-//    check_mc_with_injector( EVENT_GENERATE_GPR_MC, ITRPT_MCSR_GPR_i  );
-//    check_mc_with_injector( EVENT_GENERATE_FPR_MC, ITRPT_MCSR_FPR_i  );
-//    check_mc_with_injector( EVENT_GENERATE_IMP_MC, ITRPT_MCSR_IMP_i  );
-//   check_mc_with_injector( EVENT_GENERATE_L2_MC,  ITRPT_MCSR_L2_i   );
-//    check_mc_with_injector( EVENT_GENERATE_DCR_MC, ITRPT_MCSR_DCR_i  );
+    test_setup_inj();
+    check_mc_with_injector( EVENT_GENERATE_TLB_MC, ITRPT_MCSR_TLB_i  );
+    check_mc_with_injector( EVENT_GENERATE_IC_MC,  ITRPT_MCSR_IC_i   );
+    check_mc_with_injector( EVENT_GENERATE_DC_MC,  ITRPT_MCSR_DC_i   );
+    check_mc_with_injector( EVENT_GENERATE_GPR_MC, ITRPT_MCSR_GPR_i  );
+    check_mc_with_injector( EVENT_GENERATE_FPR_MC, ITRPT_MCSR_FPR_i  );
+    check_mc_with_injector( EVENT_GENERATE_IMP_MC, ITRPT_MCSR_IMP_i  );
+    check_mc_with_injector( EVENT_GENERATE_L2_MC,  ITRPT_MCSR_L2_i   );
+    check_mc_with_injector( EVENT_GENERATE_DCR_MC, ITRPT_MCSR_DCR_i  );
 
     test_setup_soft();
-//    check_mc_with_soft(ITRPT_MCSR_TLB_i);
-//    check_mc_with_soft(ITRPT_MCSR_IC_i);
-//    check_mc_with_soft(ITRPT_MCSR_DC_i);
-//    check_mc_with_soft(ITRPT_MCSR_FPR_i);
-//    check_mc_with_soft(ITRPT_MCSR_DCR_i);
-//    check_mc_with_soft(ITRPT_MCSR_IMP_i);
+    check_mc_with_soft(ITRPT_MCSR_TLB_i);
+    check_mc_with_soft(ITRPT_MCSR_IC_i);
+    check_mc_with_soft(ITRPT_MCSR_DC_i);
+    check_mc_with_soft(ITRPT_MCSR_FPR_i);
+    check_mc_with_soft(ITRPT_MCSR_DCR_i);
+    check_mc_with_soft(ITRPT_MCSR_IMP_i);
     check_mc_with_soft(ITRPT_MCSR_L2_i);
 
     return 0;
