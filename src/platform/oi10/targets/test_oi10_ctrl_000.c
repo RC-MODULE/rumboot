@@ -177,7 +177,7 @@ static void send_mbist_inject_event(const uint32_t chain_number)
     rumboot_platform_event_raise( EVENT_TESTEVENT, event_data, ARRAY_SIZE(event_data) );
 }
 
-static void send_mbist_resease_event(const uint32_t chain_number)
+static void send_mbist_release_event(const uint32_t chain_number)
 {
     uint32_t const event_data[] = { TEST_OI10_CTRL_000_RELEASE_ERR, chain_number };
     rumboot_platform_event_raise( EVENT_TESTEVENT, event_data, ARRAY_SIZE(event_data) );
@@ -216,11 +216,12 @@ check_sctl_kmbist_chains(const uint32_t base_addr, const bool with_injections)
         }
         TEST_ASSERT(((dcr_read(base_addr + kmbist_chain) & SCTL_KMBIST_CHAIN_SF_DONE_mask) && t),
                 "Timeout occurred while waiting end of KMBIST_CHAIN!");
-        dcr_write(base_addr + kmbist_chain, ((~SCTL_KMBIST_CHAIN_SF_TM_val) << SCTL_KMBIST_CHAIN_SF_TM_i));
         result &= ((bool)(dcr_read(base_addr + kmbist_chain) & SCTL_KMBIST_CHAIN_SF_FAIL_mask)
                 == with_injections);
+        dcr_write(base_addr + kmbist_chain, (((~SCTL_KMBIST_CHAIN_SF_TM_val)
+                & SCTL_KMBIST_CHAIN_SF_TM_mask)<< SCTL_KMBIST_CHAIN_SF_TM_i));
         if(with_injections)
-            send_mbist_resease_event(chain_number);
+            send_mbist_release_event(chain_number);
         if(MBIST_RELOCATE == kmbist_chain)
         {
             memcpy((void *)RELOCATE_TO,(void *)RELOCATE_FROM,IM0_SIZE);
