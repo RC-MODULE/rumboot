@@ -536,11 +536,14 @@ struct genint_entry_t intgen_list[] =
 uint32_t check_internal_interrupts(void)
 {
     static
-    char        *title  = "Check internal interrupts";
-    uint32_t     status = TEST_OK;
-    uint32_t     result = 0;
-    int          idx    = 0;
-    int          irq    = 0;
+    char         *title  = "Check internal interrupts";
+    uint32_t      status = TEST_OK,
+                  result = 0;
+    int           spri   = 0,
+                  idx    = 0,
+                  irq    = 0;
+    static const
+    uint32_t      sprl[] = {SPR_SRR0, SPR_CSRR0, SPR_SRR1, SPR_CSRR1};
 
     rumboot_printf("%s...\n", title);
     int_int_idx = 0;
@@ -550,9 +553,9 @@ uint32_t check_internal_interrupts(void)
         irq = intgen_list[idx].irqn;
         rumboot_printf("[%d]: Generating '%s' interrupt (IRQ #%d)...\n",
                 idx, intgen_list[idx].name, irq);
-        /* Clear SRR1 and CSRR1 */
-        spr_write(SPR_SRR1,  0x00000000);
-        spr_write(SPR_CSRR1, 0x00000000);
+        /* Clear xSRRn */
+        for(spri = 0; spri < ARRAY_SIZE(sprl); spri++)
+            spr_write(sprl[spri],  0x00000000);
         irq_type = 0;
         intgen_list[idx].func(intgen_list[idx].data);
         wait_irq(IRQ_WAIT_TIMEOUT, irq);
