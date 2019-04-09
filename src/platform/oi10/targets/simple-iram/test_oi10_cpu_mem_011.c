@@ -52,7 +52,7 @@
 #define L1_LINES                    256
 #define L1_LINE_SIZE                32
 #define L1_LINE_WORDS               (L1_LINE_SIZE / sizeof(uint32_t))
-#define USED_CACHE_LINES            8
+#define USED_CACHE_LINES            12
 #define L1_WAYS                     4
 #define L1_WAY_DATA_SIZE            (L1_LINE_SIZE * L1_LINES)
 #define L1_ALIGN_LINES              (L1_LINES - USED_CACHE_LINES)
@@ -80,6 +80,8 @@
                     0x77777777,0x77777777,0x77777777,0x77777777
 #define D_W0L7      0x77777777,0x77777777,0x77777777,0x77777777,    \
                     0xEEEEEEEE,0xEEEEEEEE,0xEEEEEEEE,0xEEEEEEEE
+#define D_W0L8      0x08040201,0x08040201,0x08040201,0x08040201,    \
+                    0x08040201,0x08040201,0x08040201,0x08040201					
 /* Way 1 */
 #define D_W1L0      0xFFFFFFFF,0x00000000,0xFFFFFFFF,0x00000000,    \
                     0xFFFF0000,0xFFFF0000,0xFFFF0000,0xFFFF0000
@@ -134,14 +136,18 @@
 
 /* Compound cache ways data */
 #define DATA_WAY_0  {D_W0L0},{D_W0L1},{D_W0L2},{D_W0L3},    \
-                    {D_W0L4},{D_W0L5},{D_W0L6},{D_W0L7}
+                    {D_W0L4},{D_W0L5},{D_W0L6},{D_W0L7},    \
+                    {D_W0L8},{D_W0L8},{D_W0L8},{D_W0L8}
+					
 #define DATA_WAY_1  {D_W1L0},{D_W1L1},{D_W1L2},{D_W1L3},    \
-                    {D_W1L4},{D_W1L5},{D_W1L6},{D_W1L7}
+                    {D_W1L4},{D_W1L5},{D_W1L6},{D_W1L7},    \
+					{D_W0L8},{D_W0L8},{D_W0L8},{D_W0L8}
 #define DATA_WAY_2  {D_W2L0},{D_W2L1},{D_W2L2},{D_W2L3},    \
-                    {D_W2L4},{D_W2L5},{D_W2L6},{D_W2L7}
+                    {D_W2L4},{D_W2L5},{D_W2L6},{D_W2L7},    \
+					{D_W0L8},{D_W0L8},{D_W0L8},{D_W0L8}
 #define DATA_WAY_3  {D_W3L0},{D_W3L1},{D_W3L2},{D_W3L3},    \
-                    {D_W3L4},{D_W3L5},{D_W3L6},{D_W3L7}
-
+                    {D_W3L4},{D_W3L5},{D_W3L6},{D_W3L7},    \
+                    {D_W0L8},{D_W0L8},{D_W0L8},{D_W0L8}
 
 /* Functions */
 #define WORDS2BYTES(WORDS)              ((WORDS) << 2)
