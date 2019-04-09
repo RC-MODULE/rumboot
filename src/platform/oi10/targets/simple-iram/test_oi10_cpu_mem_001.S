@@ -590,6 +590,51 @@ start_testing_fmadd:
     stfd  f13, 0x58(r4)
     lfd f29, 0x28(r4)
     lfd f30, 0x30(r4)
+    
+    rumboot_putstring "2 write opareations(due to 2 ports) in 1 fpr\n"
+    
+    load_const r7, 0x10
+    mtctr r7
+    loop:
+    .align 5
+    load_addr r6, new_double_var
+     fmadd f17, f1, f4, f7
+      lfdux f25, r30, r29
+    fmadd f19, f0, f8, f5
+      lfdux f27, r30, r29
+    fmadd f21, f11, f14, f15
+      lfdux f29, r30, r29
+    fmadd f16, f7, f10, f13
+      lfdux f26, r30, r29
+    fmadd f18, f12, f11, f9
+      lfdux f31, r30, r29
+    fmadd f22, f15, f6, f0
+      lfdux f24, r30, r29
+    fmadd f20, f1, f8, f3
+      lfdux f28, r30, r29
+    fmadd f23, f9, f5, f2
+      lfdux f30, r30, r29
+ 
+
+    //fmadd f30, f0, f11, f7 // "write op in 1 fpr (f30)" 
+    fmadd f25, f0, f11, f7
+      lfdux f17, r30, r29
+    fmadd f27, f13, f3, f14
+      lfdux f19, r30, r29
+    fmadd f29, f10, f8, f15
+      lfdux f21, r30, r29
+    fmadd f26, f12, f7, f6
+      lfdux f16, r30, r29
+    fmadd f31, f2, f4, f5
+      lfdux f18, r30, r29
+    fmadd f24, f10, f9, f15
+      lfdux f22, r30, r29
+    fmadd f28, f7, f11, f13
+      lfdux f20, r30, r29
+    fmadd f30, f14, f3, f12
+      lfdux f23, r30, r29
+
+      bdnz+ loop // "end of write op in 1 fpr"
 
     rumboot_putstring "sqrt sequence\n"
     load_addr r4, sqrt_source
@@ -631,6 +676,10 @@ sqrt_source:
 .align 4
 sqrt_target:
     .double   7.5
+    
+.align 4
+new_double_var:
+    .double   17.15
 
 .align 4
 mem_label:
