@@ -24,6 +24,7 @@
 #include <platform/devices/hscb.h>
 #include <platform/devices/emi.h>
 #include <platform/devices/nor_1636RR4.h>
+#include <platform/arch/ppc/ppc_476fp_mmu.h>
 
 
 #define MAX_ATTEMPTS 100000
@@ -822,7 +823,7 @@ static uint32_t check_hscb_func(
     cnt = 0;
     hscb0_dma_status = 0;
     hscb1_dma_status = 0;
-    rumboot_putstring( "Finish work!\n" );
+    rumboot_printf( "Finish work!\n" );
 
 
     rumboot_printf( "HSCB (0x%x) to HSCB (0x%x) descriptors checking\n", supplementary_base_addr, base_addr );
@@ -863,6 +864,16 @@ int main() {
     uint32_t count_of_memory_areas;
     uint8_t** data_areas = NULL;
     uint32_t* data_area_sizes = NULL;
+
+    static struct tlb_entry const em2_nospeculative_tlb_entries[] =
+    {
+    /*   MMU_TLB_ENTRY(  ERPN,   RPN,        EPN,        DSIZ,                   IL1I,   IL1D,   W,      I,      M,      G,      E,                      UX, UW, UR,     SX, SW, SR      DULXE,  IULXE,      TS,     TID,                WAY,                BID,                V   )*/
+        {MMU_TLB_ENTRY(  0x000,  0x00000,    0x00000,    MMU_TLBE_DSIZ_1GB,      0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b0,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )},
+        {MMU_TLB_ENTRY(  0x000,  0x40000,    0x40000,    MMU_TLBE_DSIZ_1GB,      0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b0,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )}
+    };
+
+    write_tlb_entries(em2_nospeculative_tlb_entries, ARRAY_SIZE(em2_nospeculative_tlb_entries));
+
 
     emi_init(DCR_EM2_EMI_BASE);
     tbl = create_irq_handlers();

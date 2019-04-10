@@ -168,4 +168,6 @@
 #define PPC0_CORE_ID    0b00
 #define PPC1_CORE_ID    0b01
 
+#define L1C_LINE_SIZE   (32)
+
 #endif  // PPC_476FP_CONFIG_H

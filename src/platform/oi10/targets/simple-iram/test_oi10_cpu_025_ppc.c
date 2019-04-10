@@ -52,15 +52,12 @@
 #define TLB_ENTRY_EM0_0_NOCACHE_VALID       MMU_TLB_ENTRY(  0x000,  0x00000,    0x00000,    MMU_TLBE_DSIZ_1GB,      0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,  MMU_TLBWE_BE_UND,   0b1 )
 #define TLB_ENTRY_EM0_0_NOCACHE_INVALID     MMU_TLB_ENTRY(  0x000,  0x00000,    0x00000,    MMU_TLBE_DSIZ_1GB,      0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,  MMU_TLBWE_BE_UND,   0b0 )
 #define TLB_ENTRY_EM0_0_CACHE_VALID         MMU_TLB_ENTRY(  0x000,  0x00000,    0x00000,    MMU_TLBE_DSIZ_1GB,      0b0,    0b0,    0b1,    0b0,    0b1,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,  MMU_TLBWE_BE_UND,   0b1 )
-#define TLB_ENTRY_BOOTROM_MIRROR_0          MMU_TLB_ENTRY(  0x01F,  0xFFFF0,    0xFFFF0,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b1,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b0,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,  MMU_TLBWE_BE_0,     0b1 )
-//                                  .long   MMU_TLB_ENTRY(  0x01F,  0xFFFF0,    0xFFFF0,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b0,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_0,     0b1 )
-//                                  .long   MMU_TLB_ENTRY(  0x000,  0x00000,    0x00000,    MMU_TLBE_DSIZ_1GB,      0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
-
+#define TLB_ENTRY_BOOTROM_MIRROR_0          MMU_TLB_ENTRY(  0x01F,  0xFFFF0,    0xFFFF0,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b0,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,  MMU_TLBWE_BE_0,     0b1 )
 
 #define UNEXIST_DCR_ADDR                0x00
 #define TEST_OI10_CPU_025_PPC_TIMEOUT    100
 
-static const tlb_entry bootrom_mirror           = {TLB_ENTRY_BOOTROM_MIRROR_0};
+//static const tlb_entry bootrom_mirror           = {TLB_ENTRY_BOOTROM_MIRROR_0};
 static const tlb_entry em0_0_cache_on_valid     = {TLB_ENTRY_EM0_0_CACHE_VALID};
 static const tlb_entry em0_0_cache_off_valid    = {TLB_ENTRY_EM0_0_NOCACHE_VALID};
 
@@ -70,7 +67,6 @@ volatile uint32_t mem_test_data __attribute__((section(".data"))) = 0x5555AAAA;
 volatile uint32_t MC_HANDLED __attribute__((section(".data")))   = 0;
 
 uint32_t value = 0;
-
 typedef void func();
 extern uint32_t cached_func[], func_size;
 
@@ -96,34 +92,12 @@ static void load_code_in_cache(uint32_t start_addr, uint32_t code_size)
 {
     uint32_t cur_addr;
     rumboot_printf("Caching exception generation code\n");
-    for (cur_addr=start_addr; cur_addr<start_addr+code_size; cur_addr+=0x100)
+
+    for (cur_addr=start_addr; cur_addr<start_addr+code_size; cur_addr+=L1C_LINE_SIZE)
     {
         rumboot_printf("icbt %x\n", cur_addr);
         icbt(0, (void* const)cur_addr);
     }
-}
-
-void __attribute__((section(".text"))) cached_func_from_EM0()
-{
-    rumboot_printf("execute cached_func_from_EM0\n");
-}
-
-static void gen_exception()
-{
-    rumboot_printf("generate L2C exception\n");
-    asm volatile   (
-        "icbi 0,%0\n\t"
-        "msync\n\t"
-        "mtspr %3, %1\n\t"
-        "isync\n\t"
-        "icbt 0,0,%0\n\t"
-        "msync\n\t"
-        "mtspr %3, %2\n\t"
-        "isync\n\t"
-        ::"r"((uint32_t) cached_func_from_EM0), "r"(2 << CTRL_CCR1_ICDPEI_i), "r"(0), "i"(SPR_CCR1)
-        :
-    );
-    cached_func_from_EM0();
 }
 
 static void gen_IC_exception_asm()
@@ -150,8 +124,6 @@ static void gen_IC_exception_asm()
     rumboot_printf("value = %x\n", value);
 }
 
-
-
 inline static void enable_machine_check()
 {
     msr_write(msr_read() | (1<<ITRPT_XSR_ME_i)); /* MSR[ME] - Machine check enable.     */
@@ -160,7 +132,6 @@ inline static void enable_machine_check()
 static void exit_from_machine_check_interrupt(uint32_t MCSR_value)
 {
     spr_write(SPR_MCSR_C,MCSR_value);
-
 }
 
 static void wait_MCSR_value(ITRPT_MCSR_FIELD MCSR_bit)
@@ -176,7 +147,7 @@ static void wait_MCSR_value(ITRPT_MCSR_FIELD MCSR_bit)
     spr_write(SPR_MCSR_C , 1 << MCSR_bit);
 }
 
-static void check_mc_status_CCR1(uint32_t mc_interrupt_status)
+static void check_mc_status_soft(uint32_t mc_interrupt_status)
 {
     rumboot_printf("mc_interrupt_status = %x\n",mc_interrupt_status);
 
@@ -187,7 +158,7 @@ static void check_mc_status_CCR1(uint32_t mc_interrupt_status)
                                                  | (1 << CTRL_CCR1_MMUTPEI_i)));
         isync();
 
-        write_tlb_entries(&bootrom_mirror,1);//fix tlb errors
+        write_tlb_entries(&em0_0_cache_on_valid,1);//restore caching tlb
         SET_BIT(MC_HANDLED, ITRPT_MCSR_TLB_i);
         rumboot_printf("detected 'UTLB parity error' interrupt\n");
     }
@@ -209,6 +180,17 @@ static void check_mc_status_CCR1(uint32_t mc_interrupt_status)
     }
     if (mc_interrupt_status & (1<<ITRPT_MCSR_FPR_i))
     {
+        msr_write( msr_read() | (1<<ITRPT_XSR_FP_i));
+
+        asm volatile   (
+            "lfs 1, 0(%0)\n\t"
+            "lfs 2, 0(%0)\n\t"
+            "msync\n\t"
+            "fcmpu 0, 1, 2\n\t"
+            ::"r"(&mem_test_data)
+            :"1","2"
+        );
+
         SET_BIT(MC_HANDLED, ITRPT_MCSR_FPR_i);
         rumboot_printf("detected 'FPR parity error' interrupt\n");
     }
@@ -221,6 +203,12 @@ static void check_mc_status_CCR1(uint32_t mc_interrupt_status)
 
     if (mc_interrupt_status & (1<<ITRPT_MCSR_L2_i))
     {
+        dci(0); dci(2);
+        msync();
+        isync();
+
+        l2c_l2_write( DCR_L2C_BASE, L2C_L2PLBSTAT1, 0xFFFFFFFF );
+
         SET_BIT(MC_HANDLED, ITRPT_MCSR_L2_i);
         rumboot_printf("detected 'Error reported through the L2 cache' interrupt\n");
     }
@@ -232,13 +220,13 @@ static void check_mc_status_CCR1(uint32_t mc_interrupt_status)
     msync();
 }
 
-static void machine_check_interrupt_handler_CCR1(int id, const char *name)
+static void machine_check_interrupt_handler_soft(int id, const char *name)
 {
     rumboot_printf("\nWE GOT AN EXCEPTION: %d: %s\n", id, name);
     if(id == RUMBOOT_IRQ_MACHINE_CHECK) {
         uint32_t mc_interrupt_status;
         mc_interrupt_status = spr_read(SPR_MCSR_RW);
-        check_mc_status_CCR1(mc_interrupt_status);
+        check_mc_status_soft(mc_interrupt_status);
         exit_from_machine_check_interrupt(mc_interrupt_status);
     } else {
         rumboot_printf("--- Guru Meditation ---\n");
@@ -259,13 +247,13 @@ static void setup_machine_check_interrupt(void (*handler)(int id, const char *na
     rumboot_irq_set_exception_handler(handler);
 }
 
-void test_setup_CCR1()
+void test_setup_soft()
 {
     rumboot_printf("Check interrupts created by CCR1\n");
 
 
 
-    setup_machine_check_interrupt(machine_check_interrupt_handler_CCR1);
+    setup_machine_check_interrupt(machine_check_interrupt_handler_soft);
     write_tlb_entries(&em0_0_cache_off_valid,1);//set em0_0 cache_off tlb_entry
 
     emi_init(DCR_EM2_EMI_BASE);
@@ -283,8 +271,8 @@ static void generate_TLB_mc()
                                             | (0b1 << CTRL_CCR1_MMUTPEI_i)); //enable_mmu_parity_error_insert
     isync();
 
-    write_tlb_entries(&bootrom_mirror,1);//set tlb with errors
-    test_tlb_addr = ioread32 (BOOTROM_BASE);
+    write_tlb_entries(&em0_0_cache_off_valid,1);//set tlb with errors
+    test_tlb_addr = ioread32 (SRAM0_BASE);
     rumboot_printf("test_tlb_addr = %d\n",test_tlb_addr);
 }
 
@@ -316,14 +304,11 @@ static void generate_DC_mc()
 
     rumboot_printf("Check value\n");
     rumboot_printf("value = %x\n", ioread32((uint32_t) data_addr));
-
 }
 
 static void generate_FPR_mc()
 {
     rumboot_printf("Check 'FPR parity error' generation with CCR1_FPRPEI field\n");
-    uint32_t const msr_old_value = msr_read();
-    msr_write(msr_old_value | (1<<ITRPT_XSR_FP_i));
 
     asm volatile   (
         "lfs 1, 0(%0)\n\t"
@@ -340,7 +325,6 @@ static void generate_FPR_mc()
         ::"r"(&mem_test_data), "r"(0b11 << CTRL_CCR1_FPRPEI_i), "r"(0), "i"(SPR_CCR1)
         :"1","2"
     );
-    msr_write(msr_old_value);
 
 }
 
@@ -364,9 +348,9 @@ static void generate_IMP_mc ()
 
 static void generate_L2C_mc()
 {
-    rumboot_printf("Check 'L2C error' generation with CCR1  field\n");
-    load_code_in_cache((uint32_t)gen_exception, 0x40);
-    gen_exception();
+    rumboot_printf("Check 'L2C error' soft generation \n");
+    dcbi((void*)&mem_test_data);
+    msync();
 }
 
 static void wait_interrupt(ITRPT_MCSR_FIELD MCSR_bit)
@@ -376,7 +360,7 @@ static void wait_interrupt(ITRPT_MCSR_FIELD MCSR_bit)
     rumboot_printf("MCSR_bit = %d\n",MCSR_bit);
 }
 
-void check_mc_with_CCR1(ITRPT_MCSR_FIELD MCSR_bit)
+void check_mc_with_soft(ITRPT_MCSR_FIELD MCSR_bit)
 {
     MC_HANDLED = 0;
     msync();
@@ -511,14 +495,14 @@ int main ()
     check_mc_with_injector( EVENT_GENERATE_L2_MC,  ITRPT_MCSR_L2_i   );
     check_mc_with_injector( EVENT_GENERATE_DCR_MC, ITRPT_MCSR_DCR_i  );
 
-    test_setup_CCR1();
-    check_mc_with_CCR1(ITRPT_MCSR_TLB_i);
-    check_mc_with_CCR1(ITRPT_MCSR_IC_i);
-    check_mc_with_CCR1(ITRPT_MCSR_DC_i);
-    check_mc_with_CCR1(ITRPT_MCSR_FPR_i);
-    check_mc_with_CCR1(ITRPT_MCSR_DCR_i);
-    check_mc_with_CCR1(ITRPT_MCSR_IMP_i);
-    check_mc_with_CCR1(ITRPT_MCSR_L2_i);
+    test_setup_soft();
+    check_mc_with_soft(ITRPT_MCSR_TLB_i);
+    check_mc_with_soft(ITRPT_MCSR_IC_i);
+    check_mc_with_soft(ITRPT_MCSR_DC_i);
+    check_mc_with_soft(ITRPT_MCSR_FPR_i);
+    check_mc_with_soft(ITRPT_MCSR_DCR_i);
+    check_mc_with_soft(ITRPT_MCSR_IMP_i);
+    check_mc_with_soft(ITRPT_MCSR_L2_i);
 
     return 0;
 }
