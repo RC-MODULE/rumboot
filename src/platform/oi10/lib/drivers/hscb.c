@@ -40,6 +40,12 @@ void hscb_convert_to_bytes (uint32_t* data_in, uint8_t* data_out, uint32_t len) 
 bool hscb_sw_rst(uint32_t base_addr)
 {
     uint32_t time = 0;
+// Add by M.Chelyshev as glitch-protect
+    uint32_t tmp = 0;
+    tmp = ioread32(base_addr + HSCB_SETTINGS);
+    tmp = tmp & 0xfffffffe;
+    iowrite32(tmp, base_addr + HSCB_SETTINGS);
+// ------------------------------------    
     iowrite32(1, base_addr + HSCB_SW_RESET);
     while ((ioread32(base_addr + HSCB_SW_RESET)!=0) && (time++<HSCB_SW_RESET_TIMEOUT));
     if (time<HSCB_SW_RESET_TIMEOUT)
