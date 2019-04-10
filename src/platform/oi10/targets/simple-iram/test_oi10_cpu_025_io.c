@@ -5,7 +5,7 @@
  *      Author: m.smolina
  */
 
-// #define USE_HARDWARE_PARTS
+#define USE_HARDWARE_PARTS
 
 #include <stdio.h>
 #include <stdint.h>
@@ -109,20 +109,28 @@ void DMA_O_S_SLV_ERR_INT_inj_int_handler()
 
 void P6P4_0_BR6TO4_INTR_inj_int_handler()
 {
+    uint32_t p64_esr;
     rumboot_printf("P6P4_0_BR6TO4_INTR_inj_int_handler\n");
     SET_BIT(MC_HANDLED, PLB6PLB40_O_0_BR6TO4_INTR);
-    TEST_ASSERT(dcr_read(DCR_PLB6PLB4_0_BASE + P64_ESR) & (0b1 << ESR_TESR_P4MWE_i), "Wrong value in P6P4_0 ESR reg. Expected ESR[P4MWE]=1\n");
+    rumboot_printf("P64_0.ESR=0x%X\n",
+            p64_esr = dcr_read(DCR_PLB6PLB4_0_BASE + P64_ESR));
+    TEST_ASSERT(p64_esr & (1 << ESR_TESR_P4MWE_i),
+            "Wrong value in P6P4_0 ESR reg. Expected ESR[P4MWE]=1\n");
     test_event(EVENT_CLEAR_INT_P6P4_0_BR6TO4_INTR);
-    dcr_write(DCR_PLB6PLB4_0_BASE + P64_ESR, ((0b1 << ESR_TESR_P4MWE_i)));
+    dcr_write(DCR_PLB6PLB4_0_BASE + P64_ESR, p64_esr);
 }
 
 void P6P4_1_BR6TO4_INTR_inj_int_handler()
 {
+    uint32_t p64_esr;
     rumboot_printf("P6P4_1_BR6TO4_INTR_inj_int_handler\n");
     SET_BIT(MC_HANDLED, PLB6PLB41_O_BR6TO4_INTR);
-    TEST_ASSERT(dcr_read(DCR_PLB6PLB4_1_BASE + P64_ESR) & (0b1 << ESR_TESR_P4MWE_i), "Wrong value in P6P4_1 ESR reg. Expected ESR[P4MWE]=1\n");
+    rumboot_printf("P64_1.ESR=0x%X\n",
+            p64_esr = dcr_read(DCR_PLB6PLB4_1_BASE + P64_ESR));
+    TEST_ASSERT(p64_esr & (1 << ESR_TESR_P6WPE_i),
+            "Wrong value in P6P4_1 ESR reg. Expected ESR[P6WPE]=1\n");
     test_event(EVENT_CLEAR_INT_P6P4_1_BR6TO4_INTR);
-    dcr_write(DCR_PLB6PLB4_1_BASE + P64_ESR, ((0b1 << ESR_TESR_P4MWE_i)));
+    dcr_write(DCR_PLB6PLB4_1_BASE + P64_ESR, p64_esr);
 }
 
 void ARB_SYSDCRERR_inj_int_handler()
@@ -324,16 +332,24 @@ int main()
 
 #ifdef USE_HARDWARE_PARTS
     test_event_send_test_id( "test_oi10_cpu_025_io" );
+#else
+    rumboot_printf("test_id: test_oi10_cpu_025_io\n");
 #endif
 
     rumboot_irq_set_exception_handler(exception_handler);
 
     MC_HANDLED = 0;
 
+    rumboot_printf("P64_0.ESR=0x%X\n",
+            dcr_read(DCR_PLB6PLB4_0_BASE + P64_ESR));
+    rumboot_printf("P64_1.ESR=0x%X\n",
+            dcr_read(DCR_PLB6PLB4_1_BASE + P64_ESR));
+
+
 #ifdef USE_HARDWARE_PARTS
-    //check_interrupt_from_io_dev_inj(DMA2PLB6_SLV_ERR_INT);
+//  check_interrupt_from_io_dev_inj(DMA2PLB6_SLV_ERR_INT);
     check_interrupt_from_io_dev_inj(PLB6PLB40_O_0_BR6TO4_INTR);
-    //check_interrupt_from_io_dev_inj(PLB6PLB41_O_BR6TO4_INTR);
+    check_interrupt_from_io_dev_inj(PLB6PLB41_O_BR6TO4_INTR);
     check_interrupt_from_io_dev_inj(ARB_SYSDCRERR);
 #endif
 
