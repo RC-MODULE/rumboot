@@ -23,7 +23,7 @@
 #define DATA_ARRAY_ADDRESS_BITS                 15
 #define DATA_ARRAY_SIZE                         (1 << DATA_ARRAY_ADDRESS_BITS)
 
-const uint32_t loop_counter = 4096;
+const uint32_t loop_counter = 6792;
 
 /*
 uint32_t inline atomic_fetch_and_nop(uint32_t address)
@@ -820,9 +820,14 @@ static int test_itrace(ITRACE_CONDITION_TYPE condition_type,
         start_address = ((j & 1) << (DATA_ARRAY_ADDRESS_BITS - 2));
         address = start_address;
         i = ((j & 1) << (DATA_ARRAY_ADDRESS_BITS - 1 ));
-//            rumboot_printf("j == %d\n", j);
-//            rumboot_printf("i == %d\n", i);
-//            rumboot_printf("address == 0x%x\n", address);
+
+
+//        rumboot_printf("j == %d\n", j);
+//        rumboot_printf("i == %d\n", i);
+//        rumboot_printf("start_address == 0x%x\n", start_address);
+//        rumboot_printf("address == 0x%x\n", address);
+
+
         do
         {
 //                    trace_msg("Address is (write)- ");
@@ -843,7 +848,7 @@ static int test_itrace(ITRACE_CONDITION_TYPE condition_type,
 
 
 //            rumboot_printf("address = 0x%x, stop_address = 0x%x\n", address, stop_address[j]);
-            if ((address >= stop_address[j]) || ((address ^ 0x80000000) >= stop_address[j]))
+            if ((address >= stop_address[j]) && ((stop_address[j] & 0x80000000) == 0x00) /*|| ((address ^ 0x80000000) >= stop_address[j])*/)
                 break;
 
 
@@ -864,7 +869,7 @@ static int test_itrace(ITRACE_CONDITION_TYPE condition_type,
 
 
 //            rumboot_printf("address = 0x%x, stop_address = 0x%x\n", address, stop_address[j]);
-            if ((address >= stop_address[j]) || ((address ^ 0x80000000) >= stop_address[j]))
+            if ((address >= stop_address[j]) && ((stop_address[j] & 0x80000000) != 0x00) /*|| ((address ^ 0x80000000) >= stop_address[j])*/)
                 break;
 
 
@@ -894,7 +899,8 @@ static int test_itrace(ITRACE_CONDITION_TYPE condition_type,
 //                if((i & 0x6) == 0x6)
 //                {
 
-            dcbf((uint32_t*)(&data[i]));
+            if (i%8 == 0)
+                dcbf((uint32_t*)(&data[i-8]));
 
 //                    trace_msg("last address for dump = ");
 //                    trace_hex(address);
