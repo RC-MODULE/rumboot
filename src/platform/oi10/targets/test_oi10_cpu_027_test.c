@@ -903,13 +903,11 @@ static int test_itrace(ITRACE_CONDITION_TYPE condition_type,
 
 //                }
 
-
+            i += 2;
 
 //            rumboot_printf("i = %d, dcr address = 0x%x\n", i, address);
             address = (address & 0x1) ? start_address | (1 << (i/4)) : address + 1;
 //            rumboot_printf("new dcr address = 0x%x\n", address);
-
-            i += 2;
 
         } while (1);
 
