@@ -305,6 +305,10 @@ uint32_t test_uart(uint32_t UART_TRANSMITTER_BASE, uint32_t UART_RECEIVER_BASE)
     if (!wait_for_tx_cts_int(UART_TIMEOUT))
         return TEST_ERROR;
 
+    if (uart_check_rfifo_empty(UART_RECEIVER_BASE)) {
+        rumboot_printf("FATAL: RX Fifo is totally empty. It shouldn't be\n");
+        return TEST_ERROR;
+    }
 
     while(!uart_check_rfifo_empty(UART_RECEIVER_BASE))
     {
@@ -334,6 +338,7 @@ int main() {
     rumboot_irq_set_handler(tbl, UARTTX_INT, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, irq_handler_uart_transmitter, (void*)0);
 
     /* Activate the table */
+    rumboot_printf("UART: RXIRQ %d TXIRQ %d\n", UARTRX_INT, UARTTX_INT);
     rumboot_irq_table_activate( tbl );
     rumboot_irq_enable( UARTRX_INT );
     rumboot_irq_enable( UARTTX_INT );
