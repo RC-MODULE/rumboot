@@ -1791,6 +1791,21 @@ endif()
     )
 
     add_rumboot_target(
+        CONFIGURATION SUPPLEMENTARY
+        LDS oi10/test_oi10_cpu_027_sram0.lds
+        FILES test_oi10_cpu_027_test.c
+        NAME "test_oi10_cpu_027_test"
+    )
+    add_rumboot_target(
+        CONFIGURATION IRAM
+        FILES test_oi10_cpu_027.c
+        CFLAGS -DTEST_OI10_CPU_027
+        NAME "test_oi10_cpu_027"
+        LOAD IM0BIN SELF
+             SRAM0BIN supplementary-test_oi10_cpu_027_test
+    )
+
+    add_rumboot_target(
       CONFIGURATION IRAM
       FILES test_oi10_cpu_mem_022.c test_oi10_cpu_mem_022.S
     )
