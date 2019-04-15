@@ -168,6 +168,10 @@
 #define PPC0_CORE_ID    0b00
 #define PPC1_CORE_ID    0b01
 
+#define L1C_INDEXES_N   (256)
+#define L1C_WAYS_N      (4)
 #define L1C_LINE_SIZE   (32)
+#define L1I_SIZE        (L1C_INDEXES_N * L1C_WAYS_N * L1C_LINE_SIZE)
+#define L1D_SIZE        (L1C_INDEXES_N * L1C_WAYS_N * L1C_LINE_SIZE)
 
 #endif  // PPC_476FP_CONFIG_H
