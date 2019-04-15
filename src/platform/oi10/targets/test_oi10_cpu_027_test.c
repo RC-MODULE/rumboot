@@ -809,7 +809,7 @@ static int test_itrace(ITRACE_CONDITION_TYPE condition_type,
     for (j = 0; j <
         (((trigger_mode == ITRACE_TRIGGER_MODE_BANK_ON_TRIGGER)
                 && ((1<<ITC0_ITLA2_VALID_i) & last_address[1]))
-                ? 2 : 1)
+                ? 2 : 2/*1*/)
                 ; j++)
     {
         start_address = ((j & 1) << (DATA_ARRAY_ADDRESS_BITS - 2));
@@ -817,10 +817,10 @@ static int test_itrace(ITRACE_CONDITION_TYPE condition_type,
         i = ((j & 1) << (DATA_ARRAY_ADDRESS_BITS - 1 ));
 
 
-//        rumboot_printf("j == %d\n", j);
-//        rumboot_printf("i == %d\n", i);
-//        rumboot_printf("start_address == 0x%x\n", start_address);
-//        rumboot_printf("address == 0x%x\n", address);
+        rumboot_printf("j == %d\n", j);
+        rumboot_printf("i == %d\n", i);
+        rumboot_printf("start_address == 0x%x\n", start_address);
+        rumboot_printf("address == 0x%x\n", address);
 
 
         do
@@ -843,7 +843,7 @@ static int test_itrace(ITRACE_CONDITION_TYPE condition_type,
 
 
 //            rumboot_printf("address = 0x%x, stop_address = 0x%x\n", address, stop_address[j]);
-            if ((address >= stop_address[j]) && ((stop_address[j] & 0x80000000) == 0x00) /*|| ((address ^ 0x80000000) >= stop_address[j])*/)
+            if ((address >= 0x00004000 /*stop_address[j]*/) && ((stop_address[j] & 0x80000000) == 0x00) /*|| ((address ^ 0x80000000) >= stop_address[j])*/)
                 break;
 
 
@@ -864,7 +864,7 @@ static int test_itrace(ITRACE_CONDITION_TYPE condition_type,
 
 
 //            rumboot_printf("address = 0x%x, stop_address = 0x%x\n", address, stop_address[j]);
-            if ((address >= stop_address[j]) && ((stop_address[j] & 0x80000000) != 0x00) /*|| ((address ^ 0x80000000) >= stop_address[j])*/)
+            if ((address >= 0x80004000 /*stop_address[j]*/) && ((stop_address[j] & 0x80000000) != 0x00) /*|| ((address ^ 0x80000000) >= stop_address[j])*/)
                 break;
 
 
