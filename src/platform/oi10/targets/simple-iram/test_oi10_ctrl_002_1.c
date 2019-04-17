@@ -23,7 +23,7 @@ static uint32_t check_registers_read(uint32_t base_addr)
     rumboot_printf("Check the read of the registers:");
 
     struct regpoker_checker check_default_array[] = {
-          {   "CRG_SYS_PLL_STAT",    REGPOKER_READ_DCR,    CRG_SYS_PLL_STAT,         0x00000000,           0x00000000   },
+          {   "CRG_SYS_PLL_STAT",    REGPOKER_READ_DCR,    CRG_SYS_PLL_STAT,         0x00000011,           0x00000011   },
           {   "CRG_SYS_PLL_CTRL",    REGPOKER_READ_DCR,    CRG_SYS_PLL_CTRL,         0x00000000,           0x00000003   },
           {   "CRG_SYS_PLL_LDUR",    REGPOKER_READ_DCR,    CRG_SYS_PLL_LDUR,         0x0000044C,           0x000007ff   },
           {   "CRG_SYS_PLL_PRDIV",   REGPOKER_READ_DCR,    CRG_SYS_PLL_PRDIV,        0x00000001,           0x0000001f   },
