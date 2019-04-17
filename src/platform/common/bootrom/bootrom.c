@@ -57,6 +57,8 @@ static void hostmode_loop(struct rumboot_config *conf, void *pdata)
                                 mdelay(100);
                         } else {
                                 dbg_boot(NULL, "Upload failed, code %d", ret);
+                                hdr->magic = -ret;
+
                         }
                 }
 
@@ -74,7 +76,7 @@ static void hostmode_loop(struct rumboot_config *conf, void *pdata)
                 }
                 if (len < 0) {
                         dbg_boot(NULL, "Header error: %s\n", rumboot_strerror(len));
-                        hdr->magic = 0;
+                        hdr->magic = -len;
                         continue;
                 }
                 if (0 == rumboot_bootimage_check_data(hdr)) {
@@ -86,6 +88,7 @@ static void hostmode_loop(struct rumboot_config *conf, void *pdata)
                         }
                 } else {
                         dbg_boot(NULL, "Data CRC32 mismatch\n");
+                        hdr->magic = EBADDATACRC;
                 }
         }
 }
