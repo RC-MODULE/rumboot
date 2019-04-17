@@ -1,7 +1,10 @@
 #include <stdio.h>
 #include <rumboot/printf.h>
 #include <rumboot/io.h>
+#include <rumboot/platform.h>
 #include <rumboot/hexdump.h>
+#include <ctype.h>
+
 
 #ifndef HEXDUMP_COLS
 #define HEXDUMP_COLS 16
