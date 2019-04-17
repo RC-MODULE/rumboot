@@ -1,4 +1,4 @@
-set(RUMBOOT_ONEVALUE_ARGS SNAPSHOT LDS PREFIX NAME BOOTROM CHECKPOINTS RESTORE TIMEOUT_CTEST VARIABLE CONFIGURATION APPEND)
+set(RUMBOOT_ONEVALUE_ARGS SNAPSHOT LDS PREFIX NAME BOOTROM CHECKPOINTS RESTORE TIMEOUT_CTEST VARIABLE CONFIGURATION APPEND COMBOIMAGE)
 set(RUMBOOT_MULVALUE_ARGS FILES IRUN_FLAGS CFLAGS TESTGROUP LDFLAGS PREPCMD CHECKCMD FEATURES TIMEOUT LOAD DEPENDS PACKIMAGE_FLAGS)
 
 find_program(PYTHON_EXECUTABLE
@@ -197,6 +197,43 @@ set(RUMBOOT_COVER_CFLAGS -DRUMBOOT_COVERAGE=1 -fprofile-arcs -ftest-coverage)
 set(RUMBOOT_COVER_LFLAGS --coverage)
 
 
+function(expand_target_load prefix)
+  set(v 0)
+  set(loadflags "")
+  set(seen)
+  set(plus)
+  foreach(l ${TARGET_LOAD})
+    if (v EQUAL 0)
+      if (plus)
+        list(APPEND seen ${plus})
+        set("${prefix}_${plus}" ${${prefix}_${plus}} PARENT_SCOPE)
+      endif()
+      set(plus ${l})
+      set(v 1)
+      list (FIND seen "${plus}" _index)
+      #If we've seen this plusarg before, skip
+      if (NOT ${_index} GREATER -1)
+        set("${prefix}_${plus}")
+      endif()
+    else()
+      if (${_index} GREATER -1)
+        continue()
+      endif()
+      set(trgs ${l})
+      string(REPLACE "," ";" trgs "${trgs}")
+      foreach(trg ${trgs})
+        generate_product_name(tproduct ${trg})
+        if(TARGET ${tproduct})
+          list(APPEND "${prefix}_${plus}" ${tproduct})
+        else()
+          list(APPEND "${prefix}_${plus}" ${trg})
+        endif()
+      endforeach()
+      set(v 0)
+    endif()
+  endforeach()
+endfunction()
+
 macro(populate_dependencies target)
     #Filter out dependencies
     foreach(dep ${TARGET_DEPENDS})
@@ -248,7 +285,7 @@ endmacro()
 function(add_rumboot_test target name)
   generate_product_name(product ${target})
   add_test(${name} ${product} ${ARGN})
-  SET_TESTS_PROPERTIES(${name} PROPERTIES TIMEOUT "5")
+  SET_TESTS_PROPERTIES(${name} PROPERTIES TIMEOUT "15")
 endfunction()
 
 function(add_rumboot_target)
@@ -294,6 +331,32 @@ function(add_rumboot_target)
 
   if (${name})
     message(STATUS "NOT Adding rumboot target: ${name} - already exists")
+    return()
+  endif()
+
+  if (TARGET_COMBOIMAGE)
+    message("Generating combo image from plusarg ${TARGET_COMBOIMAGE}")
+    expand_target_load("TARGET_LOAD")
+    set(_deps)
+    set(_cmds COMMAND rm -f ${product}.bin)
+    foreach(f ${TARGET_LOAD_${TARGET_COMBOIMAGE}})
+      list(APPEND _deps ${f}.all)
+      list(APPEND _cmds COMMAND cat ${f}.bin >> ${product}.bin)
+      if (RUMBOOT_COMBOIMAGE_PAD)
+        list(APPEND _cmds COMMAND truncate ${product}.bin -s %${RUMBOOT_COMBOIMAGE_PAD})
+      endif()
+    endforeach()
+    
+    #string(REPLACE ";" " " _deps "${_deps}")
+    #string(REPLACE ";" " " _cmds "${_cmds}")
+    add_custom_command(OUTPUT ${product}.bin
+      DEPENDS ${_deps}
+      ${_cmds}
+      VERBATIM
+    )
+    add_custom_target(${product}.all ALL DEPENDS ${product}.bin)
+
+    message(${product}.all)
     return()
   endif()
 
@@ -370,6 +433,12 @@ function(add_rumboot_target)
 
   # Native platform is special - we do unit-testing!
   list (FIND TARGET_FEATURES "STUB" _index)
+  #FixMe: TODO: Auto-enable for standalone builds
+  if (RUMBOOT_ENABLE_TESTING)
+    add_test(NAME ${product} COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/scripts/bootxmodem.py ${product}.bin)
+    SET_TESTS_PROPERTIES(${product} PROPERTIES TIMEOUT "30")  
+  endif()
+
   if (${RUMBOOT_PLATFORM} MATCHES "native" AND NOT _index GREATER -1 )
     add_test(${product} ${product})
 
