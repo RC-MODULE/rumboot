@@ -46,8 +46,8 @@ int main()
         return -1;}*/
 
     //Init TQ0 CAN0
-    iowrite32(0x00019000,CAN0_BASE + DATA_TQ0); // TT[31: 0]; TT = 100 ms
-    iowrite32(0x00000000,CAN0_BASE + DATA_TQ0); // TT[63:32];
+    iowrite32(0xFFFFFFFF,CAN0_BASE + DATA_TQ0); // TT[31: 0]; TT = max
+    iowrite32(0xFFFFFFFF,CAN0_BASE + DATA_TQ0); // TT[63:32];
     iowrite32(0x0FA00000,CAN0_BASE + DATA_TQ0); // IDE[31], bID[30:20], eID[19:2], RTR[1], unused[0]
     iowrite32(0x80000000,CAN0_BASE + DATA_TQ0); // DLC[31:28], SISH[27], ROF[26], TR[25], unused[24:0]
     iowrite32(0x3F2F1F0F,CAN0_BASE + DATA_TQ0); // Byte3[31:24], Byte2[23:16], Byte1[15:8], Byte0[7:0]
