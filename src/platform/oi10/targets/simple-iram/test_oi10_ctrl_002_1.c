@@ -36,7 +36,7 @@ static uint32_t check_registers_read(uint32_t base_addr)
           {   "CRG_SYS_RST_CFG2",    REGPOKER_READ_DCR,    CRG_SYS_RST_CFG2,         0x0107000E,           0x0107002f   },
           {   "CRG_SYS_CKUPDATE",    REGPOKER_READ_DCR,    CRG_SYS_CKUPDATE,         0x00000000,           0x00000001   },
           {   "CRG_SYS_INTMASK",     REGPOKER_READ_DCR,    CRG_SYS_INTMASK,          0x00000000,           0x00000001   },
-          //{   "CRG_SYS_INTCLR",      REGPOKER_READ_DCR,    CRG_SYS_INTCLR,           0x00000000,           0x00000001   },
+          {   "CRG_SYS_INTCLR",      REGPOKER_READ_DCR,    CRG_SYS_INTCLR,           0x00000000,           0x00000001   },
           {   "CRG_SYS_CKDIVMODE0",  REGPOKER_READ_DCR,    CRG_SYS_CKDIVMODE0,       0x00000000,           0x0000001f   },
           {   "CRG_SYS_CKDIVMODE2",  REGPOKER_READ_DCR,    CRG_SYS_CKDIVMODE2,       0x00000001,           0x0000001f   },
           {   "CRG_SYS_CKDIVMODE3",  REGPOKER_READ_DCR,    CRG_SYS_CKDIVMODE3,       0x00000000,           0x0000001f   },
