@@ -3,7 +3,6 @@ import sys
 from xmodem import XMODEM
 import os
 from parse import parse
-import ft232
 import time
 import io
 
