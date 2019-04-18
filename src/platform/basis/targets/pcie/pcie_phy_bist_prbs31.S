@@ -19,7 +19,7 @@ main:
 PCIe_bist:
     /*tube_hex 00000000*/
 
-#ifndef RUMBOOT_BUILD_TYPE_POSTPRODUCTION
+#ifndef CMAKE_BUILD_TYPE_POSTPRODUCTION
     /***************************************************/
     /*    this PMA settings are only for simulation    */
     /*    on netlist, equal define SIM_SPEEDUP on RTL  */
