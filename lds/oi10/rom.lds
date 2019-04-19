@@ -38,7 +38,7 @@ SECTIONS {
 
         /* This is where stacks start */
         rumboot_platform_stack_area_start = .;
-        . = . + 0x7e00; /* 32k stack */
+        . = . + 0x7d00; /* 32k stack */
         /* This is where stacks end */
         rumboot_platform_stack_area_end = .;
     } > IM0

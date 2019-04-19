@@ -192,7 +192,6 @@ int main()
     emi_imr_cfg mask;
     struct rumboot_irq_entry *tbl;
 
-    rumboot_printf("Start test_oi10_em2_203\n");
     test_event_send_test_id("test_oi10_em2_203");
 
     emi_init(DCR_EM2_EMI_BASE);
@@ -203,8 +202,6 @@ int main()
     mask.MRDYW = true;
     emi_set_int_mask(DCR_EM2_EMI_BASE, &mask);
     tbl = create_handlers();
-
-    memset((uint8_t *) SRAM0_BASE, 0, 32*sizeof(uint32_t));
 
     check_wr_ext_rdy();//2.3.1 PPC_SRAM_SDRAM_slave0_testplan.docx
     check_rd_ext_rdy();//2.3.1 PPC_SRAM_SDRAM_slave0_testplan.docx

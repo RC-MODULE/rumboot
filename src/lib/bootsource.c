@@ -150,6 +150,7 @@ int bootsource_try_source_once(const struct rumboot_bootsource *src, void *pdata
         bootsource_deinit(src, pdata);
         if (ret != 0) {
                 dbg_boot(src, "Error: %s (%d)", rumboot_strerror(-ret), -ret);
+                dst->magic = -ret;
                 goto bailout;
         }
         dbg_boot(src, "Image validated, executing...");

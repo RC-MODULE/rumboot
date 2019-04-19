@@ -19,6 +19,7 @@ main:
 PCIe_bist:
     /*tube_hex 00000000*/
 
+#ifndef CMAKE_BUILD_TYPE_POSTPRODUCTION
     /***************************************************/
     /*    this PMA settings are only for simulation    */
     /*    on netlist, equal define SIM_SPEEDUP on RTL  */
@@ -165,6 +166,7 @@ PCIe_bist:
     /* STR R2, [R1]                                          */
     /***************************************************/
     /***************************************************/
+#endif
 
     LDR R3, =0x0
     LDR R4, =0x0

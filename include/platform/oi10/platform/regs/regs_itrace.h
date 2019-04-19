@@ -10,30 +10,6 @@
 
 #include <platform/regs/fields/itrace.h>
 
-BEGIN_ENUM( ITRACE_TS_FIELD )
-
-    DECLARE_ENUM_VAL( ITRACE_TS_ITA1W_n,                                      1 )
-    DECLARE_ENUM_VAL( ITRACE_TS_ITA1W_e,                                      2 )
-    DECLARE_ENUM_VAL( ITRACE_TS_ITA1W_i, IBM_BIT_INDEX( 32, ITRACE_TS_ITA1W_e ) )
-
-    DECLARE_ENUM_VAL( ITRACE_TS_ITA2W_n,                                      1 )
-    DECLARE_ENUM_VAL( ITRACE_TS_ITA2W_e,                                      3 )
-    DECLARE_ENUM_VAL( ITRACE_TS_ITA2W_i, IBM_BIT_INDEX( 32, ITRACE_TS_ITA2W_e ) )
-
-    DECLARE_ENUM_VAL( ITRACE_TS_ITLBU_n,                                      1 )
-    DECLARE_ENUM_VAL( ITRACE_TS_ITLBU_e,                                      4 )
-    DECLARE_ENUM_VAL( ITRACE_TS_ITLBU_i, IBM_BIT_INDEX( 32, ITRACE_TS_ITLBU_e ) )
-
-END_ENUM( ITRACE_TS_FIELD )
-
-BEGIN_ENUM( ITRACE_TLA2_VALID_FIELD )
-
-    DECLARE_ENUM_VAL( ITRACE_TLA2_VALID_n,                                         1 )
-    DECLARE_ENUM_VAL( ITRACE_TLA2_VALID_e,                                        18 )
-    DECLARE_ENUM_VAL( ITRACE_TLA2_VALID_i, IBM_BIT_INDEX( 32, ITRACE_TLA2_VALID_e  ) )
-
-END_ENUM( ITRACE_TLA2_VALID_FIELD )
-
 
 #define ITC0_TC         	0x00
 #define ITC0_TS         	0x01

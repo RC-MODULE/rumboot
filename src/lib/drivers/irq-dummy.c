@@ -11,12 +11,12 @@ static int dummy_init(const struct rumboot_irq_controller *dev)
     return 0; /* We're good */
 }
 
-static uint32_t dummy_begin(const struct rumboot_irq_controller *dev)
+static uint32_t dummy_begin(const struct rumboot_irq_controller *dev, void *scratch)
 {
         return 0;
 }
 
-static void dummy_end(const struct rumboot_irq_controller *dev, uint32_t irq)
+static void dummy_end(const struct rumboot_irq_controller *dev, void *scratch, uint32_t irq)
 {
     return;
 }

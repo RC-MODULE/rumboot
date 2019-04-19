@@ -1,6 +1,13 @@
 SET(RUMBOOT_ARCH ppc)
 set(RUMBOOT_PLATFORM_DEFAULT_SNAPSHOT default)
 
+if (NOT RUMBOOT_SOC_BUILD_TYPE STREQUAL "RTL")
+  set(IRUN_BOOTM_EXTRA_ARGS +BOOT_NOR=0)
+else()
+  set(IRUN_BOOTM_EXTRA_ARGS )
+endif()
+
+
 file(GLOB PLATFORM_SOURCES
     ${CMAKE_SOURCE_DIR}/src/arch/ppc/exception.c
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/*.c
@@ -15,6 +22,9 @@ file(GLOB PLATFORM_SOURCES
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/lib/drivers/hscb.c
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/lib/drivers/greth.c
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/lib/drivers/ltrace.c
+    ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/lib/drivers/itrace.c
+    ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/lib/drivers/sp804.c
+    ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/lib/drivers/sp805.c
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/ppc_mmu_impl.S
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/utlb_entries.S
 )
@@ -32,12 +42,14 @@ rumboot_add_configuration(
     ROM
     DEFAULT
     LDS oi10/rom.lds
-    CFLAGS -DRUMBOOT_ONLY_STACK
+    CFLAGS -DRUMBOOT_ONLY_STACK -DRUMBOOT_MAIN_NORETURN
     LDFLAGS "-e rumboot_entry_point"
     PREFIX rom
     FEATURES ROMGEN
     FILES ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/startup.S
     TIMEOUT_CTEST 0
+    LOAD BOOTROM_NOR SELF
+    IRUN_FLAGS ${IRUN_BOOTM_EXTRA_ARGS}
 )
 
 if (RUMBOOT_BUILD_TYPE STREQUAL "Production")
@@ -47,8 +59,15 @@ endif()
 #Temporary hack, before we figure out what to do next.
 rumboot_add_configuration(
     BROM
-    CONFIGURATION ROM
-    CFLAGS ${CONFIGURATION_ROM_CFLAGS} -DUTLB_EXT_MEM_NOR_ONLY
+    LDS oi10/rom.lds
+    LDFLAGS "-e rumboot_entry_point"
+    PREFIX brom
+    FEATURES ROMGEN
+    FILES ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/startup.S
+    TIMEOUT_CTEST 0
+    LOAD BOOTROM_NOR SELF
+    IRUN_FLAGS ${IRUN_BOOTM_EXTRA_ARGS}
+    CFLAGS -DRUMBOOT_ONLY_STACK ${CONFIGURATION_ROM_CFLAGS} -DUTLB_EXT_MEM_NOR_ONLY -DRUMBOOT_MAIN_NORETURN
     LDS oi10/bootrom.lds
     IRUN_FLAGS +BOOTMGR_KEEP_DRIVING=1 ${BOOTROM_IFLAGS}
 )
@@ -61,15 +80,19 @@ rumboot_add_configuration(
     PREFIX bare-rom
     FEATURES ROMGEN
     TIMEOUT_CTEST 0
-    TIMEOUT 10 ms
+    TIMEOUT 50 ms
+    LOAD BOOTROM_NOR SELF
+    IRUN_FLAGS ${IRUN_BOOTM_EXTRA_ARGS}
 )
 
 rumboot_add_configuration(
   LPROBE_CPU
   PREFIX lprobe-cpu
   BOOTROM bootrom-lprobe-stub
+  LOAD BOOTROM_NOR bootrom-lprobe-stub
   FEATURES LPROBE
   IRUN_FLAGS +LPROBE_MODE=CPU -input ${CMAKE_SOURCE_DIR}/../scripts/lprobe-helper.tcl
+  IRUN_FLAGS ${IRUN_BOOTM_EXTRA_ARGS}
 )
 
 
@@ -89,8 +112,11 @@ rumboot_add_configuration (
     FILES ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/startup.S ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c
     BOOTROM bootrom-stub
     FEATURES LUA COVERAGE PACKIMAGE
-    LOAD IM0BIN SELF
+    LOAD
+      IM0BIN SELF
+      BOOTROM_NOR bootrom-stub
     TIMEOUT_CTEST 86400
+    IRUN_FLAGS ${IRUN_BOOTM_EXTRA_ARGS}
 )
 
 rumboot_add_configuration (
@@ -126,6 +152,39 @@ macro(rumboot_platform_generate_stuff_for_taget product)
 
         add_dependencies(${product}.all ${product}.hex)
     endif()
+
+    list (FIND TARGET_FEATURES "ISS" _index)
+    if (${_index} GREATER -1)
+    ####################################################################################
+    # NOTICE (!) For Victor Strukov                                                    # 
+    ####################################################################################
+    # REMEMBER TO USE find_program to detect if riscwatch is installed.                #
+    # If not, either exclude ISS tests from build or disable .gold.bin appending logic #
+    # Ditch this notice when done                                                      #
+    ####################################################################################
+    add_custom_command(
+        OUTPUT ${product}.gold.bin ${product}.tmp.bin
+        COMMAND ${CROSS_COMPILE}-objcopy ${CMAKE_OBJCOPY_FLAGS} -O binary ${product} ${product}.tmp.bin
+        #Replace cp with riscwatch command
+        COMMAND cp ${product}.tmp.bin ${product}.gold.bin
+        COMMENT "Generating ISS golden file for ${product}"
+        DEPENDS ${product} utils
+    )
+    add_custom_target(
+      ${product}.gold ALL
+      DEPENDS ${product}.gold.bin
+    )
+
+    add_custom_command(
+      APPEND
+      OUTPUT ${product}.bin
+      COMMAND cat ${product}.gold.bin >> ${product}.bin
+      COMMAND ${packimage_cmd}
+      COMMENT "Appending golden binary to ${product}"
+      DEPENDS ${product}.gold.bin
+    )
+
+  endif()
 
 endmacro()
 
@@ -312,6 +371,17 @@ endif()
     )
 
     rumboot_bootrom_integration_test(BROM
+        NAME "nor-with-ecc-with-cpu-ecc-ok"
+        IRUN_FLAGS ${ROM_6500K_OPTS} +BOOT_EMI_ECC=1 +BOOT_CPU_ECC=1
+        LOAD
+          SD0_BOOT_IMAGE spl-fail-bad-magic
+          SPI0_CONF spl-fail,spl-fail
+          NOR_IMAGE spl-ok
+          HOSTMOCK  spl-fail
+    )
+
+
+    rumboot_bootrom_integration_test(BROM
         NAME "nor-no-ecc-ok"
         IRUN_FLAGS +BOOT_EMI_ECC=0 ${ROM_6500K_OPTS}
         LOAD
@@ -329,6 +399,7 @@ endif()
           SPI0_CONF spl-fail,spl-fail
           NOR_IMAGE spl-ok
           HOSTMOCK  spl-fail
+          BOOTROM_NOR bootrom-loader
     )
 
     rumboot_bootrom_integration_test(BROM
@@ -339,6 +410,7 @@ endif()
           SPI0_CONF spl-fail-bad-magic,spl-fail-bad-magic
           NOR_IMAGE spl-ok
           HOSTMOCK  spl-fail
+          BOOTROM_NOR bootrom-loader
     )
 
     rumboot_bootrom_integration_test(BROM
@@ -407,6 +479,12 @@ endif()
         PREFIX "irq-rom"
     )
 
+    add_rumboot_target(
+      CONFIGURATION ROM
+      CFLAGS -DUSE_SWINT=132
+      FILES common/irq/irq-context.c
+      PREFIX "irq-context"
+    )
 
     add_rumboot_target(
         CONFIGURATION IRAM
@@ -689,36 +767,48 @@ endif()
 
     add_rumboot_target(
         CONFIGURATION SUPPLEMENTARY
-        LDS oi10/test_oi10_cpu_038_im0.lds
+        LDS oi10/test_oi10_cpu_038_im1.lds
         FILES test_oi10_cpu_038_helper.c
         CFLAGS -DTEST_OI10_CPU_038_ARRAY_SIZE=0x7C00
         NAME "test_oi10_cpu_038_helper_im0"
     )
 
     add_rumboot_target(
-        CONFIGURATION IRAM
-        FILES test_oi10_cpu_038.c
-        PREFIX simple-iram
-        CFLAGS -DIM_BASE=IM1_BASE
-        NAME "test_oi10_cpu_038_im1"
-        LOAD IM0BIN SELF
-             IMBIN supplementary-test_oi10_cpu_038_helper_im1
+        CONFIGURATION SUPPLEMENTARY
+        LDS oi10/test_oi10_cpu_038_sram0.lds
+        FILES test_oi10_cpu_038_helper.c
+        CFLAGS -DTEST_OI10_CPU_038_ARRAY_SIZE=0xFC00
+        NAME "test_oi10_cpu_038_helper_em2"
     )
 
     add_rumboot_target(
         CONFIGURATION IRAM
         FILES test_oi10_cpu_038.c
         PREFIX simple-iram
-        CFLAGS -DTEST_OI10_CPU_038_IM0 -DIM_BASE=IM1_BASE
-        NAME "test_oi10_cpu_038_im0"
+        CFLAGS -DM_BASE=IM1_BASE
+        NAME "test_oi10_cpu_038_im1"
         LOAD IM0BIN SELF
-             IMBIN supplementary-test_oi10_cpu_038_helper_im0
+             MBIN supplementary-test_oi10_cpu_038_helper_im1
     )
 
-    add_rumboot_target_dir(uart_data_logger/
+    add_rumboot_target(
         CONFIGURATION IRAM
-        IRUN_FLAGS +use_uart_data_logger
-        PREFIX uart_data_logger
+        FILES test_oi10_cpu_038.c
+        PREFIX simple-iram
+        CFLAGS -DTEST_OI10_CPU_038_IM0 -DM_BASE=IM1_BASE
+        NAME "test_oi10_cpu_038_im0"
+        LOAD IM0BIN SELF
+             MBIN supplementary-test_oi10_cpu_038_helper_im0
+    )
+
+    add_rumboot_target(
+        CONFIGURATION IRAM
+        FILES test_oi10_cpu_038.c
+        PREFIX simple-iram
+        CFLAGS -DEMI_INIT -DM_BASE=SRAM0_BASE
+        NAME "test_oi10_cpu_038_em2"
+        LOAD IM0BIN SELF
+             MBIN supplementary-test_oi10_cpu_038_helper_em2
     )
 
     add_rumboot_target_dir(iss-iram/
@@ -1682,6 +1772,65 @@ endif()
         CFLAGS -DSDIO_BASE=SDIO_1_BASE  -DGSPI_SDIO_IRQ=GSPI1_INT -DSDIO_HEAP="SRAM0"
         IRUN_FLAGS +select_sdio1
         PREFIX sdio-spi-1-sram0
+    )
+
+    add_rumboot_target(
+        CONFIGURATION SUPPLEMENTARY
+        LDS oi10/test_oi10_sys_010.lds
+        FILES test_oi10_sys_010_func.c
+        NAME "test_oi10_sys_010_func"
+    )
+
+    add_rumboot_target(
+        CONFIGURATION IRAM
+        FILES test_oi10_sys_010.c
+        PREFIX simple-iram
+        NAME "test_oi10_sys_010"
+        LOAD IM0BIN SELF
+             SBIN supplementary-test_oi10_sys_010_func
+    )
+
+    add_rumboot_target(
+        CONFIGURATION SUPPLEMENTARY
+        LDS oi10/test_oi10_cpu_027_sram0.lds
+        FILES test_oi10_cpu_027_test.c
+        NAME "test_oi10_cpu_027_test"
+    )
+    add_rumboot_target(
+        CONFIGURATION IRAM
+        FILES test_oi10_cpu_027.c
+        CFLAGS -DTEST_OI10_CPU_027
+        NAME "test_oi10_cpu_027"
+        LOAD IM0BIN SELF
+             SRAM0BIN supplementary-test_oi10_cpu_027_test
+    )
+
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES test_oi10_cpu_mem_022.c test_oi10_cpu_mem_022.S
+    )
+
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      CFLAGS -DBOOT_NOR
+      FILES simple-iram/test_oi10_em2_105.c
+      PREFIX simple-iram
+      NAME "test_oi10_em2_105_bootnor"
+    )
+
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      CFLAGS -DBOOT_NOR
+      FILES simple-iram/test_oi10_em2_204.c
+      PREFIX simple-iram
+      NAME "test_oi10_em2_204_bootnor"
+    ) 
+
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES test_oi10_cpu_025_wd.c
+      LOAD IM0BIN SELF,SELF,SELF,SELF
+
     )
 
 endmacro()

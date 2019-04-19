@@ -30,12 +30,12 @@ void rumboot_platform_dump_config(struct rumboot_config *conf, size_t maxsize) {
 }
 
 
-static void hostmode_loop(void *pdata)
+static void hostmode_loop(struct rumboot_config *conf, void *pdata)
 {
         size_t maxsize;
         struct rumboot_bootheader *hdr = rumboot_platform_get_spl_area(&maxsize);
         dbg_boot(NULL, "Host Mode, please upload SPL to 0x%x", (uintptr_t) hdr);
-        rumboot_platform_enter_host_mode();
+        rumboot_platform_enter_host_mode(conf);
         dbg_boot(NULL, "Hit 'X' for X-Modem upload");
         void *data;
         int ret;
@@ -57,6 +57,8 @@ static void hostmode_loop(void *pdata)
                                 mdelay(100);
                         } else {
                                 dbg_boot(NULL, "Upload failed, code %d", ret);
+                                hdr->magic = -ret;
+
                         }
                 }
 
@@ -74,7 +76,7 @@ static void hostmode_loop(void *pdata)
                 }
                 if (len < 0) {
                         dbg_boot(NULL, "Header error: %s\n", rumboot_strerror(len));
-                        hdr->magic = 0;
+                        hdr->magic = -len;
                         continue;
                 }
                 if (0 == rumboot_bootimage_check_data(hdr)) {
@@ -86,6 +88,7 @@ static void hostmode_loop(void *pdata)
                         }
                 } else {
                         dbg_boot(NULL, "Data CRC32 mismatch\n");
+                        hdr->magic = EBADDATACRC;
                 }
         }
 }
@@ -122,7 +125,7 @@ int main()
         }
 
         if (conf.hostmode) {
-                hostmode_loop(pdata);
+                hostmode_loop(&conf, pdata);
         }
 
 
@@ -130,7 +133,7 @@ int main()
         bootsource_try_chain(pdata, hdr, maxsize);
         rumboot_platform_perf(NULL);
 
-        hostmode_loop(pdata);
+        hostmode_loop(&conf, pdata);
         /* Never reached. Throw an error if it does */
         return 1;
 }

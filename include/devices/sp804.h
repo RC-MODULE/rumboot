@@ -1,6 +1,14 @@
 #ifndef DIT_LIB_H
 #define DIT_LIB_H
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
 
+#include <platform/devices.h>
+#include <regs/regs_sp804.h>
+#include <devices/sp804.h>
+#include <rumboot/io.h>
+#include <rumboot/printf.h>
 /**
  * \defgroup devices_sp804 SP804 'DIT' Timer
  * \ingroup devices
@@ -96,6 +104,7 @@ struct sp804_conf{
  */
 void sp804_enable( uint32_t base_addr, int index);
 
+
 /**
  *  \brief Stop timer
  *
@@ -105,6 +114,7 @@ void sp804_enable( uint32_t base_addr, int index);
  *  \details Manualy clears ENABLE bit in CONTROL register of chosen timer.
  */
 void sp804_stop( uint32_t base_addr, int index);
+
 
 /**
  *  \brief Get timer value
@@ -116,6 +126,7 @@ void sp804_stop( uint32_t base_addr, int index);
  *  \details
  */
 int sp804_get_value( uint32_t base_addr, int index);
+
 
 /**
  *  \brief Clear timer interrupt
@@ -140,6 +151,12 @@ void sp804_clrint( uint32_t base_addr, int index);
  *   sets LOAD and BgLoad values if they are non-zero.
  */
 void sp804_config( uint32_t base_addr, const struct sp804_conf * config, int index);
+
+
+
+uint32_t sp804_get_itcr(uint32_t base_addr);
+void sp804_write_to_itcr(uint32_t base_addr, uint32_t value);
+void sp804_write_to_itop(uint32_t base_addr, uint32_t value);
 
 /**
  * @}

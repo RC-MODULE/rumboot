@@ -141,7 +141,7 @@ static const struct rumboot_bootsource arr[] = {
 };
 
 
-void rumboot_platform_enter_host_mode()
+void rumboot_platform_enter_host_mode(struct rumboot_config *conf)
 {
         greth_dump_edcl_params(0, GRETH_0_BASE);
         greth_dump_edcl_params(1, GRETH_1_BASE);

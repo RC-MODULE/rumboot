@@ -14,7 +14,8 @@
 
 void do_exit(int code) {
         #ifndef RUMBOOT_NATIVE
-                exit(code);
+		uint32_t c = code;
+                rumboot_platform_event_raise(EVENT_TERM, &c, 1);
         #else
                 rumboot_printf("spl: Will now send parent a signal\n");
                 kill(getppid(), code ? SIGUSR2 : SIGUSR1);

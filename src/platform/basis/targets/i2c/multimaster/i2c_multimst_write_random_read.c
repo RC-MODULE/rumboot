@@ -380,8 +380,10 @@ tmp = i2c_write_array((i2c_base_addr +0x1000), i2c_addr,
 			4/*size_array*/,0x6B, /* check_array32*/0x10);
 		if (tmp == I2C_FAILED)                  
 	{rumboot_printf("I2C read test ERROR!\n");
-		return TEST_ERROR;}
+		return TEST_ERROR;}		
+	{iowrite32((0x0 ),(I2C_BASE 	+ 0x1000  +	I2C_SOFTR)); //SOFT_RESET
+	rumboot_printf("I2C1 ARB soft reset!\n");
 	rumboot_printf("I2C TEST OK \n");	
-	return I2C_OK; 
+		return I2C_OK;} 
 	  
 }

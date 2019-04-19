@@ -184,10 +184,32 @@ void check_sram0 (const uint32_t addr)
 }
 
 
+void init_iteration(uint32_t const addr)
+{
+  uint32_t i;
+  uint32_t ptr;
+  
+  ptr = addr;
+  for(i=0; i<=32 ; i++)   // All The Memory Region Is 128 Bytes = 32 32-bit Words  + 1 Word (Because It Is Unaligned)
+  {
+    iowrite32(0xDEADBEEF,ptr);
+    ptr = ptr + 4;
+  }
+}
+
+void init_test_place()
+{
+  init_iteration(SRAM0_BASE);
+  init_iteration(SRAM0_BASE + SRAM0_OFFSET_1);
+  init_iteration(SRAM0_BASE + SRAM0_OFFSET_2);
+}
+
 int main ()
 {
     emi_init(DCR_EM2_EMI_BASE);
 
+    init_test_place();
+    
     rumboot_printf ("CACHE OFF\n");
     check_sram0 (SRAM0_BASE + 0x01);
 

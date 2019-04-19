@@ -3,11 +3,21 @@
 static struct mdma_gp mdma_gp_dev[];
 
 #ifdef RUMBOOT_BASIS_ENABLE_MIRROR
+#ifdef RUMBOOT_BASIS_ENABLE_DDR
 #define MEM_SEGMENT_MULT	4
 static char *test_heap[] = {"PCIE-IM0", "PCIE-IM1", "PCIE-DDR0", "PCIE-DDR1"};
 #else
+#define MEM_SEGMENT_MULT	2
+static char *test_heap[] = {"PCIE-IM0", "PCIE-IM1", "PCIE-IM0", "PCIE-IM1"};
+#endif
+#else
+#ifdef RUMBOOT_BASIS_ENABLE_DDR
 #define MEM_SEGMENT_MULT	8
 static char *test_heap[] = {"IM0", "IM1", "DDR0", "DDR1"};
+#else
+#define MEM_SEGMENT_MULT	4
+static char *test_heap[] = {"IM0", "IM1", "IM0", "IM1"};
+#endif
 #endif
 
 static void *cmp_addr[2] = {NULL};

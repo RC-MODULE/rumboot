@@ -35,10 +35,10 @@ void check_plb6mcif2(const uint32_t base_address)
         {"PLB6MCIF2_MAP2CF",    REGPOKER_READ_DCR, PLB6MCIF2_MAP2CF,    0x00,                0xffffffff},
         {"PLB6MCIF2_MAP3CF",    REGPOKER_READ_DCR, PLB6MCIF2_MAP3CF,    0x00,                0xffffffff},
         {"PLB6MCIF2_MAXMEM",    REGPOKER_READ_DCR, PLB6MCIF2_MAXMEM,    0xC0000000,          0xffffffff},  //default: [0:1]= 0b11
-        {"PLB6MCIF2_MR0CF",     REGPOKER_READ_DCR, PLB6MCIF2_MR0CF,     0x01,                0xffffffff},
-        {"PLB6MCIF2_MR1CF",     REGPOKER_READ_DCR, PLB6MCIF2_MR1CF,     0x00,                0xffffffff},
-        {"PLB6MCIF2_MR2CF",     REGPOKER_READ_DCR, PLB6MCIF2_MR2CF,     0x07f80001,          0xffffffff},
-        {"PLB6MCIF2_MR3CF",     REGPOKER_READ_DCR, PLB6MCIF2_MR3CF,     0xfff80001,          0xffffffff},
+        {"PLB6MCIF2_MR0CF",     REGPOKER_READ_DCR, PLB6MCIF2_MR0CF,     0x00009001,          0xffffffff},
+        {"PLB6MCIF2_MR1CF",     REGPOKER_READ_DCR, PLB6MCIF2_MR1CF,     0xf0009001,          0xffffffff},
+        {"PLB6MCIF2_MR2CF",     REGPOKER_READ_DCR, PLB6MCIF2_MR2CF,     0x00,                0xffffffff},
+        {"PLB6MCIF2_MR3CF",     REGPOKER_READ_DCR, PLB6MCIF2_MR3CF,     0x00,                0xffffffff},
         {"PLB6MCIF2_P6BMTAG1",  REGPOKER_READ_DCR, PLB6MCIF2_P6BMTAG1,  0x00,                0xffffffff},
         {"PLB6MCIF2_P6BMTAG2",  REGPOKER_READ_DCR, PLB6MCIF2_P6BMTAG2,  0x00,                0xffffffff},
         {"PLB6MCIF2_P6BMTAG3",  REGPOKER_READ_DCR, PLB6MCIF2_P6BMTAG3,  0x00,                0xffffffff},
@@ -265,12 +265,8 @@ void check_emi(const uint32_t base_address)
     TEST_ASSERT (rumboot_regpoker_check_array(emi_regs_write, base_address) == 0, "TEST ERROR" );
 }
 
-#define EVENT_INIT_SRAM0  TEST_EVENT_CODE_MIN
-
 int main()
 {
-    rumboot_memfill8_modelling((void*)SRAM0_BASE, 0x1000, 0x00, 0x00); //workaround (init 4KB SRAM0)
-
     rumboot_printf("\nCHECK PLB6MCIF2\n\n");
     check_plb6mcif2 (DCR_EM2_PLB6MCIF2_BASE);
 

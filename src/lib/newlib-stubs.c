@@ -56,9 +56,13 @@ void exit(int status)
 
 void _exit(int status)
 {
-    uint32_t code = status;
-    rumboot_platform_event_raise(EVENT_TERM, &code, 1);
-	while(1);;
+		#ifndef RUMBOOT_NOINIT
+			/* Normal binary, do a long-jump and return to bootrom */
+			longjmp(rumboot_platform_runtime.exit_trampoline, 256 + status);
+		#endif
+
+		rumboot_printf("\n_exit: System halted, code %d\n", status);
+		while(1);;
 }
 
 int _close(int file)

@@ -2,7 +2,7 @@ SET(RUMBOOT_ARCH arm)
 SET(RUMBOOT_PLATFORM bbp3)
 
 set(RUMBOOT_PLATFORM_DEFAULT_LDS bbp3/rom.lds)
-set(RUMBOOT_PLATFORM_DEFAULT_SNAPSHOT boot)
+set(RUMBOOT_PLATFORM_DEFAULT_SNAPSHOT default)
 set(RUMBOOT_NO_SELFTEST true)
 
 if (RUMBOOT_BUILD_TYPE STREQUAL "Production")
@@ -15,15 +15,22 @@ endif()
 rumboot_add_configuration(
   ROM
   DEFAULT
-  SNAPSHOT boot
+  SNAPSHOT default
   LDS bbp3/rom.lds
   LDFLAGS "-e rumboot_reset_handler"
   CFLAGS -DRUMBOOT_ONLY_STACK -marm
   PREFIX ROM
   TIMEOUT_CTEST 200000
-  TIMEOUT 100 ms
+  TIMEOUT 1500 ms
   IRUN_FLAGS ${BOOTROM_IFLAGS}
   FEATURES ROMGEN
+)
+
+# This configuration is for 
+rumboot_add_configuration(
+  UROM
+  CONFIGURATION ROM
+  CFLAGS -DRUMBOOT_ONLY_STACK -marm -DRUMBOOT_MAIN_NORETURN
 )
 
 rumboot_add_configuration (
@@ -46,26 +53,28 @@ rumboot_add_configuration (
     LDS bbp3/iram-spl.lds
     LDFLAGS -Wl,--start-group -lgcc -lc -lm -Wl,--end-group "-e main"
     CFLAGS  -DRUMBOOT_NOINIT
-    FEATURES COVERAGE PACKIMAGE
+    FEATURES COVERAGE PACKIMAGE SPL
 )
 
 
 include(${CMAKE_SOURCE_DIR}/cmake/bootrom.cmake)
 
-set(ROM_115200_OPTS +UART0_SPEED=115200 )
+set(ROM_115200_OPTS +UART0_SPEED=115200)
 
 ### Add tests here ###
 #WARNING! Full regression automatically includes all tests from the short ones
+
 macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
-    add_rumboot_target(
-        CONFIGURATION ROM
-        FILES common/bootrom-stubs/bootrom-stub.c
-        PREFIX "bootrom"
-        NAME "stub"
-        FEATURES STUB
-    )
+  add_rumboot_target(
+    CONFIGURATION ROM
+    FILES common/bootrom-stubs/bootrom-stub.c
+    PREFIX "bootrom"
+    NAME "stub"
+    FEATURES STUB
+  )
 
+  if (NOT RUMBOOT_BUILD_TYPE STREQUAL "PostProduction")
     add_rumboot_target_dir(common/irq/
       CONFIGURATION IRAM
       PREFIX iram
@@ -83,7 +92,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
     rumboot_bootrom_unit_test(
         ID 0
-        CONFIGURATION ROM
+        CONFIGURATION UROM
         TAG spi0_cs0
         MEMTAG SPI0_CONF
         TAGOFFSET 0
@@ -94,12 +103,12 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
     rumboot_bootrom_unit_test(
         ID 0
-        CONFIGURATION ROM
+        CONFIGURATION UROM
         TAG nor_cs0
         MEMTAG NOR_IMAGE
         TAGOFFSET 0
         FULL YES
-        IRUN_FLAGS ${ROM_115200_OPTS}
+        IRUN_FLAGS ${ROM_115200_OPTS} +BOOT_EMI=1
         ENDIAN little
     )
 
@@ -117,6 +126,24 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
           NOR_IMAGE spl-fail-bad-magic
           HOSTMOCK  spl-ok
     )
+
+    rumboot_bootrom_integration_test(ROM
+    NAME "host-emi"
+    IRUN_FLAGS ${ROM_115200_OPTS} +BOOT_HOST=1 +BOOT_EMI_BIS=0 +full_boot_mode +boot_arm +arm_image=/home/necromant/Work/BBP3/build/rumboot-bbp3-Debug/rumboot-bbp3-Debug-spl-ok.hex/image_mem64_0.hex
+    LOAD
+      SPI0_CONF spl-fail-bad-magic,spl-fail-bad-magic
+      NOR_IMAGE spl-fail-bad-magic
+    )
+
+    rumboot_bootrom_integration_test(ROM
+    NAME "host-edcl"
+    IRUN_FLAGS ${ROM_115200_OPTS} +BOOT_HOST=1 +BOOT_EMI_BIS=0 +full_boot_mode +boot_arm +arm_image=/home/necromant/Work/BBP3/build/rumboot-bbp3-Debug/rumboot-bbp3-Debug-spl-ok.hex/image_mem64_0.hex
+    SNAPSHOT edcl
+    LOAD
+      SPI0_CONF spl-fail-bad-magic,spl-fail-bad-magic
+      NOR_IMAGE spl-fail-bad-magic
+    )    
+
 
     rumboot_bootrom_integration_test(ROM
         NAME "host-xmodem"
@@ -153,6 +180,15 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
           SPI0_CONF spl-ok,spl-fail
           NOR_IMAGE spl-fail
           HOSTMOCK  spl-fail
+    )
+
+    rumboot_bootrom_integration_test(ROM
+        NAME "spi-fallthrough-host"
+        IRUN_FLAGS ${ROM_115200_OPTS}
+        LOAD
+          SPI0_CONF spl-fail-bad-magic,spl-fail
+          NOR_IMAGE spl-fail
+          HOSTMOCK  spl-ok
     )
 
     rumboot_bootrom_integration_test(ROM
@@ -204,11 +240,28 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
               NOR_IMAGE spl-fail-bad-magic
         )
     endif()
+  endif()
 
     add_rumboot_target(
-        CONFIGURATION ROM
+        CONFIGURATION IRAM
+        NAME chain-test
+        LOAD
+          IM0BIN iram-irq-atomics,iram-irq-defhandler
+        FEATURES NOCODE
+      )
+
+    add_rumboot_target(
+        CONFIGURATION UROM
         FILES hello.c
       )
+
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES oi10/targets/test_oi10_uart_000.c
+      CFLAGS -DUARTRX_BASE=UART0_Base -DUARTTX_BASE=UART1_Base -DUARTRX_INT=UART0_INT -DUARTTX_INT=UART1_INT -DCHECK_REGISTERS
+      PREFIX uart0
+    )
+  
 
 endmacro()
 
@@ -263,6 +316,27 @@ macro(rumboot_platform_generate_stuff_for_taget product)
 
     add_dependencies(${product}.all ${product}.hex)
   endif()
+
+  list (FIND TARGET_FEATURES "SPL" _index)
+  if (${_index} GREATER -1)
+    add_custom_command(
+      OUTPUT ${product}.hex/image_mem64_0.hex
+      COMMAND mkdir -p ${product}.hex
+      COMMAND ${CMAKE_BINARY_DIR}/utils/romgen -l bbp3bootemi -i ${product}.bin -o ${product}.hex
+      COMMENT "Generating Verilog loadable HEX from ${product}.bin"
+      DEPENDS ${product}.bin utils
+    )
+
+    add_custom_target(
+      ${product}.hex ALL
+      DEPENDS ${product}.hex/image_mem64_0.hex
+    )
+
+    add_dependencies(${product}.all ${product}.hex)
+  endif()
+
+
+
 
 
 endmacro()

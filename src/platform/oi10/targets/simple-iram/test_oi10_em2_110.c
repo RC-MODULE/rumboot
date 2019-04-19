@@ -142,11 +142,11 @@ static void exception_handler(int id, const char *name)
 int main ()
 {
     test_event_send_test_id("test_oi10_em2_110");
-    rumboot_memfill8_modelling((void*)SRAM0_BASE, 0x1000, 0x00, 0x00);
 
     emi_init(DCR_EM2_EMI_BASE);
     emi_irq_unmask ();
 
+    rumboot_printf("Init handlers\n");
     rumboot_irq_cli();
     struct rumboot_irq_entry *tbl = rumboot_irq_create( NULL );
     rumboot_irq_set_handler( tbl, EMI_CNTR_INT_0, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, emi_cntr_0_handler, ( void* )0 );
@@ -268,6 +268,7 @@ int main ()
     rumboot_printf("Write transaction\n");
     iowrite32(test_data, SRAM0_BASE + 0xC);
     msync();
+    release_signal ();
 
     rumboot_printf("Inject err in COMP_CMD_PTY\n");
     test_event(EVENT_ERR_COMP_CMD_PTY);
@@ -275,7 +276,7 @@ int main ()
     rumboot_printf("Read transaction\n");
     rumboot_printf("read data = %x\n", ioread32(SRAM0_BASE + 0xC));
     msync();
-
+    release_signal ();
 //*******************************************************************************************************
 
 //*******************************************************************************************************
@@ -303,8 +304,8 @@ int main ()
     rumboot_printf("Read transaction\n");
     rumboot_printf("read data = %x\n", ioread32(SRAM0_BASE + 0xC));
     msync();
+    release_signal ();
 //*******************************************************************************************************
 
-    rumboot_printf ("TEST OK\n");
     return 0;
 }

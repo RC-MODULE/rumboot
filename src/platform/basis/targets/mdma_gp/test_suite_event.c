@@ -1,8 +1,14 @@
 #include "test_suite.h"
 
-#define MEM_SEGMENT_MULT	1
-
 static struct mdma_gp mdma_gp_dev[];
+
+#ifdef RUMBOOT_BASIS_ENABLE_DDR
+#define MEM_SEGMENT_MULT	2
+static char *test_heap[] = {"IM0", "IM1", "DDR0", "DDR1"};
+#else
+#define MEM_SEGMENT_MULT	1
+static char *test_heap[] = {"IM0", "IM1", "IM0", "IM1"};
+#endif
 
 static void *all_addr[4][2] = {NULL};
 
@@ -219,22 +225,22 @@ int main()
 
 	rumboot_irq_sei();
 
-	if (test_alloc_mem("IM0", all_addr[0], MEM_SEGMENT_MULT * MDMA_GP_SEGMENT_MEM)) {
+	if (test_alloc_mem(test_heap[0], all_addr[0], MEM_SEGMENT_MULT * MDMA_GP_SEGMENT_MEM)) {
 		ret = -2;
 		goto test_exit_1;
 	}
 
-	if (test_alloc_mem("IM1", all_addr[1], MEM_SEGMENT_MULT * MDMA_GP_SEGMENT_MEM)) {
+	if (test_alloc_mem(test_heap[1], all_addr[1], MEM_SEGMENT_MULT * MDMA_GP_SEGMENT_MEM)) {
 		ret = -3;
 		goto test_exit_2;
 	}
 
-	if (test_alloc_mem("DDR0", all_addr[2], MEM_SEGMENT_MULT * MDMA_GP_SEGMENT_MEM)) {
+	if (test_alloc_mem(test_heap[2], all_addr[2], MEM_SEGMENT_MULT * MDMA_GP_SEGMENT_MEM)) {
 		ret = -4;
 		goto test_exit_3;
 	}
 
-	if (test_alloc_mem("DDR1", all_addr[3], MEM_SEGMENT_MULT * MDMA_GP_SEGMENT_MEM)) {
+	if (test_alloc_mem(test_heap[3], all_addr[3], MEM_SEGMENT_MULT * MDMA_GP_SEGMENT_MEM)) {
 		ret = -5;
 		goto test_exit_4;
 	}

@@ -227,7 +227,7 @@ void uart_clear_status(uint32_t base_addr){
     reg_write(base_addr, UARTECR, 0x0); //data is not important
 }
 
-int8_t uart_putc(uint32_t base_addr, unsigned char test_char, uint32_t timeout_us){
+int uart_putc(uint32_t base_addr, uint8_t test_char, uint32_t timeout_us){
     //single transfer
 
     uint32_t start = rumboot_platform_get_uptime();
@@ -242,7 +242,7 @@ int8_t uart_putc(uint32_t base_addr, unsigned char test_char, uint32_t timeout_u
     return -1;
 }
 
-char uart_getc(uint32_t base_addr, uint32_t timeout_us){
+int uart_getc(uint32_t base_addr, uint32_t timeout_us){
     uint32_t start = rumboot_platform_get_uptime();
 
     while (rumboot_platform_get_uptime() - start < timeout_us) {

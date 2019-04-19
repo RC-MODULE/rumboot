@@ -545,15 +545,10 @@ void check_round ()
 
 int main ()
 {
-    rumboot_memfill8_modelling((void*)SRAM0_BASE, 0x1000, 0x00, 0x00); //workaround (init 4KB SRAM0)
-
     enable_fpu();
 
-
-   rumboot_printf("TEST START\n");
-
-   read_fpu ();
-   check_exception ();
+    read_fpu ();
+    check_exception ();
 
     check_OX ();
     check_UX ();
@@ -570,6 +565,5 @@ int main ()
     read_fpu ();
     check_exception ();
 
-    rumboot_printf("TEST OK\n");
-   return 0;
+    return 0;
 }

@@ -12,7 +12,7 @@ struct rumboot_runtime_info *rumboot_platform_runtime_info;
 #include <stdlib.h>
 #include <sys/mman.h>
 
-void __attribute__((constructor)) rumboot_main()
+int __attribute__((constructor)) rumboot_main()
 {
         rumboot_platform_setup();
 }

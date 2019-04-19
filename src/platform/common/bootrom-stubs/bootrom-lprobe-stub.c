@@ -82,14 +82,14 @@ static inline void parse_event(struct lprobe_event *evt)
 
 }
 
-void lprobe_proxy_irq(int irq)
+void lprobe_proxy_irq(int irq, void *arg)
 {
 }
 
 int main()
 {
 	rumboot_print_logo();
-	rumboot_irq_set_default_handler(lprobe_proxy_irq);
+	rumboot_irq_set_default_handler(lprobe_proxy_irq, NULL);
 	rumboot_irq_sei();
 	rumboot_printf("STUB: Entering lprobe event handling loop\n");
 

@@ -15,6 +15,7 @@
 #include <rumboot/macros.h>
 #include <rumboot/io.h>
 #include <rumboot/timer.h>
+#include <arch/ppc_476fp_lib_c.h>
 #include <platform/devices.h>
 #include <platform/test_assert.h>
 
@@ -47,6 +48,10 @@ static inline void nor_write32(uint32_t write_DATA, uint32_t write_ADDR)
                 NOR_WRITE32_SEQUENCE(NOR_BASE, NOR_write32_word_program_sequence);
                 udelay(10); //workaround
 #if !defined(NOR_SELFCHECKING_DISABLE)
+                nop();
+                nop();
+                nop();
+                nop();
                 TEST_ASSERT(ioread32(write_ADDR) == write_DATA, "ERROR: nor_write32 failed");
 #endif
         }

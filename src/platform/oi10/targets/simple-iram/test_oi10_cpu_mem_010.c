@@ -50,7 +50,7 @@ END_ENUM( DCU_BANK_TYPE )
 //tag array
 uint32_t test_tag_array[] =
 {
-    0b1111111111111111 << 2,
+    0b0111111111111111 << 2,
     0b0000000000000000 << 2,
     0b0011111111111111 << 2,
     0b1100000000000000 << 2,
@@ -116,7 +116,7 @@ static uint32_t calc_index (uint32_t index, DCU_BANK_TYPE tag_bank)
 
 static void init_block(uint8_t way, uint32_t base_ind, DCU_BANK_TYPE bank_type)
 {
-    for (uint32_t i = 0, ind = base_ind; i < ARRAY_SIZE(test_tag_array); i++, ind++ )
+    for (uint32_t i = 0, ind = base_ind; i < ARRAY_SIZE(test_tag_array); i++, ind+=4 )
     {
         uint32_t tag = test_tag_array[i] | way;
         uint32_t index = TAG_A_TO_INDEX(ind);
@@ -159,7 +159,7 @@ static void mem_init(void) {
 
 void cache_dcu_tag(uint8_t way, uint32_t base_ind, DCU_BANK_TYPE bank_type)
 {
-    for (uint32_t i = 0, ind = base_ind; i < ARRAY_SIZE(test_tag_array); i++, ind++)
+    for (uint32_t i = 0, ind = base_ind; i < ARRAY_SIZE(test_tag_array); i++, ind+=4)
     {
         uint32_t tag = test_tag_array[i] | way;
         uint32_t index = TAG_A_TO_INDEX(ind);
@@ -217,8 +217,6 @@ int main()
 
     emi_init(DCR_EM2_EMI_BASE);
 
-    rumboot_memfill8_modelling ((void*)0x00, 0x10000, 0x00, 0x00); //anti x
-
     rumboot_printf("Init mem\n");
     mem_init();
     rumboot_printf("Init mem done\n");
@@ -229,14 +227,8 @@ int main()
     };
     write_tlb_entries(tlb_entry_cacheable_valid, ARRAY_SIZE(tlb_entry_cacheable_valid));
 
-    if (!test_dcu_tag_array())
-     {
-         rumboot_printf("TEST_ERROR\n");
-         return 1;
-     }
+    if (!test_dcu_tag_array()) return 1;
 
-    rumboot_printf("TEST_OK\n");
     return 0;
-
 }
 
