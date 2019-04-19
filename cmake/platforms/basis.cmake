@@ -814,6 +814,19 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
    PREFIX gpio_irq_mirror
  )
 
+   add_rumboot_target(
+   CONFIGURATION IRAM
+   FILES gpio/gpio_connect.c
+   IRUN_FLAGS +gpio_station
+  )
+
+  add_rumboot_target(
+   CONFIGURATION IRAM_MIRROR
+   FILES gpio/gpio_connect.c
+   IRUN_FLAGS +gpio_station
+   PREFIX gpio_connect
+ )
+
   add_rumboot_target(
    CONFIGURATION IRAM
    FILES can-adapter/can_adapter_0_test.c
