@@ -300,6 +300,7 @@ int main()
 	uint32_t i2c_base_addr = I2C_BASE;
 	uint32_t addr_h = 0x00;		//write subaddress
 	uint32_t addr_l = 0x00;
+	uint32_t scl_frq = 0x31;
 	//uint32_t size_array;
 /*
 	static uint32_t check_array32[] = {
@@ -318,7 +319,7 @@ static uint32_t check_array[] = {
 */
 //-------------------------------I2C0 write---------------------------------
   // size_array = sizeof(check_array32) / 4;
-	tmp =i2c_ini(SCL_FREQ);
+	tmp =i2c_ini(scl_frq);
 	if (tmp == I2C_FAILED)
 	{rumboot_printf("I2C init test ERROR!\n");
 	return TEST_ERROR;}
