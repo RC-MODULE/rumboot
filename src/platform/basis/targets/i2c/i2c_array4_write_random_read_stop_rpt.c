@@ -313,8 +313,6 @@ int main()
 	return TEST_ERROR;}
 	
 	
-	
-	
 	iowrite32((I2C_STATRST ),(I2C_BASE + I2C_STAT_RST));
 	tmp = ioread32(I2C_BASE + I2C_STATUS);
 	rumboot_printf("i2c_read_STATUS =0x%x\n",tmp);
