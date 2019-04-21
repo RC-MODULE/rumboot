@@ -57,8 +57,7 @@ static void generate_wd_reset( TIMER_TCR_WRC const reset_type )
 
     spr_write( SPR_TBL_W, 0 );                          //reset TBL
     spr_write( SPR_TSR_RC, (0b1     << TIMER_TSR_ENW_i)    // clear WD next action
-                         | (0b1     << TIMER_TSR_WIS_i)    // clear WD exception
-                         | (0b11    << TIMER_TSR_WRS_i) ); // clear WD reset status
+                         | (0b1     << TIMER_TSR_WIS_i) ); // clear WD exception
 
     spr_write( SPR_TBL_W, FIELD_MASK32(8, (20-8)) );    // set TBL value that triggers TSR[ENW] to 1
     while( !(spr_read(SPR_TBL_R) & (0b1 << 20)) );      // wait trigger
@@ -99,8 +98,6 @@ static void check_wd_system_reset() {
 int main() {
     test_event_send_test_id( "test_oi10_cpu_025_wd");
 
-    uint32_t reg = 0;
-
     if(rumboot_platform_runtime_info->persistent[test_check_magic] != MAGIC ) {
         rumboot_platform_runtime_info->persistent[test_check_magic] = MAGIC;
         rumboot_platform_runtime_info->persistent[last_test_check] = TC_NONE;
@@ -113,21 +110,21 @@ int main() {
             break;
         }
         case TC_CORE_RESET: {
-            reg = spr_read (SPR_DBSR_RC);
+            TEST_ASSERT( GET_BITS( spr_read(SPR_TSR_RC), TIMER_TSR_WRS_i, TIMER_TSR_WRS_n ) == TIMER_TCR_WRS_Core_reset, "Error. Invalid value in TSR[WRS]" );
             // Under git@git.module.ru:OI10/cpu.git de57269bb7945aaea0b1fc2757708036baf0aa8a
-            TEST_ASSERT((reg & (1<<29)) && !((reg & (1<<28))), "Error. Invalid value in DBSR[MRR]");
+            TEST_ASSERT( GET_BITS( spr_read(SPR_DBSR_RC), DEBUG_DBSR_MRR_i, DEBUG_DBSR_MRR_n ) == 0b10, "Error. Invalid value in DBSR[MRR]" );
             check_wd_chip_reset();
             break;
         }
         case TC_CHIP_RESET: {
-            reg = spr_read (SPR_DBSR_RC);
-            TEST_ASSERT((reg & (1<<29)) && !((reg & (1<<28))), "Error. Invalid value in DBSR[MRR]");
+            TEST_ASSERT( GET_BITS( spr_read(SPR_TSR_RC), TIMER_TSR_WRS_i, TIMER_TSR_WRS_n ) == TIMER_TCR_WRS_Chip_reset, "Error. Invalid value in TSR[WRS]" );
+            TEST_ASSERT( GET_BITS( spr_read(SPR_DBSR_RC), DEBUG_DBSR_MRR_i, DEBUG_DBSR_MRR_n ) == 0b10, "Error. Invalid value in DBSR[MRR]" );
             check_wd_system_reset();
             break;
         }
         case TC_SYSTEM_RESET: {
-            reg = spr_read (SPR_DBSR_RC);
-            TEST_ASSERT((reg & (1<<28)) && (reg & (1<<29)), "Error. Invalid value in DBSR[MRR]");
+            TEST_ASSERT( GET_BITS( spr_read(SPR_TSR_RC), TIMER_TSR_WRS_i, TIMER_TSR_WRS_n ) == TIMER_TCR_WRS_System_reset, "Error. Invalid value in TSR[WRS]" );
+            TEST_ASSERT( GET_BITS( spr_read(SPR_DBSR_RC), DEBUG_DBSR_MRR_i, DEBUG_DBSR_MRR_n ) == 0b11, "Error. Invalid value in DBSR[MRR]" );
             rumboot_platform_runtime_info->persistent[test_check_magic] = ~MAGIC;
             return 0;
         }
