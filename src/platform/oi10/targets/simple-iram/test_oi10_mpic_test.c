@@ -180,14 +180,14 @@ void irq_handler( int irq_num, void *arg )
 {
     int num = irq_num-EXT_INT0;
     int_cnt_inc(num);
-    rumboot_printf("irq_handler: IRQ #%d received.\n", num);
+    rumboot_printf("irq_handler: IRQ #%d type #%d received.\n", num, rumboot_irq_current_type());
     test_event(*((uint32_t*)arg));
 }
 
 void irq_handler2( int irq_num, void *arg )
 {
     int num = irq_num-EXT_INT0;
-    rumboot_printf("irq_handler2: IRQ #%d received.\n", num);
+    rumboot_printf("irq_handler2: IRQ #%d type #%d received.\n", num, rumboot_irq_current_type());
     ext_int_cnt += 1;
     msync();
     test_event(*((uint32_t*)arg));
@@ -195,14 +195,14 @@ void irq_handler2( int irq_num, void *arg )
 
 void swirq_handler( int irq_num, void *arg )
 {
-    rumboot_printf("swirq_handler: IRQ #%d received.\n", irq_num);
+    rumboot_printf("swirq_handler: IRQ #%d type #%d received.\n", irq_num, rumboot_irq_current_type());
     sw_int_cnt += 1;
     msync();
 }
 
 void tmr_handler( int irq_num, void *arg )
 {
-    rumboot_printf("tmr_handler: IRQ #%d received.\n", irq_num);
+    rumboot_printf("tmr_handler: IRQ #%d type #%d received.\n", irq_num, rumboot_irq_current_type());
     mpic128_stop_timer(DCR_MPIC128_BASE, (uint32_t)arg);
     tmr_int_cnt += 1;
     msync();
@@ -210,7 +210,7 @@ void tmr_handler( int irq_num, void *arg )
 
 void def_handler( int irq_num, void *arg)
 {
-    rumboot_printf("def_handler: IRQ #%d received.\n", irq_num);
+    rumboot_printf("def_handler: IRQ #%d type #%d received.\n", irq_num, rumboot_irq_current_type());
     if (irq_num == MPIC128_IPI_0) sw_int_cnt += 1;
     if (irq_num == MPIC128_TIMER_0) tmr_int_cnt += 1;
     msync();
