@@ -54,8 +54,13 @@ void exit(int status)
 	_exit(status);
 }
 
+void __attribute__((weak)) rumboot_platform_exit(int status) {
+	/* Default implementation does nothing */
+}
+
 void _exit(int status)
 {
+		rumboot_platform_exit(status);
 		#ifndef RUMBOOT_NOINIT
 			/* Normal binary, do a long-jump and return to bootrom */
 			longjmp(rumboot_platform_runtime.exit_trampoline, 256 + status);

@@ -15,6 +15,8 @@
 #include <devices/irq-proxy-gic-cdnpcie.h>
 #include <rumboot/irq.h>
 #include <stdbool.h>
+#include <regs/regs_gpio_rcm.h>
+#include <regs/regs_gpio.h>
 
 int64_t rumboot_virt_to_phys(volatile void *addr)
 {
@@ -34,6 +36,26 @@ uint32_t rumboot_platform_get_uptime()
         return (0xFFFFFFFF - sp804_get_value(DIT3_BASE, 1)) / 6.25;
 }
 
+
+void rumboot_platform_exit(int status) {
+
+#ifdef PRODUCTION_TESTING
+        uint32_t tmp = ioread32(GPIO1_BASE + GPIO_READ_PADtoAPB);
+        uint32_t count = tmp & (1<<6 | 1<<7);
+        count++;
+        tmp &= (1<<6 | 1<<7);
+        tmp |= count;
+
+	iowrite32(tmp, GPIO1_BASE + GPIO_WRITE_APBtoPAD);
+
+        if (status) {
+        	rumboot_printf("\nHACK: _exit: System halted, code %d. \n", status);
+        	while(1);;
+        }
+
+#endif
+
+}
 
 extern char rumboot_im0_heap_start;
 extern char rumboot_im0_heap_end;

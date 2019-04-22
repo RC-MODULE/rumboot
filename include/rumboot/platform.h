@@ -309,6 +309,18 @@ void rumboot_arch_exception(int id, const char *name);
 
 
 /**
+ * @brief Platform-specific exit hook.
+ * 
+ * Called from _exit() upon each test termination.
+ *
+ * Production testing code may override this one
+ * Default implementation does nothing
+ * 
+ * @param status exit code
+ */
+void rumboot_platform_exit(int status);
+
+/**
  * Declares a function to be a constructor (will be called upon returning from
  * main or when user calls exit()
  *
