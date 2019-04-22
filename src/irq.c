@@ -263,7 +263,7 @@ void rumboot_irq_core_dispatch(uint32_t ctrl, uint32_t type, uint32_t id)
 	rumboot_platform_runtime_info->irq_context_counter++;
 	prevtype = rumboot_platform_runtime_info->irq_type;
 	/* Controllers may later change IRQ type on their own */
-	rumboot_platform_runtime_info->irq_type = id;
+	rumboot_platform_runtime_info->irq_type = type;
 
 	if (ctl->scratch_size) {
 		/* Only allocate a scratch buffer if controller requests it */
