@@ -257,8 +257,13 @@ void rumboot_irq_set_exception_handler(void (*handler)(int id, const char *name)
 void rumboot_irq_core_dispatch(uint32_t ctrl, uint32_t type, uint32_t id)
 {
 	const struct rumboot_irq_controller *ctl = rumboot_irq_controller_by_id(ctrl);
+	int prevtype;
 	void *scratch = NULL;
+
 	rumboot_platform_runtime_info->irq_context_counter++;
+	prevtype = rumboot_platform_runtime_info->irq_type;
+	/* Controllers may later change IRQ type on their own */
+	rumboot_platform_runtime_info->irq_type = id;
 
 	if (ctl->scratch_size) {
 		/* Only allocate a scratch buffer if controller requests it */
@@ -282,6 +287,8 @@ void rumboot_irq_core_dispatch(uint32_t ctrl, uint32_t type, uint32_t id)
 		}
 		break;
 	}
+	/* Restore context counter and previous IRQ type */
+	rumboot_platform_runtime_info->irq_type = prevtype;
 	rumboot_platform_runtime_info->irq_context_counter--;
 }
 
@@ -344,6 +351,15 @@ int rumboot_irq_get_context()
 	int ret; 
 	RUMBOOT_ATOMIC_BLOCK() {
 		ret = rumboot_platform_runtime_info->irq_context_counter;
+	}
+	return ret;
+}
+
+int rumboot_irq_current_type()
+{
+	int ret; 
+	RUMBOOT_ATOMIC_BLOCK() {
+		ret = rumboot_platform_runtime_info->irq_type;
 	}
 	return ret;
 }

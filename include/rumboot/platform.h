@@ -418,6 +418,8 @@ struct rumboot_runtime_info {
     void (*irq_exception_hndlr)(int id, const char *name);
     /** IRQ Context counter. Increments every time we start servicing interrupt, decrements when we exit from isr */
     int irq_context_counter;  
+    /** Type of current IRQ */
+    int irq_type;
     /** Level of function nesting (used by function tracing code) */
     int nestlevel;
     /** jmp_buf to jump from _exit() to rumboot_main(). Required for chaining tests for production */

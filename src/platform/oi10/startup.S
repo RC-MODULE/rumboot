@@ -529,7 +529,7 @@ rumboot_CI_hdr:
 
     load_const  r3, 0
     load_const  r4, RUMBOOT_IRQ_TYPE_NORMAL
-    load_const  r5, RUMBOOT_IRQ_IRQ
+    load_const  r5, 0
     bl          rumboot_irq_core_dispatch
 
     full_epilogue   1
@@ -581,7 +581,7 @@ rumboot_EI_hdr:
 
     load_const  r3, 0
     load_const  r4, RUMBOOT_IRQ_TYPE_NORMAL
-    load_const  r5, RUMBOOT_IRQ_IRQ
+    load_const  r5, 0
     bl          rumboot_irq_core_dispatch
 
     full_epilogue
