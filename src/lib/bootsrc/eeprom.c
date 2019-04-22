@@ -19,7 +19,7 @@ struct eeprom_private_data {
 #define CMD_READ_REPEAT_STOP ((1 << I2C_EN_i) | (1 << RD_i) | (1 << START_i) | (1 << REPEAT_i) | (1 << STOP_i))
 
 
-uint32_t get_i2c_clk(uint32_t clk_apb, uint32_t pr)
+static uint32_t get_i2c_clk(uint32_t clk_apb, uint32_t pr)
 {
     return clk_apb / (5 * (pr + 1));
 }
