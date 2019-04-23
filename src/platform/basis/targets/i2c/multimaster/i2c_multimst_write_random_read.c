@@ -38,7 +38,7 @@ int i2c_ini( uint32_t scl_freq){
 	uint32_t tmp_ctrl;
 
 	i2c_set_prescale(I2C_BASE,scl_freq);
-	 iowrite32(0x13, (I2C_BASE + 0x1000) + I2C_PRESCALE );
+	 iowrite32(scl_freq, (I2C_BASE + 0x1000) + I2C_PRESCALE );
     iowrite32((0x00040001),( I2C_BASE + I2C_FIFOFIL));
 	iowrite32((0x00040001),( (I2C_BASE +0x1000) + I2C_FIFOFIL));		
 	iowrite32((0x4),( I2C_BASE + I2C_NUMBER));//number of bytes
@@ -300,7 +300,7 @@ int main()
 	uint32_t i2c_base_addr = I2C_BASE;
 	uint32_t addr_h = 0x00;		//write subaddress
 	uint32_t addr_l = 0x00;
-	uint32_t scl_frq = 0xC7;
+	uint32_t scl_frq = 0x31;
 	//uint32_t size_array;
 /*
 	static uint32_t check_array32[] = {
