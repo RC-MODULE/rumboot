@@ -28,7 +28,7 @@ int main()
         rumboot_printf("Done!\n");
 #endif
 
-        int ret;
+        int ret=1;
         while(1) {
                 /* Save simulation state here */
                 rumboot_platform_sim_save("testbench.simulator_state");
