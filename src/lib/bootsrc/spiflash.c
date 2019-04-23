@@ -55,20 +55,6 @@ static void spi_cs(const struct rumboot_bootsource *src, void *pdata, int select
 #define SPIFLASH_UNIQUEID 	   0x4B
 
 
-static void spiflash_read_id(uint32_t base) {
-   unsigned char wrbuf[5];
-   unsigned char rdbuf[5];
-
-   wrbuf[0] = SPIFLASH_MANID;
-
-   pl022_xfer(base, wrbuf, rdbuf, 5);
-   int i;
-
-   for (i=0; i<5; i++) {
-	   rumboot_printf("0x%x\n", rdbuf[i]);
-   }
-}
-
 static void spiflash_read_flash(uint32_t base, uint32_t offset, unsigned char *dest, int len) {
    unsigned char cmd[4];
    cmd[0] = SPIFLASH_READDATA;
