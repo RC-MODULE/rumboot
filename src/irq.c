@@ -8,7 +8,6 @@
 #include <rumboot/printf.h>
 #include <rumboot/irq.h>
 #include <platform/interrupts.h>
-#include <alloca.h>
 
 const char *const exception_names[] = {
     [RUMBOOT_IRQ_UNDEFINED_INSTRUCTION] = "Undefined Instruction",
@@ -258,23 +257,17 @@ void rumboot_irq_core_dispatch(uint32_t ctrl, uint32_t type, uint32_t id)
 {
 	const struct rumboot_irq_controller *ctl = rumboot_irq_controller_by_id(ctrl);
 	int prevtype;
-	void *scratch = NULL;
 
 	rumboot_platform_runtime_info->irq_context_counter++;
 	prevtype = rumboot_platform_runtime_info->irq_type;
 	/* Controllers may later change IRQ type on their own */
 	rumboot_platform_runtime_info->irq_type = type;
 
-	if (ctl->scratch_size) {
-		/* Only allocate a scratch buffer if controller requests it */
-		scratch = alloca(ctl->scratch_size);
-	}
-
 	switch (type) {
 	case RUMBOOT_IRQ_TYPE_NORMAL:
-		id = ctl->begin(ctl, scratch);
+		id = ctl->begin(ctl);
 		process_irq(id);
-		ctl->end(ctl, scratch, id);
+		ctl->end(ctl, id);
 		break;
 	case RUMBOOT_IRQ_TYPE_SOFT:
 		process_irq(id);
