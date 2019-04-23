@@ -51,8 +51,8 @@ int main()
 
 	struct rumboot_irq_entry *tbl = rumboot_irq_create(NULL);
 	rumboot_irq_set_handler(tbl, MDMA0_IRQ, 0, mdma_irq_handler, start_ptr);
-	rumboot_irq_enable(MDMA0_IRQ);
 	rumboot_irq_table_activate(tbl);
+	rumboot_irq_enable(MDMA0_IRQ);
 
 	size_t heap_ids[num_heaps];
 	size_t i;
