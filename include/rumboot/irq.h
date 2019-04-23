@@ -1,9 +1,13 @@
 #ifndef RUMBOOT_IRQ_H
 #define RUMBOOT_IRQ_H
 
-#define RUMBOOT_IRQ_TYPE_NORMAL         0
-#define RUMBOOT_IRQ_TYPE_EXCEPTION      1
-#define RUMBOOT_IRQ_TYPE_SOFT           2
+#define RUMBOOT_IRQ_TYPE_NOTIRQ         0
+#define RUMBOOT_IRQ_TYPE_NORMAL         1
+#define RUMBOOT_IRQ_TYPE_EXCEPTION      2
+#define RUMBOOT_IRQ_TYPE_SOFT           3
+#define RUMBOOT_IRQ_TYPE_FIQ            4
+#define RUMBOOT_IRQ_TYPE_CRITICAL       5
+#define RUMBOOT_IRQ_TYPE_MACHINECHECK   6
 
 /* ARM Exception names */
 #define RUMBOOT_IRQ_PREFETCH_ABORT          0
@@ -26,10 +30,6 @@
 #define RUMBOOT_IRQ_INST_TLB_ERROR          16
 #define RUMBOOT_IRQ_DEBUG                   17
 
-
-/* IRQ Types */
-#define RUMBOOT_IRQ_IRQ  0
-#define RUMBOOT_IRQ_FIQ  1
 
 
 #ifndef __ASSEMBLER__
@@ -141,29 +141,18 @@ static inline uint32_t rumboot_arch_irq_setstate(uint32_t new_state)
          * service the IRQ routine. The function should return the current pending
          * irq number.
          *
-         * If the scratch_size is specified, a scratch buffer will
-         * be allocated on the irq stack and passed to this function.
-         * This very buffer will be passed to end() function. User should not
-         * try to free this buffer in any way.
-         *
          * @param dev      The irq controller device
-         * @param scratch  The scratch buffer pointer
          * @return IRQ ID that is currently being serviced
          */
-    	uint32_t	(*begin)(const struct rumboot_irq_controller *dev, void *scratch);
+    	uint32_t	(*begin)(const struct rumboot_irq_controller *dev);
         /**
          * This function is called by the IRQ subsystem when the subsystem is done
          * servicing the current interrupt.
          *
-         * If the scratch_size is specified, a scratch buffer will
-         * be allocated on the irq stack and passed to begin() and end() functions.
-         * User should not try to free this buffer in any way.
-         *
          * @param dev      The irq controller device
-         * @param scratch  The scratch buffer pointer
          * @param irq id of the irq that is done being serviced
          */
-    	void		(*end)(const struct rumboot_irq_controller *dev, void *scratch, uint32_t irq);
+    	void		(*end)(const struct rumboot_irq_controller *dev, uint32_t irq);
 
         /**
          * Generate a software interrupt.
@@ -195,11 +184,6 @@ static inline uint32_t rumboot_arch_irq_setstate(uint32_t new_state)
 
         /** Default irq line priority (if not set) */
         int         priority_default;
-
-        /** Size of an optional scratch buffer. Scratch buffer is allocated on
-        stack for every interrupt that is serviced is passed to begin() and end()
-        calls */
-        size_t scratch_size;
 
         /** Base address for this controller */
         uintptr_t    base0;
@@ -375,7 +359,7 @@ static inline uint32_t rumboot_arch_irq_setstate(uint32_t new_state)
     void rumboot_irq_reset_count(int irq);
 
     /**
-     * Get the context level. 
+     * Get current context level. 
      * 0 - Normal program execution
      * 1 - ISR context
      * 2 and more - nested ISR context
@@ -383,6 +367,22 @@ static inline uint32_t rumboot_arch_irq_setstate(uint32_t new_state)
      * @return int 
      */
     int rumboot_irq_get_context();
+
+
+    /**
+     * @brief Get the type of interrupt we're in.
+     * Returns one of these:
+     *
+     * RUMBOOT_IRQ_TYPE_NOTIRQ    
+     * RUMBOOT_IRQ_TYPE_EXCEPTION 
+     * RUMBOOT_IRQ_TYPE_NORMAL    
+     * RUMBOOT_IRQ_TYPE_SOFT      
+     * RUMBOOT_IRQ_TYPE_FIQ       
+     * RUMBOOT_IRQ_TYPE_CRITICAL
+     * RUMBOOT_IRQ_TYPE_CRITICAL  
+     * 
+     */
+    int rumboot_irq_current_type();
 
     /**
      * Disable global interrupt handling by current CPU core

@@ -83,7 +83,7 @@ irq_handler:
   push    {r0-r3, r12, lr}
   mov     r0, #0
   mov     r1, #RUMBOOT_IRQ_TYPE_NORMAL
-  mov     r2, #RUMBOOT_IRQ_IRQ
+  mov     r2, #0
   blx     rumboot_irq_core_dispatch
   POP     {r0-r3, r12, lr}
   subs    pc, lr, #4
@@ -91,8 +91,8 @@ irq_handler:
 
 fiq_handler:
   mov r0, #0
-  mov r1, #RUMBOOT_IRQ_TYPE_NORMAL
-  mov r2, #RUMBOOT_IRQ_FIQ
+  mov r1, #RUMBOOT_IRQ_TYPE_FIQ
+  mov r2, #0
   bl rumboot_irq_core_dispatch
   movs pc,lr
   nop
