@@ -40,7 +40,7 @@ static int mpic128_init( struct rumboot_irq_controller const * const dev ) {
     return 0; /* We're good */
 }
 
-static uint32_t mpic128_begin( struct rumboot_irq_controller const * const dev, void *scratch ) {
+static uint32_t mpic128_begin( struct rumboot_irq_controller const * const dev ) {
     uint32_t const      spv = dcr_read( dev->base0 + MPIC128_SPV );
     register uint32_t   ack = dcr_read( dev->base0 + MPIC128_IAR_PR );
     if(ack != spv) {
@@ -57,7 +57,7 @@ static uint32_t mpic128_begin( struct rumboot_irq_controller const * const dev, 
     return ack;
 }
 
-static void mpic128_end( struct rumboot_irq_controller const * const dev, void *scratch, uint32_t const irq ) {
+static void mpic128_end( struct rumboot_irq_controller const * const dev, uint32_t const irq ) {
     if( irq != dcr_read( dev->base0 + MPIC128_SPV ) ) {
         /* signal the end of processing for non-spurious interrupt */
         if(rumboot_platform_runtime_info->irq_type == RUMBOOT_IRQ_TYPE_MACHINECHECK) {
@@ -206,7 +206,6 @@ static const struct rumboot_irq_controller irq_ctl = {
     .priority_max = 15,
     .priority_default = 1,
     .adjust_priority = mpic128_adjust_priority,
-    .scratch_size = 0,
     .base0 = DCR_MPIC128_BASE,
 };
 
