@@ -154,7 +154,8 @@ typedef volatile uint32_t           irq_flags_t;
 /* Global vars */
 static irq_flags_t        IRQ[IRQ_ARR_SZ];
 static irq_flags_t        ext_int_raised    = 0;
-static irq_flags_t        irq_type          = 0;
+static irq_flags_t        irq_type_cpu      = 0;
+static irq_flags_t        irq_type_mpic     = 0;
 static int                int_int_idx       = 0;
 static rumboot_irq_entry *irq_table         = NULL;
 static volatile uint32_t  dma2plb6_src[DMA2PLB6_TRANSFER_UNITS] = {0};
@@ -266,7 +267,8 @@ void irq_handler( int irq_num, void *arg )
                 irq_num,
                 spr_read(SPR_SRR0),  srr1,
                 spr_read(SPR_CSRR0), csrr1);
-        irq_type = (!!csrr1 << IRQ_TYPE_CR) | (!!srr1 << IRQ_TYPE_NC);
+        irq_type_cpu  = (!!csrr1 << IRQ_TYPE_CR) | (!!srr1 << IRQ_TYPE_NC);
+        irq_type_mpic = rumboot_irq_current_type();
         set_interrupt(IRQ, irq_num);
     }
 
@@ -539,10 +541,10 @@ uint32_t check_internal_interrupts(void)
     char         *title  = "Check internal interrupts";
     uint32_t      status = TEST_OK,
                   result = 0;
-    int           spri   = 0,
+    int           spri   = 0,   /* SPR index */
                   idx    = 0,
                   irq    = 0;
-    static const
+    static const  /* SPR list */
     uint32_t      sprl[] = {SPR_SRR0, SPR_CSRR0, SPR_SRR1, SPR_CSRR1};
 
     rumboot_printf("%s...\n", title);
@@ -556,9 +558,12 @@ uint32_t check_internal_interrupts(void)
         /* Clear xSRRn */
         for(spri = 0; spri < ARRAY_SIZE(sprl); spri++)
             spr_write(sprl[spri],  0x00000000);
-        irq_type = 0;
+        irq_type_cpu  = 0;
+        irq_type_mpic = 0;
         intgen_list[idx].func(intgen_list[idx].data);
         wait_irq(IRQ_WAIT_TIMEOUT, irq);
+
+        /* Check interrupt receiving */
         status |= !(result = get_interrupt(IRQ, irq));
         if(!result)
         {
@@ -566,13 +571,24 @@ uint32_t check_internal_interrupts(void)
             irq_handler(-irq, NULL);
         }
         TEST_ASSERT(result, "INTERNAL INTERRUPT NOT RECEIVED!\n");
+
+        /* Check interrupt input line of CPU */
         if((irq >= IRQ_MC_BEG) && (irq <= IRQ_MC_END))
-            result = !!(irq_type & BIT(IRQ_TYPE_CR));
+            result = !!(irq_type_cpu & BIT(IRQ_TYPE_CR));
         else if((irq >= IRQ_CR_BEG) && (irq <= IRQ_CR_END))
-                result = !!(irq_type & BIT(IRQ_TYPE_CR));
-        else result = !!(irq_type & BIT(IRQ_TYPE_NC));
+                result = !!(irq_type_cpu & BIT(IRQ_TYPE_CR));
+        else result = !!(irq_type_cpu & BIT(IRQ_TYPE_NC));
         status |= !result;
-        TEST_ASSERT(result, "INTERUPT TYPE MISMATCH!\n");
+        TEST_ASSERT(result, "CPU INTERRUPT INPUT LINE MISMATCH!\n");
+
+        /* Check interrupt type in MPIC */
+        if((irq >= IRQ_MC_BEG) && (irq <= IRQ_MC_END))
+            result = (irq_type_mpic == RUMBOOT_IRQ_TYPE_MACHINECHECK);
+        else if((irq >= IRQ_CR_BEG) && (irq <= IRQ_CR_END))
+                result = (irq_type_mpic == RUMBOOT_IRQ_TYPE_CRITICAL);
+        else result = (irq_type_mpic == RUMBOOT_IRQ_TYPE_NORMAL);
+        status |= !result;
+        TEST_ASSERT(result, "MPIC INTERRUPT TYPE MISMATCH!\n");
     }
     rumboot_printf("%s %s!\n", title, !status ? "success" : "failed");
     return status;
