@@ -47,11 +47,9 @@ enum {
 
 static void generate_wd_reset( TIMER_TCR_WRC const reset_type )
 {
-    rumboot_platform_perf("generate_wd_reset");
-
     spr_write( SPR_TCR, (TIMER_TCR_WP_2pow21_clocks << TIMER_TCR_WP_i)
                       | (reset_type                 << TIMER_TCR_WRC_i)
-                      | (0b0                        << TIMER_TCR_WIE_i)
+                      | (0b1                        << TIMER_TCR_WIE_i)
                       | (0b0                        << TIMER_TCR_DIE_i)
                       | (0b0                        << TIMER_TCR_FIE_i) );
 
@@ -59,14 +57,22 @@ static void generate_wd_reset( TIMER_TCR_WRC const reset_type )
     spr_write( SPR_TSR_RC, (0b1     << TIMER_TSR_ENW_i)    // clear WD next action
                          | (0b1     << TIMER_TSR_WIS_i) ); // clear WD exception
 
-    spr_write( SPR_TBL_W, FIELD_MASK32(8, (20-8)) );    // set TBL value that triggers TSR[ENW] to 1
-    while( !(spr_read(SPR_TBL_R) & (0b1 << 20)) );      // wait trigger
+    spr_write( SPR_TBL_W, FIELD_MASK32(8, (20-8)) );    // speedup WD triggering (2^8 clocks) for TIMER_TCR_WP_2pow21_clocks: TSR[ENW] to 1
+    while( !(spr_read(SPR_TBL_R) & (0b1 << 20)) );      // wait trigger TSR[ENW] to 1
     spr_write( SPR_TBL_W, FIELD_MASK32(8, (20-8)) );    // set TBL value that triggers TSR[WIS] to 1
-    while( !(spr_read(SPR_TBL_R) & (0b1 << 20)) );      // wait trigger
-    spr_write( SPR_TBL_W, FIELD_MASK32(8, (20-8)) );    // set TBL value that triggers reset when TSR[ENW] == 1 and TSR[WIS] == 1
-    while( !(spr_read(SPR_TBL_R) & (0b1 << 20)) );      // wait trigger
+    while( !(spr_read(SPR_TBL_R) & (0b1 << 20)) );      // wait trigger TSR[WIS] to 1
 }
 
+static void exception_handler( int const id, char const * const name ) {
+    rumboot_printf( "exception_handler\n" );
+    if( id != RUMBOOT_IRQ_WATCHDOG_TIMER ) {
+        rumboot_printf( "Unexpected exception: %s\n", name );
+        exit(1);
+    }
+
+    rumboot_platform_perf("generate_wd_reset");
+    spr_write( SPR_TBL_W, FIELD_MASK32(8, (20-8)) );    // speedup WD triggering (2^8 clocks) for TIMER_TCR_WP_2pow21_clocks: reset on TSR[ENW] == 1 and TSR[WIS] == 1
+}
 
 static void check_wd_core_reset() {
     rumboot_printf( "check_wd_core_reset\n" );
@@ -103,6 +109,7 @@ int main() {
         rumboot_platform_runtime_info->persistent[last_test_check] = TC_NONE;
     }
 
+    rumboot_irq_set_exception_handler(exception_handler);
 
     switch( rumboot_platform_runtime_info->persistent[last_test_check] ) {
         case TC_NONE: {
