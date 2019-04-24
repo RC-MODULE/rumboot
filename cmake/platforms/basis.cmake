@@ -1550,12 +1550,66 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         NAME bconfig_test
       )
 
-    add_rumboot_target(
-          CONFIGURATION IRAM_SPL
-          FILES configtool/ini_loader.c
-          NAME basisconfig
-          FEATURES STUB
-        )
+  add_rumboot_target(
+        CONFIGURATION IRAM_SPL
+        FILES common/updaters/spi.c
+        CFLAGS -DSPI_BASE=GSPI0_BASE
+        PREFIX updater
+        NAME spi0-internal-cs
+      )
+
+  add_rumboot_target(
+        CONFIGURATION IRAM_SPL
+        FILES common/updaters/spi.c
+        CFLAGS -DSPI_BASE=GSPI1_BASE
+        PREFIX updater
+        NAME spi1-internal-cs
+  )
+
+  add_rumboot_target(
+        CONFIGURATION IRAM_SPL
+        FILES common/updaters/spi.c
+        CFLAGS -DSPI_BASE=GSPI0_BASE -DBASIS_SPI0_GP5
+        PREFIX updater
+        NAME spi0-gpio0_5-cs
+  )
+
+  add_rumboot_target(
+    CONFIGURATION IRAM_SPL
+    FILES common/updaters/i2c.c
+    CFLAGS -DI2C_BASE=I2C0_BASE -DEEPROM_ADDRESS=0x50
+    PREFIX updater
+    NAME i2c0-0x50
+    FEATURES STUB
+)
+
+add_rumboot_target(
+  CONFIGURATION IRAM_SPL
+  FILES common/updaters/i2c.c
+  CFLAGS -DI2C_BASE=I2C0_BASE -DEEPROM_ADDRESS=0x51
+  PREFIX updater
+  NAME i2c0-0x51
+  FEATURES STUB
+)
+
+add_rumboot_target(
+  CONFIGURATION IRAM_SPL
+  FILES common/updaters/i2c.c
+  CFLAGS -DI2C_BASE=I2C0_BASE -DEEPROM_ADDRESS=0x52
+  PREFIX updater
+  NAME i2c0-0x52
+  FEATURES STUB
+)
+
+add_rumboot_target(
+  CONFIGURATION IRAM_SPL
+  FILES common/updaters/i2c.c
+  CFLAGS -DI2C_BASE=I2C0_BASE -DEEPROM_ADDRESS=0x53
+  PREFIX updater
+  NAME i2c0-0x53
+  FEATURES STUB
+)
+
 
     foreach(conf IRAM IRAM_MIRROR)
     foreach(dit 0 1 2 3)
