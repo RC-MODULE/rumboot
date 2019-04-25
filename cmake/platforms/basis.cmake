@@ -48,7 +48,7 @@ rumboot_add_configuration (
   PREFIX iram
   LDFLAGS -Wl,--start-group -lgcc -lc -lm -Wl,--end-group "-e rumboot_main"
   FILES ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c
-  CFLAGS
+  CFLAGS -g
   BOOTROM bootrom-stub
   TIMEOUT_CTEST 200000
   FEATURES LUA COVERAGE PACKIMAGE
@@ -1126,6 +1126,12 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
   add_rumboot_target(
       CONFIGURATION IRAM
+      FILES pcie/pcie_board_test_config.c
+      NAME pcie_board_test_config
+    )
+
+  add_rumboot_target(
+      CONFIGURATION IRAM
       FILES pcie/pcie_irq_eRP_test.c
       NAME pcie_irq_eRP_test
       TESTGROUP sprint
@@ -1370,6 +1376,66 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       CONFIGURATION IRAM
       FILES ddr/ddr0_addr_test.c
       NAME ddr0_addr_test
+    )
+
+  add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES ddr/ddr0_phy_bist_test_data.c
+      NAME ddr0_phy_bist_test_data
+    )
+
+  add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES ddr/ddr1_phy_bist_test_data.c
+      NAME ddr1_phy_bist_test_data
+    )
+
+  add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES ddr/ddr0_phy_bist_test_ctrl.c
+      NAME ddr0_phy_bist_test_ctrl
+    )
+
+  add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES ddr/ddr1_phy_bist_test_ctrl.c
+      NAME ddr1_phy_bist_test_ctrl
+    )
+
+  add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES ddr/ddr0_phy_bist_test_clk.c
+      NAME ddr0_phy_bist_test_clk
+    )
+
+  add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES ddr/ddr1_phy_bist_test_clk.c
+      NAME ddr1_phy_bist_test_clk
+    )
+
+  add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES ddr/ddr0_phy_bist_test_dll_data.c
+      NAME ddr0_phy_bist_test_dll_data
+    )
+
+  add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES ddr/ddr1_phy_bist_test_dll_data.c
+      NAME ddr1_phy_bist_test_dll_data
+    )
+
+  add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES ddr/ddr0_phy_bist_test_dll_ctrl.c
+      NAME ddr0_phy_bist_test_dll_ctrl
+    )
+
+  add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES ddr/ddr1_phy_bist_test_dll_ctrl.c
+      NAME ddr1_phy_bist_test_dll_ctrl
     )
 
   add_rumboot_target(

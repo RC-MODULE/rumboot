@@ -36,16 +36,28 @@
 // #include "platform/ddr_config/nl__jedec_ddr3_1g_x16_1600g_cl8_bl8.h"
 // #include "platform/ddr_config/rtl__jedec_ddr3_1g_x16_1600g_cl11_bl8.h"
 // #include "platform/ddr_config/rtl__jedec_ddr3_1g_x16_1600g_cl8_bl8.h"
+
 #ifdef RUMBOOT_SOC_RTL
 #include "platform/ddr_config/rtl__my_mt41k128m8_107_cl11_bl8.h"
-#else
+#endif
+
+#ifdef RUMBOOT_SOC_POSTLAYOUT
 #include "platform/ddr_config/nl__my_mt41k128m8_107_cl11_bl8.h"
+#endif
+
+#ifdef CMAKE_BUILD_TYPE_POSTPRODUCTION
+#include "/home/e.vorontsov/Basis/_ddr3_config/ddr_settings/ddr__mt41j512m8_187e_8_8_533__bist.h"
 #endif
 //-------------------------------------------------------------
 //  Timeout of PLL lock
 //-------------------------------------------------------------
+#ifndef CMAKE_BUILD_TYPE_POSTPRODUCTION
 #define DDR_TEST_LIB_PLL_LOCK_TIMEOUT        0x1000
 #define CRG_DDR_TEST_LIB_PLL_LOCK_TIMEOUT    0x1000
+#else
+#define DDR_TEST_LIB_PLL_LOCK_TIMEOUT        0x1000000
+#define CRG_DDR_TEST_LIB_PLL_LOCK_TIMEOUT    0x1000000
+#endif
 
 //-----------------------------------------------------------------------------
 //  This function is for program setting registers of one DDR subsystem
@@ -521,7 +533,7 @@ uint32_t ddr_init (uint32_t DDRx_BASE)
 {
     uint32_t timer_cntr = 0;
 
-    crg_ddr_init (0x63 ,0x0);
+    crg_ddr_init (0x84 ,0x1);
     ddr_registers_init (DDRx_BASE);
     
     while ((ioread32(DDRx_BASE + DENALI_CTL_94) & 0x00000800) == 0)
