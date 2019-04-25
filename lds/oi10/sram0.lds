@@ -4,6 +4,12 @@ SECTIONS {
     .rwx : {
         . = 0x0;
         KEEP(*(.text.test))
+
+        /* ROM sections copy */
+        *(*.init.text)
+        *(.text.rom)
+        /* ROM sections copy end */
+
         *(.text)
         *(.text.*)
 
@@ -11,10 +17,6 @@ SECTIONS {
         *(.rodata.*)
         *(.data)
         *(.data.*)
-
-        /* ROM sections copy */
-        *(*.init.text)
-        /* ROM sections copy end */
 
         *(.sbss)
         *(.sbss.*)   

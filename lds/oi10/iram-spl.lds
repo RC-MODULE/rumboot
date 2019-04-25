@@ -6,6 +6,11 @@ SECTIONS {
 
     .rwx : {
         KEEP(*(.header))
+        /* ROM sections copy */
+        *(*.init.text)
+        *(.text.rom)
+        /* ROM sections copy end */
+
         *(.text)
         *(.text.*)
         *(.rodata)
@@ -16,10 +21,6 @@ SECTIONS {
         *(.sdata.*)
         *(.sdata2)
         *(.sdata2.*)
-
-        /* ROM sections copy */
-        *(*.init.text)
-        /* ROM sections copy end */
 
         rumboot_platform_bss_start = .;
         *(.bss)
