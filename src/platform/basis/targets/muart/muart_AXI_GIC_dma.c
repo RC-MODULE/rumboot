@@ -152,7 +152,7 @@ static bool test_AXI_GIC(uint32_t uart_N)
 
        if((src_addr = (char *)rumboot_malloc_from_heap_aligned(heap_id,size+4, ALIGN4)) == NULL){
            rumboot_printf("UNTESTED: ERROR rumboot_malloc_from_heap\n");
-           return 2;
+           return false;
        }
 
     rumboot_printf("====== Interrupt by finish read channel dma\n");
@@ -170,7 +170,7 @@ static bool test_AXI_GIC(uint32_t uart_N)
        rumboot_printf("READ FAIL\n");
        rumboot_free(src_addr);
        rumboot_free(dst_addr);
-       return 1;
+       return false;
     }
 
     dev.irq=intr;
@@ -194,6 +194,7 @@ static bool test_AXI_GIC(uint32_t uart_N)
     rumboot_printf("======= Wait transmit\n");
     if (mdma_chan_wait_trans_end(chan_rd, 1000)) {
            rumboot_printf("TEST FAIL: wait_trans_end error\n");
+           return false;
     }
 
    reg_fifo_state = ioread32(base + MUART_FIFO_STATE);
