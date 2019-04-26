@@ -46,7 +46,8 @@
 #endif
 
 #ifdef CMAKE_BUILD_TYPE_POSTPRODUCTION
-#include "/home/e.vorontsov/Basis/_ddr3_config/ddr_settings/ddr__mt41j512m8_187e_8_8_533__bist.h"
+#include "platform/ddr_config/ddr__mt41j512m8_187e_8_8_533__bist.h"
+// #include "platform/ddr_config/ddr__mt41k256m8_125_8_11_800.h"
 #endif
 //-------------------------------------------------------------
 //  Timeout of PLL lock
@@ -533,7 +534,8 @@ uint32_t ddr_init (uint32_t DDRx_BASE)
 {
     uint32_t timer_cntr = 0;
 
-    crg_ddr_init (0x84 ,0x1);
+    // crg_ddr_init (0x84 ,0x1);
+    crg_ddr_init (0x63 ,0x0);
     ddr_registers_init (DDRx_BASE);
     
     while ((ioread32(DDRx_BASE + DENALI_CTL_94) & 0x00000800) == 0)
