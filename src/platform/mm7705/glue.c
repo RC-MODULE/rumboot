@@ -122,6 +122,8 @@ uint32_t rumboot_arch_irq_enable()
 void rumboot_platform_init_loader(struct rumboot_config *conf)
 {
         uart_rx_enable(UART0_BASE, 1);
+        rumboot_printf("INIT MUX\n");
+        iowrite32(0xff, LSIF1_MGPIO2_BASE + 0x420);
 }
 
 void rumboot_platform_setup()
@@ -135,7 +137,6 @@ static bool sdio_enable(const struct rumboot_bootsource *src, void *pdata)
 
 #ifdef MM7705_USE_MPW
         iowrite32(0xff, 0x3c067000 + 0x420);
-
         iowrite32(0xff, 0x3C040000 + 0x420);
         iowrite32(0xff, 0x3C060000 + 0x420);
         iowrite32(0xff, 0x3C061000 + 0x420);
@@ -147,7 +148,6 @@ static bool sdio_enable(const struct rumboot_bootsource *src, void *pdata)
         iowrite32(0xff, 0x3C067000 + 0x420);
 #else
         iowrite32(0xff, LSIF1_MGPIO4_BASE + 0x420);
-
 #endif
         return true;
 }
@@ -190,6 +190,7 @@ void *rumboot_platform_get_spl_area(size_t *size)
 int rumboot_platform_exec(struct rumboot_bootheader *hdr)
 {
         /* No-op, this chip has only one core */
+        rumboot_printf("EP: %x\n", hdr->entry_point[0]);
         return rumboot_bootimage_execute_ep((void *) hdr->entry_point[0]);
 }
 
