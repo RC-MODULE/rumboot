@@ -17,11 +17,13 @@ __attribute__((no_instrument_function)) void rumboot_platform_event_raise(enum r
                 rumboot_printf("TRACE: %d %x\n", data[1], data[0]);
         }
 //        RUMBOOT_ATOMIC_BLOCK() {
+#if 0
                 rumboot_printf("EVENT %x: ", event);
                 for (i = 0; i < len; i++)
                         rumboot_printf("%x ", data[i]);
                 rumboot_printf("\n");
 //        }
+#endif
 }
 
 __attribute__((no_instrument_function)) enum rumboot_simulation_event
