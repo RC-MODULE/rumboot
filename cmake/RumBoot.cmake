@@ -430,14 +430,25 @@ function(add_rumboot_target)
   rumboot_platform_generate_stuff_for_taget(${product})
 
 
-  # Native platform is special - we do unit-testing!
+
   list (FIND TARGET_FEATURES "STUB" _index)
-  #FixMe: TODO: Auto-enable for standalone builds
-  if (RUMBOOT_ENABLE_TESTING)
-    add_test(NAME ${product} COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/scripts/bootxmodem.py ${product}.bin)
-    SET_TESTS_PROPERTIES(${product} PROPERTIES TIMEOUT "30")  
+
+  #For standalone builds we enable testing via rumboot-xrun
+  if (NOT RUMBOOT_TESTING_PORT)
+    set(RUMBOOT_TESTING_PORT /dev/ttyUSB0)
   endif()
 
+  if (NOT RUMBOOT_TESTING_RESETSEQ)
+    set(RUMBOOT_TESTING_RESETSEQ pl2303)
+  endif()
+
+  if (NOT RUMBOOT_DISABLE_TESTING)
+    add_test(NAME ${product} COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/rumboot-packimage.py/rumboot_xrun.py -r ${RUMBOOT_TESTING_RESETSEQ} -f ${product}.bin -p ${RUMBOOT_TESTING_PORT})
+    SET_TESTS_PROPERTIES(${product} PROPERTIES TIMEOUT "30")  
+    SET_TESTS_PROPERTIES(${product} PROPERTIES LABELS "full;${TARGET_TESTGROUP}")    
+  endif()
+
+  # Native platform is special - we always do unit-testing!
   if (${RUMBOOT_PLATFORM} MATCHES "native" AND NOT _index GREATER -1 )
     add_test(${product} ${product})
 
