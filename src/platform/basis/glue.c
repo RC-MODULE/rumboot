@@ -40,13 +40,15 @@ uint32_t rumboot_platform_get_uptime()
 void rumboot_platform_exit(int status) {
 
 #ifdef PRODUCTION_TESTING
-        uint32_t tmp = ioread32(GPIO1_BASE + GPIO_READ_PADtoAPB);
-        uint32_t count = tmp & (1<<6 | 1<<7);
+        uint32_t tmp = ioread32(GPIO1_BASE + GPIO_WRITE_APBtoPAD);
+        uint32_t count = tmp & ~(1<<6 | 1<<7);
+        rumboot_printf("GPIO1 was %x | count %x\n", tmp, count);
         count++;
         tmp &= (1<<6 | 1<<7);
         tmp |= count;
 
 	iowrite32(tmp, GPIO1_BASE + GPIO_WRITE_APBtoPAD);
+        rumboot_printf("GPIO1 now %x\n", tmp);
 
         if (status) {
         	rumboot_printf("\nHACK: _exit: System halted, code %d. \n", status);

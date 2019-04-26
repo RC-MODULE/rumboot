@@ -8,12 +8,14 @@
 #include <regs/regs_gpio_rcm.h>
 #include <rumboot/io.h>
 #include <platform/devices.h>
+#include <regs/regs_gpio_rcm.h>
+#include <regs/regs_gpio.h>
+
 
 int main()
 {
 	rumboot_printf("This is the first test. Arming GPIOs!\n");
 	iowrite32(0xff, GPIO1_BASE + GPIO_PAD_DIR);
-	iowrite32(0x0,  GPIO1_BASE + GPIO_WR_DATA_SET0);		
-	iowrite32(1<<7, GPIO1_BASE + GPIO_WR_DATA_SET1);	
+	iowrite32(1<<7, GPIO1_BASE + GPIO_WRITE_APBtoPAD);	
 	return 0;
 }
