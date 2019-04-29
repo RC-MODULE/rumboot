@@ -62,6 +62,10 @@ int mgeth_init_sgmii(uint32_t sgmii_base_addr, uint32_t sctl_base_addr)
 	iowrite32(0x07000000, OFFSET_CM + 0x20);
 
 	DBG_print("=== config SGMII_PHY OFFSET_RXS ===");
+	iowrite32(0x33000041, OFFSET_RXS_0 + 0x0);
+	iowrite32(0x33000041, OFFSET_RXS_1 + 0x0);
+	iowrite32(0x33000041, OFFSET_RXS_2 + 0x0);
+	iowrite32(0x33000041, OFFSET_RXS_3 + 0x0);
 
 	iowrite32(0x0000CEA6, OFFSET_RXS_0 + 0x08);
 	iowrite32(0x0000CEA6, OFFSET_RXS_1 + 0x08);
