@@ -12,17 +12,16 @@
 __attribute__((no_instrument_function)) void rumboot_platform_event_raise(enum rumboot_simulation_event event,
                                                                           uint32_t const *data, uint32_t len)
 {
-        int i;
+
         if (event == EVENT_TRACE) {
                 rumboot_printf("TRACE: %d %x\n", data[1], data[0]);
         }
-//        RUMBOOT_ATOMIC_BLOCK() {
 #if 0
+        int i;
                 rumboot_printf("EVENT %x: ", event);
                 for (i = 0; i < len; i++)
                         rumboot_printf("%x ", data[i]);
                 rumboot_printf("\n");
-//        }
 #endif
 }
 
