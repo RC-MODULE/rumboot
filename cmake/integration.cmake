@@ -201,7 +201,7 @@ function(rumboot_load_build platform buildtype)
         -DRUMBOOT_COVERAGE=${RUMBOOT_COVERAGE}
         -DRUMBOOT_PROFILE=${RUMBOOT_PROFILE}
         -DRUMBOOT_SOC_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-        -DRUMBOOT_DISABLE_TESTING
+        -DRUMBOOT_DISABLE_TESTING=Yes
     )
 
     if (RUMBOOT_PACKAGED)
