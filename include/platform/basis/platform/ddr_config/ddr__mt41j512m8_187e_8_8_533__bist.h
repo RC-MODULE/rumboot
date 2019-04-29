@@ -19,11 +19,11 @@
 //  unproven value; probably, training may be done once at start
 //    interval between WL = 0x1000*1024 dfi_clk (~ 4*10^6)
 #define WRLVL_INTERVAL                             0x1000
-//  WL must be turn on
+//  WL must be turn off for BIST
 #define WRLVL_EN                                   0x00
-//  Read Gating must be turn on
+//  Read Gating must be turn off for BIST
 #define RDLVL_GATE_EN                              0x00
-//  Read Leveling must be turn on
+//  Read Leveling must be turn off for BIST
 #define RDLVL_EN                                   0x00
 //  unproven value; probably, training may be done once at start
 //    interval between Read Leveling = 0x1000*1024 dfi_clk (~ 4*10^6)
@@ -108,7 +108,8 @@
 //  Special settings for BIST mode
 
 //  inhibit update requests to Core from Phy
-#define PHY_UPDATE_MASK    0x01
+//    Now it is released in main code of BIST tests
+#define PHY_UPDATE_MASK    0x00
 
 
 //-----------------------------------------------------

@@ -1440,6 +1440,18 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
   add_rumboot_target(
       CONFIGURATION IRAM
+      FILES ddr/ddr0_phy_bist_test_all.c
+      NAME ddr0_phy_bist_test_all
+    )
+
+  add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES ddr/ddr1_phy_bist_test_all.c
+      NAME ddr1_phy_bist_test_all
+    )
+
+  add_rumboot_target(
+      CONFIGURATION IRAM
       FILES ddr/ddr1_addr_test.c
       NAME ddr1_addr_test
     )
