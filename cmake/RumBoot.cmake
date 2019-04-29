@@ -441,7 +441,7 @@ function(add_rumboot_target)
   endif()
 
   list (FIND TARGET_FEATURES "STUB" _stub)
-  if (NOT RUMBOOT_DISABLE_TESTING AND NOT ${_stub} GREATER -1)
+  if (NOT RUMBOOT_DISABLE_TESTING AND NOT ${_stub} GREATER -1 AND NOT ${RUMBOOT_PLATFORM} MATCHES "native")
     add_test(NAME ${product} COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/rumboot-packimage.py/rumboot_xrun.py -r ${RUMBOOT_TESTING_RESETSEQ} -f ${product}.bin -p ${RUMBOOT_TESTING_PORT})
     SET_TESTS_PROPERTIES(${product} PROPERTIES TIMEOUT "30")  
     SET_TESTS_PROPERTIES(${product} PROPERTIES LABELS "full;${TARGET_TESTGROUP}")    
