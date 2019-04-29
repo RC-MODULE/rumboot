@@ -156,16 +156,6 @@
 #define SPR_DCDBTRL     924
 #define SPR_DCDBTRH     925
 
-/*Condition register field numbers*/
-#define cr0    0
-#define cr1    1
-#define cr2    2
-#define cr3    3
-#define cr4    4
-#define cr5    5
-#define cr6    6
-#define cr7    7
-
 #define PPC0_CORE_ID    0b00
 #define PPC1_CORE_ID    0b01
 
