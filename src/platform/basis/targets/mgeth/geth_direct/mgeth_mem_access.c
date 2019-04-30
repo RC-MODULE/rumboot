@@ -234,6 +234,7 @@ int main()
 	mgeth_reset(ETH3_BASE);
 
 	cfg.is_full_duplex = true;
+// 1000
 	cfg.speed = SPEED_1000;
 
 	mgeth_init(ETH0_BASE, &cfg);
@@ -244,7 +245,42 @@ int main()
 	res = test_suite_run(NULL, &mgeth_mem_access_test);
 
 	if (res)
+    {
 		rumboot_printf("%d tests from suite failed!\n", res);
+		return 1;
+    }
+    
+// 100
+	cfg.speed = SPEED_100;
 
+	mgeth_init(ETH0_BASE, &cfg);
+	mgeth_init(ETH1_BASE, &cfg);
+	mgeth_init(ETH2_BASE, &cfg);
+	mgeth_init(ETH3_BASE, &cfg);
+
+	res = test_suite_run(NULL, &mgeth_mem_access_test);
+
+	if (res)
+    {
+		rumboot_printf("%d tests from suite failed!\n", res);
+		return 1;
+    }
+    
+// 10
+	cfg.speed = SPEED_10;
+
+	mgeth_init(ETH0_BASE, &cfg);
+	mgeth_init(ETH1_BASE, &cfg);
+	mgeth_init(ETH2_BASE, &cfg);
+	mgeth_init(ETH3_BASE, &cfg);
+
+	res = test_suite_run(NULL, &mgeth_mem_access_test);
+
+	if (res)
+    {
+		rumboot_printf("%d tests from suite failed!\n", res);
+		return 1;
+    }
+    
 	return res;
 }
