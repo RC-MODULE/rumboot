@@ -71,9 +71,28 @@ uint32_t check_gpio2_0_high ()
 
 uint32_t main ()
 {
-    if (pcie_turn_on_with_options_ep (1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) != 0)
-        return -1;
-    ext_irq_gen_config (0x1, 0x00000000, 0x00000003);
+    // if (pcie_turn_on_with_options_ep (1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) != 0)
+        // return -1;
+    // ext_irq_gen_config (0x1, 0x00000000, 0x00000003);
+    
+    //-------------------------------------------------------------------------
+    //  Not very sure
+    iowrite32 (0x1       , EXT_IRQ_GEN_BASE + EXT_IRQ_GEN_Ctrl             );
+    iowrite32 (0x00000000, EXT_IRQ_GEN_BASE + EXT_IRQ_GEN_Global_IRQ_Mask_h);
+    iowrite32 (0x00000003, EXT_IRQ_GEN_BASE + EXT_IRQ_GEN_Global_IRQ_Mask_l);
+    
+    volatile uint32_t* addr_pointer = (uint32_t*) (EXT_IRQ_GEN_BASE + EXT_IRQ_GEN_v0_Message_Address);
+    for (int i = 0; i < 64; i++)
+    {
+        *addr_pointer = 0x40050000 + (i << 2);
+        addr_pointer+=2;
+        *addr_pointer = i;
+        addr_pointer++;
+        *addr_pointer = 0;
+        addr_pointer++;
+    }
+    //-------------------------------------------------------------------------
+    
     addr_trans_slv_config (2);
     
     for (volatile uint32_t j = 0; j < interrupt_repeat_number; j++)
