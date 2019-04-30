@@ -637,6 +637,10 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         CONFIGURATION IRAM
         PREFIX mgeth-geth_direct
     )
+    add_rumboot_target_dir(mgeth/geth_direct_jumbo_10000byte
+        CONFIGURATION IRAM
+        PREFIX mgeth-geth_direct_jumbo_10000byte
+    )
     add_rumboot_target_dir(mgeth/geth_mirror
         CONFIGURATION IRAM_MIRROR
         PREFIX mgeth-geth_mirror
