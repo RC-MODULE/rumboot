@@ -12,7 +12,7 @@
 #include <rumboot/io.h>
 #include <rumboot/hexdump.h>
 #include <rumboot/xmodem.h>
-
+#include <regs/regs_gpio_pl061.h>
 
 #ifdef BASIS_SPI0_GP5
 #include <regs/regs_gpio_rcm.h>
@@ -55,6 +55,65 @@ static const struct rumboot_bootsource src[] = {
                 .disable = spi0_1_disable,
                 .chipselect = spi0_1_cs,
         }
+};
+
+#elif defined(MM7705_SPI)
+
+
+#define BOOT_SPI_BASE SPI_CTRL0__
+#define BOOT_GPIO_FOR_SPI_BASE  GPIO1_BASE
+#define BOOT_GPIO_FOR_SPI_PIN  2
+#define SPI_CS0 (1 << BOOT_GPIO_FOR_SPI_PIN)
+
+static void mm7705_cs(const struct rumboot_bootsource *src, void *pdata, int select)
+{
+    if (!select) {
+            iowrite32(0, BOOT_GPIO_FOR_SPI_BASE + GPIO_DATA + (SPI_CS0 << 2));
+    } else {
+            iowrite32(SPI_CS0, BOOT_GPIO_FOR_SPI_BASE + GPIO_DATA + (SPI_CS0 << 2));
+    }
+}
+
+static bool mm7705_spi_enable(const struct rumboot_bootsource *src, void *pdata)
+{
+    uint8_t afsel;
+    iowrite32(0xff, LSIF1_MGPIO3_BASE + 0x420 );
+
+    afsel = ioread32(BOOT_GPIO_FOR_SPI_BASE + 0x420);
+    afsel &= ~(1 << BOOT_GPIO_FOR_SPI_PIN);
+    iowrite32(afsel, BOOT_GPIO_FOR_SPI_BASE + 0x420 );
+
+    uint8_t dir = ioread32(BOOT_GPIO_FOR_SPI_BASE + GPIO_DIR);
+    dir |= (1 << BOOT_GPIO_FOR_SPI_PIN);
+    iowrite32(dir, BOOT_GPIO_FOR_SPI_BASE + GPIO_DIR);
+
+}
+
+static bool mm7705_spi_disable(const struct rumboot_bootsource *src, void *pdata)
+{
+
+    uint8_t afsel;
+    afsel = ioread32(LSIF1_MGPIO3_BASE + 0x420);
+    afsel &= ~0b01110000;
+    iowrite32(afsel, LSIF0_MGPIO3_BASE + 0x420);
+
+    uint8_t dir = ioread32(BOOT_GPIO_FOR_SPI_BASE + GPIO_DIR);
+    dir &= ~(1 << BOOT_GPIO_FOR_SPI_PIN);
+    iowrite32(dir, BOOT_GPIO_FOR_SPI_BASE + GPIO_DIR);
+
+}
+
+
+static const struct rumboot_bootsource src[] = {
+        {
+                .name = "SPI FLASH",
+                .base = SPI_BASE,
+                .freq_khz = 30000,
+                .plugin = &g_bootmodule_spiflash,
+		.enable = mm7705_spi_enable,
+		.disable = mm7705_spi_disable,
+		.chipselect = mm7705_cs
+        },
 };
 #else
 static const struct rumboot_bootsource src[] = {
@@ -165,6 +224,19 @@ static void spiflash_read_flash(uint32_t base, uint32_t offset, unsigned char *d
 
 }
 
+int spiflash_is_blank(const struct rumboot_bootsource *src, void *pdata)
+{
+        int i;
+        char buf[256];
+	bootsource_read(src, (void *) pdata, buf, 0, 256);
+        for (i=0; i<256; i++) {
+                if (buf[i]!=0xff) {
+                        return 0;
+                }
+        }
+        return 1;
+}
+
 int main()
 {
 	char pdata[64];
@@ -183,15 +255,21 @@ int main()
 	spiflash_wait_busy(src, pdata);
 	rumboot_printf("Done\n");	
 
+
+        if (!spiflash_is_blank(src, pdata)) {
+                rumboot_printf("Trying alternate chip erase...\n");
+	        spiflash_cmd(src, pdata, SPIFLASH_WRITEENABLE);
+	        spiflash_cmd(src, pdata, SPIFLASH_ALT_CHIPERASE);
+	        spiflash_wait_busy(src, pdata);
+        }
+
 	while (transfer == 4096) {
 		rumboot_printf("boot: Press 'X' and send me the image\n");
 	    while ('X' != rumboot_platform_getchar(1000));;
 
 		transfer = xmodem_get(buf, 4096);
-		rumboot_printf("Got payload: %d bytes\n", transfer);
 		for (i=0; i<4096; i=i+256) {
 			char tmp[256];
-			rumboot_printf("Writing 256 bytes at offset %d\n", pos);			
 			spiflash_cmd(src, pdata, SPIFLASH_WRITEENABLE);			
 			spiflash_write_page(src, (void *) pdata, pos, &buf[i]);
 			spiflash_cmd(src, pdata, SPIFLASH_WRITEDISABLE);			
