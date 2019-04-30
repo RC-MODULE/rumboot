@@ -435,7 +435,8 @@ int main()
 
   uint8_t connection1 [LINES_AMOUNT];
   uint8_t connection2 [LINES_AMOUNT];
-  connection1 [0] = 4;
+  uint8_t connection [LINES_AMOUNT];
+/*  connection1 [0] = 4;
   connection1 [1] = 0xf;
   connection1 [2] = 6;
   connection1 [3] = 0xf;
@@ -451,14 +452,25 @@ int main()
   connection2 [4] = 0xf ;
   connection2 [5] = 0xf ;
   connection2 [6] = 0xf ;
-  connection2 [7] = 0xf ;
+  connection2 [7] = 0xf ;*/
+
+  connection [0] = 4   ; 
+  connection [1] = 5   ;
+  connection [2] = 6   ;
+  connection [3] = 7   ;
+  connection [4] = 0xf ;
+  connection [5] = 0xf ;
+  connection [6] = 0xf ;
+  connection [7] = 0xf ;
 
 
 
 
   if (
-      !GPIO_test (GPIO1_BASE, GPIO2_BASE, 0x85, 0x2f, connection1, 0xff, 0xff, 0x33333333, 0x33333333, 0x85) &
-      !GPIO_test (GPIO3_BASE, GPIO3_BASE, 0xf0, 0xf0, connection2, 0xff, 0xff, 0x33333333, 0x33333333, 0xf0)
+/*      !GPIO_test (GPIO1_BASE, GPIO2_BASE, 0x85, 0x2f, connection1, 0xff, 0xff, 0x33333333, 0x33333333, 0x85) &
+      !GPIO_test (GPIO3_BASE, GPIO3_BASE, 0xf0, 0xf0, connection2, 0xff, 0xff, 0x33333333, 0x33333333, 0xf0)*/
+      !GPIO_test (GPIO1_BASE, GPIO1_BASE, 0xf0, 0xf0, connection, 0xff, 0xff, 0x33333333, 0x33333333, 0xf0) &
+      !GPIO_test (GPIO2_BASE, GPIO2_BASE, 0xf0, 0xf0, connection, 0xff, 0xff, 0x33333333, 0x33333333, 0xf0) 
 
      )
   {
