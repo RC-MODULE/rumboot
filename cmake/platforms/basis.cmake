@@ -1387,6 +1387,21 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       NAME ddr0_addr_test
     )
 
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES ddr/ddr_initializer.c
+      CFLAGS -DDDR_HEADER_FILE="platform/ddr_config/ddr__mt41j512m8_187e_8_8_533__bist.h"
+      NAME ddr_initializer_bist
+    )
+
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES ddr/ddr_initializer.c
+      CFLAGS -DDDR_HEADER_FILE="platform/ddr_config/ddr__mt41k256m8_125_8_11_800_2.h"
+      NAME ddr_initializer
+    )
+
+
   add_rumboot_target(
       CONFIGURATION IRAM
       FILES ddr/ddr0_phy_bist_test_data.c
