@@ -82,6 +82,13 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
   add_rumboot_target_dir(tests
     CONFIGURATION SPL
   )
+  add_rumboot_target(
+    FILES common/updaters/spi.c
+    CONFIGURATION SPL
+    CFLAGS -DMM7705_SPI -DSPI_BASE=SPI_CTRL0_BASE
+  )
+
+
 
 endmacro()
 
