@@ -1702,7 +1702,7 @@ add_rumboot_target(
 
 
 #iram-ddr0_phy_bist_test,iram-ddr1_phy_bist_test,multimaster-i2c_multimst_write_random_read,,i2c-0-i2c_array4_write_random_read_stop_rpt,i2c-1-i2c_array4_write_random_read_stop_rpt,muart-iram-muart_AXI_GIC_dma
-#muart-iram-muart_AXI_GIC_dma
+#
 
 
 add_rumboot_target(
@@ -1710,16 +1710,20 @@ add_rumboot_target(
     IRUN_FLAGS +can_plus_adapter +i2c_single_bus
     FEATURES NOCODE
     COMBOIMAGE IM0BIN
-     LOAD IM0BIN simple-iram-chain-start-dummy,iram-sp804-0,iram-sp804-1,iram-sp804-2,iram-sp804-3,iram-pcie_phy_bist_prbs31,iram-esram1_heap_rnd_space_test,iram-bisr_hard_test_clear,iram-can_adapter_0_test,mgeth-iram-mgeth_frame_xfer,iram-mkio_write_read_test,arinc_freq_100_IM1_IM0-arinc_loopback_16_freq,simple-iram-nic400,iram-can_adapter_1_test,iram-can_adapter_2_test,direct-event-mdma_gp_1-1_1-2_1-3_1-4_internal,direct-memory-mdma_gp_2-1_2-2_2-3_internal,iram-pcie_phy_bist_prbs31,iram-ddr0_phy_bist_test_data,iram-ddr1_phy_bist_test_data,iram-ddr0_phy_bist_test_ctrl,iram-ddr1_phy_bist_test_ctrl,iram-ddr0_phy_bist_test_clk,iram-ddr1_phy_bist_test_clk,iram-ddr0_phy_bist_test_dll_data,iram-ddr1_phy_bist_test_dll_data,iram-ddr0_phy_bist_test_dll_ctrl,iram-ddr1_phy_bist_test_dll_ctrl,simple-iram-chain-end-dummy
+     LOAD IM0BIN simple-iram-chain-start-dummy,iram-sp804-0,iram-sp804-1,iram-sp804-2,iram-sp804-3,iram-pcie_phy_bist_prbs31,iram-esram1_heap_rnd_space_test,iram-bisr_hard_test_clear,iram-can_adapter_0_test,mgeth-iram-mgeth_frame_xfer,iram-mkio_write_read_test,arinc_freq_100_IM1_IM0-arinc_loopback_16_freq,simple-iram-nic400,iram-can_adapter_1_test,iram-can_adapter_2_test,direct-event-mdma_gp_1-1_1-2_1-3_1-4_internal,direct-memory-mdma_gp_2-1_2-2_2-3_internal,iram-pcie_phy_bist_prbs31,iram-ddr0_phy_bist_test_all,iram-ddr1_phy_bist_test_all,simple-iram-chain-end-dummy
     NAME functional-test-chain
   )
+
+  #muart-iram-muart_APB
+  #muart-iram-muart_APB_GIC
+  #muart-iram-muart_AXI_GIC_dma
 
   add_rumboot_target(
     CONFIGURATION IRAM
     IRUN_FLAGS +can_plus_adapter +i2c_single_bus
     FEATURES NOCODE
     COMBOIMAGE IM0BIN
-     LOAD IM0BIN simple-iram-chain-start-dummy,muart-iram-muart_AXI_GIC_dma,simple-iram-chain-end-dummy
+     LOAD IM0BIN simple-iram-chain-start-dummy,iram-ext_int_gpio_test,simple-iram-chain-end-dummy
     NAME chain-test
   )
 
