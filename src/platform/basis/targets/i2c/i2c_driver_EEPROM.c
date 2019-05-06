@@ -4,7 +4,7 @@
 //  Test includes:
 //  -  I2c master write one data byte instruction
 //  -  I2c master stop instruction after write and release I2C Interface
-//	-  I2c master random  one byte read instruction  with stop I2C Interface
+//	-  I2c master random  4 byte read instruction  with stop I2C Interface
 //
 //    Test duration (RTL): <
 //-----------------------------------------------------------------------------
@@ -25,28 +25,87 @@
 
 #include <platform/interrupts.h>
 
+void delay_cycle (volatile uint32_t delay_value)
+{
+    for (volatile uint32_t i = 0; i < delay_value; i++)
+        ;
+}
+
+static bool i2c_is_nack(uint32_t base)
+{
+	return ioread32(base + I2C_STATUS) & (1<<9);
+}
+
+static bool i2c_is_arblost(uint32_t base)
+{
+	return ioread32(base + I2C_STATUS) & (1<<1);
+}
+
+static void i2c_stat_rst(uint32_t base)
+{
+	iowrite32(0x0, base + I2C_STAT_RST);
+	iowrite32(0x1, base + I2C_STAT_RST);
+	iowrite32(0x0, base + I2C_STAT_RST);
+}
+
+static void i2c_reset(uint32_t base)
+{
+	iowrite32(1, base + I2C_SOFTR);
+	iowrite32(0, base + I2C_SOFTR);
+}
+
+
 int main()
 {
-   int tmp =-1;
+	int tmp =-1;
+	uint32_t  len = 0x4;
+	int i = 0;
+	//int delay_tr = 1000;
+	int sda, scl;
+	
    //init
- 	iowrite32((0xC7),( I2C_BASE + I2C_PRESCALE));//I2C_PRESCALE
-	iowrite32((0x1),( I2C_BASE + I2C_NUMBER));//0x1C I2C_NUMBER
+ 	iowrite32((0x31),( I2C_BASE + I2C_PRESCALE));//I2C_PRESCALE
+	iowrite32(len, I2C_BASE + I2C_NUMBER);
 	iowrite32((0x00010001),( I2C_BASE + I2C_FIFOFIL));//I2C_FIFOFIL
 
 //--------------------------preliminary write 1 byte into sensor-------
 	iowrite32((0xA0),( I2C_BASE + I2C_TRANSMIT));//I2C_TRANSMIT  ee -sensor dev. address
 	iowrite32((0x00),( I2C_BASE + I2C_TRANSMIT));//first address, I2C_TRANSMIT
 	iowrite32((0x00),( I2C_BASE + I2C_TRANSMIT));//second address, I2C_TRANSMIT
-	iowrite32((0x60),( I2C_BASE + I2C_TRANSMIT)); //data
+	iowrite32((0x53),( I2C_BASE + I2C_TRANSMIT)); //data
+	iowrite32((0x52),( I2C_BASE + I2C_TRANSMIT)); //data
+	iowrite32((0x51),( I2C_BASE + I2C_TRANSMIT)); //data
+	iowrite32((0x50),( I2C_BASE + I2C_TRANSMIT)); //data
 	iowrite32((0x13),( I2C_BASE + I2C_CTRL));//I2c_CTRL   start, en, write
+	
+	
+			bool time_out = true;
 
-   // do settings to avoid the influence of  write instruction to the next start
-  	iowrite32((0x1 ),(I2C_BASE + I2C_STAT_RST)); //I2C_STAT_RST
-	tmp = ioread32(I2C_BASE + I2C_STATUS);
-	//rumboot_printf("i2c_read_STATUS =0x%x\n",tmp);
-	iowrite32((0x0),(I2C_BASE + I2C_STAT_RST)); //reset STATRST reg
-	iowrite32((0x1),(I2C_BASE + I2C_STAT_RST)); //reset STATUS reg
-	tmp = -1;
+		//for( i =0; i < (delay_tr);  i++){
+		  tmp =-1;
+        while (tmp != 0x10) {
+		tmp = ioread32( I2C_BASE + I2C_STATUS);
+		//rumboot_printf( "check trn_empty for WRITE:  \n");
+        tmp = 0x10 & tmp;        // if trn_empty
+		 if (tmp ==0x10) time_out = false;
+		}   // while (tmp != 0x10	
+  
+		if (i2c_is_nack(I2C_BASE)) {
+			rumboot_printf( "error: WRITE operation nack while writing eeprom offset \n");
+			goto bailout;
+		}
+		if (i2c_is_arblost(I2C_BASE)) {
+			rumboot_printf( "error: WRITE operation arbitration lost while writing eeprom offset \n");
+			goto bailout;
+		}
+
+	
+	if (time_out) {
+		rumboot_printf("error: time_out while writing eeprom offset  \n");
+		goto bailout;
+	}
+	
+
 	//----------- intr check -----------------------------------
   tmp =-1;
      while (tmp != 0x10) {
@@ -62,43 +121,129 @@ int main()
 		tmp = ioread32( I2C_BASE + I2C_STATUS);
         tmp = 0x400 & tmp;        // if done
   }   // while (tmp != 0x400)
+//----------------------- - begin write_read instruction---------------
+    //  Not mandatory delay
+        delay_cycle (2000);
 
+  iowrite32((0x0 ),(I2C_BASE + I2C_STAT_RST)); //I2C_STAT_RST
+  iowrite32((0x1 ),(I2C_BASE + I2C_STAT_RST)); //I2C_STAT_RST
+  iowrite32((0x0 ),(I2C_BASE + I2C_STAT_RST)); //I2C_STAT_RST
+
+  	tmp = ioread32(I2C_BASE + I2C_STATUS);
+	scl = (tmp & (1 << 23)) ? 1 : 0;
+	sda = (tmp & (1 << 25)) ? 1 : 0;
+	if ((!sda) || (!scl)) {
+		rumboot_printf("Invalid I2C line state: SDA: %d SCL: %d \n", sda, scl);
+		goto bailout;
+	}
+ //----------------------I2C line state----- 
+  rumboot_printf(" I2C line state: SDA: %d SCL: %d \n", sda, scl);
+	//i2c_reset(I2C_BASE);
+   //init
+ 	iowrite32((0x31),( I2C_BASE + I2C_PRESCALE));//I2C_PRESCALE
+	iowrite32(len, I2C_BASE + I2C_NUMBER);
+	iowrite32((0x00010001),( I2C_BASE + I2C_FIFOFIL));//I2C_FIFOFIL
+   delay_cycle (20000); 
+  
 //----------------------- - begin write_read instruction---------------
 //data write instruction
  	iowrite32((0x00),( I2C_BASE + I2C_STATUS));//0x02C	reset I2C_STAT_RST
 
-	iowrite32((0xA0),( I2C_BASE + I2C_TRANSMIT));//I2C_TRANSMIT   ee -sensor dev. address
+	iowrite32((0xA0),( I2C_BASE + I2C_TRANSMIT));//I2C_TRANSMIT   A0 - EEPROM dev. address
 	iowrite32((0x00),( I2C_BASE + I2C_TRANSMIT)); //first address
 	iowrite32((0x00),( I2C_BASE + I2C_TRANSMIT)); //second address
 //--------------------------reset status before next start----------------------
+	 iowrite32((0x0),( I2C_BASE + I2C_STATUS));  //0x02C	reset I2C_STAT_RST
 	 iowrite32((0x1 ),(I2C_BASE + I2C_STAT_RST)); //I2C_STAT_RST
      iowrite32((0x0 ),(I2C_BASE + I2C_STAT_RST)); //I2C_STAT_RST
 //---------------------------------------------------------
 	iowrite32((0x13),( I2C_BASE + I2C_CTRL));//  I2C_CTRL 0x010   start, en, write
 //----------- intr check -----------------------------------
-      tmp =-1;
-      rumboot_printf("i2c_tmp_before =0x%x\n",tmp);
-	  while (tmp != 0x10) {
+
+		bool timeout = true;
+
+		//for( i =0; i < (delay_tr);  i++){
+				  tmp =-1;
+        while (tmp != 0x10) {
 		tmp = ioread32( I2C_BASE + I2C_STATUS);
+		//rumboot_printf( "check trn_empty for READ:  \n");
         tmp = 0x10 & tmp;        // if trn_empty
-    }   // while (tmp != 0x10)
+		timeout = false;
+		}
+		// rumboot_printf(" I2C line state after write: SDA: %d SCL: %d \n", sda, scl);
+		 delay_cycle (20000);
+		if (i2c_is_nack(I2C_BASE)) {
+			rumboot_printf( "error: first nack while writing eeprom offset \n");		
+			goto bailout;
+		}
+		if (i2c_is_arblost(I2C_BASE)) {
+			rumboot_printf( "error: arbitration lost while writing eeprom offset \n");
+			goto bailout;
+		}
 
+
+	if (timeout) {
+		rumboot_printf("error: timeout while writing eeprom offset  \n");
+		goto bailout;
+	}
+	
+//----------------------------reset status before next start------
+	 iowrite32((0x0),( I2C_BASE + I2C_STATUS));  //0x02C	reset I2C_STAT_RST
+	 iowrite32((0x1 ),(I2C_BASE + I2C_STAT_RST)); //I2C_STAT_RST
+     iowrite32((0x0 ),(I2C_BASE + I2C_STAT_RST)); //I2C_STAT_RST
+//---------------------------------------------------------				
+		
 //--data read instruction-------------------
-	iowrite32((0xA1),( I2C_BASE + I2C_TRANSMIT));//I2C_TRANSMIT  ee -sensor dev. address
-	iowrite32((0x6B),( I2C_BASE + I2C_CTRL));//I2C_CTRL   start, en, read, rpt
+	iowrite32((0xA1),( I2C_BASE + I2C_TRANSMIT));//I2C_TRANSMIT A0 EEPROM  dev. address
+	iowrite32((0x6B),( I2C_BASE + I2C_CTRL));//I2C_CTRL   start, en, read, rpt	//0x6B
 //----------- intr check -----------------------------------
-	     tmp =-1;
-	     while (tmp != 0x08) {
-		tmp = ioread32( I2C_BASE + I2C_STATUS);
-        tmp = 0x08 & tmp;        //almost full
-  }   // while (tmp != 0x8)
+	while (len--) {
+	 uint32_t have_bytes = 0;
+	 //uint32_t i = 0;
+	 uint32_t delay =1000;
+		for( i =0; i < (delay);  i++){
+			have_bytes = !(ioread32(I2C_BASE + I2C_STATUS) & (1 << 7));
+			//rumboot_printf("have_bytes =0x%x\n",(ioread32(I2C_BASE + I2C_STATUS) & (1 << 7)));
+			//rumboot_printf("len =0x%x\n",len);
+						
+			if (have_bytes)
+				break;
+		}
+		delay_cycle (20000);
+		if (len &&  ((i2c_is_nack(I2C_BASE)) == 0)) {
+				rumboot_printf( "error: unexpected nack at byte \n");
+				rumboot_printf("len =0x%x\n",len);
+				rumboot_printf("nack =0x%x\n",i2c_is_nack(I2C_BASE));
+				rumboot_printf("bit_nack =0x%x\n",(len && i2c_is_nack(I2C_BASE)));
+				goto bailout;
+			}
 
-	 tmp =  ioread32( I2C_BASE + I2C_RECEIVE);
-	rumboot_printf("i2c_read_data =0x%x\n",tmp);
-   if (tmp == 0x60)
-   {rumboot_printf("I2C test OK!\n");
-	return TEST_OK; }
-	else
-	{rumboot_printf("I2C TEST ERROR \n");
-	return TEST_ERROR;}
+		if (i2c_is_arblost(I2C_BASE)) {
+				rumboot_printf( "error: arbitration lost at byte \n");
+				goto bailout;
+			}
+
+		if (!have_bytes) {
+			rumboot_printf("error: operation time out at byte \n");
+			goto bailout;
+		}
+		tmp = ioread32(I2C_BASE + I2C_RECEIVE);
+		rumboot_printf("READ_DATA =0x%x\n",tmp);
+		if ( tmp != (0x50 +len)) {
+			rumboot_printf("I2C test ERROR!\n");
+			rumboot_printf("i2c_read_result =0x%x\n",tmp);  				
+			return TEST_ERROR;	
+		}
+		
+	}
+	 goto end;
+	bailout:
+	i2c_stat_rst(I2C_BASE);
+	i2c_reset(I2C_BASE);
+	rumboot_printf( "error  \n");
+	return 1;	
+	end:
+	i2c_reset(I2C_BASE);
+	return TEST_OK; 		
+	
 }
