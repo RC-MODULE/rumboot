@@ -83,10 +83,6 @@ static int  __attribute__((no_instrument_function)) tx_fifo_ready(uint32_t base_
 
 void  __attribute__((no_instrument_function)) rumboot_platform_putchar(uint8_t c)
 {
-        if (c == '\n') {
-                rumboot_platform_putchar('\r');
-        }
-
         while (tx_fifo_ready(UART0_BASE));;
         iowrite32(c, UART0_BASE + PL011_UARTDR);
 }

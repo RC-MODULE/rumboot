@@ -39,18 +39,18 @@ void rumboot_hexdump(void *mem, unsigned int len)
                         {
                                 if(j >= len) /* end of block, not really printing */
                                 {
-                                        rumboot_platform_putchar(' ');
+                                        rumboot_putchar(' ');
                                 }
                                 else if(isprint(((char*)mem)[j])) /* printable char */
                                 {
-                                        rumboot_platform_putchar(0xFF & ((char*)mem)[j]);        
+                                        rumboot_putchar(0xFF & ((char*)mem)[j]);        
                                 }
                                 else /* other char */
                                 {
-                                        rumboot_platform_putchar('.');
+                                        rumboot_putchar('.');
                                 }
                         }
-                        rumboot_platform_putchar('\n');
+                        rumboot_putchar('\n');
                 }
         }
 }

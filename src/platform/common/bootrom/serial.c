@@ -14,7 +14,7 @@ int main()
 	rumboot_platform_init_loader(&conf);
 
     rumboot_platform_sv_event("HOST");
-	int c = rumboot_platform_getchar(10000);
+	int c = rumboot_getchar(10000);
 	if (c == 'e') {
 			/* This will terminate simulation */
 			rumboot_platform_sv_event("EASTER_EGG");

@@ -177,10 +177,6 @@ void *rumboot_platform_get_spl_area(size_t *size)
 #ifndef CMAKE_BUILD_TYPE_DEBUG
 void  __attribute__((no_instrument_function)) rumboot_platform_putchar(uint8_t c)
 {
-        if (c == '\n') {
-                rumboot_platform_putchar('\r');
-        }
-
         while (uart_check_tfifo_full(UART0_BASE));;
         iowrite32(c, UART0_BASE + UARTDR);
 }

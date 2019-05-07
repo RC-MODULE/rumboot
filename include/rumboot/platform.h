@@ -170,8 +170,14 @@ void rumboot_platform_putchar(uint8_t c);
 
 /**
  * Return the character from stdint casted to int or
- * -1 if reception timed out.
- * Timeout may be 0
+ * -1 if reception timed out. 
+ *
+ * This function should be implemented by platform glue
+ * and should not be used directly. 
+ *
+ * Use rumboot_getchar() instead
+ *
+ * Timeout may be 0 to return immediately
  *
  * @param  timeout_us [description]
  * @return            [description]
@@ -422,6 +428,8 @@ struct rumboot_runtime_info {
     int irq_type;
     /** Level of function nesting (used by function tracing code) */
     int nestlevel;
+    /** If non-zero, all serial debug output will be suspended */
+    int silent;
     /** jmp_buf to jump from _exit() to rumboot_main(). Required for chaining tests for production */
     jmp_buf exit_trampoline;
 } __attribute__((packed));

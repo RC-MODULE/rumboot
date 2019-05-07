@@ -156,7 +156,7 @@ int main()
 
 	while (transfer == TRANSFER_CHUNK) {
 		rumboot_printf("boot: Press 'X' and send me the image\n");
-	    while ('X' != rumboot_platform_getchar(1000));;
+	    while ('X' != rumboot_getchar(1000));;
 
 		transfer = xmodem_get(buf, TRANSFER_CHUNK);
 		int i; 

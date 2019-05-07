@@ -57,7 +57,7 @@ int xmodem_chksum(int crcflag, const unsigned char *buffer, int size)
 
 void xmodem_flush_input(void)
 {
-	while(rumboot_platform_getchar(XMODEM_TIMEOUT_DELAY) >= 0);
+	while(rumboot_getchar(XMODEM_TIMEOUT_DELAY) >= 0);
 }
 
 size_t xmodem_get( char *to, size_t maxszs)
@@ -75,7 +75,7 @@ size_t xmodem_get( char *to, size_t maxszs)
 	while(retry > 0)
 	{
 		rumboot_platform_putchar(response);
-		if( (c = rumboot_platform_getchar(XMODEM_TIMEOUT_DELAY)) >= 0)
+		if( (c = rumboot_getchar(XMODEM_TIMEOUT_DELAY)) >= 0)
 		{
 			switch(c)
 			{
@@ -92,7 +92,7 @@ size_t xmodem_get( char *to, size_t maxszs)
 				rumboot_platform_putchar(ACK);
 				return totalbytes;
 			case CAN:
-				if((c = rumboot_platform_getchar(XMODEM_TIMEOUT_DELAY)) == CAN)
+				if((c = rumboot_getchar(XMODEM_TIMEOUT_DELAY)) == CAN)
 				{
 					xmodem_flush_input();
 					rumboot_platform_putchar(ACK);
@@ -112,7 +112,7 @@ size_t xmodem_get( char *to, size_t maxszs)
 		xmbuf[0] = c;
 		for(i=0; i<(pktsize+crcflag+4-1); i++)
 		{
-			if((c = rumboot_platform_getchar(XMODEM_TIMEOUT_DELAY)) >= 0)
+			if((c = rumboot_getchar(XMODEM_TIMEOUT_DELAY)) >= 0)
 			{
 				xmbuf[1+i] = c;
 			}

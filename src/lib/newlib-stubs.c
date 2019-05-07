@@ -18,7 +18,7 @@ int _write(int file, const char *ptr, int len)
 #else
 	int i;
 	for (i=0; i<len; i++)
-		rumboot_platform_putchar(ptr[i]);
+		rumboot_putchar(ptr[i]);
 #endif
 	return len;
 }

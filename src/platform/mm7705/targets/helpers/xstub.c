@@ -29,7 +29,7 @@ static void hostmode_loop(struct rumboot_config *conf, void *pdata)
                 asm("msync");
                 #endif
 
-                int c = rumboot_platform_getchar(10000);
+                int c = rumboot_getchar(10000);
                 if (c == 'X') {
                         int ret = xmodem_get((void *) hdr, maxsize);
                         mdelay(250);

@@ -75,6 +75,8 @@ void rumboot_platform_init_loader(struct rumboot_config *conf)
                 /* Initialize indication GPIO */ 
                 iowrite32(0xff, GPIOA_Base + GPIO_DIR);
                 iowrite32(0, GPIOA_Base + 0x3FC);
+        } else {
+                rumboot_platform_runtime_info->silent = 1;
         }
 }
 
@@ -177,14 +179,6 @@ int rumboot_platform_selftest(struct rumboot_config *conf)
 
 void __attribute__((no_instrument_function)) rumboot_platform_putchar(uint8_t c)
 {
-        if (is_silent()) {
-                return;
-        }
-
-        if (c == '\n') {
-                rumboot_platform_putchar('\r');
-        }
-
         while (uart_check_tfifo_full(UART0_Base));;
         iowrite32(c, UART0_Base + UARTDR);
 }

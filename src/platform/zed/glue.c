@@ -92,9 +92,6 @@
 
 void  rumboot_platform_putchar(uint8_t c)
 {
-        if (c == '\n') {
-                rumboot_platform_putchar('\r');
-        }
         while ((ioread32(UART1_BASE + XUART_CHANNEL_STS_REG0) & UART_STS_TXFULL) > 0);
         iowrite32(c, UART1_BASE + XUART_TX_RX_FIFO);
 }

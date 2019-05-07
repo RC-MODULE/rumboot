@@ -265,7 +265,7 @@ int main()
 
 	while (transfer == 4096) {
 		rumboot_printf("boot: Press 'X' and send me the image\n");
-	    while ('X' != rumboot_platform_getchar(1000));;
+	    while ('X' != rumboot_getchar(1000));;
 
 		transfer = xmodem_get(buf, 4096);
 		for (i=0; i<4096; i=i+256) {

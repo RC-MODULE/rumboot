@@ -9,6 +9,7 @@
 #include <rumboot/xmodem.h>
 #include <rumboot/timer.h>
 #include <rumboot/irq.h>
+#include <platform/bootheader.h>
 
 static inline void dump_parameter(const char *fmt, int param)
 {
@@ -47,7 +48,7 @@ static void hostmode_loop(struct rumboot_config *conf, void *pdata)
                 asm("msync");
                 #endif
 
-                int c = rumboot_platform_getchar(10000);
+                int c = rumboot_getchar(10000);
                 if (c == 'X') {
                         int ret = xmodem_get((void *) hdr, maxsize);
                         mdelay(250);
@@ -63,7 +64,11 @@ static void hostmode_loop(struct rumboot_config *conf, void *pdata)
                 }
 
                 if (c == 'e') {
+                        #ifndef RUMBOOT_PLATFORM_EASTER_EGG
                         dbg_boot(NULL, "M'aiq the Liar: There are absolutely no easter eggs in bootrom code.");
+                        #else
+                        dbg_boot(NULL, RUMBOOT_PLATFORM_EASTER_EGG);
+                        #endif
                         rumboot_platform_sv_event("EASTER_EGG");
                 }
 

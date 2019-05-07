@@ -1,5 +1,8 @@
 /* File : barebones/rumboot_printf.c
- *      This file contains an implementation of rumboot_printf that only requires a method to output a char to a UART without pulling in library code.
+ * This file contains an implementation of rumboot_printf that only 
+ * requires a method to output a char to a UART without pulling in any 
+ * library code.
+ *
  * This code is based on a file that contains the following:
  * Copyright (C) 2002 Michael Ringgaard. All rights reserved.
  * Redistribution and use in source and binary forms, with or without
@@ -109,22 +112,22 @@ static  __attribute__((no_instrument_function)) void rumboot_number(long num, in
 
 	if (i > precision) precision = i;
 	size -= precision;
-	if (!(type & (ZEROPAD | LEFT))) while (size-- > 0) rumboot_platform_putchar(' ');
-	if (sign) rumboot_platform_putchar(sign);
+	if (!(type & (ZEROPAD | LEFT))) while (size-- > 0) rumboot_putchar(' ');
+	if (sign) rumboot_putchar(sign);
 
 	if (type & HEX_PREP) {
 		if (base == 8) {
-			rumboot_platform_putchar('0');
+			rumboot_putchar('0');
 		} else if (base == 16) {
-			rumboot_platform_putchar('0');
-			rumboot_platform_putchar(lower_digits[33]);
+			rumboot_putchar('0');
+			rumboot_putchar(lower_digits[33]);
 		}
 	}
 
-	if (!(type & LEFT)) while (size-- > 0) rumboot_platform_putchar(c);
-	while (i < precision--) rumboot_platform_putchar('0');
-	while (i-- > 0) rumboot_platform_putchar(tmp[i]);
-	while (size-- > 0) rumboot_platform_putchar(' ');
+	if (!(type & LEFT)) while (size-- > 0) rumboot_putchar(c);
+	while (i < precision--) rumboot_putchar('0');
+	while (i-- > 0) rumboot_putchar(tmp[i]);
+	while (size-- > 0) rumboot_putchar(' ');
 
 }
 
@@ -142,9 +145,9 @@ static  __attribute__((no_instrument_function)) void rumboot_number(long num, in
 		tmp[len++] = dig[addr[i] & 0x0F];
 	}
 
-	if (!(type & LEFT)) while (len < size--) rumboot_platform_putchar(' ');
-	for (i = 0; i < len; ++i) rumboot_platform_putchar(tmp[i]);
-	while (len < size--) rumboot_platform_putchar(' ');
+	if (!(type & LEFT)) while (len < size--) rumboot_putchar(' ');
+	for (i = 0; i < len; ++i) rumboot_putchar(tmp[i]);
+	while (len < size--) rumboot_putchar(' ');
 
 }
 
@@ -175,9 +178,9 @@ static  __attribute__((no_instrument_function)) void iaddr(unsigned char *addr, 
 		}
 	}
 
-	if (!(type & LEFT)) while (len < size--) rumboot_platform_putchar(' ');
-	for (i = 0; i < len; ++i) rumboot_platform_putchar(tmp[i]);
-	while (len < size--) rumboot_platform_putchar(' ');
+	if (!(type & LEFT)) while (len < size--) rumboot_putchar(' ');
+	for (i = 0; i < len; ++i) rumboot_putchar(tmp[i]);
+	while (len < size--) rumboot_putchar(' ');
 
 }
 
@@ -383,7 +386,7 @@ __attribute__((no_instrument_function)) int rumboot_vprintf(const char *fmt, va_
 
 	for (; *fmt; fmt++) {
 		if (*fmt != '%') {
-			rumboot_platform_putchar(*fmt);
+			rumboot_putchar(*fmt);
 			continue;
 		}
 
@@ -437,18 +440,18 @@ repeat:
 
 		switch (*fmt) {
 		case 'c':
-			if (!(flags & LEFT)) while (--field_width > 0) rumboot_platform_putchar(' ');
-			rumboot_platform_putchar((unsigned char)va_arg(args, int));
-			while (--field_width > 0) rumboot_platform_putchar(' ');
+			if (!(flags & LEFT)) while (--field_width > 0) rumboot_putchar(' ');
+			rumboot_putchar((unsigned char)va_arg(args, int));
+			while (--field_width > 0) rumboot_putchar(' ');
 			continue;
 
 		case 's':
 			s = va_arg(args, char *);
 			if (!s) s = "<NULL>";
 			len = strnlen(s, precision);
-			if (!(flags & LEFT)) while (len < field_width--) rumboot_platform_putchar(' ');
-			for (i = 0; i < len; ++i) rumboot_platform_putchar(*s++);
-			while (len < field_width--) rumboot_platform_putchar(' ');
+			if (!(flags & LEFT)) while (len < field_width--) rumboot_putchar(' ');
+			for (i = 0; i < len; ++i) rumboot_putchar(*s++);
+			while (len < field_width--) rumboot_putchar(' ');
 			continue;
 
 		case 'p':
@@ -497,9 +500,9 @@ repeat:
 #endif
 
 		default:
-			if (*fmt != '%') rumboot_platform_putchar('%');
+			if (*fmt != '%') rumboot_putchar('%');
 			if (*fmt)
-				rumboot_platform_putchar(*fmt);
+				rumboot_putchar(*fmt);
 			else
 				--fmt;
 			continue;
@@ -518,6 +521,29 @@ repeat:
 	return 0;
 }
 
+void rumboot_set_silent(int silent)
+{
+	rumboot_platform_runtime_info->silent = silent;
+}
+
+void rumboot_putchar(uint8_t c) 
+{
+	if (rumboot_platform_runtime_info->silent) {
+		/* NOOP */
+		return;
+	}
+
+	if (c == '\n') {
+		rumboot_platform_putchar('\r');
+	}
+
+	rumboot_platform_putchar(c);
+}
+
+int rumboot_getchar(uint32_t timeout_us)
+{
+	return rumboot_platform_getchar(timeout_us);
+}
 
 #if  !defined(RUMBOOT_PRINTF_ACCEL) && !defined(RUMBOOT_NEWLIB_PRINTF)
  __attribute__((no_instrument_function)) void rumboot_printf(const char *fmt, ...)

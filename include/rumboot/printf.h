@@ -65,6 +65,22 @@ void rumboot_putstring(const char *string);
  */
 void rumboot_print_logo();
 
+/**
+ * Return the character from stdint casted to int or
+ * -1 if reception timed out. 
+ * 
+ * @param timeout_us 
+ * @return int 
+ */
+int rumboot_getchar(uint32_t timeout_us);
+
+/**
+ * Send a character to stdout.
+ * Automatically add \r for every \n
+ * @param c character
+ */
+void rumboot_putchar(uint8_t c);
+
 
 /** @}*/
 
