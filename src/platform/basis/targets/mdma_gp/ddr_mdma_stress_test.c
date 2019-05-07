@@ -21,8 +21,8 @@
 #define STOP_STAT   0x10
 
 //#define EN_PRINT
-//#define MDMAx4
-//#define RANDOM_ACCESS
+#define MDMAx4
+#define RANDOM_ACCESS
 
 struct mdma_trans_tbl {
     int      heap_id;
@@ -124,6 +124,8 @@ uint32_t mdma_wait_end_trans (struct mdma_trans_tbl* mdma) {
             rumboot_printf("   Write data: %x\n", rand_data);
             return 1;
         }
+        rand_addr = rand_addr + 0x1000;
+        rand_data = rand_data + 0x01010101;
 #endif
     }
     if (status & BAD_STAT){
@@ -301,7 +303,7 @@ int mem_mdma_test (char* test_heap, char* desc_heap, uint32_t data_size, uint32_
 }
 
 int main() {
-    uint32_t cycles_limit = 4;
+    uint32_t cycles_limit = 4; // max 511
     uint32_t data_size = 32768;
     
     rumboot_printf("Start test with %d cycles\n", cycles_limit);
