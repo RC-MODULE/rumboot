@@ -5,9 +5,9 @@
  *      Author: a.gurov
  */
 
-// #define RUMBOOT_ASSERT_WARN_ONLY
-
 // #define USE_HARDWARE_PART
+
+// #define RUMBOOT_ASSERT_WARN_ONLY
 
 #include <rumboot/platform.h>
 #include <rumboot/irq.h>
@@ -47,24 +47,18 @@
 #define TEST_ERROR                  1
 #define YES                         1
 #define NO                          0
-#define IRQ_WAIT_TIMEOUT            100         /* us */
+#define IRQ_WAIT_TIMEOUT            100     /* us */
 #define USE_INTERNAL_INTERRUPTS     YES
 #define IRQ_MIN_INTERNAL            0
-#define IRQ_MAX_INTERNAL            31
+#define IRQ_MAX_INTERNAL            14      /* was 31 */
 #define IRQ_MIN_EXTERNAL            32
-#define IRQ_MAX_EXTERNAL            127
-#define IRQ_MIN                     (USE_INTERNAL_INTERRUPTS ? 0 : 32)
-#ifdef  USE_HARDWARE_PART
-#define IRQ_MAX                     ((IRQ_MAX_EXTERNAL > IRQ_MAX_INTERNAL) ? \
-                                      IRQ_MAX_EXTERNAL : IRQ_MAX_INTERNAL)
-#else
-#define IRQ_MAX                     IRQ_MAX_INTERNAL
-#endif
+#define IRQ_MAX_EXTERNAL            75      /* was 127 */
+#define IRQ_LAST_INTERNAL           LTRACE_COMPLETE_0
+#define IRQ_MIN                     IRQ_MIN_INTERNAL
 #define IRQ_TYPE_NC                 0
 #define IRQ_TYPE_CR                 1
-#define IRQ_CNT                     (IRQ_MAX - IRQ_MIN + 1)
 #define IRQ_FLAGS                   (RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH)
-#define IRQ_ARR_SZ_CALC             (IRQ_CNT / (sizeof(uint32_t) * 8))
+#define IRQ_ARR_SZ_CALC             (128 / (sizeof(uint32_t) * 8))
 #define IRQ_ARR_SZ                  (IRQ_ARR_SZ_CALC ? IRQ_ARR_SZ_CALC : 1)
 #define IRQ_LIST_END                0xFF
 #define EVERYTHING                  (~0)
@@ -84,6 +78,12 @@
 #define LTRACE_TC_LTE_BIT           IBM_BIT_INDEX(32,  0)
 #define LTRACE_TC_LTCEN_BIT         IBM_BIT_INDEX(32, 31)
 
+/* Unconnected interrupts (defined for interrupt list readability) */
+#define UNCONNECTED_INTERRUPT_54    54
+#define UNCONNECTED_INTERRUPT_55    55
+#define UNCONNECTED_INTERRUPT_61    61
+#define UNCONNECTED_INTERRUPT_62    62
+
 /* Other macros */
 #define ALWAYS_INLINE               __attribute__((always_inline))
 #define MAY_BE_NOT_USED             __attribute__((unused))
@@ -96,7 +96,7 @@
 #define CAST_SINT(VAL)              ((int)      (VAL))
 #define CAST_UINT(VAL)              ((uint32_t) (VAL))
 #define IRQ_IDX(IRQ_NUM)            ((IRQ_NUM) - IRQ_MIN)
-#define IRQ_ARRIDX(IRQ_NUM)           (IRQ_IDX(IRQ_NUM) >> 0x05)
+#define IRQ_ARRIDX(IRQ_NUM)         (IRQ_IDX(IRQ_NUM) >> 0x05)
 #define BIT(B)                      (1 << (B))
 #define RESULT_STRING(ST)           (!(ST) ? "OK" : "ERROR")
 #define GENINT_ENTRY(F,D,I,N)       {(F),((void*)(D)),(I),(N)}
@@ -139,6 +139,7 @@ enum tesr_bits_t
     TESR_P6MTAG  = 19,
     TESR_P4_MIRQ = 31
 };
+
 struct genint_entry_t
 {
     void    (*func)(void*);
@@ -146,21 +147,92 @@ struct genint_entry_t
     int       irqn;
     char     *name;
 };
+
 typedef enum     tesr_bits_t        tesr_bits_t;
 typedef struct   genint_entry_t     genint_entry_t;
 typedef struct   rumboot_irq_entry  rumboot_irq_entry;
 typedef volatile uint32_t           irq_flags_t;
+typedef          uint8_t            irqnum_t;
 
 /* Global vars */
-static irq_flags_t        IRQ[IRQ_ARR_SZ];
-static irq_flags_t        ext_int_raised    = 0;
-static irq_flags_t        irq_type_cpu      = 0;
-static irq_flags_t        irq_type_mpic     = 0;
-static int                int_int_idx       = 0;
-static rumboot_irq_entry *irq_table         = NULL;
-static volatile uint32_t  dma2plb6_src[DMA2PLB6_TRANSFER_UNITS] = {0};
-static volatile uint32_t  dma2plb6_dst[DMA2PLB6_TRANSFER_UNITS] = {0};
+static irq_flags_t           IRQ[IRQ_ARR_SZ];
+static irq_flags_t           ext_int_raised    = 0;
+static irq_flags_t           irq_type_cpu      = 0;
+static irq_flags_t           irq_type_mpic     = 0;
+static int                   int_int_idx       = 0;
+static rumboot_irq_entry    *irq_table         = NULL;
+static volatile uint32_t     dma2plb6_src[DMA2PLB6_TRANSFER_UNITS] = {0};
+static volatile uint32_t     dma2plb6_dst[DMA2PLB6_TRANSFER_UNITS] = {0};
 
+static const    irqnum_t     irq_list[] =
+{
+    (irqnum_t) L2C0_INTERRUPTOUT,
+    (irqnum_t) L2C0_MCHKOUT,
+    (irqnum_t) PMU0_INTERRUPT,
+    (irqnum_t) DMA2PLB6_DMA_IRQ_0,
+    (irqnum_t) DMA2PLB6_DMA_IRQ_1,
+    (irqnum_t) DMA2PLB6_DMA_IRQ_2,
+    (irqnum_t) DMA2PLB6_DMA_IRQ_3,
+#ifdef USE_HARDWARE_PART
+    (irqnum_t) DMA2PLB6_SLV_ERR_INT,
+    (irqnum_t) O_SYSTEM_HUNG,
+#endif
+    (irqnum_t) PLB6PLB40_O_0_BR6TO4_INTR,
+    (irqnum_t) PLB6PLB41_O_BR6TO4_INTR,
+#ifdef USE_HARDWARE_PART
+    (irqnum_t) PLB4XAHB1_INTR,
+#endif
+    (irqnum_t) ARB_SYSDCRERR,
+    (irqnum_t) ITRACE_COMPLETE,
+    (irqnum_t) LTRACE_COMPLETE_0,
+
+#ifdef USE_HARDWARE_PART
+    (irqnum_t) GPIO0_INT,
+    (irqnum_t) GPIO1_INT,
+    (irqnum_t) GSPI0_INT,
+    (irqnum_t) GSPI1_INT,
+    (irqnum_t) UART0_INT,
+    (irqnum_t) UART1_INT,
+    (irqnum_t) MKIO0_INT,
+    (irqnum_t) MKIO1_INT,
+    (irqnum_t) DIT_INT0,
+    (irqnum_t) DIT_INT1,
+    (irqnum_t) WDT_INT,
+    (irqnum_t) CRG_INT,
+    (irqnum_t) SW0_HSCB_INT,
+    (irqnum_t) SW0_AXI_INT,
+    (irqnum_t) SW1_HSCB_INT,
+    (irqnum_t) SW1_AXI_INT,
+    (irqnum_t) SW2_HSCB_INT,
+    (irqnum_t) SW2_AXI_INT,
+    (irqnum_t) SW3_HSCB_INT,
+    (irqnum_t) SW3_AXI_INT,
+    (irqnum_t) ETH0_INT,
+    (irqnum_t) ETH1_INT,
+    (irqnum_t) UNCONNECTED_INTERRUPT_54,
+    (irqnum_t) UNCONNECTED_INTERRUPT_55,
+    (irqnum_t) EMI_CNTR_INT_0,
+    (irqnum_t) EMI_CNTR_INT_1,
+    (irqnum_t) EMI_CNTR_INT_2,
+    (irqnum_t) EMI_CNTR_INT_3,
+    (irqnum_t) PLB6_INT,
+    (irqnum_t) UNCONNECTED_INTERRUPT_61,
+    (irqnum_t) UNCONNECTED_INTERRUPT_62,
+    (irqnum_t) MCLFIR_REC_INT,
+    (irqnum_t) MCLFIR_UNREC_INT,
+    (irqnum_t) MCLFIR_INFST_INT,
+    (irqnum_t) EXT_INT0,
+    (irqnum_t) EXT_INT1,
+    (irqnum_t) EXT_INT2,
+    (irqnum_t) EXT_INT3,
+    (irqnum_t) EXT_INT4,
+    (irqnum_t) EXT_INT5,
+    (irqnum_t) EXT_INT6,
+    (irqnum_t) EXT_INT7,
+    (irqnum_t) WU_INT,
+    (irqnum_t) AXI_MSIF_INT
+#endif
+};
 
 //--------------------------------------------------------
 
@@ -320,7 +392,9 @@ void irq_handler( int irq_num, void *arg )
             dcr_write(DCR_PLB6PLB4_1_BASE + TESR, 0x00000000);
             break;
         case PLB4XAHB1_INTR:            /* 11 */
+#ifdef USE_HARDWARE_PART
             test_event(EVENT_CLR_INT_INT);
+#endif
             break;
         case ARB_SYSDCRERR:             /* 12 */
             temp = dcr_read(DCR_ARB_BASE + DCRARB_DAESR);
@@ -512,26 +586,6 @@ struct genint_entry_t intgen_list[] =
     GENINT_ENTRY(genint__ltrace,   DCR_LTRACE_BASE,         LTRACE_COMPLETE_0,
             "LTRACE COMPLETE 0"),
 /*  -----------------------------------------------------------------------  */
-/*  ---- UNCONNECTED INTERNAL INTERRUPTS <MPIC128_SOURCE_INTI[15:31]> -----  */
-#ifdef USE_HARDWARE_PART
-    GENINT_ENTRY(genint__hw_event, 15, 15, "<MPIC128_SOURCE_INTI[15]>"),
-    GENINT_ENTRY(genint__hw_event, 16, 16, "<MPIC128_SOURCE_INTI[16]>"),
-    GENINT_ENTRY(genint__hw_event, 17, 17, "<MPIC128_SOURCE_INTI[17]>"),
-    GENINT_ENTRY(genint__hw_event, 18, 18, "<MPIC128_SOURCE_INTI[18]>"),
-    GENINT_ENTRY(genint__hw_event, 19, 19, "<MPIC128_SOURCE_INTI[19]>"),
-    GENINT_ENTRY(genint__hw_event, 20, 20, "<MPIC128_SOURCE_INTI[20]>"),
-    GENINT_ENTRY(genint__hw_event, 21, 21, "<MPIC128_SOURCE_INTI[21]>"),
-    GENINT_ENTRY(genint__hw_event, 22, 22, "<MPIC128_SOURCE_INTI[22]>"),
-    GENINT_ENTRY(genint__hw_event, 23, 23, "<MPIC128_SOURCE_INTI[23]>"),
-    GENINT_ENTRY(genint__hw_event, 24, 24, "<MPIC128_SOURCE_INTI[24]>"),
-    GENINT_ENTRY(genint__hw_event, 25, 25, "<MPIC128_SOURCE_INTI[25]>"),
-    GENINT_ENTRY(genint__hw_event, 26, 26, "<MPIC128_SOURCE_INTI[26]>"),
-    GENINT_ENTRY(genint__hw_event, 27, 27, "<MPIC128_SOURCE_INTI[27]>"),
-    GENINT_ENTRY(genint__hw_event, 28, 28, "<MPIC128_SOURCE_INTI[28]>"),
-    GENINT_ENTRY(genint__hw_event, 29, 29, "<MPIC128_SOURCE_INTI[29]>"),
-    GENINT_ENTRY(genint__hw_event, 30, 30, "<MPIC128_SOURCE_INTI[30]>"),
-    GENINT_ENTRY(genint__hw_event, 31, 31, "<MPIC128_SOURCE_INTI[31]>"),
-#endif
     GENINT_ENTRY_END
 };
 
@@ -642,22 +696,30 @@ void init_interrupts(void)
     mpic128_set_interrupt_borders(DCR_MPIC128_BASE,
             IRQ_BORDER_MC, IRQ_BORDER_CR);
     irq_table = rumboot_irq_create(NULL);
-    for(irq = IRQ_MIN; irq <= IRQ_MAX; irq++)
-        rumboot_irq_set_handler(irq_table, irq,
+    for(irq = 0; irq < ARRAY_SIZE(irq_list); irq++)
+        rumboot_irq_set_handler(irq_table, (int)irq_list[irq],
             IRQ_FLAGS, irq_handler, NULL);
-    for(irq = IRQ_MIN; irq <= IRQ_MAX; irq++)
+#ifdef USE_HARDWARE_PART
+    for(irq = 0; irq_list[irq] <= IRQ_LAST_INTERNAL; irq++)
+#else
+    for(irq = 0; irq < ARRAY_SIZE(irq_list); irq++)
+#endif
     {
-        if((irq >= IRQ_MC_BEG) && (irq <= IRQ_MC_END))
-            rumboot_irq_priority_adjust(irq_table, irq, IRQ_BORDER_MC);
-        else if((irq >= IRQ_CR_BEG) && (irq <= IRQ_CR_END))
-                rumboot_irq_priority_adjust(irq_table, irq, IRQ_BORDER_CR);
-             else rumboot_irq_priority_adjust(irq_table, irq, IRQ_BORDER_NC);
+        int irqn = irq_list[irq];
+        if((irqn >= IRQ_MC_BEG) && (irqn <= IRQ_MC_END))
+            rumboot_irq_priority_adjust(irq_table, irqn, IRQ_BORDER_MC);
+        else
+            if((irqn >= IRQ_CR_BEG) && (irqn <= IRQ_CR_END))
+                rumboot_irq_priority_adjust(irq_table, irqn, IRQ_BORDER_CR);
+            else
+                rumboot_irq_priority_adjust(irq_table, irqn, IRQ_BORDER_NC);
     }
 
     /* Activate the table */
     rumboot_irq_table_activate(irq_table);
-    for(irq = IRQ_MIN; irq < IRQ_MAX; irq++)
-        rumboot_irq_enable(irq);
+    for(irq = 0; irq < ARRAY_SIZE(irq_list); irq++)
+        rumboot_irq_enable((int)irq_list[irq]);
+
     rumboot_irq_sei();
     rumboot_irq_set_exception_handler(ex_handler);
 
@@ -667,8 +729,15 @@ void init_interrupts(void)
 uint32_t main(void)
 {
 #ifdef USE_HARDWARE_PART
+    int use_hwp = YES;
     test_event_send_test_id(TEST_STRING_ID);
+#else
+    int use_hwp = NO;
 #endif
+
+    rumboot_printf("Testing %s hardware parts...\n",
+            use_hwp ? "with" : "without");
+
     init_interrupts();
 
     SPR_SET(SPR_CCR0, BIT(CTRL_CCR0_ITE_i));
