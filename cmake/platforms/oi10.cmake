@@ -1449,6 +1449,21 @@ endif()
 
     add_rumboot_target(
       CONFIGURATION IRAM
+      FILES test_oi10_ctrl_005.c
+      NAME "test_oi10_ctrl_005_soft"
+      LOAD IM0BIN SELF,SELF,SELF,SELF,SELF
+    )
+
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES test_oi10_ctrl_005.c
+      NAME "test_oi10_ctrl_005_hard"
+      CFLAGS -DTEST_OI10_CTRL_005_HARD
+      LOAD IM0BIN SELF,SELF,SELF,SELF,SELF,SELF
+    )
+
+    add_rumboot_target(
+      CONFIGURATION IRAM
       FILES test_oi10_lscb.c
       CFLAGS -DMKIO_BASE=MKIO0_BASE -DCHECK_MKIO_FUNC -DMKIO_BUS=MKIO_BUS_A -DTEST_BANK="IM1"
       IRUN_FLAGS +mkio_signal_test

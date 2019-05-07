@@ -68,34 +68,34 @@ void rumboot_platform_setup() {
 
     rumboot_irq_register_mpic128();
 
-    spr_write( SPR_IVPR,    (uint32_t)&rumboot_itrpt_hdr_base & 0xFFFF0000 );    /* link irq handlers mirror */
-    spr_write( SPR_IVOR0,   (uint32_t)&rumboot_CI_hdr & 0x0000FFFF );
-    spr_write( SPR_IVOR1,   (uint32_t)&rumboot_MC_hdr & 0x0000FFFF );
-    spr_write( SPR_IVOR2,   (uint32_t)&rumboot_DS_hdr & 0x0000FFFF );
-    spr_write( SPR_IVOR3,   (uint32_t)&rumboot_IS_hdr & 0x0000FFFF );
-    spr_write( SPR_IVOR4,   (uint32_t)&rumboot_EI_hdr & 0x0000FFFF );
-    spr_write( SPR_IVOR5,   (uint32_t)&rumboot_A_hdr & 0x0000FFFF );
-    spr_write( SPR_IVOR6,   (uint32_t)&rumboot_P_hdr & 0x0000FFFF );
-    spr_write( SPR_IVOR7,   (uint32_t)&rumboot_FPU_hdr & 0x0000FFFF );
-    spr_write( SPR_IVOR8,   (uint32_t)&rumboot_SC_hdr & 0x0000FFFF );
-    spr_write( SPR_IVOR9,   (uint32_t)&rumboot_APU_hdr & 0x0000FFFF );
-    spr_write( SPR_IVOR10,  (uint32_t)&rumboot_DEC_hdr & 0x0000FFFF );
-    spr_write( SPR_IVOR11,  (uint32_t)&rumboot_FIT_hdr & 0x0000FFFF );
-    spr_write( SPR_IVOR12,  (uint32_t)&rumboot_WDT_hdr & 0x0000FFFF );
-    spr_write( SPR_IVOR13,  (uint32_t)&rumboot_DTLBE_hdr & 0x0000FFFF );
-    spr_write( SPR_IVOR14,  (uint32_t)&rumboot_ITLBE_hdr & 0x0000FFFF );
-    spr_write( SPR_IVOR15,  (uint32_t)&rumboot_D_hdr & 0x0000FFFF );
+    spr_write( SPR_IVPR,    (uint32_t)&rumboot_itrpt_hdr_base & ITRPT_IVPR_ADDR_mask );    /* link irq handlers mirror */
+    spr_write( SPR_IVOR0,   (uint32_t)&rumboot_CI_hdr       & ITRPT_IVORn_OFFSET_mask );
+    spr_write( SPR_IVOR1,   (uint32_t)&rumboot_MC_hdr       & ITRPT_IVORn_OFFSET_mask );
+    spr_write( SPR_IVOR2,   (uint32_t)&rumboot_DS_hdr       & ITRPT_IVORn_OFFSET_mask );
+    spr_write( SPR_IVOR3,   (uint32_t)&rumboot_IS_hdr       & ITRPT_IVORn_OFFSET_mask );
+    spr_write( SPR_IVOR4,   (uint32_t)&rumboot_EI_hdr       & ITRPT_IVORn_OFFSET_mask );
+    spr_write( SPR_IVOR5,   (uint32_t)&rumboot_A_hdr        & ITRPT_IVORn_OFFSET_mask );
+    spr_write( SPR_IVOR6,   (uint32_t)&rumboot_P_hdr        & ITRPT_IVORn_OFFSET_mask );
+    spr_write( SPR_IVOR7,   (uint32_t)&rumboot_FPU_hdr      & ITRPT_IVORn_OFFSET_mask );
+    spr_write( SPR_IVOR8,   (uint32_t)&rumboot_SC_hdr       & ITRPT_IVORn_OFFSET_mask );
+    spr_write( SPR_IVOR9,   (uint32_t)&rumboot_APU_hdr      & ITRPT_IVORn_OFFSET_mask );
+    spr_write( SPR_IVOR10,  (uint32_t)&rumboot_DEC_hdr      & ITRPT_IVORn_OFFSET_mask );
+    spr_write( SPR_IVOR11,  (uint32_t)&rumboot_FIT_hdr      & ITRPT_IVORn_OFFSET_mask );
+    spr_write( SPR_IVOR12,  (uint32_t)&rumboot_WDT_hdr      & ITRPT_IVORn_OFFSET_mask );
+    spr_write( SPR_IVOR13,  (uint32_t)&rumboot_DTLBE_hdr    & ITRPT_IVORn_OFFSET_mask );
+    spr_write( SPR_IVOR14,  (uint32_t)&rumboot_ITLBE_hdr    & ITRPT_IVORn_OFFSET_mask );
+    spr_write( SPR_IVOR15,  (uint32_t)&rumboot_D_hdr        & ITRPT_IVORn_OFFSET_mask );
 
     msr_write( msr_old_value );
 
     /* Enable MEM_WINDOW */
-    spr_write( SPR_SSPCR, ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_64KB)   << MMU_SSPCR_ORD1_i)
-                        | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_1MB)    << MMU_SSPCR_ORD2_i)
-                        | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_4KB)    << MMU_SSPCR_ORD3_i)
-                        | ((MMU_SUSPCR_ORD_PID_ONLY | MMU_XSPCR_ORD_1GB)  << MMU_SSPCR_ORD4_i)
-                        | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_16KB)   << MMU_SSPCR_ORD5_i)
-                        | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_16MB)   << MMU_SSPCR_ORD6_i)
-                        | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_256MB)  << MMU_SSPCR_ORD7_i) );
+    spr_write( SPR_SSPCR, ((MMU_SUSPCR_ORD_SHARED   | MMU_XSPCR_ORD_64KB)   << MMU_SSPCR_ORD1_i)
+                        | ((MMU_SUSPCR_ORD_SHARED   | MMU_XSPCR_ORD_1MB)    << MMU_SSPCR_ORD2_i)
+                        | ((MMU_SUSPCR_ORD_SHARED   | MMU_XSPCR_ORD_4KB)    << MMU_SSPCR_ORD3_i)
+                        | ((MMU_SUSPCR_ORD_PID_ONLY | MMU_XSPCR_ORD_1GB)    << MMU_SSPCR_ORD4_i)
+                        | ((MMU_SUSPCR_ORD_SHARED   | MMU_XSPCR_ORD_16KB)   << MMU_SSPCR_ORD5_i)
+                        | ((MMU_SUSPCR_ORD_SHARED   | MMU_XSPCR_ORD_16MB)   << MMU_SSPCR_ORD6_i)
+                        | ((MMU_SUSPCR_ORD_SHARED   | MMU_XSPCR_ORD_256MB)  << MMU_SSPCR_ORD7_i) );
     set_mem_window(MEM_WINDOW_0);
 
 #if !defined(UTLB_EXT_MEM_NOR_ONLY)
