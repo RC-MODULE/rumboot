@@ -1757,6 +1757,14 @@ add_rumboot_target(
     NAME micro-spi1-redirect
   )
 
+  add_rumboot_target(
+#    CONFIGURATION IRAM
+    CONFIGURATION IRAM_WITH_DDR
+    FILES mdma_gp/ddr_mdma_stress_test.c
+    PREFIX "direct-memory"
+    NAME "ddr0_mdma_gp_0_1"
+    TESTGROUP mdma_gp
+  )
   
 endmacro()
 
