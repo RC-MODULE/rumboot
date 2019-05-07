@@ -89,21 +89,24 @@ ASM_TEXT(       mfspr   r1, SPR_SPRG7                                           
 ASM_TEXT(   .endm                                                                                                       )
 ASM_END
 
+#define PPC470_REG_SIZE     (4)
+#define ITRPT_CONTEXT_SIZE  ((32+4+4)*PPC470_REG_SIZE)  // 32 -GPRs, 4|6 - SPRs, 2|0 - paddings, 1 - LR save Area, 1 - Back Chain (r1)
+
 ASM_BEGIN
 ASM_TEXT(   .macro full_prologue save_csrr=0                                                                            )
-ASM_TEXT(       stwu        r1, -160(r1)                                                                                )
-ASM_TEXT(       stw         r0, 156(r1)                                                                                 )
-ASM_TEXT(       stmw        r2, 36(r1)                                                                                  )
+ASM_TEXT(       stwu        r1, -ITRPT_CONTEXT_SIZE(r1)                                                                 )
+                /* Skip LR save Area and 2 paddings */
+ASM_TEXT(       stmw        r0, (4*PPC470_REG_SIZE)(r1)                                                                 )
 ASM_TEXT(       mflr        r31                                                                                         )
 ASM_TEXT(       mfctr       r30                                                                                         )
 ASM_TEXT(       mfcr        r29                                                                                         )
 ASM_TEXT(       mfxer       r28                                                                                         )
-ASM_TEXT(   .if (ASM_ESC(save_csrr) != 0)                                                                               )
-ASM_TEXT(       mfspr       r27, SPR_CSRR0                                                                              )
-ASM_TEXT(       mfspr       r26, SPR_CSRR1                                                                              )
-ASM_TEXT(       stmw        r26, 12(r1)                                                                                 )
-ASM_TEXT(   .else                                                                                                       )
-ASM_TEXT(       stmw        r28, 20(r1)                                                                                 )
+ASM_TEXT(       stmw        r28, ((4+32)*PPC470_REG_SIZE)(r1)                                                           )
+ASM_TEXT(   .if( ASM_ESC(save_csrr) != 0 )                                                                              )
+ASM_TEXT(       mfspr       r31, SPR_CSRR1                                                                              )
+ASM_TEXT(       mfspr       r30, SPR_CSRR0                                                                              )
+                /* Skip LR save Area and save in 2 paddings */
+ASM_TEXT(       stmw        r30, (2*PPC470_REG_SIZE)(r1)                                                                )
 ASM_TEXT(   .endif                                                                                                      )
                 /* TODO: remove setting CTR and LR to Program interrupt handler. It's only for modeling (https://jira.module.ru/jira/browse/OI10-205) */
 ASM_TEXT(       load_addr   r3, rumboot_P_hdr                                                                           )
@@ -114,20 +117,19 @@ ASM_END
 
 ASM_BEGIN
 ASM_TEXT(   .macro full_epilogue restore_csrr=0                                                                         )
-ASM_TEXT(   .if (ASM_ESC(restore_csrr) != 0)                                                                            )
-ASM_TEXT(       lmw         r26, 12(r1)                                                                                 )
-ASM_TEXT(       mtspr       SPR_CSRR1,r26                                                                               )
-ASM_TEXT(       mtspr       SPR_CSRR0,r27                                                                               )
-ASM_TEXT(   .else                                                                                                       )
-ASM_TEXT(       lmw         r28, 20(r1)                                                                                 )
+ASM_TEXT(   .if( ASM_ESC(restore_csrr) != 0 )                                                                           )
+ASM_TEXT(       lmw         r30, (2*PPC470_REG_SIZE)(r1)                                                                )
+ASM_TEXT(       mtspr       SPR_CSRR0, r30                                                                              )
+ASM_TEXT(       mtspr       SPR_CSRR1, r31                                                                              )
 ASM_TEXT(   .endif                                                                                                      )
+ASM_TEXT(       lmw         r28, ((4+32)*PPC470_REG_SIZE)(r1)                                                           )
 ASM_TEXT(       mtxer       r28                                                                                         )
 ASM_TEXT(       mtcr        r29                                                                                         )
 ASM_TEXT(       mtctr       r30                                                                                         )
 ASM_TEXT(       mtlr        r31                                                                                         )
-ASM_TEXT(       lmw         r2, 36(r1)                                                                                  )
-ASM_TEXT(       lwz         r0, 156(r1)                                                                                 )
-ASM_TEXT(       addi        r1, r1, 160                                                                                 )
+ASM_TEXT(       lmw         r2, ((4+2)*PPC470_REG_SIZE)(r1)                                                             )
+ASM_TEXT(       lwz         r0, (4*PPC470_REG_SIZE)(r1)                                                                 )
+ASM_TEXT(       addi        r1, r1, ITRPT_CONTEXT_SIZE                                                                  )
 ASM_TEXT(   .endm                                                                                                       )
 ASM_END
 
