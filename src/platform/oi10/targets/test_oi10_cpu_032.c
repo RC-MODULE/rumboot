@@ -212,24 +212,24 @@ extern char         IM0_MEMORY_SIZE[];
 static void move_execution_to_l1() {
     /*
      *  Special algorithm:
-     *  1) copy im0->sram0
-     *  2) tlb substitution (im0->sram0)
+     *  1) copy im0->sram1
+     *  2) tlb substitution (im0->sram1)
      *  3) cache test code and stacks (in L1)
      *
      *  because if SYSTEM HUNG detected, the code can only be called from L1I
      */
 
-    rumboot_putstring("copy im0->sram0");
-    memcpy((void *) SRAM0_BASE, (void *) IM0_BASE, IM0_SIZE);
+    rumboot_putstring("copy im0->sram1");
+    memcpy((void *) SRAM1_BASE, (void *) IM0_BASE, IM0_SIZE);
     msync();
 
-    rumboot_putstring("tlb substitution (im0->sram0)");
-    static const tlb_entry im0_to_sram0_tlb[] = {
+    rumboot_putstring("tlb substitution (im0->sram1)");
+    static const tlb_entry im0_to_sram1_tlb[] = {
 //       MMU_TLB_ENTRY(  ERPN,   RPN,        EPN,        DSIZ,                   IL1I,   IL1D,   W,      I,      M,      G,      E,                      UX, UW, UR,     SX, SW, SR      DULXE,  IULXE,      TS,     TID,                WAY,                BID,                V   )
-        {MMU_TLB_ENTRY(  0x000,  0x00000,    0x80000,    MMU_TLBE_DSIZ_64KB,     0b0,    0b0,    0b0,    0b0,    0b1,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_1,     0b1 )},
-        {MMU_TLB_ENTRY(  0x000,  0x00010,    0x80010,    MMU_TLBE_DSIZ_64KB,     0b0,    0b0,    0b0,    0b0,    0b1,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_2,     0b1 )}
+        {MMU_TLB_ENTRY(  0x000,  0x60000,    0x80000,    MMU_TLBE_DSIZ_64KB,     0b0,    0b0,    0b0,    0b0,    0b1,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_1,     0b1 )},
+        {MMU_TLB_ENTRY(  0x000,  0x60010,    0x80010,    MMU_TLBE_DSIZ_64KB,     0b0,    0b0,    0b0,    0b0,    0b1,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_2,     0b1 )}
     };
-    write_tlb_entries(im0_to_sram0_tlb, ARRAY_SIZE(im0_to_sram0_tlb));
+    write_tlb_entries(im0_to_sram1_tlb, ARRAY_SIZE(im0_to_sram1_tlb));
 
     rumboot_putstring("cache test code (in L1I)");
     for (uint32_t addr = IM0_BASE; addr < (IM0_BASE + L1I_SIZE/2); addr += L1C_LINE_SIZE) {
@@ -317,11 +317,11 @@ static void check_no_hang_on_load() {
     write_tlb_entries(em0_tlb_entry_wt,ARRAY_SIZE(em0_tlb_entry_wt));
 
     uint32_t const src_address_array[] = {
-        SRAM0_BASE+IM0_SIZE,
+        SRAM0_BASE,
         SDRAM_BASE,
         SSRAM_BASE,
         PIPELINED_BASE,
-        SRAM1_BASE,
+        SRAM1_BASE+IM0_SIZE,
         IM1_BASE,
         IM2_BASE
     };
