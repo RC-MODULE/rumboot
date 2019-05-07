@@ -1,4 +1,5 @@
 #include <rumboot/printf.h>
+#include <rumboot/version.h>
 static const char rumboot_logo[] =
 "\n\n\n"
 "    RC Module's          __                __ \n"
@@ -10,16 +11,17 @@ static const char rumboot_logo[] =
 static const char rumboot_host_logo[] = ""
 "\n";
 
-static const char version[] = RUMBOOT_PLATFORM " | " CMAKE_BUILD_TYPE " | " RUMBOOT_VERSION "\n";
+//static const char version[] = RUMBOOT_PLATFORM " | " CMAKE_BUILD_TYPE " | " RUMBOOT_VERSION "\n";
 
 void rumboot_print_logo()
 {
-    rumboot_putstring(rumboot_logo);
-    rumboot_putstring(version);
+    rumboot_printf(rumboot_logo);
+    const struct rumboot_version_info *inf = rumboot_version_info();
+    rumboot_printf("%s | %s | %s \n", inf->platform, CMAKE_BUILD_TYPE, inf->gitversion);
 }
 
 void rumboot_print_host_logo()
 {
-    rumboot_putstring(rumboot_host_logo);
-    rumboot_putstring("Host mode\n");
+    rumboot_printf(rumboot_host_logo);
+    rumboot_printf("Host mode\n");
 }
