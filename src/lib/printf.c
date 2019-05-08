@@ -529,7 +529,7 @@ void rumboot_set_silent(int silent)
 void rumboot_putchar(uint8_t c) 
 {
 /* Native may have runtime uninitialized at the very start */
-#ifndef RUMBOOT_NATIVE
+#ifdef RUMBOOT_NATIVE
 	if (!rumboot_platform_runtime_info) {
 		return;
 	}
