@@ -39,7 +39,6 @@ static void handler(int irq, void *arg)
 }
 
 
-
 /*
 static void delay(uint32_t deadline)
 {
@@ -51,7 +50,7 @@ static void delay(uint32_t deadline)
 static void i2c__init()
 {
 	//init
-	iowrite32((0x13),( I2C_BASE + I2C_PRESCALE));
+	iowrite32((0x31),( I2C_BASE + I2C_PRESCALE));
 	ioread32( I2C_BASE + I2C_ISR); //reset for not masked/incorrect interrupts
 	//data transmit
  	iowrite32((0x00),( I2C_BASE + I2C_STAT_RST));	
@@ -157,7 +156,7 @@ TEST_ENTRY("I2C_NACK", 						test_nack, 	  1000),
 TEST_ENTRY("I2C_DONE",   					test_done,    1000),
 TEST_ENTRY("I2C_TXBUF_EMPTY_ALMOST",    	test_trn_empty_alm, 1000),
 TEST_ENTRY("I2C_TXBUF_EMPTY",    			test_trn_empty, 1000),
-//TEST_ENTRY("I2C_DONE",   					test_done,    1000),
+
 TEST_SUITE_END();
 
 /* Call the whole test suite */
