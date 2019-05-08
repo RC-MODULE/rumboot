@@ -23,9 +23,6 @@
 
 
 
-
-
-
 int g_argc = 0;
 static int ipc_id;
 char *g_argv[64];
@@ -83,7 +80,6 @@ static void detach()
          *
          */
         if (the_ipc_id == getpid()) {
-                rumboot_printf("RELEASE!\n");
                 if (-1 == shmctl(shmid, IPC_RMID, NULL)) {
                         perror("shmctl: ");
                         exit(1);
