@@ -2,7 +2,7 @@
 //  This program is for checking I2C transactions with Status register checking.
 //
 //  Test includes:
-//  -  I2c master write one data byte instruction
+//  -  I2c master write 4 data byte instruction
 //  -  I2c master stop instruction after write and release I2C Interface
 //	-  I2c master random  4 byte read instruction  with stop I2C Interface
 //
@@ -60,15 +60,14 @@ int main()
 	int tmp =-1;
 	uint32_t  len = 0x4;
 	int i = 0;
-	//int delay_tr = 1000;
 	int sda, scl;
-	
+	rumboot_printf("START  \n");
    //init
  	iowrite32((0x31),( I2C_BASE + I2C_PRESCALE));//I2C_PRESCALE
 	iowrite32(len, I2C_BASE + I2C_NUMBER);
 	iowrite32((0x00010001),( I2C_BASE + I2C_FIFOFIL));//I2C_FIFOFIL
 
-//--------------------------preliminary write 1 byte into sensor-------
+//--------------------------preliminary write 4 bytes into EEPROM-------
 	iowrite32((0xA0),( I2C_BASE + I2C_TRANSMIT));//I2C_TRANSMIT  ee -sensor dev. address
 	iowrite32((0x00),( I2C_BASE + I2C_TRANSMIT));//first address, I2C_TRANSMIT
 	iowrite32((0x00),( I2C_BASE + I2C_TRANSMIT));//second address, I2C_TRANSMIT
@@ -77,11 +76,9 @@ int main()
 	iowrite32((0x51),( I2C_BASE + I2C_TRANSMIT)); //data
 	iowrite32((0x50),( I2C_BASE + I2C_TRANSMIT)); //data
 	iowrite32((0x13),( I2C_BASE + I2C_CTRL));//I2c_CTRL   start, en, write
-	
-	
+		
 			bool time_out = true;
 
-		//for( i =0; i < (delay_tr);  i++){
 		  tmp =-1;
         while (tmp != 0x10) {
 		tmp = ioread32( I2C_BASE + I2C_STATUS);
@@ -112,7 +109,7 @@ int main()
 		tmp = ioread32( I2C_BASE + I2C_STATUS);
         tmp = 0x10 & tmp;        // if trn_empty
   }   // while (tmp != 0x10)
-   iowrite32((0x0 ),(I2C_BASE + I2C_STAT_RST)); //I2C_STAT_RST
+  iowrite32((0x0 ),(I2C_BASE + I2C_STAT_RST)); //I2C_STAT_RST
   iowrite32((0x1 ),(I2C_BASE + I2C_STAT_RST)); //I2C_STAT_RST
   iowrite32((0x0 ),(I2C_BASE + I2C_STAT_RST)); //I2C_STAT_RST
 //-------------------------- turn off I2C--------
@@ -123,8 +120,10 @@ int main()
   }   // while (tmp != 0x400)
 //----------------------- - begin write_read instruction---------------
     //  Not mandatory delay
-        delay_cycle (2000);
-
+       // delay_cycle (2000); 	   
+       #ifdef CMAKE_BUILD_TYPE_POSTPRODUCTION
+	   delay_cycle (2000);
+	    #endif
   iowrite32((0x0 ),(I2C_BASE + I2C_STAT_RST)); //I2C_STAT_RST
   iowrite32((0x1 ),(I2C_BASE + I2C_STAT_RST)); //I2C_STAT_RST
   iowrite32((0x0 ),(I2C_BASE + I2C_STAT_RST)); //I2C_STAT_RST
@@ -137,14 +136,15 @@ int main()
 		goto bailout;
 	}
  //----------------------I2C line state----- 
-  rumboot_printf(" I2C line state: SDA: %d SCL: %d \n", sda, scl);
-	//i2c_reset(I2C_BASE);
+  rumboot_printf("I2C line state: SDA: %d SCL: %d \n", sda, scl);
    //init
  	iowrite32((0x31),( I2C_BASE + I2C_PRESCALE));//I2C_PRESCALE
 	iowrite32(len, I2C_BASE + I2C_NUMBER);
 	iowrite32((0x00010001),( I2C_BASE + I2C_FIFOFIL));//I2C_FIFOFIL
-   delay_cycle (20000); 
-  
+  // delay_cycle (20000); //
+    #ifdef CMAKE_BUILD_TYPE_POSTPRODUCTION
+	   delay_cycle (20000);
+	#endif
 //----------------------- - begin write_read instruction---------------
 //data write instruction
  	iowrite32((0x00),( I2C_BASE + I2C_STATUS));//0x02C	reset I2C_STAT_RST
@@ -162,16 +162,17 @@ int main()
 
 		bool timeout = true;
 
-		//for( i =0; i < (delay_tr);  i++){
-				  tmp =-1;
+		tmp =-1;
         while (tmp != 0x10) {
 		tmp = ioread32( I2C_BASE + I2C_STATUS);
-		//rumboot_printf( "check trn_empty for READ:  \n");
         tmp = 0x10 & tmp;        // if trn_empty
 		timeout = false;
 		}
 		// rumboot_printf(" I2C line state after write: SDA: %d SCL: %d \n", sda, scl);
-		 delay_cycle (20000);
+		// delay_cycle (20000); //
+		#ifdef CMAKE_BUILD_TYPE_POSTPRODUCTION
+		delay_cycle (20000);
+		#endif
 		if (i2c_is_nack(I2C_BASE)) {
 			rumboot_printf( "error: first nack while writing eeprom offset \n");		
 			goto bailout;
@@ -199,17 +200,19 @@ int main()
 //----------- intr check -----------------------------------
 	while (len--) {
 	 uint32_t have_bytes = 0;
-	 //uint32_t i = 0;
-	 uint32_t delay =1000;
+	 uint32_t delay =1000; 
 		for( i =0; i < (delay);  i++){
-			have_bytes = !(ioread32(I2C_BASE + I2C_STATUS) & (1 << 7));
-			//rumboot_printf("have_bytes =0x%x\n",(ioread32(I2C_BASE + I2C_STATUS) & (1 << 7)));
-			//rumboot_printf("len =0x%x\n",len);
-						
+			have_bytes = !(ioread32(I2C_BASE + I2C_STATUS) & (1 << 7));							
 			if (have_bytes)
 				break;
 		}
+		//delay_cycle (500); 		
+		#ifdef CMAKE_BUILD_TYPE_POSTPRODUCTION
 		delay_cycle (20000);
+		#else
+		delay_cycle (500);	
+		#endif
+		
 		if (len &&  ((i2c_is_nack(I2C_BASE)) == 0)) {
 				rumboot_printf( "error: unexpected nack at byte \n");
 				rumboot_printf("len =0x%x\n",len);
