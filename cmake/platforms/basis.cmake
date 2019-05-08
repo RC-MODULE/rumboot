@@ -1476,6 +1476,18 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
   add_rumboot_target(
       CONFIGURATION IRAM
+      FILES ddr/ddr_loop_test/ddr0_loop_test.c ddr/ddr_loop_test/post_memory.c
+      NAME ddr0_loop_test
+    )
+
+  add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES ddr/ddr_loop_test/ddr1_loop_test.c ddr/ddr_loop_test/post_memory.c
+      NAME ddr1_loop_test
+    )
+
+  add_rumboot_target(
+      CONFIGURATION IRAM
       FILES ddr/ddr1_addr_test.c
       NAME ddr1_addr_test
     )
@@ -1797,7 +1809,7 @@ macro(RUMBOOT_PLATFORM_SET_COMPILER_FLAGS)
     endif()
     SET(CMAKE_ASM_FLAGS ${RUMBOOT_COMMON_FLAGS})
     SET(CMAKE_OBJCOPY_FLAGS --gap-fill 0x00 --pad-to 32768)
-    SET(CMAKE_EXE_LINKER_FLAGS "-nostartfiles -static -Wl,--gc-sections")
+    SET(CMAKE_EXE_LINKER_FLAGS "-nostartfiles -g -static -Wl,--gc-sections")
     SET(CMAKE_DUMP_FLAGS     "-EL")
 endmacro()
 
