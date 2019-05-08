@@ -52,8 +52,8 @@ uint32_t ddr_addr_shift1_test ()
         (uint64_t*) 0xC4000000 ,
         (uint64_t*) 0xC8000000 ,
         (uint64_t*) 0xD0000000 ,
-        (uint64_t*) 0xE0000000 ,
-        (uint64_t*) 0xFFFFFFF8
+        (uint64_t*) 0xD8000000 ,
+        (uint64_t*) 0xDFFFFFF8
     };
     
     
