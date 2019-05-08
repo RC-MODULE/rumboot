@@ -47,6 +47,21 @@
         uint32_t pll_fbdiv ,
         uint32_t pll_psdiv
     );
+
+    /**
+     * This function checks status of DDR Core and Phy, and
+     *   reports, if there are any errors.
+     * More description in .c file.
+     *
+     *    !!!  Not all status is checked now  !!!
+     *
+     * @param DDRx_BASE
+     * @return pass
+     */
+    uint32_t ddr_check_status
+    (
+        uint32_t DDRx_BASE
+    );
     /** @}*/
 
 

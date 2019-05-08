@@ -79,6 +79,7 @@ uint32_t pcie_simple_turn_on ()
     uint32_t timer_cntr;
 #ifndef PCIE_TEST_LIB_SIMSPEEDUP_OFF
 #ifndef RUMBOOT_BUILD_TYPE_POSTPRODUCTION
+#ifndef CMAKE_BUILD_TYPE_POSTPRODUCTION
     /***************************************************/
     /*    this PHY settings are only for simulation    */
     /*    and must be removed for real programm        */
@@ -130,6 +131,7 @@ uint32_t pcie_simple_turn_on ()
     iowrite32 (0x0810, PCIE_PHY_BASE + PCIe_Phy_PCS_COM_LOCK_CFG2      );
     iowrite32 (0x0101, PCIE_PHY_BASE + PCIe_Phy_PCS_GEN3_EIE_LOCK_CFG  );
     iowrite32 (0x000A, PCIE_PHY_BASE + PCIe_Phy_PCS_RCV_DET_INH        );
+#endif
 #endif
 #endif
 
@@ -237,6 +239,7 @@ uint32_t pcie_turn_on_with_options_ep
 
 #ifndef PCIE_TEST_LIB_SIMSPEEDUP_OFF
 #ifndef RUMBOOT_BUILD_TYPE_POSTPRODUCTION
+#ifndef CMAKE_BUILD_TYPE_POSTPRODUCTION
     /***************************************************/
     /*    this PHY settings are only for simulation    */
     /*    and must be removed for real programm        */
@@ -288,6 +291,7 @@ uint32_t pcie_turn_on_with_options_ep
     iowrite32 (0x0810, PCIE_PHY_BASE + PCIe_Phy_PCS_COM_LOCK_CFG2      );
     iowrite32 (0x0101, PCIE_PHY_BASE + PCIe_Phy_PCS_GEN3_EIE_LOCK_CFG  );
     iowrite32 (0x000A, PCIE_PHY_BASE + PCIe_Phy_PCS_RCV_DET_INH        );
+#endif
 #endif
 #endif
 
@@ -491,6 +495,7 @@ uint32_t pcie_turn_on_with_options_rc
 
 #ifndef PCIE_TEST_LIB_SIMSPEEDUP_OFF
 #ifndef RUMBOOT_BUILD_TYPE_POSTPRODUCTION
+#ifndef CMAKE_BUILD_TYPE_POSTPRODUCTION
     /***************************************************/
     /*    this PHY settings are only for simulation    */
     /*    and must be removed for real programm        */
@@ -542,6 +547,7 @@ uint32_t pcie_turn_on_with_options_rc
     iowrite32 (0x0810, PCIE_PHY_BASE + PCIe_Phy_PCS_COM_LOCK_CFG2      );
     iowrite32 (0x0101, PCIE_PHY_BASE + PCIe_Phy_PCS_GEN3_EIE_LOCK_CFG  );
     iowrite32 (0x000A, PCIE_PHY_BASE + PCIe_Phy_PCS_RCV_DET_INH        );
+#endif
 #endif
 #endif
 

@@ -49,6 +49,7 @@
 #include "platform/ddr_config/ddr__mt41j512m8_187e_8_8_533__bist.h"
 // #include "platform/ddr_config/ddr__mt41k256m8_125_8_11_800.h"
 // #include "/home/e.vorontsov/Basis/_ddr3_config/ddr_settings/ddr__mt41k256m8_125_8_11_800.h"
+// #include "/home/e.vorontsov/Basis/_ddr3_config/ddr_settings/ddr__mt41k256m8_125_8_7_533.h"
 #endif
 //-------------------------------------------------------------
 //  Timeout of PLL lock
@@ -522,6 +523,56 @@ uint32_t crg_ddr_init
 }
 
 //-----------------------------------------------------------------------------
+//  This function is for checking Errors in one of DDR subsystem
+//
+//  TODO: Add Read Leveling (eye training) error checking
+//
+//  Arguments:
+//    - DDRx_BASE
+//        posible values for Basis are:
+//          0x0108_0000 DDR0_BASE
+//          0x0108_2000 DDR1_BASE
+//
+//-----------------------------------------------------------------------------
+uint32_t ddr_check_status (uint32_t DDRx_BASE)
+{
+    uint32_t ret = 0;
+    
+    // rumboot_printf ("  ddr_check_status ... ");
+    
+    //  Report errors after initialisation
+    //    Update error is allowed. Also it can appear during work.
+    if ((ioread32(DDRx_BASE + DENALI_CTL_94) & (~0x207C0000)) != 0)
+    {
+        rumboot_printf ("\n  Unexpected DDR Core status after initialisation. Errors are possible.\n\n");
+        ret = -1;
+    }
+    if (
+        ((ioread32(DDRx_BASE + DENALI_PHY_BASE + DENALI_PHY_24 ) & (0x1 << 12)) != 0) |
+        ((ioread32(DDRx_BASE + DENALI_PHY_BASE + DENALI_PHY_152) & (0x1 << 12)) != 0) |
+        ((ioread32(DDRx_BASE + DENALI_PHY_BASE + DENALI_PHY_280) & (0x1 << 12)) != 0)
+        )
+    {
+        rumboot_printf ("\n  DDR Phy Write Leveling error after initialisation.\n\n");
+        ret = -1;
+    }
+    if (
+        ((ioread32(DDRx_BASE + DENALI_PHY_BASE + DENALI_PHY_26 ) & (0x3 << 6)) != 0) |
+        ((ioread32(DDRx_BASE + DENALI_PHY_BASE + DENALI_PHY_154) & (0x3 << 6)) != 0) |
+        ((ioread32(DDRx_BASE + DENALI_PHY_BASE + DENALI_PHY_282) & (0x3 << 6)) != 0)
+        )
+    {
+        rumboot_printf ("\n  DDR Phy Read Gating error after initialisation.\n\n");
+        ret = -1;
+    }
+    
+    // if (ret == 0)
+        // rumboot_printf ("OK\n");
+
+    return ret;
+}
+
+//-----------------------------------------------------------------------------
 //  This function is for turning On one of DDR subsystem
 //
 //  Arguments:
@@ -535,8 +586,8 @@ uint32_t ddr_init (uint32_t DDRx_BASE)
 {
     uint32_t timer_cntr = 0;
 
-    // crg_ddr_init (0x84 ,0x1);
-    crg_ddr_init (0x63 ,0x0);
+    crg_ddr_init (0x84 ,0x1);
+    // crg_ddr_init (0x63 ,0x0);
     ddr_registers_init (DDRx_BASE);
     
     while ((ioread32(DDRx_BASE + DENALI_CTL_94) & 0x00000800) == 0)
@@ -545,7 +596,11 @@ uint32_t ddr_init (uint32_t DDRx_BASE)
         if (timer_cntr == DDR_TEST_LIB_PLL_LOCK_TIMEOUT)
             return -1;
     }
-    iowrite32(0b00000000000000000000100000000000, DDRx_BASE + DENALI_CTL_95); // clear interruption flag
+    iowrite32((0x1 << 11), DDRx_BASE + DENALI_CTL_95); // clear interruption flag
+    
+    if (ddr_check_status (DDRx_BASE) != 0)
+        ;
+        // return -1;
 
     return 0;
 }
@@ -568,8 +623,11 @@ uint32_t ddr0_ddr1_init ()
         if (timer_cntr == DDR_TEST_LIB_PLL_LOCK_TIMEOUT)
             return -1;
     }
-    iowrite32(0b00000000000000000000100000000000, DDR0_BASE + DENALI_CTL_95); // clear interruption flag
-    iowrite32(0b00000000000000000000100000000000, DDR1_BASE + DENALI_CTL_95); // clear interruption flag
+    iowrite32((0x1 << 11), DDR0_BASE + DENALI_CTL_95); // clear interruption flag
+    iowrite32((0x1 << 11), DDR1_BASE + DENALI_CTL_95); // clear interruption flag
+
+    if ((ddr_check_status (DDR0_BASE) != 0) | (ddr_check_status (DDR1_BASE) != 0))
+        return -1;
 
     return 0;
 }
