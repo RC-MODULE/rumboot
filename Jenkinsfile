@@ -217,9 +217,6 @@ def coverage = true
 def local = false
 
 
-props = []
-props += CMakeProject.getParams()
-
 properties([
     parameters([
         booleanParam(defaultValue: false, name: 'LOCAL_RUN', description: 'Local run via Jenkinsfile-runner')
