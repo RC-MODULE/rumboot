@@ -3,16 +3,17 @@ class CMakeProject {
     int tries = 0
     boolean configured = false
     String setupscript
-    String sourcedir = ".." 
+    String sourcedir = "" 
     String workdir
     String environment = '''#!/bin/bash -x
     pwd
     '''
 
-    CMakeProject(steps, wdir) {
+    CMakeProject(steps, wdir, srcdir) {
         this.workdir = wdir
         this.setupscript = setupscript    
         this.steps = steps
+        this.sourcedir = srcdir
         println("Will configure project in: " + wdir)
     }
 
@@ -209,7 +210,7 @@ class CheckoutHelper {
 }
 ////////////////////////////////////////////////////////////////////
 def config=[:]
-def simnode="elvenblade"
+def simnode="trollblade"
 def hwnode="trollblade"
 def platforms = ["native", "basis", "bbp3", "oi10", "mm7705", "zed"]
 def prototypes = ["mm7705", "zed"]
@@ -244,28 +245,7 @@ config["oi10"] = [
 /////////////////////////////////////////////////////////////////////
 
 builds=[:]
-
-platforms.each {
-    plat ->
-        builds[plat] = new RumBootProject(this, plat)
-        if (coverage) {
-            print("Enabling coverage for " + plat)
-            builds[plat].enableCoverage();
-        }
-}
-
-prototypes.each {
-    plat ->
-            builds[plat].dropBuild("Debug")
-            builds[plat].dropBuild("Production")    
-}
-
-config.each { 
-    key, value ->
-        println(key)
-        builds[key].addOptions(value)    
-}
-
+def srcdir=null
 
 stage("Checkout") {
     node(hwnode){
@@ -284,10 +264,32 @@ stage("Checkout") {
                         submoduleCfg: [],
                         userRemoteConfigs: scm.userRemoteConfigs
                         ]
+        srcdir = pwd()
         }
     }
 }
 
+
+platforms.each {
+    plat ->
+        builds[plat] = new RumBootProject(this, plat, srcdir)
+        if (coverage) {
+            print("Enabling coverage for " + plat)
+            builds[plat].enableCoverage();
+        }
+}
+
+prototypes.each {
+    plat ->
+            builds[plat].dropBuild("Debug")
+            builds[plat].dropBuild("Production")    
+}
+
+config.each { 
+    key, value ->
+        println(key)
+        builds[key].addOptions(value)    
+}
 
 stage("Touchstone build (Native)") {
     parallel builds["native"].tasks(simnode, hwnode)
