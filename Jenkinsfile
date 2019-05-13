@@ -19,7 +19,6 @@ class CMakeProject {
     static def getParams(context) {
         return 
         [
-            context.booleanParam(defaultValue: false, name: 'LOCAL_RUN', description: 'Local run via Jenkinsfile-runner',),
         ]
     }
     
@@ -222,7 +221,9 @@ props = []
 props += CMakeProject.getParams()
 
 properties([
-    parameters([props])
+    parameters([
+        booleanParam(defaultValue: false, name: 'LOCAL_RUN', description: 'Local run via Jenkinsfile-runner')
+    ])
 ])
 
 
