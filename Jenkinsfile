@@ -236,6 +236,7 @@ config["mm7705"] = [
     RUMBOOT_TESTING_PORT: "/dev/ttyUSB1",
     RUMBOOT_TESTING_RESETPORT: "3",
     RUMBOOT_DISABLE_TESTING: "No",
+    RUMBOOT_COVERAGE: "No"
 ]
 
 config["oi10"] = [
