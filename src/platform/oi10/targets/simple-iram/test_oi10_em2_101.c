@@ -23,7 +23,19 @@
 
 void check_plb6mcif2(const uint32_t base_address)
 {
-    rumboot_printf("Check default values\n");
+    static const uint32_t reglist[] =
+    {
+        PLB6MCIF2_INTR_EN,  PLB6MCIF2_MAP0CF,
+        PLB6MCIF2_MAP1CF,   PLB6MCIF2_MAP2CF,
+        PLB6MCIF2_MAP3CF,   PLB6MCIF2_MAXMEM,
+        PLB6MCIF2_MR0CF,    PLB6MCIF2_MR1CF,
+        PLB6MCIF2_MR2CF,    PLB6MCIF2_MR3CF,
+        PLB6MCIF2_P6BMTAG1, PLB6MCIF2_P6BMTAG2,
+        PLB6MCIF2_P6BMTAG3, PLB6MCIF2_PLBASYNC,
+        PLB6MCIF2_PLBCFG,   PLB6MCIF2_PLBORD,
+        PLB6MCIF2_PUABA,    ~0
+    };
+
     static const struct regpoker_checker plb6mcif2_regs_default[] = {
         //      name                check type          offset         exp val                  mask
         {"PLB6MCIF2_BEARL",     REGPOKER_READ_DCR, PLB6MCIF2_BEARL,     0x00,                0xffffffff},
@@ -54,9 +66,7 @@ void check_plb6mcif2(const uint32_t base_address)
         {"PLB6MCIF2_STATUS",    REGPOKER_READ_DCR, PLB6MCIF2_STATUS,    0x80000000,          0xffffffff},
         {/* Sentinel */ }
     };
-    TEST_ASSERT (rumboot_regpoker_check_array(plb6mcif2_regs_default, base_address) == 0, "TEST ERROR" );
 
-    rumboot_printf("Check write/read\n");
     static const struct regpoker_checker plb6mcif2_regs_write[] = {
         //      name                check type          offset           val                  mask
         {"PLB6MCIF2_INTR_EN",   REGPOKER_WRITE_DCR, PLB6MCIF2_INTR_EN,   0xFFE001C0,          0xffffffff},
@@ -78,7 +88,19 @@ void check_plb6mcif2(const uint32_t base_address)
         {"PLB6MCIF2_PUABA",     REGPOKER_WRITE_DCR, PLB6MCIF2_PUABA,     0x00,                0xfffffffe},
         {/* Sentinel */ }
     };
+
+    uint32_t saved_regs[ARRAY_SIZE(reglist) - 1];
+    int i;
+
+    rumboot_printf("Check default values\n");
+    TEST_ASSERT (rumboot_regpoker_check_array(plb6mcif2_regs_default, base_address) == 0, "TEST ERROR" );
+
+    rumboot_printf("Check write/read\n");
+    for(i = 0; ~reglist[i]; i++)
+        saved_regs[i] = dcr_read(base_address + reglist[i]);
     TEST_ASSERT (rumboot_regpoker_check_array(plb6mcif2_regs_write, base_address) == 0, "TEST ERROR" );
+    for(i = 0; ~reglist[i]; i++)
+        dcr_write(base_address + reglist[i], saved_regs[i]);
 }
 
 void check_mclfir_wo (uint32_t base_addr)
@@ -265,6 +287,7 @@ void check_emi(const uint32_t base_address)
     TEST_ASSERT (rumboot_regpoker_check_array(emi_regs_write, base_address) == 0, "TEST ERROR" );
 }
 
+
 int main()
 {
     rumboot_printf("\nCHECK PLB6MCIF2\n\n");
@@ -276,6 +299,5 @@ int main()
     rumboot_printf("\nCHECK MCLFIR\n\n");
     check_mclfir (DCR_EM2_MCLFIR_BASE);
 
-    rumboot_printf("TEST OK\n");
     return 0;
 }

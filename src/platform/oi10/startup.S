@@ -499,7 +499,7 @@ setup_tlb:
 
 setup_stack: /*stack is growing down*/
     load_addr   r1, rumboot_platform_stack_area_end
-    stwu        r0, -8(r1) /*allocate LR and save SP of first stack frame according to ABI rules*/
+    stwu        r0, -16(r1) /*allocate LR and save SP of first stack frame according to ABI rules*/
     b goto_boot_main
 
 .section ".text.rom","ax",@progbits
