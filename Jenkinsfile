@@ -103,13 +103,13 @@ class RumBootProject {
     def steps
     def label = "full"
 
-    RumBootProject(steps, platform) {
+    RumBootProject(steps, platform, srcdir) {
         this.platform = platform
         this.steps = steps
         build_types.each {
             tp -> 
                 def tag = platform + "-" + tp
-                builds[tp] = new CMakeProject(steps, tag)
+                builds[tp] = new CMakeProject(steps, tag, srcdir)
         }
     }
 
