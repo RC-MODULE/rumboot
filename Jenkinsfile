@@ -209,8 +209,8 @@ class CheckoutHelper {
 }
 ////////////////////////////////////////////////////////////////////
 def config=[:]
-def simnode="master"
-def hwnode="master"
+def simnode="elvenblade"
+def hwnode="trollblade"
 def platforms = ["native", "basis", "bbp3", "oi10", "mm7705", "zed"]
 def prototypes = ["mm7705", "zed"]
 def coverage = true
