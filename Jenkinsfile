@@ -304,7 +304,7 @@ builds.each {
 }
 
 stage("Build all platforms") {
-    if (false) {
+    if (true) {
         parallel tasks
     } else { 
         tasks.each { 
@@ -332,7 +332,7 @@ stage("Analysis") {
                     println(fl)
 
                     sh("pwd && lcov " + args + " -o global.info || true")
-                    sh("python " + "scripts/lcov_cobertura.py" + "global.info -o coverage.xml")
+                    sh("python " + srcdir + "/scripts/lcov_cobertura.py" + "global.info -o coverage.xml")
                 }
             }
         }
