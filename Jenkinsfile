@@ -226,14 +226,14 @@ properties([
 
 
 config["basis"] = [
-    RUMBOOT_TESTING_PORT: "/dev/ttyUSB0",
+    RUMBOOT_TESTING_PORT: "/dev/ttyUSB1",
     RUMBOOT_TESTING_RESETPORT: "2",
     RUMBOOT_DISABLE_TESTING: "No",
     RUMBOOT_COVERAGE: "No"
 ]
 
 config["mm7705"] = [
-    RUMBOOT_TESTING_PORT: "/dev/ttyUSB1",
+    RUMBOOT_TESTING_PORT: "/dev/ttyUSB0",
     RUMBOOT_TESTING_RESETPORT: "3",
     RUMBOOT_DISABLE_TESTING: "No",
     RUMBOOT_COVERAGE: "No"
