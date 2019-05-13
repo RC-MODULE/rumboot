@@ -270,23 +270,24 @@ config.each {
 
 
 stage("Checkout") {
-    checkout scm: [
-    $class: 'GitSCM',
-    branches: "master"
-    branches: scm.branches,
-    doGenerateSubmoduleConfigurations: false,
-    extensions: [[$class: 'SubmoduleOption',
-        disableSubmodules: false,
-        parentCredentials: true,
-        recursiveSubmodules: true,
-        reference: '',
-        trackingSubmodules: false],
-        [$class: 'CloneOption', noTags: false, reference: '', shallow: true]
-        [$class: 'CleanBeforeCheckout']],
-    submoduleCfg: [],
-    userRemoteConfigs: scm.userRemoteConfigs,
-//    remote: 'git@git.module.ru:verification-components/RumBoot.git'
+    ws() {
+        checkout scm: [
+        $class: 'GitSCM',
+        branches: "master"
+        branches: scm.branches,
+        doGenerateSubmoduleConfigurations: false,
+        extensions: [[$class: 'SubmoduleOption',
+            disableSubmodules: false,
+            parentCredentials: true,
+            recursiveSubmodules: true,
+            reference: '',
+            trackingSubmodules: false],
+            [$class: 'CloneOption', noTags: false, reference: '', shallow: true]
+            [$class: 'CleanBeforeCheckout']],
+        submoduleCfg: [],
+        userRemoteConfigs: scm.userRemoteConfigs,
     ]
+    }
 }
 
 
