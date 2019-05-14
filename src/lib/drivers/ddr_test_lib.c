@@ -38,18 +38,18 @@
 // #include "platform/ddr_config/rtl__jedec_ddr3_1g_x16_1600g_cl8_bl8.h"
 
 #ifdef RUMBOOT_SOC_RTL
-#include "platform/ddr_config/rtl__my_mt41k128m8_107_cl11_bl8.h"
+// #include "platform/ddr_config/rtl__my_mt41k128m8_107_cl11_bl8.h"
 #endif
 
 #ifdef RUMBOOT_SOC_POSTLAYOUT
-#include "platform/ddr_config/nl__my_mt41k128m8_107_cl11_bl8.h"
+// #include "platform/ddr_config/nl__my_mt41k128m8_107_cl11_bl8.h"
 #endif
 
 #ifdef CMAKE_BUILD_TYPE_POSTPRODUCTION
-#include "platform/ddr_config/ddr__mt41j512m8_187e_8_8_533__bist.h"
+// #include "platform/ddr_config/ddr__mt41j512m8_187e_8_8_533__bist.h"
 // #include "platform/ddr_config/ddr__mt41k256m8_125_8_11_800.h"
 // #include "/home/e.vorontsov/Basis/_ddr3_config/ddr_settings/ddr__mt41k256m8_125_8_11_800.h"
-// #include "/home/e.vorontsov/Basis/_ddr3_config/ddr_settings/ddr__mt41k256m8_125_8_7_533.h"
+#include "/home/e.vorontsov/Basis/_ddr3_config/ddr_settings/ddr__mt41k256m8_125_8_7_533.h"
 #endif
 //-------------------------------------------------------------
 //  Timeout of PLL lock
@@ -544,7 +544,7 @@ uint32_t ddr_check_status (uint32_t DDRx_BASE)
     //    Update error is allowed. Also it can appear during work.
     if ((ioread32(DDRx_BASE + DENALI_CTL_94) & (~0x207C0000)) != 0)
     {
-        rumboot_printf ("\n  Unexpected DDR Core status after initialisation. Errors are possible.\n\n");
+        rumboot_printf ("\n  Unexpected DDR Core status. Errors are possible.\n\n");
         ret = -1;
     }
     if (
@@ -553,7 +553,7 @@ uint32_t ddr_check_status (uint32_t DDRx_BASE)
         ((ioread32(DDRx_BASE + DENALI_PHY_BASE + DENALI_PHY_280) & (0x1 << 12)) != 0)
         )
     {
-        rumboot_printf ("\n  DDR Phy Write Leveling error after initialisation.\n\n");
+        rumboot_printf ("\n  DDR Phy Write Leveling error.\n\n");
         ret = -1;
     }
     if (
@@ -562,9 +562,29 @@ uint32_t ddr_check_status (uint32_t DDRx_BASE)
         ((ioread32(DDRx_BASE + DENALI_PHY_BASE + DENALI_PHY_282) & (0x3 << 6)) != 0)
         )
     {
-        rumboot_printf ("\n  DDR Phy Read Gating error after initialisation.\n\n");
+        rumboot_printf ("\n  DDR Phy Read Gating error.\n\n");
         ret = -1;
     }
+    
+    for (uint32_t i = 0; i < 9*4; i+=4)
+        if (
+            // ((ioread32(DDRx_BASE + DENALI_PHY_BASE + DENALI_PHY_307 + i) & 0x0000FFFF)         == 0) |
+            // ((ioread32(DDRx_BASE + DENALI_PHY_BASE + DENALI_PHY_307 + i) & 0x0000FFFF) > 0x00000100) |
+            // ((ioread32(DDRx_BASE + DENALI_PHY_BASE + DENALI_PHY_307 + i) & 0xFFFF0000)         == 0) |
+            // ((ioread32(DDRx_BASE + DENALI_PHY_BASE + DENALI_PHY_307 + i) & 0xFFFF0000) > 0x01000000) |
+            ((ioread32(DDRx_BASE + DENALI_PHY_BASE + DENALI_PHY_179 + i) & 0x0000FFFF)         == 0) |
+            ((ioread32(DDRx_BASE + DENALI_PHY_BASE + DENALI_PHY_179 + i) & 0x0000FFFF) > 0x00000100) |
+            ((ioread32(DDRx_BASE + DENALI_PHY_BASE + DENALI_PHY_179 + i) & 0xFFFF0000)         == 0) |
+            ((ioread32(DDRx_BASE + DENALI_PHY_BASE + DENALI_PHY_179 + i) & 0xFFFF0000) > 0x01000000) |
+            ((ioread32(DDRx_BASE + DENALI_PHY_BASE + DENALI_PHY_51 + i) & 0x0000FFFF)         == 0) |
+            ((ioread32(DDRx_BASE + DENALI_PHY_BASE + DENALI_PHY_51 + i) & 0x0000FFFF) > 0x00000100) |
+            ((ioread32(DDRx_BASE + DENALI_PHY_BASE + DENALI_PHY_51 + i) & 0xFFFF0000)         == 0) |
+            ((ioread32(DDRx_BASE + DENALI_PHY_BASE + DENALI_PHY_51 + i) & 0xFFFF0000) > 0x01000000)
+            )
+        {
+            rumboot_printf ("\n  DDR Phy Eye Training error.\n\n");
+            ret = -1;
+        }
     
     // if (ret == 0)
         // rumboot_printf ("OK\n");
