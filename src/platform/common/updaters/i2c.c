@@ -23,7 +23,8 @@ static const struct rumboot_bootsource src[] = {
                 .name = "I2C EEPROM",
                 .base = I2C_BASE,
                 .slave_addr = EEPROM_ADDRESS,
-                .freq_khz = 100000,
+                .base_freq_khz = 100000,
+				.iface_freq_khz = 400,
                 .plugin = &g_bootmodule_eeprom,
         },
 };

@@ -157,7 +157,8 @@ static const struct rumboot_bootsource arr[] = {
         {
                 .name = "SDIO (CD: GPIO1_X)",
                 .base = SDIO_BASE,
-                .freq_khz = 100000,
+                .base_freq_khz = 100000,
+                .iface_freq_khz = 10000,
                 .plugin = &g_bootmodule_sdio,
                 .enable = sdio_enable,
                 .disable = sdio_disable,

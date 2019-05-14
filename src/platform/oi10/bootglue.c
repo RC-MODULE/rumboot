@@ -120,7 +120,8 @@ static const struct rumboot_bootsource arr[] = {
         {
                 .name = "SDIO (CD: GPIO0_3)",
                 .base = SDIO_0_BASE,
-                .freq_khz = 100000,
+                .base_freq_khz = 100000,
+                .iface_freq_khz = 10000,
                 .plugin = &g_bootmodule_sdio,
                 .enable = sdio_enable,
                 .offset = 8192,
@@ -134,7 +135,8 @@ static const struct rumboot_bootsource arr[] = {
         {
                 .name = "SPI0 (CS: internal)",
                 .base = GSPI_0_BASE,
-                .freq_khz = 100000,
+                .base_freq_khz = 100000,
+                .iface_freq_khz = 12500,
                 .plugin = &g_bootmodule_spiflash,
         },
         { /* sentinel */ }

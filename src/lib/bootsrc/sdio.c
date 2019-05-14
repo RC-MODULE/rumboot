@@ -448,8 +448,8 @@ static bool sdio_init(const struct rumboot_bootsource *src, void *pdata)
 
         bool initialized = 0;
 
-        uint32_t divl = calc_div(src->freq_khz, 400);
-        uint32_t divh = calc_div(src->freq_khz, 10000);
+        uint32_t divl = calc_div(src->base_freq_khz, 400);
+        uint32_t divh = calc_div(src->base_freq_khz, src->iface_freq_khz);
 
 #ifdef CMAKE_BUILD_TYPE_DEBUG
         /* simulation speed up */

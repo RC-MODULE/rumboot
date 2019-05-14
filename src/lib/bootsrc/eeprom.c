@@ -179,10 +179,10 @@ bool eeprom_init(const struct rumboot_bootsource *src, void *pdata)
 		return false;
 	}
 
-	epd->prescaler = calc_best_pr(src->freq_khz * 1000, I2C_FREQ);
+	epd->prescaler = calc_best_pr(src->base_freq_khz * 1000, src->iface_freq_khz * 1000);
 	i2c_resetinit(base, epd->prescaler);
 
-	dbg_boot(src, "Prescaler: 0x%x (%d Hz)", epd->prescaler, get_i2c_clk(src->freq_khz * 1000, epd->prescaler));
+	dbg_boot(src, "Prescaler: 0x%x (%d Hz)", epd->prescaler, get_i2c_clk(src->base_freq_khz * 1000, epd->prescaler));
 	return true;
 }
 

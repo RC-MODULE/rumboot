@@ -49,7 +49,8 @@ static const struct rumboot_bootsource src[] = {
         {
                 .name = "SPI FLASH (GPIO CS)",
                 .base = SPI_BASE,
-                .freq_khz = 100000,
+                .base_freq_khz = 100000,
+                .iface_freq_khz = 12500,
                 .plugin = &g_bootmodule_spiflash,
                 .enable = spi0_1_enable,
                 .disable = spi0_1_disable,
@@ -108,7 +109,7 @@ static const struct rumboot_bootsource src[] = {
         {
                 .name = "SPI FLASH",
                 .base = SPI_BASE,
-                .freq_khz = 30000,
+                .base_freq_khz = 30000,
                 .plugin = &g_bootmodule_spiflash,
 		.enable = mm7705_spi_enable,
 		.disable = mm7705_spi_disable,
@@ -120,7 +121,7 @@ static const struct rumboot_bootsource src[] = {
         {
                 .name = "SPI FLASH",
                 .base = SPI_BASE,
-                .freq_khz = 100000,
+                .base_freq_khz = 100000,
                 .plugin = &g_bootmodule_spiflash,
         },
 };
@@ -154,7 +155,7 @@ static const struct rumboot_bootsource src[] = {
 #define SPIFLASH_POWERDOWN     0xB9
 #define SPIFLASH_RELEASE       0xAB
 #define SPIFLASH_READSFDP      0x5A
-#define SPIFLASH_UNIQUEID 	   0x4B
+#define SPIFLASH_UNIQUEID      0x4B
 
 struct spiflash_private_data {
 	const struct rumboot_bootsource *src;

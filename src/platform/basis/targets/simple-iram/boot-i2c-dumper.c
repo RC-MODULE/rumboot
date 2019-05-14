@@ -1,37 +1,3 @@
-/**
- * \defgroup test_hello_iram Hello World
- * \ingroup tests_basis
- *
- * Description
- * ===========
- *
- * Prints hello world via gtube and exits with 0 exit code
- *
- * Verification environment/plusargs
- * ==============================================
- * None
- *
- * CFLAGS
- * ======
- * None
- *
- * Expected output
- * ===============
- *
- *
- * How to compile
- * ==============
- *
- * \code{cmake}
- *    add_rumboot_target(
- *       CONFIGURATION IRAM
- *       FILES common/tools/drom-check.c
- *       NAME "hello-world"
- *   )
- * \endcode
- *
- */
-
 #include <stdio.h>
 #include <rumboot/printf.h>
 #include <rumboot/irq.h>
@@ -52,7 +18,8 @@ static const struct rumboot_bootsource src[] = {
                 .name = "I2C0 (EEPROM @ 0x50)",
                 .base = I2C0_BASE,
                 .slave_addr = 0x50,
-                .freq_khz = 100000,
+                .base_freq_khz = 100000,
+                .iface_freq_khz = 400,
                 .plugin = &g_bootmodule_eeprom,
         },
 };

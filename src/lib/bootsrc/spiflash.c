@@ -73,8 +73,8 @@ static bool spiflash_init(const struct rumboot_bootsource *src, void *pdata)
 	struct spiflash_private_data *spi_flash = (struct spiflash_private_data *)pdata;
 
    struct pl022_config conf;
-   conf.ssp_clk = src->freq_khz * 1000;
-   conf.spi_clk = 12500000;
+   conf.ssp_clk = src->base_freq_khz * 1000;
+   conf.spi_clk = src->iface_freq_khz * 1000;
    conf.data_size = 8;
    conf.soft_cs = 1;
    pl022_init(src->base, &conf);

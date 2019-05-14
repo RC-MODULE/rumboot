@@ -111,7 +111,8 @@ static const struct rumboot_bootsource spi_boot[] = {
         {
                 .name = "SPI0 (CS: GPE0)",
                 .base = SPI0_Base,
-                .freq_khz = 128000,
+                .base_freq_khz = 128000,
+                .iface_freq_khz = 7000,
                 .plugin = &g_bootmodule_spiflash,
                 .enable = spi0_enable,
                 .disable = spi0_disable,
