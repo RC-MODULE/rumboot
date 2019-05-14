@@ -133,12 +133,51 @@
  * the whole RAM.
  */
 
-// #include "irq_macros.h"
-
 /*
  * Define INJECT_*_ERRORS for testing error detection in the presence of
  * _good_ hardware.
  */
+
+/*
+ *  RCM includes
+ */
+#include <rumboot/printf.h>
+
+/*
+ *  After ERROR_CNTR_MAX errors were found, halt execution of test
+ */
+#define ERROR_CNTR_MAX 50
+
+unsigned int error_cntr = 0;
+
+/*
+ *  Function that accumulate errors and
+ *    stops execution of the test, if there are too many errors
+ *  
+ *  TODO: make another stop mechanis, that exits all functions from current file
+ *    and returns to main part of test
+ */
+void error_cntr_increment ()
+{
+    error_cntr++;
+    if (error_cntr == ERROR_CNTR_MAX)
+    {
+        rumboot_printf ("Error counter overflow, test stopped\n  MDMA not stopped\n");
+        while (1);
+    }
+}
+
+/*
+ * TODO
+ *  Function for investigation reason of error:
+ *    - read data again. If it is correct, then Read Error happened
+ *      otherwise Write Error or Storage Error happened
+ *    -
+ */
+void error_investigation ()
+{
+}
+
 #undef  INJECT_DATA_ERRORS
 #undef  INJECT_ADDRESS_ERRORS
 
@@ -167,8 +206,7 @@ static void move64(const unsigned long long *src, unsigned long long *dest)
 }
 
 static int memory_post_dataline(unsigned long long * pmem, const unsigned long long * pattern,
-				const unsigned long long * otherpattern, int * mem_log,
-				int label)
+				const unsigned long long * otherpattern)
 {
 	unsigned long long temp64 = 0;
 	int i, err = 0;
@@ -193,14 +231,9 @@ static int memory_post_dataline(unsigned long long * pmem, const unsigned long l
 
 			ret = -1;
 
-            rumboot_printf ("      ERROR_1:  mem_cnt=%d  mem_size=0x%08x\n", mem_cnt, mem_size);
-            rumboot_printf ("        temp64=0x%08x    pattern=0x%08x\n", temp64, pattern[i]);
-			// TEST_ATOMIC_BLOCK() {
-				// *(mem_log + 0) += 1;
-
-				// mem_cnt = *(mem_log + 1);
-				// mem_size = *(mem_log + 2);
-			// }
+            rumboot_printf ("      ERROR_1\n");
+            rumboot_printf ("        temp64=0x%08x    pattern=0x%08x    read_2=0x%08x\n", temp64, pattern[i], *pmem);
+            //  TODO make report for high part of word
 
 			if (mem_cnt <= (mem_size - 6)) {
 				pathi = (pattern[i]>>32) & 0xffffffff;
@@ -208,26 +241,15 @@ static int memory_post_dataline(unsigned long long * pmem, const unsigned long l
 
 				hi = (temp64>>32) & 0xffffffff;
 				lo = temp64 & 0xffffffff;
-
-				// TEST_ATOMIC_BLOCK() {
-					// *(mem_log + mem_cnt + 3) = label;
-					// *(mem_log + mem_cnt + 4) = (int)pmem;
-					// *(mem_log + mem_cnt + 5) = patlo;
-					// *(mem_log + mem_cnt + 6) = pathi;
-					// *(mem_log + mem_cnt + 7) = lo;
-					// *(mem_log + mem_cnt + 8) = hi;
-
-					// mem_cnt = mem_cnt + 6;
-					// *(mem_log + 1) = mem_cnt;
-				// }
 			}
+            error_cntr_increment ();
 		}
 	}
 	return ret;
 }
 
 static int memory_post_addrline(unsigned long *testaddr, unsigned long *base,
-				unsigned long size, int * mem_log, int label)
+				unsigned long size)
 {
 	unsigned long *target;
 	unsigned long *end;
@@ -261,28 +283,8 @@ static int memory_post_addrline(unsigned long *testaddr, unsigned long *base,
 				ret = -1;
 
                 rumboot_printf ("      ERROR_2\n");
-                rumboot_printf ("        readfirst=0x%08x    readsecond=0x%08x\n", readfirst, readsecond);
-				// TEST_ATOMIC_BLOCK() {
-					// *(mem_log + 0) += 1;
-
-					// mem_cnt = *(mem_log + 1);
-					// mem_size = *(mem_log + 2);
-				// }
-				
-				// if (mem_cnt <= (mem_size - 7)) {
-					// TEST_ATOMIC_BLOCK() {
-						// *(mem_log + mem_cnt + 3) = label;
-						// *(mem_log + mem_cnt + 4) = (int)testaddr;
-						// *(mem_log + mem_cnt + 5) = (int)target;
-						// *(mem_log + mem_cnt + 6) = ~readfirst;
-						// *(mem_log + mem_cnt + 7) = readthird;
-						// *(mem_log + mem_cnt + 8) = readfirst;
-						// *(mem_log + mem_cnt + 9) = readsecond;
-
-						// mem_cnt = mem_cnt + 7;
-						// *(mem_log + 1) = mem_cnt;
-					// }
-				// }
+                rumboot_printf ("        readfirst=0x%08x    readsecond=0x%08x    read_2=0x%08x\n", readfirst, readsecond, *target);
+                error_cntr_increment ();
 			}
 		}
 	}
@@ -290,7 +292,7 @@ static int memory_post_addrline(unsigned long *testaddr, unsigned long *base,
 }
 
 static int memory_post_test1(unsigned long start, unsigned long size,
-				unsigned long val, int * mem_log, int label)
+				unsigned long val)
 {
 	unsigned long i;
 	unsigned long *mem = (unsigned long *) start;
@@ -309,32 +311,15 @@ static int memory_post_test1(unsigned long start, unsigned long size,
 			ret = -1;
 
             rumboot_printf ("      ERROR_3\n");
-            rumboot_printf ("        readback=0x%08x    val=0x%08x\n", readback, val);
-			// TEST_ATOMIC_BLOCK() {
-				// *(mem_log + 0) += 1;
-
-				// mem_cnt = *(mem_log + 1);
-				// mem_size = *(mem_log + 2);
-			// }
-
-			// if (mem_cnt <= (mem_size - 4)) {
-				// TEST_ATOMIC_BLOCK() {
-					// *(mem_log + mem_cnt + 3) = label;
-					// *(mem_log + mem_cnt + 4) = (int)(mem + i);
-					// *(mem_log + mem_cnt + 5) = val;
-					// *(mem_log + mem_cnt + 6) = readback;
-
-					// mem_cnt = mem_cnt + 4;
-					// *(mem_log + 1) = mem_cnt;
-				// }
-			// }
+            rumboot_printf ("        readback=0x%08x    val=0x%08x    read_2=0x%08x\n", readback, val, mem[i]);
+            error_cntr_increment ();
 		}
 	}
 
 	return ret;
 }
 
-static int memory_post_test2(unsigned long start, unsigned long size, int * mem_log, int label)
+static int memory_post_test2(unsigned long start, unsigned long size)
 {
 	unsigned long i;
 	unsigned long *mem = (unsigned long *) start;
@@ -353,32 +338,15 @@ static int memory_post_test2(unsigned long start, unsigned long size, int * mem_
 			ret = -1;
 
             rumboot_printf ("      ERROR_4\n");
-            rumboot_printf ("        readback=0x%08x    (1 << (i \% 32))=0x%08x\n", readback, (1 << (i % 32)));
-			// TEST_ATOMIC_BLOCK() {
-				// *(mem_log + 0) += 1;
-
-				// mem_cnt = *(mem_log + 1);
-				// mem_size = *(mem_log + 2);
-			// }
-
-			// if (mem_cnt <= (mem_size - 4)) {
-				// TEST_ATOMIC_BLOCK() {
-					// *(mem_log + mem_cnt + 3) = label;
-					// *(mem_log + mem_cnt + 4) = (int)(mem + i);
-					// *(mem_log + mem_cnt + 5) = 1 << (i % 32);
-					// *(mem_log + mem_cnt + 6) = readback;
-
-					// mem_cnt = mem_cnt + 4;
-					// *(mem_log + 1) = mem_cnt;
-				// }
-			// }
+            rumboot_printf ("        readback=0x%08x    (1 << (i \% 32))=0x%08x    read_2=0x%08x\n", readback, (1 << (i % 32)), mem[i]);
+            error_cntr_increment ();
 		}
 	}
 
 	return ret;
 }
 
-static int memory_post_test3(unsigned long start, unsigned long size, int * mem_log, int label)
+static int memory_post_test3(unsigned long start, unsigned long size)
 {
 	unsigned long i;
 	unsigned long *mem = (unsigned long *) start;
@@ -397,32 +365,15 @@ static int memory_post_test3(unsigned long start, unsigned long size, int * mem_
 			ret = -1;
 
             rumboot_printf ("      ERROR_5\n");
-            rumboot_printf ("        readback=0x%08x    i=0x%08x    addr=0x%08x\n", readback, i, &mem[i]);
-			// TEST_ATOMIC_BLOCK() {
-				// *(mem_log + 0) += 1;
-
-				// mem_cnt = *(mem_log + 1);
-				// mem_size = *(mem_log + 2);
-			// }
-
-			// if (mem_cnt <= (mem_size - 4)) {
-				// TEST_ATOMIC_BLOCK() {
-					// *(mem_log + mem_cnt + 3) = label;
-					// *(mem_log + mem_cnt + 4) = (int)(mem + i);
-					// *(mem_log + mem_cnt + 5) = i;
-					// *(mem_log + mem_cnt + 6) = readback;
-
-					// mem_cnt = mem_cnt + 4;
-					// *(mem_log + 1) = mem_cnt;
-				// }
-			// }
+            rumboot_printf ("        readback=0x%08x    i=0x%08x    addr=0x%08x    read_2=0x%08x\n", readback, i, &mem[i], mem[i]);
+            error_cntr_increment ();
 		}
 	}
 
 	return ret;
 }
 
-static int memory_post_test4(unsigned long start, unsigned long size, int *mem_log, int label)
+static int memory_post_test4(unsigned long start, unsigned long size)
 {
 	unsigned long i;
 	unsigned long *mem = (unsigned long *)start;
@@ -441,25 +392,8 @@ static int memory_post_test4(unsigned long start, unsigned long size, int *mem_l
 			ret = -1;
 
             rumboot_printf ("      ERROR_6\n");
-            rumboot_printf ("        readback=0x%08x    ~i=0x%08x\n", readback, ~i);
-			// TEST_ATOMIC_BLOCK() {
-				// *(mem_log + 0) += 1;
-
-				// mem_cnt = *(mem_log + 1);
-				// mem_size = *(mem_log + 2);
-			// }
-
-			// if (mem_cnt <= (mem_size - 4)) {
-				// TEST_ATOMIC_BLOCK() {
-					// *(mem_log + mem_cnt + 3) = label;
-					// *(mem_log + mem_cnt + 4) = (int)(mem + i);
-					// *(mem_log + mem_cnt + 5) = ~i;
-					// *(mem_log + mem_cnt + 6) = readback;
-
-					// mem_cnt = mem_cnt + 4;
-					// *(mem_log + 1) = mem_cnt;
-				// }
-			// }
+            rumboot_printf ("        readback=0x%08x    ~i=0x%08x    read_2=0x%08x\n", readback, ~i, mem[i]);
+            error_cntr_increment ();
 		}
 	}
 
@@ -467,189 +401,109 @@ static int memory_post_test4(unsigned long start, unsigned long size, int *mem_l
 }
 
 static int memory_post_test_lines(unsigned long start, unsigned long size, const unsigned long long * pattern,
-					const unsigned long long * otherpattern, int * debug_log)
+					const unsigned long long * otherpattern)
 {
 	int log_cnt;
 	int ret = 0;
 
-	ret = memory_post_dataline((unsigned long long *)start, pattern, otherpattern,
-					(int *)(*(debug_log + 1)), 0xEEEEEE01);
+	ret = memory_post_dataline((unsigned long long *)start, pattern, otherpattern);
 
 	if (!ret) {
-		ret = memory_post_addrline((unsigned long *)start, (unsigned long *)start, size,
-					(int *)(*(debug_log + 1)), 0xEEEEEE02);
+		ret = memory_post_addrline((unsigned long *)start, (unsigned long *)start, size);
 	}
 	else {
         rumboot_printf ("    ERROR: 0xEEEEEE01\n");
-		// TEST_ATOMIC_BLOCK() {
-			// log_cnt = *(debug_log + 2);
-			// *(debug_log + log_cnt + 4) = 0xEEEEEE01;
-			// *(debug_log + log_cnt + 5) = start;
-			// *(debug_log + log_cnt + 6) = size;
-			// *(debug_log + 2) = log_cnt + 3;
-		// }
 
 		goto test_lines_exit;
 	}
 
 	if (!ret) {
-		ret = memory_post_addrline((unsigned long *)(start+size-8), (unsigned long *)start, size,
-					(int *)(*(debug_log + 1)), 0xEEEEEE03);
+		ret = memory_post_addrline((unsigned long *)(start+size-8), (unsigned long *)start, size);
 	}
 	else {
         rumboot_printf ("    ERROR: 0xEEEEEE02\n");
-		// TEST_ATOMIC_BLOCK() {
-			// log_cnt = *(debug_log + 2);
-			// *(debug_log + log_cnt + 4) = 0xEEEEEE02;
-			// *(debug_log + log_cnt + 5) = start;
-			// *(debug_log + log_cnt + 6) = size;
-			// *(debug_log + 2) = log_cnt + 3;
-		// }
 
 		goto test_lines_exit;
 	}
 
 	if (ret) {
         rumboot_printf ("    ERROR: 0xEEEEEE03\n");
-		// TEST_ATOMIC_BLOCK() {
-			// log_cnt = *(debug_log + 2);
-			// *(debug_log + log_cnt + 4) = 0xEEEEEE03;
-			// *(debug_log + log_cnt + 5) = start;
-			// *(debug_log + log_cnt + 6) = size;
-			// *(debug_log + 2) = log_cnt + 3;
-		// }
 	}
 
 test_lines_exit:
 	return ret;
 }
 
-static int memory_post_test_patterns(unsigned long start, unsigned long size, int * debug_log)
+static int memory_post_test_patterns(unsigned long start, unsigned long size)
 {
 	int log_cnt;
 	int ret = 0;
 
-	ret = memory_post_test1(start, size, 0x00000000,
-				(int *)(*(debug_log + 1)), 0xEEEEEE04);
+	ret = memory_post_test1(start, size, 0x00000000);
 
 	if (!ret) {
-		ret = memory_post_test1(start, size, 0xffffffff,
-				(int *)(*(debug_log + 1)), 0xEEEEEE05);
+		ret = memory_post_test1(start, size, 0xffffffff);
 	}
 	else {
         rumboot_printf ("    ERROR: 0xEEEEEE04\n");
-		// TEST_ATOMIC_BLOCK() {
-			// log_cnt = *(debug_log + 2);
-			// *(debug_log + log_cnt + 4) = 0xEEEEEE04;
-			// *(debug_log + log_cnt + 5) = start;
-			// *(debug_log + log_cnt + 6) = size;
-			// *(debug_log + 2) = log_cnt + 3;
-		// }
 
 		goto test_patterns_exit;
 	}
 
 	if (!ret) {
-		ret = memory_post_test1(start, size, 0x55555555,
-				(int *)(*(debug_log + 1)), 0xEEEEEE06);
+		ret = memory_post_test1(start, size, 0x55555555);
 	}
 	else {
         rumboot_printf ("    ERROR: 0xEEEEEE05\n");
-		// TEST_ATOMIC_BLOCK() {
-			// log_cnt = *(debug_log + 2);
-			// *(debug_log + log_cnt + 4) = 0xEEEEEE05;
-			// *(debug_log + log_cnt + 5) = start;
-			// *(debug_log + log_cnt + 6) = size;
-			// *(debug_log + 2) = log_cnt + 3;
-		// }
 
 		goto test_patterns_exit;
 	}
 
 	if (!ret) {
-		ret = memory_post_test1(start, size, 0xaaaaaaaa,
-				(int *)(*(debug_log + 1)), 0xEEEEEE07);
+		ret = memory_post_test1(start, size, 0xaaaaaaaa);
 	}
 	else {
         rumboot_printf ("    ERROR: 0xEEEEEE06\n");
-		// TEST_ATOMIC_BLOCK() {
-			// log_cnt = *(debug_log + 2);
-			// *(debug_log + log_cnt + 4) = 0xEEEEEE06;
-			// *(debug_log + log_cnt + 5) = start;
-			// *(debug_log + log_cnt + 6) = size;
-			// *(debug_log + 2) = log_cnt + 3;
-		// }
 
 		goto test_patterns_exit;
 	}
 
 	if (!ret) {
-		ret = memory_post_test2(start, size, (int *)(*(debug_log + 1)),
-				0xEEEEEE08);
+		ret = memory_post_test2(start, size);
 	}
 	else {
                 rumboot_printf ("    ERROR: 0xEEEEEE07\n");
-                // TEST_ATOMIC_BLOCK() {
-                        // log_cnt = *(debug_log + 2);
-                        // *(debug_log + log_cnt + 4) = 0xEEEEEE07;
-                        // *(debug_log + log_cnt + 5) = start;
-                        // *(debug_log + log_cnt + 6) = size;
-                        // *(debug_log + 2) = log_cnt + 3;
-                // }
 
 		goto test_patterns_exit;
 	}
 
 	if (!ret) {
-		ret = memory_post_test3(start, size, (int *)(*(debug_log + 1)),
-				0xEEEEEE09);
+		ret = memory_post_test3(start, size);
 	}
 	else {
                 rumboot_printf ("    ERROR: 0xEEEEEE08\n");
-                // TEST_ATOMIC_BLOCK() {
-                        // log_cnt = *(debug_log + 2);
-                        // *(debug_log + log_cnt + 4) = 0xEEEEEE08;
-                        // *(debug_log + log_cnt + 5) = start;
-                        // *(debug_log + log_cnt + 6) = size;
-                        // *(debug_log + 2) = log_cnt + 3;
-                // }
 
 		goto test_patterns_exit;
 	}
 
 	if (!ret) {
-		ret = memory_post_test4(start, size, (int *)(*(debug_log + 1)),
-				0xEEEEEE0A);
+		ret = memory_post_test4(start, size);
 	}
 	else {
                 rumboot_printf ("    ERROR: 0xEEEEEE09\n");
-                // TEST_ATOMIC_BLOCK() {
-                        // log_cnt = *(debug_log + 2);
-                        // *(debug_log + log_cnt + 4) = 0xEEEEEE09;
-                        // *(debug_log + log_cnt + 5) = start;
-                        // *(debug_log + log_cnt + 6) = size;
-                        // *(debug_log + 2) = log_cnt + 3;
-                // }
 
 		goto test_patterns_exit;
 	}
 
 	if (ret) {
                 rumboot_printf ("    ERROR: 0xEEEEEE0A\n");
-                // TEST_ATOMIC_BLOCK() {
-                        // log_cnt = *(debug_log + 2);
-                        // *(debug_log + log_cnt + 4) = 0xEEEEEE0A;
-                        // *(debug_log + log_cnt + 5) = start;
-                        // *(debug_log + log_cnt + 6) = size;
-                        // *(debug_log + 2) = log_cnt + 3;
-                // }
 	}
 
 test_patterns_exit:
 	return ret;
 }
 
-static int memory_post_test_regions(unsigned long start, unsigned long size, int * debug_log)
+static int memory_post_test_regions(unsigned long start, unsigned long size)
 {
 	unsigned long i;
 	int *mem_log, mem_cnt, mem_size;
@@ -657,37 +511,17 @@ static int memory_post_test_regions(unsigned long start, unsigned long size, int
 	int ret = 0;
 
 	for (i = 0; i < (size >> 20); i++) {
-		tmp = memory_post_test_patterns(start + (i << 20), 0x800, debug_log);
+		tmp = memory_post_test_patterns(start + (i << 20), 0x800);
 		if (tmp) {
 			ret = -1;
-
-			// mem_log = (int *)(*(debug_log + 1));
-
-			// TEST_ATOMIC_BLOCK() {
-				// log_cnt = *(debug_log + 2);
-				// log_size = *(debug_log + 3);
-
-				// mem_cnt = *(mem_log + 1);
-				// mem_size = *(mem_log + 2);
-			// }
 
 			if ((log_cnt > (log_size - 4)) || (mem_cnt > (mem_size - 8)))
 				break;
 		}
 
-		tmp = memory_post_test_patterns(start + (i << 20) + 0xff800, 0x800, debug_log);
+		tmp = memory_post_test_patterns(start + (i << 20) + 0xff800, 0x800);
 		if (tmp) {
 			ret = -1;
-
-			// mem_log = (int *)(*(debug_log + 1));
-
-			// TEST_ATOMIC_BLOCK() {
-				// log_cnt = *(debug_log + 2);
-				// log_size = *(debug_log + 3);
-
-				// mem_cnt = *(mem_log + 1);
-				// mem_size = *(mem_log + 2);
-			// }
 
 			if ((log_cnt > (log_size - 4)) || (mem_cnt > (mem_size - 8)))
 				break;
@@ -698,25 +532,25 @@ static int memory_post_test_regions(unsigned long start, unsigned long size, int
 }
 
 static int memory_post_tests(unsigned long start, unsigned long size, const unsigned long long * pattern,
-				const unsigned long long * otherpattern, int * debug_log)
+				const unsigned long long * otherpattern)
 {
 	int ret = 0;
 
-	ret = memory_post_test_lines(start, size, pattern, otherpattern, debug_log);
+	ret = memory_post_test_lines(start, size, pattern, otherpattern);
 	if (!ret)
-		ret = memory_post_test_patterns(start, size, debug_log);
+		ret = memory_post_test_patterns(start, size);
 
 	return ret;
 }
 
 int memory_regions_post_test(unsigned long vstart, unsigned long memsize, const unsigned long long * pattern,
-			const unsigned long long * otherpattern, int * debug_log, int flags)
+			const unsigned long long * otherpattern, int flags)
 {
 	int ret = 0;
 
-	ret = memory_post_test_lines(vstart, memsize, pattern, otherpattern, debug_log);
+	ret = memory_post_test_lines(vstart, memsize, pattern, otherpattern);
 	if (!ret)
-		ret = memory_post_test_regions(vstart, memsize, debug_log);
+		ret = memory_post_test_regions(vstart, memsize);
 
 	return ret;
 }
@@ -725,14 +559,14 @@ int memory_regions_post_test(unsigned long vstart, unsigned long memsize, const 
 #define POST_NORMAL	0x0
 
 int memory_post_test(unsigned long vstart, unsigned long memsize, const unsigned long long * pattern,
-		const unsigned long long * otherpattern, int * debug_log, int flags)
+		const unsigned long long * otherpattern, int flags)
 {
 	int ret = 0;
 
 	if (flags & POST_SLOWTEST) {
-		ret = memory_post_tests(vstart, memsize, pattern, otherpattern, debug_log);
+		ret = memory_post_tests(vstart, memsize, pattern, otherpattern);
 	} else {
-		ret = memory_post_test_regions(vstart, memsize, debug_log);
+		ret = memory_post_test_regions(vstart, memsize);
 	}
 
 	return ret;

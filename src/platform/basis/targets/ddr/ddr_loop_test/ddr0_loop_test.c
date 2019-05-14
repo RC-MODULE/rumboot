@@ -2,12 +2,14 @@
 //  This program is for checking DDR0 SDRAM correct work
 //  
 //  Test includes:
-//    - 
-//    - 
-//    - 
-//      - 
-//      - 
-//      - 
+//    - clear debug log (not used now)
+//    - turn DDR0 On
+//    - check SDRAM stability (define TEST_NO_STABILITY to exclude this feature)
+//    - check memory with post test (March algorytms)
+//        select the deepth of check with defines TEST_FAST, TEST_NORMAL or TEST_MAXIMUM
+//        select parameters of checked memory POST_TEST_BASE and POST_TEST_SIZE
+//    - start MDMA transfers simultaneously with post test to make a large physical payload on DDR
+//        (define TEST_NO_DMA to exclude this feature)
 //    
 //    
 //    
@@ -20,40 +22,47 @@
 #include <regs/regs_ddr.h>
 #include <regs/regs_crg.h>
 #include <regs/regs_gpio.h>
+#include <regs/regs_mdma.h>
 
 #include <rumboot/io.h>
 #include <rumboot/printf.h>
 #include <rumboot/ddr_test_lib.h>
+#include <rumboot/irq.h>
 
 #include <platform/devices.h>
+#include <platform/interrupts.h>
 
-//-------------------------------------------------------------
+#include <devices/sp804.h>
+
+//-----------------------------------------------------------------------------
 //  Test features control
 //-----------------------------
 // #define TEST_NO_DMA
 
+//-------------
 // #define TEST_NO_STABILITY
 #define STABILITY_DELAY  200000000
 #define STABILITY_REP_NUMBER  5
 
+//-------------
 // #define TEST_FAST
 // #define TEST_NORMAL
-#define REP_NUMBER      20
+#define TEST_MAXIMUM
+
+#define POST_TEST_BASE  EMI0_BASE
+//  On RCM MT143.05 PCB only 1/2 of memory space is available
+//  End part of memory is used by MDMA
+#define POST_TEST_SIZE  0x1FEC0000
+
+#define REP_NUMBER      10
+//-------------------------------------------------------------
 
 
-// extern uint32_t _debug_log;
-// extern uint32_t _mem_log;
 extern uint32_t memory_post_test(unsigned long vstart, unsigned long memsize,
-        const unsigned long long * pattern, const unsigned long long * otherpattern,
-        uint32_t * log, uint32_t flags);
+        const unsigned long long * pattern, const unsigned long long * otherpattern, uint32_t flags);
 extern uint32_t memory_regions_post_test(unsigned long vstart, unsigned long memsize,
-        const unsigned long long * pattern, const unsigned long long * otherpattern,
-        uint32_t * log, uint32_t flags);
+        const unsigned long long * pattern, const unsigned long long * otherpattern, uint32_t flags);
 
-// #include "irq_macros.h"
-
-//  Why 0 was here?
-// #if 0
 #if 1
 #include "ddr_test_array.h"
 #else
@@ -81,50 +90,90 @@ static const unsigned long long otherpattern = 0x0123456789abcdefULL;
 
 static volatile uint32_t ret, rep_cnt, err_cnt, done_cnt;
 
-//-----------------------------------------------------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+//  MDMA related elements
+//-----------------------------
+#define MDMA0_SDRAM_SRC  (EMI0_BASE + 0x1FFC0000)
+#define MDMA0_SDRAM_DST  (EMI0_BASE + 0x1FFE0000)
+
+#define STOP_FLAG  0x10000000
+#define MDMA_LEN   ((16384 << 2) | STOP_FLAG)
+
+#define INT_STAT    0x4
+#define BAD_STAT    0x8
+#define STOP_STAT   0x10
+
+uint32_t mdma_transfer_direction = 0;
+
+volatile struct mdma_rd_descriptor {
+    uint32_t data_src;
+    uint32_t data_len;
+    uint32_t reserved_0;
+    uint32_t stop_word;
+} mdma0_rd_descriptor;
+
+volatile struct mdma_wr_descriptor {
+    uint32_t data_dst;
+    uint32_t data_len;
+    uint32_t reserved_0;
+    uint32_t stop_word;
+} mdma0_wr_descriptor;
+
+static inline void mdma0_start ()
+{
+    iowrite32(1, MDMA0_BASE + MDMA_ENABLE_W);
+    iowrite32(1, MDMA0_BASE + MDMA_ENABLE_R);    
+}
+
+static inline void mdma0_transceive (uint32_t data_src, uint32_t data_dst)
+{
+    // rumboot_printf ("  DMA start\n");
+    
+    mdma0_rd_descriptor.data_src   = data_src    ;
+    mdma0_rd_descriptor.data_len   = MDMA_LEN    ;
+    mdma0_rd_descriptor.reserved_0 = 0x00000000  ;
+    mdma0_rd_descriptor.stop_word  = 0xFFFFFFFF  ;
+
+    mdma0_wr_descriptor.data_dst   = data_dst    ;
+    mdma0_wr_descriptor.data_len   = MDMA_LEN    ;
+    mdma0_wr_descriptor.reserved_0 = 0x00000000  ;
+    mdma0_wr_descriptor.stop_word  = 0xFFFFFFFF  ;
+
+    iowrite32((uint32_t)(&mdma0_rd_descriptor), MDMA0_BASE + MDMA_DESC_ADDR_R);
+    iowrite32((uint32_t)(&mdma0_wr_descriptor), MDMA0_BASE + MDMA_DESC_ADDR_W);
+    
+    mdma0_start ();
+}
+
+//-----------------------------------------------------------------------------
 //  Common functions
-//-----------------------------------------------------------------------------------------------------------------------------
+//-----------------------------
 void delay_cycle (volatile uint32_t delay)
 {
     while (delay != 0)
         delay--;
 }
 
-#if !defined(TEST_NO_DMA)
 //-----------------------------------------------------------------------------
 //  DMA interruption handler.
 //-----------------------------
-/*
-static volatile uint32_t irq, err;
-
-void ISR_MDMAC_INT(void)
+#if !defined(TEST_NO_DMA)
+static void mdma0_irq_handler (int irq, void *arg)
 {
-    unsigned uint32_t val_pre, val_post;
+	// rumboot_printf ("\n -> MDMA0_IRQ irq happened \n");
+    
+    //  Clear irq status regs in MDMA
+    ioread32(MDMA0_BASE + MDMA_STATUS_W);
+    ioread32(MDMA0_BASE + MDMA_GP_STATUS);
+    //  Create new MDMA packet transaction
+    //    Transfers are made in both sides to accumulate errors
+    if (mdma_transfer_direction)
+        mdma0_transceive ((uint32_t) MDMA0_SDRAM_SRC, (uint32_t) MDMA0_SDRAM_DST);
+    else
+        mdma0_transceive ((uint32_t) MDMA0_SDRAM_DST, (uint32_t) MDMA0_SDRAM_SRC);
 
-    val_pre = rgMDMAC_Control;
-    rgMDMAC_Control = 0;
-    val_post = rgMDMAC_Control;
-
-    irq += 1;
-
-    if (val_pre & 0x4) {
-        err = 1;
-        return;
-    }
-
-    if (!(val_pre & 0x2) || (val_post & 0x8)) {
-        err = 1;
-        return;
-    }
-
-    rgMDMAC_SrcAddress = (unsigned long)0x3FFC0000;
-    rgMDMAC_DstAddress = (unsigned long)0x3FFE0000;
-    rgMDMAC_MainCounter = 0x4000;
-    rgMDMAC_Control = 0x01;
-
-    return;
+    mdma_transfer_direction = !mdma_transfer_direction;
 }
-*/
 #endif
 
 void clear_log (uint32_t * debug_log)
@@ -140,64 +189,13 @@ int main (void)
 
     //  Set debug log pointer to IM1 heap start - it must not be used.
     uint32_t *debug_log  = (uint32_t*) 0x0007B000;
-    uint32_t log_cnt;
     
     clear_log (debug_log);
-
-    // LED control
-    // *((unsigned long *)0x000CC010) |= 0x9;
-    // *((unsigned long *)0x000CC000) |= 0x9;
-    
-    //init GPIO,write
-    // iowrite32(0xff, base_gpio_addr + GPIO_SOURCE);//1-pad exchange with gpio
-    // iowrite32(direction, base_gpio_addr + GPIO_DIRECTION);//1-output,0-input
-    // iowrite32(send_data, base_gpio_addr + GPIO_WRITE_APBtoPAD);
-
 
     ret = -1;
     rep_cnt = 0;
     err_cnt = 0;
     done_cnt = 0;
-    log_cnt = 0;
-
-// #if 1
-    // for (uint32_t n = 0; n < 16384; n++)
-        // src_test_array[n] = 0x7777777777777777ULL;
-// #endif
-
-    // TEST_ATOMIC_BLOCK() {
-        // *(debug_log + 0) = 0xEF5555EF;
-        // *(debug_log + 1) = 0x11235813;
-        // *(debug_log + 2) = log_cnt;
-        // *(debug_log + 3) = 8192 - 10;
-
-        // *((uint32_t *)(*(debug_log + 1)) + 0) = 0;
-        // *((uint32_t *)(*(debug_log + 1)) + 1) = 0;
-        // *((uint32_t *)(*(debug_log + 1)) + 2) = 24576 - 10;
-    // }
-
-#if !defined(TEST_NO_DMA)
-//-----------------------------------------------------------------------------
-//  TODO. Configure GIC for DMA interruptions handling here.
-//  Mask interrupts for a while...
-//-----------------------------
-/*
-    err = 0;
-    irq = 0;
-
-
-    rgMDMAC_InterruptMask = 0x3;
-
-    rgGICD_ICFGR3 = 0xAAAAAAAA;
-    rgGICD_IGROUPR0 = 0;
-    rgGICD_IGROUPR1 = 0;
-    rgGICD_IGROUPR2 = 0;
-    rgGICD_ISENABLER1 = 0x01000000;
-    rgGICC_PMR = 0xFF;
-    rgGICC_CTLR = 0x1;
-    rgGICD_CTLR = 0x1;
-*/
-#endif
 
     if (ddr_init (DDR0_BASE) != 0)
         return -1;
@@ -208,9 +206,6 @@ int main (void)
 //-----------------------------
 //-----------------------------------------------------------------------------
 //  TODO. Add version for RTL (#ifdef based).
-//-----------------------------
-//-----------------------------------------------------------------------------
-//  TODO. Add regeneration checking.
 //-----------------------------
 
 //-----------------------------------------------------------------------------
@@ -238,45 +233,34 @@ int main (void)
     
 #if !defined(TEST_NO_DMA)
 //-----------------------------------------------------------------------------
-//  TODO. Copy data from IM to the end of DDR SDRAM
+//  Copy data from IM to the end of DDR SDRAM
 //-----------------------------
-/*
-    rgMDMAC_SrcAddress = (unsigned long)src_test_array;
-    rgMDMAC_DstAddress = (unsigned long)0x3FFC0000;
-    rgMDMAC_MainCounter = 0x4000;
-    rgMDMAC_Control = 0x01;
 
-    while ((rgMDMAC_Control & 0x2) == 0) {};
-
-    if (rgMDMAC_Control & 0x4)
-        err = 1;
-
-    rgMDMAC_Control = 0x00;
-
-    ---------------------------------------------------------
-     Log error in DMA transaction
-    if (err) {
-        TEST_ATOMIC_BLOCK() {
-            log_cnt = *(debug_log + 2);
-            *(debug_log + log_cnt + 4) = 0xDDDDDD01;
-            *(debug_log + 2) = log_cnt + 1;
-        }
-
-        goto test_exit;
-    }
-*/
+    mdma0_transceive ((uint32_t) src_test_array, (uint32_t) MDMA0_SDRAM_SRC);
+    
+    while ((ioread32(MDMA0_BASE + MDMA_STATUS_W) & 0x10) == 0)
+        ;
+    
 //-----------------------------------------------------------------------------
-//  TODO. Start transactions DDR <-> DDR.
+//  Start transactions DDR <-> DDR.
 //    Repeat them infinitely in IRQ handler
 //-----------------------------
-/*
-    rgMDMAC_InterruptMask = 0x0;
 
-    rgMDMAC_SrcAddress = (unsigned long)0x3FFC0000;
-    rgMDMAC_DstAddress = (unsigned long)0x3FFE0000;
-    rgMDMAC_MainCounter = 0x4000;
-    rgMDMAC_Control = 0x01;
-*/
+    //  GIC configuration
+    rumboot_irq_cli();
+    struct rumboot_irq_entry *tbl = rumboot_irq_create(NULL);
+    rumboot_irq_set_handler(tbl, MDMA0_IRQ, 0, mdma0_irq_handler, NULL);
+    /* Activate the table */
+    rumboot_irq_table_activate(tbl);
+    rumboot_irq_enable(MDMA0_IRQ);
+    rumboot_irq_sei();
+    
+    //  Enable IRQ in MDMA
+    iowrite32 (INT_STAT | STOP_STAT, MDMA0_BASE + MDMA_IRQ_MASK_W);
+    
+    //  Transceive data    SDRAM -> SDRAM
+    rumboot_printf ("  start MDMA infinite transactions in background\n");
+    mdma0_transceive ((uint32_t) MDMA0_SDRAM_SRC, (uint32_t) MDMA0_SDRAM_DST);
 #endif
 
     ret = 0;
@@ -285,26 +269,21 @@ int main (void)
 //  Cycle of testing DDR with CPU
 //-----------------------------
     while (rep_cnt < REP_NUMBER) {
-        uint32_t *mem_log, mem_cnt, mem_size;
-        uint32_t tmp, log_size;
+        uint32_t tmp;
 
-        // TEST_ATOMIC_BLOCK() {
-            // log_cnt = *(debug_log + 2);
-            // *(debug_log + log_cnt + 4) = rep_cnt;
-            // *(debug_log + 2) = log_cnt + 1;
-        // }
-    
     ddr_check_status (DDR0_BASE);
     
 #ifdef TEST_FAST
         rumboot_printf ("  start fast post test  %d\n", rep_cnt);
-        tmp = memory_post_test(EMI0_BASE, 0x1FEC0000, pattern, &otherpattern, debug_log, 0);
-#elif TEST_NORMAL
+        tmp = memory_post_test(POST_TEST_BASE, POST_TEST_SIZE, pattern, &otherpattern, 0);
+#endif
+#ifdef TEST_NORMAL
         rumboot_printf ("  start normal post test  %d\n", rep_cnt);
-        tmp = memory_regions_post_test(EMI0_BASE, 0x1FEC0000, pattern, &otherpattern, debug_log, 1);
-#else
+        tmp = memory_regions_post_test(POST_TEST_BASE, POST_TEST_SIZE, pattern, &otherpattern, 1);
+#endif
+#ifdef TEST_MAXIMUM
         rumboot_printf ("  start maximum post test  %d\n", rep_cnt);
-        tmp = memory_post_test(EMI0_BASE, 0x1FEC0000, pattern, &otherpattern, debug_log, 1);
+        tmp = memory_post_test(POST_TEST_BASE, POST_TEST_SIZE, pattern, &otherpattern, 1);
 #endif
         if (tmp) {
             rumboot_printf ("  ERROR !!!\n");
@@ -315,141 +294,41 @@ int main (void)
             done_cnt++;
 
         rep_cnt++;
-
-        mem_log = (uint32_t *)(*(debug_log + 1));
-
-        // TEST_ATOMIC_BLOCK() {
-            // log_cnt = *(debug_log + 2);
-            // log_size = *(debug_log + 3);
-
-            // mem_cnt = *(mem_log + 1);
-            // mem_size = *(mem_log + 2);
-        // }
-
-        if ((log_cnt > (log_size - 4)) || (mem_cnt > (mem_size - 8)))
-            break;
     }
 
 #if !defined(TEST_NO_DMA)
 //-----------------------------------------------------------------------------
 //  Make current DMA transaction the last one
 //-----------------------------
-/*
-    rgMDMAC_InterruptMask = 0x3;
+    rumboot_printf ("  cancel MDMA work\n");
+    iowrite32(0, MDMA0_BASE + MDMA_IRQ_MASK_W);
+    
+    while ((ioread32(MDMA0_BASE + MDMA_STATUS_W) & 0x10) == 0)
+        ;
 
-    while (!err && !(rgMDMAC_Control & 0x2)) {};
-
-    if (rgMDMAC_Control & 0x4)
-        err = 1;
-
-    rgMDMAC_Control = 0x00;
-
-    if (err) {
-            TEST_ATOMIC_BLOCK() {
-                    log_cnt = *(debug_log + 2);
-                    *(debug_log + log_cnt + 4) = 0xDDDDDD02;
-                    *(debug_log + 2) = log_cnt + 1;
-            }
-
-        goto test_exit;
-    }
-*/
-#endif
-
-#if !defined(TEST_NO_DMA)
 //-----------------------------------------------------------------------------
 //  Copy resulting array with DMA from SDRAM -> IM
 //-----------------------------
-/*
-    rgMDMAC_SrcAddress = (unsigned long)0x3FFE0000;
-    rgMDMAC_DstAddress = (unsigned long)dst_test_array;
-    rgMDMAC_MainCounter = 0x4000;
-    rgMDMAC_Control = 0x01;
-
-    while ((rgMDMAC_Control & 0x2) == 0) {};
-
-    if (rgMDMAC_Control & 0x4)
-        err = 1;
-
-    rgMDMAC_Control = 0x00;
-
-    if (err) {
-                TEST_ATOMIC_BLOCK() {
-                        log_cnt = *(debug_log + 2);
-                        *(debug_log + log_cnt + 4) = 0xDDDDDD03;
-                        *(debug_log + 2) = log_cnt + 1;
-                }
-
-        goto test_exit;
-    }
-*/
-//-------------------------------------------------------------
-//  Compare result of DMA transactions with etalon.
-//    Try to classify error type.
-/*
-    for (uint32_t i = 0; i < 16384; i++) {
-        uint32_t src_hi, src_lo, dst_hi, dst_lo;
-        uint32_t * mem_log = (uint32_t *)(*(debug_log + 1));
-        uint32_t mem_cnt;
-
-        if (src_test_array[i] != dst_test_array[i]) {
-            src_hi = (src_test_array[i] >> 32) & 0xFFFFFFFF;
-            src_lo = src_test_array[i] & 0xFFFFFFFF;
-
-            dst_hi = (dst_test_array[i] >> 32) & 0xFFFFFFFF;
-            dst_lo = dst_test_array[i] & 0xFFFFFFFF;
-
-                    TEST_ATOMIC_BLOCK() {
-                mem_cnt = *(mem_log + 1);
-                *(mem_log + mem_cnt + 3) = 0xDDDDDD04;
-                *(mem_log + mem_cnt + 4) = i;
-                *(mem_log + mem_cnt + 5) = src_lo;
-                *(mem_log + mem_cnt + 6) = src_hi;
-                *(mem_log + mem_cnt + 7) = dst_lo;
-                *(mem_log + mem_cnt + 8) = dst_hi;
-                *(mem_log + 1) = mem_cnt + 6;
-
-                            log_cnt = *(debug_log + 2);
-                            *(debug_log + log_cnt + 4) = 0xDDDDDD04;
-                            *(debug_log + 2) = log_cnt + 1;
-                    }
-
+    mdma0_transceive ((uint32_t) MDMA0_SDRAM_DST, (uint32_t) dst_test_array);
+    while ((ioread32(MDMA0_BASE + MDMA_STATUS_W) & 0x10) == 0)
+        ;
+        
+    rumboot_printf ("  compare MDMA result with etalon\n");
+    for (uint32_t i = 0; i < 16384; i++)
+        if (src_test_array[i] != dst_test_array[i])
+        {
+            rumboot_printf ("      ERROR_MDMA\n");
+            rumboot_printf ("        dst_test_array=0x%08x    src_test_array=0x%08x\n", src_test_array[i], dst_test_array[i]);
             ret = -1;
-            break;
         }
-    }
-*/
 #endif
     
 test_exit:
 
-#if !defined(TEST_NO_DMA)
-//-----------------------------------------------------------------------------
-//  Turn DMA off
-//-----------------------------
-/*
-    rgGICD_CTLR = 0x0;
-    rgGICC_CTLR = 0x0;
-
-    if (err)
-        ret = -1;
-*/
-#endif
-
     if (!ret)
         rumboot_printf ("\nddr0_loop_test  PASS\n");
-        // *((unsigned long *)0x000CC000) &= ~0x8;
     else
         rumboot_printf ("\nddr0_loop_test  FAILED\n");
-        // *((unsigned long *)0x000CC000) &= ~0x1;
-
-    // TEST_ATOMIC_BLOCK() {
-        // log_cnt = *(debug_log + 2);
-        // *(debug_log + log_cnt + 4) = err_cnt;
-        // *(debug_log + log_cnt + 5) = done_cnt;
-        // *(debug_log + log_cnt + 6) = 0xFEAAAAFE;
-        // *(debug_log + 2) = log_cnt + 2;
-    // }
 
     return ret;
 }
