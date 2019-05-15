@@ -49,7 +49,7 @@
 // #include "platform/ddr_config/ddr__mt41j512m8_187e_8_8_533__bist.h"
 // #include "platform/ddr_config/ddr__mt41k256m8_125_8_11_800.h"
 // #include "/home/e.vorontsov/Basis/_ddr3_config/ddr_settings/ddr__mt41k256m8_125_8_11_800.h"
-#include "/home/e.vorontsov/Basis/_ddr3_config/ddr_settings/ddr__mt41k256m8_125_8_7_533.h"
+#include "platform/ddr_config/ddr__mt41k256m8_125_8_7_533.h"
 #endif
 //-------------------------------------------------------------
 //  Timeout of PLL lock

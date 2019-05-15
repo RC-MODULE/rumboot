@@ -45,9 +45,9 @@
 #define STABILITY_REP_NUMBER  5
 
 //-------------
-// #define TEST_FAST
+#define TEST_FAST
 // #define TEST_NORMAL
-#define TEST_MAXIMUM
+// #define TEST_MAXIMUM
 
 #define POST_TEST_BASE  EMI0_BASE
 //  On RCM MT143.05 PCB only 1/2 of memory space is available
@@ -212,6 +212,9 @@ int main (void)
 //  Check SDRAM stability (regeneration)
 //-----------------------------
 #if !defined(TEST_NO_STABILITY)
+    uint32_t rdata;
+    uint32_t err_cntr = 0;
+    
     rumboot_printf ("  start stability test\n");
     for (uint32_t i = 0; i < (sizeof (src_test_array) >> 3); i++)
     {
@@ -222,11 +225,18 @@ int main (void)
     // rumboot_printf ("ok\n");
     for (uint32_t i = 0; i < (sizeof (src_test_array) >> 3); i++)
     {
-        if (((uint32_t *) EMI0_BASE) [i] != ((uint32_t *) src_test_array) [i])
+        rdata = ((uint32_t *) EMI0_BASE) [i];
+        if (rdata != ((uint32_t *) src_test_array) [i])
         {
+            err_cntr++;
             ret = -1;
             rumboot_printf ("  ERROR: stability check FAILED.\n");
-            rumboot_printf ("    etalon 0x%08x    read 0x%08x\n", ((uint32_t *) src_test_array) [i], ((uint32_t *) EMI0_BASE) [i]);
+            rumboot_printf ("    #%d  etalon 0x%08x    read 0x%08x    read_2 0x%08x\n", i, ((uint32_t *) src_test_array) [i], rdata, ((uint32_t *) EMI0_BASE) [i]);
+            if (err_cntr == 10)
+            {
+                rumboot_printf ("  Error counter overflow, test continued\n");
+                break;
+            }
         }
     }
 #endif

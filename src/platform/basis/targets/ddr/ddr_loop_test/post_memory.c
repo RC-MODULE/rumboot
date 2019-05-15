@@ -146,7 +146,7 @@
 /*
  *  After ERROR_CNTR_MAX errors were found, halt execution of test
  */
-#define ERROR_CNTR_MAX 50
+#define ERROR_CNTR_MAX 32
 
 unsigned int error_cntr = 0;
 
