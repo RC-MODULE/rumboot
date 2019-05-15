@@ -155,6 +155,7 @@ label_NRST_PON:
     TEST_ASSERT((dcr_read(DCR_CRG_BASE + CRG_SYS_RST_MON) & (1 << 11)) != 0x00 , "Value in RST_MON register is incorrect!");
 
 
+    rumboot_putstring("Generating CORERESET reset signal ...\n");
     rumboot_platform_runtime.persistent[0] = TEST_CRG_STATE_CORERESET;
 
     rumboot_platform_perf("reset_system by CORERESET");
@@ -167,6 +168,7 @@ label_CORERESET:
     //TEST_ASSERT((dcr_read(DCR_CRG_BASE + CRG_SYS_RST_MON) & (1 << 11)) != 0x00 , "Value in RST_MON register is incorrect!");
 
 
+    rumboot_putstring("Generating CHIPRESET reset signal ...\n");
     rumboot_platform_runtime.persistent[0] = TEST_CRG_STATE_CHIPRESET;
     rumboot_platform_perf("reset_system by CHIPRESET");
     test_event(EVENT_OI10_CHIPRESET);
@@ -178,6 +180,7 @@ label_CHIPRESET:
     TEST_ASSERT((dcr_read(DCR_CRG_BASE + CRG_SYS_RST_MON) & (1 << 0)) != 0x00 , "Value in RST_MON register is incorrect!");
 
 
+    rumboot_putstring("Generating SYSRESET reset signal ...\n");
     rumboot_platform_runtime.persistent[0] = TEST_CRG_STATE_SYSRESET;
     rumboot_platform_perf("reset_system by SYSRESET");
     test_event(EVENT_OI10_SYSRESET);
@@ -189,6 +192,7 @@ label_SYSRESET:
     TEST_ASSERT((dcr_read(DCR_CRG_BASE + CRG_SYS_RST_MON) & (1 << 1)) != 0x00 , "Value in RST_MON register is incorrect!");
 
 
+    rumboot_putstring("Generating WD_RESET reset signal ...\n");
     rumboot_platform_runtime.persistent[0] = TEST_CRG_STATE_WD;
     rumboot_platform_perf("reset_system by WD");
     sp805_unlock_access(DCR_WATCHDOG_BASE);
