@@ -114,7 +114,9 @@ label_NRST_PON:
 
     dcr_write(DCR_CRG_BASE + CRG_SYS_PLL_CTRL, 0x00);
 
-    udelay(1);
+    dcr_write(DCR_CRG_BASE + CRG_SYS_WR_LOCK, ~CRG_REG_WRITE_ENABLE);
+
+    udelay(100);
 
 
 label_PLL_USE_OSC:
