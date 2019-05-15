@@ -2,13 +2,14 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <arch/ppc_476fp_lib_c.h>
+
 #include <rumboot/io.h>
 #include <rumboot/platform.h>
 #include <rumboot/printf.h>
 #include <rumboot/regpoker.h>
 #include <rumboot/testsuite.h>
 
-#include <arch/ppc/arch/ppc_476fp_lib_c.h>
 #include <platform/arch/ppc/test_macro.h>
 #include <platform/common_macros/common_macros.h>
 #include <platform/devices.h>
