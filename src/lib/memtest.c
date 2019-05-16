@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <rumboot/memtest.h>
+#include <rumboot/macros.h>
 
 static const uint32_t patterns[] = {
 	/* The first entry has to be 0 to leave memtest with zeroed memory */
