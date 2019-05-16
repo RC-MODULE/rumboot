@@ -157,15 +157,13 @@ unsigned int error_cntr = 0;
  *  TODO: make another stop mechanis, that exits all functions from current file
  *    and returns to main part of test
  */
-void error_cntr_increment ()
-{
-    error_cntr++;
-    if (error_cntr == ERROR_CNTR_MAX)
-    {
-        rumboot_printf ("Error counter overflow, test stopped\n  MDMA not stopped\n");
-        while (1);
+#define error_cntr_increment()\
+    error_cntr++;\
+    if (error_cntr == ERROR_CNTR_MAX)\
+    {\
+        rumboot_printf ("Error counter overflow, test continued\n");\
+        return -1;\
     }
-}
 
 /*
  * TODO
@@ -231,8 +229,8 @@ static int memory_post_dataline(unsigned long long * pmem, const unsigned long l
 
 			ret = -1;
 
-            rumboot_printf ("      ERROR_1\n");
-            rumboot_printf ("        temp64=0x%08x    pattern=0x%08x    read_2=0x%08x\n", temp64, pattern[i], *pmem);
+            rumboot_printf ("      ERROR_1");
+            rumboot_printf ("        temp64=0x%08x    pattern=0x%08x    read_2=0x%08x    XOR=0x%08x\n", temp64, pattern[i], *pmem, temp64^pattern[i]);
             //  TODO make report for high part of word
 
 			if (mem_cnt <= (mem_size - 6)) {
@@ -242,7 +240,7 @@ static int memory_post_dataline(unsigned long long * pmem, const unsigned long l
 				hi = (temp64>>32) & 0xffffffff;
 				lo = temp64 & 0xffffffff;
 			}
-            error_cntr_increment ();
+            error_cntr_increment()
 		}
 	}
 	return ret;
@@ -282,9 +280,9 @@ static int memory_post_addrline(unsigned long *testaddr, unsigned long *base,
 
 				ret = -1;
 
-                rumboot_printf ("      ERROR_2\n");
-                rumboot_printf ("        readfirst=0x%08x    readsecond=0x%08x    read_2=0x%08x\n", readfirst, readsecond, *target);
-                error_cntr_increment ();
+                rumboot_printf ("      ERROR_2");
+                rumboot_printf ("        readfirst=0x%08x    readsecond=0x%08x    read_2=0x%08x    XOR=0x%08x\n", readfirst, readsecond, *target, readfirst^readsecond);
+                error_cntr_increment()
 			}
 		}
 	}
@@ -310,9 +308,9 @@ static int memory_post_test1(unsigned long start, unsigned long size,
 
 			ret = -1;
 
-            rumboot_printf ("      ERROR_3\n");
-            rumboot_printf ("        readback=0x%08x    val=0x%08x    read_2=0x%08x\n", readback, val, mem[i]);
-            error_cntr_increment ();
+            rumboot_printf ("      ERROR_3");
+            rumboot_printf ("        readback=0x%08x    val=0x%08x    read_2=0x%08x    XOR=0x%08x\n", readback, val, mem[i], readback^val);
+            error_cntr_increment()
 		}
 	}
 
@@ -337,9 +335,9 @@ static int memory_post_test2(unsigned long start, unsigned long size)
 
 			ret = -1;
 
-            rumboot_printf ("      ERROR_4\n");
-            rumboot_printf ("        readback=0x%08x    (1 << (i \% 32))=0x%08x    read_2=0x%08x\n", readback, (1 << (i % 32)), mem[i]);
-            error_cntr_increment ();
+            rumboot_printf ("      ERROR_4");
+            rumboot_printf ("        readback=0x%08x    (1 << (i \% 32))=0x%08x    read_2=0x%08x    XOR=0x%08x\n", readback, (1 << (i % 32)), mem[i], readback^(1 << (i % 32)));
+            error_cntr_increment()
 		}
 	}
 
@@ -364,9 +362,9 @@ static int memory_post_test3(unsigned long start, unsigned long size)
 
 			ret = -1;
 
-            rumboot_printf ("      ERROR_5\n");
-            rumboot_printf ("        readback=0x%08x    i=0x%08x    addr=0x%08x    read_2=0x%08x\n", readback, i, &mem[i], mem[i]);
-            error_cntr_increment ();
+            rumboot_printf ("      ERROR_5");
+            rumboot_printf ("        readback=0x%08x    i=0x%08x    addr=0x%08x    read_2=0x%08x    XOR=0x%08x\n", readback, i, &mem[i], mem[i], readback^i);
+            error_cntr_increment()
 		}
 	}
 
@@ -391,9 +389,9 @@ static int memory_post_test4(unsigned long start, unsigned long size)
 
 			ret = -1;
 
-            rumboot_printf ("      ERROR_6\n");
-            rumboot_printf ("        readback=0x%08x    ~i=0x%08x    read_2=0x%08x\n", readback, ~i, mem[i]);
-            error_cntr_increment ();
+            rumboot_printf ("      ERROR_6");
+            rumboot_printf ("        readback=0x%08x    ~i=0x%08x    read_2=0x%08x    XOR=0x%08x\n", readback, ~i, mem[i], readback^(~i));
+            error_cntr_increment()
 		}
 	}
 
@@ -547,6 +545,7 @@ int memory_regions_post_test(unsigned long vstart, unsigned long memsize, const 
 			const unsigned long long * otherpattern, int flags)
 {
 	int ret = 0;
+    error_cntr = 0;
 
 	ret = memory_post_test_lines(vstart, memsize, pattern, otherpattern);
 	if (!ret)
@@ -562,6 +561,7 @@ int memory_post_test(unsigned long vstart, unsigned long memsize, const unsigned
 		const unsigned long long * otherpattern, int flags)
 {
 	int ret = 0;
+    error_cntr = 0;
 
 	if (flags & POST_SLOWTEST) {
 		ret = memory_post_tests(vstart, memsize, pattern, otherpattern);

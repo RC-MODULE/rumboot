@@ -45,9 +45,9 @@
 #define STABILITY_REP_NUMBER  5
 
 //-------------
-#define TEST_FAST
+// #define TEST_FAST
 // #define TEST_NORMAL
-// #define TEST_MAXIMUM
+#define TEST_MAXIMUM
 
 #define POST_TEST_BASE  EMI1_BASE
 //  On RCM MT143.05 PCB only 1/2 of memory space is available
@@ -323,13 +323,21 @@ int main (void)
     while ((ioread32(MDMA0_BASE + MDMA_STATUS_W) & 0x10) == 0)
         ;
         
+    err_cntr = 0;
+    
     rumboot_printf ("  compare MDMA result with etalon\n");
     for (uint32_t i = 0; i < 16384; i++)
         if (src_test_array[i] != dst_test_array[i])
         {
-            rumboot_printf ("      ERROR_MDMA\n");
-            rumboot_printf ("        dst_test_array=0x%08x    src_test_array=0x%08x\n", src_test_array[i], dst_test_array[i]);
+            err_cntr++;
             ret = -1;
+            rumboot_printf ("      ERROR_MDMA\n");
+            rumboot_printf ("        #%d  dst_test_array=0x%08x    src_test_array=0x%08x\n", i, src_test_array[i], dst_test_array[i]);
+            if (err_cntr == 10)
+            {
+                rumboot_printf ("  Error counter overflow, test continued\n");
+                break;
+            }
         }
 #endif
     
