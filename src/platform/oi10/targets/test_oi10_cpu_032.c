@@ -231,12 +231,6 @@ static void move_execution_to_l1() {
     for (uint32_t addr = IM0_BASE; addr < (IM0_BASE + L1I_SIZE/2); addr += L1C_LINE_SIZE) {
         icbtls(0, addr);
     }
-    rumboot_putstring( "Cache stack (in L1D)" );
-    extern char rumboot_platform_stack_area_start;
-    extern char rumboot_platform_stack_area_end;
-    for (uint32_t addr = (uint32_t) (&rumboot_platform_stack_area_start); addr < (uint32_t) (&rumboot_platform_stack_area_end); addr += L1C_LINE_SIZE) {
-        dcbtls(0, addr);
-    }
 }
 
 
