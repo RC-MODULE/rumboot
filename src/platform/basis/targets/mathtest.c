@@ -10255,10 +10255,10 @@ const uint32_t precalc[] = {
 #include <rumboot/platform.h>
 #include <string.h>
 #include <rumboot/printf.h>
+uint32_t results[SIZE];
+
 int main()
 {
-    rumboot_platform_runtime_info->silent = 0;
-    uint32_t results[SIZE];
     rumboot_printf("Calculating array...\n");
     calculate_array(results);
     int i; 
