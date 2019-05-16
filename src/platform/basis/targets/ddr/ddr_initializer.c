@@ -20,6 +20,7 @@
 #include <rumboot/macros.h>
 #include <rumboot/io.h>
 #include <rumboot/printf.h>
+#include <rumboot/memtest.h>
 
 //-----------------------------------------------------------------------------
 //  These defines must be changed for real program
@@ -546,64 +547,6 @@ static uint32_t ddr_init (uint32_t DDRx_BASE)
 //  It must take less time, than two consequent ddr_init with different args
 //-----------------------------------------------------------------------------
 
-static uint64_t patterns[] = {
-	/* The first entry has to be 0 to leave memtest with zeroed memory */
-	0,
-	0xffffffffffffffffULL,
-	0x5555555555555555ULL,
-	0xaaaaaaaaaaaaaaaaULL,
-	0x1111111111111111ULL,
-	0x2222222222222222ULL,
-	0x4444444444444444ULL,
-	0x8888888888888888ULL,
-	0x3333333333333333ULL,
-	0x6666666666666666ULL,
-	0x9999999999999999ULL,
-	0xccccccccccccccccULL,
-	0x7777777777777777ULL,
-	0xbbbbbbbbbbbbbbbbULL,
-	0xddddddddddddddddULL,
-	0xeeeeeeeeeeeeeeeeULL,
-	0x7a6c7258554e494cULL, /* yeah ;-) */
-};
-
-static bool memtest_once(uint64_t pattern, uintptr_t start_phys, uintptr_t size)
-{
-	uint64_t *p, *start, *end;
-	uintptr_t start_bad, last_bad;
-	uintptr_t start_phys_aligned;
-	const size_t incr = sizeof(pattern);
-
-	start_phys_aligned = start_phys;
-	start = start_phys;
-	end = start + (size - (start_phys_aligned - start_phys)) / incr;
-	start_bad = 0;
-	last_bad = 0;
-
-	for (p = start; p < end; p++)
-		*p = pattern;
-
-	for (p = start; p < end; p++, start_phys_aligned += incr) {
-		if (*p == pattern)
-			continue;
-        rumboot_printf("Error at 0x%x\n", p);
-        return false;
-	}
-
-    return true;
-}
-
-bool memtest(uintptr_t start_phys, uintptr_t size)
-{
-    int i;
-    for(i=0; i<ARRAY_SIZE(patterns);i++) {
-        rumboot_printf("Testing memory @ %x pattern %lx\n", start_phys, patterns[i]);
-        if (!memtest_once(patterns[i], start_phys, size))
-            return false;
-    }
-    return true;
-}
-
 extern char rumboot_ddr0_heap_start;
 extern char rumboot_ddr1_heap_start;
 
@@ -627,16 +570,16 @@ int main()
     iowrite32(0b00000000000000000000100000000000, DDR0_BASE + DENALI_CTL_95); // clear interruption flag
     iowrite32(0b00000000000000000000100000000000, DDR1_BASE + DENALI_CTL_95); // clear interruption flag
 
-    int ret; 
+    uint64_t ret = 0; 
     #ifdef TEST_MEMORY
         ret = memtest(&rumboot_ddr0_heap_start, 128*1024*1024);
-        if (!ret) {
+        if (ret != 0) {
             rumboot_printf("DDR0 init didn't quite work out\n");
             return 1;
         }
 
         ret = memtest(&rumboot_ddr1_heap_start, 128*1024*1024);
-        if (!ret) {
+        if (ret != 0) {
             rumboot_printf("DDR1 init didn't quite work out\n");
             return 1;
         }
