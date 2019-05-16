@@ -7,8 +7,9 @@
 void dbg_boot(const struct rumboot_bootsource * src, const char *fmt, ...)
 {
 	va_list args;
-	rumboot_printf("boot: %s: \n", src ? src->name : "host");
+	rumboot_printf("boot: %s: ", src ? src->name : "host");
 	va_start(args, fmt);
 	rumboot_vprintf(fmt, args);
 	va_end(args);
+	rumboot_putchar('\n');
 }
