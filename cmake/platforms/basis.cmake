@@ -1745,6 +1745,11 @@ add_rumboot_target(
   FILES iram-memtest.c
   NAME micro-iram-spels-test
 )
+add_rumboot_target(
+  CONFIGURATION IRAM
+  FILES mathtest.c
+  NAME spels-mathtest
+)
 
 add_rumboot_target(
     CONFIGURATION IRAM
