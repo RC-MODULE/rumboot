@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <rumboot/memtest.h>
 #include <rumboot/macros.h>
+#include <rumboot/printf.h>
 
 static const uint32_t patterns[] = {
 	/* The first entry has to be 0 to leave memtest with zeroed memory */
@@ -28,15 +29,12 @@ uint64_t memtest_once(uint32_t pattern, uintptr_t start_phys, uintptr_t size)
 {
     uint64_t errors = 0;
 	uint32_t *p, *start, *end;
-	uintptr_t start_bad, last_bad;
 	uintptr_t start_phys_aligned;
 	const size_t incr = sizeof(pattern);
 
 	start_phys_aligned = start_phys;
-	start = start_phys;
+	start = (uint32_t *) start_phys;
 	end = start + (size - (start_phys_aligned - start_phys)) / incr;
-	start_bad = 0;
-	last_bad = 0;
 
 	for (p = start; p < end; p++)
 		*p = pattern;
