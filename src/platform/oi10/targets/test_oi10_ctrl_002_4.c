@@ -122,9 +122,7 @@ label_NRST_PON:
 label_PLL_USE_OSC:
     test_event(EVENT_OI10_CHECK_OSC);
 
+
     udelay(10);
-
-
-    rumboot_printf("TEST_OK\n");
     return 0;
 }

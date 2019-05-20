@@ -67,6 +67,6 @@ label_NRST_SYS:
     TEST_ASSERT((dcr_read(DCR_CRG_BASE + CRG_SYS_RST_MON) & (1 << 10)) != 0x00 , "Value in RST_MON register is incorrect!");
 
 
-    rumboot_printf("TEST_OK\n");
+    udelay(10);
     return 0;
 }
