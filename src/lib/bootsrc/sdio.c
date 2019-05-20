@@ -477,7 +477,7 @@ static bool sdio_init(const struct rumboot_bootsource *src, void *pdata)
         };
 
         if (!card_reset(src->base)) {
-                return false;
+                goto error;
         }
 
         rq.cmd = 8;
@@ -499,13 +499,13 @@ static bool sdio_init(const struct rumboot_bootsource *src, void *pdata)
         initialized = card_init_sd(src, pdata);
         if (!initialized) {
                 if (!card_reset(src->base)) {
-                        return false;
+                        goto error;
                 }
                 initialized = card_init_mmc(src, pdata);
         }
 
         if (!initialized) {
-                return false;
+                goto error;
         }
 
         rq.cmd = 2;
@@ -517,7 +517,7 @@ static bool sdio_init(const struct rumboot_bootsource *src, void *pdata)
 
         if (!sdio_request_execute(src->base, &rq)) {
                 dbg_boot(src, "CID request failed");
-                return false;
+                goto error;
         }
 
         temp->cid.regs[3] = format_response(ioread32(src->base + SDIO_SDR_RESPONSE1_REG));
@@ -548,7 +548,7 @@ static bool sdio_init(const struct rumboot_bootsource *src, void *pdata)
 
         if (!sdio_request_execute(src->base, &rq)) {
                 dbg_boot(src, "RCA request failed");
-                return false;
+                goto error;
         }
 
         uint32_t rca = ioread32(src->base + SDIO_SDR_RESPONSE1_REG);
@@ -564,7 +564,7 @@ static bool sdio_init(const struct rumboot_bootsource *src, void *pdata)
 
         if (!sdio_request_execute(src->base, &rq)) {
                 dbg_boot(src, "Failed to put SD card into transfer mode, rca %x", (rca << 16));
-                return false;
+                goto error;
         }
 
         /* Switch the card into 512 byte blocks mode */
@@ -578,7 +578,7 @@ static bool sdio_init(const struct rumboot_bootsource *src, void *pdata)
 
         if (!sdio_request_execute(src->base, &rq)) {
                 dbg_boot(src, "CMD16 Failed ");
-                return false;
+                goto error;
         }
 
         if (temp->cardtype != SDIO_CARD_MMC) {
@@ -592,12 +592,16 @@ static bool sdio_init(const struct rumboot_bootsource *src, void *pdata)
 
                 if (!sdio_request_execute(src->base, &rq)) {
                         dbg_boot(src, "ACMD6 Failed ");
-                        return false;
+                        goto error;
                 }
         }
 
         iowrite32(divh, src->base + SPISDIO_SDIO_CLK_DIVIDE);
         return true;
+error:
+
+        iowrite32(0x0, src->base + SPISDIO_ENABLE);
+        return false;
 }
 
 static void sdio_deinit(const struct rumboot_bootsource *src, void *pdata)
