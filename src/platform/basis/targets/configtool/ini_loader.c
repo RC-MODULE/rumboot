@@ -7,6 +7,7 @@
 #include <algo/ini.h>
 #include <stdlib.h>
 #include <rumboot/io.h>
+#include <rumboot/pcie_lib.h>
 
 #define MAX_SECTION_LEN 128
 #define USERDATA_LEN 1024
@@ -32,50 +33,95 @@ int iomem_handler(void *user, const char *section,
 }
 
 #define PCIE_NUM_BARS 8
-struct pcie_barcfg {
-        uintptr_t base;
-        uintptr_t size;
-        uintptr_t translation;
+struct pcie_barcfg
+{
+        uintptr_t axi_start;
+        uintptr_t aperture;
+        uintptr_t type;
+        int valid;
 };
 
 struct pcie_data
 {
-        uint32_t vid;
-        uint32_t pid;
+        uint32_t speed;
+        uint32_t device_id;
+        uint32_t revision_id;
+        uint32_t subclass_code;
+        uint32_t class_code;
+        uint32_t state_auto_ack;
         struct pcie_barcfg bars[PCIE_NUM_BARS];
 };
+
+#define fill_hex(nm)                                 \
+        if (strcmp(name, #nm) == 0)                  \
+        {                                            \
+                data->nm = strtoul(value, NULL, 16); \
+        }
+
+#define fill_bar(bar, nm)                                      \
+        if (strcmp(barparam, #nm) == 0)                        \
+        {                                                      \
+                data->bars[bar].nm = strtoul(value, NULL, 16); \
+                data->bars[bar].valid = 1;                     \
+        }
 
 int pcie_handler(void *user, const char *section,
                  const char *name, const char *value,
                  int lineno)
 {
         struct pcie_data *data = user;
-        if (strcmp(name, "vid") == 0)
-        {
-                data->vid = strtoul(value, NULL, 16);
-        }
 
-        if (strcmp(name, "pid") == 0)
-        {
-                data->vid = strtoul(value, NULL, 16);
-        }
+        fill_hex(speed);
+        fill_hex(device_id);
+        fill_hex(revision_id);
+        fill_hex(subclass_code);
+        fill_hex(class_code);
+        fill_hex(state_auto_ack);
 
         int bar;
-        if (sscanf(name, "BAR:%d", &bar)==1) {
-                rumboot_printf("Configuring bar %d\n", bar);
-        }
+        char tmp[16];
+        if (!sscanf(name, "BAR[%d]", &bar))
+                return 0;
+        int pos = sprintf(NULL, "BAR[%d].", bar);
+        char *barparam = &name[pos];
+        fill_bar(bar, aperture);
+        fill_bar(bar, axi_start);
+        fill_bar(bar, type);
 }
 
 void pcie_apply(void *user)
 {
         struct pcie_data *data = user;
-        /* pcie_configure(base, data->vid, data->pid); */
+        int ret;
+        ret = pcie_init(
+            data->speed,
+            data->device_id,
+            data->revision_id,
+            data->subclass_code,
+            data->class_code,
+            data->state_auto_ack);
+        if (ret)
+        {
+                rumboot_printf("WARNING: PCIe init faied: %d\n", ret);
+                return;
+        }
+
         int i;
-        for (i=0; i<PCIE_NUM_BARS; i++) {
-                /*pcie_add_bar() */
+        for (i = 0; i < PCIE_NUM_BARS; i++)
+        {
+                if (data->bars[i].valid)
+                {
+                        pcie_add_bar(i,
+                                     data->bars[i].axi_start,
+                                     data->bars[i].aperture,
+                                     data->bars[i].type);
+                }
+        }
+
+        if (pcie_link_up()) {
+                rumboot_printf("Warning: Failed to bring up link\n");
         }
 }
-
 
 int exit_handler(void *user, const char *section,
                  const char *name, const char *value,
@@ -84,37 +130,43 @@ int exit_handler(void *user, const char *section,
         if (strcmp(name, "mode") != 0)
                 return 0;
 
-        if (strcmp(value, "loop") == 0) {
+        if (strcmp(value, "loop") == 0)
+        {
                 rumboot_printf("Entering endless loop\n");
                 /* Endless loop */
-                while(1) ;;
+                while (1)
+                        ;
+                ;
         }
 
-        if (strcmp(value, "next") == 0) {
+        if (strcmp(value, "next") == 0)
+        {
                 rumboot_printf("Returning to bootrom to boot from next device\n");
                 exit(0);
         }
 
-        if (strcmp(value, "host") == 0) {
+        if (strcmp(value, "host") == 0)
+        {
                 rumboot_printf("Will now go back to host mode\n");
                 exit(-1);
         }
 
-
-        if (strcmp(value, "wfiloop") == 0) {
+        if (strcmp(value, "wfiloop") == 0)
+        {
                 rumboot_printf("Entering WFI loop\n");
-                while(1) {
+                while (1)
+                {
                         asm("wfi");
                 }
         }
 
         int jid;
-        if (1==sscanf(value, "jump:%d", &jid)) {
+        if (1 == sscanf(value, "jump:%d", &jid))
+        {
                 rumboot_printf("Jumping to boot device %d\n", jid);
                 exit(jid);
         }
 }
-
 
 struct sectionfilter filters[] = {
     {
@@ -132,7 +184,7 @@ struct sectionfilter filters[] = {
         .apply = NULL,
     },
     {/* Sentinel */},
-    };
+};
 
 static char prevsection[MAX_SECTION_LEN];
 static struct sectionfilter *curfilter;
@@ -143,10 +195,13 @@ int theini_handler(void *user, const char *section,
 {
         rumboot_printf("[%s] : %s=%s\n", section, name, value);
 
-        if (strlen(prevsection) && strcmp(prevsection, section) != 0)
+        if (!strlen(prevsection) || strcmp(prevsection, section) != 0)
         {
                 bzero(user, USERDATA_LEN);
-                rumboot_printf("Finished parsing section: %s", prevsection);
+                if (strlen(prevsection))
+                {
+                        rumboot_printf("Finished parsing section: %s\n", prevsection);
+                }
                 if (curfilter && curfilter->apply)
                 {
                         curfilter->apply(user);
@@ -154,7 +209,7 @@ int theini_handler(void *user, const char *section,
 
                 if (strlen(section) > MAX_SECTION_LEN)
                 {
-                        rumboot_platform_panic("Section name %d too long", section);
+                        rumboot_platform_panic("Section name %d too long\n", section);
                 }
 
                 strcpy(prevsection, section);
@@ -163,13 +218,16 @@ int theini_handler(void *user, const char *section,
                 {
                         if (strcmp(curfilter->section, section) == 0)
                                 break;
-                } while (curfilter++);
+                        curfilter++;
+                } while (curfilter->section);
 
-                if (!curfilter)
+                if (!curfilter->section)
                 {
                         rumboot_printf("Ignoring unknown section: %s\n", section);
-                } else {
-                        rumboot_printf("Current filter: %s\n", curfilter->section);                        
+                }
+                else
+                {
+                        rumboot_printf("Current filter: %s\n", curfilter->section);
                 }
         }
 

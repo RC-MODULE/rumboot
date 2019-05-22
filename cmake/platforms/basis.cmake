@@ -1671,6 +1671,13 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       )
 
   add_rumboot_target(
+    CONFIGURATION IRAM_SPL
+    FILES configtool/ini_loader.c
+    NAME bconfig
+  )
+
+
+  add_rumboot_target(
         CONFIGURATION IRAM_SPL
         FILES common/updaters/spi.c
         CFLAGS -DSPI_BASE=GSPI0_BASE
@@ -1801,6 +1808,7 @@ add_rumboot_target(
     TESTGROUP mdma_gp
   )
   
+
 endmacro()
 
 if (CMAKE_VERILOG_RULES_LOADED)
