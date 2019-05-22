@@ -11,9 +11,11 @@
 
 int main ()
 {
+    rumboot_printf ("\npcie_board_test_config start\n");
     if (pcie_turn_on_with_options_ep (1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) != 0)
         return -1;
     
+    rumboot_printf ("\npcie_board_test_config pass\n");
     return 0;
 }
 

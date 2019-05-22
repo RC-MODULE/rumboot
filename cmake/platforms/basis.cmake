@@ -1141,6 +1141,12 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
   add_rumboot_target(
       CONFIGURATION IRAM
+      FILES pcie/pcie_board_config.c
+      NAME pcie_board_config
+    )
+
+  add_rumboot_target(
+      CONFIGURATION IRAM
       FILES pcie/pcie_irq_eRP_test.c
       NAME pcie_irq_eRP_test
       TESTGROUP sprint
@@ -1810,6 +1816,7 @@ file(GLOB PLATFORM_SOURCES
     ${CMAKE_SOURCE_DIR}/src/lib/eventsystem-memory.c
     ${CMAKE_SOURCE_DIR}/src/lib/drivers/ddr_test_lib.c
     ${CMAKE_SOURCE_DIR}/src/lib/drivers/pcie_test_lib.c
+    ${CMAKE_SOURCE_DIR}/src/lib/drivers/pcie_lib.c
     ${CMAKE_SOURCE_DIR}/src/lib/drivers/dma_test_lib.c
     ${CMAKE_SOURCE_DIR}/src/lib/drivers/dit_lib.c
     ${CMAKE_SOURCE_DIR}/src/lib/drivers/bisr.c
