@@ -129,19 +129,21 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
     rumboot_bootrom_integration_test(ROM
     NAME "host-emi"
-    IRUN_FLAGS ${ROM_115200_OPTS} +BOOT_HOST=1 +BOOT_EMI_BIS=0 +full_boot_mode +boot_arm +arm_image=/home/necromant/Work/BBP3/build/rumboot-bbp3-Debug/rumboot-bbp3-Debug-spl-ok.hex/image_mem64_0.hex
+    IRUN_FLAGS ${ROM_115200_OPTS} +BOOT_HOST=1 +BOOT_EMI_BIS=0 +full_boot_mode +boot_arm
     LOAD
       SPI0_CONF spl-fail-bad-magic,spl-fail-bad-magic
       NOR_IMAGE spl-fail-bad-magic
+      arm_image spl-ok.hex/image_mem64_0.hex
     )
 
     rumboot_bootrom_integration_test(ROM
     NAME "host-edcl"
-    IRUN_FLAGS ${ROM_115200_OPTS} +BOOT_HOST=1 +BOOT_EMI_BIS=0 +full_boot_mode +boot_arm +arm_image=/home/necromant/Work/BBP3/build/rumboot-bbp3-Debug/rumboot-bbp3-Debug-spl-ok.hex/image_mem64_0.hex
+    IRUN_FLAGS ${ROM_115200_OPTS} +BOOT_HOST=1 +BOOT_EMI_BIS=0 +full_boot_mode +boot_arm
     SNAPSHOT edcl
     LOAD
       SPI0_CONF spl-fail-bad-magic,spl-fail-bad-magic
       NOR_IMAGE spl-fail-bad-magic
+      arm_image spl-ok.hex/image_mem64_0.hex
     )    
 
 
@@ -293,7 +295,6 @@ function(RUMBOOT_PLATFORM_PRINT_SUMMARY)
 endfunction()
 
 macro(rumboot_platform_generate_stuff_for_taget product)
-
   list (FIND TARGET_FEATURES "ROMGEN" _index)
   if (${_index} GREATER -1)
     add_custom_command(
