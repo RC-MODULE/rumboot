@@ -146,7 +146,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       arm_image spl-ok.hex/image_mem64_0.hex
     )    
 
-
+if (TEST_XMODEM)
     rumboot_bootrom_integration_test(ROM
         NAME "host-xmodem"
         IRUN_FLAGS ${ROM_115200_OPTS} +BOOT_HOST=1
@@ -155,7 +155,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
           NOR_IMAGE spl-fail-bad-magic
           XMODEM0   spl-ok
     )
-
+endif()
 
     rumboot_bootrom_integration_test(ROM
         NAME "host-silent"
