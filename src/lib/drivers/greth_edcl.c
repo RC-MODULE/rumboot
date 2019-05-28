@@ -24,6 +24,17 @@ union u32 {
 
 #define SWAP32(x) ((((x) & 0xff) << 24) | (((x) & 0xff00) << 8) | (((x) & 0xff0000) >> 8) | (((x) >> 24) & 0xff))
 
+void greth_edcl_configure(uintptr_t base, int enable)
+{
+        uint32_t tmp = ioread32(base + 0);
+        if (enable) {
+                tmp &= ~(1<<14);
+        } else {
+                tmp |= (1<<14);            
+        }
+        iowrite32(tmp, base + 0);
+}
+
 void greth_dump_edcl_params(int i, uintptr_t base)
 {
         union u64 macaddr;

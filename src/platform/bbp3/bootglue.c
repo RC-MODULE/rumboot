@@ -51,6 +51,7 @@ void rumboot_platform_read_config(struct rumboot_config *conf)
 void rumboot_platform_init_loader(struct rumboot_config *conf)
 {
         /* Initialize UART */
+        greth_edcl_configure(GRETH_Base, 0);
         if (!is_silent()) {
                 struct uart_init_params sparams =
                 {
@@ -133,8 +134,11 @@ static const struct rumboot_bootsource emi_boot[] = {
 void rumboot_platform_enter_host_mode(struct rumboot_config *conf)
 {
         uint32_t maxsize;
+        greth_edcl_configure(GRETH_Base, 1);
         greth_dump_edcl_params(0, GRETH_Base);
-
+        uint32_t tmp = ioread32(GRETH_Base + 0);
+        tmp &= ~(1<<14);
+        iowrite32(tmp, GRETH_Base + 0);
         struct rumboot_bootheader *hdr = rumboot_platform_get_spl_area(&maxsize);
         if (!is_silent()) {
                 iowrite32(conf->hostmode ? 0xff : hdr->magic, GPIOA_Base + 0x3FC);
