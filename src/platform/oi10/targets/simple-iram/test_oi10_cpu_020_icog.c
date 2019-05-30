@@ -60,7 +60,8 @@ static void check_func (uint32_t code_ev, uint32_t r_addr, uint32_t w_addr, bool
     iowrite32(CODE_BLR, w_addr);
 
     check_addr_in_l2c (w_addr, data_l2c_expect);
-    ici(2);
+    dcbf((void*)w_addr);
+    dci(2);
 }
 
 int main()
