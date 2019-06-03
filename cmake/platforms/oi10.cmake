@@ -1848,6 +1848,12 @@ endif()
 
     )
 
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES test_oi10_cpu_032.c
+      LOAD IM0BIN SELF,SELF
+    )
+
 endmacro()
 
 
