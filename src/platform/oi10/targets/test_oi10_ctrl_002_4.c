@@ -25,6 +25,9 @@ const uint32_t EVENT_OI10_CHECK_OSC     = TEST_EVENT_CODE_MIN + 3;
 
 const uint32_t CRG_REG_WRITE_ENABLE = 0x1ACCE551;
 
+const uint32_t INTERRUPT_WAITING_TIMEOUT = 100; //100us
+volatile uint32_t interrupt_received = 0;
+
 enum TEST_CRG_STATE
 {
     TEST_CRG_STATE_NRST_PON = 1,
@@ -35,6 +38,8 @@ enum TEST_CRG_STATE
 static void handler_crg(int irq, void *arg )
 {
     rumboot_putstring("CRG irq handler invoked.");
+
+    interrupt_received = 1;
 //
 //    if (!NRST_POR)
 //    {
@@ -59,6 +64,8 @@ static void handler_crg(int irq, void *arg )
 
 int main(void)
 {
+    test_event_send_test_id("test_oi10_ctrl_002_4");
+
     rumboot_irq_cli();
     struct rumboot_irq_entry *tbl = rumboot_irq_create( NULL );
 
@@ -75,17 +82,9 @@ int main(void)
 
     dcr_write(DCR_CRG_BASE + CRG_SYS_PLL_PRDIV, 0x01);
     dcr_write(DCR_CRG_BASE + CRG_SYS_PLL_FBDIV, 0x20);
-    dcr_write(DCR_CRG_BASE + CRG_SYS_PLL_PSDIV, 0x04);
+    dcr_write(DCR_CRG_BASE + CRG_SYS_PLL_PSDIV, 0x02);
 
     dcr_write(DCR_CRG_BASE + CRG_SYS_WR_LOCK, ~CRG_REG_WRITE_ENABLE);
-
-
-    if (rumboot_platform_runtime.persistent[0] == TEST_CRG_STATE_NRST_PON)
-        goto label_NRST_PON;
-    else if (rumboot_platform_runtime.persistent[0] == TEST_CRG_STATE_PLL_USE_OSC)
-        goto label_PLL_USE_OSC;
-
-    test_event_send_test_id("test_oi10_ctrl_002_4");
 
 
 //    while ((dcr_read(DCR_CRG_BASE + CRG_SYS_PLL_STAT) & (1 << 0)) != (1 << 0))
@@ -99,30 +98,36 @@ int main(void)
 
 //    test_event(EVENT_OI10_NRST_PON);
 
-label_NRST_PON:
+    rumboot_putstring("Check default clocks ...\n");
     test_event(EVENT_OI10_CHECK_DEFAULT);
     TEST_ASSERT((dcr_read(DCR_CRG_BASE + CRG_SYS_RST_MON) & (1 << 11)) != 0x00 , "Value in RST_MON register is incorrect!");
 
 
     dcr_write(DCR_CRG_BASE + CRG_SYS_WR_LOCK, CRG_REG_WRITE_ENABLE);
 
-    dcr_write(DCR_CRG_BASE + CRG_SYS_PLL_CTRL, 0x03);
+    dcr_write(DCR_CRG_BASE + CRG_SYS_PLL_CTRL, 0x03); //PLL_OFF_BYP
 
     dcr_write(DCR_CRG_BASE + CRG_SYS_PLL_PRDIV, 0x08);
     dcr_write(DCR_CRG_BASE + CRG_SYS_PLL_FBDIV, 0x40);
-    dcr_write(DCR_CRG_BASE + CRG_SYS_PLL_PSDIV, 0x02);
+    dcr_write(DCR_CRG_BASE + CRG_SYS_PLL_PSDIV, 0x01);
 
-    dcr_write(DCR_CRG_BASE + CRG_SYS_PLL_CTRL, 0x00);
+    dcr_write(DCR_CRG_BASE + CRG_SYS_PLL_CTRL, 0x00); //PLL_OSC_USE
 
     dcr_write(DCR_CRG_BASE + CRG_SYS_WR_LOCK, ~CRG_REG_WRITE_ENABLE);
 
-    udelay(100);
+    udelay(10);
 
-
-label_PLL_USE_OSC:
+    rumboot_putstring("Check modified clocks ...\n");
     test_event(EVENT_OI10_CHECK_OSC);
 
+    rumboot_putstring("Waiting for interrupt ...\n");
 
-    udelay(10);
+    uint32_t start = rumboot_platform_get_uptime();
+    while ((rumboot_platform_get_uptime() - start < INTERRUPT_WAITING_TIMEOUT) & !interrupt_received)
+        ;
+
+    if (!interrupt_received)
+        return 1;
+
     return 0;
 }

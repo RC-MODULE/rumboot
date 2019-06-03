@@ -1809,7 +1809,7 @@ endif()
       CONFIGURATION IRAM
       FILES test_oi10_ctrl_002_4.c
       IRUN_FLAGS +TEST_OI10_CTRL_002
-      LOAD IM0BIN SELF,SELF
+      LOAD IM0BIN SELF
       PREFIX crg
     )
 
