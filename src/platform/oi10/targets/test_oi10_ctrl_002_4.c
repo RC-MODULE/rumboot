@@ -115,7 +115,7 @@ int main(void)
 
     dcr_write(DCR_CRG_BASE + CRG_SYS_WR_LOCK, ~CRG_REG_WRITE_ENABLE);
 
-    udelay(10);
+    udelay(100);
 
     rumboot_putstring("Check modified clocks ...\n");
     test_event(EVENT_OI10_CHECK_OSC);
@@ -126,8 +126,10 @@ int main(void)
     while ((rumboot_platform_get_uptime() - start < INTERRUPT_WAITING_TIMEOUT) & !interrupt_received)
         ;
 
-    if (!interrupt_received)
+    if (!interrupt_received){
+        rumboot_putstring("Interrupt has not been received!\n");
         return 1;
+    }
 
     return 0;
 }
