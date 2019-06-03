@@ -9,7 +9,7 @@
 #include <rumboot/testsuite.h>
 #include <rumboot/timer.h>
 
-#include <arch/ppc/arch/ppc_476fp_lib_c.h>
+#include <arch/ppc_476fp_lib_c.h>
 #include <platform/arch/ppc/test_macro.h>
 #include <platform/common_macros/common_macros.h>
 #include <platform/devices.h>

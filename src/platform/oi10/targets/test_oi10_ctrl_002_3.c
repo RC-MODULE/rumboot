@@ -2,8 +2,8 @@
 #include <stdint.h>
 #include <string.h>
 
-#include <arch/ppc/arch/ppc_476fp_config.h>
-#include <arch/ppc/arch/ppc_476fp_lib_c.h>
+#include <arch/ppc_476fp_config.h>
+#include <arch/ppc_476fp_lib_c.h>
 
 #include <devices/sp805.h>
 

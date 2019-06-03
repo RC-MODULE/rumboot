@@ -2,7 +2,7 @@
 #include <stdint.h>
 #include <string.h>
 
-#include <arch/ppc/arch/ppc_476fp_lib_c.h>
+#include <arch/ppc_476fp_lib_c.h>
 
 #include <rumboot/io.h>
 #include <rumboot/irq.h>
