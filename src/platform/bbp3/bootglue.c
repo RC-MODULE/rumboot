@@ -133,7 +133,7 @@ static const struct rumboot_bootsource emi_boot[] = {
 
 void rumboot_platform_enter_host_mode(struct rumboot_config *conf)
 {
-        uint32_t maxsize;
+        size_t maxsize;
         greth_edcl_configure(GRETH_Base, 1);
         greth_dump_edcl_params(0, GRETH_Base);
         uint32_t tmp = ioread32(GRETH_Base + 0);
