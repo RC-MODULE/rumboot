@@ -40,25 +40,10 @@ static void handler_crg(int irq, void *arg )
     rumboot_putstring("CRG irq handler invoked.");
 
     interrupt_received = 1;
-//
-//    if (!NRST_POR)
-//    {
-//        TEST_ASSERT((dcr_read(DCR_CRG_BASE + CRG_SYS_INTCLR) & (1 << 0)) != 0x00 , "Value in INTCLR register is incorrect!");
-//        TEST_ASSERT((dcr_read(DCR_CRG_BASE + CRG_SYS_RST_MON) & (1 << 11)) != 0x00 , "Value in RST_MON register is incorrect!");
-//
-//        test_event(EVENT_OI10_CRG_003_CHECK);
-//
-//        NRST_POR = 1;
-//    }
-//    else if (!NRST_SYS)
-//    {
-//        TEST_ASSERT((dcr_read(DCR_CRG_BASE + CRG_SYS_INTCLR) & (1 << 0)) != 0x00 , "Value in INTCLR register is incorrect!");
-//        TEST_ASSERT((dcr_read(DCR_CRG_BASE + CRG_SYS_RST_MON) & (1 << 10)) != 0x00, "Value in RST_MON register is incorrect!");
-//
-//        test_event(EVENT_OI10_CRG_003_CHECK);
-//
-//        NRST_SYS = 1;
-//    }
+
+    dcr_write(DCR_CRG_BASE + CRG_SYS_WR_LOCK, CRG_REG_WRITE_ENABLE);
+    dcr_write(DCR_CRG_BASE + CRG_SYS_INTCLR, 0x01);
+    dcr_write(DCR_CRG_BASE + CRG_SYS_WR_LOCK, ~CRG_REG_WRITE_ENABLE);
 }
 
 
@@ -87,15 +72,6 @@ int main(void)
     dcr_write(DCR_CRG_BASE + CRG_SYS_WR_LOCK, ~CRG_REG_WRITE_ENABLE);
 
 
-//    while ((dcr_read(DCR_CRG_BASE + CRG_SYS_PLL_STAT) & (1 << 0)) != (1 << 0))
-//        ;
-
-    //Enabling CRG interrupt
-//    dcr_write(DCR_CRG_BASE + CRG_SYS_WR_LOCK, CRG_REG_WRITE_ENABLE);
-//    dcr_write(DCR_CRG_BASE + CRG_SYS_INTMASK, 0x01);
-//    dcr_write(DCR_CRG_BASE + CRG_SYS_WR_LOCK, ~CRG_REG_WRITE_ENABLE);
-
-
 //    test_event(EVENT_OI10_NRST_PON);
 
     rumboot_putstring("Check default clocks ...\n");
@@ -110,6 +86,8 @@ int main(void)
     dcr_write(DCR_CRG_BASE + CRG_SYS_PLL_PRDIV, 0x08);
     dcr_write(DCR_CRG_BASE + CRG_SYS_PLL_FBDIV, 0x40);
     dcr_write(DCR_CRG_BASE + CRG_SYS_PLL_PSDIV, 0x01);
+
+    dcr_write(DCR_CRG_BASE + CRG_SYS_INTMASK, 0x01);
 
     dcr_write(DCR_CRG_BASE + CRG_SYS_PLL_CTRL, 0x00); //PLL_OSC_USE
 
@@ -130,6 +108,8 @@ int main(void)
         rumboot_putstring("Interrupt has not been received!\n");
         return 1;
     }
+
+    rumboot_putstring("Interrupt has been received.\n");
 
     return 0;
 }
