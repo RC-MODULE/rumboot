@@ -1799,6 +1799,15 @@ add_rumboot_target(
   )
 
   add_rumboot_target(
+    CONFIGURATION IRAM
+    IRUN_FLAGS +can_plus_adapter +i2c_single_bus
+    FEATURES NOCODE
+    COMBOIMAGE IM0BIN
+     LOAD IM0BIN simple-iram-chain-start-dummy,sctl-iram-pull_up_disabled,simple-iram-chain-end-dummy
+    NAME chain-test_sctl_pull_up_disabled
+  )
+  
+  add_rumboot_target(
     CONFIGURATION IRAM_SPL
     FILES simple-iram/boot-spi1-redirect.c
     NAME micro-spi1-redirect
