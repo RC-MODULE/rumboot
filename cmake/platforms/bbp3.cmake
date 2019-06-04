@@ -137,6 +137,16 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     )
 
     rumboot_bootrom_integration_test(ROM
+    NAME "host-emi-silent"
+    IRUN_FLAGS ${ROM_115200_OPTS} +BOOT_HOST=1 +BOOT_SILENT=1 +BOOT_EMI_BIS=0 +full_boot_mode +boot_arm
+    LOAD
+      SPI0_CONF spl-fail-bad-magic,spl-fail-bad-magic
+      NOR_IMAGE spl-fail-bad-magic
+      arm_image spl-ok.hex/image_mem64_0.hex
+    )
+
+
+    rumboot_bootrom_integration_test(ROM
     NAME "host-edcl"
     IRUN_FLAGS ${ROM_115200_OPTS} +BOOT_HOST=1 +BOOT_EMI_BIS=0 +full_boot_mode +boot_arm
     SNAPSHOT edcl
@@ -145,6 +155,17 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       NOR_IMAGE spl-fail-bad-magic
       arm_image spl-ok.hex/image_mem64_0.hex
     )    
+
+    rumboot_bootrom_integration_test(ROM
+    NAME "host-edcl-silent"
+    IRUN_FLAGS ${ROM_115200_OPTS} +BOOT_HOST=1 +BOOT_SILENT=1 +BOOT_EMI_BIS=0 +full_boot_mode +boot_arm
+    SNAPSHOT edcl
+    LOAD
+      SPI0_CONF spl-fail-bad-magic,spl-fail-bad-magic
+      NOR_IMAGE spl-fail-bad-magic
+      arm_image spl-ok.hex/image_mem64_0.hex
+    )    
+
 
 if (TEST_XMODEM)
     rumboot_bootrom_integration_test(ROM
