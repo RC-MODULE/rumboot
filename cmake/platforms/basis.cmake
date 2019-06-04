@@ -650,6 +650,11 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         PREFIX mgeth-geth_direct_ddr
     )
 
+    add_rumboot_target_dir(sctl/
+        CONFIGURATION IRAM
+        PREFIX sctl-iram
+    )
+    
     add_rumboot_target_dir(basis_stress_test/
         CONFIGURATION IRAM_MIRROR
         FILES basis_stress_test/stress_test.c
