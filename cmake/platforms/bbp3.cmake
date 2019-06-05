@@ -206,6 +206,24 @@ endif()
     )
 
     rumboot_bootrom_integration_test(ROM
+        NAME "nor-silent"
+        IRUN_FLAGS ${ROM_115200_OPTS} +BOOT_EMI=1 +BOOT_SILENT=1
+        LOAD
+          SPI0_CONF spl-fail,spl-fail
+          NOR_IMAGE spl-ok
+          HOSTMOCK  spl-fail
+    )
+
+    rumboot_bootrom_integration_test(ROM
+        NAME "spi-silent"
+        IRUN_FLAGS ${ROM_115200_OPTS} +BOOT_SILENT=1
+        LOAD
+          SPI0_CONF spl-ok,spl-fail
+          NOR_IMAGE spl-fail
+          HOSTMOCK  spl-fail
+    )
+
+    rumboot_bootrom_integration_test(ROM
         NAME "spi-fallthrough-host"
         IRUN_FLAGS ${ROM_115200_OPTS}
         LOAD
