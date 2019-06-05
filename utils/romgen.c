@@ -241,7 +241,7 @@ struct mem_layout oi10_rom_gen = {
 };
 
 struct mem_layout bbp3_boot_emi = {
-	.line_count	       	= 512,
+	.line_count	       	= 2048,
 	.line_length		= 32,
     .bits_per_byte      = 8,
 	.adjacement_banks	= 1,
