@@ -47,21 +47,19 @@
 
 #ifdef CMAKE_BUILD_TYPE_POSTPRODUCTION
 // #include "platform/ddr_config/ddr__mt41j512m8_187e_8_8_533__bist.h"
-// #include "platform/ddr_config/ddr__mt41k256m8_125_8_11_800.h"
-#include "platform/ddr_config/ddr__mt41k256m8_125_8_7_533.h"
-// #include "/home/e.vorontsov/Basis/_ddr3_config/ddr_settings/ddr__mt41k256m8_125_8_11_800.h"
-// #include "/home/e.vorontsov/Basis/_ddr3_config/ddr_settings/ddr__mt41k256m8_125_8_7_533.h"
-// #include "/home/e.vorontsov/Basis/_ddr3_config/ddr_settings/ddr__mt41j512m8_187e_8_8_533.h"
+#include "platform/ddr_config/ddr__mt41k256m8_125_8_11_800.h"
+// #include "platform/ddr_config/ddr__mt41k256m8_125_8_7_533.h"
+// #include "platform/ddr_config/ddr__mt41k256m8_125_8_11_800_0_0_0_0_10.h"
 #endif
 //-------------------------------------------------------------
 //  Timeout of PLL lock
 //-------------------------------------------------------------
 #ifndef CMAKE_BUILD_TYPE_POSTPRODUCTION
-#define DDR_TEST_LIB_PLL_LOCK_TIMEOUT        0x1000
-#define CRG_DDR_TEST_LIB_PLL_LOCK_TIMEOUT    0x1000
+#define DDR_TEST_LIB_READY_TIMEOUT        0x1000
+#define CRG_DDR_TEST_LIB_READY_TIMEOUT    0x1000
 #else
-#define DDR_TEST_LIB_PLL_LOCK_TIMEOUT        0x1000000
-#define CRG_DDR_TEST_LIB_PLL_LOCK_TIMEOUT    0x1000000
+#define DDR_TEST_LIB_READY_TIMEOUT        0x1000000
+#define CRG_DDR_TEST_LIB_READY_TIMEOUT    0x1000000
 #endif
 
 //-----------------------------------------------------------------------------
@@ -508,16 +506,22 @@ uint32_t crg_ddr_init
         while ((ioread32 (CRG_DDR_BASE + CRG_PLL_STAT) & 0x00000010) == 0)
         {
             timer_cntr++;
-            if (timer_cntr == CRG_DDR_TEST_LIB_PLL_LOCK_TIMEOUT)
+            if (timer_cntr == CRG_DDR_TEST_LIB_READY_TIMEOUT)
+            {
+                rumboot_printf ("  ERROR: CRG DDR PLL lock timeout 0\n");
                 return -1;
+            }
         }
 
         iowrite32 (0x0, CRG_DDR_BASE + CRG_PLL_CTRL);
         while ((ioread32 (CRG_DDR_BASE + CRG_PLL_STAT) & 0x00000011) == 0)
         {
             timer_cntr++;
-            if (timer_cntr == CRG_DDR_TEST_LIB_PLL_LOCK_TIMEOUT)
+            if (timer_cntr == CRG_DDR_TEST_LIB_READY_TIMEOUT)
+            {
+                rumboot_printf ("  ERROR: CRG DDR PLL lock timeout 1\n");
                 return -1;
+            }
         }
     }
 
@@ -608,15 +612,18 @@ uint32_t ddr_init (uint32_t DDRx_BASE)
 {
     uint32_t timer_cntr = 0;
 
-    crg_ddr_init (0x84 ,0x1);
-    // crg_ddr_init (0x63 ,0x0);
+    // crg_ddr_init (0x84 ,0x1);
+    crg_ddr_init (0x63 ,0x0);
     ddr_registers_init (DDRx_BASE);
     
     while ((ioread32(DDRx_BASE + DENALI_CTL_94) & 0x00000800) == 0)
     {
         timer_cntr++;
-        if (timer_cntr == DDR_TEST_LIB_PLL_LOCK_TIMEOUT)
+        if (timer_cntr == DDR_TEST_LIB_READY_TIMEOUT)
+        {
+            rumboot_printf ("  ERROR: DDR ready timeout\n");
             return -1;
+        }
     }
     iowrite32((0x1 << 11), DDRx_BASE + DENALI_CTL_95); // clear interruption flag
     
@@ -642,8 +649,11 @@ uint32_t ddr0_ddr1_init ()
     while (((ioread32(DDR0_BASE + DENALI_CTL_94)) & (ioread32(DDR1_BASE + DENALI_CTL_94)) & 0x00000800) == 0)
     {
         timer_cntr++;
-        if (timer_cntr == DDR_TEST_LIB_PLL_LOCK_TIMEOUT)
+        if (timer_cntr == DDR_TEST_LIB_READY_TIMEOUT)
+        {
+            rumboot_printf ("  ERROR: DDR ready timeout\n");
             return -1;
+        }
     }
     iowrite32((0x1 << 11), DDR0_BASE + DENALI_CTL_95); // clear interruption flag
     iowrite32((0x1 << 11), DDR1_BASE + DENALI_CTL_95); // clear interruption flag
@@ -652,4 +662,34 @@ uint32_t ddr0_ddr1_init ()
         return -1;
 
     return 0;
+}
+
+//-----------------------------------------------------------------------------
+//  This function must be called after ddr_init (or smth similar)
+//  It prepares required value of SDRAM for work, if ECC is On
+//-----------------------------------------------------------------------------
+void ddr_ecc_init (uint32_t DDRx_BASE, uint32_t SDRAM_start_addr, uint32_t SDRAM_size)
+{
+    uint32_t rdata;
+    
+    if ((ioread32 (DDRx_BASE + DENALI_CTL_81) & (1 << 8)) != 0)
+    {
+        rumboot_printf ("  Note: DDR ECC is On. SDRAM will be prepared.\n");
+        
+        //  Disable ECC checks in Write transactions
+        //  Otherwise writes will fail because of trash in SDRAM
+        rdata = ioread32 (DDRx_BASE + DENALI_CTL_82);
+        iowrite32 (rdata | (1 << 24), DDRx_BASE + DENALI_CTL_82);
+        
+        for (uint32_t i = 0; i < SDRAM_size; i+=4)
+            iowrite32 (0x00000000, SDRAM_start_addr + i);
+        
+        //  Enable ECC checks in Write transactions
+        rdata = ioread32 (DDRx_BASE + DENALI_CTL_82);
+        iowrite32 (rdata & 0x00FFFFFF, DDRx_BASE + DENALI_CTL_82);
+    }
+    else
+    {
+        rumboot_printf ("  Note: DDR ECC is Off\n");
+    }
 }

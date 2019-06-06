@@ -64,5 +64,21 @@
     );
     /** @}*/
 
+    /**
+     * This function must be called after ddr_init (or smth similar)
+     * It prepares required value of SDRAM for work, if ECC is On
+     *
+     * @param DDRx_BASE
+     * @param SDRAM_start_addr
+     * @param SDRAM_size
+     */
+    void ddr_ecc_init
+    (
+        uint32_t DDRx_BASE,
+        uint32_t SDRAM_start_addr,
+        uint32_t SDRAM_size
+    );
+    /** @}*/
+
 
 #endif /* end of include guard: DDR_TEST_LIB_H */

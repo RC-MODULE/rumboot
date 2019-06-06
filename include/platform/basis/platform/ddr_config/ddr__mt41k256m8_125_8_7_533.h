@@ -65,11 +65,18 @@
 #define PHY_GTLVL_RDDQS_SLV_DLY_START_0      0x0300
 #define PHY_GTLVL_RDDQS_SLV_DLY_START_1      0x0300
 #define PHY_GTLVL_RDDQS_SLV_DLY_START_2      0x0300
-//  Set DDR3L mode for Voltage Reference Generation Pads
-#define PHY_PAD_VREF_CTRL_DQ_0        0x0300
-#define PHY_PAD_VREF_CTRL_DQ_1        0x0300
-#define PHY_PAD_VREF_CTRL_DQ_2        0x0300
-#define PHY_PAD_VREF_CTRL_AC          0x0300
+//    Coarse start point for Read Gating procedure in cycles
+#define PHY_GTLVL_LAT_ADJ_START_0            0x00
+#define PHY_GTLVL_LAT_ADJ_START_1            0x00
+#define PHY_GTLVL_LAT_ADJ_START_2            0x00
+//  Voltage Reference Generation Pads
+//    VREFSEL = 0x1F (50%*VDDQ)
+//    EN = 0x1
+//    MODE = DDR3L
+#define PHY_PAD_VREF_CTRL_DQ_0        0x031F
+#define PHY_PAD_VREF_CTRL_DQ_1        0x031F
+#define PHY_PAD_VREF_CTRL_DQ_2        0x031F
+#define PHY_PAD_VREF_CTRL_AC          0x031F
 
 
 
@@ -79,7 +86,7 @@
 //  Feedback Pads parameters:
 //    Drive strength during WRITE = 0xFF (34.3 Ohm)
 //    MODE = DDR3L
-//    SPEED = 800Mbps to 1600Mbps, TODO (increase value?)
+//    SPEED = 800Mbps to 1600Mbps
 #define PHY_PAD_FDBK_DRIVE         0x2080FF
 //  Feedback Pads parameters:
 //    ODT termination during READ = 0x88 (120 Ohm pullup + 120 Ohm pulldown = 60 Ohm differential)
@@ -275,7 +282,7 @@
 #define               DENALI_PHY_59_DATA  ( 0x00800080 )
 #define               DENALI_PHY_60_DATA  ( 0x00010011  & 0xFF00FFFF | (PHY_RDDQS_LATENCY_ADJUST_0 << 16))
 #define               DENALI_PHY_61_DATA  ( 0x000001d0 )
-#define               DENALI_PHY_62_DATA  ( 0x00000000  & 0xFF0000FF | (PHY_GTLVL_RDDQS_SLV_DLY_START_0 << 8))
+#define               DENALI_PHY_62_DATA  ( 0x00000000  & 0x00FFFFFF | (PHY_GTLVL_LAT_ADJ_START_0 << 24)) & 0xFF0000FF | (PHY_GTLVL_RDDQS_SLV_DLY_START_0 << 8)
 #define               DENALI_PHY_63_DATA  ( 0x00000000 )
 #define               DENALI_PHY_64_DATA  ( 0x00000004 )
 #define               DENALI_PHY_65_DATA  ( 0x51414152 )
@@ -403,7 +410,7 @@
 #define              DENALI_PHY_187_DATA  ( 0x00800080 )
 #define              DENALI_PHY_188_DATA  ( 0x00010011  & 0xFF00FFFF | (PHY_RDDQS_LATENCY_ADJUST_1 << 16))
 #define              DENALI_PHY_189_DATA  ( 0x000001d0 )
-#define              DENALI_PHY_190_DATA  ( 0x00000000  & 0xFF0000FF | (PHY_GTLVL_RDDQS_SLV_DLY_START_1 << 8))
+#define              DENALI_PHY_190_DATA  ( 0x00000000  & 0x00FFFFFF | (PHY_GTLVL_LAT_ADJ_START_1 << 24)) & 0xFF0000FF | (PHY_GTLVL_RDDQS_SLV_DLY_START_1 << 8)
 #define              DENALI_PHY_191_DATA  ( 0x00000000 )
 #define              DENALI_PHY_192_DATA  ( 0x00000004 )
 #define              DENALI_PHY_193_DATA  ( 0x51414152 )
@@ -531,7 +538,7 @@
 #define              DENALI_PHY_315_DATA  ( 0x00800080 )
 #define              DENALI_PHY_316_DATA  ( 0x00010011  & 0xFF00FFFF | (PHY_RDDQS_LATENCY_ADJUST_2 << 16))
 #define              DENALI_PHY_317_DATA  ( 0x000001d0 )
-#define              DENALI_PHY_318_DATA  ( 0x00000000  & 0xFF0000FF | (PHY_GTLVL_RDDQS_SLV_DLY_START_2 << 8))
+#define              DENALI_PHY_318_DATA  ( 0x00000000  & 0x00FFFFFF | (PHY_GTLVL_LAT_ADJ_START_2 << 24)) & 0xFF0000FF | (PHY_GTLVL_RDDQS_SLV_DLY_START_2 << 8)
 #define              DENALI_PHY_319_DATA  ( 0x00000000 )
 #define              DENALI_PHY_320_DATA  ( 0x00000004 )
 #define              DENALI_PHY_321_DATA  ( 0x51414152 )

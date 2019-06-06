@@ -1,9 +1,8 @@
-//  mt41k256m8_125_C_CTL_8_11_800
-//  mt41k256m8_125_C_PHY_8_11_800
+//  mt41j512m8_187e_C_CTL_8_8_533
+//  mt41j512m8_187e_C_PHY_8_8_533
 
 //  Checked with:
-//    SODIMM  Crucial       CT25664BF160B
-//    SODIMM  Transcend     TS256MSK64W6N
+//    SODIMM  Kingston       KVR16LS11S6/2
 
 //---------------------------------------------------------------------
 //  History:
@@ -35,8 +34,6 @@
 //  TODO: enable ECC
 #define ECC_EN                                     0x0
 
-//  Script decrease ROW length. But larger ROW length is not bad.
-//  Also it influence on CS placement, but we have single CS and nothing happened.
 #define ROW_DIFF                                   0x0
 
 //  Values got from    "Micron TN-41-13: DDR3 Point-to-Point Design Support Introduction"
@@ -68,9 +65,9 @@
 #define PHY_GTLVL_RDDQS_SLV_DLY_START_1      0x0300
 #define PHY_GTLVL_RDDQS_SLV_DLY_START_2      0x0300
 //    Coarse start point for Read Gating procedure in cycles
-#define PHY_GTLVL_LAT_ADJ_START_0            0x01
-#define PHY_GTLVL_LAT_ADJ_START_1            0x01
-#define PHY_GTLVL_LAT_ADJ_START_2            0x01
+#define PHY_GTLVL_LAT_ADJ_START_0            0x00
+#define PHY_GTLVL_LAT_ADJ_START_1            0x00
+#define PHY_GTLVL_LAT_ADJ_START_2            0x00
 //  Voltage Reference Generation Pads
 //    VREFSEL = 0x1F (50%*VDDQ)
 //    EN = 0x1
@@ -88,8 +85,8 @@
 //  Feedback Pads parameters:
 //    Drive strength during WRITE = 0xFF (34.3 Ohm)
 //    MODE = DDR3L
-//    SPEED = 1600Mbsp to 2400Mbps
-#define PHY_PAD_FDBK_DRIVE         0x4080FF
+//    SPEED = 800Mbps to 1600Mbps
+#define PHY_PAD_FDBK_DRIVE         0x2080FF
 //  Feedback Pads parameters:
 //    ODT termination during READ = 0x88 (120 Ohm pullup + 120 Ohm pulldown = 60 Ohm differential)
 #define PHY_PAD_FDBK_DRIVE2        0x0088
@@ -127,24 +124,24 @@
 #define               DENALI_CTL_02_DATA  ( 0x00000000 )
 #define               DENALI_CTL_03_DATA  ( 0x00000000 )
 #define               DENALI_CTL_04_DATA  ( 0x00000000 )
-#define               DENALI_CTL_05_DATA  ( 0x00000008 )
-#define               DENALI_CTL_06_DATA  ( 0x00027100 )
-#define               DENALI_CTL_07_DATA  ( 0x00061a80 )
-#define               DENALI_CTL_08_DATA  ( 0x04000816 )
-#define               DENALI_CTL_09_DATA  ( 0x1c270504 )
-#define               DENALI_CTL_10_DATA  ( 0x06180b06 )
+#define               DENALI_CTL_05_DATA  ( 0x00000006 )
+#define               DENALI_CTL_06_DATA  ( 0x0001a0ab )
+#define               DENALI_CTL_07_DATA  ( 0x000411ab )
+#define               DENALI_CTL_08_DATA  ( 0x04000610 )
+#define               DENALI_CTL_09_DATA  ( 0x141b0404 )
+#define               DENALI_CTL_10_DATA  ( 0x04140704 )
 #define               DENALI_CTL_11_DATA  ( 0x00000c04 )
-#define               DENALI_CTL_12_DATA  ( 0x0400db60 )
-#define               DENALI_CTL_13_DATA  ( 0x0c0b0005 )
-#define               DENALI_CTL_14_DATA  ( 0x17010100 )
-#define               DENALI_CTL_15_DATA  ( 0x01000b03 )
+#define               DENALI_CTL_12_DATA  ( 0x03009240 )
+#define               DENALI_CTL_13_DATA  ( 0x08070005 )
+#define               DENALI_CTL_14_DATA  ( 0x0f010100 )
+#define               DENALI_CTL_15_DATA  ( 0x01000703 )
 #define               DENALI_CTL_16_DATA  ( 0x00000001 )
-#define               DENALI_CTL_17_DATA  ( 0x00008001 )
-#define               DENALI_CTL_18_DATA  ( 0x00001858 )
-#define               DENALI_CTL_19_DATA  ( 0x00140005 )
-#define               DENALI_CTL_20_DATA  ( 0x00880200 )
+#define               DENALI_CTL_17_DATA  ( 0x00008b01 )
+#define               DENALI_CTL_18_DATA  ( 0x00001038 )
+#define               DENALI_CTL_19_DATA  ( 0x000d0004 )
+#define               DENALI_CTL_20_DATA  ( 0x00900200 )
 #define               DENALI_CTL_21_DATA  ( 0x03010000 )
-#define               DENALI_CTL_22_DATA  ( 0x00080800 )
+#define               DENALI_CTL_22_DATA  ( 0x00060600 )
 #define               DENALI_CTL_23_DATA  ( 0x07030200 )
 #define               DENALI_CTL_24_DATA  ( 0x0000031f )
 #define               DENALI_CTL_25_DATA  ( 0x00070004 )
@@ -152,14 +149,14 @@
 #define               DENALI_CTL_27_DATA  ( 0x00000000 )
 #define               DENALI_CTL_28_DATA  ( 0x00000000 )
 #define               DENALI_CTL_29_DATA  ( 0x00000000 )
-#define               DENALI_CTL_30_DATA  ( 0x000c7000 )
-#define               DENALI_CTL_31_DATA  ( 0x00180046  & 0xFFFF0000 | MR1_DATA_0)
+#define               DENALI_CTL_30_DATA  ( 0x00084000 )
+#define               DENALI_CTL_31_DATA  ( 0x00080046   & 0xFFFF0000 | MR1_DATA_0)
 #define               DENALI_CTL_32_DATA  ( 0x00000000 )
 #define               DENALI_CTL_33_DATA  ( 0x00020000 )
 #define               DENALI_CTL_34_DATA  ( 0x00400100 )
 #define               DENALI_CTL_35_DATA  ( 0x00000200 )
 #define               DENALI_CTL_36_DATA  ( 0x00000040 )
-#define               DENALI_CTL_37_DATA  ( 0x00010000  & 0xFF00FFFF | (ROW_DIFF << 16))
+#define               DENALI_CTL_37_DATA  ( 0x00000000  & 0xFF00FFFF | (ROW_DIFF << 16))
 #define               DENALI_CTL_38_DATA  ( 0xff0a0000 )
 #define               DENALI_CTL_39_DATA  ( 0x010101ff )
 #define               DENALI_CTL_40_DATA  ( 0x01010101 )
@@ -173,7 +170,7 @@
 #define               DENALI_CTL_48_DATA  ( 0x00000000 )
 #define               DENALI_CTL_49_DATA  ( 0x00000000 )
 #define               DENALI_CTL_50_DATA  ( 0x00000000 )
-#define               DENALI_CTL_51_DATA  ( 0x07000000 )
+#define               DENALI_CTL_51_DATA  ( 0x05000000 )
 #define               DENALI_CTL_52_DATA  ( 0x00000106 )
 #define               DENALI_CTL_53_DATA  ( 0x00000002 )
 #define               DENALI_CTL_54_DATA  ( 0x00000000 )
@@ -187,13 +184,13 @@
 #define               DENALI_CTL_62_DATA  ( 0x01000001 )
 #define               DENALI_CTL_63_DATA  ( 0x00000001 )
 #define               DENALI_CTL_64_DATA  ( 0x00000000 )
-#define               DENALI_CTL_65_DATA  ( 0x00001700 )
-#define               DENALI_CTL_66_DATA  ( 0x0030b005 )
+#define               DENALI_CTL_65_DATA  ( 0x00001500 )
+#define               DENALI_CTL_66_DATA  ( 0x00207005 )
 #define               DENALI_CTL_67_DATA  ( 0x02000200 )
 #define               DENALI_CTL_68_DATA  ( 0x02000200 )
-#define               DENALI_CTL_69_DATA  ( 0x000030b0 )
-#define               DENALI_CTL_70_DATA  ( 0x0001e6e0 )
-#define               DENALI_CTL_71_DATA  ( 0x02020709 )
+#define               DENALI_CTL_69_DATA  ( 0x00002070 )
+#define               DENALI_CTL_70_DATA  ( 0x00014460 )
+#define               DENALI_CTL_71_DATA  ( 0x02020507 )
 #define               DENALI_CTL_72_DATA  ( 0x00140303 )
 #define               DENALI_CTL_73_DATA  ( 0x00000000 )
 #define               DENALI_CTL_74_DATA  ( 0x00000000 )
@@ -202,8 +199,8 @@
 #define               DENALI_CTL_77_DATA  ( 0x00000000  & 0xFF00FFFF | (RDLVL_GATE_EN << 16))  & 0xFFFF00FF | (RDLVL_EN << 8)
 #define               DENALI_CTL_78_DATA  ( 0x00000000 )
 #define               DENALI_CTL_79_DATA  ( 0x00000000  & 0xFF0000FF | (RDLVL_INTERVAL << 8))
-#define               DENALI_CTL_80_DATA  ( 0x0a010000  & 0xFFFF0000 | RDLVL_GATE_INTERVAL)
-#define               DENALI_CTL_81_DATA  ( 0x00000106  & 0xFFFF00FF | (ECC_EN << 8))
+#define               DENALI_CTL_80_DATA  ( 0x07010000  & 0xFFFF0000 | RDLVL_GATE_INTERVAL)
+#define               DENALI_CTL_81_DATA  ( 0x00000104  & 0xFFFF00FF | (ECC_EN << 8))
 #define               DENALI_CTL_82_DATA  ( 0x00000000 )
 #define               DENALI_CTL_83_DATA  ( 0x00000000 )
 #define               DENALI_CTL_84_DATA  ( 0x00000000 )
@@ -224,7 +221,7 @@
 
 #define               DENALI_PHY_00_DATA  ( 0x76543210 )
 #define               DENALI_PHY_01_DATA  ( 0x0004c008 )
-#define               DENALI_PHY_02_DATA  ( 0x00000099 )
+#define               DENALI_PHY_02_DATA  ( 0x00000011 )
 #define               DENALI_PHY_03_DATA  ( 0x00000000 )
 #define               DENALI_PHY_04_DATA  ( 0x00000000 )
 #define               DENALI_PHY_05_DATA  ( 0x00000100 )
@@ -282,14 +279,14 @@
 #define               DENALI_PHY_57_DATA  ( 0x00800080 )
 #define               DENALI_PHY_58_DATA  ( 0x00800080 )
 #define               DENALI_PHY_59_DATA  ( 0x00800080 )
-#define               DENALI_PHY_60_DATA  ( 0x00010099  & 0xFF00FFFF | (PHY_RDDQS_LATENCY_ADJUST_0 << 16))
+#define               DENALI_PHY_60_DATA  ( 0x00010011  & 0xFF00FFFF | (PHY_RDDQS_LATENCY_ADJUST_0 << 16))
 #define               DENALI_PHY_61_DATA  ( 0x000001d0 )
 #define               DENALI_PHY_62_DATA  ( 0x00000000  & 0x00FFFFFF | (PHY_GTLVL_LAT_ADJ_START_0 << 24)) & 0xFF0000FF | (PHY_GTLVL_RDDQS_SLV_DLY_START_0 << 8)
 #define               DENALI_PHY_63_DATA  ( 0x00000000 )
 #define               DENALI_PHY_64_DATA  ( 0x00000004 )
 #define               DENALI_PHY_65_DATA  ( 0x51414152 )
 #define               DENALI_PHY_66_DATA  ( 0x80804141 )
-#define               DENALI_PHY_67_DATA  ( 0x01020000 )
+#define               DENALI_PHY_67_DATA  ( 0x00010000 )
 #define               DENALI_PHY_68_DATA  ( 0x08001000 )
 #define               DENALI_PHY_69_DATA  ( 0x0c053e42 )
 #define               DENALI_PHY_70_DATA  ( 0x000f0c0f )
@@ -352,7 +349,7 @@
 #define              DENALI_PHY_127_DATA  ( 0x00000000 )
 #define              DENALI_PHY_128_DATA  ( 0x76543210 )
 #define              DENALI_PHY_129_DATA  ( 0x0004c008 )
-#define              DENALI_PHY_130_DATA  ( 0x00000099 )
+#define              DENALI_PHY_130_DATA  ( 0x00000011 )
 #define              DENALI_PHY_131_DATA  ( 0x00000000 )
 #define              DENALI_PHY_132_DATA  ( 0x00000000 )
 #define              DENALI_PHY_133_DATA  ( 0x00000100 )
@@ -410,14 +407,14 @@
 #define              DENALI_PHY_185_DATA  ( 0x00800080 )
 #define              DENALI_PHY_186_DATA  ( 0x00800080 )
 #define              DENALI_PHY_187_DATA  ( 0x00800080 )
-#define              DENALI_PHY_188_DATA  ( 0x00010099  & 0xFF00FFFF | (PHY_RDDQS_LATENCY_ADJUST_1 << 16))
+#define              DENALI_PHY_188_DATA  ( 0x00010011  & 0xFF00FFFF | (PHY_RDDQS_LATENCY_ADJUST_1 << 16))
 #define              DENALI_PHY_189_DATA  ( 0x000001d0 )
 #define              DENALI_PHY_190_DATA  ( 0x00000000  & 0x00FFFFFF | (PHY_GTLVL_LAT_ADJ_START_1 << 24)) & 0xFF0000FF | (PHY_GTLVL_RDDQS_SLV_DLY_START_1 << 8)
 #define              DENALI_PHY_191_DATA  ( 0x00000000 )
 #define              DENALI_PHY_192_DATA  ( 0x00000004 )
 #define              DENALI_PHY_193_DATA  ( 0x51414152 )
 #define              DENALI_PHY_194_DATA  ( 0x80804141 )
-#define              DENALI_PHY_195_DATA  ( 0x01020000 )
+#define              DENALI_PHY_195_DATA  ( 0x00010000 )
 #define              DENALI_PHY_196_DATA  ( 0x08001000 )
 #define              DENALI_PHY_197_DATA  ( 0x0c053e42 )
 #define              DENALI_PHY_198_DATA  ( 0x000f0c0f )
@@ -480,7 +477,7 @@
 #define              DENALI_PHY_255_DATA  ( 0x00000000 )
 #define              DENALI_PHY_256_DATA  ( 0x76543210 )
 #define              DENALI_PHY_257_DATA  ( 0x0004c008 )
-#define              DENALI_PHY_258_DATA  ( 0x00000099 )
+#define              DENALI_PHY_258_DATA  ( 0x00000011 )
 #define              DENALI_PHY_259_DATA  ( 0x00000000 )
 #define              DENALI_PHY_260_DATA  ( 0x00000000 )
 #define              DENALI_PHY_261_DATA  ( 0x00000100 )
@@ -538,14 +535,14 @@
 #define              DENALI_PHY_313_DATA  ( 0x00800080 )
 #define              DENALI_PHY_314_DATA  ( 0x00800080 )
 #define              DENALI_PHY_315_DATA  ( 0x00800080 )
-#define              DENALI_PHY_316_DATA  ( 0x00010099  & 0xFF00FFFF | (PHY_RDDQS_LATENCY_ADJUST_2 << 16))
+#define              DENALI_PHY_316_DATA  ( 0x00010011  & 0xFF00FFFF | (PHY_RDDQS_LATENCY_ADJUST_2 << 16))
 #define              DENALI_PHY_317_DATA  ( 0x000001d0 )
 #define              DENALI_PHY_318_DATA  ( 0x00000000  & 0x00FFFFFF | (PHY_GTLVL_LAT_ADJ_START_2 << 24)) & 0xFF0000FF | (PHY_GTLVL_RDDQS_SLV_DLY_START_2 << 8)
 #define              DENALI_PHY_319_DATA  ( 0x00000000 )
 #define              DENALI_PHY_320_DATA  ( 0x00000004 )
 #define              DENALI_PHY_321_DATA  ( 0x51414152 )
 #define              DENALI_PHY_322_DATA  ( 0x80804141 )
-#define              DENALI_PHY_323_DATA  ( 0x01020000 )
+#define              DENALI_PHY_323_DATA  ( 0x00010000 )
 #define              DENALI_PHY_324_DATA  ( 0x08001000 )
 #define              DENALI_PHY_325_DATA  ( 0x0c053e42 )
 #define              DENALI_PHY_326_DATA  ( 0x000f0c0f )
@@ -620,8 +617,8 @@
 #define              DENALI_PHY_395_DATA  ( 0x00000000 )
 #define              DENALI_PHY_396_DATA  ( 0x00000000 )
 #define              DENALI_PHY_397_DATA  ( 0x00000000 )
-#define              DENALI_PHY_398_DATA  ( 0x00110264 )
-#define              DENALI_PHY_399_DATA  ( 0x00000122 )
+#define              DENALI_PHY_398_DATA  ( 0x00130264 )
+#define              DENALI_PHY_399_DATA  ( 0x00000322 )
 #define              DENALI_PHY_400_DATA  ( 0x00000000 )
 #define              DENALI_PHY_401_DATA  ( 0x00010000  & 0xFF0000FF | (PHY_PAD_VREF_CTRL_DQ_0 << 8))
 #define              DENALI_PHY_402_DATA  ( 0x01000100  & 0x0000FFFF | (PHY_PAD_VREF_CTRL_DQ_2 << 16)) & 0xFFFF0000 | PHY_PAD_VREF_CTRL_DQ_1

@@ -1,8 +1,6 @@
-//  mt41k256m8_125_C_CTL_8_11_800
-//  mt41k256m8_125_C_PHY_8_11_800
-
+//  mt41k256m8_125_C_CTL_8_11_800_0_0_0_0_10
+//  mt41k256m8_125_C_PHY_8_11_800_0_0_0_0_10
 //  Checked with:
-//    SODIMM  Crucial       CT25664BF160B
 //    SODIMM  Transcend     TS256MSK64W6N
 
 //---------------------------------------------------------------------
@@ -10,12 +8,17 @@
 //    - code refactored to show changes from Cadence script version
 //---------------------------------------------------------------------
 
+//---------------------------------------------------------------------
+//  Comments:
+//    - this version includes 'Additive Latency = 10' feature
+//---------------------------------------------------------------------
+
 //-------------------------------------------------------------
 //  Changed parameters are listed below
 
 //  MR1:
 //    RTT = 60 Ohm
-#define MR1_DATA_0                                 0x0006
+#define MR1_DATA_0                                 0x000E
 //  unproven value; probably, training may be done once at start
 //    interval between WL = 0x1000*1024 dfi_clk (~ 4*10^6)
 #define WRLVL_INTERVAL                             0x1000
@@ -33,7 +36,7 @@
 #define RDLVL_GATE_INTERVAL                        0x1000
 //  disable ECC while debug DDR.
 //  TODO: enable ECC
-#define ECC_EN                                     0x0
+#define ECC_EN                                     0x1
 
 //  Script decrease ROW length. But larger ROW length is not bad.
 //  Also it influence on CS placement, but we have single CS and nothing happened.
@@ -130,7 +133,7 @@
 #define               DENALI_CTL_05_DATA  ( 0x00000008 )
 #define               DENALI_CTL_06_DATA  ( 0x00027100 )
 #define               DENALI_CTL_07_DATA  ( 0x00061a80 )
-#define               DENALI_CTL_08_DATA  ( 0x04000816 )
+#define               DENALI_CTL_08_DATA  ( 0x040a0816 )
 #define               DENALI_CTL_09_DATA  ( 0x1c270504 )
 #define               DENALI_CTL_10_DATA  ( 0x06180b06 )
 #define               DENALI_CTL_11_DATA  ( 0x00000c04 )
@@ -153,7 +156,7 @@
 #define               DENALI_CTL_28_DATA  ( 0x00000000 )
 #define               DENALI_CTL_29_DATA  ( 0x00000000 )
 #define               DENALI_CTL_30_DATA  ( 0x000c7000 )
-#define               DENALI_CTL_31_DATA  ( 0x00180046  & 0xFFFF0000 | MR1_DATA_0)
+#define               DENALI_CTL_31_DATA  ( 0x0018004e  & 0xFFFF0000 | MR1_DATA_0)
 #define               DENALI_CTL_32_DATA  ( 0x00000000 )
 #define               DENALI_CTL_33_DATA  ( 0x00020000 )
 #define               DENALI_CTL_34_DATA  ( 0x00400100 )
@@ -173,7 +176,7 @@
 #define               DENALI_CTL_48_DATA  ( 0x00000000 )
 #define               DENALI_CTL_49_DATA  ( 0x00000000 )
 #define               DENALI_CTL_50_DATA  ( 0x00000000 )
-#define               DENALI_CTL_51_DATA  ( 0x07000000 )
+#define               DENALI_CTL_51_DATA  ( 0x11000000 )
 #define               DENALI_CTL_52_DATA  ( 0x00000106 )
 #define               DENALI_CTL_53_DATA  ( 0x00000002 )
 #define               DENALI_CTL_54_DATA  ( 0x00000000 )
@@ -193,7 +196,7 @@
 #define               DENALI_CTL_68_DATA  ( 0x02000200 )
 #define               DENALI_CTL_69_DATA  ( 0x000030b0 )
 #define               DENALI_CTL_70_DATA  ( 0x0001e6e0 )
-#define               DENALI_CTL_71_DATA  ( 0x02020709 )
+#define               DENALI_CTL_71_DATA  ( 0x02021113 )
 #define               DENALI_CTL_72_DATA  ( 0x00140303 )
 #define               DENALI_CTL_73_DATA  ( 0x00000000 )
 #define               DENALI_CTL_74_DATA  ( 0x00000000 )
@@ -203,7 +206,7 @@
 #define               DENALI_CTL_78_DATA  ( 0x00000000 )
 #define               DENALI_CTL_79_DATA  ( 0x00000000  & 0xFF0000FF | (RDLVL_INTERVAL << 8))
 #define               DENALI_CTL_80_DATA  ( 0x0a010000  & 0xFFFF0000 | RDLVL_GATE_INTERVAL)
-#define               DENALI_CTL_81_DATA  ( 0x00000106  & 0xFFFF00FF | (ECC_EN << 8))
+#define               DENALI_CTL_81_DATA  ( 0x00000110  & 0xFFFF00FF | (ECC_EN << 8))
 #define               DENALI_CTL_82_DATA  ( 0x00000000 )
 #define               DENALI_CTL_83_DATA  ( 0x00000000 )
 #define               DENALI_CTL_84_DATA  ( 0x00000000 )

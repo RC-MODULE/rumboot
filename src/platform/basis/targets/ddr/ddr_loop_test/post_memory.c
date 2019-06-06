@@ -230,7 +230,7 @@ static int memory_post_dataline(unsigned long long * pmem, const unsigned long l
 			ret = -1;
 
             rumboot_printf ("      ERROR_1");
-            rumboot_printf ("        temp64=0x%08x    pattern=0x%08x    read_2=0x%08x    XOR=0x%08x\n", temp64, pattern[i], *pmem, temp64^pattern[i]);
+            rumboot_printf ("        temp64=0x%08x    pattern=0x%08x    addr=0x%08x    read_2=0x%08x    XOR=0x%08x\n", temp64, pattern[i], pmem, *pmem, temp64^pattern[i]);
             //  TODO make report for high part of word
 
 			if (mem_cnt <= (mem_size - 6)) {
@@ -281,7 +281,7 @@ static int memory_post_addrline(unsigned long *testaddr, unsigned long *base,
 				ret = -1;
 
                 rumboot_printf ("      ERROR_2");
-                rumboot_printf ("        readfirst=0x%08x    readsecond=0x%08x    read_2=0x%08x    XOR=0x%08x\n", readfirst, readsecond, *target, readfirst^readsecond);
+                rumboot_printf ("        readfirst=0x%08x    readsecond=0x%08x    addr=0x%08x    read_2=0x%08x    XOR=0x%08x\n", readfirst, readsecond, target, *target, readfirst^readsecond);
                 error_cntr_increment()
 			}
 		}
@@ -309,7 +309,7 @@ static int memory_post_test1(unsigned long start, unsigned long size,
 			ret = -1;
 
             rumboot_printf ("      ERROR_3");
-            rumboot_printf ("        readback=0x%08x    val=0x%08x    read_2=0x%08x    XOR=0x%08x\n", readback, val, mem[i], readback^val);
+            rumboot_printf ("        readback=0x%08x    val=0x%08x    addr=0x%08x    read_2=0x%08x    XOR=0x%08x\n", readback, val, &mem[i], mem[i], readback^val);
             error_cntr_increment()
 		}
 	}
@@ -336,7 +336,7 @@ static int memory_post_test2(unsigned long start, unsigned long size)
 			ret = -1;
 
             rumboot_printf ("      ERROR_4");
-            rumboot_printf ("        readback=0x%08x    (1 << (i \% 32))=0x%08x    read_2=0x%08x    XOR=0x%08x\n", readback, (1 << (i % 32)), mem[i], readback^(1 << (i % 32)));
+            rumboot_printf ("        readback=0x%08x    (1 << (i \% 32))=0x%08x    addr=0x%08x    read_2=0x%08x    XOR=0x%08x\n", readback, (1 << (i % 32)), &mem[i], mem[i], readback^(1 << (i % 32)));
             error_cntr_increment()
 		}
 	}
@@ -390,7 +390,7 @@ static int memory_post_test4(unsigned long start, unsigned long size)
 			ret = -1;
 
             rumboot_printf ("      ERROR_6");
-            rumboot_printf ("        readback=0x%08x    ~i=0x%08x    read_2=0x%08x    XOR=0x%08x\n", readback, ~i, mem[i], readback^(~i));
+            rumboot_printf ("        readback=0x%08x    ~i=0x%08x    addr=0x%08x    read_2=0x%08x    XOR=0x%08x\n", readback, ~i, &mem[i], mem[i], readback^(~i));
             error_cntr_increment()
 		}
 	}

@@ -28,6 +28,7 @@
 #include <rumboot/printf.h>
 #include <rumboot/ddr_test_lib.h>
 #include <rumboot/irq.h>
+#include <rumboot/platform.h>
 
 #include <platform/devices.h>
 #include <platform/interrupts.h>
@@ -45,9 +46,9 @@
 #define STABILITY_REP_NUMBER  5
 
 //-------------
-// #define TEST_FAST
+#define TEST_FAST
 // #define TEST_NORMAL
-#define TEST_MAXIMUM
+// #define TEST_MAXIMUM
 
 #define POST_TEST_BASE  EMI1_BASE
 //  On RCM MT143.05 PCB only 1/2 of memory space is available
@@ -55,6 +56,9 @@
 #define POST_TEST_SIZE  0x1FEC0000
 
 #define REP_NUMBER      10
+
+//  This parameter only used for preparation SDRAM in case of ECC
+#define REQUIRED_MEMORY_SIZE  0x20000000
 //-------------------------------------------------------------
 
 
@@ -176,21 +180,13 @@ static void mdma0_irq_handler (int irq, void *arg)
 }
 #endif
 
-void clear_log (uint32_t * debug_log)
-{
-    for (uint32_t i = 0; i < 512; i+=4)
-        iowrite32 (0x00000000, (uint32_t) debug_log + i);
-}
-
 int main (void)
 {
-    rumboot_printf ("\nddr1_loop_test test start\n");
-    // uint32_t *debug_log  = &_debug_log;
+    uint32_t time_0;
 
-    //  Set debug log pointer to IM1 heap start - it must not be used.
-    uint32_t *debug_log  = (uint32_t*) 0x0007B000;
-    
-    clear_log (debug_log);
+    rumboot_printf ("\nddr1_loop_test test start\n");
+    time_0 = rumboot_platform_get_uptime();
+    rumboot_printf ("  TIME: start:  %d us\n", time_0);
 
     ret = -1;
     rep_cnt = 0;
@@ -200,6 +196,7 @@ int main (void)
     if (ddr_init (DDR1_BASE) != 0)
         return -1;
     rumboot_printf ("  ddr1 initialised\n");
+    ddr_ecc_init (DDR1_BASE, EMI1_BASE, REQUIRED_MEMORY_SIZE);
 
 //-----------------------------------------------------------------------------
 //  TODO. Add ECC usage. Initialise SDRAM before reading.
@@ -230,9 +227,9 @@ int main (void)
         {
             err_cntr++;
             ret = -1;
-            rumboot_printf ("  ERROR: stability check FAILED.\n");
-            rumboot_printf ("    #%d  etalon 0x%08x    read 0x%08x    read_2 0x%08x\n", i, ((uint32_t *) src_test_array) [i], rdata, ((uint32_t *) EMI1_BASE) [i]);
-            if (err_cntr == 10)
+            rumboot_printf ("  ERROR_STABILITY");
+            rumboot_printf ("    #%d  etalon=0x%08x    read=0x%08x    read_2=0x%08x    XOR=0x%08x\n", i, ((uint32_t *) src_test_array) [i], rdata, ((uint32_t *) EMI0_BASE) [i], ((uint32_t *) src_test_array) [i]^rdata);
+            if (err_cntr == 50)
             {
                 rumboot_printf ("  Error counter overflow, test continued\n");
                 break;
@@ -296,7 +293,6 @@ int main (void)
         tmp = memory_post_test(POST_TEST_BASE, POST_TEST_SIZE, pattern, &otherpattern, 1);
 #endif
         if (tmp) {
-            rumboot_printf ("  ERROR !!!\n");
             ret = -1;
             err_cnt++;
         }
@@ -331,9 +327,9 @@ int main (void)
         {
             err_cntr++;
             ret = -1;
-            rumboot_printf ("      ERROR_MDMA\n");
-            rumboot_printf ("        #%d  dst_test_array=0x%08x    src_test_array=0x%08x\n", i, src_test_array[i], dst_test_array[i]);
-            if (err_cntr == 10)
+            rumboot_printf ("      ERROR_MDMA");
+            rumboot_printf ("        #%d  dst_test_array=0x%08x    src_test_array=0x%08x    XOR=0x%08x\n", i, dst_test_array[i], src_test_array[i], src_test_array[i]^dst_test_array[i]);
+            if (err_cntr == 50)
             {
                 rumboot_printf ("  Error counter overflow, test continued\n");
                 break;
@@ -341,12 +337,12 @@ int main (void)
         }
 #endif
     
-test_exit:
-
     if (!ret)
         rumboot_printf ("\nddr1_loop_test  PASS\n");
     else
         rumboot_printf ("\nddr1_loop_test  FAILED\n");
+
+    rumboot_printf ("  TIME: end:  %d us\n", rumboot_platform_get_uptime ());
 
     return ret;
 }
