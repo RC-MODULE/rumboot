@@ -2,7 +2,7 @@
 # This invocation builds rumboot in native mode and runs the tests
 # if native tests fail - no use to test anything at all${RUMBOOT_ONEVALUE_ARGS}
 
-add_custom_target(rumboot)
+add_custom_target(rumboot ALL)
 add_custom_target(tarball)
 
 add_external_component(rumboot-native-tests rumboot NO -DRUMBOOT_PLATFORM=native)
@@ -231,6 +231,7 @@ function(rumboot_load_build platform buildtype)
 
       add_custom_command(
           TARGET rumboot
+          DEPENDS ${rumboot_fulldir}
           COMMAND tar vxpf ${CMAKE_BINARY_DIR}/rumboot-from-ci.tgz --strip-components=1
           WORKING_DIRECTORY ${rumboot_fulldir}
         )
