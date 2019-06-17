@@ -767,7 +767,7 @@ int main() {
 	reg = get_cr();	/* get control reg. */
 	set_cr(reg & ~CR_C);
 //	check_cached_access((void *) 0x11000000, (void *) 0x80000000);
-	int i = 100;
+	i = 100;
 	while (i--) {
 		timed_memtest(0x11000000, CACHE_SIZE);
 	}
