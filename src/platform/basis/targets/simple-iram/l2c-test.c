@@ -5,7 +5,6 @@
 #include <platform/devices.h>
 #include <rumboot/rumboot.h>
 #include <stdlib.h>
-#include <devices/pl310.h>
 #include <rumboot/io.h>
 #include <string.h>
 
@@ -246,60 +245,6 @@ void invalidate_icache_all(void)
 
 #define setbits(addr, set) \
 	iowrite32(ioread32(addr) | (set), addr)
-
-void armv7_outer_cache_enable(struct pl310_regs *const pl310)
-{
-	unsigned int val, cache_id;
-
-	/*
-	 * Must disable the L2 before changing the latency parameters
-	 * and auxiliary control register.
-	 */
-//	clrbits(&pl310->pl310_ctrl, L2X0_CTRL_EN);
-
-	/*
-	 * Set bit 22 in the auxiliary control register. If this bit
-	 * is cleared, PL310 treats Normal Shared Non-cacheable
-	 * accesses as Cacheable no-allocate.
-	 */
-	//setbits(&pl310->pl310_aux_ctrl, L310_SHARED_ATT_OVERRIDE_ENABLE);
-//
-	//iowrite32(0x132, &pl310->pl310_tag_latency_ctrl);
-	//iowrite32(0x132, &pl310->pl310_data_latency_ctrl);
-
-//	val = ioread32(&pl310->pl310_prefetch_ctrl);
-
-	/* Turn on the L2 I/D prefetch, double linefill */
-	/* Set prefetch offset with any value except 23 as per errata 765569 */
-//	val |= 0x7000000f;
-
-	/*
-	 * The L2 cache controller(PL310) version on the i.MX6D/Q is r3p1-50rel0
-	 * The L2 cache controller(PL310) version on the i.MX6DL/SOLO/SL/SX/DQP
-	 * is r3p2.
-	 * But according to ARM PL310 errata: 752271
-	 * ID: 752271: Double linefill feature can cause data corruption
-	 * Fault Status: Present in: r3p0, r3p1, r3p1-50rel0. Fixed in r3p2
-	 * Workaround: The only workaround to this erratum is to disable the
-	 * double linefill feature. This is the default behavior.
-	 */
-
-	/**
-	cache_id = ioread32(&pl310->pl310_cache_id);
-	if (((cache_id & L2X0_CACHE_ID_PART_MASK) == L2X0_CACHE_ID_PART_L310)
-	    && ((cache_id & L2X0_CACHE_ID_RTL_MASK) < L2X0_CACHE_ID_RTL_R3P2))
-		val &= ~(1 << 30);
-	iowrite32(val, &pl310->pl310_prefetch_ctrl);
-	*/
-
-//	val = ioread32(&pl310->pl310_power_ctrl);
-//	val |= L2X0_DYNAMIC_CLK_GATING_EN;
-//	val |= L2X0_STNDBY_MODE_EN;
-//	iowrite32(val, &pl310->pl310_power_ctrl);
-
-	iowrite32(ioread32(&pl310->pl310_ctrl) | L2X0_CTRL_EN, &pl310->pl310_ctrl);
-}
-
 
 struct armv7_page_flags {
 	uint32_t permissions;
