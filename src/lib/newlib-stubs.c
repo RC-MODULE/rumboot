@@ -153,7 +153,7 @@ caddr_t _sbrk(int incr)
 	if ((hp->pos + incr) > hp->end) {
 		rumboot_printf("FATAL: heap overflow\n");
 		/* Heap and stack collision */
-		return (caddr_t)0;
+		return (caddr_t)-1;
 	}
 	prev_heap_end = hp->pos;
 	hp->pos += incr;
