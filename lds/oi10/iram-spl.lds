@@ -41,13 +41,7 @@ SECTIONS {
         rumboot_im0_heap_end = .;
     } > IM1
 
-    .stacks (NOLOAD) : {
-        /* This is where stacks start */
-        rumboot_platform_stack_area_start = .;
-        . = . + 0x4000; /* 16k stack */
-        /* This is where stacks end */
-        rumboot_platform_stack_area_end = .;
-    } > IM0
+    INCLUDE oi10/stacks_section.lds.h
 
     INCLUDE oi10/runtime_section.lds.h
 
