@@ -31,6 +31,8 @@ SECTIONS {
 
     } > SSRAM
 
+    INCLUDE oi10/stacks_section.lds.h
+
     INCLUDE oi10/runtime_section.lds.h
 
     /DISCARD/ : {

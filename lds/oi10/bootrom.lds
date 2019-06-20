@@ -29,13 +29,9 @@ SECTIONS {
         rumboot_im0_heap_start = .;
         . = . + 0x8000; /* 32k heap */
         rumboot_im0_heap_end = .;
-
-        /* This is where stacks start */
-        rumboot_platform_stack_area_start = .;
-        . = . + 0x7e00; /* 32k stack */
-        /* This is where stacks end */
-        rumboot_platform_stack_area_end = .;
     } > IM0
+
+    INCLUDE oi10/stacks_section.lds.h
 
     INCLUDE oi10/runtime_section.lds.h
 
