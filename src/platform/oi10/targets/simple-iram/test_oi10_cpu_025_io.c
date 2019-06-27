@@ -100,7 +100,7 @@ void wait_interrupt(uint32_t interrupt_number)
 
 void DMA_O_S_SLV_ERR_INT_inj_int_handler()
 {
-    rumboot_printf("DMA1_O_S_SLV_ERR_INT_inj_int_handler\n");
+    rumboot_printf("DMA_O_S_SLV_ERR_INT_inj_int_handler\n");
     dma2plb6_disable_o_slv_err_interrupt(DCR_DMAPLB6_BASE);
     dcr_write(DCR_DMAPLB6_BASE + PLB6_DMA_PSE, 1 << DMA_PSE_PE_i);
     SET_BIT(MC_HANDLED, DMA2PLB6_SLV_ERR_INT);
@@ -127,8 +127,8 @@ void P6P4_1_BR6TO4_INTR_inj_int_handler()
     SET_BIT(MC_HANDLED, PLB6PLB41_O_BR6TO4_INTR);
     rumboot_printf("P64_1.ESR=0x%X\n",
             p64_esr = dcr_read(DCR_PLB6PLB4_1_BASE + P64_ESR));
-    TEST_ASSERT(p64_esr & (1 << ESR_TESR_P6WPE_i),
-            "Wrong value in P6P4_1 ESR reg. Expected ESR[P6WPE]=1\n");
+    TEST_ASSERT(p64_esr & (1 << ESR_TESR_P4MWE_i),
+            "Wrong value in P6P4_1 ESR reg. Expected ESR[P4MWE]=1\n");
     test_event(EVENT_CLEAR_INT_P6P4_1_BR6TO4_INTR);
     dcr_write(DCR_PLB6PLB4_1_BASE + P64_ESR, p64_esr);
 }
