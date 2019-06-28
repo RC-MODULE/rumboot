@@ -46,15 +46,16 @@ goto_next_tlb_entry:
     bdnz+   invalidate_tlb_entry //decrement cnt and check for exit from loop
     blr
 
+.align 4
 write_tlb_entries:
+    cmplwi      r4, 0
+    beqlr-
+
     mfspr       r9, SPR_RSTCFG
 
     subi        r3, r3, MMU_TLB_ENTRY_FIELD_SIZE
 
 write_next_etry:
-    cmplwi      r4, 0
-    beq-        write_tlb_entries_exit
-
     lwzu        r8, MMU_TLB_ENTRY_FIELD_SIZE(r3)
     mtspr       SPR_MMUCR, r8
 
@@ -70,8 +71,8 @@ write_next_etry:
     copy_field( r8, field_begin( MMU_TLBE_ATTR_U ), MMU_TLBE_ATTR_U_e, r9, field_begin( CTRL_RSTCFG_U ) )
     tlbwe       r8, r10, MMU_TLB_ENTRY_ATTR
 
-    subi        r4, r4, 1
-    b           write_next_etry
+    subic.      r4, r4, 1
+    bne         write_next_etry
 
 write_tlb_entries_exit:
     mfspr       r9, SPR_SRR0
