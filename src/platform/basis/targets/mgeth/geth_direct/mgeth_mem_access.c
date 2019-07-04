@@ -14,7 +14,12 @@
 #include <devices/mdma_chan_api.h>
 #include <devices/mgeth.h>
 
+#include <regs/regs_mdio.h>
+
+#include <rumboot/timer.h>
+
 #define XFER_SIZE 64
+
 
 uint32_t BASE[] = {ETH0_BASE, ETH1_BASE, ETH2_BASE, ETH3_BASE};
 
@@ -211,7 +216,7 @@ TEST_SUITE_END();
 int main()
 {
 	struct mgeth_conf cfg;
-	int res;
+	int res,i;
 
 	rumboot_printf("================================================================================\n");
 
@@ -253,6 +258,17 @@ int main()
 // 100
 	cfg.speed = SPEED_100;
 
+    #ifdef CMAKE_BUILD_TYPE_POSTPRODUCTION
+        for (i = 0; i < 4; i++){            
+            rumboot_printf("MDIO%x: setting SPEED_100 \n",i);
+            mdio_write (MDIO0_BASE + 0x1000*i,  0x0, 0x2100);
+            mdio_read_data (MDIO0_BASE + 0x1000*i,  0x0);
+        }
+    
+        rumboot_printf("delay 1s\n");
+        mdelay(1000);
+    #endif    
+
 	mgeth_init(ETH0_BASE, &cfg);
 	mgeth_init(ETH1_BASE, &cfg);
 	mgeth_init(ETH2_BASE, &cfg);
@@ -267,7 +283,7 @@ int main()
     }
     
 // 10
-	cfg.speed = SPEED_10;
+/*	cfg.speed = SPEED_10;
 
 	mgeth_init(ETH0_BASE, &cfg);
 	mgeth_init(ETH1_BASE, &cfg);
@@ -281,6 +297,6 @@ int main()
 		rumboot_printf("%d tests from suite failed!\n", res);
 		return 1;
     }
-    
+*/    
 	return res;
 }

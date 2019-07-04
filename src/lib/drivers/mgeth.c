@@ -5,10 +5,18 @@
 #include <devices/mdma_chan_api.h>
 #include <devices/mgeth.h>
 
+#include <regs/regs_mdio.h>
+#include <regs/regs_gpio_rcm.h>
+#include <platform/devices.h>
+
+#include <rumboot/timer.h>
+
 int mgeth_init_sgmii(uint32_t sgmii_base_addr, uint32_t sctl_base_addr)
 {
 	uint32_t
 		sgmii_ctrl_stat_val,
+		AN_en = 0,
+        i,
 		OFFSET_SPCS_0, OFFSET_SPCS_1, OFFSET_SPCS_2, OFFSET_SPCS_3,
 		OFFSET_TXS_0, OFFSET_TXS_1, OFFSET_TXS_2, OFFSET_TXS_3,
 		OFFSET_CM,
@@ -38,14 +46,42 @@ int mgeth_init_sgmii(uint32_t sgmii_base_addr, uint32_t sctl_base_addr)
 	OFFSET_RXS_1  = sgmii_base_addr + 0x0500;
 	OFFSET_RXS_2  = sgmii_base_addr + 0x0900;
 	OFFSET_RXS_3  = sgmii_base_addr + 0x0D00;
-
-	DBG_print("=== config SGMII_PHY ===");
-	DBG_print("=== config SGMII_PHY OFFSET_SPCS ===");
-
-	iowrite32(0x00000140, OFFSET_SPCS_0 + 0x00);
-	iowrite32(0x00000140, OFFSET_SPCS_1 + 0x00);
-	iowrite32(0x00000140, OFFSET_SPCS_2 + 0x00);
-	iowrite32(0x00000140, OFFSET_SPCS_3 + 0x00);
+    
+     #ifdef CMAKE_BUILD_TYPE_POSTPRODUCTION
+        rumboot_printf("Switch GPIO in MDIO mode\n");
+        iowrite32(0x00000000, MGPIO0_BASE + GPIO_SWITCH_SOURCE);
+        iowrite32(0x00000000, MGPIO1_BASE + GPIO_SWITCH_SOURCE); 
+        rumboot_printf("Reset PHY\n"); 
+        rumboot_printf("delay 1s\n");
+        mdelay(1000);
+        for (i = 0; i < 4; i++){
+            iowrite32(0x1, MDIO0_BASE + 0x1000*i + MDIO_ETH_RST_N);
+            iowrite32(0x1, MDIO0_BASE + 0x1000*i + MDIO_EN);
+            rumboot_printf("power up PHY%x \n",i);
+            rumboot_printf("delay 100ms for correct setup link!\n");
+            mdelay(100);
+        }
+        
+        rumboot_printf("delay 5s\n");
+        mdelay(5000);
+        
+        for (i = 0; i < 4; i++){
+            if (!AN_en) {
+                rumboot_printf("=== MDIO%x_BASE ===\n",i);  
+                mdio_write (MDIO0_BASE + 0x1000*i, 0x14, 0x2947);
+//                mdio_read_data (MDIO0_BASE + 0x1000*i, 0x14);
+            }
+        }
+    #endif
+    
+	rumboot_printf("=== config SGMII_PHY ===\n");
+    if (!AN_en) {
+        rumboot_printf("=== config SGMII_PHY OFFSET_SPCS ===\n");    
+        iowrite32(0x00000140, OFFSET_SPCS_0 + 0x00);
+        iowrite32(0x00000140, OFFSET_SPCS_1 + 0x00);
+        iowrite32(0x00000140, OFFSET_SPCS_2 + 0x00);
+        iowrite32(0x00000140, OFFSET_SPCS_3 + 0x00);
+    }  
 
 	DBG_print("=== config SGMII_PHY OFFSET_TXS ===");
 
@@ -62,10 +98,12 @@ int mgeth_init_sgmii(uint32_t sgmii_base_addr, uint32_t sctl_base_addr)
 	iowrite32(0x07000000, OFFSET_CM + 0x20);
 
 	DBG_print("=== config SGMII_PHY OFFSET_RXS ===");
+/*    
 	iowrite32(0x33000041, OFFSET_RXS_0 + 0x0);
 	iowrite32(0x33000041, OFFSET_RXS_1 + 0x0);
 	iowrite32(0x33000041, OFFSET_RXS_2 + 0x0);
 	iowrite32(0x33000041, OFFSET_RXS_3 + 0x0);
+*/
 
 	iowrite32(0x0000CEA6, OFFSET_RXS_0 + 0x08);
 	iowrite32(0x0000CEA6, OFFSET_RXS_1 + 0x08);
@@ -241,4 +279,35 @@ int mgeth_finish_transfer(struct mdma_chan *chan)
 	DBG_print("End; Return: %d.", ret);
 
 	return ret;
+}
+
+int mdio_read_data(uint32_t mdio_addr,uint32_t reg_addr)
+{
+    uint32_t phy_addr =0x0,
+             mdio_control_data,
+             read_data = 0x4;
+    mdio_control_data = 0x00000002 | phy_addr << 4 | reg_addr << 8;
+    rumboot_printf (" mdio_control_data = %x\n",mdio_control_data);
+	iowrite32(mdio_control_data, mdio_addr + MDIO_CONTROL);
+    
+	while (read_data & 0x4) {
+        read_data = ioread32(mdio_addr + MDIO_CONTROL);
+    }
+    rumboot_printf ("MDIO(0x%X): read_addr(0x%X): read_data = %x\n",mdio_addr,reg_addr, (read_data >> 16));
+    return (read_data >> 16);
+}
+
+void mdio_write(uint32_t mdio_addr,uint32_t reg_addr,uint32_t write_data)
+{
+    uint32_t phy_addr =0x0,
+             mdio_control_data,
+             read_data = 0x4;
+    
+    rumboot_printf ("MDIO(0x%X): write_addr(0x%X): write_data = %x\n",mdio_addr,reg_addr, write_data);
+    mdio_control_data = 0x00000001 | phy_addr << 4 | reg_addr << 8 | write_data << 16;
+	iowrite32(mdio_control_data, mdio_addr + MDIO_CONTROL);
+    
+	while (read_data & 0x4) {
+        read_data = ioread32(mdio_addr + MDIO_CONTROL);
+    }
 }
