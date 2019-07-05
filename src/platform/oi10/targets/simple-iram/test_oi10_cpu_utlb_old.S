@@ -89,24 +89,16 @@
 #define R_ONES          r31         /* 0xFFFFFFFF                       */
 
 
-#define CONST_MMUBE0      (0b0 << MMU_MMUBE0_VBE0_i) \
-                        | (0b1 << MMU_MMUBE0_VBE1_i) \
-                        | (0b1 << MMU_MMUBE0_VBE2_i)
-
-#define CONST_MMUBE1      (0b0 << MMU_MMUBE1_VBE3_i) \
-                        | (0b0 << MMU_MMUBE1_VBE4_i) \
-                        | (0b0 << MMU_MMUBE1_VBE5_i)
-
 #define CONST_SSPCR       ((MMU_SUSPCR_ORD_SHARED   | MMU_XSPCR_ORD_64KB ) << MMU_SSPCR_ORD1_i) \
-                        | ((MMU_SUSPCR_ORD_SHARED   | MMU_XSPCR_ORD_4KB  ) << MMU_SSPCR_ORD2_i) \
+                        | ((MMU_SUSPCR_ORD_SHARED   | MMU_XSPCR_ORD_16MB ) << MMU_SSPCR_ORD2_i) \
                         | ((                          MMU_XSPCR_ORD_END  ) << MMU_SSPCR_ORD3_i)
 
 #define CONST_ISPCR       ((                          MMU_XSPCR_ORD_64KB ) << MMU_SSPCR_ORD1_i) \
-                        | ((                          MMU_XSPCR_ORD_4KB  ) << MMU_SSPCR_ORD2_i) \
+                        | ((                          MMU_XSPCR_ORD_16MB ) << MMU_SSPCR_ORD2_i) \
                         | ((                          MMU_XSPCR_ORD_END  ) << MMU_SSPCR_ORD3_i)
 
 #define CONST_USPCR       ((MMU_SUSPCR_ORD_SHARED   | MMU_XSPCR_ORD_64KB ) << MMU_SSPCR_ORD1_i) \
-                        | ((MMU_SUSPCR_ORD_SHARED   | MMU_XSPCR_ORD_4KB  ) << MMU_SSPCR_ORD2_i) \
+                        | ((MMU_SUSPCR_ORD_SHARED   | MMU_XSPCR_ORD_16MB ) << MMU_SSPCR_ORD2_i) \
                         | ((                          MMU_XSPCR_ORD_END  ) << MMU_SSPCR_ORD3_i)
 
 #define FILL_ATTR       MMU_TLBE_ATTR(  1, 1,               /* IL1I, IL1D   */  \
@@ -127,7 +119,7 @@ fill_\()\aBeg\()_\()\aEnd\():   /* For debug purpose */
     load_const  R_ENDA,     \aEnd
     load_const  R_STEP,     \aStep
     load_const  R_FILL,     MMU_TLBE_DATA(\vEFill, (\vFill) >> 12, 0, 0)
-    load_const  R_ETAG,     MMU_TLBE_TAG(0,1,0,MMU_TLBE_DSIZ_64KB,0,0,0,0)
+    load_const  R_ETAG,     MMU_TLBE_TAG(0,1,0,MMU_TLBE_DSIZ_16MB,0,0,0,0)
     load_const  R_TPL0,     ((\vWay) << MMU_TLBWE_RA_WAY_i)
     load_const  R_ATTR,     \vAttr
     bl          fill_utlb_loop
@@ -171,17 +163,7 @@ read_\()\aBeg\()_\()\aEnd\():   /* For debug purpose */
 
 .global main
 main:
-
-    load_const  R_ZERO, 0x00000000
-    nand        R_ONES, R_ZERO, R_ZERO
     push_spr    lr
-
-    /* Clear listed GP registers */
-    .irp RN,    3,  4,  5,  6,  7,  8,  9,  10, 11, \
-                12, 13, 14, 15, 16, 17, 18, 19, 20, \
-                21, 22, 23, 24, 25, 26, 27, 28, 29
-        mr      \RN,    R_ZERO
-    .endr
 
     b           setup_tlb
 
@@ -189,28 +171,13 @@ main:
 magic_data:
     .long VAL_MAGIC
 
-/*
-.align 4
-exception_handler:
-    rumboot_putstring   "Unexpected exception!\n"
-    rumboot_putstring   "MCSR is:\n"
-    mfspr       R_TEMP, SPR_MCSR_RW
-    rumboot_puthex      R_TEMP
-    rumboot_putstring   "MCSRR0 is:\n"
-    mfspr       R_TEMP, SPR_MCSRR0
-    rumboot_puthex      R_TEMP
-    clr_cr  cr6,        eq
-    b       test_end
-*/
-
 .align 2
 tlb_entries:
-/*          MMU_TLB_ENTRY(ERPN,  RPN,     EPN,     DSIZ,               IL1I,IL1D, W,I,M,G, E,                  UX, UW, UR,  SX, SW, SR   DULXE,IULXE, TS,  TID,               WAY,             BID,              V   ) */
-/* Invalidate TLB entries of remap 128KB pages IM1 from 0x00000020_C0000000-0x00000020_C001FFFF to 0x80020000-0x8003FFFF*/
-    .long   MMU_TLB_ENTRY(0x01F, 0xFFFF0, 0xFFFF0, MMU_TLBE_DSIZ_64KB, 0b1, 0b1,  0,1,0,0, MMU_TLBE_E_BIG_END, 0b0,0b0,0b0, 0b1,0b0,0b1, 0b0,  0b0,   0b0, MEM_WINDOW_SHARED, MMU_TLBWE_WAY_0, MMU_TLBWE_BE_0,   0b0 )
-    .long   MMU_TLB_ENTRY(0x020, 0xC0000, 0x80020, MMU_TLBE_DSIZ_64KB, 0b1, 0b1,  0,1,0,0, MMU_TLBE_E_BIG_END, 0b0,0b0,0b0, 0b1,0b1,0b1, 0b0,  0b0,   0b0, MEM_WINDOW_SHARED, MMU_TLBWE_WAY_0, MMU_TLBWE_BE_3,   0b0 )
-    .long   MMU_TLB_ENTRY(0x020, 0xC0010, 0x80030, MMU_TLBE_DSIZ_64KB, 0b1, 0b1,  0,1,0,0, MMU_TLBE_E_BIG_END, 0b0,0b0,0b0, 0b1,0b1,0b1, 0b0,  0b0,   0b0, MEM_WINDOW_SHARED, MMU_TLBWE_WAY_0, MMU_TLBWE_BE_4,   0b0 )
-    .long   MMU_TLB_ENTRY(0x020, 0xC0040, 0x80040, MMU_TLBE_DSIZ_64KB, 0b1, 0b1,  0,1,0,0, MMU_TLBE_E_BIG_END, 0b0,0b0,0b0, 0b1,0b1,0b1, 0b0,  0b0,   0b0, MEM_WINDOW_SHARED, MMU_TLBWE_WAY_0, MMU_TLBWE_BE_5,   0b0 )
+/*        MMU_TLB_ENTRY(ERPN,   RPN,        EPN,        DSIZ,                   IL1I,IL1D,  W,  I,  M,  G,  E,      UX, UW, UR, SX, SW, SR      DULXE,IULXE,    TS,     TID,                WAY,                BID,                V   ) */
+/* Invalidate IM1, IM2 bolted TLB entries */
+    .long MMU_TLB_ENTRY(0x000,  0x00000,    0x80020,    MMU_TLBE_DSIZ_64KB,     0b0, 0b0,   0b0,0b0,0b0,0b0,0b0,    0b0,0b0,0b0,0b0,0b0,0b0,    0b0,  0b0,      0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_3,     0b0 )
+    .long MMU_TLB_ENTRY(0x000,  0x00000,    0x80030,    MMU_TLBE_DSIZ_64KB,     0b0, 0b0,   0b0,0b0,0b0,0b0,0b0,    0b0,0b0,0b0,0b0,0b0,0b0,    0b0,  0b0,      0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_4,     0b0 )
+    .long MMU_TLB_ENTRY(0x000,  0x00000,    0x80040,    MMU_TLBE_DSIZ_64KB,     0b0, 0b0,   0b0,0b0,0b0,0b0,0b0,    0b0,0b0,0b0,0b0,0b0,0b0,    0b0,  0b0,      0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_5,     0b0 )
 .set tlb_entries_count, (.-tlb_entries)/MMU_TLB_ENTRY_SIZE
 
 
@@ -219,10 +186,6 @@ setup_tlb:
     load_addr   R_ARG0, tlb_entries
     load_const  R_ARG1, tlb_entries_count
     bl          write_tlb_entries
-    push_sprn   SPR_MMUBE1
-    push_sprn   SPR_MMUBE0
-    load_spr    R_TEMP, SPR_MMUBE0,   CONST_MMUBE0,
-    load_spr    R_TEMP, SPR_MMUBE1,   CONST_MMUBE1,
 
     rumboot_putstring       "Run subtests...\n"
     set_cr      cr6,        eq
