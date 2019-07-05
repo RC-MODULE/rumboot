@@ -17,14 +17,11 @@
 #include <platform/test_event_codes.h>
 
 
-//static void invalidate_bolted_utlb_entries( void );
 static void fill_utlb_entries( void );
 static void check_utlb_entries( void );
 
 int main() {
     test_event_send_test_id("test_oi10_cpu_utlb");
-
-//    invalidate_bolted_utlb_entries();
 
     fill_utlb_entries();
 
@@ -35,19 +32,6 @@ int main() {
 
 
 /* <<<<<<<<<<Implementation>>>>>>>>>> */
-
-//static void invalidate_bolted_utlb_entries( void ) {
-//    rumboot_printf( "Invalidate bolted TLB entries\n" );
-//    static const tlb_entry invalid_entries[] = {
-//// IM1, IM2 bolted TLB entries
-////       MMU_TLB_ENTRY( ERPN,   RPN,        EPN,        DSIZ,                   IL1I,IL1D,  W,  I,  M,  G,  E,      UX, UW, UR, SX, SW, SR      DULXE,IULXE,    TS,     TID,                WAY,                BID,                V   )
-//        {MMU_TLB_ENTRY( 0x000,  0x00000,    0x80020,    MMU_TLBE_DSIZ_64KB,     0b0, 0b0,   0b0,0b0,0b0,0b0,0b0,    0b0,0b0,0b0,0b0,0b0,0b0,    0b0,  0b0,      0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_3,     0b0 )},
-//        {MMU_TLB_ENTRY( 0x000,  0x00000,    0x80030,    MMU_TLBE_DSIZ_64KB,     0b0, 0b0,   0b0,0b0,0b0,0b0,0b0,    0b0,0b0,0b0,0b0,0b0,0b0,    0b0,  0b0,      0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_4,     0b0 )},
-//        {MMU_TLB_ENTRY( 0x000,  0x00000,    0x80040,    MMU_TLBE_DSIZ_64KB,     0b0, 0b0,   0b0,0b0,0b0,0b0,0b0,    0b0,0b0,0b0,0b0,0b0,0b0,    0b0,  0b0,      0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_5,     0b0 )}
-//    };
-//    write_tlb_entries(invalid_entries, ARRAY_SIZE(invalid_entries));
-//}
-
 
 #define CALC_TS( index )        (0x00000001 & index)                        /* TS = odd(index[0:7]) */
 #define CALC_TID( index )       (index << 8)                                /* TID[0:15] = {index[0:7], 8'h0} */
