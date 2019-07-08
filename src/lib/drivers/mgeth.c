@@ -11,12 +11,10 @@
 
 #include <rumboot/timer.h>
 
-int mgeth_init_sgmii(uint32_t sgmii_base_addr, uint32_t sctl_base_addr)
+int mgeth_init_sgmii(uint32_t sgmii_base_addr, uint32_t sctl_base_addr, uint32_t AN_en)
 {
 	uint32_t
 		sgmii_ctrl_stat_val,
-		AN_en = 0,
-        i,
 		OFFSET_SPCS_0, OFFSET_SPCS_1, OFFSET_SPCS_2, OFFSET_SPCS_3,
 		OFFSET_TXS_0, OFFSET_TXS_1, OFFSET_TXS_2, OFFSET_TXS_3,
 		OFFSET_CM,
@@ -46,34 +44,7 @@ int mgeth_init_sgmii(uint32_t sgmii_base_addr, uint32_t sctl_base_addr)
 	OFFSET_RXS_1  = sgmii_base_addr + 0x0500;
 	OFFSET_RXS_2  = sgmii_base_addr + 0x0900;
 	OFFSET_RXS_3  = sgmii_base_addr + 0x0D00;
-    
-     #ifdef CMAKE_BUILD_TYPE_POSTPRODUCTION
-        rumboot_printf("Switch GPIO in MDIO mode\n");
-        iowrite32(0x00000000, MGPIO0_BASE + GPIO_SWITCH_SOURCE);
-        iowrite32(0x00000000, MGPIO1_BASE + GPIO_SWITCH_SOURCE); 
-        rumboot_printf("Reset PHY\n"); 
-        rumboot_printf("delay 1s\n");
-        mdelay(1000);
-        for (i = 0; i < 4; i++){
-            iowrite32(0x1, MDIO0_BASE + 0x1000*i + MDIO_ETH_RST_N);
-            iowrite32(0x1, MDIO0_BASE + 0x1000*i + MDIO_EN);
-            rumboot_printf("power up PHY%x \n",i);
-            rumboot_printf("delay 100ms for correct setup link!\n");
-            mdelay(100);
-        }
         
-        rumboot_printf("delay 5s\n");
-        mdelay(5000);
-        
-        for (i = 0; i < 4; i++){
-            if (!AN_en) {
-                rumboot_printf("=== MDIO%x_BASE ===\n",i);  
-                mdio_write (MDIO0_BASE + 0x1000*i, 0x14, 0x2947);
-//                mdio_read_data (MDIO0_BASE + 0x1000*i, 0x14);
-            }
-        }
-    #endif
-    
 	rumboot_printf("=== config SGMII_PHY ===\n");
     if (!AN_en) {
         rumboot_printf("=== config SGMII_PHY OFFSET_SPCS ===\n");    
@@ -309,5 +280,34 @@ void mdio_write(uint32_t mdio_addr,uint32_t reg_addr,uint32_t write_data)
     
 	while (read_data & 0x4) {
         read_data = ioread32(mdio_addr + MDIO_CONTROL);
+    }
+}
+
+void init_gpio_and_en_eth_phy(uint32_t mgpio_base, uint32_t mdio_base, uint32_t AN_en)
+{
+    uint32_t i;
+    rumboot_printf("Switch GPIO in MDIO mode\n");
+    iowrite32(0x00000000, mgpio_base          + GPIO_SWITCH_SOURCE);
+    iowrite32(0x00000000, mgpio_base + 0x1000 + GPIO_SWITCH_SOURCE); 
+    rumboot_printf("Reset PHY\n"); 
+    rumboot_printf("delay 1s\n");
+    mdelay(1000);
+    for (i = 0; i < 4; i++){
+        iowrite32(0x1, mdio_base + 0x1000*i + MDIO_ETH_RST_N);
+        iowrite32(0x1, mdio_base + 0x1000*i + MDIO_EN);
+        rumboot_printf("power up PHY%x \n",i);
+        rumboot_printf("delay 100ms for correct setup link!\n");
+        mdelay(100);
+    }
+    
+    rumboot_printf("delay 5s\n");
+    mdelay(5000);
+    
+    for (i = 0; i < 4; i++){
+        if (!AN_en) {
+            rumboot_printf("=== MDIO%x_BASE ===\n",i);  
+            mdio_write (mdio_base + 0x1000*i, 0x14, 0x2947);
+//            mdio_read_data (mdio_base + 0x1000*i, 0x14);
+        }
     }
 }

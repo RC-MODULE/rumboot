@@ -1,6 +1,7 @@
 #ifndef __MGETH__H__
 #define __MGETH__H__
 
+#define AN_EN   0
 //#define DBG
 
 #ifdef DBG
@@ -36,7 +37,7 @@ struct mgeth_conf
  * \param sctl_base_addr Base address of SCTL
  * \return If OK - 0, else - not 0
  */
-int mgeth_init_sgmii(uint32_t sgmii_base_addr, uint32_t sctl_base_addr);
+int mgeth_init_sgmii(uint32_t sgmii_base_addr, uint32_t sctl_base_addr,uint32_t AN_en);
 
 /**
  * \brief MGETH reset

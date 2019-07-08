@@ -248,9 +248,13 @@ int main()
 
 	rumboot_irq_cli();
 
-	if (mgeth_init_sgmii(SGMII_PHY, SCTL_BASE)) {
+	#ifdef CMAKE_BUILD_TYPE_POSTPRODUCTION
+        init_gpio_and_en_eth_phy(MGPIO0_BASE, MDIO0_BASE, AN_EN);
+    #endif
+	if (mgeth_init_sgmii(SGMII_PHY, SCTL_BASE, AN_EN))
+	{
 		rumboot_printf("ERROR: SGMII initialization ERROR!\n");
-		return -1;
+		return 1;
 	}
 
 #if defined(RUMBOOT_BASIS_DMA_MEM_ACCEL)
