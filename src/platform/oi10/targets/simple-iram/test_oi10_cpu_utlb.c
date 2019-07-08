@@ -45,16 +45,12 @@ int main() {
 )
 
 static void fill_utlb_way( uint32_t const way ) {
-//    rumboot_printf( "Fill UTLB entries for way %d\n", way );
-
     uint32_t const mmube0 = spr_read( SPR_MMUBE0 );
-
-//    bool error = false;
 
     uint32_t ts, tid, epn, erpn, ra;
     uint32_t mmucr, tlbe_tag, tlbe_data, tlbe_attr;
 
-    for( uint32_t index = 0; index < MMU_UTLB_INDEXES_N; index++/*, error = false*/ ) {
+    for( uint32_t index = 0; index < MMU_UTLB_INDEXES_N; index++ ) {
         if( (way != 0)
          || ( (GET_BITS(mmube0, MMU_MMUBE0_IBE0_i, MMU_MMUBE0_IBE0_n) != index )
            && (GET_BITS(mmube0, MMU_MMUBE0_IBE1_i, MMU_MMUBE0_IBE1_n) != index )
@@ -73,29 +69,6 @@ static void fill_utlb_way( uint32_t const way ) {
 
             spr_write(  SPR_MMUCR, mmucr );
             tlbwe( tlbe_tag, ra, MMU_TLB_ENTRY_TAG );
-//            mmucr       = spr_read(  SPR_MMUCR );
-//            TEST_ASSERT( GET_BITS(mmucr, MMU_MMUCR_LINDEX_i, MMU_MMUCR_LINDEX_n) == index, "Wrong TAG");
-//            TEST_ASSERT( GET_BITS(mmucr, MMU_MMUCR_LWAY_i, MMU_MMUCR_LWAY_n) == way, "Wrong TAG");
-//            if( GET_BITS(mmucr, MMU_MMUCR_LINDEX_i, MMU_MMUCR_LINDEX_n) != index ) {
-//                error = true;
-//                rumboot_putstring( "Wrong index" );
-//            }
-//            if( GET_BITS(mmucr, MMU_MMUCR_LWAY_i, MMU_MMUCR_LWAY_n) != way ) {
-//                error = true;
-//                rumboot_putstring( "Wrong way" );
-//            }
-//            if( error ) {
-//                rumboot_putstring( "index, way:" );
-//                rumboot_puthex( index );
-//                rumboot_puthex( way );
-//                rumboot_putstring( "TAG, DATA, ATTR:" );
-//                rumboot_puthex( tlbe_tag );
-//                rumboot_puthex( tlbe_data );
-//                rumboot_puthex( tlbe_attr );
-//                rumboot_putstring( "MMUCR:" );
-//                rumboot_puthex( mmucr );
-//                TEST_ASSERT( way == 0, "Wrong TAG");
-//            }
             tlbwe( tlbe_data,ra, MMU_TLB_ENTRY_DATA );
             tlbwe( tlbe_attr,ra, MMU_TLB_ENTRY_ATTR );
         }
@@ -118,13 +91,11 @@ enum {
 static void check_utlb_entries( void ) {
     rumboot_printf( "Check UTLB entries\n");
 
-//    bool error = false;
-
     uint32_t ts, tid, epn, erpn, ra, tlbe_attr_only;
     uint32_t mmucr, tlbe_tag, tlbe_data, tlbe_attr;
 
     for( uint32_t index = 0; index < MMU_UTLB_INDEXES_N; index++ ) {
-        for( uint32_t way = 0; way < MMU_UTLB_WAYS_N; way++/*, error = false*/ ) {
+        for( uint32_t way = 0; way < MMU_UTLB_WAYS_N; way++ ) {
             ra = MMU_TLBE_ADDR( index, way );
 
             tlbe_tag        = tlbre( ra, MMU_TLB_ENTRY_TAG );
@@ -143,48 +114,6 @@ static void check_utlb_entries( void ) {
                 TEST_ASSERT( GET_BITS(mmucr, MMU_MMUCR_STID_i, MMU_MMUCR_STID_n) == tid, "Wrong TAG");
                 TEST_ASSERT( tlbe_data == MMU_TLBE_DATA( erpn,epn, parity32( erpn ), parity32( epn ) ), "Wrong DATA");
                 TEST_ASSERT( tlbe_attr == (tlbe_attr_only | ( parity32( tlbe_attr_only ) << MMU_TLBE_ATTR_SPPar_i )), "Wrong ATTR");
-//                if( tlbe_tag != MMU_TLBE_TAG( epn, 0b1, ts, MMU_TLBE_DSIZ_16MB, 0b0, parity32( epn ), parity32( 0b1 ^ ts ^ MMU_TLBE_DSIZ_16MB ), parity32( tid ) ) ) {
-//                    error = true;
-//                    rumboot_putstring( "Wrong tag" );
-//                }
-//                if( GET_BITS(mmucr, MMU_MMUCR_STID_i, MMU_MMUCR_STID_n) != tid ) {
-//                    error = true;
-//                    rumboot_putstring( "Wrong tid" );
-//                }
-//                if( tlbe_data != MMU_TLBE_DATA( erpn,epn, parity32( erpn ), parity32( epn ) ) ) {
-//                    error = true;
-//                    rumboot_putstring( "Wrong data" );
-//                }
-//                if( tlbe_attr != (tlbe_attr_only | ( parity32( tlbe_attr_only ) << MMU_TLBE_ATTR_SPPar_i )) ) {
-//                    error = true;
-//                    rumboot_putstring( "Wrong attr" );
-//                }
-//                if( error ) {
-//                    rumboot_putstring( "index, way:" );
-//                    rumboot_puthex( index );
-//                    rumboot_puthex( way );
-//                    rumboot_putstring( "TAG, DATA, ATTR:" );
-//                    rumboot_puthex( tlbe_tag );
-//                    rumboot_puthex( tlbe_data );
-//                    rumboot_puthex( tlbe_attr );
-//                    rumboot_putstring( "MMUCR:" );
-//                    rumboot_puthex( mmucr );
-//                    rumboot_putstring( "TID, TIDPar:" );
-//                    rumboot_puthex( tid );
-//                    rumboot_puthex( parity32( tid ) );
-//                    rumboot_putstring( "EPN, EPNPar:" );
-//                    rumboot_puthex( epn );
-//                    rumboot_puthex( parity32( epn ) );
-//                    rumboot_putstring( "ERPN, ERPNPar:" );
-//                    rumboot_puthex( erpn );
-//                    rumboot_puthex( parity32( erpn ) );
-//                    rumboot_putstring( "DSIZPar:" );
-//                    rumboot_puthex( parity32( 0b1 ^ ts ^ MMU_TLBE_DSIZ_16MB ) );
-//                    rumboot_putstring( "ATTR only, ATTRPar:" );
-//                    rumboot_puthex( tlbe_attr_only );
-//                    rumboot_puthex( parity32( tlbe_attr_only ) );
-//                    TEST_ASSERT( 0, "Wrong tlbre");
-//                }
             }
         }
     }
