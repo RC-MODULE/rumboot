@@ -158,7 +158,7 @@ uint32_t stwcx(uint32_t wval, uintptr_t wptr) {
             "andi.  %0, %0, 0x0F    \n\t"
         :   "=r"(rval)
         :   "r"(wval), "r"(wptr)
-        :   "memory"
+        :   "cr0", "memory"
     );
     return rval;
 }
@@ -233,5 +233,35 @@ uint32_t lwarx(uintptr_t wptr) {
     asm volatile (\
         "tlbsync \n\t"\
     )
+
+#define tlbsx( RB ) ({\
+    int32_t RT;\
+    asm volatile (\
+        "tlbsx. %0, 0, %1\n\t"          /* RT[33:34] = tlbentry[way], RT[40:47] = tlbentry[index] */\
+        "crnot  2, 2\n\t"               /* CR[CR0[2]] = !CR[CR0[2]] */\
+        "mfcr   %1\n\t"\
+        "rlwimi %0, %1, 2, 0, 0\n\t"    /* RT[32] = CR[CR0[2]] */\
+        :   "=r"(RT), "=r"(RB)\
+        ::  "cr0"\
+    );\
+    RT;                                 /* if RT >= 0 then tlbentry is found */\
+})
+
+#define tlbre( RA, WS ) ({\
+    uint32_t RT;\
+    asm volatile (\
+        "tlbre %0, %1, %2\n\t"\
+        :   "=r"(RT)\
+        :   "r"(RA), "i"(WS)\
+    );\
+    RT;\
+})
+
+#define tlbwe( RS, RA, WS )\
+    asm volatile (\
+        "tlbwe %0, %1, %2\n\t"\
+        ::  "r"(RS), "r"(RA), "i"(WS)\
+    )
+
 
 #endif  /* PPC_476FP_LIB_C_H*/
