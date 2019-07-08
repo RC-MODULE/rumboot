@@ -165,4 +165,7 @@
 #define L1I_SIZE        (L1C_INDEXES_N * L1C_WAYS_N * L1C_LINE_SIZE)
 #define L1D_SIZE        (L1C_INDEXES_N * L1C_WAYS_N * L1C_LINE_SIZE)
 
+#define MMU_UTLB_INDEXES_N  (256)
+#define MMU_UTLB_WAYS_N     (4)
+
 #endif  // PPC_476FP_CONFIG_H

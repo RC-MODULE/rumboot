@@ -295,6 +295,7 @@ init_other_spr:
                   | (0b0000                         << CTRL_CCR0_ICWRIDX_i)\
                   | (0b0                            << CTRL_CCR0_DTB_i)\
                   | (0b0                            << CTRL_CCR0_FLSTA_i)\
+                  | (0b0                            << CTRL_CCR0_DBTAC_i)\
                   | (CTRL_CCR0_DQWPM_No_prediction  << CTRL_CCR0_DQWPM_i)\
                   | (CTRL_CCR0_IQWPM_Use_EA         << CTRL_CCR0_IQWPM_i)
     mtspr       SPR_CCR0, r3
