@@ -3,6 +3,7 @@
 
 
 #include <stdint.h>
+#include <stdbool.h>
 #include <rumboot/io.h>
 
 /*MSR access*/
@@ -173,6 +174,17 @@ uint32_t lwarx(uintptr_t wptr) {
         :   "memory"
     );
     return rval;
+}
+
+static inline __attribute__((always_inline)) bool parity32( uint32_t const val ) {
+    bool rval;
+    asm volatile (
+        "popcntb    %0, %1\n\t"
+        "prtyw      %0, %0\n\t"
+        :   "=r"(rval)
+        :   "r"(val)
+    );
+    return !rval;
 }
 
 
