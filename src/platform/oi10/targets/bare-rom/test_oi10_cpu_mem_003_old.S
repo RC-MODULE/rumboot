@@ -19,7 +19,7 @@ boot_start:
 
 rumboot_entry_point:
     gtube_init
-    test_event_send_test_id "test_oi10_cpu_mem_003"
+    test_event_send_test_id "test_oi10_cpu_mem_003_old"
     load_const  r0, 0x00000000  /* make r0 "all zeros" source */
     load_const  r1, 0xFFFFFFFF  /* make r1 "all ones" source  */
 /*    load_const  r2, 0x00000000
@@ -186,7 +186,7 @@ init_spr:
     mtspr       SPR_DBDR,	r0
     mtspr       SPR_RMPD,	r0*/
 
-    b           test_cpu_mem_003
+    b           test_cpu_mem_003_old
 
 .section ".init.rodata","a",@progbits
 
@@ -320,7 +320,7 @@ DECLARE_CONST( MMU_MMUCR_STID_MASK,  0x0000FFFF )
 
 .section ".init.text","ax",@progbits
 
-test_cpu_mem_003:
+test_cpu_mem_003_old:
 
 BEGIN_ENUM( test_event_code )
     DECLARE_ENUM_VAL(   TEC_CHECK_MMU_UTLB_READ,   TEST_EVENT_CODE_MIN )
