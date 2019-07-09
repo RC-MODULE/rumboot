@@ -33,21 +33,22 @@ int main() {
 
 /* <<<<<<<<<<Implementation>>>>>>>>>> */
 
-#define CALC_TS( index )        (0x00000001 & index)                        /* TS = odd(index[0:7]) */
-#define CALC_TID( index )       (index << 8)                                /* TID[0:15] = {index[0:7], 8'h0} */
-#define CALC_EPN( index, way )  ( (index << 12) | (way << 10) )             /* EPN[0:19] = {index[0:7], way[0:1], 10'h0} */
-#define CALC_ERPN( index, way ) ( (way << 8) | index );                     /* ERPN[0:9] = {way[0:1], index[0:7]} */
-#define CALC_MMU_TLBE_ATTR( ts, erpn, epn ) (\
-    ( (ts                                       << MMU_TLBE_ATTR_IL1I_i)    /* L1I = TS */\
-    | (erpn                                     << MMU_TLBE_ATTR_E_i)       /* {L1D, U[0:3], WIMGE[0:4]} = {way[0:1], index[0:7]} */\
-    | (GET_BITS(epn, IBM_BIT_INDEX(32, 5), 6)   << MMU_TLBE_ATTR_SR_i) )    /* {UXWR[0:2], SXWR[0:2]} = EPN[0:5] */\
-    & ~(0b1 << MMU_TLBE_ATTR_I_i)                                           /* I = 0 for enable L1I, L1D values */\
+#define CALC_TS( index )        (0x00000001 & index)                /* TS = odd(index[0:7]) */
+#define CALC_TID( index )       (index << 8)                        /* TID[0:15] = {index[0:7], 8'h0} */
+#define CALC_EPN( index, way )  ( (index << 12) | (way << 10) )     /* EPN[0:19] = {index[0:7], way[0:1], 10'h0} */
+#define CALC_ERPN( index, way ) ( (way << 8) | index )              /* ERPN[0:9] = {way[0:1], index[0:7]} */
+#define CALC_UXWRSXWR( index )  (index >> 2)                        /* {UXWR[0:2], SXWR[0:2]} = EPN[0:5] */
+#define CALC_MMU_TLBE_ATTR( ts, erpn, uxwrsxwr ) (\
+    ( (ts       << MMU_TLBE_ATTR_IL1I_i)                            /* L1I = TS */\
+    | (erpn     << MMU_TLBE_ATTR_E_i)                               /* {L1D, U[0:3], WIMGE[0:4]} = {way[0:1], index[0:7]} */\
+    | (uxwrsxwr << MMU_TLBE_ATTR_SR_i) )\
+    & ~(0b1 << MMU_TLBE_ATTR_I_i)                                   /* I = 0 for enable L1I, L1D values */\
 )
 
 static void fill_utlb_way( uint32_t const way ) {
     uint32_t const mmube0 = spr_read( SPR_MMUBE0 );
 
-    uint32_t ts, tid, epn, erpn, ra;
+    uint32_t ts, tid, epn, erpn, uxwrsxwr, ra;
     uint32_t mmucr, tlbe_tag, tlbe_data, tlbe_attr;
 
     for( uint32_t index = 0; index < MMU_UTLB_INDEXES_N; index++ ) {
@@ -59,13 +60,14 @@ static void fill_utlb_way( uint32_t const way ) {
             epn         = CALC_EPN( index, way );
             ts          = CALC_TS( index );
             erpn        = CALC_ERPN( index, way );
+            uxwrsxwr    = CALC_UXWRSXWR( index );
             ra          = ((MMU_TLBWE_WAY_0|way)    << MMU_TLBWE_RA_WAY_i)
                         | (MMU_TLBWE_BE_UND         << MMU_TLBWE_RA_BE_i);
 
             mmucr       = MMU_MMUCR( 0b0,  0b0,0b0,    ts,     tid );
             tlbe_tag    = MMU_TLBE_TAG( epn,   0b1,    ts,     MMU_TLBE_DSIZ_16MB,     0b0,    0b0,0b0,0b0 );
             tlbe_data   = MMU_TLBE_DATA( erpn,epn,     0b0,0b0 );
-            tlbe_attr   = CALC_MMU_TLBE_ATTR( ts, erpn, epn );
+            tlbe_attr   = CALC_MMU_TLBE_ATTR( ts, erpn, uxwrsxwr );
 
             spr_write(  SPR_MMUCR, mmucr );
             tlbwe( tlbe_tag, ra, MMU_TLB_ENTRY_TAG );
@@ -91,7 +93,9 @@ enum {
 static void check_utlb_entries( void ) {
     rumboot_printf( "Check UTLB entries\n");
 
-    uint32_t ts, tid, epn, erpn, ra, tlbe_attr_only;
+    test_event( TEC_CHECK_UTLB_ENTRIES );
+
+    uint32_t ts, tid, epn, erpn, uxwrsxwr, ra, tlbe_attr_only;
     uint32_t mmucr, tlbe_tag, tlbe_data, tlbe_attr;
 
     for( uint32_t index = 0; index < MMU_UTLB_INDEXES_N; index++ ) {
@@ -108,7 +112,8 @@ static void check_utlb_entries( void ) {
                 epn             = CALC_EPN( index, way );
                 ts              = CALC_TS( index );
                 erpn            = CALC_ERPN( index, way );
-                tlbe_attr_only  = CALC_MMU_TLBE_ATTR( ts, erpn, epn );
+                uxwrsxwr        = CALC_UXWRSXWR( index );
+                tlbe_attr_only  = CALC_MMU_TLBE_ATTR( ts, erpn, uxwrsxwr );
 
                 TEST_ASSERT( tlbe_tag == MMU_TLBE_TAG( epn, 0b1, ts, MMU_TLBE_DSIZ_16MB, 0b0, parity32( epn ), parity32( 0b1 ^ ts ^ MMU_TLBE_DSIZ_16MB ), parity32( tid ) ), "Wrong TAG");
                 TEST_ASSERT( GET_BITS(mmucr, MMU_MMUCR_STID_i, MMU_MMUCR_STID_n) == tid, "Wrong TAG");
@@ -118,5 +123,4 @@ static void check_utlb_entries( void ) {
         }
     }
 
-    test_event( TEC_CHECK_UTLB_ENTRIES );
 }
