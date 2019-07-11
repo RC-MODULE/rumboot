@@ -46,8 +46,8 @@
 #include <platform/regs/regs_l2c_pmu.h>
 
 
-#define EVENT_GENERATE_INT_DMA_O_S_SLV_ERR_INT       (TEST_EVENT_CODE_MIN + 0)
-#define EVENT_CLEAR_INT_DMA_O_S_SLV_ERR_INT          (TEST_EVENT_CODE_MIN + 1)
+#define EVENT_GENERATE_INT_PLB4XAHB1_INTR            (TEST_EVENT_CODE_MIN + 0)
+#define EVENT_CLEAR_INT_PLB4XAHB1_INTR               (TEST_EVENT_CODE_MIN + 1)
 
 #define EVENT_GENERATE_INT_P6BC_O_SYSTEM_HUNG        (TEST_EVENT_CODE_MIN + 2)
 #define EVENT_CLEAR_INT_P6BC_O_SYSTEM_HUNG           (TEST_EVENT_CODE_MIN + 3)
@@ -65,16 +65,29 @@
 
 #define UNEXIST_DCR_ADDR                0x00
 
+#define NON_EXISTENT_AXI_ADDR   0xC0025000
+#define TEST_VALUE              0xBABADEDA
 
 struct rumboot_irq_entry *tbl;
 volatile uint32_t MC_HANDLED = 0;
 
 static void exception_handler(int const id, char const * const name ) {
     rumboot_printf( "Exception: %s\n", name );
+
+    rumboot_printf("MSR:  0x%x\n", msr_read());
+    rumboot_printf("SRR0: 0x%x\n", spr_read(SPR_SRR0));
+    rumboot_printf("SRR1: 0x%x\n", spr_read(SPR_SRR1));
+    rumboot_printf("CSRR0: 0x%x\n", spr_read(SPR_CSRR0));
+    rumboot_printf("CSRR1: 0x%x\n", spr_read(SPR_CSRR1));
+    rumboot_printf("MCSRR0: 0x%x\n", spr_read(SPR_MCSRR0));
+    rumboot_printf("MCSRR1: 0x%x\n", spr_read(SPR_MCSRR1));
+    rumboot_printf("MCSR:  0x%x\n", spr_read(SPR_MCSR_RW));
+
     TEST_ASSERT( (id == RUMBOOT_IRQ_MACHINE_CHECK)
               && (spr_read(SPR_MCSR_RW) == ( (0b1 << ITRPT_MCSR_MCS_i) )),
                  "Unexpected exception" );
     spr_write( SPR_MCSR_C, spr_read(SPR_MCSR_RW) );
+
     isync();
     msync();
 }
@@ -83,6 +96,12 @@ void generate_BR6TO4_INTR(uint32_t base_address)
 {
     rumboot_printf("Check BR6TO4_INTR generation\n");
     dcr_write(base_address + P64_TESR, 0b1 << ESR_TESR_P6WPE_i);
+}
+
+void generate_PLB4AHB_INTR()
+{
+    rumboot_printf("Check PLB4AHB_INTR generation\n");
+    iowrite32( TEST_VALUE, NON_EXISTENT_AXI_ADDR );
 }
 
 void generate_ARB_SYSDCRERR()
@@ -96,15 +115,6 @@ void wait_interrupt(uint32_t interrupt_number)
     uint32_t t = 0;
     while (!(MC_HANDLED & (1 << interrupt_number)) && t++<TEST_OI10_CPU_025_IO_TIMEOUT) msync();
     TEST_ASSERT((MC_HANDLED & (1 << interrupt_number)), "Interrupt handle timeout!");
-}
-
-void DMA_O_S_SLV_ERR_INT_inj_int_handler()
-{
-    rumboot_printf("DMA_O_S_SLV_ERR_INT_inj_int_handler\n");
-    dma2plb6_disable_o_slv_err_interrupt(DCR_DMAPLB6_BASE);
-    dcr_write(DCR_DMAPLB6_BASE + PLB6_DMA_PSE, 1 << DMA_PSE_PE_i);
-    SET_BIT(MC_HANDLED, DMA2PLB6_SLV_ERR_INT);
-    test_event(EVENT_CLEAR_INT_DMA_O_S_SLV_ERR_INT);
 }
 
 void P6P4_0_BR6TO4_INTR_inj_int_handler()
@@ -144,6 +154,16 @@ void ARB_SYSDCRERR_inj_int_handler()
     dcr_write(DCR_ARB_BASE + DCRARB_DAESR, 0b1<<DCRARB_DAESR_EV_i); //dcrarb_clear_daesr
 }
 
+void PLB4AHB_INTR_inj_int_handler()
+{
+    rumboot_printf("PLB4AHB_INTR_inj_int_handler\n");
+    SET_BIT(MC_HANDLED, PLB4XAHB1_INTR);
+    test_event(EVENT_CLEAR_INT_PLB4XAHB1_INTR);
+//    dcr_write( DCR_PLB4AHB_0_BASE + SEAR_ADDRUPPER, 0xF );
+//    dcr_write( DCR_PLB4AHB_0_BASE + SEAR_ADDRLOWER, 0xF );
+//    dcr_write( DCR_PLB4AHB_0_BASE + SESR, 0xF );
+}
+
 void P6P4_0_BR6TO4_INTR_reg_int_handler()
 {
     rumboot_printf("P6P4_0_BR6TO4_INTR_reg_int_handler\n");
@@ -158,6 +178,15 @@ void P6P4_1_BR6TO4_INTR_reg_int_handler()
     SET_BIT(MC_HANDLED, PLB6PLB41_O_BR6TO4_INTR);
     TEST_ASSERT(dcr_read(DCR_PLB6PLB4_1_BASE + P64_ESR) & (0b1 << ESR_TESR_P6WPE_i), "Wrong value in P6P4_1 ESR reg. Expected ESR[P6BPE]=1\n");
     dcr_write(DCR_PLB6PLB4_1_BASE + P64_ESR, (0b1 << ESR_TESR_P6WPE_i));
+}
+
+void PLB4AHB_INTR_reg_int_handler()
+{
+    rumboot_printf("PLB4AHB_INTR_reg_int_handler\n");
+    SET_BIT(MC_HANDLED, PLB4XAHB1_INTR);
+    dcr_write( DCR_PLB4AHB_0_BASE + SEAR_ADDRUPPER, 0xF );
+    dcr_write( DCR_PLB4AHB_0_BASE + SEAR_ADDRLOWER, 0xF );
+    dcr_write( DCR_PLB4AHB_0_BASE + SESR, 0xF );
 }
 
 void ARB_SYSDCRERR_reg_int_handler()
@@ -208,6 +237,17 @@ void test_setup( uint32_t interrupt_number )
 
                         MC_HANDLED = 0;
     break;
+    case PLB4XAHB1_INTR:
+                        rumboot_printf("Set handler for PLB4XAHB1_INTR\n");
+                        rumboot_irq_cli();
+                        tbl = rumboot_irq_create( NULL );
+                        rumboot_irq_set_handler( tbl, PLB6PLB41_O_BR6TO4_INTR, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, PLB4AHB_INTR_reg_int_handler, NULL );
+                        rumboot_irq_table_activate( tbl );
+                        rumboot_irq_enable( PLB6PLB41_O_BR6TO4_INTR );
+                        rumboot_irq_sei();
+
+                        MC_HANDLED = 0;
+    break;
     }
 }
 
@@ -250,13 +290,13 @@ void test_setup_inj( uint32_t interrupt_number )
 
                         MC_HANDLED = 0;
     break;
-    case DMA2PLB6_SLV_ERR_INT:
-                        rumboot_printf("Set handler for DMA2PLB6_SLV_ERR_INT\n");
+    case PLB4XAHB1_INTR:
+                        rumboot_printf("Set handler for PLB4XAHB1_INTR\n");
                         rumboot_irq_cli();
                         tbl = rumboot_irq_create( NULL );
-                        rumboot_irq_set_handler( tbl, DMA2PLB6_SLV_ERR_INT, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, DMA_O_S_SLV_ERR_INT_inj_int_handler, NULL );
+                        rumboot_irq_set_handler( tbl, PLB6PLB41_O_BR6TO4_INTR, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, PLB4AHB_INTR_inj_int_handler, NULL );
                         rumboot_irq_table_activate( tbl );
-                        rumboot_irq_enable( DMA2PLB6_SLV_ERR_INT );
+                        rumboot_irq_enable( PLB6PLB41_O_BR6TO4_INTR );
                         rumboot_irq_sei();
 
                         MC_HANDLED = 0;
@@ -279,10 +319,13 @@ void check_interrupt_from_io_dev_reg(uint32_t interrupt_number)
                                             rumboot_printf("Check software generation P6P4_1_BR6TO4_INTR\n");
                                             generate_BR6TO4_INTR(DCR_PLB6PLB4_1_BASE);
                                             break;
-
         case ARB_SYSDCRERR:
                                             rumboot_printf("Check ARB_SYSDCRERR generation\n");
                                             generate_ARB_SYSDCRERR();
+                                            break;
+        case PLB4XAHB1_INTR:
+                                            rumboot_printf("Check PLB4XAHB1_INTR generation\n");
+                                            generate_PLB4AHB_INTR();
                                             break;
 
         default: rumboot_printf("Get wrong interrupt id for injection\n");
@@ -300,8 +343,8 @@ void check_interrupt_from_io_dev_inj(uint32_t interrupt_number)
 
     switch (interrupt_number)
     {
-        case DMA2PLB6_SLV_ERR_INT:
-                                            test_event(EVENT_GENERATE_INT_DMA_O_S_SLV_ERR_INT);
+        case PLB4XAHB1_INTR:
+                                            test_event(EVENT_GENERATE_INT_PLB4XAHB1_INTR);
                                             break;
 
         case PLB6PLB40_O_0_BR6TO4_INTR:
@@ -346,14 +389,17 @@ int main()
             dcr_read(DCR_PLB6PLB4_1_BASE + P64_ESR));
 
 
+
+
 #ifdef USE_HARDWARE_PARTS
-//  check_interrupt_from_io_dev_inj(DMA2PLB6_SLV_ERR_INT);
+    check_interrupt_from_io_dev_inj(PLB4XAHB1_INTR);
     check_interrupt_from_io_dev_inj(PLB6PLB40_O_0_BR6TO4_INTR);
     check_interrupt_from_io_dev_inj(PLB6PLB41_O_BR6TO4_INTR);
     check_interrupt_from_io_dev_inj(ARB_SYSDCRERR);
 #endif
 
-
+    check_interrupt_from_io_dev_reg(PLB4XAHB1_INTR);
+    check_interrupt_from_io_dev_reg(PLB6PLB40_O_0_BR6TO4_INTR);
     check_interrupt_from_io_dev_reg(PLB6PLB40_O_0_BR6TO4_INTR);
     check_interrupt_from_io_dev_reg(PLB6PLB41_O_BR6TO4_INTR);
     check_interrupt_from_io_dev_reg(ARB_SYSDCRERR);
