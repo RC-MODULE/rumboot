@@ -56,64 +56,64 @@ static struct tlb_entry const templates[][16] = {
         {TEST_TLB_ENTRY( 0x000, 0b1,        0x00000,0b1,        0x00000,0b1,        0b1,0b0,0b000001,   0b1,        0b0,0b0,0b0000, 0b0,0b0,0b0,0b0,0b0,0b0,0b0,0b0,0b0,0b0,0b0,    0b1,    0x5555, 0b1,        0 )},
         {TEST_TLB_ENTRY( 0x155, 0b0,        0x55555,0b1,        0x55555,0b1,        0b1,0b0,0b000001,   0b1,        0b1,0b0,0b1010, 0b1,0b0,0b1,0b0,0b1,0b0,0b1,0b0,0b1,0b0,0b1,    0b0,    0x5540, 0b0,        0 )},
         {TEST_TLB_ENTRY( 0x2AA, 0b0,        0xAAAAA,0b1,        0xAAAAA,0b1,        0b1,0b0,0b000001,   0b1,        0b1,0b1,0b0101, 0b0,0b1,0b0,0b1,0b0,0b1,0b0,0b1,0b0,0b1,0b0,    0b0,    0x557F, 0b0,        0 )},
-        {TEST_TLB_ENTRY( 0x3FF, 0b1,        0xFFFFF,0b1,        0xFFFFF,0b1,        0b1,0b0,0b000001,   0b1,        0b1,0b1,0b1111, 0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,    0b0,    0xFF6A, 0b1,        0 )},
+        {TEST_TLB_ENTRY( 0x3FF, 0b1,        0xFFFFF,0b1,        0xFFFFF,0b1,        0b1,0b0,0b000001,   0b1,        0b1,0b1,0b1111, 0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,    0b0,    0x556A, 0b1,        0 )},
 
         {TEST_TLB_ENTRY( 0x000, 0b1,        0x00000,0b1,        0x00000,0b1,        0b1,0b0,0b000001,   0b1,        0b0,0b0,0b0000, 0b0,0b0,0b0,0b0,0b0,0b0,0b0,0b0,0b0,0b0,0b0,    0b1,    0x5555, 0b1,        1 )},
         {TEST_TLB_ENTRY( 0x155, 0b0,        0x55555,0b1,        0x55555,0b1,        0b1,0b0,0b000001,   0b1,        0b1,0b0,0b1010, 0b1,0b0,0b1,0b0,0b1,0b0,0b1,0b0,0b1,0b0,0b1,    0b0,    0x5540, 0b0,        1 )},
         {TEST_TLB_ENTRY( 0x2AA, 0b0,        0xAAAAA,0b1,        0xAAAAA,0b1,        0b1,0b0,0b000001,   0b1,        0b1,0b1,0b0101, 0b0,0b1,0b0,0b1,0b0,0b1,0b0,0b1,0b0,0b1,0b0,    0b0,    0x557F, 0b0,        1 )},
-        {TEST_TLB_ENTRY( 0x3FF, 0b1,        0xFFFFF,0b1,        0xFFFFF,0b1,        0b1,0b0,0b000001,   0b1,        0b1,0b1,0b1111, 0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,    0b0,    0xFF6A, 0b1,        1 )},
+        {TEST_TLB_ENTRY( 0x3FF, 0b1,        0xFFFFF,0b1,        0xFFFFF,0b1,        0b1,0b0,0b000001,   0b1,        0b1,0b1,0b1111, 0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,    0b0,    0x556A, 0b1,        1 )},
 
         {TEST_TLB_ENTRY( 0x000, 0b1,        0x00000,0b1,        0x00000,0b1,        0b1,0b0,0b000001,   0b1,        0b0,0b0,0b0000, 0b0,0b0,0b0,0b0,0b0,0b0,0b0,0b0,0b0,0b0,0b0,    0b1,    0x5555, 0b1,        2 )},
         {TEST_TLB_ENTRY( 0x155, 0b0,        0x55555,0b1,        0x55555,0b1,        0b1,0b0,0b000001,   0b1,        0b1,0b0,0b1010, 0b1,0b0,0b1,0b0,0b1,0b0,0b1,0b0,0b1,0b0,0b1,    0b0,    0x5540, 0b0,        2 )},
         {TEST_TLB_ENTRY( 0x2AA, 0b0,        0xAAAAA,0b1,        0xAAAAA,0b1,        0b1,0b0,0b000001,   0b1,        0b1,0b1,0b0101, 0b0,0b1,0b0,0b1,0b0,0b1,0b0,0b1,0b0,0b1,0b0,    0b0,    0x557F, 0b0,        2 )},
-        {TEST_TLB_ENTRY( 0x3FF, 0b1,        0xFFFFF,0b1,        0xFFFFF,0b1,        0b1,0b0,0b000001,   0b1,        0b1,0b1,0b1111, 0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,    0b0,    0xFF6A, 0b1,        2 )},
+        {TEST_TLB_ENTRY( 0x3FF, 0b1,        0xFFFFF,0b1,        0xFFFFF,0b1,        0b1,0b0,0b000001,   0b1,        0b1,0b1,0b1111, 0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,    0b0,    0x556A, 0b1,        2 )},
 
         {TEST_TLB_ENTRY( 0x000, 0b1,        0x00000,0b1,        0x00000,0b1,        0b1,0b0,0b000001,   0b1,        0b0,0b0,0b0000, 0b0,0b0,0b0,0b0,0b0,0b0,0b0,0b0,0b0,0b0,0b0,    0b1,    0x5555, 0b1,        3 )},
         {TEST_TLB_ENTRY( 0x155, 0b0,        0x55555,0b1,        0x55555,0b1,        0b1,0b0,0b000001,   0b1,        0b1,0b0,0b1010, 0b1,0b0,0b1,0b0,0b1,0b0,0b1,0b0,0b1,0b0,0b1,    0b0,    0x5540, 0b0,        3 )},
         {TEST_TLB_ENTRY( 0x2AA, 0b0,        0xAAAAA,0b1,        0xAAAAA,0b1,        0b1,0b0,0b000001,   0b1,        0b1,0b1,0b0101, 0b0,0b1,0b0,0b1,0b0,0b1,0b0,0b1,0b0,0b1,0b0,    0b0,    0x557F, 0b0,        3 )},
-        {TEST_TLB_ENTRY( 0x3FF, 0b1,        0xFFFFF,0b1,        0xFFFFF,0b1,        0b1,0b0,0b000001,   0b1,        0b1,0b1,0b1111, 0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,    0b0,    0xFF6A, 0b1,        3 )}
+        {TEST_TLB_ENTRY( 0x3FF, 0b1,        0xFFFFF,0b1,        0xFFFFF,0b1,        0b1,0b0,0b000001,   0b1,        0b1,0b1,0b1111, 0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,    0b0,    0x556A, 0b1,        3 )}
     },
     {
-        {TEST_TLB_ENTRY( 0x000, 0b1,        0x00000,0b0,        0x00001,0b0,        0b1,0b0,0b000011,   0b0,        0b0,0b0,0b0000, 0b0,0b0,0b0,0b0,0b0,0b0,0b0,0b0,0b0,0b0,0b0,    0b1,    0xAA00, 0b1,        0 )},
+        {TEST_TLB_ENTRY( 0x000, 0b1,        0x00001,0b0,        0x00001,0b0,        0b1,0b0,0b000011,   0b0,        0b0,0b0,0b0000, 0b0,0b0,0b0,0b0,0b0,0b0,0b0,0b0,0b0,0b0,0b0,    0b1,    0xAA00, 0b1,        0 )},
         {TEST_TLB_ENTRY( 0x155, 0b0,        0x55551,0b0,        0x55551,0b0,        0b1,0b0,0b000011,   0b0,        0b1,0b0,0b1010, 0b1,0b0,0b1,0b0,0b1,0b0,0b1,0b0,0b1,0b0,0b1,    0b0,    0xAAFF, 0b1,        0 )},
         {TEST_TLB_ENTRY( 0x2AA, 0b0,        0xAAAA1,0b0,        0xAAAA1,0b0,        0b1,0b0,0b000011,   0b0,        0b1,0b1,0b0101, 0b0,0b1,0b0,0b1,0b0,0b1,0b0,0b1,0b0,0b1,0b0,    0b0,    0xAAAA, 0b1,        0 )},
         {TEST_TLB_ENTRY( 0x3FF, 0b1,        0xAAAA1,0b0,        0xFFFF1,0b0,        0b1,0b0,0b000011,   0b0,        0b1,0b1,0b1111, 0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,    0b0,    0xAA55, 0b1,        0 )},
 
-        {TEST_TLB_ENTRY( 0x000, 0b1,        0x00000,0b0,        0x00001,0b0,        0b1,0b0,0b000011,   0b0,        0b0,0b0,0b0000, 0b0,0b0,0b0,0b0,0b0,0b0,0b0,0b0,0b0,0b0,0b0,    0b1,    0xAA00, 0b1,        1 )},
+        {TEST_TLB_ENTRY( 0x000, 0b1,        0x00001,0b0,        0x00001,0b0,        0b1,0b0,0b000011,   0b0,        0b0,0b0,0b0000, 0b0,0b0,0b0,0b0,0b0,0b0,0b0,0b0,0b0,0b0,0b0,    0b1,    0xAA00, 0b1,        1 )},
         {TEST_TLB_ENTRY( 0x155, 0b0,        0x55551,0b0,        0x55551,0b0,        0b1,0b0,0b000011,   0b0,        0b1,0b0,0b1010, 0b1,0b0,0b1,0b0,0b1,0b0,0b1,0b0,0b1,0b0,0b1,    0b0,    0xAAFF, 0b1,        1 )},
         {TEST_TLB_ENTRY( 0x2AA, 0b0,        0xAAAA1,0b0,        0xAAAA1,0b0,        0b1,0b0,0b000011,   0b0,        0b1,0b1,0b0101, 0b0,0b1,0b0,0b1,0b0,0b1,0b0,0b1,0b0,0b1,0b0,    0b0,    0xAAAA, 0b1,        1 )},
         {TEST_TLB_ENTRY( 0x3FF, 0b1,        0xAAAA1,0b0,        0xFFFF1,0b0,        0b1,0b0,0b000011,   0b0,        0b1,0b1,0b1111, 0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,    0b0,    0xAA55, 0b1,        1 )},
 
-        {TEST_TLB_ENTRY( 0x000, 0b1,        0x00000,0b0,        0x00001,0b0,        0b1,0b0,0b000011,   0b0,        0b0,0b0,0b0000, 0b0,0b0,0b0,0b0,0b0,0b0,0b0,0b0,0b0,0b0,0b0,    0b1,    0xAA00, 0b1,        2 )},
+        {TEST_TLB_ENTRY( 0x000, 0b1,        0x00001,0b0,        0x00001,0b0,        0b1,0b0,0b000011,   0b0,        0b0,0b0,0b0000, 0b0,0b0,0b0,0b0,0b0,0b0,0b0,0b0,0b0,0b0,0b0,    0b1,    0xAA00, 0b1,        2 )},
         {TEST_TLB_ENTRY( 0x155, 0b0,        0x55551,0b0,        0x55551,0b0,        0b1,0b0,0b000011,   0b0,        0b1,0b0,0b1010, 0b1,0b0,0b1,0b0,0b1,0b0,0b1,0b0,0b1,0b0,0b1,    0b0,    0xAAFF, 0b1,        2 )},
         {TEST_TLB_ENTRY( 0x2AA, 0b0,        0xAAAA1,0b0,        0xAAAA1,0b0,        0b1,0b0,0b000011,   0b0,        0b1,0b1,0b0101, 0b0,0b1,0b0,0b1,0b0,0b1,0b0,0b1,0b0,0b1,0b0,    0b0,    0xAAAA, 0b1,        2 )},
         {TEST_TLB_ENTRY( 0x3FF, 0b1,        0xAAAA1,0b0,        0xFFFF1,0b0,        0b1,0b0,0b000011,   0b0,        0b1,0b1,0b1111, 0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,    0b0,    0xAA55, 0b1,        2 )},
 
-        {TEST_TLB_ENTRY( 0x000, 0b1,        0x00000,0b0,        0x00001,0b0,        0b1,0b0,0b000011,   0b0,        0b0,0b0,0b0000, 0b0,0b0,0b0,0b0,0b0,0b0,0b0,0b0,0b0,0b0,0b0,    0b1,    0xAA00, 0b1,        3 )},
+        {TEST_TLB_ENTRY( 0x000, 0b1,        0x00001,0b0,        0x00001,0b0,        0b1,0b0,0b000011,   0b0,        0b0,0b0,0b0000, 0b0,0b0,0b0,0b0,0b0,0b0,0b0,0b0,0b0,0b0,0b0,    0b1,    0xAA00, 0b1,        3 )},
         {TEST_TLB_ENTRY( 0x155, 0b0,        0x55551,0b0,        0x55551,0b0,        0b1,0b0,0b000011,   0b0,        0b1,0b0,0b1010, 0b1,0b0,0b1,0b0,0b1,0b0,0b1,0b0,0b1,0b0,0b1,    0b0,    0xAAFF, 0b1,        3 )},
         {TEST_TLB_ENTRY( 0x2AA, 0b0,        0xAAAA1,0b0,        0xAAAA1,0b0,        0b1,0b0,0b000011,   0b0,        0b1,0b1,0b0101, 0b0,0b1,0b0,0b1,0b0,0b1,0b0,0b1,0b0,0b1,0b0,    0b0,    0xAAAA, 0b1,        3 )},
         {TEST_TLB_ENTRY( 0x3FF, 0b1,        0xAAAA1,0b0,        0xFFFF1,0b0,        0b1,0b0,0b000011,   0b0,        0b1,0b1,0b1111, 0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,    0b0,    0xAA55, 0b1,        3 )}
     },
     {
         {TEST_TLB_ENTRY( 0x000, 0b1,        0x00000,0b1,        0x00000,0b1,        0b1,0b0,0b000111,   0b1,        0b0,0b0,0b0000, 0b0,0b0,0b0,0b0,0b0,0b0,0b0,0b0,0b0,0b0,0b0,    0b1,    0xFFFF, 0b1,        0 )},
-        {TEST_TLB_ENTRY( 0x155, 0b0,        0x55555,0b1,        0x55555,0b1,        0b1,0b0,0b000111,   0b1,        0b1,0b0,0b1010, 0b1,0b0,0b1,0b0,0b1,0b0,0b1,0b0,0b1,0b0,0b1,    0b0,    0xFFFF, 0b1,        0 )},
-        {TEST_TLB_ENTRY( 0x2AA, 0b0,        0xAAAAA,0b1,        0xAAAAA,0b1,        0b1,0b0,0b000111,   0b1,        0b1,0b1,0b0101, 0b0,0b1,0b0,0b1,0b0,0b1,0b0,0b1,0b0,0b1,0b0,    0b0,    0xFFFF, 0b1,        0 )},
-        {TEST_TLB_ENTRY( 0x3FF, 0b1,        0xFFFFF,0b1,        0xFFFFF,0b1,        0b1,0b0,0b000111,   0b1,        0b1,0b1,0b1111, 0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,    0b0,    0xFFFF, 0b1,        0 )},
+        {TEST_TLB_ENTRY( 0x155, 0b0,        0x50555,0b1,        0x50555,0b1,        0b1,0b0,0b000111,   0b1,        0b1,0b0,0b1010, 0b1,0b0,0b1,0b0,0b1,0b0,0b1,0b0,0b1,0b0,0b1,    0b0,    0xFFFF, 0b1,        0 )},
+        {TEST_TLB_ENTRY( 0x2AA, 0b0,        0xA0AAA,0b1,        0xA0AAA,0b1,        0b1,0b0,0b000111,   0b1,        0b1,0b1,0b0101, 0b0,0b1,0b0,0b1,0b0,0b1,0b0,0b1,0b0,0b1,0b0,    0b0,    0xFFFF, 0b1,        0 )},
+        {TEST_TLB_ENTRY( 0x3FF, 0b1,        0xF0FFF,0b1,        0xF0FFF,0b1,        0b1,0b0,0b000111,   0b1,        0b1,0b1,0b1111, 0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,    0b0,    0xFFFF, 0b1,        0 )},
 
         {TEST_TLB_ENTRY( 0x000, 0b1,        0x00000,0b1,        0x00000,0b1,        0b1,0b0,0b000111,   0b1,        0b0,0b0,0b0000, 0b0,0b0,0b0,0b0,0b0,0b0,0b0,0b0,0b0,0b0,0b0,    0b1,    0xFFFF, 0b1,        1 )},
-        {TEST_TLB_ENTRY( 0x155, 0b0,        0x55555,0b1,        0x55555,0b1,        0b1,0b0,0b000111,   0b1,        0b1,0b0,0b1010, 0b1,0b0,0b1,0b0,0b1,0b0,0b1,0b0,0b1,0b0,0b1,    0b0,    0xFFFF, 0b1,        1 )},
-        {TEST_TLB_ENTRY( 0x2AA, 0b0,        0xAAAAA,0b1,        0xAAAAA,0b1,        0b1,0b0,0b000111,   0b1,        0b1,0b1,0b0101, 0b0,0b1,0b0,0b1,0b0,0b1,0b0,0b1,0b0,0b1,0b0,    0b0,    0xFFFF, 0b1,        1 )},
-        {TEST_TLB_ENTRY( 0x3FF, 0b1,        0xFFFFF,0b1,        0xFFFFF,0b1,        0b1,0b0,0b000111,   0b1,        0b1,0b1,0b1111, 0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,    0b0,    0xFFFF, 0b1,        1 )},
+        {TEST_TLB_ENTRY( 0x155, 0b0,        0x50555,0b1,        0x50555,0b1,        0b1,0b0,0b000111,   0b1,        0b1,0b0,0b1010, 0b1,0b0,0b1,0b0,0b1,0b0,0b1,0b0,0b1,0b0,0b1,    0b0,    0xFFFF, 0b1,        1 )},
+        {TEST_TLB_ENTRY( 0x2AA, 0b0,        0xA0AAA,0b1,        0xA0AAA,0b1,        0b1,0b0,0b000111,   0b1,        0b1,0b1,0b0101, 0b0,0b1,0b0,0b1,0b0,0b1,0b0,0b1,0b0,0b1,0b0,    0b0,    0xFFFF, 0b1,        1 )},
+        {TEST_TLB_ENTRY( 0x3FF, 0b1,        0xF0FFF,0b1,        0xF0FFF,0b1,        0b1,0b0,0b000111,   0b1,        0b1,0b1,0b1111, 0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,    0b0,    0xFFFF, 0b1,        1 )},
 
         {TEST_TLB_ENTRY( 0x000, 0b1,        0x00000,0b1,        0x00000,0b1,        0b1,0b0,0b000111,   0b1,        0b0,0b0,0b0000, 0b0,0b0,0b0,0b0,0b0,0b0,0b0,0b0,0b0,0b0,0b0,    0b1,    0xFFFF, 0b1,        2 )},
-        {TEST_TLB_ENTRY( 0x155, 0b0,        0x55555,0b1,        0x55555,0b1,        0b1,0b0,0b000111,   0b1,        0b1,0b0,0b1010, 0b1,0b0,0b1,0b0,0b1,0b0,0b1,0b0,0b1,0b0,0b1,    0b0,    0xFFFF, 0b1,        2 )},
-        {TEST_TLB_ENTRY( 0x2AA, 0b0,        0xAAAAA,0b1,        0xAAAAA,0b1,        0b1,0b0,0b000111,   0b1,        0b1,0b1,0b0101, 0b0,0b1,0b0,0b1,0b0,0b1,0b0,0b1,0b0,0b1,0b0,    0b0,    0xFFFF, 0b1,        2 )},
-        {TEST_TLB_ENTRY( 0x3FF, 0b1,        0xFFFFF,0b1,        0xFFFFF,0b1,        0b1,0b0,0b000111,   0b1,        0b1,0b1,0b1111, 0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,    0b0,    0xFFFF, 0b1,        2 )},
+        {TEST_TLB_ENTRY( 0x155, 0b0,        0x50555,0b1,        0x50555,0b1,        0b1,0b0,0b000111,   0b1,        0b1,0b0,0b1010, 0b1,0b0,0b1,0b0,0b1,0b0,0b1,0b0,0b1,0b0,0b1,    0b0,    0xFFFF, 0b1,        2 )},
+        {TEST_TLB_ENTRY( 0x2AA, 0b0,        0xA0AAA,0b1,        0xA0AAA,0b1,        0b1,0b0,0b000111,   0b1,        0b1,0b1,0b0101, 0b0,0b1,0b0,0b1,0b0,0b1,0b0,0b1,0b0,0b1,0b0,    0b0,    0xFFFF, 0b1,        2 )},
+        {TEST_TLB_ENTRY( 0x3FF, 0b1,        0xF0FFF,0b1,        0xF0FFF,0b1,        0b1,0b0,0b000111,   0b1,        0b1,0b1,0b1111, 0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,    0b0,    0xFFFF, 0b1,        2 )},
 
         {TEST_TLB_ENTRY( 0x000, 0b1,        0x00000,0b1,        0x00000,0b1,        0b1,0b0,0b000111,   0b1,        0b0,0b0,0b0000, 0b0,0b0,0b0,0b0,0b0,0b0,0b0,0b0,0b0,0b0,0b0,    0b1,    0xFFFF, 0b1,        3 )},
-        {TEST_TLB_ENTRY( 0x155, 0b0,        0x55555,0b1,        0x55555,0b1,        0b1,0b0,0b000111,   0b1,        0b1,0b0,0b1010, 0b1,0b0,0b1,0b0,0b1,0b0,0b1,0b0,0b1,0b0,0b1,    0b0,    0xFFFF, 0b1,        3 )},
-        {TEST_TLB_ENTRY( 0x2AA, 0b0,        0xAAAAA,0b1,        0xAAAAA,0b1,        0b1,0b0,0b000111,   0b1,        0b1,0b1,0b0101, 0b0,0b1,0b0,0b1,0b0,0b1,0b0,0b1,0b0,0b1,0b0,    0b0,    0xFFFF, 0b1,        3 )},
-        {TEST_TLB_ENTRY( 0x3FF, 0b1,        0xFFFFF,0b1,        0xFFFFF,0b1,        0b1,0b0,0b000111,   0b1,        0b1,0b1,0b1111, 0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,    0b0,    0xFFFF, 0b1,        3 )}
+        {TEST_TLB_ENTRY( 0x155, 0b0,        0x50555,0b1,        0x50555,0b1,        0b1,0b0,0b000111,   0b1,        0b1,0b0,0b1010, 0b1,0b0,0b1,0b0,0b1,0b0,0b1,0b0,0b1,0b0,0b1,    0b0,    0xFFFF, 0b1,        3 )},
+        {TEST_TLB_ENTRY( 0x2AA, 0b0,        0xA0AAA,0b1,        0xA0AAA,0b1,        0b1,0b0,0b000111,   0b1,        0b1,0b1,0b0101, 0b0,0b1,0b0,0b1,0b0,0b1,0b0,0b1,0b0,0b1,0b0,    0b0,    0xFFFF, 0b1,        3 )},
+        {TEST_TLB_ENTRY( 0x3FF, 0b1,        0xF0FFF,0b1,        0xF0FFF,0b1,        0b1,0b0,0b000111,   0b1,        0b1,0b1,0b1111, 0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,0b1,    0b0,    0xFFFF, 0b1,        3 )}
     },
     {
         {TEST_TLB_ENTRY( 0x000, 0b1,        0x0000E,0b0,        0x0000E,0b0,        0b1,0b1,0b001111,   0b1,        0b0,0b0,0b0000, 0b0,0b0,0b0,0b0,0b0,0b0,0b0,0b0,0b0,0b0,0b0,    0b1,    0x5555, 0b1,        0 )},
@@ -189,6 +189,8 @@ int main() {
 
     prepare_utlb();
 
+//    return 0;
+
     for( uint32_t template_id = 0; template_id < ARRAY_SIZE(templates); template_id++ ) {
         fill_utlb_entries( template_id );
         check_utlb_entries( template_id );
@@ -213,6 +215,14 @@ static void prepare_utlb( void ) {
                                             0xFFF00,    MMU_TLBE_DSIZ_1MB,  0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b0,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_0,     0b1 )}
     };
     write_tlb_entries( rom_replace_tlb, ARRAY_SIZE(rom_replace_tlb) );
+
+    spr_write( SPR_SSPCR, ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_16MB) << MMU_SSPCR_ORD1_i)
+                        | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_64KB) << MMU_SSPCR_ORD2_i)
+                        | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_4KB)  << MMU_SSPCR_ORD3_i)
+                        | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_16KB) << MMU_SSPCR_ORD4_i)
+                        | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_1MB)  << MMU_SSPCR_ORD5_i)
+                        | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_256MB)<< MMU_SSPCR_ORD6_i)
+                        | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_1GB)  << MMU_SSPCR_ORD7_i) );
 }
 
 static void fill_utlb_entries( uint32_t const template_id ) {
@@ -224,6 +234,7 @@ static void fill_utlb_entries( uint32_t const template_id ) {
 static const uint32_t check_indexes[] = {
         0x00,                       0x55,                       0xAA,                       0xFF
 };
+
 #define INDEX_TEMPLATES( template_id, index_offset ) {\
     &templates[template_id][index_offset+0],\
     &templates[template_id][index_offset+4],\
@@ -258,36 +269,34 @@ enum {
 static void check_utlb_entries( uint32_t const template_id ) {
     rumboot_printf( "Check UTLB entries for template %d\n", template_id );
 
-    const uint32_t event [] = { TEC_CHECK_UTLB_ENTRIES, template_id, };
-    rumboot_platform_event_raise( EVENT_TESTEVENT, event, ARRAY_SIZE(event) );
-
-    (void)templates_check_map;
-//    uint32_t ts, tid, epn, erpn, uxwrsxwr, ra, tlbe_attr_only;
-//    uint32_t mmucr, tlbe_tag, tlbe_data, tlbe_attr;
+    struct tlb_entry const * template;
+    uint32_t ra, tlbe_tag, tlbe_data, tlbe_attr;
 
     for( uint32_t i = 0; i < ARRAY_SIZE(check_indexes); i++ ) {
         for( uint32_t way = 0; way < MMU_UTLB_WAYS_N; way++ ) {
-//            ra = MMU_TLBE_ADDR( check_indexes[i], way );
-//
-//            tlbe_tag        = tlbre( ra, MMU_TLB_ENTRY_TAG );
-//            if( !GET_BIT(tlbe_tag, MMU_TLBE_TAG_BLTD_i) ) {
-//                mmucr       = spr_read(  SPR_MMUCR );
-//                tlbe_data   = tlbre( ra, MMU_TLB_ENTRY_DATA );
-//                tlbe_attr   = tlbre( ra, MMU_TLB_ENTRY_ATTR );
-//
-//                tid             = CALC_TID( index );
-//                epn             = CALC_EPN( index, way );
-//                ts              = CALC_TS( index );
-//                erpn            = CALC_ERPN( index, way );
-//                uxwrsxwr        = CALC_UXWRSXWR( index );
-//                tlbe_attr_only  = CALC_MMU_TLBE_ATTR( ts, erpn, uxwrsxwr );
-//
-//                TEST_ASSERT( tlbe_tag == (MMU_TLBE_TAG( epn, 0b1, ts, MMU_TLBE_DSIZ_16MB, 0b0, parity32( epn ), parity32( 0b1 ^ ts ^ MMU_TLBE_DSIZ_16MB ), parity32( tid ) )), "Wrong TAG");
-//                TEST_ASSERT( GET_BITS(mmucr, MMU_MMUCR_STID_i, MMU_MMUCR_STID_n) == tid, "Wrong TAG");
-//                TEST_ASSERT( tlbe_data == (MMU_TLBE_DATA( erpn,epn, parity32( erpn ), parity32( epn ) )), "Wrong DATA");
-//                TEST_ASSERT( tlbe_attr == (tlbe_attr_only | ( parity32( tlbe_attr_only ) << MMU_TLBE_ATTR_SPPar_i )), "Wrong ATTR");
+            template    = templates_check_map[template_id][i][way];
+
+            ra          = MMU_TLBE_ADDR( check_indexes[i], way );
+
+            tlbe_tag    = tlbre( ra, MMU_TLB_ENTRY_TAG );
+            tlbe_data   = tlbre( ra, MMU_TLB_ENTRY_DATA );
+            tlbe_attr   = tlbre( ra, MMU_TLB_ENTRY_ATTR );
+
+            TEST_ASSERT( tlbe_tag == template->tag, "Wrong TAG");
+            TEST_ASSERT( tlbe_data == template->data, "Wrong DATA");
+            TEST_ASSERT( tlbe_attr == template->attributes, "Wrong ATTR");
+//            if( tlbe_tag != template->tag ) {
+//                rumboot_printf( "index: %d (%x), way: %d, tlbe_tag: %x, template->tag: %x\n", i, check_indexes[i], way, tlbe_tag, template->tag );
+//            }
+//            if( tlbe_data != template->data ) {
+//                rumboot_printf( "index: %d (%x), way: %d, tlbe_data: %x, template->data: %x\n", i, check_indexes[i], way, tlbe_data, template->data );
+//            }
+//            if( tlbe_attr != template->attributes ) {
+//                rumboot_printf( "index: %d (%x), way: %d, tlbe_attr: %x, template->attributes: %x\n", i, check_indexes[i], way, tlbe_attr, template->attributes );
 //            }
         }
     }
 
+    const uint32_t event [] = { TEC_CHECK_UTLB_ENTRIES, template_id, };
+    rumboot_platform_event_raise( EVENT_TESTEVENT, event, ARRAY_SIZE(event) );
 }
