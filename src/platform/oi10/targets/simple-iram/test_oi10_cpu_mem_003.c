@@ -189,12 +189,12 @@ int main() {
 
     prepare_utlb();
 
-//    return 0;
-
     for( uint32_t template_id = 0; template_id < ARRAY_SIZE(templates); template_id++ ) {
         fill_utlb_entries( template_id );
         check_utlb_entries( template_id );
     }
+    msync();
+    isync();
 
     return 0;
 }
@@ -205,22 +205,26 @@ int main() {
 static void prepare_utlb( void ) {
     rumboot_printf( "Prepare UTLB\n");
 
-    const uint32_t ra = tlbsx( BOOTROM_BASE );
-    TEST_ASSERT( ra >= 0, "ROM TLB not found" );
-    const uint32_t tlbe_data = tlbre( ra, MMU_TLB_ENTRY_DATA );
+    spr_write( SPR_MMUCR, MMU_MMUCR( 0b0,  0b0,0b0,    0b0,     MEM_WINDOW_SHARED ) );
+    const int32_t rom_ra            = tlbsx( BOOTROM_BASE );
+    TEST_ASSERT( rom_ra >= 0, "ROM TLB not found" );
+    const uint32_t rom_tlbe_data    = tlbre( rom_ra, MMU_TLB_ENTRY_DATA );
+    const uint32_t rom_erpn         = GET_BITS(rom_tlbe_data, MMU_TLBE_DATA_ERPN_i, MMU_TLBE_DATA_ERPN_n);
+    const uint32_t rom_rpn          = 0xFFF00 & GET_BITS(rom_tlbe_data, MMU_TLBE_DATA_RPN_i, MMU_TLBE_DATA_RPN_n);
     const struct tlb_entry rom_replace_tlb[] = {
-//       MMU_TLB_ENTRY( ERPN,   RPN,        EPN,        DSIZ,               IL1I,   IL1D,   W,      I,      M,      G,      E,                      UX, UW, UR,     SX, SW, SR      DULXE,  IULXE,      TS,     TID,                WAY,                BID,                V   )
-        {MMU_TLB_ENTRY( GET_BITS(tlbe_data, MMU_TLBE_DATA_ERPN_i, MMU_TLBE_DATA_ERPN_n),
-                                GET_BITS(tlbe_data, MMU_TLBE_DATA_RPN_i, MMU_TLBE_DATA_RPN_n),
-                                            0xFFF00,    MMU_TLBE_DSIZ_1MB,  0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b0,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_0,     0b1 )}
+//       MMU_TLB_ENTRY( ERPN,       RPN,        EPN,        DSIZ,               IL1I,   IL1D,   W,      I,      M,      G,      E,                      UX, UW, UR,     SX, SW, SR      DULXE,  IULXE,      TS,     TID,                WAY,                BID,                V   )
+        {MMU_TLB_ENTRY( 0x01F,      0xFFFF0,    0xFFFF0,    MMU_TLBE_DSIZ_64KB, 0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b0,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_0,     0b0 )},
+        {MMU_TLB_ENTRY( rom_erpn,   rom_rpn,    0xFFF00,    MMU_TLBE_DSIZ_1MB,  0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b0,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_0,     0b1 )}
     };
+    msync();
     write_tlb_entries( rom_replace_tlb, ARRAY_SIZE(rom_replace_tlb) );
 
-    spr_write( SPR_SSPCR, ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_16MB) << MMU_SSPCR_ORD1_i)
+//    rumboot_printf( "RA:%x, ERPN:%x, RPN:%x\n", rom_ra, rom_erpn, rom_rpn );
+    spr_write( SPR_SSPCR, ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_1MB)  << MMU_SSPCR_ORD1_i)
                         | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_64KB) << MMU_SSPCR_ORD2_i)
                         | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_4KB)  << MMU_SSPCR_ORD3_i)
                         | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_16KB) << MMU_SSPCR_ORD4_i)
-                        | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_1MB)  << MMU_SSPCR_ORD5_i)
+                        | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_16MB) << MMU_SSPCR_ORD5_i)
                         | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_256MB)<< MMU_SSPCR_ORD6_i)
                         | ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_1GB)  << MMU_SSPCR_ORD7_i) );
 }
@@ -255,17 +259,6 @@ enum {
     TEC_CHECK_UTLB_ENTRIES = TEST_EVENT_CODE_MIN,
 };
 
-//#define CALC_TS( index )        (0x00000001 & index)                /* TS = odd(index[0:7]) */
-//#define CALC_TID( index )       (index << 8)                        /* TID[0:15] = {index[0:7], 8'h0} */
-//#define CALC_EPN( index, way )  ( (index << 12) | (way << 10) )     /* EPN[0:19] = {index[0:7], way[0:1], 10'h0} */
-//#define CALC_ERPN( index, way ) ( (way << 8) | index )              /* ERPN[0:9] = {way[0:1], index[0:7]} */
-//#define CALC_UXWRSXWR( index )  (index >> 2)                        /* {UXWR[0:2], SXWR[0:2]} = EPN[0:5] */
-//#define CALC_MMU_TLBE_ATTR( ts, erpn, uxwrsxwr ) (
-//    ( (ts       << MMU_TLBE_ATTR_IL1I_i)                            /* L1I = TS */
-//    | (erpn     << MMU_TLBE_ATTR_E_i)                               /* {L1D, U[0:3], WIMGE[0:4]} = {way[0:1], index[0:7]} */
-//    | (uxwrsxwr << MMU_TLBE_ATTR_SR_i) )
-//    & ~(0b1 << MMU_TLBE_ATTR_I_i)                                   /* I = 0 for enable L1I, L1D values */
-//)
 static void check_utlb_entries( uint32_t const template_id ) {
     rumboot_printf( "Check UTLB entries for template %d\n", template_id );
 
