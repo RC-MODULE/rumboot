@@ -248,12 +248,13 @@ static inline __attribute__((always_inline)) bool parity32( uint32_t const val )
 
 #define tlbsx( RB ) ({\
     int32_t RT;\
+    uint32_t RB_ = RB;\
     asm volatile (\
         "tlbsx. %0, 0, %1\n\t"          /* RT[33:34] = tlbentry[way], RT[40:47] = tlbentry[index] */\
         "crnot  2, 2\n\t"               /* CR[CR0[2]] = !CR[CR0[2]] */\
         "mfcr   %1\n\t"\
         "rlwimi %0, %1, 2, 0, 0\n\t"    /* RT[32] = CR[CR0[2]] */\
-        :   "=r"(RT), "=r"(RB)\
+        :   "=r"(RT), "+r"(RB_)\
         ::  "cr0"\
     );\
     RT;                                 /* if RT >= 0 then tlbentry is found */\

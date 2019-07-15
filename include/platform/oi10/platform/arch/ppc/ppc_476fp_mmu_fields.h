@@ -44,12 +44,13 @@ BEGIN_ENUM( MMU_MMUCR_FIELD )
     DECLARE_ENUM_VAL( MMU_MMUCR_STID_i,     IBM_BIT_INDEX( 32, MMU_MMUCR_STID_e ) )
 END_ENUM( MMU_MMUCR_FIELD )
 
-#define MMU_MMUCR( REALE,     DULXE, IULXE,   TS,     TID )\
+#define MMU_MMUCR( REALE,     DULXE, IULXE,   TS,     TID ) (\
     (REALE << MMU_MMUCR_REALE_i)\
 |   (DULXE << MMU_MMUCR_DULXE_i)\
 |   (IULXE << MMU_MMUCR_IULXE_i)\
 |   (TS << MMU_MMUCR_STS_i)\
-|   (TID << MMU_MMUCR_STID_i)
+|   (TID << MMU_MMUCR_STID_i)\
+)
 
 
 BEGIN_ENUM( MMU_MMUBE0_FIELD )
@@ -390,12 +391,13 @@ BEGIN_ENUM( MMU_TLBE_ADDR_FIELD )
     DECLARE_ENUM_VAL( MMU_TLBE_ADDR_INDEX_i,    IBM_BIT_INDEX( 64, MMU_TLBE_ADDR_INDEX_e ) )
 END_ENUM( MMU_TLBE_ADDR_FIELD )
 
-#define MMU_TLBE_ADDR( index, way )\
+#define MMU_TLBE_ADDR( index, way ) (\
     (way   << MMU_TLBE_ADDR_WAY_i  )\
-|   (index << MMU_TLBE_ADDR_INDEX_i)
+|   (index << MMU_TLBE_ADDR_INDEX_i)\
+)
 
 
-#define MMU_TLBE_TAG( EPN,  V,  TS,     DSIZ,   BLTD,   EPNPar, DSIZPar, TIDPar )\
+#define MMU_TLBE_TAG( EPN,  V,  TS,     DSIZ,   BLTD,   EPNPar, DSIZPar, TIDPar ) (\
     (EPN     << MMU_TLBE_TAG_EPN_i    )\
 |   (V       << MMU_TLBE_TAG_V_i      )\
 |   (TS      << MMU_TLBE_TAG_TS_i     )\
@@ -403,17 +405,19 @@ END_ENUM( MMU_TLBE_ADDR_FIELD )
 |   (BLTD    << MMU_TLBE_TAG_BLTD_i   )\
 |   (EPNPar  << MMU_TLBE_TAG_EPNPar_i )\
 |   (DSIZPar << MMU_TLBE_TAG_DSIZPar_i)\
-|   (TIDPar  << MMU_TLBE_TAG_TIDPar_i )
+|   (TIDPar  << MMU_TLBE_TAG_TIDPar_i )\
+)
 
 
-#define MMU_TLBE_DATA( ERPN,RPN,    ERPNPar, RPNPar )\
+#define MMU_TLBE_DATA( ERPN,RPN,    ERPNPar, RPNPar ) (\
     (RPN     << MMU_TLBE_DATA_RPN_i    )\
 |   (RPNPar  << MMU_TLBE_DATA_RPNPar_i )\
 |   (ERPNPar << MMU_TLBE_DATA_ERPNPar_i)\
-|   (ERPN    << MMU_TLBE_DATA_ERPN_i   )
+|   (ERPN    << MMU_TLBE_DATA_ERPN_i   )\
+)
 
 
-#define MMU_TLBE_ATTR( IL1I,IL1D,   W,I,M,G,E,  UX,UW,UR,   SX,SW,SR,   U,  SPPar )\
+#define MMU_TLBE_ATTR( IL1I,IL1D,   W,I,M,G,E,  UX,UW,UR,   SX,SW,SR,   U,  SPPar ) (\
     (SPPar << MMU_TLBE_ATTR_SPPar_i)\
 |   (IL1I  << MMU_TLBE_ATTR_IL1I_i )\
 |   (IL1D  << MMU_TLBE_ATTR_IL1D_i )\
@@ -428,14 +432,15 @@ END_ENUM( MMU_TLBE_ADDR_FIELD )
 |   (UR    << MMU_TLBE_ATTR_UR_i   )\
 |   (SX    << MMU_TLBE_ATTR_SX_i   )\
 |   (SW    << MMU_TLBE_ATTR_SW_i   )\
-|   (SR    << MMU_TLBE_ATTR_SR_i   )
+|   (SR    << MMU_TLBE_ATTR_SR_i   )\
+)
 
 
 #define MMU_TLB_ENTRY( ERPN,RPN,    EPN,    DSIZ,   IL1I,IL1D,      W, I, M, G, E,      UX,UW,UR,   SX,SW,SR,   DULXE,IULXE,    TS,     TID,    WAY,    BID,    V )\
     MMU_MMUCR( 0b0,     DULXE,IULXE,    TS,     TID ),\
 \
-    (WAY << MMU_TLBWE_RA_WAY_i)\
-|   (BID << MMU_TLBWE_RA_BE_i),\
+(   (WAY << MMU_TLBWE_RA_WAY_i)\
+|   (BID << MMU_TLBWE_RA_BE_i)  ),\
 \
     MMU_TLBE_TAG( EPN,  V,  TS,     DSIZ,     0b0,    0b0, 0b0, 0b0 ),\
 \

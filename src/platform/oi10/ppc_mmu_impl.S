@@ -35,54 +35,55 @@ goto_next_tlb_entry:
 
 
 /*Details about trace infrastructure convention see in trace.S.h
-Caller must preserve r3,r4,r8,r9,r10 before calling
+Caller must preserve r3,r4,r8,r9,r10,r11 before calling
 r3 - TLB entries array pointer
 r4 - TLB entries count
-r8,r9,r10 - tmp registers
+r8,r9,r10,r11 - tmp registers
 returns nothing*/
 .global write_tlb_entries
-.align 4
 write_tlb_entries:
     cmplwi      r4, 0
     beqlr-
 
-    mfspr       r9, SPR_RSTCFG
+    mr          r7, r27
+    mr          r8, r28
+    mr          r9, r29
+    mr          r10,r30
+    mr          r11,r31
 
-    subi        r3, r3, MMU_TLB_ENTRY_FIELD_SIZE
-
+.align 4
 write_next_etry:
-    lwzu        r8, MMU_TLB_ENTRY_FIELD_SIZE(r3)
-    mtspr       SPR_MMUCR, r8
+    lmw         r27,0(r3)
+    addi        r3, r3, MMU_TLB_ENTRY_SIZE
 
-    lwzu        r10, MMU_TLB_ENTRY_FIELD_SIZE(r3)
-
-    lwzu        r8, MMU_TLB_ENTRY_FIELD_SIZE(r3)
-    tlbwe       r8, r10, MMU_TLB_ENTRY_TAG
-
-    lwzu        r8, MMU_TLB_ENTRY_FIELD_SIZE(r3)
-    tlbwe       r8, r10, MMU_TLB_ENTRY_DATA
-
-    lwzu        r8, MMU_TLB_ENTRY_FIELD_SIZE(r3)
-    copy_field( r8, field_begin(MMU_TLBE_ATTR_U), MMU_TLBE_ATTR_U_e, r9, field_begin(CTRL_RSTCFG_U) )
-    tlbwe       r8, r10, MMU_TLB_ENTRY_ATTR
+    mtspr       SPR_MMUCR,  r27
+    tlbwe       r29,r28,MMU_TLB_ENTRY_TAG
+    tlbwe       r30,r28,MMU_TLB_ENTRY_DATA
+    tlbwe       r31,r28,MMU_TLB_ENTRY_ATTR
 
     subic.      r4, r4, 1
     bne+        write_next_etry
 
 write_tlb_entries_exit:
-    mfspr       r9, SPR_SRR0
-    mfspr       r10, SPR_SRR1
+    mfspr       r3, SPR_SRR0
+    mfspr       r4, SPR_SRR1
 
-    mfmsr       r8
-    mtspr       SPR_SRR1, r8
-    load_addr   r8, write_tlb_entries_return
-    mtspr       SPR_SRR0, r8
+    mfmsr       r31
+    mtspr       SPR_SRR1, r31
+    load_addr   r31, write_tlb_entries_return
+    mtspr       SPR_SRR0, r31
 
     rfi
 
 write_tlb_entries_return:
-    mtspr       SPR_SRR1, r10
-    mtspr       SPR_SRR0, r9
+    mtspr       SPR_SRR1, r4
+    mtspr       SPR_SRR0, r3
+
+    mr          r27,r7
+    mr          r28,r8
+    mr          r29,r9
+    mr          r30,r10
+    mr          r31,r11
 
     blr
 
