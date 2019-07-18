@@ -652,7 +652,7 @@ uint32_t test_xcbtls_xcblc(xCBTxLS opcode_type,char* test_name)
              }
             lwsync();
             isync();
-            locks = get_locks(((cache_level == 1)?0:2 | ((opcode_type == xCBTxLS_ICBTLS) ? PSEUDO_CT_DECODING_IS_L1I_mask : PSEUDO_CT_DECODING_IS_L1D_val)),
+            locks = get_locks((((cache_level == 1)?0:2) | ((opcode_type == xCBTxLS_ICBTLS) ? PSEUDO_CT_DECODING_IS_L1I_mask : PSEUDO_CT_DECODING_IS_L1D_val)),
                         test_function_buf[i],
                         i);
             if(locks ^ (1 << ((L2C_COUNT_WAYS - 1) - i)))
@@ -714,7 +714,7 @@ uint32_t test_xcbtls_xcblc(xCBTxLS opcode_type,char* test_name)
             }
             lwsync();
             isync();
-            locks = get_locks(((cache_level == 1)?0:2 | ((opcode_type == xCBTxLS_ICBTLS) ? PSEUDO_CT_DECODING_IS_L1I_mask : PSEUDO_CT_DECODING_IS_L1D_val)),
+            locks = get_locks((((cache_level == 1)?0:2) | ((opcode_type == xCBTxLS_ICBTLS) ? PSEUDO_CT_DECODING_IS_L1I_mask : PSEUDO_CT_DECODING_IS_L1D_val)),
                         test_function_buf[i],
                         i);
             if(locks)
