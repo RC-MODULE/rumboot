@@ -229,7 +229,6 @@ uint32_t test_ici()
         rumboot_printf("Checking, that everything is cached.\n", CT);
         result |= check_caches(test_function_buf,true,PSEUDO_CT_DECODING_IS_L1I_mask | CT ,test_name);
         msync();
-        isync();
         if(CT & PSEUDO_CT_DECODING_IS_L2_mask)
         {
             isync();
@@ -240,11 +239,11 @@ uint32_t test_ici()
             isync();
             ici(0);
         }
-        msync();
+        //msync();
         isync();
 
-        result |= check_caches(test_function_buf,true,PSEUDO_CT_DECODING_IS_L1I_mask | PSEUDO_CT_DECODING_IS_L2_mask,test_name);
-        result |= check_caches(test_function_buf,(bool)CT,PSEUDO_CT_DECODING_IS_L1I_mask ,test_name);
+        result |= check_caches(test_function_buf,true,PSEUDO_CT_DECODING_IS_L2_mask,test_name);     /* rtl ici(2) same as ici(0) */
+        result |= check_caches(test_function_buf,false,PSEUDO_CT_DECODING_IS_L1I_mask ,test_name);
     }
     rumboot_printf("%s finished: %s\n",test_name,(result)?"FAIL":"OK");
     return result;
