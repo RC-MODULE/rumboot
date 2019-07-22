@@ -13,6 +13,11 @@
 
 int main()
 {
+#ifndef RUMBOOT_PRINTF_ACCEL
+        struct rumboot_config conf;
+        rumboot_platform_read_config(&conf);
+        rumboot_platform_init_loader(&conf);
+#endif
         #ifndef RUMBOOT_STUB_NOLOGO
         rumboot_print_logo();
         #endif
