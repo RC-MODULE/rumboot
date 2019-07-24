@@ -144,13 +144,7 @@ check_tlb_sync:
     mtsrr1      r23
     rfi
 
-
 physical_entry:
-/*    load_addr   r3, generate_syscall
-    mtctr       r3
-    bctr
-*/
-//.org 0x00001000
     load_const  r21, PHYSICAL_SPACE_ENTERED
     load_addr   r3, notify_page_2
     mtctr       r3
@@ -161,7 +155,6 @@ physical_entry:
     bctr
 
 /* This stuff do nothing */
-//.org 0x00002000
     .long   0x55AA55AA
     .long   0xAA55AA55
     .long   0xFFFFFFFF
@@ -172,8 +165,7 @@ physical_entry:
 
 missed_tlb_replace_entries:
 /*          MMU_TLB_ENTRY(  ERPN,   RPN,        EPN,        DSIZ,                    IL1I,   IL1D,    W,      I,      M,      G,      E,                      UX, UW, UR,     SX, SW, SR      DULXE,  IULXE,      TS,     TID,                WAY,                BID,                  V   ) */
-    .long   MMU_TLB_ENTRY(  0x010,  0x80010,    0x80010,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b1,0b1,0b1,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_UND,     0b1 )
-//    .long   MMU_TLB_ENTRY(  0x010,  0x80040,    0x80010,    MMU_TLBE_DSIZ_64KB,      0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b1,0b1,0b1,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_UND,     0b1 )
+    .long   MMU_TLB_ENTRY(  0x020,  0xC0040,    0x80010,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b1,0b1,0b1,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_UND,     0b1 )
 DECLARE_CONST( MISSED_TLB_REPLACE_ENTRIES_N, (.-missed_tlb_replace_entries)/MMU_TLB_ENTRY_SIZE )
 
 .align 4
