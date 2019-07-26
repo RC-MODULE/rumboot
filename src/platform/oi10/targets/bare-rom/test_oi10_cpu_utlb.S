@@ -153,7 +153,7 @@
     load_const  R_STEP,     \aStep
     load_const  R_FILL,     MMU_TLBE_DATA(\vEFill, (\vFill) >> 12, 0, 0)
     load_const  R_ETAG,     MMU_TLBE_TAG(0,1,0,MMU_TLBE_DSIZ_64KB,0,0,0,0)
-    load_const  R_TPL0,     ((\vWay) << MMU_TLBWE_RA_WAY_i)
+    load_const  R_TPL0,     ((\vWay) << MMU_TLBE_RA_WAY_i)
     load_const  R_ATTR,     \vAttr
     bl          fill_utlb_loop
 .endm
