@@ -393,9 +393,15 @@ function(add_rumboot_target)
     endif()
   endforeach()
 
+  list (FIND CONFIGURATION_${TARGET_CONFIGURATION}_FEATURES "BANNER" _need_banner)
+  if (${_need_banner} GREATER -1)
+    list(APPEND trg ${CMAKE_SOURCE_DIR}/src/banner.c)
+  endif()
+
+
 
   add_executable(${product} ${trg} $<TARGET_OBJECTS:rumboot-${TARGET_CONFIGURATION}>)
-  target_compile_options(${product} PUBLIC ${TARGET_CFLAGS} -DRUMBOOT_PRODUCT_NAME=${product})
+  target_compile_options(${product} PUBLIC ${TARGET_CFLAGS} -DRUMBOOT_PRODUCT_NAME=\"${product}\")
 
   list (FIND CONFIGURATION_${TARGET_CONFIGURATION}_FEATURES "LUA" _index)
   if (${_index} GREATER -1)

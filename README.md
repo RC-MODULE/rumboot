@@ -40,7 +40,7 @@ cmake --version
 - Сконфигурируйте проект, указав желаемую платформу и тип сборки
 
 ```
-    cmake .. -DRUMBOOT_PLATFORM=basis -DCMAKE_BUILD_TYPE=PostProduction
+    cmake .. -DRUMBOOT_PLATFORM=basis -DCMAKE_BUILD_TYPE=PostProduction 
 ```
 
 - Скомпилируйте проект
@@ -49,6 +49,68 @@ cmake --version
 ```
 
 В директории build будет созданы .bin файлы тестов, которые можно будет записать на карту памяти, SPI Flash или загрузчить используя xmodem.
+
+## Запуск и внутрисхемная прошивка .bin файлов
+
+### Запуск при помощи rumboot-xrun
+
+Для запусука из накристальной памяти необходимо воспользоваться программной rumboot-xrun из комплекта rumboot-tools и подключить UART0 платы к хост-компьютеру. 
+
+Инструкция по установки на windows, см тут: 
+
+http://git.module.ru/verification-components/rumboot-packimage.py/wikis/HOWTO/%D0%9F%D0%BE%D0%B4%D0%B3%D0%BE%D1%82%D0%BE%D0%B2%D0%BA%D0%B0-%D0%BE%D0%BA%D1%80%D1%83%D0%B6%D0%B5%D0%BD%D0%B8%D1%8F-Windows
+
+
+rumboot-xrun содержит встроенную справку доступную по ключу --help
+
+```
+0 ✓ necromant @ silverblade ~/Work/Basis/rumboot/rumboot-packimage.py $ rumboot-xrun --help
+usage: rumboot-xrun [-h] -f FILE [-l LOG] [-p value] [-b value] [-r value]
+                    [-S value] [-P value]
+
+rumboot-xrun 1.4 - RumBoot X-Modem execution tool
+(C) 2018 Andrew Andrianov, RC Module
+https://github.com/RC-MODULE
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -f FILE, --file FILE  image file
+  -l LOG, --log LOG     Log terminal output to file
+  -p value, --port value
+                        Serial port to use
+  -b value, --baud value
+                        Serial port to use
+  -r value, --reset value
+                        Reset sequence to use (none, pl2303, mt125.05)
+  -S value, --ft232-serial value
+                        FT232 serial number for MT125.05
+  -P value, --pl2303-port value
+                        PL2303 physical port (for -P of pl2303gpio)
+```
+
+Минимальный пример (linux)
+
+```
+rumboot-xrun -f myfile.bin -p /dev/ttyUSB0
+```
+
+Минимальный пример (windows)
+
+```
+rumboot-xrun -f myfile.bin -p com7:
+```
+
+
+По умолчанию программа пытается использовать последовательный порт /dev/ttyUSB0 (если не указана опция -p). Если не указан флаг -b, то скорость порта будет использована в зависимости от скорости по умолчанию для выбранной микросхемы (тип микросхемы определяется из заголовка в .bin файле).  
+
+rumboot-xrun работает как программа-терминал и выводит на экран все, что было принято по последовательному порту, в т.ч. отладочный вывод запущенной программы. Журнал работы можно записать в файл используя опцию -l file.log. 
+
+Если запущенный тест завершается возвратом в bootrom, то rumboot-xrun завершится с тем же кодом возврата (полезно для скриптов).
+
+### Использование автоматического сброса платы
+
+rumboot-xrun и rumboot-xflash могут использовать разные способы обеспечения автоматического сброса платы
+
 
 ## Специальные опции для подготовки цепочек из тестов для функционального контроля
 
@@ -283,7 +345,9 @@ add_rumboot_target(
 
     * PACKIMAGE - Говорит, что к бинарным файлам надо добавить контрольную сумму при помощи rumboot-packimage.py. Дополнительные опции для rumboot-packimage.py можно передавать через директиву PACKIMAGE_FLAGS.
 
-    * NOCODE - Эта цель не требует ничего компилировать, а только распихать по памятям другие цели и создать скрипт запуска (Для тестов загрузчика)
+    * NOCODE - Эта цель не требует ничего компилировать, а только распихать по памятям другие цели и создать скрипт запуска (Для тестов загрузчика) или сделать комбинированный образ из нескольких таргетов
+
+    * BANNER - Автоматически выводить полное имя теста перед запуском пользовательского main()
 
 ## Общие рекомендации к написанию тестов
 
