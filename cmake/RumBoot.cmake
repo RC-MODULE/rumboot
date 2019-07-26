@@ -395,7 +395,7 @@ function(add_rumboot_target)
 
 
   add_executable(${product} ${trg} $<TARGET_OBJECTS:rumboot-${TARGET_CONFIGURATION}>)
-  target_compile_options(${product} PUBLIC ${TARGET_CFLAGS})
+  target_compile_options(${product} PUBLIC ${TARGET_CFLAGS} -DRUMBOOT_PRODUCT_NAME=${product})
 
   list (FIND CONFIGURATION_${TARGET_CONFIGURATION}_FEATURES "LUA" _index)
   if (${_index} GREATER -1)
@@ -450,7 +450,7 @@ function(add_rumboot_target)
   list (FIND TARGET_FEATURES "STUB" _stub)
   if (NOT RUMBOOT_DISABLE_TESTING AND NOT ${_stub} GREATER -1 AND NOT ${RUMBOOT_PLATFORM} MATCHES "native")
     add_test(NAME ${product} COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/rumboot-packimage.py/rumboot_xrun.py -r ${RUMBOOT_TESTING_RESETSEQ} -f ${product}.bin -P ${RUMBOOT_TESTING_RESETPORT} -p ${RUMBOOT_TESTING_PORT})
-    SET_TESTS_PROPERTIES(${product} PROPERTIES TIMEOUT "30")  
+    SET_TESTS_PROPERTIES(${product} PROPERTIES TIMEOUT "45")  
     SET_TESTS_PROPERTIES(${product} PROPERTIES LABELS "full;${TARGET_TESTGROUP}")    
   endif()
 
