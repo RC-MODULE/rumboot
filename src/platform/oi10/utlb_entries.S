@@ -1,3 +1,4 @@
+#include <rumboot/macros.h>
 #include <platform/arch/ppc/ppc_476fp_mmu_fields.h>
 #include <platform/ppc470s/mmu/mem_window.h>
 
@@ -6,6 +7,7 @@
 .global tlb_entries
 .global TLB_ENTRIES_N
 
+.align 4
 tlb_entries:
 /*          MMU_TLB_ENTRY(  ERPN,   RPN,        EPN,        DSIZ,                   IL1I,   IL1D,   W,      I,      M,      G,      E,                      UX, UW, UR,     SX, SW, SR      DULXE,  IULXE,      TS,     TID,                WAY,                BID,                V   )*/
 /* Invalidate BOOTROM TLB entry for MEM_WINDOW_1 */
@@ -47,4 +49,4 @@ tlb_entries:
     .long   MMU_TLB_ENTRY(  0x001,  0xc0000,    0x40000,    MMU_TLBE_DSIZ_1GB,      0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_3,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
 #endif
 /*tlb_entries_end:*/
-.set TLB_ENTRIES_N, (.-tlb_entries)/MMU_TLB_ENTRY_SIZE
+DECLARE_CONST( TLB_ENTRIES_N, (.-tlb_entries)/MMU_TLB_ENTRY_SIZE )

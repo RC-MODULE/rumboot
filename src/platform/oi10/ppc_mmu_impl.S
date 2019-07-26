@@ -16,10 +16,10 @@ ppc470s_invalidate_all_tlb_entries_nosnoop:
 
     load_const  r3, (0x01000 << MMU_TLBE_TAG_EPN_i)
     load_const  r4, (0x00000 << MMU_TLBE_TAG_EPN_i) | (MMU_TLBE_DSIZ_16MB << MMU_TLBE_TAG_DSIZ_i)
-    load_const  r7, (MMU_TLBWE_WAY_0 << MMU_TLBWE_RA_WAY_i) | (MMU_TLBWE_BE_UND << MMU_TLBWE_RA_BE_i)
-    load_const  r8, (MMU_TLBWE_WAY_1 << MMU_TLBWE_RA_WAY_i) | (MMU_TLBWE_BE_UND << MMU_TLBWE_RA_BE_i)
-    load_const  r9, (MMU_TLBWE_WAY_2 << MMU_TLBWE_RA_WAY_i) | (MMU_TLBWE_BE_UND << MMU_TLBWE_RA_BE_i)
-    load_const  r10,(MMU_TLBWE_WAY_3 << MMU_TLBWE_RA_WAY_i) | (MMU_TLBWE_BE_UND << MMU_TLBWE_RA_BE_i)
+    load_const  r7, (MMU_TLBWE_WAY_0 << MMU_TLBE_RA_WAY_i) | (MMU_TLBWE_BE_UND << MMU_TLBE_RA_BE_i)
+    load_const  r8, (MMU_TLBWE_WAY_1 << MMU_TLBE_RA_WAY_i) | (MMU_TLBWE_BE_UND << MMU_TLBE_RA_BE_i)
+    load_const  r9, (MMU_TLBWE_WAY_2 << MMU_TLBE_RA_WAY_i) | (MMU_TLBWE_BE_UND << MMU_TLBE_RA_BE_i)
+    load_const  r10,(MMU_TLBWE_WAY_3 << MMU_TLBE_RA_WAY_i) | (MMU_TLBWE_BE_UND << MMU_TLBE_RA_BE_i)
 
 .align 4
 invalidate_tlb_entry: /* Invalidate entris for ways 0-3, even if bolted entry */
@@ -45,7 +45,6 @@ write_tlb_entries:
     cmplwi      r4, 0
     beqlr-
 
-    mr          r7, r27
     mr          r8, r28
     mr          r9, r29
     mr          r10,r30
@@ -53,13 +52,13 @@ write_tlb_entries:
 
 .align 4
 write_next_etry:
-    lmw         r27,0(r3)
+    lmw         r28,0(r3)
     addi        r3, r3, MMU_TLB_ENTRY_SIZE
 
-    mtspr       SPR_MMUCR,  r27
-    tlbwe       r29,r28,MMU_TLB_ENTRY_TAG
-    tlbwe       r30,r28,MMU_TLB_ENTRY_DATA
-    tlbwe       r31,r28,MMU_TLB_ENTRY_ATTR
+    mtspr       SPR_MMUCR,  r28
+    tlbwe       r29,r31,MMU_TLB_ENTRY_TAG
+    tlbwe       r30,r31,MMU_TLB_ENTRY_DATA
+    tlbwe       r31,r31,MMU_TLB_ENTRY_ATTR
 
     subic.      r4, r4, 1
     bne+        write_next_etry
@@ -79,7 +78,6 @@ write_tlb_entries_return:
     mtspr       SPR_SRR1, r4
     mtspr       SPR_SRR0, r3
 
-    mr          r27,r7
     mr          r28,r8
     mr          r29,r9
     mr          r30,r10

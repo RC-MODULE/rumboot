@@ -27,7 +27,7 @@ const_0:
     .long 0x00000000
     .long 0x00000000
 
-.align 2
+.align 4
 rom_tlb_entries:
 nor_tlb_entries:
 /*          MMU_TLB_ENTRY(  ERPN,   RPN,        EPN,        DSIZ,                   IL1I,   IL1D,   W,      I,      M,      G,      E,                      UX, UW, UR,     SX, SW, SR      DULXE,  IULXE,      TS,     TID,                WAY,                BID,                V   )*/

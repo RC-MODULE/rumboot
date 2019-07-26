@@ -18,11 +18,13 @@ inline static MEM_WINDOW get_mem_window() {
 
 typedef struct tlb_entry {
     uint32_t mmucr;
-    uint32_t ra;
     uint32_t tag;
     uint32_t data;
+//    union {
+//    uint32_t ra;
     uint32_t attributes;
-} tlb_entry;
+//    };
+} __attribute__(( aligned(16) )) tlb_entry;
 
 void write_tlb_entries( tlb_entry const * entries, uint32_t n );
 
