@@ -47,11 +47,11 @@ rumboot_add_configuration (
   LDS basis/iram.lds
   PREFIX iram
   LDFLAGS -Wl,--start-group -lgcc -lc -lm -Wl,--end-group "-e rumboot_main"
-  FILES ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c
+  FILES ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c 
   CFLAGS -g
   BOOTROM bootrom-stub
   TIMEOUT_CTEST 200000
-  FEATURES LUA COVERAGE PACKIMAGE
+  FEATURES LUA COVERAGE PACKIMAGE BANNER
   LOAD IM0BIN SELF
 )
 
@@ -1814,7 +1814,6 @@ add_rumboot_target(
   )
 
   add_rumboot_target(
-#    CONFIGURATION IRAM
     CONFIGURATION IRAM_WITH_DDR
     FILES mdma_gp/ddr_mdma_stress_test.c
     PREFIX "direct-memory"
