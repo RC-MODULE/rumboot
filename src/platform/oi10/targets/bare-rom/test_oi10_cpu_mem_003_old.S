@@ -205,12 +205,12 @@ END_ENUM( UTLB_TEST_DATA )
 DECLARE_CONST( TEST_TLB_ENTRY_SIZE, UTLB_TEST_DATA_N*UTLB_TEST_DATA_SIZE )
 
 #define TEST_TLB_ENTRY(index,way,EPN,EPNPar,V,TS,DSIZ,DSIZPar,TID,TIDPar,ERPN,ERPNPar,RPN,RPNPar,IL1I,IL1D,W,I,M,G,E,UX,UW,UR,SX,SW,SR,U,SPPar)\
-    MMU_TLBE_ADDR(index,way),\
+    MMU_TLBRE_RA(index,way),\
     MMU_TLBE_TAG(EPN,V,TS,DSIZ,0b0,EPNPar,DSIZPar,TIDPar),\
     MMU_TLBE_DATA(ERPN,RPN,ERPNPar,RPNPar),\
     MMU_TLBE_ATTR(IL1I,IL1D,W,I,M,G,E,UX,UW,UR,SX,SW,SR,U,SPPar),\
     MMU_MMUCR(0b0,0b0,0b0,TS,TID),\
-    ((0b100 | way) << MMU_TLBWE_RA_WAY_i) | (MMU_TLBWE_BE_UND << MMU_TLBWE_RA_BE_i)
+    MMU_TLBWE_RA((0b100 | way),MMU_TLBWE_BE_UND)
 
 test_write_tlb_entries: // write UTLB DATA for invalig (V=0) UTLB TAG entry
 /*          TEST_TLB_ENTRY( index,      way,    EPN,                    EPNPar, V,      TS,     DSIZ,       DSIZPar,TID,                TIDPar, ERPN,           ERPNPar,RPN,                    RPNPar, IL1I,   IL1D,   W,      I,      M,      G,      E,      UX,     UW,     UR,     SX,     SW,     SR,     U,      SPPar) */
