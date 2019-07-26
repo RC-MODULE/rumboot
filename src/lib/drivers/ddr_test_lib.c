@@ -46,8 +46,12 @@
 #endif
 
 #ifdef CMAKE_BUILD_TYPE_POSTPRODUCTION
-// #include "platform/ddr_config/ddr__mt41j512m8_187e_8_8_533__bist.h"
-#include "platform/ddr_config/ddr__mt41k256m8_125_8_11_800.h"
+ #ifdef PRODUCTION_TESTING
+    #include "platform/ddr_config/ddr__mt41j512m8_187e_8_8_533__bist.h"
+ #else
+    #include "platform/ddr_config/ddr__mt41k256m8_125_8_11_800.h"
+ #endif
+//#include "platform/ddr_config/ddr__mt41k256m8_125_8_11_800.h"
 // #include "platform/ddr_config/ddr__mt41k256m8_125_8_7_533.h"
 // #include "platform/ddr_config/ddr__mt41k256m8_125_8_11_800_0_0_0_0_10.h"
 #endif
