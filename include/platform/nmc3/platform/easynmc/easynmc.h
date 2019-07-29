@@ -47,8 +47,8 @@ struct nmc_stdio_channel {
 extern struct nmc_stdio_channel easynmc_stdout_hdr;
 extern struct nmc_stdio_channel easynmc_stdin_hdr;
 
-//#define stdin  (&easynmc_stdin_hdr)
-//#define stdout (&easynmc_stdout_hdr)
+#define easynmc_stdin  (&easynmc_stdin_hdr)
+#define easynmc_stdout (&easynmc_stdout_hdr)
 
 void easynmc_send_LPINT(void);
 void easynmc_send_HPINT(void);

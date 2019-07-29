@@ -28,15 +28,17 @@ endif()
 file(GLOB PLATFORM_SOURCES
   ${CMAKE_SOURCE_DIR}/src/platform/nmc3/glue.c
   ${CMAKE_SOURCE_DIR}/src/platform/nmc3/easynmc-io.c
+  ${CMAKE_SOURCE_DIR}/src/platform/nmc3/easynmc-args.S
+  ${CMAKE_SOURCE_DIR}/src/platform/nmc3/startup.S
   )
 
 macro(RUMBOOT_PLATFORM_SET_COMPILER_FLAGS)
     SET(RUMBOOT_COMMON_FLAGS "-mnmc3 -Xassembler -nmc3 -std=gnu99 -Wno-attributes")
     SET(CMAKE_C_FLAGS "${RUMBOOT_COMMON_FLAGS} -Wall -fdata-sections -ffunction-sections -DRUMBOOT_PLATFORM_NUM_HEAPS=8")
-    SET(CMAKE_ASM_FLAGS ${RUMBOOT_COMMON_FLAGS})
+    SET(CMAKE_ASM_FLAGS "-mmas ${RUMBOOT_COMMON_FLAGS}")
     SET(CMAKE_OBJCOPY_FLAGS )
-    SET(CMAKE_EXE_LINKER_FLAGS "-e _rumboot_main -nostartfiles -Wl,--gc-sections")
-    SET(CMAKE_DUMP_FLAGS     "")
+    SET(CMAKE_EXE_LINKER_FLAGS "-e start -nostartfiles -Wl,--gc-sections")
+    SET(CMAKE_DUMP_FLAGS     "--byte-addr")
 endmacro()
 
 function(RUMBOOT_PLATFORM_PRINT_SUMMARY)

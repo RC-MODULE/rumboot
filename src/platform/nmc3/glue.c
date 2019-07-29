@@ -7,15 +7,16 @@
 #include <unistd.h>
 #include <rumboot/rumboot.h>
 #include <rumboot/printf.h>
+#include <platform/easynmc/easynmc.h>
 
 void  rumboot_platform_putchar(uint8_t c)
 {
-
+        eputc(easynmc_stdout, c);
 }
 
 int rumboot_platform_getchar(uint32_t timeout_us)
 {
-        return 0;
+        return egetc(easynmc_stdin);
 }
 
 
