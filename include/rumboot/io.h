@@ -98,7 +98,7 @@ static inline uint8_t ioread8(uint32_t const base_addr);
  */
 static inline void iowrite8(uint8_t const value, uint32_t const base_addr);
 
-#ifdef __PPC__
+#if defined(__PPC__) || defined(__NM__)
     #include <arch/io.h>
 #endif
 
