@@ -9,6 +9,9 @@ MEMORY
 
 SECTIONS
 {
+  .header : {
+    KEEP(*(.header))
+  }
 
   .easynmc_args : {
     *(._easynmc_args)
@@ -30,11 +33,14 @@ SECTIONS
    *(.text)
    *(.text.*)
    *(.rodata)
+   *(.rodata.*)
    *(.data)
    *(.data.*) 
   } > IRAM
 
   .bss : {
+    _rumboot_platform_spl_start = .;
+    _rumboot_platform_spl_end = .;
     _rumboot_platform_bss_start = .;
     *(.bss)
     *(.bss.*)
