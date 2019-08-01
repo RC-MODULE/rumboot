@@ -27,6 +27,9 @@ int main()
         asm volatile (".word 0xf7f0a000\n");
 #elif defined(RUMBOOT_NATIVE)
         kill(getpid(), SIGILL);
+#elif defined(__NM__)
+        asm("push gr7;");
+        asm("pop gr7;");
 #else
         #error "Not supported on this architecture"
 #endif
