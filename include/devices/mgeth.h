@@ -2,7 +2,7 @@
 #define __MGETH__H__
 
 #define AN_EN   0
-//#define DBG
+#define DBG
 
 #ifdef DBG
 #define DBG_print(fmt, ...) rumboot_printf("%s:%d: "fmt"\n", __FUNCTION__, __LINE__, ##__VA_ARGS__);
