@@ -19,8 +19,6 @@ int rumboot_platform_getchar(uint32_t timeout_us)
         return egetc(easynmc_stdin);
 }
 
-
-
 uint32_t rumboot_platform_get_uptime()
 {
         return 0;

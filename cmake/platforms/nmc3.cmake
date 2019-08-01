@@ -14,10 +14,37 @@ rumboot_add_configuration(
   IRUN_FLAGS ${BOOTROM_IFLAGS}
 )
 
+rumboot_add_configuration(
+  IRAM_SPL
+  DEFAULT
+  PREFIX iram
+  FILES ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c 
+  SNAPSHOT default
+  LDS nmc3/generic.lds
+  IRUN_FLAGS ${BOOTROM_IFLAGS}
+)
+
+
+include(${CMAKE_SOURCE_DIR}/cmake/bootrom.cmake)
+
 macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
   add_rumboot_target_dir(iram/
     CONFIGURATION IRAM
   )
+
+  rumboot_bootrom_add_components(
+    IRAM_SPL IRAM
+    -a 512 -z 512)
+
+  rumboot_bootrom_add_common_units(
+        CONFIGURATION IRAM
+    )
+
+  rumboot_bootrom_unit_test(
+    ID 0
+    TAG spi0
+    ENDIAN little
+)
 
 endmacro()
 
@@ -27,9 +54,11 @@ endif()
 
 file(GLOB PLATFORM_SOURCES
   ${CMAKE_SOURCE_DIR}/src/platform/nmc3/glue.c
+  ${CMAKE_SOURCE_DIR}/src/platform/nmc3/bootglue.c
   ${CMAKE_SOURCE_DIR}/src/platform/nmc3/easynmc-io.c
   ${CMAKE_SOURCE_DIR}/src/platform/nmc3/easynmc-args.S
   ${CMAKE_SOURCE_DIR}/src/platform/nmc3/startup.S
+  ${CMAKE_SOURCE_DIR}/src/arch/nmc3/exception.c
   )
 
 macro(RUMBOOT_PLATFORM_SET_COMPILER_FLAGS)
@@ -38,7 +67,7 @@ macro(RUMBOOT_PLATFORM_SET_COMPILER_FLAGS)
     SET(CMAKE_ASM_FLAGS "-mmas ${RUMBOOT_COMMON_FLAGS}")
     SET(CMAKE_OBJCOPY_FLAGS )
     SET(CMAKE_EXE_LINKER_FLAGS "-e start -nostartfiles -Wl,--gc-sections")
-    SET(CMAKE_DUMP_FLAGS     "--byte-addr")
+    SET(CMAKE_DUMP_FLAGS     --byte-addr -S)
 endmacro()
 
 function(RUMBOOT_PLATFORM_PRINT_SUMMARY)

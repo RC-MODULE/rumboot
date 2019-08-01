@@ -22,17 +22,17 @@ static __attribute__((no_instrument_function)) inline uint64_t ioread64(uint32_t
 
 static __attribute__((no_instrument_function)) inline void iowrite64(uint64_t const value, uint32_t const base_addr)
 {
-    *((volatile uint64_t*)(base_addr >> 2)) = value;
+    *((volatile uint64_t*)((base_addr) >> 2)) = value;
 }
 
 static __attribute__((no_instrument_function)) inline uint32_t ioread32(uint32_t const base_addr)
 {
-    return *((volatile uint32_t*)(base_addr >> 2));
+    return *((volatile uint32_t*)((base_addr) >> 2));
 }
 
 static __attribute__((no_instrument_function)) inline void iowrite32(uint32_t const value, uint32_t const base_addr)
 {
-    *((volatile uint32_t*)(base_addr >> 2)) = value;
+    *((volatile uint32_t*)((base_addr) >> 2)) = value;
 }
 
 static __attribute__((no_instrument_function)) inline uint16_t ioread16(uint32_t const base_addr)
