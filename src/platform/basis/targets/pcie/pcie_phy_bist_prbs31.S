@@ -263,6 +263,7 @@ Wait_pcie_a0_power_state:
         ADD R1, R1, R4
         LDR R2, [R1]
         CMP R2, #0x0
+        LDRNE R0, =-1
         BNE pcie_test_failed
 
         /********** Activate BIST on TX side **********/
@@ -277,6 +278,7 @@ Wait_pcie_a0_power_state:
         LDR R2, [R1]
         AND R2, R2, #0xE
         CMP R2, #0x0
+        LDRNE R0, =-2
         BNE pcie_test_failed
 
         /********** Activate BIST on RX side **********/
@@ -314,6 +316,7 @@ Wait_pcie_bist_synch:
         LDR R2, [R1]
         AND R2, R2, #0xE
         CMP R2, #0x2
+        LDRNE R0, =-3
         BNE pcie_test_failed
 
         /********** Check the BIST error counter register **********/
@@ -321,6 +324,7 @@ Wait_pcie_bist_synch:
         ADD R1, R1, R4
         LDR R2, [R1]
         CMP R2, #0x0
+        LDRNE R0, =-4
         BNE pcie_test_failed
 
         /********** Force a BIST error **********/
@@ -347,6 +351,7 @@ Wait_pcie_error_detect:
         ADD R1, R1, R4
         LDR R2, [R1]
         CMP R2, #0x0
+        LDRNE R0, =-5
         BEQ pcie_test_failed
 
         /********** Now clear BIST errors and check status **********/
@@ -363,6 +368,7 @@ Wait_pcie_error_detect:
         LDR R2, [R1]
         AND R2, R2, #0xE
         CMP R2, #0x2
+        LDRNE R0, =-6
         BNE pcie_test_failed
 
         /********** Check the BIST error counter register **********/
@@ -370,6 +376,7 @@ Wait_pcie_error_detect:
         ADD R1, R1, R4
         LDR R2, [R1]
         CMP R2, #0x0
+        LDRNE R0, =-7
         BNE pcie_test_failed
 
         /********** De-activate isolation mode **********/
@@ -391,5 +398,5 @@ pcie_test_exit:
 
 pcie_test_failed:
     /*tube_hex 00000006*/
-    LDR R0, =0xFFFFFFFF
+    //LDR R0, =0xFFFFFFFF
     B pcie_test_exit
