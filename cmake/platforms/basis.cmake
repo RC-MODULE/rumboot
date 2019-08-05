@@ -1352,6 +1352,12 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
   add_rumboot_target(
       CONFIGURATION IRAM
+      FILES pcie/pcie_phy_bist_prbs31.c
+      NAME pcie_phy_bist_prbs31_c
+    )
+
+  add_rumboot_target(
+      CONFIGURATION IRAM
       FILES pcie/pcie_soft_reset_eRP_test.c
       NAME pcie_soft_reset_eRP_test
     )

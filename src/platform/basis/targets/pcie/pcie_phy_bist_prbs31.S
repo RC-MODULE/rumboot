@@ -351,7 +351,7 @@ Wait_pcie_error_detect:
         ADD R1, R1, R4
         LDR R2, [R1]
         CMP R2, #0x0
-        LDRNE R0, =-5
+        LDREQ R0, =-5
         BEQ pcie_test_failed
 
         /********** Now clear BIST errors and check status **********/

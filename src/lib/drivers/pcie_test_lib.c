@@ -22,11 +22,19 @@
 #include <platform/devices.h>
 #include <rumboot/io.h>
 
+#include <rumboot/printf.h>
+
 //-----------------------------------------------------------------------------
 //  These defines must be changed for real program
 //-----------------------------------------------------------------------------
+#ifndef CMAKE_BUILD_TYPE_POSTPRODUCTION
 #define PCIE_TEST_LIB_PLL_LOCK_TIMEOUT    0x1000
 #define PCIE_TEST_LIB_TRAINING_TIMEOUT    0x1000
+#else
+#define PCIE_TEST_LIB_PLL_LOCK_TIMEOUT    0x1000000
+#define PCIE_TEST_LIB_TRAINING_TIMEOUT    0x1000000
+#endif
+
 
 
 //-----------------------------------------------------------------------------
@@ -166,6 +174,62 @@ uint32_t pcie_simple_turn_on ()
 }
 
 //-----------------------------------------------------------------------------
+//  
+//-----------------------------------------------------------------------------
+void pcie_display_regs ()
+{
+    rumboot_printf ("\n  debug pcie_display_regs\n");
+    rumboot_printf ("    SCTL_PCIE_REG_0  0x%08x\n", ioread32 (SCTL_BASE + SCTL_PCIE_REG_0));
+    rumboot_printf ("    SCTL_PCIE_REG_1  0x%08x\n", ioread32 (SCTL_BASE + SCTL_PCIE_REG_1));
+    rumboot_printf ("    SCTL_PCIE_REG_2  0x%08x\n", ioread32 (SCTL_BASE + SCTL_PCIE_REG_2));
+    rumboot_printf ("    PCIe_EP_i_vendor_id_device_id              0x%08x\n", ioread32 (PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_EP_i_vendor_id_device_id            ));
+    rumboot_printf ("    PCIe_EP_i_command_status                   0x%08x\n", ioread32 (PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_EP_i_command_status                 ));
+    rumboot_printf ("    PCIe_EP_i_revision_id_class_code           0x%08x\n", ioread32 (PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_EP_i_revision_id_class_code         ));
+    rumboot_printf ("    PCIe_EP_i_bist_header_latency_cache_line   0x%08x\n", ioread32 (PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_EP_i_bist_header_latency_cache_line ));
+    rumboot_printf ("    PCIe_EP_i_base_addr_0                      0x%08x\n", ioread32 (PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_EP_i_base_addr_0                    ));
+    rumboot_printf ("    PCIe_EP_i_base_addr_1                      0x%08x\n", ioread32 (PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_EP_i_base_addr_1                    ));
+    rumboot_printf ("    PCIe_EP_i_base_addr_2                      0x%08x\n", ioread32 (PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_EP_i_base_addr_2                    ));
+    rumboot_printf ("    PCIe_EP_i_base_addr_3                      0x%08x\n", ioread32 (PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_EP_i_base_addr_3                    ));
+    rumboot_printf ("    PCIe_EP_i_base_addr_4                      0x%08x\n", ioread32 (PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_EP_i_base_addr_4                    ));
+    rumboot_printf ("    PCIe_EP_i_base_addr_5                      0x%08x\n", ioread32 (PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_EP_i_base_addr_5                    ));
+    rumboot_printf ("    PCIe_EP_i_subsystem_vendor_id_subsystem_i  0x%08x\n", ioread32 (PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_EP_i_subsystem_vendor_id_subsystem_i));
+    rumboot_printf ("    PCIe_EP_i_capabilities_pointer             0x%08x\n", ioread32 (PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_EP_i_capabilities_pointer           ));
+    rumboot_printf ("    PCIe_EP_i_intrpt_line_intrpt_pin           0x%08x\n", ioread32 (PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_EP_i_intrpt_line_intrpt_pin         ));
+    rumboot_printf ("    PCIe_EP_i_pwr_mgmt_cap                     0x%08x\n", ioread32 (PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_EP_i_pwr_mgmt_cap                   ));
+    rumboot_printf ("    PCIe_EP_i_pwr_mgmt_ctrl_stat_rep           0x%08x\n", ioread32 (PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_EP_i_pwr_mgmt_ctrl_stat_rep         ));
+    rumboot_printf ("    PCIe_EP_i_msi_ctrl_reg                     0x%08x\n", ioread32 (PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_EP_i_msi_ctrl_reg                   ));
+    rumboot_printf ("    PCIe_EP_i_msi_msg_low_addr                 0x%08x\n", ioread32 (PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_EP_i_msi_msg_low_addr               ));
+    rumboot_printf ("    PCIe_EP_i_msi_msg_hi_addr                  0x%08x\n", ioread32 (PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_EP_i_msi_msg_hi_addr                ));
+    rumboot_printf ("    PCIe_EP_i_msi_msg_data                     0x%08x\n", ioread32 (PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_EP_i_msi_msg_data                   ));
+    rumboot_printf ("    PCIe_EP_i_msi_mask                         0x%08x\n", ioread32 (PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_EP_i_msi_mask                       ));
+    rumboot_printf ("    PCIe_EP_i_msi_pending_bits                 0x%08x\n", ioread32 (PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_EP_i_msi_pending_bits               ));
+    rumboot_printf ("    PCIe_EP_i_msix_ctrl                        0x%08x\n", ioread32 (PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_EP_i_msix_ctrl                      ));
+    rumboot_printf ("    PCIe_EP_i_msix_tbl_offset                  0x%08x\n", ioread32 (PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_EP_i_msix_tbl_offset                ));
+    rumboot_printf ("    PCIe_EP_i_msix_pending_intrpt              0x%08x\n", ioread32 (PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_EP_i_msix_pending_intrpt            ));
+    rumboot_printf ("    PCIe_EP_i_pcie_cap_list                    0x%08x\n", ioread32 (PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_EP_i_pcie_cap_list                  ));
+    rumboot_printf ("    PCIe_EP_i_pcie_dev_cap                     0x%08x\n", ioread32 (PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_EP_i_pcie_dev_cap                   ));
+    rumboot_printf ("    PCIe_EP_i_pcie_dev_ctrl_status             0x%08x\n", ioread32 (PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_EP_i_pcie_dev_ctrl_status           ));
+    rumboot_printf ("    PCIe_EP_i_link_cap                         0x%08x\n", ioread32 (PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_EP_i_link_cap                       ));
+    rumboot_printf ("    PCIe_EP_i_link_ctrl_status                 0x%08x\n", ioread32 (PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_EP_i_link_ctrl_status               ));
+    rumboot_printf ("    PCIe_EP_i_pcie_dev_cap_2                   0x%08x\n", ioread32 (PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_EP_i_pcie_dev_cap_2                 ));
+    rumboot_printf ("    PCIe_EP_i_pcie_dev_ctrl_status_2           0x%08x\n", ioread32 (PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_EP_i_pcie_dev_ctrl_status_2         ));
+    rumboot_printf ("    PCIe_EP_i_link_cap_2_reg                   0x%08x\n", ioread32 (PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_EP_i_link_cap_2_reg                 ));
+    rumboot_printf ("    PCIe_EP_i_link_ctrl_status_2               0x%08x\n", ioread32 (PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_EP_i_link_ctrl_status_2             ));
+    rumboot_printf ("    PCIe_EP_i_AER_enhanced_cap_hdr             0x%08x\n", ioread32 (PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_EP_i_AER_enhanced_cap_hdr           ));
+    rumboot_printf ("    PCIe_EP_i_uncorr_err_status                0x%08x\n", ioread32 (PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_EP_i_uncorr_err_status              ));
+    rumboot_printf ("    PCIe_EP_i_uncorr_err_mask                  0x%08x\n", ioread32 (PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_EP_i_uncorr_err_mask                ));
+    rumboot_printf ("    PCIe_EP_i_uncorr_err_severity              0x%08x\n", ioread32 (PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_EP_i_uncorr_err_severity            ));
+    rumboot_printf ("    PCIe_EP_i_corr_err_status                  0x%08x\n", ioread32 (PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_EP_i_corr_err_status                ));
+    rumboot_printf ("    PCIe_EP_i_corr_err_mask                    0x%08x\n", ioread32 (PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_EP_i_corr_err_mask                  ));
+    rumboot_printf ("    PCIe_EP_i_advcd_err_cap_ctrl               0x%08x\n", ioread32 (PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_EP_i_advcd_err_cap_ctrl             ));
+    rumboot_printf ("    PCIe_EP_i_hdr_log_0                        0x%08x\n", ioread32 (PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_EP_i_hdr_log_0                      ));
+    rumboot_printf ("    PCIe_EP_i_hdr_log_1                        0x%08x\n", ioread32 (PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_EP_i_hdr_log_1                      ));
+    rumboot_printf ("    PCIe_EP_i_hdr_log_2                        0x%08x\n", ioread32 (PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_EP_i_hdr_log_2                      ));
+    rumboot_printf ("    PCIe_EP_i_hdr_log_3                        0x%08x\n", ioread32 (PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_EP_i_hdr_log_3                      ));
+    rumboot_printf ("\n");
+}
+
+//-----------------------------------------------------------------------------
 //  This function is for PCIe turn On in EndPoint mode with options
 //    Very few options are used here. Look documentation for full list.
 //    It includes:
@@ -233,8 +297,8 @@ uint32_t pcie_turn_on_with_options_ep
 
 )
 {
-    uint32_t timer_cntr;
-    uint32_t rdata;
+    volatile uint32_t timer_cntr;
+    volatile uint32_t rdata;
 
 
 #ifndef PCIE_TEST_LIB_SIMSPEEDUP_OFF
@@ -248,6 +312,7 @@ uint32_t pcie_turn_on_with_options_ep
     //  These settings may be replaced with corresponding key on RTL simulation
     //    And they are neccessary in Netlist simulation
     //-------------------------------------------------------------------------
+    rumboot_printf ("\n  Error: Simulation speedup On\n\n");
     iowrite32 (0b0000000011111010, PCIE_PHY_BASE + PCIe_Phy_MASSWR_TX_RCVDET_CTRL                );
     iowrite32 (0b0000000000000001, PCIE_PHY_BASE + PCIe_Phy_CMN_SSM_BANDGAP_TMR                  );
     iowrite32 (0b0000000000000001, PCIE_PHY_BASE + PCIe_Phy_CMN_SSM_BIAS_TMR                     );
@@ -297,10 +362,16 @@ uint32_t pcie_turn_on_with_options_ep
 
 
     //---------------------------------------------------------------
-    //  Disable Link Training
+    //  Disable Link Training and set Gen1
     //---------------------------------------------------------------
-    rdata = ioread32 (SCTL_BASE + SCTL_PCIE_REG_0) & 0xFFFFFFEF;
+    rdata = ioread32 (SCTL_BASE + SCTL_PCIE_REG_0) & 0xFFFFFFEE;
     iowrite32 (rdata, SCTL_BASE + SCTL_PCIE_REG_0);
+    //---------------------------------------------------------------
+    //  Enable function change power auto-acknowledge
+    //---------------------------------------------------------------
+    rumboot_printf ("  Enable function change power auto-acknowledge (write 0x4 to SCTL_PCIE_REG_1)\n");
+    rdata = ioread32 (SCTL_BASE + SCTL_PCIE_REG_1);
+    iowrite32 (rdata | (1 << 2), SCTL_BASE + SCTL_PCIE_REG_1);
 
     //---------------------------------------------------------------
     //  Set base options in SCTL
@@ -325,8 +396,12 @@ uint32_t pcie_turn_on_with_options_ep
     {
         timer_cntr++;
         if (timer_cntr == PCIE_TEST_LIB_PLL_LOCK_TIMEOUT)
+        {
+            rumboot_printf ("\n  Warning: PCIe PLL lock timeout.\n\n");
             return -1;
+        }
     }
+    rumboot_printf ("  PCIe PLL locked\n");
 
 
     //---------------------------------------------------------------
@@ -368,21 +443,22 @@ uint32_t pcie_turn_on_with_options_ep
         //------------------------------------------------------
         //  Enable access through controller
         //------------------------------------------------------
-        iowrite32 (0x07, PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_EP_i_command_status);
+        // iowrite32 (0x07, PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_EP_i_command_status);
         //------------------------------------------------------
         //  BAR 1 - what high bits of inbound address to mask
         //------------------------------------------------------
-        iowrite32 (0x80000000, PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_EP_i_base_addr_1);
+        // iowrite32 (0x80000000, PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_EP_i_base_addr_1);
         //------------------------------------------------------
         //  Enable BAR 0 and BAR 1 for inbound transactions
         //   - maximum BAR size selected - 2 GB
         //   - two BARs cover all memory space
         //------------------------------------------------------
-        iowrite32 (0x00009898, PCIE_CORE_BASE + PCIe_Core_LocalMgmt + PCIe_LocMgmt_i_pf_0_BAR_config_0_reg);
+        // iowrite32 (0x00009898, PCIE_CORE_BASE + PCIe_Core_LocalMgmt + PCIe_LocMgmt_i_pf_0_BAR_config_0_reg);
+        iowrite32 (0x00009292, PCIE_CORE_BASE + PCIe_Core_LocalMgmt + PCIe_LocMgmt_i_pf_0_BAR_config_0_reg);
         //------------------------------------------------------
         //  BAR 1 - what to put instead of masked bits
         //------------------------------------------------------
-        iowrite32 (0x80000000, PCIE_CORE_BASE + PCIe_Core_AXIConfig + PCIe_AXI_inregion_ep_bar_1_addr_translation);
+        // iowrite32 (0x80000000, PCIE_CORE_BASE + PCIe_Core_AXIConfig + PCIe_AXI_inregion_ep_bar_1_addr_translation);
     }
 
 
@@ -423,9 +499,57 @@ uint32_t pcie_turn_on_with_options_ep
     {
         timer_cntr++;
         if (timer_cntr == PCIE_TEST_LIB_TRAINING_TIMEOUT)
+        {
+            rumboot_printf ("\n  Warning: PCIe link training timeout.\n\n");
             return -1;
+            // break;
+        }
     }
-
+    rumboot_printf ("  PCIe link up\n");
+    
+    
+    
+    
+    
+    
+    pcie_display_regs ();
+    
+    rumboot_printf ("  start debugging PCIe link. Read status 10_000_000 times. Report, if it changed.\n");
+    
+    rdata = ioread32 (PCIE_CORE_BASE + PCIe_Core_LocalMgmt + PCIe_LocMgmt_i_pl_config_0_reg);
+    rumboot_printf ("    initial status  (PCIe_LocMgmt_i_pl_config_0_reg)  0x%08x\n", rdata);
+    
+    volatile uint32_t rdata_1;
+    volatile uint32_t link_status_changed = 0;
+    
+    for (uint32_t i = 0; i < 10000000; i++)
+    {
+        rdata_1 = ioread32 (PCIE_CORE_BASE + PCIe_Core_LocalMgmt + PCIe_LocMgmt_i_pl_config_0_reg);
+        
+        if (rdata != rdata_1)
+        {
+            rumboot_printf ("    status changed to  0x%08x    time  %d\n", rdata_1, rumboot_platform_get_uptime());
+            rdata = rdata_1;
+            link_status_changed++;
+            if (link_status_changed == 100)
+            {
+                rumboot_printf ("\n  Link status changed too many times. Exit this cycle.\n\n");
+                break;
+            }
+        }
+    }
+    
+    if (link_status_changed == 0)
+        rumboot_printf ("    PCIe status looks stable\n");
+    
+    
+    rumboot_printf ("    Manual ACK of function power state change (write 0x6 to SCTL_PCIE_REG_1)\n");
+    rdata = ioread32 (SCTL_BASE + SCTL_PCIE_REG_1);
+    iowrite32 (rdata | (1 << 2) | (1 << 1), SCTL_BASE + SCTL_PCIE_REG_1);
+    
+    
+    
+    
     return 0;
 }
 
