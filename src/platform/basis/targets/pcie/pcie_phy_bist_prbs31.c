@@ -2,13 +2,13 @@
 //  This program is for PCIe Phy testing by BIST
 //  It includes:
 //    - program speedup, if simulation
-//    - repeat for every lane:
-//      - BIST in ISI mode
-//      - if not pass, BIST in Serial Loopback mode
-//      - if not pass, BIST in Near Loopback mode
+//    - BIST in ISI mode
+//        (repeat for every lane)
+//    - if not pass, BIST in Serial Loopback mode
+//    - if not pass, BIST in Near Loopback mode
 //    - 
 //
-//    Test duration (RTL): < 
+//    Test duration (RTL): < 200 us
 //-----------------------------------------------------------------------------
 
 #include <stdint.h>
@@ -199,7 +199,7 @@ uint32_t pcie_bist_lane (uint32_t lane_base, uint32_t mode)
     iowrite32 (0x0B01, PCIE_PHY_BASE + PCIe_Phy_PMA_TX_BIST_CTRL + (lane_base << 1));
     
     /********** Check that an error is detected **********/
-    while (ioread32 (PCIE_PHY_BASE + PCIe_Phy_PMA_XCVR_CTRL + lane_base) != 0)
+    while (ioread32 (PCIE_PHY_BASE + PCIe_Phy_PMA_XCVR_CTRL + lane_base) == 0)
         ;
     
     /********** Check the BIST error counter register **********/

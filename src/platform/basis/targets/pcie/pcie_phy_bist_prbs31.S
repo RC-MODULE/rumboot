@@ -2,7 +2,7 @@
 //-----------------------------------------------------------------------------
 //  This program is for PCIe Phy testing by BIST
 //
-//    Test duration (RTL): < 170us
+//    Test duration (RTL): < 200us
 //-----------------------------------------------------------------------------
 
 #include <regs/regs_pcie.h>
