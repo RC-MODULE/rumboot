@@ -61,8 +61,7 @@ static void fill_utlb_way( uint32_t const way ) {
             ts          = CALC_TS( index );
             erpn        = CALC_ERPN( index, way );
             uxwrsxwr    = CALC_UXWRSXWR( index );
-            ra          = ((MMU_TLBWE_WAY_0|way)    << MMU_TLBWE_RA_WAY_i)
-                        | (MMU_TLBWE_BE_UND         << MMU_TLBWE_RA_BE_i);
+            ra          = MMU_TLBWE_RA( (MMU_TLBWE_WAY_0|way), MMU_TLBWE_BE_UND );
 
             mmucr       = MMU_MMUCR( 0b0,  0b0,0b0,    ts,     tid );
             tlbe_tag    = MMU_TLBE_TAG( epn,   0b1,    ts,     MMU_TLBE_DSIZ_16MB,     0b0,    0b0,0b0,0b0 );
@@ -100,7 +99,7 @@ static void check_utlb_entries( void ) {
 
     for( uint32_t index = 0; index < MMU_UTLB_INDEXES_N; index++ ) {
         for( uint32_t way = 0; way < MMU_UTLB_WAYS_N; way++ ) {
-            ra = MMU_TLBE_ADDR( index, way );
+            ra = MMU_TLBRE_RA( index, way );
 
             tlbe_tag        = tlbre( ra, MMU_TLB_ENTRY_TAG );
             if( !GET_BIT(tlbe_tag, MMU_TLBE_TAG_BLTD_i) ) {

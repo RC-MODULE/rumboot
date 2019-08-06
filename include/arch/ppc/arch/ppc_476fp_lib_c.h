@@ -276,5 +276,11 @@ static inline __attribute__((always_inline)) bool parity32( uint32_t const val )
         ::  "r"(RS), "r"(RA), "i"(WS)\
     )
 
+#define tlbivax( RB )\
+    asm volatile (\
+        "tlbivax 0, %0\n\t"\
+        ::  "r"(RB)\
+    )
+
 
 #endif  /* PPC_476FP_LIB_C_H*/
