@@ -60,6 +60,10 @@ check_cpu_ppc_prog_model_24:    /*check sequential flow*/
     // rumboot_putstring "Start test...\n"
     mtxer       R_ZERO
     test_event  EVENT_CHECK_CPU_PPC_PROG_MODEL_24_SEQ
+    nop
+    nop
+    nop
+    nop
 
 check_cpu_ppc_prog_model_25:    /*check unconditional branch*/
     rumboot_putstring	"Unconditional branch:\n align: "
