@@ -20,6 +20,11 @@
 #include <regs/regs_pcie.h>
 #include <platform/devices.h>
 
+#ifndef CMAKE_BUILD_TYPE_POSTPRODUCTION
+#define REPEAT_NUM 1
+#else
+#define REPEAT_NUM 1024
+#endif
 
 #define ISI_LOOPBACK        0x02
 #define SERIAL_LOOPBACK     0x01
@@ -99,137 +104,146 @@ uint32_t pcie_bist_lane (uint32_t lane_base, uint32_t mode)
 {
     uint32_t result = 0;
     
-    rumboot_printf ("  pcie_bist_lane start    lane_base = 0x%08x\n", lane_base);
-    
-    //---------------------------------------------------------------------------------------------
-    /********** Initiate PMA reset **********/
-    iowrite32 (0x0, PCIE_PHY_BASE + PCIe_Phy_PMA_ISO_CMN_CTRL);
-    
-    /********** Set standard mode **********/
-    iowrite32 (0x95, PCIE_PHY_BASE + PCIe_Phy_PMA_ISO_MODE);
-    
-    /********** Setup transceiver controls to enable lanes but in electrical idle **********/
-    iowrite32 (0x1103, PCIE_PHY_BASE + PCIe_Phy_PMA_ISO_XCVR_CTRL + LANE_0_BASE);
-    iowrite32 (0x1103, PCIE_PHY_BASE + PCIe_Phy_PMA_ISO_XCVR_CTRL + LANE_1_BASE);
-    iowrite32 (0x1103, PCIE_PHY_BASE + PCIe_Phy_PMA_ISO_XCVR_CTRL + LANE_2_BASE);
-    iowrite32 (0x1103, PCIE_PHY_BASE + PCIe_Phy_PMA_ISO_XCVR_CTRL + LANE_3_BASE);
-    
-    /********** Write to PMA lanes TD to set a repeating pattern **********/
-    iowrite32 (0xCCCC, PCIE_PHY_BASE + PCIe_Phy_PMA_ISO_DATA_LO + lane_base);
-    iowrite32 (0xCCCC, PCIE_PHY_BASE + PCIe_Phy_PMA_ISO_DATA_HI + lane_base);
-    
-    /********** Enable loopback for selected lane **********/
-    iowrite32 (mode, PCIE_PHY_BASE + PCIe_Phy_PMA_XCVR_LPBK + lane_base);
-    
-    /********** Put everything into isolation mode (PMA) **********/
-    iowrite32 (0xD3FF, PCIE_PHY_BASE + PCIe_Phy_PMA_ISOLATION_CTRL);
-    
-    /********** Release reset and set up refclk selection **********/
-    iowrite32 (0x0E33, PCIE_PHY_BASE + PCIe_Phy_PMA_ISO_CMN_CTRL);
-    
-    /********** Poll until PMA asserts cmn_ready **********/
-    while ((ioread32 (PCIE_PHY_BASE + PCIe_Phy_PMA_CMN_CTRL) & 0x1) != 0x1)
-        ;
-    
-    /********** Set power state request **********/
-    iowrite32 (0x1, PCIE_PHY_BASE + PCIe_Phy_PMA_ISO_PWRST_CTRL);
-    
-    /********** Poll until PMA responds with the power state acknowledge **********/
-    while ((ioread32 (PCIE_PHY_BASE + PCIe_Phy_PMA_ISO_PWRST_CTRL) & 0x100) != 0x100)
-        ;
-    
-    /********** De-assert transceiver control **********/
-    /********** electrical idle to begin transmission **********/
-    iowrite32 (0x0103, PCIE_PHY_BASE + PCIe_Phy_PMA_ISO_XCVR_CTRL + lane_base);
-    
-    
-    //---------------------------------------------------------------------------------------------
-    /********** Activate BIST testing **********/
+    rumboot_printf ("  pcie_bist_lane start   lane_base = 0x%08x\n", lane_base);
+    for (uint32_t i = 0; i < REPEAT_NUM; i++)
+    {
+        
+        //---------------------------------------------------------------------------------------------
+        /********** Initiate PMA reset **********/
+        iowrite32 (0x0, PCIE_PHY_BASE + PCIe_Phy_PMA_ISO_CMN_CTRL);
+        
+        /********** Set standard mode **********/
+        iowrite32 (0x95, PCIE_PHY_BASE + PCIe_Phy_PMA_ISO_MODE);
+        
+        /********** Setup transceiver controls to enable lanes but in electrical idle **********/
+        iowrite32 (0x1103, PCIE_PHY_BASE + PCIe_Phy_PMA_ISO_XCVR_CTRL + LANE_0_BASE);
+        iowrite32 (0x1103, PCIE_PHY_BASE + PCIe_Phy_PMA_ISO_XCVR_CTRL + LANE_1_BASE);
+        iowrite32 (0x1103, PCIE_PHY_BASE + PCIe_Phy_PMA_ISO_XCVR_CTRL + LANE_2_BASE);
+        iowrite32 (0x1103, PCIE_PHY_BASE + PCIe_Phy_PMA_ISO_XCVR_CTRL + LANE_3_BASE);
+        
+        /********** Write to PMA lanes TD to set a repeating pattern **********/
+        iowrite32 (0xCCCC, PCIE_PHY_BASE + PCIe_Phy_PMA_ISO_DATA_LO + lane_base);
+        iowrite32 (0xCCCC, PCIE_PHY_BASE + PCIe_Phy_PMA_ISO_DATA_HI + lane_base);
+        
+        /********** Enable loopback for selected lane **********/
+        iowrite32 (mode, PCIE_PHY_BASE + PCIe_Phy_PMA_XCVR_LPBK + lane_base);
+        
+        /********** Put everything into isolation mode (PMA) **********/
+        iowrite32 (0xD3FF, PCIE_PHY_BASE + PCIe_Phy_PMA_ISOLATION_CTRL);
+        
+        /********** Release reset and set up refclk selection **********/
+        iowrite32 (0x0E33, PCIE_PHY_BASE + PCIe_Phy_PMA_ISO_CMN_CTRL);
+        
+        /********** Poll until PMA asserts cmn_ready **********/
+        while ((ioread32 (PCIE_PHY_BASE + PCIe_Phy_PMA_CMN_CTRL) & 0x1) != 0x1)
+            ;
+        
+        /********** Set power state request **********/
+        iowrite32 (0x1, PCIE_PHY_BASE + PCIe_Phy_PMA_ISO_PWRST_CTRL);
+        
+        /********** Poll until PMA responds with the power state acknowledge **********/
+        while ((ioread32 (PCIE_PHY_BASE + PCIe_Phy_PMA_ISO_PWRST_CTRL) & 0x100) != 0x100)
+            ;
+        
+        /********** De-assert transceiver control **********/
+        /********** electrical idle to begin transmission **********/
+        iowrite32 (0x0103, PCIE_PHY_BASE + PCIe_Phy_PMA_ISO_XCVR_CTRL + lane_base);
+        
+        
+        //---------------------------------------------------------------------------------------------
+        /********** Activate BIST testing **********/
 
-    /********** Clear the BIST engines **********/
-    iowrite32 (0x0002, PCIE_PHY_BASE + PCIe_Phy_PMA_TX_BIST_CTRL + (lane_base << 1));
-    
-    iowrite32 (0x0012, PCIE_PHY_BASE + PCIe_Phy_PMA_RX_BIST_CTRL + (lane_base << 1));
-    
-    /********** Check the BIST error counter register **********/
-    if (ioread32 (PCIE_PHY_BASE + PCIe_Phy_PMA_RX_BIST_ERRCNT + (lane_base << 1)) != 0)
-    {
-        rumboot_printf ("    ERROR_1\n");
-        result = -1;
+        /********** Clear the BIST engines **********/
+        iowrite32 (0x0002, PCIE_PHY_BASE + PCIe_Phy_PMA_TX_BIST_CTRL + (lane_base << 1));
+        
+        iowrite32 (0x0012, PCIE_PHY_BASE + PCIe_Phy_PMA_RX_BIST_CTRL + (lane_base << 1));
+        
+        /********** Check the BIST error counter register **********/
+        if (ioread32 (PCIE_PHY_BASE + PCIe_Phy_PMA_RX_BIST_ERRCNT + (lane_base << 1)) != 0)
+        {
+            rumboot_printf ("    ERROR_1\n");
+            result = -1;
+        }
+        
+        
+        /********** Activate BIST on TX side **********/
+        iowrite32 (0x0B01, PCIE_PHY_BASE + PCIe_Phy_PMA_TX_BIST_CTRL + (lane_base << 1));
+        
+        if ((ioread32 (PCIE_PHY_BASE + PCIe_Phy_PMA_XCVR_CTRL + lane_base) & 0xE) != 0)
+        {
+            rumboot_printf ("    ERROR_2\n");
+            result = -1;
+        }
+        
+        /********** Activate BIST on RX side **********/
+        iowrite32 (0x00FA, PCIE_PHY_BASE + PCIe_Phy_PMA_RX_BIST_SYNCCNT + (lane_base << 1));
+        iowrite32 (0x0B01, PCIE_PHY_BASE + PCIe_Phy_PMA_RX_BIST_CTRL + (lane_base << 1));
+        
+        /********** Wait for BIST to synchronise **********/
+        while ((ioread32 (PCIE_PHY_BASE + PCIe_Phy_PMA_XCVR_CTRL + lane_base) & 0x2) != 0x2)
+            ;
+        
+        /********** Clear BIST error counters **********/
+        iowrite32 (0x0B11, PCIE_PHY_BASE + PCIe_Phy_PMA_RX_BIST_CTRL + (lane_base << 1));
+        iowrite32 (0x0B01, PCIE_PHY_BASE + PCIe_Phy_PMA_RX_BIST_CTRL + (lane_base << 1));
+        
+        /********** Check that BIST pins indicate no errors **********/
+        if ((ioread32 (PCIE_PHY_BASE + PCIe_Phy_PMA_XCVR_CTRL + lane_base) & 0xE) != 2)
+        {
+            rumboot_printf ("    ERROR_3\n");
+            result = -1;
+        }
+        
+        /********** Check the BIST error counter register **********/
+        if (ioread32 (PCIE_PHY_BASE + PCIe_Phy_PMA_RX_BIST_ERRCNT + (lane_base << 1)) != 0)
+        {
+            rumboot_printf ("    ERROR_4\n");
+            result = -1;
+        }
+        
+        /********** Force a BIST error **********/
+        iowrite32 (0x0B11, PCIE_PHY_BASE + PCIe_Phy_PMA_TX_BIST_CTRL + (lane_base << 1));
+        iowrite32 (0x0B01, PCIE_PHY_BASE + PCIe_Phy_PMA_TX_BIST_CTRL + (lane_base << 1));
+        
+        /********** Check that an error is detected **********/
+        while (ioread32 (PCIE_PHY_BASE + PCIe_Phy_PMA_XCVR_CTRL + lane_base) == 0)
+            ;
+        
+        /********** Check the BIST error counter register **********/
+        /********** it must contain errors **********/
+        if (ioread32 (PCIE_PHY_BASE + PCIe_Phy_PMA_RX_BIST_ERRCNT + (lane_base << 1)) == 0)
+        {
+            rumboot_printf ("    ERROR_5\n");
+            result = -1;
+        }
+        
+        /********** Now clear BIST errors and check status **********/
+        iowrite32 (0x0B11, PCIE_PHY_BASE + PCIe_Phy_PMA_RX_BIST_CTRL + (lane_base << 1));
+        iowrite32 (0x0B01, PCIE_PHY_BASE + PCIe_Phy_PMA_RX_BIST_CTRL + (lane_base << 1));
+        
+        /********** Check that BIST pins indicate no errors **********/
+        if ((ioread32 (PCIE_PHY_BASE + PCIe_Phy_PMA_XCVR_CTRL + lane_base) & 0xE) != 2)
+        {
+            rumboot_printf ("    ERROR_6\n");
+            result = -1;
+        }
+        
+        /********** Check the BIST error counter register **********/
+        if (ioread32 (PCIE_PHY_BASE + PCIe_Phy_PMA_RX_BIST_ERRCNT + (lane_base << 1)) != 0)
+        {
+            rumboot_printf ("    ERROR_7\n");
+            result = -1;
+        }
+        
+        /********** De-activate isolation mode **********/
+        iowrite32 (0x0, PCIE_PHY_BASE + PCIe_Phy_PMA_ISOLATION_CTRL);
+        
+        if (result != 0)
+        {
+            rumboot_printf ("      i = %d\n", i);
+            break;
+        }
     }
-    
-    
-    /********** Activate BIST on TX side **********/
-    iowrite32 (0x0B01, PCIE_PHY_BASE + PCIe_Phy_PMA_TX_BIST_CTRL + (lane_base << 1));
-    
-    if ((ioread32 (PCIE_PHY_BASE + PCIe_Phy_PMA_XCVR_CTRL + lane_base) & 0xE) != 0)
-    {
-        rumboot_printf ("    ERROR_2\n");
-        result = -1;
-    }
-    
-    /********** Activate BIST on RX side **********/
-    iowrite32 (0x00FA, PCIE_PHY_BASE + PCIe_Phy_PMA_RX_BIST_SYNCCNT + (lane_base << 1));
-    iowrite32 (0x0B01, PCIE_PHY_BASE + PCIe_Phy_PMA_RX_BIST_CTRL + (lane_base << 1));
-    
-    /********** Wait for BIST to synchronise **********/
-    while ((ioread32 (PCIE_PHY_BASE + PCIe_Phy_PMA_XCVR_CTRL + lane_base) & 0x2) != 0x2)
-        ;
-    
-    /********** Clear BIST error counters **********/
-    iowrite32 (0x0B11, PCIE_PHY_BASE + PCIe_Phy_PMA_RX_BIST_CTRL + (lane_base << 1));
-    iowrite32 (0x0B01, PCIE_PHY_BASE + PCIe_Phy_PMA_RX_BIST_CTRL + (lane_base << 1));
-    
-    /********** Check that BIST pins indicate no errors **********/
-    if ((ioread32 (PCIE_PHY_BASE + PCIe_Phy_PMA_XCVR_CTRL + lane_base) & 0xE) != 2)
-    {
-        rumboot_printf ("    ERROR_3\n");
-        result = -1;
-    }
-    
-    /********** Check the BIST error counter register **********/
-    if (ioread32 (PCIE_PHY_BASE + PCIe_Phy_PMA_RX_BIST_ERRCNT + (lane_base << 1)) != 0)
-    {
-        rumboot_printf ("    ERROR_4\n");
-        result = -1;
-    }
-    
-    /********** Force a BIST error **********/
-    iowrite32 (0x0B11, PCIE_PHY_BASE + PCIe_Phy_PMA_TX_BIST_CTRL + (lane_base << 1));
-    iowrite32 (0x0B01, PCIE_PHY_BASE + PCIe_Phy_PMA_TX_BIST_CTRL + (lane_base << 1));
-    
-    /********** Check that an error is detected **********/
-    while (ioread32 (PCIE_PHY_BASE + PCIe_Phy_PMA_XCVR_CTRL + lane_base) == 0)
-        ;
-    
-    /********** Check the BIST error counter register **********/
-    /********** it must contain errors **********/
-    if (ioread32 (PCIE_PHY_BASE + PCIe_Phy_PMA_RX_BIST_ERRCNT + (lane_base << 1)) == 0)
-    {
-        rumboot_printf ("    ERROR_5\n");
-        result = -1;
-    }
-    
-    /********** Now clear BIST errors and check status **********/
-    iowrite32 (0x0B11, PCIE_PHY_BASE + PCIe_Phy_PMA_RX_BIST_CTRL + (lane_base << 1));
-    iowrite32 (0x0B01, PCIE_PHY_BASE + PCIe_Phy_PMA_RX_BIST_CTRL + (lane_base << 1));
-    
-    /********** Check that BIST pins indicate no errors **********/
-    if ((ioread32 (PCIE_PHY_BASE + PCIe_Phy_PMA_XCVR_CTRL + lane_base) & 0xE) != 2)
-    {
-        rumboot_printf ("    ERROR_6\n");
-        result = -1;
-    }
-    
-    /********** Check the BIST error counter register **********/
-    if (ioread32 (PCIE_PHY_BASE + PCIe_Phy_PMA_RX_BIST_ERRCNT + (lane_base << 1)) != 0)
-    {
-        rumboot_printf ("    ERROR_7\n");
-        result = -1;
-    }
-    
-    /********** De-activate isolation mode **********/
-    iowrite32 (0x0, PCIE_PHY_BASE + PCIe_Phy_PMA_ISOLATION_CTRL);
     
     return result;
 }

@@ -1787,7 +1787,7 @@ add_rumboot_target(
     IRUN_FLAGS +can_plus_adapter +i2c_single_bus
     FEATURES NOCODE
     COMBOIMAGE IM0BIN
-     LOAD IM0BIN simple-iram-chain-start-dummy,sctl-iram-pull_up_disabled,spl-micro-iram-spels-test,iram-sp804-0,iram-sp804-1,iram-sp804-2,iram-sp804-3,iram-esram1_heap_rnd_space_test,iram-bisr_hard_test_clear,iram-can_adapter_0_test,mgeth-iram-mgeth_frame_xfer,iram-mkio_write_read_test,arinc_freq_100_IM1_IM0-arinc_loopback_16_freq,simple-iram-nic400,iram-can_adapter_1_test,iram-can_adapter_2_test,direct-event-mdma_gp_1-1_1-2_1-3_1-4_internal,direct-memory-mdma_gp_2-1_2-2_2-3_internal,iram-ddr0_phy_bist_test_all,iram-ddr1_phy_bist_test_all,iram-pcie_phy_bist_prbs31,simple-iram-chain-end-dummy
+     LOAD IM0BIN simple-iram-chain-start-dummy,sctl-iram-pull_up_disabled,spl-micro-iram-spels-test,iram-sp804-0,iram-sp804-1,iram-sp804-2,iram-sp804-3,iram-esram1_heap_rnd_space_test,iram-bisr_hard_test_clear,iram-can_adapter_0_test,mgeth-iram-mgeth_frame_xfer,iram-mkio_write_read_test,arinc_freq_100_IM1_IM0-arinc_loopback_16_freq,simple-iram-nic400,iram-can_adapter_1_test,iram-can_adapter_2_test,direct-event-mdma_gp_1-1_1-2_1-3_1-4_internal,direct-memory-mdma_gp_2-1_2-2_2-3_internal,iram-ddr0_phy_bist_test_all,iram-ddr1_phy_bist_test_all,iram-pcie_phy_bist_prbs31_c,simple-iram-chain-end-dummy
     NAME functional-test-chain
   )
 
