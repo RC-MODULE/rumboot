@@ -10,7 +10,7 @@
 #include <platform/arch/ppc/test_macro_asm.S.h>
 #include <platform/regs/regs_plb6plb4.h>
 
-.section ".text","ax",@progbits
+.section ".text.rom","ax",@progbits
 
 .global main
 
