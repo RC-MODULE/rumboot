@@ -160,7 +160,7 @@ uint32_t pcie_simple_turn_on ()
     //   Exit with error if emergency timer overflow
     //---------------------------------------------------------------
     timer_cntr = 0;
-    while ((ioread32 (PCIE_CORE_BASE + PCIe_Core_LocalMgmt + PCIe_LocMgmt_i_pl_config_0_reg) & 0x1) == 0)
+    while ((ioread32 (PCIE_CORE_BASE + PCIe_Core_LocalMgmt + PCIe_LocMgmt_i_pl_config_0_reg) & 0x19) != 0x9)
     {
         timer_cntr++;
         if (timer_cntr == PCIE_TEST_LIB_TRAINING_TIMEOUT)
@@ -424,7 +424,7 @@ uint32_t pcie_turn_on_with_options_ep
     //   Exit with error if emergency timer overflow
     //---------------------------------------------------------------
     timer_cntr = 0;
-    while ((ioread32 (PCIE_CORE_BASE + PCIe_Core_LocalMgmt + PCIe_LocMgmt_i_pl_config_0_reg) & 0x1) == 0)
+    while ((ioread32 (PCIE_CORE_BASE + PCIe_Core_LocalMgmt + PCIe_LocMgmt_i_pl_config_0_reg) & 0x19) != 0x9)
     {
         timer_cntr++;
         if (timer_cntr == PCIE_TEST_LIB_TRAINING_TIMEOUT)
@@ -676,7 +676,7 @@ uint32_t pcie_turn_on_with_options_rc
     //   Exit with error if emergency timer overflow
     //---------------------------------------------------------------
     timer_cntr = 0;
-    while ((ioread32 (PCIE_CORE_BASE + PCIe_Core_LocalMgmt + PCIe_LocMgmt_i_pl_config_0_reg) & 0x1) == 0)
+    while ((ioread32 (PCIE_CORE_BASE + PCIe_Core_LocalMgmt + PCIe_LocMgmt_i_pl_config_0_reg) & 0x19) != 0x9)
     {
         timer_cntr++;
         if (timer_cntr == PCIE_TEST_LIB_TRAINING_TIMEOUT)
