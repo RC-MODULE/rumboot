@@ -1889,6 +1889,12 @@ endif()
       LOAD IM0BIN SELF,SELF
     )
 
+    add_rumboot_target(
+        CONFIGURATION IRAM
+        FILES test_oi10_cpu_025_rst.c
+        LOAD IM0BIN SELF,SELF,SELF,SELF
+    )
+
 endmacro()
 
 
