@@ -3,6 +3,7 @@
 
 
 #include <rumboot/macros.h>
+#include <platform/regs/fields/sctl.h>
 
 /* TODO: remove this */
 #define SCTL_BOOTM 0x0
