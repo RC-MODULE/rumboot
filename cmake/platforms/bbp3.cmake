@@ -74,12 +74,13 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     FEATURES STUB
   )
 
+  add_rumboot_target_dir(common/irq/
+    CONFIGURATION IRAM
+    PREFIX iram
+    TESTGROUP short
+  )
+
   if (NOT RUMBOOT_BUILD_TYPE STREQUAL "PostProduction")
-    add_rumboot_target_dir(common/irq/
-      CONFIGURATION IRAM
-      PREFIX iram
-      TESTGROUP short
-    )
 
     rumboot_bootrom_add_components(
       IRAM_SPL ROM
