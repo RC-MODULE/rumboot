@@ -41,7 +41,7 @@ SECTIONS {
         rumboot_im1_heap_start = .;
         . = . + 0x7000; /* 28k heap */
         rumboot_im1_heap_end = .;
-    } > IM0
+    } > IM1
 
     INCLUDE oi10/stacks_section.lds.h
 
