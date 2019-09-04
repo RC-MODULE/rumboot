@@ -38,28 +38,14 @@ macro(RUMBOOT_PLATFORM_SET_COMPILER_FLAGS)
     set(CMAKE_DUMP_FLAGS -EB -M476,32)
 endmacro()
 
-rumboot_add_configuration(
-    ROM
-    DEFAULT
-    LDS oi10/rom.lds
-    CFLAGS -DRUMBOOT_ONLY_STACK -DRUMBOOT_MAIN_NORETURN
-    LDFLAGS "-e rumboot_entry_point"
-    PREFIX rom
-    FEATURES ROMGEN
-    FILES ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/startup.S
-    TIMEOUT_CTEST 0
-    LOAD BOOTROM_NOR SELF
-    IRUN_FLAGS ${IRUN_BOOTM_EXTRA_ARGS}
-)
 
 if (RUMBOOT_BUILD_TYPE STREQUAL "Production")
   set(BOOTROM_IFLAGS +GTUBE_ONLY_PRODUCTION_OPCODES)
 endif()
 
-#Temporary hack, before we figure out what to do next.
 rumboot_add_configuration(
     BROM
-    LDS oi10/rom.lds
+    DEFAULT
     LDFLAGS "-e rumboot_entry_point"
     PREFIX brom
     FEATURES ROMGEN
@@ -450,7 +436,7 @@ endif()
     )
 
     add_rumboot_target(
-        CONFIGURATION ROM
+        CONFIGURATION BROM
         FILES common/bootrom-stubs/bootrom-lprobe-stub.c
         PREFIX "bootrom"
         NAME "lprobe-stub"
@@ -458,7 +444,7 @@ endif()
       )
 
     add_rumboot_target(
-        CONFIGURATION ROM
+        CONFIGURATION BROM
         FILES common/bootrom-stubs/bootrom-stub.c
         PREFIX "bootrom"
         NAME "stub"
@@ -466,21 +452,21 @@ endif()
     )
 
     add_rumboot_target(
-        CONFIGURATION ROM
+        CONFIGURATION BROM
         CFLAGS -DUSE_SWINT=132
         FILES common/irq/irq-atomics.c
         PREFIX "irq-rom"
     )
 
     add_rumboot_target(
-        CONFIGURATION ROM
+        CONFIGURATION BROM
         CFLAGS -DUSE_SWINT=132
         FILES common/irq/irq-defhandler.c
         PREFIX "irq-rom"
     )
 
     add_rumboot_target(
-      CONFIGURATION ROM
+      CONFIGURATION BROM
       CFLAGS -DUSE_SWINT=132
       FILES common/irq/irq-context.c
       PREFIX "irq-context"
@@ -739,11 +725,11 @@ endif()
     )
 
     add_rumboot_target_dir(rom/
-        CONFIGURATION ROM
+        CONFIGURATION BROM
     )
 
     add_rumboot_target_dir(tests/
-        CONFIGURATION ROM
+        CONFIGURATION BROM
     )
 
     add_rumboot_target_dir(jenkins/
