@@ -43,6 +43,15 @@ if (RUMBOOT_BUILD_TYPE STREQUAL "Production")
   set(BOOTROM_IFLAGS +GTUBE_ONLY_PRODUCTION_OPCODES)
 endif()
 
+if (OI10_IRAM_IM0)
+  set(IRAM_LDS_FILE oi10/iram_legacy.lds)
+  set(STUB_LDS_FILE oi10/bootrom_legacy.lds)
+  message(WARNING "Tests will run from IM0. This configuration is legacy and will be removed in future")
+else()
+  set(IRAM_LDS_FILE oi10/iram.lds)
+  set(STUB_LDS_FILE oi10/bootrom.lds )
+endif()
+
 rumboot_add_configuration(
     BROM
     DEFAULT
@@ -54,7 +63,7 @@ rumboot_add_configuration(
     LOAD BOOTROM_NOR SELF
     IRUN_FLAGS ${IRUN_BOOTM_EXTRA_ARGS}
     CFLAGS -DRUMBOOT_ONLY_STACK ${CONFIGURATION_ROM_CFLAGS} -DUTLB_EXT_MEM_NOR_ONLY -DRUMBOOT_MAIN_NORETURN
-    LDS oi10/bootrom.lds
+    LDS ${STUB_LDS_FILE}
     IRUN_FLAGS +BOOTMGR_KEEP_DRIVING=1 ${BOOTROM_IFLAGS}
 )
 
@@ -92,7 +101,7 @@ rumboot_add_configuration(
 
 rumboot_add_configuration (
     IRAM
-    LDS oi10/iram.lds
+    LDS ${IRAM_LDS_FILE}
     PREFIX iram
     LDFLAGS -Wl,--start-group -lgcc -lc -lm -Wl,--end-group "-e rumboot_main"
     FILES ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/startup.S ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c
