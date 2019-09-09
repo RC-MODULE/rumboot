@@ -103,6 +103,7 @@ rumboot_add_configuration (
       BOOTROM_NOR bootrom-stub
     TIMEOUT_CTEST 86400
     IRUN_FLAGS ${IRUN_BOOTM_EXTRA_ARGS}
+    CFLAGS -DUTLB_EXT_MEM_NOR_ONLY
 )
 
 rumboot_add_configuration (
@@ -177,6 +178,7 @@ endmacro()
 
 
 include(${CMAKE_SOURCE_DIR}/cmake/bootrom.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/spels.cmake)
 
 set(ROM_9600_OPTS +BOOT_SLOWUART=1 +BOOT_FASTUART=0 +UART0_SPEED=9600)
 set(ROM_19200_OPTS +BOOT_SLOWUART=1 +BOOT_FASTUART=1 +UART0_SPEED=19200)
@@ -184,11 +186,30 @@ set(ROM_115200_OPTS +BOOT_SLOWUART=0 +BOOT_FASTUART=0 +UART0_SPEED=115200)
 set(ROM_6500K_OPTS +BOOT_SLOWUART=0 +BOOT_FASTUART=1 +UART0_SPEED=6250000)
 
 macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
-#   Example for adding a single bare-rom test
-#   add_rumboot_target(
-#       CONFIGURATION BAREROM
-#       FILES bare-rom/gtube-spr-check.S
-#   )
+
+
+    rumboot_spels_arch_tests(
+      CONFIGURATION IRAM_SPL
+    )
+
+    rumboot_spels_memory_test(
+      CONFIGURATION IRAM_SPL
+      START "IM2_BASE"
+      END "(IM2_BASE + 0x20000)"
+      NAME im2
+    )
+
+    rumboot_spels_memory_test(
+      CONFIGURATION IRAM_SPL
+      START IM0_BASE 
+      NAME im0
+    )
+
+    rumboot_spels_memory_test(
+      CONFIGURATION IRAM_SPL
+      END "(IM1_BASE+0x20000)"
+      NAME im1
+    )
 
     rumboot_bootrom_add_components(IRAM_SPL BROM
       -a 512 -z 512
