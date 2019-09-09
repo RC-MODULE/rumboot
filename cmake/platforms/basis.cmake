@@ -1778,7 +1778,7 @@ add_rumboot_target(
 
 add_rumboot_target(
   CONFIGURATION IRAM
-  FILES mathtest.c
+  FILES common/spels/mathtest.c
   NAME spels-mathtest
 )
 

@@ -15,15 +15,20 @@ function(rumboot_spels_memory_test)
     if (TARGET_END)
         set(_cflags ${_cflags} -DEND=${TARGET_END})
     endif()
-    message("${_cflags}")
 
+    set(_name memory-test-${TARGET_NAME})
     add_rumboot_target(
         CONFIGURATION ${TARGET_CONFIGURATION}
         FILES common/spels/iram.c
         PREFIX "spels"
-        NAME memory-test-${TARGET_NAME}
+        NAME ${_name}
+        TESTGROUP spels
         CFLAGS ${_cflags}
     )
+
+    list(APPEND SPELS_TEST_CHAIN spels-${_name})
+    string(REPLACE SPELS_TEST_CHAIN ";" "," ${SPELS_TEST_CHAIN})
+    set(SPELS_TEST_CHAIN ${SPELS_TEST_CHAIN} PARENT_SCOPE)
 
 endfunction()
 
@@ -37,9 +42,13 @@ function(rumboot_spels_arch_tests)
 
     add_rumboot_target(
         CONFIGURATION ${TARGET_CONFIGURATION}
-        FILES basis/targets/mathtest.c
+        FILES common/spels/mathtest.c
         PREFIX "spels"
+        TESTGROUP spels
         NAME math-test
     )
+    list(APPEND SPELS_TEST_CHAIN spels-math-test)
+    string(REPLACE SPELS_TEST_CHAIN ";" "," ${SPELS_TEST_CHAIN})
+    set(SPELS_TEST_CHAIN ${SPELS_TEST_CHAIN} PARENT_SCOPE)
 
 endfunction()

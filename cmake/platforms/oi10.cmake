@@ -205,6 +205,16 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       NAME im0
     )
 
+    add_rumboot_target(
+      CONFIGURATION SPL_IRAM
+      FEATURES NOCODE
+      COMBOIMAGE IM0BIN
+       LOAD IM0BIN ${SPELS_TEST_CHAIN}
+      PREFIX spels
+      TESTGROUP chains
+      NAME test-chain
+    )
+
     rumboot_spels_memory_test(
       CONFIGURATION IRAM_SPL
       END "(IM1_BASE+0x20000)"
