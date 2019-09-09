@@ -70,7 +70,7 @@ uint64_t memtest(uintptr_t start_phys, uintptr_t size)
     uint64_t errors = 0;
 
     for(i=0; i<ARRAY_SIZE(patterns);i++) {
-        rumboot_printf("Testing memory @ %x pattern %lx\n", start_phys, patterns[i]);
+        rumboot_printf("Testing memory @ %x pattern %x\n", start_phys, patterns[i]);
         errors += memtest_once(patterns[i], start_phys, size);
     }
     return errors;
