@@ -5,6 +5,7 @@
 #include <platform/devices.h>
 #include <rumboot/memtest.h>
 
+//#define TEST_NO_CACHE
 int main()
 {
     rumboot_printf("Writing TLB entry for SRAM0\n");
