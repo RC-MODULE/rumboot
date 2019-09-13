@@ -62,7 +62,7 @@ file(GLOB PLATFORM_SOURCES
   )
 
 macro(RUMBOOT_PLATFORM_SET_COMPILER_FLAGS)
-    SET(RUMBOOT_COMMON_FLAGS "-mnmc3 -Xassembler -nmc3 -std=gnu99 -Wno-attributes")
+    SET(RUMBOOT_COMMON_FLAGS "-fnmc-compatible-if-packed -mnmc3 -Xassembler -nmc3 -std=gnu99 -Wno-attributes")
     SET(CMAKE_C_FLAGS "${RUMBOOT_COMMON_FLAGS} -Wall -fdata-sections -ffunction-sections -DRUMBOOT_PLATFORM_NUM_HEAPS=8")
     SET(CMAKE_ASM_FLAGS "-mmas ${RUMBOOT_COMMON_FLAGS}")
     SET(CMAKE_OBJCOPY_FLAGS )
