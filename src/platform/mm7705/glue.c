@@ -7,7 +7,9 @@
 #include <rumboot/boot.h>
 #include <platform/devices.h>
 #include <rumboot/bootsrc/sdio.h>
+#include <rumboot/bootsrc/spiflash.h>
 #include <devices/uart_pl011.h>
+#include <regs/regs_gpio_pl061.h>
 #include <rumboot/printf.h>
 
 #define IBM_BIT_INDEX(size, index)    (((size) - 1) - ((index) % (size)))
@@ -152,6 +154,49 @@ static void sdio_disable(const struct rumboot_bootsource *src, void *pdata)
 {
 }
 
+#define BOOT_SPI_BASE SPI_CTRL0__
+#define BOOT_GPIO_FOR_SPI_BASE  GPIO1_BASE
+#define BOOT_GPIO_FOR_SPI_PIN  2
+#define SPI_CS0 (1 << BOOT_GPIO_FOR_SPI_PIN)
+
+static void mm7705_cs(const struct rumboot_bootsource *src, void *pdata, int select)
+{
+    if (!select) {
+            iowrite32(0, BOOT_GPIO_FOR_SPI_BASE + GPIO_DATA + (SPI_CS0 << 2));
+    } else {
+            iowrite32(SPI_CS0, BOOT_GPIO_FOR_SPI_BASE + GPIO_DATA + (SPI_CS0 << 2));
+    }
+}
+
+static bool mm7705_spi_enable(const struct rumboot_bootsource *src, void *pdata)
+{
+    uint8_t afsel;
+    iowrite32(0xff, LSIF1_MGPIO3_BASE + 0x420 );
+
+    afsel = ioread32(BOOT_GPIO_FOR_SPI_BASE + 0x420);
+    afsel &= ~(1 << BOOT_GPIO_FOR_SPI_PIN);
+    iowrite32(afsel, BOOT_GPIO_FOR_SPI_BASE + 0x420 );
+
+    uint8_t dir = ioread32(BOOT_GPIO_FOR_SPI_BASE + GPIO_DIR);
+    dir |= (1 << BOOT_GPIO_FOR_SPI_PIN);
+    iowrite32(dir, BOOT_GPIO_FOR_SPI_BASE + GPIO_DIR);
+
+}
+
+static bool mm7705_spi_disable(const struct rumboot_bootsource *src, void *pdata)
+{
+
+    uint8_t afsel;
+    afsel = ioread32(LSIF1_MGPIO3_BASE + 0x420);
+    afsel &= ~0b01110000;
+    iowrite32(afsel, LSIF0_MGPIO3_BASE + 0x420);
+
+    uint8_t dir = ioread32(BOOT_GPIO_FOR_SPI_BASE + GPIO_DIR);
+    dir &= ~(1 << BOOT_GPIO_FOR_SPI_PIN);
+    iowrite32(dir, BOOT_GPIO_FOR_SPI_BASE + GPIO_DIR);
+
+}
+
 
 static const struct rumboot_bootsource arr[] = {
         {
@@ -163,6 +208,15 @@ static const struct rumboot_bootsource arr[] = {
                 .enable = sdio_enable,
                 .disable = sdio_disable,
                 .offset = 16384,
+        },
+        {
+                .name = "SPI FLASH",
+                .base = SPI_CTRL0_BASE,
+                .base_freq_khz = 30000,
+                .plugin = &g_bootmodule_spiflash,
+		.enable = mm7705_spi_enable,
+		.disable = mm7705_spi_disable,
+		.chipselect = mm7705_cs
         },
         { /*Sentinel*/ }
 };

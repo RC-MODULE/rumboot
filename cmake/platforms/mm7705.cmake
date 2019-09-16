@@ -83,9 +83,11 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     CONFIGURATION SPL
   )
   add_rumboot_target(
-    FILES common/updaters/spi.c
+    FILES common/updaters/spiflash-pl022.c
     CONFIGURATION SPL
-    CFLAGS -DMM7705_SPI -DSPI_BASE=SPI_CTRL0_BASE
+    CFLAGS -DBOOT_ID=1
+    PREFIX updater
+    NAME spiflash
     FEATURES STUB
   )
 

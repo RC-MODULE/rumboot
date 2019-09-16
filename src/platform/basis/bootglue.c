@@ -163,13 +163,11 @@ static const struct rumboot_bootsource arr[] = {
                 .plugin = &g_bootmodule_eeprom,
         },
         {
-                .name = "SDIO1 (CD: GPIO0_4)",
-                .base = SDIO1_BASE,
+                .name = "SPI1 FLASH (CS: internal)",
+                .base = GSPI1_BASE,
                 .base_freq_khz = 100000,
-                .iface_freq_khz = 10000,
-                .plugin = &g_bootmodule_sdio,
-                .enable = sdio1_enable,
-                .offset = 8192
+                .iface_freq_khz = 12500,
+                .plugin = &g_bootmodule_spiflash,
         },
         { /*Sentinel*/ }
 };

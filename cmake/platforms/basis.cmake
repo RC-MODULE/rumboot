@@ -1690,24 +1690,24 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
   add_rumboot_target(
         CONFIGURATION IRAM_SPL
-        FILES common/updaters/spi.c
-        CFLAGS -DSPI_BASE=GSPI0_BASE
+        FILES common/updaters/spiflash-pl022.c
+        CFLAGS -DBOOT_ID=1
         PREFIX updater
         NAME spi0-internal-cs
       )
 
   add_rumboot_target(
         CONFIGURATION IRAM_SPL
-        FILES common/updaters/spi.c
-        CFLAGS -DSPI_BASE=GSPI1_BASE
+        FILES common/updaters/spiflash-pl022.c
+        CFLAGS -DBOOT_ID=7
         PREFIX updater
         NAME spi1-internal-cs
   )
 
   add_rumboot_target(
         CONFIGURATION IRAM_SPL
-        FILES common/updaters/spi.c
-        CFLAGS -DSPI_BASE=GSPI0_BASE -DBASIS_SPI0_GP5
+        FILES common/updaters/spiflash-pl022.c
+        CFLAGS -DBOOT_ID=2
         PREFIX updater
         NAME spi0-gpio0_5-cs
   )

@@ -12,120 +12,9 @@
 #include <rumboot/io.h>
 #include <rumboot/hexdump.h>
 #include <rumboot/xmodem.h>
+#include <devices/pl022.h>
 #include <regs/regs_gpio_pl061.h>
-
-#ifdef BASIS_SPI0_GP5
-#include <regs/regs_gpio_rcm.h>
-static bool spi0_1_enable(const struct rumboot_bootsource *src, void *pdata)
-{
-        uint32_t v;
-
-        v = ioread32(GPIO0_BASE + GPIO_PAD_DIR);
-        v |= 1 << 5;
-        iowrite32(v, GPIO0_BASE + GPIO_PAD_DIR);
-        iowrite32((1 << 5), GPIO0_BASE + GPIO_WR_DATA_SET1);
-        return true;
-}
-
-static void spi0_1_disable(const struct rumboot_bootsource *src, void *pdata)
-{
-        uint32_t v;
-
-        v = ioread32(GPIO0_BASE + GPIO_PAD_DIR);
-        v &= ~(1 << 5);
-        iowrite32(v, GPIO0_BASE + GPIO_PAD_DIR);
-}
-
-static void spi0_1_cs(const struct rumboot_bootsource *src, void *pdata, int select)
-{
-        if (!select) {
-                iowrite32(~(1 << 5), GPIO0_BASE + GPIO_WR_DATA_SET0);
-        } else {
-                iowrite32((1 << 5), GPIO0_BASE + GPIO_WR_DATA_SET1);
-        }
-}
-
-static const struct rumboot_bootsource src[] = {
-        {
-                .name = "SPI FLASH (GPIO CS)",
-                .base = SPI_BASE,
-                .base_freq_khz = 100000,
-                .iface_freq_khz = 12500,
-                .plugin = &g_bootmodule_spiflash,
-                .enable = spi0_1_enable,
-                .disable = spi0_1_disable,
-                .chipselect = spi0_1_cs,
-        }
-};
-
-#elif defined(MM7705_SPI)
-
-
-#define BOOT_SPI_BASE SPI_CTRL0__
-#define BOOT_GPIO_FOR_SPI_BASE  GPIO1_BASE
-#define BOOT_GPIO_FOR_SPI_PIN  2
-#define SPI_CS0 (1 << BOOT_GPIO_FOR_SPI_PIN)
-
-static void mm7705_cs(const struct rumboot_bootsource *src, void *pdata, int select)
-{
-    if (!select) {
-            iowrite32(0, BOOT_GPIO_FOR_SPI_BASE + GPIO_DATA + (SPI_CS0 << 2));
-    } else {
-            iowrite32(SPI_CS0, BOOT_GPIO_FOR_SPI_BASE + GPIO_DATA + (SPI_CS0 << 2));
-    }
-}
-
-static bool mm7705_spi_enable(const struct rumboot_bootsource *src, void *pdata)
-{
-    uint8_t afsel;
-    iowrite32(0xff, LSIF1_MGPIO3_BASE + 0x420 );
-
-    afsel = ioread32(BOOT_GPIO_FOR_SPI_BASE + 0x420);
-    afsel &= ~(1 << BOOT_GPIO_FOR_SPI_PIN);
-    iowrite32(afsel, BOOT_GPIO_FOR_SPI_BASE + 0x420 );
-
-    uint8_t dir = ioread32(BOOT_GPIO_FOR_SPI_BASE + GPIO_DIR);
-    dir |= (1 << BOOT_GPIO_FOR_SPI_PIN);
-    iowrite32(dir, BOOT_GPIO_FOR_SPI_BASE + GPIO_DIR);
-
-}
-
-static bool mm7705_spi_disable(const struct rumboot_bootsource *src, void *pdata)
-{
-
-    uint8_t afsel;
-    afsel = ioread32(LSIF1_MGPIO3_BASE + 0x420);
-    afsel &= ~0b01110000;
-    iowrite32(afsel, LSIF0_MGPIO3_BASE + 0x420);
-
-    uint8_t dir = ioread32(BOOT_GPIO_FOR_SPI_BASE + GPIO_DIR);
-    dir &= ~(1 << BOOT_GPIO_FOR_SPI_PIN);
-    iowrite32(dir, BOOT_GPIO_FOR_SPI_BASE + GPIO_DIR);
-
-}
-
-
-static const struct rumboot_bootsource src[] = {
-        {
-                .name = "SPI FLASH",
-                .base = SPI_BASE,
-                .base_freq_khz = 30000,
-                .plugin = &g_bootmodule_spiflash,
-		.enable = mm7705_spi_enable,
-		.disable = mm7705_spi_disable,
-		.chipselect = mm7705_cs
-        },
-};
-#else
-static const struct rumboot_bootsource src[] = {
-        {
-                .name = "SPI FLASH",
-                .base = SPI_BASE,
-                .base_freq_khz = 100000,
-                .plugin = &g_bootmodule_spiflash,
-        },
-};
-#endif
+#include <string.h>
 
 
 #define	SPIFLASH_MANID         0x90
@@ -185,7 +74,7 @@ uint8_t spiflash_status(const struct rumboot_bootsource *src, void *pdata)
   cmd[0] = SPIFLASH_READSTAT1;
   cmd[1] = 0x0;
   spi_cs(src, (void *) pdata, 0);
-  pl022_xfer(src->base, &cmd, &cmd, 2);
+  pl022_xfer(src->base, (uint8_t *) &cmd, (uint8_t *) &cmd, 2);
   spi_cs(src, (void *) pdata, 1);	
   return cmd[1];
 }
@@ -204,32 +93,18 @@ static void spiflash_write_page(const struct rumboot_bootsource *src, void *pdat
 	wcmd[3] = offset & 0xff;
 	memcpy(&wcmd[4], data, 256);
 
-  spi_cs(src, (void *) pdata, 0);
+    spi_cs(src, (void *) pdata, 0);
 	pl022_xfer(src->base, wcmd, wcmd, ARRAY_SIZE(wcmd));
-  spi_cs(src, (void *) pdata, 1);
+    spi_cs(src, (void *) pdata, 1);
 
 	spiflash_wait_busy(src, pdata);
-}
-
-static void spiflash_read_flash(uint32_t base, uint32_t offset, unsigned char *dest, int len) 
-{
-   unsigned char cmd[4];
-   cmd[0] = SPIFLASH_READDATA;
-   cmd[1] = (unsigned char) ((offset >> 16) & 0xff);
-   cmd[2] = (unsigned char) ((offset >> 8)  & 0xff);
-   cmd[3] = (unsigned char) ((offset >> 0)  & 0xff);
-
-   uint32_t timeout = 100 + len*4;
-   pl022_xfer_timeout(base, cmd, cmd, ARRAY_SIZE(cmd), timeout);
-   pl022_xfer_timeout(base, NULL, dest, len, timeout);
-
 }
 
 int spiflash_is_blank(const struct rumboot_bootsource *src, void *pdata)
 {
         int i;
         char buf[256];
-	bootsource_read(src, (void *) pdata, buf, 0, 256);
+	    bootsource_read(src, (void *) pdata, buf, 0, 256);
         for (i=0; i<256; i++) {
                 if (buf[i]!=0xff) {
                         return 0;
@@ -238,12 +113,17 @@ int spiflash_is_blank(const struct rumboot_bootsource *src, void *pdata)
         return 1;
 }
 
+#ifndef BOOT_ID
+#error "Updater needs a BOOT_ID defined"
+#endif
+
 int main()
 {
 	char pdata[64];
 	char buf[4096];
-	size_t ret;
 	int i;
+    const struct rumboot_bootsource *src = &rumboot_platform_get_bootsources()[BOOT_ID];
+
 	bootsource_init(src, (void *) pdata);
 
 	size_t transfer = 4096;

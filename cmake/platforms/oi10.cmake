@@ -1927,6 +1927,14 @@ endif()
         LOAD IM0BIN SELF,SELF,SELF,SELF,SELF,SELF
     )
 
+    add_rumboot_target(
+      CONFIGURATION IRAM_SPL
+      FILES common/updaters/spiflash-pl022.c
+      CFLAGS -DBOOT_ID=2
+      PREFIX updater
+      NAME spi-flash-0
+    )
+
 endmacro()
 
 
