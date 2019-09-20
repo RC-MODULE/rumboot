@@ -42,6 +42,7 @@
 
 #define DELAY                               (0x2100)   // DIT, MPIC
 #define DELAY2                              (0x10000)  // DEC, FIT, Watchdog
+#define DELTA                               (100)
 
 static void msr_ext_int_enable (void){
     msr_write (msr_read() | (1 << ITRPT_XSR_EE_i ));
@@ -90,6 +91,7 @@ static void decrementer_handler (void)
     dec_interrupt_disable ();
     dec_clr_exception ();
 }
+
 /*
  *  DECREMENT BLOCK END
  */
@@ -305,44 +307,53 @@ int main ()
     //MPIC Timer0
     rumboot_printf("Generate MPIC Timer0 interrupt...\n");
     mpic_tim0_generate_interrupt(DELAY);
+    uint32_t start_mpic = rumboot_platform_get_uptime();
     test_event(EVENT_TIME_1);
     rumboot_printf("Enter doze mode\n");
     ppc470s_enter_doze_mode();
     test_event(EVENT_TIME_2);
+    TEST_ASSERT(rumboot_platform_get_uptime() - start_mpic > DELTA, "DOZE MODE ERROR");
 
     //DIT0
     rumboot_printf("Generate DIT0 interrupt...\n");
     dit0_generate_interrupt(DELAY);
+    uint32_t start_dit0 = rumboot_platform_get_uptime();
     test_event(EVENT_TIME_1);
     rumboot_printf("Enter doze mode\n");
     ppc470s_enter_doze_mode();
     test_event(EVENT_TIME_2);
+    TEST_ASSERT(rumboot_platform_get_uptime() - start_dit0 > DELTA, "DOZE MODE ERROR");
 
     //DEC
     rumboot_printf("Generate DEC interrupt...\n");
     dec_generate_interrupt(DELAY2);
+    uint32_t start_dec = rumboot_platform_get_uptime();
     test_event(EVENT_TIME_1);
     rumboot_printf("Enter doze mode\n");
     ppc470s_enter_doze_mode();
     test_event(EVENT_TIME_2);
+    TEST_ASSERT(rumboot_platform_get_uptime() - start_dec > DELTA, "DOZE MODE ERROR");
 
     //FIT
     rumboot_printf("Generate FIT interrupt...\n");
     fit_generate_interrupt(DELAY2);
+    uint32_t start_fit = rumboot_platform_get_uptime();
     test_event(EVENT_TIME_1);
     rumboot_printf("Enter doze mode\n");
     ppc470s_enter_doze_mode();
     test_event(EVENT_TIME_2);
+    TEST_ASSERT(rumboot_platform_get_uptime() - start_fit > DELTA, "DOZE MODE ERROR");
 
     //WatchDog
     rumboot_printf("Generate WD interrupt...\n");
     wd_generate_interrupt(DELAY2);
+    uint32_t start_wd = rumboot_platform_get_uptime();
     test_event(EVENT_TIME_1);
     rumboot_printf("Enter doze mode\n");
     ppc470s_enter_doze_mode();
     test_event(EVENT_TIME_2);
+    TEST_ASSERT(rumboot_platform_get_uptime() - start_wd > DELTA, "DOZE MODE ERROR");
 
-    rumboot_printf("TEST OK\n");
     return 0;
 }
 
