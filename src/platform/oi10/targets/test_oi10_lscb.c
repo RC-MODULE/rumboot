@@ -218,16 +218,22 @@ void configure_mkio(struct mkio_instance * mkio_cfg)
 
 void run_mkio_transfers_via_external_loopback(struct mkio_instance * mkio_cfg)
 {
+#if !defined (CMAKE_BUILD_TYPE_POSTPRODUCTION)
     check_mkio_txinh_idle_via_gpio();
+#endif
     configure_mkio(mkio_cfg);
 
     mkio_rt_run_schedule(mkio_cfg->dst_mkio_base_addr);
     //In tb GPIO1[3:0] = {MK1_TXINHB, MK1_TXINHA, MK0_TXINHB, MK0_TXINHA}
+#if !defined (CMAKE_BUILD_TYPE_POSTPRODUCTION)
     check_mkio_txinh_switch_via_gpio((mkio_cfg->dst_mkio_base_addr==MKIO0_BASE) ? 0b00001100 : 0b00000011);
+#endif
 
     mkio_bc_run_schedule(mkio_cfg->src_mkio_base_addr);
     //In tb GPIO1[3:0] = {MK1_TXINHB, MK1_TXINHA, MK0_TXINHB, MK0_TXINHA}
+#if !defined (CMAKE_BUILD_TYPE_POSTPRODUCTION)
     check_mkio_txinh_switch_via_gpio(0b00000000);
+#endif
     TEST_ASSERT(mkio_wait_bc_schedule_state(mkio_cfg->src_mkio_base_addr, MKIO_BCSL_SCST_EXEC)==true, "BC sched state EXEC is timed out");
 }
 
