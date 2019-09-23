@@ -239,7 +239,12 @@ void run_mkio_transfers_via_external_loopback(struct mkio_instance * mkio_cfg)
 
 void wait_mkio_irq()
 {
+#if !defined (CMAKE_BUILD_TYPE_POSTPRODUCTION)
 #define MKIO_TR_TIMEOUT_US 1000
+#else
+//  Value 5000 obtained experimantally (PCB MT150.02, full 1553 bus realization)
+#define MKIO_TR_TIMEOUT_US 5000
+#endif
     uint32_t _start = rumboot_platform_get_uptime();
     rumboot_putstring("Waiting MKIO interrupt...\n");
     while ((mkio_handler==false) && (rumboot_platform_get_uptime() - _start < MKIO_TR_TIMEOUT_US)){};
