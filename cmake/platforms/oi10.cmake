@@ -808,6 +808,14 @@ endif()
 
     add_rumboot_target(
         CONFIGURATION SUPPLEMENTARY
+        LDS oi10/test_oi10_cpu_038_im2.lds
+        FILES test_oi10_cpu_038_helper.c
+        CFLAGS -DTEST_OI10_CPU_038_ARRAY_SIZE=0x7C00
+        NAME "test_oi10_cpu_038_helper_im2"
+    )
+
+    add_rumboot_target(
+        CONFIGURATION SUPPLEMENTARY
         LDS oi10/test_oi10_cpu_038_im1.lds
         FILES test_oi10_cpu_038_helper.c
         CFLAGS -DTEST_OI10_CPU_038_ARRAY_SIZE=0x7C00
@@ -828,6 +836,16 @@ endif()
         FILES test_oi10_cpu_038_helper.c
         CFLAGS -DTEST_OI10_CPU_038_ARRAY_SIZE=0xFC00
         NAME "test_oi10_cpu_038_helper_em2"
+    )
+
+    add_rumboot_target(
+        CONFIGURATION IRAM
+        FILES test_oi10_cpu_038.c
+        PREFIX simple-iram
+        CFLAGS -DM_BASE=IM2_BASE
+        NAME "test_oi10_cpu_038_im2"
+        LOAD IM0BIN SELF
+             MBIN supplementary-test_oi10_cpu_038_helper_im2
     )
 
     add_rumboot_target(
