@@ -216,22 +216,12 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       NAME im0
     )
 
-    add_rumboot_target(
-      CONFIGURATION SPL_IRAM
-      FEATURES NOCODE
-      COMBOIMAGE IM0BIN
-       LOAD IM0BIN ${SPELS_TEST_CHAIN}
-      PREFIX spels
-      TESTGROUP chains
-      NAME test-chain
-    )
-
     rumboot_spels_memory_test(
       CONFIGURATION IRAM_SPL
       END "(IM1_BASE+0x20000)"
       NAME im1
     )
-
+    
     rumboot_bootrom_add_components(IRAM_SPL BROM
       -a 512 -z 512
     )
@@ -1965,6 +1955,14 @@ endif()
         NAME "loop_test"
     )    
     
+    add_rumboot_target(
+      FEATURES NOCODE
+      COMBOIMAGE IM0BIN
+       LOAD IM0BIN ${SPELS_TEST_CHAIN},simple-iram-oi10_spels_cache_hack
+      PREFIX spels
+      TESTGROUP chains
+      NAME test-chain
+    )
 
 endmacro()
 

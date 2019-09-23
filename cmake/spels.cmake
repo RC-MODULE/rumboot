@@ -27,8 +27,8 @@ function(rumboot_spels_memory_test)
     )
 
     list(APPEND SPELS_TEST_CHAIN spels-${_name})
-    string(REPLACE SPELS_TEST_CHAIN ";" "," ${SPELS_TEST_CHAIN})
-    set(SPELS_TEST_CHAIN ${SPELS_TEST_CHAIN} PARENT_SCOPE)
+    string(REPLACE ";" "," _SP "${SPELS_TEST_CHAIN}")
+    set(SPELS_TEST_CHAIN ${_SP} PARENT_SCOPE)
 
 endfunction()
 
@@ -48,7 +48,7 @@ function(rumboot_spels_arch_tests)
         NAME math-test
     )
     list(APPEND SPELS_TEST_CHAIN spels-math-test)
-    string(REPLACE SPELS_TEST_CHAIN ";" "," ${SPELS_TEST_CHAIN})
-    set(SPELS_TEST_CHAIN ${SPELS_TEST_CHAIN} PARENT_SCOPE)
+    string(REPLACE ";" "," _SP "${SPELS_TEST_CHAIN}")
+    set(SPELS_TEST_CHAIN ${_SP} PARENT_SCOPE)
 
 endfunction()
