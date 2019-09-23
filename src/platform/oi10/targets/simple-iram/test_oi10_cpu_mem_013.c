@@ -75,7 +75,7 @@ const uint32_t mem_size_zero    = 0x00000100;
 
 const uint32_t mem_step         = 0x00008000;
 
-const uint32_t index_count      = 1; //128;
+const uint32_t index_count      = 128;
 
 
 typedef void (*pWay_func) ();
