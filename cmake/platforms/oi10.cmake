@@ -1936,6 +1936,35 @@ endif()
       PREFIX updater
       NAME spi-flash-0
     )
+    
+    add_rumboot_target(
+        CONFIGURATION IRAM
+        CFLAGS -DHSCB_DEV_ADDR=HSCB0_BASE
+        FILES test_oi10_hscb_connect.c
+        PREFIX "hscb_0_"
+        NAME "connect_test"
+    )    
+
+    add_rumboot_target(
+        CONFIGURATION IRAM
+        CFLAGS 
+            -DHSCB_SRC_BASE=HSCB2_BASE
+            -DHSCB_DST_BASE=HSCB3_BASE
+        FILES hscb_loop.c
+        PREFIX "hscb_2_3"
+        NAME "loop_test"
+    )    
+
+    add_rumboot_target(
+        CONFIGURATION IRAM
+        CFLAGS 
+            -DHSCB_SRC_BASE=HSCB0_BASE
+            -DHSCB_DST_BASE=HSCB1_BASE
+        FILES hscb_loop.c
+        PREFIX "hscb_0_1"
+        NAME "loop_test"
+    )    
+    
 
 endmacro()
 
