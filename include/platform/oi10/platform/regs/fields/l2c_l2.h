@@ -5,20 +5,53 @@
  *      Author: a.gurov
  */
 
-#ifndef L2C_L2_H_
-#define L2C_L2_H_
+#ifndef REGS_FIELDS_L2C_L2_H
+#define REGS_FIELDS_L2C_L2_H
 
 #include <rumboot/macros.h>
 #include <platform/arch/ppc/ibm_bit_ordering_macros.h>
 
 BEGIN_ENUM( L2C_L2CNFG0_FIELD )
-    DECLARE_ENUM_VAL(   L2C_L2CNFG0_L2SIZE_e,          31     )
-    DECLARE_ENUM_VAL(   L2C_L2CNFG0_L2SIZE_n,          2      )
-    DECLARE_ENUM_VAL(   L2C_L2CNFG0_L2SIZE_i,          IBM_BIT_INDEX(32, L2C_L2CNFG0_L2SIZE_e) )
-    DECLARE_ENUM_VAL(   L2C_L2CNFG0_L2SIZE_mask,       FIELD_MASK32(L2C_L2CNFG0_L2SIZE_i, L2C_L2CNFG0_L2SIZE_n) )
+    DECLARE_ENUM_VAL(   L2C_L2CNFG0_MASTERID_e,         19     )    /**< Master self ID from the I_M_SELF_ID[0:4] strap pins */
+    DECLARE_ENUM_VAL(   L2C_L2CNFG0_MASTERID_n,         5      )
+    DECLARE_ENUM_VAL(   L2C_L2CNFG0_MASTERID_i,         IBM_BIT_INDEX(32, L2C_L2CNFG0_MASTERID_e)   )
+    DECLARE_ENUM_VAL(   L2C_L2CNFG0_MASTERID_mask,      FIELD_MASK32(L2C_L2CNFG0_MASTERID_i, L2C_L2CNFG0_MASTERID_n)    )
 
+    DECLARE_ENUM_VAL(   L2C_L2CNFG0_TSNOOP_e,           23     ) /**< Tsnoop parameter for the PLB6 bus interface from the L2C_PLBTSNOOP[0:2] strap pins */
+    DECLARE_ENUM_VAL(   L2C_L2CNFG0_TSNOOP_n,           3      )
+    DECLARE_ENUM_VAL(   L2C_L2CNFG0_TSNOOP_i,           IBM_BIT_INDEX(32, L2C_L2CNFG0_TSNOOP_e) )
+    DECLARE_ENUM_VAL(   L2C_L2CNFG0_TSNOOP_mask,        FIELD_MASK32(L2C_L2CNFG0_TSNOOP_i, L2C_L2CNFG0_TSNOOP_n)    )
 
+    DECLARE_ENUM_VAL(   L2C_L2CNFG0_PLBCLKRATIO_e,      27     ) /**< L2 to PLB6 Clock ratio from the L2C_PLBCLKRATIO[0:1] strap pins */
+    DECLARE_ENUM_VAL(   L2C_L2CNFG0_PLBCLKRATIO_n,      2      )
+    DECLARE_ENUM_VAL(   L2C_L2CNFG0_PLBCLKRATIO_i,      IBM_BIT_INDEX(32, L2C_L2CNFG0_PLBCLKRATIO_e) )
+    DECLARE_ENUM_VAL(   L2C_L2CNFG0_PLBCLKRATIO_mask,   FIELD_MASK32(L2C_L2CNFG0_PLBCLKRATIO_i, L2C_L2CNFG0_PLBCLKRATIO_n)  )
+
+    DECLARE_ENUM_VAL(   L2C_L2CNFG0_L2SIZE_e,           31     ) /**< Size of the L2 cache data array */
+    DECLARE_ENUM_VAL(   L2C_L2CNFG0_L2SIZE_n,           2      )
+    DECLARE_ENUM_VAL(   L2C_L2CNFG0_L2SIZE_i,           IBM_BIT_INDEX(32, L2C_L2CNFG0_L2SIZE_e) )
+    DECLARE_ENUM_VAL(   L2C_L2CNFG0_L2SIZE_mask,        FIELD_MASK32(L2C_L2CNFG0_L2SIZE_i, L2C_L2CNFG0_L2SIZE_n)    )
 END_ENUM( L2C_L2CNFG0_FIELD )
+
+BEGIN_ENUM( L2C_Tsnoop_t )
+    DECLARE_ENUM_VAL(   L2C_Tsnoop_5,   0b101   )   /**< Tsnoop = 5 (only supported with PlBCkRatio = '01') */
+    DECLARE_ENUM_VAL(   L2C_Tsnoop_6,   0b110   )   /**< Tsnoop = 6 (only supported with PlBCkRatio = '01') */
+    DECLARE_ENUM_VAL(   L2C_Tsnoop_7,   0b111   )   /**< Tsnoop = 7 */
+    DECLARE_ENUM_VAL(   L2C_Tsnoop_8,   0b000   )   /**< Tsnoop = 8 */
+END_ENUM( L2C_Tsnoop_t )
+
+BEGIN_ENUM( L2C_PlbClkRatio_t )
+    DECLARE_ENUM_VAL(   L2C_PlbClkRatio_1to1,   0b00    )   /**< 1-to-1 */
+    DECLARE_ENUM_VAL(   L2C_PlbClkRatio_2to1,   0b01    )   /**< 2-to-1 */
+END_ENUM( L2C_PlbClkRatio_t )
+
+BEGIN_ENUM( L2C_L2Size_t )
+    DECLARE_ENUM_VAL(   L2C_L2Size_128KB,   0b11    )   /**< 128 KB */
+    DECLARE_ENUM_VAL(   L2C_L2Size_256KB,   0b00    )   /**< 256 KB */
+    DECLARE_ENUM_VAL(   L2C_L2Size_512KB,   0b01    )   /**< 512 KB */
+    DECLARE_ENUM_VAL(   L2C_L2Size_1MB,     0b10    )   /**< 1 MB */
+END_ENUM( L2C_L2Size_t )
+
 
 BEGIN_ENUM( L2C_L2ARRACCCTL_FIELD )
     DECLARE_ENUM_VAL(   L2C_L2ARRACCCTL_REQUEST_e,          9     ) /**< Request field [9] */
@@ -1636,4 +1669,4 @@ BEGIN_ENUM( L2C_L2PLBDBG_VALUE )
 END_ENUM( L2C_L2PLBDBG_VALUE )
 
 
-#endif /* L2C_L2_H_ */
+#endif /* REGS_FIELDS_L2C_L2_H */

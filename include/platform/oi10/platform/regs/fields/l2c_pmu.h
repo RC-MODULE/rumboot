@@ -5,8 +5,8 @@
  *      Author: a.gurov
  */
 
-#ifndef L2C_PMU_H_
-#define L2C_PMU_H_
+#ifndef REGS_FIELDS_L2C_PMU_H
+#define REGS_FIELDS_L2C_PMU_H
 
 #include <rumboot/macros.h>
 #include <platform/arch/ppc/ibm_bit_ordering_macros.h>
@@ -252,4 +252,4 @@ BEGIN_ENUM( L2C_PMU_EVENT )
 END_ENUM( L2C_PMU_EVENT )
 
 
-#endif /* L2C_PMU_H_ */
+#endif /* REGS_FIELDS_L2C_PMU_H */
