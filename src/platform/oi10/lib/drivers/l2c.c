@@ -536,3 +536,31 @@ void l2c_arracc_data_write( uint32_t base, uint32_t ext_phys_addr, uint32_t phys
         indx++;
     TEST_ASSERT( indx < L2C_TIMEOUT, "Timeout while accessing L2C via DCR.\n");
 }
+
+
+void l2c_get_mem_layout( uint32_t const base, struct l2c_mem_layout * const mem_layout ) {
+    mem_layout->l2size              = l2c_l2_read(base, L2C_L2CNFG0) & L2C_L2CNFG0_L2SIZE_mask;
+    mem_layout->tag_ecc_mask        = 0x7F;
+    mem_layout->lru_mask            = 0x3FFFFFFF;
+    mem_layout->data_ecc_mask       = 0xFF;
+    switch( mem_layout->l2size ) {
+    case L2C_L2Size_128KB:
+        mem_layout->lru_array_size  = 256;
+        mem_layout->tag_mask        = 0x3FFFFFFF;
+        break;
+    case L2C_L2Size_256KB:
+        mem_layout->lru_array_size  = 512;
+        mem_layout->tag_mask        = 0x1FFFFFFF;
+        break;
+    case L2C_L2Size_512KB:
+        mem_layout->lru_array_size  = 1024;
+        mem_layout->tag_mask        = 0x0FFFFFFF;
+        break;
+    case L2C_L2Size_1MB:
+        mem_layout->lru_array_size  = 2048;
+        mem_layout->tag_mask        = 0x07FFFFFF;
+        break;
+    }
+    mem_layout->tag_array_size      = 4 * mem_layout->lru_array_size;
+    mem_layout->data_array_size     = 8 * mem_layout->lru_array_size;
+}

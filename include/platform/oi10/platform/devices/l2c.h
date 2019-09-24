@@ -399,4 +399,28 @@ bool l2c_arracc_set_data_by_address (uint32_t base, uint32_t ext_phys_addr, uint
 bool l2c_arracc_lru_info_read_by_way( uint32_t base, uint32_t ext_phys_addr, uint32_t phys_addr, int32_t cache_way, volatile uint32_t* lru_info );
 
 
+enum l2c_mem_type {
+    L2C_MEM_TAG,
+    L2C_MEM_TAG_ECC,
+    L2C_MEM_LRU,
+    L2C_MEM_DATA,
+    L2C_MEM_DATA_ECC,
+};
+
+struct l2c_mem_layout {
+    L2C_L2Size_t    l2size;
+
+    uint32_t        tag_array_size;
+    uint32_t        lru_array_size;
+    uint32_t        data_array_size;
+
+    uint64_t        tag_mask;
+    uint64_t        tag_ecc_mask;
+    uint64_t        lru_mask;
+    uint64_t        data_ecc_mask;
+};
+
+void l2c_get_mem_layout( uint32_t base, struct l2c_mem_layout * mem_layout );
+
+
 #endif  /* L2C_H */
