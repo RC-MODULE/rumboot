@@ -256,10 +256,10 @@ void check_target_is_invalidated_in_l2c (uint32_t l2c_base, uint32_t target, boo
             rumboot_printf("tag_data == %x\n", tag_data);
             if (assert)
             {
-                TEST_ASSERT((L2C_TAG_CACHE_STATE_FROM_ARRACCDO0(tag_data) == L2C_TAG_CACHE_STATE_INVALID),"Target area was not invalidated!\n");
+                TEST_ASSERT((L2C_L2ARRACCDX0_TAG_CACHE_STATE_mask & tag_data) == (L2C_TAG_CacheState_I << L2C_L2ARRACCDX0_TAG_CACHE_STATE_i),"Target area was not invalidated!\n");
             }
             else
-                if (L2C_TAG_CACHE_STATE_FROM_ARRACCDO0(tag_data) != L2C_TAG_CACHE_STATE_INVALID)
+                if ((L2C_L2ARRACCDX0_TAG_CACHE_STATE_mask & tag_data) != (L2C_TAG_CacheState_I << L2C_L2ARRACCDX0_TAG_CACHE_STATE_i))
                 {
                     rumboot_printf("Target data is not invalid for address: %x\n", target);
                 }
