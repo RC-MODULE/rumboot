@@ -6,44 +6,17 @@
 #include <platform/regs/regs_l2c_pmu.h>
 #include <platform/arch/ppc/test_macro.h>
 
-//todo: this defines perhaps not used
-#define L2C_L2PNCR_VAL_BASE         (0x00000069) //see trunk/cpu/units/ppc476l2c_v001/verilog/rtl/PPC476L2C_DCR_LFSR.v. Dependent from I_M_SELF_ID strap.
-#define L2C_L2PNCR_VAL              (L2C_L2PNCR_VAL_BASE(L2C0_DCR_BASE))
-#define L2C_L2REVID_VAL             ( reg_field(31,L2C_REVISION_ID) | reg_field(23,L2C_VERSION_NUMBER) )
 
-
-#define I_M_SELF_ID(base)           ( (base == L2C0_DCR_BASE) ? 0x00 : 0x01 )
-//from trunk/cpu/units/ppc476l2c_v001/verilog/rtl/PPC476L2C.parameters.v
-#define  L2C_VERSION_NUMBER         (0x01)
-#define  L2C_REVISION_ID            (0x02)
-//from dut
-#define L2C_PLB_CLK_RATIO           (0x0)
-#define L2C_TSNOOP                  (0x0) //acc. to L2C_PLBTSNOOP[0:2] strap pin
-#define L2C_MASTER_ID(base)         (I_M_SELF_ID(base))
-
-#define L2C_L2ISTAT_VAL             (0x01) //1- initialization complete
-
-#define L2C_L2ARRACCADR_MSK         (0x1FFF)
 #define L2C_L2ARRACCADR_ADR_MSK     (0x7FF)
 #define L2C_ARRACCADR_TAG_LRU_ADDR_FIELD(addr)          (reg_field( 30,( ( (addr) >> 7) & L2C_CACHE_LINE_ADDR_MSK ) ))
 #define L2C_ARRACCADR_DATA_ARRAY_ADDR_FIELD(addr)       (reg_field( 31,( ( (addr) >> 6) & L2C_L2ARRACCADR_ADR_MSK ) ))
-#define L2C_WAY0_NUM                (0x0)
-#define L2C_WAY1_NUM                (0x1)
-#define L2C_WAY2_NUM                (0x2)
-#define L2C_WAY3_NUM                (0x3)
-#define L2C_WAY_MSK                 (0x3)
 #define L2C_CACHE_LINE_ADDR_MSK     (0x3FF)
-#define L2C_CACHE_HALFLINE_ADDR_MSK (0x7FF) //L2C_L2ARRACCADR_ADR_MSK
 
 
 #define L2C_TAG_ADDRESS_OFFSET                          (16) //16 for 256 KB, old value = 17 (512 KB)
 #define L2C_TAG_ADDRESS_MSK                             (0x1FFFFFF)
-#define L2C_TAG_CACHE_STATE_MSK                         (0x7)
-#define L2C_TAG_CACHE_STATE_INVALID                     (0x0)
 #define L2C_TAG_ADDRESS_FROM_64BIT(addr)                ((( (addr) & ( (uint64_t)L2C_TAG_ADDRESS_MSK << L2C_TAG_ADDRESS_OFFSET ) ) >> L2C_TAG_ADDRESS_OFFSET))
 #define L2C_TAG_ADDRESS_FROM_ARRACCDO0(val)             (( ( (val) & (L2C_TAG_ADDRESS_MSK << 3) ) >> 3)) //3 for 256, 4 for 512
-#define L2C_TAG_CACHE_STATE_FROM_ARRACCDO0(val)         (( ((val) >> IBM_BIT_INDEX(32, 2)) & L2C_TAG_CACHE_STATE_MSK ))
-#define L2C_TAG_CACHE_STATE_INVALID_VAL                 (0x0)
 
 #define L2C_EXT_ADDR_MSK                                (0x3FF)
 

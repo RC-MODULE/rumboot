@@ -7,6 +7,7 @@
 #include <platform/trace.h>
 #include <platform/test_assert.h>
 #include <platform/arch/ppc/test_macro.h>
+#include <platform/arch/ppc/ppc_476fp_mmu_fields.h>
 #include <rumboot/printf.h>
 
 //#define L2C_TRACE_DEBUG_MSG
@@ -64,7 +65,6 @@ bool l2c_arracc_tag_info_read_by_way( uint32_t const base, uint32_t const ext_ph
         volatile uint32_t* tag_info )
 {
     int32_t  indx = 0;
-    uint32_t l2arraccadr;
     bool valid = false;
 
 #ifdef L2C_TRACE_DEBUG_MSG
@@ -73,9 +73,7 @@ bool l2c_arracc_tag_info_read_by_way( uint32_t const base, uint32_t const ext_ph
     rumboot_printf ("cache_way == %x\n", cache_way);
 #endif
 
-    l2arraccadr = l2c_l2_read (base, L2C_L2ARRACCADR) & ~L2C_L2ARRACCADR_MSK;
-
-    l2c_l2_write (base, L2C_L2ARRACCADR, l2arraccadr | L2C_ARRACCADR_DATA_ARRAY_ADDR_FIELD(phys_addr) );
+    l2c_l2_write (base, L2C_L2ARRACCADR, L2C_ARRACCADR_DATA_ARRAY_ADDR_FIELD(phys_addr) );
 
     l2c_l2_write (base, L2C_L2ARRACCCTL,
                         ( (1 << L2C_L2ARRACCCTL_REQUEST_i)
@@ -107,7 +105,6 @@ bool l2c_arracc_tag_info_write_by_way_wo_gen_ecc( uint32_t base, uint32_t ext_ph
         uint32_t cache_data, uint32_t ecc_data)
 {
     int indx;
-    uint32_t l2arraccadr;
     bool valid = false;
 
 #ifdef L2C_TRACE_DEBUG_MSG
@@ -117,12 +114,10 @@ bool l2c_arracc_tag_info_write_by_way_wo_gen_ecc( uint32_t base, uint32_t ext_ph
     rumboot_printf ("ecc_data == %x\n", ecc_data);
 #endif
 
-    l2arraccadr = l2c_l2_read (base, L2C_L2ARRACCADR) & ~L2C_L2ARRACCADR_MSK;
-
     l2c_l2_write (base, L2C_L2ARRACCDI0, cache_data);
     l2c_l2_write (base, L2C_L2ARRACCDI2, ecc_data);
 
-    l2c_l2_write (base, L2C_L2ARRACCADR, l2arraccadr | L2C_ARRACCADR_DATA_ARRAY_ADDR_FIELD(phys_addr) );
+    l2c_l2_write (base, L2C_L2ARRACCADR, L2C_ARRACCADR_DATA_ARRAY_ADDR_FIELD(phys_addr) );
 
     l2c_l2_write (base, L2C_L2ARRACCCTL,
                         ( (1 << L2C_L2ARRACCCTL_REQUEST_i)
@@ -148,12 +143,9 @@ bool l2c_arracc_lru_info_read_by_way( uint32_t base, uint32_t ext_phys_addr, uin
         volatile uint32_t* lru_info )
 {
     int indx = 0;
-    uint32_t l2arraccadr;
     bool valid = false;
 
-    l2arraccadr = l2c_l2_read (base, L2C_L2ARRACCADR) & ~L2C_L2ARRACCADR_MSK;
-
-    l2c_l2_write (base, L2C_L2ARRACCADR, l2arraccadr | L2C_ARRACCADR_DATA_ARRAY_ADDR_FIELD(phys_addr) );
+    l2c_l2_write (base, L2C_L2ARRACCADR, L2C_ARRACCADR_DATA_ARRAY_ADDR_FIELD(phys_addr) );
 
     l2c_l2_write( base, L2C_L2ARRACCCTL,
                         ( (1 << L2C_L2ARRACCCTL_REQUEST_i)
@@ -182,7 +174,6 @@ bool l2c_arracc_data_read_by_way( uint32_t base, uint32_t ext_phys_addr, uint32_
         volatile uint64_t* cache_data )
 {
     int indx;
-    uint32_t l2arraccadr;
     bool valid = false;
 
 #ifdef L2C_TRACE_DEBUG_MSG
@@ -190,9 +181,7 @@ bool l2c_arracc_data_read_by_way( uint32_t base, uint32_t ext_phys_addr, uint32_
     rumboot_printf ("address == %x_%x\n", ext_phys_addr, phys_addr);
 #endif
 
-    l2arraccadr = l2c_l2_read (base, L2C_L2ARRACCADR) & ~L2C_L2ARRACCADR_MSK;
-
-    l2c_l2_write (base, L2C_L2ARRACCADR, l2arraccadr | L2C_ARRACCADR_DATA_ARRAY_ADDR_FIELD(phys_addr) );
+    l2c_l2_write (base, L2C_L2ARRACCADR, L2C_ARRACCADR_DATA_ARRAY_ADDR_FIELD(phys_addr) );
 
     l2c_l2_write (base, L2C_L2ARRACCCTL,
                         ( (1 << L2C_L2ARRACCCTL_REQUEST_i)
@@ -228,7 +217,6 @@ bool l2c_arracc_data_write_by_way( uint32_t base, uint32_t ext_phys_addr, uint32
         uint64_t cache_data )
 {
     int indx;
-    uint32_t l2arraccadr;
     bool valid = false;
 
 #ifdef L2C_TRACE_DEBUG_MSG
@@ -238,12 +226,10 @@ bool l2c_arracc_data_write_by_way( uint32_t base, uint32_t ext_phys_addr, uint32
     rumboot_printf ("cache_data lower == %x\n", (uint32_t) ( cache_data & 0xFFFFFFFF) );
 #endif
 
-    l2arraccadr = l2c_l2_read (base, L2C_L2ARRACCADR) & ~L2C_L2ARRACCADR_MSK;
-
     l2c_l2_write (base, L2C_L2ARRACCDI0, (uint32_t) (cache_data >> 32));
     l2c_l2_write (base, L2C_L2ARRACCDI1, (uint32_t) (cache_data & 0xFFFFFFFF));
 
-    l2c_l2_write (base, L2C_L2ARRACCADR, l2arraccadr | L2C_ARRACCADR_DATA_ARRAY_ADDR_FIELD(phys_addr) );
+    l2c_l2_write (base, L2C_L2ARRACCADR, L2C_ARRACCADR_DATA_ARRAY_ADDR_FIELD(phys_addr) );
 
     l2c_l2_write (base, L2C_L2ARRACCCTL,
                         ( (1 << L2C_L2ARRACCCTL_REQUEST_i)
@@ -269,7 +255,6 @@ bool l2c_arracc_data_write_by_way_wo_gen_ecc( uint32_t base, uint32_t ext_phys_a
         uint64_t cache_data, uint32_t ecc_data)
 {
     int indx;
-    uint32_t l2arraccadr;
     bool valid = false;
 
 #ifdef L2C_TRACE_DEBUG_MSG
@@ -280,13 +265,11 @@ bool l2c_arracc_data_write_by_way_wo_gen_ecc( uint32_t base, uint32_t ext_phys_a
     rumboot_printf ("ecc_data == %x\n", ecc_data);
 #endif
 
-    l2arraccadr = l2c_l2_read (base, L2C_L2ARRACCADR) & ~L2C_L2ARRACCADR_MSK;
-
     l2c_l2_write (base, L2C_L2ARRACCDI0, (uint32_t) (cache_data >> 32));
     l2c_l2_write (base, L2C_L2ARRACCDI1, (uint32_t) (cache_data & 0xFFFFFFFF));
     l2c_l2_write (base, L2C_L2ARRACCDI2, ecc_data);
 
-    l2c_l2_write (base, L2C_L2ARRACCADR, l2arraccadr | L2C_ARRACCADR_DATA_ARRAY_ADDR_FIELD(phys_addr) );
+    l2c_l2_write (base, L2C_L2ARRACCADR, L2C_ARRACCADR_DATA_ARRAY_ADDR_FIELD(phys_addr) );
 
     l2c_l2_write (base, L2C_L2ARRACCCTL,
             ( (1 << L2C_L2ARRACCCTL_REQUEST_i)
@@ -339,7 +322,7 @@ bool l2c_arracc_get_way_by_address( uint32_t base, uint32_t ext_phys_addr, uint3
 #endif
 
     } while (
-              ((*cache_way) < L2C_WAY3_NUM) &&
+              ((*cache_way) < L2C_COUNT_WAYS-1) &&
                  ( ((uint64_t)L2C_TAG_ADDRESS_FROM_64BIT(addr64) != (uint64_t)L2C_TAG_ADDRESS_FROM_ARRACCDO0(tag_info)) || !tag_valid )
             );
 
@@ -365,7 +348,7 @@ bool l2c_arracc_get_way_by_address( uint32_t base, uint32_t ext_phys_addr, uint3
 bool l2c_arracc_get_data_by_address( uint32_t base, uint32_t ext_phys_addr, uint32_t phys_addr,
         volatile uint64_t* data64 )
 {
-    int32_t cache_way = L2C_WAY0_NUM - 1;
+    int32_t cache_way = -1;
     bool valid = false;
 
 #ifdef L2C_TRACE_DEBUG_MSG
@@ -390,7 +373,7 @@ bool l2c_arracc_get_data_by_address( uint32_t base, uint32_t ext_phys_addr, uint
 bool l2c_arracc_set_data_by_address( uint32_t base, uint32_t ext_phys_addr, uint32_t phys_addr,
         uint64_t data64 )
 {
-    int32_t cache_way = L2C_WAY0_NUM - 1;
+    int32_t cache_way = -1;
     bool valid = false;
 
 #ifdef L2C_TRACE_DEBUG_MSG
@@ -418,17 +401,14 @@ uint64_t l2c_arracc_data_read( uint32_t base, uint32_t ext_phys_addr, uint32_t p
 {
     int indx;
     uint32_t data;
-    uint32_t l2arraccadr;
-    int32_t cache_way = L2C_WAY0_NUM - 1;
+    int32_t cache_way = -1;
     uint64_t addr64;
-
-    l2arraccadr = l2c_l2_read (base, L2C_L2ARRACCADR) & ~L2C_L2ARRACCADR_MSK;
 
     addr64 = (((uint64_t) (ext_phys_addr & L2C_EXT_ADDR_MSK)) << 32) + phys_addr;
     do
     {
         cache_way++;
-        l2c_l2_write (base, L2C_L2ARRACCADR, l2arraccadr | L2C_ARRACCADR_TAG_LRU_ADDR_FIELD(phys_addr) );
+        l2c_l2_write (base, L2C_L2ARRACCADR, L2C_ARRACCADR_TAG_LRU_ADDR_FIELD(phys_addr) );
         l2c_l2_write (base, L2C_L2ARRACCCTL,
                             ( (1 << L2C_L2ARRACCCTL_REQUEST_i)
                             | (L2C_ARRACC_BufferID_TAG << L2C_L2ARRACCCTL_BUFFERID_i)
@@ -441,11 +421,11 @@ uint64_t l2c_arracc_data_read( uint32_t base, uint32_t ext_phys_addr, uint32_t p
         TEST_ASSERT(indx < L2C_ARRACC_TIMEOUT, "Timeout while accessing L2C via DCR.\n" );
         data = l2c_l2_read (base, L2C_L2ARRACCDO0);
 
-    } while ( (cache_way < L2C_WAY3_NUM) && (L2C_TAG_ADDRESS_FROM_64BIT(addr64) != L2C_TAG_ADDRESS_FROM_ARRACCDO0(data)) );
+    } while ( (cache_way < L2C_COUNT_WAYS-1) && (L2C_TAG_ADDRESS_FROM_64BIT(addr64) != L2C_TAG_ADDRESS_FROM_ARRACCDO0(data)) );
 
     COMPARE_VALUES ( L2C_TAG_ADDRESS_FROM_ARRACCDO0(data), (uint64_t)L2C_TAG_ADDRESS_FROM_64BIT(addr64), "Tag address not found in Tag array.\n" );
 
-    l2c_l2_write (base, L2C_L2ARRACCADR, l2arraccadr | L2C_ARRACCADR_DATA_ARRAY_ADDR_FIELD(phys_addr) );
+    l2c_l2_write (base, L2C_L2ARRACCADR, L2C_ARRACCADR_DATA_ARRAY_ADDR_FIELD(phys_addr) );
 
     l2c_l2_write (base, L2C_L2ARRACCCTL,
                         ( (1 << L2C_L2ARRACCCTL_REQUEST_i)
@@ -466,18 +446,14 @@ void l2c_arracc_data_write( uint32_t base, uint32_t ext_phys_addr, uint32_t phys
 {
     int indx;
     uint32_t data;
-    uint32_t l2arraccadr;
-    int32_t cache_way = L2C_WAY0_NUM - 1;
+    int32_t cache_way = -1;
     uint64_t addr64;
-
-    //rumboot_printf( "l2c_arracc_data_write\n" );
-    l2arraccadr = l2c_l2_read (base, L2C_L2ARRACCADR) & ~L2C_L2ARRACCADR_MSK;
 
     addr64 = (((uint64_t) (ext_phys_addr & L2C_EXT_ADDR_MSK)) << 32) + phys_addr;
     do
     {
         cache_way++;
-        l2c_l2_write (base, L2C_L2ARRACCADR, l2arraccadr | L2C_ARRACCADR_TAG_LRU_ADDR_FIELD(phys_addr) );
+        l2c_l2_write (base, L2C_L2ARRACCADR, L2C_ARRACCADR_TAG_LRU_ADDR_FIELD(phys_addr) );
         l2c_l2_write (base, L2C_L2ARRACCCTL,
                             ( (1 << L2C_L2ARRACCCTL_REQUEST_i)
                             | (L2C_ARRACC_BufferID_TAG << L2C_L2ARRACCCTL_BUFFERID_i)
@@ -490,14 +466,14 @@ void l2c_arracc_data_write( uint32_t base, uint32_t ext_phys_addr, uint32_t phys
         TEST_ASSERT(indx < L2C_ARRACC_TIMEOUT, "Timeout while accessing L2C via DCR.\n" );
         data = l2c_l2_read (base, L2C_L2ARRACCDO0);
 
-    } while( (cache_way < L2C_WAY3_NUM) && (L2C_TAG_ADDRESS_FROM_64BIT(addr64) != L2C_TAG_ADDRESS_FROM_ARRACCDO0(data)) );
+    } while( (cache_way < L2C_COUNT_WAYS-1) && (L2C_TAG_ADDRESS_FROM_64BIT(addr64) != L2C_TAG_ADDRESS_FROM_ARRACCDO0(data)) );
 
     COMPARE_VALUES( L2C_TAG_ADDRESS_FROM_ARRACCDO0(data), (uint64_t)L2C_TAG_ADDRESS_FROM_64BIT(addr64), "Tag address not found in Tag array.\n");
 
     l2c_l2_write (base, L2C_L2ARRACCDI0, (uint32_t) (data64 >> 32));
     l2c_l2_write (base, L2C_L2ARRACCDI1, (uint32_t) (data64 & 0xFFFFFFFF));
 
-    l2c_l2_write (base, L2C_L2ARRACCADR, l2arraccadr | L2C_ARRACCADR_DATA_ARRAY_ADDR_FIELD(phys_addr) );
+    l2c_l2_write (base, L2C_L2ARRACCADR, L2C_ARRACCADR_DATA_ARRAY_ADDR_FIELD(phys_addr) );
 
     l2c_l2_write (base, L2C_L2ARRACCCTL,
                         ( (1 << L2C_L2ARRACCCTL_REQUEST_i)
