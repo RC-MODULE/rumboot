@@ -51,7 +51,9 @@ if (OI10_IRAM_IM0)
 else()
   set(IRAM_LDS_FILE oi10/iram.lds)
   set(STUB_LDS_FILE oi10/bootrom.lds )
-  set(EXTRA_STUB_FLAGS -DUTLB_EXT_MEM_NOR_ONLY)
+  #TODO: Fix stub when initial test run is complete
+  #  set(EXTRA_STUB_FLAGS -DUTLB_EXT_MEM_NOR_ONLY)
+  set(EXTRA_STUB_FLAGS )
 endif()
 
 rumboot_add_configuration(
