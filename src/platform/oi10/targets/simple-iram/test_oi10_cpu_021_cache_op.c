@@ -87,8 +87,8 @@ bool get_valid_way_by_addr(uint32_t pseudo_CT, void* addr, int32_t* cache_way)
                     (uint32_t)((phys_addr >> 32) & 0xffffffff),
                     (uint32_t)((phys_addr      ) & 0xffffffff),
                     *cache_way, &tag_info ))
-                return (((tag_info & L2C_L2ARRACCDO0_TAG_CACHE_STATE_mask) >> L2C_L2ARRACCDO0_TAG_CACHE_STATE_i)
-                        != L2C_L2ARRACCDO0_TAG_CACHE_STATE_INVALID);
+                return (((tag_info & L2C_L2ARRACCDX0_TAG_CACHE_STATE_mask) >> L2C_L2ARRACCDX0_TAG_CACHE_STATE_i)
+                        != L2C_TAG_CacheState_I);
             else
                 return false;
         }else
@@ -163,7 +163,7 @@ uint32_t get_locks(uint32_t pseudo_CT, void* addr, uint32_t cache_way)
                     &L2C_LRU_info
                     ))
         {
-            result = ( L2C_LRU_info & L2C_L2ARRACCDO0_LRU_LOCK_BITS_mask ) >> L2C_L2ARRACCDO0_LRU_LOCK_BITS_i;
+            result = ( L2C_LRU_info & L2C_L2ARRACCDX0_LRU_LOCK_BITS_mask ) >> L2C_L2ARRACCDX0_LRU_LOCK_BITS_i;
         }
     } else if(CT == 0)
     {
