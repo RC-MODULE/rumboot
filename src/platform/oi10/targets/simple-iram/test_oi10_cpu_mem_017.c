@@ -189,8 +189,6 @@ void cache_tag_efgh(uint32_t erpn_tag, uint32_t addr)
 
 int main()
 {
-    volatile uint32_t data;
-
     test_event_send_test_id("test_oi10_cpu_mem_017");
 
     static const tlb_entry tlb_entries[] =
@@ -203,14 +201,7 @@ int main()
 
     emi_init(DCR_EM2_EMI_BASE);
 
-    data = l2c_l2_read (DCR_L2C_BASE, L2C_L2ISTAT);
-    uint32_t i = 0;
-    while (((data & 0x1) != 1) && (i < L2C_TIMEOUT))
-    {
-        data = l2c_l2_read (DCR_L2C_BASE, L2C_L2ISTAT);
-        i++;
-    }
-    TEST_ASSERT((data & 0x1),"L2C Array Initialization Complete Event did not occur!");
+    TEST_ASSERT(l2c_l2_read (DCR_L2C_BASE, L2C_L2ISTAT),"L2C Array Initialization Complete Event did not occur!");
 
     rumboot_printf("Start TLB entries initialization... ");
     write_tlb_entries(tlb_entries, ARRAY_SIZE(tlb_entries));

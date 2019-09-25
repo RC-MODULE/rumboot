@@ -21,7 +21,6 @@
 #include <platform/devices/dma2plb6.h>
 
 typedef uint8_t func();
-#define L2C_TIMEOUT   0x00000020
 #define NUM_BYTE      (1024 * 8)
 
 uint8_t __attribute__((section(".data"),aligned(0x100))) volatile im0_data[NUM_BYTE] = { 0 };
@@ -55,17 +54,7 @@ int main(void)
     rumboot_printf("Starting base test\n");
     emi_init(DCR_EM2_EMI_BASE);
 
-    int         i;
-    uint32_t    data;
-
-    data = l2c_l2_read (DCR_L2C_BASE, L2C_L2ISTAT);
-    i = 0;
-    while (((data & 0x1) != 1) && (i < L2C_TIMEOUT))
-    {
-        data = l2c_l2_read (DCR_L2C_BASE, L2C_L2ISTAT);
-        i++;
-    }
-    TEST_ASSERT((data & 0x1),"L2C Array Initialization Complete Event did not occur!");
+    TEST_ASSERT(l2c_l2_read (DCR_L2C_BASE, L2C_L2ISTAT),"L2C Array Initialization Complete Event did not occur!");
 
     rumboot_printf("Copy SRAM0BIN to IM0 (addr = 0x%x)\n", im0_data);
     rumboot_platform_request_file("SRAM0BIN", (uint32_t) im0_data);
