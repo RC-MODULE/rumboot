@@ -10,8 +10,6 @@
 #define L2C_L2PNCR_VAL_BASE         (0x00000069) //see trunk/cpu/units/ppc476l2c_v001/verilog/rtl/PPC476L2C_DCR_LFSR.v. Dependent from I_M_SELF_ID strap.
 #define L2C_L2PNCR_VAL              (L2C_L2PNCR_VAL_BASE(L2C0_DCR_BASE))
 #define L2C_L2REVID_VAL             ( reg_field(31,L2C_REVISION_ID) | reg_field(23,L2C_VERSION_NUMBER) )
-#define L2C_L2CNFG0_VAL_BASE(base)  ( reg_field(31,L2C_L2SIZE) | reg_field(27,L2C_PLB_CLK_RATIO) | reg_field(23,L2C_TSNOOP) | reg_field(19,L2C_MASTER_ID(base)) )
-#define L2C_L2CNFG0_VAL             (L2C_L2CNFG0_VAL_BASE(L2C0_DCR_BASE))
 
 
 #define I_M_SELF_ID(base)           ( (base == L2C0_DCR_BASE) ? 0x00 : 0x01 )
@@ -19,7 +17,6 @@
 #define  L2C_VERSION_NUMBER         (0x01)
 #define  L2C_REVISION_ID            (0x02)
 //from dut
-#define L2C_L2SIZE                  (0x1)
 #define L2C_PLB_CLK_RATIO           (0x0)
 #define L2C_TSNOOP                  (0x0) //acc. to L2C_PLBTSNOOP[0:2] strap pin
 #define L2C_MASTER_ID(base)         (I_M_SELF_ID(base))
@@ -28,7 +25,8 @@
 
 #define L2C_L2ARRACCADR_MSK         (0x1FFF)
 #define L2C_L2ARRACCADR_ADR_MSK     (0x7FF)
-#define L2C_TIMEOUT                 (0x00000020)
+#define L2C_ARRACCADR_TAG_LRU_ADDR_FIELD(addr)          (reg_field( 30,( ( (addr) >> 7) & L2C_CACHE_LINE_ADDR_MSK ) ))
+#define L2C_ARRACCADR_DATA_ARRAY_ADDR_FIELD(addr)       (reg_field( 31,( ( (addr) >> 6) & L2C_L2ARRACCADR_ADR_MSK ) ))
 #define L2C_WAY0_NUM                (0x0)
 #define L2C_WAY1_NUM                (0x1)
 #define L2C_WAY2_NUM                (0x2)
@@ -36,32 +34,7 @@
 #define L2C_WAY_MSK                 (0x3)
 #define L2C_CACHE_LINE_ADDR_MSK     (0x3FF)
 #define L2C_CACHE_HALFLINE_ADDR_MSK (0x7FF) //L2C_L2ARRACCADR_ADR_MSK
-#define L2C_ARRACCCTL_WAY_MSK       (reg_field(23,0x3))
-#define L2C_ARRACCCTL_DWORD_MSK     (reg_field(31,0xFF))
-#define L2C_ARRACCCTL_MSK           ( (L2C_ARRACCCTL_REQUEST_FIELD) |\
-                                      (L2C_ARRACCCTL_LRU_ARRAY_SELECT_FIELD) |\
-                                      (L2C_ARRACCCTL_TAG_ARRAY_SELECT_FIELD) |\
-                                      (L2C_ARRACCCTL_DATA_ARRAY_SELECT_FIELD) |\
-                                      (L2C_ARRACCCTL_READ_8BYTE_WO_ECC_FIELD) |\
-                                      (L2C_ARRACCCTL_WAY_MSK) |\
-                                      (L2C_ARRACCCTL_DWORD_MSK) \
-                                    )
 
-//bits [0:8] are reserved
-#define L2C_ARRACCCTL_REQUEST_FIELD                     (reg_field(9,0x1))
-#define L2C_ARRACCCTL_READ_REQUEST_COMP_FIELD           (reg_field(10,0x1))
-#define L2C_ARRACCCTL_WRITE_REQUEST_COMP_FIELD          (reg_field(11,0x1))
-//bit 12 is reserved
-#define L2C_ARRACCCTL_LRU_ARRAY_SELECT_FIELD            (reg_field(13,0x1))
-#define L2C_ARRACCCTL_TAG_ARRAY_SELECT_FIELD            (reg_field(14,0x1))
-#define L2C_ARRACCCTL_DATA_ARRAY_SELECT_FIELD           (reg_field(15,0x1))
-#define L2C_ARRACCCTL_READ_8BYTE_WO_ECC_FIELD           (reg_field(19,0xF))
-#define L2C_ARRACCCTL_WRITE_8BYTE_GENERATE_ECC_FIELD    (reg_field(19,0x6))
-#define L2C_ARRACCCTL_WRITE_8BYTE_ECC_AS_IS_FIELD       (reg_field(19,0x7))
-#define L2C_ARRACCCTL_WAY_FIELD(way_number)             (reg_field(23,((way_number) & 0x3)))
-#define L2C_ARRACCCTL_MSK_DWORD_FIELD(addr)             (reg_field(31,(0x1 << (0x7 - ( ((addr) >> 0x3) & 0x7) ))))
-#define L2C_ARRACCADR_TAG_LRU_ADDR_FIELD(addr)          (reg_field( 30,( ( (addr) >> 7) & L2C_CACHE_LINE_ADDR_MSK ) ))
-#define L2C_ARRACCADR_DATA_ARRAY_ADDR_FIELD(addr)       (reg_field( 31,( ( (addr) >> 6) & L2C_L2ARRACCADR_ADR_MSK ) ))
 
 #define L2C_TAG_ADDRESS_OFFSET                          (16) //16 for 256 KB, old value = 17 (512 KB)
 #define L2C_TAG_ADDRESS_MSK                             (0x1FFFFFF)
@@ -74,30 +47,6 @@
 
 #define L2C_EXT_ADDR_MSK                                (0x3FF)
 
-/* ++ L2C Tag Array Cache State */
-typedef enum
-{
-    L2C_STATE_I  =  0b000,   /* Invalid              */
-    L2C_STATE_U  =  0b001,   /* Undefined (not used) */
-    L2C_STATE_S  =  0b010,   /* Shared               */
-    L2C_STATE_SL =  0b011,   /* Shared Last          */
-    L2C_STATE_E  =  0b100,   /* Exclusive            */
-    L2C_STATE_T  =  0b101,   /* Tagged               */
-    L2C_STATE_M  =  0b110,   /* Modified             */
-    L2C_STATE_MU =  0b111    /* Modified Unsolicited */
-
-} l2c_tag_arr_cache_state_t;
-
-/* ++ L2C Cache State (debug) Modes */
-typedef enum
-{
-    L2C_CSM_DEFAULT   =  0x00,
-    L2C_CSM_NO_SL     =  0x01,
-    L2C_CSM_NO_MU     =  0x02,
-    L2C_CSM_NO_T      =  0x04,
-    L2C_CSM_MESI_ONLY =  0x07
-
-} l2c_cache_state_mode_t;
 
 //L2C REG value
 typedef enum

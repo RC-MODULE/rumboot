@@ -58,12 +58,13 @@ void l2c_enable_interrupt( uint32_t const l2c_dcr_base, L2C_L2REG const l2c_int_
     l2c_l2_write (l2c_dcr_base, l2c_int_reg_index, l2c_l2_read(l2c_dcr_base, l2c_int_reg_index) | mask );
 }
 
+#define L2C_ARRACC_TIMEOUT                 (0x00000020)
+
 bool l2c_arracc_tag_info_read_by_way( uint32_t const base, uint32_t const ext_phys_addr, uint32_t const phys_addr, int32_t const cache_way,
         volatile uint32_t* tag_info )
 {
     int32_t  indx = 0;
     uint32_t l2arraccadr;
-    uint32_t l2arraccctl;
     bool valid = false;
 
 #ifdef L2C_TRACE_DEBUG_MSG
@@ -73,21 +74,19 @@ bool l2c_arracc_tag_info_read_by_way( uint32_t const base, uint32_t const ext_ph
 #endif
 
     l2arraccadr = l2c_l2_read (base, L2C_L2ARRACCADR) & ~L2C_L2ARRACCADR_MSK;
-    l2arraccctl = l2c_l2_read (base, L2C_L2ARRACCCTL) & ~L2C_ARRACCCTL_MSK;
 
     l2c_l2_write (base, L2C_L2ARRACCADR, l2arraccadr | L2C_ARRACCADR_DATA_ARRAY_ADDR_FIELD(phys_addr) );
 
     l2c_l2_write (base, L2C_L2ARRACCCTL,
-           (l2arraccctl | L2C_ARRACCCTL_REQUEST_FIELD
-                        | L2C_ARRACCCTL_TAG_ARRAY_SELECT_FIELD
-                        | L2C_ARRACCCTL_READ_8BYTE_WO_ECC_FIELD
-                        | L2C_ARRACCCTL_WAY_FIELD(cache_way)
-                        | L2C_ARRACCCTL_MSK_DWORD_FIELD(phys_addr)
-           ));
+                        ( (1 << L2C_L2ARRACCCTL_REQUEST_i)
+                        | (L2C_ARRACC_BufferID_TAG << L2C_L2ARRACCCTL_BUFFERID_i)
+                        | (L2C_ARRACC_ReqType_RD8WOECC << L2C_L2ARRACCCTL_REQTYPE_i)
+                        | (cache_way << L2C_L2ARRACCCTL_L2WAY_i)
+                        | (phys_addr << L2C_L2ARRACCCTL_MASKDW_i) ));
 
-    while ( (0 == (l2c_l2_read (base, L2C_L2ARRACCCTL) & L2C_ARRACCCTL_READ_REQUEST_COMP_FIELD))  && (indx < L2C_TIMEOUT) )
+    while ( (l2c_l2_read (base, L2C_L2ARRACCCTL) & L2C_L2ARRACCCTL_READREQUESTCOMP_mask) && (indx < L2C_ARRACC_TIMEOUT) )
         indx++;
-    valid = (indx < L2C_TIMEOUT);
+    valid = (indx < L2C_ARRACC_TIMEOUT);
 
     if (valid)
     {
@@ -109,7 +108,6 @@ bool l2c_arracc_tag_info_write_by_way_wo_gen_ecc( uint32_t base, uint32_t ext_ph
 {
     int indx;
     uint32_t l2arraccadr;
-    uint32_t l2arraccctl;
     bool valid = false;
 
 #ifdef L2C_TRACE_DEBUG_MSG
@@ -120,7 +118,6 @@ bool l2c_arracc_tag_info_write_by_way_wo_gen_ecc( uint32_t base, uint32_t ext_ph
 #endif
 
     l2arraccadr = l2c_l2_read (base, L2C_L2ARRACCADR) & ~L2C_L2ARRACCADR_MSK;
-    l2arraccctl = l2c_l2_read (base, L2C_L2ARRACCCTL) & ~L2C_ARRACCCTL_MSK;
 
     l2c_l2_write (base, L2C_L2ARRACCDI0, cache_data);
     l2c_l2_write (base, L2C_L2ARRACCDI2, ecc_data);
@@ -128,17 +125,16 @@ bool l2c_arracc_tag_info_write_by_way_wo_gen_ecc( uint32_t base, uint32_t ext_ph
     l2c_l2_write (base, L2C_L2ARRACCADR, l2arraccadr | L2C_ARRACCADR_DATA_ARRAY_ADDR_FIELD(phys_addr) );
 
     l2c_l2_write (base, L2C_L2ARRACCCTL,
-           ( l2arraccctl | L2C_ARRACCCTL_REQUEST_FIELD
-                         | L2C_ARRACCCTL_TAG_ARRAY_SELECT_FIELD
-                         | L2C_ARRACCCTL_WRITE_8BYTE_ECC_AS_IS_FIELD
-                         | L2C_ARRACCCTL_WAY_FIELD(cache_way)
-                         | L2C_ARRACCCTL_MSK_DWORD_FIELD(phys_addr)
-           ));
+                        ( (1 << L2C_L2ARRACCCTL_REQUEST_i)
+                        | (L2C_ARRACC_BufferID_TAG << L2C_L2ARRACCCTL_BUFFERID_i)
+                        | (L2C_ARRACC_ReqType_WR8WOECC << L2C_L2ARRACCCTL_REQTYPE_i)
+                        | (cache_way << L2C_L2ARRACCCTL_L2WAY_i)
+                        | (phys_addr << L2C_L2ARRACCCTL_MASKDW_i) ));
 
     indx = 0;
-    while ( (0 == (l2c_l2_read (base, L2C_L2ARRACCCTL) & L2C_ARRACCCTL_WRITE_REQUEST_COMP_FIELD)) && (indx < L2C_TIMEOUT) )
+    while ( (l2c_l2_read (base, L2C_L2ARRACCCTL) & L2C_L2ARRACCCTL_WRTREQUESTCOMP_mask) && (indx < L2C_ARRACC_TIMEOUT) )
         indx++;
-    valid = (indx < L2C_TIMEOUT);
+    valid = (indx < L2C_ARRACC_TIMEOUT);
 
     if (!valid)
     {
@@ -153,25 +149,22 @@ bool l2c_arracc_lru_info_read_by_way( uint32_t base, uint32_t ext_phys_addr, uin
 {
     int indx = 0;
     uint32_t l2arraccadr;
-    uint32_t l2arraccctl;
     bool valid = false;
 
     l2arraccadr = l2c_l2_read (base, L2C_L2ARRACCADR) & ~L2C_L2ARRACCADR_MSK;
-    l2arraccctl = l2c_l2_read (base, L2C_L2ARRACCCTL) & ~L2C_ARRACCCTL_MSK;
 
     l2c_l2_write (base, L2C_L2ARRACCADR, l2arraccadr | L2C_ARRACCADR_DATA_ARRAY_ADDR_FIELD(phys_addr) );
 
     l2c_l2_write( base, L2C_L2ARRACCCTL,
-           (l2arraccctl | L2C_ARRACCCTL_REQUEST_FIELD
-                        | L2C_ARRACCCTL_LRU_ARRAY_SELECT_FIELD
-                        | L2C_ARRACCCTL_READ_8BYTE_WO_ECC_FIELD
-                        | L2C_ARRACCCTL_WAY_FIELD(cache_way)
-                        | L2C_ARRACCCTL_MSK_DWORD_FIELD(phys_addr)
-           ));
+                        ( (1 << L2C_L2ARRACCCTL_REQUEST_i)
+                        | (L2C_ARRACC_BufferID_LRU << L2C_L2ARRACCCTL_BUFFERID_i)
+                        | (L2C_ARRACC_ReqType_RD8WOECC << L2C_L2ARRACCCTL_REQTYPE_i)
+                        | (cache_way << L2C_L2ARRACCCTL_L2WAY_i)
+                        | (phys_addr << L2C_L2ARRACCCTL_MASKDW_i) ));
 
-    while ( (0 == (l2c_l2_read( base, L2C_L2ARRACCCTL ) & L2C_ARRACCCTL_READ_REQUEST_COMP_FIELD)) && (indx < L2C_TIMEOUT) )
+    while ( (l2c_l2_read( base, L2C_L2ARRACCCTL ) & L2C_L2ARRACCCTL_READREQUESTCOMP_mask) && (indx < L2C_ARRACC_TIMEOUT) )
         indx++;
-    valid = ( indx < L2C_TIMEOUT );
+    valid = ( indx < L2C_ARRACC_TIMEOUT );
 
     if (valid)
     {
@@ -190,7 +183,6 @@ bool l2c_arracc_data_read_by_way( uint32_t base, uint32_t ext_phys_addr, uint32_
 {
     int indx;
     uint32_t l2arraccadr;
-    uint32_t l2arraccctl;
     bool valid = false;
 
 #ifdef L2C_TRACE_DEBUG_MSG
@@ -199,22 +191,20 @@ bool l2c_arracc_data_read_by_way( uint32_t base, uint32_t ext_phys_addr, uint32_
 #endif
 
     l2arraccadr = l2c_l2_read (base, L2C_L2ARRACCADR) & ~L2C_L2ARRACCADR_MSK;
-    l2arraccctl = l2c_l2_read (base, L2C_L2ARRACCCTL) & ~L2C_ARRACCCTL_MSK;
 
     l2c_l2_write (base, L2C_L2ARRACCADR, l2arraccadr | L2C_ARRACCADR_DATA_ARRAY_ADDR_FIELD(phys_addr) );
 
     l2c_l2_write (base, L2C_L2ARRACCCTL,
-           (l2arraccctl | L2C_ARRACCCTL_REQUEST_FIELD
-                        | L2C_ARRACCCTL_DATA_ARRAY_SELECT_FIELD
-                        | L2C_ARRACCCTL_READ_8BYTE_WO_ECC_FIELD
-                        | L2C_ARRACCCTL_WAY_FIELD(cache_way)
-                        | L2C_ARRACCCTL_MSK_DWORD_FIELD(phys_addr)
-           ));
+                        ( (1 << L2C_L2ARRACCCTL_REQUEST_i)
+                        | (L2C_ARRACC_BufferID_DATA << L2C_L2ARRACCCTL_BUFFERID_i)
+                        | (L2C_ARRACC_ReqType_RD8WOECC << L2C_L2ARRACCCTL_REQTYPE_i)
+                        | (cache_way << L2C_L2ARRACCCTL_L2WAY_i)
+                        | (phys_addr << L2C_L2ARRACCCTL_MASKDW_i) ));
 
     indx = 0;
-    while ( (0 == (l2c_l2_read (base, L2C_L2ARRACCCTL) & L2C_ARRACCCTL_READ_REQUEST_COMP_FIELD)) && (indx < L2C_TIMEOUT) )
+    while ( (l2c_l2_read (base, L2C_L2ARRACCCTL) & L2C_L2ARRACCCTL_READREQUESTCOMP_mask) && (indx < L2C_ARRACC_TIMEOUT) )
         indx++;
-    valid = ( indx < L2C_TIMEOUT );
+    valid = ( indx < L2C_ARRACC_TIMEOUT );
 
     if (valid)
     {
@@ -239,7 +229,6 @@ bool l2c_arracc_data_write_by_way( uint32_t base, uint32_t ext_phys_addr, uint32
 {
     int indx;
     uint32_t l2arraccadr;
-    uint32_t l2arraccctl;
     bool valid = false;
 
 #ifdef L2C_TRACE_DEBUG_MSG
@@ -250,7 +239,6 @@ bool l2c_arracc_data_write_by_way( uint32_t base, uint32_t ext_phys_addr, uint32
 #endif
 
     l2arraccadr = l2c_l2_read (base, L2C_L2ARRACCADR) & ~L2C_L2ARRACCADR_MSK;
-    l2arraccctl = l2c_l2_read (base, L2C_L2ARRACCCTL) & ~L2C_ARRACCCTL_MSK;
 
     l2c_l2_write (base, L2C_L2ARRACCDI0, (uint32_t) (cache_data >> 32));
     l2c_l2_write (base, L2C_L2ARRACCDI1, (uint32_t) (cache_data & 0xFFFFFFFF));
@@ -258,17 +246,16 @@ bool l2c_arracc_data_write_by_way( uint32_t base, uint32_t ext_phys_addr, uint32
     l2c_l2_write (base, L2C_L2ARRACCADR, l2arraccadr | L2C_ARRACCADR_DATA_ARRAY_ADDR_FIELD(phys_addr) );
 
     l2c_l2_write (base, L2C_L2ARRACCCTL,
-           (l2arraccctl | L2C_ARRACCCTL_REQUEST_FIELD
-                        | L2C_ARRACCCTL_DATA_ARRAY_SELECT_FIELD
-                        | L2C_ARRACCCTL_WRITE_8BYTE_GENERATE_ECC_FIELD
-                        | L2C_ARRACCCTL_WAY_FIELD(cache_way)
-                        | L2C_ARRACCCTL_MSK_DWORD_FIELD(phys_addr)
-           ));
+                        ( (1 << L2C_L2ARRACCCTL_REQUEST_i)
+                        | (L2C_ARRACC_BufferID_DATA << L2C_L2ARRACCCTL_BUFFERID_i)
+                        | (L2C_ARRACC_ReqType_WR8WTECC << L2C_L2ARRACCCTL_REQTYPE_i)
+                        | (cache_way << L2C_L2ARRACCCTL_L2WAY_i)
+                        | (phys_addr << L2C_L2ARRACCCTL_MASKDW_i) ));
 
     indx = 0;
-    while ( (0 == (l2c_l2_read (base, L2C_L2ARRACCCTL) & L2C_ARRACCCTL_WRITE_REQUEST_COMP_FIELD)) && (indx < L2C_TIMEOUT) )
+    while ( (l2c_l2_read (base, L2C_L2ARRACCCTL) & L2C_L2ARRACCCTL_WRTREQUESTCOMP_mask) && (indx < L2C_ARRACC_TIMEOUT) )
         indx++;
-    valid = (indx < L2C_TIMEOUT);
+    valid = (indx < L2C_ARRACC_TIMEOUT);
 
     if(!valid)
     {
@@ -283,7 +270,6 @@ bool l2c_arracc_data_write_by_way_wo_gen_ecc( uint32_t base, uint32_t ext_phys_a
 {
     int indx;
     uint32_t l2arraccadr;
-    uint32_t l2arraccctl;
     bool valid = false;
 
 #ifdef L2C_TRACE_DEBUG_MSG
@@ -295,7 +281,6 @@ bool l2c_arracc_data_write_by_way_wo_gen_ecc( uint32_t base, uint32_t ext_phys_a
 #endif
 
     l2arraccadr = l2c_l2_read (base, L2C_L2ARRACCADR) & ~L2C_L2ARRACCADR_MSK;
-    l2arraccctl = l2c_l2_read (base, L2C_L2ARRACCCTL) & ~L2C_ARRACCCTL_MSK;
 
     l2c_l2_write (base, L2C_L2ARRACCDI0, (uint32_t) (cache_data >> 32));
     l2c_l2_write (base, L2C_L2ARRACCDI1, (uint32_t) (cache_data & 0xFFFFFFFF));
@@ -304,17 +289,16 @@ bool l2c_arracc_data_write_by_way_wo_gen_ecc( uint32_t base, uint32_t ext_phys_a
     l2c_l2_write (base, L2C_L2ARRACCADR, l2arraccadr | L2C_ARRACCADR_DATA_ARRAY_ADDR_FIELD(phys_addr) );
 
     l2c_l2_write (base, L2C_L2ARRACCCTL,
-           (l2arraccctl | L2C_ARRACCCTL_REQUEST_FIELD
-                        | L2C_ARRACCCTL_DATA_ARRAY_SELECT_FIELD
-                        | L2C_ARRACCCTL_WRITE_8BYTE_ECC_AS_IS_FIELD
-                        | L2C_ARRACCCTL_WAY_FIELD( cache_way )
-                        | L2C_ARRACCCTL_MSK_DWORD_FIELD(phys_addr)
-           ));
+            ( (1 << L2C_L2ARRACCCTL_REQUEST_i)
+            | (L2C_ARRACC_BufferID_DATA << L2C_L2ARRACCCTL_BUFFERID_i)
+            | (L2C_ARRACC_ReqType_WR8WOECC << L2C_L2ARRACCCTL_REQTYPE_i)
+            | (cache_way << L2C_L2ARRACCCTL_L2WAY_i)
+            | (phys_addr << L2C_L2ARRACCCTL_MASKDW_i) ));
 
     indx = 0;
-    while( ( 0 == (l2c_l2_read (base, L2C_L2ARRACCCTL) & L2C_ARRACCCTL_WRITE_REQUEST_COMP_FIELD)) && (indx < L2C_TIMEOUT) )
+    while( (l2c_l2_read (base, L2C_L2ARRACCCTL) & L2C_L2ARRACCCTL_WRTREQUESTCOMP_mask) && (indx < L2C_ARRACC_TIMEOUT) )
         indx++;
-    valid = (indx < L2C_TIMEOUT);
+    valid = (indx < L2C_ARRACC_TIMEOUT);
 
     if(!valid)
     {
@@ -435,13 +419,10 @@ uint64_t l2c_arracc_data_read( uint32_t base, uint32_t ext_phys_addr, uint32_t p
     int indx;
     uint32_t data;
     uint32_t l2arraccadr;
-    uint32_t l2arraccctl;
     int32_t cache_way = L2C_WAY0_NUM - 1;
     uint64_t addr64;
 
-    //rumboot_printf( "l2c_arracc_data_read\n" );
     l2arraccadr = l2c_l2_read (base, L2C_L2ARRACCADR) & ~L2C_L2ARRACCADR_MSK;
-    l2arraccctl = l2c_l2_read (base, L2C_L2ARRACCCTL) & ~L2C_ARRACCCTL_MSK;
 
     addr64 = (((uint64_t) (ext_phys_addr & L2C_EXT_ADDR_MSK)) << 32) + phys_addr;
     do
@@ -449,16 +430,15 @@ uint64_t l2c_arracc_data_read( uint32_t base, uint32_t ext_phys_addr, uint32_t p
         cache_way++;
         l2c_l2_write (base, L2C_L2ARRACCADR, l2arraccadr | L2C_ARRACCADR_TAG_LRU_ADDR_FIELD(phys_addr) );
         l2c_l2_write (base, L2C_L2ARRACCCTL,
-               (l2arraccctl | L2C_ARRACCCTL_REQUEST_FIELD
-                            | L2C_ARRACCCTL_TAG_ARRAY_SELECT_FIELD
-                            | L2C_ARRACCCTL_READ_8BYTE_WO_ECC_FIELD
-                            | L2C_ARRACCCTL_WAY_FIELD(cache_way)
-               ));
+                            ( (1 << L2C_L2ARRACCCTL_REQUEST_i)
+                            | (L2C_ARRACC_BufferID_TAG << L2C_L2ARRACCCTL_BUFFERID_i)
+                            | (L2C_ARRACC_ReqType_RD8WOECC << L2C_L2ARRACCCTL_REQTYPE_i)
+                            | (cache_way << L2C_L2ARRACCCTL_L2WAY_i) ));
 
         indx = 0;
-        while ( (0 == (l2c_l2_read( base, L2C_L2ARRACCCTL) & L2C_ARRACCCTL_READ_REQUEST_COMP_FIELD)) && (indx < L2C_TIMEOUT) )
+        while ( (l2c_l2_read( base, L2C_L2ARRACCCTL) & L2C_L2ARRACCCTL_READREQUESTCOMP_mask) && (indx < L2C_ARRACC_TIMEOUT) )
             indx++;
-        TEST_ASSERT(indx < L2C_TIMEOUT, "Timeout while accessing L2C via DCR.\n" );
+        TEST_ASSERT(indx < L2C_ARRACC_TIMEOUT, "Timeout while accessing L2C via DCR.\n" );
         data = l2c_l2_read (base, L2C_L2ARRACCDO0);
 
     } while ( (cache_way < L2C_WAY3_NUM) && (L2C_TAG_ADDRESS_FROM_64BIT(addr64) != L2C_TAG_ADDRESS_FROM_ARRACCDO0(data)) );
@@ -468,17 +448,16 @@ uint64_t l2c_arracc_data_read( uint32_t base, uint32_t ext_phys_addr, uint32_t p
     l2c_l2_write (base, L2C_L2ARRACCADR, l2arraccadr | L2C_ARRACCADR_DATA_ARRAY_ADDR_FIELD(phys_addr) );
 
     l2c_l2_write (base, L2C_L2ARRACCCTL,
-           (l2arraccctl | L2C_ARRACCCTL_REQUEST_FIELD
-                        | L2C_ARRACCCTL_DATA_ARRAY_SELECT_FIELD
-                        | L2C_ARRACCCTL_READ_8BYTE_WO_ECC_FIELD
-                        | L2C_ARRACCCTL_WAY_FIELD(cache_way)
-                        | L2C_ARRACCCTL_MSK_DWORD_FIELD(phys_addr)
-           ));
+                        ( (1 << L2C_L2ARRACCCTL_REQUEST_i)
+                        | (L2C_ARRACC_BufferID_DATA << L2C_L2ARRACCCTL_BUFFERID_i)
+                        | (L2C_ARRACC_ReqType_RD8WOECC << L2C_L2ARRACCCTL_REQTYPE_i)
+                        | (cache_way << L2C_L2ARRACCCTL_L2WAY_i)
+                        | (phys_addr << L2C_L2ARRACCCTL_MASKDW_i) ));
 
     indx = 0;
-    while ( (0 == (l2c_l2_read (base, L2C_L2ARRACCCTL) & L2C_ARRACCCTL_READ_REQUEST_COMP_FIELD)) && (indx < L2C_TIMEOUT) )
+    while ( (l2c_l2_read (base, L2C_L2ARRACCCTL) & L2C_L2ARRACCCTL_READREQUESTCOMP_mask) && (indx < L2C_ARRACC_TIMEOUT) )
         indx++;
-    TEST_ASSERT(indx < L2C_TIMEOUT, "Timeout while accessing L2C via DCR.\n" );
+    TEST_ASSERT(indx < L2C_ARRACC_TIMEOUT, "Timeout while accessing L2C via DCR.\n" );
 
     return ( l2c_l2_read (base, L2C_L2ARRACCDO1) | (((uint64_t) l2c_l2_read (base, L2C_L2ARRACCDO0)) << 32) );
 }
@@ -488,13 +467,11 @@ void l2c_arracc_data_write( uint32_t base, uint32_t ext_phys_addr, uint32_t phys
     int indx;
     uint32_t data;
     uint32_t l2arraccadr;
-    uint32_t l2arraccctl;
     int32_t cache_way = L2C_WAY0_NUM - 1;
     uint64_t addr64;
 
     //rumboot_printf( "l2c_arracc_data_write\n" );
     l2arraccadr = l2c_l2_read (base, L2C_L2ARRACCADR) & ~L2C_L2ARRACCADR_MSK;
-    l2arraccctl = l2c_l2_read (base, L2C_L2ARRACCCTL) & ~L2C_ARRACCCTL_MSK;
 
     addr64 = (((uint64_t) (ext_phys_addr & L2C_EXT_ADDR_MSK)) << 32) + phys_addr;
     do
@@ -502,16 +479,15 @@ void l2c_arracc_data_write( uint32_t base, uint32_t ext_phys_addr, uint32_t phys
         cache_way++;
         l2c_l2_write (base, L2C_L2ARRACCADR, l2arraccadr | L2C_ARRACCADR_TAG_LRU_ADDR_FIELD(phys_addr) );
         l2c_l2_write (base, L2C_L2ARRACCCTL,
-               (l2arraccctl  | L2C_ARRACCCTL_REQUEST_FIELD
-                             | L2C_ARRACCCTL_TAG_ARRAY_SELECT_FIELD
-                             | L2C_ARRACCCTL_READ_8BYTE_WO_ECC_FIELD
-                             | L2C_ARRACCCTL_WAY_FIELD(cache_way)
-               ));
+                            ( (1 << L2C_L2ARRACCCTL_REQUEST_i)
+                            | (L2C_ARRACC_BufferID_TAG << L2C_L2ARRACCCTL_BUFFERID_i)
+                            | (L2C_ARRACC_ReqType_RD8WOECC << L2C_L2ARRACCCTL_REQTYPE_i)
+                            | (cache_way << L2C_L2ARRACCCTL_L2WAY_i) ));
 
         indx = 0;
-        while ( ( 0 == (l2c_l2_read (base, L2C_L2ARRACCCTL) & L2C_ARRACCCTL_READ_REQUEST_COMP_FIELD)) && (indx < L2C_TIMEOUT) )
+        while ( (l2c_l2_read (base, L2C_L2ARRACCCTL) & L2C_L2ARRACCCTL_READREQUESTCOMP_mask) && (indx < L2C_ARRACC_TIMEOUT) )
             indx++;
-        TEST_ASSERT(indx < L2C_TIMEOUT, "Timeout while accessing L2C via DCR.\n" );
+        TEST_ASSERT(indx < L2C_ARRACC_TIMEOUT, "Timeout while accessing L2C via DCR.\n" );
         data = l2c_l2_read (base, L2C_L2ARRACCDO0);
 
     } while( (cache_way < L2C_WAY3_NUM) && (L2C_TAG_ADDRESS_FROM_64BIT(addr64) != L2C_TAG_ADDRESS_FROM_ARRACCDO0(data)) );
@@ -524,41 +500,40 @@ void l2c_arracc_data_write( uint32_t base, uint32_t ext_phys_addr, uint32_t phys
     l2c_l2_write (base, L2C_L2ARRACCADR, l2arraccadr | L2C_ARRACCADR_DATA_ARRAY_ADDR_FIELD(phys_addr) );
 
     l2c_l2_write (base, L2C_L2ARRACCCTL,
-           (l2arraccctl | L2C_ARRACCCTL_REQUEST_FIELD
-                        | L2C_ARRACCCTL_DATA_ARRAY_SELECT_FIELD
-                        | L2C_ARRACCCTL_WRITE_8BYTE_GENERATE_ECC_FIELD
-                        | L2C_ARRACCCTL_WAY_FIELD(cache_way)
-                        | L2C_ARRACCCTL_MSK_DWORD_FIELD(phys_addr)
-           ));
+                        ( (1 << L2C_L2ARRACCCTL_REQUEST_i)
+                        | (L2C_ARRACC_BufferID_DATA << L2C_L2ARRACCCTL_BUFFERID_i)
+                        | (L2C_ARRACC_ReqType_WR8WTECC << L2C_L2ARRACCCTL_REQTYPE_i)
+                        | (cache_way << L2C_L2ARRACCCTL_L2WAY_i)
+                        | (phys_addr << L2C_L2ARRACCCTL_MASKDW_i) ));
 
     indx = 0;
-    while ( (0 == (l2c_l2_read (base, L2C_L2ARRACCCTL) & L2C_ARRACCCTL_WRITE_REQUEST_COMP_FIELD)) && (indx < L2C_TIMEOUT) )
+    while ( (l2c_l2_read (base, L2C_L2ARRACCCTL) & L2C_L2ARRACCCTL_WRTREQUESTCOMP_mask) && (indx < L2C_ARRACC_TIMEOUT) )
         indx++;
-    TEST_ASSERT( indx < L2C_TIMEOUT, "Timeout while accessing L2C via DCR.\n");
+    TEST_ASSERT( indx < L2C_ARRACC_TIMEOUT, "Timeout while accessing L2C via DCR.\n");
 }
 
 
 void l2c_get_mem_layout( uint32_t const base, struct l2c_mem_layout * const mem_layout ) {
     mem_layout->l2size              = l2c_l2_read(base, L2C_L2CNFG0) & L2C_L2CNFG0_L2SIZE_mask;
-    mem_layout->tag_ecc_mask        = 0x7F;
-    mem_layout->lru_mask            = 0x3FFFFFFF;
-    mem_layout->data_ecc_mask       = 0xFF;
+    mem_layout->tag_ecc_mask        = L2C_L2ARRACCDX2_TAG_ECC_mask;
+    mem_layout->lru_mask            = L2C_L2ARRACCDX0_LRU_mask;
+    mem_layout->data_ecc_mask       = L2C_L2ARRACCDX2_DATA_ECC_mask;
     switch( mem_layout->l2size ) {
     case L2C_L2Size_128KB:
         mem_layout->lru_array_size  = 256;
-        mem_layout->tag_mask        = 0x3FFFFFFF;
+        mem_layout->tag_mask        = L2C_L2ARRACCDX0_TAG_128KB_mask;
         break;
     case L2C_L2Size_256KB:
         mem_layout->lru_array_size  = 512;
-        mem_layout->tag_mask        = 0x1FFFFFFF;
+        mem_layout->tag_mask        = L2C_L2ARRACCDX0_TAG_256KB_mask;
         break;
     case L2C_L2Size_512KB:
         mem_layout->lru_array_size  = 1024;
-        mem_layout->tag_mask        = 0x0FFFFFFF;
+        mem_layout->tag_mask        = L2C_L2ARRACCDX0_TAG_512KB_mask;
         break;
     case L2C_L2Size_1MB:
         mem_layout->lru_array_size  = 2048;
-        mem_layout->tag_mask        = 0x07FFFFFF;
+        mem_layout->tag_mask        = L2C_L2ARRACCDX0_TAG_1MB_mask;
         break;
     }
     mem_layout->tag_array_size      = 4 * mem_layout->lru_array_size;
