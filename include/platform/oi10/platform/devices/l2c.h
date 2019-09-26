@@ -7,20 +7,6 @@
 #include <platform/arch/ppc/test_macro.h>
 
 
-#define L2C_L2ARRACCADR_ADR_MSK     (0x7FF)
-#define L2C_ARRACCADR_TAG_LRU_ADDR_FIELD(addr)          (reg_field( 30,( ( (addr) >> 7) & L2C_CACHE_LINE_ADDR_MSK ) ))
-#define L2C_ARRACCADR_DATA_ARRAY_ADDR_FIELD(addr)       (reg_field( 31,( ( (addr) >> 6) & L2C_L2ARRACCADR_ADR_MSK ) ))
-#define L2C_CACHE_LINE_ADDR_MSK     (0x3FF)
-
-
-#define L2C_TAG_ADDRESS_OFFSET                          (16) //16 for 256 KB, old value = 17 (512 KB)
-#define L2C_TAG_ADDRESS_MSK                             (0x1FFFFFF)
-#define L2C_TAG_ADDRESS_FROM_64BIT(addr)                ((( (addr) & ( (uint64_t)L2C_TAG_ADDRESS_MSK << L2C_TAG_ADDRESS_OFFSET ) ) >> L2C_TAG_ADDRESS_OFFSET))
-#define L2C_TAG_ADDRESS_FROM_ARRACCDO0(val)             (( ( (val) & (L2C_TAG_ADDRESS_MSK << 3) ) >> 3)) //3 for 256, 4 for 512
-
-#define L2C_EXT_ADDR_MSK                                (0x3FF)
-
-
 //L2C REG value
 typedef enum
 {
@@ -336,10 +322,14 @@ struct l2c_mem_layout {
     uint32_t        lru_array_size;
     uint32_t        data_array_size;
 
-    uint64_t        tag_mask;
-    uint64_t        tag_ecc_mask;
-    uint64_t        lru_mask;
-    uint64_t        data_ecc_mask;
+    uint32_t        tag_i;
+    uint32_t        tag_n;
+    uint32_t        tag_ecc_i;
+    uint32_t        tag_ecc_n;
+    uint32_t        lru_i;
+    uint32_t        lru_n;
+    uint32_t        data_ecc_i;
+    uint32_t        data_ecc_n;
 };
 
 void l2c_get_mem_layout( uint32_t base, struct l2c_mem_layout * mem_layout );

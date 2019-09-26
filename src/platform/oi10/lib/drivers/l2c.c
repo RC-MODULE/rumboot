@@ -73,7 +73,7 @@ bool l2c_arracc_tag_info_read_by_way( uint32_t const base, uint32_t const ext_ph
     rumboot_printf ("cache_way == %x\n", cache_way);
 #endif
 
-    l2c_l2_write (base, L2C_L2ARRACCADR, L2C_ARRACCADR_DATA_ARRAY_ADDR_FIELD(phys_addr) );
+    l2c_l2_write (base, L2C_L2ARRACCADR, ((phys_addr >> L2C_ARRAY_ADDR_TAG_i) << L2C_L2ARRACCADR_TAG_i) );
 
     l2c_l2_write (base, L2C_L2ARRACCCTL,
                         ( (1 << L2C_L2ARRACCCTL_REQUEST_i)
@@ -117,7 +117,7 @@ bool l2c_arracc_tag_info_write_by_way_wo_gen_ecc( uint32_t base, uint32_t ext_ph
     l2c_l2_write (base, L2C_L2ARRACCDI0, cache_data);
     l2c_l2_write (base, L2C_L2ARRACCDI2, ecc_data);
 
-    l2c_l2_write (base, L2C_L2ARRACCADR, L2C_ARRACCADR_DATA_ARRAY_ADDR_FIELD(phys_addr) );
+    l2c_l2_write (base, L2C_L2ARRACCADR, ((phys_addr >> L2C_ARRAY_ADDR_TAG_i) << L2C_L2ARRACCADR_TAG_i) );
 
     l2c_l2_write (base, L2C_L2ARRACCCTL,
                         ( (1 << L2C_L2ARRACCCTL_REQUEST_i)
@@ -145,7 +145,7 @@ bool l2c_arracc_lru_info_read_by_way( uint32_t base, uint32_t ext_phys_addr, uin
     int indx = 0;
     bool valid = false;
 
-    l2c_l2_write (base, L2C_L2ARRACCADR, L2C_ARRACCADR_DATA_ARRAY_ADDR_FIELD(phys_addr) );
+    l2c_l2_write (base, L2C_L2ARRACCADR, ((phys_addr >> L2C_ARRAY_ADDR_LRU_i) << L2C_L2ARRACCADR_LRU_i) );
 
     l2c_l2_write( base, L2C_L2ARRACCCTL,
                         ( (1 << L2C_L2ARRACCCTL_REQUEST_i)
@@ -181,7 +181,7 @@ bool l2c_arracc_data_read_by_way( uint32_t base, uint32_t ext_phys_addr, uint32_
     rumboot_printf ("address == %x_%x\n", ext_phys_addr, phys_addr);
 #endif
 
-    l2c_l2_write (base, L2C_L2ARRACCADR, L2C_ARRACCADR_DATA_ARRAY_ADDR_FIELD(phys_addr) );
+    l2c_l2_write (base, L2C_L2ARRACCADR, ((phys_addr >> L2C_ARRAY_ADDR_DATA_i) << L2C_L2ARRACCADR_DATA_i) );
 
     l2c_l2_write (base, L2C_L2ARRACCCTL,
                         ( (1 << L2C_L2ARRACCCTL_REQUEST_i)
@@ -229,7 +229,7 @@ bool l2c_arracc_data_write_by_way( uint32_t base, uint32_t ext_phys_addr, uint32
     l2c_l2_write (base, L2C_L2ARRACCDI0, (uint32_t) (cache_data >> 32));
     l2c_l2_write (base, L2C_L2ARRACCDI1, (uint32_t) (cache_data & 0xFFFFFFFF));
 
-    l2c_l2_write (base, L2C_L2ARRACCADR, L2C_ARRACCADR_DATA_ARRAY_ADDR_FIELD(phys_addr) );
+    l2c_l2_write (base, L2C_L2ARRACCADR, ((phys_addr >> L2C_ARRAY_ADDR_DATA_i) << L2C_L2ARRACCADR_DATA_i) );
 
     l2c_l2_write (base, L2C_L2ARRACCCTL,
                         ( (1 << L2C_L2ARRACCCTL_REQUEST_i)
@@ -269,7 +269,7 @@ bool l2c_arracc_data_write_by_way_wo_gen_ecc( uint32_t base, uint32_t ext_phys_a
     l2c_l2_write (base, L2C_L2ARRACCDI1, (uint32_t) (cache_data & 0xFFFFFFFF));
     l2c_l2_write (base, L2C_L2ARRACCDI2, ecc_data);
 
-    l2c_l2_write (base, L2C_L2ARRACCADR, L2C_ARRACCADR_DATA_ARRAY_ADDR_FIELD(phys_addr) );
+    l2c_l2_write (base, L2C_L2ARRACCADR, ((phys_addr >> L2C_ARRAY_ADDR_DATA_i) << L2C_L2ARRACCADR_DATA_i) );
 
     l2c_l2_write (base, L2C_L2ARRACCCTL,
             ( (1 << L2C_L2ARRACCCTL_REQUEST_i)
@@ -294,17 +294,20 @@ bool l2c_arracc_data_write_by_way_wo_gen_ecc( uint32_t base, uint32_t ext_phys_a
 bool l2c_arracc_get_way_by_address( uint32_t base, uint32_t ext_phys_addr, uint32_t phys_addr,
         volatile int32_t* cache_way )
 {
-    uint64_t addr64;
     uint32_t tag_info;
     bool valid = false;
     bool tag_valid;
+
+    struct l2c_mem_layout mem_layout;
+    l2c_get_mem_layout( base, &mem_layout );
+
+    uint32_t tag_address_n = mem_layout.tag_n-L2C_L2ARRACCDX0_TAG_CACHE_STATE_n;
 
 #ifdef L2C_TRACE_DEBUG_MSG
     rumboot_printf ("l2c_arracc_get_way_by_address\n");
     rumboot_printf ("address == %x_%x\n", ext_phys_addr, phys_addr);
 #endif
 
-    addr64 = ( ((uint64_t) (ext_phys_addr & L2C_EXT_ADDR_MSK)) << 32) + phys_addr;
     *cache_way = -1;
 
 #ifdef L2C_TRACE_DEBUG_MSG
@@ -322,15 +325,19 @@ bool l2c_arracc_get_way_by_address( uint32_t base, uint32_t ext_phys_addr, uint3
 #endif
 
     } while (
-              ((*cache_way) < L2C_COUNT_WAYS-1) &&
-                 ( ((uint64_t)L2C_TAG_ADDRESS_FROM_64BIT(addr64) != (uint64_t)L2C_TAG_ADDRESS_FROM_ARRACCDO0(tag_info)) || !tag_valid )
-            );
+        ((*cache_way) < L2C_COUNT_WAYS-1)
+    &&  (
+            (GET_BITS(phys_addr, L2C_ARRAY_ADDR_TAG_i, tag_address_n) != GET_BITS(tag_info, mem_layout.tag_i, tag_address_n))
+         || !tag_valid
+        )
+    );
 
 #ifdef L2C_TRACE_DEBUG_MSG
     rumboot_printf ("l2c_arracc_get_way_by_address loop finished\n");
 #endif
 
-    if ( (L2C_TAG_ADDRESS_FROM_ARRACCDO0(tag_info) == L2C_TAG_ADDRESS_FROM_64BIT(addr64)) && tag_valid )
+    if ( (GET_BITS(tag_info, mem_layout.tag_i, tag_address_n) == GET_BITS(phys_addr, L2C_ARRAY_ADDR_TAG_i, tag_address_n))
+      && tag_valid )
     {
         valid = true;
     }
@@ -360,12 +367,6 @@ bool l2c_arracc_get_data_by_address( uint32_t base, uint32_t ext_phys_addr, uint
     {
         valid = l2c_arracc_data_read_by_way (base, ext_phys_addr, phys_addr, cache_way, data64);
     }
-    else
-    {
-#ifdef L2C_TRACE_DEBUG_MSG
-        rumboot_printf ("Tag address not found in Tag array.\n");
-#endif
-    }
 
     return valid;
 }
@@ -387,129 +388,56 @@ bool l2c_arracc_set_data_by_address( uint32_t base, uint32_t ext_phys_addr, uint
     {
         valid = l2c_arracc_data_write_by_way (base, ext_phys_addr, phys_addr, cache_way, data64);
     }
-    else
-    {
-#ifdef L2C_TRACE_DEBUG_MSG
-        rumboot_printf ("Tag address not found in Tag array.\n");
-#endif
-    }
 
     return valid;
 }
 
 uint64_t l2c_arracc_data_read( uint32_t base, uint32_t ext_phys_addr, uint32_t phys_addr )
 {
-    int indx;
-    uint32_t data;
-    int32_t cache_way = -1;
-    uint64_t addr64;
+    uint64_t data64;
+    bool get_data_by_address_ok = l2c_arracc_get_data_by_address( base, ext_phys_addr, phys_addr, &data64 );
 
-    addr64 = (((uint64_t) (ext_phys_addr & L2C_EXT_ADDR_MSK)) << 32) + phys_addr;
-    do
-    {
-        cache_way++;
-        l2c_l2_write (base, L2C_L2ARRACCADR, L2C_ARRACCADR_TAG_LRU_ADDR_FIELD(phys_addr) );
-        l2c_l2_write (base, L2C_L2ARRACCCTL,
-                            ( (1 << L2C_L2ARRACCCTL_REQUEST_i)
-                            | (L2C_ARRACC_BufferID_TAG << L2C_L2ARRACCCTL_BUFFERID_i)
-                            | (L2C_ARRACC_ReqType_RD8WOECC << L2C_L2ARRACCCTL_REQTYPE_i)
-                            | (cache_way << L2C_L2ARRACCCTL_L2WAY_i) ));
+    TEST_ASSERT( get_data_by_address_ok, "Data read failed" );
 
-        indx = 0;
-        while ( (l2c_l2_read( base, L2C_L2ARRACCCTL) & L2C_L2ARRACCCTL_READREQUESTCOMP_mask) && (indx < L2C_ARRACC_TIMEOUT) )
-            indx++;
-        TEST_ASSERT(indx < L2C_ARRACC_TIMEOUT, "Timeout while accessing L2C via DCR.\n" );
-        data = l2c_l2_read (base, L2C_L2ARRACCDO0);
-
-    } while ( (cache_way < L2C_COUNT_WAYS-1) && (L2C_TAG_ADDRESS_FROM_64BIT(addr64) != L2C_TAG_ADDRESS_FROM_ARRACCDO0(data)) );
-
-    COMPARE_VALUES ( L2C_TAG_ADDRESS_FROM_ARRACCDO0(data), (uint64_t)L2C_TAG_ADDRESS_FROM_64BIT(addr64), "Tag address not found in Tag array.\n" );
-
-    l2c_l2_write (base, L2C_L2ARRACCADR, L2C_ARRACCADR_DATA_ARRAY_ADDR_FIELD(phys_addr) );
-
-    l2c_l2_write (base, L2C_L2ARRACCCTL,
-                        ( (1 << L2C_L2ARRACCCTL_REQUEST_i)
-                        | (L2C_ARRACC_BufferID_DATA << L2C_L2ARRACCCTL_BUFFERID_i)
-                        | (L2C_ARRACC_ReqType_RD8WOECC << L2C_L2ARRACCCTL_REQTYPE_i)
-                        | (cache_way << L2C_L2ARRACCCTL_L2WAY_i)
-                        | (phys_addr << L2C_L2ARRACCCTL_MASKDW_i) ));
-
-    indx = 0;
-    while ( (l2c_l2_read (base, L2C_L2ARRACCCTL) & L2C_L2ARRACCCTL_READREQUESTCOMP_mask) && (indx < L2C_ARRACC_TIMEOUT) )
-        indx++;
-    TEST_ASSERT(indx < L2C_ARRACC_TIMEOUT, "Timeout while accessing L2C via DCR.\n" );
-
-    return ( l2c_l2_read (base, L2C_L2ARRACCDO1) | (((uint64_t) l2c_l2_read (base, L2C_L2ARRACCDO0)) << 32) );
+    return data64;
 }
 
 void l2c_arracc_data_write( uint32_t base, uint32_t ext_phys_addr, uint32_t phys_addr, uint64_t data64)
 {
-    int indx;
-    uint32_t data;
-    int32_t cache_way = -1;
-    uint64_t addr64;
+    bool set_data_by_address_ok = l2c_arracc_set_data_by_address( base, ext_phys_addr, phys_addr, data64 );
 
-    addr64 = (((uint64_t) (ext_phys_addr & L2C_EXT_ADDR_MSK)) << 32) + phys_addr;
-    do
-    {
-        cache_way++;
-        l2c_l2_write (base, L2C_L2ARRACCADR, L2C_ARRACCADR_TAG_LRU_ADDR_FIELD(phys_addr) );
-        l2c_l2_write (base, L2C_L2ARRACCCTL,
-                            ( (1 << L2C_L2ARRACCCTL_REQUEST_i)
-                            | (L2C_ARRACC_BufferID_TAG << L2C_L2ARRACCCTL_BUFFERID_i)
-                            | (L2C_ARRACC_ReqType_RD8WOECC << L2C_L2ARRACCCTL_REQTYPE_i)
-                            | (cache_way << L2C_L2ARRACCCTL_L2WAY_i) ));
-
-        indx = 0;
-        while ( (l2c_l2_read (base, L2C_L2ARRACCCTL) & L2C_L2ARRACCCTL_READREQUESTCOMP_mask) && (indx < L2C_ARRACC_TIMEOUT) )
-            indx++;
-        TEST_ASSERT(indx < L2C_ARRACC_TIMEOUT, "Timeout while accessing L2C via DCR.\n" );
-        data = l2c_l2_read (base, L2C_L2ARRACCDO0);
-
-    } while( (cache_way < L2C_COUNT_WAYS-1) && (L2C_TAG_ADDRESS_FROM_64BIT(addr64) != L2C_TAG_ADDRESS_FROM_ARRACCDO0(data)) );
-
-    COMPARE_VALUES( L2C_TAG_ADDRESS_FROM_ARRACCDO0(data), (uint64_t)L2C_TAG_ADDRESS_FROM_64BIT(addr64), "Tag address not found in Tag array.\n");
-
-    l2c_l2_write (base, L2C_L2ARRACCDI0, (uint32_t) (data64 >> 32));
-    l2c_l2_write (base, L2C_L2ARRACCDI1, (uint32_t) (data64 & 0xFFFFFFFF));
-
-    l2c_l2_write (base, L2C_L2ARRACCADR, L2C_ARRACCADR_DATA_ARRAY_ADDR_FIELD(phys_addr) );
-
-    l2c_l2_write (base, L2C_L2ARRACCCTL,
-                        ( (1 << L2C_L2ARRACCCTL_REQUEST_i)
-                        | (L2C_ARRACC_BufferID_DATA << L2C_L2ARRACCCTL_BUFFERID_i)
-                        | (L2C_ARRACC_ReqType_WR8WTECC << L2C_L2ARRACCCTL_REQTYPE_i)
-                        | (cache_way << L2C_L2ARRACCCTL_L2WAY_i)
-                        | (phys_addr << L2C_L2ARRACCCTL_MASKDW_i) ));
-
-    indx = 0;
-    while ( (l2c_l2_read (base, L2C_L2ARRACCCTL) & L2C_L2ARRACCCTL_WRTREQUESTCOMP_mask) && (indx < L2C_ARRACC_TIMEOUT) )
-        indx++;
-    TEST_ASSERT( indx < L2C_ARRACC_TIMEOUT, "Timeout while accessing L2C via DCR.\n");
+    TEST_ASSERT( set_data_by_address_ok, "Data write failed" );
 }
 
 
 void l2c_get_mem_layout( uint32_t const base, struct l2c_mem_layout * const mem_layout ) {
     mem_layout->l2size              = l2c_l2_read(base, L2C_L2CNFG0) & L2C_L2CNFG0_L2SIZE_mask;
-    mem_layout->tag_ecc_mask        = L2C_L2ARRACCDX2_TAG_ECC_mask;
-    mem_layout->lru_mask            = L2C_L2ARRACCDX0_LRU_mask;
-    mem_layout->data_ecc_mask       = L2C_L2ARRACCDX2_DATA_ECC_mask;
+    mem_layout->tag_ecc_i           = L2C_L2ARRACCDX2_TAG_ECC_i;
+    mem_layout->tag_ecc_n           = L2C_L2ARRACCDX2_TAG_ECC_n;
+    mem_layout->lru_i               = L2C_L2ARRACCDX0_LRU_i;
+    mem_layout->lru_n               = L2C_L2ARRACCDX0_LRU_n;
+    mem_layout->data_ecc_i          = L2C_L2ARRACCDX2_DATA_ECC_i;
+    mem_layout->data_ecc_n          = L2C_L2ARRACCDX2_DATA_ECC_n;
     switch( mem_layout->l2size ) {
     case L2C_L2Size_128KB:
         mem_layout->lru_array_size  = 256;
-        mem_layout->tag_mask        = L2C_L2ARRACCDX0_TAG_128KB_mask;
+        mem_layout->tag_i           = L2C_L2ARRACCDX0_TAG_128KB_i;
+        mem_layout->tag_n           = L2C_L2ARRACCDX0_TAG_128KB_n;
         break;
     case L2C_L2Size_256KB:
         mem_layout->lru_array_size  = 512;
-        mem_layout->tag_mask        = L2C_L2ARRACCDX0_TAG_256KB_mask;
+        mem_layout->tag_i           = L2C_L2ARRACCDX0_TAG_256KB_i;
+        mem_layout->tag_n           = L2C_L2ARRACCDX0_TAG_256KB_n;
         break;
     case L2C_L2Size_512KB:
         mem_layout->lru_array_size  = 1024;
-        mem_layout->tag_mask        = L2C_L2ARRACCDX0_TAG_512KB_mask;
+        mem_layout->tag_i           = L2C_L2ARRACCDX0_TAG_512KB_i;
+        mem_layout->tag_n           = L2C_L2ARRACCDX0_TAG_512KB_n;
         break;
     case L2C_L2Size_1MB:
         mem_layout->lru_array_size  = 2048;
-        mem_layout->tag_mask        = L2C_L2ARRACCDX0_TAG_1MB_mask;
+        mem_layout->tag_i           = L2C_L2ARRACCDX0_TAG_1MB_i;
+        mem_layout->tag_n           = L2C_L2ARRACCDX0_TAG_1MB_n;
         break;
     }
     mem_layout->tag_array_size      = 4 * mem_layout->lru_array_size;
