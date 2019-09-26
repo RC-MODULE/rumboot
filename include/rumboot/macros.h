@@ -44,6 +44,7 @@
 #define BIT_FIELD_SIZE( begin, end )    ((end) - (begin) + 1)
 
 #define FIELD_MASK32( i, n )            ( ~(0xFFFFFFFFu << (n)) << (i) )
+#define FIELD_MASK64( i, n )            ( ~(0xFFFFFFFFFFFFFFFFull << (n)) << (i) )
 
 
 #endif /* end of include guard: MACROS_H */
