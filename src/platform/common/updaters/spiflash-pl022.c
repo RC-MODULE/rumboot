@@ -122,6 +122,7 @@ int main()
 	char pdata[64];
 	char buf[4096];
 	int i;
+	rumboot_platform_runtime_info->silent = false;
     const struct rumboot_bootsource *src = &rumboot_platform_get_bootsources()[BOOT_ID];
 
 	bootsource_init(src, (void *) pdata);

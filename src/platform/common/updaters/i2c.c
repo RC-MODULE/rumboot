@@ -146,6 +146,7 @@ int main()
 {
 	char pdata[64];
 	char buf[TRANSFER_CHUNK];
+	rumboot_platform_runtime_info->silent = false;
 	bootsource_init(src, (void *) pdata);
 	size_t ret = bootsource_read(src, (void *) pdata, buf, 0, 512);
 	rumboot_printf("Read %d bytes\n", ret);
