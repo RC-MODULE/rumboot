@@ -16,6 +16,12 @@
 #include <platform/test_event_c.h>
 #include <rumboot/boot.h>
 
+void rumboot_platform_exit(int status) {
+    dbg_boot(NULL, "Back in rom, code %d", status);
+    
+}
+
+
 
 int64_t rumboot_virt_to_phys(volatile void *addr)
 {
