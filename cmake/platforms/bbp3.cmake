@@ -303,6 +303,14 @@ endif()
       CFLAGS -DUARTRX_BASE=UART0_Base -DUARTTX_BASE=UART1_Base -DUARTRX_INT=UART0_INT -DUARTTX_INT=UART1_INT -DCHECK_REGISTERS
       PREFIX uart0
     )
+
+    add_rumboot_target(
+      CONFIGURATION IRAM_SPL
+      FILES common/updaters/spiflash-pl022.c
+      CFLAGS -DBOOT_ID=0
+      PREFIX updater
+      NAME spi0-cs0
+    )
   
 
 endmacro()
