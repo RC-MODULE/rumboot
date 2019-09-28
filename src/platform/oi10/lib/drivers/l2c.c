@@ -12,59 +12,51 @@
 
 //#define L2C_TRACE_DEBUG_MSG
 
-void l2c_global_enable_interrupt( uint32_t const l2c_dcr_base, L2INTEN_bits_t const mask )
-{
+void l2c_global_enable_interrupt( uint32_t const l2c_dcr_base, L2INTEN_bits_t const mask ) {
     l2c_l2_write (l2c_dcr_base, L2C_L2INTEN, l2c_l2_read (l2c_dcr_base, L2C_L2INTEN) | mask );
 }
 
-void l2c_global_mck_enable( uint32_t const l2c_dcr_base, L2MCKEN_bits_t const mask )
-{
+void l2c_global_mck_enable( uint32_t const l2c_dcr_base, L2MCKEN_bits_t const mask ) {
     l2c_l2_write (l2c_dcr_base, L2C_L2MCKEN, l2c_l2_read (l2c_dcr_base, L2C_L2MCKEN) | mask );
 }
 
-void l2c_global_mck_disable( uint32_t const l2c_dcr_base, L2MCKEN_bits_t const mask )
-{
+void l2c_global_mck_disable( uint32_t const l2c_dcr_base, L2MCKEN_bits_t const mask ) {
     uint32_t value = l2c_l2_read (l2c_dcr_base, L2C_L2MCKEN) & ~mask;
     l2c_l2_write (l2c_dcr_base, L2C_L2MCKEN, value);
     TEST_ASSERT( l2c_l2_read (l2c_dcr_base, L2C_L2MCKEN) == value, "Error setting L2MCKEN" );
 }
 
-void l2c_pmu_set_CE_bit( uint32_t const pmu_dcr_base, L2C_PMUREG const dcr_index )
-{
+void l2c_pmu_set_CE_bit( uint32_t const pmu_dcr_base, L2C_PMUREG const dcr_index ) {
     l2c_pmu_write (pmu_dcr_base, dcr_index, l2c_pmu_read (pmu_dcr_base, dcr_index) | PMULCX_CE );
 }
 
-void l2c_pmu_enable_interrupt( uint32_t const pmu_dcr_base, L2C_PMUREG const dcr_index, uint32_t const mask )
-{
+void l2c_pmu_enable_interrupt( uint32_t const pmu_dcr_base, L2C_PMUREG const dcr_index, uint32_t const mask ) {
     l2c_pmu_write (pmu_dcr_base, dcr_index, l2c_pmu_read (pmu_dcr_base, dcr_index) | mask );
 }
 
-void l2c_pmu_disable_interrupt( uint32_t const pmu_dcr_base, L2C_PMUREG const dcr_index, uint32_t const mask )
-{
+void l2c_pmu_disable_interrupt( uint32_t const pmu_dcr_base, L2C_PMUREG const dcr_index, uint32_t const mask ) {
     l2c_pmu_write (pmu_dcr_base, dcr_index, l2c_pmu_read (pmu_dcr_base, dcr_index) & ~mask );
 }
 
-void l2c_pmu_clear_interrupt( uint32_t const pmu_dcr_base )
-{
+void l2c_pmu_clear_interrupt( uint32_t const pmu_dcr_base ) {
     l2c_pmu_write (pmu_dcr_base, L2C_PMUIS0, l2c_pmu_read (pmu_dcr_base, L2C_PMUIS0) );
 }
 
-void l2c_pmu_set_cx( uint32_t const pmu_dcr_base, L2C_PMUREG const dcr_index, uint32_t const value )
-{
+void l2c_pmu_set_cx( uint32_t const pmu_dcr_base, L2C_PMUREG const dcr_index, uint32_t const value ) {
     l2c_pmu_write (pmu_dcr_base, dcr_index, value);
 }
 
-void l2c_enable_interrupt( uint32_t const l2c_dcr_base, L2C_L2REG const l2c_int_reg_index, uint32_t const mask )
-{
+void l2c_enable_interrupt( uint32_t const l2c_dcr_base, L2C_L2REG const l2c_int_reg_index, uint32_t const mask ) {
     l2c_l2_write (l2c_dcr_base, l2c_int_reg_index, l2c_l2_read(l2c_dcr_base, l2c_int_reg_index) | mask );
 }
 
 #define L2C_ARRACC_TIMEOUT                 (0x00000020)
 
-bool l2c_arracc_tag_info_read_by_way( uint32_t const base, uint32_t const ext_phys_addr, uint32_t const phys_addr, int32_t const cache_way,
-        volatile uint32_t* tag_info )
-{
-    int32_t  indx = 0;
+bool l2c_arracc_tag_info_read_by_way(
+        uint32_t const base,
+        uint32_t const ext_phys_addr, uint32_t const phys_addr, int const cache_way,
+        uint32_t * const tag_info
+) {
     bool valid = false;
 
 #ifdef L2C_TRACE_DEBUG_MSG
@@ -81,28 +73,28 @@ bool l2c_arracc_tag_info_read_by_way( uint32_t const base, uint32_t const ext_ph
                         | (L2C_ARRACC_ReqType_RD8WOECC << L2C_L2ARRACCCTL_REQTYPE_i)
                         | (cache_way << L2C_L2ARRACCCTL_L2WAY_i) ));
 
-    while ( !(l2c_l2_read (base, L2C_L2ARRACCCTL) & L2C_L2ARRACCCTL_READREQUESTCOMP_mask) && (indx < L2C_ARRACC_TIMEOUT) )
-        indx++;
-    valid = (indx < L2C_ARRACC_TIMEOUT);
+    int t = 0;
+    while ( (valid = (t < L2C_ARRACC_TIMEOUT))
+         && !(l2c_l2_read (base, L2C_L2ARRACCCTL) & L2C_L2ARRACCCTL_READREQUESTCOMP_mask) )
+        t++;
 
-    if (valid)
-    {
+    if (valid) {
         *tag_info = l2c_l2_read (base, L2C_L2ARRACCDO0);
 #ifdef L2C_TRACE_DEBUG_MSG
         rumboot_printf ("tag_info == %x\n", *tag_info);
 #endif
-    }
-    else
-    {
+    } else {
         rumboot_printf ("Timeout while accessing L2C via DCR.\n");
     }
 
     return valid;
 }
 
-bool l2c_arracc_tag_info_write_by_way_wo_gen_ecc( uint32_t base, uint32_t ext_phys_addr, uint32_t phys_addr, int32_t cache_way,
-        uint32_t cache_data, uint32_t ecc_data)
-{
+bool l2c_arracc_tag_info_write_by_way_wo_gen_ecc(
+        uint32_t const base,
+        uint32_t const ext_phys_addr, uint32_t const phys_addr, int const cache_way,
+        uint32_t const cache_data, uint32_t const ecc_data
+) {
     bool valid = false;
 
 #ifdef L2C_TRACE_DEBUG_MSG
@@ -124,21 +116,22 @@ bool l2c_arracc_tag_info_write_by_way_wo_gen_ecc( uint32_t base, uint32_t ext_ph
                         | (cache_way << L2C_L2ARRACCCTL_L2WAY_i) ));
 
     int t = 0;
-    while ( !(l2c_l2_read (base, L2C_L2ARRACCCTL) & L2C_L2ARRACCCTL_WRTREQUESTCOMP_mask)
-         && (valid = (t < L2C_ARRACC_TIMEOUT)) )
+    while ( (valid = (t < L2C_ARRACC_TIMEOUT))
+         && !(l2c_l2_read (base, L2C_L2ARRACCCTL) & L2C_L2ARRACCCTL_WRTREQUESTCOMP_mask) )
         t++;
 
-    if (!valid)
-    {
+    if (!valid) {
         rumboot_printf ("Timeout while accessing L2C via DCR.\n");
     }
 
     return valid;
 }
 
-bool l2c_arracc_lru_info_read_by_way( uint32_t base, uint32_t ext_phys_addr, uint32_t phys_addr, int32_t cache_way,
-        volatile uint32_t* lru_info )
-{
+bool l2c_arracc_lru_info_read(
+        uint32_t const base,
+        uint32_t const ext_phys_addr, uint32_t const phys_addr,
+        uint32_t * const lru_info
+) {
     bool valid = false;
 
     l2c_l2_write (base, L2C_L2ARRACCADR, ((phys_addr >> L2C_ARRAY_ADDR_LRU_i) << L2C_L2ARRACCADR_LRU_i) );
@@ -149,25 +142,24 @@ bool l2c_arracc_lru_info_read_by_way( uint32_t base, uint32_t ext_phys_addr, uin
                         | (L2C_ARRACC_ReqType_RD8WOECC << L2C_L2ARRACCCTL_REQTYPE_i) ));
 
     int t = 0;
-    while ( !(l2c_l2_read( base, L2C_L2ARRACCCTL ) & L2C_L2ARRACCCTL_READREQUESTCOMP_mask)
-         && (valid = (t < L2C_ARRACC_TIMEOUT)) )
+    while ( (valid = (t < L2C_ARRACC_TIMEOUT))
+         && !(l2c_l2_read( base, L2C_L2ARRACCCTL ) & L2C_L2ARRACCCTL_READREQUESTCOMP_mask) )
         t++;
 
-    if (valid)
-    {
+    if (valid) {
         *lru_info = l2c_l2_read( base, L2C_L2ARRACCDO0 );
-    }
-    else
-    {
+    } else {
         rumboot_printf ("Timeout while accessing L2C via DCR.\n");
     }
 
     return valid;
 }
 
-bool l2c_arracc_data_read_by_way( uint32_t base, uint32_t ext_phys_addr, uint32_t phys_addr, int32_t cache_way,
-        volatile uint64_t* cache_data )
-{
+bool l2c_arracc_data_read_by_way(
+        uint32_t const base,
+        uint32_t const ext_phys_addr, uint32_t const phys_addr, int const cache_way,
+        uint64_t * const cache_data
+) {
     bool valid = false;
 
 #ifdef L2C_TRACE_DEBUG_MSG
@@ -185,29 +177,28 @@ bool l2c_arracc_data_read_by_way( uint32_t base, uint32_t ext_phys_addr, uint32_
                         | ((0b10000000 >> GET_BITS(phys_addr, L2C_ARRAY_ADDR_DATA_DW_i, L2C_ARRAY_ADDR_DATA_DW_n)) << L2C_L2ARRACCCTL_MASKDW_i) ));
 
     int t = 0;
-    while ( !(l2c_l2_read (base, L2C_L2ARRACCCTL) & L2C_L2ARRACCCTL_READREQUESTCOMP_mask)
-         && (valid = (t < L2C_ARRACC_TIMEOUT)) )
+    while ( (valid = (t < L2C_ARRACC_TIMEOUT))
+         && !(l2c_l2_read (base, L2C_L2ARRACCCTL) & L2C_L2ARRACCCTL_READREQUESTCOMP_mask) )
         t++;
 
-    if (valid)
-    {
+    if (valid) {
         *cache_data =  l2c_l2_read (base, L2C_L2ARRACCDO1) | ( (uint64_t) l2c_l2_read(base, L2C_L2ARRACCDO0) << 32 ) ;
 #ifdef L2C_TRACE_DEBUG_MSG
-        rumboot_printf ("cache_data upper == %x\n", (uint32_t) ((*cache_data) >> 32) );
+        rumboot_printf ("cache_data upper == %x\n", (uint32_t) (*cache_data >> 32) );
         rumboot_printf ("cache_data lower == %x\n", (uint32_t) (*cache_data & 0xFFFFFFFF) );
 #endif
-    }
-    else
-    {
+    } else {
         rumboot_printf ("Timeout while accessing L2C via DCR.\n");
     }
 
     return valid;
 }
 
-bool l2c_arracc_data_write_by_way( uint32_t base, uint32_t ext_phys_addr, uint32_t phys_addr, int32_t cache_way,
-        uint64_t cache_data )
-{
+bool l2c_arracc_data_write_by_way(
+        uint32_t const base,
+        uint32_t const ext_phys_addr, uint32_t const phys_addr, int const cache_way,
+        uint64_t const cache_data
+) {
     bool valid = false;
     uint32_t cache_data_upper = (uint32_t)(cache_data >> 32);
     uint32_t cache_data_lower = (uint32_t)(cache_data & 0xFFFFFFFF);
@@ -232,21 +223,22 @@ bool l2c_arracc_data_write_by_way( uint32_t base, uint32_t ext_phys_addr, uint32
                         | ((0b10000000 >> GET_BITS(phys_addr, L2C_ARRAY_ADDR_DATA_DW_i, L2C_ARRAY_ADDR_DATA_DW_n)) << L2C_L2ARRACCCTL_MASKDW_i) ));
 
     int t = 0;
-    while ( !(l2c_l2_read (base, L2C_L2ARRACCCTL) & L2C_L2ARRACCCTL_WRTREQUESTCOMP_mask)
-         && (valid = (t < L2C_ARRACC_TIMEOUT)) )
+    while ( (valid = (t < L2C_ARRACC_TIMEOUT))
+         && !(l2c_l2_read (base, L2C_L2ARRACCCTL) & L2C_L2ARRACCCTL_WRTREQUESTCOMP_mask) )
         t++;
 
-    if(!valid)
-    {
+    if (!valid) {
         rumboot_printf ("Timeout while accessing L2C via DCR.\n");
     }
 
     return valid;
 }
 
-bool l2c_arracc_data_write_by_way_wo_gen_ecc( uint32_t base, uint32_t ext_phys_addr, uint32_t phys_addr, int32_t cache_way,
-        uint64_t cache_data, uint32_t ecc_data)
-{
+bool l2c_arracc_data_write_by_way_wo_gen_ecc(
+        uint32_t const base,
+        uint32_t const ext_phys_addr, uint32_t const phys_addr, int const cache_way,
+        uint64_t const cache_data, uint32_t const ecc_data
+) {
     bool valid = false;
     uint32_t cache_data_upper = (uint32_t)(cache_data >> 32);
     uint32_t cache_data_lower = (uint32_t)(cache_data & 0xFFFFFFFF);
@@ -273,22 +265,23 @@ bool l2c_arracc_data_write_by_way_wo_gen_ecc( uint32_t base, uint32_t ext_phys_a
                         | ((0b10000000 >> GET_BITS(phys_addr, L2C_ARRAY_ADDR_DATA_DW_i, L2C_ARRAY_ADDR_DATA_DW_n)) << L2C_L2ARRACCCTL_MASKDW_i) ));
 
     int t = 0;
-    while ( !(l2c_l2_read (base, L2C_L2ARRACCCTL) & L2C_L2ARRACCCTL_WRTREQUESTCOMP_mask)
-         && (valid = (t < L2C_ARRACC_TIMEOUT)) )
+    while ( (valid = (t < L2C_ARRACC_TIMEOUT))
+         && !(l2c_l2_read (base, L2C_L2ARRACCCTL) & L2C_L2ARRACCCTL_WRTREQUESTCOMP_mask) )
         t++;
 
-    if(!valid)
-    {
+    if (!valid) {
         rumboot_printf ("Timeout while accessing L2C via DCR.\n");
     }
 
     return valid;
 }
 
-bool l2c_arracc_get_way_by_address( uint32_t base, uint32_t ext_phys_addr, uint32_t phys_addr,
-        volatile int32_t* cache_way )
+bool l2c_arracc_get_way_by_address(
+        uint32_t const base,
+        uint32_t const ext_phys_addr, uint32_t const phys_addr,
+        int * const cache_way )
 {
-    uint64_t full_phys_addr = ((uint64_t)ext_phys_addr) << 32 | phys_addr;
+    uint64_t const full_phys_addr = ((uint64_t)ext_phys_addr) << 32 | phys_addr;
     uint32_t tag_info;
     bool tag_valid;
     uint32_t phys_addr_tag, tag_info_tag;
@@ -311,8 +304,7 @@ bool l2c_arracc_get_way_by_address( uint32_t base, uint32_t ext_phys_addr, uint3
 
     *cache_way = -1;
 
-    do
-    {
+    do {
         (*cache_way)++;
         tag_valid       = l2c_arracc_tag_info_read_by_way (base, ext_phys_addr, phys_addr, *cache_way, &tag_info);
         tag_info_tag    = GET_BITS(tag_info, mem_layout.tag_i, tag_address_n);
@@ -322,9 +314,8 @@ bool l2c_arracc_get_way_by_address( uint32_t base, uint32_t ext_phys_addr, uint3
         rumboot_printf ("tag_valid == %x\n", tag_valid);
         rumboot_printf ("tag_info_tag == %x\n", tag_info_tag);
 #endif
-
     } while (
-        ((*cache_way) < L2C_COUNT_WAYS-1)
+        (*cache_way < L2C_COUNT_WAYS-1)
     &&  ( !tag_valid || (phys_addr_tag != tag_info_tag) )
     );
 
@@ -332,12 +323,9 @@ bool l2c_arracc_get_way_by_address( uint32_t base, uint32_t ext_phys_addr, uint3
     rumboot_printf ("l2c_arracc_get_way_by_address loop finished\n");
 #endif
 
-    if ( tag_valid && (phys_addr_tag == tag_info_tag) )
-    {
+    if ( tag_valid && (phys_addr_tag == tag_info_tag) ) {
         return true;
-    }
-    else
-    {
+    } else {
 #ifdef L2C_TRACE_DEBUG_MSG
         rumboot_printf ("Tag address not found in Tag array.\n");
 #endif
@@ -345,28 +333,31 @@ bool l2c_arracc_get_way_by_address( uint32_t base, uint32_t ext_phys_addr, uint3
     }
 }
 
-bool l2c_arracc_get_data_by_address( uint32_t base, uint32_t ext_phys_addr, uint32_t phys_addr,
-        volatile uint64_t* data64 )
-{
-    int32_t cache_way;
+bool l2c_arracc_get_data_by_address(
+        uint32_t const base,
+        uint32_t const ext_phys_addr, uint32_t const phys_addr,
+        uint64_t * const data64
+) {
+    int cache_way;
 
 #ifdef L2C_TRACE_DEBUG_MSG
     rumboot_printf ("l2c_arracc_get_data_by_address\n");
     rumboot_printf ("address == %x_%x\n", ext_phys_addr, phys_addr);
 #endif
 
-    if (l2c_arracc_get_way_by_address (base, ext_phys_addr, phys_addr, &cache_way))
-    {
+    if (l2c_arracc_get_way_by_address (base, ext_phys_addr, phys_addr, &cache_way)) {
         return l2c_arracc_data_read_by_way (base, ext_phys_addr, phys_addr, cache_way, data64);
     }
 
     return false;
 }
 
-bool l2c_arracc_set_data_by_address( uint32_t base, uint32_t ext_phys_addr, uint32_t phys_addr,
-        uint64_t data64 )
-{
-    int32_t cache_way;
+bool l2c_arracc_set_data_by_address(
+        uint32_t const base,
+        uint32_t const ext_phys_addr, uint32_t const phys_addr,
+        uint64_t const data64
+) {
+    int cache_way;
 
 #ifdef L2C_TRACE_DEBUG_MSG
     rumboot_printf ("l2c_arracc_set_data_by_address\n" );
@@ -375,33 +366,39 @@ bool l2c_arracc_set_data_by_address( uint32_t base, uint32_t ext_phys_addr, uint
     rumboot_printf ("data64 lower == %x\n", (uint32_t)(data64 & 0xFFFFFFFF) );
 #endif
 
-    if (l2c_arracc_get_way_by_address (base, ext_phys_addr, phys_addr, &cache_way))
-    {
+    if (l2c_arracc_get_way_by_address (base, ext_phys_addr, phys_addr, &cache_way)) {
         return l2c_arracc_data_write_by_way (base, ext_phys_addr, phys_addr, cache_way, data64);
     }
 
     return false;
 }
 
-uint64_t l2c_arracc_data_read( uint32_t base, uint32_t ext_phys_addr, uint32_t phys_addr )
-{
+uint64_t l2c_arracc_data_read(
+        uint32_t const base,
+        uint32_t const ext_phys_addr, uint32_t const phys_addr
+) {
     uint64_t data64;
-    bool get_data_by_address_ok = l2c_arracc_get_data_by_address( base, ext_phys_addr, phys_addr, &data64 );
 
+    bool get_data_by_address_ok = l2c_arracc_get_data_by_address( base, ext_phys_addr, phys_addr, &data64 );
     TEST_ASSERT( get_data_by_address_ok, "Data read failed" );
 
     return data64;
 }
 
-void l2c_arracc_data_write( uint32_t base, uint32_t ext_phys_addr, uint32_t phys_addr, uint64_t data64)
-{
+void l2c_arracc_data_write(
+        uint32_t const base,
+        uint32_t const ext_phys_addr, uint32_t const phys_addr,
+        uint64_t const data64
+) {
     bool set_data_by_address_ok = l2c_arracc_set_data_by_address( base, ext_phys_addr, phys_addr, data64 );
-
     TEST_ASSERT( set_data_by_address_ok, "Data write failed" );
 }
 
 
-void l2c_get_mem_layout( uint32_t const base, struct l2c_mem_layout * const mem_layout ) {
+void l2c_get_mem_layout(
+        uint32_t const base,
+        struct l2c_mem_layout * const mem_layout
+) {
     mem_layout->l2size              = l2c_l2_read(base, L2C_L2CNFG0) & L2C_L2CNFG0_L2SIZE_mask;
     mem_layout->tag_ecc_i           = L2C_L2ARRACCDX2_TAG_ECC_i;
     mem_layout->tag_ecc_n           = L2C_L2ARRACCDX2_TAG_ECC_n;
