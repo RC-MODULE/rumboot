@@ -45,7 +45,7 @@ BEGIN_ENUM(PSEUDO_CT_DECODING)
     DECLARE_ENUM_VAL(   PSEUDO_CT_DECODING_IS_L2_mask,     FIELD_MASK32( PSEUDO_CT_DECODING_IS_L2_i, PSEUDO_CT_DECODING_IS_L2_n ) )
 END_ENUM(PSEUDO_CT_DECODING)
 
-bool get_valid_way_by_addr(uint32_t pseudo_CT, void* addr, int32_t* cache_way)
+static bool get_valid_way_by_addr(uint32_t pseudo_CT, void* addr, int* cache_way)
 {
     uint64_t    phys_addr = 0;
     uint32_t    reg_xCDBTRH;
@@ -78,16 +78,16 @@ bool get_valid_way_by_addr(uint32_t pseudo_CT, void* addr, int32_t* cache_way)
         rumboot_printf("l2c_arracc_get_valid_way_by_address(0x%x)\n",addr);
 #endif
         if( l2c_arracc_get_way_by_address(DCR_L2C_BASE,
-                    (uint32_t)((phys_addr >> 32) & 0xffffffff),
-                    (uint32_t)((phys_addr      ) & 0xffffffff),
+                    (uint32_t)(phys_addr >> 32),
+                    (uint32_t)(phys_addr & 0xffffffff),
                     cache_way
                     ))
         {
             if(l2c_arracc_tag_info_read_by_way( DCR_L2C_BASE,
-                    (uint32_t)((phys_addr >> 32) & 0xffffffff),
-                    (uint32_t)((phys_addr      ) & 0xffffffff),
+                    (uint32_t)(phys_addr >> 32),
+                    (uint32_t)(phys_addr & 0xffffffff),
                     *cache_way, &tag_info ))
-                return (((tag_info & L2C_L2ARRACCDX0_TAG_CACHE_STATE_mask) >> L2C_L2ARRACCDX0_TAG_CACHE_STATE_i)
+                return (GET_BITS(tag_info, L2C_L2ARRACCDX0_TAG_CACHE_STATE_i, L2C_L2ARRACCDX0_TAG_CACHE_STATE_n)
                         != L2C_TAG_CacheState_I);
             else
                 return false;
@@ -146,7 +146,7 @@ bool get_valid_way_by_addr(uint32_t pseudo_CT, void* addr, int32_t* cache_way)
     return false;
 }
 
-uint32_t get_locks(uint32_t pseudo_CT, void* addr, uint32_t cache_way)
+uint32_t get_locks(uint32_t pseudo_CT, void* addr)
 {
     uint32_t    result = -1;
     uint64_t    phys_addr = rumboot_virt_to_phys(addr);
@@ -156,14 +156,13 @@ uint32_t get_locks(uint32_t pseudo_CT, void* addr, uint32_t cache_way)
 
     if(CT == 2)
     {
-        if(l2c_arracc_lru_info_read_by_way(DCR_L2C_BASE,
-                    (uint32_t)((phys_addr >> 32) & 0xffffffff),
-                    (uint32_t)((phys_addr      ) & 0xffffffff),
-                    cache_way,
+        if(l2c_arracc_lru_info_read(DCR_L2C_BASE,
+                    (uint32_t)(phys_addr >> 32),
+                    (uint32_t)(phys_addr & 0xffffffff),
                     &L2C_LRU_info
                     ))
         {
-            result = ( L2C_LRU_info & L2C_L2ARRACCDX0_LRU_LOCK_BITS_mask ) >> L2C_L2ARRACCDX0_LRU_LOCK_BITS_i;
+            result = GET_BITS(L2C_LRU_info, L2C_L2ARRACCDX0_LRU_LOCK_BITS_i, L2C_L2ARRACCDX0_LRU_LOCK_BITS_n);
         }
     } else if(CT == 0)
     {
@@ -184,7 +183,7 @@ uint32_t    (*test_function_buf[COUNT_AREAS])();
 
 uint32_t check_caches( uint32_t    (*array_of_addr[])(), bool expected_in_cache, uint32_t pseudo_CT, char* test_name){
     bool        found_in_cache;
-    int32_t     cache_way;
+    int         cache_way;
     uint32_t    result = 0;
     for(uint32_t i = 0; i < L2C_COUNT_WAYS; ++i)
     {
@@ -593,7 +592,7 @@ uint32_t test_xcbtls_xcblc(xCBTxLS opcode_type,char* test_name)
 {
     uint32_t    result = 0;
     uint32_t    locks = 0;
-    int32_t     cache_way = -1;
+    int         cache_way = -1;
     bool        found_in_L1 = false;
     rumboot_printf("%s start\n",test_name);
     for(uint32_t cache_level = 1; cache_level < 3; cache_level++)
@@ -652,8 +651,7 @@ uint32_t test_xcbtls_xcblc(xCBTxLS opcode_type,char* test_name)
             lwsync();
             isync();
             locks = get_locks((((cache_level == 1)?0:2) | ((opcode_type == xCBTxLS_ICBTLS) ? PSEUDO_CT_DECODING_IS_L1I_mask : PSEUDO_CT_DECODING_IS_L1D_val)),
-                        test_function_buf[i],
-                        i);
+                        test_function_buf[i]);
             if(locks ^ (1 << ((L2C_COUNT_WAYS - 1) - i)))
             {
                 switch(opcode_type)
@@ -714,8 +712,7 @@ uint32_t test_xcbtls_xcblc(xCBTxLS opcode_type,char* test_name)
             lwsync();
             isync();
             locks = get_locks((((cache_level == 1)?0:2) | ((opcode_type == xCBTxLS_ICBTLS) ? PSEUDO_CT_DECODING_IS_L1I_mask : PSEUDO_CT_DECODING_IS_L1D_val)),
-                        test_function_buf[i],
-                        i);
+                        test_function_buf[i]);
             if(locks)
             {
                 rumboot_printf("ERROR!!! For test_function_buf[%d] after %s locks are 0x%x.\n", i,

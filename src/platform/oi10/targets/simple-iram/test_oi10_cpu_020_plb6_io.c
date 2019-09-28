@@ -237,8 +237,8 @@ static void  clear_test_fields (uint32_t clear_value, uint32_t source, uint32_t 
 void check_target_is_invalidated_in_l2c (uint32_t l2c_base, uint32_t target, bool assert)
 {
     uint64_t physical_addr;
-    volatile uint32_t tag_data;
-    volatile int32_t  way;
+    uint32_t tag_data;
+    int  way;
     rumboot_printf("check_target_is_invalidated_in_l2c\n");
     physical_addr = get_physical_addr (target, 0);
     rumboot_printf("physical_addr low == %x\n", (uint32_t)(physical_addr & 0xFFFFFFFF));
