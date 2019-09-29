@@ -49,14 +49,12 @@ endif()
 if (OI10_IRAM_IM0)
   set(IRAM_LDS_FILE oi10/iram_legacy.lds)
   set(STUB_LDS_FILE oi10/bootrom_legacy.lds)
-  set(EXTRA_STUB_FLAGS )
+  set(EXTRA_STUB_FLAGS -DUTLB_EXT_MEM_NOR_ONLY)
   message(WARNING "Tests will run from IM0. This configuration is legacy and will be removed in future")
 else()
   set(IRAM_LDS_FILE oi10/iram.lds)
   set(STUB_LDS_FILE oi10/bootrom.lds )
-  #TODO: Fix stub when initial test run is complete
-  #  set(EXTRA_STUB_FLAGS -DUTLB_EXT_MEM_NOR_ONLY)
-  set(EXTRA_STUB_FLAGS )
+  set(EXTRA_STUB_FLAGS -DUTLB_EXT_MEM_NOR_ONLY)
 endif()
 
 rumboot_add_configuration(
