@@ -20,7 +20,7 @@
 
 // xmodem timeout/retry parameters
 #define XMODEM_TIMEOUT_DELAY	1000000
-#define XMODEM_RETRY_LIMIT		64
+#define XMODEM_RETRY_LIMIT		128
 
 // error return codes
 #define XMODEM_ERROR_REMOTECANCEL	-1
@@ -30,6 +30,7 @@
 
 
 size_t xmodem_get( char *to, size_t maxszs);
+size_t xmodem_get_async(size_t maxszs, void (*recv_cb)(size_t curpos, void *ptr, size_t length, void *arg), void *arg);
 
 
 #endif

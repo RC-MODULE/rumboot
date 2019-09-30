@@ -60,7 +60,14 @@ void xmodem_flush_input(void)
 	while(rumboot_getchar(XMODEM_TIMEOUT_DELAY) >= 0);
 }
 
-size_t xmodem_get( char *to, size_t maxszs)
+static void memcpy_cb(size_t curpos, void *data, size_t length, void *arg)
+{
+	char *to = arg;
+	memcpy(&to[curpos], data, length);
+}
+
+
+size_t xmodem_get_async(size_t maxszs, void (*recv_cb)(size_t curpos, void *ptr, size_t length, void *arg), void *arg)
 {
 	unsigned char xmbuf[XMODEM_BUFFER_SIZE+6];
 	unsigned char seqnum=1;
@@ -133,7 +140,7 @@ size_t xmodem_get( char *to, size_t maxszs)
 			if(xmbuf[1] == seqnum)
 			{
 				// write/deliver data
-				memcpy(&to[pos], &xmbuf[3], pktsize);
+				recv_cb(pos, &xmbuf[3], pktsize, arg);
 				pos += pktsize;
 				totalbytes += pktsize;
 				seqnum++;
@@ -169,4 +176,9 @@ size_t xmodem_get( char *to, size_t maxszs)
 	rumboot_platform_putchar(CAN);
 	rumboot_platform_putchar(CAN);
 	return XMODEM_ERROR_RETRYEXCEED;
+}
+
+size_t xmodem_get( char *to, size_t maxszs)
+{
+	return xmodem_get_async(maxszs, memcpy_cb, to);
 }
