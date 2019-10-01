@@ -343,6 +343,7 @@ struct l2c_mem_layout {
 void l2c_get_mem_layout( uint32_t base, struct l2c_mem_layout * mem_layout );
 
 uint64_t l2c_read_mem( uint32_t base, struct l2c_mem_layout const * mem_layout, l2c_mem_t mem_type, uint32_t index );
+void l2c_write_mem( uint32_t base, struct l2c_mem_layout const * mem_layout, l2c_mem_t mem_type, uint32_t index, uint64_t data );
 
 
 #endif  /* L2C_H */
