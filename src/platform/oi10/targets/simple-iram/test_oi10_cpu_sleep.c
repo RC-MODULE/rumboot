@@ -42,10 +42,8 @@
 #define EVENT_TIME_2                        (TEST_EVENT_CODE_MIN + 1)
 #define EVENT_START_MONITORS                (TEST_EVENT_CODE_MIN + 2)
 
-#define DELAY                               (0x2100)   // external, MPIC
-#define DELAY2                              (0x10000)  // DEC, FIT, Watchdog
-
-#define DELTA                               (100)
+#define DELAY                               (0x2100)   // DIT, MPIC (25MHz - 40 ns)
+#define DELAY2                              (0x10000)  // DEC, FIT, Watchdog (200MHz - 5 ns)
 
 static void msr_ext_int_enable (void){
     msr_write (msr_read() | (1 << ITRPT_XSR_EE_i ));
@@ -309,52 +307,52 @@ int main ()
     //MPIC Timer0
     rumboot_printf("Generate MPIC Timer0 interrupt...\n");
     mpic_tim0_generate_interrupt(DELAY);
-    uint32_t start_mpic = rumboot_platform_get_uptime();
+    uint32_t start_mpic = rumboot_platform_get_uptime();    // in us
     test_event(EVENT_TIME_1);
     rumboot_printf("Enter sleep mode\n");
     ppc470s_enter_sleep_mode(SCTL_PPC_SLP_CPU_SLP);
     test_event(EVENT_TIME_2);
-    TEST_ASSERT(rumboot_platform_get_uptime() - start_mpic > DELTA, "SLEEP MODE ERROR");
+    TEST_ASSERT(rumboot_platform_get_uptime() - start_mpic > DELAY/25, "SLEEP MODE ERROR");
 
     //DIT0
     rumboot_printf("Generate DIT0 interrupt...\n");
     dit0_generate_interrupt(DELAY);
-    uint32_t start_dit0 = rumboot_platform_get_uptime();
+    uint32_t start_dit0 = rumboot_platform_get_uptime();    // in us
     test_event(EVENT_TIME_1);
     rumboot_printf("Enter sleep mode\n");
     ppc470s_enter_sleep_mode(SCTL_PPC_SLP_CPU_SLP);
     test_event(EVENT_TIME_2);
-    TEST_ASSERT(rumboot_platform_get_uptime() - start_dit0 > DELTA, "SLEEP MODE ERROR");
+    TEST_ASSERT(rumboot_platform_get_uptime() - start_dit0 > DELAY/25, "SLEEP MODE ERROR");
 
     //DEC
     rumboot_printf("Generate DEC interrupt...\n");
     dec_generate_interrupt(DELAY2);
-    uint32_t start_dec = rumboot_platform_get_uptime();
+    uint32_t start_dec = rumboot_platform_get_uptime();     // in us
     test_event(EVENT_TIME_1);
     rumboot_printf("Enter sleep mode\n");
     ppc470s_enter_sleep_mode(SCTL_PPC_SLP_CPU_SLP);
     test_event(EVENT_TIME_2);
-    TEST_ASSERT(rumboot_platform_get_uptime() - start_dec > DELTA, "SLEEP MODE ERROR");
+    TEST_ASSERT(rumboot_platform_get_uptime() - start_dec > DELAY2/200, "SLEEP MODE ERROR");
 
     //FIT
     rumboot_printf("Generate FIT interrupt...\n");
     fit_generate_interrupt(DELAY2);
-    uint32_t start_fit = rumboot_platform_get_uptime();
+    uint32_t start_fit = rumboot_platform_get_uptime();     // in us
     test_event(EVENT_TIME_1);
     rumboot_printf("Enter sleep mode\n");
     ppc470s_enter_sleep_mode(SCTL_PPC_SLP_CPU_SLP);
     test_event(EVENT_TIME_2);
-    TEST_ASSERT(rumboot_platform_get_uptime() - start_fit > DELTA, "SLEEP MODE ERROR");
+    TEST_ASSERT(rumboot_platform_get_uptime() - start_fit > DELAY2/200, "SLEEP MODE ERROR");
 
     //WatchDog
     rumboot_printf("Generate WD interrupt...\n");
     wd_generate_interrupt(DELAY2);
-    uint32_t start_wd = rumboot_platform_get_uptime();
+    uint32_t start_wd = rumboot_platform_get_uptime();      // in us
     test_event(EVENT_TIME_1);
     rumboot_printf("Enter sleep mode\n");
     ppc470s_enter_sleep_mode(SCTL_PPC_SLP_CPU_SLP);
     test_event(EVENT_TIME_2);
-    TEST_ASSERT(rumboot_platform_get_uptime() - start_wd > DELTA, "SLEEP MODE ERROR");
+    TEST_ASSERT(rumboot_platform_get_uptime() - start_wd > DELAY2/200, "SLEEP MODE ERROR");
 
     return 0;
 }
