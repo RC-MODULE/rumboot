@@ -296,6 +296,30 @@ void check_mkio_txinh_switch_via_gpio(uint8_t exp_state)
     rumboot_putstring("Checking {MK1_TXINHB, MK1_TXINHA, MK0_TXINHB, MK0_TXINHA} switch ... OK\n");
 }
 
+//  Use this function if You want to restart controller in another mode (BC <-> RT)
+//    It also turn BM off
+//    It can be used in selection tests
+void turn_mkio_off (uint32_t mkio_base)
+{
+    // uint32_t rdata_0, rdata_1, rdata_2;
+    // rdata_0 = ioread32 (mkio_base + BCSL);
+    // rdata_1 = ioread32 (mkio_base + RTS);
+    // rdata_2 = ioread32 (mkio_base + BMS);
+    // rumboot_printf("MKIO 0x%X  BCSL: 0x%X  RTS: 0x%X  BMS: 0x%X\n", mkio_base, rdata_0, rdata_1, rdata_2);
+    
+    //  Turn BC off
+    iowrite32 (((0x1552 << 16)|(1 << 9)|(1 << 2)), mkio_base + BCA);
+    //  Turn RT off
+    iowrite32 (((0x1553 << 16)&(~(1 << 0))), mkio_base + RTC);
+    //  Turn BM off
+    iowrite32 (((0x1543 << 16)&(~(1 << 0))), mkio_base + BMC);
+    
+    // rdata_0 = ioread32 (mkio_base + BCSL);
+    // rdata_1 = ioread32 (mkio_base + RTS);
+    // rdata_2 = ioread32 (mkio_base + BMS);
+    // rumboot_printf("MKIO 0x%X  BCSL: 0x%X  RTS: 0x%X  BMS: 0x%X\n", mkio_base, rdata_0, rdata_1, rdata_2);
+}
+
 int main(void)
 {
 #ifdef CHECK_MKIO_REGS
@@ -325,6 +349,9 @@ int main(void)
 
     mem_cmp(test_mkio_data_src, test_mkio_data_dst, MKIO_TEST_DATA_SIZE);
 #endif
+    
+    turn_mkio_off (MKIO0_BASE);
+    turn_mkio_off (MKIO1_BASE);
 
     return 0;
 }
