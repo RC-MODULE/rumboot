@@ -18,138 +18,105 @@
 #include <platform/trace.h>
 #include <platform/test_event_c.h>
 #include <arch/ppc_476fp_lib_c.h>
+#include <arch/ppc_476fp_config.h>
+#include <platform/arch/ppc/ppc_476fp_l1c_fields.h>
 #include <platform/arch/ppc/ppc_476fp_mmu_fields.h>
 #include <platform/arch/ppc/ppc_476fp_mmu.h>
+#include <platform/arch/ppc/ppc_476fp_asm.h>
 #include <platform/ppc470s/mmu/mem_window.h>
 #include <platform/devices/emi.h>
 
-typedef void func();
 
-                           //MMU_TLB_ENTRY(  ERPN,   RPN,        EPN,        DSIZ,                   IL1I,   IL1D,    W,      I,      M,      G,        E,                   UX, UW, UR,     SX, SW, SR      DULXE,  IULXE,      TS,      TID,               WAY,                BID,                V   )
-#define TLB_ENTRY_INV        MMU_TLB_ENTRY(  0x000,  0x00000,    0x00000,    MMU_TLBE_DSIZ_1GB,       0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b0 )
-#define TLB_ENTRY_SRAM0_1    MMU_TLB_ENTRY(  0x000,  0x00000,    0x00000,    MMU_TLBE_DSIZ_16KB,      0b0,    0b0,    0b0,    0b0,    0b1,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
-#define TLB_ENTRY_SRAM0_2    MMU_TLB_ENTRY(  0x000,  0x00004,    0x00004,    MMU_TLBE_DSIZ_16KB,      0b0,    0b0,    0b0,    0b0,    0b1,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
+#define START_ADDR      SRAM0_BASE  // 32 byte aligned
+#define L1C_LINES_N     (L1C_INDEXES_N*L1C_WAYS_N)
+#define CODE_BLR_INSTR  0x4e800020
 
-#define START_ADDR      SRAM0_BASE
-#define DATA_SIZE       0x8000 // 32KB
-#define WORD_NUM        0x400  // 1024 (DATA_SIZE/32)
-#define CACHE_LINE_SIZE 32     // L1
-#define CODE_BLR_INSTR  0x4E800020
 
-static void init_test_data (uint32_t data_addr)
-{
-    rumboot_memfill8_modelling((void*)START_ADDR,  DATA_SIZE, 0x00, 0x00);
-    for (uint32_t ind = 0, addr = START_ADDR; ind < WORD_NUM - 1; ind++ , addr += CACHE_LINE_SIZE)
-    {
+asm (   // this 4 words will be copied in EM2
+ASM_TEXT(   .section ".text","ax",@progbits                             )
+ASM_TEXT(   .align 4                                                    )
+ASM_TEXT(   icread_test_data_template:                                  )
+ASM_TEXT(       mfctr           r3                                      )   // get current L1I line addr
+ASM_TEXT(       addi            r3, r3, 32                              )
+ASM_TEXT(       mtctr           r3                                      )
+ASM_TEXT(       bctr                                                    )   // goto next L1I line
+);
+void icread_test_data_template(void);
+#define ICREAD_TEST_DATA_TEMPLATE_SIZE  (4*sizeof(uint32_t))
+
+static void init_test_data( uint32_t const template_data_addr, uint32_t test_data_addr ) {
+    rumboot_printf( "Init data...\n" );
+    uint32_t const test_data_end = test_data_addr+L1I_SIZE;
+    rumboot_memfill8_modelling( (void*)START_ADDR,  L1I_SIZE, 0x00, 0x00 );
+    for( ; test_data_addr < test_data_end; test_data_addr += L1C_LINE_SIZE ) {
         //4 words code
-        iowrite64(ioread64(data_addr), addr);
-        iowrite64(ioread64(data_addr + 0x8), addr + 0x8);
+        iowrite64( ioread64(template_data_addr), test_data_addr );
+        iowrite64( ioread64(template_data_addr+sizeof(uint64_t)), test_data_addr+sizeof(uint64_t) );
     }
-    iowrite32(CODE_BLR_INSTR, START_ADDR + DATA_SIZE - CACHE_LINE_SIZE);
+    iowrite32( CODE_BLR_INSTR, test_data_end - ((L1C_LINE_SIZE-ICREAD_TEST_DATA_TEMPLATE_SIZE)+sizeof(uint32_t)) ); // replace last bctr with blr
     msync();
+    rumboot_printf( "Finished\n" );
 }
 
-static bool check_with_icread(uint32_t expected_val)
-{
-    uint32_t reg_ICDBDR0, reg_ICDBTRL, reg_ICDBTRH;
-    rumboot_printf("Number of elements = 0x%x\n", WORD_NUM);
-    for (uint32_t ind = 0, addr = START_ADDR; ind < WORD_NUM; ind++ , addr += CACHE_LINE_SIZE)
-    {
-        icread((void*)addr);
+static bool check_with_icread( uint32_t expected_inst, uint32_t test_data_addr ) {
+    rumboot_printf( "Check with icread. Number of elements = %d\n", L1C_LINES_N );
+    uint32_t icdbdr0, icdbtrl, icdbtrh;
+    for( uint32_t ind = 0; ind < L1C_LINES_N; ind++, test_data_addr += L1C_LINE_SIZE ) {
+        icread((void*)test_data_addr);
         isync();
-        reg_ICDBDR0 = spr_read(SPR_ICDBDR0),
-        reg_ICDBTRH = spr_read(SPR_ICDBTRH);
 
-        rumboot_printf("ind = %x, addr = %x\n", ind, addr);
-        if ((reg_ICDBTRH & 0x1000) != 0x1000 )
-        {
-            rumboot_printf ("ERROR: Valid bit in ICDBTRH[12] not expected\n");  //tag valid bit
+        icdbtrh = spr_read(SPR_ICDBTRH);
+        rumboot_printf( "ind: %d, addr: 0x%x\n", ind, test_data_addr );
+        if( !(icdbtrh & XCDBTRH_VALID_mask) ) {
+            rumboot_printf( "ERROR: Valid bit in ICDBTRH not expected\n" );
             return false;
         }
-        if ((reg_ICDBTRH >> 13) != (addr >> 13) )
-        {
-            rumboot_printf ("ERROR: Invalid tag in ICDBTRH\n"); //check tag
+        if( (icdbtrh & XCDBTRH_TAG_ADDR_mask) != (test_data_addr & XCDBTRH_TAG_ADDR_mask) ) {
+            rumboot_printf( "ERROR: Invalid tag in ICDBTRH\n" );
             return false;
         }
-        if (ind != WORD_NUM - 1)
-        {
-            if (expected_val != reg_ICDBDR0 ) {
-                rumboot_printf ("ERROR: Invalid instruction code in ICDBDR0\n"); //check instruction code
-                return false;
-            }
+        icdbdr0 = spr_read(SPR_ICDBDR0);
+        if( expected_inst != icdbdr0 ) {
+            rumboot_printf( "ERROR: Invalid instruction code in ICDBDR0\n" );
+            return false;
         }
-        else //check last elem
-        {
-            reg_ICDBTRL = spr_read(SPR_ICDBTRL);
-            if (CODE_BLR_INSTR != reg_ICDBDR0) {
-                rumboot_printf ("ERROR: Invalid instruction code in ICDBDR0\n");     //check instruction code
-                return false;
-            }
-            if ( (reg_ICDBTRL & 0xF0000000) != 0xF0000000) {
-                rumboot_printf ("ERROR: Invalid LRUV in ICDBTRL\n"); //check LRUV bits
-                return false;
-            }
-        }
+    }
+    icdbtrl = spr_read(SPR_ICDBTRL);
+    if ( (icdbtrl & ICDBTRL_LRUV_mask) != ICDBTRL_LRUV_mask ) {
+        rumboot_printf( "ERROR: Invalid LRUV in ICDBTRL\n" );
+        return false;
     }
     return true;
 }
 
-int main (void)
-{
-    rumboot_printf("Emi init\n");
+
+int main( void ) {
+    rumboot_printf( "Emi init\n" );
     emi_init(DCR_EM2_EMI_BASE);
-
 //*******************************************
-    rumboot_printf("Init data\n");
-
-    register uint32_t data_p = 0;
+    init_test_data( (uint32_t)&icread_test_data_template, START_ADDR );
+//*******************************************
+    rumboot_printf( "Set tlb (l1, l2 cache on)\n" );
+    static const tlb_entry sram0_tlb_entry[] = {
+//       MMU_TLB_ENTRY( ERPN,   RPN,        EPN,        DSIZ,                   IL1I,   IL1D,   W,      I,      M,      G,      E,                      UX, UW, UR,     SX, SW, SR      DULXE,  IULXE,      TS,     TID,                WAY,                BID,                V   )
+        {MMU_TLB_ENTRY( 0x000,  0x00000,    0x00000,    MMU_TLBE_DSIZ_1GB,      0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b0 )},
+        {MMU_TLB_ENTRY( 0x000,  0x00000,    0x00000,    MMU_TLBE_DSIZ_16KB,     0b0,    0b0,    0b0,    0b0,    0b1,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )},
+        {MMU_TLB_ENTRY( 0x000,  0x00004,    0x00004,    MMU_TLBE_DSIZ_16KB,     0b0,    0b0,    0b0,    0b0,    0b1,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )}
+    };
+    write_tlb_entries( sram0_tlb_entry, ARRAY_SIZE(sram0_tlb_entry) );
+//*******************************************
+    rumboot_printf( "Call test func from SRAM0_BASE\n" );
+    typedef void func();
     asm volatile
     (
-        "b 2f\n\t"
-        "1: mfctr 7\n\t"                //section 1: -> this 4 words will be copied in EM2
-        "addi  7, 7, 32\n\t"
-        "mtctr 7\n\t"
-        "bctr\n\t"
-        "2: lis %0, 1b@h\n\t"
-        "ori    %0, %0, 1b@l\n\t"
-        :"=r"(data_p)
-        :
-        :"r7"
+        "mtctr %0\n\t"
+        ::"r"(START_ADDR)
     );
-
-    //copy 4 (*WORD_NUM) words code from section "1" in EM2, align 32
-    init_test_data(data_p);
-    rumboot_printf("Data initialized\n");
+    ((func*)START_ADDR)();
 //*******************************************
-
-    rumboot_printf("Set tlb (l1, l2 cache on)\n");
-    static const tlb_entry sram0_tlb_entry[] = { {TLB_ENTRY_INV}, {TLB_ENTRY_SRAM0_1}, {TLB_ENTRY_SRAM0_2} };
-    write_tlb_entries(sram0_tlb_entry, ARRAY_SIZE(sram0_tlb_entry));
-
-//*******************************************
-    rumboot_printf("Call test func from SRAM0_BASE\n");
-
-    //write start addr in CTR
-    uint32_t base_addr = START_ADDR;
-    asm volatile
-    (
-        "lis   7, %0@h\n\t"
-        "ori   7, 7, %0@l\n\t"
-        "mtctr 7\n\t"
-        ::"r"(base_addr):"r7"
-    );
-
-    func* f = (func*)(START_ADDR);
-    f();
-
-//*******************************************
-    rumboot_printf("Check with icread\n");
-    if ( !check_with_icread (ioread32(data_p)) )
-    {
-        rumboot_printf("TEST ERROR\n");
+    if( !check_with_icread( ioread32((uint32_t)&icread_test_data_template), START_ADDR ) ) {
         return 1;
     }
 
-    rumboot_printf("TEST OK\n");
     return 0;
 }
