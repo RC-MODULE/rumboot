@@ -6,98 +6,6 @@
 #include <platform/regs/regs_l2c_pmu.h>
 #include <platform/arch/ppc/test_macro.h>
 
-//todo: this defines perhaps not used
-#define L2C_L2PNCR_VAL_BASE         (0x00000069) //see trunk/cpu/units/ppc476l2c_v001/verilog/rtl/PPC476L2C_DCR_LFSR.v. Dependent from I_M_SELF_ID strap.
-#define L2C_L2PNCR_VAL              (L2C_L2PNCR_VAL_BASE(L2C0_DCR_BASE))
-#define L2C_L2REVID_VAL             ( reg_field(31,L2C_REVISION_ID) | reg_field(23,L2C_VERSION_NUMBER) )
-#define L2C_L2CNFG0_VAL_BASE(base)  ( reg_field(31,L2C_L2SIZE) | reg_field(27,L2C_PLB_CLK_RATIO) | reg_field(23,L2C_TSNOOP) | reg_field(19,L2C_MASTER_ID(base)) )
-#define L2C_L2CNFG0_VAL             (L2C_L2CNFG0_VAL_BASE(L2C0_DCR_BASE))
-
-
-#define I_M_SELF_ID(base)           ( (base == L2C0_DCR_BASE) ? 0x00 : 0x01 )
-//from trunk/cpu/units/ppc476l2c_v001/verilog/rtl/PPC476L2C.parameters.v
-#define  L2C_VERSION_NUMBER         (0x01)
-#define  L2C_REVISION_ID            (0x02)
-//from dut
-#define L2C_L2SIZE                  (0x1)
-#define L2C_PLB_CLK_RATIO           (0x0)
-#define L2C_TSNOOP                  (0x0) //acc. to L2C_PLBTSNOOP[0:2] strap pin
-#define L2C_MASTER_ID(base)         (I_M_SELF_ID(base))
-
-#define L2C_L2ISTAT_VAL             (0x01) //1- initialization complete
-
-#define L2C_L2ARRACCADR_MSK         (0x1FFF)
-#define L2C_L2ARRACCADR_ADR_MSK     (0x7FF)
-#define L2C_TIMEOUT                 (0x00000020)
-#define L2C_WAY0_NUM                (0x0)
-#define L2C_WAY1_NUM                (0x1)
-#define L2C_WAY2_NUM                (0x2)
-#define L2C_WAY3_NUM                (0x3)
-#define L2C_WAY_MSK                 (0x3)
-#define L2C_CACHE_LINE_ADDR_MSK     (0x3FF)
-#define L2C_CACHE_HALFLINE_ADDR_MSK (0x7FF) //L2C_L2ARRACCADR_ADR_MSK
-#define L2C_ARRACCCTL_WAY_MSK       (reg_field(23,0x3))
-#define L2C_ARRACCCTL_DWORD_MSK     (reg_field(31,0xFF))
-#define L2C_ARRACCCTL_MSK           ( (L2C_ARRACCCTL_REQUEST_FIELD) |\
-                                      (L2C_ARRACCCTL_LRU_ARRAY_SELECT_FIELD) |\
-                                      (L2C_ARRACCCTL_TAG_ARRAY_SELECT_FIELD) |\
-                                      (L2C_ARRACCCTL_DATA_ARRAY_SELECT_FIELD) |\
-                                      (L2C_ARRACCCTL_READ_8BYTE_WO_ECC_FIELD) |\
-                                      (L2C_ARRACCCTL_WAY_MSK) |\
-                                      (L2C_ARRACCCTL_DWORD_MSK) \
-                                    )
-
-//bits [0:8] are reserved
-#define L2C_ARRACCCTL_REQUEST_FIELD                     (reg_field(9,0x1))
-#define L2C_ARRACCCTL_READ_REQUEST_COMP_FIELD           (reg_field(10,0x1))
-#define L2C_ARRACCCTL_WRITE_REQUEST_COMP_FIELD          (reg_field(11,0x1))
-//bit 12 is reserved
-#define L2C_ARRACCCTL_LRU_ARRAY_SELECT_FIELD            (reg_field(13,0x1))
-#define L2C_ARRACCCTL_TAG_ARRAY_SELECT_FIELD            (reg_field(14,0x1))
-#define L2C_ARRACCCTL_DATA_ARRAY_SELECT_FIELD           (reg_field(15,0x1))
-#define L2C_ARRACCCTL_READ_8BYTE_WO_ECC_FIELD           (reg_field(19,0xF))
-#define L2C_ARRACCCTL_WRITE_8BYTE_GENERATE_ECC_FIELD    (reg_field(19,0x6))
-#define L2C_ARRACCCTL_WRITE_8BYTE_ECC_AS_IS_FIELD       (reg_field(19,0x7))
-#define L2C_ARRACCCTL_WAY_FIELD(way_number)             (reg_field(23,((way_number) & 0x3)))
-#define L2C_ARRACCCTL_MSK_DWORD_FIELD(addr)             (reg_field(31,(0x1 << (0x7 - ( ((addr) >> 0x3) & 0x7) ))))
-#define L2C_ARRACCADR_TAG_LRU_ADDR_FIELD(addr)          (reg_field( 30,( ( (addr) >> 7) & L2C_CACHE_LINE_ADDR_MSK ) ))
-#define L2C_ARRACCADR_DATA_ARRAY_ADDR_FIELD(addr)       (reg_field( 31,( ( (addr) >> 6) & L2C_L2ARRACCADR_ADR_MSK ) ))
-
-#define L2C_TAG_ADDRESS_OFFSET                          (16) //16 for 256 KB, old value = 17 (512 KB)
-#define L2C_TAG_ADDRESS_MSK                             (0x1FFFFFF)
-#define L2C_TAG_CACHE_STATE_MSK                         (0x7)
-#define L2C_TAG_CACHE_STATE_INVALID                     (0x0)
-#define L2C_TAG_ADDRESS_FROM_64BIT(addr)                ((( (addr) & ( (uint64_t)L2C_TAG_ADDRESS_MSK << L2C_TAG_ADDRESS_OFFSET ) ) >> L2C_TAG_ADDRESS_OFFSET))
-#define L2C_TAG_ADDRESS_FROM_ARRACCDO0(val)             (( ( (val) & (L2C_TAG_ADDRESS_MSK << 3) ) >> 3)) //3 for 256, 4 for 512
-#define L2C_TAG_CACHE_STATE_FROM_ARRACCDO0(val)         (( ((val) >> IBM_BIT_INDEX(32, 2)) & L2C_TAG_CACHE_STATE_MSK ))
-#define L2C_TAG_CACHE_STATE_INVALID_VAL                 (0x0)
-
-#define L2C_EXT_ADDR_MSK                                (0x3FF)
-
-/* ++ L2C Tag Array Cache State */
-typedef enum
-{
-    L2C_STATE_I  =  0b000,   /* Invalid              */
-    L2C_STATE_U  =  0b001,   /* Undefined (not used) */
-    L2C_STATE_S  =  0b010,   /* Shared               */
-    L2C_STATE_SL =  0b011,   /* Shared Last          */
-    L2C_STATE_E  =  0b100,   /* Exclusive            */
-    L2C_STATE_T  =  0b101,   /* Tagged               */
-    L2C_STATE_M  =  0b110,   /* Modified             */
-    L2C_STATE_MU =  0b111    /* Modified Unsolicited */
-
-} l2c_tag_arr_cache_state_t;
-
-/* ++ L2C Cache State (debug) Modes */
-typedef enum
-{
-    L2C_CSM_DEFAULT   =  0x00,
-    L2C_CSM_NO_SL     =  0x01,
-    L2C_CSM_NO_MU     =  0x02,
-    L2C_CSM_NO_T      =  0x04,
-    L2C_CSM_MESI_ONLY =  0x07
-
-} l2c_cache_state_mode_t;
 
 //L2C REG value
 typedef enum
@@ -374,29 +282,68 @@ typedef enum
 } PMULCX_bits_t;
 
 
-void l2c_global_enable_interrupt(uint32_t l2c_dcr_base, L2INTEN_bits_t mask);
-void l2c_global_mck_enable(uint32_t l2c_dcr_base, L2MCKEN_bits_t mask);
-void l2c_global_mck_disable(uint32_t l2c_dcr_base, L2MCKEN_bits_t mask);
+void l2c_global_enable_interrupt( uint32_t l2c_dcr_base, L2INTEN_bits_t mask );
+void l2c_global_mck_enable( uint32_t l2c_dcr_base, L2MCKEN_bits_t mask );
+void l2c_global_mck_disable( uint32_t l2c_dcr_base, L2MCKEN_bits_t mask );
 
-void l2c_pmu_set_CE_bit(uint32_t pmu_dcr_base, L2C_PMUREG dcr_index);
-void l2c_pmu_enable_interrupt(uint32_t pmu_dcr_base, L2C_PMUREG dcr_index, uint32_t mask);
-void l2c_pmu_disable_interrupt( uint32_t const pmu_dcr_base, L2C_PMUREG const dcr_index, uint32_t const mask );
-void l2c_pmu_clear_interrupt(uint32_t pmu_dcr_base);
-void l2c_pmu_set_cx(uint32_t pmu_dcr_base, L2C_PMUREG dcr_index, uint32_t value);
+void l2c_pmu_set_CE_bit( uint32_t pmu_dcr_base, L2C_PMUREG dcr_index );
+void l2c_pmu_enable_interrupt( uint32_t pmu_dcr_base, L2C_PMUREG dcr_index, uint32_t mask );
+void l2c_pmu_disable_interrupt( uint32_t pmu_dcr_base, L2C_PMUREG dcr_index, uint32_t mask );
+void l2c_pmu_clear_interrupt( uint32_t pmu_dcr_base );
+void l2c_pmu_set_cx( uint32_t pmu_dcr_base, L2C_PMUREG dcr_index, uint32_t value );
 
-void l2c_enable_interrupt(uint32_t l2c_dcr_base, L2C_L2REG l2c_int_reg_index, uint32_t mask);
+void l2c_enable_interrupt( uint32_t l2c_dcr_base, L2C_L2REG l2c_int_reg_index, uint32_t mask );
 
-uint64_t l2c_arracc_data_read (uint32_t base, uint32_t ext_phys_addr, uint32_t phys_addr);
-void l2c_arracc_data_write( uint32_t base, uint32_t ext_phys_addr, uint32_t phys_addr, uint64_t data64);
-bool l2c_arracc_tag_info_read_by_way (uint32_t base, uint32_t ext_phys_addr, uint32_t phys_addr, int32_t cache_way, volatile uint32_t* tag_info);
-bool l2c_arracc_tag_info_write_by_way_wo_gen_ecc( uint32_t base, uint32_t ext_phys_addr, uint32_t phys_addr, int32_t cache_way, uint32_t cache_data, uint32_t ecc_data);
-bool l2c_arracc_data_read_by_way (uint32_t base, uint32_t ext_phys_addr, uint32_t phys_addr, int32_t cache_way, volatile uint64_t* cache_data);
-bool l2c_arracc_data_write_by_way (uint32_t base, uint32_t ext_phys_addr, uint32_t phys_addr, int32_t cache_way, uint64_t cache_data);
-bool l2c_arracc_data_write_by_way_wo_gen_ecc( uint32_t base, uint32_t ext_phys_addr, uint32_t phys_addr, int32_t cache_way, uint64_t cache_data, uint32_t ecc_data);
-bool l2c_arracc_get_way_by_address (uint32_t base, uint32_t ext_phys_addr, uint32_t phys_addr, volatile int32_t* cache_way);
-bool l2c_arracc_get_data_by_address (uint32_t base, uint32_t ext_phys_addr, uint32_t phys_addr, volatile uint64_t* data64);
-bool l2c_arracc_set_data_by_address (uint32_t base, uint32_t ext_phys_addr, uint32_t phys_addr, uint64_t data64);
-bool l2c_arracc_lru_info_read_by_way( uint32_t base, uint32_t ext_phys_addr, uint32_t phys_addr, int32_t cache_way, volatile uint32_t* lru_info );
+bool l2c_arracc_get_way_by_address( uint32_t base, uint32_t ext_phys_addr, uint32_t phys_addr, int* cache_way );
+
+bool l2c_arracc_tag_info_read_by_way (uint32_t base, uint32_t ext_phys_addr, uint32_t phys_addr, int cache_way, uint32_t* tag_info );
+bool l2c_arracc_tag_ecc_read_by_way( uint32_t base, uint32_t ext_phys_addr, uint32_t phys_addr, int cache_way, uint32_t * tag_ecc );
+bool l2c_arracc_tag_info_write_by_way( uint32_t base, uint32_t ext_phys_addr, uint32_t phys_addr, int cache_way, uint32_t tag_info );
+bool l2c_arracc_tag_info_write_by_way_wo_gen_ecc( uint32_t base, uint32_t ext_phys_addr, uint32_t phys_addr, int cache_way, uint32_t tag_info, uint32_t tag_ecc );
+
+bool l2c_arracc_lru_info_read( uint32_t base, uint32_t ext_phys_addr, uint32_t phys_addr, uint32_t* lru_info );
+bool l2c_arracc_lru_info_write( uint32_t base, uint32_t ext_phys_addr, uint32_t phys_addr, uint32_t lru_info );
+
+bool l2c_arracc_data_read_by_way (uint32_t base, uint32_t ext_phys_addr, uint32_t phys_addr, int cache_way, uint64_t* cache_data );
+bool l2c_arracc_data_ecc_read_by_way( uint32_t base, uint32_t ext_phys_addr, uint32_t phys_addr, int cache_way, uint32_t * cache_data_ecc );
+bool l2c_arracc_data_write_by_way( uint32_t base, uint32_t ext_phys_addr, uint32_t phys_addr, int cache_way, uint64_t cache_data );
+bool l2c_arracc_data_write_by_way_wo_gen_ecc( uint32_t base, uint32_t ext_phys_addr, uint32_t phys_addr, int cache_way, uint64_t cache_data, uint32_t cache_data_ecc );
+
+bool l2c_arracc_get_data_by_address( uint32_t base, uint32_t ext_phys_addr, uint32_t phys_addr, uint64_t* data64 );
+bool l2c_arracc_set_data_by_address( uint32_t base, uint32_t ext_phys_addr, uint32_t phys_addr, uint64_t data64 );
+uint64_t l2c_arracc_data_read( uint32_t base, uint32_t ext_phys_addr, uint32_t phys_addr );
+void l2c_arracc_data_write( uint32_t base, uint32_t ext_phys_addr, uint32_t phys_addr, uint64_t data64 );
+
+
+typedef enum {
+    L2C_MEM_TAG,
+    L2C_MEM_TAG_ECC,
+    L2C_MEM_LRU,
+    L2C_MEM_DATA,
+    L2C_MEM_DATA_ECC,
+} l2c_mem_t;
+
+struct l2c_mem_layout {
+    L2C_L2Size_t    l2size;
+
+    uint32_t        tag_array_size;
+    uint32_t        lru_array_size;
+    uint32_t        data_array_size;
+
+    uint32_t        tag_i;
+    uint32_t        tag_n;
+    uint32_t        tag_ecc_i;
+    uint32_t        tag_ecc_n;
+    uint32_t        lru_i;
+    uint32_t        lru_n;
+    uint32_t        data_ecc_i;
+    uint32_t        data_ecc_n;
+};
+
+void l2c_get_mem_layout( uint32_t base, struct l2c_mem_layout * mem_layout );
+
+uint64_t l2c_read_mem( uint32_t base, struct l2c_mem_layout const * mem_layout, l2c_mem_t mem_type, uint32_t index );
+void l2c_write_mem( uint32_t base, struct l2c_mem_layout const * mem_layout, l2c_mem_t mem_type, uint32_t index, uint64_t data );
 
 
 #endif  /* L2C_H */

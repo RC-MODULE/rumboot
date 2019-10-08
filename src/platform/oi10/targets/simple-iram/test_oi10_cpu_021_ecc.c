@@ -45,16 +45,16 @@
 #define TLB_ENTRY1_INV    MMU_TLB_ENTRY(  0x000,  0x40000,    0x40000,    MMU_TLBE_DSIZ_1GB,      0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b0 )
 
 //Data for L2C TAG testing
-volatile uint32_t tag_data[] ={
+static uint32_t const tag_data[] ={
     0x0002033,    0x0002004,    0x000209F,    0x00020A8,
     0x000201A,    0x000202D,    0x00020BE,    0x0002025
 };
-volatile uint32_t tag_ecc[] ={
+static uint32_t const tag_ecc[] ={
     0x00,    0x7F,    0x0F,    0x70,
     0x4C,    0x33,    0x5A,    0x2A
 };
 //Data for L2C DATA testing
-volatile uint64_t __attribute__((aligned(128))) data_data[] = {
+static uint64_t const __attribute__((aligned(128))) data_data[] = {
     0x0000000000000197,    0x0000000000000000,    0x0000000000000090,    0x0000000000000107,
     0x0000000000000110,    0x0000000000000087,    0x0000000000000115,    0x0000000000000082,
     0x0000000000000197,    0xFFFFFFFFFFFFFFFF,    0x00FFFFFFFFFFE013,    0xFF00000000001117,
@@ -66,7 +66,7 @@ volatile uint64_t __attribute__((aligned(128))) data_data[] = {
     0x00FF00FF00FF00FF,    0xA060FF00FF00FF00,    0xA110F0F0F0F0F0F0,    0x018F0F0F0F0F0F0F,
     0x0553333333333333,    0xAACCCCCCCCCCCCCC,    0x28AAAAAAAAAAAAAA,    0x84F5555555555555
 };
-volatile uint32_t data_ecc[] ={
+static uint32_t const data_ecc[] ={
     0x00,    0xFF,    0x0F,    0xF0,
     0xCC,    0x33,    0xAA,    0x55,
     0x00,    0xFF,    0xFF,    0x00,
@@ -104,11 +104,11 @@ static struct rumboot_irq_entry *tbl;
 
 bool check_data_ecc(uint32_t indx)
 {
-    volatile uint64_t exp_data = data_data[indx];
-    volatile uint32_t exp_ecc  = data_ecc[indx];
+    uint64_t exp_data = data_data[indx];
+    uint32_t exp_ecc  = data_ecc[indx];
 
-    volatile uint64_t data,data_err;
-    volatile uint32_t ecc,ecc_err;
+    uint64_t data,data_err;
+    uint32_t ecc,ecc_err;
     uint32_t addr = TEST_ADDR + (indx*8);
     uint32_t error_shift = (indx & 0xF);
 
@@ -123,7 +123,7 @@ bool check_data_ecc(uint32_t indx)
                  phys_addr = (uint32_t)(rumboot_virt_to_phys( (void *)addr ) & 0xFFFFFFFF);
 
     //get way
-    int32_t cache_way = -1;
+    int cache_way = -1;
     if (l2c_arracc_get_way_by_address( DCR_L2C_BASE, ext_phys_addr, phys_addr, &cache_way ) == false)
     {
         rumboot_printf("ERROR: reading (way) via L2ARRACC*\n");
@@ -281,10 +281,10 @@ bool check_data_ecc(uint32_t indx)
 
 bool check_tag_ecc(uint32_t indx)
 {
-    volatile uint32_t ecc,state_tag;
-    volatile uint32_t ecc_err,state_tag_err;
-    volatile uint32_t exp_ecc   = tag_ecc[indx];
-    volatile uint32_t exp_tag   = tag_data[indx];
+    uint32_t ecc,state_tag;
+    uint32_t ecc_err,state_tag_err;
+    uint32_t exp_ecc   = tag_ecc[indx];
+    uint32_t exp_tag   = tag_data[indx];
     uint32_t error_shift = (indx & 0xF);
 
     rumboot_printf("------------------------------------\n");
@@ -318,7 +318,7 @@ bool check_tag_ecc(uint32_t indx)
     }
 
     //get way
-    int32_t cache_way = -1;
+    int cache_way = -1;
     if (l2c_arracc_get_way_by_address( DCR_L2C_BASE, ext_phys_addr, phys_addr, &cache_way ) == false)
     {
         rumboot_printf("ERROR: reading (way) via L2ARRACC*\n");
