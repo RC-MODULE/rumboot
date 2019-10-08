@@ -102,6 +102,7 @@ rumboot_add_configuration(
     LDS oi10/rom.lds
     SNAPSHOT default
     PREFIX supplementary
+    CFLAGS -DOI10_MINIMAL_INIT
     FEATURES STUB
 )
 

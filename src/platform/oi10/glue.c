@@ -15,10 +15,13 @@
 #include <platform/devices.h>
 #include <platform/test_event_c.h>
 #include <rumboot/boot.h>
+#include <rumboot/irq.h>
 
 void rumboot_platform_exit(int status) {
+#ifndef OI10_MINIMAL_INIT
     dbg_boot(NULL, "Back in rom, code %d", status);
-    
+#endif
+
 }
 
 
@@ -108,7 +111,7 @@ void rumboot_platform_setup() {
     rumboot_memfill8_modelling((void*)SRAM0_BASE, 0x10000, 0x00, 0x00); //workaround (init first 64KB in SRAM0)
 #endif
 
-#if !defined(RUMBOOT_ONLY_STACK)
+#if !defined(RUMBOOT_ONLY_STACK) 
     rumboot_printf("HACK: Writing TLB entry for SRAM0 & cleaning SRAM0 (sim)\n");
     static const tlb_entry sram0_tlb_entry[] = {
 //       MMU_TLB_ENTRY(  ERPN,   RPN,        EPN,        DSIZ,                   IL1I,   IL1D,   W,      I,      M,      G,      E,                      UX, UW, UR,     SX, SW, SR      DULXE,  IULXE,      TS,     TID,                WAY,                BID,                V   )
@@ -118,7 +121,7 @@ void rumboot_platform_setup() {
     rumboot_memfill8_modelling((void*)SRAM0_BASE, 0x10000, 0x00, 0x00); //workaround (init first 64KB in SRAM0)
 #endif
 
-
+#ifndef OI10_MINIMAL_INIT
     extern char rumboot_im0_heap_start;
     extern char rumboot_im0_heap_end;
     rumboot_malloc_register_heap( "IM0", &rumboot_im0_heap_start, &rumboot_im0_heap_end );
@@ -154,6 +157,9 @@ void rumboot_platform_setup() {
     extern char rumboot_nor_heap_start;
     extern char rumboot_nor_heap_end;
     rumboot_malloc_register_heap("NOR", &rumboot_nor_heap_start, &rumboot_nor_heap_end);
+    /* Set our own handler */
+    rumboot_irq_set_exception_handler(rumboot_arch_exception);
+#endif
 
     enable_fpu();
 }
