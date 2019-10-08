@@ -63,7 +63,7 @@ static bool check_mem (void)
         rumboot_printf("paddr = %x_%x, ", ext_phys_addr, phys_addr);
 
         //get way
-        int32_t cache_way = -1;
+        int cache_way = -1;
         if (l2c_arracc_get_way_by_address( DCR_L2C_BASE, ext_phys_addr, phys_addr, &cache_way ) == false)
         {
             rumboot_printf("ERROR: reading (way) via L2ARRACC*\n");
@@ -88,7 +88,7 @@ static bool check_mem (void)
 
         //get lru
         uint32_t lru_data = 0;
-        if (l2c_arracc_lru_info_read_by_way (DCR_L2C_BASE, ext_phys_addr, phys_addr, cache_way, &lru_data) == false)
+        if (l2c_arracc_lru_info_read (DCR_L2C_BASE, ext_phys_addr, phys_addr, &lru_data) == false)
         {
             rumboot_printf("ERROR: reading (lru) via L2ARRACC*\n");
             return false;
