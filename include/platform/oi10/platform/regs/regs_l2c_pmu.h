@@ -72,12 +72,12 @@ END_ENUM( L2C_PMUREG )
 .endm
 #else
 #include <arch/ppc_476fp_lib_c.h>
-static inline void l2c_pmu_write( uint32_t const base_addr, L2C_PMUREG const reg, uint32_t const value ) {
+static inline __attribute__((always_inline)) void l2c_pmu_write( uint32_t const base_addr, L2C_PMUREG const reg, uint32_t const value ) {
     dcr_write( base_addr+L2C_PMUDCRAI, (uint32_t const)reg );
     dcr_write( base_addr+L2C_PMUDCRDI, value );
 }
 
-static inline uint32_t l2c_pmu_read( uint32_t const base_addr, L2C_PMUREG const reg ) {
+static inline __attribute__((always_inline)) uint32_t l2c_pmu_read( uint32_t const base_addr, L2C_PMUREG const reg ) {
     dcr_write( base_addr+L2C_PMUDCRAI, (uint32_t const)reg );
     return dcr_read( base_addr+L2C_PMUDCRDI );
 }
