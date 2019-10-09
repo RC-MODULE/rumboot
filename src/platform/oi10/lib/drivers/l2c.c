@@ -87,7 +87,7 @@ static struct mem_config const mem_configs[4] = {
 
 #define L2C_ARRACC_TIMEOUT                 (0x00000020)
 
-static bool __attribute__((noinline)) l2c_arracc_read(
+static inline __attribute__((always_inline)) bool l2c_arracc_read(
         uint32_t const base,
         uint32_t const array_addr,
         uint32_t const l2arraccctl_fields
@@ -113,7 +113,7 @@ static bool __attribute__((noinline)) l2c_arracc_read(
     return valid;
 }
 
-static bool __attribute__((noinline)) l2c_arracc_write(
+static inline __attribute__((always_inline)) bool l2c_arracc_write(
         uint32_t const base,
         uint32_t const array_addr,
         uint32_t const l2arraccctl_fields
@@ -138,7 +138,7 @@ static bool __attribute__((noinline)) l2c_arracc_write(
     return valid;
 }
 
-static bool __attribute__((noinline)) l2c_arracc_tag_info_wt_ecc_read_raw(
+static inline __attribute__((always_inline)) bool l2c_arracc_tag_info_wt_ecc_read_raw(
         uint32_t const base,
         uint32_t const tag_addr, int const cache_way,
         uint32_t * const tag_info,
@@ -196,7 +196,7 @@ bool l2c_arracc_tag_ecc_read_by_way(
     return l2c_arracc_tag_info_wt_ecc_read_raw( base, (phys_addr >> L2C_ARRAY_ADDR_TAG_i), cache_way, &tag_info, tag_ecc );
 }
 
-static bool __attribute__((noinline)) l2c_arracc_tag_info_write_raw(
+static inline __attribute__((always_inline)) bool l2c_arracc_tag_info_write_raw(
         uint32_t const base,
         uint32_t const tag_addr, int const cache_way,
         uint32_t const tag_info
@@ -218,7 +218,7 @@ static bool __attribute__((noinline)) l2c_arracc_tag_info_write_raw(
         );
 }
 
-static bool __attribute__((noinline)) l2c_arracc_tag_info_wt_ecc_write_raw(
+static inline __attribute__((always_inline)) bool l2c_arracc_tag_info_wt_ecc_write_raw(
         uint32_t const base,
         uint32_t const tag_addr, int const cache_way,
         uint32_t const tag_info, uint32_t const tag_ecc
@@ -323,7 +323,7 @@ bool l2c_arracc_get_way_by_address(
     }
 }
 
-static bool __attribute__((noinline)) l2c_arracc_lru_info_read_raw(
+static inline __attribute__((always_inline)) bool l2c_arracc_lru_info_read_raw(
         uint32_t const base,
         uint32_t const lru_addr,
         uint32_t * const lru_info
@@ -361,7 +361,7 @@ bool l2c_arracc_lru_info_read(
     return l2c_arracc_lru_info_read_raw( base, (phys_addr >> L2C_ARRAY_ADDR_LRU_i), lru_info );
 }
 
-static bool __attribute__((noinline)) l2c_arracc_lru_info_write_raw(
+static inline __attribute__((always_inline)) bool l2c_arracc_lru_info_write_raw(
         uint32_t const base,
         uint32_t const lru_addr,
         uint32_t const lru_info
@@ -394,7 +394,7 @@ bool l2c_arracc_lru_info_write(
     return l2c_arracc_lru_info_write_raw( base, (phys_addr >> L2C_ARRAY_ADDR_LRU_i), lru_info );
 }
 
-static bool __attribute__((noinline)) l2c_arracc_data_wt_ecc_read_raw(
+static inline __attribute__((always_inline)) bool l2c_arracc_data_wt_ecc_read_raw(
         uint32_t const base,
         uint32_t const data_addr, int const cache_way,
         uint64_t * const cache_data,
@@ -454,7 +454,7 @@ bool l2c_arracc_data_ecc_read_by_way(
     return l2c_arracc_data_wt_ecc_read_raw( base, (phys_addr >> L2C_ARRAY_ADDR_DATA_DW_i), cache_way, &cache_data, cache_data_ecc );
 }
 
-static bool __attribute__((noinline)) l2c_arracc_data_write_raw(
+static inline __attribute__((always_inline)) bool l2c_arracc_data_write_raw(
         uint32_t const base,
         uint32_t const data_addr, int const cache_way,
         uint64_t const cache_data
@@ -481,7 +481,7 @@ static bool __attribute__((noinline)) l2c_arracc_data_write_raw(
         );
 }
 
-static bool __attribute__((noinline)) l2c_arracc_data_wt_ecc_write_raw(
+static inline __attribute__((always_inline)) bool l2c_arracc_data_wt_ecc_write_raw(
         uint32_t const base,
         uint32_t const data_addr, int const cache_way,
         uint64_t const cache_data, uint32_t const cache_data_ecc
