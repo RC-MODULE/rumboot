@@ -1,7 +1,7 @@
 #include <platform/arch/ppc/ppc_476fp_asm.h>
 #include <platform/regs/regs_p64.h>
 
-.section ".text.rom","a",@progbits
+.section ".p64_set_split_range_address.text.rom","a",@progbits
 
 .global p64_set_split_range_address
 p64_set_split_range_address:
