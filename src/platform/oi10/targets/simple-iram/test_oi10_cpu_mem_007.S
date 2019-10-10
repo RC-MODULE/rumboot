@@ -158,7 +158,11 @@ END_ENUM( test_event_code )
 .section ".text","ax",@progbits
 
 .global main
-
+.align 8
+.long 0
+.align 8
+.long 0
+.align 8
 main:
 test_oi10_cpu_mem_007:
 
