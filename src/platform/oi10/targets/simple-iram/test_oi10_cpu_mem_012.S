@@ -166,7 +166,7 @@ check_clr_bits:
     clr_bht_array_bits 6, 0x10400 //mem[272][3:2]
     clr_bht_array_bits 7, 0x10800 //mem[264][1:0]
     clr_bht_array_bits 8, 0x11000 //mem[260][15:14]
-    clr_bht_array_bits 9, 0x12000 //mem[257][13:12]
+//    clr_bht_array_bits 9, 0x12000 //mem[257][13:12]
 
 test_finished:
     rumboot_putstring "\nTEST FINISHED\n"
