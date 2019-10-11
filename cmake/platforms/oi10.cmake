@@ -28,6 +28,7 @@ file(GLOB PLATFORM_SOURCES
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/ppc_mmu_impl.S
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/utlb_entries.S
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/ppc_476fp_power_modes.S
+    ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/lib/drivers/hscb_lib.c
 )
 
 #Flags for Power PC
@@ -1956,17 +1957,10 @@ endif()
     
     add_rumboot_target(
         CONFIGURATION IRAM
-        CFLAGS -DHSCB_DEV_ADDR=HSCB0_BASE
-        FILES test_oi10_hscb_connect.c
-        PREFIX "hscb_0_"
-        NAME "connect_test"
-    )    
-
-    add_rumboot_target(
-        CONFIGURATION IRAM
         CFLAGS 
             -DHSCB_SRC_BASE=HSCB2_BASE
             -DHSCB_DST_BASE=HSCB3_BASE
+            -DLOOP_TEST
         FILES hscb_loop.c
         PREFIX "hscb_2_3"
         NAME "loop_test"
@@ -1977,9 +1971,20 @@ endif()
         CFLAGS 
             -DHSCB_SRC_BASE=HSCB0_BASE
             -DHSCB_DST_BASE=HSCB1_BASE
+            -DLOOP_TEST
         FILES hscb_loop.c
         PREFIX "hscb_0_1"
         NAME "loop_test"
+    )    
+
+    add_rumboot_target(
+        CONFIGURATION IRAM
+        CFLAGS 
+            -DHSCB_DST_BASE=HSCB0_BASE
+            -DBOARD_TEST
+        FILES hscb_loop.c
+        PREFIX "hscb_0"
+        NAME "board_test"
     )    
     
     add_rumboot_target(

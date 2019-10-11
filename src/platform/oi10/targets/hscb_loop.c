@@ -1,6 +1,5 @@
 //#define EN_PRINT
 
-
 #include <stdint.h>
 #include <stddef.h>
 #include <stdbool.h>
@@ -22,6 +21,9 @@
 #define INT_STAT    0x4
 #define BAD_STAT    0x8
 #define STOP_STAT   0x10
+
+//#define WAIT_LIMIT  10000
+#define WAIT_LIMIT  1
 
 // Addresses
 // -------- System --------
@@ -107,8 +109,11 @@
 #define EN_DMA                  0x70000000
 #define CANCEL_DMA              0x80000000
 
+//int64_t rumboot_virt_to_phys(volatile void *addr);
+
+
 struct hscb_trans_tbl {
-//    int      heap_id;
+    int      heap_id;
     uint32_t base_addr;
     uint32_t r_tbl_addr;
     uint32_t src_addr;
@@ -131,36 +136,31 @@ uint32_t change_endian (uint32_t data_in){
     return data_out;
 }
 
-/*
+uint32_t get_addr(int heap_id, uint32_t data_size){
+    uint32_t alloc_addr = 0;
+    int64_t virt_addr = 0;
+    uint32_t res_addr = 0;
+    
+    alloc_addr = (uint32_t) rumboot_malloc_from_heap_aligned(heap_id, data_size, 8);
+    virt_addr = rumboot_virt_to_phys((void*) alloc_addr);
+    virt_addr = virt_addr & 0x00000000ffffffff;
+    res_addr = (uint32_t) virt_addr;
+    return res_addr;
+    
+}
+
 void hscb_create_trans_tbl (struct hscb_trans_tbl * hscb, char* desc_heap, char* data_heap, uint32_t desc_num) {
     int id = 0;
     
     rumboot_printf("hscb_create_trans_tbl for %x\n", hscb->base_addr);
     
-//    id = rumboot_malloc_heap_by_name(desc_heap);
-//    hscb->r_tbl_addr = (uint32_t) rumboot_malloc_from_heap_aligned(id, desc_num*8, 8);
-//    hscb->w_tbl_addr = (uint32_t) rumboot_malloc_from_heap_aligned(id, desc_num*8, 8);
-    hscb->r_tbl_addr = 0xC0010000;
-    hscb->w_tbl_addr = 0xC0010100;
+    id = rumboot_malloc_heap_by_name(desc_heap);
+    hscb->r_tbl_addr = get_addr(id, (desc_num+1)*8);
+    hscb->w_tbl_addr = get_addr(id, (desc_num+1)*8);
+//    rumboot_printf("hscb->r_tbl_addr =  %x\n", hscb->r_tbl_addr);
+//    rumboot_printf("hscb->w_tbl_addr =  %x\n", hscb->w_tbl_addr);
     
     hscb->heap_id = rumboot_malloc_heap_by_name(data_heap);
-    
-    iowrite32(hscb->r_tbl_addr, hscb->base_addr + RDMA_SYS_ADDR );    // Set read channel first descriptor address
-    iowrite32((desc_num+1)*8  , hscb->base_addr + RDMA_TBL_SIZE );    // Set read channel first descriptor address
-    iowrite32(hscb->r_tbl_addr, hscb->base_addr + RDMA_DESC_ADDR);    // Set read channel first descriptor address
-    
-    iowrite32(hscb->w_tbl_addr, hscb->base_addr + WDMA_SYS_ADDR );    // Set read channel first descriptor address
-    iowrite32((desc_num+1)*8  , hscb->base_addr + WDMA_TBL_SIZE );    // Set read channel first descriptor address
-    iowrite32(hscb->w_tbl_addr, hscb->base_addr + WDMA_DESC_ADDR);    // Set read channel first descriptor address
-}
-*/
-
-void hscb_create_trans_tbl (struct hscb_trans_tbl * hscb, uint32_t r_addr, uint32_t w_addr, uint32_t desc_num) {
-    
-    rumboot_printf("hscb_create_trans_tbl for %x\n", hscb->base_addr);
-    
-    hscb->r_tbl_addr = r_addr;
-    hscb->w_tbl_addr = w_addr;
     
     iowrite32(hscb->r_tbl_addr, hscb->base_addr + RDMA_SYS_ADDR );    // Set read channel first descriptor address
     iowrite32((desc_num+1)*8  , hscb->base_addr + RDMA_TBL_SIZE );    // Set read channel first descriptor address
@@ -213,9 +213,19 @@ void hscb_create_trans_desc (struct hscb_trans_tbl* hscb, uint32_t len, uint32_t
 
 uint32_t hscb_wait_end_trans (struct hscb_trans_tbl* hscb) {
     uint32_t status = 0;
+    int cnt = 0;
+
+    rumboot_printf("Wait finish!\n");
 
     while (!status){
-        status = ioread32(hscb->base_addr + WDMA_STATUS) & (DMA_DESC_INT | DMA_DESC_END | DMA_BAD_DESC);
+        if (cnt == WAIT_LIMIT) {
+            status = ioread32(hscb->base_addr + WDMA_STATUS);
+            rumboot_printf("\nHSCB status %x\n", ioread32(hscb->base_addr + STATUS));
+            rumboot_printf("WDMA status %x\n", status);
+            status = status & (DMA_DESC_INT | DMA_DESC_END | DMA_BAD_DESC);
+        }
+        else
+            cnt++;
     }
     rumboot_printf("WDMA status %x\n", status);
     
@@ -231,7 +241,7 @@ int hscb_data_check(struct hscb_trans_tbl* hscb, uint32_t len, uint32_t init_val
     rumboot_printf("Check from address %x\n", hscb->dst_addr);
     for (i=0; i<len; i+=4){
         tmp = ioread32(hscb->dst_addr);
-        rumboot_printf("%x: %x, must be %x\n", hscb->dst_addr, tmp, init_val);
+//        rumboot_printf("%x: %x, must be %x\n", hscb->dst_addr, tmp, init_val);
         if (init_val != tmp){
             rumboot_printf("Check fail\n \t %x: %x, must be %x!\n", hscb->dst_addr, tmp, init_val);
             return 1;
@@ -242,9 +252,20 @@ int hscb_data_check(struct hscb_trans_tbl* hscb, uint32_t len, uint32_t init_val
     return 0;
 }
 
+int hscb_data_print(struct hscb_trans_tbl* hscb, uint32_t len) {
+    int i = 0;
+
+    rumboot_printf("Print from address %x\n", hscb->dst_addr);
+    for (i=0; i<len; i+=4){
+        rumboot_printf("%x: %x\n", hscb->dst_addr, ioread32(hscb->dst_addr));
+        hscb->dst_addr += 4;
+    }
+    return 0;
+}
+
 int hscb_loop_test (
-//        char* test_heap,
-//        char* desc_heap,
+        char* test_heap,
+        char* desc_heap,
         uint32_t hscb_src_addr,
         uint32_t hscb_dst_addr,
         uint32_t data_size,
@@ -253,7 +274,6 @@ int hscb_loop_test (
         uint32_t hscb_src_init
     ) {
 
-//    uint32_t hscb_src_init = 0x00010203;
     uint32_t hscb_dst_init = hscb_src_init + 0x01010101;
     
     struct hscb_trans_tbl hscb_src_tbl;
@@ -274,8 +294,6 @@ int hscb_loop_test (
         return 1;
     }
     
-    
-    
     hscb_src->base_addr = hscb_src_addr;
     hscb_dst->base_addr = hscb_dst_addr;
 
@@ -291,21 +309,23 @@ int hscb_loop_test (
     iowrite32((EN_HSCB | DISCARD_RMAP| EN_TRIM_CLK), hscb_dst->base_addr + SETTINGS );
 
     rumboot_printf("hscb_src\n");
-//    hscb_create_trans_tbl(hscb_src, desc_heap, test_heap, desc_num);
-//    hscb_src->src_addr = (uint32_t) rumboot_malloc_from_heap_aligned(hscb_src->heap_id, data_size, 8);
-//    hscb_src->dst_addr = (uint32_t) rumboot_malloc_from_heap_aligned(hscb_src->heap_id, data_size, 8);
-    hscb_create_trans_tbl(hscb_src, 0xC0010000, 0xC0010100, desc_num);
-    hscb_src->src_addr = 0xC0011000;
-    hscb_src->dst_addr = 0xC0011400;
+    hscb_create_trans_tbl(hscb_src, desc_heap, test_heap, desc_num);
+    hscb_src->src_addr = (uint32_t) get_addr(hscb_src->heap_id, data_size);
+    hscb_src->dst_addr = (uint32_t) get_addr(hscb_src->heap_id, data_size);
+    
+    rumboot_printf("hscb_src->src_addr =  %x\n", hscb_src->src_addr);
+    rumboot_printf("hscb_src->dst_addr =  %x\n", hscb_src->dst_addr);
+
     hscb_create_trans_desc(hscb_src, data_size, hscb_src_init);
 
     rumboot_printf("hscb_dst\n");
-//    hscb_create_trans_tbl(hscb_dst, desc_heap, test_heap, desc_num);
-//    hscb_dst->src_addr = (uint32_t) rumboot_malloc_from_heap_aligned(hscb_dst->heap_id, data_size, 8);
-//    hscb_dst->dst_addr = (uint32_t) rumboot_malloc_from_heap_aligned(hscb_dst->heap_id, data_size, 8);
-    hscb_create_trans_tbl(hscb_dst, 0xC0010200, 0xC0010300, desc_num);
-    hscb_dst->src_addr = 0xC0011800;
-    hscb_dst->dst_addr = 0xC0011C00;
+    hscb_create_trans_tbl(hscb_dst, desc_heap, test_heap, desc_num);
+    hscb_dst->src_addr = (uint32_t) get_addr(hscb_dst->heap_id, data_size);
+    hscb_dst->dst_addr = (uint32_t) get_addr(hscb_dst->heap_id, data_size);
+
+    rumboot_printf("hscb_dst->src_addr =  %x\n", hscb_dst->src_addr);
+    rumboot_printf("hscb_dst->dst_addr =  %x\n", hscb_dst->dst_addr);
+
     hscb_create_trans_desc(hscb_dst, data_size, hscb_dst_init);
 
     rumboot_printf("Set speed hscb_src = %x\n", hscb_src_speed);
@@ -331,24 +351,95 @@ int hscb_loop_test (
     return 0;
 }
 
+void hscb_send (
+        struct hscb_trans_tbl* hscb_src,
+        char* test_heap,
+        char* desc_heap,
+        uint32_t hscb_src_addr,
+        uint32_t data_size,
+        uint32_t desc_num,
+        uint32_t hscb_src_speed,
+        uint32_t hscb_src_init
+    ) {
+
+    hscb_src->base_addr = hscb_src_addr;
+
+    rumboot_printf("hscb_src\n");
+    hscb_create_trans_tbl(hscb_src, desc_heap, test_heap, desc_num);
+    hscb_src->src_addr = (uint32_t) get_addr(hscb_src->heap_id, data_size);
+    hscb_src->dst_addr = (uint32_t) get_addr(hscb_src->heap_id, data_size);
+    hscb_create_trans_desc(hscb_src, data_size, hscb_src_init);
+
+    rumboot_printf("Set speed hscb_src = %x\n", hscb_src_speed);
+    iowrite32(hscb_src_speed, hscb_src->base_addr + TRANS_CLK );
+    
+    rumboot_printf("Start!\n");
+    iowrite32(EN_DMA, hscb_src->base_addr + RDMA_SETTINGS);
+}
+
+void hscb_rec (
+        struct hscb_trans_tbl* hscb_dst,
+        char* test_heap,
+        char* desc_heap,
+        uint32_t hscb_dst_addr,
+        uint32_t data_size,
+        uint32_t desc_num
+    ) {
+
+    hscb_dst->base_addr = hscb_dst_addr;
+
+    rumboot_printf("hscb_dst\n");
+    hscb_create_trans_tbl(hscb_dst, desc_heap, test_heap, desc_num);
+    hscb_dst->src_addr = (uint32_t) get_addr(hscb_dst->heap_id, data_size);
+    hscb_dst->dst_addr = (uint32_t) get_addr(hscb_dst->heap_id, data_size);
+    hscb_create_trans_desc(hscb_dst, data_size, 0);
+
+    rumboot_printf("Start!\n");
+    iowrite32(EN_DMA, hscb_dst->base_addr + WDMA_SETTINGS);
+    
+    hscb_wait_end_trans (hscb_dst);
+    
+    hscb_data_print(hscb_dst, data_size);
+}
+
+
 int main() {
     uint32_t desc_num = 1; // max 511
-    uint32_t data_size = 16;
+    uint32_t data_size = 128;
+    
+#ifdef BOARD_TEST
+//    struct hscb_trans_tbl hscb_src_tbl;
+//    struct hscb_trans_tbl* hscb_src;
+//    hscb_src = &hscb_src_tbl;
+
+    struct hscb_trans_tbl hscb_dst_tbl;
+    struct hscb_trans_tbl* hscb_dst;
+    hscb_dst = &hscb_dst_tbl;
+
+    rumboot_printf("Start test of transmit and receive functions\n");
+//    iowrite32((EN_HSCB | DISCARD_RMAP), HSCB_SRC_BASE + SETTINGS );
+    iowrite32((EN_HSCB | DISCARD_RMAP| EN_TRIM_CLK), HSCB_DST_BASE + SETTINGS );
+
+//    hscb_send(hscb_src, "IM2", "IM2", HSCB_SRC_BASE, data_size, desc_num, speed, hscb_src_init);
+    hscb_rec(hscb_dst, "IM2", "IM2", HSCB_DST_BASE, data_size, desc_num);
+    return 0;
+#endif
+
+#ifdef LOOP_TEST
     uint32_t speed = 0x14;
     uint32_t hscb_src_init = 0x00010203;
     int i = 0;
     int tmp = 0;
-    
-    rumboot_printf("Start test with %d cycles\n", desc_num);
 
+    rumboot_printf("Start test with %d cycles\n", desc_num);
     while (!tmp & (i < 3)){
         rumboot_printf("\n\nIteration %d\n", i);
         rumboot_printf("Set speed hscb_src = %x\n", speed);
         
-        tmp = hscb_loop_test(HSCB_SRC_BASE, HSCB_DST_BASE, data_size, desc_num, speed, hscb_src_init);
+        tmp = hscb_loop_test("IM2", "IM2", HSCB_SRC_BASE, HSCB_DST_BASE, data_size, desc_num, speed, hscb_src_init);
         if (tmp)
             return 1;
-
+    
         i++;
         hscb_src_init = hscb_src_init + 0x10101010;
         if (speed == 32)
@@ -360,11 +451,7 @@ int main() {
         else
             desc_num += 1;
     }
-
-
-//    if (hscb_loop_test("IM1", "IM1", HSCB2_BASE, HSCB3_BASE, data_size, desc_num))
-//        return 1;
-    
     rumboot_printf("\n\nFinish work!\n");
     return 0;
+#endif
 }
