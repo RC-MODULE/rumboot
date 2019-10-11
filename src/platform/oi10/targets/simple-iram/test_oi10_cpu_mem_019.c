@@ -37,6 +37,12 @@
 #define L2C_WAY_SIZE    128
 #define DATA_LEN        (L2C_WAY_SIZE >> 3)
 
+
+// FixMe: Hack
+#ifndef L2C_TIMEOUT
+    #define L2C_TIMEOUT     0x00000020
+#endif
+
 const MEM_WINDOW test_windows[] =
 {
     MEM_WINDOW_0,
