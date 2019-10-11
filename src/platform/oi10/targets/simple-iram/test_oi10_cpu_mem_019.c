@@ -38,10 +38,6 @@
 #define DATA_LEN        (L2C_WAY_SIZE >> 3)
 
 
-// FixMe: Hack
-#ifndef L2C_TIMEOUT
-    #define L2C_TIMEOUT     0x00000020
-#endif
 
 const MEM_WINDOW test_windows[] =
 {
@@ -98,7 +94,7 @@ void check_read_write_via_l2carracc(int indx)
     msync();
     rumboot_printf("done\n");
 
-    int32_t cache_way = -1;
+    int cache_way = -1;
     rumboot_printf("l2c get way\n");
     if (l2c_arracc_get_way_by_address( DCR_L2C_BASE, ext_phys_addr, phys_addr, &cache_way ) == false)
     {
@@ -157,16 +153,9 @@ int main(void)
 
     emi_init(DCR_EM2_EMI_BASE);
 
-    volatile uint32_t data;
-    data = l2c_l2_read (DCR_L2C_BASE, L2C_L2ISTAT);
-    int i = 0;
-    while (((data & 0x1) != 1) && (i < L2C_TIMEOUT))
-    {
-        data = l2c_l2_read (DCR_L2C_BASE, L2C_L2ISTAT);
-        i++;
-    }
-    TEST_ASSERT((data & 0x1),"L2C Array Initialization Complete Event did not occur!");
-    msync();
+    TEST_ASSERT(l2c_l2_read (DCR_L2C_BASE, L2C_L2ISTAT),"L2C Array Initialization Complete Event did not occur!");
+
+    uint32_t i = 0;
 
     rumboot_printf("Start memory initialization...\n");
     for ( i = 0; i < ARRAY_SIZE(test_windows); i++)
@@ -197,7 +186,6 @@ int main(void)
         }
     }
 
-    rumboot_printf("TEST OK\n");
     return 0;
 }
 
