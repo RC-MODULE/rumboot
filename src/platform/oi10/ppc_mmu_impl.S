@@ -4,8 +4,7 @@
 #include <platform/trace.S.h>
 
 
-.section ".mmu.init.text","ax",@progbits
-
+.section ".ppc470s_invalidate_all_tlb_entries_nosnoop.mmu.init.text","ax",@progbits
 .global ppc470s_invalidate_all_tlb_entries_nosnoop
 ppc470s_invalidate_all_tlb_entries_nosnoop:
     load_const  r3, MMU_UTLB_INDEXES_N
@@ -33,7 +32,7 @@ goto_next_tlb_entry:
     bdnz+       invalidate_tlb_entry
     blr
 
-
+.section ".write_tlb_entries.mmu.init.text","ax",@progbits
 /*Details about trace infrastructure convention see in trace.S.h
 Caller must preserve r3,r4,r8,r9,r10,r11 before calling
 r3 - TLB entries array pointer
@@ -85,6 +84,7 @@ write_tlb_entries_return:
 
     blr
 
+.section ".get_physical_addr.mmu.init.text","ax",@progbits
 /*r3 - parameter, 32bit effective address (EA)*/
 /*r4 - TS (translation space)
 /*r4,r3 - result, 42bit real address (int64_t)*/
@@ -158,5 +158,3 @@ offset_done:
 tlbsx_error:
     load_const  r3, -1 /*return invalid value (< 0) if an error*/
     blr
-
-

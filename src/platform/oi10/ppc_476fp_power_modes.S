@@ -12,7 +12,7 @@
 #include <platform/regs/regs_l2c_l2.h>
 #include <platform/regs/regs_l2c.h>
 
-.section ".pm.init.text","ax",@progbits
+.section ".text","ax",@progbits
 
 //r3-r6, r12 are used
 .global ppc470s_enter_doze_mode_with_EE

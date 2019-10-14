@@ -6,8 +6,8 @@ SECTIONS {
         KEEP(*(.text.test))
 
         /* ROM sections copy */
-        *(*.init.text)
         *(.text.rom)
+        *(*.init.text)
         /* ROM sections copy end */
 
         *(.text)
