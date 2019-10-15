@@ -36,6 +36,8 @@
 
 #define L2C_WAY_SIZE    128
 #define DATA_LEN        (L2C_WAY_SIZE >> 3)
+#define L2C_TIMEOUT     (0x00000020)
+
 
 const uint32_t test_addr[] = { //len = 14
     0x00000000,
@@ -94,7 +96,7 @@ void check_read_write_via_l2carracc(int indx)
     msync();
     rumboot_printf("done\n");
 
-    int32_t cache_way = -1;
+    int cache_way = -1;
     rumboot_printf("l2c get way\n");
     if (l2c_arracc_get_way_by_address( DCR_L2C_BASE, ext_phys_addr, phys_addr, &cache_way ) == false)
     {
