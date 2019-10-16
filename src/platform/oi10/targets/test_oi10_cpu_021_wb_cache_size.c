@@ -64,7 +64,7 @@ static bool read_and_check (uint32_t base_addr, uint32_t size_b, uint32_t data_i
         msync(); isync();
 
         //l2c get way
-        int32_t cache_way = -1;
+        int cache_way = -1;
         uint64_t phys_addr = rumboot_virt_to_phys((void *) addr);
         if (l2c_arracc_get_way_by_address( DCR_L2C_BASE, (uint32_t) (phys_addr >> 32), (uint32_t) (phys_addr), &cache_way ) == false)
         {
