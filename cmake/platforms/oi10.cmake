@@ -2035,6 +2035,12 @@ endif()
     )
 
     add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES test_oi10_mt150_08_sdram.c
+      NAME test_oi10_mt150_08_sdram
+    )
+    
+    add_rumboot_target(
 
       FEATURES NOCODE
       COMBOIMAGE IM0BIN
