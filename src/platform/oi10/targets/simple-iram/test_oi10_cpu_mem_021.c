@@ -41,8 +41,6 @@
 //
 ///* Integer constant macros */
 #define TEST_OK                     0x00000000
-#define BUFFERID_TAG                L2C_L2ARRACCCTL_BUFFERID_TAG_i
-#define REQTYPE_RD8WOECC            L2C_L2ARRACCCTL_REQTYPE_RD8WOECC
 #define MAY_NOT_BE_USED             __attribute__((unused))
 #define ALWAYS_INLINE               __attribute__((always_inline))
 //
@@ -50,9 +48,9 @@
 #define BIT(N)                      (1 << (N))
 #define GEN_REQTYPE(REQTYPE)        (REQTYPE << L2C_L2ARRACCCTL_REQTYPE_i)
 #define GEN_WAY_FIELD(WAY)          ((WAY) << L2C_L2ARRACCCTL_L2WAY_i)
-#define L2C_ARR_RD_TAG_RQ(WAY)      (BIT(L2C_L2ARRACCCTL_REQUEST_i)  | \
-                                     BIT(BUFFERID_TAG)               | \
-                                     GEN_REQTYPE(REQTYPE_RD8WOECC)   | \
+#define L2C_ARR_RD_TAG_RQ(WAY)      (BIT(L2C_L2ARRACCCTL_REQUEST_i)                                 | \
+                                    (L2C_ARRACC_BufferID_TAG        << L2C_L2ARRACCCTL_BUFFERID_i)  | \
+                                    (L2C_ARRACC_ReqType_RD8WOECC    << L2C_L2ARRACCCTL_REQTYPE_i)   | \
                                      GEN_WAY_FIELD(WAY))
 
 
@@ -102,7 +100,7 @@ BEGIN_ENUM(PSEUDO_CT_DECODING)
     DECLARE_ENUM_VAL(   PSEUDO_CT_DECODING_IS_L2_mask,     FIELD_MASK32( PSEUDO_CT_DECODING_IS_L2_i, PSEUDO_CT_DECODING_IS_L2_n ) )
 END_ENUM(PSEUDO_CT_DECODING)
 
-bool get_valid_way_by_addr(uint32_t pseudo_CT, void* addr, int32_t* cache_way)
+bool get_valid_way_by_addr(uint32_t pseudo_CT, void* addr, int* cache_way)
 {
     uint64_t    phys_addr = 0;
     uint32_t    reg_xCDBTRH;
@@ -144,8 +142,8 @@ bool get_valid_way_by_addr(uint32_t pseudo_CT, void* addr, int32_t* cache_way)
                     (uint32_t)((phys_addr >> 32) & 0xffffffff),
                     (uint32_t)((phys_addr      ) & 0xffffffff),
                     *cache_way, &tag_info ))
-                return (((tag_info & L2C_L2ARRACCDO0_TAG_CACHE_STATE_mask) >> L2C_L2ARRACCDO0_TAG_CACHE_STATE_i)
-                        != L2C_L2ARRACCDO0_TAG_CACHE_STATE_INVALID);
+                return (((tag_info & L2C_L2ARRACCDX0_TAG_CACHE_STATE_mask) >> L2C_L2ARRACCDX0_TAG_CACHE_STATE_i)
+                        != L2C_TAG_CacheState_I);
             else
                 return false;
         }else
@@ -205,7 +203,7 @@ bool get_valid_way_by_addr(uint32_t pseudo_CT, void* addr, int32_t* cache_way)
 
 uint32_t check_caches( uint32_t  (*array_of_addr[])(), bool expected_in_cache, uint32_t pseudo_CT, char* test_name){
     bool        found_in_cache;
-    int32_t     cache_way;
+    int         cache_way;
     uint32_t    result = 0;
     for(uint32_t i = 0; i < L2C_COUNT_WAYS; ++i)
     {
@@ -256,24 +254,24 @@ uint32_t l2arracc_lru_check(uint32_t base)
     l2c_l2_write( base, L2C_L2ARRACCADR, get_addr_by_some_sophisticated_rule(0) );
     l2c_l2_write( base, L2C_L2ARRACCCTL,
                   L2C_L2ARRACCCTL_REQUEST_mask
-                | L2C_L2ARRACCCTL_BUFFERID_LRU_mask
-                | (L2C_L2ARRACCCTL_REQTYPE_RD8WOECC << L2C_L2ARRACCCTL_REQTYPE_i)
+                | L2C_L2ARRACCCTL_BUFFERID_mask
+                | (L2C_ARRACC_ReqType_RD8WOECC << L2C_L2ARRACCCTL_REQTYPE_i)
         );
     for(uint32_t tries = L2C_REQUEST_TRIES;
         (l2c_l2_read(base,L2C_L2ARRACCCTL) & L2C_L2ARRACCCTL_REQUEST_mask)
                 && tries;
         --tries); /* No body for this 'for' */
-    default_data = l2c_l2_read( base, L2C_L2ARRACCDO0) & L2C_L2ARRACCDO0_LRU_LAYOUT_mask;
+    default_data = l2c_l2_read( base, L2C_L2ARRACCDO0) & L2C_L2ARRACCDX0_LRU_mask;
 
     /*write cycle*/
     for(uint32_t i = 0; i < ARRAY_SIZE(test_data); ++i)
     {
         l2c_l2_write( base, L2C_L2ARRACCADR, get_addr_by_some_sophisticated_rule(i));
-        l2c_l2_write( base, L2C_L2ARRACCDI0, test_data[i] & L2C_L2ARRACCDO0_LRU_LAYOUT_mask);
+        l2c_l2_write( base, L2C_L2ARRACCDI0, test_data[i] & L2C_L2ARRACCDX0_LRU_mask);
         l2c_l2_write( base, L2C_L2ARRACCCTL,
                       L2C_L2ARRACCCTL_REQUEST_mask
-                    | L2C_L2ARRACCCTL_BUFFERID_LRU_mask
-                    | (L2C_L2ARRACCCTL_REQTYPE_WR8WOECC << L2C_L2ARRACCCTL_REQTYPE_i)
+                    | (L2C_ARRACC_BufferID_LRU << L2C_L2ARRACCCTL_BUFFERID_i)
+                    | (L2C_ARRACC_ReqType_WR8WOECC << L2C_L2ARRACCCTL_REQTYPE_i)
             );
         for(uint32_t tries = L2C_REQUEST_TRIES;
             (l2c_l2_read(base,L2C_L2ARRACCCTL) & L2C_L2ARRACCCTL_REQUEST_mask)
@@ -286,23 +284,23 @@ uint32_t l2arracc_lru_check(uint32_t base)
         l2c_l2_write( base, L2C_L2ARRACCADR, get_addr_by_some_sophisticated_rule(i) );
         l2c_l2_write( base, L2C_L2ARRACCCTL,
                       L2C_L2ARRACCCTL_REQUEST_mask
-                    | L2C_L2ARRACCCTL_BUFFERID_LRU_mask
-                    | (L2C_L2ARRACCCTL_REQTYPE_RD8WOECC << L2C_L2ARRACCCTL_REQTYPE_i)
+                    | (L2C_ARRACC_BufferID_LRU << L2C_L2ARRACCCTL_BUFFERID_i)
+                    | (L2C_ARRACC_ReqType_RD8WOECC << L2C_L2ARRACCCTL_REQTYPE_i)
             );
         for(uint32_t tries = L2C_REQUEST_TRIES;
             (l2c_l2_read(base,L2C_L2ARRACCCTL) & L2C_L2ARRACCCTL_REQUEST_mask)
                     && tries;
             --tries); /* No body for this 'for' */
-        data = l2c_l2_read( base, L2C_L2ARRACCDO0) & L2C_L2ARRACCDO0_LRU_LAYOUT_mask;
-        if((data & L2C_L2ARRACCDO0_LRU_LAYOUT_mask) != (test_data[i] & L2C_L2ARRACCDO0_LRU_LAYOUT_mask))
+        data = l2c_l2_read( base, L2C_L2ARRACCDO0) & L2C_L2ARRACCDX0_LRU_mask;
+        if((data & L2C_L2ARRACCDX0_LRU_mask) != (test_data[i] & L2C_L2ARRACCDX0_LRU_mask))
         {
             rumboot_printf("ERROR!!! Written data to LRU does not match the written data. Written == 0x%x, read == 0x%x, address == 0x%x\n",
-                    test_data[i] & L2C_L2ARRACCDO0_LRU_LAYOUT_mask, data, get_addr_by_some_sophisticated_rule(i));
+                    test_data[i] & L2C_L2ARRACCDX0_LRU_mask, data, get_addr_by_some_sophisticated_rule(i));
             result |= 1;
         }
 //        else
 //            rumboot_printf("Written data to LRU matches the written data. Written == 0x%x, read == 0x%x, address == 0x%x\n",
-//                    test_data[i] & L2C_L2ARRACCDO0_LRU_LAYOUT_mask, data, get_addr_by_some_sophisticated_rule(i));
+//                    test_data[i] & L2C_L2ARRACCDX0_LRU_mask, data, get_addr_by_some_sophisticated_rule(i));
     }
     /*clear cycle*/
     for(uint32_t i = 0; i < ARRAY_SIZE(test_data); ++i)
@@ -311,8 +309,8 @@ uint32_t l2arracc_lru_check(uint32_t base)
         l2c_l2_write( base, L2C_L2ARRACCDI0, default_data);
         l2c_l2_write( base, L2C_L2ARRACCCTL,
                       L2C_L2ARRACCCTL_REQUEST_mask
-                    | L2C_L2ARRACCCTL_BUFFERID_LRU_mask
-                    | (L2C_L2ARRACCCTL_REQTYPE_WR8WOECC << L2C_L2ARRACCCTL_REQTYPE_i)
+                    | (L2C_ARRACC_BufferID_LRU << L2C_L2ARRACCCTL_BUFFERID_i)
+                    | (L2C_ARRACC_ReqType_WR8WOECC << L2C_L2ARRACCCTL_REQTYPE_i)
             );
         for(uint32_t tries = L2C_REQUEST_TRIES;
             (l2c_l2_read(base,L2C_L2ARRACCCTL) & L2C_L2ARRACCCTL_REQUEST_mask)
@@ -394,12 +392,12 @@ uint32_t  lru_value_based_lru_check(uint32_t base)
         /*4th stage: checking that everything is still cached*/
         result |= check_caches((uint32_t (**)())array_of_addrs, true,PSEUDO_CT_DECODING_IS_L2_mask,"lru_value_based_lru_check");
         /*5th stage: checking that every set of cached areas has a unique LRU value*/
-        if(l2c_arracc_lru_info_read_by_way(DCR_L2C_BASE,
+        if(l2c_arracc_lru_info_read(DCR_L2C_BASE,
                 (uint32_t)(rumboot_virt_to_phys((void *)addr) >> 32) & 0xFFFFFFFF,
                 (uint32_t)(rumboot_virt_to_phys((void *)addr) & 0xFFFFFFFF),
-                0,&lru_info))
+                &lru_info))
         {
-            lru_value = ((lru_info & L2C_L2ARRACCDO0_LRU_LRU_mask) >> L2C_L2ARRACCDO0_LRU_LRU_i);
+            lru_value = ((lru_info & L2C_L2ARRACCDX0_LRU_BITS_mask) >> L2C_L2ARRACCDX0_LRU_BITS_i);
             rumboot_printf("addr == 0x%x, lru_info == 0x%x, lru_value == 0x%x\n",addr,lru_info,lru_value);
             if(lru_values_array[lru_value] == initial_value)
                 lru_values_array[lru_value] = lru_value;
