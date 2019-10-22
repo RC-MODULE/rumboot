@@ -1976,12 +1976,23 @@ endif()
         PREFIX "hscb_0_1"
         NAME "loop_test"
     )    
-
+    
     add_rumboot_target(
         CONFIGURATION IRAM
         CFLAGS 
-            -DHSCB_DST_BASE=HSCB0_BASE
+            -DHSCB_BASE=HSCB0_BASE
+            -DINTERNAL_LOOP_TEST
+        FILES hscb_loop.c
+        PREFIX "hscb_0"
+        NAME "internal_loop_test"
+    )    
+    
+    add_rumboot_target(
+        CONFIGURATION IRAM
+        CFLAGS 
+            -DHSCB_BASE=HSCB0_BASE
             -DBOARD_TEST
+#            -DON_BOARD
         FILES hscb_loop.c
         PREFIX "hscb_0"
         NAME "board_test"
@@ -1999,7 +2010,7 @@ endif()
     add_rumboot_target(
       FEATURES NOCODE
       COMBOIMAGE IM0BIN
-       LOAD IM0BIN hscb_2_3-loop_test,hscb_0_1-loop_test,simple-iram-oi10_spels_cache_hack,greth0-rx_col-test_oi10_greth,greth1-rx_col-test_oi10_greth,greth0-edcl-im2-test_oi10_greth,greth0-edcl-im1-test_oi10_greth,greth1-edcl-im2-test_oi10_greth,greth1-edcl-im1-test_oi10_greth,greth0-im2-im2-test_oi10_greth,greth0-im2-im1-test_oi10_greth,greth0-im1-im2-test_oi10_greth,greth0-im1-im1-test_oi10_greth,greth1-im2-im2-test_oi10_greth,greth1-im2-im1-test_oi10_greth,greth1-im1-im2-test_oi10_greth,greth1-im1-im1-test_oi10_greth,mkio0-regs-test_oi10_lscb,mkio1-regs-test_oi10_lscb,mkio0-im1-func-a-test_oi10_lscb,mkio1-im1-func-a-test_oi10_lscb,mkio0-im1-func-b-test_oi10_lscb,mkio1-im1-func-b-test_oi10_lscb,mkio0-im2-func-a-test_oi10_lscb,mkio1-im2-func-a-test_oi10_lscb,mkio0-im2-func-b-test_oi10_lscb,mkio1-im2-func-b-test_oi10_lscb,simple-iram-test_oi10_cpu_007,simple-iram-test_oi10_cpu_003,iss-iram-test_oi10_cpu_004,iss-iram-test_oi10_cpu_005,simple-iram-test_oi10_cpu_019,${SPELS_TEST_CHAIN},simple-iram-oi10_spels_cache_hack
+       LOAD IM0BIN simple-iram-oi10_spels_cache_hack,greth0-rx_col-test_oi10_greth,greth1-rx_col-test_oi10_greth,greth0-edcl-im2-test_oi10_greth,greth0-edcl-im1-test_oi10_greth,greth1-edcl-im2-test_oi10_greth,greth1-edcl-im1-test_oi10_greth,greth0-im2-im2-test_oi10_greth,greth0-im2-im1-test_oi10_greth,greth0-im1-im2-test_oi10_greth,greth0-im1-im1-test_oi10_greth,greth1-im2-im2-test_oi10_greth,greth1-im2-im1-test_oi10_greth,greth1-im1-im2-test_oi10_greth,greth1-im1-im1-test_oi10_greth,mkio0-regs-test_oi10_lscb,mkio1-regs-test_oi10_lscb,mkio0-im1-func-a-test_oi10_lscb,mkio1-im1-func-a-test_oi10_lscb,mkio0-im1-func-b-test_oi10_lscb,mkio1-im1-func-b-test_oi10_lscb,mkio0-im2-func-a-test_oi10_lscb,mkio1-im2-func-a-test_oi10_lscb,mkio0-im2-func-b-test_oi10_lscb,mkio1-im2-func-b-test_oi10_lscb,simple-iram-test_oi10_cpu_007,simple-iram-test_oi10_cpu_003,iss-iram-test_oi10_cpu_004,iss-iram-test_oi10_cpu_005,simple-iram-test_oi10_cpu_019,${SPELS_TEST_CHAIN},simple-iram-oi10_spels_cache_hack
       PREFIX spels
       TESTGROUP chains
       NAME functional-test-chain
@@ -2044,7 +2055,7 @@ endif()
 
       FEATURES NOCODE
       COMBOIMAGE IM0BIN
-      LOAD IM0BIN simple-iram-chain-start-dummy,hscb_0_1-loop_test,hscb_2_3-loop_test,greth0-edcl-im1-test_oi10_greth,greth1-edcl-im1-test_oi10_greth,mkio0-im1-func-a-test_oi10_lscb,mkio0-im1-func-b-test_oi10_lscb,mkio1-im1-func-a-test_oi10_lscb,mkio1-im1-func-b-test_oi10_lscb,spels-memory-test-im0,spels-memory-test-im1,simple-iram-test_oi10_cpu_007,simple-iram-test_oi10_cpu_019,irq-iram-irq-atomics,irq-iram-irq-defhandler,spels-math-test,simple-iram-oi10_spels_cache_hack,simple-iram-chain-end-dummy
+      LOAD IM0BIN simple-iram-chain-start-dummy,greth0-edcl-im1-test_oi10_greth,greth1-edcl-im1-test_oi10_greth,mkio0-im1-func-a-test_oi10_lscb,mkio0-im1-func-b-test_oi10_lscb,mkio1-im1-func-a-test_oi10_lscb,mkio1-im1-func-b-test_oi10_lscb,spels-memory-test-im0,spels-memory-test-im1,simple-iram-test_oi10_cpu_007,simple-iram-test_oi10_cpu_019,irq-iram-irq-atomics,irq-iram-irq-defhandler,spels-math-test,simple-iram-oi10_spels_cache_hack,simple-iram-chain-end-dummy
       TESTGROUP chains
       NAME fk-test-chain
     )
