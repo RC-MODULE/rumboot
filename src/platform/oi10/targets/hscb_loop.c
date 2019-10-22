@@ -517,8 +517,8 @@ int main() {
 #ifdef LOOP_TEST
     int i = 0;
     uint32_t result = 0;
-//    uint32_t speed[] = {20, 10, 1, 2, 3};
-    uint32_t speed[] = {1,0,1,0,1,0};
+    uint32_t speed[] = {20, 10, 1, 2, 3};
+//    uint32_t speed[] = {1,0,1,0,1,0};
     uint32_t page_size = 128;
 
     rumboot_printf("Reset HSCBs\n");
