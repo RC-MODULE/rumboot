@@ -46,8 +46,10 @@ static bool read_and_check (uint32_t base_addr, uint32_t size_b, uint32_t data_i
 {
     for (uint32_t i = 0; i < (size_b/sizeof(uint64_t)); i++)
     {
-        uint32_t addr = base_addr + 8*i;
-        uint64_t  rdata = ioread64(addr);
+
+        msync(); isync();
+        uint32_t  addr = base_addr + 8*i;
+        uint64_t volatile rdata = ioread64(addr);
 
         if ( (((uint32_t)(rdata >> 32)) != GET_EXP_DATA(addr, data_inc)) || ( ((uint32_t)(rdata & 0xFFFFFFFF)) != GET_EXP_DATA((addr+0x4), data_inc)) )
         {
