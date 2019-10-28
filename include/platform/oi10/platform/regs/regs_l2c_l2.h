@@ -131,12 +131,12 @@ END_ENUM( L2C_L2REG )
 .endm
 #else
 #include <arch/ppc_476fp_lib_c.h>
-static inline void l2c_l2_write( uint32_t const base_addr, L2C_L2REG const reg, uint32_t const value ) {
+static inline __attribute__((always_inline)) void l2c_l2_write( uint32_t const base_addr, L2C_L2REG const reg, uint32_t const value ) {
     dcr_write( base_addr+L2C_L2CDCRAI, (uint32_t const)reg );
     dcr_write( base_addr+L2C_L2CDCRDI, value );
 }
 
-static inline uint32_t l2c_l2_read( uint32_t const base_addr, L2C_L2REG const reg ) {
+static inline __attribute__((always_inline)) uint32_t l2c_l2_read( uint32_t const base_addr, L2C_L2REG const reg ) {
     dcr_write( base_addr+L2C_L2CDCRAI, (uint32_t const)reg );
     return dcr_read( base_addr+L2C_L2CDCRDI );
 }
