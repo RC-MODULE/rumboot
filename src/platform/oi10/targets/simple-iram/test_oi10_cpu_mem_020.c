@@ -36,7 +36,6 @@
 
 #define L2C_WAY_SIZE    128
 #define DATA_LEN        (L2C_WAY_SIZE >> 3)
-#define L2C_TIMEOUT     (0x00000020)
 
 
 const uint32_t test_addr[] = { //len = 14
@@ -152,16 +151,7 @@ int main(void)
 
     emi_init(DCR_EM2_EMI_BASE);
 
-    volatile uint32_t data;
-    data = l2c_l2_read (DCR_L2C_BASE, L2C_L2ISTAT);
-    int i = 0;
-    while (((data & 0x1) != 1) && (i < L2C_TIMEOUT))
-    {
-        data = l2c_l2_read (DCR_L2C_BASE, L2C_L2ISTAT);
-        i++;
-    }
-    TEST_ASSERT((data & 0x1),"L2C Array Initialization Complete Event did not occur!");
-    msync();
+    TEST_ASSERT(l2c_l2_read (DCR_L2C_BASE, L2C_L2ISTAT),"L2C Array Initialization Complete Event did not occur!");
 
     rumboot_printf("Start memory initialization...\n");
     memset(0x00, 0x00, 0x10000);
