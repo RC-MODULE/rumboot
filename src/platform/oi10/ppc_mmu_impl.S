@@ -8,7 +8,7 @@
 .global ppc470s_invalidate_all_tlb_entries_nosnoop
 ppc470s_invalidate_all_tlb_entries_nosnoop:
     load_const  r3, MMU_UTLB_INDEXES_N
-    mtspr       SPR_CTR, r3
+    mtctr       r3
 
     load_const  r3, MMU_MMUCR( 0b0,  0b0,0b0,    0b0,     0x0000 ) /* STID = 0x0000 */
     mtspr       SPR_MMUCR, r3
@@ -89,7 +89,7 @@ write_tlb_entries_return:
 /*r4 - TS (translation space)
 /*r4,r3 - result, 42bit real address (int64_t)*/
 /*if return value <0 then tlb entry was not found*/
-/*r5  - tmp register*/
+/*r5,r6  - tmp register*/
 .global get_physical_addr
 get_physical_addr:
     mfspr       r5, SPR_MMUCR
@@ -108,51 +108,45 @@ get_physical_addr:
     bne-        tlbsx_error                                                                         /* (CR[CR0[2]] == 0), see 4.8.1. PowerPC 476FP Embedded Processor Core. User's Manual */
 
 tlbsx_ok:
-    mr          r5, r3                                                                              /* save EA */
-
-    tlbre       r3, r4, MMU_TLB_ENTRY_TAG                                                           /* RT[32:60] <= tlbentry[EPN(0:19), V, TS, DSIZ(0:5), BLTD] */
-    andi.       r3, r3, (0x3F << MMU_TLBE_TAG_DSIZ_i)
-offset_4k:
-    cmpwi       r3, (MMU_TLBE_DSIZ_4KB << MMU_TLBE_TAG_DSIZ_i)
-    bne         offset_16k
-    clrlwi      r5, r5, 20                                                                          /* RT <= RT & 0x00000FFF */
-    b           offset_done
-offset_16k:
-    cmpwi       r3, (MMU_TLBE_DSIZ_16KB << MMU_TLBE_TAG_DSIZ_i)
-    bne         offset_64k
-    clrlwi      r5, r5, 18                                                                          /* RT <= RT & 0x00003FFF */
-    b           offset_done
-offset_64k:
-    cmpwi       r3, (MMU_TLBE_DSIZ_64KB << MMU_TLBE_TAG_DSIZ_i)
-    bne         offset_1m
-    clrlwi      r5, r5, 16                                                                          /* RT <= RT & 0x0000FFFF */
-    b           offset_done
-offset_1m:
-    cmpwi       r3, (MMU_TLBE_DSIZ_1MB << MMU_TLBE_TAG_DSIZ_i)
-    bne         offset_16m
-    clrlwi      r5, r5, 12                                                                          /* RT <= RT & 0x000FFFFF */
-    b           offset_done
-offset_16m:
-    cmpwi       r3, (MMU_TLBE_DSIZ_16MB << MMU_TLBE_TAG_DSIZ_i)
-    bne         offset_256m
-    clrlwi      r5, r5, 8                                                                           /* RT <= RT & 0x00FFFFFF */
+/*    mfctr       r7*/
+    tlbre       r5, r4, MMU_TLB_ENTRY_TAG                                                           /* RT[32:60] <= tlbentry[EPN(0:19), V, TS, DSIZ(0:5), BLTD] */
+    extrwi      r5, r5, MMU_TLBE_TAG_DSIZ_n, field_begin(MMU_TLBE_TAG_DSIZ)                         /* RT <= DSIZ(0:5) */
+    cntlzw      r5, r5                                                                              /* RT <= 6(MMU_TLBE_DSIZ_4KB); 5(MMU_TLBE_DSIZ_16KB); */
+    subi        r5, r5, 32-MMU_TLBE_TAG_DSIZ_n                                                      /*       ...; 0(MMU_TLBE_DSIZ_1GB)*/
+    slwi        r5, r5, 3                                                                           /* RT <= RT * 8(two instructions) */
+    load_addr   r6, offset
+    add         r6, r6, r5
+    mtctr       r6
+    bctr
+offset:
+offset_1g:
+    clrlwi      r5, r3, 2                                                                           /* RT <= RT & 0x3FFFFFFF */
     b           offset_done
 offset_256m:
-    cmpwi       r3, (MMU_TLBE_DSIZ_256MB << MMU_TLBE_TAG_DSIZ_i)
-    bne         offset_1g
-    clrlwi      r5, r5, 4                                                                           /* RT <= RT & 0x0FFFFFFF */
+    clrlwi      r5, r3, 4                                                                           /* RT <= RT & 0x0FFFFFFF */
     b           offset_done
-offset_1g:
-    cmpwi       r3, (MMU_TLBE_DSIZ_1GB << MMU_TLBE_TAG_DSIZ_i)
-    bne         tlbsx_error /* default */
-    clrlwi      r5, r5, 2                                                                           /* RT <= RT & 0xFFFFFFFF */
-/*  b           offset_done*/
+offset_16m:
+    clrlwi      r5, r3, 8                                                                           /* RT <= RT & 0x00FFFFFF */
+    b           offset_done
+offset_1m:
+    clrlwi      r5, r3, 12                                                                          /* RT <= RT & 0x000FFFFF */
+    b           offset_done
+offset_64k:
+    clrlwi      r5, r3, 16                                                                          /* RT <= RT & 0x0000FFFF */
+    b           offset_done
+offset_16k:
+    clrlwi      r5, r3, 18                                                                          /* RT <= RT & 0x00003FFF */
+    b           offset_done
+offset_4k:
+    clrlwi      r5, r3, 20                                                                          /* RT <= RT & 0x00000FFF */
+    b           offset_done
 
 offset_done:
     tlbre       r4, r4, MMU_TLB_ENTRY_DATA                                                          /* RT[32:51] <= RPN, RT[54:63] <= ERPN*/
-    clrlwi      r3, r4, 22                                                                          /* RT <= ERPN */
-    clrrwi      r4, r4, 12                                                                          /* RT <= RPN */
-    add         r4, r4, r5                                                                          /* RT <= RPN | OFFSET */
+    clrlwi      r3, r4, field_begin(MMU_TLBE_DATA_ERPN)                                             /* RT <= ERPN */
+    clrrwi      r4, r4, MMU_TLBE_DATA_RPN_i                                                         /* RT <= RPN */
+    or          r4, r4, r5                                                                          /* RT <= RPN | OFFSET */
+/*    mtcrt       r7*/
     blr
 
 tlbsx_error:

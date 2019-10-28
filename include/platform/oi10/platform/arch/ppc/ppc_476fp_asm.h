@@ -16,7 +16,7 @@
             (((reg_src_field_begin)%32) + (32 - ((reg_dest_field_begin)%32)))%32,\
             (reg_dest_field_begin)%32, (reg_dest_field_end)%32
 
-#define field_begin( field )  CAT( field,_e ) - ( CAT( field,_n ) - 1 )
+#define field_begin( field )  ((CAT( field,_e ) - ( CAT( field,_n ) - 1 ))%32)
 
 #ifdef __ASSEMBLER__
 #define ASM_BEGIN
