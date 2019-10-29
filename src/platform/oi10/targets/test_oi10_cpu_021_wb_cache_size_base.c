@@ -20,7 +20,7 @@ typedef bool func();
 
 int main(void)
 {
-    //test_event_send_test_id("test_oi10_cpu_021_wb_cache_size");
+    test_event_send_test_id("test_oi10_cpu_021_wb_cache_size");
 
     rumboot_printf ("EMI init\n");
     emi_init(DCR_EM2_EMI_BASE);
