@@ -20,10 +20,24 @@
 #include <regs/regs_pcie.h>
 #include <platform/devices.h>
 
+//-----------------------------------------------------------------------------
+//  Test parameters. Can be changed, if You need other functionality.
+//-----------------------------
+#define PCIE_GEN_1
+// #define PCIE_GEN_2
+//-----------------------------------------------------------------------------
+
 #ifndef CMAKE_BUILD_TYPE_POSTPRODUCTION
 #define REPEAT_NUM 1
 #else
 #define REPEAT_NUM 1024
+#endif
+
+#ifdef PCIE_GEN_1
+#define PCIe_Phy_PMA_ISO_MODE__VALUE 0x95
+#endif
+#ifdef PCIE_GEN_2
+#define PCIe_Phy_PMA_ISO_MODE__VALUE 0xA5
 #endif
 
 #define ISI_LOOPBACK        0x02
@@ -35,16 +49,16 @@
 #define LANE_2_BASE         0x800
 #define LANE_3_BASE         0xC00
 
+#define COMMON_TIMEOUT  10000000
+
 //-----------------------------------------------------------------------------
 //  Common functions
 //-----------------------------
-/*
 void delay_cycle (volatile uint32_t delay)
 {
     while (delay != 0)
         delay--;
 }
-*/
 
 //-----------------------------------------------------------------------------
 void simulation_speedup ()
@@ -100,9 +114,22 @@ void simulation_speedup ()
 #endif
 }
 
+void synchronize_sequence (uint32_t lane_base)
+{
+        //  Transmit  COM, COM
+        iowrite32 (0xEB05, PCIE_PHY_BASE + PCIe_Phy_PMA_ISO_DATA_LO + lane_base);
+        iowrite32 (0x0003, PCIE_PHY_BASE + PCIe_Phy_PMA_ISO_DATA_HI + lane_base);
+        delay_cycle (1000);
+        //  Transmit  SKP, SKP
+        iowrite32 (0xD30B, PCIE_PHY_BASE + PCIe_Phy_PMA_ISO_DATA_LO + lane_base);
+        iowrite32 (0x0003, PCIE_PHY_BASE + PCIe_Phy_PMA_ISO_DATA_HI + lane_base);
+        delay_cycle (1000);
+}
+
 uint32_t pcie_bist_lane (uint32_t lane_base, uint32_t mode)
 {
     uint32_t result = 0;
+    volatile uint32_t timeout_cntr;
     
     rumboot_printf ("  pcie_bist_lane start   lane_base = 0x%08x\n", lane_base);
     for (uint32_t i = 0; i < REPEAT_NUM; i++)
@@ -113,7 +140,11 @@ uint32_t pcie_bist_lane (uint32_t lane_base, uint32_t mode)
         iowrite32 (0x0, PCIE_PHY_BASE + PCIe_Phy_PMA_ISO_CMN_CTRL);
         
         /********** Set standard mode **********/
-        iowrite32 (0x95, PCIE_PHY_BASE + PCIe_Phy_PMA_ISO_MODE);
+        iowrite32 (PCIe_Phy_PMA_ISO_MODE__VALUE, PCIE_PHY_BASE + PCIe_Phy_PMA_ISO_MODE);  //  GEN2
+        
+        iowrite32 (0x00, PCIE_PHY_BASE + PCIe_Phy_PMA_ISO_TX_DMPH_LO);  //  -6.0dB
+        // iowrite32 (0x01, PCIE_PHY_BASE + PCIe_Phy_PMA_ISO_TX_DMPH_LO);  //  -3.5dB
+        // iowrite32 (0x02, PCIE_PHY_BASE + PCIe_Phy_PMA_ISO_TX_DMPH_LO);  //  0dB
         
         /********** Setup transceiver controls to enable lanes but in electrical idle **********/
         iowrite32 (0x1103, PCIE_PHY_BASE + PCIe_Phy_PMA_ISO_XCVR_CTRL + LANE_0_BASE);
@@ -135,20 +166,37 @@ uint32_t pcie_bist_lane (uint32_t lane_base, uint32_t mode)
         iowrite32 (0x0E33, PCIE_PHY_BASE + PCIe_Phy_PMA_ISO_CMN_CTRL);
         
         /********** Poll until PMA asserts cmn_ready **********/
+        timeout_cntr = 0;
         while ((ioread32 (PCIE_PHY_BASE + PCIe_Phy_PMA_CMN_CTRL) & 0x1) != 0x1)
-            ;
+        {
+            timeout_cntr++;
+            if (timeout_cntr == COMMON_TIMEOUT)
+            {
+                rumboot_printf ("    ERROR: timeout_0\n");
+                return -1;
+            }
+        }
         
         /********** Set power state request **********/
         iowrite32 (0x1, PCIE_PHY_BASE + PCIe_Phy_PMA_ISO_PWRST_CTRL);
         
         /********** Poll until PMA responds with the power state acknowledge **********/
+        timeout_cntr = 0;
         while ((ioread32 (PCIE_PHY_BASE + PCIe_Phy_PMA_ISO_PWRST_CTRL) & 0x100) != 0x100)
-            ;
+        {
+            timeout_cntr++;
+            if (timeout_cntr == COMMON_TIMEOUT)
+            {
+                rumboot_printf ("    ERROR: timeout_1\n");
+                return -1;
+            }
+        }
         
         /********** De-assert transceiver control **********/
         /********** electrical idle to begin transmission **********/
         iowrite32 (0x0103, PCIE_PHY_BASE + PCIe_Phy_PMA_ISO_XCVR_CTRL + lane_base);
         
+        // synchronize_sequence (lane_base);
         
         //---------------------------------------------------------------------------------------------
         /********** Activate BIST testing **********/
@@ -180,8 +228,16 @@ uint32_t pcie_bist_lane (uint32_t lane_base, uint32_t mode)
         iowrite32 (0x0B01, PCIE_PHY_BASE + PCIe_Phy_PMA_RX_BIST_CTRL + (lane_base << 1));
         
         /********** Wait for BIST to synchronise **********/
+        timeout_cntr = 0;
         while ((ioread32 (PCIE_PHY_BASE + PCIe_Phy_PMA_XCVR_CTRL + lane_base) & 0x2) != 0x2)
-            ;
+        {
+            timeout_cntr++;
+            if (timeout_cntr == COMMON_TIMEOUT)
+            {
+                rumboot_printf ("    ERROR: timeout_2\n");
+                return -1;
+            }
+        }
         
         /********** Clear BIST error counters **********/
         iowrite32 (0x0B11, PCIE_PHY_BASE + PCIe_Phy_PMA_RX_BIST_CTRL + (lane_base << 1));
@@ -206,8 +262,16 @@ uint32_t pcie_bist_lane (uint32_t lane_base, uint32_t mode)
         iowrite32 (0x0B01, PCIE_PHY_BASE + PCIe_Phy_PMA_TX_BIST_CTRL + (lane_base << 1));
         
         /********** Check that an error is detected **********/
+        timeout_cntr = 0;
         while (ioread32 (PCIE_PHY_BASE + PCIe_Phy_PMA_XCVR_CTRL + lane_base) == 0)
-            ;
+        {
+            timeout_cntr++;
+            if (timeout_cntr == COMMON_TIMEOUT)
+            {
+                rumboot_printf ("    ERROR: timeout_3\n");
+                return -1;
+            }
+        }
         
         /********** Check the BIST error counter register **********/
         /********** it must contain errors **********/
