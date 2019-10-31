@@ -362,23 +362,23 @@ test_oi10_cpu_mem_007:
 //    TEST_DCU_LRU_DBUS 2, dcu_lru_array_data
 //    TEST_DCU_LRU_DBUS 3, dcu_lru_array_data
 //***
-    rumboot_putstring "TEC_DCU_WBYTESEL0_01_BIT_FORCE dcu_lru_array_data\n"
+//    rumboot_putstring "TEC_DCU_WBYTESEL0_01_BIT_FORCE dcu_lru_array_data\n"
 
-    test_event TEC_DCU_WBYTESEL0_01_BIT_FORCE
-    .align 7
-    TEST_DCU_LRU_DBUS 0, dcu_lru_array_data01
-    TEST_DCU_LRU_DBUS 1, dcu_lru_array_data01
-    TEST_DCU_LRU_DBUS 2, dcu_lru_array_data01
-    TEST_DCU_LRU_DBUS 3, dcu_lru_array_data01
-
-//    rumboot_putstring "TEC_DCU_WBYTESEL0_10_BIT_FORCE dcu_lru_array_data\n"
-
-//    test_event TEC_DCU_WBYTESEL0_10_BIT_FORCE
+//    test_event TEC_DCU_WBYTESEL0_01_BIT_FORCE
 //    .align 7
-//    TEST_DCU_LRU_DBUS 0, dcu_lru_array_data
-//    TEST_DCU_LRU_DBUS 1, dcu_lru_array_data
-//    TEST_DCU_LRU_DBUS 2, dcu_lru_array_data
-//    TEST_DCU_LRU_DBUS 3, dcu_lru_array_data
+//    TEST_DCU_LRU_DBUS 0, dcu_lru_array_data01
+//    TEST_DCU_LRU_DBUS 1, dcu_lru_array_data01
+//    TEST_DCU_LRU_DBUS 2, dcu_lru_array_data01
+//    TEST_DCU_LRU_DBUS 3, dcu_lru_array_data01
+
+    rumboot_putstring "TEC_DCU_WBYTESEL0_10_BIT_FORCE dcu_lru_array_data\n"
+
+    test_event TEC_DCU_WBYTESEL0_10_BIT_FORCE
+    .align 7
+    TEST_DCU_LRU_DBUS 0, dcu_lru_array_data10
+    TEST_DCU_LRU_DBUS 1, dcu_lru_array_data10
+    TEST_DCU_LRU_DBUS 2, dcu_lru_array_data10
+    TEST_DCU_LRU_DBUS 3, dcu_lru_array_data10
 
 //    rumboot_putstring "TEC_DCU_WBYTESEL0_11_BIT_FORCE dcu_lru_array_data\n"
 
@@ -542,3 +542,15 @@ dcu_lru_array_data01:
 .long 0x49fc8000
 .long 0xd21c4000
 .long 0x7a7c0000
+
+dcu_lru_array_data10:
+.long 0x10008000
+.long 0x2fc4c000
+.long 0x4e88c000
+.long 0x8d4c8000
+.long 0x1a904000
+.long 0x25540000
+.long 0x43188000
+.long 0x8cdcc000
+.long 0x1c20c000
+.long 0x2ea48000
