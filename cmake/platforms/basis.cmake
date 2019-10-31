@@ -1358,6 +1358,12 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
   add_rumboot_target(
       CONFIGURATION IRAM
+      FILES pcie/pcie_power_consumption.c
+      NAME pcie_power_consumption
+    )
+
+  add_rumboot_target(
+      CONFIGURATION IRAM
       FILES pcie/pcie_soft_reset_eRP_test.c
       NAME pcie_soft_reset_eRP_test
     )
