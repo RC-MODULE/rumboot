@@ -1,17 +1,13 @@
 //-----------------------------------------------------------------------------
 //  This program is for achieving PCIe maximum power consumption
 //  
-//  if there is no opposite device, we must use Phy 
+//  if there is no opposite device, use only PCIe Phy in BIST mode
+//    (then MAC wont turn if off)
 //  
 //  It includes:
-//    - program speedup, if simulation
-//    - BIST in ISI mode
-//        (repeat for every lane)
-//    - if not pass, BIST in Serial Loopback mode
-//    - if not pass, BIST in Near Loopback mode
 //    - 
 //
-//    Test duration (RTL): < 200 us
+//    Test duration (RTL): < 
 //-----------------------------------------------------------------------------
 
 #include <stdint.h>
@@ -111,7 +107,7 @@ void simulation_speedup ()
 #endif
 }
 
-uint32_t pcie_turn_on_bist_all_lanes (uint32_t lane_base, uint32_t mode)
+uint32_t pcie_turn_on_bist_all_lanes (uint32_t mode)
 {
     volatile uint32_t timeout_cntr;
     
@@ -225,10 +221,11 @@ int main ()
 {
     simulation_speedup ();
     
-    pcie_turn_on_bist_all_lanes (LANE_0_BASE, ISI_LOOPBACK);
+    pcie_turn_on_bist_all_lanes (ISI_LOOPBACK);
     
-    while (1)
-        ;
+    //  This delay can be removed.
+    //    It present only to show, that PCIe Phy works infinite time.
+    delay_cycle (200);
     
     return 0;
 }
