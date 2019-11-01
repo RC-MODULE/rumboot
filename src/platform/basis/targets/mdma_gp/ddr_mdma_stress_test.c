@@ -7,6 +7,7 @@
 #include <rumboot/printf.h>
 #include <rumboot/timer.h>
 #include <rumboot/rumboot.h>
+#include <rumboot/ddr_test_lib.h>
 
 #include <regs/regs_mdma.h>
 
@@ -303,6 +304,8 @@ int mem_mdma_test (
 }
 
 int main() {
+    if (ddr_init (DDR0_BASE) != 0)
+        return -1;
     uint32_t desc_num = 64; // max 511
 //    uint32_t data_size = 8192;
 //    uint32_t data_size = 1024;
