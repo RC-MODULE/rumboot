@@ -1832,7 +1832,13 @@ add_rumboot_target(
     NAME "ddr0_mdma_gp_0_1"
     TESTGROUP mdma_gp
   )
-  
+
+  add_rumboot_target(
+    CONFIGURATION IRAM
+    CFLAGS -DGPIO_BASE=GPIO1_BASE
+    FILES gpio/gpio_blink.c
+    NAME "gpio_blink"
+  )  
 
 endmacro()
 
