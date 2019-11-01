@@ -137,9 +137,9 @@
 
 
     lwz r18, 0(r17)
-    rumboot_puthex    r27
-//    cmp cr7, 0 , r27, r18
-//    TEST_ASSERT(eq, cr7, "Wrong value in dcu lru array for way \way")
+//    rumboot_puthex    r27
+    cmp cr7, 0 , r27, r18
+    TEST_ASSERT(eq, cr7, "Wrong value in dcu lru array for way \way")
 
     addi r17, r17, 4
     addi r2, r2, 1
@@ -384,10 +384,10 @@ test_oi10_cpu_mem_007:
 
     test_event TEC_DCU_WBYTESEL0_11_BIT_FORCE
     .align 7
-    TEST_DCU_LRU_DBUS 0, dcu_lru_array_data
-    TEST_DCU_LRU_DBUS 1, dcu_lru_array_data
-    TEST_DCU_LRU_DBUS 2, dcu_lru_array_data
-    TEST_DCU_LRU_DBUS 3, dcu_lru_array_data
+    TEST_DCU_LRU_DBUS 0, dcu_lru_array_data11
+    TEST_DCU_LRU_DBUS 1, dcu_lru_array_data11
+    TEST_DCU_LRU_DBUS 2, dcu_lru_array_data11
+    TEST_DCU_LRU_DBUS 3, dcu_lru_array_data11
 //***
 
 test_ok:
@@ -554,3 +554,15 @@ dcu_lru_array_data10:
 .long 0x4cfc8000
 .long 0xdc1cc000
 .long 0x7ebc8000
+
+dcu_lru_array_data11:
+.long 0x8aa04000
+.long 0x3fc0c000
+.long 0x7c308000
+.long 0x8d60c000
+.long 0xca944000
+.long 0x05480000
+.long 0x9f348000
+.long 0x427c8000
+.long 0xde5cc000
+.long 0x7c7c0000
