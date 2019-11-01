@@ -339,7 +339,6 @@ save_data_size:
 
 main:
     full_prologue
-    test_event_send_test_id "test_iss_base"
 
     rumboot_putstring "Init test...\n"
     set_cr      cr6,    eq
@@ -984,12 +983,6 @@ test_end:
 
 test_end_cont:
     rest_srr
-    load_addr   R_ADDR, save_data_size
-    stw         R_DMPB, 0(R_ADDR)
-    load_const  r3, EVENT_TESTEVENT
-    load_addr   r4, event_data
-    load_const  r5, EVENT_DATA_SIZE
-    bl          rumboot_platform_event_raise
 
     bne- cr2,           test_error
 
