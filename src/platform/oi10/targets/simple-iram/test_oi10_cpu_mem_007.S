@@ -346,7 +346,7 @@ test_oi10_cpu_mem_007:
     TEST_DCU_LRU_ABUS 3, 0x7F
 
 
-//    test_event TEC_INIT_LRU_ARRAYS_DBUS_CHECK
+    test_event TEC_INIT_LRU_ARRAYS_DBUS_CHECK
 
 //    rumboot_putstring "TEST_ICU_LRU_DBUS icu_lru_array_data\n"
 //    TEST_ICU_LRU_DBUS 0, icu_lru_array_data
@@ -362,23 +362,23 @@ test_oi10_cpu_mem_007:
 //    TEST_DCU_LRU_DBUS 2, dcu_lru_array_data
 //    TEST_DCU_LRU_DBUS 3, dcu_lru_array_data
 //***
-//    rumboot_putstring "TEC_DCU_WBYTESEL0_01_BIT_FORCE dcu_lru_array_data\n"
+    rumboot_putstring "TEC_DCU_WBYTESEL0_01_BIT_FORCE dcu_lru_array_data\n"
 
-//    test_event TEC_DCU_WBYTESEL0_01_BIT_FORCE
-//    .align 7
-//    TEST_DCU_LRU_DBUS 0, dcu_lru_array_data01
-//    TEST_DCU_LRU_DBUS 1, dcu_lru_array_data01
-//    TEST_DCU_LRU_DBUS 2, dcu_lru_array_data01
-//    TEST_DCU_LRU_DBUS 3, dcu_lru_array_data01
-
-    rumboot_putstring "TEC_DCU_WBYTESEL0_10_BIT_FORCE dcu_lru_array_data\n"
-
-    test_event TEC_DCU_WBYTESEL0_10_BIT_FORCE
+    test_event TEC_DCU_WBYTESEL0_01_BIT_FORCE
     .align 7
-    TEST_DCU_LRU_DBUS 0, dcu_lru_array_data10
-    TEST_DCU_LRU_DBUS 1, dcu_lru_array_data10
-    TEST_DCU_LRU_DBUS 2, dcu_lru_array_data10
-    TEST_DCU_LRU_DBUS 3, dcu_lru_array_data10
+    TEST_DCU_LRU_DBUS 0, dcu_lru_array_data01
+    TEST_DCU_LRU_DBUS 1, dcu_lru_array_data01
+    TEST_DCU_LRU_DBUS 2, dcu_lru_array_data01
+    TEST_DCU_LRU_DBUS 3, dcu_lru_array_data01
+
+//    rumboot_putstring "TEC_DCU_WBYTESEL0_10_BIT_FORCE dcu_lru_array_data\n"
+
+//    test_event TEC_DCU_WBYTESEL0_10_BIT_FORCE
+//    .align 7
+//    TEST_DCU_LRU_DBUS 0, dcu_lru_array_data10
+//    TEST_DCU_LRU_DBUS 1, dcu_lru_array_data10
+//    TEST_DCU_LRU_DBUS 2, dcu_lru_array_data10
+//    TEST_DCU_LRU_DBUS 3, dcu_lru_array_data10
 
 //    rumboot_putstring "TEC_DCU_WBYTESEL0_11_BIT_FORCE dcu_lru_array_data\n"
 
@@ -533,15 +533,15 @@ dcu_lru_array_data:
 
 dcu_lru_array_data01:
 .long 0x8020c000
-.long 0x0840c000
-.long 0xf0b04000
-.long 0x98e44000
-.long 0x01340000
-.long 0xc9684000
-.long 0x91b88000
-.long 0x49fc8000
-.long 0xd21c4000
-.long 0x7a7c0000
+.long 0x0fc0c000
+.long 0xff30c000
+.long 0x9ce4c000
+.long 0x0ab40000
+.long 0xc5684000
+.long 0x93388000
+.long 0x40fc8000
+.long 0xd01cc000
+.long 0x7ffc8000
 
 dcu_lru_array_data10:
 .long 0x10008000
