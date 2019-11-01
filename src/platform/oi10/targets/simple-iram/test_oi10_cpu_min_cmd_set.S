@@ -1,4 +1,3 @@
-#define RUMBOOT_ASSERT_WARN_ONLY
 #include <platform/arch/ppc/test_macro_asm.S.h>
 #include <platform/test_event_codes.h>
 #include <platform/test_event_asm.h>
@@ -409,7 +408,7 @@ gold_dump:
     .long 0x000000c3, 0x000000c3, 0x8002096f, 0x000000c3
     .long 0x8002096f, 0x000000c3, 0x00005a5a, 0x00005a5a
     .long 0x00005a5a, 0x00005a5a, 0x8002096a, 0x00005a5a
-    .long 0x00000000, 0x00000000, 0x00000000, 0x00000000
+    .long 0x8002096a, 0x00005a5a, 0x3c3cc3c3, 0x3c3cc3c3
     .long 0x3c3cc3c3, 0x3c3cc3c3, 0x8002096c, 0x3c3cc3c3
     .long 0x8002096c, 0x3c3cc3c3, 0x00c30000, 0x00c30000
     .long 0x00c30000, 0x00c30000, 0x8002a1e9, 0x00c30000
