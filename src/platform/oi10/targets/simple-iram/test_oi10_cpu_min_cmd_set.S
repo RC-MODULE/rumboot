@@ -1,3 +1,4 @@
+#define RUMBOOT_ASSERT_WARN_ONLY
 #include <platform/arch/ppc/test_macro_asm.S.h>
 #include <platform/test_event_codes.h>
 #include <platform/test_event_asm.h>
@@ -338,6 +339,7 @@ save_data_size:
 
 main:
     full_prologue
+    test_event_send_test_id "test_iss_base"
 
     rumboot_putstring "Init test...\n"
     set_cr      cr6,    eq
@@ -411,12 +413,12 @@ gold_dump:
     .long 0x8002096a, 0x00005a5a, 0x3c3cc3c3, 0x3c3cc3c3
     .long 0x3c3cc3c3, 0x3c3cc3c3, 0x8002096c, 0x3c3cc3c3
     .long 0x8002096c, 0x3c3cc3c3, 0x00c30000, 0x00c30000
-    .long 0x00c30000, 0x00c30000, 0x80029dd9, 0x00c30000
-    .long 0x80029ddd, 0x00c30000, 0x0000aa55, 0x0000aa55
-    .long 0x0000aa55, 0x0000aa55, 0x80029dea, 0x0000aa55
-    .long 0x80029dee, 0x0000aa55, 0xa55ac33c, 0xa55ac33c
-    .long 0xa55ac33c, 0xa55ac33c, 0x80029df8, 0xa55ac33c
-    .long 0x80029dfc, 0xa55ac33c, 0x80029dfc, 0xa55ac33c
+    .long 0x00c30000, 0x00c30000, 0x8002a1e9, 0x00c30000
+    .long 0x8002a1ed, 0x00c30000, 0x0000aa55, 0x0000aa55
+    .long 0x0000aa55, 0x0000aa55, 0x8002a1fa, 0x0000aa55
+    .long 0x8002a1fe, 0x0000aa55, 0xa55ac33c, 0xa55ac33c
+    .long 0xa55ac33c, 0xa55ac33c, 0x8002a208, 0xa55ac33c
+    .long 0x8002a20c, 0xa55ac33c, 0x8002a20c, 0xa55ac33c
     .long 0x00000000, 0xaaaa5555, 0xaaaa5555, 0xaaaa5555
     .long 0xaaaa5555, 0xaa5555aa, 0x555555aa, 0x5555aaaa
     .long 0xffffffff, 0xffffffff, 0x0000aaaa, 0x0000aaaa
@@ -428,17 +430,19 @@ gold_dump:
     .long 0x80020980, 0x80020990, 0x80020980, 0x800209a8
     .long 0x400921fb, 0x54442d18, 0x85a5a5a5, 0xa5a5a5a5
     .long 0x00000000, 0x00000000, 0xc0787878, 0x60000000
-    .long 0x80029dc0, 0x80029dc8, 0xc0787878, 0x60000000
-    .long 0x3f878787, 0x80000000, 0x80029dc0, 0x80029dd0
+    .long 0x8002a1d0, 0x8002a1d8, 0xc0787878, 0x60000000
+    .long 0x3f878787, 0x80000000, 0x8002a1d0, 0x8002a1e0
     .long 0x3f878787, 0x80000000, 0x00000000, 0xad2d2d2d
-    .long 0x80029dc0, 0x80029ddc, 0x00000000, 0xad2d2d2d
-    .long 0x00000000, 0x92d2d2d2, 0x80029dc0, 0x80029de4
+    .long 0x8002a1d0, 0x8002a1ec, 0x00000000, 0xad2d2d2d
+    .long 0x00000000, 0x92d2d2d2, 0x8002a1d0, 0x8002a1f4
     .long 0x00000000, 0x92d2d2d2, 0x00000000, 0x00000000
-    .long 0x00000000, 0x82004000, 0x00000000, 0x92d2d2d2
-    .long 0x00000000, 0x12d2d2d2, 0x00000000, 0xc3c3c24a
-    .long 0x00000000, 0x3c3c3c3c, 0x8a5a5a5a, 0x5a5a5a5a
-    .long 0x0a5a5a5a, 0x5a5a5a5a, 0xc0787849, 0x50f10000
-    .long 0x3f878787, 0x80000000, 0x00000000, 0x3ddb84a8
+    .long 0x00000000, 0x82004000, 0x8a5a5a5a, 0x5a5a5a5a
+    .long 0x0a5a5a5a, 0x5a5a5a5a, 0xc0e0a3d7, 0x00000000
+    .long 0x4169730c, 0x80000000, 0xc0787849, 0x50f10000
+    .long 0x3f878787, 0x80000000, 0x00000000, 0x92d2d2d2
+    .long 0x00000000, 0x12d2d2d2, 0x00000000, 0xc7051eb8
+    .long 0x00000000, 0x4b4b9864, 0x00000000, 0xc3c3c24a
+    .long 0x00000000, 0x3c3c3c3c, 0x00000000, 0x3ddb84a8
     .long 0x00000000, 0x82064000, 0x400921fb, 0x54442d18
     .long 0x00000000, 0x40490fdb, 0x400921fb, 0x60000000
     .long 0x3333cccc, 0x3333cccc, 0x0002b900, 0x0002b900
@@ -791,28 +795,32 @@ fp_exec:
     lfd         f20,    0x00(r8)
     fpscr_reset
     mffs        f21
-    fcmpu       cr7,    f21,    f20
     dump_write_fpscr
+    fcmpu       cr7,    f21,    f20
     TEST_ASSERT(eq, cr7, "Expected other FPSCR value after first fpscr_reset.")
     crand   ((cr2*4)+2), ((cr2*4)+2), ((cr7*4)+2)
     lfd         f20,     0x08(r8)
-    lfs         f21,     0x14(r8)
-    lfs         f22,     0x1c(r8)
-    lfs         f23,     0x24(r8)
-    lfs         f24,     0x2c(r8)
-    lfd         f25,     0x30(r8)
-    lfd         f26,     0x38(r8)
-    lfd         f27,     0x40(r8)
-    lfd         f28,     0x48(r8)
+    lfd         f25,     0x10(r8)
+    lfd         f26,     0x18(r8)
+    lfd         f27,     0x20(r8)
+    lfd         f28,     0x28(r8)
+    lfd         f2,      0x30(r8)
+    lfd         f3,      0x38(r8)
+    lfs         f21,     0x44(r8)
+    lfs         f22,     0x4c(r8)
+    lfs         f23,     0x54(r8)
+    lfs         f24,     0x5c(r8)
+    lfs         f4,      0x64(r8)
+    lfs         f5,      0x6c(r8)
     fmadd.		f13,    f13, f14, f14
     fmsub.		f14,    f14, f13, f13
     fdivs.		f15,    f11, f12
     fmuls.		f16,    f15, f11
-    fadd        f15,    f11, f12
-    fsub        f16,    f15, f11
+    fadd        f17,    f11, f12
+    fsub        f18,    f17, f11
     mffs        f29
-    fcmpu       cr7,    f29,    f20
     dump_write_fpscr
+    fcmpu       cr7,    f29,    f20
     TEST_ASSERT(eq, cr7, "Expected other FPSCR value after FPU arithmetic instructions.")
 
     crand   ((cr2*4)+2), ((cr2*4)+2), ((cr7*4)+2)
@@ -828,12 +836,22 @@ fp_exec:
     crand   ((cr2*4)+2), ((cr2*4)+2), ((cr7*4)+2)
     fcmpu       cr7,    f15,    f27
     dump_write_double   f15
-    TEST_ASSERT(eq, cr7, "Expected other double value after 'fdivs.' and 'fadd' instruction.")
+    TEST_ASSERT(eq, cr7, "Expected other double value after 'fdivs.' instruction.")
 
     crand   ((cr2*4)+2), ((cr2*4)+2), ((cr7*4)+2)
     fcmpu       cr7,    f16,    f28
     dump_write_double   f16
-    TEST_ASSERT(eq, cr7, "Expected other double value after 'fmuls.' and 'fsub'  instruction.")
+    TEST_ASSERT(eq, cr7, "Expected other double value after 'fmuls.' instruction.")
+
+    crand   ((cr2*4)+2), ((cr2*4)+2), ((cr7*4)+2)
+    fcmpu       cr7,    f17,    f2
+    dump_write_double   f17
+    TEST_ASSERT(eq, cr7, "Expected other double value after 'fadd' instruction.")
+
+    crand   ((cr2*4)+2), ((cr2*4)+2), ((cr7*4)+2)
+    fcmpu       cr7,    f18,    f3
+    dump_write_double   f18
+    TEST_ASSERT(eq, cr7, "Expected other double value after 'fsub'  instruction.")
 
     crand   ((cr2*4)+2), ((cr2*4)+2), ((cr7*4)+2)
     dump_write_single   f13
@@ -851,26 +869,39 @@ fp_exec:
     dump_write_single   f15
     lfs         f15,    -4(R_DMPA)
     fcmpu       cr7,    f15,    f23
-    TEST_ASSERT(eq, cr7, "Expected other single value after 'fdivs.' and 'fadd' instructions.")
+    TEST_ASSERT(eq, cr7, "Expected other single value after 'fdivs.' instructions.")
 
     crand   ((cr2*4)+2), ((cr2*4)+2), ((cr7*4)+2)
     dump_write_single   f16
     lfs         f16,    -4(R_DMPA)
     fcmpu       cr7,    f16,    f24
-    TEST_ASSERT(eq, cr7, "Expected other single value after 'fmuls.' and 'fsub' instructions.")
+    TEST_ASSERT(eq, cr7, "Expected other single value after 'fmuls.' instructions.")
+
+    crand   ((cr2*4)+2), ((cr2*4)+2), ((cr7*4)+2)
+    dump_write_single   f17
+    lfs         f17,    -4(R_DMPA)
+    fcmpu       cr7,    f17,    f4
+    TEST_ASSERT(eq, cr7, "Expected other single value after 'fadd' instructions.")
+
+    crand   ((cr2*4)+2), ((cr2*4)+2), ((cr7*4)+2)
+    dump_write_single   f18
+    lfs         f6,     -4(R_DMPA)
+    fcmpu       cr7,    f6,    f5
+    TEST_ASSERT(eq, cr7, "Expected other single value after 'fsub' instructions.")
 
     crand   ((cr2*4)+2), ((cr2*4)+2), ((cr7*4)+2)
     add         r8,     r7,     R_DMPB
     lfs         f20,     0x04(r8)
-    fcmpo cr3,  f16,    f12
-    fcmpu cr4,  f16,    f12
+    fcmpo cr3,  f18,    f12
+    fcmpu cr4,  f18,    f12
     TEST_ASSERT(eq, cr3, "Unexpected FP ordered compare instruction result.")
     TEST_ASSERT(eq, cr4, "Unexpected FP unordered compare instruction result.")
     crand   ((cr2*4)+2), ((cr2*4)+2), ((cr3*4)+2)
     crand   ((cr2*4)+2), ((cr2*4)+2), ((cr4*4)+2)
-    fsqrts      f16,    f16
-    fcmpu       cr7,    f16,    f20
-    dump_write_single   f16
+    fsqrts      f18,    f18
+    dump_write_single   f18
+    lfs         f18,    -4(R_DMPA)
+    fcmpu       cr7,    f18,    f20
     TEST_ASSERT(eq, cr7, "Expected other double value after 'fsqrts' instruction.")
     crand   ((cr2*4)+2), ((cr2*4)+2), ((cr7*4)+2)
     lfs         f17,    0x0C(R_CONF)
@@ -882,8 +913,8 @@ fp_exec:
     lfd         f21,     0x10(r8)
     lfs         f22,     0x1c(r8)
     lfd         f23,     0x20(r8)
-    fcmpu       cr7,    f29,    f20
     dump_write_fpscr
+    fcmpu       cr7,    f29,    f20
     TEST_ASSERT(eq, cr7, "Expected other FPSCR value after 'frsp.' instruction.")
     crand   ((cr2*4)+2), ((cr2*4)+2), ((cr7*4)+2)
     fcmpu       cr5,    f23,    f19
@@ -953,6 +984,12 @@ test_end:
 
 test_end_cont:
     rest_srr
+    load_addr   R_ADDR, save_data_size
+    stw         R_DMPB, 0(R_ADDR)
+    load_const  r3, EVENT_TESTEVENT
+    load_addr   r4, event_data
+    load_const  r5, EVENT_DATA_SIZE
+    bl          rumboot_platform_event_raise
 
     bne- cr2,           test_error
 
