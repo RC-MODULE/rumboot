@@ -1827,9 +1827,21 @@ add_rumboot_target(
 
   add_rumboot_target(
     CONFIGURATION IRAM
+    CFLAGS 
+        -DDDR_RD
     FILES mdma_gp/ddr_mdma_stress_test.c
-    PREFIX "direct-memory"
-    NAME "ddr0_mdma_gp_0_1"
+    PREFIX "ddr_and_mdma"
+    NAME "rd_ddr0_wr_im1"
+    TESTGROUP mdma_gp
+  )
+
+  add_rumboot_target(
+    CONFIGURATION IRAM
+    CFLAGS 
+        -DDDR_WR
+    FILES mdma_gp/ddr_mdma_stress_test.c
+    PREFIX "ddr_and_mdma"
+    NAME "rd_mi1_wr_ddr0"
     TESTGROUP mdma_gp
   )
 
