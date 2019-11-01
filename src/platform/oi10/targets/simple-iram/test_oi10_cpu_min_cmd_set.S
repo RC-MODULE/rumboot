@@ -409,7 +409,7 @@ gold_dump:
     .long 0x000000c3, 0x000000c3, 0x8002096f, 0x000000c3
     .long 0x8002096f, 0x000000c3, 0x00005a5a, 0x00005a5a
     .long 0x00005a5a, 0x00005a5a, 0x8002096a, 0x00005a5a
-    .long 0x8002096a, 0x00005a5a, 0x3c3cc3c3, 0x3c3cc3c3
+    .long 0x00000000, 0x00000000, 0x00000000, 0x00000000
     .long 0x3c3cc3c3, 0x3c3cc3c3, 0x8002096c, 0x3c3cc3c3
     .long 0x8002096c, 0x3c3cc3c3, 0x00c30000, 0x00c30000
     .long 0x00c30000, 0x00c30000, 0x8002a1e9, 0x00c30000
@@ -989,7 +989,7 @@ test_end_cont:
 pre_finish:
     load_addr   r3, gold_dump
     load_addr   r4, save_data
-    load_const  r5, R_DMPB
+    mr          r5, R_DMPB
     bl memcmp
     load_const  r4, 0
     cmpw        cr0, r3, r4
