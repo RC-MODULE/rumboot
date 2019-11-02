@@ -289,23 +289,22 @@ bool l2c_arracc_get_way_by_address(
     rumboot_printf( "phys_addr_tag: %x\n", phys_addr_tag);
 #endif
 
-    *cache_way = -1;
-
     uint32_t tag_info;
     bool tag_valid;
     uint32_t tag_info_tag;
+    int current_cache_way = -1;
     do {
-        (*cache_way)++;
-        tag_valid       = l2c_arracc_tag_info_read_by_way( base, ext_phys_addr, phys_addr, *cache_way, &tag_info );
+        current_cache_way++;
+        tag_valid       = l2c_arracc_tag_info_read_by_way( base, ext_phys_addr, phys_addr, current_cache_way, &tag_info );
         tag_info_tag    = GET_BITS(tag_info, mem_layout.tag_i, tag_address_n);
 
 #ifdef L2C_TRACE_DEBUG_MSG
-        rumboot_printf ("cache_way: %d\n", *cache_way);
+        rumboot_printf ("cache_way: %d\n", current_cache_way);
         rumboot_printf ("tag_valid: %x\n", tag_valid);
         rumboot_printf ("tag_info_tag: %x\n", tag_info_tag);
 #endif
     } while (
-        (*cache_way < L2C_COUNT_WAYS-1)
+        (current_cache_way < L2C_COUNT_WAYS-1)
     &&  ( !tag_valid || (phys_addr_tag != tag_info_tag) )
     );
 
@@ -314,6 +313,7 @@ bool l2c_arracc_get_way_by_address(
 #endif
 
     if ( tag_valid && (phys_addr_tag == tag_info_tag) ) {
+        *cache_way = current_cache_way;
         return true;
     } else {
 #ifdef L2C_TRACE_DEBUG_MSG
