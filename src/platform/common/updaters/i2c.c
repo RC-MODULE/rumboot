@@ -140,11 +140,23 @@ bailout:
 	return ret;
 }
 
+static char pdata[64];
+
+void packet_rx_cb(size_t curpos, void *ptr, size_t length, void *arg)
+{
+	int i;
+	char *buf = ptr;
+	int ret;
+	for (i=0; i<length; i=i+16) {
+		ret = eeprom_write_chunk(src, (void *) pdata, src->slave_addr, curpos + i, &buf[i], 16);
+		mdelay(5);		
+	}
+}
 
 #define TRANSFER_CHUNK 4096
 int main()
 {
-	char pdata[64];
+
 	char buf[TRANSFER_CHUNK];
 	rumboot_platform_runtime_info->silent = false;
 	bootsource_init(src, (void *) pdata);
@@ -156,19 +168,12 @@ int main()
 	int pos=0;
 
 
-	while (transfer == TRANSFER_CHUNK) {
-		rumboot_printf("boot: Press 'X' and send me the image\n");
-	    while ('X' != rumboot_getchar(1000));;
+    rumboot_printf("boot: Press 'X' and send me the image\n");
+    while ('X' != rumboot_getchar(1000));;
 
-		transfer = xmodem_get(buf, TRANSFER_CHUNK);
-		int i; 
-		rumboot_printf("Got payload: %d bytes\n", transfer);
-		for (i=0; i<TRANSFER_CHUNK; i=i+16) {
-			ret = eeprom_write_chunk(src, (void *) pdata, src->slave_addr, pos, &buf[i], 16);
-			pos+=16;
-			mdelay(5);		
-		}
-	}
+	size_t bytes = xmodem_get_async(512 * 1024 * 1024, packet_rx_cb, (void *) src);
+	rumboot_printf("Operation completed, %d bytes written\n", bytes);
+
 	
 	rumboot_printf("Operation completed\n");
 	return 0;

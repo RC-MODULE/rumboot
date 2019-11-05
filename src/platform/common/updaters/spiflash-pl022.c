@@ -86,12 +86,12 @@ void spiflash_wait_busy(const struct rumboot_bootsource *src, void *pdata)
 
 static void spiflash_write_page(const struct rumboot_bootsource *src, void *pdata, uint32_t offset, void *data)
 {
-	uint8_t wcmd[256 + 4];
+	uint8_t wcmd[128 + 4];
 	wcmd[0] = SPIFLASH_PAGEPROG;
 	wcmd[1] = (offset >> 16) & 0xff;
 	wcmd[2] = (offset >> 8) & 0xff;
 	wcmd[3] = offset & 0xff;
-	memcpy(&wcmd[4], data, 256);
+	memcpy(&wcmd[4], data, 128);
 
     spi_cs(src, (void *) pdata, 0);
 	pl022_xfer(src->base, wcmd, wcmd, ARRAY_SIZE(wcmd));
@@ -117,57 +117,93 @@ int spiflash_is_blank(const struct rumboot_bootsource *src, void *pdata)
 #error "Updater needs a BOOT_ID defined"
 #endif
 
+//static char sectorbuf[256];
+void packet_rx_cb(size_t curpos, void *ptr, size_t length, void *src)
+{
+	char pdata[512];
+
+//	if (curpos % 256) {
+//		memcpy(&sectorbuf[128], ptr, 128);
+//	} else {
+		spiflash_cmd(src, pdata, SPIFLASH_WRITEENABLE);			
+		spiflash_write_page(src, (void *) pdata, curpos, ptr);
+		spiflash_cmd(src, pdata, SPIFLASH_WRITEDISABLE);
+//		memcpy(sectorbuf, ptr, 128);		
+//	}
+}
+
+void adjust_speed(int baudrate)
+{
+	struct rumboot_config conf;
+    rumboot_platform_read_config(&conf);
+	conf.baudrate = baudrate;
+    rumboot_platform_init_loader(&conf);
+}
+
+#include <platform/devices.h>
+#include <devices/uart_pl011.h>
+#include <regs/regs_uart_pl011.h>
+
+
+#if 0
+struct flasher_plugin {
+	struct bootsrc *src;
+	size_t chunksize;
+	size_t offset;
+	int (*prepare)(struct flasher_plugin *flp);
+	int (*write_chunk)(struct flasher_plugin *flp, size_t offset, void *data);
+};
+
+int flashapp_execute(struct flasher_plugin *flp)
+{
+	char pdata[64];
+	rumboot_platform_runtime_info->silent = false;
+
+}
+
 int main()
 {
 	char pdata[64];
-	char buf[4096];
-	int i;
+	rumboot_platform_runtime_info->silent = false;
+	while (1) {
+		int i = 0;
+		scanf("HELLO: %d\n", &i);
+		rumboot_printf("%d i\n");
+	}
+}
+#endif
+#if 1
+int main()
+{
+	char pdata[64];
 	rumboot_platform_runtime_info->silent = false;
     const struct rumboot_bootsource *src = &rumboot_platform_get_bootsources()[BOOT_ID];
-
 	bootsource_init(src, (void *) pdata);
-
-	size_t transfer = 4096;
-	int pos=0;
-
+	//adjust_speed(115200);
+	//iowrite32(ioread32(UART0_BASE + UARTLCR_H) | 1<<3, UART0_BASE + UARTLCR_H);
 
 	rumboot_printf("Erasing whole flash...\n");
 	spiflash_cmd(src, pdata, SPIFLASH_WRITEENABLE);
 	spiflash_cmd(src, pdata, SPIFLASH_CHIPERASE);
 	spiflash_wait_busy(src, pdata);
 	rumboot_printf("Done\n");	
+	char tmp[4096];
 
+    if (!spiflash_is_blank(src, pdata)) {
+            rumboot_printf("Trying alternate chip erase...\n");
+	    spiflash_cmd(src, pdata, SPIFLASH_WRITEENABLE);
+	    spiflash_cmd(src, pdata, SPIFLASH_ALT_CHIPERASE);
+	    spiflash_wait_busy(src, pdata);
+    }
 
-        if (!spiflash_is_blank(src, pdata)) {
-                rumboot_printf("Trying alternate chip erase...\n");
-	        spiflash_cmd(src, pdata, SPIFLASH_WRITEENABLE);
-	        spiflash_cmd(src, pdata, SPIFLASH_ALT_CHIPERASE);
-	        spiflash_wait_busy(src, pdata);
-        }
+    rumboot_printf("boot: Press 'X' and send me the image\n");
+    while ('X' != rumboot_getchar(1000));;
 
-	while (transfer == 4096) {
-		rumboot_printf("boot: Press 'X' and send me the image\n");
-	    while ('X' != rumboot_getchar(1000));;
+	size_t bytes = xmodem_get_async(512 * 1024 * 1024, packet_rx_cb, (void *) src);
+	rumboot_printf("Operation completed, %d bytes written\n", bytes);
 
-		transfer = xmodem_get(buf, 4096);
-		for (i=0; i<4096; i=i+256) {
-			char tmp[256];
-			spiflash_cmd(src, pdata, SPIFLASH_WRITEENABLE);			
-			spiflash_write_page(src, (void *) pdata, pos, &buf[i]);
-			spiflash_cmd(src, pdata, SPIFLASH_WRITEDISABLE);			
-
-			bootsource_read(src, (void *) pdata, tmp, pos, 256);
-			if (memcmp(&buf[i], tmp, 256)!=0) {
-				rumboot_printf("verification failed at offset %d: \nWrote:\n", pos);
-				rumboot_hexdump(&buf[i], 256);
-				rumboot_printf("But read:\n");
-				rumboot_hexdump(tmp, 256);
-				rumboot_platform_panic(NULL);
-			}
-			pos+=256;
-		}
-	}
-
-	rumboot_printf("Operation completed\n");
+	bootsource_read(src, (void *) pdata, tmp, 0, 4096);
+	rumboot_hexdump(tmp, 1024);
 	return 0;
 }
+#endif
