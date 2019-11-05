@@ -361,7 +361,7 @@ test_oi10_cpu_mem_007:
     TEST_DCU_LRU_DBUS 1, dcu_lru_array_data
     TEST_DCU_LRU_DBUS 2, dcu_lru_array_data
     TEST_DCU_LRU_DBUS 3, dcu_lru_array_data
-//***
+
     rumboot_putstring "TEC_DCU_WBYTESEL0_01_BIT_FORCE dcu_lru_array_data\n"
 
     test_event TEC_DCU_WBYTESEL0_01_BIT_FORCE
@@ -391,7 +391,6 @@ test_oi10_cpu_mem_007:
     TEST_DCU_LRU_DBUS 1, dcu_lru_array_data11
     TEST_DCU_LRU_DBUS 2, dcu_lru_array_data11
     TEST_DCU_LRU_DBUS 3, dcu_lru_array_data11
-//***
 
 test_ok:
     rumboot_putstring "TEST_OK\n"
@@ -401,100 +400,7 @@ test_error:
     rumboot_putstring "TEST_ERROR\n"
     exit 0x01
 
-
-/*
 icu_lru_array_data:
-.long 0x00002000
-.long 0x00004000
-.long 0x00008000
-.long 0x00000008
-.long 0x00040000
-.long 0x00080000
-.long 0x00100000
-.long 0x00200000
-.long 0x10004000
-.long 0x20004000
-.long 0x40004000
-.long 0x80004000
-.long 0x00400000
-.long 0x00800000
-.long 0x01000000
-.long 0x02000000
-.long 0x04000000
-.long 0x08000000
-.long 0x0ffcc008
-.long 0xfffca008
-.long 0x0ffc6008
-.long 0x0ffce000
-.long 0x0ff8e008
-.long 0x0ff4e008
-.long 0x0fece008
-.long 0x0fdce008
-.long 0xeffce008
-.long 0xdffce008
-.long 0xbffce008
-.long 0x7ffce008
-.long 0x0fbce008
-.long 0x0f7ce008
-.long 0x0efce008
-.long 0x0dfce008
-.long 0x0bfce008
-.long 0x0f7fce00
-
-
-dcu_lru_array_data:
-.long 0x00000000
-.long 0x00040000
-.long 0x00080000
-.long 0x00100000
-.long 0x00200000
-.long 0x10000000
-.long 0x20000000
-.long 0x40000000
-.long 0x80000000
-.long 0x00000000
-.long 0x00000000
-.long 0x00000000
-.long 0x00400000
-.long 0x00800000
-.long 0x01000000
-.long 0x02000000
-.long 0x04000000
-.long 0x08000000
-.long 0xfffc0000
-.long 0xfff80000
-.long 0xfff40000
-.long 0xffec0000
-.long 0xffdc0000
-.long 0xeffc0000
-.long 0xdffc0000
-.long 0xbffc0000
-.long 0x7ffc0000
-.long 0xfffc0000
-.long 0xfffc0000
-.long 0xfffc0000
-.long 0xffbc0000
-.long 0xff7c0000
-.long 0xfefc0000
-.long 0xfdfc0000
-.long 0xfbfc0000
-.long 0xf7fc0000
-*/
-
-icu_lru_array_data:
-/*
-.long 0x00000000
-.long 0x0fc00000
-.long 0x0f3c0000
-.long 0x0ccc6000
-.long 0x0aa84008 ???
-.long 0x5554a000
-.long 0xc3308008
-.long 0xe0c0e008
-.long 0x103ce008
-.long 0x0ffce008
-*/
-
 //Array with LRU parity bits
 .long 0x00000000
 .long 0xefc04000
@@ -509,19 +415,6 @@ icu_lru_array_data:
 
 
 dcu_lru_array_data:
-/*
-.long 0x00000000
-.long 0x0fc00000
-.long 0xff200000
-.long 0x9ce40000
-.long 0x5a940000
-.long 0xa5680000
-.long 0x63180000
-.long 0x00dc0000
-.long 0xf03c0000
-.long 0xfffc0000
-*/
-
 //Array with LRU parity bits
 .long 0x0000c000
 .long 0x0fc0c000
