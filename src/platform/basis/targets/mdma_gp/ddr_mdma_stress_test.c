@@ -54,7 +54,7 @@ void mdma_create_trans_desc (struct mdma_trans_tbl* mdma, uint32_t len, uint32_t
 
 #ifdef EN_PRINT    
     rumboot_printf("mdma_create_trans_desc for %x\n", mdma->base_addr);
-#endif    
+#endif
     uint32_t i = 0;
     
     // Read channel
@@ -82,8 +82,9 @@ void mdma_reuse_trans_desc (struct mdma_trans_tbl* mdma, uint32_t len, uint32_t 
 
     uint32_t i = 0;
     
-
-//    rumboot_printf("mdma_reuse_trans_desc for %x\n", mdma->base_addr);
+#ifdef EN_PRINT
+    rumboot_printf("mdma_reuse_trans_desc for %x\n", mdma->base_addr);
+#endif
     // Read channel
     for (i=0;i<desc_num-1; i++){
         iowrite32(len, mdma->r_tbl_addr + i*8 + 4);
@@ -98,8 +99,10 @@ void mdma_reuse_trans_desc (struct mdma_trans_tbl* mdma, uint32_t len, uint32_t 
 
     iowrite32(mdma->r_tbl_addr, mdma->base_addr + MDMA_DESC_ADDR_R);    // Set read channel first descriptor address
     iowrite32(mdma->w_tbl_addr, mdma->base_addr + MDMA_DESC_ADDR_W);    // Set read channel first descriptor address
+#ifdef EN_PRINT
+    rumboot_printf("ReStart!\n");
+#endif
 
-//    rumboot_printf("ReStart!\n");
 }
 
 static inline void mdma_start (struct mdma_trans_tbl* mdma){
@@ -248,17 +251,17 @@ int mem_mdma_test (
     rumboot_printf("Start 0!");
     mdma_start(mdma0);
     delay = 0;
-    while (delay < max_delay) {delay++;}
+//    while (delay < max_delay) {delay++;}
     rumboot_printf("Start 1!");
     mdma_start(mdma1);
     
 #ifdef MDMAx4
     delay = 0;
-    while (delay < max_delay) {delay++;}
+//    while (delay < max_delay) {delay++;}
     rumboot_printf("Start 2!");
     mdma_start(mdma2);
     delay = 0;
-    while (delay < max_delay) {delay++;}
+//    while (delay < max_delay) {delay++;}
     rumboot_printf("Start 3!");
     mdma_start(mdma3);
 #endif
@@ -267,7 +270,9 @@ int mem_mdma_test (
 //    for (i=0; i<cycles_limit; i++){
     while(1){
 //    while(i<2){
-        rumboot_printf("Cycle %d\n", i);
+        if (i%1000 == 0){
+            rumboot_printf("Cycle %d\n", i);
+        }
         
         if (mdma_wait_end_trans(mdma0))
             return 1;
@@ -295,8 +300,6 @@ int mem_mdma_test (
 int main() {
     if (ddr_init (DDR0_BASE) != 0)
         return -1;
-    if (ddr_init (DDR1_BASE) != 0)
-        return -1;
     uint32_t desc_num = 64; // max 511
 //    uint32_t data_size = 8192;
 //    uint32_t data_size = 1024;
@@ -309,6 +312,8 @@ int main() {
 #endif
 
 #ifdef DDR_RD    
+    if (ddr_init (DDR1_BASE) != 0)
+        return -1;
     rumboot_printf("Start READ from DDR0\n");
     if (mem_mdma_test("IM0", "DDR0", "DDR1", data_size, desc_num))
         return 1;
