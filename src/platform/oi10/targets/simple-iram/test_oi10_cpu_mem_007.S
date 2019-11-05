@@ -161,9 +161,17 @@ DECLARE_ENUM_VAL( TEC_DCU_WBYTESEL0_11_BIT_FORCE,   TEST_EVENT_CODE_MIN+6 )
 END_ENUM( test_event_code )
 
 
-.section ".text","ax",@progbits
+.section ".text.rom","ax",@progbits
 
 .global main
+.align 8
+.long 0
+.align 8
+.long 0
+.align 8
+.long 0
+.align 8
+.long 0
 .align 8
 .long 0
 .align 8
