@@ -58,6 +58,7 @@ rumboot_add_configuration (
 
 
 include(${CMAKE_SOURCE_DIR}/cmake/bootrom.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/spels.cmake)
 
 set(ROM_115200_OPTS +UART0_SPEED=115200)
 
@@ -311,7 +312,37 @@ endif()
       PREFIX updater
       NAME spi0-cs0
     )
-  
+  ### SPELS Tests go here ###
+    rumboot_spels_arch_tests(
+      CONFIGURATION IRAM
+    )
+
+    rumboot_spels_memory_test(
+      CONFIGURATION IRAM
+      NAME ambx
+    )
+
+    rumboot_spels_memory_test(
+      CONFIGURATION IRAM
+      START 0x100000
+      END   0x200000
+      NAME smb
+    )
+
+    rumboot_spels_memory_test(
+      CONFIGURATION IRAM
+      START 0x200000
+      END   0x280000
+      NAME nm1b
+    )
+
+    rumboot_spels_memory_test(
+      CONFIGURATION IRAM
+      START 0x280000
+      END   0x300000
+      NAME nm2b
+    )
+
 
 endmacro()
 
