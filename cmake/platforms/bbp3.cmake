@@ -288,6 +288,7 @@ endif()
     add_rumboot_target(
         CONFIGURATION IRAM
         NAME chain-test
+        COMBOIMAGE IM0BIN
         LOAD
           IM0BIN iram-irq-atomics,iram-irq-defhandler
         FEATURES NOCODE
@@ -341,6 +342,16 @@ endif()
       START 0x280000
       END   0x300000
       NAME nm2b
+    )
+
+    add_rumboot_target(
+      FEATURES NOCODE
+      CONFIGURATION IRAM
+      COMBOIMAGE IM0BIN
+       LOAD IM0BIN ${SPELS_TEST_CHAIN}
+      PREFIX spels
+      TESTGROUP chains
+      NAME test-chain
     )
 
 
