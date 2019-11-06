@@ -147,10 +147,11 @@
     load_const  R_EXPV, \expVal
     mr          R_BACK, R_CONI
     \cmd        R_DATA, \offset(R_CONI)
-    dump_write_uint32   R_CONI, R_DATA
     cmpw  cr4,  R_DATA, R_EXPV
     addi        R_EXPV, R_BACK, \offset
     cmpw  cr3,  R_CONI, R_EXPV
+    sub         R_CONI, R_CONI, R_BACK
+    dump_write_uint32   R_CONI, R_DATA
     mr          R_CONI, R_BACK
     TEST_ASSERT(eq, cr4, "\cmd fails.\n")
     TEST_ASSERT(eq, cr3, "\cmd autoupdate fails.\n")
@@ -175,10 +176,11 @@
     load_const  R_OFFS, \offset
     mr          R_BACK, R_CONI
     \cmd        R_DATA, R_CONI, R_OFFS
-    dump_write_uint32   R_CONI, R_DATA
     cmpw  cr4,  R_DATA, R_EXPV
     addi        R_EXPV, R_BACK, \offset
     cmpw  cr3,  R_CONI, R_EXPV
+    sub         R_CONI, R_CONI, R_BACK
+    dump_write_uint32   R_CONI, R_DATA
     mr          R_CONI, R_BACK
     TEST_ASSERT(eq, cr4, "\cmd fails.\n")
     TEST_ASSERT(eq, cr3, "\cmd autoupdate fails.\n")
@@ -207,10 +209,11 @@
     stw         R_ZERO, \ldOffset(R_BACK)
     \stCmd      R_TEMP, \stOffset(R_VARS)
     lwz         R_DATA, \ldOffset(R_BACK)
-    dump_write_uint32   R_VARS, R_DATA
     cmpw  cr4,  R_DATA, R_EXPV
     addi        R_EXPV, R_BACK, \stOffset
     cmpw  cr3,  R_VARS, R_EXPV
+    sub         R_VARS, R_VARS, R_BACK
+    dump_write_uint32   R_VARS, R_DATA
     mr          R_VARS, R_BACK
     TEST_ASSERT(eq, cr4, "\stCmd fails.\n")
     TEST_ASSERT(eq, cr3, "\stCmd autoupdate fails.\n")
@@ -243,10 +246,11 @@
     stwx        R_ZERO, R_VARS, R_OFFS
     \stCmd      R_TEMP, R_VARS, R_OFFT
     lwzx        R_DATA, R_BACK, R_OFFS
-    dump_write_uint32   R_VARS, R_DATA
     cmpw  cr4,  R_DATA, R_EXPV
     addi        R_EXPV, R_BACK, \stOffset
     cmpw  cr3,  R_VARS, R_EXPV
+    sub         R_VARS, R_VARS, R_BACK
+    dump_write_uint32   R_VARS, R_DATA
     mr          R_VARS, R_BACK
     TEST_ASSERT(eq, cr4, "\stCmd fails.\n")
     TEST_ASSERT(eq, cr3, "\stCmd autoupdate fails.\n")
@@ -406,18 +410,18 @@ gold_dump:
     .long 0x00000000, 0x00000004, 0x00000000, 0x00000003
     .long 0x00000000, 0x00000002, 0x00000000, 0x00000001
     .long 0xc0de4bee, 0xc0de4bee, 0x000000c3, 0x000000c3
-    .long 0x000000c3, 0x000000c3, 0x8002091f, 0x000000c3
-    .long 0x8002091f, 0x000000c3, 0x00005a5a, 0x00005a5a
-    .long 0x00005a5a, 0x00005a5a, 0x8002091a, 0x00005a5a
-    .long 0x8002091a, 0x00005a5a, 0x3c3cc3c3, 0x3c3cc3c3
-    .long 0x3c3cc3c3, 0x3c3cc3c3, 0x8002091c, 0x3c3cc3c3
-    .long 0x8002091c, 0x3c3cc3c3, 0x00c30000, 0x00c30000
-    .long 0x00c30000, 0x00c30000, 0x8002a2e9, 0x00c30000
-    .long 0x8002a2ed, 0x00c30000, 0x0000aa55, 0x0000aa55
-    .long 0x0000aa55, 0x0000aa55, 0x8002a2fa, 0x0000aa55
-    .long 0x8002a2fe, 0x0000aa55, 0xa55ac33c, 0xa55ac33c
-    .long 0xa55ac33c, 0xa55ac33c, 0x8002a308, 0xa55ac33c
-    .long 0x8002a30c, 0xa55ac33c, 0x8002a30c, 0xa55ac33c
+    .long 0x000000c3, 0x000000c3, 0x0000000f, 0x000000c3
+    .long 0x0000000f, 0x000000c3, 0x00005a5a, 0x00005a5a
+    .long 0x00005a5a, 0x00005a5a, 0x0000000a, 0x00005a5a
+    .long 0x0000000a, 0x00005a5a, 0x3c3cc3c3, 0x3c3cc3c3
+    .long 0x3c3cc3c3, 0x3c3cc3c3, 0x0000000c, 0x3c3cc3c3
+    .long 0x0000000c, 0x3c3cc3c3, 0x00c30000, 0x00c30000
+    .long 0x00c30000, 0x00c30000, 0x00000019, 0x00c30000
+    .long 0x0000001d, 0x00c30000, 0x0000aa55, 0x0000aa55
+    .long 0x0000aa55, 0x0000aa55, 0x0000002a, 0x0000aa55
+    .long 0x0000002e, 0x0000aa55, 0xa55ac33c, 0xa55ac33c
+    .long 0xa55ac33c, 0xa55ac33c, 0x00000038, 0xa55ac33c
+    .long 0x0000003c, 0xa55ac33c, 0x00000001, 0xaaaa5555
     .long 0x00000000, 0xaaaa5555, 0xaaaa5555, 0xaaaa5555
     .long 0xaaaa5555, 0xaa5555aa, 0x555555aa, 0x5555aaaa
     .long 0xffffffff, 0xffffffff, 0x0000aaaa, 0x0000aaaa
@@ -426,14 +430,14 @@ gold_dump:
     .long 0x3c3cc3c3, 0xaaaabebf, 0xaaaabebf, 0x00000002
     .long 0x00000000, 0xc3c3c3c3, 0x00000000, 0x3c3c3c3c
     .long 0x85a5a5a5, 0xa5a5a5a5, 0x8a5a5a5a, 0x5a5a5a5a
-    .long 0x80020930, 0x80020940, 0x80020930, 0x80020958
+    .long 0x00000010, 0x00000010, 0x00000028, 0x00000028
     .long 0x400921fb, 0x54442d18, 0x85a5a5a5, 0xa5a5a5a5
     .long 0x00000000, 0x00000000, 0xc0787878, 0x60000000
-    .long 0x8002a2d0, 0x8002a2d8, 0xc0787878, 0x60000000
-    .long 0x3f878787, 0x80000000, 0x8002a2d0, 0x8002a2e0
+    .long 0x00000008, 0x00000008, 0xc0787878, 0x60000000
+    .long 0x3f878787, 0x80000000, 0x00000010, 0x00000010
     .long 0x3f878787, 0x80000000, 0x00000000, 0xad2d2d2d
-    .long 0x8002a2d0, 0x8002a2ec, 0x00000000, 0xad2d2d2d
-    .long 0x00000000, 0x92d2d2d2, 0x8002a2d0, 0x8002a2f4
+    .long 0x0000001c, 0x0000001c, 0x00000000, 0xad2d2d2d
+    .long 0x00000000, 0x92d2d2d2, 0x00000024, 0x00000024
     .long 0x00000000, 0x92d2d2d2, 0x00000000, 0x00000000
     .long 0x00000000, 0x82004000, 0x8a5a5a5a, 0x5a5a5a5a
     .long 0x0a5a5a5a, 0x5a5a5a5a, 0xc0e0a3d7, 0x00000000
@@ -496,7 +500,7 @@ j_i_pipe:
     load_addr   R_CONI, int_data
     load_const  R_OPR1, 0x00000001
     load_const  R_OPR2, 0xAAAA5555
-    dump_write_uint32   R_EXPV, R_DATA
+    dump_write_uint32   R_OPR1, R_OPR2
     subi        R_OPR1, R_OPR1, 0x0001
     dump_write_uint32   R_OPR1, R_OPR2
     cmpwi cr0,  R_OPR1, 0x0000
@@ -633,7 +637,8 @@ fp_load:
     lfdu        f20,    0x10(R_CONF)
     lfd         f21,    0x08(R_CONF)
     cmpw        cr7,    R_EXPV, R_CONF
-    dump_write_uint32   R_BACK, R_CONF
+    sub         R_CONF, R_CONF, R_BACK
+    dump_write_uint32   R_CONF, R_CONF
     TEST_ASSERT(eq, cr7, "Expected other address after 'lfdu' instruction.")
     crand   ((cr2*4)+2), ((cr2*4)+2), ((cr7*4)+2)
 
@@ -642,7 +647,8 @@ fp_load:
     add         R_EXPV, R_BACK, R_OFFS
     lfdux       f22,    R_CONF, R_OFFS
     cmpw        cr7,    R_EXPV, R_CONF
-    dump_write_uint32   R_BACK, R_CONF
+    sub         R_CONF, R_CONF, R_BACK
+    dump_write_uint32   R_CONF, R_CONF
     add         r8,     r7,     R_DMPB
     lfd         f17,    0x00(r8)
     lfd         f18,    0x08(r8)
@@ -683,7 +689,8 @@ fp_store:
     addi        R_EXPV, R_BACK, 0x08
     stfdu       f11,    0x08(R_VARS)
     cmpw        cr7,    R_EXPV, R_VARS
-    dump_write_uint32   R_BACK, R_VARS
+    sub         R_VARS, R_VARS, R_BACK
+    dump_write_uint32   R_VARS, R_VARS
     TEST_ASSERT(eq, cr7, "Expected other address after 'stfdu' instruction.")
     crand   ((cr2*4)+2), ((cr2*4)+2), ((cr7*4)+2)
 
@@ -713,7 +720,8 @@ fp_store:
     add         R_EXPV, R_BACK, R_OFFT
     stfdux      f12,    R_VARS, R_OFFT
     cmpw        cr7,    R_EXPV, R_VARS
-    dump_write_uint32   R_BACK, R_VARS
+    sub         R_VARS, R_VARS, R_BACK
+    dump_write_uint32   R_VARS, R_VARS
     TEST_ASSERT(eq, cr7, "Expected other address after 'stfdux' instruction.")
     crand   ((cr2*4)+2), ((cr2*4)+2), ((cr7*4)+2)
 
@@ -742,7 +750,8 @@ fp_store:
     addi        R_EXPV, R_BACK, 0x1C
     stfsu       f13,    0x1C(R_VARS)
     cmpw        cr7,    R_EXPV, R_VARS
-    dump_write_uint32   R_BACK, R_VARS
+    sub         R_VARS, R_VARS, R_BACK
+    dump_write_uint32   R_VARS, R_VARS
     TEST_ASSERT(eq, cr7, "Expected other address after 'stfsu' instruction.")
     crand   ((cr2*4)+2), ((cr2*4)+2), ((cr7*4)+2)
 
@@ -775,7 +784,8 @@ fp_store:
     add         R_EXPV, R_BACK, R_OFFT
     stfsux      f14,    R_VARS, R_OFFT
     cmpw        cr7,    R_EXPV, R_VARS
-    dump_write_uint32   R_BACK, R_VARS
+    sub         R_VARS, R_VARS, R_BACK
+    dump_write_uint32   R_VARS, R_VARS
     TEST_ASSERT(eq, cr7, "Expected other address after 'stfsux' instruction.")
     crand   ((cr2*4)+2), ((cr2*4)+2), ((cr7*4)+2)
 
