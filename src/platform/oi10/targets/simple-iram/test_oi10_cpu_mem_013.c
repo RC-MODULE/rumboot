@@ -304,7 +304,7 @@ uint32_t set_lru_to_zero_and_print()
     ici(0);
     msync();
     isync();
-//    for(int i = 0; i < 0x80/*mem_size_instr/4*/; i += 0x20)
+//    for(int i = 0; i < mem_size_instr/4; i += 0x20)
 //    {
 //        touch_list_of_addresses(list_of_addresses_zero_LRU + 4, sizeof(list_of_addresses_zero_LRU)/( 2 * sizeof(list_of_addresses_zero_LRU[0]) ), i);
 //        print_icache_values(list_of_addresses_zero_LRU[7] + i);
@@ -312,7 +312,7 @@ uint32_t set_lru_to_zero_and_print()
 //    ici(0);
 //    msync();
 //    isync();
-    for(int i = 0; i < 0x80/*mem_size_instr/4*/; i += 0x20)
+    for(int i = 0; i < mem_size_instr/4; i += 0x20)
     {
         result |= print_and_check_icache_values(
                 list_of_addresses_zero_LRU[7] + i,
@@ -330,14 +330,14 @@ uint32_t set_lru_to_zero_and_print()
 uint32_t set_lru_to_one_and_print()
 {
     uint32_t result = 0;
-    for(int i = 0; i < 0x80/*mem_size_instr/4*/; i += 0x20)
+    for(int i = 0; i < mem_size_instr/4; i += 0x20)
     {
         access_list_of_addresses(list_of_addresses_one_LRU, sizeof(list_of_addresses_one_LRU)/sizeof(list_of_addresses_one_LRU[7]), i);
 //        print_icache_values(list_of_addresses_one_LRU[7] + i);
     }
     msync();
     isync();
-    for(int i = 0; i < 0x80/*mem_size_instr/4*/; i += 0x20)
+    for(int i = 0; i < mem_size_instr/4; i += 0x20)
     {
         result |= print_and_check_icache_values(
                 list_of_addresses_one_LRU[7] + i,
@@ -357,14 +357,14 @@ uint32_t set_lock_to_one_and_print()
     ici(0);
     msync();
     isync();
-    for(int i = 0; i < 0x80/*mem_size_instr/4*/; i += 0x20)
+    for(int i = 0; i < mem_size_instr/4; i += 0x20)
     {
         lock_list_of_addresses(list_of_addresses_one_LRU, sizeof(list_of_addresses_one_LRU)/sizeof(list_of_addresses_one_LRU[7]), i);
 //        print_icache_values(list_of_addresses_one_LRU[7] + i);
     }
     msync();
     isync();
-    for(int i = 0; i < 0x80/*mem_size_instr/4*/; i += 0x20)
+    for(int i = 0; i < mem_size_instr/4; i += 0x20)
     {
         result |= print_and_check_icache_values(
                 list_of_addresses_zero_LRU[7] + i,
@@ -375,7 +375,7 @@ uint32_t set_lock_to_one_and_print()
                 true,
                 0xf);
     }
-    for(int i = 0; i < 0x80/*mem_size_instr/4*/; i += 0x20)
+    for(int i = 0; i < mem_size_instr/4; i += 0x20)
     {
         unlock_list_of_addresses(list_of_addresses_one_LRU, 8, i);
     }
@@ -392,14 +392,14 @@ int main()
     emi_init(DCR_EM2_EMI_BASE);
     rumboot_putstring("EM2 initialized\n");
 
-    rumboot_memfill32((void*)(SRAM0_BASE ), 2 * mem_size_instr + 0x40, blr_instruction, 0);
+    rumboot_memfill32((void*)(SRAM0_BASE ), mem_size_instr + 0x40, blr_instruction, 0);
 
 
     static const tlb_entry sram0_tlb_entry_cacheable_valid = {TLB_ENTRY_CACHE_VALID};
     write_tlb_entries(&sram0_tlb_entry_cacheable_valid, 1);
 
     rumboot_putstring("Starting test ...\n");
-    touch_address_range(0x8000, 0x8080);
+    touch_address_range(0x8000, 0x10000);
     ici(0);
     dci(2);
     msync();
