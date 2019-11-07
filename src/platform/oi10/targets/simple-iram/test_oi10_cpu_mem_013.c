@@ -143,26 +143,26 @@ void print_access_sequence(uint32_t* list_of_addresses,  uint32_t length, uint32
         rumboot_printf("[%d] = 0x%x\n", i, list_of_addresses[i] + offset);
 }
 
-void print_icache_values(uint32_t address)
-{
-    msync();
-    isync();
-    icread((void*) address);
-    msync();
-    isync();
-    uint32_t icdbtrl = spr_read(SPR_ICDBTRL);
-    msync();
-    isync();
-    rumboot_printf("\nPrinting: address = 0x%x\nicdbdr0 = 0x%x\nicdbdr1 = 0x%x\nicdbtrh = 0x%x\nicdbtrl = 0x%x\nLRU val = 0x%x, LOCK val = 0x%x, Validity bits = 0x%x\n",
-            address,
-            spr_read(SPR_ICDBDR0),
-            spr_read(SPR_ICDBDR1),
-            spr_read(SPR_ICDBTRH),
-            icdbtrl,
-            ((icdbtrl & ICDBTRL_LRU_mask)  >> ICDBTRL_LRU_i),
-            ((icdbtrl & ICDBTRL_LOCK_mask) >> ICDBTRL_LOCK_i),
-            ((icdbtrl & ICDBTRL_LRUV_mask) >> ICDBTRL_LRUV_i));
-}
+//void print_icache_values(uint32_t address)
+//{
+//    msync();
+//    isync();
+//    icread((void*) address);
+//    msync();
+//    isync();
+//    uint32_t icdbtrl = spr_read(SPR_ICDBTRL);
+//    msync();
+//    isync();
+//    rumboot_printf("\nPrinting: address = 0x%x\nicdbdr0 = 0x%x\nicdbdr1 = 0x%x\nicdbtrh = 0x%x\nicdbtrl = 0x%x\nLRU val = 0x%x, LOCK val = 0x%x, Validity bits = 0x%x\n",
+//            address,
+//            spr_read(SPR_ICDBDR0),
+//            spr_read(SPR_ICDBDR1),
+//            spr_read(SPR_ICDBTRH),
+//            icdbtrl,
+//            ((icdbtrl & ICDBTRL_LRU_mask)  >> ICDBTRL_LRU_i),
+//            ((icdbtrl & ICDBTRL_LOCK_mask) >> ICDBTRL_LOCK_i),
+//            ((icdbtrl & ICDBTRL_LRUV_mask) >> ICDBTRL_LRUV_i));
+//}
 
 uint32_t print_and_check_icache_values(
         uint32_t    address,
@@ -186,7 +186,12 @@ uint32_t print_and_check_icache_values(
     uint32_t LOCK_VALUES = ((icdbtrl & ICDBTRL_LOCK_mask) >> ICDBTRL_LOCK_i);
     uint32_t LRUV_VALUES = ((icdbtrl & ICDBTRL_LRUV_mask) >> ICDBTRL_LRUV_i);
     uint32_t result = 0;
-    rumboot_printf("\nPrinting: address = 0x%x\nicdbdr0 = 0x%x\nicdbdr1 = 0x%x\nicdbtrh = 0x%x\nicdbtrl = 0x%x\nLRU val = 0x%x, LOCK val = 0x%x, Validity bits = 0x%x\n",
+    if (((check_LRU) && (LRU_values != expected_LRU) )
+            || ((check_LOCK) && (LOCK_VALUES != expected_LOCK))
+            || ((check_LRUV) && (LRUV_VALUES != expected_LRUV)))
+    {
+        result |= 1;
+        rumboot_printf("\nPrinting: address = 0x%x\nicdbdr0 = 0x%x\nicdbdr1 = 0x%x\nicdbtrh = 0x%x\nicdbtrl = 0x%x\nLRU val = 0x%x, LOCK val = 0x%x, Validity bits = 0x%x\n",
             address,
             spr_read(SPR_ICDBDR0),
             spr_read(SPR_ICDBDR1),
@@ -195,9 +200,7 @@ uint32_t print_and_check_icache_values(
             LRU_values,
             LOCK_VALUES,
             LRUV_VALUES);
-    result |= (check_LRU) ? (LRU_values != expected_LRU) : 0;
-    result |= (check_LOCK) ? (LOCK_VALUES != expected_LOCK) : 0;
-    result |= (check_LRUV) ? (LRUV_VALUES != expected_LRUV) : 0;
+    }
     return result;
 }
 
@@ -212,78 +215,78 @@ uint32_t check_LRUV(uint32_t address, uint32_t expected_value)
 }
 
 
-void swap(uint32_t *a, int i, int j)
-{
-  uint32_t s = a[i];
-  a[i] = a[j];
-  a[j] = s;
-}
-
-bool NextSet(uint32_t *a, uint32_t n)
-{
-  int j = n - 2;
-  while (j != -1 && a[j] >= a[j + 1]) j--;
-  if (j == -1)
-    return false;
-  int k = n - 1;
-  while (a[j] >= a[k]) k--;
-  swap(a, j, k);
-  int l = j + 1, r = n - 1;
-  while (l<r)
-    swap(a, l++, r--);
-  return true;
-}
-
-void set_different_lru_states()
-{
-    //initial caching of a line in all four ways
-    //setting order: the least recently used is not called, the next is called first, the third is called before last, the most recently used is called last
-    //may be we should use a function that accesses a list of addresses
-//    uint32_t list_of_addresses_zero_LRU[] = {
-//            SRAM0_BASE,
-//            SRAM0_BASE + mem_step,
-//            SRAM0_BASE + (2 * mem_step),
-//            SRAM0_BASE + (3 * mem_step),
-//            SRAM0_BASE,
-//            SRAM0_BASE + mem_step,
-//            SRAM0_BASE + (2 * mem_step),
-//            SRAM0_BASE + (3 * mem_step)
-//    };
-//    uint32_t list_of_addresses_one_LRU[] = {
-//            SRAM0_BASE,
-//            SRAM0_BASE + mem_step,
-//            SRAM0_BASE + (2 * mem_step),
-//            SRAM0_BASE + (3 * mem_step),
-//            SRAM0_BASE + (3 * mem_step),
-//            SRAM0_BASE + (2 * mem_step),
-//            SRAM0_BASE + mem_step,
-//            SRAM0_BASE
-//    };
-    lock_list_of_addresses(list_of_addresses_zero_LRU, sizeof(list_of_addresses_zero_LRU)/( 2 * sizeof(list_of_addresses_zero_LRU[0]) ), 0);
-    print_icache_values(list_of_addresses_zero_LRU[0]);
-    ici(0);
-
-    access_list_of_addresses(list_of_addresses_zero_LRU, sizeof(list_of_addresses_zero_LRU)/sizeof(list_of_addresses_zero_LRU[0]), 0);
-    print_icache_values(list_of_addresses_zero_LRU[0]);
-    //print access sequence
-    print_access_sequence(list_of_addresses_zero_LRU,  sizeof(list_of_addresses_zero_LRU)/sizeof(list_of_addresses_zero_LRU[0]), 0);
-    //print lru value
-    print_icache_values(list_of_addresses_zero_LRU[0]);
-    unlock_list_of_addresses(list_of_addresses_zero_LRU, sizeof(list_of_addresses_zero_LRU)/sizeof(list_of_addresses_zero_LRU[0]), 0);
-    ici(0);
-
-    access_list_of_addresses(list_of_addresses_one_LRU, sizeof(list_of_addresses_one_LRU)/sizeof(list_of_addresses_one_LRU[7]), 0);
-    print_icache_values(list_of_addresses_one_LRU[7]);
-    lock_list_of_addresses(list_of_addresses_one_LRU, sizeof(list_of_addresses_one_LRU)/( 2 * sizeof(list_of_addresses_one_LRU[7]) ), 0);
-    print_icache_values(list_of_addresses_one_LRU[7]);
-    //print access sequence
-    print_access_sequence(list_of_addresses_one_LRU,  sizeof(list_of_addresses_one_LRU)/sizeof(list_of_addresses_one_LRU[7]), 0);
-    //print lru value
-    print_icache_values(list_of_addresses_one_LRU[7]);
-    unlock_list_of_addresses(list_of_addresses_one_LRU, sizeof(list_of_addresses_one_LRU)/sizeof(list_of_addresses_one_LRU[7]), 0);
-    print_icache_values(list_of_addresses_one_LRU[7]);
-    ici(0);
-}
+//void swap(uint32_t *a, int i, int j)
+//{
+//  uint32_t s = a[i];
+//  a[i] = a[j];
+//  a[j] = s;
+//}
+//
+//bool NextSet(uint32_t *a, uint32_t n)
+//{
+//  int j = n - 2;
+//  while (j != -1 && a[j] >= a[j + 1]) j--;
+//  if (j == -1)
+//    return false;
+//  int k = n - 1;
+//  while (a[j] >= a[k]) k--;
+//  swap(a, j, k);
+//  int l = j + 1, r = n - 1;
+//  while (l<r)
+//    swap(a, l++, r--);
+//  return true;
+//}
+//
+//void set_different_lru_states()
+//{
+//    //initial caching of a line in all four ways
+//    //setting order: the least recently used is not called, the next is called first, the third is called before last, the most recently used is called last
+//    //may be we should use a function that accesses a list of addresses
+////    uint32_t list_of_addresses_zero_LRU[] = {
+////            SRAM0_BASE,
+////            SRAM0_BASE + mem_step,
+////            SRAM0_BASE + (2 * mem_step),
+////            SRAM0_BASE + (3 * mem_step),
+////            SRAM0_BASE,
+////            SRAM0_BASE + mem_step,
+////            SRAM0_BASE + (2 * mem_step),
+////            SRAM0_BASE + (3 * mem_step)
+////    };
+////    uint32_t list_of_addresses_one_LRU[] = {
+////            SRAM0_BASE,
+////            SRAM0_BASE + mem_step,
+////            SRAM0_BASE + (2 * mem_step),
+////            SRAM0_BASE + (3 * mem_step),
+////            SRAM0_BASE + (3 * mem_step),
+////            SRAM0_BASE + (2 * mem_step),
+////            SRAM0_BASE + mem_step,
+////            SRAM0_BASE
+////    };
+//    lock_list_of_addresses(list_of_addresses_zero_LRU, sizeof(list_of_addresses_zero_LRU)/( 2 * sizeof(list_of_addresses_zero_LRU[0]) ), 0);
+//    print_icache_values(list_of_addresses_zero_LRU[0]);
+//    ici(0);
+//
+//    access_list_of_addresses(list_of_addresses_zero_LRU, sizeof(list_of_addresses_zero_LRU)/sizeof(list_of_addresses_zero_LRU[0]), 0);
+//    print_icache_values(list_of_addresses_zero_LRU[0]);
+//    //print access sequence
+//    print_access_sequence(list_of_addresses_zero_LRU,  sizeof(list_of_addresses_zero_LRU)/sizeof(list_of_addresses_zero_LRU[0]), 0);
+//    //print lru value
+//    print_icache_values(list_of_addresses_zero_LRU[0]);
+//    unlock_list_of_addresses(list_of_addresses_zero_LRU, sizeof(list_of_addresses_zero_LRU)/sizeof(list_of_addresses_zero_LRU[0]), 0);
+//    ici(0);
+//
+//    access_list_of_addresses(list_of_addresses_one_LRU, sizeof(list_of_addresses_one_LRU)/sizeof(list_of_addresses_one_LRU[7]), 0);
+//    print_icache_values(list_of_addresses_one_LRU[7]);
+//    lock_list_of_addresses(list_of_addresses_one_LRU, sizeof(list_of_addresses_one_LRU)/( 2 * sizeof(list_of_addresses_one_LRU[7]) ), 0);
+//    print_icache_values(list_of_addresses_one_LRU[7]);
+//    //print access sequence
+//    print_access_sequence(list_of_addresses_one_LRU,  sizeof(list_of_addresses_one_LRU)/sizeof(list_of_addresses_one_LRU[7]), 0);
+//    //print lru value
+//    print_icache_values(list_of_addresses_one_LRU[7]);
+//    unlock_list_of_addresses(list_of_addresses_one_LRU, sizeof(list_of_addresses_one_LRU)/sizeof(list_of_addresses_one_LRU[7]), 0);
+//    print_icache_values(list_of_addresses_one_LRU[7]);
+//    ici(0);
+//}
 
 void touch_address_range(uint32_t offset_from, uint32_t offset_to)
 {
@@ -330,7 +333,7 @@ uint32_t set_lru_to_one_and_print()
     for(int i = 0; i < 0x80/*mem_size_instr/4*/; i += 0x20)
     {
         access_list_of_addresses(list_of_addresses_one_LRU, sizeof(list_of_addresses_one_LRU)/sizeof(list_of_addresses_one_LRU[7]), i);
-        print_icache_values(list_of_addresses_one_LRU[7] + i);
+//        print_icache_values(list_of_addresses_one_LRU[7] + i);
     }
     msync();
     isync();
@@ -357,7 +360,7 @@ uint32_t set_lock_to_one_and_print()
     for(int i = 0; i < 0x80/*mem_size_instr/4*/; i += 0x20)
     {
         lock_list_of_addresses(list_of_addresses_one_LRU, sizeof(list_of_addresses_one_LRU)/sizeof(list_of_addresses_one_LRU[7]), i);
-        print_icache_values(list_of_addresses_one_LRU[7] + i);
+//        print_icache_values(list_of_addresses_one_LRU[7] + i);
     }
     msync();
     isync();
