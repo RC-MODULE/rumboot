@@ -74,7 +74,7 @@ const uint32_t mem_size_instr   = 0x00008000;
 
 const uint32_t mem_size_zero    = 0x00000100;
 
-const uint32_t mem_step         = 0x00002000;
+#define MEM_STEP          0x00002000
 
 //const uint32_t index_count      = 128;
 const uint32_t index_count      = 10;
@@ -82,219 +82,135 @@ const uint32_t index_count      = 10;
 
 typedef void (*pWay_func) ();
 
+uint32_t list_of_addresses_zero_LRU[] = {
+        SRAM0_BASE,
+        SRAM0_BASE + MEM_STEP,
+        SRAM0_BASE + (2 * MEM_STEP),
+        SRAM0_BASE + (3 * MEM_STEP),
+        SRAM0_BASE,
+        SRAM0_BASE + MEM_STEP,
+        SRAM0_BASE + (2 * MEM_STEP),
+        SRAM0_BASE + (3 * MEM_STEP)
+};
+uint32_t list_of_addresses_one_LRU[] = {
+        SRAM0_BASE,
+        SRAM0_BASE + MEM_STEP,
+        SRAM0_BASE + (2 * MEM_STEP),
+        SRAM0_BASE + (3 * MEM_STEP),
+        SRAM0_BASE + (3 * MEM_STEP),
+        SRAM0_BASE + (2 * MEM_STEP),
+        SRAM0_BASE + MEM_STEP,
+        SRAM0_BASE
+};
 
 
-//static void fill_mem(void* dst, const uint32_t val, size_t size)
-//{
-//    asm("stmw 8, 96(1)\n\t"
-//        "mr 8, %[val]\n\t"
-//        "mr 9, %[val]\n\t"
-//        "mr 10, %[val]\n\t"
-//        "mr 11, %[val]\n\t"
-//        "mr 12, %[val]\n\t"
-//        "mr 13, %[val]\n\t"
-//        "mr 14, %[val]\n\t"
-//        "mr 15, %[val]\n\t"
-//        "mr 16, %[val]\n\t"
-//        "mr 17, %[val]\n\t"
-//        "mr 18, %[val]\n\t"
-//        "mr 19, %[val]\n\t"
-//        "mr 20, %[val]\n\t"
-//        "mr 21, %[val]\n\t"
-//        "mr 22, %[val]\n\t"
-//        "mr 23, %[val]\n\t"
-//        "mr 24, %[val]\n\t"
-//        "mr 25, %[val]\n\t"
-//        "mr 26, %[val]\n\t"
-//        "mr 27, %[val]\n\t"
-//        "mr 28, %[val]\n\t"
-//        "mr 29, %[val]\n\t"
-//        "mr 30, %[val]\n\t"
-//        "mr 31, %[val]\n\t"
-//        "1: stmw 8, 0(%[dst])\n\t"
-//        "addi %[dst], %[dst], 96\n\t"
-//        "subi %[size], %[size], 96\n\t"
-//        "cmpwi cr3, %[size], 0\n\t"
-//        "bgt cr3, 1b\n\t"
-//        "lmw 8, 96(1)\n\t"
-//        :
-//        :[dst] "r" (dst), [val] "r" (val), [size] "r" (size)
-//        :"r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15", "r16", "r17", "r18", "r19",
-//         "r20", "r21", "r22", "r23", "r24", "r25", "r26", "r27", "r28", "r29", "cr3"
-//    );
-//}
-
-
-//
-//static bool test_icu_lru_array()
-//{
-//    uint32_t addr;
-//
-//    for (addr = SRAM0_BASE; addr != (SRAM0_BASE + mem_size_instr); addr += mem_step)
-//    {
-//        rumboot_printf("Testing address 0x%x ...\n", addr);
-//
-//        for (uint32_t index = 0; index < index_count; index++)
-//        {
-//            rumboot_printf("Testing index 0x%x ...\n", index);
-//
-//            rumboot_putstring("Testing MEM0 block ...\n");
-//
-////            rumboot_printf("%d EVENT_ICU_LRU_MEM0_VALUE_34\n", index);
-//
-//            //test_event(EVENT_ICU_LRU_MEM0_VALUE_34);
-//            ((pWay_func)(addr | (index << XCREAD_EA_L1I_INDEX_i) | way0))();
-//            icread((void*)(addr | (index << XCREAD_EA_L1I_INDEX_i) | way0));
-//            isync();
-//
-//            TEST_ASSERT(spr_read(SPR_ICDBDR0) == 0x4E800020,"Read from SPR_ICDBDR0 failed!");
-//            rumboot_printf("icdbdr0 = 0x%x\n", spr_read(SPR_ICDBDR0));
-//            rumboot_printf("icdbdr1 = 0x%x\n", spr_read(SPR_ICDBDR1));
-//            rumboot_printf("icdbtrh = 0x%x\n", spr_read(SPR_ICDBTRH));
-//            rumboot_printf("icdbtrl = 0x%x\n", spr_read(SPR_ICDBTRL));
-//
-////            rumboot_printf("%d EVENT_ICU_LRU_MEM0_VALUE_1E\n", index);
-//
-//            //test_event(EVENT_ICU_LRU_MEM0_VALUE_1E);
-//            ((pWay_func)(addr | (index << XCREAD_EA_L1I_INDEX_i) | way1))();
-//            icread((void*)(addr | (index << XCREAD_EA_L1I_INDEX_i) | way1));
-//            isync();
-//
-//            TEST_ASSERT(spr_read(SPR_ICDBDR0) == 0x4E800020,"Read from SPR_ICDBDR0 failed!");
-//            rumboot_printf("icdbdr0 = 0x%x\n", spr_read(SPR_ICDBDR0));
-//            rumboot_printf("icdbdr1 = 0x%x\n", spr_read(SPR_ICDBDR1));
-//            rumboot_printf("icdbtrh = 0x%x\n", spr_read(SPR_ICDBTRH));
-//            rumboot_printf("icdbtrl = 0x%x\n", spr_read(SPR_ICDBTRL));
-//
-////            rumboot_printf("%d EVENT_ICU_LRU_MEM0_VALUE_07\n", index);
-//
-//            //test_event(EVENT_ICU_LRU_MEM0_VALUE_07);
-//            ((pWay_func)(addr | (index << XCREAD_EA_L1I_INDEX_i) | way2))();
-//            icread((void*)(addr | (index << XCREAD_EA_L1I_INDEX_i) | way2));
-//            isync();
-//
-//            TEST_ASSERT(spr_read(SPR_ICDBDR0) == 0x4E800020,"Read from SPR_ICDBDR0 failed!");
-//            rumboot_printf("icdbdr0 = 0x%x\n", spr_read(SPR_ICDBDR0));
-//            rumboot_printf("icdbdr1 = 0x%x\n", spr_read(SPR_ICDBDR1));
-//            rumboot_printf("icdbtrh = 0x%x\n", spr_read(SPR_ICDBTRH));
-//            rumboot_printf("icdbtrl = 0x%x\n", spr_read(SPR_ICDBTRL));
-//
-////            rumboot_printf("%d EVENT_ICU_LRU_MEM0_VALUE_00\n", index);
-//
-//            //test_event(EVENT_ICU_LRU_MEM0_VALUE_00);
-//            ((pWay_func)(addr | (index << XCREAD_EA_L1I_INDEX_i) | way3))();
-//            icread((void*)(addr | (index << XCREAD_EA_L1I_INDEX_i) | way3));
-//            isync();
-//
-//            TEST_ASSERT(spr_read(SPR_ICDBDR0) == 0x4E800020,"Read from SPR_ICDBDR0 failed!");
-//            rumboot_printf("icdbdr0 = 0x%x\n", spr_read(SPR_ICDBDR0));
-//            rumboot_printf("icdbdr1 = 0x%x\n", spr_read(SPR_ICDBDR1));
-//            rumboot_printf("icdbtrh = 0x%x\n", spr_read(SPR_ICDBTRH));
-//            rumboot_printf("icdbtrl = 0x%x\n", spr_read(SPR_ICDBTRL));
-//
-//
-//
-//            rumboot_putstring("Testing MEM1 block ...\n");
-//
-////            rumboot_printf("%d EVENT_ICU_LRU_MEM1_VALUE_34\n", index);
-//
-//            //test_event(EVENT_ICU_LRU_MEM1_VALUE_34);
-//            ((pWay_func)(addr | index19 | (index << XCREAD_EA_L1I_INDEX_i) | way0))();
-//            icread((void*)(addr | index19 | (index << XCREAD_EA_L1I_INDEX_i) | way0));
-//            isync();
-//
-//            TEST_ASSERT(spr_read(SPR_ICDBDR0) == 0x4E800020,"Read from SPR_ICDBDR0 failed!");
-//            rumboot_printf("icdbdr0 = 0x%x\n", spr_read(SPR_ICDBDR0));
-//            rumboot_printf("icdbdr1 = 0x%x\n", spr_read(SPR_ICDBDR1));
-//            rumboot_printf("icdbtrh = 0x%x\n", spr_read(SPR_ICDBTRH));
-//            rumboot_printf("icdbtrl = 0x%x\n", spr_read(SPR_ICDBTRL));
-//
-////            rumboot_printf("%d EVENT_ICU_LRU_MEM1_VALUE_1E\n", index);
-//
-//            //test_event(EVENT_ICU_LRU_MEM1_VALUE_1E);
-//            ((pWay_func)(addr | index19 | (index << XCREAD_EA_L1I_INDEX_i) | way1))();
-//            icread((void*)(addr | index19 | (index << XCREAD_EA_L1I_INDEX_i) | way1));
-//            isync();
-//
-//            TEST_ASSERT(spr_read(SPR_ICDBDR0) == 0x4E800020,"Read from SPR_ICDBDR0 failed!");
-//            rumboot_printf("icdbdr0 = 0x%x\n", spr_read(SPR_ICDBDR0));
-//            rumboot_printf("icdbdr1 = 0x%x\n", spr_read(SPR_ICDBDR1));
-//            rumboot_printf("icdbtrh = 0x%x\n", spr_read(SPR_ICDBTRH));
-//            rumboot_printf("icdbtrl = 0x%x\n", spr_read(SPR_ICDBTRL));
-//
-////            rumboot_printf("%d EVENT_ICU_LRU_MEM1_VALUE_07\n", index);
-//
-//            //test_event(EVENT_ICU_LRU_MEM1_VALUE_07);
-//            ((pWay_func)(addr | index19 | (index << XCREAD_EA_L1I_INDEX_i) | way2))();
-//            icread((void*)(addr | index19 | (index << XCREAD_EA_L1I_INDEX_i) | way2));
-//            isync();
-//
-//            TEST_ASSERT(spr_read(SPR_ICDBDR0) == 0x4E800020,"Read from SPR_ICDBDR0 failed!");
-//            rumboot_printf("icdbdr0 = 0x%x\n", spr_read(SPR_ICDBDR0));
-//            rumboot_printf("icdbdr1 = 0x%x\n", spr_read(SPR_ICDBDR1));
-//            rumboot_printf("icdbtrh = 0x%x\n", spr_read(SPR_ICDBTRH));
-//            rumboot_printf("icdbtrl = 0x%x\n", spr_read(SPR_ICDBTRL));
-//
-////            rumboot_printf("%d EVENT_ICU_LRU_MEM1_VALUE_00\n", index);
-//
-//            //test_event(EVENT_ICU_LRU_MEM1_VALUE_00);
-//            ((pWay_func)(addr | index19 | (index << XCREAD_EA_L1I_INDEX_i) | way3))();
-//            icread((void*)(addr | index19 | (index << XCREAD_EA_L1I_INDEX_i) | way3));
-//            isync();
-//
-//            TEST_ASSERT(spr_read(SPR_ICDBDR0) == 0x4E800020,"Read from SPR_ICDBDR0 failed!");
-//            rumboot_printf("icdbdr0 = 0x%x\n", spr_read(SPR_ICDBDR0));
-//            rumboot_printf("icdbdr1 = 0x%x\n", spr_read(SPR_ICDBDR1));
-//            rumboot_printf("icdbtrh = 0x%x\n", spr_read(SPR_ICDBTRH));
-//            rumboot_printf("icdbtrl = 0x%x\n", spr_read(SPR_ICDBTRL));
-//        }
-//    }
-//
-//    return true;
-//}
-
-void access_list_of_addresses(uint32_t* list_of_addresses,  uint32_t length )
+void touch_list_of_addresses(uint32_t* list_of_addresses,  uint32_t length, uint32_t offset )
 {
     for(int i = 0; i < length; ++i)
-        ((pWay_func)(list_of_addresses[i]))();
-//        icbtls(0,list_of_addresses[i]);
+        icbt(0,list_of_addresses[i] + offset);
     isync();
 }
 
-void lock_list_of_addresses(uint32_t* list_of_addresses,  uint32_t length )
+void access_list_of_addresses(uint32_t* list_of_addresses,  uint32_t length, uint32_t offset )
 {
     for(int i = 0; i < length; ++i)
-        icbtls(0,list_of_addresses[i]);
+    {
+        isync();
+        msync();
+        ((pWay_func)(list_of_addresses[i] + offset))();
+    }
+}
+
+void lock_list_of_addresses(uint32_t* list_of_addresses,  uint32_t length, uint32_t offset )
+{
+    for(int i = 0; i < length; ++i)
+        icbtls(0,list_of_addresses[i] + offset);
     isync();
-//        ((pWay_func)(list_of_addresses[i]))();
 }
 
-void unlock_list_of_addresses(uint32_t* list_of_addresses,  uint32_t length )
+void unlock_list_of_addresses(uint32_t* list_of_addresses,  uint32_t length, uint32_t offset )
 {
     for(int i = 0; i < length; ++i)
-//        ((pWay_func)(list_of_addresses[i]))();
-        icblc(0,list_of_addresses[i]);
-//    isync();
+        icblc(0,list_of_addresses[i] + offset);
+    isync();
 }
 
 
-void print_access_sequence(uint32_t* list_of_addresses,  uint32_t length )
+void print_access_sequence(uint32_t* list_of_addresses,  uint32_t length, uint32_t offset )
 {
     rumboot_printf("Set of addresses:\n");
     for(int i = 0; i < length; ++i)
-        rumboot_printf("[%d] = 0x%x\n", i, list_of_addresses[i]);
+        rumboot_printf("[%d] = 0x%x\n", i, list_of_addresses[i] + offset);
 }
 
 void print_icache_values(uint32_t address)
 {
+    msync();
+    isync();
     icread((void*) address);
-    rumboot_printf("icdbdr0 = 0x%x\n", spr_read(SPR_ICDBDR0));
-    rumboot_printf("icdbdr1 = 0x%x\n", spr_read(SPR_ICDBDR1));
-    rumboot_printf("icdbtrh = 0x%x\n", spr_read(SPR_ICDBTRH));
-    rumboot_printf("icdbtrl = 0x%x\n", spr_read(SPR_ICDBTRL));
-    rumboot_printf("LRU val = 0x%x\n", ((spr_read(SPR_ICDBTRL) & ICDBTRL_LRU_mask) >> ICDBTRL_LRU_i));
-    rumboot_printf("LOCK val = 0x%x\n", ((spr_read(SPR_ICDBTRL) & ICDBTRL_LOCK_mask) >> ICDBTRL_LOCK_i));
+    msync();
+    isync();
+    uint32_t icdbtrl = spr_read(SPR_ICDBTRL);
+    msync();
+    isync();
+    rumboot_printf("\nPrinting: address = 0x%x\nicdbdr0 = 0x%x\nicdbdr1 = 0x%x\nicdbtrh = 0x%x\nicdbtrl = 0x%x\nLRU val = 0x%x, LOCK val = 0x%x, Validity bits = 0x%x\n",
+            address,
+            spr_read(SPR_ICDBDR0),
+            spr_read(SPR_ICDBDR1),
+            spr_read(SPR_ICDBTRH),
+            icdbtrl,
+            ((icdbtrl & ICDBTRL_LRU_mask)  >> ICDBTRL_LRU_i),
+            ((icdbtrl & ICDBTRL_LOCK_mask) >> ICDBTRL_LOCK_i),
+            ((icdbtrl & ICDBTRL_LRUV_mask) >> ICDBTRL_LRUV_i));
 }
+
+uint32_t print_and_check_icache_values(
+        uint32_t    address,
+        bool        check_LRU,
+        uint32_t    expected_LRU,
+        bool        check_LOCK,
+        uint32_t    expected_LOCK,
+        bool        check_LRUV,
+        uint32_t    expected_LRUV
+        )
+{
+    msync();
+    isync();
+    icread((void*) address);
+    msync();
+    isync();
+    uint32_t icdbtrl = spr_read(SPR_ICDBTRL);
+    msync();
+    isync();
+    uint32_t LRU_values = ((icdbtrl & ICDBTRL_LRU_mask)  >> ICDBTRL_LRU_i);
+    uint32_t LOCK_VALUES = ((icdbtrl & ICDBTRL_LOCK_mask) >> ICDBTRL_LOCK_i);
+    uint32_t LRUV_VALUES = ((icdbtrl & ICDBTRL_LRUV_mask) >> ICDBTRL_LRUV_i);
+    uint32_t result = 0;
+    rumboot_printf("\nPrinting: address = 0x%x\nicdbdr0 = 0x%x\nicdbdr1 = 0x%x\nicdbtrh = 0x%x\nicdbtrl = 0x%x\nLRU val = 0x%x, LOCK val = 0x%x, Validity bits = 0x%x\n",
+            address,
+            spr_read(SPR_ICDBDR0),
+            spr_read(SPR_ICDBDR1),
+            spr_read(SPR_ICDBTRH),
+            icdbtrl,
+            LRU_values,
+            LOCK_VALUES,
+            LRUV_VALUES);
+    result |= (check_LRU) ? (LRU_values != expected_LRU) : 0;
+    result |= (check_LOCK) ? (LOCK_VALUES != expected_LOCK) : 0;
+    result |= (check_LRUV) ? (LRUV_VALUES != expected_LRUV) : 0;
+    return result;
+}
+
+uint32_t check_LRU(uint32_t address, uint32_t expected_value)
+{
+    return ((spr_read(SPR_ICDBTRL) & ICDBTRL_LRU_mask) >> ICDBTRL_LRU_i) == expected_value;
+}
+
+uint32_t check_LRUV(uint32_t address, uint32_t expected_value)
+{
+    return ((spr_read(SPR_ICDBTRL) & ICDBTRL_LRUV_mask) >> ICDBTRL_LRUV_i) == expected_value;
+}
+
 
 void swap(uint32_t *a, int i, int j)
 {
@@ -323,55 +239,149 @@ void set_different_lru_states()
     //initial caching of a line in all four ways
     //setting order: the least recently used is not called, the next is called first, the third is called before last, the most recently used is called last
     //may be we should use a function that accesses a list of addresses
-    uint32_t list_of_addresses_zero_LRU[] = {
-            SRAM0_BASE,
-            SRAM0_BASE + mem_step,
-            SRAM0_BASE + (2 * mem_step),
-            SRAM0_BASE + (3 * mem_step),
-            SRAM0_BASE,
-            SRAM0_BASE + mem_step,
-            SRAM0_BASE + (2 * mem_step),
-            SRAM0_BASE + (3 * mem_step)
-    };
-    uint32_t list_of_addresses_one_LRU[] = {
-            SRAM0_BASE,
-            SRAM0_BASE + mem_step,
-            SRAM0_BASE + (2 * mem_step),
-            SRAM0_BASE + (3 * mem_step),
-            SRAM0_BASE + (3 * mem_step),
-            SRAM0_BASE + (2 * mem_step),
-            SRAM0_BASE + mem_step,
-            SRAM0_BASE
-    };
-    lock_list_of_addresses(list_of_addresses_zero_LRU, sizeof(list_of_addresses_zero_LRU)/( 2 * sizeof(list_of_addresses_zero_LRU[0]) ));
+//    uint32_t list_of_addresses_zero_LRU[] = {
+//            SRAM0_BASE,
+//            SRAM0_BASE + mem_step,
+//            SRAM0_BASE + (2 * mem_step),
+//            SRAM0_BASE + (3 * mem_step),
+//            SRAM0_BASE,
+//            SRAM0_BASE + mem_step,
+//            SRAM0_BASE + (2 * mem_step),
+//            SRAM0_BASE + (3 * mem_step)
+//    };
+//    uint32_t list_of_addresses_one_LRU[] = {
+//            SRAM0_BASE,
+//            SRAM0_BASE + mem_step,
+//            SRAM0_BASE + (2 * mem_step),
+//            SRAM0_BASE + (3 * mem_step),
+//            SRAM0_BASE + (3 * mem_step),
+//            SRAM0_BASE + (2 * mem_step),
+//            SRAM0_BASE + mem_step,
+//            SRAM0_BASE
+//    };
+    lock_list_of_addresses(list_of_addresses_zero_LRU, sizeof(list_of_addresses_zero_LRU)/( 2 * sizeof(list_of_addresses_zero_LRU[0]) ), 0);
     print_icache_values(list_of_addresses_zero_LRU[0]);
     ici(0);
 
-    access_list_of_addresses(list_of_addresses_zero_LRU, sizeof(list_of_addresses_zero_LRU)/sizeof(list_of_addresses_zero_LRU[0]));
+    access_list_of_addresses(list_of_addresses_zero_LRU, sizeof(list_of_addresses_zero_LRU)/sizeof(list_of_addresses_zero_LRU[0]), 0);
     print_icache_values(list_of_addresses_zero_LRU[0]);
     //print access sequence
-    print_access_sequence(list_of_addresses_zero_LRU,  sizeof(list_of_addresses_zero_LRU)/sizeof(list_of_addresses_zero_LRU[0]));
+    print_access_sequence(list_of_addresses_zero_LRU,  sizeof(list_of_addresses_zero_LRU)/sizeof(list_of_addresses_zero_LRU[0]), 0);
     //print lru value
     print_icache_values(list_of_addresses_zero_LRU[0]);
-    unlock_list_of_addresses(list_of_addresses_zero_LRU, sizeof(list_of_addresses_zero_LRU)/sizeof(list_of_addresses_zero_LRU[0]));
+    unlock_list_of_addresses(list_of_addresses_zero_LRU, sizeof(list_of_addresses_zero_LRU)/sizeof(list_of_addresses_zero_LRU[0]), 0);
     ici(0);
 
-    access_list_of_addresses(list_of_addresses_one_LRU, sizeof(list_of_addresses_one_LRU)/sizeof(list_of_addresses_one_LRU[0]));
-    print_icache_values(list_of_addresses_one_LRU[0]);
-    lock_list_of_addresses(list_of_addresses_one_LRU, sizeof(list_of_addresses_one_LRU)/( 2 * sizeof(list_of_addresses_one_LRU[0]) ));
-    print_icache_values(list_of_addresses_one_LRU[0]);
+    access_list_of_addresses(list_of_addresses_one_LRU, sizeof(list_of_addresses_one_LRU)/sizeof(list_of_addresses_one_LRU[7]), 0);
+    print_icache_values(list_of_addresses_one_LRU[7]);
+    lock_list_of_addresses(list_of_addresses_one_LRU, sizeof(list_of_addresses_one_LRU)/( 2 * sizeof(list_of_addresses_one_LRU[7]) ), 0);
+    print_icache_values(list_of_addresses_one_LRU[7]);
     //print access sequence
-    print_access_sequence(list_of_addresses_one_LRU,  sizeof(list_of_addresses_one_LRU)/sizeof(list_of_addresses_one_LRU[0]));
+    print_access_sequence(list_of_addresses_one_LRU,  sizeof(list_of_addresses_one_LRU)/sizeof(list_of_addresses_one_LRU[7]), 0);
     //print lru value
-    print_icache_values(list_of_addresses_one_LRU[0]);
-    unlock_list_of_addresses(list_of_addresses_one_LRU, sizeof(list_of_addresses_one_LRU)/sizeof(list_of_addresses_one_LRU[0]));
-    print_icache_values(list_of_addresses_one_LRU[0]);
+    print_icache_values(list_of_addresses_one_LRU[7]);
+    unlock_list_of_addresses(list_of_addresses_one_LRU, sizeof(list_of_addresses_one_LRU)/sizeof(list_of_addresses_one_LRU[7]), 0);
+    print_icache_values(list_of_addresses_one_LRU[7]);
     ici(0);
 }
 
+void touch_address_range(uint32_t offset_from, uint32_t offset_to)
+{
+    for(uint32_t offset = offset_from; offset <= offset_to; offset += 0x20)
+        touch_list_of_addresses(
+                list_of_addresses_zero_LRU,
+                sizeof(list_of_addresses_zero_LRU)/sizeof(list_of_addresses_zero_LRU[7]),
+                offset );
+
+}
+
+uint32_t set_lru_to_zero_and_print()
+{
+    uint32_t result = 0;
+    ici(0);
+    msync();
+    isync();
+//    for(int i = 0; i < 0x80/*mem_size_instr/4*/; i += 0x20)
+//    {
+//        touch_list_of_addresses(list_of_addresses_zero_LRU + 4, sizeof(list_of_addresses_zero_LRU)/( 2 * sizeof(list_of_addresses_zero_LRU[0]) ), i);
+//        print_icache_values(list_of_addresses_zero_LRU[7] + i);
+//    }
+//    ici(0);
+//    msync();
+//    isync();
+    for(int i = 0; i < 0x80/*mem_size_instr/4*/; i += 0x20)
+    {
+        result |= print_and_check_icache_values(
+                list_of_addresses_zero_LRU[7] + i,
+                true,
+                0x0,
+                true,
+                0x0,
+                true,
+                0x0);
+    }
+    return result;
+}
+
+
+uint32_t set_lru_to_one_and_print()
+{
+    uint32_t result = 0;
+    for(int i = 0; i < 0x80/*mem_size_instr/4*/; i += 0x20)
+    {
+        access_list_of_addresses(list_of_addresses_one_LRU, sizeof(list_of_addresses_one_LRU)/sizeof(list_of_addresses_one_LRU[7]), i);
+        print_icache_values(list_of_addresses_one_LRU[7] + i);
+    }
+    msync();
+    isync();
+    for(int i = 0; i < 0x80/*mem_size_instr/4*/; i += 0x20)
+    {
+        result |= print_and_check_icache_values(
+                list_of_addresses_one_LRU[7] + i,
+                true,
+                0x3f,
+                true,
+                0x0,
+                true,
+                0xf);
+    }
+    return result;
+}
+
+uint32_t set_lock_to_one_and_print()
+{
+    uint32_t result = 0;
+    ici(0);
+    msync();
+    isync();
+    for(int i = 0; i < 0x80/*mem_size_instr/4*/; i += 0x20)
+    {
+        lock_list_of_addresses(list_of_addresses_one_LRU, sizeof(list_of_addresses_one_LRU)/sizeof(list_of_addresses_one_LRU[7]), i);
+        print_icache_values(list_of_addresses_one_LRU[7] + i);
+    }
+    msync();
+    isync();
+    for(int i = 0; i < 0x80/*mem_size_instr/4*/; i += 0x20)
+    {
+        result |= print_and_check_icache_values(
+                list_of_addresses_zero_LRU[7] + i,
+                false,
+                0x0,
+                true,
+                0xf,
+                true,
+                0xf);
+    }
+    for(int i = 0; i < 0x80/*mem_size_instr/4*/; i += 0x20)
+    {
+        unlock_list_of_addresses(list_of_addresses_one_LRU, 8, i);
+    }
+    return result;
+}
 
 int main()
 {
+    uint32_t result = 0;
     rumboot_putstring("Test started\n");
 
 //    test_event_send_test_id("test_oi10_cpu_mem_013");
@@ -379,44 +389,29 @@ int main()
     emi_init(DCR_EM2_EMI_BASE);
     rumboot_putstring("EM2 initialized\n");
 
-    rumboot_memfill32((void*)(SRAM0_BASE ), mem_size_instr + 0x40, blr_instruction, 0);
-//
-//    for (int index = 0; index < index_count; index++)
-//    {
-//        rumboot_putstring("Copy values ...\n");
-//
-//
-//        rumboot_memfill32((void*)(SRAM0_BASE | (index << XCREAD_EA_L1I_INDEX_i)), (mem_size_instr >> 2), blr_instruction, 0);
-//
-////        rumboot_printf("SRAM0_BASE + 0x0 = 0x%x\n", ioread32(SRAM0_BASE | (index << 12) + 0x0));
-//
-//        rumboot_memfill32((void*)(SRAM0_BASE | index19 | (index << XCREAD_EA_L1I_INDEX_i)), (mem_size_instr >> 2), blr_instruction, 0);
-//
-////        rumboot_printf("SRAM0_BASE + 0x0 = 0x%x\n", ioread32(SRAM0_BASE | (index << 12) + 0x0));
-//
-//
-//        rumboot_putstring("Copy zeroes ...\n");
-//
-//
-//        rumboot_memfill32((void*)((SRAM0_BASE | (index << XCREAD_EA_L1I_INDEX_i)) + mem_size_instr), (mem_size_zero >> 2), 0x00000000, 0);
-//
-////        rumboot_printf("SRAM0_BASE + mem_size_instr + 0x0 = 0x%x\n", ioread32(SRAM0_BASE + mem_size_instr + 0x0));
-//
-//        rumboot_memfill32((void*)((SRAM0_BASE | index19 | (index << XCREAD_EA_L1I_INDEX_i)) + mem_size_instr), (mem_size_zero >> 2), 0x00000000, 0);
-//
-////        rumboot_printf("SRAM0_BASE + mem_size_instr + 0x0 = 0x%x\n", ioread32(SRAM0_BASE + mem_size_instr + 0x0));
-//    }
+    rumboot_memfill32((void*)(SRAM0_BASE ), 2 * mem_size_instr + 0x40, blr_instruction, 0);
 
 
     static const tlb_entry sram0_tlb_entry_cacheable_valid = {TLB_ENTRY_CACHE_VALID};
     write_tlb_entries(&sram0_tlb_entry_cacheable_valid, 1);
 
     rumboot_putstring("Starting test ...\n");
-//    TEST_ASSERT(test_icu_lru_array(),"ICU LRU array check failed");
-    set_different_lru_states();
+    touch_address_range(0x8000, 0x8080);
+    ici(0);
+    dci(2);
+    msync();
+    isync();
+    set_lru_to_zero_and_print();
+    result |= set_lru_to_zero_and_print();
+    rumboot_printf("after set_lru_to_zero_and_print result == 0x%x\n", result);
+    set_lru_to_one_and_print();
+    result |= set_lru_to_one_and_print();
+    rumboot_printf("after set_lru_to_one_and_print result == 0x%x\n", result);
+    result |= set_lock_to_one_and_print();
+    rumboot_printf("after set_lock_to_one_and_print result == 0x%x\n", result);
+    result |= set_lru_to_zero_and_print();
+    rumboot_printf("after second set_lru_to_zero_and_print result == 0x%x\n", result);
+//    set_different_lru_states();
 
-    test_event(EVENT_FINISHED);
-
-    rumboot_putstring("TEST OK\n");
-    return 0;
+    return result;
 }
