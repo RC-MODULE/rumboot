@@ -11,6 +11,9 @@
 #include <devices/uart_pl011.h>
 #include <regs/regs_gpio_pl061.h>
 #include <rumboot/printf.h>
+#include <arch/ppc_476fp_config.h>
+#include <arch/ppc_476fp_lib_c.h>
+
 
 #define IBM_BIT_INDEX(size, index)    (((size) - 1) - ((index) % (size)))
 #define ITRPT_XSR_FP_e  50
@@ -37,24 +40,14 @@ static void enable_fpu()
 
 
 /* Platform-specific glue */
-uint32_t rumboot_platform_get_uptime()
-{
-#define TIMER_TICKS_PER_US  800
-#define SPR_TBL_R           0x10C
+uint32_t rumboot_platform_get_uptime() {
+    #define TIMER_TICKS_PER_US  800 /* TODO check if PPC_TMR_CLK is 5ns */
 
-        uint32_t value = 0;
-
-        __asm volatile
-        (
-                "mfspr %0, %1 \n\t"
-                : "=r" (value)
-                : "i" (SPR_TBL_R)
-                :
-        );
-
-        return value / TIMER_TICKS_PER_US;
+    uint64_t v = spr_read( SPR_TBU_R );
+    v = v << 32;
+    v |= spr_read( SPR_TBL_R );
+    return v / TIMER_TICKS_PER_US;
 }
-
 
 #define PL011_UARTDR  0x0
 #define PL011_UARTFR  0x018

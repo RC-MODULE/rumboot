@@ -41,7 +41,10 @@ uint32_t rumboot_virt_to_dma(volatile void *addr)
 uint32_t rumboot_platform_get_uptime() {
     #define TIMER_TICKS_PER_US  200 /* TODO check if PPC_TMR_CLK is 5ns */
 
-    return spr_read( SPR_TBL_R ) / TIMER_TICKS_PER_US;
+    uint64_t v = spr_read( SPR_TBU_R );
+    v = v << 32;
+    v |= spr_read( SPR_TBL_R );
+    return v / TIMER_TICKS_PER_US;
 }
 
 void rumboot_itrpt_hdr_base();

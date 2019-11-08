@@ -12,7 +12,8 @@ static inline void udelay(uint32_t us) {
 
 static inline void mdelay(uint32_t ms) {
 
-  udelay(ms * 1000);
+  while (ms--)
+    udelay(1000);
 };
 
 #define LOOP_UNTIL_TIMEOUT(timeout_us) \
