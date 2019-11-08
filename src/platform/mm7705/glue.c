@@ -39,13 +39,16 @@ static void enable_fpu()
 }
 
 
-/* Platform-specific glue */
 uint32_t rumboot_platform_get_uptime() {
     #define TIMER_TICKS_PER_US  800 /* TODO check if PPC_TMR_CLK is 5ns */
 
-    uint64_t v = spr_read( SPR_TBU_R );
-    v = v << 32;
-    v |= spr_read( SPR_TBL_R );
+    uint32_t h = spr_read( SPR_TBU_R );
+    uint32_t l = spr_read( SPR_TBL_R );    
+    if (h != spr_read( SPR_TBU_R ))
+        return rumboot_platform_get_uptime();
+
+    uint64_t v = h; 
+    v = (v << 32) | l;
     return v / TIMER_TICKS_PER_US;
 }
 
