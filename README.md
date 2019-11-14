@@ -240,6 +240,7 @@ add_rumboot_target(
     DEPENDS prefix-name
     BOOTROM prefix-name
     PACKIMAGE_FLAGS flags
+    OBJCOPY_FLAGS  flag1 flag2
     VARIABLE PATHVAR
     APPEND filename
     FEATURES [STUB] [LUA] [COVERAGE] [LPROBE] [PACKIMAGE] [PACKIMAGE] [ROMGEN] [NOCODE] [COVERAGE]
@@ -280,6 +281,8 @@ add_rumboot_target(
 - IRUN_FLAGS - Дополнительные флаги irun'у при запуске данного теста
 
 - PACKIMAGE_FLAGS - Опции для rumboot-packimage.py. При отсутствии просто добавляет правильную контрольную сумму
+
+- OBJCOPY_FLAGS - Дополнительные опции для objcopy при создании .bin файла
 
 - CHECKCMD - Выполнить эту команду в директории запуска теста для проверки результата прохождения теста. Если команда вернет 0, то тест будет считаться пройденным. Код возврата от моделирования при этом не будет учитываться.
 
