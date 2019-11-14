@@ -1,0 +1,9 @@
+#ifndef PLATFORM_BOOTHEADER_h
+#define PLATFORM_BOOTHEADER_h
+
+#define RUMBOOT_PLATFORM_CHIPID   6
+#define RUMBOOT_PLATFORM_CHIPREV  1
+#define RUMBOOT_PLATFORM_NUMCORES 1
+#define RUMBOOT_PLATFORM_EASTER_EGG "Archon: Power owerwhelming!"
+
+#endif /* end of include guard: PLATFORM_BOOTHEADER_h */

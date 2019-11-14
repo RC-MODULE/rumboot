@@ -1,0 +1,11 @@
+
+#ifndef DEVICES_H_
+#define DEVICES_H_
+
+#define GIC_DIST_BASE  0x000B0000
+#define GIC_CPUIF_BASE 0x000B1000
+#define PL022_SSP_BASE 0x000CF000
+#define GRETH_BASE     0x000D0000
+#define SP804_BASE     0x000CD000
+
+#endif
