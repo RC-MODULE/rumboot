@@ -100,6 +100,16 @@ macro(find_rumboot_packimage)
       COMMAND ${GIT_EXECUTABLE} submodule update rumboot-packimage.py
       WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
     )
+    set(PACKIMAGE_DIR ${PROJECT_SOURCE_DIR}/rumboot-packimage.py)
+    file(WRITE ${PROJECT_BINARY_DIR}/rumboot-packimage "#!/bin/bash\n${PYTHON_EXECUTABLE} ${PACKIMAGE_DIR}/rumboot_packimage.py $*")
+    file(WRITE ${PROJECT_BINARY_DIR}/rumboot-xflash    "#!/bin/bash\n${PYTHON_EXECUTABLE} ${PACKIMAGE_DIR}/rumboot_xflash.py -z ${PROJECT_BINARY_DIR} $*")
+    file(WRITE ${PROJECT_BINARY_DIR}/rumboot-xrun      "#!/bin/bash\n${PYTHON_EXECUTABLE} ${PACKIMAGE_DIR}/rumboot_xrun.py $*")
+    find_program(CHMOD_PROG chmod)
+    if(CHMOD_PROG)
+      execute_process(COMMAND ${CHMOD_PROG} +x ${PROJECT_BINARY_DIR}/rumboot-packimage)
+      execute_process(COMMAND ${CHMOD_PROG} +x ${PROJECT_BINARY_DIR}/rumboot-xrun)
+      execute_process(COMMAND ${CHMOD_PROG} +x ${PROJECT_BINARY_DIR}/rumboot-xflash)
+    endif()
   endif()
 endmacro()
 
