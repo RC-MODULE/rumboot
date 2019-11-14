@@ -55,12 +55,12 @@ void rumboot_platform_setup() {
 
     struct pl022_config conf;
     conf.ssp_clk = 200000000UL;
-    conf.spi_clk = 100000;
+    conf.spi_clk = 12500000UL;
     conf.data_size = 16;
     conf.soft_cs = 0;
     pl022_init(PL022_SSP_BASE, &conf);
 
     iowrite32(1<<2, PL022_SSP_BASE + 0x140);
+    /* Send the start symbol */
     iowrite32(0xf55, PL022_SSP_BASE + 0x8);
-    rumboot_printf("HELLO\n");
 }

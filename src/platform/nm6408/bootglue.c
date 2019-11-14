@@ -29,16 +29,22 @@ int rumboot_platform_selftest(struct rumboot_config *conf)
 
 void rumboot_platform_read_config(struct rumboot_config *conf)
 {
-        conf->hostmode = 1;
+        uint32_t bootm = ioread32(0x000CB004);
+        conf->hostmode = bootm & (1<<2);
         conf->legacyboot = 0;
         conf->selftest = 0;
+        conf->baudrate = 115200;
         conf->edcl = 1;
 }
 
 void rumboot_platform_print_summary(struct rumboot_config *conf)
 {
-
-
+        uint32_t bootm = ioread32(0x000CB004);        
+        rumboot_printf("BOOTM:            0:%x 1:%x 2:%x\n", 
+                (bootm & (1<<0)) ? 1 : 0,
+                (bootm & (1<<1)) ? 1 : 0,
+                (bootm & (1<<2)) ? 1 : 0                
+                );
 }
 
 
@@ -48,7 +54,7 @@ static const struct rumboot_bootsource arr[] = {
                 .base = PL022_SSP_BASE,
                 .base_freq_khz = 100000,
                 .iface_freq_khz = 12500,
-                .offset = 8192,
+                .offset = 16384,
                 .plugin = &g_bootmodule_spiflash,
         },
         { /* sentinel */ }
