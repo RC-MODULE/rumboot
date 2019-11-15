@@ -122,14 +122,12 @@
     load_const r0, 0x00
     load_const r1, \way
     load_const r2, 0x00 //current index
-    lis r17, \addr@h
-    ori r17, r17, \addr@l
+    load_addr  r17, \addr
 6:
     slwi r5, r1, IBM_BIT_INDEX(32, 18) //way
     slwi r6, r2, IBM_BIT_INDEX(32, 26) //index
     or r5, r5 ,r6
     DCREAD_WRAPPER r25, r0, r5, r26, r27
-
 
     //Workaround to discard "x" in data parity.
     load_const r28, 0xFFFFFFF0
@@ -147,6 +145,27 @@
     blt cr7, 6b
 .endm
 
+.macro TEST_DCU_LRU_DBUS_MASK addr, index
+    load_const r0, 0x00
+    load_const r1, 0x00
+    load_const r2, \index //current index
+    load_const r17, \addr //current index
+    slwi r5, r1, IBM_BIT_INDEX(32, 18) //way
+    slwi r6, r2, IBM_BIT_INDEX(32, 26) //index
+    or r5, r5 ,r6
+    DCREAD_WRAPPER r25, r0, r5, r26, r27
+
+    //Workaround to discard "x" in data parity.
+    load_const r28, 0xFFFFFFF0
+    and r27, r27, r28
+
+
+//    lwz r18, 0(r17)
+//    rumboot_puthex    r27
+    cmp cr7, 0 , r27, r17
+    TEST_ASSERT(eq, cr7, "Wrong value in dcu lru array for way \way")
+
+.endm
 
 BEGIN_ENUM( test_event_code )
 DECLARE_ENUM_VAL( TEC_INIT_LRU_ARRAYS_ABUS_CHECK,   TEST_EVENT_CODE_MIN+0 )
@@ -374,19 +393,30 @@ test_oi10_cpu_mem_007:
 
     test_event TEC_DCU_WBYTESEL0_01_BIT_FORCE
     .align 7
-    TEST_DCU_LRU_DBUS 0, dcu_lru_array_data01
-    TEST_DCU_LRU_DBUS 1, dcu_lru_array_data01
-    TEST_DCU_LRU_DBUS 2, dcu_lru_array_data01
-    TEST_DCU_LRU_DBUS 3, dcu_lru_array_data01
+    TEST_DCU_LRU_DBUS_MASK 0xf03cc000, 0x00
+    TEST_DCU_LRU_DBUS_MASK 0x587cc000, 0x3f
+    TEST_DCU_LRU_DBUS_MASK 0x20800000, 0x40
+    TEST_DCU_LRU_DBUS_MASK 0x78fc0000, 0x7f
+    TEST_DCU_LRU_DBUS_MASK 0x40008000, 0x80
+    TEST_DCU_LRU_DBUS_MASK 0x107c0000, 0xbf
+    TEST_DCU_LRU_DBUS_MASK 0x6880c000, 0xc0
+    TEST_DCU_LRU_DBUS_MASK 0x30fcc000, 0xff
 
     rumboot_putstring "TEC_DCU_WBYTESEL0_10_BIT_FORCE dcu_lru_array_data\n"
 
+    ici 0
+    msync
+
     test_event TEC_DCU_WBYTESEL0_10_BIT_FORCE
     .align 7
-    TEST_DCU_LRU_DBUS 0, dcu_lru_array_data10
-    TEST_DCU_LRU_DBUS 1, dcu_lru_array_data10
-    TEST_DCU_LRU_DBUS 2, dcu_lru_array_data10
-    TEST_DCU_LRU_DBUS 3, dcu_lru_array_data10
+    TEST_DCU_LRU_DBUS_MASK 0xfffcc000, 0x00
+    TEST_DCU_LRU_DBUS_MASK 0x503cc000, 0x3f
+    TEST_DCU_LRU_DBUS_MASK 0x20008000, 0x40
+    TEST_DCU_LRU_DBUS_MASK 0x703c8000, 0x7f
+    TEST_DCU_LRU_DBUS_MASK 0x40008000, 0x80
+    TEST_DCU_LRU_DBUS_MASK 0x103c8000, 0xbf
+    TEST_DCU_LRU_DBUS_MASK 0x6000c000, 0xc0
+    TEST_DCU_LRU_DBUS_MASK 0x303cc000, 0xff
 
     rumboot_putstring "TEC_DCU_WBYTESEL0_11_BIT_FORCE dcu_lru_array_data\n"
 
@@ -395,10 +425,14 @@ test_oi10_cpu_mem_007:
 
     test_event TEC_DCU_WBYTESEL0_11_BIT_FORCE
     .align 7
-    TEST_DCU_LRU_DBUS 0, dcu_lru_array_data11
-    TEST_DCU_LRU_DBUS 1, dcu_lru_array_data11
-    TEST_DCU_LRU_DBUS 2, dcu_lru_array_data11
-    TEST_DCU_LRU_DBUS 3, dcu_lru_array_data11
+    TEST_DCU_LRU_DBUS_MASK 0x0440c000, 0x00
+    TEST_DCU_LRU_DBUS_MASK 0x547cc000, 0x3f
+    TEST_DCU_LRU_DBUS_MASK 0x24408000, 0x40
+    TEST_DCU_LRU_DBUS_MASK 0x747c8000, 0x7f
+    TEST_DCU_LRU_DBUS_MASK 0x44408000, 0x80
+    TEST_DCU_LRU_DBUS_MASK 0x147c8000, 0xbf
+    TEST_DCU_LRU_DBUS_MASK 0x6440c000, 0xc0
+    TEST_DCU_LRU_DBUS_MASK 0x347cc000, 0xff
 
 test_ok:
     rumboot_putstring "TEST_OK\n"
@@ -435,38 +469,64 @@ dcu_lru_array_data:
 .long 0xf03cc000
 .long 0xfffcc000
 
-dcu_lru_array_data01:
-.long 0x8020c000
-.long 0x0fc0c000
-.long 0xff30c000
-.long 0x9ce4c000
-.long 0x0ab40000
-.long 0xc5684000
-.long 0x93388000
-.long 0x40fc8000
-.long 0xd01cc000
-.long 0x7ffc8000
+dcu_lru_array_data01_0:
+.long 0xf03cc000
 
-dcu_lru_array_data10:
+dcu_lru_array_data01_1:
+.long 0x90e4c000
+.long 0x90e4c000
+.long 0x90e4c000
+.long 0x90e4c000
+dcu_lru_array_data01_2:
+.long 0xf0b04000
+.long 0xf0b04000
+.long 0xf0b04000
+.long 0xf0b04000
+dcu_lru_array_data01_3:
+.long 0x98e44000
+.long 0x98e44000
+.long 0x98e44000
+.long 0x98e44000
+
+dcu_lru_array_data10_0:
 .long 0x8020c000
+.long 0x0840c000
+.long 0x0840c000
+.long 0x0840c000
+dcu_lru_array_data10_1:
 .long 0x0fc0c000
+.long 0x0840c000
+.long 0x0840c000
+.long 0x0840c000
+dcu_lru_array_data10_2:
 .long 0xfeb0c000
+.long 0x0840c000
+.long 0x0840c000
+.long 0x0840c000
+dcu_lru_array_data10_3:
 .long 0x9d64c000
-.long 0x0ab40000
-.long 0xc5684000
-.long 0x93388000
-.long 0x4cfc8000
-.long 0xdc1cc000
-.long 0x7ebc8000
+.long 0x0840c000
+.long 0x0840c000
+.long 0x0840c000
 
-dcu_lru_array_data11:
+dcu_lru_array_data11_0:
 .long 0x8aa04000
+.long 0x0840c000
+.long 0x0840c000
+.long 0x0840c000
+dcu_lru_array_data11_1:
 .long 0x3fc0c000
+.long 0x0840c000
+.long 0x0840c000
+.long 0x0840c000
+dcu_lru_array_data11_2:
 .long 0x7c308000
+.long 0x0840c000
+.long 0x0840c000
+.long 0x0840c000
+dcu_lru_array_data11_3:
 .long 0x8d60c000
-.long 0xca944000
-.long 0x05480000
-.long 0x9f348000
-.long 0x427c8000
-.long 0xde5cc000
-.long 0x7c7c0000
+.long 0x0840c000
+.long 0x0840c000
+.long 0x0840c000
+
