@@ -54,9 +54,10 @@ void rumboot_platform_setup() {
 
     struct pl022_config conf;
     conf.ssp_clk = 200000000UL;
-    conf.spi_clk = 500000UL;
+    conf.spi_clk = 1000000UL;
     conf.data_size = 16;
     conf.soft_cs = 0;
+    conf.variant = PL022_VARIANT_SHELUHIN;
 
     struct ssp_params prms;
     prms.cpol = 1;
