@@ -32,11 +32,18 @@
  * @{
  */
 
+enum pl022_variant {
+    PL022_VARIANT_GSPI = 0, /* PL022/GSPI with DMA, one chip-select */
+    PL022_VARIANT_DUMB, /* Vanilla PL022, No DMA */
+    PL022_VARIANT_SHELUHIN, /* PL022 from Sheluhin. DMA & Hardware chipselect only */
+};
+
 struct pl022_config {
 	uint32_t ssp_clk; /** SSP input frequency from CRG (See SoC Doc!) */
 	uint32_t spi_clk; /** Desired SPI Frequency */
 	uint32_t data_size; /** Transfer unit size in bits (Usually 8) */
-    uint32_t soft_cs; /** Use software chip-select control */
+    enum pl022_variant variant; /** pl022 hardware variant */
+    int soft_cs; /** Use software chip-select control extension */
 };
 
 /**
@@ -111,7 +118,7 @@ void pl022_init(uint32_t base, struct pl022_config const *conf);
 int pl022_set_speed(uint32_t base, struct pl022_config const *conf);
 /**
  * Software control over 'internal' chip-select line
- * FIXME: Not yet implemented
+ * Works only on PL022 GSPI Hardware
  * @param base   SSP base address
  * @param select CS signal value
  */

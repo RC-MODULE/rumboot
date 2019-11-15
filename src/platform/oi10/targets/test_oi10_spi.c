@@ -368,6 +368,8 @@ int main( void ) {
     conf.spi_clk = 20000000;
     conf.data_size = 8;
     conf.soft_cs = 0;
+    conf.variant = PL022_VARIANT_GSPI;
+
     pl022_init( GSPI_BASE, &conf );
 
     //set ssp parameters

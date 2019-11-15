@@ -135,6 +135,14 @@ void pl022_init(uint32_t const base, struct pl022_config const * const conf)
     pl022_set_speed(base, conf);
     set_data_size(base, conf->data_size);
     pl022_enable(base);
+
+    if (conf->soft_cs && (conf->variant != PL022_VARIANT_GSPI)) {
+        return rumboot_platform_panic("PL022: No SoftCS control for this hardware");
+    }
+
+    if (conf->variant != PL022_VARIANT_GSPI)
+        return; /* Nothing to do */
+
     uint32_t soft_cs_ctl = ioread32(base + SSPSR_SOFTCS);
     if (conf->soft_cs) {
         iowrite32(soft_cs_ctl | (1<<1), base + SSPSR_SOFTCS);

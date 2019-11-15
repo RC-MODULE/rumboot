@@ -77,6 +77,8 @@ static bool spiflash_init(const struct rumboot_bootsource *src, void *pdata)
    conf.spi_clk = src->iface_freq_khz * 1000;
    conf.data_size = 8;
    conf.soft_cs = 1;
+   conf.variant = PL022_VARIANT_GSPI;
+
    pl022_init(src->base, &conf);
 
 	spi_flash->src = src;
