@@ -1420,7 +1420,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES ddr/ddr_initializer.c
-      CFLAGS -DDDR_HEADER_FILE="platform/ddr_config/ddr__mt41k256m8_125_8_11_800_2.h"
+      CFLAGS -DDDR_HEADER_FILE="platform/ddr_config/ddr__mt41k256m8_125_8_11_800.h"
       NAME ddr_initializer
     )
 
@@ -1818,7 +1818,7 @@ add_rumboot_target(
      LOAD IM0BIN simple-iram-chain-start-dummy,sctl-iram-pull_up_disabled,simple-iram-chain-end-dummy
     NAME chain-test_sctl_pull_up_disabled
   )
-  
+
   add_rumboot_target(
     CONFIGURATION IRAM_SPL
     FILES simple-iram/boot-spi1-redirect.c
@@ -1851,7 +1851,31 @@ add_rumboot_target(
     FILES gpio/gpio_blink.c
     NAME "gpio_blink"
   )  
+  
+  add_rumboot_target(
+      CONFIGURATION IRAM
+      CFLAGS -DNO_DDR_INIT_IN_TEST_DDRi_ADDR_TEST
+      FILES ddr/ddr0_addr_test.c
+      NAME ddr0_addr_test_no_init
+  )
 
+  add_rumboot_target(
+      CONFIGURATION IRAM
+      CFLAGS -DNO_DDR_INIT_IN_TEST_DDRi_ADDR_TEST
+      FILES ddr/ddr1_addr_test.c
+      NAME ddr1_addr_test_no_init
+  )
+
+  add_rumboot_target(
+    CONFIGURATION IRAM
+    IRUN_FLAGS +can_plus_adapter +i2c_single_bus
+    FEATURES NOCODE
+    COMBOIMAGE IM0BIN
+    LOAD IM0BIN simple-iram-chain-start-dummy,iram-ddr_initializer,iram-ddr0_addr_test_no_init,iram-ddr1_addr_test_no_init,arinc-arinc_loopback_8,iram-mkio_write_read_test,iram-can_adapter_0_test,iram-can_adapter_1_test,iram-can_adapter_2_test,mgeth-geth_direct-mgeth_mem_access,i2c-0-i2c_driver_EEPROM,iram-pcie_board_config
+#     LOAD IM0BIN simple-iram-chain-start-dummy,iram-ddr_initializer,iram-ddr0_addr_test
+    NAME chain-test_mt14305
+  )
+  
 endmacro()
 
 if (CMAKE_VERILOG_RULES_LOADED)

@@ -89,8 +89,10 @@ uint32_t ddr_addr_shift1_test ()
 
 int main ()
 {
-    if (ddr_init (DDR1_BASE) != 0)
-        return -1;
+    #ifndef NO_DDR_INIT_IN_TEST_DDRi_ADDR_TEST
+        if (ddr_init (DDR1_BASE) != 0)
+            return -1;
+    #endif
     if (ddr_addr_shift1_test () != 0)
         return -2;
     return 0;
