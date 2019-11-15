@@ -108,7 +108,7 @@ int rumboot_platform_getchar(uint32_t timeout_us)
                 iowrite32(0x0, PL022_SSP_BASE + 0x8);
                 while(pl022_rx_empty(PL022_SSP_BASE));;
                 uint32_t byte = ioread32(PL022_SSP_BASE + 0x8);
-                if ((byte & (1<<8)) == 0)
+                if ((byte & (1<<8)))
                         return (int) byte & 0xff;
         }
         return -1;
