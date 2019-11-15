@@ -121,27 +121,49 @@ int pl022_set_speed(uint32_t const base, struct pl022_config const * const conf)
 
 static inline void pl022_enable(uint32_t const base)
 {
-    iowrite32((1 << PL022_CR1__SOD_i) | (1 << PL022_CR1__SSE_i), base + PL022_CR1);
+    uint32_t cr1 = ioread32(base + PL022_CR1);
+
+    cr1 |= (1 << PL022_CR1__SOD_i) | (1 << PL022_CR1__SSE_i);
+
+    iowrite32(cr1, base + PL022_CR1);
 }
 
 static inline void pl022_disable(uint32_t const base)
 {
     uint32_t cr1 = ioread32(base + PL022_CR1);
-    iowrite32(cr1 & ~((1 << PL022_CR1__SOD_i) | (1 << PL022_CR1__SSE_i)), base + PL022_CR1);
+
+    cr1 = (cr1 | (1 << PL022_CR1__SOD_i)) & ~(1 << PL022_CR1__SSE_i);
+
+    iowrite32(cr1, base + PL022_CR1);
+}
+
+void pl022_slave_output(uint32_t const base, int enable)
+{
+    uint32_t cr1 = ioread32(base + PL022_CR1);
+
+    if (enable)
+         cr1 &= ~(1 << PL022_CR1__SOD_i);
+    else
+         cr1 |= (1 << PL022_CR1__SOD_i);
+
+    iowrite32(cr1, base + PL022_CR1);
 }
 
 void pl022_init(uint32_t const base, struct pl022_config const * const conf)
 {
+    pl022_disable(base);
+
     pl022_set_speed(base, conf);
     set_data_size(base, conf->data_size);
-    pl022_enable(base);
 
     if (conf->soft_cs && (conf->variant != PL022_VARIANT_GSPI)) {
         return rumboot_platform_panic("PL022: No SoftCS control for this hardware");
     }
 
-    if (conf->variant != PL022_VARIANT_GSPI)
+    if (conf->variant != PL022_VARIANT_GSPI) {
+	pl022_enable(base);
         return; /* Nothing to do */
+    }
 
     uint32_t soft_cs_ctl = ioread32(base + SSPSR_SOFTCS);
     if (conf->soft_cs) {
@@ -149,6 +171,8 @@ void pl022_init(uint32_t const base, struct pl022_config const * const conf)
     } else {
         iowrite32(soft_cs_ctl & (~(1<<1)), base + SSPSR_SOFTCS);
     }
+
+    pl022_enable(base);
 }
 
 void pl022_internal_cs(uint32_t const base, int const select)
@@ -163,7 +187,7 @@ void pl022_internal_cs(uint32_t const base, int const select)
 
 bool pl022_tx_empty(uint32_t const base)
 {
-    return ioread32(base + PL022_SR) & (1 << PL022_SR__TFE_i);
+    return !(ioread32(base + PL022_SR) & (1 << PL022_SR__BSY_i));
 }
 
 bool pl022_tx_avail(uint32_t const base)
@@ -174,6 +198,11 @@ bool pl022_tx_avail(uint32_t const base)
 bool pl022_rx_empty(uint32_t const base)
 {
     return !(ioread32(base + PL022_SR) & (1 << PL022_SR__RNE_i));
+}
+
+bool pl022_rx_full(uint32_t const base)
+{
+   return (ioread32(base + PL022_SR) & (1 << PL022_SR__RFF_i));
 }
 
 void pl022_dump_fifo_state(uint32_t const base)
@@ -223,8 +252,13 @@ int pl022_xfer(uint32_t const base, unsigned char const *wrbuf, unsigned char *r
 
 void pl022_clear_rx_buf(uint32_t const base)
 {
-    while (ioread32(base + PL022_SR) & (1 << PL022_SR__RNE_i))
+    while (!pl022_tx_empty(base)) {};
+
+    while (!pl022_rx_empty(base))
         ioread32(base + PL022_DR);
+
+
+   iowrite32(1 << PL022_ICR__ROR_i, base + PL022_ICR);
 }
 
 
@@ -331,16 +365,20 @@ void pl022_dma_set_param(uint32_t const base_addr, struct dma_params const * con
 
 void pl022_set_param(uint32_t const base_address, struct ssp_params const * const params)
 {
-    uint32_t cr0;
+    uint32_t cr0, cr1;
     //disable ssp
     pl022_disable(base_address);
     //setup the parameters
     cr0 = ioread32(base_address + GSPI_SSPCR0);
+    cr0 &= ~((0x1 << SPH_SHIFT) | (0x1 << SPO_SHIFT) | (0x3 << FRF_SHIFT));
     //cpol, cpha, format
     iowrite32((((params->cpha & 0x1) << SPH_SHIFT) |
                 ((params->cpol & 0x1) << SPO_SHIFT) |
-                (params->fr_format << FRF_SHIFT) | cr0),
+                ((params->fr_format & 0x3) << FRF_SHIFT) | cr0),
                 base_address + GSPI_SSPCR0);
     //mode, loopback, enable core
-    iowrite32( ( ((params->loopback & 0x1) << LBM_SHIFT) | (params->mode << MS_SHIFT) | SSE ), base_address + GSPI_SSPCR1);
+    cr1 = ioread32(base_address + GSPI_SSPCR1);
+    cr1 &= ~((0x1 << LBM_SHIFT) | (0x1 << MS_SHIFT));
+    iowrite32((((params->loopback & 0x1) << LBM_SHIFT) | ((params->mode & 0x1) << MS_SHIFT) | cr1), base_address + GSPI_SSPCR1);
+    pl022_enable(base_address);
 }

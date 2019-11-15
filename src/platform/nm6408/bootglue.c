@@ -93,19 +93,16 @@ void  __attribute__((no_instrument_function)) rumboot_platform_putchar(uint8_t c
 {
     while (!pl022_tx_avail(PL022_SSP_BASE));;
     iowrite32( 0x100 | c, PL022_SSP_BASE + 0x8);
-    while (!pl022_rx_empty(PL022_SSP_BASE)) {
-        ioread32(PL022_SSP_BASE + 0x8);
-    }
+
+    if (!pl022_rx_empty(PL022_SSP_BASE))
+        pl022_clear_rx_buf(PL022_SSP_BASE);
 }
 
 int rumboot_platform_getchar(uint32_t timeout_us)
 {
         uint32_t start = rumboot_platform_get_uptime();
         /* Make sure no leftover data in fifo's */
-        while (!pl022_tx_empty(PL022_SSP_BASE));;
-        while (!pl022_rx_empty(PL022_SSP_BASE)) {
-                ioread32(PL022_SSP_BASE + 0x8);
-        }        
+        pl022_clear_rx_buf(PL022_SSP_BASE);
 
         while (rumboot_platform_get_uptime() - start < timeout_us) {
                 iowrite32(0x0, PL022_SSP_BASE + 0x8);

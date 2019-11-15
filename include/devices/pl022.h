@@ -109,6 +109,7 @@ struct dma_params{
 
 //global functions
 void pl022_init(uint32_t base, struct pl022_config const *conf);
+void pl022_slave_output(uint32_t const base, int enable);
 /**
  * Calculate the divisors and set SSP speed
  * @param  base base address
@@ -141,6 +142,12 @@ bool pl022_tx_avail(uint32_t base);
  * @return
  */
 bool pl022_rx_empty(uint32_t base);
+/**
+ * Returns true if RX FIFO is full
+ * @param  base SSP base address
+ * @return
+ */
+bool pl022_rx_full(uint32_t base);
 /**
  * Dumps fifo state to stdout (for debugging)
  * @param base SSP base address

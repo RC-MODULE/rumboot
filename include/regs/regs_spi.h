@@ -12,6 +12,8 @@
  #define PL022_CPSR  0x10
  #define PL022_CR0 0x0
  #define PL022_IMSC 0x14
+ #define PL022_RIS 0x18
+ #define PL022_MIS 0x1c
  #define PL022_ICR 0x20
  #define PL022_CR1 0x4
  #define PL022_DMACR 0x24
@@ -29,11 +31,14 @@
   * \addtogroup spi_bit_positions
   * @{
   */
+#define PL022_SR__BSY_i 4
+#define PL022_SR__RFF_i 3
 #define PL022_SR__RNE_i 2
 #define PL022_SR__TNF_i 1
 #define PL022_SR__TFE_i 0
 #define PL022_CR1__SOD_i 3
 #define PL022_CR1__SSE_i 1
+#define PL022_ICR__ROR_i 0
 /**
  * @}
 

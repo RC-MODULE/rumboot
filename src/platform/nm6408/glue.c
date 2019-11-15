@@ -26,7 +26,7 @@ uint32_t rumboot_virt_to_dma(volatile void *addr)
 
 /* Platform-specific glue */
 uint32_t rumboot_platform_get_uptime() {
-        return (0xFFFFFFFF - sp804_get_value(SP804_BASE, 1)) / 12.5;
+        return (0xFFFFFFFF - sp804_get_value(SP804_BASE, 0)) / 12.5;
 }
 
 
@@ -44,23 +44,38 @@ void rumboot_platform_setup() {
 
     struct sp804_conf conf_str;
     conf_str.mode = FREERUN;
-    conf_str.interrupt_enable = 1;
+    conf_str.interrupt_enable = 0;
     conf_str.clock_division = 16;
     conf_str.width = 32;
-    conf_str.load = 0;
-    conf_str.bgload = 0;
-    sp804_config(SP804_BASE, &conf_str, 1);
-    sp804_enable(SP804_BASE, 1);
-
+    conf_str.load = 0xFFFFFFFF;
+    conf_str.bgload = 0xFFFFFFFF;
+    sp804_config(SP804_BASE, &conf_str, 0);
+    sp804_enable(SP804_BASE, 0); 
 
     struct pl022_config conf;
     conf.ssp_clk = 200000000UL;
-    conf.spi_clk = 12500000UL;
+    conf.spi_clk = 500000UL;
     conf.data_size = 16;
     conf.soft_cs = 0;
+
+    struct ssp_params prms;
+    prms.cpol = 1;
+    prms.cpha = 1;
+    prms.mode = master_mode;
+    prms.fr_format = ssp_motorola_fr_form;
+
     pl022_init(PL022_SSP_BASE, &conf);
 
+    prms.loopback = true;
+    pl022_set_param(PL022_SSP_BASE, &prms);
+
+    pl022_clear_rx_buf(PL022_SSP_BASE);
     iowrite32(1<<2, PL022_SSP_BASE + 0x140);
+
+    prms.loopback = false;
+    pl022_set_param(PL022_SSP_BASE, &prms);
+
     /* Send the start symbol */
     iowrite32(0xf55, PL022_SSP_BASE + 0x8);
+    pl022_clear_rx_buf(PL022_SSP_BASE);
 }
