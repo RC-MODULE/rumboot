@@ -169,14 +169,10 @@
 
 BEGIN_ENUM( test_event_code )
 DECLARE_ENUM_VAL( TEC_INIT_LRU_ARRAYS_ABUS_CHECK,   TEST_EVENT_CODE_MIN+0 )
-DECLARE_ENUM_VAL( TEC_RELEASE_LRU_ARRAYS_ABUS,      TEST_EVENT_CODE_MIN+1 )
-DECLARE_ENUM_VAL( TEC_INIT_LRU_ARRAYS_DBUS_CHECK,   TEST_EVENT_CODE_MIN+2 )
-DECLARE_ENUM_VAL( TEC_RELEASE_LRU_ARRAYS_DBUS,      TEST_EVENT_CODE_MIN+3 )
-//***
-DECLARE_ENUM_VAL( TEC_DCU_WBYTESEL0_01_BIT_FORCE,   TEST_EVENT_CODE_MIN+4 )
-DECLARE_ENUM_VAL( TEC_DCU_WBYTESEL0_10_BIT_FORCE,   TEST_EVENT_CODE_MIN+5 )
-DECLARE_ENUM_VAL( TEC_DCU_WBYTESEL0_11_BIT_FORCE,   TEST_EVENT_CODE_MIN+6 )
-//***
+DECLARE_ENUM_VAL( TEC_INIT_LRU_ARRAYS_DBUS_CHECK,   TEST_EVENT_CODE_MIN+1 )
+DECLARE_ENUM_VAL( TEC_DCU_WBYTESEL0_01_BIT_FORCE,   TEST_EVENT_CODE_MIN+2 )
+DECLARE_ENUM_VAL( TEC_DCU_WBYTESEL0_10_BIT_FORCE,   TEST_EVENT_CODE_MIN+3 )
+DECLARE_ENUM_VAL( TEC_DCU_WBYTESEL0_11_BIT_FORCE,   TEST_EVENT_CODE_MIN+4 )
 END_ENUM( test_event_code )
 
 
@@ -468,65 +464,4 @@ dcu_lru_array_data:
 .long 0x00dc8000
 .long 0xf03cc000
 .long 0xfffcc000
-
-dcu_lru_array_data01_0:
-.long 0xf03cc000
-
-dcu_lru_array_data01_1:
-.long 0x90e4c000
-.long 0x90e4c000
-.long 0x90e4c000
-.long 0x90e4c000
-dcu_lru_array_data01_2:
-.long 0xf0b04000
-.long 0xf0b04000
-.long 0xf0b04000
-.long 0xf0b04000
-dcu_lru_array_data01_3:
-.long 0x98e44000
-.long 0x98e44000
-.long 0x98e44000
-.long 0x98e44000
-
-dcu_lru_array_data10_0:
-.long 0x8020c000
-.long 0x0840c000
-.long 0x0840c000
-.long 0x0840c000
-dcu_lru_array_data10_1:
-.long 0x0fc0c000
-.long 0x0840c000
-.long 0x0840c000
-.long 0x0840c000
-dcu_lru_array_data10_2:
-.long 0xfeb0c000
-.long 0x0840c000
-.long 0x0840c000
-.long 0x0840c000
-dcu_lru_array_data10_3:
-.long 0x9d64c000
-.long 0x0840c000
-.long 0x0840c000
-.long 0x0840c000
-
-dcu_lru_array_data11_0:
-.long 0x8aa04000
-.long 0x0840c000
-.long 0x0840c000
-.long 0x0840c000
-dcu_lru_array_data11_1:
-.long 0x3fc0c000
-.long 0x0840c000
-.long 0x0840c000
-.long 0x0840c000
-dcu_lru_array_data11_2:
-.long 0x7c308000
-.long 0x0840c000
-.long 0x0840c000
-.long 0x0840c000
-dcu_lru_array_data11_3:
-.long 0x8d60c000
-.long 0x0840c000
-.long 0x0840c000
-.long 0x0840c000
 
