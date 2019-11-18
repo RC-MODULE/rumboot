@@ -124,28 +124,6 @@ static void check_values(uint32_t check_value, test_io10_cpu_020_plb6_io_data_si
         COMPARE_VALUES(ioread32(target + i), check_value, "Incorrect data were read!");
 }
 
-inline void dma2plb6_trace_status(
-        channel_status status) {
-    switch (status.spec_error_status) {
-    case error_alignnment:
-    case error_scatter_alignment:
-        rumboot_printf("DMA2PLB6: Error alignment\n");
-        break;
-    case error_read_data_regular:
-    case error_read_data_scatter_or_resume:
-        rumboot_printf("DMA2PLB6: Error read data\n");
-        break;
-    case error_read_request_regular:
-    case error_read_request_scatter_or_resume:
-        rumboot_printf("DMA2PLB6: Error read request\n");
-        break;
-    case error_write_request:
-        rumboot_printf("DMA2PLB6: Error write request\n");
-        break;
-    default:
-        rumboot_printf("DMA2PLB6: Unexpected status\n");
-    }
-}
 /*
 static void test_procedure_with_gmii(uint32_t base_addr_src_eth, test_io10_cpu_020_plb6_io_data_size data_size, uint32_t source, uint32_t target)
 {
@@ -211,7 +189,7 @@ static void test_procedure_with_dma(uint32_t dma_base, test_io10_cpu_020_plb6_io
     rumboot_printf("DMA prepared, starting copy.\n");
     if (dma2plb6_single_copy_coherency_required(&dma_info, &dma_status) == false)
     {
-        dma2plb6_trace_status(dma_status);
+        dma2plb6_trace_error_status(&dma_status);
         TEST_ASSERT(0, "DMA copy failed.\n");
     }
     rumboot_printf("DMA copy completed.\n");

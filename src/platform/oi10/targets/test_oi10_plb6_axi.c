@@ -443,24 +443,6 @@ void test_oi10_greth (){
 
 //-------------------------------------------------------------------------------------------------
 
-#define SHOW_STATUS(status) switch(status){ \
-                case error_alignnment: \
-                case error_scatter_alignment: \
-                    rumboot_printf("DMA2PLB6: Error alignment\n"); \
-                    break; \
-                case error_read_data_regular: \
-                case error_read_data_scatter_or_resume: \
-                    rumboot_printf("DMA2PLB6: Error read data\n"); \
-                    break; \
-                case error_read_request_regular: \
-                case error_read_request_scatter_or_resume: \
-                    rumboot_printf("DMA2PLB6: Error read request\n"); \
-                    break; \
-                case error_write_request: \
-                    rumboot_printf("DMA2PLB6: Error write request\n"); \
-                    break; \
-                }
-
 
 #define TEST_DATA_SIZE 128
 #define TEST_DATA_CONTENT 0xFEDCBA9876543210
@@ -612,7 +594,7 @@ uint32_t check_dma2plb6_0_mem_to_mem(uint32_t source_ea, uint32_t dest_ea, uint6
 
             rumboot_printf("run dma copy\n");
             if(dma2plb6_single_copy(&dma_info, &status) == false){
-                SHOW_STATUS(status.spec_error_status);
+                dma2plb6_trace_error_status(&status);
                 return false;
             } else {
                 rumboot_printf("run compare data\n");

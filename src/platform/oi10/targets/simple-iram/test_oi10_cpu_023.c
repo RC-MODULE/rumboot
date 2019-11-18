@@ -22,24 +22,6 @@
 //test data content
 #define TEST_DATA_CONTENT 0x0123456789ABCDEF
 
-#define SHOW_STATUS(status) switch(status){ \
-                case error_alignnment: \
-                case error_scatter_alignment: \
-                    rumboot_printf("DMA2PLB6: Error alignment\n"); \
-                    break; \
-                case error_read_data_regular: \
-                case error_read_data_scatter_or_resume: \
-                    rumboot_printf("DMA2PLB6: Error read data\n"); \
-                    break; \
-                case error_read_request_regular: \
-                case error_read_request_scatter_or_resume: \
-                    rumboot_printf("DMA2PLB6: Error read request\n"); \
-                    break; \
-                case error_write_request: \
-                    rumboot_printf("DMA2PLB6: Error write request\n"); \
-                    break; \
-                }
-
 
 //IM0, 128-bit alignment (16 bytes)
 static uint8_t source_area_im0 [TEST_DATA_SIZE]__attribute__((aligned(16)));
@@ -174,7 +156,7 @@ static uint32_t check_dma2plb6_0_mem_to_mem(uint32_t source_ea, uint32_t dest_ea
             dma_info.count = TEST_DATA_SIZE/dma2plb6_get_bytesize(dma_info.transfer_width);
 
             if(dma2plb6_single_copy(&dma_info, &status) == false){
-                SHOW_STATUS(status.spec_error_status);
+                dma2plb6_trace_error_status(&status);
                 return false;
             } else {
                 TEST_ASSERT(compare(source_ea, dest_ea, TEST_DATA_SIZE) == true, "Memory comparison failed");
