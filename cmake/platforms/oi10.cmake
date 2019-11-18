@@ -1762,6 +1762,7 @@ endif()
 
     add_rumboot_target(
         CONFIGURATION SUPPLEMENTARY
+        CFLAGS -DL2C_CHECK_SIZE=0x100
         LDS oi10/sram0.lds
         FILES test_oi10_cpu_021_wb_cache_size.c
         NAME "test_oi10_cpu_021_wb_cache_size"
