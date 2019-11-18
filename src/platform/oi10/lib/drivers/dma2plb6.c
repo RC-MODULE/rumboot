@@ -83,34 +83,8 @@ void dma2plb6_mcpy(dma2plb6_setup_info * const setup_info)
  */
 void dma2plb6_mcpy_coherency_required(dma2plb6_setup_info const * const setup_info)
 {
-    dma2plb6_disable_channel(setup_info->base_addr,setup_info->channel);
-    dcr_write(get_addr(setup_info->channel,PLB6_DMA_SAH,setup_info->base_addr),(setup_info->source_adr >> 32));
-    dcr_write(get_addr(setup_info->channel,PLB6_DMA_SAL,setup_info->base_addr),setup_info->source_adr & 0xFFFFFFFF);
-    dcr_write(get_addr(setup_info->channel,PLB6_DMA_DAH,setup_info->base_addr),(setup_info->dest_adr >> 32));
-    dcr_write(get_addr(setup_info->channel,PLB6_DMA_DAL,setup_info->base_addr),setup_info->dest_adr & 0xFFFFFFFF);
-    //count < 0x000FFFFF
-    dcr_write(get_addr(setup_info->channel,PLB6_DMA_CTC,setup_info->base_addr),setup_info->count);
-    if(setup_info->striding_info.striding != striding_none){
-        dcr_write(get_addr(setup_info->channel,PLB6_DMA_DSTR,setup_info->base_addr),
-                setup_info->striding_info.sbs << IBM_BIT_INDEX(32,31) | setup_info->striding_info.tbs << IBM_BIT_INDEX(32,15));
-    }
-    //clear CS[x] and RIx in SR
-    dcr_write(setup_info->base_addr + PLB6_DMA_SR, (1 << IBM_BIT_INDEX(32,(RI0 * (setup_info->channel+1)))) |
-                                                   ((1 << IBM_BIT_INDEX(32,CS))) << IBM_BIT_INDEX(4, setup_info->channel));
-    uint32_t const cr = //int mode, int enable
-                        (setup_info->int_mode << IBM_BIT_INDEX(32,CIM))
-                      | (setup_info->tc_int_enable << IBM_BIT_INDEX(32,TCIE))
-                      | (setup_info->err_int_enable << IBM_BIT_INDEX(32,EIE))
-                        //transfer options
-                      | (setup_info->transfer_width << IBM_BIT_INDEX(32,PW))
-                      | (setup_info->striding_info.striding << IBM_BIT_INDEX(32,DSD))   //setup DSD and DSS
-                      | (1 << IBM_BIT_INDEX(32,TCE))                                    //Enable terminal count
-                      | (setup_info->priority << IBM_BIT_INDEX(32,CP))
-                      | (setup_info->rw_transfer_size << IBM_BIT_INDEX(32,PF))
-                      | (setup_info->snp_mode << IBM_BIT_INDEX(32,DSC));
-    dcr_write(get_addr(setup_info->channel,PLB6_DMA_CR,setup_info->base_addr), cr);
-                                                                               //enable channel
-    dcr_write(get_addr(setup_info->channel,PLB6_DMA_CR,setup_info->base_addr), cr | (1 << IBM_BIT_INDEX(32,CE)));
+    dma2plb6_mcpy_init( setup_info );
+    dma2plb6_enable_channel( setup_info->base_addr, setup_info->channel );
 }
 
 void dma2plb6_mcpy_init(dma2plb6_setup_info const * const setup_info)
