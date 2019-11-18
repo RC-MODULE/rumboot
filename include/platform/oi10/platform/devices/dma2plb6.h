@@ -17,7 +17,7 @@ typedef enum{
     channel3 = 3
 }DmaChannel;
 
-typedef struct {
+typedef struct channel_status {
     uint32_t terminalcnt_reached;
     uint32_t error_detected;
     uint32_t spec_error_status;
@@ -79,13 +79,13 @@ typedef enum {
     priority_high = 0b11
 }channel_priority;
 
-typedef struct {
+typedef struct striding_params {
     tr_striding striding;
     uint32_t tbs;//transfer block_size, in doublewords
     uint32_t sbs;//skip block size, in doublewords
 }striding_params;
 
-typedef struct{
+typedef struct dma2plb6_setup_info {
     uint32_t base_addr;
     DmaChannel channel;
     //d2p6_transfer_type tr_type; //for future use
@@ -107,39 +107,41 @@ typedef struct{
 //
 
 channel_status dma2plb6_ch_get_status(uint32_t base_address, DmaChannel channel);
+
+void dma2plb6_trace_error_status(struct channel_status const * status);
 /**
  * Blocking version of dma2plb6_mcpy
  * @param setup_info
  * @param status
  * @return
  */
-bool dma2plb6_single_copy(dma2plb6_setup_info * setup_info, channel_status * status);
+bool dma2plb6_single_copy(struct dma2plb6_setup_info * setup_info, struct channel_status * status);
 /**
  * Blocking version of dma2plb6_mcpy_coherency_required
  * @param setup_info
  * @param status
  * @return
  */
-bool dma2plb6_single_copy_coherency_required(dma2plb6_setup_info const * setup_info, channel_status * status);
+bool dma2plb6_single_copy_coherency_required(struct dma2plb6_setup_info const * setup_info, struct channel_status * status);
 void dma2plb6_clear_interrupt(uint32_t base_addr, DmaChannel channel);
 /**
  * Async copy. This function is not applicable for requests to coherent slaves
  * @param setup_info
  */
-void dma2plb6_mcpy(dma2plb6_setup_info * setup_info);
+void dma2plb6_mcpy(struct dma2plb6_setup_info * setup_info);
 /**
  * Async copy
  * @param setup_info
  */
 
-void dma2plb6_mcpy_coherency_required(dma2plb6_setup_info const * setup_info);
+void dma2plb6_mcpy_coherency_required(struct dma2plb6_setup_info const * setup_info);
 /**
  * Waits dma2plb6_mcpy or dma2plb6_mcpy_coherency_required
  * @param setup_info
  * @param status
  * @return
  */
-bool wait_dma2plb6_mcpy(dma2plb6_setup_info const * setup_info, channel_status * status);
+bool wait_dma2plb6_mcpy(struct dma2plb6_setup_info const * setup_info, struct channel_status * status);
 void dma2plb6_enable_o_slv_err_interrupt(uint32_t base_addr);
 void dma2plb6_disable_o_slv_err_interrupt(uint32_t base_addr);
 
@@ -147,7 +149,7 @@ void dma2plb6_disable_channel(uint32_t base_addr, DmaChannel channel);
 
 void dma2plb6_disable_all_channel(uint32_t const base_addr);
 
-void dma2plb6_mcpy_init(dma2plb6_setup_info const * const setup_info);
+void dma2plb6_mcpy_init(struct dma2plb6_setup_info const * const setup_info);
 
 void dma2plb6_enable_channel(uint32_t const base_addr, DmaChannel const channel);
 
