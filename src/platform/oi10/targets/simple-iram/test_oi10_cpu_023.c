@@ -53,9 +53,9 @@ static uint32_t dma2plb6_get_bytesize(transfer_width transfer_width_code)
     return 0;
 }
 
-static dma2plb6_setup_info get_default_dma_info(DmaChannel channel, uint32_t* ch_src, uint32_t* ch_dst)
+static struct dma2plb6_setup_info get_default_dma_info(DmaChannel channel, uint32_t* ch_src, uint32_t* ch_dst)
 {
-    dma2plb6_setup_info dma_info;
+    struct dma2plb6_setup_info dma_info;
 
     dma_info.base_addr = DCR_DMAPLB6_BASE;
     dma_info.source_adr = rumboot_virt_to_phys(ch_src);
@@ -132,8 +132,8 @@ static uint32_t compare(uint32_t s_addr, uint32_t d_addr,uint32_t size_in_bytes)
 
 static uint32_t check_dma2plb6_0_mem_to_mem(uint32_t source_ea, uint32_t dest_ea, uint64_t source_phys, uint64_t dest_phys)
 {
-    dma2plb6_setup_info dma_info;
-    channel_status status = {};
+    struct dma2plb6_setup_info dma_info;
+    struct channel_status status = {};
     dma_info.base_addr = DCR_DMAPLB6_BASE;
     dma_info.source_adr = source_phys;
     dma_info.dest_adr = dest_phys;
@@ -288,15 +288,15 @@ static uint32_t check_multiple_channels_4()
     fill((uint64_t*)ch3_src, fill_word, TEST_DATA_SIZE);
     fill((uint64_t*)ch3_dst, 0x00, TEST_DATA_SIZE);
 
-    dma2plb6_setup_info ch0_dma_info = get_default_dma_info(channel0, ch0_src, ch0_dst);
-    dma2plb6_setup_info ch1_dma_info = get_default_dma_info(channel1, ch1_src, ch1_dst);
-    dma2plb6_setup_info ch2_dma_info = get_default_dma_info(channel2, ch2_src, ch2_dst);
-    dma2plb6_setup_info ch3_dma_info = get_default_dma_info(channel3, ch3_src, ch3_dst);
+    struct dma2plb6_setup_info ch0_dma_info = get_default_dma_info(channel0, ch0_src, ch0_dst);
+    struct dma2plb6_setup_info ch1_dma_info = get_default_dma_info(channel1, ch1_src, ch1_dst);
+    struct dma2plb6_setup_info ch2_dma_info = get_default_dma_info(channel2, ch2_src, ch2_dst);
+    struct dma2plb6_setup_info ch3_dma_info = get_default_dma_info(channel3, ch3_src, ch3_dst);
 
-    channel_status ch0_status = {};
-    channel_status ch1_status = {};
-    channel_status ch2_status = {};
-    channel_status ch3_status = {};
+    struct channel_status ch0_status = {};
+    struct channel_status ch1_status = {};
+    struct channel_status ch2_status = {};
+    struct channel_status ch3_status = {};
 
     rumboot_putstring("Initializing DMA channels ...\n");
     dma2plb6_mcpy(&ch0_dma_info);
@@ -364,11 +364,11 @@ static uint32_t check_multiple_channels_2()
     nor_fill((uint32_t*)ch1_src, fill_word, TEST_DATA_SIZE);
     fill((uint64_t*)ch1_dst, 0x00, TEST_DATA_SIZE);
 
-    dma2plb6_setup_info ch0_dma_info = get_default_dma_info(channel0, ch0_src, ch0_dst);
-    dma2plb6_setup_info ch1_dma_info = get_default_dma_info(channel1, ch1_src, ch1_dst);
+    struct dma2plb6_setup_info ch0_dma_info = get_default_dma_info(channel0, ch0_src, ch0_dst);
+    struct dma2plb6_setup_info ch1_dma_info = get_default_dma_info(channel1, ch1_src, ch1_dst);
 
-    channel_status ch0_status = {};
-    channel_status ch1_status = {};
+    struct channel_status ch0_status = {};
+    struct channel_status ch1_status = {};
 
     rumboot_putstring("Initializing DMA channels ...\n");
     dma2plb6_mcpy(&ch0_dma_info);

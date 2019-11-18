@@ -67,7 +67,7 @@ int main(void)
 {
     const uint32_t CALL_ITERATIONS_COUNT = 100;
 
-    static dma2plb6_setup_info dma_setup_info =
+    static struct dma2plb6_setup_info dma_setup_info =
     {
         .base_addr = DCR_DMAPLB6_BASE,
         .priority = priority_medium_low,

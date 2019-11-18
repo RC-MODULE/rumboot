@@ -17,13 +17,13 @@ typedef enum{
     channel3 = 3
 }DmaChannel;
 
-typedef struct channel_status {
+struct channel_status {
     uint32_t terminalcnt_reached;
     uint32_t error_detected;
     uint32_t spec_error_status;
     uint32_t busy;
     uint32_t sc_gth_status;
-}channel_status;
+};
 
 //error_status in SR
 enum {
@@ -79,13 +79,13 @@ typedef enum {
     priority_high = 0b11
 }channel_priority;
 
-typedef struct striding_params {
+struct striding_params {
     tr_striding striding;
     uint32_t tbs;//transfer block_size, in doublewords
     uint32_t sbs;//skip block size, in doublewords
-}striding_params;
+};
 
-typedef struct dma2plb6_setup_info {
+struct dma2plb6_setup_info {
     uint32_t base_addr;
     DmaChannel channel;
     //d2p6_transfer_type tr_type; //for future use
@@ -94,7 +94,7 @@ typedef struct dma2plb6_setup_info {
     uint64_t source_adr;//real physical address, not a virtual!
     uint64_t dest_adr;//real physical address, not a virtual!
     uint32_t count;//number of transfers
-    striding_params striding_info;
+    struct striding_params striding_info;
     channel_priority priority;
     uint32_t tc_int_enable;
     uint32_t err_int_enable;
@@ -102,11 +102,11 @@ typedef struct dma2plb6_setup_info {
     snoopable_mode snp_mode;
     //uint32_t * descriptor;//pointer for scatter/gather transfers
     //uint32_t options;//OPTIONS register as is
-}dma2plb6_setup_info;
+};
 
 //
 
-channel_status dma2plb6_ch_get_status(uint32_t base_address, DmaChannel channel);
+struct channel_status dma2plb6_ch_get_status(uint32_t base_address, DmaChannel channel);
 
 void dma2plb6_trace_error_status(struct channel_status const * status);
 /**

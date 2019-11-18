@@ -37,8 +37,8 @@ int main(void)
     rumboot_printf("Copy successful (data = 0x%x)\n", ioread32((uint32_t)im0_data));
     rumboot_printf("Prepare DMA (im0 -> sram0)...\n");
 
-    dma2plb6_setup_info dma_info;
-    channel_status status = {};
+    struct dma2plb6_setup_info dma_info;
+    struct channel_status status = {};
     dma_info.base_addr = DCR_DMAPLB6_BASE;
     dma_info.source_adr = rumboot_virt_to_phys((void*) im0_data);
     dma_info.dest_adr = rumboot_virt_to_phys((void*) SRAM0_BASE);

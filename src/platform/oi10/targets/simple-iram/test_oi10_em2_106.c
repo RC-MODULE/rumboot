@@ -97,8 +97,8 @@ static bool check_data(uint32_t* input_addr, uint32_t* output_addr)
 
 static bool dma2plb6_memcpy(const uint32_t base_addr, const uint64_t source, const uint64_t dest, const DmaChannel channel, const transfer_width width, const rw_transfer_size size, const uint32_t count)
 {
-    dma2plb6_setup_info dma_info;
-    channel_status status = {};
+    struct dma2plb6_setup_info dma_info;
+    struct channel_status status = {};
     dma_info.base_addr = base_addr;
     dma_info.source_adr = source;
     dma_info.dest_adr = dest;

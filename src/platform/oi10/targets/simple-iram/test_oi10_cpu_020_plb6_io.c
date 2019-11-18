@@ -164,8 +164,8 @@ static void test_procedure_with_dma(uint32_t dma_base, test_io10_cpu_020_plb6_io
     uint64_t src = 0;
     uint64_t dst = 0;
 
-    static dma2plb6_setup_info dma_info;
-    static channel_status dma_status = { };
+    static struct dma2plb6_setup_info dma_info;
+    static struct channel_status dma_status = { };
     transfer_width curent_width = tr_width_quadword;
 
     src = rumboot_virt_to_dma( (volatile void *) source);

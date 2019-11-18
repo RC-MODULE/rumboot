@@ -563,8 +563,8 @@ static uint32_t compare(uint32_t s_addr, uint32_t d_addr,uint32_t size_in_bytes)
 
 uint32_t check_dma2plb6_0_mem_to_mem(uint32_t source_ea, uint32_t dest_ea, uint64_t source_phys, uint64_t dest_phys)
 {
-    dma2plb6_setup_info dma_info;
-    channel_status status = {};
+    struct dma2plb6_setup_info dma_info;
+    struct channel_status status = {};
     dma_info.base_addr = DCR_DMAPLB6_BASE;
     dma_info.source_adr = source_phys;
     dma_info.dest_adr = dest_phys;

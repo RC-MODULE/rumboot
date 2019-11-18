@@ -270,7 +270,7 @@ static void check_system_hang() {
 
 static void configure_dma( uint32_t const base_addr, DmaChannel const channel, uint32_t const addr_src, uint32_t const addr_dst, uint32_t const count) {
     //default
-    dma2plb6_setup_info const dma_info = {
+    struct dma2plb6_setup_info const dma_info = {
         .base_addr = base_addr,
         .source_adr = rumboot_virt_to_phys((void*)addr_src),
         .dest_adr = rumboot_virt_to_phys((void*)addr_dst),
