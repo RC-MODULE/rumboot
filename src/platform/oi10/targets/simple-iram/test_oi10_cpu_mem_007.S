@@ -163,7 +163,7 @@
 //    lwz r18, 0(r17)
 //    rumboot_puthex    r27
     cmp cr7, 0 , r27, r17
-    TEST_ASSERT(eq, cr7, "Wrong value in dcu lru array for way \way")
+    TEST_ASSERT(eq, cr7, "Wrong value in dcu lru array for way \addr")
 
 .endm
 
@@ -406,13 +406,13 @@ test_oi10_cpu_mem_007:
     test_event TEC_DCU_WBYTESEL0_10_BIT_FORCE
     .align 7
     TEST_DCU_LRU_DBUS_MASK 0x89400000, 0x00
-    TEST_DCU_LRU_DBUS_MASK 0x0fc48000, 0x3f
-    TEST_DCU_LRU_DBUS_MASK 0x80008000, 0x40
-    TEST_DCU_LRU_DBUS_MASK 0x8fc4c000, 0x7f
-    TEST_DCU_LRU_DBUS_MASK 0x8fc08000, 0x80
+    TEST_DCU_LRU_DBUS_MASK 0x03c48000, 0x3f
+    TEST_DCU_LRU_DBUS_MASK 0x8c008000, 0x40
+    TEST_DCU_LRU_DBUS_MASK 0x83c4c000, 0x7f
+    TEST_DCU_LRU_DBUS_MASK 0x83c08000, 0x80
     TEST_DCU_LRU_DBUS_MASK 0x0fc0c000, 0xbf
-    TEST_DCU_LRU_DBUS_MASK 0x8004c000, 0xc0
-    TEST_DCU_LRU_DBUS_MASK 0x8fc08000, 0xff
+    TEST_DCU_LRU_DBUS_MASK 0x8184c000, 0xc0
+    TEST_DCU_LRU_DBUS_MASK 0x83c08000, 0xff
 
     rumboot_putstring "TEC_DCU_WBYTESEL0_11_BIT_FORCE dcu_lru_array_data\n"
 
