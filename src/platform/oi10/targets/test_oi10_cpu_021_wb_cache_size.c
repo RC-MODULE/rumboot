@@ -32,7 +32,7 @@
 #define PTRN_INC_2 0x2
 #define PTRN_INC_3 0x3
 
-#define START_ADDR          (SRAM0_BASE + 0x10000)
+#define START_ADDR          (SRAM0_BASE + 256*1024) // skip code
 
 #define GET_EXP_DATA(addr, inc)  ( (((addr - START_ADDR) / sizeof(uint32_t)) + 1) * inc )
 
@@ -51,12 +51,8 @@ static bool read_and_check(
         uint64_t rdata = ioread64(addr);
         if( rdata != (((uint64_t)GET_EXP_DATA(addr, data_inc) << 32) | (uint64_t)GET_EXP_DATA((addr+sizeof(uint32_t)), data_inc)) ) {
             rumboot_printf( "ERROR: invalid read data\n" );
-            rumboot_printf( "expected:\n" );
-            rumboot_printf( "data_h = %x\n", (uint32_t)GET_EXP_DATA(addr, data_inc) );
-            rumboot_printf( "data_l = %x\n", (uint32_t)GET_EXP_DATA((addr+sizeof(uint32_t)), data_inc) );
-            rumboot_printf( "actual:\n" );
-            rumboot_printf( "data_h = %x\n", (uint32_t)(rdata >> 32) );
-            rumboot_printf( "data_l = %x\n\n", (uint32_t)(rdata & 0xFFFFFFFF) );
+            rumboot_printf( "expected: data_h=%x, data_l=%x\n", (uint32_t)GET_EXP_DATA(addr, data_inc), (uint32_t)GET_EXP_DATA((addr+sizeof(uint32_t)), data_inc) );
+            rumboot_printf( "actual: data_h=%x, data_l=%x\n\n", (uint32_t)(rdata >> 32), (uint32_t)(rdata & 0xFFFFFFFF) );
 
             return false;
         }
@@ -80,12 +76,8 @@ static bool read_and_check(
 
         if( l2c_data != rdata ) {
             rumboot_printf( "ERROR: invalid cache data\n" );
-            rumboot_printf( "expected:\n" );
-            rumboot_printf( "data_h = %x\n", (uint32_t)(rdata >> 32) );
-            rumboot_printf( "data_l = %x\n", (uint32_t)(rdata & 0xFFFFFFFF) );
-            rumboot_printf( "actual:\n");
-            rumboot_printf( "l2c_data_h = %x\n", (uint32_t)(l2c_data >> 32) );
-            rumboot_printf( "l2c_data_l = %x\n\n", (uint32_t)(l2c_data & 0xFFFFFFFF) );
+            rumboot_printf( "expected: data_h=%x, data_l=%x\n", (uint32_t)(rdata >> 32), (uint32_t)(rdata & 0xFFFFFFFF) );
+            rumboot_printf( "actual: l2c_data_h=%x, l2c_data_l=%x\n\n", (uint32_t)(l2c_data >> 32), (uint32_t)(l2c_data & 0xFFFFFFFF) );
 
             return false;
         }
@@ -117,12 +109,30 @@ bool __attribute__((section(".text.test"))) cache_testing_function() {
     msync();
 
     rumboot_printf( "Set tlb (WB)\n" );
-    static const tlb_entry wb_tlb_entries[] = {
-//       MMU_TLB_ENTRY(  ERPN,   RPN,        EPN,        DSIZ,                   IL1I,  IL1D,   W,     I,     M,     G,      E,                      UX, UW, UR,     SX, SW, SR      DULXE,  IULXE,      TS,     TID,                WAY,                BID,               V   )
-        {MMU_TLB_ENTRY(  0x000,  0x00000,    0x00000,    MMU_TLBE_DSIZ_1GB,      0b1,   0b1,    0b0,   0b0,   0b1,   0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,  0b1 )}
+    static tlb_entry const wb_tlb_entries[] = {
+//       MMU_TLB_ENTRY(  ERPN,   RPN,        EPN,        DSIZ,                   IL1I,  IL1D,   W,      I,      M,      G,      E,                      UX, UW, UR,     SX, SW, SR      DULXE,  IULXE,      TS,     TID,                WAY,                BID,                V   )
+        {MMU_TLB_ENTRY(  0x000,  0x00000,    0x00000,    MMU_TLBE_DSIZ_1GB,      0b1,   0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b0 )},
+        /* code noncacheable page */
+        {MMU_TLB_ENTRY(  0x000,  0x00000,    0x00000,    MMU_TLBE_DSIZ_64KB,     0b1,   0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )},
+        {MMU_TLB_ENTRY(  0x000,  0x00010,    0x00010,    MMU_TLBE_DSIZ_64KB,     0b1,   0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )},
+        {MMU_TLB_ENTRY(  0x000,  0x00020,    0x00020,    MMU_TLBE_DSIZ_64KB,     0b1,   0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )},
+        {MMU_TLB_ENTRY(  0x000,  0x00030,    0x00030,    MMU_TLBE_DSIZ_64KB,     0b1,   0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )},
+        /* test data l2 cacheable page */
+        {MMU_TLB_ENTRY(  0x000,  0x00040,    0x00040,    MMU_TLBE_DSIZ_64KB,     0b1,   0b1,    0b0,    0b0,    0b1,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )},
+        {MMU_TLB_ENTRY(  0x000,  0x00050,    0x00050,    MMU_TLBE_DSIZ_64KB,     0b1,   0b1,    0b0,    0b0,    0b1,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )},
+        {MMU_TLB_ENTRY(  0x000,  0x00060,    0x00060,    MMU_TLBE_DSIZ_64KB,     0b1,   0b1,    0b0,    0b0,    0b1,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )},
+        {MMU_TLB_ENTRY(  0x000,  0x00070,    0x00070,    MMU_TLBE_DSIZ_64KB,     0b1,   0b1,    0b0,    0b0,    0b1,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )},
+        /* test data noncacheable page */
+        {MMU_TLB_ENTRY(  0x000,  0x00080,    0x00080,    MMU_TLBE_DSIZ_64KB,     0b1,   0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )},
+        {MMU_TLB_ENTRY(  0x000,  0x00090,    0x00090,    MMU_TLBE_DSIZ_64KB,     0b1,   0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )},
+        {MMU_TLB_ENTRY(  0x000,  0x000A0,    0x000A0,    MMU_TLBE_DSIZ_64KB,     0b1,   0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )},
+        {MMU_TLB_ENTRY(  0x000,  0x000B0,    0x000B0,    MMU_TLBE_DSIZ_64KB,     0b1,   0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )}
     };
     write_tlb_entries( wb_tlb_entries, ARRAY_SIZE(wb_tlb_entries) );
+
+    rumboot_printf( "Invalidate L2, L1D\n" );
     dci(2); dci(0);
+    msync();
 
     rumboot_printf( "2. Read and check L2C Line Size\n" );
     if( !read_and_check (START_ADDR, L2C_LINE_SIZE, PTRN_INC_1) ) return false;
