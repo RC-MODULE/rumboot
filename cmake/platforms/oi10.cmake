@@ -2052,6 +2052,18 @@ endif()
     )
     
     add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES test_oi10_mt150_07_sram.c
+      NAME test_oi10_mt150_07_sram
+    )
+    
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES test_oi10_progr_crg.c
+      NAME test_oi10_progr_crg
+    )
+    
+    add_rumboot_target(
 
       FEATURES NOCODE
       COMBOIMAGE IM0BIN
