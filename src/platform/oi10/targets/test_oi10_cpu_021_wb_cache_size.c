@@ -143,11 +143,11 @@ bool __attribute__((section(".text.test"))) cache_testing_function( void ) {
 
     rumboot_printf( "Start testing function\n" );
 
-    rumboot_printf( "1. Init direct cacheable memory (pattern 1)\n" );
+    rumboot_printf( "1. Init direct cacheable memory 1 (pattern 1)\n" );
     rumboot_memfill32( (void*)CACHEABLE_ADDR1, check_words_num, PTRN_INC_1, PTRN_INC_1 );
     msync();
 
-    rumboot_printf( "Set tlb (WB)\n" );
+    rumboot_printf( "Set tlb (WB) (4a)\n" );
     static tlb_entry const wb_tlb_entries[] = {
 //       MMU_TLB_ENTRY(  ERPN,   RPN,        EPN,        DSIZ,                   IL1I,  IL1D,   W,      I,      M,      G,      E,                      UX, UW, UR,     SX, SW, SR      DULXE,  IULXE,      TS,     TID,                WAY,                BID,                V   )
         {MMU_TLB_ENTRY(  0x000,  0x00000,    0x00000,    MMU_TLBE_DSIZ_1GB,      0b1,   0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b0 )},
@@ -178,78 +178,64 @@ bool __attribute__((section(".text.test"))) cache_testing_function( void ) {
     dci(2); dci(0);
     msync();
 
-    rumboot_printf( "2. Read and check L2C Line Size (pattern 1)\n" );
+    rumboot_printf( "2. Read and check cacheable memory 1 L2C Line Size (pattern 1)\n" );
     if( !read_and_check( CACHEABLE_ADDR1, L2C_LINE_SIZE, PTRN_INC_1, true ) ) return false;
 
-    rumboot_printf( "3. Write direct to cacheable memory L2C Line Size (pattern 1)\n" );
+    rumboot_printf( "3. Write direct to cacheable memory 1 L2C Line Size (pattern 1)\n" );
     rumboot_memfill32( (void*)UNCACHEABLE_ADDR, L2C_LINE_SIZE, PTRN_INC_3, PTRN_INC_3 );
     if( !dma2plb6_copy( UNCACHEABLE_ADDR, CACHEABLE_ADDR1, L2C_LINE_SIZE ) ) return false;
-    rumboot_printf( "3a. Read and check cacheable memory L2C Line Size (pattern 1)\n" );
+    rumboot_printf( "3a. Read and check cacheable memory 1 L2C Line Size (pattern 1)\n" );
     if( !read_and_check( CACHEABLE_ADDR1, L2C_LINE_SIZE, PTRN_INC_1, true ) ) return false;
-    rumboot_printf( "3b. Invalidate L2C. Reread and check cacheable memory L2C Line Size (pattern 3)\n" );
+    rumboot_printf( "3b. Invalidate L2C. Reread and check cacheable memory 1 L2C Line Size (pattern 3)\n" );
     dci( 2 );
     if( !read_and_check( CACHEABLE_ADDR1, L2C_LINE_SIZE, PTRN_INC_3, true ) ) return false;
 
-    rumboot_printf( "4. Rewrite cacheable memory L2C Line Size (pattern 2)\n" );
+    rumboot_printf( "4. Rewrite cacheable memory 1 L2C Line Size (pattern 2)\n" );
     for( uint32_t i = 0, d = PTRN_INC_2; i < line_words_num; i++, d += PTRN_INC_2 ) {
         iowrite32(d, CACHEABLE_ADDR1 + sizeof(uint32_t)*i);
     }
     msync();
-    rumboot_printf( "4b. Copy direct cacheable memory to uncacheable memory L2C Line Size (pattern 3)\n" );
+    rumboot_printf( "4b. Copy direct cacheable memory 1 to uncacheable memory L2C Line Size (pattern 3)\n" );
     if( !dma2plb6_copy( CACHEABLE_ADDR1, UNCACHEABLE_ADDR, L2C_LINE_SIZE ) ) return false;
 
-    rumboot_printf( "5. Read and check cacheable memory L2C Line Size (pattern 2). Read and check uncacheable memory L2C Line Size (pattern 3)\n" );
+    rumboot_printf( "5. Read and check cacheable memory 1 L2C Line Size (pattern 2). Read and check uncacheable memory L2C Line Size (pattern 3)\n" );
     if( !read_and_check( CACHEABLE_ADDR1, L2C_LINE_SIZE, PTRN_INC_2, true ) ) return false;
     if( !read_and_check( UNCACHEABLE_ADDR, L2C_LINE_SIZE, PTRN_INC_3, false ) ) return false;
 
-    rumboot_printf( "6. Rewrite cacheable memory L2C Line Size (pattern 1)\n");
+    rumboot_printf( "6. Rewrite cacheable memory 1 L2C Line Size (pattern 1)\n");
     for( uint32_t i = 0, d = PTRN_INC_1; i < line_words_num; i++, d += PTRN_INC_1 ) {
         iowrite32(d, CACHEABLE_ADDR1 + sizeof(uint32_t)*i);
     }
     msync();
 
-    rumboot_printf( "7. Read and check cacheable memory, size = 0x%x (pattern 1)\n", l2c_check_size );
+    rumboot_printf( "7. Read and check cacheable memory 1, size = 0x%x (pattern 1)\n", l2c_check_size );
     if( !read_and_check( CACHEABLE_ADDR1, l2c_check_size, PTRN_INC_1, true ) ) return false;
 
-    rumboot_printf( "8. Rewrite direct cacheable memory, size = 0x%x (pattern 3)\n", l2c_check_size );
+    rumboot_printf( "8. Rewrite direct cacheable memory 1, size = 0x%x (pattern 3)\n", l2c_check_size );
     rumboot_memfill32( (void*)UNCACHEABLE_ADDR, l2c_check_size, PTRN_INC_3, PTRN_INC_3 );
     if( !dma2plb6_copy( UNCACHEABLE_ADDR, CACHEABLE_ADDR1, l2c_check_size ) ) return false;
-    rumboot_printf( "8a. Read and check cacheable memory, size = 0x%x (pattern 1)\n", l2c_check_size );
+    rumboot_printf( "8a. Read and check cacheable memory 1, size = 0x%x (pattern 1)\n", l2c_check_size );
     if( !read_and_check( CACHEABLE_ADDR1, l2c_check_size, PTRN_INC_1, true ) ) return false;
-    rumboot_printf( "8b. Invalidate L2C. Reread and check cacheable memory, size = 0x%x (pattern 3)\n", l2c_check_size );
+    rumboot_printf( "8b. Invalidate L2C. Reread and check cacheable memory 1, size = 0x%x (pattern 3)\n", l2c_check_size );
     dci( 2 );
     if( !read_and_check( CACHEABLE_ADDR1, l2c_check_size, PTRN_INC_3, true ) ) return false;
 
-//    rumboot_printf( "8. Read and check cacheable memory, size = 0x%x (check L2C.O_M_ADDR)\n", l2c_check_size );
-//    test_event(EVENT_START_CHECK_O_M_ADDR);
-//    if( !read_and_check (CACHEABLE_ADDR1, l2c_check_size, PTRN_INC_1) ) return false;
-//    test_event(EVENT_END_CHECK_O_M_ADDR);
-//
-//    rumboot_printf( "9. Rewrite mem (pattern 2)\n" );
-//    for( uint32_t i = 0, d = PTRN_INC_2; i < check_words_num; i++, d += PTRN_INC_2 ) {
-//        iowrite32(d, CACHEABLE_ADDR1 + sizeof(uint32_t)*i);
-//    }
-//    msync();
-//
-//    rumboot_printf( "10. Read and check mem, size = 0x%x (check L2C.O_M_ADDR)\n", l2c_check_size );
-//    test_event(EVENT_START_CHECK_O_M_ADDR);
-//    if( !read_and_check (CACHEABLE_ADDR1, l2c_check_size, PTRN_INC_2) ) return false;
-//    test_event(EVENT_END_CHECK_O_M_ADDR);
-//
-//    rumboot_printf( "11. Read and check new L2C Line Size\n" );
-//    if( !read_and_check ((CACHEABLE_ADDR1 + l2c_check_size), L2C_LINE_SIZE, PTRN_INC_1) ) return false;
-//
-//    rumboot_printf( "12. Rewrite new L2C Line Size\n");
-//    for( uint32_t i = 0, d = GET_EXP_DATA(CACHEABLE_ADDR1, (CACHEABLE_ADDR1 + l2c_check_size), PTRN_INC_2); i < line_words_num; i++, d += PTRN_INC_2 ) {
-//        iowrite32(d, (CACHEABLE_ADDR1 + l2c_check_size) + sizeof(uint32_t)*i);
-//    }
-//    msync();
-//
-//    rumboot_printf( "13. Read and check new L2C Line Size\n" );
-//    test_event(EVENT_START_CHECK_O_M_ADDR);
-//    if( !read_and_check ((CACHEABLE_ADDR1 + l2c_check_size), L2C_LINE_SIZE, PTRN_INC_2) ) return false;
-//    test_event(EVENT_END_CHECK_O_M_ADDR);
+    rumboot_printf( "9. Write, read and check cacheable memory 2 L2C Line Size (pattern 1)\n");
+    rumboot_memfill8_modelling( (void*)CACHEABLE_ADDR2, l2c_check_size, 0, 0 );
+    for( uint32_t i = 0, d = PTRN_INC_1; i < line_words_num; i++, d += PTRN_INC_1 ) {
+        iowrite32(d, CACHEABLE_ADDR2 + sizeof(uint32_t)*i);
+    }
+    msync();
+    if( !read_and_check( CACHEABLE_ADDR2, L2C_LINE_SIZE, PTRN_INC_1, true ) ) return false;
 
+    rumboot_printf( "10. Write direct to cacheable memory 2 L2C Line Size (pattern 3)\n" );
+    rumboot_memfill32( (void*)UNCACHEABLE_ADDR, L2C_LINE_SIZE, PTRN_INC_3, PTRN_INC_3 );
+    if( !dma2plb6_copy( UNCACHEABLE_ADDR, CACHEABLE_ADDR2, L2C_LINE_SIZE ) ) return false;
+    rumboot_printf( "Flash cacheable memory 2 L2C Line Size (pattern 1). Reread and check cacheable memory 2 L2C Line Size (pattern 1)\n" );
+    dcbf( (void*)CACHEABLE_ADDR2 );
+    if( !read_and_check( CACHEABLE_ADDR2, L2C_LINE_SIZE, PTRN_INC_1, true ) ) return false;
+    if( !dma2plb6_copy( CACHEABLE_ADDR2, UNCACHEABLE_ADDR, L2C_LINE_SIZE ) ) return false;
+    if( !read_and_check( UNCACHEABLE_ADDR, L2C_LINE_SIZE, PTRN_INC_1, false ) ) return false;
 
     rumboot_printf( "Testing function completed\n" );
     return true;
