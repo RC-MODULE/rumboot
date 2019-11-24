@@ -182,7 +182,7 @@ bool __attribute__((section(".text.test"))) cache_testing_function( void ) {
     if( !read_and_check( CACHEABLE_ADDR1, L2C_LINE_SIZE, PTRN_INC_1, true ) ) return false;
 
     rumboot_printf( "3. Write direct to cacheable memory 1 L2C Line Size (pattern 1)\n" );
-    rumboot_memfill32( (void*)UNCACHEABLE_ADDR, L2C_LINE_SIZE, PTRN_INC_3, PTRN_INC_3 );
+    rumboot_memfill32( (void*)UNCACHEABLE_ADDR, line_words_num, PTRN_INC_3, PTRN_INC_3 );
     if( !dma2plb6_copy( UNCACHEABLE_ADDR, CACHEABLE_ADDR1, L2C_LINE_SIZE ) ) return false;
     rumboot_printf( "3a. Read and check cacheable memory 1 L2C Line Size (pattern 1)\n" );
     if( !read_and_check( CACHEABLE_ADDR1, L2C_LINE_SIZE, PTRN_INC_1, true ) ) return false;
@@ -212,7 +212,7 @@ bool __attribute__((section(".text.test"))) cache_testing_function( void ) {
     if( !read_and_check( CACHEABLE_ADDR1, l2c_check_size, PTRN_INC_1, true ) ) return false;
 
     rumboot_printf( "8. Rewrite direct cacheable memory 1, size = 0x%x (pattern 3)\n", l2c_check_size );
-    rumboot_memfill32( (void*)UNCACHEABLE_ADDR, l2c_check_size, PTRN_INC_3, PTRN_INC_3 );
+    rumboot_memfill32( (void*)UNCACHEABLE_ADDR, check_words_num, PTRN_INC_3, PTRN_INC_3 );
     if( !dma2plb6_copy( UNCACHEABLE_ADDR, CACHEABLE_ADDR1, l2c_check_size ) ) return false;
     rumboot_printf( "8a. Read and check cacheable memory 1, size = 0x%x (pattern 1)\n", l2c_check_size );
     if( !read_and_check( CACHEABLE_ADDR1, l2c_check_size, PTRN_INC_1, true ) ) return false;
@@ -229,7 +229,7 @@ bool __attribute__((section(".text.test"))) cache_testing_function( void ) {
     if( !read_and_check( CACHEABLE_ADDR2, L2C_LINE_SIZE, PTRN_INC_1, true ) ) return false;
 
     rumboot_printf( "10. Write direct to cacheable memory 2 L2C Line Size (pattern 3)\n" );
-    rumboot_memfill32( (void*)UNCACHEABLE_ADDR, L2C_LINE_SIZE, PTRN_INC_3, PTRN_INC_3 );
+    rumboot_memfill32( (void*)UNCACHEABLE_ADDR, line_words_num, PTRN_INC_3, PTRN_INC_3 );
     if( !dma2plb6_copy( UNCACHEABLE_ADDR, CACHEABLE_ADDR2, L2C_LINE_SIZE ) ) return false;
     rumboot_printf( "Flash cacheable memory 2 L2C Line Size (pattern 1). Reread and check cacheable memory 2 L2C Line Size (pattern 1)\n" );
     dcbf( (void*)CACHEABLE_ADDR2 );
