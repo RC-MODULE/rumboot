@@ -14,11 +14,9 @@
 #include <rumboot/macros.h>
 #include <rumboot/io.h>
 
-#include <platform/test_assert.h>
 #include <platform/devices.h>
 #include <platform/devices/l2c.h>
 #include <platform/trace.h>
-#include <platform/test_event_c.h>
 #include <arch/ppc_476fp_lib_c.h>
 #include <platform/arch/ppc/ppc_476fp_mmu_fields.h>
 #include <platform/arch/ppc/ppc_476fp_mmu.h>
@@ -40,9 +38,6 @@
 #define CACHEABLE_ADDR2     (UNCACHEABLE_ADDR + PAGE_SIZE)
 
 #define GET_EXP_DATA(base_addr, addr, inc)  ( (((addr - base_addr) / sizeof(uint32_t)) + 1) * inc )
-
-#define EVENT_START_CHECK_O_M_ADDR   TEST_EVENT_CODE_MIN + 0
-#define EVENT_END_CHECK_O_M_ADDR     TEST_EVENT_CODE_MIN + 1
 
 
 static bool read_and_check(
