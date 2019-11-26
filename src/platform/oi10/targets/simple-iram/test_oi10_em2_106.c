@@ -95,34 +95,10 @@ static bool check_data(uint32_t* input_addr, uint32_t* output_addr)
     return true;
 }
 
-static void dma2plb6_trace_status(channel_status status)
-{
-    switch(status.spec_error_status)
-    {
-        case error_alignnment:
-        case error_scatter_alignment:
-            rumboot_putstring("DMA2PLB6: Error alignment\n");
-            break;
-        case error_read_data_regular:
-        case error_read_data_scatter_or_resume:
-            rumboot_putstring("DMA2PLB6: Error read data\n");
-            break;
-        case error_read_request_regular:
-        case error_read_request_scatter_or_resume:
-            rumboot_putstring("DMA2PLB6: Error read request\n");
-            break;
-        case error_write_request:
-            rumboot_putstring("DMA2PLB6: Error write request\n");
-            break;
-        default:
-            rumboot_putstring("DMA2PLB6: Unexpected status\n");
-    }
-}
-
 static bool dma2plb6_memcpy(const uint32_t base_addr, const uint64_t source, const uint64_t dest, const DmaChannel channel, const transfer_width width, const rw_transfer_size size, const uint32_t count)
 {
-    dma2plb6_setup_info dma_info;
-    channel_status status = {};
+    struct dma2plb6_setup_info dma_info;
+    struct channel_status status = {};
     dma_info.base_addr = base_addr;
     dma_info.source_adr = source;
     dma_info.dest_adr = dest;
@@ -148,7 +124,7 @@ static bool dma2plb6_memcpy(const uint32_t base_addr, const uint64_t source, con
 
     if(dma2plb6_single_copy(&dma_info,&status) == false)
     {
-        dma2plb6_trace_status(status);
+        dma2plb6_trace_error_status(&status);
         return false;
     }
     return true;

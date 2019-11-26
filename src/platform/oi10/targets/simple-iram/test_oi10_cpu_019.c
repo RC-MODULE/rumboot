@@ -464,7 +464,7 @@ void genint__pmu(void *data)
 void genint__dma2plb6(void *data)
 {
     static
-    dma2plb6_setup_info dma_info =
+    struct dma2plb6_setup_info dma_info =
     {
         .base_addr              = DCR_DMAPLB6_BASE,
         .priority               = priority_medium_low,

@@ -25,30 +25,6 @@ typedef uint8_t func();
 
 uint8_t __attribute__((section(".data"),aligned(0x100))) volatile im0_data[NUM_BYTE] = { 0 };
 
-inline void dma2plb6_trace_status(channel_status status)
-{
-    switch(status.spec_error_status)
-    {
-        case error_alignnment:
-        case error_scatter_alignment:
-            rumboot_printf ("DMA2PLB6: Error alignment\n");
-            break;
-        case error_read_data_regular:
-        case error_read_data_scatter_or_resume:
-            rumboot_printf ("DMA2PLB6: Error read data\n");
-            break;
-        case error_read_request_regular:
-        case error_read_request_scatter_or_resume:
-            rumboot_printf ("DMA2PLB6: Error read request\n");
-            break;
-        case error_write_request:
-            rumboot_printf ("DMA2PLB6: Error write request\n");
-            break;
-        default:
-            rumboot_printf ("DMA2PLB6: Unexpected status\n");
-    }
-}
-
 int main(void)
 {
     rumboot_printf("Starting base test\n");
@@ -61,8 +37,8 @@ int main(void)
     rumboot_printf("Copy successful (data = 0x%x)\n", ioread32((uint32_t)im0_data));
     rumboot_printf("Prepare DMA (im0 -> sram0)...\n");
 
-    dma2plb6_setup_info dma_info;
-    channel_status status = {};
+    struct dma2plb6_setup_info dma_info;
+    struct channel_status status = {};
     dma_info.base_addr = DCR_DMAPLB6_BASE;
     dma_info.source_adr = rumboot_virt_to_phys((void*) im0_data);
     dma_info.dest_adr = rumboot_virt_to_phys((void*) SRAM0_BASE);
@@ -80,7 +56,7 @@ int main(void)
     dma2plb6_mcpy(&dma_info);
     if (!wait_dma2plb6_mcpy (&dma_info, &status))
     {
-        dma2plb6_trace_status(status);
+        dma2plb6_trace_error_status(&status);
         return 1;
     }
     msync();

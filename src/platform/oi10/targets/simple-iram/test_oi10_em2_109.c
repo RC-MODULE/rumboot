@@ -98,7 +98,7 @@ void check_data (uint8_t part)
 
 }
 
-void set_dma_cfg (dma2plb6_setup_info * dma_info, uint32_t base_addr, DmaChannel channel, transfer_width tr_width, rw_transfer_size rw_tr_size, uint64_t src, uint64_t dst, uint32_t count)
+void set_dma_cfg (struct dma2plb6_setup_info * dma_info, uint32_t base_addr, DmaChannel channel, transfer_width tr_width, rw_transfer_size rw_tr_size, uint64_t src, uint64_t dst, uint32_t count)
 {
     dma_info->base_addr = base_addr;
     dma_info->source_adr = src;
@@ -124,20 +124,20 @@ int main (void)
     uint32_t size_for_dma = NUM_ELEM * 4;
 
     rumboot_printf ("DMA prepare...\n");
-    dma2plb6_setup_info dma_info0;
-    channel_status status0 = {};
+    struct dma2plb6_setup_info dma_info0;
+    struct channel_status status0 = {};
     set_dma_cfg (&dma_info0, DCR_DMAPLB6_BASE, channel0, tr_width_byte, rw_tr_size_1q, rumboot_virt_to_phys((void*)data_src_0), rumboot_virt_to_phys((void*)data_dst_0), size_for_dma);
 
-    dma2plb6_setup_info dma_info1;
-    channel_status status1 = {};
+    struct dma2plb6_setup_info dma_info1;
+    struct channel_status status1 = {};
     set_dma_cfg (&dma_info1, DCR_DMAPLB6_BASE, channel1, tr_width_halfword, rw_tr_size_2q, rumboot_virt_to_phys((void*)data_src_1), rumboot_virt_to_phys((void*)data_dst_1), size_for_dma/2);
 
-    dma2plb6_setup_info dma_info2;
-    channel_status status2 = {};
+    struct dma2plb6_setup_info dma_info2;
+    struct channel_status status2 = {};
     set_dma_cfg (&dma_info2, DCR_DMAPLB6_BASE, channel2, tr_width_doubleword, rw_tr_size_4q, rumboot_virt_to_phys((void*)data_src_2), rumboot_virt_to_phys((void*)data_dst_2), size_for_dma/8);
 
-    dma2plb6_setup_info dma_info3;
-    channel_status status3 = {};
+    struct dma2plb6_setup_info dma_info3;
+    struct channel_status status3 = {};
     set_dma_cfg (&dma_info3, DCR_DMAPLB6_BASE, channel3, tr_width_quadword, rw_tr_size_8q, rumboot_virt_to_phys((void*)data_src_3), rumboot_virt_to_phys((void*)data_dst_3), size_for_dma/16);
     rumboot_printf ("DMA prepared: ch0 (sram0->sram0), ch1 (nor->sram0), ch2 (sdram->sdram), ch3 (nor-> sdram)\n");
 
