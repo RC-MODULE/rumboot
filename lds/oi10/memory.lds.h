@@ -1,14 +1,17 @@
 MEMORY {
-    SRAM0   (rwx):  ORIGIN = 0x00000000,    LENGTH = 0x100000
-    SDRAM   (rwx):  ORIGIN = 0x20000000,    LENGTH = 0x10000000
-    SSRAM   (rwx):  ORIGIN = 0x40000000,    LENGTH = 0x400000
-    PLRAM   (rwx):  ORIGIN = 0x50000000,    LENGTH = 0x400000
-    SRAM1   (rwx):  ORIGIN = 0x60000000,    LENGTH = 0x400000
-    NOR     (rx):   ORIGIN = 0x70000000,    LENGTH = 0x800000
-    IM0     (rwx):  ORIGIN = 0x80000000,    LENGTH = 0x20000
-    IM1     (rwx):  ORIGIN = 0x80020000,    LENGTH = 0x20000
-    IM2     (rwx):  ORIGIN = 0x80040000,    LENGTH = 0x20000
-    ROM     (rx):   ORIGIN = 0xFFFF0000,    LENGTH = 0x10000
+    SRAM0       (rwx):  ORIGIN = 0x00000000,    LENGTH = 0x100000
+    SDRAM       (rwx):  ORIGIN = 0x20000000,    LENGTH = 0x10000000
+    SSRAM       (rwx):  ORIGIN = 0x40000000,    LENGTH = 0x400000
+    PLRAM       (rwx):  ORIGIN = 0x50000000,    LENGTH = 0x400000
+    SRAM1       (rwx):  ORIGIN = 0x60000000,    LENGTH = 0x400000
+    NOR         (rx):   ORIGIN = 0x70000000,    LENGTH = 0x800000
+    IM0         (rwx):  ORIGIN = 0x80000000,    LENGTH = 0x20000
+    IM1         (rwx):  ORIGIN = 0x80020000,    LENGTH = 0x20000
+    IM2         (rwx):  ORIGIN = 0x80040000,    LENGTH = 0x20000
+    /* Cached IM0 not directly supported by bootrom. Only for hackish power tests */
+    IM0_CACHE   (rwx):  ORIGIN = 0x80060000,    LENGTH = 0x20000
+    ROM          (rx):  ORIGIN = 0xFFFF0000,    LENGTH = 0x10000
+
 }
 
 SRAM0_MEMORY_BASE   = ORIGIN(SRAM0);

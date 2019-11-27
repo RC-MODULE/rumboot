@@ -15,6 +15,10 @@
 #include <rumboot/memtest.h>
 #include <platform/arch/ppc/ppc_476fp_mmu.h>
 
+#ifdef ENABLE_CACHE
+#undef IM0_BASE
+#define IM0_BASE 0x80060000
+#endif
 
 #define  PPC476FP_L1_CACHELINE_SIZE   32u   // Длина кэш строки L1 в байтах
 #define  PPC476FP_L2_CACHELINE_SIZE  128u   // Длина кэш строки L2 в байтах
@@ -85,7 +89,7 @@ void  flush_cache_range ( void * start, unsigned long sizeInBytes )
 static void hostmode_loop(struct rumboot_config *conf, void *pdata)
 {
         size_t maxsize = 256 * 1024;
-        struct rumboot_bootheader *hdr = (void *) 0x80060000;
+        struct rumboot_bootheader *hdr = (void *) IM0_BASE;
         dbg_boot(NULL, "Host Mode, please upload SPL to 0x%x", (uintptr_t) hdr);
         rumboot_platform_enter_host_mode(conf);
         dbg_boot(NULL, "Hit 'X' for X-Modem upload");
@@ -206,7 +210,13 @@ int main()
         rumboot_print_logo();
         hostmode_loop(&conf, pdata);
 #else 
-        rumboot_platform_request_file("IM0BIN", (uint32_t)hdr);
+        rumboot_platform_request_file("IM0BIN", (uint32_t) IM0_BASE);
+        flush_cache_range((void *) IM0_BASE, 64*1024);
+        asm("msync");
+        asm("isync");                        
+        asm("sync");
+        asm ("msync");
+        rumboot_platform_exec((void *) IM0_BASE);
 #endif
 
     return 0;
