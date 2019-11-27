@@ -57,6 +57,7 @@ void  flush_cache_range ( void * start, unsigned long sizeInBytes )
     // Инвалидируем данные из диапазона из кэша данных, чтобы при следующем
     // использовании данные были загружены из памяти
     // dcbf сбрасывает 4 строки DL1 (и соответственно одну строку L2)
+    rumboot_printf("Invalidating data cache...\n");
     for ( addr = range_start; addr < range_end; addr += PPC476FP_L2_CACHELINE_SIZE )
     {
         asm volatile (
@@ -74,6 +75,7 @@ void  flush_cache_range ( void * start, unsigned long sizeInBytes )
     range_start = start_addr & mask_line_base;
     range_end = ( end_addr & mask_line_base ) + PPC476FP_L1_CACHELINE_SIZE;
 
+    rumboot_printf("Invalidating instruction cache...\n");
     for ( addr = range_start; addr < range_end; addr += PPC476FP_L1_CACHELINE_SIZE )
     {
         asm volatile (
@@ -85,7 +87,7 @@ void  flush_cache_range ( void * start, unsigned long sizeInBytes )
     }
 }
 
-
+#ifdef CMAKE_BUILD_TYPE_POSTPRODUCTION
 static void hostmode_loop(struct rumboot_config *conf, void *pdata)
 {
         size_t maxsize = 256 * 1024;
@@ -164,7 +166,7 @@ static void hostmode_loop(struct rumboot_config *conf, void *pdata)
         }
 }
 
-
+#endif
 
 // Cache IM0-M:                   5368716 us
 // No Cache IM0-M: Iteration took 4283273619 us
@@ -200,10 +202,10 @@ int main()
   rumboot_printf("Chain-booting from IM0 \n");
 
 
-  #define PDATA_SIZE 128
-    char pdata[PDATA_SIZE];
 
 #ifdef CMAKE_BUILD_TYPE_POSTPRODUCTION
+#define PDATA_SIZE 128
+        char pdata[PDATA_SIZE];
         struct rumboot_config conf;
         rumboot_platform_read_config(&conf);
         rumboot_platform_init_loader(&conf);
@@ -211,11 +213,15 @@ int main()
         hostmode_loop(&conf, pdata);
 #else 
         rumboot_platform_request_file("IM0BIN", (uint32_t) IM0_BASE);
+#ifdef ENABLE_CACHE
+        rumboot_printf("Invalidating cache...\n");
         flush_cache_range((void *) IM0_BASE, 64*1024);
         asm("msync");
         asm("isync");                        
         asm("sync");
         asm ("msync");
+        rumboot_printf("Done, executing...\n");
+#endif
         rumboot_platform_exec((void *) IM0_BASE);
 #endif
 

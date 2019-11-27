@@ -2087,6 +2087,42 @@ endif()
       NAME fk-test-chain
     )
 
+    add_rumboot_target(
+      CONFIGURATION BROM
+      FILES power/loader.c      
+      CFLAGS -DENABLE_CACHE
+      NAME "im0-with-cache"
+      PREFIX preloader
+      FEATURES STUB
+  )
+
+  add_rumboot_target(
+    CONFIGURATION BROM
+    FILES power/loader.c      
+    NAME "im0-without-cache"
+    PREFIX preloader
+    FEATURES STUB
+  )
+
+  add_rumboot_target(
+    CONFIGURATION IRAM
+    LDS oi10/iram_legacy_cached.lds 
+    FILES power/fpu_power_test.S power/power.c 
+    CFLAGS -DCPU_ITERATIONS_COUNT=0x100    
+    NAME "cached-fpu-power-test"
+    BOOTROM preloader-im0-with-cache
+    LOAD IM0BIN SELF
+  )
+
+  add_rumboot_target(
+    CONFIGURATION IRAM
+    LDS oi10/iram_legacy.lds 
+    FILES power/fpu_power_test.S power/power.c 
+    CFLAGS -DCPU_ITERATIONS_COUNT=0x100    
+    NAME "non-cached-fpu-power-test"
+    BOOTROM preloader-im0-without-cache
+    LOAD IM0BIN SELF
+  )
 endmacro()
 
 

@@ -113,114 +113,20 @@ loop:
     //FMADD RT(f8-f19), f0-f7
     //STFDUX RS(f20-f31)
     fmadd  f8, f2,  f4, f6
-      # stfdux f20, r30, r29
     fmadd  f9, f1,  f3, f5
-      # stfdux f21, r30, r29
     fmadd  f10, f0,  f3, f5
-      # stfdux f22, r30, r29
     fmadd  f11, f7,  f2, f4
-      # stfdux f23, r30, r29
     fmadd  f12, f0,  f0, f2
-      # stfdux f24, r30, r29
     fmadd  f13, f6,  f1, f1
-      # stfdux f25, r30, r29
     fmadd  f14, f1,  f4, f6
-      # stfdux f26, r30, r29
     fmadd  f15, f7,  f5, f3
-      # stfdux f27, r30, r29
     fmadd  f16, f0,  f0, f2
-      # stfdux f28, r30, r29
     fmadd  f17, f6,  f1, f1
-      # stfdux f29, r30, r29
     fmadd  f18, f1,  f4, f6
-      # stfdux f30, r30, r29
     fmadd  f19, f7,  f5, f3
-      # stfdux f31, r30, r29
-
-    //FMADD RT(f20-f31), f0-f7
-    //STFDUX RS(f8-f19)
-    fmadd  f20, f3,  f2, f1
-      # stfdux f8, r30, r29
-    fmadd  f21, f2,  f6, f0
-      # stfdux f9, r30, r29
-    fmadd  f22, f5,  f2, f4
-      # stfdux f10, r30, r29
-    fmadd  f23, f6,  f2, f0
-      # stfdux f11, r30, r29
-    fmadd  f24, f6,  f0, f7
-      # stfdux f12, r30, r29
-    fmadd  f25, f1,  f4, f6
-      # stfdux f13, r30, r29
-    fmadd  f26, f2,  f0, f4
-      # stfdux f14, r30, r29
-    fmadd  f27, f3,  f1, f5
-      # stfdux f15, r30, r29
-    fmadd  f28, f6,  f0, f0
-      # stfdux f16, r30, r29
-    fmadd  f29, f1,  f4, f6
-      # stfdux f17, r30, r29
-    fmadd  f30, f2,  f0, f4
-      # stfdux f18, r30, r29
-    fmadd  f31, f3,  f1, f5
-      # stfdux f19, r30, r29
-
-    load_addr r30, power_3_store_fp_data //current pointer
-
-    //FMADD RT(f8-f19), f0-f7
-    //STFDUX RS(f20-f31)
-    fmadd  f8, f5,  f6, f0
-      # stfdux f20, r30, r29
-    fmadd  f9, f4,  f1, f0
-      # stfdux f21, r30, r29
-    fmadd  f10, f0,  f3, f3
-      # stfdux f22, r30, r29
-    fmadd  f11, f1,  f6, f4
-      # stfdux f23, r30, r29
-    fmadd  f12, f6,  f5, f4
-      # stfdux f24, r30, r29
-    fmadd  f13, f2,  f0, f3
-      # stfdux f25, r30, r29
-    fmadd  f14, f1,  f2, f1
-      # stfdux f26, r30, r29
-    fmadd  f15, f1,  f5, f3
-      # stfdux f27, r30, r29
-    fmadd  f16, f6,  f5, f4
-      # stfdux f28, r30, r29
-    fmadd  f17, f2,  f0, f3
-      # stfdux f29, r30, r29
-    fmadd  f18, f1,  f2, f1
-      # stfdux f30, r30, r29
-    fmadd  f19, f1,  f5, f3
-      # stfdux f31, r30, r29
-
-    //FMADD RT(f20-f31), f0-f7
-    //STFDUX RS(f8-f19)
-    fmadd  f20, f2,  f5, f7
-      # stfdux f8, r30, r29
-    fmadd  f21, f2,  f6, f1
-      # stfdux f9, r30, r29
-    fmadd  f22, f5,  f2, f1
-      # stfdux f10, r30, r29
-    fmadd  f23, f3,  f2, f5
-      # stfdux f11, r30, r29
-    fmadd  f24, f1,  f0, f4
-      # stfdux f12, r30, r29
-    fmadd  f25, f4,  f2, f4
-      # stfdux f13, r30, r29
-    fmadd  f26, f6,  f0, f5
-      # stfdux f14, r30, r29
-    fmadd  f27, f0,  f1, f7
-      # stfdux f15, r30, r29
-    fmadd  f28, f1,  f0, f3
-      # stfdux f16, r30, r29
-    fmadd  f29, f4,  f2, f4
-      # stfdux f17, r30, r29
-    fmadd  f30, f6,  f0, f5
-      # stfdux f18, r30, r29
-    fmadd  f31, f0,  f1, f7
-      # stfdux f19, r30, r29
 
     bdnz+       loop
+    
     rumboot_putstring "CPU test done\n"
     lwz r0, 12(r1)
     mtctr r0
