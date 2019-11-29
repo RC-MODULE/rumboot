@@ -17,6 +17,15 @@ SECTIONS
   *(.rodata)
   *(.rodata.*)
 
+  rumboot_platform_bss_start = .;
+  *(.bss)
+  *(.bss.*)
+  rumboot_platform_bss_end = .;
+
+  rumboot_IRAM_heap_start = .;
+  . = . + 0x800;
+  rumboot_IRAM_heap_end = .;
+
  } > ROM
 
   .header :  {
@@ -93,8 +102,6 @@ SECTIONS
      /* Make sure data & bss go to hell */
      *(.data)
      *(.data.*)
-     *(.bss)
-     *(.bss.*)
      *(COMMON)
  }
 

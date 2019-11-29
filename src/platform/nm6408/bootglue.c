@@ -15,6 +15,7 @@
 #include <rumboot/bootsrc/boilerplate.h>
 #include <devices/greth_edcl.h>
 #include <rumboot/timer.h>
+#include <regs/regs_spi.h>
 
 void rumboot_platform_init_loader(struct rumboot_config *conf)
 {
@@ -88,14 +89,35 @@ void *rumboot_platform_get_spl_area(size_t *size)
         return (void *)&rumboot_platform_spl_start;
 }
 
+void pl022_context(uintptr_t base, int save) 
+{
+        static uint32_t cr0, cr1, cpsr, cs;
+        if (save) {
+                cr0 = ioread32(base + PL022_CR0);
+                cr1 = ioread32(base + PL022_CR1);
+                cpsr = ioread32(base + PL022_CPSR);
+                cs = ioread32(PL022_SSP_BASE + 0x140);
+        } else { 
+                if (cs == ioread32(base + 0x140))
+                        return; /* Nothing to restore */
+                iowrite32(cr0, base + PL022_CR0);
+                iowrite32(cr1, base + PL022_CR1);
+                iowrite32(cpsr, base + PL022_CPSR);
+                iowrite32(cs, base + 0x140);
+        }
+}
+
 #ifndef CMAKE_BUILD_TYPE_DEBUG
 void  __attribute__((no_instrument_function)) rumboot_platform_putchar(uint8_t c)
 {
+
     while (!pl022_tx_avail(PL022_SSP_BASE));;
     iowrite32( 0x100 | c, PL022_SSP_BASE + 0x8);
 
     if (!pl022_rx_empty(PL022_SSP_BASE))
         pl022_clear_rx_buf(PL022_SSP_BASE);
+        
+    mdelay(1);
 }
 
 int rumboot_platform_getchar(uint32_t timeout_us)
@@ -105,12 +127,14 @@ int rumboot_platform_getchar(uint32_t timeout_us)
         pl022_clear_rx_buf(PL022_SSP_BASE);
 
         while (rumboot_platform_get_uptime() - start < timeout_us) {
+                mdelay(1);                
                 iowrite32(0x0, PL022_SSP_BASE + 0x8);
                 while(pl022_rx_empty(PL022_SSP_BASE));;
                 uint32_t byte = ioread32(PL022_SSP_BASE + 0x8);
                 if ((byte & (1<<8)))
-                        return (int) byte & 0xff;
+                        return (int) byte & 0xff;                
         }
+        mdelay(1);
         return -1;
 }
 #endif

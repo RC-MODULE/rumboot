@@ -33,7 +33,7 @@ uint32_t rumboot_platform_get_uptime() {
 extern char rumboot_IRAM_heap_start;
 extern char rumboot_IRAM_heap_end;
 
-
+void pl022_context(uintptr_t base, int save);
 void rumboot_platform_setup() {
 #ifndef RUMBOOT_ONLY_STACK
         rumboot_malloc_register_heap("IRAM",
@@ -54,7 +54,7 @@ void rumboot_platform_setup() {
 
     struct pl022_config conf;
     conf.ssp_clk = 200000000UL;
-    conf.spi_clk = 1000000UL;
+    conf.spi_clk = 115200;
     conf.data_size = 16;
     conf.soft_cs = 0;
     conf.variant = PL022_VARIANT_SHELUHIN;
@@ -76,6 +76,8 @@ void rumboot_platform_setup() {
     prms.loopback = false;
     pl022_set_param(PL022_SSP_BASE, &prms);
 
+    pl022_context(PL022_SSP_BASE, 1);
+    
     /* Send the start symbol */
     iowrite32(0xf55, PL022_SSP_BASE + 0x8);
     pl022_clear_rx_buf(PL022_SSP_BASE);

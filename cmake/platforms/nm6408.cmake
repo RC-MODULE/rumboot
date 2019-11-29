@@ -23,7 +23,7 @@ rumboot_add_configuration(
         --change-section-address .ro=0x8 
         --change-section-address .header=0x0 
         --change-section-address .trailer=16380
-  CFLAGS -DRUMBOOT_ONLY_STACK -marm
+  CFLAGS  -marm
   PREFIX ROM
   TIMEOUT_CTEST 200000
   TIMEOUT 1500 ms
@@ -35,7 +35,7 @@ rumboot_add_configuration(
 rumboot_add_configuration(
   UROM
   CONFIGURATION ROM
-  CFLAGS -DRUMBOOT_ONLY_STACK -marm -DRUMBOOT_MAIN_NORETURN
+  CFLAGS -marm -DRUMBOOT_MAIN_NORETURN
 )
 
 rumboot_add_configuration (
