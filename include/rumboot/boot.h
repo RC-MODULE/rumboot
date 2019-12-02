@@ -101,7 +101,7 @@ void dbg_boot(const struct rumboot_bootsource * src, const char *fmt, ...);
  bool bootsource_init(const struct rumboot_bootsource *src, void *pdata);
  size_t bootsource_read(const struct rumboot_bootsource *src, void *pdata, void *dest, size_t offset, size_t len);
  void bootsource_deinit(const struct rumboot_bootsource *src, void *pdata);
-
+ int rumboot_bootimage_execute(struct rumboot_bootheader *hdr, const struct rumboot_bootsource *src);
 
  /**
   * Attempts to boot from specified boot source once.
@@ -157,7 +157,7 @@ void dbg_boot(const struct rumboot_bootsource * src, const char *fmt, ...);
  int rumboot_platform_selftest(struct rumboot_config *conf);
  const struct rumboot_bootsource *rumboot_platform_get_bootsources();
  bool rumboot_platform_check_entry_points(struct rumboot_bootheader *hdr);
- int rumboot_platform_exec(struct rumboot_bootheader *hdr);
+ int rumboot_platform_exec(struct rumboot_bootheader *hdr, int swap);
  void *rumboot_platform_get_spl_area(size_t *size);
  int rumboot_bootimage_execute_ep(void *ep);
  void rumboot_platform_enter_host_mode(struct rumboot_config *conf);

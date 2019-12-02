@@ -63,7 +63,7 @@ static void hostmode_loop(struct rumboot_config *conf, void *pdata)
                 }
                 if (0 == rumboot_bootimage_check_data(hdr)) {
                         hdr->magic = 0x0;
-                        ret = rumboot_platform_exec(hdr);
+                        ret = rumboot_platform_exec(hdr, 0);
                         dbg_boot(NULL, "Back in rom, code %d", ret);
                         if (ret > 0) {
                                 bootsource_try_by_id(ret - 1, pdata, hdr, maxsize);

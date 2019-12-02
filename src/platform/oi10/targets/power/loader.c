@@ -154,7 +154,7 @@ static void hostmode_loop(struct rumboot_config *conf, void *pdata)
                         asm("sync");
                         rumboot_printf("GOT\n\n");
 
-                        ret = rumboot_platform_exec(hdr);
+                        ret = rumboot_platform_exec(hdr, 0);
                         dbg_boot(NULL, "Back in rom, code %d", ret);
                         if (ret > 0) {
                                 bootsource_try_by_id(ret - 1, pdata, hdr, maxsize);
@@ -222,7 +222,7 @@ int main()
         asm ("msync");
         rumboot_printf("Done, executing...\n");
 #endif
-        rumboot_platform_exec((void *) IM0_BASE);
+        rumboot_platform_exec((void *) IM0_BASE, 0);
 #endif
 
     return 0;

@@ -44,7 +44,7 @@ int main()
 								}
 								if (0 == rumboot_bootimage_check_data(hdr)) {
 																hdr->magic = 0x0;
-																ret = rumboot_platform_exec(hdr);
+																ret = rumboot_platform_exec(hdr, 0);
 								}
 								/* If we're here, something didn't work out */
 								return 1;

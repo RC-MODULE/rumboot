@@ -113,6 +113,8 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
   add_rumboot_test(bootrom-loader bootrom-bad-revision --file ${SPL_OK_BAD_REV} --file2 ${SPL_FAIL})
   add_rumboot_test(bootrom-loader bootrom-next --file ${SPL_NEXT} --file2 ${SPL_OK_CHECK2})
   add_rumboot_test(bootrom-loader bootrom-hostmode-ok --host --hfile ${SPL_OK})
+  add_rumboot_test(bootrom-loader bootrom-hostmode-ok-reverse --host --hfile ${SPL_OK_REVERSE})
+
   add_rumboot_test(bootrom-loader bootrom-hostmode-bad-data --host --hfile ${SPL_FAIL_BAD_DCRC32},${SPL_OK})
   add_rumboot_test(bootrom-loader bootrom-hostmode-bad-magic --host --hfile ${SPL_FAIL_BAD_MAGIC},${SPL_OK})
   add_rumboot_test(bootrom-loader bootrom-hostmode-bad-id --host --hfile ${SPL_FAIL_BAD_ID},${SPL_OK})

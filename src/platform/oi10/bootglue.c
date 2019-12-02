@@ -163,7 +163,7 @@ bool rumboot_platform_check_entry_points(struct rumboot_bootheader *hdr)
         return true;
 }
 
-int rumboot_platform_exec(struct rumboot_bootheader *hdr)
+int rumboot_platform_exec(struct rumboot_bootheader *hdr, int swap)
 {
         /* Make sure PID is 0 */
         set_mem_window(MEM_WINDOW_SHARED);

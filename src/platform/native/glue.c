@@ -20,7 +20,7 @@
 #include <poll.h>
 #include <stdio.h>
 #include <unistd.h>
-
+#include <rumboot/bitswapper.h>
 
 
 int g_argc = 0;
@@ -467,12 +467,16 @@ int run_binary(const char *command)
 }
 
 
-int rumboot_platform_exec(struct rumboot_bootheader *hdr)
+int rumboot_platform_exec(struct rumboot_bootheader *hdr, int swap)
 {
         char ret;
         FILE *tmp = fopen("binary", "w");
 
-        fwrite(hdr->data, hdr->datalen, 1, tmp);
+        if (swap) {
+                fwrite(hdr->data, __swap32(hdr->datalen), 1, tmp);
+        } else {
+                fwrite(hdr->data, hdr->datalen, 1, tmp);                
+        }
         fclose(tmp);
         system("chmod +x binary");
         rumboot_printf("rom: spl exec count: %d\n",
