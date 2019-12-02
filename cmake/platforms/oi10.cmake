@@ -1969,7 +1969,22 @@ endif()
       PREFIX updater
       NAME spi-flash-0
     )
-    
+
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES common/updaters/nor.c
+      PREFIX updater
+      NAME nor-mt150.04
+    )
+
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES common/updaters/nor.c
+      CFLAGS -DNOR_OFFSET=134152192
+      PREFIX updater
+      NAME nor-mt150.04-brom
+    )
+
     add_rumboot_target(
         CONFIGURATION IRAM
         CFLAGS 
