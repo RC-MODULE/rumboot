@@ -70,7 +70,7 @@ if (NOT LUA_VERSION MATCHES "Lua\ 5.1")
 endif()
 
 
-SET(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Os -Wall -fno-omit-frame-pointer")
+SET(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wall -fno-omit-frame-pointer")
 
 SET(EXTRA_COMMON_FLAGS "${EXTRA_COMMON_FLAGS} -DRUMBOOT_VERSION=\\\"${GIT_BRANCH}-${GIT_REVISION}\\\"")
 
@@ -263,7 +263,7 @@ include_directories(src/lib/lua-5.1.5/src/)
 ADD_LIBRARY(lua STATIC ${LUA_FILES})
 foreach(c ${RUMBOOT_CONFIGURATIONS})
   ADD_LIBRARY(rumboot-${c} OBJECT ${PLATFORM_SOURCES})
-  target_compile_options(rumboot-${c} PUBLIC ${CONFIGURATION_${c}_CFLAGS})
+  target_compile_options(rumboot-${c} PUBLIC ${CONFIGURATION_${c}_CFLAGS} ${CONFIGURATION_${c}_OPTIMIZE})
 endforeach()
 
 set(RUMBOOT_PLATFORM_TARGET_DIR ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/targets/)
@@ -305,3 +305,21 @@ SET(CPACK_GENERATOR "TGZ")
 SET(CPACK_PACKAGE_FILE_NAME "rumboot-${RUMBOOT_PLATFORM}-${CMAKE_BUILD_TYPE}-${GIT_BRANCH}-${GIT_REVISION}")
 SET(CPACK_INCLUDE_TOPLEVEL_DIRECTORY 0)
 INCLUDE(CPack)
+
+macro(check_for_optimization_flag var flag)
+string(FIND "${${var}}" "${flag}" _opt)
+if (NOT _opt STREQUAL "-1")
+  message(FATAL_ERROR "${var} contains ${flag}. Please, do not add optimisation flags explicitly, use OPTIMIZE directive. See README.md")
+endif()
+endmacro()
+
+macro(check_for_optimization_flags var)
+  set(_flags "-Os;-O0;-O1;-O2;-O3;-Og")
+  foreach(f ${_flags})
+    check_for_optimization_flag(${var} "${f}")    
+  endforeach()
+endmacro()
+
+check_for_optimization_flags(CMAKE_C_FLAGS)
+check_for_optimization_flags(CMAKE_ASM_FLAGS)
+check_for_optimization_flags(CMAKE_CXX_FLAGS)

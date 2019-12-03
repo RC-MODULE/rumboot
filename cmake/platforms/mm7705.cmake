@@ -9,7 +9,7 @@ file(GLOB PLATFORM_SOURCES
 )
 
 macro(RUMBOOT_PLATFORM_SET_COMPILER_FLAGS)
-    set(RUMBOOT_COMMON_FLAGS "-DRUMBOOT_NO_IRQ_MACROS -mcpu=476fp -gdwarf-2 -m32 -ffreestanding -Os -mbig-endian -fno-zero-initialized-in-bss")
+    set(RUMBOOT_COMMON_FLAGS "-DRUMBOOT_NO_IRQ_MACROS -mcpu=476fp -gdwarf-2 -m32 -ffreestanding -mbig-endian -fno-zero-initialized-in-bss")
     set(CMAKE_C_FLAGS "${RUMBOOT_COMMON_FLAGS} -mstrict-align -fdata-sections -ffunction-sections ")
     set(CMAKE_ASM_FLAGS ${RUMBOOT_COMMON_FLAGS})
     set(CMAKE_EXE_LINKER_FLAGS "-fno-zero-initialized-in-bss -e rumboot_main -Wl,--oformat=elf32-powerpc -static -nostartfiles -Wl,--gc-sections")
