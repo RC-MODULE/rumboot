@@ -2139,6 +2139,16 @@ endif()
     BOOTROM preloader-im0-without-cache
     LOAD IM0BIN SELF
   )
+  
+  add_rumboot_target(
+    CONFIGURATION IRAM
+    LDS oi10/iram_legacy_cached.lds 
+    FILES power/fpu_power_test_endless.S power/power_endless.c 
+    NAME "cached-fpu-power-test_endless"
+    BOOTROM preloader-im0-with-cache
+    LOAD IM0BIN SELF
+  )
+
 endmacro()
 
 
