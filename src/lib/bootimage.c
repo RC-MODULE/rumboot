@@ -5,11 +5,12 @@
 #include <platform/bootheader.h>
 #include <rumboot/bitswapper.h>
 
-/* TODO: Move to error.h */
+/* HACK: Endian defines are missing on older gcc versions */
 #if  !defined(__ORDER_LITTLE_ENDIAN__) && !defined(__ORDER_BIG_ENDIAN__)
 #define __ORDER_LITTLE_ENDIAN__ 1234
 #endif
 
+/* TODO: Move to error.h */
 static const char *errors[] =
 {
 	[0] = "Success",
