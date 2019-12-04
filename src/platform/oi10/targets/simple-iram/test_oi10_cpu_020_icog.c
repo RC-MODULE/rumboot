@@ -34,7 +34,7 @@ typedef void func();
 
 static void check_addr_in_l2c (uint32_t addr, bool expected)
 {
-    int32_t cache_way = -1;
+    int cache_way = -1;
     uint64_t phys_addr = rumboot_virt_to_phys((void*) addr);
     uint32_t tag_data = 0;
     if (l2c_arracc_get_way_by_address( DCR_L2C_BASE, (uint32_t)(phys_addr >> 32), (uint32_t) phys_addr, &cache_way )){
