@@ -1,3 +1,6 @@
+if(RUMBOOT_SUPPORTS_SPL_ENDIAN_SWAP)
+  add_definitions(-DRUMBOOT_SUPPORTS_SPL_ENDIAN_SWAP)
+endif()
 
 macro(rumboot_bootrom_add_common_units)
   set(options DEFAULT)

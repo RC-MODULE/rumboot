@@ -163,11 +163,43 @@ bool rumboot_platform_check_entry_points(struct rumboot_bootheader *hdr)
         return true;
 }
 
+
+
+static const tlb_entry little_endian_tlb[] =
+{
+ {MMU_TLB_ENTRY(  0x020,  0xC0000,    0x80020,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_LITTLE_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_3,     0b1 )},
+ {MMU_TLB_ENTRY(  0x020,  0xC0010,    0x80030,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_LITTLE_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_4,     0b1 )}
+};
+
+
+static const tlb_entry big_endian_tlb[] =
+{
+ {MMU_TLB_ENTRY(  0x020,  0xC0000,    0x80020,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_3,     0b1 )},
+ {MMU_TLB_ENTRY(  0x020,  0xC0010,    0x80030,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_4,     0b1 )}
+};
+
+#include <rumboot/bitswapper.h>
+
 int rumboot_platform_exec(struct rumboot_bootheader *hdr, int swap)
 {
         /* Make sure PID is 0 */
         set_mem_window(MEM_WINDOW_SHARED);
-        return rumboot_bootimage_execute_ep((void *) hdr->entry_point[0]);
+        uint32_t ep = hdr->entry_point[0];
+        rumboot_printf("Preparing to exec... %x %x (%x)\n", hdr->entry_point[0], __swap32(hdr->entry_point[0]), ep);
+
+        if (swap) {
+                write_tlb_entries(little_endian_tlb, ARRAY_SIZE(little_endian_tlb));
+                ep = __swap32(ep);
+        }
+        rumboot_printf("Preparing to exec... %x %x (%x)\n", hdr->entry_point[0], __swap32(hdr->entry_point[0]), ep);
+
+        int ret = rumboot_bootimage_execute_ep((void *) ep);
+
+        if (swap) {
+                write_tlb_entries(big_endian_tlb, ARRAY_SIZE(big_endian_tlb));
+        }
+        rumboot_printf("BACK: ret = %d\n", ret);
+        return ret;
 }
 
 void *rumboot_platform_get_spl_area(size_t *size)

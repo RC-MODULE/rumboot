@@ -6,6 +6,8 @@ file(GLOB PLATFORM_SOURCES
     ${CMAKE_SOURCE_DIR}/src/lib/drivers/irq-dummy.c
 )
 
+set(RUMBOOT_SUPPORTS_SPL_ENDIAN_SWAP Yes)
+
 macro(RUMBOOT_PLATFORM_SET_COMPILER_FLAGS)
     SET(CMAKE_DUMP_FLAGS     "-EL")
     SET(CMAKE_C_FLAGS     "-std=gnu99 -m32")
