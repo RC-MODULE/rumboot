@@ -46,6 +46,15 @@ struct __attribute__((packed)) rumboot_bootheader {
     char     data[];
 };
 
+
+/**
+ * @brief Check 
+ * 
+ * @param magic 
+ * @return int 
+ */
+int rumboot_bootimage_check_magic(uint32_t magic);
+
 /**
  * Validate a header pointed by hdr
  * @param  hdr     Bootimage header pointer

@@ -42,19 +42,15 @@ int main()
 #ifdef __PPC__
                 asm ("msync");
 #endif
-
-                if (hdr->magic != RUMBOOT_HEADER_MAGIC) {
+                int i = rumboot_bootimage_check_magic(hdr->magic);
+                if (i < 0) {
                         rumboot_printf("STUB: No more images to boot\n");
                         break;
                 }
 
                 rumboot_printf("STUB: Executing SPL image from %x. Magic: 0x%x Entry: 0x%x\n",
                         (uint32_t) hdr, hdr->magic, hdr->entry_point[0]);
-                int (*ram_main)();
-                ram_main = (void *)hdr->entry_point[0];
-                rumboot_platform_perf("IM0 startup");
-                hdr->magic = 0x0;
-                ret = ram_main();
+                ret = rumboot_bootimage_execute(hdr, NULL);
                 if (ret != 0)
                         break;
         }

@@ -36,7 +36,7 @@ const char *rumboot_strerror(int err)
 	return errors[err];
 }
 
-static int rumboot_bootimage_check_magic(uint32_t magic) 
+int rumboot_bootimage_check_magic(uint32_t magic) 
 {
 	if (magic == RUMBOOT_HEADER_MAGIC) {
 		return 0;
