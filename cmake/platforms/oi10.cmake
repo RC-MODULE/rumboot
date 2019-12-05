@@ -34,11 +34,11 @@ file(GLOB PLATFORM_SOURCES
 
 #Flags for Power PC
 macro(RUMBOOT_PLATFORM_SET_COMPILER_FLAGS)
-    set(RUMBOOT_COMMON_FLAGS "-mcpu=476fp -gdwarf-2 -fno-plt -fno-pic -m32 -ffreestanding -mbig-endian -std=gnu99 -DRUMBOOT_PLATFORM_NUM_HEAPS=9 -D__FILENAME__='\"$(subst ${CMAKE_SOURCE_DIR}/,,$(abspath $<))\"'")
+    set(RUMBOOT_COMMON_FLAGS "-mcpu=476fp -gdwarf-2 -fno-plt -fno-pic -m32 -ffreestanding -std=gnu99 -DRUMBOOT_PLATFORM_NUM_HEAPS=9 -D__FILENAME__='\"$(subst ${CMAKE_SOURCE_DIR}/,,$(abspath $<))\"'")
     set(CMAKE_C_FLAGS "${RUMBOOT_COMMON_FLAGS} -mstrict-align -Wall -Werror -Wno-error=cpp -fdata-sections -ffunction-sections")
     set(CMAKE_ASM_FLAGS "${RUMBOOT_COMMON_FLAGS}")
-    set(CMAKE_EXE_LINKER_FLAGS "-nostartfiles -static -Wl,--gc-sections -Wl,--oformat=elf32-powerpc")
-    set(CMAKE_DUMP_FLAGS -EB -M476,32)
+    set(CMAKE_EXE_LINKER_FLAGS "-nostartfiles -static -Wl,--gc-sections")
+    set(CMAKE_DUMP_FLAGS -M476,32)
     if (PRODUCTION_TESTING) 
       SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DPRODUCTION_TESTING")    
     endif()
@@ -63,7 +63,7 @@ endif()
 rumboot_add_configuration(
     BROM
     DEFAULT
-    LDFLAGS "-e rumboot_entry_point"
+    LDFLAGS -Wl,-erumboot_entry_point
     PREFIX brom
     FEATURES ROMGEN
     FILES ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/startup.S
@@ -112,7 +112,7 @@ rumboot_add_configuration (
     IRAM
     LDS ${IRAM_LDS_FILE}
     PREFIX iram
-    LDFLAGS -Wl,--start-group -lgcc -lc -lm -Wl,--end-group "-e rumboot_main"
+    LDFLAGS -Wl,-erumboot_main
     FILES ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/startup.S ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c
     BOOTROM bootrom-stub
     FEATURES LUA COVERAGE PACKIMAGE BANNER
@@ -124,12 +124,20 @@ rumboot_add_configuration (
     CFLAGS -DUTLB_EXT_MEM_NOR_ONLY
 )
 
+rumboot_add_configuration(IRAM_LE
+  CONFIGURATION IRAM
+  PREFIX iram-le
+  LDFLAGS -Wl,-belf32-powerpcle -mlittle-endian -Wl,-emain
+  CFLAGS -mlittle-endian
+  DUMPFLAGS -EL
+)
+
 rumboot_add_configuration (
     IRAM_SPL
     CONFIGURATION IRAM
     LDS oi10/iram-spl.lds
     PREFIX spl
-    LDFLAGS -Wl,--start-group -lgcc -lc -lm -Wl,--end-group "-e main"
+    LDFLAGS -Wl,-emain
     CFLAGS -DRUMBOOT_NOINIT
     FEATURES COVERAGE PACKIMAGE
 )
@@ -506,6 +514,12 @@ endif()
         FILES common/irq/irq-atomics.c
         PREFIX "irq-rom"
     )
+
+    add_rumboot_target(
+      CONFIGURATION IRAM_LE
+      CFLAGS -DUSE_SWINT=132
+      FILES common/irq/irq-atomics.c
+  )
 
     add_rumboot_target(
         CONFIGURATION BROM
