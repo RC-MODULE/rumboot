@@ -140,6 +140,9 @@ int main()
             iowrite32(data_value, (uint32_t)test_data_buf[i]);
             isync();
             msync();
+            data_value = ioread32((uint32_t)test_data_buf[i]);
+            isync();
+            msync();
             rumboot_printf("area[%d] addr == 0x%x, data == 0x%x\n", i, (uint32_t)test_data_buf[i], data_value);
         }
         isync();
@@ -211,10 +214,13 @@ int main()
                         }
                     }
                 }
-                lwsync();
                 isync();
+                msync();
                 data_value = ioread32((uint32_t)test_data_buf[i]);
                 iowrite32(data_value, (uint32_t)test_data_buf[i]);
+                isync();
+                msync();
+                data_value = ioread32((uint32_t)test_data_buf[i]);
                 isync();
                 msync();
             }
@@ -262,6 +268,9 @@ int main()
                 }
                 data_value = ioread32((uint32_t)test_data_buf[i]);
                 iowrite32(data_value,(uint32_t)test_data_buf[i]);
+                isync();
+                msync();
+                data_value = ioread32((uint32_t)test_data_buf[i]);
                 msync();
                 isync();
             }
@@ -332,6 +341,9 @@ int main()
 
             data_value = ioread32((uint32_t)test_data_buf[not_in_cache_function_number]);
             iowrite32(data_value, (uint32_t)test_data_buf[not_in_cache_function_number]);
+            isync();
+            msync();
+            data_value = ioread32((uint32_t)test_data_buf[not_in_cache_function_number]);
             isync();
             msync();
 
