@@ -7,6 +7,7 @@
 #include <rumboot/memfill.h>
 #include <rumboot/io.h>
 #include <rumboot/macros.h>
+#include <rumboot/xmodem.h>
 
 
 __attribute__((no_instrument_function)) void rumboot_platform_event_raise(enum rumboot_simulation_event event,
@@ -23,6 +24,14 @@ __attribute__((no_instrument_function)) void rumboot_platform_event_raise(enum r
                         rumboot_printf("%x ", data[i]);
                 rumboot_printf("\n");
 #endif
+        switch(event) {
+                case EVENT_UPLOAD:
+                        rumboot_printf("UPLOAD: %s to 0x%x\n", data[0], data[1]);
+                        xmodem_get((void *) data[1], 8*1024*1024);
+                        break;
+                default:
+                        break;
+        }
 }
 
 __attribute__((no_instrument_function)) enum rumboot_simulation_event
