@@ -28,6 +28,8 @@
     #define WAIT_LIMIT  1
 #endif
 
+#define MAX_ATTEMPT 10
+
 // Addresses
 // -------- System --------
 #define ID                       0x00000000       // Read only
@@ -184,7 +186,7 @@ void hscb_create_desc_tbl (struct hscb_trans_tbl * hscb, char* desc_heap, bool t
 // ----------------- hscb_create_desc -----------------
 void hscb_create_desc (struct hscb_trans_tbl* hscb, uint32_t desc_size, uint32_t desc_addr) {
 
-    rumboot_printf("Create descriptor with address %x for HSCB %x\n", desc_addr, hscb->base_addr);
+//    rumboot_printf("Create descriptor with address %x for HSCB %x\n", desc_addr, hscb->base_addr);
     
     iowrite32(change_endian(desc_size<<6 | TRAN_FLAG | LAST_FLAG), hscb->prep_desc);
 //    rumboot_printf("Desc_params: %x\n", ioread32(hscb->prep_desc));
@@ -269,7 +271,7 @@ uint32_t hscb_wait_end_trans (struct hscb_trans_tbl* hscb) {
         else
             cnt++;
     }
-    
+   
     return 0;
 }
 
@@ -284,7 +286,7 @@ int hscb_data_check(struct hscb_trans_tbl* hscb, uint32_t init_val, uint32_t inc
     addr = hscb_get_addr(hscb);
     len = hscb_get_len(hscb);
    
-    rumboot_printf("Check from descriptor at address %x\n   address: %x data length: %d\n", hscb->proc_desc, addr, len);
+//    rumboot_printf("Check from descriptor at address %x\n   address: %x data length: %d\n", hscb->proc_desc, addr, len);
     for (i=0; i<len; i+=4){
         tmp = ioread32(addr);
 //        rumboot_printf("%x: %x, must be %x\n", addr, tmp, init_val);
@@ -295,7 +297,7 @@ int hscb_data_check(struct hscb_trans_tbl* hscb, uint32_t init_val, uint32_t inc
         init_val = init_val + inc_val;
         addr += 4;
     }
-    rumboot_printf("Data check success!\n");
+//    rumboot_printf("Data check success!\n");
     return 0;
 }
 
@@ -438,7 +440,7 @@ int hscb_loop_iteration (
     hscb_gen_data(dst_tx_data_addr, page_size, dst_init_val, inc_val);
     
     // Start
-    rumboot_printf("Start!\n");
+//    rumboot_printf("Start!\n");
     iowrite32(hscb_src_speed, src_base_addr + TRANS_CLK );
     
     iowrite32(EN_DMA, src_rx->base_addr + WDMA_SETTINGS);
@@ -447,9 +449,25 @@ int hscb_loop_iteration (
     iowrite32(EN_DMA, dst_tx->base_addr + RDMA_SETTINGS);
     
     // Wait finish transfer
-    rumboot_printf("Wait finish...\n");
+//    rumboot_printf("Wait finish...\n");
     if (hscb_wait_end_trans (src_rx)) return 1;
     if (hscb_wait_end_trans (dst_rx)) return 1;
+    
+    // Check link state
+    uint32_t hscb_status;
+    hscb_status = ioread32(src_rx->base_addr + STATUS);
+    if (hscb_status & (DISCONNECT_ERR | PARITY_ERR | ESC_ERR | TIME_CODE_ERR | TX_CREDIT_ERR | RX_CREDIT_ERR)){
+        rumboot_printf("\n Error in HSCB src (addr %x) status!\n", src_rx->base_addr);
+        rumboot_printf("    status = %x\n", hscb_status);
+        return 1;
+    }
+
+    hscb_status = ioread32(dst_rx->base_addr + STATUS);
+    if (hscb_status & (DISCONNECT_ERR | PARITY_ERR | ESC_ERR | TIME_CODE_ERR | TX_CREDIT_ERR | RX_CREDIT_ERR)){
+        rumboot_printf("\n Error in HSCB dst (addr %x) status!\n", src_rx->base_addr);
+        rumboot_printf("    status = %x\n", hscb_status);
+        return 1;
+    }
     
     //Check results
     if (hscb_data_check (src_rx, dst_init_val, inc_val)) return 1;
@@ -517,9 +535,12 @@ int main() {
 #ifdef LOOP_TEST
     int i = 0;
     uint32_t result = 0;
-    uint32_t speed[] = {20, 10, 1, 2, 3};
+//    uint32_t speed[] = {20, 10, 1, 2, 3};
 //    uint32_t speed[] = {1,0,1,0,1,0};
+    uint32_t speed = 10;
     uint32_t page_size = 128;
+    uint32_t hscb_status = 0;
+    uint32_t cnt = 0;
 
     rumboot_printf("Reset HSCBs\n");
     iowrite32(1, HSCB_SRC_BASE + SW_RESET );
@@ -532,19 +553,42 @@ int main() {
     iowrite32((EN_HSCB | DISCARD_RMAP)             , HSCB_SRC_BASE + SETTINGS );
     iowrite32((EN_HSCB | DISCARD_RMAP| EN_TRIM_CLK), HSCB_DST_BASE + SETTINGS );
     
+    // Wait link enable state
+//    rumboot_printf("Wait link\n");
+    while(((hscb_status & ACTIVE_LINK) == 0) || (cnt >= MAX_ATTEMPT)){
+        hscb_status = ioread32(HSCB_SRC_BASE + STATUS);
+//        rumboot_printf("hscb_status = %x\n", hscb_status);
+//        rumboot_printf("hscb_status & ACTIVE_LINK = %x\n", (hscb_status & ACTIVE_LINK));
+        cnt++;
+    }
+    if (cnt >= MAX_ATTEMPT){
+        rumboot_printf("\n\n HSCB test ERROR!\n    Can't link!!!\n");
+        return 1;
+    }
+    // Clean HSCB_DST address
+    hscb_status = ioread32(HSCB_DST_BASE + STATUS);
+    
     // Loop test
     while (!result & (i < 51)){
-        rumboot_printf("\nIteration number %d\n",i);
-        rumboot_printf("Speed[%d] = %x \n",(i%6), speed[(i%6)]);
+//        rumboot_printf("Iteration number %d\n",i);
+//        rumboot_printf("Speed = %x\n",speed);
         
-        result = hscb_loop_iteration(HSCB_SRC_BASE, HSCB_DST_BASE, "IM1", "IM1", page_size, speed[i%6]);
-        if (result) return 1;
-
+        
+        result = hscb_loop_iteration(HSCB_SRC_BASE, HSCB_DST_BASE, "IM1", "IM1", page_size, speed);
+        if (result) { 
+            rumboot_printf("\nIteration number %d\n",i);
+            rumboot_printf("Speed = %x\n",speed);
+            return 1;
+        }
         i++;
         if (page_size == 128)
             page_size = 16;
         else
             page_size += 8;        
+        if (speed == 15)
+            speed = 1;
+        else
+            speed++;
     }
     rumboot_printf("\nTest OK!\n\n");
     return 0;
