@@ -128,7 +128,7 @@ rumboot_add_configuration(IRAM_LE
   CONFIGURATION IRAM
   PREFIX iram-le
   LDFLAGS -Wl,-belf32-powerpcle -mlittle-endian -Wl,-emain
-  CFLAGS -mlittle-endian
+  CFLAGS -mlittle-endian -DUTLB_EXT_MEM_NOR_ONLY
   DUMPFLAGS -EL
 )
 
