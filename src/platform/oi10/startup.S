@@ -376,7 +376,7 @@ init_other_spr:
 setup_boot_tlb_entries:
 // Program invalidation of all TLB entries is very slow. Let's skip it in tests.
 // All entries are invalidated from testbench during core reset.
-#ifdef CMAKE_BUILD_TYPE_PRODUCTION
+#ifndef CMAKE_BUILD_TYPE_DEBUG
     bl          ppc470s_invalidate_all_tlb_entries_nosnoop
 #endif
 
