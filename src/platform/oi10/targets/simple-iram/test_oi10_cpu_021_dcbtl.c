@@ -344,7 +344,7 @@ int main()
     //            TEST_ASSERT((cache_way == j), "Incorrect way was replaced");
                 if(!(cache_way == ((j + 1)%L2C_COUNT_WAYS)))
                 {
-                    rumboot_printf("ERROR!!! Cache way lock does not work! Expected way %d to be replaced, but actually replaced way %d.\n",j,cache_way);
+                    rumboot_printf("ERROR!!! Cache way lock does not work! Expected way %d to be replaced, but actually replaced way %d.\n",((j + 1)%L2C_COUNT_WAYS),cache_way);
                     result |= !(cache_way == ((j + 1)%L2C_COUNT_WAYS));
                 }
             }
