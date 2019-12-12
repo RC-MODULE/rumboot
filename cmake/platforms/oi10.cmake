@@ -52,12 +52,10 @@ endif()
 if (OI10_IRAM_IM0)
   set(IRAM_LDS_FILE oi10/iram_legacy.lds)
   set(STUB_LDS_FILE oi10/bootrom_legacy.lds)
-  set(EXTRA_STUB_FLAGS -DUTLB_EXT_MEM_NOR_ONLY)
   message(WARNING "Tests will run from IM0. This configuration is legacy and will be removed in future")
 else()
   set(IRAM_LDS_FILE oi10/iram.lds)
   set(STUB_LDS_FILE oi10/bootrom.lds )
-  set(EXTRA_STUB_FLAGS -DUTLB_EXT_MEM_NOR_ONLY)
 endif()
 
 rumboot_add_configuration(
@@ -70,7 +68,7 @@ rumboot_add_configuration(
     TIMEOUT_CTEST 0
     LOAD BOOTROM_NOR SELF
     IRUN_FLAGS ${IRUN_BOOTM_EXTRA_ARGS}
-    CFLAGS -DRUMBOOT_ONLY_STACK ${CONFIGURATION_ROM_CFLAGS} ${EXTRA_STUB_FLAGS} -DRUMBOOT_MAIN_NORETURN
+    CFLAGS -DRUMBOOT_ONLY_STACK ${CONFIGURATION_ROM_CFLAGS} -DRUMBOOT_MAIN_NORETURN
     LDS ${STUB_LDS_FILE}
     IRUN_FLAGS +BOOTMGR_KEEP_DRIVING=1 ${BOOTROM_IFLAGS}
 )
@@ -121,14 +119,13 @@ rumboot_add_configuration (
       BOOTROM_NOR bootrom-stub
     TIMEOUT_CTEST 86400
     IRUN_FLAGS ${IRUN_BOOTM_EXTRA_ARGS}
-    CFLAGS -DUTLB_EXT_MEM_NOR_ONLY
 )
 
 rumboot_add_configuration(IRAM_LE
   CONFIGURATION IRAM
   PREFIX iram-le
   LDFLAGS -Wl,-belf32-powerpcle -mlittle-endian -Wl,-emain
-  CFLAGS -mlittle-endian -DUTLB_EXT_MEM_NOR_ONLY
+  CFLAGS -mlittle-endian
   DUMPFLAGS -EL
 )
 
