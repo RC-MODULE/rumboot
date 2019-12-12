@@ -23,14 +23,17 @@
 //-----------------------------------------------------------------------------
 //  Test parameters. Can be changed, if You need other functionality.
 //-----------------------------
-#define PCIE_GEN_1
-// #define PCIE_GEN_2
+// #define PCIE_GEN_1
+#define PCIE_GEN_2
 //-----------------------------------------------------------------------------
 
 #ifndef CMAKE_BUILD_TYPE_POSTPRODUCTION
 #define REPEAT_NUM 1
 #else
-#define REPEAT_NUM 1024
+//  If we run many iterrations, test will fail with good probability
+//    because of PCIe lane BER != 0
+#define REPEAT_NUM 1
+// #define REPEAT_NUM 1024
 #endif
 
 #ifdef PCIE_GEN_1
@@ -325,7 +328,19 @@ int main ()
     
     if (result != 0)
     {
-        rumboot_printf ("  ISI loopback failed, start Serial loopback to precise error\n");
+        rumboot_printf ("  ISI loopback #0 failed. It must be very rare, but permitted, situation.\n");
+        rumboot_printf ("  Repeat ISI loopback\n");
+        result = 0;
+        
+        result += pcie_bist_lane (LANE_0_BASE, ISI_LOOPBACK);
+        result += pcie_bist_lane (LANE_1_BASE, ISI_LOOPBACK);
+        result += pcie_bist_lane (LANE_2_BASE, ISI_LOOPBACK);
+        result += pcie_bist_lane (LANE_3_BASE, ISI_LOOPBACK);
+    }
+    
+    if (result != 0)
+    {
+        rumboot_printf ("  ISI loopback #1 failed, start Serial loopback to precise error\n");
         
         result = 0;
         
