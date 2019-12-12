@@ -148,8 +148,15 @@ void rumboot_platform_panic(const char *why, ...)
 
 __attribute__((no_instrument_function)) int rumboot_memcheck32(void *src, void *dst, size_t sz)
 {
-  rumboot_platform_panic("NOT IMPLEMENTED");
-  return 123;
+  int i;
+  uint32_t *p_src = src;
+  uint32_t *p_dst = dst;
+  for (i=0; i<sz; i++) {
+      if (p_src[i] != p_dst[i]) {
+          rumboot_platform_panic("rumboot_memcheck32: data check failed");
+      }
+  }
+  return 0;
 }
 
 __attribute__((no_instrument_function)) int memcmp(const void *src, const void *dst, size_t sz)
@@ -193,8 +200,13 @@ void* rumboot_memfill8(void *addr, size_t sz, uint8_t val, int8_t incr)
 
 __attribute__((no_instrument_function)) int rumboot_memfill32(void *addr, size_t sz, int val, int incr)
 {
-	rumboot_platform_panic("NOT IMPLEMENTED");
-    return 123;
+    int i;
+    uint32_t *dst = addr;
+    for(i=0; i < sz; i++) {
+      dst[i] = val; 
+      val += incr;
+    }
+    return 0;
 }
 
 #endif
