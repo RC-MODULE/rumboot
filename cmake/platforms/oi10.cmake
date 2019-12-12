@@ -2177,6 +2177,14 @@ endif()
     BOOTROM preloader-im0-with-cache
     LOAD IM0BIN SELF
   )
+  
+  add_rumboot_target(
+    CONFIGURATION IRAM
+    FILES ../archive/test_oi10_cpu_021_dcbtl.c 
+    PREFIX archive-iram
+    TESTGROUP broken
+    )
+  
 
 endmacro()
 
