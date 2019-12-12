@@ -33,7 +33,7 @@ bool get_way_by_addr(uint32_t CT, void* addr, int32_t* cache_way)
         return l2c_arracc_get_way_by_address(DCR_L2C_BASE,
                     (uint32_t)((phys_addr >> 32) & 0xffffffff),
                     (uint32_t)((phys_addr      ) & 0xffffffff),
-                    cache_way
+                    (int * ) cache_way
                     );
     } else if(CT == 0)
     {
@@ -76,14 +76,13 @@ uint32_t get_locks(uint32_t CT, void* addr, uint32_t cache_way)
     uint32_t L2C_LRU_info;
     if(CT == 2)
     {
-        if(l2c_arracc_lru_info_read_by_way(DCR_L2C_BASE,
+        if(l2c_arracc_lru_info_read(DCR_L2C_BASE,
                     (uint32_t)((phys_addr >> 32) & 0xffffffff),
                     (uint32_t)((phys_addr      ) & 0xffffffff),
-                    cache_way,
                     &L2C_LRU_info
                     ))
         {
-            result = ( L2C_LRU_info & L2C_L2ARRACCDO0_LRU_LOCK_BITS_mask ) >> L2C_L2ARRACCDO0_LRU_LOCK_BITS_i;
+            result = ( L2C_LRU_info & L2C_L2ARRACCDX0_LRU_LOCK_BITS_mask ) >> L2C_L2ARRACCDX0_LRU_LOCK_BITS_i;
         }
     } else if(CT == 0)
     {
