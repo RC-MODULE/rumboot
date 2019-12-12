@@ -8,6 +8,14 @@
 #include <rumboot/io.h>
 #include <rumboot/macros.h>
 #include <rumboot/xmodem.h>
+#include <rumboot/hexdump.h>
+
+
+void rumboot_platform_request_file(const char *plusarg, uint32_t addr)
+{
+        rumboot_printf("UPLOAD: %s to 0x%x\n", plusarg, addr);
+        xmodem_get((void *) addr, 8*1024*1024);
+}
 
 
 __attribute__((no_instrument_function)) void rumboot_platform_event_raise(enum rumboot_simulation_event event,
@@ -23,16 +31,6 @@ __attribute__((no_instrument_function)) void rumboot_platform_event_raise(enum r
                 for (i = 0; i < len; i++)
                         rumboot_printf("%x ", data[i]);
                 rumboot_printf("\n");
-#endif
-#if 0
-        switch(event) {
-                case EVENT_UPLOAD:
-                        rumboot_printf("UPLOAD: %s to 0x%x\n", data[0], data[1]);
-                        xmodem_get((void *) data[1], 8*1024*1024);
-                        break;
-                default:
-                        break;
-        }
 #endif
 }
 
