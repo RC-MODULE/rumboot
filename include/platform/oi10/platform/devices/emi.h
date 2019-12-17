@@ -8,7 +8,7 @@
 #ifndef EMI_H_
 #define EMI_H_
 
-
+#include <stdbool.h>
 #include <stdint.h>
 #include <platform/regs/fields/emi.h>
 
