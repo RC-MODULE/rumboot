@@ -21,6 +21,7 @@
 #include <regs/regs_pcie.h>
 #include <platform/devices.h>
 #include <rumboot/io.h>
+#include <rumboot/printf.h>
 
 //-----------------------------------------------------------------------------
 //  These defines must be changed for real program
@@ -160,12 +161,21 @@ uint32_t pcie_simple_turn_on ()
     //   Exit with error if emergency timer overflow
     //---------------------------------------------------------------
     timer_cntr = 0;
-    while ((ioread32 (PCIE_CORE_BASE + PCIe_Core_LocalMgmt + PCIe_LocMgmt_i_pl_config_0_reg) & 0x19) != 0x9)
+    while ((ioread32 (PCIE_CORE_BASE + PCIe_Core_LocalMgmt + PCIe_LocMgmt_i_pl_config_0_reg) & 0x01) != 0x1)
     {
         timer_cntr++;
         if (timer_cntr == PCIE_TEST_LIB_TRAINING_TIMEOUT)
             return -2;
     }
+    rumboot_printf ("  PCIe link up\n");
+    
+    rdata = ioread32 (PCIE_CORE_BASE + PCIe_Core_LocalMgmt + PCIe_LocMgmt_i_pl_config_0_reg);
+    rumboot_printf ("    negotiated link width:  %d\n", (1 << ((rdata >> 1) & 0x3)));
+    if (((rdata >> 3) & 0x3) == 0)
+        rumboot_printf ("    negotiated link speed:  2.5GTs\n");
+    if (((rdata >> 3) & 0x3) == 1)
+        rumboot_printf ("    negotiated link speed:  5.0GTs\n");
+
 
     return 0;
 }
@@ -424,12 +434,20 @@ uint32_t pcie_turn_on_with_options_ep
     //   Exit with error if emergency timer overflow
     //---------------------------------------------------------------
     timer_cntr = 0;
-    while ((ioread32 (PCIE_CORE_BASE + PCIe_Core_LocalMgmt + PCIe_LocMgmt_i_pl_config_0_reg) & 0x19) != 0x9)
+    while ((ioread32 (PCIE_CORE_BASE + PCIe_Core_LocalMgmt + PCIe_LocMgmt_i_pl_config_0_reg) & 0x01) != 0x1)
     {
         timer_cntr++;
         if (timer_cntr == PCIE_TEST_LIB_TRAINING_TIMEOUT)
             return -1;
     }
+    rumboot_printf ("  PCIe link up\n");
+    
+    rdata = ioread32 (PCIE_CORE_BASE + PCIe_Core_LocalMgmt + PCIe_LocMgmt_i_pl_config_0_reg);
+    rumboot_printf ("    negotiated link width:  %d\n", (1 << ((rdata >> 1) & 0x3)));
+    if (((rdata >> 3) & 0x3) == 0)
+        rumboot_printf ("    negotiated link speed:  2.5GTs\n");
+    if (((rdata >> 3) & 0x3) == 1)
+        rumboot_printf ("    negotiated link speed:  5.0GTs\n");
 
     return 0;
 }
@@ -676,12 +694,21 @@ uint32_t pcie_turn_on_with_options_rc
     //   Exit with error if emergency timer overflow
     //---------------------------------------------------------------
     timer_cntr = 0;
-    while ((ioread32 (PCIE_CORE_BASE + PCIe_Core_LocalMgmt + PCIe_LocMgmt_i_pl_config_0_reg) & 0x19) != 0x9)
+    while ((ioread32 (PCIE_CORE_BASE + PCIe_Core_LocalMgmt + PCIe_LocMgmt_i_pl_config_0_reg) & 0x01) != 0x1)
     {
         timer_cntr++;
         if (timer_cntr == PCIE_TEST_LIB_TRAINING_TIMEOUT)
             return -1;
     }
+    rumboot_printf ("  PCIe link up\n");
+    
+    rdata = ioread32 (PCIE_CORE_BASE + PCIe_Core_LocalMgmt + PCIe_LocMgmt_i_pl_config_0_reg);
+    rumboot_printf ("    negotiated link width:  %d\n", (1 << ((rdata >> 1) & 0x3)));
+    if (((rdata >> 3) & 0x3) == 0)
+        rumboot_printf ("    negotiated link speed:  2.5GTs\n");
+    if (((rdata >> 3) & 0x3) == 1)
+        rumboot_printf ("    negotiated link speed:  5.0GTs\n");
+
 
     return 0;
 }
