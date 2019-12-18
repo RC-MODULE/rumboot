@@ -26,7 +26,7 @@ __attribute__((no_instrument_function)) void rumboot_platform_perf_func(void *ad
 	rumboot_platform_event_raise(EVENT_PERF_FUNC, data, ARRAY_SIZE(data));
 }
 
-#ifdef RUMBOOT_BUILD_TYPE_DEBUG
+#if defined(CMAKE_BUILD_TYPE_DEBUG) || defined(CMAKE_BUILD_TYPE_PRODUCTION)
 void rumboot_platform_request_file(const char *plusarg, uint32_t addr)
 {
 	uint32_t data[] = { (uint32_t) plusarg, addr };
