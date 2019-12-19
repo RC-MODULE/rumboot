@@ -83,6 +83,7 @@ void pcie_loopback_mode_on (uint32_t loopback_mode)
 uint32_t pcie_simple_turn_on ()
 {
     uint32_t timer_cntr;
+    uint32_t rdata;
 #ifndef PCIE_TEST_LIB_SIMSPEEDUP_OFF
 #ifndef RUMBOOT_BUILD_TYPE_POSTPRODUCTION
 #ifndef CMAKE_BUILD_TYPE_POSTPRODUCTION
