@@ -7,6 +7,8 @@
 #include <rumboot/memfill.h>
 #include <rumboot/io.h>
 #include <rumboot/macros.h>
+#include <rumboot/xmodem.h>
+#include <rumboot/hexdump.h>
 
 __attribute__((no_instrument_function)) void rumboot_platform_trace(void *pc)
 {
@@ -16,55 +18,48 @@ __attribute__((no_instrument_function)) void rumboot_platform_trace(void *pc)
 
 __attribute__((no_instrument_function)) void rumboot_platform_perf(const char *tag)
 {
-	uint32_t data[] = { (uint32_t) tag };
-	rumboot_platform_event_raise(EVENT_PERF, data, ARRAY_SIZE(data));
+	rumboot_printf("PERF: %s @ %u us\n", tag, rumboot_platform_get_uptime());
 }
 
 __attribute__((no_instrument_function)) void rumboot_platform_perf_func(void *addr)
 {
-	uint32_t data[] = { (uint32_t) addr };
-	rumboot_platform_event_raise(EVENT_PERF_FUNC, data, ARRAY_SIZE(data));
+	rumboot_printf("PERF_FUNC: 0x%x @ %u us\n", addr, rumboot_platform_get_uptime());
 }
 
-#if defined(CMAKE_BUILD_TYPE_DEBUG) || defined(CMAKE_BUILD_TYPE_PRODUCTION)
 void rumboot_platform_request_file(const char *plusarg, uint32_t addr)
 {
-	uint32_t data[] = { (uint32_t) plusarg, addr };
-	rumboot_platform_event_raise(EVENT_UPLOAD, data, ARRAY_SIZE(data));
+        rumboot_printf("UPLOAD: %s to 0x%x\n", plusarg, addr);
+        xmodem_get((void *) addr, -1);
 }
-#endif
 
 void rumboot_platform_sim_save(const char *filename)
 {
-	uint32_t data[] = { (uint32_t) filename };
-	rumboot_platform_event_raise(EVENT_SIM_SAVE, data, ARRAY_SIZE(data));
+	/* No - op */
 }
 
 void rumboot_platform_sim_restore(const char *filename)
 {
-	uint32_t data[] = { (uint32_t) filename };
-	rumboot_platform_event_raise(EVENT_SIM_RESTORE, data, ARRAY_SIZE(data));
+	/* No - op */
 }
 
 void rumboot_platform_dump_region(const char *filename, uint32_t addr, uint32_t len)
 {
-	uint32_t data[] = { (uint32_t) filename, addr, len };
-	rumboot_platform_event_raise(EVENT_DOWNLOAD, data, ARRAY_SIZE(data));
+	rumboot_printf("DOWNLOAD: %u bytes from 0x%x to %s\n", len, addr, filename);
 }
 
 void rumboot_platform_store_gcda(const char *filename, uint32_t addr, uint32_t len)
 {
-	uint32_t data[] = { (uint32_t) filename, addr, len };
-	rumboot_platform_event_raise(EVENT_GCDA, data, ARRAY_SIZE(data));
+	rumboot_printf("DOWNLOAD: %u bytes from 0x%x to %s\n", len, addr, filename);
+	rumboot_hexdump(addr, 512);
+	xmodem_send(addr, len);
 }
 
 void rumboot_platform_relocate_runtime(uint32_t addr)
 {
-    rumboot_platform_event_raise(EVENT_RELOCATE_RUNTIME, &addr, 1);
+	rumboot_printf("RUNTIME: Relocated to 0x%x \n", addr);
 }
 
 void rumboot_platform_sv_event(const char *name)
 {
-	uint32_t ptr[] = { (uint32_t) name };
-    rumboot_platform_event_raise(EVENT_GENERIC, ptr, 1);
+	/* No - op */
 }

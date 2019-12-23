@@ -85,6 +85,8 @@ SET(EXTRA_COMMON_FLAGS "${EXTRA_COMMON_FLAGS} -DRUMBOOT_ARCH=\\\"${RUMBOOT_ARCH}
 
 if(NOT RUMBOOT_DISABLE_CCACHE)
   find_program(CCACHE_FOUND ccache)
+else()
+  set(CCACHE_FOUND No)
 endif()
 
 
@@ -217,7 +219,6 @@ ADD_SOURCE("src/lib/bootsrc/boilerplate.c")
 ADD_SOURCE("src/lib/bootsrc/physmap.c")
 ADD_SOURCE("src/lib/malloc.c")
 ADD_SOURCE("src/lib/xmodem.c")
-ADD_SOURCE("src/lib/eventsystem/wrappers.c")
 ADD_SOURCE("src/lib/eventsystem/offload.c")
 ADD_SOURCE("src/lib/ini.c")
 ADD_SOURCE("src/lib/drivers/uart_pl011.c")
@@ -235,12 +236,16 @@ if (NOT RUMBOOT_PLATFORM STREQUAL "native")
       ADD_SOURCE("src/lib/eventsystem/eventchannel-memory.c")
     endif()
     ADD_SOURCE("src/lib/eventsystem/io-eventchannel.c")
+    ADD_SOURCE("src/lib/eventsystem/wrappers-simulation.c")
+
     set(EXTRA_COMMON_FLAGS "${EXTRA_COMMON_FLAGS} -DRUMBOOT_PRINTF_ACCEL")
   elseif(CMAKE_BUILD_TYPE STREQUAL "Production")
     ADD_SOURCE(src/lib/eventsystem/eventchannel-memory.c)
-  elseif(CMAKE_BUILD_TYPE STREQUAL "PostProduction")
+    ADD_SOURCE("src/lib/eventsystem/wrappers-simulation.c")
+    elseif(CMAKE_BUILD_TYPE STREQUAL "PostProduction")
     ADD_SOURCE(src/lib/eventsystem/eventchannel-serial.c)
-  endif()
+    ADD_SOURCE("src/lib/eventsystem/wrappers-serial.c")
+    endif()
 endif()
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${EXTRA_COMMON_FLAGS}")
@@ -281,7 +286,7 @@ endforeach()
     "${CMAKE_CURRENT_BINARY_DIR}/Doxyfile"
   )
 
-if (RUMBOOT_COVERAGE AND RUMBOOT_PLATFORM STREQUAL "native")
+if (RUMBOOT_COVERAGE)
     add_custom_target(coverage
       COMMAND lcov -c -o coverage.info -d ${PROJECT_BINARY_DIR}
       COMMAND genhtml -o coverage_report coverage.info

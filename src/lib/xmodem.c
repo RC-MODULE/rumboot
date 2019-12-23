@@ -186,12 +186,17 @@ size_t xmodem_get( char *to, size_t maxszs)
 	return xmodem_get_async(maxszs, memcpy_cb, to);
 }
 
-#if 0
-void (*transmit_cb)(size_t curpos, void *ptr, size_t length, void *arg)
+#if 1
+static void transmit_cb(size_t curpos, void *ptr, size_t length, void *arg)
 {
-	
+	void *src = arg;
+	memcpy(ptr, &src[curpos], length);
 }
 
+int xmodem_send(void *ptr, size_t length) {
+	int ret = xmodem_tx_async(transmit_cb, length, ptr);
+	return ret;
+}
 
 int xmodem_tx_async(void (*transmit_cb)(size_t curpos, void *ptr, size_t length, void *arg), int srcsz, void *arg)
 {
@@ -200,10 +205,11 @@ int xmodem_tx_async(void (*transmit_cb)(size_t curpos, void *ptr, size_t length,
 	unsigned char packetno = 1;
 	int i, c, len = 0;
 	int retry;
+	uint32_t curpos = 0;
 
 	for(;;) {
 		for( retry = 0; retry < 16; ++retry) {
-			if ((c = _inbyte((DLY_1S)<<1)) >= 0) {
+			if ((c = rumboot_platform_getchar((XMODEM_TIMEOUT_DELAY)<<1)) >= 0) {
 				switch (c) {
 				case 'C':
 					crc = 1;
@@ -212,9 +218,9 @@ int xmodem_tx_async(void (*transmit_cb)(size_t curpos, void *ptr, size_t length,
 					crc = 0;
 					goto start_trans;
 				case CAN:
-					if ((c = _inbyte(DLY_1S)) == CAN) {
-						_outbyte(ACK);
-						flushinput();
+					if ((c = rumboot_platform_getchar(XMODEM_TIMEOUT_DELAY)) == CAN) {
+						rumboot_platform_putchar(ACK);
+						xmodem_flush_input();
 						return -1; /* canceled by remote */
 					}
 					break;
@@ -223,10 +229,10 @@ int xmodem_tx_async(void (*transmit_cb)(size_t curpos, void *ptr, size_t length,
 				}
 			}
 		}
-		_outbyte(CAN);
-		_outbyte(CAN);
-		_outbyte(CAN);
-		flushinput();
+		rumboot_platform_putchar(CAN);
+		rumboot_platform_putchar(CAN);
+		rumboot_platform_putchar(CAN);
+		xmodem_flush_input();
 		return -2; /* no sync */
 
 		for(;;) {
@@ -242,12 +248,12 @@ int xmodem_tx_async(void (*transmit_cb)(size_t curpos, void *ptr, size_t length,
 					xbuff[3] = CTRLZ;
 				}
 				else {
-					//memcpy (&xbuff[3], &src[len], c);
-					transmit_cb()
+					transmit_cb(curpos, &xbuff[3], c, arg);
+					curpos += c;
 					if (c < bufsz) xbuff[3+c] = CTRLZ;
 				}
 				if (crc) {
-					unsigned short ccrc = crc16_ccitt(&xbuff[3], bufsz);
+					unsigned short ccrc = xmodem_chksum(0, &xbuff[3], bufsz);
 					xbuff[bufsz+3] = (ccrc>>8) & 0xFF;
 					xbuff[bufsz+4] = ccrc & 0xFF;
 				}
@@ -258,20 +264,20 @@ int xmodem_tx_async(void (*transmit_cb)(size_t curpos, void *ptr, size_t length,
 					}
 					xbuff[bufsz+3] = ccks;
 				}
-				for (retry = 0; retry < MAXRETRANS; ++retry) {
+				for (retry = 0; retry < XMODEM_RETRY_LIMIT; ++retry) {
 					for (i = 0; i < bufsz+4+(crc?1:0); ++i) {
-						_outbyte(xbuff[i]);
+						rumboot_platform_putchar(xbuff[i]);
 					}
-					if ((c = _inbyte(DLY_1S)) >= 0 ) {
+					if ((c = rumboot_platform_getchar(XMODEM_TIMEOUT_DELAY)) >= 0 ) {
 						switch (c) {
 						case ACK:
 							++packetno;
 							len += bufsz;
 							goto start_trans;
 						case CAN:
-							if ((c = _inbyte(DLY_1S)) == CAN) {
-								_outbyte(ACK);
-								flushinput();
+							if ((c = rumboot_platform_getchar(XMODEM_TIMEOUT_DELAY)) == CAN) {
+								rumboot_platform_putchar(ACK);
+								xmodem_flush_input();
 								return -1; /* canceled by remote */
 							}
 							break;
@@ -281,18 +287,18 @@ int xmodem_tx_async(void (*transmit_cb)(size_t curpos, void *ptr, size_t length,
 						}
 					}
 				}
-				_outbyte(CAN);
-				_outbyte(CAN);
-				_outbyte(CAN);
-				flushinput();
+				rumboot_platform_putchar(CAN);
+				rumboot_platform_putchar(CAN);
+				rumboot_platform_putchar(CAN);
+				xmodem_flush_input();
 				return -4; /* xmit error */
 			}
 			else {
 				for (retry = 0; retry < 10; ++retry) {
-					_outbyte(EOT);
-					if ((c = _inbyte((DLY_1S)<<1)) == ACK) break;
+					rumboot_platform_putchar(EOT);
+					if ((c = rumboot_platform_getchar((XMODEM_TIMEOUT_DELAY)<<1)) == ACK) break;
 				}
-				flushinput();
+				xmodem_flush_input();
 				return (c == ACK)?len:-5;
 			}
 		}

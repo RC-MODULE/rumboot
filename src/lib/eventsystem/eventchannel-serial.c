@@ -11,13 +11,6 @@
 #include <rumboot/hexdump.h>
 
 
-void rumboot_platform_request_file(const char *plusarg, uint32_t addr)
-{
-        rumboot_printf("UPLOAD: %s to 0x%x\n", plusarg, addr);
-        xmodem_get((void *) addr, 8*1024*1024);
-}
-
-
 __attribute__((no_instrument_function)) void rumboot_platform_event_raise(enum rumboot_simulation_event event,
                                                                           uint32_t const *data, uint32_t len)
 {
