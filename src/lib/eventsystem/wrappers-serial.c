@@ -50,8 +50,7 @@ void rumboot_platform_dump_region(const char *filename, uint32_t addr, uint32_t 
 void rumboot_platform_store_gcda(const char *filename, uint32_t addr, uint32_t len)
 {
 	rumboot_printf("DOWNLOAD: %u bytes from 0x%x to %s\n", len, addr, filename);
-	rumboot_hexdump(addr, 512);
-	xmodem_send(addr, len);
+	xmodem_send((void *) addr, len);
 }
 
 void rumboot_platform_relocate_runtime(uint32_t addr)

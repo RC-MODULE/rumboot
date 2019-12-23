@@ -186,10 +186,9 @@ size_t xmodem_get( char *to, size_t maxszs)
 	return xmodem_get_async(maxszs, memcpy_cb, to);
 }
 
-#if 1
 static void transmit_cb(size_t curpos, void *ptr, size_t length, void *arg)
 {
-	void *src = arg;
+	char *src = arg;
 	memcpy(ptr, &src[curpos], length);
 }
 
@@ -304,4 +303,3 @@ int xmodem_tx_async(void (*transmit_cb)(size_t curpos, void *ptr, size_t length,
 		}
 	}
 }
-#endif
