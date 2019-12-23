@@ -2150,6 +2150,20 @@ endif()
   )
 
   add_rumboot_target(
+    CONFIGURATION IRAM_SPL
+    FILES tlbdump/main.c tlbdump/ops.S      
+    PREFIX "tlbdumper"
+    NAME "after-rom"
+  )
+
+  add_rumboot_target(
+    CONFIGURATION IRAM
+    FILES tlbdump/main.c tlbdump/ops.S      
+    PREFIX "tlbdumper"
+    NAME "with-rumboot-init"
+  )
+
+add_rumboot_target(
     CONFIGURATION IRAM
     LDS oi10/iram_legacy_cached.lds 
     FILES power/fpu_power_test.S power/power.c 
