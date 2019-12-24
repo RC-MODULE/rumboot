@@ -287,8 +287,14 @@ endforeach()
   )
 
 if (RUMBOOT_COVERAGE)
+    if (CROSS_COMPILE)
+      set(GCOV ${CROSS_COMPILE}-gcov)
+    else()
+      set(GCOV gcov)
+    endif()
+
     add_custom_target(coverage
-      COMMAND lcov -c -o coverage.info -d ${PROJECT_BINARY_DIR}
+      COMMAND lcov --gcov-tool=${GCOV} -c -o coverage.info -d ${PROJECT_BINARY_DIR}
       COMMAND genhtml -o coverage_report coverage.info
     )
 endif()
