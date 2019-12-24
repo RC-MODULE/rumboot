@@ -294,36 +294,6 @@ uint32_t rumboot_arch_irq_enable()
         return 0;
 }
 
-#if 0
-void rumboot_platform_request_file(const char *plusarg, uint32_t addr)
-{
-        if (strcmp(plusarg, "HOSTMOCK") == 0) {
-                if (!hfile) {
-                        return;
-                }
-                FILE *fd = fopen(hfile, "r");
-                if (!fd) {
-                        return;
-                }
-                size_t sz;
-                fseek(fd, 0, SEEK_END);
-                sz = ftell(fd);
-                fseek(fd, 0, SEEK_SET);
-                fread((void *)addr, sz, 1, fd);
-                fclose(fd);
-                hfile = strtok(NULL, ",");
-        }
-}
-
-void rumboot_platform_dump_region(const char *filename, uint32_t addr, uint32_t len)
-{
-}
-
-void rumboot_platform_perf(const char *tag)
-{
-}
-
-#endif
 const struct rumboot_bootsource *rumboot_platform_get_bootsources()
 {
         return arr;

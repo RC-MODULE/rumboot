@@ -253,13 +253,13 @@ set(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} ${EXTRA_COMMON_FLAGS}")
 
 
 if (RUMBOOT_PLATFORM MATCHES native)
+    ADD_SOURCE("src/lib/eventsystem/wrappers-simulation.c")
     ADD_SOURCE("src/rumboot_main_native.c")
     ADD_SOURCE("src/lib/bootsrc/file.c")
 else()
     ADD_SOURCE("src/rumboot_main.c")
     ADD_SOURCE("src/lib/newlib-stubs.c")
     ADD_SOURCE("src/lib/gcov.c")
-    ADD_SOURCE("src/lib/gcov-gcc-4.7.c")
 endif()
 
 file(GLOB LUA_FILES src/lib/lua-5.1.5/src/*.c)
