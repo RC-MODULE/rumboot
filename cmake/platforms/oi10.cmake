@@ -1841,6 +1841,14 @@ endif()
     )
 
     add_rumboot_target(
+      CONFIGURATION IRAM
+      CFLAGS -DUSE_HARDWARE_PARTS
+      FILES simple-iram/test_oi10_cpu_025_l2c.c
+      PREFIX "simple-iram"
+      NAME "test_oi10_cpu_025_l2c_hard"
+    )
+
+    add_rumboot_target(
         CONFIGURATION IRAM
         CFLAGS  -DTEST_OI10_CPU_021_CACHE_OP_LIST=test_ici 
                 -DL2C_TRACE_DEBUG_MSG

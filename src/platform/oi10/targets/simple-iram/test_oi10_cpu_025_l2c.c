@@ -102,6 +102,7 @@ void wait_interrupt(L2MCKEN_bits_t L2MCK_bit)
     TEST_ASSERT((MC_HANDLED & (1 << L2MCK_bit)), "Interrupt handle timeout!");
 }
 
+#ifdef USE_HARDWARE_PARTS
 void check_l2c_mck_inj(L2C_L2MCKEN_FIELD L2MCK_bit)
 {
     //irq_unmask(IRQ_SOURCE_L2CX_MCHKOUT);
@@ -169,6 +170,7 @@ void check_l2c_mck_inj(L2C_L2MCKEN_FIELD L2MCK_bit)
     }
     wait_interrupt(L2MCK_bit);
 }
+#endif
 
 void check_l2c_mck_reg(L2C_L2MCKEN_FIELD L2MCK_bit)
 {
@@ -234,6 +236,7 @@ void check_l2c_mck_reg(L2C_L2MCKEN_FIELD L2MCK_bit)
     wait_interrupt(L2MCK_bit);
 }
 
+#ifdef USE_HARDWARE_PARTS
 void critical_interrupt_handler_inj()
 {
     uint32_t status;
@@ -333,6 +336,7 @@ void critical_interrupt_handler_inj()
     rumboot_printf("L2MCK = %x\n", status);
     test_event(EVENT_ERROR);
 }
+#endif
 
 void critical_interrupt_handler_reg()
 {
@@ -448,6 +452,7 @@ void test_setup()
     MC_HANDLED = 0;
 }
 
+#ifdef USE_HARDWARE_PARTS
 void test_setup_inj()
 {
     rumboot_irq_set_exception_handler(exception_handler);
@@ -460,13 +465,17 @@ void test_setup_inj()
 
     MC_HANDLED = 0;
 }
+#endif
 
 int main()
 {
+#ifdef USE_HARDWARE_PARTS
     test_event_send_test_id( "test_oi10_cpu_025_l2c");
+#endif
 
     rumboot_memfill8_modelling((void*)SRAM0_BASE, 0x1000, 0x00, 0x00); //workaround (init 4KB SRAM0)
 
+#ifdef USE_HARDWARE_PARTS
     test_setup_inj();
     MC_HANDLED = 0;
     rumboot_printf("Generation machine check with injectors\n");
@@ -481,6 +490,7 @@ int main()
     check_l2c_mck_inj(L2C_L2MCKEN_WACMCK0_i);
     check_l2c_mck_inj(L2C_L2MCKEN_WACMCK1_i);
     check_l2c_mck_inj(L2C_L2MCKEN_WACMCK2_i);
+#endif
 
     test_setup();
     MC_HANDLED = 0;
