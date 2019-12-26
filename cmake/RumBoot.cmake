@@ -47,7 +47,6 @@ macro(rumboot_add_configuration name)
       ${CONFIGURATION_${name}_CFLAGS} ${RUMBOOT_COVER_CFLAGS})
     set(CONFIGURATION_${name}_LDFLAGS
     ${CONFIGURATION_${name}_LDFLAGS} ${RUMBOOT_COVER_LFLAGS})
-
   endif()
 
 endmacro()
@@ -199,7 +198,7 @@ endmacro()
 
 
 set(RUMBOOT_COVER_CFLAGS -DRUMBOOT_COVERAGE=1 -fprofile-arcs -ftest-coverage)
-set(RUMBOOT_COVER_LFLAGS --coverage)
+set(RUMBOOT_COVER_LFLAGS --coverage )
 
 
 function(expand_target_load prefix)
@@ -460,7 +459,7 @@ function(add_rumboot_target)
 
   list (FIND TARGET_FEATURES "STUB" _stub)
   if (NOT RUMBOOT_DISABLE_TESTING AND NOT ${_stub} GREATER -1 AND NOT ${RUMBOOT_PLATFORM} MATCHES "native")
-    add_test(NAME ${product} COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/rumboot-packimage.py/rumboot_xrun.py -r ${RUMBOOT_TESTING_RESETSEQ} -f ${product}.bin -P ${RUMBOOT_TESTING_RESETPORT} -p ${RUMBOOT_TESTING_PORT})
+    add_test(NAME ${product} COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/rumboot-packimage.py/rumboot_xrun.py -r ${RUMBOOT_TESTING_RESETSEQ} -f ${product}.bin -P ${RUMBOOT_TESTING_RESETPORT} -p ${RUMBOOT_TESTING_PORT} -A ${TARGET_IRUN_FLAGS})
     SET_TESTS_PROPERTIES(${product} PROPERTIES TIMEOUT "45")  
     SET_TESTS_PROPERTIES(${product} PROPERTIES LABELS "full;${TARGET_TESTGROUP}")    
   endif()

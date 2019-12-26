@@ -11,6 +11,27 @@
 #include <rumboot/irq.h>
 #include <platform/bootheader.h>
 
+
+#if 0
+struct rumboot_hostapp {
+        char hotkey;
+        const char *help;
+        /* On hostmode entry */
+        void (*init)(struct rumboot_hostapp *app, struct rumboot_config *conf);
+        /* Called every loop iteration */
+        void (*loop)(struct rumboot_hostapp *app, struct rumboot_config *conf);
+        /* Called when hotkey pressed */
+        void (*run)(struct rumboot_hostapp *app, struct rumboot_config *conf);
+};
+
+struct rumboot_hostapp *eggs[] = {
+        xmodem_app,
+        easter_app,
+        edcl_app,
+        gdb_app,
+        NULL /* Sentinel */
+};
+#endif
 static inline void dump_parameter(const char *fmt, int param)
 {
         if (param < 0) {

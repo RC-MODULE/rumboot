@@ -9,16 +9,17 @@
 #include <rumboot/macros.h>
 #include <rumboot/xmodem.h>
 #include <rumboot/hexdump.h>
+#include <algo/crc32.h>
 
 __attribute__((no_instrument_function)) void rumboot_platform_trace(void *pc)
 {
-	uint32_t data[] = { (uint32_t) (pc), rumboot_platform_runtime_info->nestlevel};
-	rumboot_platform_event_raise(EVENT_TRACE, data, ARRAY_SIZE(data));
+//	uint32_t data[] = { (uint32_t) (pc), rumboot_platform_runtime_info->nestlevel};
+//	rumboot_platform_event_raise(EVENT_TRACE, data, ARRAY_SIZE(data));
 }
 
 __attribute__((no_instrument_function)) void rumboot_platform_perf(const char *tag)
 {
-	rumboot_printf("PERF: %s @ %u us\n", tag, rumboot_platform_get_uptime());
+//	rumboot_printf("PERF: %s @ %u us\n", tag, rumboot_platform_get_uptime());
 }
 
 __attribute__((no_instrument_function)) void rumboot_platform_perf_func(void *addr)
@@ -26,10 +27,33 @@ __attribute__((no_instrument_function)) void rumboot_platform_perf_func(void *ad
 	rumboot_printf("PERF_FUNC: 0x%x @ %u us\n", addr, rumboot_platform_get_uptime());
 }
 
+struct mcpy_desc {
+	uint32_t crc32; 
+	void *to;
+	size_t length;
+};
+
+static void memcpy_cb(size_t curpos, void *data, size_t length, void *arg)
+{
+	struct mcpy_desc *dsc = arg;
+	char *to = dsc->to;
+	dsc->crc32 = crc32(dsc->crc32, data, length);
+	dsc->length += length;
+	memcpy(&to[curpos], data, length);
+}
+#include <rumboot/timer.h>
 void rumboot_platform_request_file(const char *plusarg, uint32_t addr)
 {
         rumboot_printf("UPLOAD: %s to 0x%x\n", plusarg, addr);
-        xmodem_get((void *) addr, -1);
+ 		struct mcpy_desc dsc = {
+			 .crc32 = 0,
+			 .to = (void *) addr,
+			 .length = 0,
+		 };
+		xmodem_get_async(-1, memcpy_cb, &dsc);
+		uint32_t crc = crc32(0, (void *) addr, dsc.length);
+		mdelay(1000);
+		rumboot_printf("UPLOAD CRC32: %x %x\n", crc, dsc.crc32);
 }
 
 void rumboot_platform_sim_save(const char *filename)

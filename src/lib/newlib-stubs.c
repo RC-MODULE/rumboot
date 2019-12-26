@@ -93,7 +93,7 @@ int _fstat(int file, struct stat *st)
 	return 0;
 }
 
-int _getpid()
+int getpid()
 {
 	return 1;
 }
@@ -112,7 +112,7 @@ int _isatty(int file)
 	}
 }
 
-int _kill(int pid, int sig)
+int kill(int pid, int sig)
 {
 	errno = EINVAL;
 	return -1;
@@ -176,6 +176,7 @@ clock_t _times(struct tms *buf)
 
 int _unlink(char *name)
 {
+	rumboot_printf("unlink: %s\n", name);
 	errno = ENOENT;
 	return -1;
 }
@@ -246,6 +247,7 @@ int _unlink_r (struct _reent * r, char *path) {
 
   return _unlink(path);
 }
+
 #if 0
 int _getpid_r (struct _reent * r ) {
 
@@ -257,7 +259,6 @@ int _fcntl_r  ((struct _reent *, int, int, int));
 int _fork_r  ((struct _reent *));
 
 
-int _kill_r  ((struct _reent *, int, int));
 int _link_r  ((struct _reent *, const char *, const char *));
 
 int _mkdir_r  ((struct _reent *, const char *, int));

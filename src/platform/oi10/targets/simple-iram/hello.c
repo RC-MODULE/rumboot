@@ -7,8 +7,15 @@
 #include <rumboot/io.h>
 #include <platform/devices.h>
 
+
+
 int main()
 {
-    rumboot_printf("Hello world from IRAM!\n");
+//	uint32_t tmp = dcr_read(SPR_CCR2);
+//	tmp |= (1<<2);
+//	dcr_write(tmp, SPR_CCR2);
+
+//    int tmp = ioread32(HSCB3_BASE);
+  //  rumboot_printf("Hello world from IRAM %d !\n", tmp);
     return 0;
 }

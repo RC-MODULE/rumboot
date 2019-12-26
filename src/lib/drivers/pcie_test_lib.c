@@ -170,7 +170,7 @@ uint32_t pcie_simple_turn_on ()
     }
     rumboot_printf ("  PCIe link up\n");
     
-    rdata = ioread32 (PCIE_CORE_BASE + PCIe_Core_LocalMgmt + PCIe_LocMgmt_i_pl_config_0_reg);
+    uint32_t rdata = ioread32 (PCIE_CORE_BASE + PCIe_Core_LocalMgmt + PCIe_LocMgmt_i_pl_config_0_reg);
     rumboot_printf ("    negotiated link width:  %d\n", (1 << ((rdata >> 1) & 0x3)));
     if (((rdata >> 3) & 0x3) == 0)
         rumboot_printf ("    negotiated link speed:  2.5GTs\n");

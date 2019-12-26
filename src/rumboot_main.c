@@ -26,14 +26,18 @@ static void rumboot_init_array (void)
         size_t i;
 
         count = __preinit_array_end - __preinit_array_start;
-        for (i = 0; i < count; i++)
+        for (i = 0; i < count; i++) {
+                rumboot_printf("--> %x\n", __preinit_array_start[i]);
                 __preinit_array_start[i] ();
+        }
 
         _init();
 
         count = __init_array_end - __init_array_start;
-        for (i = 0; i < count; i++)
+        for (i = 0; i < count; i++) {
+                rumboot_printf("--> %x\n", __init_array_start[i]);
                 __init_array_start[i] ();
+        }
 }
 
 int rumboot_main()
