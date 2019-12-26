@@ -5,8 +5,6 @@
  *      Author: m.smolina
  */
 
-#define USE_HARDWARE_PARTS
-
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
@@ -372,11 +370,8 @@ void check_interrupt_from_io_dev_inj(uint32_t interrupt_number)
 
 int main()
 {
-
 #ifdef USE_HARDWARE_PARTS
     test_event_send_test_id( "test_oi10_cpu_025_io" );
-#else
-    rumboot_printf("test_id: test_oi10_cpu_025_io\n");
 #endif
 
     rumboot_irq_set_exception_handler(exception_handler);
