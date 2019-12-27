@@ -134,19 +134,6 @@ static void exit_from_machine_check_interrupt(uint32_t MCSR_value)
     spr_write(SPR_MCSR_C,MCSR_value);
 }
 
-static void wait_MCSR_value(ITRPT_MCSR_FIELD MCSR_bit)
-{
-    TEST_WAIT_ASSERT (spr_read(SPR_MCSR_RW) & (1 << MCSR_bit), TEST_OI10_CPU_025_PPC_TIMEOUT, "Failed waiting MCSR value!");
-
-    if (MCSR_bit==ITRPT_MCSR_IMP_i) {
-        test_event(EVENT_CLEAR_IMP_MC);
-        rumboot_printf("Writing 0x00 to ESR\n");
-        spr_write(SPR_ESR , 0x00);
-    }
-
-    spr_write(SPR_MCSR_C , 1 << MCSR_bit);
-}
-
 static void check_mc_status_soft(uint32_t mc_interrupt_status)
 {
     rumboot_printf("mc_interrupt_status = %x\n",mc_interrupt_status);
@@ -394,6 +381,7 @@ void check_mc_with_soft(ITRPT_MCSR_FIELD MCSR_bit)
     wait_interrupt(MCSR_bit);
 }
 
+#ifdef USE_HARDWARE_PARTS
 void check_mc_status_inj(uint32_t mc_interrupt_status_inj)
 {
     TEST_ASSERT(mc_interrupt_status_inj & (1 << ITRPT_MCSR_MCS_i), "Failed to set machine check interrupt");
@@ -470,6 +458,19 @@ void test_setup_inj()
     setup_machine_check_interrupt(machine_check_interrupt_handler_inj);
 }
 
+static void wait_MCSR_value(ITRPT_MCSR_FIELD MCSR_bit)
+{
+    TEST_WAIT_ASSERT (spr_read(SPR_MCSR_RW) & (1 << MCSR_bit), TEST_OI10_CPU_025_PPC_TIMEOUT, "Failed waiting MCSR value!");
+
+    if (MCSR_bit==ITRPT_MCSR_IMP_i) {
+        test_event(EVENT_CLEAR_IMP_MC);
+        rumboot_printf("Writing 0x00 to ESR\n");
+        spr_write(SPR_ESR , 0x00);
+    }
+
+    spr_write(SPR_MCSR_C , 1 << MCSR_bit);
+}
+
 void check_mc_with_injector(uint32_t event_code, ITRPT_MCSR_FIELD MCSR_bit)
 {
     if (MCSR_bit == ITRPT_MCSR_DCR_i )
@@ -480,11 +481,13 @@ void check_mc_with_injector(uint32_t event_code, ITRPT_MCSR_FIELD MCSR_bit)
 
     (MCSR_bit==ITRPT_MCSR_IMP_i) ? wait_MCSR_value(MCSR_bit):wait_interrupt(MCSR_bit);
 }
+#endif
 
 int main ()
 {
     test_event_send_test_id( "test_oi10_cpu_025_ppc");
 
+#ifdef USE_HARDWARE_PARTS
     test_setup_inj();
     check_mc_with_injector( EVENT_GENERATE_TLB_MC, ITRPT_MCSR_TLB_i  );
     check_mc_with_injector( EVENT_GENERATE_IC_MC,  ITRPT_MCSR_IC_i   );
@@ -494,6 +497,7 @@ int main ()
     check_mc_with_injector( EVENT_GENERATE_IMP_MC, ITRPT_MCSR_IMP_i  );
     check_mc_with_injector( EVENT_GENERATE_L2_MC,  ITRPT_MCSR_L2_i   );
     check_mc_with_injector( EVENT_GENERATE_DCR_MC, ITRPT_MCSR_DCR_i  );
+#endif
 
     test_setup_soft();
     check_mc_with_soft(ITRPT_MCSR_TLB_i);

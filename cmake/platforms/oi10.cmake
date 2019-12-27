@@ -1831,8 +1831,31 @@ endif()
       FILES test_oi10_endianness.c
       NAME "test_oi10_endianness_soft_and_hard"
     )
-    
-    
+
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      CFLAGS -DUSE_HARDWARE_PARTS
+      FILES simple-iram/test_oi10_cpu_025_io.c
+      PREFIX "simple-iram"
+      NAME "test_oi10_cpu_025_io_hard"
+    )
+
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      CFLAGS -DUSE_HARDWARE_PARTS
+      FILES simple-iram/test_oi10_cpu_025_l2c.c
+      PREFIX "simple-iram"
+      NAME "test_oi10_cpu_025_l2c_hard"
+    )
+
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      CFLAGS -DUSE_HARDWARE_PARTS
+      FILES simple-iram/test_oi10_cpu_025_ppc.c
+      PREFIX "simple-iram"
+      NAME "test_oi10_cpu_025_ppc_hard"
+    )
+
     add_rumboot_target(
         CONFIGURATION IRAM
         CFLAGS  -DTEST_OI10_CPU_021_CACHE_OP_LIST=test_ici 
