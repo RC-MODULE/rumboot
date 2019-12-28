@@ -2221,7 +2221,25 @@ add_rumboot_target(
     PREFIX archive-iram
     TESTGROUP broken
     )
-  
+
+    add_rumboot_target(
+      CONFIGURATION SUPPLEMENTARY
+#        CFLAGS -DL2C_CHECK_SIZE=0x100
+      LDS oi10/sram0.lds
+      PREFIX l2cbug-supp
+      FILES l2bug/test_oi10_cpu_021_wb_cache_size.c
+      NAME "test_oi10_cpu_021_wb_cache_size"
+  )
+  add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES l2bug/test_oi10_cpu_021_wb_cache_size_base.c
+      NAME "test_oi10_cpu_021_wb_cache_size"
+      PREFIX l2cbug
+      IRUN_FLAGS ${ROM_6500K_OPTS}
+      LOAD IM0BIN SELF
+           MBIN l2cbug-supp-test_oi10_cpu_021_wb_cache_size
+  )
+
 
 endmacro()
 
