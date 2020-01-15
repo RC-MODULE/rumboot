@@ -46,7 +46,7 @@ static inline void nor_write32(uint32_t write_DATA, uint32_t write_ADDR)
                 NOR_write32_word_program_sequence[3].addr = write_ADDR - NOR_BASE;
                 NOR_write32_word_program_sequence[3].data = write_DATA;
                 NOR_WRITE32_SEQUENCE(NOR_BASE, NOR_write32_word_program_sequence);
-                udelay(10); //workaround
+                udelay(200); //workaround
 #if !defined(NOR_SELFCHECKING_DISABLE)
                 nop();
                 nop();
