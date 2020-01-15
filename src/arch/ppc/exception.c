@@ -4,6 +4,7 @@
 #include <rumboot/printf.h>
 #include <arch/ppc_476fp_config.h>
 #include <rumboot/io.h>
+#include <platform/arch/ppc/ppc_476fp_itrpt_fields.h>
 
 void rumboot_arch_stacktrace(void)
 {
@@ -38,10 +39,77 @@ void rumboot_arch_stacktrace(void)
    }
 }
 
+const char * const mcsr[32] = {
+   [ITRPT_MCSR_MCS_i] = "(summary)",
+   [ITRPT_MCSR_TLB_i] = "UTLB Parity",
+   [ITRPT_MCSR_IC_i] = "I-Cache",
+   [ITRPT_MCSR_DC_i] = "D-Cache",
+   [ITRPT_MCSR_GPR_i] = "GPR Parity",
+   [ITRPT_MCSR_FPR_i] = "FPR Parity",
+   [ITRPT_MCSR_IMP_i] = "Impresize",
+   [ITRPT_MCSR_L2_i] = "L2 Cache",
+   [ITRPT_MCSR_DCR_i] = "DCR Timeout"
+};
+
+const char * const esr[32] = {
+   [ITRPT_MCSR_MCS_i] = "(summary)",
+   [ITRPT_MCSR_TLB_i] = "UTLB Parity",
+   [ITRPT_MCSR_IC_i]  = "I-Cache",
+   [ITRPT_MCSR_DC_i]  = "D-Cache",
+   [ITRPT_MCSR_GPR_i] = "GPR Parity",
+   [ITRPT_MCSR_FPR_i] = "FPR Parity",
+   [ITRPT_MCSR_IMP_i] = "Impresize",
+   [ITRPT_MCSR_L2_i]  = "L2 Cache",
+   [ITRPT_MCSR_DCR_i] = "DCR Timeout"
+};
+
+#if 0
+static void rumboot_decode_esr() {
+
+}
+#endif
+
+static void rumboot_decode_l1mck() {
+   rumboot_printf("  -  L1 Debug Info  -\n");
+   /* TODO */
+}
+
+static void rumboot_decode_l2mck() {
+   rumboot_printf("  -  L2 Debug Info  -\n");
+   /* TODO */
+}
+
+static void rumboot_decode_mch() {
+   uint32_t sr = spr_read(SPR_MCSR_RW);
+   int i; 
+   if ((sr & (1<<ITRPT_MCSR_MCS_i))==0) {
+      return;
+   } 
+
+   rumboot_printf("  -  Machine Check  -\n");
+   rumboot_printf("MCSR:    0x%x\n", spr_read(SPR_MCSR_RW));
+   rumboot_printf("Machine Check(s): ");
+   for (i =0; i<32; i++) {
+      if ((sr & (1<<i)) && (i != ITRPT_MCSR_MCS_i)) {
+         rumboot_printf("[%s] ", mcsr[i] ? mcsr[i] : "reserved");
+      }
+   }
+   rumboot_printf("\n");
+
+   if (sr & ((1 << ITRPT_MCSR_IC_i) | (1 << ITRPT_MCSR_IC_i))) {
+      rumboot_decode_l1mck();
+   } 
+
+   if (sr & (1 << ITRPT_MCSR_L2_i)) { 
+      rumboot_decode_l2mck();
+   }
+}
+
 void rumboot_arch_exception(int id, const char *name)
 {
         rumboot_printf("\n\n\nWE GOT AN EXCEPTION: %d: %s\n", id, name);
         rumboot_printf("--- Guru Meditation ---\n");
+        rumboot_decode_mch();
         rumboot_printf("  -   Registers     -\n");
         rumboot_printf("MSR:     0x%x\n", msr_read());
         rumboot_printf("SRR0:    0x%x\n", spr_read(SPR_SRR0));
