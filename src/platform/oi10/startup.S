@@ -9,7 +9,7 @@
 #include <platform/trace.S.h>
 #include <platform/ppc470s/mmu.S.h>
 #include <platform/regs/regs_plb6bc.h>
-#include <platform/arch/ppc/ppc_476fp_itrpt_fields.h>
+#include <arch/ppc_476fp_itrpt_fields.h>
 #include <platform/arch/ppc/ppc_476fp_debug_fields.h>
 #include <platform/arch/ppc/ppc_476fp_ctrl_fields.h>
 #include <platform/arch/ppc/ppc_476fp_timer_fields.h>
@@ -503,7 +503,7 @@ setup_stack: /*stack is growing down*/
     stwu        r0, -16(r1) /*allocate LR and save SP of first stack frame according to ABI rules*/
     b goto_boot_main
 
-.section ".text.rom","ax",@progbits
+.section ".text.irq","ax",@progbits
 
 .global rumboot_itrpt_hdr_base
 .global rumboot_CI_hdr
@@ -732,6 +732,7 @@ rumboot_D_hdr:
 
     rfci
 
+.section ".text.rom","ax",@progbits
 
 goto_boot_main:
     /* Initialize the runtime  */

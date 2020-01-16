@@ -7,7 +7,7 @@ SECTIONS {
     .rwx : {
         KEEP(*(.header))
         /* ROM sections copy */
-        *(.text.rom)
+        *(.text.irq)
         *(*.init.text)
         /* ROM sections copy end */
 
