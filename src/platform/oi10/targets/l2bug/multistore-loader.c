@@ -230,7 +230,6 @@ int main(void)
     rumboot_irq_register_mpic128();
 
     spr_write( SPR_IVPR,    (uint32_t)&rumboot_itrpt_hdr_base & ITRPT_IVPR_ADDR_mask );    /* link irq handlers mirror */
-
     spr_write( SPR_IVOR0,   (uint32_t)&rumboot_CI_hdr       & ITRPT_IVORn_OFFSET_mask );
     spr_write( SPR_IVOR1,   (uint32_t)&rumboot_MC_hdr       & ITRPT_IVORn_OFFSET_mask );
     spr_write( SPR_IVOR2,   (uint32_t)&rumboot_DS_hdr       & ITRPT_IVORn_OFFSET_mask );
@@ -297,5 +296,4 @@ int main(void)
     rumboot_printf("Starting test code from another memory\n");
 
     return rumboot_bootimage_execute_ep((void *) gdbmon_hdr.entry_point[0]);
-    return 0;
 }

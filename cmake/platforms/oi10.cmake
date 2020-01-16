@@ -2239,7 +2239,7 @@ add_rumboot_target(
 #        CFLAGS -DL2C_CHECK_SIZE=0x100
       LDS oi10/sram0.lds
       PREFIX l2cbug-supp
-      FILES l2bug/test_oi10_cpu_021_wb_cache_size.c
+      FILES l2bug/test_oi10_cpu_021_wb_cache_size.c 
       NAME "test_oi10_cpu_021_wb_cache_size"
   )
   add_rumboot_target(
@@ -2256,8 +2256,9 @@ add_rumboot_target(
     CONFIGURATION SUPPLEMENTARY
     PREFIX l2bug
     LDS oi10/l2bug_supp.lds
-    LDFLAGS -Wl,-e_boot_entry
-    FILES l2bug/multistore.c
+    CFLAGS -DRUMBOOT_NOINIT
+    LDFLAGS -Wl,-emain
+    FILES l2bug/multistore.c ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c
     NAME "multistore-supp"
   )
 
@@ -2272,7 +2273,6 @@ add_rumboot_target(
     LOAD IM0BIN SELF
          MBIN l2bug-multistore-supp
 )
-
 
 
 endmacro()

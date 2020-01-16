@@ -1,7 +1,7 @@
 
 #include <rumboot/printf.h>
 
-int __attribute__ ((section(".text.test"))) _boot_entry ()
+int __attribute__ ((section(".text.test"))) main ()
 {
     static __attribute__((aligned(128))) int data[256];
     int *p = data, tmp;
