@@ -35,7 +35,7 @@ file(GLOB PLATFORM_SOURCES
 #Flags for Power PC
 macro(RUMBOOT_PLATFORM_SET_COMPILER_FLAGS)
     set(RUMBOOT_COMMON_FLAGS "-mcpu=476fp -g -gdwarf-2 -fno-plt -fno-pic -m32 -ffreestanding -std=gnu99 -DRUMBOOT_PLATFORM_NUM_HEAPS=9 -D__FILENAME__='\"$(subst ${CMAKE_SOURCE_DIR}/,,$(abspath $<))\"'")
-    set(CMAKE_C_FLAGS "${RUMBOOT_COMMON_FLAGS} -mstrict-align -Wall -Werror -Wno-error=cpp -fdata-sections -ffunction-sections")
+    set(CMAKE_C_FLAGS "${RUMBOOT_COMMON_FLAGS} -mstrict-align -Wall -Wno-error=cpp -fdata-sections -ffunction-sections")
     set(CMAKE_ASM_FLAGS "${RUMBOOT_COMMON_FLAGS}")
     set(CMAKE_EXE_LINKER_FLAGS "-g -nostartfiles -static -Wl,--gc-sections")
     set(CMAKE_DUMP_FLAGS -M476,32)
@@ -2255,15 +2255,16 @@ add_rumboot_target(
   add_rumboot_target(
     CONFIGURATION SUPPLEMENTARY
     PREFIX l2bug
-    LDS oi10/sram0.lds
+    LDS oi10/l2bug_supp.lds
+    LDFLAGS -Wl,-e_boot_entry
     FILES l2bug/multistore.c
     NAME "multistore-supp"
   )
 
   add_rumboot_target(
-    CONFIGURATION IRAM
+    CONFIGURATION IRAM_SPL
     PREFIX l2bug
-    FILES l2bug/test_oi10_cpu_021_wb_cache_size_base.c
+    FILES l2bug/multistore-loader.c
     NAME "multistore"
     PREFIX l2bug
     CFLAGS -DEMI_INIT -DADD_TLB -DM_BASE=SRAM0_BASE
@@ -2271,6 +2272,7 @@ add_rumboot_target(
     LOAD IM0BIN SELF
          MBIN l2bug-multistore-supp
 )
+
 
 
 endmacro()
