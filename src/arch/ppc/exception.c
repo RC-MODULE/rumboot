@@ -120,6 +120,8 @@ void rumboot_arch_exception(int id, const char *name)
         rumboot_printf("MCSRR1:  0x%x\n", spr_read(SPR_MCSRR1));
         rumboot_printf("DEAR:    0x%x\n", spr_read(SPR_DEAR));
         rumboot_printf("ESR:     0x%x\n", spr_read(SPR_ESR));
+        rumboot_printf("DCESR:   0x%x\n", spr_read(SPR_DCESR));
+        rumboot_printf("ICESR:   0x%x\n", spr_read(SPR_ICESR));
         rumboot_printf("MCSR_RW: 0x%x\n", spr_read(SPR_MCSR_RW));
         rumboot_printf("  -   Stack trace   -\n");
         rumboot_arch_stacktrace();
