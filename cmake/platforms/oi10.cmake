@@ -34,10 +34,10 @@ file(GLOB PLATFORM_SOURCES
 
 #Flags for Power PC
 macro(RUMBOOT_PLATFORM_SET_COMPILER_FLAGS)
-    set(RUMBOOT_COMMON_FLAGS "-mcpu=476fp -gdwarf-2 -fno-plt -fno-pic -m32 -ffreestanding -std=gnu99 -DRUMBOOT_PLATFORM_NUM_HEAPS=9 -D__FILENAME__='\"$(subst ${CMAKE_SOURCE_DIR}/,,$(abspath $<))\"'")
+    set(RUMBOOT_COMMON_FLAGS "-mcpu=476fp -g -gdwarf-2 -fno-plt -fno-pic -m32 -ffreestanding -std=gnu99 -DRUMBOOT_PLATFORM_NUM_HEAPS=9 -D__FILENAME__='\"$(subst ${CMAKE_SOURCE_DIR}/,,$(abspath $<))\"'")
     set(CMAKE_C_FLAGS "${RUMBOOT_COMMON_FLAGS} -mstrict-align -Wall -Werror -Wno-error=cpp -fdata-sections -ffunction-sections")
     set(CMAKE_ASM_FLAGS "${RUMBOOT_COMMON_FLAGS}")
-    set(CMAKE_EXE_LINKER_FLAGS "-nostartfiles -static -Wl,--gc-sections")
+    set(CMAKE_EXE_LINKER_FLAGS "-g -nostartfiles -static -Wl,--gc-sections")
     set(CMAKE_DUMP_FLAGS -M476,32)
     if (PRODUCTION_TESTING) 
       SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DPRODUCTION_TESTING")    
@@ -162,6 +162,18 @@ macro(rumboot_platform_generate_stuff_for_taget product)
 
         add_dependencies(${product}.all ${product}.hex)
     endif()
+
+#    expand_target_load(TARGET_LOAD TARGET_LOAD TARGET_LOAD_LIST)
+#    list(REMOVE_ITEM TARGET_LOAD_LIST TARGET_LOAD_IM0BIN 
+#      TARGET_LOAD_SD0_BOOT_IMAGE 
+#      TARGET_LOAD_NOR_IMAGE
+#      TARGET_LOAD_SPI0_CONF
+#    )
+#
+#    foreach(mem ${TARGET_LOAD_LIST})
+#      message("${CROSS_COMPILE}-ld -g -r ${PROJECT_BINARY_DIR}/${product} ${PROJECT_BINARY_DIR}/${${mem}} -o ${PROJECT_BINARY_DIR}/${product}.rwelf")
+#    endforeach()
+#    
 
     list (FIND TARGET_FEATURES "ISS" _index)
     if (${_index} GREATER -1)
@@ -2239,6 +2251,26 @@ add_rumboot_target(
       LOAD IM0BIN SELF
            MBIN l2cbug-supp-test_oi10_cpu_021_wb_cache_size
   )
+
+  add_rumboot_target(
+    CONFIGURATION SUPPLEMENTARY
+    PREFIX l2bug
+    LDS oi10/sram0.lds
+    FILES l2bug/multistore.c
+    NAME "multistore-supp"
+  )
+
+  add_rumboot_target(
+    CONFIGURATION IRAM
+    PREFIX l2bug
+    FILES l2bug/test_oi10_cpu_021_wb_cache_size_base.c
+    NAME "multistore"
+    PREFIX l2bug
+    CFLAGS -DEMI_INIT -DADD_TLB -DM_BASE=SRAM0_BASE
+    IRUN_FLAGS ${ROM_6500K_OPTS}
+    LOAD IM0BIN SELF
+         MBIN l2bug-multistore-supp
+)
 
 
 endmacro()

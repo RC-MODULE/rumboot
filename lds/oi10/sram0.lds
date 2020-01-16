@@ -20,6 +20,13 @@ SECTIONS {
 
         *(.sbss)
         *(.sbss.*)   
+
+        /* Make sure data & bss go to hell */
+        *(.data)
+        *(.bss)
+        *(.bss.*)
+        *(COMMON)
+
     } > SRAM0
 
     INCLUDE oi10/stacks_section.lds.h
@@ -33,11 +40,6 @@ SECTIONS {
         libc.a ( * )
         libm.a ( * )
         libgcc.a ( * )
-        /* Make sure data & bss go to hell */
-        *(.data)
-        *(.bss)
-        *(.bss.*)
-        *(COMMON)
         *(.text._init)
         *(.text._fini)
         *(.debug_info)
