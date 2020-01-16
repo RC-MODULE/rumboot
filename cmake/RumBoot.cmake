@@ -425,7 +425,7 @@ function(add_rumboot_target)
     set_target_properties(${product} PROPERTIES LINK_DEPENDS ${TARGET_LDS})
   endif()
 
-  target_link_libraries(${product} ${CONFIGURATION_${TARGET_CONFIGURATION}_LDFLAGS} ${ldf} -Wl,-Map,${product}.map)
+  target_link_libraries(${product} ${TARGET_LDFLAGS} ${ldf} -Wl,-Map,${product}.map)
 
   if (TARGET_APPEND)
     locate_source_file(_append_list ${TARGET_APPEND})
