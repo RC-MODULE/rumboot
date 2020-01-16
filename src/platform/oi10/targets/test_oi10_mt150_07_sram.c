@@ -8,7 +8,7 @@
 #include <rumboot/timer.h>
 
 #include <arch/ppc_476fp_config.h>
-#include <platform/common_macros/common_macros.h>
+#include <arch/common_macros.h>
 #include <platform/devices.h>
 #include <platform/devices/emi.h>
 #include <platform/devices/l2c.h>

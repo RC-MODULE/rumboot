@@ -20,7 +20,7 @@
 #include <rumboot/macros.h>
 #include <rumboot/memfill.h>
 
-#include <platform/common_macros/common_macros.h>
+#include <arch/common_macros.h>
 
 #include <platform/test_event_c.h>
 #include <platform/test_event_codes.h>

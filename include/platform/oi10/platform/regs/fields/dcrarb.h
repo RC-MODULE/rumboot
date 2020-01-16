@@ -9,7 +9,7 @@
 #define REGS_FIELDS_DCRARB_H__
 
 #include <rumboot/macros.h>
-#include <platform/arch/ppc/ibm_bit_ordering_macros.h>
+#include <arch/ibm_bit_ordering_macros.h>
 
 BEGIN_ENUM( DCRARB_DACR_FIELD )
     DECLARE_ENUM_VAL( DCRARB_DACR_DPM_e,                                              0 )

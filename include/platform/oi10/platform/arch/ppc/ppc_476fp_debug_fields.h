@@ -6,8 +6,8 @@
 #define PPC_476FP_DEBUG_FIELDS_H
 
 
-#include <platform/common_macros/common_macros.h>
-#include <platform/arch/ppc/ibm_bit_ordering_macros.h>
+#include <arch/common_macros.h>
+#include <arch/ibm_bit_ordering_macros.h>
 
 
 #define DEBUG_RESET_No      0b00

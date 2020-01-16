@@ -7,7 +7,7 @@
 
 
 #include <rumboot/macros.h>
-#include <platform/arch/ppc/ibm_bit_ordering_macros.h>
+#include <arch/ibm_bit_ordering_macros.h>
 
 
 BEGIN_ENUM( CTRL_PVR_FIELD )

@@ -5,8 +5,8 @@
 #include <platform/test_event_c.h>
 #include <platform/test_assert.h>
 #include <platform/arch/ppc/ppc_476fp_ctrl_fields.h>
-#include <platform/arch/ppc/ppc_476fp_itrpt_fields.h>
-#include <platform/arch/ppc/ibm_bit_ordering_macros.h>
+#include <arch/ppc_476fp_itrpt_fields.h>
+#include <arch/ibm_bit_ordering_macros.h>
 #include <platform/devices.h>
 #include <platform/devices/l2c.h>
 #include <platform/regs/regs_l2c_l2.h>

@@ -9,7 +9,7 @@
 #define REGS_FIELDS_L2C_PMU_H
 
 #include <rumboot/macros.h>
-#include <platform/arch/ppc/ibm_bit_ordering_macros.h>
+#include <arch/ibm_bit_ordering_macros.h>
 
 
 BEGIN_ENUM( L2C_PMUGS0_FIELD )  /* Global Status Register 0 */

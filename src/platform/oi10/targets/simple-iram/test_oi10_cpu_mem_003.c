@@ -10,7 +10,7 @@
 
 #include <platform/arch/ppc/ppc_476fp_mmu.h>
 #include <platform/arch/ppc/ppc_476fp_asm.h>
-#include <platform/arch/ppc/ibm_bit_ordering_macros.h>
+#include <arch/ibm_bit_ordering_macros.h>
 #include <platform/devices.h>
 #include <platform/test_assert.h>
 #include <platform/test_event_c.h>

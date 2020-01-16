@@ -3,7 +3,7 @@
 #include <platform/trace.S.h>
 #include <platform/ppc470s/mmu.S.h>
 #include <platform/regs/regs_plb6bc.h>
-#include <platform/arch/ppc/ppc_476fp_itrpt_fields.h>
+#include <arch/ppc_476fp_itrpt_fields.h>
 #include <platform/arch/ppc/ppc_476fp_debug_fields.h>
 #include <platform/arch/ppc/ppc_476fp_ctrl_fields.h>
 #include <platform/arch/ppc/ppc_476fp_timer_fields.h>

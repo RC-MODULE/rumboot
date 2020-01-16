@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include <platform/arch/ppc/ibm_bit_ordering_macros.h>
+#include <arch/ibm_bit_ordering_macros.h>
 
 
 typedef enum

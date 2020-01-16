@@ -5,8 +5,8 @@
 #ifndef P64_REGS_FIELDS_H
 #define P64_REGS_FIELDS_H
 
-#include <platform/common_macros/common_macros.h>
-#include <platform/arch/ppc/ibm_bit_ordering_macros.h>
+#include <arch/common_macros.h>
+#include <arch/ibm_bit_ordering_macros.h>
 
 BEGIN_ENUM( P64_P64CR_FIELD)
 DECLARE_ENUM_VAL(    P64CR_PRI       ,   IBM_BIT_INDEX(32, 31))

@@ -1,7 +1,7 @@
 #ifndef REGS_EMI_H_
 #define REGS_EMI_H_
 
-#include <platform/common_macros/common_macros.h>
+#include <arch/common_macros.h>
 
 BEGIN_ENUM( EMI_REG )
 DECLARE_ENUM_VAL( EMI_SS0,                      0x00 )    //WR 0x00000000

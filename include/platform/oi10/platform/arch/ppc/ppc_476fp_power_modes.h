@@ -11,7 +11,7 @@
 #include <platform/regs/regs_l2c_l2.h>
 #include <platform/regs/regs_l2c.h>
 #include <arch/ppc_476fp_config.h>
-#include <platform/arch/ppc/ppc_476fp_itrpt_fields.h>
+#include <arch/ppc_476fp_itrpt_fields.h>
 
 void ppc470s_enter_sleep_mode( SCTL_PPC_SLP_TYPE const sleep_mode );
 void ppc470s_enter_sleep_mode_with_EE( SCTL_PPC_SLP_TYPE const sleep_mode );

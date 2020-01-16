@@ -23,7 +23,7 @@
 #include <platform/devices/hscb.h>
 #include <platform/devices/emi.h>
 #include <platform/devices/nor_1636RR4.h>
-#include <platform/common_macros/common_macros.h>
+#include <arch/common_macros.h>
 #include <platform/test_event_c.h>
 #include <platform/arch/ppc/ppc_476fp_mmu.h>
 

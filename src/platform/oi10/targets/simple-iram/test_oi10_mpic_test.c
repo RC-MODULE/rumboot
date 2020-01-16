@@ -14,7 +14,7 @@
 #include <rumboot/irq.h>
 #include <rumboot/timer.h>
 
-#include <platform/common_macros/common_macros.h>
+#include <arch/common_macros.h>
 
 #include <arch/ppc_476fp_config.h>
 #include <arch/ppc_476fp_lib_c.h>

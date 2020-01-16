@@ -18,7 +18,7 @@
 
 #include <platform/devices.h>
 #include <platform/regs/regs_greth.h>
-#include <platform/common_macros/common_macros.h>
+#include <arch/common_macros.h>
 #include <platform/arch/ppc/test_macro.h>
 
 //#define ETH_DEBUG

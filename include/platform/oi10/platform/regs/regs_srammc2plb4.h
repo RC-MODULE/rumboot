@@ -9,8 +9,8 @@
 #define REGS_SRAMMC2PLB4_H_
 
 
-#include <platform/common_macros/common_macros.h>
-#include <platform/arch/ppc/ibm_bit_ordering_macros.h>
+#include <arch/common_macros.h>
+#include <arch/ibm_bit_ordering_macros.h>
 
 
 DECLARE_CONST( SRAMMC2PLB4_BANK_N,      4)

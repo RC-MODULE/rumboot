@@ -2,8 +2,8 @@
 #define TEST_EVENT_CODES_H_
 
 
-#include <platform/common_macros/common_macros.h>
-#include <platform/arch/ppc/ibm_bit_ordering_macros.h>
+#include <arch/common_macros.h>
+#include <arch/ibm_bit_ordering_macros.h>
 
 BEGIN_ENUM( sys_event_code )
 DECLARE_ENUM_VAL( EVENT_RESERVED1,                  0x00000000 )

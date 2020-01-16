@@ -6,7 +6,7 @@
 #define P64_REGS_H
 
 #include <platform/regs/fields/p64.h>
-#include <platform/common_macros/common_macros.h>
+#include <arch/common_macros.h>
 
 BEGIN_ENUM( P64_REG )
 DECLARE_ENUM_VAL(     P64_P64CR                           , 0x00)         /* Configuration Register                           0x00000203*/

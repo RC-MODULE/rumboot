@@ -26,7 +26,7 @@
 #include <arch/ppc_476fp_config.h>
 #include <arch/ppc_476fp_lib_c.h>
 #include <platform/arch/ppc/ppc_476fp_debug_fields.h>
-#include <platform/arch/ppc/ppc_476fp_itrpt_fields.h>
+#include <arch/ppc_476fp_itrpt_fields.h>
 #include <platform/arch/ppc/ppc_476fp_ctrl_fields.h>
 #include <platform/arch/ppc/ppc_476fp_mmu_fields.h>
 #include <platform/arch/ppc/ppc_476fp_mmu.h>

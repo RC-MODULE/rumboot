@@ -8,7 +8,7 @@
 #ifndef EMI_H_FIELD
 #define EMI_H_FIELD
 
-#include <platform/common_macros/common_macros.h>
+#include <arch/common_macros.h>
 
 BEGIN_ENUM(ssx_btyp_t)
 DECLARE_ENUM_VAL( BTYP_SRAM,    0b000 )

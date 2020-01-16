@@ -5,7 +5,7 @@
 #include <rumboot/io.h>
 #include <rumboot/printf.h>
 
-#include <platform/common_macros/common_macros.h>
+#include <arch/common_macros.h>
 #include <platform/test_event_codes.h>
 #include <platform/test_assert.h>
 #include <platform/devices.h>

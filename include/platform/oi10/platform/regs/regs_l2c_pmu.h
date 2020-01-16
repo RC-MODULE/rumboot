@@ -10,7 +10,7 @@
 
 
 #include <rumboot/macros.h>
-#include <platform/arch/ppc/ibm_bit_ordering_macros.h>
+#include <arch/ibm_bit_ordering_macros.h>
 #include <platform/regs/regs_l2c.h>
 #include <platform/regs/fields/l2c_pmu.h>
 

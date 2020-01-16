@@ -3,8 +3,8 @@
 #define __DDR_PLB6MCIF2_REG_ACCESS_H__
 
 #include <arch/ppc_476fp_lib_c.h>
-#include <platform/common_macros/common_macros.h>
-#include <platform/arch/ppc/ibm_bit_ordering_macros.h>
+#include <arch/common_macros.h>
+#include <arch/ibm_bit_ordering_macros.h>
 #include <platform/reg_access/macros.h>
 #include <platform/regs/regs_plb6mcif2.h>
 

@@ -16,7 +16,7 @@
 
 #include <platform/arch/ppc/ppc_476fp_timer_fields.h>
 #include <platform/arch/ppc/test_macro.h>
-#include <platform/common_macros/common_macros.h>
+#include <arch/common_macros.h>
 #include <platform/devices.h>
 #include <platform/interrupts.h>
 #include <platform/regs/regs_crg_sys.h>

@@ -2,8 +2,8 @@
 #define REGS_MPIC_H
 
 
-#include <platform/common_macros/common_macros.h>
-#include <platform/arch/ppc/ibm_bit_ordering_macros.h>
+#include <arch/common_macros.h>
+#include <arch/ibm_bit_ordering_macros.h>
 #include <platform/regs/fields/mpic128.h>
 
 

@@ -8,7 +8,7 @@
 #ifndef REGS_PLB6MCIF2_H_
 #define REGS_PLB6MCIF2_H_
 
-#include <platform/common_macros/common_macros.h>
+#include <arch/common_macros.h>
 
 #define PLB6MCIF2_MEMRANK_N 4
 #define PLB6MCIF2_WATERMARK 0x00000707

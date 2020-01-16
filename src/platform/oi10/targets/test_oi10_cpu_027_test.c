@@ -8,7 +8,7 @@
 
 #include <arch/ppc_476fp_config.h>
 #include <arch/ppc_476fp_lib_c.h>
-#include <platform/common_macros/common_macros.h>
+#include <arch/common_macros.h>
 #include <platform/test_event_codes.h>
 #include <platform/test_event_c.h>
 #include <platform/test_assert.h>

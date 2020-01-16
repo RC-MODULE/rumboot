@@ -2,8 +2,8 @@
 #define __PLB6BC_REG_ACCESS_H__
 
 #include <platform/regs/regs_plb6bc.h>
-#include <platform/common_macros/common_macros.h>
-#include <platform/arch/ppc/ibm_bit_ordering_macros.h>
+#include <arch/common_macros.h>
+#include <arch/ibm_bit_ordering_macros.h>
 #include <platform/reg_access/macros.h>
 
 REG_READ_DCR( plb6bc, PLB6BC_CR0, 32 )

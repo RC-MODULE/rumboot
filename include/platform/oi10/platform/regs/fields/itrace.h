@@ -9,7 +9,7 @@
 #define REGS_FIELDS_ITRACE_H_
 
 #include <rumboot/macros.h>
-#include <platform/arch/ppc/ibm_bit_ordering_macros.h>
+#include <arch/ibm_bit_ordering_macros.h>
 
 
 BEGIN_ENUM( ITC0_TC_FIELD )

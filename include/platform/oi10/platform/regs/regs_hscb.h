@@ -9,7 +9,7 @@
 #define REGS_HSCB_H
 
 
-#include <platform/common_macros/common_macros.h>
+#include <arch/common_macros.h>
 
 /**
  * \defgroup regs_hscb HSCB controller

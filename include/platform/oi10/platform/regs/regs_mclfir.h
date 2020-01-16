@@ -1,7 +1,7 @@
 #ifndef REGS_MCLFIR_H_
 #define REGS_MCLFIR_H_
 
-#include <platform/common_macros/common_macros.h>
+#include <arch/common_macros.h>
 
 BEGIN_ENUM( MCLFIR_REG )
 DECLARE_ENUM_VAL( MCLFIR_MC_ERR0,                    0x00 )    //R 0x00000000

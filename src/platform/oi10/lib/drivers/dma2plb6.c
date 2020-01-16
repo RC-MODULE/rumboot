@@ -1,5 +1,5 @@
 #include <arch/ppc_476fp_lib_c.h>
-#include <platform/arch/ppc/ibm_bit_ordering_macros.h>
+#include <arch/ibm_bit_ordering_macros.h>
 #include <platform/regs/regs_dma2plb6.h>
 #include <platform/devices/dma2plb6.h>
 #include <rumboot/printf.h>

@@ -11,7 +11,7 @@
 
 #include <platform/arch/ppc/ppc_476fp_mmu.h>
 #include <platform/arch/ppc/ppc_476fp_mmu_fields.h>
-#include <platform/common_macros/common_macros.h>
+#include <arch/common_macros.h>
 #include <platform/devices.h>
 #include <platform/devices/l2c.h>
 #include <platform/devices/ltrace.h>

@@ -12,7 +12,7 @@
 #include <platform/devices/plb6mcif2.h>
 #include <platform/devices/emi.h>
 #include <platform/regs/fields/emi.h>
-#include <platform/common_macros/common_macros.h>
+#include <arch/common_macros.h>
 #include <platform/regs/regs_emi.h>
 #include <platform/test_assert.h>
 #include <rumboot/io.h>

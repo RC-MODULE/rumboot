@@ -5,7 +5,7 @@
 #include <rumboot/io.h>
 #include <rumboot/printf.h>
 
-#include <platform/common_macros/common_macros.h>
+#include <arch/common_macros.h>
 #include <rumboot/regpoker.h>
 #include <rumboot/printf.h>
 #include <rumboot/io.h>

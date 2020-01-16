@@ -9,7 +9,7 @@
 /* CCR0, CCR1, CCR2 fields */
 #include <platform/arch/ppc/ppc_476fp_ctrl_fields.h>
 /* MSR fields */
-#include <platform/arch/ppc/ppc_476fp_itrpt_fields.h>
+#include <arch/ppc_476fp_itrpt_fields.h>
 
 
 #define reg_field32 reg_field

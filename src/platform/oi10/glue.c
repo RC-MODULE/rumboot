@@ -9,7 +9,7 @@
 #include <rumboot/rumboot.h>
 #include <arch/ppc_476fp_config.h>
 #include <arch/ppc_476fp_lib_c.h>
-#include <platform/arch/ppc/ppc_476fp_itrpt_fields.h>
+#include <arch/ppc_476fp_itrpt_fields.h>
 #include <platform/ppc470s/mmu.h>
 #include <platform/devices/mpic128.h>
 #include <platform/devices.h>

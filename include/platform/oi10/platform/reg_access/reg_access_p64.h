@@ -9,8 +9,8 @@
 #define REG_ACCESS_P64_H_
 
 
-#include <platform/common_macros/common_macros.h>
-#include <platform/arch/ppc/ibm_bit_ordering_macros.h>
+#include <arch/common_macros.h>
+#include <arch/ibm_bit_ordering_macros.h>
 #include <platform/reg_access/macros.h>
 #include <platform/regs/regs_p64.h>
 

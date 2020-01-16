@@ -1,8 +1,8 @@
 #ifndef __DDR_PLB6MCIF2_REG_FIELD_H__
 #define __DDR_PLB6MCIF2_REG_FIELD_H__
 
-#include <platform/common_macros/common_macros.h>
-#include <platform/arch/ppc/ibm_bit_ordering_macros.h>
+#include <arch/common_macros.h>
+#include <arch/ibm_bit_ordering_macros.h>
 
 BEGIN_ENUM( PLB6MCIF2_BESR_FIELD )
 DECLARE_ENUM_VAL( PLB6MCIF2_BESR_MxRW_e,        0 )
