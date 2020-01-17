@@ -285,6 +285,7 @@ int main(void)
 
     printf("Copy test to SRAM\n");
     rumboot_platform_request_file("MBIN", M_BASE);
+    printf("Drop l2\n");
     flush_L2C(M_BASE);
 
     printf("Read header:\n");
