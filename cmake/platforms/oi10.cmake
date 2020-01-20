@@ -2264,6 +2264,13 @@ add_rumboot_target(
 
   add_rumboot_target(
     CONFIGURATION IRAM_SPL
+    PREFIX tool
+    FILES common/tools/trampoline.c
+    PACKIMAGE_FLAGS -C -a 1024
+  )
+
+  add_rumboot_target(
+    CONFIGURATION IRAM_SPL
     PREFIX l2bug
     FILES l2bug/multistore-loader.c
     NAME "multistore"
