@@ -1,6 +1,8 @@
 import subprocess
 from pathlib import Path
 import re
+from itertools import chain
+import sys 
 
 def stripcomments(text):
     return re.sub('//.*?\n|/\*.*?\*/', '', text, flags=re.S)
@@ -23,8 +25,12 @@ def format_definition(line, symbol, addr):
     line = line.replace(";", "= (void *) 0x%x;" % addr)
     return line
 
-def locate_definition(symbol):
-    for filename in Path('../include/rumboot').glob('**/boot.h'):
+def locate_definition(srcdir, symbol):
+    bootapi = Path(srcdir + '/include/rumboot').glob('**/boot.h')
+    pf = Path(srcdir + '/include/rumboot').glob('**/printf.h')
+    xmodem =  Path(srcdir + '/include/rumboot').glob('**/xmodem.h')
+    files = chain(bootapi, xmodem, pf)
+    for filename in files:
         tmp = open(str(filename), "r")
         lines = tmp.read()
         lines = stripcomments(lines)
@@ -50,7 +56,13 @@ def locate_definition(symbol):
 #
 #TODO: ...
 
-cmdline = "readelf -s -W rumboot-bbp3-Production-bootrom-loader"
+srcdir = sys.argv[1]
+elf = sys.argv[2]
+
+print("#ifndef __RUMBOOT_ROM_API")
+print("#define __RUMBOOT_ROM_API")
+
+cmdline = "readelf -s -W " + elf
 cmd = subprocess.Popen(cmdline, shell=True, stdout=subprocess.PIPE)
 for line in cmd.stdout:
     decoded = line.decode().split()
@@ -66,8 +78,11 @@ for line in cmd.stdout:
     scope = decoded[4]
     if (ttype == "FUNC") and (scope == "GLOBAL"):
         symbol = decoded[7]
-        df = locate_definition(symbol)
+        if (symbol == "rumboot_printf"):
+            continue
+        df = locate_definition(srcdir, symbol)
         if df == None:
             continue
         df = format_definition(df, symbol, addr)
         print(df)
+print("#endif")
