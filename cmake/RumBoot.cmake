@@ -132,19 +132,33 @@ macro(generate_stuff_for_target product)
   endif()
 
   list (FIND TARGET_FEATURES "CPACK" _index)
-
   if (NOT ${_index} EQUAL -1)
       #Package it!
-      install(TARGETS ${product} RUNTIME DESTINATION rumboot)
+      install(TARGETS ${product} RUNTIME DESTINATION rumboot/binaries)
   endif()
 
+  set(_outfiles )
   if (NOT RUMBOOT_PLATFORM STREQUAL "native")
+      list (FIND TARGET_FEATURES "ROMAPIGEN" _romapigen)
+      if (NOT ${_romapigen} EQUAL -1)
+          add_custom_command(
+            OUTPUT ${product}.h
+            COMMAND echo '/* Automatically generated header for ${RUMBOOT_PLATFORM} from ${GIT_REVISION} */' > ${product}.h
+            COMMAND ${PYTHON_EXECUTABLE} ${PROJECT_SOURCE_DIR}/scripts/romapigen.py ${PROJECT_SOURCE_DIR} ${PROJECT_BINARY_DIR}/${product} ${product} >> ${product}.h
+            COMMENT "Generating ROM API header: ${product}.h"
+            DEPENDS ${product}
+          )
+          install(FILES ${CMAKE_BINARY_DIR}/${product}.h DESTINATION rumboot/include)
+          list(APPEND _outfiles ${product}.h)
+      endif()
+
       add_custom_command(
         OUTPUT ${product}.dmp
         COMMAND ${CROSS_COMPILE}-objdump -D ${TARGET_DUMPFLAGS} ${CMAKE_DUMP_FLAGS} ${product} > ${product}.dmp
         COMMENT "Generating disassembly listing: ${product}.dmp"
         DEPENDS ${product}
       )
+      list(APPEND _outfiles ${product}.dmp)
 
       add_custom_command(
         OUTPUT ${product}.bin
@@ -152,6 +166,7 @@ macro(generate_stuff_for_target product)
         COMMENT "Generating binary image ${product}.bin"
         DEPENDS ${product}
       )
+      list(APPEND _outfiles ${product}.bin)
 
       if (TARGET_APPEND)
         add_custom_command(
@@ -173,15 +188,15 @@ macro(generate_stuff_for_target product)
 
 
       if (NOT ${_index} EQUAL -1)
-        install(FILES ${CMAKE_BINARY_DIR}/${product}.dmp DESTINATION rumboot)
-        install(FILES ${CMAKE_BINARY_DIR}/${product}.bin DESTINATION rumboot)
-        install(FILES ${CMAKE_BINARY_DIR}/${product}.map DESTINATION rumboot)
+        install(FILES ${CMAKE_BINARY_DIR}/${product}.dmp DESTINATION rumboot/binaries)
+        install(FILES ${CMAKE_BINARY_DIR}/${product}.bin DESTINATION rumboot/binaries)
+        install(FILES ${CMAKE_BINARY_DIR}/${product}.map DESTINATION rumboot/binaries)
       endif()
 
       add_custom_target(
         ${product}.all ALL
-        DEPENDS ${product}.bin ${product}.dmp
-      )
+        DEPENDS ${_outfiles}
+      )    
   else()
     add_custom_command(
       TARGET ${product}

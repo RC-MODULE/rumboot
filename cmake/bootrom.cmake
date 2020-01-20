@@ -68,7 +68,7 @@ macro(rumboot_bootrom_add_components spl_conf romconf)
       NAME "loader"
       CONFIGURATION ${romconf}
       FILES common/bootrom/bootrom.c
-      FEATURES STUB ${ROM_EXTRAFEATURES} CPACK
+      FEATURES STUB ${ROM_EXTRAFEATURES} CPACK ROMAPIGEN
   )
 
   if (RUMBOOT_ARCH STREQUAL "ppc")

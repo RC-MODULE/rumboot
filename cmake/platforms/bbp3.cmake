@@ -401,7 +401,7 @@ macro(rumboot_platform_generate_stuff_for_taget product)
 
     list (FIND TARGET_FEATURES "CPACK" _index)
     if (${_index} GREATER -1)
-            install(DIRECTORY ${PROJECT_BINARY_DIR}/${product}.hex DESTINATION rumboot)
+            install(DIRECTORY ${PROJECT_BINARY_DIR}/${product}.hex DESTINATION rumboot/binaries)
     endif()
 
     add_dependencies(${product}.all ${product}.hex)
