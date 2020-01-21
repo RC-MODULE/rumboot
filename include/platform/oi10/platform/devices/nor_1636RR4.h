@@ -29,7 +29,7 @@ typedef struct {
         MACRO_BEGIN \
         int sequence_length = ARRAY_SIZE(sequence); \
         int i = 0; \
-        for (i = 0; i < sequence_length - 1; i++) \
+        for (i = 0; i < sequence_length; i++) \
                 iowrite32(sequence[i].data, base + sequence[i].addr); \
         MACRO_END
 
