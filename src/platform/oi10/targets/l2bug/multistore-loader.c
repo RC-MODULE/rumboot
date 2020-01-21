@@ -13,7 +13,7 @@
 #include <rumboot/platform.h>
 #include <rumboot/irq.h>
 #include <platform/devices/mpic128.h>
-
+#include <rumboot/hexdump.h>
 #define printf rumboot_printf
 
 
@@ -275,9 +275,10 @@ int main(void)
 
 #ifdef ADD_TLB
     printf("Add TLB entries\n");
+
+    add_tlb_entry( (1024*1024), 0x0, 0x0, MMU_TLBE_DSIZ_1MB, 0, 0 );
+    memset((void *) (1024*1024), 0x0, 0x2000);
     add_tlb_entry( 0x0, 0x0, 0x0, MMU_TLBE_DSIZ_1MB, 6, 0 );
-    memset((void *)0x0, 0x0, 0x2000);
-    flush_L2C(0x0);
     printf("Done.\n");
 #endif
 
