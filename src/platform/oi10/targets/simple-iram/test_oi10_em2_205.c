@@ -170,7 +170,7 @@ static void irq_handler( int irq, void *arg ) {
 
 
                 default:
-                    rumboot_putstring("Unexpected EMI error irq source.");
+                    rumboot_printf("Unexpected EMI error irq source: 0x%x.\n", error_irq_source);
                     break;
             }
 
@@ -771,10 +771,10 @@ int main(void)
     dcr_write(DCR_EM2_EMI_BASE + EMI_FLCNTRL,  (dcr_read(DCR_EM2_EMI_BASE + EMI_FLCNTRL) & 0x1C)  | ECC_CTRL_CNT_ECCWRR);
 
     rumboot_putstring("WRITE NOR\n");
-    nor_write32(0xBABA0000, ADDR_NOR_SE);
+    nor_write32_select(0xBABA0000, ADDR_NOR_SE, false);
     msync();
 
-    nor_write32(0xBABA0007, ADDR_NOR_DE);
+    nor_write32_select(0xBABA0007, ADDR_NOR_DE, false);
     msync();
 
 
@@ -837,13 +837,13 @@ int main(void)
     dcr_write(DCR_EM2_EMI_BASE + EMI_FLCNTRL,  (dcr_read(DCR_EM2_EMI_BASE + EMI_FLCNTRL) & 0x1C)  | ECC_CTRL_CNT_ECCWRR);
 
     rumboot_putstring("WRITE NOR ECC\n");
-    nor_write32(0xBABA0001, ADDR_NOR_SE_2);
+    nor_write32_select(0xBABA0001, ADDR_NOR_SE_2, false);
     msync();
 
     dcr_write(DCR_EM2_EMI_BASE + EMI_ECCWRR, BABA0001_ECC_2bit);
     dcr_write(DCR_EM2_EMI_BASE + EMI_FLCNTRL,  (dcr_read(DCR_EM2_EMI_BASE + EMI_FLCNTRL) & 0x1C)  | ECC_CTRL_CNT_ECCWRR);
 
-    nor_write32(0xBABA0001, ADDR_NOR_DE_2);
+    nor_write32_select(0xBABA0001, ADDR_NOR_DE_2, false);
     msync();
 
 
