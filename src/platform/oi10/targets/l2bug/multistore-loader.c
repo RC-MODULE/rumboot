@@ -5,6 +5,7 @@
 #include <arch/io.h>
 #include <platform/arch/ppc/ppc_476fp_mmu_fields.h>
 #include <platform/arch/ppc/ppc_476fp_ctrl_fields.h>
+#include <platform/test_event_c.h>
 #include <platform/devices.h>
 #include <platform/devices/emi.h>
 #include <rumboot/boot.h>
@@ -275,7 +276,8 @@ int main(void)
 #ifdef ADD_TLB
     printf("Add TLB entries\n");
     add_tlb_entry( 0x0, 0x0, 0x0, MMU_TLBE_DSIZ_1MB, 6, 0 );
-    memset((void *)0x0, 0x0, 0x100000);
+    rumboot_memfill8_modelling((void*)SRAM0_BASE, 0x10000, 0x00, 0x00); //workaround (init first 64KB in SRAM0)
+//    memset((void *)0x0, 0x0, 0x4000);
     flush_L2C(0x0);
     printf("Done.\n");
 #endif
