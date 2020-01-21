@@ -276,8 +276,7 @@ int main(void)
 #ifdef ADD_TLB
     printf("Add TLB entries\n");
     add_tlb_entry( 0x0, 0x0, 0x0, MMU_TLBE_DSIZ_1MB, 6, 0 );
-    rumboot_memfill8_modelling((void*)SRAM0_BASE, 0x10000, 0x00, 0x00); //workaround (init first 64KB in SRAM0)
-//    memset((void *)0x0, 0x0, 0x4000);
+    memset((void *)0x0, 0x0, 0x2000);
     flush_L2C(0x0);
     printf("Done.\n");
 #endif
