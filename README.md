@@ -137,6 +137,38 @@ rumboot-xrun и rumboot-xflash могут использовать разные 
 - Production - используется для bootrom загрузчика. Система событий, в виде канала для отладочного вывода используется уарт.
 - PostProduction - Для запуска тестов на реальном железе. Для вывода отладки используется UART, система событий реализована поверх UART.
 
+Сравнительная таблица типов сборок.
+| -                      	| Описание                                                 	| Debug 	| Production 	| PostProduction 	|
+|------------------------	|----------------------------------------------------------	|-------	|------------	|----------------	|
+|  EVENT_TERM            	| Остановка моделирования                                  	| TB    	| TB         	| UART           	|
+| EVENT_STDOUT           	| Вывод одного символа                                     	| TB    	| UART       	| UART           	|
+| EVENT_STDIN            	| Ввод одного символа                                      	| TB    	| UART       	| UART           	|
+| EVENT_TRACE            	| Трассировка вызова функции                               	| TB    	| UART       	| UART           	|
+| EVENT_UPLOAD           	| Загрузка кода и данных                                   	| TB    	| Memory     	| UART           	|
+| EVENT_PERF             	| Контрольная точка замера производительности              	| TB    	| UART       	| UART           	|
+| EVENT_PRINTF           	| Вывод форматированной строки                             	| TB    	| UART       	| UART           	|
+| EVENT_DOWNLOAD         	| Выгрузка данных из памяти в файл                         	| TB    	| UART       	| UART           	|
+| EVENT_LPROBE           	| Запрос ввода/вывода гибридного окружения                 	| TB    	| N/A        	| N/A            	|
+| EVENT_MEMSET           	| Заполнение памяти константой                             	| TB    	| Software   	| Software       	|
+| EVENT_STACKTRACE       	| Команда верификационному окружению разобрать кадр стека  	| TB    	| Software   	| Software       	|
+| EVENT_GCDA             	| Сохранение файла анализа функционального покрытия        	| TB    	| UART       	| UART           	|
+| EVENT_MEMCPY           	| Копирование памяти                                       	| TB    	| Software   	| Software       	|
+| EVENT_PERF_FUNC        	| Событие профилирования вызова функций                    	| TB    	| Software   	| Software       	|
+| EVENT_SIM_SAVE         	| Сохранение контрольной точки моделирование               	| TB    	| N/A        	| N/A            	|
+| EVENT_SIM_RESTORE      	| Восстановление контрольной точки моделирования           	| TB    	| N/A        	| N/A            	|
+| EVENT_TESTEVENT        	| Вызов аппаратной части тестов для Legacy тестов Модуль-В 	| TB    	| N/A        	| N/A            	|
+| EVENT_RELOCATE_RUNTIME 	| Релоцирование виртуального адреса рантайм секции         	| TB    	| N/A        	| N/A            	|
+| EVENT_MEMFILLSEQ       	| Заполнение памяти 32-битной последовательностью          	| TB    	| Software   	| Software       	|
+| EVENT_MEMCHECKSEQ      	| Проверка 32-битной последовательности                    	| TB    	| Software   	| Software       	|
+| EVENT_GENERIC          	| Генерация SystemVerilog события                          	| TB    	| N/A        	| N/A            	|
+| EVENT_MEMCMP           	| Сравнение областей памяти                                	| TB    	| Software   	| Software       	|
+| EVENT_MEMFILL8         	| Заполнение памяти 8-битной последовательностью           	| TB    	| Software   	| Software       	|
+| EVENT_REALTIME         	| Получение значения SystemVerilog таста $realtime         	| TB    	| Software   	| Software       	|
+
+Software - программная реализация
+TB - реализация со стороны верификационного окружения
+UART - программная реализация с передачей данных по UART к/от внешней системы
+
 ## Макросы препроцессора, передаваемые системой сборки
 
 - _RUMBOOT_VERSION_ - Версия rumboot (коммит из git'а)
@@ -387,3 +419,6 @@ add_rumboot_target(
 - ВСЕГДА используйте базовые адреса и номера прерываний из interrupts.h и devices.h. Не надо хардкодить адреса, это очень вредно для переносимости.
 
 - Не надо выделять память для DMA операций на стеке или в виде статически заданного массива. Используйте вызовы rumboot_malloc_from_heap()
+
+
+##
