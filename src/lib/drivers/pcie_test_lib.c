@@ -445,6 +445,13 @@ uint32_t pcie_turn_on_with_options_ep
     
     rdata = ioread32 (PCIE_CORE_BASE + PCIe_Core_LocalMgmt + PCIe_LocMgmt_i_pl_config_0_reg);
     rumboot_printf ("    negotiated link width:  %d\n", (1 << ((rdata >> 1) & 0x3)));
+#ifdef PRODUCTION_TESTING
+    if ((1 << ((rdata >> 1) & 0x3)) != 4)
+    {
+        rumboot_printf ("    ERROR: not all 4 lanes are active\n");
+        return -1;
+    }
+#endif
     if (((rdata >> 3) & 0x3) == 0)
         rumboot_printf ("    negotiated link speed:  2.5GTs\n");
     if (((rdata >> 3) & 0x3) == 1)
