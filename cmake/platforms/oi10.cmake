@@ -2279,7 +2279,29 @@ add_rumboot_target(
     IRUN_FLAGS ${ROM_6500K_OPTS}
     LOAD IM0BIN SELF
          MBIN l2bug-multistore-supp
-)
+  )
+
+  add_rumboot_target(
+    CONFIGURATION SUPPLEMENTARY
+    PREFIX l2bug
+    LDS oi10/l2bug_supp-2.lds
+    CFLAGS -DRUMBOOT_NOINIT
+    LDFLAGS -Wl,-emain
+    FILES l2bug/multistore.c ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c
+    NAME "multistore-supp-2"
+  )
+
+  add_rumboot_target(
+    CONFIGURATION IRAM_SPL
+    PREFIX l2bug
+    FILES l2bug/multistore-loader-2.c
+    NAME "multistore-2"
+    PREFIX l2bug
+    CFLAGS -DEMI_INIT -DADD_TLB -DM_BASE=SRAM0_BASE
+    IRUN_FLAGS ${ROM_6500K_OPTS}
+    LOAD IM0BIN SELF
+        MBIN l2bug-multistore-supp
+  )
 
 
 endmacro()
