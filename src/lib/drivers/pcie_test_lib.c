@@ -614,6 +614,15 @@ uint32_t pcie_turn_on_with_options_rc
 #endif
         if (pcie_wait_link_and_report () != 0)
             return -1;
+        
+#ifdef PRODUCTION_TESTING
+        rdata = ioread32 (PCIE_CORE_BASE + PCIe_Core_LocalMgmt + PCIe_LocMgmt_i_pl_config_0_reg);
+        if (((rdata >> 3) & 0x3) != 1)
+        {
+            rumboot_printf ("    ERROR: link speed must be 5.0GTs. Probably, your PCIe Endpoint doesn`t support it.\n");
+            return -1;
+        }
+#endif
     }
     
     return 0;
