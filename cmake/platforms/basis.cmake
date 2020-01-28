@@ -1146,6 +1146,12 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
   add_rumboot_target(
       CONFIGURATION IRAM
+      FILES pcie/pcie_board_test_config_rootport.c
+      NAME pcie_board_test_config_rootport
+    )
+
+  add_rumboot_target(
+      CONFIGURATION IRAM
       FILES pcie/pcie_board_config.c
       NAME pcie_board_config
     )

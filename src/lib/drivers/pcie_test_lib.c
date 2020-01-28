@@ -45,6 +45,7 @@ void pcie_soft_reset ()
     iowrite32 (0x0, SCTL_BASE + SCTL_PCIE_RST);
 }
 
+
 //-----------------------------------------------------------------------------
 //  This function is for turning ON one of PCIe subsystem loopback modes
 //    It influence only on Phy.
@@ -72,18 +73,56 @@ void pcie_loopback_mode_on (uint32_t loopback_mode)
     (*(uint32_t*) (PCIe_Phy_PMA_XCVR_LPBK + 0xC00 + PCIE_PHY_BASE)) = loopback_mode;
 }
 
+
 //-----------------------------------------------------------------------------
-//  This function is for PCIe simple turn On.
-//  All settings are default.
-//    It includes:
-//      - PCIe reset Off
-//      - Wait until training complete
-//        - Exit with error if emergency timer overflow
+//  This function waits PCIe link is up and print status
 //-----------------------------------------------------------------------------
-uint32_t pcie_simple_turn_on ()
+uint32_t pcie_wait_link_and_report ()
 {
     uint32_t timer_cntr;
     uint32_t rdata;
+
+
+    //---------------------------------------------------------------
+    //  Wait until training complete
+    //   Exit with error if emergency timer overflow
+    //---------------------------------------------------------------
+    timer_cntr = 0;
+    while ((ioread32 (PCIE_CORE_BASE + PCIe_Core_LocalMgmt + PCIe_LocMgmt_i_pl_config_0_reg) & 0x01) != 0x1)
+    {
+        timer_cntr++;
+        if (timer_cntr == PCIE_TEST_LIB_TRAINING_TIMEOUT)
+        {
+            rumboot_printf ("  ERROR: PCIe link up timeout\n");
+            return -1;
+        }
+    }
+    rumboot_printf ("  PCIe link up\n");
+    
+    rdata = ioread32 (PCIE_CORE_BASE + PCIe_Core_LocalMgmt + PCIe_LocMgmt_i_pl_config_0_reg);
+    rumboot_printf ("    negotiated link width:  %d\n", (1 << ((rdata >> 1) & 0x3)));
+#ifdef PRODUCTION_TESTING
+    if ((1 << ((rdata >> 1) & 0x3)) != 4)
+    {
+        rumboot_printf ("    ERROR: not all 4 lanes are active\n");
+        return -1;
+    }
+#endif
+    if (((rdata >> 3) & 0x3) == 0)
+        rumboot_printf ("    negotiated link speed:  2.5GTs\n");
+    if (((rdata >> 3) & 0x3) == 1)
+        rumboot_printf ("    negotiated link speed:  5.0GTs\n");
+    
+    if (((rdata >> 5) & 0x1) == 0)
+        rumboot_printf ("    mode:  upstream (Endpoint)\n");
+    else
+        rumboot_printf ("    mode:  downstream (RootPort)\n");
+    
+    return 0;
+}
+
+void pcie_simulation_speedup ()
+{
 #ifndef PCIE_TEST_LIB_SIMSPEEDUP_OFF
 #ifndef RUMBOOT_BUILD_TYPE_POSTPRODUCTION
 #ifndef CMAKE_BUILD_TYPE_POSTPRODUCTION
@@ -141,10 +180,26 @@ uint32_t pcie_simple_turn_on ()
 #endif
 #endif
 #endif
+}
 
+
+//-----------------------------------------------------------------------------
+//  This function is for PCIe simple turn On.
+//  All settings are default.
+//    It includes:
+//      - PCIe reset Off
+//      - Wait until training complete
+//        - Exit with error if emergency timer overflow
+//-----------------------------------------------------------------------------
+uint32_t pcie_simple_turn_on ()
+{
+    uint32_t timer_cntr;
+    
+    pcie_simulation_speedup ();
+    
     iowrite32 (0x1, SCTL_BASE + SCTL_PCIE_RST);
 
-
+    
     //---------------------------------------------------------------
     //  Wait until PLL locked
     //   Exit with error if emergency timer overflow
@@ -157,26 +212,8 @@ uint32_t pcie_simple_turn_on ()
             return -1;
     }
 
-    //---------------------------------------------------------------
-    //  Wait until training complete
-    //   Exit with error if emergency timer overflow
-    //---------------------------------------------------------------
-    timer_cntr = 0;
-    while ((ioread32 (PCIE_CORE_BASE + PCIe_Core_LocalMgmt + PCIe_LocMgmt_i_pl_config_0_reg) & 0x01) != 0x1)
-    {
-        timer_cntr++;
-        if (timer_cntr == PCIE_TEST_LIB_TRAINING_TIMEOUT)
-            return -2;
-    }
-    rumboot_printf ("  PCIe link up\n");
-    
-    rdata = ioread32 (PCIE_CORE_BASE + PCIe_Core_LocalMgmt + PCIe_LocMgmt_i_pl_config_0_reg);
-    rumboot_printf ("    negotiated link width:  %d\n", (1 << ((rdata >> 1) & 0x3)));
-    if (((rdata >> 3) & 0x3) == 0)
-        rumboot_printf ("    negotiated link speed:  2.5GTs\n");
-    if (((rdata >> 3) & 0x3) == 1)
-        rumboot_printf ("    negotiated link speed:  5.0GTs\n");
-
+    if (pcie_wait_link_and_report () != 0)
+        return -1;
 
     return 0;
 }
@@ -253,65 +290,8 @@ uint32_t pcie_turn_on_with_options_ep
     uint32_t rdata;
 
 
-#ifndef PCIE_TEST_LIB_SIMSPEEDUP_OFF
-#ifndef RUMBOOT_BUILD_TYPE_POSTPRODUCTION
-#ifndef CMAKE_BUILD_TYPE_POSTPRODUCTION
-    /***************************************************/
-    /*    this PHY settings are only for simulation    */
-    /*    and must be removed for real programm        */
-    /***************************************************/
-    //-------------------------------------------------------------------------
-    //  These settings may be replaced with corresponding key on RTL simulation
-    //    And they are neccessary in Netlist simulation
-    //-------------------------------------------------------------------------
-    iowrite32 (0b0000000011111010, PCIE_PHY_BASE + PCIe_Phy_MASSWR_TX_RCVDET_CTRL                );
-    iowrite32 (0b0000000000000001, PCIE_PHY_BASE + PCIe_Phy_CMN_SSM_BANDGAP_TMR                  );
-    iowrite32 (0b0000000000000001, PCIE_PHY_BASE + PCIe_Phy_CMN_SSM_BIAS_TMR                     );
-    iowrite32 (0b0000000000000001, PCIE_PHY_BASE + PCIe_Phy_CMN_SSM_PLLEN_TMR                    );
-    iowrite32 (0b0000000000000001, PCIE_PHY_BASE + PCIe_Phy_CMN_SSM_PLLPRE_TMR                   );
-    iowrite32 (0b0000000000000001, PCIE_PHY_BASE + PCIe_Phy_CMN_SSM_PLLVREF_TMR                  );
-    iowrite32 (0b0000000000000010, PCIE_PHY_BASE + PCIe_Phy_CMN_SSM_PLLLOCK_TMR                  );
-    iowrite32 (0b0000000000000001, PCIE_PHY_BASE + PCIe_Phy_CMN_SSM_PLLCLKDIS_TMR                );
-    iowrite32 (0b0000000000000001, PCIE_PHY_BASE + PCIe_Phy_CMN_SSM_LANECAL_TMR                  );
-    iowrite32 (0b0000000000000001, PCIE_PHY_BASE + PCIe_Phy_CMN_SSM_A0IN_TMR                     );
-    iowrite32 (0b0000000000000100, PCIE_PHY_BASE + PCIe_Phy_CMN_SSM_A1IN_TMR                     );
-    iowrite32 (0b0000000000000100, PCIE_PHY_BASE + PCIe_Phy_CMN_SSM_A2IN_TMR                     );
-    iowrite32 (0b0000000000000100, PCIE_PHY_BASE + PCIe_Phy_CMN_SSM_A3IN_TMR                     );
-    iowrite32 (0b1000000000000000, PCIE_PHY_BASE + PCIe_Phy_CMN_BGCAL_OVRD                       );
-    iowrite32 (0b1000000000000000, PCIE_PHY_BASE + PCIe_Phy_CMN_PLL_CPI_OVRD                     );
-    iowrite32 (0b1000000000000000, PCIE_PHY_BASE + PCIe_Phy_MASSWR_CMN_SDCAL0_OVRD               );
-    iowrite32 (0b1000000000000000, PCIE_PHY_BASE + PCIe_Phy_MASSWR_CMN_SDCAL1_OVRD               );
-    iowrite32 (0b1000000000010010, PCIE_PHY_BASE + PCIe_Phy_CMN_PLL_VCOCAL_OVRD                  );
-    iowrite32 (0b0000000000010000, PCIE_PHY_BASE + PCIe_Phy_CMN_PLL_VCOCAL_CNT_START             );
-    iowrite32 (0b0000000000010000, PCIE_PHY_BASE + PCIe_Phy_CMN_PLL_LOCK_CNT_START               );
-    iowrite32 (0b1000000000000010, PCIE_PHY_BASE + PCIe_Phy_MASSWR_RX_IQPI_ILL_CAL_OVRD          );
-    iowrite32 (0b0000000000010000, PCIE_PHY_BASE + PCIe_Phy_MASSWR_RX_IQPI_ILL_LOCK_REFCNT_START );
-    iowrite32 (0b0000000000010000, PCIE_PHY_BASE + PCIe_Phy_MASSWR_RX_IQPI_ILL_LOCK_CALCNT_START0);
-    iowrite32 (0b0000000000010000, PCIE_PHY_BASE + PCIe_Phy_MASSWR_RX_IQPI_ILL_LOCK_CALCNT_START1);
-    iowrite32 (0b1000000000000010, PCIE_PHY_BASE + PCIe_Phy_MASSWR_RX_EPI_ILL_CAL_OVRD           );
-    iowrite32 (0b0000000000010000, PCIE_PHY_BASE + PCIe_Phy_MASSWR_RX_EPI_ILL_LOCK_REFCNT_START  );
-    iowrite32 (0b0000000000010000, PCIE_PHY_BASE + PCIe_Phy_MASSWR_RX_EPI_ILL_LOCK_CALCNT_START0 );
-    iowrite32 (0b0000000000010000, PCIE_PHY_BASE + PCIe_Phy_MASSWR_RX_EPI_ILL_LOCK_CALCNT_START1 );
-    // iowrite32 (0b00_0000_1000, PCIE_PHY_BASE + PCIe_Phy_LANE_CAL_RESET_TIME_VALUE         );
-    iowrite32 (0b1000000000100010, PCIE_PHY_BASE + PCIe_Phy_CMN_TXPUCAL_OVRD                     );
-    iowrite32 (0b1000000000100010, PCIE_PHY_BASE + PCIe_Phy_CMN_TXPDCAL_OVRD                     );
-    iowrite32 (0b1000000000000011, PCIE_PHY_BASE + PCIe_Phy_CMN_RXCAL_OVRD                       );
-    iowrite32 (0b0000000000000001, PCIE_PHY_BASE + PCIe_Phy_MASSWR_RX_SLC_INIT_TMR               );
-    iowrite32 (0b0000000000000001, PCIE_PHY_BASE + PCIe_Phy_MASSWR_RX_SLC_RUN_TMR                );
-    // iowrite32 (0b0000000000010000, PCIE_PHY_BASE + PCIe_Phy_CMN_PRPLL_LOCK_CNT_START          );
+    pcie_simulation_speedup ();
     
-    //-------------------------------------------------------------------------
-    //  These settings must be used in any type of simulation
-    //-------------------------------------------------------------------------
-    iowrite32 (0x4010, PCIE_PHY_BASE + PCIe_Phy_PCS_COM_LOCK_CFG1      );
-    iowrite32 (0x0810, PCIE_PHY_BASE + PCIe_Phy_PCS_COM_LOCK_CFG2      );
-    iowrite32 (0x0101, PCIE_PHY_BASE + PCIe_Phy_PCS_GEN3_EIE_LOCK_CFG  );
-    iowrite32 (0x000A, PCIE_PHY_BASE + PCIe_Phy_PCS_RCV_DET_INH        );
-#endif
-#endif
-#endif
-
-
     //---------------------------------------------------------------
     //  Disable Link Training
     //---------------------------------------------------------------
@@ -430,35 +410,12 @@ uint32_t pcie_turn_on_with_options_ep
     rdata = ioread32 (SCTL_BASE + SCTL_PCIE_REG_0) | 0x00000010;
     iowrite32 (rdata, SCTL_BASE + SCTL_PCIE_REG_0);
 
-    //---------------------------------------------------------------
-    //  Wait until training complete
-    //   Exit with error if emergency timer overflow
-    //---------------------------------------------------------------
-    timer_cntr = 0;
-    while ((ioread32 (PCIE_CORE_BASE + PCIe_Core_LocalMgmt + PCIe_LocMgmt_i_pl_config_0_reg) & 0x01) != 0x1)
-    {
-        timer_cntr++;
-        if (timer_cntr == PCIE_TEST_LIB_TRAINING_TIMEOUT)
-            return -1;
-    }
-    rumboot_printf ("  PCIe link up\n");
-    
-    rdata = ioread32 (PCIE_CORE_BASE + PCIe_Core_LocalMgmt + PCIe_LocMgmt_i_pl_config_0_reg);
-    rumboot_printf ("    negotiated link width:  %d\n", (1 << ((rdata >> 1) & 0x3)));
-#ifdef PRODUCTION_TESTING
-    if ((1 << ((rdata >> 1) & 0x3)) != 4)
-    {
-        rumboot_printf ("    ERROR: not all 4 lanes are active\n");
+    if (pcie_wait_link_and_report () != 0)
         return -1;
-    }
-#endif
-    if (((rdata >> 3) & 0x3) == 0)
-        rumboot_printf ("    negotiated link speed:  2.5GTs\n");
-    if (((rdata >> 3) & 0x3) == 1)
-        rumboot_printf ("    negotiated link speed:  5.0GTs\n");
-
+    
     return 0;
 }
+
 
 //-----------------------------------------------------------------------------
 //  This function is for PCIe turn On in RootPort mode with options
@@ -509,6 +466,7 @@ uint32_t pcie_turn_on_with_options_ep
 uint32_t pcie_turn_on_with_options_rc
 (
     uint8_t usual_settings               ,
+    uint8_t retrain_to_5gts              ,
     uint8_t high_lvl_loopback_mode       ,
     uint32_t  sctl_base_opt              ,
     uint32_t  i_command_status           ,
@@ -524,65 +482,8 @@ uint32_t pcie_turn_on_with_options_rc
     uint32_t rdata;
 
 
-#ifndef PCIE_TEST_LIB_SIMSPEEDUP_OFF
-#ifndef RUMBOOT_BUILD_TYPE_POSTPRODUCTION
-#ifndef CMAKE_BUILD_TYPE_POSTPRODUCTION
-    /***************************************************/
-    /*    this PHY settings are only for simulation    */
-    /*    and must be removed for real programm        */
-    /***************************************************/
-    //-------------------------------------------------------------------------
-    //  These settings may be replaced with corresponding key on RTL simulation
-    //    And they are neccessary in Netlist simulation
-    //-------------------------------------------------------------------------
-    iowrite32 (0b0000000011111010, PCIE_PHY_BASE + PCIe_Phy_MASSWR_TX_RCVDET_CTRL                );
-    iowrite32 (0b0000000000000001, PCIE_PHY_BASE + PCIe_Phy_CMN_SSM_BANDGAP_TMR                  );
-    iowrite32 (0b0000000000000001, PCIE_PHY_BASE + PCIe_Phy_CMN_SSM_BIAS_TMR                     );
-    iowrite32 (0b0000000000000001, PCIE_PHY_BASE + PCIe_Phy_CMN_SSM_PLLEN_TMR                    );
-    iowrite32 (0b0000000000000001, PCIE_PHY_BASE + PCIe_Phy_CMN_SSM_PLLPRE_TMR                   );
-    iowrite32 (0b0000000000000001, PCIE_PHY_BASE + PCIe_Phy_CMN_SSM_PLLVREF_TMR                  );
-    iowrite32 (0b0000000000000010, PCIE_PHY_BASE + PCIe_Phy_CMN_SSM_PLLLOCK_TMR                  );
-    iowrite32 (0b0000000000000001, PCIE_PHY_BASE + PCIe_Phy_CMN_SSM_PLLCLKDIS_TMR                );
-    iowrite32 (0b0000000000000001, PCIE_PHY_BASE + PCIe_Phy_CMN_SSM_LANECAL_TMR                  );
-    iowrite32 (0b0000000000000001, PCIE_PHY_BASE + PCIe_Phy_CMN_SSM_A0IN_TMR                     );
-    iowrite32 (0b0000000000000100, PCIE_PHY_BASE + PCIe_Phy_CMN_SSM_A1IN_TMR                     );
-    iowrite32 (0b0000000000000100, PCIE_PHY_BASE + PCIe_Phy_CMN_SSM_A2IN_TMR                     );
-    iowrite32 (0b0000000000000100, PCIE_PHY_BASE + PCIe_Phy_CMN_SSM_A3IN_TMR                     );
-    iowrite32 (0b1000000000000000, PCIE_PHY_BASE + PCIe_Phy_CMN_BGCAL_OVRD                       );
-    iowrite32 (0b1000000000000000, PCIE_PHY_BASE + PCIe_Phy_CMN_PLL_CPI_OVRD                     );
-    iowrite32 (0b1000000000000000, PCIE_PHY_BASE + PCIe_Phy_MASSWR_CMN_SDCAL0_OVRD               );
-    iowrite32 (0b1000000000000000, PCIE_PHY_BASE + PCIe_Phy_MASSWR_CMN_SDCAL1_OVRD               );
-    iowrite32 (0b1000000000010010, PCIE_PHY_BASE + PCIe_Phy_CMN_PLL_VCOCAL_OVRD                  );
-    iowrite32 (0b0000000000010000, PCIE_PHY_BASE + PCIe_Phy_CMN_PLL_VCOCAL_CNT_START             );
-    iowrite32 (0b0000000000010000, PCIE_PHY_BASE + PCIe_Phy_CMN_PLL_LOCK_CNT_START               );
-    iowrite32 (0b1000000000000010, PCIE_PHY_BASE + PCIe_Phy_MASSWR_RX_IQPI_ILL_CAL_OVRD          );
-    iowrite32 (0b0000000000010000, PCIE_PHY_BASE + PCIe_Phy_MASSWR_RX_IQPI_ILL_LOCK_REFCNT_START );
-    iowrite32 (0b0000000000010000, PCIE_PHY_BASE + PCIe_Phy_MASSWR_RX_IQPI_ILL_LOCK_CALCNT_START0);
-    iowrite32 (0b0000000000010000, PCIE_PHY_BASE + PCIe_Phy_MASSWR_RX_IQPI_ILL_LOCK_CALCNT_START1);
-    iowrite32 (0b1000000000000010, PCIE_PHY_BASE + PCIe_Phy_MASSWR_RX_EPI_ILL_CAL_OVRD           );
-    iowrite32 (0b0000000000010000, PCIE_PHY_BASE + PCIe_Phy_MASSWR_RX_EPI_ILL_LOCK_REFCNT_START  );
-    iowrite32 (0b0000000000010000, PCIE_PHY_BASE + PCIe_Phy_MASSWR_RX_EPI_ILL_LOCK_CALCNT_START0 );
-    iowrite32 (0b0000000000010000, PCIE_PHY_BASE + PCIe_Phy_MASSWR_RX_EPI_ILL_LOCK_CALCNT_START1 );
-    // iowrite32 (0b00_0000_1000, PCIE_PHY_BASE + PCIe_Phy_LANE_CAL_RESET_TIME_VALUE         );
-    iowrite32 (0b1000000000100010, PCIE_PHY_BASE + PCIe_Phy_CMN_TXPUCAL_OVRD                     );
-    iowrite32 (0b1000000000100010, PCIE_PHY_BASE + PCIe_Phy_CMN_TXPDCAL_OVRD                     );
-    iowrite32 (0b1000000000000011, PCIE_PHY_BASE + PCIe_Phy_CMN_RXCAL_OVRD                       );
-    iowrite32 (0b0000000000000001, PCIE_PHY_BASE + PCIe_Phy_MASSWR_RX_SLC_INIT_TMR               );
-    iowrite32 (0b0000000000000001, PCIE_PHY_BASE + PCIe_Phy_MASSWR_RX_SLC_RUN_TMR                );
-    // iowrite32 (0b0000000000010000, PCIE_PHY_BASE + PCIe_Phy_CMN_PRPLL_LOCK_CNT_START          );
+    pcie_simulation_speedup ();
     
-    //-------------------------------------------------------------------------
-    //  These settings must be used in any type of simulation
-    //-------------------------------------------------------------------------
-    iowrite32 (0x4010, PCIE_PHY_BASE + PCIe_Phy_PCS_COM_LOCK_CFG1      );
-    iowrite32 (0x0810, PCIE_PHY_BASE + PCIe_Phy_PCS_COM_LOCK_CFG2      );
-    iowrite32 (0x0101, PCIE_PHY_BASE + PCIe_Phy_PCS_GEN3_EIE_LOCK_CFG  );
-    iowrite32 (0x000A, PCIE_PHY_BASE + PCIe_Phy_PCS_RCV_DET_INH        );
-#endif
-#endif
-#endif
-
-
     //---------------------------------------------------------------
     //  Disable Link Training
     //---------------------------------------------------------------
@@ -697,27 +598,24 @@ uint32_t pcie_turn_on_with_options_rc
     rdata = ioread32 (SCTL_BASE + SCTL_PCIE_REG_0) | 0x00000010;
     iowrite32 (rdata, SCTL_BASE + SCTL_PCIE_REG_0);
 
-    //---------------------------------------------------------------
-    //  Wait until training complete
-    //   Exit with error if emergency timer overflow
-    //---------------------------------------------------------------
-    timer_cntr = 0;
-    while ((ioread32 (PCIE_CORE_BASE + PCIe_Core_LocalMgmt + PCIe_LocMgmt_i_pl_config_0_reg) & 0x01) != 0x1)
+    if (pcie_wait_link_and_report () != 0)
+        return -1;
+
+    if (retrain_to_5gts == 1)
     {
-        timer_cntr++;
-        if (timer_cntr == PCIE_TEST_LIB_TRAINING_TIMEOUT)
+        rumboot_printf ("    retrain to 5GTS\n");
+        rdata = ioread32 (PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_RP_i_link_ctrl_status);
+        iowrite32 (rdata | 0x00000020, PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_RP_i_link_ctrl_status);
+#ifdef CMAKE_BUILD_TYPE_POSTPRODUCTION
+        //  TODO: need another way to wait, based on readyness of the link
+        //    but it is always ready after retrain request
+        for (volatile uint32_t i = 0; i < 100000; i++)
+            ;
+#endif
+        if (pcie_wait_link_and_report () != 0)
             return -1;
     }
-    rumboot_printf ("  PCIe link up\n");
     
-    rdata = ioread32 (PCIE_CORE_BASE + PCIe_Core_LocalMgmt + PCIe_LocMgmt_i_pl_config_0_reg);
-    rumboot_printf ("    negotiated link width:  %d\n", (1 << ((rdata >> 1) & 0x3)));
-    if (((rdata >> 3) & 0x3) == 0)
-        rumboot_printf ("    negotiated link speed:  2.5GTs\n");
-    if (((rdata >> 3) & 0x3) == 1)
-        rumboot_printf ("    negotiated link speed:  5.0GTs\n");
-
-
     return 0;
 }
 

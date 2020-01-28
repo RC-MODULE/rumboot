@@ -102,6 +102,7 @@
     uint32_t pcie_turn_on_with_options_rc
     (
         uint8_t usual_settings              ,
+        uint8_t retrain_to_5gts             ,
         uint8_t high_lvl_loopback_mode      ,
         uint32_t sctl_base_opt              ,
         uint32_t i_command_status           ,
