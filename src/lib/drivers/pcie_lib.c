@@ -180,6 +180,10 @@ uint32_t pcie_init
     
     //  TODO: probably, this action must be done from the host. Not sure.
     // iowrite32 (0x07, PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_EP_i_command_status);
+
+    //  Enable Link Training. Otherwise RootPort wont be able to go to 5GTs
+    rdata = ioread32 (SCTL_BASE + SCTL_PCIE_REG_0) | 0x00000010;
+    iowrite32 (rdata, SCTL_BASE + SCTL_PCIE_REG_0);
     
     return 0;
 }
