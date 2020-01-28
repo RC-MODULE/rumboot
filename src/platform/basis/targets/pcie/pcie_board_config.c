@@ -15,7 +15,7 @@ int main ()
     rumboot_printf ("\npcie_board_test_config_with_file start\n");
     
     if (pcie_init (
-            0       ,  //  uint32_t speed            
+            1       ,  //  uint32_t speed            
             0x5813  ,  //  uint32_t device_id        
             0xABDC  ,  //  uint32_t revision_id      
             0xFF    ,  //  uint32_t subclass_code    

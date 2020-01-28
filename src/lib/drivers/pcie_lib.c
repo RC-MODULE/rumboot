@@ -180,10 +180,6 @@ uint32_t pcie_init
     
     //  TODO: probably, this action must be done from the host. Not sure.
     // iowrite32 (0x07, PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_EP_i_command_status);
-
-    //  Enable Link Training. Otherwise RootPort wont be able to go to 5GTs
-    rdata = ioread32 (SCTL_BASE + SCTL_PCIE_REG_0) | 0x00000010;
-    iowrite32 (rdata, SCTL_BASE + SCTL_PCIE_REG_0);
     
     return 0;
 }
@@ -310,6 +306,11 @@ uint32_t pcie_link_up ()
     if (((rdata >> 3) & 0x3) == 1)
         rumboot_printf ("    negotiated link speed:  5.0GTs\n");
 
+    if (((rdata >> 5) & 0x1) == 0)
+        rumboot_printf ("    mode:  upstream (Endpoint)\n");
+    else
+        rumboot_printf ("    mode:  downstream (RootPort)\n");
+    
     return 0;
 }
 
