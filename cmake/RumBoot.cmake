@@ -74,25 +74,18 @@ endmacro()
 
 macro(add_rumboot_target_dir dir)
 
-  #Fetch from current target dir
-  fetch_sources(${RUMBOOT_PLATFORM_TARGET_DIR}/${dir})
-  foreach(target ${RUMBOOT_TARGETS_C} ${RUMBOOT_TARGETS_S} ${RUMBOOT_TARGETS_LUA})
+  cmake_parse_arguments(TMPD "" "${RUMBOOT_ONEVALUE_ARGS}" "${RUMBOOT_MULVALUE_ARGS}" ${ARGN})
+  string (REPLACE "FILES;${TMPD_FILES}" "" OUT "${ARGN}")
+
+  foreach(ddir ${RUMBOOT_PLATFORM_COMMON_DIR}/${dir} ${RUMBOOT_PLATFORM_TARGET_DIR}/${dir})
+    fetch_sources(${ddir})
+    foreach(target ${RUMBOOT_TARGETS_C} ${RUMBOOT_TARGETS_S} ${RUMBOOT_TARGETS_LUA})
     add_rumboot_target(
-        ${ARGN}
-        FILES ${target}
+        ${OUT}
+        FILES ${target} ${TMPD_FILES}
     )
+    endforeach()
   endforeach()
-
-  #fetch from common directory
-  fetch_sources(${RUMBOOT_PLATFORM_COMMON_DIR}/${dir})
-  foreach(target ${RUMBOOT_TARGETS_C} ${RUMBOOT_TARGETS_S} ${RUMBOOT_TARGETS_LUA})
-    add_rumboot_target(
-        ${ARGN}
-        FILES ${target}
-    )
-  endforeach()
-
-
 endmacro()
 
 
@@ -314,7 +307,6 @@ function(add_rumboot_target)
   set(multiValueArgs ${RUMBOOT_MULVALUE_ARGS})
 
   cmake_parse_arguments(TARGET "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
-
   if (NOT TARGET_CONFIGURATION)
     set(TARGET_CONFIGURATION ${RUMBOOT_PLATFORM_DEFAULT_CONFIGURATION})
   endif()
@@ -330,7 +322,7 @@ function(add_rumboot_target)
   if (NOT TARGET_NAME)
     list(GET TARGET_FILES 0 TARGET_NAME)
     GET_FILENAME_COMPONENT(TARGET_NAME ${TARGET_NAME} NAME_WE)
-  endif()
+    endif()
 
   list (FIND TARGET_FEATURES "NOCODE" _index2)
   if ((NOT ${_index2} GREATER -1) AND (NOT TARGET_FILES))
