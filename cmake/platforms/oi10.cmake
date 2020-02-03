@@ -19,6 +19,8 @@ file(GLOB PLATFORM_SOURCES
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/lib/drivers/dma2plb6.c
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/lib/drivers/emi.c
     ${CMAKE_SOURCE_DIR}/src/lib/drivers/gpio_pl061.c
+    ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/lib/drivers/l2inject.c
+    ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/lib/drivers/l2scrub.c
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/lib/drivers/l2c.c
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/lib/drivers/hscb.c
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/lib/drivers/greth.c
@@ -500,6 +502,14 @@ endif()
       CONFIGURATION LPROBE_CPU
       PREFIX lprobe-cpu
     )
+
+    #Cache scrubbing and error injection framework
+    add_rumboot_target_dir(l2scrubber/tests
+      CONFIGURATION IRAM
+      PREFIX l2scrub
+      FILES l2scrubber/oi10.c
+    )
+
 
     add_rumboot_target(
         CONFIGURATION BROM
@@ -2298,6 +2308,7 @@ add_rumboot_target(
     NAME "multistore-2"
     PREFIX l2bug
     CFLAGS -DEMI_INIT -DADD_TLB -DM_BASE=SRAM0_BASE
+#    CFLAGS -DSDRAM_INIT -DADD_TLB -DM_BASE=SRAM0_BASE
     IRUN_FLAGS ${ROM_6500K_OPTS}
     LOAD IM0BIN SELF
         MBIN l2bug-multistore-supp

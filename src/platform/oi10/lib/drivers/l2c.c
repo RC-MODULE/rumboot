@@ -85,7 +85,7 @@ static struct mem_config const mem_configs[4] = {
     }
 };
 
-#define L2C_ARRACC_TIMEOUT                 (0x00000020)
+#define L2C_ARRACC_TIMEOUT                 (0xffffffff)
 
 static inline __attribute__((always_inline)) bool l2c_arracc_read(
         uint32_t const base,
@@ -607,6 +607,22 @@ void l2c_get_mem_layout(
 ) {
     mem_layout->l2size          = l2c_l2_read(base, L2C_L2CNFG0) & L2C_L2CNFG0_L2SIZE_mask;
 
+    switch (mem_layout->l2size)
+    {
+    case L2C_L2Size_128KB:
+        mem_layout->l2size_bytes = 128 * 1024;
+        break;
+    case L2C_L2Size_256KB:
+        mem_layout->l2size_bytes = 256 * 1024;
+        break;
+    case L2C_L2Size_512KB:
+        mem_layout->l2size_bytes = 512 * 1024;
+        break;
+    case L2C_L2Size_1MB:
+        mem_layout->l2size_bytes = 1 * 1024 * 1024;
+        break;
+    }
+
     mem_layout->tag_ecc_i       = L2C_L2ARRACCDX2_TAG_ECC_i;
     mem_layout->tag_ecc_n       = L2C_L2ARRACCDX2_TAG_ECC_n;
 
@@ -686,6 +702,23 @@ uint64_t l2c_read_mem(
         TEST_ASSERT( 0, "Unknown mem type" );
         return 0;
     }
+}
+
+
+int l2_data_address_encode(struct l2c_mem_layout *mem_layout, int way, int addr, int subaddr)
+{
+    int ret = (addr << L2C_ARRAY_ADDR_DATA_DW_n) | subaddr;
+    ret |= (way << mem_configs[mem_layout->l2size].array_addr_data_n);
+    return ret;
+}
+
+
+void l2_data_address_decode(struct l2c_mem_layout *mem_layout, int index, int *way, int *addr, int *subaddr)
+{
+    *addr    = GET_BITS( index, 0, mem_configs[mem_layout->l2size].array_addr_data_n);
+    *subaddr = *addr & 0x7;
+    *addr    = *addr >> L2C_ARRAY_ADDR_DATA_DW_n;
+    *way     = GET_BITS( index, mem_configs[mem_layout->l2size].array_addr_data_n, L2C_L2ARRACCCTL_L2WAY_n);
 }
 
 void l2c_write_mem(

@@ -325,6 +325,7 @@ typedef enum {
 
 struct l2c_mem_layout {
     L2C_L2Size_t    l2size;
+    uint32_t   l2size_bytes;
 
     uint32_t        tag_array_size;
     uint32_t        lru_array_size;
@@ -339,6 +340,9 @@ struct l2c_mem_layout {
     uint32_t        data_ecc_i;
     uint32_t        data_ecc_n;
 };
+
+int l2_data_address_encode(struct l2c_mem_layout *mem_layout, int way, int addr, int subaddr);
+void l2_data_address_decode(struct l2c_mem_layout *mem_layout, int index, int *way, int *addr, int *subaddr);
 
 void l2c_get_mem_layout( uint32_t base, struct l2c_mem_layout * mem_layout );
 
