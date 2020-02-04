@@ -781,6 +781,8 @@ void l2c_write_mem(
         return;
     }
     case L2C_MEM_DATAECC_CLEAR: {
+        uint32_t    data_addr   = GET_BITS( index, 0, mem_configs[mem_layout->l2size].array_addr_data_n );
+        int         cache_way   = GET_BITS( index, mem_configs[mem_layout->l2size].array_addr_data_n, L2C_L2ARRACCCTL_L2WAY_n );
         bool cache_data_write_ok = l2c_arracc_data_wt_ecc_write_raw( base, data_addr, cache_way, 0x0, 0x0 );
         TEST_ASSERT( cache_data_write_ok, "DATA/ECC write failed" );
         return;

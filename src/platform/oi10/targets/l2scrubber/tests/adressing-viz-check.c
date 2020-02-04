@@ -37,7 +37,7 @@ int main()
     int w; 
     for (w=0; w<4; w++) {
         write_some_shit(&layout, w, 0, 0);
-        write_some_shit(&layout, w, 8191, 7);
+        write_some_shit(&layout, w, 1023, 7);
     }
     rumboot_printf("Please check timing diagrams\n");
     return 0;
