@@ -721,6 +721,17 @@ void l2_data_address_decode(struct l2c_mem_layout *mem_layout, int index, int *w
     *way     = GET_BITS( index, mem_configs[mem_layout->l2size].array_addr_data_n, L2C_L2ARRACCCTL_L2WAY_n);
 }
 
+int l2_tag_address_encode(struct l2c_mem_layout *mem_layout, int way, int addr)
+{
+    return (way << mem_configs[mem_layout->l2size].array_addr_tag_n) | addr;
+}
+
+void l2_tag_address_decode(struct l2c_mem_layout *mem_layout, int index, int *way, int *addr)
+{
+    *addr    = GET_BITS( index, 0, mem_configs[mem_layout->l2size].array_addr_tag_n );
+    *way   = GET_BITS( index, mem_configs[mem_layout->l2size].array_addr_tag_n, L2C_L2ARRACCCTL_L2WAY_n );
+}
+
 void l2c_write_mem(
         uint32_t const base,
         struct l2c_mem_layout const * const mem_layout, l2c_mem_t const mem_type, uint32_t const index,
@@ -787,6 +798,14 @@ void l2c_write_mem(
         TEST_ASSERT( cache_data_write_ok, "DATA/ECC write failed" );
         return;
     }
+    case L2C_MEM_TAGECC_CLEAR: {
+        uint32_t    tag_addr    = GET_BITS( index, 0, mem_configs[mem_layout->l2size].array_addr_tag_n );
+        int         cache_way   = GET_BITS( index, mem_configs[mem_layout->l2size].array_addr_tag_n, L2C_L2ARRACCCTL_L2WAY_n );
+        bool tag_info_write_ok = l2c_arracc_tag_info_wt_ecc_write_raw( base, tag_addr, cache_way, 0x0, 0x0 );
+        TEST_ASSERT( tag_info_write_ok, "TAG ECC write failed" );
+        return;
+    }
+
     default:
         TEST_ASSERT( 0, "Unknown mem type" );
         return;

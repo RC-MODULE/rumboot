@@ -346,6 +346,8 @@ struct l2c_mem_layout {
 
 int l2_data_address_encode(struct l2c_mem_layout *mem_layout, int way, int addr, int subaddr);
 void l2_data_address_decode(struct l2c_mem_layout *mem_layout, int index, int *way, int *addr, int *subaddr);
+int l2_tag_address_encode(struct l2c_mem_layout *mem_layout, int way, int addr);
+void l2_tag_address_decode(struct l2c_mem_layout *mem_layout, int index, int *way, int *addr);
 
 void l2c_get_mem_layout( uint32_t base, struct l2c_mem_layout * mem_layout );
 
