@@ -2313,6 +2313,15 @@ add_rumboot_target(
     LOAD IM0BIN SELF
         MBIN l2bug-multistore-supp
   )
+   
+   add_rumboot_target(
+    CONFIGURATION IRAM_SPL
+    PREFIX l2bug
+    FILES l2bug/l1_error_insertion.c
+    NAME "l1_error_insertion"
+    CFLAGS -DEMI_INIT -DADD_TLB -DM_BASE=SRAM0_BASE
+    IRUN_FLAGS ${ROM_6500K_OPTS}
+  )
 
 
 endmacro()
