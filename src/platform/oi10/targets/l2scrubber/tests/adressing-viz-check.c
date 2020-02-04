@@ -24,6 +24,7 @@ static void write_some_shit(struct l2c_mem_layout *layout, int way, int addr, in
 {
     int idx = l2_data_address_encode(layout, way, addr, subaddr);
     uint64_t some_shit = 0xdeadc0deb00bc0de;
+    l2c_write_mem(DCR_L2C_BASE, layout, L2C_MEM_DATAECC_CLEAR, idx, 0x0); 
     l2c_write_mem(DCR_L2C_BASE, layout, L2C_MEM_DATA_ECC, idx, some_shit); 
     l2c_write_mem(DCR_L2C_BASE, layout, L2C_MEM_DATA, idx, some_shit); 
 }
