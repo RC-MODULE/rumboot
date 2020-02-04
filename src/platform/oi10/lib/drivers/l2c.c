@@ -780,6 +780,11 @@ void l2c_write_mem(
         TEST_ASSERT( cache_data_write_ok, "DATA ECC write failed" );
         return;
     }
+    case L2C_MEM_DATAECC_CLEAR: {
+        bool cache_data_write_ok = l2c_arracc_data_wt_ecc_write_raw( base, data_addr, cache_way, 0x0, 0x0 );
+        TEST_ASSERT( cache_data_write_ok, "DATA/ECC write failed" );
+        return;
+    }
     default:
         TEST_ASSERT( 0, "Unknown mem type" );
         return;

@@ -321,6 +321,9 @@ typedef enum {
     L2C_MEM_LRU,
     L2C_MEM_DATA,
     L2C_MEM_DATA_ECC,
+    L2C_MEM_DATAECC_CLEAR,
+    L2C_MEM_TAGECC_CLEAR,
+    L2C_MEM_LRU_CLEAR
 } l2c_mem_t;
 
 struct l2c_mem_layout {
