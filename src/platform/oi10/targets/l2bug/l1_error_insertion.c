@@ -309,16 +309,17 @@ int main(void)
     rumboot_printf("CCR0: 0x%x\n", spr_read(SPR_CCR0));
     rumboot_printf("CCR1: 0x%x\n", spr_read(SPR_CCR1));
     rumboot_printf("CCR2: 0x%x\n", spr_read(SPR_CCR2));
+    rumboot_printf("CCR2: 0x%x\n", spr_read(SPR_DCESR));
 //--------GC-end
     //iowrite32(0xA, 0x1000);
     //read_val = ioread32(0x1000);
     
     arr = (uint32_t *) 0x1000;
-    
-    for(i=0;i<1000;i=i+1) {
+    rumboot_printf("Write & read 20 cached values");
+    for(i=0;i<20;i=i+1) {
         *(arr + i) = i;
     }
-    for(i=0;i<1000;i=i+1) {
+    for(i=0;i<20;i=i+1) {
         rumboot_printf("read_val: 0x%x\n", *(arr + i));
     }
     rumboot_printf("CCR1: 0x%x\n", spr_read(SPR_CCR1));
