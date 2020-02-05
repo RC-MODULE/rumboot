@@ -23,7 +23,7 @@
 static void write_some_data_shit(struct l2c_mem_layout *layout, int way, int addr, int subaddr)
 {
     int idx = l2_data_address_encode(layout, way, addr, subaddr);
-    uint64_t some_shit = 0xdeadc0deb00bc0de;
+    uint64_t some_shit = (0xb00b << 48) | (way << 32 | addr << 3 | subaddr);
     l2c_write_mem(DCR_L2C_BASE, layout, L2C_MEM_DATAECC_CLEAR, idx, 0x0); 
     l2c_write_mem(DCR_L2C_BASE, layout, L2C_MEM_DATA_ECC, idx, some_shit); 
     l2c_write_mem(DCR_L2C_BASE, layout, L2C_MEM_DATA, idx, some_shit); 
@@ -32,7 +32,7 @@ static void write_some_data_shit(struct l2c_mem_layout *layout, int way, int add
 static void write_some_tag_shit(struct l2c_mem_layout *layout, int way, int addr)
 {
     int idx = l2_tag_address_encode(layout, way, addr);
-    uint64_t some_shit = 0xdeadc0deb00bc0de;
+    uint64_t some_shit = (0xdead << 48) | (way << 32 | addr);
     l2c_write_mem(DCR_L2C_BASE, layout, L2C_MEM_TAGECC_CLEAR, idx, 0x0); 
     l2c_write_mem(DCR_L2C_BASE, layout, L2C_MEM_TAG_ECC, idx, some_shit); 
     l2c_write_mem(DCR_L2C_BASE, layout, L2C_MEM_TAG, idx, some_shit); 
@@ -43,6 +43,7 @@ int main()
     rumboot_printf("Writing some data into L2\n");
     struct l2c_mem_layout layout;
     l2c_get_mem_layout(DCR_L2C_BASE, &layout);
+
     int w; 
     rumboot_printf("Writing tags\n");
     for (w=0; w<4; w++) {
