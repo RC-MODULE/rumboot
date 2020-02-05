@@ -309,7 +309,7 @@ int main(void)
     rumboot_printf("CCR0: 0x%x\n", spr_read(SPR_CCR0));
     rumboot_printf("CCR1: 0x%x\n", spr_read(SPR_CCR1));
     rumboot_printf("CCR2: 0x%x\n", spr_read(SPR_CCR2));
-    rumboot_printf("CCR2: 0x%x\n", spr_read(SPR_DCESR));
+    rumboot_printf("DCESR: 0x%x\n", spr_read(SPR_DCESR));
 //--------GC-end
     //iowrite32(0xA, 0x1000);
     //read_val = ioread32(0x1000);
