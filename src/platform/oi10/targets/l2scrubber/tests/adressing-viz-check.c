@@ -39,6 +39,11 @@ static void write_some_tag_shit(struct l2c_mem_layout *layout, int way, int addr
     l2c_write_mem(DCR_L2C_BASE, layout, L2C_MEM_TAGECC_CLEAR, idx, 0x0); 
     l2c_write_mem(DCR_L2C_BASE, layout, L2C_MEM_TAG_ECC, idx, some_shit); 
     l2c_write_mem(DCR_L2C_BASE, layout, L2C_MEM_TAG, idx, some_shit); 
+    some_shit = l2c_read_mem(DCR_L2C_BASE, layout, L2C_MEM_TAG, idx);
+//    rumboot_printf("%x %x\n", 
+//        (uint32_t )(some_shit & 0xffffffff), 
+//        (uint32_t )((some_shit >> 32) & 0xffffffff)        
+//    );
 }
 
 int main()
@@ -46,13 +51,13 @@ int main()
     rumboot_printf("Writing some data into L2\n");
     struct l2c_mem_layout layout;
     l2c_get_mem_layout(DCR_L2C_BASE, &layout);
+    int w; 
 
     rumboot_printf("Writing data\n");
     for (w=0; w<4; w++) {
         write_some_data_shit(&layout, w, 0, 0);
         write_some_data_shit(&layout, w, 1023, 7);
     }
-    int w; 
     rumboot_printf("Writing tags\n");
     for (w=0; w<4; w++) {
         write_some_tag_shit(&layout, w, 0);
