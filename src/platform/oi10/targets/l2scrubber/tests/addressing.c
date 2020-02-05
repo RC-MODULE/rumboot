@@ -26,7 +26,7 @@ int main()
     l2c_get_mem_layout(DCR_L2C_BASE, &layout);
 
     int i;
-    for (i = 0; i < layout.l2size_bytes / 8 ; i++)
+    for (i = 0; i < layout.data_array_size ; i++)
     {
         int way, addr, subaddr;
         l2_data_address_decode(&layout, i, &way, &addr, &subaddr);
@@ -36,10 +36,22 @@ int main()
         if (i != idx) {
             rumboot_printf("FAIL: way: %d addr: %d sub:%d\n", way, addr, subaddr);
             rumboot_printf("FAIL: expected index %d got %d\n", i, idx);
+            return 1;
+        }        
+    }
 
+    for (i = 0; i < layout.tag_array_size; i++)
+    {
+        int way, addr;
+        l2_tag_address_decode(&layout, i, &way, &addr);
+        int idx = l2_tag_address_encode(&layout, way, addr);
+        rumboot_printf("index: %d(%d), way: %d addr: %d\n", idx, i, way, addr);
+        if (i != idx) {
+            rumboot_printf("FAIL: way: %d addr: %d\n", way, addr);
+            rumboot_printf("FAIL: expected index %d got %d\n", i, idx);
             return 1;
         }
-        
     }
+
     return 0;
 }
