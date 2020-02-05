@@ -280,6 +280,8 @@ int main(void)
     printf("magic:          %lx\n", gdbmon_hdr.magic);
     printf("datalen:        %ld\n", gdbmon_hdr.datalen);
     printf("entry_point[0]: %ld\n", gdbmon_hdr.entry_point[0]);
+    
+    rumboot_printf("Initial DCESR: 0x%x\n", spr_read(SPR_DCESR));
 
     rumboot_printf("Starting test code from another memory\n");
 
