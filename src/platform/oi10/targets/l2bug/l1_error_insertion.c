@@ -2,6 +2,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <arch/ppc_476fp_config.h>
+#include <arch/ppc_476fp_lib_c.h>
 #include <arch/io.h>
 #include <platform/arch/ppc/ppc_476fp_mmu_fields.h>
 #include <platform/arch/ppc/ppc_476fp_ctrl_fields.h>
@@ -14,7 +15,11 @@
 #include <rumboot/irq.h>
 #include <platform/devices/mpic128.h>
 #include <rumboot/hexdump.h>
+#include <rumboot/irq.h>
 #define printf rumboot_printf
+#define FRST_PG_STRT 0x00001000
+#define SCND_PG_STRT 0x00002000
+
 
 
 extern void rumboot_itrpt_hdr_base();
@@ -75,7 +80,7 @@ int add_tlb_entry( uint32_t e_base, uint32_t r_base, uint32_t ERPN, unsigned DSI
     w0 = ( e_base & 0xfffff000 ) | ( valid << 11 ) | ( DSIZ << 4 ),
     w1 = ( r_base & 0xfffff000 ) | ERPN,
     w2;
-
+    rumboot_printf("w0 = 0x%x, w1 = 0x%x\n", w1, w2);
     switch ( cache_mode )
     {
         case 0:
@@ -190,6 +195,85 @@ void  flush_cache_range ( void * start, unsigned long sizeInBytes )
     */
 }
 
+void read_l1_cache( uint32_t way_start, uint32_t index_start, uint32_t word_start, 
+                    uint32_t way_end,   uint32_t index_end,   uint32_t word_end,  uint32_t valid ){
+    uint32_t dcread_addr, dcread_data, way, index, word, dcdbtrl, dcdbtrh;
+// 0:16     -   Unused.
+// 17:18    -   Data cache way.
+// 19:26    -   Data cache index.
+// 27:29    -   Word address within L1 Data cache line.
+// 30:31    -   Unused.
+    if(valid > 1){rumboot_printf("Incorrect value of VALID parameter - should be 0 or 1");}
+    for(way = way_start; way < way_end+1; way=way+1)
+        for(index = index_start; index < index_end+1; index = index+1)
+            for(word = word_start; word < word_end+1; word = word+1) {
+                dcread_addr = (0x00000000) | (word << 2) | (index << 5)|(way << 13);
+                dcread_data = dcread (dcread_addr);
+                isync();
+                dcdbtrl = spr_read(SPR_DCDBTRL);
+                dcdbtrh = spr_read(SPR_DCDBTRH);                
+                if(valid == 1 && ((dcdbtrh >> 12) & 0x00000001)!=1) continue;
+                rumboot_printf("\t way = 0x%x, set = 0x%x, word_num = 0x%x, dcread_addr = 0x%x, dcread_data = 0x%x, dcdbtrl = 0x%x, dcdbtrh = 0x%x, valid = 0x%x, data_parity = 0x%x \n", 
+                                   way,        index,        word,        dcread_addr,        dcread_data, dcdbtrl, dcdbtrh, (dcdbtrh >> 12) & 0x00000001, (dcdbtrl >> 0) & 0x0000000F);    
+            }
+}
+
+void read_all_l1_cache(){read_l1_cache(0,0,0,3,255,7,0);}
+
+void my_handler(int id, const char *name) {
+    uint32_t dcesr_val, dcindxpe, dcindxpe_ext, dcrdpe, dcread_addr, dcread_data, dcdbtrl, dcdbtrh;
+    rumboot_printf("----------------It's my handler-----------");
+    dcesr_val = spr_read(SPR_DCESR);
+    rumboot_printf("DCESR:   0x%x\n", dcesr_val);
+    rumboot_printf("DCESR decode result\n");
+    dcrdpe = (dcesr_val >> 27) & 0x0000000F;
+    rumboot_printf("\tDCRDPE    =   0x%x\n", dcrdpe);
+    rumboot_printf("\tDCESPE    =   0x%x\n", (dcesr_val >> 29) & 0x0000000F);
+    rumboot_printf("\tDCOSPE    =   0x%x\n", (dcesr_val >> 15) & 0x0000000F);
+    dcindxpe = (dcesr_val >> 9) & 0x00000003F;
+    rumboot_printf("\tDCINDXPE  =   0x%x\n", dcindxpe);
+    rumboot_printf("\tDCDAPE    =   0x%x\n", (dcesr_val >> 8) & 0x00000001);
+    rumboot_printf("\tDCTAPE    =   0x%x\n", (dcesr_val >> 7) & 0x00000001);
+    rumboot_printf("\tDCLRUPE   =   0x%x\n", (dcesr_val >> 5) & 0x00000001);
+    rumboot_printf("\tDCSNPPE   =   0x%x\n", (dcesr_val >> 4) & 0x00000001);
+    rumboot_printf("\tDCDAHIT   =   0x%x\n", (dcesr_val >> 3) & 0x00000001);
+    rumboot_printf("\tDCDAAPU   =   0x%x\n", (dcesr_val >> 2) & 0x00000001);    
+    //--------------
+    rumboot_printf("----------- Read debug registers ------\n");
+    
+// 0:16     -   Unused.
+// 17:18    -   Data cache way.
+// 19:26    -   Data cache index.
+// 27:29    -   Word address within L1 Data cache line.
+// 30:31    -   Unused.
+    
+    dcread_addr = (0x00000000) | (dcrdpe << 2) | (dcindxpe << 5);
+    
+    dcread_data = dcread (dcread_addr);
+    isync();
+    dcdbtrl = spr_read(SPR_DCDBTRL);
+    dcdbtrh = spr_read(SPR_DCDBTRH);
+    rumboot_printf("Readed data = 0x%x, DCDBTRL   =   0x%x, DCDBTRH   =   0x%x\n", dcread_data, dcdbtrl, dcdbtrh);
+    rumboot_printf("----------- Decoded information ------\n");    
+    //---
+    rumboot_printf("LRU valid bits        = 0x%x\n", (dcdbtrl >> 27) & 0x0000000F);
+    rumboot_printf("LRU value             = 0x%x\n", (dcdbtrl >> 21) & 0x0000001F);
+    rumboot_printf("Lock bits             = 0x%x\n", (dcdbtrl >> 17) & 0x0000000F);
+    rumboot_printf("LRU Parity            = 0x%x\n", (dcdbtrl >> 13) & 0x00000003);
+    rumboot_printf("Word Data parity      = 0x%x\n", (dcdbtrl >> 0) & 0x0000000F);
+    //---
+    rumboot_printf("Tag address           = 0x%x\n", (dcdbtrh >> 12) & 0x0007FFFF);
+    rumboot_printf("Valid bit             = 0x%x\n", (dcdbtrh >> 11) & 0x00000001);
+    rumboot_printf("Tag parity bits       = 0x%x\n", (dcdbtrh >> 9) & 0x00000003);
+    rumboot_printf("Extended tag address  = 0x%x\n", (dcdbtrh >> 0) & 0x000003FF);
+    
+    //read_l1_cache(0,0x80,0,0,0x82,7,1);
+    //read_all_l1_cache();
+    read_l1_cache(0,0,0,3,255,7,1);
+
+    rumboot_arch_exception(id, name);
+}
+
 int main(void)
 {
     // uint32_t result = 0;
@@ -227,6 +311,7 @@ int main(void)
     rumboot_irq_set_exception_handler(rumboot_arch_exception);
 
     printf("Setup cache\n");
+    //read_l1_cache(0,0x80,0,0,0x82,7);
     
 //---GC-start
     rumboot_printf("CCR2 contains: 0x%x\n", (CTRL_CCR2_DSTG_disabled << CTRL_CCR2_DSTG_i)\
@@ -263,9 +348,9 @@ int main(void)
 
 #ifdef ADD_TLB
     printf("Add TLB entries\n");
-    add_tlb_entry( 0x0, 0x0, 0x0, MMU_TLBE_DSIZ_4KB, 0, 0, 1, 0xE0000000, 0x07 );
-    add_tlb_entry( 0x1000, 0x1000, 0x0, MMU_TLBE_DSIZ_4KB, 0, 0, 1, 0xE0000000, 0x03 );
-    memset((void *) 0x0, 0x0, 0x2000);
+    add_tlb_entry( FRST_PG_STRT, FRST_PG_STRT, 0x0, MMU_TLBE_DSIZ_4KB, 0, 0, 1, 0xE0000000, 0x07 );
+    add_tlb_entry( SCND_PG_STRT, SCND_PG_STRT, 0x0, MMU_TLBE_DSIZ_4KB, 0, 0, 1, 0xE0000000, 0x03 );
+    memset((void *) FRST_PG_STRT, 0x0, 0x2000);
 #endif
 
     dcr_write(0x80000600, 0xC10);
@@ -277,20 +362,20 @@ int main(void)
     printf("Add TLB entries\n");
 //int add_tlb_entry( uint32_t e_base, uint32_t r_base, uint32_t ERPN, unsigned DSIZ, unsigned cache_mode, unsigned is_little, unsigned valid, unsigned ra, unsigned xwr)    
     
-    add_tlb_entry( 0x0, 0x0, 0x0, MMU_TLBE_DSIZ_4KB, 0, 0, 0, 0xE0000000, 0x07 );
-    add_tlb_entry( 0x1000, 0x1000, 0x0, MMU_TLBE_DSIZ_4KB, 0, 0, 0, 0xE0000000, 0x03 );
-    add_tlb_entry( 0x0, 0x0, 0x0, MMU_TLBE_DSIZ_4KB, 6, 0, 1, 0xE0000000, 0x07 );
-    add_tlb_entry( 0x1000, 0x1000, 0x0, MMU_TLBE_DSIZ_4KB, 6, 0, 1, 0xE0000000, 0x03 );
+    add_tlb_entry( FRST_PG_STRT, FRST_PG_STRT, 0x0, MMU_TLBE_DSIZ_4KB, 0, 0, 0, 0xE0000000, 0x07 );
+    add_tlb_entry( SCND_PG_STRT, SCND_PG_STRT, 0x0, MMU_TLBE_DSIZ_4KB, 0, 0, 0, 0xE0000000, 0x03 );
+    add_tlb_entry( FRST_PG_STRT, FRST_PG_STRT, 0x0, MMU_TLBE_DSIZ_4KB, 6, 0, 1, 0xE0000000, 0x07 );
+    add_tlb_entry( SCND_PG_STRT, SCND_PG_STRT, 0x0, MMU_TLBE_DSIZ_4KB, 6, 0, 1, 0xE0000000, 0x03 );
     printf("Drop l1, l2 0x0 - 0x1FFF\n");
-    flush_cache_range(M_BASE, 0x1FFF);
-
-    asm volatile (
-        "sync\n"
-        "icbi 0, %0\n"
-        "isync\n"
-        :
-        :"r"( 0 )
-    );
+    //flush_cache_range(M_BASE, 0x1FFF);
+    //printf("ASM insertion \n");
+    //asm volatile (
+    //    "sync\n"
+    //    "icbi 0, %0\n"
+    //    "isync\n"
+    //    :
+    //    :"r"( 0 )
+    //);
 
     //printf("Read header:\n");
     //memcpy((void *)&gdbmon_hdr, (void *)M_BASE, sizeof(gdbmon_hdr));
@@ -302,26 +387,30 @@ int main(void)
 
 //--------GC-start
 // --- set DCDPEI - [10:11]
-  spr_write(SPR_CCR1, 0x00200000);
-//--------GC-end
-
-//--------GC-start
+    spr_write(SPR_CCR1, 0x00200000);
+    isync();
     rumboot_printf("CCR0: 0x%x\n", spr_read(SPR_CCR0));
     rumboot_printf("CCR1: 0x%x\n", spr_read(SPR_CCR1));
     rumboot_printf("CCR2: 0x%x\n", spr_read(SPR_CCR2));
     rumboot_printf("DCESR: 0x%x\n", spr_read(SPR_DCESR));
+    rumboot_irq_set_exception_handler(my_handler);
 //--------GC-end
     //iowrite32(0xA, 0x1000);
     //read_val = ioread32(0x1000);
     
-    arr = (uint32_t *) 0x1000;
-    rumboot_printf("Write & read 20 cached values");
+    arr = (uint32_t *) (SCND_PG_STRT +0x100);
+    rumboot_printf("Write 20 cached values at 0x%x\n", arr);
     for(i=0;i<20;i=i+1) {
-        *(arr + i) = i;
+        *(arr + i) = 0xDEADC0DE;
     }
+    //msync();
+    //read_l1_cache(0,0x80,0,0,0x82,7);
+    //read_all_l1_cache();
+    rumboot_printf("Read 20 cached values\n");
     for(i=0;i<20;i=i+1) {
         rumboot_printf("read_val: 0x%x\n", *(arr + i));
     }
+    //read_l1_cache(0,0x80,0,0,0x82,7);
+    read_all_l1_cache();
     rumboot_printf("CCR1: 0x%x\n", spr_read(SPR_CCR1));
-    //return rumboot_bootimage_execute_ep((void *) gdbmon_hdr.entry_point[0]);
 }
