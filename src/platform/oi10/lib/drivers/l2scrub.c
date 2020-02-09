@@ -166,7 +166,7 @@ struct l2_scrubbing_context {
 
 static inline void l2_scrubbing_context_dump(struct l2_scrubbing_context *ctx)
 {
-#define DO_CTX_DUMP(ctx,reg) dbg("%08s: %x\n", #reg, (ctx)->reg);
+#define DO_CTX_DUMP(ctx,reg) dbg("%s: %x\n", #reg, (ctx)->reg);
 
     dbg("--- ctx ---\n");
     DO_CTX_DUMP(ctx, log0);
@@ -261,7 +261,7 @@ static bool l2_correct_data(struct l2_scrubber *scr, struct l2_scrubbing_context
     uint64_t actual_ecc  = l2c_read_mem(scr->dcr_base, &scr->layout, L2C_MEM_DATA_ECC, failarraddr);
     uint64_t data = (((uint64_t) ctx->log2) << 32 | ((uint64_t) ctx->log3));
     if (data != actual_data) { 
-        dbg("Multihit: actual: 0x%08x %08x | logged: 0x%08x %08x (addr %d log0 0x%x)\n", 
+        dbg("Multihit: actual: 0x%x %x | logged: 0x%x %x (addr %d log0 0x%x)\n", 
             (uint32_t) ((actual_data >> 32) & 0xffffffff),
             (uint32_t) ((actual_data) & 0xffffffff),
             (uint32_t) ((data >> 32) & 0xffffffff),
