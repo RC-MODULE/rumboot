@@ -13,11 +13,13 @@ struct l2_scrubber {
     volatile l2c_mem_t lastfailmem;
     volatile uint32_t lastfailaddr;
     volatile uint32_t lastfailbit;
+    volatile int injected_bit;
 };
 
 struct l2_scrubber *l2_scrubber_create(uintptr_t dcr_base, int irq);
 
 void l2_dump_data(uint32_t start, uint32_t count);
+void l2_dump_tag(struct l2c_mem_layout *layout, int index);
 void l2_dump_tags();
 
 

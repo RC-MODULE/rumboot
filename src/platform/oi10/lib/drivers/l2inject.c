@@ -16,6 +16,19 @@
 #include <math.h>
 #include <arch/l2scrub.h>
 
+
+void l2_dump_tag(struct l2c_mem_layout *layout, int index)
+{
+    uint64_t tag = l2c_read_mem(DCR_L2C_BASE, layout, L2C_MEM_TAG, index);
+    uint64_t ecc = l2c_read_mem(DCR_L2C_BASE, layout, L2C_MEM_TAG_ECC, index);
+    rumboot_printf("TAG[%d]: DATA: 0x%x%x ECC: 0x%x%x\n",
+    index, 
+        (uint32_t) ((tag >> 32) & 0xffffffff),
+        (uint32_t) ((tag) & 0xffffffff),
+        (uint32_t) ((ecc >> 32) & 0xffffffff),
+        (uint32_t) ((ecc) & 0xffffffff)
+    );
+}
 /**
  * @brief Dumps all L2 tags to stdout
  * 
@@ -26,15 +39,7 @@ void l2_dump_tags()
     l2c_get_mem_layout(DCR_L2C_BASE, &layout);
     int i; 
     for (i=0; i<16; i++) {
-        uint64_t tag = l2c_read_mem(DCR_L2C_BASE, &layout, L2C_MEM_TAG, i);
-        uint64_t ecc = l2c_read_mem(DCR_L2C_BASE, &layout, L2C_MEM_TAG_ECC, i);
-        rumboot_printf("TAG[%d]: DATA: 0x%x%x ECC: 0x%x%x\n",
-        i, 
-            (uint32_t) ((tag >> 32) & 0xffffffff),
-            (uint32_t) ((tag) & 0xffffffff),
-            (uint32_t) ((ecc >> 32) & 0xffffffff),
-            (uint32_t) ((ecc) & 0xffffffff)
-        );
+        l2_dump_tag(&layout, i);
     }
 }
 
@@ -84,9 +89,13 @@ void l2_inject_data_ecc_fault(uintptr_t base, int pos, int bit)
 {
     struct l2c_mem_layout layout;
     l2c_get_mem_layout(DCR_L2C_BASE, &layout);
-    uint64_t ecc = l2c_read_mem(DCR_L2C_BASE, &layout, L2C_MEM_DATA_ECC, pos);
-    ecc ^= 1<<bit;
-    l2c_write_mem(DCR_L2C_BASE, &layout, L2C_MEM_DATA_ECC, pos, ecc); 
+    RUMBOOT_ATOMIC_BLOCK() {
+        l2_dump_line(pos);
+        uint64_t ecc = l2c_read_mem(DCR_L2C_BASE, &layout, L2C_MEM_DATA_ECC, pos);
+        ecc ^= 1<<bit;
+        l2c_write_mem(DCR_L2C_BASE, &layout, L2C_MEM_DATA_ECC, pos, ecc); 
+        l2_dump_line(pos);
+    }
 }
 
 /**
@@ -100,9 +109,11 @@ void l2_inject_tag_fault(uintptr_t base, int pos, int bit)
 {
     struct l2c_mem_layout layout;
     l2c_get_mem_layout(DCR_L2C_BASE, &layout);
-    uint64_t tag = l2c_read_mem(DCR_L2C_BASE, &layout, L2C_MEM_TAG, pos);
-    tag ^= 1ULL<<bit;
-    l2c_write_mem(DCR_L2C_BASE, &layout, L2C_MEM_TAG, pos, tag);    
+    RUMBOOT_ATOMIC_BLOCK() {
+        uint64_t tag = l2c_read_mem(DCR_L2C_BASE, &layout, L2C_MEM_TAG, pos);
+        tag ^= 1ULL<<bit;
+        l2c_write_mem(DCR_L2C_BASE, &layout, L2C_MEM_TAG, pos, tag);    
+    }
 }
 
 /**
@@ -132,8 +143,10 @@ void l2_inject_data_fault(uintptr_t base, int pos, int bit)
 {
     struct l2c_mem_layout layout;
     l2c_get_mem_layout(DCR_L2C_BASE, &layout);
-    uint64_t tag = l2c_read_mem(DCR_L2C_BASE, &layout, L2C_MEM_DATA, pos);
-    tag ^= 1ULL<<bit;
-    l2c_write_mem(DCR_L2C_BASE, &layout, L2C_MEM_DATA, pos, tag);    
+    RUMBOOT_ATOMIC_BLOCK() {
+        uint64_t tag = l2c_read_mem(DCR_L2C_BASE, &layout, L2C_MEM_DATA, pos);
+        tag ^= 1ULL<<bit;
+        l2c_write_mem(DCR_L2C_BASE, &layout, L2C_MEM_DATA, pos, tag);    
+    }
 }
 

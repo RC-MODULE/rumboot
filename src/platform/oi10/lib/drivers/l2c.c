@@ -732,6 +732,23 @@ void l2_tag_address_decode(struct l2c_mem_layout *mem_layout, int index, int *wa
     *way   = GET_BITS( index, mem_configs[mem_layout->l2size].array_addr_tag_n, L2C_L2ARRACCCTL_L2WAY_n );
 }
 
+void l2c_tag_directwrite(uint32_t const dcr_base, struct l2c_mem_layout *mem_layout, int index, uint32_t log2, uint32_t log1)
+{
+    int way, addr;
+    l2_tag_address_decode(mem_layout, index, &way, &addr);
+    l2c_arracc_tag_info_wt_ecc_write_raw( dcr_base, addr, way, log2, log1 );
+}
+
+void l2c_tag_regen(uint32_t const base, struct l2c_mem_layout *mem_layout, int index)
+{
+    int way, addr;
+    uint32_t tag, ecc;
+    bool ret;
+    l2_tag_address_decode(mem_layout, index, &way, &addr);
+    ret = l2c_arracc_tag_info_wt_ecc_read_raw(base, addr, way, &tag, &ecc);
+}
+
+
 void l2c_write_mem(
         uint32_t const base,
         struct l2c_mem_layout const * const mem_layout, l2c_mem_t const mem_type, uint32_t const index,
