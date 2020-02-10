@@ -17,8 +17,11 @@
 #include <rumboot/hexdump.h>
 #include <rumboot/irq.h>
 #define printf rumboot_printf
-#define FRST_PG_STRT 0x00001000
-#define SCND_PG_STRT 0x00002000
+#define FRST_PG_STRT 0x00004000
+#define SCND_PG_STRT 0x00005000
+#define SET_DCDPEI   0x00300000 // Data Parity Error
+#define SET_DCLPEI   0x000C0000 // LRU Parity Error
+#define SET_DCTPEI   0x00030000 // Tag Parity Error
 
 
 
@@ -80,7 +83,8 @@ int add_tlb_entry( uint32_t e_base, uint32_t r_base, uint32_t ERPN, unsigned DSI
     w0 = ( e_base & 0xfffff000 ) | ( valid << 11 ) | ( DSIZ << 4 ),
     w1 = ( r_base & 0xfffff000 ) | ERPN,
     w2;
-    rumboot_printf("w0 = 0x%x, w1 = 0x%x\n", w1, w2);
+    rumboot_printf("e_base = 0x%x, r_base = 0x%x, ERPN = 0x%x\n", e_base, r_base, ERPN);
+    rumboot_printf("w0 = 0x%x, w1 = 0x%x\n", w0, w1);
     switch ( cache_mode )
     {
         case 0:
@@ -195,6 +199,7 @@ void  flush_cache_range ( void * start, unsigned long sizeInBytes )
     */
 }
 
+//=================================================================================================
 void read_l1_cache( uint32_t way_start, uint32_t index_start, uint32_t word_start, 
                     uint32_t way_end,   uint32_t index_end,   uint32_t word_end,  uint32_t valid ){
     uint32_t dcread_addr, dcread_data, way, index, word, dcdbtrl, dcdbtrh;
@@ -219,9 +224,37 @@ void read_l1_cache( uint32_t way_start, uint32_t index_start, uint32_t word_star
 }
 
 void read_all_l1_cache(){read_l1_cache(0,0,0,3,255,7,0);}
+void read_valid_l1_cache(){read_l1_cache(0,0,0,3,255,7,1);}
 
-void my_handler(int id, const char *name) {
-    uint32_t dcesr_val, dcindxpe, dcindxpe_ext, dcrdpe, dcread_addr, dcread_data, dcdbtrl, dcdbtrh;
+void debug_dc_read(uint32_t dcread_addr){
+    uint32_t dcread_data, dcdbtrl, dcdbtrh;
+    dcread_data = dcread (dcread_addr);
+    isync();
+    dcdbtrl = spr_read(SPR_DCDBTRL);
+    dcdbtrh = spr_read(SPR_DCDBTRH);
+    rumboot_printf("dcread_addr_odd = 0x%x,  data = 0x%x, DCDBTRL   =   0x%x, DCDBTRH   =   0x%x\n", dcread_addr, dcread_data, dcdbtrl, dcdbtrh);
+    dcread_decode(dcdbtrl, dcdbtrh);
+}
+
+void dcread_decode(uint32_t dcdbtrl, uint32_t dcdbtrh){
+    rumboot_printf("----- Decoded information\n");    
+    //---
+    rumboot_printf("LRU valid bits        = 0x%x\n", (dcdbtrl >> 28) & 0x0000000F);
+    rumboot_printf("LRU value             = 0x%x\n", (dcdbtrl >> 22) & 0x0000003F);
+    rumboot_printf("Lock bits             = 0x%x\n", (dcdbtrl >> 18) & 0x0000000F);
+    rumboot_printf("LRU Parity            = 0x%x\n", (dcdbtrl >> 14) & 0x00000003);
+    rumboot_printf("Word Data parity      = 0x%x\n", (dcdbtrl >> 0) & 0x0000000F);
+    rumboot_printf("---------\n");
+    //---
+    rumboot_printf("Tag address           = 0x%x\n", (dcdbtrh >> 13) & 0x0007FFFF);
+    rumboot_printf("Valid bit             = 0x%x\n", (dcdbtrh >> 12) & 0x00000001);
+    rumboot_printf("Tag parity bits       = 0x%x\n", (dcdbtrh >> 10) & 0x00000003);
+    rumboot_printf("Extended tag address  = 0x%x\n", (dcdbtrh >> 0) & 0x000003FF);
+    rumboot_printf("Full tag address  = 0x%x\n", (dcdbtrh & 0x000003FF) | ((dcdbtrh >> 3) & ~(0xE00003FF)));
+}
+
+void l1_cache_error_handler(int id, const char *name) {
+    uint32_t dcesr_val, dcindxpe, dcrdpe, dcread_addr_even, dcread_addr_odd;
     rumboot_printf("----------------It's my handler-----------");
     dcesr_val = spr_read(SPR_DCESR);
     rumboot_printf("DCESR:   0x%x\n", dcesr_val);
@@ -239,45 +272,30 @@ void my_handler(int id, const char *name) {
     rumboot_printf("\tDCDAHIT   =   0x%x\n", (dcesr_val >> 3) & 0x00000001);
     rumboot_printf("\tDCDAAPU   =   0x%x\n", (dcesr_val >> 2) & 0x00000001);    
     //--------------
-    rumboot_printf("----------- Read debug registers ------\n");
-    
-// 0:16     -   Unused.
-// 17:18    -   Data cache way.
-// 19:26    -   Data cache index.
-// 27:29    -   Word address within L1 Data cache line.
-// 30:31    -   Unused.
-    
-    dcread_addr = (0x00000000) | (dcrdpe << 2) | (dcindxpe << 5);
-    
-    dcread_data = dcread (dcread_addr);
-    isync();
-    dcdbtrl = spr_read(SPR_DCDBTRL);
-    dcdbtrh = spr_read(SPR_DCDBTRH);
-    rumboot_printf("Readed data = 0x%x, DCDBTRL   =   0x%x, DCDBTRH   =   0x%x\n", dcread_data, dcdbtrl, dcdbtrh);
-    rumboot_printf("----------- Decoded information ------\n");    
-    //---
-    rumboot_printf("LRU valid bits        = 0x%x\n", (dcdbtrl >> 27) & 0x0000000F);
-    rumboot_printf("LRU value             = 0x%x\n", (dcdbtrl >> 21) & 0x0000001F);
-    rumboot_printf("Lock bits             = 0x%x\n", (dcdbtrl >> 17) & 0x0000000F);
-    rumboot_printf("LRU Parity            = 0x%x\n", (dcdbtrl >> 13) & 0x00000003);
-    rumboot_printf("Word Data parity      = 0x%x\n", (dcdbtrl >> 0) & 0x0000000F);
-    //---
-    rumboot_printf("Tag address           = 0x%x\n", (dcdbtrh >> 12) & 0x0007FFFF);
-    rumboot_printf("Valid bit             = 0x%x\n", (dcdbtrh >> 11) & 0x00000001);
-    rumboot_printf("Tag parity bits       = 0x%x\n", (dcdbtrh >> 9) & 0x00000003);
-    rumboot_printf("Extended tag address  = 0x%x\n", (dcdbtrh >> 0) & 0x000003FF);
-    
-    //read_l1_cache(0,0x80,0,0,0x82,7,1);
-    //read_all_l1_cache();
-    read_l1_cache(0,0,0,3,255,7,1);
 
+// 0:16     -   Unused.                                     [
+// 17:18    -   Data cache way.                             [
+// 19:26    -   Data cache index.                           [12:5]
+// 27:29    -   Word address within L1 Data cache line.     [4:2]
+// 30:31    -   Unused.                                     [1:0]
+    
+    //------------
+    rumboot_printf("******** Read FIRST word *********\n");
+    dcread_addr_even = (0x00000000) | (dcrdpe << 2) | (dcindxpe << 5);
+    debug_dc_read(dcread_addr_even);
+    //------------
+    rumboot_printf("******** Read SECOND word *********\n");
+    dcread_addr_odd = dcread_addr_even ^ (~(dcread_addr_even | 0xFFFFEFFF));
+    debug_dc_read(dcread_addr_odd);
+    read_valid_l1_cache();
     rumboot_arch_exception(id, name);
 }
 
+//=================================================================================================
 int main(void)
 {
     // uint32_t result = 0;
-    uint32_t read_val, *arr, i;
+    uint32_t read_val, *arr, i, dcdbtrl, dcdbtrh;
 
     rumboot_platform_runtime_info->silent = false;
         uint32_t const msr_old_value = msr_read();
@@ -386,31 +404,33 @@ int main(void)
     rumboot_printf("Starting test\n");
 
 //--------GC-start
-// --- set DCDPEI - [10:11]
-    spr_write(SPR_CCR1, 0x00200000);
+    // ----- set error
+    spr_write(SPR_CCR1, SET_DCLPEI); 
+    // ----- set error
     isync();
     rumboot_printf("CCR0: 0x%x\n", spr_read(SPR_CCR0));
     rumboot_printf("CCR1: 0x%x\n", spr_read(SPR_CCR1));
     rumboot_printf("CCR2: 0x%x\n", spr_read(SPR_CCR2));
     rumboot_printf("DCESR: 0x%x\n", spr_read(SPR_DCESR));
-    rumboot_irq_set_exception_handler(my_handler);
+    rumboot_irq_set_exception_handler(l1_cache_error_handler);
 //--------GC-end
     //iowrite32(0xA, 0x1000);
     //read_val = ioread32(0x1000);
     
-    arr = (uint32_t *) (SCND_PG_STRT +0x100);
+    arr = (uint32_t *) (SCND_PG_STRT +0x600);
     rumboot_printf("Write 20 cached values at 0x%x\n", arr);
     for(i=0;i<20;i=i+1) {
         *(arr + i) = 0xDEADC0DE;
     }
-    //msync();
-    //read_l1_cache(0,0x80,0,0,0x82,7);
-    //read_all_l1_cache();
+    
     rumboot_printf("Read 20 cached values\n");
     for(i=0;i<20;i=i+1) {
         rumboot_printf("read_val: 0x%x\n", *(arr + i));
     }
-    //read_l1_cache(0,0x80,0,0,0x82,7);
-    read_all_l1_cache();
+    
+    debug_dc_read(0x1600);
+    
+    
+    
     rumboot_printf("CCR1: 0x%x\n", spr_read(SPR_CCR1));
 }
