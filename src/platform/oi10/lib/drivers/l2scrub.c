@@ -15,6 +15,7 @@
 #include <rumboot/rumboot.h>
 #include <math.h>
 #include <arch/l2scrub.h>
+#include <devices/sp805.h>
 
 //#define DEBUG
 #ifdef DEBUG
@@ -317,7 +318,7 @@ static bool l2_correct_data(struct l2_scrubber *scr, struct l2_scrubbing_context
 
     if (scr->scrub_with_pattern) {
         l2c_data_direct_write(scr->dcr_base, &scr->layout, failarraddr, scr->pattern);
-        dbg("Fixed bitflip by overriting the pattern\n");
+        dbg("Fixed bitflip by overriting the pattern @ index %d\n", failarraddr);
         scr->corrected_data_errors++;
         /* When scrubbing with pattern we can fix multiple flips in one go */
         return false; 
@@ -431,7 +432,7 @@ static void l2_scrubber_handler(int irq, void *arg)
     uint32_t status = l2c_l2_read(DCR_L2C_BASE, L2C_L2INT);
     ctx.l2int = status;
     ctx.l2mck = l2c_l2_read(DCR_L2C_BASE, L2C_L2MCK);
-    scr->irq_count++;
+
     
     if (status & (1<<(31-23))) {
         scrubber_exception(scr, &ctx, "Uncorrectables from ARRSTAT0");
@@ -445,6 +446,26 @@ static void l2_scrubber_handler(int irq, void *arg)
     }
 
     uint32_t end = rumboot_platform_get_uptime();
+    uint32_t time_between_errors = start - scr->last_error_timestamp;
+    scr->last_error_timestamp = start;
+    if (scr->irq_count == 1) {
+        scr->min_time_between_errors = time_between_errors;
+        scr->max_time_between_errors = time_between_errors;
+        scr->avg_time_between_errors = time_between_errors;
+    } else if (scr->irq_count > 1) {
+        /* Theoretically this should more or less allow us to avoid overflows */
+        scr->avg_time_between_errors = (time_between_errors + (scr->avg_time_between_errors * scr->irq_count)) / (scr->irq_count + 1);
+    }
+
+    if (time_between_errors < scr->min_time_between_errors) {
+        scr->min_time_between_errors = time_between_errors;
+    }
+
+    if (time_between_errors > scr->max_time_between_errors) {
+        scr->max_time_between_errors = time_between_errors;
+    }
+
+    scr->irq_count++;
     scr->time_wasted += end - start;
 }
 
@@ -462,6 +483,19 @@ void l2scrub_mck_handler(int id, const char *name)
     mcsr = spr_read(SPR_MCSR_RW);
     /* Some other shit happened, let previous handler handle it */
     if (mcsr) {
+
+    struct sp805_conf config_FREE_RUN =
+        {
+               .mode = FREERUN,
+               .interrupt_enable = 1,
+               .clock_division = 1,
+               .width = 32,
+               .load = 100,
+        };
+        sp805_unlock_access(DCR_WATCHDOG_BASE);
+        sp805_write_to_itcr(DCR_WATCHDOG_BASE, 0b0); //set up normal mode
+        sp805_config(DCR_WATCHDOG_BASE, &config_FREE_RUN);
+        sp805_enable(DCR_WATCHDOG_BASE);
         scrubber_exception(the_scrubber, NULL, "Machine check");
     }
 }
@@ -533,4 +567,10 @@ void l2_scrubber_dump_stats(struct l2_scrubber *scr)
     rumboot_printf("Time wasted:            %u us\n", scr->time_wasted);
     rumboot_printf("Time between errors:    min: %u us max: %u us avg: %u us\n", 
         scr->min_time_between_errors, scr->max_time_between_errors, scr->avg_time_between_errors);
+}
+
+void l2_scrubber_reset_stats(struct l2_scrubber *scr)
+{
+    int len = ((uint8_t *) &(scr->stats_end)) - ((uint8_t *) &(scr->stats_start));
+    memset(&(scr->stats_start), 0x0, len);
 }

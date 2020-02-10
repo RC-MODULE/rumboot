@@ -507,7 +507,7 @@ endif()
     add_rumboot_target_dir(l2scrubber/tests
       CONFIGURATION IRAM
       PREFIX l2scrub
-      FILES l2scrubber/oi10.c
+      FILES l2scrubber/oi10.c tlbdump/ops.S
     )
 
 

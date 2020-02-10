@@ -21,40 +21,52 @@
 
 int main()
 {
+    int i,j;
+    int num_irqs;
+
     struct l2_scrubber *scr = l2scrubber_tests_init();
     uintptr_t ptr = (uintptr_t) l2scrubber_tests_get_cachable_area();
+
     /* This magic bullet will fix everything */
     l2_scrubber_enable_pattern_scrubbing(scr, 0x5a5a5a5a5a5a5a5aUL);
 
     struct l2c_mem_layout layout;
     l2c_get_mem_layout(DCR_L2C_BASE, &layout);
 
-    int i,j;
-    int num_irqs;
 
     for (i=0; i<8; i++) {
-        scr->irq_count = 0;
+        l2_scrubber_reset_stats(scr);
         rumboot_printf("Injecting data ecc error in bit %d\n", i);
         for (j=0; j < layout.l2size_bytes / 8; j++) {
             l2_inject_data_ecc_fault(DCR_L2C_BASE, j, i);
         }
         num_irqs = j;
 
-        rumboot_printf("Running readback, this will take a while\n");
+        rumboot_printf("Running readback #1, this will take a while\n");
         for (j=0; j < layout.l2size_bytes; j = j + 8) {
             ioread64(j);
         }
 
+        rumboot_printf("Fixed %d errors so far\n", scr->corrected_data_errors);
+
+        rumboot_printf("Running readback #2, this will take a while\n");
+        for (j=0; j < layout.l2size_bytes; j = j + 8) {
+            ioread64(j);
+        }
+
+        rumboot_printf("Fixed %d errors so far\n", scr->corrected_data_errors);
+
         if (num_irqs != scr->corrected_data_errors) {
-            rumboot_printf("FATAL: Expected %d IRQs, got %d\n", j, scr->corrected_data_errors);
+            rumboot_printf("FATAL: Expected %d corrected, but got %d\n", j, scr->corrected_data_errors);
             l2_scrubber_dump_stats(scr);
             return 1;
         }
+        l2_scrubber_dump_stats(scr);
     }
 
 
     for (i=0; i<64; i++) {
-        scr->irq_count = 0;
+        l2_scrubber_reset_stats(scr);
         rumboot_printf("Injecting data error in bit %d\n", i);
         for (j=0; j < layout.l2size_bytes / 8; j++) {
             l2_inject_data_fault(DCR_L2C_BASE, j, i);
@@ -72,8 +84,9 @@ int main()
             ioread64(j);
         }
 
-        if (num_irqs != scr->irq_count) {
-            rumboot_printf("FATAL: Expected %d IRQs, got %d\n", j, scr->irq_count);
+        if (num_irqs != scr->corrected_data_errors) {
+            rumboot_printf("FATAL: Expected %d corrected, but got %d\n", j, scr->corrected_data_errors);
+            l2_scrubber_dump_stats(scr);
             return 1;
         }
     }

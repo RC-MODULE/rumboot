@@ -743,11 +743,12 @@ void l2c_tag_directwrite(uint32_t const dcr_base, struct l2c_mem_layout *mem_lay
 
 void l2c_data_direct_write(uint32_t const base, struct l2c_mem_layout *mem_layout, int index, uint64_t data)
 {
-    int cache_way, data_addr;
+    int cache_way, data_addr, data_subaddr;
     uint32_t tag, ecc;
     bool ret;
-    l2_tag_address_decode(mem_layout, index, &cache_way, &data_addr);
-
+    l2_data_address_decode(mem_layout, index, &cache_way, &data_addr, &data_subaddr);
+    data_addr = data_addr << 3;
+    data_addr |= data_subaddr;
     uint32_t const cache_data_upper = (uint32_t)(data >> 32);
     uint32_t const cache_data_lower = (uint32_t)(data & 0xFFFFFFFF);
     l2c_l2_write( base, L2C_L2ARRACCDI0, cache_data_upper );
