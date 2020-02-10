@@ -2314,6 +2314,18 @@ add_rumboot_target(
         MBIN l2bug-multistore-supp
   )
    
+  add_rumboot_target(
+    CONFIGURATION IRAM_SPL
+    PREFIX l2bug
+    FILES l2bug/multistore-loader-3.c
+    NAME "multistore-3"
+    PREFIX l2bug
+    CFLAGS -DEMI_INIT -DADD_TLB -DM_BASE=SRAM0_BASE
+#    CFLAGS -DSDRAM_INIT -DADD_TLB -DM_BASE=SRAM0_BASE
+    IRUN_FLAGS ${ROM_6500K_OPTS}
+    LOAD IM0BIN SELF
+        MBIN l2bug-multistore-supp
+  )
    add_rumboot_target(
     CONFIGURATION IRAM_SPL
     PREFIX l2bug
