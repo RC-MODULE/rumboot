@@ -74,11 +74,6 @@ static void rumboot_decode_l1mck() {
    /* TODO */
 }
 
-static void rumboot_decode_l2mck() {
-   rumboot_printf("  -  L2 Debug Info  -\n");
-   /* TODO */
-}
-
 static void rumboot_decode_mch() {
    uint32_t sr = spr_read(SPR_MCSR_RW);
    int i; 
@@ -99,10 +94,6 @@ static void rumboot_decode_mch() {
    if (sr & ((1 << ITRPT_MCSR_IC_i) | (1 << ITRPT_MCSR_IC_i))) {
       rumboot_decode_l1mck();
    } 
-
-   if (sr & (1 << ITRPT_MCSR_L2_i)) { 
-      rumboot_decode_l2mck();
-   }
 }
 
 void rumboot_arch_exception(int id, const char *name)

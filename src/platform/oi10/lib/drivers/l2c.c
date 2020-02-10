@@ -737,15 +737,30 @@ void l2c_tag_directwrite(uint32_t const dcr_base, struct l2c_mem_layout *mem_lay
     int way, addr;
     l2_tag_address_decode(mem_layout, index, &way, &addr);
     l2c_arracc_tag_info_wt_ecc_write_raw( dcr_base, addr, way, log2, log1 );
+
+
 }
 
-void l2c_tag_regen(uint32_t const base, struct l2c_mem_layout *mem_layout, int index)
+void l2c_data_direct_write(uint32_t const base, struct l2c_mem_layout *mem_layout, int index, uint64_t data)
 {
-    int way, addr;
+    int cache_way, data_addr;
     uint32_t tag, ecc;
     bool ret;
-    l2_tag_address_decode(mem_layout, index, &way, &addr);
-    ret = l2c_arracc_tag_info_wt_ecc_read_raw(base, addr, way, &tag, &ecc);
+    l2_tag_address_decode(mem_layout, index, &cache_way, &data_addr);
+
+    uint32_t const cache_data_upper = (uint32_t)(data >> 32);
+    uint32_t const cache_data_lower = (uint32_t)(data & 0xFFFFFFFF);
+    l2c_l2_write( base, L2C_L2ARRACCDI0, cache_data_upper );
+    l2c_l2_write( base, L2C_L2ARRACCDI1, cache_data_lower );
+
+    return l2c_arracc_write(
+            base,
+            ((data_addr >> L2C_ARRAY_ADDR_DATA_DW_n) << L2C_L2ARRACCADR_DATA_i),
+            ( (L2C_ARRACC_BufferID_DATA << L2C_L2ARRACCCTL_BUFFERID_i)
+            | (L2C_ARRACC_ReqType_WR8WTECC << L2C_L2ARRACCCTL_REQTYPE_i)
+            | (cache_way << L2C_L2ARRACCCTL_L2WAY_i)
+            | ((0b10000000 >> GET_BITS(data_addr, 0, L2C_ARRAY_ADDR_DATA_DW_n)) << L2C_L2ARRACCCTL_MASKDW_i) )
+        );
 }
 
 

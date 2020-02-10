@@ -16,7 +16,7 @@
 #include <math.h>
 #include <arch/l2scrub.h>
 
-#define DEBUG
+//#define DEBUG
 #ifdef DEBUG
 #define dbg(fmt, ...) rumboot_printf("l2-scrubber: " fmt, ##__VA_ARGS__)
 #else
@@ -160,6 +160,8 @@ struct l2_scrubbing_context {
     uint32_t arrstat0 ;
     uint32_t arrstat1 ;
     uint32_t arrstat2 ;
+    uint32_t l2int    ;
+    uint32_t l2mck;
 };
 
 
@@ -233,13 +235,6 @@ static inline void l2_scrubbing_context_read(struct l2_scrubber *scr, struct l2_
 }
 
 
-
-
-static bool l2_correct_tag(struct l2_scrubber *scr, struct l2_scrubbing_context *ctx, int way)
-{
-    return false;
-}
-
 static int find_data(struct l2_scrubber *scr, uint64_t data) {
     int idx;
     for (idx = 0; idx < (scr->layout.l2size_bytes / 8); idx++) {
@@ -249,36 +244,103 @@ static int find_data(struct l2_scrubber *scr, uint64_t data) {
     }
     return -1;
 }
+
+static int find_tag(struct l2_scrubber *scr, uint64_t data) {
+    int idx;
+    for (idx = 0; idx < (scr->layout.l2size_bytes / 8); idx++) {
+        uint64_t actual_data = l2c_read_mem(scr->dcr_base, &scr->layout, L2C_MEM_TAG, idx);
+        if (data == actual_data)
+            return idx;
+    }
+    return -1;
+}
+
+static bool l2_correct_tag(struct l2_scrubber *scr, struct l2_scrubbing_context *ctx, int way)
+{
+        int index = l2_tag_address_encode(&scr->layout, way, ctx->log0 >> 1);
+        uint64_t actual_tag = l2c_read_mem(scr->dcr_base, &scr->layout, L2C_MEM_TAG, index);
+        uint64_t actual_ecc  = l2c_read_mem(scr->dcr_base, &scr->layout, L2C_MEM_TAG_ECC, index);
+        uint64_t tag_ecc = ctx->log1 & 0xff;
+        uint64_t tag     = ctx->log2 << 2;
+
+        int bit = ctx->log1 >> 16;
+        bit = tag_ecc_fix_lookup[bit];
+
+        if (tag != actual_tag) {
+        dbg("Multihit: actual: 0x%x %x ecc: %x | logged: 0x%x %x ecc: %x (addr %d log0 0x%x bit %d)\n", 
+            (uint32_t) ((actual_tag >> 32) & 0xffffffff),
+            (uint32_t) ((actual_tag) & 0xffffffff),
+            (uint32_t) ((actual_ecc) & 0xff),
+            0,
+            (uint32_t) tag,
+            (uint32_t) ((tag_ecc) & 0xff),
+            index, ctx->log0, bit
+            );
+        dbg("index must be %d\n", find_tag(scr, tag));
+        return false;
+        }
+
+
+        dbg("Correcting tag index %d way %d bit %d\n", index, way, bit);
+        if (bit<32) {
+            tag ^= (1<< bit);
+            l2c_write_mem(scr->dcr_base, &scr->layout, L2C_MEM_TAG, index, ((uint64_t) tag));
+        } else {
+            bit -= 64;
+            ctx->log1 &= 0xff;
+            ctx->log1 ^= (1<<(bit - 64));
+            l2c_write_mem(scr->dcr_base, &scr->layout, L2C_MEM_TAG_ECC, index, ctx->log1);
+        }
+        scr->corrected_tag_errors++;
+    return false;
+}
+
+
 static bool l2_correct_data(struct l2_scrubber *scr, struct l2_scrubbing_context *ctx, int word)
 {
     /* 
-     * We can't be sure if the log registers contain out data, so we need to check them
+     * BEWARE: Hardware BUG
+     * We can't be sure if the log registers contain our data, so we need to check them
      * against the actual array data. But, if we're lucky - the word argument is the one 
      * we seek.
+     * But sometimes the data in LOG2 & LOG3 is completely wrong, and therefore we won't be 
+     * able to do anything about this bitflip. 
      */
     uint32_t failarraddr = (ctx->log0 << 3) | word;
     uint64_t actual_data = l2c_read_mem(scr->dcr_base, &scr->layout, L2C_MEM_DATA, failarraddr);
     uint64_t actual_ecc  = l2c_read_mem(scr->dcr_base, &scr->layout, L2C_MEM_DATA_ECC, failarraddr);
     uint64_t data = (((uint64_t) ctx->log2) << 32 | ((uint64_t) ctx->log3));
+    uint64_t data_ecc = ctx->log1 & 0xff;
+    scr->lastfailaddr = failarraddr;
+    int bit = ctx->log1 >> 16;
+    bit = data_ecc_fix_lookup[bit];
+
+    if (scr->scrub_with_pattern) {
+        l2c_data_direct_write(scr->dcr_base, &scr->layout, failarraddr, scr->pattern);
+        dbg("Fixed bitflip by overriting the pattern\n");
+        scr->corrected_data_errors++;
+        /* When scrubbing with pattern we can fix multiple flips in one go */
+        return false; 
+    }
+
     if (data != actual_data) { 
-        dbg("Multihit: actual: 0x%x %x | logged: 0x%x %x (addr %d log0 0x%x)\n", 
+        dbg("Multihit: actual: 0x%x %x ecc: %x | logged: 0x%x %x ecc: %x (addr %d log0 0x%x bit %d)\n", 
             (uint32_t) ((actual_data >> 32) & 0xffffffff),
             (uint32_t) ((actual_data) & 0xffffffff),
+            (uint32_t) ((actual_ecc) & 0xff),
             (uint32_t) ((data >> 32) & 0xffffffff),
             (uint32_t) ((data) & 0xffffffff),
-            failarraddr, ctx->log0
+            (uint32_t) ((data_ecc) & 0xff),
+            failarraddr, ctx->log0, bit
             );
+//        data = actual_data;
 //        dbg("Index should be %d\n", find_data(scr, data));
 //        l2_scrubbing_context_read(scr, ctx);
 //        l2_dump_data((failarraddr - 8) > 0 ? (failarraddr - 8) : 0 , 16);
         return false; /* That's not our bitflip!*/
     }
-    /* That's our baby, let's fix it */
 
-    l2_dump_data(failarraddr, 1);
-    scr->lastfailaddr = failarraddr;
-    int bit = ctx->log1 >> 16;
-    bit = data_ecc_fix_lookup[bit];
+    /* That's our baby, let's fix it */
     if (bit<64) {
         data ^= (1ULL << bit);
         l2c_write_mem(scr->dcr_base, &scr->layout, L2C_MEM_DATA, failarraddr, data);
@@ -292,20 +354,39 @@ static bool l2_correct_data(struct l2_scrubber *scr, struct l2_scrubbing_context
     }
     scr->corrected_data_errors++;
     dbg("Corrected cache data bitflip at index %d bit %d\n", failarraddr, bit);
-    l2_dump_data(failarraddr, 1);
     return true;
+}
+
+static void scrubber_exception(struct l2_scrubber *scr, struct l2_scrubbing_context *ctx, const char *descr)
+{
+    if (ctx) {
+        rumboot_printf("  /!\\  FATAL SCRUBBING EXCEPTION  /!\\ \n");
+        rumboot_printf("  -  L2 Debug Info  -\n");
+        rumboot_printf("L2INT:      0x%x\n",  ctx->l2int);   
+        rumboot_printf("L2MCK:      0x%x\n",  ctx->l2mck);   
+        rumboot_printf("ARRSTAT0:   0x%x\n",  ctx->arrstat0);   
+        rumboot_printf("ARRSTAT1:   0x%x\n",  ctx->arrstat1);   
+        rumboot_printf("ARRSTAT2:   0x%x\n",  ctx->arrstat2);   
+        rumboot_printf("FERR:       0x%x\n",  ctx->ferr);   
+        rumboot_printf("ARRFERR0:   0x%x\n",  ctx->arrferr0);   
+        rumboot_printf("ARRFERR1:   0x%x\n",  ctx->arrferr1);   
+        rumboot_printf("ARRFERR2:   0x%x\n",  ctx->arrferr2);   
+   }
+   if (scr->old_mck_handler) {
+        scr->old_mck_handler(4, descr);
+   }
 }
 
 static void l2_correct_arrstat2(struct l2_scrubber *scr, struct l2_scrubbing_context *ctx)
 {
     uint32_t arrstat2 = ctx->arrstat2;
+    int multihit = 0;
     while(1) {
         int failure = ffs(arrstat2);
         if (failure <= 0)
             break;
         failure -= 1;
         dbg("Processing failbit %d |  %x\n", failure, arrstat2);
-            
         if (failure < 8) {
             /* Correctable flips in data, fix it! */
             int failword = 7 - failure;
@@ -319,82 +400,23 @@ static void l2_correct_arrstat2(struct l2_scrubber *scr, struct l2_scrubbing_con
             if (l2_correct_tag(scr, ctx, way)) {
                 goto bailout; /* We've corrected something! Good!*/
             }
+        } else {
+            scrubber_exception(scr, &ctx, "Uncorrectables from ARRSTAT2");
         }
         arrstat2 &= ~(1<<failure); /* Clear this one */
         dbg("Arrstat2 now %x\n", arrstat2);
+        multihit++;
     }
 
     bailout:
+        if (multihit) {
+            scr->multihits++;
+        }
+        if (scr->maxhit < multihit) {
+            scr->maxhit = multihit;
+        }
         dbg("--------DONE--------\n");
         l2c_l2_write(scr->dcr_base, L2C_L2ARRSTAT2, ctx->arrstat2);
-
-#if 0
-    int failbit = ffs(arrstat2) - 1;
-    if (failbit < 8) { 
-        int failword = 7-(failbit);
-        uint32_t failarraddr = (log0 << 3) | failword;
-        scr->lastfailaddr = failarraddr;
-        int bit = log1 >> 16;
-        bit = data_ecc_fix_lookup[bit];
-        if (bit<32) {
-            log3 ^= (1<< bit);
-            l2c_write_mem(scr->dcr_base, &scr->layout, L2C_MEM_DATA, failarraddr, (((uint64_t) log2) << 32 | log3));
-            scr->lastfailmem = L2C_MEM_DATA;
-            scr->lastfailbit = bit;
-        } else if (bit <64) {
-            log2 ^= (1<< (bit - 32));
-            l2c_write_mem(scr->dcr_base, &scr->layout, L2C_MEM_DATA, failarraddr, (((uint64_t) log2) << 32 | log3));
-            scr->lastfailmem = L2C_MEM_DATA;
-            scr->lastfailbit = bit;
-        } else {
-            log1 ^= (1<<(bit - 64));
-            l2c_write_mem(scr->dcr_base, &scr->layout, L2C_MEM_DATA_ECC, failarraddr, log1 & 0xff);
-            scr->lastfailmem = L2C_MEM_DATA_ECC;
-            scr->lastfailbit = bit;
-        }
-        scr->corrected_data_errors++;
-        dbg("Corrected cache data bitflip at index %d\n", failarraddr);
-    } else if (failbit < 12) {
-        uint32_t way = 3 - (failbit - 8);
-        log0 = log0 >> 1;
-        int index = l2_tag_address_encode(&scr->layout, way, log0);
-        int bit = log1 >> 16;
-        bit = tag_ecc_fix_lookup[bit];
-        if (bit<32) {
-            log2 = log2 << 2;
-            log2 ^= (1<< bit);
-            l2c_write_mem(scr->dcr_base, &scr->layout, L2C_MEM_TAG, index, ((uint64_t) log2));
-        } else {
-            bit -= 64;
-            log1 &= 0xff;
-            log1 ^= (1<<(bit - 64));
-            l2c_write_mem(scr->dcr_base, &scr->layout, L2C_MEM_TAG_ECC, index, log1);
-        }
-   //     l2c_tag_directwrite(scr->dcr_base, &scr->layout, index, log2, log1);
-   //     l2_dump_tag(&scr->layout, index);
-   //     l2_dump_tag(&scr->layout, index);
-        scr->corrected_tag_errors++;
-    }
-
-    l2c_l2_write(scr->dcr_base, L2C_L2ARRSTAT2, arrstat2);
-
-    arrstat2 &= ~(1<<failbit);
-    if (arrstat2) {
-        rumboot_printf("LOG REGS: LOG0: 0x%x LOG1: 0x%x LOG2: 0x%x LOG3: 0x%x LOG4: 0x%x LOG5: 0x%x FERR: 0x%x\n", 
-        log0,
-        log1,
-        log2,
-        log3,
-        log4,
-        log5,
-        ferr 
-        );
-
-
-        //rumboot_platform_panic("FATAL: Multiple errors in TAGs (%x & %x), don't know what to do\n", arrstat2, (1<<failbit));
-        return;
-    }
-#endif
 }
 
 
@@ -407,17 +429,18 @@ static void l2_scrubber_handler(int irq, void *arg)
 
     uint32_t start = rumboot_platform_get_uptime();
     uint32_t status = l2c_l2_read(DCR_L2C_BASE, L2C_L2INT);
+    ctx.l2int = status;
+    ctx.l2mck = l2c_l2_read(DCR_L2C_BASE, L2C_L2MCK);
     scr->irq_count++;
-	dbg("IRQ %d STATUS 0x%x\n", irq, status);
     
     if (status & (1<<(31-23))) {
-        dbg("ARRSTAT0\n");
+        scrubber_exception(scr, &ctx, "Uncorrectables from ARRSTAT0");
     }
     if (status & (1<<(31-24))) {
-        dbg("ARRSTAT1\n");
+        scrubber_exception(scr, &ctx, "Uncorrectables from ARRSTAT1");
     }
+
     if (status & (1<<(31-25))) {
-        dbg("ARRSTAT2\n");
         l2_correct_arrstat2(scr, &ctx);
     }
 
@@ -431,8 +454,16 @@ void l2scrub_mck_handler(int id, const char *name)
 {
     uint32_t mcsr = spr_read(SPR_MCSR_RW);
     dbg("MCK: MCSR %x\n", mcsr);
-    l2_scrubber_handler(4, the_scrubber);
-    spr_write(0x33C, mcsr);
+    if (mcsr & (1 << ITRPT_MCSR_L2_i)) {
+        /* That's our business */
+        l2_scrubber_handler(4, the_scrubber);
+        spr_write(0x33C, (1 << ITRPT_MCSR_MCS_i) | (1 << ITRPT_MCSR_L2_i));
+    }
+    mcsr = spr_read(SPR_MCSR_RW);
+    /* Some other shit happened, let previous handler handle it */
+    if (mcsr) {
+        scrubber_exception(the_scrubber, NULL, "Machine check");
+    }
 }
 
 struct l2_scrubber *l2_scrubber_create(uintptr_t dcr_base, int irq)
@@ -441,6 +472,7 @@ struct l2_scrubber *l2_scrubber_create(uintptr_t dcr_base, int irq)
     memset(scrub, 0x0, sizeof(*scrub));
     scrub->dcr_base = dcr_base;
     scrub->irq = irq;
+    scrub->old_mck_handler = rumboot_platform_runtime_info->irq_exception_hndlr;
 
     l2c_get_mem_layout(DCR_L2C_BASE, &scrub->layout);
     rumboot_printf("l2-scrubber: Attaching to L2 Cache at 0x%x IRQ %d\n", scrub->dcr_base, scrub->irq);
@@ -451,28 +483,30 @@ struct l2_scrubber *l2_scrubber_create(uintptr_t dcr_base, int irq)
         scrub->layout.data_array_size
     );
 
-    #ifdef USE_IRQ
-    struct rumboot_irq_entry *tbl = rumboot_irq_table_get();
-    if (!tbl) {
-        tbl = rumboot_irq_create(NULL);
+    if (irq >= 0) {
+        struct rumboot_irq_entry *tbl = rumboot_irq_table_get();
+        if (!tbl) {
+            tbl = rumboot_irq_create(NULL);
+        }
+
+        rumboot_irq_set_handler(tbl, irq,  (RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH), l2_scrubber_handler, scrub);
+        rumboot_irq_table_activate(tbl);
+        rumboot_irq_sei();
+        l2c_global_enable_interrupt(dcr_base, 0xffffffff);
+        l2c_l2_write (dcr_base, L2C_L2ARRINTEN0, 0xffffffff);
+        l2c_l2_write (dcr_base, L2C_L2ARRINTEN1, 0xffffffff);
+        l2c_l2_write (dcr_base, L2C_L2ARRINTEN2, 0xffffffff);
+        l2c_l2_write (dcr_base, L2C_L2ARRINTEN2, 0xffffffff);
+        l2c_l2_write (dcr_base, L2C_L2ARRMCKEN1, 0xffffffff);
+        l2c_l2_write (dcr_base, L2C_L2ARRMCKEN2, 0x01110000);
+    } else {
+        /* Use machine-checks */
+        l2c_l2_write (dcr_base, L2C_L2ARRMCKEN1, 0xffffffff);
+        l2c_l2_write (dcr_base, L2C_L2ARRMCKEN2, 0xffffffff);
+        rumboot_irq_set_exception_handler(l2scrub_mck_handler);
+        the_scrubber = scrub;
     }
 
-    rumboot_irq_set_handler(tbl, irq,  (RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH), l2_scrubber_handler, scrub);
-    rumboot_irq_table_activate(tbl);
-    rumboot_irq_sei();
-    l2c_global_enable_interrupt(dcr_base, 0xffffffff);
-    l2c_l2_write (dcr_base, L2C_L2ARRINTEN0, 0xffffffff);
-    l2c_l2_write (dcr_base, L2C_L2ARRINTEN1, 0xffffffff);
-    l2c_l2_write (dcr_base, L2C_L2ARRINTEN2, 0xffffffff);
-    l2c_l2_write (dcr_base, L2C_L2ARRINTEN2, 0xffffffff);
-    l2c_l2_write (dcr_base, L2C_L2ARRMCKEN1, 0xffffffff);
-    l2c_l2_write (dcr_base, L2C_L2ARRMCKEN2, 0x01110000);
-#else
-    l2c_l2_write (dcr_base, L2C_L2ARRMCKEN1, 0xffffffff);
-    l2c_l2_write (dcr_base, L2C_L2ARRMCKEN2, 0xffffffff);
-    rumboot_irq_set_exception_handler(l2scrub_mck_handler);
-    the_scrubber = scrub;
-#endif
     /* Use single-threaded access */
     uint32_t cfg =     l2c_l2_read (dcr_base, L2C_L2ARRCFG);
     l2c_l2_write (dcr_base, L2C_L2ARRCFG, cfg | 1 | (0x7<<9));
@@ -480,4 +514,23 @@ struct l2_scrubber *l2_scrubber_create(uintptr_t dcr_base, int irq)
     struct l2_scrubbing_context ctx;
     l2_scrubbing_context_read(scrub, &ctx);
     return scrub;
+}
+
+void l2_scrubber_enable_pattern_scrubbing(struct l2_scrubber *scr, uint64_t pattern)
+{
+    scr->scrub_with_pattern = 1;
+    scr->pattern = pattern;
+}
+
+void l2_scrubber_dump_stats(struct l2_scrubber *scr)
+{
+    rumboot_printf("---- L2 Scrubber Statistics ----\n");
+    rumboot_printf("IRQs served:            %d\n", scr->irq_count);
+    rumboot_printf("Corrected TAGs:         %d\n", scr->corrected_tag_errors);
+    rumboot_printf("Corrected DATA:         %d\n", scr->corrected_data_errors);
+    rumboot_printf("Multiword hits:         %u\n", scr->multihits);
+    rumboot_printf("Max simultaneous hits:  %u\n", scr->maxhit);
+    rumboot_printf("Time wasted:            %u us\n", scr->time_wasted);
+    rumboot_printf("Time between errors:    min: %u us max: %u us avg: %u us\n", 
+        scr->min_time_between_errors, scr->max_time_between_errors, scr->avg_time_between_errors);
 }

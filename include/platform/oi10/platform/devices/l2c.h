@@ -356,5 +356,5 @@ void l2c_write_mem( uint32_t base, struct l2c_mem_layout const * mem_layout, l2c
 
 /* FixMe: Hack ! */
 void l2c_tag_directwrite(uint32_t dcr_base, struct l2c_mem_layout *mem_layout, int index, uint32_t log2, uint32_t log1);
-
+void l2c_data_direct_write(uint32_t const base, struct l2c_mem_layout *mem_layout, int index, uint64_t data);
 #endif  /* L2C_H */
