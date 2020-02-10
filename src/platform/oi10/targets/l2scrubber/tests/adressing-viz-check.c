@@ -58,7 +58,10 @@ int main()
         write_some_data_shit(&layout, w, 0, 0);
         write_some_data_shit(&layout, w, 0, 1);
         write_some_data_shit(&layout, w, 0, 2);
+        write_some_data_shit(&layout, w, 0, 7);
         write_some_data_shit(&layout, w, 1023, 0);
+        write_some_data_shit(&layout, w, 1023, 1);
+        write_some_data_shit(&layout, w, 1023, 2);
         write_some_data_shit(&layout, w, 1023, 7);
     }
     rumboot_printf("Writing tags\n");
