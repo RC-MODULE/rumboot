@@ -143,7 +143,7 @@ void rumboot_platform_panic(const char *why, ...)
 	   rumboot_vprintf(why, ap);
 	   va_end(ap);
    }
-   exit(1);
+   while(1);;
 }
 
 __attribute__((no_instrument_function)) int rumboot_memcheck32(void *src, void *dst, size_t sz)
