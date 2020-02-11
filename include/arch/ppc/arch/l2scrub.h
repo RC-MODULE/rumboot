@@ -33,6 +33,7 @@ struct l2_scrubber {
 
 struct l2_scrubber *l2_scrubber_create(uintptr_t dcr_base, int irq);
 void l2_scrubber_enable_pattern_scrubbing(struct l2_scrubber *scr, uint64_t pattern);
+void l2_scrubber_scrub_once(struct l2_scrubber *scr);
 
 void l2_dump_data(uint32_t start, uint32_t count);
 void l2_dump_tag(struct l2c_mem_layout *layout, int index);

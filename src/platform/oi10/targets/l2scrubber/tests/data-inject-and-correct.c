@@ -40,6 +40,8 @@ int main()
         for (j=0; j < layout.l2size_bytes / 8; j++) {
             l2_inject_data_ecc_fault(DCR_L2C_BASE, j, i);
         }
+        l2_inject_tag_fault(DCR_L2C_BASE, i, 1);
+
         num_irqs = j;
 
         rumboot_printf("Running readback #1, this will take a while\n");

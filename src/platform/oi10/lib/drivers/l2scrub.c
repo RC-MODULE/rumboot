@@ -16,8 +16,9 @@
 #include <math.h>
 #include <arch/l2scrub.h>
 #include <devices/sp805.h>
+#include <regs/regs_sp805.h>
 
-//#define DEBUG
+#define DEBUG
 #ifdef DEBUG
 #define dbg(fmt, ...) rumboot_printf("l2-scrubber: " fmt, ##__VA_ARGS__)
 #else
@@ -172,6 +173,8 @@ static inline void l2_scrubbing_context_dump(struct l2_scrubbing_context *ctx)
 #define DO_CTX_DUMP(ctx,reg) dbg("%s: %x\n", #reg, (ctx)->reg);
 
     dbg("--- ctx ---\n");
+    DO_CTX_DUMP(ctx, l2int);
+    DO_CTX_DUMP(ctx, l2mck);
     DO_CTX_DUMP(ctx, log0);
     DO_CTX_DUMP(ctx, log1);
     DO_CTX_DUMP(ctx, log2);
@@ -210,6 +213,10 @@ static inline void l2_scrubbing_context_read(struct l2_scrubber *scr, struct l2_
     int total_reads = 0;
     int reads;
     uint32_t tmp;
+
+    ctx->l2int = l2c_l2_read(DCR_L2C_BASE, L2C_L2INT);
+    ctx->l2mck = l2c_l2_read(DCR_L2C_BASE, L2C_L2MCK);
+
     ctx->arrstat0 = l2c_l2_read(scr->dcr_base, L2C_L2ARRSTAT0);
     ctx->arrstat1 = l2c_l2_read(scr->dcr_base, L2C_L2ARRSTAT1);
     ctx->arrstat2 = l2c_l2_read(scr->dcr_base, L2C_L2ARRSTAT2);
@@ -360,6 +367,21 @@ static bool l2_correct_data(struct l2_scrubber *scr, struct l2_scrubbing_context
 
 static void scrubber_exception(struct l2_scrubber *scr, struct l2_scrubbing_context *ctx, const char *descr)
 {
+
+    struct sp805_conf wd_conf =
+        {
+            .mode              = FREERUN,
+            .interrupt_enable  = 0x1,
+            .width             = 0x20,
+            .load              = 0x2fffff
+        };
+
+    sp805_unlock_access(DCR_WATCHDOG_BASE);
+    sp805_clrint(DCR_WATCHDOG_BASE);
+    sp805_config(DCR_WATCHDOG_BASE, &wd_conf);
+    dcr_write(DCR_WATCHDOG_BASE + WD_REG_CONTROL, dcr_read(DCR_WATCHDOG_BASE + WD_REG_CONTROL) | WD_CTRL_RESEN);
+    sp805_enable(DCR_WATCHDOG_BASE);
+
     if (ctx) {
         rumboot_printf("  /!\\  FATAL SCRUBBING EXCEPTION  /!\\ \n");
         rumboot_printf("  -  L2 Debug Info  -\n");
@@ -372,6 +394,13 @@ static void scrubber_exception(struct l2_scrubber *scr, struct l2_scrubbing_cont
         rumboot_printf("ARRFERR0:   0x%x\n",  ctx->arrferr0);   
         rumboot_printf("ARRFERR1:   0x%x\n",  ctx->arrferr1);   
         rumboot_printf("ARRFERR2:   0x%x\n",  ctx->arrferr2);   
+        rumboot_printf("LOG0:   0x%x\n",  ctx->log0);   
+        rumboot_printf("LOG1:   0x%x\n",  ctx->log1);   
+        rumboot_printf("LOG2:   0x%x\n",  ctx->log2);   
+        rumboot_printf("LOG3:   0x%x\n",  ctx->log3);   
+        rumboot_printf("LOG4:   0x%x\n",  ctx->log4);   
+        rumboot_printf("LOG5:   0x%x\n",  ctx->log5);   
+        l2_scrubber_dump_stats(scr);
    }
    if (scr->old_mck_handler) {
         scr->old_mck_handler(4, descr);
@@ -429,11 +458,7 @@ static void l2_scrubber_handler(int irq, void *arg)
     l2_scrubbing_context_read(scr, &ctx);
 
     uint32_t start = rumboot_platform_get_uptime();
-    uint32_t status = l2c_l2_read(DCR_L2C_BASE, L2C_L2INT);
-    ctx.l2int = status;
-    ctx.l2mck = l2c_l2_read(DCR_L2C_BASE, L2C_L2MCK);
-
-    
+    uint32_t status = ctx.l2int | ctx.l2mck;
     if (status & (1<<(31-23))) {
         scrubber_exception(scr, &ctx, "Uncorrectables from ARRSTAT0");
     }
@@ -448,6 +473,7 @@ static void l2_scrubber_handler(int irq, void *arg)
     uint32_t end = rumboot_platform_get_uptime();
     uint32_t time_between_errors = start - scr->last_error_timestamp;
     scr->last_error_timestamp = start;
+
     if (scr->irq_count == 1) {
         scr->min_time_between_errors = time_between_errors;
         scr->max_time_between_errors = time_between_errors;
@@ -480,22 +506,10 @@ void l2scrub_mck_handler(int id, const char *name)
         l2_scrubber_handler(4, the_scrubber);
         spr_write(0x33C, (1 << ITRPT_MCSR_MCS_i) | (1 << ITRPT_MCSR_L2_i));
     }
+
     mcsr = spr_read(SPR_MCSR_RW);
     /* Some other shit happened, let previous handler handle it */
     if (mcsr) {
-
-    struct sp805_conf config_FREE_RUN =
-        {
-               .mode = FREERUN,
-               .interrupt_enable = 1,
-               .clock_division = 1,
-               .width = 32,
-               .load = 100,
-        };
-        sp805_unlock_access(DCR_WATCHDOG_BASE);
-        sp805_write_to_itcr(DCR_WATCHDOG_BASE, 0b0); //set up normal mode
-        sp805_config(DCR_WATCHDOG_BASE, &config_FREE_RUN);
-        sp805_enable(DCR_WATCHDOG_BASE);
         scrubber_exception(the_scrubber, NULL, "Machine check");
     }
 }
@@ -507,6 +521,8 @@ struct l2_scrubber *l2_scrubber_create(uintptr_t dcr_base, int irq)
     scrub->dcr_base = dcr_base;
     scrub->irq = irq;
     scrub->old_mck_handler = rumboot_platform_runtime_info->irq_exception_hndlr;
+    rumboot_irq_set_exception_handler(l2scrub_mck_handler);
+    the_scrubber = scrub;
 
     l2c_get_mem_layout(DCR_L2C_BASE, &scrub->layout);
     rumboot_printf("l2-scrubber: Attaching to L2 Cache at 0x%x IRQ %d\n", scrub->dcr_base, scrub->irq);
@@ -533,12 +549,12 @@ struct l2_scrubber *l2_scrubber_create(uintptr_t dcr_base, int irq)
         l2c_l2_write (dcr_base, L2C_L2ARRINTEN2, 0xffffffff);
         l2c_l2_write (dcr_base, L2C_L2ARRMCKEN1, 0xffffffff);
         l2c_l2_write (dcr_base, L2C_L2ARRMCKEN2, 0x01110000);
-    } else {
+    } else if (irq == -1) {
         /* Use machine-checks */
         l2c_l2_write (dcr_base, L2C_L2ARRMCKEN1, 0xffffffff);
         l2c_l2_write (dcr_base, L2C_L2ARRMCKEN2, 0xffffffff);
-        rumboot_irq_set_exception_handler(l2scrub_mck_handler);
-        the_scrubber = scrub;
+    } else {
+        /* Polling, please call l2_scrubber_scrub_once() periodically */
     }
 
     /* Use single-threaded access */
@@ -573,4 +589,9 @@ void l2_scrubber_reset_stats(struct l2_scrubber *scr)
 {
     int len = ((uint8_t *) &(scr->stats_end)) - ((uint8_t *) &(scr->stats_start));
     memset(&(scr->stats_start), 0x0, len);
+}
+
+void l2_scrubber_scrub_once(struct l2_scrubber *scr)
+{
+    l2_scrubber_handler(0, scr);
 }
