@@ -226,15 +226,6 @@ void read_l1_cache( uint32_t way_start, uint32_t index_start, uint32_t word_star
 void read_all_l1_cache(){read_l1_cache(0,0,0,3,255,7,0);}
 void read_valid_l1_cache(){read_l1_cache(0,0,0,3,255,7,1);}
 
-void debug_dc_read(uint32_t dcread_addr){
-    uint32_t dcread_data, dcdbtrl, dcdbtrh;
-    dcread_data = dcread (dcread_addr);
-    isync();
-    dcdbtrl = spr_read(SPR_DCDBTRL);
-    dcdbtrh = spr_read(SPR_DCDBTRH);
-    rumboot_printf("dcread_addr_odd = 0x%x,  data = 0x%x, DCDBTRL   =   0x%x, DCDBTRH   =   0x%x\n", dcread_addr, dcread_data, dcdbtrl, dcdbtrh);
-    dcread_decode(dcdbtrl, dcdbtrh);
-}
 
 void dcread_decode(uint32_t dcdbtrl, uint32_t dcdbtrh){
     rumboot_printf("----- Decoded information\n");    
@@ -252,10 +243,49 @@ void dcread_decode(uint32_t dcdbtrl, uint32_t dcdbtrh){
     rumboot_printf("Extended tag address  = 0x%x\n", (dcdbtrh >> 0) & 0x000003FF);
     rumboot_printf("Full tag address  = 0x%x\n", (dcdbtrh & 0x000003FF) | ((dcdbtrh >> 3) & ~(0xE00003FF)));
 }
+uint32_t calc_odd_parity(uint32_t val, uint32_t size, uint32_t odd){
+    uint32_t i, parity;
+    //rumboot_printf("Calculate parity type %d for 0x%x\n", odd, val);
+    for(i=0; i < size; i=i+1){
+        if(i==0){
+            parity = (val & 0x00000001); 
+            //rumboot_printf("Set 0x%x bit = 0x%x\n", i, parity);
+            continue;}
+        parity = ( (val >> i) & 0x00000001) ^ (parity & 0x00000001);
+        //rumboot_printf("Set 0x%x bit = 0x%x\n", i, parity);
+    }
+    if(odd) parity = (~parity) & 0x00000001;
+    return parity;
+}
+void LRU_parity_check(uint32_t dcdbtrl){
+    uint32_t valid_bits, lock_bits, lru_bits, lru_parity, valid_lock_calc_parity, lru_calc_parity;
+    valid_bits = (dcdbtrl >> 28) & 0x0000000F;
+    lock_bits  = (dcdbtrl >> 18) & 0x0000000F;
+    lru_bits   = (dcdbtrl >> 22) & 0x0000003F;
+    lru_parity = (dcdbtrl >> 14) & 0x00000003;
+    valid_lock_calc_parity  = calc_odd_parity((0x000000FF & ((valid_bits <<4)| lock_bits)), 8, 1);
+    lru_calc_parity         = calc_odd_parity( lru_bits, 6, 1);
+    rumboot_printf("-------Checks parity of valid&lock bits-------\n");
+    //rumboot_printf("valid_lock_calc_parity = 0x%x\n", valid_lock_calc_parity);
+    //rumboot_printf("lru_calc_parity = 0x%x\n", lru_calc_parity);
+    rumboot_printf("{valid_lock_calc_parity, lru_calc_parity} = 0x%x, lru_parity = 0x%x\n", ((valid_lock_calc_parity<<1)| lru_calc_parity),lru_parity);
+    rumboot_printf("----------------------------------------------\n");
+}
+
+void debug_dc_read(uint32_t dcread_addr){
+    uint32_t dcread_data, dcdbtrl, dcdbtrh;
+    dcread_data = dcread (dcread_addr);
+    isync();
+    dcdbtrl = spr_read(SPR_DCDBTRL);
+    dcdbtrh = spr_read(SPR_DCDBTRH);
+    rumboot_printf("dcread_addr_odd = 0x%x,  data = 0x%x, DCDBTRL   =   0x%x, DCDBTRH   =   0x%x\n", dcread_addr, dcread_data, dcdbtrl, dcdbtrh);
+    dcread_decode(dcdbtrl, dcdbtrh);
+    LRU_parity_check(dcdbtrl);
+}
 
 void l1_cache_error_handler(int id, const char *name) {
     uint32_t dcesr_val, dcindxpe, dcrdpe, dcread_addr_even, dcread_addr_odd;
-    rumboot_printf("----------------It's my handler-----------");
+    rumboot_printf("----------------l1_cache_error_handler-----------\n");
     dcesr_val = spr_read(SPR_DCESR);
     rumboot_printf("DCESR:   0x%x\n", dcesr_val);
     rumboot_printf("DCESR decode result\n");
