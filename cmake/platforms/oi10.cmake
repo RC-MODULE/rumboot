@@ -2300,16 +2300,6 @@ add_rumboot_target(
     FILES l2bug/multistore.c ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c
     NAME "multistore-supp-2"
   )
-  
-  add_rumboot_target(
-    CONFIGURATION SUPPLEMENTARY
-    PREFIX l2bug
-    LDS oi10/l2bug_supp-2.lds
-    CFLAGS -DRUMBOOT_NOINIT
-    LDFLAGS -Wl,-emain
-    FILES l2bug/multistore-msync.c ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c
-    NAME "multistore-msync-supp-3"
-  )
 
   add_rumboot_target(
     CONFIGURATION IRAM_SPL
@@ -2336,20 +2326,6 @@ add_rumboot_target(
     LOAD IM0BIN SELF
         MBIN l2bug-multistore-supp
   )
-  
-  add_rumboot_target(
-    CONFIGURATION IRAM_SPL
-    PREFIX l2bug
-    FILES l2bug/multistore-loader-3.c
-    NAME "multistore-msync-3"
-    PREFIX l2bug
-    CFLAGS -DEMI_INIT -DADD_TLB -DM_BASE=SRAM0_BASE
-#    CFLAGS -DSDRAM_INIT -DADD_TLB -DM_BASE=SRAM0_BASE
-    IRUN_FLAGS ${ROM_6500K_OPTS}
-    LOAD IM0BIN SELF
-        MBIN multistore-msync-supp-3
-  )  
-  
    add_rumboot_target(
     CONFIGURATION IRAM_SPL
     PREFIX l2bug
