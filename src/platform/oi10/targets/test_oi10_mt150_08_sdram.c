@@ -63,7 +63,39 @@ int main(void)
     rumboot_printf("Read EMI_HSTSR \n");
     read_data = dcr_read(DCR_EM2_EMI_BASE + 0x34);
     rumboot_printf("read_data(0x%x) = 0x%x\n", DCR_EM2_EMI_BASE + 0x34,read_data);
-        
+    
+    rumboot_printf("------------------------------------------------------------------------ \n");
+    rumboot_printf("Test DATA line\n");
+    rumboot_printf("WRITE SSRAM\n");
+    iowrite32(0x55555555, SDRAM_BASE);
+    iowrite32(0xaaaaaaaa, SDRAM_BASE + 4);
+    rumboot_printf("READ SSRAM\n");
+    read_data = ioread32(SDRAM_BASE);
+    rumboot_printf("ioread32(0x%x) = 0x%x \n",SDRAM_BASE,read_data);
+    if (read_data != 0x55555555) {
+        rumboot_printf("--------------------------------\n");
+        rumboot_printf("ERROR DATA !!!\n");
+        rumboot_printf("ioread32(0x%x) = 0x%x \n",SDRAM_BASE,read_data);
+        rumboot_printf("wait data      = 0x%x \n",0x55555555);
+        rumboot_printf("--------------------------------\n");
+        test_result = 1;
+        return 1;
+    }
+    
+    read_data = ioread32(SDRAM_BASE + 4);
+    rumboot_printf("ioread32(0x%x) = 0x%x \n",SDRAM_BASE + 4,read_data);
+    if (read_data != 0xaaaaaaaa) {
+        rumboot_printf("--------------------------------\n");
+        rumboot_printf("ERROR DATA !!!\n");
+        rumboot_printf("ioread32(0x%x) = 0x%x \n",SDRAM_BASE + 4,read_data);
+        rumboot_printf("wait data      = 0x%x \n",0xaaaaaaaa);
+        rumboot_printf("--------------------------------\n");
+        test_result = 1;
+        return 1;
+    }
+    
+    rumboot_printf("------------------------------------------------------------------------ \n");
+    rumboot_printf("Test all mem\n");
     rumboot_printf("Write all mem  \n");
     for (int i=0; i<8388608; i++) {
         iowrite32(i*4, SDRAM_BASE+(i*4));

@@ -2164,6 +2164,12 @@ endif()
     
     add_rumboot_target(
       CONFIGURATION IRAM
+      FILES test_oi10_mt150_06_ssram.c
+      NAME test_oi10_mt150_06_ssram
+    )
+    
+    add_rumboot_target(
+      CONFIGURATION IRAM
       FILES test_oi10_progr_crg.c
       NAME test_oi10_progr_crg
     )

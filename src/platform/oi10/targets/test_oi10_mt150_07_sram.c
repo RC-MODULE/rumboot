@@ -136,8 +136,40 @@ int main(void)
     
     rumboot_printf("SRAM0_BASE = 0x%x \n",SRAM0_BASE );
     
-    rumboot_printf("WRITE SRAM0\n");
     uint32_t read_data;
+    rumboot_printf("------------------------------------------------------------------------ \n");
+    rumboot_printf("Test DATA line\n");
+    rumboot_printf("WRITE SSRAM\n");
+    iowrite32(0x55555555, SRAM0_BASE);
+    iowrite32(0xaaaaaaaa, SRAM0_BASE + 4);
+    rumboot_printf("READ SSRAM\n");
+    read_data = ioread32(SRAM0_BASE);
+    rumboot_printf("ioread32(0x%x) = 0x%x \n",SRAM0_BASE,read_data);
+    if (read_data != 0x55555555) {
+        rumboot_printf("--------------------------------\n");
+        rumboot_printf("ERROR DATA !!!\n");
+        rumboot_printf("ioread32(0x%x) = 0x%x \n",SRAM0_BASE,read_data);
+        rumboot_printf("wait data      = 0x%x \n",0x55555555);
+        rumboot_printf("--------------------------------\n");
+        test_result = 1;
+        return 1;
+    }
+    
+    read_data = ioread32(SRAM0_BASE + 4);
+    rumboot_printf("ioread32(0x%x) = 0x%x \n",SRAM0_BASE + 4,read_data);
+    if (read_data != 0xaaaaaaaa) {
+        rumboot_printf("--------------------------------\n");
+        rumboot_printf("ERROR DATA !!!\n");
+        rumboot_printf("ioread32(0x%x) = 0x%x \n",SRAM0_BASE + 4,read_data);
+        rumboot_printf("wait data      = 0x%x \n",0xaaaaaaaa);
+        rumboot_printf("--------------------------------\n");
+        test_result = 1;
+        return 1;
+    }
+    
+    rumboot_printf("------------------------------------------------------------------------ \n");
+    rumboot_printf("Test all mem\n");
+    rumboot_printf("WRITE SRAM0\n");
     for (int i=0; i<(0x1<<20); i++) {  //20
         iowrite32(i, SRAM0_BASE + i*4);
     }
