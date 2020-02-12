@@ -160,7 +160,7 @@ int __attribute__ ((section(".text.test"))) main ()
         "lwzu %0,-4(%1)\n"
         "msync\n"
         "lwzu %0,-4(%1)\n"
-        "subi %0,%0,4\n"
+        "addi %0,%0,4\n"
         : "+r"(p), "=r"(tmp)
         :
         : "memory"
