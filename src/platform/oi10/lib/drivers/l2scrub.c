@@ -575,13 +575,13 @@ void l2_scrubber_enable_pattern_scrubbing(struct l2_scrubber *scr, uint64_t patt
 void l2_scrubber_dump_stats(struct l2_scrubber *scr)
 {
     rumboot_printf("---- L2 Scrubber Statistics ----\n");
-    rumboot_printf("IRQs served:            %d\n", scr->irq_count);
-    rumboot_printf("Corrected TAGs:         %d\n", scr->corrected_tag_errors);
-    rumboot_printf("Corrected DATA:         %d\n", scr->corrected_data_errors);
-    rumboot_printf("Multiword hits:         %u\n", scr->multihits);
-    rumboot_printf("Max simultaneous hits:  %u\n", scr->maxhit);
-    rumboot_printf("Time wasted:            %u us\n", scr->time_wasted);
-    rumboot_printf("Time between errors:    min: %u us max: %u us avg: %u us\n", 
+    rumboot_printf("IRQs served:             %d\n", scr->irq_count);
+    rumboot_printf("Corrected TAGs:          %d\n", scr->corrected_tag_errors);
+    rumboot_printf("Corrected DATA:          %d\n", scr->corrected_data_errors);
+    rumboot_printf("Multiword hits:          %u\n", scr->multihits);
+    rumboot_printf("Max simultaneous hits:   %u\n", scr->maxhit);
+    rumboot_printf("Time wasted:             %u us\n", scr->time_wasted);
+    rumboot_printf("Time between errors:     min: %u us max: %u us avg: %u us\n", 
         scr->min_time_between_errors, scr->max_time_between_errors, scr->avg_time_between_errors);
 }
 
