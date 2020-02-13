@@ -69,4 +69,5 @@ void rumboot_platform_setup()
 
         sp804_config(DIT_Base, &conf_str, 1);
         sp804_enable(DIT_Base, 1);
+        rumboot_irq_set_exception_handler(rumboot_arch_exception);
 }
