@@ -49,17 +49,16 @@ void rumboot_arch_stacktrace(void)
         uint32_t lr = *(((uint32_t*)topfp) -1);
         uint32_t pc = *(((uint32_t*)topfp) -0);
 
-
         pos = lr - 4;
 
 
-        rumboot_printf("frame[%d] address: 0x%x (FP: 0x%x SP: 0x%x LR: 0x%x PC: 0x%x)\n",
-        i, pos, fp, sp, lr, pc);
+        rumboot_printf("frame[%d] address 0x%x\n",
+        i, pos);
         if (fp == 0)
           break;
-        if ((fp < (uint32_t)&rumboot_platform_stack_area_start) ||
-            (fp > (uint32_t)&rumboot_platform_stack_area_end)) {
-                rumboot_printf("Next frame looks invalid, we'll stop here, sorry\n");
+        // FixMe: Move stack boundaries to runtime_info structure
+        if (fp > 0x80000) {
+                rumboot_printf("Next frame (0x%x) looks invalid, we'll stop here, sorry\n", fp);
                 break;
         }
         topfp = fp;
