@@ -18,7 +18,7 @@
 #include <devices/sp805.h>
 #include <regs/regs_sp805.h>
 
-#define DEBUG
+//#define DEBUG
 #ifdef DEBUG
 #define dbg(fmt, ...) rumboot_printf("l2-scrubber: " fmt, ##__VA_ARGS__)
 #else
@@ -242,7 +242,7 @@ static inline void l2_scrubbing_context_read(struct l2_scrubber *scr, struct l2_
 
 }
 
-
+#if 0
 static int find_data(struct l2_scrubber *scr, uint64_t data) {
     int idx;
     for (idx = 0; idx < (scr->layout.l2size_bytes / 8); idx++) {
@@ -252,7 +252,7 @@ static int find_data(struct l2_scrubber *scr, uint64_t data) {
     }
     return -1;
 }
-
+#endif
 static int find_tag(struct l2_scrubber *scr, uint64_t data) {
     int idx;
     for (idx = 0; idx < (scr->layout.l2size_bytes / 8); idx++) {
@@ -431,7 +431,7 @@ static void l2_correct_arrstat2(struct l2_scrubber *scr, struct l2_scrubbing_con
                 goto bailout; /* We've corrected something! Good!*/
             }
         } else {
-            scrubber_exception(scr, &ctx, "Uncorrectables from ARRSTAT2");
+            scrubber_exception(scr, ctx, "Uncorrectables from ARRSTAT2");
         }
         arrstat2 &= ~(1<<failure); /* Clear this one */
         dbg("Arrstat2 now %x\n", arrstat2);
@@ -495,7 +495,7 @@ static void l2_scrubber_handler(int irq, void *arg)
     scr->time_wasted += end - start;
 }
 
-static volatile struct l2_scrubbing_context *the_scrubber;
+static struct l2_scrubber *the_scrubber;
 
 void l2scrub_mck_handler(int id, const char *name)
 {

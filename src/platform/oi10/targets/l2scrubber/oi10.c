@@ -261,7 +261,7 @@ static emi_bank_cfg bank_cfg =
 };
 
 
-struct l2_scrubber *l2scrubber_tests_init() 
+struct l2_scrubber *l2scrubber_tests_init(int mode) 
 {
     dcr_write(0x80000600, 0xC10);
     dcr_write(0x80000604, 0x1);
@@ -284,8 +284,7 @@ struct l2_scrubber *l2scrubber_tests_init()
 //    mem_map_tlbs();
     rumboot_irq_sei();
 
-//    struct l2_scrubber *scr = l2_scrubber_create(DCR_L2C_BASE, L2C0_INTERRUPTOUT);
-    struct l2_scrubber *scr = l2_scrubber_create(DCR_L2C_BASE, -1);
+    struct l2_scrubber *scr = l2_scrubber_create(DCR_L2C_BASE, (mode == 0) ? L2C0_INTERRUPTOUT : mode);
     return scr;
 }
 
