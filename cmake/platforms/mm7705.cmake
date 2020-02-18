@@ -58,30 +58,12 @@ endmacro()
 include(${CMAKE_SOURCE_DIR}/cmake/bootrom.cmake)
 
 macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
-
-#  rumboot_bootrom_add_components(SPL ROM)
-#
-#  rumboot_bootrom_add_common_units(
-#      CONFIGURATION ROM
-#  )
-#
-#  rumboot_bootrom_unit_test(
-#      ID 0
-#      CONFIGURATION ROM
-#      TAG sdio
-#      FULL YES
-#  )
-#
-
-  add_rumboot_target(
-    CONFIGURATION ROM
-    FILES helpers/xstub.c
-    FEATURES STUB
-  )
+  rumboot_bootrom_add_components(SPL ROM)
 
   add_rumboot_target_dir(tests
     CONFIGURATION SPL
   )
+
   add_rumboot_target(
     FILES common/updaters/spiflash-pl022.c
     CONFIGURATION SPL

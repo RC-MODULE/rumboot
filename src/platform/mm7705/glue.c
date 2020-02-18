@@ -14,6 +14,16 @@
 #include <arch/ppc_476fp_config.h>
 #include <arch/ppc_476fp_lib_c.h>
 
+#define BOOTM_PRIMARY_CPU_ID                             (1<<0)
+#define BOOTM_DISABLE_SECONDARY_CPU                      (1<<1)
+#define BOOTM_DISABLE_SELFTEST                           (1<<2)
+#define BOOTM_ENABLE_HOST_MODE                           (1<<3)
+#define BOOTM_ENABLE_EDCL                                (1<<4)
+#define BOOTM_RUN_MEM_SELFRECOVERY                       (1<<5)
+#define BOOTM_ENABLE_USB_DEVICE                          (1<<6)
+#define BOOTM_USE_EXTERNAL_REF_CLK_FOR_PCIE_PHY_BIST     (1<<7)
+#define BOOTM_ENABLE_MODE_A                              (1<<8)
+#define BOOTM_SKIP_LOADING_FROM_SD_CARD                  (1<<9)
 
 #define IBM_BIT_INDEX(size, index)    (((size) - 1) - ((index) % (size)))
 #define ITRPT_XSR_FP_e  50
@@ -243,8 +253,10 @@ int rumboot_platform_exec(struct rumboot_bootheader *hdr, int swap)
 
 void rumboot_platform_read_config(struct rumboot_config *conf)
 {
-        conf->baudrate = 115200;
-        conf->hostmode = 0;
+        uint32_t bootm = ioread32(SCTL_BASE + 0x0);
+        rumboot_printf("BOOTM:           0x%x\n", bootm);
+        conf->baudrate = 1000000;
+        conf->hostmode = bootm & BOOTM_ENABLE_EDCL;
 }
 
 

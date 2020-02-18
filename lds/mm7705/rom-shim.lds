@@ -1,7 +1,7 @@
 MEMORY
 {
-    ROM_SHIM (rx): ORIGIN = 0x40000,  LENGTH = 0x20000
-    IM0 (rwx): ORIGIN = 0x60000, LENGTH = 0x20000
+    ROM_SHIM (rx): ORIGIN = 0x40000,  LENGTH = 0x8000
+    IM0 (rwx): ORIGIN = 0x48000, LENGTH = 0x38000
 }
 
 SECTIONS
@@ -28,14 +28,13 @@ SECTIONS
   rumboot_platform_heap_end = .;
 
   /* This is where stacks start */
-  rumboot_platform_stack_area_start = .;
-  . = . + 0x7fa0; /* 60k stack */
 
   /* This is where stacks end */
   rumboot_platform_runtime_info = .;
   *(.rumboot_platform_runtime_info);
 
   . = ALIGN(8);
+  rumboot_platform_stack_area_start = .;
   rumboot_platform_stack_area_end = .;
  } > IM0
 
