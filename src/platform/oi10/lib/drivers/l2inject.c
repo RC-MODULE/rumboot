@@ -109,7 +109,9 @@ void l2_inject_tag_fault(uintptr_t base, int pos, int bit)
     l2c_get_mem_layout(DCR_L2C_BASE, &layout);
     RUMBOOT_ATOMIC_BLOCK() {
         uint64_t tag = l2c_read_mem(DCR_L2C_BASE, &layout, L2C_MEM_TAG, pos);
+        rumboot_printf("Readed tag: 0x%x\n",tag);
         tag ^= 1ULL<<bit;
+        rumboot_printf("Error injected tag: 0x%x\n",tag);
         l2c_write_mem(DCR_L2C_BASE, &layout, L2C_MEM_TAG, pos, tag);    
     }
 }
