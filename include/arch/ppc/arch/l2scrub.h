@@ -39,7 +39,7 @@ void l2_dump_data(uint32_t start, uint32_t count);
 void l2_dump_tag(struct l2c_mem_layout *layout, int index);
 void l2_dump_tags(int start, int count);
 
-
+void l2_inject_lru_fault(uintptr_t base, int pos, int bit);
 void l2_inject_data_ecc_fault(uintptr_t base, int pos, int bit);
 void l2_inject_tag_fault(uintptr_t base, int pos, int bit);
 void l2_inject_tag_ecc_fault(uintptr_t base, int pos, int bit);

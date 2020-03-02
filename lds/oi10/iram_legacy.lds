@@ -31,16 +31,19 @@ SECTIONS {
         *(COMMON)
         rumboot_platform_bss_end = .;
 
-        . = ALIGN(32);
 
-        rumboot_platform_spl_start = .;
-        rumboot_platform_spl_end = .;
 
         . = ALIGN(8);
 
         rumboot_im0_heap_start = .;
         . = . + 0x7000; /* 28k heap */
         rumboot_im0_heap_end = .;
+
+        . = ALIGN(32);
+
+        rumboot_platform_spl_start = .;
+        rumboot_platform_spl_end = .;
+
     } > IM0
 
     INCLUDE oi10/stacks_section.lds.h

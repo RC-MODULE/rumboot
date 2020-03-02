@@ -96,6 +96,17 @@ void l2_inject_data_ecc_fault(uintptr_t base, int pos, int bit)
     }
 }
 
+void l2_inject_lru_fault(uintptr_t base, int pos, int bit)
+{
+    struct l2c_mem_layout layout;
+    l2c_get_mem_layout(DCR_L2C_BASE, &layout);
+    RUMBOOT_ATOMIC_BLOCK() {
+        uint64_t tmp = l2c_read_mem(DCR_L2C_BASE, &layout, L2C_MEM_LRU, pos);
+        tmp ^= 1<<bit;
+        l2c_write_mem(DCR_L2C_BASE, &layout, L2C_MEM_LRU, pos, tmp); 
+    }
+}
+
 /**
  * @brief Injects a single bit tag fault.
  * 
