@@ -22,7 +22,7 @@
 
 int main()
 {
-    struct l2_scrubber *scr = l2scrubber_tests_init();
+    struct l2_scrubber *scr = l2scrubber_tests_init(0);
     uintptr_t ptr = (uintptr_t) l2scrubber_tests_get_cachable_area();
 
     struct l2c_mem_layout layout;
