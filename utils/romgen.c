@@ -1,10 +1,18 @@
-#define _GNU_SOURCE
+#define _GNU_SOURCE 1
 #include <stdio.h>
 #include <errno.h>
 #include <stdlib.h>
 #include <getopt.h>
 #include <stdint.h>
 #include <string.h>
+#include <dirent.h>
+
+#ifdef _WIN32
+#include <dir.h>
+#else
+#include <sys/stat.h>
+#endif
+
 
 #define __swap32(value)                                 \
         ((((uint32_t)((value) & 0x000000FF)) << 24) |   \
@@ -396,9 +404,31 @@ static struct option long_options[] = {
 	{ 0,	    0,		       0, 0   }
 };
 
+void check_output_dir(const char *outdir)
+{
+	DIR* dir = opendir(outdir);
+	if (dir) {
+	    /* Directory exists. */
+    	closedir(dir);
+		return;
+	}
+
+	if (ENOENT == errno) {
+#ifndef _WIN32
+		if (mkdir(outdir, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) == 0)
+			return;
+#else
+		if (mkdir(outdir) == 0)
+			return;
+#endif
+	}
+	fprintf(stderr, "FATAL: Failed to open/prepare output dir\n");
+	exit(1);
+}
+
 void usage(const char *argv0)
 {
-	printf("BIN2RCF tool. (c) Andrew 'Necromant' Andrianov, RC Module 2016-2018\n");
+	printf("BIN2RCF tool. (c) Andrew 'Necromant' Andrianov, RC Module 2016-2020\n");
 	printf("Usage: %s [--layout basis] --input file.bin --outdir=./rcfs/\n", argv0);
 	printf("Other available rom layouts: \n");
 
@@ -408,7 +438,7 @@ void usage(const char *argv0)
 		pos++;
 	}
 
-	printf("This is free, WTFPL-licensed software\n");
+	printf("This is file is free, WTFPL-licensed software\n");
 }
 
 const char *input_file = NULL;
@@ -444,6 +474,8 @@ int main(int argc, char **argv)
 			break;
 		}
 	}
+
+	check_output_dir(outdir);
 
 	if (!input_file) {
 		printf("Missing input file\n");
