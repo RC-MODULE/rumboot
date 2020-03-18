@@ -13,7 +13,7 @@
 #include <rumboot/irq.h>
 
 #include <platform/interrupts.h>
-#include <platform/regs/fields/mpic128.h>
+#include <regs/fields/mpic128.h>
 #include <platform/regs/sctl.h>
 #include <platform/devices/emi.h>
 #include <platform/test_assert.h>

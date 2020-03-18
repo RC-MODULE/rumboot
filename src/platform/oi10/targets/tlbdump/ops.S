@@ -1,5 +1,5 @@
 
-#include <platform/arch/ppc/ppc_476fp_asm.h>
+#include <arch/ppc_476fp_asm.h>
 
 .global _invalidate_tlb_entry
 _invalidate_tlb_entry:

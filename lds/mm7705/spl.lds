@@ -20,10 +20,10 @@ rumboot_platform_runtime_info = .;
   *(.data.*)
 
   rumboot_platform_heap_start = .;
-  . = . + 0x8000; /* 32k heap */
+  . = . + 0x4000; /* 32k heap */
   rumboot_platform_heap_end = .;
 
-  . = . + 0x8000; /* 32k stacks */
+  . = . + 0x4000; /* 32k stacks */
 
   rumboot_platform_spl_start = .;
   rumboot_platform_spl_end = .;

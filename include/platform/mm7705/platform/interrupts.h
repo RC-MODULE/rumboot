@@ -14,8 +14,17 @@
  * WARNING: DO NOT ADD ANYTHING ELSE HERE, ONLY IRQ NUMBERS
  */
 
-#define RUMBOOT_PLATFORM_NUM_IRQS 2
+#define RUMBOOT_PLATFORM_NUM_IRQS 256
 
+
+#define MPIC128_TIMER_0             (128)
+#define MPIC128_TIMER_1             (129)
+#define MPIC128_TIMER_2             (130)
+#define MPIC128_TIMER_3             (131)
+#define MPIC128_IPI_0               (132)
+#define MPIC128_IPI_1               (133)
+#define MPIC128_IPI_2               (134)
+#define MPIC128_IPI_3               (135)
 
  /**
   * @}

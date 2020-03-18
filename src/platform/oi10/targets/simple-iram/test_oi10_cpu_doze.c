@@ -29,7 +29,7 @@
 #include <platform/devices.h>
 #include <platform/devices/plb6mcif2.h>
 #include <platform/devices/emi.h>
-#include <platform/devices/mpic128.h>
+#include <devices/mpic128.h>
 #include <platform/regs/sctl.h>
 #include <platform/regs/fields/emi.h>
 #include <platform/interrupts.h>

@@ -11,7 +11,7 @@
 #include <platform/interrupts.h>
 #include <platform/test_assert.h>
 #include <rumboot/regpoker.h>
-#include <platform/regs/fields/mpic128.h>
+#include <regs/fields/mpic128.h>
 #include <regs/regs_gpio_pl061.h>
 #include <devices/gpio_pl061.h>
 

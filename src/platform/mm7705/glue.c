@@ -13,6 +13,7 @@
 #include <rumboot/printf.h>
 #include <arch/ppc_476fp_config.h>
 #include <arch/ppc_476fp_lib_c.h>
+#include <arch/ppc_476fp_itrpt_fields.h>
 
 #define BOOTM_PRIMARY_CPU_ID                             (1<<0)
 #define BOOTM_DISABLE_SECONDARY_CPU                      (1<<1)
@@ -130,9 +131,61 @@ void rumboot_platform_init_loader(struct rumboot_config *conf)
         iowrite32(0xff, LSIF1_MGPIO2_BASE + 0x420);
 }
 
+void rumboot_itrpt_hdr_base();
+void rumboot_CI_hdr();
+void rumboot_MC_hdr();
+void rumboot_DS_hdr();
+void rumboot_IS_hdr();
+void rumboot_EI_hdr();
+void rumboot_A_hdr();
+void rumboot_P_hdr();
+void rumboot_FPU_hdr();
+void rumboot_SC_hdr();
+void rumboot_APU_hdr();
+void rumboot_DEC_hdr();
+void rumboot_FIT_hdr();
+void rumboot_WDT_hdr();
+void rumboot_DTLBE_hdr();
+void rumboot_ITLBE_hdr();
+void rumboot_D_hdr();
+
+
 void rumboot_platform_setup()
 {
-       enable_fpu();
+    rumboot_platform_runtime_info->silent = 0;
+    /* Disable interrupts on the PPC core */
+    uint32_t const msr_old_value = msr_read();
+    msr_write( msr_old_value & ~((0b1 << ITRPT_XSR_CE_i)       /* MSR[CE] - Critical interrupt. */
+                               | (0b1 << ITRPT_XSR_EE_i)       /* MSR[EE] - External interrupt. */
+                               | (0b1 << ITRPT_XSR_ME_i)       /* MSR[ME] - Machine check. */
+                               | (0b1 << ITRPT_XSR_DE_i)));    /* MSR[DE] - Debug interrupt. */
+
+    spr_write( SPR_IVPR,    (uint32_t)&rumboot_itrpt_hdr_base & ITRPT_IVPR_ADDR_mask );    /* link irq handlers mirror */
+    spr_write( SPR_IVOR0,   (uint32_t)&rumboot_CI_hdr       & ITRPT_IVORn_OFFSET_mask );
+    spr_write( SPR_IVOR1,   (uint32_t)&rumboot_MC_hdr       & ITRPT_IVORn_OFFSET_mask );
+    spr_write( SPR_IVOR2,   (uint32_t)&rumboot_DS_hdr       & ITRPT_IVORn_OFFSET_mask );
+    spr_write( SPR_IVOR3,   (uint32_t)&rumboot_IS_hdr       & ITRPT_IVORn_OFFSET_mask );
+    spr_write( SPR_IVOR4,   (uint32_t)&rumboot_EI_hdr       & ITRPT_IVORn_OFFSET_mask );
+    spr_write( SPR_IVOR5,   (uint32_t)&rumboot_A_hdr        & ITRPT_IVORn_OFFSET_mask );
+    spr_write( SPR_IVOR6,   (uint32_t)&rumboot_P_hdr        & ITRPT_IVORn_OFFSET_mask );
+    spr_write( SPR_IVOR7,   (uint32_t)&rumboot_FPU_hdr      & ITRPT_IVORn_OFFSET_mask );
+    spr_write( SPR_IVOR8,   (uint32_t)&rumboot_SC_hdr       & ITRPT_IVORn_OFFSET_mask );
+    spr_write( SPR_IVOR9,   (uint32_t)&rumboot_APU_hdr      & ITRPT_IVORn_OFFSET_mask );
+    spr_write( SPR_IVOR10,  (uint32_t)&rumboot_DEC_hdr      & ITRPT_IVORn_OFFSET_mask );
+    spr_write( SPR_IVOR11,  (uint32_t)&rumboot_FIT_hdr      & ITRPT_IVORn_OFFSET_mask );
+    spr_write( SPR_IVOR12,  (uint32_t)&rumboot_WDT_hdr      & ITRPT_IVORn_OFFSET_mask );
+    spr_write( SPR_IVOR13,  (uint32_t)&rumboot_DTLBE_hdr    & ITRPT_IVORn_OFFSET_mask );
+    spr_write( SPR_IVOR14,  (uint32_t)&rumboot_ITLBE_hdr    & ITRPT_IVORn_OFFSET_mask );
+    spr_write( SPR_IVOR15,  (uint32_t)&rumboot_D_hdr        & ITRPT_IVORn_OFFSET_mask );
+
+    rumboot_irq_register_mpic128();
+
+    msr_write( msr_old_value );
+    enable_fpu();
+    extern char rumboot_platform_heap_start;
+    extern char rumboot_platform_heap_end;
+    rumboot_malloc_register_heap( "IM0", &rumboot_platform_heap_start, &rumboot_platform_heap_end );
+
 }
 
 static bool sdio_enable(const struct rumboot_bootsource *src, void *pdata)

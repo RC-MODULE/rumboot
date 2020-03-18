@@ -2,7 +2,7 @@
 #define TRACE_S_H_
 
 
-#include <platform/arch/ppc/ppc_476fp_asm.h>
+#include <arch/ppc_476fp_asm.h>
 #include <platform/test_event_asm.h>
 #include <platform/test_event_codes.h>
 

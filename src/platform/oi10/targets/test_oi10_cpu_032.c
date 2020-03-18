@@ -22,13 +22,13 @@
 #include <platform/arch/ppc/ppc_476fp_mmu.h>
 #include <platform/arch/ppc/ppc_476fp_timer_fields.h>
 #include <arch/ppc_476fp_itrpt_fields.h>
-#include <platform/arch/ppc/ppc_476fp_asm.h>
+#include <arch/ppc_476fp_asm.h>
 
 #include <platform/devices/l2c.h>
 #include <platform/devices.h>
 #include <platform/devices/plb6mcif2.h>
 #include <platform/devices/emi.h>
-#include <platform/devices/mpic128.h>
+#include <devices/mpic128.h>
 #include <platform/regs/fields/emi.h>
 #include <platform/interrupts.h>
 #include <platform/devices/dma2plb6.h>

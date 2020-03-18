@@ -22,7 +22,7 @@
 
 #include <platform/devices.h>
 #include <platform/interrupts.h>
-#include <platform/regs/fields/mpic128.h>
+#include <regs/fields/mpic128.h>
 #include <platform/regs/fields/dma2plb6.h>
 #include <platform/regs/regs_dma2plb6.h>
 #include <platform/devices/hscb.h>

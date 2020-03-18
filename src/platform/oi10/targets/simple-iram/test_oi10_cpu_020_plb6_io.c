@@ -26,7 +26,7 @@
 #include <platform/devices/dma2plb6.h>
 #include <platform/devices/l2c.h>
 #include <platform/interrupts.h>
-#include <platform/regs/fields/mpic128.h>
+#include <regs/fields/mpic128.h>
 //#include <platform/devices/greth.h>
 //#include <regs/regs_hscb.h>
 //#include <devices/hscb.h>

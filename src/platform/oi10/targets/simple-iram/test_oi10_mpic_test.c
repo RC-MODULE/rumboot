@@ -26,9 +26,9 @@
 #include <platform/trace.h>
 #include <platform/devices.h>
 #include <platform/interrupts.h>
-#include <platform/devices/mpic128.h>
+#include <devices/mpic128.h>
 
-#include <platform/regs/fields/mpic128.h>
+#include <regs/fields/mpic128.h>
 #include <platform/arch/ppc/ppc_476fp_timer_fields.h>
 #include <platform/arch/ppc/ppc_476fp_ctrl_fields.h>
 

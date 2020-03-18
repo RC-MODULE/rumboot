@@ -38,7 +38,7 @@
 #include <platform/regs/regs_plb6bc.h>
 #include <platform/regs/regs_dcrarb.h>
 #include <platform/regs/regs_p64.h>
-#include <platform/regs/fields/mpic128.h>
+#include <regs/fields/mpic128.h>
 #include <platform/regs/regs_l2c_l2.h>
 #include <platform/regs/regs_l2c.h>
 #include <platform/regs/regs_l2c_pmu.h>

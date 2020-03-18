@@ -16,7 +16,7 @@
 #include <devices/sp804.h>
 #include <rumboot/platform.h>
 #include <platform/interrupts.h>
-#include <platform/regs/fields/mpic128.h>
+#include <regs/fields/mpic128.h>
 
 
 #define TIMER0_CYCLES           1

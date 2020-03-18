@@ -201,6 +201,8 @@
 #define EM0_PHY_BASE        0x3800E000
 #define EM1_PHY_BASE        0x3800F000
 
+#define DCR_MPIC128_BASE    0xffc00000
+                            
 #endif
 /**
  * @}

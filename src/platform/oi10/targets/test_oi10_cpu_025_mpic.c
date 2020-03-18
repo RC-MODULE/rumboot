@@ -31,8 +31,8 @@
 
 #include <platform/devices.h>
 #include <platform/devices/emi.h>
-#include <platform/devices/mpic128.h>
-#include <platform/regs/regs_mpic128.h>
+#include <devices/mpic128.h>
+#include <regs/regs_mpic128.h>
 #include <platform/regs/fields/emi.h>
 
 typedef enum

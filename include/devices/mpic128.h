@@ -18,7 +18,7 @@
  * \ingroup devices_irq_mpic128
  *
  * \code{.c}
- * #include <platform/devices/mpic128.h>
+ * #include <devices/mpic128.h>
  * \endcode
  *
  * \addtogroup devices_irq_mpic128_api

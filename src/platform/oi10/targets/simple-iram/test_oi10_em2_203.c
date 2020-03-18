@@ -21,7 +21,7 @@
 #include <platform/devices/emi.h>
 #include <platform/devices/l2c.h>
 #include <platform/interrupts.h>
-#include <platform/regs/fields/mpic128.h>
+#include <regs/fields/mpic128.h>
 
 
 

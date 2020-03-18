@@ -4,7 +4,7 @@
 
 #include <arch/ppc_476fp_lib_c.h>
 #include <arch/ppc_476fp_itrpt_fields.h>
-#include <platform/regs/fields/mpic128.h>
+#include <regs/fields/mpic128.h>
 
 
 /* Include doxygen.h to make sure that documentation gets updated  */

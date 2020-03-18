@@ -12,7 +12,7 @@
 #include <rumboot/printf.h>
 #include <rumboot/platform.h>
 #include <rumboot/irq.h>
-#include <platform/devices/mpic128.h>
+#include <devices/mpic128.h>
 #include <rumboot/hexdump.h>
 #define printf rumboot_printf
 

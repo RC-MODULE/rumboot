@@ -4,7 +4,7 @@
 
 #include <arch/common_macros.h>
 #include <arch/ibm_bit_ordering_macros.h>
-#include <platform/regs/fields/mpic128.h>
+#include <regs/fields/mpic128.h>
 
 
 #define MPIC128_VIR0_VALUE      reg_field(31,0x14) | reg_field(23,0x50)

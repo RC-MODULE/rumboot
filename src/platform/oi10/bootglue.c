@@ -10,7 +10,7 @@
 #include <arch/ppc_476fp_lib_c.h>
 #include <arch/ppc_476fp_itrpt_fields.h>
 #include <platform/ppc470s/mmu.h>
-#include <platform/devices/mpic128.h>
+#include <devices/mpic128.h>
 #include <devices/gpio_pl061.h>
 #include <platform/devices.h>
 #include <platform/regs/sctl.h>

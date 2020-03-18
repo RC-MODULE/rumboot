@@ -7,7 +7,7 @@
 #include <platform/arch/ppc/test_macro_asm.S.h>
 
 /* MPIC Registers */
-#include <platform/regs/regs_mpic128.h>
+#include <regs/regs_mpic128.h>
 
 #define CVR3				r21,r22,r23
 #define MPIC128A(OFFSET)	(DCR_MPIC128_BASE + (OFFSET))

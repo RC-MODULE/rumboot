@@ -20,7 +20,7 @@
 
 #include <platform/regs/regs_mclfir.h>
 #include <platform/regs/regs_emi.h>
-#include <platform/regs/fields/mpic128.h>
+#include <regs/fields/mpic128.h>
 #include <platform/test_event_c.h>
 #include <platform/test_event_codes.h>
 
