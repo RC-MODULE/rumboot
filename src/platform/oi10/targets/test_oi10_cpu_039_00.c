@@ -23,7 +23,8 @@
 typedef uint8_t func();
 
                         //MMU_TLB_ENTRY(  ERPN,   RPN,        EPN,        DSIZ,             IL1I,            IL1D,           W,         I,    M,    G,      E,                      UX, UW, UR,     SX, SW, SR      DULXE,  IULXE,      TS,     TID,                WAY,                BID,           V   )
-#define TLB_ENTRY_WT    MMU_TLB_ENTRY(  0x000,  0x00000,    0x00000,    MMU_TLBE_DSIZ_1GB,  L2C_IL1I_BIT,   L2C_IL1D_BIT,  L2C_W_BIT,  0b0,  0b1,  0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
+//#define TLB_ENTRY_WT    MMU_TLB_ENTRY(  0x000,  0x00000,    0x00000,    MMU_TLBE_DSIZ_1GB,  L2C_IL1I_BIT,   L2C_IL1D_BIT,  L2C_W_BIT,  0b0,  0b1,  0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
+#define TLB_ENTRY_WT    MMU_TLB_ENTRY(  0x000,  0x00000,    0x00000,    MMU_TLBE_DSIZ_1GB,  L2C_IL1I_BIT,   L2C_IL1D_BIT,  L2C_W_BIT,  0b0,  0b1,  0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
 
 
 int main(void)
