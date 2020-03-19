@@ -48,7 +48,7 @@ rumboot_add_configuration(
   LEGACY
   DEFAULT
   LDS mm7705/ram.lds
-  PREFIX iram
+  PREFIX legacy
   CFLAGS
   FEATURES PACKIMAGE
   FILES ${CMAKE_SOURCE_DIR}/src/lib/bootheader_legacy.c
@@ -68,6 +68,10 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
   add_rumboot_target_dir(tests
     CONFIGURATION IRAM
+  )
+
+  add_rumboot_target_dir(tests
+    CONFIGURATION LEGACY
   )
 
   add_rumboot_target(
