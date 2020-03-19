@@ -185,7 +185,7 @@ void rumboot_platform_setup()
     extern char rumboot_platform_heap_start;
     extern char rumboot_platform_heap_end;
     rumboot_malloc_register_heap( "IM0", &rumboot_platform_heap_start, &rumboot_platform_heap_end );
-
+    rumboot_irq_set_exception_handler(rumboot_arch_exception);
 }
 
 static bool sdio_enable(const struct rumboot_bootsource *src, void *pdata)
