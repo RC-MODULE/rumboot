@@ -1,6 +1,6 @@
 MEMORY
 {
-    IM0 (rwx): ORIGIN = 0x48000, LENGTH = 0x38000
+    IM0 (rwx): ORIGIN = 0x40000, LENGTH = 0x40000
 }
 
 SECTIONS
