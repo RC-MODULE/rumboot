@@ -18,6 +18,7 @@
 #include <arch/ppc_476fp_lib_c.h>
 #include <platform/devices.h>
 #include <platform/test_assert.h>
+#include <platform/regs/regs_emi.h>
 
 typedef struct {
         uint32_t    addr;
@@ -32,7 +33,7 @@ typedef struct {
                 iowrite32(sequence[i].data, base + sequence[i].addr); \
         MACRO_END
 
-static inline void nor_write32(uint32_t write_DATA, uint32_t write_ADDR)
+static inline void nor_write32_select(uint32_t write_DATA, uint32_t write_ADDR, bool default_ecc)
 {
         RUMBOOT_ATOMIC_BLOCK() {
                 nor_addr_data32_pair NOR_write32_word_program_sequence[] =
@@ -42,11 +43,16 @@ static inline void nor_write32(uint32_t write_DATA, uint32_t write_ADDR)
                         { (0x555 << 2), 0xA0A0A0A0 },
                         { 0,        0      }
                 };
+                uint32_t emi_flcntrl_tmp = dcr_read(DCR_EM2_EMI_BASE + EMI_FLCNTRL);
 
                 NOR_write32_word_program_sequence[3].addr = write_ADDR - NOR_BASE;
                 NOR_write32_word_program_sequence[3].data = write_DATA;
-                NOR_WRITE32_SEQUENCE(NOR_BASE, NOR_write32_word_program_sequence);
-                udelay(10); //workaround
+                if(default_ecc)
+                    dcr_write(DCR_EM2_EMI_BASE + EMI_FLCNTRL, (ECC_CTRL_CNT_ECC | (ECC_CNT_4 << EMI_FLCNTRL_ECC_CNT_i)));
+               NOR_WRITE32_SEQUENCE(NOR_BASE, NOR_write32_word_program_sequence);
+                udelay(200); //workaround
+                if(default_ecc)
+                    dcr_write(DCR_EM2_EMI_BASE + EMI_FLCNTRL, emi_flcntrl_tmp);
 #if !defined(NOR_SELFCHECKING_DISABLE)
                 nop();
                 nop();
@@ -55,6 +61,11 @@ static inline void nor_write32(uint32_t write_DATA, uint32_t write_ADDR)
                 TEST_ASSERT(ioread32(write_ADDR) == write_DATA, "ERROR: nor_write32 failed");
 #endif
         }
+}
+
+static inline void nor_write32(uint32_t write_DATA, uint32_t write_ADDR)
+{
+    nor_write32_select(write_DATA, write_ADDR, true);
 }
 
 static inline void nor_reset(){
@@ -73,13 +84,16 @@ static inline void nor_erase_sect(uint32_t addr){
             {(0x2AA << 2),     0x55555555},
             {0,                0x30303030}
         } ;
+        uint32_t emi_flcntrl_tmp = dcr_read(DCR_EM2_EMI_BASE + EMI_FLCNTRL);
 
         NOR_sector_erase_sequence[5].addr = addr - NOR_BASE;
+        dcr_write(DCR_EM2_EMI_BASE + EMI_FLCNTRL, ECC_CTRL_ALWAYS_D7D0);
         NOR_WRITE32_SEQUENCE(NOR_BASE,NOR_sector_erase_sequence);
         udelay(50);
         /*
          * TODO: For detecting of sector erase finishing we have to poll STATUS[D3] bit (4.17 of document 1636RR4.pdf)
          */
+        dcr_write(DCR_EM2_EMI_BASE + EMI_FLCNTRL, emi_flcntrl_tmp);
 #if !defined(NOR_SELFCHECKING_DISABLE)
         TEST_ASSERT(ioread32(addr)==0xffffffff, "ERROR: nor_erase_sect failed");
 #endif
