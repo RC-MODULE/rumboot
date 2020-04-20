@@ -85,6 +85,8 @@ END_ENUM( HSCB_REG )
  *
  * @{
  */
+DECLARE_CONST(HSCB_DESCR_SIZE, 0x8)
+
 BEGIN_ENUM( HSCB_SW_RESET_FIELD )
     DECLARE_ENUM_VAL(   HSCB_SW_RESET_RST_i,        0 )         /**< Programmnyi sbros Space Wire */
     DECLARE_ENUM_VAL(   HSCB_SW_RESET_RST_n,        1 )

@@ -285,6 +285,8 @@ typedef struct hscb_instance
     uint32_t        dst_size;
     uint32_t        tx_descr_addr;
     uint32_t        rx_descr_addr;
+    uint32_t        real_rdma_addr;
+    uint32_t        real_wdma_addr;
 }hscb_instance_t;
 
 bool hscb_sw_rst(uint32_t base_addr);
@@ -325,6 +327,8 @@ void hscb_run_wdma(uint32_t base_addr);
 void hscb_set_max_speed(uint32_t base_addr);
 void hscb_enable(uint32_t base_addr);
 void hscb_config_for_receive_and_transmit(hscb_instance_t* hscb_inst);
+void hscb_config_for_receive_and_transmit_same_multiple(hscb_instance_t* hscb_inst, uint32_t count);
+
 uint8_t hscb_rmap_get_reply_byte(   hscb_uint8_array_with_length_t  rmap_reply,
                                     uint32_t                        start_index,
                                     hscb_rmap_reply_packet_fields_t required_field);
