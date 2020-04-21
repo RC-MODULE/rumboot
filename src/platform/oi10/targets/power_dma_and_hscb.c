@@ -50,7 +50,7 @@
 //#define PERIPH_TEST_DATA_LEN 32768
 //#define PERIPH_TEST_DATA_LEN 16384
 //#define PERIPH_TEST_DATA_LEN 8192
-#define PERIPH_TEST_DATA_LEN 1024
+#define PERIPH_TEST_DATA_LEN 8192
 #define PERIPH_TEST_DATA_LEN_BYTES      (PERIPH_TEST_DATA_LEN * sizeof(uint32_t))
 
 #define PERIPH_TEST_PATTERN_0    0x55555555
@@ -61,7 +61,7 @@
 #define DMA_TEST_DATA_LEN_BYTES         (PERIPH_TEST_DATA_LEN_BYTES)
 
 //#define BASE_DESCR_COUNT                0x256
-#define BASE_DESCR_COUNT                0x2
+#define BASE_DESCR_COUNT                0x64
 #define DMA2PLB6_DESCR_COUNT            (BASE_DESCR_COUNT)
 #define TEST_POWER_HSCB_DESCR_TABLE_LEN (BASE_DESCR_COUNT * 8)
 
@@ -654,17 +654,14 @@ int main(void)
 
 
     while (1)
-    {
-//       if (hscb_handler || dma2plb6_handler)
-//        {   
-            if (dma2plb6_handler) 
-            {    
-                dma2plb6_handler = false;
-                run_dma2plb6_scatter_gather_transfer();
-            }
-            if (hscb_handler)
-                hscb_handler = false;
-//        }
+    { 
+        if (dma2plb6_handler) 
+        {    
+            dma2plb6_handler = false;
+            run_dma2plb6_scatter_gather_transfer();
+        }
+        if (hscb_handler)
+            hscb_handler = false;
     }
 
     rumboot_printf("\nEnd of test\n");
