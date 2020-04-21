@@ -2464,19 +2464,7 @@ endif()
       FILES test_oi10_mt150_06_ssram.c
       NAME test_oi10_mt150_06_ssram
     )
-    
-    add_rumboot_target(
-      CONFIGURATION IRAM
-      FILES power/power_EMI_start.c
-      NAME power_EMI_start
-    )
-    
-    add_rumboot_target(
-      CONFIGURATION IRAM
-      FILES power_module.c
-      NAME power_module
-    )
-    
+            
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES power_hscb.c
@@ -2560,15 +2548,6 @@ add_rumboot_target(
     LDS oi10/iram_legacy_cached.lds 
     FILES power/fpu_power_test_endless.S power/power_endless.c 
     NAME "cached-fpu-power-test_endless"
-    BOOTROM preloader-im0-with-cache
-    LOAD IM0BIN SELF
-  )
-  
-  add_rumboot_target(
-    CONFIGURATION IRAM
-    LDS oi10/iram_legacy_cached.lds 
-    FILES power/power_EMI.S power/power_EMI.c 
-    NAME "cached-power_EMI"
     BOOTROM preloader-im0-with-cache
     LOAD IM0BIN SELF
   )
