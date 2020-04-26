@@ -2485,6 +2485,12 @@ endif()
     
     add_rumboot_target(
       CONFIGURATION IRAM
+      FILES power_dma_and_hscb_and_gpio_finish.c
+      NAME power_dma_and_hscb_and_gpio_finish
+    )
+    
+    add_rumboot_target(
+      CONFIGURATION IRAM
       FILES test_oi10_progr_crg.c
       NAME test_oi10_progr_crg
     )
