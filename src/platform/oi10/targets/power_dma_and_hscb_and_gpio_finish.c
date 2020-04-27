@@ -660,10 +660,10 @@ int main(void)
         }
         if (hscb_handler) {
             hscb_handler = false;   
-            read_data = ioread32(GPIO_1_BASE);
+            read_data = ioread32(GPIO_1_BASE+0x3fc);
 //            rumboot_printf("GPIO_1_BASE = 0x%X \n",read_data);
             if (read_data&0x1){
-                rumboot_printf("GPIO_1[0] = 1 \n");
+                 rumboot_printf("GPIO_1_BASE[0] = 1 \n");
                 break;
             }
         }
