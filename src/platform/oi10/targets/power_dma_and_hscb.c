@@ -528,19 +528,19 @@ void prepare_test_data(uint32_t src_id)
 #ifdef HSCB_POWER
     test_hscb0_data_im1_src = test_hscb_im1_data_src;
 //    test_hscb0_data_im1_dst = (uint32_t*)rumboot_malloc_from_heap_aligned(2, HSCB_TEST_DATA_LEN_BYTES, sizeof(uint32_t));
-    test_hscb0_data_im1_dst = (uint32_t*)(EM2_BASE + 0x1ff00);
+    test_hscb0_data_im1_dst = (uint32_t*)(EM2_BASE + 0xfff000);
     
     test_hscb1_data_im1_src = test_hscb_im1_data_src;
 //    test_hscb1_data_im1_dst = (uint32_t*)rumboot_malloc_from_heap_aligned(2, HSCB_TEST_DATA_LEN_BYTES, sizeof(uint32_t));
-    test_hscb1_data_im1_dst = (uint32_t*)(EM2_BASE + 0x20000);
+    test_hscb1_data_im1_dst = (uint32_t*)(EM2_BASE + 0xfff000);
 
     test_hscb2_data_im1_src = test_hscb_im1_data_src;
 //    test_hscb2_data_im1_dst = (uint32_t*)rumboot_malloc_from_heap_aligned(2, HSCB_TEST_DATA_LEN_BYTES, sizeof(uint32_t));
-    test_hscb2_data_im1_dst = (uint32_t*)(EM2_BASE + 0x3ff00);
+    test_hscb2_data_im1_dst = (uint32_t*)(EM2_BASE + 0xfff000);
 
     test_hscb3_data_im1_src = test_hscb_im1_data_src;
 //    test_hscb3_data_im1_dst = (uint32_t*)rumboot_malloc_from_heap_aligned(2, HSCB_TEST_DATA_LEN_BYTES, sizeof(uint32_t));
-    test_hscb3_data_im1_dst = (uint32_t*)(EM2_BASE + 0x40000);
+    test_hscb3_data_im1_dst = (uint32_t*)(EM2_BASE + 0xfff000);
 #endif
 #ifdef DMA_POWER
     test_dma2plb6_0_data_src = (uint8_t*)rumboot_malloc_from_heap_aligned(0, DMA_TEST_DATA_LEN_BYTES, 64);
