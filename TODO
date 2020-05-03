@@ -6,6 +6,8 @@ rumboot-tools:
     ☐ rumboot-flashrom wrapper
     ✔ xrun - Add keep running option @done(20-05-03 12:51)
     ☐ rumboot-edcl library
+    ☐ rename rumboot-packimage -> rumboot-tools
+    ☐ fix versioning
     ☐ MB7707 support (?)
 
 rumboot:
