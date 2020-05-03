@@ -5,6 +5,7 @@ SECTIONS {
     . = 0x00000000;
 
     .rwx : {
+        rumboot_self = .;
         KEEP(*(.header))
 
         /* ROM sections copy */

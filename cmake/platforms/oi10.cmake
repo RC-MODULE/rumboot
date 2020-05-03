@@ -142,6 +142,16 @@ rumboot_add_configuration (
     FEATURES COVERAGE PACKIMAGE
 )
 
+rumboot_add_chain(
+  name
+  CONFIGURATION conf
+  ELEMENTS
+    rumboot-oi10-Debug-chain-start
+    rumboot-oi10-Debug-simple-iram-hello
+
+)
+
+
 macro(rumboot_platform_generate_stuff_for_taget product)
     list (FIND TARGET_FEATURES "ROMGEN" _index)
     if (${_index} GREATER -1)
@@ -2475,8 +2485,18 @@ endif()
       CONFIGURATION IRAM
       FILES power_dma_and_hscb.c
       NAME power_dma_and_hscb
+      CFLAGS -DGPIO_SWITCH
     )
     
+    add_rumboot_target(
+      FEATURES NOCODE
+      COMBOIMAGE IM0BIN
+      LOAD IM0BIN iram-power_dma_and_hscb,power-flash-im0-loader,power-cached-test_endless
+      TESTGROUP chains
+      NAME endless_power_test
+      PREFIX chain
+    )
+
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES power_dma_and_hscb_and_ext_clk.c
@@ -2496,7 +2516,6 @@ endif()
     )
     
     add_rumboot_target(
-
       FEATURES NOCODE
       COMBOIMAGE IM0BIN
       LOAD IM0BIN simple-iram-chain-start-dummy,hscb_0_1-loop_test,hscb_2_3-loop_test,greth0-edcl-im1-test_oi10_greth,greth1-edcl-im1-test_oi10_greth,mkio0-im1-func-a-test_oi10_lscb,mkio0-im1-func-b-test_oi10_lscb,mkio1-im1-func-a-test_oi10_lscb,mkio1-im1-func-b-test_oi10_lscb,spels-memory-test-im0,spels-memory-test-im1,simple-iram-test_oi10_cpu_007,simple-iram-test_oi10_cpu_019,irq-iram-irq-atomics,irq-iram-irq-defhandler,spels-math-test,simple-iram-oi10_spels_cache_hack,simple-iram-chain-end-dummy
@@ -2505,21 +2524,23 @@ endif()
     )
 
     add_rumboot_target(
-      CONFIGURATION BROM
+      CONFIGURATION IRAM
       FILES power/loader.c      
-      CFLAGS -DENABLE_CACHE
-      NAME "im0-with-cache"
-      PREFIX preloader
+      CFLAGS -DENABLE_CACHE -DCHAINLOAD_FROM_FLASH
+      NAME "flash-im0-loader"
+      PREFIX power
       FEATURES STUB
   )
 
-  add_rumboot_target(
-    CONFIGURATION BROM
-    FILES power/loader.c      
-    NAME "im0-without-cache"
-    PREFIX preloader
-    FEATURES STUB
-  )
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      LDS oi10/iram_legacy_cached.lds 
+      FILES power/fpu_power_test_endless.S power/power_endless.c 
+      NAME "cached-test_endless"
+      PREFIX power
+      LOAD IM0BIN SELF
+    )
+
 
   add_rumboot_target(
     CONFIGURATION IRAM_SPL
@@ -2535,34 +2556,6 @@ endif()
     NAME "with-rumboot-init"
   )
 
-add_rumboot_target(
-    CONFIGURATION IRAM
-    LDS oi10/iram_legacy_cached.lds 
-    FILES power/fpu_power_test.S power/power.c 
-    CFLAGS -DCPU_ITERATIONS_COUNT=0x100    
-    NAME "cached-fpu-power-test"
-    BOOTROM preloader-im0-with-cache
-    LOAD IM0BIN SELF
-  )
-
-  add_rumboot_target(
-    CONFIGURATION IRAM
-    LDS oi10/iram_legacy.lds 
-    FILES power/fpu_power_test.S power/power.c 
-    CFLAGS -DCPU_ITERATIONS_COUNT=0x100    
-    NAME "non-cached-fpu-power-test"
-    BOOTROM preloader-im0-without-cache
-    LOAD IM0BIN SELF
-  )
-  
-  add_rumboot_target(
-    CONFIGURATION IRAM
-    LDS oi10/iram_legacy_cached.lds 
-    FILES power/fpu_power_test_endless.S power/power_endless.c 
-    NAME "cached-fpu-power-test_endless"
-    BOOTROM preloader-im0-with-cache
-    LOAD IM0BIN SELF
-  )
   
   add_rumboot_target(
     CONFIGURATION IRAM

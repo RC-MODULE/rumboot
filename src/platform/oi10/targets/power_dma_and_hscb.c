@@ -23,6 +23,7 @@
 #include <rumboot/rumboot.h>
 
 #include <devices/gpio_pl061.h>
+#include <regs/regs_gpio_pl061.h>
 
 #include <platform/devices.h>
 #include <platform/interrupts.h>
@@ -599,6 +600,17 @@ void prepare_test_data(uint32_t src_id)
 int main(void)
 {
     struct rumboot_irq_entry *tbl;
+
+
+
+#ifdef GPIO_SWITCH
+    rumboot_printf( "gpioswitch: Init GPIO \n");
+    iowrite32 (0xfe,GPIO_1_BASE+GPIO_DIR);
+    if (ioread32(GPIO_1_BASE+0x3fc) & 1) {
+        rumboot_printf("gpioswitch: skipping to CPU Power test\n");
+        return 0;
+    }
+#endif
 
     rumboot_printf("\n\n\nStart power_dma_and_hscb\n");
     
