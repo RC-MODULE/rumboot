@@ -1,0 +1,14 @@
+rumboot-tools:
+    ✔ commit oi10 power tests @done(20-05-03 14:13)
+    ✔ Implement resetSeqAPC @done(20-05-03 12:51)
+    ☐ Python chaining tool
+    ☐ Documentation
+    ☐ rumboot-flashrom wrapper
+    ✔ xrun - Add keep running option @done(20-05-03 12:51)
+    ☐ rumboot-edcl library
+    ☐ MB7707 support (?)
+
+rumboot:
+    ☐ add_rumboot_chain() using new tool
+    ☐ Create a global library TODO list
+    ☐ Fix windows builds
