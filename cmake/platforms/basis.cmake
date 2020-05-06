@@ -1701,6 +1701,14 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
 
   add_rumboot_target(
+    CONFIGURATION IRAM_SPL
+    FILES common/tools/serprog.c
+    CFLAGS -DBOOT_ID=2
+    PREFIX serprog
+    NAME spi0-gpio0_5-cs
+)
+
+  add_rumboot_target(
         CONFIGURATION IRAM_SPL
         FILES common/updaters/spiflash-pl022.c
         CFLAGS -DBOOT_ID=1
