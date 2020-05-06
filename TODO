@@ -1,16 +1,30 @@
 rumboot-tools:
     ✔ commit oi10 power tests @done(20-05-03 14:13)
     ✔ Implement resetSeqAPC @done(20-05-03 12:51)
-    ☐ Python chaining tool
-    ☐ Documentation
-    ☐ rumboot-flashrom wrapper
+    ✔ Python chaining tool / rumboot-combine @done(20-05-04 18:13)
+    ✔ detect proper reset port for pl2303gpio @done(20-05-04 20:31)
+    ✔ implement nested mode for rumboot-daemon @done(20-05-06 13:43)
+    ✔ implement daemon file preloading @done(20-05-06 13:43)
+    ✔ Documentation @done(20-05-06 15:17)
+        ✔ packimage @done(20-05-04 20:13)
+        ✔ xrun @done(20-05-04 20:13)
+        ✔ xflash @done(20-05-05 17:31)
+        ✔ daemon @done(20-05-06 15:16)
+        ✔ combine @done(20-05-06 15:17)
+        ✔ flashrom @done(20-05-05 17:31)
+    ✔ Develop rumboot-flashrom wrapper @done(20-05-06 15:17)
+        ✔ Port serprog.c @done(20-05-05 09:43)
+        ✔ Working draft of python part @done(20-05-05 11:30)
+        ✔ Cleanup python part @done(20-05-05 17:31)
     ✔ xrun - Add keep running option @done(20-05-03 12:51)
     ☐ rumboot-edcl library
     ☐ rename rumboot-packimage -> rumboot-tools
-    ☐ fix versioning
-    ☐ MB7707 support (?)
+    ✔ fix versioning @done(20-05-04 20:31)
+    ✔ MB7707 support @done(20-05-04 21:21)
+    ☐ TCP mode for GDB stub
 
 rumboot:
-    ☐ add_rumboot_chain() using new tool
+    ✔ use rumboot-combine for TARGET_APPEND @done(20-05-06 17:45)
     ☐ Create a global library TODO list
     ☐ Fix windows builds
+    ☐ MB7707 port
