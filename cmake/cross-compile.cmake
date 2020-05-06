@@ -17,12 +17,12 @@ if (NOT CMAKE_C_COMPILER)
         set(CMAKE_C_COMPILER_WORKS 1)
         SET(CMAKE_C_COMPILER     /usr/share/clang/scan-build-3.8/libexec/ccc-analyzer)
     else()
-        SET(CMAKE_C_COMPILER     ${CROSS_COMPILE}-gcc${CMAKE_EXECUTABLE_SUFFIX})
+        SET(CMAKE_C_COMPILER     "${CROSS_COMPILE}-gcc${CMAKE_EXECUTABLE_SUFFIX}")
     endif()
 endif()
 
 if (NOT CMAKE_C_COMPILER)
-    SET(CMAKE_CXX_COMPILER   ${CROSS_COMPILE}-g++${CMAKE_EXECUTABLE_SUFFIX})
+    SET(CMAKE_CXX_COMPILER   "${CROSS_COMPILE}-g++${CMAKE_EXECUTABLE_SUFFIX}")
 endif()
 
 # where is the target environment
