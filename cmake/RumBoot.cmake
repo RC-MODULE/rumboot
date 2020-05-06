@@ -162,10 +162,11 @@ macro(generate_stuff_for_target product)
       list(APPEND _outfiles ${product}.bin)
 
       if (TARGET_APPEND)
+      message(${product}.bin)
         add_custom_command(
           APPEND
           OUTPUT ${product}.bin
-          COMMAND cat ${TARGET_APPEND} >> ${product}.bin &&  truncate -s +1  ${product}.bin
+          COMMAND ${PYTHON_EXECUTABLE} ${RUMBOOT_COMBINE} -a ini -i ${product}.bin -i ${TARGET_APPEND} -o ${product}.bin
           COMMENT "Appending ${TARGET_APPEND} to ${product}"
         )
       endif()
