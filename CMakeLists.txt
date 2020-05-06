@@ -96,6 +96,13 @@ macro(find_rumboot_packimage)
     PATHS ${PROJECT_SOURCE_DIR}/rumboot-packimage.py
           ${CMAKE_SOURCE_DIR}/rumboot-packimage.py
   )
+  find_file(RUMBOOT_COMBINE
+    NAMES rumboot_combine.py rumboot-combine
+    PATHS ${PROJECT_SOURCE_DIR}/rumboot-packimage.py
+          ${CMAKE_SOURCE_DIR}/rumboot-packimage.py
+  )
+
+
   if("${RUMBOOT_PACKIMAGE}" STREQUAL "${PROJECT_SOURCE_DIR}/rumboot-packimage.py/rumboot_packimage.py")
     message("rumboot_packimage.py: Using shipped version, so I will update the submodule for you")
     execute_process(
@@ -105,13 +112,17 @@ macro(find_rumboot_packimage)
     set(PACKIMAGE_DIR ${PROJECT_SOURCE_DIR}/rumboot-packimage.py)
     file(WRITE ${PROJECT_BINARY_DIR}/local-rumboot-packimage "#!/bin/bash\n${PYTHON_EXECUTABLE} ${PACKIMAGE_DIR}/rumboot_packimage.py $*")
     file(WRITE ${PROJECT_BINARY_DIR}/local-rumboot-xflash    "#!/bin/bash\n${PYTHON_EXECUTABLE} ${PACKIMAGE_DIR}/rumboot_xflash.py -z ${PROJECT_BINARY_DIR}/ $*")
+    file(WRITE ${PROJECT_BINARY_DIR}/local-rumboot-flashrom "#!/bin/bash\n${PYTHON_EXECUTABLE} ${PACKIMAGE_DIR}/rumboot_flashom.py -z ${PROJECT_BINARY_DIR}/ $*")
     file(WRITE ${PROJECT_BINARY_DIR}/local-rumboot-xrun      "#!/bin/bash\n${PYTHON_EXECUTABLE} ${PACKIMAGE_DIR}/rumboot_xrun.py $*")
+    file(WRITE ${PROJECT_BINARY_DIR}/local-rumboot-combine   "#!/bin/bash\n${PYTHON_EXECUTABLE} ${PACKIMAGE_DIR}/rumboot_combine.py $*")
     find_program(CHMOD_PROG chmod)
     if(CHMOD_PROG)
       execute_process(COMMAND ${CHMOD_PROG} +x ${PROJECT_BINARY_DIR}/local-rumboot-packimage)
       execute_process(COMMAND ${CHMOD_PROG} +x ${PROJECT_BINARY_DIR}/local-rumboot-xrun)
       execute_process(COMMAND ${CHMOD_PROG} +x ${PROJECT_BINARY_DIR}/local-rumboot-xflash)
-    endif()
+      execute_process(COMMAND ${CHMOD_PROG} +x ${PROJECT_BINARY_DIR}/local-rumboot-combine)
+      execute_process(COMMAND ${CHMOD_PROG} +x ${PROJECT_BINARY_DIR}/local-rumboot-flashrom)
+      endif()
   endif()
 endmacro()
 
