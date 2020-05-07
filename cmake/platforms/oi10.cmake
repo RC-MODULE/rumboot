@@ -38,13 +38,17 @@ file(GLOB PLATFORM_SOURCES
 #Flags for Power PC
 macro(RUMBOOT_PLATFORM_SET_COMPILER_FLAGS)
 
+
+    set(RUMBOOT_COMMON_FLAGS "-mcpu=476fp -fno-plt -fno-pic -m32 -ffreestanding -std=gnu99 -DRUMBOOT_PLATFORM_NUM_HEAPS=9 ")
+
     if ( "${CMAKE_GENERATOR}" STREQUAL "Unix Makefiles")
-      set(_filename_magic -D__FILENAME__='\"$(subst ${CMAKE_SOURCE_DIR}/,,$(abspath $<))\"')
+      set(RUMBOOT_COMMON_FLAGS "${RUMBOOT_COMMON_FLAGS} -D__FILENAME__='\"$(subst ${CMAKE_SOURCE_DIR}/,,$(abspath $<))\"'")
+    set(_filename_magic )
     else()
-      set(_filename_magic -D__FILENAME__='\"unknown\"')
+      set(RUMBOOT_COMMON_FLAGS "${RUMBOOT_COMMON_FLAGS} -D__FILENAME__=__FILE__")
     endif()
 
-    set(RUMBOOT_COMMON_FLAGS "-mcpu=476fp -fno-plt -fno-pic -m32 -ffreestanding -std=gnu99 -DRUMBOOT_PLATFORM_NUM_HEAPS=9 ${_filename_magic}")
+
     set(CMAKE_C_FLAGS "${RUMBOOT_COMMON_FLAGS} -mstrict-align -Wall -Wno-error=cpp -fdata-sections -ffunction-sections")
     set(CMAKE_ASM_FLAGS "${RUMBOOT_COMMON_FLAGS}")
     set(CMAKE_EXE_LINKER_FLAGS "-g -nostartfiles -static -Wl,--gc-sections")
@@ -2487,15 +2491,6 @@ endif()
     )
 
     add_rumboot_target(
-      FEATURES NOCODE
-      COMBOIMAGE IM0BIN
-      LOAD IM0BIN iram-power_dma_and_hscb,power-flash-im0-loader,power-cached-test_endless
-      TESTGROUP chains
-      NAME endless_power_test
-      PREFIX chain
-    )
-
-    add_rumboot_target(
       CONFIGURATION IRAM
       FILES power_dma_and_hscb_and_ext_clk.c
       NAME power_dma_and_hscb_and_ext_clk
@@ -2676,6 +2671,15 @@ endif()
     CFLAGS -DEMI_INIT -DADD_TLB -DM_BASE=SRAM0_BASE
     IRUN_FLAGS ${ROM_6500K_OPTS}
   )
+
+      add_rumboot_target(
+      FEATURES NOCODE
+      COMBOIMAGE IM0BIN
+      LOAD IM0BIN iram-power_dma_and_hscb,power-flash-im0-loader,power-cached-test_endless
+      TESTGROUP chains
+      NAME endless_power_test
+      PREFIX chain
+    )
 
 
 endmacro()
