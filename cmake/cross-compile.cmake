@@ -11,18 +11,22 @@ SET(CMAKE_SYSTEM_NAME Generic)
 SET(CMAKE_SYSTEM_VERSION 1)
 
 #Hack!
+if(WIN32)
+  set(TOOL_SUFFIX .exe)
+endif()
+
 if (NOT CMAKE_C_COMPILER)
     # HACK: Bare metal compiler confuses cmake
     if (CLANG_ANALYZE)
         set(CMAKE_C_COMPILER_WORKS 1)
         SET(CMAKE_C_COMPILER     /usr/share/clang/scan-build-3.8/libexec/ccc-analyzer)
     else()
-        SET(CMAKE_C_COMPILER     "${CROSS_COMPILE}-gcc${CMAKE_EXECUTABLE_SUFFIX}")
+        SET(CMAKE_C_COMPILER     "${CROSS_COMPILE}-gcc${TOOL_SUFFIX}")
     endif()
 endif()
 
-if (NOT CMAKE_C_COMPILER)
-    SET(CMAKE_CXX_COMPILER   "${CROSS_COMPILE}-g++${CMAKE_EXECUTABLE_SUFFIX}")
+if (NOT CMAKE_CXX_COMPILER)
+    SET(CMAKE_CXX_COMPILER   "${CROSS_COMPILE}-g++${TOOL_SUFFIX}")
 endif()
 
 # where is the target environment
