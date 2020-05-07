@@ -37,13 +37,20 @@ file(GLOB PLATFORM_SOURCES
 
 #Flags for Power PC
 macro(RUMBOOT_PLATFORM_SET_COMPILER_FLAGS)
-    set(RUMBOOT_COMMON_FLAGS "-mcpu=476fp -g -gdwarf-2 -fno-plt -fno-pic -m32 -ffreestanding -std=gnu99 -DRUMBOOT_PLATFORM_NUM_HEAPS=9 -D__FILENAME__='\"$(subst ${CMAKE_SOURCE_DIR}/,,$(abspath $<))\"'")
+
+    if ( "${CMAKE_GENERATOR}" STREQUAL "Unix Makefiles")
+      set(_filename_magic -D__FILENAME__='\"$(subst ${CMAKE_SOURCE_DIR}/,,$(abspath $<))\"')
+    else()
+      set(_filename_magic -D__FILENAME__='\"unknown\"')
+    endif()
+
+    set(RUMBOOT_COMMON_FLAGS "-mcpu=476fp -fno-plt -fno-pic -m32 -ffreestanding -std=gnu99 -DRUMBOOT_PLATFORM_NUM_HEAPS=9 ${_filename_magic}")
     set(CMAKE_C_FLAGS "${RUMBOOT_COMMON_FLAGS} -mstrict-align -Wall -Wno-error=cpp -fdata-sections -ffunction-sections")
     set(CMAKE_ASM_FLAGS "${RUMBOOT_COMMON_FLAGS}")
     set(CMAKE_EXE_LINKER_FLAGS "-g -nostartfiles -static -Wl,--gc-sections")
     set(CMAKE_DUMP_FLAGS -M476,32)
-    if (PRODUCTION_TESTING) 
-      SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DPRODUCTION_TESTING")    
+    if (PRODUCTION_TESTING)
+      SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DPRODUCTION_TESTING")
     endif()
 endmacro()
 
@@ -142,15 +149,6 @@ rumboot_add_configuration (
     FEATURES COVERAGE PACKIMAGE
 )
 
-rumboot_add_chain(
-  name
-  CONFIGURATION conf
-  ELEMENTS
-    rumboot-oi10-Debug-chain-start
-    rumboot-oi10-Debug-simple-iram-hello
-
-)
-
 
 macro(rumboot_platform_generate_stuff_for_taget product)
     list (FIND TARGET_FEATURES "ROMGEN" _index)
@@ -176,8 +174,8 @@ macro(rumboot_platform_generate_stuff_for_taget product)
     endif()
 
 #    expand_target_load(TARGET_LOAD TARGET_LOAD TARGET_LOAD_LIST)
-#    list(REMOVE_ITEM TARGET_LOAD_LIST TARGET_LOAD_IM0BIN 
-#      TARGET_LOAD_SD0_BOOT_IMAGE 
+#    list(REMOVE_ITEM TARGET_LOAD_LIST TARGET_LOAD_IM0BIN
+#      TARGET_LOAD_SD0_BOOT_IMAGE
 #      TARGET_LOAD_NOR_IMAGE
 #      TARGET_LOAD_SPI0_CONF
 #    )
@@ -185,12 +183,12 @@ macro(rumboot_platform_generate_stuff_for_taget product)
 #    foreach(mem ${TARGET_LOAD_LIST})
 #      message("${CROSS_COMPILE}-ld -g -r ${PROJECT_BINARY_DIR}/${product} ${PROJECT_BINARY_DIR}/${${mem}} -o ${PROJECT_BINARY_DIR}/${product}.rwelf")
 #    endforeach()
-#    
+#
 
     list (FIND TARGET_FEATURES "ISS" _index)
     if (${_index} GREATER -1)
     ####################################################################################
-    # NOTICE (!) For Victor Strukov                                                    # 
+    # NOTICE (!) For Victor Strukov                                                    #
     ####################################################################################
     # REMEMBER TO USE find_program to detect if riscwatch is installed.                #
     # If not, either exclude ISS tests from build or disable .gold.bin appending logic #
@@ -248,7 +246,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
     rumboot_spels_memory_test(
       CONFIGURATION IRAM_SPL
-      START IM0_BASE 
+      START IM0_BASE
       NAME im0
     )
 
@@ -257,7 +255,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       END "(IM1_BASE+0x20000)"
       NAME im1
     )
-    
+
     rumboot_bootrom_add_components(IRAM_SPL BROM
       -a 512 -z 512
     )
@@ -583,7 +581,7 @@ endif()
           FILES test_oi10_em2_201.c
           CFLAGS -DEXT_MEM_BASE=SRAM0_BASE -DSW_ASSERTS_ONLY -DNOR_SELFCHECKING_DISABLE
           PREFIX sram0-sw-asserts
-        )     
+        )
 
     add_rumboot_target(
           CONFIGURATION IRAM
@@ -665,7 +663,7 @@ endif()
           FILES test_oi10_em2_201.c
           CFLAGS -DEXT_MEM_BASE=SRAM1_BASE
           PREFIX sram1-sw-asserts
-        )     
+        )
 
     add_rumboot_target(
           CONFIGURATION IRAM
@@ -673,13 +671,13 @@ endif()
           CFLAGS -DEXT_MEM_BASE=NOR_BASE -DSW_ASSERTS_ONLY -DNOR_SELFCHECKING_DISABLE
           PREFIX nor-sw-asserts
         )
-    
+
     add_rumboot_target(
           CONFIGURATION IRAM
           FILES test_oi10_em2_201.c
           CFLAGS -DEXT_MEM_BASE=SRAM0_BASE
           PREFIX sram0-sw-hw-asserts
-        )     
+        )
 
     add_rumboot_target(
           CONFIGURATION IRAM
@@ -761,7 +759,7 @@ endif()
           FILES test_oi10_em2_201.c
           CFLAGS -DEXT_MEM_BASE=SRAM1_BASE
           PREFIX sram1-sw-hw-asserts
-        )     
+        )
 
     add_rumboot_target(
           CONFIGURATION IRAM
@@ -2187,13 +2185,13 @@ endif()
 
     add_rumboot_target(
         CONFIGURATION IRAM
-        CFLAGS  -DTEST_OI10_CPU_021_CACHE_OP_LIST=test_ici 
+        CFLAGS  -DTEST_OI10_CPU_021_CACHE_OP_LIST=test_ici
                 -DL2C_TRACE_DEBUG_MSG
         FILES simple-iram/test_oi10_cpu_021_cache_op.c
         PREFIX "simple-iram"
         NAME test_oi10_cpu_021_cache_op_ici
     )
-    
+
 
     add_rumboot_target(
         CONFIGURATION IRAM
@@ -2242,7 +2240,7 @@ endif()
         IRUN_FLAGS +select_sdio1
         PREFIX sdio-spi-1-sram0
     )
-    
+
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES test_oi10_ctrl_002_2.c
@@ -2250,7 +2248,7 @@ endif()
       LOAD IM0BIN SELF,SELF
       PREFIX crg
     )
-    
+
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES test_oi10_ctrl_002_3.c
@@ -2258,7 +2256,7 @@ endif()
       LOAD IM0BIN SELF,SELF,SELF,SELF,SELF
       PREFIX crg
     )
-    
+
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES test_oi10_ctrl_002_4.c
@@ -2317,7 +2315,7 @@ endif()
       FILES simple-iram/test_oi10_em2_204.c
       PREFIX simple-iram
       NAME "test_oi10_em2_204_bootnor"
-    ) 
+    )
 
     add_rumboot_target(
       CONFIGURATION IRAM
@@ -2369,47 +2367,47 @@ endif()
 
     add_rumboot_target(
         CONFIGURATION IRAM
-        CFLAGS 
+        CFLAGS
             -DHSCB_SRC_BASE=HSCB2_BASE
             -DHSCB_DST_BASE=HSCB3_BASE
             -DLOOP_TEST
         FILES hscb_loop.c
         PREFIX "hscb_2_3"
         NAME "loop_test"
-    )    
+    )
 
     add_rumboot_target(
         CONFIGURATION IRAM
-        CFLAGS 
+        CFLAGS
             -DHSCB_SRC_BASE=HSCB0_BASE
             -DHSCB_DST_BASE=HSCB1_BASE
             -DLOOP_TEST
         FILES hscb_loop.c
         PREFIX "hscb_0_1"
         NAME "loop_test"
-    )    
-    
+    )
+
     add_rumboot_target(
         CONFIGURATION IRAM
-        CFLAGS 
+        CFLAGS
             -DHSCB_BASE=HSCB0_BASE
             -DINTERNAL_LOOP_TEST
         FILES hscb_loop.c
         PREFIX "hscb_0"
         NAME "internal_loop_test"
-    )    
-    
+    )
+
     add_rumboot_target(
         CONFIGURATION IRAM
-        CFLAGS 
+        CFLAGS
             -DHSCB_BASE=HSCB0_BASE
             -DBOARD_TEST
 #            -DON_BOARD
         FILES hscb_loop.c
         PREFIX "hscb_0"
         NAME "board_test"
-    )    
-    
+    )
+
     add_rumboot_target(
       FEATURES NOCODE
       COMBOIMAGE IM0BIN
@@ -2462,32 +2460,32 @@ endif()
       FILES test_oi10_mt150_08_sdram.c
       NAME test_oi10_mt150_08_sdram
     )
-    
+
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES test_oi10_mt150_07_sram.c
       NAME test_oi10_mt150_07_sram
     )
-    
+
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES test_oi10_mt150_06_ssram.c
       NAME test_oi10_mt150_06_ssram
     )
-            
+
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES power_hscb.c
       NAME power_hscb
     )
-    
+
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES power_dma_and_hscb.c
       NAME power_dma_and_hscb
       CFLAGS -DGPIO_SWITCH
     )
-    
+
     add_rumboot_target(
       FEATURES NOCODE
       COMBOIMAGE IM0BIN
@@ -2502,19 +2500,19 @@ endif()
       FILES power_dma_and_hscb_and_ext_clk.c
       NAME power_dma_and_hscb_and_ext_clk
     )
-    
+
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES power_dma_and_hscb_and_gpio_finish.c
       NAME power_dma_and_hscb_and_gpio_finish
     )
-    
+
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES test_oi10_progr_crg.c
       NAME test_oi10_progr_crg
     )
-    
+
     add_rumboot_target(
       FEATURES NOCODE
       COMBOIMAGE IM0BIN
@@ -2525,7 +2523,7 @@ endif()
 
     add_rumboot_target(
       CONFIGURATION IRAM
-      FILES power/loader.c      
+      FILES power/loader.c
       CFLAGS -DENABLE_CACHE -DCHAINLOAD_FROM_FLASH
       NAME "flash-im0-loader"
       PREFIX power
@@ -2534,8 +2532,8 @@ endif()
 
     add_rumboot_target(
       CONFIGURATION IRAM
-      LDS oi10/iram_legacy_cached.lds 
-      FILES power/fpu_power_test_endless.S power/power_endless.c 
+      LDS oi10/iram_legacy_cached.lds
+      FILES power/fpu_power_test_endless.S power/power_endless.c
       NAME "cached-test_endless"
       PREFIX power
       LOAD IM0BIN SELF
@@ -2544,22 +2542,22 @@ endif()
 
   add_rumboot_target(
     CONFIGURATION IRAM_SPL
-    FILES tlbdump/main.c tlbdump/ops.S      
+    FILES tlbdump/main.c tlbdump/ops.S
     PREFIX "tlbdumper"
     NAME "after-rom"
   )
 
   add_rumboot_target(
     CONFIGURATION IRAM
-    FILES tlbdump/main.c tlbdump/ops.S      
+    FILES tlbdump/main.c tlbdump/ops.S
     PREFIX "tlbdumper"
     NAME "with-rumboot-init"
   )
 
-  
+
   add_rumboot_target(
     CONFIGURATION IRAM
-    FILES ../archive/test_oi10_cpu_021_dcbtl.c 
+    FILES ../archive/test_oi10_cpu_021_dcbtl.c
     PREFIX archive-iram
     TESTGROUP broken
     )
@@ -2569,7 +2567,7 @@ endif()
 #        CFLAGS -DL2C_CHECK_SIZE=0x100
       LDS oi10/sram0.lds
       PREFIX l2cbug-supp
-      FILES l2bug/test_oi10_cpu_021_wb_cache_size.c 
+      FILES l2bug/test_oi10_cpu_021_wb_cache_size.c
       NAME "test_oi10_cpu_021_wb_cache_size"
   )
   add_rumboot_target(
@@ -2620,7 +2618,7 @@ endif()
     FILES l2bug/multistore.c ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c
     NAME "multistore-supp-2"
   )
-  
+
   add_rumboot_target(
     CONFIGURATION SUPPLEMENTARY
     PREFIX l2bug
@@ -2643,7 +2641,7 @@ endif()
     LOAD IM0BIN SELF
         MBIN l2bug-multistore-supp
   )
-   
+
   add_rumboot_target(
     CONFIGURATION IRAM_SPL
     PREFIX l2bug
@@ -2656,7 +2654,7 @@ endif()
     LOAD IM0BIN SELF
         MBIN l2bug-multistore-supp
   )
-  
+
   add_rumboot_target(
     CONFIGURATION IRAM_SPL
     PREFIX l2bug
@@ -2668,8 +2666,8 @@ endif()
     IRUN_FLAGS ${ROM_6500K_OPTS}
     LOAD IM0BIN SELF
         MBIN multistore-msync-supp-3
-  )  
-  
+  )
+
    add_rumboot_target(
     CONFIGURATION IRAM_SPL
     PREFIX l2bug
