@@ -1030,17 +1030,33 @@ endif()
     )
 
 if (RUMBOOT_SOC_BUILD_TYPE MATCHES "RTL")
-    add_rumboot_target(
-        CONFIGURATION IRAM
-        FILES test_oi10_ctrl_000.c
-        CFLAGS -DMBIST_RELOCATE=KMBIST_CHAIN_SF_8 -DRELOCATE_FROM=IM0_BASE -DRELOCATE_TO=IM2_BASE
-    )
+    if (OI10_IRAM_IM0)
+        add_rumboot_target(
+            CONFIGURATION IRAM
+            FILES test_oi10_ctrl_000.c
+            CFLAGS -DMBIST_RELOCATE=KMBIST_CHAIN_SF_8_IM0 -DRELOCATE_FROM=IM0_BASE -DRELOCATE_TO=IM2_BASE
+        )
+    else()
+        add_rumboot_target(
+            CONFIGURATION IRAM
+            FILES test_oi10_ctrl_000.c
+            CFLAGS -DMBIST_RELOCATE=KMBIST_CHAIN_SF_6_IM1 -DRELOCATE_FROM=IM1_BASE -DRELOCATE_TO=IM2_BASE
+        )
+    endif()
 else()
+    if (OI10_IRAM_IM0)
     add_rumboot_target(
         CONFIGURATION IRAM
         FILES test_oi10_ctrl_000.c
-        CFLAGS -DMBIST_RELOCATE=KMBIST_CHAIN_SF_8 -DRELOCATE_FROM=IM0_BASE -DRELOCATE_TO=IM2_BASE -DERR_INJ_ENABLED
+        CFLAGS -DMBIST_RELOCATE=KMBIST_CHAIN_SF_8_IM0 -DRELOCATE_FROM=IM0_BASE -DRELOCATE_TO=IM2_BASE -DERR_INJ_ENABLED
     )
+    else()
+        add_rumboot_target(
+            CONFIGURATION IRAM
+            FILES test_oi10_ctrl_000.c
+            CFLAGS -DMBIST_RELOCATE=KMBIST_CHAIN_SF_6_IM1 -DRELOCATE_FROM=IM1_BASE -DRELOCATE_TO=IM2_BASE -DERR_INJ_ENABLED
+        )
+    endif()
 endif()
 
     add_rumboot_target(
