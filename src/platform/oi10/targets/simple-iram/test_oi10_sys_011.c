@@ -71,26 +71,26 @@ static int check_systemstatus(void)
     rumboot_printf("DEBUG_SYSTEMSTATUS check done!\n");
     return 0;
 }
-
-static int check_uncondevent(void)
-{
-    uint32_t dbsr;
-    rumboot_printf("DEBUG_UNCONDEVENT check start!\n");
-
-    spr_write(SPR_DBSR_RC,0xFFFFFFFF); //clear dbsr
-    rumboot_printf("send TEC_CHECK_DEBUG_UNCONDEVENT\n");
-    test_event(TEC_CHECK_DEBUG_UNCONDEVENT );
-
-    dbsr = spr_read(SPR_DBSR_RC);
-    spr_write(SPR_DBSR_RC,0xFFFFFFFF); //clear dbsr
-    if (!(dbsr & (1 << DEBUG_DBSR_UDE_i)) ){
-        rumboot_printf("DBSR UDE is not set!\n");
-        return 1;
-    }
-
-    rumboot_printf("DEBUG_UNCONDEVENT check done!\n");
-    return 0;
-}
+//
+//static int check_uncondevent(void)
+//{
+//    uint32_t dbsr;
+//    rumboot_printf("DEBUG_UNCONDEVENT check start!\n");
+//
+//    spr_write(SPR_DBSR_RC,0xFFFFFFFF); //clear dbsr
+//    rumboot_printf("send TEC_CHECK_DEBUG_UNCONDEVENT\n");
+//    test_event(TEC_CHECK_DEBUG_UNCONDEVENT );
+//
+//    dbsr = spr_read(SPR_DBSR_RC);
+//    spr_write(SPR_DBSR_RC,0xFFFFFFFF); //clear dbsr
+//    if (!(dbsr & (1 << DEBUG_DBSR_UDE_i)) ){
+//        rumboot_printf("DBSR UDE is not set!\n");
+//        return 1;
+//    }
+//
+//    rumboot_printf("DEBUG_UNCONDEVENT check done!\n");
+//    return 0;
+//}
 
 static int check_halt(void)
 {
@@ -187,29 +187,29 @@ static int check_machinecheck(void)
     return 0;
 }
 
-static int check_dbomask(void)
-{
-    uint32_t dbdr;
-
-    rumboot_printf("DBOMASK check start!\n");
-    spr_write(SPR_DBDR, TEST_DATA_ERROR);
-
-    rumboot_platform_event_clear();
-    rumboot_printf("send TEC_CHECK_DEBUG_MASKOUT\n");
-    test_event(TEC_CHECK_DEBUG_MASKOUT );
-    if(event_get()) return 1;
-
-    dbdr = spr_read(SPR_DBDR);
-    if (dbdr != TEST_DATA_OK ){
-        rumboot_printf("DBIMASK check failed!\n");
-        return 1;
-    }
-
-    spr_write(SPR_DBSR_RC,0xFFFFFFFF); //clear dbsr
-
-    rumboot_printf("DBOMASK check done!\n");
-    return 0;
-}
+//static int check_dbomask(void)
+//{
+//    uint32_t dbdr;
+//
+//    rumboot_printf("DBOMASK check start!\n");
+//    spr_write(SPR_DBDR, TEST_DATA_ERROR);
+//
+//    rumboot_platform_event_clear();
+//    rumboot_printf("send TEC_CHECK_DEBUG_MASKOUT\n");
+//    test_event(TEC_CHECK_DEBUG_MASKOUT );
+//    if(event_get()) return 1;
+//
+//    dbdr = spr_read(SPR_DBDR);
+//    if (dbdr != TEST_DATA_OK ){
+//        rumboot_printf("DBIMASK check failed!\n");
+//        return 1;
+//    }
+//
+//    spr_write(SPR_DBSR_RC,0xFFFFFFFF); //clear dbsr
+//
+//    rumboot_printf("DBOMASK check done!\n");
+//    return 0;
+//}
 
 static int check_systemcontrol (void)
 {
@@ -235,10 +235,10 @@ int main()
         rumboot_printf("DEBUG_SYSTEMSTATUS test failed!");
         return 1;
     }
-    if(check_uncondevent()) {
-        rumboot_printf("DEBUG_UNCONDEVENT test failed!");
-        return 1;
-    }
+//    if(check_uncondevent()) {
+//        rumboot_printf("DEBUG_UNCONDEVENT test failed!");
+//        return 1;
+//    }
     if(check_halt()) {
         rumboot_printf("DEBUG_HALT test failed!");
         return 1;
@@ -247,10 +247,10 @@ int main()
         rumboot_printf("DEBUG_MACHINECHECK test failed!");
         return 1;
     }
-    if(check_dbomask()) {
-        rumboot_printf("DBOMask test failed!");
-        return 1;
-    }
+//    if(check_dbomask()) {
+//        rumboot_printf("DBOMask test failed!");
+//        return 1;
+//    }
     if(check_systemcontrol()) {
         rumboot_printf("SYSTEMCONTROL test failed!");
         return 1;
