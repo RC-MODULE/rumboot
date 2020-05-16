@@ -44,6 +44,13 @@ DECLARE_CONST(IM0_SIZE, 0x20000)
 #define TLB_ENTRY_RELOCATE_TO1          {MMU_TLB_ENTRY(  0x020,  0xC0050,   (((RELOCATE_FROM >> 12) & 0xFFFFF) + 0x10), MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_4,     0b1 )}
 #define TLB_ENTRY_RELOCATE_TO0_BACK     {MMU_TLB_ENTRY(  0x020,  0xC0040,   ( (RELOCATE_TO >> 12) & 0xFFFFF),           MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_3,     0b1 )}
 #define TLB_ENTRY_RELOCATE_TO1_BACK     {MMU_TLB_ENTRY(  0x020,  0xC0050,   (((RELOCATE_TO >> 12) & 0xFFFFF) + 0x10),   MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_4,     0b1 )}
+
+#define TLB_ENTRY_RELOCATE_STACK0        {MMU_TLB_ENTRY(  0x010,  0x80000,    ( (RELOCATE_TO    >> 12) & 0xFFFFF),          MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_1,     0b1 )}
+#define TLB_ENTRY_RELOCATE_STACK1        {MMU_TLB_ENTRY(  0x010,  0x80010,    (((RELOCATE_TO    >> 12) & 0xFFFFF) + 0x10),  MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_2,     0b1 )}
+#define TLB_ENTRY_RELOCATE_STACK0_BACK   {MMU_TLB_ENTRY(  0x010,  0x80000,    ( (IM0_BASE       >> 12) & 0xFFFFF),          MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_1,     0b1 )}
+#define TLB_ENTRY_RELOCATE_STACK1_BACK   {MMU_TLB_ENTRY(  0x010,  0x80010,    (((IM0_BASE       >> 12) & 0xFFFFF) + 0x10),  MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_2,     0b1 )}
+#define TLB_ENTRY_RELOCATE_IM2_TO_IM0_0  {MMU_TLB_ENTRY(  0x020,  0xC0040,    ( (IM0_BASE       >> 12) & 0xFFFFF),          MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_3,     0b1 )}
+#define TLB_ENTRY_RELOCATE_IM2_TO_IM0_1  {MMU_TLB_ENTRY(  0x020,  0xC0050,    (((IM0_BASE       >> 12) & 0xFFFFF) + 0x10),  MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_4,     0b1 )}
 #endif
 
 #if RELOCATE_FROM == IM0_BASE
@@ -58,6 +65,7 @@ DECLARE_CONST(IM0_SIZE, 0x20000)
 #define TLB_ENTRY_RELOCATE_FROM1_BACK   {MMU_TLB_ENTRY(  0x020,  0xC0010,    (((RELOCATE_FROM >> 12) & 0xFFFFF) + 0x10), MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_2,     0b1 )}
 #endif
 
+
 static const tlb_entry im_switch_tlb_entries[] =        {TLB_ENTRY_RELOCATE_TO0,
                                                          TLB_ENTRY_RELOCATE_TO1,
                                                          TLB_ENTRY_RELOCATE_FROM0,
@@ -66,6 +74,16 @@ static const tlb_entry im_switch_tlb_entries_back[] =   {TLB_ENTRY_RELOCATE_TO0_
                                                          TLB_ENTRY_RELOCATE_TO1_BACK,
                                                          TLB_ENTRY_RELOCATE_FROM0_BACK,
                                                          TLB_ENTRY_RELOCATE_FROM1_BACK};
+
+
+static const tlb_entry im0_switch_tlb_entries[] =       {TLB_ENTRY_RELOCATE_STACK0,
+                                                         TLB_ENTRY_RELOCATE_STACK1,
+                                                         TLB_ENTRY_RELOCATE_IM2_TO_IM0_0,
+                                                         TLB_ENTRY_RELOCATE_IM2_TO_IM0_1};
+static const tlb_entry im0_switch_tlb_entries_back[] =  {TLB_ENTRY_RELOCATE_STACK0_BACK,
+                                                         TLB_ENTRY_RELOCATE_STACK1_BACK,
+                                                         TLB_ENTRY_RELOCATE_TO0_BACK,
+                                                         TLB_ENTRY_RELOCATE_TO0_BACK};
 
 
 __attribute__((unused))
@@ -196,11 +214,16 @@ check_sctl_kmbist_chains(const uint32_t base_addr, const bool with_injections)
         {
             memcpy((void *)RELOCATE_TO,(void *)RELOCATE_FROM,IM0_SIZE);
             rumboot_printf("Copy from 0x%x to 0x%x finished\n", RELOCATE_FROM, RELOCATE_TO);
-            //switch physical addresses IM0<->IM1
             write_tlb_entries(im_switch_tlb_entries,ARRAY_SIZE(im_switch_tlb_entries));
-
             rumboot_printf("TLB entries switching finished\n");
-
+        }
+        else
+        if((KMBIST_CHAIN_SF_8_IM0 == kmbist_chain))
+        {
+            memcpy((void *)RELOCATE_TO,(void *)IM0_BASE,IM0_SIZE);
+            rumboot_printf("Copy from 0x%x to 0x%x finished\n", IM0_BASE, RELOCATE_TO);
+            write_tlb_entries(im0_switch_tlb_entries,ARRAY_SIZE(im0_switch_tlb_entries));
+            rumboot_printf("TLB entries switching finished\n");
         }
         t = TEST_OI10_CTRL_000_MBIST_TIMEOUT;
         chain_number = ((kmbist_chain - KMBIST_CHAIN_SF_0) / 4) + 1;
@@ -225,12 +248,17 @@ check_sctl_kmbist_chains(const uint32_t base_addr, const bool with_injections)
         if(MBIST_RELOCATE == kmbist_chain)
         {
             memcpy((void *)RELOCATE_TO,(void *)RELOCATE_FROM,IM0_SIZE);
-            rumboot_printf("Copy from 0x%x to 0x%x finished\n", RELOCATE_TO, RELOCATE_FROM);
+            rumboot_printf("Copy from 0x%x to 0x%x finished\n", RELOCATE_FROM, RELOCATE_TO);
             write_tlb_entries(im_switch_tlb_entries_back,ARRAY_SIZE(im_switch_tlb_entries_back));
-
             rumboot_printf("TLB entries switching back finished\n");
-
-
+        }
+        else
+        if((KMBIST_CHAIN_SF_8_IM0 == kmbist_chain))
+        {
+            memcpy((void *)RELOCATE_TO,(void *)IM0_BASE,IM0_SIZE);
+            rumboot_printf("Copy from 0x%x to 0x%x finished\n", IM0_BASE, RELOCATE_TO);
+            write_tlb_entries(im0_switch_tlb_entries_back,ARRAY_SIZE(im0_switch_tlb_entries_back));
+            rumboot_printf("TLB entries switching finished\n");
         }
     }
     return result;
