@@ -281,11 +281,12 @@ check_sctl_kmbist_chains_inject(const uint32_t base_addr)
 #endif
 
 TEST_SUITE_BEGIN(sctl_testlist, "SCTL TEST")
+#ifndef ERR_INJ_ENABLED
 TEST_ENTRY("SCTL reg read default", check_sctl_regs_ro, DCR_SCTL_BASE),
 TEST_ENTRY("SCTL reg rw check", check_sctl_regs_rw, DCR_SCTL_BASE),
 TEST_ENTRY("SCTL check PLB4 frequency change", check_sctl_plb4_clk_management, DCR_SCTL_BASE),
 TEST_ENTRY("SCTL run KMBIST chains as is", check_sctl_kmbist_chains_default, DCR_SCTL_BASE),
-#ifdef ERR_INJ_ENABLED
+#else
 TEST_ENTRY("SCTL run KMBIST chains with injections", check_sctl_kmbist_chains_inject, DCR_SCTL_BASE),
 #endif
 TEST_SUITE_END();
