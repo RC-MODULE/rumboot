@@ -158,7 +158,7 @@ label_NRST_PON:
     rumboot_putstring("Generating CORERESET reset signal ...\n");
     rumboot_platform_runtime.persistent[0] = TEST_CRG_STATE_CORERESET;
 
-    rumboot_platform_perf("reset_system by CORERESET");
+//    rumboot_platform_perf("reset_system by CORERESET"); // OI10-305
     test_event(EVENT_OI10_CORERESET);
     spr_write(SPR_DBCR0, spr_read(SPR_DBCR0) | (0x1 << IBM_BIT_INDEX(64, 35)));
     udelay(10);
@@ -170,7 +170,7 @@ label_CORERESET:
 
     rumboot_putstring("Generating CHIPRESET reset signal ...\n");
     rumboot_platform_runtime.persistent[0] = TEST_CRG_STATE_CHIPRESET;
-    rumboot_platform_perf("reset_system by CHIPRESET");
+//    rumboot_platform_perf("reset_system by CHIPRESET");
     test_event(EVENT_OI10_CHIPRESET);
     spr_write(SPR_DBCR0, spr_read(SPR_DBCR0) | (0x2 << IBM_BIT_INDEX(64, 35)));
     udelay(10);
@@ -182,7 +182,7 @@ label_CHIPRESET:
 
     rumboot_putstring("Generating SYSRESET reset signal ...\n");
     rumboot_platform_runtime.persistent[0] = TEST_CRG_STATE_SYSRESET;
-    rumboot_platform_perf("reset_system by SYSRESET");
+//    rumboot_platform_perf("reset_system by SYSRESET");
     test_event(EVENT_OI10_SYSRESET);
     spr_write(SPR_DBCR0, spr_read(SPR_DBCR0) | (0x3 << IBM_BIT_INDEX(64, 35)));
     udelay(10);
@@ -194,7 +194,7 @@ label_SYSRESET:
 
     rumboot_putstring("Generating WD_RESET reset signal ...\n");
     rumboot_platform_runtime.persistent[0] = TEST_CRG_STATE_WD;
-    rumboot_platform_perf("reset_system by WD");
+//    rumboot_platform_perf("reset_system by WD");
     sp805_unlock_access(DCR_WATCHDOG_BASE);
     if (dcr_read(DCR_WATCHDOG_BASE + WD_REG_LOCK) != 0x00)
     {

@@ -57,7 +57,7 @@ label_NRST_PON:
 
     rumboot_putstring("Generating NRST_SYS reset signal ...\n");
     rumboot_platform_runtime.persistent[0] = TEST_CRG_STATE_NRST_SYS;
-    rumboot_platform_perf("reset_system by NRST_SYS");
+//    rumboot_platform_perf("reset_system by NRST_SYS"); // OI10-305
     test_event(EVENT_OI10_NRST_SYS);
     udelay(10);
 
