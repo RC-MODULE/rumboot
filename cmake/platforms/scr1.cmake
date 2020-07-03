@@ -38,6 +38,10 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         CONFIGURATION ROM
         FILES common/bootrom/timer.c
     )
+    add_rumboot_target(
+      CONFIGURATION ROM
+      FILES scr1/targets/simple-rom/test_proba.c scr1/targets/simple-rom/common_for_tests.c
+    )
 
 
 
