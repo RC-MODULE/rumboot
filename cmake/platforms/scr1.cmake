@@ -42,6 +42,11 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       CONFIGURATION ROM
       FILES scr1/targets/simple-rom/test_proba.c scr1/targets/simple-rom/common_for_tests.c
     )
+    add_rumboot_target(
+      CONFIGURATION ROM
+      FILES scr1/targets/load_bin_example/hello_load_bin.c
+      IRUN_FLAGS +myfile=${CMAKE_SOURCE_DIR}/src/platform/scr1/targets/load_bin_example/data
+    )
 
 
 
