@@ -7,7 +7,7 @@
 #include <platform/devices.h> // memory map
 #include <devices/quad_spi.h> // offset in quad_spi`s memory map
 
-#include "common_for_tests.h"
+#include "../common_for_tests.h"
 
 #include <stdio.h>
 #include <stdint.h> // for uint32_t

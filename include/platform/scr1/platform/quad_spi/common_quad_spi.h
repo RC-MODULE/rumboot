@@ -1,11 +1,3 @@
-#define assert(condition) \
-  if(!(condition)) { \
-    rumboot_printf("Assertion '%s' failed.\n", #condition); \
-    rumboot_printf("TEST FAILED\n"); \
-    return 1; \
-  }
-
-
 struct Reg_CONTROL {
   uint32_t rx_length,
            edq_mode,
@@ -27,10 +19,6 @@ struct Reg_FIFO_WATERMARK {
            rx_fifo_irq_level;
 };
 
-
-uint32_t bit_in_reg(uint32_t reg, int bit);
-uint32_t bits_in_reg(uint32_t reg, int msb, int lsb);
-int randomize(int min, int max);
 
 uint32_t rand_control();
 uint32_t rand_fifo_watermark();

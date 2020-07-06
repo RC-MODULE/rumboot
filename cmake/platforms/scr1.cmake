@@ -25,6 +25,7 @@ rumboot_add_configuration(
   LOAD IRAM_IMAGE SELF
   IRUN_FLAGS ${BOOTROM_IFLAGS}
   FEATURES ROMGEN
+  FILES scr1/targets/simple-rom/common_for_tests.c
 )
 
 
@@ -40,7 +41,9 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     )
     add_rumboot_target(
       CONFIGURATION ROM
-      FILES scr1/targets/simple-rom/test_proba.c scr1/targets/simple-rom/common_for_tests.c
+      FILES 
+        scr1/targets/simple-rom/quad_spi/test_proba.c 
+        scr1/targets/simple-rom/quad_spi/common_quad_spi.c
     )
     add_rumboot_target(
       CONFIGURATION ROM
