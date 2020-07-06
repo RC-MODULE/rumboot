@@ -47,6 +47,8 @@ void rumboot_platform_init_loader(struct rumboot_config *conf)
 void rumboot_platform_read_config(struct rumboot_config *conf)
 {}
 
+extern char rumboot_emem_heap_start;
+extern char rumboot_emem_heap_end;
 
 void rumboot_platform_setup()
 {
@@ -59,6 +61,9 @@ void rumboot_platform_setup()
 #ifndef RUMBOOT_ONLY_STACK
         rumboot_malloc_register_heap("IRAM",
                                      &rumboot_IRAM_heap_start, &rumboot_IRAM_heap_end);
+        rumboot_malloc_register_heap("IRAM",
+                                     &rumboot_emem_heap_start, &rumboot_emem_heap_end);
+
 #endif
 }
 

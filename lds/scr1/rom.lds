@@ -3,7 +3,8 @@ OUTPUT_ARCH( "riscv" )
 ENTRY(_start)
 
 MEMORY {
-  RAM (rwx) : ORIGIN = 0x0, LENGTH = 64K
+  RAM (rwx) : ORIGIN = 0x0, LENGTH = 1M
+  EMEM (rwx): ORIGIN = 0x004A0000, LENGTH = 0xffb5ffff
 }
 
 STACK_SIZE = 1024;
@@ -39,6 +40,12 @@ SECTIONS {
     *(.data .data.*)
     . = ALIGN(CL_SIZE);
   } >RAM
+
+ .extmem (NOLOAD): {
+   rumboot_emem_heap_start = .;
+   . = . + 16M;
+   rumboot_emem_heap_end = .;
+ } > EMEM
 
  .runtime 0xfc00 (NOLOAD):
  {
