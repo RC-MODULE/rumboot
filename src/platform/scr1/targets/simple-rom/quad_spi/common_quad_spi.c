@@ -1,11 +1,23 @@
 #include <rumboot/printf.h>
 
 #include <devices/quad_spi.h> // offset in quad_spi`s memory map
-#include "common_quad_spi.h"
+#include <platform/quad_spi/common_quad_spi.h>
+// #include <platform/scr1/platform/quad_spi/common_quad_spi.h>
 
 
 uint32_t rand_control() {
-  struct Reg_CONTROL x = {0, 0, 1, 0, 3, 2, 0, 0, 0, 0};
+  // struct Reg_CONTROL x = {0, 0, 1, 0, 3, 2, 0, 0, 0, 0};
+  volatile struct Reg_CONTROL x = {0, 0, 1, 0, 3, 2, 0, 0, 0, 0};
+  volatile struct Reg_CONTROL y = {
+    .rx_length=0x0, .edq_mode=0x0, .ss_source=0x1, .sw_ss=0x0, .length1=0x3, 
+    .clock_divider=0x2, .phase=0x0, .polarity=0x0, .frame_format=0x0, .length0=0x0
+  };
+
+  rumboot_printf("x=");
+  print(x);
+  rumboot_printf("\ny=");
+  print(y);
+  rumboot_printf("\n");
 
   uint32_t reg_x = x.rx_length << RX_LENGTH_LSB 
     | x.edq_mode << EDQ_MODE_LSB 

@@ -1,6 +1,6 @@
 // #include <rumboot/printf.h>
 
-#include "common_for_tests.h"
+#include <platform/common_for_tests.h>
 
 #include <stdlib.h> // for rand()
 #include <time.h> // for srand()

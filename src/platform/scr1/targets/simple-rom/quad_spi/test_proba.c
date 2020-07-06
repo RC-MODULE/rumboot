@@ -7,7 +7,8 @@
 #include <platform/devices.h> // memory map
 #include <devices/quad_spi.h> // offset in quad_spi`s memory map
 
-#include "../common_for_tests.h"
+#include <platform/common_for_tests.h>
+#include <platform/quad_spi/common_quad_spi.h>
 
 #include <stdio.h>
 #include <stdint.h> // for uint32_t
@@ -16,11 +17,11 @@
 int main() {
   rumboot_printf("TEST_PROBA\n");
 
-  // check ID, VSERSION
+  // check ID, VERSION
   assert (ioread32(SPI_CONTROL_BASE + ID) == 0xCC9B9);
   assert (ioread32(SPI_CONTROL_BASE + VERSION) == 0x1);
 
-  // check, that controller doesn't work
+  // check, that controller doesn't work in current moment
   uint32_t fifo_status; 
   do {
     fifo_status = ioread32(SPI_CONTROL_BASE + FIFO_STATUS);
