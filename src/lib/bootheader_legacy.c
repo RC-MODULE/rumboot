@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include <rumboot/platform.h>
+#include <rumboot/boot.h>
 
 #define BOOTHEADER_MAGIC__BOOT_IMAGE_VALID    0xbeefc0de
 #define BOOTHEADER_MAGIC__HOST_IMAGE_VALID    0xdeadc0de
@@ -30,8 +31,15 @@ struct legacy_bootheader
 } __attribute__((packed));
 
 
+static void rumboot_main_wrapper()
+{
+    int ret = rumboot_main();
+    dbg_boot(NULL, "Back in rom, code %d", ret);
+    while(1);;
+}
+
 static const __attribute__((used)) __attribute__((section(".header")))
 struct legacy_bootheader hdr = {
 	.magic		= BOOTHEADER_MAGIC__HOST_IMAGE_VALID,
-	.entry0	= (uint32_t) &rumboot_main,
+	.entry0	= (uint32_t) &rumboot_main_wrapper,
 };
