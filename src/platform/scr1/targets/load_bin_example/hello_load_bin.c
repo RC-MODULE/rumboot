@@ -8,15 +8,21 @@
 uint32_t data;
 uint32_t addr=0x004A0000;
 
+volatile uint32_t* dump_ptr;
+int dump_size;
+
 int main()
 {
-  iowrite64(0xAAAA5555AAAA5555l,addr);
-  data = ioread32(addr);
-  if(data != 0xAAAA5555)
+  dump_size = 8;
+  dump_ptr = rumboot_malloc_from_heap(1,dump_size*4 /*size in bytes*/);
+
+  dump_ptr[0] = 0xAAAA5555;
+  if(dump_ptr[0] != 0xAAAA5555)
 	 return 1;
+
   rumboot_platform_request_file("myfile", addr);
-  data = ioread32(addr);
+  data = dump_ptr[0];
   rumboot_printf("My data is %x\n",data);
-  rumboot_platform_dump_region("mydump", addr, 32);
+  rumboot_platform_dump_region("mydump", (uint32_t) dump_ptr, dump_size*4);
   return 0;
 }
