@@ -60,7 +60,7 @@ class CMakeProject {
         steps.script {
         steps.ws(workdir) {
             def teststmp = steps.sh (
-                script: 'ctest -N -L ' + label,
+                script: 'ctest -LE hwonly -N -L ' + label,
                 returnStdout: true
                 ).split("\n")
             teststmp.each {
