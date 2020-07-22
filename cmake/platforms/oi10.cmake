@@ -239,6 +239,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
     rumboot_spels_arch_tests(
       CONFIGURATION IRAM_SPL
+      TESTGROUP hwonly
     )
 
     rumboot_spels_memory_test(
@@ -246,18 +247,21 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       START "IM2_BASE"
       END "(IM2_BASE + 0x20000)"
       NAME im2
+      TESTGROUP hwonly
     )
 
     rumboot_spels_memory_test(
       CONFIGURATION IRAM_SPL
       START IM0_BASE
       NAME im0
+      TESTGROUP hwonly
     )
 
     rumboot_spels_memory_test(
       CONFIGURATION IRAM_SPL
       END "(IM1_BASE+0x20000)"
       NAME im1
+      TESTGROUP hwonly
     )
 
     rumboot_bootrom_add_components(IRAM_SPL BROM
@@ -1273,12 +1277,14 @@ endif()
         FILES chain-start-dummy.c
         PREFIX "simple-iram"
         NAME chain-start-dummy
+        TESTGROUP hwonly
     )
     add_rumboot_target(
         CONFIGURATION IRAM
         FILES chain-end-dummy.c
         PREFIX "simple-iram"
         NAME chain-end-dummy
+        TESTGROUP hwonly
     )
     add_rumboot_target(
         CONFIGURATION IRAM
@@ -2393,6 +2399,7 @@ endif()
       FILES common/updaters/spiflash-pl022.c
       CFLAGS -DBOOT_ID=2
       PREFIX updater
+      TESTGROUP hwonly
       NAME spi-flash-0
     )
 
@@ -2400,6 +2407,7 @@ endif()
       CONFIGURATION IRAM
       FILES common/updaters/nor.c
       PREFIX updater
+      TESTGROUP hwonly
       NAME nor-mt150.04
     )
 
@@ -2408,6 +2416,7 @@ endif()
       FILES common/updaters/nor.c
       CFLAGS -DNOR_OFFSET=134152192
       PREFIX updater
+      TESTGROUP hwonly
       NAME nor-mt150.04-brom
     )
 
@@ -2460,6 +2469,7 @@ endif()
        LOAD IM0BIN ${SPELS_TEST_CHAIN},simple-iram-oi10_spels_cache_hack
       PREFIX spels
       TESTGROUP chains
+      TESTGROUP hwonly      
       NAME test-chain
     )
 
@@ -2468,7 +2478,7 @@ endif()
       COMBOIMAGE IM0BIN
        LOAD IM0BIN hscb_2_3-loop_test,hscb_0_1-loop_test,simple-iram-oi10_spels_cache_hack,greth0-rx_col-test_oi10_greth,greth1-rx_col-test_oi10_greth,greth0-edcl-im2-test_oi10_greth,greth0-edcl-im1-test_oi10_greth,greth1-edcl-im2-test_oi10_greth,greth1-edcl-im1-test_oi10_greth,greth0-im2-im2-test_oi10_greth,greth0-im2-im1-test_oi10_greth,greth0-im1-im2-test_oi10_greth,greth0-im1-im1-test_oi10_greth,greth1-im2-im2-test_oi10_greth,greth1-im2-im1-test_oi10_greth,greth1-im1-im2-test_oi10_greth,greth1-im1-im1-test_oi10_greth,mkio0-regs-test_oi10_lscb,mkio1-regs-test_oi10_lscb,mkio0-im1-func-a-test_oi10_lscb,mkio1-im1-func-a-test_oi10_lscb,mkio0-im1-func-b-test_oi10_lscb,mkio1-im1-func-b-test_oi10_lscb,mkio0-im2-func-a-test_oi10_lscb,mkio1-im2-func-a-test_oi10_lscb,mkio0-im2-func-b-test_oi10_lscb,mkio1-im2-func-b-test_oi10_lscb,simple-iram-test_oi10_cpu_007,simple-iram-test_oi10_cpu_003,iss-iram-test_oi10_cpu_004,iss-iram-test_oi10_cpu_005,simple-iram-test_oi10_cpu_019,${SPELS_TEST_CHAIN},simple-iram-oi10_spels_cache_hack
       PREFIX spels
-      TESTGROUP chains
+      TESTGROUP chains hwonly
       NAME functional-test-chain
     )
 
@@ -2574,6 +2584,7 @@ endif()
       NAME "cached-test_endless"
       PREFIX power
       LOAD IM0BIN SELF
+      TESTGROUP hwonly
     )
 
 

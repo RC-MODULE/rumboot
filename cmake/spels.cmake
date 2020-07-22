@@ -2,7 +2,7 @@ function(rumboot_spels_memory_test)
     set(options )
 
     set(oneValueArgs   CONFIGURATION START END NAME)
-    set(multiValueArgs MEMTEST)
+    set(multiValueArgs MEMTEST TESTGROUP)
 
     cmake_parse_arguments(TARGET "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
@@ -22,7 +22,7 @@ function(rumboot_spels_memory_test)
         FILES common/spels/iram.c
         PREFIX "spels"
         NAME ${_name}
-        TESTGROUP spels
+        TESTGROUP spels ${TARGET_TESTGROUP}
         CFLAGS ${_cflags}
     )
 
@@ -36,7 +36,7 @@ function(rumboot_spels_arch_tests)
     set(options )
 
     set(oneValueArgs   CONFIGURATION )
-    set(multiValueArgs MEMTEST)
+    set(multiValueArgs MEMTEST TESTGROUP)
 
     cmake_parse_arguments(TARGET "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
@@ -44,7 +44,7 @@ function(rumboot_spels_arch_tests)
         CONFIGURATION ${TARGET_CONFIGURATION}
         FILES common/spels/mathtest.c
         PREFIX "spels"
-        TESTGROUP spels
+        TESTGROUP spels ${TARGET_TESTGROUP}
         NAME math-test
     )
     list(APPEND SPELS_TEST_CHAIN spels-math-test)
