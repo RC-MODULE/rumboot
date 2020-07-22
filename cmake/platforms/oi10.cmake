@@ -522,6 +522,7 @@ endif()
     #Cache scrubbing and error injection framework
     add_rumboot_target_dir(l2scrubber/tests
       CONFIGURATION IRAM
+      TESTGROUP hwonly
       PREFIX l2scrub
       FILES l2scrubber/oi10.c tlbdump/ops.S
     )
@@ -2650,6 +2651,7 @@ endif()
     PREFIX tool
     FILES common/tools/trampoline.c
     PACKIMAGE_FLAGS -C -a 1024
+    TESTGROUP hwonly
   )
 
   add_rumboot_target(
@@ -2660,6 +2662,7 @@ endif()
     PREFIX l2bug
     CFLAGS -DEMI_INIT -DADD_TLB -DM_BASE=SRAM0_BASE
     IRUN_FLAGS ${ROM_6500K_OPTS}
+    TESTGROUP hwonly
     LOAD IM0BIN SELF
          MBIN l2bug-multistore-supp
   )
@@ -2670,6 +2673,7 @@ endif()
     LDS oi10/l2bug_supp-2.lds
     CFLAGS -DRUMBOOT_NOINIT
     LDFLAGS -Wl,-emain
+    TESTGROUP hwonly
     FILES l2bug/multistore.c ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c
     NAME "multistore-supp-2"
   )
@@ -2680,6 +2684,7 @@ endif()
     LDS oi10/l2bug_supp-2.lds
     CFLAGS -DRUMBOOT_NOINIT
     LDFLAGS -Wl,-emain
+    TESTGROUP hwonly
     FILES l2bug/multistore-msync.c ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c
     NAME "multistore-msync-supp-3"
   )
@@ -2689,6 +2694,7 @@ endif()
     PREFIX l2bug
     FILES l2bug/multistore-loader-2.c
     NAME "multistore-2"
+    TESTGROUP hwonly
     PREFIX l2bug
     CFLAGS -DEMI_INIT -DADD_TLB -DM_BASE=SRAM0_BASE
 #    CFLAGS -DSDRAM_INIT -DADD_TLB -DM_BASE=SRAM0_BASE
@@ -2701,6 +2707,7 @@ endif()
     CONFIGURATION IRAM_SPL
     PREFIX l2bug
     FILES l2bug/multistore-loader-3.c
+    TESTGROUP hwonly
     NAME "multistore-3"
     PREFIX l2bug
     CFLAGS -DEMI_INIT -DADD_TLB -DM_BASE=SRAM0_BASE
@@ -2714,6 +2721,7 @@ endif()
     CONFIGURATION IRAM_SPL
     PREFIX l2bug
     FILES l2bug/multistore-loader-3.c
+    TESTGROUP hwonly
     NAME "multistore-msync-3"
     PREFIX l2bug
     CFLAGS -DEMI_INIT -DADD_TLB -DM_BASE=SRAM0_BASE
@@ -2728,6 +2736,7 @@ endif()
     PREFIX l2bug
     FILES l2bug/l1_error_insertion.c
     NAME "l1_error_insertion"
+    TESTGROUP hwonly
     CFLAGS -DEMI_INIT -DADD_TLB -DM_BASE=SRAM0_BASE
     IRUN_FLAGS ${ROM_6500K_OPTS}
   )
@@ -2736,7 +2745,7 @@ endif()
       FEATURES NOCODE
       COMBOIMAGE IM0BIN
       LOAD IM0BIN iram-power_dma_and_hscb,power-flash-im0-loader,power-cached-test_endless
-      TESTGROUP chains
+      TESTGROUP chains hwonly
       NAME endless_power_test
       PREFIX chain
     )
