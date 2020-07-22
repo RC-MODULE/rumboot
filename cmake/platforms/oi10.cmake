@@ -2468,8 +2468,7 @@ endif()
       COMBOIMAGE IM0BIN
        LOAD IM0BIN ${SPELS_TEST_CHAIN},simple-iram-oi10_spels_cache_hack
       PREFIX spels
-      TESTGROUP chains
-      TESTGROUP hwonly      
+      TESTGROUP chains hwonly
       NAME test-chain
     )
 
@@ -2514,30 +2513,35 @@ endif()
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES test_oi10_mt150_08_sdram.c
+      TESTGROUP hwonly
       NAME test_oi10_mt150_08_sdram
     )
 
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES test_oi10_mt150_07_sram.c
+      TESTGROUP hwonly
       NAME test_oi10_mt150_07_sram
     )
 
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES test_oi10_mt150_06_ssram.c
+      TESTGROUP hwonly
       NAME test_oi10_mt150_06_ssram
     )
 
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES power_hscb.c
+      TESTGROUP hwonly
       NAME power_hscb
     )
 
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES power_dma_and_hscb.c
+      TESTGROUP hwonly
       NAME power_dma_and_hscb
       CFLAGS -DGPIO_SWITCH
     )
@@ -2545,18 +2549,21 @@ endif()
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES power_dma_and_hscb_and_ext_clk.c
+      TESTGROUP hwonly
       NAME power_dma_and_hscb_and_ext_clk
     )
 
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES power_dma_and_hscb_and_gpio_finish.c
+      TESTGROUP hwonly
       NAME power_dma_and_hscb_and_gpio_finish
     )
 
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES test_oi10_progr_crg.c
+      TESTGROUP hwonly
       NAME test_oi10_progr_crg
     )
 
@@ -2564,7 +2571,7 @@ endif()
       FEATURES NOCODE
       COMBOIMAGE IM0BIN
       LOAD IM0BIN simple-iram-chain-start-dummy,hscb_0_1-loop_test,hscb_2_3-loop_test,greth0-edcl-im1-test_oi10_greth,greth1-edcl-im1-test_oi10_greth,mkio0-im1-func-a-test_oi10_lscb,mkio0-im1-func-b-test_oi10_lscb,mkio1-im1-func-a-test_oi10_lscb,mkio1-im1-func-b-test_oi10_lscb,spels-memory-test-im0,spels-memory-test-im1,simple-iram-test_oi10_cpu_007,simple-iram-test_oi10_cpu_019,irq-iram-irq-atomics,irq-iram-irq-defhandler,spels-math-test,simple-iram-oi10_spels_cache_hack,simple-iram-chain-end-dummy
-      TESTGROUP chains
+      TESTGROUP chains hwonly
       NAME fk-test-chain
     )
 
