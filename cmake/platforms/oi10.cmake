@@ -64,6 +64,7 @@ if (RUMBOOT_BUILD_TYPE STREQUAL "Production")
 endif()
 
 if (OI10_IRAM_IM0)
+  set(BOOTROM_IFLAGS +GTUBE_ONLY_PRODUCTION_OPCODES +OI10_IRAM_IM0)
   set(IRAM_LDS_FILE oi10/iram_legacy.lds)
   set(STUB_LDS_FILE oi10/bootrom_legacy.lds)
   message(WARNING "Tests will run from IM0. This configuration is legacy and will be removed in future")
@@ -331,67 +332,69 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
           HOSTMOCK  spl-ok
     )
 
-    rumboot_bootrom_integration_test(BROM
-        NAME "host-fallthough-edcl"
-        IRUN_FLAGS ${ROM_6500K_OPTS} +edcl_loader0
-        LOAD
-          SD0_BOOT_IMAGE spl-fail
-          SPI0_CONF spl-fail-bad-magic,spl-fail-bad-magic
-          NOR_IMAGE spl-fail-bad-magic
-          edcl_image  spl-ok
-    )
-
-    rumboot_bootrom_integration_test(BROM
-        NAME "host-fallthough-rmap"
-        IRUN_FLAGS ${ROM_6500K_OPTS} +rmap_master=0
-        LOAD
-          SD0_BOOT_IMAGE spl-fail
-          SPI0_CONF spl-fail-bad-magic,spl-fail-bad-magic
-          NOR_IMAGE spl-fail-bad-magic
-          rmap_file spl-ok
-    )
-
-    rumboot_bootrom_integration_test(BROM
-        NAME "host-edcl-0"
-        IRUN_FLAGS +BOOT_HOST=1 ${ROM_6500K_OPTS} +edcl_loader0
-        LOAD
-          edcl_image  spl-ok
-    )
-
-    rumboot_bootrom_integration_test(BROM
-        NAME "host-edcl-1"
-        IRUN_FLAGS +BOOT_HOST=1 ${ROM_6500K_OPTS} +edcl_loader1
-        LOAD
-          edcl_image spl-ok
-    )
-
-    rumboot_bootrom_integration_test(BROM
-        NAME "host-rmap-0"
-        IRUN_FLAGS +BOOT_HOST=1 ${ROM_6500K_OPTS} +rmap_master=0
-        LOAD
-          rmap_file spl-ok
-    )
-
-    rumboot_bootrom_integration_test(BROM
-        NAME "host-rmap-1"
-        IRUN_FLAGS +BOOT_HOST=1 ${ROM_6500K_OPTS} +rmap_master=1
-        LOAD
-          rmap_file spl-ok
-    )
-
-    rumboot_bootrom_integration_test(BROM
-        NAME "host-rmap-2"
-        IRUN_FLAGS +BOOT_HOST=1 ${ROM_6500K_OPTS} +rmap_master=2
-        LOAD
-          rmap_file spl-ok
-    )
-
-    rumboot_bootrom_integration_test(BROM
-        NAME "host-rmap-3"
-        IRUN_FLAGS +BOOT_HOST=1 ${ROM_6500K_OPTS} +rmap_master=3
-        LOAD
-          rmap_file spl-ok
-    )
+    if(NOT OI10_IRAM_IM0)
+      rumboot_bootrom_integration_test(BROM
+          NAME "host-fallthough-edcl"
+          IRUN_FLAGS ${ROM_6500K_OPTS} +edcl_loader0
+          LOAD
+            SD0_BOOT_IMAGE spl-fail
+            SPI0_CONF spl-fail-bad-magic,spl-fail-bad-magic
+            NOR_IMAGE spl-fail-bad-magic
+            edcl_image  spl-ok
+      )
+  
+      rumboot_bootrom_integration_test(BROM
+          NAME "host-fallthough-rmap"
+          IRUN_FLAGS ${ROM_6500K_OPTS} +rmap_master=0
+          LOAD
+            SD0_BOOT_IMAGE spl-fail
+            SPI0_CONF spl-fail-bad-magic,spl-fail-bad-magic
+            NOR_IMAGE spl-fail-bad-magic
+            rmap_file spl-ok
+      )
+  
+      rumboot_bootrom_integration_test(BROM
+          NAME "host-edcl-0"
+          IRUN_FLAGS +BOOT_HOST=1 ${ROM_6500K_OPTS} +edcl_loader0
+          LOAD
+            edcl_image  spl-ok
+      )
+  
+      rumboot_bootrom_integration_test(BROM
+          NAME "host-edcl-1"
+          IRUN_FLAGS +BOOT_HOST=1 ${ROM_6500K_OPTS} +edcl_loader1
+          LOAD
+            edcl_image spl-ok
+      )
+  
+      rumboot_bootrom_integration_test(BROM
+          NAME "host-rmap-0"
+          IRUN_FLAGS +BOOT_HOST=1 ${ROM_6500K_OPTS} +rmap_master=0
+          LOAD
+            rmap_file spl-ok
+      )
+  
+      rumboot_bootrom_integration_test(BROM
+          NAME "host-rmap-1"
+          IRUN_FLAGS +BOOT_HOST=1 ${ROM_6500K_OPTS} +rmap_master=1
+          LOAD
+            rmap_file spl-ok
+      )
+  
+      rumboot_bootrom_integration_test(BROM
+          NAME "host-rmap-2"
+          IRUN_FLAGS +BOOT_HOST=1 ${ROM_6500K_OPTS} +rmap_master=2
+          LOAD
+            rmap_file spl-ok
+      )
+  
+      rumboot_bootrom_integration_test(BROM
+          NAME "host-rmap-3"
+          IRUN_FLAGS +BOOT_HOST=1 ${ROM_6500K_OPTS} +rmap_master=3
+          LOAD
+            rmap_file spl-ok
+      )
+  endif()
 
 if (NOT RUMBOOT_BUILD_TYPE STREQUAL "Debug")
     rumboot_bootrom_integration_test(BROM
