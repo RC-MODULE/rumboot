@@ -93,7 +93,7 @@ endif()
 macro(find_rumboot_packimage)
   message("rumboot-tools: Updating submodule, please stand by...")
   execute_process(
-    COMMAND ${GIT_EXECUTABLE} submodule update rumboot-packimage.py
+    COMMAND ${GIT_EXECUTABLE} submodule update rumboot-packimage.py --init
     WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
   )
   set(PACKIMAGE_DIR ${PROJECT_SOURCE_DIR}/rumboot-packimage.py)
