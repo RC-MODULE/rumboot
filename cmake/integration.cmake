@@ -210,6 +210,7 @@ function(rumboot_load_build platform buildtype)
         -DRUMBOOT_DISABLE_TESTING=Yes
         ${RUMBOOT_EXTRA_CMAKE_ARGS}
     )
+    add_dependencies(${rumboot_dirname} rumboot-native-tests)
 
     if (RUMBOOT_PACKAGED)
       message(STATUS "Downloading CI package: ${RUMBOOT_PACKAGE_URL}")
