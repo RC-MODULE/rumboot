@@ -91,56 +91,51 @@ endif()
 
 
 macro(find_rumboot_packimage)
+  message("rumboot-tools: Updating submodule, please stand by...")
+  execute_process(
+    COMMAND ${GIT_EXECUTABLE} submodule update rumboot-packimage.py
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+  )
+  set(PACKIMAGE_DIR ${PROJECT_SOURCE_DIR}/rumboot-packimage.py)
+  file(WRITE ${PROJECT_BINARY_DIR}/local-rumboot-packimage "#!/bin/bash\n${PYTHON_EXECUTABLE} ${PACKIMAGE_DIR}/rumboot_packimage.py $*")
+  file(WRITE ${PROJECT_BINARY_DIR}/local-rumboot-xflash    "#!/bin/bash\n${PYTHON_EXECUTABLE} ${PACKIMAGE_DIR}/rumboot_xflash.py -z ${PROJECT_BINARY_DIR}/ $*")
+  file(WRITE ${PROJECT_BINARY_DIR}/local-rumboot-flashrom "#!/bin/bash\n${PYTHON_EXECUTABLE} ${PACKIMAGE_DIR}/rumboot_flashom.py -z ${PROJECT_BINARY_DIR}/ $*")
+  file(WRITE ${PROJECT_BINARY_DIR}/local-rumboot-xrun      "#!/bin/bash\n${PYTHON_EXECUTABLE} ${PACKIMAGE_DIR}/rumboot_xrun.py $*")
+  file(WRITE ${PROJECT_BINARY_DIR}/local-rumboot-combine   "#!/bin/bash\n${PYTHON_EXECUTABLE} ${PACKIMAGE_DIR}/rumboot_combine.py $*")
+  find_program(CHMOD_PROG chmod)
+  if(CHMOD_PROG)
+    execute_process(COMMAND ${CHMOD_PROG} +x ${PROJECT_BINARY_DIR}/local-rumboot-packimage)
+    execute_process(COMMAND ${CHMOD_PROG} +x ${PROJECT_BINARY_DIR}/local-rumboot-xrun)
+    execute_process(COMMAND ${CHMOD_PROG} +x ${PROJECT_BINARY_DIR}/local-rumboot-xflash)
+    execute_process(COMMAND ${CHMOD_PROG} +x ${PROJECT_BINARY_DIR}/local-rumboot-combine)
+    execute_process(COMMAND ${CHMOD_PROG} +x ${PROJECT_BINARY_DIR}/local-rumboot-flashrom)
+  endif()
+
   find_file(RUMBOOT_PACKIMAGE
-    NAMES rumboot_packimage.py rumboot-packimage
+    NAMES rumboot_packimage.py
     PATHS ${PROJECT_SOURCE_DIR}/rumboot-packimage.py
           ${CMAKE_SOURCE_DIR}/rumboot-packimage.py
-  )
+  )  
   find_file(RUMBOOT_COMBINE
-    NAMES rumboot_combine.py rumboot-combine
+    NAMES rumboot_combine.py
     PATHS ${PROJECT_SOURCE_DIR}/rumboot-packimage.py
           ${CMAKE_SOURCE_DIR}/rumboot-packimage.py
   )
 
+  if (NOT RUMBOOT_PACKIMAGE STREQUAL "RUMBOOT_PACKIMAGE-NOTFOUND")
+    message("-- Found rumboot-packimage: ${RUMBOOT_PACKIMAGE}")
+  else()
+    message(FATAL_ERROR "Failed to find rumboot-packimage (Problems with repo access?)")
+  endif()
 
-  if("${RUMBOOT_PACKIMAGE}" STREQUAL "${PROJECT_SOURCE_DIR}/rumboot-packimage.py/rumboot_packimage.py")
-    message("rumboot_packimage.py: Using shipped version, so I will update the submodule for you")
-    execute_process(
-      COMMAND ${GIT_EXECUTABLE} submodule update rumboot-packimage.py
-      WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-    )
-    set(PACKIMAGE_DIR ${PROJECT_SOURCE_DIR}/rumboot-packimage.py)
-    file(WRITE ${PROJECT_BINARY_DIR}/local-rumboot-packimage "#!/bin/bash\n${PYTHON_EXECUTABLE} ${PACKIMAGE_DIR}/rumboot_packimage.py $*")
-    file(WRITE ${PROJECT_BINARY_DIR}/local-rumboot-xflash    "#!/bin/bash\n${PYTHON_EXECUTABLE} ${PACKIMAGE_DIR}/rumboot_xflash.py -z ${PROJECT_BINARY_DIR}/ $*")
-    file(WRITE ${PROJECT_BINARY_DIR}/local-rumboot-flashrom "#!/bin/bash\n${PYTHON_EXECUTABLE} ${PACKIMAGE_DIR}/rumboot_flashom.py -z ${PROJECT_BINARY_DIR}/ $*")
-    file(WRITE ${PROJECT_BINARY_DIR}/local-rumboot-xrun      "#!/bin/bash\n${PYTHON_EXECUTABLE} ${PACKIMAGE_DIR}/rumboot_xrun.py $*")
-    file(WRITE ${PROJECT_BINARY_DIR}/local-rumboot-combine   "#!/bin/bash\n${PYTHON_EXECUTABLE} ${PACKIMAGE_DIR}/rumboot_combine.py $*")
-    find_program(CHMOD_PROG chmod)
-    if(CHMOD_PROG)
-      execute_process(COMMAND ${CHMOD_PROG} +x ${PROJECT_BINARY_DIR}/local-rumboot-packimage)
-      execute_process(COMMAND ${CHMOD_PROG} +x ${PROJECT_BINARY_DIR}/local-rumboot-xrun)
-      execute_process(COMMAND ${CHMOD_PROG} +x ${PROJECT_BINARY_DIR}/local-rumboot-xflash)
-      execute_process(COMMAND ${CHMOD_PROG} +x ${PROJECT_BINARY_DIR}/local-rumboot-combine)
-      execute_process(COMMAND ${CHMOD_PROG} +x ${PROJECT_BINARY_DIR}/local-rumboot-flashrom)
-      endif()
+  if (NOT RUMBOOT_COMBINE STREQUAL "RUMBOOT_COMBINE-NOTFOUND")
+    message("-- Found rumboot-combine: ${RUMBOOT_COMBINE}")
+  else()
+    message(FATAL_ERROR "Failed to find rumboot-combine (Problems with repo access?)")
   endif()
 endmacro()
 
 find_rumboot_packimage()
-if (RUMBOOT_PACKIMAGE STREQUAL "RUMBOOT_PACKIMAGE-NOTFOUND")
-  message("rumboot-packimage.py not found, trying check it out")
-  execute_process(
-    COMMAND ${GIT_EXECUTABLE} submodule update --init rumboot-packimage.py
-    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-  )
-  find_rumboot_packimage()
-endif()
-
-if (NOT RUMBOOT_PACKIMAGE STREQUAL "RUMBOOT_PACKIMAGE-NOTFOUND")
-  message("-- Found Rumboot-Packimage.py: ${RUMBOOT_PACKIMAGE}")
-else()
-  message(FATAL_ERROR "Failed to find Rumboot-Packimage.py")
-endif()
 
 message("\n\n ==== RumBoot Configuration summary ====")
 
