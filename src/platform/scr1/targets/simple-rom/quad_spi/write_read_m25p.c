@@ -11,7 +11,7 @@
 #include <devices/quad_spi.h> // lib for work with Quad SPI
 
 #include <platform/common_for_tests.h>
-#include <platform/quad_spi/common_quad_spi.h>
+// #include <platform/quad_spi/common_quad_spi.h>
 
 #include <stdio.h>
 #include <stdint.h> // for uint32_t

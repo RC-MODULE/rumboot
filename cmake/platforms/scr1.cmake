@@ -43,7 +43,12 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       CONFIGURATION ROM
       FILES 
         scr1/targets/simple-rom/quad_spi/write_read_m25p.c 
-        scr1/targets/simple-rom/quad_spi/common_quad_spi.c
+        # scr1/targets/simple-rom/quad_spi/common_quad_spi.c
+    )
+    add_rumboot_target(
+      CONFIGURATION ROM
+      FILES 
+        scr1/targets/simple-rom/quad_spi/loopback.c 
     )
     add_rumboot_target(
       CONFIGURATION ROM
