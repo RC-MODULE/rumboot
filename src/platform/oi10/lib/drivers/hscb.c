@@ -420,7 +420,7 @@ void hscb_run_rdma(uint32_t base_addr)
     hscb_rwdma_settings_t rdma_settings;
     rumboot_printf("Run RDMA (0x%X)\n", base_addr);
     hscb_get_rdma_settings(base_addr, &rdma_settings);
-//    rdma_settings.en_rwdma = true;
+    rdma_settings.en_rwdma = true;
     rdma_settings.en_rwdma_desc_tbl = true;
     rdma_settings.rwdma_long_len = true;
     hscb_set_rdma_settings(base_addr, &rdma_settings);
@@ -432,7 +432,7 @@ void hscb_run_wdma(uint32_t base_addr)
     rumboot_printf("Run WDMA (0x%X)\n", base_addr);
     hscb_get_wdma_settings(base_addr, &wdma_settings);
     wdma_settings.rw_bad_desc = true;
-//    wdma_settings.en_rwdma = true;
+    wdma_settings.en_rwdma = true;
     wdma_settings.en_rwdma_desc_tbl = true;
     wdma_settings.rwdma_long_len = true;
     hscb_set_wdma_settings(base_addr, &wdma_settings);
