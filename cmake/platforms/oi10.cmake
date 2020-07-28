@@ -826,42 +826,42 @@ endif()
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES test_oi10_greth.c
-      CFLAGS -DGRETH_BASE=GRETH_0_BASE -DEDCL_TEST_ADDR=EDCL_TEST_ADDR_IM2
+      CFLAGS -DGRETH_BASE=GRETH_0_BASE -DEDCL_TEST_BANK=IM2
       PREFIX greth0-edcl-im2
     )
 
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES test_oi10_greth.c
-      CFLAGS -DGRETH_BASE=GRETH_0_BASE -DEDCL_TEST_ADDR=EDCL_TEST_ADDR_IM1
+      CFLAGS -DGRETH_BASE=GRETH_0_BASE -DEDCL_TEST_BANK=IM1
       PREFIX greth0-edcl-im1
     )
 
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES test_oi10_greth.c
-      CFLAGS -DGRETH_BASE=GRETH_0_BASE  -DEDCL_TEST_ADDR=EDCL_TEST_ADDR_EM2
+      CFLAGS -DGRETH_BASE=GRETH_0_BASE  -DEDCL_TEST_BANK=EM2
       PREFIX greth0-edcl-em2
     )
 
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES test_oi10_greth.c
-      CFLAGS -DGRETH_BASE=GRETH_1_BASE -DEDCL_TEST_ADDR=EDCL_TEST_ADDR_IM2
+      CFLAGS -DGRETH_BASE=GRETH_1_BASE -DEDCL_TEST_BANK=IM2
       PREFIX greth1-edcl-im2
     )
 
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES test_oi10_greth.c
-      CFLAGS -DGRETH_BASE=GRETH_1_BASE -DEDCL_TEST_ADDR=EDCL_TEST_ADDR_IM1
+      CFLAGS -DGRETH_BASE=GRETH_1_BASE -DEDCL_TEST_BANK=IM1
       PREFIX greth1-edcl-im1
     )
 
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES test_oi10_greth.c
-      CFLAGS -DGRETH_BASE=GRETH_1_BASE -DEDCL_TEST_ADDR=EDCL_TEST_ADDR_EM2
+      CFLAGS -DGRETH_BASE=GRETH_1_BASE -DEDCL_TEST_BANK=EM2
       PREFIX greth1-edcl-em2
     )
 

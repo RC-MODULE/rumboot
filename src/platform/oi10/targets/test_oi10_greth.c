@@ -27,9 +27,10 @@
 #define GRETH_TEST_DATA_MISALIGN_IM2  0
 #define GRETH_TEST_DATA_MISALIGN_EM2  0
 
-#define EDCL_TEST_ADDR_IM1  (IM1_BASE + 0x4000 + 0x100)
-#define EDCL_TEST_ADDR_IM2  (IM2_BASE + 0x4000 + 0x100)
-#define EDCL_TEST_ADDR_EM2  (EM2_BANK3_BASE)
+static uintptr_t EDCL_TEST_ADDR;
+//#define EDCL_TEST_ADDR_IM1  (IM1_BASE + 0x4000 + 0x100)
+//#define EDCL_TEST_ADDR_IM2  (IM2_BASE + 0x4000 + 0x100)
+//#define EDCL_TEST_ADDR_EM2  (EM2_BANK3_BASE)
 
 #define EVENT_CHECK_GRETH0_RX_ER   0x00001000
 #define EVENT_CHECK_GRETH1_RX_ER   0x00001001
@@ -609,7 +610,8 @@ int main(void)
     rumboot_printf("Start test_oi10_greth. MDIO and registers access checks for GRETH%d (0x%X)\n", GET_GRETH_IDX(GRETH_BASE), GRETH_BASE);
     regs_check(GRETH_BASE);
     mdio_check(GRETH_BASE);
-#elif EDCL_TEST_ADDR
+#elif defined(EDCL_TEST_BANK)
+    EDCL_TEST_ADDR = (uintptr_t ) rumboot_malloc_from_named_heap_aligned(__stringify(EDCL_TEST_BANK), 8192, 8);
     rumboot_printf("Start test_oi10_greth. EDCL checks\n");
     tbl = create_greth01_irq_handlers();
     edcl_seq_number = 0;
