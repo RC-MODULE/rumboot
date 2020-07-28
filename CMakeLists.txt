@@ -233,6 +233,7 @@ ADD_SOURCE("src/lib/version.c")
 ADD_SOURCE("src/lib/bootdbg.c")
 ADD_SOURCE("src/lib/memtest.c")
 ADD_SOURCE("src/lib/bitswapper.c")
+ADD_SOURCE("src/lib/drivers/quad_spi.c")
 
 if (NOT RUMBOOT_PLATFORM STREQUAL "native")
   if (CMAKE_BUILD_TYPE STREQUAL "Debug")

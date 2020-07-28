@@ -5,11 +5,14 @@
 #include <stdlib.h> // for rand()
 #include <time.h> // for srand()
 #include <stdint.h> // for uint32_t
+#include <stdarg.h>
 
 // #include <assert.h>
 
 
 uint32_t bit_in_reg(uint32_t reg, int bit) {
+  // rumboot_printf("bit_in_reg\n");
+
   return (reg & (1 << bit)) >> bit;
 }
 
@@ -36,15 +39,23 @@ int randomize(int min, int max) { // random in [min, max]
 }
 
 
-// int sum(int n, ...) {
-//   int res = 0;
-//   rumboot_printf("n=%d",n);
-//   for(int *p = &n; n>0; n--){
-//     rumboot_printf(*p);
-//     res += *(++p);
-//   }
-//   return res;
-// }
+int summa(int count, ...) { // это работает
+  int res = 0;
+  va_list args;
+
+  va_start(args, count);
+  for(int i = 0; i < count; ++i) {
+    // rumboot_printf("i=%d", i);
+    rumboot_printf("i=%d, xi=%d", i, va_arg(args, int));
+    // if(va_arg(args, int) == NULL)  // так писать плохо, знаение не определено, если аргументы законились
+    //   rumboot_printf("NULL\n");
+    // else
+    //   rumboot_printf("not NULL\n");
+  }
+  va_end(args);
+
+  return res;
+}
 
 
 // uint32_t bits(uint32_t number, int count_bits, uint32_t left_border, ...) {
