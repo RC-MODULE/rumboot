@@ -8,13 +8,14 @@
 
 #include <platform/devices.h> // memory map scr1
 #include <regs/quad_spi.h> // regs names Quad SPI
-#include <devices/quad_spi.h> // lib for work with Quad SPI
+#include <platform/devices/quad_spi.h> // lib for work with Quad SPI
 
 #include <platform/common_for_tests.h>
 // #include <platform/quad_spi/common_quad_spi.h>
 
 #include <stdio.h>
 #include <stdint.h> // for uint32_t
+#include <assert.h>
 
 
 int main() {

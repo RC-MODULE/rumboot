@@ -1,4 +1,4 @@
-#include <devices/quad_spi.h>
+#include <platform/devices/quad_spi.h>
 #include <regs/quad_spi.h> // regs names Quad SPI
 
 #include <platform/common_for_tests.h>
@@ -7,9 +7,17 @@
 #include <rumboot/io.h>
 
 #include <stdint.h> // for uintptr_t, uint32_t
-#include <time.h>
+// #include <time.h>
+#include <assert.h>
 
-int generate_control_reg(Quad_spi_config const *config, uint32_t *control) {
+#define DEBUG
+#ifdef DEBUG
+  #define dbg(x, ...) rumboot_printf("qspi: " x, ##__VA_ARGS__) 
+#else
+  #define dbg(x, ...)
+#endif
+
+static int generate_control_reg(Quad_spi_config const *config, uint32_t *control) {
   struct Reg_control {
     uint32_t rx_length : 6;
     uint32_t edq_mode : 2;
@@ -135,7 +143,7 @@ int generate_control_reg(Quad_spi_config const *config, uint32_t *control) {
 }
 
 
-int generate_fifo_watermark_reg(Quad_spi_config const *config, uint32_t *fifo_watermark) {
+static int generate_fifo_watermark_reg(Quad_spi_config const *config, uint32_t *fifo_watermark) {
   // check correctness input data
   assert ((config->tx_fifo_irq_level >= 0) && (config->tx_fifo_irq_level <= 7));
   assert ((config->rx_fifo_irq_level >= 0) && (config->rx_fifo_irq_level <= 7));
@@ -149,7 +157,7 @@ int generate_fifo_watermark_reg(Quad_spi_config const *config, uint32_t *fifo_wa
 
 
 int quad_spi_init(uintptr_t base, Quad_spi_config const *config) {
-  rumboot_printf("quad_spi_init\n");
+  dbg("quad_spi_init\n");
 
   // check, that controller doesn't work in current moment
   int is_busy;
@@ -194,7 +202,7 @@ int quad_spi_init(uintptr_t base, Quad_spi_config const *config) {
 
 
 int quad_spi_set_mask(uintptr_t base, Quad_spi_mask const *mask) {
-  rumboot_printf("quad_spi_set_mask\n");
+  dbg("quad_spi_set_mask\n");
 
   uint32_t reg = (mask->tx_empty) << TX_EMPTY
     | (mask->rx_irq) << RX_IRQ
@@ -209,21 +217,21 @@ int quad_spi_set_mask(uintptr_t base, Quad_spi_mask const *mask) {
 
 
 int quad_spi_tx_fifo_full(uintptr_t base) {
-  rumboot_printf("quad_spi_tx_fifo_full\n");
+  dbg("quad_spi_tx_fifo_full\n");
 
   return bit_in_reg(ioread32(base + FIFO_STATUS), TX_FIFO_NOT_FULL) ? 0 : 1;
 }
 
 
 int quad_spi_rx_fifo_empty(uintptr_t base) {
-  rumboot_printf("quad_spi_rx_fifo_empty\n");
+  dbg("quad_spi_rx_fifo_empty\n");
 
   return bit_in_reg(ioread32(base + FIFO_STATUS), RX_FIFO_NOT_EMPTY) ? 0 : 1;
 }
 
 
 int quad_spi_busy(uintptr_t base) {
-  rumboot_printf("quad_spi_busy\n");
+  dbg("quad_spi_busy\n");
 
   return bit_in_reg(ioread32(base + FIFO_STATUS), SPI_BUSY) ? 1 : 0;
 }
@@ -234,7 +242,7 @@ int quad_spi_write_data(uintptr_t control_base, uintptr_t fifo_base, unsigned in
     return 1;
   }
 
-  rumboot_printf("quad_spi_write_data\n");
+  dbg("quad_spi_write_data\n");
 
   if(size > 32) {
     iowrite32((uint32_t)(data & 0xFFFFFFFF), fifo_base + TX_DATA1);
@@ -254,7 +262,7 @@ int quad_spi_read_data(uintptr_t control_base, uintptr_t fifo_base, unsigned int
     is_empty = quad_spi_rx_fifo_empty(control_base);
   } while(is_empty);
 
-  rumboot_printf("quad_spi_read_data\n");
+  dbg("quad_spi_read_data\n");
 
   uint32_t lsbs = ioread32(fifo_base + RX_DATA1);
   uint32_t msbs = 0x0;
@@ -269,14 +277,14 @@ int quad_spi_read_data(uintptr_t control_base, uintptr_t fifo_base, unsigned int
     // (uint32_t)(*data >> 32), 
     // (uint32_t)(*data & 0xFFFFFFFF)
   // );
-  rumboot_printf("quad_spi_read_data is finished\n");
+  dbg("quad_spi_read_data is finished\n");
 
   return 0;
 }
 
 
 int quad_spi_reset_irq(uintptr_t base, Quad_spi_irq_status *irq_status) {
-  rumboot_printf("quad_spi_reset_irq\n");
+  dbg("quad_spi_reset_irq\n");
 
   uint32_t reg = ioread32(base + IRQ_STATUS);
 

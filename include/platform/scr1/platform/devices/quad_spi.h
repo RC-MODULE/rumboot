@@ -51,8 +51,8 @@ int quad_spi_write_data(uintptr_t control_base, uintptr_t fifo_base, unsigned in
 int quad_spi_read_data(uintptr_t control_base, uintptr_t fifo_base, unsigned int size, uint64_t *data);
 int quad_spi_reset_irq(uintptr_t base, Quad_spi_irq_status *irq_status);
 
-int generate_control_reg(Quad_spi_config const *config, uint32_t *control);
-int generate_fifo_watermark_reg(Quad_spi_config const *config, uint32_t *fifo_watermark);
+// int generate_control_reg(Quad_spi_config const *config, uint32_t *control);
+// int generate_fifo_watermark_reg(Quad_spi_config const *config, uint32_t *fifo_watermark);
 
 
 

@@ -25,7 +25,7 @@ rumboot_add_configuration(
   LOAD IRAM_IMAGE SELF
   IRUN_FLAGS ${BOOTROM_IFLAGS}
   FEATURES ROMGEN
-  FILES scr1/targets/simple-rom/common_for_tests.c
+  # FILES scr1/targets/simple-rom/common_for_tests.c
 )
 
 
@@ -68,6 +68,7 @@ file(GLOB PLATFORM_SOURCES
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/*.c
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/*.S
     ${CMAKE_SOURCE_DIR}/src/lib/eventsystem-memory.c
+    ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/lib/drivers/quad_spi.c
 )
 
 macro(RUMBOOT_PLATFORM_SET_COMPILER_FLAGS)
