@@ -2433,6 +2433,7 @@ endif()
         FILES hscb_loop.c
         PREFIX "hscb_2_3"
         NAME "loop_test"
+        TESTGROUP hwonly
     )
 
     add_rumboot_target(
@@ -2444,6 +2445,7 @@ endif()
         FILES hscb_loop.c
         PREFIX "hscb_0_1"
         NAME "loop_test"
+        TESTGROUP hwonly
     )
 
     add_rumboot_target(
@@ -2454,6 +2456,7 @@ endif()
         FILES hscb_loop.c
         PREFIX "hscb_0"
         NAME "internal_loop_test"
+        TESTGROUP hwonly
     )
 
     add_rumboot_target(
@@ -2465,6 +2468,7 @@ endif()
         FILES hscb_loop.c
         PREFIX "hscb_0"
         NAME "board_test"
+        TESTGROUP hwonly
     )
 
     add_rumboot_target(
