@@ -27,7 +27,7 @@ int main() {
     rumboot_platform_request_file("myfile", (uint32_t)addr_src);
     rumboot_platform_dump_region("mydump", (uint32_t)addr_src, dump_size);
 
-    ret = simple_mdma_exec (1, addr_src, addr_dst, data_size);
+    ret = simple_mdma_exec (1, MDMA_BASE, addr_src, addr_dst, data_size);
 
     if (ret) rumboot_printf("TEST FAILED\n");
     else rumboot_printf("TEST PASSED\n");

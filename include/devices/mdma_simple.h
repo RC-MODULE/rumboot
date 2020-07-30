@@ -28,12 +28,12 @@ struct mdma_descr {
     uint32_t pitch      : 16;
 } __attribute__((packed));
 
-void simple_config_mdma();
+void simple_config_mdma(uintptr_t base);
 
 void simple_descr_form (struct mdma_descr* p_mdma_descr, void* addr, uint32_t size);
 
-int simple_mdma_exec (int heap_id, void* addr_src, void* addr_dst, uint32_t data_size);
+int simple_mdma_exec (int heap_id, uintptr_t base, void* addr_src, void* addr_dst, uint32_t data_size);
 
-int simple_mdma_end_wait();
+int simple_mdma_end_wait(uintptr_t base);
 
 #endif

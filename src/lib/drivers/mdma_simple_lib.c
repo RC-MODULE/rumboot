@@ -9,16 +9,16 @@
 #include <regs/regs_mdma.h>
 #include <devices/mdma_simple.h>
 
-void simple_config_mdma() {
+void simple_config_mdma(uintptr_t base) {
 
-    //iowrite32(0x1, MDMA_BASE+MDMA_AXLEN_R);
-    //iowrite32(0x1, MDMA_BASE+MDMA_AXLEN_W);
+    //iowrite32(0x1, base+MDMA_AXLEN_R);
+    //iowrite32(0x1, base+MDMA_AXLEN_W);
 
-    //iowrite32(, MDMA_BASE+MDMA_ARLEN); // 0xF
-    //iowrite32(, MDMA_BASE+MDMA_AWLEN); // 0xF
+    //iowrite32(, base+MDMA_ARLEN); // 0xF
+    //iowrite32(, base+MDMA_AWLEN); // 0xF
 
-    //iowrite32(0xF, MDMA_BASE+MDMA_R_MAX_TRANS);
-    //iowrite32(0xF, MDMA_BASE+MDMA_W_MAX_TRANS);
+    //iowrite32(0xF, base+MDMA_R_MAX_TRANS);
+    //iowrite32(0xF, base+MDMA_W_MAX_TRANS);
 }
 
 // transfer data size < 64MB (length[121:96])
@@ -37,14 +37,14 @@ void simple_descr_form (struct mdma_descr* p_mdma_descr, void* addr, uint32_t si
     p_mdma_descr->str_lnth      = 0;
 }
 
-int simple_mdma_end_wait() {
+int simple_mdma_end_wait(uintptr_t base) {
     char i, j, ret;
 
     rumboot_printf ("simple_mdma_wait_end\n");
 
     ret = 0;
-    while (((ioread32(MDMA_BASE+MDMA_ENABLE_R) & 0x1) != 0x0) ||
-        ((ioread32(MDMA_BASE+MDMA_ENABLE_W) & 0x1) != 0x0)) {
+    while (((ioread32(base+MDMA_ENABLE_R) & 0x1) != 0x0) ||
+        ((ioread32(base+MDMA_ENABLE_W) & 0x1) != 0x0)) {
 
         if (ret == 7) {
             rumboot_printf ("ERROR: timeout\n");
@@ -59,7 +59,7 @@ int simple_mdma_end_wait() {
     return ret;
 }
 
-int simple_mdma_exec (int heap_id, void* addr_src, void* addr_dst, uint32_t data_size) {
+int simple_mdma_exec (int heap_id, uintptr_t base, void* addr_src, void* addr_dst, uint32_t data_size) {
     int ret;
 
     struct mdma_descr* p_mdma_descr_r;
@@ -78,18 +78,18 @@ int simple_mdma_exec (int heap_id, void* addr_src, void* addr_dst, uint32_t data
         rumboot_printf ("ERROR: NULL pointer!\n");
     }
     else {
-        simple_config_mdma();
+        simple_config_mdma(base);
 
         simple_descr_form(p_mdma_descr_r, addr_src, data_size);
         simple_descr_form(p_mdma_descr_w, addr_dst, data_size);
 
-        iowrite32((uint32_t)p_mdma_descr_r, MDMA_BASE+MDMA_DESC_ADDR_R);
-        iowrite32((uint32_t)p_mdma_descr_w, MDMA_BASE+MDMA_DESC_ADDR_W);
+        iowrite32((uint32_t)p_mdma_descr_r, base+MDMA_DESC_ADDR_R);
+        iowrite32((uint32_t)p_mdma_descr_w, base+MDMA_DESC_ADDR_W);
 
-        iowrite32(0x1, MDMA_BASE+MDMA_ENABLE_R);
-        iowrite32(0x1, MDMA_BASE+MDMA_ENABLE_W);
+        iowrite32(0x1, base+MDMA_ENABLE_R);
+        iowrite32(0x1, base+MDMA_ENABLE_W);
 
-        ret = simple_mdma_end_wait();
+        ret = simple_mdma_end_wait(base);
     }
 
     return ret;
