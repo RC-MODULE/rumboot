@@ -9,4 +9,6 @@
 
 #define MDMA_BASE           DUT_BASE
 
+#define DEMONSTRATOR_BASE   DUT_BASE
+
 #endif /* end of include guard: DEVICES_H */

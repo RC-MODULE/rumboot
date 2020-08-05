@@ -39,28 +39,39 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         CONFIGURATION ROM
         FILES common/bootrom/timer.c
     )
+
+    # quad_spi tests
     add_rumboot_target(
       CONFIGURATION ROM
       FILES 
-        scr1/targets/simple-rom/quad_spi/write_read_m25p.c 
+        scr1/targets/simple-rom/quad_spi/write_read_m25p.c # test on quad_spi+flash_m25p10a
         # scr1/targets/simple-rom/quad_spi/common_quad_spi.c
     )
     add_rumboot_target(
       CONFIGURATION ROM
       FILES 
-        scr1/targets/simple-rom/quad_spi/loopback.c 
+        scr1/targets/simple-rom/quad_spi/loopback.c # loopback test on quad_spi
     )
+
+    # mdma tests
     add_rumboot_target(
       CONFIGURATION ROM
       FILES scr1/targets/simple-rom/mdma_simple_test/mdma_simple_test.c 
       IRUN_FLAGS +myfile=${CMAKE_SOURCE_DIR}/src/platform/scr1/targets/simple-rom/mdma_simple_test/data
     )
+
     add_rumboot_target(
       CONFIGURATION ROM
       FILES scr1/targets/load_bin_example/hello_load_bin.c
       IRUN_FLAGS +myfile=${CMAKE_SOURCE_DIR}/src/platform/scr1/targets/load_bin_example/data
     )
 
+    # demonstrator tests
+    add_rumboot_target(
+      CONFIGURATION ROM
+      FILES
+        scr1/targets/simple-rom/demonstrator/simple_test.c
+    )
 
 
 endmacro()
