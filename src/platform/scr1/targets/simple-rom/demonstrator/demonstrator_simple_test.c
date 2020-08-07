@@ -38,13 +38,6 @@ int main() {
   // addr = MDMA_BASE + (uint32_t)addr_ext;
   // rumboot_printf("addr=%x\n", (uint32_t)addr);
 
-  uint32_t settings_r = ioread32(MDMA_BASE + MDMA_SETTINGS_R);
-  settings_r = (settings_r | 0xffff0000) & (16 << 16);
-  iowrite32(settings_r, MDMA_BASE + MDMA_SETTINGS_R);
-
-  uint32_t settings_w = ioread32(MDMA_BASE + MDMA_SETTINGS_W);
-  settings_w = (settings_w & 0x0000ffff) | (16 << 16); // так лучше
-  iowrite32(settings_w, MDMA_BASE + MDMA_SETTINGS_W);
 
 
   int res;
