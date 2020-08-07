@@ -604,6 +604,10 @@ int main(void)
 
 
 #ifdef GPIO_SWITCH
+    /* Mark tests as complete */
+    iowrite32 (0xff,GPIO_1_BASE+GPIO_DIR);
+    iowrite32 (0x40,GPIO_1_BASE+0x3fc);
+    /* Check if we need to switch to CPU test */
     rumboot_printf( "gpioswitch: Init GPIO \n");
     iowrite32 (0xfe,GPIO_1_BASE+GPIO_DIR);
     if (ioread32(GPIO_1_BASE+0x3fc) & 1) {
