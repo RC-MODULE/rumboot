@@ -41,24 +41,28 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     )
 
     # quad_spi tests
+    # if(DUT STREQUAL "QUAD_SPI_SIMPLE")
     add_rumboot_target(
       CONFIGURATION ROM
       FILES 
-        scr1/targets/simple-rom/quad_spi/write_read_m25p.c # test on quad_spi+flash_m25p10a
+        scr1/targets/simple-rom/quad_spi/qspi_write_read_m25p.c # test on quad_spi+flash_m25p10a
         # scr1/targets/simple-rom/quad_spi/common_quad_spi.c
     )
     add_rumboot_target(
       CONFIGURATION ROM
       FILES 
-        scr1/targets/simple-rom/quad_spi/loopback.c # loopback test on quad_spi
+        scr1/targets/simple-rom/quad_spi/qspi_loopback.c # loopback test on quad_spi
     )
+    # endif()
 
     # mdma tests
+    # if(DUT STREQUAL "MDMA_SIMPLE")
     add_rumboot_target(
       CONFIGURATION ROM
       FILES scr1/targets/simple-rom/mdma_simple_test/mdma_simple_test.c 
       IRUN_FLAGS +myfile=${CMAKE_SOURCE_DIR}/src/platform/scr1/targets/simple-rom/mdma_simple_test/data
     )
+    # endif()
 
     add_rumboot_target(
       CONFIGURATION ROM
@@ -67,11 +71,13 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     )
 
     # demonstrator tests
+    # if(DUT STREQUAL "DEMONSTRATOR_SIMPLE")
     add_rumboot_target(
       CONFIGURATION ROM
       FILES
-        scr1/targets/simple-rom/demonstrator/simple_test.c
+        scr1/targets/simple-rom/demonstrator/demonstrator_simple_test.c
     )
+    # endif()
 
 
 endmacro()
