@@ -65,8 +65,8 @@ int simple_mdma_exec (int heap_id, uintptr_t base, void* addr_src, void* addr_ds
     struct mdma_descr* p_mdma_descr_r;
     struct mdma_descr* p_mdma_descr_w;
 
-    p_mdma_descr_r = rumboot_malloc_from_heap (heap_id, sizeof (struct mdma_descr));
-    p_mdma_descr_w = rumboot_malloc_from_heap (heap_id, sizeof (struct mdma_descr));
+    p_mdma_descr_r = rumboot_malloc_from_heap_aligned (heap_id, sizeof (struct mdma_descr), 16);
+    p_mdma_descr_w = rumboot_malloc_from_heap_aligned (heap_id, sizeof (struct mdma_descr), 16);
 
     //p_mdma_descr_r = rumboot_malloc_from_heap (heap_id, 16);
     //p_mdma_descr_w = rumboot_malloc_from_heap (heap_id, 16);
