@@ -46,12 +46,15 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       CONFIGURATION ROM
       FILES 
         scr1/targets/simple-rom/quad_spi/qspi_write_read_m25p.c # test on quad_spi+flash_m25p10a
-        # scr1/targets/simple-rom/quad_spi/common_quad_spi.c
+      IRUN_FLAGS
+        +SPI_FLASH=m25p
     )
     add_rumboot_target(
       CONFIGURATION ROM
       FILES 
         scr1/targets/simple-rom/quad_spi/qspi_loopback.c # loopback test on quad_spi
+      IRUN_FLAGS
+        +TESTNAME=loopback
     )
     # endif()
 
@@ -76,6 +79,8 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       CONFIGURATION ROM
       FILES
         scr1/targets/simple-rom/demonstrator/demonstrator_simple_test.c
+      IRUN_FLAGS
+        +input_file=${CMAKE_SOURCE_DIR}/src/platform/scr1/targets/simple-rom/demonstrator/data
     )
     # endif()
 

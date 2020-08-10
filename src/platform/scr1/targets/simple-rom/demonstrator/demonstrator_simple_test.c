@@ -12,37 +12,36 @@
 
 #include <devices/mdma_simple.h> // lib for work with mdma
 
+#include <assert.h>
+
+#define DEBUG
+#ifdef DEBUG
+  #define dbg(x, ...) rumboot_printf("qspi: " x, ##__VA_ARGS__) 
+#else
+  #define dbg(x, ...)
+#endif
+
 
 int main() {
   rumboot_printf("TEST simple-test start\n");
 
+  uint32_t data_size = 128;
+
   void *addr_ext;
-  void *addr_dmem;
-
-  uint32_t data_size = 32;
-
   addr_ext = rumboot_malloc_from_heap_aligned(1, data_size, 16);
-  if(addr_ext == NULL)
-    return 1;
+  assert (addr_ext != NULL);
 
-  // addr_ext = EXT_MEMORY_BASE;
+  // rumboot_platform_request_file("input_file", (uint32_t)addr_ext); // что-то странное происxодит
+  iowrite32(0x01abcdef, (uint32_t)addr_ext);
+  dbg("addr_ext=%x, data_ext=%x\n", (uint32_t)addr_ext, ioread32((uint32_t)addr_ext));
+  
+  void *addr_dmem;
   addr_dmem = DATA_BASE;
+  assert (!simple_mdma_exec(1, MDMA_BASE, addr_ext, addr_dmem, data_size));
 
-
-  // rumboot_platform_request_file("myfile", (uint32_t)addr_src);
-  
-  iowrite32(0xabcd, (uint32_t)addr_ext);
-  rumboot_printf("addr_ext=%x, data_ext=%x\n", (uint32_t)addr_ext, ioread32((uint32_t)addr_ext));
-  
-  // void *addr;
-  // addr = MDMA_BASE + (uint32_t)addr_ext;
-  // rumboot_printf("addr=%x\n", (uint32_t)addr);
-
-
-
-  int res;
-  res = simple_mdma_exec(1, MDMA_BASE, addr_ext, addr_dmem, data_size);
-  rumboot_printf("res=%d\n", res);
+  void *addr_weigth;
+  addr_weigth = WEIGHT_BASE;
+  assert (!simple_mdma_exec(1, MDMA_BASE, addr_dmem, addr_weigth, data_size));
   
   rumboot_printf("TEST simple-test PASSED\n");
   return 0;
