@@ -75,10 +75,6 @@ static uint32_t* test_hscb_im1_data_src;
 // -------------------------------- Interfaces Definitions --------------------------------
 // -----------------------------------------------------------------------------
 static volatile bool hscb_handler = true;
-static volatile bool dma2plb6_handler = true;
-
-
-
 
 // ================ HSCB ===============   
 struct test_pattern_t
@@ -356,20 +352,6 @@ void run_hscb_transfers_via_loopback(hscb_instance_t* hscb_inst)
 
 // ================ DMA ===============   
 #ifdef DMA_POWER
-static void handler_dma2plb6( int irq, void *arg )
-{
-//    channel_status dma_status;
-    DmaChannel dma_channel = *(DmaChannel*)arg;
-    dma2plb6_clear_interrupt(DCR_DMAPLB6_BASE, dma_channel);
-
-    //clearing SG status bit
-    dcr_write(get_addr(dma_channel, PLB6_DMA_SR, DCR_DMAPLB6_BASE), (1 << IBM_BIT_INDEX(32,SG)));
-
-//    rumboot_printf("DMA2PLB6: PLB6_DMA_SR after clear = 0x%x\n", dcr_read(get_addr(dma_channel, PLB6_DMA_SR, DCR_DMAPLB6_BASE)));
-    dcr_read(get_addr(dma_channel, PLB6_DMA_SR, DCR_DMAPLB6_BASE));
-
-    dma2plb6_handler = true;
-}
 
 uint32_t dma2plb6_get_bytesize(transfer_width transfer_width_code)
 {
@@ -470,8 +452,6 @@ static void clear_dma2plb6_status()
 
 static void run_dma2plb6_scatter_gather_transfer()
 {
-    clear_dma2plb6_status();
-
     dcr_write(get_addr(0, PLB6_DMA_SGH, DCR_DMAPLB6_BASE), rumboot_virt_to_phys(dma2plb6_chnl0_sg_descr) >> 32);
     dcr_write(get_addr(0, PLB6_DMA_SGL, DCR_DMAPLB6_BASE), rumboot_virt_to_phys(dma2plb6_chnl0_sg_descr) & 0xFFFFFFFF);
     //Setting SSG bit
@@ -492,9 +472,6 @@ struct rumboot_irq_entry * create_irq_handlers(hscb_instance_t* hscb_inst)
     rumboot_irq_set_handler( tbl, SW2_AXI_INT, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler_hscb, &hscb_inst[2] );
     rumboot_irq_set_handler( tbl, SW3_AXI_INT, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler_hscb, &hscb_inst[3] );
 #endif
-#ifdef DMA_POWER
-    rumboot_irq_set_handler( tbl, DMA2PLB6_DMA_IRQ_0, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler_dma2plb6, &dma_channel0 );
-#endif
 
     rumboot_irq_table_activate( tbl );
     
@@ -503,9 +480,6 @@ struct rumboot_irq_entry * create_irq_handlers(hscb_instance_t* hscb_inst)
     rumboot_irq_enable( SW1_AXI_INT );
     rumboot_irq_enable( SW2_AXI_INT );
     rumboot_irq_enable( SW3_AXI_INT );
-#endif
-#ifdef DMA_POWER
-    rumboot_irq_enable( DMA2PLB6_DMA_IRQ_0 );
 #endif
     rumboot_irq_sei();
 
@@ -660,7 +634,6 @@ int main(void)
     rumboot_printf("\nRunning tests ...\n");
 
 #ifdef DMA_POWER    
-    dma2plb6_handler = false;
     run_dma2plb6_scatter_gather_transfer();
 #endif
 #ifdef HSCB_POWER    
@@ -676,21 +649,29 @@ int main(void)
 #else
     while (1) {
 #endif
-        if (dma2plb6_handler) 
-        {    
-            dma2plb6_handler = false;
-            run_dma2plb6_scatter_gather_transfer();
-        }
         if (hscb_handler)
             hscb_handler = false;
     }
 
-    rumboot_printf("Finilizing transfers... %d %d \n", dma2plb6_handler, hscb_handler);
-    //while (!(dma2plb6_handler && hscb_handler));
-    //FIXME: Properly wait for IRQS. This delay SUCKS!
-    mdelay(2000);
+    
+    rumboot_printf("Reset HSCBs \n");
+    iowrite32(1, HSCB0_BASE + 0x00000008 );
+    iowrite32(1, HSCB0_BASE + 0x00000808 );
+    
+    iowrite32(1, HSCB1_BASE + 0x00000008 );
+    iowrite32(1, HSCB1_BASE + 0x00000808 );
+    
+    iowrite32(1, HSCB2_BASE + 0x00000008 );
+    iowrite32(1, HSCB2_BASE + 0x00000808 );
+    
+    iowrite32(1, HSCB3_BASE + 0x00000008 );
+    iowrite32(1, HSCB3_BASE + 0x00000808 );
+    
+    rumboot_printf("DMA disabled \n");
+    dcr_write(get_addr(0, PLB6_DMA_SGC, DCR_DMAPLB6_BASE), (0 << IBM_BIT_INDEX(32,0)));
+    
+    mdelay(100);
 
-    rumboot_printf("Finilizing transfers... %d %d \n", dma2plb6_handler, hscb_handler);
     rumboot_printf("\nEnd of test\n");
     delete_irq_handlers(tbl);
 
