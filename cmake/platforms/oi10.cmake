@@ -2551,7 +2551,7 @@ endif()
       FILES power_dma_and_hscb.c
       TESTGROUP hwonly
       NAME power_dma_and_hscb
-      CFLAGS -DGPIO_SWITCH
+      CFLAGS -DPOWER_TIMEOUT=5000000UL
     )
 
     add_rumboot_target(
@@ -2752,7 +2752,7 @@ endif()
       add_rumboot_target(
       FEATURES NOCODE
       COMBOIMAGE IM0BIN
-      LOAD IM0BIN simple-iram-chain-start-dummy,${FK_TEST_CHAIN},iram-power_dma_and_hscb,power-flash-im0-loader,power-cached-test_endless
+      LOAD IM0BIN simple-iram-chain-start-dummy,iram-power_dma_and_hscb,${FK_TEST_CHAIN},power-flash-im0-loader,power-cached-test_endless
       TESTGROUP chains hwonly
       NAME endless_power_test
       PREFIX chain

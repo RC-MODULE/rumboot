@@ -669,8 +669,13 @@ int main(void)
 #endif
 
 
-    while (1)
-    { 
+#ifdef POWER_TIMEOUT
+    rumboot_printf("Running test for %d us at %d us\n", POWER_TIMEOUT, rumboot_platform_get_uptime());
+    uint32_t start = rumboot_platform_get_uptime();
+    while (rumboot_platform_get_uptime() - start < POWER_TIMEOUT) { 
+#else
+    while (1) {
+#endif
         if (dma2plb6_handler) 
         {    
             dma2plb6_handler = false;
@@ -680,6 +685,12 @@ int main(void)
             hscb_handler = false;
     }
 
+    rumboot_printf("Finilizing transfers... %d %d \n", dma2plb6_handler, hscb_handler);
+    //while (!(dma2plb6_handler && hscb_handler));
+    //FIXME: Properly wait for IRQS. This delay SUCKS!
+    mdelay(2000);
+
+    rumboot_printf("Finilizing transfers... %d %d \n", dma2plb6_handler, hscb_handler);
     rumboot_printf("\nEnd of test\n");
     delete_irq_handlers(tbl);
 
