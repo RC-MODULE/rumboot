@@ -840,7 +840,7 @@ endif()
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES test_oi10_greth.c
-      CFLAGS -DGRETH_BASE=GRETH_0_BASE  -DEDCL_TEST_BANK=EM2
+      CFLAGS -DGRETH_BASE=GRETH_0_BASE  -DEDCL_TEST_BANK=SRAM0
       PREFIX greth0-edcl-em2
     )
 
@@ -861,7 +861,7 @@ endif()
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES test_oi10_greth.c
-      CFLAGS -DGRETH_BASE=GRETH_1_BASE -DEDCL_TEST_BANK=EM2
+      CFLAGS -DGRETH_BASE=GRETH_1_BASE -DEDCL_TEST_BANK=SRAM0
       PREFIX greth1-edcl-em2
     )
 
