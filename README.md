@@ -275,7 +275,7 @@ add_rumboot_target(
     OBJCOPY_FLAGS  flag1 flag2
     VARIABLE PATHVAR
     APPEND filename
-    FEATURES [STUB] [LUA] [COVERAGE] [LPROBE] [PACKIMAGE] [PACKIMAGE] [ROMGEN] [NOCODE] [COVERAGE]
+    FEATURES [STUB] [LUA] [COVERAGE] [LPROBE] [PACKIMAGE] [PACKIMAGE] [ROMGEN] [NOCODE] [COVERAGE] [EXTRACT_LABELS]
     LOAD
         PLUSARG TARGET
         PLUSARG SELF
@@ -381,6 +381,15 @@ add_rumboot_target(
     * LPROBE - Данная цель является lprobe-сценарием
 
     * COVERAGE - для данной цели возможна сборка покрытия. Для включения инструментирования данной цели используйте -DRUMBOOT_COVERAGE=Y при конфигурации сборки
+
+    * EXTRACT_LABELS - для данной цели будет проводиться извлечение меток из исходного кода. Если указать этот ключ, при конфигурации система сборки будет искать в исходном коде специальный текст, на основе которого будет присваивать дополнительные метки собираемому тесту. Анализируются только первые три строчки кода. Пример служебного комментария ниже:
+
+    ```c
+        /* -*- rumboot-test-labels: label1 label2 -*- */
+    ```
+
+    _ВАЖНО_: Не стоит ставить эту метку для всех тестов разом, это приведет к серьезному замедлению процесса конфигурации. Рекомендуется ставить для каталогов 
+    simple-iram
 
     * PACKIMAGE - Говорит, что к бинарным файлам надо добавить контрольную сумму при помощи rumboot-packimage.py. Дополнительные опции для rumboot-packimage.py можно передавать через директиву PACKIMAGE_FLAGS.
 
