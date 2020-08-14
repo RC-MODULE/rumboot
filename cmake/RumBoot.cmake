@@ -88,6 +88,52 @@ macro(add_rumboot_target_dir dir)
   endforeach()
 endmacro()
 
+macro(locate_source_file list f)
+  #Extra seat-belts
+  if (EXISTS ${RUMBOOT_PLATFORM_TARGET_DIR}/${f} AND
+      EXISTS ${RUMBOOT_PLATFORM_COMMON_DIR}/${f})
+      message(FATAL_ERROR "FATAL: Files with the same name: ${RUMBOOT_PLATFORM_TARGET_DIR}/${f} and ${RUMBOOT_PLATFORM_COMMON_DIR}/${f}")
+    endif()
+
+  if (EXISTS ${RUMBOOT_PLATFORM_TARGET_DIR}/${f})
+        LIST(APPEND ${list} ${RUMBOOT_PLATFORM_TARGET_DIR}/${f})
+  elseif(EXISTS ${RUMBOOT_PLATFORM_COMMON_DIR}/${f})
+        LIST(APPEND ${list} ${RUMBOOT_PLATFORM_COMMON_DIR}/${f})
+  elseif(EXISTS ${f})
+        LIST(APPEND ${list} ${f})
+  else()
+    message(FATAL_ERROR "Can't find file ${f} for target ${TARGET_NAME}")
+  endif()
+endmacro()
+
+function(expand_source_list outlist inlist)
+  set(__list)
+  foreach(f ${${inlist}})
+    locate_source_file(__list ${f})
+  endforeach()
+  set(${outlist} "${__list}" PARENT_SCOPE)
+endfunction()
+
+function(extract_labels_from_source product)
+  execute_process(
+    COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/scripts/extract-labels.py ${ARGN}
+    RESULT_VARIABLE RET
+    OUTPUT_VARIABLE OUT
+    )
+  if (RET STREQUAL "0")
+    get_test_property(${product} LABELS labels)
+    SET_TESTS_PROPERTIES(${product} PROPERTIES LABELS "${labels};${OUT}")    
+  endif()
+endfunction()
+
+function(feature_check feature featurelist outvar)
+  list (FIND ${featurelist} "${feature}" _index)
+  if (_index GREATER -1)
+    set(${outvar} Yes PARENT_SCOPE)
+  else()
+    set(${outvar} No PARENT_SCOPE)
+  endif()
+endfunction()
 
 
 if (CMAKE_VERILOG_RULES_DIR)
@@ -275,26 +321,6 @@ macro(populate_dependencies target)
 endmacro()
 
 
-macro(locate_source_file list f)
-
-  #Extra seat-belts
-  if (EXISTS ${RUMBOOT_PLATFORM_TARGET_DIR}/${f} AND
-      EXISTS ${RUMBOOT_PLATFORM_COMMON_DIR}/${f})
-      message(FATAL_ERROR "FATAL: Files with the same name: ${RUMBOOT_PLATFORM_TARGET_DIR}/${f} and ${RUMBOOT_PLATFORM_COMMON_DIR}/${f}")
-    endif()
-
-  if (EXISTS ${RUMBOOT_PLATFORM_TARGET_DIR}/${f})
-        LIST(APPEND ${list} ${RUMBOOT_PLATFORM_TARGET_DIR}/${f})
-  elseif(EXISTS ${RUMBOOT_PLATFORM_COMMON_DIR}/${f})
-        LIST(APPEND ${list} ${RUMBOOT_PLATFORM_COMMON_DIR}/${f})
-  elseif(EXISTS ${f})
-        LIST(APPEND ${list} ${f})
-  else()
-    message(FATAL_ERROR "Can't find file ${f} for target ${TARGET_NAME}")
-  endif()
-endmacro()
-
-
 function(add_rumboot_test target name)
   generate_product_name(product ${target})
   add_test(${name} ${product} ${ARGN})
@@ -378,9 +404,7 @@ function(add_rumboot_target)
 
   set(${name} TRUE PARENT_SCOPE)
 
-  foreach(f ${TARGET_FILES})
-    locate_source_file(trg ${f})
-  endforeach()
+  expand_source_list(trg TARGET_FILES)
 
   foreach(f ${trg})
     GET_FILENAME_COMPONENT(ext ${f} EXT)
@@ -489,6 +513,7 @@ function(add_rumboot_target)
     endforeach()
     
     add_test(NAME ${product} COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/rumboot-packimage.py/rumboot_xrun.py -r ${RUMBOOT_TESTING_RESETSEQ} -f ${product}.bin -P ${RUMBOOT_TESTING_RESETPORT} -p ${RUMBOOT_TESTING_PORT} ${_plusargs})
+    extract_labels_from_source(${product} ${trg})
     SET_TESTS_PROPERTIES(${product} PROPERTIES TIMEOUT "45")  
     SET_TESTS_PROPERTIES(${product} PROPERTIES LABELS "full;${TARGET_TESTGROUP}")    
   endif()
@@ -496,6 +521,7 @@ function(add_rumboot_target)
   # Native platform is special - we always do unit-testing!
   if (${RUMBOOT_PLATFORM} MATCHES "native" AND NOT _index GREATER -1 )
     add_test(${product} ${product})
+    extract_labels_from_source(${product} ${TARGET_FILES})
 
     SET_TESTS_PROPERTIES(${product} PROPERTIES LABELS "full;${TARGET_TESTGROUP}")
     if (TARGET_TIMEOUT_CTEST)

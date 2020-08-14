@@ -1035,6 +1035,7 @@ endif()
     add_rumboot_target_dir(simple-iram/
         CONFIGURATION IRAM
         PREFIX simple-iram
+        FEATURES EXTRACT_LABELS
     )
 
 if (RUMBOOT_SOC_BUILD_TYPE MATCHES "RTL")
