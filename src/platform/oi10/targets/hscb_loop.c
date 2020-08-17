@@ -554,8 +554,8 @@ int main() {
     iowrite32((EN_HSCB | DISCARD_RMAP| EN_TRIM_CLK), HSCB_DST_BASE + SETTINGS );
     
     // Wait link enable state
-//    rumboot_printf("Wait link\n");
-    while(((hscb_status & ACTIVE_LINK) == 0) || (cnt >= MAX_ATTEMPT)){
+    rumboot_printf("Wait link\n");
+    while(((hscb_status & ACTIVE_LINK) == 0) && (cnt <= MAX_ATTEMPT)){
         hscb_status = ioread32(HSCB_SRC_BASE + STATUS);
 //        rumboot_printf("hscb_status = %x\n", hscb_status);
 //        rumboot_printf("hscb_status & ACTIVE_LINK = %x\n", (hscb_status & ACTIVE_LINK));
@@ -565,6 +565,7 @@ int main() {
         rumboot_printf("\n\n HSCB test ERROR!\n    Can't link!!!\n");
         return 1;
     }
+    rumboot_printf("Link enabled success!!!\n");
     // Clean HSCB_DST address
     hscb_status = ioread32(HSCB_DST_BASE + STATUS);
     
@@ -586,7 +587,7 @@ int main() {
         else
             page_size += 8;        
         if (speed == 15)
-            speed = 1;
+            speed = 2;
         else
             speed++;
     }
