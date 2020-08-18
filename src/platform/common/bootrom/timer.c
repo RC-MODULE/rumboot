@@ -35,7 +35,7 @@ int main()
 	rumboot_printf("2 timer reads take %d ns, approx %d ns per read\n", delta, delta/2);
 
 	int32_t delay;
-	for (delay = 100; delay < 500; delay += 100) {
+	for (delay = 300; delay < 2100; delay += 300) {
 		t_start = rumboot_platform_get_uptime();
 		rumboot_sim_get_realtime(&sim_start);
 		udelay(delay);
