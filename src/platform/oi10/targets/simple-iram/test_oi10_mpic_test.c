@@ -1,3 +1,4 @@
+/* -*- rumboot-test-labels: broken -*- */
 /*
  * test_oi10_mpic_test.c
  *

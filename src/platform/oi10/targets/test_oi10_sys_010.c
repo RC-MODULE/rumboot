@@ -1,3 +1,4 @@
+/* -*- rumboot-test-labels: broken -*- */
 /*
  * test_oi10_sys_010.c
  *

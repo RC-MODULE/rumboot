@@ -99,6 +99,7 @@ rumboot_add_configuration(
     TIMEOUT 50 ms
     LOAD BOOTROM_NOR SELF
     IRUN_FLAGS ${IRUN_BOOTM_EXTRA_ARGS}
+    FEATURES EXTRACT_LABELS
 )
 
 rumboot_add_configuration(
@@ -520,6 +521,7 @@ endif()
     add_rumboot_target_dir(common/lua/
       CONFIGURATION LPROBE_CPU
       PREFIX lprobe-cpu
+      TESTGROUP hwonly
     )
 
     #Cache scrubbing and error injection framework
@@ -842,6 +844,7 @@ endif()
       FILES test_oi10_greth.c
       CFLAGS -DGRETH_BASE=GRETH_0_BASE  -DEDCL_TEST_BANK=SRAM0
       PREFIX greth0-edcl-em2
+      TESTGROUP broken      
     )
 
     add_rumboot_target(
@@ -863,6 +866,7 @@ endif()
       FILES test_oi10_greth.c
       CFLAGS -DGRETH_BASE=GRETH_1_BASE -DEDCL_TEST_BANK=SRAM0
       PREFIX greth1-edcl-em2
+      TESTGROUP broken
     )
 
     add_rumboot_target(
@@ -1912,6 +1916,7 @@ endif()
       FILES test_oi10_ctrl_005.c
       NAME "test_oi10_ctrl_005_soft"
       LOAD IM0BIN SELF,SELF,SELF,SELF,SELF
+      TESTGROUP broken
     )
 
     add_rumboot_target(
@@ -1920,6 +1925,7 @@ endif()
       NAME "test_oi10_ctrl_005_hard"
       CFLAGS -DTEST_OI10_CTRL_005_HARD
       LOAD IM0BIN SELF,SELF,SELF,SELF,SELF,SELF
+      TESTGROUP broken
     )
 
     add_rumboot_target(
@@ -2304,6 +2310,7 @@ endif()
       IRUN_FLAGS +BOOT_PLL_BYP=1 +TEST_OI10_CTRL_002
       LOAD IM0BIN SELF,SELF
       PREFIX crg
+      TESTGROUP broken
     )
 
     add_rumboot_target(
@@ -2312,13 +2319,15 @@ endif()
       IRUN_FLAGS +TEST_OI10_CTRL_002
       LOAD IM0BIN SELF,SELF,SELF,SELF,SELF
       PREFIX crg
-    )
+      TESTGROUP broken
+      )
 
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES test_oi10_ctrl_002_4.c
       IRUN_FLAGS +TEST_OI10_CTRL_002
       LOAD IM0BIN SELF
+      TESTGROUP broken
       PREFIX crg
     )
 
@@ -2378,25 +2387,28 @@ endif()
       CONFIGURATION IRAM
       FILES test_oi10_cpu_025_wd.c
       LOAD IM0BIN SELF,SELF,SELF,SELF
-
+      TESTGROUP broken
     )
 
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES test_oi10_cpu_032.c
       LOAD IM0BIN SELF,SELF
+      TESTGROUP broken
     )
 
     add_rumboot_target(
         CONFIGURATION IRAM
         FILES test_oi10_cpu_025_rst.c
         LOAD IM0BIN SELF,SELF,SELF,SELF
+        TESTGROUP broken
     )
 
     add_rumboot_target(
         CONFIGURATION IRAM
         FILES test_oi10_cpu_025_mpic.c
         LOAD IM0BIN SELF,SELF,SELF,SELF,SELF,SELF
+        TESTGROUP broken
     )
 
     add_rumboot_target(
@@ -2496,6 +2508,7 @@ endif()
       FILES test_oi10_plb6_axi.c
       CFLAGS -DCHECK_PLB6_AXI_SINGLE
       PREFIX plb6-axi-single
+      TESTGROUP broken
     )
 
     add_rumboot_target(
@@ -2503,7 +2516,8 @@ endif()
       FILES test_oi10_plb6_axi.c
       CFLAGS -DCHECK_PLB6_AXI_BURST
       PREFIX plb6-axi-burst
-    )
+      TESTGROUP broken
+      )
 
     add_rumboot_target(
       CONFIGURATION IRAM
@@ -2610,6 +2624,7 @@ endif()
     FILES tlbdump/main.c tlbdump/ops.S
     PREFIX "tlbdumper"
     NAME "after-rom"
+    TESTGROUP hwonly
   )
 
   add_rumboot_target(
@@ -2617,6 +2632,7 @@ endif()
     FILES tlbdump/main.c tlbdump/ops.S
     PREFIX "tlbdumper"
     NAME "with-rumboot-init"
+    TESTGROUP hwonly
   )
 
 

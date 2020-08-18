@@ -1,4 +1,4 @@
-
+/* -*- rumboot-test-labels: broken -*- */
 #define DEBUG_CONTINUE_ON_ASSERT
 
 #include <platform/ppc470s/mmu.S.h>

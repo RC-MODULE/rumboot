@@ -15,6 +15,7 @@ macro(rumboot_bootrom_add_common_units)
      NAME timer
      PREFIX bootrom-unit
      CONFIGURATION ${BOOTSOURCE_CONFIGURATION}
+     TESTGROUP broken
    )
   endif()
 
@@ -283,7 +284,7 @@ macro(rumboot_bootrom_unit_test)
               PREFIX "bootrom"
               FILES common/bootrom/unit.c
               CFLAGS -DSOURCE=${BOOTSOURCE_ID} -DEXPECTED=0
-              TESTGROUP bootrom bootrom-unit
+              TESTGROUP bootrom bootrom-unit broken
               IRUN_FLAGS ${BOOTSOURCE_IRUN_FLAGS}
               LOAD ${BOOTSOURCE_MEMTAG} ${_commas}spl-pid-test
             )
