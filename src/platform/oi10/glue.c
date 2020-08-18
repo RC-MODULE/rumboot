@@ -54,6 +54,12 @@ static void additional_tlb_configure(int enable)
 }
 void rumboot_platform_exit(int status) {
     additional_tlb_configure(0);
+    #ifdef PRODUCTION_TESTING
+        if (status) {
+        	rumboot_printf("\nHACK: _exit: System halted, code %d. \n", status);
+        	while(1);;
+        }
+    #endif
 }
 
 
