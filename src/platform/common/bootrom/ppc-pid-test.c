@@ -17,7 +17,7 @@ int main(int argc, char const *argv[]) {
     rumboot_printf("PID: %d\n", pid);
     if (pid != 0) {
             rumboot_printf("PID must be 0\n");
-            exit(1);
+            return 1;
     }
-    exit(0);
+    return 0;
 }
