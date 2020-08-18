@@ -100,19 +100,21 @@ int rumboot_main()
          */
         int ret = setjmp(rumboot_platform_runtime.exit_trampoline);
         if (ret == 0) {
+                rumboot_platform_perf("main()");
                 /* That's how we do it the very first time */
                 ret = main();
                 exit(ret); /* Does a longjmp */
                 /* Never reached */
         }
-
-        /* If we are here, we're back from longjmp */
-        rumboot_platform_perf("Trampoline");
         
-      #ifdef RUMBOOT_MAIN_NORETURN
-        uint32_t code = ret - 256; 
-        rumboot_platform_event_raise(EVENT_TERM, &code, 1);
-      #endif
+        #ifdef RUMBOOT_MAIN_NORETURN
+                /* No need to perf, if we're terminating anyway. */
+                uint32_t code = ret - 256; 
+                rumboot_platform_event_raise(EVENT_TERM, &code, 1);
+        #endif
+
+        /* If we do a return, close the brackets */
+        rumboot_platform_perf(NULL);
 
         /* De-mangle exit code from trampoline */
         return ret - 256;
