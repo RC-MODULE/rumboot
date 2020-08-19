@@ -41,7 +41,7 @@ static uint32_t check_registers_read(uint32_t base_addr)
           {   "CRG_SYS_INTCLR",      REGPOKER_READ_DCR,    CRG_SYS_INTCLR,           0x00000000,           0x00000001   },
           {   "CRG_SYS_CKDIVMODE0",  REGPOKER_READ_DCR,    CRG_SYS_CKDIVMODE0,       0x00000000,           0x0000001f   },
           {   "CRG_SYS_CKDIVMODE2",  REGPOKER_READ_DCR,    CRG_SYS_CKDIVMODE2,       0x00000001,           0x0000001f   },
-          {   "CRG_SYS_CKDIVMODE3",  REGPOKER_READ_DCR,    CRG_SYS_CKDIVMODE3,       0x00000000,           0x0000001f   },
+          {   "CRG_SYS_CKDIVMODE3",  REGPOKER_READ_DCR,    CRG_SYS_CKDIVMODE3,       0x00000013,           0x0000001f   },
           {   "CRG_SYS_CKDIVMODE4",  REGPOKER_READ_DCR,    CRG_SYS_CKDIVMODE4,       0x00000009,           0x0000001f   },
           { }
       };
@@ -77,7 +77,7 @@ static uint32_t check_registers_write( uint32_t base_addr )
           //{   "CRG_SYS_INTCLR",      REGPOKER_WRITE_DCR,    CRG_SYS_INTCLR,           0x00000000,           0x00000001   },
           {   "CRG_SYS_CKDIVMODE0",  REGPOKER_WRITE_DCR,    CRG_SYS_CKDIVMODE0,       0x00000000,           0x0000001f   },
           {   "CRG_SYS_CKDIVMODE2",  REGPOKER_WRITE_DCR,    CRG_SYS_CKDIVMODE2,       0x00000001,           0x0000001f   },
-          {   "CRG_SYS_CKDIVMODE3",  REGPOKER_WRITE_DCR,    CRG_SYS_CKDIVMODE3,       0x00000000,           0x0000001f   },
+          {   "CRG_SYS_CKDIVMODE3",  REGPOKER_WRITE_DCR,    CRG_SYS_CKDIVMODE3,       0x00000013,           0x0000001f   },
           {   "CRG_SYS_CKDIVMODE4",  REGPOKER_WRITE_DCR,    CRG_SYS_CKDIVMODE4,       0x00000009,           0x0000001f   },
           { }
       };
