@@ -158,7 +158,7 @@ uint8_t* test_data_em2_dst;
  * Registers access checks
  */
 struct regpoker_checker greth_check_array[] = {
-    { "CTRL              ",  REGPOKER_READ32,  CTRL              , 0x98000090, 0xFE007CFF },
+    { "CTRL              ",  REGPOKER_READ32,  CTRL              , 0x9A000090, 0xFE007CFF },
     { "MDIO_CTRL         ",  REGPOKER_READ32,  MDIO_CTRL         , 0x01E10140, 0xFFFFFFCF },
     { "EDCL_IP           ",  REGPOKER_READ32,  EDCL_IP           , EDCLIP0, ~0 },
     { "EDCL_MAC_MSB      ",  REGPOKER_READ32,  EDCL_MAC_MSB      , EDCLMAC_MSB, 0xffff },
