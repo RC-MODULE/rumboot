@@ -44,17 +44,27 @@ static void memcpy_cb(size_t curpos, void *data, size_t length, void *arg)
 #include <rumboot/timer.h>
 void rumboot_platform_request_file(const char *plusarg, uint32_t addr)
 {
-        rumboot_printf("UPLOAD: %s to 0x%x\n", plusarg, addr);
+        rumboot_printf("UPLOAD: %s to 0x%x. 'X' for X-modem, 'E' for EDCL\n", plusarg, addr);
  		struct mcpy_desc dsc = {
 			 .crc32 = 0,
 			 .to = (void *) addr,
 			 .length = 0,
 		 };
-		xmodem_get_async(-1, memcpy_cb, &dsc);
-		uint32_t crc = crc32(0, (void *) addr, dsc.length);
-		if (crc != dsc.crc32) {
-			mdelay(1000);
-			rumboot_platform_panic("FATAL: Data upload CRC32 mismatch!");
+		while(1) {
+			char tmp = rumboot_platform_getchar(500);
+			if (tmp == 'X') {
+				xmodem_get_async(-1, memcpy_cb, &dsc);
+				uint32_t crc = crc32(0, (void *) addr, dsc.length);
+				if (crc != dsc.crc32) {
+					mdelay(1000);
+					rumboot_platform_panic("FATAL: Data upload CRC32 mismatch!");
+				}
+				break;
+			}
+
+			if (tmp == 'E') {
+				break;
+			}
 		}
 }
 
@@ -70,13 +80,24 @@ void rumboot_platform_sim_restore(const char *filename)
 
 void rumboot_platform_dump_region(const char *filename, uint32_t addr, uint32_t len)
 {
-	rumboot_printf("DOWNLOAD: %u bytes from 0x%x to %s\n", len, addr, filename);
+	rumboot_printf("DOWNLOAD: %u bytes from 0x%x to %s. 'X' for X-modem, 'E' for EDCL\n", len, addr, filename);
+	while(1) {
+		char tmp = rumboot_platform_getchar(500);
+		if (tmp == 'X') {
+			xmodem_send(addr, len);
+			break;
+		}
+
+		if (tmp == 'E') {
+			break;
+		}
+	}
 }
 
 void rumboot_platform_store_gcda(const char *filename, uint32_t addr, uint32_t len)
 {
 	rumboot_printf("DOWNLOAD: %u bytes from 0x%x to %s\n", len, addr, filename);
-	xmodem_send((void *) addr, len);
+	rumboot_platform_dump_region(filename, addr, len);
 }
 
 void rumboot_platform_relocate_runtime(uint32_t addr)
