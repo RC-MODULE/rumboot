@@ -455,7 +455,11 @@ void emi_init_impl (uint32_t const emi_dcr_base, uint32_t const plb6mcif2_dcr_ba
             SST_Flow_Through,
             TSSOE_1,
             TSOE_1,
+            #ifdef CMAKE_BUILD_TYPE_DEBUG
+            TCYC_8,
+            #else
             TCYC_12,
+            #endif
             0, //T_RDY
             TDEL_0
         },
