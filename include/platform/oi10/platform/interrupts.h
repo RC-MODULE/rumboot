@@ -76,6 +76,8 @@
 #define EXT_INT7                    (73)
 #define WU_INT                      (74)
 #define AXI_MSIF_INT                (75)
+#define SCRB_INT_0                  (76)
+#define SCRB_INT_1                  (77)
 
 /* MPIC128 IRQs */
 #define MPIC128_TIMER_0             (128)
