@@ -395,7 +395,7 @@ void emi_mkerr_nor( uint32_t mem_addr, uint32_t mem_data,
             | ECC_CTRL_CNT_ECCWRR);
     rumboot_printf("Writing 0x%X to NOR at 0x%X...\n",
             mem_data, mem_addr);
-    nor_write32(mem_data ^ err_data, mem_addr);
+    nor_write32_select(mem_data ^ err_data, mem_addr, false);
     tmp = EMI_READ(EMI_WECR);
     EMI_WRITE(EMI_FLCNTRL, flcntrl);
 }
