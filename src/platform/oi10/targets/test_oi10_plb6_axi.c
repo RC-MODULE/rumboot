@@ -467,7 +467,7 @@ void test_oi10_greth (){
     )
 
 struct regpoker_checker greth_check_array[] = {
-    { "CTRL              ",  REGPOKER_READ32,  CTRL              , 0x98000090, 0xFE007CFF },
+    { "CTRL              ",  REGPOKER_READ32,  CTRL              , 0x9A000090, 0xFE007CFF },
     { "MDIO_CTRL         ",  REGPOKER_READ32,  MDIO_CTRL         , 0x01E10140, 0xFFFFFFCF },
     { "TRANSMIT_DESCR_PTR",  REGPOKER_READ8,  TRANSMIT_DESCR_PTR, 0x0, 0x3F8 },
     { "RECEIVER_DESCR_PTR",  REGPOKER_READ8,  RECEIVER_DESCR_PTR, 0x0, 0x3F8 },
