@@ -1171,6 +1171,20 @@ endif()
         NAME "test_oi10_cpu_039_helper_em2_short"
     )
     add_rumboot_target(
+        CONFIGURATION SUPPLEMENTARY
+        LDS oi10/test_oi10_cpu_039_sram0.lds
+        FILES test_oi10_cpu_040_00_helper.c
+        CFLAGS -DTEST_OI10_CPU_039_MEM_SIZE=0x80000
+        NAME "test_oi10_cpu_040_helper_em2"
+    )
+    add_rumboot_target(
+        CONFIGURATION SUPPLEMENTARY
+        LDS oi10/test_oi10_cpu_039_sram0.lds
+        FILES test_oi10_cpu_040_00_helper.c
+        CFLAGS -DTEST_OI10_CPU_039_MEM_SIZE=0x100
+        NAME "test_oi10_cpu_040_helper_em2_short"
+    )
+    add_rumboot_target(
         CONFIGURATION IRAM
         FILES test_oi10_cpu_039_00.c
         PREFIX simple-iram
@@ -1214,7 +1228,7 @@ endif()
         CFLAGS -DM_BASE=SRAM0_BASE -DL2C_IL1I_BIT=1 -DL2C_IL1D_BIT=1 -DL2C_W_BIT=0
         NAME "test_oi10_cpu_040_00"
         LOAD IM0BIN SELF
-             MBIN supplementary-test_oi10_cpu_039_helper_em2
+             MBIN supplementary-test_oi10_cpu_040_helper_em2
     )
     add_rumboot_target(
         CONFIGURATION IRAM
@@ -1223,7 +1237,7 @@ endif()
         CFLAGS -DM_BASE=SRAM0_BASE -DL2C_IL1I_BIT=0 -DL2C_IL1D_BIT=1 -DL2C_W_BIT=0
         NAME "test_oi10_cpu_040_01"
         LOAD IM0BIN SELF
-             MBIN supplementary-test_oi10_cpu_039_helper_em2
+             MBIN supplementary-test_oi10_cpu_040_helper_em2
     )
     add_rumboot_target(
         CONFIGURATION IRAM
@@ -1232,7 +1246,7 @@ endif()
         CFLAGS -DM_BASE=SRAM0_BASE -DL2C_IL1I_BIT=1 -DL2C_IL1D_BIT=0 -DL2C_W_BIT=0
         NAME "test_oi10_cpu_040_10"
         LOAD IM0BIN SELF
-             MBIN supplementary-test_oi10_cpu_039_helper_em2
+             MBIN supplementary-test_oi10_cpu_040_helper_em2
     )
     add_rumboot_target(
         CONFIGURATION IRAM
@@ -1241,7 +1255,7 @@ endif()
         CFLAGS -DM_BASE=SRAM0_BASE -DL2C_IL1I_BIT=0 -DL2C_IL1D_BIT=0 -DL2C_W_BIT=0
         NAME "test_oi10_cpu_040_11"
         LOAD IM0BIN SELF
-             MBIN supplementary-test_oi10_cpu_039_helper_em2
+             MBIN supplementary-test_oi10_cpu_040_helper_em2
     )
    add_rumboot_target(
         CONFIGURATION IRAM
@@ -1259,7 +1273,7 @@ endif()
         CFLAGS -DM_BASE=SRAM0_BASE -DL2C_IL1I_BIT=0 -DL2C_IL1D_BIT=0 -DL2C_W_BIT=0
         NAME "test_oi10_cpu_040_11_short"
         LOAD IM0BIN SELF
-             MBIN supplementary-test_oi10_cpu_039_helper_em2_short
+             MBIN supplementary-test_oi10_cpu_040_helper_em2_short
     )
     add_rumboot_target_dir(iss-iram/
         CONFIGURATION IRAM

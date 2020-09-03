@@ -134,8 +134,6 @@ int __attribute__((section(".text.test"))) check_cpu_ppc_039(void)
         ".set r25, 25               \n\t" // CR copy
         ".set r26, 26               \n\t" // 1 - Direct values , 2 - Inverse Values
         "    addi r26, r0, 0x0    \n\t" // 1 - direct values error, 2 - inverse values errors, 0 - no errors
-// Commented due to OI10-457
-/*
 // clear only conflict lines
         "    addis r4, r0, 0x0    \n\t" // number of inerrations
         "    ori   r4, r4, 0x4    \n\t" // 
@@ -183,7 +181,6 @@ int __attribute__((section(".text.test"))) check_cpu_ppc_039(void)
         "    addi r5, r5,  0x80   \n\t" 
         "    addis r5, r5, 0x1    \n\t" // r5 = r5 + 0x0001_0000
         "    bdnz+ l0_1           \n\t"
-*/
 // store loop 1
         "    mtctr (%4)           \n\t" // ctr - number of iterations
         "    mr r4, (%3)          \n\t" // addr
