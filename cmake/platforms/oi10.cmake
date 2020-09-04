@@ -94,12 +94,11 @@ rumboot_add_configuration(
     CFLAGS -DRUMBOOT_ONLY_STACK
     SNAPSHOT default
     PREFIX bare-rom
-    FEATURES ROMGEN
     TIMEOUT_CTEST 0
     TIMEOUT 50 ms
     LOAD BOOTROM_NOR SELF
     IRUN_FLAGS ${IRUN_BOOTM_EXTRA_ARGS}
-    FEATURES EXTRACT_LABELS
+    FEATURES EXTRACT_LABELS ROMGEN
 )
 
 rumboot_add_configuration(
