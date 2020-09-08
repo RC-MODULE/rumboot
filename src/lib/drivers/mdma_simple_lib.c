@@ -37,23 +37,24 @@ void simple_descr_form (struct mdma_descr* p_mdma_descr, void* addr, uint32_t si
     p_mdma_descr->str_lnth      = 0;
 }
 
-int simple_mdma_end_wait(uintptr_t base) {
-    char i, j, ret;
+int simple_mdma_end_wait(uintptr_t base, uint32_t data_size) {
+    uint32_t i, ret;
 
     rumboot_printf ("simple_mdma_wait_end\n");
 
     ret = 0;
-    while (((ioread32(base+MDMA_ENABLE_R) & 0x1) != 0x0) ||
-        ((ioread32(base+MDMA_ENABLE_W) & 0x1) != 0x0)) {
+    i   = 0;
 
-        if (ret == 7) {
+    while (((ioread32(base+MDMA_ENABLE_R) & 0x1) != 0x0 ||
+        (ioread32(base+MDMA_ENABLE_W) & 0x1) != 0x0) && !ret) {
+
+        if (i==data_size) {
             rumboot_printf ("ERROR: timeout\n");
 
             ret = 1;
-            break;
         }
 
-        for (i=0, j=0; i<63 && j<63; i++, ret++) j = j % i + ret;   // dummy wait
+        i++;
     }
 
     return ret;
@@ -89,7 +90,7 @@ int simple_mdma_exec (int heap_id, uintptr_t base, void* addr_src, void* addr_ds
         iowrite32(0x1, base+MDMA_ENABLE_R);
         iowrite32(0x1, base+MDMA_ENABLE_W);
 
-        ret = simple_mdma_end_wait(base);
+        ret = simple_mdma_end_wait(base, data_size);
     }
 
     return ret;
