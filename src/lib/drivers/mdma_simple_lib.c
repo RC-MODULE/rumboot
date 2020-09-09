@@ -37,7 +37,7 @@ void simple_descr_form (struct mdma_descr* p_mdma_descr, void* addr, uint32_t si
     p_mdma_descr->str_lnth      = 0;
 }
 
-int simple_mdma_end_wait(uintptr_t base, uint32_t data_size) {
+int simple_mdma_wait_end(uintptr_t base, uint32_t data_size) {
     uint32_t i, ret;
 
     rumboot_printf ("simple_mdma_wait_end\n");
@@ -90,7 +90,7 @@ int simple_mdma_exec (int heap_id, uintptr_t base, void* addr_src, void* addr_ds
         iowrite32(0x1, base+MDMA_ENABLE_R);
         iowrite32(0x1, base+MDMA_ENABLE_W);
 
-        ret = simple_mdma_end_wait(base, data_size);
+        ret = simple_mdma_wait_end(base, data_size);
     }
 
     return ret;

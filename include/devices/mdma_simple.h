@@ -34,6 +34,6 @@ void simple_descr_form (struct mdma_descr* p_mdma_descr, void* addr, uint32_t si
 
 int simple_mdma_exec (int heap_id, uintptr_t base, void* addr_src, void* addr_dst, uint32_t data_size);
 
-int simple_mdma_end_wait(uintptr_t base, uint32_t size);
+int simple_mdma_wait_end(uintptr_t base, uint32_t size);
 
 #endif
