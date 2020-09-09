@@ -49,7 +49,7 @@ int simple_mdma_wait_end(uintptr_t base, uint32_t data_size) {
         (ioread32(base+MDMA_ENABLE_W) & 0x1) != 0x0) && !ret) {
 
         if (i==data_size) {
-            rumboot_printf ("ERROR: timeout\n");
+            rumboot_printf ("ERROR:simple_mdma_wait_end timeout\n");
 
             ret = 1;
         }
