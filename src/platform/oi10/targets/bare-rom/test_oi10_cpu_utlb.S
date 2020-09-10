@@ -1,4 +1,7 @@
 /* -*- rumboot-test-labels: broken -*- */
+// did, 09.09.20
+// Replaced write_tlb_entries_loop filling UTLB entries
+// on write_tlb_entrie from rumboot/src/platform/oi10/ppc_mmu_impl.S
 #define DEBUG_CONTINUE_ON_ASSERT
 
 #include <platform/ppc470s/mmu.S.h>
@@ -301,27 +304,27 @@ setup_tlb:
     load_const  R_ARG1, 0x0002
     mfspr       R_TEMP, SPR_RSTCFG
     addi        R_ARG0, R_ARG0, -4
-
+/* did, 09.09.20
 write_tlb_entries_loop:
     cmpwi cr7,  R_ARG1, 0x0000
     beq-  cr7,  write_tlb_entries_end
 
-    /* entry[0] -> MMUCR */
+    // entry[0] -> MMUCR 
     lwzu        R_DATA, MMU_TLB_ENTRY_FIELD_SIZE(R_ARG0)
     mtspr       SPR_MMUCR, R_DATA
 
-    /* entry[1] -> WTF? */
+    // entry[1] -> WTF? 
     lwzu        R_TLBR, MMU_TLB_ENTRY_FIELD_SIZE(R_ARG0)
 
-    /* entry[2] -> ETAG    (WS=0) */
+    // entry[2] -> ETAG    (WS=0) 
     lwzu        R_DATA, MMU_TLB_ENTRY_FIELD_SIZE(R_ARG0)
     tlbwe       R_DATA, R_TLBR, MMU_TLB_ENTRY_TAG
 
-    /* entry[3] -> EDATA   (WS=1) */
+    // entry[3] -> EDATA   (WS=1) 
     lwzu        R_DATA, MMU_TLB_ENTRY_FIELD_SIZE(R_ARG0)
     tlbwe       R_DATA, R_TLBR, MMU_TLB_ENTRY_DATA
 
-    /* entry[4] ->EATTR    (WS=2) */
+    // entry[4] ->EATTR    (WS=2) 
     lwzu        R_DATA, MMU_TLB_ENTRY_FIELD_SIZE(R_ARG0)
     copy_field(                                             \
                 R_DATA,                                     \
@@ -350,6 +353,71 @@ write_tlb_entries_end:
 write_tlb_entries_ret:
     mtspr       SPR_SRR1,   R_SAV1
     mtspr       SPR_SRR0,   R_SAV0
+
+    rumboot_putstring       "Run subtests...\n"
+    set_cr      cr6,        eq
+*/
+// From rumboot/src/platform/oi10/ppc_mmu_impl.S 
+//Details about trace infrastructure convention see in trace.S.h
+//Caller must preserve r3,r4,r8,r9,r10,r11 before calling
+//r3 - TLB entries array pointer
+//r4 - TLB entries count
+//r8,r9,r10,r11 - tmp registers
+//returns nothing
+// r29 - tlbentry[EPN, V, TS, DSIZ] <= RS[0:27]
+// r30 - tlbentry[RPN]  <= RS[0 :19]
+//       tlbentry[ERPN] <= RS[22:31]
+// r31 - tlbentry[IL1I, IL1D, U(0:3), W, I, M, G, E] <= RS[14: 24]
+//       tlbentry[UX, UW, UR, SX, SW, SR]            <= RS[26: 31]
+//.global write_tlb_entries
+
+   load_addr   r3, tlb_entries   
+   load_const  r4, 0x0002
+
+write_tlb_entries_bare_rom:
+    cmplwi      r4, 0
+    beqlr-
+
+    mr          r8, r28
+    mr          r9, r29
+    mr          r10,r30
+    mr          r11,r31
+
+.align 4
+write_next_etry:
+    lmw         r28,0(r3)
+    addi        r3, r3, MMU_TLB_ENTRY_SIZE
+
+    mtspr       SPR_MMUCR,  r28
+    tlbwe       r29,r31,MMU_TLB_ENTRY_TAG
+    tlbwe       r30,r31,MMU_TLB_ENTRY_DATA
+    tlbwe       r31,r31,MMU_TLB_ENTRY_ATTR
+
+    subic.      r4, r4, 1
+    bne+        write_next_etry
+
+write_tlb_entries_exit:
+    mfspr       r3, SPR_SRR0
+    mfspr       r4, SPR_SRR1
+
+    mfmsr       r31
+    mtspr       SPR_SRR1, r31
+    load_addr   r31, write_tlb_entries_return
+    mtspr       SPR_SRR0, r31
+
+    rfi
+
+write_tlb_entries_return:
+    mtspr       SPR_SRR1, r4
+    mtspr       SPR_SRR0, r3
+
+    mr          r28,r8
+    mr          r29,r9
+    mr          r30,r10
+    mr          r31,r11
+
+// did commented, 09.09.20
+//    blr
 
     rumboot_putstring       "Run subtests...\n"
     set_cr      cr6,        eq
