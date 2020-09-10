@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.3.2)
+cmake_minimum_required(VERSION 2.6)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -g")
 
