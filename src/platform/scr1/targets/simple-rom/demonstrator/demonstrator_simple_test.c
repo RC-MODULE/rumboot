@@ -35,6 +35,8 @@ int main() {
   addr_ext_w=rumboot_malloc_from_heap_aligned(1,weight_size,16);
   assert (addr_ext != NULL && addr_ext_w != NULL);
 
+  // IMPORTANT!!!
+  // Через input_file должен появиться input/input_rtl_data_X.bin, в кт реф-я модель что-то запишет
   // rumboot_platform_request_file("input_file", (uint32_t)addr_ext); // что-то странное происxодит
   iowrite32(0x01abcdef, (uint32_t)addr_ext);
   iowrite32(0x98765432, (uint32_t)addr_ext_w);

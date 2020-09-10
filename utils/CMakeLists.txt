@@ -5,3 +5,7 @@ if (WIN32)
     set(missing_sources asprintf.c)
 endif()
 add_executable(romgen romgen.c ${missing_sources})
+
+if (NOT WIN32)
+    add_subdirectory(matrix_rm)
+endif()

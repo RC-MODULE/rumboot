@@ -75,16 +75,19 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
     # demonstrator tests
     # if(DUT STREQUAL "DEMONSTRATOR_SIMPLE")
+    set(DEMONSTRATOR_TESTS_DIR ${CMAKE_SOURCE_DIR}/src/platform/scr1/targets/simple-rom/demonstrator)
     add_rumboot_target(
       CONFIGURATION ROM
       FILES
-        scr1/targets/simple-rom/demonstrator/demonstrator_simple_test.c
+        ${DEMONSTRATOR_TESTS_DIR}/demonstrator_simple_test.c
       IRUN_FLAGS
-        +input_file=${CMAKE_SOURCE_DIR}/src/platform/scr1/targets/simple-rom/demonstrator/data
+        +input_file=${DEMONSTRATOR_TESTS_DIR}/input/input_rtl_data_X.bin
+        # +input_file=${CMAKE_SOURCE_DIR}/src/platform/scr1/targets/simple-rom/demonstrator/data
+      PREPCMD
+        ${CMAKE_BINARY_DIR}/${rumboot_dirname}/utils/matrix_rm/matrix_rm 
+          --config=${DEMONSTRATOR_TESTS_DIR}/input/config.ini
     )
     # endif()
-
-
 endmacro()
 
 if (CMAKE_VERILOG_RULES_LOADED)
