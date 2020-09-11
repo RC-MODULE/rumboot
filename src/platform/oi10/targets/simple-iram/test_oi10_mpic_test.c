@@ -1,4 +1,4 @@
-/* -*- rumboot-test-labels: broken -*- */
+/* -*- rumboot-test-labels: broken hwonly -*- */
 /*
  * test_oi10_mpic_test.c
  *

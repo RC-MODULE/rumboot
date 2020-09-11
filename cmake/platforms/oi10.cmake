@@ -2521,7 +2521,7 @@ endif()
       FILES test_oi10_plb6_axi.c
       CFLAGS -DCHECK_PLB6_AXI_SINGLE
       PREFIX plb6-axi-single
-      TESTGROUP broken
+      TESTGROUP broken hwonly
     )
 
     add_rumboot_target(
@@ -2529,7 +2529,7 @@ endif()
       FILES test_oi10_plb6_axi.c
       CFLAGS -DCHECK_PLB6_AXI_BURST
       PREFIX plb6-axi-burst
-      TESTGROUP broken
+      TESTGROUP broken hwonly
       )
 
     add_rumboot_target(
@@ -2537,6 +2537,7 @@ endif()
       FILES test_oi10_plb6_axi.c
       CFLAGS -DCHECK_AXI_PLB6_SINGLE
       PREFIX axi-plb6-single
+      TESTGROUP hwonly
     )
 
     add_rumboot_target(
@@ -2544,7 +2545,8 @@ endif()
       FILES test_oi10_plb6_axi.c
       CFLAGS -DCHECK_AXI_PLB6_BURST
       PREFIX axi-plb6-burst
-    )
+      TESTGROUP hwonly
+      )
 
     add_rumboot_target(
       CONFIGURATION IRAM
@@ -2653,7 +2655,7 @@ endif()
     CONFIGURATION IRAM
     FILES ../archive/test_oi10_cpu_021_dcbtl.c
     PREFIX archive-iram
-    TESTGROUP broken
+    TESTGROUP broken hwonly
     )
 
     add_rumboot_target(
@@ -2663,12 +2665,15 @@ endif()
       PREFIX l2cbug-supp
       FILES l2bug/test_oi10_cpu_021_wb_cache_size.c
       NAME "test_oi10_cpu_021_wb_cache_size"
-  )
-  add_rumboot_target(
+      TESTGROUP broken hwonly
+    )
+
+    add_rumboot_target(
       CONFIGURATION IRAM
       FILES l2bug/test_oi10_cpu_021_wb_cache_size_base.c
       NAME "test_oi10_cpu_021_wb_cache_size"
       PREFIX l2cbug
+      TESTGROUP broken hwonly
       IRUN_FLAGS ${ROM_6500K_OPTS}
       LOAD IM0BIN SELF
            MBIN l2cbug-supp-test_oi10_cpu_021_wb_cache_size
