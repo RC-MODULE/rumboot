@@ -194,6 +194,7 @@ int main()
 
     test_event_send_test_id("test_oi10_em2_203");
 
+    tbl = create_handlers(); // moved up handlers
     emi_init(DCR_EM2_EMI_BASE);
     emi_set_trdy(DCR_EM2_EMI_BASE, TEST_BANK_IDX, TEST_TRDY);
     emi_enable_ext_rdy(DCR_EM2_EMI_BASE, TEST_BANK_IDX);
@@ -201,7 +202,7 @@ int main()
     mask.MRDYR = true;
     mask.MRDYW = true;
     emi_set_int_mask(DCR_EM2_EMI_BASE, &mask);
-    tbl = create_handlers();
+//    tbl = create_handlers();
 
     check_wr_ext_rdy();//2.3.1 PPC_SRAM_SDRAM_slave0_testplan.docx
     check_rd_ext_rdy();//2.3.1 PPC_SRAM_SDRAM_slave0_testplan.docx
