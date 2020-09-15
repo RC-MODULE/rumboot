@@ -10,7 +10,7 @@
 
 #define MDMA_BASE               DUT_BASE
 
-#define DEMONSTRATOR_APB_BASE   DUT_BASE
-#define DEMONSTRATOR_MDMA_BASE  (DUT_BASE + 0x00002000)
+#define DEMONSTRATOR_MDMA_BASE  DUT_BASE
+#define DEMONSTRATOR_APB_BASE   (DUT_BASE + 0x00002000)
 
 #endif /* end of include guard: DEVICES_H */
