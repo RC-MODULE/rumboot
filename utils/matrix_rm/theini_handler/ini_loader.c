@@ -154,7 +154,7 @@ int hwc_handler(
 ) {
   dbg("**hwc_handler started\n");
 
-  matrix_config *data = user;
+  matrix_config_t *data = user;
 
   fill_int_box(H);
   fill_int_box(W);
@@ -177,7 +177,7 @@ int rsc_handler(
 ) {
   dbg("**rsc_handler started\n");
 
-  matrix_config *data = user;
+  matrix_config_t *data = user;
 
   fill_int_box(R);
   fill_int_box(S);
@@ -210,8 +210,9 @@ int parameters_handler(
 ) {
   dbg("**parameters_handler started\n");
 
-  matrix_config *data = user;
+  matrix_config_t *data = user;
 
+  fill_int_box(sn);
   fill_int_box(LINES);
   fill_int_box(COLUMNS);
   fill_int_box(BUF_NMB);
@@ -235,7 +236,7 @@ int user_data_handler(
 ) {
   dbg("**user_data_handler started\n");
 
-  matrix_config *data = user;
+  matrix_config_t *data = user;
   
   fill_str_box(user_X_data_file_name);
   fill_str_box(user_W_data_base_file_name);
@@ -254,7 +255,7 @@ int rtl_data_handler(
 ) {
   dbg("**rtl_data_handler started\n");
 
-  matrix_config *data = user;
+  matrix_config_t *data = user;
   
   fill_str_box(X_data_file_name);
   fill_str_box(W_data_file_name);

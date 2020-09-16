@@ -5,7 +5,6 @@
 #include <string.h>
 #include <stdlib.h> // malloc
 #include <stdio.h> // printf
-#include <stdio.h> // files
 #include <assert.h>
 
 #define DEBUG
@@ -46,14 +45,10 @@ int main(int argc, char *argv[]) {
   // Finished parse config ini-file
 
   // Start process reference model's functions
-    matrix_config *config = userdata;
-    
-    dbg("matrix_config->H=%d\n", config->H);
-    dbg("matrix_config->W=%d\n", config->W);
-    dbg("matrix_config->K=%d\n", config->K);
-    dbg("matrix_config->user_X_data_file_name=%s\n", config->user_X_data_file_name);
-    dbg("matrix_config->Y_data_file_name=%s\n", config->Y_data_file_name);
-    
+    matrix_config_t *config = userdata;
+ 
+    make_all (config);
+
   // Finished process reference model's functions
 
   printf("_____________________Test finished \"test_rm\"_____________________\n");
