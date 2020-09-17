@@ -86,6 +86,13 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       PREPCMD
         ${CMAKE_BINARY_DIR}/${rumboot_dirname}/utils/matrix_rm/matrix_rm 
           --config=${DEMONSTRATOR_TESTS_DIR}/input/config.ini
+          --input_dir=${DEMONSTRATOR_TESTS_DIR}/input/
+    )
+
+    add_rumboot_target(
+      CONFIGURATION ROM
+      FILES
+        ${DEMONSTRATOR_TESTS_DIR}/test_on_vec_op.c
     )
     # endif()
 endmacro()
