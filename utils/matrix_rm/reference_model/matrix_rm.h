@@ -152,12 +152,12 @@ typedef struct acc_arg {
 /**
 * A struct of parameters for mac
 */
-typedef struct mac_arg {
+typedef struct mpe_arg {
     int*            d_pt    ; //<! address of matrix HoWoRdSdC
     int*            w_pt    ; //<! address of matrix f*RdSdC
     long*           dst_addr; //<! address of matrix HoWoK
     hwc_rsc_conf_t* conf    ;
-} mac_arg_t;
+} mpe_arg_t;
 
 /**
 * Print null pointer error message.
@@ -184,7 +184,7 @@ int check_mac_matrix_arg (mac_matrix_arg_t* mma);
 
 int check_acc_arg (acc_arg_t* aa);
 
-int check_mac_arg (mac_arg_t* ma);
+int check_mpe_arg (mpe_arg_t* ma);
 
 int char2hex (char c, unsigned int* hex_s);
 
@@ -217,13 +217,13 @@ int mac_matrix (mac_matrix_arg_t* mac_matrix_arg);
 int acc (acc_arg_t* acc_arg);
 
 /**
-* Multiplier & ACcumlator.
+* Matrix Processing Engine. Matrix multiplier & ACcumlator.
 *
 * Is used to fetch data values from data matrix HoWoRdSdC and to put them to data buffer
 * Is used to fetch weights from weight matrix f*RdSdC and to put them to weight buffer
 * Is used to call mac_matrix to multiply values from data buffer to values from weight buffer * Is used to call acc to perform partial summation with previous results
 */
-int mac (mac_arg_t* mac_arg);
+int mpe (mpe_arg_t* mpe_arg);
 
 /**
 * Get configuration from matrix_config structure.

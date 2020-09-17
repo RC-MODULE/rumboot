@@ -120,7 +120,7 @@ int check_acc_arg (acc_arg_t* aa) {
     return res;
 }
 
-int check_mac_arg (mac_arg_t* ma) {
+int check_mpe_arg (mpe_arg_t* ma) {
     int res = 0;
 
     if (ma==NULL || ma->d_pt==NULL || ma->w_pt==NULL || ma->dst_addr==NULL || check_hwc_rsc_conf(ma->conf)) res = is_nullptr(__func__);
@@ -642,7 +642,7 @@ int acc (acc_arg_t* acc_arg) {
     return res;
 }
 
-int mac (mac_arg_t* mac_arg) {
+int mpe (mpe_arg_t* mpe_arg) {
     int res = 0;
     unsigned int dbg = 0;
 
@@ -673,13 +673,13 @@ int mac (mac_arg_t* mac_arg) {
     int*    w_buf = NULL;   // for weight buffer matrix
     long*   p_buf = NULL;   // for partial sums
 
-    if (check_mac_arg(mac_arg)) res = is_nullptr(__func__);
+    if (check_mpe_arg(mpe_arg)) res = is_nullptr(__func__);
 
     if (!res) {
-        d_pt    = mac_arg->d_pt         ;
-        w_pt    = mac_arg->w_pt         ;
-        dst_addr= mac_arg->dst_addr     ;
-        conf    = mac_arg->conf         ;
+        d_pt    = mpe_arg->d_pt         ;
+        w_pt    = mpe_arg->w_pt         ;
+        dst_addr= mpe_arg->dst_addr     ;
+        conf    = mpe_arg->conf         ;
 
         K       = conf->rsc_conf->K     ;
         RdSdC   = conf->rsc_conf->RdSdC ;
@@ -990,7 +990,7 @@ int hwc_rsc_values_init (matrix_config_t* mc, hwc_rsc_conf_t* conf, matrices_add
 int make_convolution (hwc_rsc_conf_t* conf, matrices_addr_t* ma) {
     int res = 0;
 
-    mac_arg_t   mac_arg         ;
+    mpe_arg_t   mpe_arg         ;
 
     int*        HWC_addr        ;
     int*        fRSC_addr       ;
@@ -1017,12 +1017,12 @@ int make_convolution (hwc_rsc_conf_t* conf, matrices_addr_t* ma) {
     if (!res) res = HoWoRdSdC_init (HpWpC_addr, HoWoRdSdC_addr, conf);
 
     if (!res) {
-        mac_arg.d_pt    = HoWoRdSdC_addr;
-        mac_arg.w_pt    = fRdSdC_addr   ;
-        mac_arg.dst_addr= HoWoK_addr    ;
-        mac_arg.conf    = conf          ;
+        mpe_arg.d_pt    = HoWoRdSdC_addr;
+        mpe_arg.w_pt    = fRdSdC_addr   ;
+        mpe_arg.dst_addr= HoWoK_addr    ;
+        mpe_arg.conf    = conf          ;
 
-        res = mac (&mac_arg);
+        res = mpe (&mpe_arg);
     }
 
     if (res) printf ("%s.", __func__);
@@ -1262,3 +1262,5 @@ int make_all (matrix_config_t* mc) {
     if (res) printf ("%s.", __func__);
     return res;
 }
+
+//end
