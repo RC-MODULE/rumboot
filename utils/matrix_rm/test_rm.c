@@ -103,9 +103,6 @@ int main(int argc, char *argv[]) {
     strcpy(config->Y_data_file_name + input_dir_name_length, config->Y_data_file_name);
     strncpy(config->Y_data_file_name, input_dir_name, input_dir_name_length);
 
-
-    
-
     make_all (config);
 
     free(config->user_X_data_file_name);

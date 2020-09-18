@@ -89,11 +89,11 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
           --input_dir=${DEMONSTRATOR_TESTS_DIR}/input/
     )
 
-    add_rumboot_target(
-      CONFIGURATION ROM
-      FILES
-        ${DEMONSTRATOR_TESTS_DIR}/test_on_vec_op.c
-    )
+    #add_rumboot_target(
+    #  CONFIGURATION ROM
+    #  FILES
+    #    ${DEMONSTRATOR_TESTS_DIR}/test_on_vec_op.c
+    #)
     # endif()
 endmacro()
 
