@@ -14,10 +14,10 @@ typedef struct matrix_config {
 
     int R   ;   // kernel sizes
     int S   ;
-    int Dx  ;   // dilation
-    int Dy  ;   
-    int Sx  ;   // striding
-    int Sy  ;   
+    int Ds  ;   // dilation
+    int Dr  ;   
+    int Sw  ;   // striding
+    int Sh  ;   
     int K   ;   // number of kernels
 
     int sn  ;   // the number of a sign bit
@@ -56,10 +56,10 @@ typedef struct rsc_conf {
     int R   ;   // kernel sizes
     int S   ;   
     int C   ;   
-    int Dx  ;   // dilation
-    int Dy  ;   
-    int Sx  ;   // striding
-    int Sy  ;   
+    int Ds  ;   // dilation
+    int Dr  ;   
+    int Sw  ;   // striding
+    int Sh  ;   
     int K   ;   // number of kernels
 
     int sn  ;   // 7/15 for 8b/16b data size

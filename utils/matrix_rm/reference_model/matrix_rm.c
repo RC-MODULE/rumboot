@@ -411,7 +411,7 @@ int HWC_padding (int* src_addr, int* dst_addr, hwc_conf_t* conf) {
 int RSC_dilat (int* src_addr, int* dst_addr, rsc_conf_t* conf) {
     int res = 0;
 
-    int Rd, Sd, C, K, Dx, Dy;
+    int Rd, Sd, C, K, Ds, Dr;
     int id, jd, k, f, dx, dy;
     int S, RSC, RdSdC;
     int i, j;
@@ -424,8 +424,8 @@ int RSC_dilat (int* src_addr, int* dst_addr, rsc_conf_t* conf) {
         S       = conf->S   ;
         C       = conf->C   ;
         K       = conf->K   ;
-        Dx      = conf->Dx  ;
-        Dy      = conf->Dy  ;
+        Ds      = conf->Ds  ;
+        Dr      = conf->Dr  ;
 
         Rd      = conf->Rd   ;   // kernel sizes after dilation
         Sd      = conf->Sd   ;
@@ -434,27 +434,27 @@ int RSC_dilat (int* src_addr, int* dst_addr, rsc_conf_t* conf) {
         RdSdC   = conf->RdSdC   ;
 
         for (f=0; f<K; f++) {
-            for (id=0, i=0, dy=Dy-1; id<Rd; id++) {
+            for (id=0, i=0, dy=Dr-1; id<Rd; id++) {
                 dy++;
 
-                for (jd=0, j=0, dx=Dx-1; jd<Sd; jd++) {
-                    if (dy == Dy) dx++;
+                for (jd=0, j=0, dx=Ds-1; jd<Sd; jd++) {
+                    if (dy == Dr) dx++;
 
                     for (k=0; k<C; k++) {
 
-                        nd_v =  (dx == Dx) && (dy == Dy) ?
+                        nd_v =  (dx == Ds) && (dy == Dr) ?
                                 *(src_addr + f*RSC + i*S*C + j*C + k) : 0x0;
 
                         *(dst_addr + f*RdSdC + id*Sd*C + jd*C + k) = nd_v;
                     }
 
-                    if (dx == Dx) {
+                    if (dx == Ds) {
                         j++;
                         if (jd+1 < Sd) dx = 0x0;
                     }
                 }
 
-                if (dy == Dy) {
+                if (dy == Dr) {
                     i++;
                     if (id+1 < Rd) dy = 0x0;
                 }
@@ -473,7 +473,7 @@ int HoWoRdSdC_init (int* src_addr, int* dst_addr, hwc_rsc_conf_t* conf) {
     int ir, js;
     int ih, jw;
 
-    int C, Hp, Wp, Rd, Sd, RdSdC, Sx, Sy;
+    int C, Hp, Wp, Rd, Sd, RdSdC, Sw, Sh;
 
     int dst_offset, src_offset;
 
@@ -484,8 +484,8 @@ int HoWoRdSdC_init (int* src_addr, int* dst_addr, hwc_rsc_conf_t* conf) {
         Hp      = conf->hwc_conf->Hp;   // H, W after null padding
         Wp      = conf->hwc_conf->Wp;
 
-        Sx      = conf->rsc_conf->Sx;
-        Sy      = conf->rsc_conf->Sy;
+        Sw      = conf->rsc_conf->Sw;
+        Sh      = conf->rsc_conf->Sh;
 
         Rd      = conf->rsc_conf->Rd ;  // kernel sizes after dilation
         Sd      = conf->rsc_conf->Sd ;
@@ -508,13 +508,13 @@ int HoWoRdSdC_init (int* src_addr, int* dst_addr, hwc_rsc_conf_t* conf) {
                     }
                 }
 
-                jw = jw + Sx;
+                jw = jw + Sw;
 
                 j = 0;
                 i++;
             }
 
-            ih = ih + Sy;
+            ih = ih + Sh;
         }
     }
 
@@ -786,10 +786,10 @@ int hwc_rsc_conf_init (matrix_config_t* mc, hwc_rsc_conf_t* conf) {
         conf->rsc_conf->R   = mc->R ;
         conf->rsc_conf->S   = mc->S ;
         conf->rsc_conf->C   = mc->C ;
-        conf->rsc_conf->Dx  = mc->Dx;
-        conf->rsc_conf->Dy  = mc->Dy;
-        conf->rsc_conf->Sx  = mc->Sx;
-        conf->rsc_conf->Sy  = mc->Sy;
+        conf->rsc_conf->Ds  = mc->Ds;
+        conf->rsc_conf->Dr  = mc->Dr;
+        conf->rsc_conf->Sw  = mc->Sw;
+        conf->rsc_conf->Sh  = mc->Sh;
         conf->rsc_conf->K   = mc->K ;
         conf->rsc_conf->sn  = mc->sn;
 
@@ -806,9 +806,9 @@ int config_complete (hwc_rsc_conf_t* conf) {
     int res = 0;
 
     int H, W, C, Tp, Bp, Lp, Rp, Hp, Wp, sn;
-    int R, S, K, Dx, Dy, Rd, Sd;
+    int R, S, K, Ds, Dr, Rd, Sd;
 
-    int Sx, Sy, Ho, Wo;
+    int Sw, Sh, Ho, Wo;
 
     int HWC, HpWpC, RSC, RdSdC, HoWo, HoWoK, HoWoRdSdC, KRdSdC; 
 
@@ -830,10 +830,10 @@ int config_complete (hwc_rsc_conf_t* conf) {
         R   = conf->rsc_conf->R ;
         S   = conf->rsc_conf->S ;
         K   = conf->rsc_conf->K ;
-        Dx  = conf->rsc_conf->Dx;
-        Dy  = conf->rsc_conf->Dy;
-        Sx  = conf->rsc_conf->Sx;
-        Sy  = conf->rsc_conf->Sy;
+        Ds  = conf->rsc_conf->Ds;
+        Dr  = conf->rsc_conf->Dr;
+        Sw  = conf->rsc_conf->Sw;
+        Sh  = conf->rsc_conf->Sh;
 
         if (sizeof(long) < 2*(int)sizeof(int)) {
             printf ("ERROR:sizeof(long) is too small.\n");
@@ -846,8 +846,8 @@ int config_complete (hwc_rsc_conf_t* conf) {
             res = 1;
         }
 
-        if ((H<1) || (W<1) || (C<1) || (R<1) || (S<1) || (K<1) || (Dx<1) || (Dy<1) || (Sx<1) || (Sy<1) || sn<1) {
-            printf ("ERROR:H, W, C, R, S, K, Dx, Dy, Sx, Sy, sn should be > 1.\n");
+        if ((H<1) || (W<1) || (C<1) || (R<1) || (S<1) || (K<1) || (Ds<1) || (Dr<1) || (Sw<1) || (Sh<1) || sn<1) {
+            printf ("ERROR:H, W, C, R, S, K, Ds, Dr, Sw, Sh, sn should be > 1.\n");
             res = 1;
         }
 
@@ -861,14 +861,14 @@ int config_complete (hwc_rsc_conf_t* conf) {
         Hp  = H+Tp+Bp;          // H, W after null padding
         Wp  = W+Lp+Rp;
 
-        Rd  = (R-1)*Dy + 1;     // kernel sizes after dilation
-        Sd  = (S-1)*Dx + 1;
+        Rd  = (R-1)*Dr + 1;     // kernel sizes after dilation
+        Sd  = (S-1)*Ds + 1;
 
-        Ho  = (Hp-Rd)/Sy + 1;   // Hout, Wout with respect to striding, dilation, null padding
-        Wo  = (Wp-Sd)/Sx + 1;
+        Ho  = (Hp-Rd)/Sh + 1;   // Hout, Wout with respect to striding, dilation, null padding
+        Wo  = (Wp-Sd)/Sw + 1;
 
-        Ho_db = ((double)Hp - (double)Rd) / (double)Sy + 1;
-        Wo_db = ((double)Wp - (double)Sd) / (double)Sx + 1;
+        Ho_db = ((double)Hp - (double)Rd) / (double)Sh + 1;
+        Wo_db = ((double)Wp - (double)Sd) / (double)Sw + 1;
 
         if (((double)Ho != Ho_db) || ((double)Wo != Wo_db)) {
             printf ("ERROR:Hout or Wout is not integer.\n");

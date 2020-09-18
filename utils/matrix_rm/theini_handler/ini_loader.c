@@ -191,10 +191,10 @@ int rsc_handler(
   //   }
   // }
 
-  fill_int_box(Dx);
-  fill_int_box(Dy);
-  fill_int_box(Sx);
-  fill_int_box(Sy);
+  fill_int_box(Ds);
+  fill_int_box(Dr);
+  fill_int_box(Sw);
+  fill_int_box(Sh);
   fill_int_box(K);
 
   return 0;
