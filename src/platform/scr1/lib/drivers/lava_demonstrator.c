@@ -9,7 +9,7 @@
 
 
 #include <devices/mdma_simple.h> // lib for work with mdma
-#include <devices/lava_demonstrator.h> // lib for work with demonstrator
+#include <platform/devices/lava_demonstrator.h> // lib for work with demonstrator
 #include <assert.h>
 
 int load_demonstrator_data (int heap_id, void* addr_src, uint32_t data_size)
@@ -259,6 +259,12 @@ int load_etalon_array ( uint32_t dump_size, uintptr_t dump_ptr[], uint32_t data 
 	return 0;	
 } 
 
+int load_demonstrator_coefficients (int heap_id, void *addr_src, uint32_t data_size)
+{
+  return simple_mdma_exec(heap_id, MDMA_BASE, addr_src, COEFFICIENT_BASE, data_size);
+}
 
-
-
+int unload_demonstrator_results (int heap_id, void *addr_dst, uint32_t data_size)
+{
+  return simple_mdma_exec(heap_id, MDMA_BASE, RESULT_BASE, addr_dst, data_size);
+}
