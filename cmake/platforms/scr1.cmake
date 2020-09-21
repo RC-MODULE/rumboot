@@ -79,21 +79,32 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     add_rumboot_target(
       CONFIGURATION ROM
       FILES
-        ${DEMONSTRATOR_TESTS_DIR}/demonstrator_simple_test.c
+        ${DEMONSTRATOR_TESTS_DIR}/first_test.c
       IRUN_FLAGS
         +input_file=${DEMONSTRATOR_TESTS_DIR}/input/input_rtl_data_X.bin
-        # +input_file=${CMAKE_SOURCE_DIR}/src/platform/scr1/targets/simple-rom/demonstrator/data
       PREPCMD
         ${CMAKE_BINARY_DIR}/${rumboot_dirname}/utils/matrix_rm/matrix_rm 
           --config=${DEMONSTRATOR_TESTS_DIR}/input/config.ini
           --input_dir=${DEMONSTRATOR_TESTS_DIR}/input/
     )
 
-    #add_rumboot_target(
+    add_rumboot_target(
+      CONFIGURATION ROM
+      FILES
+        ${DEMONSTRATOR_TESTS_DIR}/demonstrator_simple_test.c
+      IRUN_FLAGS
+        +input_file=${DEMONSTRATOR_TESTS_DIR}/input/input_rtl_data_X.bin
+      PREPCMD
+        ${CMAKE_BINARY_DIR}/${rumboot_dirname}/utils/matrix_rm/matrix_rm 
+          --config=${DEMONSTRATOR_TESTS_DIR}/input/config.ini
+          --input_dir=${DEMONSTRATOR_TESTS_DIR}/input/
+    )
+
+    # add_rumboot_target(
     #  CONFIGURATION ROM
     #  FILES
     #    ${DEMONSTRATOR_TESTS_DIR}/test_on_vec_op.c
-    #)
+    # )
     # endif()
 endmacro()
 
