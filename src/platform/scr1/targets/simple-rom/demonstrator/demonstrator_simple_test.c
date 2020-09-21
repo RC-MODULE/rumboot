@@ -19,51 +19,114 @@
   #define dbg(x, ...)
 #endif
 
+int fill_data_array (  uint32_t len, int16_t* dump_ptr) {
+	uint32_t i;
+
+	for (i = 0; i< len ; i++){
+    dump_ptr[i] = 0x0001;
+	}
+	return 0;	
+} 
+
+int fill_wght_array ( uint32_t len, int16_t* dump_ptr ) {
+	uint32_t i;
+	
+	for (i = 0; i< len ; i++){
+    dump_ptr[i] = 0x0001;//rand(); //i; //it might be assigned rand for data and <i> as weights or vice versa
+
+	//rumboot_printf("&dump_ptr[i]=0x%x\n", &dump_ptr[i]);
+	//rumboot_printf(" ioread tmp=0x%x\n", tmp);
+	//rumboot_printf(" dump_ptr[i]=0x%x\n", dump_ptr[i]);
+	//rumboot_printf(" len=0x%x\n", len);
+	//rumboot_printf(" i=0x%x\n", i);
+	
+	}
+	return 0;	
+} 
+
+int fill_etalon_array (  uint32_t len, int16_t* dump_ptr) {
+	uint32_t i;
+
+	for (i = 0; i< len ; i++){
+    dump_ptr[i] = 64;
+	}
+	return 0;	
+} 
+
+
 
 int main() {
-  uint32_t res_size = 32;//65536; byte or 2 x 256 x 64 x 16 bit  //temporal
-  uint32_t data = 32; //!!!!! temporal
+  uint32_t src_vectors = 32;
+  uint32_t src_data_array_size = src_vectors * 64 * 2; // Each Vector Has 64 int16
+  uint32_t src_wght_array_size = 64 * 16 * 2;          // 64x16 int16
+  uint32_t dst_data_array_size = src_vectors * 16 * 8; // Each Vector Has 16 int64
   int ret;
+  
+  int16_t* src_data;
+  int16_t* src_wght;
+  int64_t* etalon;
+  int64_t* dst_data;
+  
  
   rumboot_printf("TEST matrix_multiplication start\n");
 
-  ret = run_matrix(); 
+  src_data = rumboot_malloc_from_heap_aligned(1, src_data_array_size, 16);
+  src_wght = rumboot_malloc_from_heap_aligned(1, src_wght_array_size, 16);
+  dst_data = rumboot_malloc_from_heap_aligned(1, dst_data_array_size, 16);
+  etalon   = rumboot_malloc_from_heap_aligned(1, dst_data_array_size, 16);
+  
+  rumboot_printf("src_data at 0x%x\n",(uint32_t)src_data);
+  rumboot_printf("src_wght at 0x%x\n",(uint32_t)src_wght);
+  rumboot_printf("dst_data at 0x%x\n",(uint32_t)dst_data);
+  rumboot_printf("etalon   at 0x%x\n",(uint32_t)etalon);
+  
+  if(src_data == NULL || src_wght == NULL || dst_data == NULL || etalon == NULL)
+  {
+    rumboot_printf("Malloc failed\n");
+    return 1;
+  }
+  
+  fill_data_array(src_data_array_size/2,  src_data);
+  fill_wght_array(src_wght_array_size/2,  src_wght);
+  
+  
+  ret=load_demonstrator_data (1, src_data, src_data_array_size);
+  if(ret!=0){
+    rumboot_printf("ERROR loading data\n");
+    return 1;
+  }
+  ret=load_demonstrator_weights (1, src_wght, src_wght_array_size);
+  if(ret!=0){
+    rumboot_printf("ERROR loading weights\n");
+    return 1;
+  }
+  
+  ret = demonstrator_run_matrix_flow(DEMONSTRATOR_APB_BASE, src_data_array_size, src_data_array_size);
+  
   if (ret) {
 	  rumboot_printf(" multiplication TEST_ERROR\n");
 	  return 1;
   }
  
-	uintptr_t src_etalon =(uintptr_t) rumboot_malloc_from_heap_aligned(1, sizeof(src_etalon), 16);
-	uintptr_t addr_ext_r =(uintptr_t) rumboot_malloc_from_heap_aligned(1, sizeof(addr_ext_r), 16);
-	
-    rumboot_printf("adr_etalon=0x%x\n",src_etalon);
-	
- //-----------temporal array---------------- 
-	load_etalon_array(res_size, src_etalon, data ); //reduced temporally!!
-	rumboot_printf("RESULT_BASE=0x%x\n",RESULT_BASE);
-	rumboot_printf("MDMA_BASE=0x%x\n",MDMA_BASE);
-	rumboot_printf("RESULT_ARRAY_from_source=0x%x\n",RESULT_BASE);
-	rumboot_printf("addr_ext_r=0x%x\n",addr_ext_r);
-	rumboot_printf("src_etalon=0x%x\n",src_etalon);
-	rumboot_printf("data_etalon=0x%x\n",(ioread32(src_etalon)));
-	rumboot_printf("sizeof(src_etalon)=0x%x\n",sizeof(src_etalon));
-	rumboot_printf("sizeof(addr_ext_r)=0x%x\n",sizeof(addr_ext_r));
-//------------------------------------------
+	ret = unload_demonstrator_results (1, dst_data, dst_data_array_size);
+  if(ret!=0){
+    rumboot_printf("ERROR unloading results\n");
+    return 1;
+  }
+  rumboot_printf(" demonstrator result array was loaded by DMA\n");
   
-	
-	ret = load_demonstrator_result(1,addr_ext_r,/*res_size*/256 );  //temporal size !!!
-	if (ret) {
-	  rumboot_printf(" load multiplication result TEST_ERROR\n");
-	  return 1;
+  //ret = read_demonstrator_matrix_etalon(etalon, dst_data_array_size);
+  ret = fill_etalon_array(dst_data_array_size/2, etalon);
+  if(ret!=0){
+    rumboot_printf("ERROR loading etalon\n");
+    return 1;
   }
   
-  
-   rumboot_printf(" demonstrator result array was loaded by DMA\n");
-	ret = demonstrator_compare_data(src_etalon,   addr_ext_r,(res_size/4 )); 
-	if (ret) {
+  rumboot_printf(" Comparing.. at 0x%x vs at 0x%x\n",(uint32_t)dst_data,(uint32_t)etalon);
+	if (!compare_demonstrator_result_64bit((int64_t*)dst_data, (int64_t*)etalon, dst_data_array_size/8)) {
 	  rumboot_printf(" compare multiplication result TEST_ERROR\n");
 
-	  return 0;
+	  return 1;
   }
  
   rumboot_printf("TEST simple-test PASSED\n");
