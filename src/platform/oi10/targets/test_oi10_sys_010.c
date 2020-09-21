@@ -640,6 +640,8 @@ int check_trace_bt()
 					   | (0 << DEBUG_DBCR0_RET_i)
 					   | (0 << DEBUG_DBCR0_FT_i));
     isync();
+    nop();
+    nop();
 
     trace_bt_func();
     trace1_bt_func1();
