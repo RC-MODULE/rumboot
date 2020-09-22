@@ -101,7 +101,7 @@ int main() {
     return 1;
   }
   
-  ret = demonstrator_run_matrix_flow(DEMONSTRATOR_APB_BASE, src_data_array_size, src_data_array_size);
+  ret = demonstrator_run_matrix_flow(DEMONSTRATOR_APB_BASE, src_data_array_size, src_wght_array_size);
   
   if (ret) {
 	  rumboot_printf(" multiplication TEST_ERROR\n");

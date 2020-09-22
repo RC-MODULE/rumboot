@@ -38,6 +38,7 @@ int main(int argc, char *argv[]) {
         dbg("config_file_name=%s\n", config_file_name);
       }
 
+      // вычисление аргумента флага "--input_dir"
       const char *input_dir_flag = "--input_dir=";
       const int input_dir_flag_length = strlen(input_dir_flag);
 
@@ -56,9 +57,9 @@ int main(int argc, char *argv[]) {
     dbg("res_parse_ini=%d\n", res_parse_ini);
   // Finished parse config ini-file
 
-  // Start process reference model's functions
     matrix_config_t *config = userdata;
 
+  // Prepare path to files for reference model 
     int input_dir_name_length = strlen(input_dir_name);
 
     config->user_X_data_file_name = (char *) realloc(
@@ -102,8 +103,11 @@ int main(int argc, char *argv[]) {
     );
     strcpy(config->Y_data_file_name + input_dir_name_length, config->Y_data_file_name);
     strncpy(config->Y_data_file_name, input_dir_name, input_dir_name_length);
+  // Finished prepare
 
+  // Start process reference model's functions
     make_all (config);
+  // Finished process reference model's functions
 
     free(config->user_X_data_file_name);
     free(config->user_W_data_base_file_name);
@@ -111,7 +115,6 @@ int main(int argc, char *argv[]) {
     free(config->X_data_file_name);
     free(config->W_data_file_name);
     free(config->Y_data_file_name);
-  // Finished process reference model's functions
 
   printf("_____________________Test finished \"test_rm\"_____________________\n");
   return 0;

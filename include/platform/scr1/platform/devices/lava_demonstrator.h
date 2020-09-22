@@ -14,6 +14,7 @@ bool compare_demonstrator_result_64bit(int64_t* res, int64_t* etalon, uint32_t s
 
 int load_demonstrator_coefficients (int heap_id, void *addr_src, uint32_t data_size);
 int unload_demonstrator_results (int heap_id, void *addr_dst, uint32_t data_size);
+int demonstrator_run_vec_flow(uintptr_t matrix_base, uint32_t data_size, uint32_t coef_size);
 
 #endif // LAVA_DEMONSTRATOR_H
 
