@@ -93,7 +93,9 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       FILES
         ${DEMONSTRATOR_TESTS_DIR}/demonstrator_simple_test.c
       IRUN_FLAGS
-        +input_file=${DEMONSTRATOR_TESTS_DIR}/input/input_rtl_data_X.bin
+        +input_data=${DEMONSTRATOR_TESTS_DIR}/input/HoWoRdSdC.bin
+        +input_weigth=${DEMONSTRATOR_TESTS_DIR}/input/KRdSdC.bin
+        +etalon=${DEMONSTRATOR_TESTS_DIR}/input/HoWoK.bin
       PREPCMD
         ${CMAKE_BINARY_DIR}/${rumboot_dirname}/utils/matrix_rm/matrix_rm 
           --config=${DEMONSTRATOR_TESTS_DIR}/input/config.ini

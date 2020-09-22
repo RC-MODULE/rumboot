@@ -86,8 +86,10 @@ int main() {
     return 1;
   }
   
-  fill_data_array(src_data_array_size/2,  src_data);
-  fill_wght_array(src_wght_array_size/2,  src_wght);
+  // fill_data_array(src_data_array_size/2,  src_data);
+  rumboot_platform_request_file("input_data", (uint16_t)src_data);
+  // fill_wght_array(src_wght_array_size/2,  src_wght);
+  rumboot_platform_request_file("input_weigth", (uint16_t)src_wght);
   
   
   ret=load_demonstrator_data (1, src_data, src_data_array_size);
@@ -115,12 +117,13 @@ int main() {
   }
   rumboot_printf(" demonstrator result array was loaded by DMA\n");
   
-  //ret = read_demonstrator_matrix_etalon(etalon, dst_data_array_size);
-  ret = fill_etalon_array(dst_data_array_size/2, etalon);
-  if(ret!=0){
-    rumboot_printf("ERROR loading etalon\n");
-    return 1;
-  }
+  // // ret = read_demonstrator_matrix_etalon(etalon, dst_data_array_size);
+  // ret = fill_etalon_array(dst_data_array_size/2, etalon);
+  // if(ret!=0){
+  //   rumboot_printf("ERROR loading etalon\n");
+  //   return 1;
+  // }
+  rumboot_platform_request_file("etalon", (uint64_t)etalon);
   
   rumboot_printf(" Comparing.. at 0x%x vs at 0x%x\n",(uint32_t)dst_data,(uint32_t)etalon);
 	if (!compare_demonstrator_result_64bit((int64_t*)dst_data, (int64_t*)etalon, dst_data_array_size/8)) {
