@@ -102,15 +102,15 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
           --input_dir=${DEMONSTRATOR_TESTS_DIR}/input/
     )
 
-    # add_rumboot_target(
-    #   CONFIGURATION ROM
-    #   FILES
-    #     ${DEMONSTRATOR_TESTS_DIR}/test_on_vec_op.c
-    #   IRUN_FLAGS
-    #     +input_coef=${DEMONSTRATOR_TESTS_DIR}/input/coef.bin
-    #     +input_data=${DEMONSTRATOR_TESTS_DIR}/input/data.bin
-    #     +etalon_data=${DEMONSTRATOR_TESTS_DIR}/input/etalon_data.bin
-    # )
+    add_rumboot_target(
+      CONFIGURATION ROM
+      FILES
+        ${DEMONSTRATOR_TESTS_DIR}/test_on_vec_op.c
+      IRUN_FLAGS
+         +input_coef=${DEMONSTRATOR_TESTS_DIR}/input/coef.bin
+         +input_data=${DEMONSTRATOR_TESTS_DIR}/input/data.bin
+         +etalon_data=${DEMONSTRATOR_TESTS_DIR}/input/etalon_data.bin
+    )
     # endif()
 endmacro()
 
