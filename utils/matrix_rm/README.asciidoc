@@ -42,6 +42,16 @@ link:algo/ini.h[], link:algo/ini.c[]
 
 * функция __<имя_секции>_apply__, вызывает функции, например, референсной модели, над данными структуры __<имя_секции>_data__.
 
+=== Генерация ini-файла
+
+Скрипт генерации ini-файла:
+
+* rumboot/src/platform/scr1/targets/simple-rom/demonstrator/input/get_configini.pl
+
+README по скрипту генерации ini-файла:
+
+* rumboot/utils/matrix_rm/reference_model/README.asciidoc, раздел "Генерация конфигурационного ini-файла".
+
 === Пример секции
 
 Описание полей секции [MATRIX] в link:theini_handler/ini_loader.h[]:
@@ -68,6 +78,10 @@ void matrix_apply(...);
 == Референсная модель
 
 Все, что относится к ней, в link:reference_model[]
+
+В том числе README на референсную модель:
+
+* link:README.asciidoc
 
 == Тест
 
