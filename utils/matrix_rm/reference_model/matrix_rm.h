@@ -127,6 +127,7 @@ typedef struct matrices_addr {
 
     int16_t*    X_addr      ;
     int16_t*    W_addr      ;
+    int64_t*    Y_addr      ;
 
 } matrices_addr_t;
 

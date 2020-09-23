@@ -92,7 +92,7 @@ int mtrx_prnt (mtrx_prnt_arg_t* mtrx_prnt_arg) {
 int check_matrices_addr (matrices_addr_t* ma) {
     int res = 0;
 
-    if (ma==NULL || ma->HWC_addr==NULL || ma->HpWpC_addr==NULL || ma->HoWoK_addr==NULL || ma->fRSC_addr==NULL || ma->fRdSdC_addr==NULL || ma->HoWoRdSdC_addr==NULL || ma->X_addr==NULL || ma->W_addr==NULL) res = is_nullptr(__func__);
+    if (ma==NULL || ma->HWC_addr==NULL || ma->HpWpC_addr==NULL || ma->HoWoK_addr==NULL || ma->fRSC_addr==NULL || ma->fRdSdC_addr==NULL || ma->HoWoRdSdC_addr==NULL || ma->X_addr==NULL || ma->W_addr==NULL || ma->Y_addr==NULL) res = is_nullptr(__func__);
 
     return res;
 }
@@ -954,8 +954,9 @@ int matrices_addr_calloc (hwc_rsc_conf_t* conf, matrices_addr_t* ma) {
         ma->HoWoRdSdC_addr  = calloc(HoWoRdSdC  ,   sizeof(int) );
         ma->HoWoK_addr      = calloc(HoWoK      ,   sizeof(long));
 
-        ma->X_addr          = calloc(HoWoRdSdC  ,   sizeof(int16_t));
         ma->W_addr          = calloc(K*RdSdC    ,   sizeof(int16_t));
+        ma->X_addr          = calloc(HoWoRdSdC  ,   sizeof(int16_t));
+        ma->Y_addr          = calloc(HoWoK      ,   sizeof(int64_t));
 
         res = check_matrices_addr(ma);
     }
@@ -1149,6 +1150,7 @@ int xwy_2binfile (matrix_config_t* mc, hwc_rsc_conf_t* conf, matrices_addr_t* ma
 
     int16_t*    X_addr          ;
     int16_t*    W_addr          ;
+    int64_t*    Y_addr          ;
 
     int KRdSdC, HoWoRdSdC, HoWoK;
 
@@ -1172,6 +1174,7 @@ int xwy_2binfile (matrix_config_t* mc, hwc_rsc_conf_t* conf, matrices_addr_t* ma
 
         X_addr          = ma->X_addr            ;
         W_addr          = ma->W_addr            ;
+        Y_addr          = ma->Y_addr            ;
 
         KRdSdC          = conf->rsc_conf->KRdSdC;
         HoWoRdSdC       = conf->HoWoRdSdC       ;
@@ -1185,7 +1188,7 @@ int xwy_2binfile (matrix_config_t* mc, hwc_rsc_conf_t* conf, matrices_addr_t* ma
 
     if (!res) {
         rshp_arg.src_addr   = (void*)HoWoRdSdC_addr;
-        rshp_arg.dst_addr   = X_addr;
+        rshp_arg.dst_addr   = (void*)X_addr;
         rshp_arg.nmb        = HoWoRdSdC;
         rshp_arg.fsrc       = "i32";
         rshp_arg.fdst       = "i16";
@@ -1193,18 +1196,26 @@ int xwy_2binfile (matrix_config_t* mc, hwc_rsc_conf_t* conf, matrices_addr_t* ma
         res = rshp_values(&rshp_arg);
 
         rshp_arg.src_addr   = (void*)fRdSdC_addr;
-        rshp_arg.dst_addr   = W_addr;
+        rshp_arg.dst_addr   = (void*)W_addr;
         rshp_arg.nmb        = KRdSdC;
         rshp_arg.fsrc       = "i32";
         rshp_arg.fdst       = "i16";
 
-        if (!res) rshp_values(&rshp_arg);
+        if (!res) res = rshp_values(&rshp_arg);
+
+        rshp_arg.src_addr   = (void*)HoWoK_addr;
+        rshp_arg.dst_addr   = (void*)Y_addr;
+        rshp_arg.nmb        = HoWoK;
+        rshp_arg.fsrc       = "l64";
+        rshp_arg.fdst       = "i64";
+
+        if (!res) res = rshp_values(&rshp_arg);       
     }
 
     if (!res) {
         mtrx_prnt_arg.name  = "bin";
         mtrx_prnt_arg.addr  = (const void*)X_addr;
-        mtrx_prnt_arg.size  = sizeof(int);
+        mtrx_prnt_arg.size  = sizeof(int16_t);
         mtrx_prnt_arg.nr    = 1;
         mtrx_prnt_arg.nc    = HoWoRdSdC;
         mtrx_prnt_arg.ne    = 1;
@@ -1219,8 +1230,8 @@ int xwy_2binfile (matrix_config_t* mc, hwc_rsc_conf_t* conf, matrices_addr_t* ma
 
         mtrx_prnt (&mtrx_prnt_arg);
 
-        mtrx_prnt_arg.addr  = (const void*)HoWoK_addr;
-        mtrx_prnt_arg.size  = sizeof(long);
+        mtrx_prnt_arg.addr  = (const void*)Y_addr;
+        mtrx_prnt_arg.size  = sizeof(int64_t);
         mtrx_prnt_arg.nc    = HoWoK;
         mtrx_prnt_arg.fp    = fpy;
 
@@ -1242,8 +1253,9 @@ void matrices_addr_free (matrices_addr_t* ma) {
     if (ma->fRdSdC_addr     ) free (ma->fRdSdC_addr     );
     if (ma->HoWoRdSdC_addr  ) free (ma->HoWoRdSdC_addr  );
     if (ma->HoWoK_addr      ) free (ma->HoWoK_addr      );
-    if (ma->X_addr          ) free (ma->X_addr          );
     if (ma->W_addr          ) free (ma->W_addr          );
+    if (ma->X_addr          ) free (ma->X_addr          );
+    if (ma->Y_addr          ) free (ma->Y_addr          );
 
 }
 
@@ -1315,8 +1327,9 @@ int make_all (matrix_config_t* mc) {
         ma->fRdSdC_addr     = NULL;
         ma->HoWoRdSdC_addr  = NULL;
         ma->HoWoK_addr      = NULL;
-        ma->X_addr          = NULL;
         ma->W_addr          = NULL;
+        ma->X_addr          = NULL;
+        ma->Y_addr          = NULL;
 
                     res = hwc_rsc_conf_init (mc, conf);
         if (!res)   res = config_complete (conf);
