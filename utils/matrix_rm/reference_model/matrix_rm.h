@@ -2,6 +2,7 @@
 #define MATRIX_RM_H
 
 #include <stdio.h>
+#include <stdint.h>
 
 typedef struct matrix_config {
     int H   ;   // data cube sizes
@@ -91,9 +92,9 @@ typedef struct hwc_rsc_conf {
 * A struct of parameters for mtrx_prnt
 */
 typedef struct mtrx_prnt_arg {
-    const char* name; //!< name of matrix is used for debug print
-    size_t      size; //!< sizeof(element of matrix) is used for print to bin file
-    char*       pf  ; //!< int 32 or long 64 is used for debug pirnt
+    const char* name; //!< name of matrix used for debug print
+    size_t      size; //!< sizeof(element of matrix) used for print to bin file
+    char*       pf  ; //!< int 32 or long 64 used for debug pirnt
     const void* addr; //!< address where it's located
     int         nr  ; //!< number of rows in matrix
     int         nc  ; //!< number of columns in matrix
@@ -101,6 +102,17 @@ typedef struct mtrx_prnt_arg {
 
     FILE*       fp  ; //!< bin file pointer where the matrix value should be written
 } mtrx_prnt_arg_t;
+
+/**
+* A struct of parameters for rshp_values
+*/
+typedef struct rshp_values_arg {
+    void*   src_addr; //!< where take values
+    void*   dst_addr; //!< where put reshaped values
+    int     nmb     ; //!< number of values to reshape
+    char*   fsrc    ; //!< origin value format
+    char*   fdst    ; //!< new value format
+} rshp_values_arg_t;
 
 /**
 * A struct of addresses of matrices used in mac.c
@@ -112,6 +124,10 @@ typedef struct matrices_addr {
     int*    fRdSdC_addr     ;
     int*    HoWoRdSdC_addr  ;
     long*   HoWoK_addr      ;
+
+    int16_t*    X_addr      ;
+    int16_t*    W_addr      ;
+
 } matrices_addr_t;
 
 /**
@@ -247,6 +263,11 @@ int make_convolution (hwc_rsc_conf_t* conf, matrices_addr_t* ma);
 void matrices_addr_free (matrices_addr_t* ma);
 
 int xwy_prnt (matrix_config_t* mc, hwc_rsc_conf_t* conf, matrices_addr_t* ma);
+
+/**
+* Is used to reshape values from one data type to another.
+*/
+int rshp_values (rshp_values_arg_t* rv);
 
 int xwy_2binfile (matrix_config_t* mc, hwc_rsc_conf_t* conf, matrices_addr_t* ma);
 
