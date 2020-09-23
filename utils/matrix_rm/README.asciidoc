@@ -46,7 +46,7 @@ link:algo/ini.h[], link:algo/ini.c[]
 
 Скрипт генерации ini-файла:
 
-* rumboot/src/platform/scr1/targets/simple-rom/demonstrator/input/get_configini.pl
+* rumboot/src/platform/scr1/targets/simple-rom/demonstrator/input/create_configini.pl
 
 README по скрипту генерации ini-файла:
 

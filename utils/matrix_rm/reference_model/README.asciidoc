@@ -102,7 +102,7 @@ toc::[]
 
 Для работы скрипта, в папке со скриптом должен лежать файл config_base.ini. Пример запуска скрипта:
 ----
-rumboot/src/platform/scr1/targets/simple-rom/demonstrator/input% perl get_configini.pl 7 32 64 16 
+rumboot/src/platform/scr1/targets/simple-rom/demonstrator/input% perl create_configini.pl 7 32 64 16 
 ----
 
 Аргументы, передаваемые скрипту из командной строки:
