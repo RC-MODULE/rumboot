@@ -22,6 +22,9 @@ my $LINES   = 16;
 my $COLUMNS = 64;
 my $BUF_NMB = 1 ;
 
+my $fn  = "hwc";
+my $fnb = "rsc_";
+
 # config.ini parameters end
 
 my $src_vectors = 32;   # $ARGV[1]
@@ -29,9 +32,6 @@ my $RSC         = 64;   # $ARGV[2]
 
 my $Wo = 0;
 my $Ho = 0;
-
-my $fnb = "rsc_";
-my $fn  = "hwc";
 
 my $fnci = "config.ini";
 my $fncbi= "config_base.ini";
@@ -77,7 +77,7 @@ sub rsc_init {
 
     for ($f=0; $f<$K; $f++) {
 
-        $fn = "$fnb$f";
+        my $fn = "$fnb$f";
         hwc_init($fn, $R, $S, $C);    
     }
 }
@@ -155,59 +155,30 @@ sub configini_fillin {
 
     while ($line = <$fpr>) {
 
-        if ($line =~ m/^H\s+=\s+\d/) {
-            $line =~ s/\d+/$H/;
+        if ($line =~ m/^H\s+=\s+\d/) {$line =~ s/\d+/$H/;}
+        elsif ($line =~ m/^W\s+=\s+\d/) {$line =~ s/\d+/$W/;}
+        elsif ($line =~ m/^C\s+=\s+\d/) {$line =~ s/\d+/$C/;}
+        elsif ($line =~ m/^Tp\s+=\s+\d/) {$line =~ s/\d+/$Tp/;}
+        elsif ($line =~ m/^Bp\s+=\s+\d/) {$line =~ s/\d+/$Bp/;}
+        elsif ($line =~ m/^Lp\s+=\s+\d/) {$line =~ s/\d+/$Lp/;}
+        elsif ($line =~ m/^Rp\s+=\s+\d/) {$line =~ s/\d+/$Rp/;}
+        elsif ($line =~ m/^R\s+=\s+\d/) {$line =~ s/\d+/$R/;} 
+        elsif ($line =~ m/^S\s+=\s+\d/) {$line =~ s/\d+/$S/;} 
+        elsif ($line =~ m/^Ds\s+=\s+\d/) {$line =~ s/\d+/${Ds}/;}
+        elsif ($line =~ m/^Dr\s+=\s+\d/) {$line =~ s/\d+/${Dr}/;}
+        elsif ($line =~ m/^Sw\s+=\s+\d/) {$line =~ s/\d+/${Sw}/;}
+        elsif ($line =~ m/^Sh\s+=\s+\d/) {$line =~ s/\d+/${Sh}/;}
+        elsif ($line =~ m/^K\s+=\s+\d/) {$line =~ s/\d+/$K/;} 
+        elsif ($line =~ m/^sn\s+=\s+\d/) {$line =~ s/\d+/${sn}/;}
+        elsif ($line =~ m/^LINES\s+=\s+\d/) {$line =~ s/\d+/${LINES}/;}
+        elsif ($line =~ m/^COLUMNS\s+=\s+\d/) {$line =~ s/\d+/${COLUMNS}/;}
+        elsif ($line =~ m/^BUF_NMB\s+=\s+\d/) {$line =~ s/\d+/${BUF_NMB}/;}
+
+        elsif ($line =~ m/^user_X_data_file_name\s+=/) {
+            $line =~ s/=.+/= ${fn}/;
         }
-        elsif ($line =~ m/^W\s+=\s+\d/) {
-            $line =~ s/\d+/$W/;
-        }
-        elsif ($line =~ m/^C\s+=\s+\d/) {
-            $line =~ s/\d+/$C/;
-        }
-        elsif ($line =~ m/^Tp\s+=\s+\d/) {
-            $line =~ s/\d+/$Tp/;
-        }
-        elsif ($line =~ m/^Bp\s+=\s+\d/) {
-            $line =~ s/\d+/$Bp/;
-        }
-        elsif ($line =~ m/^Lp\s+=\s+\d/) {
-            $line =~ s/\d+/$Lp/;
-        }
-        elsif ($line =~ m/^Rp\s+=\s+\d/) {
-            $line =~ s/\d+/$Rp/;
-        }
-        elsif ($line =~ m/^R\s+=\s+\d/) {
-            $line =~ s/\d+/$R/;
-        } 
-        elsif ($line =~ m/^S\s+=\s+\d/) {
-            $line =~ s/\d+/$S/;
-        } 
-        elsif ($line =~ m/^Ds\s+=\s+\d/) {
-            $line =~ s/\d+/${Ds}/;
-        }
-        elsif ($line =~ m/^Dr\s+=\s+\d/) {
-            $line =~ s/\d+/${Dr}/;
-        }
-        elsif ($line =~ m/^Sw\s+=\s+\d/) {
-            $line =~ s/\d+/${Sw}/;
-        }
-        elsif ($line =~ m/^Sh\s+=\s+\d/) {
-            $line =~ s/\d+/${Sh}/;
-        }
-        elsif ($line =~ m/^K\s+=\s+\d/) {
-            $line =~ s/\d+/$K/;
-        } 
-        elsif ($line =~ m/^sn\s+=\s+\d/) {
-            $line =~ s/\d+/${sn}/;
-        }
-        elsif ($line =~ m/^LINES\s+=\s+\d/) {
-            $line =~ s/\d+/${LINES}/;
-        }
-        elsif ($line =~ m/^COLUMNS\s+=\s+\d/) {
-            $line =~ s/\d+/${COLUMNS}/;
-        }
-        elsif ($line =~ m/^BUF_NMB\s+=\s+\d/) {
-            $line =~ s/\d+/${BUF_NMB}/;
+        elsif ($line =~ m/^user_W_data_base_file_name\s+=/) {
+            $line =~ s/=.+/= ${fnb}/;
         }
 
         print $fpw $line;
