@@ -27,7 +27,7 @@ int mtrx_prnt (mtrx_prnt_arg_t* mtrx_prnt_arg) {
     int i,j,k;
     char vt;
 
-    const char* f;
+    const char* f = "\n";
 
     const char* name= mtrx_prnt_arg->name   ;
     size_t      size= mtrx_prnt_arg->size   ;
@@ -39,16 +39,16 @@ int mtrx_prnt (mtrx_prnt_arg_t* mtrx_prnt_arg) {
 
     FILE*       fp  = mtrx_prnt_arg->fp     ;
 
-    if      (pf=="%016lx" || pf=="%lx" || pf=="%ld")    vt = 64;
-    else if (pf=="%08x" || pf=="%x" || pf=="%d")        vt = 32;
+    if      (!strcmp(pf, "%016lx") || !strcmp(pf, "%lx") || !strcmp(pf, "%ld")) vt = 64;
+    else if (!strcmp(pf, "%08x") || !strcmp(pf, "%x") || !strcmp(pf, "%d")) vt = 32;
     else {
         vt  = 32;
         pf  = "%x";
     }
 
-    if (fp == NULL || fp && name == "dbg") {
+    if (fp == NULL || fp && !strcmp(name, "dbg")) {
         
-        if(fp == NULL && strlen(name) > 0) printf ("\n%s\n", name);
+        if(fp == NULL && strlen(name) > 0) printf ("\n%s %d\n", name, vt);
     
         for (i=0; i<nr; i++) {
             for (j=0; j<nc; j++) {
@@ -71,6 +71,7 @@ int mtrx_prnt (mtrx_prnt_arg_t* mtrx_prnt_arg) {
                         res = prnt_strng (fp, f);
                     }
                 }
+
                 if (j+1 == nc) {
                     f = "\n";
                     res = prnt_strng(fp, f);
@@ -82,7 +83,8 @@ int mtrx_prnt (mtrx_prnt_arg_t* mtrx_prnt_arg) {
             }
         }
     }
-    else if (fp && name == "bin") res = !(nr*nc*ne == fwrite (addr, size, nr*nc*ne, fp));
+    else if (fp && !strcmp(name, "bin")) res = !(nr*nc*ne == fwrite (addr, size, nr*nc*ne, fp));
+    //else if (fp) res = !(nr*nc*ne == fwrite (addr, size, nr*nc*ne, fp));
     else res = 1;
 
     if (res) printf ("%s.", __func__);
@@ -954,9 +956,9 @@ int matrices_addr_calloc (hwc_rsc_conf_t* conf, matrices_addr_t* ma) {
         ma->HoWoRdSdC_addr  = calloc(HoWoRdSdC  ,   sizeof(int) );
         ma->HoWoK_addr      = calloc(HoWoK      ,   sizeof(long));
 
-        ma->W_addr          = calloc(K*RdSdC    ,   sizeof(int16_t));
-        ma->X_addr          = calloc(HoWoRdSdC  ,   sizeof(int16_t));
-        ma->Y_addr          = calloc(HoWoK      ,   sizeof(int64_t));
+        ma->W_addr          = calloc(K*RdSdC    ,   sizeof(uint16_t));
+        ma->X_addr          = calloc(HoWoRdSdC  ,   sizeof(uint16_t));
+        ma->Y_addr          = calloc(HoWoK      ,   sizeof(uint64_t));
 
         res = check_matrices_addr(ma);
     }
@@ -1069,14 +1071,14 @@ int xwy_prnt (matrix_config_t* mc, hwc_rsc_conf_t* conf, matrices_addr_t* ma) {
         mtrx_prnt_arg.ne    = 1;
         mtrx_prnt_arg.fp    = NULL;
 
-        //mtrx_prnt (&mtrx_prnt_arg);
+        mtrx_prnt (&mtrx_prnt_arg);
 
         mtrx_prnt_arg.name  = "HoWoRdSdC";
         mtrx_prnt_arg.addr  = (void*)HoWoRdSdC_addr;
         mtrx_prnt_arg.nr    = Ho*Wo;
         mtrx_prnt_arg.nc    = Rd*Sd*C;
 
-        //mtrx_prnt (&mtrx_prnt_arg);
+        mtrx_prnt (&mtrx_prnt_arg);
 
         mtrx_prnt_arg.name  = "HoWoK";
         mtrx_prnt_arg.pf    = "%ld";
@@ -1123,11 +1125,17 @@ int rshp_values (rshp_values_arg_t* rv) {
         fdst    = rv->fdst    ;
 
         for (i=0; i<nmb && !res; i++) {
-            if (fsrc == "i32" && fdst == "i16") {
+            if (!strcmp(fsrc, "i32") && !strcmp(fdst, "i16")) {
                 *((int16_t*)dst_addr + i) = *((int*)src_addr + i);
             }
-            else if (fsrc == "l64" && fdst == "i64") {
+            else if (!strcmp(fsrc, "i32") && !strcmp(fdst, "u16")) {
+                *((uint16_t*)dst_addr + i) = (uint16_t)(*((int*)src_addr + i) & 0xFFFF);
+            }
+            else if (!strcmp(fsrc, "l64") && !strcmp(fdst, "i64")) {
                 *((int64_t*)dst_addr + i) = *((long*)src_addr + i);
+            }
+            else if (!strcmp(fsrc, "l64") && !strcmp(fdst, "u64")) {
+                *((uint64_t*)dst_addr + i) = (uint64_t)(*((long*)src_addr + i) & 0x3FFFFFFFFF);
             }
             else res = 1;
         }
@@ -1148,9 +1156,9 @@ int xwy_2binfile (matrix_config_t* mc, hwc_rsc_conf_t* conf, matrices_addr_t* ma
     int*        fRdSdC_addr     ;
     long*       HoWoK_addr      ;
 
-    int16_t*    X_addr          ;
-    int16_t*    W_addr          ;
-    int64_t*    Y_addr          ;
+    uint16_t*    X_addr          ;
+    uint16_t*    W_addr          ;
+    uint64_t*    Y_addr          ;
 
     int KRdSdC, HoWoRdSdC, HoWoK;
 
@@ -1191,7 +1199,7 @@ int xwy_2binfile (matrix_config_t* mc, hwc_rsc_conf_t* conf, matrices_addr_t* ma
         rshp_arg.dst_addr   = (void*)X_addr;
         rshp_arg.nmb        = HoWoRdSdC;
         rshp_arg.fsrc       = "i32";
-        rshp_arg.fdst       = "i16";
+        rshp_arg.fdst       = "u16";
 
         res = rshp_values(&rshp_arg);
 
@@ -1199,7 +1207,7 @@ int xwy_2binfile (matrix_config_t* mc, hwc_rsc_conf_t* conf, matrices_addr_t* ma
         rshp_arg.dst_addr   = (void*)W_addr;
         rshp_arg.nmb        = KRdSdC;
         rshp_arg.fsrc       = "i32";
-        rshp_arg.fdst       = "i16";
+        rshp_arg.fdst       = "u16";
 
         if (!res) res = rshp_values(&rshp_arg);
 
@@ -1207,15 +1215,16 @@ int xwy_2binfile (matrix_config_t* mc, hwc_rsc_conf_t* conf, matrices_addr_t* ma
         rshp_arg.dst_addr   = (void*)Y_addr;
         rshp_arg.nmb        = HoWoK;
         rshp_arg.fsrc       = "l64";
-        rshp_arg.fdst       = "i64";
+        rshp_arg.fdst       = "u64";
 
         if (!res) res = rshp_values(&rshp_arg);       
     }
 
     if (!res) {
         mtrx_prnt_arg.name  = "bin";
+        mtrx_prnt_arg.pf    = "no";
         mtrx_prnt_arg.addr  = (const void*)X_addr;
-        mtrx_prnt_arg.size  = sizeof(int16_t);
+        mtrx_prnt_arg.size  = sizeof(uint16_t);
         mtrx_prnt_arg.nr    = 1;
         mtrx_prnt_arg.nc    = HoWoRdSdC;
         mtrx_prnt_arg.ne    = 1;
@@ -1231,7 +1240,7 @@ int xwy_2binfile (matrix_config_t* mc, hwc_rsc_conf_t* conf, matrices_addr_t* ma
         mtrx_prnt (&mtrx_prnt_arg);
 
         mtrx_prnt_arg.addr  = (const void*)Y_addr;
-        mtrx_prnt_arg.size  = sizeof(int64_t);
+        mtrx_prnt_arg.size  = sizeof(uint64_t);
         mtrx_prnt_arg.nc    = HoWoK;
         mtrx_prnt_arg.fp    = fpy;
 
@@ -1284,6 +1293,16 @@ int make_all_dbg (matrix_config_t* mc, matrices_addr_t* ma_dbg, hwc_rsc_conf_t* 
             conf= &conf_l;
             ma  = &ma_l;
         }
+
+        ma->HWC_addr        = NULL;
+        ma->fRSC_addr       = NULL;
+        ma->HpWpC_addr      = NULL;
+        ma->fRdSdC_addr     = NULL;
+        ma->HoWoRdSdC_addr  = NULL;
+        ma->HoWoK_addr      = NULL;
+        ma->W_addr          = NULL;
+        ma->X_addr          = NULL;
+        ma->Y_addr          = NULL;
 
                     res = hwc_rsc_conf_init (mc, conf);
         if (!res)   res = config_complete (conf);
