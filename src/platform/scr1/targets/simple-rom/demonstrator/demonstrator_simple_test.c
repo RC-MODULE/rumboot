@@ -57,9 +57,12 @@ int fill_etalon_array (  uint32_t len, int16_t* dump_ptr) {
 
 int main() {
   uint32_t src_vectors = 32;
-  uint32_t src_data_array_size = src_vectors * 64 * 2; // Each Vector Has 64 int16
-  uint32_t src_wght_array_size = 64 * 16 * 2;          // 64x16 int16
-  uint32_t dst_data_array_size = src_vectors * 16 * 8; // Each Vector Has 16 int64
+  // uint32_t src_data_array_size = src_vectors * 64 * 2; // Each Vector Has 64 int16
+  uint32_t src_data_array_size = src_vectors * 64 * sizeof(int16_t); // sizeof(int16_t)=2
+  // uint32_t src_wght_array_size = 64 * 16 * 2;          // 64x16 int16
+  uint32_t src_wght_array_size = 64 * 16 * sizeof(int16_t);
+  // uint32_t dst_data_array_size = src_vectors * 16 * 8; // Each Vector Has 16 int64
+  uint32_t dst_data_array_size = src_vectors * 16 * sizeof(int16_t);
   int ret;
   
   int16_t* src_data;
@@ -76,6 +79,7 @@ int main() {
   etalon   = rumboot_malloc_from_heap_aligned(1, dst_data_array_size, 16);
   
   rumboot_printf("src_data at 0x%x\n",(uint32_t)src_data);
+  // rumboot_printf("src_data at 0x%x\n", src_data); // it is ok too
   rumboot_printf("src_wght at 0x%x\n",(uint32_t)src_wght);
   rumboot_printf("dst_data at 0x%x\n",(uint32_t)dst_data);
   rumboot_printf("etalon   at 0x%x\n",(uint32_t)etalon);
@@ -87,9 +91,9 @@ int main() {
   }
   
   // fill_data_array(src_data_array_size/2,  src_data);
-  rumboot_platform_request_file("input_data", (uint16_t)src_data);
+  rumboot_platform_request_file("input_data", (uint32_t)src_data);
   // fill_wght_array(src_wght_array_size/2,  src_wght);
-  rumboot_platform_request_file("input_weigth", (uint16_t)src_wght);
+  rumboot_platform_request_file("input_weigth", (uint32_t)src_wght);
   
   
   ret=load_demonstrator_data (1, src_data, src_data_array_size);
@@ -123,10 +127,20 @@ int main() {
   //   rumboot_printf("ERROR loading etalon\n");
   //   return 1;
   // }
-  rumboot_platform_request_file("etalon", (uint64_t)etalon);
+  rumboot_platform_request_file("etalon", (uint32_t)etalon);
   
+  int i;
+  for(i = 0; i <= dst_data_array_size/sizeof(int64_t); ++i) {
+    dbg("dst_data=%x, data=%x ", (uint32_t)dst_data, dst_data[i]);
+    dbg("etalon=%x, etalon_data=%x\n", (uint32_t)etalon, etalon[i]);
+  }
+
+
+  dbg("COMPARE=%d\n", memcmp(dst_data, etalon, dst_data_array_size));
+
   rumboot_printf(" Comparing.. at 0x%x vs at 0x%x\n",(uint32_t)dst_data,(uint32_t)etalon);
-	if (!compare_demonstrator_result_64bit((int64_t*)dst_data, (int64_t*)etalon, dst_data_array_size/8)) {
+  if (!compare_demonstrator_result_64bit(dst_data, etalon, dst_data_array_size/sizeof(int64_t))) {
+	// if (!compare_demonstrator_result_64bit((int64_t*)dst_data, (int64_t*)etalon, dst_data_array_size/8)) {
 	  rumboot_printf(" compare multiplication result TEST_ERROR\n");
 
 	  return 1;
