@@ -387,7 +387,7 @@ function(add_rumboot_target)
       ${_cmds}
       VERBATIM
     )
-    add_custom_target(${product}.all ALL DEPENDS ${product}.bin)
+    add_custom_target(${product}.all ALL DEPENDS ${product}.bin utils)
     return()
   endif()
 
