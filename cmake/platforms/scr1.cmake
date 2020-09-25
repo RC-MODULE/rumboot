@@ -94,7 +94,6 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
     add_rumboot_target(
       CONFIGURATION ROM
-      DEPENDS utils
       FILES
         ${DEMONSTRATOR_TESTS_DIR}/demonstrator_simple_test.c
       IRUN_FLAGS
