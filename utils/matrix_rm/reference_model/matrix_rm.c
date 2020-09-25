@@ -1282,17 +1282,8 @@ int make_all_dbg (matrix_config_t* mc, matrices_addr_t* ma_dbg, hwc_rsc_conf_t* 
     if (mc==NULL) res = is_nullptr(__func__);
 
     if (!res) {
-        if (ma_dbg && conf_dbg) {   // dbg mode
-            conf= conf_dbg  ;
-            ma  = ma_dbg    ;
-        }
-        else {
-            conf_l.hwc_conf = &hwc_conf_l;
-            conf_l.rsc_conf = &rsc_conf_l;
-
-            conf= &conf_l;
-            ma  = &ma_l;
-        }
+        conf= conf_dbg  ;
+        ma  = ma_dbg    ;
 
         ma->HWC_addr        = NULL;
         ma->fRSC_addr       = NULL;
