@@ -74,8 +74,12 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     )
 
     # demonstrator tests
+
     # if(DUT STREQUAL "DEMONSTRATOR_SIMPLE")
     set(DEMONSTRATOR_TESTS_DIR ${CMAKE_SOURCE_DIR}/src/platform/scr1/targets/simple-rom/demonstrator)
+      # Script That  Generate config.ini 
+    set(CREATE_INI ${DEMONSTRATOR_TESTS_DIR}/input/create_configini.pl)
+
     add_rumboot_target(
       CONFIGURATION ROM
       FILES
@@ -90,16 +94,19 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
     add_rumboot_target(
       CONFIGURATION ROM
+      DEPENDS utils
       FILES
         ${DEMONSTRATOR_TESTS_DIR}/demonstrator_simple_test.c
       IRUN_FLAGS
-        +input_data=${DEMONSTRATOR_TESTS_DIR}/input/HoWoRdSdC.bin
-        +input_weigth=${DEMONSTRATOR_TESTS_DIR}/input/KRdSdC.bin
-        +etalon=${DEMONSTRATOR_TESTS_DIR}/input/HoWoK.bin
+        +input_data=HoWoRdSdC.bin
+        +input_weigth=KRdSdC.bin
+        +etalon=HoWoK.bin
       PREPCMD
+        cp ${DEMONSTRATOR_TESTS_DIR}/input/config_base.ini . &&
+        perl ${CREATE_INI} 15 32 64 16 all_ones &&
         ${CMAKE_BINARY_DIR}/${rumboot_dirname}/utils/matrix_rm/matrix_rm 
-          --config=${DEMONSTRATOR_TESTS_DIR}/input/config.ini
-          --input_dir=${DEMONSTRATOR_TESTS_DIR}/input/
+          --config=config.ini
+          --input_dir=./
     )
 
     add_rumboot_target(
