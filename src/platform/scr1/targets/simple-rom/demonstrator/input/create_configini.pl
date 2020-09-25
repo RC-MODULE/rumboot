@@ -1,3 +1,6 @@
+my $DATA_RAND  = "drandom";
+my $DATA_ONES  = "all_ones";
+my $CONF_RAND  = "crandom";
 
 # config.ini parameters
 my $H   = 0 ;
@@ -30,6 +33,8 @@ my $fnb = "rsc_";
 my $src_vectors = 32;   # $ARGV[1]
 my $RSC         = 64;   # $ARGV[2]
 
+my $dt = $DATA_RAND;    # $ARGV[4]
+
 my $Wo = 0;
 my $Ho = 0;
 
@@ -39,22 +44,28 @@ my $fncbi= "config_base.ini";
 # create $fn file and fill it with input cube data values
 sub hwc_init {
 
-    my $fn = $_[0];
-    my $H  = $_[1];
-    my $W  = $_[2];
-    my $C  = $_[3];
+    my $fn  = $_[0];
+    my $H   = $_[1];
+    my $W   = $_[2];
+    my $C   = $_[3];
 
+    my $dt  = $_[4];
     #print "hwc_init $fn $H $W $C\n";
 
     open ($fp, ">$fn");
- 
+
     for ($i=0; $i<$H; $i++) {
         for ($j=0; $j<$W; $j++) {
             for ($k=0; $k<$C; $k++) {
 
-                $randl = (0xFFFFFFFF >> 32-$sn-1)+1;
+                if ($dt eq $DATA_RAND) {
+                    $randl = (0xFFFFFFFF >> 32-$sn-1)+1;
+                    $val = int(rand($randl));
+                }
+                elsif ($dt eq $DATA_ONES) {
+                    $val = 0x1;
+                }
 
-                $val = int(rand($randl));
                 $val = sprintf("0x%X", $val);
 
                 print $fp "$val";
@@ -70,30 +81,42 @@ sub hwc_init {
 
 # create $fnb<nmb> files and fill them with kernel<nmb> values
 sub rsc_init {
-    my $fnb= $_[0];
-    my $R  = $_[1];
-    my $S  = $_[2];
-    my $C  = $_[3];
+    my $fnb = $_[0];
+    my $R   = $_[1];
+    my $S   = $_[2];
+    my $C   = $_[3];
+    my $dt  = $_[4];
 
     for ($f=0; $f<$K; $f++) {
 
         my $fn = "$fnb$f";
-        hwc_init($fn, $R, $S, $C);    
+        hwc_init($fn, $R, $S, $C, $dt);    
     }
 }
 
 sub parse_argv {
-    if ($ARGV[0]) {$sn = $ARGV[0];}
-    else {die "can't set sn $!\n";}
+    if ($ARGV[0] =~ m/help/) {
+        print "ARGV[0] = sn or crandom\n";
+        print "ARGV[1] = src_vectors\n";
+        print "ARGV[2] = RSC\n";
+        print "ARGV[3] = K\n";
+        print "ARGV[4] = drandom or all_ones\n";
+    }
+    else {
+        if ($ARGV[0] =~ m/\d+/) {$sn = $ARGV[0];}
+        else {die "can't set sn $!\n";}
 
-    if ($ARGV[1]) {$src_vectors = $ARGV[1];}
-    else {die "can't set src_vectors $!\n";}
+        if ($ARGV[1] =~ m/\d+/) {$src_vectors = $ARGV[1];}
+        else {die "can't set src_vectors $!\n";}
 
-    if ($ARGV[2]) {$RSC = $ARGV[2];}
-    else {die "can't set RSC $!\n";}
+        if ($ARGV[2] =~ m/\d+/) {$RSC = $ARGV[2];}
+        else {die "can't set RSC $!\n";}
 
-    if ($ARGV[3]) {$K = $ARGV[3];}
-    else {die "can't set K $!\n";}
+        if ($ARGV[3] =~ m/\d+/) {$K = $ARGV[3];}
+        else {die "can't set K $!\n";}
+
+        if ($ARGV[4] =~ m/\w+/) {$dt = $ARGV[4];}
+    }
 
     #print "sn $sn\n";
     #print "src_vectors $src_vectors\n";
@@ -189,7 +212,7 @@ sub configini_fillin {
 }
 
 sub set_configs {
-    if ($ARGV[0] == "random") {random_configs;}
+    if ($ARGV[0] eq $CONF_RAND) {random_configs;}
     else {
         parse_argv;
         iter_hwcrs($RSC, $src_vectors);
@@ -198,8 +221,8 @@ sub set_configs {
 
 set_configs;
 
-hwc_init($fn, $H, $W, $C);
-rsc_init($fnb, $R, $S, $C);
+hwc_init($fn, $H, $W, $C, $dt);
+rsc_init($fnb, $R, $S, $C, $dt);
 
 configini_fillin($fnci, $fncbi);
 

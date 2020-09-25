@@ -84,7 +84,6 @@ int mtrx_prnt (mtrx_prnt_arg_t* mtrx_prnt_arg) {
         }
     }
     else if (fp && !strcmp(name, "bin")) res = !(nr*nc*ne == fwrite (addr, size, nr*nc*ne, fp));
-    //else if (fp) res = !(nr*nc*ne == fwrite (addr, size, nr*nc*ne, fp));
     else res = 1;
 
     if (res) printf ("%s.", __func__);
@@ -1064,24 +1063,24 @@ int xwy_prnt (matrix_config_t* mc, hwc_rsc_conf_t* conf, matrices_addr_t* ma) {
         Wo              = conf->Wo          ;
 
         mtrx_prnt_arg.name  = "KRdSdC";
-        mtrx_prnt_arg.pf    = "%d";
+        mtrx_prnt_arg.pf    = "%x";
         mtrx_prnt_arg.addr  = (void*)fRdSdC_addr;
         mtrx_prnt_arg.nr    = K;
         mtrx_prnt_arg.nc    = Rd*Sd*C;
         mtrx_prnt_arg.ne    = 1;
         mtrx_prnt_arg.fp    = NULL;
 
-        mtrx_prnt (&mtrx_prnt_arg);
+        //mtrx_prnt (&mtrx_prnt_arg);
 
         mtrx_prnt_arg.name  = "HoWoRdSdC";
         mtrx_prnt_arg.addr  = (void*)HoWoRdSdC_addr;
         mtrx_prnt_arg.nr    = Ho*Wo;
         mtrx_prnt_arg.nc    = Rd*Sd*C;
 
-        mtrx_prnt (&mtrx_prnt_arg);
+        //mtrx_prnt (&mtrx_prnt_arg);
 
         mtrx_prnt_arg.name  = "HoWoK";
-        mtrx_prnt_arg.pf    = "%ld";
+        mtrx_prnt_arg.pf    = "%lx";
         mtrx_prnt_arg.addr  = (void*)HoWoK_addr;
         mtrx_prnt_arg.nc    = K;
 
@@ -1090,7 +1089,7 @@ int xwy_prnt (matrix_config_t* mc, hwc_rsc_conf_t* conf, matrices_addr_t* ma) {
         fp = fopen(mc->user_Y_data_file_name, "w");
 
         mtrx_prnt_arg.name  = "dbg";
-        mtrx_prnt_arg.pf    = "%ld";
+        mtrx_prnt_arg.pf    = "%lx";
         mtrx_prnt_arg.addr  = (const void*)HoWoK_addr;
         mtrx_prnt_arg.size  = sizeof(long);
         mtrx_prnt_arg.fp    = fp;
@@ -1136,8 +1135,9 @@ int rshp_values (rshp_values_arg_t* rv) {
             }
             else if (!strcmp(fsrc, "l64") && !strcmp(fdst, "u64")) {
                 *((uint64_t*)dst_addr + i) = (uint64_t)(*((long*)src_addr + i) & 0x3FFFFFFFFF);
+//                *((uint64_t*)dst_addr + i) = (uint64_t)(*((long*)src_addr + i));
             }
-            else res = 1;
+            else res = 0;
         }
     }
 
