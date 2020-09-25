@@ -235,7 +235,7 @@ macro(generate_stuff_for_target product)
 
       add_custom_target(
         ${product}.all ALL
-        DEPENDS ${_outfiles}
+        DEPENDS ${_outfiles} utils
       )    
   else()
     add_custom_command(
@@ -387,7 +387,7 @@ function(add_rumboot_target)
       ${_cmds}
       VERBATIM
     )
-    add_custom_target(${product}.all ALL DEPENDS ${product}.bin utils)
+    add_custom_target(${product}.all ALL DEPENDS ${product}.bin)
     return()
   endif()
 
