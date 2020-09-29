@@ -110,7 +110,7 @@ bool compare_demonstrator_result_64bit(int64_t* res, int64_t* etalon, uint32_t s
 }
 
 
-int load_demonstrator_coefficients (int heap_id, void *addr_src, uint32_t data_size)
+int demonstrator_load_coefficients (int heap_id, void *addr_src, uint32_t data_size)
 {
   return simple_mdma_exec(heap_id, DEMONSTRATOR_MDMA_BASE, addr_src, COEFFICIENT_BASE, data_size);
 }
@@ -122,7 +122,14 @@ int unload_demonstrator_results (int heap_id, void *addr_dst, uint32_t data_size
 }
 
 
-int demonstrator_run_vec_flow(uintptr_t matrix_base, uint32_t data_size, uint32_t coef_size)
+int demonstrator_run_vec_flow (
+  uintptr_t matrix_base, 
+  uint32_t data_size, 
+  Vec_op op,
+  Relu_op relu_on,
+  uint32_t data_offset,
+  uint32_t result_offset
+) 
 {
   int cnt; 
   int DEMONSTRATOR_ATTEMPT = 0x01000;
@@ -137,25 +144,35 @@ int demonstrator_run_vec_flow(uintptr_t matrix_base, uint32_t data_size, uint32_
   }
   
   iowrite32(0x100, matrix_base + NA_STGS); // vec op
-  iowrite32(0x1, matrix_base + NA_ACTS); // op "+"
-  // iowrite32(0x2, matrix_base + NA_ACTS); // op "min"
-  iowrite32(0x0, matrix_base + NA_DCNT);
+  
+  uint32_t na_acts = (relu_on << 4) |
+                    ((op == PLUS) 
+                    ? 0x1 
+                    : ((op == MIN)
+                      ? 0x2
+                      : 0x3));
+
+  iowrite32(na_acts, matrix_base + NA_ACTS);
+
+  iowrite32(data_offset, matrix_base + NA_DCNT);
   iowrite32(data_size, matrix_base + NA_FADR);
-  iowrite32(0x0, matrix_base + NA_RCNT);
+  iowrite32(result_offset, matrix_base + NA_RCNT);
   iowrite32(0x1, matrix_base + NA_ENAB);
 
   cnt = DEMONSTRATOR_ATTEMPT;
   do {
     tmp = 0x00000001 & (ioread32(matrix_base + NA_COMP)); //wait the end of multiplication  
     --cnt;
-  } while  ( tmp!=0x00000001 && cnt!=0 ) ;
+  } while ( tmp != 0x00000001 && cnt != 0 ) ;
   if (cnt == 0)  {
     rumboot_printf("No end multiplication!\n");
     return 1;
   }
 
-  rumboot_printf("CYCLE_COUNT=%d\n",ioread32(matrix_base + NA_CNTT)); // the number of cycles that matrix runs
-  rumboot_printf("CYCLE_end=%d\n",ioread32(matrix_base + NA_COMP));   // multiplication is ended
+  rumboot_printf("CYCLE_COUNT=%d\n", ioread32(matrix_base + NA_CNTT)); // the number of cycles that matrix runs
+  rumboot_printf("CYCLE_end=%d\n", ioread32(matrix_base + NA_COMP));   // multiplication is ended
+
+  iowrite32(0x1, matrix_base + NA_CRST);
 
   return 0;
 }

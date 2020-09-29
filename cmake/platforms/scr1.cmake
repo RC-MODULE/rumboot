@@ -102,8 +102,8 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         +etalon=HoWoK.bin
       PREPCMD
         cp ${DEMONSTRATOR_TESTS_DIR}/input/config_base.ini . &&
-        perl ${CREATE_INI} 15 32 64 16 all_ones &&
-        #perl ${CREATE_INI} 15 32 64 16 &&
+        # perl ${CREATE_INI} 15 32 64 16 all_ones &&
+        perl ${CREATE_INI} 15 32 64 16 &&
         ${CMAKE_BINARY_DIR}/${rumboot_dirname}/utils/matrix_rm/matrix_rm 
           --config=config.ini
           --input_dir=./
@@ -114,9 +114,9 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       FILES
         ${DEMONSTRATOR_TESTS_DIR}/test_on_vec_op.c
       IRUN_FLAGS
-         +input_coef=${DEMONSTRATOR_TESTS_DIR}/input/coef.bin
-         +input_data=${DEMONSTRATOR_TESTS_DIR}/input/data.bin
-         +etalon_data=${DEMONSTRATOR_TESTS_DIR}/input/etalon_data.bin
+         # +input_coef=${DEMONSTRATOR_TESTS_DIR}/input/coef.bin
+         # +input_data=${DEMONSTRATOR_TESTS_DIR}/input/data.bin
+         # +etalon_data=${DEMONSTRATOR_TESTS_DIR}/input/etalon_data.bin
     )
     # endif()
 endmacro()

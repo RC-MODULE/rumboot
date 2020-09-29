@@ -7,5 +7,7 @@ endif()
 add_executable(romgen romgen.c ${missing_sources})
 
 if (NOT WIN32)
+    add_library(ini ini/ini.c)
     add_subdirectory(matrix_rm)
+    add_subdirectory(bin_generator)
 endif()

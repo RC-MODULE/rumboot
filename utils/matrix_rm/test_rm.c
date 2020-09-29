@@ -1,4 +1,4 @@
-#include "algo/ini.h"
+#include "../ini/ini.h"
 #include "theini_handler/ini_loader.h"
 #include "reference_model/matrix_rm.h"
 
