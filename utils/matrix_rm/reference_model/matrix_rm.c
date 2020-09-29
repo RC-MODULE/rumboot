@@ -291,7 +291,7 @@ int HWC_init (char* file_name, int* dst_addr, hwc_conf_t* conf) {
         res = 1;
     }
 
-    if (dst_addr==NULL || conf==NULL) res = is_nullptr(__func__);
+    if (dst_addr==NULL || conf==NULL || res) res = is_nullptr(__func__);
 
     if (!res) {
         H   = conf->H   ;
@@ -1300,7 +1300,7 @@ int make_all_dbg (matrix_config_t* mc, matrices_addr_t* ma_dbg, hwc_rsc_conf_t* 
         if (!res)   res = matrices_addr_calloc (conf, ma);
         if (!res)   res = hwc_rsc_values_init (mc, conf, ma);
         if (!res)   res = make_convolution (conf, ma);
-        
+
         if (!res)   res = xwy_prnt(mc, conf, ma);
         if (!res)   res = xwy_2binfile(mc, conf, ma);
         

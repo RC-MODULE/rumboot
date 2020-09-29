@@ -102,7 +102,8 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         +etalon=HoWoK.bin
       PREPCMD
         cp ${DEMONSTRATOR_TESTS_DIR}/input/config_base.ini . &&
-        perl ${CREATE_INI} 15 32 64 16 all_ones &&
+        #perl ${CREATE_INI} 15 32 64 16 all_ones &&
+        perl ${CREATE_INI} 15 32 64 16 &&
         ${CMAKE_BINARY_DIR}/${rumboot_dirname}/utils/matrix_rm/matrix_rm 
           --config=config.ini
           --input_dir=./
