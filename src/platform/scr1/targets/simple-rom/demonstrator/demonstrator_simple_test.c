@@ -9,7 +9,7 @@
 #include <regs/regs_mdma.h> // regs names demonstrator
 
 #include <devices/mdma_simple.h> // lib for work with mdma
-#include <platform/devices/lava_demonstrator.h> // lib for work with demonstrator
+#include <devices/lava_demonstrator.h> // lib for work with demonstrator
 #include <assert.h>
 
 #define DEBUG
