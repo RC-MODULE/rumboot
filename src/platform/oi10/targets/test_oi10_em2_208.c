@@ -105,8 +105,8 @@ void check_emi_ports()
     iowrite32(test_data, SRAM0_BASE);
     TEST_ASSERT(test_data==ioread32(SRAM0_BASE), "Data error");
 
-    emi_hiz_mode_on(DCR_EM2_EMI_BASE);
     test_event(TEST_EVENT_CHECK_EMI_HIZ);
+    emi_hiz_mode_on(DCR_EM2_EMI_BASE);
 
     test_event(TEST_EVENT_CHECK_EMI_ACTIVE);
     emi_hiz_mode_off(DCR_EM2_EMI_BASE);
