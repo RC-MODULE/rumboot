@@ -102,7 +102,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         +etalon=HoWoK.bin
       PREPCMD
         cp ${DEMONSTRATOR_TESTS_DIR}/input/config_base.ini . &&
-        #perl ${CREATE_INI} 15 32 64 16 all_ones &&
+        # perl ${CREATE_INI} 15 32 64 16 all_ones &&
         perl ${CREATE_INI} 15 32 64 16 &&
         ${CMAKE_BINARY_DIR}/${rumboot_dirname}/utils/matrix_rm/matrix_rm 
           --config=config.ini
@@ -130,6 +130,7 @@ file(GLOB PLATFORM_SOURCES
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/*.S
     ${CMAKE_SOURCE_DIR}/src/lib/eventsystem-memory.c
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/lib/drivers/quad_spi.c
+    ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/lib/drivers/lava_demonstrator.c
 )
 
 macro(RUMBOOT_PLATFORM_SET_COMPILER_FLAGS)
