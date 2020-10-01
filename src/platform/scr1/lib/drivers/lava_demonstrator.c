@@ -176,3 +176,41 @@ int demonstrator_run_vec_flow (
 
   return 0;
 }
+
+int demonstrator_run_pooling_flow(uintptr_t matrix_base, uint32_t data_size, uint32_t pooling_mode)
+{
+  int cnt; 
+  int DEMONSTRATOR_ATTEMPT = 0x01000;
+  uint32_t tmp;
+  
+  rumboot_printf("set demonstrator registers\n");
+  
+  tmp = (ioread32(matrix_base + NA_MXID));
+  if (tmp != 0x4D545800) {
+    rumboot_printf("Wrong MXID\n");
+    return 1;   
+  }
+  iowrite32(0x1000, matrix_base + NA_STGS); 		// pooling op
+  if (pooling_mode == 0x1) {
+  iowrite32(0x100, matrix_base + NA_ACTS); 			// pooling op max value
+  }
+  else {
+  iowrite32(0x0, matrix_base + NA_ACTS); 			// pooling op middle value	
+  }
+  iowrite32(0x0, matrix_base + NA_DCNT);  			// set initial memory address for data
+  iowrite32(data_size, matrix_base + NA_FADR);		// data size
+  iowrite32(0x0, matrix_base + NA_RCNT);			// set initial memory address for the result
+  iowrite32(0x1, matrix_base + NA_ENAB);			// run pooling on NA_PPE	
+  
+  do {
+    tmp = 0x00000001 & (ioread32(matrix_base + NA_COMP)); //wait the end of pooling  
+    --cnt;
+  } while  ( tmp!=0x00000001 && cnt!=0 ) ;
+  if (cnt == 0)  {
+    rumboot_printf("No end pooling!\n");
+    return 1;
+  }
+rumboot_printf("CYCLE_COUNT=%d\n",ioread32(matrix_base + NA_CNTT)); // the number of cycles that pooling runs
+rumboot_printf("CYCLE_end=%d\n",ioread32(matrix_base + NA_COMP));   // pooling is ended
+ return 0;
+}
