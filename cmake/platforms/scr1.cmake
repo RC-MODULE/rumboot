@@ -118,6 +118,15 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
          # +input_data=${DEMONSTRATOR_TESTS_DIR}/input/data.bin
          # +etalon_data=${DEMONSTRATOR_TESTS_DIR}/input/etalon_data.bin
     )
+		add_rumboot_target(
+      CONFIGURATION ROM
+      FILES
+        ${DEMONSTRATOR_TESTS_DIR}/demonstrator_pooling_test.c
+      IRUN_FLAGS
+        +input_data=${DEMONSTRATOR_TESTS_DIR}/input/data.bin
+        +etalon_data=${DEMONSTRATOR_TESTS_DIR}/input/etalon_data.bin
+    )
+	
     # endif()
 endmacro()
 
