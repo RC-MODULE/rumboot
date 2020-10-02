@@ -218,17 +218,17 @@ void check_emi(const uint32_t base_address)
     rumboot_printf("Check default values\n");
     static const struct regpoker_checker emi_regs_default[] = {
         // name             check type     offset        exp val            mask
-        {"EMI_SS0",     REGPOKER_READ_DCR, EMI_SS0,       0x00,          0xffffffff},
+        {"EMI_SS0",     REGPOKER_READ_DCR, EMI_SS0,   0x800000,          0xffffffff},
         {"EMI_SD0",     REGPOKER_READ_DCR, EMI_SD0,       0x00,          0xffffffff},
-        {"EMI_SS1",     REGPOKER_READ_DCR, EMI_SS1,       0x00,          0xffffffff},
+        {"EMI_SS1",     REGPOKER_READ_DCR, EMI_SS1,   0x800000,          0xffffffff},
         {"EMI_SD1",     REGPOKER_READ_DCR, EMI_SD1,       0x00,          0xffffffff},
-        {"EMI_SS2",     REGPOKER_READ_DCR, EMI_SS2,       0x00,          0xffffffff},
+        {"EMI_SS2",     REGPOKER_READ_DCR, EMI_SS2,   0x800000,          0xffffffff},
         {"EMI_SD2",     REGPOKER_READ_DCR, EMI_SD2,       0x00,          0xffffffff},
-        {"EMI_SS3",     REGPOKER_READ_DCR, EMI_SS3,       0x00,          0xffffffff},
+        {"EMI_SS3",     REGPOKER_READ_DCR, EMI_SS3,   0x800000,          0xffffffff},
         {"EMI_SD3",     REGPOKER_READ_DCR, EMI_SD3,       0x00,          0xffffffff},
-        {"EMI_SS4",     REGPOKER_READ_DCR, EMI_SS4,       0x00,          0xffffffff},
+        {"EMI_SS4",     REGPOKER_READ_DCR, EMI_SS4,   0x800000,          0xffffffff},
         {"EMI_SD4",     REGPOKER_READ_DCR, EMI_SD4,       0x00,          0xffffffff},
-        {"EMI_SS5",     REGPOKER_READ_DCR, EMI_SS5,       0x00,          0xffffffff},
+        {"EMI_SS5",     REGPOKER_READ_DCR, EMI_SS5,   0x800000,          0xffffffff},
         {"EMI_SD5",     REGPOKER_READ_DCR, EMI_SD5,       0x00,          0xffffffff},
         {"EMI_RFC",     REGPOKER_READ_DCR, EMI_RFC,       0x00,          0xffffffff},
         {"EMI_HSTSR",   REGPOKER_READ_DCR, EMI_HSTSR,     0x00,          0xffffffff},
