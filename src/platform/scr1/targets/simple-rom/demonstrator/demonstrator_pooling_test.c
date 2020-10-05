@@ -41,11 +41,11 @@ int load_etalon_array (  uint32_t len, int32_t* dump_ptr[]) {
 	uint32_t i;
 	uint32_t etalon;
 	uint32_t data[len-1];
-    uint32_t pooling_mode;
+    Pool_op pooling_mode;
 	
-	pooling_mode = 0x00000100 & ioread32(DEMONSTRATOR_APB_BASE + NA_ACTS);
+	pooling_mode = (0x00000100 & ioread32(DEMONSTRATOR_APB_BASE + NA_ACTS)) == 0 ? POOL_AVE : POOL_MAX;
 
-  if (pooling_mode ==0){
+  if (pooling_mode == POOL_AVE){
 	for (i = 0; i< len ; i++){
 		
 		data[i] = 2*i + (2*i + 1) + (2*i+2) + (2*i +3);//i + ((i +1) << 16);	//rand;			
@@ -59,7 +59,7 @@ int load_etalon_array (  uint32_t len, int32_t* dump_ptr[]) {
 		rumboot_printf(" etalon=0x%x\n", etalon);
 	}
   }	
- else if (pooling_mode !=0) {
+ else if (pooling_mode == POOL_MAX) {
 	for (i = 0; i< len ; i++){
 
 		if  ((i % 2) ==0)
@@ -79,8 +79,6 @@ int load_etalon_array (  uint32_t len, int32_t* dump_ptr[]) {
 
 int pooling_compare_data(int32_t* res, int32_t* src_etalon, uint32_t size)
 {
-  uint32_t pooling_mode;
-  pooling_mode = 0x00000100 & ioread32(DEMONSTRATOR_APB_BASE + NA_ACTS);
   
   for (int i=0; i<size; i++)
   {
@@ -104,7 +102,7 @@ int main() {
   uint32_t src_data_array_size = src_vectors * 64 * 2; // Each Vector Has 64 int16
   //uint32_t dst_data_array_size = src_vectors * 64 * 2; // Each Vector Has 64 int16
   int ret;
-  uint32_t pooling_mode =0x0;
+  Pool_op pooling_mode =POOL_AVE;
   int32_t* src_data;
   int32_t* src_etalon;
   int32_t* dst_data;
