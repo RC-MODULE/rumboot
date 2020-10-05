@@ -179,15 +179,15 @@ int demonstrator_run_vec_flow (
 
 int demonstrator_run_pooling_flow(uintptr_t matrix_base, uint32_t data_size, Pool_op pooling_mode)
 {
-  int cnt; 
-  int DEMONSTRATOR_ATTEMPT = 0x01000;
   uint32_t tmp;
+  int DEMONSTRATOR_ATTEMPT = 0x01000;
+  int cnt = DEMONSTRATOR_ATTEMPT; 
   
   rumboot_printf("set demonstrator registers\n");
   
   tmp = (ioread32(matrix_base + NA_MXID));
   if (tmp != 0x4D545800) {
-    rumboot_printf("Wrong MXID\n");
+    rumboot_printf("Wrong MXID got 0x%x\n", tmp);
     return 1;   
   }
   iowrite32(0x1000, matrix_base + NA_STGS); 		// pooling op
