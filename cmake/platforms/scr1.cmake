@@ -114,10 +114,28 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       FILES
         ${DEMONSTRATOR_TESTS_DIR}/test_on_vec_op.c
       IRUN_FLAGS
-         # +input_coef=${DEMONSTRATOR_TESTS_DIR}/input/coef.bin
-         # +input_data=${DEMONSTRATOR_TESTS_DIR}/input/data.bin
+         +input_coef=coef.bin
+         +input_data=data.bin
          # +etalon_data=${DEMONSTRATOR_TESTS_DIR}/input/etalon_data.bin
+      PREPCMD
+        cp ${DEMONSTRATOR_TESTS_DIR}/input/vec_data_template.ini . 
+        && ${CMAKE_BINARY_DIR}/${rumboot_dirname}/utils/bin_generator/bin_generator
+            --ini=vec_data_template.ini
+            --length=16
+            --seed=0
+        && cp ${DEMONSTRATOR_TESTS_DIR}/input/vec_coef_template.ini . 
+        && ${CMAKE_BINARY_DIR}/${rumboot_dirname}/utils/bin_generator/bin_generator
+            --ini=vec_coef_template.ini
+            --length=16
+            --seed=0
     )
+
+    add_rumboot_target(
+      CONFIGURATION ROM
+      FILES
+        ${DEMONSTRATOR_TESTS_DIR}/test_on_vec_op_cycle.c
+    )
+
 		add_rumboot_target(
       CONFIGURATION ROM
       FILES

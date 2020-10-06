@@ -2,10 +2,11 @@
 #include "theini_handler/ini_gen_loader.h"
 
 #include <string.h>
-#include <stdlib.h> // malloc, atoi
+#include <stdlib.h> // malloc, strtol
+#include <stdint.h>
 
 
-#define DEBUG
+// #define DEBUG
 #ifdef DEBUG
   #define dbg(x, ...) printf("bin_gen: " x, ##__VA_ARGS__) 
 #else
@@ -16,10 +17,12 @@
 
 
 int main(int argc, char const *argv[]) {
+  printf("_________BIN_GENERATOR STARTED_________\n");
+
   char *ini_name = "";
   int length = 0;
   int seed = 0;
-  int i;
+  int i, j;
 
   for(i = 1; i < argc; ++i) {
     // вычисление аргумента флага "--ini"
@@ -66,18 +69,76 @@ int main(int argc, char const *argv[]) {
   dbg("length=%d\n", length);
   dbg("seed=%d\n", seed);
   
-  char userdata[USERDATA_LEN];
-
-  int res_parse_ini = ini_parse(ini_name, theini_handler, userdata);
+  // parse ini-file
   gen_parameters *config;
-  init_gen_parameters(&config);
-  config = userdata;
+
+  config = malloc(sizeof(gen_parameters));
+  config->type = (char **) malloc(4*sizeof(char *));
+  config->value = (char **) malloc(4*sizeof(char *));
+
+  int res_parse_ini = ini_parse(ini_name, theini_handler, config);
+
+  dbg("i'm print...\n");
+  for(i = 0; i < 4; ++i) {
+    if(config->type[i] != NULL) {
+      dbg("type[%d]=%s\n", i, config->type[i]);
+    }
+    if(config->value[i] != NULL) {
+      dbg("value[%d]=%s\n", i, config->value[i]);
+    }
+  }
+  dbg("name=%s\n", config->name);
 
   for(i = 0; i < 4; ++i) {
-    dbg("type[%d]=%s\n", i, config->type[i]);
+    if((config->type[i] != NULL) && (config->value[i] == NULL) || 
+       (config->type[i] == NULL) && (config->value[i] != NULL)) {
+      printf("Error in ini-file\n");
+      return 1;
+    }
   }
 
+  // create bin-file
+  FILE *fd;
+  fd = fopen(config->name, "w");
+  if(!fd) {
+    printf("Cannot open file\n");
+    return 1;
+  }
+
+  srand(seed);
+
+  for(i = 0; i < length; ++i) {
+    for(j = 0; j < 4; ++j) {
+      char *current_type = config->type[j];
+      char *current_value = config->value[j];
+
+      if(current_type != NULL) {
+        if(!strcmp(current_type, "int8")) {
+          int8_t number = (!strcmp(current_value, "all")) ? rand() : (int8_t)strtol(current_value, NULL, 0);
+          fwrite(&number, sizeof(int8_t), 1, fd);
+        } else {
+          if(!strcmp(current_type, "int16")) {
+            int16_t number = (!strcmp(current_value, "all")) ? rand() : (int16_t)strtol(current_value, NULL, 0);
+            fwrite(&number, sizeof(int16_t), 1, fd);
+          } else {
+            if(!strcmp(current_type, "int32")) {
+              int32_t number = (!strcmp(current_value, "all")) ? rand() : (int32_t)strtol(current_value, NULL, 0);
+              fwrite(&number, sizeof(int32_t), 1, fd);
+            } else {}
+          }
+        }
+      } else {}
+    }
+  }
+
+  fclose(fd);
+
+  // free memory
   free(ini_name);
-  // free_gen_parameters(&config);
+  free(config->type);
+  free(config->value);
+  free(config->name);
+
+  printf("_________BIN_GENERATOR FINISHED________\n");
   return 0;
 }

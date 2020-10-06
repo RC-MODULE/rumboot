@@ -2,8 +2,9 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
-#define DEBUG
+// #define DEBUG
 #ifdef DEBUG
   #define dbg(x, ...) printf("ini_gen_loader: " x, ##__VA_ARGS__) 
 #else
@@ -11,30 +12,40 @@
 #endif
 
 
-void init_gen_parameters(gen_parameters *str) {
-  dbg("init_gen_parameters started\n");
-  int i;
+// void init_gen_parameters(gen_parameters *config) {
+//   dbg("init_gen_parameters started\n");
+//   int i;
 
-  for(i = 0; i < 4; ++i) {
-    str->type[i] = (char *) malloc(8 + 1);
-    str->type[i] = "";
-    str->value[i] = (char *) malloc(8 + 1);
-    str->value[i] = "";
-  }
-  str->name = (char *) malloc(16);
-  str->name = "";
-}
+//   // for(i = 0; i < 4; ++i) {
+//     // str->type[i] = (char *) malloc(8 + 1);
+//     // str->type[i] = "";
+//     // str->value[i] = (char *) malloc(8 + 1);
+//     // str->value[i] = "";
+//   // }
+//   // str->name = (char *) malloc(16*sizeof(char));
+//   // str->name = "";
 
-void free_gen_parameters(gen_parameters *str) {
-  dbg("free_gen_parameters started\n");
-  int i;
+//   // config = malloc(sizeof(gen_parameters));
+//   config->type = (char **) malloc(4*sizeof(char *));
+//   for(i = 0; i < 4; ++i) {
+//     config->type[i] = (char *) malloc(14*sizeof(char));
+//     config->type[i] = "";
+//     // strcpy(config.type[i], "");
+//     // config->value[i] = (char *) malloc(14*sizeof(char));
+//     // strcpy(config->value[i], "");
+//   }
+// }
 
-  for(i = 0; i < 4; ++i) {
-    free(str->type[i]);
-    free(str->value[i]);
-  }
-  free(str->name);
-}
+// void free_gen_parameters(gen_parameters *str) {
+//   dbg("free_gen_parameters started\n");
+//   int i;
+
+//   for(i = 0; i < 4; ++i) {
+//     free(str->type[i]);
+//     free(str->value[i]);
+//   }
+//   free(str->name);
+// }
 
 
 static char prevsection[MAX_SECTION_LEN];
@@ -149,20 +160,6 @@ int exit_handler(
 }
 
 
-#define fill_int_box(nm)                     \
-  if(strcmp(name, #nm) == 0) {           \
-    data->nm = atoi(value);              \
-  } // !!!! strtoul
-
-#define fill_type(i, nm) \
-  dbg("3. value=%s, name=%s, nm=%s, temp=%s\n", value, name, #nm, temp); \
-  if(strcmp(temp, #nm) == 0) { \
-    dbg("4. value=%s\n", value); \
-    strcpy(data->nm[i], value); \
-  } \
-  dbg("5. data->nm[%d]=%s\n", i, data->nm[i]);
-
-
 int type_handler(
   void *user, 
   const char *section,
@@ -170,41 +167,44 @@ int type_handler(
   const char *value,
   int lineno
 ) {
-  dbg("0. **type_handler started, name=%s, valur=%s\n", name, value);
-
   gen_parameters *data = user;
 
   int i;
-  char tmp[16];
   if(!sscanf(name, "type[%d]", &i)) {
     return 0;
   }
-  dbg("1. **name=%s, value=%s, i=%d\n", name, value, i);
-  char *temp = (char *) malloc(5);
-  strncpy(temp, name, 4 * sizeof(char));
-  // int pos = sprintf(NULL, "type[%d]", i);
-  // char *barparam = &name[pos];
-  dbg("2. i'm here\n");
-  fill_type(i, type);
-  // fill_type(i, type);
-  // fill_type(i, type);
-  // fill_type(i, type);
 
-  dbg("6. type_handler finished\n");
- 
+  if(!strncmp(name, "type", strlen("type"))) {
+    data->type[i] = (char *) malloc(strlen(value)*sizeof(char)); 
+    strcpy(data->type[i], value); 
+  } 
 
   return 0;
 }
-
 
 
 int value_handler(
   void *user, 
   const char *section,
   const char *name, 
-  const char *value,
+  const char *x,
   int lineno
-) {}
+) {
+  gen_parameters *data = user;
+
+  int i;
+  if(!sscanf(name, "value[%d]", &i)) {
+    return 0;
+  }
+
+  if(!strncmp(name, "value", strlen("value"))) {
+    data->value[i] = (char *) malloc(strlen(x)*sizeof(char)); 
+    strcpy(data->value[i], x); 
+  } 
+
+  return 0;
+}
+
 
 int name_handler(
   void *user, 
@@ -212,4 +212,13 @@ int name_handler(
   const char *name, 
   const char *value,
   int lineno
-) {}
+) {
+  gen_parameters *data = user;
+
+  if(!strcmp(name, "name")) {
+    data->name = (char *) malloc(strlen(value) + 1);
+    strcpy(data->name, value);
+  }
+
+  return 0;
+}

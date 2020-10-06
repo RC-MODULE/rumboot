@@ -1,4 +1,11 @@
 // Test: test on vector operations in demonstrator
+// input: <input_data>.bin, <input_coef>.bin
+// test do: 
+//   1) run demonstrator; 
+//   2) calculate etalon; 
+//   3) compare etalon with demonstrator's result
+// const data length = 16 * 8 bytes
+
 
 #include <rumboot/printf.h>
 #include <rumboot/irq.h>
@@ -93,84 +100,45 @@ Vec_result rm_vec_op(Vec_data *data, Vec_coef *coefficient, Vec_op op, Relu_op r
 
 int main() {
   rumboot_printf("TEST test_on_vec_op start\n");
-int j;
-for(j = 1; j < 33; ++j){ 
-  rumboot_printf("ITERATION %d\n", j);
-  uint32_t count_vectors = j;
-  uint32_t count_elements_in_vector = 16;
-  uint32_t data_size = count_vectors * count_elements_in_vector * sizeof(Vec_data);
-  uint32_t coefficient_size = count_vectors * count_elements_in_vector * sizeof(Vec_coef);
-  uint32_t result_size = count_vectors * count_elements_in_vector * sizeof(Vec_result);
-  int i;
 
+  uint32_t count_vectors = 16;
+  uint32_t data_size = count_vectors * sizeof(Vec_data);
+  uint32_t coefficient_size = count_vectors * sizeof(Vec_coef);
+  uint32_t result_size = count_vectors * sizeof(Vec_result);
+  int i;
 
   // load coefficients in Coefficients mem 
   Vec_coef *coefficients = rumboot_malloc_from_heap_aligned(1, coefficient_size, 16);
   assert (coefficients != NULL);
-
-  // rumboot_platform_request_file("input_coef", (uint32_t)addr_ext_coef);
-  srand(0);
-
-  Vec_coef elem_coef;
-  // Vec_coef elem_coef = {0x2, 0x1, 0};
-  elem_coef.Zero = 0x0;
-  elem_coef.C2 = 0x1;
-  for(i = 0; i < count_vectors * count_elements_in_vector; ++i){
-    int32_t temp;
-    // do {
-      temp = rand();
-    // } while(temp < 0);
-    elem_coef.C1 = temp;
-    coefficients[i] = elem_coef;
-  }
-
+  rumboot_platform_request_file("input_coef", (uint64_t)coefficients);
   assert (!demonstrator_load_coefficients(1, coefficients, coefficient_size));
-
-  dbg("coefficients[0] 0=%x, C2=%x, C1=%x\n", coefficients[0].Zero, coefficients[0].C2, coefficients[0].C1);
-  dbg("coefficients[1] 0=%x, C2=%x, C1=%x\n", coefficients[1].Zero, coefficients[1].C2, coefficients[1].C1);
 
   // load data in Data mem
   Vec_data *data = rumboot_malloc_from_heap_aligned(1, data_size, 16);
   assert (data != NULL);
-
-  Vec_data elem_data;
-  elem_data.Zero = 0x0;
-  // Vec_data elem_data = {-0x200, 0x0};
-  for(i = 0; i < count_vectors * count_elements_in_vector; ++i) {
-    int32_t temp;
-    // do {
-      temp = rand();
-    // } while(temp < 0);
-    elem_data.D = temp;
-    data[i] = elem_data;
-  }
-
+  rumboot_platform_request_file("input_data", (uint32_t)data);
   assert (!load_demonstrator_data(1, data, data_size));
 
-  dbg("data[0] 0=%x, D=%x\n", data[0].Zero, data[0].D);
-  dbg("data[1] 0=%x, D=%x\n", data[1].Zero, data[1].D);
-
   // Start demonstrator
+  srand(0);
   Vec_op current_op = rand() % 3;
   Relu_op current_relu = rand() % 2;
-  rumboot_printf("current_op=%d, current_relu=%d", current_op, current_relu);
+  dbg("current_op=%d, current_relu=%d", current_op, current_relu);
   assert (!demonstrator_run_vec_flow(DEMONSTRATOR_APB_BASE, data_size, current_op, current_relu, 0x0, 0x0));
 
   // Unload result
   Vec_result *result = rumboot_malloc_from_heap_aligned(1, result_size, 16);
   assert (result != NULL);
-
   assert (!unload_demonstrator_results(1, result, result_size));
-  dbg("result[0] 0=%x, R0=%x\n", result[0].Zero, result[0].R0);
-  dbg("result[1] 0=%x, R0=%x\n", result[1].Zero, result[1].R0);
 
   // Load etalon
   Vec_result *etalon = rumboot_malloc_from_heap_aligned(1, result_size, 16);
   assert (etalon != NULL);
 
-  for(i = 0; i < count_vectors * count_elements_in_vector; ++i) {
+  for(i = 0; i < count_vectors; ++i) {
     dbg("i=%d\n", i);
     etalon[i] = rm_vec_op(&data[i], &coefficients[i], current_op, current_relu);
+    // Compare result and etalon
     if(result[i].R0 != etalon[i].R0) {
       rumboot_printf("NOT_EQUAL, D=%x, C1=%x, C2=%x, result[%d].R0=%x, etalon[%d].R0=%x, op=%d, relu=%d\n", data[i].D, coefficients[i].C1, coefficients[i].C2, i, result[i].R0, i, etalon[i].R0, current_op, current_relu);
       dbg("coef[i]=%x ", coefficients[i].C1);
@@ -182,10 +150,6 @@ for(j = 1; j < 33; ++j){
   // Compare result and etalon
   // assert (memcmp(result, etalon, result_size) == 0);
   assert (compare_demonstrator_result_64bit((int64_t *)result, (int64_t *)etalon, result_size / sizeof(int64_t)));
-
-  rumboot_printf("ITERATION %d passed\n", j);
-
-}
 
   return 0;
 }

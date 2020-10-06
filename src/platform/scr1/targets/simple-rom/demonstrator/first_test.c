@@ -45,7 +45,7 @@ int main(int argc, char const *argv[]) {
   
   // IMPORTANT!!!
   // Через input_file должен появиться input/input_rtl_data_X.bin, в кт реф-я модель что-то запишет
-  // rumboot_platform_request_file("input_file", (uint32_t)addr_ext); // что-то странное происxодит
+  // rumboot_platform_request_file("input_file", (uint32_t)addr_ext);
  
   return 0;
 }

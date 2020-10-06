@@ -109,6 +109,7 @@ int main(int argc, char *argv[]) {
     make_all (config);
   // Finished process reference model's functions
 
+  // Free memory
     free(config->user_X_data_file_name);
     free(config->user_W_data_base_file_name);
     free(config->user_Y_data_file_name);

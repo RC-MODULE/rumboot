@@ -21,13 +21,13 @@ typedef struct sectionfilter {
 } sectionfilter;
 
 typedef struct gen_parameters {
-  char *type[4];
-  char *value[4];
+  char **type;
+  char **value;
   char *name;
 } gen_parameters;
 
-void init_gen_parameters(gen_parameters *str);
-void free_gen_parameters(gen_parameters *str);
+// void init_gen_parameters(gen_parameters *str);
+// void free_gen_parameters(gen_parameters *str);
 
 int theini_handler(
   void *user, 
