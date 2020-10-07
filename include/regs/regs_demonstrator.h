@@ -1,9 +1,3 @@
-#define DATA_BASE           0xFFF00000
-#define COEFFICIENT_BASE    0xFFF40000
-#define WEIGHT_BASE         0xFFF80000
-#define RESULT_BASE         0xFFFC0000
-#define EXT_MEMORY_BASE     0x004A0000
-
 #define NA_MXID             0x000
 #define NA_PUMP             0x004
 #define NA_CNTT             0x008

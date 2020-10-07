@@ -1,6 +1,12 @@
 #ifndef DEVICES_H
 #define DEVICES_H
 
+#define DATA_BASE               0xFFF00000
+#define COEFFICIENT_BASE        0xFFF40000
+#define WEIGHT_BASE             0xFFF80000
+#define RESULT_BASE             0xFFFC0000
+#define EXT_MEMORY_BASE         0x004A0000
+
 #define SCR1_TIMER_BASE         0x00490000
 #define DUT_BASE                0x00498000
 #define EXT_MEMORY_BASE         0x004A0000
