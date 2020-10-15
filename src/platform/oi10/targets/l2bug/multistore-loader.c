@@ -39,9 +39,10 @@ extern void rumboot_D_hdr();
 struct rumboot_bootheader gdbmon_hdr;
 
 #ifdef EMI_INIT
-static emi_bank_cfg bank_cfg =
+//static emi_bank_cfg bank_cfg =
+static emi_bank_cfg bank_cfg[6] =
 {
-    //SS0
+  {    //SS0
     {
         BTYP_SRAM,
         PTYP_NO_PAGES,
@@ -64,6 +65,146 @@ static emi_bank_cfg bank_cfg =
         TRCD_5,
         TRAS_9
     }
+  },
+  // append from emi_init_impl, default settings for bank1-bank5
+  //init bank1 - SDRAM
+    {
+       //SS1
+       {
+           BTYP_SDRAM,
+           PTYP_NO_PAGES,
+           SRDY_EXT_RDY_NOT_USE,
+           TWR_0,
+           SST_Flow_Through,
+           TSSOE_1,
+           TSOE_1,
+           TCYC_8,
+           0, //T_RDY
+           TDEL_0
+       },
+       //SD1
+       {
+           CSP_2048,
+           SDS_64M,
+           CL_3,
+           TRDL_2,
+           SI_CPU_INIT,
+           TRCD_2,
+           TRAS_5
+       }
+    },
+    // init bank2 - SSRAM, 
+    //  SS2
+   {
+       //SS2
+       {
+           BTYP_SSRAM,
+           PTYP_NO_PAGES,
+           SRDY_EXT_RDY_NOT_USE,
+           TWR_0,
+           SST_Pipelined,
+           TSSOE_2,
+           TSOE_1,
+           TCYC_8,
+           0, //T_RDY
+           TDEL_0
+       },
+       //SD2
+       {
+           CSP_256,
+           SDS_2M,
+           CL_3,
+           TRDL_1,
+           SI_EXT_INIT,
+           TRCD_5,
+           TRAS_9
+       }
+	 },
+    //init bank3 - PIPELINED
+    //SS3
+   {
+       //SS3
+       {
+           BTYP_PIPERDY,
+           PTYP_NO_PAGES,
+           SRDY_EXT_RDY_NOT_USE,
+           TWR_0,
+           SST_Pipelined,
+           TSSOE_1,
+           TSOE_1,
+           TCYC_8,
+           0, //T_RDY
+           TDEL_0
+       },
+       //SD3
+       {
+           CSP_256,
+           SDS_2M,
+           CL_3,
+           TRDL_1,
+           SI_EXT_INIT,
+           TRCD_5,
+           TRAS_9
+       }
+	 },
+    //init bank4 - SRAM1
+    //SS4
+   {
+       //SS4
+       {
+           BTYP_SRAM,
+           PTYP_NO_PAGES,
+           SRDY_EXT_RDY_NOT_USE,
+           TWR_0,
+           SST_Flow_Through,
+           TSSOE_1,
+           TSOE_1,
+           TCYC_2,
+           0, //T_RDY
+           TDEL_0
+       },
+       //SD4
+       {
+           CSP_256,
+           SDS_2M,
+           CL_3,
+           TRDL_1,
+           SI_EXT_INIT,
+           TRCD_5,
+           TRAS_9
+       }
+	 },
+    //init bank5 - NOR
+    //SS5
+  {
+        //SS5
+        {
+            BTYP_NOR,
+            PTYP_NO_PAGES,
+            SRDY_EXT_RDY_NOT_USE,
+            TWR_0,
+            SST_Flow_Through,
+            TSSOE_1,
+            TSOE_1,
+            #ifdef CMAKE_BUILD_TYPE_DEBUG
+            TCYC_8,
+            #else
+            TCYC_12,
+            #endif
+            0, //T_RDY
+            TDEL_0
+        },
+        //SD5
+        {
+            CSP_256,
+            SDS_2M,
+            CL_3,
+            TRDL_1,
+            SI_EXT_INIT,
+            TRCD_5,
+            TRAS_9
+        }
+  }
 };
 #endif
 
