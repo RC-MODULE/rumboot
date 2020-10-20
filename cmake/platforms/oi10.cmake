@@ -2204,6 +2204,7 @@ endif()
         CONFIGURATION IRAM
         FILES test_oi10_cpu_021_wb_cache_size_base.c
         NAME "test_oi10_cpu_021_wb_cache_size"
+        TESTGROUP broken hwonly
         LOAD IM0BIN SELF
              MBIN supplementary-test_oi10_cpu_021_wb_cache_size
     )
@@ -2705,7 +2706,6 @@ endif()
     PREFIX l2bug
     CFLAGS -DEMI_INIT -DADD_TLB -DM_BASE=SRAM0_BASE
     IRUN_FLAGS ${ROM_6500K_OPTS}
-    TESTGROUP hwonly
     LOAD IM0BIN SELF
          MBIN l2bug-multistore-supp
   )
