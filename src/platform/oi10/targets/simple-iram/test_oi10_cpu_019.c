@@ -52,7 +52,7 @@
 #define IRQ_MIN_INTERNAL            0
 #define IRQ_MAX_INTERNAL            14      /* was 31 */
 #define IRQ_MIN_EXTERNAL            32
-#define IRQ_MAX_EXTERNAL            75      /* was 127 */
+#define IRQ_MAX_EXTERNAL            77      /* was 127 */
 #define IRQ_LAST_INTERNAL           LTRACE_COMPLETE_0
 #define IRQ_MIN                     IRQ_MIN_INTERNAL
 #define IRQ_TYPE_NC                 0
@@ -230,7 +230,9 @@ static const    irqnum_t     irq_list[] =
     (irqnum_t) EXT_INT6,
     (irqnum_t) EXT_INT7,
     (irqnum_t) WU_INT,
-    (irqnum_t) AXI_MSIF_INT
+    (irqnum_t) AXI_MSIF_INT,
+    (irqnum_t) SCRB_INT_0,
+    (irqnum_t) SCRB_INT_1
 #endif
 };
 
