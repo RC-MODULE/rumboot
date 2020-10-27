@@ -2269,6 +2269,13 @@ endif()
         NAME test_oi10_cpu_021_cache_op_ici
     )
 
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      CFLAGS -DUSE_HARDWARE_PART
+      FILES simple-iram/test_oi10_cpu_019.c
+      PREFIX "simple-iram"
+      NAME "test_oi10_cpu_019_hard"
+    )
 
     add_rumboot_target(
         CONFIGURATION IRAM
