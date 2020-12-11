@@ -2529,7 +2529,7 @@ endif()
       FILES test_oi10_plb6_axi.c
       CFLAGS -DCHECK_PLB6_AXI_SINGLE
       PREFIX plb6-axi-single
-      TESTGROUP broken hwonly
+      TESTGROUP broken
     )
 
     add_rumboot_target(
