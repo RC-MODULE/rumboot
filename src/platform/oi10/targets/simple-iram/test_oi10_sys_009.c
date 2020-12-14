@@ -181,8 +181,9 @@ int check_dbimask ()
 	rumboot_platform_event_clear();
 	rumboot_printf("send TEC_CHECK_DEBUG_DBIMASK\n");
 	test_event(TEC_CHECK_DEBUG_DBIMASK );
-//	if(event_get()) return 1;
-//	rumboot_printf("got event\n");
+	
+	if(event_get()) return 1;     
+	rumboot_printf("got event\n"); 
 
 	dbdr = spr_read(SPR_DBDR);
 	if (dbdr != TEST_DATA_OK ){
