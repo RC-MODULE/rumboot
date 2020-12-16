@@ -22,7 +22,7 @@ rumboot_add_configuration(
   SNAPSHOT default
   LDS basis/rom.lds
   LDFLAGS "-e rumboot_reset_handler"
-  CFLAGS -DRUMBOOT_ONLY_STACK
+  CFLAGS -DRUMBOOT_ONLY_STACK -DRUMBOOT_MAIN_NORETURN
   PREFIX ROM
   TIMEOUT_CTEST 200000
   TIMEOUT 100 ms
