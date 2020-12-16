@@ -97,7 +97,7 @@ uint32_t pcie_wait_link_and_report ()
             return -1;
         }
     }
-    rumboot_printf ("  PCIe link up\n");
+    rumboot_printf ("\n  PCIe link up\n");
     
 #ifndef PRODUCTION_TESTING
     //  Testbench usually use Gen2. Wait correspond speed.
@@ -120,9 +120,9 @@ uint32_t pcie_wait_link_and_report ()
         rumboot_printf ("    negotiated link speed:  5.0GTs\n");
     
     if (((rdata >> 5) & 0x1) == 0)
-        rumboot_printf ("    mode:  upstream (Endpoint)\n");
+        rumboot_printf ("    mode:  upstream (Endpoint)\n\n");
     else
-        rumboot_printf ("    mode:  downstream (Root Port)\n");
+        rumboot_printf ("    mode:  downstream (Root Port)\n\n");
     
     return 0;
 }
