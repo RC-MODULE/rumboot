@@ -138,6 +138,7 @@ uint32_t pcie_dma_transaction ()
 //-----------------------------------------------------------------------------
 uint32_t Check_transaction ()
 {
+    rumboot_printf ("    Check_transaction start\n");
     for (uint32_t i = 0; i < 256; i+=8)
     {
         if (
@@ -158,14 +159,27 @@ uint32_t Check_transaction ()
 
 uint32_t main ()
 {
+    rumboot_printf ("  pcie_dma_eRP_test start\n");
+    
     create_etalon_array ();
     clear_space         ((uint32_t*) (&data_mid), (uint32_t*) (&data_mid) + 256);
     clear_space         ((uint32_t*) (&data_dst), (uint32_t*) (&data_dst) + 256);
     if (pcie_turn_on_with_options_ep (1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) != 0)
+    {
+        rumboot_printf ("    pcie_turn_on_with_options_ep FAILED\n");
         return -1;
+    }
     if (pcie_dma_transaction () != 0)
+    {
+        rumboot_printf ("    pcie_dma_transaction FAILED\n");
         return -2;
+    }
     if (Check_transaction () != 0)
+    {
+        rumboot_printf ("    Check_transaction FAILED\n");
         return -3;
+    }
+    
+    rumboot_printf ("  pcie_dma_eRP_test finish\n");
     return 0;
 }

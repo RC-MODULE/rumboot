@@ -70,8 +70,13 @@ uint32_t check_msix_interrupt ()
 
 uint32_t main ()
 {
+    rumboot_printf ("  pcie_msix_eRP_test start\n");
+    
     if (pcie_turn_on_with_options_ep (1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) != 0)
+    {
+        rumboot_printf ("    pcie_turn_on_with_options_ep FAILED\n");
         return -1;
+    }
     ext_irq_gen_config (0x2, 0x00000000, 0x00000000);
     addr_trans_slv_config (2);
     
@@ -82,8 +87,12 @@ uint32_t main ()
         for (volatile uint32_t i = 0; i < interrupt_turnaround_duration; i++)
             ;
         if (check_msix_interrupt () != 0)
+        {
+            rumboot_printf ("    check_msix_interrupt FAILED\n");
             return -2;
+        }
     }
         
+    rumboot_printf ("  pcie_msix_eRP_test finish\n");
     return 0;
 }
