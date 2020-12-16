@@ -99,6 +99,12 @@ uint32_t pcie_wait_link_and_report ()
     }
     rumboot_printf ("  PCIe link up\n");
     
+#ifndef PRODUCTION_TESTING
+    //  Testbench usually use Gen2. Wait correspond speed.
+    while (((ioread32 (PCIE_CORE_BASE + PCIe_Core_FuncRPConfig + PCIe_EP_i_link_ctrl_status) >> 16) & 0xF) != 0x2)
+        ;
+#endif
+
     rdata = ioread32 (PCIE_CORE_BASE + PCIe_Core_LocalMgmt + PCIe_LocMgmt_i_pl_config_0_reg);
     rumboot_printf ("    negotiated link width:  %d\n", (1 << ((rdata >> 1) & 0x3)));
 #ifdef PRODUCTION_TESTING
@@ -116,7 +122,7 @@ uint32_t pcie_wait_link_and_report ()
     if (((rdata >> 5) & 0x1) == 0)
         rumboot_printf ("    mode:  upstream (Endpoint)\n");
     else
-        rumboot_printf ("    mode:  downstream (RootPort)\n");
+        rumboot_printf ("    mode:  downstream (Root Port)\n");
     
     return 0;
 }
@@ -126,6 +132,7 @@ void pcie_simulation_speedup ()
 #ifndef PCIE_TEST_LIB_SIMSPEEDUP_OFF
 #ifndef RUMBOOT_BUILD_TYPE_POSTPRODUCTION
 #ifndef CMAKE_BUILD_TYPE_POSTPRODUCTION
+    rumboot_printf ("  INFO: pcie_simulation_speedup start\n");
     /***************************************************/
     /*    this PHY settings are only for simulation    */
     /*    and must be removed for real programm        */
