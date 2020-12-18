@@ -1,0 +1,102 @@
+SET(RUMBOOT_ARCH ppc)
+set(RUMBOOT_SUPPORTS_SPL_ENDIAN_SWAP Yes)
+set(RUMBOOT_PLATFORM_DEFAULT_SNAPSHOT default)
+
+if (NOT RUMBOOT_SOC_BUILD_TYPE STREQUAL "RTL")
+  set(IRUN_BOOTM_EXTRA_ARGS +BOOT_NOR=0)
+else()
+  set(IRUN_BOOTM_EXTRA_ARGS )
+endif()
+
+
+file(GLOB PLATFORM_SOURCES
+    ${CMAKE_SOURCE_DIR}/src/arch/ppc/exception.c
+    ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/*.c
+    ${CMAKE_SOURCE_DIR}/src/lib/drivers/irq-mpic128.c)
+
+#Flags for Power PC
+macro(RUMBOOT_PLATFORM_SET_COMPILER_FLAGS)
+    set(RUMBOOT_COMMON_FLAGS "-mcpu=476fp -fno-plt -fno-pic -m32 -ffreestanding -std=gnu99 -DRUMBOOT_PLATFORM_NUM_HEAPS=9 ")
+    set(CMAKE_C_FLAGS "${RUMBOOT_COMMON_FLAGS} -mstrict-align -Wall -Wno-error=cpp -fdata-sections -ffunction-sections")
+    set(CMAKE_ASM_FLAGS "${RUMBOOT_COMMON_FLAGS}")
+    set(CMAKE_EXE_LINKER_FLAGS "-g -nostartfiles -static -Wl,--gc-sections")
+    set(CMAKE_DUMP_FLAGS -M476,32)
+    if (PRODUCTION_TESTING)
+      SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DPRODUCTION_TESTING")
+    endif()
+endmacro()
+
+
+if (RUMBOOT_BUILD_TYPE STREQUAL "Production")
+  set(BOOTROM_IFLAGS +GTUBE_ONLY_PRODUCTION_OPCODES)
+endif()
+
+
+rumboot_add_configuration(
+    ROM
+    DEFAULT
+    LDFLAGS -Wl,-erumboot_entry_point
+    PREFIX brom
+    FEATURES ROMGEN
+    FILES #${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/startup.S
+    TIMEOUT_CTEST 0
+    LOAD BOOTROM_NOR SELF
+    IRUN_FLAGS ${IRUN_BOOTM_EXTRA_ARGS}
+    CFLAGS -DRUMBOOT_ONLY_STACK ${CONFIGURATION_ROM_CFLAGS} -DRUMBOOT_MAIN_NORETURN
+    LDS oi10/bootrom.lds
+    IRUN_FLAGS +BOOTMGR_KEEP_DRIVING=1 ${BOOTROM_IFLAGS}
+)
+
+
+macro(rumboot_platform_generate_stuff_for_taget product)
+    list (FIND TARGET_FEATURES "ROMGEN" _index)
+    if (${_index} GREATER -1)
+        add_custom_command(
+            OUTPUT ${product}.hex/image_mem64_0.hex
+            COMMAND ${CMAKE_BINARY_DIR}/utils/romgen -l oi10_gen -i ${product}.bin -o ${product}.hex
+            COMMENT "Generating HEX memory files for ${product}.bin"
+            DEPENDS ${product}.bin utils
+        )
+
+
+        add_custom_target(
+            ${product}.hex ALL
+            DEPENDS ${product}.hex/image_mem64_0.hex
+        )
+        list (FIND TARGET_FEATURES "CPACK" _index)
+        if (${_index} GREATER -1)
+                install(DIRECTORY ${PROJECT_BINARY_DIR}/${product}.hex DESTINATION bootrom)
+        endif()
+
+        add_dependencies(${product}.all ${product}.hex)
+    endif()
+endmacro()
+
+
+
+set(ROM_9600_OPTS +BOOT_SLOWUART=1 +BOOT_FASTUART=0 +UART0_SPEED=9600)
+set(ROM_19200_OPTS +BOOT_SLOWUART=1 +BOOT_FASTUART=1 +UART0_SPEED=19200)
+set(ROM_115200_OPTS +BOOT_SLOWUART=0 +BOOT_FASTUART=0 +UART0_SPEED=115200)
+set(ROM_6500K_OPTS +BOOT_SLOWUART=0 +BOOT_FASTUART=1 +UART0_SPEED=6250000)
+
+macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
+add_rumboot_target(
+    CONFIGURATION ROM 
+    FILES oi10/targets/simple-iram/hello.c
+  )
+endmacro()
+
+
+function(RUMBOOT_PLATFORM_PRINT_SUMMARY)
+
+endfunction()
+
+if (NOT CROSS_COMPILE)
+    SET(CROSS_COMPILE powerpc-rcm-elf)
+    message(STATUS "No -DCROSS_COMPILE passed to cmake, attempting to detect ${CROSS_COMPILE}")
+    if (EXISTS /opt/r42/toolchains/powerpc-rcm-elf/bin/powerpc-rcm-elf-gcc)
+        set(CROSS_COMPILE "/opt/r42/toolchains/powerpc-rcm-elf/bin/${CROSS_COMPILE}")
+    endif()
+endif()
+
+set(CMAKE_C_COMPILER_WORKS 1)
