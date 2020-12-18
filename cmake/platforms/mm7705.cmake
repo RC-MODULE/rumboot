@@ -18,38 +18,22 @@ macro(RUMBOOT_PLATFORM_SET_COMPILER_FLAGS)
 endmacro()
 
 rumboot_add_configuration(
-  ROM
-  PREFIX rom
-  LDS mm7705/rom-shim.lds
-  FILES ${CMAKE_SOURCE_DIR}/src/lib/bootheader_legacy.c
-  CFLAGS -DRUMBOOT_ONLY_STACK
-  #LDFLAGS -Wl,--start-group -lgcc -lc -lm -Wl,--end-group
-  FEATURES PACKIMAGE
-)
-
-#Add configuration for binaries
-
-rumboot_add_configuration(
   IRAM
-  LDS mm7705/spl.lds
-  FILES ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c
-  LDFLAGS -Wl,--start-group -lgcc -lc -lm -Wl,--end-group
-  PREFIX spl
-  FEATURES PACKIMAGE
-)
-
-rumboot_add_configuration(
-  SPL
-  CONFIGURATION IRAM
-  CFLAGS  -DRUMBOOT_NOINIT
-)
-
-rumboot_add_configuration(
-  LEGACY
   DEFAULT
   LDS mm7705/ram.lds
-  PREFIX legacy
+  PREFIX iram
   CFLAGS
+  FEATURES PACKIMAGE
+  FILES ${CMAKE_SOURCE_DIR}/src/lib/bootheader_legacy.c
+  LDFLAGS -Wl,--start-group -lgcc -lc -lm -Wl,--end-group
+)
+
+rumboot_add_configuration(
+  IRAM_DUAL
+  DEFAULT
+  LDS mm7705/ram.lds
+  PREFIX iram-dual
+  CFLAGS -DRUMBOOT_MM7705_ENABLE_MAIN2=Yes
   FEATURES PACKIMAGE
   FILES ${CMAKE_SOURCE_DIR}/src/lib/bootheader_legacy.c
   LDFLAGS -Wl,--start-group -lgcc -lc -lm -Wl,--end-group
@@ -64,30 +48,33 @@ endmacro()
 include(${CMAKE_SOURCE_DIR}/cmake/bootrom.cmake)
 
 macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
-  rumboot_bootrom_add_components(SPL ROM)
 
-  add_rumboot_target_dir(tests
-    CONFIGURATION IRAM
-  )
-
-  add_rumboot_target_dir(tests
-    CONFIGURATION LEGACY
-  )
-
-  add_rumboot_target(
-    FILES common/updaters/spiflash-pl022.c
-    CONFIGURATION SPL
-    CFLAGS -DBOOT_ID=1
-    PREFIX updater
-    NAME spiflash
-    FEATURES STUB
-  )
-
-  add_rumboot_target(
+add_rumboot_target(
     CONFIGURATION IRAM
     CFLAGS -DUSE_SWINT=132
     FILES common/irq/irq-atomics.c
     PREFIX "irq"
+)
+
+add_rumboot_target(
+    CONFIGURATION IRAM_DUAL
+    FILES heattest/main.c
+        heattest/lib/timer.c
+        heattest/lib/spi.c
+#        heattest/lib/adma.c
+        heattest/lib/gpio.c
+        heattest/lib/mutex.c
+        heattest/lib/memory.c
+        heattest/lib/pcie.c
+        heattest/lib/mishin_hscb.c
+        heattest/lib/fpu.c
+#        heattest/lib/hscb.c
+        heattest/lib/lscb.c
+#        heattest/lib/uart.c
+#        heattest/lib/hscb_.c
+#        heattest/lib/pcie_hardloopback.c
+        heattest/lib/mbist.c
+#        heattest/lib/sdio.c
 )
 
 

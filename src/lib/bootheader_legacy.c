@@ -38,8 +38,13 @@ static void rumboot_main_wrapper()
     while(1);;
 }
 
+extern void main2();
+
 static const __attribute__((used)) __attribute__((section(".header")))
 struct legacy_bootheader hdr = {
 	.magic		= BOOTHEADER_MAGIC__HOST_IMAGE_VALID,
 	.entry0	= (uint32_t) &rumboot_main_wrapper,
+    #ifdef RUMBOOT_MM7705_ENABLE_MAIN2
+    .entry1 = (uint32_t) &main2,
+    #endif
 };
