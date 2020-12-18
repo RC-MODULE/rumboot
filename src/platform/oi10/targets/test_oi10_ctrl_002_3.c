@@ -14,7 +14,7 @@
 #include <rumboot/testsuite.h>
 #include <rumboot/timer.h>
 
-#include <platform/arch/ppc/ppc_476fp_timer_fields.h>
+#include <arch/ppc_476fp_timer_fields.h>
 #include <platform/arch/ppc/test_macro.h>
 #include <arch/common_macros.h>
 #include <platform/devices.h>

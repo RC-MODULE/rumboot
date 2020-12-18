@@ -30,8 +30,8 @@
 #include <devices/mpic128.h>
 
 #include <regs/fields/mpic128.h>
-#include <platform/arch/ppc/ppc_476fp_timer_fields.h>
-#include <platform/arch/ppc/ppc_476fp_ctrl_fields.h>
+#include <arch/ppc_476fp_timer_fields.h>
+#include <arch/ppc_476fp_ctrl_fields.h>
 
 enum {
     TEC_SET_EXT_INT0 = TEST_EVENT_CODE_MIN,

@@ -10,7 +10,7 @@
 #include <platform/devices.h>
 #include <platform/arch/ppc/test_macro_asm.S.h>
 /* CCR0, CCR1, CCR2 fields */
-#include <platform/arch/ppc/ppc_476fp_ctrl_fields.h>
+#include <arch/ppc_476fp_ctrl_fields.h>
 /* MSR fields */
 #include <arch/ppc_476fp_itrpt_fields.h>
 

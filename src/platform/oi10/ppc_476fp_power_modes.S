@@ -4,9 +4,9 @@
 #include <platform/ppc470s/mmu.S.h>
 #include <platform/regs/regs_plb6bc.h>
 #include <arch/ppc_476fp_itrpt_fields.h>
-#include <platform/arch/ppc/ppc_476fp_debug_fields.h>
-#include <platform/arch/ppc/ppc_476fp_ctrl_fields.h>
-#include <platform/arch/ppc/ppc_476fp_timer_fields.h>
+#include <arch/ppc_476fp_debug_fields.h>
+#include <arch/ppc_476fp_ctrl_fields.h>
+#include <arch/ppc_476fp_timer_fields.h>
 #include <platform/devices.h>
 #include <platform/regs/sctl.h>
 #include <platform/regs/regs_l2c_l2.h>

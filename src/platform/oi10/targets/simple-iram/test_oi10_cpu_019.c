@@ -20,7 +20,7 @@
 
 #include <platform/arch/ppc/ppc_476fp_mmu.h>
 #include <arch/ppc_476fp_itrpt_fields.h>
-#include <platform/arch/ppc/ppc_476fp_ctrl_fields.h>
+#include <arch/ppc_476fp_ctrl_fields.h>
 
 #include <platform/devices.h>
 #include <platform/devices/l2c.h>

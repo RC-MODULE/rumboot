@@ -4,7 +4,7 @@
 #include <platform/test_assert.S.h>
 #include <platform/devices.h>
 #include <platform/arch/ppc/test_macro_asm.S.h>
-#include <platform/arch/ppc/ppc_476fp_ctrl_fields.h>
+#include <arch/ppc_476fp_ctrl_fields.h>
 #include <regs/regs_mpic128.h>
 #include <platform/regs/regs_plb6bc.h>
 

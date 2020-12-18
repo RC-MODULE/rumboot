@@ -22,9 +22,9 @@
 #include <platform/devices.h>
 #include <platform/interrupts.h>
 #include <platform/arch/ppc/test_macro.h>
-#include <platform/arch/ppc/ppc_476fp_debug_fields.h>
+#include <arch/ppc_476fp_debug_fields.h>
 #include <arch/ppc_476fp_itrpt_fields.h>
-#include <platform/arch/ppc/ppc_476fp_ctrl_fields.h>
+#include <arch/ppc_476fp_ctrl_fields.h>
 
 enum {
        TEC_CHECK_DEBUG_MACHINECHECK = TEST_EVENT_CODE_MIN,

@@ -19,8 +19,8 @@
 #include <platform/test_event_c.h>
 #include <platform/trace.h>
 #include <platform/test_assert.h>
-#include <platform/arch/ppc/ppc_476fp_timer_fields.h>
-#include <platform/arch/ppc/ppc_476fp_debug_fields.h>
+#include <arch/ppc_476fp_timer_fields.h>
+#include <arch/ppc_476fp_debug_fields.h>
 #include <platform/arch/ppc/ppc_476fp_mmu_fields.h>
 #include <platform/arch/ppc/ppc_476fp_mmu.h>
 #include <platform/ppc470s/mmu/mem_window.h>

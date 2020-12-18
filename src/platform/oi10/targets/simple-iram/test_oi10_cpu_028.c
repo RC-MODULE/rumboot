@@ -4,7 +4,7 @@
 #include <arch/ppc_476fp_lib_c.h>
 #include <platform/test_event_c.h>
 #include <platform/test_assert.h>
-#include <platform/arch/ppc/ppc_476fp_ctrl_fields.h>
+#include <arch/ppc_476fp_ctrl_fields.h>
 #include <arch/ppc_476fp_itrpt_fields.h>
 #include <arch/ibm_bit_ordering_macros.h>
 #include <platform/devices.h>

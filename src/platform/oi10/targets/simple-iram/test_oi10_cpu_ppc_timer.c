@@ -20,9 +20,9 @@
 #include <platform/test_event_c.h>
 #include <platform/trace.h>
 #include <platform/test_assert.h>
-#include <platform/arch/ppc/ppc_476fp_ctrl_fields.h>
-#include <platform/arch/ppc/ppc_476fp_timer_fields.h>
-#include <platform/arch/ppc/ppc_476fp_debug_fields.h>
+#include <arch/ppc_476fp_ctrl_fields.h>
+#include <arch/ppc_476fp_timer_fields.h>
+#include <arch/ppc_476fp_debug_fields.h>
 
 #define DEC_PERIOD  0x800
 

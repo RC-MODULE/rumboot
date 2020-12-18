@@ -3,10 +3,10 @@
 #include <platform/ppc470s/mmu.S.h>
 #include <platform/trace.S.h>
 #include <platform/devices.h>
-#include <platform/arch/ppc/ppc_476fp_ctrl_fields.h>
+#include <arch/ppc_476fp_ctrl_fields.h>
 #include <arch/ppc_476fp_itrpt_fields.h>
-#include <platform/arch/ppc/ppc_476fp_debug_fields.h>
-#include <platform/arch/ppc/ppc_476fp_timer_fields.h>
+#include <arch/ppc_476fp_debug_fields.h>
+#include <arch/ppc_476fp_timer_fields.h>
 
 
 #define WORD_ADDR_SHIFT                            IBM_BIT_INDEX(32, 29)

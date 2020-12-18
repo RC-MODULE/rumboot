@@ -5,7 +5,7 @@
 #include <platform/ppc470s/mmu.h>
 #include <arch/io.h>
 #include <platform/arch/ppc/ppc_476fp_mmu_fields.h>
-#include <platform/arch/ppc/ppc_476fp_ctrl_fields.h>
+#include <arch/ppc_476fp_ctrl_fields.h>
 #include <platform/test_event_c.h>
 #include <platform/devices.h>
 #include <platform/devices/emi.h>
