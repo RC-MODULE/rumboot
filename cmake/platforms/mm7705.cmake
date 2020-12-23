@@ -57,28 +57,6 @@ add_rumboot_target(
     PREFIX "irq"
 )
 
-add_rumboot_target(
-    CONFIGURATION IRAM_DUAL
-    FILES heattest/main.c
-        heattest/lib/timer.c
-        heattest/lib/spi.c
-#        heattest/lib/adma.c
-        heattest/lib/gpio.c
-        heattest/lib/mutex.c
-        heattest/lib/memory.c
-        heattest/lib/pcie.c
-        heattest/lib/mishin_hscb.c
-        heattest/lib/fpu.c
-#        heattest/lib/hscb.c
-        heattest/lib/lscb.c
-#        heattest/lib/uart.c
-#        heattest/lib/hscb_.c
-#        heattest/lib/pcie_hardloopback.c
-        heattest/lib/mbist.c
-#        heattest/lib/sdio.c
-)
-
-
 endmacro()
 
 function(RUMBOOT_PLATFORM_PRINT_SUMMARY)
