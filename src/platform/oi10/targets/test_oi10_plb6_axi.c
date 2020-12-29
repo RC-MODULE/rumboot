@@ -24,16 +24,29 @@
 #include <arch/ppc_476fp_mmu.h>
 #include <platform/devices/emi.h>
 #include <platform/devices/dma2plb6.h>
+#include <platform/devices/plb6mcif2.h>
 #include <platform/devices/nor_1636RR4.h>
 #include <platform/devices/hscb.h>
+#include <platform/regs/regs_plb6mcif2.h>
 
 #define GRETH_TEST_DATA_MISALIGN_IM0    0
 #define GRETH_TEST_DATA_MISALIGN_IM1    0
 #define GRETH_TEST_DATA_MISALIGN_IM2    0
 #define GRETH_TEST_DATA_MISALIGN_EM2    0
 
+#define GRETH_SRC_DATA_SEL              true
+#define GRETH_DST_DATA_SEL              false
 #define GRETH_TEST_DATA_LEN_BYTES       250
 #define GRETH_EDCL_DATA_LEN_BYTES       16
+#define GRETH_CKMODE_NORMAL             0
+#define GRETH_CKMODE_RDFAIL             1
+#define GRETH_CKMODE_WRFAIL             2
+#define GRETH_CKMODE_RWFAIL             3
+#define GRETH_CKMODES                   4
+#define GRETH_RAM_PRESENT               (SRAM0_BASE + 0x00000000)
+#define GRETH_RAM_ABSENT                (SRAM0_BASE + 0x00800000)
+#define GRETH_FILL_SRC_EN_MASK          ((1 << GRETH_CKMODE_NORMAL)   | \
+                                         (1 << GRETH_CKMODE_WRFAIL))
 
 #define EDCL_TEST_ADDR_IM0              (IM0_BASE + 0x4000 + 0x100)
 #define EDCL_TEST_ADDR_IM1              (IM1_BASE + 0x4000 + 0x100)
@@ -53,12 +66,14 @@
 #define EDCLIP0_TEST                    (EDCLIP | EDCLADDRL0_TEST)
 #define EDCLIP1_TEST                    (EDCLIP | EDCLADDRL1_TEST)
 
-#define TST_MAC_MSB                     0xFFFF
+#define TST_MAC_MSB                     0x0000FFFF
 #define TST_MAC_LSB                     0xFFFFFFFF
 
-#define HCB_IRQ_FLAGS                   (RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH)
-#define ETH_IRQ_FLAGS                   (RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH)
+#define HCB_IRQ_F                       (RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH)
+#define ETH_IRQ_F                       (RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH)
 
+#define TEST_DATA_SIZE                  128
+#define TEST_DATA_CONTENT               0xFEDCBA9876543210ULL
 #define TESTDATA_BASE                   (SRAM0_BASE + 0x1000)
 #define HSCB_DESC_BASE                  (SRAM0_BASE + 0x0100)
 #define PERIPH_TEST_DATA_LEN 250
@@ -77,7 +92,6 @@
 #define PERIPH_TEST_PATTERN_7           0x29303132
 
 #define RAMPAGE(T,B,P,I)                ((T*)((B) + ((P) * (I))))
-#define RAMPAGE8(B,P,I)                 RAMPAGE(uint8_t,B,P,I)
 #define TD_PAGE(P,I)                    RAMPAGE(uint32_t,TESTDATA_BASE,P,I)
 #define HSCB_DESC_PAGE(P,I)             RAMPAGE(uint32_t,HSCB_DESC_BASE,P,I)
 #define PRETTY_HEXDUMP(V,S)             hexDump(#V,(void*)V,S)
@@ -101,13 +115,68 @@ struct test_pattern_t
 };
 typedef struct test_pattern_t test_pattern_t;
 
-greth_mac_t tst_greth_mac       = {TST_MAC_MSB, TST_MAC_LSB};
-greth_mac_t tst_greth_edcl_mac0 = {EDCLMAC_MSB, (EDCLMAC_LSB | EDCLADDRL0_TEST)};
-greth_mac_t tst_greth_edcl_mac1 = {EDCLMAC_MSB, (EDCLMAC_LSB | EDCLADDRL1_TEST)};
+struct greth_instance
+{
+    uint32_t    base_addr;
+    volatile
+    uint32_t   *irq_handled;
+};
+typedef struct greth_instance greth_instance;
 
-#if defined(CHECK_AXI_PLB6_SINGLE) || defined(CHECK_AXI_PLB6_BURST)
-static uint8_t  *test_data_src = RAMPAGE8(SRAM0_BASE, 0x400, 1),
-                *test_data_dst = RAMPAGE8(SRAM0_BASE, 0x400, 2);
+uint32_t  edcl_seq_number   = 0;
+uint8_t  *edcl_test_data_wr = NULL;
+
+greth_descr_t*  tx_descriptor_data;
+greth_descr_t*  rx_descriptor_data;
+
+#ifdef CHECK_AXI_PLB6_SINGLE
+struct pu8_src_dst_pair_t
+{
+    uint8_t *src;
+    uint8_t *dst;
+};
+typedef struct pu8_src_dst_pair_t pu8_src_dst_pair_t;
+
+static volatile
+uint32_t GRETH0_IRQ_HANDLED  = 0,
+         GRETH1_IRQ_HANDLED  = 0,
+         GRETH0_STATUS       = 0,
+         GRETH1_STATUS       = 0;
+
+greth_mac_t tst_greth_mac    = {TST_MAC_MSB, TST_MAC_LSB};
+
+static greth_instance in[]   =
+{
+        {
+                .base_addr   = GRETH_0_BASE,
+                .irq_handled = &GRETH0_IRQ_HANDLED
+        },
+        {
+                .base_addr   = GRETH_1_BASE,
+                .irq_handled = &GRETH1_IRQ_HANDLED
+        }
+};
+
+static pu8_src_dst_pair_t greth_test_info[GRETH_CKMODES] =
+{
+        {
+                .src = RAMPAGE(uint8_t, GRETH_RAM_PRESENT, 0x400, 1),
+                .dst = RAMPAGE(uint8_t, GRETH_RAM_PRESENT, 0x400, 2)
+        },
+        {
+                .src = RAMPAGE(uint8_t, GRETH_RAM_ABSENT,  0x400, 1),
+                .dst = RAMPAGE(uint8_t, GRETH_RAM_PRESENT, 0x400, 3)
+        },
+        {
+                .src = RAMPAGE(uint8_t, GRETH_RAM_PRESENT, 0x400, 4),
+                .dst = RAMPAGE(uint8_t, GRETH_RAM_ABSENT,  0x400, 2)
+        },
+        {
+                .src = RAMPAGE(uint8_t, GRETH_RAM_ABSENT,  0x400, 3),
+                .dst = RAMPAGE(uint8_t, GRETH_RAM_ABSENT,  0x400, 4)
+        }
+};
+
 #endif
 
 #ifdef CHECK_AXI_PLB6_BURST
@@ -145,25 +214,10 @@ static uint32_t *test_hscb0_data_src  = TD_PAGE(0x400, 1),
 
 #endif
 
-static uint32_t volatile GRETH0_IRQ_HANDLED = 0;
-static uint32_t volatile GRETH1_IRQ_HANDLED = 0;
-
-uint32_t edcl_seq_number = 0;
-uint8_t* edcl_test_data_wr;
-
-greth_descr_t*  tx_descriptor_data_;
-greth_descr_t*  rx_descriptor_data_;
-
-struct greth_instance
-{
-    uint32_t  base_addr;
-    uint32_t volatile*  irq_handled;
-};
-
+#if 0
 #define DEBUGOUT    rumboot_printf
 #define EOL         "\n"
 
-#if 0
 void hexDump(char *desc, void *addr, int len)
 {
     int i, h = 0;
@@ -240,46 +294,94 @@ void hexDump(char *desc, void *addr, int len)
 }
 #endif
 
-static void handler_eth( int irq, void *arg )
+#ifdef CHECK_AXI_PLB6_SINGLE
+static void handler_eth(int irq, void *arg)
 {
-    uint32_t cur_status;
-    uint32_t mask;
-    struct greth_instance* gr_inst = (struct greth_instance* ) arg;
+    uint32_t        cur_status  = 0,
+                    greth_idx   = 0;
+    volatile
+    uint32_t       *pstatus     = &GRETH0_STATUS;
+    greth_instance *gr_inst     = (greth_instance*)arg;
+    static const
+    uint32_t        mask        =
+            ((1U << GRETH_STATUS_IA)    |
+             (1U << GRETH_STATUS_TS)    |
+             (1U << GRETH_STATUS_TA)    |
+             (1U << GRETH_STATUS_RA)    |
+             (1U << GRETH_STATUS_TI)    |
+             (1U << GRETH_STATUS_TE)    |
+             (1U << GRETH_STATUS_RI)    |
+             (1U << GRETH_STATUS_RE));
 
-    rumboot_printf( "GRETH%d(0x%X) IRQ arrived  \n",
-            GET_GRETH_IDX(gr_inst->base_addr),
-            gr_inst->base_addr );
-    mask = ((1 << GRETH_STATUS_IA)  |
-            (1 << GRETH_STATUS_TS)  |
-            (1 << GRETH_STATUS_TA)  |
-            (1 << GRETH_STATUS_RA)  |
-            (1 << GRETH_STATUS_TI)  |
-            (1 << GRETH_STATUS_TE)  |
-            (1 << GRETH_STATUS_RI)  |
-            (1 << GRETH_STATUS_RE));
+    greth_idx = GET_GRETH_IDX(gr_inst->base_addr);
+    if(greth_idx & 0x01) pstatus = &GRETH1_STATUS;
+    rumboot_printf("GRETH%d(0x%X) IRQ arrived  \n",
+            greth_idx, gr_inst->base_addr);
 
-    cur_status = greth_get_status(gr_inst->base_addr);
+    *pstatus = cur_status = greth_get_status(gr_inst->base_addr);
 
     if(cur_status & (1 << GRETH_STATUS_RI))
     {
         *(gr_inst->irq_handled) = 1;
-        rumboot_printf("Receive interrupt (0x%x)\n", cur_status );
+        rumboot_printf("Receive interrupt (0x%x)\n", cur_status);
     }
 
     if(cur_status & (1 << GRETH_STATUS_RE))
     {
         *(gr_inst->irq_handled) = 3;
-        rumboot_printf("Receive Error interrupt (0x%x)\n", cur_status );
+        rumboot_printf("Receive Error interrupt (0x%x)\n", cur_status);
     }
 
     if(!(cur_status & (1 << GRETH_STATUS_RI)) && !(cur_status & (1 << GRETH_STATUS_RE)))
     {
         *(gr_inst->irq_handled) = 2;
-        rumboot_printf( "Unexpected status (0x%x)\n", cur_status );
+        rumboot_printf("Unexpected status (0x%x)\n", cur_status);
     }
+
     greth_clear_status_bits(gr_inst->base_addr, mask);
     rumboot_printf("Exit from handler\n");
 }
+
+static bool _greth_wait_transmit(uint32_t base_addr)
+{
+    uint32_t    t           = 0;
+    uint32_t    cur_status  = 0;
+    uint32_t    greth_idx   = 0;
+    volatile
+    uint32_t   *pstatus     = &GRETH0_STATUS;
+
+    static const
+    uint32_t    mask        = ((1 << GRETH_STATUS_IA) |
+                               (1 << GRETH_STATUS_TS) |
+                               (1 << GRETH_STATUS_TA) |
+                               (1 << GRETH_STATUS_RA) |
+                               (1 << GRETH_STATUS_TI) |
+                               (1 << GRETH_STATUS_TE) |
+                               (1 << GRETH_STATUS_RE));
+
+    rumboot_printf("Waiting transmit..\n");
+
+    greth_idx = GET_GRETH_IDX(base_addr);
+    if(greth_idx & 0x01) pstatus = &GRETH1_STATUS;
+
+    do {cur_status = ioread32(base_addr + STATUS);}
+        while(!(cur_status & mask) && (t++ < GRETH_TIMEOUT));
+
+    *pstatus = cur_status;
+
+    if((t == GRETH_TIMEOUT) || !(cur_status & (1 << GRETH_STATUS_TI)))
+    {
+        rumboot_printf("Transmit is timed out (0x%X)\n", cur_status);
+        greth_clear_status_bits(base_addr, mask);
+        return false;
+    } else
+    {
+        rumboot_printf("Transmit is OK! (0x%X)\n", cur_status);
+        greth_clear_status_bits(base_addr, (1 << GRETH_STATUS_TI));
+        return true;
+    }
+}
+#endif
 
 #ifdef CHECK_AXI_PLB6_BURST
 static void handler_hscb(int irq, void *arg)
@@ -302,21 +404,7 @@ static void handler_hscb(int irq, void *arg)
 
     hscb_handler[idx] = true;
 }
-#endif
 
-static struct greth_instance in[] =
-{
-        {
-                .base_addr   = GRETH_0_BASE,
-                .irq_handled = &GRETH0_IRQ_HANDLED
-        },
-        {
-                .base_addr   = GRETH_1_BASE,
-                .irq_handled = &GRETH1_IRQ_HANDLED
-        }
-};
-
-#ifdef CHECK_AXI_PLB6_BURST
 void init_hscb_cfg(hscb_instance_t *hscb_inst)
 {
     rumboot_printf("[%s]: Init hscb instances...\n", __FUNCTION__);
@@ -370,7 +458,7 @@ rumboot_irq_entry *create_hscb_irq_handlers(hscb_instance_t* hscb_inst)
     init_hscb_cfg(hscb_inst);
 
     for(i = 0; i < 4; i++)
-        rumboot_irq_set_handler(tbl, il[i], HCB_IRQ_FLAGS,
+        rumboot_irq_set_handler(tbl, il[i], HCB_IRQ_F,
                 handler_hscb, hscb_inst + i);
 
     /* Activate the table */
@@ -384,19 +472,26 @@ rumboot_irq_entry *create_hscb_irq_handlers(hscb_instance_t* hscb_inst)
 }
 #endif
 
+void delete_irq_handlers(struct rumboot_irq_entry *tbl)
+{
+    rumboot_irq_table_activate(NULL);
+    rumboot_irq_free(tbl);
+}
+
+#ifdef CHECK_AXI_PLB6_SINGLE
 struct rumboot_irq_entry *create_greth01_irq_handlers()
 {
-    rumboot_printf( "Enable GRETH irqs\n" );
+    rumboot_printf("Enable GRETH irqs\n");
     rumboot_irq_cli();
-    struct rumboot_irq_entry *tbl = rumboot_irq_create( NULL );
+    struct rumboot_irq_entry *tbl = rumboot_irq_create(NULL);
 
     GRETH0_IRQ_HANDLED = 0;
     GRETH1_IRQ_HANDLED = 0;
 
-    rumboot_irq_set_handler(tbl, ETH0_INT, ETH_IRQ_FLAGS, handler_eth, in + 0);
-    rumboot_irq_set_handler(tbl, ETH1_INT, ETH_IRQ_FLAGS, handler_eth, in + 1);
+    rumboot_irq_set_handler(tbl, ETH0_INT, ETH_IRQ_F, handler_eth, in + 0);
+    rumboot_irq_set_handler(tbl, ETH1_INT, ETH_IRQ_F, handler_eth, in + 1);
 
-    rumboot_irq_table_activate( tbl );
+    rumboot_irq_table_activate(tbl);
     rumboot_irq_enable(ETH0_INT);
     rumboot_irq_enable(ETH1_INT);
     rumboot_irq_sei();
@@ -404,105 +499,85 @@ struct rumboot_irq_entry *create_greth01_irq_handlers()
     return tbl;
 }
 
-void delete_irq_handlers(struct rumboot_irq_entry *tbl)
-{
-    rumboot_irq_table_activate(NULL);
-    rumboot_irq_free(tbl);
-}
-
-#define CHK_GRETH_MDIO_READ(B,R)                                \
-    TEST_ASSERT(                                                \
-        greth_mdio_read(B,ETH_PHY_ADDR,R) == (R ## _DEFAULT),   \
-                "Error at mdio reading " #R "register\n")
-
-void mdio_check(uint32_t base_addr)
-{
-    rumboot_printf("MDIO check for GRETH%d(0x%x)\n",
-            GET_GRETH_IDX(base_addr), base_addr);
-
-    CHK_GRETH_MDIO_READ(base_addr, ETH_PHY_CTRL);
-    CHK_GRETH_MDIO_READ(base_addr, ETH_PHY_STATUS);
-    CHK_GRETH_MDIO_READ(base_addr, ETH_PHY_ID0);
-    CHK_GRETH_MDIO_READ(base_addr, ETH_PHY_ID1);
-    CHK_GRETH_MDIO_READ(base_addr, ETH_PHY_ANEGADV);
-    CHK_GRETH_MDIO_READ(base_addr, ETH_PHY_ANEGLP);
-    CHK_GRETH_MDIO_READ(base_addr, ETH_PHY_ANEGXP);
-    CHK_GRETH_MDIO_READ(base_addr, ETH_PHY_ANEGNPTX);
-    CHK_GRETH_MDIO_READ(base_addr, ETH_PHY_ANEGNPLP);
-    CHK_GRETH_MDIO_READ(base_addr, ETH_PHY_MSTSLVCTRL);
-    CHK_GRETH_MDIO_READ(base_addr, ETH_PHY_MSTSLVSTAT);
-    CHK_GRETH_MDIO_READ(base_addr, ETH_PHY_EXTSTATUS);
-}
-
-#undef CHK_GRETH_MDIO_READ
-
-#define GRETH_SRC_DATA_SEL  true
-#define GRETH_DST_DATA_SEL  false
-
-void prepare_test_data(uint8_t **ppsrc, uint8_t **ppdst, bool need_alloc)
+void prepare_test_data_greth(pu8_src_dst_pair_t *inf,
+                             bool                need_alloc,
+                             bool                need_fill)
 {
     uint32_t    i     = 0;
-    uint8_t    *psrc  = NULL;
+    uint8_t    *psrc  = inf->src;
 
-    //bool toggle = true;
+    rumboot_putstring("Preparing data...");
 
-    rumboot_putstring("Preparing data");
-
-    tx_descriptor_data_ = (greth_descr_t*)rumboot_malloc_from_heap_aligned(
+    tx_descriptor_data = (greth_descr_t*)
+            rumboot_malloc_from_heap_aligned(
             1, 3 * sizeof(greth_descr_t), 1024);
-    rx_descriptor_data_ = (greth_descr_t*)rumboot_malloc_from_heap_aligned(
+    rx_descriptor_data = (greth_descr_t*)
+            rumboot_malloc_from_heap_aligned(
             1, 3 * sizeof(greth_descr_t), 1024);
     rumboot_printf("Allocated from im1 for descrs(0x%X / 0x%x)\n",
-            (uint32_t)tx_descriptor_data_, (uint32_t)rx_descriptor_data_);
+            (uint32_t)tx_descriptor_data, (uint32_t)rx_descriptor_data);
 
     if(need_alloc)
     {
-        *ppsrc = (uint8_t*)rumboot_malloc_from_heap_misaligned(
-                    0, GRETH_TEST_DATA_LEN_BYTES, 16, GRETH_TEST_DATA_MISALIGN_IM0);
-        rumboot_printf("Allocated from im0 for src (0x%X)\n", (uint32_t)*ppsrc);
-        *ppdst = (uint8_t*)rumboot_malloc_from_heap_misaligned(
-                    0, GRETH_TEST_DATA_LEN_BYTES, 16, GRETH_TEST_DATA_MISALIGN_IM0);
-        rumboot_printf("Allocated from im0 for dst (0x%X)\n", (uint32_t)*ppdst);
+        inf->src = (uint8_t*)
+                rumboot_malloc_from_heap_misaligned(
+                    0, GRETH_TEST_DATA_LEN_BYTES, 16,
+                    GRETH_TEST_DATA_MISALIGN_IM0);
+        rumboot_printf("Allocated from im0 for src (0x%X)\n",
+                (uint32_t)inf->src);
+        inf->dst = (uint8_t*)
+                rumboot_malloc_from_heap_misaligned(
+                    0, GRETH_TEST_DATA_LEN_BYTES, 16,
+                    GRETH_TEST_DATA_MISALIGN_IM0);
+        rumboot_printf("Allocated from im0 for dst (0x%X)\n",
+                (uint32_t)inf->src);
     } else
     {
-        rumboot_putstring("Skip src and dst allocation\n");
-        rumboot_printf("Default %s is at 0x%X\n", "src", (uint32_t)*ppsrc);
-        rumboot_printf("Default %s is at 0x%X\n", "dst", (uint32_t)*ppdst);
+        rumboot_printf(
+                "Skip src and dst allocation "
+                "and use default addresses\n");
     }
 
-    psrc = *ppsrc;
-
-    rumboot_putstring("Fill source array...\n");
-    psrc[i++] = (uint8_t)((tst_greth_mac.mac_lsb & 0x00FF0000) >> 16);
-    psrc[i++] = (uint8_t)((tst_greth_mac.mac_lsb & 0xFF000000) >> 24);
-    psrc[i++] = (uint8_t)((tst_greth_mac.mac_msb & 0x000000FF) >>  0);
-    psrc[i++] = (uint8_t)((tst_greth_mac.mac_msb & 0x0000FF00) >>  8);
-
-    psrc[i++] = (uint8_t)((tst_greth_mac.mac_msb & 0x000000FF) >>  0);
-    psrc[i++] = (uint8_t)((tst_greth_mac.mac_msb & 0x0000FF00) >>  8);
-    psrc[i++] = (uint8_t)((tst_greth_mac.mac_lsb & 0x000000FF) >>  0);
-    psrc[i++] = (uint8_t)((tst_greth_mac.mac_lsb & 0x0000FF00) >>  8);
-
-    psrc[i++] = (uint8_t)((tst_greth_mac.mac_lsb & 0x000000FF) >>  0);
-    psrc[i++] = (uint8_t)((tst_greth_mac.mac_lsb & 0x0000FF00) >>  8);
-    psrc[i++] = (uint8_t)((tst_greth_mac.mac_lsb & 0x00FF0000) >> 16);
-    psrc[i++] = (uint8_t)((tst_greth_mac.mac_lsb & 0xFF000000) >> 24);
-
-    psrc[i++] = (uint8_t)(((GRETH_TEST_DATA_LEN_BYTES - 14) & 0x00FF) >> 0);
-    psrc[i++] = (uint8_t)(((GRETH_TEST_DATA_LEN_BYTES - 14) & 0xFF00) >> 8);
-    psrc[i++] = (uint8_t)(0);
-    psrc[i++] = (uint8_t)(0);
-
-    while(i < GRETH_TEST_DATA_LEN_BYTES)
+    if(need_fill)
     {
-        psrc[i] = i;
-        i++;
+        rumboot_putstring("Fill source array...\n");
+        psrc[i++] = (uint8_t)((tst_greth_mac.mac_lsb & 0x00FF0000) >> 16);
+        psrc[i++] = (uint8_t)((tst_greth_mac.mac_lsb & 0xFF000000) >> 24);
+        psrc[i++] = (uint8_t)((tst_greth_mac.mac_msb & 0x000000FF) >>  0);
+        psrc[i++] = (uint8_t)((tst_greth_mac.mac_msb & 0x0000FF00) >>  8);
+
+        psrc[i++] = (uint8_t)((tst_greth_mac.mac_msb & 0x000000FF) >>  0);
+        psrc[i++] = (uint8_t)((tst_greth_mac.mac_msb & 0x0000FF00) >>  8);
+        psrc[i++] = (uint8_t)((tst_greth_mac.mac_lsb & 0x000000FF) >>  0);
+        psrc[i++] = (uint8_t)((tst_greth_mac.mac_lsb & 0x0000FF00) >>  8);
+
+        psrc[i++] = (uint8_t)((tst_greth_mac.mac_lsb & 0x000000FF) >>  0);
+        psrc[i++] = (uint8_t)((tst_greth_mac.mac_lsb & 0x0000FF00) >>  8);
+        psrc[i++] = (uint8_t)((tst_greth_mac.mac_lsb & 0x00FF0000) >> 16);
+        psrc[i++] = (uint8_t)((tst_greth_mac.mac_lsb & 0xFF000000) >> 24);
+
+        psrc[i++] = (uint8_t)
+                (((GRETH_TEST_DATA_LEN_BYTES - 14) & 0x00FF) >> 0);
+        psrc[i++] = (uint8_t)
+                (((GRETH_TEST_DATA_LEN_BYTES - 14) & 0xFF00) >> 8);
+        psrc[i++] = (uint8_t)(0);
+        psrc[i++] = (uint8_t)(0);
+
+        while(i < GRETH_TEST_DATA_LEN_BYTES)
+        {
+            psrc[i] = i;
+            i++;
+        }
     }
+
+    rumboot_putstring("Preparing data finished");
+}
+#endif
 
 #ifdef CHECK_AXI_PLB6_BURST
-
-    static const size_t hscb_dsz    = sizeof(test_hscbx_src_data),
-                        mwsz        = sizeof(uint32_t);
+void prepare_test_data_hscb(void *psrc_data, size_t dsz)
+{
+    rumboot_putstring("Preparing data...");
 
     PRETTY_PRINT_VAR(test_hscb0_data_src);
     PRETTY_PRINT_VAR(test_hscb0_data_dst);
@@ -513,22 +588,26 @@ void prepare_test_data(uint8_t **ppsrc, uint8_t **ppdst, bool need_alloc)
     PRETTY_PRINT_VAR(test_hscb3_data_src);
     PRETTY_PRINT_VAR(test_hscb3_data_dst);
 
-    memcpy(test_hscb0_data_src, test_hscbx_src_data, hscb_dsz);
-    memcpy(test_hscb1_data_src, test_hscbx_src_data, hscb_dsz);
-    memcpy(test_hscb2_data_src, test_hscbx_src_data, hscb_dsz);
-    memcpy(test_hscb3_data_src, test_hscbx_src_data, hscb_dsz);
-
-#endif
+    memcpy((void*)test_hscb0_data_src, psrc_data, dsz);
+    memcpy((void*)test_hscb1_data_src, psrc_data, dsz);
+    memcpy((void*)test_hscb2_data_src, psrc_data, dsz);
+    memcpy((void*)test_hscb3_data_src, psrc_data, dsz);
 
     rumboot_putstring("Preparing data finished");
 }
+#endif
 
-void check_transfer_via_external_loopback(uint32_t  base_addr_src_eth,
-                                          uint8_t  *ptest_data_src,
-                                          uint8_t  *ptest_data_dst)
+#ifdef CHECK_AXI_PLB6_SINGLE
+void check_transfer_via_ext_loop(uint32_t  base_addr_src_eth,
+                                  uint8_t  *ptest_data_src,
+                                  uint8_t  *ptest_data_dst,
+                                  int       ckmode)
 {
-    uint32_t base_addr_dst_eth;
-    uint32_t volatile *eth_handled_flag_ptr;
+    volatile
+    uint32_t    *eth_handled_flag_ptr   = NULL,
+                *psrc_status            = NULL,
+                *pdst_status            = NULL;
+    uint32_t     base_addr_dst_eth      = 0x00000000;
 
     // test_event(EVENT_CHECK_RUN_HPROT_MONITOR);
     // checking switch u_nic400_oi10_axi32.hprot_eth_1(0)_s
@@ -539,20 +618,24 @@ void check_transfer_via_external_loopback(uint32_t  base_addr_src_eth,
             (base_addr_src_eth == GRETH_1_BASE) ||
             (base_addr_src_eth == GRETH_0_BASE),
                 "Wrong GRETH base address\n");
+
     base_addr_dst_eth = (base_addr_src_eth == GRETH_0_BASE)
             ? GRETH_1_BASE : GRETH_0_BASE;
 
     if (base_addr_src_eth == GRETH_1_BASE)
     {
-        base_addr_dst_eth = GRETH_0_BASE;
-        GRETH0_IRQ_HANDLED = 0;
+        base_addr_dst_eth    = GRETH_0_BASE;
+        psrc_status          = &GRETH1_STATUS;
+        pdst_status          = &GRETH0_STATUS;
         eth_handled_flag_ptr = &GRETH0_IRQ_HANDLED;
-    }
-    else
+        GRETH0_IRQ_HANDLED   = 0;
+    } else
     {
-        base_addr_dst_eth = GRETH_1_BASE;
-        GRETH1_IRQ_HANDLED = 0;
+        base_addr_dst_eth    = GRETH_1_BASE;
+        psrc_status          = &GRETH0_STATUS;
+        pdst_status          = &GRETH1_STATUS;
         eth_handled_flag_ptr = &GRETH1_IRQ_HANDLED;
+        GRETH1_IRQ_HANDLED   = 0;
     }
 
     rumboot_printf("\n[%s] Checking transfer from 0x%X to 0x%x\n",
@@ -562,81 +645,114 @@ void check_transfer_via_external_loopback(uint32_t  base_addr_src_eth,
     greth_configure_for_receive(base_addr_dst_eth,
             ptest_data_dst,
             GRETH_TEST_DATA_LEN_BYTES,
-            rx_descriptor_data_,
+            rx_descriptor_data,
             &tst_greth_mac);
     greth_configure_for_transmit(base_addr_src_eth,
             ptest_data_src,
             GRETH_TEST_DATA_LEN_BYTES,
-            tx_descriptor_data_,
+            tx_descriptor_data,
             &tst_greth_mac);
 
     greth_start_receive(base_addr_dst_eth, true);
     greth_start_transmit(base_addr_src_eth);
 
-    TEST_ASSERT(greth_wait_receive_irq(base_addr_dst_eth,
-            eth_handled_flag_ptr), "Receiving is failed\n");
-    TEST_ASSERT(!memcmp(ptest_data_src, ptest_data_dst,
-            GRETH_TEST_DATA_LEN_BYTES), "Data compare error!\n");
+    switch(ckmode)
+    {
+        case GRETH_CKMODE_NORMAL:
+            TEST_ASSERT(_greth_wait_transmit(base_addr_src_eth),
+                    "GRETH transmition error!\n");
+            TEST_ASSERT(greth_wait_receive_irq(base_addr_dst_eth,
+                    eth_handled_flag_ptr), "Receiving IRQ is failed\n");
+            TEST_ASSERT(!memcmp(ptest_data_src, ptest_data_dst,
+                    GRETH_TEST_DATA_LEN_BYTES), "Data compare error!\n");
+            memset(ptest_data_dst, 0, GRETH_TEST_DATA_LEN_BYTES);
+            break;
+        case GRETH_CKMODE_RDFAIL:
+            TEST_ASSERT(_greth_wait_transmit(base_addr_src_eth),
+                    "GRETH transmition error!\n");
+            memset(ptest_data_dst, 0, GRETH_TEST_DATA_LEN_BYTES);
+            break;
+        case GRETH_CKMODE_WRFAIL:
+            TEST_ASSERT(_greth_wait_transmit(base_addr_src_eth),
+                    "GRETH transmition error!\n");
+            break;
+        default: break;
+    }
 
-    memset(ptest_data_dst, 0, GRETH_TEST_DATA_LEN_BYTES);
+    rumboot_printf("GRETH %s STATUS: 0x%X\n", "SRC", *psrc_status);
+    rumboot_printf("GRETH %s STATUS: 0x%X\n", "DST", *pdst_status);
 
-    rumboot_free(tx_descriptor_data_);
-    rumboot_free(rx_descriptor_data_);
+    rumboot_free(tx_descriptor_data);
+    rumboot_free(rx_descriptor_data);
     //test_event(EVENT_CHECK_STOP_HPROT_MONITOR);
 }
 
-#ifdef CHECK_AXI_PLB6_SINGLE
 void test_oi10_greth(void)
 {
-	struct rumboot_irq_entry *tbl;
+	struct
+	rumboot_irq_entry   *tbl;
+    pu8_src_dst_pair_t   dma;
+    uint32_t             oldMR0CF;
+    int                  i;
+    static const
+    uint32_t             newMR0CF   =       // Set Rank0 base addr and size
+              reg_field(3, (0x00 & 0b1110)) // M_BA[0:2]  = PUABA[28:30]
+            | reg_field(12, 0b0000000000)   // M_BA[3:12] = 0b0000000000
+            | reg_field(19, 0b0000)         // Set Rank0 size = 8MB
+            | reg_field(31, 0b1);           // Enable Rank0
+
+
     rumboot_printf("Start test_oi10_greth. Transmit/receive checks\n");
     //test_event_send_test_id("test_oi10_greth");
     tbl = create_greth01_irq_handlers();
-    prepare_test_data(&test_data_src, &test_data_dst, false);
-    check_transfer_via_external_loopback(GRETH_0_BASE,
-            (uint8_t*)rumboot_virt_to_dma(test_data_src),
-            (uint8_t*)rumboot_virt_to_dma(test_data_dst));
+
+    oldMR0CF = dcr_read(DCR_EM2_PLB6MCIF2_BASE + PLB6MCIF2_MR0CF);
+
+    for(i = 0; i < GRETH_CKMODES; i++)
+    {
+        rumboot_printf("----------------------------------------\n");
+        prepare_test_data_greth(greth_test_info + i,
+                false, !!((1 << i) & GRETH_FILL_SRC_EN_MASK));
+        dma.src = (uint8_t*)rumboot_virt_to_dma(greth_test_info[i].src);
+        dma.dst = (uint8_t*)rumboot_virt_to_dma(greth_test_info[i].dst);
+        rumboot_printf(
+                "Check transfer mode #%d: "
+                "0x%X(0x%X) -> 0x%X(0x%X)...\n", i,
+                (uint32_t)greth_test_info[i].src, (uint32_t)dma.src,
+                (uint32_t)greth_test_info[i].dst, (uint32_t)dma.dst);
+        if(i != GRETH_CKMODE_NORMAL)
+        {
+            dcr_write(DCR_EM2_PLB6MCIF2_BASE + PLB6MCIF2_MR0CF, newMR0CF);
+
+            rumboot_printf("MR%dCF: OLD=0x%X, NEW=0x%X\n", 0,
+                    oldMR0CF, newMR0CF);
+        }
+
+        check_transfer_via_ext_loop(GRETH_0_BASE, dma.src, dma.dst, i);
+
+        if(i != GRETH_CKMODE_NORMAL)
+            dcr_write(DCR_EM2_PLB6MCIF2_BASE + PLB6MCIF2_MR0CF, oldMR0CF);
+    }
+
     delete_irq_handlers(tbl);
 }
 #endif
 
-//-------------------------------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
-
-#define TEST_DATA_SIZE 128
-#define TEST_DATA_CONTENT 0xFEDCBA9876543210
-
- #define stmw(base, shift)          \
-    asm volatile ("\n\t"            \
-        "addis 26, 0,  0x0101 \n\t" \
-        "addi  26, 26, 0x0101 \n\t" \
-        "addis 27, 0,  0x0101 \n\t" \
-        "addi  27, 27, 0x0101 \n\t" \
-        "addis 28, 0,  0x0101 \n\t" \
-        "addi  28, 28, 0x0101 \n\t" \
-        "addis 29, 0,  0x0101 \n\t" \
-        "addi  29, 29, 0x0101 \n\t" \
-        "addis 30, 0,  0x0101 \n\t" \
-        "addi  30, 30, 0x0101 \n\t" \
-        "addis 31, 0,  0x0202 \n\t" \
-        "addi  31, 31, 0x0202 \n\t" \
-        "addis 25, 0, %0 \n\t"      \
-        "stmw 26, %1(25) \n\t"      \
-        ::"i"(base), "i"(shift)     \
-    )
-
+#ifdef CHECK_PLB6_AXI_SINGLE
 struct regpoker_checker greth_check_array[] =
 {
-    { "CTRL              ",  REGPOKER_READ32,  CTRL              , 0x9A000090, 0xFE007CFF },
-    { "MDIO_CTRL         ",  REGPOKER_READ32,  MDIO_CTRL         , 0x01E10140, 0xFFFFFFCF },
-    { "TRANSMIT_DESCR_PTR",  REGPOKER_READ8,   TRANSMIT_DESCR_PTR, 0x0, 0x3F8 },
-    { "RECEIVER_DESCR_PTR",  REGPOKER_READ8,   RECEIVER_DESCR_PTR, 0x0, 0x3F8 },
-    { "EDCL_IP           ",  REGPOKER_READ32,  EDCL_IP           , EDCLIP , ~0 },
-    { "EDCL_MAC_MSB      ",  REGPOKER_READ32,  EDCL_MAC_MSB      , EDCLMAC_MSB, 0xffff },
-    { "EDCL_MAC_LSB      ",  REGPOKER_READ32,  EDCL_MAC_LSB      , EDCLMAC_LSB, ~0 },
-    { "EDCL_IP           ",  REGPOKER_WRITE32, EDCL_IP           , 0, ~0 },
-    { "EDCL_MAC_MSB      ",  REGPOKER_WRITE32, EDCL_MAC_MSB      , 0, 0xffff },
-    { "EDCL_MAC_LSB      ",  REGPOKER_WRITE32, EDCL_MAC_LSB      , 0, ~0 }
+    {"CTRL              ", REGPOKER_READ32,  CTRL              , 0x9A000090,  0xFE007CFF},
+    {"MDIO_CTRL         ", REGPOKER_READ32,  MDIO_CTRL         , 0x01E10140,  0xFFFFFFCF},
+    {"TRANSMIT_DESCR_PTR", REGPOKER_READ8,   TRANSMIT_DESCR_PTR, 0x00000000,  0x3F8},
+    {"RECEIVER_DESCR_PTR", REGPOKER_READ8,   RECEIVER_DESCR_PTR, 0x00000000,  0x3F8},
+    {"EDCL_IP           ", REGPOKER_READ32,  EDCL_IP           , EDCLIP,      ~0},
+    {"EDCL_MAC_MSB      ", REGPOKER_READ32,  EDCL_MAC_MSB      , EDCLMAC_MSB, 0xFFFF},
+    {"EDCL_MAC_LSB      ", REGPOKER_READ32,  EDCL_MAC_LSB      , EDCLMAC_LSB, ~0},
+    {"EDCL_IP           ", REGPOKER_WRITE32, EDCL_IP           , 0x00000000,  ~0},
+    {"EDCL_MAC_MSB      ", REGPOKER_WRITE32, EDCL_MAC_MSB      , 0x00000000,  0xFFFF},
+    {"EDCL_MAC_LSB      ", REGPOKER_WRITE32, EDCL_MAC_LSB      , 0x00000000,  ~0}
 };
 
 void regs_check(uint32_t base_addr)
@@ -647,18 +763,19 @@ void regs_check(uint32_t base_addr)
                 1, base_addr);
         greth_check_array[4].expected  = EDCLIP1;
         greth_check_array[6].expected |= EDCLADDRL1;
-    }
-    else
+    } else
     {
         rumboot_printf("Checking access to GRETH%d(0x%x) registers\n",
                 0, base_addr);
     }
+
     TEST_ASSERT(rumboot_regpoker_check_array(
             greth_check_array, base_addr),
             "Failed to check GRETH registers\n");
 }
+#endif
 
-
+#ifdef CHECK_PLB6_AXI_BURST
 static void fill(uint64_t *s, uint64_t pattern, uint32_t size_in_bytes)
 {
     uint32_t i;
@@ -789,6 +906,7 @@ check_dma2plb6_0_mem_to_mem(uint32_t source_ea, uint32_t dest_ea,
     }
     return true;
 }
+#endif
 
 #ifdef CHECK_PLB6_AXI_SINGLE
 static void byte_plb_axi_test(uint32_t base_addr)
@@ -964,7 +1082,7 @@ void single_plb6_axi_test(uint32_t base_addr)
 #endif
 
 #ifdef CHECK_AXI_PLB6_BURST
-void run_hscb_transfers_via_external_loopback(hscb_instance_t *hscb_inst)
+void run_hscb_transfers_via_ext_loop(hscb_instance_t *hscb_inst)
 {
     uint32_t i;
 
@@ -973,19 +1091,6 @@ void run_hscb_transfers_via_external_loopback(hscb_instance_t *hscb_inst)
         hscb_run_wdma(hscb_inst[i].src_hscb_base_addr); // run wdma
         hscb_run_rdma(hscb_inst[i].src_hscb_base_addr); // run rdma
     }
-}
-
-void test_oi10_hscb(void)
-{
-    struct rumboot_irq_entry *tbl;
-    rumboot_printf("Start test_oi10_hscb. Transmit/receive checks\n");
-    // test_event_send_test_id("test_oi10_greth");
-    tbl = create_greth01_irq_handlers();
-    prepare_test_data(&test_data_src, &test_data_dst, true);
-    check_transfer_via_external_loopback(GRETH_0_BASE,
-            (uint8_t*)rumboot_virt_to_dma(test_data_src),
-            (uint8_t*)rumboot_virt_to_dma(test_data_dst));
-    delete_irq_handlers(tbl);
 }
 
 void configure_hscb(hscb_instance_t     *hscb_inst,
@@ -1084,6 +1189,7 @@ void hscb_memcmp(hscb_instance_t* hscb_cfg)
 
 int main(void)
 {
+
 #ifdef CHECK_PLB6_AXI_SINGLE
     rumboot_putstring(
             "Start test_plb6_axi_greth.\n"
@@ -1123,6 +1229,10 @@ int main(void)
 #endif
 
 #ifdef CHECK_AXI_PLB6_SINGLE
+    rumboot_printf("Init EMI...\n");
+    emi_init(DCR_EM2_EMI_BASE);
+    rumboot_printf("Init done.\n");
+
     test_oi10_greth();
 #endif
 
@@ -1145,11 +1255,12 @@ int main(void)
 
     int arwlen_values[ARWLEN_ARR_SIZE] = {1,2,4,7,8,14,16};
 
-    // set_mem_window(MEM_WINDOW_0);
+    tbl = create_hscb_irq_handlers(hscb_cfg);
 
     rumboot_printf("Start test_oi10_hscb. Transmit/receive checks\n");
-    prepare_test_data(&test_data_src, &test_data_dst, false);
-    tbl = create_hscb_irq_handlers(hscb_cfg);
+    prepare_test_data_hscb(
+            (void*)test_hscbx_src_data,
+            sizeof(test_hscbx_src_data));
 
     int i;
     for (i = 0; i < ARWLEN_ARR_SIZE; i++)
@@ -1157,7 +1268,7 @@ int main(void)
         rumboot_printf("Check with ARWLEN: %d(0x%X) / ARWBURST: 0x%X\n",
                 arwlen_values[i], arwlen_codes[i], HSCB_ARWBURST_INCR);
         configure_hscb(hscb_cfg,  arwlen_codes[i], HSCB_ARWBURST_INCR);
-        run_hscb_transfers_via_external_loopback(hscb_cfg);
+        run_hscb_transfers_via_ext_loop(hscb_cfg);
         hscb_memcmp(hscb_cfg);
     }
 
