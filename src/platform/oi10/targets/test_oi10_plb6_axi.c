@@ -43,10 +43,15 @@
 #define GRETH_CKMODE_WRFAIL             2
 #define GRETH_CKMODE_RWFAIL             3
 #define GRETH_CKMODES                   4
+#define GRETH_CKMODES_MASK              (0b0111)
 #define GRETH_RAM_PRESENT               (SRAM0_BASE + 0x00000000)
 #define GRETH_RAM_ABSENT                (SRAM0_BASE + 0x00800000)
 #define GRETH_FILL_SRC_EN_MASK          ((1 << GRETH_CKMODE_NORMAL)   | \
                                          (1 << GRETH_CKMODE_WRFAIL))
+#define GRETH_TERR_BITS                 ((1 << GRETH_STATUS_TE)       | \
+                                         (1 << GRETH_STATUS_TA))
+#define GRETH_RERR_BITS                 ((1 << GRETH_STATUS_RE)       | \
+                                         (1 << GRETH_STATUS_RA))
 
 #define EDCL_TEST_ADDR_IM0              (IM0_BASE + 0x4000 + 0x100)
 #define EDCL_TEST_ADDR_IM1              (IM1_BASE + 0x4000 + 0x100)
@@ -598,6 +603,10 @@ void prepare_test_data_hscb(void *psrc_data, size_t dsz)
 #endif
 
 #ifdef CHECK_AXI_PLB6_SINGLE
+
+#define TEM_MSG     "Transmit error mismatch!"
+#define REM_MSG     "Receive error mismatch!"
+
 void check_transfer_via_ext_loop(uint32_t  base_addr_src_eth,
                                   uint8_t  *ptest_data_src,
                                   uint8_t  *ptest_data_dst,
@@ -668,13 +677,21 @@ void check_transfer_via_ext_loop(uint32_t  base_addr_src_eth,
             memset(ptest_data_dst, 0, GRETH_TEST_DATA_LEN_BYTES);
             break;
         case GRETH_CKMODE_RDFAIL:
-            TEST_ASSERT(_greth_wait_transmit(base_addr_src_eth),
-                    "GRETH transmition error!\n");
+            _greth_wait_transmit(base_addr_src_eth);
+            greth_wait_receive_irq(base_addr_dst_eth, eth_handled_flag_ptr);
+            TEST_ASSERT(*psrc_status & GRETH_TERR_BITS, TEM_MSG);
             memset(ptest_data_dst, 0, GRETH_TEST_DATA_LEN_BYTES);
             break;
         case GRETH_CKMODE_WRFAIL:
-            TEST_ASSERT(_greth_wait_transmit(base_addr_src_eth),
-                    "GRETH transmition error!\n");
+            _greth_wait_transmit(base_addr_src_eth);
+            TEST_ASSERT(*pdst_status & GRETH_RERR_BITS, REM_MSG);
+            greth_wait_receive_irq(base_addr_dst_eth, eth_handled_flag_ptr);
+            break;
+        case GRETH_CKMODE_RWFAIL:
+            _greth_wait_transmit(base_addr_src_eth);
+            greth_wait_receive_irq(base_addr_dst_eth, eth_handled_flag_ptr);
+            TEST_ASSERT(*psrc_status & GRETH_TERR_BITS, TEM_MSG);
+            TEST_ASSERT(*pdst_status & GRETH_RERR_BITS, REM_MSG);
             break;
         default: break;
     }
@@ -700,6 +717,13 @@ void test_oi10_greth(void)
             | reg_field(12, 0b0000000000)   // M_BA[3:12] = 0b0000000000
             | reg_field(19, 0b0000)         // Set Rank0 size = 8MB
             | reg_field(31, 0b1);           // Enable Rank0
+    static const char   *cmn[]      =
+    {
+            "NORMAL",
+            "READ FAIL",
+            "WRITE FAIL",
+            "READ AND WRITE FAIL"
+    };
 
 
     rumboot_printf("Start test_oi10_greth. Transmit/receive checks\n");
@@ -710,14 +734,17 @@ void test_oi10_greth(void)
 
     for(i = 0; i < GRETH_CKMODES; i++)
     {
+        // Skip disabled checks
+        if(!(GRETH_CKMODES_MASK & (1 << i))) continue;
+
         rumboot_printf("----------------------------------------\n");
         prepare_test_data_greth(greth_test_info + i,
                 false, !!((1 << i) & GRETH_FILL_SRC_EN_MASK));
         dma.src = (uint8_t*)rumboot_virt_to_dma(greth_test_info[i].src);
         dma.dst = (uint8_t*)rumboot_virt_to_dma(greth_test_info[i].dst);
         rumboot_printf(
-                "Check transfer mode #%d: "
-                "0x%X(0x%X) -> 0x%X(0x%X)...\n", i,
+                "Check transfer mode #%d (%s): "
+                "0x%X(0x%X) -> 0x%X(0x%X)...\n", i, cmn[i],
                 (uint32_t)greth_test_info[i].src, (uint32_t)dma.src,
                 (uint32_t)greth_test_info[i].dst, (uint32_t)dma.dst);
         if(i != GRETH_CKMODE_NORMAL)
