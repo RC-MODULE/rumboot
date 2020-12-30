@@ -1,0 +1,32 @@
+/*
+ * regs_mcif2arb4.h
+ *
+ *  Created on: June 25, 2018
+ *      Author: s.chernousov
+ */
+
+#ifndef REGS_MCIF2ARB4_H_
+#define REGS_MCIF2ARB4_H_
+
+#include <arch/common_macros.h>
+
+
+
+BEGIN_ENUM( MCIF2ARB4_REG )
+DECLARE_ENUM_VAL( MCIF2ARB4_MACR,     0x00 )
+
+END_ENUM( MCIF2ARB4_REG )
+
+BEGIN_ENUM( MCIF2ARB4_REG_DFLT )
+DECLARE_ENUM_VAL( MCIF2ARB4_MACR_DFLT,        0x08000000 )
+
+END_ENUM( MCIF2ARB4_REG_DFLT )
+
+BEGIN_ENUM( MCIF2ARB4_REG_MSK )
+DECLARE_ENUM_VAL( MCIF2ARB4_MACR_MSK,          0xFFFFFFFF )
+
+
+
+END_ENUM( MCIF2ARB4_REG_MSK )
+
+#endif /* REGS_MCIF2ARB4_H_ */

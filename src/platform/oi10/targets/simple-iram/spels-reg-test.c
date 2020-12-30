@@ -9,10 +9,18 @@
 #include <platform/devices/greth.h>
 #include <platform/regs/regs_greth.h>
 
+#define GRETH_CTRL_MASK 0x08002BBF
+#define GRETH_CTRL_DFLT 0x08000090
+#define GRETH_STAT_MASK 0x000000C0
+#define GRETH_STAT_DFLT 0x00000000
+#define GRETH_MDIO_CTRL_MASK 0xFFFFFFDF
+#define GRETH_MDIO_CTRL_DFLT 0x01e10140
+
 // Processing src/platform/oi10/targets/test_oi10_plb6_axi.c / test_oi10_plb6_axi
 struct regpoker_checker greth0_read_checker[] = {
-//?    {"CTRL              ", REGPOKER_READ32, CTRL, 0x98000090, 0xFE007CFF},
-//?    {"MDIO_CTRL         ", REGPOKER_READ32, MDIO_CTRL, 0x01E10140, 0xFFFFFFCF},
+    {"CTRL              ", REGPOKER_READ32, CTRL, GRETH_CTRL_DFLT, GRETH_CTRL_MASK}, // new
+    //{"STATUS            ", REGPOKER_READ32, STATUS, GRETH_STAT_DFLT, GRETH_STAT_MASK}, // new
+    {"MDIO_CTRL         ", REGPOKER_READ32, MDIO_CTRL, GRETH_MDIO_CTRL_DFLT, GRETH_MDIO_CTRL_MASK}, // new
     {"TRANSMIT_DESCR_PTR", REGPOKER_READ8, TRANSMIT_DESCR_PTR, 0x0, 0x3F8},
     {"RECEIVER_DESCR_PTR", REGPOKER_READ8, RECEIVER_DESCR_PTR, 0x0, 0x3F8},
     {"EDCL_IP           ", REGPOKER_READ32, EDCL_IP, EDCLIP0, ~0},
@@ -22,8 +30,9 @@ struct regpoker_checker greth0_read_checker[] = {
     };
 
 struct regpoker_checker greth1_read_checker[] = {
-//?    {"CTRL              ", REGPOKER_READ32, CTRL, 0x98000090, 0xFE007CFF},
-//?    {"MDIO_CTRL         ", REGPOKER_READ32, MDIO_CTRL, 0x01E10140, 0xFFFFFFCF},
+    {"CTRL              ", REGPOKER_READ32, CTRL, GRETH_CTRL_DFLT, GRETH_CTRL_MASK}, // new
+    //{"STATUS            ", REGPOKER_READ32, STATUS, GRETH_STAT_DFLT, GRETH_STAT_MASK}, // new
+    {"MDIO_CTRL         ", REGPOKER_READ32, MDIO_CTRL, GRETH_MDIO_CTRL_DFLT, GRETH_MDIO_CTRL_MASK}, // new
     {"TRANSMIT_DESCR_PTR", REGPOKER_READ8, TRANSMIT_DESCR_PTR, 0x0, 0x3F8},
     {"RECEIVER_DESCR_PTR", REGPOKER_READ8, RECEIVER_DESCR_PTR, 0x0, 0x3F8},
     {"EDCL_IP           ", REGPOKER_READ32, EDCL_IP, EDCLIP1, ~0},
@@ -38,6 +47,166 @@ struct regpoker_checker greth_write_checker[] = {
     {"EDCL_MAC_LSB      ", REGPOKER_WRITE32, EDCL_MAC_LSB, 0, ~0},
     {}
 };
+
+#include <platform/regs/regs_hscb.h>
+
+#define HSCB_ID_DFLT 0x42435348
+#define HSCB_VERSION_DFLT 0x00000102
+#define HSCB_SW_RESET_DFLT 0x00000000
+#define HSCB_SW_STATUS_DFLT 0x00000000
+#define HSCB_IRQ_MASK_DFLT 0x00000000
+#define HSCB_TRANS_CLK_DFLT 0x00c81414
+#define HSCB_TIMINGS_DFLT 0xc8a00500
+#define HSCB_INTERVAL_DFLT 0x000007d0
+#define HSCB_TIME_CODE_INNER_DFLT 0x00000101
+#define HSCB_TIME_CODE_OUTER_DFLT 0x00000000
+#define HSCB_RMAP_PARAMS_DFLT 0x00017799
+#define HSCB_RMAP_STATUS_DFLT 0x00000000
+#define HSCB_RMAP_C_STATUS_DFLT 0x00000000
+#define HSCB_ADMA_ID_DFLT 0x414d4441
+#define HSCB_ADMA_REV_DFLT 0x00000011
+#define HSCB_ADMA_SW_RESET_DFLT 0x00000000
+#define HSCB_ADMA_CH_STATUS_DFLT 0x00000000
+#define HSCB_ARLEN_DFLT 0xf
+#define HSCB_AWLEN_DFLT 0xf
+#define HSCB_BRESP_DFLT 0x0
+#define HSCB_RAXI_ERR_ADDR_DFLT 0x0
+#define HSCB_ARCACHE_DFLT 0x3
+#define HSCB_AWCACHE_DFLT 0x3
+#define HSCB_ARPROT_DFLT 0x2
+#define HSCB_AWPROT_DFLT 0x2
+#define HSCB_ARLOCK_DFLT 0x0
+#define HSCB_AWLOCK_DFLT 0x0
+#define HSCB_ARBURST_DFLT 0x1
+#define HSCB_AWBURST_DFLT 0x1
+#define HSCB_RDMA_SETTINGS_DFLT 0x0
+#define HSCB_RDMA_STATUS_DFLT 0x80
+#define HSCB_RDMA_SYS_ADDR_DFLT 0x0
+#define HSCB_RDMA_TBL_SIZE_DFLT 0x800
+#define HSCB_RDMA_ADDR_DFLT 0x0
+#define HSCB_RDMA_LEN_DFLT 0x0
+#define HSCB_RDMA_DESC_ADDR_DFLT 0x0
+#define HSCB_WDMA_SETTINGS_DFLT 0x0
+#define HSCB_WDMA_STATUS_DFLT 0x80
+#define HSCB_WDMA_SYS_ADDR_DFLT 0x0
+#define HSCB_WDMA_TBL_SIZE_DFLT 0x800
+#define HSCB_WDMA_ADDR_DFLT 0x0
+#define HSCB_WDMA_LEN_DFLT 0x0
+#define HSCB_WDMA_DESC_ADDR_DFLT 0x0
+
+
+struct regpoker_checker hscb_read_checker[] = {
+    {"ID               ", REGPOKER_READ32, HSCB_ID,              HSCB_ID_DFLT,              0xffffffff}, // new
+    {"VERSION          ", REGPOKER_READ32, HSCB_VERSION,         HSCB_VERSION_DFLT,         0xffffffff}, // new
+    {"SW_RESET         ", REGPOKER_READ32, HSCB_SW_RESET,        HSCB_SW_RESET_DFLT,        0xffffffff}, // new
+    {"SETTINGS         ", REGPOKER_READ32, HSCB_SETTINGS,        HSCB_SETTINGS_DFLT,        0xffffffff}, // new
+    //{"STATUS            ", REGPOKER_READ32, HSCB_STATUS,          HSCB_STATUS_DFLT,          0xffffffff}, // new
+    {"IRQ_MASK         ", REGPOKER_READ32, HSCB_IRQ_MASK,        HSCB_IRQ_MASK_DFLT,        0xffffffff}, // new
+    {"TRANS_CLK        ", REGPOKER_READ32, HSCB_TRANS_CLK,       HSCB_TRANS_CLK_DFLT,       0xffffffff}, // new
+    {"TIMINGS          ", REGPOKER_READ32, HSCB_TIMINGS,         HSCB_TIMINGS_DFLT,         0xffffffff}, // new
+    {"INTERVAL         ", REGPOKER_READ32, HSCB_INTERVAL,        HSCB_INTERVAL_DFLT,        0xffffffff}, // new
+    {"TIME_CODE_INNER  ", REGPOKER_READ32, HSCB_TIME_CODE_INNER, HSCB_TIME_CODE_INNER_DFLT, 0xffffffff}, // new
+    {"TIME_CODE_OUTER  ", REGPOKER_READ32, HSCB_TIME_CODE_OUTER, HSCB_TIME_CODE_OUTER_DFLT, 0xffffffff}, // new
+    {"RMAP_PARAMS      ", REGPOKER_READ32, HSCB_RMAP_PARAMS,     HSCB_RMAP_PARAMS_DFLT,     0xffffffff}, // new
+    {"RMAP_C_STATUS    ", REGPOKER_READ32, HSCB_RMAP_C_STATUS,   HSCB_RMAP_C_STATUS_DFLT,   0xffffffff}, // new
+    {"ADMA_ID          ", REGPOKER_READ32, HSCB_ADMA_ID,         HSCB_ADMA_ID_DFLT,         0xffffffff}, // new
+    {"ADMA_REV         ", REGPOKER_READ32, HSCB_ADMA_REV,        HSCB_ADMA_REV_DFLT,        0xffffffff}, // new
+    {"ADMA_SW_RESET    ", REGPOKER_READ32, HSCB_ADMA_SW_RESET,   HSCB_ADMA_SW_RESET_DFLT,   0xffffffff}, // new
+    {"ADMA_CH_STATUS   ", REGPOKER_READ32, HSCB_ADMA_CH_STATUS,  HSCB_ADMA_CH_STATUS_DFLT,  0xffffffff}, // new
+    {"ARLEN            ", REGPOKER_READ32, HSCB_ARLEN,           HSCB_ARLEN_DFLT,           0x0000000f}, // new
+    {"ARWEN            ", REGPOKER_READ32, HSCB_AWLEN,           HSCB_AWLEN_DFLT,           0x0000000f}, // new
+    {"BRESP            ", REGPOKER_READ32, HSCB_BRESP,           HSCB_BRESP_DFLT,           0x00000003}, // new
+    {"RAXI_ERR_ADDR    ", REGPOKER_READ32, HSCB_RAXI_ERR_ADDR,   HSCB_RAXI_ERR_ADDR_DFLT,   0xffffffff}, // new
+    {"ARCACHE          ", REGPOKER_READ32, HSCB_ARCACHE,         HSCB_ARCACHE_DFLT,         0x0000000f}, // new
+    {"AWCACHE          ", REGPOKER_READ32, HSCB_AWCACHE,         HSCB_AWCACHE_DFLT,         0x0000000f}, // new
+    {"ARPROT           ", REGPOKER_READ32, HSCB_ARPROT,          HSCB_ARPROT_DFLT,          0x00000007}, // new
+    {"AWPROT           ", REGPOKER_READ32, HSCB_AWPROT,          HSCB_AWPROT_DFLT,          0x00000007}, // new
+    {"ARBURST          ", REGPOKER_READ32, HSCB_ARBURST,         HSCB_ARBURST_DFLT,         0x0000000f}, // new
+    {"AWBURST          ", REGPOKER_READ32, HSCB_AWBURST,         HSCB_AWBURST_DFLT,         0x00000003}, // new
+    {"RDMA_SETTINGS    ", REGPOKER_READ32, HSCB_RDMA_SETTINGS,   HSCB_RDMA_SETTINGS_DFLT,   0xffffffff}, // new
+    {"RDMA_STATUS      ", REGPOKER_READ32, HSCB_RDMA_STATUS,     HSCB_RDMA_STATUS_DFLT,     0xffffffff}, // new
+    {"RDMA_SYS_ADDR    ", REGPOKER_READ32, HSCB_RDMA_SYS_ADDR,   HSCB_RDMA_SYS_ADDR_DFLT,   0xffffffff}, // new
+    {"RDMA_TBL_SIZE    ", REGPOKER_READ32, HSCB_RDMA_TBL_SIZE,   HSCB_RDMA_TBL_SIZE_DFLT,   0xffffffff}, // new
+    {"RDMA_ADDR        ", REGPOKER_READ32, HSCB_RDMA_ADDR,       HSCB_RDMA_ADDR_DFLT,       0xffffffff}, // new
+    {"RDMA_LEN         ", REGPOKER_READ32, HSCB_RDMA_LEN,        HSCB_RDMA_LEN_DFLT,        0xffffffff}, // new
+    {"RDMA_DESC_ADDR   ", REGPOKER_READ32, HSCB_RDMA_DESC_ADDR,  HSCB_RDMA_DESC_ADDR_DFLT,  0xffffffff}, // new
+    {"WDMA_SETTINGS    ", REGPOKER_READ32, HSCB_WDMA_SETTINGS,   HSCB_WDMA_SETTINGS_DFLT,   0xffffffff}, // new
+    {"WDMA_STATUS      ", REGPOKER_READ32, HSCB_WDMA_STATUS,     HSCB_WDMA_STATUS_DFLT,     0xffffffff}, // new
+    {"WDMA_SYS_ADDR    ", REGPOKER_READ32, HSCB_WDMA_SYS_ADDR,   HSCB_WDMA_SYS_ADDR_DFLT,   0xffffffff}, // new
+    {"WDMA_TBL_SIZE    ", REGPOKER_READ32, HSCB_WDMA_TBL_SIZE,   HSCB_WDMA_TBL_SIZE_DFLT,   0xffffffff}, // new
+    {"WDMA_ADDR        ", REGPOKER_READ32, HSCB_WDMA_ADDR,       HSCB_WDMA_ADDR_DFLT,       0xffffffff}, // new
+    {"WDMA_LEN         ", REGPOKER_READ32, HSCB_WDMA_LEN,        HSCB_WDMA_LEN_DFLT,        0xffffffff}, // new
+    {"WDMA_DESC_ADDR   ", REGPOKER_READ32, HSCB_WDMA_DESC_ADDR,  HSCB_WDMA_DESC_ADDR_DFLT,  0xffffffff}, // new
+    
+    
+    { } // Missing
+    };
+    
+
+#include <regs/regs_sdio.h>
+
+//#define SDIO_SDR_CARD_BLOCK_SET_REG_DFLT 0x0
+//#define SDIO_SDR_CTRL_REG_DFLT 0x0
+//#define SDIO_SDR_CMD_ARGUMENT_REG_DFLT 0x0
+//#define SDIO_SDR_ADDRESS_REG_DFLT 0x0
+//#define SDIO_SDR_STATUS_REG_DFLT 0x800
+//#define SDIO_SDR_ERROR_ENABLE_REG_DFLT 0x0
+//#define SDIO_SDR_RESPONSE1_REG_DFLT 0x0
+//#define SDIO_SDR_RESPONSE2_REG_DFLT 0x0
+//#define SDIO_SDR_RESPONSE3_REG_DFLT 0x0
+//#define SDIO_SDR_RESPONSE4_REG_DFLT 0x0
+#define SDIO_DCCR_0_DFLT 0x0
+#define SDIO_DCSSAR_0_DFLT 0x0
+#define SDIO_DCDSAR_0_DFLT 0x0
+#define SDIO_DCDTR_0_DFLT 0x0
+#define SDIO_DCCR_1_DFLT 0x0
+#define SDIO_DCSSAR_1_DFLT 0x0
+#define SDIO_DCDSAR_1_DFLT 0x0
+#define SDIO_DCDTR_1_DFLT 0x0
+#define SDIO_SDR_BUF_TRAN_RESP_REG_DFLT 0x0
+#define SDIO_BUF_TRAN_CTRL_REG_DFLT 0x0
+#define SDIO_MULTI_BLK_CTRL_REG_DFLT 0x0
+#define SDIO_DMA_CHANEL_FINISH_REG_DFLT 0x0
+#define SPISDIO_ENABLE_DFLT 0x0
+#define SPISDIO_SDIO_CLK_DIVIDE_DFLT 0x1
+#define SDIO_INT_STATUS_DFLT 0x0
+#define SPISDIO_SDIO_INT_MASKS_DFLT 0x0
+#define SPISDIO_SDIO_CLK_POLARITY_DFLT 0x0
+
+#define SPISDIO_SDIO_CLK_POLARITY 0x310
+
+
+struct regpoker_checker sdio_read_checker[] = {
+    {"SDIO_SDR_CARD_BLOCK_SET_REG    ", REGPOKER_READ32, SDIO_SDR_CARD_BLOCK_SET_REG, SDIO_SDR_CARD_BLOCK_SET_REG_DFLT, 0x03ff03ff}, // new
+    {"SDIO_SDR_CTRL_REG              ", REGPOKER_READ32, SDIO_SDR_CTRL_REG,           SDIO_SDR_CTRL_REG_DFLT,           0x003f7fd3}, // new
+    {"SDIO_SDR_CMD_ARGUMENT_REG      ", REGPOKER_READ32, SDIO_SDR_CMD_ARGUMENT_REG,   SDIO_SDR_CMD_ARGUMENT_REG_DFLT,   0xffffffff}, // new
+    {"SDIO_SDR_ADDRESS_REG           ", REGPOKER_READ32, SDIO_SDR_ADDRESS_REG,        SDIO_SDR_ADDRESS_REG_DFLT,        0x00000004}, // new
+    {"SDIO_SDR_STATUS_REG            ", REGPOKER_READ32, SDIO_SDR_STATUS_REG,         0x800,                            0x006f9c00}, // new
+    {"SDIO_SDR_ERROR_ENABLE_REG      ", REGPOKER_READ32, SDIO_SDR_ERROR_ENABLE_REG,   SDIO_SDR_ERROR_ENABLE_REG_DFLT,   0x000003ff}, // new
+    {"SDIO_SDR_RESPONSE1_REG         ", REGPOKER_READ32, SDIO_SDR_RESPONSE1_REG,      SDIO_SDR_RESPONSE1_REG_DFLT,      0xffffffff}, // new
+    {"SDIO_SDR_RESPONSE2_REG         ", REGPOKER_READ32, SDIO_SDR_RESPONSE2_REG,      SDIO_SDR_RESPONSE2_REG_DFLT,      0xffffffff}, // new
+    {"SDIO_SDR_RESPONSE3_REG         ", REGPOKER_READ32, SDIO_SDR_RESPONSE3_REG,      SDIO_SDR_RESPONSE3_REG_DFLT,      0xffffffff}, // new
+    {"SDIO_SDR_RESPONSE4_REG         ", REGPOKER_READ32, SDIO_SDR_RESPONSE4_REG,      SDIO_SDR_RESPONSE4_REG_DFLT,      0xffffffff}, // new
+    {"SDIO_DCCR_0                    ", REGPOKER_READ32, SDIO_DCCR_0,                 SDIO_DCCR_0_DFLT,                 0x000870f7}, // new
+    {"SDIO_DCSSAR_0                  ", REGPOKER_READ32, SDIO_DCSSAR_0,               SDIO_DCSSAR_0_DFLT,               0xffffffff}, // new
+    {"SDIO_DCDSAR_0                  ", REGPOKER_READ32, SDIO_DCDSAR_0,               SDIO_DCDSAR_0_DFLT,               0xffffffff}, // new
+    {"SDIO_DCDTR_0                   ", REGPOKER_READ32, SDIO_DCDTR_0,                SDIO_DCDTR_0_DFLT,                0xffffffff}, // new
+    {"SDIO_DCCR_1                    ", REGPOKER_READ32, SDIO_DCCR_1,                 SDIO_DCCR_1_DFLT,                 0x000870f7}, // new
+    {"SDIO_DCSSAR_1                  ", REGPOKER_READ32, SDIO_DCSSAR_1,               SDIO_DCSSAR_1_DFLT,               0xffffffff}, // new
+    {"SDIO_DCDSAR_1                  ", REGPOKER_READ32, SDIO_DCDSAR_1,               SDIO_DCDSAR_1_DFLT,               0xffffffff}, // new
+    {"SDIO_DCDTR_1                   ", REGPOKER_READ32, SDIO_DCDTR_1,                SDIO_DCDTR_1_DFLT,                0xffffffff}, // new
+    {"SDIO_SDR_BUF_TRAN_RESP_REG     ", REGPOKER_READ32, SDIO_SDR_BUF_TRAN_RESP_REG,  SDIO_SDR_BUF_TRAN_RESP_REG_DFLT,  0x0000003f}, // new
+    {"SDIO_BUF_TRAN_CTRL_REG         ", REGPOKER_READ32, SDIO_BUF_TRAN_CTRL_REG,      SDIO_BUF_TRAN_CTRL_REG_DFLT,      0x00000007}, // new
+    {"SDIO_MULTI_BLK_CTRL_REG        ", REGPOKER_READ32, SDIO_MULTI_BLK_CTRL_REG,     SDIO_MULTI_BLK_CTRL_REG_DFLT,     0x00007000}, // new
+    {"SDIO_DMA_CHANEL_FINISH_REG     ", REGPOKER_READ32, SDIO_DMA_CHANEL_FINISH_REG,  SDIO_DMA_CHANEL_FINISH_REG_DFLT,  0x00000003}, // new
+    {"SPISDIO_ENABLE                 ", REGPOKER_READ32, SPISDIO_ENABLE,              SPISDIO_ENABLE_DFLT,              0x00000001}, // new
+    {"SPISDIO_SDIO_CLK_DIVIDE        ", REGPOKER_READ32, SPISDIO_SDIO_CLK_DIVIDE,     SPISDIO_SDIO_CLK_DIVIDE_DFLT,     0x000000ff}, // new
+    {"SDIO_INT_STATUS                ", REGPOKER_READ32, SDIO_INT_STATUS,             SDIO_INT_STATUS_DFLT,             0x000000ff}, // new
+    {"SPISDIO_SDIO_INT_MASKS         ", REGPOKER_READ32, SPISDIO_SDIO_INT_MASKS,      SPISDIO_SDIO_INT_MASKS_DFLT,      0x000000ff}, // new
+    {"SPISDIO_SDIO_CLK_POLARITY      ", REGPOKER_READ32, SPISDIO_SDIO_CLK_POLARITY,   SPISDIO_SDIO_CLK_POLARITY_DFLT,   0x00000001}, // new
+    
+    { } // Missing
+    };
 
 // Processing src/platform/oi10/targets/test_oi10_lscb.c / test_oi10_lscb
 #include <regs/regs_mkio.h>
@@ -182,7 +351,7 @@ struct regpoker_checker uart_checker[] = {
 
 // Processing src/platform/oi10/targets/test_oi10_spi.c / test_oi10_spi
 static struct regpoker_checker const spi_checker[] = {
-    {"STATUS", REGPOKER_READ32, GSPI_STATUS, GSPI_STATUS_DEFAULT, GSPI_STATUS_MASK},
+    //{"STATUS", REGPOKER_READ32, GSPI_STATUS, GSPI_STATUS_DEFAULT, GSPI_STATUS_MASK}, /*default SPIx_IRQ=z; need $plusargs("spi_irq_test") */
     {"SSPCR0", REGPOKER_READ32, GSPI_SSPCR0, GSPI_SSPCR0_DEFAULT, GSPI_SSPCR0_MASK},
     {"SSPCR1", REGPOKER_READ32, GSPI_SSPCR1, GSPI_SSPCR1_DEFAULT, GSPI_SSPCR1_MASK},
     {"SSPSR", REGPOKER_READ32, GSPI_SSPSR, GSPI_SSPSR_DEFAULT, GSPI_SSPSR_MASK},
@@ -310,7 +479,7 @@ struct regpoker_checker sctl_rw_checker[] = {
 #include <regs/regs_sp805.h>
 
 #define WD_REG_LOAD_mask        0xffffffff
-#define WD_REG_VALUE_mask       0xffffffff
+#define WD_REG_VALUE_mask       0x00000003
 #define WD_REG_CONTROL_mask     0x3
 #define WD_REG_RIS_mask         0x1
 #define WD_REG_MIS_mask         0x1
@@ -326,7 +495,7 @@ struct regpoker_checker sctl_rw_checker[] = {
 #define WD_REG_PCELLID3_mask    0xff
 
 #define WD_REG_LOAD_DFLT        0xffffffff
-#define WD_REG_VALUE_DFLT       0xffffffff
+#define WD_REG_VALUE_DFLT       0x00000003
 #define WD_REG_CONTROL_DFLT     0
 #define WD_REG_RIS_DFLT         0
 #define WD_REG_MIS_DFLT         0
@@ -610,6 +779,37 @@ struct regpoker_checker nic_checker_rw64[] = {
     {"NIC400_SW_3_S_FN_MOD", REGPOKER_WRITE32, NIC400_SW_3_S_FN_MOD, 0x0, 0b11},
     {}};
 
+
+#include <platform/regs/regs_mcif2arb4.h>
+
+static const struct regpoker_checker mcif2arb4_regs_default[] = {
+    //      name                check type          offset         exp val                  mask
+    {"MCIF2ARB4_MACR",      REGPOKER_READ_DCR, MCIF2ARB4_MACR,      MCIF2ARB4_MACR_DFLT,       MCIF2ARB4_MACR_MSK},
+    
+    
+    {/* Sentinel */}};   
+
+#include <platform/regs/regs_aximcif2.h>
+
+static const struct regpoker_checker aximcif2_regs_default[] = {
+    //      name                check type          offset         exp val                  mask
+    {"AXIMCIF2_BESR_read",      REGPOKER_READ_DCR, AXIMCIF2_BESR_read,      AXIMCIF2_BESR_DFLT,       AXIMCIF2_BESR_MSK},
+    {"AXIMCIF2_AEARL",          REGPOKER_READ_DCR, AXIMCIF2_AEARL,          AXIMCIF2_AEARL_DFLT,      AXIMCIF2_AEARL_MSK},
+    {"AXIMCIF2_AEARU",          REGPOKER_READ_DCR, AXIMCIF2_AEARU,          AXIMCIF2_AEARU_DFLT,      AXIMCIF2_AEARU_MSK},
+    {"AXIMCIF2_ERRID",          REGPOKER_READ_DCR, AXIMCIF2_ERRID,          AXIMCIF2_ERRID_DFLT,      AXIMCIF2_ERRID_MSK},
+    {"AXIMCIF2_AXIERRMASK",     REGPOKER_READ_DCR, AXIMCIF2_AXIERRMASK,     AXIMCIF2_AXIERRMASK_DFLT, AXIMCIF2_AXIERRMASK_MSK},
+    {"AXIMCIF2_AXIASYNC",       REGPOKER_READ_DCR, AXIMCIF2_AXIASYNC,       AXIMCIF2_AXIASYNC_DFLT,   AXIMCIF2_AXIASYNC_MSK},
+    {"AXIMCIF2_AXICFG",         REGPOKER_READ_DCR, AXIMCIF2_AXICFG,         AXIMCIF2_AXICFG_DFLT,     AXIMCIF2_AXICFG_MSK},
+    {"AXIMCIF2_AXISTS",         REGPOKER_READ_DCR, AXIMCIF2_AXISTS,         AXIMCIF2_AXISTS_DFLT,     AXIMCIF2_AXISTS_MSK},
+    {"AXIMCIF2_AXIMR0CF",       REGPOKER_READ_DCR, AXIMCIF2_MR0CF,       AXIMCIF2_MR0CF_DFLT,   AXIMCIF2_MRxCF_MSK},
+    {"AXIMCIF2_AXIMR1CF",       REGPOKER_READ_DCR, AXIMCIF2_MR1CF,       AXIMCIF2_MR1CF_DFLT,   AXIMCIF2_MRxCF_MSK},
+    {"AXIMCIF2_AXIMR2CF",       REGPOKER_READ_DCR, AXIMCIF2_MR2CF,       AXIMCIF2_MR2CF_DFLT,   AXIMCIF2_MRxCF_MSK},
+    {"AXIMCIF2_AXIMR3CF",       REGPOKER_READ_DCR, AXIMCIF2_MR3CF,       AXIMCIF2_MR3CF_DFLT,   AXIMCIF2_MRxCF_MSK},
+    {"AXIMCIF2_AXIRID",         REGPOKER_READ_DCR, AXIMCIF2_RID,       AXIMCIF2_RID_DFLT,   AXIMCIF2_RID_MSK},
+    
+    
+    {/* Sentinel */}};    
+    
 // Processing src/platform/oi10/targets/simple-iram/test_oi10_em2_105.c / test_oi10_em2_105
 #include <platform/devices/emi.h>
 #define ROM_IN_NOR_SIZE (0)
@@ -713,20 +913,22 @@ static const struct regpoker_checker mclfir_regs_write[] = {
     {}};
 
 #include <platform/regs/regs_emi.h>
+#define EMI_SSx_DFLT 0x00800000
+#define EMI_SDx_DFLT 0x00000000
 static const struct regpoker_checker emi_regs_default[] = {
     // name             check type     offset        exp val            mask
-    {"EMI_SS0", REGPOKER_READ_DCR, EMI_SS0, 0x00, 0xffffffff},
-    {"EMI_SD0", REGPOKER_READ_DCR, EMI_SD0, 0x00, 0xffffffff},
-    {"EMI_SS1", REGPOKER_READ_DCR, EMI_SS1, 0x00, 0xffffffff},
-    {"EMI_SD1", REGPOKER_READ_DCR, EMI_SD1, 0x00, 0xffffffff},
-    {"EMI_SS2", REGPOKER_READ_DCR, EMI_SS2, 0x00, 0xffffffff},
-    {"EMI_SD2", REGPOKER_READ_DCR, EMI_SD2, 0x00, 0xffffffff},
-    {"EMI_SS3", REGPOKER_READ_DCR, EMI_SS3, 0x00, 0xffffffff},
-    {"EMI_SD3", REGPOKER_READ_DCR, EMI_SD3, 0x00, 0xffffffff},
-    {"EMI_SS4", REGPOKER_READ_DCR, EMI_SS4, 0x00, 0xffffffff},
-    {"EMI_SD4", REGPOKER_READ_DCR, EMI_SD4, 0x00, 0xffffffff},
-    {"EMI_SS5", REGPOKER_READ_DCR, EMI_SS5, 0x00, 0xffffffff},
-    {"EMI_SD5", REGPOKER_READ_DCR, EMI_SD5, 0x00, 0xffffffff},
+    {"EMI_SS0", REGPOKER_READ_DCR, EMI_SS0, EMI_SSx_DFLT, 0xffffffff},
+    {"EMI_SD0", REGPOKER_READ_DCR, EMI_SD0, EMI_SDx_DFLT, 0xffffffff},
+    {"EMI_SS1", REGPOKER_READ_DCR, EMI_SS1, EMI_SSx_DFLT, 0xffffffff},
+    {"EMI_SD1", REGPOKER_READ_DCR, EMI_SD1, EMI_SDx_DFLT, 0xffffffff},
+    {"EMI_SS2", REGPOKER_READ_DCR, EMI_SS2, EMI_SSx_DFLT, 0xffffffff},
+    {"EMI_SD2", REGPOKER_READ_DCR, EMI_SD2, EMI_SDx_DFLT, 0xffffffff},
+    {"EMI_SS3", REGPOKER_READ_DCR, EMI_SS3, EMI_SSx_DFLT, 0xffffffff},
+    {"EMI_SD3", REGPOKER_READ_DCR, EMI_SD3, EMI_SDx_DFLT, 0xffffffff},
+    {"EMI_SS4", REGPOKER_READ_DCR, EMI_SS4, EMI_SSx_DFLT, 0xffffffff},
+    {"EMI_SD4", REGPOKER_READ_DCR, EMI_SD4, EMI_SDx_DFLT, 0xffffffff},
+    {"EMI_SS5", REGPOKER_READ_DCR, EMI_SS5, EMI_SSx_DFLT, 0xffffffff},
+    {"EMI_SD5", REGPOKER_READ_DCR, EMI_SD5, EMI_SDx_DFLT, 0xffffffff},
     {"EMI_RFC", REGPOKER_READ_DCR, EMI_RFC, 0x00, 0xffffffff},
     {"EMI_HSTSR", REGPOKER_READ_DCR, EMI_HSTSR, 0x00, 0xffffffff},
     {"EMI_ECNT20", REGPOKER_READ_DCR, EMI_ECNT20, 0x00, 0xffffffff},
@@ -742,18 +944,18 @@ static const struct regpoker_checker emi_regs_default[] = {
     {/* Sentinel */}};
 static const struct regpoker_checker emi_regs_write[] = {
     // name             check type       offset         val             mask
-    {"EMI_SS0", REGPOKER_WRITE_DCR, EMI_SS0, 0x00, 0x001fffff},
-    {"EMI_SD0", REGPOKER_WRITE_DCR, EMI_SD0, 0x00, 0x0000fffe},
-    {"EMI_SS1", REGPOKER_WRITE_DCR, EMI_SS1, 0x00, 0x001fffff},
-    {"EMI_SD1", REGPOKER_WRITE_DCR, EMI_SD1, 0x00, 0x0000fffe},
-    {"EMI_SS2", REGPOKER_WRITE_DCR, EMI_SS2, 0x00, 0x001fffff},
-    {"EMI_SD2", REGPOKER_WRITE_DCR, EMI_SD2, 0x00, 0x0000fffe},
-    {"EMI_SS3", REGPOKER_WRITE_DCR, EMI_SS3, 0x00, 0x001fffff},
-    {"EMI_SD3", REGPOKER_WRITE_DCR, EMI_SD3, 0x00, 0x0000fffe},
-    {"EMI_SS4", REGPOKER_WRITE_DCR, EMI_SS4, 0x00, 0x001fffff},
-    {"EMI_SD4", REGPOKER_WRITE_DCR, EMI_SD4, 0x00, 0x0000fffe},
-    {"EMI_SS5", REGPOKER_WRITE_DCR, EMI_SS5, 0x00, 0x001fffff},
-    {"EMI_SD5", REGPOKER_WRITE_DCR, EMI_SD5, 0x00, 0x0000fffe},
+    {"EMI_SS0", REGPOKER_WRITE_DCR, EMI_SS0, EMI_SSx_DFLT, 0x001fffff},
+    {"EMI_SD0", REGPOKER_WRITE_DCR, EMI_SD0, EMI_SDx_DFLT, 0x0000fffe},
+    {"EMI_SS1", REGPOKER_WRITE_DCR, EMI_SS1, EMI_SSx_DFLT, 0x001fffff},
+    {"EMI_SD1", REGPOKER_WRITE_DCR, EMI_SD1, EMI_SDx_DFLT, 0x0000fffe},
+    {"EMI_SS2", REGPOKER_WRITE_DCR, EMI_SS2, EMI_SSx_DFLT, 0x001fffff},
+    {"EMI_SD2", REGPOKER_WRITE_DCR, EMI_SD2, EMI_SDx_DFLT, 0x0000fffe},
+    {"EMI_SS3", REGPOKER_WRITE_DCR, EMI_SS3, EMI_SSx_DFLT, 0x001fffff},
+    {"EMI_SD3", REGPOKER_WRITE_DCR, EMI_SD3, EMI_SDx_DFLT, 0x0000fffe},
+    {"EMI_SS4", REGPOKER_WRITE_DCR, EMI_SS4, EMI_SSx_DFLT, 0x001fffff},
+    {"EMI_SD4", REGPOKER_WRITE_DCR, EMI_SD4, EMI_SDx_DFLT, 0x0000fffe},
+    {"EMI_SS5", REGPOKER_WRITE_DCR, EMI_SS5, EMI_SSx_DFLT, 0x001fffff},
+    {"EMI_SD5", REGPOKER_WRITE_DCR, EMI_SD5, EMI_SDx_DFLT, 0x0000fffe},
     {"EMI_RFC", REGPOKER_WRITE_DCR, EMI_RFC, 0x00, 0x0003fffe},
     {"EMI_HSTSR", REGPOKER_WRITE_DCR, EMI_HSTSR, 0x00, 0x0000003f},
     {"EMI_ECNT20", REGPOKER_WRITE_DCR, EMI_ECNT20, 0x00, 0x00ffffff},
@@ -885,6 +1087,16 @@ struct rumboot_pokerlist {
 static struct rumboot_pokerlist the_big_list[] = {
     {greth0_read_checker, GRETH_0_BASE },
     {greth1_read_checker, GRETH_1_BASE },
+    {mcif2arb4_regs_default, DCR_MCIF2ARB4_BASE},
+    {crg_checker,         DCR_CRG_BASE},
+    //{crg_checker_rw,      DCR_CRG_BASE},
+    {aximcif2_regs_default, DCR_AXIMCIF2_BASE},
+    {hscb_read_checker,   HSCB0_BASE},
+    {hscb_read_checker,   HSCB1_BASE},
+    {hscb_read_checker,   HSCB2_BASE},
+    {hscb_read_checker,   HSCB3_BASE},
+    {sdio_read_checker,   SDIO_0_BASE},
+    {sdio_read_checker,   SDIO_1_BASE},
     {greth_write_checker, GRETH_0_BASE },
     {greth_write_checker, GRETH_1_BASE },
     {mkio_checker,        MKIO0_BASE},
