@@ -205,7 +205,7 @@ int main()
 
 //        rumboot_printf("SRAM0_BASE + 0x0 = 0x%x\n", ioread32(SRAM0_BASE | (index << 12) + 0x0));
 
-        rumboot_memfill32((void*)(SRAM0_BASE | (1 << 12) | (index << 5)), (mem_size_instr >> 2), blr_instruction, 0);
+        //rumboot_memfill32((void*)(SRAM0_BASE | (1 << 12) | (index << 5)), (mem_size_instr >> 2), blr_instruction, 0);
 
 //        rumboot_printf("SRAM0_BASE + 0x0 = 0x%x\n", ioread32(SRAM0_BASE | (index << 12) + 0x0));
 
@@ -217,7 +217,7 @@ int main()
 
 //        rumboot_printf("SRAM0_BASE + mem_size_instr + 0x0 = 0x%x\n", ioread32(SRAM0_BASE + mem_size_instr + 0x0));
 
-        rumboot_memfill32((void*)((SRAM0_BASE | (1 << 12) | (index << 5)) + mem_size_instr), (mem_size_zero >> 2), 0x00000000, 0);
+    //    rumboot_memfill32((void*)((SRAM0_BASE | (1 << 12) | (index << 5)) + mem_size_instr), (mem_size_zero >> 2), 0x00000000, 0);
 
 //        rumboot_printf("SRAM0_BASE + mem_size_instr + 0x0 = 0x%x\n", ioread32(SRAM0_BASE + mem_size_instr + 0x0));
     }
