@@ -2661,6 +2661,24 @@ endif()
       NAME fk-test-chain
     )
 
+#ERROR - видимо какой-то из тестов как-то хитро бьет стек и в зависимости от порядка тестов цепочка или падает или проходит    set(FK_TEST_CHAIN_WITHOUT_MKIO hscb_0_1-loop_test,hscb_2_3-loop_test,greth0-edcl-im1-test_oi10_greth,greth1-edcl-im1-test_oi10_greth,spels-memory-test-im0,spels-memory-test-im1,simple-iram-test_oi10_cpu_007,simple-iram-test_oi10_cpu_019,irq-iram-irq-atomics,irq-iram-irq-defhandler,spels-math-test,simple-iram-oi10_spels_cache_hack)
+    set(FK_TEST_CHAIN_WITHOUT_MKIO hscb_0_1-loop_test,hscb_2_3-loop_test,greth0-edcl-im1-test_oi10_greth,greth1-edcl-im1-test_oi10_greth,spels-memory-test-im0,spels-memory-test-im1,simple-iram-test_oi10_cpu_007,simple-iram-test_oi10_cpu_019,irq-iram-irq-defhandler,irq-iram-irq-atomics,spels-math-test,simple-iram-oi10_spels_cache_hack)
+    add_rumboot_target(
+      FEATURES NOCODE
+      COMBOIMAGE IM0BIN
+      LOAD IM0BIN simple-iram-chain-start-dummy,${FK_TEST_CHAIN_WITHOUT_MKIO},simple-iram-chain-end-dummy
+      TESTGROUP chains hwonly
+      NAME fk-test-chain_without_mkio
+    )
+        
+    add_rumboot_target(
+      FEATURES NOCODE
+      COMBOIMAGE IM0BIN
+      LOAD IM0BIN ${FK_TEST_CHAIN_WITHOUT_MKIO},simple-iram-chain-end-dummy
+      TESTGROUP chains hwonly
+      NAME fk-test-chain_tmp
+    )
+    
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES power/loader.c
