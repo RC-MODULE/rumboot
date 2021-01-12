@@ -31,6 +31,18 @@ bool dma2plb6_single_copy(
     return wait_dma2plb6_mcpy(setup_info, status);
 }
 
+bool dma2plb6_multiple_copy(
+        struct dma2plb6_setup_info * const setup_info_0,
+        struct dma2plb6_setup_info * const setup_info_1,
+        struct dma2plb6_setup_info * const setup_info_2,
+        struct dma2plb6_setup_info * const setup_info_3,
+        struct channel_status * const status
+) {
+    dma2plb6_mcpy_mult(setup_info_0, setup_info_1, setup_info_2, setup_info_3);
+    return wait_dma2plb6_mcpy(setup_info_3, status);
+}
+
+
 /*
  * copy for memory coherent requests
  */
@@ -114,6 +126,34 @@ void dma2plb6_mcpy(
     dma2plb6_mcpy_coherency_required(setup_info);
 }
 
+void dma2plb6_mcpy_mult(
+        struct dma2plb6_setup_info * const setup_info_0,
+        struct dma2plb6_setup_info * const setup_info_1,
+        struct dma2plb6_setup_info * const setup_info_2,
+        struct dma2plb6_setup_info * const setup_info_3
+) {
+    setup_info_0->snp_mode = snp_mode_off;
+    setup_info_1->snp_mode = snp_mode_off;
+    setup_info_2->snp_mode = snp_mode_off;
+    setup_info_3->snp_mode = snp_mode_off;
+    dma2plb6_mcpy_coherency_required_mult(setup_info_0, setup_info_1, setup_info_2, setup_info_3);
+}
+
+void dma2plb6_mcpy_coherency_required_mult(
+        struct dma2plb6_setup_info const * const setup_info_0,
+        struct dma2plb6_setup_info const * const setup_info_1,
+        struct dma2plb6_setup_info const * const setup_info_2,
+        struct dma2plb6_setup_info const * const setup_info_3
+) {
+    dma2plb6_mcpy_init( setup_info_0);
+    dma2plb6_mcpy_init( setup_info_1);
+    dma2plb6_mcpy_init( setup_info_2);
+    dma2plb6_mcpy_init( setup_info_3);
+    dma2plb6_enable_channel( setup_info_0->base_addr, setup_info_0->channel );
+    dma2plb6_enable_channel( setup_info_1->base_addr, setup_info_1->channel );
+    dma2plb6_enable_channel( setup_info_2->base_addr, setup_info_2->channel );
+    dma2plb6_enable_channel( setup_info_3->base_addr, setup_info_3->channel );
+}
 /*
  * initializes memory-to-memory single transfer for channel (setup_info->channel=0,1,2 or 3)
  */

@@ -784,6 +784,13 @@ endif()
     #---GRETH tests start---
     add_rumboot_target(
       CONFIGURATION IRAM
+      FILES test_oi10_ppc_regs_im1.c
+      PREFIX ppc_bw
+    )
+    
+    #---GRETH tests start---
+    add_rumboot_target(
+      CONFIGURATION IRAM
       FILES test_oi10_greth.c
       CFLAGS -DGRETH_BASE=GRETH_0_BASE -DCHECK_RX_COL=1
       PREFIX greth0-rx_col
@@ -1809,6 +1816,38 @@ endif()
         FILES test_oi10_hscb.c
         PREFIX "hscb_0"
         NAME test_oi10_hscb_reg
+    )
+    add_rumboot_target(
+        CONFIGURATION IRAM
+        #CFLAGS -DHSCB_UNDER_TEST_BASE=HSCB0_BASE
+        #       -DHSCB_SUPPLEMENTARY_BASE=HSCB1_BASE
+        #       -DHSCB_UNDER_TEST_INT=SW0_HSCB_INT
+        #       -DHSCB_UNDER_TEST_DMA_INT=SW0_AXI_INT
+        #       -DHSCB_SUPPLEMENTARY_INT=SW1_HSCB_INT
+        #       -DHSCB_SUPPLEMENTARY_DMA_INT=SW1_AXI_INT
+        #       -DTX_0_HEAP_NAME="SRAM0"
+        #       -DTX_1_HEAP_NAME="SRAM0"
+        #       -DTX_2_HEAP_NAME="SRAM0"
+        #       -DTX_3_HEAP_NAME="SRAM0"
+        #       -DTX_4_HEAP_NAME="SRAM0"
+        #       -DTX_5_HEAP_NAME="SRAM0"
+        #       -DRX_0_HEAP_NAME="SRAM0"
+        #       -DRX_1_HEAP_NAME="SRAM0"
+        #       -DRX_2_HEAP_NAME="SRAM0"
+        #       -DRX_3_HEAP_NAME="SRAM0"
+        #       -DRX_4_HEAP_NAME="SRAM0"
+        #       -DRX_5_HEAP_NAME="SRAM0"
+        #       -DDATA_SIZE_0=1024
+        #       -DDATA_SIZE_1=1024
+        #       -DDATA_SIZE_2=1024
+        #       -DDATA_SIZE_3=1024
+        #       -DDATA_SIZE_4=1024
+        #       -DDATA_SIZE_5=1024
+        #       -DHSCB_FUNC_TEST
+        #       -DTEST_OI10_HSCB_FULL_TRACING
+        FILES test_oi10_hscb_simult_big.c
+        PREFIX "hscb_simult"
+        NAME test_hscb_big
     )
 
     add_rumboot_target(

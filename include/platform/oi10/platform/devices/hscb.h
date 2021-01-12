@@ -58,6 +58,18 @@ typedef struct hscb_descr_struct
     bool        change_endian;
 }hscb_descr_struct_t;
 
+
+typedef struct hscb_descr
+{
+    uint32_t    start_address   : 32;
+    uint32_t    length          : 26;
+    hscb_act_t  act             : 2;
+    hscb_act0_t act0            : 1;
+    uint32_t    ie              : 1;
+    uint32_t    err             : 1;
+    uint32_t    valid           : 1;
+} hscb_descr;
+
 /**
  * hscb_packed_descr_struct: Structure contains descriptor parameters which are used to transmit
  * start_address: 32-bit start address
