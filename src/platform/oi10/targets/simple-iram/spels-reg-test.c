@@ -867,7 +867,7 @@ static const struct regpoker_checker plb4ahb_regs_default[] = {
     
     {/* Sentinel */}};  
     
-#include <platform/regs/regs_plb6bc.h>
+#include <arch/regs/plb6bc.h>
 
 
 static const struct regpoker_checker plb6bc_regs_default[] = {
