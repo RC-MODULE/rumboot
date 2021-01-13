@@ -18,7 +18,7 @@
 
 #include <arch/ppc_476fp_config.h>
 #include <arch/ppc_476fp_lib_c.h>
-#include <platform/arch/ppc/ppc_476fp_mmu_fields.h>
+#include <arch/ppc_476fp_mmu_fields.h>
 #include <platform/arch/ppc/ppc_476fp_mmu.h>
 #include <arch/ppc_476fp_timer_fields.h>
 #include <arch/ppc_476fp_itrpt_fields.h>
@@ -41,9 +41,9 @@
 #include <platform/regs/regs_dma2plb6.h>
 #include <platform/regs/regs_plb4plb6.h>
 #include <platform/regs/regs_plb4ahb.h>
-#include <platform/regs/regs_plb6bc.h>
+#include <arch/regs/plb6bc.h>
 #include <platform/regs/regs_dcrarb.h>
-#include <platform/regs/regs_p64.h>
+#include <arch/regs/regs_p64.h>
 
 
 #define ITRACE_HANG_ADDR    0x00001FFF

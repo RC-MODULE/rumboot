@@ -1,7 +1,7 @@
 #ifndef __PLB6BC_REG_ACCESS_H__
 #define __PLB6BC_REG_ACCESS_H__
 
-#include <platform/regs/regs_plb6bc.h>
+#include <arch/regs/plb6bc.h>
 #include <arch/common_macros.h>
 #include <arch/ibm_bit_ordering_macros.h>
 #include <platform/reg_access/macros.h>

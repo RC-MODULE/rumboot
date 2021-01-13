@@ -7,7 +7,7 @@
 #include <platform/trace.h>
 #include <platform/test_assert.h>
 #include <platform/arch/ppc/test_macro.h>
-#include <platform/arch/ppc/ppc_476fp_mmu_fields.h>
+#include <arch/ppc_476fp_mmu_fields.h>
 #include <rumboot/printf.h>
 
 //#define L2C_TRACE_DEBUG_MSG

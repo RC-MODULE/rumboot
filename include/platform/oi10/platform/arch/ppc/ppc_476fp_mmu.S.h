@@ -3,8 +3,8 @@
 
 
 #include <arch/ppc_476fp_asm.h>
-#include <platform/arch/ppc/ppc_476fp_mmu_fields.h>
-#include <platform/ppc470s/mmu/mem_window.h>
+#include <arch/ppc_476fp_mmu_fields.h>
+#include <arch/mem_window.h>
 
 
 .macro  set_mem_window rT, window

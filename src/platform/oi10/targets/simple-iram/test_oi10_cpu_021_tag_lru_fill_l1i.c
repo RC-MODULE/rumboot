@@ -20,10 +20,10 @@
 #include <arch/ppc_476fp_lib_c.h>
 #include <arch/ppc_476fp_config.h>
 #include <platform/arch/ppc/ppc_476fp_l1c_fields.h>
-#include <platform/arch/ppc/ppc_476fp_mmu_fields.h>
+#include <arch/ppc_476fp_mmu_fields.h>
 #include <platform/arch/ppc/ppc_476fp_mmu.h>
 #include <arch/ppc_476fp_asm.h>
-#include <platform/ppc470s/mmu/mem_window.h>
+#include <arch/mem_window.h>
 #include <platform/devices/emi.h>
 
 

@@ -4,8 +4,8 @@
 
 #include <arch/ppc_476fp_lib_c.h>
 #include <arch/ppc_476fp_config.h>
-#include <platform/ppc470s/mmu/mem_window.h>
-#include <platform/arch/ppc/ppc_476fp_mmu_fields.h>
+#include <arch/mem_window.h>
+#include <arch/ppc_476fp_mmu_fields.h>
 
 
 inline static void set_mem_window( MEM_WINDOW const window ) {

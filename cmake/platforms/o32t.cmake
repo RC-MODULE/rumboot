@@ -11,7 +11,12 @@ endif()
 
 file(GLOB PLATFORM_SOURCES
     ${CMAKE_SOURCE_DIR}/src/arch/ppc/exception.c
+    ${CMAKE_SOURCE_DIR}/src/arch/ppc/p64.S    
+    ${CMAKE_SOURCE_DIR}/src/arch/ppc/vectors.S
+    ${CMAKE_SOURCE_DIR}/src/arch/ppc/startup.S
+    ${CMAKE_SOURCE_DIR}/src/arch/ppc/ppc_mmu_impl.S
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/*.c
+    ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/*.S
     ${CMAKE_SOURCE_DIR}/src/lib/drivers/irq-mpic128.c)
 
 #Flags for Power PC

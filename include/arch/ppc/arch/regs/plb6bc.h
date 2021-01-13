@@ -7,7 +7,7 @@
 
 
 #include <rumboot/macros.h>
-#include <platform/regs/fields/plb6bc.h>
+#include <arch/regs/fields/plb6bc.h>
 
 
 BEGIN_ENUM( PLB6BC_REG )

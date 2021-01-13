@@ -6,7 +6,7 @@
 #include <platform/test_event_codes.h>
 #include <platform/devices.h>
 #include <rumboot/platform.h>
-#include <platform/arch/ppc/ppc_476fp_mmu_fields.h>
+#include <arch/ppc_476fp_mmu_fields.h>
 #include <arch/ppc_476fp_ctrl_fields.h>
 
 #include <rumboot/io.h>

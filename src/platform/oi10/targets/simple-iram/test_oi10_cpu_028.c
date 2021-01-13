@@ -11,7 +11,7 @@
 #include <platform/devices/l2c.h>
 #include <platform/regs/regs_l2c_l2.h>
 #include <platform/regs/regs_srammc2plb4.h>
-#include <platform/regs/regs_p64.h>
+#include <arch/regs/regs_p64.h>
 #include <platform/interrupts.h>
 #include <rumboot/printf.h>
 #include <rumboot/irq.h>

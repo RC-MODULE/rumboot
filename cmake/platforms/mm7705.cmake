@@ -15,7 +15,6 @@ macro(RUMBOOT_PLATFORM_SET_COMPILER_FLAGS)
     set(CMAKE_ASM_FLAGS ${RUMBOOT_COMMON_FLAGS})
     set(CMAKE_EXE_LINKER_FLAGS "-fno-zero-initialized-in-bss -e rumboot_main -Wl,--oformat=elf32-powerpc -static -nostartfiles -Wl,--gc-sections")
     set(CMAKE_DUMP_FLAGS -S -EB -M476,32)
-
 endmacro()
 
 rumboot_add_configuration(

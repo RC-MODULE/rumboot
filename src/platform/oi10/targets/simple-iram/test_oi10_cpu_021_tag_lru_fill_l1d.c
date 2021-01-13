@@ -18,9 +18,9 @@
 #include <platform/trace.h>
 #include <platform/test_event_c.h>
 #include <arch/ppc_476fp_lib_c.h>
-#include <platform/arch/ppc/ppc_476fp_mmu_fields.h>
+#include <arch/ppc_476fp_mmu_fields.h>
 #include <platform/arch/ppc/ppc_476fp_mmu.h>
-#include <platform/ppc470s/mmu/mem_window.h>
+#include <arch/mem_window.h>
 #include <platform/devices/emi.h>
 
                       //MMU_TLB_ENTRY(  ERPN,   RPN,        EPN,        DSIZ,                   IL1I,   IL1D,    W,      I,      M,      G,        E,                   UX, UW, UR,     SX, SW, SR      DULXE,  IULXE,      TS,      TID,               WAY,                BID,                V   )

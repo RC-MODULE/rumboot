@@ -6,8 +6,7 @@
 #include <platform/arch/ppc/test_macro_asm.S.h>
 #include <arch/ppc_476fp_ctrl_fields.h>
 #include <regs/regs_mpic128.h>
-#include <platform/regs/regs_plb6bc.h>
-
+#include <arch/regs/plb6bc.h>
 #define CVR3						r21,r22,r23		/* CheckValue Regs Triade */
 #define P6BCA(OFFSET)				(DCR_PLB6_BC_BASE + (OFFSET))
 #define SGD_NON_SYNTH_VALUE         0xFFFFFFF0

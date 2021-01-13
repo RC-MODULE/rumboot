@@ -22,7 +22,7 @@
 #include <platform/test_assert.h>
 #include <platform/trace.h>
 
-#include <platform/arch/ppc/ppc_476fp_mmu_fields.h>
+#include <arch/ppc_476fp_mmu_fields.h>
 #include <platform/arch/ppc/ppc_476fp_mmu.h>
 
 #include <platform/devices.h>

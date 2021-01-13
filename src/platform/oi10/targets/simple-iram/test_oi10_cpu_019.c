@@ -12,6 +12,7 @@
 #include <rumboot/platform.h>
 #include <rumboot/irq.h>
 #include <rumboot/printf.h>
+#include <arch/ppc_476fp_lib_c.h>
 
 #include <platform/test_assert.h>
 #include <platform/test_event_c.h>

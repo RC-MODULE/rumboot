@@ -1,5 +1,5 @@
 #include <arch/ppc_476fp_asm.h>
-#include <platform/regs/regs_p64.h>
+#include <arch/regs/regs_p64.h>
 
 .section ".text.p64_set_split_range_address","a",@progbits
 

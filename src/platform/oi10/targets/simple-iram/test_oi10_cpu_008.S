@@ -6,7 +6,7 @@
 #include <platform/arch/ppc/test_macro_asm.S.h>
 #include <arch/ppc_476fp_ctrl_fields.h>
 #include <regs/regs_mpic128.h>
-#include <platform/regs/regs_plb6bc.h>
+#include <arch/regs/plb6bc.h>
 
 #define R_ARG0                  r3      /* Argument #1           */
 #define R_ARG1                  r4      /* Argument #2           */

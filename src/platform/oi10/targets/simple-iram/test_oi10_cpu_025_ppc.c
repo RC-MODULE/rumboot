@@ -28,7 +28,7 @@
 #include <arch/ppc_476fp_debug_fields.h>
 #include <arch/ppc_476fp_itrpt_fields.h>
 #include <arch/ppc_476fp_ctrl_fields.h>
-#include <platform/arch/ppc/ppc_476fp_mmu_fields.h>
+#include <arch/ppc_476fp_mmu_fields.h>
 #include <platform/arch/ppc/ppc_476fp_mmu.h>
 
 #define EVENT_GENERATE_TLB_MC                   (TEST_EVENT_CODE_MIN + 0)

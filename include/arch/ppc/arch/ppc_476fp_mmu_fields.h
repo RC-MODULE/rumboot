@@ -8,6 +8,7 @@
 
 #include <rumboot/macros.h>
 #include <arch/ibm_bit_ordering_macros.h>
+#include <arch/mem_window.h>
 
 
 BEGIN_ENUM( MMU_MMUCR_FIELD )

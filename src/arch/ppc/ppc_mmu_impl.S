@@ -1,7 +1,6 @@
 #include <arch/ppc_476fp_asm.h>
-#include <platform/arch/ppc/ppc_476fp_mmu_fields.h>
+#include <arch/ppc_476fp_mmu_fields.h>
 #include <arch/ppc_476fp_ctrl_fields.h>
-#include <platform/trace.S.h>
 
 
 .section ".ppc470s_invalidate_all_tlb_entries_nosnoop.mmu.init.text","ax",@progbits
@@ -39,8 +38,8 @@ r3 - TLB entries array pointer
 r4 - TLB entries count
 r8,r9,r10,r11 - tmp registers
 returns nothing*/
-.global write_tlb_entries
-write_tlb_entries:
+.global ppc470s_write_tlb_entries
+ppc470s_write_tlb_entries:
     cmplwi      r4, 0
     beqlr-
 

@@ -5,7 +5,7 @@
 #ifndef P64_REGS_H
 #define P64_REGS_H
 
-#include <platform/regs/fields/p64.h>
+#include <arch/regs/fields/p64.h>
 #include <arch/common_macros.h>
 
 BEGIN_ENUM( P64_REG )
