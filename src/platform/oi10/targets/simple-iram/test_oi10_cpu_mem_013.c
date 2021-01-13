@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
+// Test was modified by D.Dryagalkin, 30.12.20
+// Test must be run without optimization (-O0)
 #include <stdbool.h>
 
 #include <arch/ppc/arch/ppc_476fp_lib_c.h>
@@ -21,6 +23,8 @@
 #include <rumboot/printf.h>
 #include <rumboot/timer.h>
 
+
+//#define TEST_OI10_MEM_013_FUNC_POINT 
 
 //#define EVENT_ICU_LRU_MEM_SET_INDEX     (TEST_EVENT_CODE_MIN + 0)
 
@@ -77,10 +81,27 @@ const uint32_t mem_step         = 0x00008000;
 
 const uint32_t index_count      = 128;
 
-
+#ifdef TEST_OI10_MEM_013_FUNC_POINT
 typedef void (*pWay_func) ();
+#else
+void pWay_func(uint32_t addr) {
+    asm volatile (
+        ".set  r8, 8               \n\t"
+        "     mtctr (%0)          \n\t"
+        "     bl l1               \n\t"
+        "l1:  nop                 \n\t" // save l1 in the LR
+        "     mflr r8             \n\t"
+        "     addi r8, r8, 0x14   \n\t" // add 0x14 for LR to branch on the nop
+        "     mtlr r8             \n\t"
+        "     bctr                \n\t"
+        "     nop                 \n\t"
+        :
+        : "r"((uint32_t) addr)
+        : "r8", "lr", "ctr"
+    );
 
-
+}
+#endif
 
 //static void fill_mem(void* dst, const uint32_t val, size_t size)
 //{
@@ -139,23 +160,39 @@ static bool test_icu_lru_array()
             rumboot_printf("%d EVENT_ICU_LRU_MEM0_VALUE_34\n", index);
 
             test_event(EVENT_ICU_LRU_MEM0_VALUE_34);
+#ifdef TEST_OI10_MEM_013_FUNC_POINT
             ((pWay_func)(addr | (index << 5) | way0))();
+#else
+            pWay_func(addr | (index << 5) | way0);
+#endif
 
             rumboot_printf("%d EVENT_ICU_LRU_MEM0_VALUE_1E\n", index);
 
             test_event(EVENT_ICU_LRU_MEM0_VALUE_1E);
-            ((pWay_func)(addr | (index << 5) | way1))();
+#ifdef TEST_OI10_MEM_013_FUNC_POINT
+          ((pWay_func)(addr | (index << 5) | way1))();
+#else
+            pWay_func(addr | (index << 5) | way1);
+#endif
 
             rumboot_printf("%d EVENT_ICU_LRU_MEM0_VALUE_07\n", index);
 
             test_event(EVENT_ICU_LRU_MEM0_VALUE_07);
+#ifdef TEST_OI10_MEM_013_FUNC_POINT
             ((pWay_func)(addr | (index << 5) | way2))();
+#else
+            pWay_func(addr | (index << 5) | way2);
+#endif
+
 
             rumboot_printf("%d EVENT_ICU_LRU_MEM0_VALUE_00\n", index);
 
             test_event(EVENT_ICU_LRU_MEM0_VALUE_00);
+#ifdef TEST_OI10_MEM_013_FUNC_POINT
             ((pWay_func)(addr | (index << 5) | way3))();
-
+#else
+            pWay_func(addr | (index << 5) | way3);
+#endif
 
 
             rumboot_putstring("Testing MEM1 block ...\n");
@@ -163,22 +200,35 @@ static bool test_icu_lru_array()
             rumboot_printf("%d EVENT_ICU_LRU_MEM1_VALUE_34\n", index);
 
             test_event(EVENT_ICU_LRU_MEM1_VALUE_34);
+#ifdef TEST_OI10_MEM_013_FUNC_POINT
             ((pWay_func)(addr | (1 << 12) | (index << 5) | way0))();
-
+#else
+            pWay_func(addr | (1 << 12) | (index << 5) | way0);
+#endif
             rumboot_printf("%d EVENT_ICU_LRU_MEM1_VALUE_1E\n", index);
 
             test_event(EVENT_ICU_LRU_MEM1_VALUE_1E);
+#ifdef TEST_OI10_MEM_013_FUNC_POINT
             ((pWay_func)(addr | (1 << 12) | (index << 5) | way1))();
-
+#else
+            pWay_func(addr | (1 << 12) | (index << 5) | way1);
+#endif
             rumboot_printf("%d EVENT_ICU_LRU_MEM1_VALUE_07\n", index);
 
             test_event(EVENT_ICU_LRU_MEM1_VALUE_07);
+#ifdef TEST_OI10_MEM_013_FUNC_POINT
             ((pWay_func)(addr | (1 << 12) | (index << 5) | way2))();
-
+#else
+            pWay_func(addr | (1 << 12) | (index << 5) | way2);
+#endif
             rumboot_printf("%d EVENT_ICU_LRU_MEM1_VALUE_00\n", index);
 
             test_event(EVENT_ICU_LRU_MEM1_VALUE_00);
+#ifdef TEST_OI10_MEM_013_FUNC_POINT
             ((pWay_func)(addr | (1 << 12) | (index << 5) | way3))();
+#else
+            pWay_func(addr | (1 << 12) | (index << 5) | way3);
+#endif
         }
     }
 
@@ -205,7 +255,7 @@ int main()
 
 //        rumboot_printf("SRAM0_BASE + 0x0 = 0x%x\n", ioread32(SRAM0_BASE | (index << 12) + 0x0));
 
-        //rumboot_memfill32((void*)(SRAM0_BASE | (1 << 12) | (index << 5)), (mem_size_instr >> 2), blr_instruction, 0);
+        rumboot_memfill32((void*)(SRAM0_BASE | (1 << 12) | (index << 5)), (mem_size_instr >> 2), blr_instruction, 0);
 
 //        rumboot_printf("SRAM0_BASE + 0x0 = 0x%x\n", ioread32(SRAM0_BASE | (index << 12) + 0x0));
 
@@ -217,7 +267,7 @@ int main()
 
 //        rumboot_printf("SRAM0_BASE + mem_size_instr + 0x0 = 0x%x\n", ioread32(SRAM0_BASE + mem_size_instr + 0x0));
 
-    //    rumboot_memfill32((void*)((SRAM0_BASE | (1 << 12) | (index << 5)) + mem_size_instr), (mem_size_zero >> 2), 0x00000000, 0);
+        rumboot_memfill32((void*)((SRAM0_BASE | (1 << 12) | (index << 5)) + mem_size_instr), (mem_size_zero >> 2), 0x00000000, 0);
 
 //        rumboot_printf("SRAM0_BASE + mem_size_instr + 0x0 = 0x%x\n", ioread32(SRAM0_BASE + mem_size_instr + 0x0));
     }
