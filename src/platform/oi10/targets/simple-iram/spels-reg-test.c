@@ -788,6 +788,241 @@ static const struct regpoker_checker mcif2arb4_regs_default[] = {
     
     
     {/* Sentinel */}};   
+    
+//#include <platform/regs/regs_cldcr.h> // doesn't compile with this include, test_oi10_sys 010 already has this include...
+
+#define CLDCR_TCRREV 0x0
+#define CLDCR_ITRCTRL 0x1
+#define CLDCR_LTRCTRL 0x2
+
+#define CLDCR_TCRREV_DFLT 0x00000101
+#define CLDCR_ITRCTRL_DFLT 0x0
+#define CLDCR_LTRCTRL_DFLT 0x0
+
+#define CLDCR_TCRREV_MSK  0x000fffff
+#define CLDCR_ITRCTRL_MSK 0x000000ff
+#define CLDCR_LTRCTRL_MSK 0x000000ff
+
+static const struct regpoker_checker cldcr_regs_default[] = {
+    //      name                check type          offset         exp val                  mask
+    {"CLDCR_TCRREV",       REGPOKER_READ_DCR, CLDCR_TCRREV,      CLDCR_TCRREV_DFLT,       CLDCR_TCRREV_MSK},
+    {"CLDCR_ITRCTRL",      REGPOKER_READ_DCR, CLDCR_ITRCTRL,     CLDCR_ITRCTRL_DFLT,      CLDCR_ITRCTRL_MSK},
+    {"CLDCR_LTRCTRL",      REGPOKER_READ_DCR, CLDCR_LTRCTRL,     CLDCR_LTRCTRL_DFLT,      CLDCR_LTRCTRL_MSK},
+    
+    
+    
+    {/* Sentinel */}};   
+
+#include <platform/regs/regs_plb4arb8m.h>
+
+#define PREV_MSK 0x000fffff
+#define PACR_MSK 0xff000000
+#define PESR_MSK 0xffffffff
+#define PEAR_MSK 0xffffffff
+ 
+static const struct regpoker_checker plb4arb8m_0_regs_default[] = {
+    //name         check type         offset     exp val                  mask
+    {"PREV",       REGPOKER_READ_DCR, PREV,      PREV_0_RESET_VAL,       PREV_MSK},
+    {"PACR",       REGPOKER_READ_DCR, PACR,      PACR_0_RESET_VAL,       PACR_MSK},
+    {"PESR_RC",    REGPOKER_READ_DCR, PESR_RC,   PESR_0_RESET_VAL,       PESR_MSK},
+    {"PESR_W",     REGPOKER_READ_DCR, PESR_W,    PESR_0_RESET_VAL,       PESR_MSK},
+    //{"PEARL",      REGPOKER_READ_DCR, PEARL,     PEARL_RESET_VAL,      PEAR_MSK},
+    //{"PEARH",      REGPOKER_READ_DCR, PEARH,     PEARH_RESET_VAL,      PEAR_MSK},    
+    
+    {/* Sentinel */}};     
+    
+static const struct regpoker_checker plb4arb8m_2_regs_default[] = {
+    //name         check type         offset     exp val                  mask
+    {"PREV",       REGPOKER_READ_DCR, PREV,      0x00000000,       PREV_MSK},
+    {"PACR",       REGPOKER_READ_DCR, PACR,      0x00000000,       PACR_MSK},
+    {"PESR_RC",    REGPOKER_READ_DCR, PESR_RC,   PESR_0_RESET_VAL,       PESR_MSK},
+    {"PESR_W",     REGPOKER_READ_DCR, PESR_W,    PESR_0_RESET_VAL,       PESR_MSK},
+    //{"PEARL",      REGPOKER_READ_DCR, PEARL,     PEARL_RESET_VAL,      PEAR_MSK},
+    //{"PEARH",      REGPOKER_READ_DCR, PEARH,     PEARH_RESET_VAL,      PEAR_MSK},    
+    
+    {/* Sentinel */}}; 
+    
+#include <platform/regs/regs_plb4ahb.h>
+
+#define REVID_MSK          0xffffffff
+#define SEAR_ADDRUPPER_MSK 0x0000000f
+#define SEAR_ADDRLOWER_MSK 0xffffffff
+#define SESR_MSK           0xffffc00f
+#define TOP_ADDR_MSK       0x800000ff
+#define BOT_ADDR_MSK       0x800000ff
+#define ATTRS_MSK     0x00000001
+
+static const struct regpoker_checker plb4ahb_regs_default[] = {
+    
+    //name                   check type         offset               exp val                     mask  
+    //uni-directional
+    {"REVID",                REGPOKER_READ_DCR, REVID,               REVID_VALUE,                REVID_MSK},
+    {"SEAR_ADDRUPPER",       REGPOKER_READ_DCR, SEAR_ADDRUPPER,      SEAR_ADDRUPPER_VALUE,       SEAR_ADDRUPPER_MSK},
+    {"SEAR_ADDRLOWER",       REGPOKER_READ_DCR, SEAR_ADDRLOWER,      SEAR_ADDRLOWER_VALUE,       SEAR_ADDRLOWER_MSK},
+    {"SESR",                 REGPOKER_READ_DCR, SESR,                SESR_VALUE,                 SESR_MSK},
+    {"TOP_ADDR",             REGPOKER_READ_DCR, TOP_ADDR,            TOP_ADDR_VALUE,             TOP_ADDR_MSK},
+    {"BOT_ADDR",             REGPOKER_READ_DCR, BOT_ADDR,            BOT_ADDR_VALUE,             BOT_ADDR_MSK},
+    {"ATTRS",                REGPOKER_READ_DCR, ATTRS,               ATTRS_VALUE,                ATTRS_MSK},
+   
+    
+    {/* Sentinel */}};  
+    
+#include <platform/regs/regs_plb6bc.h>
+
+
+static const struct regpoker_checker plb6bc_regs_default[] = {
+    
+    //name                   check type         offset               exp val                     mask  
+    //{"PLB6BC_CR0           ",           REGPOKER_READ_DCR, PLB6BC_CR0           ,          PLB6BC_CR0_DFLT,            PLB6BC_CR0_MSK},
+    {"PLB6BC_PRI           ",           REGPOKER_READ_DCR, PLB6BC_PRI           ,          PLB6BC_PRI_DFLT,            PLB6BC_PRI_MSK},
+    //{"PLB6BC_TSNOOP        ",           REGPOKER_READ_DCR, PLB6BC_TSNOOP        ,          PLB6BC_TSNOOP_DFLT,         PLB6BC_TSNOOP_MSK}, Not available
+    {"PLB6BC_PAAM_WIN_EXT  ",           REGPOKER_READ_DCR, PLB6BC_PAAM_WIN_EXT  ,          PLB6BC_PAAM_WIN_EXT_DFLT,   PLB6BC_PAAM_WIN_EXT_MSK},
+    {"PLB6BC_SGD1          ",           REGPOKER_READ_DCR, PLB6BC_SGD1          ,          0x00000010,                 PLB6BC_SGDx_MSK},
+    {"PLB6BC_SGD2          ",           REGPOKER_READ_DCR, PLB6BC_SGD2          ,          0x00000010,                 PLB6BC_SGDx_MSK},
+    {"PLB6BC_SGD3          ",           REGPOKER_READ_DCR, PLB6BC_SGD3          ,          0x00000020,                 PLB6BC_SGDx_MSK},
+    {"PLB6BC_SGD4          ",           REGPOKER_READ_DCR, PLB6BC_SGD4          ,          PLB6BC_SGD4_DFLT,           PLB6BC_SGDx_MSK},
+    {"PLB6BC_SGD5          ",           REGPOKER_READ_DCR, PLB6BC_SGD5          ,          PLB6BC_SGD5_DFLT,           PLB6BC_SGDx_MSK},
+    {"PLB6BC_SGD6          ",           REGPOKER_READ_DCR, PLB6BC_SGD6          ,          PLB6BC_SGD6_DFLT,           PLB6BC_SGDx_MSK},
+    {"PLB6BC_SGD7          ",           REGPOKER_READ_DCR, PLB6BC_SGD7          ,          PLB6BC_SGD7_DFLT,           PLB6BC_SGDx_MSK},
+    {"PLB6BC_ERR           ",           REGPOKER_READ_DCR, PLB6BC_ERR           ,          PLB6BC_ERR_DFLT,            PLB6BC_ERR_MSK},
+    {"PLB6BC_MSRSP         ",           REGPOKER_READ_DCR, PLB6BC_MSRSP         ,          PLB6BC_MSRSP_DFLT,          PLB6BC_MSRSP_MSK},
+    {"PLB6BC_HCPP          ",           REGPOKER_READ_DCR, PLB6BC_HCPP          ,          0x00001000,                 PLB6BC_HCPP_MSK},
+    {"PLB6BC_HD            ",           REGPOKER_READ_DCR, PLB6BC_HD            ,          PLB6BC_HD_DFLT,             PLB6BC_HD_MSK},
+    {"PLB6BC_QD            ",           REGPOKER_READ_DCR, PLB6BC_QD            ,          PLB6BC_QD_DFLT,             PLB6BC_QD_MSK},
+    {"PLB6BC_SHD           ",           REGPOKER_READ_DCR, PLB6BC_SHD           ,          PLB6BC_SHD_DFLT,            PLB6BC_SHD_MSK},
+    {"PLB6BC_REVID         ",           REGPOKER_READ_DCR, PLB6BC_REVID         ,          0x00000102,                 PLB6BC_REVID_MSK},
+   
+    
+    {/* Sentinel */}};  
+    
+#include <platform/regs/regs_dma2plb6.h>
+
+#define PLB6_DMA_DSTRx_MSK  0xffffffff
+#define PLB6_DMA_SAHx_MSK   0xffffffff
+#define PLB6_DMA_SALx_MSK   0xffffffff
+#define PLB6_DMA_DAHx_MSK   0xffffffff
+#define PLB6_DMA_DALx_MSK   0xffffffff
+#define PLB6_DMA_SGHx_MSK   0xffffffff
+#define PLB6_DMA_SGLx_MSK   0xffffffff
+#define PLB6_DMA_PMEAx_MSK  0xffffffff
+#define PLB6_DMA_PSEAx_MSK  0xffffffff
+
+static const struct regpoker_checker dma2plb6_regs_default[] = {
+    
+    //name                   check type         offset               exp val                     mask  
+    {"CR0    ",                REGPOKER_READ_DCR, PLB6_DMA_CR0    ,        PLB6_DMA_CR0_DEFAULT,       PLB6_DMA_CR0_MSK},
+    {"CTC0   ",                REGPOKER_READ_DCR, PLB6_DMA_CTC0   ,        PLB6_DMA_CTC0_DEFAULT,      PLB6_DMA_CTC0_MSK},
+    {"DSTR0  ",                REGPOKER_READ_DCR, PLB6_DMA_DSTR0  ,        PLB6_DMA_DSTR0_DEFAULT,     PLB6_DMA_DSTRx_MSK},
+    {"SAH0   ",                REGPOKER_READ_DCR, PLB6_DMA_SAH0   ,        PLB6_DMA_SAH0_DEFAULT,      PLB6_DMA_SAHx_MSK},
+    {"SAL0   ",                REGPOKER_READ_DCR, PLB6_DMA_SAL0   ,        PLB6_DMA_SAL0_DEFAULT,      PLB6_DMA_SALx_MSK},
+    {"DAH0   ",                REGPOKER_READ_DCR, PLB6_DMA_DAH0   ,        PLB6_DMA_DAH0_DEFAULT,      PLB6_DMA_DAHx_MSK},
+    {"DAL0   ",                REGPOKER_READ_DCR, PLB6_DMA_DAL0   ,        PLB6_DMA_DAL0_DEFAULT,      PLB6_DMA_DALx_MSK},
+    {"SGH0   ",                REGPOKER_READ_DCR, PLB6_DMA_SGH0   ,        PLB6_DMA_SGH0_DEFAULT,      PLB6_DMA_SGHx_MSK},
+    {"SGL0   ",                REGPOKER_READ_DCR, PLB6_DMA_SGL0   ,        PLB6_DMA_SGL0_DEFAULT,      PLB6_DMA_SGLx_MSK},
+    {"SGC0   ",                REGPOKER_READ_DCR, PLB6_DMA_SGC0   ,        PLB6_DMA_SGC0_DEFAULT,      PLB6_DMA_SGC0_MSK},
+    {"CHRES0 ",                REGPOKER_READ_DCR, PLB6_DMA_CHRES0 ,        PLB6_DMA_CHRES0_DEFAULT,    PLB6_DMA_CHRES0_MSK},
+    {"CHLOCK0",                REGPOKER_READ_DCR, PLB6_DMA_CHLOCK0,        PLB6_DMA_CHLOCK0_DEFAULT,   PLB6_DMA_CHLOCK0_MSK},
+    {"SGCA0  ",                REGPOKER_READ_DCR, PLB6_DMA_SGCA0  ,        PLB6_DMA_SGCA0_DEFAULT,     PLB6_DMA_SGCA0_MSK},
+    {"CR1    ",                REGPOKER_READ_DCR, PLB6_DMA_CR1    ,        PLB6_DMA_CR1_DEFAULT,       PLB6_DMA_CR1_MSK},
+    {"CTC1   ",                REGPOKER_READ_DCR, PLB6_DMA_CTC1   ,        PLB6_DMA_CTC1_DEFAULT,      PLB6_DMA_CTC1_MSK},
+    {"DSTR1  ",                REGPOKER_READ_DCR, PLB6_DMA_DSTR1  ,        PLB6_DMA_DSTR1_DEFAULT,     PLB6_DMA_DSTRx_MSK},
+    {"SAH1   ",                REGPOKER_READ_DCR, PLB6_DMA_SAH1   ,        PLB6_DMA_SAH1_DEFAULT,      PLB6_DMA_SAHx_MSK},
+    {"SAL1   ",                REGPOKER_READ_DCR, PLB6_DMA_SAL1   ,        PLB6_DMA_SAL1_DEFAULT,      PLB6_DMA_SALx_MSK},
+    {"DAH1   ",                REGPOKER_READ_DCR, PLB6_DMA_DAH1   ,        PLB6_DMA_DAH1_DEFAULT,      PLB6_DMA_DAHx_MSK},
+    {"DAL1   ",                REGPOKER_READ_DCR, PLB6_DMA_DAL1   ,        PLB6_DMA_DAL1_DEFAULT,      PLB6_DMA_DALx_MSK},
+    {"SGH1   ",                REGPOKER_READ_DCR, PLB6_DMA_SGH1   ,        PLB6_DMA_SGH1_DEFAULT,      PLB6_DMA_SGHx_MSK},
+    {"SGL1   ",                REGPOKER_READ_DCR, PLB6_DMA_SGL1   ,        PLB6_DMA_SGL1_DEFAULT,      PLB6_DMA_SGLx_MSK},
+    {"SGC1   ",                REGPOKER_READ_DCR, PLB6_DMA_SGC1   ,        PLB6_DMA_SGC1_DEFAULT,      PLB6_DMA_SGC1_MSK},
+    {"CHRES1 ",                REGPOKER_READ_DCR, PLB6_DMA_CHRES1 ,        PLB6_DMA_CHRES1_DEFAULT,    PLB6_DMA_CHRES1_MSK},
+    {"CHLOCK1",                REGPOKER_READ_DCR, PLB6_DMA_CHLOCK1,        PLB6_DMA_CHLOCK1_DEFAULT,   PLB6_DMA_CHLOCK1_MSK},
+    {"SGCA1  ",                REGPOKER_READ_DCR, PLB6_DMA_SGCA1  ,        PLB6_DMA_SGCA1_DEFAULT,     PLB6_DMA_SGCA1_MSK},
+    {"CR2    ",                REGPOKER_READ_DCR, PLB6_DMA_CR2    ,        PLB6_DMA_CR2_DEFAULT,       PLB6_DMA_CR2_MSK},
+    {"CTC2   ",                REGPOKER_READ_DCR, PLB6_DMA_CTC2   ,        PLB6_DMA_CTC2_DEFAULT,      PLB6_DMA_CTC2_MSK},
+    {"DSTR2  ",                REGPOKER_READ_DCR, PLB6_DMA_DSTR2  ,        PLB6_DMA_DSTR2_DEFAULT,     PLB6_DMA_DSTRx_MSK},
+    {"SAH2   ",                REGPOKER_READ_DCR, PLB6_DMA_SAH2   ,        PLB6_DMA_SAH2_DEFAULT,      PLB6_DMA_SAHx_MSK},
+    {"SAL2   ",                REGPOKER_READ_DCR, PLB6_DMA_SAL2   ,        PLB6_DMA_SAL2_DEFAULT,      PLB6_DMA_SALx_MSK},
+    {"DAH2   ",                REGPOKER_READ_DCR, PLB6_DMA_DAH2   ,        PLB6_DMA_DAH2_DEFAULT,      PLB6_DMA_DAHx_MSK},
+    {"DAL2   ",                REGPOKER_READ_DCR, PLB6_DMA_DAL2   ,        PLB6_DMA_DAL2_DEFAULT,      PLB6_DMA_DALx_MSK},
+    {"SGH2   ",                REGPOKER_READ_DCR, PLB6_DMA_SGH2   ,        PLB6_DMA_SGH2_DEFAULT,      PLB6_DMA_SGHx_MSK},
+    {"SGL2   ",                REGPOKER_READ_DCR, PLB6_DMA_SGL2   ,        PLB6_DMA_SGL2_DEFAULT,      PLB6_DMA_SGLx_MSK},
+    {"SGC2   ",                REGPOKER_READ_DCR, PLB6_DMA_SGC2   ,        PLB6_DMA_SGC2_DEFAULT,      PLB6_DMA_SGC2_MSK},
+    {"CHRES2 ",                REGPOKER_READ_DCR, PLB6_DMA_CHRES2 ,        PLB6_DMA_CHRES2_DEFAULT,    PLB6_DMA_CHRES2_MSK},
+    {"CHLOCK2",                REGPOKER_READ_DCR, PLB6_DMA_CHLOCK2,        PLB6_DMA_CHLOCK2_DEFAULT,   PLB6_DMA_CHLOCK2_MSK},
+    {"SGCA2  ",                REGPOKER_READ_DCR, PLB6_DMA_SGCA2  ,        PLB6_DMA_SGCA2_DEFAULT,     PLB6_DMA_SGCA2_MSK},
+    {"CR3    ",                REGPOKER_READ_DCR, PLB6_DMA_CR3    ,        PLB6_DMA_CR3_DEFAULT,       PLB6_DMA_CR3_MSK},
+    {"CTC3   ",                REGPOKER_READ_DCR, PLB6_DMA_CTC3   ,        PLB6_DMA_CTC3_DEFAULT,      PLB6_DMA_CTC3_MSK},
+    {"DSTR3  ",                REGPOKER_READ_DCR, PLB6_DMA_DSTR3  ,        PLB6_DMA_DSTR3_DEFAULT,     PLB6_DMA_DSTRx_MSK},
+    {"SAH3   ",                REGPOKER_READ_DCR, PLB6_DMA_SAH3   ,        PLB6_DMA_SAH3_DEFAULT,      PLB6_DMA_SAHx_MSK},
+    {"SAL3   ",                REGPOKER_READ_DCR, PLB6_DMA_SAL3   ,        PLB6_DMA_SAL3_DEFAULT,      PLB6_DMA_SALx_MSK},
+    {"DAH3   ",                REGPOKER_READ_DCR, PLB6_DMA_DAH3   ,        PLB6_DMA_DAH3_DEFAULT,      PLB6_DMA_DAHx_MSK},
+    {"DAL3   ",                REGPOKER_READ_DCR, PLB6_DMA_DAL3   ,        PLB6_DMA_DAL3_DEFAULT,      PLB6_DMA_DALx_MSK},
+    {"SGH3   ",                REGPOKER_READ_DCR, PLB6_DMA_SGH3   ,        PLB6_DMA_SGH3_DEFAULT,      PLB6_DMA_SGHx_MSK},
+    {"SGL3   ",                REGPOKER_READ_DCR, PLB6_DMA_SGL3   ,        PLB6_DMA_SGL3_DEFAULT,      PLB6_DMA_SGLx_MSK},
+    {"SGC3   ",                REGPOKER_READ_DCR, PLB6_DMA_SGC3   ,        PLB6_DMA_SGC3_DEFAULT,      PLB6_DMA_SGC3_MSK},
+    {"CHRES3 ",                REGPOKER_READ_DCR, PLB6_DMA_CHRES3 ,        PLB6_DMA_CHRES3_DEFAULT,    PLB6_DMA_CHRES3_MSK},
+    {"CHLOCK3",                REGPOKER_READ_DCR, PLB6_DMA_CHLOCK3,        PLB6_DMA_CHLOCK3_DEFAULT,   PLB6_DMA_CHLOCK3_MSK},
+    {"SGCA3  ",                REGPOKER_READ_DCR, PLB6_DMA_SGCA3  ,        PLB6_DMA_SGCA3_DEFAULT,     PLB6_DMA_SGCA3_MSK},
+    {"SR     ",                REGPOKER_READ_DCR, PLB6_DMA_SR     ,        PLB6_DMA_SR_DEFAULT,        PLB6_DMA_SR_MSK},
+    {"PMEAH  ",                REGPOKER_READ_DCR, PLB6_DMA_PMEAH  ,        PLB6_DMA_PMEAH_DEFAULT,     PLB6_DMA_PMEAx_MSK},
+    {"PMEAL  ",                REGPOKER_READ_DCR, PLB6_DMA_PMEAL  ,        PLB6_DMA_PMEAL_DEFAULT,     PLB6_DMA_PMEAx_MSK},
+    {"PSE    ",                REGPOKER_READ_DCR, PLB6_DMA_PSE    ,        PLB6_DMA_PSE_DEFAULT,       PLB6_DMA_PSE_MSK},
+    {"PSEAH  ",                REGPOKER_READ_DCR, PLB6_DMA_PSEAH  ,        PLB6_DMA_PSEAH_DEFAULT,     PLB6_DMA_PSEAx_MSK},
+    {"PSEAL  ",                REGPOKER_READ_DCR, PLB6_DMA_PSEAL  ,        PLB6_DMA_PSEAL_DEFAULT,     PLB6_DMA_PSEAx_MSK},
+    {"CRS    ",                REGPOKER_READ_DCR, PLB6_DMA_CRS    ,        PLB6_DMA_CRS_DEFAULT,       PLB6_DMA_CRS_MSK},
+    {"REVID  ",                REGPOKER_READ_DCR, PLB6_DMA_REVID  ,        PLB6_DMA_REVID_DEFAULT,     PLB6_DMA_REVID_MSK},
+    {"ARB    ",                REGPOKER_READ_DCR, PLB6_DMA_ARB    ,        PLB6_DMA_ARB_DEFAULT,       PLB6_DMA_ARB_MSK},
+    {"OPTIONS",                REGPOKER_READ_DCR, PLB6_DMA_OPTIONS,        PLB6_DMA_OPTIONS_DEFAULT,   PLB6_DMA_OPTIONS_MSK},
+    {"PERM   ",                REGPOKER_READ_DCR, PLB6_DMA_PERM   ,        PLB6_DMA_PERM_DEFAULT,      PLB6_DMA_PERM_MSK},
+    //{"PNC   ",                 REGPOKER_READ_DCR, PLB6_DMA_PNC   ,         PLB6_DMA_PNC_DEFAULT,       PLB6_DMA_PNC_MSK},
+   
+    
+    {/* Sentinel */}};
+    
+#include <platform/regs/regs_srammc2plb4.h>
+
+#define SRAMMC2PLB4_0_SB0CR_DFLT 0xffff048f
+#define SRAMMC2PLB4_0_SB1CR_DFLT 0xffff448f
+#define SRAMMC2PLB4_0_SB2CR_DFLT 0xffff848f
+#define SRAMMC2PLB4_0_SB3CR_DFLT 0xffffc48f
+
+#define SRAMMC2PLB4_1_SB0CR_DFLT 0x80000780
+#define SRAMMC2PLB4_1_SB1CR_DFLT 0x80008780
+#define SRAMMC2PLB4_1_SB2CR_DFLT 0x80010780
+#define SRAMMC2PLB4_1_SB3CR_DFLT 0x80018780
+
+
+ 
+static const struct regpoker_checker srammc2plb4_0_regs_default[] = {
+    //name         check type         offset     exp val                  mask
+    {"SB0CR",       REGPOKER_READ_DCR, SRAMMC2PLB4_SB0CR,      SRAMMC2PLB4_0_SB0CR_DFLT,       SRAMMC2PLB4_SBxCR_MASK},
+    {"SB1CR",       REGPOKER_READ_DCR, SRAMMC2PLB4_SB1CR,      SRAMMC2PLB4_0_SB1CR_DFLT,       SRAMMC2PLB4_SBxCR_MASK},
+    {"SB2CR",       REGPOKER_READ_DCR, SRAMMC2PLB4_SB2CR,      SRAMMC2PLB4_0_SB2CR_DFLT,       SRAMMC2PLB4_SBxCR_MASK},
+    {"SB3CR",       REGPOKER_READ_DCR, SRAMMC2PLB4_SB3CR,      SRAMMC2PLB4_0_SB3CR_DFLT,       SRAMMC2PLB4_SBxCR_MASK},
+    {"BEAR",        REGPOKER_READ_DCR, SRAMMC2PLB4_BEAR,       SRAMMC2PLB4_BEAR_DFLT,        SRAMMC2PLB4_BEAR_MASK},
+    {"BESR0",       REGPOKER_READ_DCR, SRAMMC2PLB4_BESR0,      SRAMMC2PLB4_BESRx_DFLT,       SRAMMC2PLB4_BESR0_MASK},
+    {"BESR1",       REGPOKER_READ_DCR, SRAMMC2PLB4_BESR1,      SRAMMC2PLB4_BESRx_DFLT,       SRAMMC2PLB4_BESR1_MASK},
+    {"PMEG",        REGPOKER_READ_DCR, SRAMMC2PLB4_PMEG,       SRAMMC2PLB4_PMEG_DFLT,        SRAMMC2PLB4_PMEG_MASK},
+    {"CID",         REGPOKER_READ_DCR, SRAMMC2PLB4_CID,        SRAMMC2PLB4_CID_DFLT,         SRAMMC2PLB4_CID_MASK},
+    {"REVID",       REGPOKER_READ_DCR, SRAMMC2PLB4_REVID,      SRAMMC2PLB4_REVID_DFLT,       SRAMMC2PLB4_REVID_MASK},
+    {"DPC",         REGPOKER_READ_DCR, SRAMMC2PLB4_DPC,        SRAMMC2PLB4_DPC_DFLT,         SRAMMC2PLB4_DPC_MASK},
+        
+    {/* Sentinel */}}; 
+    
+static const struct regpoker_checker srammc2plb4_1_regs_default[] = {
+    //name         check type         offset     exp val                  mask
+    {"SB0CR",       REGPOKER_READ_DCR, SRAMMC2PLB4_SB0CR,      SRAMMC2PLB4_1_SB0CR_DFLT,       SRAMMC2PLB4_SBxCR_MASK},
+    {"SB1CR",       REGPOKER_READ_DCR, SRAMMC2PLB4_SB1CR,      SRAMMC2PLB4_1_SB1CR_DFLT,       SRAMMC2PLB4_SBxCR_MASK},
+    {"SB2CR",       REGPOKER_READ_DCR, SRAMMC2PLB4_SB2CR,      SRAMMC2PLB4_1_SB2CR_DFLT,       SRAMMC2PLB4_SBxCR_MASK},
+    {"SB3CR",       REGPOKER_READ_DCR, SRAMMC2PLB4_SB3CR,      SRAMMC2PLB4_1_SB3CR_DFLT,       SRAMMC2PLB4_SBxCR_MASK},
+    {"BEAR",        REGPOKER_READ_DCR, SRAMMC2PLB4_BEAR,       SRAMMC2PLB4_BEAR_DFLT,        SRAMMC2PLB4_BEAR_MASK},
+    {"BESR0",       REGPOKER_READ_DCR, SRAMMC2PLB4_BESR0,      SRAMMC2PLB4_BESRx_DFLT,       SRAMMC2PLB4_BESR0_MASK},
+    {"BESR1",       REGPOKER_READ_DCR, SRAMMC2PLB4_BESR1,      SRAMMC2PLB4_BESRx_DFLT,       SRAMMC2PLB4_BESR1_MASK},
+    {"PMEG",        REGPOKER_READ_DCR, SRAMMC2PLB4_PMEG,       SRAMMC2PLB4_PMEG_DFLT,        SRAMMC2PLB4_PMEG_MASK},
+    {"CID",         REGPOKER_READ_DCR, SRAMMC2PLB4_CID,        SRAMMC2PLB4_CID_DFLT,         SRAMMC2PLB4_CID_MASK},
+    {"REVID",       REGPOKER_READ_DCR, SRAMMC2PLB4_REVID,      SRAMMC2PLB4_REVID_DFLT,       SRAMMC2PLB4_REVID_MASK},
+    {"DPC",         REGPOKER_READ_DCR, SRAMMC2PLB4_DPC,        SRAMMC2PLB4_DPC_DFLT,         SRAMMC2PLB4_DPC_MASK},
+        
+    {/* Sentinel */}}; 
 
 #include <platform/regs/regs_aximcif2.h>
 
@@ -1088,6 +1323,14 @@ static struct rumboot_pokerlist the_big_list[] = {
     {greth0_read_checker, GRETH_0_BASE },
     {greth1_read_checker, GRETH_1_BASE },
     {mcif2arb4_regs_default, DCR_MCIF2ARB4_BASE},
+    {cldcr_regs_default,     DCR_CLDCR_BASE},
+    {plb4ahb_regs_default, DCR_PLB4AHB_0_BASE},
+    {dma2plb6_regs_default, DCR_DMAPLB6_BASE},
+    {plb6bc_regs_default, DCR_PLB6_BC_BASE},
+    {plb4arb8m_0_regs_default, DCR_PLB4ARB8M_0_BASE},
+    {plb4arb8m_2_regs_default, DCR_PLB4ARB8M_2_BASE},
+    {srammc2plb4_0_regs_default, DCR_SRAMMC2PLB4_0_BASE},
+    {srammc2plb4_1_regs_default, DCR_SRAMMC2PLB4_1_BASE},
     {crg_checker,         DCR_CRG_BASE},
     //{crg_checker_rw,      DCR_CRG_BASE},
     {aximcif2_regs_default, DCR_AXIMCIF2_BASE},
