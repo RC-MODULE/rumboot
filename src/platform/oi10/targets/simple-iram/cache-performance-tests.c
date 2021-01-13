@@ -2,7 +2,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <arch/ppc_476fp_config.h>
-#include <platform/ppc470s/mmu.h>
+#include <arch/mmu.h>
 #include <arch/io.h>
 #include <arch/ppc_476fp_mmu_fields.h>
 #include <arch/ppc_476fp_ctrl_fields.h>

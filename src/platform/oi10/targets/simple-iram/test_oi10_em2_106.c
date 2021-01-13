@@ -10,7 +10,7 @@
 #include <platform/test_assert.h>
 #include <platform/devices.h>
 #include <platform/devices/emi.h>
-#include <platform/ppc470s/mmu.h>
+#include <arch/mmu.h>
 #include <arch/mem_window.h>
 #include <platform/devices/dma2plb6.h>
 

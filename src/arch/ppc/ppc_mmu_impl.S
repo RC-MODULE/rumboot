@@ -38,8 +38,8 @@ r3 - TLB entries array pointer
 r4 - TLB entries count
 r8,r9,r10,r11 - tmp registers
 returns nothing*/
-.global ppc470s_write_tlb_entries
-ppc470s_write_tlb_entries:
+.global write_tlb_entries
+write_tlb_entries:
     cmplwi      r4, 0
     beqlr-
 

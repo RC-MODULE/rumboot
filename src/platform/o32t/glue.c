@@ -13,7 +13,6 @@
 #include <arch/mmu.h>
 #include <devices/mpic128.h>
 #include <platform/devices.h>
-#include <platform/test_event_c.h>
 #include <rumboot/boot.h>
 #include <rumboot/irq.h>
 

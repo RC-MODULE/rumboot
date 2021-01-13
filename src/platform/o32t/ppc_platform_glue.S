@@ -46,7 +46,7 @@ write_rom_tlb_entries:
     load_size   r4, ROM_TLB_ENTRIES_N
 
 write_xxx_tlb_entries:
-    bl          ppc470s_write_tlb_entries
+    bl          write_tlb_entries
     blr
 
 
@@ -102,7 +102,7 @@ setup_plb6bc:
 setup_tlb:
     load_addr   r3, tlb_entries
     load_size   r4, TLB_ENTRIES_N
-    bl          ppc470s_write_tlb_entries /*(r3, r4) - are parameters*/
+    bl          write_tlb_entries /*(r3, r4) - are parameters*/
 
 setup_stack: /*stack is growing down*/
     load_addr   r1, rumboot_platform_stack_area_end
