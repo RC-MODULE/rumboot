@@ -84,7 +84,7 @@ const uint32_t index_count      = 128;
 #ifdef TEST_OI10_MEM_013_FUNC_POINT
 typedef void (*pWay_func) ();
 #else
-void pWay_func(uint32_t addr) {
+__attribute__((no_instrument_function)) __attribute__((optimize("-O0"))) void pWay_func(uint32_t addr) {
     asm volatile (
         ".set  r8, 8               \n\t"
         "     mtctr (%0)          \n\t"
@@ -144,8 +144,7 @@ void pWay_func(uint32_t addr) {
 //}
 
 
-
-static bool test_icu_lru_array()
+__attribute__((no_instrument_function)) __attribute__((optimize("-O0"))) static bool test_icu_lru_array()
 {
     uint32_t addr;
 
