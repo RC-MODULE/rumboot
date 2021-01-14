@@ -13,7 +13,6 @@ file(GLOB PLATFORM_SOURCES
     ${CMAKE_SOURCE_DIR}/src/arch/ppc/exception.c
     ${CMAKE_SOURCE_DIR}/src/arch/ppc/p64.S    
     ${CMAKE_SOURCE_DIR}/src/arch/ppc/vectors.S
-    ${CMAKE_SOURCE_DIR}/src/arch/ppc/startup.S
     ${CMAKE_SOURCE_DIR}/src/arch/ppc/ppc_mmu_impl.S
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/*.c
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/*.S
@@ -43,7 +42,7 @@ rumboot_add_configuration(
     LDFLAGS -Wl,-erumboot_entry_point
     PREFIX brom
     FEATURES ROMGEN
-    FILES #${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/startup.S
+    FILES ${CMAKE_SOURCE_DIR}/src/arch/ppc/startup.S
     TIMEOUT_CTEST 0
     LOAD BOOTROM_NOR SELF
     IRUN_FLAGS ${IRUN_BOOTM_EXTRA_ARGS}

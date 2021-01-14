@@ -46,7 +46,9 @@ write_rom_tlb_entries:
     load_size   r4, ROM_TLB_ENTRIES_N
 
 write_xxx_tlb_entries:
+    mflr r0
     bl          write_tlb_entries
+    mtlr r0
     blr
 
 
@@ -58,7 +60,9 @@ setup_boot_rom_im0_p64:
     /* enable requests to BOOT_ROM mirror (0x0000001F_FFFF0000:0x0000001F_FFFFFFFF) and IM0 (0x00000010_80000000:0x00000010_8001FFFF) */
     load_const  r4, 0x00000010
     load_const  r5, 0x0000001F
+    mflr r0
     bl          p64_set_split_range_address
+    mtlr r0
 
 setup_plb6bc:
     load_const  r6, ((MMU_SUSPCR_ORD_SHARED | MMU_XSPCR_ORD_64KB)   << MMU_SSPCR_ORD1_i)\
@@ -102,7 +106,9 @@ setup_plb6bc:
 setup_tlb:
     load_addr   r3, tlb_entries
     load_size   r4, TLB_ENTRIES_N
+    mflr r0    
     bl          write_tlb_entries /*(r3, r4) - are parameters*/
+    mtlr r0
 
 setup_stack: /*stack is growing down*/
     load_addr   r1, rumboot_platform_stack_area_end
