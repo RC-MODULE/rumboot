@@ -1,3 +1,6 @@
+#ifndef O32T_DEVICES_H
+#define O32T_DEVICES_H
+
 #include <platform/oi10/platform/devices.h>
 
 #undef AXI32HSIFS_CTRL_BASE
@@ -8,3 +11,5 @@
 #define AXI32_RIGHT_CTRL_BASE   0xC0200000
 #define AXI64_CTRL_BASE         0xC0400000
 #define SCRB_BASE               0xC0307000
+
+#endif // !O32T_DEVICES_H

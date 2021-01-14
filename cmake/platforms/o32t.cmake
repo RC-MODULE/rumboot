@@ -51,6 +51,26 @@ rumboot_add_configuration(
     IRUN_FLAGS +BOOTMGR_KEEP_DRIVING=1 ${BOOTROM_IFLAGS}
 )
 
+rumboot_add_configuration (
+    IRAM_IM1
+    LDS oi10/iram.lds
+    PREFIX iram
+    LDFLAGS -Wl,-erumboot_main
+    FILES ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c
+    BOOTROM bootrom-stub
+    FEATURES COVERAGE PACKIMAGE BANNER
+    LOAD
+      IM0BIN SELF
+      BOOTROM_NOR bootrom-stub
+    TIMEOUT_CTEST 86400
+    IRUN_FLAGS ${IRUN_BOOTM_EXTRA_ARGS}
+)
+
+rumboot_add_configuration (
+    IRAM_IM0
+    CONFIGURATION IRAM_IM1
+    LDS oi10/iram_legacy.lds
+)
 
 macro(rumboot_platform_generate_stuff_for_taget product)
     list (FIND TARGET_FEATURES "ROMGEN" _index)
@@ -84,11 +104,26 @@ set(ROM_115200_OPTS +BOOT_SLOWUART=0 +BOOT_FASTUART=0 +UART0_SPEED=115200)
 set(ROM_6500K_OPTS +BOOT_SLOWUART=0 +BOOT_FASTUART=1 +UART0_SPEED=6250000)
 
 macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
-add_rumboot_target(
-    CONFIGURATION ROM 
-    FILES oi10/targets/simple-iram/hello.c
+  add_rumboot_target(
+    CONFIGURATION ROM
+    FILES common/bootrom-stubs/bootrom-stub.c
+    PREFIX "bootrom"
+    NAME "stub"
+    FEATURES STUB
   )
-endmacro()
+
+  add_rumboot_target_dir(simple-iram/
+    CONFIGURATION IRAM_IM1
+    PREFIX iram-im1
+  )
+
+  #Don't use, not ready yet.
+  #add_rumboot_target_dir(simple-iram/
+  #  CONFIGURATION IRAM_IM0
+  #  PREFIX iram-im0
+  #)
+
+  endmacro()
 
 
 function(RUMBOOT_PLATFORM_PRINT_SUMMARY)
