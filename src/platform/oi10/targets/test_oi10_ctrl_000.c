@@ -12,7 +12,7 @@
 #include <rumboot/rumboot.h>
 #include <platform/test_event_c.h>
 #include <platform/test_assert.h>
-#include <platform/arch/ppc/ppc_476fp_mmu.h>
+#include <arch/ppc_476fp_mmu.h>
 
 DECLARE_CONST(TEST_OI10_CTRL_000_CHECK_50MHz,       TEST_EVENT_CODE_MIN + 0)
 DECLARE_CONST(TEST_OI10_CTRL_000_CHECK_100MHz,      TEST_EVENT_CODE_MIN + 1)

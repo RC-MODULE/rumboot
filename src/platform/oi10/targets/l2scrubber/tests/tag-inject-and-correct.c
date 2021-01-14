@@ -9,7 +9,7 @@
 #include <platform/devices/l2c.h>
 #include <stdio.h>
 #include <inttypes.h>
-#include <platform/arch/ppc/ppc_476fp_mmu.h>
+#include <arch/ppc_476fp_mmu.h>
 #include <platform/interrupts.h>
 #include <rumboot/irq.h>
 #include <rumboot/rumboot.h>

@@ -30,7 +30,7 @@
 #include <platform/devices/emi.h>
 #include <platform/test_assert.h>
 #include <platform/devices/greth.h>
-#include <platform/arch/ppc/ppc_476fp_mmu.h>
+#include <arch/ppc_476fp_mmu.h>
 #include <rumboot/hexdump.h>
 
 extern void test_oi10_power_endless();

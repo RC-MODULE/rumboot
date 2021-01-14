@@ -10,7 +10,7 @@
 #include <platform/devices.h>
 #include <rumboot/memtest.h>
 #include <devices/gpio_pl061.h>
-#include <platform/arch/ppc/ppc_476fp_mmu.h>
+#include <arch/ppc_476fp_mmu.h>
 #include <regs/regs_spi.h>
 #include <rumboot/io.h>
 #include <regs/regs_uart_pl011.h>

@@ -2,7 +2,7 @@
 #include <arch/ppc_476fp_ctrl_fields.h>
 #include <arch/ppc_476fp_itrpt_fields.h>
 #include <arch/ppc_476fp_debug_fields.h>
-#include <platform/ppc470s/mmu.S.h>
+#include <arch/mmu.S.h>
 #include <platform/test_event_asm.h>
 #include <platform/test_assert.S.h>
 #include <platform/arch/ppc/test_macro_asm.S.h>

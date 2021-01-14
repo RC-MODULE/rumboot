@@ -19,7 +19,7 @@
 #include <platform/test_event_codes.h>
 #include <platform/interrupts.h>
 
-#include <platform/arch/ppc/ppc_476fp_mmu.h>
+#include <arch/ppc_476fp_mmu.h>
 #include <arch/ppc_476fp_itrpt_fields.h>
 #include <arch/ppc_476fp_ctrl_fields.h>
 

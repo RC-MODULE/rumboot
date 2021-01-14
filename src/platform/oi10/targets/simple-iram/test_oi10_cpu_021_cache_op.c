@@ -8,7 +8,7 @@
 #include <platform/devices.h>
 #include <platform/devices/emi.h>
 #include <platform/devices/l2c.h>
-#include <platform/arch/ppc/ppc_476fp_mmu.h>
+#include <arch/ppc_476fp_mmu.h>
 #include <rumboot/rumboot.h>
 #include <platform/test_assert.h>
 #include <platform/arch/ppc/ppc_476fp_l1c_fields.h>

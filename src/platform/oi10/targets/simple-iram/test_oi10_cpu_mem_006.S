@@ -1,6 +1,6 @@
 #include <platform/test_event_asm.h>
 #include <platform/test_assert.S.h>
-#include <platform/ppc470s/mmu.S.h>
+#include <arch/mmu.S.h>
 #include <platform/trace.S.h>
 #include <platform/devices.h>
 #include <arch/ppc_476fp_ctrl_fields.h>

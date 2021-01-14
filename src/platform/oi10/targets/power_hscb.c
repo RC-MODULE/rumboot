@@ -35,7 +35,7 @@
 #include <platform/devices/greth.h>
 #include <rumboot/printf.h>
 #include <rumboot/macros.h>
-#include <platform/arch/ppc/ppc_476fp_mmu.h>
+#include <arch/ppc_476fp_mmu.h>
 #include <unistd.h>
 #include <rumboot/memtest.h>
 #include <platform/devices/l2c.h>

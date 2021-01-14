@@ -6,7 +6,7 @@
 #include <rumboot/macros.h>
 #include <rumboot/io.h>
 #include <platform/devices.h>
-#include <platform/arch/ppc/ppc_476fp_mmu.h>
+#include <arch/ppc_476fp_mmu.h>
 
 struct addr_map {
     uint32_t    virt;

@@ -7,7 +7,7 @@
 #include <platform/devices.h>
 #include <platform/regs/regs_plb6dma.h>
 
-#include <platform/ppc470s/mmu.S.h>
+#include <arch/mmu.S.h>
 
 
 #define EM2_ADDR(addr)      (addr)-em2_data_begin+EM2_BASE

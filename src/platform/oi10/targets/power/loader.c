@@ -13,7 +13,7 @@
 #include <rumboot/macros.h>
 #include <algo/crc32.h>
 #include <rumboot/memtest.h>
-#include <platform/arch/ppc/ppc_476fp_mmu.h>
+#include <arch/ppc_476fp_mmu.h>
 
 #define IM0_BASE_UNCACHED 0x80000000
 #ifdef ENABLE_CACHE

@@ -12,7 +12,7 @@
 #include <rumboot/io.h>
 #include <rumboot/printf.h>
 #include <platform/trace.h>
-#include <platform/arch/ppc/ppc_476fp_mmu.h>
+#include <arch/ppc_476fp_mmu.h>
 #include <platform/devices/emi.h>
 #include <rumboot/memfill.h>
 

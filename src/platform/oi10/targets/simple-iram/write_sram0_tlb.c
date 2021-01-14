@@ -1,6 +1,6 @@
 #include <rumboot/printf.h>
 #include <rumboot/macros.h>
-#include <platform/arch/ppc/ppc_476fp_mmu.h>
+#include <arch/ppc_476fp_mmu.h>
 
 
 int main()
