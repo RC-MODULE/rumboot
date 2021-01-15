@@ -29,6 +29,26 @@
 #include <platform/devices/hscb.h>
 #include <platform/regs/regs_plb6mcif2.h>
 
+#ifndef DCR_EM2_AXIMCIF2_BASE
+#define DCR_EM2_AXIMCIF2_BASE           0x800D0000
+#endif
+
+/* AXI-MCIF2 Bridge registers */
+#define AXIMCIF2_BESR_RC                0x00    // Read/Clear
+#define AXIMCIF2_BESR_RS                0x01    // Read/Set
+#define AXIMCIF2_ERRID                  0x02    // Read
+#define AXIMCIF2_AEARL                  0x03    // Read
+#define AXIMCIF2_AEARU                  0x04    // Read
+#define AXIMCIF2_AXIERRMSK              0x05    // Read/Write
+#define AXIMCIF2_AXIASYNC               0x06    // Read/Write
+#define AXIMCIF2_AXICFG                 0x07    // Read/Write
+#define AXIMCIF2_AXISTS                 0x09    // Read
+#define AXIMCIF2_MR0CF                  0x10    // Read/Write
+#define AXIMCIF2_MR1CF                  0x11    // Read/Write
+#define AXIMCIF2_MR2CF                  0x12    // Read/Write
+#define AXIMCIF2_MR3CF                  0x13    // Read/Write
+#define AXIMCIF2_RID                    0x20    // Read
+
 #define GRETH_TEST_DATA_MISALIGN_IM0    0
 #define GRETH_TEST_DATA_MISALIGN_IM1    0
 #define GRETH_TEST_DATA_MISALIGN_IM2    0
@@ -45,12 +65,12 @@
 #define GRETH_CKMODES                   4
 #define GRETH_CKMODES_MASK              (0b0111)
 #define GRETH_RAM_PRESENT               (SRAM0_BASE + 0x00000000)
-#define GRETH_RAM_ABSENT                (SRAM0_BASE + 0x00800000)
+#define GRETH_RAM_ABSENT                (SRAM0_BASE + 0x08000000)
 #define GRETH_FILL_SRC_EN_MASK          ((1 << GRETH_CKMODE_NORMAL)   | \
                                          (1 << GRETH_CKMODE_WRFAIL))
-#define GRETH_TERR_BITS                 ((1 << GRETH_STATUS_TE)       | \
+#define GRETH_TERR_BITS                 ((0 << GRETH_STATUS_TE)       | \
                                          (1 << GRETH_STATUS_TA))
-#define GRETH_RERR_BITS                 ((1 << GRETH_STATUS_RE)       | \
+#define GRETH_RERR_BITS                 ((0 << GRETH_STATUS_RE)       | \
                                          (1 << GRETH_STATUS_RA))
 
 #define EDCL_TEST_ADDR_IM0              (IM0_BASE + 0x4000 + 0x100)
@@ -102,6 +122,9 @@
 #define PRETTY_HEXDUMP(V,S)             hexDump(#V,(void*)V,S)
 #define PRETTY_PRINT_VAR(V)             rumboot_printf("%s = 0x%X\n",   \
                                             (#V), (uint32_t)V)
+#define PRETTY_PRINT_DCR(B,R)           rumboot_printf("%s = 0x%X\n",   \
+                                            (#R), (uint32_t)            \
+                                            dcr_read((B) + (R)))
 #define GET_NIBBLE(V,N)                 (((V) >> ((N) * 4)) & 0x0F)
 #define IS_NOT_PRINTABLE(C)             (((C) < 0x20) || ((C) > 0x7E))
 
@@ -604,8 +627,8 @@ void prepare_test_data_hscb(void *psrc_data, size_t dsz)
 
 #ifdef CHECK_AXI_PLB6_SINGLE
 
-#define TEM_MSG     "Transmit error mismatch!"
-#define REM_MSG     "Receive error mismatch!"
+#define TE_MSG     "Transmit error mismatch!"
+#define RE_MSG     "Receive error mismatch!"
 
 void check_transfer_via_ext_loop(uint32_t  base_addr_src_eth,
                                   uint8_t  *ptest_data_src,
@@ -617,11 +640,6 @@ void check_transfer_via_ext_loop(uint32_t  base_addr_src_eth,
                 *psrc_status            = NULL,
                 *pdst_status            = NULL;
     uint32_t     base_addr_dst_eth      = 0x00000000;
-
-    // test_event(EVENT_CHECK_RUN_HPROT_MONITOR);
-    // checking switch u_nic400_oi10_axi32.hprot_eth_1(0)_s
-    // from 0x3 to 0xF (by request from JIRA-78)
-    // dcr_write(DCR_SCTL_BASE + SCTL_IFSYS_ETH_HPROT, 0x3F3F3F3F);
 
     TEST_ASSERT(
             (base_addr_src_eth == GRETH_1_BASE) ||
@@ -679,21 +697,23 @@ void check_transfer_via_ext_loop(uint32_t  base_addr_src_eth,
         case GRETH_CKMODE_RDFAIL:
             _greth_wait_transmit(base_addr_src_eth);
             greth_wait_receive_irq(base_addr_dst_eth, eth_handled_flag_ptr);
-            TEST_ASSERT(*psrc_status & GRETH_TERR_BITS, TEM_MSG);
+            TEST_ASSERT(*psrc_status & GRETH_TERR_BITS, TE_MSG);
             memset(ptest_data_dst, 0, GRETH_TEST_DATA_LEN_BYTES);
             break;
         case GRETH_CKMODE_WRFAIL:
             _greth_wait_transmit(base_addr_src_eth);
-            TEST_ASSERT(*pdst_status & GRETH_RERR_BITS, REM_MSG);
             greth_wait_receive_irq(base_addr_dst_eth, eth_handled_flag_ptr);
+            TEST_ASSERT(*pdst_status & GRETH_RERR_BITS, RE_MSG);
             break;
         case GRETH_CKMODE_RWFAIL:
             _greth_wait_transmit(base_addr_src_eth);
             greth_wait_receive_irq(base_addr_dst_eth, eth_handled_flag_ptr);
-            TEST_ASSERT(*psrc_status & GRETH_TERR_BITS, TEM_MSG);
-            TEST_ASSERT(*pdst_status & GRETH_RERR_BITS, REM_MSG);
+            TEST_ASSERT(*psrc_status & GRETH_TERR_BITS, TE_MSG);
+            TEST_ASSERT(*pdst_status & GRETH_RERR_BITS, RE_MSG);
             break;
-        default: break;
+        default:
+            TEST_ASSERT(true, "Unexpected check mode!\n");
+            break;
     }
 
     rumboot_printf("GRETH %s STATUS: 0x%X\n", "SRC", *psrc_status);
@@ -713,10 +733,10 @@ void test_oi10_greth(void)
     int                  i;
     static const
     uint32_t             newMR0CF   =       // Set Rank0 base addr and size
-              reg_field(3, (0x00 & 0b1110)) // M_BA[0:2]  = PUABA[28:30]
-            | reg_field(12, 0b0000000000)   // M_BA[3:12] = 0b0000000000
-            | reg_field(19, 0b0000)         // Set Rank0 size = 8MB
-            | reg_field(31, 0b1);           // Enable Rank0
+                      ( (0      << 20)      // R_RA[31:20] Base address
+                      | (0b0000 << 16)      // R_RS[19:16] Set Rank0 size
+                      | (0      <<  1)      // R_RO[15:1] AXI RANK Offset
+                      | (1      <<  0));    // R_RV[0] Enable Rank0
     static const char   *cmn[]      =
     {
             "NORMAL",
@@ -725,12 +745,12 @@ void test_oi10_greth(void)
             "READ AND WRITE FAIL"
     };
 
-
+    PRETTY_PRINT_DCR(DCR_EM2_AXIMCIF2_BASE, AXIMCIF2_MR0CF);
     rumboot_printf("Start test_oi10_greth. Transmit/receive checks\n");
     //test_event_send_test_id("test_oi10_greth");
     tbl = create_greth01_irq_handlers();
 
-    oldMR0CF = dcr_read(DCR_EM2_PLB6MCIF2_BASE + PLB6MCIF2_MR0CF);
+    oldMR0CF = dcr_read(DCR_EM2_AXIMCIF2_BASE + AXIMCIF2_MR0CF);
 
     for(i = 0; i < GRETH_CKMODES; i++)
     {
@@ -749,7 +769,7 @@ void test_oi10_greth(void)
                 (uint32_t)greth_test_info[i].dst, (uint32_t)dma.dst);
         if(i != GRETH_CKMODE_NORMAL)
         {
-            dcr_write(DCR_EM2_PLB6MCIF2_BASE + PLB6MCIF2_MR0CF, newMR0CF);
+            dcr_write(DCR_EM2_AXIMCIF2_BASE + AXIMCIF2_MR0CF, newMR0CF);
 
             rumboot_printf("MR%dCF: OLD=0x%X, NEW=0x%X\n", 0,
                     oldMR0CF, newMR0CF);
@@ -758,7 +778,7 @@ void test_oi10_greth(void)
         check_transfer_via_ext_loop(GRETH_0_BASE, dma.src, dma.dst, i);
 
         if(i != GRETH_CKMODE_NORMAL)
-            dcr_write(DCR_EM2_PLB6MCIF2_BASE + PLB6MCIF2_MR0CF, oldMR0CF);
+            dcr_write(DCR_EM2_AXIMCIF2_BASE + AXIMCIF2_MR0CF, oldMR0CF);
     }
 
     delete_irq_handlers(tbl);
