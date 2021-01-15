@@ -789,6 +789,49 @@ static const struct regpoker_checker mcif2arb4_regs_default[] = {
     
     {/* Sentinel */}};   
     
+#include <platform/regs/regs_plb6plb4.h>
+
+#define P64CR_MSK     0x0fff0703
+#define ESR_MSK       0xfffff001
+#define P64REV_MSK    0x000fffff
+#define EARH_MSK      0xffffffff
+#define EARL_MSK      0xffffffff
+#define ADDRL1_MSK    0xffffffff
+#define ADDRH1_MSK    0xffffffff
+#define TESR_MSK      0xfffff001
+
+static const struct regpoker_checker plb6plb4_0_regs_default[] = {
+    //   name                check type         offset       exp val                mask
+    {"PLB6PLB4_P64CR ",      REGPOKER_READ_DCR, P64CR ,      0x00000303,            P64CR_MSK},
+    {"PLB6PLB4_ESR   ",      REGPOKER_READ_DCR, ESR   ,      ESR_RESET_VAL,         ESR_MSK},
+    {"PLB6PLB4_P64REV",      REGPOKER_READ_DCR, P64REV,      P64REV_RESET_VAL,      P64REV_MSK},
+    {"PLB6PLB4_EARH  ",      REGPOKER_READ_DCR, EARH  ,      EARH_RESET_VAL,        EARH_MSK},
+    {"PLB6PLB4_EARL  ",      REGPOKER_READ_DCR, EARL  ,      EARL_RESET_VAL,        EARL_MSK},
+    //{"PLB6PLB4_ADDRL0",      REGPOKER_READ_DCR, ADDRL0,      ADDRL0_RESET_VAL,      ADDRL0_MSK}, belong to input strap
+    //{"PLB6PLB4_ADDRH0",      REGPOKER_READ_DCR, ADDRH0,      ADDRH0_RESET_VAL,      ADDRH0_MSK},
+    {"PLB6PLB4_ADDRL1",      REGPOKER_READ_DCR, ADDRL1,      0x10,                  ADDRL1_MSK},
+    {"PLB6PLB4_ADDRH1",      REGPOKER_READ_DCR, ADDRH1,      0x1f,                  ADDRH1_MSK},
+    {"PLB6PLB4_TESR  ",      REGPOKER_READ_DCR, TESR  ,      TESR_RESET_VAL,        TESR_MSK},
+    
+    
+    {/* Sentinel */}}; 
+    
+static const struct regpoker_checker plb6plb4_1_regs_default[] = {
+    //   name                check type         offset       exp val                mask
+    {"PLB6PLB4_P64CR ",      REGPOKER_READ_DCR, P64CR ,      P64CR_0_RESET_VAL,     P64CR_MSK},
+    {"PLB6PLB4_ESR   ",      REGPOKER_READ_DCR, ESR   ,      ESR_RESET_VAL,         ESR_MSK},
+    {"PLB6PLB4_P64REV",      REGPOKER_READ_DCR, P64REV,      P64REV_RESET_VAL,      P64REV_MSK},
+    {"PLB6PLB4_EARH  ",      REGPOKER_READ_DCR, EARH  ,      EARH_RESET_VAL,        EARH_MSK},
+    {"PLB6PLB4_EARL  ",      REGPOKER_READ_DCR, EARL  ,      EARL_RESET_VAL,        EARL_MSK},
+    //{"PLB6PLB4_ADDRL0",      REGPOKER_READ_DCR, ADDRL0,      ADDRL0_RESET_VAL,      ADDRL0_MSK}, belong to input strap
+    //{"PLB6PLB4_ADDRH0",      REGPOKER_READ_DCR, ADDRH0,      ADDRH0_RESET_VAL,      ADDRH0_MSK},
+    {"PLB6PLB4_ADDRL1",      REGPOKER_READ_DCR, ADDRL1,      ADDRL1_RESET_VAL,      ADDRL1_MSK},
+    {"PLB6PLB4_ADDRH1",      REGPOKER_READ_DCR, ADDRH1,      ADDRH1_RESET_VAL,      ADDRH1_MSK},
+    {"PLB6PLB4_TESR  ",      REGPOKER_READ_DCR, TESR  ,      TESR_RESET_VAL,        TESR_MSK},
+    
+    
+    {/* Sentinel */}};
+    
 //#include <platform/regs/regs_cldcr.h> // doesn't compile with this include, test_oi10_sys 010 already has this include...
 
 #define CLDCR_TCRREV 0x0
@@ -866,6 +909,467 @@ static const struct regpoker_checker plb4ahb_regs_default[] = {
    
     
     {/* Sentinel */}};  
+    
+#include <regs/regs_mpic128.h>
+
+#define MPIC128_VPx_MSK       0xc0cf00ff
+#define MPIC128_DSTx_MSK      0x0000000f
+#define MPIC128_CTPx_MSK      0x0000000f
+#define MPIC128_WAIx_MSK      0x00000003
+#define MPIC128_NCIARx_MSK    0x000000ff
+#define MPIC128_NCEOIx_MSK    0xffffffff
+#define MPIC128_CIARx_MSK     0x000000ff
+#define MPIC128_CEOIx_MSK     0xffffffff
+#define MPIC128_IARx_MSK      0x000000ff
+#define MPIC128_EOIx_MSK      0xffffffff
+#define MPIC128_FRG0_MSK      0x07ff1fff
+#define MPIC128_GCF0_MSK      0xa000000f
+#define MPIC128_VITC_MSK      0x00001f1f
+#define MPIC128_VRID_MSK      0xfffff007
+#define MPIC128_REVID_MSK     0x000fffff
+#define MPIC128_VIR0_MSK      0x00ffffff
+#define MPIC128_PINI_MSK      0x0000000f
+#define MPIC128_IVPx_MSK      0xc00f00ff
+#define MPIC128_SPV_MSK       0x000000ff
+#define MPIC128_TFR_MSK       0xffffffff
+#define MPIC128_TCCx_MSK      0xffffffff
+#define MPIC128_TBCx_MSK      0xffffffff
+#define MPIC128_TVPx_MSK      0xffffffff
+#define MPIC128_TDSTx_MSK     0xffffffff
+
+
+static const struct regpoker_checker mpic128_regs_default[] = {
+    
+    //name                         check type         offset                     exp val                           mask  
+    {"MPIC128_VP0",                REGPOKER_READ_DCR, MPIC128_VP0,               MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP1",                REGPOKER_READ_DCR, MPIC128_VP1,               MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP2",                REGPOKER_READ_DCR, MPIC128_VP2,               MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP3",                REGPOKER_READ_DCR, MPIC128_VP3,               MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP4",                REGPOKER_READ_DCR, MPIC128_VP4,               MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP5",                REGPOKER_READ_DCR, MPIC128_VP5,               MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP6",                REGPOKER_READ_DCR, MPIC128_VP6,               MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP7",                REGPOKER_READ_DCR, MPIC128_VP7,               MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP8",                REGPOKER_READ_DCR, MPIC128_VP8,               MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP9",                REGPOKER_READ_DCR, MPIC128_VP9,               MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP10",               REGPOKER_READ_DCR, MPIC128_VP10,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP11",               REGPOKER_READ_DCR, MPIC128_VP11,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP12",               REGPOKER_READ_DCR, MPIC128_VP12,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP13",               REGPOKER_READ_DCR, MPIC128_VP13,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP14",               REGPOKER_READ_DCR, MPIC128_VP14,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP15",               REGPOKER_READ_DCR, MPIC128_VP15,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP16",               REGPOKER_READ_DCR, MPIC128_VP16,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP17",               REGPOKER_READ_DCR, MPIC128_VP17,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP18",               REGPOKER_READ_DCR, MPIC128_VP18,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP19",               REGPOKER_READ_DCR, MPIC128_VP19,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP20",               REGPOKER_READ_DCR, MPIC128_VP20,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP21",               REGPOKER_READ_DCR, MPIC128_VP21,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP22",               REGPOKER_READ_DCR, MPIC128_VP22,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP23",               REGPOKER_READ_DCR, MPIC128_VP23,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP24",               REGPOKER_READ_DCR, MPIC128_VP24,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP25",               REGPOKER_READ_DCR, MPIC128_VP25,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP26",               REGPOKER_READ_DCR, MPIC128_VP26,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP27",               REGPOKER_READ_DCR, MPIC128_VP27,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP28",               REGPOKER_READ_DCR, MPIC128_VP28,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP29",               REGPOKER_READ_DCR, MPIC128_VP29,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP30",               REGPOKER_READ_DCR, MPIC128_VP30,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP31",               REGPOKER_READ_DCR, MPIC128_VP31,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP32",               REGPOKER_READ_DCR, MPIC128_VP32,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP33",               REGPOKER_READ_DCR, MPIC128_VP33,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP34",               REGPOKER_READ_DCR, MPIC128_VP34,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP35",               REGPOKER_READ_DCR, MPIC128_VP35,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP36",               REGPOKER_READ_DCR, MPIC128_VP36,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP37",               REGPOKER_READ_DCR, MPIC128_VP37,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP38",               REGPOKER_READ_DCR, MPIC128_VP38,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP39",               REGPOKER_READ_DCR, MPIC128_VP39,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP40",               REGPOKER_READ_DCR, MPIC128_VP40,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP41",               REGPOKER_READ_DCR, MPIC128_VP41,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP42",               REGPOKER_READ_DCR, MPIC128_VP42,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP43",               REGPOKER_READ_DCR, MPIC128_VP43,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP44",               REGPOKER_READ_DCR, MPIC128_VP44,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP45",               REGPOKER_READ_DCR, MPIC128_VP45,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP46",               REGPOKER_READ_DCR, MPIC128_VP46,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP47",               REGPOKER_READ_DCR, MPIC128_VP47,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP48",               REGPOKER_READ_DCR, MPIC128_VP48,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP49",               REGPOKER_READ_DCR, MPIC128_VP49,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP50",               REGPOKER_READ_DCR, MPIC128_VP50,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP51",               REGPOKER_READ_DCR, MPIC128_VP51,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP52",               REGPOKER_READ_DCR, MPIC128_VP52,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP53",               REGPOKER_READ_DCR, MPIC128_VP53,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP54",               REGPOKER_READ_DCR, MPIC128_VP54,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP55",               REGPOKER_READ_DCR, MPIC128_VP55,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP56",               REGPOKER_READ_DCR, MPIC128_VP56,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP57",               REGPOKER_READ_DCR, MPIC128_VP57,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP58",               REGPOKER_READ_DCR, MPIC128_VP58,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP59",               REGPOKER_READ_DCR, MPIC128_VP59,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP60",               REGPOKER_READ_DCR, MPIC128_VP60,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP61",               REGPOKER_READ_DCR, MPIC128_VP61,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP62",               REGPOKER_READ_DCR, MPIC128_VP62,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP63",               REGPOKER_READ_DCR, MPIC128_VP63,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP64",               REGPOKER_READ_DCR, MPIC128_VP64,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP65",               REGPOKER_READ_DCR, MPIC128_VP65,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP66",               REGPOKER_READ_DCR, MPIC128_VP66,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP67",               REGPOKER_READ_DCR, MPIC128_VP67,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP68",               REGPOKER_READ_DCR, MPIC128_VP68,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP69",               REGPOKER_READ_DCR, MPIC128_VP69,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP70",               REGPOKER_READ_DCR, MPIC128_VP70,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP71",               REGPOKER_READ_DCR, MPIC128_VP71,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP72",               REGPOKER_READ_DCR, MPIC128_VP72,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP73",               REGPOKER_READ_DCR, MPIC128_VP73,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP74",               REGPOKER_READ_DCR, MPIC128_VP74,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP75",               REGPOKER_READ_DCR, MPIC128_VP75,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP76",               REGPOKER_READ_DCR, MPIC128_VP76,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP77",               REGPOKER_READ_DCR, MPIC128_VP77,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP78",               REGPOKER_READ_DCR, MPIC128_VP78,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP79",               REGPOKER_READ_DCR, MPIC128_VP79,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP80",               REGPOKER_READ_DCR, MPIC128_VP80,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP81",               REGPOKER_READ_DCR, MPIC128_VP81,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP82",               REGPOKER_READ_DCR, MPIC128_VP82,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP83",               REGPOKER_READ_DCR, MPIC128_VP83,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP84",               REGPOKER_READ_DCR, MPIC128_VP84,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP85",               REGPOKER_READ_DCR, MPIC128_VP85,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP86",               REGPOKER_READ_DCR, MPIC128_VP86,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP87",               REGPOKER_READ_DCR, MPIC128_VP87,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP88",               REGPOKER_READ_DCR, MPIC128_VP88,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP89",               REGPOKER_READ_DCR, MPIC128_VP89,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP90",               REGPOKER_READ_DCR, MPIC128_VP90,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP91",               REGPOKER_READ_DCR, MPIC128_VP91,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP92",               REGPOKER_READ_DCR, MPIC128_VP92,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP93",               REGPOKER_READ_DCR, MPIC128_VP93,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP94",               REGPOKER_READ_DCR, MPIC128_VP94,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP95",               REGPOKER_READ_DCR, MPIC128_VP95,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP96",               REGPOKER_READ_DCR, MPIC128_VP96,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP97",               REGPOKER_READ_DCR, MPIC128_VP97,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP98",               REGPOKER_READ_DCR, MPIC128_VP98,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP99",               REGPOKER_READ_DCR, MPIC128_VP99,              MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP100",              REGPOKER_READ_DCR, MPIC128_VP100,             MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP101",              REGPOKER_READ_DCR, MPIC128_VP101,             MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP102",              REGPOKER_READ_DCR, MPIC128_VP102,             MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP103",              REGPOKER_READ_DCR, MPIC128_VP103,             MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP104",              REGPOKER_READ_DCR, MPIC128_VP104,             MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP105",              REGPOKER_READ_DCR, MPIC128_VP105,             MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP106",              REGPOKER_READ_DCR, MPIC128_VP106,             MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP107",              REGPOKER_READ_DCR, MPIC128_VP107,             MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP108",              REGPOKER_READ_DCR, MPIC128_VP108,             MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP109",              REGPOKER_READ_DCR, MPIC128_VP109,             MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP110",              REGPOKER_READ_DCR, MPIC128_VP110,             MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP111",              REGPOKER_READ_DCR, MPIC128_VP111,             MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP112",              REGPOKER_READ_DCR, MPIC128_VP112,             MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP113",              REGPOKER_READ_DCR, MPIC128_VP113,             MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP114",              REGPOKER_READ_DCR, MPIC128_VP114,             MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP115",              REGPOKER_READ_DCR, MPIC128_VP115,             MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP116",              REGPOKER_READ_DCR, MPIC128_VP116,             MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP117",              REGPOKER_READ_DCR, MPIC128_VP117,             MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP118",              REGPOKER_READ_DCR, MPIC128_VP118,             MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP119",              REGPOKER_READ_DCR, MPIC128_VP119,             MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP120",              REGPOKER_READ_DCR, MPIC128_VP120,             MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP121",              REGPOKER_READ_DCR, MPIC128_VP121,             MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP122",              REGPOKER_READ_DCR, MPIC128_VP122,             MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP123",              REGPOKER_READ_DCR, MPIC128_VP123,             MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP124",              REGPOKER_READ_DCR, MPIC128_VP124,             MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP125",              REGPOKER_READ_DCR, MPIC128_VP125,             MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP126",              REGPOKER_READ_DCR, MPIC128_VP126,             MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    {"MPIC128_VP127",              REGPOKER_READ_DCR, MPIC128_VP127,             MPIC128_VP0_VALUE,                MPIC128_VPx_MSK},
+    
+    {"MPIC128_DST0",                REGPOKER_READ_DCR, MPIC128_DST0,               MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST1",                REGPOKER_READ_DCR, MPIC128_DST1,               MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST2",                REGPOKER_READ_DCR, MPIC128_DST2,               MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST3",                REGPOKER_READ_DCR, MPIC128_DST3,               MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST4",                REGPOKER_READ_DCR, MPIC128_DST4,               MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST5",                REGPOKER_READ_DCR, MPIC128_DST5,               MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST6",                REGPOKER_READ_DCR, MPIC128_DST6,               MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST7",                REGPOKER_READ_DCR, MPIC128_DST7,               MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST8",                REGPOKER_READ_DCR, MPIC128_DST8,               MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST9",                REGPOKER_READ_DCR, MPIC128_DST9,               MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST10",               REGPOKER_READ_DCR, MPIC128_DST10,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST11",               REGPOKER_READ_DCR, MPIC128_DST11,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST12",               REGPOKER_READ_DCR, MPIC128_DST12,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST13",               REGPOKER_READ_DCR, MPIC128_DST13,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST14",               REGPOKER_READ_DCR, MPIC128_DST14,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST15",               REGPOKER_READ_DCR, MPIC128_DST15,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST16",               REGPOKER_READ_DCR, MPIC128_DST16,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST17",               REGPOKER_READ_DCR, MPIC128_DST17,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST18",               REGPOKER_READ_DCR, MPIC128_DST18,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST19",               REGPOKER_READ_DCR, MPIC128_DST19,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST20",               REGPOKER_READ_DCR, MPIC128_DST20,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST21",               REGPOKER_READ_DCR, MPIC128_DST21,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST22",               REGPOKER_READ_DCR, MPIC128_DST22,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST23",               REGPOKER_READ_DCR, MPIC128_DST23,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST24",               REGPOKER_READ_DCR, MPIC128_DST24,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST25",               REGPOKER_READ_DCR, MPIC128_DST25,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST26",               REGPOKER_READ_DCR, MPIC128_DST26,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST27",               REGPOKER_READ_DCR, MPIC128_DST27,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST28",               REGPOKER_READ_DCR, MPIC128_DST28,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST29",               REGPOKER_READ_DCR, MPIC128_DST29,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST30",               REGPOKER_READ_DCR, MPIC128_DST30,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST31",               REGPOKER_READ_DCR, MPIC128_DST31,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST32",               REGPOKER_READ_DCR, MPIC128_DST32,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST33",               REGPOKER_READ_DCR, MPIC128_DST33,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST34",               REGPOKER_READ_DCR, MPIC128_DST34,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST35",               REGPOKER_READ_DCR, MPIC128_DST35,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST36",               REGPOKER_READ_DCR, MPIC128_DST36,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST37",               REGPOKER_READ_DCR, MPIC128_DST37,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST38",               REGPOKER_READ_DCR, MPIC128_DST38,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST39",               REGPOKER_READ_DCR, MPIC128_DST39,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST40",               REGPOKER_READ_DCR, MPIC128_DST40,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST41",               REGPOKER_READ_DCR, MPIC128_DST41,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST42",               REGPOKER_READ_DCR, MPIC128_DST42,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST43",               REGPOKER_READ_DCR, MPIC128_DST43,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST44",               REGPOKER_READ_DCR, MPIC128_DST44,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST45",               REGPOKER_READ_DCR, MPIC128_DST45,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST46",               REGPOKER_READ_DCR, MPIC128_DST46,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST47",               REGPOKER_READ_DCR, MPIC128_DST47,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST48",               REGPOKER_READ_DCR, MPIC128_DST48,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST49",               REGPOKER_READ_DCR, MPIC128_DST49,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST50",               REGPOKER_READ_DCR, MPIC128_DST50,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST51",               REGPOKER_READ_DCR, MPIC128_DST51,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST52",               REGPOKER_READ_DCR, MPIC128_DST52,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST53",               REGPOKER_READ_DCR, MPIC128_DST53,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST54",               REGPOKER_READ_DCR, MPIC128_DST54,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST55",               REGPOKER_READ_DCR, MPIC128_DST55,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST56",               REGPOKER_READ_DCR, MPIC128_DST56,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST57",               REGPOKER_READ_DCR, MPIC128_DST57,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST58",               REGPOKER_READ_DCR, MPIC128_DST58,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST59",               REGPOKER_READ_DCR, MPIC128_DST59,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST60",               REGPOKER_READ_DCR, MPIC128_DST60,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST61",               REGPOKER_READ_DCR, MPIC128_DST61,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST62",               REGPOKER_READ_DCR, MPIC128_DST62,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST63",               REGPOKER_READ_DCR, MPIC128_DST63,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST64",               REGPOKER_READ_DCR, MPIC128_DST64,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST65",               REGPOKER_READ_DCR, MPIC128_DST65,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST66",               REGPOKER_READ_DCR, MPIC128_DST66,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST67",               REGPOKER_READ_DCR, MPIC128_DST67,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST68",               REGPOKER_READ_DCR, MPIC128_DST68,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST69",               REGPOKER_READ_DCR, MPIC128_DST69,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST70",               REGPOKER_READ_DCR, MPIC128_DST70,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST71",               REGPOKER_READ_DCR, MPIC128_DST71,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST72",               REGPOKER_READ_DCR, MPIC128_DST72,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST73",               REGPOKER_READ_DCR, MPIC128_DST73,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST74",               REGPOKER_READ_DCR, MPIC128_DST74,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST75",               REGPOKER_READ_DCR, MPIC128_DST75,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST76",               REGPOKER_READ_DCR, MPIC128_DST76,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST77",               REGPOKER_READ_DCR, MPIC128_DST77,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST78",               REGPOKER_READ_DCR, MPIC128_DST78,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST79",               REGPOKER_READ_DCR, MPIC128_DST79,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST80",               REGPOKER_READ_DCR, MPIC128_DST80,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST81",               REGPOKER_READ_DCR, MPIC128_DST81,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST82",               REGPOKER_READ_DCR, MPIC128_DST82,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST83",               REGPOKER_READ_DCR, MPIC128_DST83,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST84",               REGPOKER_READ_DCR, MPIC128_DST84,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST85",               REGPOKER_READ_DCR, MPIC128_DST85,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST86",               REGPOKER_READ_DCR, MPIC128_DST86,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST87",               REGPOKER_READ_DCR, MPIC128_DST87,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST88",               REGPOKER_READ_DCR, MPIC128_DST88,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST89",               REGPOKER_READ_DCR, MPIC128_DST89,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST90",               REGPOKER_READ_DCR, MPIC128_DST90,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST91",               REGPOKER_READ_DCR, MPIC128_DST91,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST92",               REGPOKER_READ_DCR, MPIC128_DST92,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST93",               REGPOKER_READ_DCR, MPIC128_DST93,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST94",               REGPOKER_READ_DCR, MPIC128_DST94,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST95",               REGPOKER_READ_DCR, MPIC128_DST95,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST96",               REGPOKER_READ_DCR, MPIC128_DST96,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST97",               REGPOKER_READ_DCR, MPIC128_DST97,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST98",               REGPOKER_READ_DCR, MPIC128_DST98,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST99",               REGPOKER_READ_DCR, MPIC128_DST99,              MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST100",              REGPOKER_READ_DCR, MPIC128_DST100,             MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST101",              REGPOKER_READ_DCR, MPIC128_DST101,             MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST102",              REGPOKER_READ_DCR, MPIC128_DST102,             MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST103",              REGPOKER_READ_DCR, MPIC128_DST103,             MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST104",              REGPOKER_READ_DCR, MPIC128_DST104,             MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST105",              REGPOKER_READ_DCR, MPIC128_DST105,             MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST106",              REGPOKER_READ_DCR, MPIC128_DST106,             MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST107",              REGPOKER_READ_DCR, MPIC128_DST107,             MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST108",              REGPOKER_READ_DCR, MPIC128_DST108,             MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST109",              REGPOKER_READ_DCR, MPIC128_DST109,             MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST110",              REGPOKER_READ_DCR, MPIC128_DST110,             MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST111",              REGPOKER_READ_DCR, MPIC128_DST111,             MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST112",              REGPOKER_READ_DCR, MPIC128_DST112,             MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST113",              REGPOKER_READ_DCR, MPIC128_DST113,             MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST114",              REGPOKER_READ_DCR, MPIC128_DST114,             MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST115",              REGPOKER_READ_DCR, MPIC128_DST115,             MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST116",              REGPOKER_READ_DCR, MPIC128_DST116,             MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST117",              REGPOKER_READ_DCR, MPIC128_DST117,             MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST118",              REGPOKER_READ_DCR, MPIC128_DST118,             MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST119",              REGPOKER_READ_DCR, MPIC128_DST119,             MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST120",              REGPOKER_READ_DCR, MPIC128_DST120,             MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST121",              REGPOKER_READ_DCR, MPIC128_DST121,             MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST122",              REGPOKER_READ_DCR, MPIC128_DST122,             MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST123",              REGPOKER_READ_DCR, MPIC128_DST123,             MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST124",              REGPOKER_READ_DCR, MPIC128_DST124,             MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST125",              REGPOKER_READ_DCR, MPIC128_DST125,             MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST126",              REGPOKER_READ_DCR, MPIC128_DST126,             MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_DST127",              REGPOKER_READ_DCR, MPIC128_DST127,             MPIC128_DST0_VALUE,                MPIC128_DSTx_MSK},
+    {"MPIC128_CTP0",                REGPOKER_READ_DCR, MPIC128_CTP0,               0x00000000,                        MPIC128_CTPx_MSK},
+    {"MPIC128_CTP1",                REGPOKER_READ_DCR, MPIC128_CTP1,               MPIC128_CTP1_VALUE,                MPIC128_CTPx_MSK},
+    {"MPIC128_CTP2",                REGPOKER_READ_DCR, MPIC128_CTP2,               MPIC128_CTP2_VALUE,                MPIC128_CTPx_MSK},
+    {"MPIC128_CTP3",                REGPOKER_READ_DCR, MPIC128_CTP3,               MPIC128_CTP3_VALUE,                MPIC128_CTPx_MSK},
+    {"MPIC128_WAI0",                REGPOKER_READ_DCR, MPIC128_WAI0,               MPIC128_WAI0_VALUE,                MPIC128_WAIx_MSK},
+    {"MPIC128_WAI1",                REGPOKER_READ_DCR, MPIC128_WAI1,               MPIC128_WAI1_VALUE,                MPIC128_WAIx_MSK},
+    {"MPIC128_WAI2",                REGPOKER_READ_DCR, MPIC128_WAI2,               MPIC128_WAI2_VALUE,                MPIC128_WAIx_MSK},
+    {"MPIC128_WAI3",                REGPOKER_READ_DCR, MPIC128_WAI3,               MPIC128_WAI3_VALUE,                MPIC128_WAIx_MSK},
+    {"MPIC128_NCIAR0",              REGPOKER_READ_DCR, MPIC128_NCIAR0,             MPIC128_NCIAR0_VALUE,              MPIC128_NCIARx_MSK},
+    {"MPIC128_NCIAR1",              REGPOKER_READ_DCR, MPIC128_NCIAR1,             MPIC128_NCIAR1_VALUE,              MPIC128_NCIARx_MSK},
+    {"MPIC128_NCIAR2",              REGPOKER_READ_DCR, MPIC128_NCIAR2,             MPIC128_NCIAR2_VALUE,              MPIC128_NCIARx_MSK},
+    {"MPIC128_NCIAR3",              REGPOKER_READ_DCR, MPIC128_NCIAR3,             MPIC128_NCIAR3_VALUE,              MPIC128_NCIARx_MSK},
+    {"MPIC128_NCEOI0",              REGPOKER_READ_DCR, MPIC128_NCEOI0,             MPIC128_NCEOI0_VALUE,              MPIC128_NCEOIx_MSK},
+    {"MPIC128_NCEOI1",              REGPOKER_READ_DCR, MPIC128_NCEOI1,             MPIC128_NCEOI1_VALUE,              MPIC128_NCEOIx_MSK},
+    {"MPIC128_NCEOI2",              REGPOKER_READ_DCR, MPIC128_NCEOI2,             MPIC128_NCEOI2_VALUE,              MPIC128_NCEOIx_MSK},
+    {"MPIC128_NCEOI3",              REGPOKER_READ_DCR, MPIC128_NCEOI3,             MPIC128_NCEOI3_VALUE,              MPIC128_NCEOIx_MSK},
+    {"MPIC128_CIAR0",               REGPOKER_READ_DCR, MPIC128_CIAR0,              MPIC128_CIAR0_VALUE,               MPIC128_CIARx_MSK},
+    {"MPIC128_CIAR1",               REGPOKER_READ_DCR, MPIC128_CIAR1,              MPIC128_CIAR1_VALUE,               MPIC128_CIARx_MSK},
+    {"MPIC128_CIAR2",               REGPOKER_READ_DCR, MPIC128_CIAR2,              MPIC128_CIAR2_VALUE,               MPIC128_CIARx_MSK},
+    {"MPIC128_CIAR3",               REGPOKER_READ_DCR, MPIC128_CIAR3,              MPIC128_CIAR3_VALUE,               MPIC128_CIARx_MSK},
+    {"MPIC128_CEOI0",               REGPOKER_READ_DCR, MPIC128_CEOI0,              MPIC128_CEOI0_VALUE,               MPIC128_CEOIx_MSK},
+    {"MPIC128_CEOI1",               REGPOKER_READ_DCR, MPIC128_CEOI1,              MPIC128_CEOI1_VALUE,               MPIC128_CEOIx_MSK},
+    {"MPIC128_CEOI2",               REGPOKER_READ_DCR, MPIC128_CEOI2,              MPIC128_CEOI2_VALUE,               MPIC128_CEOIx_MSK},
+    {"MPIC128_CEOI3",               REGPOKER_READ_DCR, MPIC128_CEOI3,              MPIC128_CEOI3_VALUE,               MPIC128_CEOIx_MSK},
+    {"MPIC128_IAR0",                REGPOKER_READ_DCR, MPIC128_IAR0,               MPIC128_IAR0_VALUE,                MPIC128_IARx_MSK},
+    {"MPIC128_IAR1",                REGPOKER_READ_DCR, MPIC128_IAR1,               MPIC128_IAR1_VALUE,                MPIC128_IARx_MSK},
+    {"MPIC128_IAR2",                REGPOKER_READ_DCR, MPIC128_IAR2,               MPIC128_IAR2_VALUE,                MPIC128_IARx_MSK},
+    {"MPIC128_IAR3",                REGPOKER_READ_DCR, MPIC128_IAR3,               MPIC128_IAR3_VALUE,                MPIC128_IARx_MSK},
+    {"MPIC128_EOI0",                REGPOKER_READ_DCR, MPIC128_EOI0,               MPIC128_EOI0_VALUE,                MPIC128_EOIx_MSK},
+    {"MPIC128_EOI1",                REGPOKER_READ_DCR, MPIC128_EOI1,               MPIC128_EOI1_VALUE,                MPIC128_EOIx_MSK},
+    {"MPIC128_EOI2",                REGPOKER_READ_DCR, MPIC128_EOI2,               MPIC128_EOI2_VALUE,                MPIC128_EOIx_MSK},
+    {"MPIC128_EOI3",                REGPOKER_READ_DCR, MPIC128_EOI3,               MPIC128_EOI3_VALUE,                MPIC128_EOIx_MSK},
+    {"MPIC128_FRG0",                REGPOKER_READ_DCR, MPIC128_FRG0,               MPIC128_FRG0_VALUE,                MPIC128_FRG0_MSK},
+    {"MPIC128_GCF0",                REGPOKER_READ_DCR, MPIC128_GCF0,               0x2000000f,                        MPIC128_GCF0_MSK},
+    {"MPIC128_VITC",                REGPOKER_READ_DCR, MPIC128_VITC,               MPIC128_VITC_VALUE,                MPIC128_VITC_MSK},
+    {"MPIC128_VRID",                REGPOKER_READ_DCR, MPIC128_VRID,               MPIC128_VRID_VALUE,                MPIC128_VRID_MSK},
+    {"MPIC128_REVID",               REGPOKER_READ_DCR, MPIC128_REVID,              MPIC128_REVID_VALUE,               MPIC128_REVID_MSK},
+    {"MPIC128_VIR",                 REGPOKER_READ_DCR, MPIC128_VIR0,               MPIC128_VIR0_VALUE,                MPIC128_VIR0_MSK},
+    {"MPIC128_PINI",                REGPOKER_READ_DCR, MPIC128_PINI,               MPIC128_PINI_VALUE,                MPIC128_PINI_MSK},
+    {"MPIC128_IVP0",                REGPOKER_READ_DCR, MPIC128_IVP0,               MPIC128_IVP0_VALUE,                MPIC128_IVPx_MSK},
+    {"MPIC128_IVP1",                REGPOKER_READ_DCR, MPIC128_IVP1,               MPIC128_IVP1_VALUE,                MPIC128_IVPx_MSK},
+    {"MPIC128_IVP2",                REGPOKER_READ_DCR, MPIC128_IVP2,               MPIC128_IVP2_VALUE,                MPIC128_IVPx_MSK},
+    {"MPIC128_IVP3",                REGPOKER_READ_DCR, MPIC128_IVP3,               MPIC128_IVP3_VALUE,                MPIC128_IVPx_MSK},
+    {"MPIC128_SPV",                 REGPOKER_READ_DCR, MPIC128_SPV,                MPIC128_SPV_VALUE,                 MPIC128_SPV_MSK},
+    {"MPIC128_TFR",                 REGPOKER_READ_DCR, MPIC128_TFR,                MPIC128_TFR_VALUE,                 MPIC128_TFR_MSK},
+    {"MPIC128_TCC0",                REGPOKER_READ_DCR, MPIC128_TCC0,               MPIC128_TCC0_VALUE,                MPIC128_TCCx_MSK},
+    {"MPIC128_TCC1",                REGPOKER_READ_DCR, MPIC128_TCC1,               MPIC128_TCC1_VALUE,                MPIC128_TCCx_MSK},
+    {"MPIC128_TCC2",                REGPOKER_READ_DCR, MPIC128_TCC2,               MPIC128_TCC2_VALUE,                MPIC128_TCCx_MSK},
+    {"MPIC128_TCC3",                REGPOKER_READ_DCR, MPIC128_TCC3,               MPIC128_TCC3_VALUE,                MPIC128_TCCx_MSK},
+    {"MPIC128_TBC0",                REGPOKER_READ_DCR, MPIC128_TBC0,               MPIC128_TBC0_VALUE,                MPIC128_TBCx_MSK},
+    {"MPIC128_TBC1",                REGPOKER_READ_DCR, MPIC128_TBC1,               MPIC128_TBC1_VALUE,                MPIC128_TBCx_MSK},
+    {"MPIC128_TBC2",                REGPOKER_READ_DCR, MPIC128_TBC2,               MPIC128_TBC2_VALUE,                MPIC128_TBCx_MSK},
+    {"MPIC128_TBC3",                REGPOKER_READ_DCR, MPIC128_TBC3,               MPIC128_TBC3_VALUE,                MPIC128_TBCx_MSK},
+    {"MPIC128_TVP0",                REGPOKER_READ_DCR, MPIC128_TVP0,               MPIC128_TVP0_VALUE,                MPIC128_TVPx_MSK},
+    {"MPIC128_TVP1",                REGPOKER_READ_DCR, MPIC128_TVP1,               MPIC128_TVP1_VALUE,                MPIC128_TVPx_MSK},
+    {"MPIC128_TVP2",                REGPOKER_READ_DCR, MPIC128_TVP2,               MPIC128_TVP2_VALUE,                MPIC128_TVPx_MSK},
+    {"MPIC128_TVP3",                REGPOKER_READ_DCR, MPIC128_TVP3,               MPIC128_TVP3_VALUE,                MPIC128_TVPx_MSK},
+    {"MPIC128_TDST0",               REGPOKER_READ_DCR, MPIC128_TDST0,              MPIC128_TDST0_VALUE,               MPIC128_TDSTx_MSK},
+    {"MPIC128_TDST1",               REGPOKER_READ_DCR, MPIC128_TDST1,              MPIC128_TDST1_VALUE,               MPIC128_TDSTx_MSK},
+    {"MPIC128_TDST2",               REGPOKER_READ_DCR, MPIC128_TDST2,              MPIC128_TDST2_VALUE,               MPIC128_TDSTx_MSK},
+    {"MPIC128_TDST3",               REGPOKER_READ_DCR, MPIC128_TDST3,              MPIC128_TDST3_VALUE,               MPIC128_TDSTx_MSK},    
+   
+    
+    {/* Sentinel */}}; 
+    
+#include <platform/regs/regs_dcrarb.h>
+
+#define DCRARB_TADDR_MSK  0xffffffff
+#define DCRARB_MADDR_MSK  0xffffffff
+#define DCRARB_MASK_MSK   0xffffffff
+#define DCRARB_DACR_MSK   0xc30003f0
+#define DCRARB_DAESR_MSK  0xefc0000f
+#define DCRARB_DAEAR_MSK  0xffffffff
+#define DCRARB_DASMR_MSK  0x8000000f
+#define DCRARB_REVID_MSK  0x000fffff
+
+
+static const struct regpoker_checker dcrarb_regs_default[] = {
+    
+    //name                       check type         offset               exp val                     mask  
+    //uni-directional
+    {"DCRARB_TADDR         ",    REGPOKER_READ_DCR, DCRARB_TADDR     ,   DCRARB_TADDR_VALUE     ,       DCRARB_TADDR_MSK},
+    {"DCRARB_MADDR         ",    REGPOKER_READ_DCR, DCRARB_MADDR     ,   DCRARB_MADDR_VALUE     ,       DCRARB_MADDR_MSK},
+    {"DCRARB_MASK          ",    REGPOKER_READ_DCR, DCRARB_MASK      ,   DCRARB_MASK_VALUE      ,       DCRARB_MASK_MSK},
+    {"DCRARB_DACR          ",    REGPOKER_READ_DCR, DCRARB_DACR      ,   DCRARB_DACR_VALUE      ,       DCRARB_DACR_MSK},
+    {"DCRARB_DAESR         ",    REGPOKER_READ_DCR, DCRARB_DAESR     ,   DCRARB_DAESR_VALUE     ,       DCRARB_DAESR_MSK},
+    {"DCRARB_DAEAR         ",    REGPOKER_READ_DCR, DCRARB_DAEAR     ,   DCRARB_DAEAR_VALUE     ,       DCRARB_DAEAR_MSK},
+    //{"DCRARB_DASMR         ",    REGPOKER_READ_DCR, DCRARB_DASMR     ,   DCRARB_DASMR_VALUE     ,       DCRARB_DASMR_MSK},
+    {"DCRARB_REVID         ",    REGPOKER_READ_DCR, DCRARB_REVID     ,   DCRARB_REVID_VALUE     ,       DCRARB_REVID_MSK},
+    
+    {/* Sentinel */}};  
+    
+#include <platform/regs/regs_itrace.h>
+
+#define ITC0_TLA1_MSK 0x00000000
+#define ITC0_TLA2_MSK 0x00000000
+#define ITC0_WCNT_MSK 0x00000000
+#define ITC0_CTO_MSK 0x00000000
+#define ITC0_C1ML_MSK 0x00000000
+#define ITC0_C2ML_MSK 0x00000000
+
+
+
+
+static const struct regpoker_checker itrace_regs_default[] = {
+    
+    //name                       check type         offset               exp val                     mask  
+    {"ITC0_TC           ",    REGPOKER_READ_DCR, ITC0_TC       ,   ITC0_TC_DEFAULT       ,       ITC0_TC_MSK},
+    {"ITC0_TS           ",    REGPOKER_READ_DCR, ITC0_TS       ,   ITC0_TS_DEFAULT       ,       ITC0_TS_MSK},
+    //{"ITC0_TLA1         ",    REGPOKER_READ_DCR, ITC0_TLA1     ,   ITC0_TLA1_DEFAULT     ,       ITC0_TLA1_MSK},
+    //{"ITC0_TLA2         ",    REGPOKER_READ_DCR, ITC0_TLA2     ,   ITC0_TLA2_DEFAULT     ,       ITC0_TLA2_MSK},
+    {"ITC0_WCNT         ",    REGPOKER_READ_DCR, ITC0_WCNT     ,   ITC0_WCNT_DEFAULT     ,       ITC0_WCNT_MSK},
+    {"ITC0_CTO          ",    REGPOKER_READ_DCR, ITC0_CTO      ,   ITC0_CTO_DEFAULT      ,       ITC0_CTO_MSK},
+    {"ITC0_C1MH         ",    REGPOKER_READ_DCR, ITC0_C1MH     ,   ITC0_C1MH_DEFAULT     ,       ITC0_C1MH_MSK},
+    //{"ITC0_C1ML         ",    REGPOKER_READ_DCR, ITC0_C1ML     ,   ITC0_C1ML_DEFAULT     ,       ITC0_C1ML_MSK},
+    {"ITC0_C2MH         ",    REGPOKER_READ_DCR, ITC0_C2MH     ,   ITC0_C2MH_DEFAULT     ,       ITC0_C2MH_MSK},
+    //{"ITC0_C2ML         ",    REGPOKER_READ_DCR, ITC0_C2ML     ,   ITC0_C2ML_DEFAULT     ,       ITC0_C2ML_MSK},
+    //{"ITC0_ITAI         ",    REGPOKER_READ_DCR, ITC0_ITAI     ,   ITC0_ITAI_DEFAULT     ,       ITC0_ITAI_MSK},
+    //{"ITC0_ITAD         ",    REGPOKER_READ_DCR, ITC0_ITAD     ,   ITC0_ITAD_DEFAULT     ,       ITC0_ITAD_MSK},
+    
+    
+    {/* Sentinel */}};
+
+#include <platform/regs/regs_ltrace.h>
+
+
+#define LTR_WC_MSK     0xffffffff
+#define LTR_CT_MSK     0xffffffff
+#define LTR_CC1PH_MSK  0xffffffff
+#define LTR_CC1PL_MSK  0xffffffff
+#define LTR_CC1MH_MSK  0xffffffff
+#define LTR_CC1ML_MSK  0xffffffff
+#define LTR_CC2PH_MSK  0xffffffff
+#define LTR_CC2PL_MSK  0xffffffff
+#define LTR_CC2MH_MSK  0xffffffff
+#define LTR_CC2ML_MSK  0xffffffff
+#define LTR_CC3PH_MSK  0xffffffff
+#define LTR_CC3PL_MSK  0xffffffff
+#define LTR_CC3MH_MSK  0xffffffff
+#define LTR_CC3ML_MSK  0xffffffff
+#define LTR_CMH_MSK    0xffffffff
+#define LTR_CML_MSK    0xffffffff
+
+
+static const struct regpoker_checker ltrace_regs_default[] = {
+    
+    //name                    check type         offset            exp val                     mask  
+    {"LTR_TC            ",    REGPOKER_READ_DCR, LTR_TC        ,   LTR_TC_DEFAULT      ,       LTR_TC_MSK},
+    {"LTR_TS            ",    REGPOKER_READ_DCR, LTR_TS        ,   LTR_TS_DEFAULT      ,       LTR_TS_MSK},
+    //{"LTR_LA1           ",    REGPOKER_READ_DCR, LTR_LA1       ,   LTR_LA1_DEFAULT     ,       LTR_LA1_MSK},
+    //{"LTR_LA2           ",    REGPOKER_READ_DCR, LTR_LA2       ,   LTR_LA2_DEFAULT     ,       LTR_LA2_MSK},
+    {"LTR_WC            ",    REGPOKER_READ_DCR, LTR_WC        ,   LTR_WC_DEFAULT      ,       LTR_WC_MSK},  
+    {"LTR_CT            ",    REGPOKER_READ_DCR, LTR_CT        ,   LTR_CT_DEFAULT      ,       LTR_CT_MSK},  
+    {"LTR_CC1PH         ",    REGPOKER_READ_DCR, LTR_CC1PH     ,   LTR_CC1PH_DEFAULT   ,       LTR_CC1PH_MSK},
+    {"LTR_CC1PL         ",    REGPOKER_READ_DCR, LTR_CC1PL     ,   LTR_CC1PL_DEFAULT   ,       LTR_CC1PL_MSK},
+    {"LTR_CC1MH         ",    REGPOKER_READ_DCR, LTR_CC1MH     ,   LTR_CC1MH_DEFAULT   ,       LTR_CC1MH_MSK},
+    {"LTR_CC1ML         ",    REGPOKER_READ_DCR, LTR_CC1ML     ,   LTR_CC1ML_DEFAULT   ,       LTR_CC1ML_MSK},
+    {"LTR_CC2PH         ",    REGPOKER_READ_DCR, LTR_CC2PH     ,   LTR_CC2PH_DEFAULT   ,       LTR_CC2PH_MSK},
+    {"LTR_CC2PL         ",    REGPOKER_READ_DCR, LTR_CC2PL     ,   LTR_CC2PL_DEFAULT   ,       LTR_CC2PL_MSK},
+    {"LTR_CC2MH         ",    REGPOKER_READ_DCR, LTR_CC2MH     ,   LTR_CC2MH_DEFAULT   ,       LTR_CC2MH_MSK},
+    {"LTR_CC2ML         ",    REGPOKER_READ_DCR, LTR_CC2ML     ,   LTR_CC2ML_DEFAULT   ,       LTR_CC2ML_MSK},
+    {"LTR_CC3PH         ",    REGPOKER_READ_DCR, LTR_CC3PH     ,   LTR_CC3PH_DEFAULT   ,       LTR_CC3PH_MSK},
+    {"LTR_CC3PL         ",    REGPOKER_READ_DCR, LTR_CC3PL     ,   LTR_CC3PL_DEFAULT   ,       LTR_CC3PL_MSK},
+    {"LTR_CC3MH         ",    REGPOKER_READ_DCR, LTR_CC3MH     ,   LTR_CC3MH_DEFAULT   ,       LTR_CC3MH_MSK},
+    {"LTR_CC3ML         ",    REGPOKER_READ_DCR, LTR_CC3ML     ,   LTR_CC3ML_DEFAULT   ,       LTR_CC3ML_MSK},
+    {"LTR_CMH           ",    REGPOKER_READ_DCR, LTR_CMH       ,   LTR_CMH_DEFAULT     ,       LTR_CMH_MSK},
+    {"LTR_CML           ",    REGPOKER_READ_DCR, LTR_CML       ,   LTR_CML_DEFAULT     ,       LTR_CML_MSK},
+    //{"LTR_AI            ",    REGPOKER_READ_DCR, LTR_AI        ,   LTR_AI_DEFAULT      ,       LTR_AI_MSK},
+    //{"LTR_AD            ",    REGPOKER_READ_DCR, LTR_AD        ,   LTR_AD_DEFAULT      ,       LTR_AD_MSK},
+    
+    
+    {/* Sentinel */}};
     
 #include <arch/regs/plb6bc.h>
 
@@ -1320,60 +1824,75 @@ struct rumboot_pokerlist {
 };
 
 static struct rumboot_pokerlist the_big_list[] = {
-    {greth0_read_checker, GRETH_0_BASE },
-    {greth1_read_checker, GRETH_1_BASE },
-    {mcif2arb4_regs_default, DCR_MCIF2ARB4_BASE},
-    {cldcr_regs_default,     DCR_CLDCR_BASE},
-    {plb4ahb_regs_default, DCR_PLB4AHB_0_BASE},
-    {dma2plb6_regs_default, DCR_DMAPLB6_BASE},
-    {plb6bc_regs_default, DCR_PLB6_BC_BASE},
-    {plb4arb8m_0_regs_default, DCR_PLB4ARB8M_0_BASE},
-    {plb4arb8m_2_regs_default, DCR_PLB4ARB8M_2_BASE},
+    {plb4arb8m_0_regs_default,   DCR_PLB4ARB8M_0_BASE},    
     {srammc2plb4_0_regs_default, DCR_SRAMMC2PLB4_0_BASE},
     {srammc2plb4_1_regs_default, DCR_SRAMMC2PLB4_1_BASE},
-    {crg_checker,         DCR_CRG_BASE},
-    //{crg_checker_rw,      DCR_CRG_BASE},
-    {aximcif2_regs_default, DCR_AXIMCIF2_BASE},
-    {hscb_read_checker,   HSCB0_BASE},
-    {hscb_read_checker,   HSCB1_BASE},
-    {hscb_read_checker,   HSCB2_BASE},
-    {hscb_read_checker,   HSCB3_BASE},
-    {sdio_read_checker,   SDIO_0_BASE},
-    {sdio_read_checker,   SDIO_1_BASE},
-    {greth_write_checker, GRETH_0_BASE },
-    {greth_write_checker, GRETH_1_BASE },
-    {mkio_checker,        MKIO0_BASE},
-    {mkio_checker,        MKIO1_BASE},
-//    {uart_checker,        UART0_BASE}, /* Screws up serial communications */
-    {uart_checker,        UART1_BASE},
-    {spi_checker,         GSPI_0_BASE}, /* N.B. Might screws up SPI communications */
-    {spi_checker,         GSPI_1_BASE},
-    {gpio_checker,        GPIO_0_BASE },
-    {gpio_checker,        GPIO_1_BASE },
-    {gpio_rw_checker,     GPIO_0_BASE },
-    {gpio_rw_checker,     GPIO_1_BASE },
-    {sctl_checker,        DCR_SCTL_BASE},
-    {sctl_rw_checker,     DCR_SCTL_BASE},
-    {wdt_checker,         DCR_WATCHDOG_BASE},
-    {wdt_rw_checker,      DCR_WATCHDOG_BASE},
+    {plb4ahb_regs_default,       DCR_PLB4AHB_0_BASE},
+    {plb4arb8m_2_regs_default,   DCR_PLB4ARB8M_2_BASE},
+    
+    {dma2plb6_regs_default,      DCR_DMAPLB6_BASE},
+    {plb6bc_regs_default,        DCR_PLB6_BC_BASE},
+    {plb6plb4_0_regs_default,    DCR_PLB6PLB4_0_BASE},
+    {plb6plb4_1_regs_default,    DCR_PLB6PLB4_1_BASE},
+    
+    {dcrarb_regs_default,        DCR_ARB_BASE},
+    {itrace_regs_default,        DCR_ITRACE_BASE},
+    {ltrace_regs_default,        DCR_LTRACE_BASE},
+    {cldcr_regs_default,         DCR_CLDCR_BASE}, 
 
-    {sp804_checker,      DCR_TIMERS_BASE },
+    
+    
+    {plb6mcif2_regs_default,     DCR_EM2_PLB6MCIF2_BASE},
+    {plb6mcif2_regs_write,       DCR_EM2_PLB6MCIF2_BASE },    
+    {emi_regs_default,           DCR_EM2_EMI_BASE },
+    {emi_regs_write,             DCR_EM2_EMI_BASE },    
+    {mclfir_regs_default,        DCR_EM2_MCLFIR_BASE},
+    {mclfir_regs_write,          DCR_EM2_MCLFIR_BASE}, 
+    
+    {crg_checker,                DCR_CRG_BASE},
+    //{crg_checker_rw,             DCR_CRG_BASE},    
+    {sctl_checker,               DCR_SCTL_BASE},
+    {sctl_rw_checker,            DCR_SCTL_BASE},    
+    {sp804_checker,              DCR_TIMERS_BASE },
     // Will screw up timing and delays
-    // {sp804_checker_rw,   DCR_TIMERS_BASE },
-
-    {plb6mcif2_regs_default, DCR_EM2_PLB6MCIF2_BASE},
-    {plb6mcif2_regs_write,   DCR_EM2_PLB6MCIF2_BASE },
-    {mclfir_regs_default, DCR_EM2_MCLFIR_BASE},
-    {mclfir_regs_write,   DCR_EM2_MCLFIR_BASE},
-
-    {emi_regs_default, DCR_EM2_EMI_BASE },
-    {emi_regs_write,   DCR_EM2_EMI_BASE },
-
-    {nic_checker,         AXI32HSIFS_CTRL_BASE},
-    {nic_checker,         AXI64HSIFS_CTRL_BASE},
-
-    {nic_checker_rw32,    AXI32HSIFS_CTRL_BASE },
-    {nic_checker_rw64,    AXI64HSIFS_CTRL_BASE },
+    //{sp804_checker_rw,           DCR_TIMERS_BASE },    
+    {wdt_checker,                DCR_WATCHDOG_BASE},
+    {wdt_rw_checker,             DCR_WATCHDOG_BASE},    
+    {mcif2arb4_regs_default,     DCR_MCIF2ARB4_BASE},    
+    {aximcif2_regs_default,      DCR_AXIMCIF2_BASE},
+    
+    {mpic128_regs_default, DCR_MPIC128_BASE},
+    
+    {mkio_checker,               MKIO0_BASE},
+    {mkio_checker,               MKIO1_BASE},
+    {gpio_checker,               GPIO_0_BASE },
+    {gpio_checker,               GPIO_1_BASE },
+    {gpio_rw_checker,            GPIO_0_BASE },
+    {gpio_rw_checker,            GPIO_1_BASE },
+    //{uart_checker,               UART0_BASE}, /* Screws up serial communications */
+    {uart_checker,               UART1_BASE},
+                                 
+    {greth0_read_checker,        GRETH_0_BASE },
+    {greth1_read_checker,        GRETH_1_BASE },
+    {greth_write_checker,        GRETH_0_BASE },
+    {greth_write_checker,        GRETH_1_BASE },
+                                 
+    {spi_checker,                GSPI_0_BASE}, /* N.B. Might screws up SPI communications */
+    {spi_checker,                GSPI_1_BASE},
+                                 
+    {sdio_read_checker,          SDIO_0_BASE},
+    {sdio_read_checker,          SDIO_1_BASE},
+                                 
+    {nic_checker,                AXI32HSIFS_CTRL_BASE},
+    {nic_checker,                AXI64HSIFS_CTRL_BASE},
+                                 
+    {nic_checker_rw32,           AXI32HSIFS_CTRL_BASE },
+    {nic_checker_rw64,           AXI64HSIFS_CTRL_BASE },
+                                 
+    {hscb_read_checker,          HSCB0_BASE},
+    {hscb_read_checker,          HSCB1_BASE},
+    {hscb_read_checker,          HSCB2_BASE},
+    {hscb_read_checker,          HSCB3_BASE},
 
     /* These may need adjustments to target hw */
     //{em2_checker_a,       NOR_BASE },
