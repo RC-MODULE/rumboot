@@ -80,12 +80,22 @@ ssize_t rumboot_bootimage_check_header(struct rumboot_bootheader *hdr, void **da
 #endif
 
     dbg_boot(hdr->device, "Header version:   %d",   hdr->version);
-	if (hdr->version != RUMBOOT_HEADER_VERSION)
+	if ((hdr->version != RUMBOOT_HEADER_VERSION) && (hdr->version != 2))
 		return -EBADVERSION;
 
     dbg_boot(hdr->device, "Chip Id:          %d", hdr->chip_id);
     dbg_boot(hdr->device, "Chip Revision:    %d", hdr->chip_rev);
-    dbg_boot(hdr->device, "Data length:      %d", rumboot_bootimage_header_item(hdr->datalen, swap));
+    dbg_boot(hdr->device, "Image Flags:     %s%s%s%s%s%s%s%s", 
+		hdr->flags & RUMBOOT_FLAG_COMPRESS ? " GZIP"    : "",
+		hdr->flags & RUMBOOT_FLAG_ENCRYPT  ? " ENCRYPT" : "",
+		hdr->flags & RUMBOOT_FLAG_SIGNED   ? " SIGNED"  : "",
+		hdr->flags & RUMBOOT_FLAG_SMP      ? " SMP"     : "",
+		hdr->flags & RUMBOOT_FLAG_DECAPS   ? " DECAPS"  : "",
+		hdr->flags & RUMBOOT_FLAG_RELOCATE ? " RELOC"   : "",
+		hdr->flags & RUMBOOT_FLAG_SYNC     ? " SYNC"    : "",
+		hdr->flags & RUMBOOT_FLAG_RESERVED ? " RSVD"    : ""
+		);
+    dbg_boot(hdr->device, "Data Length:      %d", rumboot_bootimage_header_item(hdr->datalen, swap));
     dbg_boot(hdr->device, "Header CRC32:     0x%x", rumboot_bootimage_header_item(hdr->header_crc32, swap));
     dbg_boot(hdr->device, "Data CRC32:       0x%x", rumboot_bootimage_header_item(hdr->data_crc32, swap));
     dbg_boot(hdr->device, "---        ---        ---");
@@ -136,6 +146,9 @@ int rumboot_bootimage_execute(struct rumboot_bootheader *hdr, const struct rumbo
 	int swap = rumboot_bootimage_check_magic(hdr->magic);
 	hdr->magic = 0x0; /* Wipe out magic */
 	hdr->device = src;
+	if (hdr->version == 2) {
+		hdr->entry_point == (hdr->entry_point >> 32); /* Properly handle 32-bit V2 images */
+	}
     return rumboot_platform_exec(hdr, swap);
 }
 

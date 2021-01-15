@@ -32,16 +32,34 @@
 
 struct rumboot_bootsource;
 
+enum rumboot_header_flags {
+    RUMBOOT_FLAG_COMPRESS = 1 << 0, // NOT_YET_IMPLEMENTED: This image is compressed
+    RUMBOOT_FLAG_ENCRYPT  = 1 << 1, // NOT_YET_IMPLEMENTED: Image is encrypted, decrypt data from OTP
+    RUMBOOT_FLAG_SIGNED   = 1 << 2, // NOT_YET_IMPLEMENTED: Image is signed, need signature verification
+    RUMBOOT_FLAG_SMP      = 1 << 3, // NOT_YET_IMPLEMENTED: SMP Image
+    RUMBOOT_FLAG_DECAPS   = 1 << 4, // NOT_YET_IMPLEMENTED: Remove header during relocation
+    RUMBOOT_FLAG_RELOCATE = 1 << 5, // NOT_YET_IMPLEMENTED: Relocate image before execution
+    RUMBOOT_FLAG_SYNC     = 1 << 6, // NOT_YET_IMPLEMENTED: Wait for the image to finish before exiting
+    RUMBOOT_FLAG_RESERVED = 1 << 7, // NOT_YET_IMPLEMENTED: Wait for the image to finish before exiting
+};
+
 struct __attribute__((packed)) rumboot_bootheader {
     uint32_t magic;
     uint8_t  version;
-    uint8_t  reserved;
+    uint8_t  flags;
     uint8_t  chip_id;
     uint8_t  chip_rev;
     uint32_t data_crc32;
     uint32_t datalen;
-    uint32_t entry_point[10];
-    uint32_t header_crc32;
+/*    uint32_t entry_point[10]; */
+    uint64_t  entry_point;
+    uint64_t  relocation;
+    uint32_t  target_cpu_cluster;
+    uint32_t  encryption_slot;
+    uint32_t  certificate_slot;
+    uint32_t  priority;
+    uint32_t  reserved[2];
+    uint32_t  header_crc32;
     const struct rumboot_bootsource *device;
     char     data[];
 };
