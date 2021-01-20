@@ -536,14 +536,31 @@ void prepare_test_data_greth(pu8_src_dst_pair_t *inf,
 
     rumboot_putstring("Preparing data...");
 
-    tx_descriptor_data = (greth_descr_t*)
+    if(!tx_descriptor_data)
+    {
+        tx_descriptor_data = (greth_descr_t*)
             rumboot_malloc_from_heap_aligned(
             1, 3 * sizeof(greth_descr_t), 1024);
-    rx_descriptor_data = (greth_descr_t*)
+        rumboot_printf("%s memory for %s descriptor: 0x%X\n",
+                "Allocated", "tx", (uint32_t)tx_descriptor_data);
+    } else
+    {
+        rumboot_printf("%s memory for %s descriptor: 0x%X\n",
+                "Reused", "tx", (uint32_t)tx_descriptor_data);
+    }
+
+    if(!rx_descriptor_data)
+    {
+        rx_descriptor_data = (greth_descr_t*)
             rumboot_malloc_from_heap_aligned(
             1, 3 * sizeof(greth_descr_t), 1024);
-    rumboot_printf("Allocated from im1 for descrs(0x%X / 0x%x)\n",
-            (uint32_t)tx_descriptor_data, (uint32_t)rx_descriptor_data);
+        rumboot_printf("%s memory for %s descriptor: 0x%X\n",
+                "Allocated", "rx", (uint32_t)rx_descriptor_data);
+    } else
+    {
+        rumboot_printf("%s memory for %s descriptor: 0x%X\n",
+                "Used", "rx", (uint32_t)rx_descriptor_data);
+    }
 
     if(need_alloc)
     {
@@ -563,7 +580,7 @@ void prepare_test_data_greth(pu8_src_dst_pair_t *inf,
     {
         rumboot_printf(
                 "Skip src and dst allocation "
-                "and use default addresses\n");
+                "and use predefined addresses\n");
     }
 
     if(need_fill)
@@ -630,7 +647,7 @@ void prepare_test_data_hscb(void *psrc_data, size_t dsz)
 #define TE_MSG     "Transmit error mismatch!"
 #define RE_MSG     "Receive error mismatch!"
 
-void check_transfer_via_ext_loop(uint32_t  base_addr_src_eth,
+void check_transfer_via_ext_loop(uint32_t   base_addr_src_eth,
                                   uint8_t  *ptest_data_src,
                                   uint8_t  *ptest_data_dst,
                                   int       ckmode)
@@ -679,6 +696,21 @@ void check_transfer_via_ext_loop(uint32_t  base_addr_src_eth,
             GRETH_TEST_DATA_LEN_BYTES,
             tx_descriptor_data,
             &tst_greth_mac);
+
+    rumboot_printf("GRETH %s descriptor is at 0x%X\n", "RX",
+            ioread32(base_addr_dst_eth + RECEIVER_DESCR_PTR));
+    rumboot_printf("GRETH %s descriptor is at 0x%X\n", "TX",
+            ioread32(base_addr_src_eth + TRANSMIT_DESCR_PTR));
+    rumboot_printf("GRETH %s descriptor "
+            "start address=0x%X, "
+            "options=0x%X\n", "RX",
+            rx_descriptor_data->start_addr,
+            rx_descriptor_data->options);
+    rumboot_printf("GRETH %s descriptor "
+            "start address=0x%X, "
+            "options=0x%X\n", "TX",
+            tx_descriptor_data->start_addr,
+            tx_descriptor_data->options);
 
     greth_start_receive(base_addr_dst_eth, true);
     greth_start_transmit(base_addr_src_eth);
@@ -751,6 +783,8 @@ void test_oi10_greth(void)
     tbl = create_greth01_irq_handlers();
 
     oldMR0CF = dcr_read(DCR_EM2_AXIMCIF2_BASE + AXIMCIF2_MR0CF);
+    tx_descriptor_data = NULL;
+    rx_descriptor_data = NULL;
 
     for(i = 0; i < GRETH_CKMODES; i++)
     {
@@ -758,19 +792,18 @@ void test_oi10_greth(void)
         if(!(GRETH_CKMODES_MASK & (1 << i))) continue;
 
         rumboot_printf("----------------------------------------\n");
-        prepare_test_data_greth(greth_test_info + i,
-                false, !!((1 << i) & GRETH_FILL_SRC_EN_MASK));
         dma.src = (uint8_t*)rumboot_virt_to_dma(greth_test_info[i].src);
         dma.dst = (uint8_t*)rumboot_virt_to_dma(greth_test_info[i].dst);
         rumboot_printf(
-                "Check transfer mode #%d (%s): "
+                " --- Check transfer mode #%d (%s): "
                 "0x%X(0x%X) -> 0x%X(0x%X)...\n", i, cmn[i],
                 (uint32_t)greth_test_info[i].src, (uint32_t)dma.src,
                 (uint32_t)greth_test_info[i].dst, (uint32_t)dma.dst);
+        prepare_test_data_greth(greth_test_info + i, false,
+                !!((1 << i) & GRETH_FILL_SRC_EN_MASK));
         if(i != GRETH_CKMODE_NORMAL)
         {
             dcr_write(DCR_EM2_AXIMCIF2_BASE + AXIMCIF2_MR0CF, newMR0CF);
-
             rumboot_printf("MR%dCF: OLD=0x%X, NEW=0x%X\n", 0,
                     oldMR0CF, newMR0CF);
         }
