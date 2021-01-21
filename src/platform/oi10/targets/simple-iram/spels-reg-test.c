@@ -9,7 +9,7 @@
 #include <platform/devices/greth.h>
 #include <platform/regs/regs_greth.h>
 
-#define GRETH_CTRL_MASK      0x08002BBF
+#define GRETH_CTRL_MASK      0xfe007fff
 #define GRETH_CTRL_DFLT      0x08000090
 #define GRETH_STAT_MASK      0x000000C0
 #define GRETH_STAT_DFLT      0x00000000
@@ -18,9 +18,11 @@
 
 // Processing src/platform/oi10/targets/test_oi10_plb6_axi.c / test_oi10_plb6_axi
 struct regpoker_checker greth0_read_checker[] = {
-    {"CTRL              ", REGPOKER_READ32, CTRL,               GRETH_CTRL_DFLT,      GRETH_CTRL_MASK        }, // new
+    {"CTRL              ", REGPOKER_READ32, CTRL,               0x98000000,      GRETH_CTRL_MASK        }, // pcb version
+    //{"CTRL              ", REGPOKER_READ32, CTRL,               GRETH_CTRL_DFLT,      GRETH_CTRL_MASK        }, // rtl version
     //{"STATUS            ", REGPOKER_READ32, STATUS,             GRETH_STAT_DFLT,      GRETH_STAT_MASK        }, // new
-    {"MDIO_CTRL         ", REGPOKER_READ32, MDIO_CTRL,          GRETH_MDIO_CTRL_DFLT, GRETH_MDIO_CTRL_MASK   }, // new
+    // not stable on pcb{"MDIO_CTRL         ", REGPOKER_READ32, MDIO_CTRL,          0xffff000e, GRETH_MDIO_CTRL_MASK   }, // pcb version
+    //{"MDIO_CTRL         ", REGPOKER_READ32, MDIO_CTRL,          GRETH_MDIO_CTRL_DFLT, GRETH_MDIO_CTRL_MASK   }, // rtl version
     {"TRANSMIT_DESCR_PTR", REGPOKER_READ8,  TRANSMIT_DESCR_PTR, 0x0,                  0x3F8                  },
     {"RECEIVER_DESCR_PTR", REGPOKER_READ8,  RECEIVER_DESCR_PTR, 0x0,                  0x3F8                  },
     {"EDCL_IP           ", REGPOKER_READ32, EDCL_IP,            EDCLIP0,              ~0                     },
@@ -30,9 +32,11 @@ struct regpoker_checker greth0_read_checker[] = {
     };
 
 struct regpoker_checker greth1_read_checker[] = {
-    {"CTRL              ", REGPOKER_READ32, CTRL,               GRETH_CTRL_DFLT,      GRETH_CTRL_MASK     }, // new
+    {"CTRL              ", REGPOKER_READ32, CTRL,               0x98000000,      GRETH_CTRL_MASK        }, // pcb version
+    //{"CTRL              ", REGPOKER_READ32, CTRL,               GRETH_CTRL_DFLT,      GRETH_CTRL_MASK        }, // rtl version
     //{"STATUS            ", REGPOKER_READ32, STATUS,             GRETH_STAT_DFLT,      GRETH_STAT_MASK     }, // new
-    {"MDIO_CTRL         ", REGPOKER_READ32, MDIO_CTRL,          GRETH_MDIO_CTRL_DFLT, GRETH_MDIO_CTRL_MASK}, // new
+    // not stable on pcb{"MDIO_CTRL         ", REGPOKER_READ32, MDIO_CTRL,          0xffff000e, GRETH_MDIO_CTRL_MASK   }, // pcb version
+    //{"MDIO_CTRL         ", REGPOKER_READ32, MDIO_CTRL,          GRETH_MDIO_CTRL_DFLT, GRETH_MDIO_CTRL_MASK   }, // rtl version
     {"TRANSMIT_DESCR_PTR", REGPOKER_READ8,  TRANSMIT_DESCR_PTR, 0x0,                  0x3F8               },
     {"RECEIVER_DESCR_PTR", REGPOKER_READ8,  RECEIVER_DESCR_PTR, 0x0,                  0x3F8               },
     {"EDCL_IP           ", REGPOKER_READ32, EDCL_IP, EDCLIP1,                         ~0                  },
@@ -171,7 +175,8 @@ struct regpoker_checker sdio_read_checker[] = {
     {"SDIO_SDR_CTRL_REG              ", REGPOKER_READ32, SDIO_SDR_CTRL_REG,           SDIO_SDR_CTRL_REG_DFLT,           0x003f7fd3}, // new
     {"SDIO_SDR_CMD_ARGUMENT_REG      ", REGPOKER_READ32, SDIO_SDR_CMD_ARGUMENT_REG,   SDIO_SDR_CMD_ARGUMENT_REG_DFLT,   0xffffffff}, // new
     {"SDIO_SDR_ADDRESS_REG           ", REGPOKER_READ32, SDIO_SDR_ADDRESS_REG,        SDIO_SDR_ADDRESS_REG_DFLT,        0x00000004}, // new
-    {"SDIO_SDR_STATUS_REG            ", REGPOKER_READ32, SDIO_SDR_STATUS_REG,         0x800,                            0x006f9c00}, // new
+    {"SDIO_SDR_STATUS_REG            ", REGPOKER_READ32, SDIO_SDR_STATUS_REG,         0xc00,                            0x006f9c00}, // pcb version
+    //{"SDIO_SDR_STATUS_REG            ", REGPOKER_READ32, SDIO_SDR_STATUS_REG,         0x800,                            0x006f9c00}, // rtl version
     {"SDIO_SDR_ERROR_ENABLE_REG      ", REGPOKER_READ32, SDIO_SDR_ERROR_ENABLE_REG,   SDIO_SDR_ERROR_ENABLE_REG_DFLT,   0x000003ff}, // new
     {"SDIO_SDR_RESPONSE1_REG         ", REGPOKER_READ32, SDIO_SDR_RESPONSE1_REG,      SDIO_SDR_RESPONSE1_REG_DFLT,      0xffffffff}, // new
     {"SDIO_SDR_RESPONSE2_REG         ", REGPOKER_READ32, SDIO_SDR_RESPONSE2_REG,      SDIO_SDR_RESPONSE2_REG_DFLT,      0xffffffff}, // new
@@ -615,7 +620,8 @@ struct regpoker_checker crg_checker[] = {
     {"CRG_SYS_INTCLR",     REGPOKER_READ_DCR, CRG_SYS_INTCLR,     0x00000000, 0x00000001   },
     {"CRG_SYS_CKDIVMODE0", REGPOKER_READ_DCR, CRG_SYS_CKDIVMODE0, 0x00000000, 0x0000001f   },
     {"CRG_SYS_CKDIVMODE2", REGPOKER_READ_DCR, CRG_SYS_CKDIVMODE2, 0x00000001, 0x0000001f   },
-    {"CRG_SYS_CKDIVMODE3", REGPOKER_READ_DCR, CRG_SYS_CKDIVMODE3, 0x00000013, 0x0000001f   },
+    {"CRG_SYS_CKDIVMODE3", REGPOKER_READ_DCR, CRG_SYS_CKDIVMODE3, 0x00000000, 0x0000001f   }, // pcb version
+    //{"CRG_SYS_CKDIVMODE3", REGPOKER_READ_DCR, CRG_SYS_CKDIVMODE3, 0x00000013, 0x0000001f   }, // rtl version
     {"CRG_SYS_CKDIVMODE4", REGPOKER_READ_DCR, CRG_SYS_CKDIVMODE4, 0x00000009, 0x0000001f   },
     {}};
 
@@ -1340,7 +1346,8 @@ static const struct regpoker_checker plb6bc_regs_default[] = {
     {"PLB6BC_SGD5          ",           REGPOKER_READ_DCR, PLB6BC_SGD5          ,          PLB6BC_SGD5_DFLT,           PLB6BC_SGDx_MSK           },
     {"PLB6BC_SGD6          ",           REGPOKER_READ_DCR, PLB6BC_SGD6          ,          PLB6BC_SGD6_DFLT,           PLB6BC_SGDx_MSK           },
     {"PLB6BC_SGD7          ",           REGPOKER_READ_DCR, PLB6BC_SGD7          ,          PLB6BC_SGD7_DFLT,           PLB6BC_SGDx_MSK           },
-    {"PLB6BC_ERR           ",           REGPOKER_READ_DCR, PLB6BC_ERR           ,          PLB6BC_ERR_DFLT,            PLB6BC_ERR_MSK            },
+    {"PLB6BC_ERR           ",           REGPOKER_READ_DCR, PLB6BC_ERR           ,          0x800d8000,            PLB6BC_ERR_MSK            }, // pcb version
+    //{"PLB6BC_ERR           ",           REGPOKER_READ_DCR, PLB6BC_ERR           ,          PLB6BC_ERR_DFLT,            PLB6BC_ERR_MSK            }, //rtl version
     {"PLB6BC_MSRSP         ",           REGPOKER_READ_DCR, PLB6BC_MSRSP         ,          PLB6BC_MSRSP_DFLT,          PLB6BC_MSRSP_MSK          },
     {"PLB6BC_HCPP          ",           REGPOKER_READ_DCR, PLB6BC_HCPP          ,          0x00001000,                 PLB6BC_HCPP_MSK           },
     {"PLB6BC_HD            ",           REGPOKER_READ_DCR, PLB6BC_HD            ,          PLB6BC_HD_DFLT,             PLB6BC_HD_MSK             },
@@ -1608,17 +1615,25 @@ static const struct regpoker_checker mclfir_regs_write[] = {
 #define EMI_SDx_DFLT 0x00000000
 static const struct regpoker_checker emi_regs_default[] = {
     // name             check type     offset        exp val          mask
-    {"EMI_SS0",     REGPOKER_READ_DCR,     EMI_SS0,     EMI_SSx_DFLT, 0xffffffff   },
+    /* not stable on pcb
+    {"EMI_SS0",     REGPOKER_READ_DCR,     EMI_SS0,     0x800000, 0xffffffff   }, // pcb version
+    {"EMI_SS1",     REGPOKER_READ_DCR,     EMI_SS1,     0x800000, 0xffffffff   }, // pcb version
+    {"EMI_SS2",     REGPOKER_READ_DCR,     EMI_SS2,     0x800000, 0xffffffff   }, // pcb version
+    {"EMI_SS3",     REGPOKER_READ_DCR,     EMI_SS3,     0x800000, 0xffffffff   }, // pcb version
+    {"EMI_SS4",     REGPOKER_READ_DCR,     EMI_SS4,     0x800000, 0xffffffff   }, // pcb version
+    {"EMI_SS5",     REGPOKER_READ_DCR,     EMI_SS5,     0x800000, 0xffffffff   }, // pcb version
+    */
+    //{"EMI_SS0",     REGPOKER_READ_DCR,     EMI_SS0,     EMI_SSx_DFLT, 0xffffffff   }, // rtl version
+    //{"EMI_SS1",     REGPOKER_READ_DCR,     EMI_SS1,     EMI_SSx_DFLT, 0xffffffff   }, // rtl version
+    //{"EMI_SS2",     REGPOKER_READ_DCR,     EMI_SS2,     EMI_SSx_DFLT, 0xffffffff   }, // rtl version
+    //{"EMI_SS3",     REGPOKER_READ_DCR,     EMI_SS3,     EMI_SSx_DFLT, 0xffffffff   }, // rtl version
+    //{"EMI_SS4",     REGPOKER_READ_DCR,     EMI_SS4,     EMI_SSx_DFLT, 0xffffffff   }, // rtl version
+    //{"EMI_SS5",     REGPOKER_READ_DCR,     EMI_SS5,     EMI_SSx_DFLT, 0xffffffff   }, // rtl version
     {"EMI_SD0",     REGPOKER_READ_DCR,     EMI_SD0,     EMI_SDx_DFLT, 0xffffffff   },
-    {"EMI_SS1",     REGPOKER_READ_DCR,     EMI_SS1,     EMI_SSx_DFLT, 0xffffffff   },
     {"EMI_SD1",     REGPOKER_READ_DCR,     EMI_SD1,     EMI_SDx_DFLT, 0xffffffff   },
-    {"EMI_SS2",     REGPOKER_READ_DCR,     EMI_SS2,     EMI_SSx_DFLT, 0xffffffff   },
     {"EMI_SD2",     REGPOKER_READ_DCR,     EMI_SD2,     EMI_SDx_DFLT, 0xffffffff   },
-    {"EMI_SS3",     REGPOKER_READ_DCR,     EMI_SS3,     EMI_SSx_DFLT, 0xffffffff   },
     {"EMI_SD3",     REGPOKER_READ_DCR,     EMI_SD3,     EMI_SDx_DFLT, 0xffffffff   },
-    {"EMI_SS4",     REGPOKER_READ_DCR,     EMI_SS4,     EMI_SSx_DFLT, 0xffffffff   },
     {"EMI_SD4",     REGPOKER_READ_DCR,     EMI_SD4,     EMI_SDx_DFLT, 0xffffffff   },
-    {"EMI_SS5",     REGPOKER_READ_DCR,     EMI_SS5,     EMI_SSx_DFLT, 0xffffffff   },
     {"EMI_SD5",     REGPOKER_READ_DCR,     EMI_SD5,     EMI_SDx_DFLT, 0xffffffff   },
     {"EMI_RFC",     REGPOKER_READ_DCR,     EMI_RFC,     0x00,         0xffffffff   },
     {"EMI_HSTSR",   REGPOKER_READ_DCR,     EMI_HSTSR,   0x00,         0xffffffff   },
@@ -1902,6 +1917,7 @@ static struct rumboot_pokerlist the_big_list[] = {
     
     {dma2plb6_regs_default,      DCR_DMAPLB6_BASE},
     {plb6bc_regs_default,        DCR_PLB6_BC_BASE},
+    
     {plb6plb4_0_regs_default,    DCR_PLB6PLB4_0_BASE},
     {plb6plb4_1_regs_default,    DCR_PLB6PLB4_1_BASE},    
     
@@ -1910,7 +1926,6 @@ static struct rumboot_pokerlist the_big_list[] = {
     {itrace_regs_default,        DCR_ITRACE_BASE},
     {ltrace_regs_default,        DCR_LTRACE_BASE},
     {cldcr_regs_default,         DCR_CLDCR_BASE}, 
-
     
     
     {plb6mcif2_regs_default,     DCR_EM2_PLB6MCIF2_BASE},
@@ -1942,11 +1957,11 @@ static struct rumboot_pokerlist the_big_list[] = {
     {gpio_rw_checker,            GPIO_1_BASE },
     //{uart_checker,               UART0_BASE}, /* Screws up serial communications */
     {uart_checker,               UART1_BASE},
-                                 
-    {greth0_read_checker,        GRETH_0_BASE },
-    {greth1_read_checker,        GRETH_1_BASE },
-    {greth_write_checker,        GRETH_0_BASE },
-    {greth_write_checker,        GRETH_1_BASE },
+    
+    {greth0_read_checker, GRETH_0_BASE},
+    {greth1_read_checker, GRETH_1_BASE},
+    {greth_write_checker, GRETH_0_BASE},
+    {greth_write_checker, GRETH_1_BASE},
                                  
     {spi_checker,                GSPI_0_BASE}, /* N.B. Might screws up SPI communications */
     {spi_checker,                GSPI_1_BASE},
