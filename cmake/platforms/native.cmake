@@ -10,7 +10,8 @@ set(RUMBOOT_SUPPORTS_SPL_ENDIAN_SWAP Yes)
 
 macro(RUMBOOT_PLATFORM_SET_COMPILER_FLAGS)
     SET(CMAKE_DUMP_FLAGS     "-EL")
-    SET(CMAKE_C_FLAGS     "-std=gnu99 -m32")
+    SET(CMAKE_C_FLAGS     "-std=gnu99 -m32 -g")
+    SET(CMAKE_EXE_LINKER_FLAGS     "-g")
 endmacro()
 
 rumboot_add_configuration(
