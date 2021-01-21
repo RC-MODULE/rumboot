@@ -137,6 +137,7 @@ static struct option long_options[] =
 
 void rumboot_platform_setup()
 {
+
         signal(SIGUSR1, my_handler);
         signal(SIGUSR2, my_handler);
         FILE *fd = fopen("/proc/self/cmdline", "r");
@@ -196,12 +197,16 @@ void rumboot_platform_setup()
         }
 
         system("touch " CMAKE_BINARY_DIR "/rumboot.tmp");
-        rumboot_platform_runtime_info = create_shared_memory(CMAKE_BINARY_DIR "/rumboot.tmp", ipc_id, sizeof(rumboot_platform_runtime_info));
+        #define HEAP_SIZE (1 * 1024 * 1024)
+        rumboot_platform_runtime_info = create_shared_memory(CMAKE_BINARY_DIR "/rumboot.tmp", ipc_id, sizeof(rumboot_platform_runtime_info) + HEAP_SIZE);
         if (ipc_id == getpid()) {
                 /* If we own memory, clear it! */
                 memset(rumboot_platform_runtime_info, 0x0, sizeof(*rumboot_platform_runtime_info));
+                /* And add a heap */
+                char *heap = rumboot_platform_runtime_info;
+                heap = &heap[sizeof(*rumboot_platform_runtime_info)];
+	        rumboot_malloc_register_heap("IM0", heap, &heap[HEAP_SIZE]);
         }
-        /* No - op */
 }
 
 

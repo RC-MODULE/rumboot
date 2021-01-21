@@ -60,8 +60,9 @@ int main()
 	rumboot_malloc_register_heap("ALIGN", buf, &buf[8192]);
 	rumboot_malloc_register_heap("MISALIGN", buf, &buf[8192]);
 
-	check_malloc(buf, 0);
-	check_malloc_align(buf, 1);
-	check_malloc_misalign(buf, 2);
+	int id_start = rumboot_malloc_heap_by_name("NONE");
+	check_malloc(buf, id_start);
+	check_malloc_align(buf, id_start + 1);
+	check_malloc_misalign(buf, id_start + 2);
 	return 0;
 }
