@@ -446,7 +446,7 @@ function(add_rumboot_target)
 
   if (TARGET_LDS)
     if (EXISTS ${TARGET_LDS})
-      set(ldf -T${TARGET_LDS} -L${CMAKE_SOURCE_DIR}/lds)
+      set(ldf -Wl,-T${TARGET_LDS} -L${CMAKE_SOURCE_DIR}/lds)
     else()
       message(FATAL_ERROR "Target ${product} is missing required file: ${TARGET_LDS}. Did you commit it?")
     endif()
