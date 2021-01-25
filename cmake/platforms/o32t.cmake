@@ -118,6 +118,14 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     PREFIX iram-im1
   )
 
+  add_rumboot_target(
+    CONFIGURATION IRAM_IM1
+    FILES oi10/targets/test_oi10_lscb.c
+    CFLAGS -DMKIO_BASE=MKIO2_BASE -DCHECK_MKIO_REGS
+    PREFIX mkio0-regs
+  )
+
+
   #Don't use, not ready yet.
   #add_rumboot_target_dir(simple-iram/
   #  CONFIGURATION IRAM_IM0

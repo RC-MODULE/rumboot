@@ -3,8 +3,7 @@ OUTPUT_ARCH(nmc)
 
 MEMORY
 {
-  LOADERMEM (a):   ORIGIN =  0x00000000, LENGTH = 0x00000800
-  IRAM(rwx):       ORIGIN =  0x00000800, LENGTH = 0x0001f800
+  IRAM(rwx):       ORIGIN =  0x00000000, LENGTH = 0x20000
 }
 
 SECTIONS
@@ -13,37 +12,25 @@ SECTIONS
     KEEP(*(.header))
   }
 
-  .easynmc_args : {
-    *(._easynmc_args)
-  } > IRAM
-
-  .easynmc_stdin : {
-   *(.easynmc_stdin)
-   *(.easynmc_stdin.*)
-  } > IRAM
-
-  .easynmc_stdout : {
-   *(.easynmc_stdout)
-   *(.easynmc_stdout.*)
-  } > IRAM
-
   .rwx : {
-   *(.rumboot_platform_runtime_info)
-   *(.easynmc_stdout)
+    KEEP(*(.text.init))
    *(.text)
    *(.text.*)
    *(.rodata)
    *(.rodata.*)
    *(.data)
    *(.data.*) 
+   *(.rumboot_platform_runtime_info)
   } > IRAM
 
   .bss : {
-    _rumboot_platform_spl_start = .;
-    _rumboot_platform_spl_end = .;
+    rumboot_platform_spl_start = .;
+    rumboot_platform_spl_end = .;
     _rumboot_platform_bss_start = .;
     *(.bss)
     *(.bss.*)
+    *(.bsst)
+    *(.bsst.*)
     _rumboot_platform_bss_end = .;
   } > IRAM
 
