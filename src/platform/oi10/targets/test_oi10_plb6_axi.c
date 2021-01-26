@@ -61,9 +61,7 @@
 #define GRETH_CKMODE_NORMAL             0
 #define GRETH_CKMODE_RDFAIL             1
 #define GRETH_CKMODE_WRFAIL             2
-#define GRETH_CKMODE_RWFAIL             3
-#define GRETH_CKMODES                   4
-#define GRETH_CKMODES_MASK              (0b0111)
+#define GRETH_CKMODES                   3
 #define GRETH_RAM_PRESENT               (SRAM0_BASE + 0x00000000)
 #define GRETH_RAM_ABSENT                (SRAM0_BASE + 0x08000000)
 #define GRETH_FILL_SRC_EN_MASK          ((1 << GRETH_CKMODE_NORMAL)   | \
@@ -198,10 +196,6 @@ static pu8_src_dst_pair_t greth_test_info[GRETH_CKMODES] =
         {
                 .src = RAMPAGE(uint8_t, GRETH_RAM_PRESENT, 0x400, 4),
                 .dst = RAMPAGE(uint8_t, GRETH_RAM_ABSENT,  0x400, 2)
-        },
-        {
-                .src = RAMPAGE(uint8_t, GRETH_RAM_ABSENT,  0x400, 3),
-                .dst = RAMPAGE(uint8_t, GRETH_RAM_ABSENT,  0x400, 4)
         }
 };
 
@@ -240,86 +234,6 @@ static uint32_t *test_hscb0_data_src  = TD_PAGE(0x400, 1),
                 *HSCB3_TX_DESCR_ADDR  = HSCB_DESC_PAGE(0x80, 7),
                 *HSCB3_RX_DESCR_ADDR  = HSCB_DESC_PAGE(0x80, 8);
 
-#endif
-
-#if 0
-#define DEBUGOUT    rumboot_printf
-#define EOL         "\n"
-
-void hexDump(char *desc, void *addr, int len)
-{
-    int i, h = 0;
-    uint8_t       cbuf[24]   = {0, 0, 0, 0},
-                  hbuf[56]   = {0, 0, 0, 0};
-    uint8_t      *pc         = (uint8_t*)addr;
-    static const
-    uint8_t       hchr[16]   =
-        {
-                '0', '1', '2', '3', '4', '5', '6', '7',
-                '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
-        };
-
-    // Output description if given.
-    if(desc) DEBUGOUT("%s:" EOL, desc);
-
-    if(!len)
-    {
-        DEBUGOUT("  * ZERO LENGTH" EOL);
-        return;
-    }
-
-    if (len < 0)
-    {
-        DEBUGOUT("  * NEGATIVE LENGTH: %i" EOL, len);
-        return;
-    }
-
-    // Process every byte in the data.
-    for(i = 0; i < len; i++)
-    {
-        // Multiple of 16 means new line (with line offset).
-
-        if(!(i & 0x0F))
-        {
-            hbuf[h++] = 0;
-            h = 0;
-
-            // Just don't print ASCII for the zeroth line.
-            if(i) DEBUGOUT("%s  %s" EOL, hbuf, cbuf);
-
-            // Output the offset.
-            hbuf[h++] = ' ';
-            hbuf[h++] = hchr[GET_NIBBLE(i, 3)];
-            hbuf[h++] = hchr[GET_NIBBLE(i, 2)];
-            hbuf[h++] = hchr[GET_NIBBLE(i, 1)];
-            hbuf[h++] = hchr[GET_NIBBLE(i, 0)];
-            hbuf[h++] = ':';
-            hbuf[h++] = ' ';
-        }
-
-        // Now the hex code for the specific character.
-        hbuf[h++] = hchr[GET_NIBBLE(pc[i], 1)];
-        hbuf[h++] = hchr[GET_NIBBLE(pc[i], 0)];
-        hbuf[h++] = ' ';
-
-        // And store a printable ASCII character for later.
-        cbuf[(i & 0x0F) + 0] = IS_NOT_PRINTABLE(pc[i]) ? '.' : pc[i];
-        cbuf[(i & 0x0F) + 1] = 0;
-    }
-
-    // Pad out last line if not exactly 16 characters.
-    while (i++ & 0x0F)
-    {
-        hbuf[h++] = ' ';
-        hbuf[h++] = ' ';
-        hbuf[h++] = ' ';
-    }
-
-    hbuf[h++] = 0;
-
-    // And print the final ASCII bits.
-    DEBUGOUT("%s  %s" EOL, hbuf, cbuf);
-}
 #endif
 
 #ifdef CHECK_AXI_PLB6_SINGLE
@@ -686,6 +600,15 @@ void check_transfer_via_ext_loop(uint32_t   base_addr_src_eth,
             __FUNCTION__,
             (uint32_t)ptest_data_src, (uint32_t)ptest_data_dst);
 
+    if(ckmode != GRETH_CKMODE_NORMAL)
+    {
+        rumboot_putstring("Resetting GRETH hardware...\n");
+        TEST_ASSERT(greth_reset(base_addr_src_eth),
+                "Source GRETH reset fails!");
+        TEST_ASSERT(greth_reset(base_addr_dst_eth),
+                "Destination GRETH reset fails!");
+    }
+
     greth_configure_for_receive(base_addr_dst_eth,
             ptest_data_dst,
             GRETH_TEST_DATA_LEN_BYTES,
@@ -735,12 +658,9 @@ void check_transfer_via_ext_loop(uint32_t   base_addr_src_eth,
         case GRETH_CKMODE_WRFAIL:
             _greth_wait_transmit(base_addr_src_eth);
             greth_wait_receive_irq(base_addr_dst_eth, eth_handled_flag_ptr);
-            TEST_ASSERT(*pdst_status & GRETH_RERR_BITS, RE_MSG);
-            break;
-        case GRETH_CKMODE_RWFAIL:
-            _greth_wait_transmit(base_addr_src_eth);
-            greth_wait_receive_irq(base_addr_dst_eth, eth_handled_flag_ptr);
-            TEST_ASSERT(*psrc_status & GRETH_TERR_BITS, TE_MSG);
+            // Read status explicitly, because IRQ handler
+            // not called. when receive fails.
+            *pdst_status = greth_get_status(base_addr_dst_eth);
             TEST_ASSERT(*pdst_status & GRETH_RERR_BITS, RE_MSG);
             break;
         default:
@@ -788,9 +708,6 @@ void test_oi10_greth(void)
 
     for(i = 0; i < GRETH_CKMODES; i++)
     {
-        // Skip disabled checks
-        if(!(GRETH_CKMODES_MASK & (1 << i))) continue;
-
         rumboot_printf("----------------------------------------\n");
         dma.src = (uint8_t*)rumboot_virt_to_dma(greth_test_info[i].src);
         dma.dst = (uint8_t*)rumboot_virt_to_dma(greth_test_info[i].dst);
