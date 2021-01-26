@@ -27,7 +27,8 @@ const char *const exception_names[] = {
     [RUMBOOT_IRQ_WATCHDOG_TIMER] = "Watchdog Timer",
     [RUMBOOT_IRQ_DATA_TLB_ERROR] = "Data TLB Error",
     [RUMBOOT_IRQ_INST_TLB_ERROR] = "Inst TLB Error",
-    [RUMBOOT_IRQ_DEBUG] = "Debug"
+    [RUMBOOT_IRQ_DEBUG] = "Debug",
+    [RUMBOOT_IRQ_OVERFLOW] = "Overflow"
 };
 
 struct rumboot_irq_entry {

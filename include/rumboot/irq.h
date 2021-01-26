@@ -29,6 +29,8 @@
 #define RUMBOOT_IRQ_DATA_TLB_ERROR          15
 #define RUMBOOT_IRQ_INST_TLB_ERROR          16
 #define RUMBOOT_IRQ_DEBUG                   17
+/* NMC Interrupt names */
+#define RUMBOOT_IRQ_OVERFLOW                18
 
 
 
