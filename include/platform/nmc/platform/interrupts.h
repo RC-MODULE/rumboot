@@ -1,6 +1,9 @@
 #ifndef PLATFORM_INTERRUPTS_H
 #define PLATFORM_INTERRUPTS_H
 
-#define RUMBOOT_PLATFORM_NUM_IRQS 128
+#define RUMBOOT_PLATFORM_NUM_IRQS 64
+#define IRQ_ITIMER0  0
+#define IRQ_ITIMER1  1
+#define IRQ_HP       2
 
 #endif
