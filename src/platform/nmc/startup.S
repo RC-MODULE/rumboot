@@ -9,8 +9,7 @@ the_start:
     gr0 = _rumboot_platform_stack_start;
     gr0 = _rumboot_platform_stack_start;
     gr0 = _rumboot_platform_stack_start;
-
-//    ar7 = _rumboot_platform_stack_start;
+    ar7 = _rumboot_platform_stack_start;
 	delayed goto _rumboot_main;
 	nul 32;
 
