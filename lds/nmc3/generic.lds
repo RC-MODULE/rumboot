@@ -3,7 +3,7 @@ OUTPUT_ARCH(nmc)
 
 MEMORY
 {
-  IRAM(rwx):       ORIGIN =  0x00000000, LENGTH = 0x20000
+  IRAM(rwx):       ORIGIN =  0x00000000, LENGTH = 0x60000
 }
 
 SECTIONS
@@ -19,8 +19,7 @@ SECTIONS
    *(.rodata)
    *(.rodata.*)
    *(.data)
-   *(.data.*) 
-   *(.rumboot_platform_runtime_info)
+   *(.data.*)
   } > IRAM
 
   .bss : {
@@ -32,6 +31,12 @@ SECTIONS
     *(.bsst)
     *(.bsst.*)
     _rumboot_platform_bss_end = .;
+  } > IRAM
+
+
+  .runtime 0x1A000 (NOLOAD) : {
+    rumboot_platform_runtime_info = .;
+    *(.rumboot_platform_runtime_info);
   } > IRAM
 
   .stack (NOLOAD) : {
