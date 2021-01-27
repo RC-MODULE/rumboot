@@ -13,7 +13,7 @@ rumboot_add_configuration(
   LDS nmc3/generic.lds
   FILES ${CMAKE_SOURCE_DIR}/src/platform/nmc/startup.S
   LDFLAGS "-Wl,\"-estart\""
-  IRUN_FLAGS ${BOOTROM_IFLAGS} +RUMBOOT_RUNTIME_ADDR=0x8000
+  IRUN_FLAGS ${BOOTROM_IFLAGS} +RUMBOOT_RUNTIME_ADDR=5A000
   LOAD IM1_IMAGE SELF
 )
 
