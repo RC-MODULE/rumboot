@@ -28,7 +28,7 @@
  */
 reset_handler:
 	delayed goto the_start; 
-    ar7 = _rumboot_platform_stack_start;
+    ar7 = _rumboot_platform_stack_start; /* Stack grown UP, ar7 increases on every push */
 
 .align 5
 /* Three internal exceptions follow */
@@ -145,6 +145,7 @@ the_start:
 	call _rumboot_main;
     /* Should never get here */
 
+//#define NMC_SUPPORTS_HALT
 #ifndef NMC_SUPPORTS_HALT
     goto dead_loop; 
 #else
