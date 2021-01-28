@@ -3,10 +3,6 @@
 #include <rumboot/io.h>
 #include <rumboot/boot.h>
 #include <rumboot/platform.h>
-#include <rumboot/bootsrc/spiflash.h>
-#include <rumboot/bootsrc/eeprom.h>
-#include <rumboot/bootsrc/boilerplate.h>
-#include <rumboot/bootsrc/sdio.h>
 #include <rumboot/printf.h>
 #include <rumboot/irq.h>
 #include <regs/regs_gpio_pl061.h>

@@ -18,12 +18,28 @@ rumboot_add_configuration(
   CFLAGS -DRUMBOOT_MAIN_NORETURN
 )
 
+rumboot_add_configuration(
+  CORE
+  PREFIX core
+  SNAPSHOT top
+  LDS nmc3/generic.lds
+  LDFLAGS "-Wl,\"-ecorestart\""
+  CFLAGS -mmas -save-temps
+  IRUN_FLAGS ${BOOTROM_IFLAGS} +RUMBOOT_RUNTIME_ADDR=5A000
+  LOAD IM1_IMAGE SELF
+)
+
+
 include(${CMAKE_SOURCE_DIR}/cmake/bootrom.cmake)
 
 macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
   add_rumboot_target_dir(iram/
     CONFIGURATION IRAM
   )
+  add_rumboot_target_dir(coretests/
+    CONFIGURATION CORE
+  )
+
 
 endmacro()
 
