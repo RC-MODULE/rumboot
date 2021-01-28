@@ -34,7 +34,7 @@ SECTIONS
   } > IRAM
 
 
-  .runtime 0x1A000 (NOLOAD) : {
+  .runtime 0x5A000 (NOLOAD) : {
     rumboot_platform_runtime_info = .;
     *(.rumboot_platform_runtime_info);
   } > IRAM
