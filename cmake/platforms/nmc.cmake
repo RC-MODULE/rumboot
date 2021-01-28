@@ -11,10 +11,11 @@ rumboot_add_configuration(
   PREFIX iram
   SNAPSHOT top
   LDS nmc3/generic.lds
-  FILES ${CMAKE_SOURCE_DIR}/src/platform/nmc/startup.S
+  FILES ${CMAKE_SOURCE_DIR}/src/platform/nmc/startup.S 
   LDFLAGS "-Wl,\"-estart\""
   IRUN_FLAGS ${BOOTROM_IFLAGS} +RUMBOOT_RUNTIME_ADDR=5A000
   LOAD IM1_IMAGE SELF
+  CFLAGS -DRUMBOOT_MAIN_NORETURN
 )
 
 include(${CMAKE_SOURCE_DIR}/cmake/bootrom.cmake)
