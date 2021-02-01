@@ -362,7 +362,7 @@ typedef enum mkio_bc_schedule_state
 #define MKIO_TIMEOUT    100
 
 void mkio_prepare_rt_descr(uint32_t base_addr, uint32_t* data_ptr, uint32_t size, struct mkio_rt_descriptor volatile* mkio_rt_rx_descriptor, struct mkio_rt_sa_table volatile* rt_sa_tbl);
-void mkio_prepare_bc_descr(uint32_t base_addr, uint32_t* data_ptr, uint32_t size, struct mkio_bc_descriptor volatile* descr_ptr, mkio_bus_t bus);
+void mkio_prepare_bc_descr(uint32_t base_addr, uint32_t* data_ptr, uint32_t size, struct mkio_bc_descriptor volatile* descr_ptr, mkio_bus_t bus, uint32_t TR);
 void mkio_bc_run_schedule (uint32_t base_address);
 void mkio_rt_run_schedule (uint32_t base_address);
 void mkio_set_bcrd(uint32_t base_address, uint32_t bc_irq_ring_addr);

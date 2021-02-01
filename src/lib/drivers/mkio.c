@@ -301,9 +301,10 @@ void mkio_prepare_rt_descr(uint32_t base_addr, uint32_t* data_ptr, uint32_t size
     rt_sa_tbl[0].sa_tx_descriptor_pointer = 0x00;
     rt_sa_tbl[0].sa_rx_descriptor_pointer = 0x00;
     rt_sa_tbl[0].sa_reserved              = 0x00;
-
+    
+    
     rt_sa_tbl[1].sa_ctrl_word             = (0x00000000 | (RXEN << 15) | (RXIRQ <<13) | (TXEN << 7));
-    rt_sa_tbl[1].sa_tx_descriptor_pointer = 0x00000000 ;
+    rt_sa_tbl[1].sa_tx_descriptor_pointer = (rumboot_virt_to_dma(mkio_rt_rx_descriptor));
     rt_sa_tbl[1].sa_rx_descriptor_pointer = (rumboot_virt_to_dma(mkio_rt_rx_descriptor));
     rt_sa_tbl[1].sa_reserved              = (0x00000000);
 
@@ -313,10 +314,14 @@ void mkio_prepare_rt_descr(uint32_t base_addr, uint32_t* data_ptr, uint32_t size
     mkio_rt_rx_descriptor->data_pointer            = (rumboot_virt_to_dma(cur_data_ptr));
     mkio_rt_rx_descriptor->next_descriptor_pointer = (rt_descriptor_end_of_list);
 
+    rumboot_printf("ctrl_status_word:        0x%X\n", mkio_rt_rx_descriptor->ctrl_status_word       );
+    rumboot_printf("data_pointer:            0x%X\n", mkio_rt_rx_descriptor->data_pointer           );
+    rumboot_printf("next_descriptor_pointer: 0x%X\n", mkio_rt_rx_descriptor->next_descriptor_pointer);
+
     iowrite32 (rumboot_virt_to_dma(rt_sa_tbl), base_addr + RTSTBA);
 }
 
-void mkio_prepare_bc_descr(uint32_t base_addr, uint32_t* data_ptr, uint32_t size, struct mkio_bc_descriptor volatile * descr_ptr, mkio_bus_t bus)
+void mkio_prepare_bc_descr(uint32_t base_addr, uint32_t* data_ptr, uint32_t size, struct mkio_bc_descriptor volatile * descr_ptr, mkio_bus_t bus, uint32_t TR)
 {
     //  Suspend normally (SUSN) - Always suspends after transfer
     uint32_t SUSN = 0x1;
@@ -332,7 +337,7 @@ void mkio_prepare_bc_descr(uint32_t base_addr, uint32_t* data_ptr, uint32_t size
     //  RT Subaddress (RTSA1)
     uint32_t RTSA1 = 0x01;
     //  0 - transmit (BC->RT), 1 - receive (RT->BC)
-    uint32_t TR = 0;
+    // uint32_t TR = 0;
 
     uint32_t unused = 0xDEADBEEF ;
 
@@ -432,7 +437,7 @@ void mkio_write_to_rt_with_irq_2(struct mkio_instance* const mkio_cfg)
 {
     uint32_t mkio_irq_ring_buffer [16] __attribute__ ((aligned(64)));
 
-    mkio_prepare_bc_descr(mkio_cfg[0].src_mkio_base_addr, mkio_cfg[0].src_addr, mkio_cfg[0].size, mkio_cfg[0].bc_desr, MKIO_BUS_A);
+    mkio_prepare_bc_descr(mkio_cfg[0].src_mkio_base_addr, mkio_cfg[0].src_addr, mkio_cfg[0].size, mkio_cfg[0].bc_desr, MKIO_BUS_A, 0);
     mkio_prepare_rt_descr(mkio_cfg[0].dst_mkio_base_addr, mkio_cfg[0].dst_addr, mkio_cfg[0].size, mkio_cfg[0].rt_descr, mkio_cfg[0].rt_sa_tbl);
 
     //mkio_prepare_bc_descr((mkio_cfg + 1)->src_mkio_base_addr, (mkio_cfg + 1)->src_addr, (mkio_cfg + 1)->size, (mkio_cfg + 0)->bc_desr, true);

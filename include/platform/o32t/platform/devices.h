@@ -7,6 +7,8 @@
 #undef AXI64HSIFS_CTRL_BASE
 #undef SCRB_BASE
 
+#define MKIO2_BASE              0xC0021000
+#define MKIO3_BASE              0xC0031000
 #define AXI32_LEFT_CTRL_BASE    0xC0100000
 #define AXI32_RIGHT_CTRL_BASE   0xC0200000
 #define AXI64_CTRL_BASE         0xC0400000

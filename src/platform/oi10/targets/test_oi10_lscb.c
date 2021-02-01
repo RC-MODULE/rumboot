@@ -1,4 +1,58 @@
 
+//-----------------------------------------------------------------------------
+//  This program is for MKIO testing
+//    
+//    It is designed to make few different types of test
+//    It is designed to test different MKIO controllers
+//    It is designed to be run on different SoC (Platforms)
+//      - OI10
+//      - O32T
+//
+//      (bad practice to unite many features in one source, never do this again)
+//    
+//    
+//    It can be run on:
+//      - rtl simulation
+//      - netlist simulation
+//      - post-production special hardware
+//    
+//    
+//    CHECK_MKIO_REGS:
+//      Test includes:
+//      - predefine struct with registers addr, access, field mask
+//      - write/read registers testing according to the struct
+//
+//    CHECK_MKIO_FUNC
+//      - prepare data space:
+//          - allocate space in requested memory for:
+//              - data source
+//              - data destination
+//              - MKIO BC descriptors
+//              - MKIO RT descriptors
+//              - MKIO RT sub-address table
+//      - predefine struct with transations info
+//      - create IRQ handlers
+//      - transmit data:
+//          - check external MKIO signals are idle with GPIO
+//          - create descriptors
+//          - run MKIO RT
+//          - check external MKIO signals with GPIO
+//          - run MKIO BC
+//          - check external MKIO signals with GPIO
+//      - delete IRQ handlers
+//      - wait MKIO IRQ
+//      - check data
+//      - turn MKIO controllers off
+//        
+//        
+//      WARNING: Tx/Rx data can be placed in non-accessible memory, and test will pass
+//        Now it is only "IM0" memory
+//        
+//    
+//    Test duration (RTL): < 
+//-----------------------------------------------------------------------------
+
+
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
@@ -20,13 +74,32 @@
 #include <regs/regs_mkio.h>
 #include <devices/mkio.h>
 #include <regs/regs_gpio_pl061.h>
-#include <devices/gpio_pl061.h>
+// #include <devices/gpio_pl061.h>
 
-void check_mkio_txinh_idle_via_gpio();
-void check_mkio_txinh_switch_via_gpio(uint8_t exp_state);
+
+
+
+//-----------------------------------------------------------------------------
+//  Test features control
+//-----------------------------
+
+//  Data transfer direction
+//      If TEST_MODE__BC_TRANSMIT set to 0 from Cmake, read data from RT
+#ifndef TEST_MODE__BC_TRANSMIT
+#define TEST_MODE__BC_TRANSMIT 1
+#endif
+
 
 #define MKIO_TEST_LEN_IN_WORDS  32
 #define MKIO_TEST_DATA_SIZE     (MKIO_TEST_LEN_IN_WORDS*sizeof(uint16_t))
+
+//-------------------------------------------------------------
+
+
+
+int check_mkio_txinh_idle_via_gpio();
+int check_mkio_txinh_switch_via_gpio(uint8_t exp_state);
+
 
 uint16_t test_mkio_data_im0_src[MKIO_TEST_LEN_IN_WORDS] = {
                                                             0x0001,
@@ -70,6 +143,12 @@ struct mkio_bc_descriptor volatile* mkio_bc_desr;//  = (mkio_bc_descriptor*)(IM1
 struct mkio_rt_descriptor volatile* mkio_rt_descr;// = (mkio_rt_descriptor*)(IM1_BASE + 2 * MKIO_TEST_DATA_SIZE + sizeof(mkio_bc_descriptor));
 
 struct mkio_rt_sa_table volatile*   rt_sa_tbl;// = (mkio_rt_sa_table_t *)rumboot_malloc_from_heap_aligned(1, sizeof(mkio_rt_sa_table_t)*2, 512);
+
+volatile bool mkio_irq_found = false;
+volatile bool mkio_dma_error = false;
+volatile bool mkio_expected_error = false;
+
+char* heap_name; 
 
 /*
  * Registers access checks
@@ -122,43 +201,73 @@ struct regpoker_checker mkio_check_array[] =
     { "BMTTC  ", REGPOKER_WRITE32, BMTTC , 0x00000000, 0xFFFFFFFF},
 };
 
-void regs_check(uint32_t base_address)
+int regs_check(uint32_t base_address)
 {
-    TEST_ASSERT(rumboot_regpoker_check_array(mkio_check_array, base_address)==0, "Failed to check MKIO registers\n");
+    if(rumboot_regpoker_check_array(mkio_check_array, base_address) !=0)
+    {
+        rumboot_printf("    Failed to check MKIO registers\n");
+        return -1;
+    }
+    return 0;
 }
-
-volatile bool mkio_handler = false;
 
 static void handler_mkio( int irq, void *arg )
 {
     uint32_t cur_status;
+    cur_status = ioread32(MKIO_BASE + IRQ);
     struct mkio_instance volatile* mkio_inst = (struct mkio_instance volatile* ) arg;
-    rumboot_printf( "MKIO(0x%X) IRQ arrived\n", mkio_inst->src_mkio_base_addr);
+    // rumboot_printf( "    MKIO(0x%X) IRQ arrived\n", mkio_inst->src_mkio_base_addr);
     cur_status = ioread32(mkio_inst->src_mkio_base_addr + IRQ);
-    rumboot_printf( "IRQ = 0x%X\n", cur_status);
-    iowrite32(1, mkio_inst->src_mkio_base_addr + IRQ);
-    mkio_handler = true;
+    // rumboot_printf( "    IRQ = 0x%X\n", cur_status);
+    
+    
+    //  BC Transfer-triggered event interrupt
+    if (cur_status & (1<<0))
+        iowrite32((1<<0), mkio_inst->src_mkio_base_addr + IRQ);
+    
+    
+    //  BC DMA Error Enable
+    if (cur_status & (1<<1))
+    {
+        if (heap_name == "IM0")
+        {
+            rumboot_printf("WARNING: Tried to access closed IM0 space. Suppose, it is test feature.\n");
+            mkio_expected_error = true;
+        }
+        
+        mkio_dma_error = true;
+        iowrite32((1<<1), mkio_inst->src_mkio_base_addr + IRQ);
+    }
+    
+    
+    mkio_irq_found = true;
 }
 
 
 struct rumboot_irq_entry * create_irq_handlers(struct mkio_instance volatile* mkio_inst)
 {
-    rumboot_printf( "Create irq handlers\n" );
+    uint32_t irq_number;
+    
+    rumboot_printf( "    Create irq handlers\n" );
     rumboot_irq_cli();
     struct rumboot_irq_entry *tbl = rumboot_irq_create( NULL );
-
-    if (mkio_inst->src_mkio_base_addr==MKIO0_BASE)
-    {
-        rumboot_irq_set_handler( tbl, MKIO0_INT, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler_mkio, (void*)mkio_inst );
-        rumboot_irq_table_activate( tbl );
-        rumboot_irq_enable( MKIO0_INT );
+    
+    switch (mkio_inst->src_mkio_base_addr) {
+#ifdef PLATFORM_O32T
+        case MKIO0_BASE : {irq_number = MKIO0_INT; break;}
+        case MKIO1_BASE : {irq_number = MKIO1_INT; break;}
+        case MKIO2_BASE : {irq_number = MKIO2_INT; break;}
+        case MKIO3_BASE : {irq_number = MKIO3_INT; break;}
+#else
+        case MKIO0_BASE : {irq_number = MKIO0_INT; break;}
+        case MKIO1_BASE : {irq_number = MKIO1_INT; break;}
+#endif
     }
-    else
-    {
-        rumboot_irq_set_handler( tbl, MKIO1_INT, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler_mkio, (void*)mkio_inst );
-        rumboot_irq_table_activate( tbl );
-        rumboot_irq_enable( MKIO1_INT );
-    }
+    
+    rumboot_irq_set_handler( tbl, irq_number, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler_mkio, (void*)mkio_inst );
+    rumboot_irq_table_activate( tbl );
+    rumboot_irq_enable( irq_number );
+    
     rumboot_irq_sei();
     return tbl;
 }
@@ -171,13 +280,17 @@ void delete_irq_handlers(struct rumboot_irq_entry *tbl)
 
 void prepare_test_data(char* heap_name)
 {
-    rumboot_putstring("Preparing source test data\n");
+    rumboot_printf("    Preparing source test data\n");
 
-    emi_init(DCR_EM2_EMI_BASE);
-
+    // emi_init(DCR_EM2_EMI_BASE);
+#ifndef DATA_DIRECT_ADDRESS
     test_mkio_data_src = (uint16_t *)rumboot_malloc_from_named_heap_aligned(heap_name, MKIO_TEST_DATA_SIZE, 2);
 
     test_mkio_data_dst = (uint16_t *)rumboot_malloc_from_named_heap_aligned(heap_name, MKIO_TEST_DATA_SIZE, 2);
+#else
+    test_mkio_data_src = DATA_DIRECT_ADDRESS + 0x0000;
+    test_mkio_data_dst = DATA_DIRECT_ADDRESS + 0x1000;
+#endif
 
     mkio_bc_desr  = (struct mkio_bc_descriptor volatile*)rumboot_malloc_from_named_heap_aligned(heap_name, sizeof(struct mkio_bc_descriptor), 128);
     memset((uint32_t*)mkio_bc_desr, 0, sizeof(struct mkio_bc_descriptor));
@@ -204,40 +317,91 @@ void init_mkio_cfg(struct mkio_instance * mkio_inst, uint32_t bc_base_addr, uint
     mkio_inst->rt_sa_tbl            = rt_sa_tbl;
 }
 
-void configure_mkio(struct mkio_instance * mkio_cfg)
+void configure_mkio(struct mkio_instance * mkio_cfg, uint32_t write_data)
 {
     uint32_t* mkio_irq_ring_buffer;
     mkio_irq_ring_buffer = (uint32_t *)rumboot_malloc_from_heap_aligned(1, 16 * sizeof(uint32_t), 64);
-
-    mkio_prepare_bc_descr(mkio_cfg->src_mkio_base_addr, mkio_cfg->src_addr, mkio_cfg->size, mkio_cfg->bc_desr, mkio_cfg->bus);
-    mkio_prepare_rt_descr(mkio_cfg->dst_mkio_base_addr, mkio_cfg->dst_addr, mkio_cfg->size, mkio_cfg->rt_descr, mkio_cfg->rt_sa_tbl);
-
+    
+    if (write_data)
+    {
+        rumboot_printf("    MKIO BC transmit data\n");
+        mkio_prepare_bc_descr(mkio_cfg->src_mkio_base_addr, mkio_cfg->src_addr, mkio_cfg->size, mkio_cfg->bc_desr, mkio_cfg->bus, 0);
+        mkio_prepare_rt_descr(mkio_cfg->dst_mkio_base_addr, mkio_cfg->dst_addr, mkio_cfg->size, mkio_cfg->rt_descr, mkio_cfg->rt_sa_tbl);
+    }
+    else
+    {
+        rumboot_printf("    MKIO BC receive data\n");
+        mkio_prepare_bc_descr(mkio_cfg->src_mkio_base_addr, mkio_cfg->dst_addr, mkio_cfg->size, mkio_cfg->bc_desr, mkio_cfg->bus, 1);
+        mkio_prepare_rt_descr(mkio_cfg->dst_mkio_base_addr, mkio_cfg->src_addr, mkio_cfg->size, mkio_cfg->rt_descr, mkio_cfg->rt_sa_tbl);
+    }
+        
     mkio_enable_all_irq(mkio_cfg->src_mkio_base_addr);
     mkio_set_bcrd(mkio_cfg->src_mkio_base_addr, rumboot_virt_to_dma(mkio_irq_ring_buffer));
 }
 
-void run_mkio_transfers_via_external_loopback(struct mkio_instance * mkio_cfg)
+int run_mkio_transfers_via_external_loopback(struct mkio_instance * mkio_cfg, uint32_t write_data)
 {
 #if !defined (CMAKE_BUILD_TYPE_POSTPRODUCTION)
-    check_mkio_txinh_idle_via_gpio();
+    if (check_mkio_txinh_idle_via_gpio() != 0)
+        return -1;
 #endif
-    configure_mkio(mkio_cfg);
 
+
+    configure_mkio(mkio_cfg, write_data);
     mkio_rt_run_schedule(mkio_cfg->dst_mkio_base_addr);
-    //In tb GPIO1[3:0] = {MK1_TXINHB, MK1_TXINHA, MK0_TXINHB, MK0_TXINHA}
+    
+    
 #if !defined (CMAKE_BUILD_TYPE_POSTPRODUCTION)
-    check_mkio_txinh_switch_via_gpio((mkio_cfg->dst_mkio_base_addr==MKIO0_BASE) ? 0b00001100 : 0b00000011);
+    uint8_t gpio_state;
+ #ifdef PLATFORM_O32T
+    //In tb GPIO1[7:0] = {MK3_TXINHB, MK3_TXINHA, MK2_TXINHB, MK2_TXINHA, MK1_TXINHB, MK1_TXINHA, MK0_TXINHB, MK0_TXINHA}
+    switch (mkio_cfg->dst_mkio_base_addr) {
+        case MKIO0_BASE : {gpio_state = 0b11111100; break;}
+        case MKIO1_BASE : {gpio_state = 0b11110011; break;}
+        case MKIO2_BASE : {gpio_state = 0b11001111; break;}
+        case MKIO3_BASE : {gpio_state = 0b00111111; break;}
+    }
+ #else
+    //In tb GPIO1[3:0] = {MK1_TXINHB, MK1_TXINHA, MK0_TXINHB, MK0_TXINHA}
+    switch (mkio_cfg->dst_mkio_base_addr) {
+        case MKIO0_BASE : {gpio_state = 0b00001100; break;}
+        case MKIO1_BASE : {gpio_state = 0b00000011; break;}
+    }
+ #endif
+    if (check_mkio_txinh_switch_via_gpio(gpio_state) != 0)
+        return -1;
 #endif
-
+    
+    
     mkio_bc_run_schedule(mkio_cfg->src_mkio_base_addr);
-    //In tb GPIO1[3:0] = {MK1_TXINHB, MK1_TXINHA, MK0_TXINHB, MK0_TXINHA}
+    
+    
 #if !defined (CMAKE_BUILD_TYPE_POSTPRODUCTION)
-    check_mkio_txinh_switch_via_gpio(0b00000000);
+ #ifdef PLATFORM_O32T
+    //In tb GPIO1[7:0] = {MK3_TXINHB, MK3_TXINHA, MK2_TXINHB, MK2_TXINHA, MK1_TXINHB, MK1_TXINHA, MK0_TXINHB, MK0_TXINHA}
+    switch (mkio_cfg->dst_mkio_base_addr) {
+        case MKIO0_BASE : {gpio_state = 0b11110000; break;}
+        case MKIO1_BASE : {gpio_state = 0b11110000; break;}
+        case MKIO2_BASE : {gpio_state = 0b00001111; break;}
+        case MKIO3_BASE : {gpio_state = 0b00001111; break;}
+    }
+ #else
+    //In tb GPIO1[3:0] = {MK1_TXINHB, MK1_TXINHA, MK0_TXINHB, MK0_TXINHA}
+    gpio_state = 0b00000000;
+ #endif
+    if (check_mkio_txinh_switch_via_gpio(gpio_state) != 0)
+        return -1;
 #endif
-    TEST_ASSERT(mkio_wait_bc_schedule_state(mkio_cfg->src_mkio_base_addr, MKIO_BCSL_SCST_EXEC)==true, "BC sched state EXEC is timed out");
+    if(mkio_wait_bc_schedule_state(mkio_cfg->src_mkio_base_addr, MKIO_BCSL_SCST_EXEC) != true)
+    {
+        rumboot_printf("    BC sched state EXEC is timed out\n");
+        return -1;
+    }
+    
+    return 0;
 }
 
-void wait_mkio_irq()
+int wait_mkio_irq()
 {
 #if !defined (CMAKE_BUILD_TYPE_POSTPRODUCTION)
 #define MKIO_TR_TIMEOUT_US 1000
@@ -246,54 +410,96 @@ void wait_mkio_irq()
 #define MKIO_TR_TIMEOUT_US 5000
 #endif
     uint32_t _start = rumboot_platform_get_uptime();
-    rumboot_putstring("Waiting MKIO interrupt...\n");
-    while ((mkio_handler==false) && (rumboot_platform_get_uptime() - _start < MKIO_TR_TIMEOUT_US)){};
-    TEST_ASSERT(rumboot_platform_get_uptime() - _start < MKIO_TR_TIMEOUT_US, "Failed to waiting MKIO interrupt");
-    rumboot_putstring("Waiting MKIO interrupt... OK\n");
+    rumboot_printf("    Waiting MKIO interrupt...\n");
+    while ((mkio_irq_found==false) && (rumboot_platform_get_uptime() - _start < MKIO_TR_TIMEOUT_US)){};
+    if(rumboot_platform_get_uptime() - _start >= MKIO_TR_TIMEOUT_US)
+    {
+        rumboot_printf("    Failed to waiting MKIO interrupt\n");
+        return -1;
+    }
+    rumboot_printf("    Waiting MKIO interrupt... OK\n");
+    
+    return 0;
 }
 
-void mem_cmp(uint16_t* src, uint16_t* dst, uint32_t size)
+int mem_cmp(uint16_t* src, uint16_t* dst, uint32_t size)
 {
     uint32_t i = 0;
     bool err = false;
-    rumboot_putstring("Start compare source and destination data\n");
+    rumboot_printf("    Start compare source and destination data\n");
     while (i<size)
     {
         if (*src!=*dst)
         {
-            rumboot_printf("%d. Data error\nsrc[0x%X] = 0x%X\ndst[0x%X] = 0x%X\n\n", (i / sizeof(uint16_t)), (uint32_t)src, *src, (uint32_t)dst, *dst);
+            rumboot_printf("    %d. Data error\nsrc[0x%X] = 0x%X\ndst[0x%X] = 0x%X\n\n", (i / sizeof(uint16_t)), (uint32_t)src, *src, (uint32_t)dst, *dst);
             err = true;
         }
         src++; dst++;
         i += sizeof(uint16_t);
     }
-    TEST_ASSERT(err==false, "Were data error(s). Please review log");
-    rumboot_putstring("Data OK!\n");
+    if(err != false)
+    {
+        rumboot_printf ("    Were data error(s). Please review log\n");
+        return -1;
+    }
+    rumboot_printf("    Data OK!\n");
+    
+    return 0;
 }
 
-void check_mkio_txinh_idle_via_gpio()
+int check_mkio_txinh_idle_via_gpio()
 {
     uint8_t data;
-    rumboot_putstring("Checking initial state of TXINH (HIGH) via GPIO\n");
-    gpio_set_value_by_mask(GPIO_1_BASE, GPIO_REG_MASK, gpio_pin_direction_in);
-    data = gpio_get_data(GPIO_1_BASE) & 0x0F;
-    TEST_ASSERT(data==0b00001111, "Expected all MK*_TXINH* = 0b1");
-    rumboot_putstring("Checking initial state of TXINH (HIGH) via GPIO ... OK\n");
+    rumboot_printf("    Checking initial state of TXINH (HIGH) via GPIO\n");
+    
+    //  Set GPIO as input - 0
+    // gpio_set_value_by_mask(GPIO_1_BASE, GPIO_REG_MASK, gpio_pin_direction_in);
+    iowrite32 (0, GPIO_1_BASE+GPIO_DIR);
+    //  part of address mask read bits. So plus 0x3FC
+    data = ioread32 (GPIO_1_BASE+GPIO_DATA+0x3FC);
+#ifdef PLATFORM_O32T
+    if (data != 0b11111111)
+#else
+    if ((data & 0x0F) != 0b00001111)
+#endif
+    {
+        rumboot_printf ("    Expected all MK*_TXINH* = 0b1\n");
+        return -1;
+    }
+    rumboot_printf("    Checking initial state of TXINH (HIGH) via GPIO ... OK\n");
+    
+    return 0;
 }
 
-void check_mkio_txinh_switch_via_gpio(uint8_t exp_state)
+int check_mkio_txinh_switch_via_gpio(uint8_t exp_state)
 {
 #define MKI_TX_INH_TIMEOUT_US  50
     uint8_t data;
     uint32_t _start = rumboot_platform_get_uptime();
-    rumboot_printf("Checking {MK1_TXINHB, MK1_TXINHA, MK0_TXINHB, MK0_TXINHA} switch to 0x%X\n", exp_state);
-    data = gpio_get_data(GPIO_1_BASE) & 0x0F;
+    rumboot_printf("    Checking {MK1_TXINHB, MK1_TXINHA, MK0_TXINHB, MK0_TXINHA} switch to 0x%X\n", exp_state);
+    //  part of address mask read bits. So plus 0x3FC
+#ifdef PLATFORM_O32T
+    data = ioread32 (GPIO_1_BASE+GPIO_DATA+0x3FC) & 0xFF;
+#else
+    data = ioread32 (GPIO_1_BASE+GPIO_DATA+0x3FC) & 0x0F;
+#endif
     while ((data != exp_state) && (rumboot_platform_get_uptime() - _start<MKI_TX_INH_TIMEOUT_US))
     {
-        data = gpio_get_data(GPIO_1_BASE) & 0x0F;
+        //  part of address mask read bits. So plus 0x3FC
+#ifdef PLATFORM_O32T
+        data = ioread32 (GPIO_1_BASE+GPIO_DATA+0x3FC) & 0xFF;
+#else
+        data = ioread32 (GPIO_1_BASE+GPIO_DATA+0x3FC) & 0x0F;
+#endif
     }
-    TEST_ASSERT(data==exp_state, "Expected all MK*_TXINH* = 0b0");
-    rumboot_putstring("Checking {MK1_TXINHB, MK1_TXINHA, MK0_TXINHB, MK0_TXINHA} switch ... OK\n");
+    if (data != exp_state)
+    {
+        rumboot_printf ("    Expected all MK*_TXINH* = 0b0\n");
+        return -1;
+    }
+    rumboot_printf("    Checking {MK1_TXINHB, MK1_TXINHA, MK0_TXINHB, MK0_TXINHA} switch ... OK\n");
+    
+    return 0;
 }
 
 //  Use this function if You want to restart controller in another mode (BC <-> RT)
@@ -301,58 +507,76 @@ void check_mkio_txinh_switch_via_gpio(uint8_t exp_state)
 //    It can be used in selection tests
 void turn_mkio_off (uint32_t mkio_base)
 {
-    // uint32_t rdata_0, rdata_1, rdata_2;
-    // rdata_0 = ioread32 (mkio_base + BCSL);
-    // rdata_1 = ioread32 (mkio_base + RTS);
-    // rdata_2 = ioread32 (mkio_base + BMS);
-    // rumboot_printf("MKIO 0x%X  BCSL: 0x%X  RTS: 0x%X  BMS: 0x%X\n", mkio_base, rdata_0, rdata_1, rdata_2);
-    
-    //  Turn BC off
     iowrite32 (((0x1552 << 16)|(1 << 9)|(1 << 2)), mkio_base + BCA);
     //  Turn RT off
     iowrite32 (((0x1553 << 16)&(~(1 << 0))), mkio_base + RTC);
     //  Turn BM off
     iowrite32 (((0x1543 << 16)&(~(1 << 0))), mkio_base + BMC);
-    
-    // rdata_0 = ioread32 (mkio_base + BCSL);
-    // rdata_1 = ioread32 (mkio_base + RTS);
-    // rdata_2 = ioread32 (mkio_base + BMS);
-    // rumboot_printf("MKIO 0x%X  BCSL: 0x%X  RTS: 0x%X  BMS: 0x%X\n", mkio_base, rdata_0, rdata_1, rdata_2);
 }
 
 int main(void)
 {
+    rumboot_printf("test_oi10_lscb start\n\n");
+    
+    
 #ifdef CHECK_MKIO_REGS
-    rumboot_printf("Start test_oi10_lscb. Registers access checks for MKIO module (0x%X)\n", MKIO_BASE);
-    regs_check(MKIO_BASE);
+    rumboot_printf("  Registers access checks for MKIO module (0x%X)\n", MKIO_BASE);
+    if (regs_check(MKIO_BASE) != 0)
+        return -1;
 #endif
-
+    
+    
 #ifdef CHECK_MKIO_FUNC
     struct mkio_instance mkio_cfg;
     struct rumboot_irq_entry *tbl;
     uint32_t bc_base_addr;
     uint32_t rt_base_addr;
+    
+    uint32_t write_data;
+    
+    write_data = TEST_MODE__BC_TRANSMIT;
+    
+    heap_name = TEST_BANK;
+    
+    prepare_test_data(heap_name);
 
-    prepare_test_data(TEST_BANK);
-
-    mkio_handler = false;
+    mkio_irq_found = false;
     bc_base_addr = MKIO_BASE;
-    rt_base_addr = (MKIO_BASE==MKIO0_BASE) ? MKIO1_BASE : MKIO0_BASE;
-    rumboot_printf("Start MKIO functional test\nBC: 0x%X\nRT: 0x%X\n", bc_base_addr, rt_base_addr);
+    switch (MKIO_BASE) {
+#ifdef PLATFORM_O32T
+        case MKIO0_BASE : {rt_base_addr = MKIO1_BASE; break;}
+        case MKIO1_BASE : {rt_base_addr = MKIO0_BASE; break;}
+        case MKIO2_BASE : {rt_base_addr = MKIO3_BASE; break;}
+        case MKIO3_BASE : {rt_base_addr = MKIO2_BASE; break;}
+#else
+        case MKIO0_BASE : {rt_base_addr = MKIO1_BASE; break;}
+        case MKIO1_BASE : {rt_base_addr = MKIO0_BASE; break;}
+#endif
+    }
+    rumboot_printf("  Start MKIO functional test\nBC: 0x%X\nRT: 0x%X\n", bc_base_addr, rt_base_addr);
     init_mkio_cfg(&mkio_cfg, bc_base_addr, rt_base_addr, test_mkio_data_src, test_mkio_data_dst, mkio_bc_desr, mkio_rt_descr, MKIO_TEST_DATA_SIZE, MKIO_BUS, rt_sa_tbl);
     tbl = create_irq_handlers(&mkio_cfg);
 
-    run_mkio_transfers_via_external_loopback(&mkio_cfg);
-    wait_mkio_irq();
+    if (run_mkio_transfers_via_external_loopback(&mkio_cfg, write_data) != 0)
+        if (mkio_expected_error != true)
+            return -2;
+        
+    if (wait_mkio_irq() != 0)
+        if (mkio_expected_error != true)
+            return -3;
 
     delete_irq_handlers(tbl);
 
-    mem_cmp(test_mkio_data_src, test_mkio_data_dst, MKIO_TEST_DATA_SIZE);
+    if (mem_cmp(test_mkio_data_src, test_mkio_data_dst, MKIO_TEST_DATA_SIZE) != 0)
+        if (mkio_expected_error != true)
+            return -4;
+    
+    turn_mkio_off (rt_base_addr);
+    turn_mkio_off (bc_base_addr);
 #endif
     
-    turn_mkio_off (MKIO0_BASE);
-    turn_mkio_off (MKIO1_BASE);
-
+    
+    rumboot_printf("\n\ntest_oi10_lscb finish\n");
     return 0;
 }
 

@@ -133,7 +133,138 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
   #  PREFIX iram-im0
   #)
 
-  endmacro()
+  
+    #  The one test, checking access to closed space
+    add_rumboot_target(
+      CONFIGURATION IRAM_IM1
+      FILES oi10/targets/test_oi10_lscb.c
+      CFLAGS -DPLATFORM_O32T -DMKIO_BASE=MKIO0_BASE -DCHECK_MKIO_FUNC -DMKIO_BUS=MKIO_BUS_A -DTEST_BANK="IM0" -D__FILENAME__=\"wtfisthisiwonder\"
+      IRUN_FLAGS +mkio_signal_test
+      PREFIX mkio0-im0-func-a
+    )
+
+
+
+
+    #  Set of tests for MKIO2 controller
+    #    - only one test to check B channel - its enough
+    
+    add_rumboot_target(
+      CONFIGURATION IRAM_IM1
+      FILES oi10/targets/test_oi10_lscb.c
+      CFLAGS -DPLATFORM_O32T -DMKIO_BASE=MKIO2_BASE -DCHECK_MKIO_REGS -D__FILENAME__=\"wtfisthisiwonder\"
+      PREFIX mkio2-regs
+    )
+    
+    add_rumboot_target(
+      CONFIGURATION IRAM_IM1
+      FILES oi10/targets/test_oi10_lscb.c
+      CFLAGS -DPLATFORM_O32T -DMKIO_BASE=MKIO2_BASE -DCHECK_MKIO_FUNC -DMKIO_BUS=MKIO_BUS_A -DTEST_BANK="IM1" -D__FILENAME__=\"wtfisthisiwonder\"
+      IRUN_FLAGS +mkio_signal_test
+      PREFIX mkio2-im1-func-a
+    )
+
+    add_rumboot_target(
+      CONFIGURATION IRAM_IM1
+      FILES oi10/targets/test_oi10_lscb.c
+      CFLAGS -DPLATFORM_O32T -DDATA_DIRECT_ADDRESS=0xC0060000 -DMKIO_BASE=MKIO2_BASE -DCHECK_MKIO_FUNC -DMKIO_BUS=MKIO_BUS_A -DTEST_BANK="IM1" -D__FILENAME__=\"wtfisthisiwonder\"
+      IRUN_FLAGS +mkio_signal_test
+      PREFIX mkio2-im1-func-a-dir_addr
+    )
+
+    add_rumboot_target(
+      CONFIGURATION IRAM_IM1
+      FILES oi10/targets/test_oi10_lscb.c
+      CFLAGS -DPLATFORM_O32T -DMKIO_BASE=MKIO2_BASE -DCHECK_MKIO_FUNC -DMKIO_BUS=MKIO_BUS_B -DTEST_BANK="IM1" -D__FILENAME__=\"wtfisthisiwonder\"
+      IRUN_FLAGS +mkio_signal_test
+      PREFIX mkio2-im1-func-b
+    )
+
+    add_rumboot_target(
+      CONFIGURATION IRAM_IM1
+      FILES oi10/targets/test_oi10_lscb.c
+      CFLAGS -DPLATFORM_O32T -DMKIO_BASE=MKIO2_BASE -DCHECK_MKIO_FUNC -DMKIO_BUS=MKIO_BUS_A -DTEST_BANK="IM2" -D__FILENAME__=\"wtfisthisiwonder\"
+      IRUN_FLAGS +mkio_signal_test
+      PREFIX mkio2-im2-func-a
+    )
+
+    add_rumboot_target(
+      CONFIGURATION IRAM_IM1
+      FILES oi10/targets/test_oi10_lscb.c
+      CFLAGS -DPLATFORM_O32T -DMKIO_BASE=MKIO2_BASE -DCHECK_MKIO_FUNC -DMKIO_BUS=MKIO_BUS_A -DTEST_BANK="IM3" -D__FILENAME__=\"wtfisthisiwonder\"
+      IRUN_FLAGS +mkio_signal_test
+      PREFIX mkio2-im3-func-a
+    )
+
+    add_rumboot_target(
+      CONFIGURATION IRAM_IM1
+      FILES oi10/targets/test_oi10_lscb.c
+      CFLAGS -DPLATFORM_O32T -DMKIO_BASE=MKIO2_BASE -DCHECK_MKIO_FUNC -DMKIO_BUS=MKIO_BUS_A -DTEST_BANK="SSRAM" -D__FILENAME__=\"wtfisthisiwonder\"
+      IRUN_FLAGS +mkio_signal_test
+      PREFIX mkio2-em2-func-a
+    )
+    
+    
+    #  Set of tests for MKIO3 controller
+    #    - only one test to check B channel - its enough
+    
+    add_rumboot_target(
+      CONFIGURATION IRAM_IM1
+      FILES oi10/targets/test_oi10_lscb.c
+      CFLAGS -DPLATFORM_O32T -DMKIO_BASE=MKIO3_BASE -DCHECK_MKIO_REGS -D__FILENAME__=\"wtfisthisiwonder\"
+      PREFIX mkio3-regs
+    )
+    
+    add_rumboot_target(
+      CONFIGURATION IRAM_IM1
+      FILES oi10/targets/test_oi10_lscb.c
+      CFLAGS -DPLATFORM_O32T -DMKIO_BASE=MKIO3_BASE -DCHECK_MKIO_FUNC -DMKIO_BUS=MKIO_BUS_A -DTEST_BANK="IM1" -D__FILENAME__=\"wtfisthisiwonder\"
+      IRUN_FLAGS +mkio_signal_test
+      PREFIX mkio3-im1-func-a
+    )
+
+    add_rumboot_target(
+      CONFIGURATION IRAM_IM1
+      FILES oi10/targets/test_oi10_lscb.c
+      CFLAGS -DPLATFORM_O32T -DDATA_DIRECT_ADDRESS=0xC0060000 -DMKIO_BASE=MKIO3_BASE -DCHECK_MKIO_FUNC -DMKIO_BUS=MKIO_BUS_A -DTEST_BANK="IM1" -D__FILENAME__=\"wtfisthisiwonder\"
+      IRUN_FLAGS +mkio_signal_test
+      PREFIX mkio3-im1-func-a-dir_addr
+    )
+
+    add_rumboot_target(
+      CONFIGURATION IRAM_IM1
+      FILES oi10/targets/test_oi10_lscb.c
+      CFLAGS -DPLATFORM_O32T -DMKIO_BASE=MKIO3_BASE -DCHECK_MKIO_FUNC -DMKIO_BUS=MKIO_BUS_B -DTEST_BANK="IM1" -D__FILENAME__=\"wtfisthisiwonder\"
+      IRUN_FLAGS +mkio_signal_test
+      PREFIX mkio3-im1-func-b
+    )
+
+    add_rumboot_target(
+      CONFIGURATION IRAM_IM1
+      FILES oi10/targets/test_oi10_lscb.c
+      CFLAGS -DPLATFORM_O32T -DMKIO_BASE=MKIO3_BASE -DCHECK_MKIO_FUNC -DMKIO_BUS=MKIO_BUS_A -DTEST_BANK="IM2" -D__FILENAME__=\"wtfisthisiwonder\"
+      IRUN_FLAGS +mkio_signal_test
+      PREFIX mkio3-im2-func-a
+    )
+
+    add_rumboot_target(
+      CONFIGURATION IRAM_IM1
+      FILES oi10/targets/test_oi10_lscb.c
+      CFLAGS -DPLATFORM_O32T -DMKIO_BASE=MKIO3_BASE -DCHECK_MKIO_FUNC -DMKIO_BUS=MKIO_BUS_A -DTEST_BANK="IM3" -D__FILENAME__=\"wtfisthisiwonder\"
+      IRUN_FLAGS +mkio_signal_test
+      PREFIX mkio3-im3-func-a
+    )
+
+    add_rumboot_target(
+      CONFIGURATION IRAM_IM1
+      FILES oi10/targets/test_oi10_lscb.c
+      CFLAGS -DPLATFORM_O32T -DMKIO_BASE=MKIO3_BASE -DCHECK_MKIO_FUNC -DMKIO_BUS=MKIO_BUS_A -DTEST_BANK="SSRAM" -D__FILENAME__=\"wtfisthisiwonder\"
+      IRUN_FLAGS +mkio_signal_test
+      PREFIX mkio3-em2-func-a
+    )
+    
+    
+endmacro()
 
 
 function(RUMBOOT_PLATFORM_PRINT_SUMMARY)

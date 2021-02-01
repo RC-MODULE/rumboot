@@ -2289,7 +2289,17 @@ endif()
       IRUN_FLAGS +mkio_signal_test
       PREFIX mkio1-em2-func-b
     )
-
+    
+    
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES test_oi10_lscb.c
+      CFLAGS -DMKIO_BASE=MKIO0_BASE -DTEST_MODE__BC_TRANSMIT=0 -DCHECK_MKIO_FUNC -DMKIO_BUS=MKIO_BUS_A -DTEST_BANK="SSRAM"
+      IRUN_FLAGS +mkio_signal_test
+      PREFIX mkio0-em2-func-a-read
+    )
+    
+    
 #    add_rumboot_target(
 #        CONFIGURATION IRAM
 #        FILES common/mkio/mkio0_events_timestamps_test.c
