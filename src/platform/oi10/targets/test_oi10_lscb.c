@@ -68,8 +68,8 @@
 
 #include <platform/devices.h>
 #include <platform/interrupts.h>
-#include <platform/test_assert.h>
-#include <platform/devices/emi.h>
+// #include <platform/test_assert.h>
+// #include <platform/devices/emi.h>
 
 #include <regs/regs_mkio.h>
 #include <devices/mkio.h>
