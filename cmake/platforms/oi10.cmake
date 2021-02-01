@@ -879,129 +879,340 @@ endif()
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES test_oi10_greth.c
-      CFLAGS -DGRETH_BASE=GRETH_0_BASE -DSRC_BANK=2 -DDST_BANK=2
+      CFLAGS -DGRETH_BASE=GRETH_0_BASE -DSRC_HEAP_NAME="IM1" -DDST_HEAP_NAME="IM1"
+      PREFIX greth0-im1-im1
+    )
+    
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES test_oi10_greth.c
+      CFLAGS -DGRETH_BASE=GRETH_0_BASE -DSRC_HEAP_NAME="IM2" -DDST_HEAP_NAME="IM2"
       PREFIX greth0-im2-im2
     )
 
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES test_oi10_greth.c
-      CFLAGS -DGRETH_BASE=GRETH_0_BASE -DSRC_BANK=2 -DDST_BANK=1
-      PREFIX greth0-im2-im1
+      CFLAGS -DGRETH_BASE=GRETH_0_BASE -DSRC_HEAP_NAME="SRAM0" -DDST_HEAP_NAME="SRAM0" -DINIT_EMI
+      PREFIX greth0-sram0-sram0
     )
 
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES test_oi10_greth.c
-      CFLAGS -DGRETH_BASE=GRETH_0_BASE -DSRC_BANK=2 -DDST_BANK=3
-      PREFIX greth0-im2-em2
+      CFLAGS -DGRETH_BASE=GRETH_1_BASE -DSRC_HEAP_NAME="IM1" -DDST_HEAP_NAME="IM1"
+      PREFIX greth1-im1-im1
     )
-
+    
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES test_oi10_greth.c
-      CFLAGS -DGRETH_BASE=GRETH_0_BASE -DSRC_BANK=1 -DDST_BANK=2
-      PREFIX greth0-im1-im2
-    )
-
-    add_rumboot_target(
-      CONFIGURATION IRAM
-      FILES test_oi10_greth.c
-      CFLAGS -DGRETH_BASE=GRETH_0_BASE -DSRC_BANK=1 -DDST_BANK=1
-      PREFIX greth0-im1-im1
-    )
-
-    add_rumboot_target(
-      CONFIGURATION IRAM
-      FILES test_oi10_greth.c
-      CFLAGS -DGRETH_BASE=GRETH_0_BASE -DSRC_BANK=1 -DDST_BANK=3
-      PREFIX greth0-im1-em2
-    )
-
-    add_rumboot_target(
-      CONFIGURATION IRAM
-      FILES test_oi10_greth.c
-      CFLAGS -DGRETH_BASE=GRETH_0_BASE -DSRC_BANK=3 -DDST_BANK=2
-      PREFIX greth0-em2-im2
-    )
-
-    add_rumboot_target(
-      CONFIGURATION IRAM
-      FILES test_oi10_greth.c
-      CFLAGS -DGRETH_BASE=GRETH_0_BASE -DSRC_BANK=3 -DDST_BANK=1
-      PREFIX greth0-em2-im1
-    )
-
-    add_rumboot_target(
-      CONFIGURATION IRAM
-      FILES test_oi10_greth.c
-      CFLAGS -DGRETH_BASE=GRETH_0_BASE -DSRC_BANK=3 -DDST_BANK=3
-      PREFIX greth0-em2-em2
-    )
-
-    add_rumboot_target(
-      CONFIGURATION IRAM
-      FILES test_oi10_greth.c
-      CFLAGS -DGRETH_BASE=GRETH_1_BASE -DSRC_BANK=2 -DDST_BANK=2
+      CFLAGS -DGRETH_BASE=GRETH_1_BASE -DSRC_HEAP_NAME="IM2" -DDST_HEAP_NAME="IM2"
       PREFIX greth1-im2-im2
     )
 
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES test_oi10_greth.c
-      CFLAGS -DGRETH_BASE=GRETH_1_BASE -DSRC_BANK=2 -DDST_BANK=1
-      PREFIX greth1-im2-im1
+      CFLAGS -DGRETH_BASE=GRETH_1_BASE -DSRC_HEAP_NAME="SRAM0" -DDST_HEAP_NAME="SRAM0" -DINIT_EMI
+      PREFIX greth1-sram0-sram0
     )
-
+    
+#----- TX-RX --- IM2 --- 
     add_rumboot_target(
       CONFIGURATION IRAM
-      FILES test_oi10_greth.c
-      CFLAGS -DGRETH_BASE=GRETH_1_BASE -DSRC_BANK=2 -DDST_BANK=3
-      PREFIX greth1-im2-em2
+      TESTGROUP test_greth_system
+      FILES test_o32t_greth_system.c
+      CFLAGS -DTX_GRETH_BASE=GRETH_0_BASE 
+             -DRX_GRETH_BASE=GRETH_1_BASE 
+             #-DINIT_EMI
+             -DDESC_HEAP_NAME="IM2"
+             -DSRC_HEAP_NAME="IM2"
+             -DDST_HEAP_NAME="IM2"
+             -DN_DESC=8
+             -DGRETH_TEST_DATA_LEN_BYTES=60
+      PREFIX tx0-rx1-im2-im2_n8_60B
     )
-
+    
     add_rumboot_target(
       CONFIGURATION IRAM
-      FILES test_oi10_greth.c
-      CFLAGS -DGRETH_BASE=GRETH_1_BASE -DSRC_BANK=1 -DDST_BANK=2
-      PREFIX greth1-im1-im2
+      TESTGROUP test_greth_system
+      FILES test_o32t_greth_system.c
+      CFLAGS -DTX_GRETH_BASE=GRETH_0_BASE 
+             -DRX_GRETH_BASE=GRETH_1_BASE 
+             #-DINIT_EMI
+             -DDESC_HEAP_NAME="IM2"
+             -DSRC_HEAP_NAME="IM2"
+             -DDST_HEAP_NAME="IM2"
+             -DN_DESC=8
+             -DGRETH_TEST_DATA_LEN_BYTES=65
+      PREFIX tx0-rx1-im2-im2_n8_65B
     )
-
+    
     add_rumboot_target(
       CONFIGURATION IRAM
-      FILES test_oi10_greth.c
-      CFLAGS -DGRETH_BASE=GRETH_1_BASE -DSRC_BANK=1 -DDST_BANK=1
-      PREFIX greth1-im1-im1
+      TESTGROUP test_greth_system
+      FILES test_o32t_greth_system.c
+      CFLAGS -DTX_GRETH_BASE=GRETH_0_BASE 
+             -DRX_GRETH_BASE=GRETH_1_BASE 
+             #-DINIT_EMI
+             -DDESC_HEAP_NAME="IM2"
+             -DSRC_HEAP_NAME="IM2"
+             -DDST_HEAP_NAME="IM2"
+             -DN_DESC=8
+             -DGRETH_TEST_DATA_LEN_BYTES=1500
+      PREFIX tx0-rx1-im2-im2_n8_1500B
     )
 
+#----- TX-RX --- SRAM0 ---
     add_rumboot_target(
       CONFIGURATION IRAM
-      FILES test_oi10_greth.c
-      CFLAGS -DGRETH_BASE=GRETH_1_BASE -DSRC_BANK=1 -DDST_BANK=3
-      PREFIX greth1-im1-em2
+      TESTGROUP test_greth_system
+      FILES test_o32t_greth_system.c
+      CFLAGS -DTX_GRETH_BASE=GRETH_0_BASE 
+             -DRX_GRETH_BASE=GRETH_1_BASE 
+             -DINIT_EMI
+             -DDESC_HEAP_NAME="SRAM0"
+             -DSRC_HEAP_NAME="SRAM0"
+             -DDST_HEAP_NAME="SRAM0"
+             -DN_DESC=8
+             -DGRETH_TEST_DATA_LEN_BYTES=60
+      PREFIX tx0-rx1-sram0-sram0_n8_60B
     )
-
+    
     add_rumboot_target(
       CONFIGURATION IRAM
-      FILES test_oi10_greth.c
-      CFLAGS -DGRETH_BASE=GRETH_1_BASE -DSRC_BANK=3 -DDST_BANK=2
-      PREFIX greth1-em2-im2
+      TESTGROUP test_greth_system
+      FILES test_o32t_greth_system.c
+      CFLAGS -DTX_GRETH_BASE=GRETH_0_BASE 
+             -DRX_GRETH_BASE=GRETH_1_BASE 
+             -DINIT_EMI
+             -DDESC_HEAP_NAME="SRAM0"
+             -DSRC_HEAP_NAME="SRAM0"
+             -DDST_HEAP_NAME="SRAM0"
+             -DN_DESC=8
+             -DGRETH_TEST_DATA_LEN_BYTES=65
+      PREFIX tx0-rx1-sram0-sram0_n8_65B
     )
-
+    
     add_rumboot_target(
       CONFIGURATION IRAM
-      FILES test_oi10_greth.c
-      CFLAGS -DGRETH_BASE=GRETH_1_BASE -DSRC_BANK=3 -DDST_BANK=1
-      PREFIX greth1-em2-im1
+      TESTGROUP test_greth_system
+      FILES test_o32t_greth_system.c
+      CFLAGS -DTX_GRETH_BASE=GRETH_0_BASE 
+             -DRX_GRETH_BASE=GRETH_1_BASE 
+             -DINIT_EMI
+             -DDESC_HEAP_NAME="SRAM0"
+             -DSRC_HEAP_NAME="SRAM0"
+             -DDST_HEAP_NAME="SRAM0"
+             -DN_DESC=8
+             -DGRETH_TEST_DATA_LEN_BYTES=1500
+      PREFIX tx0-rx1-sram0-sram0_n8_1500B
     )
-
+#----- TX-RX --- IM2 - SRAM0 ---
     add_rumboot_target(
       CONFIGURATION IRAM
-      FILES test_oi10_greth.c
-      CFLAGS -DGRETH_BASE=GRETH_1_BASE -DSRC_BANK=3 -DDST_BANK=3
-      PREFIX greth1-em2-em2
+      TESTGROUP test_greth_system
+      FILES test_o32t_greth_system.c
+      CFLAGS -DTX_GRETH_BASE=GRETH_0_BASE 
+             -DRX_GRETH_BASE=GRETH_1_BASE 
+             -DINIT_EMI
+             -DDESC_HEAP_NAME="SRAM0"
+             -DSRC_HEAP_NAME="IM2"
+             -DDST_HEAP_NAME="SRAM0"
+             -DN_DESC=8
+             -DGRETH_TEST_DATA_LEN_BYTES=60
+      PREFIX tx0-rx1-im2-sram0_n8_60B
     )
-    #---GRETH tests finish---
+    
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      TESTGROUP test_greth_system
+      FILES test_o32t_greth_system.c
+      CFLAGS -DTX_GRETH_BASE=GRETH_0_BASE 
+             -DRX_GRETH_BASE=GRETH_1_BASE 
+             -DINIT_EMI
+             -DDESC_HEAP_NAME="SRAM0"
+             -DSRC_HEAP_NAME="IM2"
+             -DDST_HEAP_NAME="SRAM0"
+             -DN_DESC=8
+             -DGRETH_TEST_DATA_LEN_BYTES=65
+      PREFIX tx0-rx1-im2-sram0_n8_65B
+    )
+    
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      TESTGROUP test_greth_system
+      FILES test_o32t_greth_system.c
+      CFLAGS -DTX_GRETH_BASE=GRETH_0_BASE 
+             -DRX_GRETH_BASE=GRETH_1_BASE 
+             -DINIT_EMI
+             -DDESC_HEAP_NAME="SRAM0"
+             -DSRC_HEAP_NAME="IM2"
+             -DDST_HEAP_NAME="SRAM0"
+             -DN_DESC=8
+             -DGRETH_TEST_DATA_LEN_BYTES=1500
+      PREFIX tx0-rx1-im2-sram0_n8_1500B
+    )
+#----- 2 ETH --- IM2 ---   
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      TESTGROUP test_greth_system
+      FILES test_o32t_2_greth_system.c
+      CFLAGS -DDESC_HEAP_NAME="IM2"
+             -DSRC_HEAP_NAME="IM2"
+             -DDST_HEAP_NAME="IM2"
+             -DN_DESC=8
+             -DGRETH_TEST_DATA_LEN_BYTES=60
+             -DINIT_EMI
+      PREFIX 2_greth_system-im2-im2_n8_60B
+    )
+    
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      TESTGROUP test_greth_system
+      FILES test_o32t_2_greth_system.c
+      CFLAGS -DDESC_HEAP_NAME="IM2"
+             -DSRC_HEAP_NAME="IM2"
+             -DDST_HEAP_NAME="IM2"
+             -DN_DESC=2
+             -DGRETH_TEST_DATA_LEN_BYTES=65
+             -DINIT_EMI
+      PREFIX 2_greth_system-im2-im2_n2_65B
+    )
+         
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      TESTGROUP test_greth_system
+      FILES test_o32t_2_greth_system.c
+      CFLAGS -DDESC_HEAP_NAME="IM2"
+             -DSRC_HEAP_NAME="IM2"
+             -DDST_HEAP_NAME="IM2"
+             -DN_DESC=8
+             -DGRETH_TEST_DATA_LEN_BYTES=1500
+             -DINIT_EMI
+      PREFIX 2_greth_system-im2-im2_n8_1500B
+    )
+    
+#----- 2 ETH --- SRAM0 --- 
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      TESTGROUP test_greth_system
+      FILES test_o32t_2_greth_system.c
+      CFLAGS -DDESC_HEAP_NAME="SRAM0"
+             -DSRC_HEAP_NAME="SRAM0"
+             -DDST_HEAP_NAME="SRAM0"
+             -DN_DESC=8
+             -DGRETH_TEST_DATA_LEN_BYTES=60
+             -DINIT_EMI
+      PREFIX 2_greth_system-sram0-sram0_n8_60B
+    )
+    
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      TESTGROUP test_greth_system
+      FILES test_o32t_2_greth_system.c
+      CFLAGS -DDESC_HEAP_NAME="SRAM0"
+             -DSRC_HEAP_NAME="SRAM0"
+             -DDST_HEAP_NAME="SRAM0"
+             -DN_DESC=8
+             -DGRETH_TEST_DATA_LEN_BYTES=65
+             -DINIT_EMI
+      PREFIX 2_greth_system-sram0-sram0_n8_65B
+    )
+         
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      TESTGROUP test_greth_system
+      FILES test_o32t_2_greth_system.c
+      CFLAGS -DDESC_HEAP_NAME="SRAM0"
+             -DSRC_HEAP_NAME="SRAM0"
+             -DDST_HEAP_NAME="SRAM0"
+             -DN_DESC=8
+             -DGRETH_TEST_DATA_LEN_BYTES=1500
+             -DINIT_EMI
+      PREFIX 2_greth_system-sram0-sram0_n8_1500B
+    )
+        
+#----- 2 ETH --- IM2 - SRAM0 --- 
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      TESTGROUP test_greth_system
+      FILES test_o32t_2_greth_system.c
+      CFLAGS -DDESC_HEAP_NAME="SRAM0"
+             -DSRC_HEAP_NAME="IM2"
+             -DDST_HEAP_NAME="SRAM0"
+             -DN_DESC=8
+             -DGRETH_TEST_DATA_LEN_BYTES=60
+             -DINIT_EMI
+      PREFIX 2_greth_system-desc_sram0-im2-sram0_n8_60B
+    )
+    
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      TESTGROUP test_greth_system
+      FILES test_o32t_2_greth_system.c
+      CFLAGS -DDESC_HEAP_NAME="SRAM0"
+             -DSRC_HEAP_NAME="IM2"
+             -DDST_HEAP_NAME="SRAM0"
+             -DN_DESC=8
+             -DGRETH_TEST_DATA_LEN_BYTES=65
+             -DINIT_EMI
+      PREFIX 2_greth_system-desc_sram0-im2-sram0_n8_65B
+    )
+         
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      TESTGROUP test_greth_system
+      FILES test_o32t_2_greth_system.c
+      CFLAGS -DDESC_HEAP_NAME="SRAM0"
+             -DSRC_HEAP_NAME="IM2"
+             -DDST_HEAP_NAME="SRAM0"
+             -DN_DESC=8
+             -DGRETH_TEST_DATA_LEN_BYTES=1500
+             -DINIT_EMI
+      PREFIX 2_greth_system-desc_sram0-im2-sram0_n8_1500B
+    )
+         
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      TESTGROUP test_greth_system
+      FILES test_o32t_2_greth_system.c
+      CFLAGS -DDESC_HEAP_NAME="IM2"
+             -DSRC_HEAP_NAME="IM2"
+             -DDST_HEAP_NAME="SRAM0"
+             -DN_DESC=8
+             -DGRETH_TEST_DATA_LEN_BYTES=60
+             -DINIT_EMI
+      PREFIX 2_greth_system-desc_im2-im2-sram0_n8_60B
+    )
+    
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      TESTGROUP test_greth_system
+      FILES test_o32t_2_greth_system.c
+      CFLAGS -DDESC_HEAP_NAME="IM2"
+             -DSRC_HEAP_NAME="IM2"
+             -DDST_HEAP_NAME="SRAM0"
+             -DN_DESC=8
+             -DGRETH_TEST_DATA_LEN_BYTES=65
+             -DINIT_EMI
+      PREFIX 2_greth_system-desc_im2-im2-sram0_n8_65B
+    )
+         
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      TESTGROUP test_greth_system
+      FILES test_o32t_2_greth_system.c
+      CFLAGS -DDESC_HEAP_NAME="IM2"
+             -DSRC_HEAP_NAME="IM2"
+             -DDST_HEAP_NAME="SRAM0"
+             -DN_DESC=8
+             -DGRETH_TEST_DATA_LEN_BYTES=1500
+             -DINIT_EMI
+      PREFIX 2_greth_system-desc_im2-im2-sram0_n8_1500B
+    )
+#---GRETH tests finish---
 
     add_rumboot_target(
       CONFIGURATION IRAM
@@ -2557,7 +2768,7 @@ endif()
     add_rumboot_target(
       FEATURES NOCODE
       COMBOIMAGE IM0BIN
-       LOAD IM0BIN hscb_2_3-loop_test,hscb_0_1-loop_test,simple-iram-oi10_spels_cache_hack,greth0-rx_col-test_oi10_greth,greth1-rx_col-test_oi10_greth,greth0-edcl-im2-test_oi10_greth,greth0-edcl-im1-test_oi10_greth,greth1-edcl-im2-test_oi10_greth,greth1-edcl-im1-test_oi10_greth,greth0-im2-im2-test_oi10_greth,greth0-im2-im1-test_oi10_greth,greth0-im1-im2-test_oi10_greth,greth0-im1-im1-test_oi10_greth,greth1-im2-im2-test_oi10_greth,greth1-im2-im1-test_oi10_greth,greth1-im1-im2-test_oi10_greth,greth1-im1-im1-test_oi10_greth,mkio0-regs-test_oi10_lscb,mkio1-regs-test_oi10_lscb,mkio0-im1-func-a-test_oi10_lscb,mkio1-im1-func-a-test_oi10_lscb,mkio0-im1-func-b-test_oi10_lscb,mkio1-im1-func-b-test_oi10_lscb,mkio0-im2-func-a-test_oi10_lscb,mkio1-im2-func-a-test_oi10_lscb,mkio0-im2-func-b-test_oi10_lscb,mkio1-im2-func-b-test_oi10_lscb,simple-iram-test_oi10_cpu_007,simple-iram-test_oi10_cpu_003,iss-iram-test_oi10_cpu_004,iss-iram-test_oi10_cpu_005,simple-iram-test_oi10_cpu_019,${SPELS_TEST_CHAIN},simple-iram-oi10_spels_cache_hack
+       LOAD IM0BIN hscb_2_3-loop_test,hscb_0_1-loop_test,simple-iram-oi10_spels_cache_hack,greth0-rx_col-test_oi10_greth,greth1-rx_col-test_oi10_greth,greth0-edcl-im2-test_oi10_greth,greth0-edcl-im1-test_oi10_greth,greth1-edcl-im2-test_oi10_greth,greth1-edcl-im1-test_oi10_greth,greth0-im2-im2-test_oi10_greth,greth0-im1-im1-test_oi10_greth,greth1-im2-im2-test_oi10_greth,greth1-im1-im1-test_oi10_greth,mkio0-regs-test_oi10_lscb,mkio1-regs-test_oi10_lscb,mkio0-im1-func-a-test_oi10_lscb,mkio1-im1-func-a-test_oi10_lscb,mkio0-im1-func-b-test_oi10_lscb,mkio1-im1-func-b-test_oi10_lscb,mkio0-im2-func-a-test_oi10_lscb,mkio1-im2-func-a-test_oi10_lscb,mkio0-im2-func-b-test_oi10_lscb,mkio1-im2-func-b-test_oi10_lscb,simple-iram-test_oi10_cpu_007,simple-iram-test_oi10_cpu_003,iss-iram-test_oi10_cpu_004,iss-iram-test_oi10_cpu_005,simple-iram-test_oi10_cpu_019,${SPELS_TEST_CHAIN},simple-iram-oi10_spels_cache_hack
       PREFIX spels
       TESTGROUP chains hwonly
       NAME functional-test-chain
