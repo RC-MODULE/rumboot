@@ -10,6 +10,8 @@
 #define AXI32_LEFT_CTRL_BASE    0xC0100000
 #define AXI32_RIGHT_CTRL_BASE   0xC0200000
 #define AXI64_CTRL_BASE         0xC0400000
+#define COM0_BASE           	0xC0304000
+#define COM1_BASE               0xC0305000
 #define RCM_NDMA_BASE           0xC0306000
 #define SCRB_BASE               0xC0307000
 
