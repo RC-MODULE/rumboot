@@ -1075,10 +1075,10 @@ endif()
       CFLAGS -DDESC_HEAP_NAME="IM2"
              -DSRC_HEAP_NAME="IM2"
              -DDST_HEAP_NAME="IM2"
-             -DN_DESC=2
+             -DN_DESC=8
              -DGRETH_TEST_DATA_LEN_BYTES=65
              -DINIT_EMI
-      PREFIX 2_greth_system-im2-im2_n2_65B
+      PREFIX 2_greth_system-im2-im2_n8_65B
     )
          
     add_rumboot_target(
