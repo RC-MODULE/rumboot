@@ -278,8 +278,11 @@ include_directories(src/lib/lua-5.1.5/src/)
 
 ADD_LIBRARY(lua STATIC ${LUA_FILES})
 foreach(c ${RUMBOOT_CONFIGURATIONS})
-  ADD_LIBRARY(rumboot-${c} OBJECT ${PLATFORM_SOURCES})
-  target_compile_options(rumboot-${c} PUBLIC ${CONFIGURATION_${c}_CFLAGS} ${CONFIGURATION_${c}_OPTIMIZE})
+  list (FIND CONFIGURATION_${c}_FEATURES "NOLIBS" _index)
+  if (NOT ${_index} GREATER -1)
+    ADD_LIBRARY(rumboot-${c} OBJECT ${PLATFORM_SOURCES})
+    target_compile_options(rumboot-${c} PUBLIC ${CONFIGURATION_${c}_CFLAGS} ${CONFIGURATION_${c}_OPTIMIZE})
+  endif()
 endforeach()
 
 set(RUMBOOT_PLATFORM_TARGET_DIR ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/targets/)

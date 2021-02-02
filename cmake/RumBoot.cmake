@@ -429,8 +429,13 @@ function(add_rumboot_target)
   endif()
 
 
+  list (FIND CONFIGURATION_${TARGET_CONFIGURATION}_FEATURES "NOLIBS" _index)
+  if (${_index} GREATER -1)
+    add_executable(${product} ${trg})
+  else()
+    add_executable(${product} ${trg} $<TARGET_OBJECTS:rumboot-${TARGET_CONFIGURATION}>)
+  endif()
 
-  add_executable(${product} ${trg} $<TARGET_OBJECTS:rumboot-${TARGET_CONFIGURATION}>)
   target_compile_options(${product} PUBLIC ${TARGET_CFLAGS} ${TARGET_OPTIMIZE} -DRUMBOOT_PRODUCT_NAME=\"${product}\")
 
   list (FIND CONFIGURATION_${TARGET_CONFIGURATION}_FEATURES "LUA" _index)
