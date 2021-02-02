@@ -33,15 +33,15 @@ SECTIONS
     _rumboot_platform_bss_end = .;
   } > IRAM
 
+  .stack (NOLOAD) : {
+    _rumboot_platform_stack_start = .;
+    . = . + 0x4000;
+    _rumboot_platform_stack_end = .;    
+  } > IRAM
 
   .runtime 0x5A000 (NOLOAD) : {
     rumboot_platform_runtime_info = .;
     *(.rumboot_platform_runtime_info);
   } > IRAM
 
-  .stack (NOLOAD) : {
-    _rumboot_platform_stack_start = .;
-    . = . + 0x4000;
-    _rumboot_platform_stack_end = .;    
-  } > IRAM
 }
