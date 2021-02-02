@@ -36,9 +36,13 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
   add_rumboot_target_dir(iram/
     CONFIGURATION IRAM
   )
-  add_rumboot_target_dir(coretests/
-    CONFIGURATION CORE
-  )
+
+  #Clang doesn't support legacy stuff
+  if (NOT RUMBOOT_NMC_USE_CLANG)
+    add_rumboot_target_dir(coretests/
+      CONFIGURATION CORE
+    )
+  endif()
 
 
 endmacro()
@@ -74,9 +78,12 @@ endmacro()
 
 if (NOT CROSS_COMPILE)
     set(CMAKE_C_COMPILER_WORKS 1)
-    SET(CROSS_COMPILE nmc)
-#    SET(CMAKE_C_COMPILER       /opt/llvm-nmc/usr/local/bin/clang)
-#    SET(CMAKE_CXX_COMPILER     /opt/llvm-nmc/usr/local/bin/clang++)
+    if(NOT RUMBOOT_NMC_USE_CLANG)
+      SET(CROSS_COMPILE nmc)
+    else()
+      SET(CMAKE_C_COMPILER       /opt/llvm-nmc/usr/local/bin/clang)
+      SET(CMAKE_CXX_COMPILER     /opt/llvm-nmc/usr/local/bin/clang++)
+    endif()
 endif()
 
 set(CMAKE_C_COMPILER_WORKS 1)
