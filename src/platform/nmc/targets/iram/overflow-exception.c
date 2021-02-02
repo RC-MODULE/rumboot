@@ -13,10 +13,6 @@
 #include <rumboot/platform.h>
 #include <rumboot/irq.h>
 
-void enable_all_irqs() {
-        asm("pswr set 0x1C0;\n"); /* Everything except debug */
-}
-
 void overflow() {
         uint32_t tmp = 0xb2ffffff;
         uint32_t tmp2 = 0xbfffffff;
@@ -49,9 +45,9 @@ int main(int argc, char** argv)
                         exit(1);
                 }
         }
-        rumboot_printf("Exception counter: %d\n", got_exception);
         if (!got_exception) {
                 rumboot_printf("Overflow exception did not happen\n");
+                rumboot_printf("Psst! Check your toolchain for https://jira.module.ru/jira/browse/NM-1191\n");
                 exit(1);
         }
         rumboot_printf("Looking good, yeah\n");

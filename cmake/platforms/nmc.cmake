@@ -36,7 +36,6 @@ include(${CMAKE_SOURCE_DIR}/cmake/bootrom.cmake)
 macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
   add_rumboot_target_dir(iram/
     CONFIGURATION IRAM
-    OPTIMIZE -O0
   )
 
   #Clang doesn't support legacy stuff
