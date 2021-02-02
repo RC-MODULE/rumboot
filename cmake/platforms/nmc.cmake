@@ -60,7 +60,11 @@ file(GLOB PLATFORM_SOURCES
 
 macro(RUMBOOT_PLATFORM_SET_COMPILER_FLAGS)
     SET(RUMBOOT_COMMON_FLAGS "-std=gnu99")
-    SET(CMAKE_C_FLAGS " -mnmc4-fixed ${RUMBOOT_COMMON_FLAGS} -Wall -fdata-sections -ffunction-sections -DRUMBOOT_PLATFORM_NUM_HEAPS=8")
+    SET(CMAKE_C_FLAGS " ${RUMBOOT_COMMON_FLAGS} -Wall -fdata-sections -ffunction-sections -DRUMBOOT_PLATFORM_NUM_HEAPS=8")
+    if (NOT RUMBOOT_NMC_USE_CLANG)
+      set(CMAKE_C_FLAGS "-mnmc4-fixed ${CMAKE_C_FLAGS}")
+    endif()
+    
     SET(CMAKE_ASM_FLAGS "")
     SET(CMAKE_OBJCOPY_FLAGS )
     SET(CMAKE_EXE_LINKER_FLAGS "-nostartfiles -Wl,--gc-sections")
