@@ -11,33 +11,53 @@
 #define RUMBOOT_IRQ_HIGH    (0)
 #define RUMBOOT_IRQ_LOW     (0)
 
-
-#if 0
-static inline void rumboot_arch_irq_dump_cpsr()
-{
-    int result = 0;
-    asm volatile (
-    "mrs %0, cpsr\n" : "=r" (result) );
-    rumboot_printf("cpsr == 0x%x\n", result);
-}
-
-#endif
-
-static inline uint32_t rumboot_arch_irq_enable()
-{
-    return 0;
-}
+/*
+ * General notes on NMC interrupt handling
+ * 
+ * - 'Sandwitched' groups of instructions are guaranteed to be atomic
+ * - We should not touch flag bits or configs in PSWR, compiler relies on 'em
+ * - We have to save the previous PSWR value to stack via a callrel
+ * - Debug & Overflow should be enabled explicitly, since overflow gets 
+ *   triggered every time you print are really long uin32_t
+ */
 
 
 static inline uint32_t rumboot_arch_irq_disable()
 {
-    return 0;
+    uint32_t ret = 0;
+    uint32_t new_state = 0x1f0; /* Mask ALL interrupts */
+    asm volatile(
+        "delayed callrel 2;\n"
+        "pswr clear %1;\n"
+        "nul; \n"
+        "%0 = [ar7 - 1];\n"
+        "ar7 = ar7 - 2;\n"
+        : "=r"(ret)
+        : "r"(new_state)
+        );
+    return ret & 0x1f0; /* Do not return flags & reserved bits */
 }
 
 static inline uint32_t rumboot_arch_irq_setstate(uint32_t new_state)
 {
-    return 0;
+    /* Assume interrupts were enabled before. Rare, but may happen. */
+    uint32_t prev = rumboot_arch_irq_disable();
+    /* At this point we only SET bits */ 
+    asm volatile("pswr set %0;\n"
+        :: "r"(new_state)
+        );
+    return prev;
 }
+
+static inline uint32_t rumboot_arch_irq_enable()
+{
+    /* Assume interrupts were enabled before. Rare, but may happen. */
+    uint32_t prev = rumboot_arch_irq_disable();
+    /* Enable 'em, preserving other bits */
+    asm volatile("pswr set 0xc0;\n"); /* Enable all except DEBUG & OVERFLOW */ 
+    return prev;
+}
+
 
 
 #define RUMBOOT_ATOMIC_BLOCK() \
