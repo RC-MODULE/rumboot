@@ -13,7 +13,9 @@ SECTIONS
  .ro : {
   *(.text.startup)
   *(.text)
+  *(.text.*)
   *(.rodata)
+  *(.rodata.*)
  } > ROM
 
  .preinit_array     :
