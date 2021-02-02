@@ -14,11 +14,10 @@
  **/
 
 .macro irq_vector itype,inum
-    push gr7;
-    push ar5;
     push ar6,gr6;
+    ar6=\itype;
     delayed goto irq_wrapper;
-    gr7=\inum;
+    gr6=\inum;
 .endm
 
 .section .text.init
@@ -116,13 +115,29 @@ irq_vector RUMBOOT_IRQ_TYPE_NORMAL,    51
 irq_vector RUMBOOT_IRQ_TYPE_NORMAL,    52
 irq_vector RUMBOOT_IRQ_TYPE_NORMAL,    53
 
-/* TODO: Fix wrapper */
+/**
+ * IRQ & Exception wrapper. 
+ * We'll get type in ar6, id in gr6. Controller should always be zero
+ */
+
 irq_wrapper:
+    push ar5;
+    push gr7;
+    ar5 = 0;
+    push ar5; /* Alignment */
+    push gr6; /* num */
+    push ar6; /* type */
+    push ar5; /* ctrl_id == 0 */ 
     call _rumboot_irq_core_dispatch; 
     nul;
-    pop ar6,gr6;
-    pop ar5;
+
+    /* Dismantle the args stuff*/
+    ar7 = ar7 - 4;
+
+    /* Restore old values */
     pop gr7;
+    pop ar5;
+    pop ar6,gr6;
     ireturn;
 
 the_start:
