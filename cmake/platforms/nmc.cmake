@@ -56,6 +56,7 @@ file(GLOB PLATFORM_SOURCES
   ${CMAKE_SOURCE_DIR}/src/platform/nmc/glue.c
   ${CMAKE_SOURCE_DIR}/src/platform/nmc/bootglue.c
   ${CMAKE_SOURCE_DIR}/src/arch/nmc/exception.c
+  ${CMAKE_SOURCE_DIR}/src/lib/drivers/irq-nmc.c
   )
 
 macro(RUMBOOT_PLATFORM_SET_COMPILER_FLAGS)

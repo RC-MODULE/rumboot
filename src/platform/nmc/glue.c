@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <rumboot/rumboot.h>
 #include <rumboot/printf.h>
+#include <devices/irq-nmc.h> 
 
 #ifndef CMAKE_BUILD_TYPE_DEBUG
 void  rumboot_platform_putchar(uint8_t c)
@@ -27,5 +28,5 @@ uint32_t rumboot_platform_get_uptime()
 
 void rumboot_platform_setup()
 {
-
+        rumboot_irq_register_nmc_intc_controller();
 }
