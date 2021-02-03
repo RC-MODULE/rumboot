@@ -58,7 +58,23 @@ static inline uint32_t rumboot_arch_irq_enable()
     return prev;
 }
 
+static inline void __nmc_enable_overflow_exception(int enable)
+{
+    if (enable) {
+        asm volatile("pswr set 0x100;\n"); /* Enable OVERFLOW */         
+    } else {
+        asm volatile("pswr clear 0x100;\n"); /* Enable OVERFLOW */         
+    }
+}
 
+static inline void __nmc_enable_debug_exception(int enable)
+{
+    if (enable) {
+        asm volatile("pswr set 0x20;\n"); /* Enable DEBUG */         
+    } else {
+        asm volatile("pswr clear 0x20;\n"); /* Disable debug */         
+    }
+}
 
 #define RUMBOOT_ATOMIC_BLOCK() \
      for(uint32_t old_state = rumboot_arch_irq_disable(), flag = 1; \
