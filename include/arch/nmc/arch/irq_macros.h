@@ -38,6 +38,23 @@ static inline uint32_t rumboot_arch_irq_disable()
     return ret & 0x1f0; /* Do not return flags & reserved bits */
 }
 
+static inline void __nmc_flush_pipeline()
+{
+    /* This will flush everything from the pipeline */
+    asm volatile("gr0 = gr0;\n");
+    asm volatile("gr0 = gr0;\n");
+    asm volatile("gr0 = gr0;\n");
+    asm volatile("gr0 = gr0;\n");
+    asm volatile("gr0 = gr0;\n");
+    asm volatile("gr0 = gr0;\n");
+    asm volatile("gr0 = gr0;\n");
+    asm volatile("gr0 = gr0;\n");
+    asm volatile("gr0 = gr0;\n");
+    asm volatile("gr0 = gr0;\n");
+    asm volatile("gr0 = gr0;\n");
+    asm volatile("gr0 = gr0;\n");
+};
+
 static inline uint32_t rumboot_arch_irq_setstate(uint32_t new_state)
 {
     /* Assume interrupts were enabled before. Rare, but may happen. */
@@ -46,6 +63,7 @@ static inline uint32_t rumboot_arch_irq_setstate(uint32_t new_state)
     asm volatile("pswr set %0;\n"
         :: "r"(new_state)
         );
+    __nmc_flush_pipeline();
     return prev;
 }
 
@@ -55,6 +73,10 @@ static inline uint32_t rumboot_arch_irq_enable()
     uint32_t prev = rumboot_arch_irq_disable();
     /* Enable 'em, preserving other bits */
     asm volatile("pswr set 0xc0;\n"); /* Enable all except DEBUG & OVERFLOW */ 
+    /* Flush the pipeline. If any IRQ was pending, it will arrive here, 
+     * BEFORE user code is reached 
+     */
+    __nmc_flush_pipeline();
     return prev;
 }
 
