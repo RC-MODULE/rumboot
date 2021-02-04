@@ -89,7 +89,7 @@ static int  __attribute__((no_instrument_function)) tx_fifo_ready(uint32_t base_
         return -1;
 }
 
-
+#ifndef CMAKE_BUILD_TYPE_DEBUG
 void  __attribute__((no_instrument_function)) rumboot_platform_putchar(uint8_t c)
 {
         while (tx_fifo_ready(UART0_BASE));;
@@ -108,7 +108,7 @@ int rumboot_platform_getchar(uint32_t timeout_us)
         }
         return -1;
 }
-
+#endif
 
 void rumboot_platform_irq_init()
 {
