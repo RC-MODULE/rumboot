@@ -26,7 +26,13 @@ uint32_t rumboot_platform_get_uptime()
         return 0;
 }
 
+extern char rumboot_IRAM_heap_start;
+extern char rumboot_IRAM_heap_end;
+
 void rumboot_platform_setup()
 {
         rumboot_irq_register_nmc_intc_controller();
+        rumboot_malloc_register_heap("IM",
+                                     &rumboot_IRAM_heap_start, &rumboot_IRAM_heap_end);
+
 }

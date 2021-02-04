@@ -33,6 +33,12 @@ SECTIONS
     _rumboot_platform_bss_end = .;
   } > IRAM
 
+  .heap (NOLOAD) : {
+    _rumboot_IRAM_heap_start = .;
+    . = . + 0x1000;
+    _rumboot_IRAM_heap_end = .;
+  }
+
   .stack (NOLOAD) : {
     _rumboot_platform_stack_start = .;
     . = . + 0x4000;
