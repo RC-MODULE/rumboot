@@ -155,7 +155,7 @@ void rumboot_irq_table_activate(struct rumboot_irq_entry *tbl)
 	}
 }
 
-void rumboot_irq_swint(uint32_t irq)
+void rumboot_irq_swint(int irq)
 {
 	const struct rumboot_irq_controller *ctl = rumboot_irq_controller_by_irq(irq);
 	irq -= ctl->first;
@@ -254,7 +254,7 @@ void rumboot_irq_set_exception_handler(void (*handler)(int id, const char *name)
 	}
 }
 
-void rumboot_irq_core_dispatch(uint32_t ctrl, uint32_t type, uint32_t id)
+void rumboot_irq_core_dispatch(uint32_t ctrl, uint32_t type, int id)
 {
 	const struct rumboot_irq_controller *ctl = rumboot_irq_controller_by_id(ctrl);
 	int prevtype;
@@ -266,7 +266,7 @@ void rumboot_irq_core_dispatch(uint32_t ctrl, uint32_t type, uint32_t id)
 
 	switch (type) {
 	case RUMBOOT_IRQ_TYPE_NORMAL:
-		id = ctl->begin(ctl);
+		id = ctl->begin(ctl, id);
 		process_irq(id);
 		ctl->end(ctl, id);
 		break;

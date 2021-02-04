@@ -45,6 +45,33 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     )
   endif()
 
+  add_rumboot_target(
+    CONFIGURATION IRAM
+    CFLAGS -DUSE_SWINT=30
+    FILES common/irq/irq-atomics.c
+    PREFIX "iram-irqlo"
+)
+
+add_rumboot_target(
+    CONFIGURATION IRAM
+    CFLAGS -DUSE_SWINT=30
+    FILES common/irq/irq-defhandler.c
+    PREFIX "iram-irqlo"
+)
+
+add_rumboot_target(
+  CONFIGURATION IRAM
+  CFLAGS -DUSE_SWINT=41
+  FILES common/irq/irq-atomics.c
+  PREFIX "iram-irqhi"
+)
+
+add_rumboot_target(
+  CONFIGURATION IRAM
+  CFLAGS -DUSE_SWINT=41
+  FILES common/irq/irq-defhandler.c
+  PREFIX "iram-irqhi"
+)
 
 endmacro()
 

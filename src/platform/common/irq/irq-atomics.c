@@ -21,7 +21,11 @@ static void handler(int irq, void *arg)
 static void delay(uint32_t deadline)
 {
 	while (deadline--) {
-		asm volatile ("nop");
+			#ifndef __NM__
+			asm volatile ("nop");
+			#else
+			asm volatile ("gr0 = gr0;");
+			#endif
 	}
 }
 
@@ -40,7 +44,11 @@ static bool test_swirq_simple(uint32_t arg)
 		rumboot_irq_swint(USE_SWINT);
 
 		while (deadline-- && (done == 0)) {
+			#ifndef __NM__
 			asm volatile ("nop");
+			#else
+			asm volatile ("gr0 = gr0;");
+			#endif
 		}
 
 		if (deadline <= 0)

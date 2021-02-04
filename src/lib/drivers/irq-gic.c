@@ -37,7 +37,7 @@ static int gic_init(const struct rumboot_irq_controller *dev)
 	return 0;
 }
 
-static uint32_t gic_begin(const struct rumboot_irq_controller *dev)
+static uint32_t gic_begin(const struct rumboot_irq_controller *dev, int id)
 {
 	uint32_t irq = gic_cpuif_read(dev, GICC_REG_IAR);
 
@@ -47,7 +47,7 @@ static uint32_t gic_begin(const struct rumboot_irq_controller *dev)
 	return irq;
 }
 
-static void gic_end(const struct rumboot_irq_controller *dev, uint32_t irq)
+static void gic_end(const struct rumboot_irq_controller *dev, int irq)
 {
 	gic_cpuif_write(dev, GICC_REG_EOIR, irq);
 
@@ -88,7 +88,7 @@ static void gic_configure(const struct rumboot_irq_controller *dev, int irq, uin
 	gic_dist_write(dev, GICD_REG_CTLR, 1);
 }
 
-static void gic_swint(const struct rumboot_irq_controller *dev, uint32_t irq)
+static void gic_swint(const struct rumboot_irq_controller *dev, int irq)
 {
 	if (irq == 0) {
 		iowrite32(GIC_GENSWINT0, (dev->base0 + GICD_REG_SGIR));

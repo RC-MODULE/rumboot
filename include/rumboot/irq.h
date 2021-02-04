@@ -141,12 +141,14 @@ static inline uint32_t rumboot_arch_irq_setstate(uint32_t new_state)
         /**
          * This function is called by the IRQ subsystem when starting to
          * service the IRQ routine. The function should return the current pending
-         * irq number.
+         * irq number. It can accept arbitrary id from underlying assembly code as
+         * a parameter and either return it, or change in the driver code.
          *
          * @param dev      The irq controller device
+         * @param id       The driver-specific id. Controller driver may override it
          * @return IRQ ID that is currently being serviced
          */
-    	uint32_t	(*begin)(const struct rumboot_irq_controller *dev);
+    	uint32_t	(*begin)(const struct rumboot_irq_controller *dev, int id);
         /**
          * This function is called by the IRQ subsystem when the subsystem is done
          * servicing the current interrupt.
@@ -154,14 +156,14 @@ static inline uint32_t rumboot_arch_irq_setstate(uint32_t new_state)
          * @param dev      The irq controller device
          * @param irq id of the irq that is done being serviced
          */
-    	void		(*end)(const struct rumboot_irq_controller *dev, uint32_t irq);
+    	void		(*end)(const struct rumboot_irq_controller *dev, int irq);
 
         /**
          * Generate a software interrupt.
          *
          * @param generate_swint [description]
          */
-    	void		(*generate_swint)(const struct rumboot_irq_controller *dev, uint32_t irq);
+    	void		(*generate_swint)(const struct rumboot_irq_controller *dev, int irq);
 
         /**
          * Deprecated. Do not use.
@@ -173,7 +175,7 @@ static inline uint32_t rumboot_arch_irq_setstate(uint32_t new_state)
 	    void		(*slave_restore)(void);
 
 
-	    void		(*adjust_priority)(const struct rumboot_irq_controller *dev, uint32_t irq, int priority);
+	    void		(*adjust_priority)(const struct rumboot_irq_controller *dev, int irq, int priority);
         /**
          * Maximum possible interrupt priority supported by this controller
          */
@@ -281,7 +283,7 @@ static inline uint32_t rumboot_arch_irq_setstate(uint32_t new_state)
      *
      * @param irq The IRQ line to trigger
      */
-     void rumboot_irq_swint(uint32_t irq);
+     void rumboot_irq_swint(int irq);
 
     /**
      * Set a default IRQ handler. This will be called when an interrupt
@@ -445,7 +447,7 @@ static inline uint32_t rumboot_arch_irq_setstate(uint32_t new_state)
      * @param type RUMBOOT_IRQ_TYPE_NORMAL or RUMBOOT_IRQ_TYPE_EXCEPTION
      * @param id   RUMBOOT_IRQ_IRQ, RUMBOOT_IRQ_FIQ, etc.
      */
-    void rumboot_irq_core_dispatch(uint32_t ctrl, uint32_t type, uint32_t id);
+    void rumboot_irq_core_dispatch(uint32_t ctrl, uint32_t type, int id);
 
     /**
      * ARCH-specific glue: Disable CPU IRQ handling.
