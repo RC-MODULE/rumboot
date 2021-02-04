@@ -144,6 +144,20 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     )
 
 
+    add_rumboot_target(
+        CONFIGURATION IRAM_IM1
+        FILES test_oi10_lscb_polarity.c
+        CFLAGS -DPLATFORM_O32T -DMKIO_BASE=MKIO0_BASE -DMKIO_BUS=MKIO_BUS_A -DTEST_BANK="IM1" -D__FILENAME__=\"wtfisthisiwonder\"
+        PREFIX mkio0-im1-a
+    )
+
+
+    add_rumboot_target(
+        CONFIGURATION IRAM_IM1
+        FILES test_oi10_lscb_1553_functionality.c
+        CFLAGS -DPLATFORM_O32T -DMKIO_BASE=MKIO0_BASE -DMKIO_BUS=MKIO_BUS_A -DTEST_BANK="IM1" -D__FILENAME__=\"wtfisthisiwonder\"
+        PREFIX mkio0-im1-a
+    )
 
 
     #  Set of tests for MKIO2 controller

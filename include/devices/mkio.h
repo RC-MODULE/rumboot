@@ -14,8 +14,29 @@
  *
  *  @{
  */
-
-
+    
+    /**
+     * Standard 1553 mode codes for control transactions
+     * Used in Gaisler MKIO controller
+     */
+    enum mkio_mode_code {
+        DYNAMIC_BUS_CONTROL                          = 0b00000,
+        SYNCHRONIZE                                  = 0b00001,
+        TRANSMIT_STATUS_WORD                         = 0b00010,
+        INITIATE_SELF_TEST                           = 0b00011,
+        TRANSMITTER_SHUTDOWN                         = 0b00100,
+        OVERRIDE_TRANSMITTER_SHUTDOWN                = 0b00101,
+        INHIBIT_TERMINAL_FLAG_BIT                    = 0b00110,
+        OVERRIDE_INHIBIT_TERMINAL_FLAG_BIT           = 0b00111,
+        RESET_REMOTE_TERMINAL                        = 0b01000,
+        TRANSMIT_VECTOR_WORD                         = 0b10000,
+        SYNCHRONIZE_DATA                             = 0b10001,
+        TRANSMIT_LAST_COMMAND                        = 0b10010,
+        TRANSMIT_BIT_WORD                            = 0b10011,
+        SELECTED_TRANSMITTER_SHUTDOWN                = 0b10100,
+        OVERRIDE_SELECTED_TRANSMITTER_SHUTDOWN       = 0b10101,
+    };
+    
     /**
      * This function is for checking, that MKIO is present in current project in that base address.
      * It checks MKIO configuration, presence of BC, RT and BM blocks

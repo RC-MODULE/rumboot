@@ -362,6 +362,57 @@ void mkio_prepare_bc_descr(uint32_t base_addr, uint32_t* data_ptr, uint32_t size
     iowrite32(rumboot_virt_to_dma(descr_ptr), base_addr + BCTNP);
 }
 
+void mkio_prepare_control_bc_descr(uint32_t base_addr, enum mkio_mode_code mode_code, struct mkio_bc_descriptor volatile * descr_ptr, mkio_bus_t bus, bool broadcast, uint32_t* data_ptr)
+{
+    //  Suspend normally (SUSN) - Always suspends after transfer
+    uint32_t SUSN = 1;
+    //  IRQ after transfer on Error (IRQE_)
+    uint32_t IRQE_ = 1;
+    //  IRQ normally (IRQN) - Always interrupts after transfer
+    uint32_t IRQN = 1;
+
+    //  RT Address (RTAD1)
+    //  Standartized behaviour
+    uint32_t RTAD1 = 0x00;
+    if (broadcast)
+        RTAD1 = 0b11111;
+        
+    //  RT Subaddress (RTSA1)
+    //  Must be 0b00000 or 0b11111 to indicate control transaction
+    uint32_t RTSA1 = 0b00000;
+    
+    //  0 - transmit (BC->RT), 1 - receive (RT->BC)
+    //  TR has standartized values for control transaction type
+    uint32_t TR = 1;
+    if (
+        (mode_code == SYNCHRONIZE_DATA                      ) ||
+        (mode_code == SELECTED_TRANSMITTER_SHUTDOWN         ) ||
+        (mode_code == OVERRIDE_SELECTED_TRANSMITTER_SHUTDOWN)
+        )
+        TR = 0;
+
+    uint32_t unused = 0xDEADBEEF;
+
+    uint32_t bc_descriptor_end_of_list = 0x800000FF;
+
+    rumboot_printf("Setting control BC descr: 0x%X / 0b%B\n", rumboot_virt_to_dma(descr_ptr), mode_code);
+    descr_ptr->ctrl_word_0      = (0x00000000 | (IRQE_ << 28) | (IRQN << 27) | (SUSN << 25));
+    descr_ptr->ctrl_word_1      = (0x00000000 | (bus << 30) | (RTAD1 << 11) | (TR << 10) | (RTSA1 << 5) | (mode_code << 0));
+    //  Some control transactions need no data. Set pointer anyway, it wont be read and can have any value.
+    descr_ptr->data_pointer     = (rumboot_virt_to_dma(data_ptr));
+    descr_ptr->result_word      = 0xFFFFFFFF ;
+    descr_ptr->condition_word   = (bc_descriptor_end_of_list);
+    descr_ptr->branch_address   = unused;
+    descr_ptr->reserved_0       = unused;
+    descr_ptr->reserved_1       = unused;
+
+    rumboot_printf("ctrl_word_0:  0x%X\n", descr_ptr->ctrl_word_0);
+    rumboot_printf("ctrl_word_1:  0x%X\n", descr_ptr->ctrl_word_1);
+    rumboot_printf("data_pointer: 0x%X\n", descr_ptr->data_pointer);
+
+    iowrite32(rumboot_virt_to_dma(descr_ptr), base_addr + BCTNP);
+}
+
 void mkio_bc_run_schedule (uint32_t base_address)
 {
     //  Safety code (BCKEY) - Must be 0x1552 when writing, otherwise register write is ignored
@@ -483,6 +534,14 @@ static mkio_bc_schedule_state_t mkio_get_schedule_state(uint32_t base_address)
 {
     return (mkio_bc_schedule_state_t)( mkio_get_bc_status(base_address) & MKIO_BCSL_SCST_mask);
 }
+
+// void mkio_enable_all_events (uint32_t base_address, uint32_t* log_ring_buffer_ptr, uint32_t log_ring_buffer_size)
+// {
+    // iowrite32 (, base_address + RTMCC);
+    // iowrite32 (, base_address + RTELM);
+    // iowrite32 (, base_address + RTELP);
+// }
+
 
 bool mkio_wait_bc_schedule_state(uint32_t base_address, mkio_bc_schedule_state_t sched_state)
 {
