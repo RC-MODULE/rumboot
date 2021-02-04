@@ -90,6 +90,7 @@
 #define XUARTPS_MR_CLKS_REF_CLK 0       /*  0: clock source is uart_ref_clk*/
 
 
+#ifndef CMAKE_BUILD_TYPE_DEBUG
 void  rumboot_platform_putchar(uint8_t c)
 {
         while ((ioread32(UART1_BASE + XUART_CHANNEL_STS_REG0) & UART_STS_TXFULL) > 0);
@@ -100,7 +101,7 @@ int rumboot_platform_getchar(uint32_t timeout_us)
 {
         return 0;
 }
-
+#endif
 
 #define SCUTIMER_CONTROL_PRESCALER_MASK	0x0000FF00 /* Prescaler */
 #define SCUTIMER_CONTROL_PRESCALER_SHIFT	8
