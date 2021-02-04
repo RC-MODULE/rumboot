@@ -13,6 +13,7 @@ SECTIONS
  .ro : {
   *(.text.startup)
   *(.text)
+  *(.text.*)
   *(.rodata)
  } > ROM
 
