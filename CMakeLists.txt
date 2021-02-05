@@ -245,11 +245,7 @@ if (NOT RUMBOOT_PLATFORM STREQUAL "native")
     endif()
     ADD_SOURCE("src/lib/eventsystem/io-eventchannel.c")
     ADD_SOURCE("src/lib/eventsystem/wrappers-simulation.c")
-
-    #FixMe: This should be feature of target platform.
-    if (NOT RUMBOOT_PLATFORM STREQUAL "nmc")
-      set(EXTRA_COMMON_FLAGS "${EXTRA_COMMON_FLAGS} -DRUMBOOT_PRINTF_ACCEL")
-    endif()
+    set(EXTRA_COMMON_FLAGS "${EXTRA_COMMON_FLAGS} -DRUMBOOT_PRINTF_ACCEL")
   elseif(CMAKE_BUILD_TYPE STREQUAL "Production")
     ADD_SOURCE(src/lib/eventsystem/eventchannel-memory.c)
     ADD_SOURCE("src/lib/eventsystem/wrappers-simulation.c")
