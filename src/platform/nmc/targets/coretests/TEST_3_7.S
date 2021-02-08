@@ -9,12 +9,12 @@ data data_test
 // The control value dimension 
 contr_result : long[46] = (
   //  Data    Address
-0000_8000_0001_0000hl,
-  0000_8000_0000_AAAAhl,
+  0000_8000_0001_0000hl,
+  0001_0000_0000_AAAAhl,
   0000_AAAA_0000_7FFEhl,
   0000_7FFE_0001_5550hl,
-  0001_5550_0001_7FFFhl,
-  0001_7FFF_0001_7FFChl,
+  0001_5550_0001_7FF0hl,
+  0001_7FF0_0001_7FFChl,
   0001_7FFC_0001_5554hl,
   0001_5554_0001_5AA9hl,
   0001_0000_0001_5553hl,
@@ -24,14 +24,14 @@ contr_result : long[46] = (
   0001_7FF0_0001_7879hl,
   0001_7FFC_0001_7785hl,
   0001_5554_0001_3C3Dhl,
-  0001_5553_0001_C3C1hl,
+  0001_5553_0001_63C1hl,
   0001_2AA8_0001_0F05hl,
   0001_1E1D_0000_F0F9hl,
   0001_71E2_0000_F005hl,
   0001_7879_0001_0FF9hl,
   0001_6F7D_0001_0770hl,
   0000_FBFB_0001_7870hl,
-  0001_BFBD_0001_7874hl,
+  0001_5FBD_0001_7874hl,
   0000_FEF3_0001_078Ehl,
  0FFFF_EFED_0001_008Ehl,
  0FFFF_EFFB_0001_7F7Fhl,
@@ -46,12 +46,12 @@ contr_result : long[46] = (
   0000_0005_0001_0006hl,
   0000_FFF5_0000_9007hl,
   0000_8006_0000_9006hl,
-  0009_FF70_0001_0017hl,
+  0000_FF70_0001_0017hl,
   0000_0006_0001_0016hl,
   0000_0808_0000_8005hl,
   0000_8003_0000_8004hl,
   0000_4042_0001_7877hl,
-  0007_F874_0001_7876hl,
+  0001_7874_0001_7876hl,
   0000_0404_0001_178Fhl,
   0001_078E_0001_178Ehl,
   0000_1012_0001_018Fhl,
@@ -82,7 +82,7 @@ gr0 = 0_8000h;
 // 2-th step
 ar1 = 0_5555h;
 gr1 = 0_5555h;
-[ar1 +=	gr1] = ar0;											// Write 0_8000h on address 0_AAAAh
+[ar1 +=	gr1] = ar0;											// Write 1_0000h on address 0_AAAAh
 
 //3-th step
 ar2 = 0_3FFFh;
@@ -150,9 +150,9 @@ gr5 =  0_4042h;
 [ar5 +	gr5] = ar6;											// Write 1_5554h on address 1_3C3Dh
 
 //16-th step
-ar6 = 1_BFBDh;
+ar6 = 1_5FBDh;
 gr6 = 0_0404h;
-[ar6 +	gr6] = ar7;											// Write 1_5553h on address 1_C3C1h
+[ar6 +	gr6] = ar7;											// Write 1_5553h on address 1_63C1h
 
 //17-th step
 ar7 =  0_FEF3h;
@@ -185,7 +185,7 @@ ar4 = 0000_0080h;
 
 //23-th step
 ar5 =   0_0880h;
-[ar5 +=	1_6FF4h] = ar6;							    // Write 1_BFBDh on address 1_7874h
+[ar5 +=	1_6FF4h] = ar6;							    // Write 1_5FBDh on address 1_7874h
 
 //24-th step
 ar6 =   0_100Fh;
