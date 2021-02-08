@@ -210,10 +210,9 @@ class CheckoutHelper {
 }
 ////////////////////////////////////////////////////////////////////
 def config=[:]
-def simnode="trollblade"
-def hwnode="trollblade"
-def platforms = ["native", "basis", "bbp3", "oi10", "mm7705", "zed"]
-def prototypes = ["mm7705", "zed"]
+def simnode="elvenblade"
+def hwnode="elvenblade"
+def platforms = ["native", "basis", "bbp3", "oi10", "mm7705", "zed", "nmc", "scr1"]
 def coverage = true
 def local = false
 
@@ -278,12 +277,6 @@ platforms.each {
             print("Enabling coverage for " + plat)
             builds[plat].enableCoverage();
         }
-}
-
-prototypes.each {
-    plat ->
-            builds[plat].dropBuild("Debug")
-            builds[plat].dropBuild("Production")    
 }
 
 config.each { 
