@@ -153,27 +153,29 @@ class RumBootProject {
                         }
 
 
-                        steps.node(node) {
-                            steps.stage(build.workdir + ": Configure") {
-                                def tmp = this.options
-                                tmp["CMAKE_BUILD_TYPE"]=type
-                                tmp["RUMBOOT_PLATFORM"]=platform
-                                build.configure(tmp)
-                            }
-
-                            steps.stage(build.workdir + ": Build") {
-                                build.build()
-                            }
-
-                            if (platform == "native" || type == "PostProduction") {
-                                steps.stage(build.workdir + ": Test") {
-                                    build.test(label)
+                        steps.stage(platform + " / " + type) {
+                            steps.node(node) {
+                                steps.stage(build.workdir + ": Configure") {
+                                    def tmp = this.options
+                                    tmp["CMAKE_BUILD_TYPE"]=type
+                                    tmp["RUMBOOT_PLATFORM"]=platform
+                                    build.configure(tmp)
                                 }
-                            }
 
-                            if (this.options["RUMBOOT_COVERAGE"]=="Yes") {
-                                steps.stage(build.workdir + ": Generate Coverage") {
-                                    build.coverage()
+                                steps.stage(build.workdir + ": Build") {
+                                    build.build()
+                                }
+
+                                if (platform == "native" || type == "PostProduction") {
+                                    steps.stage(build.workdir + ": Test") {
+                                        build.test(label)
+                                    }
+                                }
+
+                                if (this.options["RUMBOOT_COVERAGE"]=="Yes") {
+                                    steps.stage(build.workdir + ": Generate Coverage") {
+                                        build.coverage()
+                                    }
                                 }
                             }
                         }
