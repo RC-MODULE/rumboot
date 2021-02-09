@@ -215,7 +215,7 @@ def config=[:]
 def simnode="sim"
 def hwnode="sim"
 def platforms = ["native", "basis", "bbp3", "oi10", "mm7705", "zed", "nmc", "scr1"]
-def coverage = true
+def coverage = false
 def local = false
 
 
