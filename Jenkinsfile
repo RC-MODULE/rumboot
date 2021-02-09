@@ -212,8 +212,8 @@ class CheckoutHelper {
 }
 ////////////////////////////////////////////////////////////////////
 def config=[:]
-def simnode="elvenblade"
-def hwnode="elvenblade"
+def simnode="sim"
+def hwnode="sim"
 def platforms = ["native", "basis", "bbp3", "oi10", "mm7705", "zed", "nmc", "scr1"]
 def coverage = true
 def local = false
