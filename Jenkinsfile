@@ -173,16 +173,17 @@ class RumBootProject {
                                 build.coverage()
                             }
                             steps.updateGitlabCommitStatus name: tg, state: 'success'
-                                    } catch (Exception e) {
-                            steps.updateGitlabCommitStatus name: tg, state: 'failed'
-                            error('Exception while building project: ' + e.toString())
+                            } catch (Exception e) {
+                                steps.updateGitlabCommitStatus name: tg, state: 'failed'
+                                error('Exception while building project: ' + e.toString())
                         }
                     }
                 }
         }
-
+        println(stages)
+        println(magicks)
         magicks[platform] = steps.stage(platform) {
-                    steps.parallel stages
+                    steps.parallel(stages)
         }
 
         return magicks
@@ -298,7 +299,7 @@ def tasks = [:]
 builds.each {
     plat,build ->
         if (plat != 'native') {
-        tasks += build.tasks(cluster_node, optane_node)
+            tasks += build.tasks(cluster_node, optane_node)
         }
 }
 println('-------------------')
