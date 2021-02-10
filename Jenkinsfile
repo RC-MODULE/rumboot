@@ -108,7 +108,7 @@ class RumBootProject {
         build_types.each {
             tp -> 
                 //tag(tp) gives: expected to call RumBootProject.<init> but wound up catching RumBootProject.tag
-                tg = platform + "-" + tp 
+                def tg = platform + "-" + tp 
                 builds[tp] = new CMakeProject(steps, srcdir + "/" + tg, srcdir)
                 steps.updateGitlabCommitStatus name: tg, state: 'pending'
         }
@@ -156,7 +156,7 @@ class RumBootProject {
                         if (platform != "native" && type == "PostProduction") {
                             node = hwnode
                         }
-                        tg = tag(type)
+                        def tg = tag(type)
                         steps.stage(tg) {
                             steps.node(node) {
                                 steps.updateGitlabCommitStatus name: tg, state: 'running'
