@@ -300,12 +300,11 @@ def tasks = [:]
 builds.each {
     plat,build ->
         if (plat != "native") {
-            tasks += build.tasks(cluster_node, optane_node)
+            tasks += parallel build.tasks(cluster_node, optane_node)
         }
 }
 
 stage("Build all platforms") {
-        println(tasks)
         parallel tasks
 }
 
