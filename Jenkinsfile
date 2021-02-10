@@ -300,7 +300,7 @@ def tasks = [:]
 builds.each {
     plat,build ->
         if (plat != "native") {
-            tasks += parallel build.tasks(cluster_node, optane_node)
+            tasks += parallel(build.tasks(cluster_node, optane_node))
         }
 }
 
