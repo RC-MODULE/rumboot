@@ -98,7 +98,6 @@ class RumBootProject {
     def build_types = ["Debug", "Production", "PostProduction"]
     def builds = [:]
     def platform
-    def tag
     def options = [ RUMBOOT_DISABLE_TESTING: "Yes", RUMBOOT_COVERAGE: "No" ]
     def steps
     def label = "full"
@@ -108,10 +107,14 @@ class RumBootProject {
         this.steps = steps
         build_types.each {
             tp -> 
-                tag = platform + "-" + tp
-                builds[tp] = new CMakeProject(steps, srcdir + "/" + tag, srcdir)
-                steps.updateGitlabCommitStatus name: tag, state: 'pending'
+                tg = tag(tp)
+                builds[tp] = new CMakeProject(steps, srcdir + "/" + tg, srcdir)
+                steps.updateGitlabCommitStatus name: tg, state: 'pending'
         }
+    }
+
+    def tag(type) {
+        return platform + "-" + type;
     }
 
     def dropBuild(type) {
@@ -152,10 +155,10 @@ class RumBootProject {
                         if (platform != "native" && type == "PostProduction") {
                             node = hwnode
                         }
-
-                        steps.stage(tag) {
+                        tg = tag(type)
+                        steps.stage(tg) {
                             steps.node(node) {
-                                steps.updateGitlabCommitStatus name: tag, state: 'running'
+                                steps.updateGitlabCommitStatus name: tg, state: 'running'
                                 try {
                                     def tmp = this.options
                                     tmp["CMAKE_BUILD_TYPE"]=type
@@ -170,9 +173,9 @@ class RumBootProject {
                                     if (this.options["RUMBOOT_COVERAGE"]=="Yes") {
                                         build.coverage()
                                     }
-                                    steps.updateGitlabCommitStatus name: tag, state: 'success'
+                                    steps.updateGitlabCommitStatus name: tg, state: 'success'
                                 } catch (Exception e) {
-                                    steps.updateGitlabCommitStatus name: tag, state: 'failed'
+                                    steps.updateGitlabCommitStatus name: tg, state: 'failed'
                                     error("Exception while building project: " + e.toString())
                                 }
                             }
