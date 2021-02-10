@@ -148,7 +148,7 @@ class RumBootProject {
         def magicks = [:]
         magicks[platform] = {
             steps.stage(platform) {
-                steps.parallel builds.each {
+                builds.each {
                     type,build -> 
                         def node = simnode
                         /* Node selection. native doesn't need hardware */
@@ -305,14 +305,8 @@ builds.each {
 }
 
 stage("Build all platforms") {
-    if (true) {
+        println(tasks)
         parallel tasks
-    } else { 
-        tasks.each { 
-        k, task ->
-            task()
-        }
-    }
 }
 
 stage("Analysis") {
