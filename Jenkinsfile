@@ -157,25 +157,25 @@ class RumBootProject {
                             steps.node(node) {
                                 steps.updateGitlabCommitStatus name: the_name, state: 'running'
                                 try {
-                                    steps.stage(build.workdir + ": Configure") {
+                                    steps.stage(the_name + ": Configure") {
                                         def tmp = this.options
                                         tmp["CMAKE_BUILD_TYPE"]=type
                                         tmp["RUMBOOT_PLATFORM"]=platform
                                         build.configure(tmp)
                                     }
 
-                                    steps.stage(build.workdir + ": Build") {
+                                    steps.stage(the_name + ": Build") {
                                         build.build()
                                     }
 
                                     if (platform == "native" || type == "PostProduction") {
-                                        steps.stage(build.workdir + ": Test") {
+                                        steps.stage(the_name + ": Test") {
                                             build.test(label)
                                         }
                                     }
 
                                     if (this.options["RUMBOOT_COVERAGE"]=="Yes") {
-                                        steps.stage(build.workdir + ": Generate Coverage") {
+                                        steps.stage(the_name + ": Generate Coverage") {
                                             build.coverage()
                                         }
                                     }
