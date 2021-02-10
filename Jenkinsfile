@@ -144,17 +144,17 @@ class RumBootProject {
         return fl
     }
 
-    def tasks(simnode, hwnode) {
+    def tasks(cluster_node, optane_node) {
         def magicks = [:]
         magicks[platform] = {
             steps.stage(platform) {
                 builds.each {
                     type,build -> 
-                        def node = simnode
+                        def node = cluster_node
                         /* Node selection. native doesn't need hardware */
 
                         if (platform != "native" && type == "PostProduction") {
-                            node = hwnode
+                            node = optane_node
                         }
                         def tg = tag(type)
                         steps.stage(tg) {
@@ -214,8 +214,8 @@ class CheckoutHelper {
 }
 ////////////////////////////////////////////////////////////////////
 def config=[:]
-def simnode="sim"
-def hwnode="sim"
+def cluster_node="sim"
+def optane_node="yacc"
 def platforms = ["native", "basis", "bbp3", "oi10", "mm7705", "zed", "nmc", "scr1"]
 def coverage = false
 def local = false
@@ -255,7 +255,7 @@ builds=[:]
 def srcdir=null
 
 stage("Checkout") {
-    node(hwnode){
+    node(optane_node){
         ws() {
             checkout scm: [
                         $class: 'GitSCM',
@@ -293,14 +293,14 @@ config.each {
 }
 
 stage("Touchstone build (Native)") {
-    parallel builds["native"].tasks(simnode, hwnode)
+    parallel builds["native"].tasks(cluster_node, optane_node)
 }
 
 def tasks = [:]
 builds.each {
     plat,build ->
         if (plat != "native") {
-            tasks += build.tasks(simnode, hwnode)
+            tasks += build.tasks(cluster_node, optane_node)
         }
 }
 
@@ -312,7 +312,7 @@ stage("Build all platforms") {
 stage("Analysis") {
     if (coverage) {
         stage("Merge Coverage Information") {
-            node(hwnode) {
+            node(optane_node) {
                 ws() {
                     def fl = []
                     def args = ""
