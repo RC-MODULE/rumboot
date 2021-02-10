@@ -155,7 +155,7 @@ class RumBootProject {
                         def the_name = platform + "-" + type
                         steps.stage(the_name) {
                             steps.node(node) {
-                                updateGitlabCommitStatus name: the_name, state: 'running'
+                                steps.updateGitlabCommitStatus name: the_name, state: 'running'
                                 try {
                                     steps.stage(build.workdir + ": Configure") {
                                         def tmp = this.options
@@ -179,9 +179,9 @@ class RumBootProject {
                                             build.coverage()
                                         }
                                     }
-                                    updateGitlabCommitStatus name: the_name, state: 'success'
+                                    steps.updateGitlabCommitStatus name: the_name, state: 'success'
                                 } catch (Exception e) {
-                                    updateGitlabCommitStatus name: the_name, state: 'failed'
+                                    steps.updateGitlabCommitStatus name: the_name, state: 'failed'
                                     error("Exception while building project: " + e.toString())
                                 }
                             }
