@@ -108,7 +108,7 @@ class RumBootProject {
         build_types.each {
             tp -> 
                 //tag(tp) gives: expected to call RumBootProject.<init> but wound up catching RumBootProject.tag
-                tg = platform + "-" + type 
+                tg = platform + "-" + tp 
                 builds[tp] = new CMakeProject(steps, srcdir + "/" + tg, srcdir)
                 steps.updateGitlabCommitStatus name: tg, state: 'pending'
         }
