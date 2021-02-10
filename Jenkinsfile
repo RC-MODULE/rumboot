@@ -44,7 +44,7 @@ class CMakeProject {
     }
 
     def build() {
-        run("cmake --build .")
+        run("echo cmake --build .")
     }
 
     def test(label) {
