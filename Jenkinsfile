@@ -108,8 +108,9 @@ class RumBootProject {
         this.steps = steps
         build_types.each {
             tp -> 
-                def tag = platform + "-" + tp
+                tag = platform + "-" + tp
                 builds[tp] = new CMakeProject(steps, srcdir + "/" + tag, srcdir)
+                steps.updateGitlabCommitStatus name: tag, state: 'pending'
         }
     }
 
@@ -152,36 +153,26 @@ class RumBootProject {
                             node = hwnode
                         }
 
-                        def the_name = platform + "-" + type
-                        steps.stage(the_name) {
+                        steps.stage(tag) {
                             steps.node(node) {
-                                steps.updateGitlabCommitStatus name: the_name, state: 'running'
+                                steps.updateGitlabCommitStatus name: tag, state: 'running'
                                 try {
-                                    steps.stage(the_name + ": Configure") {
-                                        def tmp = this.options
-                                        tmp["CMAKE_BUILD_TYPE"]=type
-                                        tmp["RUMBOOT_PLATFORM"]=platform
-                                        build.configure(tmp)
-                                    }
-
-                                    steps.stage(the_name + ": Build") {
-                                        build.build()
-                                    }
+                                    def tmp = this.options
+                                    tmp["CMAKE_BUILD_TYPE"]=type
+                                    tmp["RUMBOOT_PLATFORM"]=platform
+                                    build.configure(tmp)
+                                    build.build()
 
                                     if (platform == "native" || type == "PostProduction") {
-                                        steps.stage(the_name + ": Test") {
-                                            build.test(label)
-                                        }
+                                        build.test(label)
                                     }
 
                                     if (this.options["RUMBOOT_COVERAGE"]=="Yes") {
-                                        steps.stage(the_name + ": Generate Coverage") {
-                                            build.coverage()
-                                        }
+                                        build.coverage()
                                     }
-                                    steps.updateGitlabCommitStatus name: the_name, state: 'success'
+                                    steps.updateGitlabCommitStatus name: tag, state: 'success'
                                 } catch (Exception e) {
-                                    steps.updateGitlabCommitStatus name: the_name, state: 'failed'
+                                    steps.updateGitlabCommitStatus name: tag, state: 'failed'
                                     error("Exception while building project: " + e.toString())
                                 }
                             }
