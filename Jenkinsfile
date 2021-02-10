@@ -182,7 +182,7 @@ class RumBootProject {
         }
 
         magicks[platform] = steps.stage(platform) {
-                    parallel stages
+                    steps.parallel stages
         }
 
         return magicks
