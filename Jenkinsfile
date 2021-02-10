@@ -60,7 +60,7 @@ class CMakeProject {
         steps.script {
         steps.ws(workdir) {
             def teststmp = steps.sh (
-                script: 'ctest -LE hwonly -N -L ' + label,
+                script: 'ctest -N -L ' + label,
                 returnStdout: true
                 ).split("\n")
             teststmp.each {
@@ -99,7 +99,7 @@ class RumBootProject {
     def builds = [:]
     def platform
     def tag
-    def options = [ RUMBOOT_DISABLE_TESTING: "Yes" ]
+    def options = [ RUMBOOT_DISABLE_TESTING: "Yes", RUMBOOT_COVERAGE: "No" ]
     def steps
     def label = "full"
 
@@ -152,30 +152,37 @@ class RumBootProject {
                             node = hwnode
                         }
 
-
-                        steps.stage(platform + " / " + type) {
+                        def the_name = platform + "-" + type
+                        steps.stage(the_name) {
                             steps.node(node) {
-                                steps.stage(build.workdir + ": Configure") {
-                                    def tmp = this.options
-                                    tmp["CMAKE_BUILD_TYPE"]=type
-                                    tmp["RUMBOOT_PLATFORM"]=platform
-                                    build.configure(tmp)
-                                }
-
-                                steps.stage(build.workdir + ": Build") {
-                                    build.build()
-                                }
-
-                                if (platform == "native" || type == "PostProduction") {
-                                    steps.stage(build.workdir + ": Test") {
-                                        build.test(label)
+                                updateGitlabCommitStatus name: the_name, state: 'running'
+                                try {
+                                    steps.stage(build.workdir + ": Configure") {
+                                        def tmp = this.options
+                                        tmp["CMAKE_BUILD_TYPE"]=type
+                                        tmp["RUMBOOT_PLATFORM"]=platform
+                                        build.configure(tmp)
                                     }
-                                }
 
-                                if (this.options["RUMBOOT_COVERAGE"]=="Yes") {
-                                    steps.stage(build.workdir + ": Generate Coverage") {
-                                        build.coverage()
+                                    steps.stage(build.workdir + ": Build") {
+                                        build.build()
                                     }
+
+                                    if (platform == "native" || type == "PostProduction") {
+                                        steps.stage(build.workdir + ": Test") {
+                                            build.test(label)
+                                        }
+                                    }
+
+                                    if (this.options["RUMBOOT_COVERAGE"]=="Yes") {
+                                        steps.stage(build.workdir + ": Generate Coverage") {
+                                            build.coverage()
+                                        }
+                                    }
+                                    updateGitlabCommitStatus name: the_name, state: 'success'
+                                } catch (Exception e) {
+                                    updateGitlabCommitStatus name: the_name, state: 'failed'
+                                    error("Exception while building project: " + e.toString())
                                 }
                             }
                         }
@@ -220,29 +227,32 @@ def local = false
 
 
 properties([
+    gitLabConnection('git.module.ru'),
     parameters([
         booleanParam(defaultValue: false, name: 'LOCAL_RUN', description: 'Local run via Jenkinsfile-runner')
     ])
 ])
 
 
-config["basis"] = [
-    RUMBOOT_TESTING_PORT: "/dev/serial/by-path/pci-0000:00:1d.2-usb-0:2:1.0-port0",
-    RUMBOOT_TESTING_RESETPORT: "2",
-    RUMBOOT_DISABLE_TESTING: "No",
-    RUMBOOT_COVERAGE: "No"
-]
-
-config["mm7705"] = [
-    RUMBOOT_TESTING_PORT: "/dev/serial/by-path/pci-0000:00:1d.2-usb-0:1:1.0-port0",
-    RUMBOOT_TESTING_RESETPORT: "1",
-    RUMBOOT_DISABLE_TESTING: "No",
-    RUMBOOT_COVERAGE: "No"
-]
-
-config["oi10"] = [
-    RUMBOOT_COVERAGE: "No"
-]
+//TODO: Fill in per-platform options
+//
+//config["basis"] = [
+//    RUMBOOT_TESTING_PORT: "/dev/serial/by-path/pci-0000:00:1d.2-usb-0:2:1.0-port0",
+//    RUMBOOT_TESTING_RESETPORT: "2",
+//    RUMBOOT_DISABLE_TESTING: "No",
+//    RUMBOOT_COVERAGE: "No"
+//]
+//
+//config["mm7705"] = [
+//    RUMBOOT_TESTING_PORT: "/dev/serial/by-path/pci-0000:00:1d.2-usb-0:1:1.0-port0",
+//    RUMBOOT_TESTING_RESETPORT: "1",
+//    RUMBOOT_DISABLE_TESTING: "No",
+//    RUMBOOT_COVERAGE: "No"
+//]
+//
+//config["oi10"] = [
+//    RUMBOOT_COVERAGE: "No"
+//]
 
 /////////////////////////////////////////////////////////////////////
 
