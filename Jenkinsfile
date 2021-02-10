@@ -109,7 +109,7 @@ class RumBootProject {
         build_types.each {
             tp -> 
                 def tag = platform + "-" + tp
-                builds[tp] = new CMakeProject(steps, tag, srcdir)
+                builds[tp] = new CMakeProject(steps, srcdir + "/" + tag, srcdir)
         }
     }
 
