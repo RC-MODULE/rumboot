@@ -292,7 +292,7 @@ config.each {
 }
 
 stage('Touchstone build (Native)') {
-    parallel builds['native'].tasks(cluster_node, optane_node)
+    builds['native'].tasks(cluster_node, optane_node)
 }
 
 def tasks = [:]
