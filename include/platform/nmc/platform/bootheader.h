@@ -1,9 +1,7 @@
-#ifndef PLATFORM_BOOTHEADER_h
-#define PLATFORM_BOOTHEADER_h
+#ifndef PLATFORM_NMC_BOOTHEADER_H
+#define PLATFORM_NMC_BOOTHEADER_H
 
-#define RUMBOOT_PLATFORM_CHIPID   0
-#define RUMBOOT_PLATFORM_CHIPREV  0
-#define RUMBOOT_PLATFORM_NUMCORES 1
+// TODO: #ifdef's here
+#include <platform/o32t/platform/bootheader.h>
 
-
-#endif /* end of include guard: PLATFORM_BOOTHEADER_h */
+#endif
