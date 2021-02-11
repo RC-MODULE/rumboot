@@ -2,29 +2,35 @@ SET(RUMBOOT_ARCH nmc)
 SET(RUMBOOT_PLATFORM nmc)
 
 set(RUMBOOT_PLATFORM_DEFAULT_LDS nmc3/generic.lds)
-set(RUMBOOT_PLATFORM_DEFAULT_SNAPSHOT default)
+
+if (RUMBOOT_DEFAULT_SNAPSHOT)
+  set(RUMBOOT_PLATFORM_DEFAULT_SNAPSHOT ${RUMBOOT_DEFAULT_SNAPSHOT})
+else()
+  set(RUMBOOT_PLATFORM_DEFAULT_SNAPSHOT top)
+endif()
 
 #These are configurations for our binaries
 rumboot_add_configuration(
   IRAM
   DEFAULT
   PREFIX iram
-  SNAPSHOT top
   LDS nmc3/generic.lds
-  FILES ${CMAKE_SOURCE_DIR}/src/platform/nmc/startup.S 
+  FILES ${CMAKE_SOURCE_DIR}/src/platform/nmc/startup.S ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c
   LDFLAGS "-Wl,\"-estart\""
   IRUN_FLAGS ${BOOTROM_IFLAGS} +RUMBOOT_RUNTIME_ADDR=5A000
   LOAD IM1_IMAGE SELF
-  CFLAGS -DRUMBOOT_MAIN_NORETURN
+  CFLAGS -DRUMBOOT_MAIN_NORETURN -fnmc-compatible-if-packed
+  OBJCOPY_FLAGS --change-section-lma=.header=0
+  FEATURES PACKIMAGE
 )
 
 rumboot_add_configuration(
   CORE
   PREFIX core
-  SNAPSHOT top
+  FILES ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c
   LDS nmc3/generic.lds
   LDFLAGS "-Wl,\"-ecorestart\""
-  CFLAGS -mmas -save-temps
+  CFLAGS -mmas -save-temps -DRUMBOOT_NOENTRY
   IRUN_FLAGS ${BOOTROM_IFLAGS} +RUMBOOT_RUNTIME_ADDR=5A000
   LOAD IM1_IMAGE SELF
   FEATURES NOLIBS
@@ -111,9 +117,12 @@ endmacro()
 
 if (NOT CROSS_COMPILE)
     set(CMAKE_C_COMPILER_WORKS 1)
-    if(NOT RUMBOOT_NMC_USE_CLANG)
-      SET(CROSS_COMPILE nmc)
+    if (EXISTS /usr/local/bin/nmc-gcc)
+        set(CROSS_COMPILE "/usr/local/bin/nmc")
     else()
+      SET(CROSS_COMPILE nmc)
+    endif()
+    if(RUMBOOT_NMC_USE_CLANG)
       SET(CMAKE_C_COMPILER       /opt/llvm-nmc/usr/local/bin/clang)
       SET(CMAKE_CXX_COMPILER     /opt/llvm-nmc/usr/local/bin/clang++)
     endif()
