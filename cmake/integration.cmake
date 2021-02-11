@@ -213,7 +213,8 @@ function(rumboot_load_build platform buildtype)
         -DRUMBOOT_SOC_BUILD_TYPE=${CMAKE_BUILD_TYPE}
         -DRUMBOOT_DISABLE_TESTING=Yes
         ${RUMBOOT_EXTRA_CMAKE_ARGS}
-    )
+        ${ARGN}
+      )
     add_dependencies(${rumboot_dirname} rumboot-native-tests)
 
     if (RUMBOOT_PACKAGED)
