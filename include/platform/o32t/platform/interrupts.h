@@ -4,10 +4,13 @@
 /* Place all O32-specific interrupts here. 
    Use #undef carefully where needed
 */
-#define CP0_RCV_INT                    0x4E
-#define CP0_TRM_INT                    0x4F
-#define CP1_RCV_INT                    0x50
-#define CP1_TRM_INT                    0x51
+#define CP0_RCV_INT                    78
+#define CP0_TRM_INT                    79
+#define CP1_RCV_INT                    80
+#define CP1_TRM_INT                    81
+
+#define AXI_MDMAC_ERR                  82
+#define AXI_MDMAC_FINISH               83
 
 #define MKIO2_INT                   (54)
 #define MKIO3_INT                   (55)
