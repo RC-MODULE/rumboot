@@ -276,8 +276,19 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       IRUN_FLAGS +mkio_signal_test
       PREFIX mkio3-em2-func-a
     )
-    
-    
+
+    add_rumboot_target(
+      CONFIGURATION IRAM_IM1
+      CFLAGS -DUSE_SWINT=132
+      FILES common/irq/irq-atomics.c
+  )
+
+  add_rumboot_target(
+      CONFIGURATION IRAM_IM1
+      CFLAGS -DUSE_SWINT=132
+      FILES common/irq/irq-defhandler.c
+  )
+
 endmacro()
 
 
