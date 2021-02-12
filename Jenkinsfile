@@ -175,7 +175,7 @@ class RumBootProject {
                             steps.updateGitlabCommitStatus name: tg, state: 'success'
                             } catch (Exception e) {
                                 steps.updateGitlabCommitStatus name: tg, state: 'failed'
-                                error('Exception while building project: ' + e.toString())
+                                steps.error('Exception while building project: ' + e.toString())
                         }
                     }
                 }
