@@ -74,12 +74,12 @@ int main()
     prepare_arrays( &src0, &dst0 );
     prepare_arrays( &src1, &dst1 );
     if( (comp_dma_run( rumboot_virt_to_dma(src0), rumboot_virt_to_dma(dst0),COM0_BASE,COM1_BASE ) != 0)
-   /*  || (memcmp( src0, dst0, sizeof(uint32_t)*ARR_SIZE  ) != 0)*/ ) {
+    || (memcmp( src0, dst0, sizeof(uint32_t)*ARR_SIZE  ) != 0) ) {
         result = 1;
 	 }  
  	 rumboot_printf("COMMPORT0 to COMMPORT1 direction checked\n"); 
 	if( (comp_dma_run( rumboot_virt_to_dma(src1), rumboot_virt_to_dma(dst1),COM1_BASE,COM0_BASE ) != 0)
-    /* || (memcmp( src1, dst1, sizeof(uint32_t)*ARR_SIZE  ) != 0)*/ ) {
+     || (memcmp( src1, dst1, sizeof(uint32_t)*ARR_SIZE  ) != 0) ) {
         return 1;
 	 }
    rumboot_printf("COMMPORT1 to COMMPORT0 direction checked\n"); 	 
