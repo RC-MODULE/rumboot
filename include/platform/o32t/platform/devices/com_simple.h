@@ -26,7 +26,7 @@ typedef struct com_cfg {
 } com_cfg_t;
 */
 int comp_dma_run( uint32_t src_addr, uint32_t dst_addr,uint32_t base0, uint32_t base1 );
-int comp_dma_irq_run( uint32_t src_addr, uint32_t dst_addr,uint32_t base0, uint32_t base1,uint32_t COM0_Cpl,uint32_t COM1_Cpl);  
+int comp_dma_irq_run( uint32_t src_addr, uint32_t dst_addr,uint32_t base0, uint32_t base1,uint32_t COM0_Cpl,uint32_t COM1_Cpl  );  
 //int com_simple_run(uintptr_t base_tr, uintptr_t base_rcv,com_cfg_t * cfg);
 int com_simple_wait_complete(uintptr_t base, uintptr_t ctrl);
 //int com_simple_memcpy(uintptr_t base, com_cfg_t * cfg);
