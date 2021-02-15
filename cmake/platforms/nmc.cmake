@@ -1,7 +1,7 @@
 SET(RUMBOOT_ARCH nmc)
 SET(RUMBOOT_PLATFORM nmc)
 
-set(RUMBOOT_PLATFORM_DEFAULT_LDS nmc3/generic.lds)
+set(RUMBOOT_PLATFORM_DEFAULT_LDS nmc/generic.lds)
 
 if (RUMBOOT_DEFAULT_SNAPSHOT)
   set(RUMBOOT_PLATFORM_DEFAULT_SNAPSHOT ${RUMBOOT_DEFAULT_SNAPSHOT})
@@ -14,7 +14,7 @@ rumboot_add_configuration(
   IRAM
   DEFAULT
   PREFIX iram
-  LDS nmc3/generic.lds
+  LDS nmc/generic.lds
   FILES ${CMAKE_SOURCE_DIR}/src/platform/nmc/startup.S ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c
   LDFLAGS "-Wl,\"-estart\""
   IRUN_FLAGS ${BOOTROM_IFLAGS} +RUMBOOT_RUNTIME_ADDR=5A000 
@@ -36,7 +36,7 @@ rumboot_add_configuration(
   CORE
   PREFIX core
   FILES ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c
-  LDS nmc3/generic.lds
+  LDS nmc/generic.lds
   LDFLAGS "-Wl,\"-ecorestart\""
   CFLAGS -mmas -save-temps -DRUMBOOT_NOENTRY
   IRUN_FLAGS ${BOOTROM_IFLAGS} +RUMBOOT_RUNTIME_ADDR=5A000
