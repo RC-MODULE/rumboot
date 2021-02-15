@@ -49,13 +49,13 @@ rumboot_add_configuration(
     LOAD BOOTROM_NOR SELF
     IRUN_FLAGS ${IRUN_BOOTM_EXTRA_ARGS}
     CFLAGS -DRUMBOOT_ONLY_STACK ${CONFIGURATION_ROM_CFLAGS} -DRUMBOOT_MAIN_NORETURN
-    LDS oi10/bootrom.lds
+    LDS o32t/bootrom.lds
     IRUN_FLAGS +BOOTMGR_KEEP_DRIVING=1 ${BOOTROM_IFLAGS}
 )
 
 rumboot_add_configuration (
     IRAM_IM1
-    LDS oi10/iram.lds
+    LDS o32t/iram.lds
     PREFIX iram
     LDFLAGS -Wl,-erumboot_main
     FILES ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c
@@ -71,7 +71,7 @@ rumboot_add_configuration (
 rumboot_add_configuration (
     IRAM_IM0
     CONFIGURATION IRAM_IM1
-    LDS oi10/iram_legacy.lds
+    LDS o32t/iram_legacy.lds
 )
 
 macro(rumboot_platform_generate_stuff_for_taget product)

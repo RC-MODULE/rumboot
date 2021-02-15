@@ -193,6 +193,11 @@ void rumboot_platform_setup() {
     extern char rumboot_nor_heap_start;
     extern char rumboot_nor_heap_end;
     rumboot_malloc_register_heap("NOR", &rumboot_nor_heap_start, &rumboot_nor_heap_end);
+
+    extern char rumboot_im3_heap_start;
+    extern char rumboot_im3_heap_end;
+    rumboot_malloc_register_heap( "IM3", &rumboot_im3_heap_start, &rumboot_im3_heap_end );
+
     /* Set our own handler */
     rumboot_irq_set_exception_handler(rumboot_arch_exception);
 #endif
