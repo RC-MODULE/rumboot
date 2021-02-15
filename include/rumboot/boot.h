@@ -21,7 +21,7 @@
  * @{
  */
 
-#define RUMBOOT_HEADER_VERSION 2
+#define RUMBOOT_HEADER_VERSION 3
 #define RUMBOOT_HEADER_MAGIC 0xb01dface
 
 #include <platform/bootheader.h>
@@ -33,14 +33,14 @@
 struct rumboot_bootsource;
 
 enum rumboot_header_flags {
-    RUMBOOT_FLAG_COMPRESS = 1 << 0, // NOT_YET_IMPLEMENTED: This image is compressed
-    RUMBOOT_FLAG_ENCRYPT  = 1 << 1, // NOT_YET_IMPLEMENTED: Image is encrypted, decrypt data from OTP
-    RUMBOOT_FLAG_SIGNED   = 1 << 2, // NOT_YET_IMPLEMENTED: Image is signed, need signature verification
-    RUMBOOT_FLAG_SMP      = 1 << 3, // NOT_YET_IMPLEMENTED: SMP Image
-    RUMBOOT_FLAG_DECAPS   = 1 << 4, // NOT_YET_IMPLEMENTED: Remove header during relocation
-    RUMBOOT_FLAG_RELOCATE = 1 << 5, // NOT_YET_IMPLEMENTED: Relocate image before execution
-    RUMBOOT_FLAG_SYNC     = 1 << 6, // NOT_YET_IMPLEMENTED: Wait for the image to finish before exiting
-    RUMBOOT_FLAG_RESERVED = 1 << 7, // NOT_YET_IMPLEMENTED: Wait for the image to finish before exiting
+    RUMBOOT_FLAG_COMPRESS = (1 << 0), // NOT_YET_IMPLEMENTED: This image is compressed
+    RUMBOOT_FLAG_ENCRYPT  = (1 << 1), // NOT_YET_IMPLEMENTED: Image is encrypted, decrypt data from OTP
+    RUMBOOT_FLAG_SIGNED   = (1 << 2), // NOT_YET_IMPLEMENTED: Image is signed, need signature verification
+    RUMBOOT_FLAG_SMP      = (1 << 3), // NOT_YET_IMPLEMENTED: SMP Image
+    RUMBOOT_FLAG_DECAPS   = (1 << 4), // NOT_YET_IMPLEMENTED: Remove header during relocation
+    RUMBOOT_FLAG_RELOCATE = (1 << 5), // NOT_YET_IMPLEMENTED: Relocate image before execution
+    RUMBOOT_FLAG_SYNC     = (1 << 6), // NOT_YET_IMPLEMENTED: Wait for the image to finish before exiting
+    RUMBOOT_FLAG_RESERVED = (1 << 7), // Reserved
 };
 
 struct __attribute__((packed)) rumboot_bootheader {
@@ -51,8 +51,13 @@ struct __attribute__((packed)) rumboot_bootheader {
     uint8_t  chip_rev;
     uint32_t data_crc32;
     uint32_t datalen;
-/*    uint32_t entry_point[10]; */
-    uint64_t  entry_point;
+
+    union
+    {
+      uint64_t  entry_point;
+      uint32_t  entry_point32[2];
+    };
+    
     uint64_t  relocation;
     uint32_t  target_cpu_cluster;
     uint32_t  encryption_slot;
