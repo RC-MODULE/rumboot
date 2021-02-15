@@ -17,12 +17,20 @@ rumboot_add_configuration(
   LDS nmc3/generic.lds
   FILES ${CMAKE_SOURCE_DIR}/src/platform/nmc/startup.S ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c
   LDFLAGS "-Wl,\"-estart\""
-  IRUN_FLAGS ${BOOTROM_IFLAGS} +RUMBOOT_RUNTIME_ADDR=5A000
-  LOAD IM1_IMAGE SELF
+  IRUN_FLAGS ${BOOTROM_IFLAGS} +RUMBOOT_RUNTIME_ADDR=5A000 
+  LOAD 
+    IM1_IMAGE SELF
+    IM0BIN SELF
   CFLAGS -DRUMBOOT_MAIN_NORETURN -fnmc-compatible-if-packed
   OBJCOPY_FLAGS --change-section-lma=.header=0
   FEATURES PACKIMAGE
-)
+  PACKIMAGE_FLAGS -CiR 0x00000020C0040000
+  #HACK: For now that should work
+  BOOTROM "${CMAKE_BINARY_DIR}/rumboot-o32t-Debug/rumboot-o32t-Debug-bootrom-stub.hex"
+  #TODO: This is how this shit should look like
+  #RUMBOOT_DEPENDENCY o32t:bootrom-stub
+  #BOOTROM o32t:bootrom-stub
+  )
 
 rumboot_add_configuration(
   CORE
@@ -32,7 +40,8 @@ rumboot_add_configuration(
   LDFLAGS "-Wl,\"-ecorestart\""
   CFLAGS -mmas -save-temps -DRUMBOOT_NOENTRY
   IRUN_FLAGS ${BOOTROM_IFLAGS} +RUMBOOT_RUNTIME_ADDR=5A000
-  LOAD IM1_IMAGE SELF
+  LOAD 
+    IM1_IMAGE SELF
   FEATURES NOLIBS
 )
 
