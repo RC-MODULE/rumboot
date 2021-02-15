@@ -80,7 +80,7 @@ bool rumboot_platform_check_entry_points(struct rumboot_bootheader *hdr)
 
 int rumboot_platform_exec(struct rumboot_bootheader *hdr, int swap)
 {
-        return rumboot_bootimage_execute_ep((void *) hdr->entry_point[0]);
+        return rumboot_bootimage_execute_ep((void *) hdr->entry_point32[0]);
 }
 
 void *rumboot_platform_get_spl_area(size_t *size)

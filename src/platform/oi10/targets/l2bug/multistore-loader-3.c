@@ -411,7 +411,7 @@ int main(void)
     memcpy((void *)&gdbmon_hdr, (void *)M_BASE, sizeof(gdbmon_hdr));
     printf("magic:          %lx\n", gdbmon_hdr.magic);
     printf("datalen:        %ld\n", gdbmon_hdr.datalen);
-    printf("entry_point[0]: %ld\n", gdbmon_hdr.entry_point[0]);
+    printf("entry_point32[0]: %ld\n", gdbmon_hdr.entry_point32[0]);
     
     rumboot_printf("Initial DCESR: 0x%x\n", spr_read(SPR_DCESR));
     rumboot_printf("CCR0: 0x%x\n", spr_read(SPR_CCR0));
@@ -423,5 +423,5 @@ int main(void)
     
     rumboot_irq_set_exception_handler(l1_cache_error_handler);
 
-    return rumboot_bootimage_execute_ep((void *) gdbmon_hdr.entry_point[0]);
+    return rumboot_bootimage_execute_ep((void *) gdbmon_hdr.entry_point32[0]);
 }

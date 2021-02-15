@@ -44,12 +44,12 @@ int main()
 #endif
                 int i = rumboot_bootimage_check_magic(hdr->magic);
                 if (i < 0) {
-                        rumboot_printf("STUB: No more images to boot\n");
+                        rumboot_printf("STUB: No more images to boot (%x)\n", hdr->magic);
                         break;
                 }
 
                 rumboot_printf("STUB: Executing SPL image from %x. Magic: 0x%x Entry: 0x%x\n",
-                        (uint32_t) hdr, hdr->magic, hdr->entry_point[0]);
+                        (uint32_t) hdr, hdr->magic, hdr->entry_point32[0]);
                 ret = rumboot_bootimage_execute(hdr, NULL);
                 if (ret != 0)
                         break;

@@ -145,11 +145,28 @@ int rumboot_bootimage_execute(struct rumboot_bootheader *hdr, const struct rumbo
 	/* TODO: Handle decapsulation, relocation and decompression here */
 	int swap = rumboot_bootimage_check_magic(hdr->magic);
 	hdr->magic = 0x0; /* Wipe out magic */
-	hdr->device = src;
+	hdr->device = src; /* Set the src pointer */
 	if (hdr->version == 2) {
 		hdr->entry_point == (hdr->entry_point >> 32); /* Properly handle 32-bit V2 images */
+		goto bailout;
 	}
-    return rumboot_platform_exec(hdr, swap);
+	
+	/* The following is only for V3 images */
+	if (hdr->flags & RUMBOOT_FLAG_RELOCATE) {
+		void *dest = (void *) hdr->relocation;
+		void *src = hdr;
+		size_t len = hdr->datalen + sizeof(*hdr);
+
+		if (hdr->flags & RUMBOOT_FLAG_DECAPS) {
+			src = hdr->data;
+			len -= sizeof(*hdr);
+		}
+		dbg_boot(hdr->device, "Relocating image to 0x%x -> 0x%x", src, dest);
+		memcpy(dest, src, len);
+	}
+
+	bailout:
+    	return rumboot_platform_exec(hdr, swap);
 }
 
 int rumboot_bootimage_execute_ep(void *ep)
