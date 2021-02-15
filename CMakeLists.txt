@@ -90,18 +90,18 @@ else()
 endif()
 
 
-macro(find_rumboot_packimage)
+macro(find_rumboot_tools)
   message("rumboot-tools: Updating submodule, please stand by...")
   execute_process(
-    COMMAND ${GIT_EXECUTABLE} submodule update --init rumboot-packimage.py 
+    COMMAND ${GIT_EXECUTABLE} submodule update --init rumboot-tools 
     WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
   )
-  set(PACKIMAGE_DIR ${PROJECT_SOURCE_DIR}/rumboot-packimage.py)
-  file(WRITE ${PROJECT_BINARY_DIR}/local-rumboot-packimage "#!/bin/bash\n${PYTHON_EXECUTABLE} ${PACKIMAGE_DIR}/rumboot_packimage.py $*")
-  file(WRITE ${PROJECT_BINARY_DIR}/local-rumboot-xflash    "#!/bin/bash\n${PYTHON_EXECUTABLE} ${PACKIMAGE_DIR}/rumboot_xflash.py -z ${PROJECT_BINARY_DIR}/ $*")
-  file(WRITE ${PROJECT_BINARY_DIR}/local-rumboot-flashrom "#!/bin/bash\n${PYTHON_EXECUTABLE} ${PACKIMAGE_DIR}/rumboot_flashom.py -z ${PROJECT_BINARY_DIR}/ $*")
-  file(WRITE ${PROJECT_BINARY_DIR}/local-rumboot-xrun      "#!/bin/bash\n${PYTHON_EXECUTABLE} ${PACKIMAGE_DIR}/rumboot_xrun.py $*")
-  file(WRITE ${PROJECT_BINARY_DIR}/local-rumboot-combine   "#!/bin/bash\n${PYTHON_EXECUTABLE} ${PACKIMAGE_DIR}/rumboot_combine.py $*")
+  set(RUMBOOT_TOOLS_DIR ${PROJECT_SOURCE_DIR}/rumboot-tools)
+  file(WRITE ${PROJECT_BINARY_DIR}/local-rumboot-packimage "#!/bin/bash\n${PYTHON_EXECUTABLE} ${RUMBOOT_TOOLS_DIR}/rumboot_packimage.py $*")
+  file(WRITE ${PROJECT_BINARY_DIR}/local-rumboot-xflash    "#!/bin/bash\n${PYTHON_EXECUTABLE} ${RUMBOOT_TOOLS_DIR}/rumboot_xflash.py -z ${PROJECT_BINARY_DIR}/ $*")
+  file(WRITE ${PROJECT_BINARY_DIR}/local-rumboot-flashrom "#!/bin/bash\n${PYTHON_EXECUTABLE} ${RUMBOOT_TOOLS_DIR}/rumboot_flashom.py -z ${PROJECT_BINARY_DIR}/ $*")
+  file(WRITE ${PROJECT_BINARY_DIR}/local-rumboot-xrun      "#!/bin/bash\n${PYTHON_EXECUTABLE} ${RUMBOOT_TOOLS_DIR}/rumboot_xrun.py $*")
+  file(WRITE ${PROJECT_BINARY_DIR}/local-rumboot-combine   "#!/bin/bash\n${PYTHON_EXECUTABLE} ${RUMBOOT_TOOLS_DIR}/rumboot_combine.py $*")
   find_program(CHMOD_PROG chmod)
   if(CHMOD_PROG)
     execute_process(COMMAND ${CHMOD_PROG} +x ${PROJECT_BINARY_DIR}/local-rumboot-packimage)
@@ -113,13 +113,13 @@ macro(find_rumboot_packimage)
 
   find_file(RUMBOOT_PACKIMAGE
     NAMES rumboot_packimage.py
-    PATHS ${PROJECT_SOURCE_DIR}/rumboot-packimage.py
-          ${CMAKE_SOURCE_DIR}/rumboot-packimage.py
+    PATHS ${PROJECT_SOURCE_DIR}/rumboot-tools
+          ${CMAKE_SOURCE_DIR}/rumboot-tools
   )  
   find_file(RUMBOOT_COMBINE
     NAMES rumboot_combine.py
-    PATHS ${PROJECT_SOURCE_DIR}/rumboot-packimage.py
-          ${CMAKE_SOURCE_DIR}/rumboot-packimage.py
+    PATHS ${PROJECT_SOURCE_DIR}/rumboot-tools
+          ${CMAKE_SOURCE_DIR}/rumboot-tools
   )
 
   if (NOT RUMBOOT_PACKIMAGE STREQUAL "RUMBOOT_PACKIMAGE-NOTFOUND")
@@ -135,7 +135,7 @@ macro(find_rumboot_packimage)
   endif()
 endmacro()
 
-find_rumboot_packimage()
+find_rumboot_tools()
 
 message("\n\n ==== RumBoot Configuration summary ====")
 
