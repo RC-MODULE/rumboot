@@ -123,6 +123,12 @@ void init_descr(hscb_descr *dsc_table, uint32_t num_of_descr, hscb_descr *dsc) {
     hscb_descr *dsc_table_pt;
     uint64_t *dscr_p;
     if(DEBUG_PRINT)rumboot_printf("dsc_addr = %x, start_address = %x, length = %x, act = %x, act0 = %x, ie = %x, err = %x, valid = %x\n", &dsc_table[num_of_descr], dsc->start_address, dsc->length, dsc->act, dsc->act0, dsc->ie, dsc->err, dsc->valid);
+    //---- hack
+    dsc_table_pt = &dsc_table[num_of_descr];
+    dscr_p = (uint64_t*)(dsc_table_pt);
+    *dscr_p = 0;
+    msync();
+    // ---- 
     dsc_table[num_of_descr].start_address  =   dsc->start_address;
     dsc_table[num_of_descr].length         =   dsc->length       ;
     dsc_table[num_of_descr].act            =   dsc->act          ;
@@ -250,9 +256,9 @@ void config_hscb(uint32_t hscb_base_addr, hscb_descr **hscb_tx_dsc_table, char *
     *hscb_rx_dsc_table=dsc_table;
     // --- set of DMA regs
     hscb_set_rdma_tbl_size(hscb_base_addr, N_OF_PACKETS * sizeof(hscb_descr));
-    hscb_set_rdma_sys_addr(hscb_base_addr, *hscb_tx_dsc_table);
+    hscb_set_rdma_sys_addr(hscb_base_addr, rumboot_virt_to_dma(*hscb_tx_dsc_table));
     hscb_set_wdma_tbl_size(hscb_base_addr, N_OF_PACKETS * sizeof(hscb_descr));
-    hscb_set_wdma_sys_addr(hscb_base_addr, *hscb_rx_dsc_table);
+    hscb_set_wdma_sys_addr(hscb_base_addr, rumboot_virt_to_dma(*hscb_rx_dsc_table));
     // --- set of HSCB regs
     hscb_set_max_speed(hscb_base_addr);
     hscb_rdma_prepare(hscb_base_addr, &rdma_ctrl_word_loc);

@@ -2052,37 +2052,52 @@ endif()
     )
     add_rumboot_target(
         CONFIGURATION IRAM
-        #CFLAGS -DHSCB_UNDER_TEST_BASE=HSCB0_BASE
-        #       -DHSCB_SUPPLEMENTARY_BASE=HSCB1_BASE
-        #       -DHSCB_UNDER_TEST_INT=SW0_HSCB_INT
-        #       -DHSCB_UNDER_TEST_DMA_INT=SW0_AXI_INT
-        #       -DHSCB_SUPPLEMENTARY_INT=SW1_HSCB_INT
-        #       -DHSCB_SUPPLEMENTARY_DMA_INT=SW1_AXI_INT
-        #       -DTX_0_HEAP_NAME="SRAM0"
-        #       -DTX_1_HEAP_NAME="SRAM0"
-        #       -DTX_2_HEAP_NAME="SRAM0"
-        #       -DTX_3_HEAP_NAME="SRAM0"
-        #       -DTX_4_HEAP_NAME="SRAM0"
-        #       -DTX_5_HEAP_NAME="SRAM0"
-        #       -DRX_0_HEAP_NAME="SRAM0"
-        #       -DRX_1_HEAP_NAME="SRAM0"
-        #       -DRX_2_HEAP_NAME="SRAM0"
-        #       -DRX_3_HEAP_NAME="SRAM0"
-        #       -DRX_4_HEAP_NAME="SRAM0"
-        #       -DRX_5_HEAP_NAME="SRAM0"
-        #       -DDATA_SIZE_0=1024
-        #       -DDATA_SIZE_1=1024
-        #       -DDATA_SIZE_2=1024
-        #       -DDATA_SIZE_3=1024
-        #       -DDATA_SIZE_4=1024
-        #       -DDATA_SIZE_5=1024
-        #       -DHSCB_FUNC_TEST
-        #       -DTEST_OI10_HSCB_FULL_TRACING
+        CFLAGS  -DHSCB0_TX_DSCTBL_BASE="SRAM0"
+                -DHSCB0_TX_DATA_BASE="SRAM0"
+                -DHSCB0_RX_DSCTBL_BASE="SRAM0"
+                -DHSCB0_RX_DATA_BASE="SRAM0"
+                -DHSCB1_TX_DSCTBL_BASE="SRAM0"
+                -DHSCB1_TX_DATA_BASE="SRAM0"
+                -DHSCB1_RX_DSCTBL_BASE="SRAM0"
+                -DHSCB1_RX_DATA_BASE="SRAM0"
+                -DHSCB2_TX_DSCTBL_BASE="SRAM0"
+                -DHSCB2_TX_DATA_BASE="SRAM0"
+                -DHSCB2_RX_DSCTBL_BASE="SRAM0"
+                -DHSCB2_RX_DATA_BASE="SRAM0"
+                -DHSCB3_TX_DSCTBL_BASE="SRAM0"
+                -DHSCB3_TX_DATA_BASE="SRAM0"
+                -DHSCB3_RX_DSCTBL_BASE="SRAM0"
+                -DHSCB3_RX_DATA_BASE="SRAM0"
+                -DDEBUG_PRINT=0
         FILES test_oi10_hscb_simult_big.c
         PREFIX "hscb_simult"
-        NAME test_hscb_big
+        NAME test_hscb_big_sram0
     )
 
+    add_rumboot_target(
+        CONFIGURATION IRAM
+        CFLAGS  -DHSCB0_TX_DSCTBL_BASE="SSRAM"
+                -DHSCB0_TX_DATA_BASE="SSRAM"
+                -DHSCB0_RX_DSCTBL_BASE="SSRAM"
+                -DHSCB0_RX_DATA_BASE="SSRAM"
+                -DHSCB1_TX_DSCTBL_BASE="SSRAM"
+                -DHSCB1_TX_DATA_BASE="SSRAM"
+                -DHSCB1_RX_DSCTBL_BASE="SSRAM"
+                -DHSCB1_RX_DATA_BASE="SSRAM"
+                -DHSCB2_TX_DSCTBL_BASE="SSRAM"
+                -DHSCB2_TX_DATA_BASE="SSRAM"
+                -DHSCB2_RX_DSCTBL_BASE="SSRAM"
+                -DHSCB2_RX_DATA_BASE="SSRAM"
+                -DHSCB3_TX_DSCTBL_BASE="SSRAM"
+                -DHSCB3_TX_DATA_BASE="SSRAM"
+                -DHSCB3_RX_DSCTBL_BASE="SSRAM"
+                -DHSCB3_RX_DATA_BASE="SSRAM"
+                -DDEBUG_PRINT=0
+        FILES test_oi10_hscb_simult_big.c
+        PREFIX "hscb_simult"
+        NAME test_hscb_big_ssram
+    )    
+    
     add_rumboot_target(
         CONFIGURATION IRAM
         CFLAGS -DHSCB_UNDER_TEST_BASE=HSCB1_BASE
