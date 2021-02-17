@@ -923,6 +923,7 @@ endif()
       CONFIGURATION IRAM
       TESTGROUP test_greth_system
       FILES test_o32t_greth_system.c
+      IRUN_FLAGS +enable_IPG_checker
       CFLAGS -DTX_GRETH_BASE=GRETH_0_BASE 
              -DRX_GRETH_BASE=GRETH_1_BASE 
              #-DINIT_EMI
@@ -938,6 +939,7 @@ endif()
       CONFIGURATION IRAM
       TESTGROUP test_greth_system
       FILES test_o32t_greth_system.c
+      IRUN_FLAGS +enable_IPG_checker
       CFLAGS -DTX_GRETH_BASE=GRETH_0_BASE 
              -DRX_GRETH_BASE=GRETH_1_BASE 
              #-DINIT_EMI
@@ -953,6 +955,7 @@ endif()
       CONFIGURATION IRAM
       TESTGROUP test_greth_system
       FILES test_o32t_greth_system.c
+      IRUN_FLAGS +enable_IPG_checker
       CFLAGS -DTX_GRETH_BASE=GRETH_0_BASE 
              -DRX_GRETH_BASE=GRETH_1_BASE 
              #-DINIT_EMI
@@ -969,6 +972,7 @@ endif()
       CONFIGURATION IRAM
       TESTGROUP test_greth_system
       FILES test_o32t_greth_system.c
+      IRUN_FLAGS +enable_IPG_checker
       CFLAGS -DTX_GRETH_BASE=GRETH_0_BASE 
              -DRX_GRETH_BASE=GRETH_1_BASE 
              -DINIT_EMI
@@ -984,6 +988,7 @@ endif()
       CONFIGURATION IRAM
       TESTGROUP test_greth_system
       FILES test_o32t_greth_system.c
+      IRUN_FLAGS +enable_IPG_checker
       CFLAGS -DTX_GRETH_BASE=GRETH_0_BASE 
              -DRX_GRETH_BASE=GRETH_1_BASE 
              -DINIT_EMI
@@ -999,6 +1004,7 @@ endif()
       CONFIGURATION IRAM
       TESTGROUP test_greth_system
       FILES test_o32t_greth_system.c
+      IRUN_FLAGS +enable_IPG_checker
       CFLAGS -DTX_GRETH_BASE=GRETH_0_BASE 
              -DRX_GRETH_BASE=GRETH_1_BASE 
              -DINIT_EMI
@@ -1014,6 +1020,7 @@ endif()
       CONFIGURATION IRAM
       TESTGROUP test_greth_system
       FILES test_o32t_greth_system.c
+      IRUN_FLAGS +enable_IPG_checker
       CFLAGS -DTX_GRETH_BASE=GRETH_0_BASE 
              -DRX_GRETH_BASE=GRETH_1_BASE 
              -DINIT_EMI
@@ -1029,6 +1036,7 @@ endif()
       CONFIGURATION IRAM
       TESTGROUP test_greth_system
       FILES test_o32t_greth_system.c
+      IRUN_FLAGS +enable_IPG_checker
       CFLAGS -DTX_GRETH_BASE=GRETH_0_BASE 
              -DRX_GRETH_BASE=GRETH_1_BASE 
              -DINIT_EMI
@@ -1044,6 +1052,7 @@ endif()
       CONFIGURATION IRAM
       TESTGROUP test_greth_system
       FILES test_o32t_greth_system.c
+      IRUN_FLAGS +enable_IPG_checker
       CFLAGS -DTX_GRETH_BASE=GRETH_0_BASE 
              -DRX_GRETH_BASE=GRETH_1_BASE 
              -DINIT_EMI
@@ -1059,6 +1068,7 @@ endif()
       CONFIGURATION IRAM
       TESTGROUP test_greth_system
       FILES test_o32t_2_greth_system.c
+      IRUN_FLAGS +enable_IPG_checker
       CFLAGS -DDESC_HEAP_NAME="IM2"
              -DSRC_HEAP_NAME="IM2"
              -DDST_HEAP_NAME="IM2"
@@ -1072,6 +1082,7 @@ endif()
       CONFIGURATION IRAM
       TESTGROUP test_greth_system
       FILES test_o32t_2_greth_system.c
+      IRUN_FLAGS +enable_IPG_checker
       CFLAGS -DDESC_HEAP_NAME="IM2"
              -DSRC_HEAP_NAME="IM2"
              -DDST_HEAP_NAME="IM2"
@@ -1085,6 +1096,7 @@ endif()
       CONFIGURATION IRAM
       TESTGROUP test_greth_system
       FILES test_o32t_2_greth_system.c
+      IRUN_FLAGS +enable_IPG_checker
       CFLAGS -DDESC_HEAP_NAME="IM2"
              -DSRC_HEAP_NAME="IM2"
              -DDST_HEAP_NAME="IM2"
@@ -1099,6 +1111,7 @@ endif()
       CONFIGURATION IRAM
       TESTGROUP test_greth_system
       FILES test_o32t_2_greth_system.c
+      IRUN_FLAGS +enable_IPG_checker
       CFLAGS -DDESC_HEAP_NAME="SRAM0"
              -DSRC_HEAP_NAME="SRAM0"
              -DDST_HEAP_NAME="SRAM0"
@@ -1112,6 +1125,7 @@ endif()
       CONFIGURATION IRAM
       TESTGROUP test_greth_system
       FILES test_o32t_2_greth_system.c
+      IRUN_FLAGS +enable_IPG_checker
       CFLAGS -DDESC_HEAP_NAME="SRAM0"
              -DSRC_HEAP_NAME="SRAM0"
              -DDST_HEAP_NAME="SRAM0"
@@ -1125,6 +1139,7 @@ endif()
       CONFIGURATION IRAM
       TESTGROUP test_greth_system
       FILES test_o32t_2_greth_system.c
+      IRUN_FLAGS +enable_IPG_checker
       CFLAGS -DDESC_HEAP_NAME="SRAM0"
              -DSRC_HEAP_NAME="SRAM0"
              -DDST_HEAP_NAME="SRAM0"
@@ -1139,6 +1154,7 @@ endif()
       CONFIGURATION IRAM
       TESTGROUP test_greth_system
       FILES test_o32t_2_greth_system.c
+      IRUN_FLAGS +enable_IPG_checker
       CFLAGS -DDESC_HEAP_NAME="SRAM0"
              -DSRC_HEAP_NAME="IM2"
              -DDST_HEAP_NAME="SRAM0"
@@ -1152,6 +1168,7 @@ endif()
       CONFIGURATION IRAM
       TESTGROUP test_greth_system
       FILES test_o32t_2_greth_system.c
+      IRUN_FLAGS +enable_IPG_checker
       CFLAGS -DDESC_HEAP_NAME="SRAM0"
              -DSRC_HEAP_NAME="IM2"
              -DDST_HEAP_NAME="SRAM0"
@@ -1165,6 +1182,7 @@ endif()
       CONFIGURATION IRAM
       TESTGROUP test_greth_system
       FILES test_o32t_2_greth_system.c
+      IRUN_FLAGS +enable_IPG_checker
       CFLAGS -DDESC_HEAP_NAME="SRAM0"
              -DSRC_HEAP_NAME="IM2"
              -DDST_HEAP_NAME="SRAM0"
@@ -1178,6 +1196,7 @@ endif()
       CONFIGURATION IRAM
       TESTGROUP test_greth_system
       FILES test_o32t_2_greth_system.c
+      IRUN_FLAGS +enable_IPG_checker
       CFLAGS -DDESC_HEAP_NAME="IM2"
              -DSRC_HEAP_NAME="IM2"
              -DDST_HEAP_NAME="SRAM0"
@@ -1191,6 +1210,7 @@ endif()
       CONFIGURATION IRAM
       TESTGROUP test_greth_system
       FILES test_o32t_2_greth_system.c
+      IRUN_FLAGS +enable_IPG_checker
       CFLAGS -DDESC_HEAP_NAME="IM2"
              -DSRC_HEAP_NAME="IM2"
              -DDST_HEAP_NAME="SRAM0"
@@ -1204,6 +1224,7 @@ endif()
       CONFIGURATION IRAM
       TESTGROUP test_greth_system
       FILES test_o32t_2_greth_system.c
+      IRUN_FLAGS +enable_IPG_checker
       CFLAGS -DDESC_HEAP_NAME="IM2"
              -DSRC_HEAP_NAME="IM2"
              -DDST_HEAP_NAME="SRAM0"
