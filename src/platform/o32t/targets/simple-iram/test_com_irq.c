@@ -165,14 +165,12 @@ static void deinit_irq( struct rumboot_irq_entry * const tbl ) {
     rumboot_irq_free(tbl);
 }
 
-
 // Crutch Until This Will Be Made For All Tests Accurately
 static struct tlb_entry const em2_nospeculative_tlb_entries[] =
 {
 /*   MMU_TLB_ENTRY(  ERPN,   RPN,        EPN,        DSIZ,                   IL1I,   IL1D,   W,      I,      M,      G,      E,                      UX, UW, UR,     SX, SW, SR      DULXE,  IULXE,      TS,     TID,                WAY,                BID,                V   )*/
     {MMU_TLB_ENTRY(  0x020,  0xC0304,    0xC0304,    MMU_TLBE_DSIZ_16KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_LITTLE_END,  0b0,0b0,0b0,    0b0,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_1,    MMU_TLBWE_BE_UND,   0b1 )}
 };
-
 
 int main()
 {
