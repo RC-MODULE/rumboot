@@ -8,11 +8,11 @@ static const char rumboot_logo[] =
 " `\"  88      ,8P                             `\"  88      ,8P                     88888888\n"
 "     88aaaad8P\"                                  88aaaad8P\"                         I8   \n"
 "     88\"\"\"\"Yb,    gg      gg   ,ggg,,ggg,,ggg,   88\"\"\"\"Y8ba    ,ggggg,    ,ggggg,   I8\n"
-"     88     \"8b   I8      8I  ,8\" \"8P\" \"8P\" \"8,  88      `8b  dP\"  \"Y8gggdP\"  \"Y8gggI8\n"
-"     88      `8i  I8,    ,8I  I8   8I   8I   8I  88      ,8P i8'    ,8I i8'    ,8I ,I8,  \n"
-"     88       Yb,,d8b,  ,d8b,,dP   8I   8I   Yb, 88_____,d8',d8,   ,d8',d8,   ,d8',d88b, \n"
-"     88        Y88P'\"Y88P\"`Y88P'   8I   8I   `Y888888888P\"  P\"Y8888P\"  P\"Y8888P\"  8P\"\"Y8\n";
-                                                                                         
+"     88     \"8b   I8      8I  ,8\" \"8P\" \"8P\" \"8,  88      `8b  dP\"  \"Y8gggdP\"  \"Y8g  I8\n"
+"     88      `8i  I8,    ,8I  I8   8I   8I   8I  88      ,8P i8'    ,8I i8'    ,8I  I8,  \n"
+"     88       Yb,,d8b,  ,d8b,,dP   8I   8I   Yb, 88_____,d8',d8,   ,d8',d8,   ,d8'  88b, \n"
+"     88        Y88P'\"Y88P\"`Y88P'   8I   8I   `Y888888888P\"  P\"Y8888P\"  P\"Y8888P\"     \"Y888\n";
+                                                                                      
                                                                                          
             
 
