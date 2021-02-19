@@ -37,9 +37,9 @@ enum rumboot_header_flags {
     RUMBOOT_FLAG_ENCRYPT  = (1 << 1), // NOT_YET_IMPLEMENTED: Image is encrypted, decrypt data from OTP
     RUMBOOT_FLAG_SIGNED   = (1 << 2), // NOT_YET_IMPLEMENTED: Image is signed, need signature verification
     RUMBOOT_FLAG_SMP      = (1 << 3), // NOT_YET_IMPLEMENTED: SMP Image
-    RUMBOOT_FLAG_DECAPS   = (1 << 4), // NOT_YET_IMPLEMENTED: Remove header during relocation
-    RUMBOOT_FLAG_RELOCATE = (1 << 5), // NOT_YET_IMPLEMENTED: Relocate image before execution
-    RUMBOOT_FLAG_SYNC     = (1 << 6), // NOT_YET_IMPLEMENTED: Wait for the image to finish before exiting
+    RUMBOOT_FLAG_DECAPS   = (1 << 4), /** Remove header before executing and move data to the beginning */
+    RUMBOOT_FLAG_RELOCATE = (1 << 5), /** Relocate image before execution to the address in relocation field */
+    RUMBOOT_FLAG_SYNC     = (1 << 6), /** Wait for the image to finish before exiting */
     RUMBOOT_FLAG_RESERVED = (1 << 7), // Reserved
 };
 
