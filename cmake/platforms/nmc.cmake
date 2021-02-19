@@ -22,14 +22,12 @@ rumboot_add_configuration(
     IM1_IMAGE SELF
     IM0BIN SELF
   CFLAGS -DRUMBOOT_MAIN_NORETURN -fnmc-compatible-if-packed
-  OBJCOPY_FLAGS --change-section-lma=.header=0
+  OBJCOPY_FLAGS 
   FEATURES PACKIMAGE
-  PACKIMAGE_FLAGS -CiR 0x00000020C0040000
-  #HACK: For now that should work
-  BOOTROM "${CMAKE_BINARY_DIR}/rumboot-o32t-Debug/rumboot-o32t-Debug-bootrom-stub.hex"
-  #TODO: This is how this shit should look like
-  #RUMBOOT_DEPENDENCY o32t:bootrom-stub
-  #BOOTROM o32t:bootrom-stub
+  #We need a relocatable image 0x80020000
+  PACKIMAGE_FLAGS -CiR 0x80020000
+  #External bootrom-stub dependency
+  BOOTROM o32t:bootrom-stub
   )
 
 rumboot_add_configuration(
@@ -38,12 +36,17 @@ rumboot_add_configuration(
   FILES ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c
   LDS nmc/generic.lds
   LDFLAGS "-Wl,\"-ecorestart\""
-  CFLAGS -mmas -save-temps -DRUMBOOT_NOENTRY
+  CFLAGS -mmas -save-temps -DRUMBOOT_NOENTRY -fnmc-compatible-if-packed
   IRUN_FLAGS ${BOOTROM_IFLAGS} +RUMBOOT_RUNTIME_ADDR=5A000
+  BOOTROM "${CMAKE_BINARY_DIR}/rumboot-o32t-Debug/rumboot-o32t-Debug-bootrom-stub.hex"
   LOAD 
     IM1_IMAGE SELF
-  FEATURES NOLIBS
-)
+    IM0BIN SELF
+  FEATURES NOLIBS PACKIMAGE
+  PACKIMAGE_FLAGS -CiR 0x80020000
+  #External bootrom-stub dependency
+  BOOTROM o32t:bootrom-stub
+  )
 
 
 include(${CMAKE_SOURCE_DIR}/cmake/bootrom.cmake)

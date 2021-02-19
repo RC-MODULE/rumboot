@@ -8,8 +8,16 @@ MEMORY
 
 SECTIONS
 {
+  OVERLAY : {
+    .header {
+      KEEP(*(.header))
+    }
+    .init {
+      KEEP(*(.text.init))
+    }    
+  } > IRAM
+
   .rwx : {
-   KEEP(*(.text.init))
    *(.text)
    *(.text.*)
    *(.rodata)
@@ -29,10 +37,6 @@ SECTIONS
     _rumboot_platform_bss_end = .;
   } > IRAM
 
-  /* --change-section-lma=0 will move it for us */
-  .header : {
-    KEEP(*(.header))
-  } > IRAM
 
   .heap (NOLOAD) : {
     _rumboot_IRAM_heap_start = .;
