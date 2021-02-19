@@ -23,5 +23,10 @@ __attribute__((packed)) struct rumboot_bootheader hdr  = {
 	.version	= RUMBOOT_HEADER_VERSION,
 	.chip_id	= RUMBOOT_PLATFORM_CHIPID,
 	.chip_rev	= RUMBOOT_PLATFORM_CHIPREV,
+#if defined (__NM__) && !defined(RUMBOOT_TARGET_CPU_CLUSTER)
+	.target_cpu_cluster = 1,
+#elif defined (RUMBOOT_TARGET_CPU_CLUSTER)
+	.target_cpu_cluster = RUMBOOT_TARGET_CPU_CLUSTER,
+#endif
 	.entry_point32	= { THE_ENTRY_POINT, 0x0 },
 };
