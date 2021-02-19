@@ -86,6 +86,12 @@ __attribute__((no_instrument_function)) void *memcpy(void *d, const void *s, siz
    return d;
 }
 
+__attribute__((no_instrument_function)) void *memmove(void *d, const void *s, size_t n)
+{
+   do_memcpy(d, s, n);
+   return d;
+}
+
  __attribute__((no_instrument_function)) __attribute__((optimize("-O0"))) void rumboot_printf(const char *fmt, ...)
 {
 	/* va-arg func sends r0-r3 registers to stack in prologue
