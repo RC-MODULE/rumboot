@@ -185,10 +185,17 @@ static const tlb_entry big_endian_tlb[] =
 };
 
 #include <rumboot/bitswapper.h>
-
+#include <rumboot/hexdump.h>
 int rumboot_platform_exec(struct rumboot_bootheader *hdr, int swap)
 {
         /* Make sure PID is 0 */
+        if (hdr->target_cpu_cluster) {
+                dcr_write(DCR_SCTL_BASE + SCTL_NMPU_NMI, 1<<1);                
+                dcr_write(DCR_SCTL_BASE + SCTL_NMPU_NMI, 0);
+                rumboot_printf("Should work now\n");
+                while(1);;
+        }
+        
         set_mem_window(MEM_WINDOW_SHARED);
         uint32_t ep = hdr->entry_point32[0];
 
