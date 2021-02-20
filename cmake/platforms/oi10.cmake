@@ -40,7 +40,7 @@ file(GLOB PLATFORM_SOURCES
 macro(RUMBOOT_PLATFORM_SET_COMPILER_FLAGS)
 
 
-    set(RUMBOOT_COMMON_FLAGS "-mcpu=476fp -fno-plt -fno-pic -m32 -ffreestanding -std=gnu99 -DRUMBOOT_PLATFORM_NUM_HEAPS=9 ")
+    set(RUMBOOT_COMMON_FLAGS "-DRUMBOOT_HEADER_VERSION=2 -mcpu=476fp -fno-plt -fno-pic -m32 -ffreestanding -std=gnu99 -DRUMBOOT_PLATFORM_NUM_HEAPS=9 ")
 
     if ( "${CMAKE_GENERATOR}" STREQUAL "Unix Makefiles")
       set(RUMBOOT_COMMON_FLAGS "${RUMBOOT_COMMON_FLAGS} -D__FILENAME__='\"$(subst ${CMAKE_SOURCE_DIR}/,,$(abspath $<))\"'")

@@ -21,7 +21,10 @@
  * @{
  */
 
-#define RUMBOOT_HEADER_VERSION 3
+#ifndef RUMBOOT_HEADER_VERSION
+  #define RUMBOOT_HEADER_VERSION 3
+#endif
+
 #define RUMBOOT_HEADER_MAGIC 0xb01dface
 
 #include <platform/bootheader.h>
