@@ -4,6 +4,7 @@
 #include <algo/crc32.h>
 #include <platform/bootheader.h>
 #include <rumboot/bitswapper.h>
+#include <string.h>
 
 /* HACK: Endian defines are missing on older gcc versions */
 #if  !defined(__ORDER_LITTLE_ENDIAN__) && !defined(__ORDER_BIG_ENDIAN__)
@@ -50,13 +51,31 @@ int rumboot_bootimage_check_magic(uint32_t magic)
 }
 
 #ifdef RUMBOOT_SUPPORTS_SPL_ENDIAN_SWAP
-static uint32_t rumboot_bootimage_header_item(uint32_t v, int swap)
+static uint32_t rumboot_bootimage_header_item32(uint32_t v, int swap)
 {
 	return swap ? __swap32(v) : v;
 }
 #else 
-#define rumboot_bootimage_header_item(v,s) (s ? v : v)
+#define rumboot_bootimage_header_item32(v,s) (s ? v : v)
 #endif
+
+#ifdef RUMBOOT_SUPPORTS_SPL_ENDIAN_SWAP
+static uint64_t rumboot_bootimage_header_item64(uint64_t v, int swap)
+{
+	return swap ? __swap64(v) : v;
+}
+#else 
+#define rumboot_bootimage_header_item64(v,s) (s ? v : v)
+#endif
+
+/* TODO: Move to platform glue */
+const char *rumboot_platform_get_cluster_name(int cluster_id) {
+	if (cluster_id == 0) {
+		return "PPC";
+	} else {
+		return "NMC";
+	}
+}
 
 ssize_t rumboot_bootimage_check_header(struct rumboot_bootheader *hdr, void **dataptr)
 {
@@ -65,7 +84,7 @@ ssize_t rumboot_bootimage_check_header(struct rumboot_bootheader *hdr, void **da
 		return -EBADMAGIC;
 
     dbg_boot(hdr->device, "--- Boot Image Header ---");
-    dbg_boot(hdr->device, "Magic:            0x%x", rumboot_bootimage_header_item(hdr->magic, swap));
+    dbg_boot(hdr->device, "Magic:            0x%x", rumboot_bootimage_header_item32(hdr->magic, swap));
 
 #ifdef RUMBOOT_SUPPORTS_SPL_ENDIAN_SWAP
 	#if (__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__)
@@ -95,9 +114,11 @@ ssize_t rumboot_bootimage_check_header(struct rumboot_bootheader *hdr, void **da
 		hdr->flags & RUMBOOT_FLAG_SYNC     ? " SYNC"    : "",
 		hdr->flags & RUMBOOT_FLAG_RESERVED ? " RSVD"    : ""
 		);
-    dbg_boot(hdr->device, "Data Length:      %d", rumboot_bootimage_header_item(hdr->datalen, swap));
-    dbg_boot(hdr->device, "Header CRC32:     0x%x", rumboot_bootimage_header_item(hdr->header_crc32, swap));
-    dbg_boot(hdr->device, "Data CRC32:       0x%x", rumboot_bootimage_header_item(hdr->data_crc32, swap));
+	uint32_t cluster_id = rumboot_bootimage_header_item32(hdr->target_cpu_cluster, swap);
+    dbg_boot(hdr->device, "Target CPU:       %d (%s)", cluster_id, rumboot_platform_get_cluster_name(cluster_id));	
+    dbg_boot(hdr->device, "Data Length:      %d", rumboot_bootimage_header_item32(hdr->datalen, swap));
+    dbg_boot(hdr->device, "Header CRC32:     0x%x", rumboot_bootimage_header_item32(hdr->header_crc32, swap));
+    dbg_boot(hdr->device, "Data CRC32:       0x%x", rumboot_bootimage_header_item32(hdr->data_crc32, swap));
     dbg_boot(hdr->device, "---        ---        ---");
 	if (hdr->chip_id != RUMBOOT_PLATFORM_CHIPID)
 		return -EBADCHIPID;
@@ -111,7 +132,7 @@ ssize_t rumboot_bootimage_check_header(struct rumboot_bootheader *hdr, void **da
 	int hdrcrclen = (int ) ((void *) &(hdr->header_crc32) - (void *)hdr);
 	uint32_t checksum = crc32(0, hdr, hdrcrclen);
 
-	if (checksum != rumboot_bootimage_header_item(hdr->header_crc32, swap)) {
+	if (checksum != rumboot_bootimage_header_item32(hdr->header_crc32, swap)) {
 		dbg_boot(hdr->device, "Bad Header CRC32: expected: %x", checksum);
 		return -EBADHDRCRC;
 	}
@@ -120,17 +141,17 @@ ssize_t rumboot_bootimage_check_header(struct rumboot_bootheader *hdr, void **da
 		return -EBADENTRY;
 
 	*dataptr = hdr->data;
-	return rumboot_bootimage_header_item(hdr->datalen, swap);
+	return rumboot_bootimage_header_item32(hdr->datalen, swap);
 }
 
 int32_t rumboot_bootimage_check_data(struct rumboot_bootheader *hdr)
 {
 	int swap = rumboot_bootimage_check_magic(hdr->magic);	
-	if (rumboot_bootimage_header_item(hdr->datalen, swap) == 0)
+	if (rumboot_bootimage_header_item32(hdr->datalen, swap) == 0)
 		return -EBADDATACRC;
 
-	uint32_t checksum = crc32(0, hdr->data, rumboot_bootimage_header_item(hdr->datalen, swap));
-	if (checksum != rumboot_bootimage_header_item(hdr->data_crc32, swap)) {
+	uint32_t checksum = crc32(0, hdr->data, rumboot_bootimage_header_item32(hdr->datalen, swap));
+	if (checksum != rumboot_bootimage_header_item32(hdr->data_crc32, swap)) {
 		dbg_boot(hdr->device, "Bad Data CRC32: expected: 0x%x",
 			checksum
 		);
@@ -142,27 +163,38 @@ int32_t rumboot_bootimage_check_data(struct rumboot_bootheader *hdr)
 
 int rumboot_bootimage_execute(struct rumboot_bootheader *hdr, const struct rumboot_bootsource *src)
 {
-	/* TODO: Handle decapsulation, relocation and decompression here */
 	int swap = rumboot_bootimage_check_magic(hdr->magic);
 	hdr->magic = 0x0; /* Wipe out magic */
 	hdr->device = src; /* Set the src pointer */
 	if (hdr->version == 2) {
-		hdr->entry_point == (hdr->entry_point >> 32); /* Properly handle 32-bit V2 images */
+		hdr->entry_point = (hdr->entry_point >> 32); /* Properly handle 32-bit V2 images */
 		goto bailout;
 	}
-	
+	int cluster = rumboot_bootimage_header_item32(hdr->target_cpu_cluster, swap);
 	/* The following is only for V3 images */
-	if (hdr->flags & RUMBOOT_FLAG_RELOCATE) {
-		void *dest = (void *) hdr->relocation;
+	if (hdr->flags & (RUMBOOT_FLAG_RELOCATE | RUMBOOT_FLAG_DECAPS)) {
+		void *dest;
+		/* If we only have a 'decaps' image, we'll have to do an in-place memmove/decompress */
+		uint64_t dest_ptr = (hdr->flags & RUMBOOT_FLAG_RELOCATE) ? rumboot_bootimage_header_item64(hdr->relocation, swap) : (uintptr_t) hdr;
+		if (sizeof(dest) == sizeof(uint32_t)) {
+			dest = (void *) (uintptr_t) (dest_ptr & 0xffffffff);
+		} else if (sizeof(dest) == sizeof(uint64_t)) {
+			dest = (void*) (uintptr_t) dest_ptr;
+		};
+
 		void *src = hdr;
-		size_t len = hdr->datalen + sizeof(*hdr);
+		size_t len = rumboot_bootimage_header_item32(hdr->datalen, swap) + sizeof(*hdr);
 
 		if (hdr->flags & RUMBOOT_FLAG_DECAPS) {
 			src = hdr->data;
 			len -= sizeof(*hdr);
 		}
-		dbg_boot(hdr->device, "Relocating image to 0x%x -> 0x%x", src, dest);
-		memcpy(dest, src, len);
+		rumboot_printf("Relocating image to 0x%x -> 0x%x\n", src, dest);
+		memmove(dest,src, len);
+        #ifdef __PPC__
+        /* FixMe: Use cross-platform barrier sync functions here */
+        asm("msync");
+        #endif
 	}
 
 	bailout:
