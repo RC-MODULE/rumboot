@@ -479,7 +479,7 @@ function(add_rumboot_target)
   if (NOT EXISTS ${CMAKE_BINARY_DIR}/.stamps/)
     file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/.stamps/)
   endif()
-  file(TOUCH ${CMAKE_BINARY_DIR}/.stamps/${product})
+  file(WRITE ${CMAKE_BINARY_DIR}/.stamps/${product} X)
 
   generate_stuff_for_target(${product})
   rumboot_platform_generate_stuff_for_taget(${product})
