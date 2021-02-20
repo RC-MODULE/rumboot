@@ -166,10 +166,7 @@ int rumboot_bootimage_execute(struct rumboot_bootheader *hdr, const struct rumbo
 	int swap = rumboot_bootimage_check_magic(hdr->magic);
 	hdr->magic = 0x0; /* Wipe out magic */
 	hdr->device = src; /* Set the src pointer */
-	if (hdr->version == 2) {
-		hdr->entry_point = (hdr->entry_point >> 32); /* Properly handle 32-bit V2 images */
-		goto bailout;
-	}
+	
 	int cluster = rumboot_bootimage_header_item32(hdr->target_cpu_cluster, swap);
 	/* The following is only for V3 images */
 	if (hdr->flags & (RUMBOOT_FLAG_RELOCATE | RUMBOOT_FLAG_DECAPS)) {
