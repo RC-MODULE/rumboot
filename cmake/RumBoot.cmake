@@ -476,8 +476,12 @@ function(add_rumboot_target)
     endif()
   endif()
 
-  generate_stuff_for_target(${product})
+  if (NOT EXISTS ${CMAKE_BINARY_DIR}/.stamps/)
+    file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/.stamps/)
+  endif()
+  file(TOUCH ${CMAKE_BINARY_DIR}/.stamps/${product})
 
+  generate_stuff_for_target(${product})
   rumboot_platform_generate_stuff_for_taget(${product})
 
 
@@ -516,7 +520,7 @@ function(add_rumboot_target)
     string(REPLACE "TARGET_LOAD_" "" mem ${mem})
     set(_plusargs "${_plusargs};+${mem}=${_load}")      
     endforeach()
-    
+
     add_test(NAME ${product} COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/rumboot-packimage.py/rumboot_xrun.py -r ${RUMBOOT_TESTING_RESETSEQ} -f ${product}.bin -P ${RUMBOOT_TESTING_RESETPORT} -p ${RUMBOOT_TESTING_PORT} ${_plusargs})
     extract_labels_from_source(${product} ${trg})
     SET_TESTS_PROPERTIES(${product} PROPERTIES TIMEOUT "45")  

@@ -179,6 +179,7 @@ function(add_rumboot_target)
     set(HDL_EXTRA_REBUILD_CMD
       "${HDL_EXTRA_REBUILD_CMD}
       make ${rumboot_dirname}-configure
+      [ -f \"${rumboot_dirname}/.stamps/${product}\" ] || make ${rumboot_dirname}-configure -B
       cd ${rumboot_dirname}
       make ${product}.all
       cd ..
