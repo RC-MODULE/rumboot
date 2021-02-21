@@ -5,7 +5,7 @@
 add_custom_target(rumboot ALL)
 add_custom_target(tarball)
 
-add_external_component(rumboot-native-tests rumboot NO -DRUMBOOT_PLATFORM=native)
+#add_external_component(rumboot-native-tests rumboot NO -DRUMBOOT_PLATFORM=native)
 
 if(RUMBOOT_COVERAGE)
   configure_file(
