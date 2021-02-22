@@ -20,28 +20,14 @@
 #include <arch/ppc/arch/ppc_476fp_mmu_fields.h>
 #include <arch/ppc/arch/ppc_476fp_mmu.h>
 
-/*
-com_cfg_t cfg = {
-  .RD_MainCounter  =0x0,
-  .RD_Address      =(uint32_t)0x0,
-  .RD_Bias         =0x0,
-  .RD_RowCounter   =0x0,
-  .RD_AddressMode  =ONE_DIMENSION,
-  .RD_InterruptMask=COM_RD_CONTROL_EN|COM_RD_CONTROL_CPL,
-  .RD_IH_EN_tr         =0x0,
-  .WR_MainCounter     =0x0,
-  .WR_Address      =(uint32_t)0x0,
-  .WR_Err1CNT_rcv         =0x0,
-  .WR_Err2CNT_rcv         =0x0 
-};
-*/
+
 #define ARR_SIZE 128
 
 #ifndef COM_SRC_HEAP
-#define COM_SRC_HEAP "IM1"
+#define COM_SRC_HEAP "IM2"
 #endif
 #ifndef COM_DST_HEAP
-#define COM_DST_HEAP "IM1"
+#define COM_DST_HEAP "IM2"
 #endif
 
 void prepare_arrays( uint32_t ** src, uint32_t ** dst ) {
@@ -50,7 +36,7 @@ void prepare_arrays( uint32_t ** src, uint32_t ** dst ) {
 
 	
     for( uint32_t i = 0; i < ARR_SIZE; i++ )
-        (*src)[ i ] = i + ( (i+1) << 8 ) + ( (i+1) << 16 ) + ( (i+1) << 24 );
+        (*src)[ i ] = i + ( (i+1) << 8 ) + ( (i+2) << 16 ) + ( (i+3) << 24 );
     msync();
 }
 
@@ -58,10 +44,10 @@ static volatile uint32_t COM0_Cpl_tr;
 static volatile uint32_t COM0_Cpl_rcv;
 static volatile uint32_t COM1_Cpl_tr;
 static volatile uint32_t COM1_Cpl_rcv;
-static volatile uint32_t COM0_ES_tr;
-static volatile uint32_t COM0_ES_rcv;
-static volatile uint32_t COM1_ES_tr;
-static volatile uint32_t COM1_ES_rcv;
+static volatile uint32_t COM0_ES_tr=0;
+static volatile uint32_t COM0_ES_rcv=0;
+static volatile uint32_t COM1_ES_tr=0;
+static volatile uint32_t COM1_ES_rcv=0;
 static volatile uint32_t COMMP0_COMMP1_IRQ = 0;
 static volatile uint32_t COMMP0_COMMP1_IRQ_ERROR = 0;
 
@@ -77,63 +63,71 @@ static void handler1() {
 	uint32_t  COM1_Status_rcv = ioread32( COM1_BASE + CSR_rcv ); //Read interrupt status
 	
 	
-    if( ( COM0_Status_tr >> 1 ) & ( (COM0_Mask_tr & 0x1) ==0) ) {				 
+    if( ( COM0_Status_tr >> 1 ) & ((COM0_Mask_tr & 0x1) ==0) ) {				 
        COM0_Cpl_tr = 1;
 	   	rumboot_printf( "COM0_Cpl_tr= %d\n",COM0_Cpl_tr );
+		//rumboot_printf( "COM0_Status_trr= %d\n",( COM0_Status_tr >> 1 ) );
+		//rumboot_printf( "COM0_Status_tr= %d\n",( ( COM0_Status_tr >> 1 ) & ((COM0_Mask_tr & 0x1) ==0) ) );
+		//rumboot_printf( "COM0_Mask_tr= %d\n",((COM0_Mask_tr & 0x1) ==0));		
 		iowrite32((COM0_Status_tr & 0xfffffffd),COM0_BASE + CSR_tr);
 		COMMP0_COMMP1_IRQ = 80;//CP1_RCV_INT;
     }
-    if( ( COM0_Status_tr >> 2 ) & (((COM0_Mask_tr >> 2) & 0x1 )==0)) {
+    if( ( COM0_Status_tr >> 2 ) &(((COM0_Mask_tr >> 2) & 0x1)==0)){
         COM0_ES_tr = 1;
 		rumboot_printf( "COMPORT ERROR COM0_ES_tr= %d\n",COM0_ES_tr );
 	   iowrite32((COM0_Status_tr & 0xfffffffb),COM0_BASE + CSR_tr);
 		COMMP0_COMMP1_IRQ = 80;//CP1_RCV_INT;	
 		COMMP0_COMMP1_IRQ_ERROR =1;
+		rumboot_printf( "COMMP0_COMMP1_IRQ_TR_ERROR= %d\n",COMMP0_COMMP1_IRQ_ERROR );
     }
 		 
-	 if( ( COM1_Status_rcv >> 1 ) & ( (COM1_Mask_rcv & 0x1) ==0) ) {
+if( ( COM1_Status_rcv >> 1 ) & ((COM1_Mask_rcv & 0x1) ==0)){
        COM1_Cpl_rcv = 1;	  
 		rumboot_printf( "COM1_Cpl_rcv= %d\n",COM1_Cpl_rcv );
-	   	iowrite32((COM1_Status_rcv & 0xfffffffd),COM1_BASE + CSR_rcv);	   
+	   	iowrite32((COM1_Status_rcv & 0xfffffffd),COM1_BASE + CSR_rcv);
 		COMMP0_COMMP1_IRQ = 81;// CP1_TRM_INT;
+
     }
 	
 
-	if( ( COM1_Status_rcv> 2 ) & (((COM1_Mask_rcv >> 2) & 0x1 )==0)) {
+	if( ( COM1_Status_rcv	>> 2) &	(((COM1_Mask_rcv >> 2) & 0x1)==0)) {
         COM1_ES_rcv = 1;
 	   iowrite32((COM1_Status_rcv & 0xfffffffb),COM1_BASE + CSR_rcv);	   
 		COMMP0_COMMP1_IRQ =81; //CP1_TRM_INT;
 		COMMP0_COMMP1_IRQ_ERROR =1;
+		rumboot_printf( "COMMP0_COMMP1_IRQ_RCV_ERROR= %d\n",COMMP0_COMMP1_IRQ_ERROR );
     }
 			    
 	
-     if( ( COM1_Status_tr >> 1 ) & ( (COM1_Mask_tr & 0x1) ==0) ) {
+     if( ( COM1_Status_tr >> 1 ) & ((COM1_Mask_tr & 0x1) ==0 )){
        COM1_Cpl_tr = 1;
 	   rumboot_printf( "COM1_Cpl_tr= %d\n",COM1_Cpl_tr );
 	
 		iowrite32((COM1_Status_tr & 0xfffffffd),COM1_BASE + CSR_tr);	   
 		COMMP0_COMMP1_IRQ = 78;//CP0_RCV_INT; 
 	 }	
-    if( ( COM1_Status_tr >> 2 ) & (((COM1_Mask_tr >> 2) & 0x1 )==0)) {
+    if( ( COM1_Status_tr >> 2 ) & ((COM1_Mask_tr >> 2) & 0x1 ==0)){
         COM1_ES_tr = 1;
 		iowrite32((COM1_Status_tr & 0xfffffffb),COM1_BASE + CSR_tr);
-		COMMP0_COMMP1_IRQ = 78;//CP0_RCV_INT;
+		COMMP0_COMMP1_IRQ = 78;//CP0_RCV_INT;		
 		COMMP0_COMMP1_IRQ_ERROR =1;
+		rumboot_printf( "COMMP1_COMMP0_IRQ_TR_ERROR =%d\n",COMMP0_COMMP1_IRQ_ERROR );
     }
 	
 		 
-	 if( ( COM0_Status_rcv >> 1 ) & ( (COM0_Mask_rcv & 0x1) ==0) ) {
+	 if( ( COM0_Status_rcv >> 1 ) & ((COM0_Mask_rcv & 0x1) ==0 )){
         COM0_Cpl_rcv = 1;
 		   	rumboot_printf( "COM0_Cpl_rcv= %d\n",COM0_Cpl_rcv );
 
 	   	iowrite32((COM0_Status_rcv & 0xfffffffd),COM0_BASE + CSR_rcv);
 		COMMP0_COMMP1_IRQ = 0;
     }
-   if( ( COM0_Status_rcv> 2 ) & (((COM0_Mask_rcv >> 2) & 0x1 )==0)) {
+   if( ( COM0_Status_rcv	>> 2 ) & ((COM0_Mask_rcv >> 2) & 0x1 ==0)){
         COM0_ES_rcv  = 1;
 	   iowrite32((COM0_Status_tr & 0xfffffffb),COM0_BASE + CSR_rcv);
 		COMMP0_COMMP1_IRQ = 0;
 		COMMP0_COMMP1_IRQ_ERROR =1;
+		rumboot_printf( "COMMP1_COMMP0_IRQ_RCV_ERROR= %d\n",COMMP0_COMMP1_IRQ_ERROR );
     }
 	    
 	
@@ -202,6 +196,10 @@ int main()
 	rumboot_printf( "COM1_Cpl_rcv= %d\n",COM1_Cpl_rcv ); 
 	rumboot_printf( "COM1_Cpl_tr= %d\n",COM1_Cpl_tr );
 	rumboot_printf( "COM0_Cpl_rcv= %d\n",COM0_Cpl_rcv ); 
+	COM0_Cpl_tr =0;
+	COM0_Cpl_rcv=0;
+	COM1_Cpl_tr =0;
+	COM1_Cpl_rcv=0;
 	
    deinit_irq(tbl);
   rumboot_printf("COMMPORT1 to COMMPORT0 direction checked\n"); 
