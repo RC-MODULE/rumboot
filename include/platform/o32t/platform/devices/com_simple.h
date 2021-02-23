@@ -8,7 +8,7 @@
 #define COM_CONTROL_EN  0x1
 #define COM_CONTROL_CPL 0x2
 
-//#define COM_DO_DELAY	0x0
+#define COM_DO_DELAY	0x1
 #define COM_COUNT 		  0x40
 /*
 typedef struct com_cfg {
