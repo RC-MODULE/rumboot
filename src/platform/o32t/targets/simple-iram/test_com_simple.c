@@ -31,7 +31,7 @@ void prepare_arrays( uint32_t ** src, uint32_t ** dst ) {
 
 	
     for( uint32_t i = 0; i < ARR_SIZE; i++ )
-        (*src)[ i ] = i + ( (i+1) << 8 ) + ( (i+1) << 16 ) + ( (i+1) << 24 );
+        (*src)[ i ] = i + ( (i+1) << 8 ) + ( (i+2) << 16 ) + ( (i+3) << 24 );
     msync();
 }
 
