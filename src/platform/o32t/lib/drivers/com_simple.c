@@ -53,9 +53,9 @@ int comp_dma_run( uint32_t src_addr, uint32_t dst_addr,uint32_t base0, uint32_t 
 	
 	iowrite32(COM_CONTROL_EN,base0+ CSR_tr);
 	
-	#ifdef COM_DO_DELAY
-	comp_delay (25);
-	#endif
+//	#ifdef COM_DO_DELAY
+//	comp_delay (25);
+//	#endif
 	
 	iowrite32(COM_CONTROL_EN,base1	+ CSR_rcv);
 	
