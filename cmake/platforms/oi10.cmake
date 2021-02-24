@@ -2050,54 +2050,7 @@ endif()
         PREFIX "hscb_0"
         NAME test_oi10_hscb_reg
     )
-    add_rumboot_target(
-        CONFIGURATION IRAM
-        CFLAGS  -DHSCB0_TX_DSCTBL_BASE="SRAM0"
-                -DHSCB0_TX_DATA_BASE="SRAM0"
-                -DHSCB0_RX_DSCTBL_BASE="SRAM0"
-                -DHSCB0_RX_DATA_BASE="SRAM0"
-                -DHSCB1_TX_DSCTBL_BASE="SRAM0"
-                -DHSCB1_TX_DATA_BASE="SRAM0"
-                -DHSCB1_RX_DSCTBL_BASE="SRAM0"
-                -DHSCB1_RX_DATA_BASE="SRAM0"
-                -DHSCB2_TX_DSCTBL_BASE="SRAM0"
-                -DHSCB2_TX_DATA_BASE="SRAM0"
-                -DHSCB2_RX_DSCTBL_BASE="SRAM0"
-                -DHSCB2_RX_DATA_BASE="SRAM0"
-                -DHSCB3_TX_DSCTBL_BASE="SRAM0"
-                -DHSCB3_TX_DATA_BASE="SRAM0"
-                -DHSCB3_RX_DSCTBL_BASE="SRAM0"
-                -DHSCB3_RX_DATA_BASE="SRAM0"
-                -DDEBUG_PRINT=0
-        FILES test_oi10_hscb_simult_big.c
-        PREFIX "hscb_simult"
-        NAME test_hscb_big_sram0
-    )
 
-    add_rumboot_target(
-        CONFIGURATION IRAM
-        CFLAGS  -DHSCB0_TX_DSCTBL_BASE="SSRAM"
-                -DHSCB0_TX_DATA_BASE="SSRAM"
-                -DHSCB0_RX_DSCTBL_BASE="SSRAM"
-                -DHSCB0_RX_DATA_BASE="SSRAM"
-                -DHSCB1_TX_DSCTBL_BASE="SSRAM"
-                -DHSCB1_TX_DATA_BASE="SSRAM"
-                -DHSCB1_RX_DSCTBL_BASE="SSRAM"
-                -DHSCB1_RX_DATA_BASE="SSRAM"
-                -DHSCB2_TX_DSCTBL_BASE="SSRAM"
-                -DHSCB2_TX_DATA_BASE="SSRAM"
-                -DHSCB2_RX_DSCTBL_BASE="SSRAM"
-                -DHSCB2_RX_DATA_BASE="SSRAM"
-                -DHSCB3_TX_DSCTBL_BASE="SSRAM"
-                -DHSCB3_TX_DATA_BASE="SSRAM"
-                -DHSCB3_RX_DSCTBL_BASE="SSRAM"
-                -DHSCB3_RX_DATA_BASE="SSRAM"
-                -DDEBUG_PRINT=0
-        FILES test_oi10_hscb_simult_big.c
-        PREFIX "hscb_simult"
-        NAME test_hscb_big_ssram
-    )    
-    
     add_rumboot_target(
         CONFIGURATION IRAM
         CFLAGS -DHSCB_UNDER_TEST_BASE=HSCB1_BASE
@@ -2197,6 +2150,110 @@ endif()
         NAME test_oi10_hscb_rmap
     )
 
+#---------------------------- HSCB_NEW    
+     add_rumboot_target(
+        CONFIGURATION IRAM
+        #CFLAGS -DHSCB_UNDER_TEST_BASE=HSCB0_BASE
+        FILES test_oi10_hscb_simult_big.c
+        PREFIX "hscb_simult"
+        NAME test_hscb_big
+    )
+    
+    add_rumboot_target(
+        CONFIGURATION IRAM
+        #CFLAGS -DHSCB_UNDER_TEST_BASE=HSCB0_BASE
+        CFLAGS -DHSCB1_TX_DSCTBL_BASE="IM1"
+               -DHSCB1_TX_DATA_BASE="IM1"
+               -DHSCB1_RX_DSCTBL_BASE="IM1"
+               -DHSCB1_RX_DATA_BASE="IM1"
+               -DHSCB2_TX_DSCTBL_BASE="IM1"
+               -DHSCB2_TX_DATA_BASE="IM1"
+               -DHSCB2_RX_DSCTBL_BASE="IM1"
+               -DHSCB2_RX_DATA_BASE="IM1"
+               -DHSCB3_TX_DSCTBL_BASE="IM1"
+               -DHSCB3_TX_DATA_BASE="IM1"
+               -DHSCB3_RX_DSCTBL_BASE="IM1"
+               -DHSCB3_RX_DATA_BASE="IM1"
+        FILES test_oi10_hscb_simult_big.c
+        PREFIX "hscb0_emi_others_im1"
+        NAME test_hscb_big
+    )
+    
+        add_rumboot_target(
+        CONFIGURATION IRAM
+        #CFLAGS -DHSCB_UNDER_TEST_BASE=HSCB0_BASE
+        CFLAGS -DHSCB0_TX_DSCTBL_BASE="SSRAM"
+               -DHSCB0_TX_DATA_BASE="SSRAM"
+               -DHSCB0_RX_DSCTBL_BASE="SSRAM"
+               -DHSCB0_RX_DATA_BASE="SSRAM"
+               -DHSCB1_TX_DSCTBL_BASE="SSRAM"
+               -DHSCB1_TX_DATA_BASE="SSRAM"
+               -DHSCB1_RX_DSCTBL_BASE="SSRAM"
+               -DHSCB1_RX_DATA_BASE="SSRAM"
+               -DHSCB2_TX_DSCTBL_BASE="SSRAM"
+               -DHSCB2_TX_DATA_BASE="SSRAM"
+               -DHSCB2_RX_DSCTBL_BASE="SSRAM"
+               -DHSCB2_RX_DATA_BASE="SSRAM"
+               -DHSCB3_TX_DSCTBL_BASE="SSRAM"
+               -DHSCB3_TX_DATA_BASE="SSRAM"
+               -DHSCB3_RX_DSCTBL_BASE="SSRAM"
+               -DHSCB3_RX_DATA_BASE="SSRAM"
+               #-DDEBUG_PRINT=1
+        FILES test_oi10_hscb_simult_big.c
+        PREFIX "hscb_all_ssram"
+        NAME test_hscb_big
+    )
+
+    add_rumboot_target(
+        CONFIGURATION IRAM
+        #CFLAGS -DHSCB_UNDER_TEST_BASE=HSCB0_BASE
+        CFLAGS -DHSCB0_TX_DSCTBL_BASE="SSRAM"
+               -DHSCB0_TX_DATA_BASE="SSRAM"
+               -DHSCB0_RX_DSCTBL_BASE="SSRAM"
+               -DHSCB0_RX_DATA_BASE="SSRAM"
+               -DHSCB1_TX_DSCTBL_BASE="IM1"
+               -DHSCB1_TX_DATA_BASE="IM1"
+               -DHSCB1_RX_DSCTBL_BASE="IM1"
+               -DHSCB1_RX_DATA_BASE="IM1"
+               -DHSCB2_TX_DSCTBL_BASE="IM1"
+               -DHSCB2_TX_DATA_BASE="IM1"
+               -DHSCB2_RX_DSCTBL_BASE="IM1"
+               -DHSCB2_RX_DATA_BASE="IM1"
+               -DHSCB3_TX_DSCTBL_BASE="IM1"
+               -DHSCB3_TX_DATA_BASE="IM1"
+               -DHSCB3_RX_DSCTBL_BASE="IM1"
+               -DHSCB3_RX_DATA_BASE="IM1"
+        FILES test_oi10_hscb_simult_big.c
+        PREFIX "hscb0_ssram_others_im1"
+        NAME test_hscb_big
+    )  
+
+        add_rumboot_target(
+        CONFIGURATION IRAM
+        #CFLAGS -DHSCB_UNDER_TEST_BASE=HSCB0_BASE
+        CFLAGS -DHSCB0_TX_DSCTBL_BASE="IM1"
+               -DHSCB0_TX_DATA_BASE="SSRAM"
+               -DHSCB0_RX_DSCTBL_BASE="IM1"
+               -DHSCB0_RX_DATA_BASE="SSRAM"
+               -DHSCB1_TX_DSCTBL_BASE="IM1"
+               -DHSCB1_TX_DATA_BASE="SSRAM"
+               -DHSCB1_RX_DSCTBL_BASE="IM1"
+               -DHSCB1_RX_DATA_BASE="SSRAM"
+               -DHSCB2_TX_DSCTBL_BASE="IM1"
+               -DHSCB2_TX_DATA_BASE="SSRAM"
+               -DHSCB2_RX_DSCTBL_BASE="IM1"
+               -DHSCB2_RX_DATA_BASE="SSRAM"
+               -DHSCB3_TX_DSCTBL_BASE="IM1"
+               -DHSCB3_TX_DATA_BASE="SSRAM"
+               -DHSCB3_RX_DSCTBL_BASE="IM1"
+               -DHSCB3_RX_DATA_BASE="SSRAM"
+               #-DDEBUG_PRINT=1
+        FILES test_oi10_hscb_simult_big.c
+        PREFIX "hscb_desc_im1_data_ssram"
+        NAME test_hscb_big
+    )    
+#-------------------------------------------------------    
+    
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES test_oi10_lscb.c
@@ -2506,6 +2563,168 @@ endif()
              MBIN supplementary-test_oi10_cpu_021_wb_cache_size
     )
 
+#***********************************************************************************************************************************************************************************************************
+    add_rumboot_target(
+        CONFIGURATION SUPPLEMENTARY
+        LDS oi10/sram0.lds
+        FILES ppc_memory_bw_exploration/test_oi10_ppc_memory_bw_exploration_first_exprience.c
+        NAME "test_oi10_ppc_memory_bw_exploration_first_exprience"
+        OPTIMIZE -O3
+    )
+    add_rumboot_target(
+        CONFIGURATION IRAM
+        FILES ppc_memory_bw_exploration/test_oi10_ppc_memory_bw_exploration_loader.c
+        NAME "test_oi10_ppc_memory_bw_exploration_first_exprience"
+        TESTGROUP broken hwonly
+        LOAD IM0BIN SELF
+             MBIN supplementary-test_oi10_ppc_memory_bw_exploration_first_exprience
+    )
+    # -------
+    add_rumboot_target(
+        CONFIGURATION SUPPLEMENTARY
+        LDS oi10/sram0.lds
+        FILES ppc_memory_bw_exploration/test_oi10_ppc_memory_bw_exploration_dcbt_dcbf.c
+        NAME "test_oi10_ppc_memory_bw_exploration_dcbt_dcbf"
+        OPTIMIZE -O3
+    )
+    add_rumboot_target(
+        CONFIGURATION IRAM
+        FILES ppc_memory_bw_exploration/test_oi10_ppc_memory_bw_exploration_loader.c
+        NAME "test_oi10_ppc_memory_bw_exploration_dcbt_dcbf"
+        TESTGROUP broken hwonly
+        LOAD IM0BIN SELF
+             MBIN supplementary-test_oi10_ppc_memory_bw_exploration_dcbt_dcbf
+    )    
+#****PPC_MEMORY_BW_EXPLORATION_RX_CASE*******************************************************************************************************************************************************************************************************
+    # -------
+    add_rumboot_target(
+        CONFIGURATION SUPPLEMENTARY
+        LDS oi10/sram0.lds
+        FILES ppc_memory_bw_exploration/test_oi10_ppc_memory_bw_exploration_rx_case.c
+        CFLAGS  -DNUM_OF_BUFS=10
+                -DSIZE_OF_BUFS=4096
+                -DREAD_SIZE=4
+                -DSIMPLE_CRC=1
+                -DSRAM0_CACHE=1
+        NAME "test_oi10_ppc_memory_bw_exploration_rx_case_10_4096_4_simple_crc_sram0"
+        OPTIMIZE -O3
+    )
+    add_rumboot_target(
+        CONFIGURATION IRAM
+        FILES ppc_memory_bw_exploration/test_oi10_ppc_memory_bw_exploration_loader.c
+        NAME "test_oi10_ppc_memory_bw_exploration_rx_case_10_4096_4_simple_crc_sram0"
+        TESTGROUP broken hwonly
+        LOAD IM0BIN SELF
+             MBIN supplementary-test_oi10_ppc_memory_bw_exploration_rx_case_10_4096_4_simple_crc_sram0
+    )   
+    # -------
+    add_rumboot_target(
+        CONFIGURATION SUPPLEMENTARY
+        LDS oi10/sram0.lds
+        FILES ppc_memory_bw_exploration/test_oi10_ppc_memory_bw_exploration_rx_case.c
+        CFLAGS  -DNUM_OF_BUFS=10
+                -DSIZE_OF_BUFS=4096
+                -DREAD_SIZE=4
+                -DSIMPLE_CRC=1
+                -DSRAM1_CACHE=1
+        NAME "test_oi10_ppc_memory_bw_exploration_rx_case_10_4096_4_simple_crc_sram1"
+        OPTIMIZE -O3
+    )
+    add_rumboot_target(
+        CONFIGURATION IRAM
+        FILES ppc_memory_bw_exploration/test_oi10_ppc_memory_bw_exploration_loader.c
+        NAME "test_oi10_ppc_memory_bw_exploration_rx_case_10_4096_4_simple_crc_sram1"
+        TESTGROUP broken hwonly
+        LOAD IM0BIN SELF
+             MBIN supplementary-test_oi10_ppc_memory_bw_exploration_rx_case_10_4096_4_simple_crc_sram1
+    )
+    # -------
+    add_rumboot_target(
+        CONFIGURATION SUPPLEMENTARY
+        LDS oi10/sram0.lds
+        FILES ppc_memory_bw_exploration/test_oi10_ppc_memory_bw_exploration_rx_case.c
+        CFLAGS  -DNUM_OF_BUFS=10
+                -DSIZE_OF_BUFS=4096
+                -DREAD_SIZE=4
+                -DSIMPLE_CRC=1
+                -DSSRAM_CACHE=1
+        NAME "test_oi10_ppc_memory_bw_exploration_rx_case_10_4096_4_simple_crc_ssram"
+        OPTIMIZE -O3
+    )
+    add_rumboot_target(
+        CONFIGURATION IRAM
+        FILES ppc_memory_bw_exploration/test_oi10_ppc_memory_bw_exploration_loader.c
+        NAME "test_oi10_ppc_memory_bw_exploration_rx_case_10_4096_4_simple_crc_ssram"
+        TESTGROUP broken hwonly
+        LOAD IM0BIN SELF
+             MBIN supplementary-test_oi10_ppc_memory_bw_exploration_rx_case_10_4096_4_simple_crc_ssram
+    )    
+#****PPC_MEMORY_BW_EXPLORATION_TX_CASE*******************************************************************************************************************************************************************************************************
+    # -------
+    add_rumboot_target(
+        CONFIGURATION SUPPLEMENTARY
+        LDS oi10/sram0.lds
+        FILES ppc_memory_bw_exploration/test_oi10_ppc_memory_bw_exploration_tx_case.c
+        CFLAGS  -DNUM_OF_BUFS=10
+                -DSIZE_OF_BUFS=4096
+                -DREAD_SIZE=4
+                -DSIMPLE_CRC=1
+                -DSRAM0_CACHE=1
+        NAME "test_oi10_ppc_memory_bw_exploration_tx_case_10_4096_4_simple_crc_sram0"
+        OPTIMIZE -O3
+    )
+    add_rumboot_target(
+        CONFIGURATION IRAM
+        FILES ppc_memory_bw_exploration/test_oi10_ppc_memory_bw_exploration_loader.c
+        NAME "test_oi10_ppc_memory_bw_exploration_tx_case_10_4096_4_simple_crc_sram0"
+        TESTGROUP broken hwonly
+        LOAD IM0BIN SELF
+             MBIN supplementary-test_oi10_ppc_memory_bw_exploration_tx_case_10_4096_4_simple_crc_sram0
+    )   
+    # -------
+    add_rumboot_target(
+        CONFIGURATION SUPPLEMENTARY
+        LDS oi10/sram0.lds
+        FILES ppc_memory_bw_exploration/test_oi10_ppc_memory_bw_exploration_tx_case.c
+        CFLAGS  -DNUM_OF_BUFS=10
+                -DSIZE_OF_BUFS=4096
+                -DREAD_SIZE=4
+                -DSIMPLE_CRC=1
+                -DSRAM1_CACHE=1
+        NAME "test_oi10_ppc_memory_bw_exploration_tx_case_10_4096_4_simple_crc_sram1"
+        OPTIMIZE -O3
+    )
+    add_rumboot_target(
+        CONFIGURATION IRAM
+        FILES ppc_memory_bw_exploration/test_oi10_ppc_memory_bw_exploration_loader.c
+        NAME "test_oi10_ppc_memory_bw_exploration_tx_case_10_4096_4_simple_crc_sram1"
+        TESTGROUP broken hwonly
+        LOAD IM0BIN SELF
+             MBIN supplementary-test_oi10_ppc_memory_bw_exploration_tx_case_10_4096_4_simple_crc_sram1
+    )
+    # -------
+    add_rumboot_target(
+        CONFIGURATION SUPPLEMENTARY
+        LDS oi10/sram0.lds
+        FILES ppc_memory_bw_exploration/test_oi10_ppc_memory_bw_exploration_tx_case.c
+        CFLAGS  -DNUM_OF_BUFS=10
+                -DSIZE_OF_BUFS=4096
+                -DREAD_SIZE=4
+                -DSIMPLE_CRC=1
+                -DSSRAM_CACHE=1
+        NAME "test_oi10_ppc_memory_bw_exploration_tx_case_10_4096_4_simple_crc_ssram"
+        OPTIMIZE -O3
+    )
+    add_rumboot_target(
+        CONFIGURATION IRAM
+        FILES ppc_memory_bw_exploration/test_oi10_ppc_memory_bw_exploration_loader.c
+        NAME "test_oi10_ppc_memory_bw_exploration_tx_case_10_4096_4_simple_crc_ssram"
+        TESTGROUP broken hwonly
+        LOAD IM0BIN SELF
+             MBIN supplementary-test_oi10_ppc_memory_bw_exploration_tx_case_10_4096_4_simple_crc_ssram
+    )  
+#***********************************************************************************************************************************************************************************************************    
+    
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES test_oi10_uart_000.c
