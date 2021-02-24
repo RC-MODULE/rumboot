@@ -26,4 +26,6 @@
 #define DAP_BASE     (NMC_REGS_BASE + 0x1800)
 #define FIFO_BASE    (NMC_REGS_BASE + 0x1C00)
 
+#include <platform/o32t/platform/devices.h>
+
 #endif
