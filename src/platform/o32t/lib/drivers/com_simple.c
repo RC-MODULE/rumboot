@@ -12,9 +12,9 @@
 #include <platform/devices/com_simple.h>
 
 
-int comp_dma_run_tr( uint32_t addr, uint32_t base, uint32_t mask ) {
+int comp_dma_run_tr( uint32_t addr, uint32_t base, uint32_t mask,	uint32_t count_num) {
     //write data
-	iowrite32( COM_COUNT, base + MainCounter_tr ); //set dma total data 512 byte
+	iowrite32( count_num, base + MainCounter_tr ); //set dma total data 512 byte
 	iowrite32( addr, base + Address_tr ); //dma source atart address
 	iowrite32( 0x0, base + Bias_tr );
 	iowrite32( 0x0, base + RowCounter_tr );
@@ -25,9 +25,9 @@ int comp_dma_run_tr( uint32_t addr, uint32_t base, uint32_t mask ) {
 return 0;
    }
 
-int comp_dma_run_rcv( uint32_t addr, uint32_t base, uint32_t mask) {
+int comp_dma_run_rcv( uint32_t addr, uint32_t base, uint32_t mask,	uint32_t count_num) {
     //write data
-	iowrite32( COM_COUNT, base + MainCounter_rcv ); //set dma total data 512 byte
+	iowrite32( count_num, base + MainCounter_rcv ); //set dma total data 512 byte
 	iowrite32( addr, base + Address_rcv ); //dma destination atart address
 	iowrite32( 0x0, base + Bias_rcv );
 	iowrite32( 0x0, base + RowCounter_rcv );
@@ -45,11 +45,14 @@ do { count = timeout;
 } while ( --timeout );	
 } 
   
-int comp_dma_run( uint32_t src_addr, uint32_t dst_addr,uint32_t base0, uint32_t base1 ) {
+int comp_dma_run( uint32_t src_addr, uint32_t dst_addr,uint32_t base0, uint32_t base1,uint32_t count_num) {
 	uint32_t result;
+	uint32_t start;
+	uint32_t end;
+	uint32_t delta;
 	
-	result =comp_dma_run_tr(src_addr,base0,0x3);
-	result =comp_dma_run_rcv(dst_addr,base1,0x3);
+	result =comp_dma_run_tr(src_addr,base0,0x3,count_num );
+	result =comp_dma_run_rcv(dst_addr,base1,0x3,count_num );
 	
 	iowrite32(COM_CONTROL_EN,base0+ CSR_tr);
 	
@@ -65,6 +68,8 @@ int comp_dma_run( uint32_t src_addr, uint32_t dst_addr,uint32_t base0, uint32_t 
         rumboot_printf( "COM0_Cpl  timeout_1\n" );
         return 1;
     }
+	
+	
 	if (com_simple_wait_complete(base1, CSR_rcv )) {
         rumboot_printf( "COM1_Cpl  timeout_1\n" );
         return 1;
@@ -87,11 +92,11 @@ static inline __attribute__((always_inline)) uint32_t wait_com_int_handled( uint
 
     return 0;
 }
-int comp_dma_irq_run( uint32_t src_addr, uint32_t dst_addr,uint32_t base0, uint32_t base1, uint32_t COM0_Cpl,uint32_t COM1_Cpl ) {
+int comp_dma_irq_run( uint32_t src_addr, uint32_t dst_addr,uint32_t base0, uint32_t base1, uint32_t COM0_Cpl,uint32_t COM1_Cpl, uint32_t count_num ) {
 	uint32_t result;
 	
-	result = comp_dma_run_tr(src_addr,base0,0x0);	
-	result = comp_dma_run_rcv(dst_addr,base1,0x0);
+	result = comp_dma_run_tr(src_addr,base0,0x0,count_num);	
+	result = comp_dma_run_rcv(dst_addr,base1,0x0,count_num);
 	
 	iowrite32(COM_CONTROL_EN,base0 + CSR_tr);
 	iowrite32(COM_CONTROL_EN,base1	+ CSR_rcv);	
