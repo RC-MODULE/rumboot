@@ -24,10 +24,10 @@
 #define ARR_SIZE 128
 
 #ifndef COM_SRC_HEAP
-#define COM_SRC_HEAP "IM2"
+#define COM_SRC_HEAP "IM1"
 #endif
 #ifndef COM_DST_HEAP
-#define COM_DST_HEAP "IM2"
+#define COM_DST_HEAP "IM1"
 #endif
 
 void prepare_arrays( uint32_t ** src, uint32_t ** dst ) {
