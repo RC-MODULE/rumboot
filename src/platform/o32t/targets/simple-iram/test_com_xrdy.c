@@ -25,7 +25,7 @@
 #define COM_DST_HEAP "IM1"
 #endif
 
-int comp_dma_run_xrdy( uint32_t  src_addr, uint32_t dst_addr,uint32_t base0, uint32_t base1 ) {
+int comp_dma_run_xrdy( uint32_t  src_addr, uint32_t dst_addr,uint32_t base0, uint32_t base1,(ARR_SIZE>>1)) {
 	uint32_t result;	
 	
 	result =comp_dma_run_tr(src_addr,base0,0x3);

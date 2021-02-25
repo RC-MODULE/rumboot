@@ -181,14 +181,14 @@ int main()
 	COMMP0_COMMP1_IRQ = 79;
   struct rumboot_irq_entry * tbl = init_irq(); 
   
-    if( (comp_dma_irq_run( rumboot_virt_to_dma(src0), rumboot_virt_to_dma(dst0),COM0_BASE,COM1_BASE,&COM0_Cpl_tr,&COM1_Cpl_rcv ) != 0)
+    if( (comp_dma_irq_run( rumboot_virt_to_dma(src0), rumboot_virt_to_dma(dst0),COM0_BASE,COM1_BASE,&COM0_Cpl_tr,&COM1_Cpl_rcv,(ARR_SIZE>>1)) != 0)
  || (memcmp( src0, dst0, sizeof(uint32_t)*ARR_SIZE  ) != 0) ) {
         result = 1;
 	 } 
 	 rumboot_printf("COMMPORT0 to COMMPORT1 direction checked\n"); 
 	COMMP0_COMMP1_IRQ = 81;
 
-	if( (comp_dma_irq_run( rumboot_virt_to_dma(src1), rumboot_virt_to_dma(dst1),COM1_BASE,COM0_BASE, &COM1_Cpl_tr,&COM0_Cpl_rcv ) != 0)
+	if( (comp_dma_irq_run( rumboot_virt_to_dma(src1), rumboot_virt_to_dma(dst1),COM1_BASE,COM0_BASE, &COM1_Cpl_tr,&COM0_Cpl_rcv,(ARR_SIZE>>1)) != 0)
     || (memcmp( src1, dst1, sizeof(uint32_t)*ARR_SIZE  ) != 0)) {
         result = 1;
 	 } 
