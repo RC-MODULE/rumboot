@@ -2659,6 +2659,48 @@ endif()
         LOAD IM0BIN SELF
              MBIN supplementary-test_oi10_ppc_memory_bw_exploration_rx_case_10_4096_4_simple_crc_ssram
     )    
+    # -------
+    add_rumboot_target(
+        CONFIGURATION SUPPLEMENTARY
+        LDS oi10/sram0.lds
+        FILES ppc_memory_bw_exploration/test_oi10_ppc_memory_bw_exploration_rx_case.c
+        CFLAGS  -DNUM_OF_BUFS=10
+                -DSIZE_OF_BUFS=4096
+                -DREAD_SIZE=4
+                -DSIMPLE_CRC=1
+                -DIM0_CACHE=1
+        NAME "test_oi10_ppc_memory_bw_exploration_rx_case_10_4096_4_simple_crc_im0"
+        OPTIMIZE -O3
+    )
+    add_rumboot_target(
+        CONFIGURATION IRAM
+        FILES ppc_memory_bw_exploration/test_oi10_ppc_memory_bw_exploration_loader.c
+        NAME "test_oi10_ppc_memory_bw_exploration_rx_case_10_4096_4_simple_crc_im0"
+        TESTGROUP broken hwonly
+        LOAD IM0BIN SELF
+             MBIN supplementary-test_oi10_ppc_memory_bw_exploration_rx_case_10_4096_4_simple_crc_im0
+    )  
+    # -------
+    add_rumboot_target(
+        CONFIGURATION SUPPLEMENTARY
+        LDS oi10/sram0.lds
+        FILES ppc_memory_bw_exploration/test_oi10_ppc_memory_bw_exploration_rx_case.c
+        CFLAGS  -DNUM_OF_BUFS=10
+                -DSIZE_OF_BUFS=4096
+                -DREAD_SIZE=4
+                -DSIMPLE_CRC=1
+                -DIM1_CACHE=1
+        NAME "test_oi10_ppc_memory_bw_exploration_rx_case_10_4096_4_simple_crc_im1"
+        OPTIMIZE -O3
+    )
+    add_rumboot_target(
+        CONFIGURATION IRAM
+        FILES ppc_memory_bw_exploration/test_oi10_ppc_memory_bw_exploration_loader.c
+        NAME "test_oi10_ppc_memory_bw_exploration_rx_case_10_4096_4_simple_crc_im1"
+        TESTGROUP broken hwonly
+        LOAD IM0BIN SELF
+             MBIN supplementary-test_oi10_ppc_memory_bw_exploration_rx_case_10_4096_4_simple_crc_im1
+    )       
 #****PPC_MEMORY_BW_EXPLORATION_TX_CASE*******************************************************************************************************************************************************************************************************
     # -------
     add_rumboot_target(
@@ -2723,6 +2765,48 @@ endif()
         LOAD IM0BIN SELF
              MBIN supplementary-test_oi10_ppc_memory_bw_exploration_tx_case_10_4096_4_simple_crc_ssram
     )  
+    # -------
+    add_rumboot_target(
+        CONFIGURATION SUPPLEMENTARY
+        LDS oi10/sram0.lds
+        FILES ppc_memory_bw_exploration/test_oi10_ppc_memory_bw_exploration_tx_case.c
+        CFLAGS  -DNUM_OF_BUFS=10
+                -DSIZE_OF_BUFS=4096
+                -DREAD_SIZE=4
+                -DSIMPLE_CRC=1
+                -DIM0_CACHE=1
+        NAME "test_oi10_ppc_memory_bw_exploration_tx_case_10_4096_4_simple_crc_im0"
+        OPTIMIZE -O3
+    )
+    add_rumboot_target(
+        CONFIGURATION IRAM
+        FILES ppc_memory_bw_exploration/test_oi10_ppc_memory_bw_exploration_loader.c
+        NAME "test_oi10_ppc_memory_bw_exploration_tx_case_10_4096_4_simple_crc_im0"
+        TESTGROUP broken hwonly
+        LOAD IM0BIN SELF
+             MBIN supplementary-test_oi10_ppc_memory_bw_exploration_tx_case_10_4096_4_simple_crc_im0
+    )  
+    # -------
+    add_rumboot_target(
+        CONFIGURATION SUPPLEMENTARY
+        LDS oi10/sram0.lds
+        FILES ppc_memory_bw_exploration/test_oi10_ppc_memory_bw_exploration_tx_case.c
+        CFLAGS  -DNUM_OF_BUFS=10
+                -DSIZE_OF_BUFS=4096
+                -DREAD_SIZE=4
+                -DSIMPLE_CRC=1
+                -DIM1_CACHE=1
+        NAME "test_oi10_ppc_memory_bw_exploration_tx_case_10_4096_4_simple_crc_im1"
+        OPTIMIZE -O3
+    )
+    add_rumboot_target(
+        CONFIGURATION IRAM
+        FILES ppc_memory_bw_exploration/test_oi10_ppc_memory_bw_exploration_loader.c
+        NAME "test_oi10_ppc_memory_bw_exploration_tx_case_10_4096_4_simple_crc_im1"
+        TESTGROUP broken hwonly
+        LOAD IM0BIN SELF
+             MBIN supplementary-test_oi10_ppc_memory_bw_exploration_tx_case_10_4096_4_simple_crc_im1
+    )      
 #***********************************************************************************************************************************************************************************************************    
     
     add_rumboot_target(
