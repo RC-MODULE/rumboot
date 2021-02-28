@@ -78,7 +78,6 @@ return result;
    }   
 
 
-
 static inline __attribute__((always_inline)) uint32_t wait_com_int_handled( uint32_t timeout, volatile uint32_t * const  flag ) {
     do {
         rumboot_printf( "COMPORT  wait interrupt Cpl\n" ); 
@@ -114,13 +113,70 @@ int comp_dma_irq_run( uint32_t src_addr, uint32_t dst_addr,uint32_t base0, uint3
         return 1;
     }
 	rumboot_printf( "COM1_Cpl_rcv interrupt is ended\n" );
-	return result;
-   }   
-
-
+ 
+    return 0;
+} 
 int com_simple_wait_complete(uintptr_t base, uintptr_t cntrl )
 {
   uint32_t res;
   do{ res=ioread32(base+cntrl); } while(! ( res&COM_CONTROL_CPL ) );
   return 0;
+}
+int com_status(uint32_t base, uint32_t direct )
+{ uint32_t result;
+
+  uint32_t  COM_Mask_tr;
+  uint32_t  COM_Mask_rcv;
+  uint32_t  COM_Status_tr;
+  uint32_t  COM_Status_rcv;
+  uint32_t  COM_IRQ_TR_ERROR;
+  uint32_t  COM_IRQ_RCV_ERROR;
+
+  if (direct ==1) {
+   COM_Mask_tr = ioread32	( base + InterruptMask_tr );
+   COM_Status_tr = ioread32	( base + CSR_tr );
+   result = ( (( (COM_Status_tr >> 1) & 0x1) ==1)&& ((COM_Mask_tr & 0x1) ==0)) ||
+  (( ( (COM_Status_tr >> 2) & 0x1)==1) && (((COM_Mask_tr>> 2) & 0x1)==0) ) ;
+  if (( ( COM_Status_tr & 0x4)==4) && (((COM_Mask_tr>> 2) & 0x1)==0) ) {
+  COM_IRQ_TR_ERROR =1;
+   rumboot_printf( "COM_IRQ_TR_ERROR= %d\n", COM_IRQ_TR_ERROR );
+  }
+  }
+  else
+  {COM_Mask_rcv = ioread32	( base + InterruptMask_rcv ); 
+  COM_Status_rcv = ioread32	( base + CSR_rcv );
+  result = (((( COM_Status_rcv >> 1 ) & 0x1)==1) && ((COM_Mask_rcv & 0x1) ==0)) ||
+  ( ( ((COM_Status_rcv >> 2) & 0x1)==1) && (((COM_Mask_rcv>> 2) & 0x1) ==0));  
+    if (( (COM_Status_rcv &0x4)  == 4) && (((COM_Mask_rcv>> 2) & 0x1) ==0)) {
+	COM_IRQ_RCV_ERROR =1;
+	rumboot_printf( "COM_IRQ_RCV_ERROR= %d\n", COM_IRQ_RCV_ERROR );
+	}
+  }
+  
+  return result;
+} 
+void clear_com_status(uint32_t base, uint32_t direct ) {
+  uint32_t  COM_Mask_tr;
+  uint32_t  COM_Mask_rcv;
+  uint32_t  COM_Status_tr;
+  uint32_t  COM_Status_rcv;	
+ 
+      
+ if (direct ==1) {
+	  COM_Mask_tr = ioread32	( base + InterruptMask_tr );
+	COM_Status_tr = ioread32	( base + CSR_tr );
+	 if ( (( (COM_Status_tr >> 1) & 0x1) ==1)&& ((COM_Mask_tr & 0x1) ==0))  
+	iowrite32((COM_Status_tr & 0xfffffffd),base + CSR_tr); 
+	else if (( ( (COM_Status_tr & 0x4) & 0x1)==1) && ((COM_Mask_tr>> 2) & 0x1))
+	iowrite32((COM_Status_rcv & 0xfffffffb),base + CSR_rcv);
+
+ }
+ if (direct ==0) {
+  COM_Mask_rcv = ioread32	( base + InterruptMask_rcv);
+	COM_Status_rcv = ioread32	( base + CSR_rcv);
+	 if (((( COM_Status_rcv >> 1 ) & 0x1)==1) && ((COM_Mask_rcv & 0x1) ==0))
+	iowrite32((COM_Status_rcv & 0xfffffffd),base + CSR_rcv); 
+	else if (( ( (COM_Status_rcv & 0x4) & 0x1)==1) && (((COM_Mask_rcv>> 2) & 0x1)==0))
+	iowrite32((COM_Status_rcv & 0xfffffffb),base + CSR_rcv);
+ }
 }
