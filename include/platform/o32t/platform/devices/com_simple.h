@@ -16,3 +16,4 @@ int comp_dma_irq_run( uint32_t src_addr, uint32_t dst_addr,uint32_t base0, uint3
 int comp_dma_run_xrdy(uint32_t src_addr, uint32_t dst_addr,uint32_t base0, uint32_t base1,uint32_t count_num);
 int comp_dma_run_thru(uint32_t src_addr, uint32_t dst_addr,uint32_t base0, uint32_t base1,uint32_t count_num);
 int com_simple_wait_complete(uintptr_t base, uintptr_t ctrl);
+int com_status(uint32_t base, uint32_t direct );
