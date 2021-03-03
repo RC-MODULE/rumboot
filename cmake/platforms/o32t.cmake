@@ -143,7 +143,32 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       PREFIX mkio0-im0-func-a
     )
 
+    add_rumboot_target(
+      CONFIGURATION IRAM_IM1
+      FILES oi10/targets/test_oi10_lscb.c
+      CFLAGS -DPLATFORM_O32T -DMKIO_BASE=MKIO1_BASE -DCHECK_MKIO_FUNC -DMKIO_BUS=MKIO_BUS_A -DTEST_BANK="IM0" -D__FILENAME__=\"wtfisthisiwonder\"
+      IRUN_FLAGS +mkio_signal_test
+      PREFIX mkio1-im0-func-a
+    )
 
+    add_rumboot_target(
+      CONFIGURATION IRAM_IM1
+      FILES oi10/targets/test_oi10_lscb.c
+      CFLAGS -DPLATFORM_O32T -DMKIO_BASE=MKIO2_BASE -DCHECK_MKIO_FUNC -DMKIO_BUS=MKIO_BUS_A -DTEST_BANK="IM0" -D__FILENAME__=\"wtfisthisiwonder\"
+      IRUN_FLAGS +mkio_signal_test
+      PREFIX mkio2-im0-func-a
+    )
+
+    add_rumboot_target(
+      CONFIGURATION IRAM_IM1
+      FILES oi10/targets/test_oi10_lscb.c
+      CFLAGS -DPLATFORM_O32T -DMKIO_BASE=MKIO3_BASE -DCHECK_MKIO_FUNC -DMKIO_BUS=MKIO_BUS_A -DTEST_BANK="IM0" -D__FILENAME__=\"wtfisthisiwonder\"
+      IRUN_FLAGS +mkio_signal_test
+      PREFIX mkio3-im0-func-a
+    )
+
+
+    #  Four tests for checking 1553 signals changing polarity for each controller
     add_rumboot_target(
         CONFIGURATION IRAM_IM1
         FILES test_oi10_lscb_polarity.c
@@ -151,12 +176,55 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         PREFIX mkio0-im1-a
     )
 
+    add_rumboot_target(
+        CONFIGURATION IRAM_IM1
+        FILES test_oi10_lscb_polarity.c
+        CFLAGS -DPLATFORM_O32T -DMKIO_BASE=MKIO1_BASE -DMKIO_BUS=MKIO_BUS_A -DTEST_BANK="IM1" -D__FILENAME__=\"wtfisthisiwonder\"
+        PREFIX mkio1-im1-a
+    )
 
+    add_rumboot_target(
+        CONFIGURATION IRAM_IM1
+        FILES test_oi10_lscb_polarity.c
+        CFLAGS -DPLATFORM_O32T -DMKIO_BASE=MKIO2_BASE -DMKIO_BUS=MKIO_BUS_A -DTEST_BANK="IM1" -D__FILENAME__=\"wtfisthisiwonder\"
+        PREFIX mkio2-im1-a
+    )
+
+    add_rumboot_target(
+        CONFIGURATION IRAM_IM1
+        FILES test_oi10_lscb_polarity.c
+        CFLAGS -DPLATFORM_O32T -DMKIO_BASE=MKIO3_BASE -DMKIO_BUS=MKIO_BUS_A -DTEST_BANK="IM1" -D__FILENAME__=\"wtfisthisiwonder\"
+        PREFIX mkio3-im1-a
+    )
+
+
+    #  Four tests for checking 1553 functionality for each controller
     add_rumboot_target(
         CONFIGURATION IRAM_IM1
         FILES test_oi10_lscb_1553_functionality.c
         CFLAGS -DPLATFORM_O32T -DMKIO_BASE=MKIO0_BASE -DMKIO_BUS=MKIO_BUS_A -DTEST_BANK="IM1" -D__FILENAME__=\"wtfisthisiwonder\"
         PREFIX mkio0-im1-a
+    )
+
+    add_rumboot_target(
+        CONFIGURATION IRAM_IM1
+        FILES test_oi10_lscb_1553_functionality.c
+        CFLAGS -DPLATFORM_O32T -DMKIO_BASE=MKIO1_BASE -DMKIO_BUS=MKIO_BUS_A -DTEST_BANK="IM1" -D__FILENAME__=\"wtfisthisiwonder\"
+        PREFIX mkio1-im1-a
+    )
+
+    add_rumboot_target(
+        CONFIGURATION IRAM_IM1
+        FILES test_oi10_lscb_1553_functionality.c
+        CFLAGS -DPLATFORM_O32T -DMKIO_BASE=MKIO2_BASE -DMKIO_BUS=MKIO_BUS_A -DTEST_BANK="IM1" -D__FILENAME__=\"wtfisthisiwonder\"
+        PREFIX mkio2-im1-a
+    )
+
+    add_rumboot_target(
+        CONFIGURATION IRAM_IM1
+        FILES test_oi10_lscb_1553_functionality.c
+        CFLAGS -DPLATFORM_O32T -DMKIO_BASE=MKIO3_BASE -DMKIO_BUS=MKIO_BUS_A -DTEST_BANK="IM1" -D__FILENAME__=\"wtfisthisiwonder\"
+        PREFIX mkio3-im1-a
     )
 
 
