@@ -3128,7 +3128,7 @@ endif()
          CONFIGURATION IRAM
          IRUN_FLAGS +TEST_OI10_CPU_025_MPIC
          FILES test_oi10_cpu_025_mpic.c
-         LOAD IM0BIN SELF,SELF,SELF,SELF,SELF,SELF
+         LOAD IM0BIN SELF,SELF,SELF,SELF,SELF,SELF,SELF
      )
 
     add_rumboot_target(
