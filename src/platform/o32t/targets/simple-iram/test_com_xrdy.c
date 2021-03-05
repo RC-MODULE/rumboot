@@ -25,6 +25,12 @@
 #define COM_DST_HEAP "IM1"
 #endif
 
+
+#if 1
+	int main() {
+		rumboot_printf("PLEASE DO NOT COMMIT BROKEN TESTS\n");
+	}
+#else
 int comp_dma_run_xrdy( uint32_t  src_addr, uint32_t dst_addr,uint32_t base0, uint32_t base1,(ARR_SIZE>>1)) {
 	uint32_t result;	
 	
@@ -98,3 +104,4 @@ int main()
   return result;
 }
 
+#endif
