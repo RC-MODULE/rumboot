@@ -2807,6 +2807,28 @@ endif()
         LOAD IM0BIN SELF
              MBIN supplementary-test_oi10_ppc_memory_bw_exploration_tx_case_10_4096_4_simple_crc_im1
     )      
+    # -------
+    add_rumboot_target(
+        CONFIGURATION SUPPLEMENTARY
+        LDS oi10/sram0.lds
+        FILES ppc_memory_bw_exploration/test_oi10_ppc_memory_bw_exploration_tx_case.c
+        CFLAGS  -DNUM_OF_BUFS=64
+                -DSIZE_OF_BUFS=4096
+                -DREAD_SIZE=4
+                -DSIMPLE_CRC=1
+                -DSSRAM_CACHE=1
+        NAME "test_oi10_ppc_memory_bw_exploration_tx_case_full_l2c_simple_crc_ssram"
+        OPTIMIZE -O3
+    )
+    add_rumboot_target(
+        CONFIGURATION IRAM
+        FILES ppc_memory_bw_exploration/test_oi10_ppc_memory_bw_exploration_loader.c
+        NAME "test_oi10_ppc_memory_bw_exploration_tx_case_full_l2c_simple_crc_ssram"
+        TESTGROUP broken hwonly
+        LOAD IM0BIN SELF
+             MBIN supplementary-test_oi10_ppc_memory_bw_exploration_tx_case_full_l2c_simple_crc_ssram
+    )  
+    
 #***********************************************************************************************************************************************************************************************************    
     
     add_rumboot_target(

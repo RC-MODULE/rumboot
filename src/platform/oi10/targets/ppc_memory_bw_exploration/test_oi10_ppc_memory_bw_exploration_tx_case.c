@@ -74,8 +74,8 @@ bool __attribute__((section(".text.test"))) cache_testing_function( void ) {
 //    uint32_t const l2c_check_size = l2c_size_in_bytes[l2c_layout.l2size];
 //#endif
     
-    uint32_t const l2c_check_size = (NUM_OF_BUFS+1)*SIZE_OF_BUFS;
-    uint32_t const check_words_num  = l2c_check_size / sizeof(uint32_t);
+    uint32_t const l2c_check_size = NUM_OF_BUFS*SIZE_OF_BUFS;
+    uint32_t const check_words_num  = l2c_check_size / READ_SIZE;
     uint32_t const line_words_num = L2C_LINE_SIZE / sizeof(uint32_t);
     uint32_t k = -1;
     uint32_t stack_h;
@@ -135,7 +135,7 @@ bool __attribute__((section(".text.test"))) cache_testing_function( void ) {
 
     rumboot_printf( "Set tlb (WB) (4a)\n" );
     static tlb_entry const wb_tlb_entries[] = {
-//       MMU_TLB_ENTRY(  ERPN,   RPN,        EPN,        DSIZ,                   IL1I,  IL1D,   W,      I,      M,      G,      E,                      UX, UW, UR,     SX, SW, SR      DULXE,  IULXE,      TS,     TID,                WAY,                BID,                V   )
+//       MMU_TLB_ENTRY(  ERPN,   RPN,        EPN,        DSIZ,                   IL1I,  IL1D,   W,      I,      M,      G,               E,                      UX, UW, UR,     SX, SW, SR      DULXE,  IULXE,      TS,     TID,                WAY,                BID,                V   )
         {MMU_TLB_ENTRY(  0x000,  0x00000,    0x00000,    MMU_TLBE_DSIZ_1GB,      0b1,   0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b0 )},
     // ---------- re-define for IM0
         {MMU_TLB_ENTRY(  0x010,  0x80010,    0x80010,    MMU_TLBE_DSIZ_64KB,     0b1,   0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_2,     0b0 )}, // remove old
@@ -249,7 +249,7 @@ bool __attribute__((section(".text.test"))) cache_testing_function( void ) {
         *start_signal = 0xBABA0000;
         msync();
         stime[k] = (uint64_t)spr_read(SPR_TBL_R) + (uint64_t)spr_read(SPR_TBU_R);
-        rumboot_printf("%s: read data from RX-buffers (size = %d) by word_size = %d located at address 0x%x (0x%x%x) and pseudo-calculate CRC  \n", mem_name[k], SIZE_OF_BUFS, READ_SIZE, src, src_prnt_b, src_prnt_l);
+        rumboot_printf("%s: write data to %d TX-buffers (size = %d) by word_size = %d started at address 0x%x (0x%x%x)\n", mem_name[k], NUM_OF_BUFS, SIZE_OF_BUFS, READ_SIZE, src, src_prnt_b, src_prnt_l);
         for (int i=0; i < NUM_OF_BUFS; i++)  {
             //rumboot_printf("%s: read data from %d-s RX-buffer (size = %d) by word_size = %d located at address 0x%x (0x%x%x) and pseudo-calculate CRC  \n", mem_name[k], i, SIZE_OF_BUFS, READ_SIZE, src, src_prnt_b, src_prnt_l);
             *start_signal = *start_signal + i;
@@ -261,13 +261,15 @@ bool __attribute__((section(".text.test"))) cache_testing_function( void ) {
         // --- flush L2-cache data blocks to TX-buffer
             msync(); 
             start_addr = (unsigned long)src;
-            end_addr = start_addr + SIZE_OF_BUFS;
+            end_addr = start_addr + (SIZE_OF_BUFS-1);
             // Устанавливаем адрес на первое слово в строке (это необязательно делать)
             mask_line_base = (~(PPC476FP_L2_CACHELINE_SIZE - 1));
             range_start = start_addr & mask_line_base;
             range_end = (end_addr & mask_line_base) + PPC476FP_L2_CACHELINE_SIZE;
+            //rumboot_printf("%s: flush data from 0x%x to 0x%x \n", mem_name[k], range_start, range_end);
             for (addr = range_start; addr < range_end; addr += PPC476FP_L2_CACHELINE_SIZE)
             {
+                //rumboot_printf(" --- flush data from 0x%x \n", addr);
                 dcbf((void *)addr);
             }
         // ---            
