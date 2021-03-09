@@ -136,8 +136,8 @@ int com_status(uint32_t base, uint32_t direct )
    COM_Mask_tr = ioread32	( base + InterruptMask_tr );
    COM_Status_tr = ioread32	( base + CSR_tr );
    result = ( (( (COM_Status_tr >> 1) & 0x1) ==1)&& ((COM_Mask_tr & 0x1) ==0)) ||
-  (( ( (COM_Status_tr >> 2) & 0x1)==1) && (((COM_Mask_tr>> 2) & 0x1)==0) ) ;
-  if (( ( COM_Status_tr & 0x4)==4) && (((COM_Mask_tr>> 2) & 0x1)==0) ) {
+  (( ( (COM_Status_tr >> 2) & 0x1)==1) && (((COM_Mask_tr>> 1) & 0x1)==0) ) ;
+  if (( (( COM_Status_tr >> 2) & 0x1)==1) && (((COM_Mask_tr>> 1) & 0x1)==0) ) {
   COM_IRQ_TR_ERROR =1;
    rumboot_printf( "COM_IRQ_TR_ERROR= %d\n", COM_IRQ_TR_ERROR );
   }
@@ -146,8 +146,8 @@ int com_status(uint32_t base, uint32_t direct )
   {COM_Mask_rcv = ioread32	( base + InterruptMask_rcv ); 
   COM_Status_rcv = ioread32	( base + CSR_rcv );
   result = (((( COM_Status_rcv >> 1 ) & 0x1)==1) && ((COM_Mask_rcv & 0x1) ==0)) ||
-  ( ( ((COM_Status_rcv >> 2) & 0x1)==1) && (((COM_Mask_rcv>> 2) & 0x1) ==0));  
-    if (( (COM_Status_rcv &0x4)  == 4) && (((COM_Mask_rcv>> 2) & 0x1) ==0)) {
+  ( ( ((COM_Status_rcv >> 2) & 0x1)==1) && (((COM_Mask_rcv>> 1) & 0x1) ==0));  
+    if (( ((COM_Status_rcv >> 2)& 0x1)  == 1) && (((COM_Mask_rcv>> 1) & 0x1) ==0)) {
 	COM_IRQ_RCV_ERROR =1;
 	rumboot_printf( "COM_IRQ_RCV_ERROR= %d\n", COM_IRQ_RCV_ERROR );
 	}
@@ -163,20 +163,20 @@ void clear_com_status(uint32_t base, uint32_t direct ) {
  
       
  if (direct ==1) {
-	  COM_Mask_tr = ioread32	( base + InterruptMask_tr );
-	COM_Status_tr = ioread32	( base + CSR_tr );
+	COM_Mask_tr = ioread32( base + InterruptMask_tr );
+	COM_Status_tr = ioread32( base + CSR_tr );
 	 if ( (( (COM_Status_tr >> 1) & 0x1) ==1)&& ((COM_Mask_tr & 0x1) ==0))  
-	iowrite32((COM_Status_tr & 0xfffffffd),base + CSR_tr); 
-	else if (( ( (COM_Status_tr & 0x4) & 0x1)==1) && ((COM_Mask_tr>> 2) & 0x1))
-	iowrite32((COM_Status_rcv & 0xfffffffb),base + CSR_rcv);
-
+	iowrite32((COM_Status_tr & 0xd),base + CSR_tr); 
+	if (( ( (COM_Status_tr >> 2) & 0x1)==1) && ((COM_Mask_tr>> 1) & 0x1))
+	iowrite32((COM_Status_rcv & 0xb),base + CSR_rcv);
+	iowrite32((COM_Status_tr & 0x3),base + CSR_tr); //set CLR 
  }
  if (direct ==0) {
-  COM_Mask_rcv = ioread32	( base + InterruptMask_rcv);
+	COM_Mask_rcv = ioread32( base + InterruptMask_rcv);
 	COM_Status_rcv = ioread32	( base + CSR_rcv);
 	 if (((( COM_Status_rcv >> 1 ) & 0x1)==1) && ((COM_Mask_rcv & 0x1) ==0))
-	iowrite32((COM_Status_rcv & 0xfffffffd),base + CSR_rcv); 
-	else if (( ( (COM_Status_rcv & 0x4) & 0x1)==1) && (((COM_Mask_rcv>> 2) & 0x1)==0))
-	iowrite32((COM_Status_rcv & 0xfffffffb),base + CSR_rcv);
+	iowrite32((COM_Status_rcv & 0xd),base + CSR_rcv); 
+	 if (( ( (COM_Status_rcv >> 2) & 0x1)==1) && (((COM_Mask_rcv >> 1) & 0x1)==0))
+	iowrite32((COM_Status_rcv & 0xb),base + CSR_rcv);
  }
 }
