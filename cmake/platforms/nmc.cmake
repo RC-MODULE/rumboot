@@ -9,6 +9,20 @@ else()
   set(RUMBOOT_PLATFORM_DEFAULT_SNAPSHOT top)
 endif()
 
+if(NOT RUMBOOT_SOC)
+  message("NMC: Standalone build!")
+  set(SOC_OBJCOPY_FLAGS --remove-section=.header)
+  set(SOC_BOOTROM )
+  set(SOC_PACKIMAGE_FLAGS )
+  set(SOC_FEATURES )
+else()
+  message("NMC: SOC build for ${RUMBOOT_SOC}!")
+  set(SOC_OBJCOPY_FLAGS )
+  set(SOC_BOOTROM ${RUMBOOT_SOC}:bootrom-stub)
+  set(SOC_PACKIMAGE_FLAGS -CiR 0x80020000)
+  set(SOC_FEATURES PACKIMAGE)
+endif()
+
 #These are configurations for our binaries
 rumboot_add_configuration(
   IRAM
@@ -22,12 +36,12 @@ rumboot_add_configuration(
     IM1_IMAGE SELF
     IM0BIN SELF
   CFLAGS -DRUMBOOT_MAIN_NORETURN -fnmc-compatible-if-packed
-  OBJCOPY_FLAGS 
-  FEATURES PACKIMAGE
+  OBJCOPY_FLAGS ${SOC_OBJCOPY_FLAGS}
+  FEATURES ${SOC_FEATURES}
   #We need a relocatable image 0x80020000
-  PACKIMAGE_FLAGS -CiR 0x80020000
+  PACKIMAGE_FLAGS ${SOC_PACKIMAGE_FLAGS}
   #External bootrom-stub dependency
-  BOOTROM o32t:bootrom-stub
+  BOOTROM ${SOC_BOOTROM}
   )
 
 rumboot_add_configuration(
@@ -38,14 +52,14 @@ rumboot_add_configuration(
   LDFLAGS "-Wl,\"-ecorestart\""
   CFLAGS -mmas -save-temps -DRUMBOOT_NOENTRY -fnmc-compatible-if-packed
   IRUN_FLAGS ${BOOTROM_IFLAGS} +RUMBOOT_RUNTIME_ADDR=5A000
-  BOOTROM "${CMAKE_BINARY_DIR}/rumboot-o32t-Debug/rumboot-o32t-Debug-bootrom-stub.hex"
   LOAD 
     IM1_IMAGE SELF
     IM0BIN SELF
-  FEATURES NOLIBS PACKIMAGE
-  PACKIMAGE_FLAGS -CiR 0x80020000
+  FEATURES NOLIBS ${SOC_FEATURES}
+  OBJCOPY_FLAGS ${SOC_OBJCOPY_FLAGS}
+  PACKIMAGE_FLAGS ${SOC_PACKIMAGE_FLAGS}
   #External bootrom-stub dependency
-  BOOTROM o32t:bootrom-stub
+  BOOTROM ${SOC_BOOTROM}
   )
 
 
