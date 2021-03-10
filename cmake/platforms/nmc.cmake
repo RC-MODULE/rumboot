@@ -105,6 +105,12 @@ add_rumboot_target(
   PREFIX "iram-irqhi"
 )
 
+add_rumboot_target(
+  CONFIGURATION IRAM
+  FILES common/bootrom/timer.c
+)
+
+
 endmacro()
 
 if (CMAKE_VERILOG_RULES_LOADED)
