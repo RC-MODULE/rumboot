@@ -23,7 +23,7 @@ int rumboot_platform_getchar(uint32_t timeout_us)
 
 uint32_t rumboot_platform_get_uptime()
 {
-        return 0;
+        return (ioread32(TIMERS_BASE) / 100);
 }
 
 extern char rumboot_IRAM_heap_start;
@@ -31,6 +31,8 @@ extern char rumboot_IRAM_heap_end;
 
 void rumboot_platform_setup()
 {
+        iowrite32(0x0, TIMERS_BASE); 
+        iowrite32(0x3, TIMERS_BASE + 8);
         rumboot_irq_register_nmc_intc_controller();
         rumboot_malloc_register_heap("IM",
                                      &rumboot_IRAM_heap_start, &rumboot_IRAM_heap_end);

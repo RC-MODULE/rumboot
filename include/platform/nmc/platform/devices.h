@@ -18,13 +18,14 @@
 /* Prehaps we have to somehow accomodate this later ? */
 
 #define INTC_BASE    (NMC_REGS_BASE + 0x0000)
-#define SC_BASE      (NMC_REGS_BASE + 0x0400)
-#define TIMERS_BASE  (NMC_REGS_BASE + 0x0800)
-#define IFU_BASE     (NMC_REGS_BASE + 0x0C00)
-#define AXIBR_BASE   (NMC_REGS_BASE + 0x1000)
-#define MPU_BASE     (NMC_REGS_BASE + 0x1400)
-#define DAP_BASE     (NMC_REGS_BASE + 0x1800)
-#define FIFO_BASE    (NMC_REGS_BASE + 0x1C00)
+#define SC_BASE      (NMC_REGS_BASE + 0x1000)
+#define TIMERS_BASE  (NMC_REGS_BASE + 0x2000)
+#define IFU_BASE     (NMC_REGS_BASE + 0x3000)
+#define FIFO_BASE    (NMC_REGS_BASE + 0x4000)
+/* Not Sure. See NMPU.v for details */
+#define AXIBR_BASE   (NMC_REGS_BASE + 0x5000)
+//#define MPU_BASE     (NMC_REGS_BASE + 0x1400)
+//#define DAP_BASE     (NMC_REGS_BASE + 0x1800)
 
 #include <platform/o32t/platform/devices.h>
 
