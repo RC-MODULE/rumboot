@@ -357,6 +357,11 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       FILES common/irq/irq-defhandler.c
   )
 
+  add_rumboot_target(
+      CONFIGURATION IRAM_IM1
+      FILES sctl_integration.c
+  )
+
 endmacro()
 
 
