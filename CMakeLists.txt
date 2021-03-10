@@ -35,6 +35,13 @@ endif()
 
 RUMBOOT_PLATFORM_SET_COMPILER_FLAGS()
 
+if (RUMBOOT_ENABLE_LTO)
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -flto")
+  set(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} -flto")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -flto")
+  SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -flto")
+endif()
+
 INCLUDE_DIRECTORIES (
     ${CMAKE_SOURCE_DIR}/include/
     ${CMAKE_SOURCE_DIR}/include/platform/${RUMBOOT_PLATFORM}/
@@ -163,6 +170,12 @@ else()
   message("Doxygen Docs:       disabled")
 endif()
 
+if (RUMBOOT_ENABLE_LTO)
+  message("GCC LTO:            enabled")
+else()
+  message("GCC LTO:            disabled")
+endif()
+
 if (RUMBOOT_TRACE)
   SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DRUMBOOT_TRACE=y")
   set(instrument_functions yes)
@@ -174,9 +187,9 @@ endif()
 if (RUMBOOT_PROFILE)
   SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DRUMBOOT_PROFILE=y")
   set(instrument_functions yes)
-  message("Function profiling:   Enabled")
+  message("Function profiling: Enabled")
 else()
-  message("Function profiling:   Disabled")
+  message("Function profiling: Disabled")
 endif()
 
 if (instrument_functions)
