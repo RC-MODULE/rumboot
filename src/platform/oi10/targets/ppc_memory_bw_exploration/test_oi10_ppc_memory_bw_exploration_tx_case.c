@@ -275,17 +275,44 @@ bool __attribute__((section(".text.test"))) cache_testing_function( void ) {
         // ---            
             src+=SIZE_OF_BUFS/READ_SIZE;
         }
-        ftime[k] = (uint64_t)spr_read(SPR_TBL_R) + (uint64_t)spr_read(SPR_TBU_R);
-
-
-   rumboot_printf("CRC of all buffer: %d\n", crc);
-   //for (int k=0; k<2; k++){
-   //     time_diff = ftime[0] - stime[0];
-   //     src_prnt_l = time_diff;
-   //     src_prnt_b = time_diff >> 32;
-   //     rumboot_printf("%s: spent time is %d%d\n", mem_name[k], src_prnt_b, src_prnt_l);
-   //}
-   
-   
-   return true;
+        //---------------
+        
+        
+        
+        
+        
+        // --- check of flushed data
+        rumboot_printf("Make self-checks of flushed data \n", addr);
+        src = mem_base[k];
+        crc = 0;
+        for (int i=0; i < NUM_OF_BUFS; i++)  {
+        // --- read RX-buffer and calculate CRC
+            //rumboot_printf("%s: check buf 0x%x \n", mem_name[k], src);
+            //// --- invalidate L2-cache data blocks
+            //msync(); 
+            //start_addr = (unsigned long)src;
+            //end_addr = start_addr + (SIZE_OF_BUFS-1);
+            //// Устанавливаем адрес на первое слово в строке (это необязательно делать)
+            //mask_line_base = (~(PPC476FP_L2_CACHELINE_SIZE - 1));
+            //range_start = start_addr & mask_line_base;
+            //range_end = (end_addr & mask_line_base) + PPC476FP_L2_CACHELINE_SIZE;
+            //for (addr = range_start; addr < range_end; addr += PPC476FP_L2_CACHELINE_SIZE)
+            //{
+            //    dcbi((void *)addr);
+            //}
+            //-----------
+            for(int j=0;j < SIZE_OF_BUFS/READ_SIZE; j++) {
+                crc = crc + src[j] - j;
+                //if (src[j] != j) {
+                //    rumboot_printf("%s: ERROR - mismatch of flused data at address 0x%x: src[j]((0x%x)) != j(0x%x) \n", mem_name[k], &src[j], src[j], j);
+                //}
+            }
+            src+=SIZE_OF_BUFS/READ_SIZE;
+        }
+        if(crc != 0) {
+            rumboot_printf("%s: ERROR - mismatch of flused data, crc = %d\n", mem_name[k], crc);
+            return false;
+        } 
+    rumboot_printf("%s: test ok, crc = %d\n", mem_name[k], crc);
+    return true;
 }
