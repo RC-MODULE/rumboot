@@ -71,7 +71,8 @@ rumboot_add_configuration (
 rumboot_add_configuration (
     IRAM_IM0
     CONFIGURATION IRAM_IM1
-    LDS o32t/iram_legacy.lds
+    LDS o32t/iram_im0.lds
+    PACKIMAGE_FLAGS -CiR 0x80000000
 )
 
 macro(rumboot_platform_generate_stuff_for_taget product)
@@ -117,6 +118,11 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
   add_rumboot_target_dir(simple-iram/
     CONFIGURATION IRAM_IM1
     PREFIX iram-im1
+  )
+
+  add_rumboot_target_dir(simple-iram/
+    CONFIGURATION IRAM_IM0
+    PREFIX iram-im0
   )
 
 #  add_rumboot_target(
@@ -346,13 +352,13 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     )
 
     add_rumboot_target(
-      CONFIGURATION IRAM_IM1
+      CONFIGURATION IRAM_IM0
       CFLAGS -DUSE_SWINT=132
       FILES common/irq/irq-atomics.c
   )
 
   add_rumboot_target(
-      CONFIGURATION IRAM_IM1
+      CONFIGURATION IRAM_IM0
       CFLAGS -DUSE_SWINT=132
       FILES common/irq/irq-defhandler.c
   )
