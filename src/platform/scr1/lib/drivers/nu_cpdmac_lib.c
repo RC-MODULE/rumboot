@@ -33,7 +33,7 @@ void nu_cpdmac_trn512_run          (uintptr_t base)
     iowrite32(1,base + NU_CPDMAC_REGBLOCK_OFFSET(i) + NU_CPDMAC_CSR_tr);
   }
 }
-int  nu_cpdmac_trn512_wait_complete(uintptr_t base)
+void  nu_cpdmac_trn512_wait_complete(uintptr_t base)
 {
   for (int i=0; i<8; i++) {
     while( (ioread32(base + NU_CPDMAC_REGBLOCK_OFFSET(i) + NU_CPDMAC_CSR_tr) & 2) == 0)
