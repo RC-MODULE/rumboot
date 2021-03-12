@@ -32,6 +32,13 @@ int ndma_simple_wait_complete(uintptr_t base)
   return 0;
 }
 
+int ndma_simple_wait_error(uintptr_t base)
+{
+  uint32_t res;
+  do{ res=ioread32(base+NDMA_Control); } while(! ( res&(NDMA_CONTROL_CPL|NDMA_CONTROL_ES) ) );
+  return 0;
+}
+
 
 int ndma_simple_memcpy(uintptr_t base, ndma_cfg_t * cfg)
 {
