@@ -69,7 +69,10 @@
 #include <platform/devices.h>
 #include <platform/interrupts.h>
 // #include <platform/test_assert.h>
-// #include <platform/devices/emi.h>
+#ifdef PLATFORM_O32T
+#else
+    #include <platform/devices/emi.h>
+#endif
 
 #include <regs/regs_mkio.h>
 #include <devices/mkio.h>
@@ -282,7 +285,12 @@ void prepare_test_data(char* heap_name)
 {
     rumboot_printf("    Preparing source test data\n");
 
-    // emi_init(DCR_EM2_EMI_BASE);
+#ifdef PLATFORM_O32T
+    //  TODO: add emi controller init for O32T. It is not done yet.
+#else
+    emi_init(DCR_EM2_EMI_BASE);
+#endif
+    
 #ifndef DATA_DIRECT_ADDRESS
     test_mkio_data_src = (uint16_t *)rumboot_malloc_from_named_heap_aligned(heap_name, MKIO_TEST_DATA_SIZE, 2);
 
