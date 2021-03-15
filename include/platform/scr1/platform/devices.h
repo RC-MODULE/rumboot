@@ -9,7 +9,7 @@
 
 #define SCR1_TIMER_BASE         0x00490000
 #define DUT_BASE                0x00800000
-#define DUT_PORT1_BASE          (DUT_BASE + 0x00020000)
+#define DUT_PORT1_BASE          (DUT_BASE + 0x00200000)
 #define EXT_MEMORY_BASE         0x01000000
 
 #define SPI_CONTROL_BASE        DUT_BASE
