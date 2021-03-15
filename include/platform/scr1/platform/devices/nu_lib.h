@@ -5,6 +5,143 @@
 
 #include <stdint.h>
 
+#define NU_VPE_CFG_PARAMS_NUM 54
+
+  /** 
+  Режим работы блока 
+  */
+  typedef enum Mode {
+    Mode_Unitary, 
+    Mode_Channel, 
+    Mode_Element
+  } Mode;
+
+  /** 
+  Режим округления нормализатора 
+  */
+  typedef enum RoundMode {
+    RoundMode_Nearest,
+    RoundMode_Down,
+    RoundMode_Up
+  }RoundMode;
+
+
+  /**
+  Активация элемента
+  */
+  typedef enum Enable {
+    Enable_NotEn,
+    Enable_En
+  }Enable;
+  
+
+  /** 
+  Операции alu
+  */
+  typedef enum AluOperationSwitch {
+    AluOperationSwitch_Max,
+    AluOperationSwitch_Min,
+    AluOperationSwitch_Sum
+  }AluOperationSwitch;
+  
+  /** 
+  Расширенны набор операци alu
+  */
+  typedef enum AluOperationExtSwitch {
+    AluOperationExtSwitch_Max,
+    AluOperationExtSwitch_Min,
+    AluOperationExtSwitch_Sum,
+    AluOperationExtSwitch_Eql
+  }AluOperationExtSwitch;
+
+  /** 
+  Операции pooling
+  */
+  typedef enum PoolingOperationSwitch {
+    PoolingOperationSwitch_Avg,
+    PoolingOperationSwitch_Max,
+    PoolingOperationSwitch_Min
+  }PoolingOperationSwitch;
+
+
+  /** 
+  Тип обрабатываемых данных
+  */
+  typedef enum DataType {
+    DataType_Int8,
+    DataType_Int16,
+    DataType_Fp16
+  }DataType;
+
+
+  /**
+  Тип вычислений
+  */
+  typedef enum DataTypeExt {
+    DataTypeExt_Int32,
+    DataTypeExt_Fp32
+  }DataTypeExt;
+
+  typedef struct ConfigOp01 {
+    Enable alu_en;
+    Enable mux_en;
+    Enable relu_en;
+    Enable prelu_en;
+    AluOperationSwitch alu_operation;
+    uint8_t lshift_value; // !!!! вообще он uint6
+    Mode alu_mode;
+    uint32_t alu_value; //!!!!
+    Mode mux_mode;
+    uint32_t mux_value; //!!!! Тут может бытb другои тип
+    // T prelu_value;
+    RoundMode norm_round_mode;
+    Enable norm_saturation_en;
+    uint8_t norm_round_size;
+  }ConfigOp01;
+  
+  typedef struct ConfigOp2 {
+    Enable alu_en;
+    Enable mux_en;
+    Enable lut_en;
+    Enable prelu_en;
+    AluOperationExtSwitch alu_operation;
+    Enable c1_en;
+    Enable c2_en;
+    Mode alu_mode;
+    uint32_t alu_value; //!!!! Тут может бытb другои тип
+    Mode mux_mode;
+    uint32_t mux_value; //!!!! Тут может бытb другои тип
+    // T prelu_value;
+    RoundMode norm_round_mode;
+    Enable norm_saturation_en;
+    uint8_t norm_round_size;
+    int16_t c1_offset;
+    int16_t c1_scale;
+    uint8_t c1_trunc; // !!!! вообще он uint6
+    int16_t c2_offset;
+    int16_t c2_scale;
+    uint8_t c2_trunc; // !!!! вообще он uint6
+  }ConfigOp2;
+  
+  typedef struct ConfigVPE {
+    DataType data_type;
+    Enable flying;
+    Enable op0_en;
+    Enable op1_en;
+    Enable op2_en;
+    int32_t c3_offset;
+    int16_t c3_scale;
+    uint8_t c3_trunc; // !!!! вообще он uint6
+    ConfigOp01 op0_config;
+    ConfigOp01 op1_config;
+    ConfigOp2 op2_config;
+  }ConfigVPE;
+  
+void nu_vpe_load_config(ConfigVPE* cfg, void* cfg_bin);
+void nu_vpe_print_config(ConfigVPE* cfg);
+
+void nu_vpe_setup(uintptr_t base, ConfigVPE* cfg);
+
 void nu_vpe_config_rd_main_channel(uintptr_t dma_base, void *addr, int size);
 void nu_vpe_run_rd_main_channel(uintptr_t dma_base);
 void nu_vpe_wait_rd_main_channel_complete(uintptr_t dma_base);

@@ -21,5 +21,6 @@
 #define DEMONSTRATOR_APB_BASE   DUT_PORT1_BASE
 
 #define NU_CPDMAC_ASM_BASE      DUT_PORT1_BASE
+#define NU_VPE_STANDALONE_BASE  DUT_BASE
 
 #endif /* end of include guard: DEVICES_H */

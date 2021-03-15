@@ -75,11 +75,13 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
     # VPE example 
     # if(DUT STREQUAL "VPE")
+    set(VPE_SIMPLE_PATH src/platform/scr1/targets/simple-rom/vpe_simple)
     add_rumboot_target(
       CONFIGURATION ROM
       FILES scr1/targets/simple-rom/vpe_simple/hello_vpe.c
-      IRUN_FLAGS +in_file_tag=${CMAKE_SOURCE_DIR}/src/platform/scr1/targets/simple-rom/vpe_simple/in_data.bin 
-                 +etalon_file_tag=${CMAKE_SOURCE_DIR}/src/platform/scr1/targets/simple-rom/vpe_simple/etalon.bin
+      IRUN_FLAGS +in_file_tag=${CMAKE_SOURCE_DIR}/${VPE_SIMPLE_PATH}/in_data.bin 
+                 +etalon_file_tag=${CMAKE_SOURCE_DIR}/${VPE_SIMPLE_PATH}/etalon.bin
+                 +cfg_file_tag=${CMAKE_SOURCE_DIR}/${VPE_SIMPLE_PATH}/Config_vpe1.bin
     )
     # endif()
 
