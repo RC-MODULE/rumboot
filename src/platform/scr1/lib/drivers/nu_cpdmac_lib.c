@@ -38,6 +38,7 @@ void  nu_cpdmac_trn512_wait_complete(uintptr_t base)
   for (int i=0; i<8; i++) {
     while( (ioread32(base + NU_CPDMAC_REGBLOCK_OFFSET(i) + NU_CPDMAC_CSR_tr) & 2) == 0)
     {}
+    iowrite32(0,base + NU_CPDMAC_REGBLOCK_OFFSET(i) +NU_CPDMAC_CSR_tr);
   }
   
 }
@@ -70,6 +71,7 @@ void nu_cpdmac_rcv512_wait_complete(uintptr_t base)
   for (int i=0; i<8; i++) {
     while( (ioread32(base + NU_CPDMAC_REGBLOCK_OFFSET(i) + NU_CPDMAC_CSR_rcv) & 2) == 0)
     {}
+    iowrite32(0,base + NU_CPDMAC_REGBLOCK_OFFSET(i) +NU_CPDMAC_CSR_rcv);
   }
   
 }
@@ -103,6 +105,7 @@ void  nu_cpdmac_trn256_wait_complete(uintptr_t base)
   for (int i=0; i<4; i++) {
     while( (ioread32(base + NU_CPDMAC_REGBLOCK_OFFSET(i) + NU_CPDMAC_CSR_tr) & 2) == 0)
     {}
+    iowrite32(0,base + NU_CPDMAC_REGBLOCK_OFFSET(i) +NU_CPDMAC_CSR_tr);
   }
   
 }
@@ -135,6 +138,7 @@ void  nu_cpdmac_rcv256_wait_complete(uintptr_t base)
   for (int i=0; i<4; i++) {
     while( (ioread32(base + NU_CPDMAC_REGBLOCK_OFFSET(i) + NU_CPDMAC_CSR_rcv) & 2) == 0)
     {}
+    iowrite32(0,base + NU_CPDMAC_REGBLOCK_OFFSET(i) +NU_CPDMAC_CSR_rcv);
   }
   
 }
