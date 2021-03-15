@@ -5,12 +5,12 @@
 #define COEFFICIENT_BASE        0xFFF40000
 #define WEIGHT_BASE             0xFFF80000
 #define RESULT_BASE             0xFFFC0000
-#define EXT_MEMORY_BASE         0x004A0000
+#define EXT_MEMORY_BASE         0x01000000
 
 #define SCR1_TIMER_BASE         0x00490000
-#define DUT_BASE                0x00498000
-#define DUT_PORT1_BASE          (DUT_BASE + 0x00002000)
-#define EXT_MEMORY_BASE         0x004A0000
+#define DUT_BASE                0x00800000
+#define DUT_PORT1_BASE          (DUT_BASE + 0x00020000)
+#define EXT_MEMORY_BASE         0x01000000
 
 #define SPI_CONTROL_BASE        DUT_BASE
 #define SPI_FIFO_BASE           DUT_PORT1_BASE

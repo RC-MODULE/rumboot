@@ -4,7 +4,7 @@ ENTRY(_start)
 
 MEMORY {
   RAM (rwx) : ORIGIN = 0x0, LENGTH = 1M
-  EMEM (rwx): ORIGIN = 0x004A0000, LENGTH = 0xffb5ffff
+  EMEM (rwx): ORIGIN = 0x01000000, LENGTH = 0xfeffffff
 }
 
 STACK_SIZE = 1024;
