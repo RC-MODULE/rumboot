@@ -31,6 +31,13 @@ ndma_cfg_t cfg = {
 
 #define ARR_SIZE 128
 
+#ifndef SET_TEST_BANK
+
+#define RD_TEST_BANK "IM1"
+#define WR_TEST_BANK "IM1"
+
+#endif
+
 // Crutch Until This Will Be Made For All Tests Accurately
 static struct tlb_entry const em2_nospeculative_tlb_entries[] =
 {
