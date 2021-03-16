@@ -17,4 +17,7 @@
 #define RCM_NDMA_BASE           0xC0306000
 #define SCRB_BASE               0xC0307000
 
+
+#define DCR_APBFIFO_BASE        0x80092000
+
 #endif // !O32T_DEVICES_H
