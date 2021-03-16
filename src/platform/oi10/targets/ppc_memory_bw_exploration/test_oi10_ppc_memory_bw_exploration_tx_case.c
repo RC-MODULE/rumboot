@@ -81,7 +81,10 @@ bool __attribute__((section(".text.test"))) cache_testing_function( void ) {
     uint32_t stack_h;
 
     rumboot_printf( "Start testing function\n" );
-
+// Enable L2 Cache scrubbing    
+    rumboot_printf( "Enable L2 Cache scrubbing\n");
+    dcr_write(0x800E0010, 0x101);
+    
     stack_h = __builtin_frame_address(0);
     rumboot_printf( "Stack = %x\n", stack_h );
 #ifdef SRAM0_CACHE

@@ -2772,6 +2772,7 @@ endif()
         CONFIGURATION SUPPLEMENTARY
         LDS oi10/sram0.lds
         FILES ppc_memory_bw_exploration/test_oi10_ppc_memory_bw_exploration_tx_case.c
+        IRUN_FLAGS +randomize_L2Cache
         CFLAGS  -DNUM_OF_BUFS=10
                 -DSIZE_OF_BUFS=4096
                 -DREAD_SIZE=4
@@ -2783,6 +2784,7 @@ endif()
     add_rumboot_target(
         CONFIGURATION IRAM
         FILES ppc_memory_bw_exploration/test_oi10_ppc_memory_bw_exploration_loader.c
+        IRUN_FLAGS +randomize_L2Cache
         NAME "test_oi10_ppc_memory_bw_exploration_tx_case_10_4096_4_simple_crc_sram0"
         TESTGROUP broken hwonly
         LOAD IM0BIN SELF
@@ -2793,6 +2795,7 @@ endif()
         CONFIGURATION SUPPLEMENTARY
         LDS oi10/sram0.lds
         FILES ppc_memory_bw_exploration/test_oi10_ppc_memory_bw_exploration_tx_case.c
+        IRUN_FLAGS +randomize_L2Cache
         CFLAGS  -DNUM_OF_BUFS=10
                 -DSIZE_OF_BUFS=4096
                 -DREAD_SIZE=4
@@ -2804,6 +2807,7 @@ endif()
     add_rumboot_target(
         CONFIGURATION IRAM
         FILES ppc_memory_bw_exploration/test_oi10_ppc_memory_bw_exploration_loader.c
+        IRUN_FLAGS +randomize_L2Cache
         NAME "test_oi10_ppc_memory_bw_exploration_tx_case_10_4096_4_simple_crc_sram1"
         TESTGROUP broken hwonly
         LOAD IM0BIN SELF
@@ -2814,6 +2818,7 @@ endif()
         CONFIGURATION SUPPLEMENTARY
         LDS oi10/sram0.lds
         FILES ppc_memory_bw_exploration/test_oi10_ppc_memory_bw_exploration_tx_case.c
+        IRUN_FLAGS +randomize_L2Cache
         CFLAGS  -DNUM_OF_BUFS=10
                 -DSIZE_OF_BUFS=4096
                 -DREAD_SIZE=4
@@ -2825,6 +2830,7 @@ endif()
     add_rumboot_target(
         CONFIGURATION IRAM
         FILES ppc_memory_bw_exploration/test_oi10_ppc_memory_bw_exploration_loader.c
+        IRUN_FLAGS +randomize_L2Cache
         NAME "test_oi10_ppc_memory_bw_exploration_tx_case_10_4096_4_simple_crc_ssram"
         TESTGROUP broken hwonly
         LOAD IM0BIN SELF
@@ -2835,6 +2841,7 @@ endif()
         CONFIGURATION SUPPLEMENTARY
         LDS oi10/sram0.lds
         FILES ppc_memory_bw_exploration/test_oi10_ppc_memory_bw_exploration_tx_case.c
+        IRUN_FLAGS +randomize_L2Cache
         CFLAGS  -DNUM_OF_BUFS=10
                 -DSIZE_OF_BUFS=4096
                 -DREAD_SIZE=4
@@ -2846,6 +2853,7 @@ endif()
     add_rumboot_target(
         CONFIGURATION IRAM
         FILES ppc_memory_bw_exploration/test_oi10_ppc_memory_bw_exploration_loader.c
+        IRUN_FLAGS +randomize_L2Cache
         NAME "test_oi10_ppc_memory_bw_exploration_tx_case_10_4096_4_simple_crc_im0"
         TESTGROUP broken hwonly
         LOAD IM0BIN SELF
@@ -2856,6 +2864,7 @@ endif()
         CONFIGURATION SUPPLEMENTARY
         LDS oi10/sram0.lds
         FILES ppc_memory_bw_exploration/test_oi10_ppc_memory_bw_exploration_tx_case.c
+        IRUN_FLAGS +randomize_L2Cache
         CFLAGS  -DNUM_OF_BUFS=10
                 -DSIZE_OF_BUFS=4096
                 -DREAD_SIZE=4
@@ -2867,6 +2876,7 @@ endif()
     add_rumboot_target(
         CONFIGURATION IRAM
         FILES ppc_memory_bw_exploration/test_oi10_ppc_memory_bw_exploration_loader.c
+        IRUN_FLAGS +randomize_L2Cache
         NAME "test_oi10_ppc_memory_bw_exploration_tx_case_10_4096_4_simple_crc_im1"
         TESTGROUP broken hwonly
         LOAD IM0BIN SELF
@@ -2877,6 +2887,7 @@ endif()
         CONFIGURATION SUPPLEMENTARY
         LDS oi10/sram0.lds
         FILES ppc_memory_bw_exploration/test_oi10_ppc_memory_bw_exploration_tx_case.c
+        IRUN_FLAGS +randomize_L2Cache
         CFLAGS  -DNUM_OF_BUFS=64
                 -DSIZE_OF_BUFS=4096
                 -DREAD_SIZE=4
@@ -2888,6 +2899,7 @@ endif()
     add_rumboot_target(
         CONFIGURATION IRAM
         FILES ppc_memory_bw_exploration/test_oi10_ppc_memory_bw_exploration_loader.c
+        IRUN_FLAGS +randomize_L2Cache
         NAME "test_oi10_ppc_memory_bw_exploration_tx_case_full_l2c_simple_crc_ssram"
         TESTGROUP broken hwonly
         LOAD IM0BIN SELF
