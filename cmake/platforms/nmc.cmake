@@ -70,6 +70,11 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     CONFIGURATION IRAM
   )
 
+  add_rumboot_target_dir(dap/
+    CONFIGURATION IRAM
+    PREFIX dap
+  )
+
   #Clang doesn't support legacy stuff
   if (NOT RUMBOOT_NMC_USE_CLANG)
     add_rumboot_target_dir(coretests/
