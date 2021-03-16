@@ -141,30 +141,46 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
   
   add_rumboot_target(
       CONFIGURATION IRAM_IM1
-      FILES simple-iram/test_ndma_mem.c
-      CFLAGS -DSET_TEST_BANK -DRD_TEST_BANK="IM1" -DWR_TEST_BANK="IM1"
+      FILES axi-dma/test_ndma_mem.c
+      CFLAGS -DRD_TEST_BANK="IM1" -DWR_TEST_BANK="IM1"
       PREFIX rd-im1-wr-im1
     )
     
   add_rumboot_target(
       CONFIGURATION IRAM_IM1
-      FILES simple-iram/test_ndma_mem.c
-      CFLAGS -DSET_TEST_BANK -DRD_TEST_BANK="IM2" -DWR_TEST_BANK="IM2"
+      FILES axi-dma/test_ndma_mem.c
+      CFLAGS -DRD_TEST_BANK="IM2" -DWR_TEST_BANK="IM2"
       PREFIX rd-im2-wr-im2
     )
     
     add_rumboot_target(
       CONFIGURATION IRAM_IM1
-      FILES simple-iram/test_ndma_mem.c
-      CFLAGS -DSET_TEST_BANK -DRD_TEST_BANK="IM3" -DWR_TEST_BANK="IM3"
+      FILES axi-dma/test_ndma_mem.c
+      CFLAGS -DRD_TEST_BANK="IM3" -DWR_TEST_BANK="IM3"
       PREFIX rd-im3-wr-im3
     )
     
     add_rumboot_target(
       CONFIGURATION IRAM_IM1
-      FILES simple-iram/test_ndma_mem.c
-      CFLAGS -DSET_TEST_BANK -DRD_TEST_BANK="SRAM0" -DWR_TEST_BANK="SRAM0"
+      FILES axi-dma/test_ndma_mem.c
+      CFLAGS -DRD_TEST_BANK="SRAM0" -DWR_TEST_BANK="SRAM0"
       PREFIX rd-sram0-wr-sram0
+    )
+    
+    add_rumboot_target(
+      CONFIGURATION IRAM_IM1
+      FILES axi-dma/test_ndma_apb.c
+    )
+    
+    add_rumboot_target(
+      CONFIGURATION IRAM_IM1
+      FILES axi-dma/test_ndma_denied.c
+    )
+    
+    add_rumboot_target(
+      CONFIGURATION IRAM_IM1
+      FILES axi-dma/test_ndma_denied_2.c
+      CFLAGS -DRD_TEST_BANK="IM1"
     )
 
   

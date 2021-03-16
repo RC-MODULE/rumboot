@@ -48,9 +48,11 @@ int main()
   
   rumboot_printf("Hello NDMA test denied (BRESP check)\n");
   
+  char* rd_heap_name = RD_TEST_BANK;
+  
   write_tlb_entries(em2_nospeculative_tlb_entries, ARRAY_SIZE(em2_nospeculative_tlb_entries));
   
-  src = (uint32_t*)rumboot_malloc_from_named_heap_aligned("IM1", ARR_SIZE * sizeof(uint32_t), sizeof(uint64_t));
+  src = (uint32_t*)rumboot_malloc_from_named_heap_aligned(rd_heap_name, ARR_SIZE * sizeof(uint32_t), sizeof(uint64_t));
     
   acc = seed;
   for(int i=0;i<ARR_SIZE;i++)

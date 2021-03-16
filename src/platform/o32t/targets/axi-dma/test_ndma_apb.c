@@ -40,35 +40,12 @@ static struct tlb_entry const em2_nospeculative_tlb_entries[] =
 
 int main()
 {
-  /*uint32_t * src;
-  uint32_t * dst;
-  uint32_t seed=0;
-  uint32_t diff=0x00010001u;
-  uint32_t patt=0x55555555u;
-  uint32_t acc;*/
-  
   
   
   rumboot_printf("Hello NDMA, test apb\n");
   
   write_tlb_entries(em2_nospeculative_tlb_entries, ARRAY_SIZE(em2_nospeculative_tlb_entries));
-  
-  /*src = (uint32_t*)rumboot_malloc_from_named_heap_aligned("IM1", ARR_SIZE * sizeof(uint32_t), sizeof(uint64_t));
-  dst = (uint32_t*)rumboot_malloc_from_named_heap_aligned("IM1", ARR_SIZE * sizeof(uint32_t), sizeof(uint64_t));
-  
-  acc = seed;
-  for(int i=0;i<ARR_SIZE;i++)
-  {
-    src[i] = acc;
-    dst[i] = patt;
-    acc = acc + diff;
-  }
-  
-  cfg.RD_Address = rumboot_virt_to_dma( src );
-  cfg.WR_Address = rumboot_virt_to_dma( dst );
-  cfg.MainCounter = ARR_SIZE >> 1; //Size In 64-bit Words*/
-  
-  //rumboot_printf("Run NDMA from %x to %x, size %d\n",cfg.RD_Address,cfg.WR_Address,cfg.MainCounter);
+ 
   rumboot_printf("NDMA apb check\n");
   ndma_apb_check((uintptr_t)RCM_NDMA_BASE,&cfg_apb);
   rumboot_printf("NDMA running one check\n");
