@@ -40,13 +40,27 @@ static struct tlb_entry const em2_nospeculative_tlb_entries[] =
 
 int main()
 {
+    
+  uint32_t * src;
+  uint32_t seed=0;
+  uint32_t diff=0x00010001u;
+  uint32_t acc;
   
-  rumboot_printf("Hello NDMA test denied (RRESP check)\n");
+  rumboot_printf("Hello NDMA test denied (BRESP check)\n");
   
   write_tlb_entries(em2_nospeculative_tlb_entries, ARRAY_SIZE(em2_nospeculative_tlb_entries));
   
+  src = (uint32_t*)rumboot_malloc_from_named_heap_aligned("IM1", ARR_SIZE * sizeof(uint32_t), sizeof(uint64_t));
+    
+  acc = seed;
+  for(int i=0;i<ARR_SIZE;i++)
+  {
+    src[i] = acc;
+    acc = acc + diff;
+  }
   
-  cfg.RD_Address = COM0_BASE;
+  cfg.RD_Address = rumboot_virt_to_dma( src );
+  
   cfg.WR_Address = COM1_BASE;
   cfg.MainCounter = ARR_SIZE >> 1; //Size In 64-bit Words
   
