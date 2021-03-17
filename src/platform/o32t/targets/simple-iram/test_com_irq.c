@@ -33,18 +33,27 @@
 void prepare_arrays( uint32_t ** src, uint32_t ** dst ) {
     *src = rumboot_malloc_from_named_heap_aligned( COM_SRC_HEAP, sizeof(uint32_t)*ARR_SIZE, sizeof(uint64_t) );
     *dst = rumboot_malloc_from_named_heap_aligned( COM_DST_HEAP, sizeof(uint32_t)*ARR_SIZE,sizeof(uint64_t) );
-
 	
     for( uint32_t i = 0; i < ARR_SIZE; i++ )
         (*src)[ i ] = i + ( (i+1) << 8 ) + ( (i+2) << 16 ) + ( (i+3) << 24 );
+
+    msync();
+}
+void prepare_arrays_light( uint32_t ** src, uint32_t ** dst ) {
+    *src = rumboot_malloc_from_named_heap_aligned( COM_SRC_HEAP, sizeof(uint32_t)*ARR_SIZE, sizeof(uint64_t) );
+    *dst = rumboot_malloc_from_named_heap_aligned( COM_DST_HEAP, sizeof(uint32_t)*ARR_SIZE,sizeof(uint64_t) );
+	
+    for( uint32_t i = 0; i < ARR_SIZE; i++ )
+        (*src)[ i ] = i << 1;
+	
     msync();
 }
 
-static volatile uint32_t COM0_Cpl_tr;
-static volatile uint32_t COM0_Cpl_rcv;
-static volatile uint32_t COM1_Cpl_tr;
-static volatile uint32_t COM1_Cpl_rcv;
-static volatile uint32_t COMMP0_COMMP1_IRQ = 79;
+ uint32_t COM0_Cpl_tr;
+ uint32_t COM0_Cpl_rcv;
+ uint32_t COM1_Cpl_tr;
+ uint32_t COM1_Cpl_rcv;
+ uint32_t COMMP0_COMMP1_IRQ = CP0_TRM_INT;
 
 
 static void handler1() {
@@ -52,21 +61,21 @@ static void handler1() {
 
 	   rumboot_printf( "COMMP0_COMMP1_IRQ= %d\n",COMMP0_COMMP1_IRQ) ;	
 	   rumboot_printf( "com_status= %d\n",com_status(COM0_BASE, 1) );	  
-	if (COMMP0_COMMP1_IRQ == 79){
+	if (COMMP0_COMMP1_IRQ == CP0_TRM_INT){
 		if (com_status(COM0_BASE, 1)== 1) {
 		COM0_Cpl_tr = 1;
 		clear_com_status(COM0_BASE,1);
 		rumboot_printf( "COM0_Cpl_tr= %d\n",COM0_Cpl_tr );
-		COMMP0_COMMP1_IRQ = 80;
+		COMMP0_COMMP1_IRQ = CP1_RCV_INT;
 		COM0_Cpl_tr = 0;
 		}
 	  }
-	if (COMMP0_COMMP1_IRQ == 80) {
+	if (COMMP0_COMMP1_IRQ == CP1_RCV_INT) {
 		if (com_status(COM1_BASE, 0)== 1) {
 		COM1_Cpl_rcv = 1;	  
 		rumboot_printf( "COM1_Cpl_rcv= %d\n",COM1_Cpl_rcv );
 		clear_com_status(COM1_BASE,0);
-		COMMP0_COMMP1_IRQ = 81;// CP1_TRM_INT;
+		COMMP0_COMMP1_IRQ = CP1_TRM_INT;
 		COM1_Cpl_rcv = 0;
 		}
 	}
@@ -76,7 +85,7 @@ static void handler1() {
 		COM1_Cpl_tr = 1;
 		clear_com_status(COM1_BASE,1); 
 		rumboot_printf( "COM1_Cpl_tr= %d\n",COM1_Cpl_tr );		   
-		COMMP0_COMMP1_IRQ = 78;//CP0_RCV_INT;
+		COMMP0_COMMP1_IRQ = CP0_RCV_INT;
 		COM1_Cpl_tr = 0;
 		}	
 	}
@@ -138,8 +147,8 @@ int main()
   
   write_tlb_entries(em2_nospeculative_tlb_entries, ARRAY_SIZE(em2_nospeculative_tlb_entries));
 	prepare_arrays( &src0, &dst0 );
-    prepare_arrays( &src1, &dst1 );
-	COMMP0_COMMP1_IRQ = 79; /*CP0_TRM_INT */
+    prepare_arrays_light( &src1, &dst1 );
+	COMMP0_COMMP1_IRQ = CP0_TRM_INT;
   struct rumboot_irq_entry * tbl = init_irq(); 
   
     if( (comp_dma_irq_run( rumboot_virt_to_dma(src0), rumboot_virt_to_dma(dst0),COM0_BASE,COM1_BASE,&COM0_Cpl_tr,&COM1_Cpl_rcv,(ARR_SIZE>>1)) != 0)
