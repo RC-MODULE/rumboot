@@ -33,7 +33,7 @@ void prepare_arrays( uint32_t ** src, uint32_t ** dst ) {
 
     for( uint32_t i = 0; i < ARR_SIZE; i++ )
         (*src)[ i ] = i + ( (i+1) << 8 ) + ( (i+2) << 16 ) + ( (i+3) << 24 );
-    msync();
+   // msync();
 }
 
 // Crutch Until This Will Be Made For All Tests Accurately
@@ -57,6 +57,9 @@ int main()
     prepare_arrays( &src1, &dst1 );
     if( (comp_dma_run( rumboot_virt_to_dma(src0), rumboot_virt_to_dma(dst0),COM0_BASE,COM1_BASE,(ARR_SIZE>>	1)) != 0)
  ||	memcmp( src0, dst0, sizeof(uint32_t)*ARR_SIZE  ) != 0){
+	 
+	// rumboot_printf( "src0= %d\n",src0 );
+	// rumboot_printf( "dst0= %d\n",dst0 );
         result = 1;
 	 } 
 
