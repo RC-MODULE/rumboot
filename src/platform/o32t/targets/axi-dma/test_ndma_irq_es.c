@@ -92,9 +92,11 @@ int main()
     
   //int res = ndma_irq_es_run((uintptr_t)RCM_NDMA_BASE, &cfg, &flag);
    
-  deinit_irq(tbl);
+ 
   
-  return ndma_irq_es_run((uintptr_t)RCM_NDMA_BASE, &cfg, &flag);
+  int res = ndma_irq_es_run((uintptr_t)RCM_NDMA_BASE, &cfg, &flag);
+  
+   deinit_irq(tbl);
   
   /*if (!ndma_simple_wait_error((uintptr_t)RCM_NDMA_BASE))
   {
@@ -107,6 +109,6 @@ int main()
       return 1;
   }*/
   
-
+  return res;
 }
 
