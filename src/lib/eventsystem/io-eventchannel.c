@@ -19,6 +19,5 @@ void __attribute__((no_instrument_function)) rumboot_platform_putchar(uint8_t c)
 
 int __attribute__((no_instrument_function)) rumboot_platform_getchar(uint32_t timeout_us)
 {
-	/* TODO: .. */
-	return 0;
+	return -1;
 }
