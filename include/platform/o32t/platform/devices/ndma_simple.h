@@ -25,8 +25,10 @@ typedef struct ndma_cfg {
 
 
 int ndma_simple_run(uintptr_t base, ndma_cfg_t * cfg);
+int ndma_irq_es_run(uintptr_t base, ndma_cfg_t * cfg, uint32_t flag_irq);
 int ndma_simple_wait_complete(uintptr_t base);
 int ndma_simple_wait_error(uintptr_t base);
 int ndma_simple_memcpy(uintptr_t base, ndma_cfg_t * cfg);
 int ndma_apb_check(uintptr_t base, ndma_cfg_t * cfg);
 int ndma_apb_running_one(uintptr_t base);
+void clear_ndma_status(uintptr_t base);

@@ -182,6 +182,12 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       FILES axi-dma/test_ndma_denied_2.c
       CFLAGS -DRD_TEST_BANK="IM1"
     )
+    
+    add_rumboot_target(
+      CONFIGURATION IRAM_IM1
+      FILES axi-dma/test_ndma_irq_es.c
+    )
+
 
   
     #  The one test, checking access to closed space
