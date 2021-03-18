@@ -20,27 +20,37 @@ inline void dcr_write(uintptr_t addr, uint32_t data) {
 #endif
 
 #define NFIFO_DATA    0
-#define NFIFO_CONTROL 4
+#define NFIFO_CONTROL 1
 
 
-void nfifo_instance_init(struct nfifo_instance *inst, uintptr_t base, int is_dcr)
+void nfifo_instance_init(struct nfifo_instance *inst, uintptr_t base)
 {
     inst->base = base;
-    inst->dcr = is_dcr;
+    #ifdef __PPC__
+        inst->dcr = 1;
+    #else
+        inst->dcr = 0;
+    #endif
+    #ifdef __NM__
+        inst->spacing = 8;
+    #else
+        inst->spacing = 4;
+    #endif
 }
 
 
 static uint32_t nfifo_reg_read(struct nfifo_instance *inst, uintptr_t offset)
 {
-        return inst->dcr ? dcr_read(inst->base + offset) : ioread32(inst->base + offset);
+        uint32_t v = inst->dcr ? dcr_read(inst->base + (offset * inst->spacing)) : ioread32(inst->base + offset * inst->spacing);
+        return v;
 }
 
 static void nfifo_reg_write(struct nfifo_instance *inst, uintptr_t offset, uint32_t value)
 {
     if (inst->dcr) {
-        dcr_write(inst->base + offset, value);
+        dcr_write(inst->base + (offset * inst->spacing), value);
      } else {
-        iowrite32(value, inst->base + offset);
+        iowrite32(value, inst->base + (offset * inst->spacing));
      }
 }
 
@@ -60,10 +70,16 @@ int nfifo_can_write(struct nfifo_instance *inst)
     return nfifo_reg_read(inst, NFIFO_CONTROL) & (1<<1);
 }
 
-uint32_t nfifo_read(struct nfifo_instance *inst)
+uint32_t nfifo_read(struct nfifo_instance *inst, uint32_t timeout_us)
 {
-        while (!nfifo_can_read(inst));;
-        return nfifo_reg_read(inst, NFIFO_DATA);
+        uint32_t start = rumboot_platform_get_uptime();
+
+        do {
+                if (nfifo_can_read(inst)) {
+                        return nfifo_reg_read(inst, NFIFO_DATA);
+                }
+        } while (rumboot_platform_get_uptime() - start < timeout_us);
+        return -1;
 }
 
 void nfifo_write(struct nfifo_instance *inst, uint32_t word)
