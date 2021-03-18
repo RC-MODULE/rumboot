@@ -249,6 +249,7 @@ ADD_SOURCE("src/lib/memtest.c")
 ADD_SOURCE("src/lib/bitswapper.c")
 ADD_SOURCE("src/lib/drivers/scrb_lib.c")
 ADD_SOURCE("src/lib/drivers/nfifo.c")
+ADD_SOURCE("src/lib/weaklings.c")
 
 if (NOT RUMBOOT_PLATFORM STREQUAL "native")
   if (CMAKE_BUILD_TYPE STREQUAL "Debug")
