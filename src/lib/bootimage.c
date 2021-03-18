@@ -50,24 +50,6 @@ int rumboot_bootimage_check_magic(uint32_t magic)
 	return -1;
 }
 
-#ifdef RUMBOOT_SUPPORTS_SPL_ENDIAN_SWAP
-static uint32_t rumboot_bootimage_header_item32(uint32_t v, int swap)
-{
-	return swap ? __swap32(v) : v;
-}
-#else 
-#define rumboot_bootimage_header_item32(v,s) (s ? v : v)
-#endif
-
-#ifdef RUMBOOT_SUPPORTS_SPL_ENDIAN_SWAP
-static uint64_t rumboot_bootimage_header_item64(uint64_t v, int swap)
-{
-	return swap ? __swap64(v) : v;
-}
-#else 
-#define rumboot_bootimage_header_item64(v,s) (s ? v : v)
-#endif
-
 /* TODO: Move to platform glue */
 const char *rumboot_platform_get_cluster_name(int cluster_id) {
 	if (cluster_id == 0) {
@@ -112,7 +94,7 @@ ssize_t rumboot_bootimage_check_header(struct rumboot_bootheader *hdr, void **da
 		hdr->flags & RUMBOOT_FLAG_DECAPS   ? " DECAPS"  : "",
 		hdr->flags & RUMBOOT_FLAG_RELOCATE ? " RELOC"   : "",
 		hdr->flags & RUMBOOT_FLAG_SYNC     ? " SYNC"    : "",
-		hdr->flags & RUMBOOT_FLAG_RESERVED ? " RSVD"    : ""
+		hdr->flags & RUMBOOT_FLAG_KILL     ? " KILL"    : ""
 		);
 	uint32_t cluster_id = rumboot_bootimage_header_item32(hdr->target_cpu_cluster, swap);
     dbg_boot(hdr->device, "Target CPU:       %d (%s)", cluster_id, rumboot_platform_get_cluster_name(cluster_id));	
@@ -166,13 +148,24 @@ int rumboot_bootimage_execute(struct rumboot_bootheader *hdr, const struct rumbo
 	int swap = rumboot_bootimage_check_magic(hdr->magic);
 	hdr->magic = 0x0; /* Wipe out magic */
 	hdr->device = src; /* Set the src pointer */
-	
+	uint8_t flags = hdr->flags;
+
+	int cluster_count = 0;
+	const struct rumboot_secondary_cpu * cpus = rumboot_platform_get_secondary_cpus(&cluster_count);
 	int cluster = rumboot_bootimage_header_item32(hdr->target_cpu_cluster, swap);
+	const struct rumboot_secondary_cpu * cpu = NULL; 
+
+	if (cluster > 0 && cluster <= cluster_count) {
+		cpu = &cpus[cluster -1];
+		if ((flags & RUMBOOT_FLAG_KILL) && (cpu->kill))
+			cpu->kill(cpu); /* Kill any running tasks on this CPU */
+	}
+
 	/* The following is only for V3 images */
-	if (hdr->flags & (RUMBOOT_FLAG_RELOCATE | RUMBOOT_FLAG_DECAPS)) {
+	if (flags & (RUMBOOT_FLAG_RELOCATE | RUMBOOT_FLAG_DECAPS)) {
 		void *dest;
 		/* If we only have a 'decaps' image, we'll have to do an in-place memmove/decompress */
-		uint64_t dest_ptr = (hdr->flags & RUMBOOT_FLAG_RELOCATE) ? rumboot_bootimage_header_item64(hdr->relocation, swap) : (uintptr_t) hdr;
+		uint64_t dest_ptr = (flags & RUMBOOT_FLAG_RELOCATE) ? rumboot_bootimage_header_item64(hdr->relocation, swap) : (uintptr_t) hdr;
 		if (sizeof(dest) == sizeof(uint32_t)) {
 			dest = (void *) (uintptr_t) (dest_ptr & 0xffffffff);
 		} else if (sizeof(dest) == sizeof(uint64_t)) {
@@ -182,12 +175,12 @@ int rumboot_bootimage_execute(struct rumboot_bootheader *hdr, const struct rumbo
 		void *src = hdr;
 		size_t len = rumboot_bootimage_header_item32(hdr->datalen, swap) + sizeof(*hdr);
 
-		if (hdr->flags & RUMBOOT_FLAG_DECAPS) {
+		if (flags & RUMBOOT_FLAG_DECAPS) {
 			src = hdr->data;
 			len -= sizeof(*hdr);
 		}
-		rumboot_printf("Relocating image to 0x%x -> 0x%x\n", src, dest);
-		memmove(dest,src, len);
+		//dbg_boot(src, "Relocating data 0x%x -> 0x%x\n", src, dest);
+		memmove(dest, src, len);
         #ifdef __PPC__
         /* FixMe: Use cross-platform barrier sync functions here */
         asm("msync");
@@ -195,7 +188,25 @@ int rumboot_bootimage_execute(struct rumboot_bootheader *hdr, const struct rumbo
 	}
 
 	bailout:
-    	return rumboot_platform_exec(hdr, swap);
+		if (cluster == 0) {
+    		return rumboot_platform_exec(hdr, swap);
+		} else if (cluster <= cluster_count) {
+			dbg_boot(src, "Starting %ssynchronous code execution on cluster %d (%s)", 
+				(flags & RUMBOOT_FLAG_SYNC) ? "" : "a", 
+				cluster,
+				cpu->name);
+			if (cpu->start) 
+				cpu->start(cpu, hdr, swap);
+			if (flags & RUMBOOT_FLAG_SYNC) {
+				if (cpu->poll) {
+					cpu->poll(cpu);
+				} else { 
+					dbg_boot(src, "WARN: %s doesn't support synchronous mode");
+				}
+			} else {
+				return 0;
+			}
+		}
 }
 
 int rumboot_bootimage_execute_ep(void *ep)

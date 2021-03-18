@@ -19,7 +19,7 @@ else()
   message("NMC: SOC build for ${RUMBOOT_SOC}!")
   set(SOC_OBJCOPY_FLAGS )
   set(SOC_BOOTROM ${RUMBOOT_SOC}:bootrom-stub)
-  set(SOC_PACKIMAGE_FLAGS -CiR 0x80020000)
+  set(SOC_PACKIMAGE_FLAGS -CiR 0x80020000 -F SYNC True)
   set(SOC_FEATURES PACKIMAGE)
 endif()
 
@@ -35,7 +35,7 @@ rumboot_add_configuration(
   LOAD 
     IM1_IMAGE SELF
     IM0BIN SELF
-  CFLAGS -DRUMBOOT_MAIN_NORETURN -fnmc-compatible-if-packed
+  CFLAGS -fnmc-compatible-if-packed
   OBJCOPY_FLAGS ${SOC_OBJCOPY_FLAGS}
   FEATURES ${SOC_FEATURES}
   #We need a relocatable image 0x80020000

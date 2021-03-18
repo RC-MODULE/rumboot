@@ -184,45 +184,11 @@ static const tlb_entry big_endian_tlb[] =
  { MMU_TLB_ENTRY(  0x010,  0x80010,    0x80010,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_2,     0b1 )},
 };
 
-#include <rumboot/bitswapper.h>
 #include <rumboot/hexdump.h>
-#include <devices/nfifo.h>
-
-
-int nmc_poll_loop()
-{
-        struct nfifo_instance nf;
-        rumboot_printf("%x %x\n", dcr_read(DCR_APBFIFO_BASE), dcr_read(DCR_APBFIFO_BASE + 4));
-        nfifo_instance_init(&nf, DCR_APBFIFO_BASE, 1);
-        nfifo_enable(&nf, 1);
-        while(true) {
-                if (nfifo_can_read(&nf)) {
-                        uint32_t word = nfifo_read(&nf);
-                        rumboot_printf("got word: %x\n", word);
-                        if (word & (1<<31)) { /* exit code */
-                                return word & 0xff;
-                        } else { /* stdio */
-                                rumboot_platform_putchar(word & 0xff);
-                        }
-                }
-                int c = rumboot_platform_getchar(0);
-                if (c != -1) {
-                        nfifo_write(&nf, (c & 0xff));
-                }
-        }
-}
 
 int rumboot_platform_exec(struct rumboot_bootheader *hdr, int swap)
 {
         /* Make sure PID is 0 */
-        if (hdr->target_cpu_cluster) {
-                dcr_write(DCR_SCTL_BASE + SCTL_NMPU_NMI, 1<<1);                
-                dcr_write(DCR_SCTL_BASE + SCTL_NMPU_NMI, 0);
-                rumboot_printf("Should work now\n");
-                //nmc_poll_loop();
-                while(1);
-        }
-        
         set_mem_window(MEM_WINDOW_SHARED);
         uint32_t ep = hdr->entry_point32[0];
 
@@ -257,11 +223,11 @@ int rumboot_platform_getchar(uint32_t timeout_us)
 {
         uint32_t start = rumboot_platform_get_uptime();
 
-        while (rumboot_platform_get_uptime() - start < timeout_us) {
+        do {
                 if (!uart_check_rfifo_empty(UART0_BASE)) {
                         return ioread32(UART0_BASE + UARTDR) & 0xFF;
                 }
-        }
+        } while (rumboot_platform_get_uptime() - start < timeout_us);
         return -1;
 }
 #endif

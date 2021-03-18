@@ -1,6 +1,7 @@
 #ifndef BOOTHEADER_H
 #define BOOTHEADER_H
 
+#include <rumboot/bitswapper.h>
 /**
  *
  * \defgroup bootheader Boot image handling
@@ -43,7 +44,7 @@ enum rumboot_header_flags {
     RUMBOOT_FLAG_DECAPS   = (1 << 4), /** Remove header before executing and move data to the beginning */
     RUMBOOT_FLAG_RELOCATE = (1 << 5), /** Relocate image before execution to the address in relocation field */
     RUMBOOT_FLAG_SYNC     = (1 << 6), /** Wait for the image to finish before exiting */
-    RUMBOOT_FLAG_RESERVED = (1 << 7), // Reserved
+    RUMBOOT_FLAG_KILL     = (1 << 7), /** Issue a reset to the target CPU before operating */
 };
 
 struct __attribute__((packed)) rumboot_bootheader {
@@ -197,4 +198,37 @@ void dbg_boot(const struct rumboot_bootsource * src, const char *fmt, ...);
  int rumboot_bootimage_execute_ep(void *ep);
  void rumboot_platform_enter_host_mode(struct rumboot_config *conf);
  void rumboot_platform_init_loader(struct rumboot_config *conf);
+
+#ifdef RUMBOOT_SUPPORTS_SPL_ENDIAN_SWAP
+static inline uint32_t rumboot_bootimage_header_item32(uint32_t v, int swap)
+{
+	return swap ? __swap32(v) : v;
+}
+#else 
+#define rumboot_bootimage_header_item32(v,s) (s ? v : v)
+#endif
+
+#ifdef RUMBOOT_SUPPORTS_SPL_ENDIAN_SWAP
+static inline uint64_t rumboot_bootimage_header_item64(uint64_t v, int swap)
+{
+	return swap ? __swap64(v) : v;
+}
+#else 
+#define rumboot_bootimage_header_item64(v,s) (s ? v : v)
+#endif
+
+
+struct rumboot_secondary_cpu {
+  const char *name;
+  uintptr_t base;
+  void (*kill)(const struct rumboot_secondary_cpu *cpu);
+  int  (*poll)(const struct rumboot_secondary_cpu *cpu);
+  void (*start)(const struct rumboot_secondary_cpu *cpu, struct rumboot_bootheader *hdr, int swap);
+};
+
+const struct rumboot_secondary_cpu *rumboot_platform_get_secondary_cpus(int *cpu_count);
+
+
 #endif /* end of include guard: BOOTHEADER_H */
+
+
