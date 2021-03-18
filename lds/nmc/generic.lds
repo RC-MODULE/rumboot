@@ -34,6 +34,7 @@ SECTIONS
     *(.bss.*)
     *(.bsst)
     *(.bsst.*)
+    *(COMMON)
     _rumboot_platform_bss_end = .;
   } > IRAM
 
