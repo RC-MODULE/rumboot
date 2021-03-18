@@ -22,8 +22,9 @@
 #define TIMERS_BASE  (NMC_REGS_BASE + 0x2000)
 #define IFU_BASE     (NMC_REGS_BASE + 0x3000)
 #define AXIBR_BASE   (NMC_REGS_BASE + 0x4000)
-#define FIFO_BASE    (NMC_REGS_BASE + 0x5000)
-#define DAP_BASE     (NMC_REGS_BASE + 0x6000)
-#define DBG_BASE     (NMC_REGS_BASE + 0x7000)
+#define DAP_BASE     (NMC_REGS_BASE + 0x5000)
+#define FIFO_BASE    (NMC_REGS_BASE + 0x6000)
+
+#include <platform/o32t/platform/devices.h>
 
 #endif
