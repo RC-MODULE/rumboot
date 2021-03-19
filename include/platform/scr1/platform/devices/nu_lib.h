@@ -6,6 +6,7 @@
 #include <stdint.h>
 
 #define NU_VPE_CFG_PARAMS_NUM 54
+#define NU_MPE_CFG_PARAMS_NUM 21
 
   /** 
   Режим работы блока 
@@ -81,6 +82,32 @@
     DataTypeExt_Int32,
     DataTypeExt_Fp32
   }DataTypeExt;
+  
+  typedef struct ConfigMPE {
+    uint32_t H        ;
+    uint32_t W        ;
+    uint32_t C        ;
+    uint32_t Tp       ;
+    uint32_t Bp       ;
+    uint32_t Lp       ;
+    uint32_t Rp       ;
+    uint32_t R        ;
+    uint32_t S        ;
+    uint32_t Ds       ;
+    uint32_t Dr       ;
+    uint32_t Sw       ;
+    uint32_t Sh       ;
+    uint32_t K        ;
+    DataType dt       ;
+    uint32_t LINES    ;
+    uint32_t COLUMNS  ;
+    uint32_t BUF_NMB  ;
+    uint32_t RND_MODE ;
+    uint32_t SAT      ;
+    uint32_t RND_SIZE ;
+  }ConfigMPE;
+
+  
 
   typedef struct ConfigOp01 {
     Enable alu_en;
@@ -142,6 +169,11 @@ void nu_vpe_print_config(ConfigVPE* cfg);
 
 void nu_vpe_setup(uintptr_t base, ConfigVPE* cfg);
 
+void nu_mpe_load_config(ConfigMPE* cfg, void* cfg_bin);
+void nu_mpe_print_config(ConfigMPE* cfg);
+
+void nu_mpe_setup(uintptr_t base, ConfigMPE* cfg);
+
 void nu_vpe_config_rd_main_channel(uintptr_t dma_base, void *addr, int size);
 void nu_vpe_run_rd_main_channel(uintptr_t dma_base);
 void nu_vpe_wait_rd_main_channel_complete(uintptr_t dma_base);
@@ -149,6 +181,10 @@ void nu_vpe_wait_rd_main_channel_complete(uintptr_t dma_base);
 void nu_vpe_config_wr_main_channel(uintptr_t dma_base, void *addr, int size);
 void nu_vpe_run_wr_main_channel(uintptr_t dma_base);
 void nu_vpe_wait_wr_main_channel_complete(uintptr_t dma_base);
+
+void nu_mpe_config_wr_main_channel(uintptr_t dma_base, void *addr, int size);
+void nu_mpe_run_wr_main_channel(uintptr_t dma_base);
+void nu_mpe_wait_wr_main_channel_complete(uintptr_t dma_base);
 
 
 #endif

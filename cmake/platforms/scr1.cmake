@@ -85,6 +85,18 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     )
     # endif()
 
+    # MPE example 
+    # if(DUT STREQUAL "MPE")
+    set(MPE_SIMPLE_PATH src/platform/scr1/targets/simple-rom/mpe_simple)
+    add_rumboot_target(
+      CONFIGURATION ROM
+      FILES scr1/targets/simple-rom/mpe_simple/hello_mpe.c
+      IRUN_FLAGS +in_file_tag=${CMAKE_SOURCE_DIR}/${MPE_SIMPLE_PATH}/in_data.bin 
+                 +etalon_file_tag=${CMAKE_SOURCE_DIR}/${MPE_SIMPLE_PATH}/etalon.bin
+                 +cfg_file_tag=${CMAKE_SOURCE_DIR}/${MPE_SIMPLE_PATH}/Config_mpe1.bin
+    )
+    # endif()
+
     # demonstrator tests
 
     # if(DUT STREQUAL "DEMONSTRATOR_SIMPLE")

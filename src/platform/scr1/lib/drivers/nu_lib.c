@@ -6,6 +6,9 @@
 #include <rumboot/rumboot.h>
 #include <rumboot/io.h>
 
+#include <regs/regs_nu_mpe.h>
+#include <regs/regs_nu_vpe.h>
+
 #include <platform/devices/nu_cpdmac_lib.h> 
 #include <platform/devices/nu_lib.h> 
 
@@ -70,6 +73,34 @@ void nu_vpe_load_config(ConfigVPE* cfg, void* cfg_bin) {
   cfg->op2_config.c2_trunc=*ptr;ptr++;
     
 }
+void nu_mpe_load_config(ConfigMPE* cfg, void* cfg_bin) {
+  int32_t* ptr;
+  
+  ptr = (int32_t*) cfg_bin;
+  
+  cfg-> H        =*ptr;ptr++;
+  cfg-> W        =*ptr;ptr++;
+  cfg-> C        =*ptr;ptr++;
+  cfg-> Tp       =*ptr;ptr++;
+  cfg-> Bp       =*ptr;ptr++;
+  cfg-> Lp       =*ptr;ptr++;
+  cfg-> Rp       =*ptr;ptr++;
+  cfg-> R        =*ptr;ptr++;
+  cfg-> S        =*ptr;ptr++;
+  cfg-> Ds       =*ptr;ptr++;
+  cfg-> Dr       =*ptr;ptr++;
+  cfg-> Sw       =*ptr;ptr++;
+  cfg-> Sh       =*ptr;ptr++;
+  cfg-> K        =*ptr;ptr++;
+  cfg-> dt       =*ptr;ptr++;
+  cfg-> LINES    =*ptr;ptr++;
+  cfg-> COLUMNS  =*ptr;ptr++;
+  cfg-> BUF_NMB  =*ptr;ptr++;
+  cfg-> RND_MODE =*ptr;ptr++;
+  cfg-> SAT      =*ptr;ptr++;
+  cfg-> RND_SIZE =*ptr;ptr++;  
+}
+
 
 
   void nu_vpe_print_Mode(Mode mode, char* name) {
@@ -225,10 +256,43 @@ void nu_vpe_print_config(ConfigVPE* cfg){
   
 }
 
+void nu_mpe_print_config(ConfigMPE* cfg){
+  rumboot_printf("ConfigMPE:\n");
+  
+    rumboot_printf("  H        = %d \n" , cfg->H);
+    rumboot_printf("  W        = %d \n" , cfg->W);
+    rumboot_printf("  C        = %d \n" , cfg->C);
+    rumboot_printf("  Tp       = %d \n" , cfg->Tp);
+    rumboot_printf("  Bp       = %d \n" , cfg->Bp);
+    rumboot_printf("  Lp       = %d \n" , cfg->Lp);
+    rumboot_printf("  Rp       = %d \n" , cfg->Rp);
+    rumboot_printf("  R        = %d \n" , cfg->R);
+    rumboot_printf("  S        = %d \n" , cfg->S);
+    rumboot_printf("  Ds       = %d \n" , cfg->Ds);
+    rumboot_printf("  Dr       = %d \n" , cfg->Dr);
+    rumboot_printf("  Sw       = %d \n" , cfg->Sw);
+    rumboot_printf("  Sh       = %d \n" , cfg->Sh);
+    rumboot_printf("  K        = %d \n" , cfg->K);
+    nu_vpe_print_DataType(cfg->dt,"dt      ");
+    rumboot_printf("  LINES    = %d \n" , cfg->LINES);
+    rumboot_printf("  COLUMNS  = %d \n" , cfg->COLUMNS);
+    rumboot_printf("  BUF_NMB  = %d \n" , cfg->BUF_NMB);
+    rumboot_printf("  RND_MODE = %d \n" , cfg->RND_MODE);
+    rumboot_printf("  SAT      = %d \n" , cfg->SAT);
+    rumboot_printf("  RND_SIZE = %d \n" , cfg->RND_SIZE);
+  
+}
+
 void nu_vpe_setup(uintptr_t base, ConfigVPE* cfg) {
   rumboot_printf("Configuring VPE..\n");
   
-  // iowrite32(cfg->MYFIELD, base + MYREG);
+  // iowrite32(cfg->MYFIELD, base + NU_VPE_MYREG);
+}
+
+void nu_mpe_setup(uintptr_t base, ConfigMPE* cfg) {
+  rumboot_printf("Configuring MPE..\n");
+  
+  // iowrite32(cfg->MYFIELD, base + NU_MPE_MYREG);
 }
 
 
@@ -251,6 +315,17 @@ void nu_vpe_run_wr_main_channel(uintptr_t dma_base) {
 }
 void nu_vpe_wait_wr_main_channel_complete(uintptr_t dma_base) {
   nu_cpdmac_rcv256_wait_complete(dma_base);
+}
+
+void nu_mpe_config_wr_main_channel(uintptr_t dma_base, void *addr, int size){
+  nu_cpdmac_rcv512_config(dma_base,addr,size);
+}
+
+void nu_mpe_run_wr_main_channel(uintptr_t dma_base) {
+  nu_cpdmac_rcv512_run(dma_base);
+}
+void nu_mpe_wait_wr_main_channel_complete(uintptr_t dma_base) {
+  nu_cpdmac_rcv512_wait_complete(dma_base);
 }
 
 
