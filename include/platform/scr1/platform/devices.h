@@ -23,5 +23,6 @@
 #define NU_CPDMAC_ASM_BASE      DUT_PORT1_BASE
 #define NU_VPE_STANDALONE_BASE  DUT_BASE
 #define NU_MPE_STANDALONE_BASE  DUT_BASE
+#define NU_PPE_STANDALONE_BASE  DUT_BASE
 
 #endif /* end of include guard: DEVICES_H */

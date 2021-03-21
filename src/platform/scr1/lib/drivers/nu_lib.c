@@ -8,6 +8,7 @@
 
 #include <regs/regs_nu_mpe.h>
 #include <regs/regs_nu_vpe.h>
+#include <regs/regs_nu_ppe.h>
 
 #include <platform/devices/nu_cpdmac_lib.h> 
 #include <platform/devices/nu_lib.h> 
@@ -101,7 +102,35 @@ void nu_mpe_load_config(ConfigMPE* cfg, void* cfg_bin) {
   cfg-> RND_SIZE =*ptr;ptr++;  
 }
 
-
+void nu_ppe_load_config(ConfigPPE* cfg, void* cfg_bin) {
+  uint32_t* ptr;
+  
+  ptr = (uint32_t*) cfg_bin;
+  
+    cfg-> H      =*ptr;ptr++;
+    cfg-> W      =*ptr;ptr++;
+    cfg-> C      =*ptr;ptr++;
+    cfg-> Kh     =*ptr;ptr++;
+    cfg-> Kw     =*ptr;ptr++;
+    cfg-> Sh     =*ptr;ptr++;
+    cfg-> Sw     =*ptr;ptr++;
+    cfg-> Kh_r   =*ptr;ptr++;
+    cfg-> Kw_r   =*ptr;ptr++;
+    cfg-> Tp     =*ptr;ptr++;
+    cfg-> Bp     =*ptr;ptr++;
+    cfg-> Lp     =*ptr;ptr++;
+    cfg-> Rp     =*ptr;ptr++;
+    cfg-> pv[0]  =*ptr;ptr++;
+    cfg-> pv[1]  =*ptr;ptr++;
+    cfg-> pv[2]  =*ptr;ptr++;
+    cfg-> pv[3]  =*ptr;ptr++;
+    cfg-> pv[4]  =*ptr;ptr++;
+    cfg-> pv[5]  =*ptr;ptr++;
+    cfg-> pv[6]  =*ptr;ptr++;
+    cfg-> meth   =*ptr;ptr++;
+    cfg-> dt     =*ptr;ptr++;
+    cfg-> MC     =*ptr;ptr++;
+}
 
   void nu_vpe_print_Mode(Mode mode, char* name) {
     static char* ModeNames[]= {
@@ -282,6 +311,27 @@ void nu_mpe_print_config(ConfigMPE* cfg){
     rumboot_printf("  RND_SIZE = %d \n" , cfg->RND_SIZE);
   
 }
+void nu_ppe_print_config(ConfigPPE* cfg){
+  rumboot_printf("ConfigPPE:\n");
+  
+    rumboot_printf("  H      = %d \n" , cfg->H);
+    rumboot_printf("  W      = %d \n" , cfg->W);
+    rumboot_printf("  C      = %d \n" , cfg->C);
+    rumboot_printf("  Kh     = %d \n" , cfg->Kh);
+    rumboot_printf("  Kw     = %d \n" , cfg->Kw);
+    rumboot_printf("  Sh     = %d \n" , cfg->Sh);
+    rumboot_printf("  Sw     = %d \n" , cfg->Sw);
+    rumboot_printf("  Kh_r   = %d \n" , cfg->Kh_r);
+    rumboot_printf("  Kw_r   = %d \n" , cfg->Kw_r);
+    rumboot_printf("  Tp     = %d \n" , cfg->Tp);
+    rumboot_printf("  Bp     = %d \n" , cfg->Bp);
+    rumboot_printf("  Lp     = %d \n" , cfg->Lp);
+    rumboot_printf("  Rp     = %d \n" , cfg->Rp);
+    rumboot_printf("  pv     = %d %d %d %d %d %d %d \n" , cfg->pv[0], cfg->pv[1], cfg->pv[2], cfg->pv[3], cfg->pv[4], cfg->pv[5], cfg->pv[6]);
+    nu_vpe_print_PoolingOperationSwitch(cfg->meth,"meth    ");
+    nu_vpe_print_DataType(cfg->dt,"dt      ");
+    rumboot_printf("  MC     = %d \n" , cfg->MC);
+}
 
 void nu_vpe_setup(uintptr_t base, ConfigVPE* cfg) {
   rumboot_printf("Configuring VPE..\n");
@@ -295,6 +345,11 @@ void nu_mpe_setup(uintptr_t base, ConfigMPE* cfg) {
   // iowrite32(cfg->MYFIELD, base + NU_MPE_MYREG);
 }
 
+void nu_ppe_setup(uintptr_t base, ConfigPPE* cfg) {
+  rumboot_printf("Configuring PPE..\n");
+  
+  // iowrite32(cfg->MYFIELD, base + NU_MPE_MYREG);
+}
 
 void nu_vpe_config_rd_main_channel(uintptr_t dma_base, void *addr, int size) {
   nu_cpdmac_trn512_config(dma_base,addr,size);
@@ -328,4 +383,14 @@ void nu_mpe_wait_wr_main_channel_complete(uintptr_t dma_base) {
   nu_cpdmac_rcv512_wait_complete(dma_base);
 }
 
+
+void nu_ppe_config_rd_main_channel(uintptr_t dma_base, void *addr, int size) {
+  nu_cpdmac_trn256_config(dma_base,addr,size);
+}
+void nu_ppe_run_rd_main_channel(uintptr_t dma_base) {
+  nu_cpdmac_trn256_run(dma_base);
+}
+void nu_ppe_wait_rd_main_channel_complete(uintptr_t dma_base){
+  nu_cpdmac_trn256_wait_complete(dma_base);
+}
 

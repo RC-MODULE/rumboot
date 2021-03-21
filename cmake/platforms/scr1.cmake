@@ -97,6 +97,18 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     )
     # endif()
 
+    # PPE example 
+    # if(DUT STREQUAL "PPE")
+    set(PPE_SIMPLE_PATH src/platform/scr1/targets/simple-rom/ppe_simple)
+    add_rumboot_target(
+      CONFIGURATION ROM
+      FILES scr1/targets/simple-rom/ppe_simple/hello_ppe.c
+      IRUN_FLAGS +in_file_tag=${CMAKE_SOURCE_DIR}/${PPE_SIMPLE_PATH}/in_data.bin 
+                 +etalon_file_tag=${CMAKE_SOURCE_DIR}/${PPE_SIMPLE_PATH}/etalon.bin
+                 +cfg_file_tag=${CMAKE_SOURCE_DIR}/${PPE_SIMPLE_PATH}/Config_ppe1.bin
+    )
+    # endif()
+
     # demonstrator tests
 
     # if(DUT STREQUAL "DEMONSTRATOR_SIMPLE")
