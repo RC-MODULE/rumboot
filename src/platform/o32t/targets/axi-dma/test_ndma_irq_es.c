@@ -32,27 +32,28 @@ ndma_cfg_t cfg = {
   .InterruptMask   =0x0
 };
 
-static volatile uint32_t flag;
+static volatile uint32_t flag = 0;
 
 static void handler1() {
 
 	   rumboot_printf("handler1 start\n");
-       ndma_simple_wait_error((uintptr_t)RCM_NDMA_BASE);
-       flag = 1;
-       rumboot_printf( "NDMAC_irq_es= %d\n",flag );
+          
        clear_ndma_status((uintptr_t)RCM_NDMA_BASE);  
-       flag = 0;       
+       flag = 1;     
+       rumboot_printf( "NDMAC_irq_es = %d\n",flag );       
 		
     msync();
 
 }
 
+
 static struct rumboot_irq_entry * init_irq() {
+    
     rumboot_irq_cli();
     struct rumboot_irq_entry * const tbl = rumboot_irq_create( NULL );
-	//MDMAC_ES_IRQ = AXI_MDMAC_ERR;
-    rumboot_irq_set_handler( tbl, AXI_MDMAC_ERR, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler1, NULL );
 	
+    rumboot_irq_set_handler( tbl, AXI_MDMAC_ERR, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler1, NULL );
+    	
     rumboot_irq_table_activate( tbl );
 	rumboot_irq_enable(AXI_MDMAC_ERR);
     rumboot_irq_sei();
@@ -79,6 +80,9 @@ int main()
   
   rumboot_printf("Hello NDMA test irq_es\n");
   
+  int res = 1;
+  uint32_t timeout = 2;
+    
   write_tlb_entries(em2_nospeculative_tlb_entries, ARRAY_SIZE(em2_nospeculative_tlb_entries));
   struct rumboot_irq_entry * tbl = init_irq(); 
   
@@ -87,28 +91,23 @@ int main()
   cfg.WR_Address = COM1_BASE;
   cfg.MainCounter = ARR_SIZE >> 1; //Size In 64-bit Words
   
-  rumboot_printf("Run NDMA from %x to %x, size %d\n",cfg.RD_Address,cfg.WR_Address,cfg.MainCounter);
-  
+  rumboot_printf("Run NDMA from %x to %x, size %d\n",cfg.RD_Address,cfg.WR_Address,cfg.MainCounter);  
     
-  //int res = ndma_irq_es_run((uintptr_t)RCM_NDMA_BASE, &cfg, &flag);
-   
- 
+    
+  ndma_simple_run((uintptr_t)RCM_NDMA_BASE, &cfg);
+    
+  do {  
+        if( flag == 1 ) {
+            rumboot_printf( "irq is detected\n" );
+            flag = 0;
+            res = 0;
+            msync();
+        }
+        else { rumboot_printf( "wait irq, timeout = %d\n", timeout ); }
+    } while ( --timeout && res == 1 );
   
-  int res = ndma_irq_es_run((uintptr_t)RCM_NDMA_BASE, &cfg, &flag);
-  
-   deinit_irq(tbl);
-  
-  /*if (!ndma_simple_wait_error((uintptr_t)RCM_NDMA_BASE))
-  {
-      rumboot_printf("TEST OK. ES & CPL bits were detected in CSR\n");
-      return 0;
-  }
-  else
-  {
-      rumboot_printf("ERROR: no ES & CPL bits in CSR\n");
-      return 1;
-  }*/
-  
+  deinit_irq(tbl);
+      
   return res;
 }
 

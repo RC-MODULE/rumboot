@@ -46,38 +46,6 @@ int ndma_simple_wait_error(uintptr_t base)
   return 0;
 }
 
-static inline __attribute__((always_inline)) uint32_t wait_ndma_int_handled( uint32_t timeout, volatile uint32_t * const  flag ) {
-    do {
-        rumboot_printf( "NDMAC  wait interrupt \n" ); 
-		if( *flag ) {
-            *flag = 0;
-            msync();
-
-            return 1;
-        }
-    } while ( --timeout );
-
-    return 0;
-}
-
-int ndma_irq_es_run(uintptr_t base, ndma_cfg_t * cfg, uint32_t flag_irq) {
-		
-	//result = comp_dma_run_tr(src_addr,base0,0x0,count_num);	
-	ndma_simple_run(base,cfg);
-    //result = ndma_simple_wait_error((uintptr_t)RCM_NDMA_BASE);
-    	
-	rumboot_printf( "check_run\n" );
-
-	if( !wait_ndma_int_handled( 10, &flag_irq) )
-		{			
-    rumboot_printf( "NDMAC_irq_es interrupt timeout_1\n" );
-        return 1;
-    }
-	
- 
-    return 0;
-} 
-
 
 int ndma_simple_memcpy(uintptr_t base, ndma_cfg_t * cfg)
 {
