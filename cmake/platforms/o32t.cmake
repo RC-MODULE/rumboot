@@ -187,6 +187,12 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       CONFIGURATION IRAM_IM1
       FILES axi-dma/test_ndma_irq_es.c
     )
+    
+    add_rumboot_target(
+      CONFIGURATION IRAM_IM1
+      FILES axi-dma/test_ndma_irq_cpl.c
+      CFLAGS -DRD_TEST_BANK="IM1" -DWR_TEST_BANK="IM1"
+    )
 
 
   
