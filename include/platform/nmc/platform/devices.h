@@ -22,8 +22,17 @@
 #define TIMERS_BASE  (NMC_REGS_BASE + 0x2000)
 #define IFU_BASE     (NMC_REGS_BASE + 0x3000)
 #define AXIBR_BASE   (NMC_REGS_BASE + 0x4000)
-#define DAP_BASE     (NMC_REGS_BASE + 0x5000)
-#define FIFO_BASE    (NMC_REGS_BASE + 0x6000)
+#define FIFO_BASE    (NMC_REGS_BASE + 0x5000)
+#define DAP_BASE     (NMC_REGS_BASE + 0x6000)
+#define DBG_BASE     (NMC_REGS_BASE + 0x7000)
+
+/* nmc-gcc asm compiler don't understand hex numbers in it's patterns
+   with math operations. */
+
+#define NMC_REGS_BASE_DEC 917504
+
+#define DAP_BASE_DEC (NMC_REGS_BASE_DEC + 24576)
+#define DBG_BASE_DEC (NMC_REGS_BASE_DEC + 28672)
 
 #include <platform/o32t/platform/devices.h>
 
