@@ -75,10 +75,10 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
     # VPE example 
     # if(DUT STREQUAL "VPE")
-    set(VPE_SIMPLE_PATH src/platform/scr1/targets/simple-rom/vpe_simple)
+    set(VPE_SIMPLE_PATH src/platform/scr1/targets/simple-rom/nu/vpe_simple)
     add_rumboot_target(
       CONFIGURATION ROM
-      FILES scr1/targets/simple-rom/vpe_simple/hello_vpe.c
+      FILES scr1/targets/simple-rom/nu/vpe_simple/hello_vpe.c
       IRUN_FLAGS +in_file_tag=${CMAKE_SOURCE_DIR}/${VPE_SIMPLE_PATH}/in_data.bin 
                  +etalon_file_tag=${CMAKE_SOURCE_DIR}/${VPE_SIMPLE_PATH}/etalon.bin
                  +cfg_file_tag=${CMAKE_SOURCE_DIR}/${VPE_SIMPLE_PATH}/Config_vpe1.bin
@@ -87,10 +87,10 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
     # MPE example 
     # if(DUT STREQUAL "MPE")
-    set(MPE_SIMPLE_PATH src/platform/scr1/targets/simple-rom/mpe_simple)
+    set(MPE_SIMPLE_PATH src/platform/scr1/targets/simple-rom/nu/mpe_simple)
     add_rumboot_target(
       CONFIGURATION ROM
-      FILES scr1/targets/simple-rom/mpe_simple/hello_mpe.c
+      FILES scr1/targets/simple-rom/nu/mpe_simple/hello_mpe.c
       IRUN_FLAGS +in_file_tag=${CMAKE_SOURCE_DIR}/${MPE_SIMPLE_PATH}/in_data.bin 
                  +etalon_file_tag=${CMAKE_SOURCE_DIR}/${MPE_SIMPLE_PATH}/etalon.bin
                  +cfg_file_tag=${CMAKE_SOURCE_DIR}/${MPE_SIMPLE_PATH}/Config_mpe1.bin
@@ -99,10 +99,10 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
     # PPE example 
     # if(DUT STREQUAL "PPE")
-    set(PPE_SIMPLE_PATH src/platform/scr1/targets/simple-rom/ppe_simple)
+    set(PPE_SIMPLE_PATH src/platform/scr1/targets/simple-rom/nu/ppe_simple)
     add_rumboot_target(
       CONFIGURATION ROM
-      FILES scr1/targets/simple-rom/ppe_simple/hello_ppe.c
+      FILES scr1/targets/simple-rom/nu/ppe_simple/hello_ppe.c
       IRUN_FLAGS +in_file_tag=${CMAKE_SOURCE_DIR}/${PPE_SIMPLE_PATH}/in_data.bin 
                  +etalon_file_tag=${CMAKE_SOURCE_DIR}/${PPE_SIMPLE_PATH}/etalon.bin
                  +cfg_file_tag=${CMAKE_SOURCE_DIR}/${PPE_SIMPLE_PATH}/Config_ppe1.bin
