@@ -199,6 +199,8 @@ void nu_mpe_print_config(ConfigMPE* cfg);
 
 void nu_mpe_setup(uintptr_t base, ConfigMPE* cfg);
 
+void nu_mpe_load_buf(uintptr_t base, void* data, int size);
+
 void nu_ppe_load_config(ConfigPPE* cfg, void* cfg_bin);
 void nu_ppe_print_config(ConfigPPE* cfg);
 

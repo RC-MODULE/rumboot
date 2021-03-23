@@ -345,6 +345,36 @@ void nu_mpe_setup(uintptr_t base, ConfigMPE* cfg) {
   // iowrite32(cfg->MYFIELD, base + NU_MPE_MYREG);
 }
 
+void nu_mpe_load_buf(uintptr_t base, void* data, int size) {
+  int size32words;
+  uint32_t* data_ptr;
+  uintptr_t buf_ptr;
+  uint32_t buf_size_mi1;
+  uint32_t buf_append_size;
+  
+  size32words = size >> 2;
+  data_ptr = (uint32_t*) data;
+  buf_ptr = base;
+  
+  for(int i=0;i<size32words;i++) {
+    iowrite32(*data_ptr,buf_ptr);
+    data_ptr++;buf_ptr=buf_ptr+sizeof(uint32_t);
+  }
+  
+    // Append Zeroes For An Entire Buffer Partition
+  buf_size_mi1 = (NU_MPE_BUF01) - 1; // Hmm, The Size Of The Partition Is An Offset Of 2nd Partition
+  buf_append_size = buf_ptr & buf_size_mi1;
+  if(buf_append_size != 0) {
+    size32words = buf_append_size >> 2;
+    for(int i=0;i<size32words;i++) {
+      iowrite32(0,buf_ptr);
+      buf_ptr=buf_ptr+sizeof(uint32_t);
+    }
+  }
+    //
+  
+}
+
 void nu_ppe_setup(uintptr_t base, ConfigPPE* cfg) {
   rumboot_printf("Configuring PPE..\n");
   

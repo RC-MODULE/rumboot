@@ -5,9 +5,15 @@
 #include <rumboot/io.h>
 
 #include <platform/devices.h> 
+#include <regs/regs_nu_mpe.h>
+#include <regs/regs_nu_vpe.h>
+#include <regs/regs_nu_ppe.h>
+
+
 
 #include <platform/devices/nu_lib.h> 
 
+#include <string.h>
 
 int16_t *in_data;
 int32_t *etalon;
@@ -55,6 +61,7 @@ int main() {
   nu_mpe_load_config(&cfg, cfg_bin);
   nu_mpe_print_config(&cfg);
   
+  nu_mpe_load_buf(NU_MPE_BUFFER_BASE+NU_MPE_BUF00, in_data, in_size*sizeof(int16_t));
   nu_mpe_setup(NU_MPE_STANDALONE_BASE, &cfg);
   
   res_data = rumboot_malloc_from_heap_aligned(NU_HEAPID,res_size*sizeof(int32_t) , 64);
