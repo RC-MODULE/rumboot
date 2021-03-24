@@ -29,7 +29,7 @@ ndma_cfg_t cfg = {
 };
 
 
-#define ARR_SIZE 128
+#define ARR_SIZE 256
 
 
 // Crutch Until This Will Be Made For All Tests Accurately
@@ -43,10 +43,14 @@ int main()
 {
   uint32_t * src;
   uint32_t * dst;
-  uint32_t seed=0;
-  uint32_t diff=0x00010001u;
+  uint32_t seed_1=0x00000001u;
+  uint32_t seed_2=0x00000002u;
+  //uint64_t seed=0x0000000000000001u;
+  //uint32_t diff=0x00010001u;
   uint32_t patt=0x55555555u;
-  uint32_t acc;
+  //uint64_t patt=0x5555555555555555u;
+  uint32_t acc_1;
+  uint32_t acc_2;
   
   rumboot_printf("Hello NDMA mem test\n");
   rumboot_printf("Read from: "RD_TEST_BANK"\n");
@@ -60,14 +64,26 @@ int main()
   src = (uint32_t*)rumboot_malloc_from_named_heap_aligned(rd_heap_name, ARR_SIZE * sizeof(uint32_t), sizeof(uint64_t));
   dst = (uint32_t*)rumboot_malloc_from_named_heap_aligned(wr_heap_name, ARR_SIZE * sizeof(uint32_t), sizeof(uint64_t));
   
-  acc = seed;
+  acc_1 = seed_1;
+  acc_2 = seed_2;
   for(int i=0;i<ARR_SIZE;i++)
   {
-    src[i] = acc;
-    dst[i] = patt;
-    acc = acc + diff;
+      if (i<ARR_SIZE/2)
+      {
+          src[i  ] = acc_1;
+          dst[i  ] = patt;
+          acc_1 = acc_1 << 1;
+      }
+      else
+      {
+          src[i  ] = acc_2;
+          dst[i  ] = patt;
+          acc_2 = acc_2 << 1;
+      }
   }
   
+      
+      
   cfg.RD_Address = rumboot_virt_to_dma( src );
   cfg.WR_Address = rumboot_virt_to_dma( dst );
   cfg.MainCounter = ARR_SIZE >> 1; //Size In 64-bit Words
@@ -77,18 +93,31 @@ int main()
   ndma_simple_memcpy((uintptr_t)RCM_NDMA_BASE,&cfg);
   
   rumboot_printf("Checking\n");
-  acc = seed;
+  acc_1 = seed_1;
+  acc_2 = seed_2;
   for(int i=0;i<ARR_SIZE;i++)
   {
-    if(dst[i]!=acc)
-    {
-      rumboot_printf("ERROR: i=%d, value=%x, acc=%x\n",i,dst[i],acc);
-      return 1;
-    }
-    
-    acc = acc + diff;
+      if (i<ARR_SIZE/2)
+      {
+          if(dst[i]!=acc_1)
+          {
+              rumboot_printf("ERROR: i=%d, value=%x, acc=%x\n",i,dst[i],acc_1);
+              return 1;
+          }
+          acc_1 = acc_1 << 1;
+      }
+      else
+      {
+          if(dst[i]!=acc_2)
+          {
+              rumboot_printf("ERROR: i=%d, value=%x, acc=%x\n",i,dst[i],acc_2);
+              return 1;
+          }
+          acc_2 = acc_2 << 1;
+      }
   }
   
+ 
   return 0;
 }
 

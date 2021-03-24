@@ -128,6 +128,11 @@ int ndma_apb_check(uintptr_t base, ndma_cfg_t * cfg)
       rumboot_printf("NDMA_Control read fail\n");
       return 1;
   }
+  if (ioread32(base+NDMA_State) != NDMA_STATE_DFLT)
+  {
+      rumboot_printf("NDMA_State read fail\n");
+      return 1;
+  }
   return 0;
 }
 

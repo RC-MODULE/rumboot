@@ -10,6 +10,8 @@ typedef enum ndma_ams {ONE_DIMENSION, TWO_DIMENSION} ndma_am_t;
 #define NDMA_CONTROL_CPL   0x2
 #define NDMA_CONTROL_ES    0x4
 
+#define NDMA_STATE_DFLT  0x0
+
 typedef struct ndma_cfg {
   uint32_t  RD_Address      ;
   uint32_t  RD_Bias         ;
