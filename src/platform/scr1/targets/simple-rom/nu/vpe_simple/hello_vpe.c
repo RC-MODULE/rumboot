@@ -64,11 +64,13 @@ int main() {
   nu_vpe_config_wr_main_channel(NU_CPDMAC_ASM_BASE,res_data,res_size*sizeof(int16_t));
   
   rumboot_printf("Running DMA..\n");
-  nu_vpe_run_rd_main_channel(NU_CPDMAC_ASM_BASE);
-  nu_vpe_run_wr_main_channel(NU_CPDMAC_ASM_BASE);
   
-  nu_vpe_wait_rd_main_channel_complete(NU_CPDMAC_ASM_BASE);
-  nu_vpe_wait_wr_main_channel_complete(NU_CPDMAC_ASM_BASE);
+    // Do Not Run Yet - It Is Falling
+  // nu_vpe_run_rd_main_channel(NU_CPDMAC_ASM_BASE);
+  // nu_vpe_run_wr_main_channel(NU_CPDMAC_ASM_BASE);
+  
+  // nu_vpe_wait_rd_main_channel_complete(NU_CPDMAC_ASM_BASE);
+  // nu_vpe_wait_wr_main_channel_complete(NU_CPDMAC_ASM_BASE);
   
   rumboot_platform_dump_region("res_data.bin",(uint32_t)res_data,res_size*sizeof(int16_t));
   
