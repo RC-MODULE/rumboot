@@ -61,7 +61,7 @@ int main() {
   res_data = rumboot_malloc_from_heap_aligned(NU_HEAPID,res_size*sizeof(int32_t) , 64);
   memset(res_data,0xA5,res_size*sizeof(int16_t));
   
-  nu_ppe_config_rd_main_channel(NU_CPDMAC_ASM_BASE,res_data,res_size*sizeof(int16_t));
+  nu_ppe_config_rd_main_channel(NU_CPDMAC_ASM_BASE,in_data,in_size*sizeof(int16_t));
   
   rumboot_printf("Running DMA..\n");
   nu_ppe_run_rd_main_channel(NU_CPDMAC_ASM_BASE);
