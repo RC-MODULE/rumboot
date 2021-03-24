@@ -152,6 +152,12 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       CFLAGS -DRD_TEST_BANK="IM2" -DWR_TEST_BANK="IM2"
       PREFIX rd-im2-wr-im2
     )
+  add_rumboot_target(
+      CONFIGURATION IRAM_IM1
+      FILES axi-dma/test_ndma_le.c
+      CFLAGS -DRD_TEST_BANK="IM2" -DWR_TEST_BANK="IM2"
+      PREFIX rd-im2-wr-im2
+    )
     
     add_rumboot_target(
       CONFIGURATION IRAM_IM1
