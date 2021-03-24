@@ -47,9 +47,6 @@ do { count = timeout;
   
 int comp_dma_run( uint32_t src_addr, uint32_t dst_addr,uint32_t base0, uint32_t base1,uint32_t count_num) {
 	uint32_t result;
-	uint32_t start;
-	uint32_t end;
-	uint32_t delta;
 	
 	result =comp_dma_run_tr(src_addr,base0,0x3,count_num );
 	result =comp_dma_run_rcv(dst_addr,base1,0x3,count_num );
@@ -83,7 +80,7 @@ static inline __attribute__((always_inline)) uint32_t wait_com_int_handled( uint
         rumboot_printf( "COMPORT  wait interrupt Cpl\n" ); 
 		if( *flag ) {		
             *flag = 0;
-            msync();
+          //  msync();
 
             return 1;
         }
@@ -114,7 +111,7 @@ int comp_dma_irq_run( uint32_t src_addr, uint32_t dst_addr,uint32_t base0, uint3
     }
 	rumboot_printf( "COM1_Cpl_rcv interrupt is ended\n" );
  
-    return 0;
+    return result;
 } 
 int com_simple_wait_complete(uintptr_t base, uintptr_t cntrl )
 {
@@ -179,4 +176,127 @@ void clear_com_status(uint32_t base, uint32_t direct ) {
 	 if (( ( (COM_Status_rcv >> 2) & 0x1)==1) && (((COM_Mask_rcv >> 1) & 0x1)==0))
 	iowrite32((COM_Status_rcv & 0xb),base + CSR_rcv);
  }
+}
+
+int com_simple_write(uintptr_t base, com_cfg_t * cfg)
+{
+  iowrite32(cfg->MainCounter_WR    	,base+MainCounter_tr );
+  iowrite32(cfg->Address_WR       	,base+Address_tr    );
+  iowrite32(cfg->Bias_WR			,base+Bias_tr  );
+  iowrite32(cfg->RowCounter_WR		,base+RowCounter_tr );
+  iowrite32(cfg->AddressMode_WR    	,base+AddressMode_tr );
+  iowrite32(cfg->InterruptMask_WR   ,base+InterruptMask_tr );
+  iowrite32(cfg->MainCounter_RD    	,base+MainCounter_rcv );
+  iowrite32(cfg->Address_RD       	,base+Address_rcv    );
+  iowrite32(cfg->Bias_RD 			,base+Bias_rcv  );
+  iowrite32(cfg->RowCounter_RD		,base+RowCounter_rcv );
+  iowrite32(cfg->AddressMode_RD    	,base+AddressMode_rcv );
+  iowrite32(cfg->InterruptMask_RD  	,base+InterruptMask_rcv );
+  
+  return 0;
+}
+int com_apb_check(uintptr_t base, com_cfg_t * cfg)
+{
+   uint32_t result;
+    uint32_t tmp;
+ 
+   result = com_simple_write( base, cfg);
+    if (result) {
+		 rumboot_printf("COMMPORT_WRITE  ERROR\n");
+		return 1;
+	}
+
+  if (ioread32(base+MainCounter_tr) != cfg->MainCounter_WR)
+  {
+		rumboot_printf("COMMPORT_MainCounter_tr read ERROR\n");
+		tmp= (cfg->MainCounter_WR);
+		rumboot_printf("COMMPORT_MainCounter_write =%x\n",tmp); 
+		rumboot_printf("COMMPORT_MainCounter read =%x\n",ioread32(base+MainCounter_tr) );
+	  
+      return 1;
+  }
+  if (ioread32(base+Address_tr) != cfg->Address_WR)
+  {
+		rumboot_printf("COMMPORT_Address_tr read ERROR\n");
+		tmp= (cfg->Address_WR);
+		rumboot_printf("COMMPORT_Address_tr_write =%x\n",tmp);
+		rumboot_printf("COMMPORT_Address_tr read =%d\n",ioread32(base+Address_tr) );
+      return 1;
+  }
+  if (ioread32(base+Bias_tr) != cfg->Bias_WR)
+  {
+		rumboot_printf("COMMPORT_Bias_tr read ERROR\n");
+		tmp= (cfg->Bias_WR);
+		rumboot_printf("COMMPORT_Bias_WR_write =%x\n",tmp); 
+		rumboot_printf("COMMPORT_Bias_tr =%d\n",ioread32(base+Bias_tr) );
+      return 1;   
+  }      
+  if (ioread32(base+RowCounter_tr) != cfg->RowCounter_WR)
+  {
+      rumboot_printf("COMMPORT_RowCounter_tr read ERROR\n");
+	  rumboot_printf("COMMPORT_RowCounter_tr =%d\n",ioread32(base+RowCounter_tr) );
+      return 1;
+  }
+ if (ioread32(base+AddressMode_tr) != cfg->AddressMode_WR)
+  {
+      rumboot_printf("COMMPORT_AddressMode_tr read ERROR\n");
+       rumboot_printf("COMMPORT_AddressMode_tr  =%d\n",ioread32(base+AddressMode_tr) );
+	  return 1;
+  }
+  if (ioread32(base+InterruptMask_tr) != cfg->InterruptMask_WR)
+  {
+      rumboot_printf("COMMPORT_InterruptMask_tr read ERROR\n");
+      return 1;
+  }
+
+ if (ioread32(base+MainCounter_rcv) != cfg->MainCounter_RD)
+  {
+      rumboot_printf("COMMPORT_MainCounter_rcv read ERROR\n");
+      return 1;
+  }
+  if (ioread32(base+Address_rcv) != cfg->Address_RD)
+  {
+      rumboot_printf("COMMPORT_Address_rcv read ERROR\n");
+      return 1;
+  }
+  if (ioread32(base+Bias_rcv) != cfg->Bias_RD)
+  {
+      rumboot_printf("COMMPORT_Bias_rcv read ERROR\n");
+      return 1;   
+  }      
+  if (ioread32(base+RowCounter_tr) != cfg->RowCounter_RD)
+  {
+      rumboot_printf("COMMPORT_RowCounter_rcv read ERROR\n");
+      return 1;
+  }
+ if (ioread32(base+AddressMode_rcv) != cfg->AddressMode_RD)
+  {
+      rumboot_printf("COMMPORT_RowCounter_rcv read ERROR\n");
+      return 1;
+  }
+  if (ioread32(base+InterruptMask_rcv) != cfg->InterruptMask_RD)
+  {
+      rumboot_printf("COMMPORT_InterruptMask_tr read ERROR\n");
+      return 1;
+  }
+  
+  return 0;
+}
+
+int com_apb_running_one(uintptr_t base, uint32_t COM_Address, uint32_t mask, int end_number )
+{
+    uint32_t data = 1;
+
+	
+    for ( int i = 0; i<end_number; i++)
+    {
+        iowrite32((data & mask)    ,base+COM_Address);
+        if (ioread32(base+COM_Address) != (data & mask))
+        {
+            rumboot_printf("COMMPORT apb running 1 ERROR, data %x", data);
+            return 1;
+        }
+        data = (data << 1);
+    }
+    return 0;
 }
