@@ -37,7 +37,7 @@ void prepare_arrays( uint32_t ** src, uint32_t ** dst ) {
     for( uint32_t i = 0; i < ARR_SIZE; i++ )
         (*src)[ i ] = i + ( (i+1) << 8 ) + ( (i+2) << 16 ) + ( (i+3) << 24 );
 
-    msync();
+//    msync();
 }
 void prepare_arrays_light( uint32_t ** src, uint32_t ** dst ) {
     *src = rumboot_malloc_from_named_heap_aligned( COM_SRC_HEAP, sizeof(uint32_t)*ARR_SIZE, sizeof(uint64_t) );
@@ -46,14 +46,12 @@ void prepare_arrays_light( uint32_t ** src, uint32_t ** dst ) {
     for( uint32_t i = 0; i < ARR_SIZE; i++ )
         (*src)[ i ] = i << 1;
 	
-    msync();
 }
-
-uint32_t COM0_Cpl_tr;
-uint32_t COM0_Cpl_rcv;
-uint32_t COM1_Cpl_tr;
-uint32_t COM1_Cpl_rcv;
-uint32_t COMMP0_COMMP1_IRQ = CP0_TRM_INT;
+ uint32_t COM0_Cpl_tr;
+ uint32_t COM0_Cpl_rcv;
+ uint32_t COM1_Cpl_tr;
+ uint32_t COM1_Cpl_rcv;
+ uint32_t COMMP0_COMMP1_IRQ = CP0_TRM_INT;
 
 
 static void handler1() {
@@ -99,8 +97,6 @@ static void handler1() {
 		}
 	}
 	
-  //  msync();
-
 }
 
 static struct rumboot_irq_entry * init_irq() {
@@ -157,27 +153,20 @@ int main()
   struct rumboot_irq_entry * tbl = init_irq(); 
 
 uint32_t	dst_0= 0x80003da0;
-uint32_t	dst_1= 0x80003da8;
-	
-	//iowrite32( 0x1, COM1_BASE + InterruptMask_tr ); //set interupt mask for BRESP[1] for COMMPORT 1
+uint32_t	dst_1= 0x80003da8;	
+
 if( (comp_dma_irq_run(rumboot_virt_to_dma(src0), (dst_0),COM0_BASE,COM1_BASE,&COM0_Cpl_tr,&COM1_Cpl_rcv,(ARR_SIZE>>1)) != 0)
  )
-	{
+ {
         result = 1;  //check from BRESP[1]=1  ES interrupt COMMMPORT 1
 	 } 
-	 rumboot_printf("COMMPORT0 to COMMPORT1 direction checked for BRESP COMMPORT1\n");
-	//iowrite32( 0x1, COM0_BASE + InterruptMask_tr ); //set interupt mask for BRESP[1]
-		
+	 rumboot_printf("COMMPORT0 to COMMPORT1 direction checked for BRESP COMMPORT1\n"); 
 	COMMP0_COMMP1_IRQ = CP1_TRM_INT;
-	
 	if( (comp_dma_irq_run(rumboot_virt_to_dma(src1),(dst_1),COM1_BASE,COM0_BASE, &COM1_Cpl_tr,&COM0_Cpl_rcv,(ARR_SIZE>>1)) != 0)
 	) {
        result = 1;  //check from BRESP[1]=1  ES interrupt COMMMPORT 0
 	 }
-rumboot_printf("COMMPORT1 to COMMPORT0 direction checked for BRESP COMMPORT0\n"); 
-iowrite32( 0x0, COM1_BASE + InterruptMask_tr ); //set interupt mask 
-iowrite32( 0x0, COM0_BASE + InterruptMask_tr ); //set interupt mask
- 	 
+rumboot_printf("COMMPORT1 to COMMPORT0 direction checked for BRESP COMMPORT0\n"); 	 
 COMMP0_COMMP1_IRQ = CP0_TRM_INT; 
 if( (comp_dma_irq_run((dst_0), rumboot_virt_to_dma(dst0),COM0_BASE,COM1_BASE,&COM0_Cpl_tr,&COM1_Cpl_rcv,(ARR_SIZE>>1)) != 0)
  )
