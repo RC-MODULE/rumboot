@@ -26,22 +26,18 @@
 #endif
 
 
-#if 1
-	int main() {
-		rumboot_printf("PLEASE DO NOT COMMIT BROKEN TESTS\n");
-	}
-#else
-int comp_dma_run_xrdy( uint32_t  src_addr, uint32_t dst_addr,uint32_t base0, uint32_t base1,(ARR_SIZE>>1)) {
+
+int comp_dma_run_xrdy( uint32_t  src_addr, uint32_t dst_addr,uint32_t base0, uint32_t base1,uint32_t count_num) {
 	uint32_t result;	
 	
-	result =comp_dma_run_tr(src_addr,base0,0x3);
-	result =comp_dma_run_rcv(dst_addr,base1,0x3);
+	result =comp_dma_run_tr(src_addr,base0,0x3,count_num);
+	result =comp_dma_run_rcv(dst_addr,base1,0x3,count_num);
 	
 	iowrite32(COM_CONTROL_EN,base0+ CSR_tr);
 	
-//#ifdef COM_DO_DELAY
+#ifdef COM_DO_DELAY
 	comp_delay (25);
-//#endif
+#endif
 	
 	iowrite32(COM_CONTROL_EN,base1	+ CSR_rcv);
 	
@@ -67,7 +63,7 @@ void prepare_arrays( uint32_t ** src, uint32_t ** dst ) {
 	
     for( uint32_t i = 0; i < ARR_SIZE; i++ )
         (*src)[ i ] = i + ( (i+1) << 8 ) + ( (i+2) << 16 ) + ( (i+3) << 24 );
-    msync();
+
 }
 
 // Crutch Until This Will Be Made For All Tests Accurately
@@ -89,13 +85,13 @@ int main()
   write_tlb_entries(em2_nospeculative_tlb_entries, ARRAY_SIZE(em2_nospeculative_tlb_entries));
     prepare_arrays( &src0, &dst0 );
     prepare_arrays( &src1, &dst1 );
-    if( (comp_dma_run_xrdy(rumboot_virt_to_dma(src0), rumboot_virt_to_dma(dst0),COM0_BASE,COM1_BASE ) != 0)
- ||	memcmp( src0, dst0, sizeof(uint32_t)*ARR_SIZE  ) != 0){
+    if( (comp_dma_run_xrdy(rumboot_virt_to_dma(src0), rumboot_virt_to_dma(dst0),COM0_BASE,COM1_BASE,(ARR_SIZE>>1) ) != 0)
+	||	memcmp( src0, dst0, sizeof(uint32_t)*ARR_SIZE  ) != 0){
         result = 1;
 	 } 
 		 
  	 rumboot_printf("COMMPORT0 to COMMPORT1 direction checked\n"); 
-	if( (comp_dma_run_xrdy( rumboot_virt_to_dma(src1), rumboot_virt_to_dma(dst1),COM1_BASE,COM0_BASE ) != 0)
+	if( (comp_dma_run_xrdy( rumboot_virt_to_dma(src1), rumboot_virt_to_dma(dst1),COM1_BASE,COM0_BASE,(ARR_SIZE>>1) ) != 0)
 	||	(memcmp( src1, dst1, sizeof(uint32_t)*ARR_SIZE  ) != 0)){
         return 1;
 	 }
@@ -103,5 +99,3 @@ int main()
    rumboot_printf("COMMPORT1 to COMMPORT0 direction checked\n"); 
   return result;
 }
-
-#endif
