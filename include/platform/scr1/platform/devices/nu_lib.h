@@ -172,6 +172,15 @@
     ConfigOp2 op2_config;
   }ConfigVPE;
   
+  typedef struct ConfigDMAVPE {
+    Enable dma_src_en;
+    Enable dma_op0_en;
+    Enable dma_op1_en;
+    Enable dma_op2_en;
+    Enable dma_dst_en;
+    // Add Here DMA Parameter Fields
+  }ConfigDMAVPE;
+  
   /**
   Настройки блока субдескритизации
   */
@@ -198,8 +207,10 @@
   
 void nu_vpe_load_config(ConfigVPE* cfg, void* cfg_bin);
 void nu_vpe_print_config(ConfigVPE* cfg);
+void nu_vpe_print_config_dma(ConfigDMAVPE* cfg);
 
-void nu_vpe_setup(uintptr_t base, ConfigVPE* cfg);
+void nu_vpe_setup(uintptr_t base, ConfigVPE* cfg, ConfigDMAVPE* cfg_dma);
+void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, ConfigDMAVPE* cfg_dma);
 
 void nu_mpe_load_config(ConfigMPE* cfg, void* cfg_bin);
 void nu_mpe_print_config(ConfigMPE* cfg);
@@ -216,6 +227,9 @@ void nu_ppe_setup(uintptr_t base, ConfigPPE* cfg);
 void nu_vpe_config_rd_main_channel(uintptr_t dma_base, void *addr, int size);
 void nu_vpe_run_rd_main_channel(uintptr_t dma_base);
 void nu_vpe_wait_rd_main_channel_complete(uintptr_t dma_base);
+
+void nu_vpe_run(uintptr_t vpe_base, ConfigDMAVPE* cfg);
+void nu_vpe_wait(uintptr_t vpe_base, ConfigDMAVPE* cfg);
 
 void nu_vpe_config_wr_main_channel(uintptr_t dma_base, void *addr, int size);
 void nu_vpe_run_wr_main_channel(uintptr_t dma_base);

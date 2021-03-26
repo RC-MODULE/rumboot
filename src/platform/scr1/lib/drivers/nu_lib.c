@@ -229,7 +229,7 @@ void nu_ppe_load_config(ConfigPPE* cfg, void* cfg_bin) {
 
 void nu_vpe_print_config(ConfigVPE* cfg){
   rumboot_printf("ConfigVPE:\n");
-  nu_vpe_print_DataTypeExt(cfg->in_data_type,"data_type");
+  nu_vpe_print_DataTypeExt(cfg->in_data_type,"in_data_type");
   nu_vpe_print_DataType(cfg->in_data_type,"out_data_type");
   nu_vpe_print_Enable(cfg->flying,"flying");
   nu_vpe_print_Enable(cfg->op0_en,"op0_en");
@@ -299,6 +299,15 @@ void nu_vpe_print_config(ConfigVPE* cfg){
   
 }
 
+void nu_vpe_print_config_dma(ConfigDMAVPE* cfg) {
+  rumboot_printf("ConfigDMAVPE:\n");
+  nu_vpe_print_Enable(cfg->dma_src_en,"dma_src_en");
+  nu_vpe_print_Enable(cfg->dma_op0_en,"dma_op0_en");
+  nu_vpe_print_Enable(cfg->dma_op1_en,"dma_op1_en");
+  nu_vpe_print_Enable(cfg->dma_op2_en,"dma_op2_en");
+  nu_vpe_print_Enable(cfg->dma_dst_en,"dma_dst_en");
+}
+
 void nu_mpe_print_config(ConfigMPE* cfg){
   rumboot_printf("ConfigMPE:\n");
   
@@ -347,10 +356,34 @@ void nu_ppe_print_config(ConfigPPE* cfg){
     rumboot_printf("  MC     = %d \n" , cfg->MC);
 }
 
-void nu_vpe_setup(uintptr_t base, ConfigVPE* cfg) {
+void nu_vpe_setup(uintptr_t base, ConfigVPE* cfg, ConfigDMAVPE* cfg_dma) {
   rumboot_printf("Configuring VPE..\n");
   
   // iowrite32(cfg->MYFIELD, base + NU_VPE_MYREG);
+}
+
+void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, ConfigDMAVPE* cfg_dma) {
+  if(cfg->in_data_type == DataTypeExt_Int32 || cfg->in_data_type == DataTypeExt_Fp32)
+    cfg_dma->dma_src_en =  Enable_NotEn ;  // if 32bit Input Data then Main Channel Works
+  else
+    cfg_dma->dma_src_en = Enable_En;
+  
+  if(cfg->op0_config.alu_mode == Mode_Unitary && cfg->op0_config.mux_mode == Mode_Unitary) // if Both Operands Are A Single Value
+    cfg_dma->dma_op0_en = Enable_NotEn;  // Then We Do Not Need DMA
+  else
+    cfg_dma->dma_op0_en = Enable_En;
+  
+  if(cfg->op1_config.alu_mode == Mode_Unitary && cfg->op1_config.mux_mode == Mode_Unitary) // if Both Operands Are A Single Value
+    cfg_dma->dma_op1_en = Enable_NotEn;  // Then We Do Not Need DMA
+  else
+    cfg_dma->dma_op1_en = Enable_En;
+  
+  if(cfg->op2_config.alu_mode == Mode_Unitary && cfg->op2_config.mux_mode == Mode_Unitary) // if Both Operands Are A Single Value
+    cfg_dma->dma_op2_en = Enable_NotEn;  // Then We Do Not Need DMA
+  else
+    cfg_dma->dma_op2_en = Enable_En;
+  
+  // We Have No Setting That Define If We Run WDMA Or Main Wr Channel
 }
 
 void nu_mpe_setup(uintptr_t base, ConfigMPE* cfg) {
@@ -404,6 +437,15 @@ void nu_vpe_run_rd_main_channel(uintptr_t dma_base) {
 void nu_vpe_wait_rd_main_channel_complete(uintptr_t dma_base){
   nu_cpdmac_trn512_wait_complete(dma_base);
 }
+
+void nu_vpe_run(uintptr_t vpe_base, ConfigDMAVPE* cfg) {
+  // Напиши сюда 3апуск DMA
+}
+
+void nu_vpe_wait(uintptr_t vpe_base, ConfigDMAVPE* cfg){
+  // Напиши сюда 3авершение DMA
+}
+
 
 void nu_vpe_config_wr_main_channel(uintptr_t dma_base, void *addr, int size){
   nu_cpdmac_rcv256_config(dma_base,addr,size);

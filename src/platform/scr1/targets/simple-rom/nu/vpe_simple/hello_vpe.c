@@ -34,6 +34,7 @@ void print_in_data(int32_t * in_data, int in_size){
 }
 
 ConfigVPE cfg;
+ConfigDMAVPE cfg_dma;
 
 int main() {
   int res_size;
@@ -55,7 +56,7 @@ int main() {
   nu_vpe_load_config(&cfg, cfg_bin);
   nu_vpe_print_config(&cfg);
   
-  nu_vpe_setup(NU_VPE_STANDALONE_BASE, &cfg);
+  nu_vpe_setup(NU_VPE_STANDALONE_BASE, &cfg, &cfg_dma);
   
   res_data = rumboot_malloc_from_heap_aligned(NU_VPE_HEAPID,res_size*sizeof(int16_t) , 32);
   memset(res_data,0xA5,res_size*sizeof(int16_t));
