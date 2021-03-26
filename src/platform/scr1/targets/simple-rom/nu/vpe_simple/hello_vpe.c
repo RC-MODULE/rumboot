@@ -7,7 +7,7 @@
 #include <platform/devices.h> 
 
 #include <platform/devices/nu_lib.h> 
-
+#include <string.h>
 
 int32_t *in_data;
 int16_t *etalon;

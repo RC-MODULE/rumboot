@@ -5,7 +5,7 @@
 
 #include <stdint.h>
 
-#define NU_VPE_CFG_PARAMS_NUM 54
+#define NU_VPE_CFG_PARAMS_NUM 59
 #define NU_MPE_CFG_PARAMS_NUM 21
 #define NU_PPE_CFG_PARAMS_NUM 23
 
@@ -80,6 +80,9 @@
   Тип вычислений
   */
   typedef enum DataTypeExt {
+    DataTypeExt_Int8,
+    DataTypeExt_Int16,
+    DataTypeExt_Fp16,
     DataTypeExt_Int32,
     DataTypeExt_Fp32
   }DataTypeExt;
@@ -111,6 +114,7 @@
   
 
   typedef struct ConfigOp01 {
+    DataType coef_type;
     Enable alu_en;
     Enable mux_en;
     Enable relu_en;
@@ -128,6 +132,7 @@
   }ConfigOp01;
   
   typedef struct ConfigOp2 {
+    DataType coef_type;
     Enable alu_en;
     Enable mux_en;
     Enable lut_en;
@@ -152,7 +157,8 @@
   }ConfigOp2;
   
   typedef struct ConfigVPE {
-    DataType data_type;
+    DataTypeExt in_data_type;
+    DataType out_data_type;
     Enable flying;
     Enable op0_en;
     Enable op1_en;
@@ -160,6 +166,7 @@
     int32_t c3_offset;
     int16_t c3_scale;
     uint8_t c3_trunc; // !!!! вообще он uint6
+    Enable nan_to_zero;
     ConfigOp01 op0_config;
     ConfigOp01 op1_config;
     ConfigOp2 op2_config;

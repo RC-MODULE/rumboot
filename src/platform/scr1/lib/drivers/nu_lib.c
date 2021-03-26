@@ -18,7 +18,8 @@ void nu_vpe_load_config(ConfigVPE* cfg, void* cfg_bin) {
   
   ptr = (int32_t*) cfg_bin;
   
-  cfg->data_type=*ptr;ptr++;
+  cfg->in_data_type=*ptr;ptr++;
+  cfg->out_data_type=*ptr;ptr++;
   cfg->flying=*ptr;ptr++;
   cfg->op0_en=*ptr;ptr++;
   cfg->op1_en=*ptr;ptr++;
@@ -26,6 +27,8 @@ void nu_vpe_load_config(ConfigVPE* cfg, void* cfg_bin) {
   cfg->c3_offset=*ptr;ptr++;
   cfg->c3_scale=*ptr;ptr++;
   cfg->c3_trunc=*ptr;ptr++;
+  cfg->nan_to_zero=*ptr;ptr++;
+  cfg->op0_config.coef_type=*ptr;ptr++;
   cfg->op0_config.alu_en=*ptr;ptr++;
   cfg->op0_config.mux_en=*ptr;ptr++;
   cfg->op0_config.relu_en=*ptr;ptr++;
@@ -39,6 +42,7 @@ void nu_vpe_load_config(ConfigVPE* cfg, void* cfg_bin) {
   cfg->op0_config.norm_round_mode=*ptr;ptr++;
   cfg->op0_config.norm_saturation_en=*ptr;ptr++;
   cfg->op0_config.norm_round_size=*ptr;ptr++;
+  cfg->op1_config.coef_type=*ptr;ptr++;
   cfg->op1_config.alu_en=*ptr;ptr++;
   cfg->op1_config.mux_en=*ptr;ptr++;
   cfg->op1_config.relu_en=*ptr;ptr++;
@@ -52,6 +56,7 @@ void nu_vpe_load_config(ConfigVPE* cfg, void* cfg_bin) {
   cfg->op1_config.norm_round_mode=*ptr;ptr++;
   cfg->op1_config.norm_saturation_en=*ptr;ptr++;
   cfg->op1_config.norm_round_size=*ptr;ptr++;
+  cfg->op2_config.coef_type=*ptr;ptr++;
   cfg->op2_config.alu_en=*ptr;ptr++;
   cfg->op2_config.mux_en=*ptr;ptr++;
   cfg->op2_config.lut_en=*ptr;ptr++;
@@ -211,6 +216,9 @@ void nu_ppe_load_config(ConfigPPE* cfg, void* cfg_bin) {
 
   void nu_vpe_print_DataTypeExt(DataTypeExt data_type, char* name) {
     static char* DataTypeExtNames[]= {
+      "Int8",
+      "Int16",
+      "Fp16",
       "Int32",
       "Fp32"
     };
@@ -221,7 +229,8 @@ void nu_ppe_load_config(ConfigPPE* cfg, void* cfg_bin) {
 
 void nu_vpe_print_config(ConfigVPE* cfg){
   rumboot_printf("ConfigVPE:\n");
-  nu_vpe_print_DataType(cfg->data_type,"data_type");
+  nu_vpe_print_DataTypeExt(cfg->in_data_type,"data_type");
+  nu_vpe_print_DataType(cfg->in_data_type,"out_data_type");
   nu_vpe_print_Enable(cfg->flying,"flying");
   nu_vpe_print_Enable(cfg->op0_en,"op0_en");
   nu_vpe_print_Enable(cfg->op1_en,"op1_en");
@@ -229,8 +238,11 @@ void nu_vpe_print_config(ConfigVPE* cfg){
   rumboot_printf("  c3_offset = %d\n" , cfg->c3_offset);
   rumboot_printf("  c3_scale = %d\n" , cfg->c3_scale);
   rumboot_printf("  c3_trunc = %d\n" , cfg->c3_trunc);
+  nu_vpe_print_Enable(cfg->nan_to_zero,"nan_to_zero");
   
   rumboot_printf("ConfigOp01 (0):\n");
+  
+  nu_vpe_print_DataType(cfg->op0_config.coef_type,"coef_type");
   nu_vpe_print_Enable(cfg->op0_config.alu_en,"alu_en");
   nu_vpe_print_Enable(cfg->op0_config.mux_en,"mux_en");
   nu_vpe_print_Enable(cfg->op0_config.relu_en,"relu_en");
@@ -246,6 +258,7 @@ void nu_vpe_print_config(ConfigVPE* cfg){
   rumboot_printf("  norm_round_size = %d\n" , cfg->op0_config.norm_round_size);
 
   rumboot_printf("ConfigOp01 (1):\n");
+  nu_vpe_print_DataType(cfg->op1_config.coef_type,"coef_type");
   nu_vpe_print_Enable(cfg->op1_config.alu_en,"alu_en");
   nu_vpe_print_Enable(cfg->op1_config.mux_en,"mux_en");
   nu_vpe_print_Enable(cfg->op1_config.relu_en,"relu_en");
@@ -261,6 +274,7 @@ void nu_vpe_print_config(ConfigVPE* cfg){
   rumboot_printf("  norm_round_size = %d\n" , cfg->op1_config.norm_round_size);
 
   rumboot_printf("ConfigOp2:\n");
+  nu_vpe_print_DataType(cfg->op2_config.coef_type,"coef_type");
   nu_vpe_print_Enable(cfg->op2_config.alu_en,"alu_en");
   nu_vpe_print_Enable(cfg->op2_config.mux_en,"mux_en");
   nu_vpe_print_Enable(cfg->op2_config.lut_en,"lut_en");
