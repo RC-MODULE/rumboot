@@ -85,6 +85,17 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     )
     # endif()
 
+    set(NA_RM_BIN_PATH ${CMAKE_BINARY_DIR}/${rumboot_dirname}/utils/npe_rm/rm_core/tests)
+    set(VPE_COUPLED_PATH src/platform/scr1/targets/simple-rom/nu/vpe_first_coupled)
+    add_rumboot_target(
+      CONFIGURATION ROM
+      FILES scr1/targets/simple-rom/nu/vpe_first_coupled/first_coupled_vpe.c
+      PREPCMD ${NA_RM_BIN_PATH}/main_generate_first_coupled
+      IRUN_FLAGS +in_file_tag=cube.bin
+                 +etalon_file_tag=res.bin
+                 +cfg_file_tag=config_vpe.bin
+    )
+
     # MPE example 
     # if(DUT STREQUAL "MPE")
     set(MPE_SIMPLE_PATH src/platform/scr1/targets/simple-rom/nu/mpe_simple)
