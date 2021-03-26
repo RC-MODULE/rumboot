@@ -15,7 +15,9 @@
 #include <arch/ppc/arch/ppc_476fp_mmu_fields.h>
 #include <arch/ppc/arch/ppc_476fp_mmu.h>
 
-#define ARR_SIZE	1024
+#ifndef ARR_SIZE
+#define ARR_SIZE 1024
+#endif
 
 #ifndef COM_SRC_HEAP
 #define COM_SRC_HEAP "IM1"
