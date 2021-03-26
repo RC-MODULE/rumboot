@@ -200,7 +200,43 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       CFLAGS -DRD_TEST_BANK="IM1" -DWR_TEST_BANK="IM1"
     )
 
-
+  add_rumboot_target(
+      CONFIGURATION IRAM_IM1
+      FILES axi-com/test_com_irq.c
+      CFLAGS -DCOM_SRC_HEAP="IM1" -DCOM_DST_HEAP="IM1"
+	   PREFIX com-irq-im1-im1
+    )
+	add_rumboot_target(
+      CONFIGURATION IRAM_IM1
+      FILES axi-com/test_com_irq.c
+      CFLAGS -DCOM_SRC_HEAP="IM2" -DCOM_DST_HEAP="IM2"
+	  PREFIX com-irq-im2-im2
+    )
+   add_rumboot_target(
+      CONFIGURATION IRAM_IM1
+      FILES axi-com/test_com_throughput.c
+      CFLAGS -DCOM_SRC_HEAP="IM3" -DCOM_DST_HEAP="IM3"
+	  PREFIX com-irq-im3-im3
+    )
+	
+      add_rumboot_target(
+      CONFIGURATION IRAM_IM1
+      FILES axi-com/test_com_throughput.c
+      CFLAGS -DCOM_SRC_HEAP="IM1" -DCOM_DST_HEAP="IM1"
+	  PREFIX com-thru-im1-im1
+    )
+	add_rumboot_target(
+      CONFIGURATION IRAM_IM1
+      FILES axi-com/test_com_throughput.c
+      CFLAGS -DCOM_SRC_HEAP="IM2" -DCOM_DST_HEAP="IM2"
+	  PREFIX com-thru-im2-im2
+    )
+   add_rumboot_target(
+      CONFIGURATION IRAM_IM1
+      FILES axi-com/test_com_throughput.c
+      CFLAGS -DCOM_SRC_HEAP="IM3" -DCOM_DST_HEAP="IM3"
+	 PREFIX com-thru-im3-im3 
+    )
   
     #  The one test, checking access to closed space
     add_rumboot_target(
