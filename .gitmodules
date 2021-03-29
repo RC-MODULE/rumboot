@@ -1,3 +1,6 @@
 [submodule "rumboot-packimage.py"]
 	path = rumboot-tools
 	url = git@git.module.ru:verification-components/rumboot-tools.git
+[submodule "utils/npe_rm"]
+	path = utils/npe_rm
+	url = git@git.module.ru:verification-components/npe_rm.git
