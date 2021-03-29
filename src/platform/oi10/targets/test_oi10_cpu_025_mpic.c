@@ -10,6 +10,8 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <devices/gpio_pl061.h>
+
 #include <rumboot/io.h>
 #include <rumboot/irq.h>
 #include <rumboot/printf.h>
@@ -35,13 +37,15 @@
 #include <regs/regs_mpic128.h>
 #include <platform/regs/fields/emi.h>
 
+
 typedef enum
 {
     EVENT_CHECK_MPIC_TIMER0_INT = TEST_EVENT_CODE_MIN,
     EVENT_CHECK_MPIC_TIMER1_INT,
     EVENT_CHECK_MPIC_TIMER2_INT,
     EVENT_CHECK_MPIC_TIMER3_INT,
-    EVENT_CHECK_MPIC_IPI_INT
+    EVENT_CHECK_MPIC_IPI_INT,
+    EVENT_CHECK_MPIC_MACHINE_CHECK_INT
 } TEST_OI10_CPU_025_EVENT_CODE;
 
 enum {
@@ -59,6 +63,7 @@ uint32_t reset_type = 0;
 uint32_t dbcr = 0;
 
 #define MAGIC 0x3A61C0DE
+
 
 static void mpic_ipi_generate_interrupt()
 {
@@ -92,6 +97,15 @@ static void  mpic_timer_generate_interrupt (uint32_t delay)
     mpic128_start_timer(DCR_MPIC128_BASE, mpic_timer, delay);
 }
 
+static void  mpic_machine_check_generate_interrupt()
+{
+    test_event(EVENT_CHECK_MPIC_MACHINE_CHECK_INT);
+
+    gpio_set_direction(GPIO_1_BASE, 0, gpio_pin_direction_out);
+    gpio_set_value(GPIO_1_BASE, 0, 1);
+}
+
+
 static void mpic_timer_handler()
 {
     HANDLER_FLAG = 1;
@@ -110,6 +124,27 @@ static void mpic_handler ()
     rumboot_printf("Interrupt handler\n");
     rumboot_platform_perf("reset_system");
     reset_type = (rumboot_platform_runtime_info->persistent[MPIC_RESET_TYPE] < 3)?(rumboot_platform_runtime_info->persistent[MPIC_RESET_TYPE]+1):3;
+    dbcr = spr_read(SPR_DBCR0)|(reset_type << IBM_BIT_INDEX(64, 35));
+    msync();
+    spr_write(SPR_DBCR0, dbcr);
+}
+
+static void machine_check_interrupt_handler(int id, const char *name)
+{
+    rumboot_printf("\nWE GOT AN EXCEPTION: %d: %s\n", id, name);
+
+    rumboot_printf("MSR:  0x%x\n", msr_read());
+    rumboot_printf("SRR0: 0x%x\n", spr_read(SPR_SRR0));
+    rumboot_printf("SRR1: 0x%x\n", spr_read(SPR_SRR1));
+    rumboot_printf("CSRR0: 0x%x\n", spr_read(SPR_CSRR0));
+    rumboot_printf("CSRR1: 0x%x\n", spr_read(SPR_CSRR1));
+    rumboot_printf("MCSRR0: 0x%x\n", spr_read(SPR_MCSRR0));
+    rumboot_printf("MCSRR1: 0x%x\n", spr_read(SPR_MCSRR1));
+    rumboot_printf("MCSR:  0x%x\n", spr_read(SPR_MCSR_RW));
+    spr_write(SPR_MCSR_C,spr_read(SPR_MCSR_RW));
+
+    rumboot_platform_perf("reset_system");
+    reset_type = 0x3;
     dbcr = spr_read(SPR_DBCR0)|(reset_type << IBM_BIT_INDEX(64, 35));
     msync();
     spr_write(SPR_DBCR0, dbcr);
@@ -165,14 +200,21 @@ static void init_handlers()
             rumboot_irq_enable( MPIC128_TIMER_3 );
             rumboot_irq_sei();
             break;
+        case 4:
+            rumboot_irq_set_exception_handler(machine_check_interrupt_handler);
+            break;
     }
 }
+
 
 int main ()
 {
     test_event_send_test_id( "test_oi10_cpu_025_mpic");
 
-    if (rumboot_platform_runtime_info->persistent[MPIC_RESET_TYPE] == 4)
+    rumboot_printf("MPIC_RESET_TYPE = %d\n", rumboot_platform_runtime_info->persistent[MPIC_RESET_TYPE]);
+    rumboot_printf("MPIC_RESET = 0x%x\n", rumboot_platform_runtime_info->persistent[MPIC_RESET]);
+
+    if (rumboot_platform_runtime_info->persistent[MPIC_RESET_TYPE] == 5)
     {
           rumboot_platform_runtime_info->persistent[MPIC_RESET] = ~MAGIC;
           return 0;
@@ -191,8 +233,14 @@ int main ()
         mpic_ipi_generate_interrupt();
     }
 
-    mpic_timer_generate_interrupt(DELAY);
-    while (HANDLER_FLAG == 0) msync();
+    if (rumboot_platform_runtime_info->persistent[MPIC_RESET_TYPE] < 4)
+    {
+        mpic_timer_generate_interrupt(DELAY);
+        while (HANDLER_FLAG == 0) msync();
+    }
+    rumboot_platform_runtime_info->persistent[MPIC_RESET_TYPE] = 5;
+
+    mpic_machine_check_generate_interrupt();
 
     rumboot_platform_runtime_info->persistent[MPIC_RESET] = ~MAGIC;
     return 1;
