@@ -86,14 +86,32 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     # endif()
 
     set(NA_RM_BIN_PATH ${CMAKE_BINARY_DIR}/${rumboot_dirname}/utils/npe_rm/rm_core/tests)
+    set(NA_RM_PLUSARGS +in_file_tag=cube.bin
+                       +in_ameba_file_tag=cube_ameba.bin
+                       +in_with_unused_file_tag=cube_with_unused.bin
+                       +etalon_file_tag=res.bin
+                       +etalon_ameba_file_tag=res_ameba.bin
+                       +etalon_with_unused_file_tag=res_with_unused.bin
+                       +op0_vec_file_tag=op0.bin
+                       +op0_cube_file_tag=op0.bin
+                       +op0_ameba_file_tag=op0_ameba.bin
+                       +op0_with_unused_file_tag=op0_with_unused.bin
+                       +op1_vec_file_tag=op1.bin
+                       +op1_cube_file_tag=op1.bin
+                       +op1_ameba_file_tag=op1_ameba.bin
+                       +op1_with_unused_file_tag=op1_with_unused.bin
+                       +op2_vec_file_tag=op2.bin
+                       +op2_cube_file_tag=op2.bin
+                       +op2_ameba_file_tag=op2_ameba.bin
+                       +op2_with_unused_file_tag=op2_with_unused.bin
+                       +cfg_file_tag=config_vpe.bin
+    )
     set(VPE_COUPLED_PATH src/platform/scr1/targets/simple-rom/nu/vpe_first_coupled)
     add_rumboot_target(
       CONFIGURATION ROM
       FILES scr1/targets/simple-rom/nu/vpe_first_coupled/first_coupled_vpe.c
       PREPCMD ${NA_RM_BIN_PATH}/main_generate_first_coupled
-      IRUN_FLAGS +in_file_tag=cube.bin
-                 +etalon_file_tag=res.bin
-                 +cfg_file_tag=config_vpe.bin
+      IRUN_FLAGS ${NA_RM_PLUSARGS}
     )
 
     # MPE example 

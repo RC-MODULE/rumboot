@@ -13,6 +13,9 @@ int32_t *in_data;
 int16_t *etalon;
 int16_t *res_data;
 uint32_t *cfg_bin;
+void *op0;
+void *op1;
+void *op2;
 
 #define NU_VPE_HEAPID 1
 
@@ -36,6 +39,70 @@ void print_in_data(int32_t * in_data, int in_size){
 void nu_vpe_decide_dma_config (ConfigVPE* cfg, ConfigDMAVPE* cfg_dma) {
   nu_vpe_decide_dma_config_trivial(cfg,cfg_dma);
   cfg_dma->dma_dst_en = Enable_NotEn; // Волюнтари3м
+}
+
+
+void* nu_vpe_load_op01(ConfigOp01* cfg, char* cube_file_tag, char* vec_file_tag, int index) {
+  void* op;
+    // Determine An Element Size
+  int element_size;
+  if(cfg->coef_type==DataType_Fp16 || cfg->coef_type==DataType_Int16)
+    element_size = 2;
+  else if(cfg->coef_type==DataType_Int8)
+    element_size = 1;
+  else {
+    rumboot_printf("ERROR: OP%0d wrong data type 0x%x\n",index,(uint32_t)cfg->coef_type);
+    return NULL;
+  }
+  
+    // Try If OP0 Is A Cube
+  if((cfg->alu_en==Enable_En && cfg->alu_mode==Mode_Element) || 
+     (cfg->mux_en==Enable_En && cfg->mux_mode==Mode_Element) ) {
+    op = rumboot_malloc_from_heap_aligned(NU_VPE_HEAPID,16*16*16 /*CHECK*/ *element_size,64);
+    rumboot_platform_request_file(cube_file_tag,(uintptr_t)op);
+    return op;
+  } 
+    
+    // Try If Op0 Is A Vector
+  if((cfg->alu_en==Enable_En && cfg->alu_mode==Mode_Channel) || 
+     (cfg->mux_en==Enable_En && cfg->mux_mode==Mode_Channel) ) {
+    op = rumboot_malloc_from_heap_aligned(NU_VPE_HEAPID,16 /* CHECK */ *element_size,64);
+    rumboot_platform_request_file(vec_file_tag,(uintptr_t)op);
+    return op;
+  } 
+  
+  return NULL;
+}
+void* nu_vpe_load_op2(ConfigOp2* cfg, char* cube_file_tag, char* vec_file_tag) {
+  void* op;
+    // Determine An Element Size
+  int element_size;
+  if(cfg->coef_type==DataType_Fp16 || cfg->coef_type==DataType_Int16)
+    element_size = 2;
+  else if(cfg->coef_type==DataType_Int8)
+    element_size = 1;
+  else {
+    rumboot_printf("ERROR: OP2 wrong data type 0x%x\n",(uint32_t)cfg->coef_type);
+    return NULL;
+  }
+  
+    // Try If OP2 Is A Cube
+  if((cfg->alu_en==Enable_En && cfg->alu_mode==Mode_Element) || 
+     (cfg->mux_en==Enable_En && cfg->mux_mode==Mode_Element) ) {
+    op = rumboot_malloc_from_heap_aligned(NU_VPE_HEAPID,16*16*16 /*CHECK*/ *element_size,64);
+    rumboot_platform_request_file(cube_file_tag,(uintptr_t)op);
+    return op;
+  } 
+    
+    // Try If Op2 Is A Vector
+  if((cfg->alu_en==Enable_En && cfg->alu_mode==Mode_Channel) || 
+     (cfg->mux_en==Enable_En && cfg->mux_mode==Mode_Channel) ) {
+    op = rumboot_malloc_from_heap_aligned(NU_VPE_HEAPID,16 /* CHECK */ *element_size,64);
+    rumboot_platform_request_file(vec_file_tag,(uintptr_t)op);
+    return op;
+  } 
+  
+  return NULL;
 }
 
 ConfigVPE cfg;
@@ -82,6 +149,17 @@ int main() {
   
   res_data = rumboot_malloc_from_heap_aligned(NU_VPE_HEAPID,res_size*out_data_item_size , 32);
   memset(res_data,0xA5,res_size*out_data_item_size);
+  
+    // Load OP0-OP2 Operands If Needed
+  if(cfg.op0_en==Enable_En) {
+    op0 = nu_vpe_load_op01(&cfg.op0_config,"op0_cube_file_tag","op0_vec_file_tag",0);
+  }
+  if(cfg.op1_en==Enable_En) {
+    op1 = nu_vpe_load_op01(&cfg.op1_config,"op1_cube_file_tag","op1_vec_file_tag",1);
+  }
+  if(cfg.op2_en==Enable_En) {
+    op2 = nu_vpe_load_op2(&cfg.op2_config,"op2_cube_file_tag","op2_vec_file_tag");
+  }
   
   etalon = rumboot_malloc_from_heap_aligned(NU_VPE_HEAPID,res_size*out_data_item_size, 32);
   rumboot_platform_request_file("etalon_file_tag",(uintptr_t) etalon);
