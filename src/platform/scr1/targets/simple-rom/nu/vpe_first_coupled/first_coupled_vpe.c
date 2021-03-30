@@ -42,63 +42,55 @@ void nu_vpe_decide_dma_config (ConfigVPE* cfg, ConfigDMAVPE* cfg_dma) {
 }
 
 
-void* nu_vpe_load_op01(ConfigOp01* cfg, char* cube_file_tag, char* vec_file_tag, int index) {
+void* nu_vpe_load_op01(ConfigOp01* cfg, int index) {
   void* op;
-    // Determine An Element Size
-  int element_size;
-  if(cfg->coef_type==DataType_Fp16 || cfg->coef_type==DataType_Int16)
-    element_size = 2;
-  else if(cfg->coef_type==DataType_Int8)
-    element_size = 1;
-  else {
-    rumboot_printf("ERROR: OP%0d wrong data type 0x%x\n",index,(uint32_t)cfg->coef_type);
-    return NULL;
-  }
+  CubeMetrics* cube_metrics;
+  VectorMetrics* vec_metrics;
   
     // Try If OP0 Is A Cube
   if((cfg->alu_en==Enable_En && cfg->alu_mode==Mode_Element) || 
      (cfg->mux_en==Enable_En && cfg->mux_mode==Mode_Element) ) {
-    op = rumboot_malloc_from_heap_aligned(NU_VPE_HEAPID,16*16*16 /*CHECK*/ *element_size,64);
-    rumboot_platform_request_file(cube_file_tag,(uintptr_t)op);
+    cube_metrics = rumboot_malloc_from_heap_aligned(NU_VPE_HEAPID,sizeof(CubeMetrics),sizeof(int32_t));
+    rumboot_platform_request_file(index?"metrics_op1_cube_tag":"metrics_op0_cube_tag",(uintptr_t)cube_metrics);
+    op = rumboot_malloc_from_heap_aligned(NU_VPE_HEAPID,cube_metrics->s,64);
+    rumboot_platform_request_file(index?"op1_cube_file_tag":"op0_cube_file_tag",(uintptr_t)op);
     return op;
   } 
     
     // Try If Op0 Is A Vector
   if((cfg->alu_en==Enable_En && cfg->alu_mode==Mode_Channel) || 
      (cfg->mux_en==Enable_En && cfg->mux_mode==Mode_Channel) ) {
-    op = rumboot_malloc_from_heap_aligned(NU_VPE_HEAPID,16 /* CHECK */ *element_size,64);
-    rumboot_platform_request_file(vec_file_tag,(uintptr_t)op);
+    vec_metrics = rumboot_malloc_from_heap_aligned(NU_VPE_HEAPID,sizeof(VectorMetrics),sizeof(int32_t));
+    rumboot_platform_request_file(index?"metrics_op1_vec_tag":"metrics_op0_vec_tag",(uintptr_t)vec_metrics);
+    op = rumboot_malloc_from_heap_aligned(NU_VPE_HEAPID,vec_metrics->s,64);
+    rumboot_platform_request_file(index?"op1_vec_file_tag":"op0_vec_file_tag",(uintptr_t)op);
     return op;
   } 
   
   return NULL;
 }
-void* nu_vpe_load_op2(ConfigOp2* cfg, char* cube_file_tag, char* vec_file_tag) {
+void* nu_vpe_load_op2(ConfigOp2* cfg) {
   void* op;
-    // Determine An Element Size
-  int element_size;
-  if(cfg->coef_type==DataType_Fp16 || cfg->coef_type==DataType_Int16)
-    element_size = 2;
-  else if(cfg->coef_type==DataType_Int8)
-    element_size = 1;
-  else {
-    rumboot_printf("ERROR: OP2 wrong data type 0x%x\n",(uint32_t)cfg->coef_type);
-    return NULL;
-  }
+  CubeMetrics* cube_metrics;
+  VectorMetrics* vec_metrics;
   
     // Try If OP2 Is A Cube
   if((cfg->alu_en==Enable_En && cfg->alu_mode==Mode_Element) || 
      (cfg->mux_en==Enable_En && cfg->mux_mode==Mode_Element) ) {
-    op = rumboot_malloc_from_heap_aligned(NU_VPE_HEAPID,16*16*16 /*CHECK*/ *element_size,64);
-    rumboot_platform_request_file(cube_file_tag,(uintptr_t)op);
+    cube_metrics = rumboot_malloc_from_heap_aligned(NU_VPE_HEAPID,sizeof(CubeMetrics),sizeof(int32_t));
+    rumboot_platform_request_file("metrics_op2_cube_tag",(uintptr_t)cube_metrics);
+    op = rumboot_malloc_from_heap_aligned(NU_VPE_HEAPID,cube_metrics->s,64);
+    rumboot_platform_request_file("op2_cube_file_tag",(uintptr_t)op);
     return op;
   } 
     
     // Try If Op2 Is A Vector
   if((cfg->alu_en==Enable_En && cfg->alu_mode==Mode_Channel) || 
      (cfg->mux_en==Enable_En && cfg->mux_mode==Mode_Channel) ) {
-    op = rumboot_malloc_from_heap_aligned(NU_VPE_HEAPID,16 /* CHECK */ *element_size,64);
-    rumboot_platform_request_file(vec_file_tag,(uintptr_t)op);
+    vec_metrics = rumboot_malloc_from_heap_aligned(NU_VPE_HEAPID,sizeof(VectorMetrics),sizeof(int32_t));
+    rumboot_platform_request_file("metrics_op2_vec_tag",(uintptr_t)vec_metrics);
+    op = rumboot_malloc_from_heap_aligned(NU_VPE_HEAPID,vec_metrics->s,64);
+    rumboot_platform_request_file("op2_vec_file_tag",(uintptr_t)op);
     return op;
   } 
   
@@ -108,14 +100,10 @@ void* nu_vpe_load_op2(ConfigOp2* cfg, char* cube_file_tag, char* vec_file_tag) {
 ConfigVPE cfg;
 ConfigDMAVPE cfg_dma;
 
+CubeMetrics* in_metrics;
+CubeMetrics* res_metrics;
+
 int main() {
-  int res_size;
-  int in_size;
-  int in_data_item_size;
-  int out_data_item_size;
-  
-  in_size=16*16*16;//H=16;W=16;C=16; // CHECK
-  res_size=in_size;
   
   rumboot_printf("Hello\n");
   
@@ -124,44 +112,30 @@ int main() {
   
   nu_vpe_load_config(&cfg, cfg_bin);  // Move The VPE Settings From Binary To Struct
   
-  if(cfg.in_data_type == DataTypeExt_Fp32 || cfg.in_data_type == DataTypeExt_Int32)
-    in_data_item_size=4;
-  else if(cfg.in_data_type == DataTypeExt_Int16 || cfg.in_data_type == DataTypeExt_Fp16)
-    in_data_item_size=2;
-  else if(cfg.in_data_type == DataTypeExt_Int8)
-    in_data_item_size=1;
-  else {
-    rumboot_printf("ERROR: Unknown in_data_type 0x%x",(uint32_t)cfg.in_data_type);
-    return -1;
-  }
+  in_metrics = rumboot_malloc_from_heap_aligned(NU_VPE_HEAPID,sizeof(CubeMetrics),sizeof(int32_t));
+  rumboot_platform_request_file("metrics_in_tag",(uintptr_t)in_metrics);
   
-  if(cfg.out_data_type == DataType_Int16 || cfg.out_data_type == DataType_Fp16)
-    out_data_item_size=2;
-  else if(cfg.out_data_type == DataType_Int8)
-    out_data_item_size=1;
-  else {
-    rumboot_printf("ERROR: Unknown out_data_type 0x%x",(uint32_t)cfg.out_data_type);
-    return -1;
-  }
+  res_metrics= rumboot_malloc_from_heap_aligned(NU_VPE_HEAPID,sizeof(CubeMetrics),sizeof(int32_t));
+  rumboot_platform_request_file("metrics_etalon_tag",(uintptr_t)res_metrics);
   
-  in_data = rumboot_malloc_from_heap_aligned(NU_VPE_HEAPID,in_size*in_data_item_size /*size in bytes*/,64/*aligned by 64 bytes*/);
+  in_data = rumboot_malloc_from_heap_aligned(NU_VPE_HEAPID,in_metrics->s /*size in bytes*/,64/*aligned by 64 bytes*/);
   rumboot_platform_request_file("in_file_tag", (uintptr_t)in_data); // What is "in_file_tag" defined in scr1.cmake
   
-  res_data = rumboot_malloc_from_heap_aligned(NU_VPE_HEAPID,res_size*out_data_item_size , 32);
-  memset(res_data,0xA5,res_size*out_data_item_size);
+  res_data = rumboot_malloc_from_heap_aligned(NU_VPE_HEAPID,res_metrics->s , 32);
+  memset(res_data,0xA5,res_metrics->s);
   
     // Load OP0-OP2 Operands If Needed
   if(cfg.op0_en==Enable_En) {
-    op0 = nu_vpe_load_op01(&cfg.op0_config,"op0_cube_file_tag","op0_vec_file_tag",0);
+    op0 = nu_vpe_load_op01(&cfg.op0_config,0);
   }
   if(cfg.op1_en==Enable_En) {
-    op1 = nu_vpe_load_op01(&cfg.op1_config,"op1_cube_file_tag","op1_vec_file_tag",1);
+    op1 = nu_vpe_load_op01(&cfg.op1_config,1);
   }
   if(cfg.op2_en==Enable_En) {
-    op2 = nu_vpe_load_op2(&cfg.op2_config,"op2_cube_file_tag","op2_vec_file_tag");
+    op2 = nu_vpe_load_op2(&cfg.op2_config);
   }
   
-  etalon = rumboot_malloc_from_heap_aligned(NU_VPE_HEAPID,res_size*out_data_item_size, 32);
+  etalon = rumboot_malloc_from_heap_aligned(NU_VPE_HEAPID,res_metrics->s, 32);
   rumboot_platform_request_file("etalon_file_tag",(uintptr_t) etalon);
   
   //print_in_data(in_data,in_size);
@@ -174,9 +148,9 @@ int main() {
   
     // Setup Main Channel DMAs if Required
   if(cfg_dma.dma_src_en == Enable_NotEn)
-    nu_vpe_config_rd_main_channel(NU_CPDMAC_ASM_BASE,in_data,in_size*in_data_item_size);
+    nu_vpe_config_rd_main_channel(NU_CPDMAC_ASM_BASE,in_data,in_metrics->s);
   if(cfg_dma.dma_dst_en == Enable_NotEn)
-    nu_vpe_config_wr_main_channel(NU_CPDMAC_ASM_BASE,res_data,res_size*out_data_item_size);
+    nu_vpe_config_wr_main_channel(NU_CPDMAC_ASM_BASE,res_data,res_metrics->s);
   
   rumboot_printf("Running DMA..\n");
   
@@ -195,11 +169,11 @@ int main() {
   nu_vpe_wait(NU_VPE_STANDALONE_BASE, &cfg_dma);
   
   
-  rumboot_platform_dump_region("res_data.bin",(uint32_t)res_data,res_size*out_data_item_size);
+  rumboot_platform_dump_region("res_data.bin",(uint32_t)res_data,res_metrics->s);
   
   rumboot_printf("Comparing..\n");
   
-  if(memcmp((char*)res_data,(char*)etalon,res_size*out_data_item_size) != 0) {
+  if(memcmp((char*)res_data,(char*)etalon,res_metrics->s) != 0) {
     rumboot_printf("Test FAILED\n");
     return -1;
   }

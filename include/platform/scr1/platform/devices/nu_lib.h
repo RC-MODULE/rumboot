@@ -204,6 +204,26 @@
     uint32_t MC     ;
   }ConfigPPE;
   
+  typedef struct CubeMetrics{
+    int32_t s;   // Size That Cube Occupies (in bytes)
+    int32_t H;
+    int32_t W;
+    int32_t C;
+  }CubeMetrics;
+  
+  typedef struct WarrMetrics{
+    int32_t s;   // Size That Warr Occupies (in bytes)
+    int32_t H;
+    int32_t W;
+    int32_t C;
+    int32_t K;
+  }WarrMetrics;
+  
+  typedef struct VectorMetrics{
+    int32_t s;   // Size That Vector Occupies (in bytes)
+    int32_t vec_size; // Number Of Elements
+  }VectorMetrics;
+  
   
 void nu_vpe_load_config(ConfigVPE* cfg, void* cfg_bin);
 void nu_vpe_print_config(ConfigVPE* cfg);

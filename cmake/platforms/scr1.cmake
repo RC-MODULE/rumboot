@@ -104,7 +104,27 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
                        +op2_cube_file_tag=op2.bin
                        +op2_ameba_file_tag=op2_ameba.bin
                        +op2_with_unused_file_tag=op2_with_unused.bin
+                       
                        +cfg_file_tag=config_vpe.bin
+
+                       +metrics_in_tag=cube.bin.metrics
+                       +metrics_in_ameba_tag=cube_ameba.bin.metrics
+                       +metrics_in_with_unused_tag=cube_with_unused.bin.metrics
+                       +metrics_etalon_tag=res.bin.metrics
+                       +metrics_etalon_ameba_tag=res_ameba.bin.metrics
+                       +metrics_etalon_with_unused_tag=res_with_unused.bin.metrics
+                       +metrics_op0_vec_tag=op0.bin.metrics
+                       +metrics_op0_cube_tag=op0.bin.metrics
+                       +metrics_op0_ameba_tag=op0_ameba.bin.metrics
+                       +metrics_op0_with_unused_tag=op0_with_unused.bin.metrics
+                       +metrics_op1_vec_tag=op1.bin.metrics
+                       +metrics_op1_cube_tag=op1.bin.metrics
+                       +metrics_op1_ameba_tag=op1_ameba.bin.metrics
+                       +metrics_op1_with_unused_tag=op1_with_unused.bin.metrics
+                       +metrics_op2_vec_tag=op2.bin.metrics
+                       +metrics_op2_cube_tag=op2.bin.metrics
+                       +metrics_op2_ameba_tag=op2_ameba.bin.metrics
+                       +metrics_op2_with_unused_tag=op2_with_unused.bin.metrics
     )
     set(VPE_COUPLED_PATH src/platform/scr1/targets/simple-rom/nu/vpe_first_coupled)
     add_rumboot_target(
