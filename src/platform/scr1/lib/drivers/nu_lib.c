@@ -362,26 +362,34 @@ void nu_vpe_setup(uintptr_t base, ConfigVPE* cfg, ConfigDMAVPE* cfg_dma) {
   // iowrite32(cfg->MYFIELD, base + NU_VPE_MYREG);
 }
 
-void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, ConfigDMAVPE* cfg_dma) {
+void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics, ConfigDMAVPE* cfg_dma) {
+  cfg_dma->H = metrics->H;
+  cfg_dma->W = metrics->W;
+  cfg_dma->C = metrics->C;
+  
   if(cfg->in_data_type == DataTypeExt_Int32 || cfg->in_data_type == DataTypeExt_Fp32)
     cfg_dma->dma_src_en =  Enable_NotEn ;  // if 32bit Input Data then Main Channel Works
   else
     cfg_dma->dma_src_en = Enable_En;
   
-  if(cfg->op0_config.alu_mode == Mode_Unitary && cfg->op0_config.mux_mode == Mode_Unitary) // if Both Operands Are A Single Value
-    cfg_dma->dma_op0_en = Enable_NotEn;  // Then We Do Not Need DMA
-  else
+  if((cfg->op0_config.alu_en == Enable_En && cfg->op0_config.alu_mode != Mode_Unitary) ||
+     (cfg->op0_config.mux_en == Enable_En && cfg->op0_config.mux_mode != Mode_Unitary)  )// if Some Of Operands Enabled And Not A Single Value
     cfg_dma->dma_op0_en = Enable_En;
-  
-  if(cfg->op1_config.alu_mode == Mode_Unitary && cfg->op1_config.mux_mode == Mode_Unitary) // if Both Operands Are A Single Value
-    cfg_dma->dma_op1_en = Enable_NotEn;  // Then We Do Not Need DMA
   else
+    cfg_dma->dma_op0_en = Enable_NotEn;
+  
+  if((cfg->op1_config.alu_en == Enable_En && cfg->op1_config.alu_mode != Mode_Unitary) ||
+     (cfg->op1_config.mux_en == Enable_En && cfg->op1_config.mux_mode != Mode_Unitary)  )// if Some Of Operands Enabled And Not A Single Value
     cfg_dma->dma_op1_en = Enable_En;
-  
-  if(cfg->op2_config.alu_mode == Mode_Unitary && cfg->op2_config.mux_mode == Mode_Unitary) // if Both Operands Are A Single Value
-    cfg_dma->dma_op2_en = Enable_NotEn;  // Then We Do Not Need DMA
   else
+    cfg_dma->dma_op1_en = Enable_NotEn;
+  
+  if((cfg->op2_config.alu_en == Enable_En && cfg->op2_config.alu_mode != Mode_Unitary) ||
+     (cfg->op2_config.mux_en == Enable_En && cfg->op2_config.mux_mode != Mode_Unitary)  )// if Some Of Operands Enabled And Not A Single Value
     cfg_dma->dma_op2_en = Enable_En;
+  else
+    cfg_dma->dma_op2_en = Enable_NotEn;
+  
   
   // We Have No Setting That Define If We Run WDMA Or Main Wr Channel
 }

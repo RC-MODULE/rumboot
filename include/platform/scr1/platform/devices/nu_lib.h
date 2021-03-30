@@ -178,6 +178,9 @@
     Enable dma_op1_en;
     Enable dma_op2_en;
     Enable dma_dst_en;
+    int32_t H;
+    int32_t W;
+    int32_t C;
     // Add Here DMA Parameter Fields
   }ConfigDMAVPE;
   
@@ -230,7 +233,7 @@ void nu_vpe_print_config(ConfigVPE* cfg);
 void nu_vpe_print_config_dma(ConfigDMAVPE* cfg);
 
 void nu_vpe_setup(uintptr_t base, ConfigVPE* cfg, ConfigDMAVPE* cfg_dma);
-void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, ConfigDMAVPE* cfg_dma);
+void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics, ConfigDMAVPE* cfg_dma);
 
 void nu_mpe_load_config(ConfigMPE* cfg, void* cfg_bin);
 void nu_mpe_print_config(ConfigMPE* cfg);
