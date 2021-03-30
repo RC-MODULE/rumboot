@@ -4,8 +4,72 @@
 #include <rumboot/platform.h>
 #include <rumboot/rumboot.h>
 #include <rumboot/io.h>
+#include <string.h>
 
 #include <platform/devices/nu_lib.h> 
+
+int nu_get_heap_id() {
+  return 1;  // CHECK // fix this by define when compile under other platform than scr1
+}
+
+int nu_vpe_load_cfg(int heap_id, ConfigVPE* cfg) {
+  uint32_t *cfg_bin;
+  
+  cfg_bin = rumboot_malloc_from_heap_aligned(heap_id,NU_VPE_CFG_PARAMS_NUM*sizeof(uint32_t),sizeof(uint32_t));
+  if(cfg_bin==NULL)
+    return 1;
+  rumboot_platform_request_file("cfg_file_tag", (uintptr_t)cfg_bin);
+  
+  nu_vpe_load_config(cfg, cfg_bin);  // Move The VPE Settings From Binary To Struct
+  rumboot_free((void*) cfg_bin);
+  return 0;
+}
+
+CubeMetrics* nu_load_cube_metrics(int heap_id, char* file_tag) {
+  CubeMetrics* m;
+  m = rumboot_malloc_from_heap_aligned(heap_id,sizeof(CubeMetrics),sizeof(int32_t));
+  if(m == NULL)
+    return NULL;
+  
+  rumboot_platform_request_file(file_tag,(uintptr_t)m);
+  return m;
+}
+
+CubeMetrics* nu_vpe_load_in_metrics(int heap_id) {
+  return nu_load_cube_metrics(heap_id,"metrics_in_tag");
+}
+
+CubeMetrics* nu_vpe_load_res_metrics(int heap_id) {
+  return nu_load_cube_metrics(heap_id,"metrics_etalon_tag");
+}
+
+void* nu_load_cube(int heap_id,char* file_tag,CubeMetrics* metrics) {
+  void* c;
+  c = rumboot_malloc_from_heap_aligned(heap_id,metrics->s /*size in bytes*/,64/*aligned by 64 bytes*/);
+  if(c==NULL) 
+    return NULL;
+  
+  rumboot_platform_request_file(file_tag, (uintptr_t)c);
+  return c;
+}
+
+void* nu_vpe_load_in_data(int heap_id,CubeMetrics* metrics) {
+  return nu_load_cube(heap_id,"in_file_tag",metrics);
+}
+
+void* nu_vpe_malloc_res(int heap_id,CubeMetrics* metrics) {
+  void* res;
+  res = rumboot_malloc_from_heap_aligned(heap_id,metrics->s , 64); // CHECK
+  if(res == NULL)
+    return NULL;
+  
+  memset(res,0xA5,metrics->s);
+  return res;
+}
+
+void* nu_vpe_load_etalon(int heap_id,CubeMetrics* metrics) {
+  return nu_load_cube(heap_id,"etalon_file_tag",metrics);
+}
 
 
 void* nu_vpe_load_op01(int heap_id, ConfigOp01* cfg, int index) {
@@ -20,6 +84,7 @@ void* nu_vpe_load_op01(int heap_id, ConfigOp01* cfg, int index) {
     rumboot_platform_request_file(index?"metrics_op1_cube_tag":"metrics_op0_cube_tag",(uintptr_t)cube_metrics);
     op = rumboot_malloc_from_heap_aligned(heap_id,cube_metrics->s,64);
     rumboot_platform_request_file(index?"op1_cube_file_tag":"op0_cube_file_tag",(uintptr_t)op);
+    rumboot_free((void*) cube_metrics);
     return op;
   } 
     
@@ -30,6 +95,7 @@ void* nu_vpe_load_op01(int heap_id, ConfigOp01* cfg, int index) {
     rumboot_platform_request_file(index?"metrics_op1_vec_tag":"metrics_op0_vec_tag",(uintptr_t)vec_metrics);
     op = rumboot_malloc_from_heap_aligned(heap_id,vec_metrics->s,64);
     rumboot_platform_request_file(index?"op1_vec_file_tag":"op0_vec_file_tag",(uintptr_t)op);
+    rumboot_free((void*) vec_metrics);
     return op;
   } 
   
@@ -47,6 +113,7 @@ void* nu_vpe_load_op2(int heap_id, ConfigOp2* cfg) {
     rumboot_platform_request_file("metrics_op2_cube_tag",(uintptr_t)cube_metrics);
     op = rumboot_malloc_from_heap_aligned(heap_id,cube_metrics->s,64);
     rumboot_platform_request_file("op2_cube_file_tag",(uintptr_t)op);
+    rumboot_free((void*) cube_metrics);
     return op;
   } 
     
@@ -57,9 +124,13 @@ void* nu_vpe_load_op2(int heap_id, ConfigOp2* cfg) {
     rumboot_platform_request_file("metrics_op2_vec_tag",(uintptr_t)vec_metrics);
     op = rumboot_malloc_from_heap_aligned(heap_id,vec_metrics->s,64);
     rumboot_platform_request_file("op2_vec_file_tag",(uintptr_t)op);
+    rumboot_free((void*) vec_metrics);
     return op;
   } 
   
   return NULL;
 }
 
+int nu_bitwise_compare(void* res_data, void* etalon, int size) {
+  return memcmp((char*)res_data,(char*)etalon,size)  ;
+}

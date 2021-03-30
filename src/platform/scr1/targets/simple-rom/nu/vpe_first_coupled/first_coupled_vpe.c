@@ -8,17 +8,13 @@
 
 #include <platform/devices/nu_lib.h> 
 #include <platform/devices/nu_test_lib.h> 
-#include <string.h>
 
 int32_t *in_data;
 int16_t *etalon;
 int16_t *res_data;
-uint32_t *cfg_bin;
 void *op0;
 void *op1;
 void *op2;
-
-#define NU_VPE_HEAPID 1
 
 void print_in_data(int32_t * in_data, int in_size){
   int lines;
@@ -51,46 +47,46 @@ CubeMetrics* in_metrics;
 CubeMetrics* res_metrics;
 
 int main() {
+  int heap_id;
   
   rumboot_printf("Hello\n");
   
-  cfg_bin = rumboot_malloc_from_heap_aligned(NU_VPE_HEAPID,NU_VPE_CFG_PARAMS_NUM*sizeof(uint32_t),sizeof(uint32_t));
-  rumboot_platform_request_file("cfg_file_tag", (uintptr_t)cfg_bin);
+  heap_id = nu_get_heap_id();
   
-  nu_vpe_load_config(&cfg, cfg_bin);  // Move The VPE Settings From Binary To Struct
+  if(nu_vpe_load_cfg(heap_id, &cfg) != 0) return -1;
   
-  in_metrics = rumboot_malloc_from_heap_aligned(NU_VPE_HEAPID,sizeof(CubeMetrics),sizeof(int32_t));
-  rumboot_platform_request_file("metrics_in_tag",(uintptr_t)in_metrics);
+  in_metrics = nu_vpe_load_in_metrics(heap_id);
+  if(in_metrics == NULL) return -1;
   
-  res_metrics= rumboot_malloc_from_heap_aligned(NU_VPE_HEAPID,sizeof(CubeMetrics),sizeof(int32_t));
-  rumboot_platform_request_file("metrics_etalon_tag",(uintptr_t)res_metrics);
+  res_metrics= nu_vpe_load_res_metrics(heap_id);
+  if(res_metrics == NULL) return -1;
   
-  in_data = rumboot_malloc_from_heap_aligned(NU_VPE_HEAPID,in_metrics->s /*size in bytes*/,64/*aligned by 64 bytes*/);
-  rumboot_platform_request_file("in_file_tag", (uintptr_t)in_data); // What is "in_file_tag" defined in scr1.cmake
+  in_data = nu_vpe_load_in_data(heap_id,in_metrics);
+  if(in_data == NULL) return -1;
   
-  res_data = rumboot_malloc_from_heap_aligned(NU_VPE_HEAPID,res_metrics->s , 32);
-  memset(res_data,0xA5,res_metrics->s);
+  res_data = nu_vpe_malloc_res(heap_id, res_metrics);
+  if(res_data == NULL) return -1;
   
     // Load OP0-OP2 Operands If Needed
   if(cfg.op0_en==Enable_En) {
-    op0 = nu_vpe_load_op01(NU_VPE_HEAPID,&cfg.op0_config,0);
+    op0 = nu_vpe_load_op01(heap_id,&cfg.op0_config,0);
   }
   if(cfg.op1_en==Enable_En) {
-    op1 = nu_vpe_load_op01(NU_VPE_HEAPID,&cfg.op1_config,1);
+    op1 = nu_vpe_load_op01(heap_id,&cfg.op1_config,1);
   }
   if(cfg.op2_en==Enable_En) {
-    op2 = nu_vpe_load_op2(NU_VPE_HEAPID,&cfg.op2_config);
+    op2 = nu_vpe_load_op2(heap_id,&cfg.op2_config);
   }
   
-  etalon = rumboot_malloc_from_heap_aligned(NU_VPE_HEAPID,res_metrics->s, 32);
-  rumboot_platform_request_file("etalon_file_tag",(uintptr_t) etalon);
+  etalon = nu_vpe_load_etalon(heap_id,res_metrics);
+  if(etalon == NULL) return -1;
   
   //print_in_data(in_data,in_size);
   
   nu_vpe_print_config(&cfg);
+  nu_vpe_decide_dma_config(&cfg,in_metrics,&cfg_dma);
   nu_vpe_print_config_dma(&cfg_dma);
   
-  nu_vpe_decide_dma_config(&cfg,in_metrics,&cfg_dma);
   nu_vpe_setup(NU_VPE_STANDALONE_BASE, &cfg, &cfg_dma);
   
     // Setup Main Channel DMAs if Required
@@ -120,12 +116,12 @@ int main() {
   
   rumboot_printf("Comparing..\n");
   
-  if(memcmp((char*)res_data,(char*)etalon,res_metrics->s) != 0) {
+  if(nu_bitwise_compare(res_data,etalon,res_metrics->s) == 0)
+    rumboot_printf("Test PASSED\n");
+  else {
     rumboot_printf("Test FAILED\n");
-    return -1;
+    return 1;
   }
-  
-  rumboot_printf("Test PASSED\n");
   
   return 0;
   
