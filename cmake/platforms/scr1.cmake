@@ -104,7 +104,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
                        +op2_cube_file_tag=op2.bin
                        +op2_ameba_file_tag=op2_ameba.bin
                        +op2_with_unused_file_tag=op2_with_unused.bin
-                       
+
                        +cfg_file_tag=config_vpe.bin
 
                        +metrics_in_tag=cube.bin.metrics
@@ -130,7 +130,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     add_rumboot_target(
       CONFIGURATION ROM
       FILES scr1/targets/simple-rom/nu/vpe_first_coupled/first_coupled_vpe.c
-      PREPCMD ${NA_RM_BIN_PATH}/main_generate_first_coupled
+      PREPCMD ${NA_RM_BIN_PATH}/main_generate_first_coupled > npe_rm.log
       IRUN_FLAGS ${NA_RM_PLUSARGS}
     )
 
