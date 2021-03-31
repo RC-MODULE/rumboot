@@ -103,9 +103,6 @@
     uint32_t Sh       ;
     uint32_t K        ;
     DataType dt       ;
-    uint32_t LINES    ;
-    uint32_t COLUMNS  ;
-    uint32_t BUF_NMB  ;
     uint32_t RND_MODE ;
     uint32_t SAT      ;
     uint32_t RND_SIZE ;

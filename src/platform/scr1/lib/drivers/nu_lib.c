@@ -99,9 +99,6 @@ void nu_mpe_load_config(ConfigMPE* cfg, void* cfg_bin) {
   cfg-> Sh       =*ptr;ptr++;
   cfg-> K        =*ptr;ptr++;
   cfg-> dt       =*ptr;ptr++;
-  cfg-> LINES    =*ptr;ptr++;
-  cfg-> COLUMNS  =*ptr;ptr++;
-  cfg-> BUF_NMB  =*ptr;ptr++;
   cfg-> RND_MODE =*ptr;ptr++;
   cfg-> SAT      =*ptr;ptr++;
   cfg-> RND_SIZE =*ptr;ptr++;  
@@ -326,9 +323,6 @@ void nu_mpe_print_config(ConfigMPE* cfg){
     rumboot_printf("  Sh       = %d \n" , cfg->Sh);
     rumboot_printf("  K        = %d \n" , cfg->K);
     nu_vpe_print_DataType(cfg->dt,"dt      ");
-    rumboot_printf("  LINES    = %d \n" , cfg->LINES);
-    rumboot_printf("  COLUMNS  = %d \n" , cfg->COLUMNS);
-    rumboot_printf("  BUF_NMB  = %d \n" , cfg->BUF_NMB);
     rumboot_printf("  RND_MODE = %d \n" , cfg->RND_MODE);
     rumboot_printf("  SAT      = %d \n" , cfg->SAT);
     rumboot_printf("  RND_SIZE = %d \n" , cfg->RND_SIZE);
