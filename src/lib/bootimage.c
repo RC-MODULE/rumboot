@@ -25,6 +25,8 @@ static const char *errors[] =
 	[ETOOBIG] = "Image too big",
 	[EBADSOURCE] = "Bad boot source",
     [EIO]   = "I/O Error",
+	[ETOHOST] = "To Host Mode",
+	[EBADCLUSTERID] = "Bad Target Cluster",
 	[EMAXERROR] = "Unknown",
 };
 
@@ -262,10 +264,13 @@ int rumboot_bootimage_execute(struct rumboot_bootheader *hdr, const struct rumbo
 			effective_size = datasize; 
 		}
 
-		if (image_source_base != image_destination_base) { /* relocation */
-			if ((flags & RUMBOOT_FLAG_DECAPS) == 0) { /* No decapsulation - move header */
+		if (image_source_base != image_destination_base) { /* We relocation */
+			if ((flags & RUMBOOT_FLAG_DECAPS) == 0) { /* No decapsulation, so move header */
 				dbg_boot(src, "Moving header: %x -> %x", image_source_base, image_destination_base);
 				memmove(image_destination_base, image_source_base, sizeof(*hdr));
+				image_source_offset = sizeof(*hdr);
+				image_destination_offset = sizeof(*hdr);
+				effective_size = datasize; 
 			}
 		}
 		
@@ -309,6 +314,11 @@ int rumboot_bootimage_execute(struct rumboot_bootheader *hdr, const struct rumbo
         /* FixMe: Use cross-platform barrier sync functions here */
         asm("msync");
         #endif
+	}
+
+	if (flags & RUMBOOT_FLAG_DATA) {
+		/* This image contains only user data to be loaded */
+		return 0;
 	}
 
 	if (!cpu) {
