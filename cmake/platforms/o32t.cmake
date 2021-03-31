@@ -100,7 +100,7 @@ macro(rumboot_platform_generate_stuff_for_taget product)
 endmacro()
 
 
-
+include(${CMAKE_SOURCE_DIR}/cmake/bootrom.cmake)
 set(ROM_9600_OPTS +BOOT_SLOWUART=1 +BOOT_FASTUART=0 +UART0_SPEED=9600)
 set(ROM_19200_OPTS +BOOT_SLOWUART=1 +BOOT_FASTUART=1 +UART0_SPEED=19200)
 set(ROM_115200_OPTS +BOOT_SLOWUART=0 +BOOT_FASTUART=0 +UART0_SPEED=115200)
@@ -113,6 +113,15 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     PREFIX "bootrom"
     NAME "stub"
     FEATURES STUB
+  )
+
+  rumboot_bootrom_add_components(IRAM_IM0 ROM
+  -a 512 -z 512
+  )
+
+  rumboot_bootrom_add_common_units(
+      CONFIGURATION ROM
+      IRUN_FLAGS ${ROM_6500K_OPTS}
   )
 
   add_rumboot_target_dir(simple-iram/

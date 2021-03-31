@@ -37,10 +37,10 @@
 struct rumboot_bootsource;
 
 enum rumboot_header_flags {
-    RUMBOOT_FLAG_COMPRESS = (1 << 0), // NOT_YET_IMPLEMENTED: This image is compressed
-    RUMBOOT_FLAG_ENCRYPT  = (1 << 1), // NOT_YET_IMPLEMENTED: Image is encrypted, decrypt data from OTP
-    RUMBOOT_FLAG_SIGNED   = (1 << 2), // NOT_YET_IMPLEMENTED: Image is signed, need signature verification
-    RUMBOOT_FLAG_SMP      = (1 << 3), // NOT_YET_IMPLEMENTED: SMP Image
+    RUMBOOT_FLAG_COMPRESS = (1 << 0), /** Image data is compressed with heatshrink */
+    RUMBOOT_FLAG_DATA     = (1 << 1), /** Image file contains only data to be loaded, it shouldn't be executed */
+    RUMBOOT_FLAG_RESERVED = (1 << 2), /** Reserved for further usage */ 
+    RUMBOOT_FLAG_SMP      = (1 << 3), /** SMP Image. If supported by target CPU cluster, all cores will start execution */
     RUMBOOT_FLAG_DECAPS   = (1 << 4), /** Remove header before executing and move data to the beginning */
     RUMBOOT_FLAG_RELOCATE = (1 << 5), /** Relocate image before execution to the address in relocation field */
     RUMBOOT_FLAG_SYNC     = (1 << 6), /** Wait for the image to finish before exiting */
@@ -177,7 +177,8 @@ void dbg_boot(const struct rumboot_bootsource * src, const char *fmt, ...);
 #define EBADSOURCE     9
 #define EIO            10
 #define ETOHOST        11
-#define EMAXERROR      12
+#define EBADCLUSTERID  12
+#define EMAXERROR      13
 
  struct rumboot_config {
          bool	hostmode;

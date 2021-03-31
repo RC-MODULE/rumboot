@@ -48,18 +48,21 @@ static void nmc_kill(const struct rumboot_secondary_cpu *cpu)
 
 
 #if 0
+
 struct ecom_instance {
     uintptr_t base;
+    bool     swap_endian;
+
     uint64_t *rxbuf;
     uint64_t *txbuf;
 };
 
-void ecom_instance_init(struct ecom_instance *inst, uintptr_t base)
+void ecom_instance_init(struct ecom_settings *inst, uintptr_t base)
 {
 
 }
 
-void ecom_send(struct ecom_instance *inst, void *buf, size_t len)
+void ecom_send(struct ecom_instance *inst, const void *buf, size_t len)
 {
 
 }
@@ -69,15 +72,6 @@ void ecom_recv(struct ecom_instance *inst, void *buf, size_t len)
 
 }
 
-uint64_t ecom_get(struct ecom_instance *inst, uint32_t timeout_us)
-{
-
-}
-
-void ecom_put(struct ecom_instance *inst, uint64_t word)
-{
-
-}
 #endif
 
 static void ext_kill(const struct rumboot_secondary_cpu *cpu)

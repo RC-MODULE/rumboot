@@ -108,15 +108,17 @@ void rumboot_platform_print_summary(struct rumboot_config *conf)
 
 static bool emi_enable(const struct rumboot_bootsource *src, void *pdata)
 {
-        plb6mcif2_simple_init(DCR_EM2_PLB6MCIF2_BASE, 0x00);
+        #warning "WAAAAAAAAAGH!"
+        //plb6mcif2_simple_init(DCR_EM2_PLB6MCIF2_BASE, 0x00);
         return true;
 }
 
 static bool sdio_enable(const struct rumboot_bootsource *src, void *pdata)
 {
-        gpio_set_direction(GPIO_0_BASE, 3, gpio_pin_direction_in);
-        return !(gpio_get_data(GPIO_0_BASE) & BOOTM_SDIO_CD);
+        //gpio_set_direction(GPIO_0_BASE, 3, gpio_pin_direction_in);
+        //return !(gpio_get_data(GPIO_0_BASE) & BOOTM_SDIO_CD);
 }
+
 
 static const struct rumboot_bootsource arr[] = {
         {
