@@ -40,6 +40,7 @@ void print_in_data(int32_t * in_data, int in_size){
 }
 
 ConfigMPE cfg;
+ConfigDMAMPE* cfg_dma;
 
 int main() {
   int res_size;
@@ -62,7 +63,7 @@ int main() {
   nu_mpe_print_config(&cfg);
   
   nu_mpe_load_buf(NU_MPE_BUFFER_BASE+NU_MPE_BUF00, in_data, in_size*sizeof(int16_t));
-  nu_mpe_setup(NU_MPE_STANDALONE_BASE, &cfg);
+  nu_mpe_setup(NU_MPE_STANDALONE_BASE, &cfg, cfg_dma);
   
   res_data = rumboot_malloc_from_heap_aligned(NU_HEAPID,res_size*sizeof(int32_t) , 64);
   memset(res_data,0xA5,res_size*sizeof(int32_t));

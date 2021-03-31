@@ -328,6 +328,18 @@ void nu_mpe_print_config(ConfigMPE* cfg){
     rumboot_printf("  RND_SIZE = %d \n" , cfg->RND_SIZE);
   
 }
+
+void nu_mpe_print_config_dma(ConfigDMAMPE* cfg) {
+  rumboot_printf("ConfigDMAMPE:\n");
+    rumboot_printf("  H        = %d \n" , cfg-> H);
+    rumboot_printf("  W        = %d \n" , cfg-> W);
+    rumboot_printf("  C        = %d \n" , cfg-> C);
+    rumboot_printf("  R        = %d \n" , cfg-> R);
+    rumboot_printf("  S        = %d \n" , cfg-> S);
+    rumboot_printf("  data_buf#= %d \n" , cfg-> in_data_partition);
+    rumboot_printf("  warr_buf#= %d \n" , cfg-> warr_partition);
+}
+
 void nu_ppe_print_config(ConfigPPE* cfg){
   rumboot_printf("ConfigPPE:\n");
   
@@ -388,10 +400,46 @@ void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics, Conf
   // We Have No Setting That Define If We Run WDMA Or Main Wr Channel
 }
 
-void nu_mpe_setup(uintptr_t base, ConfigMPE* cfg) {
+int nu_mpe_get_size_in_partitions(int size_in_bytes) {
+  int res;
+  res = size_in_bytes / (NU_MPE_BUF01 - NU_MPE_BUF00);
+  if( (size_in_bytes % (NU_MPE_BUF01 - NU_MPE_BUF00)) != 0 )
+    res++;
+  
+  return res;
+}
+
+int nu_mpe_decide_dma_config_trivial(ConfigMPE* cfg, CubeMetrics* cube_metrics, WarrMetrics* warr_metrics, ConfigDMAMPE* cfg_dma) {
+  int warr_size_in_partitions;
+  
+  cfg_dma->H = cube_metrics->H;
+  cfg_dma->W = cube_metrics->W;
+  cfg_dma->C = cube_metrics->C;
+  
+  cfg_dma->R = warr_metrics->H;
+  cfg_dma->S = warr_metrics->W; // CHECK The Accurate WarrMetrics Field Meanings
+  
+  cfg_dma->in_data_partition=0; // Data Is Always In 0th Partition
+  cfg_dma->warr_partition = nu_mpe_get_size_in_partitions(cube_metrics->s); // Warr - In Next Partition After Data
+  warr_size_in_partitions = nu_mpe_get_size_in_partitions(warr_metrics->s);
+  if(cfg_dma->warr_partition+warr_size_in_partitions >16) return -1;
+  return 0;
+}
+
+void nu_mpe_setup(uintptr_t base, ConfigMPE* cfg, ConfigDMAMPE* cfg_dma) {
   rumboot_printf("Configuring MPE..\n");
   
   // iowrite32(cfg->MYFIELD, base + NU_MPE_MYREG);
+}
+
+void nu_mpe_run(uintptr_t mpe_base, ConfigDMAMPE* cfg_dma) {
+  
+  // iowrite32(cfg->MYFIELD, mpe_base + NU_MPE_MYREG);
+}
+
+void nu_mpe_wait(uintptr_t mpe_base, ConfigDMAMPE* cfg_dma) {
+  
+  // while (ioread32(mpe_base + NU_MPE_MYREG)) != ...) {}
 }
 
 void nu_mpe_load_buf(uintptr_t base, void* data, int size) {

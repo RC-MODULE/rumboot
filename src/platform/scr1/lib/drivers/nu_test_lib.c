@@ -25,9 +25,32 @@ int nu_vpe_load_cfg(int heap_id, ConfigVPE* cfg) {
   return 0;
 }
 
+int nu_mpe_load_cfg(int heap_id, ConfigMPE* cfg) {
+  uint32_t* cfg_bin;
+  
+  cfg_bin = rumboot_malloc_from_heap_aligned(heap_id,NU_MPE_CFG_PARAMS_NUM*sizeof(uint32_t),sizeof(uint32_t));
+  if(cfg_bin==NULL)
+    return 1;
+  rumboot_platform_request_file("cfg_mpe_file_tag",(uintptr_t)cfg_bin);
+  
+  nu_mpe_load_config(cfg,cfg_bin);
+  rumboot_free((void*) cfg_bin);
+  return 0;
+}
+
 CubeMetrics* nu_load_cube_metrics(int heap_id, char* file_tag) {
   CubeMetrics* m;
   m = rumboot_malloc_from_heap_aligned(heap_id,sizeof(CubeMetrics),sizeof(int32_t));
+  if(m == NULL)
+    return NULL;
+  
+  rumboot_platform_request_file(file_tag,(uintptr_t)m);
+  return m;
+}
+
+WarrMetrics* nu_load_warr_metrics(int heap_id, char* file_tag) {
+  WarrMetrics* m;
+  m = rumboot_malloc_from_heap_aligned(heap_id,sizeof(WarrMetrics),sizeof(int32_t));
   if(m == NULL)
     return NULL;
   
@@ -39,8 +62,20 @@ CubeMetrics* nu_vpe_load_in_metrics(int heap_id) {
   return nu_load_cube_metrics(heap_id,"metrics_in_tag");
 }
 
+CubeMetrics* nu_mpe_load_in_metrics(int heap_id) {
+  return nu_load_cube_metrics(heap_id,"metrics_in_tag"); // Yeh! Identical
+}
+
 CubeMetrics* nu_vpe_load_res_metrics(int heap_id) {
   return nu_load_cube_metrics(heap_id,"metrics_etalon_tag");
+}
+
+CubeMetrics* nu_mpe_load_res_metrics(int heap_id) {
+  return nu_load_cube_metrics(heap_id,"metrics_etalon_tag"); // Identical Once More
+}
+
+WarrMetrics* nu_mpe_load_warr_metrics(int heap_id) {
+  return nu_load_warr_metrics(heap_id,"metrics_warr_tag");
 }
 
 void* nu_load_cube(int heap_id,char* file_tag,CubeMetrics* metrics) {
@@ -53,8 +88,26 @@ void* nu_load_cube(int heap_id,char* file_tag,CubeMetrics* metrics) {
   return c;
 }
 
+void* nu_load_warr(int heap_id,char* file_tag,WarrMetrics* metrics) {
+  void* w;
+  w = rumboot_malloc_from_heap_aligned(heap_id,metrics->s,64); // CHECK
+  if(w==NULL)
+    return NULL;
+  
+  rumboot_platform_request_file(file_tag,(uintptr_t)w);
+  return w;
+}
+
 void* nu_vpe_load_in_data(int heap_id,CubeMetrics* metrics) {
   return nu_load_cube(heap_id,"in_file_tag",metrics);
+}
+
+void* nu_mpe_load_in_data(int heap_id,CubeMetrics* metrics) {
+  return nu_load_cube(heap_id,"in_file_tag",metrics); //
+}
+
+void* nu_mpe_load_warr(int heap_id,WarrMetrics* metrics) {
+  return nu_load_warr(heap_id,"warr_file_tag",metrics);
 }
 
 void* nu_vpe_malloc_res(int heap_id,CubeMetrics* metrics) {
@@ -67,10 +120,23 @@ void* nu_vpe_malloc_res(int heap_id,CubeMetrics* metrics) {
   return res;
 }
 
+void* nu_mpe_malloc_res(int heap_id,CubeMetrics* metrics) {
+  void* res;
+  res = rumboot_malloc_from_heap_aligned(heap_id,metrics->s, 64); // CHECK
+  if(res == NULL)
+    return NULL;
+  
+  memset(res,0xA5,metrics->s);
+  return res;
+}
+
 void* nu_vpe_load_etalon(int heap_id,CubeMetrics* metrics) {
   return nu_load_cube(heap_id,"etalon_file_tag",metrics);
 }
 
+void* nu_mpe_load_etalon(int heap_id,CubeMetrics* metrics) {
+  return nu_load_cube(heap_id,"etalon_file_tag",metrics);   // Identical
+}
 
 void* nu_vpe_load_op01(int heap_id, ConfigOp01* cfg, int index) {
   void* op;

@@ -89,6 +89,8 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     set(NA_RM_PLUSARGS +in_file_tag=cube.bin
                        +in_ameba_file_tag=cube_ameba.bin
                        +in_with_unused_file_tag=cube_with_unused.bin
+                       +warr_file_tag=warr.bin
+                       +warr_with_unused_file_tag=warr_with_unused.bin
                        +etalon_file_tag=res.bin
                        +etalon_ameba_file_tag=res_ameba.bin
                        +etalon_with_unused_file_tag=res_with_unused.bin
@@ -106,10 +108,13 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
                        +op2_with_unused_file_tag=op2_with_unused.bin
 
                        +cfg_file_tag=config_vpe.bin
+                       +cfg_mpe_file_tag=config_mpe.bin
 
                        +metrics_in_tag=cube.bin.metrics
                        +metrics_in_ameba_tag=cube_ameba.bin.metrics
                        +metrics_in_with_unused_tag=cube_with_unused.bin.metrics
+                       +metrics_warr_tag=warr.bin.metrics
+                       +metrics_warr_with_unused_tag=warr_with_unused.bin.metrics
                        +metrics_etalon_tag=res.bin.metrics
                        +metrics_etalon_ameba_tag=res_ameba.bin.metrics
                        +metrics_etalon_with_unused_tag=res_with_unused.bin.metrics
@@ -126,11 +131,19 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
                        +metrics_op2_ameba_tag=op2_ameba.bin.metrics
                        +metrics_op2_with_unused_tag=op2_with_unused.bin.metrics
     )
+    set(RM_LOGFILE npe_rm.log)
     set(VPE_COUPLED_PATH src/platform/scr1/targets/simple-rom/nu/vpe_first_coupled)
     add_rumboot_target(
       CONFIGURATION ROM
       FILES scr1/targets/simple-rom/nu/vpe_first_coupled/first_coupled_vpe.c
-      PREPCMD ${NA_RM_BIN_PATH}/main_generate_first_coupled > npe_rm.log
+      PREPCMD ${NA_RM_BIN_PATH}/main_generate_first_coupled > ${RM_LOGFILE}
+      IRUN_FLAGS ${NA_RM_PLUSARGS}
+    )
+
+    add_rumboot_target(
+      CONFIGURATION ROM
+      FILES scr1/targets/simple-rom/nu/vpe_first_coupled/first_coupled_mpe.c
+      #PREPCMD ${NA_RM_BIN_PATH}/main_generate_first_coupled > ${RM_LOGFILE}
       IRUN_FLAGS ${NA_RM_PLUSARGS}
     )
 

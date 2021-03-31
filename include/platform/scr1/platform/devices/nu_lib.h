@@ -181,6 +181,17 @@
     // Add Here DMA Parameter Fields
   }ConfigDMAVPE;
   
+  typedef struct ConfigDMAMPE {
+    int32_t H;
+    int32_t W;
+    int32_t C;
+    int32_t R;
+    int32_t S;
+    int in_data_partition;
+    int warr_partition;
+    // Add Here DMA Parameter Fields
+  }ConfigDMAMPE;
+  
   /**
   Настройки блока субдескритизации
   */
@@ -234,8 +245,11 @@ void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics, Conf
 
 void nu_mpe_load_config(ConfigMPE* cfg, void* cfg_bin);
 void nu_mpe_print_config(ConfigMPE* cfg);
+void nu_mpe_print_config_dma(ConfigDMAMPE* cfg);
 
-void nu_mpe_setup(uintptr_t base, ConfigMPE* cfg);
+int  nu_mpe_get_size_in_partitions(int size_in_bytes);
+void nu_mpe_setup(uintptr_t base, ConfigMPE* cfg, ConfigDMAMPE* cfg_dma);
+int  nu_mpe_decide_dma_config_trivial(ConfigMPE* cfg, CubeMetrics* cube_metrics, WarrMetrics* warr_metrics, ConfigDMAMPE* cfg_dma);
 
 void nu_mpe_load_buf(uintptr_t base, void* data, int size);
 
@@ -250,6 +264,9 @@ void nu_vpe_wait_rd_main_channel_complete(uintptr_t dma_base);
 
 void nu_vpe_run(uintptr_t vpe_base, ConfigDMAVPE* cfg);
 void nu_vpe_wait(uintptr_t vpe_base, ConfigDMAVPE* cfg);
+
+void nu_mpe_run(uintptr_t mpe_base, ConfigDMAMPE* cfg_dma);
+void nu_mpe_wait(uintptr_t mpe_base, ConfigDMAMPE* cfg_dma);
 
 void nu_vpe_config_wr_main_channel(uintptr_t dma_base, void *addr, int size);
 void nu_vpe_run_wr_main_channel(uintptr_t dma_base);
