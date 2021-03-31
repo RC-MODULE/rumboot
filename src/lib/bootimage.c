@@ -154,8 +154,8 @@ ssize_t rumboot_bootimage_check_header(struct rumboot_bootheader *hdr, void **da
 	if (hdr->version > 2) {
     	dbg_boot(hdr->device, "Image Flags:     %s%s%s%s%s%s%s%s", 
 			hdr->flags & RUMBOOT_FLAG_COMPRESS ? " GZIP"    : "",
-			hdr->flags & RUMBOOT_FLAG_ENCRYPT  ? " ENCRYPT" : "",
-			hdr->flags & RUMBOOT_FLAG_SIGNED   ? " SIGNED"  : "",
+			hdr->flags & RUMBOOT_FLAG_DATA     ? " DATA"    : "",
+			hdr->flags & RUMBOOT_FLAG_RESERVED ? " RSVD"    : "",
 			hdr->flags & RUMBOOT_FLAG_SMP      ? " SMP"     : "",
 			hdr->flags & RUMBOOT_FLAG_DECAPS   ? " DECAPS"  : "",
 			hdr->flags & RUMBOOT_FLAG_RELOCATE ? " RELOC"   : "",
