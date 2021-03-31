@@ -1,6 +1,5 @@
 #include <stdlib.h>
 #include <string.h>
-
 #include <algo/heatshrink_decoder.h>
 
 /* States for the polling state machine. */
@@ -174,7 +173,7 @@ HSD_poll_res heatshrink_decoder_poll(heatshrink_decoder *hsd,
         default:
             return HSDR_POLL_ERROR_UNKNOWN;
         }
-
+        
         /* If the current state cannot advance, check if input or output
          * buffer are exhausted. */
         if (hsd->state == in_state) {
