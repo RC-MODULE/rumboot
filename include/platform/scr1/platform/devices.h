@@ -25,6 +25,7 @@
 #define NU_VPE_STANDALONE_BASE  DUT_BASE
 #define NU_MPE_STANDALONE_BASE  DUT_BASE
 #define NU_PPE_STANDALONE_BASE  DUT_BASE
+#define NU_PPE_RDMA_BASE        DUT_PORT2_BASE
 #define NU_MPE_BUFFER_BASE      DUT_PORT2_BASE
 
 #endif /* end of include guard: DEVICES_H */

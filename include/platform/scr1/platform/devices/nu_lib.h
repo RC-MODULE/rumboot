@@ -8,18 +8,19 @@
 #define NU_VPE_CFG_PARAMS_NUM 59
 #define NU_MPE_CFG_PARAMS_NUM 18
 #define NU_PPE_CFG_PARAMS_NUM 23
+#define NU_PPE_REG_CFG_PARAMS_NUM 48
 
-  /** 
-  Режим работы блока 
+  /**
+  Режим работы блока
   */
   typedef enum Mode {
-    Mode_Unitary, 
-    Mode_Channel, 
+    Mode_Unitary,
+    Mode_Channel,
     Mode_Element
   } Mode;
 
-  /** 
-  Режим округления нормализатора 
+  /**
+  Режим округления нормализатора
   */
   typedef enum RoundMode {
     RoundMode_Nearest,
@@ -35,9 +36,9 @@
     Enable_NotEn,
     Enable_En
   }Enable;
-  
 
-  /** 
+
+  /**
   Операции alu
   */
   typedef enum AluOperationSwitch {
@@ -45,8 +46,8 @@
     AluOperationSwitch_Min,
     AluOperationSwitch_Sum
   }AluOperationSwitch;
-  
-  /** 
+
+  /**
   Расширенны набор операци alu
   */
   typedef enum AluOperationExtSwitch {
@@ -56,7 +57,7 @@
     AluOperationExtSwitch_Eql
   }AluOperationExtSwitch;
 
-  /** 
+  /**
   Операции pooling
   */
   typedef enum PoolingOperationSwitch {
@@ -66,7 +67,7 @@
   }PoolingOperationSwitch;
 
 
-  /** 
+  /**
   Тип обрабатываемых данных
   */
   typedef enum DataType {
@@ -86,7 +87,7 @@
     DataTypeExt_Int32,
     DataTypeExt_Fp32
   }DataTypeExt;
-  
+
   typedef struct ConfigMPE {
     uint32_t H        ;
     uint32_t W        ;
@@ -108,7 +109,7 @@
     uint32_t RND_SIZE ;
   }ConfigMPE;
 
-  
+
 
   typedef struct ConfigOp01 {
     DataType coef_type;
@@ -127,7 +128,7 @@
     Enable norm_saturation_en;
     uint8_t norm_round_size;
   }ConfigOp01;
-  
+
   typedef struct ConfigOp2 {
     DataType coef_type;
     Enable alu_en;
@@ -152,7 +153,7 @@
     int16_t c2_scale;
     uint8_t c2_trunc; // !!!! вообще он uint6
   }ConfigOp2;
-  
+
   typedef struct ConfigVPE {
     DataTypeExt in_data_type;
     DataType out_data_type;
@@ -168,7 +169,7 @@
     ConfigOp01 op1_config;
     ConfigOp2 op2_config;
   }ConfigVPE;
-  
+
   typedef struct ConfigDMAVPE {
     Enable dma_src_en;
     Enable dma_op0_en;
@@ -180,7 +181,7 @@
     int32_t C;
     // Add Here DMA Parameter Fields
   }ConfigDMAVPE;
-  
+
   typedef struct ConfigDMAMPE {
     int32_t H;
     int32_t W;
@@ -191,7 +192,7 @@
     int warr_partition;
     // Add Here DMA Parameter Fields
   }ConfigDMAMPE;
-  
+
   /**
   Настройки блока субдескритизации
   */
@@ -214,14 +215,74 @@
     DataType                dt  ;
     uint32_t MC     ;
   }ConfigPPE;
-  
+
+  typedef struct ConfigREGPPE{
+    // rdma
+    // uint32_t rSt      ; // STATUS
+    uint32_t rOpEn    ; // OP_ENABLE          / Start
+    uint32_t rWi      ; // DATA_W_IN          / Input Width size
+    uint32_t rHi      ; // DATA_H_IN          / Input Height size
+    uint32_t rCi      ; // DATA_C_IN          / Input Channel size
+    uint32_t rBALs    ; // SRC_BASE_ADDR_L    / Start address of Cube
+    // uint32_t rBAHs    ; // SRC_BASE_ADDR_H    / Start address of Cube
+    uint32_t rVSs     ; // SRC_VECTOR_STRIDE  / DMA Stride
+    uint32_t rLSs     ; // SRC_LINE_STRIDE    / DMA Stride
+    uint32_t rESs     ; // SRC_ELEMENT_STRIDE / DMA Stride
+    uint32_t rOpM     ; // OP_MODE            / Operation mode params
+    uint32_t rBSWi    ; // BOX_SIZE_W_IN      / DMA Working Box Size w/o Offset
+    uint32_t rBSHi    ; // BOX_SIZE_H_IN      / DMA Working Box Size
+    uint32_t rBSCi    ; // BOX_SIZE_C_IN      / DMA Working Box Size
+    uint32_t rStWi    ; // BOX_START_W_IN     / DMA First part Working Box Size
+    uint32_t rOfWi    ; // BOX_OFFSET_W_IN    / DMA Box Offset
+    uint32_t rK       ; // KERNEL             / Pooling kernel params
+    // ppe + wdma
+    // uint32_t wSt      ; // STATUS
+    uint32_t wOpEn    ; // OP_ENABLE          / Start
+    uint32_t wWi      ; // DATA_W_IN          / Input Width size
+    uint32_t wHi      ; // DATA_H_IN          / Input Height size
+    uint32_t wCi      ; // DATA_C_IN          / Input Channel size
+    uint32_t wWo      ; // DATA_W_OUT         / Output Width size
+    uint32_t wHo      ; // DATA_H_OUT         / Output Height size
+    uint32_t wCo      ; // DATA_C_OUT         / Output Channel size
+    uint32_t wBALd    ; // DST_BASE_ADDR_L    / Start address of Cube
+    // uint32_t wBAHd    ; // DST_BASE_ADDR_H    / Start address of Cube
+    uint32_t wVSd     ; // DST_VECTOR_STRIDE  / DMA Stride
+    uint32_t wLSd     ; // DST_LINE_STRIDE    / DMA Stride
+    uint32_t wESd     ; // DST_ELEMENT_STRIDE / DMA Stride
+    uint32_t wOpM     ; // OP_MODE            / Operation mode params
+    uint32_t wBSWi    ; // BOX_SIZE_W_IN      / DMA Input Working Box Size w/o Offset
+    uint32_t wBSHi    ; // BOX_SIZE_H_IN      / DMA Input Working Box Size
+    uint32_t wBSCi    ; // BOX_SIZE_C_IN      / DMA Input Working Box Size
+    uint32_t wStWi    ; // BOX_START_W_IN     / DMA Input First part Working Box Size
+    uint32_t wOfWi    ; // BOX_OFFSET_W_IN    / DMA Input Box Offset
+    uint32_t wBSWo    ; // BOX_SIZE_W_OUT     / DMA Output Working Box Size w/o Offset
+    uint32_t wBSHo    ; // BOX_SIZE_H_OUT     / DMA Output Working Box Size
+    uint32_t wBSCo    ; // BOX_SIZE_C_OUT     / DMA Output Working Box Size
+    uint32_t wStWo    ; // BOX_START_W_OUT    / DMA Output First part Working Box Size
+    uint32_t wOfWo    ; // BOX_OFFSET_W_OUT   / DMA Output Box Offset
+    uint32_t wK       ; // KERNEL             / Pooling kernel params
+    uint32_t wKWr     ; // RECIP_KERNEL_W     /
+    uint32_t wKHr     ; // RECIP_KERNEL_H     /
+    uint32_t wP       ; // PADDING            /
+    uint32_t wPV1     ; // PADDING_VALUE_1    /
+    uint32_t wPV2     ; // PADDING_VALUE_2    /
+    uint32_t wPV3     ; // PADDING_VALUE_3    /
+    uint32_t wPV4     ; // PADDING_VALUE_4    /
+    uint32_t wPV5     ; // PADDING_VALUE_5    /
+    uint32_t wPV6     ; // PADDING_VALUE_6    /
+    uint32_t wPV7     ; // PADDING_VALUE_7    /
+    // uint32_t wINi     ; // INF_NUM_IN
+    // uint32_t wNNi     ; // NAN_NUM_IN
+    // uint32_t wNNo     ; // NAN_NUM_OUT
+  }ConfigREGPPE;
+
   typedef struct CubeMetrics{
     int32_t s;   // Size That Cube Occupies (in bytes)
     int32_t H;
     int32_t W;
     int32_t C;
   }CubeMetrics;
-  
+
   typedef struct WarrMetrics{
     int32_t s;   // Size That Warr Occupies (in bytes)
     int32_t H;
@@ -229,13 +290,13 @@
     int32_t C;
     int32_t K;
   }WarrMetrics;
-  
+
   typedef struct VectorMetrics{
     int32_t s;   // Size That Vector Occupies (in bytes)
     int32_t vec_size; // Number Of Elements
   }VectorMetrics;
-  
-  
+
+
 void nu_vpe_load_config(ConfigVPE* cfg, void* cfg_bin);
 void nu_vpe_print_config(ConfigVPE* cfg);
 void nu_vpe_print_config_dma(ConfigDMAVPE* cfg);
@@ -257,6 +318,10 @@ void nu_ppe_load_config(ConfigPPE* cfg, void* cfg_bin);
 void nu_ppe_print_config(ConfigPPE* cfg);
 
 void nu_ppe_setup(uintptr_t base, ConfigPPE* cfg);
+void nu_ppe_setup_reg(uintptr_t rbase, uintptr_t wbase, ConfigREGPPE* cfg);
+
+void nu_ppe_rdma_run(uintptr_t rbase, ConfigREGPPE* cfg);
+void nu_ppe_run(uintptr_t wbase, ConfigREGPPE* cfg);
 
 void nu_vpe_config_rd_main_channel(uintptr_t dma_base, void *addr, int size);
 void nu_vpe_run_rd_main_channel(uintptr_t dma_base);
@@ -282,4 +347,3 @@ void nu_ppe_wait_rd_main_channel_complete(uintptr_t dma_base);
 
 
 #endif
-
