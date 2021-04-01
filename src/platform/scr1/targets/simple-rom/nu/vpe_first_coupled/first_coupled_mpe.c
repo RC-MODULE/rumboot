@@ -85,7 +85,7 @@ int main() {
   
     // Finalize Required DMA Channels
   nu_mpe_wait(NU_VPE_STANDALONE_BASE, &cfg_dma);
-  nu_mpe_wait_wr_main_channel_complete(NU_CPDMAC_ASM_BASE);
+  // nu_mpe_wait_wr_main_channel_complete(NU_CPDMAC_ASM_BASE); // Uncomment This When MPE Will Actually Be Run
   
   
   rumboot_platform_dump_region("res_data.bin",(uint32_t)res_data,res_metrics->s);

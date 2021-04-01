@@ -143,7 +143,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     add_rumboot_target(
       CONFIGURATION ROM
       FILES scr1/targets/simple-rom/nu/vpe_first_coupled/first_coupled_mpe.c
-      #PREPCMD ${NA_RM_BIN_PATH}/main_generate_first_coupled > ${RM_LOGFILE}
+      PREPCMD ${NA_RM_BIN_PATH}/main_generate_first_coupled_mpe > ${RM_LOGFILE}
       IRUN_FLAGS ${NA_RM_PLUSARGS}
     )
 
