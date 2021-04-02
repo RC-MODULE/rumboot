@@ -35,7 +35,7 @@ void print_in_data(int32_t * in_data, int in_size){
 }
 
 ConfigPPE cfg;
-ConfigREGPPE cfg_regs = {1};
+ConfigREGPPE cfg_regs = {0};
 
 int main() {
   int res_size;
@@ -52,6 +52,9 @@ int main() {
   in_data = rumboot_malloc_from_heap_aligned(NU_HEAPID,in_size*sizeof(int16_t) /*size in bytes*/,64/*aligned by 64 bytes*/);
   rumboot_platform_request_file("in_file_tag", (uintptr_t)in_data); // What is "in_file_tag" defined in scr1.cmake
 
+  res_data = rumboot_malloc_from_heap_aligned(NU_HEAPID,res_size*sizeof(int32_t) , 64);
+  memset(res_data,0xA5,res_size*sizeof(int16_t));
+
   //print_in_data(in_data,in_size);
 
   nu_ppe_load_config(&cfg, cfg_bin);
@@ -59,18 +62,41 @@ int main() {
 
   nu_ppe_setup(NU_PPE_STANDALONE_BASE, &cfg);
 
-  // Configure RDMA and PPE+WDMA
-  cfg_regs.rBALs = (uintptr_t)in_data;
+  // Configure RDMA
+  cfg_regs.rWi    = 0X00001000;
+  cfg_regs.rHi    = 0X00001000;
+  cfg_regs.rCi    = 0X00000020;
+  cfg_regs.rBALs  = (uintptr_t)in_data;
+  cfg_regs.rVSs   = 0X00000020;
+  cfg_regs.rLSs   = 0X00001000;
+  cfg_regs.rESs   = 0X00000020;
+  cfg_regs.rOpM   = 0X00200000;
+  cfg_regs.rBSWi  = 0X0000007F;
+  cfg_regs.rBSHi  = 0X00000000;
+  cfg_regs.rBSCi  = 0X0000000F;
+  cfg_regs.rStWi  = 0X0000007F;
+  cfg_regs.rOfWi  = 0X00000000;
+  // Configure PPE+WDMA
+  cfg_regs.wWo    = 0X00001000;
+  cfg_regs.wHo    = 0X00001000;
+  cfg_regs.wCo    = 0X00000020;
+  cfg_regs.wBALd  = (uintptr_t)res_data;
+  cfg_regs.wVSd   = 0X00000020;
+  cfg_regs.wLSd   = 0X00001000;
+  cfg_regs.wESd   = 0X00000020;
+  cfg_regs.wOpM   = 0X00200000;
+  cfg_regs.wBSWo  = 0X0000007F;
+  cfg_regs.wBSHo  = 0X00000000;
+  cfg_regs.wBSCo  = 0X0000000F;
+  cfg_regs.wStWo  = 0X0000007F;
+  cfg_regs.wOfWo  = 0X00000000;
   nu_ppe_setup_reg(NU_PPE_RDMA_BASE, NU_PPE_STANDALONE_BASE, &cfg_regs);
 
-  cfg_regs.rOpEn = 0X00000001; // Set start of PPE RDMA field to active value
-  cfg_regs.wOpEn = 0X00000001; // Set start of PPE+WDMA field to active value
+  cfg_regs.rOpEn  = 0X00000001; // Set start of PPE RDMA field to active value
+  cfg_regs.wOpEn  = 0X00000001; // Set start of PPE+WDMA field to active value
   // Start RDMA then PPE+WDMA
-  // nu_ppe_rdma_run(NU_PPE_RDMA_BASE, &cfg_regs);
-  // nu_ppe_run(NU_PPE_STANDALONE_BASE, &cfg_regs);
-
-  res_data = rumboot_malloc_from_heap_aligned(NU_HEAPID,res_size*sizeof(int32_t) , 64);
-  memset(res_data,0xA5,res_size*sizeof(int16_t));
+  nu_ppe_rdma_run(NU_PPE_RDMA_BASE, &cfg_regs);
+  nu_ppe_run(NU_PPE_STANDALONE_BASE, &cfg_regs);
 
   nu_ppe_config_rd_main_channel(NU_CPDMAC_ASM_BASE,in_data,in_size*sizeof(int16_t));
 
