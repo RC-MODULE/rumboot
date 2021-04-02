@@ -85,7 +85,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     )
     # endif()
 
-    set(NA_RM_BIN_PATH ${CMAKE_BINARY_DIR}/${rumboot_dirname}/utils/npe_rm/rm_core/tests)
+    set(NA_RM_BIN_PATH ${CMAKE_BINARY_DIR}/${rumboot_dirname}/utils/npe_rm/rm_core/rtl-tests)
     set(NA_RM_PLUSARGS +in_file_tag=cube.bin
                        +in_ameba_file_tag=cube_ameba.bin
                        +in_with_unused_file_tag=cube_with_unused.bin
