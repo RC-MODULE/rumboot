@@ -323,6 +323,9 @@ void nu_ppe_setup_reg(uintptr_t rbase, uintptr_t wbase, ConfigREGPPE* cfg);
 void nu_ppe_rdma_run(uintptr_t rbase, ConfigREGPPE* cfg);
 void nu_ppe_run(uintptr_t wbase, ConfigREGPPE* cfg);
 
+void nu_ppe_rdma_wait_complete(uintptr_t rbase);
+void nu_ppe_wait_complete(uintptr_t wbase);
+
 void nu_vpe_config_rd_main_channel(uintptr_t dma_base, void *addr, int size);
 void nu_vpe_run_rd_main_channel(uintptr_t dma_base);
 void nu_vpe_wait_rd_main_channel_complete(uintptr_t dma_base);

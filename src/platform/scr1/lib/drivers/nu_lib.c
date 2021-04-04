@@ -478,7 +478,7 @@ void nu_ppe_setup(uintptr_t base, ConfigPPE* cfg) {
   // iowrite32(cfg->MYFIELD, base + NU_MPE_MYREG);
 }
 
-nu_ppe_setup_reg(uintptr_t rbase, uintptr_t wbase, ConfigREGPPE* cfg) {
+void nu_ppe_setup_reg(uintptr_t rbase, uintptr_t wbase, ConfigREGPPE* cfg) {
   rumboot_printf("Configuring PPE regs..\n");
   // rdma
   // iowrite32(cfg->rSt,      rbase + NU_PPE_RDMA_STATUS);
@@ -538,15 +538,25 @@ nu_ppe_setup_reg(uintptr_t rbase, uintptr_t wbase, ConfigREGPPE* cfg) {
   // iowrite32(cfg->wNNi,     wbase + NU_PPE_NAN_NUM_IN);
   // iowrite32(cfg->wNNo,     wbase + NU_PPE_NAN_NUM_OUT);
 }
-nu_ppe_rdma_run(uintptr_t rbase, ConfigREGPPE* cfg) {
+// rdma
+void nu_ppe_rdma_run(uintptr_t rbase, ConfigREGPPE* cfg) {
   rumboot_printf("Start PPE RDMA...\n");
-  // rdma
   iowrite32(cfg->rOpEn,   rbase + NU_PPE_RDMA_OP_ENABLE);
 }
-nu_ppe_run(uintptr_t wbase, ConfigREGPPE* cfg) {
+void nu_ppe_rdma_wait_complete(uintptr_t rbase){
+  rumboot_printf("Wait PPE RDMA...\n");
+  while(ioread32(rbase + NU_PPE_RDMA_STATUS) !=0) {}
+  rumboot_printf("Done PPE RDMA...\n");
+}
+// ppe + wdma
+void nu_ppe_run(uintptr_t wbase, ConfigREGPPE* cfg) {
   rumboot_printf("Start PPE + WDMA...\n");
-  // ppe + wdma
   iowrite32(cfg->wOpEn,   wbase + NU_PPE_OP_ENABLE);
+}
+void nu_ppe_wait_complete(uintptr_t wbase){
+  rumboot_printf("Wait PPE + WDMA...\n");
+  while(ioread32(wbase + NU_PPE_STATUS) !=0) {}
+  rumboot_printf("Done PPE + WDMA...\n");
 }
 
 void nu_vpe_config_rd_main_channel(uintptr_t dma_base, void *addr, int size) {
