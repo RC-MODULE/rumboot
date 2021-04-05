@@ -63,13 +63,15 @@ struct __attribute__((packed)) rumboot_bootheader {
     };
     
     uint64_t  relocation;
-    uint32_t  target_cpu_cluster;
-    uint32_t  encryption_slot;
-    uint32_t  certificate_slot;
-    uint32_t  priority;
-    uint32_t  reserved[2];
+
+    uint8_t   target_cpu_cluster;
+    uint8_t   encryption_slot;
+    uint8_t   certificate_slot;
+    uint8_t   priority;
+    uint64_t  bootargs[2];
+    uint32_t  reserved;
     uint32_t  header_crc32;
-    const struct rumboot_bootsource *device;
+    uint32_t  device;
     char     data[];
 };
 
