@@ -97,6 +97,9 @@ int main() {
   // Start RDMA then PPE+WDMA
   nu_ppe_rdma_run(NU_PPE_RDMA_BASE, &cfg_regs);
   nu_ppe_run(NU_PPE_STANDALONE_BASE, &cfg_regs);
+  // Wait RDMA then PPE+WDMA
+  nu_ppe_rdma_wait_complete(NU_PPE_RDMA_BASE);
+  nu_ppe_wait_complete(NU_PPE_STANDALONE_BASE);
 
   nu_ppe_config_rd_main_channel(NU_CPDMAC_ASM_BASE,in_data,in_size*sizeof(int16_t));
 
