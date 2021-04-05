@@ -207,19 +207,33 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
                        +metrics_op2_with_unused_tag=${NA_TEST_metrics_op2_with_unused}
     )
     set(RM_LOGFILE npe_rm.log)
-    add_rumboot_target(
-      CONFIGURATION ROM
-      FILES scr1/targets/simple-rom/nu/coupled_with_rm/first_coupled_vpe.c
-      PREPCMD ${NA_RM_BIN_PATH}/main_sqared_try_all_ops ${NA_RM_KEYS} > ${RM_LOGFILE}
-      IRUN_FLAGS ${NA_RM_PLUSARGS}
-    )
 
-    add_rumboot_target(
-      CONFIGURATION ROM
-      FILES scr1/targets/simple-rom/nu/coupled_with_rm/first_coupled_mpe.c
-      PREPCMD ${NA_RM_BIN_PATH}/main_sqared_simple_mpe ${NA_RM_KEYS} > ${RM_LOGFILE}
-      IRUN_FLAGS ${NA_RM_PLUSARGS}
-    )
+    macro(ADD_VPE_COUPLED_TEST name rm_bin_name)
+      add_rumboot_target(
+        CONFIGURATION ROM
+        NAME ${name}
+        FILES scr1/targets/simple-rom/nu/coupled_with_rm/first_coupled_vpe.c
+        PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
+        IRUN_FLAGS ${NA_RM_PLUSARGS}
+      )
+    endmacro()
+
+    macro(ADD_MPE_COUPLED_TEST name rm_bin_name) # name - символическое имя теста, rm_bin_name - имя executable и3 npe_rm/rtl-tests/CMakeLists.txt
+      add_rumboot_target(
+        CONFIGURATION ROM
+        NAME ${name}
+        FILES scr1/targets/simple-rom/nu/coupled_with_rm/first_coupled_mpe.c
+        PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
+        IRUN_FLAGS ${NA_RM_PLUSARGS}
+      )
+    endmacro()
+
+    # Add new tests here
+    ADD_VPE_COUPLED_TEST(vpe_first_coupled main_sqared_try_all_ops)
+    ADD_VPE_COUPLED_TEST(vpe_first_coupled_float main_sqared_try_all_ops_float)
+    ADD_MPE_COUPLED_TEST(mpe_first_coupled main_sqared_simple_mpe)
+
+
 
     # MPE example 
     # if(DUT STREQUAL "MPE")
