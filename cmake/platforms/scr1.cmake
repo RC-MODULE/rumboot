@@ -207,17 +207,16 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
                        +metrics_op2_with_unused_tag=${NA_TEST_metrics_op2_with_unused}
     )
     set(RM_LOGFILE npe_rm.log)
-    set(VPE_COUPLED_PATH src/platform/scr1/targets/simple-rom/nu/vpe_first_coupled)
     add_rumboot_target(
       CONFIGURATION ROM
-      FILES scr1/targets/simple-rom/nu/vpe_first_coupled/first_coupled_vpe.c
+      FILES scr1/targets/simple-rom/nu/coupled_with_rm/first_coupled_vpe.c
       PREPCMD ${NA_RM_BIN_PATH}/main_sqared_try_all_ops ${NA_RM_KEYS} > ${RM_LOGFILE}
       IRUN_FLAGS ${NA_RM_PLUSARGS}
     )
 
     add_rumboot_target(
       CONFIGURATION ROM
-      FILES scr1/targets/simple-rom/nu/vpe_first_coupled/first_coupled_mpe.c
+      FILES scr1/targets/simple-rom/nu/coupled_with_rm/first_coupled_mpe.c
       PREPCMD ${NA_RM_BIN_PATH}/main_sqared_simple_mpe ${NA_RM_KEYS} > ${RM_LOGFILE}
       IRUN_FLAGS ${NA_RM_PLUSARGS}
     )
