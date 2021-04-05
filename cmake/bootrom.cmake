@@ -112,6 +112,11 @@ macro(rumboot_bootrom_add_components spl_conf romconf)
       PACKIMAGE_FLAGS ${ARGN} -e -C
       VARIABLE SPL_OK_REVERSE
   )
+    add_test(packimage_v2_v3_compatibility
+    bash -c "cp -f ${SPL_OK} test-compat-spl;
+    ${PYTHON_EXECUTABLE} ${RUMBOOT_PACKIMAGE} -if test-compat-spl -s version 2 -c;
+    ${PYTHON_EXECUTABLE} ${RUMBOOT_PACKIMAGE} -if test-compat-spl; exit $?"
+    )
 endif()
 
   add_rumboot_target(
