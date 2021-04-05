@@ -22,6 +22,7 @@ static inline void dump_parameter(const char *fmt, int param)
 void rumboot_platform_dump_config(struct rumboot_config *conf, size_t maxsize) {
         rumboot_printf("--- RumBoot Configuration ---\n");
         dump_parameter("Force Host Mode: %s\n", conf->hostmode);
+        dump_parameter("Secure Boot:     %s\n", conf->secure_boot);
         dump_parameter("Selftest:        %s\n", conf->selftest);
         dump_parameter("EDCL/RMAP:       %s\n", conf->edcl);
         rumboot_printf("UART speed:      %d bps\n", conf->baudrate);

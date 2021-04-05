@@ -182,6 +182,7 @@ void dbg_boot(const struct rumboot_bootsource * src, const char *fmt, ...);
 
  struct rumboot_config {
          bool	hostmode;
+         bool secure_boot;
          int	selftest;
          int	edcl;
          bool	legacyboot;
