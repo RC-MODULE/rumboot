@@ -92,6 +92,16 @@ macro(rumboot_bootrom_add_components spl_conf romconf)
       VARIABLE SPL_OK
   )
 
+  add_rumboot_target(
+    CONFIGURATION ${spl_conf}
+    NAME compressed-ok
+    FILES common/bootrom/spl.c
+    CFLAGS -DTERMINATE_SIMULATION -DEXITCODE=0
+    FEATURES STUB PACKIMAGE
+    PACKIMAGE_FLAGS ${ARGN} -c -Z
+    VARIABLE COMPRESSED_OK
+  )
+
   if (RUMBOOT_ARCH STREQUAL "native")
     add_rumboot_target(
       CONFIGURATION ${spl_conf}

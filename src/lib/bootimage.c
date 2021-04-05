@@ -70,6 +70,8 @@ int rumboot_decompress_buffer(const struct rumboot_bootsource *src, const uint8_
     uint32_t polled = 0;
     heatshrink_decoder hsd;
     heatshrink_decoder_reset(&hsd);
+    bool data_direction = compressed_data > decompressed_data;
+
     while (sunk < input_length)
     {
         size_t count;
@@ -110,6 +112,11 @@ int rumboot_decompress_buffer(const struct rumboot_bootsource *src, const uint8_
                 break;
             }
         }
+
+		if ((&compressed_data[sunk] > &decompressed_data[polled]) != data_direction) {
+			dbg_boot(src, "ERROR: Detected a clash of compressed and uncompressed buffers");
+			return -EBADDATACRC;
+		}
     }
     return polled;
 }
@@ -153,7 +160,7 @@ ssize_t rumboot_bootimage_check_header(struct rumboot_bootheader *hdr, void **da
 
 	if (hdr->version > 2) {
     	dbg_boot(hdr->device, "Image Flags:     %s%s%s%s%s%s%s%s", 
-			hdr->flags & RUMBOOT_FLAG_COMPRESS ? " GZIP"    : "",
+			hdr->flags & RUMBOOT_FLAG_COMPRESS ? " SHRNK"    : "",
 			hdr->flags & RUMBOOT_FLAG_DATA     ? " DATA"    : "",
 			hdr->flags & RUMBOOT_FLAG_RESERVED ? " RSVD"    : "",
 			hdr->flags & RUMBOOT_FLAG_SMP      ? " SMP"     : "",
@@ -233,6 +240,22 @@ int rumboot_bootimage_execute(struct rumboot_bootheader *hdr, const struct rumbo
 		cpu->kill(cpu); /* Kill any running tasks on secondary CPU, if needed */
 	}
 
+#if 0
+	/* At this point we have to handle data decryption, if needed */
+	int encryption_slot  = rumboot_bootimage_header_item32(hdr->encryption_slot,  swap);
+	int certificate_slot = rumboot_bootimage_header_item32(hdr->certificate_slot, swap);
+
+	if ((encryption_slot > 0) && (certificate_slot > 0)) {
+		dbg_boot("Decrypting image, key slot %d...\n", encryption_slot);
+		rumboot_platform_decrypt_buffer(encryption_slot, hdr->data, datasize);
+		dbg_boot("Verifying signature, certificate slot %d...\n", encryption_slot);
+		int ret = rumboot_platform_verify_signature(certificate_slot, hdr->data, datasize);
+		if (ret != 0) {
+			return ret;
+		}
+	}
+#endif
+
 	/* Now, let's calculate the relocation. This will only affect V3 images, since V2 have flags zeroed */
 	if (flags & (RUMBOOT_FLAG_RELOCATE | RUMBOOT_FLAG_DECAPS | RUMBOOT_FLAG_COMPRESS)) {
 		uint8_t *image_destination_base;
@@ -284,7 +307,7 @@ int rumboot_bootimage_execute(struct rumboot_bootheader *hdr, const struct rumbo
 					ret = rumboot_decompress_buffer(src, 
 						image_source_base + image_source_offset, 
 						image_destination_base + image_destination_offset, 
-						effective_size, 128000);
+						effective_size, -1);
 			} else {
 					dbg_boot(src, "Doing in-place decompression, watch out for side effects!");
 					/* Move compressed data to the end of the SPL area */
@@ -293,8 +316,9 @@ int rumboot_bootimage_execute(struct rumboot_bootheader *hdr, const struct rumbo
 						image_source_base + image_source_offset, 
 						temp_buf);
 					memmove(temp_buf, image_source_base + image_source_offset, datasize);				
-					/* Actual decompression */
-					ret = rumboot_decompress_buffer(src, temp_buf, image_destination_base + image_destination_offset, effective_size, 128000);
+					/* Actual decompression. */
+					ret = rumboot_decompress_buffer(src, temp_buf, image_destination_base + image_destination_offset, effective_size, 
+						spl_size - ((flags & RUMBOOT_FLAG_DECAPS) ? sizeof(*hdr) : 0));
 			}
 			if (ret < 0) {
 				return ret;
