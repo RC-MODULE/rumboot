@@ -85,65 +85,140 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     )
     # endif()
 
+    # files transfered from RM to simulation environment
+    set(NA_TEST_in_file cube.bin)
+    set(NA_TEST_in_ameba_file cube_ameba.bin)
+    set(NA_TEST_in_with_unused_file cube_with_unused.bin)
+    set(NA_TEST_warr_file warr.bin)
+    set(NA_TEST_warr_with_unused_file warr_with_unused.bin)
+    set(NA_TEST_etalon_file res.bin)
+    set(NA_TEST_etalon_ameba_file res_ameba.bin)
+    set(NA_TEST_etalon_with_unused_file res_with_unused.bin)
+    set(NA_TEST_op0_vec_file op0.bin)
+    set(NA_TEST_op0_cube_file op0.bin)
+    set(NA_TEST_op0_ameba_file op0_ameba.bin)
+    set(NA_TEST_op0_with_unused_file op0_with_unused.bin)
+    set(NA_TEST_op1_vec_file op1.bin)
+    set(NA_TEST_op1_cube_file op1.bin)
+    set(NA_TEST_op1_ameba_file op1_ameba.bin)
+    set(NA_TEST_op1_with_unused_file op1_with_unused.bin)
+    set(NA_TEST_op2_vec_file op2.bin)
+    set(NA_TEST_op2_cube_file op2.bin)
+    set(NA_TEST_op2_ameba_file op2_ameba.bin)
+    set(NA_TEST_op2_with_unused_file op2_with_unused.bin)
+
+    set(NA_TEST_cfg_file config_vpe.bin)
+    set(NA_TEST_cfg_mpe_file config_mpe.bin)
+
+    set(NA_TEST_metrics_in cube.bin.metrics)
+    set(NA_TEST_metrics_in_ameba cube_ameba.bin.metrics)
+    set(NA_TEST_metrics_in_with_unused cube_with_unused.bin.metrics)
+    set(NA_TEST_metrics_warr warr.bin.metrics)
+    set(NA_TEST_metrics_warr_with_unused warr_with_unused.bin.metrics)
+    set(NA_TEST_metrics_etalon res.bin.metrics)
+    set(NA_TEST_metrics_etalon_ameba res_ameba.bin.metrics)
+    set(NA_TEST_metrics_etalon_with_unused res_with_unused.bin.metrics)
+    set(NA_TEST_metrics_op0_vec op0.bin.metrics)
+    set(NA_TEST_metrics_op0_cube op0.bin.metrics)
+    set(NA_TEST_metrics_op0_ameba op0_ameba.bin.metrics)
+    set(NA_TEST_metrics_op0_with_unused op0_with_unused.bin.metrics)
+    set(NA_TEST_metrics_op1_vec op1.bin.metrics)
+    set(NA_TEST_metrics_op1_cube op1.bin.metrics)
+    set(NA_TEST_metrics_op1_ameba op1_ameba.bin.metrics)
+    set(NA_TEST_metrics_op1_with_unused op1_with_unused.bin.metrics)
+    set(NA_TEST_metrics_op2_vec op2.bin.metrics)
+    set(NA_TEST_metrics_op2_cube op2.bin.metrics)
+    set(NA_TEST_metrics_op2_ameba op2_ameba.bin.metrics)
+    set(NA_TEST_metrics_op2_with_unused op2_with_unused.bin.metrics)
+    ###################
+
+    set(NA_RM_KEYS
+      --in_file                  ${NA_TEST_in_file}
+      --in_ameba_file            ${NA_TEST_in_ameba_file}
+      --in_with_unused_file      ${NA_TEST_in_with_unused_file}
+      --warr_file                ${NA_TEST_warr_file}
+      --warr_with_unused_file    ${NA_TEST_warr_with_unused_file}
+      --etalon_file              ${NA_TEST_etalon_file}
+      --etalon_ameba_file        ${NA_TEST_etalon_ameba_file}
+      --etalon_with_unused_file  ${NA_TEST_etalon_with_unused_file}
+      --op0_vec_file             ${NA_TEST_op0_vec_file}
+      --op0_cube_file            ${NA_TEST_op0_cube_file}
+      --op0_ameba_file           ${NA_TEST_op0_ameba_file}
+      --op0_with_unused_file     ${NA_TEST_op0_with_unused_file}
+      --op1_vec_file             ${NA_TEST_op1_vec_file}
+      --op1_cube_file            ${NA_TEST_op1_cube_file}
+      --op1_ameba_file           ${NA_TEST_op1_ameba_file}
+      --op1_with_unused_file     ${NA_TEST_op1_with_unused_file}
+      --op2_vec_file             ${NA_TEST_op2_vec_file}
+      --op2_cube_file            ${NA_TEST_op2_cube_file}
+      --op2_ameba_file           ${NA_TEST_op2_ameba_file}
+      --op2_with_unused_file     ${NA_TEST_op2_with_unused_file}
+      --cfg_file                 ${NA_TEST_cfg_file}
+      --cfg_mpe_file             ${NA_TEST_cfg_mpe_file}
+      # '.metrics' added by RM itself
+     )
+
+
+
     set(NA_RM_BIN_PATH ${CMAKE_BINARY_DIR}/${rumboot_dirname}/utils/npe_rm/rm_core/rtl-tests)
-    set(NA_RM_PLUSARGS +in_file_tag=cube.bin
-                       +in_ameba_file_tag=cube_ameba.bin
-                       +in_with_unused_file_tag=cube_with_unused.bin
-                       +warr_file_tag=warr.bin
-                       +warr_with_unused_file_tag=warr_with_unused.bin
-                       +etalon_file_tag=res.bin
-                       +etalon_ameba_file_tag=res_ameba.bin
-                       +etalon_with_unused_file_tag=res_with_unused.bin
-                       +op0_vec_file_tag=op0.bin
-                       +op0_cube_file_tag=op0.bin
-                       +op0_ameba_file_tag=op0_ameba.bin
-                       +op0_with_unused_file_tag=op0_with_unused.bin
-                       +op1_vec_file_tag=op1.bin
-                       +op1_cube_file_tag=op1.bin
-                       +op1_ameba_file_tag=op1_ameba.bin
-                       +op1_with_unused_file_tag=op1_with_unused.bin
-                       +op2_vec_file_tag=op2.bin
-                       +op2_cube_file_tag=op2.bin
-                       +op2_ameba_file_tag=op2_ameba.bin
-                       +op2_with_unused_file_tag=op2_with_unused.bin
+    set(NA_RM_PLUSARGS +in_file_tag=${NA_TEST_in_file}
+                       +in_ameba_file_tag=${NA_TEST_in_ameba_file}
+                       +in_with_unused_file_tag=${NA_TEST_in_with_unused_file}
+                       +warr_file_tag=${NA_TEST_warr_file}
+                       +warr_with_unused_file_tag=${NA_TEST_warr_with_unused_file}
+                       +etalon_file_tag=${NA_TEST_etalon_file}
+                       +etalon_ameba_file_tag=${NA_TEST_etalon_ameba_file}
+                       +etalon_with_unused_file_tag=${NA_TEST_etalon_with_unused_file}
+                       +op0_vec_file_tag=${NA_TEST_op0_vec_file}
+                       +op0_cube_file_tag=${NA_TEST_op0_cube_file}
+                       +op0_ameba_file_tag=${NA_TEST_op0_with_unused_file}
+                       +op0_with_unused_file_tag=${NA_TEST_op0_with_unused_file}
+                       +op1_vec_file_tag=${NA_TEST_op1_vec_file}
+                       +op1_cube_file_tag=${NA_TEST_op1_cube_file}
+                       +op1_ameba_file_tag=${NA_TEST_op1_ameba_file}
+                       +op1_with_unused_file_tag=${NA_TEST_op1_with_unused_file}
+                       +op2_vec_file_tag=${NA_TEST_op2_vec_file}
+                       +op2_cube_file_tag=${NA_TEST_op2_cube_file}
+                       +op2_ameba_file_tag=${NA_TEST_op2_ameba_file}
+                       +op2_with_unused_file_tag=${NA_TEST_op2_with_unused_file}
 
-                       +cfg_file_tag=config_vpe.bin
-                       +cfg_mpe_file_tag=config_mpe.bin
+                       +cfg_file_tag=${NA_TEST_cfg_file}
+                       +cfg_mpe_file_tag=${NA_TEST_cfg_mpe_file}
 
-                       +metrics_in_tag=cube.bin.metrics
-                       +metrics_in_ameba_tag=cube_ameba.bin.metrics
-                       +metrics_in_with_unused_tag=cube_with_unused.bin.metrics
-                       +metrics_warr_tag=warr.bin.metrics
-                       +metrics_warr_with_unused_tag=warr_with_unused.bin.metrics
-                       +metrics_etalon_tag=res.bin.metrics
-                       +metrics_etalon_ameba_tag=res_ameba.bin.metrics
-                       +metrics_etalon_with_unused_tag=res_with_unused.bin.metrics
-                       +metrics_op0_vec_tag=op0.bin.metrics
-                       +metrics_op0_cube_tag=op0.bin.metrics
-                       +metrics_op0_ameba_tag=op0_ameba.bin.metrics
-                       +metrics_op0_with_unused_tag=op0_with_unused.bin.metrics
-                       +metrics_op1_vec_tag=op1.bin.metrics
-                       +metrics_op1_cube_tag=op1.bin.metrics
-                       +metrics_op1_ameba_tag=op1_ameba.bin.metrics
-                       +metrics_op1_with_unused_tag=op1_with_unused.bin.metrics
-                       +metrics_op2_vec_tag=op2.bin.metrics
-                       +metrics_op2_cube_tag=op2.bin.metrics
-                       +metrics_op2_ameba_tag=op2_ameba.bin.metrics
-                       +metrics_op2_with_unused_tag=op2_with_unused.bin.metrics
+                       +metrics_in_tag=${NA_TEST_metrics_in}
+                       +metrics_in_ameba_tag=${NA_TEST_metrics_in_ameba}
+                       +metrics_in_with_unused_tag=${NA_TEST_metrics_in_with_unused}
+                       +metrics_warr_tag=${NA_TEST_metrics_warr}
+                       +metrics_warr_with_unused_tag=${NA_TEST_metrics_warr_with_unused}
+                       +metrics_etalon_tag=${NA_TEST_metrics_etalon}
+                       +metrics_etalon_ameba_tag=${NA_TEST_metrics_etalon_ameba}
+                       +metrics_etalon_with_unused_tag=${NA_TEST_metrics_etalon_with_unused}
+                       +metrics_op0_vec_tag=${NA_TEST_metrics_op0_vec}
+                       +metrics_op0_cube_tag=${NA_TEST_metrics_op0_cube}
+                       +metrics_op0_ameba_tag=${NA_TEST_metrics_op0_ameba}
+                       +metrics_op0_with_unused_tag=${NA_TEST_metrics_op0_with_unused}
+                       +metrics_op1_vec_tag=${NA_TEST_metrics_op1_vec}
+                       +metrics_op1_cube_tag=${NA_TEST_metrics_op1_cube}
+                       +metrics_op1_ameba_tag=${NA_TEST_metrics_op1_ameba}
+                       +metrics_op1_with_unused_tag=${NA_TEST_metrics_op1_with_unused}
+                       +metrics_op2_vec_tag=${NA_TEST_metrics_op2_vec}
+                       +metrics_op2_cube_tag=${NA_TEST_metrics_op2_cube}
+                       +metrics_op2_ameba_tag=${NA_TEST_metrics_op2_ameba}
+                       +metrics_op2_with_unused_tag=${NA_TEST_metrics_op2_with_unused}
     )
     set(RM_LOGFILE npe_rm.log)
     set(VPE_COUPLED_PATH src/platform/scr1/targets/simple-rom/nu/vpe_first_coupled)
     add_rumboot_target(
       CONFIGURATION ROM
       FILES scr1/targets/simple-rom/nu/vpe_first_coupled/first_coupled_vpe.c
-      PREPCMD ${NA_RM_BIN_PATH}/main_sqared_try_all_ops > ${RM_LOGFILE}
+      PREPCMD ${NA_RM_BIN_PATH}/main_sqared_try_all_ops ${NA_RM_KEYS} > ${RM_LOGFILE}
       IRUN_FLAGS ${NA_RM_PLUSARGS}
     )
 
     add_rumboot_target(
       CONFIGURATION ROM
       FILES scr1/targets/simple-rom/nu/vpe_first_coupled/first_coupled_mpe.c
-      PREPCMD ${NA_RM_BIN_PATH}/main_sqared_simple_mpe > ${RM_LOGFILE}
+      PREPCMD ${NA_RM_BIN_PATH}/main_sqared_simple_mpe ${NA_RM_KEYS} > ${RM_LOGFILE}
       IRUN_FLAGS ${NA_RM_PLUSARGS}
     )
 
