@@ -7,7 +7,7 @@
 #include <arch/ppc_476fp_lib_c.h>
 
 
-static int nmc_poll(const struct rumboot_secondary_cpu *cpu)
+static int nmc_poll(const struct rumboot_cpu_cluster *cpu)
 {
         struct nfifo_instance nf;
         int ret = -1; 
@@ -34,13 +34,13 @@ static int nmc_poll(const struct rumboot_secondary_cpu *cpu)
         return ret;
 }
 
-static void nmc_start(const struct rumboot_secondary_cpu *cpu, struct rumboot_bootheader *hdr, int swap)
+static void nmc_start(const struct rumboot_cpu_cluster *cpu, struct rumboot_bootheader *hdr, int swap)
 {
     dcr_write(DCR_SCTL_BASE + SCTL_NMPU_NMI, 1<<1);                
     dcr_write(DCR_SCTL_BASE + SCTL_NMPU_NMI, 0);
 }
 
-static void nmc_kill(const struct rumboot_secondary_cpu *cpu)
+static void nmc_kill(const struct rumboot_cpu_cluster *cpu)
 {
     dcr_write(DCR_SCTL_BASE + SCTL_NMPU_PRST, 1<<0); //Issue reset                
     while (!(dcr_read(DCR_SCTL_BASE + SCTL_NMPU_PRST) & (1<<1)));; // Wait for ack
@@ -74,7 +74,7 @@ void ecom_recv(struct ecom_instance *inst, void *buf, size_t len)
 
 #endif
 
-static void ext_kill(const struct rumboot_secondary_cpu *cpu)
+static void ext_kill(const struct rumboot_cpu_cluster *cpu)
 {
     /* TODO: Issue a GPIO reset */    
     if (cpu->base == COM0_BASE) {
@@ -86,17 +86,21 @@ static void ext_kill(const struct rumboot_secondary_cpu *cpu)
     }
 }
 
-static void ext_start(const struct rumboot_secondary_cpu *cpu,  struct rumboot_bootheader *hdr, int swap)
+static void ext_start(const struct rumboot_cpu_cluster *cpu,  struct rumboot_bootheader *hdr, int swap)
 {
     /* TODO: Send payload via COMx */
 }
 
-static void ext_poll(const struct rumboot_secondary_cpu *cpu,  struct rumboot_bootheader *hdr, int swap)
+static void ext_poll(const struct rumboot_cpu_cluster *cpu,  struct rumboot_bootheader *hdr, int swap)
 {
     /* TODO: Same as poll, but via COMx port */
 }
 
-static const struct rumboot_secondary_cpu cpus[] = {
+static const struct rumboot_cpu_cluster cpus[] = {
+    {
+        .name  = "PowerPC"
+        .start = rumboot_bootimage_jump_to_ep_with_args,
+    },
     {
         .name = "NMRISC",
         .kill = nmc_kill,
@@ -119,7 +123,7 @@ static const struct rumboot_secondary_cpu cpus[] = {
     }
 };
 
-const struct rumboot_secondary_cpu *rumboot_platform_get_secondary_cpus(int *cpu_count)
+const struct rumboot_cpu_cluster *rumboot_platform_get_cpus(int *cpu_count)
 {
     *cpu_count = ARRAY_SIZE(cpus);
     return cpus;

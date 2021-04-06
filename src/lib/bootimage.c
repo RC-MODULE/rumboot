@@ -52,13 +52,13 @@ int rumboot_bootimage_check_magic(uint32_t magic)
 	return -1;
 }
 
-static const struct rumboot_secondary_cpu *get_secondary_cpu(int cluster)
+static const struct rumboot_cpu_cluster *get_cpu(int cluster)
 {
 	int cluster_count;
-	const struct rumboot_secondary_cpu * cpus = rumboot_platform_get_secondary_cpus(&cluster_count);
-	const struct rumboot_secondary_cpu *ret;
-	if (cluster > 0 && cluster <= cluster_count) {
-		ret = &cpus[cluster -1];
+	const struct rumboot_cpu_cluster *cpus = rumboot_platform_get_cpus(&cluster_count);
+	const struct rumboot_cpu_cluster *ret;
+	if (cluster >= 0 && cluster < cluster_count) {
+		ret = &cpus[cluster];
 		return ret;
 	}
 	return NULL;
@@ -170,12 +170,12 @@ ssize_t rumboot_bootimage_check_header(struct rumboot_bootheader *hdr, void **da
 			hdr->flags & RUMBOOT_FLAG_KILL     ? " KILL"    : ""
 			);
 		uint32_t cluster_id = rumboot_bootimage_header_item32(hdr->target_cpu_cluster, swap);
-		const struct rumboot_secondary_cpu *cpu = get_secondary_cpu(cluster_id);
-		if (cluster_id && !cpu) {
+		const struct rumboot_cpu_cluster *cpu = get_cpu(cluster_id);
+		if (!cpu) {
 			dbg_boot(hdr->device, "ERR: Invalid target cluster_id specified: %d\n", cluster_id);
 			return -EBADCLUSTERID;
 		}
-    	dbg_boot(hdr->device, "Target CPU:       %d (%s)", cluster_id, cpu ? cpu->name : "boot");	
+    	dbg_boot(hdr->device, "Target CPU:       %d (%s)", cluster_id, cpu->name);	
 	}
     dbg_boot(hdr->device, "Data Length:      %d", rumboot_bootimage_header_item32(hdr->datalen, swap));
     dbg_boot(hdr->device, "Header CRC32:     0x%x", rumboot_bootimage_header_item32(hdr->header_crc32, swap));
@@ -234,7 +234,7 @@ int rumboot_bootimage_execute(struct rumboot_bootheader *hdr, const struct rumbo
 
 	rumboot_platform_get_spl_area(&spl_size);
 	int cluster = (hdr->version == 3) ? rumboot_bootimage_header_item32(hdr->target_cpu_cluster, swap) : 0;
-	const struct rumboot_secondary_cpu * cpu = get_secondary_cpu(cluster); 
+	const struct rumboot_cpu_cluster * cpu = get_cpu(cluster); 
 
 	if (cpu && (flags & RUMBOOT_FLAG_KILL) && (cpu->kill)) {
 		cpu->kill(cpu); /* Kill any running tasks on secondary CPU, if needed */
@@ -334,37 +334,40 @@ int rumboot_bootimage_execute(struct rumboot_bootheader *hdr, const struct rumbo
 				image_destination_base + image_destination_offset, 
 				image_source_base + image_source_offset, effective_size);
 		}
-
-        #ifdef __PPC__
-        /* FixMe: Use cross-platform barrier sync functions here */
-        asm("msync");
-        #endif
 	}
+
+	/* At this point we must be sure that the data is really in memory */
+    #ifdef __PPC__
+    /* FixMe: Use cross-platform barrier sync functions here */
+    asm("msync");
+    #endif
 
 	if (flags & RUMBOOT_FLAG_DATA) {
 		/* This image contains only user data to be loaded */
 		return 0;
 	}
 
-	if (!cpu) {
-    	return rumboot_platform_exec(hdr, swap);
-	}
-
+	int ret = 0; 
 	dbg_boot(src, "Starting %ssynchronous code execution on cluster %d (%s)", 
 		(flags & RUMBOOT_FLAG_SYNC) ? "" : "a", 
 		cluster,
 		cpu->name);
-	if (cpu->start) 
-		cpu->start(cpu, hdr, swap);
+	if (cpu->start) {
+		ret = cpu->start(cpu, hdr, swap);
+		if (ret) /* If start didn't succeed */
+			return ret;
+	}
+
 	if (flags & RUMBOOT_FLAG_SYNC) {
 		if (cpu->poll) {
-			cpu->poll(cpu);
+			ret = cpu->poll(cpu);
 		} else { 
 			dbg_boot(src, "WARN: %s doesn't support synchronous mode");
+			ret = 0;
 		}
-	} else {
-		return 0;
 	}
+	
+	return ret;
 }
 
 int rumboot_bootimage_execute_ep(void *ep)
@@ -372,4 +375,17 @@ int rumboot_bootimage_execute_ep(void *ep)
 	int (*ram_main)();
 	ram_main = ep;
 	return ram_main();
+}
+
+int rumboot_bootimage_jump_to_ep_with_args(const struct rumboot_cpu_cluster *cpu,  struct rumboot_bootheader *hdr, int swap)
+{
+    int (*runme)(uint32_t a, uint32_t b, uint32_t c, uint32_t d, uint32_t e) = hdr->entry_point;
+	/* TODO: We may need smarter ep handling here to boot linux */
+    return runme(
+        hdr->bootargs[0], 
+        hdr->bootargs[1], 
+        hdr->bootargs[2],
+        hdr->bootargs[3],
+        hdr->bootargs[4]
+        );
 }

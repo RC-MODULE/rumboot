@@ -441,8 +441,7 @@ int run_binary(const char *command)
         return WEXITSTATUS(status);
 }
 
-
-int rumboot_platform_exec(struct rumboot_bootheader *hdr, int swap)
+static int exec_prog(const struct rumboot_cpu_cluster *cpu,  struct rumboot_bootheader *hdr, int swap)
 {
         char ret;
         FILE *tmp = fopen("binary", "w");
@@ -462,13 +461,27 @@ int rumboot_platform_exec(struct rumboot_bootheader *hdr, int swap)
         return ret;
 }
 
+static const struct rumboot_cpu_cluster own[] = {
+    {
+        .name = "native (boot)",
+        .start = exec_prog,
+    }
+};
+
+const struct rumboot_cpu_cluster *rumboot_platform_get_cpus(int *cpu_count)
+{
+    *cpu_count = ARRAY_SIZE(own);
+    return own;
+}
+
 uint32_t rumboot_virt_to_dma(volatile void *addr)
 {
-        return (uint32_t)addr;
+        return (uint32_t) addr;
 }
 
 void rumboot_platform_print_summary(struct rumboot_config *conf)
 {
+
 }
 
 void rumboot_platform_enter_host_mode(struct rumboot_config *conf)

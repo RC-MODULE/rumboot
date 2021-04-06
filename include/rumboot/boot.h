@@ -68,8 +68,7 @@ struct __attribute__((packed)) rumboot_bootheader {
     uint8_t   encryption_slot;
     uint8_t   certificate_slot;
     uint8_t   priority;
-    uint64_t  bootargs[2];
-    uint32_t  reserved;
+    uint32_t  bootargs[5];
     uint32_t  header_crc32;
     uint32_t  device;
     char     data[];
@@ -199,7 +198,6 @@ void dbg_boot(const struct rumboot_bootsource * src, const char *fmt, ...);
  bool rumboot_platform_check_entry_points(struct rumboot_bootheader *hdr);
  int rumboot_platform_exec(struct rumboot_bootheader *hdr, int swap);
  void *rumboot_platform_get_spl_area(size_t *size);
- int rumboot_bootimage_execute_ep(void *ep);
  void rumboot_platform_enter_host_mode(struct rumboot_config *conf);
  void rumboot_platform_init_loader(struct rumboot_config *conf);
 
@@ -222,15 +220,17 @@ static inline uint64_t rumboot_bootimage_header_item64(uint64_t v, int swap)
 #endif
 
 
-struct rumboot_secondary_cpu {
+struct rumboot_cpu_cluster {
   const char *name;
   uintptr_t base;
-  void (*kill)(const struct rumboot_secondary_cpu *cpu);
-  int  (*poll)(const struct rumboot_secondary_cpu *cpu);
-  void (*start)(const struct rumboot_secondary_cpu *cpu, struct rumboot_bootheader *hdr, int swap);
+  void (*kill)(const struct rumboot_cpu_cluster *cpu);
+  int  (*poll)(const struct rumboot_cpu_cluster *cpu);
+  int (*start)(const struct rumboot_cpu_cluster *cpu, struct rumboot_bootheader *hdr, int swap);
 };
 
-const struct rumboot_secondary_cpu *rumboot_platform_get_secondary_cpus(int *cpu_count);
+const struct rumboot_cpu_cluster *rumboot_platform_get_secondary_cpus(int *cpu_count);
+int __attribute__((deprecated)) rumboot_bootimage_execute_ep(void *ep);
+int rumboot_bootimage_jump_to_ep_with_args(const struct rumboot_cpu_cluster *cpu,  struct rumboot_bootheader *hdr, int swap);
 
 
 #endif /* end of include guard: BOOTHEADER_H */
