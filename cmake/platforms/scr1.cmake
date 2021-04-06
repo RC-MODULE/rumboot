@@ -109,6 +109,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
     set(NA_TEST_cfg_file config_vpe.bin)
     set(NA_TEST_cfg_mpe_file config_mpe.bin)
+    set(NA_TEST_cfg_ppe_file config_ppe.bin)
 
     set(NA_TEST_metrics_in cube.bin.metrics)
     set(NA_TEST_metrics_in_ameba cube_ameba.bin.metrics)
@@ -155,6 +156,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       --op2_with_unused_file     ${NA_TEST_op2_with_unused_file}
       --cfg_file                 ${NA_TEST_cfg_file}
       --cfg_mpe_file             ${NA_TEST_cfg_mpe_file}
+      --cfg_ppe_file             ${NA_TEST_cfg_ppe_file}
       # '.metrics' added by RM itself
      )
 
@@ -184,6 +186,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
                        +cfg_file_tag=${NA_TEST_cfg_file}
                        +cfg_mpe_file_tag=${NA_TEST_cfg_mpe_file}
+                       +cfg_ppe_file_tag=${NA_TEST_cfg_ppe_file}
 
                        +metrics_in_tag=${NA_TEST_metrics_in}
                        +metrics_in_ameba_tag=${NA_TEST_metrics_in_ameba}
@@ -228,10 +231,21 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       )
     endmacro()
 
+    macro(ADD_PPE_COUPLED_TEST name rm_bin_name)
+      add_rumboot_target(
+        CONFIGURATION ROM
+        NAME ${name}
+        FILES scr1/targets/simple-rom/nu/coupled_with_rm/first_coupled_ppe.c
+        PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
+        IRUN_FLAGS ${NA_RM_PLUSARGS}
+      )
+    endmacro()
+
     # Add new tests here
     ADD_VPE_COUPLED_TEST(vpe_first_coupled main_sqared_try_all_ops)
     ADD_VPE_COUPLED_TEST(vpe_first_coupled_float main_sqared_try_all_ops_float)
     ADD_MPE_COUPLED_TEST(mpe_first_coupled main_sqared_simple_mpe)
+    ADD_PPE_COUPLED_TEST(ppe_first_coupled main_simple_ppe_coupled)
 
 
 

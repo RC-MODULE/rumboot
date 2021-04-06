@@ -131,7 +131,6 @@ void nu_ppe_load_config(ConfigPPE* cfg, void* cfg_bin) {
     cfg-> pv[6]  =*ptr;ptr++;
     cfg-> meth   =*ptr;ptr++;
     cfg-> dt     =*ptr;ptr++;
-    cfg-> MC     =*ptr;ptr++;
 }
 
   void nu_vpe_print_Mode(Mode mode, char* name) {
@@ -359,7 +358,6 @@ void nu_ppe_print_config(ConfigPPE* cfg){
     rumboot_printf("  pv     = %d %d %d %d %d %d %d \n" , cfg->pv[0], cfg->pv[1], cfg->pv[2], cfg->pv[3], cfg->pv[4], cfg->pv[5], cfg->pv[6]);
     nu_vpe_print_PoolingOperationSwitch(cfg->meth,"meth    ");
     nu_vpe_print_DataType(cfg->dt,"dt      ");
-    rumboot_printf("  MC     = %d \n" , cfg->MC);
 }
 
 void nu_vpe_setup(uintptr_t base, ConfigVPE* cfg, ConfigDMAVPE* cfg_dma) {
@@ -472,10 +470,16 @@ void nu_mpe_load_buf(uintptr_t base, void* data, int size) {
 
 }
 
-void nu_ppe_setup(uintptr_t base, ConfigPPE* cfg) {
+void nu_ppe_setup(uintptr_t base, ConfigPPE* cfg, ConfigREGPPE* cfg_reg) {
   rumboot_printf("Configuring PPE..\n");
 
+  // Перегнатb параметры и3 cfg в cfg_reg и 3апуститb nu_ppe_setup_reg
+  
   // iowrite32(cfg->MYFIELD, base + NU_MPE_MYREG);
+}
+
+int  nu_ppe_decide_dma_config_trivial(ConfigPPE* cfg, CubeMetrics* in_cube_metrics, CubeMetrics* out_cube_metrics, ConfigREGPPE* cfg_reg) {
+  return 0;
 }
 
 void nu_ppe_setup_reg(uintptr_t rbase, uintptr_t wbase, ConfigREGPPE* cfg) {

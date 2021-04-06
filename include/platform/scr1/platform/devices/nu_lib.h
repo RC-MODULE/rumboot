@@ -7,7 +7,7 @@
 
 #define NU_VPE_CFG_PARAMS_NUM 59
 #define NU_MPE_CFG_PARAMS_NUM 18
-#define NU_PPE_CFG_PARAMS_NUM 23
+#define NU_PPE_CFG_PARAMS_NUM 22
 #define NU_PPE_REG_CFG_PARAMS_NUM 48
 
   /**
@@ -213,8 +213,11 @@
     uint32_t pv[7]  ;
     PoolingOperationSwitch  meth;
     DataType                dt  ;
-    uint32_t MC     ;
   }ConfigPPE;
+  
+//   typedef struct ConfigDMAPPE {
+//     Enable dma_src_en;
+//   }ConfigDMAPPE;
 
   typedef struct ConfigREGPPE{
     // rdma
@@ -317,8 +320,9 @@ void nu_mpe_load_buf(uintptr_t base, void* data, int size);
 void nu_ppe_load_config(ConfigPPE* cfg, void* cfg_bin);
 void nu_ppe_print_config(ConfigPPE* cfg);
 
-void nu_ppe_setup(uintptr_t base, ConfigPPE* cfg);
+void nu_ppe_setup(uintptr_t base, ConfigPPE* cfg, ConfigREGPPE* cfg_reg);
 void nu_ppe_setup_reg(uintptr_t rbase, uintptr_t wbase, ConfigREGPPE* cfg);
+int  nu_ppe_decide_dma_config_trivial(ConfigPPE* cfg, CubeMetrics* in_cube_metrics, CubeMetrics* out_cube_metrics, ConfigREGPPE* cfg_reg);
 
 void nu_ppe_rdma_run(uintptr_t rbase, ConfigREGPPE* cfg);
 void nu_ppe_run(uintptr_t wbase, ConfigREGPPE* cfg);
