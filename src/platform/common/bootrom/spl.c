@@ -12,6 +12,11 @@
 #include <signal.h>
 #endif
 
+
+#ifdef OVERSIZED
+const char __attribute__((used)) __attribute__((section(".data"))) huge_data[8 * 1024 * 1024];
+#endif
+
 void do_exit(int code) {
         #ifndef RUMBOOT_NATIVE
 		uint32_t c = code;
