@@ -413,8 +413,7 @@ int run_binary(const char *command)
                 char tmp[128];
                 sprintf(tmp, "%d", ipc_id);
                 execl(command, command, "--ipckey", tmp, (char *)NULL);
-                _exit(127);     /* We could not exec the shell */
-
+                kill(getppid(), SIGUSR2); /* Tell parent we've failed to exec the shell */
         default:                /* Parent: wait for our child to terminate */
 
                 /* We must use waitpid() for this task; using wait() could inadvertently

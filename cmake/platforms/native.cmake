@@ -7,6 +7,7 @@ file(GLOB PLATFORM_SOURCES
 )
 
 set(RUMBOOT_SUPPORTS_SPL_ENDIAN_SWAP Yes)
+set(RUMBOOT_HAS_V3_BOOTROM Yes)
 
 macro(RUMBOOT_PLATFORM_SET_COMPILER_FLAGS)
     SET(CMAKE_DUMP_FLAGS     "-EL")
@@ -119,6 +120,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
   add_rumboot_test(bootrom-loader bootrom-hostmode-ok-reverse --host --hfile ${SPL_OK_REVERSE})
 
   add_rumboot_test(bootrom-loader bootrom-hostmode-compressed-ok --host --hfile ${COMPRESSED_OK})
+  add_rumboot_test(bootrom-loader bootrom-hostmode-compressed-fail-oversized --host --hfile ${SPL_FAIL_COMPRESSED_OVERSIZED},${SPL_OK})
 
   add_rumboot_test(bootrom-loader bootrom-hostmode-bad-data --host --hfile ${SPL_FAIL_BAD_DCRC32},${SPL_OK})
   add_rumboot_test(bootrom-loader bootrom-hostmode-bad-magic --host --hfile ${SPL_FAIL_BAD_MAGIC},${SPL_OK})

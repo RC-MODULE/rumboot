@@ -92,18 +92,33 @@ macro(rumboot_bootrom_add_components spl_conf romconf)
       VARIABLE SPL_OK
   )
 
-  add_rumboot_target(
-    CONFIGURATION ${spl_conf}
-    NAME compressed-ok
-    FILES common/bootrom/spl.c
-    CFLAGS -DTERMINATE_SIMULATION -DEXITCODE=0
-    FEATURES STUB PACKIMAGE
-    PACKIMAGE_FLAGS ${ARGN} -c -Z
-    VARIABLE COMPRESSED_OK
-  )
+  if (RUMBOOT_HAS_V3_BOOTROM)
+    add_rumboot_target(
+      CONFIGURATION ${spl_conf}
+      NAME compressed-ok
+      FILES common/bootrom/spl.c
+      CFLAGS -DTERMINATE_SIMULATION -DEXITCODE=0
+      FEATURES STUB PACKIMAGE
+      PACKIMAGE_FLAGS ${ARGN} -c -Z
+      VARIABLE COMPRESSED_OK
+    )
+  endif()
 
   if (RUMBOOT_ARCH STREQUAL "native")
+
+  if (RUMBOOT_HAS_V3_BOOTROM)
     add_rumboot_target(
+        CONFIGURATION ${spl_conf}
+        NAME fail-oversized-clash
+        FILES common/bootrom/spl.c
+        CFLAGS -DTERMINATE_SIMULATION -DEXITCODE=1 -DOVERSIZED=Yes
+        FEATURES STUB PACKIMAGE
+        PACKIMAGE_FLAGS ${ARGN} -c -Z
+        VARIABLE SPL_FAIL_COMPRESSED_OVERSIZED
+    )
+  endif()
+
+  add_rumboot_target(
       CONFIGURATION ${spl_conf}
       NAME ok-reverse-endian
       FILES common/bootrom/spl.c
@@ -112,12 +127,13 @@ macro(rumboot_bootrom_add_components spl_conf romconf)
       PACKIMAGE_FLAGS ${ARGN} -e -C
       VARIABLE SPL_OK_REVERSE
   )
-    add_test(packimage_v2_v3_compatibility
+
+  add_test(packimage_v2_v3_compatibility
     bash -c "cp -f ${SPL_OK} test-compat-spl;
     ${PYTHON_EXECUTABLE} ${RUMBOOT_PACKIMAGE} -if test-compat-spl -s version 2 -c;
     ${PYTHON_EXECUTABLE} ${RUMBOOT_PACKIMAGE} -if test-compat-spl; exit $?"
     )
-endif()
+  endif()
 
   add_rumboot_target(
       CONFIGURATION ${spl_conf}

@@ -22,7 +22,7 @@ void do_exit(int code) {
 		uint32_t c = code;
                 rumboot_platform_event_raise(EVENT_TERM, &c, 1);
         #else
-                rumboot_printf("spl: Will now send parent a signal\n");
+                rumboot_printf("spl: Will now send parent a signal: %d\n", code ? SIGUSR2 : SIGUSR1);
                 kill(getppid(), code ? SIGUSR2 : SIGUSR1);
                 usleep(1000);
                 exit(0);
