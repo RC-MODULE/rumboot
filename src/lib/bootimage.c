@@ -312,7 +312,7 @@ int rumboot_bootimage_execute(struct rumboot_bootheader *hdr, const struct rumbo
 					dbg_boot(src, "Doing in-place decompression, watch out for side effects!");
 					/* Move compressed data to the end of the SPL area */
 					void *temp_buf = (uint8_t *) image_source_base + spl_size - datasize;
-					dbg_boot(src, "Moving compressed data to temporary buffer: %x -> %x\n", 
+					dbg_boot(src, "Moving compressed data to temporary buffer: %x -> %x", 
 						image_source_base + image_source_offset, 
 						temp_buf);
 					memmove(temp_buf, image_source_base + image_source_offset, datasize);				
