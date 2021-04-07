@@ -366,7 +366,8 @@ int rumboot_bootimage_execute(struct rumboot_bootheader *hdr, const struct rumbo
 		if (cpu->poll) {
 			ret = cpu->poll(cpu);
 		} else if (cluster > 0) { /* Only warn about non-boot clusters */
-			dbg_boot(src, "WARN: %s doesn't support synchronous mode");
+			dbg_boot(src, "WARN: Cluster %d (%s) doesn't support synchronous mode", 
+				cluster, cpu->name);
 			ret = 0;
 		}
 	}
