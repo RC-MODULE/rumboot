@@ -347,6 +347,10 @@ int rumboot_bootimage_execute(struct rumboot_bootheader *hdr, const struct rumbo
 		return 0;
 	}
 
+	if (cluster == 0) { /* CPU 0 is always sync, since it's the boot CPU */
+		flags |= RUMBOOT_FLAG_SYNC;
+	}
+
 	int ret = 0; 
 	dbg_boot(src, "Starting %ssynchronous code execution on cluster %d (%s)", 
 		(flags & RUMBOOT_FLAG_SYNC) ? "" : "a", 
@@ -361,7 +365,7 @@ int rumboot_bootimage_execute(struct rumboot_bootheader *hdr, const struct rumbo
 	if (flags & RUMBOOT_FLAG_SYNC) {
 		if (cpu->poll) {
 			ret = cpu->poll(cpu);
-		} else { 
+		} else if (cluster > 0) { /* Only warn about non-boot clusters */
 			dbg_boot(src, "WARN: %s doesn't support synchronous mode");
 			ret = 0;
 		}
