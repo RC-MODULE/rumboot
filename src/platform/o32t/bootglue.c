@@ -82,6 +82,7 @@ void rumboot_platform_read_config(struct rumboot_config *conf)
         conf->legacyboot = 0;
         conf->selftest = (bootm & BOOTM_SELFTEST);
         conf->edcl = 1;
+        conf->secure_boot = 0;
 }
 
 void rumboot_platform_print_summary(struct rumboot_config *conf)

@@ -377,10 +377,16 @@ int rumboot_bootimage_execute_ep(void *ep)
 	return ram_main();
 }
 
-int rumboot_bootimage_jump_to_ep_with_args(const struct rumboot_cpu_cluster *cpu,  struct rumboot_bootheader *hdr, int swap)
+int rumboot_bootimage_jump_to_ep_with_args(const struct rumboot_cpu_cluster *cpu,  struct rumboot_bootheader *hdr, int swap) 
 {
-    int (*runme)(uint32_t a, uint32_t b, uint32_t c, uint32_t d, uint32_t e) = hdr->entry_point;
-	/* TODO: We may need smarter ep handling here to boot linux */
+    int (*runme)(uint32_t a, uint32_t b, uint32_t c, uint32_t d, uint32_t e); 
+	
+	if (sizeof(runme) == sizeof(uint64_t)) {
+		runme = (void *) hdr->entry_point;
+	} else {
+		runme = (void *) hdr->entry_point32[0];
+	}
+
     return runme(
         hdr->bootargs[0], 
         hdr->bootargs[1], 

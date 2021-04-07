@@ -98,7 +98,7 @@ static void ext_poll(const struct rumboot_cpu_cluster *cpu,  struct rumboot_boot
 
 static const struct rumboot_cpu_cluster cpus[] = {
     {
-        .name  = "PowerPC"
+        .name  = "PowerPC",
         .start = rumboot_bootimage_jump_to_ep_with_args,
     },
     {
