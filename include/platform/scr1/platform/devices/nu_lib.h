@@ -88,6 +88,33 @@
     DataTypeExt_Fp32
   }DataTypeExt;
 
+  
+  /**
+  Type DMA_RAM_TYPE
+  */
+  typedef enum DmaRamType {
+    DmaRamType_CV,
+    DmaRamType_MC
+  }DmaRamType;  
+  
+  
+  /**
+  Type DMA_DATA_SIZE
+  */
+  typedef enum DmaDSizeType {
+    DmaDSizeType_One_Byte,
+    DmaDSizeType_Two_Byte
+  }DmaDSizeType;    
+  
+  /**
+  Type DMA_DATA_USE
+  */
+  typedef enum DmaDUseType {
+    DmaDUseType_Mux,
+    DmaDUseType_Alu,
+    DmaDUseType_Both
+  }DmaDUseType;   
+  
   typedef struct ConfigMPE {
     uint32_t H        ;
     uint32_t W        ;
@@ -154,20 +181,49 @@
     uint8_t c2_trunc; // !!!! вообще он uint6
   }ConfigOp2;
 
+  typedef struct ConfigDMA {
+    Enable       dma_op_en         ;  
+    uint32_t     dma_H             ;
+    uint32_t     dma_W             ;
+    uint32_t     dma_C             ;
+    DmaRamType   dma_ram_type      ;
+    Mode         dma_data_mode     ; // convert ????
+    DmaDSizeType dma_data_size     ;
+    DmaDUseType  dma_data_use      ;
+    uint32_t     dma_baddr         ;
+    uint32_t     dma_line_stride   ;
+    uint32_t     dma_vector_stride ;
+    uint32_t     dma_elem_stride   ;    
+    uint32_t     dma_box_st_size_x ;
+    uint32_t     dma_box_st_size_y ;
+    uint32_t     dma_box_st_size_z ;        
+    uint32_t     dma_box_size_x    ;
+    uint32_t     dma_box_size_y    ;
+    uint32_t     dma_box_size_z    ;    
+    uint32_t     dma_box_offset_x  ;
+    uint32_t     dma_box_offset_y  ;
+    uint32_t     dma_box_offset_z  ;      
+  }ConfigDMA;  
+    
   typedef struct ConfigVPE {
-    DataTypeExt in_data_type;
-    DataType out_data_type;
-    Enable flying;
-    Enable op0_en;
-    Enable op1_en;
-    Enable op2_en;
-    int32_t c3_offset;
-    int16_t c3_scale;
-    uint8_t c3_trunc; // !!!! вообще он uint6
-    Enable nan_to_zero;
-    ConfigOp01 op0_config;
-    ConfigOp01 op1_config;
-    ConfigOp2 op2_config;
+    DataTypeExt in_data_type    ;
+    DataType    out_data_type   ;
+    Enable      flying          ;
+    Enable      op0_en          ;
+    Enable      op1_en          ;
+    Enable      op2_en          ;
+    int32_t     c3_offset       ;
+    int16_t     c3_scale        ;
+    uint8_t     c3_trunc        ; // !!!! вообще он uint6
+    Enable      nan_to_zero     ;
+    ConfigOp01  op0_config      ;
+    ConfigOp01  op1_config      ;
+    ConfigOp2   op2_config      ;
+    ConfigDMA   src_rdma_config ;
+    ConfigDMA   op0_rdma_config ;
+    ConfigDMA   op1_rdma_config ;
+    ConfigDMA   op2_rdma_config ;
+    ConfigDMA   wrdma_config    ;
   }ConfigVPE;
 
   typedef struct ConfigDMAVPE {
@@ -181,7 +237,7 @@
     int32_t C;
     // Add Here DMA Parameter Fields
   }ConfigDMAVPE;
-
+  
   typedef struct ConfigDMAMPE {
     int32_t H;
     int32_t W;
@@ -214,11 +270,11 @@
     PoolingOperationSwitch  meth;
     DataType                dt  ;
   }ConfigPPE;
-  
+    
 //   typedef struct ConfigDMAPPE {
 //     Enable dma_src_en;
 //   }ConfigDMAPPE;
-
+  
   typedef struct ConfigREGPPE{
     // rdma
     // uint32_t rSt      ; // STATUS
@@ -306,6 +362,7 @@ void nu_vpe_print_config_dma(ConfigDMAVPE* cfg);
 
 void nu_vpe_setup(uintptr_t base, ConfigVPE* cfg, ConfigDMAVPE* cfg_dma);
 void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics, ConfigDMAVPE* cfg_dma);
+bool nu_vpe_mode_to_bool (Mode in_mode);
 
 void nu_mpe_load_config(ConfigMPE* cfg, void* cfg_bin);
 void nu_mpe_print_config(ConfigMPE* cfg);
