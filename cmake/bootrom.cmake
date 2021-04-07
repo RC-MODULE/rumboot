@@ -83,6 +83,16 @@ macro(rumboot_bootrom_add_components spl_conf romconf)
   endif()
 
   add_rumboot_target(
+    CONFIGURATION ${spl_conf}
+    NAME v2-ok
+    FILES common/bootrom/spl-v2-compat.c
+    CFLAGS -DTERMINATE_SIMULATION -DEXITCODE=0
+    FEATURES STUB PACKIMAGE
+    PACKIMAGE_FLAGS ${ARGN} -c
+    VARIABLE SPL_V2_OK
+  )
+
+  add_rumboot_target(
       CONFIGURATION ${spl_conf}
       NAME ok
       FILES common/bootrom/spl.c

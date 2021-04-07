@@ -75,6 +75,44 @@ rumboot_add_configuration (
     PACKIMAGE_FLAGS -CiR 0x80000000
 )
 
+rumboot_add_configuration (
+    IRAM_SPL
+    CONFIGURATION IRAM
+    LDS o32t/iram-spl.lds
+    PREFIX spl
+    FILES ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c
+    LDFLAGS -Wl,-emain
+    CFLAGS -DRUMBOOT_NOINIT
+    FEATURES COVERAGE PACKIMAGE
+)
+
+rumboot_add_configuration(IRAM_SPL_LE
+  CONFIGURATION IRAM
+  PREFIX spl-le
+  LDFLAGS -Wl,-belf32-powerpcle -mlittle-endian -Wl,-emain
+  CFLAGS -mlittle-endian
+  DUMPFLAGS -EL
+)
+
+rumboot_add_configuration(IRAM_IM0_SPL_LE
+  CONFIGURATION IRAM_IM0
+  PREFIX spl-im0-le
+  LDFLAGS -Wl,-belf32-powerpcle -mlittle-endian -Wl,-emain
+  CFLAGS -mlittle-endian
+  DUMPFLAGS -EL
+)
+
+rumboot_add_configuration (
+    IRAM_SPL_IM0
+    CONFIGURATION IRAM_IM0
+    LDS o32t/iram-spl-im0.lds
+    PREFIX spl
+    FILES ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c
+    LDFLAGS -Wl,-emain
+    CFLAGS -DRUMBOOT_NOINIT
+    FEATURES COVERAGE PACKIMAGE
+)
+
 macro(rumboot_platform_generate_stuff_for_taget product)
     list (FIND TARGET_FEATURES "ROMGEN" _index)
     if (${_index} GREATER -1)
@@ -115,7 +153,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     FEATURES STUB
   )
 
-  rumboot_bootrom_add_components(IRAM_IM0 ROM
+  rumboot_bootrom_add_components(IRAM_SPL ROM
   -a 512 -z 512
   )
 
@@ -132,6 +170,20 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
   add_rumboot_target_dir(simple-iram/
     CONFIGURATION IRAM_IM0
     PREFIX iram-im0
+  )
+
+  rumboot_bootrom_integration_test(BROM
+    NAME "host-mockup"
+    IRUN_FLAGS +BOOT_HOST=1 ${ROM_6500K_OPTS}
+    LOAD
+      HOSTMOCK  spl-ok
+  )
+
+  rumboot_bootrom_integration_test(BROM
+    NAME "host-mockup-v2"
+    IRUN_FLAGS +BOOT_HOST=1 ${ROM_6500K_OPTS}
+    LOAD
+      HOSTMOCK  spl-v2-ok
   )
 
 #  add_rumboot_target(

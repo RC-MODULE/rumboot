@@ -1,4 +1,4 @@
-INCLUDE oi10/memory.lds.h
+INCLUDE o32t/memory.lds.h
 
 SECTIONS {
 
@@ -42,9 +42,9 @@ SECTIONS {
         rumboot_im0_heap_end = .;
     } > IM1
 
-    INCLUDE oi10/stacks_section.lds.h
+    INCLUDE o32t/stacks_section.lds.h
 
-    INCLUDE oi10/runtime_section.lds.h
+    INCLUDE o32t/runtime_section.lds.h
 
     /DISCARD/ : {
         *(.init.text)
