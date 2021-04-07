@@ -11,6 +11,7 @@ SECTIONS
 {
 
  .header : {
+   rumboot_self = .;
    KEEP(*(.header))
  } > IM0
 

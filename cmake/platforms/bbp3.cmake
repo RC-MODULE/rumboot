@@ -84,9 +84,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
   if (NOT RUMBOOT_BUILD_TYPE STREQUAL "PostProduction")
 
-    rumboot_bootrom_add_components(
-      IRAM_SPL ROM
-      -a 512 -z 512)
+    rumboot_bootrom_add_components(ROM IRAM_SPL FALSE FALSE)
 
     rumboot_bootrom_add_common_units(
         CONFIGURATION ROM

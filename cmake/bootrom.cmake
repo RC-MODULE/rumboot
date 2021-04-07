@@ -82,15 +82,17 @@ macro(rumboot_bootrom_add_components romconf spl_conf spl_reverse_conf spl_reloc
     )
   endif()
 
-  add_rumboot_target(
-    CONFIGURATION ${spl_conf}
-    NAME v2-ok
-    FILES common/bootrom/spl-v2-compat.c
-    CFLAGS -DTERMINATE_SIMULATION -DEXITCODE=0
-    FEATURES STUB PACKIMAGE
-    PACKIMAGE_FLAGS -a 512 -z 512 -c
-    VARIABLE SPL_V2_OK
-  )
+  if (NOT RUMBOOT_PLATFORM STREQUAL "native")
+    add_rumboot_target(
+      CONFIGURATION ${spl_conf}
+      NAME v2-ok
+      FILES common/bootrom/spl-v2-compat.c
+      CFLAGS -DTERMINATE_SIMULATION -DEXITCODE=0
+      FEATURES STUB PACKIMAGE
+      PACKIMAGE_FLAGS -a 512 -z 512 -c
+      VARIABLE SPL_V2_OK
+    )
+  endif()
 
   add_rumboot_target(
     CONFIGURATION ${spl_conf}

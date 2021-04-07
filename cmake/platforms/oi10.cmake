@@ -266,9 +266,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       TESTGROUP hwonly
     )
 
-    rumboot_bootrom_add_components(IRAM_SPL BROM
-      -a 512 -z 512
-    )
+    rumboot_bootrom_add_components(BROM IRAM_SPL FALSE FALSE)
 
     rumboot_bootrom_add_common_units(
         CONFIGURATION BROM

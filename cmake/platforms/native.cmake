@@ -67,7 +67,8 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
   endforeach()
 
 
-  rumboot_bootrom_add_components(NATIVE_SPL NATIVE)
+  rumboot_bootrom_add_components(NATIVE NATIVE_SPL FALSE FALSE)
+  
   rumboot_bootrom_add_common_units(
       CONFIGURATION NATIVE
   )

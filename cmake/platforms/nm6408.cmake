@@ -76,14 +76,12 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     TESTGROUP short
   )
 
-  rumboot_bootrom_add_components(
-    IRAM ROM
-    -a 512 -z 512)
+  rumboot_bootrom_add_components(ROM IRAM FALSE FALSE)
 
-    add_rumboot_target(
-        CONFIGURATION IRAM
-        FILES hello.c
-      )
+  add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES hello.c
+    )
 
 endmacro()
 

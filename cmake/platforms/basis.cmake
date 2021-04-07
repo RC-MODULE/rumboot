@@ -124,9 +124,7 @@ set(ROM_6500K_OPTS  +BOOT_FASTUART=1 +UART0_SPEED=6250000 +I2C0_SLV_DISABLE)
 #WARNING! Full regression automatically includes all tests from the short ones
 macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
-  rumboot_bootrom_add_components(
-    IRAM_SPL ROM
-    -a 512 -z 512)
+  rumboot_bootrom_add_components(ROM IRAM_SPL FALSE FALSE)
 
   rumboot_bootrom_add_common_units(
         CONFIGURATION ROM
