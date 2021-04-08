@@ -259,6 +259,22 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
                  +etalon_file_tag=${CMAKE_SOURCE_DIR}/${MPE_SIMPLE_PATH}/etalon.bin
                  +cfg_file_tag=${CMAKE_SOURCE_DIR}/${MPE_SIMPLE_PATH}/Config_mpe1.bin
     )
+
+    set(MPE_DEMO_PATH src/platform/scr1/targets/simple-rom/nu/mpe_demo)
+    set(mpe_demo_test_name test1)
+    add_rumboot_target(
+      CONFIGURATION ROM
+      NAME mpe_demo_${mpe_demo_test_name}
+      FILES scr1/targets/simple-rom/nu/mpe_demo/mpe_demo_common.c
+      IRUN_FLAGS +in_file_tag=${CMAKE_SOURCE_DIR}/${MPE_DEMO_PATH}/${mpe_demo_test_name}/in_data.bin 
+               +warr_file_tag=${CMAKE_SOURCE_DIR}/${MPE_DEMO_PATH}/${mpe_demo_test_name}/warr.bin
+             +etalon_file_tag=${CMAKE_SOURCE_DIR}/${MPE_DEMO_PATH}/${mpe_demo_test_name}/etalon.bin
+            +mpe_cmd_file_tag=${CMAKE_SOURCE_DIR}/${MPE_DEMO_PATH}/${mpe_demo_test_name}/cmd.bin
+              +metrics_in_tag=${CMAKE_SOURCE_DIR}/${MPE_DEMO_PATH}/${mpe_demo_test_name}/in_data.bin.metrics
+            +metrics_warr_tag=${CMAKE_SOURCE_DIR}/${MPE_DEMO_PATH}/${mpe_demo_test_name}/warr.bin.metrics
+          +metrics_etalon_tag=${CMAKE_SOURCE_DIR}/${MPE_DEMO_PATH}/${mpe_demo_test_name}/etalon.bin.metrics
+         +metrics_mpe_cmd_tag=${CMAKE_SOURCE_DIR}/${MPE_DEMO_PATH}/${mpe_demo_test_name}/cmd.bin.metrics
+    )
     # endif()
 
     # PPE example 

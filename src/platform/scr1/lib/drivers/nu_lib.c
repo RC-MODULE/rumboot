@@ -644,6 +644,20 @@ void nu_mpe_run(uintptr_t mpe_base, ConfigDMAMPE* cfg_dma) {
   // iowrite32(cfg->MYFIELD, mpe_base + NU_MPE_MYREG);
 }
 
+int  nu_mpe_run_cmd(uintptr_t base, void* cmd, MPECmdMetrics* cmd_metrics) {
+  int num_cmds = cmd_metrics->s / 8;
+  uint64_t* ptr = (uint64_t*) cmd;
+  uint32_t offset;uint32_t data;
+  for(int i=0;i<num_cmds;i++) {
+    data = (uint32_t) *ptr;
+    offset = (uint32_t) ((*ptr) >> 32);
+    rumboot_printf("Writing data=%x addr = %x\n", data, base + (offset<<2));
+    iowrite32(data,base + (offset<<2));
+    ptr++;
+  }
+  return 0;
+}
+
 void nu_mpe_wait(uintptr_t mpe_base, ConfigDMAMPE* cfg_dma) {
 
   // while (ioread32(mpe_base + NU_MPE_MYREG)) != ...) {}

@@ -354,6 +354,10 @@
     int32_t s;   // Size That Vector Occupies (in bytes)
     int32_t vec_size; // Number Of Elements
   }VectorMetrics;
+  
+  typedef struct MPECmdMetrics{
+    int32_t s; // Size Of Command Blob In Bytes
+  }MPECmdMetrics;
 
 
 void nu_vpe_load_config(ConfigVPE* cfg, void* cfg_bin);
@@ -383,6 +387,7 @@ int  nu_ppe_decide_dma_config_trivial(ConfigPPE* cfg, CubeMetrics* in_cube_metri
 
 void nu_ppe_rdma_run(uintptr_t rbase, ConfigREGPPE* cfg);
 void nu_ppe_run(uintptr_t wbase, ConfigREGPPE* cfg);
+int  nu_mpe_run_cmd(uintptr_t base, void* cmd,MPECmdMetrics* cmd_metrics);
 
 void nu_ppe_rdma_wait_complete(uintptr_t rbase);
 void nu_ppe_wait_complete(uintptr_t wbase);
