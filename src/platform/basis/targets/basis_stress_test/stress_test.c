@@ -211,10 +211,11 @@ static void test_dev_handler(int irq, void *arg)
 
 			local_flags &= local_mask;
 
-			if (local_flags & dev->err_flags)
+			if (local_flags & dev->err_flags) {
 				rumboot_platform_panic("IRQ %d: error flags - 0x%x\n", irq, local_flags);
-			else
+			} else {
 				rumboot_platform_panic("Unkhown IRQ %d\n", irq);
+			}
 		}
 
 		ret = mdma_chan_irq_cb(chan);

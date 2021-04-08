@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <setjmp.h>
+#include <unistd.h>
 /**
  *
  * \defgroup platform_glue Platform bindings
@@ -71,7 +72,14 @@ enum rumboot_simulation_event {
  *
  * @param fmt format for description message. Can be NULL
  */
-void rumboot_platform_panic(const char *fmt, ...) __attribute__((noreturn));
+#define rumboot_platform_panic(fmt, ...) \
+    { \
+        if (fmt) { \
+            rumboot_printf("PANIC: %s", fmt, ##__VA_ARGS__); \
+        } \
+        exit(13); /* Trigger an exit */ \
+        while(1);; /* And loop if the above didn't work */ \
+    }
 
 /**
  * This function will be called before main(). This function should contains

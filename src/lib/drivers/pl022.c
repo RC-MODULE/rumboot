@@ -157,7 +157,7 @@ void pl022_init(uint32_t const base, struct pl022_config const * const conf)
     set_data_size(base, conf->data_size);
 
     if (conf->soft_cs && (conf->variant != PL022_VARIANT_GSPI)) {
-        return rumboot_platform_panic("PL022: No SoftCS control for this hardware");
+        rumboot_platform_panic("PL022: No SoftCS control for this hardware");
     }
 
     if (conf->variant != PL022_VARIANT_GSPI) {

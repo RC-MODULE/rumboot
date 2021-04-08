@@ -103,18 +103,6 @@ __attribute__((no_instrument_function)) void *memmove(void *d, const void *s, si
    	deliver(EVENT_PRINTF, (uint32_t) __builtin_frame_address(0));
 }
 
- __attribute__((no_instrument_function))
- __attribute__((noreturn))
- __attribute__((optimize("-O0")))
- void rumboot_platform_panic(const char *why, ...)
-{
-	if (why) {
-		deliver(EVENT_PRINTF, (uint32_t) __builtin_frame_address(0));
-    }
-	deliver(EVENT_STACKTRACE, (uint32_t) __builtin_frame_address(0));
-	exit(1);
-}
-
  __attribute__((no_instrument_function)) __attribute__((optimize("-O0"))) void do_memfillseq8(void *ptr, ...)
 {
     deliver(EVENT_MEMFILL8, (uint32_t)__builtin_frame_address(0));
@@ -136,20 +124,6 @@ __attribute__((no_instrument_function)) __attribute__((optimize("-O0"))) void* r
 __attribute__((no_instrument_function)) void rumboot_sim_get_realtime(uint32_t *rt)
 {
    *rt = rumboot_platform_get_uptime();
-}
-
-__attribute__((no_instrument_function))
-__attribute__((noreturn))
-void rumboot_platform_panic(const char *why, ...)
-{
-   if (why) {
-	   va_list ap;
-	   rumboot_printf("PANIC: ");
-	   va_start(ap, why);
-	   rumboot_vprintf(why, ap);
-	   va_end(ap);
-   }
-   while(1);;
 }
 
 __attribute__((no_instrument_function)) int rumboot_memcheck32(void *src, void *dst, size_t sz)
