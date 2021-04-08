@@ -34,10 +34,13 @@
 
 void rumboot_platform_init_loader(struct rumboot_config *conf)
 {
+        /* Disable EDCL to avoid seecurity breaches */
+        greth_edcl_configure(GRETH_0_BASE, 0);
+        greth_edcl_configure(GRETH_1_BASE, 0);
+
         /* Set HOST pin to output */
         uint32_t v = ioread32(GPIO_0_BASE + GPIO_DIR);
         iowrite32(v | BOOTM_HOST, GPIO_0_BASE + GPIO_DIR);
-
 
         /* Initialize UART */
         struct uart_init_params sparams =
@@ -152,7 +155,8 @@ void rumboot_platform_enter_host_mode(struct rumboot_config *conf)
 {
         greth_dump_edcl_params(0, GRETH_0_BASE);
         greth_dump_edcl_params(1, GRETH_1_BASE);
-
+        greth_edcl_configure(GRETH_0_BASE, 1);
+        greth_edcl_configure(GRETH_1_BASE, 1);
         /* TODO: Set BOOT PIN */
         iowrite32(BOOTM_HOST, GPIO_0_BASE + GPIO_DATA + (BOOTM_HOST << 2));
 }
