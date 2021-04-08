@@ -1,0 +1,13 @@
+#!/usr/bin/perl -w
+
+$cline="";
+
+while(defined($cline = <STDIN>)) {
+  @arr = split(" ",$cline,16);
+  
+  $temp="";
+  for($i=0;$i<16;$i++) {
+    $temp = substr($arr[$i],6,2) .substr($arr[$i],4,2) .substr($arr[$i],2,2) .substr($arr[$i],0,2) ." " . $temp;
+  }
+  print STDOUT "$temp\n";
+}

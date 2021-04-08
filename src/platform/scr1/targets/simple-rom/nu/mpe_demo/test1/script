@@ -1,4 +1,6 @@
-xxd -c 64 -g4 -ps -r data.txt etalon.bin
+./new_script < data.txt > datar.txt
+xxd -c 64 -g4 -ps -r datar.txt etalon.bin
 gcc gen.c
 ./a.out
 rm ./a.out
+rm datar.txt
