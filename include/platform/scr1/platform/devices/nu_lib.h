@@ -270,7 +270,7 @@
     PoolingOperationSwitch  meth;
     DataType                dt  ;
   }ConfigPPE;
-    
+
 //   typedef struct ConfigDMAPPE {
 //     Enable dma_src_en;
 //   }ConfigDMAPPE;
@@ -383,6 +383,7 @@ void nu_ppe_print_config(ConfigPPE* cfg);
 
 void nu_ppe_setup(uintptr_t base, ConfigPPE* cfg, ConfigREGPPE* cfg_reg);
 void nu_ppe_setup_reg(uintptr_t rbase, uintptr_t wbase, ConfigREGPPE* cfg);
+void nu_ppe_print_config_reg(ConfigREGPPE* cfg_reg);
 int  nu_ppe_decide_dma_config_trivial(ConfigPPE* cfg, CubeMetrics* in_cube_metrics, CubeMetrics* out_cube_metrics, ConfigREGPPE* cfg_reg);
 
 void nu_ppe_rdma_run(uintptr_t rbase, ConfigREGPPE* cfg);

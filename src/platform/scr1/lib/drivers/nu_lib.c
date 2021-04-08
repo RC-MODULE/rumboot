@@ -363,10 +363,66 @@ void nu_ppe_print_config(ConfigPPE* cfg){
     nu_vpe_print_DataType(cfg->dt,"dt      ");
 }
 
-
-
-
-
+void nu_ppe_print_config_reg(ConfigREGPPE* cfg_reg){
+  rumboot_printf("ConfigREGPPE:\n");
+  rumboot_printf("  = RDMA registers:\n");
+  // rumboot_printf("  rSt     = %x \n" , cfg_reg->rSt);
+  rumboot_printf("  rOpEn   = %x \n" , cfg_reg->rOpEn);
+  rumboot_printf("  rWi     = %x \n" , cfg_reg->rWi);
+  rumboot_printf("  rHi     = %x \n" , cfg_reg->rHi);
+  rumboot_printf("  rCi     = %x \n" , cfg_reg->rCi);
+  rumboot_printf("  rBALs   = %x \n" , cfg_reg->rBALs);
+  // rumboot_printf("  rBAHs   = %x \n" , cfg_reg->rBAHs);
+  rumboot_printf("  rVSs    = %x \n" , cfg_reg->rVSs);
+  rumboot_printf("  rLSs    = %x \n" , cfg_reg->rLSs);
+  rumboot_printf("  rESs    = %x \n" , cfg_reg->rESs);
+  rumboot_printf("  rOpM    = %x \n" , cfg_reg->rOpM);
+  rumboot_printf("  rBSWi   = %x \n" , cfg_reg->rBSWi);
+  rumboot_printf("  rBSHi   = %x \n" , cfg_reg->rBSHi);
+  rumboot_printf("  rBSCi   = %x \n" , cfg_reg->rBSCi);
+  rumboot_printf("  rStWi   = %x \n" , cfg_reg->rStWi);
+  rumboot_printf("  rOfWi   = %x \n" , cfg_reg->rOfWi);
+  rumboot_printf("  rK      = %x \n" , cfg_reg->rK);
+  rumboot_printf("  = PPE+WDMA registers:\n");
+  // rumboot_printf("  wSt     = %x \n" , cfg_reg->wSt);
+  rumboot_printf("  wOpEn   = %x \n" , cfg_reg->wOpEn);
+  rumboot_printf("  wWi     = %x \n" , cfg_reg->wWi);
+  rumboot_printf("  wHi     = %x \n" , cfg_reg->wHi);
+  rumboot_printf("  wCi     = %x \n" , cfg_reg->wCi);
+  rumboot_printf("  wWo     = %x \n" , cfg_reg->wWo);
+  rumboot_printf("  wHo     = %x \n" , cfg_reg->wHo);
+  rumboot_printf("  wCo     = %x \n" , cfg_reg->wCo);
+  rumboot_printf("  wBALd   = %x \n" , cfg_reg->wBALd);
+  // rumboot_printf("  wBAHd   = %x \n" , cfg_reg->wBAHd);
+  rumboot_printf("  wVSd    = %x \n" , cfg_reg->wVSd);
+  rumboot_printf("  wLSd    = %x \n" , cfg_reg->wLSd);
+  rumboot_printf("  wESd    = %x \n" , cfg_reg->wESd);
+  rumboot_printf("  wOpM    = %x \n" , cfg_reg->wOpM);
+  rumboot_printf("  wBSWi   = %x \n" , cfg_reg->wBSWi);
+  rumboot_printf("  wBSHi   = %x \n" , cfg_reg->wBSHi);
+  rumboot_printf("  wBSCi   = %x \n" , cfg_reg->wBSCi);
+  rumboot_printf("  wStWi   = %x \n" , cfg_reg->wStWi);
+  rumboot_printf("  wOfWi   = %x \n" , cfg_reg->wOfWi);
+  rumboot_printf("  wBSWo   = %x \n" , cfg_reg->wBSWo);
+  rumboot_printf("  wBSHo   = %x \n" , cfg_reg->wBSHo);
+  rumboot_printf("  wBSCo   = %x \n" , cfg_reg->wBSCo);
+  rumboot_printf("  wStWo   = %x \n" , cfg_reg->wStWo);
+  rumboot_printf("  wOfWo   = %x \n" , cfg_reg->wOfWo);
+  rumboot_printf("  wK      = %x \n" , cfg_reg->wK);
+  rumboot_printf("  wKWr    = %x \n" , cfg_reg->wKWr);
+  rumboot_printf("  wKHr    = %x \n" , cfg_reg->wKHr);
+  rumboot_printf("  wP      = %x \n" , cfg_reg->wP);
+  rumboot_printf("  wPV1    = %x \n" , cfg_reg->wPV1);
+  rumboot_printf("  wPV2    = %x \n" , cfg_reg->wPV2);
+  rumboot_printf("  wPV3    = %x \n" , cfg_reg->wPV3);
+  rumboot_printf("  wPV4    = %x \n" , cfg_reg->wPV4);
+  rumboot_printf("  wPV5    = %x \n" , cfg_reg->wPV5);
+  rumboot_printf("  wPV6    = %x \n" , cfg_reg->wPV6);
+  rumboot_printf("  wPV7    = %x \n" , cfg_reg->wPV7);
+  // rumboot_printf("  wINi    = %x \n" , cfg_reg->wINi);
+  // rumboot_printf("  wNNi    = %x \n" , cfg_reg->wNNi);
+  // rumboot_printf("  wNNo    = %x \n" , cfg_reg->wNNo);
+}
 
 void nu_vpe_setup(uintptr_t base, ConfigVPE* cfg, ConfigDMAVPE* cfg_dma) {
   rumboot_printf("Configuring VPE..\n");
@@ -697,11 +753,122 @@ void nu_ppe_setup(uintptr_t base, ConfigPPE* cfg, ConfigREGPPE* cfg_reg) {
   rumboot_printf("Configuring PPE..\n");
 
   // Перегнатb параметры и3 cfg в cfg_reg и 3апуститb nu_ppe_setup_reg
-  
+
   // iowrite32(cfg->MYFIELD, base + NU_MPE_MYREG);
 }
 
 int  nu_ppe_decide_dma_config_trivial(ConfigPPE* cfg, CubeMetrics* in_cube_metrics, CubeMetrics* out_cube_metrics, ConfigREGPPE* cfg_reg) {
+  uint32_t Celem;
+  // rdma
+  // cfg_reg->rOpEn  = 0;
+  // cfg_reg->rBALs  = 0;
+  // cfg_reg->rK     = 0;
+  if(cfg->dt == DataType_Int8) {
+    cfg_reg->rOpM = 0X00000000;
+    Celem = (1*cfg->C)/32;
+    if((1*cfg->C)%32 == 0){
+      Celem--;
+    }
+  } else if(cfg->dt == DataType_Int16) {
+    cfg_reg->rOpM = 0X00200000;
+    Celem = (2*cfg->C)/32;
+    if((2*cfg->C)%32 == 0){
+      Celem--;
+    }
+  } else if(cfg->dt == DataType_Fp16) {
+    cfg_reg->rOpM = 0X00400000;
+    Celem = (2*cfg->C)/32;
+    if((2*cfg->C)%32 == 0){
+      Celem--;
+    }
+  } else {
+    rumboot_printf("ERROR: Unsupported data type for PPE!\n");
+    return -1;
+  }
+  cfg_reg->rESs   = 0X00000020; // 32 bytes, always 16x16 or 32x8
+  if(cfg->dt == DataType_Int8) {
+    cfg_reg->rVSs = cfg->C;     // bytes of full C (now defined for BOX=CUBE)
+  } else {
+    cfg_reg->rVSs = 2*cfg->C;   // bytes of full C (now defined for BOX=CUBE)
+  }
+  cfg_reg->rLSs   = (cfg_reg->rVSs)*(cfg->W);     // bytes of full C*W (now defined for BOX=CUBE)
+  cfg_reg->rCi    = Celem*32;                     // bytes for Celem - 1
+  cfg_reg->rWi    = (cfg_reg->rVSs)*(cfg->W - 1); // bytes for C*(W-1)
+  cfg_reg->rHi    = (cfg_reg->rLSs)*(cfg->H - 1); // bytes for C*W*(H-1)
+  cfg_reg->rBSWi  = 0X00001FFF & (cfg->W - 1);    // W elements -1
+  cfg_reg->rBSHi  = 0X00001FFF & (cfg->H - 1);    // H elements -1
+  cfg_reg->rBSCi  = Celem;                        // C elements -1
+  cfg_reg->rStWi  = 0X00001FFF & (cfg->W - 1);    // W elements -1 in first box
+  cfg_reg->rOfWi  = 0X00000000;                   // W elements addon between boxes
+  // ppe+wdma
+  // cfg_reg->wOpEn  = 0;
+  // cfg_reg->wBALd  = 0;
+  if(cfg->dt == DataType_Int8) {
+    cfg_reg->wOpM = 0X00000000;
+    Celem = (1*out_cube_metrics->C)/32;
+    if((1*out_cube_metrics->C)%32 == 0){
+      Celem--;
+    }
+  } else if(cfg->dt == DataType_Int16) {
+    cfg_reg->wOpM = 0X00200000;
+    Celem = (2*out_cube_metrics->C)/32;
+    if((2*out_cube_metrics->C)%32 == 0){
+      Celem--;
+    }
+  } else if(cfg->dt == DataType_Fp16) {
+    cfg_reg->wOpM = 0X00400000;
+    Celem = (2*out_cube_metrics->C)/32;
+    if((2*out_cube_metrics->C)%32 == 0){
+      Celem--;
+    }
+  } else {
+    rumboot_printf("ERROR: Unsupported data type for PPE!\n");
+    return -1;
+  }
+  if(cfg->meth == PoolingOperationSwitch_Avg) {
+    cfg_reg->wOpM = (0x00600000 & cfg_reg->wOpM) | 0X00000000;
+  } else if(cfg->meth == PoolingOperationSwitch_Max) {
+    cfg_reg->wOpM = (0x00600000 & cfg_reg->wOpM) | 0X00000001;
+  } else if(cfg->meth == PoolingOperationSwitch_Min) {
+    cfg_reg->wOpM = (0x00600000 & cfg_reg->wOpM) | 0X00000002;
+  } else {
+    rumboot_printf("ERROR: Unsupported pooling method type for PPE!\n");
+    return -1;
+  }
+  cfg_reg->wWi    = 0X00001FFF & (cfg->W - 1);
+  cfg_reg->wHi    = 0X00001FFF & (cfg->H - 1);
+  cfg_reg->wCi    = 0X00001FFF & (cfg->C - 1);
+  cfg_reg->wESd   = 0X00000020;                                 // 32 bytes, always 16x16 or 32x8
+  if(cfg->dt == DataType_Int8) {
+    cfg_reg->wVSd = out_cube_metrics->C;                        // bytes of full C (now defined for BOX=CUBE)
+  } else {
+    cfg_reg->wVSd = 2*out_cube_metrics->C;                      // bytes of full C (now defined for BOX=CUBE)
+  }
+  cfg_reg->wLSd   = (cfg_reg->wVSd)*(out_cube_metrics->W);      // bytes of full C*W (now defined for BOX=CUBE)
+  cfg_reg->wCo    = Celem*32;                                   // bytes for Celem - 1
+  cfg_reg->wWo    = (cfg_reg->wVSd)*(out_cube_metrics->W - 1);  // bytes for C*(W-1)
+  cfg_reg->wHo    = (cfg_reg->wLSd)*(out_cube_metrics->H - 1);  // bytes for C*W*(H-1)
+  cfg_reg->wBSWi  = cfg_reg->rBSWi;
+  cfg_reg->wBSHi  = cfg_reg->rBSHi;
+  cfg_reg->wBSCi  = cfg_reg->rBSCi;
+  cfg_reg->wStWi  = cfg_reg->rStWi;
+  cfg_reg->wOfWi  = cfg_reg->rOfWi;
+  cfg_reg->wBSWo  = 0X00001FFF & (out_cube_metrics->W - 1);     // W elements -1
+  cfg_reg->wBSHo  = 0X00001FFF & (out_cube_metrics->H - 1);     // H elements -1
+  cfg_reg->wBSCo  = Celem;                                      // C elements -1
+  cfg_reg->wStWo  = 0X00001FFF & (out_cube_metrics->W - 1);     // W elements -1 in first box
+  cfg_reg->wOfWo  = 0X00000000;                                 // W elements addon between boxes
+  cfg_reg->wK     = (0X00F00000 & (cfg->Sh << 20)) | (0X000F0000 & (cfg->Sw << 16)) | (0X00000700 & (cfg->Kh << 8)) | (0X00000007 & cfg->Kw);
+  cfg_reg->wKWr   = 0X0000FFFF & cfg->Kw;
+  cfg_reg->wKHr   = 0X0000FFFF & cfg->Kh;
+  cfg_reg->wP     = (0X00007000 & (cfg->Bp << 12)) | (0X00000700 & (cfg->Rp << 8)) | (0X00000070 & (cfg->Tp << 4)) | (0X00000007 & cfg->Lp);
+  cfg_reg->wPV1   = 0X0007FFFF & cfg->pv[0]*1;
+  cfg_reg->wPV2   = 0X0007FFFF & cfg->pv[0]*2;
+  cfg_reg->wPV3   = 0X0007FFFF & cfg->pv[0]*3;
+  cfg_reg->wPV4   = 0X0007FFFF & cfg->pv[0]*4;
+  cfg_reg->wPV5   = 0X0007FFFF & cfg->pv[0]*5;
+  cfg_reg->wPV6   = 0X0007FFFF & cfg->pv[0]*6;
+  cfg_reg->wPV7   = 0X0007FFFF & cfg->pv[0]*7;
   return 0;
 }
 
