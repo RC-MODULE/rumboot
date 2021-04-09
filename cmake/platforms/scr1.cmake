@@ -244,6 +244,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     # Add new tests here
     ADD_VPE_COUPLED_TEST(vpe_first_coupled main_sqared_try_all_ops)
     ADD_VPE_COUPLED_TEST(vpe_first_coupled_float main_sqared_try_all_ops_float)
+    ADD_VPE_COUPLED_TEST(vpe_nothing_to_do main_nothing_to_do)
     ADD_MPE_COUPLED_TEST(mpe_first_coupled main_sqared_simple_mpe)
     ADD_PPE_COUPLED_TEST(ppe_first_coupled main_simple_ppe_coupled)
     ADD_PPE_COUPLED_TEST(ppe_first_coupled_float main_simple_ppe_coupled_float)
