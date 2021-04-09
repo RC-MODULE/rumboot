@@ -352,8 +352,8 @@ void nu_ppe_print_config(ConfigPPE* cfg){
     rumboot_printf("  Kw     = %d \n" , cfg->Kw);
     rumboot_printf("  Sh     = %d \n" , cfg->Sh);
     rumboot_printf("  Sw     = %d \n" , cfg->Sw);
-    rumboot_printf("  Kh_r   = %d \n" , cfg->Kh_r);
-    rumboot_printf("  Kw_r   = %d \n" , cfg->Kw_r);
+    rumboot_printf("  Kh_r   = 0x%x \n" , cfg->Kh_r);
+    rumboot_printf("  Kw_r   = 0x%x \n" , cfg->Kw_r);
     rumboot_printf("  Tp     = %d \n" , cfg->Tp);
     rumboot_printf("  Bp     = %d \n" , cfg->Bp);
     rumboot_printf("  Lp     = %d \n" , cfg->Lp);
