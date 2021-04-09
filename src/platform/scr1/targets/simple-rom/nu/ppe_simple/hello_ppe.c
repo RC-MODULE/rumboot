@@ -4,6 +4,7 @@
 #include <rumboot/rumboot.h>
 #include <rumboot/io.h>
 #include <string.h>
+#include <regs/regs_nu_ppe.h>
 
 #include <platform/devices.h>
 
@@ -60,7 +61,7 @@ int main() {
   nu_ppe_load_config(&cfg, cfg_bin);
   nu_ppe_print_config(&cfg);
 
-  nu_ppe_setup(NU_PPE_STANDALONE_BASE, &cfg);
+  nu_ppe_setup(NU_PPE_STANDALONE_BASE, &cfg, &cfg_regs);
 
   // Configure RDMA
   cfg_regs.rWi    = 0X00001000;
