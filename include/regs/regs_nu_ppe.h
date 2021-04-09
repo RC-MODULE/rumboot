@@ -18,7 +18,7 @@
 #define NU_PPE_RDMA_BOX_SIZE_C_IN       0X034
 #define NU_PPE_RDMA_BOX_START_W_IN      0X038
 #define NU_PPE_RDMA_BOX_OFFSET_W_IN     0X03C
-#define NU_PPE_RDMA_KERNEL              0X040
+// #define NU_PPE_RDMA_KERNEL              0X040
 
 // PPE+WDMA registers
 #define NU_PPE_STATUS                   0X000

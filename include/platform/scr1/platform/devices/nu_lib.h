@@ -88,24 +88,24 @@
     DataTypeExt_Fp32
   }DataTypeExt;
 
-  
+
   /**
   Type DMA_RAM_TYPE
   */
   typedef enum DmaRamType {
     DmaRamType_CV,
     DmaRamType_MC
-  }DmaRamType;  
-  
-  
+  }DmaRamType;
+
+
   /**
   Type DMA_DATA_SIZE
   */
   typedef enum DmaDSizeType {
     DmaDSizeType_One_Byte,
     DmaDSizeType_Two_Byte
-  }DmaDSizeType;    
-  
+  }DmaDSizeType;
+
   /**
   Type DMA_DATA_USE
   */
@@ -113,8 +113,8 @@
     DmaDUseType_Mux,
     DmaDUseType_Alu,
     DmaDUseType_Both
-  }DmaDUseType;   
-  
+  }DmaDUseType;
+
   typedef struct ConfigMPE {
     uint32_t H        ;
     uint32_t W        ;
@@ -182,7 +182,7 @@
   }ConfigOp2;
 
   typedef struct ConfigDMA {
-    Enable       dma_op_en         ;  
+    Enable       dma_op_en         ;
     uint32_t     dma_H             ;
     uint32_t     dma_W             ;
     uint32_t     dma_C             ;
@@ -193,18 +193,18 @@
     uint32_t     dma_baddr         ;
     uint32_t     dma_line_stride   ;
     uint32_t     dma_vector_stride ;
-    uint32_t     dma_elem_stride   ;    
+    uint32_t     dma_elem_stride   ;
     uint32_t     dma_box_st_size_x ;
     uint32_t     dma_box_st_size_y ;
-    uint32_t     dma_box_st_size_z ;        
+    uint32_t     dma_box_st_size_z ;
     uint32_t     dma_box_size_x    ;
     uint32_t     dma_box_size_y    ;
-    uint32_t     dma_box_size_z    ;    
+    uint32_t     dma_box_size_z    ;
     uint32_t     dma_box_offset_x  ;
     uint32_t     dma_box_offset_y  ;
-    uint32_t     dma_box_offset_z  ;      
-  }ConfigDMA;  
-    
+    uint32_t     dma_box_offset_z  ;
+  }ConfigDMA;
+
   typedef struct ConfigVPE {
     DataTypeExt in_data_type    ;
     DataType    out_data_type   ;
@@ -237,7 +237,7 @@
     int32_t C;
     // Add Here DMA Parameter Fields
   }ConfigDMAVPE;
-  
+
   typedef struct ConfigDMAMPE {
     int32_t H;
     int32_t W;
@@ -274,7 +274,7 @@
 //   typedef struct ConfigDMAPPE {
 //     Enable dma_src_en;
 //   }ConfigDMAPPE;
-  
+
   typedef struct ConfigREGPPE{
     // rdma
     // uint32_t rSt      ; // STATUS
@@ -293,7 +293,7 @@
     uint32_t rBSCi    ; // BOX_SIZE_C_IN      / DMA Working Box Size
     uint32_t rStWi    ; // BOX_START_W_IN     / DMA First part Working Box Size
     uint32_t rOfWi    ; // BOX_OFFSET_W_IN    / DMA Box Offset
-    uint32_t rK       ; // KERNEL             / Pooling kernel params
+    // uint32_t rK       ; // KERNEL             / Pooling kernel params
     // ppe + wdma
     // uint32_t wSt      ; // STATUS
     uint32_t wOpEn    ; // OP_ENABLE          / Start
@@ -354,7 +354,7 @@
     int32_t s;   // Size That Vector Occupies (in bytes)
     int32_t vec_size; // Number Of Elements
   }VectorMetrics;
-  
+
   typedef struct MPECmdMetrics{
     int32_t s; // Size Of Command Blob In Bytes
   }MPECmdMetrics;

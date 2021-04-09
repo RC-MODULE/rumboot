@@ -376,7 +376,7 @@ void nu_ppe_print_config_reg(ConfigREGPPE* cfg_reg){
   rumboot_printf("  rBSCi   = %x \n" , cfg_reg->rBSCi);
   rumboot_printf("  rStWi   = %x \n" , cfg_reg->rStWi);
   rumboot_printf("  rOfWi   = %x \n" , cfg_reg->rOfWi);
-  rumboot_printf("  rK      = %x \n" , cfg_reg->rK);
+  // rumboot_printf("  rK      = %x \n" , cfg_reg->rK);
   rumboot_printf("  = PPE+WDMA registers:\n");
   // rumboot_printf("  wSt     = %x \n" , cfg_reg->wSt);
   rumboot_printf("  wOpEn   = %x \n" , cfg_reg->wOpEn);
@@ -699,7 +699,7 @@ int  nu_mpe_run_cmd(uintptr_t base, void* cmd, MPECmdMetrics* cmd_metrics) {
   uint32_t data;
   int num_cmds;
   uint32_t* ptr;
-  
+
   ptr = (uint32_t*) cmd;
   num_cmds = cmd_metrics->s / 8;
   // rumboot_platform_dump_region("test_cmd.bin",(uint32_t)cmd,cmd_metrics->s); // but if enable this - test does not crush with magic printf
@@ -765,22 +765,13 @@ int  nu_ppe_decide_dma_config_trivial(ConfigPPE* cfg, CubeMetrics* in_cube_metri
   // cfg_reg->rK     = 0;
   if(cfg->dt == DataType_Int8) {
     cfg_reg->rOpM = 0X00000000;
-    Celem = (1*cfg->C)/32;
-    if((1*cfg->C)%32 == 0){
-      Celem--;
-    }
+    Celem = (1*cfg->C)/32 - ((1*cfg->C)%32 == 0);
   } else if(cfg->dt == DataType_Int16) {
     cfg_reg->rOpM = 0X00200000;
-    Celem = (2*cfg->C)/32;
-    if((2*cfg->C)%32 == 0){
-      Celem--;
-    }
+    Celem = (2*cfg->C)/32 - ((2*cfg->C)%32 == 0);
   } else if(cfg->dt == DataType_Fp16) {
     cfg_reg->rOpM = 0X00400000;
-    Celem = (2*cfg->C)/32;
-    if((2*cfg->C)%32 == 0){
-      Celem--;
-    }
+    Celem = (2*cfg->C)/32 - ((2*cfg->C)%32 == 0);
   } else {
     rumboot_printf("ERROR: Unsupported data type for PPE!\n");
     return -1;
@@ -805,22 +796,13 @@ int  nu_ppe_decide_dma_config_trivial(ConfigPPE* cfg, CubeMetrics* in_cube_metri
   // cfg_reg->wBALd  = 0;
   if(cfg->dt == DataType_Int8) {
     cfg_reg->wOpM = 0X00000000;
-    Celem = (1*out_cube_metrics->C)/32;
-    if((1*out_cube_metrics->C)%32 == 0){
-      Celem--;
-    }
+    Celem = (1*out_cube_metrics->C)/32 - ((1*out_cube_metrics->C)%32 == 0);
   } else if(cfg->dt == DataType_Int16) {
     cfg_reg->wOpM = 0X00200000;
-    Celem = (2*out_cube_metrics->C)/32;
-    if((2*out_cube_metrics->C)%32 == 0){
-      Celem--;
-    }
+    Celem = (2*out_cube_metrics->C)/32 - ((2*out_cube_metrics->C)%32 == 0);
   } else if(cfg->dt == DataType_Fp16) {
     cfg_reg->wOpM = 0X00400000;
-    Celem = (2*out_cube_metrics->C)/32;
-    if((2*out_cube_metrics->C)%32 == 0){
-      Celem--;
-    }
+    Celem = (2*out_cube_metrics->C)/32 - ((2*out_cube_metrics->C)%32 == 0);
   } else {
     rumboot_printf("ERROR: Unsupported data type for PPE!\n");
     return -1;
@@ -891,7 +873,7 @@ void nu_ppe_setup_reg(uintptr_t rbase, uintptr_t wbase, ConfigREGPPE* cfg) {
   iowrite32(cfg->rBSCi,   rbase + NU_PPE_RDMA_BOX_SIZE_C_IN);
   iowrite32(cfg->rStWi,   rbase + NU_PPE_RDMA_BOX_START_W_IN);
   iowrite32(cfg->rOfWi,   rbase + NU_PPE_RDMA_BOX_OFFSET_W_IN);
-  iowrite32(cfg->rK,      rbase + NU_PPE_RDMA_KERNEL);
+  // iowrite32(cfg->rK,      rbase + NU_PPE_RDMA_KERNEL);
   // ppe + wdma
   // iowrite32(cfg->wSt,      wbase + NU_PPE_STATUS);
   iowrite32(0X00000000,   wbase + NU_PPE_OP_ENABLE);
