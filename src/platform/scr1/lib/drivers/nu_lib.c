@@ -125,13 +125,7 @@ void nu_ppe_load_config(ConfigPPE* cfg, void* cfg_bin) {
     cfg-> Bp     =*ptr;ptr++;
     cfg-> Lp     =*ptr;ptr++;
     cfg-> Rp     =*ptr;ptr++;
-    cfg-> pv[0]  =*ptr;ptr++;
-    cfg-> pv[1]  =*ptr;ptr++;
-    cfg-> pv[2]  =*ptr;ptr++;
-    cfg-> pv[3]  =*ptr;ptr++;
-    cfg-> pv[4]  =*ptr;ptr++;
-    cfg-> pv[5]  =*ptr;ptr++;
-    cfg-> pv[6]  =*ptr;ptr++;
+    cfg-> pv     =*ptr;ptr++;
     cfg-> meth   =*ptr;ptr++;
     cfg-> dt     =*ptr;ptr++;
 }
@@ -358,7 +352,7 @@ void nu_ppe_print_config(ConfigPPE* cfg){
     rumboot_printf("  Bp     = %d \n" , cfg->Bp);
     rumboot_printf("  Lp     = %d \n" , cfg->Lp);
     rumboot_printf("  Rp     = %d \n" , cfg->Rp);
-    rumboot_printf("  pv     = %d %d %d %d %d %d %d \n" , cfg->pv[0], cfg->pv[1], cfg->pv[2], cfg->pv[3], cfg->pv[4], cfg->pv[5], cfg->pv[6]);
+    rumboot_printf("  pv     = %d\n" , cfg->pv);
     nu_vpe_print_PoolingOperationSwitch(cfg->meth,"meth    ");
     nu_vpe_print_DataType(cfg->dt,"dt      ");
 }
@@ -868,13 +862,13 @@ int  nu_ppe_decide_dma_config_trivial(ConfigPPE* cfg, CubeMetrics* in_cube_metri
   cfg_reg->wKWr   = 0X0000FFFF & cfg->Kw_r;
   cfg_reg->wKHr   = 0X0000FFFF & cfg->Kh_r;
   cfg_reg->wP     = (0X00007000 & (cfg->Bp << 12)) | (0X00000700 & (cfg->Rp << 8)) | (0X00000070 & (cfg->Tp << 4)) | (0X00000007 & cfg->Lp);
-  cfg_reg->wPV1   = 0X0007FFFF & cfg->pv[0]*1;
-  cfg_reg->wPV2   = 0X0007FFFF & cfg->pv[0]*2;
-  cfg_reg->wPV3   = 0X0007FFFF & cfg->pv[0]*3;
-  cfg_reg->wPV4   = 0X0007FFFF & cfg->pv[0]*4;
-  cfg_reg->wPV5   = 0X0007FFFF & cfg->pv[0]*5;
-  cfg_reg->wPV6   = 0X0007FFFF & cfg->pv[0]*6;
-  cfg_reg->wPV7   = 0X0007FFFF & cfg->pv[0]*7;
+  cfg_reg->wPV1   = 0X0007FFFF & cfg->pv*1;
+  cfg_reg->wPV2   = 0X0007FFFF & cfg->pv*2;
+  cfg_reg->wPV3   = 0X0007FFFF & cfg->pv*3;
+  cfg_reg->wPV4   = 0X0007FFFF & cfg->pv*4;
+  cfg_reg->wPV5   = 0X0007FFFF & cfg->pv*5;
+  cfg_reg->wPV6   = 0X0007FFFF & cfg->pv*6;
+  cfg_reg->wPV7   = 0X0007FFFF & cfg->pv*7;
   return 0;
 }
 
