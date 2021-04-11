@@ -371,6 +371,10 @@ int main() {
   cfg_regs.rOfWi  = 0x00000000;
   // Configure PPE+WDMA
 //  cfg_regs.wSt = 0x00000000;
+  cfg_regs.wWi    = 0x00000000;
+  cfg_regs.wHi    = 0x00000000;
+  cfg_regs.wCi    = 0x00000000;
+
   cfg_regs.wWo    = 0x00000000;
   cfg_regs.wHo    = 0x00000000;
   cfg_regs.wCo    = 0x00000000;
@@ -380,13 +384,27 @@ int main() {
   cfg_regs.wLSd   = 0x00000000;
   cfg_regs.wESd   = 0x00000000;
   cfg_regs.wOpM   = 0x00000000;
+  cfg_regs.wBSWi  = 0x00000000;
+  cfg_regs.wBSHi  = 0x00000000;
+  cfg_regs.wBSCi  = 0x00000000;
   cfg_regs.wBSWo  = 0x00000000;
   cfg_regs.wBSHo  = 0x00000000;
   cfg_regs.wBSCo  = 0x00000000;
   cfg_regs.wStWo  = 0x00000000;
   cfg_regs.wOfWo  = 0x00000000;
   
-
+  cfg_regs.wK  	   = 0x00000000;
+  cfg_regs.wKWr    = 0x00000000;
+  cfg_regs.wKHr    = 0x00000000;  
+  cfg_regs.wP  	   = 0x00000000;
+  cfg_regs.wPV1    = 0x00000000;
+  cfg_regs.wPV2    = 0x00000000;
+  cfg_regs.wPV3    = 0x00000000;
+  cfg_regs.wPV4    = 0x00000000;
+  cfg_regs.wPV5    = 0x00000000;
+  cfg_regs.wPV6    = 0x00000000;
+  cfg_regs.wPV7    = 0x00000000;
+  
    res = nu_ppe_rd_regs(NU_PPE_RDMA_BASE, NU_PPE_STANDALONE_BASE, &cfg_regs);
 
   if ( res !=0)
@@ -416,6 +434,9 @@ int main() {
   cfg_regs.rOfWi  = 0x00000000;
   // Configure PPE+WDMA
 //  cfg_regs.wSt = 0x00000000;
+  cfg_regs.wWi    = 0x00000000;
+  cfg_regs.wHi    = 0x00000000;
+  cfg_regs.wCi    = 0x00000000;
   cfg_regs.wWo    = 0x00001000;
   cfg_regs.wHo    = 0x00001000;
   cfg_regs.wCo    = 0x00000020;
@@ -425,11 +446,26 @@ int main() {
   cfg_regs.wLSd   = 0x00001000;
   cfg_regs.wESd   = 0x00000020;
   cfg_regs.wOpM   = 0x00200000;
+  cfg_regs.wBSWi  = 0x00000000;
+  cfg_regs.wBSHi  = 0x00000000;
+  cfg_regs.wBSCi  = 0x00000000;
   cfg_regs.wBSWo  = 0x0000007F;
   cfg_regs.wBSHo  = 0x00000000;
   cfg_regs.wBSCo  = 0x0000000F;
   cfg_regs.wStWo  = 0x0000007F;
   cfg_regs.wOfWo  = 0x00000000;
+  
+  cfg_regs.wK  	   = 0x00000000;
+  cfg_regs.wKWr    = 0x00008888;
+  cfg_regs.wKHr    = 0x00008888;   
+  cfg_regs.wP  	   = 0x00000000;
+  cfg_regs.wPV1    = 0x00000000;
+  cfg_regs.wPV2    = 0x00000000;
+  cfg_regs.wPV3    = 0x00000000;
+  cfg_regs.wPV4    = 0x00000000;
+  cfg_regs.wPV5    = 0x00000000;
+  cfg_regs.wPV6    = 0x00000000;
+  cfg_regs.wPV7    = 0x00000000;
   
 	//rumboot_printf("Read REGS after WRITE REGs\n");
 	// write reg config data
@@ -451,7 +487,7 @@ int main() {
   cfg_regs.rVSs   = 0xFFFFFFDF;
   cfg_regs.rLSs   = 0xFFFFEFFF;
   cfg_regs.rESs   = 0xFFFFFFDF;
-  cfg_regs.rOpM   = 0x0040FF00;
+  cfg_regs.rOpM   = 0x0040FF00;  
   cfg_regs.rBSWi  = 0x00001F80;
   cfg_regs.rBSHi  = 0x00001FFF;
   cfg_regs.rBSCi  = 0x00001FF0;
@@ -459,6 +495,9 @@ int main() {
   cfg_regs.rOfWi  = 0x00001FFF;
   // Configure PPE+WDMA
 //  cfg_regs.wSt = 0x00000000;
+  cfg_regs.wWi    = 0x00001FFF;
+  cfg_regs.wHi    = 0x00001FFF;
+  cfg_regs.wCi    = 0x00001FFF;
   cfg_regs.wWo    = 0xFFFFEFFF;
   cfg_regs.wHo    = 0xFFFFEFFF;
   cfg_regs.wCo    = 0xFFFFEFDF;
@@ -467,12 +506,27 @@ int main() {
   cfg_regs.wVSd   = 0xFFFFFFDF;
   cfg_regs.wLSd   = 0xFFFFEFFF;
   cfg_regs.wESd   = 0xFFFFFFDF;
-  cfg_regs.wOpM   = 0x0240FF23; 
+  cfg_regs.wOpM   = 0x0240FF23;
+  cfg_regs.wBSWi  = 0x00001FFF;
+  cfg_regs.wBSHi  = 0x00001FFF;
+  cfg_regs.wBSCi  = 0x00001FFF;
   cfg_regs.wBSWo  = 0x00001F80;
   cfg_regs.wBSHo  = 0x00001FFF;
   cfg_regs.wBSCo  = 0x00001FF0;
   cfg_regs.wStWo  = 0x00001F80;
   cfg_regs.wOfWo  = 0x00001FFF;
+  
+  cfg_regs.wK  	   = 0x00FF0707;
+  cfg_regs.wKWr    = 0x00007777;
+  cfg_regs.wKHr    = 0x00007777;  
+  cfg_regs.wP  	   = 0x00007777;
+  cfg_regs.wPV1    = 0x0007FFFF;
+  cfg_regs.wPV2    = 0x0007FFFF;
+  cfg_regs.wPV3    = 0x0007FFFF;
+  cfg_regs.wPV4    = 0x0007FFFF;
+  cfg_regs.wPV5    = 0x0007FFFF;
+  cfg_regs.wPV6    = 0x0007FFFF;
+  cfg_regs.wPV7    = 0x0007FFFF; 
   
 	//rumboot_printf("Read REGS after WRITE REGs\n");
 	// write reg config data
