@@ -84,7 +84,10 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
                  +cfg_file_tag=${CMAKE_SOURCE_DIR}/${VPE_SIMPLE_PATH}/Config_vpe1.bin
     )
     # endif()
-
+  add_rumboot_target(
+      CONFIGURATION ROM
+      FILES scr1/targets/simple-rom/nu/ppe_regs/regs_ppe.c
+	)
     # files transfered from RM to simulation environment
     set(NA_TEST_in_file cube.bin)
     set(NA_TEST_in_ameba_file cube_ameba.bin)
