@@ -19,7 +19,7 @@ else()
   message("NMC: SOC build for ${RUMBOOT_SOC}!")
   set(SOC_OBJCOPY_FLAGS )
   set(SOC_BOOTROM ${RUMBOOT_SOC}:bootrom-stub)
-  set(SOC_PACKIMAGE_FLAGS -CiR 0x80020000 -F SYNC True)
+  set(SOC_PACKIMAGE_FLAGS -CiR 0x80020000 -F SYNC True -s target_cpu 1)
   set(SOC_FEATURES PACKIMAGE)
 endif()
 
