@@ -266,7 +266,7 @@
     uint32_t Bp     ;
     uint32_t Lp     ;
     uint32_t Rp     ;
-    uint32_t pv     ;
+    uint32_t pv[7]  ;
     PoolingOperationSwitch  meth;
     DataType                dt  ;
   }ConfigPPE;
