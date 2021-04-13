@@ -207,6 +207,7 @@ message(" ==== ==== ==== ==== ==== ==== ==== ====\n\n")
 
 
 ADD_SOURCE("src/lib/algo/crc32.c")
+ADD_SOURCE("src/lib/algo/aes.c")
 ADD_SOURCE("src/lib/logo.c")
 ADD_SOURCE("src/lib/stdio.c")
 ADD_SOURCE("src/lib/printf.c")
