@@ -23,7 +23,7 @@ ConfigREGPPE cfg_regs = {0};
 	  int resw;
 	  int reswro;
 	  int reswro1,reswro2,reswro3;
-	
+	//--------------------------RDMA--------------------------------------
 	if ((0x00000000) !=(ioread32(rbase +NU_PPE_RDMA_STATUS) & 0x00000003)) 	
 	{res0 =1;
 	rumboot_printf("res0 error\n");}	
@@ -35,18 +35,18 @@ ConfigREGPPE cfg_regs = {0};
 	rumboot_printf("res1 error\n");}
 		else 
 		res1=0;	
-	if ((cfg-> rWi) != ioread32(rbase +NU_PPE_RDMA_DATA_W_IN))
+	if ((cfg-> rPWi) != ioread32(rbase +NU_PPE_RDMA_PLANE_W_IN))
 	{res2 =1;
 	rumboot_printf("res2 error\n");}
 		else 
 		res2=0;	
-	if ((cfg->rHi) !=ioread32(rbase +NU_PPE_RDMA_DATA_H_IN))	
+	if ((cfg->rPHi) !=ioread32(rbase +NU_PPE_RDMA_PLANE_H_IN))	
 		{res3 =1;
 		rumboot_printf("res3 error\n");}
 		else 
 		res3=0;	
 
-	if ((cfg->rCi) != ioread32(rbase + NU_PPE_RDMA_DATA_C_IN))
+	if ((cfg->rPCi) != ioread32(rbase + NU_PPE_RDMA_PLANE_C_IN))
 		{res4 =1;
 		rumboot_printf("res4 error\n");}
 		else 
@@ -120,7 +120,7 @@ ConfigREGPPE cfg_regs = {0};
 //		else 
 //		res16=0;
 
-//-----------------------------------------------------------------
+//------------------PPE+WDMA-------------------------------------------
 	if ((0x00000000) !=(ioread32(wbase +NU_PPE_STATUS)& 0x00000003)) 	
 		{resw0 =1;
 		rumboot_printf("resw0 error\n");}
@@ -149,112 +149,130 @@ ConfigREGPPE cfg_regs = {0};
 		resw4=0;
 	
 	
-	if ((cfg->wWo) != ioread32(wbase + NU_PPE_DATA_W_OUT))
+	if ((cfg->wWo) != (ioread32(wbase + NU_PPE_DATA_W_OUT)& 0x00001FFF))
 		{resw5 =1;
 		rumboot_printf("resw5 error\n");}
 		else 
 		resw5=0;
-	if ((cfg->wHo) != ioread32(wbase + NU_PPE_DATA_H_OUT))
+	if ((cfg->wHo) != (ioread32(wbase + NU_PPE_DATA_H_OUT)& 0x00001FFF))
 		{resw6=1;
 		rumboot_printf("resw6 error\n");}
 		else 
 		resw6=0;
-	if ((cfg->wCo) != ioread32(wbase + NU_PPE_DATA_C_OUT))
+	if ((cfg->wCo) != (ioread32(wbase + NU_PPE_DATA_C_OUT)& 0x00001FFF))
 		{resw7=1;
 		rumboot_printf("resw7 error\n");}
 		else 
 		resw7=0;
-	if ((cfg->wBALd) != ioread32(wbase + NU_PPE_DST_BASE_ADDR_L))
+	if ((cfg->wPWo) != ioread32(wbase + NU_PPE_PLANE_W_OUT))
 		{resw8=1;
-		rumboot_printf("resw8 error\n");}
+		rumboot_printf("resw7 error\n");}
 		else 
 		resw8=0;
+	if ((cfg->wPHo) != ioread32(wbase + NU_PPE_PLANE_H_OUT))
+		{resw9=1;
+		rumboot_printf("resw7 error\n");}
+		else 
+		resw9=0;
+	if ((cfg->wPCo) != ioread32(wbase + NU_PPE_PLANE_C_OUT))
+		{resw10=1;
+		rumboot_printf("resw7 error\n");}
+		else 
+		resw10=0;
+
+	
+	
+	if ((cfg->wBALd) != ioread32(wbase + NU_PPE_DST_BASE_ADDR_L))
+		{resw11=1;
+		rumboot_printf("resw8 error\n");}
+		else 
+		resw11=0;
 //	if ((cfg->wBAHd) != ioread32(wbase + NU_PPE_DST_BASE_ADDR_H))
 //		resw9=1;
 //		else 
 //		resw9=0;
 	if ((cfg->wVSd) !=ioread32(wbase +NU_PPE_DST_VECTOR_STRIDE)) 	
-		{resw9 =1;
+		{resw12 =1;
 		rumboot_printf("resw9 error\n");}
 		else 
-		resw9=0;	
+		resw12=0;	
 	if ((cfg->wLSd) != ioread32(wbase + NU_PPE_DST_LINE_STRIDE))
-		{resw10 =1;
+		{resw13 =1;
 		rumboot_printf("resw10 error\n");}
 		else 
-		resw10=0;	
+		resw13=0;	
 	if ((cfg->wESd) !=ioread32(wbase +NU_PPE_DST_ELEMENT_STRIDE)) 	
-		{resw11 =1;
+		{resw14 =1;
 		rumboot_printf("resw11 error\n");}	
 		else 
-		resw11=0;
+		resw14=0;
    	
 	if ((cfg->wOpM) != (ioread32(wbase + NU_PPE_OP_MODE)& 0x0260FF33))
-		{resw12 =1;
+		{resw15 =1;
 		rumboot_printf("resw12 error\n");}
 		else 
-		resw12=0;	
+		resw15=0;	
 	if ((cfg->wBSWi) != (ioread32(wbase + NU_PPE_BOX_SIZE_W_IN)& 0x000001FFF))
-		{resw13 =1;
+		{resw16 =1;
 		rumboot_printf("resw13 error\n");}
 		else 
-		resw13=0;
+		resw16=0;
 	if ((cfg->wBSHi) != (ioread32(wbase + NU_PPE_BOX_SIZE_H_IN)& 0x000001FFF))
-		{resw14 =1;
-		rumboot_printf("resw14 error\n");}
-		else 
-		resw14=0;
-	
-	if ((cfg->wBSCi) !=(ioread32(wbase +NU_PPE_BOX_SIZE_C_IN)& 0x000001FFF)) 	
-		{resw15=1;
-		rumboot_printf("resw15 error\n");}
-		else 
-		resw15=0;
-	
-	if ((cfg->wStWi) != (ioread32(wbase + NU_PPE_BOX_START_W_IN)& 0x000001FFF)) 
-		{resw16 =1;
-		rumboot_printf("resw16 error\n");}
-		else 
-		resw16=0;	
-	if ((cfg->wOfWi) != (ioread32(wbase + NU_PPE_BOX_OFFSET_W_IN)& 0x000001FFF))
 		{resw17 =1;
-		rumboot_printf("resw17 error\n");}
+		rumboot_printf("resw14 error\n");}
 		else 
 		resw17=0;
-	//------------------
-	if ((cfg->wBSWo) != ioread32(wbase + NU_PPE_BOX_SIZE_W_OUT))
-		{resw18 =1;
-		rumboot_printf("resw13 error\n");}
-		else 
-		resw18=0;
-	if ((cfg->wBSHo) != ioread32(wbase + NU_PPE_BOX_SIZE_H_OUT))
-		{resw19 =1;
-		rumboot_printf("resw14 error\n");}
-		else 
-		resw19=0;
 	
-	if ((cfg->wBSCo) !=ioread32(wbase +NU_PPE_BOX_SIZE_C_OUT)) 	
-		{resw20=1;
+	if ((cfg->wBSCi) !=(ioread32(wbase +NU_PPE_BOX_SIZE_C_IN)& 0x000001FFF)) 	
+		{resw18=1;
 		rumboot_printf("resw15 error\n");}
 		else 
-		resw20=0;	
-	if ((cfg->wStWo) != (ioread32(wbase + NU_PPE_BOX_START_W_OUT)& 0x000001FFF)) 
-		{resw21 =1;
+		resw18=0;
+	
+	if ((cfg->wStWi) != (ioread32(wbase + NU_PPE_BOX_START_W_IN)& 0x000001FFF)) 
+		{resw19 =1;
 		rumboot_printf("resw16 error\n");}
 		else 
-		resw21=0;	
-	if ((cfg->wOfWo) != (ioread32(wbase + NU_PPE_BOX_OFFSET_W_OUT)& 0x000001FFF))
-		{resw22 =1;
+		resw19=0;	
+	if ((cfg->wOfWi) != (ioread32(wbase + NU_PPE_BOX_OFFSET_W_IN)& 0x000001FFF))
+		{resw20 =1;
 		rumboot_printf("resw17 error\n");}
 		else 
+		resw20=0;
+	//------------------
+	if ((cfg->wBSWo) != ioread32(wbase + NU_PPE_BOX_SIZE_W_OUT))
+		{resw21 =1;
+		rumboot_printf("resw13 error\n");}
+		else 
+		resw21=0;
+	if ((cfg->wBSHo) != ioread32(wbase + NU_PPE_BOX_SIZE_H_OUT))
+		{resw22 =1;
+		rumboot_printf("resw14 error\n");}
+		else 
 		resw22=0;
+	
+	if ((cfg->wBSCo) !=ioread32(wbase +NU_PPE_BOX_SIZE_C_OUT)) 	
+		{resw23=1;
+		rumboot_printf("resw15 error\n");}
+		else 
+		resw23=0;	
+	if ((cfg->wStWo) != (ioread32(wbase + NU_PPE_BOX_START_W_OUT)& 0x000001FFF)) 
+		{resw24 =1;
+		rumboot_printf("resw16 error\n");}
+		else 
+		resw24=0;	
+	if ((cfg->wOfWo) != (ioread32(wbase + NU_PPE_BOX_OFFSET_W_OUT)& 0x000001FFF))
+		{resw25 =1;
+		rumboot_printf("resw17 error\n");}
+		else 
+		resw25=0;
 
 
 	if ((cfg->wK) != (ioread32(wbase + NU_PPE_KERNEL)& 0x00FF0707))
-		{resw25 =1;
+		{resw26 =1;
 		rumboot_printf("resw25 error\n");}
 		else 
-		resw25=0;
+		resw26=0;
 	if ((cfg->wKWr) != (ioread32(wbase + NU_PPE_RECIP_KERNEL_W)& 0x00000FFFF))
 		{resw26 =1;
 		rumboot_printf("resw26 error\n");}
@@ -355,9 +373,9 @@ int main() {
   
    // Configure RDMA initial state
  // cfg_regs.rSt = 0x00000000;
-  cfg_regs.rWi    = 0x00000000;
-  cfg_regs.rHi    = 0x00000000;
-  cfg_regs.rCi    = 0x00000000;
+  cfg_regs.rPWi   = 0x00000000;
+  cfg_regs.rPHi   = 0x00000000;
+  cfg_regs.rPCi   = 0x00000000;
   cfg_regs.rBALs  = 0x00000000;
  // cfg_regs.rBAHs  = 0x00000000;
   cfg_regs.rVSs   = 0x00000000;
@@ -378,6 +396,10 @@ int main() {
   cfg_regs.wWo    = 0x00000000;
   cfg_regs.wHo    = 0x00000000;
   cfg_regs.wCo    = 0x00000000;
+  cfg_regs.wPWo   = 0x00000000;
+  cfg_regs.wPHo   = 0x00000000;
+  cfg_regs.wPCo   = 0x00000000;
+  
   cfg_regs.wBALd  = 0x00000000;
  // cfg_regs.wBAHd  = 0x00000000;
   cfg_regs.wVSd   = 0x00000000;
@@ -418,9 +440,9 @@ int main() {
    
   // Configure RDMA
 
-  cfg_regs.rWi    = 0x00000000;
-  cfg_regs.rHi    = 0x00001000;
-  cfg_regs.rCi    = 0x00000020;
+  cfg_regs.rPWi    = 0x00000000;
+  cfg_regs.rPHi    = 0x00001000;
+  cfg_regs.rPCi    = 0x00000020;
   cfg_regs.rBALs  = 0x13572468;
  // cfg_regs.rBAHs  = 0x00000000;
   cfg_regs.rVSs   = 0x00000020;
@@ -440,6 +462,9 @@ int main() {
   cfg_regs.wWo    = 0x00001000;
   cfg_regs.wHo    = 0x00001000;
   cfg_regs.wCo    = 0x00000020;
+  cfg_regs.wPWo   = 0x00001000;
+  cfg_regs.wPHo   = 0x00000100;
+  cfg_regs.wPCo   = 0x00000010;
   cfg_regs.wBALd  = 0x12345678;
  // cfg_regs.wBAHd  = 0x00000000;
   cfg_regs.wVSd   = 0x00000020;
@@ -479,9 +504,9 @@ int main() {
   
   // Configure RDMA with changed config
 
-  cfg_regs.rWi    = 0xFFFFFFFF;
-  cfg_regs.rHi    = 0xFFFFFFFF;
-  cfg_regs.rCi    = 0xFFFFFFFF;
+  cfg_regs.rPWi   = 0xFFFFFFFF;
+  cfg_regs.rPHi   = 0xFFFFFFFF;
+  cfg_regs.rPCi   = 0xFFFFFFFF;
   cfg_regs.rBALs  = 0xedcda987;
  // cfg_regs.rBAHs  = 0x00000000;
   cfg_regs.rVSs   = 0xFFFFFFDF;
@@ -498,9 +523,12 @@ int main() {
   cfg_regs.wWi    = 0x00001FFF;
   cfg_regs.wHi    = 0x00001FFF;
   cfg_regs.wCi    = 0x00001FFF;
-  cfg_regs.wWo    = 0xFFFFEFFF;
-  cfg_regs.wHo    = 0xFFFFEFFF;
-  cfg_regs.wCo    = 0xFFFFEFDF;
+  cfg_regs.wWo    = 0x00001FFF;
+  cfg_regs.wHo    = 0x00001FFF;
+  cfg_regs.wCo    = 0x00001FDF;
+  cfg_regs.wPWo   = 0xFFFFEFFF;
+  cfg_regs.wPHo   = 0xFFFFFEFF;
+  cfg_regs.wPCo   = 0xFFFFFFEF;
   cfg_regs.wBALd  = 0xedcda987;
  // cfg_regs.wBAHd  = 0x00000000;
   cfg_regs.wVSd   = 0xFFFFFFDF;
