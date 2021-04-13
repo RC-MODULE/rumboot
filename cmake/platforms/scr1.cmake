@@ -272,7 +272,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     set(MPE_DEMO_PATH src/platform/scr1/targets/simple-rom/nu/mpe_demo)
     set(MPE_PARSE_TEST ${CMAKE_SOURCE_DIR}/${MPE_DEMO_PATH}/parse_mpe_arrays.pl)
     set(MPE_TEST_SHEETS_DIR ${CMAKE_SOURCE_DIR}/../units/rcm_lava_mpe/tests)     # Outside The RumBoot!!!!
-    set(mpe_demo_test_name test1.1)
+    set(mpe_demo_test_name test1)
 
     set(MPE_TEST_SHEET ${MPE_TEST_SHEETS_DIR}/${mpe_demo_test_name}/mpe_arrays.txt)
     add_rumboot_target(
