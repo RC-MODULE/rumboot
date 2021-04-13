@@ -3,6 +3,9 @@
 
 #define ARRAY_SIZE( array )             (sizeof(array) / sizeof(array[0]))
 
+#define RUMBOOT_IS_64BIT() (UINTPTR_MAX > 0xFFFFFFFF)
+#define RUMBOOT_IS_32BIT() (UINTPTR_MAX < 0xFFFFFFFF)
+
 #ifdef __ASSEMBLER__
 #define DECLARE_CONST( name, value )    .equiv name, value
 #else

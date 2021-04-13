@@ -42,3 +42,14 @@ int __attribute__((weak)) rumboot_platform_selftest(struct rumboot_config *conf)
 {
         return 0;
 }
+
+/* TODO: Reference AES-CBC encryption */
+int rumboot_platform_decrypt_buffer(const struct rumboot_bootsource *src, int encryption_slot, void *data, size_t datasize)
+{
+    return 0;
+}
+
+int rumboot_platform_verify_signature(const struct rumboot_bootsource *src, int certificate_slot, void *data, size_t datasize)
+{
+    return 0;
+}

@@ -435,9 +435,9 @@ int main(void)
     memcpy((void *)&gdbmon_hdr, (void *)M_BASE, sizeof(gdbmon_hdr));
     printf("magic:          %lx\n", gdbmon_hdr.magic);
     printf("datalen:        %ld\n", gdbmon_hdr.datalen);
-    printf("entry_point32[0]: %ld\n", gdbmon_hdr.entry_point32[0]);
+    printf("entry_point[0]: %ld\n", gdbmon_hdr.entry_point[0]);
 
     rumboot_printf("Starting test code from another memory\n");
 
-    return rumboot_bootimage_execute_ep((void *) gdbmon_hdr.entry_point32[0]);
+    return rumboot_bootimage_execute_ep((void *) gdbmon_hdr.entry_point[0]);
 }

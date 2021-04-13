@@ -74,9 +74,9 @@ static void hostmode_loop(struct rumboot_config *conf, void *pdata)
                 }
 
                 if (hdr->device) {
-                        hdr->device = NULL;
+                        hdr->device = 0;
                 }
-                ssize_t len = rumboot_bootimage_check_header(hdr, &data);
+                ssize_t len = rumboot_bootimage_check_header(NULL, hdr, &data);
                 if (len == -EBADMAGIC) {
                         continue;
                 }
@@ -85,7 +85,7 @@ static void hostmode_loop(struct rumboot_config *conf, void *pdata)
                         hdr->magic = -len;
                         continue;
                 }
-                if (0 == rumboot_bootimage_check_data(hdr)) {
+                if (0 == rumboot_bootimage_check_data(NULL, hdr)) {
                         ret = rumboot_bootimage_execute(hdr, NULL);
                         dbg_boot(NULL, "Back in rom, code %d", ret);
                         if (ret > 0) {

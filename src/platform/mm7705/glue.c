@@ -300,8 +300,8 @@ void *rumboot_platform_get_spl_area(size_t *size)
 int rumboot_platform_exec(struct rumboot_bootheader *hdr, int swap)
 {
         /* No-op, this chip has only one core */
-        rumboot_printf("EP: %x\n", hdr->entry_point32[0]);
-        return rumboot_bootimage_execute_ep((void *) hdr->entry_point32[0]);
+        rumboot_printf("EP: %x\n", hdr->entry_point[0]);
+        return rumboot_bootimage_execute_ep((void *) hdr->entry_point[0]);
 }
 
 void rumboot_platform_read_config(struct rumboot_config *conf)

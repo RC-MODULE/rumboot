@@ -47,7 +47,7 @@ enum rumboot_header_flags {
     RUMBOOT_FLAG_KILL     = (1 << 7), /** Issue a reset to the target CPU before operating */
 };
 
-struct __attribute__((packed)) rumboot_bootheader {
+struct rumboot_bootheader {
     uint32_t magic;
     uint8_t  version;
     uint8_t  flags;
@@ -55,16 +55,11 @@ struct __attribute__((packed)) rumboot_bootheader {
     uint8_t  chip_rev;
     uint32_t data_crc32;
     uint32_t datalen;
-
-    union
-    {
-      uint64_t  entry_point;
-      uint32_t  entry_point32[2];
-    };
-    
+    /* We use two 32-bit numbers, since gcc can't assign statically a 64-bit one */ 
+    uint32_t  entry_point[2];
     uint64_t  relocation;
-
     uint8_t   target_cpu_cluster;
+
     uint8_t   encryption_slot;
     uint8_t   certificate_slot;
     uint8_t   priority;
@@ -72,7 +67,9 @@ struct __attribute__((packed)) rumboot_bootheader {
     uint32_t  header_crc32;
     uint32_t  device;
     char     data[];
-};
+} __attribute__((packed));
+
+
 
 
 /**
@@ -89,14 +86,14 @@ int rumboot_bootimage_check_magic(uint32_t magic);
  * @param  dataptr Pointer to image data (for a valid header)
  * @return         Image data length
  */
-ssize_t rumboot_bootimage_check_header(struct rumboot_bootheader *hdr, void **dataptr);
+ssize_t rumboot_bootimage_check_header(const struct rumboot_bootsource *src, struct rumboot_bootheader *hdr, void **dataptr);
 
 /**
  * Validate data section of the bootable image
  * @param  hdr [description]
  * @return     [description]
  */
-int32_t rumboot_bootimage_check_data(struct rumboot_bootheader *hdr);
+int32_t rumboot_bootimage_check_data(const struct rumboot_bootsource *src, struct rumboot_bootheader *hdr);
 
 
 /*
@@ -228,10 +225,11 @@ struct rumboot_cpu_cluster {
   int (*start)(const struct rumboot_cpu_cluster *cpu, struct rumboot_bootheader *hdr, int swap);
 };
 
-const struct rumboot_cpu_cluster *rumboot_platform_get_secondary_cpus(int *cpu_count);
+const struct rumboot_cpu_cluster *rumboot_platform_get_cpus(int *cpu_count);
 int __attribute__((deprecated)) rumboot_bootimage_execute_ep(void *ep);
 int rumboot_bootimage_jump_to_ep_with_args(const struct rumboot_cpu_cluster *cpu,  struct rumboot_bootheader *hdr, int swap);
-
+int rumboot_platform_decrypt_buffer(const struct rumboot_bootsource *src, int encryption_slot, void *data, size_t datasize);
+int rumboot_platform_verify_signature(const struct rumboot_bootsource *src, int certificate_slot, void *data, size_t datasize);
 
 #endif /* end of include guard: BOOTHEADER_H */
 

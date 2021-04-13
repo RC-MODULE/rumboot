@@ -23,7 +23,7 @@ enum bootheader_err_code test_rumboot_bootimage_check_header(struct rumboot_boot
   void *data;
 
   for(i = 0; i < numb; i++) {
-      wrong_hdr[i] = rumboot_malloc(sizeof (*wrong_hdr[i]) + hdr->num_cores * sizeof (hdr->entry_point32[0])); //allocation memory
+      wrong_hdr[i] = rumboot_malloc(sizeof (*wrong_hdr[i]) + hdr->num_cores * sizeof (hdr->entry_point[0])); //allocation memory
       *wrong_hdr[i] = *hdr; //initialization
   }
 
@@ -61,7 +61,7 @@ enum bootheader_err_code test_rumboot_bootimage_check_data(struct rumboot_boothe
   struct rumboot_bootheader* wrong_hdr[numb];
 
   for(i = 0; i < numb; i++) {
-    wrong_hdr[i] = rumboot_malloc(sizeof (*wrong_hdr[i]) + hdr->num_cores * sizeof (hdr->entry_point32[0])); //allocation memory
+    wrong_hdr[i] = rumboot_malloc(sizeof (*wrong_hdr[i]) + hdr->num_cores * sizeof (hdr->entry_point[0])); //allocation memory
     *wrong_hdr[i] = *hdr; //initialization
   }
 
@@ -104,7 +104,7 @@ int main() {
   rumboot_printf("Test bootheader.\n");
 
   struct rumboot_bootheader* hdr;
-  hdr = rumboot_malloc(sizeof (*hdr) + NUM_CORES * sizeof (hdr->entry_point32[0]));
+  hdr = rumboot_malloc(sizeof (*hdr) + NUM_CORES * sizeof (hdr->entry_point[0]));
   hdr->magic = RUMBOOT_HEADER_MAGIC;
   hdr->version = RUMBOOT_HEADER_VERSION;
   hdr->num_cores = NUM_CORES;

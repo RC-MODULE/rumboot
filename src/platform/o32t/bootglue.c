@@ -197,7 +197,7 @@ int rumboot_platform_exec(struct rumboot_bootheader *hdr, int swap)
 {
         /* Make sure PID is 0 */
         set_mem_window(MEM_WINDOW_SHARED);
-        uint32_t ep = hdr->entry_point32[0];
+        uint32_t ep = hdr->entry_point[0];
 
         if (swap) {
                 write_tlb_entries(little_endian_tlb, ARRAY_SIZE(little_endian_tlb));

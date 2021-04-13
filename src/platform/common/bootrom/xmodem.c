@@ -31,7 +31,7 @@ int main()
 								if (ret <= 0)
 									return 1;
 
-								ssize_t len = rumboot_bootimage_check_header(hdr, &data);
+								ssize_t len = rumboot_bootimage_check_header(NULL, hdr, &data);
 								if (len == -EBADMAGIC) {
 																dbg_boot(NULL, "Bad magic");
 																return 1;
@@ -42,7 +42,7 @@ int main()
 																hdr->magic = 0;
 																return 1;
 								}
-								if (0 == rumboot_bootimage_check_data(hdr)) {
+								if (0 == rumboot_bootimage_check_data(NULL, hdr)) {
 																hdr->magic = 0x0;
 																ret = rumboot_platform_exec(hdr, 0);
 								}

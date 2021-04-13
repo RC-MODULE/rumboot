@@ -34,10 +34,11 @@ static int nmc_poll(const struct rumboot_cpu_cluster *cpu)
         return ret;
 }
 
-static void nmc_start(const struct rumboot_cpu_cluster *cpu, struct rumboot_bootheader *hdr, int swap)
+static int nmc_start(const struct rumboot_cpu_cluster *cpu, struct rumboot_bootheader *hdr, int swap)
 {
     dcr_write(DCR_SCTL_BASE + SCTL_NMPU_NMI, 1<<1);                
     dcr_write(DCR_SCTL_BASE + SCTL_NMPU_NMI, 0);
+    return 0;
 }
 
 static void nmc_kill(const struct rumboot_cpu_cluster *cpu)
@@ -86,12 +87,12 @@ static void ext_kill(const struct rumboot_cpu_cluster *cpu)
     }
 }
 
-static void ext_start(const struct rumboot_cpu_cluster *cpu,  struct rumboot_bootheader *hdr, int swap)
+static int ext_start(const struct rumboot_cpu_cluster *cpu,  struct rumboot_bootheader *hdr, int swap)
 {
     /* TODO: Send payload via COMx */
 }
 
-static void ext_poll(const struct rumboot_cpu_cluster *cpu,  struct rumboot_bootheader *hdr, int swap)
+static int ext_poll(const struct rumboot_cpu_cluster *cpu,  struct rumboot_bootheader *hdr, int swap)
 {
     /* TODO: Same as poll, but via COMx port */
 }

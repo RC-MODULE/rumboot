@@ -14,7 +14,7 @@ extern int main(int argc, const char *argv[]);
 #endif
 
 static const __attribute__((used)) __attribute__((section(".header")))
-__attribute__((packed)) struct rumboot_bootheader hdr  = {
+struct rumboot_bootheader hdr  = {
 	.magic		= RUMBOOT_HEADER_MAGIC,
 #ifdef __NM__
 	/* NeuroMatrix images always need decapsulation */
@@ -28,5 +28,5 @@ __attribute__((packed)) struct rumboot_bootheader hdr  = {
 #elif defined (RUMBOOT_TARGET_CPU_CLUSTER)
 	.target_cpu_cluster = RUMBOOT_TARGET_CPU_CLUSTER,
 #endif
-	.entry_point32	= { THE_ENTRY_POINT, 0x0 },
+	.entry_point	= { THE_ENTRY_POINT, 0x0 },
 };

@@ -122,14 +122,14 @@ int rumboot_decompress_buffer(const struct rumboot_bootsource *src, const uint8_
 }
 
 
-ssize_t rumboot_bootimage_check_header(struct rumboot_bootheader *hdr, void **dataptr)
+ssize_t rumboot_bootimage_check_header(const struct rumboot_bootsource *src, struct rumboot_bootheader *hdr, void **dataptr)
 {
 	int swap = rumboot_bootimage_check_magic(hdr->magic);
 	if (swap == -1)
 		return -EBADMAGIC;
 
-    dbg_boot(hdr->device, "--- Boot Image Header ---");
-    dbg_boot(hdr->device, "Magic:            0x%x", rumboot_bootimage_header_item32(hdr->magic, swap));
+    dbg_boot(src, "--- Boot Image Header ---");
+    dbg_boot(src, "Magic:            0x%x", rumboot_bootimage_header_item32(hdr->magic, swap));
 
 #ifdef RUMBOOT_SUPPORTS_SPL_ENDIAN_SWAP
 	#if (__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__)
@@ -140,26 +140,26 @@ ssize_t rumboot_bootimage_check_header(struct rumboot_bootheader *hdr, void **da
 	const char *endian = swap ? "little" : "big";
 	#endif 
 
-	dbg_boot(hdr->device, "Byte order:       %s (%s)", endian, swap ? "reversed" : "native");
+	dbg_boot(src, "Byte order:       %s (%s)", endian, swap ? "reversed" : "native");
 #endif
 
-    dbg_boot(hdr->device, "Header version:   %d",   hdr->version);
+    dbg_boot(src, "Header version:   %d",   hdr->version);
 	if ((hdr->version != RUMBOOT_HEADER_VERSION) && (hdr->version != 2))
 		return -EBADVERSION;
 
-    dbg_boot(hdr->device, "Chip Id:          %d", hdr->chip_id);
-    dbg_boot(hdr->device, "Chip Revision:    %d", hdr->chip_rev);
+    dbg_boot(src, "Chip Id:          %d", hdr->chip_id);
+    dbg_boot(src, "Chip Revision:    %d", hdr->chip_rev);
 
 	/* Require hdr->flags to be zero for old images */
 	if (hdr->version == 2) {
 		if (hdr->flags) {
-    		dbg_boot(hdr->device, "ERR: Non-zero 'reserved' field in header");
+    		dbg_boot(src, "ERR: Non-zero 'reserved' field in header");
 			return -EBADHEADER;
 		}		
 	}
 
 	if (hdr->version > 2) {
-    	dbg_boot(hdr->device, "Image Flags:     %s%s%s%s%s%s%s%s", 
+    	dbg_boot(src, "Image Flags:     %s%s%s%s%s%s%s%s", 
 			hdr->flags & RUMBOOT_FLAG_COMPRESS ? " SHRNK"    : "",
 			hdr->flags & RUMBOOT_FLAG_DATA     ? " DATA"    : "",
 			hdr->flags & RUMBOOT_FLAG_RESERVED ? " RSVD"    : "",
@@ -172,21 +172,21 @@ ssize_t rumboot_bootimage_check_header(struct rumboot_bootheader *hdr, void **da
 		uint32_t cluster_id = rumboot_bootimage_header_item32(hdr->target_cpu_cluster, swap);
 		const struct rumboot_cpu_cluster *cpu = get_cpu(cluster_id);
 		if (!cpu) {
-			dbg_boot(hdr->device, "ERR: Invalid target cluster_id specified: %d\n", cluster_id);
+			dbg_boot(src, "ERR: Invalid target cluster_id specified: %d\n", cluster_id);
 			return -EBADCLUSTERID;
 		}
-    	dbg_boot(hdr->device, "Target CPU:       %d (%s)", cluster_id, cpu->name);	
+    	dbg_boot(src, "Target CPU:       %d (%s)", cluster_id, cpu->name);	
 	}
-    dbg_boot(hdr->device, "Data Length:      %d", rumboot_bootimage_header_item32(hdr->datalen, swap));
-    dbg_boot(hdr->device, "Header CRC32:     0x%x", rumboot_bootimage_header_item32(hdr->header_crc32, swap));
-    dbg_boot(hdr->device, "Data CRC32:       0x%x", rumboot_bootimage_header_item32(hdr->data_crc32, swap));
-    dbg_boot(hdr->device, "---        ---        ---");
+    dbg_boot(src, "Data Length:      %d", rumboot_bootimage_header_item32(hdr->datalen, swap));
+    dbg_boot(src, "Header CRC32:     0x%x", rumboot_bootimage_header_item32(hdr->header_crc32, swap));
+    dbg_boot(src, "Data CRC32:       0x%x", rumboot_bootimage_header_item32(hdr->data_crc32, swap));
+    dbg_boot(src, "---        ---        ---");
 	if (hdr->chip_id != RUMBOOT_PLATFORM_CHIPID)
 		return -EBADCHIPID;
 
 	/* Warn about possible incompatibilities */
 	if (hdr->chip_rev != RUMBOOT_PLATFORM_CHIPREV) {
-		dbg_boot(hdr->device, "WARN: Bad Chip Revision: expected: %d",
+		dbg_boot(src, "WARN: Bad Chip Revision: expected: %d",
 		RUMBOOT_PLATFORM_CHIPREV);
 	}
 
@@ -194,7 +194,7 @@ ssize_t rumboot_bootimage_check_header(struct rumboot_bootheader *hdr, void **da
 	uint32_t checksum = crc32(0, hdr, hdrcrclen);
 
 	if (checksum != rumboot_bootimage_header_item32(hdr->header_crc32, swap)) {
-		dbg_boot(hdr->device, "Bad Header CRC32: expected: %x", checksum);
+		dbg_boot(src, "Bad Header CRC32: expected: %x", checksum);
 		return -EBADHDRCRC;
 	}
 
@@ -205,7 +205,7 @@ ssize_t rumboot_bootimage_check_header(struct rumboot_bootheader *hdr, void **da
 	return rumboot_bootimage_header_item32(hdr->datalen, swap);
 }
 
-int32_t rumboot_bootimage_check_data(struct rumboot_bootheader *hdr)
+int32_t rumboot_bootimage_check_data(const struct rumboot_bootsource *src, struct rumboot_bootheader *hdr)
 {
 	int swap = rumboot_bootimage_check_magic(hdr->magic);	
 	if (rumboot_bootimage_header_item32(hdr->datalen, swap) == 0)
@@ -213,7 +213,7 @@ int32_t rumboot_bootimage_check_data(struct rumboot_bootheader *hdr)
 
 	uint32_t checksum = crc32(0, hdr->data, rumboot_bootimage_header_item32(hdr->datalen, swap));
 	if (checksum != rumboot_bootimage_header_item32(hdr->data_crc32, swap)) {
-		dbg_boot(hdr->device, "Bad Data CRC32: expected: 0x%x",
+		dbg_boot(src, "Bad Data CRC32: expected: 0x%x",
 			checksum
 		);
         return -EBADDATACRC;
@@ -230,31 +230,34 @@ int rumboot_bootimage_execute(struct rumboot_bootheader *hdr, const struct rumbo
 	size_t spl_size;
 
 	hdr->magic = 0x0; /* Wipe out magic */
-	hdr->device = src; /* Set the src pointer */
+	hdr->device = (uint32_t) src; /* Set the legacy src pointer */
 
 	rumboot_platform_get_spl_area(&spl_size);
-	int cluster = (hdr->version == 3) ? rumboot_bootimage_header_item32(hdr->target_cpu_cluster, swap) : 0;
-	const struct rumboot_cpu_cluster * cpu = get_cpu(cluster); 
+	int cluster = (hdr->version == 3) ? hdr->target_cpu_cluster : 0;
 
-	if (cpu && (flags & RUMBOOT_FLAG_KILL) && (cpu->kill)) {
+	const struct rumboot_cpu_cluster * cpu = get_cpu(cluster); 
+	if (!cpu) {
+		dbg_boot(src, "ERR: Invalid target cpu cluster: %d", cluster);
+		return -EBADCLUSTERID;
+	}
+
+	if ((flags & RUMBOOT_FLAG_KILL) && (cpu->kill)) {
 		cpu->kill(cpu); /* Kill any running tasks on secondary CPU, if needed */
 	}
 
-#if 0
 	/* At this point we have to handle data decryption, if needed */
 	int encryption_slot  = rumboot_bootimage_header_item32(hdr->encryption_slot,  swap);
 	int certificate_slot = rumboot_bootimage_header_item32(hdr->certificate_slot, swap);
 
 	if ((encryption_slot > 0) && (certificate_slot > 0)) {
 		dbg_boot("Decrypting image, key slot %d...\n", encryption_slot);
-		rumboot_platform_decrypt_buffer(encryption_slot, hdr->data, datasize);
+		rumboot_platform_decrypt_buffer(src, encryption_slot, hdr->data, datasize);
 		dbg_boot("Verifying signature, certificate slot %d...\n", encryption_slot);
-		int ret = rumboot_platform_verify_signature(certificate_slot, hdr->data, datasize);
+		int ret = rumboot_platform_verify_signature(src, certificate_slot, hdr->data, datasize);
 		if (ret != 0) {
 			return ret;
 		}
 	}
-#endif
 
 	/* Now, let's calculate the relocation. This will only affect V3 images, since V2 have flags zeroed */
 	if (flags & (RUMBOOT_FLAG_RELOCATE | RUMBOOT_FLAG_DECAPS | RUMBOOT_FLAG_COMPRESS)) {
@@ -266,13 +269,13 @@ int rumboot_bootimage_execute(struct rumboot_bootheader *hdr, const struct rumbo
 
 		/* If we only have a 'decaps' image, we'll have to do an in-place memmove/decompress */
 		uint64_t dest_ptr = (flags & RUMBOOT_FLAG_RELOCATE) ? rumboot_bootimage_header_item64(hdr->relocation, swap) : (uintptr_t) hdr;
-		if (sizeof(image_destination_base) == sizeof(uint32_t)) {
-			image_destination_base = (void *) (uintptr_t) (dest_ptr & 0xffffffff);
-		} else if (sizeof(image_destination_base) == sizeof(uint64_t)) {
+		#if UINTPTR_MAX > 0xFFFFFFFF
 			image_destination_base = (void*) (uintptr_t) dest_ptr;
-		};
+		#else
+			image_destination_base = (void *) (uintptr_t) (dest_ptr & 0xffffffff);
+		#endif
 
-		image_source_base = hdr;
+		image_source_base = (void *) hdr;
 		/* First, let's make sure the header is where it's needed */
 		if (flags & RUMBOOT_FLAG_DECAPS) {
 			/* Decapsulation: Skip header. Same for compressed images */
@@ -386,11 +389,11 @@ int rumboot_bootimage_jump_to_ep_with_args(const struct rumboot_cpu_cluster *cpu
 {
     int (*runme)(uint32_t a, uint32_t b, uint32_t c, uint32_t d, uint32_t e); 
 	
-	if (sizeof(runme) == sizeof(uint64_t)) {
-		runme = (void *) hdr->entry_point;
-	} else {
-		runme = (void *) hdr->entry_point32[0];
-	}
+#if UINTPTR_MAX > 0xFFFFFFFF
+		runme = (void *) ((hdr->entry_point[0]) | (uint64_t) (hdr->entry_point[1]) << 32);
+#else
+		runme = (void *) hdr->entry_point[0];
+#endif
 
     return runme(
         hdr->bootargs[0], 

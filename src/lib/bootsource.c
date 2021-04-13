@@ -115,7 +115,7 @@ int bootsource_load_img(const struct rumboot_bootsource *src, void *pdata, struc
         }
         *offset += count;
 
-        ssize_t len = rumboot_bootimage_check_header(hdr, &data);
+        ssize_t len = rumboot_bootimage_check_header(src, hdr, &data);
 
         if (len < 0) {
                 return len;
@@ -131,7 +131,7 @@ int bootsource_load_img(const struct rumboot_bootsource *src, void *pdata, struc
         bootsource_read(src, pdata, &hdr->data[count - sizeof(*hdr)], *offset, len);
         *offset += len;
         /* No error handling here, let crc32 sort everything out */
-        return rumboot_bootimage_check_data(hdr);
+        return rumboot_bootimage_check_data(src, hdr);
 }
 
 int bootsource_try_source_once(const struct rumboot_bootsource *src, void *pdata, struct rumboot_bootheader *dst, size_t maxsize, size_t *offset)

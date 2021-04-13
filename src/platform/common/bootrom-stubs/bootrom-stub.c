@@ -48,8 +48,8 @@ int main()
                         break;
                 }
 
-                rumboot_printf("STUB: Executing SPL image from %x. Magic: 0x%x Entry: 0x%x\n",
-                        (uint32_t) hdr, hdr->magic, hdr->entry_point32[0]);
+                rumboot_printf("STUB: Executing SPL image from %x. magic: 0x%x entry: 0x%x cluster: %d\n",
+                        (uint32_t) hdr, hdr->magic, hdr->entry_point[0], hdr->target_cpu_cluster);
                 ret = rumboot_bootimage_execute(hdr, NULL);
                 if (ret != 0)
                         break;
