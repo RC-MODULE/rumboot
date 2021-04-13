@@ -375,9 +375,9 @@ void nu_ppe_print_config_reg(ConfigREGPPE* cfg_reg){
   rumboot_printf("  = RDMA registers:\n");
   // rumboot_printf("  rSt     = %x \n" , cfg_reg->rSt);
   rumboot_printf("  rOpEn   = %x \n" , cfg_reg->rOpEn);
-  rumboot_printf("  rWi     = %x \n" , cfg_reg->rWi);
-  rumboot_printf("  rHi     = %x \n" , cfg_reg->rHi);
-  rumboot_printf("  rCi     = %x \n" , cfg_reg->rCi);
+  rumboot_printf("  rPWi    = %x \n" , cfg_reg->rPWi);
+  rumboot_printf("  rPHi    = %x \n" , cfg_reg->rPHi);
+  rumboot_printf("  rPCi    = %x \n" , cfg_reg->rPCi);
   rumboot_printf("  rBALs   = %x \n" , cfg_reg->rBALs);
   // rumboot_printf("  rBAHs   = %x \n" , cfg_reg->rBAHs);
   rumboot_printf("  rVSs    = %x \n" , cfg_reg->rVSs);
@@ -399,6 +399,9 @@ void nu_ppe_print_config_reg(ConfigREGPPE* cfg_reg){
   rumboot_printf("  wWo     = %x \n" , cfg_reg->wWo);
   rumboot_printf("  wHo     = %x \n" , cfg_reg->wHo);
   rumboot_printf("  wCo     = %x \n" , cfg_reg->wCo);
+  rumboot_printf("  wPWo    = %x \n" , cfg_reg->wPWo);
+  rumboot_printf("  wPHo    = %x \n" , cfg_reg->wPHo);
+  rumboot_printf("  wPCo    = %x \n" , cfg_reg->wPCo);
   rumboot_printf("  wBALd   = %x \n" , cfg_reg->wBALd);
   // rumboot_printf("  wBAHd   = %x \n" , cfg_reg->wBAHd);
   rumboot_printf("  wVSd    = %x \n" , cfg_reg->wVSd);
@@ -794,9 +797,9 @@ int  nu_ppe_decide_dma_config_trivial(ConfigPPE* cfg, CubeMetrics* in_cube_metri
   cfg_reg->rESs   = 0X00000020; // 32 bytes, always 16x16 or 32x8
   cfg_reg->rVSs   = Cbyte;                        // bytes of full C (now defined for BOX=CUBE)
   cfg_reg->rLSs   = (cfg_reg->rVSs)*(cfg->W);     // bytes of full C*W (now defined for BOX=CUBE)
-  cfg_reg->rCi    = Celem*32;                     // bytes for Celem - 1
-  cfg_reg->rWi    = (cfg_reg->rVSs)*(cfg->W - 1); // bytes for C*(W-1)
-  cfg_reg->rHi    = (cfg_reg->rLSs)*(cfg->H - 1); // bytes for C*W*(H-1)
+  cfg_reg->rPCi   = Celem*32;                     // bytes for Celem - 1
+  cfg_reg->rPWi   = (cfg_reg->rVSs)*(cfg->W - 1); // bytes for C*(W-1)
+  cfg_reg->rPHi   = (cfg_reg->rLSs)*(cfg->H - 1); // bytes for C*W*(H-1)
   cfg_reg->rBSWi  = 0X00001FFF & (cfg->W - 1);    // W elements -1
   cfg_reg->rBSHi  = 0X00001FFF & (cfg->H - 1);    // H elements -1
   cfg_reg->rBSCi  = 0X00000000; // Celem;         // C elements -1 for FLYING_MODE = FLYING_BOXED (not supported yet), else 0
@@ -837,12 +840,15 @@ int  nu_ppe_decide_dma_config_trivial(ConfigPPE* cfg, CubeMetrics* in_cube_metri
   cfg_reg->wWi    = 0X00001FFF & (cfg->W - 1);
   cfg_reg->wHi    = 0X00001FFF & (cfg->H - 1);
   cfg_reg->wCi    = 0X00001FFF & (cfg->C - 1);
+  cfg_reg->wWo    = 0X00001FFF & (out_cube_metrics->W - 1);
+  cfg_reg->wHo    = 0X00001FFF & (out_cube_metrics->H - 1);
+  cfg_reg->wCo    = 0X00001FFF & (out_cube_metrics->C - 1);
   cfg_reg->wESd   = 0X00000020;                                 // 32 bytes, always 16x16 or 32x8
   cfg_reg->wVSd   = Cbyte;                                      // bytes of full C (now defined for BOX=CUBE)
   cfg_reg->wLSd   = (cfg_reg->wVSd)*(out_cube_metrics->W);      // bytes of full C*W (now defined for BOX=CUBE)
-  cfg_reg->wCo    = Celem*32;                                   // bytes for Celem - 1
-  cfg_reg->wWo    = (cfg_reg->wVSd)*(out_cube_metrics->W - 1);  // bytes for C*(W-1)
-  cfg_reg->wHo    = (cfg_reg->wLSd)*(out_cube_metrics->H - 1);  // bytes for C*W*(H-1)
+  cfg_reg->wPCo   = Celem*32;                                   // bytes for Celem - 1
+  cfg_reg->wPWo   = (cfg_reg->wVSd)*(out_cube_metrics->W - 1);  // bytes for C*(W-1)
+  cfg_reg->wPHo   = (cfg_reg->wLSd)*(out_cube_metrics->H - 1);  // bytes for C*W*(H-1)
   cfg_reg->wBSWi  = cfg_reg->rBSWi;
   cfg_reg->wBSHi  = cfg_reg->rBSHi;
   cfg_reg->wBSCi  = cfg_reg->rBSCi;
@@ -872,9 +878,9 @@ void nu_ppe_setup_reg(uintptr_t rbase, uintptr_t wbase, ConfigREGPPE* cfg) {
   // rdma
   // iowrite32(cfg->rSt,      rbase + NU_PPE_RDMA_STATUS);
   iowrite32(0X00000000,   rbase + NU_PPE_RDMA_OP_ENABLE);
-  iowrite32(cfg->rWi,     rbase + NU_PPE_RDMA_DATA_W_IN);
-  iowrite32(cfg->rHi,     rbase + NU_PPE_RDMA_DATA_H_IN);
-  iowrite32(cfg->rCi,     rbase + NU_PPE_RDMA_DATA_C_IN);
+  iowrite32(cfg->rPWi,    rbase + NU_PPE_RDMA_PLANE_W_IN);
+  iowrite32(cfg->rPHi,    rbase + NU_PPE_RDMA_PLANE_H_IN);
+  iowrite32(cfg->rPCi,    rbase + NU_PPE_RDMA_PLANE_C_IN);
   iowrite32(cfg->rBALs,   rbase + NU_PPE_RDMA_SRC_BASE_ADDR_L);
   // iowrite32(cfg->rBAHs,    rbase + NU_PPE_RDMA_SRC_BASE_ADDR_H);
   iowrite32(cfg->rVSs,    rbase + NU_PPE_RDMA_SRC_VECTOR_STRIDE);
@@ -896,6 +902,9 @@ void nu_ppe_setup_reg(uintptr_t rbase, uintptr_t wbase, ConfigREGPPE* cfg) {
   iowrite32(cfg->wWo,     wbase + NU_PPE_DATA_W_OUT);
   iowrite32(cfg->wHo,     wbase + NU_PPE_DATA_H_OUT);
   iowrite32(cfg->wCo,     wbase + NU_PPE_DATA_C_OUT);
+  iowrite32(cfg->wPWo,    wbase + NU_PPE_PLANE_W_OUT);
+  iowrite32(cfg->wPHo,    wbase + NU_PPE_PLANE_H_OUT);
+  iowrite32(cfg->wPCo,    wbase + NU_PPE_PLANE_C_OUT);
   iowrite32(cfg->wBALd,   wbase + NU_PPE_DST_BASE_ADDR_L);
   // iowrite32(cfg->wBAHd,    wbase + NU_PPE_DST_BASE_ADDR_H);
   iowrite32(cfg->wVSd,    wbase + NU_PPE_DST_VECTOR_STRIDE);
