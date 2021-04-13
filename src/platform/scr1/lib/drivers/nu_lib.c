@@ -80,6 +80,13 @@ void nu_vpe_load_config(ConfigVPE* cfg, void* cfg_bin) {
   cfg->op2_config.c2_offset=*ptr;ptr++;
   cfg->op2_config.c2_scale=*ptr;ptr++;
   cfg->op2_config.c2_trunc=*ptr;ptr++;
+  cfg->op2_config.lut_sel=*ptr;ptr++;
+  cfg->op2_config.lut_right_priority=*ptr;ptr++;
+  cfg->op2_config.lut_left_priority=*ptr;ptr++;
+  cfg->op2_config.lut_tab1_x_start=*ptr;ptr++;
+  cfg->op2_config.lut_tab2_x_start=*ptr;ptr++;
+  cfg->op2_config.lut_tab2_x_start=*ptr;ptr++;
+  cfg->op2_config.lut_tab2_x_end=*ptr;ptr++;
 
 }
 void nu_mpe_load_config(ConfigMPE* cfg, void* cfg_bin) {
@@ -296,7 +303,14 @@ void nu_vpe_print_config(ConfigVPE* cfg){
   rumboot_printf("  c1_trunc = %d \n" , cfg->op2_config.c1_trunc);
   rumboot_printf("  c2_offset = %d \n" , cfg->op2_config.c2_offset);
   rumboot_printf("  c2_scale = %d \n" , cfg->op2_config.c2_scale);
-  rumboot_printf("  c2_trunc = %d \n\n" , cfg->op2_config.c2_trunc);
+  rumboot_printf("  c2_trunc = %d \n" , cfg->op2_config.c2_trunc);
+  rumboot_printf("  lut_sel = %d \n" , cfg->op2_config.lut_sel);
+  rumboot_printf("  lut_right_priority = %d \n" , cfg->op2_config.lut_right_priority);
+  rumboot_printf("  lut_left_priority = %d \n" , cfg->op2_config.lut_left_priority);
+  rumboot_printf("  lut_tab1_x_start = %x \n" , cfg->op2_config.lut_tab1_x_start);
+  rumboot_printf("  lut_tab1_x_end = %x \n" , cfg->op2_config.lut_tab1_x_end);
+  rumboot_printf("  lut_tab2_x_start = %x \n" , cfg->op2_config.lut_tab2_x_start);
+  rumboot_printf("  lut_tab2_x_end = %x \n" , cfg->op2_config.lut_tab2_x_end);
 
 }
 

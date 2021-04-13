@@ -5,7 +5,7 @@
 
 #include <stdint.h>
 
-#define NU_VPE_CFG_PARAMS_NUM 59
+#define NU_VPE_CFG_PARAMS_NUM 66
 #define NU_MPE_CFG_PARAMS_NUM 18
 #define NU_PPE_CFG_PARAMS_NUM 22
 #define NU_PPE_REG_CFG_PARAMS_NUM 48
@@ -179,6 +179,13 @@
     int16_t c2_offset;
     int16_t c2_scale;
     uint8_t c2_trunc; // !!!! вообще он uint6
+    uint8_t lut_sel;  // !!! bit
+    uint8_t lut_right_priority;
+    uint8_t lut_left_priority;
+    uint32_t lut_tab1_x_start; //!!!! Тут может бытb другои тип
+    uint32_t lut_tab1_x_end;
+    uint32_t lut_tab2_x_start;
+    uint32_t lut_tab2_x_end;
   }ConfigOp2;
 
   typedef struct ConfigDMA {
