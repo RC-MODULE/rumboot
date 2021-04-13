@@ -48,6 +48,7 @@ int main() {
   if(warr == NULL) return -1;
    //
   
+  rumboot_printf("Loading input buffer\n");
   nu_mpe_load_buf(NU_MPE_BUFFER_BASE+NU_MPE_BUF00,               in_data,in_metrics->s);
   nu_mpe_load_buf(NU_MPE_BUFFER_BASE+NU_MPE_BUF00+in_metrics->s, warr   ,warr_metrics->s);  // Подряд
   
@@ -64,6 +65,8 @@ int main() {
   nu_mpe_config_wr_main_channel(NU_CPDMAC_ASM_BASE,res_data,res_metrics->s);
   nu_mpe_run_wr_main_channel(NU_CPDMAC_ASM_BASE);
   
+  
+  rumboot_printf("Runnung MPE commands\n");
   if( nu_mpe_run_cmd(NU_MPE_STANDALONE_BASE,cmd,cmd_metrics) != 0 ) return -1;
   
   nu_mpe_wait_wr_main_channel_complete(NU_CPDMAC_ASM_BASE);

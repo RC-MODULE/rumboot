@@ -712,14 +712,13 @@ int  nu_mpe_run_cmd(uintptr_t base, void* cmd, MPECmdMetrics* cmd_metrics) {
 
   ptr = (uint32_t*) cmd;
   num_cmds = cmd_metrics->s / 8;
-  // rumboot_platform_dump_region("test_cmd.bin",(uint32_t)cmd,cmd_metrics->s); // but if enable this - test does not crush with magic printf
   for(int i=0;i<num_cmds;i++) {
     data = *ptr;
     ptr++;
     offset = *ptr;
     ptr++;
-    //rumboot_printf("Writing data=%x addr = %x\n", data, offset);  // Magic printf that crushes test
-    iowrite32(data,base + (offset<<2));
+    rumboot_printf("Writing data=%x addr = %x\n", data, offset);
+    iowrite32(data,base + (offset*4));
   }
   return 0;
 }

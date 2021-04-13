@@ -113,6 +113,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     set(NA_TEST_cfg_file config_vpe.bin)
     set(NA_TEST_cfg_mpe_file config_mpe.bin)
     set(NA_TEST_cfg_ppe_file config_ppe.bin)
+    set(NA_TEST_mpe_cmd_file cmd.bin)
 
     set(NA_TEST_metrics_in cube.bin.metrics)
     set(NA_TEST_metrics_in_ameba cube_ameba.bin.metrics)
@@ -134,6 +135,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     set(NA_TEST_metrics_op2_cube op2.bin.metrics)
     set(NA_TEST_metrics_op2_ameba op2_ameba.bin.metrics)
     set(NA_TEST_metrics_op2_with_unused op2_with_unused.bin.metrics)
+    set(NA_TEST_metrics_mpe_cmd cmd.bin.metrics)
     ###################
 
     set(NA_RM_KEYS
@@ -190,6 +192,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
                        +cfg_file_tag=${NA_TEST_cfg_file}
                        +cfg_mpe_file_tag=${NA_TEST_cfg_mpe_file}
                        +cfg_ppe_file_tag=${NA_TEST_cfg_ppe_file}
+                       +mpe_cmd_file_tag=${NA_TEST_mpe_cmd_file}
 
                        +metrics_in_tag=${NA_TEST_metrics_in}
                        +metrics_in_ameba_tag=${NA_TEST_metrics_in_ameba}
@@ -211,6 +214,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
                        +metrics_op2_cube_tag=${NA_TEST_metrics_op2_cube}
                        +metrics_op2_ameba_tag=${NA_TEST_metrics_op2_ameba}
                        +metrics_op2_with_unused_tag=${NA_TEST_metrics_op2_with_unused}
+                       +metrics_mpe_cmd_tag=${NA_TEST_metrics_mpe_cmd}
     )
     set(RM_LOGFILE npe_rm.log)
 
@@ -266,19 +270,17 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     )
 
     set(MPE_DEMO_PATH src/platform/scr1/targets/simple-rom/nu/mpe_demo)
-    set(mpe_demo_test_name test1)
+    set(MPE_PARSE_TEST ${CMAKE_SOURCE_DIR}/${MPE_DEMO_PATH}/parse_mpe_arrays.pl)
+    set(MPE_TEST_SHEETS_DIR ${CMAKE_SOURCE_DIR}/../units/rcm_lava_mpe/tests)     # Outside The RumBoot!!!!
+    set(mpe_demo_test_name test1.1)
+
+    set(MPE_TEST_SHEET ${MPE_TEST_SHEETS_DIR}/${mpe_demo_test_name}/mpe_arrays.txt)
     add_rumboot_target(
       CONFIGURATION ROM
       NAME mpe_demo_${mpe_demo_test_name}
       FILES scr1/targets/simple-rom/nu/mpe_demo/mpe_demo_common.c
-      IRUN_FLAGS +in_file_tag=${CMAKE_SOURCE_DIR}/${MPE_DEMO_PATH}/${mpe_demo_test_name}/in_data.bin 
-               +warr_file_tag=${CMAKE_SOURCE_DIR}/${MPE_DEMO_PATH}/${mpe_demo_test_name}/warr.bin
-             +etalon_file_tag=${CMAKE_SOURCE_DIR}/${MPE_DEMO_PATH}/${mpe_demo_test_name}/etalon.bin
-            +mpe_cmd_file_tag=${CMAKE_SOURCE_DIR}/${MPE_DEMO_PATH}/${mpe_demo_test_name}/cmd.bin
-              +metrics_in_tag=${CMAKE_SOURCE_DIR}/${MPE_DEMO_PATH}/${mpe_demo_test_name}/in_data.bin.metrics
-            +metrics_warr_tag=${CMAKE_SOURCE_DIR}/${MPE_DEMO_PATH}/${mpe_demo_test_name}/warr.bin.metrics
-          +metrics_etalon_tag=${CMAKE_SOURCE_DIR}/${MPE_DEMO_PATH}/${mpe_demo_test_name}/etalon.bin.metrics
-         +metrics_mpe_cmd_tag=${CMAKE_SOURCE_DIR}/${MPE_DEMO_PATH}/${mpe_demo_test_name}/cmd.bin.metrics
+      PREPCMD ${MPE_PARSE_TEST} ${NA_TEST_mpe_cmd_file} ${NA_TEST_in_file} ${NA_TEST_warr_file} ${NA_TEST_etalon_file} < ${MPE_TEST_SHEET}
+      IRUN_FLAGS ${NA_RM_PLUSARGS}
     )
     # endif()
 
