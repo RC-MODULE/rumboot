@@ -272,16 +272,20 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     set(MPE_DEMO_PATH src/platform/scr1/targets/simple-rom/nu/mpe_demo)
     set(MPE_PARSE_TEST ${CMAKE_SOURCE_DIR}/${MPE_DEMO_PATH}/parse_mpe_arrays.pl)
     set(MPE_TEST_SHEETS_DIR ${CMAKE_SOURCE_DIR}/../units/rcm_lava_mpe/tests)     # Outside The RumBoot!!!!
-    set(mpe_demo_test_name test1)
 
-    set(MPE_TEST_SHEET ${MPE_TEST_SHEETS_DIR}/${mpe_demo_test_name}/mpe_arrays.txt)
-    add_rumboot_target(
-      CONFIGURATION ROM
-      NAME mpe_demo_${mpe_demo_test_name}
-      FILES scr1/targets/simple-rom/nu/mpe_demo/mpe_demo_common.c
-      PREPCMD ${MPE_PARSE_TEST} ${NA_TEST_mpe_cmd_file} ${NA_TEST_in_file} ${NA_TEST_warr_file} ${NA_TEST_etalon_file} < ${MPE_TEST_SHEET}
-      IRUN_FLAGS ${NA_RM_PLUSARGS}
-    )
+    macro (ADD_MPE_DEMO_TEST mpe_demo_test_name)
+      set(MPE_TEST_SHEET ${MPE_TEST_SHEETS_DIR}/${mpe_demo_test_name}/mpe_arrays.txt)
+      add_rumboot_target(
+        CONFIGURATION ROM
+        NAME mpe_demo_${mpe_demo_test_name}
+        FILES scr1/targets/simple-rom/nu/mpe_demo/mpe_demo_common.c
+        PREPCMD ${MPE_PARSE_TEST} ${NA_TEST_mpe_cmd_file} ${NA_TEST_in_file} ${NA_TEST_warr_file} ${NA_TEST_etalon_file} < ${MPE_TEST_SHEET}
+        IRUN_FLAGS ${NA_RM_PLUSARGS}
+      )
+    endmacro()
+
+    ADD_MPE_DEMO_TEST(test1)
+
     # endif()
 
     # PPE example 
