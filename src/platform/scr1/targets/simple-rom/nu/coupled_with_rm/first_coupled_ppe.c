@@ -26,6 +26,8 @@ ConfigREGPPE cfg_reg = {0};
 CubeMetrics* in_metrics;
 CubeMetrics* res_metrics;
 
+uint32_t dma_loop = 1;
+
 int main() {
   int heap_id;
 
@@ -59,6 +61,30 @@ int main() {
   if(nu_ppe_decide_dma_config(&cfg,in_metrics,res_metrics,&cfg_reg) != 0) return -1;
   nu_ppe_print_config_reg(&cfg_reg);
 
+  if(dma_loop == 1){
+    cfg_reg.wESd  = cfg_reg.rESs;
+    cfg_reg.wVSd  = cfg_reg.rVSs;
+    cfg_reg.wLSd  = cfg_reg.rLSs;
+    cfg_reg.wPCo  = cfg_reg.rPCi;
+    cfg_reg.wPWo  = cfg_reg.rPWi;
+    cfg_reg.wPHo  = cfg_reg.rPHi;
+    cfg_reg.wBSWo = cfg_reg.rBSWi;
+    cfg_reg.wBSHo = cfg_reg.rBSHi;
+    cfg_reg.wBSCo = cfg_reg.rBSCi;
+    cfg_reg.wStWo = cfg_reg.rStWi;
+    cfg_reg.wOfWo = cfg_reg.rOfWi;
+    nu_ppe_setup_reg(NU_PPE_RDMA_BASE, NU_PPE_STANDALONE_BASE, &cfg_reg);
+
+    cfg_reg.rOpEn  = 0X00000001; // Set start of PPE RDMA field to active value
+    cfg_reg.wOpEn  = 0X00000001; // Set start of PPE+WDMA field to active value
+    // Start RDMA then PPE+WDMA
+    nu_ppe_rdma_run(NU_PPE_RDMA_BASE, &cfg_reg);
+    nu_ppe_run(NU_PPE_STANDALONE_BASE, &cfg_reg);
+    // Wait RDMA then PPE+WDMA
+    nu_ppe_rdma_wait_complete(NU_PPE_RDMA_BASE);
+    nu_ppe_wait_complete(NU_PPE_STANDALONE_BASE);
+  }
+
   if(cfg_reg.rOpEn==0)
     nu_ppe_config_rd_main_channel(NU_CPDMAC_ASM_BASE,res_data,res_metrics->s);
 
@@ -89,11 +115,20 @@ int main() {
 
   rumboot_printf("Comparing..\n");
 
-  if(nu_bitwise_compare(res_data,etalon,res_metrics->s) == 0)
-    rumboot_printf("Test PASSED\n");
-  else {
-    rumboot_printf("Test FAILED\n");
-    return 1;
+  if(dma_loop == 1){
+    if(nu_bitwise_compare(res_data,in_data,in_metrics->s) == 0)
+      rumboot_printf("Test PASSED\n");
+    else {
+      rumboot_printf("Test FAILED\n");
+      return 1;
+    }
+  } else {
+    if(nu_bitwise_compare(res_data,etalon,res_metrics->s) == 0)
+      rumboot_printf("Test PASSED\n");
+    else {
+      rumboot_printf("Test FAILED\n");
+      return 1;
+    }
   }
 
   return 0;
