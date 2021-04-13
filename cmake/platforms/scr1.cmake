@@ -285,6 +285,13 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     endmacro()
 
     ADD_MPE_DEMO_TEST(test1)
+    ADD_MPE_DEMO_TEST(test2)
+    ADD_MPE_DEMO_TEST(test3)
+    ADD_MPE_DEMO_TEST(test4)
+    ADD_MPE_DEMO_TEST(test5)
+    ADD_MPE_DEMO_TEST(test_MAX_calculation)
+    ADD_MPE_DEMO_TEST(test-int8)
+    ADD_MPE_DEMO_TEST(test-int16)
 
     # endif()
 
