@@ -64,9 +64,9 @@ int main() {
   nu_ppe_setup(NU_PPE_STANDALONE_BASE, &cfg, &cfg_regs);
 
   // Configure RDMA
-  cfg_regs.rWi    = 0X00001000;
-  cfg_regs.rHi    = 0X00001000;
-  cfg_regs.rCi    = 0X00000020;
+  cfg_regs.rPWi   = 0X00001000;
+  cfg_regs.rPHi   = 0X00001000;
+  cfg_regs.rPCi   = 0X00000020;
   cfg_regs.rBALs  = (uintptr_t)in_data;
   cfg_regs.rVSs   = 0X00000020;
   cfg_regs.rLSs   = 0X00001000;
@@ -78,9 +78,9 @@ int main() {
   cfg_regs.rStWi  = 0X0000007F;
   cfg_regs.rOfWi  = 0X00000000;
   // Configure PPE+WDMA
-  cfg_regs.wWo    = 0X00001000;
-  cfg_regs.wHo    = 0X00001000;
-  cfg_regs.wCo    = 0X00000020;
+  cfg_regs.wPWo   = 0X00001000;
+  cfg_regs.wPHo   = 0X00001000;
+  cfg_regs.wPCo   = 0X00000020;
   cfg_regs.wBALd  = (uintptr_t)res_data;
   cfg_regs.wVSd   = 0X00000020;
   cfg_regs.wLSd   = 0X00001000;

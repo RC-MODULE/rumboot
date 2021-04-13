@@ -279,9 +279,9 @@
     // rdma
     // uint32_t rSt      ; // STATUS
     uint32_t rOpEn    ; // OP_ENABLE          / Start
-    uint32_t rWi      ; // DATA_W_IN          / Input Width size
-    uint32_t rHi      ; // DATA_H_IN          / Input Height size
-    uint32_t rCi      ; // DATA_C_IN          / Input Channel size
+    uint32_t rPWi     ; // PLANE_W_IN         / Input Width size in bytes
+    uint32_t rPHi     ; // PLANE_H_IN         / Input Height size in bytes
+    uint32_t rPCi     ; // PLANE_C_IN         / Input Channel size in bytes
     uint32_t rBALs    ; // SRC_BASE_ADDR_L    / Start address of Cube
     // uint32_t rBAHs    ; // SRC_BASE_ADDR_H    / Start address of Cube
     uint32_t rVSs     ; // SRC_VECTOR_STRIDE  / DMA Stride
@@ -297,12 +297,15 @@
     // ppe + wdma
     // uint32_t wSt      ; // STATUS
     uint32_t wOpEn    ; // OP_ENABLE          / Start
-    uint32_t wWi      ; // DATA_W_IN          / Input Width size
-    uint32_t wHi      ; // DATA_H_IN          / Input Height size
-    uint32_t wCi      ; // DATA_C_IN          / Input Channel size
-    uint32_t wWo      ; // DATA_W_OUT         / Output Width size
-    uint32_t wHo      ; // DATA_H_OUT         / Output Height size
-    uint32_t wCo      ; // DATA_C_OUT         / Output Channel size
+    uint32_t wWi      ; // DATA_W_IN          / Input Width size in elements
+    uint32_t wHi      ; // DATA_H_IN          / Input Height size in elements
+    uint32_t wCi      ; // DATA_C_IN          / Input Channel size in elements
+    uint32_t wWo      ; // DATA_W_OUT         / Output Width size in elements
+    uint32_t wHo      ; // DATA_H_OUT         / Output Height size in elements
+    uint32_t wCo      ; // DATA_C_OUT         / Output Channel size in elements
+    uint32_t wPWo     ; // PLANE_W_OUT        / Output Width size in bytes
+    uint32_t wPHo     ; // PLANE_H_OUT        / Output Height size in bytes
+    uint32_t wPCo     ; // PLANE_C_OUT        / Output Channel size in bytes
     uint32_t wBALd    ; // DST_BASE_ADDR_L    / Start address of Cube
     // uint32_t wBAHd    ; // DST_BASE_ADDR_H    / Start address of Cube
     uint32_t wVSd     ; // DST_VECTOR_STRIDE  / DMA Stride
