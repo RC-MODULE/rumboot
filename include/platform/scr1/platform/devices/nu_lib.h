@@ -378,6 +378,7 @@ void nu_mpe_print_config_dma(ConfigDMAMPE* cfg);
 int  nu_mpe_get_size_in_partitions(int size_in_bytes);
 void nu_mpe_setup(uintptr_t base, ConfigMPE* cfg, ConfigDMAMPE* cfg_dma);
 int  nu_mpe_decide_dma_config_trivial(ConfigMPE* cfg, CubeMetrics* cube_metrics, WarrMetrics* warr_metrics, ConfigDMAMPE* cfg_dma);
+uint32_t nu_mpe_get_warr_offset(void* cmd, MPECmdMetrics* metrics);
 
 void nu_mpe_load_buf(uintptr_t base, void* data, int size);
 

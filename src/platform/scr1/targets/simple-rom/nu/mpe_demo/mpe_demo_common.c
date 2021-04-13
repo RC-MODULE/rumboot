@@ -23,6 +23,7 @@ MPECmdMetrics* cmd_metrics;
 
 int main() {
   int heap_id;
+  uint32_t in_buffer_warr_offset;
   
   rumboot_printf("Hello\n");
   
@@ -48,19 +49,21 @@ int main() {
   if(warr == NULL) return -1;
    //
   
-  rumboot_printf("Loading input buffer\n");
-  nu_mpe_load_buf(NU_MPE_BUFFER_BASE+NU_MPE_BUF00,               in_data,in_metrics->s);
-  nu_mpe_load_buf(NU_MPE_BUFFER_BASE+NU_MPE_BUF00+in_metrics->s, warr   ,warr_metrics->s);  // Подряд
-  
-  
-  etalon = nu_mpe_load_etalon(heap_id,res_metrics);
-  if(etalon == NULL) return -1;
-  
   cmd_metrics = nu_mpe_load_cmd_metrics(heap_id);
   if(cmd_metrics == NULL) return -1;
   
   cmd = nu_mpe_load_cmd(heap_id,cmd_metrics);
   if(cmd == NULL) return -1;
+  
+  in_buffer_warr_offset = nu_mpe_get_warr_offset(cmd,cmd_metrics);
+  
+  rumboot_printf("Loading input buffer\n");
+  nu_mpe_load_buf(NU_MPE_BUFFER_BASE+NU_MPE_BUF00,               in_data,in_metrics->s);
+  nu_mpe_load_buf(NU_MPE_BUFFER_BASE+NU_MPE_BUF00+in_buffer_warr_offset, warr,warr_metrics->s);
+  
+  
+  etalon = nu_mpe_load_etalon(heap_id,res_metrics);
+  if(etalon == NULL) return -1;
   
   nu_mpe_config_wr_main_channel(NU_CPDMAC_ASM_BASE,res_data,res_metrics->s);
   nu_mpe_run_wr_main_channel(NU_CPDMAC_ASM_BASE);

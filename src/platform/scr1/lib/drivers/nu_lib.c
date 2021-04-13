@@ -699,6 +699,28 @@ int nu_mpe_decide_dma_config_trivial(ConfigMPE* cfg, CubeMetrics* cube_metrics, 
   return 0;
 }
 
+uint32_t nu_mpe_get_warr_offset(void* cmd, MPECmdMetrics* metrics) {
+  uint32_t cmd_size;
+  uint32_t* ptr;
+  uint32_t data;
+  uint32_t reg_addr;
+  
+  cmd_size = metrics->s / 8;
+  
+  ptr = (uint32_t*) cmd;
+  for(int i=0;i<cmd_size;i++) {
+    data = *ptr;
+    ptr++;
+    reg_addr = *ptr;
+    ptr++;
+    if(reg_addr == 0x000000006) {
+      return data * (1024/8);
+    }
+  }
+  
+  return 0;
+}
+
 void nu_mpe_setup(uintptr_t base, ConfigMPE* cfg, ConfigDMAMPE* cfg_dma) {
   rumboot_printf("Configuring MPE..\n");
 
