@@ -80,7 +80,7 @@ static inline __attribute__((always_inline)) uint32_t wait_com_int_handled( uint
         rumboot_printf( "COMPORT  wait interrupt Cpl\n" ); 
 		if( *flag ) {		
             *flag = 0;
-          //  msync();
+
 
             return 1;
         }
@@ -171,11 +171,15 @@ void clear_com_status(uint32_t base, uint32_t direct ) {
  if (direct ==0) {
 	COM_Mask_rcv = ioread32( base + InterruptMask_rcv);
 	COM_Status_rcv = ioread32	( base + CSR_rcv);
-	 if (((( COM_Status_rcv >> 1 ) & 0x1)==1) && ((COM_Mask_rcv & 0x1) ==0))
-	iowrite32((COM_Status_rcv & 0xd),base + CSR_rcv); 
+	 if (((( COM_Status_rcv >> 1 ) & 0x1)==1) && ((COM_Mask_rcv & 0x1) ==0))		 
+	 {iowrite32((COM_Status_rcv & 0xd),base + CSR_rcv);
+     iowrite32((COM_Status_rcv & 0x9),base + CSR_rcv);}
 	 if (( ( (COM_Status_rcv >> 2) & 0x1)==1) && (((COM_Mask_rcv >> 1) & 0x1)==0))
-	iowrite32((COM_Status_rcv & 0xb),base + CSR_rcv);
+	 {iowrite32((COM_Status_rcv & 0xb),base + CSR_rcv);
+	 iowrite32((COM_Status_rcv & 0x9),base + CSR_rcv); } 
+	 
  }
+ 
 }
 
 int com_simple_write(uintptr_t base, com_cfg_t * cfg)
