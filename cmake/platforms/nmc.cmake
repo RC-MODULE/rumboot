@@ -50,14 +50,14 @@ rumboot_add_configuration(
   FILES ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c
   LDS nmc/generic.lds
   LDFLAGS "-Wl,\"-ecorestart\""
-  CFLAGS -mmas -save-temps -DRUMBOOT_NOENTRY -fnmc-compatible-if-packed
+  CFLAGS -fnmc-compatible-if-packed -mmas -DRUMBOOT_NOENTRY 
   IRUN_FLAGS ${BOOTROM_IFLAGS} +RUMBOOT_RUNTIME_ADDR=5A000
   LOAD 
     IM1_IMAGE SELF
     IM0BIN SELF
   FEATURES NOLIBS ${SOC_FEATURES}
   OBJCOPY_FLAGS ${SOC_OBJCOPY_FLAGS}
-  PACKIMAGE_FLAGS ${SOC_PACKIMAGE_FLAGS}
+  PACKIMAGE_FLAGS ${SOC_PACKIMAGE_FLAGS} -s target_cpu 1
   #External bootrom-stub dependency
   BOOTROM ${SOC_BOOTROM}
   )
