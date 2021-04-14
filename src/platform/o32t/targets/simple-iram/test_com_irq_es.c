@@ -37,7 +37,7 @@ void prepare_arrays( uint32_t ** src, uint32_t ** dst ) {
     for( uint32_t i = 0; i < ARR_SIZE; i++ )
         (*src)[ i ] = i + ( (i+1) << 8 ) + ( (i+2) << 16 ) + ( (i+3) << 24 );
 
-//    msync();
+
 }
 void prepare_arrays_light( uint32_t ** src, uint32_t ** dst ) {
     *src = rumboot_malloc_from_named_heap_aligned( COM_SRC_HEAP, sizeof(uint32_t)*ARR_SIZE, sizeof(uint64_t) );
@@ -67,9 +67,12 @@ static void handler1() {
 		COM0_Cpl_tr = 0;
 		}
 	  }
+	  rumboot_printf( "status=%d\n", com_status(COM1_BASE, 0));
+	  
 	if (COMMP0_COMMP1_IRQ == CP1_RCV_INT) {
 		if (com_status(COM1_BASE, 0)== 1) {
 		COM1_Cpl_rcv = 1;
+		
 		clear_com_status(COM1_BASE,0);
 		rumboot_printf( "COM1_Cpl_rcv= %d\n",COM1_Cpl_rcv );
 		COMMP0_COMMP1_IRQ = CP1_TRM_INT;
@@ -102,10 +105,22 @@ static void handler1() {
 static struct rumboot_irq_entry * init_irq() {
     rumboot_irq_cli();
     struct rumboot_irq_entry * const tbl = rumboot_irq_create( NULL );
+	
+
 	COMMP0_COMMP1_IRQ = CP0_TRM_INT;
     rumboot_irq_set_handler( tbl, COMMP0_COMMP1_IRQ, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler1, NULL );
 	COMMP0_COMMP1_IRQ = CP1_RCV_INT;
     rumboot_irq_set_handler( tbl, COMMP0_COMMP1_IRQ, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler1, NULL );
+	//-----------------
+	COMMP0_COMMP1_IRQ = CP1_RCV_INT;
+    rumboot_irq_set_handler( tbl, COMMP0_COMMP1_IRQ, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler1, NULL );
+	//----------------------
+	COMMP0_COMMP1_IRQ = CP1_RCV_INT;
+    rumboot_irq_set_handler( tbl, COMMP0_COMMP1_IRQ, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler1, NULL );
+	//----------------------
+	COMMP0_COMMP1_IRQ = CP1_RCV_INT;
+    rumboot_irq_set_handler( tbl, COMMP0_COMMP1_IRQ, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler1, NULL );
+	//----------------------
 	COMMP0_COMMP1_IRQ = CP1_TRM_INT;   
 	rumboot_irq_set_handler( tbl,COMMP0_COMMP1_IRQ, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler1, NULL );
 	COMMP0_COMMP1_IRQ = CP0_TRM_INT;
@@ -147,9 +162,9 @@ int main()
   write_tlb_entries(em2_nospeculative_tlb_entries, ARRAY_SIZE(em2_nospeculative_tlb_entries));
 	prepare_arrays( &src0, &dst0 );
     prepare_arrays_light( &src1, &dst1 );
-	
-	
-	COMMP0_COMMP1_IRQ = CP0_TRM_INT;
+		
+	COMMP0_COMMP1_IRQ = CP0_TRM_INT;	
+	rumboot_printf("CP1_RCV_INT=%d\n",CP1_RCV_INT);
   struct rumboot_irq_entry * tbl = init_irq(); 
 
 uint32_t	dst_0= 0x80003da0;
