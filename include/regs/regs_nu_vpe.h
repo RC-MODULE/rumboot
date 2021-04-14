@@ -87,6 +87,12 @@
 #define NU_VPE_WDMA_ELEM_STRIDE        0x10C
 #define NU_VPE_CTRL_NC                 0x110
 
+// INTERRUPT Registers address -----------------------------------
+#define  REG_VPE_IRQ_RD_ADDR           0x120
+#define  REG_VPE_IRQ_CLR_ADDR          0x124
+#define  REG_VPE_IRQ_SET_ADDR          0x128
+#define  REG_VPE_IRQ_MASK_ADDR         0x12C
+
 
 // VPE RDMA Registers address --------------------
 #define NU_VPE_RDMA_STATUS             0x000

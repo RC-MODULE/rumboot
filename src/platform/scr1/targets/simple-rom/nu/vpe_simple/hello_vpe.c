@@ -44,14 +44,14 @@ int main() {
   in_size=16*128; // 128 Lines of 16 32bit elements
   res_size=in_size;
   
+  // Входной кубик
+  const uint32_t H = 16;
+  const uint32_t W = 16;
+  const uint32_t C = 16;
+  in_size = H*W*C*
+  
   rumboot_printf("Hello\n");
-  
-  
-  iowrite32(0x01234567, DUT_BASE + 0x000);
-  iowrite32(0xFFF34567, DUT_BASE + NU_VPE_WDMA_DST_VECTOR_STRIDE); // 0x024
-  iowrite32(0xAAA34567, DUT_BASE + NU_VPE_WDMA_DST_CFG);           // 0x028
-  
-  
+
   
   cfg_bin = rumboot_malloc_from_heap_aligned(NU_VPE_HEAPID,NU_VPE_CFG_PARAMS_NUM*sizeof(uint32_t),sizeof(uint32_t));
   rumboot_platform_request_file("cfg_file_tag", (uintptr_t)cfg_bin);
@@ -72,9 +72,13 @@ int main() {
   nu_vpe_config_rd_main_channel(NU_CPDMAC_ASM_BASE,in_data,in_size*sizeof(int32_t));
   nu_vpe_config_wr_main_channel(NU_CPDMAC_ASM_BASE,res_data,res_size*sizeof(int16_t));
   
+  
+  cfg->src_rdma_config.dma_baddr = in_data ;  
+  cfg->src_wdma_config.dma_baddr = res_data;  
+  
   rumboot_printf("Running DMA..\n");
   
-    // Do Not Run Yet - It Is Falling
+  // Do Not Run Yet - It Is Falling
   // nu_vpe_run_rd_main_channel(NU_CPDMAC_ASM_BASE);
   // nu_vpe_run_wr_main_channel(NU_CPDMAC_ASM_BASE);
   

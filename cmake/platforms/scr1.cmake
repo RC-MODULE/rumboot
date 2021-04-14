@@ -255,7 +255,14 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     ADD_MPE_COUPLED_TEST(mpe_first_coupled main_sqared_simple_mpe)
     ADD_PPE_COUPLED_TEST(ppe_first_coupled main_simple_ppe_coupled)
     ADD_PPE_COUPLED_TEST(ppe_first_coupled_float main_simple_ppe_coupled_float)
+    ADD_VPE_COUPLED_TEST(vpe_dma_test main_vpe_dma)
 
+      add_rumboot_target(
+        CONFIGURATION ROM
+        FILES scr1/targets/simple-rom/nu/coupled_with_rm/dma_coupled_vpe.c
+        PREPCMD ${NA_RM_BIN_PATH}/main_vpe_dma ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
+        IRUN_FLAGS ${NA_RM_PLUSARGS}
+      )
 
 
     # MPE example 

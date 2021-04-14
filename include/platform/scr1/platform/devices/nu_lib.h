@@ -102,17 +102,18 @@
   Type DMA_DATA_SIZE
   */
   typedef enum DmaDSizeType {
-    DmaDSizeType_One_Byte,
-    DmaDSizeType_Two_Byte
+    DmaDSize_One_Byte,
+    DmaDSize_Two_Byte
   }DmaDSizeType;
 
   /**
   Type DMA_DATA_USE
   */
   typedef enum DmaDUseType {
-    DmaDUseType_Mux,
-    DmaDUseType_Alu,
-    DmaDUseType_Both
+    DmaDUse_Off,
+    DmaDUse_Mux,
+    DmaDUse_Alu,
+    DmaDUse_Both
   }DmaDUseType;
 
   typedef struct ConfigMPE {
@@ -230,7 +231,7 @@
     ConfigDMA   op0_rdma_config ;
     ConfigDMA   op1_rdma_config ;
     ConfigDMA   op2_rdma_config ;
-    ConfigDMA   wrdma_config    ;
+    ConfigDMA   wdma_config     ;
   }ConfigVPE;
 
   typedef struct ConfigDMAVPE {
@@ -376,6 +377,7 @@ void nu_vpe_print_config_dma(ConfigDMAVPE* cfg);
 
 void nu_vpe_setup(uintptr_t base, ConfigVPE* cfg, ConfigDMAVPE* cfg_dma);
 void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics, ConfigDMAVPE* cfg_dma);
+
 bool nu_vpe_mode_to_bool (Mode in_mode);
 
 void nu_mpe_load_config(ConfigMPE* cfg, void* cfg_bin);
@@ -408,8 +410,8 @@ void nu_vpe_config_rd_main_channel(uintptr_t dma_base, void *addr, int size);
 void nu_vpe_run_rd_main_channel(uintptr_t dma_base);
 void nu_vpe_wait_rd_main_channel_complete(uintptr_t dma_base);
 
-void nu_vpe_run(uintptr_t vpe_base, ConfigDMAVPE* cfg);
-void nu_vpe_wait(uintptr_t vpe_base, ConfigDMAVPE* cfg);
+void nu_vpe_run (uintptr_t vpe_base, ConfigVPE* cfg);
+void nu_vpe_wait(uintptr_t vpe_base, ConfigVPE* cfg);
 
 void nu_mpe_run(uintptr_t mpe_base, ConfigDMAMPE* cfg_dma);
 void nu_mpe_wait(uintptr_t mpe_base, ConfigDMAMPE* cfg_dma);
@@ -417,7 +419,7 @@ void nu_mpe_wait(uintptr_t mpe_base, ConfigDMAMPE* cfg_dma);
 void nu_vpe_config_wr_main_channel(uintptr_t dma_base, void *addr, int size);
 void nu_vpe_run_wr_main_channel(uintptr_t dma_base);
 void nu_vpe_wait_wr_main_channel_complete(uintptr_t dma_base);
-
+ 
 void nu_mpe_config_wr_main_channel(uintptr_t dma_base, void *addr, int size);
 void nu_mpe_run_wr_main_channel(uintptr_t dma_base);
 void nu_mpe_wait_wr_main_channel_complete(uintptr_t dma_base);
@@ -425,6 +427,8 @@ void nu_mpe_wait_wr_main_channel_complete(uintptr_t dma_base);
 void nu_ppe_config_rd_main_channel(uintptr_t dma_base, void *addr, int size);
 void nu_ppe_run_rd_main_channel(uintptr_t dma_base);
 void nu_ppe_wait_rd_main_channel_complete(uintptr_t dma_base);
+
+
 
 
 #endif
