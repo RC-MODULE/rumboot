@@ -374,6 +374,7 @@
 void nu_vpe_load_config(ConfigVPE* cfg, void* cfg_bin);
 void nu_vpe_print_config(ConfigVPE* cfg);
 void nu_vpe_print_config_dma(ConfigDMAVPE* cfg);
+void nu_print_config_dma(ConfigDMA * cfg_dma,char* name);
 
 void nu_vpe_setup(uintptr_t base, ConfigVPE* cfg, ConfigDMAVPE* cfg_dma);
 void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics, ConfigDMAVPE* cfg_dma);

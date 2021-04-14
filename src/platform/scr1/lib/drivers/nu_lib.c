@@ -233,6 +233,35 @@ void nu_ppe_load_config(ConfigPPE* cfg, void* cfg_bin) {
 
     rumboot_printf("  %s = %s \n", name, DataTypeExtNames[(int) data_type] );
   }
+  
+  void nu_vpe_print_DmaRamType(DmaRamType rt, char* name) {
+    static char* DmaRamTypeNames[] = {
+      "CV",
+      "MC"
+    };
+    
+    rumboot_printf("  %s = %s \n", name,DmaRamTypeNames[(int) rt] );
+  }
+  
+  void nu_vpe_print_DmaDSizeType(DmaDSizeType st, char* name) {
+    static char* DmaDSizeTypeNames[] = {
+      "DmaDSize_One_Byte",
+      "DmaDSize_Two_Byte"
+    };
+    
+    rumboot_printf("  %s = %s \n",name,DmaDSizeTypeNames[(int) st] );
+  }
+  
+  void nu_vpe_print_DmaDUseType(DmaDUseType ut, char* name) {
+    static char* DmaDUseTypeNames[] =  {
+      "Off",
+      "Mux",
+      "Alu",
+      "Both"
+    };
+    
+    rumboot_printf("  %s = %s \n", name, DmaDUseTypeNames[(int) ut]);
+  }
 
 
 void nu_vpe_print_config(ConfigVPE* cfg){
@@ -321,6 +350,32 @@ void nu_vpe_print_config_dma(ConfigDMAVPE* cfg) {
   nu_vpe_print_Enable(cfg->dma_op1_en,"dma_op1_en");
   nu_vpe_print_Enable(cfg->dma_op2_en,"dma_op2_en");
   nu_vpe_print_Enable(cfg->dma_dst_en,"dma_dst_en");
+}
+
+void nu_print_config_dma(ConfigDMA * cfg_dma,char* name) {
+  rumboot_printf("ConfigDMA (%s):\n",name);
+  nu_vpe_print_Enable(cfg_dma->dma_op_en,"dma_op_en");
+  rumboot_printf("  dma_H = %d\n",cfg_dma->dma_H);
+  rumboot_printf("  dma_W = %d\n",cfg_dma->dma_W);
+  rumboot_printf("  dma_C = %d\n",cfg_dma->dma_C);
+  nu_vpe_print_DmaRamType(cfg_dma->dma_ram_type,"dma_ram_type");
+  nu_vpe_print_Mode(cfg_dma->dma_data_mode,"dma_data_mode");
+  nu_vpe_print_DmaDSizeType(cfg_dma->dma_data_size,"dma_data_size");
+  nu_vpe_print_DmaDUseType(cfg_dma->dma_data_use,"dma_data_use");
+  rumboot_printf("  dma_baddr = 0x%x\n",cfg_dma->dma_baddr);
+  rumboot_printf("  dma_line_stride = %d\n",cfg_dma->dma_line_stride);
+  rumboot_printf("  dma_vector_stride = %d\n",cfg_dma->dma_vector_stride);
+  rumboot_printf("  dma_elem_stride = %d\n",cfg_dma->dma_elem_stride);
+  rumboot_printf("  dma_box_st_size_x = %d\n",cfg_dma->dma_box_st_size_x);
+  rumboot_printf("  dma_box_st_size_y = %d\n",cfg_dma->dma_box_st_size_y);
+  rumboot_printf("  dma_box_st_size_z = %d\n",cfg_dma->dma_box_st_size_z);
+  rumboot_printf("  dma_box_size_x = %d\n",cfg_dma->dma_box_size_x);
+  rumboot_printf("  dma_box_size_y = %d\n",cfg_dma->dma_box_size_y);
+  rumboot_printf("  dma_box_size_z = %d\n",cfg_dma->dma_box_size_z);
+  rumboot_printf("  dma_box_offset_x = %d\n",cfg_dma->dma_box_offset_x);
+  rumboot_printf("  dma_box_offset_y = %d\n",cfg_dma->dma_box_offset_y);
+  rumboot_printf("  dma_box_offset_z = %d\n",cfg_dma->dma_box_offset_z);
+  
 }
 
 void nu_mpe_print_config(ConfigMPE* cfg){
