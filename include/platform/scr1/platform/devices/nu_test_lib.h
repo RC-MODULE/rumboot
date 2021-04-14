@@ -7,6 +7,7 @@
 
 int nu_get_heap_id();
 int nu_vpe_load_cfg(int heap_id, ConfigVPE* cfg);
+int nu_vpe_load_cfg_by_tag(int heap_id, ConfigVPE* cfg, char* cfg_file_tag);
 int nu_mpe_load_cfg(int heap_id, ConfigMPE* cfg);
 int nu_ppe_load_cfg(int heap_id, ConfigPPE* cfg);
 CubeMetrics* nu_load_cube_metrics(int heap_id, char* file_tag);
@@ -33,7 +34,9 @@ void* nu_vpe_load_etalon(int heap_id,CubeMetrics* metrics);
 void* nu_mpe_load_etalon(int heap_id,CubeMetrics* metrics);
 void* nu_ppe_load_etalon(int heap_id,CubeMetrics* metrics);
 void* nu_vpe_load_op01(int heap_id, ConfigOp01* cfg, int index) ;
+void* nu_vpe_load_op01_by_tags(int heap_id, ConfigOp01* cfg, char* metrics_cube_tag,char* metrics_vec_tag,char* cube_file_tag,char* vec_file_tag);
 void* nu_vpe_load_op2(int heap_id, ConfigOp2* cfg);
+void* nu_vpe_load_op2_by_tags(int heap_id, ConfigOp2* cfg, char* metrics_cube_tag,char* metrics_vec_tag,char* cube_file_tag,char* vec_file_tag);
 int nu_bitwise_compare(void* res_data, void* etalon, int size);
 
 #endif

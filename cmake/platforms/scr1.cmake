@@ -89,6 +89,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       FILES scr1/targets/simple-rom/nu/ppe_regs/regs_ppe.c
 	)
     # files transfered from RM to simulation environment
+    set(NA_TEST_num_iterations_file num_iterations.bin)
     set(NA_TEST_in_file cube.bin)
     set(NA_TEST_in_ameba_file cube_ameba.bin)
     set(NA_TEST_in_with_unused_file cube_with_unused.bin)
@@ -115,30 +116,31 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     set(NA_TEST_cfg_ppe_file config_ppe.bin)
     set(NA_TEST_mpe_cmd_file cmd.bin)
 
-    set(NA_TEST_metrics_in cube.bin.metrics)
-    set(NA_TEST_metrics_in_ameba cube_ameba.bin.metrics)
-    set(NA_TEST_metrics_in_with_unused cube_with_unused.bin.metrics)
-    set(NA_TEST_metrics_warr warr.bin.metrics)
-    set(NA_TEST_metrics_warr_with_unused warr_with_unused.bin.metrics)
-    set(NA_TEST_metrics_etalon res.bin.metrics)
-    set(NA_TEST_metrics_etalon_ameba res_ameba.bin.metrics)
-    set(NA_TEST_metrics_etalon_with_unused res_with_unused.bin.metrics)
-    set(NA_TEST_metrics_op0_vec op0.bin.metrics)
-    set(NA_TEST_metrics_op0_cube op0.bin.metrics)
-    set(NA_TEST_metrics_op0_ameba op0_ameba.bin.metrics)
-    set(NA_TEST_metrics_op0_with_unused op0_with_unused.bin.metrics)
-    set(NA_TEST_metrics_op1_vec op1.bin.metrics)
-    set(NA_TEST_metrics_op1_cube op1.bin.metrics)
-    set(NA_TEST_metrics_op1_ameba op1_ameba.bin.metrics)
-    set(NA_TEST_metrics_op1_with_unused op1_with_unused.bin.metrics)
-    set(NA_TEST_metrics_op2_vec op2.bin.metrics)
-    set(NA_TEST_metrics_op2_cube op2.bin.metrics)
-    set(NA_TEST_metrics_op2_ameba op2_ameba.bin.metrics)
-    set(NA_TEST_metrics_op2_with_unused op2_with_unused.bin.metrics)
-    set(NA_TEST_metrics_mpe_cmd cmd.bin.metrics)
+    set(NA_TEST_metrics_in ${NA_TEST_in_file}.metrics)
+    set(NA_TEST_metrics_in_ameba ${NA_TEST_in_ameba_file}.metrics)
+    set(NA_TEST_metrics_in_with_unused ${NA_TEST_in_with_unused_file}.metrics)
+    set(NA_TEST_metrics_warr ${NA_TEST_warr_file}.metrics)
+    set(NA_TEST_metrics_warr_with_unused ${NA_TEST_warr_with_unused_file}.metrics)
+    set(NA_TEST_metrics_etalon ${NA_TEST_etalon_file}.metrics)
+    set(NA_TEST_metrics_etalon_ameba ${NA_TEST_etalon_ameba_file}.metrics)
+    set(NA_TEST_metrics_etalon_with_unused ${NA_TEST_etalon_with_unused_file}.metrics)
+    set(NA_TEST_metrics_op0_vec ${NA_TEST_op0_vec_file}.metrics)
+    set(NA_TEST_metrics_op0_cube ${NA_TEST_op0_cube_file}.metrics)
+    set(NA_TEST_metrics_op0_ameba ${NA_TEST_op0_ameba_file}.metrics)
+    set(NA_TEST_metrics_op0_with_unused ${NA_TEST_op0_with_unused_file}.metrics)
+    set(NA_TEST_metrics_op1_vec ${NA_TEST_op1_vec_file}.metrics)
+    set(NA_TEST_metrics_op1_cube ${NA_TEST_op1_cube_file}.metrics)
+    set(NA_TEST_metrics_op1_ameba ${NA_TEST_op1_ameba_file}.metrics)
+    set(NA_TEST_metrics_op1_with_unused ${NA_TEST_op1_with_unused_file}.metrics)
+    set(NA_TEST_metrics_op2_vec ${NA_TEST_op2_vec_file}.metrics)
+    set(NA_TEST_metrics_op2_cube ${NA_TEST_op2_cube_file}.metrics)
+    set(NA_TEST_metrics_op2_ameba ${NA_TEST_op2_ameba_file}.metrics)
+    set(NA_TEST_metrics_op2_with_unused ${NA_TEST_op2_with_unused_file}.metrics)
+    set(NA_TEST_metrics_mpe_cmd ${NA_TEST_mpe_cmd_file}.metrics)
     ###################
 
     set(NA_RM_KEYS
+      --num_iterations_file      ${NA_TEST_num_iterations_file}
       --in_file                  ${NA_TEST_in_file}
       --in_ameba_file            ${NA_TEST_in_ameba_file}
       --in_with_unused_file      ${NA_TEST_in_with_unused_file}
@@ -165,57 +167,157 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       # '.metrics' added by RM itself
      )
 
+    set(PLUSARG_num_iterations_file_tag num_iterations_file_tag)
+    set(PLUSARG_in_file_tag in_file_tag)
+    set(PLUSARG_in_ameba_file_tag in_ameba_file_tag)
+    set(PLUSARG_in_with_unused_file_tag in_with_unused_file_tag)
+    set(PLUSARG_warr_file_tag warr_file_tag)
+    set(PLUSARG_warr_with_unused_file_tag warr_with_unused_file_tag)
+    set(PLUSARG_etalon_file_tag etalon_file_tag)
+    set(PLUSARG_etalon_ameba_file_tag etalon_ameba_file_tag)
+    set(PLUSARG_etalon_with_unused_file_tag etalon_with_unused_file_tag)
+    set(PLUSARG_op0_vec_file_tag op0_vec_file_tag)
+    set(PLUSARG_op0_cube_file_tag op0_cube_file_tag)
+    set(PLUSARG_op0_ameba_file_tag op0_ameba_file_tag)
+    set(PLUSARG_op0_with_unused_file_tag op0_with_unused_file_tag)
+    set(PLUSARG_op1_vec_file_tag op1_vec_file_tag)
+    set(PLUSARG_op1_cube_file_tag op1_cube_file_tag)
+    set(PLUSARG_op1_ameba_file_tag op1_ameba_file_tag)
+    set(PLUSARG_op1_with_unused_file_tag op1_with_unused_file_tag)
+    set(PLUSARG_op2_vec_file_tag op2_vec_file_tag)
+    set(PLUSARG_op2_cube_file_tag op2_cube_file_tag)
+    set(PLUSARG_op2_ameba_file_tag op2_ameba_file_tag)
+    set(PLUSARG_op2_with_unused_file_tag op2_with_unused_file_tag)
+
+    set(PLUSARG_cfg_file_tag cfg_file_tag)
+    set(PLUSARG_cfg_mpe_file_tag cfg_mpe_file_tag)
+    set(PLUSARG_cfg_ppe_file_tag cfg_ppe_file_tag)
+    set(PLUSARG_mpe_cmd_file_tag mpe_cmd_file_tag)
+
+    set(PLUSARG_metrics_in_tag metrics_in_tag)
+    set(PLUSARG_metrics_in_ameba_tag metrics_in_ameba_tag)
+    set(PLUSARG_metrics_in_with_unused_tag metrics_in_with_unused_tag)
+    set(PLUSARG_metrics_warr_tag metrics_warr_tag)
+    set(PLUSARG_metrics_warr_with_unused_tag metrics_warr_with_unused_tag)
+    set(PLUSARG_metrics_etalon_tag metrics_etalon_tag)
+    set(PLUSARG_metrics_etalon_ameba_tag metrics_etalon_ameba_tag)
+    set(PLUSARG_metrics_etalon_with_unused_tag metrics_etalon_with_unused_tag)
+    set(PLUSARG_metrics_op0_vec_tag metrics_op0_vec_tag)
+    set(PLUSARG_metrics_op0_cube_tag metrics_op0_cube_tag)
+    set(PLUSARG_metrics_op0_ameba_tag metrics_op0_ameba_tag)
+    set(PLUSARG_metrics_op0_with_unused_tag metrics_op0_with_unused_tag)
+    set(PLUSARG_metrics_op1_vec_tag metrics_op1_vec_tag)
+    set(PLUSARG_metrics_op1_cube_tag metrics_op1_cube_tag)
+    set(PLUSARG_metrics_op1_ameba_tag metrics_op1_ameba_tag)
+    set(PLUSARG_metrics_op1_with_unused_tag metrics_op1_with_unused_tag)
+    set(PLUSARG_metrics_op2_vec_tag metrics_op2_vec_tag)
+    set(PLUSARG_metrics_op2_cube_tag metrics_op2_cube_tag)
+    set(PLUSARG_metrics_op2_ameba_tag metrics_op2_ameba_tag)
+    set(PLUSARG_metrics_op2_with_unused_tag metrics_op2_with_unused_tag)
+    set(PLUSARG_metrics_mpe_cmd_tag metrics_mpe_cmd_tag)
 
 
     set(NA_RM_BIN_PATH ${CMAKE_BINARY_DIR}/${rumboot_dirname}/utils/npe_rm/rm_core/rtl-tests)
-    set(NA_RM_PLUSARGS +in_file_tag=${NA_TEST_in_file}
-                       +in_ameba_file_tag=${NA_TEST_in_ameba_file}
-                       +in_with_unused_file_tag=${NA_TEST_in_with_unused_file}
-                       +warr_file_tag=${NA_TEST_warr_file}
-                       +warr_with_unused_file_tag=${NA_TEST_warr_with_unused_file}
-                       +etalon_file_tag=${NA_TEST_etalon_file}
-                       +etalon_ameba_file_tag=${NA_TEST_etalon_ameba_file}
-                       +etalon_with_unused_file_tag=${NA_TEST_etalon_with_unused_file}
-                       +op0_vec_file_tag=${NA_TEST_op0_vec_file}
-                       +op0_cube_file_tag=${NA_TEST_op0_cube_file}
-                       +op0_ameba_file_tag=${NA_TEST_op0_with_unused_file}
-                       +op0_with_unused_file_tag=${NA_TEST_op0_with_unused_file}
-                       +op1_vec_file_tag=${NA_TEST_op1_vec_file}
-                       +op1_cube_file_tag=${NA_TEST_op1_cube_file}
-                       +op1_ameba_file_tag=${NA_TEST_op1_ameba_file}
-                       +op1_with_unused_file_tag=${NA_TEST_op1_with_unused_file}
-                       +op2_vec_file_tag=${NA_TEST_op2_vec_file}
-                       +op2_cube_file_tag=${NA_TEST_op2_cube_file}
-                       +op2_ameba_file_tag=${NA_TEST_op2_ameba_file}
-                       +op2_with_unused_file_tag=${NA_TEST_op2_with_unused_file}
+    set(NA_RM_PLUSARGS +${PLUSARG_in_file_tag}=${NA_TEST_in_file}
+                       +${PLUSARG_in_ameba_file_tag}=${NA_TEST_in_ameba_file}
+                       +${PLUSARG_in_with_unused_file_tag}=${NA_TEST_in_with_unused_file}
+                       +${PLUSARG_warr_file_tag}=${NA_TEST_warr_file}
+                       +${PLUSARG_warr_with_unused_file_tag}=${NA_TEST_warr_with_unused_file}
+                       +${PLUSARG_etalon_file_tag}=${NA_TEST_etalon_file}
+                       +${PLUSARG_etalon_ameba_file_tag}=${NA_TEST_etalon_ameba_file}
+                       +${PLUSARG_etalon_with_unused_file_tag}=${NA_TEST_etalon_with_unused_file}
+                       +${PLUSARG_op0_vec_file_tag}=${NA_TEST_op0_vec_file}
+                       +${PLUSARG_op0_cube_file_tag}=${NA_TEST_op0_cube_file}
+                       +${PLUSARG_op0_ameba_file_tag}=${NA_TEST_op0_with_unused_file}
+                       +${PLUSARG_op0_with_unused_file_tag}=${NA_TEST_op0_with_unused_file}
+                       +${PLUSARG_op1_vec_file_tag}=${NA_TEST_op1_vec_file}
+                       +${PLUSARG_op1_cube_file_tag}=${NA_TEST_op1_cube_file}
+                       +${PLUSARG_op1_ameba_file_tag}=${NA_TEST_op1_ameba_file}
+                       +${PLUSARG_op1_with_unused_file_tag}=${NA_TEST_op1_with_unused_file}
+                       +${PLUSARG_op2_vec_file_tag}=${NA_TEST_op2_vec_file}
+                       +${PLUSARG_op2_cube_file_tag}=${NA_TEST_op2_cube_file}
+                       +${PLUSARG_op2_ameba_file_tag}=${NA_TEST_op2_ameba_file}
+                       +${PLUSARG_op2_with_unused_file_tag}=${NA_TEST_op2_with_unused_file}
 
-                       +cfg_file_tag=${NA_TEST_cfg_file}
-                       +cfg_mpe_file_tag=${NA_TEST_cfg_mpe_file}
-                       +cfg_ppe_file_tag=${NA_TEST_cfg_ppe_file}
-                       +mpe_cmd_file_tag=${NA_TEST_mpe_cmd_file}
+                       +${PLUSARG_cfg_file_tag}=${NA_TEST_cfg_file}
+                       +${PLUSARG_cfg_mpe_file_tag}=${NA_TEST_cfg_mpe_file}
+                       +${PLUSARG_cfg_ppe_file_tag}=${NA_TEST_cfg_ppe_file}
+                       +${PLUSARG_mpe_cmd_file_tag}=${NA_TEST_mpe_cmd_file}
 
-                       +metrics_in_tag=${NA_TEST_metrics_in}
-                       +metrics_in_ameba_tag=${NA_TEST_metrics_in_ameba}
-                       +metrics_in_with_unused_tag=${NA_TEST_metrics_in_with_unused}
-                       +metrics_warr_tag=${NA_TEST_metrics_warr}
-                       +metrics_warr_with_unused_tag=${NA_TEST_metrics_warr_with_unused}
-                       +metrics_etalon_tag=${NA_TEST_metrics_etalon}
-                       +metrics_etalon_ameba_tag=${NA_TEST_metrics_etalon_ameba}
-                       +metrics_etalon_with_unused_tag=${NA_TEST_metrics_etalon_with_unused}
-                       +metrics_op0_vec_tag=${NA_TEST_metrics_op0_vec}
-                       +metrics_op0_cube_tag=${NA_TEST_metrics_op0_cube}
-                       +metrics_op0_ameba_tag=${NA_TEST_metrics_op0_ameba}
-                       +metrics_op0_with_unused_tag=${NA_TEST_metrics_op0_with_unused}
-                       +metrics_op1_vec_tag=${NA_TEST_metrics_op1_vec}
-                       +metrics_op1_cube_tag=${NA_TEST_metrics_op1_cube}
-                       +metrics_op1_ameba_tag=${NA_TEST_metrics_op1_ameba}
-                       +metrics_op1_with_unused_tag=${NA_TEST_metrics_op1_with_unused}
-                       +metrics_op2_vec_tag=${NA_TEST_metrics_op2_vec}
-                       +metrics_op2_cube_tag=${NA_TEST_metrics_op2_cube}
-                       +metrics_op2_ameba_tag=${NA_TEST_metrics_op2_ameba}
-                       +metrics_op2_with_unused_tag=${NA_TEST_metrics_op2_with_unused}
-                       +metrics_mpe_cmd_tag=${NA_TEST_metrics_mpe_cmd}
+                       +${PLUSARG_metrics_in_tag}=${NA_TEST_metrics_in}
+                       +${PLUSARG_metrics_in_ameba_tag}=${NA_TEST_metrics_in_ameba}
+                       +${PLUSARG_metrics_in_with_unused_tag}=${NA_TEST_metrics_in_with_unused}
+                       +${PLUSARG_metrics_warr_tag}=${NA_TEST_metrics_warr}
+                       +${PLUSARG_metrics_warr_with_unused_tag}=${NA_TEST_metrics_warr_with_unused}
+                       +${PLUSARG_metrics_etalon_tag}=${NA_TEST_metrics_etalon}
+                       +${PLUSARG_metrics_etalon_ameba_tag}=${NA_TEST_metrics_etalon_ameba}
+                       +${PLUSARG_metrics_etalon_with_unused_tag}=${NA_TEST_metrics_etalon_with_unused}
+                       +${PLUSARG_metrics_op0_vec_tag}=${NA_TEST_metrics_op0_vec}
+                       +${PLUSARG_metrics_op0_cube_tag}=${NA_TEST_metrics_op0_cube}
+                       +${PLUSARG_metrics_op0_ameba_tag}=${NA_TEST_metrics_op0_ameba}
+                       +${PLUSARG_metrics_op0_with_unused_tag}=${NA_TEST_metrics_op0_with_unused}
+                       +${PLUSARG_metrics_op1_vec_tag}=${NA_TEST_metrics_op1_vec}
+                       +${PLUSARG_metrics_op1_cube_tag}=${NA_TEST_metrics_op1_cube}
+                       +${PLUSARG_metrics_op1_ameba_tag}=${NA_TEST_metrics_op1_ameba}
+                       +${PLUSARG_metrics_op1_with_unused_tag}=${NA_TEST_metrics_op1_with_unused}
+                       +${PLUSARG_metrics_op2_vec_tag}=${NA_TEST_metrics_op2_vec}
+                       +${PLUSARG_metrics_op2_cube_tag}=${NA_TEST_metrics_op2_cube}
+                       +${PLUSARG_metrics_op2_ameba_tag}=${NA_TEST_metrics_op2_ameba}
+                       +${PLUSARG_metrics_op2_with_unused_tag}=${NA_TEST_metrics_op2_with_unused}
+                       +${PLUSARG_metrics_mpe_cmd_tag}=${NA_TEST_metrics_mpe_cmd}
     )
+    set(NA_RM_PLUSARGS_LOOP +${PLUSARG_num_iterations_file_tag}=${NA_TEST_num_iterations_file})
+    foreach(i RANGE 0 15)
+      set(NA_RM_PLUSARGS_LOOP ${NA_RM_PLUSARGS_LOOP} 
+        +${PLUSARG_in_file_tag}_${i}_=${NA_TEST_in_file}.${i}
+        +${PLUSARG_in_ameba_file_tag}_${i}_=${NA_TEST_in_ameba_file}.${i}
+        +${PLUSARG_in_with_unused_file_tag}_${i}_=${NA_TEST_in_with_unused_file}.${i}
+        +${PLUSARG_warr_file_tag}_${i}_=${NA_TEST_warr_file}.${i}
+        +${PLUSARG_warr_with_unused_file_tag}_${i}_=${NA_TEST_warr_with_unused_file}.${i}
+        +${PLUSARG_etalon_file_tag}_${i}_=${NA_TEST_etalon_file}.${i}
+        +${PLUSARG_etalon_ameba_file_tag}_${i}_=${NA_TEST_etalon_ameba_file}.${i}
+        +${PLUSARG_etalon_with_unused_file_tag}_${i}_=${NA_TEST_etalon_with_unused_file}.${i}
+        +${PLUSARG_op0_vec_file_tag}_${i}_=${NA_TEST_op0_vec_file}.${i}
+        +${PLUSARG_op0_cube_file_tag}_${i}_=${NA_TEST_op0_cube_file}.${i}
+        +${PLUSARG_op0_ameba_file_tag}_${i}_=${NA_TEST_op0_with_unused_file}.${i}
+        +${PLUSARG_op0_with_unused_file_tag}_${i}_=${NA_TEST_op0_with_unused_file}.${i}
+        +${PLUSARG_op1_vec_file_tag}_${i}_=${NA_TEST_op1_vec_file}.${i}
+        +${PLUSARG_op1_cube_file_tag}_${i}_=${NA_TEST_op1_cube_file}.${i}
+        +${PLUSARG_op1_ameba_file_tag}_${i}_=${NA_TEST_op1_ameba_file}.${i}
+        +${PLUSARG_op1_with_unused_file_tag}_${i}_=${NA_TEST_op1_with_unused_file}.${i}
+        +${PLUSARG_op2_vec_file_tag}_${i}_=${NA_TEST_op2_vec_file}.${i}
+        +${PLUSARG_op2_cube_file_tag}_${i}_=${NA_TEST_op2_cube_file}.${i}
+        +${PLUSARG_op2_ameba_file_tag}_${i}_=${NA_TEST_op2_ameba_file}.${i}
+        +${PLUSARG_op2_with_unused_file_tag}_${i}_=${NA_TEST_op2_with_unused_file}.${i}
+
+        +${PLUSARG_cfg_file_tag}_${i}_=${NA_TEST_cfg_file}.${i}
+        +${PLUSARG_cfg_mpe_file_tag}_${i}_=${NA_TEST_cfg_mpe_file}.${i}
+        +${PLUSARG_cfg_ppe_file_tag}_${i}_=${NA_TEST_cfg_ppe_file}.${i}
+        +${PLUSARG_mpe_cmd_file_tag}_${i}_=${NA_TEST_mpe_cmd_file}.${i}
+
+        +${PLUSARG_metrics_in_tag}_${i}_=${NA_TEST_in_file}.${i}.metrics
+        +${PLUSARG_metrics_in_ameba_tag}_${i}_=${NA_TEST_in_ameba_file}.${i}.metrics
+        +${PLUSARG_metrics_in_with_unused_tag}_${i}_=${NA_TEST_in_with_unused_file}.${i}.metrics
+        +${PLUSARG_metrics_warr_tag}_${i}_=${NA_TEST_warr_file}.${i}.metrics
+        +${PLUSARG_metrics_warr_with_unused_tag}_${i}_=${NA_TEST_warr_with_unused_file}.${i}.metrics
+        +${PLUSARG_metrics_etalon_tag}_${i}_=${NA_TEST_etalon_file}.${i}.metrics
+        +${PLUSARG_metrics_etalon_ameba_tag}_${i}_=${NA_TEST_etalon_ameba_file}.${i}.metrics
+        +${PLUSARG_metrics_etalon_with_unused_tag}_${i}_=${NA_TEST_etalon_with_unused_file}.${i}.metrics
+        +${PLUSARG_metrics_op0_vec_tag}_${i}_=${NA_TEST_op0_vec_file}.${i}.metrics
+        +${PLUSARG_metrics_op0_cube_tag}_${i}_=${NA_TEST_op0_cube_file}.${i}.metrics
+        +${PLUSARG_metrics_op0_ameba_tag}_${i}_=${NA_TEST_op0_ameba_file}.${i}.metrics
+        +${PLUSARG_metrics_op0_with_unused_tag}_${i}_=${NA_TEST_op0_with_unused_file}.${i}.metrics
+        +${PLUSARG_metrics_op1_vec_tag}_${i}_=${NA_TEST_op1_vec_file}.${i}.metrics
+        +${PLUSARG_metrics_op1_cube_tag}_${i}_=${NA_TEST_op1_cube_file}.${i}.metrics
+        +${PLUSARG_metrics_op1_ameba_tag}_${i}_=${NA_TEST_op1_ameba_file}.${i}.metrics
+        +${PLUSARG_metrics_op1_with_unused_tag}_${i}_=${NA_TEST_op1_with_unused_file}.${i}.metrics
+        +${PLUSARG_metrics_op2_vec_tag}_${i}_=${NA_TEST_op2_vec_file}.${i}.metrics
+        +${PLUSARG_metrics_op2_cube_tag}_${i}_=${NA_TEST_op2_cube_file}.${i}.metrics
+        +${PLUSARG_metrics_op2_ameba_tag}_${i}_=${NA_TEST_op2_ameba_file}.${i}.metrics
+        +${PLUSARG_metrics_op2_with_unused_tag}_${i}_=${NA_TEST_op2_with_unused_file}.${i}.metrics
+        +${PLUSARG_metrics_mpe_cmd_tag}_${i}_=${NA_TEST_mpe_cmd_file}.${i}.metrics
+      )
+    endforeach()
     set(RM_LOGFILE npe_rm.log)
 
     macro(ADD_VPE_COUPLED_TEST name rm_bin_name)
@@ -263,6 +365,14 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         PREPCMD ${NA_RM_BIN_PATH}/main_vpe_dma ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
         IRUN_FLAGS ${NA_RM_PLUSARGS}
       )
+
+    add_rumboot_target(
+      CONFIGURATION ROM
+      NAME try_loop
+      FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe.c
+      PREPCMD ${NA_RM_BIN_PATH}/main_nothing_to_do_x4 ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
+      IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+    )
 
 
     # MPE example 

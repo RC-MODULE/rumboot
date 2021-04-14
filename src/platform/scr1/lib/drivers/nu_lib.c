@@ -84,7 +84,7 @@ void nu_vpe_load_config(ConfigVPE* cfg, void* cfg_bin) {
   cfg->op2_config.lut_right_priority=*ptr;ptr++;
   cfg->op2_config.lut_left_priority=*ptr;ptr++;
   cfg->op2_config.lut_tab1_x_start=*ptr;ptr++;
-  cfg->op2_config.lut_tab2_x_start=*ptr;ptr++;
+  cfg->op2_config.lut_tab1_x_end=*ptr;ptr++;
   cfg->op2_config.lut_tab2_x_start=*ptr;ptr++;
   cfg->op2_config.lut_tab2_x_end=*ptr;ptr++;
 
