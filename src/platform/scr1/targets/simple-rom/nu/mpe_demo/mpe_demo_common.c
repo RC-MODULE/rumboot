@@ -71,20 +71,21 @@ int main() {
   if(etalon == NULL) return -1;
   
   nu_mpe_config_wr_main_channel(NU_CPDMAC_ASM_BASE,res_data,res_metrics->s);
-  start = rumboot_platform_get_uptime();
   nu_mpe_run_wr_main_channel(NU_CPDMAC_ASM_BASE);
-  
-  
+    
   rumboot_printf("Runnung MPE commands\n");
+  start = rumboot_platform_get_uptime();
   if( nu_mpe_run_cmd(NU_MPE_STANDALONE_BASE,cmd,cmd_metrics) != 0 ) return -1;
   
   nu_mpe_wait_wr_main_channel_complete(NU_CPDMAC_ASM_BASE);
-  
+  end = rumboot_platform_get_uptime();
   rumboot_platform_dump_region("res_data.bin",(uint32_t)res_data,res_metrics->s);
   
-  end = rumboot_platform_get_uptime();
   delta = end -start;
-  v = (res_data *4)/delta;
+  v = /*(res_data *4)/ */delta;
+  
+  rumboot_printf( "start=%d\n",start);
+   rumboot_printf( "end=%d\n",end);
   rumboot_printf( "v=%d\n",v);
   
   rumboot_printf("Comparing..\n");
