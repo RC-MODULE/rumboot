@@ -267,7 +267,7 @@ void nu_ppe_load_config(ConfigPPE* cfg, void* cfg_bin) {
 void nu_vpe_print_config(ConfigVPE* cfg){
   rumboot_printf("ConfigVPE:\n");
   nu_vpe_print_DataTypeExt(cfg->in_data_type,"in_data_type");
-  nu_vpe_print_DataType(cfg->in_data_type,"out_data_type");
+  nu_vpe_print_DataType(cfg->out_data_type,"out_data_type");
   nu_vpe_print_Enable(cfg->flying,"flying");
   nu_vpe_print_Enable(cfg->op0_en,"op0_en");
   nu_vpe_print_Enable(cfg->op1_en,"op1_en");

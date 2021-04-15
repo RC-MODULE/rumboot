@@ -366,13 +366,20 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         IRUN_FLAGS ${NA_RM_PLUSARGS}
       )
 
-    add_rumboot_target(
-      CONFIGURATION ROM
-      NAME try_loop
-      FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe.c
-      PREPCMD ${NA_RM_BIN_PATH}/main_nothing_to_do_x4 ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
-      IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
-    )
+    
+    macro(ADD_VPE_COUPLED_TEST_LOOP name rm_bin_name)
+      add_rumboot_target(
+        CONFIGURATION ROM
+        NAME ${name}
+        FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe.c
+        PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
+        IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+      )
+    endmacro()
+
+    ADD_VPE_COUPLED_TEST_LOOP(try_loop main_nothing_to_do_x4)
+    ADD_VPE_COUPLED_TEST_LOOP(relu_test_int32 main_relu_int32)
+    ADD_VPE_COUPLED_TEST_LOOP(relu_test_fp32  main_relu_fp32)
 
 
     # MPE example 
