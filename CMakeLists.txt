@@ -251,6 +251,11 @@ ADD_SOURCE("src/lib/bitswapper.c")
 ADD_SOURCE("src/lib/drivers/scrb_lib.c")
 ADD_SOURCE("src/lib/drivers/nfifo.c")
 ADD_SOURCE("src/lib/weaklings.c")
+ADD_SOURCE("src/lib/drivers/gpio_pl061.c")
+
+if (RUMBOOT_ARCH MATCHES ppc)
+  ADD_SOURCE("src/lib/drivers/ugly/plb6mcif2.c")
+endif()
 
 if (NOT RUMBOOT_PLATFORM STREQUAL "native")
   if (CMAKE_BUILD_TYPE STREQUAL "Debug")
