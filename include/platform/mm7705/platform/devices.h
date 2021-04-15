@@ -270,5 +270,6 @@
 //PLB4AHB
 #define PLB4AHB_BASE            0x00000050
 
+#define DCR_PLB6_BC_BASE            0x80000200
 
 #endif //MIVEM_MEM_MAP_H
