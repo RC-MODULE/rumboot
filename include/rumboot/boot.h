@@ -222,12 +222,12 @@ struct rumboot_cpu_cluster {
   uintptr_t base;
   void (*kill)(const struct rumboot_cpu_cluster *cpu);
   int  (*poll)(const struct rumboot_cpu_cluster *cpu);
-  int (*start)(const struct rumboot_cpu_cluster *cpu, struct rumboot_bootheader *hdr, int swap);
+  int (*start)(const struct rumboot_cpu_cluster *cpu, struct rumboot_bootheader *hdr, void *data, int swap);
 };
 
 const struct rumboot_cpu_cluster *rumboot_platform_get_cpus(int *cpu_count);
 int __attribute__((deprecated)) rumboot_bootimage_execute_ep(void *ep);
-int rumboot_bootimage_jump_to_ep_with_args(const struct rumboot_cpu_cluster *cpu,  struct rumboot_bootheader *hdr, int swap);
+int rumboot_bootimage_jump_to_ep_with_args(const struct rumboot_cpu_cluster *cpu,  struct rumboot_bootheader *hdr, void *data, int swap);
 int rumboot_platform_decrypt_buffer(const struct rumboot_bootsource *src, int encryption_slot, void *data, size_t datasize);
 int rumboot_platform_verify_signature(const struct rumboot_bootsource *src, int certificate_slot, void *data, size_t datasize);
 

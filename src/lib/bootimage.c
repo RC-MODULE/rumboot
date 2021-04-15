@@ -228,6 +228,8 @@ int rumboot_bootimage_execute(struct rumboot_bootheader *hdr, const struct rumbo
 	size_t datasize = rumboot_bootimage_header_item32(hdr->datalen, swap);
 	uint8_t flags = hdr->flags;
 	size_t spl_size;
+	struct rumboot_bootheader header_copy_space; /* We'll need this when doing decaps */
+	void *image_final_data_location = hdr->data;
 
 	hdr->magic = 0x0; /* Wipe out magic */
 	hdr->device = (uint32_t) src; /* Set the legacy src pointer */
@@ -250,9 +252,9 @@ int rumboot_bootimage_execute(struct rumboot_bootheader *hdr, const struct rumbo
 	int certificate_slot = rumboot_bootimage_header_item32(hdr->certificate_slot, swap);
 
 	if ((encryption_slot > 0) && (certificate_slot > 0)) {
-		dbg_boot("Decrypting image, key slot %d...\n", encryption_slot);
+		dbg_boot(src, "Decrypting image, key slot %d...\n", encryption_slot);
 		rumboot_platform_decrypt_buffer(src, encryption_slot, hdr->data, datasize);
-		dbg_boot("Verifying signature, certificate slot %d...\n", encryption_slot);
+		dbg_boot(src, "Verifying signature, certificate slot %d...\n", encryption_slot);
 		int ret = rumboot_platform_verify_signature(src, certificate_slot, hdr->data, datasize);
 		if (ret != 0) {
 			return ret;
@@ -282,6 +284,7 @@ int rumboot_bootimage_execute(struct rumboot_bootheader *hdr, const struct rumbo
 			image_source_offset = sizeof(*hdr);
 			image_destination_offset = 0;
 			effective_size = datasize; 
+			header_copy_space = *hdr;
 		}
 
 		if (flags & RUMBOOT_FLAG_COMPRESS) {
@@ -303,11 +306,11 @@ int rumboot_bootimage_execute(struct rumboot_bootheader *hdr, const struct rumbo
 		/* TODO: Split this into a chain of distinct 'data handlers'. 
 		 * Perhaps use a pair of fd's to pipe the data
 		 */ 
+		ssize_t new_data_length = datasize; 
 		if (flags & RUMBOOT_FLAG_COMPRESS) {
-			ssize_t ret; 
 			if (flags & RUMBOOT_FLAG_RELOCATE) {
 					/* If we do relocation, we do not impose any limits on destination size. */
-					ret = rumboot_decompress_buffer(src, 
+					new_data_length = rumboot_decompress_buffer(src, 
 						image_source_base + image_source_offset, 
 						image_destination_base + image_destination_offset, 
 						effective_size, -1);
@@ -320,12 +323,12 @@ int rumboot_bootimage_execute(struct rumboot_bootheader *hdr, const struct rumbo
 						temp_buf);
 					memmove(temp_buf, image_source_base + image_source_offset, datasize);				
 					/* Actual decompression. */
-					ret = rumboot_decompress_buffer(src, temp_buf, 
+					new_data_length = rumboot_decompress_buffer(src, temp_buf, 
                             image_destination_base + image_destination_offset, effective_size, 
 						spl_size - ((flags & RUMBOOT_FLAG_DECAPS) ? sizeof(*hdr) : 0));
 			}
-			if (ret < 0) {
-				return ret;
+			if (new_data_length < 0) {
+				return new_data_length;
 			}
 		} else if ( /* Do we need any memmoves ? */
 				image_source_base + image_source_offset != 
@@ -337,6 +340,11 @@ int rumboot_bootimage_execute(struct rumboot_bootheader *hdr, const struct rumbo
 				image_destination_base + image_destination_offset, 
 				image_source_base + image_source_offset, effective_size);
 		}
+	image_final_data_location = image_destination_base + image_destination_offset;
+	}
+
+	if (flags & RUMBOOT_FLAG_DECAPS) {
+		hdr = &header_copy_space;
 	}
 
 	/* At this point we must be sure that the data is really in memory */
@@ -360,7 +368,7 @@ int rumboot_bootimage_execute(struct rumboot_bootheader *hdr, const struct rumbo
 		cluster,
 		cpu->name);
 	if (cpu->start) {
-		ret = cpu->start(cpu, hdr, swap);
+		ret = cpu->start(cpu, hdr, image_final_data_location, swap);
 		if (ret) /* If start didn't succeed */
 			return ret;
 	}
@@ -385,7 +393,7 @@ int rumboot_bootimage_execute_ep(void *ep)
 	return ram_main();
 }
 
-int rumboot_bootimage_jump_to_ep_with_args(const struct rumboot_cpu_cluster *cpu,  struct rumboot_bootheader *hdr, int swap) 
+int rumboot_bootimage_jump_to_ep_with_args(const struct rumboot_cpu_cluster *cpu,  struct rumboot_bootheader *hdr, void *data, int swap) 
 {
     int (*runme)(uint32_t a, uint32_t b, uint32_t c, uint32_t d, uint32_t e); 
 	
