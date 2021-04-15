@@ -26,7 +26,7 @@
 #include <arch/ppc_476fp_mmu.h>
 
 #include <platform/devices.h>
-#include <platform/devices/plb6mcif2.h>
+#include <devices/ugly/plb6mcif2.h>
 #include <platform/devices/emi.h>
 #include <platform/devices/l2c.h>
 

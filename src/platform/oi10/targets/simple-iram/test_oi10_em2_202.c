@@ -29,7 +29,7 @@
 #define NOR_SELFCHECKING_DISABLE 1
 
 #include <platform/devices.h>
-#include <platform/devices/plb6mcif2.h>
+#include <devices/ugly/plb6mcif2.h>
 #include <platform/devices/emi.h>
 #include <platform/devices/l2c.h>
 #include <platform/devices/nor_1636RR4.h>
