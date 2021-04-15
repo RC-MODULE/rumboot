@@ -36,17 +36,15 @@ static int nmc_poll(const struct rumboot_cpu_cluster *cpu)
         return ret;
 }
 
-static int nmc_start(const struct rumboot_cpu_cluster *cpu, struct rumboot_bootheader *hdr, void *data, int swap)
+static void nmc_generate_trampoline(void *at, uint32_t ep)
 {
-    uint32_t ep = rumboot_bootimage_header_item32(hdr->entry_point[0], swap);
-    if (ep) {
-        uint8_t *nmc_memory = (void *) IM1_BASE; /* The trampoline is always there */
+        uint8_t *nmc_memory = (void *) at; /* The trampoline is always there */
         uint32_t *nmc_goto = &nmc_memory[4];
         nmc_memory[0] = 0x0;
         nmc_memory[1] = 0x0;
         nmc_memory[2] = 0x27; /* delayed goto */ 
         nmc_memory[3] = 0x48;
-        *nmc_goto = swap ? __swap32(ep) : ep;
+        *nmc_goto = ep;
         nmc_memory[8] = 0x0;
         nmc_memory[9] = 0x0; /* nop, nop */
         nmc_memory[10] = 0x0;
@@ -55,7 +53,14 @@ static int nmc_start(const struct rumboot_cpu_cluster *cpu, struct rumboot_booth
         nmc_memory[13] = 0x0;
         nmc_memory[14] = 0x0;
         nmc_memory[15] = 0x0;
-        rumboot_printf("nmc: Created trampoline to %x at reset vector location\n", nmc_goto);
+        rumboot_printf("boot: Created trampoline to %x at reset vector location\n", nmc_goto);
+}
+
+static int nmc_start(const struct rumboot_cpu_cluster *cpu, struct rumboot_bootheader *hdr, void *data, int swap)
+{
+    uint32_t ep = rumboot_bootimage_header_item32(hdr->entry_point[0], swap);
+    if (ep) {
+        nmc_generate_trampoline((void *) IM1_BASE, swap ? __swap32(ep) : ep);
     }
     dcr_write(DCR_SCTL_BASE + SCTL_NMPU_NMI, 1<<1);                
     dcr_write(DCR_SCTL_BASE + SCTL_NMPU_NMI, 0);
