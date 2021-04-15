@@ -1531,7 +1531,7 @@ struct regpoker_checker em2x_checker[] = {
     {"Data15", REGPOKER_READ32, NOR_SIZE - ROM_IN_NOR_SIZE - 0x04, 0xCCCCCCCC, 0xffffffff   },
     {/* Sentinel */}};
 // Processing src/platform/oi10/targets/simple-iram/test_oi10_em2_101.c / test_oi10_em2_101
-#include <platform/regs/regs_plb6mcif2.h>
+#include <arch/regs/plb6mcif2.h>
 
 static const struct regpoker_checker plb6mcif2_regs_default[] = {
     //      name                check type          offset         exp val                  mask

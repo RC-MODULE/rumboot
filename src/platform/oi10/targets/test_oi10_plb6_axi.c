@@ -27,7 +27,6 @@
 #include <devices/ugly/plb6mcif2.h>
 #include <platform/devices/nor_1636RR4.h>
 #include <platform/devices/hscb.h>
-#include <platform/regs/regs_plb6mcif2.h>
 
 #ifndef DCR_EM2_AXIMCIF2_BASE
 #define DCR_EM2_AXIMCIF2_BASE           0x800D0000

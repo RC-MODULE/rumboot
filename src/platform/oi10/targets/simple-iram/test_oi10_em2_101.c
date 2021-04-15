@@ -13,12 +13,12 @@
 #include <platform/devices.h>
 #include <platform/trace.h>
 #include <platform/test_event_c.h>
-#include <platform/regs/regs_plb6mcif2.h>
 #include <platform/regs/regs_mclfir.h>
 #include <platform/regs/regs_emi.h>
 #include <platform/devices/emi.h>
 #include <arch/ppc_476fp_mmu_fields.h>
 #include <arch/ppc_476fp_mmu.h>
+#include <arch/regs/plb6mcif2.h>
 #include <arch/mem_window.h>
 
 void check_plb6mcif2(const uint32_t base_address)

@@ -14,7 +14,7 @@
 #include <platform/trace.h>
 #include <platform/regs/regs_emi.h>
 #include <platform/regs/regs_mclfir.h>
-#include <platform/regs/regs_plb6mcif2.h>
+
 
 #include <rumboot/io.h>
 #include <rumboot/macros.h>
