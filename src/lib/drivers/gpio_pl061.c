@@ -2,8 +2,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-#include <platform/test_assert.h>
-#include <arch/common_macros.h>
+#include <assert.h>
 
 #include <rumboot/io.h>
 #include <rumboot/printf.h>
@@ -49,7 +48,7 @@ void gpio_int_enable_by_mask( uint32_t const base_address, uint8_t const pins_ma
         reg_set( pins_mask, base_address+GPIO_IBE );    /* enable both edges */
         break;
     default:
-        TEST_ASSERT( 0, "Unsupported interrupt type" );
+        rumboot_platform_panic("Unsupported interrupt type" );
         return;
     }
 
@@ -57,7 +56,7 @@ void gpio_int_enable_by_mask( uint32_t const base_address, uint8_t const pins_ma
 }
 
 void gpio_int_enable( uint32_t const base_address, uint32_t const pin_offset, gpio_int_type const int_type ) {
-    TEST_ASSERT( pin_offset < GPIO_PIN_N, "ERROR!!! No such GPIO port exists" );
+    assert( pin_offset < GPIO_PIN_N);
 
     gpio_int_enable_by_mask( base_address, (0b1 << pin_offset), int_type );
 }
@@ -68,7 +67,7 @@ void gpio_int_disable_by_mask( uint32_t const base_address, uint8_t const pins_m
 }
 
 void gpio_int_disable( uint32_t const base_address, uint32_t const pin_offset ) {
-    TEST_ASSERT( pin_offset < GPIO_PIN_N, "ERROR!!! No such GPIO port exists" );
+    assert( pin_offset < GPIO_PIN_N );
 
     gpio_int_disable_by_mask( base_address, (0b1 << pin_offset) );
 }
@@ -79,7 +78,7 @@ void gpio_int_clear_by_mask( uint32_t const base_address, uint8_t const pins_mas
 }
 
 void gpio_int_clear( uint32_t const base_address, uint32_t const pin_offset ) {
-    TEST_ASSERT( pin_offset < GPIO_PIN_N, "ERROR!!! No such GPIO port exists" );
+    assert( pin_offset < GPIO_PIN_N);
 
     gpio_int_clear_by_mask( base_address, (0b1 << pin_offset) );
 }
@@ -92,13 +91,13 @@ void gpio_set_direction_by_mask( uint32_t const base_address, uint8_t const pins
 }
 
 void gpio_set_direction( uint32_t const base_address, uint32_t const pin_offset, gpio_pin_direction const dir ) {
-    TEST_ASSERT( pin_offset < GPIO_PIN_N, "ERROR!!! No such GPIO port exists" );
+    assert( pin_offset < GPIO_PIN_N);
 
     gpio_set_direction_by_mask( base_address, (0b1 << pin_offset), dir );
 }
 
 gpio_pin_direction gpio_get_direction( uint32_t const base_address,  uint32_t const pin_offset ){
-    TEST_ASSERT( pin_offset < GPIO_PIN_N, "ERROR!!! No such GPIO port exists" );
+    assert( pin_offset < GPIO_PIN_N);
 
     return (gpio_pin_direction)( (0b1 << pin_offset) & (ioread32( base_address+GPIO_DIR ) & GPIO_REG_MASK) );
 }
@@ -111,13 +110,13 @@ void gpio_set_ctrl_mode_by_mask( uint32_t const base_address, uint8_t const pins
 }
 
 void gpio_set_ctrl_mode( uint32_t const base_address, uint32_t const pin_offset, gpio_ctrl_mode const ctrl_mode ) {
-    TEST_ASSERT( pin_offset < GPIO_PIN_N, "ERROR!!! No such GPIO port exists" );
+    assert( pin_offset < GPIO_PIN_N);
 
     gpio_set_ctrl_mode_by_mask( base_address, (0b1 << pin_offset), ctrl_mode );
 }
 
 gpio_ctrl_mode gpio_get_ctrl_mode( uint32_t const base_address,  uint32_t const pin_offset ) {
-    TEST_ASSERT( pin_offset < GPIO_PIN_N, "ERROR!!! No such GPIO port exists" );
+    assert( pin_offset < GPIO_PIN_N);
 
     return (gpio_ctrl_mode)( (0b1 << pin_offset) & reg_read(base_address+GPIO_AFSEL) );
 }
@@ -128,13 +127,13 @@ void gpio_set_value_by_mask( uint32_t const base_address, uint8_t const pins_mas
 }
 
 void gpio_set_value( uint32_t const base_address, uint32_t const pin_offset, bool const value ) {
-    TEST_ASSERT( pin_offset < GPIO_PIN_N, "ERROR!!! No such GPIO port exists" );
+    assert( pin_offset < GPIO_PIN_N);
 
     gpio_set_value_by_mask( base_address, (0b1 << pin_offset), (value << pin_offset) );
 }
 
 bool gpio_get_value( uint32_t const base_address, uint32_t const pin_offset ) {
-    TEST_ASSERT( pin_offset < GPIO_PIN_N, "ERROR!!! No such GPIO port exists" );
+    assert( pin_offset < GPIO_PIN_N);
 
     return (bool)( reg_read( base_address+GPIO_DATA + GPIO_GET_PINS_OFFSET(0b1 << pin_offset) ) >> pin_offset );
 }
