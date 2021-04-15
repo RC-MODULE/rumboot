@@ -31,7 +31,7 @@
 #include <platform/regs/regs_dma2plb6.h>
 #include <platform/devices/hscb.h>
 #include <platform/devices/dma2plb6.h>
-#include <platform/devices/emi.h>
+#include <devices/ugly/emi.h>
 #include <platform/test_assert.h>
 #include <platform/devices/greth.h>
 #include <rumboot/printf.h>

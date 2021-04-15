@@ -24,7 +24,7 @@
 #include <arch/ppc_476fp_mmu.h>
 #include <arch/ppc_476fp_asm.h>
 #include <arch/mem_window.h>
-#include <platform/devices/emi.h>
+#include <devices/ugly/emi.h>
 
 
 #define START_ADDR      (SRAM0_BASE+L1I_SIZE)   // 32 byte aligned

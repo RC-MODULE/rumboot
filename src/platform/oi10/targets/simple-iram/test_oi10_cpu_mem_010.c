@@ -24,9 +24,9 @@
 
 #include <platform/devices.h>
 #include <devices/ugly/plb6mcif2.h>
-#include <platform/devices/emi.h>
-#include <platform/regs/regs_emi.h>
-#include <platform/regs/fields/emi.h>
+#include <devices/ugly/emi.h>
+#include <regs/regs_emi.h>
+#include <regs/fields/emi.h>
 #include <platform/devices/nor_1636RR4.h>
 
 //                                  MMU_TLB_ENTRY(  ERPN,   RPN,        EPN,        DSIZ,                   IL1I,   IL1D,   W,      I,      M,      G,      E,                      UX, UW, UR,     SX, SW, SR      DULXE,  IULXE,      TS,     TID,                WAY,                BID,                V   )

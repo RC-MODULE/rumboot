@@ -22,7 +22,7 @@
 #include <arch/ppc_476fp_mmu_fields.h>
 #include <arch/ppc_476fp_mmu.h>
 #include <arch/mem_window.h>
-#include <platform/devices/emi.h>
+#include <devices/ugly/emi.h>
 #include <platform/regs/regs_l2c_l2.h>
 
 //#define L2C_IL1I_BIT, L2C_IL1D_BIT, L2C_WRITE_MODE_BIT, L2C_INHIBIT_BIT, L2C_MEMORY_COHERENCE_BIT see in oi10.cmake

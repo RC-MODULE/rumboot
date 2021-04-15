@@ -12,7 +12,7 @@
 #include <platform/test_assert.h>
 #include <platform/interrupts.h>
 #include <platform/devices.h>
-#include <platform/devices/emi.h>
+#include <devices/ugly/emi.h>
 #include <platform/devices/l2c.h>
 #include <platform/regs/regs_l2c_l2.h>
 #include <rumboot/rumboot.h>

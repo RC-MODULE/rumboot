@@ -25,9 +25,9 @@
 #include <arch/ppc_476fp_mmu.h>
 #include <arch/mem_window.h>
 
-#include <platform/devices/emi.h>
-#include <platform/regs/regs_emi.h>
-#include <platform/regs/fields/emi.h>
+#include <devices/ugly/emi.h>
+#include <regs/regs_emi.h>
+#include <regs/fields/emi.h>
 
 #define PHY2RPN(ADDR)      	(((ADDR) & 0xFFFFF000) >> 12)
 #define ADDR2EPN			PHY2RPN

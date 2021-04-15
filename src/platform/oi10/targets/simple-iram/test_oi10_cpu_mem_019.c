@@ -30,9 +30,9 @@
 #include <platform/devices/l2c.h>
 #include <platform/devices.h>
 #include <devices/ugly/plb6mcif2.h>
-#include <platform/devices/emi.h>
-#include <platform/regs/regs_emi.h>
-#include <platform/regs/fields/emi.h>
+#include <devices/ugly/emi.h>
+#include <regs/regs_emi.h>
+#include <regs/fields/emi.h>
 
 #define L2C_WAY_SIZE    128
 #define DATA_LEN        (L2C_WAY_SIZE >> 3)

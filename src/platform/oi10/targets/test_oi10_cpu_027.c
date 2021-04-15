@@ -9,7 +9,7 @@
 #include <arch/ppc_476fp_mmu.h>
 #include <arch/common_macros.h>
 #include <platform/devices.h>
-#include <platform/devices/emi.h>
+#include <devices/ugly/emi.h>
 #include <platform/devices/dma2plb6.h>
 #include <platform/interrupts.h>
 #include <platform/test_assert.h>

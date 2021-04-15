@@ -8,7 +8,7 @@
 
 #include <platform/devices.h>
 #include <platform/interrupts.h>
-#include <platform/devices/emi.h>
+#include <devices/ugly/emi.h>
 
 #include <regs/regs_spi.h>
 #include <regs/regs_gpio_pl061.h>

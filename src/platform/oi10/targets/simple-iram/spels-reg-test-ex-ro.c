@@ -1509,7 +1509,7 @@ static const struct regpoker_checker aximcif2_regs_default[] = {
     {/* Sentinel */}};    
     
 // Processing src/platform/oi10/targets/simple-iram/test_oi10_em2_105.c / test_oi10_em2_105
-#include <platform/devices/emi.h>
+#include <devices/ugly/emi.h>
 #define ROM_IN_NOR_SIZE (0)
 
 struct regpoker_checker em2x_checker[] = {
@@ -1610,7 +1610,7 @@ static const struct regpoker_checker mclfir_regs_write[] = {
     {"MCLFIR_MC_ERR_WOF1",    REGPOKER_WRITE_DCR, MCLFIR_MC_ERR_WOF1,    0x00, 0xffffffc0   },
     {}};
 
-#include <platform/regs/regs_emi.h>
+#include <regs/regs_emi.h>
 #define EMI_SSx_DFLT 0x00800000
 #define EMI_SDx_DFLT 0x00000000
 static const struct regpoker_checker emi_regs_default[] = {

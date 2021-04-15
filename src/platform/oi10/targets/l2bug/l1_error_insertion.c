@@ -8,7 +8,7 @@
 #include <arch/ppc_476fp_ctrl_fields.h>
 #include <platform/test_event_c.h>
 #include <platform/devices.h>
-#include <platform/devices/emi.h>
+#include <devices/ugly/emi.h>
 #include <rumboot/boot.h>
 #include <rumboot/printf.h>
 #include <rumboot/platform.h>

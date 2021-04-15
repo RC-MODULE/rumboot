@@ -18,7 +18,7 @@
 #include <arch/ppc_476fp_lib_c.h>
 #include <platform/devices.h>
 #include <platform/test_assert.h>
-#include <platform/regs/regs_emi.h>
+#include <regs/regs_emi.h>
 
 typedef struct {
         uint32_t    addr;

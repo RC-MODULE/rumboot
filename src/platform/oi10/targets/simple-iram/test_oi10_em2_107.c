@@ -17,7 +17,7 @@
 #include <platform/devices.h>
 #include <platform/trace.h>
 #include <platform/test_event_c.h>
-#include <platform/devices/emi.h>
+#include <devices/ugly/emi.h>
 
 #define SRAM0_OFFSET_1 0x1000
 #define SRAM0_OFFSET_2 0x2000

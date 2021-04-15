@@ -9,7 +9,7 @@
 #include <platform/test_event_codes.h>
 #include <platform/test_assert.h>
 #include <platform/devices.h>
-#include <platform/devices/emi.h>
+#include <devices/ugly/emi.h>
 #include <arch/mmu.h>
 #include <arch/mem_window.h>
 #include <platform/devices/dma2plb6.h>

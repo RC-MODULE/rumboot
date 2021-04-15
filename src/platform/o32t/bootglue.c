@@ -23,9 +23,9 @@
 #include <regs/regs_gpio_pl061.h>
 #include <regs/regs_uart_pl011.h>
 
-//#include <platform/devices/emi.h>
-//#include <platform/regs/fields/emi.h>
-//#include <platform/regs/regs_emi.h>
+//#include <devices/ugly/emi.h>
+//#include <regs/fields/emi.h>
+//#include <regs/regs_emi.h>
 //#include <devices/ugly/plb6mcif2.h>
 
 #include <devices/uart_pl011.h>

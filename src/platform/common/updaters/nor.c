@@ -288,7 +288,7 @@ uint32_t flash_get_erase_size(struct nor_flash *fl)
 }
 
 
-#include <platform/devices/emi.h>
+#include <devices/ugly/emi.h>
 
 #ifndef NOR_OFFSET
     #define NOR_OFFSET 0

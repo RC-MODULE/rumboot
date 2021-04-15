@@ -21,7 +21,7 @@
 #include <arch/ppc_476fp_mmu_fields.h>
 #include <arch/ppc_476fp_mmu.h>
 #include <arch/ppc_476fp_itrpt_fields.h>
-#include <platform/devices/emi.h>
+#include <devices/ugly/emi.h>
 #include <platform/devices/l2c.h>
 #include <platform/devices/dma2plb6.h>
 #include <rumboot/memfill.h>

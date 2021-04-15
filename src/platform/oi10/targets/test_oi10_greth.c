@@ -15,7 +15,7 @@
 #include <platform/interrupts.h>
 #include <regs/fields/mpic128.h>
 #include <platform/regs/sctl.h>
-#include <platform/devices/emi.h>
+#include <devices/ugly/emi.h>
 #include <platform/test_assert.h>
 
 #include <platform/devices/greth.h>
