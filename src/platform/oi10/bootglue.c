@@ -25,7 +25,7 @@
 #include <platform/devices/emi.h>
 #include <platform/regs/fields/emi.h>
 #include <platform/regs/regs_emi.h>
-#include <platform/devices/plb6mcif2.h>
+#include <devices/ugly/plb6mcif2.h>
 #include <devices/uart_pl011.h>
 #include <rumboot/irq.h>
 #include <devices/greth_edcl.h>

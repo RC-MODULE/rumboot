@@ -26,7 +26,7 @@
 //#include <platform/devices/emi.h>
 //#include <platform/regs/fields/emi.h>
 //#include <platform/regs/regs_emi.h>
-//#include <platform/devices/plb6mcif2.h>
+//#include <devices/ugly/plb6mcif2.h>
 
 #include <devices/uart_pl011.h>
 #include <rumboot/irq.h>
@@ -119,8 +119,8 @@ static bool emi_enable(const struct rumboot_bootsource *src, void *pdata)
 
 static bool sdio_enable(const struct rumboot_bootsource *src, void *pdata)
 {
-        //gpio_set_direction(GPIO_0_BASE, 3, gpio_pin_direction_in);
-        //return !(gpio_get_data(GPIO_0_BASE) & BOOTM_SDIO_CD);
+        gpio_set_direction(GPIO_0_BASE, 3, gpio_pin_direction_in);
+        return !(gpio_get_data(GPIO_0_BASE) & BOOTM_SDIO_CD);
 }
 
 
