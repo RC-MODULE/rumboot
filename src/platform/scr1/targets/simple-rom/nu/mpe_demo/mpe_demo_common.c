@@ -28,8 +28,9 @@ int main() {
   uint32_t start;
   uint32_t end;
   uint32_t delta;
+  uint32_t instr_number;
   uint32_t v; 
-  
+  uint32_t vc; 
   rumboot_printf("Hello\n");
   
   heap_id = nu_get_heap_id();
@@ -81,12 +82,23 @@ int main() {
   end = rumboot_platform_get_uptime();
   rumboot_platform_dump_region("res_data.bin",(uint32_t)res_data,res_metrics->s);
   
-  delta = end -start;
-  v = /*(res_data *4)/ */delta;
+  delta = (end -start); // number of cycles in microseconds(ns), cycle =10ns;
+  instr_number = 8 *128 * 1024; // 8 MAC istructions,128 - number of repeat,1024 -matrix weghts and data 
+  rumboot_printf( " performance  by cycle\n");
+  vc = (instr_number) / (delta * 100);
+  rumboot_printf( "vc=%d\n",vc);
   
-  rumboot_printf( "start=%d\n",start);
-   rumboot_printf( "end=%d\n",end);
+  rumboot_printf( " performance  by sec\n");
+  v = (instr_number/delta) * 1000000;
+  
   rumboot_printf( "v=%d\n",v);
+   
+  rumboot_printf( "time(mcsec)=%d\n",(end-start));
+ // rumboot_printf( "start=%d\n",start);
+ // rumboot_printf( "end=%d\n",end);
+  
+  rumboot_printf( "instr_number=%d\n",instr_number);
+
   
   rumboot_printf("Comparing..\n");
   
