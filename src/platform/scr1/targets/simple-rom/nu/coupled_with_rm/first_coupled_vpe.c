@@ -102,14 +102,14 @@ int main() {
     nu_vpe_run_rd_main_channel(NU_CPDMAC_ASM_BASE);
   if(cfg_dma.dma_dst_en == Enable_NotEn)
     nu_vpe_run_wr_main_channel(NU_CPDMAC_ASM_BASE);
-  nu_vpe_run(NU_VPE_STANDALONE_BASE, &cfg_dma);     // To Invoke Or Not To Invoke Internal DMA Channel - Decide inside nu_vpe_run
+  nu_vpe_run(NU_VPE_STANDALONE_BASE, &cfg);     // To Invoke Or Not To Invoke Internal DMA Channel - Decide inside nu_vpe_run
   
     // Finalize Required DMA Channels
   if(cfg_dma.dma_src_en == Enable_NotEn)
     nu_vpe_wait_rd_main_channel_complete(NU_CPDMAC_ASM_BASE);
   if(cfg_dma.dma_dst_en == Enable_NotEn)
     nu_vpe_wait_wr_main_channel_complete(NU_CPDMAC_ASM_BASE);
-  nu_vpe_wait(NU_VPE_STANDALONE_BASE, &cfg_dma);
+  nu_vpe_wait(NU_VPE_STANDALONE_BASE, &cfg);
   
   
   rumboot_platform_dump_region("res_data.bin",(uint32_t)res_data,res_metrics->s);
