@@ -165,7 +165,7 @@ void clear_com_status(uint32_t base, uint32_t direct ) {
 	 if ( (( (COM_Status_tr >> 1) & 0x1) ==1)&& ((COM_Mask_tr & 0x1) ==0))  
 	iowrite32((COM_Status_tr & 0xd),base + CSR_tr); 
 	if (( ( (COM_Status_tr >> 2) & 0x1)==1) && ((COM_Mask_tr>> 1) & 0x1))
-	iowrite32((COM_Status_rcv & 0xb),base + CSR_rcv);
+	iowrite32((COM_Status_tr & 0xb),base + CSR_tr);
 	iowrite32((COM_Status_tr & 0x3),base + CSR_tr); //set CLR 
  }
  if (direct ==0) {
