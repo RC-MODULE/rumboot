@@ -35,7 +35,7 @@ rumboot_add_configuration(
   LOAD 
     IM1_IMAGE SELF
     IM0BIN SELF
-  CFLAGS -fnmc-compatible-if-packed
+  CFLAGS -fnmc-compatible-if-packed -DRUMBOOT_NOENTRY
   OBJCOPY_FLAGS ${SOC_OBJCOPY_FLAGS}
   FEATURES ${SOC_FEATURES}
   #We need a relocatable image 0x80020000
