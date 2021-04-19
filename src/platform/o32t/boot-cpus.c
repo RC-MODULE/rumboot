@@ -53,7 +53,7 @@ static void nmc_generate_trampoline(void *at, uint32_t ep)
         nmc_memory[13] = 0x0;
         nmc_memory[14] = 0x0;
         nmc_memory[15] = 0x0;
-        rumboot_printf("boot: Created trampoline to %x at reset vector location\n", nmc_goto);
+        rumboot_printf("boot: Created trampoline to 0x%x at 0x%x\n", __swap32(*nmc_goto), at);
 }
 
 static int nmc_start(const struct rumboot_cpu_cluster *cpu, struct rumboot_bootheader *hdr, void *data, int swap)
