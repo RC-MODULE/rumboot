@@ -295,7 +295,9 @@ int rumboot_bootimage_execute(struct rumboot_bootheader *hdr, const struct rumbo
 
 		if (image_source_base != image_destination_base) { /* We relocation */
 			if ((flags & RUMBOOT_FLAG_DECAPS) == 0) { /* No decapsulation, so move header */
+#ifndef CMAKE_BUILD_TYPE_DEBUG
 				dbg_boot(src, "Moving header: %x -> %x", image_source_base, image_destination_base);
+#endif			
 				memmove(image_destination_base, image_source_base, sizeof(*hdr));
 				image_source_offset = sizeof(*hdr);
 				image_destination_offset = sizeof(*hdr);
@@ -333,9 +335,11 @@ int rumboot_bootimage_execute(struct rumboot_bootheader *hdr, const struct rumbo
 		} else if ( /* Do we need any memmoves ? */
 				image_source_base + image_source_offset != 
 				image_destination_base + image_destination_offset ) {
+#ifndef CMAKE_BUILD_TYPE_DEBUG
 			dbg_boot(src, "Relocating data 0x%x -> 0x%x", 
 				image_source_base + image_source_offset, 
 				image_destination_base + image_destination_offset);
+#endif
 			memmove(
 				image_destination_base + image_destination_offset, 
 				image_source_base + image_source_offset, effective_size);
@@ -363,10 +367,12 @@ int rumboot_bootimage_execute(struct rumboot_bootheader *hdr, const struct rumbo
 	}
 
 	int ret = 0; 
+#ifndef CMAKE_BUILD_TYPE_DEBUG
 	dbg_boot(src, "Starting %ssynchronous code execution on cluster %d (%s)", 
 		(flags & RUMBOOT_FLAG_SYNC) ? "" : "a", 
 		cluster,
 		cpu->name);
+#endif
 	if (cpu->start) {
 		ret = cpu->start(cpu, hdr, image_final_data_location, swap);
 		if (ret) /* If start didn't succeed */
