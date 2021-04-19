@@ -285,7 +285,6 @@ function(expand_target_load loadlist outvar listvar)
     if (v EQUAL 0)
       if (plus)
         list(APPEND seen ${plus})
-        set("${outvar}_${plus}" ${${outvar}_${plus}} PARENT_SCOPE)
       endif()
       set(plus ${l})
       set(v 1)
@@ -312,9 +311,13 @@ function(expand_target_load loadlist outvar listvar)
     endif()
   endforeach()
 
+  #Left-over
+  list(APPEND seen ${plus})
+
   #Prepare overall list
   foreach(s ${seen})
       list(APPEND ${listvar} ${outvar}_${s})
+      set(${outvar}_${s} "${${outvar}_${s}}" PARENT_SCOPE)
   endforeach()
   if (${listvar})
     list(REMOVE_DUPLICATES ${listvar})
