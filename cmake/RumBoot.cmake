@@ -15,7 +15,6 @@ endif()
 # Broken on RHEL
 #find_package(PythonInterp 3.0 REQUIRED)
 
-
 macro(rumboot_add_configuration name)
   message(STATUS "Adding configuration ${name}")
   set(options DEFAULT)
@@ -133,6 +132,26 @@ function(feature_check feature featurelist outvar)
   else()
     set(${outvar} No PARENT_SCOPE)
   endif()
+endfunction()
+
+function(expand_external_dependency var outvar)
+  string(REPLACE ":" ";" var "${${var}}")
+  list(LENGTH var _len)
+  if (_len EQUAL "2")
+    list(GET var 0 _eproject)
+    list(GET var 1 _estub)
+    set(_ext_rumboot    rumboot-${_eproject}-${RUMBOOT_BUILD_TYPE})        
+    set(_ext_cmd    ${_ext_rumboot}-${name})
+    set(_ext_target ${_ext_rumboot}-${_estub}.all)
+    set(_ext_path ${CMAKE_BINARY_DIR}/${_ext_rumboot}/${_ext_rumboot}-${_estub})
+
+    set(HDL_EXTRA_REBUILD_CMD 
+        "${HDL_EXTRA_REBUILD_CMD}
+        make rumboot-${_eproject}-${RUMBOOT_BUILD_TYPE}-configure
+        make -C ${CMAKE_BINARY_DIR}/rumboot-${_eproject}-${RUMBOOT_BUILD_TYPE} ${_ext_target}
+        " PARENT_SCOPE)
+    set(${outvar} "${_ext_path}" PARENT_SCOPE)
+  endif()  
 endfunction()
 
 
