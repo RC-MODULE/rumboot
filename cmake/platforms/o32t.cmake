@@ -434,12 +434,22 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     PREFIX stub
     FEATURES STUB
   )
-  
+
+  add_rumboot_target(
+    CONFIGURATION IRAM_IM1
+    FILES emi_initializer.c
+    NAME emi_initializer_notlb_unload
+    PREFIX stub
+    CFLAGS -DKEEP_TLB
+    FEATURES STUB
+  )
+
+  if (FALSE)
   add_rumboot_target_dir(simple-iram/
     CONFIGURATION IRAM_IM1
     PREFIX iram-im1
   )
-
+endif()
   add_rumboot_target_dir(simple-iram/
     CONFIGURATION IRAM_IM0
     PREFIX iram-im0

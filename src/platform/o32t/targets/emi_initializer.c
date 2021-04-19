@@ -212,6 +212,13 @@ int main()
 #endif
     rumboot_printf("Clearing SRAM to prevent speculation faults...\n");
     rumboot_memfill8((void*)SRAM0_BASE, 0x10000, 0x00, 0x00); //workaround (init first 64KB in SRAM0)
+
+    #ifdef KEEP_TLB
+        rumboot_printf("HACK: NOT calling platform exit\n");
+        /* HACK: For NMC booting we have to keep populated TLBs in RAM */
+        rumboot_platform_perf(NULL);
+		longjmp(rumboot_platform_runtime.exit_trampoline, 256);        
+    #endif
     rumboot_printf("All done, have fun.\n");
     return 0;
 }
