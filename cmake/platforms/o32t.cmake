@@ -441,7 +441,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
   )
 
   add_rumboot_target_dir(simple-iram/
-    CONFIGURATION IRAM_IM0_WITH_EMI
+    CONFIGURATION IRAM_IM0
     PREFIX iram-im0
   )
 
