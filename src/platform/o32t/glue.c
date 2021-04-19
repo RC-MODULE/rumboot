@@ -154,7 +154,6 @@ void rumboot_platform_setup() {
 
 #if !defined(RUMBOOT_ONLY_STACK)
     additional_tlb_configure(1);
-    rumboot_memfill8((void*)SRAM0_BASE, 0x10000, 0x00, 0x00); //workaround (init first 64KB in SRAM0)
 #endif
 
 #ifndef OI10_MINIMAL_INIT

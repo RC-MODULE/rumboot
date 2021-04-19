@@ -434,30 +434,6 @@ void emi_init_impl_sram40ns (uint32_t const emi_dcr_base, uint32_t const plb6mci
     msync();
 }
 
-void emi_set_ecc (uint32_t const emi_dcr_base, emi_bank_num const num_bank, emi_ecc_status const ecc_stat)
-{
-    if (num_bank == emi_bank_all )
-    {
-        if (ecc_stat == emi_ecc_off)
-            dcr_write (emi_dcr_base + EMI_HSTSR, 0x00);
-        else
-            dcr_write (emi_dcr_base + EMI_HSTSR, 0x3F);
-    }
-    else
-    {
-        uint32_t tmp = dcr_read (emi_dcr_base + EMI_HSTSR);
-        if (ecc_stat == emi_ecc_off)
-        {
-            tmp &= ~(1 << num_bank);
-            dcr_write (emi_dcr_base + EMI_HSTSR, tmp);
-        }
-        else
-        {
-            tmp |= 1 << num_bank;
-            dcr_write (emi_dcr_base + EMI_HSTSR, tmp);
-        }
-    }
-}
 
 void emi_init (uint32_t const emi_dcr_base)
 {

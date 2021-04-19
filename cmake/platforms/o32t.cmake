@@ -62,7 +62,7 @@ rumboot_add_configuration (
   BOOTROM bootrom-stub
   FEATURES COVERAGE PACKIMAGE BANNER
   LOAD
-  IM0BIN SELF
+    IM0BIN SELF
   BOOTROM_NOR bootrom-stub
   TIMEOUT_CTEST 86400
   IRUN_FLAGS ${IRUN_BOOTM_EXTRA_ARGS}
@@ -74,6 +74,21 @@ rumboot_add_configuration (
   LDS o32t/iram_im0.lds
   PACKIMAGE_FLAGS -CiR 0x80000000
 )
+
+
+rumboot_add_configuration (
+  IRAM_IM1_WITH_EMI
+  CONFIGURATION IRAM_IM1
+  LOAD 
+    IM0BIN stub-emi_initializer,SELF
+ )
+
+ rumboot_add_configuration (
+  IRAM_IM0_WITH_EMI
+  CONFIGURATION IRAM_IM0
+  LOAD 
+    IM0BIN stub-emi_initializer,SELF
+ )
 
 rumboot_add_configuration (
   IRAM_SPL
@@ -412,13 +427,21 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
   )
 
   ######################### END OF BOOTROM STUFF #########################
+
+  add_rumboot_target(
+    CONFIGURATION IRAM_IM1
+    FILES emi_initializer.c
+    PREFIX stub
+    FEATURES STUB
+  )
+  
   add_rumboot_target_dir(simple-iram/
     CONFIGURATION IRAM_IM1
     PREFIX iram-im1
   )
 
   add_rumboot_target_dir(simple-iram/
-    CONFIGURATION IRAM_IM0
+    CONFIGURATION IRAM_IM0_WITH_EMI
     PREFIX iram-im0
   )
 
