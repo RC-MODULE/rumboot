@@ -19,7 +19,9 @@ else()
   message("NMC: SOC build for ${RUMBOOT_SOC}!")
   set(SOC_OBJCOPY_FLAGS )
   set(SOC_BOOTROM ${RUMBOOT_SOC}:bootrom-stub)
+  set(SOC_EMI_INITIALIZER ${RUMBOOT_SOC}:stub-emi_initializer)
   set(SOC_PACKIMAGE_FLAGS -CiR 0x80020000 -F SYNC True)
+  set(SOC_PACKIMAGE_FLAGS_EMI -CiR 0x0 -F SYNC True)
   set(SOC_FEATURES PACKIMAGE)
 endif()
 
@@ -62,6 +64,27 @@ rumboot_add_configuration(
   BOOTROM ${SOC_BOOTROM}
   )
 
+if(RUMBOOT_SOC)
+  rumboot_add_configuration(
+      SRAM
+      DEFAULT
+      PREFIX sram
+      LDS nmc/emi.lds
+      FILES ${CMAKE_SOURCE_DIR}/src/platform/nmc/startup.S ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c
+      LDFLAGS "-Wl,\"-estart\""
+      IRUN_FLAGS ${BOOTROM_IFLAGS} +RUMBOOT_RUNTIME_ADDR=5A000 
+      LOAD 
+        IM0BIN ${SOC_EMI_INITIALIZER},SELF
+      CFLAGS -fnmc-compatible-if-packed -DRUMBOOT_ENTRY=start 
+      OBJCOPY_FLAGS ${SOC_OBJCOPY_FLAGS}
+      FEATURES ${SOC_FEATURES}
+      PACKIMAGE_FLAGS ${SOC_PACKIMAGE_FLAGS_EMI}
+      #External bootrom-stub dependency
+      BOOTROM ${SOC_BOOTROM}
+      )
+endif()
+  
+
 
 include(${CMAKE_SOURCE_DIR}/cmake/bootrom.cmake)
 
@@ -69,6 +92,12 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
   add_rumboot_target_dir(iram/
     CONFIGURATION IRAM
   )
+
+  if (RUMBOOT_SOC)
+    add_rumboot_target_dir(iram/
+      CONFIGURATION SRAM
+    )
+  endif()
 
   add_rumboot_target_dir(dap/
     CONFIGURATION IRAM
