@@ -436,6 +436,12 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
   )
 
   add_rumboot_target(
+    CONFIGURATION IRAM_IM1_WITH_EMI
+    FILES emi_sanity.c
+  )
+  
+
+  add_rumboot_target(
     CONFIGURATION IRAM_IM1
     FILES emi_initializer.c
     NAME emi_initializer_notlb_unload
