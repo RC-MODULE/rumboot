@@ -727,7 +727,7 @@ void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics, Conf
   // WDMA --------------------------------------------------------------------------------------------
   //if(cfg->out_data_type == DataTypeExt_Int32 || cfg->out_data_type == DataTypeExt_Fp32) {
   //     cfg->wdma_config.dma_op_en = Enable_NotEn; // new struct ============
-  //}
+  //
   //else cfg->wdma_config.dma_op_en = Enable_En; // new struct ============
   
   cfg->wdma_config.dma_op_en = Enable_En;  
@@ -1159,6 +1159,18 @@ void nu_mpe_load_buf(uintptr_t base, void* data, int size) {
 
 }
 
+void nu_mpe_config_wr_main_channel(uintptr_t dma_base, void *addr, int size){
+  nu_cpdmac_rcv512_config(dma_base,addr,size);
+}
+
+void nu_mpe_run_wr_main_channel(uintptr_t dma_base) {
+  nu_cpdmac_rcv512_run(dma_base);
+}
+
+void nu_mpe_wait_wr_main_channel_complete(uintptr_t dma_base) {
+  nu_cpdmac_rcv512_wait_complete(dma_base);
+}
+
 void nu_ppe_setup(uintptr_t base, ConfigPPE* cfg, ConfigREGPPE* cfg_reg) {
   rumboot_printf("Configuring PPE..\n");
 
@@ -1170,10 +1182,12 @@ void nu_ppe_setup(uintptr_t base, ConfigPPE* cfg, ConfigREGPPE* cfg_reg) {
 int  nu_ppe_decide_dma_config_trivial(ConfigPPE* cfg, CubeMetrics* in_cube_metrics, CubeMetrics* out_cube_metrics, ConfigREGPPE* cfg_reg) {
   uint32_t Celem;
   uint32_t Cbyte;
+
   // rdma
   // cfg_reg->rOpEn  = 0;
   // cfg_reg->rBALs  = 0;
   // cfg_reg->rK     = 0;
+
   if(cfg->dt == DataType_Int8) {
     cfg_reg->rOpM = 0X00000000;
     Cbyte = 1*cfg->C;
@@ -1187,6 +1201,7 @@ int  nu_ppe_decide_dma_config_trivial(ConfigPPE* cfg, CubeMetrics* in_cube_metri
     rumboot_printf("ERROR: Unsupported data type for PPE!\n");
     return -1;
   }
+
   Celem = Cbyte/32 - (Cbyte%32 == 0);
   cfg_reg->rESs   = 0X00000020; // 32 bytes, always 16x16 or 32x8
   cfg_reg->rVSs   = Cbyte;                        // bytes of full C (now defined for BOX=CUBE)
@@ -1199,12 +1214,14 @@ int  nu_ppe_decide_dma_config_trivial(ConfigPPE* cfg, CubeMetrics* in_cube_metri
   cfg_reg->rBSCi  = 0X00000000; // Celem;         // C elements -1 for FLYING_MODE = FLYING_BOXED (not supported yet), else 0
   cfg_reg->rStWi  = 0X00001FFF & (cfg->W - 1);    // W elements -1 in first box
   cfg_reg->rOfWi  = 0X00000000;                   // W elements addon between boxes
+
   // ppe+wdma
   if(cfg_reg->rOpEn == 0){
-    cfg_reg->wOpM = 0X00000010;
+    cfg_reg->wOpM = 0X00000010; // vpe (main channel) linear
   } else {
-    cfg_reg->wOpM = 0X00000020;
+    cfg_reg->wOpM = 0X00000020; // memory linear all-in-one
   }
+
   // cfg_reg->wOpEn  = 0;
   // cfg_reg->wBALd  = 0;
   if(cfg->dt == DataType_Int8) {
@@ -1220,6 +1237,7 @@ int  nu_ppe_decide_dma_config_trivial(ConfigPPE* cfg, CubeMetrics* in_cube_metri
     rumboot_printf("ERROR: Unsupported data type for PPE!\n");
     return -1;
   }
+
   Celem = Cbyte/32 - (Cbyte%32 == 0);
   if(cfg->meth == PoolingOperationSwitch_Avg) {
     cfg_reg->wOpM = (0x00600000 & cfg_reg->wOpM) | 0X00000000;
@@ -1231,6 +1249,7 @@ int  nu_ppe_decide_dma_config_trivial(ConfigPPE* cfg, CubeMetrics* in_cube_metri
     rumboot_printf("ERROR: Unsupported pooling method type for PPE!\n");
     return -1;
   }
+
   cfg_reg->wWi    = 0X00001FFF & (cfg->W - 1);
   cfg_reg->wHi    = 0X00001FFF & (cfg->H - 1);
   cfg_reg->wCi    = 0X00001FFF & (cfg->C - 1);
@@ -1330,6 +1349,7 @@ void nu_ppe_setup_reg(uintptr_t rbase, uintptr_t wbase, ConfigREGPPE* cfg) {
   // iowrite32(cfg->wNNi,     wbase + NU_PPE_NAN_NUM_IN);
   // iowrite32(cfg->wNNo,     wbase + NU_PPE_NAN_NUM_OUT);
 }
+
 // rdma
 void nu_ppe_rdma_run(uintptr_t rbase, ConfigREGPPE* cfg) {
   rumboot_printf("Start PPE RDMA...\n");
@@ -1340,15 +1360,29 @@ void nu_ppe_rdma_wait_complete(uintptr_t rbase){
   while(ioread32(rbase + NU_PPE_RDMA_STATUS) !=0) {}
   rumboot_printf("Done PPE RDMA...\n");
 }
+
 // ppe + wdma
 void nu_ppe_run(uintptr_t wbase, ConfigREGPPE* cfg) {
   rumboot_printf("Start PPE + WDMA...\n");
   iowrite32(cfg->wOpEn,   wbase + NU_PPE_OP_ENABLE);
 }
+
 void nu_ppe_wait_complete(uintptr_t wbase){
   rumboot_printf("Wait PPE + WDMA...\n");
   while(ioread32(wbase + NU_PPE_STATUS) !=0) {}
   rumboot_printf("Done PPE + WDMA...\n");
+}
+
+void nu_ppe_config_rd_main_channel(uintptr_t dma_base, void *addr, int size) {
+  nu_cpdmac_trn256_config(dma_base,addr,size);
+}
+
+void nu_ppe_run_rd_main_channel(uintptr_t dma_base) {
+  nu_cpdmac_trn256_run(dma_base);
+}
+
+void nu_ppe_wait_rd_main_channel_complete(uintptr_t dma_base){
+  nu_cpdmac_trn256_wait_complete(dma_base);
 }
 
 void nu_vpe_config_rd_main_channel(uintptr_t dma_base, void *addr, int size) {
@@ -1360,12 +1394,6 @@ void nu_vpe_run_rd_main_channel(uintptr_t dma_base) {
 void nu_vpe_wait_rd_main_channel_complete(uintptr_t dma_base){
   nu_cpdmac_trn512_wait_complete(dma_base);
 }
-
-
-
-
-
-
 
 //void nu_vpe_run(uintptr_t vpe_base, ConfigDMAVPE* cfg) {
 void nu_vpe_run(uintptr_t vpe_base, ConfigVPE* cfg){ // ?????????   ConfigVPE* cfg  
@@ -1384,12 +1412,6 @@ void nu_vpe_wait(uintptr_t vpe_base, ConfigVPE* cfg){ // ?????????   ConfigVPE* 
   rumboot_printf("Done VPE.\n");
 }
 
-
-
-
-
-
-
 void nu_vpe_config_wr_main_channel(uintptr_t dma_base, void *addr, int size){
   nu_cpdmac_rcv256_config(dma_base,addr,size);
 }
@@ -1401,29 +1423,6 @@ void nu_vpe_wait_wr_main_channel_complete(uintptr_t dma_base) {
   nu_cpdmac_rcv256_wait_complete(dma_base);
 }
 
-void nu_mpe_config_wr_main_channel(uintptr_t dma_base, void *addr, int size){
-  nu_cpdmac_rcv512_config(dma_base,addr,size);
-}
-
-void nu_mpe_run_wr_main_channel(uintptr_t dma_base) {
-  nu_cpdmac_rcv512_run(dma_base);
-}
-void nu_mpe_wait_wr_main_channel_complete(uintptr_t dma_base) {
-  nu_cpdmac_rcv512_wait_complete(dma_base);
-}
-
-
-void nu_ppe_config_rd_main_channel(uintptr_t dma_base, void *addr, int size) {
-  nu_cpdmac_trn256_config(dma_base,addr,size);
-}
-void nu_ppe_run_rd_main_channel(uintptr_t dma_base) {
-  nu_cpdmac_trn256_run(dma_base);
-}
-void nu_ppe_wait_rd_main_channel_complete(uintptr_t dma_base){
-  nu_cpdmac_trn256_wait_complete(dma_base);
-}
-
-
 // Type conversion for VPE
 bool nu_vpe_mode_to_bool (Mode in_mode){
   bool res;
@@ -1431,7 +1430,3 @@ bool nu_vpe_mode_to_bool (Mode in_mode){
   else                         res = 1;
   return res;
 }
-
-
-
-
