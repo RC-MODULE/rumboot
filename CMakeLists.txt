@@ -335,11 +335,15 @@ if (DOXYGEN_FOUND)
   add_custom_target(docs COMMAND doxygen > doxygen.log)
 endif()
 
+if (NOT RUMBOOT_BUILD_NPE_RM)
+  set(RUMBOOT_BUILD_NPE_RM No)
+endif()
+
 include(ExternalProject)
 ExternalProject_Add(utils
     SOURCE_DIR        "${CMAKE_SOURCE_DIR}/utils"
     BINARY_DIR        "${CMAKE_BINARY_DIR}/utils"
-    CONFIGURE_COMMAND ${CMAKE_COMMAND} ${CMAKE_SOURCE_DIR}/utils -G ${CMAKE_GENERATOR}
+    CONFIGURE_COMMAND ${CMAKE_COMMAND} ${CMAKE_SOURCE_DIR}/utils -G ${CMAKE_GENERATOR} -DRUMBOOT_BUILD_NPE_RM=${RUMBOOT_BUILD_NPE_RM}
     BUILD_COMMAND     ${CMAKE_COMMAND} --build "${CMAKE_BINARY_DIR}/utils"
     INSTALL_COMMAND   ""
   )

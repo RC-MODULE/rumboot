@@ -380,6 +380,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     ADD_VPE_COUPLED_TEST_LOOP(try_loop main_nothing_to_do_x4)
     ADD_VPE_COUPLED_TEST_LOOP(relu_test_int32 main_relu_int32)
     ADD_VPE_COUPLED_TEST_LOOP(relu_test_fp32  main_relu_fp32)
+    ADD_VPE_COUPLED_TEST_LOOP(c3_test main_vpe_c3)
 
 
     # MPE example 
