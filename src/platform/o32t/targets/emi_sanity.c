@@ -10,11 +10,13 @@
 int main()
 {
     rumboot_printf("Writing stuffs!\n");
-    iowrite32(0x4, 0xdeadc0de);
-    iowrite32(0x8, 0xdeadf00d);
+    iowrite32(0xdeadc0de, 0x4);
+    iowrite32(0xdeadf00d, 0x8);
     asm("msync");
     rumboot_printf("Reading stuffs\n");
+    /* ---- */
     rumboot_printf("%x %x\n", ioread32(0x4), ioread32(0x4));
+    /* ---- */
     rumboot_printf("%x %x\n", ioread32(0x8), ioread32(0x8));
     return 0;
 }
