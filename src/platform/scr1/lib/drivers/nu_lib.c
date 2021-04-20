@@ -533,12 +533,15 @@ void nu_vpe_setup(uintptr_t base, ConfigVPE* cfg, ConfigDMAVPE* cfg_dma) {
   iowrite32(cfg->wdma_config.dma_box_offset_x  , base + NU_VPE + NU_VPE_WDMA_BOX_OFFSET_SIZE_X );
   iowrite32(cfg->wdma_config.dma_box_offset_y  , base + NU_VPE + NU_VPE_WDMA_BOX_OFFSET_SIZE_Y );
   iowrite32(cfg->wdma_config.dma_box_offset_z  , base + NU_VPE + NU_VPE_WDMA_BOX_OFFSET_SIZE_Z );  
-  
 
   tmp_data = (cfg->out_data_type << 16) | (cfg->op2_config.coef_type << 14) | (cfg->op1_config.coef_type << 12) | (cfg->op0_config.coef_type << 10) | (cfg->in_data_type << 8) | (cfg->nan_to_zero << 4) | (cfg->flying << 0) ;
   iowrite32(tmp_data, base + NU_VPE + NU_VPE_OP_MODE);
   
-  
+  // Configuration OUT --------------------------------------------------
+  iowrite32(cfg->c3_offset, base + NU_VPE + NU_VPE_OUT_CVT_OFFSET_VAL);
+  iowrite32(cfg->c3_scale , base + NU_VPE + NU_VPE_OUT_CVT_SCALE_VAL );
+  iowrite32(cfg->c3_trunc , base + NU_VPE + NU_VPE_OUT_CVT_TRUNC_VAL );
+
   // OP0 ----------------------------------------------------------------
   tmp_data = (cfg->op0_config.relu_en << 6) | (cfg->op0_config.prelu_en << 5) | (!cfg->op0_config.mux_en << 4) | (cfg->op0_config.alu_operation << 2) | (!cfg->op0_config.alu_en << 1) | (!cfg->op0_en << 0);
   iowrite32(tmp_data, base + NU_VPE + NU_VPE_OP0_CFG);
@@ -727,7 +730,7 @@ void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics, Conf
   // WDMA --------------------------------------------------------------------------------------------
   //if(cfg->out_data_type == DataTypeExt_Int32 || cfg->out_data_type == DataTypeExt_Fp32) {
   //     cfg->wdma_config.dma_op_en = Enable_NotEn; // new struct ============
-  //
+  //}
   //else cfg->wdma_config.dma_op_en = Enable_En; // new struct ============
   
   cfg->wdma_config.dma_op_en = Enable_En;  
@@ -741,7 +744,7 @@ void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics, Conf
   if   (cfg->wdma_config.dma_data_size == DmaDSize_Two_Byte) tmp_data_size = 2;
   else                                                       tmp_data_size = 1;  
   
-  elem_size = 16 * tmp_data_size; 
+  elem_size = tmp_data_size; 
 
   cfg->wdma_config.dma_elem_stride    = 16                      * elem_size                   ; //coef_z == vector_size * elem_size
   cfg->wdma_config.dma_vector_stride  = metrics->C              * elem_size                   ; //coef_x == full_line_z             = full_line_C*elem_size
@@ -776,7 +779,7 @@ void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics, Conf
   if   (cfg->src_rdma_config.dma_data_size == DmaDSize_Two_Byte) tmp_data_size = 2;
   else                                                           tmp_data_size = 1;  
   
-  elem_size = 16 * tmp_data_use * tmp_data_size; 
+  elem_size = tmp_data_use * tmp_data_size; 
   
   
   // ----------------
@@ -839,7 +842,7 @@ void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics, Conf
   if   (cfg->op0_rdma_config.dma_data_size == DmaDSize_Two_Byte) tmp_data_size = 2;
   else                                                           tmp_data_size = 1;  
   
-  elem_size = 16 * tmp_data_use * tmp_data_size; 
+  elem_size = tmp_data_use * tmp_data_size; 
   
 
   //------------
@@ -899,7 +902,7 @@ void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics, Conf
   if   (cfg->op1_rdma_config.dma_data_size == DmaDSize_Two_Byte) tmp_data_size = 2;
   else                                                           tmp_data_size = 1;  
   
-  elem_size = 16 * tmp_data_use * tmp_data_size; 
+  elem_size = tmp_data_use * tmp_data_size; 
 
   //----------------
   cfg->op1_rdma_config.dma_elem_stride   = 16                      * elem_size; //coef_z == vector_size * elem_size
@@ -957,7 +960,7 @@ void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics, Conf
   if   (cfg->op2_rdma_config.dma_data_size == DmaDSize_Two_Byte) tmp_data_size = 2;
   else                                                           tmp_data_size = 1;  
   
-  elem_size = 16 * tmp_data_use * tmp_data_size; 
+  elem_size = tmp_data_use * tmp_data_size; 
   
   //---------------------
   cfg->op2_rdma_config.dma_elem_stride   = 16                      * elem_size; //coef_z == vector_size * elem_size
