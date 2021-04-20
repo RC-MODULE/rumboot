@@ -73,36 +73,6 @@ static void nmc_kill(const struct rumboot_cpu_cluster *cpu)
     while (!(dcr_read(DCR_SCTL_BASE + SCTL_NMPU_PRST) & (1<<1)));; // Wait for ack
 }
 
-
-#if 0
-struct ecom_instance {
-    uintptr_t base;
-    bool      swap_endian;
-};
-
-
-void ecom_instance_init(struct ecom_settings *inst, uintptr_t base)
-{
-    inst->base = base;
-}
-
-void ecom_send(struct ecom_instance *inst, const void *buf, size_t len)
-{
-	iowrite32( len,  inst->base + MainCounter_rcv ); //set dma total data 512 byte
-	iowrite32( (uint32_t) buf, inst->base + Address_rcv ); //dma destination atart address
-	iowrite32( 0x0,  inst->base + Bias_rcv );
-	iowrite32( 0x0,  inst->base + RowCounter_rcv );
-	iowrite32( 0x0,  inst->base + AddressMode_rcv );
-    
-}
-
-void ecom_recv(struct ecom_instance *inst, void *buf, size_t len)
-{
-
-}
-
-#endif
-
 static void ext_kill(const struct rumboot_cpu_cluster *cpu)
 {
     if (cpu->base == COM0_BASE) {

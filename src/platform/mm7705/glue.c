@@ -36,7 +36,7 @@ int64_t rumboot_virt_to_phys(volatile void *addr)
     return (uint32_t) addr; /* FixMe: ... */
 }
 
-uint32_t rumboot_virt_to_dma(volatile void *addr)
+uint32_t rumboot_virt_to_dma(volatile const void *addr)
 {
     //FixMe: Use TLB stuff here
     uint64_t ret = (uint64_t) addr; //get_physical_addr( (uint32_t)  addr, 0);

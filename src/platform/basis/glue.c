@@ -25,7 +25,7 @@ int64_t rumboot_virt_to_phys(volatile void *addr)
         return ret;
 }
 
-uint32_t rumboot_virt_to_dma(volatile void *addr)
+uint32_t rumboot_virt_to_dma(volatile const void *addr)
 {
         return (uint32_t)addr;
 }
