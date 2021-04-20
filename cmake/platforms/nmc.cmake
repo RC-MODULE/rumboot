@@ -85,6 +85,21 @@ if(RUMBOOT_SOC)
 endif()
   
 
+macro(dap_integration_test sourcefile)
+  GET_FILENAME_COMPONENT(__NAME ${sourcefile} NAME_WE)
+  add_rumboot_target(
+      CONFIGURATION IRAM
+      PREFIX dap
+      FILES ${sourcefile}
+      NAME ${__NAME}
+      IRUN_FLAGS +DS5_JTAG
+    )
+  if (NMC_DBG_INTEGRATION_TESTS AND CMAKE_VERILOG_RULES_LOADED)
+    hdl_test_provide_file(rumboot-${RUMBOOT_DEFAULT_SNAPSHOT}-rumboot-${RUMBOOT_PLATFORM}-${RUMBOOT_BUILD_TYPE}-dap-${__NAME} ${PROJECT_BINARY_DIR}/units/ca5-validation-tests/${__NAME}.bsi JTAGbsi)
+    hdl_test_provide_file(rumboot-${RUMBOOT_DEFAULT_SNAPSHOT}-rumboot-${RUMBOOT_PLATFORM}-${RUMBOOT_BUILD_TYPE}-dap-${__NAME} ${PROJECT_BINARY_DIR}/units/ca5-validation-tests/SWIM${__NAME}.hex SWIM.hex)
+    hdl_test_provide_file(rumboot-${RUMBOOT_DEFAULT_SNAPSHOT}-rumboot-${RUMBOOT_PLATFORM}-${RUMBOOT_BUILD_TYPE}-dap-${__NAME} ${PROJECT_BINARY_DIR}/units/ca5-validation-tests/SWJIM${__NAME}.hex SWJIMCtl.hex)
+  endif()
+  endmacro()
 
 include(${CMAKE_SOURCE_DIR}/cmake/bootrom.cmake)
 
@@ -98,11 +113,6 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       CONFIGURATION SRAM
     )
   endif()
-
-  add_rumboot_target_dir(dap/
-    CONFIGURATION IRAM
-    PREFIX dap
-  )
 
   #Clang doesn't support legacy stuff
   if (NOT RUMBOOT_NMC_USE_CLANG)
@@ -144,6 +154,12 @@ add_rumboot_target(
   FILES common/bootrom/timer.c
 )
 
+  dap_integration_test(dap/nmc_dbg_brp.S)
+  dap_integration_test(dap/nmc_dbg_dap_integration.S)
+  dap_integration_test(dap/nmc_dbg_drar_dsar.S)
+  dap_integration_test(dap/nmc_dbg_dscr.S)
+  dap_integration_test(dap/nmc_dbg_modes.S)
+  dap_integration_test(dap/nmc_dbg_sftrst.S)
 
 endmacro()
 
