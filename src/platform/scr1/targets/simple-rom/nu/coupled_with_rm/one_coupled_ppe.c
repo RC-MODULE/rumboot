@@ -28,28 +28,22 @@ int main() {
   rumboot_printf("one_coupled_ppe\n");
 
   in_metrics  = nu_load_cube_metrics(heap_id, "metrics_in_tag");
+//  in_metrics  = nu_load_cube_metrics(heap_id, "metrics_in_ameba_tag");
+//  in_metrics  = nu_load_cube_metrics(heap_id, "metrics_in_with_unused_tag");
+
   res_metrics = nu_load_cube_metrics (heap_id, "metrics_etalon_tag");
+//  res_metrics = nu_load_cube_metrics (heap_id, "metrics_etalon_ameba_tag");
+//  res_metrics = nu_load_cube_metrics (heap_id, "metrics_etalon_with_unused_tag");
 
   in_data     = nu_load_cube(heap_id, "in_file_tag", in_metrics);
+//  in_data     = nu_load_cube(heap_id, "in_with_unused_file_tag", in_metrics);
+//  in_data     = nu_load_cube(heap_id, "in_ameba_file_tag", in_metrics);
+
   etalon      = nu_load_cube (heap_id, "etalon_file_tag", res_metrics);
+//  etalon      = nu_load_cube (heap_id, "etalon_ameba_file_tag", res_metrics);
+//  etalon      = nu_load_cube (heap_id, "etalon_with_unused_file_tag", res_metrics);
 
   res_data    = nu_ppe_malloc_res(heap_id, res_metrics);
-
-//nu_load_cube_metrics(heap_id, "metrics_in_tag");
-//nu_load_cube_metrics(heap_id, "metrics_in_ameba_tag");
-//nu_load_cube_metrics(heap_id, "metrics_in_with_unused_tag");
-
-//nu_load_cube_metrics(heap_id, "metrics_etalon_tag");
-//nu_load_cube_metrics(heap_id, "metrics_etalon_ameba_tag");
-//nu_load_cube_metrics(heap_id, "metrics_etalon_with_unused_tag");
-
-//nu_load_cube(heap_id, "in_file_tag", _metrics);
-//nu_load_cube(heap_id, "in_ameba_file_tag", _metrics);
-//nu_load_cube(heap_id, "in_with_unused_file_tag", _metrics);
-
-//nu_load_cube (heap_id, "etalon_file_tag");
-//nu_load_cube (heap_id, "etalon_ameba_file_tag");
-//nu_load_cube (heap_id, "etalon_with_unused_file_tag");
 
   if (!res) {
     if(in_metrics   == NULL)  res = 1;
@@ -97,5 +91,6 @@ int main() {
   if (!res) rumboot_printf("Test PASSED\n");
   else rumboot_printf("Test FAILED\n");
 
-  return 0;
+  return res;
+
 }
