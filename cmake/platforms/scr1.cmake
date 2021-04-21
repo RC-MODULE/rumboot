@@ -369,6 +369,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     ADD_PPE_COUPLED_TEST(ppe_first_coupled_float main_simple_ppe_coupled_float)
 
     ADD_PPE_COUPLED_TST(ppe_one_coupled main_i8_ppe_coupled)
+    ADD_PPE_COUPLED_TST(ppe_probe_coupled main_probe_ppe_coupled)
 
     ADD_VPE_COUPLED_TEST(vpe_dma_test main_vpe_dma)
 
