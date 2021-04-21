@@ -23,7 +23,7 @@ void nu_vpe_load_config(ConfigVPE* cfg, void* cfg_bin) {
 
   cfg->in_data_type=*ptr;ptr++;
   cfg->out_data_type=*ptr;ptr++;
-  cfg->flying=*ptr;ptr++;
+  /*cfg->flying=*ptr;*/ptr++; // Skip flying
   cfg->op0_en=*ptr;ptr++;
   cfg->op1_en=*ptr;ptr++;
   cfg->op2_en=*ptr;ptr++;
@@ -268,7 +268,7 @@ void nu_vpe_print_config(ConfigVPE* cfg){
   rumboot_printf("ConfigVPE:\n");
   nu_vpe_print_DataTypeExt(cfg->in_data_type,"in_data_type");
   nu_vpe_print_DataType(cfg->out_data_type,"out_data_type");
-  nu_vpe_print_Enable(cfg->flying,"flying");
+  // nu_vpe_print_Enable(cfg->flying,"flying");
   nu_vpe_print_Enable(cfg->op0_en,"op0_en");
   nu_vpe_print_Enable(cfg->op1_en,"op1_en");
   nu_vpe_print_Enable(cfg->op2_en,"op2_en");
@@ -534,7 +534,7 @@ void nu_vpe_setup(uintptr_t base, ConfigVPE* cfg, ConfigDMAVPE* cfg_dma) {
   iowrite32(cfg->wdma_config.dma_box_offset_y  , base + NU_VPE + NU_VPE_WDMA_BOX_OFFSET_SIZE_Y );
   iowrite32(cfg->wdma_config.dma_box_offset_z  , base + NU_VPE + NU_VPE_WDMA_BOX_OFFSET_SIZE_Z );  
 
-  tmp_data = (cfg->out_data_type << 16) | (cfg->op2_config.coef_type << 14) | (cfg->op1_config.coef_type << 12) | (cfg->op0_config.coef_type << 10) | (cfg->in_data_type << 8) | (cfg->nan_to_zero << 4) | (cfg->flying << 0) ;
+  tmp_data = (cfg->out_data_type << 16) | (cfg->op2_config.coef_type << 14) | (cfg->op1_config.coef_type << 12) | (cfg->op0_config.coef_type << 10) | (cfg->in_data_type << 8) | (cfg->nan_to_zero << 4) | (cfg->dst_flying << 1) | (cfg->src_flying << 0) ;
   iowrite32(tmp_data, base + NU_VPE + NU_VPE_OP_MODE);
   
   // Configuration OUT --------------------------------------------------
