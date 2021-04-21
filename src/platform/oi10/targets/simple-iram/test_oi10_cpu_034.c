@@ -23,9 +23,9 @@
 #include <arch/ppc_476fp_mmu.h>
 
 #include <platform/devices.h>
-#include <platform/devices/emi.h>
+#include <devices/ugly/emi.h>
 #include <devices/mpic128.h>
-#include <platform/regs/fields/emi.h>
+#include <regs/fields/emi.h>
 #include <platform/interrupts.h>
 
 #define PERMISSIBLE_DIFS 0x200

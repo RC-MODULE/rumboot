@@ -21,7 +21,7 @@
 #include <rumboot/rumboot.h>
 #include <rumboot/memfill.h>
 #include <platform/devices/hscb.h>
-#include <platform/devices/emi.h>
+#include <devices/ugly/emi.h>
 #include <platform/devices/nor_1636RR4.h>
 #include <arch/common_macros.h>
 #include <platform/test_event_c.h>

@@ -43,7 +43,7 @@ SECTIONS
     _rumboot_IRAM_heap_start = .;
     . = . + 0x1000;
     _rumboot_IRAM_heap_end = .;
-  }
+  } > IRAM
 
   .stack (NOLOAD) : {
     _rumboot_platform_stack_start = .;

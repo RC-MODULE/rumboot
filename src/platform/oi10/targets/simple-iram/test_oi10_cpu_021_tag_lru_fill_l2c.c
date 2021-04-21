@@ -21,7 +21,7 @@
 #include <arch/ppc_476fp_mmu_fields.h>
 #include <arch/ppc_476fp_mmu.h>
 #include <arch/mem_window.h>
-#include <platform/devices/emi.h>
+#include <devices/ugly/emi.h>
 #include <platform/devices/l2c.h>
 
                          //MMU_TLB_ENTRY(  ERPN,   RPN,        EPN,        DSIZ,                   IL1I,   IL1D,    W,      I,      M,      G,        E,                   UX, UW, UR,     SX, SW, SR      DULXE,  IULXE,      TS,      TID,               WAY,                BID,                V   )

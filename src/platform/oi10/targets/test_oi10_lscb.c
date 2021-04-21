@@ -71,7 +71,7 @@
 // #include <platform/test_assert.h>
 #ifdef PLATFORM_O32T
 #else
-    #include <platform/devices/emi.h>
+    #include <devices/ugly/emi.h>
 #endif
 
 #include <regs/regs_mkio.h>

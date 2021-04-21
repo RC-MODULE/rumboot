@@ -2,8 +2,8 @@
 .extern _rumboot_main
 .extern _rumboot_platform_stack_start
 
-.global start
-.set start, the_start
+.global _start
+.set _start, the_start
 
 /**
  * ABI: 

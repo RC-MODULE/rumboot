@@ -14,7 +14,7 @@
 #include <platform/devices.h>
 #include <rumboot/platform.h>
 #include <platform/test_event_c.h>
-#include <platform/devices/emi.h>
+#include <devices/ugly/emi.h>
 #include <platform/devices/nor_1636RR4.h>
 
 void report_data_error(uint32_t addr, uint64_t exp, uint64_t act)

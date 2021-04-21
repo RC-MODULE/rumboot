@@ -20,7 +20,7 @@
 #include <arch/ppc_476fp_mmu_fields.h>
 #include <arch/ppc_476fp_mmu.h>
 #include <arch/mem_window.h>
-#include <platform/devices/emi.h>
+#include <devices/ugly/emi.h>
 #include <platform/devices/nor_1636RR4.h>
 
 #define EVENT_CHK_NOR_STORE_BE                      TEST_EVENT_CODE_MIN + 0

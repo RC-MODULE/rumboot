@@ -473,7 +473,7 @@ const struct rumboot_cpu_cluster *rumboot_platform_get_cpus(int *cpu_count)
     return own;
 }
 
-uint32_t rumboot_virt_to_dma(volatile void *addr)
+uint32_t rumboot_virt_to_dma(volatile const void *addr)
 {
         return (uint32_t) addr;
 }

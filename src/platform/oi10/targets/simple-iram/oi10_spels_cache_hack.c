@@ -5,7 +5,7 @@
 #include <unistd.h>
 #include <platform/devices.h>
 #include <rumboot/memtest.h>
-#include <platform/devices/emi.h>
+#include <devices/ugly/emi.h>
 #include <platform/devices/l2c.h>
 
 

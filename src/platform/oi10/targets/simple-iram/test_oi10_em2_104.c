@@ -21,7 +21,7 @@
 #include <arch/ppc_476fp_mmu_fields.h>
 #include <arch/ppc_476fp_mmu.h>
 #include <arch/mem_window.h>
-#include <platform/devices/emi.h>
+#include <devices/ugly/emi.h>
 #include <platform/devices/nor_1636RR4.h>
 
 #define TLB_ENTRY_CACHE_WT   MMU_TLB_ENTRY(  0x000,  0x40000,    0x40000,    MMU_TLBE_DSIZ_1GB,      0b0,    0b0,    0b1,    0b0,    0b1,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )

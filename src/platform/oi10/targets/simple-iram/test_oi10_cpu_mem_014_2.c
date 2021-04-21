@@ -7,11 +7,11 @@
 #include <arch/ppc_476fp_mmu.h>
 #include <platform/arch/ppc/ppc_476fp_l1c_fields.h>
 #include <platform/devices.h>
-#include <platform/devices/emi.h>
+#include <devices/ugly/emi.h>
 #include <platform/test_assert.h>
 #include <platform/test_event_c.h>
 #include <platform/trace.h>
-#include <platform/regs/regs_emi.h>
+#include <regs/regs_emi.h>
 #include <platform/regs/regs_mclfir.h>
 
 #include <rumboot/io.h>

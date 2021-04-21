@@ -20,9 +20,9 @@
 #include <arch/ppc_476fp_lib_c.h>
 #include <arch/ppc_476fp_mmu.h>
 
-#include <platform/regs/regs_emi.h>
+#include <regs/regs_emi.h>
 #include <platform/regs/regs_l2c_l2.h>
-#include <platform/regs/fields/emi.h>
+#include <regs/fields/emi.h>
 
 #include <platform/interrupts.h>
 
@@ -30,7 +30,7 @@
 
 #include <platform/devices.h>
 #include <devices/ugly/plb6mcif2.h>
-#include <platform/devices/emi.h>
+#include <devices/ugly/emi.h>
 #include <platform/devices/l2c.h>
 #include <platform/devices/nor_1636RR4.h>
 

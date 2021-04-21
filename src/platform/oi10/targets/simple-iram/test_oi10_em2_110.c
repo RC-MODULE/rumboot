@@ -22,8 +22,8 @@
 #include <arch/ppc_476fp_mmu_fields.h>
 #include <arch/ppc_476fp_mmu.h>
 #include <arch/mem_window.h>
-#include <platform/devices/emi.h>
-#include <platform/regs/regs_emi.h>
+#include <devices/ugly/emi.h>
+#include <regs/regs_emi.h>
 #include <platform/regs/regs_mclfir.h>
 #include <platform/interrupts.h>
 #include <platform/devices/l2c.h>

@@ -13,7 +13,7 @@
 #include <platform/devices.h>
 #include <rumboot/platform.h>
 #include <platform/test_event_c.h>
-#include <platform/devices/emi.h>
+#include <devices/ugly/emi.h>
 #include <platform/devices/nor_1636RR4.h>
 
 

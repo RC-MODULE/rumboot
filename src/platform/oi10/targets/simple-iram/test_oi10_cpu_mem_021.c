@@ -32,7 +32,7 @@
 #include <arch/ppc_476fp_mmu_fields.h>
 
 #include <platform/devices.h>
-#include <platform/devices/emi.h>
+#include <devices/ugly/emi.h>
 #include <platform/devices/l2c.h>
 #include <platform/arch/ppc/ppc_476fp_l1c_fields.h>
 

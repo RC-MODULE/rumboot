@@ -10,7 +10,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-#include <platform/regs/fields/emi.h>
+#include <regs/fields/emi.h>
 
 
 /* From LDS */

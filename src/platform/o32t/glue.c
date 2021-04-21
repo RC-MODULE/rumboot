@@ -69,7 +69,7 @@ int64_t rumboot_virt_to_phys(volatile void *addr)
     return get_physical_addr( (uint32_t) addr, 0);
 }
 
-uint32_t rumboot_virt_to_dma(volatile void *addr)
+uint32_t rumboot_virt_to_dma(volatile const void *addr)
 {
     uint64_t ret = get_physical_addr( (uint32_t)  addr, 0);
     return (uint32_t) (ret & 0xFFFFFFFF);
@@ -154,7 +154,6 @@ void rumboot_platform_setup() {
 
 #if !defined(RUMBOOT_ONLY_STACK)
     additional_tlb_configure(1);
-    rumboot_memfill8((void*)SRAM0_BASE, 0x10000, 0x00, 0x00); //workaround (init first 64KB in SRAM0)
 #endif
 
 #ifndef OI10_MINIMAL_INIT

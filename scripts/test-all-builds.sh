@@ -1,5 +1,5 @@
 #!/bin/bash
-PLATFORMS="native oi10 basis bbp3"
+PLATFORMS="native oi10 basis bbp3 o32t"
 mkdir build-test
 cd build-test
 
@@ -11,7 +11,7 @@ test()
     mkdir $p-$b
     cd $p-$b
     cmake ../../ -DRUMBOOT_PLATFORM=$p -DCMAKE_BUILD_TYPE=$b
-    make || exit 1
+    make -j16 || exit 1
     cd ..
 
 }

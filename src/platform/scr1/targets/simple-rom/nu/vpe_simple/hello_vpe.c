@@ -41,14 +41,13 @@ int main() {
   int res_size;
   int in_size;
   
-  in_size=16*128; // 128 Lines of 16 32bit elements
-  res_size=in_size;
-  
   // Входной кубик
   const uint32_t H = 16;
   const uint32_t W = 16;
   const uint32_t C = 16;
-  in_size = H*W*C*
+  in_size = H*W*C;
+  res_size=in_size;
+  
   
   rumboot_printf("Hello\n");
 
@@ -73,8 +72,8 @@ int main() {
   nu_vpe_config_wr_main_channel(NU_CPDMAC_ASM_BASE,res_data,res_size*sizeof(int16_t));
   
   
-  cfg->src_rdma_config.dma_baddr = in_data ;  
-  cfg->src_wdma_config.dma_baddr = res_data;  
+  cfg.src_rdma_config.dma_baddr = in_data ;  
+  cfg.wdma_config.dma_baddr = res_data;  
   
   rumboot_printf("Running DMA..\n");
   

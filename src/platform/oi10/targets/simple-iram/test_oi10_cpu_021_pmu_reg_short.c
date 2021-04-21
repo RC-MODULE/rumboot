@@ -38,7 +38,7 @@
 
 #include <platform/devices.h>
 #include <platform/devices/l2c.h>
-#include <platform/devices/emi.h>
+#include <devices/ugly/emi.h>
 
 
 

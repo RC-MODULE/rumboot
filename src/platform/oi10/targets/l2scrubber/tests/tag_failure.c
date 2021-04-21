@@ -16,7 +16,7 @@
 #include <math.h>
 #include <arch/l2scrub.h>
 #include "../src/platform/oi10/targets/l2scrubber/glue.h"
-#include <platform/devices/emi.h>
+#include <devices/ugly/emi.h>
 
 /* This file is the OI10 glue for scrubber framework */
 

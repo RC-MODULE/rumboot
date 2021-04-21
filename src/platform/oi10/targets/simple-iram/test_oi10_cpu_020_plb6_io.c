@@ -22,7 +22,7 @@
 #include <arch/ppc_476fp_mmu.h>
 #include <platform/arch/ppc/test_macro.h>
 #include <arch/mem_window.h>
-#include <platform/devices/emi.h>
+#include <devices/ugly/emi.h>
 #include <platform/devices/dma2plb6.h>
 #include <platform/devices/l2c.h>
 #include <platform/interrupts.h>

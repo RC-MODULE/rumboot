@@ -13,7 +13,7 @@
 #include <rumboot/printf.h>
 #include <platform/trace.h>
 #include <arch/ppc_476fp_mmu.h>
-#include <platform/devices/emi.h>
+#include <devices/ugly/emi.h>
 #include <rumboot/memfill.h>
 
 

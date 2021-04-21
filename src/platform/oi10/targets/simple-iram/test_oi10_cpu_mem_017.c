@@ -17,7 +17,7 @@
 #include <platform/trace.h>
 #include <platform/test_assert.h>
 #include <platform/devices.h>
-#include <platform/devices/emi.h>
+#include <devices/ugly/emi.h>
 #include <platform/devices/l2c.h>
 
 /*                        MMU_TLB_ENTRY(  ERPN,     RPN,         EPN,          DSIZ,              IL1I,   IL1D,    W,      I,      M,      G,           E,                 UX, UW, UR,     SX, SW, SR     DULXE,  IULXE,       TS,         TID,                WAY,              BID,             V )*/

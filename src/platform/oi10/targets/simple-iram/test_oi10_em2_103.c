@@ -21,7 +21,7 @@
 #include <arch/ppc_476fp_mmu.h>
 #include <arch/ppc_476fp_itrpt_fields.h>
 #include <arch/mem_window.h>
-#include <platform/devices/emi.h>
+#include <devices/ugly/emi.h>
 
 #define NUM_BYTE 128
 

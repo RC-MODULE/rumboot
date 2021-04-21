@@ -16,13 +16,13 @@
 #include <platform/interrupts.h>
 #include <regs/fields/mpic128.h>
 #include <platform/regs/sctl.h>
-#include <platform/devices/emi.h>
+#include <devices/ugly/emi.h>
 #include <platform/test_assert.h>
 
 #include <platform/devices/greth.h>
 #include <arch/common_macros.h>
 #include <arch/ppc_476fp_mmu.h>
-#include <platform/devices/emi.h>
+#include <devices/ugly/emi.h>
 #include <platform/devices/dma2plb6.h>
 #include <devices/ugly/plb6mcif2.h>
 #include <platform/devices/nor_1636RR4.h>

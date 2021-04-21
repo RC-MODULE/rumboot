@@ -13,10 +13,10 @@
 
 #include <platform/devices.h>
 #include <platform/test_event_c.h>
-#include <platform/devices/emi.h>
+#include <devices/ugly/emi.h>
 #include <platform/devices/nor_1636RR4.h>
 #include <platform/devices/dma2plb6.h>
-#include <platform/regs/regs_emi.h>
+#include <regs/regs_emi.h>
 
 #include <arch/ppc_476fp_mmu_fields.h>
 #include <arch/ppc_476fp_mmu.h>

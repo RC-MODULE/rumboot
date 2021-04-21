@@ -28,10 +28,10 @@
 #include <platform/devices/l2c.h>
 #include <platform/devices.h>
 #include <devices/ugly/plb6mcif2.h>
-#include <platform/devices/emi.h>
+#include <devices/ugly/emi.h>
 #include <devices/mpic128.h>
 #include <platform/regs/sctl.h>
-#include <platform/regs/fields/emi.h>
+#include <regs/fields/emi.h>
 #include <platform/interrupts.h>
 
 #include <devices/sp804.h>

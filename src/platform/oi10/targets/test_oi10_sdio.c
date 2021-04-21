@@ -15,7 +15,7 @@
 #include <rumboot/timer.h>
 #include <arch/ppc_476fp_mmu_fields.h>
 #include <arch/ppc_476fp_mmu.h>
-#include <platform/devices/emi.h>
+#include <devices/ugly/emi.h>
 
 
 #define DATA_ARRAY_SIZE 128

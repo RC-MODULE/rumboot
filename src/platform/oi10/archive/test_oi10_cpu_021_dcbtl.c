@@ -6,7 +6,7 @@
 #include <rumboot/macros.h>
 #include <rumboot/io.h>
 #include <platform/devices.h>
-#include <platform/devices/emi.h>
+#include <devices/ugly/emi.h>
 #include <platform/devices/l2c.h>
 #include <arch/ppc_476fp_mmu.h>
 #include <rumboot/rumboot.h>

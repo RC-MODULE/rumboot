@@ -7,7 +7,7 @@
 #include <rumboot/io.h>
 #include <rumboot/memfill.h>
 #include <platform/devices.h>
-#include <platform/devices/emi.h>
+#include <devices/ugly/emi.h>
 #include <rumboot/rumboot.h>
 #include <arch/ppc_476fp_mmu.h>
 #include <platform/test_event_c.h>
