@@ -17,6 +17,8 @@ void *res_data;
 void *op0;
 void *op1;
 void *op2;
+void *lut1;
+void *lut2;
 
 
 void nu_vpe_decide_dma_config (
@@ -54,6 +56,9 @@ ConfigDMAVPE cfg_dma;
 
 CubeMetrics* in_metrics;
 CubeMetrics* res_metrics;
+
+VectorMetrics* lut1_metrics;
+VectorMetrics* lut2_metrics;
 
 int main() {
   int heap_id;
@@ -97,6 +102,15 @@ int main() {
       op2 = nu_vpe_load_op2_by_tags(heap_id,&cfg.op2_config,metrics_op2_cube_tag[i],metrics_op2_vec_tag[i],op2_cube_file_tag[i],op2_vec_file_tag[i]);
     }
     else op2 = NULL;
+    
+      // Load LUTs If Needed
+    if(cfg.op2_config.lut_en == Enable_En) {
+      lut1_metrics = nu_load_vec_metrics(heap_id,metrics_lut1_file_tag[i]);
+      lut2_metrics = nu_load_vec_metrics(heap_id,metrics_lut2_file_tag[i]);
+      lut1 = nu_load_vec(heap_id,lut1_file_tag[i],lut1_metrics);
+      lut2 = nu_load_vec(heap_id,lut2_file_tag[i],lut2_metrics);
+      nu_vpe_load_lut(NU_VPE_STANDALONE_BASE,lut1,lut2);
+    }
     
     etalon = nu_load_cube(heap_id,etalon_file_tag[i],res_metrics);
     if(etalon == NULL) return -1;
