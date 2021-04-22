@@ -503,22 +503,22 @@ void nu_ppe_print_config_reg(ConfigREGPPE* cfg_reg){
 
 void nu_vpe_load_lut(uintptr_t base, void* lut1, void* lut2) {
   uint16_t* ptr;
-  uint16_t temp;
-  uint32_t temp32;
-  int lut1_size = 257; // Predefined By HW
-  int lut2_size = 65;
+  uint32_t command;
+  uint32_t lut1_size = 257; // Predefined By HW
+  uint32_t lut2_size = 65;
   
-  iowrite32(1<<17,base + NU_VPE + NU_VPE_LUT_ACCESS_CFG); // Write LUT1 From Begining
-  
+  command = (1<<17)|(0<<16);// NU_VPE_LUT_ACCESS_CFG - Write LUT1 From Begining
   ptr = (uint16_t*) lut1;
-  for(int i=0;i<lut1_size;i++) {
-    iowrite32((uint32_t) *ptr++, base + NU_VPE + NU_VPE_LUT_ACCESS_DATA);
+  for(uint32_t i=0;i<lut1_size;i++) {
+    iowrite32(command + i,base + NU_VPE + NU_VPE_LUT_ACCESS_CFG);           // Write Command + Cell Address
+    iowrite32((uint32_t) *ptr++, base + NU_VPE + NU_VPE_LUT_ACCESS_DATA);  // Write Data
   }
   
-  iowrite32((1<<17)|(1<<16),base + NU_VPE + NU_VPE_LUT_ACCESS_CFG); // Write LUT2 From Begining
+  command = (1<<17)|(1<<16); // Write LUT2
   
   ptr = (uint16_t*) lut2;
-  for(int i=0;i<lut2_size;i++) {
+  for(uint32_t i=0;i<lut2_size;i++) {
+    iowrite32(command + i,base + NU_VPE + NU_VPE_LUT_ACCESS_CFG);
     iowrite32((uint32_t) *ptr++, base + NU_VPE + NU_VPE_LUT_ACCESS_DATA);
   }
   
