@@ -267,7 +267,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
                        +${PLUSARG_metrics_mpe_cmd_tag}=${NA_TEST_metrics_mpe_cmd}
     )
     set(NA_RM_PLUSARGS_LOOP +${PLUSARG_num_iterations_file_tag}=${NA_TEST_num_iterations_file})
-    foreach(i RANGE 0 15)
+    foreach(i RANGE 0 31)
       set(NA_RM_PLUSARGS_LOOP ${NA_RM_PLUSARGS_LOOP} 
         +${PLUSARG_in_file_tag}_${i}_=${NA_TEST_in_file}.${i}
         +${PLUSARG_in_ameba_file_tag}_${i}_=${NA_TEST_in_ameba_file}.${i}
