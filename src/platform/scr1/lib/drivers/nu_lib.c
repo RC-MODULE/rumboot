@@ -501,6 +501,29 @@ void nu_ppe_print_config_reg(ConfigREGPPE* cfg_reg){
   // rumboot_printf("  wNNo    = %x \n" , cfg_reg->wNNo);
 }
 
+void nu_vpe_load_lut(uintptr_t base, void* lut1, void* lut2) {
+  uint16_t* ptr;
+  uint16_t temp;
+  uint32_t temp32;
+  int lut1_size = 257; // Predefined By HW
+  int lut2_size = 65;
+  
+  iowrite32(1<<17,base + NU_VPE + NU_VPE_LUT_ACCESS_CFG); // Write LUT1 From Begining
+  
+  ptr = (uint16_t*) lut1;
+  for(int i=0;i<lut1_size;i++) {
+    iowrite32((uint32_t) *ptr++, base + NU_VPE + NU_VPE_LUT_ACCESS_DATA);
+  }
+  
+  iowrite32((1<<17)|(1<<16),base + NU_VPE + NU_VPE_LUT_ACCESS_CFG); // Write LUT2 From Begining
+  
+  ptr = (uint16_t*) lut2;
+  for(int i=0;i<lut2_size;i++) {
+    iowrite32((uint32_t) *ptr++, base + NU_VPE + NU_VPE_LUT_ACCESS_DATA);
+  }
+  
+}
+
 void nu_vpe_setup(uintptr_t base, ConfigVPE* cfg, ConfigDMAVPE* cfg_dma) {
   rumboot_printf("Configuring VPE..\n");
 
@@ -603,6 +626,16 @@ void nu_vpe_setup(uintptr_t base, ConfigVPE* cfg, ConfigDMAVPE* cfg_dma) {
   
   tmp_data = (cfg->op2_config.norm_round_mode << 16) | (cfg->op2_config.norm_saturation_en << 8) | (cfg->op2_config.norm_round_size << 0);
   iowrite32(tmp_data, base + NU_VPE + NU_VPE_OP2_NORM_PARAM);   
+  
+  if(cfg->op2_config.lut_en) {
+    tmp_data = 0x000000000 | (cfg->op2_config.lut_sel << 2) | (cfg->op2_config.lut_right_priority << 1) | (cfg->op2_config.lut_left_priority << 0);
+    iowrite32(tmp_data, base + NU_VPE + NU_VPE_LUT_CFG);
+    
+    iowrite32(cfg->op2_config.lut_tab1_x_start, base + NU_VPE + NU_VPE_LUT_TAB1_X_START);
+    iowrite32(cfg->op2_config.lut_tab1_x_end  , base + NU_VPE + NU_VPE_LUT_TAB1_X_END  );
+    iowrite32(cfg->op2_config.lut_tab2_x_start, base + NU_VPE + NU_VPE_LUT_TAB2_X_START);
+    iowrite32(cfg->op2_config.lut_tab2_x_end  , base + NU_VPE + NU_VPE_LUT_TAB2_X_END  );
+  }
 
 
   // Configuration SRC_RDMA ------------------------------------------------------

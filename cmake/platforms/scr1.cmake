@@ -110,6 +110,8 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     set(NA_TEST_op2_cube_file op2.bin)
     set(NA_TEST_op2_ameba_file op2_ameba.bin)
     set(NA_TEST_op2_with_unused_file op2_with_unused.bin)
+    set(NA_TEST_lut1_file lut1.bin)
+    set(NA_TEST_lut2_file lut2.bin)
 
     set(NA_TEST_cfg_file config_vpe.bin)
     set(NA_TEST_cfg_mpe_file config_mpe.bin)
@@ -136,6 +138,8 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     set(NA_TEST_metrics_op2_cube ${NA_TEST_op2_cube_file}.metrics)
     set(NA_TEST_metrics_op2_ameba ${NA_TEST_op2_ameba_file}.metrics)
     set(NA_TEST_metrics_op2_with_unused ${NA_TEST_op2_with_unused_file}.metrics)
+    set(NA_TEST_metrics_lut1 ${NA_TEST_lut1_file}.metrics)
+    set(NA_TEST_metrics_lut2 ${NA_TEST_lut2_file}.metrics)
     set(NA_TEST_metrics_mpe_cmd ${NA_TEST_mpe_cmd_file}.metrics)
     ###################
 
@@ -161,6 +165,8 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       --op2_cube_file            ${NA_TEST_op2_cube_file}
       --op2_ameba_file           ${NA_TEST_op2_ameba_file}
       --op2_with_unused_file     ${NA_TEST_op2_with_unused_file}
+      --lut1_file                ${NA_TEST_lut1_file}
+      --lut2_file                ${NA_TEST_lut2_file}
       --cfg_file                 ${NA_TEST_cfg_file}
       --cfg_mpe_file             ${NA_TEST_cfg_mpe_file}
       --cfg_ppe_file             ${NA_TEST_cfg_ppe_file}
@@ -188,6 +194,8 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     set(PLUSARG_op2_cube_file_tag op2_cube_file_tag)
     set(PLUSARG_op2_ameba_file_tag op2_ameba_file_tag)
     set(PLUSARG_op2_with_unused_file_tag op2_with_unused_file_tag)
+    set(PLUSARG_lut1_file_tag lut1_file_tag)
+    set(PLUSARG_lut2_file_tag lut2_file_tag)
 
     set(PLUSARG_cfg_file_tag cfg_file_tag)
     set(PLUSARG_cfg_mpe_file_tag cfg_mpe_file_tag)
@@ -214,6 +222,8 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     set(PLUSARG_metrics_op2_cube_tag metrics_op2_cube_tag)
     set(PLUSARG_metrics_op2_ameba_tag metrics_op2_ameba_tag)
     set(PLUSARG_metrics_op2_with_unused_tag metrics_op2_with_unused_tag)
+    set(PLUSARG_metrics_lut1_tag metrics_lut1_tag)
+    set(PLUSARG_metrics_lut2_tag metrics_lut2_tag)
     set(PLUSARG_metrics_mpe_cmd_tag metrics_mpe_cmd_tag)
 
 
@@ -238,6 +248,8 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
                        +${PLUSARG_op2_cube_file_tag}=${NA_TEST_op2_cube_file}
                        +${PLUSARG_op2_ameba_file_tag}=${NA_TEST_op2_ameba_file}
                        +${PLUSARG_op2_with_unused_file_tag}=${NA_TEST_op2_with_unused_file}
+                       +${PLUSARG_lut1_file_tag}=${NA_TEST_lut1_file}
+                       +${PLUSARG_lut2_file_tag}=${NA_TEST_lut2_file}
 
                        +${PLUSARG_cfg_file_tag}=${NA_TEST_cfg_file}
                        +${PLUSARG_cfg_mpe_file_tag}=${NA_TEST_cfg_mpe_file}
@@ -264,6 +276,8 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
                        +${PLUSARG_metrics_op2_cube_tag}=${NA_TEST_metrics_op2_cube}
                        +${PLUSARG_metrics_op2_ameba_tag}=${NA_TEST_metrics_op2_ameba}
                        +${PLUSARG_metrics_op2_with_unused_tag}=${NA_TEST_metrics_op2_with_unused}
+                       +${PLUSARG_metrics_lut1_tag}=${NA_TEST_metrics_lut1}
+                       +${PLUSARG_metrics_lut2_tag}=${NA_TEST_metrics_lut2}
                        +${PLUSARG_metrics_mpe_cmd_tag}=${NA_TEST_metrics_mpe_cmd}
     )
     set(NA_RM_PLUSARGS_LOOP +${PLUSARG_num_iterations_file_tag}=${NA_TEST_num_iterations_file})
@@ -289,6 +303,8 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         +${PLUSARG_op2_cube_file_tag}_${i}_=${NA_TEST_op2_cube_file}.${i}
         +${PLUSARG_op2_ameba_file_tag}_${i}_=${NA_TEST_op2_ameba_file}.${i}
         +${PLUSARG_op2_with_unused_file_tag}_${i}_=${NA_TEST_op2_with_unused_file}.${i}
+        +${PLUSARG_lut1_file_tag}_${i}_=${NA_TEST_lut1_file}.${i}
+        +${PLUSARG_lut2_file_tag}_${i}_=${NA_TEST_lut2_file}.${i}
 
         +${PLUSARG_cfg_file_tag}_${i}_=${NA_TEST_cfg_file}.${i}
         +${PLUSARG_cfg_mpe_file_tag}_${i}_=${NA_TEST_cfg_mpe_file}.${i}
@@ -315,6 +331,8 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         +${PLUSARG_metrics_op2_cube_tag}_${i}_=${NA_TEST_op2_cube_file}.${i}.metrics
         +${PLUSARG_metrics_op2_ameba_tag}_${i}_=${NA_TEST_op2_ameba_file}.${i}.metrics
         +${PLUSARG_metrics_op2_with_unused_tag}_${i}_=${NA_TEST_op2_with_unused_file}.${i}.metrics
+        +${PLUSARG_metrics_lut1_tag}_${i}_=${NA_TEST_lut1_file}.${i}.metrics
+        +${PLUSARG_metrics_lut2_tag}_${i}_=${NA_TEST_lut2_file}.${i}.metrics
         +${PLUSARG_metrics_mpe_cmd_tag}_${i}_=${NA_TEST_mpe_cmd_file}.${i}.metrics
       )
     endforeach()
@@ -401,6 +419,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_lshift_op1 main_vpe_lshift_op1)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_f_op0 main_vpe_f_op0)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_f_op1 main_vpe_f_op1)
+    ADD_VPE_COUPLED_TEST_LOOP(vpe_lut main_lut)
 
 
     # MPE example 
