@@ -233,6 +233,7 @@
     ConfigDMA   op1_rdma_config ;
     ConfigDMA   op2_rdma_config ;
     ConfigDMA   wdma_config     ;
+    int32_t     cube_size       ;
   }ConfigVPE;
 
   typedef struct ConfigDMAVPE {
