@@ -86,6 +86,8 @@
 #define NU_VPE_WDMA_BOX_OFFSET_SIZE_Z  0x108
 #define NU_VPE_WDMA_ELEM_STRIDE        0x10C
 #define NU_VPE_CTRL_NC                 0x110
+#define NU_VPE_AXI_PARAM               0x114
+#define NU_VPE_CUBE_SIZE               0x118
 
 // INTERRUPT Registers address -----------------------------------
 #define  REG_VPE_IRQ_RD_ADDR           0x120

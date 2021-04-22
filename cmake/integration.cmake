@@ -78,28 +78,14 @@ function(add_rumboot_target)
     set(bootrom_flags +BOOTROM=${rumboot_fulldir}/${product}.hex)
     set(maplist ${rumboot_fulldir}/${product}.dmp)
   else()
-      #TODO: Move this to a function. e.g. get_ext_binary_path? 
-      string(REPLACE ":" ";" TARGET_BOOTROM "${TARGET_BOOTROM}")
-      list(LENGTH TARGET_BOOTROM _len)
-      if (_len EQUAL "2")
-        list(GET TARGET_BOOTROM 0 _eproject)
-        list(GET TARGET_BOOTROM 1 _estub)
-        set(_ext_rumboot    rumboot-${_eproject}-${RUMBOOT_BUILD_TYPE})        
-        set(_ext_cmd    ${_ext_rumboot}-${name})
-        set(_ext_target ${_ext_rumboot}-${_estub}.all)
-        set(_ext_hex ${CMAKE_BINARY_DIR}/${_ext_rumboot}/${_ext_rumboot}-${_estub}.hex)
-        set(_ext_map ${CMAKE_BINARY_DIR}/${_ext_rumboot}/${_ext_rumboot}-${_estub}.map)
-
-        set(HDL_EXTRA_REBUILD_CMD 
-            "${HDL_EXTRA_REBUILD_CMD}
-            make rumboot-${_eproject}-${RUMBOOT_BUILD_TYPE}-configure
-            make -C ${CMAKE_BINARY_DIR}/rumboot-${_eproject}-${RUMBOOT_BUILD_TYPE} ${_ext_target}
-            ")
+      set(_extrom)
+      expand_external_dependency(TARGET_BOOTROM _extrom)
+      if (_extrom)
         set(bootrom_flags
-            +BOOTROM="${_ext_hex}"
+            +BOOTROM="${_extrom}.hex"
         )
         set(maplist
-            ${_ext_map}
+            ${_extrom}.map
         )
       else()
         generate_product_name(bproduct ${TARGET_BOOTROM})
@@ -144,7 +130,13 @@ function(add_rumboot_target)
             set(trglist "${trglist}${rumboot_fulldir}/${tproduct}.bin")
             set(maplist "${maplist}${rumboot_fulldir}/${tproduct}.dmp")
           else()
-            set(trglist "${trglist}${trg}")
+            expand_external_dependency(trg _exttrg)
+            if (_exttrg)
+              set(trglist "${trglist}${_exttrg}.bin")
+              set(maplist "${trglist}${_exttrg}.map")
+            else()
+              set(trglist "${trglist}${trg}")
+            endif()
           endif()
       endforeach()
       set(loadflags "${loadflags} +${plus}=${trglist}")

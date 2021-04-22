@@ -23,7 +23,6 @@ void nu_vpe_load_config(ConfigVPE* cfg, void* cfg_bin) {
 
   cfg->in_data_type=*ptr;ptr++;
   cfg->out_data_type=*ptr;ptr++;
-  cfg->flying=*ptr;ptr++;
   cfg->op0_en=*ptr;ptr++;
   cfg->op1_en=*ptr;ptr++;
   cfg->op2_en=*ptr;ptr++;
@@ -268,7 +267,6 @@ void nu_vpe_print_config(ConfigVPE* cfg){
   rumboot_printf("ConfigVPE:\n");
   nu_vpe_print_DataTypeExt(cfg->in_data_type,"in_data_type");
   nu_vpe_print_DataType(cfg->out_data_type,"out_data_type");
-  nu_vpe_print_Enable(cfg->flying,"flying");
   nu_vpe_print_Enable(cfg->op0_en,"op0_en");
   nu_vpe_print_Enable(cfg->op1_en,"op1_en");
   nu_vpe_print_Enable(cfg->op2_en,"op2_en");
@@ -508,7 +506,8 @@ void nu_vpe_setup(uintptr_t base, ConfigVPE* cfg, ConfigDMAVPE* cfg_dma) {
 
   // iowrite32(cfg->MYFIELD, base + NU_VPE_MYREG);
 
-  int32_t tmp_data;
+  int32_t     tmp_data;
+  DataTypeExt tmp_type;
 
 
   // VPE & WDMA -------------------------------------------------------------------------
@@ -533,14 +532,23 @@ void nu_vpe_setup(uintptr_t base, ConfigVPE* cfg, ConfigDMAVPE* cfg_dma) {
   iowrite32(cfg->wdma_config.dma_box_offset_x  , base + NU_VPE + NU_VPE_WDMA_BOX_OFFSET_SIZE_X );
   iowrite32(cfg->wdma_config.dma_box_offset_y  , base + NU_VPE + NU_VPE_WDMA_BOX_OFFSET_SIZE_Y );
   iowrite32(cfg->wdma_config.dma_box_offset_z  , base + NU_VPE + NU_VPE_WDMA_BOX_OFFSET_SIZE_Z );  
-  
 
-  tmp_data = (cfg->out_data_type << 16) | (cfg->op2_config.coef_type << 14) | (cfg->op1_config.coef_type << 12) | (cfg->op0_config.coef_type << 10) | (cfg->in_data_type << 8) | (cfg->nan_to_zero << 4) | (cfg->flying << 0) ;
+  // CUBE_SIZE
+  iowrite32(cfg->cube_size, base + NU_VPE + NU_VPE_CUBE_SIZE);
+  
+  if      (cfg->in_data_type == DataTypeExt_Int32) tmp_type = DataTypeExt_Int16 ;
+  else if (cfg->in_data_type == DataTypeExt_Fp32)  tmp_type = DataTypeExt_Fp16  ;
+  else                                             tmp_type = cfg->in_data_type ;
+  tmp_data = (cfg->out_data_type << 16) | (cfg->op2_config.coef_type << 14) | (cfg->op1_config.coef_type << 12) | (cfg->op0_config.coef_type << 10) | (tmp_type << 8) | (cfg->nan_to_zero << 4) | (cfg->dst_flying << 1) | (cfg->src_flying << 0) ;
   iowrite32(tmp_data, base + NU_VPE + NU_VPE_OP_MODE);
   
-  
+  // Configuration OUT --------------------------------------------------
+  iowrite32(cfg->c3_offset, base + NU_VPE + NU_VPE_OUT_CVT_OFFSET_VAL);
+  iowrite32(cfg->c3_scale , base + NU_VPE + NU_VPE_OUT_CVT_SCALE_VAL );
+  iowrite32(cfg->c3_trunc , base + NU_VPE + NU_VPE_OUT_CVT_TRUNC_VAL );
+
   // OP0 ----------------------------------------------------------------
-  tmp_data = (cfg->op0_config.relu_en << 6) | (cfg->op0_config.prelu_en << 5) | (!cfg->op0_config.mux_en << 4) | (cfg->op0_config.alu_operation << 2) | (!cfg->op0_config.alu_en << 1) | (!cfg->op0_en << 0);
+  tmp_data = (!cfg->op0_config.relu_en << 6) | (cfg->op0_config.prelu_en << 5) | (!cfg->op0_config.mux_en << 4) | (cfg->op0_config.alu_operation << 2) | (!cfg->op0_config.alu_en << 1) | (!cfg->op0_en << 0);
   iowrite32(tmp_data, base + NU_VPE + NU_VPE_OP0_CFG);
   
   tmp_data = (cfg->op0_config.lshift_value << 8) | (nu_vpe_mode_to_bool(cfg->op0_config.alu_mode) << 0) ; // ??????????????????????????????? (cfg->op0_config.alu_mode << 0)
@@ -556,7 +564,7 @@ void nu_vpe_setup(uintptr_t base, ConfigVPE* cfg, ConfigDMAVPE* cfg_dma) {
   
   
   // OP1 ----------------------------------------------------------------
-  tmp_data = (cfg->op1_config.relu_en << 6) | (cfg->op1_config.prelu_en << 5) | (!cfg->op1_config.mux_en << 4) | (cfg->op1_config.alu_operation << 2) | (!cfg->op1_config.alu_en << 1) | (!cfg->op1_en << 0);
+  tmp_data = (!cfg->op1_config.relu_en << 6) | (cfg->op1_config.prelu_en << 5) | (!cfg->op1_config.mux_en << 4) | (cfg->op1_config.alu_operation << 2) | (!cfg->op1_config.alu_en << 1) | (!cfg->op1_en << 0);
   iowrite32(tmp_data, base + NU_VPE + NU_VPE_OP1_CFG);  
   
   tmp_data = (cfg->op1_config.lshift_value << 8) | (nu_vpe_mode_to_bool(cfg->op1_config.alu_mode) << 0) ; // ???????????????????????????????
@@ -574,7 +582,7 @@ void nu_vpe_setup(uintptr_t base, ConfigVPE* cfg, ConfigDMAVPE* cfg_dma) {
   tmp_data = (!cfg->op2_config.lut_en << 6) | (cfg->op2_config.prelu_en << 5) | (!cfg->op2_config.mux_en << 4) | (cfg->op2_config.alu_operation << 2) | (!cfg->op2_config.alu_en << 1) | (!cfg->op2_en << 0);
   iowrite32(tmp_data, base + NU_VPE + NU_VPE_OP2_CFG);   
   
-  tmp_data = (!cfg->op2_config.c1_en << 8) | (nu_vpe_mode_to_bool(cfg->op2_config.alu_mode) << 0) ; // ???????????????????????????????
+  tmp_data = (!cfg->op2_config.c1_en << 1) | (nu_vpe_mode_to_bool(cfg->op2_config.alu_mode) << 0) ; // ???????????????????????????????
   iowrite32(tmp_data, base + NU_VPE + NU_VPE_OP2_ALU_CFG);  
 
   iowrite32(cfg->op2_config.alu_value, base + NU_VPE + NU_VPE_OP2_ALU_SRC_VAL);
@@ -584,7 +592,7 @@ void nu_vpe_setup(uintptr_t base, ConfigVPE* cfg, ConfigDMAVPE* cfg_dma) {
   iowrite32(cfg->op2_config.c1_trunc , base + NU_VPE + NU_VPE_OP2_ALU_CVT_TRUNC_VAL );
 
 
-  tmp_data = (!cfg->op2_config.c2_en << 8) | (nu_vpe_mode_to_bool(cfg->op2_config.mux_mode) << 0) ; // ???????????????????????????????
+  tmp_data = (!cfg->op2_config.c2_en << 1) | (nu_vpe_mode_to_bool(cfg->op2_config.mux_mode) << 0) ; // ???????????????????????????????
   iowrite32(tmp_data, base + NU_VPE + NU_VPE_OP2_MUL_CFG);  
 
   iowrite32(cfg->op2_config.mux_value, base + NU_VPE + NU_VPE_OP2_MUL_SRC_VAL);
@@ -722,7 +730,9 @@ void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics, Conf
   uint32_t elem_size;
   uint32_t tmp_data_use ;
   uint32_t tmp_data_size;   
-    
+  
+  // CUBE_SIZE in vectors
+  cfg->cube_size = (metrics->C/16 + ((metrics->C%16) != 0)) * metrics->W * metrics->H ;  
     
   // WDMA --------------------------------------------------------------------------------------------
   //if(cfg->out_data_type == DataTypeExt_Int32 || cfg->out_data_type == DataTypeExt_Fp32) {
@@ -741,14 +751,14 @@ void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics, Conf
   if   (cfg->wdma_config.dma_data_size == DmaDSize_Two_Byte) tmp_data_size = 2;
   else                                                       tmp_data_size = 1;  
   
-  elem_size = 16 * tmp_data_size; 
+  elem_size = tmp_data_size; 
 
-  cfg->wdma_config.dma_elem_stride    = 16                      * elem_size                   ; //coef_z == vector_size * elem_size
-  cfg->wdma_config.dma_vector_stride  = metrics->C              * elem_size                   ; //coef_x == full_line_z             = full_line_C*elem_size
-  cfg->wdma_config.dma_line_stride    = metrics->C * metrics->W * elem_size                   ; //coef_y == full_line_z*full_line_x = full_line_C*full_line_W*elem_size
-  cfg->wdma_config.dma_C              = (metrics->C/16 - ((metrics->C%16) == 0)) * elem_size  ; //line_size (bytes)               = (Z-1)*elem_size
-  cfg->wdma_config.dma_W              = (metrics->W - 1) * cfg->wdma_config.dma_vector_stride ; //plane_size - last line (bytes)  = (X-1)*full_line_z*elem_size
-  cfg->wdma_config.dma_H              = (metrics->H - 1) * cfg->wdma_config.dma_line_stride   ; //cube_size  - last plane (bytes) = (Y-1)*full_line_z*full_line_x*elem_size
+  cfg->wdma_config.dma_elem_stride    = 16                      * elem_size                        ; //coef_z == vector_size * elem_size
+  cfg->wdma_config.dma_vector_stride  = metrics->C              * elem_size                        ; //coef_x == full_line_z             = full_line_C*elem_size
+  cfg->wdma_config.dma_line_stride    = metrics->C * metrics->W * elem_size                        ; //coef_y == full_line_z*full_line_x = full_line_C*full_line_W*elem_size
+  cfg->wdma_config.dma_C              = (metrics->C/16 - ((metrics->C%16) == 0)) * 16 * elem_size  ; //line_size (bytes)               = (Z-1)*elem_size
+  cfg->wdma_config.dma_W              = (metrics->W - 1) * cfg->wdma_config.dma_vector_stride      ; //plane_size - last line (bytes)  = (X-1)*full_line_z*elem_size
+  cfg->wdma_config.dma_H              = (metrics->H - 1) * cfg->wdma_config.dma_line_stride        ; //cube_size  - last plane (bytes) = (Y-1)*full_line_z*full_line_x*elem_size
    
   // SRC_DMA --------------------------------------------------------------------------------------------
   if(cfg->in_data_type == DataTypeExt_Int32 || cfg->in_data_type == DataTypeExt_Fp32) {
@@ -776,14 +786,13 @@ void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics, Conf
   if   (cfg->src_rdma_config.dma_data_size == DmaDSize_Two_Byte) tmp_data_size = 2;
   else                                                           tmp_data_size = 1;  
   
-  elem_size = 16 * tmp_data_use * tmp_data_size; 
-  
+  elem_size = tmp_data_use * tmp_data_size; 
   
   // ----------------
   cfg->src_rdma_config.dma_elem_stride    = 16                      * elem_size                       ; //coef_z == vector_size * elem_size
   cfg->src_rdma_config.dma_vector_stride  = metrics->C              * elem_size                       ; //coef_x == full_line_z             = full_line_C*elem_size
   cfg->src_rdma_config.dma_line_stride    = metrics->C * metrics->W * elem_size                       ; //coef_y == full_line_z*full_line_x = full_line_C*full_line_W*elem_size
-  cfg->src_rdma_config.dma_C              = (metrics->C/16 - ((metrics->C%16) == 0)) * elem_size      ; //line_size (bytes)               = (Z-1)*elem_size
+  cfg->src_rdma_config.dma_C              = (metrics->C/16 - ((metrics->C%16) == 0)) * 16 * elem_size ; //line_size (bytes)               = (Z-1)*elem_size
   cfg->src_rdma_config.dma_W              = (metrics->W - 1) * cfg->src_rdma_config.dma_vector_stride ; //plane_size - last line (bytes)  = (X-1)*full_line_z*elem_size
   cfg->src_rdma_config.dma_H              = (metrics->H - 1) * cfg->src_rdma_config.dma_line_stride   ; //cube_size  - last plane (bytes) = (Y-1)*full_line_z*full_line_x*elem_size
  
@@ -839,7 +848,7 @@ void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics, Conf
   if   (cfg->op0_rdma_config.dma_data_size == DmaDSize_Two_Byte) tmp_data_size = 2;
   else                                                           tmp_data_size = 1;  
   
-  elem_size = 16 * tmp_data_use * tmp_data_size; 
+  elem_size = tmp_data_use * tmp_data_size; 
   
 
   //------------
@@ -899,7 +908,7 @@ void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics, Conf
   if   (cfg->op1_rdma_config.dma_data_size == DmaDSize_Two_Byte) tmp_data_size = 2;
   else                                                           tmp_data_size = 1;  
   
-  elem_size = 16 * tmp_data_use * tmp_data_size; 
+  elem_size = tmp_data_use * tmp_data_size; 
 
   //----------------
   cfg->op1_rdma_config.dma_elem_stride   = 16                      * elem_size; //coef_z == vector_size * elem_size
@@ -957,7 +966,7 @@ void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics, Conf
   if   (cfg->op2_rdma_config.dma_data_size == DmaDSize_Two_Byte) tmp_data_size = 2;
   else                                                           tmp_data_size = 1;  
   
-  elem_size = 16 * tmp_data_use * tmp_data_size; 
+  elem_size = tmp_data_use * tmp_data_size; 
   
   //---------------------
   cfg->op2_rdma_config.dma_elem_stride   = 16                      * elem_size; //coef_z == vector_size * elem_size
@@ -1159,6 +1168,18 @@ void nu_mpe_load_buf(uintptr_t base, void* data, int size) {
 
 }
 
+void nu_mpe_config_wr_main_channel(uintptr_t dma_base, void *addr, int size){
+  nu_cpdmac_rcv512_config(dma_base,addr,size);
+}
+
+void nu_mpe_run_wr_main_channel(uintptr_t dma_base) {
+  nu_cpdmac_rcv512_run(dma_base);
+}
+
+void nu_mpe_wait_wr_main_channel_complete(uintptr_t dma_base) {
+  nu_cpdmac_rcv512_wait_complete(dma_base);
+}
+
 void nu_ppe_setup(uintptr_t base, ConfigPPE* cfg, ConfigREGPPE* cfg_reg) {
   rumboot_printf("Configuring PPE..\n");
 
@@ -1170,10 +1191,12 @@ void nu_ppe_setup(uintptr_t base, ConfigPPE* cfg, ConfigREGPPE* cfg_reg) {
 int  nu_ppe_decide_dma_config_trivial(ConfigPPE* cfg, CubeMetrics* in_cube_metrics, CubeMetrics* out_cube_metrics, ConfigREGPPE* cfg_reg) {
   uint32_t Celem;
   uint32_t Cbyte;
+
   // rdma
   // cfg_reg->rOpEn  = 0;
   // cfg_reg->rBALs  = 0;
   // cfg_reg->rK     = 0;
+
   if(cfg->dt == DataType_Int8) {
     cfg_reg->rOpM = 0X00000000;
     Cbyte = 1*cfg->C;
@@ -1187,6 +1210,7 @@ int  nu_ppe_decide_dma_config_trivial(ConfigPPE* cfg, CubeMetrics* in_cube_metri
     rumboot_printf("ERROR: Unsupported data type for PPE!\n");
     return -1;
   }
+
   Celem = Cbyte/32 - (Cbyte%32 == 0);
   cfg_reg->rESs   = 0X00000020; // 32 bytes, always 16x16 or 32x8
   cfg_reg->rVSs   = Cbyte;                        // bytes of full C (now defined for BOX=CUBE)
@@ -1199,12 +1223,14 @@ int  nu_ppe_decide_dma_config_trivial(ConfigPPE* cfg, CubeMetrics* in_cube_metri
   cfg_reg->rBSCi  = 0X00000000; // Celem;         // C elements -1 for FLYING_MODE = FLYING_BOXED (not supported yet), else 0
   cfg_reg->rStWi  = 0X00001FFF & (cfg->W - 1);    // W elements -1 in first box
   cfg_reg->rOfWi  = 0X00000000;                   // W elements addon between boxes
+
   // ppe+wdma
   if(cfg_reg->rOpEn == 0){
-    cfg_reg->wOpM = 0X00000010;
+    cfg_reg->wOpM = 0X00000010; // vpe (main channel) linear
   } else {
-    cfg_reg->wOpM = 0X00000020;
+    cfg_reg->wOpM = 0X00000020; // memory linear all-in-one
   }
+
   // cfg_reg->wOpEn  = 0;
   // cfg_reg->wBALd  = 0;
   if(cfg->dt == DataType_Int8) {
@@ -1220,6 +1246,7 @@ int  nu_ppe_decide_dma_config_trivial(ConfigPPE* cfg, CubeMetrics* in_cube_metri
     rumboot_printf("ERROR: Unsupported data type for PPE!\n");
     return -1;
   }
+
   Celem = Cbyte/32 - (Cbyte%32 == 0);
   if(cfg->meth == PoolingOperationSwitch_Avg) {
     cfg_reg->wOpM = (0x00600000 & cfg_reg->wOpM) | 0X00000000;
@@ -1231,6 +1258,7 @@ int  nu_ppe_decide_dma_config_trivial(ConfigPPE* cfg, CubeMetrics* in_cube_metri
     rumboot_printf("ERROR: Unsupported pooling method type for PPE!\n");
     return -1;
   }
+
   cfg_reg->wWi    = 0X00001FFF & (cfg->W - 1);
   cfg_reg->wHi    = 0X00001FFF & (cfg->H - 1);
   cfg_reg->wCi    = 0X00001FFF & (cfg->C - 1);
@@ -1253,9 +1281,9 @@ int  nu_ppe_decide_dma_config_trivial(ConfigPPE* cfg, CubeMetrics* in_cube_metri
   cfg_reg->wBSCo  = 0X00000000; // Celem;                       // C elements -1 for FLYING_MODE = FLYING_BOXED (not supported yet), else 0
   cfg_reg->wStWo  = 0X00001FFF & (out_cube_metrics->W - 1);     // W elements -1 in first box
   cfg_reg->wOfWo  = 0X00000000;                                 // W elements addon between boxes
-  cfg_reg->wK     = (0X00F00000 & (cfg->Sh << 20)) | (0X000F0000 & (cfg->Sw << 16)) | (0X00000700 & (cfg->Kh << 8)) | (0X00000007 & cfg->Kw);
-  cfg_reg->wKWr   = 0X0000FFFF & cfg->Kw_r;
-  cfg_reg->wKHr   = 0X0000FFFF & cfg->Kh_r;
+  cfg_reg->wK     = (0X00F00000 & (cfg->Sh-1 << 20)) | (0X000F0000 & (cfg->Sw-1 << 16)) | (0X00000700 & (cfg->Kh-1 << 8)) | (0X00000007 & cfg->Kw-1);
+  cfg_reg->wKWr   = 0X0001FFFF & cfg->Kw_r;
+  cfg_reg->wKHr   = 0X0001FFFF & cfg->Kh_r;
   cfg_reg->wP     = (0X00007000 & (cfg->Bp << 12)) | (0X00000700 & (cfg->Rp << 8)) | (0X00000070 & (cfg->Tp << 4)) | (0X00000007 & cfg->Lp);
   cfg_reg->wPV1   = 0X0007FFFF & cfg->pv[0];
   cfg_reg->wPV2   = 0X0007FFFF & cfg->pv[1];
@@ -1330,6 +1358,7 @@ void nu_ppe_setup_reg(uintptr_t rbase, uintptr_t wbase, ConfigREGPPE* cfg) {
   // iowrite32(cfg->wNNi,     wbase + NU_PPE_NAN_NUM_IN);
   // iowrite32(cfg->wNNo,     wbase + NU_PPE_NAN_NUM_OUT);
 }
+
 // rdma
 void nu_ppe_rdma_run(uintptr_t rbase, ConfigREGPPE* cfg) {
   rumboot_printf("Start PPE RDMA...\n");
@@ -1340,15 +1369,29 @@ void nu_ppe_rdma_wait_complete(uintptr_t rbase){
   while(ioread32(rbase + NU_PPE_RDMA_STATUS) !=0) {}
   rumboot_printf("Done PPE RDMA...\n");
 }
+
 // ppe + wdma
 void nu_ppe_run(uintptr_t wbase, ConfigREGPPE* cfg) {
   rumboot_printf("Start PPE + WDMA...\n");
   iowrite32(cfg->wOpEn,   wbase + NU_PPE_OP_ENABLE);
 }
+
 void nu_ppe_wait_complete(uintptr_t wbase){
   rumboot_printf("Wait PPE + WDMA...\n");
   while(ioread32(wbase + NU_PPE_STATUS) !=0) {}
   rumboot_printf("Done PPE + WDMA...\n");
+}
+
+void nu_ppe_config_rd_main_channel(uintptr_t dma_base, void *addr, int size) {
+  nu_cpdmac_trn256_config(dma_base,addr,size);
+}
+
+void nu_ppe_run_rd_main_channel(uintptr_t dma_base) {
+  nu_cpdmac_trn256_run(dma_base);
+}
+
+void nu_ppe_wait_rd_main_channel_complete(uintptr_t dma_base){
+  nu_cpdmac_trn256_wait_complete(dma_base);
 }
 
 void nu_vpe_config_rd_main_channel(uintptr_t dma_base, void *addr, int size) {
@@ -1360,12 +1403,6 @@ void nu_vpe_run_rd_main_channel(uintptr_t dma_base) {
 void nu_vpe_wait_rd_main_channel_complete(uintptr_t dma_base){
   nu_cpdmac_trn512_wait_complete(dma_base);
 }
-
-
-
-
-
-
 
 //void nu_vpe_run(uintptr_t vpe_base, ConfigDMAVPE* cfg) {
 void nu_vpe_run(uintptr_t vpe_base, ConfigVPE* cfg){ // ?????????   ConfigVPE* cfg  
@@ -1384,12 +1421,6 @@ void nu_vpe_wait(uintptr_t vpe_base, ConfigVPE* cfg){ // ?????????   ConfigVPE* 
   rumboot_printf("Done VPE.\n");
 }
 
-
-
-
-
-
-
 void nu_vpe_config_wr_main_channel(uintptr_t dma_base, void *addr, int size){
   nu_cpdmac_rcv256_config(dma_base,addr,size);
 }
@@ -1401,29 +1432,6 @@ void nu_vpe_wait_wr_main_channel_complete(uintptr_t dma_base) {
   nu_cpdmac_rcv256_wait_complete(dma_base);
 }
 
-void nu_mpe_config_wr_main_channel(uintptr_t dma_base, void *addr, int size){
-  nu_cpdmac_rcv512_config(dma_base,addr,size);
-}
-
-void nu_mpe_run_wr_main_channel(uintptr_t dma_base) {
-  nu_cpdmac_rcv512_run(dma_base);
-}
-void nu_mpe_wait_wr_main_channel_complete(uintptr_t dma_base) {
-  nu_cpdmac_rcv512_wait_complete(dma_base);
-}
-
-
-void nu_ppe_config_rd_main_channel(uintptr_t dma_base, void *addr, int size) {
-  nu_cpdmac_trn256_config(dma_base,addr,size);
-}
-void nu_ppe_run_rd_main_channel(uintptr_t dma_base) {
-  nu_cpdmac_trn256_run(dma_base);
-}
-void nu_ppe_wait_rd_main_channel_complete(uintptr_t dma_base){
-  nu_cpdmac_trn256_wait_complete(dma_base);
-}
-
-
 // Type conversion for VPE
 bool nu_vpe_mode_to_bool (Mode in_mode){
   bool res;
@@ -1431,7 +1439,3 @@ bool nu_vpe_mode_to_bool (Mode in_mode){
   else                         res = 1;
   return res;
 }
-
-
-
-

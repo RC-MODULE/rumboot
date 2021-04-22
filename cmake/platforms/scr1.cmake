@@ -267,7 +267,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
                        +${PLUSARG_metrics_mpe_cmd_tag}=${NA_TEST_metrics_mpe_cmd}
     )
     set(NA_RM_PLUSARGS_LOOP +${PLUSARG_num_iterations_file_tag}=${NA_TEST_num_iterations_file})
-    foreach(i RANGE 0 15)
+    foreach(i RANGE 0 31)
       set(NA_RM_PLUSARGS_LOOP ${NA_RM_PLUSARGS_LOOP} 
         +${PLUSARG_in_file_tag}_${i}_=${NA_TEST_in_file}.${i}
         +${PLUSARG_in_ameba_file_tag}_${i}_=${NA_TEST_in_ameba_file}.${i}
@@ -350,6 +350,16 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       )
     endmacro()
 
+    macro(ADD_PPE_COUPLED_TST name rm_bin_name)
+      add_rumboot_target(
+        CONFIGURATION ROM
+        NAME ${name}
+        FILES scr1/targets/simple-rom/nu/coupled_with_rm/one_coupled_ppe.c
+        PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
+        IRUN_FLAGS ${NA_RM_PLUSARGS}
+      )
+    endmacro()
+
     # Add new tests here
     ADD_VPE_COUPLED_TEST(vpe_first_coupled main_sqared_try_all_ops)
     ADD_VPE_COUPLED_TEST(vpe_first_coupled_float main_sqared_try_all_ops_float)
@@ -357,6 +367,10 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     ADD_MPE_COUPLED_TEST(mpe_first_coupled main_sqared_simple_mpe)
     ADD_PPE_COUPLED_TEST(ppe_first_coupled main_simple_ppe_coupled)
     ADD_PPE_COUPLED_TEST(ppe_first_coupled_float main_simple_ppe_coupled_float)
+
+    ADD_PPE_COUPLED_TST(ppe_one_coupled main_i8_ppe_coupled)
+    ADD_PPE_COUPLED_TST(ppe_probe_coupled main_probe_ppe_coupled)
+
     ADD_VPE_COUPLED_TEST(vpe_dma_test main_vpe_dma)
 
       add_rumboot_target(
@@ -377,9 +391,16 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       )
     endmacro()
 
-    ADD_VPE_COUPLED_TEST_LOOP(try_loop main_nothing_to_do_x4)
-    ADD_VPE_COUPLED_TEST_LOOP(relu_test_int32 main_relu_int32)
-    ADD_VPE_COUPLED_TEST_LOOP(relu_test_fp32  main_relu_fp32)
+    ADD_VPE_COUPLED_TEST_LOOP(vpe_try_loop main_nothing_to_do_x4)
+    ADD_VPE_COUPLED_TEST_LOOP(vpe_relu_int32 main_relu_int32)
+    ADD_VPE_COUPLED_TEST_LOOP(vpe_relu_fp32  main_relu_fp32)
+    ADD_VPE_COUPLED_TEST_LOOP(vpe_c3 main_vpe_c3)
+    ADD_VPE_COUPLED_TEST_LOOP(vpe_c1 main_vpe_c1)
+    ADD_VPE_COUPLED_TEST_LOOP(vpe_c2 main_vpe_c2)
+    ADD_VPE_COUPLED_TEST_LOOP(vpe_lshift_op0 main_vpe_lshift_op0)
+    ADD_VPE_COUPLED_TEST_LOOP(vpe_lshift_op1 main_vpe_lshift_op1)
+    ADD_VPE_COUPLED_TEST_LOOP(vpe_f_op0 main_vpe_f_op0)
+    ADD_VPE_COUPLED_TEST_LOOP(vpe_f_op1 main_vpe_f_op1)
 
 
     # MPE example 

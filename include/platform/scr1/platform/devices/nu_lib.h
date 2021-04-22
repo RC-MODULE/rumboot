@@ -216,7 +216,8 @@
   typedef struct ConfigVPE {
     DataTypeExt in_data_type    ;
     DataType    out_data_type   ;
-    Enable      flying          ;
+    Enable      src_flying      ;
+    Enable      dst_flying      ;
     Enable      op0_en          ;
     Enable      op1_en          ;
     Enable      op2_en          ;
@@ -232,6 +233,7 @@
     ConfigDMA   op1_rdma_config ;
     ConfigDMA   op2_rdma_config ;
     ConfigDMA   wdma_config     ;
+    int32_t     cube_size       ;
   }ConfigVPE;
 
   typedef struct ConfigDMAVPE {

@@ -3,7 +3,8 @@ OUTPUT_ARCH(nmc)
 
 MEMORY
 {
-  IRAM(rwx):       ORIGIN =  0x00000000, LENGTH = 0x60000
+  IRAM(rwx):       ORIGIN =  0x00000000, LENGTH  = 0x60000
+  SRAM(rwx):       ORIGIN =  0x100000000, LENGTH = 0x100000
 }
 
 SECTIONS
@@ -15,7 +16,7 @@ SECTIONS
     .init {
       KEEP(*(.text.init))
     }    
-  } > IRAM
+  } > SRAM
 
   .rwx : {
    *(.text)
@@ -24,7 +25,7 @@ SECTIONS
    *(.rodata.*)
    *(.data)
    *(.data.*)
-  } > IRAM
+  } > SRAM
 
   .bss : {
     rumboot_platform_spl_start = .;
@@ -36,7 +37,7 @@ SECTIONS
     *(.bsst.*)
     *(COMMON)
     _rumboot_platform_bss_end = .;
-  } > IRAM
+  } > SRAM
 
 
   .heap (NOLOAD) : {
@@ -49,7 +50,7 @@ SECTIONS
     _rumboot_platform_stack_start = .;
     . = . + 0x4000;
     _rumboot_platform_stack_end = .;    
-  } > IRAM
+  } > SRAM
 
   .runtime 0x5A000 (NOLOAD) : {
     rumboot_platform_runtime_info = .;

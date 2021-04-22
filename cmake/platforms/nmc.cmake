@@ -19,7 +19,9 @@ else()
   message("NMC: SOC build for ${RUMBOOT_SOC}!")
   set(SOC_OBJCOPY_FLAGS )
   set(SOC_BOOTROM ${RUMBOOT_SOC}:bootrom-stub)
+  set(SOC_EMI_INITIALIZER ${RUMBOOT_SOC}:stub-emi_initializer_notlb_unload)
   set(SOC_PACKIMAGE_FLAGS -CiR 0x80020000 -F SYNC True)
+  set(SOC_PACKIMAGE_FLAGS_EMI -CiR 0x0 -F SYNC True)
   set(SOC_FEATURES PACKIMAGE)
 endif()
 
@@ -35,7 +37,7 @@ rumboot_add_configuration(
   LOAD 
     IM1_IMAGE SELF
     IM0BIN SELF
-  CFLAGS -fnmc-compatible-if-packed
+  CFLAGS -fnmc-compatible-if-packed -DRUMBOOT_NOENTRY
   OBJCOPY_FLAGS ${SOC_OBJCOPY_FLAGS}
   FEATURES ${SOC_FEATURES}
   #We need a relocatable image 0x80020000
@@ -62,6 +64,42 @@ rumboot_add_configuration(
   BOOTROM ${SOC_BOOTROM}
   )
 
+if(RUMBOOT_SOC)
+  rumboot_add_configuration(
+      SRAM
+      DEFAULT
+      PREFIX sram
+      LDS nmc/emi.lds
+      FILES ${CMAKE_SOURCE_DIR}/src/platform/nmc/startup.S ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c
+      LDFLAGS "-Wl,\"-estart\""
+      IRUN_FLAGS ${BOOTROM_IFLAGS} +RUMBOOT_RUNTIME_ADDR=5A000 
+      LOAD 
+        IM0BIN ${SOC_EMI_INITIALIZER},SELF
+      CFLAGS -fnmc-compatible-if-packed -DRUMBOOT_ENTRY=start 
+      OBJCOPY_FLAGS ${SOC_OBJCOPY_FLAGS}
+      FEATURES ${SOC_FEATURES}
+      PACKIMAGE_FLAGS ${SOC_PACKIMAGE_FLAGS_EMI}
+      #External bootrom-stub dependency
+      BOOTROM ${SOC_BOOTROM}
+      )
+endif()
+  
+
+macro(dap_integration_test sourcefile)
+  GET_FILENAME_COMPONENT(__NAME ${sourcefile} NAME_WE)
+  add_rumboot_target(
+      CONFIGURATION IRAM
+      PREFIX dap
+      FILES ${sourcefile}
+      NAME ${__NAME}
+      IRUN_FLAGS +DS5_JTAG
+    )
+  if (NMC_DBG_INTEGRATION_TESTS AND CMAKE_VERILOG_RULES_LOADED)
+    hdl_test_provide_file(rumboot-${RUMBOOT_DEFAULT_SNAPSHOT}-rumboot-${RUMBOOT_PLATFORM}-${RUMBOOT_BUILD_TYPE}-dap-${__NAME} ${PROJECT_BINARY_DIR}/units/ca5-validation-tests/${__NAME}.bsi JTAGbsi)
+    hdl_test_provide_file(rumboot-${RUMBOOT_DEFAULT_SNAPSHOT}-rumboot-${RUMBOOT_PLATFORM}-${RUMBOOT_BUILD_TYPE}-dap-${__NAME} ${PROJECT_BINARY_DIR}/units/ca5-validation-tests/SWIM${__NAME}.hex SWIM.hex)
+    hdl_test_provide_file(rumboot-${RUMBOOT_DEFAULT_SNAPSHOT}-rumboot-${RUMBOOT_PLATFORM}-${RUMBOOT_BUILD_TYPE}-dap-${__NAME} ${PROJECT_BINARY_DIR}/units/ca5-validation-tests/SWJIM${__NAME}.hex SWJIMCtl.hex)
+  endif()
+  endmacro()
 
 include(${CMAKE_SOURCE_DIR}/cmake/bootrom.cmake)
 
@@ -70,10 +108,11 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     CONFIGURATION IRAM
   )
 
-  add_rumboot_target_dir(dap/
-    CONFIGURATION IRAM
-    PREFIX dap
-  )
+  if (RUMBOOT_SOC)
+    add_rumboot_target_dir(iram/
+      CONFIGURATION SRAM
+    )
+  endif()
 
   #Clang doesn't support legacy stuff
   if (NOT RUMBOOT_NMC_USE_CLANG)
@@ -115,6 +154,12 @@ add_rumboot_target(
   FILES common/bootrom/timer.c
 )
 
+  dap_integration_test(dap/nmc_dbg_brp.S)
+  dap_integration_test(dap/nmc_dbg_dap_integration.S)
+  dap_integration_test(dap/nmc_dbg_drar_dsar.S)
+  dap_integration_test(dap/nmc_dbg_dscr.S)
+  dap_integration_test(dap/nmc_dbg_modes.S)
+  dap_integration_test(dap/nmc_dbg_sftrst.S)
 
 endmacro()
 

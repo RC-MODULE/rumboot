@@ -53,7 +53,7 @@ static void nmc_generate_trampoline(void *at, uint32_t ep)
         nmc_memory[13] = 0x0;
         nmc_memory[14] = 0x0;
         nmc_memory[15] = 0x0;
-        rumboot_printf("boot: Created trampoline to %x at reset vector location\n", nmc_goto);
+        rumboot_printf("boot: Created trampoline to 0x%x at 0x%x\n", __swap32(*nmc_goto), at);
 }
 
 static int nmc_start(const struct rumboot_cpu_cluster *cpu, struct rumboot_bootheader *hdr, void *data, int swap)
@@ -72,36 +72,6 @@ static void nmc_kill(const struct rumboot_cpu_cluster *cpu)
     dcr_write(DCR_SCTL_BASE + SCTL_NMPU_PRST, 1<<0); //Issue reset                
     while (!(dcr_read(DCR_SCTL_BASE + SCTL_NMPU_PRST) & (1<<1)));; // Wait for ack
 }
-
-
-#if 0
-struct ecom_instance {
-    uintptr_t base;
-    bool      swap_endian;
-};
-
-
-void ecom_instance_init(struct ecom_settings *inst, uintptr_t base)
-{
-    inst->base = base;
-}
-
-void ecom_send(struct ecom_instance *inst, const void *buf, size_t len)
-{
-	iowrite32( len,  inst->base + MainCounter_rcv ); //set dma total data 512 byte
-	iowrite32( (uint32_t) buf, inst->base + Address_rcv ); //dma destination atart address
-	iowrite32( 0x0,  inst->base + Bias_rcv );
-	iowrite32( 0x0,  inst->base + RowCounter_rcv );
-	iowrite32( 0x0,  inst->base + AddressMode_rcv );
-    
-}
-
-void ecom_recv(struct ecom_instance *inst, void *buf, size_t len)
-{
-
-}
-
-#endif
 
 static void ext_kill(const struct rumboot_cpu_cluster *cpu)
 {

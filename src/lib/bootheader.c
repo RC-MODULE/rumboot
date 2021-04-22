@@ -9,6 +9,9 @@ extern int main(int argc, const char *argv[]);
  #define 	THE_ENTRY_POINT	((uint32_t) &main)
 #elif defined(RUMBOOT_NOENTRY)
  #define 	THE_ENTRY_POINT	0
+#elif defined(RUMBOOT_ENTRY)
+	extern int RUMBOOT_ENTRY ();
+	#define THE_ENTRY_POINT (&RUMBOOT_ENTRY)
 #else
  #define 	THE_ENTRY_POINT	((uint32_t) &rumboot_main)
 #endif
