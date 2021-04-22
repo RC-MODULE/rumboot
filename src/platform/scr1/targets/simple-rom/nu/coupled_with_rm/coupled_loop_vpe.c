@@ -37,7 +37,7 @@ void nu_vpe_decide_dma_config (
   cfg->wdma_config.dma_data_use=DmaDUse_Off;
   
   nu_vpe_decide_dma_config_trivial(cfg,in_metrics,cfg_dma);
-  cfg_dma->dma_dst_en = Enable_En; // Волюнтари3м
+  cfg_dma->dma_dst_en = Enable_NotEn; // Волюнтари3м
   
   cfg->src_rdma_config.dma_baddr = (uint32_t) in_data;
   cfg->op0_rdma_config.dma_baddr = (uint32_t) op0;
@@ -45,6 +45,8 @@ void nu_vpe_decide_dma_config (
   cfg->op2_rdma_config.dma_baddr = (uint32_t) op2;
   cfg->wdma_config.dma_baddr = (uint32_t) res_data;
   
+  cfg->src_flying = Enable_En;
+  cfg->dst_flying = Enable_En; // Everything Through Main Channel
 }
 
 ConfigVPE cfg;
