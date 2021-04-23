@@ -765,7 +765,7 @@ void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics, Conf
   uint32_t tmp_data_size;   
   
   // CUBE_SIZE in vectors
-  cfg->cube_size = (metrics->C/16 + ((metrics->C%16) != 0)) * metrics->W * metrics->H ;  
+  cfg->cube_size = (metrics->C/16 + ((metrics->C%16) != 0)) * metrics->W * metrics->H - 1;  
     
   // WDMA --------------------------------------------------------------------------------------------
   //if(cfg->out_data_type == DataTypeExt_Int32 || cfg->out_data_type == DataTypeExt_Fp32) {
@@ -773,7 +773,7 @@ void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics, Conf
   //}
   //else cfg->wdma_config.dma_op_en = Enable_En; // new struct ============
   
-  cfg->wdma_config.dma_op_en = Enable_En;  
+  //cfg->wdma_config.dma_op_en = Enable_En;  // it must be assigned in test main function !!!!!!!!!!!!
   cfg->wdma_config.dma_ram_type = 0;  // ????????????????????????????????? 
 
   // dma_data_size definition------------------- 
