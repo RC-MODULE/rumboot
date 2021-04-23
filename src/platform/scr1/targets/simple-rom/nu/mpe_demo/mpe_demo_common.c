@@ -21,6 +21,25 @@ WarrMetrics* warr_metrics;
 CubeMetrics* res_metrics;
 MPECmdMetrics* cmd_metrics;
 
+int  nu_run_mpe_cmd(uintptr_t base, void* cmd, MPECmdMetrics* cmd_metrics) {
+  uint32_t offset;
+  uint32_t data;
+  int num_cmds;
+  uint32_t* ptr;
+
+  ptr = (uint32_t*) cmd;
+  num_cmds = (cmd_metrics->s / 8) - 8;
+  rumboot_printf("num_cmds=%x addr = %x\n", num_cmds, offset);
+  for(int i=0;i<num_cmds;i++) {
+    data = *ptr;
+    ptr++;
+    offset = *ptr;
+    ptr++;
+    rumboot_printf("Writing data=%x addr = %x  num_cmds=%x\n", data, offset, num_cmds);
+	iowrite32(data,base + (offset*4));
+  }
+  return 0;
+}
 int main() {
   int heap_id;
   uint32_t in_buffer_warr_offset;
@@ -29,8 +48,10 @@ int main() {
   uint32_t end;
   uint32_t delta;
   uint32_t instr_number;
-  uint32_t v; 
-  uint32_t vc; 
+  uint32_t k; 
+  uint32_t vc;
+  uint32_t start_inst;
+  uint32_t cycle_num_inst;
   rumboot_printf("Hello\n");
   
   heap_id = nu_get_heap_id();
@@ -75,6 +96,9 @@ int main() {
   nu_mpe_run_wr_main_channel(NU_CPDMAC_ASM_BASE);
     
   rumboot_printf("Runnung MPE commands\n");
+ start_inst = rumboot_platform_get_uptime(); 
+ if( nu_run_mpe_cmd(NU_MPE_STANDALONE_BASE,cmd,cmd_metrics) != 0 ) return -1;
+  
   start = rumboot_platform_get_uptime();
   if( nu_mpe_run_cmd(NU_MPE_STANDALONE_BASE,cmd,cmd_metrics) != 0 ) return -1;
   
@@ -82,24 +106,25 @@ int main() {
   end = rumboot_platform_get_uptime();
   rumboot_platform_dump_region("res_data.bin",(uint32_t)res_data,res_metrics->s);
   
-  delta = (end -start); // number of cycles in microseconds(ns), cycle =10ns;
+  delta = (end -start); // number of cycles in microseconds(ns), cycle_APB_timer =10ns;
   instr_number = 8 *128 * 1024; // 8 MAC istructions,128 - number of repeat,1024 -matrix weghts and data 
+
   rumboot_printf( " performance  by cycle\n");
-  vc = (instr_number) / ((delta * 1000)/850);
-  rumboot_printf( "vc=%d\n",vc);
-  
-  //rumboot_printf( " performance  by sec\n");
-  // v = (instr_number/delta) * 1000000;
-  
-  //rumboot_printf( "v=%d\n",v);
-   
+  cycle_num_inst = (((delta - (start-start_inst))) * 1000)/650;
+ 
   rumboot_printf( "time(mcsec)=%d\n",(end-start));
   rumboot_printf( "start=%d\n",start);
   rumboot_printf( "end=%d\n",end);
-  
+  rumboot_printf( "start_inst=%d\n",start_inst);
+  rumboot_printf( "time_inst=%d\n",(start-start_inst));
   rumboot_printf( "instr_number=%d\n",instr_number);
-
+  rumboot_printf( "cycle_num_inst=%d\n",cycle_num_inst);
   
+  vc = instr_number/( cycle_num_inst );
+ // rumboot_printf( "vc=%d\n",vc);
+
+  vc = (vc * 660)/650; //consider with coeff of apb timer cycle count correct
+  rumboot_printf( "vc_final=%d\n",vc);
   rumboot_printf("Comparing..\n");
   
   if(nu_bitwise_compare(res_data,etalon,res_metrics->s) == 0)
