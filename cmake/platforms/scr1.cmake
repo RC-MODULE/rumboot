@@ -382,21 +382,22 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     ADD_VPE_COUPLED_TEST(vpe_first_coupled main_sqared_try_all_ops)
     ADD_VPE_COUPLED_TEST(vpe_first_coupled_float main_sqared_try_all_ops_float)
     ADD_VPE_COUPLED_TEST(vpe_nothing_to_do main_nothing_to_do)
+    ADD_VPE_COUPLED_TEST(vpe_dma_test main_vpe_dma)
+
     ADD_MPE_COUPLED_TEST(mpe_first_coupled main_sqared_simple_mpe)
+
     ADD_PPE_FIRST_COUPLED_TEST(ppe_first_coupled main_simple_ppe_coupled)
     ADD_PPE_FIRST_COUPLED_TEST(ppe_first_coupled_float main_simple_ppe_coupled_float)
 
     ADD_PPE_NEXT_COUPLED_TEST(ppe_one_coupled main_i8_ppe_coupled)
     ADD_PPE_NEXT_COUPLED_TEST(ppe_probe_coupled main_probe_ppe_coupled)
 
-    ADD_VPE_COUPLED_TEST(vpe_dma_test main_vpe_dma)
-
-      add_rumboot_target(
-        CONFIGURATION ROM
-        FILES scr1/targets/simple-rom/nu/coupled_with_rm/dma_coupled_vpe.c
-        PREPCMD ${NA_RM_BIN_PATH}/main_vpe_dma ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
-        IRUN_FLAGS ${NA_RM_PLUSARGS}
-      )
+    add_rumboot_target(
+      CONFIGURATION ROM
+      FILES scr1/targets/simple-rom/nu/coupled_with_rm/dma_coupled_vpe.c
+      PREPCMD ${NA_RM_BIN_PATH}/main_vpe_dma ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
+      IRUN_FLAGS ${NA_RM_PLUSARGS}
+    )
 
     
     macro(ADD_VPE_COUPLED_TEST_LOOP name rm_bin_name)
@@ -404,6 +405,16 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         CONFIGURATION ROM
         NAME ${name}
         FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe.c
+        PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
+        IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+      )
+    endmacro()
+
+    macro(ADD_PPE_COUPLED_TEST_LOOP name rm_bin_name)
+      add_rumboot_target(
+        CONFIGURATION ROM
+        NAME ${name}
+        FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_ppe.c
         PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
         IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
       )
@@ -421,6 +432,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_f_op1 main_vpe_f_op1)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_lut main_lut)
 
+    ADD_PPE_COUPLED_TEST_LOOP(ppe_loop_coupled main_loop_ppe_coupled)
 
     # MPE example 
     # if(DUT STREQUAL "MPE")

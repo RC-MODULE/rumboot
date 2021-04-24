@@ -9,7 +9,10 @@ int nu_get_heap_id();
 int nu_vpe_load_cfg(int heap_id, ConfigVPE* cfg);
 int nu_vpe_load_cfg_by_tag(int heap_id, ConfigVPE* cfg, char* cfg_file_tag);
 int nu_mpe_load_cfg(int heap_id, ConfigMPE* cfg);
+
 int nu_ppe_load_cfg(int heap_id, ConfigPPE* cfg);
+int nu_ppe_load_cfg_by_tag(int heap_id, ConfigPPE* cfg, char* cfg_file_tag);
+
 CubeMetrics* nu_load_cube_metrics(int heap_id, char* file_tag);
 WarrMetrics* nu_load_warr_metrics(int heap_id, char* file_tag);
 VectorMetrics* nu_load_vec_metrics(int heap_id, char* file_tag);

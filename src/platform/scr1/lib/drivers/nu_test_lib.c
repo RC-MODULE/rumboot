@@ -63,6 +63,20 @@ int nu_ppe_load_cfg(int heap_id, ConfigPPE* cfg) {
   return 0;
 }
 
+int nu_ppe_load_cfg_by_tag(int heap_id, ConfigPPE* cfg, char* cfg_file_tag) {
+  uint32_t *cfg_bin;
+  
+  cfg_bin = rumboot_malloc_from_heap_aligned(heap_id,NU_PPE_CFG_PARAMS_NUM*sizeof(uint32_t),sizeof(uint32_t));
+
+  if(cfg_bin==NULL) return 1;
+
+  rumboot_platform_request_file(cfg_file_tag, (uintptr_t)cfg_bin);
+  nu_ppe_load_config(cfg, cfg_bin);
+
+  rumboot_free((void*) cfg_bin);
+  return 0;
+}
+
 CubeMetrics* nu_load_cube_metrics(int heap_id, char* file_tag) {
   CubeMetrics* m;
   m = rumboot_malloc_from_heap_aligned(heap_id,sizeof(CubeMetrics),sizeof(int32_t));
