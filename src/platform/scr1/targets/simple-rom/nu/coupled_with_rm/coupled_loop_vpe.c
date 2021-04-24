@@ -40,7 +40,6 @@ void nu_vpe_decide_dma_config (
   
   nu_vpe_decide_dma_config_trivial(cfg,in_metrics,cfg_dma);
   cfg_dma->dma_dst_en = Enable_NotEn; // Волюнтари3м
-  cfg->wdma_config.dma_op_en = Enable_NotEn;
   
   cfg->src_rdma_config.dma_baddr = (uint32_t) in_data;
   cfg->op0_rdma_config.dma_baddr = (uint32_t) op0;

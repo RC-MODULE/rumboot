@@ -774,6 +774,11 @@ void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics, Conf
   //else cfg->wdma_config.dma_op_en = Enable_En; // new struct ============
   
   //cfg->wdma_config.dma_op_en = Enable_En;  // it must be assigned in test main function !!!!!!!!!!!!
+  
+  if   (cfg->dst_flying == Enable_En) cfg->wdma_config.dma_op_en = Enable_NotEn; 
+  else                                cfg->wdma_config.dma_op_en = Enable_En   ; 
+
+  
   cfg->wdma_config.dma_ram_type = 0;  // ????????????????????????????????? 
 
   // dma_data_size definition------------------- 
@@ -1450,7 +1455,8 @@ void nu_vpe_run(uintptr_t vpe_base, ConfigVPE* cfg){ // ?????????   ConfigVPE* c
 void nu_vpe_wait(uintptr_t vpe_base, ConfigVPE* cfg){ // ?????????   ConfigVPE* cfg  
   // Напиши сюда 3авершение DMA
   rumboot_printf("Wait VPE WDMA...\n");
-  while(ioread32(vpe_base + NU_VPE + NU_VPE_CTRL_NC) !=0) {}
+  //while(ioread32(vpe_base + NU_VPE + NU_VPE_CTRL_NC) !=0) {}
+  while((ioread32(vpe_base + NU_VPE + REG_VPE_IRQ_RD_ADDR) >> 1 && 1) !=0) {}
   rumboot_printf("Done VPE.\n");
 }
 
