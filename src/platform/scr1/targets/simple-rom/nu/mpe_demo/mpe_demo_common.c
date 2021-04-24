@@ -48,7 +48,7 @@ int main() {
   uint32_t end;
   uint32_t delta;
   uint32_t instr_number;
-  uint32_t k; 
+
   uint32_t vc;
   uint32_t start_inst;
   uint32_t cycle_num_inst;
@@ -107,7 +107,7 @@ int main() {
   rumboot_platform_dump_region("res_data.bin",(uint32_t)res_data,res_metrics->s);
   
   delta = (end -start); // number of cycles in microseconds(ns), cycle_APB_timer =10ns;
-  instr_number = 8 *128 * 1024; // 8 MAC istructions,128 - number of repeat,1024 -matrix weghts and data 
+  instr_number = 8 *128 * 1024; // 8 MAC istructions,128 - number of repeat,1024 - min number of cycles 
 
   rumboot_printf( " performance  by cycle\n");
   cycle_num_inst = (((delta - (start-start_inst))) * 1000)/650;
@@ -121,10 +121,8 @@ int main() {
   rumboot_printf( "cycle_num_inst=%d\n",cycle_num_inst);
   
   vc = instr_number/( cycle_num_inst );
- // rumboot_printf( "vc=%d\n",vc);
+  rumboot_printf( "vc=%d\n",vc);
 
-  vc = (vc * 660)/650; //consider with coeff of apb timer cycle count correct
-  rumboot_printf( "vc_final=%d\n",vc);
   rumboot_printf("Comparing..\n");
   
   if(nu_bitwise_compare(res_data,etalon,res_metrics->s) == 0)
