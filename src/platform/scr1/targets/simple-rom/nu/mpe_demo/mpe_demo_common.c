@@ -26,20 +26,53 @@ int  nu_run_mpe_cmd(uintptr_t base, void* cmd, MPECmdMetrics* cmd_metrics) {
   uint32_t data;
   int num_cmds;
   uint32_t* ptr;
-
+  uint32_t start_time;
+  uint32_t inst_masked = 0x141 & 0xffffffc1 ;
+  uint32_t result;
   ptr = (uint32_t*) cmd;
-  num_cmds = (cmd_metrics->s / 8) - 8;
+  num_cmds = (cmd_metrics->s / 8);
   rumboot_printf("num_cmds=%x addr = %x\n", num_cmds, offset);
   for(int i=0;i<num_cmds;i++) {
     data = *ptr;
     ptr++;
     offset = *ptr;
+
+	if (offset == inst_masked)	
+    {start_time = rumboot_platform_get_uptime();
+	rumboot_printf("start_time = %d addr = %x n", start_time, offset);}		
     ptr++;
     rumboot_printf("Writing data=%x addr = %x  num_cmds=%x\n", data, offset, num_cmds);
 	iowrite32(data,base + (offset*4));
   }
-  return 0;
+  result = start_time;
+  return result;
 }
+int  nu_mpe_cmd(uintptr_t base, void* cmd, MPECmdMetrics* cmd_metrics) {
+  uint32_t offset;
+  uint32_t data;
+  int num_cmds;
+  uint32_t* ptr;
+  uint32_t start_instr;
+  uint32_t inst_masked = 0x141 & 0xffffffc1;
+  uint32_t result;
+  
+  ptr = (uint32_t*) cmd;
+  num_cmds = (cmd_metrics->s / 8);
+  rumboot_printf("inst_masked=%d addr = %x\n", inst_masked, offset);
+  for(int i=0;i<num_cmds;i++) {
+    ptr++;
+    offset = *ptr;
+	if (offset == inst_masked)
+    {start_instr = num_cmds -(i +1);  //number of the executed instructions
+ 	rumboot_printf("start_instr = %x addr = %x n", i, offset);}		
+    ptr++;
+
+  }
+  result = start_instr;
+  return result;
+  }
+
+
 int main() {
   int heap_id;
   uint32_t in_buffer_warr_offset;
@@ -96,32 +129,31 @@ int main() {
   nu_mpe_run_wr_main_channel(NU_CPDMAC_ASM_BASE);
     
   rumboot_printf("Runnung MPE commands\n");
- start_inst = rumboot_platform_get_uptime(); 
- if( nu_run_mpe_cmd(NU_MPE_STANDALONE_BASE,cmd,cmd_metrics) != 0 ) return -1;
-  
-  start = rumboot_platform_get_uptime();
-  if( nu_mpe_run_cmd(NU_MPE_STANDALONE_BASE,cmd,cmd_metrics) != 0 ) return -1;
+
+  start_inst = nu_mpe_cmd(NU_MPE_STANDALONE_BASE,cmd,cmd_metrics);
+  start = nu_run_mpe_cmd(NU_MPE_STANDALONE_BASE,cmd,cmd_metrics);
+
   
   nu_mpe_wait_wr_main_channel_complete(NU_CPDMAC_ASM_BASE);
   end = rumboot_platform_get_uptime();
   rumboot_platform_dump_region("res_data.bin",(uint32_t)res_data,res_metrics->s);
   
-  delta = (end -start); // number of cycles in microseconds(ns), cycle_APB_timer =10ns;
-  instr_number = 8 *128 * 1024; // 8 MAC istructions,128 - number of repeat,1024 - min number of cycles 
+  delta = (end -start); // number of cycles in microseconds, cycle_APB_timer =10ns;
+  instr_number = start_inst *128 * 1024; // 8 MAC istructions,128 - number of repeat,1024 - min number of cycles 
 
   rumboot_printf( " performance  by cycle\n");
-  cycle_num_inst = (((delta - (start-start_inst))) * 1000)/650;
  
+  cycle_num_inst = (delta * 1000)/650 ;    //650 ns - one cycle period
   rumboot_printf( "time(mcsec)=%d\n",(end-start));
   rumboot_printf( "start=%d\n",start);
   rumboot_printf( "end=%d\n",end);
   rumboot_printf( "start_inst=%d\n",start_inst);
-  rumboot_printf( "time_inst=%d\n",(start-start_inst));
+
   rumboot_printf( "instr_number=%d\n",instr_number);
   rumboot_printf( "cycle_num_inst=%d\n",cycle_num_inst);
   
   vc = instr_number/( cycle_num_inst );
-  rumboot_printf( "vc=%d\n",vc);
+  rumboot_printf( "performance=%d\n",vc);
 
   rumboot_printf("Comparing..\n");
   
