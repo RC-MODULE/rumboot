@@ -48,11 +48,17 @@ int main() {
       //in_data     = nu_load_cube(heap_id, in_ameba_file_tag[i], in_metrics);
       //in_data     = nu_load_cube(heap_id, in_with_unused_file_tag[i], in_metrics);
 
+      if (in_data == NULL) rumboot_printf ("in_data is NULL\n");
+
       etalon      = nu_load_cube (heap_id, etalon_file_tag[i], res_metrics);
       //etalon      = nu_load_cube (heap_id, etalon_ameba_file_tag[i], res_metrics);
       //etalon      = nu_load_cube (heap_id, etalon_with_unused_file_tag[i], res_metrics);
 
+      if (etalon == NULL) rumboot_printf ("in_data is NULL\n");
+
       res_data    = nu_ppe_malloc_res(heap_id, res_metrics);
+
+      if (res_data == NULL) rumboot_printf ("in_data is NULL\n");
     }
 
     if (in_data == NULL || etalon == NULL || res_data == NULL) res = 1;
@@ -66,7 +72,7 @@ int main() {
 
       cfg_reg.rOpEn = 0x1;  // is needed to set memory linear all-in-one
       res = nu_ppe_decide_dma_config_trivial(&cfg, in_metrics, res_metrics, &cfg_reg);
-      //nu_ppe_print_config_reg(&cfg_reg);
+      nu_ppe_print_config_reg(&cfg_reg);
     }
 
     if(!res){
