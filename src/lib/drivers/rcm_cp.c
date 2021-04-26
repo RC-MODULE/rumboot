@@ -9,6 +9,7 @@
 #include <assert.h>
 #include <rumboot/rumboot.h>
 
+#define DEBUG
 
 static void cp_check_buffer(const void *bufptr, size_t len)
 {
@@ -22,11 +23,38 @@ static void cp_check_buffer(const void *bufptr, size_t len)
     }
 }
 
-void cp_instance_init(struct rcm_cp_instance *inst, uintptr_t base)
+void cp_instance_init(struct rcm_cp_instance *inst, uintptr_t base, uint32_t base_freq_khz)
 {
     inst->base = base;
     inst->two_dimentional = 0;
+    inst->base_freq_khz = base_freq_khz;
     cp_detach_buffers(inst);
+}
+
+int32_t cp_set_speed(struct rcm_cp_instance *inst, int32_t target_freq_khz)
+{
+    int best_div = 0;
+    int32_t best_freq = 0;
+    int32_t best_freq_delta = inst->base_freq_khz;
+
+    for (int fdiv = 0; fdiv < 16; fdiv++) {
+        int32_t freq = inst->base_freq_khz / (fdiv + 2);
+        int32_t delta = abs(target_freq_khz - freq);
+        if (delta < best_freq_delta) {
+            best_div = fdiv; 
+            best_freq = freq;
+            best_freq_delta = delta;
+        }
+    }
+
+    uint32_t spdreg = ioread32(inst->base + RCM_CP_PHYCONFIG) & 0xfffffff0;
+    spdreg |= best_div;
+    iowrite32(spdreg, inst->base + RCM_CP_PHYCONFIG);
+
+    #ifdef DEBUG
+    rumboot_printf("CP: div %d actual speed %d kHz requested %d kHz\n", best_div, best_freq, target_freq_khz);
+    #endif
+    return best_freq;
 }
 
 void cp_attach_buffers(struct rcm_cp_instance *inst, void *rxbuf, void *txbuf, size_t buflen)
@@ -131,4 +159,9 @@ int cp_wait(struct rcm_cp_instance *inst, bool rx, bool tx, uint32_t timeout_us)
         return 0;
     }
     return -1;
+}
+
+void cp_ecc_control(struct rcm_cp_instance *inst, bool enable)
+{
+
 }

@@ -21,6 +21,10 @@
     #define CHUNK_SIZE 128
 #endif
 
+#ifndef BASE_FREQ
+    #define BASE_FREQ 100000
+#endif
+
 char tx_buf[CHUNK_SIZE * 2] __attribute__((aligned (8))) = "HELLO WORLD"; 
 char rx_buf[CHUNK_SIZE * 2] __attribute__((aligned (8))) = "XXXXXXXXXXX"; 
 
@@ -29,9 +33,9 @@ int main()
     memset(tx_buf, 0xa, CHUNK_SIZE * 2);
     memset(rx_buf, 0xb, CHUNK_SIZE * 2);
     struct rcm_cp_instance c0; 
-    cp_instance_init(&c0, COM0_BASE);
+    cp_instance_init(&c0, COM0_BASE, BASE_FREQ);
     struct rcm_cp_instance c1; 
-    cp_instance_init(&c1, COM1_BASE);
+    cp_instance_init(&c1, COM1_BASE, BASE_FREQ);
 
     rumboot_printf("Initialized instances\n");
     cp_start_tx(&c0, tx_buf, CHUNK_SIZE);
