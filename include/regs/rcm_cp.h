@@ -12,6 +12,7 @@
 #define RCM_CP_INTERNALSTATE_TR          0x1C
 #define RCM_CP_IH_EN_TR       			 0x40
 #define RCM_CP_MAINCOUNTER_RCV           0x20
+
 #define RCM_CP_ADDRESS_RCV           	 0x24
 #define RCM_CP_BIAS_RCV           	 	 0x28
 #define RCM_CP_ROWCOUNTER_RCV            0x2C
