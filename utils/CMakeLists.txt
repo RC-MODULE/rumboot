@@ -30,6 +30,7 @@ if (NOT WIN32)
         WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
       )
       endif()
+      set(COMPILE_FROM_ROMBOOT "YES")
       add_subdirectory(${RM_CORE_DIR})
     endif()
 endif()
