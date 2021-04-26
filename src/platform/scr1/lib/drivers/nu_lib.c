@@ -157,6 +157,7 @@ void nu_ppe_load_config(ConfigPPE* cfg, void* cfg_bin) {
 
   void nu_vpe_print_RoundMode(RoundMode mode, char* name) {
     static char* RoundModeNames[]= {
+      "HalfAwayFromZero",
       "Nearest",
       "Down",
       "Up"
