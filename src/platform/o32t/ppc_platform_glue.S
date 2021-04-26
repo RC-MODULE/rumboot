@@ -164,11 +164,8 @@ tlb_entries:
     .long   MMU_TLB_ENTRY(  0x020,  0xC0200,    0xC0200,    MMU_TLBE_DSIZ_1MB,      0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_LITTLE_END,  0b0,0b0,0b0,    0b0,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
     .long   MMU_TLB_ENTRY(  0x020,  0xC0400,    0xC0400,    MMU_TLBE_DSIZ_1MB,      0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_LITTLE_END,  0b0,0b0,0b0,    0b0,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
 
-/* TLB entry to remap HSIF SW registers from 0x00000020_C0300000-0x00000020_C0303FFF to 0xC0300000-0xC0303FFF*/
-    .long   MMU_TLB_ENTRY(  0x020,  0xC0300,    0xC0300,    MMU_TLBE_DSIZ_16KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_LITTLE_END,  0b0,0b0,0b0,    0b0,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
-
-/* TLB entry to remap SCRB registers from 0x00000020_C0307000-0x00000020_C0307FFF to 0xC0307000-0xC0307FFF*/
-    .long   MMU_TLB_ENTRY(  0x020,  0xC0307,    0xC0307,    MMU_TLBE_DSIZ_4KB,      0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_LITTLE_END,  0b0,0b0,0b0,    0b0,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
+/* TLB entry to remap HSIF SW,SCRB,COMX & AXIDMA registers from 0x00000020_C0300000-0x00000020_C0303FFF to 0xC0300000-0xC0303FFF*/
+    .long   MMU_TLB_ENTRY(  0x020,  0xC0300,    0xC0300,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_LITTLE_END,  0b0,0b0,0b0,    0b0,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )
 
 /* TLB entries to remap 2 1GB pages SRAM_SDRAM EM2 from 0x00000004_00000000-0x00000005_FFFFFFFF to 0x00000000-0x7FFFFFFf for MEM_WINDOW_0-MEM_WINDOW_3*/
     .long   MMU_TLB_ENTRY(  0x000,  0x70000,    0x70000,    MMU_TLBE_DSIZ_256MB,    0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
