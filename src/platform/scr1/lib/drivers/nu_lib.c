@@ -1287,11 +1287,11 @@ int  nu_ppe_decide_dma_config_trivial(ConfigPPE* cfg, CubeMetrics* in_cube_metri
 
   Celem = Cbyte/32 - (Cbyte%32 == 0);
   if(cfg->meth == PoolingOperationSwitch_Avg) {
-    cfg_reg->wOpM = (0x00600000 & cfg_reg->wOpM) | 0X00000000;
+    cfg_reg->wOpM = (0x00600030 & cfg_reg->wOpM) | 0X00000000;
   } else if(cfg->meth == PoolingOperationSwitch_Max) {
-    cfg_reg->wOpM = (0x00600000 & cfg_reg->wOpM) | 0X00000001;
+    cfg_reg->wOpM = (0x00600030 & cfg_reg->wOpM) | 0X00000001;
   } else if(cfg->meth == PoolingOperationSwitch_Min) {
-    cfg_reg->wOpM = (0x00600000 & cfg_reg->wOpM) | 0X00000002;
+    cfg_reg->wOpM = (0x00600030 & cfg_reg->wOpM) | 0X00000002;
   } else {
     rumboot_printf("ERROR: Unsupported pooling method type for PPE!\n");
     return -1;
@@ -1320,8 +1320,8 @@ int  nu_ppe_decide_dma_config_trivial(ConfigPPE* cfg, CubeMetrics* in_cube_metri
   cfg_reg->wStWo  = 0X00001FFF & (out_cube_metrics->W - 1);     // W elements -1 in first box
   cfg_reg->wOfWo  = 0X00000000;                                 // W elements addon between boxes
   cfg_reg->wK     = (0X00F00000 & (cfg->Sh-1 << 20)) | (0X000F0000 & (cfg->Sw-1 << 16)) | (0X00000700 & (cfg->Kh-1 << 8)) | (0X00000007 & cfg->Kw-1);
-  cfg_reg->wKWr   = 0X00FFFFFF & cfg->Kw_r;
-  cfg_reg->wKHr   = 0X00FFFFFF & cfg->Kh_r;
+  cfg_reg->wKWr   = 0X01FFFFFF & cfg->Kw_r;
+  cfg_reg->wKHr   = 0X01FFFFFF & cfg->Kh_r;
   cfg_reg->wP     = (0X00007000 & (cfg->Bp << 12)) | (0X00000700 & (cfg->Rp << 8)) | (0X00000070 & (cfg->Tp << 4)) | (0X00000007 & cfg->Lp);
   cfg_reg->wPV1   = 0X0007FFFF & cfg->pv[0];
   cfg_reg->wPV2   = 0X0007FFFF & cfg->pv[1];
