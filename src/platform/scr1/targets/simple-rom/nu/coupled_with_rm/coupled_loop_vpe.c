@@ -32,11 +32,15 @@ void nu_vpe_decide_dma_config (
   void*res_data, 
   ConfigDMAVPE* cfg_dma
 ) {
+  rumboot_printf("nu_vpe_decide_dma_config \n");
   cfg->op0_rdma_config.dma_data_mode = cfg->op0_config.mux_mode; // Init Them
   cfg->op1_rdma_config.dma_data_mode = cfg->op1_config.mux_mode;
   cfg->op2_rdma_config.dma_data_mode = cfg->op2_config.mux_mode;
   cfg->wdma_config.dma_data_mode      = 1; // Copypaste From src_rdma_config in nu_vpe_decide_dma_config_trivial
   cfg->wdma_config.dma_data_use=DmaDUse_Off;
+  
+  cfg->src_flying = Enable_En;
+  cfg->dst_flying = Enable_En; // Everything Through Main Channel
   
   nu_vpe_decide_dma_config_trivial(cfg,in_metrics,cfg_dma);
   cfg_dma->dma_dst_en = Enable_NotEn; // Волюнтари3м
@@ -47,8 +51,7 @@ void nu_vpe_decide_dma_config (
   cfg->op2_rdma_config.dma_baddr = (uint32_t) op2;
   cfg->wdma_config.dma_baddr = (uint32_t) res_data;
   
-  cfg->src_flying = Enable_En;
-  cfg->dst_flying = Enable_En; // Everything Through Main Channel
+  
 }
 
 ConfigVPE cfg;
