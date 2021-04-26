@@ -450,12 +450,11 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     FEATURES STUB
   )
 
-  if (FALSE)
   add_rumboot_target_dir(simple-iram/
     CONFIGURATION IRAM_IM1
     PREFIX iram-im1
   )
-endif()
+
   add_rumboot_target_dir(simple-iram/
     CONFIGURATION IRAM_IM0
     PREFIX iram-im0
