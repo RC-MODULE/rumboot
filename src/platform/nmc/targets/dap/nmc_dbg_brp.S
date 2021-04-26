@@ -27,7 +27,7 @@ __main:
     gr0 = 0;
     gr1 = 0;
 // Store by NEXT_BKPT_ADDR addr addresses of breakpoints
-    [GET_NMC_ADDR(DBG_BASE_DEC,BKPT_ARRAY_PTR)] = gr0;
+    [BKPT_ARRAY_PTR] = gr0;
     ar1 = BKPT_ARRAY;
 ////////////////////
 //  gr2 = IB_goto; 

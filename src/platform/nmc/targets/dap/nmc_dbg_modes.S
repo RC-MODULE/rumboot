@@ -44,7 +44,7 @@ DBG_EXIT:
     if <>0 goto DBG_EXIT;
 
 GOOD_CASE:
-    gr7 = 0;
+    gr7 = 0000000Fh;
     goto END_OF_FUNC;
 
 BAD_CASE:
@@ -87,7 +87,7 @@ NEXT_CHECK:
     call _dbg_test;
     ar1--;
     ar7 = ar1;
-    gr0 = 0FFFFFFFFh;
+    gr0 = 0000000Fh;
     gr7 = gr7-gr0;
     if <>0 goto FAIL;
     
