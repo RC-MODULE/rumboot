@@ -173,7 +173,7 @@ function(add_rumboot_target)
       make ${rumboot_dirname}-configure
       [ -f \"${rumboot_dirname}/.stamps/${product}\" ] || make ${rumboot_dirname}-configure -B
       cd ${rumboot_dirname}
-      make ${product}.all
+      make ${product}.all $THREADS
       cd ..
       "
     )
