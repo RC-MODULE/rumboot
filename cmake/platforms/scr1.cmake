@@ -494,7 +494,24 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     ADD_MPE_DEMO_TEST(test_MAX_calculation)
     ADD_MPE_DEMO_TEST(test-int8)
     ADD_MPE_DEMO_TEST(test-int16)
+    
+    macro (ADD_MPE_COUPLED_TEST_LOOP name rm_bin_name)
+      set (ADD_MPE_COUPLED_TEST_LOOP_ARGS cp ${MPE_TEST_SHEETS_DIR}/${name}/num_iterations.bin .)
+      foreach(i RANGE 0 15)
+        set(MPE_TEST_SHEET ${MPE_TEST_SHEETS_DIR}/${name}/${rm_bin_name}_${i}/mpe_arrays_r.txt)
+        set(ADD_MPE_COUPLED_TEST_LOOP_ARGS ${ADD_MPE_COUPLED_TEST_LOOP_ARGS} &&
+        ${MPE_PARSE_TEST} ${NA_TEST_mpe_cmd_file}.${i} ${NA_TEST_in_file}.${i} ${NA_TEST_warr_file}.${i} ${NA_TEST_etalon_file}.${i} < ${MPE_TEST_SHEET})
+      endforeach()
+      add_rumboot_target(
+        CONFIGURATION ROM
+        NAME ${name}
+        FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_mpe.c
+        PREPCMD ${ADD_MPE_COUPLED_TEST_LOOP_ARGS}
+        IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+      )
+    endmacro()
 
+    ADD_MPE_COUPLED_TEST_LOOP(regression_1 test) # int16 test
     # endif()
 
     # PPE example 

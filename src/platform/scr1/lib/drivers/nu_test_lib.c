@@ -137,6 +137,16 @@ MPECmdMetrics* nu_mpe_load_cmd_metrics(int heap_id) {
   return m;
 }
 
+MPECmdMetrics* nu_mpe_load_cmd_metrics_by_tag(int heap_id, char* file_tag) {
+  MPECmdMetrics* m;
+  m = rumboot_malloc_from_heap_aligned(heap_id,sizeof(MPECmdMetrics),sizeof(int32_t));
+  if(m==NULL)
+    return NULL;
+
+  rumboot_platform_request_file(file_tag,(uintptr_t)m);
+  return m;
+}
+
 CubeMetrics* nu_vpe_load_in_metrics(int heap_id) {
   return nu_load_cube_metrics(heap_id,"metrics_in_tag");
 }
@@ -204,6 +214,17 @@ void* nu_mpe_load_cmd(int heap_id,MPECmdMetrics* metrics) {
   rumboot_platform_request_file("mpe_cmd_file_tag",(uintptr_t)c);
   return c;
 }
+
+void* nu_mpe_load_cmd_by_tag(int heap_id, char* file_tag, MPECmdMetrics* metrics) {
+  void* c;
+  c = rumboot_malloc_from_heap_aligned(heap_id,metrics->s,8);
+  if(c==NULL)
+    return c;
+
+  rumboot_platform_request_file(file_tag,(uintptr_t)c);
+  return c;
+}
+
 
 void* nu_vpe_load_in_data(int heap_id,CubeMetrics* metrics) {
   return nu_load_cube(heap_id,"in_file_tag",metrics);
