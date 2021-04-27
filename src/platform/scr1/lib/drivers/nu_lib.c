@@ -874,7 +874,7 @@ void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics, Conf
   else if (( cfg->op0_config.mux_en == Enable_En && cfg->op0_config.mux_mode != Mode_Unitary) &&
           (( cfg->op0_config.alu_en == Enable_En && cfg->op0_config.alu_mode == Mode_Unitary) ||
            ( cfg->op0_config.alu_en != Enable_En)                                           ) ){
-    cfg->op0_rdma_config.dma_data_use = DmaDUse_Alu ;
+    cfg->op0_rdma_config.dma_data_use = DmaDUse_Mux ;
   }  
   else cfg->op0_rdma_config.dma_data_use = DmaDUse_Off ;
 
@@ -935,7 +935,7 @@ void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics, Conf
   else if (( cfg->op1_config.mux_en == Enable_En && cfg->op1_config.mux_mode != Mode_Unitary) &&
           (( cfg->op1_config.alu_en == Enable_En && cfg->op1_config.alu_mode == Mode_Unitary) ||
            ( cfg->op1_config.alu_en != Enable_En)                                           ) ){
-    cfg->op1_rdma_config.dma_data_use = DmaDUse_Alu ;
+    cfg->op1_rdma_config.dma_data_use = DmaDUse_Mux ;
   }  
   else cfg->op1_rdma_config.dma_data_use = DmaDUse_Off ;
   
@@ -993,7 +993,7 @@ void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics, Conf
   else if (( cfg->op2_config.mux_en == Enable_En && cfg->op2_config.mux_mode != Mode_Unitary) &&
           (( cfg->op2_config.alu_en == Enable_En && cfg->op2_config.alu_mode == Mode_Unitary) ||
            ( cfg->op2_config.alu_en != Enable_En)                                           ) ){
-    cfg->op2_rdma_config.dma_data_use = DmaDUse_Alu ;
+    cfg->op2_rdma_config.dma_data_use = DmaDUse_Mux ;
   }  
   else cfg->op2_rdma_config.dma_data_use = DmaDUse_Off ;
 
