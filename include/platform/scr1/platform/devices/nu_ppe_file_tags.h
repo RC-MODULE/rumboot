@@ -1,41 +1,6 @@
 #ifndef NU_PPE_FILE_TAGS_H
 #define NU_PPE_FILE_TAGS_H
 
-char* cfg_ppe_pyfile_tag[] = {
-  "cfg_ppe_pyfile_tag_0_",
-  "cfg_ppe_pyfile_tag_1_",
-  "cfg_ppe_pyfile_tag_2_",
-  "cfg_ppe_pyfile_tag_3_",
-  "cfg_ppe_pyfile_tag_4_",
-  "cfg_ppe_pyfile_tag_5_",
-  "cfg_ppe_pyfile_tag_6_",
-  "cfg_ppe_pyfile_tag_7_",
-  "cfg_ppe_pyfile_tag_8_",
-  "cfg_ppe_pyfile_tag_9_",
-  "cfg_ppe_pyfile_tag_10_",
-  "cfg_ppe_pyfile_tag_11_",
-  "cfg_ppe_pyfile_tag_12_",
-  "cfg_ppe_pyfile_tag_13_",
-  "cfg_ppe_pyfile_tag_14_",
-  "cfg_ppe_pyfile_tag_15_",
-  "cfg_ppe_pyfile_tag_16_",
-  "cfg_ppe_pyfile_tag_17_",
-  "cfg_ppe_pyfile_tag_18_",
-  "cfg_ppe_pyfile_tag_19_",
-  "cfg_ppe_pyfile_tag_20_",
-  "cfg_ppe_pyfile_tag_21_",
-  "cfg_ppe_pyfile_tag_22_",
-  "cfg_ppe_pyfile_tag_23_",
-  "cfg_ppe_pyfile_tag_24_",
-  "cfg_ppe_pyfile_tag_25_",
-  "cfg_ppe_pyfile_tag_26_",
-  "cfg_ppe_pyfile_tag_27_",
-  "cfg_ppe_pyfile_tag_28_",
-  "cfg_ppe_pyfile_tag_29_",
-  "cfg_ppe_pyfile_tag_30_",
-  "cfg_ppe_pyfile_tag_31_"
-};
-
 char* cfg_file_tag[] = {
   "cfg_ppe_file_tag_0_",
   "cfg_ppe_file_tag_1_",

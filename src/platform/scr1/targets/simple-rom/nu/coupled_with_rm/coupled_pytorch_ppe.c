@@ -59,7 +59,7 @@ int main() {
 
     if (in_data == NULL || etalon == NULL || res_data == NULL) res = 1;
 
-    if (!res) res = nu_ppe_load_pycfg_by_tag(heap_id, &cfg_reg, cfg_ppe_pyfile_tag[i]);
+    if (!res) res = nu_ppe_load_pycfg_by_tag(heap_id, &cfg_reg, cfg_file_tag[i]);
 
     if (!res) {
       cfg_reg.rBALs = (uintptr_t)in_data;

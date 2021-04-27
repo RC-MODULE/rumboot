@@ -310,7 +310,6 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         +${PLUSARG_cfg_mpe_file_tag}_${i}_=${NA_TEST_cfg_mpe_file}.${i}
 
         +${PLUSARG_cfg_ppe_file_tag}_${i}_=${NA_TEST_cfg_ppe_file}.${i}
-        +${PLUSARG_cfg_ppe_pyfile_tag}_${i}_=${NA_TEST_cfg_ppe_file}.${i}
 
         +${PLUSARG_mpe_cmd_file_tag}_${i}_=${NA_TEST_mpe_cmd_file}.${i}
 
@@ -423,6 +422,19 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       )
     endmacro()
 
+#    set(PYTORCH_BINS_DIR ${CMAKE_SOURCE_DIR}/../units/rcm_lava_ppe/tests/pybins)
+    set(PYTORCH_BINS_DIR ${CMAKE_SOURCE_DIR}/../vdir)
+
+    macro(ADD_PPE_COUPLED_TEST_PYTORCH name)
+      add_rumboot_target(
+        CONFIGURATION ROM
+        NAME ${name}
+        FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_pytorch_ppe.c
+        PREPCMD cp ${PYTORCH_BINS_DIR}/*.bin* .
+        IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+      )
+    endmacro()
+
     ADD_VPE_COUPLED_TEST_LOOP(vpe_try_loop main_nothing_to_do_x4)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_relu_int32 main_relu_int32)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_relu_fp32  main_relu_fp32)
@@ -438,6 +450,8 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_lut main_lut)
 
     ADD_PPE_COUPLED_TEST_LOOP(ppe_loop_coupled main_loop_ppe_coupled)
+
+    ADD_PPE_COUPLED_TEST_PYTORCH(ppe_pytorch_coupled)
 
     ADD_PPE_COUPLED_TEST_LOOP(ppe_2_i8_max    main_ppe_2_i8_max   )
     ADD_PPE_COUPLED_TEST_LOOP(ppe_3_i16_max   main_ppe_3_i16_max  )
