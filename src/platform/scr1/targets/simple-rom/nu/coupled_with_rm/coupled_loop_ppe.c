@@ -17,9 +17,9 @@ ConfigREGPPE  cfg_reg = {0};
 CubeMetrics*  in_metrics  = NULL;
 CubeMetrics*  res_metrics = NULL;
 
-void *in_data = NULL;
-void *etalon  = NULL;
-void *res_data= NULL;
+void* in_data = NULL;
+void* etalon  = NULL;
+void* res_data= NULL;
 
 int main() {
   int res = 0;
@@ -33,6 +33,7 @@ int main() {
   rumboot_printf("it_nmb is %d\n", it_nmb);
 
   for (i=0; i<it_nmb && !res; i++) {
+
     in_metrics  = nu_load_cube_metrics(heap_id, metrics_in_tag[i]);
     //in_metrics  = nu_load_cube_metrics(heap_id, metrics_in_ameba_tag[i]);
     //in_metrics  = nu_load_cube_metrics(heap_id, metrics_in_with_unused_tag[i]);
@@ -48,17 +49,11 @@ int main() {
       //in_data     = nu_load_cube(heap_id, in_ameba_file_tag[i], in_metrics);
       //in_data     = nu_load_cube(heap_id, in_with_unused_file_tag[i], in_metrics);
 
-      if (in_data == NULL) rumboot_printf ("in_data is NULL\n");
-
       etalon      = nu_load_cube (heap_id, etalon_file_tag[i], res_metrics);
       //etalon      = nu_load_cube (heap_id, etalon_ameba_file_tag[i], res_metrics);
       //etalon      = nu_load_cube (heap_id, etalon_with_unused_file_tag[i], res_metrics);
 
-      if (etalon == NULL) rumboot_printf ("in_data is NULL\n");
-
       res_data    = nu_ppe_malloc_res(heap_id, res_metrics);
-
-      if (res_data == NULL) rumboot_printf ("in_data is NULL\n");
     }
 
     if (in_data == NULL || etalon == NULL || res_data == NULL) res = 1;
