@@ -606,24 +606,24 @@ void nu_vpe_setup(uintptr_t base, ConfigVPE* cfg, ConfigDMAVPE* cfg_dma) {
   tmp_data = (!cfg->op2_config.lut_en << 6) | (cfg->op2_config.prelu_en << 5) | (!cfg->op2_config.mux_en << 4) | (cfg->op2_config.alu_operation << 2) | (!cfg->op2_config.alu_en << 1) | (!cfg->op2_en << 0);
   iowrite32(tmp_data, base + NU_VPE + NU_VPE_OP2_CFG);   
   
-  tmp_data = (!cfg->op2_config.c1_en << 1) | (nu_vpe_mode_to_bool(cfg->op2_config.alu_mode) << 0) ; // ???????????????????????????????
+  tmp_data = (!cfg->op2_config.c2_en << 1) | (nu_vpe_mode_to_bool(cfg->op2_config.alu_mode) << 0) ; // ???????????????????????????????
   iowrite32(tmp_data, base + NU_VPE + NU_VPE_OP2_ALU_CFG);  
 
   iowrite32(cfg->op2_config.alu_value, base + NU_VPE + NU_VPE_OP2_ALU_SRC_VAL);
 
-  iowrite32(cfg->op2_config.c1_offset, base + NU_VPE + NU_VPE_OP2_ALU_CVT_OFFSET_VAL);
-  iowrite32(cfg->op2_config.c1_scale , base + NU_VPE + NU_VPE_OP2_ALU_CVT_SCALE_VAL );
-  iowrite32(cfg->op2_config.c1_trunc , base + NU_VPE + NU_VPE_OP2_ALU_CVT_TRUNC_VAL );
+  iowrite32(cfg->op2_config.c2_offset, base + NU_VPE + NU_VPE_OP2_ALU_CVT_OFFSET_VAL);
+  iowrite32(cfg->op2_config.c2_scale , base + NU_VPE + NU_VPE_OP2_ALU_CVT_SCALE_VAL );
+  iowrite32(cfg->op2_config.c2_trunc , base + NU_VPE + NU_VPE_OP2_ALU_CVT_TRUNC_VAL );
 
 
-  tmp_data = (!cfg->op2_config.c2_en << 1) | (nu_vpe_mode_to_bool(cfg->op2_config.mux_mode) << 0) ; // ???????????????????????????????
+  tmp_data = (!cfg->op2_config.c1_en << 1) | (nu_vpe_mode_to_bool(cfg->op2_config.mux_mode) << 0) ; // ???????????????????????????????
   iowrite32(tmp_data, base + NU_VPE + NU_VPE_OP2_MUL_CFG);  
 
   iowrite32(cfg->op2_config.mux_value, base + NU_VPE + NU_VPE_OP2_MUL_SRC_VAL);
   
-  iowrite32(cfg->op2_config.c2_offset, base + NU_VPE + NU_VPE_OP2_MUL_CVT_OFFSET_VAL);
-  iowrite32(cfg->op2_config.c2_scale , base + NU_VPE + NU_VPE_OP2_MUL_CVT_SCALE_VAL );
-  iowrite32(cfg->op2_config.c2_trunc , base + NU_VPE + NU_VPE_OP2_MUL_CVT_TRUNC_VAL );  
+  iowrite32(cfg->op2_config.c1_offset, base + NU_VPE + NU_VPE_OP2_MUL_CVT_OFFSET_VAL);
+  iowrite32(cfg->op2_config.c1_scale , base + NU_VPE + NU_VPE_OP2_MUL_CVT_SCALE_VAL );
+  iowrite32(cfg->op2_config.c1_trunc , base + NU_VPE + NU_VPE_OP2_MUL_CVT_TRUNC_VAL );  
   
   tmp_data = (cfg->op2_config.norm_round_mode << 16) | (cfg->op2_config.norm_saturation_en << 8) | (cfg->op2_config.norm_round_size << 0);
   iowrite32(tmp_data, base + NU_VPE + NU_VPE_OP2_NORM_PARAM);   
@@ -732,7 +732,6 @@ void nu_vpe_setup(uintptr_t base, ConfigVPE* cfg, ConfigDMAVPE* cfg_dma) {
   iowrite32(cfg->op2_rdma_config.dma_box_offset_z  , base + NU_VPE_OP2_RDMA + NU_VPE_RDMA_BOX_OFFSET_SIZE_Z );   
 
 }
-
 
 void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics, ConfigDMAVPE* cfg_dma) {
   cfg_dma->H = metrics->H;
