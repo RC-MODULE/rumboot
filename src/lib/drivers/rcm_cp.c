@@ -96,6 +96,9 @@ void cp_start_tx(struct rcm_cp_instance *inst, const void *buf, size_t len)
 	iowrite32( 0x0,  inst->base + RCM_CP_BIAS_TR );
 	iowrite32( 0x0,  inst->base + RCM_CP_ROWCOUNTER_TR );
     iowrite32(inst->two_dimentional, inst->base + RCM_CP_ADDRESSMODE_TR);
+    #ifdef __PPC__
+    asm("msync");
+    #endif
     /* Go! */
     iowrite32(0x1,   inst->base + RCM_CP_CSR_TR);
 }
@@ -144,6 +147,9 @@ enum cp_status cp_rx_status(struct rcm_cp_instance *inst)
 #endif
     if (status & (1<<1)) { /* cpl */
         iowrite32(status & (~(1<<1)), inst->base + RCM_CP_CSR_RCV);
+        #ifdef __PPC__
+        asm("msync");
+        #endif
     }
     return status;
 }

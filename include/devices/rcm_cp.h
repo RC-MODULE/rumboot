@@ -16,8 +16,9 @@ struct rcm_cp_instance {
 };
 
 enum cp_status {
-    CP_IDLE = 0, 
+    CP_IDLE    = 0, 
     CP_WORKING = 1,
+    CP_DONE    = 2
 };
 
 

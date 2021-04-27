@@ -8,6 +8,8 @@
 #include <devices/gpio_pl061.h>
 #include <regs/regs_gpio_pl061.h>
 #include <regs/regs_uart_pl011.h>
+#include <devices/rcm_cp.h>
+#include <rumboot/printf.h>
 
 static int nmc_poll(const struct rumboot_cpu_cluster *cpu)
 {
@@ -24,8 +26,6 @@ static int nmc_poll(const struct rumboot_cpu_cluster *cpu)
                         } else { /* stdio */
                                 uint8_t ch = (uint8_t) word & 0xff;
                                 rumboot_platform_putchar(ch);
-                                if (ch == '\n') {
-                                }
                         }
                 }
                 int c = rumboot_platform_getchar(0);
@@ -90,12 +90,46 @@ static void ext_kill(const struct rumboot_cpu_cluster *cpu)
 
 static int ext_start(const struct rumboot_cpu_cluster *cpu,  struct rumboot_bootheader *hdr, int swap)
 {
-
+    struct rcm_cp_instance cp; 
+    cp_instance_init(&cp, cpu->base, 100000);
+    cp_set_speed(&cp, 10000);
+    uint32_t len = rumboot_bootimage_header_item32(hdr->datalen, swap);
+    if (len % 8) {
+        return -EBADDATACRC;
+    }
+    cp_start_tx(&cp, hdr->data, len);
+    return cp_wait(&cp, 1, 1, len * 50);
 }
+
 
 static int ext_poll(const struct rumboot_cpu_cluster *cpu,  struct rumboot_bootheader *hdr, int swap)
 {
-
+    struct rcm_cp_instance cp; 
+    int ret;
+    cp_instance_init(&cp, cpu->base, 100000);
+    cp_set_speed(&cp, 10000);
+    uint64_t *buf = (uint64_t *) hdr; /* Use hdr as buf. It should be aligned */
+    cp_start_rx(&cp, &buf[0], 8);
+    while(true) {
+            if (cp_rx_status(&cp) == CP_IDLE) {
+                    uint64_t word = buf[0];
+                    if (word & (1UL<<63)) { /* exit code */
+                            ret = word & 0xff;
+                            break;
+                    } else { /* stdio */
+                            uint8_t ch = (uint8_t) word & 0xff;
+                            rumboot_platform_putchar(ch);
+                    }
+            }
+            if (cp_tx_status(&cp) == CP_IDLE) {
+                int c = rumboot_platform_getchar(0);
+                if (c != -1) {
+                    buf[1] = c;
+                    cp_start_tx(&cp, &buf[1], 8);
+                }
+            }
+    }
+    return ret;
 }
 
 static const struct rumboot_cpu_cluster cpus[] = {
