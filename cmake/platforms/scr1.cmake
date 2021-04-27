@@ -308,7 +308,10 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
         +${PLUSARG_cfg_file_tag}_${i}_=${NA_TEST_cfg_file}.${i}
         +${PLUSARG_cfg_mpe_file_tag}_${i}_=${NA_TEST_cfg_mpe_file}.${i}
+
         +${PLUSARG_cfg_ppe_file_tag}_${i}_=${NA_TEST_cfg_ppe_file}.${i}
+        +${PLUSARG_cfg_ppe_pyfile_tag}_${i}_=${NA_TEST_cfg_ppe_file}.${i}
+
         +${PLUSARG_mpe_cmd_file_tag}_${i}_=${NA_TEST_mpe_cmd_file}.${i}
 
         +${PLUSARG_metrics_in_tag}_${i}_=${NA_TEST_in_file}.${i}.metrics

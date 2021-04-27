@@ -11,7 +11,6 @@
 
 #include "platform/devices/nu_ppe_file_tags.h"
 
-ConfigPPE     cfg;
 ConfigREGPPE  cfg_reg = {0};
 
 CubeMetrics*  in_metrics  = NULL;
@@ -27,12 +26,13 @@ int main() {
 
   int heap_id = nu_get_heap_id();;
 
-  rumboot_printf("coupled_loop_ppe\n");
+  rumboot_printf("coupled_pytorch_ppe\n");
 
   rumboot_platform_request_file("num_iterations_file_tag", (uintptr_t) &it_nmb);
   rumboot_printf("it_nmb is %d\n", it_nmb);
 
   for (i=0; i<it_nmb && !res; i++) {
+
     rumboot_malloc_update_heaps(false);
 
     in_metrics  = nu_load_cube_metrics(heap_id, metrics_in_tag[i]);
@@ -59,19 +59,19 @@ int main() {
 
     if (in_data == NULL || etalon == NULL || res_data == NULL) res = 1;
 
-    if (!res) res = nu_ppe_load_cfg_by_tag(heap_id, &cfg, cfg_file_tag[i]);
-    //nu_ppe_print_config(&cfg);
+    if (!res) res = nu_ppe_load_pycfg_by_tag(heap_id, &cfg_reg, cfg_ppe_pyfile_tag[i]);
 
     if (!res) {
       cfg_reg.rBALs = (uintptr_t)in_data;
       cfg_reg.wBALd = (uintptr_t)res_data;
 
-      cfg_reg.rOpEn = 0x1;  // is needed to set memory linear all-in-one
-      res = nu_ppe_decide_dma_config_trivial(&cfg, in_metrics, res_metrics, &cfg_reg);
       nu_ppe_print_config_reg(&cfg_reg);
     }
 
     if(!res){
+      cfg_reg.rBALs = (uintptr_t)in_data;
+      cfg_reg.wBALd = (uintptr_t)res_data;
+
       nu_ppe_setup_reg(NU_PPE_RDMA_BASE, NU_PPE_STANDALONE_BASE, &cfg_reg);
 
       cfg_reg.rOpEn  = 0x1; // Set start of PPE RDMA field to active value

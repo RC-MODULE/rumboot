@@ -64,7 +64,7 @@ int nu_ppe_load_cfg(int heap_id, ConfigPPE* cfg) {
 }
 
 int nu_ppe_load_cfg_by_tag(int heap_id, ConfigPPE* cfg, char* cfg_file_tag) {
-  uint32_t *cfg_bin;
+  uint32_t *cfg_bin = NULL;
   
   cfg_bin = rumboot_malloc_from_heap_aligned(heap_id,NU_PPE_CFG_PARAMS_NUM*sizeof(uint32_t),sizeof(uint32_t));
 
@@ -75,6 +75,26 @@ int nu_ppe_load_cfg_by_tag(int heap_id, ConfigPPE* cfg, char* cfg_file_tag) {
 
   rumboot_free((void*) cfg_bin);
   return 0;
+}
+
+int nu_ppe_load_pycfg_by_tag(int heap_id, ConfigREGPPE* cfg_reg, char* cfg_reg_file_tag) {
+  int res = 0;
+
+  uint32_t* cfg_reg_bin = NULL;
+  
+  cfg_reg_bin = rumboot_malloc_from_heap_aligned(heap_id,NU_PPE_REG_CFG_PARAMS_NUM*sizeof(uint32_t),sizeof(uint32_t));
+
+  if (cfg_reg_bin==NULL || cfg_reg==NULL || cfg_reg_file_tag==NULL) res = 1;
+
+  if (!res) {
+    rumboot_platform_request_file(cfg_reg_file_tag, (uintptr_t)cfg_reg_bin);
+
+    res = nu_ppe_reg_load_config(cfg_reg, cfg_reg_bin);
+  }
+
+  if (!res) rumboot_free((void*) cfg_reg_bin);
+
+  return res;
 }
 
 CubeMetrics* nu_load_cube_metrics(int heap_id, char* file_tag) {

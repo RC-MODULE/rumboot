@@ -8,7 +8,7 @@
 #define NU_VPE_CFG_PARAMS_NUM 66
 #define NU_MPE_CFG_PARAMS_NUM 18
 #define NU_PPE_CFG_PARAMS_NUM 22
-#define NU_PPE_REG_CFG_PARAMS_NUM 48
+#define NU_PPE_REG_CFG_PARAMS_NUM 50
 
   /**
   Режим работы блока
@@ -397,6 +397,8 @@ uint32_t nu_mpe_get_warr_offset(void* cmd, MPECmdMetrics* metrics);
 void nu_mpe_load_buf(uintptr_t base, void* data, int size);
 
 void nu_ppe_load_config(ConfigPPE* cfg, void* cfg_bin);
+int nu_ppe_reg_load_config (ConfigREGPPE* cfg_reg, void* cfg_reg_bin);
+
 void nu_ppe_print_config(ConfigPPE* cfg);
 
 void nu_ppe_setup(uintptr_t base, ConfigPPE* cfg, ConfigREGPPE* cfg_reg);
