@@ -1,5 +1,4 @@
 
-
 #include <stdint.h>
 #include <rumboot/printf.h>
 #include <rumboot/platform.h>
@@ -142,6 +141,71 @@ void nu_ppe_load_config(ConfigPPE* cfg, void* cfg_bin) {
 
     cfg-> meth   =*ptr;ptr++;
     cfg-> dt     =*ptr;ptr++;
+}
+
+int nu_ppe_reg_load_config (ConfigREGPPE* cfg_reg, void* cfg_reg_bin) {
+  int res = 0;
+
+  uint32_t* ptr = NULL;
+
+  if (cfg_reg == NULL || cfg_reg_bin == NULL) res = 1;
+
+  if (!res) {
+    ptr = (uint32_t*) cfg_reg_bin;
+
+    cfg_reg->rOpEn  = *ptr; ptr++;
+    cfg_reg->rPWi   = *ptr; ptr++;
+    cfg_reg->rPHi   = *ptr; ptr++;
+    cfg_reg->rPCi   = *ptr; ptr++;
+    cfg_reg->rBALs  = *ptr; ptr++;
+    cfg_reg->rVSs   = *ptr; ptr++;
+    cfg_reg->rLSs   = *ptr; ptr++;
+    cfg_reg->rESs   = *ptr; ptr++;
+    cfg_reg->rOpM   = *ptr; ptr++;
+    cfg_reg->rBSWi  = *ptr; ptr++;
+    cfg_reg->rBSHi  = *ptr; ptr++;
+    cfg_reg->rBSCi  = *ptr; ptr++;
+    cfg_reg->rStWi  = *ptr; ptr++;
+    cfg_reg->rOfWi  = *ptr; ptr++;
+    cfg_reg->wOpEn  = *ptr; ptr++;
+    cfg_reg->wWi    = *ptr; ptr++;
+    cfg_reg->wHi    = *ptr; ptr++;
+    cfg_reg->wCi    = *ptr; ptr++;
+    cfg_reg->wWo    = *ptr; ptr++;
+    cfg_reg->wHo    = *ptr; ptr++;
+    cfg_reg->wCo    = *ptr; ptr++;
+    cfg_reg->wPWo   = *ptr; ptr++;
+    cfg_reg->wPHo   = *ptr; ptr++;
+    cfg_reg->wPCo   = *ptr; ptr++;
+    cfg_reg->wBALd  = *ptr; ptr++;
+    cfg_reg->wVSd   = *ptr; ptr++;
+    cfg_reg->wLSd   = *ptr; ptr++;
+    cfg_reg->wESd   = *ptr; ptr++;
+    cfg_reg->wOpM   = *ptr; ptr++;
+    cfg_reg->wBSWi  = *ptr; ptr++;
+    cfg_reg->wBSHi  = *ptr; ptr++;
+    cfg_reg->wBSCi  = *ptr; ptr++;
+    cfg_reg->wStWi  = *ptr; ptr++;
+    cfg_reg->wOfWi  = *ptr; ptr++;
+    cfg_reg->wBSWo  = *ptr; ptr++;
+    cfg_reg->wBSHo  = *ptr; ptr++;
+    cfg_reg->wBSCo  = *ptr; ptr++;
+    cfg_reg->wStWo  = *ptr; ptr++;
+    cfg_reg->wOfWo  = *ptr; ptr++;
+    cfg_reg->wK     = *ptr; ptr++;
+    cfg_reg->wKWr   = *ptr; ptr++;
+    cfg_reg->wKHr   = *ptr; ptr++;
+    cfg_reg->wP     = *ptr; ptr++;
+    cfg_reg->wPV1   = *ptr; ptr++;
+    cfg_reg->wPV2   = *ptr; ptr++;
+    cfg_reg->wPV3   = *ptr; ptr++;
+    cfg_reg->wPV4   = *ptr; ptr++;
+    cfg_reg->wPV5   = *ptr; ptr++;
+    cfg_reg->wPV6   = *ptr; ptr++;
+    cfg_reg->wPV7   = *ptr; ptr++;
+  }
+
+  return res;
 }
 
   void nu_vpe_print_Mode(Mode mode, char* name) {

@@ -11,6 +11,9 @@
 #include <devices/rcm_cp.h>
 #include <rumboot/printf.h>
 
+
+#define CP_STRB_RATE 25000
+
 static int nmc_poll(const struct rumboot_cpu_cluster *cpu)
 {
         struct nfifo_instance nf;
@@ -92,7 +95,7 @@ static int ext_start(const struct rumboot_cpu_cluster *cpu,  struct rumboot_boot
 {
     struct rcm_cp_instance cp; 
     cp_instance_init(&cp, cpu->base, 100000);
-    cp_set_speed(&cp, 10000);
+    cp_set_speed(&cp, CP_STRB_RATE);
     uint32_t len = rumboot_bootimage_header_item32(hdr->datalen, swap);
     if (len % 8) {
         return -EBADDATACRC;
@@ -107,7 +110,7 @@ static int ext_poll(const struct rumboot_cpu_cluster *cpu,  struct rumboot_booth
     struct rcm_cp_instance cp; 
     int ret;
     cp_instance_init(&cp, cpu->base, 100000);
-    cp_set_speed(&cp, 10000);
+    cp_set_speed(&cp, CP_STRB_RATE);
     uint64_t *buf = (uint64_t *) hdr; /* Use hdr as buf. It should be aligned */
     cp_start_rx(&cp, &buf[0], 8);
     while(true) {
