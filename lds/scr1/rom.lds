@@ -43,7 +43,7 @@ SECTIONS {
 
  .extmem (NOLOAD): {
    rumboot_emem_heap_start = .;
-   . = . + 16M;
+   . = . + 256M;
    rumboot_emem_heap_end = .;
  } > EMEM
 
