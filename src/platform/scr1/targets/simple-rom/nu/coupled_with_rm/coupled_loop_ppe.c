@@ -60,7 +60,6 @@ int main() {
     if (in_data == NULL || etalon == NULL || res_data == NULL) res = 1;
 
     if (!res) res = nu_ppe_load_cfg_by_tag(heap_id, &cfg, cfg_file_tag[i]);
-    //nu_ppe_print_config(&cfg);
 
     if (!res) {
       cfg_reg.rBALs = (uintptr_t)in_data;
@@ -68,7 +67,6 @@ int main() {
 
       cfg_reg.rOpEn = 0x1;  // is needed to set memory linear all-in-one
       res = nu_ppe_decide_dma_config_trivial(&cfg, in_metrics, res_metrics, &cfg_reg);
-      nu_ppe_print_config_reg(&cfg_reg);
     }
 
     if(!res){
@@ -87,15 +85,21 @@ int main() {
     }
 
     if (!res) {
-      rumboot_platform_dump_region("res_data.bin",(uint32_t)res_data,res_metrics->s);
-
       rumboot_printf("Comparing...\n");
 
       res = nu_bitwise_compare(res_data,etalon,res_metrics->s);
     }
 
     if (!res) rumboot_printf("Iteration %d PASSED\n", i);
-    else rumboot_printf("Test FAILED at iteration %d\n", i);
+    else {
+      rumboot_printf("Test FAILED at iteration %d\n", i);
+
+      nu_ppe_print_config(&cfg);
+      nu_ppe_print_config_reg(&cfg_reg);
+
+      rumboot_platform_dump_region("res_data.bin",(uint32_t)res_data,res_metrics->s);
+      rumboot_platform_dump_region("cfg_reg.bin", &cfg_reg, NU_PPE_REG_CFG_PARAMS_NUM*sizeof(uint32_t));
+    }
 
     rumboot_malloc_update_heaps(true);
   }
