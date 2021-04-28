@@ -338,6 +338,9 @@ void nu_vpe_print_config(ConfigVPE* cfg){
   rumboot_printf("  c3_offset = %d\n" , cfg->c3_offset);
   rumboot_printf("  c3_scale = %d\n" , cfg->c3_scale);
   rumboot_printf("  c3_trunc = %d\n" , cfg->c3_trunc);
+  rumboot_printf("  c3_satur_en = %d\n" , cfg->c3_satur_en  );
+  rumboot_printf("  c3_round_mode = %d\n" , cfg->c3_round_mode);
+  
   nu_vpe_print_Enable(cfg->nan_to_zero,"nan_to_zero");
 
   rumboot_printf("ConfigOp01 (0):\n");
@@ -633,7 +636,9 @@ void nu_vpe_setup(uintptr_t base, ConfigVPE* cfg, ConfigDMAVPE* cfg_dma) {
   // Configuration OUT --------------------------------------------------
   iowrite32(cfg->c3_offset, base + NU_VPE + NU_VPE_OUT_CVT_OFFSET_VAL);
   iowrite32(cfg->c3_scale , base + NU_VPE + NU_VPE_OUT_CVT_SCALE_VAL );
-  iowrite32(cfg->c3_trunc , base + NU_VPE + NU_VPE_OUT_CVT_TRUNC_VAL );
+  
+  tmp_data = (cfg->c3_round_mode << 12) | (cfg->c3_satur_en << 8) | (cfg->c3_trunc << 0) ;
+  iowrite32(tmp_data , base + NU_VPE + NU_VPE_OUT_CVT_TRUNC_VAL );
 
   // OP0 ----------------------------------------------------------------
   tmp_data = (!cfg->op0_config.relu_en << 6) | (cfg->op0_config.prelu_en << 5) | (!cfg->op0_config.mux_en << 4) | (cfg->op0_config.alu_operation << 2) | (!cfg->op0_config.alu_en << 1) | (!cfg->op0_en << 0);

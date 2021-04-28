@@ -225,6 +225,8 @@
     int32_t     c3_offset       ;
     int16_t     c3_scale        ;
     uint8_t     c3_trunc        ; // !!!! вообще он uint6
+    Enable      c3_satur_en     ;
+    RoundMode   c3_round_mode   ;
     Enable      nan_to_zero     ;
     ConfigOp01  op0_config      ;
     ConfigOp01  op1_config      ;
