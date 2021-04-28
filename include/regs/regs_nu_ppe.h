@@ -62,5 +62,6 @@
 #define NU_PPE_INF_NUM_IN               0X098
 #define NU_PPE_NAN_NUM_IN               0X09C
 #define NU_PPE_NAN_NUM_OUT              0X0A0
+#define NU_PPE_STATUS_DONE              0X0A4
 
 #endif
