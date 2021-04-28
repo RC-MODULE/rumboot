@@ -436,6 +436,11 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
   )
 
   add_rumboot_target(
+    CONFIGURATION IRAM_IM1
+    FILES common/rcm_cp/rcm_cp_size.c
+  )
+
+  add_rumboot_target(
     CONFIGURATION IRAM_IM1_WITH_EMI
     FILES emi_sanity.c
   )
