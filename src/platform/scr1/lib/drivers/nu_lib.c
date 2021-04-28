@@ -569,6 +569,15 @@ void nu_ppe_print_config_reg(ConfigREGPPE* cfg_reg){
   // rumboot_printf("  wNNo    = %x \n" , cfg_reg->wNNo);
 }
 
+uint32_t nu_lut_log2(uint32_t a) {  // log2(0)=0; log2(1)=0; log2(2)=1; log2(8)=3; ...
+  uint32_t t;
+  uint32_t r;
+  
+  t=a;r=0;
+  while((t!=0) && (t!=1)) { t>>=1; r++; }
+  return r;
+}
+
 void nu_vpe_load_lut(uintptr_t base, void* lut1, void* lut2) {
   uint16_t* ptr;
   uint32_t command;
@@ -698,6 +707,9 @@ void nu_vpe_setup(uintptr_t base, ConfigVPE* cfg, ConfigDMAVPE* cfg_dma) {
   iowrite32(tmp_data, base + NU_VPE + NU_VPE_OP2_NORM_PARAM);   
   
   if(cfg->op2_config.lut_en) {
+    float shift_f1;int32_t shift_i1;
+    float shift_f2;int32_t shift_i2;
+    
     tmp_data = 0x000000000 | (cfg->op2_config.lut_sel << 2) | (cfg->op2_config.lut_right_priority << 1) | (cfg->op2_config.lut_left_priority << 0);
     iowrite32(tmp_data, base + NU_VPE + NU_VPE_LUT_CFG);
     
@@ -705,6 +717,34 @@ void nu_vpe_setup(uintptr_t base, ConfigVPE* cfg, ConfigDMAVPE* cfg_dma) {
     iowrite32(cfg->op2_config.lut_tab1_x_end  , base + NU_VPE + NU_VPE_LUT_TAB1_X_END  );
     iowrite32(cfg->op2_config.lut_tab2_x_start, base + NU_VPE + NU_VPE_LUT_TAB2_X_START);
     iowrite32(cfg->op2_config.lut_tab2_x_end  , base + NU_VPE + NU_VPE_LUT_TAB2_X_END  );
+    
+    if(cfg->in_data_type == DataTypeExt_Fp16 || cfg->in_data_type == DataTypeExt_Fp32) { // Floating Point LUT
+      float start_f;
+      float end_f;
+      int32_t start_i;
+      int32_t end_i;
+      uint32_t temp_ui;
+      
+      temp_ui = cfg->op2_config.lut_tab1_x_end  ;end_f   = *((float*) &(temp_ui));// Read The Couple Of Bits 
+      temp_ui = cfg->op2_config.lut_tab1_x_start;start_f = *((float*) &(temp_ui));//  And Store It In A float Variable
+      end_i = (int32_t) end_f; //  Round Them (Because It Is Said To Be About The Corresponding Integer Values)
+      start_i = (int32_t) start_f;
+      shift_i1 = nu_lut_log2(end_i - start_i) - 8;
+      
+      temp_ui = cfg->op2_config.lut_tab2_x_end  ;end_f   = *((float*) &(temp_ui));// Read The Couple Of Bits 
+      temp_ui = cfg->op2_config.lut_tab2_x_start;start_f = *((float*) &(temp_ui));//  And Store It In A float Variable
+      end_i = (int32_t) end_f; //  Round Them (Because It Is Said To Be About The Corresponding Integer Values)
+      start_i = (int32_t) start_f;
+      shift_i2 = nu_lut_log2(end_i - start_i) - 6;
+    }
+    else { // Integer LUT
+      shift_i1 = nu_lut_log2(cfg->op2_config.lut_tab1_x_end - cfg->op2_config.lut_tab1_x_start) - 8;
+      shift_i2 = nu_lut_log2(cfg->op2_config.lut_tab2_x_end - cfg->op2_config.lut_tab2_x_start) - 6;
+    }
+    
+    rumboot_printf("LUTs: shift_i1 = %x, shift_i2 = %x\n",shift_i1,shift_i2);
+    iowrite32(shift_i1,base + NU_VPE + NU_VPE_LUT_TAB1_X_SHIFT);
+    iowrite32(shift_i2,base + NU_VPE + NU_VPE_LUT_TAB2_X_SHIFT);
   }
 
 

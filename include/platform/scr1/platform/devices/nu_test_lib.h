@@ -12,6 +12,7 @@ int nu_mpe_load_cfg(int heap_id, ConfigMPE* cfg);
 
 int nu_ppe_load_cfg(int heap_id, ConfigPPE* cfg);
 int nu_ppe_load_cfg_by_tag(int heap_id, ConfigPPE* cfg, char* cfg_file_tag);
+int nu_ppe_load_cfg_reg_by_tag(int heap_id, ConfigREGPPE* cfg_reg, char* cfg_reg_file_tag);
 
 CubeMetrics* nu_load_cube_metrics(int heap_id, char* file_tag);
 WarrMetrics* nu_load_warr_metrics(int heap_id, char* file_tag);

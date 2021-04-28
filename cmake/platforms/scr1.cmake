@@ -422,15 +422,14 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       )
     endmacro()
 
-#    set(PYTORCH_BINS_DIR ${CMAKE_SOURCE_DIR}/../units/rcm_lava_ppe/tests/pybins)
-    set(PYTORCH_BINS_DIR ${CMAKE_SOURCE_DIR}/../vdir)
+    set(PPE_EXPER_DIR /opt/lib_h31/LAVA_lib/experiment_stage_2/PPE/)
 
-    macro(ADD_PPE_COUPLED_TEST_PYTORCH name)
+    macro(ADD_PPE_EXPER_TEST name)
       add_rumboot_target(
         CONFIGURATION ROM
         NAME ${name}
-        FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_pytorch_ppe.c
-        PREPCMD cp ${PYTORCH_BINS_DIR}/*.bin* .
+        FILES scr1/targets/simple-rom/nu/coupled_with_rm/experiment_ppe.c
+        PREPCMD cp ${PPE_EXPER_DIR}/${name}/*bin* .
         IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
       )
     endmacro()
@@ -448,10 +447,19 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_f_op0 main_vpe_f_op0)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_f_op1 main_vpe_f_op1)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_lut main_lut)
+    ADD_VPE_COUPLED_TEST_LOOP(vpe_op1_alu main_vpe_op1_alu)
 
     ADD_PPE_COUPLED_TEST_LOOP(ppe_loop_coupled main_loop_ppe_coupled)
 
-    ADD_PPE_COUPLED_TEST_PYTORCH(ppe_pytorch_coupled)
+    ADD_PPE_EXPER_TEST(PPE_2)
+    ADD_PPE_EXPER_TEST(PPE_3)
+    ADD_PPE_EXPER_TEST(PPE_4)
+    ADD_PPE_EXPER_TEST(PPE_5)
+    ADD_PPE_EXPER_TEST(PPE_6)
+    ADD_PPE_EXPER_TEST(PPE_7)
+    ADD_PPE_EXPER_TEST(PPE_8)
+    ADD_PPE_EXPER_TEST(PPE_9)
+    ADD_PPE_EXPER_TEST(PPE_10)
 
     ADD_PPE_COUPLED_TEST_LOOP(ppe_2_i8_max    main_ppe_2_i8_max   )
     ADD_PPE_COUPLED_TEST_LOOP(ppe_3_i16_max   main_ppe_3_i16_max  )
@@ -473,7 +481,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
     set(MPE_DEMO_PATH src/platform/scr1/targets/simple-rom/nu/mpe_demo)
     set(MPE_PARSE_TEST ${CMAKE_SOURCE_DIR}/${MPE_DEMO_PATH}/parse_mpe_arrays.pl)
-    set(MPE_TEST_SHEETS_DIR ${CMAKE_SOURCE_DIR}/../units/rcm_lava_mpe/tests)     # Outside The RumBoot!!!!
+    set(MPE_TEST_SHEETS_DIR ${CMAKE_SOURCE_DIR}/../units/rcm_lava_mpe/tests/experiment)     # Outside The RumBoot!!!!
 
     macro (ADD_MPE_DEMO_TEST mpe_demo_test_name)
       set(MPE_TEST_SHEET ${MPE_TEST_SHEETS_DIR}/${mpe_demo_test_name}/mpe_arrays.txt)
@@ -486,14 +494,15 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       )
     endmacro()
 
-    ADD_MPE_DEMO_TEST(test1)
-    ADD_MPE_DEMO_TEST(test2)
-    ADD_MPE_DEMO_TEST(test3)
-    ADD_MPE_DEMO_TEST(test4)
-    ADD_MPE_DEMO_TEST(test5)
-    ADD_MPE_DEMO_TEST(test_MAX_calculation)
-    ADD_MPE_DEMO_TEST(test-int8)
-    ADD_MPE_DEMO_TEST(test-int16)
+    ADD_MPE_DEMO_TEST(MPE_1)
+    ADD_MPE_DEMO_TEST(MPE_2)
+    ADD_MPE_DEMO_TEST(MPE_3)
+    ADD_MPE_DEMO_TEST(MPE_4)
+    ADD_MPE_DEMO_TEST(MPE_5)
+    ADD_MPE_DEMO_TEST(MPE_6)
+    ADD_MPE_DEMO_TEST(MPE_10)
+    ADD_MPE_DEMO_TEST(MPE_11)
+    ADD_MPE_DEMO_TEST(MPE_14)
     
     macro (ADD_MPE_COUPLED_TEST_LOOP name rm_bin_name)
       set (ADD_MPE_COUPLED_TEST_LOOP_ARGS cp ${MPE_TEST_SHEETS_DIR}/${name}/num_iterations.bin .)
@@ -511,7 +520,14 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       )
     endmacro()
 
-    ADD_MPE_COUPLED_TEST_LOOP(regression_1 test) # int16 test
+    ADD_MPE_COUPLED_TEST_LOOP(MPE_7 test) # mu int8 test
+    ADD_MPE_COUPLED_TEST_LOOP(MPE_8 test) # mu int16 test
+    ADD_MPE_COUPLED_TEST_LOOP(MPE_9 test) # mu fp16 test
+
+    ADD_MPE_COUPLED_TEST_LOOP(MPE_12 test) # mu+acc int8 test
+    ADD_MPE_COUPLED_TEST_LOOP(MPE_13 test) # mu+acc int16 test
+    ADD_MPE_COUPLED_TEST_LOOP(MPE_15 test) # mu+acc fp16 test
+
     # endif()
 
     # PPE example 
