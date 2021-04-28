@@ -700,6 +700,8 @@ void nu_vpe_setup(uintptr_t base, ConfigVPE* cfg, ConfigDMAVPE* cfg_dma) {
     iowrite32(cfg->op2_config.lut_tab1_x_end  , base + NU_VPE + NU_VPE_LUT_TAB1_X_END  );
     iowrite32(cfg->op2_config.lut_tab2_x_start, base + NU_VPE + NU_VPE_LUT_TAB2_X_START);
     iowrite32(cfg->op2_config.lut_tab2_x_end  , base + NU_VPE + NU_VPE_LUT_TAB2_X_END  );
+    iowrite32(0,base + NU_VPE + NU_VPE_LUT_TAB1_X_SHIFT);  // CHECK Temporary Until This Will Be Made In RM
+    iowrite32(0,base + NU_VPE + NU_VPE_LUT_TAB2_X_SHIFT);
   }
 
 
