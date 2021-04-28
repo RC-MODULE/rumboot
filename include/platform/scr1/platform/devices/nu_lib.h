@@ -379,6 +379,7 @@ void nu_vpe_print_config(ConfigVPE* cfg);
 void nu_vpe_print_config_dma(ConfigDMAVPE* cfg);
 void nu_print_config_dma(ConfigDMA * cfg_dma,char* name);
 
+uint32_t nu_lut_log2(uint32_t a);
 void nu_vpe_load_lut(uintptr_t base, void* lut1, void* lut2);
 void nu_vpe_setup(uintptr_t base, ConfigVPE* cfg, ConfigDMAVPE* cfg_dma);
 void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics, ConfigDMAVPE* cfg_dma);
