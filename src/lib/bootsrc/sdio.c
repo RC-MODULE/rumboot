@@ -41,16 +41,18 @@ enum sd_card_type {
         SDIO_CARD_SDHC,
         SDIO_CARD_SDXC, /* TODO: Needs moar testing. TODO: Find out how to tell the difference between these two */
         SDIO_CARD_SDUC, /* TODO: Reserved. No cards on the market. Yet. */
+        SDIO_CARD_EMMC,
         SDIO_CARD_MAX,
 };
 
 const char *const sd_card_type_names[] = {
         [SDIO_CARD_UNKNOWN] = "Unknown/Invalid",
         [SDIO_CARD_OLD] = "Ancient Relic (Where did u dig it up?)",
-        [SDIO_CARD_MMC] = "MMC Card (Blast from the past?)",
+        [SDIO_CARD_MMC]  = "(e)MMC Card (<2Gb)",
         [SDIO_CARD_SDHC] = "SDHC Card",
         [SDIO_CARD_SDSC] = "SDSC Card",
         [SDIO_CARD_SDXC] = "SDXC Card",
+        [SDIO_CARD_EMMC] = "(e)MMC Card (>2Gb)",
         [SDIO_CARD_SDUC] = "SDUC Card",
 };
 
@@ -324,6 +326,10 @@ static int sd_read_block(const struct rumboot_bootsource *src, void *pdata, void
                 real_offset /= 512;
         }
 
+        if (sd_pdata->cardtype == SDIO_CARD_EMMC) {
+                real_offset /= 512;
+        }
+
         struct sdio_request rq = {
                 .cmd		= 17, /* CMD 17 */
                 .resp		= SDIO_RESPONSE_R1367,
@@ -336,7 +342,7 @@ static int sd_read_block(const struct rumboot_bootsource *src, void *pdata, void
                 .is_acmd	= 0,
                 .int_buf_num	= 0,
                 /* MMC cards don't work in 4-lane mode */
-                .data_lanes     = (sd_pdata->cardtype == SDIO_CARD_MMC) ? 1 : 4,
+                .data_lanes     = ((sd_pdata->cardtype == SDIO_CARD_MMC) | (sd_pdata->cardtype == SDIO_CARD_EMMC)) ? 1 : 4,
         };
 
         if (!sdio_request_execute(src->base, &rq)) {
@@ -419,15 +425,16 @@ static bool card_init_mmc(const struct rumboot_bootsource *src, void *pdata)
         rq.is_acmd = 0;
         rq.crc = 0;
         rq.idx = 1;
-        rq.arg = 0x80ff8000;
-        for (int i = 0; i < SDIO_ATTEMPTS_NUMBER * 2; i++) {
+        rq.arg = 0xc0ff8080;
+
+        for (int i = 0; i < SDIO_ATTEMPTS_NUMBER * 8; i++) {
                 if (!sdio_request_execute(src->base, &rq)) {
                         continue;
                 }
                 temp->ocr = ioread32(src->base + SDIO_SDR_RESPONSE1_REG);
                 if ((temp->ocr & (1 << 31))) {
                         initialized = true;
-                        temp->cardtype = SDIO_CARD_MMC;
+                        temp->cardtype = (temp->ocr & (1<<30)) ? SDIO_CARD_EMMC : SDIO_CARD_MMC;
                         break;
                 }
                 mdelay(250);
