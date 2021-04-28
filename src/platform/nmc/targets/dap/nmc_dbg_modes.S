@@ -68,6 +68,15 @@ data_copy:
 .skip 64
 
 __main:
+    ar5 = ar7 - 2;
+    push ar0,gr0;
+    push ar1,gr1;
+    push ar2,gr2;
+    push ar3,gr3;
+    push ar4,gr4;
+    push ar5,gr5;
+    push ar6,gr6;
+
     // Loops
     gr2 = 4;
     // Loop number in which clearing data_copy array will be skipped (array on next loop will compared by BST and will not write in data_copy)
@@ -113,10 +122,19 @@ PRE_NEXT_CHECK:
 
 PASS:
     gr7 = 0;
-    return;
+    goto END_OF_MAIN;
 FAIL:
     gr7 = 1;
-    return;
+    goto END_OF_MAIN;
 FAIL_EXTRA_COPYING:
     gr7 = 2;
+
+END_OF_MAIN:
+    pop ar6,gr6;
+    pop ar5,gr5;
+    pop ar4,gr4;
+    pop ar3,gr3;
+    pop ar2,gr2;
+    pop ar1,gr1;
+    pop ar0,gr0;
     return;
