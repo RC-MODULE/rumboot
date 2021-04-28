@@ -422,15 +422,14 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       )
     endmacro()
 
-#    set(PYTORCH_BINS_DIR ${CMAKE_SOURCE_DIR}/../units/rcm_lava_ppe/tests/pybins)
-    set(PYTORCH_BINS_DIR ${CMAKE_SOURCE_DIR}/../vdir)
+    set(PPE_EXPER_DIR /opt/lib_h31/LAVA_lib/experiment_stage_2/PPE/)
 
-    macro(ADD_PPE_COUPLED_TEST_PYTORCH name)
+    macro(ADD_PPE_EXPER_TEST name)
       add_rumboot_target(
         CONFIGURATION ROM
         NAME ${name}
-        FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_pytorch_ppe.c
-        PREPCMD cp ${PYTORCH_BINS_DIR}/*.bin* .
+        FILES scr1/targets/simple-rom/nu/coupled_with_rm/experiment_ppe.c
+        PREPCMD cp ${PPE_EXPER_DIR}/${name}/*bin* .
         IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
       )
     endmacro()
@@ -452,7 +451,15 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
     ADD_PPE_COUPLED_TEST_LOOP(ppe_loop_coupled main_loop_ppe_coupled)
 
-    ADD_PPE_COUPLED_TEST_PYTORCH(ppe_pytorch_coupled)
+    ADD_PPE_EXPER_TEST(PPE_2)
+    ADD_PPE_EXPER_TEST(PPE_3)
+    ADD_PPE_EXPER_TEST(PPE_4)
+    ADD_PPE_EXPER_TEST(PPE_5)
+    ADD_PPE_EXPER_TEST(PPE_6)
+    ADD_PPE_EXPER_TEST(PPE_7)
+    ADD_PPE_EXPER_TEST(PPE_8)
+    ADD_PPE_EXPER_TEST(PPE_9)
+    ADD_PPE_EXPER_TEST(PPE_10)
 
     ADD_PPE_COUPLED_TEST_LOOP(ppe_2_i8_max    main_ppe_2_i8_max   )
     ADD_PPE_COUPLED_TEST_LOOP(ppe_3_i16_max   main_ppe_3_i16_max  )

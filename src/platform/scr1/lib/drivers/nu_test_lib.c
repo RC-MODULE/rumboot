@@ -77,7 +77,7 @@ int nu_ppe_load_cfg_by_tag(int heap_id, ConfigPPE* cfg, char* cfg_file_tag) {
   return 0;
 }
 
-int nu_ppe_load_pycfg_by_tag(int heap_id, ConfigREGPPE* cfg_reg, char* cfg_reg_file_tag) {
+int nu_ppe_load_cfg_reg_by_tag(int heap_id, ConfigREGPPE* cfg_reg, char* cfg_reg_file_tag) {
   int res = 0;
 
   uint32_t* cfg_reg_bin = NULL;
