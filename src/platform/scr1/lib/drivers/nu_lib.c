@@ -865,11 +865,13 @@ void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics, Conf
   // SRC_DMA --------------------------------------------------------------------------------------------
   if(cfg->in_data_type == DataTypeExt_Int32 || cfg->in_data_type == DataTypeExt_Fp32) {
     cfg_dma->dma_src_en =  Enable_NotEn ;  // if 32bit Input Data then Main Channel Works
-    cfg->src_rdma_config.dma_op_en = Enable_NotEn; // new struct ============
+    cfg->src_rdma_config.dma_op_en    = Enable_NotEn; // new struct ============
+    cfg->src_rdma_config.dma_data_use = DmaDUse_Off ; // 
   }
   else {
     cfg_dma->dma_src_en = Enable_En;
-    cfg->src_rdma_config.dma_op_en = Enable_En; // new struct ============
+    cfg->src_rdma_config.dma_op_en    = Enable_En ; // new struct ============
+    cfg->src_rdma_config.dma_data_use = DmaDUse_Mux ; // 
   }
 
   cfg->src_rdma_config.dma_ram_type       = 0; // ?????????????????????????????????
