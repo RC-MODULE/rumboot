@@ -122,7 +122,6 @@ int main() {
     
     nu_vpe_print_config(&cfg);
     nu_vpe_decide_dma_config(&cfg,in_metrics,in_data,op0,op1,op2,res_metrics,res_data,&cfg_dma);
-    nu_vpe_print_config_dma(&cfg_dma);
     nu_print_config_dma(&cfg.src_rdma_config,"src_rdma_config");
     nu_print_config_dma(&cfg.op0_rdma_config,"op0_rdma_config");
     nu_print_config_dma(&cfg.op1_rdma_config,"op1_rdma_config");
@@ -132,24 +131,24 @@ int main() {
     nu_vpe_setup(NU_VPE_STANDALONE_BASE, &cfg, &cfg_dma);
     
       // Setup Main Channel DMAs if Required
-    if(cfg_dma.dma_src_en == Enable_NotEn)
+    if(cfg.src_rdma_config.dma_op_en == Enable_NotEn)
       nu_vpe_config_rd_main_channel(NU_CPDMAC_ASM_BASE,in_data,in_metrics->s);
-    if(cfg_dma.dma_dst_en == Enable_NotEn)
+    if(cfg.wdma_config.dma_op_en == Enable_NotEn)
       nu_vpe_config_wr_main_channel(NU_CPDMAC_ASM_BASE,res_data,res_metrics->s);
     
     rumboot_printf("Running DMA..\n");
     
       // Invoke Required DMA Channels
-    if(cfg_dma.dma_src_en == Enable_NotEn)
+    if(cfg.src_rdma_config.dma_op_en == Enable_NotEn)
       nu_vpe_run_rd_main_channel(NU_CPDMAC_ASM_BASE);
-    if(cfg_dma.dma_dst_en == Enable_NotEn)
+    if(cfg.wdma_config.dma_op_en == Enable_NotEn)
       nu_vpe_run_wr_main_channel(NU_CPDMAC_ASM_BASE);
     nu_vpe_run(NU_VPE_STANDALONE_BASE, &cfg);     // To Invoke Or Not To Invoke Internal DMA Channel - Decide inside nu_vpe_run
     
       // Finalize Required DMA Channels
-    if(cfg_dma.dma_src_en == Enable_NotEn)
+    if(cfg.src_rdma_config.dma_op_en == Enable_NotEn)
       nu_vpe_wait_rd_main_channel_complete(NU_CPDMAC_ASM_BASE);
-    if(cfg_dma.dma_dst_en == Enable_NotEn)
+    if(cfg.wdma_config.dma_op_en == Enable_NotEn)
       nu_vpe_wait_wr_main_channel_complete(NU_CPDMAC_ASM_BASE);
     nu_vpe_wait(NU_VPE_STANDALONE_BASE, &cfg);
     
