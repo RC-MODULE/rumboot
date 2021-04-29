@@ -357,6 +357,7 @@ ExternalProject_Add(utils
 ExternalProject_Add_Step(utils
   utils-rebuild
   ALWAYS 1
+  WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/utils"
   COMMAND     "$(MAKE)" -C "${CMAKE_BINARY_DIR}/utils"
 )
 
