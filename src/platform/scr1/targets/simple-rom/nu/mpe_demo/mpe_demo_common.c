@@ -140,21 +140,15 @@ int main() {
   
   delta = (end -start); // number of cycles in microseconds, cycle_APB_timer =10ns;
   instr_number = start_inst *128 * 1024; // 8 MAC istructions,128 - number of repeat,1024 - min number of cycles 
-
-  rumboot_printf( " performance  by cycle\n");
  
   cycle_num_inst = (delta * 1000)/650 ;    //650 ns - one cycle period
-  rumboot_printf( "time(mcsec)=%d\n",(end-start));
-  rumboot_printf( "start=%d\n",start);
-  rumboot_printf( "end=%d\n",end);
-  rumboot_printf( "start_inst=%d\n",start_inst);
 
-  rumboot_printf( "instr_number=%d\n",instr_number);
-  rumboot_printf( "cycle_num_inst=%d\n",cycle_num_inst);
-  
   vc = instr_number/( cycle_num_inst );
-  rumboot_printf( "performance=%d\n",vc);
-
+  
+  rumboot_printf(" \n");
+  rumboot_printf( "performance=%d",vc);
+  rumboot_printf(" MAC/cycle \n");
+  rumboot_printf(" \n");
   rumboot_printf("Comparing..\n");
   
   if(nu_bitwise_compare(res_data,etalon,res_metrics->s) == 0)
