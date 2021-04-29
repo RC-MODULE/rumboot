@@ -354,11 +354,11 @@ ExternalProject_Add(utils
 #    BUILD_ALWAYS Yes
     )
 
-ExternalProject_Add_Step(utils
-  utils-rebuild
-  ALWAYS 1
+add_custom_target(utils-check-rebuild
+  ALL
+  DEPENDS utils
   WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/utils"
-  COMMAND     "$(MAKE)" -C "${CMAKE_BINARY_DIR}/utils"
+  COMMAND     "$(MAKE)" -C "${CMAKE_BINARY_DIR}/utils"  
 )
 
 SET(CPACK_GENERATOR "TGZ")
