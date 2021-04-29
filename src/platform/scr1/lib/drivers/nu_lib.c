@@ -709,8 +709,8 @@ void nu_vpe_setup(uintptr_t base, ConfigVPE* cfg, ConfigDMAVPE* cfg_dma) {
   iowrite32(tmp_data, base + NU_VPE + NU_VPE_OP2_NORM_PARAM);   
   
   if(cfg->op2_config.lut_en) {
-    float shift_f1;int32_t shift_i1;
-    float shift_f2;int32_t shift_i2;
+    int32_t shift_i1;
+    int32_t shift_i2;
     
     tmp_data = 0x000000000 | (cfg->op2_config.lut_sel << 2) | (cfg->op2_config.lut_right_priority << 1) | (cfg->op2_config.lut_left_priority << 0);
     iowrite32(tmp_data, base + NU_VPE + NU_VPE_LUT_CFG);
@@ -723,21 +723,21 @@ void nu_vpe_setup(uintptr_t base, ConfigVPE* cfg, ConfigDMAVPE* cfg_dma) {
     if(cfg->in_data_type == DataTypeExt_Fp16 || cfg->in_data_type == DataTypeExt_Fp32) { // Floating Point LUT
       float start_f;
       float end_f;
-      int32_t start_i;
-      int32_t end_i;
+      float diff_f;
+      uint32_t diff_i;
       uint32_t temp_ui;
       
       temp_ui = cfg->op2_config.lut_tab1_x_end  ;end_f   = *((float*) &(temp_ui));// Read The Couple Of Bits 
       temp_ui = cfg->op2_config.lut_tab1_x_start;start_f = *((float*) &(temp_ui));//  And Store It In A float Variable
-      end_i = (int32_t) end_f; //  Round Them (Because It Is Said To Be About The Corresponding Integer Values)
-      start_i = (int32_t) start_f;
-      shift_i1 = nu_lut_log2(end_i - start_i) - 8;
+      diff_f = end_f  - start_f;
+      diff_i = (uint32_t) diff_f; // Just Round
+      shift_i1 = nu_lut_log2(diff_i) - 8;
       
       temp_ui = cfg->op2_config.lut_tab2_x_end  ;end_f   = *((float*) &(temp_ui));// Read The Couple Of Bits 
       temp_ui = cfg->op2_config.lut_tab2_x_start;start_f = *((float*) &(temp_ui));//  And Store It In A float Variable
-      end_i = (int32_t) end_f; //  Round Them (Because It Is Said To Be About The Corresponding Integer Values)
-      start_i = (int32_t) start_f;
-      shift_i2 = nu_lut_log2(end_i - start_i) - 6;
+      diff_f = end_f  - start_f;
+      diff_i = (uint32_t) diff_f; // Just Round
+      shift_i2 = nu_lut_log2(diff_i) - 6;
     }
     else { // Integer LUT
       shift_i1 = nu_lut_log2(cfg->op2_config.lut_tab1_x_end - cfg->op2_config.lut_tab1_x_start) - 8;
