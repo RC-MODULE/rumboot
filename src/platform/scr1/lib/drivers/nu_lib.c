@@ -28,6 +28,8 @@ void nu_vpe_load_config(ConfigVPE* cfg, void* cfg_bin) {
   cfg->c3_offset=*ptr;ptr++;
   cfg->c3_scale=*ptr;ptr++;
   cfg->c3_trunc=*ptr;ptr++;
+  cfg->c3_satur_en=*ptr;ptr++;
+  cfg->c3_round_mode=*ptr;ptr++;
   cfg->nan_to_zero=*ptr;ptr++;
   cfg->op0_config.coef_type=*ptr;ptr++;
   cfg->op0_config.alu_en=*ptr;ptr++;
@@ -339,7 +341,7 @@ void nu_vpe_print_config(ConfigVPE* cfg){
   rumboot_printf("  c3_scale = %d\n" , cfg->c3_scale);
   rumboot_printf("  c3_trunc = %d\n" , cfg->c3_trunc);
   rumboot_printf("  c3_satur_en = %d\n" , cfg->c3_satur_en  );
-  rumboot_printf("  c3_round_mode = %d\n" , cfg->c3_round_mode);
+  nu_vpe_print_RoundMode( cfg->c3_round_mode, "c3_round_mode");
   
   nu_vpe_print_Enable(cfg->nan_to_zero,"nan_to_zero");
 

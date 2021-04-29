@@ -5,7 +5,7 @@
 
 #include <stdint.h>
 
-#define NU_VPE_CFG_PARAMS_NUM 66
+#define NU_VPE_CFG_PARAMS_NUM 67
 #define NU_MPE_CFG_PARAMS_NUM 18
 #define NU_PPE_CFG_PARAMS_NUM 22
 #define NU_PPE_REG_CFG_PARAMS_NUM 50
