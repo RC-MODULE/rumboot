@@ -22,7 +22,8 @@ void* res_data= NULL;
 
 int main() {
   int res = 0;
-  int i, it_nmb;
+  int i, it_nmb, dtb;
+  int clk_cnt;
 
   int heap_id = nu_get_heap_id();;
 
@@ -40,6 +41,7 @@ int main() {
 
     if (!res) {
       FM = (cfg_reg.wOpM & 0x30) >> 4;
+      //rumboot_printf("FM is %d\n", FM);
 
       in_metrics =
         (FM == 0x0) ? nu_load_cube_metrics(heap_id, metrics_in_ameba_tag[i]) :
@@ -91,9 +93,17 @@ int main() {
         nu_ppe_rdma_run(NU_PPE_RDMA_BASE, &cfg_reg);
         nu_ppe_run(NU_PPE_STANDALONE_BASE, &cfg_reg);
 
+        clk_cnt = rumboot_platform_get_uptime();
+        while (nu_ppe_status_done_rd(NU_PPE_STANDALONE_BASE) == 0x0) {} // set timeout
+        clk_cnt = rumboot_platform_get_uptime() - clk_cnt;
+
         // Wait RDMA then PPE+WDMA
         nu_ppe_rdma_wait_complete(NU_PPE_RDMA_BASE);
         nu_ppe_wait_complete(NU_PPE_STANDALONE_BASE);
+
+        dtb = cfg_reg.wOpM & 0x600000 == 0x0 ? 1 : 2; // bytes in DataType
+
+        clk_cnt = (in_metrics->H * in_metrics->W * in_metrics->C * dtb) / (clk_cnt*16);
       }
     }
 
@@ -108,7 +118,11 @@ int main() {
       }
     }
 
-    if (!res) rumboot_printf("Iteration %d PASSED\n", i);
+    if (!res) {
+      rumboot_printf("Iteration %d PASSED\n", i);
+
+      rumboot_printf("PPE peak perfomance is %d %% \n", clk_cnt);
+    }
     else rumboot_printf("Test FAILED at iteration %d\n", i);
 
     rumboot_malloc_update_heaps(true);
