@@ -1,8 +1,12 @@
 cmake_minimum_required (VERSION 2.6)
 project (rumboot-utils C)
 
+if (NOT RUMBOOT_DISABLE_CCACHE)
+  find_program(CCACHE_FOUND ccache)
+else()
+  set(CCACHE_FOUND No)
+endif()
 
-find_program(CCACHE_FOUND ccache)
 if(CCACHE_FOUND)
     set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ccache)
     set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK ccache)
