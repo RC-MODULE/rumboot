@@ -1515,6 +1515,10 @@ void nu_ppe_setup_reg(uintptr_t rbase, uintptr_t wbase, ConfigREGPPE* cfg) {
   // iowrite32(cfg->wNNo,     wbase + NU_PPE_NAN_NUM_OUT);
 }
 
+uint32_t nu_ppe_status_done_rd (uintptr_t wbase) {
+  return ioread32(wbase + NU_PPE_STATUS_DONE);
+}
+
 // rdma
 void nu_ppe_rdma_run(uintptr_t rbase, ConfigREGPPE* cfg) {
   rumboot_printf("Start PPE RDMA...\n");

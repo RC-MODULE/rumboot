@@ -409,6 +409,8 @@ void nu_ppe_setup_reg(uintptr_t rbase, uintptr_t wbase, ConfigREGPPE* cfg);
 void nu_ppe_print_config_reg(ConfigREGPPE* cfg_reg);
 int  nu_ppe_decide_dma_config_trivial(ConfigPPE* cfg, CubeMetrics* in_cube_metrics, CubeMetrics* out_cube_metrics, ConfigREGPPE* cfg_reg);
 
+uint32_t nu_ppe_status_done_rd (uintptr_t wbase);
+
 void nu_ppe_rdma_run(uintptr_t rbase, ConfigREGPPE* cfg);
 void nu_ppe_run(uintptr_t wbase, ConfigREGPPE* cfg);
 int  nu_mpe_run_cmd(uintptr_t base, void* cmd,MPECmdMetrics* cmd_metrics);
