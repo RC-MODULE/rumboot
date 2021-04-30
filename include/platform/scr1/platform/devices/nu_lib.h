@@ -191,27 +191,28 @@
   }ConfigOp2;
 
   typedef struct ConfigDMA {
-    Enable       dma_op_en         ;
-    uint32_t     dma_H             ;
-    uint32_t     dma_W             ;
-    uint32_t     dma_C             ;
-    DmaRamType   dma_ram_type      ;
-    Mode         dma_data_mode     ; // convert ????
-    DmaDSizeType dma_data_size     ;
-    DmaDUseType  dma_data_use      ;
-    uint32_t     dma_baddr         ;
-    uint32_t     dma_line_stride   ;
-    uint32_t     dma_vector_stride ;
-    uint32_t     dma_elem_stride   ;
-    uint32_t     dma_box_st_size_x ;
-    uint32_t     dma_box_st_size_y ;
-    uint32_t     dma_box_st_size_z ;
-    uint32_t     dma_box_size_x    ;
-    uint32_t     dma_box_size_y    ;
-    uint32_t     dma_box_size_z    ;
-    uint32_t     dma_box_offset_x  ;
-    uint32_t     dma_box_offset_y  ;
-    uint32_t     dma_box_offset_z  ;
+    Enable       dma_op_en           ;
+    uint32_t     dma_H               ;
+    uint32_t     dma_W               ;
+    uint32_t     dma_C               ;
+    DmaRamType   dma_ram_type        ;
+    Mode         dma_data_mode       ; // convert ????
+    DmaDSizeType dma_data_size       ;
+    DmaDUseType  dma_data_use        ;
+    uint32_t     dma_baddr           ;
+    uint32_t     dma_line_stride     ;
+    uint32_t     dma_vector_stride   ;
+    uint32_t     dma_elem_stride     ;
+    uint32_t     dma_lst_elem_stride ;
+    uint32_t     dma_box_st_size_x   ;
+    uint32_t     dma_box_st_size_y   ;
+    uint32_t     dma_box_st_size_z   ;
+    uint32_t     dma_box_size_x      ;
+    uint32_t     dma_box_size_y      ;
+    uint32_t     dma_box_size_z      ;
+    uint32_t     dma_box_offset_x    ;
+    uint32_t     dma_box_offset_y    ;
+    uint32_t     dma_box_offset_z    ;
   }ConfigDMA;
 
   typedef struct ConfigVPE {
