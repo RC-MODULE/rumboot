@@ -75,7 +75,7 @@ if(RUMBOOT_SOC)
       IRUN_FLAGS ${BOOTROM_IFLAGS} +RUMBOOT_RUNTIME_ADDR=5A000 
       LOAD 
         IM0BIN ${SOC_EMI_INITIALIZER},SELF
-      CFLAGS -fnmc-compatible-if-packed -DRUMBOOT_ENTRY=start 
+      CFLAGS -fnmc-compatible-if-packed -DRUMBOOT_ENTRY=start  
       OBJCOPY_FLAGS ${SOC_OBJCOPY_FLAGS}
       FEATURES ${SOC_FEATURES}
       PACKIMAGE_FLAGS ${SOC_PACKIMAGE_FLAGS_EMI}
@@ -119,6 +119,14 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     add_rumboot_target_dir(coretests/
       CONFIGURATION CORE
     )
+    if (RUMBOOT_SOC)
+      add_rumboot_target_dir(coretests/emi/
+        CONFIGURATION CORE
+        PREFIX coresram
+        LOAD IM0BIN ${SOC_EMI_INITIALIZER},SELF
+      )
+    endif()
+
   endif()
 
   add_rumboot_target(

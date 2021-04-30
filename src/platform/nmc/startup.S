@@ -27,7 +27,8 @@
  */
 reset_handler:
 	delayed goto the_start; 
-    ar7 = _rumboot_platform_stack_start; /* Stack grown UP, ar7 increases on every push */
+    nul;
+    nul;
 
 .align 5
 /* Three internal exceptions follow */
@@ -141,6 +142,7 @@ irq_wrapper:
     ireturn;
 
 the_start:
+    ar7 = _rumboot_platform_stack_start; /* Stack grown UP, ar7 increases on every push */
     ar0=0;
     ar1=0;
     ar2=0;

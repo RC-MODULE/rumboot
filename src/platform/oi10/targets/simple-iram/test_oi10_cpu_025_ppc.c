@@ -53,14 +53,16 @@
 #define TLB_ENTRY_EM0_0_NOCACHE_INVALID     MMU_TLB_ENTRY(  0x000,  0x00000,    0x00000,    MMU_TLBE_DSIZ_1GB,      0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,  MMU_TLBWE_BE_UND,   0b0 )
 #define TLB_ENTRY_EM0_0_CACHE_VALID         MMU_TLB_ENTRY(  0x000,  0x00000,    0x00000,    MMU_TLBE_DSIZ_1GB,      0b0,    0b0,    0b1,    0b0,    0b1,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,  MMU_TLBWE_BE_UND,   0b1 )
 #define TLB_ENTRY_BOOTROM_MIRROR_0          MMU_TLB_ENTRY(  0x01F,  0xFFFF0,    0xFFFF0,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b0,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,  MMU_TLBWE_BE_0,     0b1 )
+#define TLB_ENTRY_SS2_RESERVED              MMU_TLB_ENTRY(  0x020,  0xC0080,    0xC0080,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,  MMU_TLBWE_BE_0,     0b1 )
 
 #define UNEXIST_DCR_ADDR                0x00
 #define TEST_OI10_CPU_025_PPC_TIMEOUT    100
+#define EA_SS2_RESERVED                 0xC0080000 // start effective address of TLB_ENTRY_SS2_RESERVED
 
 //static const tlb_entry bootrom_mirror           = {TLB_ENTRY_BOOTROM_MIRROR_0};
 static const tlb_entry em0_0_cache_on_valid     = {TLB_ENTRY_EM0_0_CACHE_VALID};
 static const tlb_entry em0_0_cache_off_valid    = {TLB_ENTRY_EM0_0_NOCACHE_VALID};
-
+static const tlb_entry ss2_reserved_valid       = {TLB_ENTRY_SS2_RESERVED};
 
 volatile uint32_t mem_test_data __attribute__((section(".data"))) = 0x5555AAAA;
 
@@ -336,8 +338,9 @@ static void generate_IMP_mc ()
 static void generate_L2C_mc()
 {
     rumboot_printf("Check 'L2C error' soft generation \n");
-    dcbi((void*)&mem_test_data);
+    write_tlb_entries(&ss2_reserved_valid,1); 
     msync();
+    iowrite32(ioread32(EA_SS2_RESERVED) | 0xF000F001, EA_SS2_RESERVED); 
 }
 
 static void wait_interrupt(ITRPT_MCSR_FIELD MCSR_bit)
@@ -372,7 +375,7 @@ void check_mc_with_soft(ITRPT_MCSR_FIELD MCSR_bit)
         case ITRPT_MCSR_IMP_i:    generate_IMP_mc();
                             rumboot_printf("wait interrupt from MCSR_DCR\n");
                             break;
-        case ITRPT_MCSR_L2_i:     generate_L2C_mc();
+        case ITRPT_MCSR_L2_i: generate_L2C_mc();
                             rumboot_printf("wait interrupt from MCSR_L2C\n");
                             break;
         default: break;

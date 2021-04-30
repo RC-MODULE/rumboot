@@ -4,7 +4,7 @@ OUTPUT_ARCH(nmc)
 MEMORY
 {
   IRAM(rwx):       ORIGIN =  0x00000000, LENGTH  = 0x60000
-  SRAM(rwx):       ORIGIN =  0x100000000, LENGTH = 0x100000
+  SRAM(rwx):       ORIGIN =  0x100000000, LENGTH  = 0x100000
 }
 
 SECTIONS
@@ -40,13 +40,13 @@ SECTIONS
   } > SRAM
 
 
-  .heap (NOLOAD) : {
+  .heap : {
     _rumboot_IRAM_heap_start = .;
     . = . + 0x1000;
     _rumboot_IRAM_heap_end = .;
-  } > IRAM
+  } > SRAM
 
-  .stack (NOLOAD) : {
+  .stack : {
     _rumboot_platform_stack_start = .;
     . = . + 0x4000;
     _rumboot_platform_stack_end = .;    

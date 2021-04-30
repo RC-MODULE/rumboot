@@ -350,7 +350,16 @@ ExternalProject_Add(utils
 #    BUILD_COMMAND     ${CMAKE_COMMAND} --build "${CMAKE_BINARY_DIR}/utils" -- -j ${NUM_THREADS}
     BUILD_COMMAND     "$(MAKE)" -C "${CMAKE_BINARY_DIR}/utils"
     INSTALL_COMMAND   ""
-  )
+#    Not supported by cmake 2.8.x
+#    BUILD_ALWAYS Yes
+    )
+
+add_custom_target(utils-check-rebuild
+  ALL
+  DEPENDS utils
+  WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/utils"
+  COMMAND     "$(MAKE)" -C "${CMAKE_BINARY_DIR}/utils"  
+)
 
 SET(CPACK_GENERATOR "TGZ")
 SET(CPACK_PACKAGE_FILE_NAME "rumboot-${RUMBOOT_PLATFORM}-${CMAKE_BUILD_TYPE}-${GIT_BRANCH}-${GIT_REVISION}")
