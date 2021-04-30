@@ -448,7 +448,8 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_f_op1 main_vpe_f_op1)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_lut main_lut)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_op1_alu main_vpe_op1_alu)
-    ADD_VPE_COUPLED_TEST_LOOP(vpe_mul main_vpe_mul)
+    ADD_VPE_COUPLED_TEST_LOOP(vpe_mul_int32 main_vpe_mul_int32)
+    ADD_VPE_COUPLED_TEST_LOOP(vpe_mul_fp32 main_vpe_mul_fp32)
 
     ADD_PPE_COUPLED_TEST_LOOP(ppe_loop_coupled main_loop_ppe_coupled)
 
