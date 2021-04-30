@@ -424,12 +424,13 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
     set(PPE_EXPER_DIR /opt/lib_h31/LAVA_lib/experiment_stage_2/PPE/)
 
-    macro(ADD_PPE_EXPER_TEST name)
+    macro(ADD_PPE_EXPER_TEST name ShowPerf)
       add_rumboot_target(
         CONFIGURATION ROM
         NAME ${name}
         FILES scr1/targets/simple-rom/nu/coupled_with_rm/experiment_ppe.c
         PREPCMD cp ${PPE_EXPER_DIR}/${name}/*bin* .
+        CFLAGS -D${ShowPerf}
         IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
       )
     endmacro()
@@ -455,16 +456,16 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
     ADD_PPE_COUPLED_TEST_LOOP(ppe_loop_coupled main_loop_ppe_coupled)
 
-    ADD_PPE_EXPER_TEST(PPE_2)
-    ADD_PPE_EXPER_TEST(PPE_3)
-    ADD_PPE_EXPER_TEST(PPE_4)
-    ADD_PPE_EXPER_TEST(PPE_5)
-    ADD_PPE_EXPER_TEST(PPE_6)
-    ADD_PPE_EXPER_TEST(PPE_7)
-    ADD_PPE_EXPER_TEST(PPE_8)
-    ADD_PPE_EXPER_TEST(PPE_9)
-    ADD_PPE_EXPER_TEST(PPE_10)
-    ADD_PPE_EXPER_TEST(PPE_11)
+    ADD_PPE_EXPER_TEST(PPE_2 NotShowPerf)
+    ADD_PPE_EXPER_TEST(PPE_3 NotShowPerf)
+    ADD_PPE_EXPER_TEST(PPE_4 NotShowPerf)
+    ADD_PPE_EXPER_TEST(PPE_5 NotShowPerf)
+    ADD_PPE_EXPER_TEST(PPE_6 NotShowPerf)
+    ADD_PPE_EXPER_TEST(PPE_7 NotShowPerf)
+    ADD_PPE_EXPER_TEST(PPE_8 NotShowPerf)
+    ADD_PPE_EXPER_TEST(PPE_9 NotShowPerf)
+    ADD_PPE_EXPER_TEST(PPE_10 NotShowPerf)
+    ADD_PPE_EXPER_TEST(PPE_11 ShowPerf)
 
     ADD_PPE_COUPLED_TEST_LOOP(ppe_2_i8_max    main_ppe_2_i8_max   )
     ADD_PPE_COUPLED_TEST_LOOP(ppe_3_i16_max   main_ppe_3_i16_max  )
