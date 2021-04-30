@@ -91,9 +91,9 @@ int main() {
 
         // Start RDMA then PPE+WDMA
         nu_ppe_rdma_run(NU_PPE_RDMA_BASE, &cfg_reg);
+        clk_cnt = rumboot_platform_get_uptime();
         nu_ppe_run(NU_PPE_STANDALONE_BASE, &cfg_reg);
 
-        clk_cnt = rumboot_platform_get_uptime();
         while (nu_ppe_status_done_rd(NU_PPE_STANDALONE_BASE) == 0x0) {} // set timeout
         clk_cnt = rumboot_platform_get_uptime() - clk_cnt;
 
