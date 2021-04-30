@@ -35,7 +35,7 @@ int main() {
   rumboot_printf("it_nmb is %d\n", it_nmb);
 
   for (i=0; i<it_nmb && !res; i++) {
-    rumboot_malloc_update_heaps(false);
+    rumboot_malloc_update_heaps(1);
 
     res = nu_ppe_load_cfg_reg_by_tag(heap_id, &cfg_reg, cfg_file_tag[i]);
 
@@ -131,7 +131,7 @@ int main() {
     }
     else rumboot_printf("Test FAILED at iteration %d\n", i);
 
-    rumboot_malloc_update_heaps(true);
+    rumboot_malloc_update_heaps(0);
   }
 
   return res;
