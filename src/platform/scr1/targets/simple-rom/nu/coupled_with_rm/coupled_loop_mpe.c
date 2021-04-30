@@ -93,20 +93,20 @@ int main() {
 
     delta = (end -start); // number of cycles in microseconds(ns), cycle =10ns;
     instr_number = 8 *128 * 1024; // 8 MAC istructions,128 - number of repeat,1024 -matrix weghts and data
-    rumboot_printf( " performance  by cycle\n");
+    //rumboot_printf( " performance  by cycle\n");
     vc = (instr_number) / ((delta * 1000)/850);
-    rumboot_printf( "vc=%d\n",vc);
+    //rumboot_printf( "vc=%d\n",vc);
 
     //rumboot_printf( " performance  by sec\n");
     // v = (instr_number/delta) * 1000000;
 
     //rumboot_printf( "v=%d\n",v);
 
-    rumboot_printf( "time(mcsec)=%d\n",(end-start));
-    rumboot_printf( "start=%d\n",start);
-    rumboot_printf( "end=%d\n",end);
+    //rumboot_printf( "time(mcsec)=%d\n",(end-start));
+    //rumboot_printf( "start=%d\n",start);
+    //rumboot_printf( "end=%d\n",end);
 
-    rumboot_printf( "instr_number=%d\n",instr_number);
+    //rumboot_printf( "instr_number=%d\n",instr_number);
 
 
     rumboot_printf("Comparing..\n");

@@ -144,11 +144,13 @@ int main() {
   cycle_num_inst = (delta * 1000)/650 ;    //650 ns - one cycle period
 
   vc = instr_number/( cycle_num_inst );
-  
+
+#ifdef SHOW_PERF
   rumboot_printf(" \n");
   rumboot_printf( "performance=%d",vc);
   rumboot_printf(" MAC/cycle \n");
   rumboot_printf(" \n");
+#endif
   rumboot_printf("Comparing..\n");
   
   if(nu_bitwise_compare(res_data,etalon,res_metrics->s) == 0)

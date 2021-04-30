@@ -488,27 +488,28 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     set(MPE_PARSE_TEST ${CMAKE_SOURCE_DIR}/${MPE_DEMO_PATH}/parse_mpe_arrays.pl)
     set(MPE_TEST_SHEETS_DIR ${CMAKE_SOURCE_DIR}/../units/rcm_lava_mpe/tests/experiment)     # Outside The RumBoot!!!!
 
-    macro (ADD_MPE_DEMO_TEST mpe_demo_test_name)
+    macro (ADD_MPE_DEMO_TEST mpe_demo_test_name show_perf)
       set(MPE_TEST_SHEET ${MPE_TEST_SHEETS_DIR}/${mpe_demo_test_name}/mpe_arrays.txt)
       add_rumboot_target(
         CONFIGURATION ROM
         NAME mpe_demo_${mpe_demo_test_name}
         FILES scr1/targets/simple-rom/nu/mpe_demo/mpe_demo_common.c
+        CFLAGS -D${show_perf}
         PREPCMD ${MPE_PARSE_TEST} ${NA_TEST_mpe_cmd_file} ${NA_TEST_in_file} ${NA_TEST_warr_file} ${NA_TEST_etalon_file} < ${MPE_TEST_SHEET}
         IRUN_FLAGS ${NA_RM_PLUSARGS}
       )
     endmacro()
 
-    ADD_MPE_DEMO_TEST(MPE_1)
-    ADD_MPE_DEMO_TEST(MPE_2)
-    ADD_MPE_DEMO_TEST(MPE_3)
-    ADD_MPE_DEMO_TEST(MPE_4)
-    ADD_MPE_DEMO_TEST(MPE_5)
-    ADD_MPE_DEMO_TEST(MPE_6)
-    ADD_MPE_DEMO_TEST(MPE_10)
-    ADD_MPE_DEMO_TEST(MPE_11)
-    ADD_MPE_DEMO_TEST(MPE_14)
-    ADD_MPE_DEMO_TEST(MPE_16)
+    ADD_MPE_DEMO_TEST(MPE_1 No)
+    ADD_MPE_DEMO_TEST(MPE_2 No)
+    ADD_MPE_DEMO_TEST(MPE_3 No)
+    ADD_MPE_DEMO_TEST(MPE_4 No)
+    ADD_MPE_DEMO_TEST(MPE_5 No)
+    ADD_MPE_DEMO_TEST(MPE_6 No)
+    ADD_MPE_DEMO_TEST(MPE_10 No)
+    ADD_MPE_DEMO_TEST(MPE_11 No)
+    ADD_MPE_DEMO_TEST(MPE_14 No)
+    ADD_MPE_DEMO_TEST(MPE_16 SHOW_PERF)
     
     macro (ADD_MPE_COUPLED_TEST_LOOP name rm_bin_name)
       set (ADD_MPE_COUPLED_TEST_LOOP_ARGS cp ${MPE_TEST_SHEETS_DIR}/${name}/num_iterations.bin .)
