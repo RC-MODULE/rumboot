@@ -1619,6 +1619,7 @@ void nu_vpe_wait(uintptr_t vpe_base, ConfigVPE* cfg){ // ?????????   ConfigVPE* 
     rumboot_printf("Wait VPE WDMA...\n");
     //while(ioread32(vpe_base + NU_VPE + NU_VPE_CTRL_NC) !=0) {}
     while(( (ioread32(vpe_base + NU_VPE + REG_VPE_IRQ_RD_ADDR) >> 1) & 1) !=1) {}
+    iowrite32(2,vpe_base + NU_VPE + REG_VPE_IRQ_CLR_ADDR);
   }
   rumboot_printf("Done VPE.\n");
 }

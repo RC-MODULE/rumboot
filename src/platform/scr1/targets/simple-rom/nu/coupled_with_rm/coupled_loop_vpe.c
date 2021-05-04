@@ -39,11 +39,11 @@ void nu_vpe_decide_dma_config (
   cfg->wdma_config.dma_data_mode      = 1; // Copypaste From src_rdma_config in nu_vpe_decide_dma_config_trivial
   cfg->wdma_config.dma_data_use=DmaDUse_Off;
   
-  cfg->src_flying = Enable_En;
+  cfg->src_flying = cfg->in_data_type == DataTypeExt_Int32 || cfg->in_data_type == DataTypeExt_Fp32 ? Enable_En : Enable_NotEn;
   cfg->dst_flying = cfg->out_data_type == DataType_Int8 ? Enable_NotEn : Enable_En;
   
   nu_vpe_decide_dma_config_trivial(cfg,in_metrics,cfg_dma);
-  cfg_dma->dma_dst_en = Enable_NotEn; // Волюнтари3м
+  cfg_dma->dma_dst_en = cfg->dst_flying ? Enable_NotEn : Enable_NotEn;
   
   cfg->src_rdma_config.dma_baddr = (uint32_t) in_data;
   cfg->op0_rdma_config.dma_baddr = (uint32_t) op0;
