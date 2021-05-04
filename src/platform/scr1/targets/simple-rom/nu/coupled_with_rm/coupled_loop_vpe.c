@@ -40,7 +40,7 @@ void nu_vpe_decide_dma_config (
   cfg->wdma_config.dma_data_use=DmaDUse_Off;
   
   cfg->src_flying = Enable_En;
-  cfg->dst_flying = Enable_En; // Everything Through Main Channel
+  cfg->dst_flying = cfg->out_data_type == DataType_Int8 ? Enable_NotEn : Enable_En;
   
   nu_vpe_decide_dma_config_trivial(cfg,in_metrics,cfg_dma);
   cfg_dma->dma_dst_en = Enable_NotEn; // Волюнтари3м

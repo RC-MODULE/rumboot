@@ -331,6 +331,7 @@ int nu_ppe_reg_load_config (ConfigREGPPE* cfg_reg, void* cfg_reg_bin) {
 
 
 void nu_vpe_print_config(ConfigVPE* cfg){
+#ifndef NU_NO_PRINT
   rumboot_printf("ConfigVPE:\n");
   nu_vpe_print_DataTypeExt(cfg->in_data_type,"in_data_type");
   nu_vpe_print_DataType(cfg->out_data_type,"out_data_type");
@@ -409,18 +410,22 @@ void nu_vpe_print_config(ConfigVPE* cfg){
   rumboot_printf("  lut_tab2_x_start = %x \n" , cfg->op2_config.lut_tab2_x_start);
   rumboot_printf("  lut_tab2_x_end = %x \n" , cfg->op2_config.lut_tab2_x_end);
 
+#endif // NU_NO_PRINT
 }
 
 void nu_vpe_print_config_dma(ConfigDMAVPE* cfg) {
+#ifndef NU_NO_PRINT
   rumboot_printf("ConfigDMAVPE:\n");
   nu_vpe_print_Enable(cfg->dma_src_en,"dma_src_en");
   nu_vpe_print_Enable(cfg->dma_op0_en,"dma_op0_en");
   nu_vpe_print_Enable(cfg->dma_op1_en,"dma_op1_en");
   nu_vpe_print_Enable(cfg->dma_op2_en,"dma_op2_en");
   nu_vpe_print_Enable(cfg->dma_dst_en,"dma_dst_en");
+#endif
 }
 
 void nu_print_config_dma(ConfigDMA * cfg_dma,char* name) {
+#ifndef NU_NO_PRINT
   rumboot_printf("ConfigDMA (%s):\n",name);
   nu_vpe_print_Enable(cfg_dma->dma_op_en,"dma_op_en");
   rumboot_printf("  dma_H = %d\n",cfg_dma->dma_H);
@@ -443,10 +448,12 @@ void nu_print_config_dma(ConfigDMA * cfg_dma,char* name) {
   rumboot_printf("  dma_box_offset_x = %d\n",cfg_dma->dma_box_offset_x);
   rumboot_printf("  dma_box_offset_y = %d\n",cfg_dma->dma_box_offset_y);
   rumboot_printf("  dma_box_offset_z = %d\n",cfg_dma->dma_box_offset_z);
+#endif // NU_NO_PRINT
   
 }
 
 void nu_mpe_print_config(ConfigMPE* cfg){
+#ifndef NU_NO_PRINT
   rumboot_printf("ConfigMPE:\n");
 
     rumboot_printf("  H        = %d \n" , cfg->H);
@@ -468,9 +475,11 @@ void nu_mpe_print_config(ConfigMPE* cfg){
     rumboot_printf("  SAT      = %d \n" , cfg->SAT);
     rumboot_printf("  RND_SIZE = %d \n" , cfg->RND_SIZE);
 
+#endif // NU_NO_PRINT
 }
 
 void nu_mpe_print_config_dma(ConfigDMAMPE* cfg) {
+#ifndef NU_NO_PRINT
   rumboot_printf("ConfigDMAMPE:\n");
     rumboot_printf("  H        = %d \n" , cfg-> H);
     rumboot_printf("  W        = %d \n" , cfg-> W);
@@ -479,9 +488,11 @@ void nu_mpe_print_config_dma(ConfigDMAMPE* cfg) {
     rumboot_printf("  S        = %d \n" , cfg-> S);
     rumboot_printf("  data_buf#= %d \n" , cfg-> in_data_partition);
     rumboot_printf("  warr_buf#= %d \n" , cfg-> warr_partition);
+#endif //NU_NO_PRINT
 }
 
 void nu_ppe_print_config(ConfigPPE* cfg){
+#ifndef NU_NO_PRINT
   rumboot_printf("ConfigPPE:\n");
     rumboot_printf("  H      = %d \n" , cfg->H);
     rumboot_printf("  W      = %d \n" , cfg->W);
@@ -505,9 +516,11 @@ void nu_ppe_print_config(ConfigPPE* cfg){
     rumboot_printf("           0x%x \n" , cfg->pv[6]);
     nu_vpe_print_PoolingOperationSwitch(cfg->meth,"meth    ");
     nu_vpe_print_DataType(cfg->dt,"dt      ");
+#endif // NU_NO_PRINT
 }
 
 void nu_ppe_print_config_reg(ConfigREGPPE* cfg_reg){
+#ifndef NU_NO_PRINT
   rumboot_printf("ConfigREGPPE:\n");
   rumboot_printf("  = RDMA registers:\n");
   // rumboot_printf("  rSt     = %x \n" , cfg_reg->rSt);
@@ -569,6 +582,7 @@ void nu_ppe_print_config_reg(ConfigREGPPE* cfg_reg){
   // rumboot_printf("  wINi    = %x \n" , cfg_reg->wINi);
   // rumboot_printf("  wNNi    = %x \n" , cfg_reg->wNNi);
   // rumboot_printf("  wNNo    = %x \n" , cfg_reg->wNNo);
+#endif // NU_NO_PRINT
 }
 
 uint32_t nu_lut_log2(uint32_t a) {  // log2(0)=0; log2(1)=0; log2(2)=1; log2(8)=3; ...
@@ -1601,9 +1615,11 @@ void nu_vpe_run(uintptr_t vpe_base, ConfigVPE* cfg){ // ?????????   ConfigVPE* c
 //void nu_vpe_wait(uintptr_t vpe_base, ConfigDMAVPE* cfg){
 void nu_vpe_wait(uintptr_t vpe_base, ConfigVPE* cfg){ // ?????????   ConfigVPE* cfg  
   // Напиши сюда 3авершение DMA
-  rumboot_printf("Wait VPE WDMA...\n");
-  //while(ioread32(vpe_base + NU_VPE + NU_VPE_CTRL_NC) !=0) {}
-  while((ioread32(vpe_base + NU_VPE + REG_VPE_IRQ_RD_ADDR) >> 1 && 1) !=0) {}
+  if(! cfg->dst_flying) {
+    rumboot_printf("Wait VPE WDMA...\n");
+    //while(ioread32(vpe_base + NU_VPE + NU_VPE_CTRL_NC) !=0) {}
+    while(( (ioread32(vpe_base + NU_VPE + REG_VPE_IRQ_RD_ADDR) >> 1) & 1) !=1) {}
+  }
   rumboot_printf("Done VPE.\n");
 }
 
