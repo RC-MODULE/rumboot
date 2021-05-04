@@ -102,7 +102,7 @@ int main() {
         nu_ppe_rdma_wait_complete(NU_PPE_RDMA_BASE);
         nu_ppe_wait_complete(NU_PPE_STANDALONE_BASE);
 
-        dtB = cfg_reg.wOpM & 0x600000 == 0x0 ? 1 : 2; // sizeof(DataType) in bytes
+        dtB = (cfg_reg.wOpM & 0x600000) == 0x0 ? 1 : 2; // sizeof(DataType) in bytes
 
         // (cube size in byte) / (clk numbers * 16B/clk); 16B - 128-bit wdata bus
         //clk_cnt = (in_metrics->H * in_metrics->W * in_metrics->C * dtB) / (clk_cnt*16);
