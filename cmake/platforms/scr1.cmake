@@ -456,8 +456,6 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_mul_fp32 main_vpe_mul_fp32)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_together_op2 main_together_op2)
 
-	    ADD_PPE_COUPLED_TEST_LOOP(ppe_loop_coupled main_loop_ppe_coupled)
-
     ADD_PPE_EXPER_TEST(PPE_2 NotShowPerf)
     ADD_PPE_EXPER_TEST(PPE_3 NotShowPerf)
     ADD_PPE_EXPER_TEST(PPE_4 NotShowPerf)
@@ -469,6 +467,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     ADD_PPE_EXPER_TEST(PPE_10 NotShowPerf)
     ADD_PPE_EXPER_TEST(PPE_11 ShowPerf)
 
+    ADD_PPE_COUPLED_TEST_LOOP(ppe_loop_coupled main_loop_ppe_coupled)
     ADD_PPE_COUPLED_TEST_LOOP(ppe_2_i8_max    main_ppe_2_i8_max   )
     ADD_PPE_COUPLED_TEST_LOOP(ppe_3_i16_max   main_ppe_3_i16_max  )
     ADD_PPE_COUPLED_TEST_LOOP(ppe_4_fp16_max  main_ppe_4_fp16_max )

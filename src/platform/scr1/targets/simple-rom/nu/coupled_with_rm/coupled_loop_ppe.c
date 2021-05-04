@@ -33,7 +33,7 @@ int main() {
   rumboot_printf("it_nmb is %d\n", it_nmb);
 
   for (i=0; i<it_nmb && !res; i++) {
-    rumboot_malloc_update_heaps(false);
+    rumboot_malloc_update_heaps(1);
 
     in_metrics  = nu_load_cube_metrics(heap_id, metrics_in_tag[i]);
     //in_metrics  = nu_load_cube_metrics(heap_id, metrics_in_ameba_tag[i]);
@@ -101,7 +101,7 @@ int main() {
       rumboot_platform_dump_region("cfg_reg.bin", &cfg_reg, NU_PPE_REG_CFG_PARAMS_NUM*sizeof(uint32_t));
     }
 
-    rumboot_malloc_update_heaps(true);
+    rumboot_malloc_update_heaps(0);
   }
 
   return res;
