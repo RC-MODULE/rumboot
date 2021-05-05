@@ -971,14 +971,26 @@ void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics, Conf
   elem_size = tmp_data_use * tmp_data_size; 
   
   // ----------------
-  cfg->src_rdma_config.dma_lst_elem_stride = ((metrics->C % 16) + ((metrics->C%16) == 0)*16) * elem_size ;
-  cfg->src_rdma_config.dma_elem_stride     = 16                      * elem_size                         ; //coef_z == vector_size * elem_size
-  cfg->src_rdma_config.dma_vector_stride   = metrics->C              * elem_size                         ; //coef_x == full_line_z             = full_line_C*elem_size
-  cfg->src_rdma_config.dma_line_stride     = metrics->C * metrics->W * elem_size                         ; //coef_y == full_line_z*full_line_x = full_line_C*full_line_W*elem_size
-  cfg->src_rdma_config.dma_C               = (metrics->C/16 - ((metrics->C%16) == 0)) * 16 * elem_size   ; //line_size (bytes)               = (Z-1)*elem_size
-  cfg->src_rdma_config.dma_W               = (metrics->W - 1) * cfg->src_rdma_config.dma_vector_stride   ; //plane_size - last line (bytes)  = (X-1)*full_line_z*elem_size
-  cfg->src_rdma_config.dma_H               = (metrics->H - 1) * cfg->src_rdma_config.dma_line_stride     ; //cube_size  - last plane (bytes) = (Y-1)*full_line_z*full_line_x*elem_size
- 
+  if (cfg->dst_flying == Enable_En) {
+    // for flying testcases only. Linear data read mode. NOT MPE read mode !!!!!!!!!!!! correct only for Cube sizes < 128
+    cfg->src_rdma_config.dma_lst_elem_stride = metrics->C              * elem_size ;
+    cfg->src_rdma_config.dma_elem_stride     = metrics->C              * elem_size ; //coef_z == vector_size * elem_size
+    cfg->src_rdma_config.dma_vector_stride   = metrics->C              * elem_size ; //coef_x == full_line_z             = full_line_C*elem_size
+    cfg->src_rdma_config.dma_line_stride     = metrics->C * metrics->W * elem_size ; //coef_y == full_line_z*full_line_x = full_line_C*full_line_W*elem_size   
+    cfg->src_rdma_config.dma_C               = 0                                                         ; //line_size (bytes)               = (Z-1)*elem_size
+    cfg->src_rdma_config.dma_W               = (metrics->W - 1) * cfg->src_rdma_config.dma_vector_stride ; //plane_size - last line (bytes)  = (X-1)*full_line_z*elem_size
+    cfg->src_rdma_config.dma_H               = (metrics->H - 1) * cfg->src_rdma_config.dma_line_stride   ; //cube_size  - last plane (bytes) = (Y-1)*full_line_z*full_line_x*elem_size
+  }
+  else {  // MPE read mode
+    cfg->src_rdma_config.dma_lst_elem_stride = ((metrics->C % 16) + ((metrics->C%16) == 0)*16) * elem_size ;
+    cfg->src_rdma_config.dma_elem_stride     = 16                      * elem_size                         ; //coef_z == vector_size * elem_size
+    cfg->src_rdma_config.dma_vector_stride   = metrics->C              * elem_size                         ; //coef_x == full_line_z             = full_line_C*elem_size
+    cfg->src_rdma_config.dma_line_stride     = metrics->C * metrics->W * elem_size                         ; //coef_y == full_line_z*full_line_x = full_line_C*full_line_W*elem_size
+    cfg->src_rdma_config.dma_C               = (metrics->C/16 - ((metrics->C%16) == 0)) * 16 * elem_size   ; //line_size (bytes)               = (Z-1)*elem_size
+    cfg->src_rdma_config.dma_W               = (metrics->W - 1) * cfg->src_rdma_config.dma_vector_stride   ; //plane_size - last line (bytes)  = (X-1)*full_line_z*elem_size
+    cfg->src_rdma_config.dma_H               = (metrics->H - 1) * cfg->src_rdma_config.dma_line_stride     ; //cube_size  - last plane (bytes) = (Y-1)*full_line_z*full_line_x*elem_size
+  }
+  
   // OP0_RDMA -------------------------------------------------------------------------------------------- 
   if((cfg->op0_config.alu_en == Enable_En && cfg->op0_config.alu_mode != Mode_Unitary) ||
      (cfg->op0_config.mux_en == Enable_En && cfg->op0_config.mux_mode != Mode_Unitary)  ) { // if Some Of Operands Enabled And Not A Single Value
@@ -1035,14 +1047,25 @@ void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics, Conf
   
 
   //------------
-  cfg->op0_rdma_config.dma_lst_elem_stride = ((metrics->C % 16) + ((metrics->C%16) == 0)*16) * elem_size;
-  cfg->op0_rdma_config.dma_elem_stride     = 16                      * elem_size; //coef_z == vector_size * elem_size
-  cfg->op0_rdma_config.dma_vector_stride   = metrics->C              * elem_size; //coef_x == full_line_z             = full_line_C*elem_size
-  cfg->op0_rdma_config.dma_line_stride     = metrics->C * metrics->W * elem_size; //coef_y == full_line_z*full_line_x = full_line_C*full_line_W*elem_size 
-  cfg->op0_rdma_config.dma_C               = (metrics->C/16 - ((metrics->C%16) == 0)) * 16 * elem_size ; //line_size (bytes)               = (Z-1)*elem_size
-  cfg->op0_rdma_config.dma_W               = (metrics->W - 1) * cfg->op0_rdma_config.dma_vector_stride ; //plane_size - last line (bytes)  = (X-1)*full_line_z*elem_size
-  cfg->op0_rdma_config.dma_H               = (metrics->H - 1) * cfg->op0_rdma_config.dma_line_stride   ; //cube_size  - last plane (bytes) = (Y-1)*full_line_z*full_line_x*elem_size
- 
+  if (cfg->dst_flying == Enable_En) {
+    // for flying testcases only. Linear data read mode. NOT MPE read mode !!!!!!!!!!!! correct only for Cube sizes < 128
+    cfg->op0_rdma_config.dma_lst_elem_stride = metrics->C              * elem_size ;
+    cfg->op0_rdma_config.dma_elem_stride     = metrics->C              * elem_size ; //coef_z == vector_size * elem_size
+    cfg->op0_rdma_config.dma_vector_stride   = metrics->C              * elem_size ; //coef_x == full_line_z             = full_line_C*elem_size
+    cfg->op0_rdma_config.dma_line_stride     = metrics->C * metrics->W * elem_size ; //coef_y == full_line_z*full_line_x = full_line_C*full_line_W*elem_size   
+    cfg->op0_rdma_config.dma_C               = 0                                                         ; //line_size (bytes)               = (Z-1)*elem_size
+    cfg->op0_rdma_config.dma_W               = (metrics->W - 1) * cfg->op0_rdma_config.dma_vector_stride ; //plane_size - last line (bytes)  = (X-1)*full_line_z*elem_size
+    cfg->op0_rdma_config.dma_H               = (metrics->H - 1) * cfg->op0_rdma_config.dma_line_stride   ; //cube_size  - last plane (bytes) = (Y-1)*full_line_z*full_line_x*elem_size
+  }
+  else {  // MPE read mode
+    cfg->op0_rdma_config.dma_lst_elem_stride = ((metrics->C % 16) + ((metrics->C%16) == 0)*16) * elem_size;
+    cfg->op0_rdma_config.dma_elem_stride     = 16                      * elem_size; //coef_z == vector_size * elem_size
+    cfg->op0_rdma_config.dma_vector_stride   = metrics->C              * elem_size; //coef_x == full_line_z             = full_line_C*elem_size
+    cfg->op0_rdma_config.dma_line_stride     = metrics->C * metrics->W * elem_size; //coef_y == full_line_z*full_line_x = full_line_C*full_line_W*elem_size 
+    cfg->op0_rdma_config.dma_C               = (metrics->C/16 - ((metrics->C%16) == 0)) * 16 * elem_size ; //line_size (bytes)               = (Z-1)*elem_size
+    cfg->op0_rdma_config.dma_W               = (metrics->W - 1) * cfg->op0_rdma_config.dma_vector_stride ; //plane_size - last line (bytes)  = (X-1)*full_line_z*elem_size
+    cfg->op0_rdma_config.dma_H               = (metrics->H - 1) * cfg->op0_rdma_config.dma_line_stride   ; //cube_size  - last plane (bytes) = (Y-1)*full_line_z*full_line_x*elem_size
+  }
 
   // OP1_RDMA -------------------------------------------------------------------------------------------- 
   if((cfg->op1_config.alu_en == Enable_En && cfg->op1_config.alu_mode != Mode_Unitary) ||
@@ -1098,14 +1121,26 @@ void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics, Conf
   elem_size = tmp_data_use * tmp_data_size; 
 
   //----------------
-  cfg->op1_rdma_config.dma_lst_elem_stride = ((metrics->C % 16) + ((metrics->C%16) == 0)*16) * elem_size;
-  cfg->op1_rdma_config.dma_elem_stride     = 16                      * elem_size; //coef_z == vector_size * elem_size
-  cfg->op1_rdma_config.dma_vector_stride   = metrics->C              * elem_size; //coef_x == full_line_z             = full_line_C*elem_size
-  cfg->op1_rdma_config.dma_line_stride     = metrics->C * metrics->W * elem_size; //coef_y == full_line_z*full_line_x = full_line_C*full_line_W*elem_size 
-  cfg->op1_rdma_config.dma_C               = (metrics->C/16 - ((metrics->C%16) == 0)) * 16 * elem_size ; //line_size (bytes)               = (Z-1)*elem_size
-  cfg->op1_rdma_config.dma_W               = (metrics->W - 1) * cfg->op1_rdma_config.dma_vector_stride ; //plane_size - last line (bytes)  = (X-1)*full_line_z*elem_size
-  cfg->op1_rdma_config.dma_H               = (metrics->H - 1) * cfg->op1_rdma_config.dma_line_stride   ; //cube_size  - last plane (bytes) = (Y-1)*full_line_z*full_line_x*elem_size
-  
+  if (cfg->dst_flying == Enable_En) {
+    // for flying testcases only. Linear data read mode. NOT MPE read mode !!!!!!!!!!!! correct only for Cube sizes < 128
+    cfg->op1_rdma_config.dma_lst_elem_stride = metrics->C              * elem_size ;
+    cfg->op1_rdma_config.dma_elem_stride     = metrics->C              * elem_size ; //coef_z == vector_size * elem_size
+    cfg->op1_rdma_config.dma_vector_stride   = metrics->C              * elem_size ; //coef_x == full_line_z             = full_line_C*elem_size
+    cfg->op1_rdma_config.dma_line_stride     = metrics->C * metrics->W * elem_size ; //coef_y == full_line_z*full_line_x = full_line_C*full_line_W*elem_size   
+    cfg->op1_rdma_config.dma_C               = 0                                                         ; //line_size (bytes)               = (Z-1)*elem_size
+    cfg->op1_rdma_config.dma_W               = (metrics->W - 1) * cfg->op1_rdma_config.dma_vector_stride ; //plane_size - last line (bytes)  = (X-1)*full_line_z*elem_size
+    cfg->op1_rdma_config.dma_H               = (metrics->H - 1) * cfg->op1_rdma_config.dma_line_stride   ; //cube_size  - last plane (bytes) = (Y-1)*full_line_z*full_line_x*elem_size
+  }
+  else {  // MPE read mode
+    cfg->op1_rdma_config.dma_lst_elem_stride = ((metrics->C % 16) + ((metrics->C%16) == 0)*16) * elem_size;
+    cfg->op1_rdma_config.dma_elem_stride     = 16                      * elem_size; //coef_z == vector_size * elem_size
+    cfg->op1_rdma_config.dma_vector_stride   = metrics->C              * elem_size; //coef_x == full_line_z             = full_line_C*elem_size
+    cfg->op1_rdma_config.dma_line_stride     = metrics->C * metrics->W * elem_size; //coef_y == full_line_z*full_line_x = full_line_C*full_line_W*elem_size 
+    cfg->op1_rdma_config.dma_C               = (metrics->C/16 - ((metrics->C%16) == 0)) * 16 * elem_size ; //line_size (bytes)               = (Z-1)*elem_size
+    cfg->op1_rdma_config.dma_W               = (metrics->W - 1) * cfg->op1_rdma_config.dma_vector_stride ; //plane_size - last line (bytes)  = (X-1)*full_line_z*elem_size
+    cfg->op1_rdma_config.dma_H               = (metrics->H - 1) * cfg->op1_rdma_config.dma_line_stride   ; //cube_size  - last plane (bytes) = (Y-1)*full_line_z*full_line_x*elem_size
+  }
+
   // OP2_RDMA -------------------------------------------------------------------------------------------- 
   if((cfg->op2_config.alu_en == Enable_En && cfg->op2_config.alu_mode != Mode_Unitary) ||
      (cfg->op2_config.mux_en == Enable_En && cfg->op2_config.mux_mode != Mode_Unitary)  ) { // if Some Of Operands Enabled And Not A Single Value
@@ -1160,14 +1195,25 @@ void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics, Conf
   elem_size = tmp_data_use * tmp_data_size; 
   
   //---------------------
-  cfg->op2_rdma_config.dma_lst_elem_stride = ((metrics->C % 16) + ((metrics->C%16) == 0)*16) * elem_size;
-  cfg->op2_rdma_config.dma_elem_stride     = 16                      * elem_size; //coef_z == vector_size * elem_size
-  cfg->op2_rdma_config.dma_vector_stride   = metrics->C              * elem_size; //coef_x == full_line_z             = full_line_C*elem_size
-  cfg->op2_rdma_config.dma_line_stride     = metrics->C * metrics->W * elem_size; //coef_y == full_line_z*full_line_x = full_line_C*full_line_W*elem_size   
-  cfg->op2_rdma_config.dma_C               = (metrics->C/16 - ((metrics->C%16) == 0)) * 16 * elem_size ; //line_size (bytes)               = (Z-1)*elem_size
-  cfg->op2_rdma_config.dma_W               = (metrics->W - 1) * cfg->op2_rdma_config.dma_vector_stride ; //plane_size - last line (bytes)  = (X-1)*full_line_z*elem_size
-  cfg->op2_rdma_config.dma_H               = (metrics->H - 1) * cfg->op2_rdma_config.dma_line_stride   ; //cube_size  - last plane (bytes) = (Y-1)*full_line_z*full_line_x*elem_size
-  
+  if (cfg->dst_flying == Enable_En) {
+    // for flying testcases only. Linear data read mode. NOT MPE read mode !!!!!!!!!!!! correct only for Cube sizes < 128
+    cfg->op2_rdma_config.dma_lst_elem_stride = metrics->C              * elem_size ;
+    cfg->op2_rdma_config.dma_elem_stride     = metrics->C              * elem_size ; //coef_z == vector_size * elem_size
+    cfg->op2_rdma_config.dma_vector_stride   = metrics->C              * elem_size ; //coef_x == full_line_z             = full_line_C*elem_size
+    cfg->op2_rdma_config.dma_line_stride     = metrics->C * metrics->W * elem_size ; //coef_y == full_line_z*full_line_x = full_line_C*full_line_W*elem_size   
+    cfg->op2_rdma_config.dma_C               = 0                                                         ; //line_size (bytes)               = (Z-1)*elem_size
+    cfg->op2_rdma_config.dma_W               = (metrics->W - 1) * cfg->op2_rdma_config.dma_vector_stride ; //plane_size - last line (bytes)  = (X-1)*full_line_z*elem_size
+    cfg->op2_rdma_config.dma_H               = (metrics->H - 1) * cfg->op2_rdma_config.dma_line_stride   ; //cube_size  - last plane (bytes) = (Y-1)*full_line_z*full_line_x*elem_size
+  }
+  else {  // MPE read mode
+    cfg->op2_rdma_config.dma_lst_elem_stride = ((metrics->C % 16) + ((metrics->C%16) == 0)*16) * elem_size;
+    cfg->op2_rdma_config.dma_elem_stride     = 16                      * elem_size; //coef_z == vector_size * elem_size
+    cfg->op2_rdma_config.dma_vector_stride   = metrics->C              * elem_size; //coef_x == full_line_z             = full_line_C*elem_size
+    cfg->op2_rdma_config.dma_line_stride     = metrics->C * metrics->W * elem_size; //coef_y == full_line_z*full_line_x = full_line_C*full_line_W*elem_size   
+    cfg->op2_rdma_config.dma_C               = (metrics->C/16 - ((metrics->C%16) == 0)) * 16 * elem_size ; //line_size (bytes)               = (Z-1)*elem_size
+    cfg->op2_rdma_config.dma_W               = (metrics->W - 1) * cfg->op2_rdma_config.dma_vector_stride ; //plane_size - last line (bytes)  = (X-1)*full_line_z*elem_size
+    cfg->op2_rdma_config.dma_H               = (metrics->H - 1) * cfg->op2_rdma_config.dma_line_stride   ; //cube_size  - last plane (bytes) = (Y-1)*full_line_z*full_line_x*elem_size      
+  }
   //*******************  
   
 #ifdef MPE_MEM_PATH
