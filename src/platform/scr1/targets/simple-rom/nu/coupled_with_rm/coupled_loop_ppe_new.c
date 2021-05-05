@@ -91,7 +91,7 @@ int main() {
     #endif
 
     #ifdef VPEtoPPE
-    in_metrics  = nu_load_cube_metrics(heap_id, metrics_in_ameba_tag[i]);
+    in_metrics  = nu_load_cube_metrics(heap_id, metrics_in_tag[i]);
     res_metrics = nu_load_cube_metrics (heap_id, metrics_etalon_tag[i]);
 
     if (in_metrics == NULL || res_metrics == NULL) res = 1;
@@ -105,21 +105,22 @@ int main() {
     if (in_data == NULL || etalon == NULL || res_data == NULL) res = 1;
 
     if (!res) {
+      cfg_reg.rBALs = (uintptr_t)in_data;
       cfg_reg.wBALd = (uintptr_t)res_data;
-
+    
       cfg_reg.rOpEn = 0x0; // to set wOpM to VPE Linear mode
       res = nu_ppe_decide_dma_config_trivial(&cfg, in_metrics, res_metrics, &cfg_reg);
     }
 
     if(!res){
       nu_ppe_setup_reg(NU_PPE_RDMA_BASE, NU_PPE_STANDALONE_BASE, &cfg_reg);
-
+    
       cfg_reg.wOpEn  = 0x1; // Set start of PPE+WDMA field to active value
       nu_ppe_run(NU_PPE_STANDALONE_BASE, &cfg_reg);
-
+    
       nu_cpdmac_trn256_config(NU_CPDMAC_ASM_BASE,in_data,in_metrics->s);
       nu_cpdmac_trn256_run(NU_CPDMAC_ASM_BASE);
-
+    
       nu_cpdmac_trn256_wait_complete(NU_CPDMAC_ASM_BASE);
       nu_ppe_wait_complete(NU_PPE_STANDALONE_BASE);
     }

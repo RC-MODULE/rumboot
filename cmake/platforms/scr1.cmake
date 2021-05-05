@@ -427,7 +427,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       add_rumboot_target(
         CONFIGURATION ROM
         NAME ${name}
-        FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_ppe.c
+        FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_ppe_new.c
         PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
         CFLAGS -D${ShowPerf} -D${OpMode}
         IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
