@@ -412,12 +412,24 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       )
     endmacro()
 
-    macro(ADD_PPE_COUPLED_TEST_LOOP name rm_bin_name)
+    macro(ADD_PPE_COUPLED_TEST_LOOP name rm_bin_name ShowPerf)
       add_rumboot_target(
         CONFIGURATION ROM
         NAME ${name}
         FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_ppe.c
         PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
+        CFLAGS -D${ShowPerf}
+        IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+      )
+    endmacro()
+
+    macro(ADD_PPE_V_EXPER_TEST name rm_bin_name ShowPerf OpMode)
+      add_rumboot_target(
+        CONFIGURATION ROM
+        NAME ${name}
+        FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_ppe.c
+        PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
+        CFLAGS -D${ShowPerf} -D${OpMode}
         IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
       )
     endmacro()
@@ -458,24 +470,32 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_together_op1 main_together_op1) # VPE_23
     ADD_VPE_COUPLED_TEST_LOOP(vpe_together_op2 main_together_op2) # VPE_24
 
-    ADD_PPE_EXPER_TEST(PPE_2 NotShowPerf)
-    ADD_PPE_EXPER_TEST(PPE_3 NotShowPerf)
-    ADD_PPE_EXPER_TEST(PPE_4 NotShowPerf)
-    ADD_PPE_EXPER_TEST(PPE_5 NotShowPerf)
-    ADD_PPE_EXPER_TEST(PPE_6 NotShowPerf)
-    ADD_PPE_EXPER_TEST(PPE_7 NotShowPerf)
-    ADD_PPE_EXPER_TEST(PPE_8 NotShowPerf)
-    ADD_PPE_EXPER_TEST(PPE_9 NotShowPerf)
-    ADD_PPE_EXPER_TEST(PPE_10 NotShowPerf)
-    ADD_PPE_EXPER_TEST(PPE_11 ShowPerf)
+    ADD_PPE_COUPLED_TEST_LOOP(ppe_loop_coupled main_loop_ppe_coupled NotShowPerf)
 
-    ADD_PPE_COUPLED_TEST_LOOP(ppe_loop_coupled main_loop_ppe_coupled)
-    ADD_PPE_COUPLED_TEST_LOOP(ppe_2_i8_max    main_ppe_2_i8_max   )
-    ADD_PPE_COUPLED_TEST_LOOP(ppe_3_i16_max   main_ppe_3_i16_max  )
-    ADD_PPE_COUPLED_TEST_LOOP(ppe_4_fp16_max  main_ppe_4_fp16_max )
-    ADD_PPE_COUPLED_TEST_LOOP(ppe_5_i8_avg    main_ppe_5_i8_avg   )
-    ADD_PPE_COUPLED_TEST_LOOP(ppe_6_i16_avg   main_ppe_6_i16_avg  )
-    ADD_PPE_COUPLED_TEST_LOOP(ppe_7_fp16_avg  main_ppe_7_fp16_avg )
+    ADD_PPE_COUPLED_TEST_LOOP(ppe_2_i8_max    main_ppe_2_i8_max   NotShowPerf )
+    ADD_PPE_COUPLED_TEST_LOOP(ppe_3_i16_max   main_ppe_3_i16_max  NotShowPerf )
+    ADD_PPE_COUPLED_TEST_LOOP(ppe_4_fp16_max  main_ppe_4_fp16_max NotShowPerf )
+    ADD_PPE_COUPLED_TEST_LOOP(ppe_5_i8_avg    main_ppe_5_i8_avg   NotShowPerf )
+    ADD_PPE_COUPLED_TEST_LOOP(ppe_6_i16_avg   main_ppe_6_i16_avg  NotShowPerf )
+    ADD_PPE_COUPLED_TEST_LOOP(ppe_7_fp16_avg  main_ppe_7_fp16_avg NotShowPerf )
+    ADD_PPE_COUPLED_TEST_LOOP(ppe_11_i8_max   main_ppe_3_i16_max  ShowPerf    )
+
+    ADD_PPE_V_EXPER_TEST(ppe_8v_i16_max   main_ppe_3_i16_max  NotShowPerf VPEtoPPE)
+    ADD_PPE_V_EXPER_TEST(ppe_2v_i8_max    main_ppe_2_i8_max   NotShowPerf MEMtoMEM)
+
+    ADD_PPE_EXPER_TEST(PPE_2  NotShowPerf)
+    ADD_PPE_EXPER_TEST(PPE_3  NotShowPerf)
+    ADD_PPE_EXPER_TEST(PPE_4  NotShowPerf)
+    ADD_PPE_EXPER_TEST(PPE_5  NotShowPerf)
+    ADD_PPE_EXPER_TEST(PPE_6  NotShowPerf)
+    ADD_PPE_EXPER_TEST(PPE_7  NotShowPerf)
+    ADD_PPE_EXPER_TEST(PPE_8  NotShowPerf)
+    ADD_PPE_EXPER_TEST(PPE_9  NotShowPerf)
+    ADD_PPE_EXPER_TEST(PPE_10 NotShowPerf)
+    ADD_PPE_EXPER_TEST(PPE_11 NotShowPerf)
+    ADD_PPE_EXPER_TEST(PPE_12 NotShowPerf)
+    ADD_PPE_EXPER_TEST(PPE_13 ShowPerf)
+    ADD_PPE_EXPER_TEST(PPE_14 NotShowPerf)
 
     # MPE example 
     # if(DUT STREQUAL "MPE")

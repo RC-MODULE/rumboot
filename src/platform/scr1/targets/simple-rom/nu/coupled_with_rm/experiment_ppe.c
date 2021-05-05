@@ -104,10 +104,18 @@ int main() {
 
         dtB = (cfg_reg.wOpM & 0x600000) == 0x0 ? 1 : 2; // sizeof(DataType) in bytes
 
-        // (cube size in byte) / (clk numbers * 16B/clk); 16B - 128-bit wdata bus
-        //clk_cnt = (in_metrics->H * in_metrics->W * in_metrics->C * dtB) / (clk_cnt*16);
-
+        // Sizeof(DataCube)/(time*frequency); time measure is us, frequency is 100 MHz
         clk_cnt = (in_metrics->H * in_metrics->W * in_metrics->C * dtB)/(clk_cnt*100);
+      }
+      else if (FM == 0x1) {
+        cfg_reg.wOpEn  = 0x1;
+        nu_ppe_run(NU_PPE_STANDALONE_BASE, &cfg_reg);
+
+        nu_cpdmac_trn256_config(NU_CPDMAC_ASM_BASE,in_data,in_metrics->s);
+        nu_cpdmac_trn256_run(NU_CPDMAC_ASM_BASE);
+
+        nu_cpdmac_trn256_wait_complete(NU_CPDMAC_ASM_BASE);
+        nu_ppe_wait_complete(NU_PPE_STANDALONE_BASE);
       }
     }
 
