@@ -907,7 +907,7 @@ endif()
       CFLAGS -DGRETH_BASE=GRETH_1_BASE -DSRC_HEAP_NAME="IM2" -DDST_HEAP_NAME="IM2"
       PREFIX greth1-im2-im2
     )
-
+    
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES test_oi10_greth.c

@@ -161,15 +161,15 @@ typedef struct greth_rx_tx_descr
  */
 #define EDCL_WR     true
 #define EDCL_RD     false
-#define EDCLADDRL0  0
-#define EDCLADDRL1  1
+#define EDCLADDRL0  1
+#define EDCLADDRL1  2
 
 /**
  * Default EDCL MAC addresses and IP at OI-10 platform
  */
-#define EDCLMAC_MSB     0xEC17
-#define EDCLMAC_LSB     0x660E1000
-#define EDCLIP      0xC0A80130
+#define EDCLMAC_MSB     0xEC17 
+#define EDCLMAC_LSB     0x66EDC100 
+#define EDCLIP      0xC0A80320
 #define EDCLIP0     (EDCLIP | EDCLADDRL0)
 #define EDCLIP1     (EDCLIP | EDCLADDRL1)
 
