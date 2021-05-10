@@ -532,6 +532,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         CFLAGS -D${show_perf}
         PREPCMD ${MPE_PARSE_TEST} ${NA_TEST_mpe_cmd_file} ${NA_TEST_in_file} ${NA_TEST_warr_file} ${NA_TEST_etalon_file} < ${MPE_TEST_SHEET}
         IRUN_FLAGS ${NA_RM_PLUSARGS}
+        TIMEOUT_CTEST 10000
       )
     endmacro()
 
@@ -559,6 +560,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_mpe.c
         PREPCMD ${ADD_MPE_COUPLED_TEST_LOOP_ARGS}
         IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+        TIMEOUT_CTEST 10000
       )
     endmacro()
 
