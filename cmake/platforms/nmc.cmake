@@ -20,7 +20,7 @@ else()
   set(SOC_OBJCOPY_FLAGS )
   set(SOC_BOOTROM ${RUMBOOT_SOC}:bootrom-stub)
   set(SOC_EMI_INITIALIZER ${RUMBOOT_SOC}:stub-emi_initializer_notlb_unload)
-  set(SOC_PACKIMAGE_FLAGS -CiR 0x80020000 -F SYNC True)
+  set(SOC_PACKIMAGE_FLAGS -CiR 0x80020000 -F SYNC True -F KILL True)
   set(SOC_PACKIMAGE_FLAGS_EMI -CiR 0x0 -F SYNC True)
   set(SOC_FEATURES PACKIMAGE)
 endif()
@@ -112,6 +112,15 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     add_rumboot_target_dir(iram/
       CONFIGURATION SRAM
     )
+
+  add_rumboot_target(
+    FEATURES NOCODE
+    CONFIGURATION IRAM
+    COMBOIMAGE IM0BIN
+      LOAD IM0BIN iram-hello,iram-hello,iram-hello
+    NAME isolation-cells-test
+  )
+
   endif()
 
   #Clang doesn't support legacy stuff

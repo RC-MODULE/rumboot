@@ -59,21 +59,27 @@ static void nmc_generate_trampoline(void *at, uint32_t ep)
         rumboot_printf("boot: Created trampoline to 0x%x at 0x%x\n", __swap32(*nmc_goto), at);
 }
 
+static void dumpregs()
+{
+    rumboot_printf("nmi %x\n", dcr_read(DCR_SCTL_BASE + SCTL_NMPU_NMI));
+    rumboot_printf("rst %x\n", dcr_read(DCR_SCTL_BASE + SCTL_NMPU_PRST));
+}
 static int nmc_start(const struct rumboot_cpu_cluster *cpu, struct rumboot_bootheader *hdr, void *data, int swap)
 {
     uint32_t ep = rumboot_bootimage_header_item32(hdr->entry_point[0], swap);
     if (ep) {
         nmc_generate_trampoline((void *) IM1_BASE, swap ? __swap32(ep) : ep);
     }
-    dcr_write(DCR_SCTL_BASE + SCTL_NMPU_NMI, 1<<1);                
+    dcr_write(DCR_SCTL_BASE + SCTL_NMPU_NMI, 1<<1);             
     dcr_write(DCR_SCTL_BASE + SCTL_NMPU_NMI, 0);
     return 0;
 }
 
 static void nmc_kill(const struct rumboot_cpu_cluster *cpu)
 {
-    dcr_write(DCR_SCTL_BASE + SCTL_NMPU_PRST, 1<<0); //Issue reset                
+    dcr_write(DCR_SCTL_BASE + SCTL_NMPU_PRST, 1<<0);
     while (!(dcr_read(DCR_SCTL_BASE + SCTL_NMPU_PRST) & (1<<1)));; // Wait for ack
+    dcr_write(DCR_SCTL_BASE + SCTL_NMPU_PRST, 0);
 }
 
 static void ext_kill(const struct rumboot_cpu_cluster *cpu)
