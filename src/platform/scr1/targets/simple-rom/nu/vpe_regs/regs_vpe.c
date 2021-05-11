@@ -16,7 +16,7 @@
 	  int res;
 	  int op_res;
 	  
-	  int /*resw0,resw1,*/resw2,resw3,resw4,resw5,resw6,resw7,resw8,resw9,resw10,resw11,resw12,
+	  int resw0,resw1,resw2,resw3,resw4,resw5,resw6,resw7,resw8,resw9,resw10,resw11,resw12,
 		  resw13,resw14,resw15,resw16,resw17,resw18,resw19;
 	  int cp0_res0,cp0_res1,cp0_res2,cp0_res3,cp0_res4,cp0_res5;
 	  int cp1_res0,cp1_res1,cp1_res2,cp1_res3,cp1_res4,cp1_res5;
@@ -36,7 +36,7 @@
 	  int resw;
 	  int32_t tmp;
 	//----------------------NU_VPE---------------------------------------	  
-/*	if ((0x00000000) !=(ioread32(base + NU_VPE +NU_VPE_STATUS)& 0x00030003)) 	
+	if ((0x00000000) !=(ioread32(base + NU_VPE +NU_VPE_STATUS)& 0x00030003)) 	
 		{resw0 =1;
 	    tmp = ioread32(base + NU_VPE +NU_VPE_STATUS);
 		rumboot_printf("resw0_tmp =%d\n",tmp);
@@ -51,7 +51,7 @@
 		rumboot_printf("resw1 error\n");}
 		else 
 		{resw1=0;}
- */
+ 
 	if ((0x00000000) !=(ioread32(base + NU_VPE + NU_VPE_OP_ENABLE) & 0x00000001))	
 		{resw2 =1;
 		tmp = ioread32(base + NU_VPE + NU_VPE_OP_ENABLE);
@@ -441,23 +441,29 @@
 		{src_res1 =1;
 		rumboot_printf("src_res1 error\n");}	
 		else 
-		{src_res1=0;}	*/
-/*	if ((cfg->src_rdma_config.dma_op_en) !=(ioread32(base + NU_VPE_SRC_RDMA + NU_VPE_RDMA_OP_ENABLE)& 0x00000001)) 	
+		{src_res1=0;} 	
+	if ((0x00000000) !=(ioread32(base + NU_VPE_SRC_RDMA + NU_VPE_RDMA_OP_ENABLE)& 0x00000001)) 	
 		{src_res2 =1;
+	    tmp= ioread32(base +  NU_VPE_SRC_RDMA + NU_VPE_RDMA_OP_ENABLE);
+		rumboot_printf("src_res2_tmp =%d\n",tmp);
 		rumboot_printf("src_res2 error\n");}
 		else 
 		{src_res2=0;}	
-	if ((cfg->src_rdma_config.dma_W) != (ioread32(base + base + NU_VPE_SRC_RDMA + NU_VPE_RDMA_DATA_W_IN)& 0x00001fff)) 
+	if ((0x00000000) != (ioread32(base + base + NU_VPE_SRC_RDMA + NU_VPE_RDMA_DATA_W_IN)& 0x00003fff)) 
 		{src_res3 =1;
+		tmp= ioread32(base +  NU_VPE_SRC_RDMA + NU_VPE_RDMA_DATA_W_IN);
+		rumboot_printf("src_res3_tmp =%x\n",tmp);
 		rumboot_printf("src_res3 error\n");}	
 		else 
 		{src_res3=0;}	
-	if ((cfg->src_rdma_config.dma_H) !=(ioread32(base +base + NU_VPE_SRC_RDMA + NU_VPE_RDMA_DATA_H_IN)& 0x00001fff))	
+	if ((0x00000000) !=(ioread32(base +base + NU_VPE_SRC_RDMA + NU_VPE_RDMA_DATA_H_IN)& 0x00003fff))	
 		{src_res4 =1;
+		tmp= ioread32(base +  NU_VPE_SRC_RDMA + NU_VPE_RDMA_DATA_H_IN);
+		rumboot_printf("src_res4_tmp =%x\n",tmp);	
 		rumboot_printf("src_res4 error\n");}	
 		else 
 		{src_res4=0;}
-		*/	
+	*/
 	if ((0x00000000) != (ioread32(base + NU_VPE_SRC_RDMA + NU_VPE_RDMA_DATA_C_IN)& 0x00003fff)) /* DOC*/
 		{src_res5 =1;
 		tmp= ioread32(base + NU_VPE_SRC_RDMA + NU_VPE_RDMA_DATA_C_IN);
@@ -604,19 +610,19 @@
 		rumboot_printf("op0_res1 error\n");}	
 		else 
 		{op0_res1=0;}	
-	if ((cfg->op0_rdma_config.dma_op_en) !=(ioread32(base + NU_VPE_OP0_RDMA + NU_VPE_RDMA_OP_ENABLE)& 0x00000001)) 	
+	if ((0x00000000) !=(ioread32(base + NU_VPE_OP0_RDMA + NU_VPE_RDMA_OP_ENABLE)& 0x00000001)) 	
 		{op0_res2 =1;
 		tmp= ioread32(base + NU_VPE_OP0_RDMA +  NU_VPE_RDMA_OP_ENABLE);
 		rumboot_printf("op0_res2_tmp =%d\n",tmp);
 		rumboot_printf("op0_res2 error\n");}
 		else 
 		{op0_res2=0;}	
-	if ((cfg->op0_rdma_config.dma_W) != (ioread32(base + base + NU_VPE_OP0_RDMA + NU_VPE_RDMA_DATA_W_IN)& 0x00001fff)) 
+	if ((0x00000000) != (ioread32(base + base + NU_VPE_OP0_RDMA + NU_VPE_RDMA_DATA_W_IN)& 0x00003fff)) 
 		{op0_res3 =1;
 		rumboot_printf("op0_res3 error\n");}	
 		else 
 		{op0_res3=0;}	
-	if ((cfg->op0_rdma_config.dma_H) !=(ioread32(base +base + NU_VPE_OP0_RDMA + NU_VPE_RDMA_DATA_H_IN)& 0x00001fff))	
+	if ((0x00000000) !=(ioread32(base +base + NU_VPE_OP0_RDMA + NU_VPE_RDMA_DATA_H_IN)& 0x00001fff))	
 		{op0_res4 =1;
 		rumboot_printf("op0_res4 error\n");}	
 		else 
@@ -764,17 +770,17 @@
 		else 
 		{op0_res1=0;}
 	
-	if ((cfg->op0_rdma_config.dma_op_en) !=(ioread32(base + NU_VPE_OP1_RDMA + NU_VPE_RDMA_OP_ENABLE)& 0x00000001)) 	
+	if ((0x00000000) !=(ioread32(base + NU_VPE_OP1_RDMA + NU_VPE_RDMA_OP_ENABLE)& 0x00000001)) 	
 		{op1_res2 =1;
 		rumboot_printf("op1_res2 error\n");}
 		else 
 		{op1_res2=0;}	
-	if ((cfg->op0_rdma_config.dma_W) != (ioread32(base + base + NU_VPE_OP1_RDMA + NU_VPE_RDMA_DATA_W_IN)& 0x00001fff)) 
+	if ((0x00000000) != (ioread32(base + base + NU_VPE_OP1_RDMA + NU_VPE_RDMA_DATA_W_IN)& 0x00001fff)) 
 		{op1_res3 =1;
 		rumboot_printf("op1_res3 error\n");}	
 		else 
 		{op1_res3=0;}	
-	if ((cfg->op1_rdma_config.dma_H) !=(ioread32(base +base + NU_VPE_OP1_RDMA + NU_VPE_RDMA_DATA_H_IN)& 0x00001fff))	
+	if ((0x00000000) !=(ioread32(base +base + NU_VPE_OP1_RDMA + NU_VPE_RDMA_DATA_H_IN)& 0x00001fff))	
 		{op1_res4 =1;
 		rumboot_printf("op1_res4 error\n");}	
 		else 
@@ -922,17 +928,17 @@
 		else 
 		{op2_res1=0;}
  
-	if ((cfg->op2_rdma_config.dma_op_en) !=(ioread32(base + NU_VPE_OP2_RDMA + NU_VPE_RDMA_OP_ENABLE)& 0x00000001)) 	
+	if ((c0x00000000) !=(ioread32(base + NU_VPE_OP2_RDMA + NU_VPE_RDMA_OP_ENABLE)& 0x00000001)) 	
 		{op2_res2 =1;
 		rumboot_printf("op2_res2 error\n");}
 		else 
 		{op2_res2=0;}	
-	if ((cfg->op2_rdma_config.dma_W) != (ioread32(base + base + NU_VPE_OP2_RDMA + NU_VPE_RDMA_DATA_W_IN)& 0x00001fff)) 
+	if ((0x00000000) != (ioread32(base + base + NU_VPE_OP2_RDMA + NU_VPE_RDMA_DATA_W_IN)& 0x00001fff)) 
 		{op2_res3 =1;
 		rumboot_printf("op2_res3 error\n");}	
 		else 
 		{op2_res3=0;}	
-	if ((cfg->op2_rdma_config.dma_H) !=(ioread32(base +base + NU_VPE_OP2_RDMA + NU_VPE_RDMA_DATA_H_IN)& 0x00001fff))	
+	if ((0x00000000) !=(ioread32(base +base + NU_VPE_OP2_RDMA + NU_VPE_RDMA_DATA_H_IN)& 0x00001fff))	
 		{op2_res4 =1;
 		rumboot_printf("op2_res4 error\n");}	
 		else 
@@ -1435,16 +1441,16 @@ int nu_vpe_wr_regs(uintptr_t base, int32_t data) {
 		{cp2_res2=0;}
 	
 	    iowrite32(tmpr, base + NU_VPE + NU_VPE_OP2_ALU_CVT_OFFSET_VAL);	
-	if ((tmpr) != ioread32(base + NU_VPE + NU_VPE_OP2_ALU_CVT_OFFSET_VAL))	
+	if ((tmpr & 0x0000FFFF) != (ioread32(base + NU_VPE + NU_VPE_OP2_ALU_CVT_OFFSET_VAL) & 0x0000FFFF))	
 		{cp2_res3 =1;
 		tmp= ioread32(base + NU_VPE +  NU_VPE_OP2_ALU_CVT_OFFSET_VAL);
-		rumboot_printf("cp2_res3_tmp =%d\n",tmp);	
+		rumboot_printf("cp2_res3_tmp =%x\n",tmp);	
 		rumboot_printf("cp2_res3 error\n");}
 		else 
 		{cp2_res3=0;}
 	
 	    iowrite32(tmpr, base + NU_VPE + NU_VPE_OP2_ALU_CVT_SCALE_VAL);		
-	if ((tmpr& 0x0000FFFF) != (ioread32(base + NU_VPE + NU_VPE_OP2_ALU_CVT_SCALE_VAL)& 0x0000FFFF))	
+	if ((tmpr & 0x0000FFFF) != (ioread32(base + NU_VPE + NU_VPE_OP2_ALU_CVT_SCALE_VAL)& 0x0000FFFF))	
 		{cp2_res4 =1;
 		tmp= ioread32(base + NU_VPE +  NU_VPE_OP2_ALU_CVT_SCALE_VAL);
 		rumboot_printf("cp2_res4_tmp =%x\n",tmp);
@@ -1469,8 +1475,9 @@ int nu_vpe_wr_regs(uintptr_t base, int32_t data) {
 		rumboot_printf("cp2_res6_tmp =%d\n",tmp);
 		rumboot_printf("cp2_res6 error\n");}
 		else 
-		{cp2_res6=0;}	
-
+		{cp2_res6=0;}
+	
+		iowrite32(tmpr, base + NU_VPE + NU_VPE_OP2_MUL_SRC_VAL);
 	if ((tmpr) != ioread32(base + NU_VPE + NU_VPE_OP2_MUL_SRC_VAL))		
 		{cp2_res7 =1;
 	    tmp= ioread32(base + NU_VPE +  NU_VPE_OP2_MUL_SRC_VAL);
@@ -1480,8 +1487,10 @@ int nu_vpe_wr_regs(uintptr_t base, int32_t data) {
 		{cp2_res7=0;}
 	
 	    iowrite32(tmpr, base + NU_VPE + NU_VPE_OP2_MUL_CVT_OFFSET_VAL);
-	if ((tmpr) != (ioread32(base + NU_VPE + NU_VPE_OP2_MUL_CVT_OFFSET_VAL)))	
+	if ((tmpr & 0x0000FFFF) != (ioread32(base + NU_VPE + NU_VPE_OP2_MUL_CVT_OFFSET_VAL) & 0x0000FFFF))	
 		{cp2_res8 =1;
+		tmp= ioread32(base + NU_VPE + NU_VPE_OP2_MUL_CVT_OFFSET_VAL);
+		rumboot_printf("cp2_res8_tmp =%d\n",tmp);
 		rumboot_printf("cp2_res8 error\n");}
 		else 
         {cp2_res8=0;}
@@ -1489,6 +1498,8 @@ int nu_vpe_wr_regs(uintptr_t base, int32_t data) {
 	    iowrite32(tmpr, base + NU_VPE + NU_VPE_OP2_MUL_CVT_SCALE_VAL);	
 	if ((tmpr & 0x0000FFFF) != (ioread32(base + NU_VPE + NU_VPE_OP2_MUL_CVT_SCALE_VAL)& 0x0000FFFF))	
 		{cp2_res9 =1;
+		tmp= ioread32(base + NU_VPE + NU_VPE_OP2_MUL_CVT_SCALE_VAL);
+		rumboot_printf("cp2_res9_tmp =%d\n",tmp);	
 		rumboot_printf("cp2_res9 error\n");}
 		else 
 		{cp2_res9=0;}
@@ -1541,7 +1552,7 @@ int nu_vpe_wr_regs(uintptr_t base, int32_t data) {
 	
 		
 		iowrite32(tmpr, base + NU_VPE_SRC_RDMA + NU_VPE_RDMA_DATA_W_IN);		
-	if ((tmpr & 0x00001fff) != (ioread32(base + base + NU_VPE_SRC_RDMA + NU_VPE_RDMA_DATA_W_IN)& 0x00001fff)) 
+	if ((tmpr & 0x00003fff) != (ioread32(base + base + NU_VPE_SRC_RDMA + NU_VPE_RDMA_DATA_W_IN)& 0x00003fff)) 
 		{src_res3 =1;
 		tmp= ioread32(base + NU_VPE_SRC_RDMA + NU_VPE_RDMA_DATA_W_IN);
 		rumboot_printf("src_res3_tmp =%x\n",tmp);	
@@ -1553,7 +1564,7 @@ int nu_vpe_wr_regs(uintptr_t base, int32_t data) {
 
 		
 	    iowrite32(tmpr, base + NU_VPE_SRC_RDMA + NU_VPE_RDMA_DATA_H_IN);		
-	if ((tmpr & 0x00001fff) !=(ioread32(base +base + NU_VPE_SRC_RDMA + NU_VPE_RDMA_DATA_H_IN)& 0x00001fff))	
+	if ((tmpr & 0x00003fff) !=(ioread32(base +base + NU_VPE_SRC_RDMA + NU_VPE_RDMA_DATA_H_IN)& 0x00003fff))	
 		{src_res4 =1;
 		rumboot_printf("src_res4 error\n");}	
 		else 
