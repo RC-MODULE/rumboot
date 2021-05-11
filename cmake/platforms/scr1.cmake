@@ -495,6 +495,10 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     ADD_PPE_V_EXPER_TEST(ppe_8v_i16_max   main_ppe_3_i16_max  NotShowPerf VPEtoPPE)
     ADD_PPE_V_EXPER_TEST(ppe_2v_i8_max    main_ppe_2_i8_max   NotShowPerf MEMtoMEM)
 
+    ADD_PPE_V_EXPER_TEST(ppe_5v_i8_min    main_ppe_2_i8_min   NotShowPerf MEMtoMEM)
+    ADD_PPE_V_EXPER_TEST(ppe_6v_i16_min   main_ppe_3_i16_min  NotShowPerf MEMtoMEM)
+    ADD_PPE_V_EXPER_TEST(ppe_7v_fp16_min  main_ppe_4_fp16_min NotShowPerf MEMtoMEM)
+
     ADD_PPE_EXPER_TEST(PPE_2  NotShowPerf)
     ADD_PPE_EXPER_TEST(PPE_3  NotShowPerf)
     ADD_PPE_EXPER_TEST(PPE_4  NotShowPerf)
