@@ -59,11 +59,6 @@ static void nmc_generate_trampoline(void *at, uint32_t ep)
         rumboot_printf("boot: Created trampoline to 0x%x at 0x%x\n", __swap32(*nmc_goto), at);
 }
 
-static void dumpregs()
-{
-    rumboot_printf("nmi %x\n", dcr_read(DCR_SCTL_BASE + SCTL_NMPU_NMI));
-    rumboot_printf("rst %x\n", dcr_read(DCR_SCTL_BASE + SCTL_NMPU_PRST));
-}
 static int nmc_start(const struct rumboot_cpu_cluster *cpu, struct rumboot_bootheader *hdr, void *data, int swap)
 {
     uint32_t ep = rumboot_bootimage_header_item32(hdr->entry_point[0], swap);
