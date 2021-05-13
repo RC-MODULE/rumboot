@@ -87,17 +87,19 @@ endif()
 
 macro(dap_integration_test sourcefile)
   GET_FILENAME_COMPONENT(__NAME ${sourcefile} NAME_WE)
-  add_rumboot_target(
-      CONFIGURATION IRAM
-      PREFIX dap
-      FILES ${sourcefile}
-      NAME ${__NAME}
-      IRUN_FLAGS +DS5_JTAG
-    )
-  if (NMC_DBG_INTEGRATION_TESTS AND CMAKE_VERILOG_RULES_LOADED)
-    hdl_test_provide_file(rumboot-${RUMBOOT_DEFAULT_SNAPSHOT}-rumboot-${RUMBOOT_PLATFORM}-${RUMBOOT_BUILD_TYPE}-dap-${__NAME} ${PROJECT_BINARY_DIR}/units/ca5-validation-tests/${__NAME}.bsi JTAGbsi)
-    hdl_test_provide_file(rumboot-${RUMBOOT_DEFAULT_SNAPSHOT}-rumboot-${RUMBOOT_PLATFORM}-${RUMBOOT_BUILD_TYPE}-dap-${__NAME} ${PROJECT_BINARY_DIR}/units/ca5-validation-tests/SWIM${__NAME}.hex SWIM.hex)
-    hdl_test_provide_file(rumboot-${RUMBOOT_DEFAULT_SNAPSHOT}-rumboot-${RUMBOOT_PLATFORM}-${RUMBOOT_BUILD_TYPE}-dap-${__NAME} ${PROJECT_BINARY_DIR}/units/ca5-validation-tests/SWJIM${__NAME}.hex SWJIMCtl.hex)
+  if (NMC_DBG_INTEGRATION_TESTS)
+    add_rumboot_target(
+        CONFIGURATION IRAM
+        PREFIX dap
+        FILES ${sourcefile}
+        NAME ${__NAME}
+        IRUN_FLAGS +DS5_JTAG
+      )
+    if (CMAKE_VERILOG_RULES_LOADED)
+      hdl_test_provide_file(rumboot-${RUMBOOT_DEFAULT_SNAPSHOT}-rumboot-${RUMBOOT_PLATFORM}-${RUMBOOT_BUILD_TYPE}-dap-${__NAME} ${PROJECT_BINARY_DIR}/units/ca5-validation-tests/${__NAME}.bsi JTAGbsi)
+      hdl_test_provide_file(rumboot-${RUMBOOT_DEFAULT_SNAPSHOT}-rumboot-${RUMBOOT_PLATFORM}-${RUMBOOT_BUILD_TYPE}-dap-${__NAME} ${PROJECT_BINARY_DIR}/units/ca5-validation-tests/SWIM${__NAME}.hex SWIM.hex)
+      hdl_test_provide_file(rumboot-${RUMBOOT_DEFAULT_SNAPSHOT}-rumboot-${RUMBOOT_PLATFORM}-${RUMBOOT_BUILD_TYPE}-dap-${__NAME} ${PROJECT_BINARY_DIR}/units/ca5-validation-tests/SWJIM${__NAME}.hex SWJIMCtl.hex)
+    endif()
   endif()
   endmacro()
 
@@ -113,12 +115,14 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       CONFIGURATION SRAM
       FILES iram/hello.c
     )
+    
     add_rumboot_target(
       FEATURES NOCODE
       PREFIX iram
         LOAD IM0BIN iram-hello,iram-hello,iram-hello
       NAME isolation-cells
     )
+
     add_rumboot_target(
       FEATURES NOCODE
       PREFIX sram
@@ -142,12 +146,22 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
   endif()
 
+
+  add_rumboot_target(
+    CONFIGURATION SRAM
+    FILES stubs/cp_boot_stub.c
+    PREFIX "stub"
+    CFLAGS -DCOM_BASE=COM1_BASE
+    FEATURES STUB
+    NAME cp1-booter
+  )
+
   add_rumboot_target(
     CONFIGURATION IRAM
     CFLAGS -DUSE_SWINT=30
     FILES common/irq/irq-atomics.c
     PREFIX "iram-irqlo"
-)
+  )
 
 add_rumboot_target(
     CONFIGURATION IRAM
