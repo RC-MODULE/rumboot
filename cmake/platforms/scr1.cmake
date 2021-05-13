@@ -471,8 +471,8 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_f_op1_int main_vpe_f_op1_int )
     ADD_VPE_COUPLED_TEST_LOOP(vpe_f_op0_fp main_vpe_f_op0_fp )
     ADD_VPE_COUPLED_TEST_LOOP(vpe_f_op1_fp main_vpe_f_op1_fp )
-    ADD_VPE_COUPLED_TEST_LOOP(vpe_lut main_lut)
-    ADD_VPE_COUPLED_TEST_LOOP(vpe_op0_alu_int8_low main_vpe_op0_alu_int8_low)
+   
+ ADD_VPE_COUPLED_TEST_LOOP(vpe_op0_alu_int8_low main_vpe_op0_alu_int8_low)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_op0_alu_int8_middle main_vpe_op0_alu_int8_middle)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_op0_alu_int8_high main_vpe_op0_alu_int8_high)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_op0_alu_int16_low main_vpe_op0_alu_int16_low)
@@ -500,6 +500,8 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_mul_op2_int32 main_vpe_mul_op2_int32)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_mul_op2_int8 main_vpe_mul_op2_int8)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_mul_op2_fp32 main_vpe_mul_op2_fp32)
+    ADD_VPE_COUPLED_TEST_LOOP(vpe_lut main_lut) # VPE_21
+    ADD_VPE_COUPLED_TEST_LOOP(vpe_lut_addition main_lut_addition) # VPE_21_addition
     ADD_VPE_COUPLED_TEST_LOOP(vpe_together_op0 main_together_op0) # VPE_22
     ADD_VPE_COUPLED_TEST_LOOP(vpe_together_op1 main_together_op1) # VPE_23
     ADD_VPE_COUPLED_TEST_LOOP(vpe_together_op2 main_together_op2) # VPE_24
