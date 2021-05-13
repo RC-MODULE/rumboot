@@ -1,3 +1,5 @@
+/* -*- rumboot-test-labels: broken -*- */
+
 // Test 3.2. PC (Program Counter) Incrementor Check 
 // The test should be started at addreess 0h (local internal memory)
 // We make jump to address 00...010 bin, 00...0110 bin, 00...01110 bin, 00...011110 bin, ... , 001...10 bin.

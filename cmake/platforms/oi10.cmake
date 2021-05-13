@@ -3512,6 +3512,7 @@ endif()
       CONFIGURATION IRAM
       FILES scrb.c
       IRUN_FLAGS +insert_error_in_im1_im2_mem
+      TESTGROUP oi10only
     )
 
 endmacro()
