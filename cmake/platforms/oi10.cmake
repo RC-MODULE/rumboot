@@ -265,72 +265,72 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       TESTGROUP hwonly
     )
 
-    rumboot_bootrom_add_components(BROM IRAM_SPL FALSE FALSE)
-
-    rumboot_bootrom_add_common_units(
-        CONFIGURATION BROM
-        IRUN_FLAGS ${ROM_6500K_OPTS}
-    )
-
-    rumboot_bootrom_unit_test(
-        ID 0
-        CONFIGURATION BROM
-        TAG sdio
-        MEMTAG SD0_BOOT_IMAGE
-        TAGOFFSET 0
-        IRUN_FLAGS +select_sdio0 +BOOT_SD_CD=0 ${ROM_6500K_OPTS}
-        ENDIAN big
-    )
-
-    rumboot_bootrom_unit_test(
-        ID 1
-        CONFIGURATION BROM
-        TAG nor-no-ecc
-        MEMTAG NOR_IMAGE
-        TAGOFFSET 0
-        IRUN_FLAGS +BOOT_EMI_ECC=0 ${ROM_6500K_OPTS}
-        ENDIAN big
-    )
-
-    rumboot_bootrom_unit_test(
-        ID 1
-        CONFIGURATION BROM
-        TAG nor-with-ecc
-        MEMTAG NOR_IMAGE
-        TAGOFFSET 0
-        IRUN_FLAGS +BOOT_EMI_ECC=1 ${ROM_6500K_OPTS}
-        ENDIAN big
-    )
-
-    rumboot_bootrom_unit_test(
-        ID 2
-        CONFIGURATION BROM
-        TAG spi0_cs0
-        MEMTAG SPI0_CONF
-        TAGOFFSET 0
-        FULL YES
-        IRUN_FLAGS ${ROM_6500K_OPTS}
-        ENDIAN big
-    )
-
-    rumboot_bootrom_integration_test(BROM
-        NAME "host-mockup-fallthough"
-        IRUN_FLAGS ${ROM_6500K_OPTS}
-        LOAD
-          SD0_BOOT_IMAGE spl-fail
-          SPI0_CONF spl-fail-bad-magic,spl-fail-bad-magic
-          NOR_IMAGE spl-fail-bad-magic
-          HOSTMOCK  spl-ok
-    )
-
-    rumboot_bootrom_integration_test(BROM
-        NAME "host-mockup"
-        IRUN_FLAGS +BOOT_HOST=1 ${ROM_6500K_OPTS}
-        LOAD
-          HOSTMOCK  spl-ok
-    )
-
     if(NOT OI10_IRAM_IM0)
+      rumboot_bootrom_add_components(BROM IRAM_SPL FALSE FALSE)
+
+      rumboot_bootrom_add_common_units(
+          CONFIGURATION BROM
+          IRUN_FLAGS ${ROM_6500K_OPTS}
+      )
+
+      rumboot_bootrom_unit_test(
+          ID 0
+          CONFIGURATION BROM
+          TAG sdio
+          MEMTAG SD0_BOOT_IMAGE
+          TAGOFFSET 0
+          IRUN_FLAGS +select_sdio0 +BOOT_SD_CD=0 ${ROM_6500K_OPTS}
+          ENDIAN big
+      )
+
+      rumboot_bootrom_unit_test(
+          ID 1
+          CONFIGURATION BROM
+          TAG nor-no-ecc
+          MEMTAG NOR_IMAGE
+          TAGOFFSET 0
+          IRUN_FLAGS +BOOT_EMI_ECC=0 ${ROM_6500K_OPTS}
+          ENDIAN big
+      )
+
+      rumboot_bootrom_unit_test(
+          ID 1
+          CONFIGURATION BROM
+          TAG nor-with-ecc
+          MEMTAG NOR_IMAGE
+          TAGOFFSET 0
+          IRUN_FLAGS +BOOT_EMI_ECC=1 ${ROM_6500K_OPTS}
+          ENDIAN big
+      )
+
+      rumboot_bootrom_unit_test(
+          ID 2
+          CONFIGURATION BROM
+          TAG spi0_cs0
+          MEMTAG SPI0_CONF
+          TAGOFFSET 0
+          FULL YES
+          IRUN_FLAGS ${ROM_6500K_OPTS}
+          ENDIAN big
+      )
+
+      rumboot_bootrom_integration_test(BROM
+          NAME "host-mockup-fallthough"
+          IRUN_FLAGS ${ROM_6500K_OPTS}
+          LOAD
+            SD0_BOOT_IMAGE spl-fail
+            SPI0_CONF spl-fail-bad-magic,spl-fail-bad-magic
+            NOR_IMAGE spl-fail-bad-magic
+            HOSTMOCK  spl-ok
+      )
+
+      rumboot_bootrom_integration_test(BROM
+          NAME "host-mockup"
+          IRUN_FLAGS +BOOT_HOST=1 ${ROM_6500K_OPTS}
+          LOAD
+            HOSTMOCK  spl-ok
+      )
+
       rumboot_bootrom_integration_test(BROM
           NAME "host-fallthough-edcl"
           IRUN_FLAGS ${ROM_6500K_OPTS} +edcl_loader0
@@ -392,24 +392,22 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
           LOAD
             rmap_file spl-ok
       )
-  endif()
 
-if (NOT RUMBOOT_BUILD_TYPE STREQUAL "Debug")
-    rumboot_bootrom_integration_test(BROM
-        NAME "host-easter-egg"
-        IRUN_FLAGS +BOOT_HOST=1 ${ROM_6500K_OPTS} +uart_easter_egg
-    )
+    if (NOT RUMBOOT_BUILD_TYPE STREQUAL "Debug")
+        rumboot_bootrom_integration_test(BROM
+            NAME "host-easter-egg"
+            IRUN_FLAGS +BOOT_HOST=1 ${ROM_6500K_OPTS} +uart_easter_egg
+        )
 
-    rumboot_bootrom_integration_test(BROM
-        NAME "host-fallthough-easter-egg"
-        IRUN_FLAGS ${ROM_6500K_OPTS} +uart_easter_egg
-        LOAD
-          SD0_BOOT_IMAGE spl-fail
-          SPI0_CONF spl-fail-bad-magic,spl-fail-bad-magic
-          NOR_IMAGE spl-fail-bad-magic
-    )
-
-endif()
+        rumboot_bootrom_integration_test(BROM
+            NAME "host-fallthough-easter-egg"
+            IRUN_FLAGS ${ROM_6500K_OPTS} +uart_easter_egg
+            LOAD
+              SD0_BOOT_IMAGE spl-fail
+              SPI0_CONF spl-fail-bad-magic,spl-fail-bad-magic
+              NOR_IMAGE spl-fail-bad-magic
+        )
+    endif()
 
     rumboot_bootrom_integration_test(BROM
         NAME "sdio-ok"
@@ -512,6 +510,7 @@ endif()
         IRUN_FLAGS ${ROM_6500K_OPTS} +UART0_STOP_ON_MATCH +UART0_STOP_ON_MISMATCH
         TIMEOUT 10 ms
     )
+    endif()
 
 
     #Add lprobe sample scripts
