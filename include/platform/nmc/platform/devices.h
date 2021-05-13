@@ -36,4 +36,15 @@
 
 #include <platform/o32t/platform/devices.h>
 
+#undef IM1_BASE
+#define IM1_BASE 0x70000000
+
+#undef IM2_BASE
+#define IM2_BASE 0x70010000
+
+#undef IM3_BASE
+#define IM3_BASE 0x70018000
+
+
+
 #endif
