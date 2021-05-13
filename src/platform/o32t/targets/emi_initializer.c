@@ -30,7 +30,7 @@ int main()
            TSOE_1,
            TCYC_2,
            0, //T_RDY
-           TDEL_0
+           TDEL_1
        },
        //SD0
        {
@@ -207,7 +207,10 @@ int main()
     dcr_write(DCR_EM2_EMI_BASE + EMI_BUSEN, 0x01);
 
 #if defined(CMAKE_BUILD_TYPE_DEBUG) && !defined(RUMBOOT_NOINIT)
-    iowrite32(0x00000000, SDRAM_BASE); // touch sdram to prevent warnings in simulation console
+    iowrite32(0x00000000, SDRAM_BASE);
+    iowrite32(0x00000000, SDRAM_BASE + 4);
+    iowrite32(0x00000000, SDRAM_BASE + 8);
+    iowrite32(0x00000000, SDRAM_BASE + 12);
     rumboot_putstring( "Touching SDRAM: WARNING!!! WRITING 0x00000000 to SDRAM_BASE!!!\n" );
 #endif
     rumboot_printf("Clearing SRAM to prevent speculation faults...\n");

@@ -264,7 +264,7 @@ macro(generate_stuff_for_target product)
     )
   endif()
 
-  if (NOT ${TARGET_BOOTROM} STREQUAL "")
+  if (NOT ${TARGET_BOOTROM} STREQUAL "" AND NOT ${TARGET_BOOTROM} MATCHES ":")
     add_dependencies(${product}.all ${bootrom})
   endif()
 
@@ -417,7 +417,10 @@ function(add_rumboot_target)
   if (${_index} GREATER -1 OR ${_index2} GREATER -1)
     #Lprobe scripts compile nothing. Provide a dummy
     #target and return
-    add_custom_target(${product}.all ALL DEPENDS ${bootrom})
+    add_custom_target(${product}.all ALL)
+    if (NOT "${bootrom}" MATCHES ":")
+      add_dependencies(${product}.all ${bootrom})
+    endif()
     populate_dependencies(${product}.all)
     return()
   endif()

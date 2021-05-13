@@ -21,7 +21,7 @@ else()
   set(SOC_BOOTROM ${RUMBOOT_SOC}:bootrom-stub)
   set(SOC_EMI_INITIALIZER ${RUMBOOT_SOC}:stub-emi_initializer_notlb_unload)
   set(SOC_PACKIMAGE_FLAGS -CiR 0x80020000 -F SYNC True -F KILL True)
-  set(SOC_PACKIMAGE_FLAGS_EMI -CiR 0x0 -F SYNC True)
+  set(SOC_PACKIMAGE_FLAGS_EMI -CiR 0x0 -F SYNC True -F KILL True)
   set(SOC_FEATURES PACKIMAGE)
 endif()
 
@@ -109,19 +109,23 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
   )
 
   if (RUMBOOT_SOC)
-    add_rumboot_target_dir(iram/
+    add_rumboot_target(
       CONFIGURATION SRAM
+      FILES iram/hello.c
     )
-
-  add_rumboot_target(
-    FEATURES NOCODE
-    CONFIGURATION IRAM
-    COMBOIMAGE IM0BIN
-      LOAD IM0BIN iram-hello,iram-hello,iram-hello
-    NAME isolation-cells-test
-  )
-
-  endif()
+    add_rumboot_target(
+      FEATURES NOCODE
+      PREFIX iram
+        LOAD IM0BIN iram-hello,iram-hello,iram-hello
+      NAME isolation-cells
+    )
+    add_rumboot_target(
+      FEATURES NOCODE
+      PREFIX sram
+        LOAD IM0BIN ${SOC_EMI_INITIALIZER},sram-hello,sram-hello,sram-hello
+      NAME isolation-cells
+    )
+    endif()
 
   #Clang doesn't support legacy stuff
   if (NOT RUMBOOT_NMC_USE_CLANG)
