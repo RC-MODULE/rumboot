@@ -86,6 +86,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     # endif()
 	add_rumboot_target(
       CONFIGURATION ROM
+      NAME PPE_1
       FILES scr1/targets/simple-rom/nu/ppe_regs/regs_ppe.c
 	)
 	
