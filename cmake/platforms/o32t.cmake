@@ -18,7 +18,7 @@ file(GLOB PLATFORM_SOURCES
   ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/*.S
   ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/lib/drivers/ndma_simple.c
   ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/lib/drivers/com_simple.c
-${CMAKE_SOURCE_DIR}/src/lib/drivers/irq-mpic128.c)
+  ${CMAKE_SOURCE_DIR}/src/lib/drivers/irq-mpic128.c)
 
 #Flags for Power PC
 macro(RUMBOOT_PLATFORM_SET_COMPILER_FLAGS)
@@ -405,6 +405,22 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     HOSTMOCK  spl-fail
   )
 
+  add_rumboot_target(
+    CONFIGURATION IRAM_IM1
+    FILES emi_initializer.c
+    NAME emi_initializer_notlb_unload
+    PREFIX stub
+    CFLAGS -DKEEP_TLB
+    FEATURES STUB
+  )
+
+  rumboot_bootrom_integration_test(BROM
+    NAME "nmc-extboot-cp01"
+    IRUN_FLAGS ${ROM_6500K_OPTS} +BOOT_HOST=1
+    LOAD
+      HOSTMOCK  stub-emi_initializer_notlb_unload,nmc:stub-cp1-booter
+  )
+
   rumboot_bootrom_integration_test(BROM
     NAME "serial-9600"
     IRUN_FLAGS ${ROM_9600_OPTS} +UART0_STOP_ON_MATCH +UART0_STOP_ON_MISMATCH
@@ -446,14 +462,6 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
   )
   
 
-  add_rumboot_target(
-    CONFIGURATION IRAM_IM1
-    FILES emi_initializer.c
-    NAME emi_initializer_notlb_unload
-    PREFIX stub
-    CFLAGS -DKEEP_TLB
-    FEATURES STUB
-  )
 
   add_rumboot_target_dir(simple-iram/
     CONFIGURATION IRAM_IM1
