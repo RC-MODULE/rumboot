@@ -32,7 +32,8 @@
 		  op2_res13,op2_res14,op2_res15,op2_res16,op2_res17,op2_res18,op2_res19,op2_res20;	
 	  int lut_res0,lut_res1,lut_res2,lut_res3,lut_res4,lut_res5,lut_res6,lut_res7,lut_res8,lut_res9,lut_res10,lut_res11,lut_res12, 
 		  lut_res13;
-	  int vpe_res0,vpe_res1,vpe_res2,vpe_res3,vpe_res4,vpe_res5;  
+	  int vpe_res0,vpe_res1,vpe_res2,vpe_res3,vpe_res4,vpe_res5;
+		  
 	  int resr;
 	  int resw;
 	  int32_t tmp;
@@ -753,6 +754,7 @@
 		rumboot_printf("op0_res16 error\n");}
 		else 
 		op0_res16=0;
+	
 	if ((0x00000000) !=ioread32( base + NU_VPE_OP0_RDMA + NU_VPE_RDMA_BOX_OFFSET_SIZE_X))	
 		{op0_res17 =1;
 		tmp= ioread32(base + NU_VPE_OP0_RDMA + NU_VPE_RDMA_BOX_OFFSET_SIZE_X);
@@ -1219,7 +1221,7 @@ if ((0x00000000) !=(ioread32(base + NU_VPE + NU_VPE_LUT_ACCESS_CFG)& 0x000301FF)
 	if ((0x00000000) != (ioread32( base + NU_VPE + NU_VPE_LUT_TAB2_SLOPE_SCALE)& 0xFFFFFFFFF))
 		{lut_res12 =1;
 		tmp= ioread32(base + NU_VPE + NU_VPE_LUT_TAB2_SLOPE_SCALE);
-		rumboot_printf("lut_res12_tmp =%d\n",tmp);	  
+		rumboot_printf("lut_res12_tmp =%x\n",tmp);	  
 		rumboot_printf("lut_res12 error\n");}
 		else 
 		{lut_res12=0;}
@@ -1334,8 +1336,10 @@ int nu_vpe_wr_regs(uintptr_t base, int32_t data) {
 	  int /*op1_res0,op1_res1,op1_res2,*/op1_res3,op1_res4,op1_res5,op1_res6,op1_res7,op1_res8,op1_res9,op1_res10,op1_res11,op1_res12,
 		  op1_res13,op1_res14,op1_res15,op1_res16,op1_res17,op1_res18,op1_res19;	  
 	  int /*op2_res0,op2_res1,op2_res2,*/op2_res3,op2_res4,op2_res5,op2_res6,op2_res7,op2_res8,op2_res9,op2_res10,op2_res11,op2_res12,
-		  op2_res13,op2_res14,op2_res15,op2_res16,op2_res17,op2_res18,op2_res19;	
-	 
+		  op2_res13,op2_res14,op2_res15,op2_res16,op2_res17,op2_res18,op2_res19,op2_res20;	
+	  int lut_res0,lut_res1,lut_res2,lut_res3,lut_res4,lut_res5,lut_res6,lut_res7,lut_res8,lut_res9,lut_res10,lut_res11,lut_res12, 
+		  lut_res13;
+	  int vpe_res0,vpe_res1,vpe_res2,vpe_res3,vpe_res4,vpe_res5; 
 	  int resr;
 	  int resw;
 	  int32_t tmp;
@@ -2121,7 +2125,8 @@ int nu_vpe_wr_regs(uintptr_t base, int32_t data) {
 		rumboot_printf("op0_res19_tmp =%x\n",tmp);	
 		rumboot_printf("op0_res19 error\n");}
 		else 
-		{op0_res19=0;}	
+		{op0_res19=0;}
+	
 //---------------------------Configuration OP1_RDMA-----------------------------------
 	/*if ((0x00000000) !=(ioread32(base + NU_VPE_OP1_RDMA + NU_VPE_RDMA_STATUS)& 0x00030003)) 	
 		{op1_res0 =1;
@@ -2296,7 +2301,18 @@ int nu_vpe_wr_regs(uintptr_t base, int32_t data) {
 		rumboot_printf("op1_res19_tmp =%x\n",tmp);	
 		rumboot_printf("op1_res19 error\n");}
 		else 
-		{op1_res19=0;}	
+		{op1_res19=0;}
+	
+		iowrite32(tmpr, base + NU_VPE_OP1_RDMA + NU_VPE_OP2_ALU_CMP_RESULT);	
+	/*if ((tmpr) != ioread32( base + NU_VPE_OP2_RDMA + NU_VPE_OP2_ALU_CMP_RESULT))
+		{op2_res20 =1;
+		tmp= ioread32(base + NU_VPE_OP2_RDMA + NU_VPE_OP2_ALU_CMP_RESULT);
+		rumboot_printf("op2_res20_tmp =%d\n",tmp);	
+		rumboot_printf("op2_res20 error\n");}
+		else 
+		{op2_res20=0;
+	    tmp= ioread32(base + NU_VPE_OP2_RDMA + NU_VPE_OP2_ALU_CMP_RESULT);
+		rumboot_printf("op2_res20_tmp =%d\n",tmp);}	*/
 //---------------------------Configuration OP2_RDMA-----------------------------------	
 /* if ((0x00000000) !=(ioread32(base + NU_VPE_OP2_RDMA + NU_VPE_RDMA_STATUS)& 0x00030003)) 	
 		{op2_res0 =1;
@@ -2466,7 +2482,180 @@ int nu_vpe_wr_regs(uintptr_t base, int32_t data) {
 		rumboot_printf("op2_res19_tmp =%x\n",tmp);	
 		rumboot_printf("op2_res19 error\n");}
 		else 
-		{op2_res19=0;}	
+		{op2_res19=0;}
+
+		iowrite32(tmpr, base + NU_VPE + NU_VPE_LUT_CFG);
+	if ((tmpr & 0x0000000F) !=(ioread32(base + NU_VPE + NU_VPE_LUT_CFG)& 0x0000000F)) 	
+		{lut_res2 =1;
+		tmp= ioread32(base + NU_VPE + NU_VPE_LUT_CFG);
+		rumboot_printf("lut_res2_tmp =%x\n",tmp);	
+		rumboot_printf("lut_res2 error\n");}
+		else 
+		{lut_res2=0;
+	    tmp= ioread32(base + NU_VPE + NU_VPE_LUT_CFG);
+		rumboot_printf("lut_res2_tmp =%x\n",tmp);}
+		
+		iowrite32(tmpr, base + NU_VPE + NU_VPE_LUT_SYM_POINT);		
+	if ((tmpr) != (ioread32(base +  NU_VPE + NU_VPE_LUT_SYM_POINT)& 0xFFFFFFFF)) 
+		{lut_res3 =1;
+		tmp= ioread32(base + NU_VPE + NU_VPE_LUT_SYM_POINT);
+		rumboot_printf("lut_res3_tmp =%x\n",tmp);	
+		rumboot_printf("lut_res3 error\n");}	
+		else 
+		{lut_res3=0;
+		tmp= ioread32(base + NU_VPE + NU_VPE_LUT_SYM_POINT);
+		rumboot_printf("lut_res3_tmp =%x\n",tmp);}
+	
+		iowrite32(tmpr, base + NU_VPE + NU_VPE_LUT_TAB1_X_SHIFT);	
+	if ((tmpr & 0x000000FF) !=(ioread32(base +NU_VPE + NU_VPE_LUT_TAB1_X_SHIFT)& 0x000000FF))	
+		{lut_res4 =1;
+		tmp= ioread32(base + NU_VPE +NU_VPE_LUT_TAB1_X_SHIFT);
+		rumboot_printf("lut_res4_tmp =%x\n",tmp);	
+		rumboot_printf("lut_res4 error\n");}	
+		else 
+		{lut_res4=0;
+	    tmp= ioread32(base + NU_VPE +NU_VPE_LUT_TAB1_X_SHIFT);
+		rumboot_printf("lut_res4_tmp =%x\n",tmp);}
+	
+		iowrite32(tmpr, base + NU_VPE + NU_VPE_LUT_TAB2_X_SHIFT);	
+	if ((tmpr & 0x000000FF) != (ioread32(base + NU_VPE + NU_VPE_LUT_TAB2_X_SHIFT)& 0x000000FF))
+		{lut_res5 =1;
+		tmp= ioread32(base + NU_VPE + NU_VPE_LUT_TAB2_X_SHIFT);
+		rumboot_printf("lut_res5_tmp =%x\n",tmp);			
+		rumboot_printf("lut_res5 error\n");}	
+		else 
+		{lut_res5=0;
+	    tmp= ioread32(base + NU_VPE + NU_VPE_LUT_TAB2_X_SHIFT);
+		rumboot_printf("lut_res5_tmp =%x\n",tmp);}
+
+		iowrite32(tmpr, base + NU_VPE + NU_VPE_LUT_TAB1_X_START);	
+	if ((tmpr) !=(ioread32(base + NU_VPE + NU_VPE_LUT_TAB1_X_START)& 0xFFFFFFFF)) //not corresp. doc
+		{lut_res6 =1;
+		tmp= ioread32(base + NU_VPE_OP2_RDMA + NU_VPE_LUT_TAB1_X_START);
+		rumboot_printf("lut_res6_tmp =%x\n",tmp);	
+		rumboot_printf("lut_res6 error\n");}
+		else 
+		{lut_res6=0;
+	    tmp= ioread32(base + NU_VPE_OP2_RDMA + NU_VPE_LUT_TAB1_X_START);
+		rumboot_printf("lut_res6_tmp =%x\n",tmp);}
+
+		iowrite32(tmpr, base + NU_VPE + NU_VPE_LUT_TAB1_X_END);		
+	if ((tmpr) != (ioread32(base + NU_VPE + NU_VPE_LUT_TAB1_X_END)& 0xFFFFFFFF))
+		{lut_res7 =1;
+		tmp= ioread32(base + NU_VPE + NU_VPE_LUT_TAB1_X_END);
+		rumboot_printf("lut_res7_tmp =%d\n",tmp);
+		rumboot_printf("lut_res7 error\n");}
+		else 
+		{lut_res7=0;}
+
+		iowrite32(tmpr, base + NU_VPE + NU_VPE_LUT_TAB2_X_START);
+	if ((tmpr) !=(ioread32(base + NU_VPE + NU_VPE_LUT_TAB2_X_START)& 0xFFFFFFFF))	
+		{lut_res8 =1;
+		tmp= ioread32(base + NU_VPE + NU_VPE_LUT_TAB2_X_START);
+		rumboot_printf("lut_res8_tmp =%d\n",tmp);	
+		rumboot_printf("lut_res8 error\n");}
+		else 
+		{lut_res8=0;}
+
+		iowrite32(tmpr, base + NU_VPE + NU_VPE_LUT_TAB2_X_END);
+	if ((tmpr) != (ioread32(base + NU_VPE + NU_VPE_LUT_TAB2_X_END)& 0xFFFFFFFF))
+		{lut_res9 =1;
+		tmp= ioread32(base + NU_VPE + NU_VPE_LUT_TAB2_X_END);
+		rumboot_printf("lut_res9_tmp =%d\n",tmp);		  
+		rumboot_printf("lut_res9 error\n");}
+		else 
+		{lut_res9=0;}
+
+		iowrite32(tmpr, base + NU_VPE + NU_VPE_LUT_TAB1_SLOPE_SCALE);	
+	if ((tmpr) != (ioread32(base + NU_VPE + NU_VPE_LUT_TAB1_SLOPE_SCALE)& 0xFFFFFFFF)) //???
+		{lut_res10 =1;  
+		tmp= ioread32(base + NU_VPE + NU_VPE_LUT_TAB1_SLOPE_SCALE);
+		rumboot_printf("lut_res10_tmp =%d\n",tmp);		
+		rumboot_printf("lut_res10 error\n");}
+		else 
+		lut_res10=0;
+
+		iowrite32(tmpr, base + NU_VPE + NU_VPE_LUT_TAB1_SLOPE_SHIFT);
+	if ((tmpr &0x000003FF) !=(ioread32( base + NU_VPE + NU_VPE_LUT_TAB1_SLOPE_SHIFT)& 0x000003FF))	
+		{lut_res11 =1;
+		tmp= ioread32(base + NU_VPE + NU_VPE_LUT_TAB1_SLOPE_SHIFT);
+		rumboot_printf("lut_res11_tmp =%d\n",tmp);	
+		rumboot_printf("lut_res11 error\n");}
+		else 
+		{lut_res11=0;}
+
+		iowrite32(tmpr, base + NU_VPE + NU_VPE_LUT_TAB2_SLOPE_SCALE);
+	if ((tmpr) != (ioread32( base + NU_VPE + NU_VPE_LUT_TAB2_SLOPE_SCALE)& 0xffffffff))
+		{lut_res12 =1;
+		tmp= ioread32(base + NU_VPE + NU_VPE_LUT_TAB2_SLOPE_SCALE)& 0xffffffff;
+		rumboot_printf("lut_res12_tmp =%x\n",tmp);
+		rumboot_printf("lut_res12 error\n");}
+		else 
+		{lut_res12=0;}
+
+		iowrite32(tmpr, base + NU_VPE + NU_VPE_LUT_TAB2_SLOPE_SHIFT);	
+	if ((tmpr & 0x0000003F) != (ioread32( base + NU_VPE + NU_VPE_LUT_TAB2_SLOPE_SHIFT)& 0x0000003F))
+		{lut_res13 =1;
+		tmp= ioread32(base + NU_VPE + NU_VPE_LUT_TAB2_SLOPE_SHIFT);
+		rumboot_printf("lut_res13_tmp =%x\n",tmp);		
+		rumboot_printf("lut_res13 error\n");}
+		else 
+		lut_res13=0;
+	
+		iowrite32(tmpr, base + NU_VPE + NU_VPE_OUT_CVT_OFFSET_VAL);
+	if ((tmpr) != (ioread32( base + NU_VPE + NU_VPE_OUT_CVT_OFFSET_VAL)& 0xffffffff))
+		{vpe_res0 =1;
+		tmp= ioread32(base + NU_VPE + NU_VPE_OUT_CVT_OFFSET_VAL);
+		rumboot_printf("vpe_res0_tmp =%x\n",tmp);	  
+		rumboot_printf("vpe_res0 error\n");}
+		else 
+		{vpe_res0=0;}
+
+		iowrite32(tmpr, base + NU_VPE + NU_VPE_OUT_CVT_SCALE_VAL);	
+	if ((tmpr & 0x0000FFFF) != (ioread32( base + NU_VPE + NU_VPE_OUT_CVT_SCALE_VAL)& 0x0000FFFF))
+		{vpe_res1 =1;
+		tmp= ioread32(base + NU_VPE + NU_VPE_OUT_CVT_SCALE_VAL);
+		rumboot_printf("vpe_res1_tmp =%x\n",tmp);	
+		rumboot_printf("vpe_res1 error\n");}
+		else 
+		{vpe_res1=0;}
+	
+		iowrite32(tmpr, base + NU_VPE + NU_VPE_OUT_CVT_TRUNC_VAL);		
+	if ((tmpr & 0x0000313F) !=(ioread32( base + NU_VPE + NU_VPE_OUT_CVT_TRUNC_VAL)& 0x0000313F))	
+		{vpe_res2 =1;
+		tmp= ioread32(base + NU_VPE + NU_VPE_OUT_CVT_TRUNC_VAL);
+		rumboot_printf("vpe_res2_tmp =%x\n",tmp);	
+		rumboot_printf("vpe_res2 error\n");}
+		else 
+		{vpe_res2=0;}
+/*	
+		iowrite32(tmpr, base + NU_VPE + NU_VPE_INF_NUM_IN);	
+	if ((tmpr) != ioread32( base + NU_VPE + NU_VPE_INF_NUM_IN))
+		{vpe_res3 =1;
+		tmp= ioread32(base + NU_VPE + NU_VPE_INF_NUM_IN);
+		rumboot_printf("{vpe_res3_tmp =%x\n",tmp);	  
+		rumboot_printf("{vpe_res3 error\n");}
+		else 
+		{vpe_res3=0;}
+	
+		iowrite32(tmpr, base + NU_VPE + NU_VPE_NAN_NUM_OUT);	
+	if ((tmpr) != ioread32( base + NU_VPE + NU_VPE_NAN_NUM_OUT))
+		{vpe_res4 =1;
+		tmp= ioread32(base + NU_VPE + NU_VPE_NAN_NUM_OUT );
+		rumboot_printf("vpe_res4_tmp =%x\n",tmp);	
+		rumboot_printf("vpe_res4 error\n");}
+		else 
+		{vpe_res4=0;}
+	
+		iowrite32(tmpr, base + NU_VPE + NU_VPE_SATUR_NUM_OUT );	
+	if ((tmpr) != ioread32( base + NU_VPE + NU_VPE_SATUR_NUM_OUT ))
+		{vpe_res5 =1;
+		tmp= ioread32(base + NU_VPE + NU_VPE_SATUR_NUM_OUT );
+		rumboot_printf("vpe_res5_tmp =%d\n",tmp);	
+		rumboot_printf("vpe_res5 error\n");}
+		else 
+		{vpe_res5=0;}
+*/	
 //----------------------------------------------------------------
 	  		
 	  resr = 	cp0_res0 || cp0_res1|| cp0_res2 || cp0_res3 || cp0_res4 || cp0_res5 ||
@@ -2483,10 +2672,10 @@ int nu_vpe_wr_regs(uintptr_t base, int32_t data) {
 				op1_res16 || op1_res17 || op1_res18 || op1_res19 ||
 				/*op2_res0 || op2_res1|| op2_res2 || */op2_res3 || op2_res4 || op2_res5 || op2_res7 || op2_res8 ||
 				op2_res9 || op2_res10 || op2_res11 || op2_res12 || op2_res13 || op2_res14 || op2_res15 || 
-				op2_res16 || op2_res17 || op2_res18 || op2_res19 || op_res ;/*||
-			    /* lut_res0 || lut_res2 || lut_res3 || lut_res4 || lut_res5 || lut_res6 || lut_res7 || lut_res8 ||
-				lut_res9 || lut_res10 || lut_res11 || lut_res12 || lut_res13 || lut_res14 ||
-				vpe_res0 ||vpe_res1 || vpe_res2 || vpe_res3 || vpe_res4 || vpe_res5 ; */
+				op2_res16 || op2_res17 || op2_res18 || op2_res19 || op_res ||
+			     lut_res0 || lut_res2 || lut_res3 || lut_res4 || lut_res5 || lut_res6 || lut_res7 || lut_res8 ||
+				lut_res9 || lut_res10 || lut_res11 || lut_res12 || lut_res13 ||
+				vpe_res0 ||vpe_res1 || vpe_res2 || vpe_res3 || vpe_res4 || vpe_res5 ; 
 				
 	  resw = 	/*resw0 || resw1|| */resw2 || resw3 || resw4 || resw5 || resw6 || resw7 || resw8 || resw9 ||
 				resw10 || resw11 || resw12 || resw13 || resw14 || resw15 || resw16 || resw17 ||
