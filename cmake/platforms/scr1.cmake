@@ -419,6 +419,20 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       )
     endmacro()
 
+    if(NOT DEFINED VPE_BINARIES_ROOT)
+      set(VPE_BINARIES_ROOT /opt/lib_h31/LAVA_lib/experiment_stage_2/VPE)
+    endif()
+
+    macro(ADD_VPE_FROM_BINARY_TEST_LOOP name bin_dir)
+      add_rumboot_target(
+        CONFIGURATION ROM
+        NAME ${name}
+        FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe.c
+        PREPCMD cp ${VPE_BINARIES_ROOT}/${bin_dir}/* . || exit 1
+        IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+      )
+    endmacro()
+
     macro(ADD_PPE_COUPLED_TEST_LOOP name rm_bin_name ShowPerf)
       add_rumboot_target(
         CONFIGURATION ROM
@@ -511,6 +525,65 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_25_op012_together main_vpe_25_op012_together) # VPE_25
     ADD_VPE_COUPLED_TEST_LOOP(vpe_28_perf main_28_perf) # VPE_28
 
+
+    ###############
+    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_9_0_op0_relu_int32_fb VPE_9/0)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_15_0_op1_relu_int32_fb VPE_15/0)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_9_1_op0_relu_fp32_fb VPE_9/1)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_15_1_op1_relu_fp32_fb VPE_15/1)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_3_c3_fb VPE_3)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_18_op2_c1_fb VPE_18)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_16_op2_c2_fb VPE_16)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_8_0_op0_norm_fb VPE_8/0)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_14_0_op1_norm_fb VPE_14/0)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_8_1_op0_norm_rnd_fb VPE_8/1)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_14_1_op1_norm_rnd_fb VPE_14/1)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_20_0_op2_norm_fb VPE_20/0)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_20_1_op2_norm_rnd_fb VPE_20/1)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_4_op0_lshift_fb VPE_4)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_10_op1_lshift_fb VPE_10)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_6_0_op0_f_int_fb VPE_6/0)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_12_0_op1_f_int_fb VPE_12/0)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_6_1_op0_f_fp_fb VPE_6/1)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_12_1_op1_f_fp_fb VPE_12/1)
+   
+    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_5_0_op0_alu_int8_low_fb VPE_5/0)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_5_1_op0_alu_int8_middle_fb VPE_5/1)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_5_2_op0_alu_int8_high_fb VPE_5/2)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_5_3_op0_alu_int16_low_fb VPE_5/3)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_5_4_op0_alu_int16_middle_fb VPE_5/4)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_5_5_op0_alu_int16_high_fb VPE_5/5)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_5_6_op0_alu_fp32_fb VPE_5/6)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_11_0_op1_alu_int8_low_fb VPE_11/0)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_11_1_op1_alu_int8_middle_fb VPE_11/1)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_11_2_op1_alu_int8_high_fb VPE_11/2)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_11_3_op1_alu_int16_low_fb VPE_11/3)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_11_4_op1_alu_int16_middle_fb VPE_11/4)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_11_5_op1_alu_int16_high_fb VPE_11/5)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_11_6_op1_alu_fp32_fb VPE_11/6)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_17_0_op2_alu_int8_low_fb VPE_17/0)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_17_1_op2_alu_int8_high_fb VPE_17/1)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_17_2_op2_alu_int16_low_fb VPE_17/2)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_17_3_op2_alu_int16_high_fb VPE_17/3)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_17_4_op2_alu_fp32_fb VPE_17/4)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_7_0_op0_mul_int16_fb VPE_7/0)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_7_1_op0_mul_int8_fb VPE_7/1)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_7_2_op0_mul_fp32_fb VPE_7/2)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_13_0_op1_mul_int16_fb VPE_13/0)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_13_1_op1_mul_int8_fb VPE_13/1)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_13_2_op1_mul_fp32_fb VPE_13/2)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_19_0_op2_mul_int16_fb VPE_19/0)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_19_1_op2_mul_int8_fb VPE_19/1)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_19_2_op2_mul_fp32_fb VPE_19/2)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_21_0_lut_fb VPE_21/0) # VPE_21
+    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_21_1_lut_addition_fb VPE_21/1) # VPE_21_addition
+    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_22_op0_together_fb VPE_22) # VPE_22
+    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_23_op1_together_fb VPE_23) # VPE_23
+    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_24_op2_together_fb VPE_24) # VPE_24
+    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_25_op012_together_fb VPE_25) # VPE_25
+    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_28_perf_fb VPE_28) # VPE_28
+
+    ###############
 
     ADD_PPE_COUPLED_TEST_LOOP(ppe_loop_coupled main_loop_ppe_coupled NotShowPerf)
 
