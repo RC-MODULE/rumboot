@@ -111,11 +111,11 @@ int main() {
       else if (FM == 0x1) {
         cfg_reg.wOpEn  = 0x1;
 
-        nu_ppe_run(NU_PPE_STANDALONE_BASE, &cfg_reg);
-
         nu_cpdmac_trn256_config(NU_CPDMAC_ASM_BASE,in_data,in_metrics->s);
 
+        nu_ppe_run(NU_PPE_STANDALONE_BASE, &cfg_reg);
         clk_cnt = rumboot_platform_get_uptime();
+
         nu_cpdmac_trn256_run(NU_CPDMAC_ASM_BASE);
 
         while (nu_ppe_status_done_rd(NU_PPE_STANDALONE_BASE) == 0x0) {} // set timeout
