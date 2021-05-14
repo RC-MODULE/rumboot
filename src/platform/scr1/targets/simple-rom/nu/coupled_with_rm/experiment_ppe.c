@@ -110,13 +110,23 @@ int main() {
       }
       else if (FM == 0x1) {
         cfg_reg.wOpEn  = 0x1;
+
         nu_ppe_run(NU_PPE_STANDALONE_BASE, &cfg_reg);
 
         nu_cpdmac_trn256_config(NU_CPDMAC_ASM_BASE,in_data,in_metrics->s);
+
+        clk_cnt = rumboot_platform_get_uptime();
         nu_cpdmac_trn256_run(NU_CPDMAC_ASM_BASE);
+
+        while (nu_ppe_status_done_rd(NU_PPE_STANDALONE_BASE) == 0x0) {} // set timeout
+        clk_cnt = rumboot_platform_get_uptime() - clk_cnt;
 
         nu_cpdmac_trn256_wait_complete(NU_CPDMAC_ASM_BASE);
         nu_ppe_wait_complete(NU_PPE_STANDALONE_BASE);
+
+        dtB = (cfg_reg.wOpM & 0x600000) == 0x0 ? 1 : 2; // sizeof(DataType) in bytes
+
+        clk_cnt = (in_metrics->H * in_metrics->W * in_metrics->C * dtB)/clk_cnt;
       }
     }
 
@@ -146,8 +156,7 @@ int main() {
   }
 
   #ifdef ShowPerf
-
-  perf_avg = ((perf_avg * 100)/it_nmb)/100;
+  perf_avg = ((perf_avg * 100)/it_nmb)/100; // multiply and devide by 100 to preserve precession
 
   rumboot_printf("PPE average perfomance of %d iterations is %d.%d bytes per cycle\n", it_nmb, perf_avg/100, perf_avg-(perf_avg/100)*100);
   #endif
