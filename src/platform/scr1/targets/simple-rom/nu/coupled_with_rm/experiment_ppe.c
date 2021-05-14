@@ -24,16 +24,16 @@ int main() {
   int res = 0;
   int i, it_nmb, dtB;
   int clk_cnt;
+  int perf_avg;
 
   int heap_id = nu_get_heap_id();;
 
   int FM; // 0 FLYING_BOXED 1 FLYING_LINEAR 2 OFFLY_LINEAR
 
-  rumboot_printf("coupled_pytorch_ppe\n");
-
   rumboot_platform_request_file("num_iterations_file_tag", (uintptr_t) &it_nmb);
   rumboot_printf("it_nmb is %d\n", it_nmb);
 
+  perf_avg = 0;
   for (i=0; i<it_nmb && !res; i++) {
     rumboot_malloc_update_heaps(1);
 
@@ -105,7 +105,8 @@ int main() {
         dtB = (cfg_reg.wOpM & 0x600000) == 0x0 ? 1 : 2; // sizeof(DataType) in bytes
 
         // Sizeof(DataCube)/(time*frequency); time measure is us, frequency is 100 MHz
-        clk_cnt = (in_metrics->H * in_metrics->W * in_metrics->C * dtB)/(clk_cnt*100);
+        // clk_cnt will be devided by 100 later
+        clk_cnt = (in_metrics->H * in_metrics->W * in_metrics->C * dtB)/clk_cnt;
       }
       else if (FM == 0x1) {
         cfg_reg.wOpEn  = 0x1;
@@ -134,13 +135,22 @@ int main() {
       rumboot_printf("Iteration %d PASSED\n", i);
 
       #ifdef ShowPerf
-      rumboot_printf("PPE perfomance is %d bytes per cycle\n", clk_cnt);
+      perf_avg += clk_cnt;
+
+      rumboot_printf("PPE perfomance of iteration # %d is %d.%d bytes per cycle\n", i, clk_cnt/100, clk_cnt-(clk_cnt/100)*100);
       #endif
     }
     else rumboot_printf("Test FAILED at iteration %d\n", i);
 
     rumboot_malloc_update_heaps(0);
   }
+
+  #ifdef ShowPerf
+
+  perf_avg = ((perf_avg * 100)/it_nmb)/100;
+
+  rumboot_printf("PPE average perfomance of %d iterations is %d.%d bytes per cycle\n", it_nmb, perf_avg/100, perf_avg-(perf_avg/100)*100);
+  #endif
 
   return res;
 }
