@@ -68,6 +68,16 @@ int main() {
   int i;
   int iterations;
   
+    // Time Measure
+  uint32_t start;
+  uint32_t end;
+  uint32_t delta;
+  uint32_t num_cycles;
+  uint32_t num_vectors;
+  uint32_t productivity_x1000;
+  uint32_t productivity_x100;
+  uint32_t productivity_frac;  
+  
   rumboot_printf("Hello\n");
   
   heap_id = nu_get_heap_id();
@@ -143,6 +153,9 @@ int main() {
       nu_vpe_run_rd_main_channel(NU_CPDMAC_ASM_BASE);
     if(cfg.wdma_config.dma_op_en == Enable_NotEn)
       nu_vpe_run_wr_main_channel(NU_CPDMAC_ASM_BASE);
+    
+    start = rumboot_platform_get_uptime();
+    
     nu_vpe_run(NU_VPE_STANDALONE_BASE, &cfg);     // To Invoke Or Not To Invoke Internal DMA Channel - Decide inside nu_vpe_run
     
       // Finalize Required DMA Channels
@@ -152,6 +165,13 @@ int main() {
       nu_vpe_wait_wr_main_channel_complete(NU_CPDMAC_ASM_BASE);
     nu_vpe_wait(NU_VPE_STANDALONE_BASE, &cfg);
     
+    end = rumboot_platform_get_uptime();
+    delta = end - start;
+    num_cycles = delta * 1000 / 650; // delta in microseconds, 1 DUT cycle is 650 nanoseconds
+    num_vectors = in_metrics->H * in_metrics->W * in_metrics->C / 16;
+    productivity_x1000 =  num_vectors*1000 / num_cycles;
+    productivity_x100 = productivity_x1000 / 10;
+    productivity_frac = productivity_x1000 % 10;
     
     rumboot_printf("Comparing..\n");
     
@@ -161,6 +181,11 @@ int main() {
       rumboot_printf("Test FAILED at iteration %d\n",i);
       return 1;
     }
+    
+//     rumboot_printf("Productivity: %d.%d Percent  num_vectors = %d, start = %d, end = %d, delta = %d, num_cycles = %d \n",
+//                    productivity_x100,productivity_frac,num_vectors,start,end,delta,num_cycles);
+    rumboot_printf("Productivity: %d.%d Percent  num_vectors = %d, num_cycles = %d \n",
+                   productivity_x100,productivity_frac,num_vectors,num_cycles);
   }
   
   return 0;
