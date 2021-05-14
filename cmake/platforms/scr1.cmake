@@ -419,6 +419,17 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       )
     endmacro()
 
+    macro(ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA name rm_bin_name)
+      add_rumboot_target(
+        CONFIGURATION ROM
+        NAME ${name}
+        FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe.c
+        CFLAGS -DFORCE_VPE_WDMA_EN=1
+        PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
+        IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+      )
+    endmacro()
+
     if(NOT DEFINED VPE_BINARIES_ROOT)
       set(VPE_BINARIES_ROOT /opt/lib_h31/LAVA_lib/experiment_stage_2/VPE)
     endif()
@@ -524,6 +535,8 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_24_op2_together main_vpe_24_op2_together) # VPE_24
     ADD_VPE_COUPLED_TEST_LOOP(vpe_25_op012_together main_vpe_25_op012_together) # VPE_25
     ADD_VPE_COUPLED_TEST_LOOP(vpe_27_0_control_cons main_vpe_27_0_control_cons) # VPE_27
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_26_autonom main_vpe_26_autonom)
+    ADD_VPE_COUPLED_TEST_LOOP(vpe_26_autonom_nowdma main_vpe_26_autonom)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_28_perf main_28_perf) # VPE_28
 
 
