@@ -1446,8 +1446,7 @@ if ((0x00000000) !=(ioread32(base + NU_VPE + NU_VPE_LUT_ACCESS_CFG)& 0x000301FF)
 		rumboot_printf("vpe_res12_tmp =%x\n",tmp);	
 		rumboot_printf("vpe_res12 error\n");}
 		else 
-		{vpe_res12=0;}
-			
+		{vpe_res12=0;}			
 //----------------------------------------------------------------
 	  		
 	  resr = 	cp0_res0 || cp0_res1|| cp0_res2 || cp0_res3 || cp0_res4 || cp0_res5 ||
@@ -1458,7 +1457,7 @@ if ((0x00000000) !=(ioread32(base + NU_VPE + NU_VPE_LUT_ACCESS_CFG)& 0x000301FF)
 				src_res16 || src_res17 || src_res18 || src_res19 || src_res21 || src_res22 ||
 				op0_res0 || op0_res1|| op0_res2 || op0_res3 || op0_res4 || op0_res5 || op0_res7 || op0_res8 ||
 				op0_res9 || op0_res10 || op0_res11 || op0_res12 || op0_res13 || op0_res14 || op0_res15 || 
-				op0_res16 || op0_res17 || op0_res18 || op0_res19 || op0_res21,op0_res22 ||
+				op0_res16 || op0_res17 || op0_res18 || op0_res19 || op0_res21 || op0_res22 ||
 				op1_res0 || op1_res1|| op1_res2 || op1_res3 || op1_res4 ||  op1_res5 || op1_res7 || op1_res8 ||
 				op1_res9 || op1_res10 || op1_res11 || op1_res12 || op1_res13 || op1_res14 || op1_res15 || 
 				op1_res16 || op1_res17 || op1_res18 || op1_res19 || op1_res21 || op1_res22 ||
