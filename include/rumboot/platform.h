@@ -60,6 +60,7 @@ enum rumboot_simulation_event {
     EVENT_MEMCMP, /** memcmp acceleration */
     EVENT_MEMFILL8, /** memfill8 acceleration */
     EVENT_REALTIME, /** Get $realtime. Timer tests only! */
+    EVENT_CRC32, /** CRC32 calculation stuff */
 };
 
 

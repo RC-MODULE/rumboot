@@ -90,8 +90,11 @@ static const uint32_t crc32_tab[] = {
 	0xb40bbe37, 0xc30c8ea1, 0x5a05df1b, 0x2d02ef8d
 };
 
-uint32_t
-crc32(uint32_t crc, const void *buf, size_t size)
+#ifndef RUMBOOT_PRINTF_ACCEL
+/*   When simulating in 'debug' configuration the offloaded implementation is
+ *   provided from offload.c 
+ */ 
+uint32_t crc32(uint32_t crc, const void *buf, size_t size)
 {
 	const uint8_t *p;
 
@@ -103,3 +106,5 @@ crc32(uint32_t crc, const void *buf, size_t size)
 
 	return crc ^ ~0U;
 }
+
+#endif
