@@ -391,7 +391,6 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     ADD_VPE_COUPLED_TEST(vpe_first_coupled main_sqared_try_all_ops)
     ADD_VPE_COUPLED_TEST(vpe_first_coupled_float main_sqared_try_all_ops_float)
     ADD_VPE_COUPLED_TEST(vpe_nothing_to_do main_nothing_to_do)
-    ADD_VPE_COUPLED_TEST(vpe_2_dma main_vpe_2_dma)
 
     ADD_MPE_COUPLED_TEST(mpe_first_coupled main_sqared_simple_mpe)
 
@@ -401,12 +400,6 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     ADD_PPE_NEXT_COUPLED_TEST(ppe_one_coupled main_i8_ppe_coupled)
     ADD_PPE_NEXT_COUPLED_TEST(ppe_probe_coupled main_probe_ppe_coupled)
 
-    add_rumboot_target(
-      CONFIGURATION ROM
-      FILES scr1/targets/simple-rom/nu/coupled_with_rm/dma_coupled_vpe.c
-      PREPCMD ${NA_RM_BIN_PATH}/main_vpe_2_dma ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
-      IRUN_FLAGS ${NA_RM_PLUSARGS}
-    )
 
     
     macro(ADD_VPE_COUPLED_TEST_LOOP name rm_bin_name)
@@ -466,6 +459,17 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       )
     endmacro()
 
+    macro(ADD_VPE_FROM_BINARY_TEST_LOOP_FORCE_WDMA name bin_dir)
+      add_rumboot_target(
+        CONFIGURATION ROM
+        NAME ${name}
+        CFLAGS -DFORCE_VPE_WDMA_EN=1
+        FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe.c
+        PREPCMD cp ${VPE_BINARIES_ROOT}/${bin_dir}/* . || exit 1
+        IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+      )
+    endmacro()
+
     macro(ADD_PPE_COUPLED_TEST_LOOP name rm_bin_name ShowPerf)
       add_rumboot_target(
         CONFIGURATION ROM
@@ -502,6 +506,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     endmacro()
 
     ADD_VPE_COUPLED_TEST_LOOP(vpe_try_loop main_nothing_to_do_x4)
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_2_dma main_vpe_2_dma)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_9_0_op0_relu_int32 main_vpe_9_0_op0_relu_int32)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_15_0_op1_relu_int32 main_vpe_15_0_op1_relu_int32)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_9_1_op0_relu_fp32  main_vpe_9_1_op0_relu_fp32)
@@ -563,6 +568,8 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
 
     ###############
+
+    ADD_VPE_FROM_BINARY_TEST_LOOP_FORCE_WDMA(vpe_2_dma_fb VPE_2)
     ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_9_0_op0_relu_int32_fb VPE_9/0)
     ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_15_0_op1_relu_int32_fb VPE_15/0)
     ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_9_1_op0_relu_fp32_fb VPE_9/1)
