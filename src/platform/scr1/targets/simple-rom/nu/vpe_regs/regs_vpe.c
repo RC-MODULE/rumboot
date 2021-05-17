@@ -2964,7 +2964,7 @@ int nu_vpe_wr_regs(uintptr_t base, int32_t data) {
 		rumboot_printf("vpe_res8 error\n");}
 		else 
 		{vpe_res8=0;}
-/*	
+	
 		iowrite32(tmpr, base + NU_VPE + REG_VPE_IRQ_MASK_ADDR );	
 	if ((tmpr & 0x00000003) != (ioread32( base + NU_VPE + REG_VPE_IRQ_MASK_ADDR )& 0x00000003))
 		{vpe_res12 =1;
@@ -2973,7 +2973,7 @@ int nu_vpe_wr_regs(uintptr_t base, int32_t data) {
 		rumboot_printf("vpe_res12 error\n");}
 		else 
 		{vpe_res12=0;}	
-*/	
+	
 //----------------------------------------------------------------
 	  		
 	  resr = 	cp0_res0 || cp0_res1|| cp0_res2 || cp0_res3 || cp0_res4 || cp0_res5 ||
