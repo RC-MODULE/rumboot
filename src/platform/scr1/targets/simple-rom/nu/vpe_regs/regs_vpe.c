@@ -2978,7 +2978,7 @@ int nu_vpe_wr_regs(uintptr_t base, int32_t data) {
 	  		
 	  resr = 	cp0_res0 || cp0_res1|| cp0_res2 || cp0_res3 || cp0_res4 || cp0_res5 ||
 				cp1_res0 || cp1_res1|| cp1_res2 || cp1_res3 || cp1_res4 || cp1_res5 ||
-				cp2_res2 || cp2_res1|| cp2_res2 || cp2_res3 || cp2_res4 || cp2_res5 || cp2_res6 || cp2_res7|| cp2_res8 || cp2_res9 || cp2_res10 || cp2_res11 ||
+				cp2_res0 || cp2_res1|| cp2_res2 || cp2_res3 || cp2_res4 || cp2_res5 || cp2_res6 || cp2_res7|| cp2_res8 || cp2_res9 || cp2_res10 || cp2_res11 ||
 				/*src_res0 || src_res1|| src_res2 || */src_res3 || src_res4 || src_res5 || src_res7 || src_res8 ||
 				src_res9 || src_res10 || src_res11 || src_res12 || src_res13 || src_res14 || src_res15 || 
 				src_res16 || src_res17 || src_res18 || src_res19 || src_res21 ||

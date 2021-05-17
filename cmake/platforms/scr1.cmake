@@ -617,6 +617,8 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_23_op1_together_fb VPE_23) # VPE_23
     ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_24_op2_together_fb VPE_24) # VPE_24
     ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_25_op012_together_fb VPE_25) # VPE_25
+    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_27_0_control_cons_fb VPE_27/0)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_26_autonom_fb VPE_26)
     ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_28_perf_fb VPE_28) # VPE_28
 
     ###############
