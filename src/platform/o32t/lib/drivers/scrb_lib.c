@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-#include <regs/regs_scrb.h>
-#include <devices/scrb.h>
+#include <platform/regs/regs_scrb.h>
+#include <platform/devices/scrb.h>
 #include <rumboot/io.h>
 #include <rumboot/printf.h>
 

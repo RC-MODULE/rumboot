@@ -6,9 +6,7 @@
 #include <stdint.h>
 
 #include <platform/devices.h>
-#include <devices/scrb.h>
 
-#include <regs/regs_scrb.h>
 #include <rumboot/io.h>
 #include <rumboot/printf.h>
 

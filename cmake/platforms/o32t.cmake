@@ -19,8 +19,9 @@ file(GLOB PLATFORM_SOURCES
   ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/*.S
   ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/lib/drivers/ndma_simple.c
   ${CMAKE_SOURCE_DIR}/src/lib/drivers/com_simple.c
-  ${CMAKE_SOURCE_DIR}/src/lib/drivers/irq-mpic128.c)
-
+  ${CMAKE_SOURCE_DIR}/src/lib/drivers/irq-mpic128.c
+  ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/lib/drivers/scrb_lib.c
+)
 #Flags for Power PC
 macro(RUMBOOT_PLATFORM_SET_COMPILER_FLAGS)
   set(RUMBOOT_COMMON_FLAGS "-mcpu=476fp -fno-plt -fno-pic -m32 -ffreestanding -std=gnu99 -DRUMBOOT_PLATFORM_NUM_HEAPS=10 -DRUMBOOT_SUPPORTS_SPL_ENDIAN_SWAP")
@@ -988,6 +989,11 @@ add_rumboot_target(
   FILES sctl_integration.c
 )
 
+add_rumboot_target(
+  CONFIGURATION IRAM_IM0
+  FILES scrb.c
+  IRUN_FLAGS +insert_error_in_im1_im2_mem
+)
 endmacro()
 
 

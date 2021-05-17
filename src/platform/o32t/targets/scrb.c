@@ -5,8 +5,9 @@
 #include <rumboot/testsuite.h>
 
 #include <platform/devices.h>
-#include <regs/regs_scrb.h>
-#include <devices/scrb.h>
+#include <platform/regs/regs_scrb.h>
+#include <platform/devices/scrb.h>
+
 #include <rumboot/io.h>
 #include <rumboot/printf.h>
 #include <rumboot/irq.h>
@@ -89,7 +90,7 @@ bool test_scrb( uint32_t structure ) {
     scrb_set_allcnt(SCRB_BASE, stru->all_errors);
     scrb_set_fref(SCRB_BASE, stru->im1_errors);
 
-    mask_value = (SCRB_BASE, stru->dont_mask_all<<1)|(stru->dont_mask_sep);
+    mask_value = (stru->dont_mask_all<<1)|(stru->dont_mask_sep);
     scrb_set_imr(SCRB_BASE, mask_value);
     scrb_set_work_mode(SCRB_BASE, stru->mode);
     scrb_set_priority(SCRB_BASE, stru->pri);
@@ -110,10 +111,10 @@ bool test_scrb( uint32_t structure ) {
     irq_struct_inst->int1_irq=0;
 
         
-    rumboot_printf("Check XOR - %x\n", (!(stru->im1_enable) & ((stru->im2_enable)^(stru->im3_enable))) | ((stru->im1_enable) &(!(stru->im2_enable)) &(stru->im3_enable)) );
-    rumboot_printf("While IM1 - %x\n", stru->im1_enable);
-    rumboot_printf("While IM2 - %x\n", stru->im2_enable);
-    rumboot_printf("While IM3 - %x\n", stru->im3_enable);
+    //rumboot_printf("Check XOR - %x\n", (!(stru->im1_enable) & ((stru->im2_enable)^(stru->im3_enable))) | ((stru->im1_enable) &(!(stru->im2_enable)) &(stru->im3_enable)) );
+    //rumboot_printf("While IM1 - %x\n", stru->im1_enable);
+    //rumboot_printf("While IM2 - %x\n", stru->im2_enable);
+    //rumboot_printf("While IM3 - %x\n", stru->im3_enable);
 
     
     
@@ -266,15 +267,10 @@ static struct irq_struct irq_struct_instance = {
 
 
 // Новые тесты
-//     | Who         | Mode | Pri | Mask all | Mask sep | Timer  | All errors | Err im1 | Err im2
-//  0  | im1         | 1    | 0   | 0        | 0        |  0 бит | 4          | 3       | 3
-//  1  | im1         | 1    | 1   | 1        | 1        |  3 бит | 4          | 3       | 3
-//  2  | im2         | 1    | 1   | 0        | 1        |  0 бит | 4          | 3       | 3
-//  3  | im2         | 1    | 0   | 1        | 0        |  3 бит | 4          | 3       | 3
-//  4  | im3         | 1    | 0   | 0        | 0        |  0 бит | 4          | 3       | 3
-//  5  | im3         | 1    | 1   | 1        | 1        |  3 бит | 4          | 3       | 3
-//  6  | im1+im2+im3 | 1    | 1   | 0        | 1        |  0 бит | 4          | 3       | 3
-//  7  | im1+im2+im3 | 0    | 0   | 1        | 0        | 16 бит | 4          | 3       | 3
+//     | Who         | Mode | Pri | Mask all | Mask sep | Timer     | All errors | Err im1 | Err im2 | Err im3
+//  0  | im1         | 0    | 0   | 0        | 0        |  0 бит    | 4          | 3       | 3       | 3
+//  1  | im2         | 0    | 1   | 1        | 1        |  3 бит    | 4          | 3       | 3       | 3
+//  2  | im3         | 1    | 1   | 0        | 1        | 1<<17 бит | 4          | 3       | 3       | 3
 
 
 
@@ -285,7 +281,7 @@ static struct scrb_test_config in_new[ ] = {
         .im1_enable     = 1,
         .im2_enable     = 0,
         .im3_enable     = 0,
-        .mode           = 1,
+        .mode           = 0,
         .pri            = 0,
         .dont_mask_all  = 1,
         .dont_mask_sep  = 1,
@@ -299,14 +295,14 @@ static struct scrb_test_config in_new[ ] = {
     // 1
     {
         .test_number    = 1,
-        .im1_enable     = 1,
-        .im2_enable     = 0,
+        .im1_enable     = 0,
+        .im2_enable     = 1,
         .im3_enable     = 0,
-        .mode           = 1,
+        .mode           = 0,
         .pri            = 1,
         .dont_mask_all  = 0,
         .dont_mask_sep  = 0,
-        .timer_value    = 1<<3,
+        .timer_value    = 0,
         .all_errors     = 4,
         .im1_errors     = 3,
         .im2_errors     = 3,
@@ -317,104 +313,20 @@ static struct scrb_test_config in_new[ ] = {
     {
         .test_number    = 2,
         .im1_enable     = 0,
-        .im2_enable     = 1,
-        .im3_enable     = 0,
-        .mode           = 1,
-        .pri            = 1,
-        .dont_mask_all  = 1,
-        .dont_mask_sep  = 0,
-        .timer_value    = 0,
-        .all_errors     = 4,
-        .im1_errors     = 3,
-        .im2_errors     = 3,
-        .im3_errors     = 3,
-        .irq_struct_inst = &irq_struct_instance,
-    },
-    // 3
-    {
-        .test_number    = 3,
-        .im1_enable     = 0,
-        .im2_enable     = 1,
-        .im3_enable     = 0,
-        .mode           = 1,
-        .pri            = 0,
-        .dont_mask_all  = 0,
-        .dont_mask_sep  = 1,
-        .timer_value    = 1<<3,
-        .all_errors     = 4,
-        .im1_errors     = 3,
-        .im2_errors     = 3,
-        .im3_errors     = 3,
-        .irq_struct_inst = &irq_struct_instance,
-    },
-    // 4
-    {
-        .test_number    = 4,
-        .im1_enable     = 0,
-        .im2_enable     = 0,
-        .im3_enable     = 1,
-        .mode           = 1,
-        .pri            = 0,
-        .dont_mask_all  = 1,
-        .dont_mask_sep  = 1,
-        .timer_value    = 0,
-        .all_errors     = 4,
-        .im1_errors     = 3,
-        .im2_errors     = 3,
-        .im3_errors     = 3,
-        .irq_struct_inst = &irq_struct_instance,
-    },
-    // 5
-    {
-        .test_number    = 5,
-        .im1_enable     = 0,
         .im2_enable     = 0,
         .im3_enable     = 1,
         .mode           = 1,
         .pri            = 1,
-        .dont_mask_all  = 0,
-        .dont_mask_sep  = 0,
-        .timer_value    = 1<<3,
-        .all_errors     = 4,
-        .im1_errors     = 3,
-        .im2_errors     = 3,
-        .im3_errors     = 3,
-        .irq_struct_inst = &irq_struct_instance,
-    },
-    // 6
-    {
-        .test_number    = 6,
-        .im1_enable     = 1,
-        .im2_enable     = 1,
-        .im3_enable     = 1,
-        .mode           = 1,
-        .pri            = 1,
         .dont_mask_all  = 1,
         .dont_mask_sep  = 0,
-        .timer_value    = 0,
+        .timer_value    = 1<<17,
         .all_errors     = 4,
         .im1_errors     = 3,
         .im2_errors     = 3,
         .im3_errors     = 3,
         .irq_struct_inst = &irq_struct_instance,
     },
-    // 7
-    {
-        .test_number    = 7,
-        .im1_enable     = 1,
-        .im2_enable     = 1,
-        .im3_enable     = 1,
-        .mode           = 0,
-        .pri            = 0,
-        .dont_mask_all  = 0,
-        .dont_mask_sep  = 1,
-        .timer_value    = 0,//1<<16,
-        .all_errors     = 4,
-        .im1_errors     = 3,
-        .im2_errors     = 3,
-        .im3_errors     = 3,
-        .irq_struct_inst = &irq_struct_instance,
-    },
+
 };
 
 
@@ -424,11 +336,7 @@ TEST_SUITE_BEGIN(scrb_testlist, "SCRB TEST")
     TEST_ENTRY("SCRB_0", test_scrb, (uint32_t) &in_new[0]),
     TEST_ENTRY("SCRB_1", test_scrb, (uint32_t) &in_new[1]),
     TEST_ENTRY("SCRB_2", test_scrb, (uint32_t) &in_new[2]),
-    TEST_ENTRY("SCRB_3", test_scrb, (uint32_t) &in_new[3]),
-    TEST_ENTRY("SCRB_4", test_scrb, (uint32_t) &in_new[4]),
-    TEST_ENTRY("SCRB_5", test_scrb, (uint32_t) &in_new[5]),
-    TEST_ENTRY("SCRB_6", test_scrb, (uint32_t) &in_new[6]),
-    TEST_ENTRY("SCRB_7", test_scrb, (uint32_t) &in_new[7]),
+
 TEST_SUITE_END();
 
 int main() {

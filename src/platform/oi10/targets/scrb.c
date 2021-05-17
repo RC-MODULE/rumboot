@@ -7,8 +7,9 @@
 #include <rumboot/testsuite.h>
 
 #include <platform/devices.h>
-#include <regs/regs_scrb.h>
-#include <devices/scrb.h>
+#include <platform/regs/regs_scrb.h>
+#include <platform/devices/scrb.h>
+
 #include <rumboot/io.h>
 #include <rumboot/printf.h>
 #include <rumboot/irq.h>
@@ -86,7 +87,7 @@ bool test_scrb( uint32_t structure ) {
     scrb_set_allcnt(SCRB_BASE, stru->all_errors);
     scrb_set_fref(SCRB_BASE, stru->im1_errors);
 
-    mask_value = (SCRB_BASE, stru->dont_mask_all<<1)|(stru->dont_mask_sep);
+    mask_value = (stru->dont_mask_all<<1)|(stru->dont_mask_sep);
     scrb_set_imr(SCRB_BASE, mask_value);
     scrb_set_work_mode(SCRB_BASE, stru->mode);
     scrb_set_priority(SCRB_BASE, stru->pri);
