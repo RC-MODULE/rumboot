@@ -26,7 +26,7 @@ int main() {
   int i, it_nmb, dtB;
   int clk_cnt;
 
-  int heap_id = nu_get_heap_id();;
+  int heap_id = nu_get_heap_id();
 
   rumboot_printf("coupled_loop_ppe\n");
 

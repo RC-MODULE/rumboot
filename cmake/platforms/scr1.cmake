@@ -470,12 +470,17 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       )
     endmacro()
 
+    # works after rm CMakeCache.txt
+    if(NOT DEFINED PPE_SEED)
+      set(PPE_SEED 0)
+    endif()
+
     macro(ADD_PPE_COUPLED_TEST_LOOP name rm_bin_name ShowPerf)
       add_rumboot_target(
         CONFIGURATION ROM
         NAME ${name}
         FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_ppe.c
-        PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
+        PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${PPE_SEED} > ${RM_LOGFILE} || exit 1
         CFLAGS -D${ShowPerf}
         IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
       )
