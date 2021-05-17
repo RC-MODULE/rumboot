@@ -1,5 +1,5 @@
-
-#include <platform/devices/greth.h>
+#include <devices/ugly/greth.h>
+#include <regs/regs_greth.h>
 
 void greth_set_mac(uint32_t base_addr, greth_mac_t* mac)
 {
@@ -167,7 +167,7 @@ bool greth_wait_receive(uint32_t base_addr)
     uint32_t mask;
     cur_status = ioread32(base_addr + STATUS);
 
-    rumboot_printf("Waiting receive by GRETH%d..\n", base_addr==GRETH_0_BASE? 0 : 1);
+//    rumboot_printf("Waiting receive by GRETH%d..\n", base_addr==GRETH_0_BASE? 0 : 1);
     mask = ((1 << GRETH_STATUS_IA) |
             (1 << GRETH_STATUS_TS) |
             (1 << GRETH_STATUS_TA) |
@@ -253,9 +253,9 @@ bool greth_configure_for_receive( uint32_t base_addr, void volatile * const dst,
 {
 
     greth_mac_t greth_mac;
-    uint32_t greth_idx = base_addr==GRETH_0_BASE ? 0 : 1;
+//    uint32_t greth_idx = base_addr==GRETH_0_BASE ? 0 : 1;
 
-    rumboot_printf("Start receiving %d bytes by GRETH%d(0x%x) to 0x%x\n", length, greth_idx, base_addr, (uint32_t)dst);
+//    rumboot_printf("Start receiving %d bytes by GRETH%d(0x%x) to 0x%x\n", length, greth_idx, base_addr, (uint32_t)dst);
 
     //clear status register by writing '1's (TA,RA,TI,RI,TE,RE)
     iowrite32( (1 << GRETH_STATUS_RE) |
@@ -372,9 +372,9 @@ bool greth_wait_receive_err_irq(uint32_t base_addr, uint32_t volatile* eth_irq_h
 bool greth_configure_for_transmit( uint32_t base_addr, void volatile * const src, uint32_t length, greth_descr_t* tx_descriptor_data_, greth_mac_t* gr_mac)
 {
     greth_mac_t greth_mac;
-    uint32_t greth_idx = base_addr==GRETH_0_BASE ? 0 : 1;
+//    uint32_t greth_idx = base_addr==GRETH_0_BASE ? 0 : 1;
 
-    rumboot_printf("Sending %d bytes by GRETH%d(0x%x) from 0x%x \n", length, greth_idx, base_addr, (uint32_t)src);
+//    rumboot_printf("Sending %d bytes by GRETH%d(0x%x) from 0x%x \n", length, greth_idx, base_addr, (uint32_t)src);
 
     //clear status register by writing '1's (TA,RA,TI,RI,TE,RE)
     iowrite32( (1 << GRETH_STATUS_RE) |

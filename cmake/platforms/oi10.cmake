@@ -24,7 +24,7 @@ file(GLOB PLATFORM_SOURCES
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/lib/drivers/l2scrub.c
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/lib/drivers/l2c.c
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/lib/drivers/hscb.c
-    ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/lib/drivers/greth.c
+#    ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/lib/drivers/greth.c
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/lib/drivers/ltrace.c
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/lib/drivers/itrace.c
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/lib/drivers/sp804.c
@@ -55,6 +55,9 @@ macro(RUMBOOT_PLATFORM_SET_COMPILER_FLAGS)
     set(CMAKE_DUMP_FLAGS -M476,32)
     if (PRODUCTION_TESTING)
       SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DPRODUCTION_TESTING")
+    endif()
+    if (RUMBOOT_SOC_O32T)
+      SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DRUMBOOT_SOC_O32T")
     endif()
 endmacro()
 
@@ -835,12 +838,12 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       PREFIX greth0-edcl-im2
     )
 
-    add_rumboot_target(
-      CONFIGURATION IRAM
-      FILES test_oi10_greth.c
-      CFLAGS -DGRETH_BASE=GRETH_0_BASE -DEDCL_TEST_BANK=IM1
-      PREFIX greth0-edcl-im1
-    )
+     add_rumboot_target(
+         CONFIGURATION IRAM
+         FILES test_oi10_greth.c
+         CFLAGS -DGRETH_BASE=GRETH_0_BASE -DEDCL_TEST_BANK=IM1
+         PREFIX greth0-edcl-im1
+     )
 
     add_rumboot_target(
       CONFIGURATION IRAM

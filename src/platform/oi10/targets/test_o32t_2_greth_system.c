@@ -18,7 +18,7 @@
 #include <devices/ugly/emi.h>
 #include <platform/test_assert.h>
 
-#include <platform/devices/greth.h>
+#include <devices/ugly/greth.h>
 
 #define EVENT_CHECK_RUN_HPROT_MONITOR     0x00001004
 #define EVENT_CHECK_STOP_HPROT_MONITOR    0x00001005
@@ -120,12 +120,14 @@ void prepare_test_data()
 {
     uint32_t i=0;
 
-#ifdef INIT_EMI
-    {
-        rumboot_putstring("Init EMI");
-        emi_init(DCR_EM2_EMI_BASE);
-    }
-#endif
+    #ifndef GRETH_CMAKE_O32T
+        #ifdef INIT_EMI
+            {
+                rumboot_putstring("Init EMI");
+                emi_init(DCR_EM2_EMI_BASE);
+            }
+        #endif
+    #endif
     
     rumboot_putstring("Preparing data");
     tx0_descriptor_data_ = (greth_descr_t*) rumboot_malloc_from_named_heap_aligned(DESC_HEAP_NAME, N_DESC * sizeof(greth_descr_t), 1024);
@@ -274,7 +276,9 @@ int main(void)
     tbl = create_greth01_irq_handlers();
     prepare_test_data();
     
-    test_event(EVENT_CHECK_RUN_HPROT_MONITOR);//checking switch u_nic400_oi10_axi32.hprot_eth_1(0)_s from 0x3 to 0xF (by request from JIRA-78)
+    #ifndef GRETH_CMAKE_O32T
+        test_event(EVENT_CHECK_RUN_HPROT_MONITOR);//checking switch u_nic400_oi10_axi32.hprot_eth_1(0)_s from 0x3 to 0xF (by request from JIRA-78)
+    #endif
     dcr_write(DCR_SCTL_BASE + SCTL_IFSYS_ETH_HPROT, 0x3F3F3F3F);
         
     start_transfer_wait_irq();
@@ -294,7 +298,9 @@ int main(void)
     rumboot_free(tx1_descriptor_data_);
     rumboot_free(rx1_descriptor_data_);
     
-    test_event(EVENT_CHECK_STOP_HPROT_MONITOR);
+    #ifndef GRETH_CMAKE_O32T
+        test_event(EVENT_CHECK_STOP_HPROT_MONITOR);
+    #endif
     delete_greth01_irq_handlers(tbl);
     return 0;
 }

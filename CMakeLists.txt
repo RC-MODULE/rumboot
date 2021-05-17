@@ -257,6 +257,7 @@ ADD_SOURCE("src/lib/drivers/rcm_cp.c")
 if (RUMBOOT_ARCH MATCHES ppc)
   ADD_SOURCE("src/lib/drivers/ugly/plb6mcif2.c")
   ADD_SOURCE("src/lib/drivers/ugly/emi.c")
+  ADD_SOURCE("src/lib/drivers/ugly/greth.c")
 endif()
 
 if (NOT RUMBOOT_PLATFORM STREQUAL "native")

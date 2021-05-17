@@ -796,7 +796,83 @@ add_rumboot_target(
   IRUN_FLAGS +mkio_signal_test
   PREFIX mkio3-em2-func-a
 )
-
+# --- GRETH ---
+    add_rumboot_target(
+      CONFIGURATION IRAM_IM1
+      FILES oi10/targets/test_oi10_greth.c
+      CFLAGS -DGRETH_BASE=GRETH_0_BASE 
+             -DEDCL_TEST_BANK=IM3
+             -DGRETH_CMAKE_O32T
+             -DRUMBOOT_SOC_O32T
+      PREFIX greth0-edcl-im3
+    )
+    
+    add_rumboot_target(
+      CONFIGURATION IRAM_IM1
+      FILES oi10/targets/test_oi10_greth.c
+      CFLAGS -DGRETH_BASE=GRETH_1_BASE
+             -DEDCL_TEST_BANK=IM3
+             -DGRETH_CMAKE_O32T
+             -DRUMBOOT_SOC_O32T
+      PREFIX greth1-edcl-im3
+    )
+    
+    add_rumboot_target(
+      CONFIGURATION IRAM_IM1
+      FILES oi10/targets/test_oi10_greth.c
+      CFLAGS -DGRETH_BASE=GRETH_0_BASE
+             -DSRC_HEAP_NAME="IM3"
+             -DDST_HEAP_NAME="IM3"
+             -DGRETH_CMAKE_O32T
+             -DRUMBOOT_SOC_O32T
+      PREFIX greth0-im3-im3
+    )
+    
+    add_rumboot_target(
+      CONFIGURATION IRAM_IM1
+      FILES oi10/targets/test_oi10_greth.c
+      CFLAGS -DGRETH_BASE=GRETH_1_BASE
+             -DSRC_HEAP_NAME="IM3"
+             -DDST_HEAP_NAME="IM3"
+             -DGRETH_CMAKE_O32T
+             -DRUMBOOT_SOC_O32T
+      PREFIX greth1-im3-im3
+    )
+    
+    add_rumboot_target(
+      CONFIGURATION IRAM_IM1
+      TESTGROUP test_greth_system
+      FILES oi10/targets/test_o32t_greth_system.c
+      IRUN_FLAGS +enable_IPG_checker
+      CFLAGS -DTX_GRETH_BASE=GRETH_0_BASE 
+             -DRX_GRETH_BASE=GRETH_1_BASE 
+             #-DINIT_EMI
+             -DDESC_HEAP_NAME="IM3"
+             -DSRC_HEAP_NAME="IM3"
+             -DDST_HEAP_NAME="IM3"
+             -DN_DESC=8
+             -DGRETH_TEST_DATA_LEN_BYTES=60
+             -DGRETH_CMAKE_O32T
+             -DRUMBOOT_SOC_O32T
+      PREFIX tx0-rx1-im3-im3_n8_60B
+    )
+    
+    add_rumboot_target(
+      CONFIGURATION IRAM_IM1
+      TESTGROUP test_greth_system
+      FILES oi10/targets/test_o32t_2_greth_system.c
+      IRUN_FLAGS +enable_IPG_checker
+      CFLAGS -DDESC_HEAP_NAME="IM3"
+             -DSRC_HEAP_NAME="IM3"
+             -DDST_HEAP_NAME="IM3"
+             -DN_DESC=8
+             -DGRETH_TEST_DATA_LEN_BYTES=60
+             #-DINIT_EMI
+             -DGRETH_CMAKE_O32T
+             -DRUMBOOT_SOC_O32T
+      PREFIX 2_greth_system-im3-im3_n8_60B
+    )
+#---
 add_rumboot_target(
   CONFIGURATION IRAM_IM0
   CFLAGS -DUSE_SWINT=132

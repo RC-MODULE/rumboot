@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
+#include <assert.h>
 
 #include <rumboot/printf.h>
 #include <rumboot/platform.h>
@@ -16,9 +17,12 @@
 #include <regs/fields/mpic128.h>
 #include <platform/regs/sctl.h>
 #include <devices/ugly/emi.h>
-#include <platform/test_assert.h>
-
-#include <platform/devices/greth.h>
+//#include <platform/test_assert.h>
+#ifndef GRETH_CMAKE_O32T
+    #include <platform/test_event_c.h>
+#endif
+   
+#include <devices/ugly/greth.h>
 
 #define GRETH_TEST_DATA_LEN_BYTES    65
 #define GRETH_EDCL_DATA_LEN_BYTES    16
@@ -39,17 +43,15 @@ static uintptr_t EDCL_TEST_ADDR;
 #define EVENT_CHECK_RUN_HPROT_MONITOR     0x00001004
 #define EVENT_CHECK_STOP_HPROT_MONITOR    0x00001005
 
-//setting non-default EDCLADDRL values
-#define EDCLADDRL0_TEST  0x1
-#define EDCLADDRL1_TEST  0x2
-#define EDCLIP0_TEST     (EDCLIP | EDCLADDRL0_TEST)
-#define EDCLIP1_TEST     (EDCLIP | EDCLADDRL1_TEST)
-
 #define TST_MAC_MSB     0xFFFF
 #define TST_MAC_LSB     0xFFFFFFFF
 greth_mac_t tst_greth_mac       = {TST_MAC_MSB, TST_MAC_LSB};
-greth_mac_t tst_greth_edcl_mac0 = {EDCLMAC_MSB, (EDCLMAC_LSB | EDCLADDRL0_TEST) };
-greth_mac_t tst_greth_edcl_mac1 = {EDCLMAC_MSB, (EDCLMAC_LSB | EDCLADDRL1_TEST) };
+greth_mac_t tst_greth_edcl_mac0 = {EDCLMAC_MSB, (EDCLMAC_LSB | EDCLADDRL0) };
+greth_mac_t tst_greth_edcl_mac1 = {EDCLMAC_MSB, (EDCLMAC_LSB | EDCLADDRL1) };
+
+#ifndef GRETH_BASE
+ #define GRETH_BASE=GRETH_0_BASE
+#endif
 
 #ifndef SRC_HEAP_NAME
  #define SRC_HEAP_NAME "IM1"
@@ -189,7 +191,7 @@ void regs_check(uint32_t base_addr)
     {
         rumboot_printf("Checking access to GRETH%d(0x%x) registers\n", 0, base_addr);
     }
-    TEST_ASSERT(rumboot_regpoker_check_array(greth_check_array, base_addr)==0, "Failed to check GRETH registers\n");
+    assert(rumboot_regpoker_check_array(greth_check_array, base_addr)==0);
 }
 /*
  * MDIO checks
@@ -197,54 +199,32 @@ void regs_check(uint32_t base_addr)
 void mdio_check(uint32_t base_addr)
 {
     rumboot_printf("MDIO check for GRETH%d(0x%x)\n", GET_GRETH_IDX(base_addr), base_addr);
-    TEST_ASSERT(greth_mdio_read(base_addr, ETH_PHY_ADDR, ETH_PHY_CTRL      )==ETH_PHY_CTRL_DEFAULT      , "Error at mdio reading ETH_PHY_CTRL       register\n");
-    TEST_ASSERT(greth_mdio_read(base_addr, ETH_PHY_ADDR, ETH_PHY_STATUS    )==ETH_PHY_STATUS_DEFAULT    , "Error at mdio reading ETH_PHY_STATUS     register\n");
-    TEST_ASSERT(greth_mdio_read(base_addr, ETH_PHY_ADDR, ETH_PHY_ID0       )==ETH_PHY_ID0_DEFAULT       , "Error at mdio reading ETH_PHY_ID0        register\n");
-    TEST_ASSERT(greth_mdio_read(base_addr, ETH_PHY_ADDR, ETH_PHY_ID1       )==ETH_PHY_ID1_DEFAULT       , "Error at mdio reading ETH_PHY_ID1        register\n");
-    TEST_ASSERT(greth_mdio_read(base_addr, ETH_PHY_ADDR, ETH_PHY_ANEGADV   )==ETH_PHY_ANEGADV_DEFAULT   , "Error at mdio reading ETH_PHY_ANEGADV    register\n");
-    TEST_ASSERT(greth_mdio_read(base_addr, ETH_PHY_ADDR, ETH_PHY_ANEGLP    )==ETH_PHY_ANEGLP_DEFAULT    , "Error at mdio reading ETH_PHY_ANEGLP     register\n");
-    TEST_ASSERT(greth_mdio_read(base_addr, ETH_PHY_ADDR, ETH_PHY_ANEGXP    )==ETH_PHY_ANEGXP_DEFAULT    , "Error at mdio reading ETH_PHY_ANEGXP     register\n");
-    TEST_ASSERT(greth_mdio_read(base_addr, ETH_PHY_ADDR, ETH_PHY_ANEGNPTX  )==ETH_PHY_ANEGNPTX_DEFAULT  , "Error at mdio reading ETH_PHY_ANEGNPTX   register\n");
-    TEST_ASSERT(greth_mdio_read(base_addr, ETH_PHY_ADDR, ETH_PHY_ANEGNPLP  )==ETH_PHY_ANEGNPLP_DEFAULT  , "Error at mdio reading ETH_PHY_ANEGNPLP   register\n");
-    TEST_ASSERT(greth_mdio_read(base_addr, ETH_PHY_ADDR, ETH_PHY_MSTSLVCTRL)==ETH_PHY_MSTSLVCTRL_DEFAULT, "Error at mdio reading ETH_PHY_MSTSLVCTRL register\n");
-    TEST_ASSERT(greth_mdio_read(base_addr, ETH_PHY_ADDR, ETH_PHY_MSTSLVSTAT)==ETH_PHY_MSTSLVSTAT_DEFAULT, "Error at mdio reading ETH_PHY_MSTSLVSTAT register\n");
-    TEST_ASSERT(greth_mdio_read(base_addr, ETH_PHY_ADDR, ETH_PHY_EXTSTATUS )==ETH_PHY_EXTSTATUS_DEFAULT , "Error at mdio reading ETH_PHY_EXTSTATUS  register\n");
+    assert(greth_mdio_read(base_addr, ETH_PHY_ADDR, ETH_PHY_CTRL      )==ETH_PHY_CTRL_DEFAULT      );
+    assert(greth_mdio_read(base_addr, ETH_PHY_ADDR, ETH_PHY_STATUS    )==ETH_PHY_STATUS_DEFAULT    );
+    assert(greth_mdio_read(base_addr, ETH_PHY_ADDR, ETH_PHY_ID0       )==ETH_PHY_ID0_DEFAULT       );
+    assert(greth_mdio_read(base_addr, ETH_PHY_ADDR, ETH_PHY_ID1       )==ETH_PHY_ID1_DEFAULT       );
+    assert(greth_mdio_read(base_addr, ETH_PHY_ADDR, ETH_PHY_ANEGADV   )==ETH_PHY_ANEGADV_DEFAULT   );
+    assert(greth_mdio_read(base_addr, ETH_PHY_ADDR, ETH_PHY_ANEGLP    )==ETH_PHY_ANEGLP_DEFAULT    );
+    assert(greth_mdio_read(base_addr, ETH_PHY_ADDR, ETH_PHY_ANEGXP    )==ETH_PHY_ANEGXP_DEFAULT    );
+    assert(greth_mdio_read(base_addr, ETH_PHY_ADDR, ETH_PHY_ANEGNPTX  )==ETH_PHY_ANEGNPTX_DEFAULT  );
+    assert(greth_mdio_read(base_addr, ETH_PHY_ADDR, ETH_PHY_ANEGNPLP  )==ETH_PHY_ANEGNPLP_DEFAULT  );
+    assert(greth_mdio_read(base_addr, ETH_PHY_ADDR, ETH_PHY_MSTSLVCTRL)==ETH_PHY_MSTSLVCTRL_DEFAULT);
+    assert(greth_mdio_read(base_addr, ETH_PHY_ADDR, ETH_PHY_MSTSLVSTAT)==ETH_PHY_MSTSLVSTAT_DEFAULT);
+    assert(greth_mdio_read(base_addr, ETH_PHY_ADDR, ETH_PHY_EXTSTATUS )==ETH_PHY_EXTSTATUS_DEFAULT );
 }
-
-//#define GRETH_SRC_DATA_SEL  true
-//#define GRETH_DST_DATA_SEL  false
-//
-//uint8_t * get_src_dst_data_ptr(bool src_dst, uint32_t bank_num)
-//{
-//    uint8_t* data_ptr = (uint8_t *) 0;
-//    switch (bank_num)
-//    {
-//        case 1:
-//            data_ptr = (src_dst==GRETH_SRC_DATA_SEL) ? test_data_src : test_data_dst;
-//            break;
-//        case 2:
-//            data_ptr = (src_dst==GRETH_SRC_DATA_SEL) ? test_data_im2_src : test_data_im2_dst;
-//            break;
-//        case 3:
-//            data_ptr = (src_dst==GRETH_SRC_DATA_SEL) ? test_data_em2_src : test_data_em2_dst;
-//            break;
-//        default:
-//            TEST_ASSERT(0, "Wrong bank index");
-//            break;
-//    }
-//    return data_ptr;
-//}
 
 void prepare_test_data()
 {
     uint32_t i=0;
 
-#ifdef INIT_EMI
-    {
-        rumboot_putstring("Init EMI");
-        emi_init(DCR_EM2_EMI_BASE);
-    }
-#endif
+    #ifndef GRETH_CMAKE_O32T
+        #ifdef INIT_EMI
+            {
+                rumboot_putstring("Init EMI");
+                emi_init(DCR_EM2_EMI_BASE);
+            }
+        #endif
+    #endif
 
     rumboot_putstring("Preparing data");
     tx_descriptor_data_ = (greth_descr_t*) rumboot_malloc_from_heap_aligned(1, 3*sizeof(greth_descr_t), 1024);
@@ -364,11 +344,13 @@ void check_transfer_via_external_loopback(uint32_t base_addr_src_eth,  uint8_t *
 {
     uint32_t base_addr_dst_eth;
     uint32_t volatile* eth_handled_flag_ptr;
-
-    test_event(EVENT_CHECK_RUN_HPROT_MONITOR);//checking switch u_nic400_oi10_axi32.hprot_eth_1(0)_s from 0x3 to 0xF (by request from JIRA-78)
+    //ё - TODO - решить так оставить или убрать ifndef
+    #ifndef GRETH_CMAKE_O32T
+        test_event(EVENT_CHECK_RUN_HPROT_MONITOR);//checking switch u_nic400_oi10_axi32.hprot_eth_1(0)_s from 0x3 to 0xF (by request from JIRA-78)
+    #endif   
     dcr_write(DCR_SCTL_BASE + SCTL_IFSYS_ETH_HPROT, 0x3F3F3F3F);
 
-    TEST_ASSERT((base_addr_src_eth==GRETH_1_BASE)||(base_addr_src_eth==GRETH_0_BASE), "Wrong GRETH base address\n");
+    assert((base_addr_src_eth==GRETH_1_BASE)||(base_addr_src_eth==GRETH_0_BASE));
     base_addr_dst_eth = base_addr_src_eth==GRETH_0_BASE ? GRETH_1_BASE : GRETH_0_BASE;
 
     if (base_addr_src_eth==GRETH_1_BASE)
@@ -392,14 +374,16 @@ void check_transfer_via_external_loopback(uint32_t base_addr_src_eth,  uint8_t *
     greth_start_receive( base_addr_dst_eth, true );
     greth_start_transmit( base_addr_src_eth );
 
-    TEST_ASSERT(greth_wait_receive_irq(base_addr_dst_eth, eth_handled_flag_ptr), "Receiving is failed\n");
-    TEST_ASSERT(memcmp(test_data_src, test_data_dst, GRETH_TEST_DATA_LEN_BYTES)==0, "Data compare error!\n");
+    assert(greth_wait_receive_irq(base_addr_dst_eth, eth_handled_flag_ptr));
+    assert(memcmp(test_data_src, test_data_dst, GRETH_TEST_DATA_LEN_BYTES)==0);
 
     memset(test_data_dst, 0, GRETH_TEST_DATA_LEN_BYTES);
 
     rumboot_free(tx_descriptor_data_);
     rumboot_free(rx_descriptor_data_);
-    test_event(EVENT_CHECK_STOP_HPROT_MONITOR);
+    #ifndef GRETH_CMAKE_O32T
+        test_event(EVENT_CHECK_STOP_HPROT_MONITOR);
+    #endif
 }
 
 void check_edcl_wr_via_external_loopback(uint32_t base_addr_dst_eth, uint32_t wr_mem_addr, void* data, uint32_t len)
@@ -411,12 +395,12 @@ void check_edcl_wr_via_external_loopback(uint32_t base_addr_dst_eth, uint32_t wr
     uint32_t volatile* eth_handled_flag_ptr;
     uint32_t* test_data_resp = (uint32_t* )rumboot_malloc_from_heap(1, GRETH_TEST_DATA_LEN_BYTES);
 
-    TEST_ASSERT((base_addr_dst_eth==GRETH_1_BASE)||(base_addr_dst_eth==GRETH_0_BASE), "Wrong GRETH base address\n");
+    assert((base_addr_dst_eth==GRETH_1_BASE)||(base_addr_dst_eth==GRETH_0_BASE));
     if (base_addr_dst_eth==GRETH_1_BASE)
     {
-        edcl_cfg.src_ip   = EDCLIP1_TEST;
+        edcl_cfg.src_ip   = EDCLIP0;
         edcl_cfg.src_mac  = tst_greth_edcl_mac1;
-        edcl_cfg.dst_ip   = EDCLIP1_TEST;
+        edcl_cfg.dst_ip   = EDCLIP0;
         edcl_cfg.dst_mac  = tst_greth_edcl_mac1;
         GRETH0_IRQ_HANDLED = 0;
         base_addr_src_eth = GRETH_0_BASE;
@@ -424,9 +408,9 @@ void check_edcl_wr_via_external_loopback(uint32_t base_addr_dst_eth, uint32_t wr
     }
     else
     {
-        edcl_cfg.src_ip   = EDCLIP0_TEST;
+        edcl_cfg.src_ip   = EDCLIP0;
         edcl_cfg.src_mac  = tst_greth_edcl_mac0;
-        edcl_cfg.dst_ip   = EDCLIP0_TEST;
+        edcl_cfg.dst_ip   = EDCLIP0;
         edcl_cfg.dst_mac  = tst_greth_edcl_mac0;
         GRETH1_IRQ_HANDLED = 0;
         base_addr_src_eth = GRETH_1_BASE;
@@ -448,8 +432,8 @@ void check_edcl_wr_via_external_loopback(uint32_t base_addr_dst_eth, uint32_t wr
 
     greth_start_edcl_transfer( base_addr_src_eth );
 
-    TEST_ASSERT(greth_wait_receive_irq(base_addr_src_eth, eth_handled_flag_ptr), "Receiving EDCL response failed\n");
-    TEST_ASSERT(memcmp(data, (uint8_t*) wr_mem_addr, len)==0, "Data error at EDCL WR operation!");
+    assert(greth_wait_receive_irq(base_addr_src_eth, eth_handled_flag_ptr));
+    assert(memcmp(data, (uint8_t*) wr_mem_addr, len)==0);
 }
 
 void check_edcl_rd_via_external_loopback(uint32_t base_addr_dst_eth, uint32_t rd_mem_addr, uint32_t len)
@@ -461,21 +445,21 @@ void check_edcl_rd_via_external_loopback(uint32_t base_addr_dst_eth, uint32_t rd
     uint32_t* test_data_resp = (uint32_t* )rumboot_malloc_from_heap(1, GRETH_TEST_DATA_LEN_BYTES);
     uint32_t volatile* eth_handled_flag_ptr;
 
-    TEST_ASSERT((base_addr_dst_eth==GRETH_1_BASE)||(base_addr_dst_eth==GRETH_0_BASE), "Wrong GRETH base address\n");
+    assert((base_addr_dst_eth==GRETH_1_BASE)||(base_addr_dst_eth==GRETH_0_BASE));
     if (base_addr_dst_eth==GRETH_1_BASE)
     {
-        edcl_cfg.src_ip   = EDCLIP1_TEST;
+        edcl_cfg.src_ip   = EDCLIP0;
         edcl_cfg.src_mac  = tst_greth_edcl_mac1;
-        edcl_cfg.dst_ip   = EDCLIP1_TEST;
+        edcl_cfg.dst_ip   = EDCLIP0;
         edcl_cfg.dst_mac  = tst_greth_edcl_mac1;
         GRETH1_IRQ_HANDLED = 0;
         base_addr_src_eth = GRETH_0_BASE;
     }
     else
     {
-        edcl_cfg.src_ip   = EDCLIP0_TEST;
+        edcl_cfg.src_ip   = EDCLIP0;
         edcl_cfg.src_mac  = tst_greth_edcl_mac0;
-        edcl_cfg.dst_ip   = EDCLIP0_TEST;
+        edcl_cfg.dst_ip   = EDCLIP0;
         edcl_cfg.dst_mac  = tst_greth_edcl_mac0;
         GRETH0_IRQ_HANDLED = 0;
         base_addr_src_eth = GRETH_1_BASE;
@@ -496,8 +480,8 @@ void check_edcl_rd_via_external_loopback(uint32_t base_addr_dst_eth, uint32_t rd
     greth_start_edcl_transfer( base_addr_src_eth );
 
     eth_handled_flag_ptr = (base_addr_src_eth==GRETH_0_BASE) ? &GRETH0_IRQ_HANDLED : &GRETH1_IRQ_HANDLED;
-    TEST_ASSERT(greth_wait_receive_irq(base_addr_src_eth, eth_handled_flag_ptr), "Receiving EDCL response failed\n");
-    TEST_ASSERT(memcmp((uint8_t*) rd_mem_addr, (uint8_t*)(&test_data_resp[13]), len)==0, "Data compare error at EDCL RD operation!\n");
+    assert(greth_wait_receive_irq(base_addr_src_eth, eth_handled_flag_ptr));
+    assert(memcmp((uint8_t*) rd_mem_addr, (uint8_t*)(&test_data_resp[13]), len)==0);
 }
 
 void check_rx_er(uint32_t base_addr)
@@ -505,16 +489,14 @@ void check_rx_er(uint32_t base_addr)
     uint32_t base_addr_dst_eth;
     uint32_t base_addr_src_eth;
     uint32_t volatile* eth_handled_flag_ptr;
-    uint32_t event_code;
 
-    TEST_ASSERT((base_addr==GRETH_1_BASE)||(base_addr==GRETH_0_BASE), "Wrong GRETH base address\n");
+    assert((base_addr==GRETH_1_BASE)||(base_addr==GRETH_0_BASE));
     if (base_addr==GRETH_1_BASE)
     {
         base_addr_dst_eth = GRETH_1_BASE;
         base_addr_src_eth = GRETH_0_BASE;
         GRETH1_IRQ_HANDLED = 0;
         eth_handled_flag_ptr = &GRETH1_IRQ_HANDLED;
-        event_code = EVENT_CHECK_GRETH1_RX_ER;
     }
     else
     {
@@ -522,19 +504,30 @@ void check_rx_er(uint32_t base_addr)
         base_addr_src_eth = GRETH_1_BASE;
         GRETH0_IRQ_HANDLED = 0;
         eth_handled_flag_ptr = &GRETH0_IRQ_HANDLED;
-        event_code = EVENT_CHECK_GRETH0_RX_ER;
     }
 
     prepare_test_data();
 
     greth_configure_for_receive( base_addr_dst_eth, (uint8_t*)rumboot_virt_to_dma(test_data_dst_), GRETH_TEST_DATA_LEN_BYTES, rx_descriptor_data_, &tst_greth_mac);
     greth_configure_for_transmit( base_addr_src_eth, (uint8_t*)rumboot_virt_to_dma(test_data_src_), GRETH_TEST_DATA_LEN_BYTES, tx_descriptor_data_, &tst_greth_mac);
-
-    test_event(event_code);
+    
+    #ifndef GRETH_CMAKE_O32T
+        uint32_t event_code;
+        if (base_addr==GRETH_1_BASE)
+        {
+            event_code = EVENT_CHECK_GRETH1_RX_ER;
+        }
+        else
+        {
+            event_code = EVENT_CHECK_GRETH0_RX_ER;
+        }
+        test_event(event_code);
+    #endif
+    
     greth_start_receive( base_addr_dst_eth, true );
     greth_start_transmit( base_addr_src_eth );
 
-    TEST_ASSERT(greth_wait_receive_err_irq(base_addr_dst_eth, eth_handled_flag_ptr), "Receiving error is failed\n");
+    assert(greth_wait_receive_err_irq(base_addr_dst_eth, eth_handled_flag_ptr));
 
     rumboot_free(tx_descriptor_data_);
     rumboot_free(rx_descriptor_data_);
@@ -546,34 +539,41 @@ void check_rx_col(uint32_t base_src_addr)
 {
     uint32_t base_addr_dst_eth;
     uint32_t volatile* eth_handled_flag_ptr;
-    uint32_t event_code;
 
     if (base_src_addr==GRETH_0_BASE)
     {
         base_addr_dst_eth = GRETH_1_BASE;
         GRETH1_IRQ_HANDLED = 0;
         eth_handled_flag_ptr = &GRETH1_IRQ_HANDLED;
-        event_code = EVENT_CHECK_GRETH0_RX_COL;
     }
     else
     {
         base_addr_dst_eth = GRETH_0_BASE;
         GRETH0_IRQ_HANDLED = 0;
         eth_handled_flag_ptr = &GRETH0_IRQ_HANDLED;
-        event_code = EVENT_CHECK_GRETH1_RX_COL;
     }
 
     prepare_test_data();
 
     greth_configure_for_transmit( base_src_addr, (uint8_t*)rumboot_virt_to_dma(test_data_src_), GRETH_TEST_DATA_LEN_BYTES, tx_descriptor_data_, &tst_greth_mac);
     greth_configure_for_receive( base_addr_dst_eth, (uint8_t*)rumboot_virt_to_dma(test_data_dst_), GRETH_TEST_DATA_LEN_BYTES, rx_descriptor_data_, &tst_greth_mac);
-
-    test_event(event_code);
+    #ifndef GRETH_CMAKE_O32T    
+        uint32_t event_code;
+        if (base_src_addr==GRETH_0_BASE)
+        {
+            event_code = EVENT_CHECK_GRETH0_RX_COL;
+        }
+        else
+        {
+            event_code = EVENT_CHECK_GRETH1_RX_COL;
+        }
+        test_event(event_code);
+    #endif
 
     greth_start_receive(base_addr_dst_eth, true);
     greth_start_transmit(base_src_addr);
 
-    TEST_ASSERT(greth_wait_receive_irq(base_addr_dst_eth, eth_handled_flag_ptr), "Receiving error is failed\n");
+    assert(greth_wait_receive_irq(base_addr_dst_eth, eth_handled_flag_ptr));
 
     rumboot_free(tx_descriptor_data_);
     rumboot_free(rx_descriptor_data_);
@@ -588,6 +588,7 @@ void check_rx_col(uint32_t base_src_addr)
 int main(void)
 {
     rumboot_printf("Start\n");
+    rumboot_printf("EDCLMAC_LSB = 0x%x\n",EDCLMAC_LSB);
 #ifndef CHECK_REG_AND_MDIO
     struct rumboot_irq_entry *tbl;
 #endif
@@ -600,36 +601,44 @@ int main(void)
     rumboot_printf("Start test_oi10_greth. EDCL checks \n");
     tbl = create_greth01_irq_handlers();
     edcl_seq_number = 0;
-    if ((EDCL_TEST_ADDR>=EM2_BANK0_BASE) && ((EDCL_TEST_ADDR<(EM2_BANK5_BASE+NOR_SIZE))))
-        emi_init(DCR_EM2_EMI_BASE);
+    #ifndef GRETH_CMAKE_O32T
+        if ((EDCL_TEST_ADDR>=EM2_BANK0_BASE) && ((EDCL_TEST_ADDR<(EM2_BANK5_BASE+NOR_SIZE))))
+            emi_init(DCR_EM2_EMI_BASE);
+    #endif
 
     edcl_test_data_im1_wr = (uint8_t*) rumboot_malloc_from_heap(1, GRETH_EDCL_DATA_LEN_BYTES);
 
     for (int i=0; i<GRETH_EDCL_DATA_LEN_BYTES; i++)
+        edcl_test_data_im1_wr[i] = (i+1);
 
     rx_descriptor_data_ = (greth_descr_t*) rumboot_malloc_from_heap_aligned(1, 3*sizeof(greth_descr_t), 1024);
     tx_descriptor_data_ = (greth_descr_t*) rumboot_malloc_from_heap_aligned(1, 3*sizeof(greth_descr_t), 1024);
 
-    dcr_write(DCR_SCTL_BASE + SCTL_IFSYS_ETH_CTRL, (uint32_t) (EDCLADDRL0_TEST | (EDCLADDRL1_TEST << 16)) );//setting non-default edcladdrl values
     check_edcl_wr_via_external_loopback(GRETH_BASE, EDCL_TEST_ADDR, edcl_test_data_im1_wr, GRETH_EDCL_DATA_LEN_BYTES);
     check_edcl_rd_via_external_loopback(GRETH_BASE, EDCL_TEST_ADDR, GRETH_EDCL_DATA_LEN_BYTES);
 
     delete_greth01_irq_handlers(tbl);
 #elif CHECK_RX_ER
     rumboot_printf("Start test_oi10_greth. Checks connection RX_ER signal for GRETH%d (0x%X)\n", GET_GRETH_IDX(GRETH_BASE), GRETH_BASE);
-    test_event_send_test_id("test_oi10_greth");
+    #ifndef GRETH_CMAKE_O32T
+        test_event_send_test_id("test_oi10_greth");
+    #endif
     tbl = create_greth01_irq_handlers();
     check_rx_er(GRETH_BASE);
     delete_greth01_irq_handlers(tbl);
 #elif CHECK_RX_COL
     rumboot_printf("Start test_oi10_greth. Checks connection RX_COL signal for GRETH%d (0x%X)\n", GET_GRETH_IDX(GRETH_BASE), GRETH_BASE);
-    test_event_send_test_id("test_oi10_greth");
+    #ifndef GRETH_CMAKE_O32T
+        test_event_send_test_id("test_oi10_greth");
+    #endif
     tbl = create_greth01_irq_handlers();
     check_rx_col(GRETH_BASE);
     delete_greth01_irq_handlers(tbl);
 #else
     rumboot_printf("Start test_oi10_greth. Transmit/receive checks\n");
-    test_event_send_test_id("test_oi10_greth");
+    #ifndef GRETH_CMAKE_O32T
+        test_event_send_test_id("test_oi10_greth");
+    #endif
     tbl = create_greth01_irq_handlers();
     prepare_test_data();
     check_transfer_via_external_loopback(GRETH_BASE, (uint8_t*)rumboot_virt_to_dma(test_data_src_), (uint8_t*)rumboot_virt_to_dma(test_data_dst_));
