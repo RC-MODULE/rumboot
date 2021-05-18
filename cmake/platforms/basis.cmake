@@ -1913,7 +1913,7 @@ file(GLOB PLATFORM_SOURCES
 )
 
 macro(RUMBOOT_PLATFORM_SET_COMPILER_FLAGS)
-    SET(RUMBOOT_COMMON_FLAGS "-g -mcpu=cortex-a5 -mapcs-frame -fno-omit-frame-pointer -mfpu=vfpv3-d16 -mfloat-abi=hard -marm -ffreestanding -Wno-error=cpp")
+    SET(RUMBOOT_COMMON_FLAGS "-DRUMBOOT_HEADER_VERSION=2 -g -mcpu=cortex-a5 -mapcs-frame -fno-omit-frame-pointer -mfpu=vfpv3-d16 -mfloat-abi=hard -marm -ffreestanding -Wno-error=cpp")
     SET(CMAKE_C_FLAGS "${RUMBOOT_COMMON_FLAGS} -Wall -g -fdata-sections -ffunction-sections -DRUMBOOT_PLATFORM_NUM_HEAPS=8")
     if (PRODUCTION_TESTING) 
       SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DPRODUCTION_TESTING")    
