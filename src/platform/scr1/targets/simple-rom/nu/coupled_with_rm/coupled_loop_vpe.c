@@ -174,8 +174,6 @@ int main() {
     num_cycles = delta * 1000 / 650; // delta in microseconds, 1 DUT cycle is 650 nanoseconds
     num_vectors = in_metrics->H * in_metrics->W * in_metrics->C / 16;
     productivity_x1000 =  num_vectors*1000 / num_cycles;
-    productivity_x100 = productivity_x1000 / 10;
-    productivity_frac = productivity_x1000 % 10;
     
     rumboot_printf("Comparing..\n");
     
@@ -188,8 +186,8 @@ int main() {
     
 //     rumboot_printf("Productivity: %d.%d Percent  num_vectors = %d, start = %d, end = %d, delta = %d, num_cycles = %d \n",
 //                    productivity_x100,productivity_frac,num_vectors,start,end,delta,num_cycles);
-    rumboot_printf("Productivity: %d.%d Percent  num_vectors = %d, num_cycles = %d \n",
-                   productivity_x100,productivity_frac,num_vectors,num_cycles);
+    rumboot_printf("Performance: 0.%d vectors/cycle num_vectors = %d, num_cycles = %d \n",
+                   productivity_x1000,num_vectors,num_cycles);
   }
   
   return 0;
