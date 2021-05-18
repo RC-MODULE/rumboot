@@ -142,19 +142,20 @@ int main() {
     //nu_print_config_dma(&cfg.op2_rdma_config,"op2_rdma_config");
     //nu_print_config_dma(&cfg.wdma_config,"wdma_config");
     
+    start[i] = rumboot_platform_get_uptime();
+    
     nu_vpe_setup(NU_VPE_STANDALONE_BASE, &cfg, &cfg_dma);
     
     
     rumboot_printf("Running DMA..\n");
     
     
-    start[i] = rumboot_platform_get_uptime();
-    
     nu_vpe_run(NU_VPE_STANDALONE_BASE, &cfg);     // To Invoke Or Not To Invoke Internal DMA Channel - Decide inside nu_vpe_run
     
+    nu_vpe_wait(NU_VPE_STANDALONE_BASE, &cfg);
     
     end[i] = rumboot_platform_get_uptime();
-    delta[i] = end[i] - start[i];
+    delta[i] = end[i] - start[0];
    // num_cycles = delta * 1000 / 650; // delta in microseconds, 1 DUT cycle is 650 nanoseconds
    // num_vectors = in_metrics->H * in_metrics->W * in_metrics->C / 16;
    // productivity_x1000 =  num_vectors*1000 / num_cycles;
@@ -170,7 +171,7 @@ int main() {
       return 1;
     }
     
-     rumboot_printf("delta = %d \n",delta);
+     rumboot_printf("delta = %d \n",delta[i]);
 //    rumboot_printf("Productivity: %d.%d Percent  num_vectors = %d, num_cycles = %d \n",
 //                   productivity_x100,productivity_frac,num_vectors,num_cycles);
   }

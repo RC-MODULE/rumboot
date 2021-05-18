@@ -11,12 +11,12 @@
 
 #include "platform/devices/nu_vpe_file_tags.h"
 
-void *in_data;
-void *etalon[i];
-void *res_data[i];
-void *op0;
-void *op1;
-void *op2;
+void *in_data[2];
+void *etalon[2];
+void *res_data[2];
+void *op0[2];
+void *op1[2];
+void *op2[2];
 void *lut1;
 void *lut2;
 
@@ -61,7 +61,7 @@ void nu_vpe_decide_dma_config (
 ConfigVPE cfg;
 ConfigDMAVPE cfg_dma;
 
-CubeMetrics* in_metrics;
+CubeMetrics* in_metrics[2];
 CubeMetrics* res_metrics[2];
 
 VectorMetrics* lut1_metrics;
@@ -73,14 +73,14 @@ int main() {
   int iterations;
   
     // Time Measure
-  uint32_t start[i];
-  uint32_t end[i];
-  uint32_t delta[i];
-  uint32_t num_cycles;
-  uint32_t num_vectors;
-  uint32_t productivity_x1000;
-  uint32_t productivity_x100;
-  uint32_t productivity_frac;  
+  uint32_t start[2];
+  uint32_t end[2];
+  uint32_t delta[2];
+  //uint32_t num_cycles;
+  //uint32_t num_vectors;
+  //uint32_t productivity_x1000;
+  //uint32_t productivity_x100;
+  //uint32_t productivity_frac;  
   
   rumboot_printf("Hello\n");
   
@@ -94,31 +94,31 @@ int main() {
     
     if(nu_vpe_load_cfg_by_tag(heap_id, &cfg, cfg_file_tag[i]) != 0) return -1;
     
-    in_metrics = nu_load_cube_metrics(heap_id,metrics_in_tag[i]);
-    if(in_metrics == NULL) return -1;
+    in_metrics[i] = nu_load_cube_metrics(heap_id,metrics_in_tag[i]);
+    if(in_metrics[i] == NULL) return -1;
     
     res_metrics[i]= nu_load_cube_metrics(heap_id,metrics_etalon_tag[i]);
     if(res_metrics[i] == NULL) return -1;
     
-    in_data = nu_load_cube(heap_id,in_file_tag[i],in_metrics);
-    if(in_data == NULL) return -1;
+    in_data[i] = nu_load_cube(heap_id,in_file_tag[i],in_metrics[i]);
+    if(in_data[i] == NULL) return -1;
     
     res_data[i] = nu_vpe_malloc_res(heap_id, res_metrics[i]);
     if(res_data[i] == NULL) return -1;
     
       // Load OP0-OP2 Operands If Needed
     if(cfg.op0_en==Enable_En) {
-      op0 = nu_vpe_load_op01_by_tags(heap_id,&cfg.op0_config,metrics_op0_cube_tag[i],metrics_op0_vec_tag[i],op0_cube_file_tag[i],op0_vec_file_tag[i]);
+      op0[i] = nu_vpe_load_op01_by_tags(heap_id,&cfg.op0_config,metrics_op0_cube_tag[i],metrics_op0_vec_tag[i],op0_cube_file_tag[i],op0_vec_file_tag[i]);
     }
-    else op0 = NULL;
+    else op0[i] = NULL;
     if(cfg.op1_en==Enable_En) {
-      op1 = nu_vpe_load_op01_by_tags(heap_id,&cfg.op1_config,metrics_op1_cube_tag[i],metrics_op1_vec_tag[i],op1_cube_file_tag[i],op1_vec_file_tag[i]);
+      op1[i] = nu_vpe_load_op01_by_tags(heap_id,&cfg.op1_config,metrics_op1_cube_tag[i],metrics_op1_vec_tag[i],op1_cube_file_tag[i],op1_vec_file_tag[i]);
     }
-    else op1 = NULL;
+    else op1[i] = NULL;
     if(cfg.op2_en==Enable_En) {
-      op2 = nu_vpe_load_op2_by_tags(heap_id,&cfg.op2_config,metrics_op2_cube_tag[i],metrics_op2_vec_tag[i],op2_cube_file_tag[i],op2_vec_file_tag[i]);
+      op2[i] = nu_vpe_load_op2_by_tags(heap_id,&cfg.op2_config,metrics_op2_cube_tag[i],metrics_op2_vec_tag[i],op2_cube_file_tag[i],op2_vec_file_tag[i]);
     }
-    else op2 = NULL;
+    else op2[i] = NULL;
     
       // Load LUTs If Needed
     if(cfg.op2_config.lut_en == Enable_En) {
@@ -135,12 +135,14 @@ int main() {
     //print_in_data(in_data,in_size);
     
     //nu_vpe_print_config(&cfg);
-    nu_vpe_decide_dma_config(&cfg,in_metrics,in_data,op0,op1,op2,res_metrics[i],res_data[i],&cfg_dma);
+    nu_vpe_decide_dma_config(&cfg,in_metrics[i],in_data[i],op0[i],op1[i],op2[i],res_metrics[i],res_data[i],&cfg_dma);
     //nu_print_config_dma(&cfg.src_rdma_config,"src_rdma_config");
     //nu_print_config_dma(&cfg.op0_rdma_config,"op0_rdma_config");
     //nu_print_config_dma(&cfg.op1_rdma_config,"op1_rdma_config");
     //nu_print_config_dma(&cfg.op2_rdma_config,"op2_rdma_config");
     //nu_print_config_dma(&cfg.wdma_config,"wdma_config");
+    
+    start[i] = rumboot_platform_get_uptime();
     
     nu_vpe_setup(NU_VPE_STANDALONE_BASE, &cfg, &cfg_dma);
     
@@ -157,8 +159,6 @@ int main() {
     //  nu_vpe_run_rd_main_channel(NU_CPDMAC_ASM_BASE);
     //if(cfg.wdma_config.dma_op_en == Enable_NotEn)
     //  nu_vpe_run_wr_main_channel(NU_CPDMAC_ASM_BASE);
-    
-    start[i] = rumboot_platform_get_uptime();
     
     nu_vpe_run(NU_VPE_STANDALONE_BASE, &cfg);     // To Invoke Or Not To Invoke Internal DMA Channel - Decide inside nu_vpe_run
     nu_vpe_wait_cntx_appl(NU_VPE_STANDALONE_BASE, &cfg);
@@ -196,9 +196,9 @@ int main() {
         rumboot_printf("Test FAILED at iteration %d\n",i);
         return 1;
         }
+    rumboot_printf("delta = %d\n", delta[i]);
   }
   
-  rumboot_printf("delta = %d\n", delta);
   
   return 0;
   
