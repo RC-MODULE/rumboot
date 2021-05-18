@@ -196,10 +196,11 @@ int main() {
         rumboot_printf("Test FAILED at iteration %d\n",i);
         return 1;
         }
-    rumboot_printf("delta = %d\n", delta[i]);
   }
   
+  rumboot_printf("First cube time %d us, both cube time %d us \n",delta[0],delta[1]);
   
+
   return 0;
   
 }

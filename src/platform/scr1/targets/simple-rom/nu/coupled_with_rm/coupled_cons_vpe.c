@@ -171,10 +171,10 @@ int main() {
       return 1;
     }
     
-     rumboot_printf("delta = %d \n",delta[i]);
 //    rumboot_printf("Productivity: %d.%d Percent  num_vectors = %d, num_cycles = %d \n",
 //                   productivity_x100,productivity_frac,num_vectors,num_cycles);
   }
+  rumboot_printf("First cube time %d us, both cube time %d us \n",delta[0],delta[1]);
   
   return 0;
   
