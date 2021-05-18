@@ -440,15 +440,18 @@ int run_binary(const char *command)
         return WEXITSTATUS(status);
 }
 
-static int exec_prog(const struct rumboot_cpu_cluster *cpu,  struct rumboot_bootheader *hdr, int swap)
+static int exec_prog(const struct rumboot_cpu_cluster *cpu,  struct rumboot_bootheader *hdr, void *data, int swap)
 {
         char ret;
+        int err;
         FILE *tmp = fopen("binary", "w");
-
         if (swap) {
-                fwrite(hdr->data, __swap32(hdr->datalen), 1, tmp);
+                err = fwrite(hdr->data, __swap32(hdr->datalen), 1, tmp);
         } else {
-                fwrite(hdr->data, hdr->datalen, 1, tmp);                
+                err = fwrite(hdr->data, hdr->datalen, 1, tmp);                
+        }
+        if (err <= 0) {
+                fprintf(stderr, "failed to write temp file!\n");
         }
         fclose(tmp);
         system("chmod +x binary");
