@@ -688,7 +688,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       set(MPE_TEST_SHEET ${MPE_TEST_SHEETS_DIR}/${mpe_demo_test_name}/mpe_arrays.txt)
       add_rumboot_target(
         CONFIGURATION ROM
-        NAME mpe_demo_${mpe_demo_test_name}
+        NAME ${mpe_demo_test_name}
         FILES scr1/targets/simple-rom/nu/mpe_demo/mpe_demo_common.c
         CFLAGS -D${show_perf}
         PREPCMD ${MPE_PARSE_TEST} ${NA_TEST_mpe_cmd_file} ${NA_TEST_in_file} ${NA_TEST_warr_file} ${NA_TEST_etalon_file} < ${MPE_TEST_SHEET}
