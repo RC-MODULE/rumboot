@@ -247,9 +247,9 @@ int main(void)
 //    test_event_send_test_id("test_o32t_greth_system");
     tbl = create_greth01_irq_handlers();
     prepare_test_data();
-    #ifndef GRETH_CMAKE_O32T
-        test_event(EVENT_CHECK_RUN_HPROT_MONITOR);//checking switch u_nic400_oi10_axi32.hprot_eth_1(0)_s from 0x3 to 0xF (by request from JIRA-78)
-    #endif
+//    #ifndef GRETH_CMAKE_O32T
+//        test_event(EVENT_CHECK_RUN_HPROT_MONITOR);//checking switch u_nic400_oi10_axi32.hprot_eth_1(0)_s from 0x3 to 0xF (by request from JIRA-78)
+//    #endif
     dcr_write(DCR_SCTL_BASE + SCTL_IFSYS_ETH_HPROT, 0x3F3F3F3F);
     
     start_transfer_wait_irq();
@@ -263,9 +263,9 @@ int main(void)
     rumboot_free(tx_descriptor_data_);
     rumboot_free(rx_descriptor_data_);
     
-    #ifndef GRETH_CMAKE_O32T
-        test_event(EVENT_CHECK_STOP_HPROT_MONITOR);
-    #endif
+//    #ifndef GRETH_CMAKE_O32T
+//        test_event(EVENT_CHECK_STOP_HPROT_MONITOR);
+//    #endif
     delete_greth01_irq_handlers(tbl);
     return 0;
 }

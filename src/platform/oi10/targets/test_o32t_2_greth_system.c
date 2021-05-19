@@ -254,7 +254,7 @@ void start_transfer_wait_irq()
 //    greth_start_receive( RX_GRETH_BASE, true );
 //    greth_start_transmit( TX_GRETH_BASE );
 
-    TEST_ASSERT(greth_wait_receive_irq(GRETH_0_BASE, eth_handled_flag_ptr), "Receiving is failed\n");
+    assert(greth_wait_receive_irq(GRETH_0_BASE, eth_handled_flag_ptr));
 }
 
 /*
@@ -272,24 +272,24 @@ int main(void)
     rumboot_printf("STATUS: 0x%x\n", ioread32(GRETH_1_BASE + STATUS));
             
     rumboot_printf("Start test_o32t_2_greth_system. Transmit/receive checks\n");
-    test_event_send_test_id("test_o32t_2_greth_system");
+//    test_event_send_test_id("test_o32t_2_greth_system");
     tbl = create_greth01_irq_handlers();
     prepare_test_data();
     
-    #ifndef GRETH_CMAKE_O32T
-        test_event(EVENT_CHECK_RUN_HPROT_MONITOR);//checking switch u_nic400_oi10_axi32.hprot_eth_1(0)_s from 0x3 to 0xF (by request from JIRA-78)
-    #endif
+//    #ifndef GRETH_CMAKE_O32T
+//        test_event(EVENT_CHECK_RUN_HPROT_MONITOR);//checking switch u_nic400_oi10_axi32.hprot_eth_1(0)_s from 0x3 to 0xF (by request from JIRA-78)
+//    #endif
     dcr_write(DCR_SCTL_BASE + SCTL_IFSYS_ETH_HPROT, 0x3F3F3F3F);
         
     start_transfer_wait_irq();
      
     rumboot_printf("Start checks rx_0\n");
     for (i = 0; i < N_DESC; i++){
-        TEST_ASSERT(memcmp(test_data_src, test_data_dst_0[i], GRETH_TEST_DATA_LEN_BYTES)==0, "Data compare error!\n");
+        assert(memcmp(test_data_src, test_data_dst_0[i], GRETH_TEST_DATA_LEN_BYTES)==0);
     }
     rumboot_printf("Start checks rx_1\n");
     for (i = 0; i < N_DESC; i++){
-        TEST_ASSERT(memcmp(test_data_src, test_data_dst_1[i], GRETH_TEST_DATA_LEN_BYTES)==0, "Data compare error!\n");
+        assert(memcmp(test_data_src, test_data_dst_1[i], GRETH_TEST_DATA_LEN_BYTES)==0);
     }
     rumboot_printf("Finish checks\n");
 
@@ -298,9 +298,9 @@ int main(void)
     rumboot_free(tx1_descriptor_data_);
     rumboot_free(rx1_descriptor_data_);
     
-    #ifndef GRETH_CMAKE_O32T
-        test_event(EVENT_CHECK_STOP_HPROT_MONITOR);
-    #endif
+//    #ifndef GRETH_CMAKE_O32T
+//        test_event(EVENT_CHECK_STOP_HPROT_MONITOR);
+//    #endif
     delete_greth01_irq_handlers(tbl);
     return 0;
 }

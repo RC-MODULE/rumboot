@@ -18,7 +18,7 @@
 #include <devices/ugly/emi.h>
 #include <platform/test_assert.h>
 
-#include <platform/devices/greth.h>
+#include <devices/ugly/greth.h>
 
 struct regpoker_checker greth_check_array[] = {
     { "CTRL              ",  REGPOKER_READ32,  CTRL              , 0x9A000090, 0xFE007CFF },

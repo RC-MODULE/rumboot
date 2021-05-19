@@ -89,7 +89,7 @@
 #include <rumboot/timer.h>
 #include <platform/test_assert.h>
 #include <devices/ugly/emi.h>
-#include <platform/devices/greth.h>
+#include <devices/ugly/greth.h>
 #include <regs/regs_gpio_pl061.h>
 #include <devices/gpio_pl061.h>
 

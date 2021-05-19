@@ -6,8 +6,8 @@
 
 
 // Processing src/platform/oi10/targets/test_oi10_greth.c / test_oi10_greth
-#include <platform/devices/greth.h>
-#include <platform/regs/regs_greth.h>
+#include <devices/ugly/greth.h>
+#include <regs/regs_greth.h>
 
 #define GRETH_CTRL_MASK      0xf8007fff  // <- RO, other 0xfe007fff
 #define GRETH_CTRL_DFLT      0x08000090

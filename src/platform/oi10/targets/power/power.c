@@ -29,7 +29,7 @@
 #include <platform/devices/dma2plb6.h>
 #include <devices/ugly/emi.h>
 #include <platform/test_assert.h>
-#include <platform/devices/greth.h>
+#include <devices/ugly/greth.h>
 #include <arch/ppc_476fp_mmu.h>
 #include <rumboot/hexdump.h>
 
