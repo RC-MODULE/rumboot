@@ -30,6 +30,7 @@ rumboot_add_configuration(
   LDFLAGS -lm
   CFLAGS -DRUMBOOT_NATIVE -DCMAKE_BINARY_DIR=\"${CMAKE_BINARY_DIR}\"
   PREFIX "spl"
+  PACKIMAGE_FLAGS -w V3
   FEATURES LUA PACKIMAGE STUB
 )
 
@@ -45,8 +46,8 @@ function(gen_chain_spl var name s1 s2)
   generate_product_name(SPL_CHAIN_EXEC ${name})
   message(${SPL_CHAIN_EXEC})
   add_custom_target(${SPL_CHAIN_EXEC} ALL
-    COMMAND cat ${s1} > ${SPL_CHAIN_EXEC}
-    COMMAND cat ${s2}   >> ${SPL_CHAIN_EXEC}
+    COMMAND ${PYTHON_EXECUTABLE} ${RUMBOOT_PACKIMAGE} -f ${s1} -C
+    COMMAND ${PYTHON_EXECUTABLE} ${RUMBOOT_COMBINE} -i ${s1} -i ${s2} -o ${SPL_CHAIN_EXEC}
     WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
     COMMENT "Generating chained ${name}"
     DEPENDS ${s1} ${s2}
