@@ -1681,6 +1681,17 @@ void nu_vpe_wait_cntx_appl(uintptr_t vpe_base, ConfigVPE* cfg){ // ?????????   C
   rumboot_printf("Done VPE.\n");
 }
 
+void nu_vpe_wait_cube_cmpl(uintptr_t vpe_base, ConfigVPE* cfg){ // ?????????   ConfigVPE* cfg  
+  // Напиши сюда 3авершение DMA
+  if(! cfg->dst_flying) {
+    rumboot_printf("Wait VPE WDMA...\n");
+    //while(ioread32(vpe_base + NU_VPE + NU_VPE_CTRL_NC) !=0) {}
+    while(( (ioread32(vpe_base + NU_VPE + REG_VPE_IRQ_RD_ADDR) >> 4) & 1) !=1) {}
+    iowrite32(2,vpe_base + NU_VPE + REG_VPE_IRQ_CLR_ADDR);
+  }
+  rumboot_printf("Done VPE.\n");
+}
+
 void nu_vpe_config_wr_main_channel(uintptr_t dma_base, void *addr, int size){
   nu_cpdmac_rcv256_config(dma_base,addr,size);
 }
