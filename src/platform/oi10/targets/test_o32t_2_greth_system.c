@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
+#include <assert.h>
 
 #include <rumboot/printf.h>
 #include <rumboot/platform.h>
@@ -16,7 +17,6 @@
 #include <regs/fields/mpic128.h>
 #include <platform/regs/sctl.h>
 #include <devices/ugly/emi.h>
-#include <platform/test_assert.h>
 
 #include <devices/ugly/greth.h>
 
@@ -124,7 +124,7 @@ void prepare_test_data()
         #ifdef INIT_EMI
             {
                 rumboot_putstring("Init EMI");
-                emi_init(DCR_EM2_EMI_BASE);
+                emi_init_sram40ns(DCR_EM2_EMI_BASE);
             }
         #endif
     #endif
