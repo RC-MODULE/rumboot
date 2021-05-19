@@ -731,7 +731,7 @@ add_rumboot_target(
 )
 
 add_rumboot_target(
-  CONFIGURATION IRAM_IM1
+  CONFIGURATION IRAM_IM1_WITH_EMI
   FILES oi10/targets/test_oi10_lscb.c
   CFLAGS -DPLATFORM_O32T -DMKIO_BASE=MKIO2_BASE -DCHECK_MKIO_FUNC -DMKIO_BUS=MKIO_BUS_A -DTEST_BANK="SSRAM" -D__FILENAME__=\"wtfisthisiwonder\"
   IRUN_FLAGS +mkio_signal_test
@@ -790,7 +790,7 @@ add_rumboot_target(
 )
 
 add_rumboot_target(
-  CONFIGURATION IRAM_IM1
+  CONFIGURATION IRAM_IM1_WITH_EMI
   FILES oi10/targets/test_oi10_lscb.c
   CFLAGS -DPLATFORM_O32T -DMKIO_BASE=MKIO3_BASE -DCHECK_MKIO_FUNC -DMKIO_BUS=MKIO_BUS_A -DTEST_BANK="SSRAM" -D__FILENAME__=\"wtfisthisiwonder\"
   IRUN_FLAGS +mkio_signal_test
