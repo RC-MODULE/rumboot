@@ -79,8 +79,6 @@ int main() {
   uint32_t num_cycles;
   uint32_t num_vectors;
   uint32_t productivity_x1000;
-  uint32_t productivity_x100;
-  uint32_t productivity_frac;  
   
   rumboot_printf("Hello\n");
   
