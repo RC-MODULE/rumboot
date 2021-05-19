@@ -1455,7 +1455,7 @@ if ((0x00000000) !=(ioread32(base + NU_VPE + NU_VPE_LUT_ACCESS_CFG)& 0x000301FF)
 	  		
 	  resr = 	cp0_res0 || cp0_res1|| cp0_res2 || cp0_res3 || cp0_res4 || cp0_res5 ||
 				cp1_res0 || cp1_res1|| cp1_res2 || cp1_res3 || cp1_res4 || cp1_res5 ||
-				cp2_res2 || cp2_res1|| cp2_res2 || cp2_res3 || cp2_res4 || cp2_res5 || cp2_res6 || cp2_res7 || cp2_res8 || cp2_res9 || cp2_res10 || cp2_res11 ||
+				cp2_res0 || cp2_res1|| cp2_res2 || cp2_res3 || cp2_res4 || cp2_res5 || cp2_res6 || cp2_res7 || cp2_res8 || cp2_res9 || cp2_res10 || cp2_res11 ||
 				src_res0 || src_res1|| src_res2 || src_res3 || src_res4 || src_res5 ||src_res6 || src_res7 || src_res8 ||
 				src_res9 || src_res10 || src_res11 || src_res12 || src_res13 || src_res14 || src_res15 || 
 				src_res16 || src_res17 || src_res18 || src_res19 || src_res21 || src_res22 ||
@@ -1511,9 +1511,9 @@ int nu_vpe_wr_regs(uintptr_t base, int32_t data) {
 		  op1_res13,op1_res14,op1_res15,op1_res16,op1_res17,op1_res18,op1_res19,op1_res21,op1_res22;	  
 	  int /*op2_res0,op2_res1,op2_res2,*/op2_res3,op2_res4,op2_res5,op2_res6,op2_res7,op2_res8,op2_res9,op2_res10,op2_res11,op2_res12,
 		  op2_res13,op2_res14,op2_res15,op2_res16,op2_res17,op2_res18,op2_res19,op2_res21,op2_res22;	
-	  int lut_res0,lut_res1,lut_res2,lut_res3,lut_res4,lut_res5,lut_res6,lut_res7,lut_res8,lut_res9,lut_res10,lut_res11,lut_res12, 
+	  int /*lut_res0,lut_res1,*/lut_res2,lut_res3,lut_res4,lut_res5,lut_res6,lut_res7,lut_res8,lut_res9,lut_res10,lut_res11,lut_res12, 
 		  lut_res13;
-	  int vpe_res0,vpe_res1,vpe_res2,vpe_res3,vpe_res4,vpe_res5, vpe_res7,vpe_res8,vpe_res12; 
+	  int vpe_res0,vpe_res1,vpe_res2,/*vpe_res3,vpe_res4,vpe_res5,*/ vpe_res7,vpe_res8,vpe_res12; 
 	  int resr;
 	  int resw;
 	  int32_t tmp;
@@ -2981,23 +2981,23 @@ int nu_vpe_wr_regs(uintptr_t base, int32_t data) {
 				cp2_res0 || cp2_res1|| cp2_res2 || cp2_res3 || cp2_res4 || cp2_res5 || cp2_res6 || cp2_res7|| cp2_res8 || cp2_res9 || cp2_res10 || cp2_res11 ||
 				/*src_res0 || src_res1|| src_res2 || */src_res3 || src_res4 || src_res5 || src_res7 || src_res8 ||
 				src_res9 || src_res10 || src_res11 || src_res12 || src_res13 || src_res14 || src_res15 || 
-				src_res16 || src_res17 || src_res18 || src_res19 || src_res21 ||
-				/*op0_res0 || op0_res1|| op0_res2 || */op0_res3 || op0_res4 || op0_res5 || op0_res7 || op0_res8 ||
+				src_res16 || src_res17 || src_res18 || src_res19 || src_res21 || src_res22 ||
+				/*op0_res0 || op0_res1|| op0_res2 || */op0_res3 || op0_res4 || op0_res5 || op0_res6 || op0_res7 || op0_res8 ||
 				op0_res9 || op0_res10 || op0_res11 || op0_res12 || op0_res13 || op0_res14 || op0_res15 || 
-				op0_res16 || op0_res17 || op0_res18 || op0_res19 ||
-				/*op1_res0 || op1_res1|| op1_res2 || */op1_res3 || op1_res4 || op1_res5 || op1_res7 || op1_res8 ||
+				op0_res16 || op0_res17 || op0_res18 || op0_res19 || op0_res21 || op0_res22 ||
+				/*op1_res0 || op1_res1|| op1_res2 || */op1_res3 || op1_res4 || op1_res5 || op1_res6 || op1_res7 || op1_res8 ||
 				op1_res9 || op1_res10 || op1_res11 || op1_res12 || op1_res13 || op1_res14 || op1_res15 || 
 				op1_res16 || op1_res17 || op1_res18 || op1_res19 || op1_res21 ||op1_res22 ||
-				/*op2_res0 || op2_res1|| op2_res2 || */op2_res3 || op2_res4 || op2_res5 || op2_res7 || op2_res8 ||
+				/*op2_res0 || op2_res1|| op2_res2 || */op2_res3 || op2_res4 || op2_res5 || op2_res6 || op2_res7 || op2_res8 ||
 				op2_res9 || op2_res10 || op2_res11 || op2_res12 || op2_res13 || op2_res14 || op2_res15 || 
 				op2_res16 || op2_res17 || op2_res18 || op2_res19 || op2_res21 ||op2_res22 || op_res ||
-			     lut_res0 || lut_res2 || lut_res3 || lut_res4 || lut_res5 || lut_res6 || lut_res7 || lut_res8 ||
+			    /*lut_res0 ||*/ lut_res2 || lut_res3 || lut_res4 || lut_res5 || lut_res6 || lut_res7 || lut_res8 ||
 				lut_res9 || lut_res10 || lut_res11 || lut_res12 || lut_res13 ||
 				vpe_res0 ||vpe_res1 || vpe_res2 || vpe_res7 || vpe_res8 || vpe_res12; 
 				
 	  resw = 	/*resw0 || resw1|| */resw2 || resw3 || resw4 || resw5 || resw6 || resw7 || resw8 || resw9 ||
 				resw10 || resw11 || resw12 || resw13 || resw14 || resw15 || resw16 || resw17 ||
-				resw18 || resw19 ; 
+				resw18 || resw19  || resw20 || resw21 || resw22; 
 	  			
 	
 	res = resr  || resw ;
