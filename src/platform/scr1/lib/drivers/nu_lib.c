@@ -1652,44 +1652,30 @@ void nu_vpe_wait_rd_main_channel_complete(uintptr_t dma_base){
 //void nu_vpe_run(uintptr_t vpe_base, ConfigDMAVPE* cfg) {
 void nu_vpe_run(uintptr_t vpe_base, ConfigVPE* cfg){ // ?????????   ConfigVPE* cfg  
   // Напиши сюда 3апуск DMA
-  rumboot_printf("Wait VPE context apply enable...\n");
   while(ioread32(vpe_base + NU_VPE + NU_VPE_CTRL_NC) !=0) {}
   rumboot_printf("Start VPE...\n");
   iowrite32 (1, vpe_base + NU_VPE + NU_VPE_CTRL_NC);
 }
 
-//void nu_vpe_wait(uintptr_t vpe_base, ConfigDMAVPE* cfg){
-void nu_vpe_wait(uintptr_t vpe_base, ConfigVPE* cfg){ // ?????????   ConfigVPE* cfg  
-  // Напиши сюда 3авершение DMA
+void nu_vpe_wait(uintptr_t vpe_base, ConfigVPE* cfg){
   if(! cfg->dst_flying) {
     rumboot_printf("Wait VPE WDMA...\n");
-    //while(ioread32(vpe_base + NU_VPE + NU_VPE_CTRL_NC) !=0) {}
     while(( (ioread32(vpe_base + NU_VPE + REG_VPE_IRQ_RD_ADDR) >> 1) & 1) !=1) {}
     iowrite32(2,vpe_base + NU_VPE + REG_VPE_IRQ_CLR_ADDR);
   }
-  rumboot_printf("Done VPE.\n");
-}
-
-void nu_vpe_wait_cntx_appl(uintptr_t vpe_base, ConfigVPE* cfg){ // ?????????   ConfigVPE* cfg  
-  // Напиши сюда 3авершение DMA
-  if(! cfg->dst_flying) {
-    rumboot_printf("Wait VPE WDMA...\n");
-    //while(ioread32(vpe_base + NU_VPE + NU_VPE_CTRL_NC) !=0) {}
-    while(( (ioread32(vpe_base + NU_VPE + REG_VPE_IRQ_RD_ADDR) >> 0) & 1) !=1) {}
-    iowrite32(2,vpe_base + NU_VPE + REG_VPE_IRQ_CLR_ADDR);
-  }
-  rumboot_printf("Done VPE.\n");
-}
-
-void nu_vpe_wait_cube_cmpl(uintptr_t vpe_base, ConfigVPE* cfg){ // ?????????   ConfigVPE* cfg  
-  // Напиши сюда 3авершение DMA
-  if(! cfg->dst_flying) {
-    rumboot_printf("Wait VPE WDMA...\n");
-    //while(ioread32(vpe_base + NU_VPE + NU_VPE_CTRL_NC) !=0) {}
+  else {
+    rumboot_printf("Wait VPE complete...\n");
     while(( (ioread32(vpe_base + NU_VPE + REG_VPE_IRQ_RD_ADDR) >> 4) & 1) !=1) {}
     iowrite32(2,vpe_base + NU_VPE + REG_VPE_IRQ_CLR_ADDR);
   }
-  rumboot_printf("Done VPE.\n");
+  // rumboot_printf("Done VPE wait.\n");
+}
+
+void nu_vpe_wait_cntx_appl(uintptr_t vpe_base, ConfigVPE* cfg){
+    rumboot_printf("Wait VPE context got...\n");
+    while(( (ioread32(vpe_base + NU_VPE + REG_VPE_IRQ_RD_ADDR) >> 0) & 1) !=1) {}
+    iowrite32(2,vpe_base + NU_VPE + REG_VPE_IRQ_CLR_ADDR);
+  rumboot_printf("Done VPE context got.\n");
 }
 
 void nu_vpe_config_wr_main_channel(uintptr_t dma_base, void *addr, int size){

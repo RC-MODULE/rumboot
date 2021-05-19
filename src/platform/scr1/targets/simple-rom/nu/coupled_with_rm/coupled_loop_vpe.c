@@ -162,14 +162,16 @@ int main() {
     
     nu_vpe_run(NU_VPE_STANDALONE_BASE, &cfg);     // To Invoke Or Not To Invoke Internal DMA Channel - Decide inside nu_vpe_run
     
+    nu_vpe_wait(NU_VPE_STANDALONE_BASE, &cfg);
+    
+    end = rumboot_platform_get_uptime();
+    
       // Finalize Required DMA Channels
     if(cfg.src_rdma_config.dma_op_en == Enable_NotEn)
       nu_vpe_wait_rd_main_channel_complete(NU_CPDMAC_ASM_BASE);
     if(cfg.wdma_config.dma_op_en == Enable_NotEn)
       nu_vpe_wait_wr_main_channel_complete(NU_CPDMAC_ASM_BASE);
-    nu_vpe_wait(NU_VPE_STANDALONE_BASE, &cfg);
     
-    end = rumboot_platform_get_uptime();
     delta = end - start;
     num_cycles = delta * 1000 / 650; // delta in microseconds, 1 DUT cycle is 650 nanoseconds
     num_vectors = in_metrics->H * in_metrics->W * in_metrics->C / 16;
