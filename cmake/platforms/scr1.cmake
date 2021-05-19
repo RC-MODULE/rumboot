@@ -92,6 +92,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 	
 	add_rumboot_target(
 	  CONFIGURATION ROM
+      NAME VPE_1
       FILES scr1/targets/simple-rom/nu/vpe_regs/regs_vpe.c
 	)
 	
@@ -400,6 +401,22 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     ADD_PPE_NEXT_COUPLED_TEST(ppe_one_coupled main_i8_ppe_coupled)
     ADD_PPE_NEXT_COUPLED_TEST(ppe_probe_coupled main_probe_ppe_coupled)
 
+    if(NOT DEFINED EXPERIMENT_STAGE_2_DIR)
+      set(EXPERIMENT_STAGE_2_DIR /opt/lib_h31/LAVA_lib/experiment_stage_2)
+    endif()
+    message("EXPERIMENT_STAGE_2_DIR = ${EXPERIMENT_STAGE_2_DIR}")
+
+
+    if(NOT DEFINED VPE_BINARIES_ROOT)
+      if(EXISTS ${CMAKE_SOURCE_DIR}/../../VPE)
+        set(VPE_BINARIES_ROOT ${CMAKE_SOURCE_DIR}/../../VPE)
+      elseif(EXISTS ${EXPERIMENT_STAGE_2_DIR}/VPE)
+        set(VPE_BINARIES_ROOT ${EXPERIMENT_STAGE_2_DIR}/VPE)
+      else()
+        message(FATAL_ERROR "VPE_BINARIES_ROOT test binaries Directory not found")
+      endif()
+    endif()
+    message("VPE_BINARIES_ROOT = ${VPE_BINARIES_ROOT}")
 
     
     macro(ADD_VPE_COUPLED_TEST_LOOP name rm_bin_name)
@@ -434,6 +451,17 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       )
     endmacro()
     
+    macro(ADD_VPE_FROM_BINARY_TEST_CONTROL_CONS name bin_dir)
+      add_rumboot_target(
+        CONFIGURATION ROM
+        NAME ${name}
+        FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_cons_vpe.c
+        CFLAGS -DFORCE_VPE_WDMA_EN=1
+        PREPCMD cp ${VPE_BINARIES_ROOT}/${bin_dir}/* . || exit 1
+        IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+      )
+    endmacro()
+    
     macro(ADD_VPE_COUPLED_TEST_CONTROL_PARALLEL name rm_bin_name)
       add_rumboot_target(
         CONFIGURATION ROM
@@ -445,9 +473,16 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       )
     endmacro()
 
-    if(NOT DEFINED VPE_BINARIES_ROOT)
-      set(VPE_BINARIES_ROOT /opt/lib_h31/LAVA_lib/experiment_stage_2/VPE)
-    endif()
+    macro(ADD_VPE_FROM_BINARY_TEST_CONTROL_PARALLEL name bin_dir)
+      add_rumboot_target(
+        CONFIGURATION ROM
+        NAME ${name}
+        FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_parallel_vpe.c
+        CFLAGS -DFORCE_VPE_WDMA_EN=1
+        PREPCMD cp ${VPE_BINARIES_ROOT}/${bin_dir}/* . || exit 1
+        IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+      )
+    endmacro()
 
     macro(ADD_VPE_FROM_BINARY_TEST_LOOP name bin_dir)
       add_rumboot_target(
@@ -500,7 +535,16 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       )
     endmacro()
 
-    set(PPE_EXPER_DIR /opt/lib_h31/LAVA_lib/experiment_stage_2/PPE/)
+    if(NOT DEFINED PPE_EXPER_DIR)
+      if(EXISTS ${CMAKE_SOURCE_DIR}/../../PPE)
+        set(PPE_EXPER_DIR ${CMAKE_SOURCE_DIR}/../../PPE)
+      elseif(EXISTS ${EXPERIMENT_STAGE_2_DIR}/PPE)
+        set(PPE_EXPER_DIR ${EXPERIMENT_STAGE_2_DIR}/PPE/)
+      else()
+        message(FATAL_ERROR "PPE_EXPER_DIR test binaries Directory not found")
+      endif()
+    endif()
+    message("PPE_EXPER_DIR = ${PPE_EXPER_DIR}")
 
     macro(ADD_PPE_EXPER_TEST name ShowPerf)
       add_rumboot_target(
@@ -514,7 +558,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     endmacro()
 
     ADD_VPE_COUPLED_TEST_LOOP(vpe_try_loop main_nothing_to_do_x4)
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_2_dma main_vpe_2_dma)
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_2_dma_int16 main_vpe_2_dma_int16)
     ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_2_dma_int8 main_vpe_2_dma_int8)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_9_0_op0_relu_int32 main_vpe_9_0_op0_relu_int32)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_15_0_op1_relu_int32 main_vpe_15_0_op1_relu_int32)
@@ -579,64 +623,66 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
     ###############
 
-    ADD_VPE_FROM_BINARY_TEST_LOOP_FORCE_WDMA(vpe_2_dma_fb VPE_2)
-    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_9_0_op0_relu_int32_fb VPE_9/0)
-    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_15_0_op1_relu_int32_fb VPE_15/0)
-    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_9_1_op0_relu_fp32_fb VPE_9/1)
-    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_15_1_op1_relu_fp32_fb VPE_15/1)
-    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_3_c3_fb VPE_3)
-    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_18_op2_c1_fb VPE_18)
-    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_16_op2_c2_fb VPE_16)
-    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_8_0_op0_norm_fb VPE_8/0)
-    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_14_0_op1_norm_fb VPE_14/0)
-    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_8_1_op0_norm_rnd_fb VPE_8/1)
-    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_14_1_op1_norm_rnd_fb VPE_14/1)
-    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_20_0_op2_norm_fb VPE_20/0)
-    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_20_1_op2_norm_rnd_fb VPE_20/1)
-    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_4_op0_lshift_fb VPE_4)
-    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_10_op1_lshift_fb VPE_10)
-    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_6_0_op0_f_int_fb VPE_6/0)
-    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_12_0_op1_f_int_fb VPE_12/0)
-    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_6_1_op0_f_fp_fb VPE_6/1)
-    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_12_1_op1_f_fp_fb VPE_12/1)
+    ADD_VPE_FROM_BINARY_TEST_LOOP_FORCE_WDMA(VPE_2_0 VPE_2/0)
+    ADD_VPE_FROM_BINARY_TEST_LOOP_FORCE_WDMA(VPE_2_1 VPE_2/1)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_9_0 VPE_9/0)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_15_0 VPE_15/0)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_9_1 VPE_9/1)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_15_1 VPE_15/1)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_3 VPE_3)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_18 VPE_18)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_16 VPE_16)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_8_0 VPE_8/0)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_14_0 VPE_14/0)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_8_1 VPE_8/1)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_14_1 VPE_14/1)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_20_0 VPE_20/0)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_20_1 VPE_20/1)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_4 VPE_4)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_10 VPE_10)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_6_0 VPE_6/0)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_12_0 VPE_12/0)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_6_1 VPE_6/1)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_12_1 VPE_12/1)
    
-    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_5_0_op0_alu_int8_low_fb VPE_5/0)
-    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_5_1_op0_alu_int8_middle_fb VPE_5/1)
-    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_5_2_op0_alu_int8_high_fb VPE_5/2)
-    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_5_3_op0_alu_int16_low_fb VPE_5/3)
-    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_5_4_op0_alu_int16_middle_fb VPE_5/4)
-    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_5_5_op0_alu_int16_high_fb VPE_5/5)
-    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_5_6_op0_alu_fp32_fb VPE_5/6)
-    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_11_0_op1_alu_int8_low_fb VPE_11/0)
-    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_11_1_op1_alu_int8_middle_fb VPE_11/1)
-    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_11_2_op1_alu_int8_high_fb VPE_11/2)
-    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_11_3_op1_alu_int16_low_fb VPE_11/3)
-    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_11_4_op1_alu_int16_middle_fb VPE_11/4)
-    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_11_5_op1_alu_int16_high_fb VPE_11/5)
-    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_11_6_op1_alu_fp32_fb VPE_11/6)
-    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_17_0_op2_alu_int8_low_fb VPE_17/0)
-    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_17_1_op2_alu_int8_high_fb VPE_17/1)
-    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_17_2_op2_alu_int16_low_fb VPE_17/2)
-    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_17_3_op2_alu_int16_high_fb VPE_17/3)
-    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_17_4_op2_alu_fp32_fb VPE_17/4)
-    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_7_0_op0_mul_int16_fb VPE_7/0)
-    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_7_1_op0_mul_int8_fb VPE_7/1)
-    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_7_2_op0_mul_fp32_fb VPE_7/2)
-    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_13_0_op1_mul_int16_fb VPE_13/0)
-    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_13_1_op1_mul_int8_fb VPE_13/1)
-    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_13_2_op1_mul_fp32_fb VPE_13/2)
-    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_19_0_op2_mul_int16_fb VPE_19/0)
-    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_19_1_op2_mul_int8_fb VPE_19/1)
-    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_19_2_op2_mul_fp32_fb VPE_19/2)
-    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_21_0_lut_fb VPE_21/0) # VPE_21
-    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_21_1_lut_addition_fb VPE_21/1) # VPE_21_addition
-    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_22_op0_together_fb VPE_22) # VPE_22
-    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_23_op1_together_fb VPE_23) # VPE_23
-    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_24_op2_together_fb VPE_24) # VPE_24
-    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_25_op012_together_fb VPE_25) # VPE_25
-    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_27_0_control_cons_fb VPE_27/0)
-    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_26_autonom_fb VPE_26)
-    ADD_VPE_FROM_BINARY_TEST_LOOP(vpe_28_perf_fb VPE_28) # VPE_28
+    ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_5_0 VPE_5/0)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_5_1 VPE_5/1)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_5_2 VPE_5/2)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_5_3 VPE_5/3)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_5_4 VPE_5/4)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_5_5 VPE_5/5)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_5_6 VPE_5/6)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_11_0 VPE_11/0)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_11_1 VPE_11/1)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_11_2 VPE_11/2)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_11_3 VPE_11/3)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_11_4 VPE_11/4)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_11_5 VPE_11/5)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_11_6 VPE_11/6)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_17_0 VPE_17/0)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_17_1 VPE_17/1)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_17_2 VPE_17/2)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_17_3 VPE_17/3)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_17_4 VPE_17/4)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_7_0 VPE_7/0)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_7_1 VPE_7/1)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_7_2 VPE_7/2)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_13_0 VPE_13/0)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_13_1 VPE_13/1)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_13_2 VPE_13/2)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_19_0 VPE_19/0)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_19_1 VPE_19/1)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_19_2 VPE_19/2)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_21_0 VPE_21/0)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_21_1 VPE_21/1)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_22 VPE_22)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_23 VPE_23)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_24 VPE_24)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_25 VPE_25)
+    ADD_VPE_FROM_BINARY_TEST_CONTROL_CONS(VPE_27_0 VPE_27/0)
+    ADD_VPE_FROM_BINARY_TEST_CONTROL_PARALLEL(VPE_27_1 VPE_27/1)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_26 VPE_26)
+    ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_28 VPE_28)
 
     ###############
 
@@ -684,7 +730,19 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
     set(MPE_DEMO_PATH src/platform/scr1/targets/simple-rom/nu/mpe_demo)
     set(MPE_PARSE_TEST ${CMAKE_SOURCE_DIR}/${MPE_DEMO_PATH}/parse_mpe_arrays.pl)
-    set(MPE_TEST_SHEETS_DIR ${CMAKE_SOURCE_DIR}/../units/rcm_lava_mpe/tests/experiment)     # Outside The RumBoot!!!!
+
+    if(NOT DEFINED MPE_TEST_SHEETS_DIR)
+      if(EXISTS ${CMAKE_SOURCE_DIR}/../../MPE)
+        set (MPE_TEST_SHEETS_DIR ${CMAKE_SOURCE_DIR}/../../MPE)
+      elseif(EXISTS ${EXPERIMENT_STAGE_2_DIR}/MPE)
+        set (MPE_TEST_SHEETS_DIR ${EXPERIMENT_STAGE_2_DIR}/MPE)
+      elseif(EXISTS ${CMAKE_SOURCE_DIR}/../units/rcm_lava_mpe/tests/experiment)
+        set(MPE_TEST_SHEETS_DIR ${CMAKE_SOURCE_DIR}/../units/rcm_lava_mpe/tests/experiment)
+      else()
+        message(FATAL_ERROR "MPE_TEST_SHEETS_DIR test binaries not found")
+      endif()
+    endif()
+    message ("MPE_TEST_SHEETS_DIR = ${MPE_TEST_SHEETS_DIR}")
 
     macro (ADD_MPE_DEMO_TEST mpe_demo_test_name show_perf)
       set(MPE_TEST_SHEET ${MPE_TEST_SHEETS_DIR}/${mpe_demo_test_name}/mpe_arrays.txt)
