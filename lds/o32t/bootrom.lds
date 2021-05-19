@@ -35,9 +35,9 @@ SECTIONS {
     INCLUDE o32t/runtime_section.lds.h
 
 
-    /* SPL should be in IM1 */
+    /* SPL area covers IM1 to IM3 */
     rumboot_platform_spl_start = IM1_MEMORY_BASE;
-    rumboot_platform_spl_end = IM1_MEMORY_BASE + IM1_MEMORY_SIZE;
+    rumboot_platform_spl_end = IM1_MEMORY_BASE + IM1_MEMORY_SIZE + IM2_MEMORY_SIZE + IM3_MEMORY_SIZE;
 
     rumboot_im1_heap_start      = IM1_MEMORY_BASE;
     rumboot_im1_heap_end        = IM1_MEMORY_BASE + IM1_MEMORY_SIZE;
