@@ -425,6 +425,7 @@ void nu_vpe_wait_rd_main_channel_complete(uintptr_t dma_base);
 
 void nu_vpe_run (uintptr_t vpe_base, ConfigVPE* cfg);
 void nu_vpe_wait(uintptr_t vpe_base, ConfigVPE* cfg);
+void nu_vpe_wait_cntx_appl(uintptr_t vpe_base, ConfigVPE* cfg);
 
 void nu_mpe_run(uintptr_t mpe_base, ConfigDMAMPE* cfg_dma);
 void nu_mpe_wait(uintptr_t mpe_base, ConfigDMAMPE* cfg_dma);
