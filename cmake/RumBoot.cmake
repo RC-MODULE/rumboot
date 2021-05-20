@@ -534,7 +534,7 @@ function(add_rumboot_target)
     endforeach()
 
     file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/runners)
-    string(REPLACE ";" " " _plusargs ${_plusargs})
+    string(REPLACE ";" " " _plusargs "${_plusargs}")
     file(WRITE ${PROJECT_BINARY_DIR}/runners/${product} "${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/rumboot-tools/rumboot_xrun.py -f ${product}.bin ${_plusargs} $* \${RUMBOOT_TESTING_ARGS}")
     if(CHMOD_PROG)
       execute_process(COMMAND ${CHMOD_PROG} +x ${PROJECT_BINARY_DIR}/runners/${product})
