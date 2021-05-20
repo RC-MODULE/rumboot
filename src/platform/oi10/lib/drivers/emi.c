@@ -623,6 +623,9 @@ void emi_init_ext_cfg (uint32_t const emi_dcr_base, emi_bank_cfg* cfg )
     emi_init_impl_ext_cfg (emi_dcr_base, DCR_EM2_PLB6MCIF2_BASE, 0x00, cfg);
 #if defined(CMAKE_BUILD_TYPE_DEBUG) && !defined(RUMBOOT_NOINIT)
     iowrite32(0x00000000, SDRAM_BASE); // touch sdram to prevent warnings in simulation console
+    iowrite32(0x00000000, SDRAM_BASE + 4);
+    iowrite32(0x00000000, SDRAM_BASE + 8);
+    iowrite32(0x00000000, SDRAM_BASE + 12);
     rumboot_putstring( "Touching SDRAM: WARNING!!! WRITING 0x00000000 to SDRAM_BASE!!!\n" );
 #endif
 }
