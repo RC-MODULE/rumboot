@@ -513,19 +513,6 @@ function(add_rumboot_target)
 
   list (FIND TARGET_FEATURES "STUB" _index)
 
-  #For standalone builds we enable testing via rumboot-xrun
-  if (NOT RUMBOOT_TESTING_PORT)
-    set(RUMBOOT_TESTING_PORT /dev/ttyUSB0)
-  endif()
-
-  if (NOT RUMBOOT_TESTING_RESETSEQ)
-    set(RUMBOOT_TESTING_RESETSEQ pl2303)
-  endif()
-
-  if (NOT RUMBOOT_TESTING_RESETPORT)
-    set(RUMBOOT_TESTING_RESETPORT -1)
-  endif()
-
 
   list (FIND TARGET_FEATURES "STUB" _stub)
   if (NOT RUMBOOT_DISABLE_TESTING AND NOT ${_stub} GREATER -1 AND NOT ${RUMBOOT_PLATFORM} MATCHES "native")
@@ -546,8 +533,17 @@ function(add_rumboot_target)
     set(_plusargs "${_plusargs};+${mem}=${_load}")      
     endforeach()
 
-    add_test(NAME ${product} COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/rumboot-packimage.py/rumboot_xrun.py -r ${RUMBOOT_TESTING_RESETSEQ} -f ${product}.bin -P ${RUMBOOT_TESTING_RESETPORT} -p ${RUMBOOT_TESTING_PORT} ${_plusargs})
-    extract_labels_from_source(${product} ${trg})
+    file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/runners)
+    string(REPLACE ";" " " _plusargs ${_plusargs})
+    file(WRITE ${PROJECT_BINARY_DIR}/runners/${product} "${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/rumboot-tools/rumboot_xrun.py -f ${product}.bin ${_plusargs} $* \${RUMBOOT_TESTING_ARGS}")
+    if(CHMOD_PROG)
+      execute_process(COMMAND ${CHMOD_PROG} +x ${PROJECT_BINARY_DIR}/runners/${product})
+    endif()
+    add_test(NAME ${product} COMMAND ${PROJECT_BINARY_DIR}/runners/${product})
+    feature_check("EXTRACT_LABELS" TARGET_FEATURES _scan_source)
+    if (_scan_source)
+      extract_labels_from_source(${product} ${trg})
+    endif()
     SET_TESTS_PROPERTIES(${product} PROPERTIES TIMEOUT "45")  
     SET_TESTS_PROPERTIES(${product} PROPERTIES LABELS "full;${TARGET_TESTGROUP}")    
   endif()
