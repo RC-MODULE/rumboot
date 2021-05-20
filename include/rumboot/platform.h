@@ -279,6 +279,32 @@ void rumboot_platform_sv_event(const char *name);
 void* rumboot_memfill8(void *addr, size_t sz, uint8_t val, int8_t incr);
 
 /**
+ * The function fills memory sequentially with val that is incremented each time by incr s
+ * tarting from address pointed by addr until all sz bytes are filled.
+ * 
+ * WARNING: This function accepts words as sz arguments 
+ * 
+ * @param addr start address
+ * @param sz size in 32-bit words
+ * @param val initial value to start with
+ * @param incr increments
+ * @return int 
+ */
+int rumboot_memfill32(void *addr, size_t sz, int val, int incr);
+
+/**
+ * Checks two buffers. 
+ * 
+ * @warning Perhaps we should ditch this one
+ * 
+ * @param src 
+ * @param dst 
+ * @param sz 
+ * @return int 
+ */
+int rumboot_memcheck32(void *src, void *dst, size_t sz);
+
+/**
  * Returns 64-bit physical address from a virtual 32-bit
  * address on ppc platforms. On ARM just platforms returns
  * the addr cast to 64-bit.
