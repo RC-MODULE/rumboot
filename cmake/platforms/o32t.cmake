@@ -585,7 +585,12 @@ add_rumboot_target(
   CFLAGS -DCOM_SRC_HEAP="IM3" -DCOM_DST_HEAP="IM3"
   PREFIX com-thru-im3-im3
 )
-
+add_rumboot_target(
+  CONFIGURATION IRAM_IM1_WITH_EMI
+  FILES axi-com/test_com_irq.c
+  CFLAGS -DCOM_SRC_HEAP="SRAM0" -DCOM_DST_HEAP="SRAM0"
+  PREFIX com-irq-sram0-sram0
+)
 #  The one test, checking access to closed space
 add_rumboot_target(
   CONFIGURATION IRAM_IM1
@@ -731,7 +736,7 @@ add_rumboot_target(
 )
 
 add_rumboot_target(
-  CONFIGURATION IRAM_IM1_WITH_EMI
+  CONFIGURATION IRAM_IM1
   FILES oi10/targets/test_oi10_lscb.c
   CFLAGS -DPLATFORM_O32T -DMKIO_BASE=MKIO2_BASE -DCHECK_MKIO_FUNC -DMKIO_BUS=MKIO_BUS_A -DTEST_BANK="SSRAM" -D__FILENAME__=\"wtfisthisiwonder\"
   IRUN_FLAGS +mkio_signal_test
@@ -790,7 +795,7 @@ add_rumboot_target(
 )
 
 add_rumboot_target(
-  CONFIGURATION IRAM_IM1_WITH_EMI
+  CONFIGURATION IRAM_IM1
   FILES oi10/targets/test_oi10_lscb.c
   CFLAGS -DPLATFORM_O32T -DMKIO_BASE=MKIO3_BASE -DCHECK_MKIO_FUNC -DMKIO_BUS=MKIO_BUS_A -DTEST_BANK="SSRAM" -D__FILENAME__=\"wtfisthisiwonder\"
   IRUN_FLAGS +mkio_signal_test
