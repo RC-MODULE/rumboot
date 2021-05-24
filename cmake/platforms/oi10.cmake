@@ -2899,6 +2899,13 @@ endif()
         NAME "test_o32t_l2cache_and_im0_scrubbers_apb"
     )
 
+    add_rumboot_target(
+        CONFIGURATION IRAM
+        FILES test_im0_double_error.c
+        IRUN_FLAGS +enable_IM0_de_insertion
+        NAME "test_im0_double_error"
+    )
+
 #***********************************************************************************************************************************************************************************************************    
     
     add_rumboot_target(
@@ -2969,6 +2976,16 @@ endif()
       NAME "test_oi10_cpu_019_hard"
     )
 
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES simple-iram/test_oi10_cpu_028.c
+      IRUN_FLAGS +set_IM0_to_zero 
+                 +disable_L2C_se_insertion
+                 +disable_IM0_se_insertion
+#      PREFIX "simple-iram"
+      NAME "test_oi10_cpu_028"
+    )
+    
     add_rumboot_target(
         CONFIGURATION IRAM
         FILES test_oi10_sdio.c
