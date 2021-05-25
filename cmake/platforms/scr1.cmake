@@ -696,8 +696,10 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     ADD_PPE_COUPLED_TEST_LOOP(ppe_7_fp16_avg  main_ppe_7_fp16_avg NotShowPerf )
     ADD_PPE_COUPLED_TEST_LOOP(ppe_11_i16_max  main_ppe_3_i16_max  ShowPerf    )
 
-    ADD_PPE_V_EXPER_TEST(ppe_8v_i16_max   main_ppe_3_i16_max  NotShowPerf VPEtoPPE)
-    ADD_PPE_V_EXPER_TEST(ppe_2v_i8_max    main_ppe_2_i8_max   NotShowPerf MEMtoMEM)
+#    ADD_PPE_V_EXPER_TEST(ppe_8v_i16_max   main_ppe_3_i16_max  NotShowPerf VPEtoPPE)
+    ADD_PPE_V_EXPER_TEST(ppe_8v_i16_max   main_ppe_3_i16_max  ShowPerf    VPEtoPPE)
+#    ADD_PPE_V_EXPER_TEST(ppe_2v_i8_max    main_ppe_2_i8_max   NotShowPerf MEMtoMEM)
+    ADD_PPE_V_EXPER_TEST(ppe_2v_i8_max    main_ppe_2_i8_max   ShowPerf MEMtoMEM)
 
     ADD_PPE_V_EXPER_TEST(ppe_5v_i8_min    main_ppe_2_i8_min   NotShowPerf MEMtoMEM)
     ADD_PPE_V_EXPER_TEST(ppe_6v_i16_min   main_ppe_3_i16_min  NotShowPerf MEMtoMEM)

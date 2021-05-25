@@ -21,10 +21,13 @@ void* in_data = NULL;
 void* etalon  = NULL;
 void* res_data= NULL;
 
+int ppe_clk_f = 25; // MHz ppe clk frequency
+
 int main() {
   int res = 0;
   int i, it_nmb, dtB;
   int clk_cnt;
+  int perf_avg;
 
   int heap_id = nu_get_heap_id();
 
@@ -33,6 +36,7 @@ int main() {
   rumboot_platform_request_file("num_iterations_file_tag", (uintptr_t) &it_nmb);
   rumboot_printf("it_nmb is %d\n", it_nmb);
 
+  perf_avg = 0;
   for (i=0; i<it_nmb && !res; i++) {
     rumboot_malloc_update_heaps(1);
 
@@ -72,21 +76,17 @@ int main() {
       nu_ppe_rdma_run(NU_PPE_RDMA_BASE, &cfg_reg);
       nu_ppe_run(NU_PPE_STANDALONE_BASE, &cfg_reg);
 
-      #ifdef ShowPerf
       while (nu_ppe_status_done_rd(NU_PPE_STANDALONE_BASE) == 0x0) {} // set timeout
       clk_cnt = rumboot_platform_get_uptime() - clk_cnt;
-      #endif
 
       // Wait RDMA then PPE+WDMA
       nu_ppe_rdma_wait_complete(NU_PPE_RDMA_BASE);
       nu_ppe_wait_complete(NU_PPE_STANDALONE_BASE);
 
-      #ifdef ShowPerf
+      // Sizeof(DataCube)/(time*frequency); time measure is us, frequency measure is MHz
+      // clk_cnt will be devided by frequency later
       dtB = (cfg_reg.wOpM & 0x600000) == 0x0 ? 1 : 2; // sizeof(DataType) in bytes
-
-      // Sizeof(DataCube)/(time*frequency); time measure is us, frequency is 100 MHz
-      clk_cnt = (in_metrics->H * in_metrics->W * in_metrics->C * dtB)/(clk_cnt*100);
-      #endif
+      clk_cnt = (in_metrics->H * in_metrics->W * in_metrics->C * dtB)/clk_cnt;
     }
     #endif
 
@@ -113,16 +113,26 @@ int main() {
     }
 
     if(!res){
-      nu_ppe_setup_reg(NU_PPE_RDMA_BASE, NU_PPE_STANDALONE_BASE, &cfg_reg);
-    
       cfg_reg.wOpEn  = 0x1; // Set start of PPE+WDMA field to active value
-      nu_ppe_run(NU_PPE_STANDALONE_BASE, &cfg_reg);
-    
+      nu_ppe_setup_reg(NU_PPE_RDMA_BASE, NU_PPE_STANDALONE_BASE, &cfg_reg);
+
       nu_cpdmac_trn256_config(NU_CPDMAC_ASM_BASE,in_data,in_metrics->s);
+
+      nu_ppe_run(NU_PPE_STANDALONE_BASE, &cfg_reg); 
+      clk_cnt = rumboot_platform_get_uptime();
+
       nu_cpdmac_trn256_run(NU_CPDMAC_ASM_BASE);
-    
+
+      while (nu_ppe_status_done_rd(NU_PPE_STANDALONE_BASE) == 0x0) {} // set timeout
+      clk_cnt = rumboot_platform_get_uptime() - clk_cnt;
+
       nu_cpdmac_trn256_wait_complete(NU_CPDMAC_ASM_BASE);
       nu_ppe_wait_complete(NU_PPE_STANDALONE_BASE);
+
+      // Sizeof(DataCube)/(time*frequency); time measure is us, frequency measure is MHz
+      // clk_cnt will be devided by frequency later
+      dtB = (cfg_reg.wOpM & 0x600000) == 0x0 ? 1 : 2;
+      clk_cnt = (in_metrics->H * in_metrics->W * in_metrics->C * dtB)/clk_cnt;
     }
     #endif
 
@@ -144,13 +154,25 @@ int main() {
       rumboot_printf("Iteration %d PASSED\n", i);
 
       #ifdef ShowPerf
-      rumboot_printf("PPE perfomance is %d bytes per cycle\n", clk_cnt);
+      perf_avg += clk_cnt;
+
+      rumboot_printf("clk_cnt is %d\n", clk_cnt);
+
+      clk_cnt = (clk_cnt*100)/ppe_clk_f;
+
+      rumboot_printf("PPE perfomance of iteration # %d is %d.%d bytes per cycle\n", i, clk_cnt/100, clk_cnt-(clk_cnt/100)*100);
       #endif
     }
     else rumboot_printf("Test FAILED at iteration %d\n", i);
 
     rumboot_malloc_update_heaps(0);
   }
+
+  #ifdef ShowPerf
+  perf_avg = (perf_avg*100)/it_nmb;
+
+  rumboot_printf("PPE average perfomance of %d iterations is %d.%d bytes per cycle\n", it_nmb, perf_avg/100, perf_avg-(perf_avg/100)*100);
+  #endif
 
   return res;
 }
