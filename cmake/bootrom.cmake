@@ -104,13 +104,13 @@ macro(rumboot_bootrom_add_components romconf spl_conf spl_reverse_conf spl_reloc
     VARIABLE SPL_OK
   )
 
-  if (spl_reverse_conf)
+  if ( NOT spl_reverse_conf STREQUAL "" )
     add_rumboot_target(
       CONFIGURATION ${spl_reverse_conf}
       NAME reverse-endian-ok
       FILES common/bootrom/spl.c
       CFLAGS -DTERMINATE_SIMULATION -DEXITCODE=0
-      FEATURES STUB PACKIMAGE
+      FEATURES PACKIMAGE
       PACKIMAGE_FLAGS -a 512 -z 512 -c
       VARIABLE SPL_REVERSE_ENDIAN_OK
     )

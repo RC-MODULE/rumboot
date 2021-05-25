@@ -96,13 +96,13 @@ rumboot_add_configuration (
   LDS o32t/iram-spl.lds
   PREFIX spl
   FILES ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c
-  LDFLAGS -Wl,-emain
+  LDFLAGS -Wl,-erumboot_main
   CFLAGS -DRUMBOOT_NOINIT
   FEATURES COVERAGE PACKIMAGE
 )
 
 rumboot_add_configuration(IRAM_SPL_LE
-  CONFIGURATION IRAM
+  CONFIGURATION IRAM_IM1
   PREFIX spl
   LDFLAGS -Wl,-belf32-powerpcle -mlittle-endian -Wl,-emain
   CFLAGS -mlittle-endian
@@ -213,6 +213,13 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     IRUN_FLAGS +BOOT_HOST=1 ${ROM_6500K_OPTS}
     LOAD
     HOSTMOCK  spl-ok
+  )
+
+  rumboot_bootrom_integration_test(BROM
+    NAME "host-mockup-little-endian"
+    IRUN_FLAGS +BOOT_HOST=1 ${ROM_6500K_OPTS}
+    LOAD
+    HOSTMOCK  spl-reverse-endian-ok
   )
 
   rumboot_bootrom_integration_test(BROM
