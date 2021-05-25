@@ -156,7 +156,7 @@ int main() {
       #ifdef ShowPerf
       perf_avg += clk_cnt;
 
-      rumboot_printf("clk_cnt is %d\n", clk_cnt);
+      //rumboot_printf("clk_cnt is %d\n", clk_cnt);
 
       clk_cnt = (clk_cnt*100)/ppe_clk_f;
 
