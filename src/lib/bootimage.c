@@ -402,18 +402,20 @@ int rumboot_bootimage_execute_ep(void *ep)
 int rumboot_bootimage_jump_to_ep_with_args(const struct rumboot_cpu_cluster *cpu,  struct rumboot_bootheader *hdr, void *data, int swap) 
 {
     int (*runme)(uint32_t a, uint32_t b, uint32_t c, uint32_t d, uint32_t e); 
-	
+	uint32_t ep0 = rumboot_bootimage_header_item32(hdr->entry_point[0], swap);
+	uint32_t ep1 = rumboot_bootimage_header_item32(hdr->entry_point[1], swap);
+
 #if UINTPTR_MAX > 0xFFFFFFFF
-		runme = (void *) ((hdr->entry_point[0]) | (uint64_t) (hdr->entry_point[1]) << 32);
+		runme = (void *) ((ep0) | (uint64_t) (ep1) << 32);
 #else
-		runme = (void *) hdr->entry_point[0];
+		runme = (void *) ep0;
 #endif
 
     return runme(
-        hdr->bootargs[0], 
-        hdr->bootargs[1], 
-        hdr->bootargs[2],
-        hdr->bootargs[3],
-        hdr->bootargs[4]
-        );
+		rumboot_bootimage_header_item32(hdr->bootargs[0], swap),
+		rumboot_bootimage_header_item32(hdr->bootargs[1], swap),
+		rumboot_bootimage_header_item32(hdr->bootargs[2], swap),
+		rumboot_bootimage_header_item32(hdr->bootargs[3], swap),
+		rumboot_bootimage_header_item32(hdr->bootargs[4], swap)
+		);
 }
