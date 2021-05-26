@@ -59,6 +59,7 @@ static void nmc_generate_trampoline(void *at, uint32_t ep)
         nmc_memory[13] = 0x0;
         nmc_memory[14] = 0x0;
         nmc_memory[15] = 0x0;
+        asm("msync");
         rumboot_printf("boot: Created trampoline to 0x%x at 0x%x\n", __swap32(*nmc_goto), at);
 }
 
