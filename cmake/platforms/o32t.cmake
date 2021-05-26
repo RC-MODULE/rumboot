@@ -96,7 +96,7 @@ rumboot_add_configuration (
   LDS o32t/iram-spl.lds
   PREFIX spl
   FILES ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c
-  LDFLAGS -Wl,-erumboot_main
+  LDFLAGS -Wl,-emain
   CFLAGS -DRUMBOOT_NOINIT
   FEATURES COVERAGE PACKIMAGE
 )
