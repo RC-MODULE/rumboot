@@ -173,10 +173,26 @@ void init_descr(hscb_descr *dsc_table, uint32_t num_of_descr, hscb_descr *dsc) {
     }
 }
 
+void change_descr_endianess (hscb_descr *src_dsc, hscb_descr *dst_dsc) {
+    hscb_descr *result_dsc;
+    uint64_t *dscr_p, dsc_loc;
+    uint32_t word1, word2;
+    dscr_p = (uint64_t*)(src_dsc);
+    word1 = *dscr_p >> 32;
+    word2 = *dscr_p;
+    dscr_p = (uint64_t*)(dst_dsc);
+    word1 = hscb_change_endian(word1, 1);
+    word2 = hscb_change_endian(word2, 1);
+    *dscr_p = 0;
+    *dscr_p = word2;
+    *dscr_p = (*dscr_p << 32);
+    *dscr_p = *dscr_p | word1;
+    //src_dsc = (hscb_descr*)dscr_p;
+}
 void print_dscr_table(hscb_descr *dsc_table, bool ch_end) {
     uint32_t i, word1, word2;
-    uint64_t *dscr_p, dsc_loc;
-    hscb_descr *dsc;
+    uint64_t *dscr_p;
+    hscb_descr *dsc, dsc_loc;
     rumboot_printf("Print content of DSC table at 0x%x\n", dsc_table);
     for (i=0; i < N_OF_PACKETS; i=i+1) {
         dsc = &dsc_table[i];
@@ -192,15 +208,15 @@ void print_dscr_table(hscb_descr *dsc_table, bool ch_end) {
         if (ch_end){
             word1 = hscb_change_endian(word1 ,1);
             word2 = hscb_change_endian(word2 ,1);
-            dsc_loc = 0;
-            dsc_loc = word2;
-            dsc_loc = (dsc_loc << 32);
-            dsc_loc = dsc_loc | word1;
-            dscr_p = &dsc_loc;
-            dsc = (hscb_descr*)dscr_p;
+            //dsc_loc = 0;
+            //dsc_loc = word2;
+            //dsc_loc = (dsc_loc << 32);
+            //dsc_loc = dsc_loc | word1;
+            //dscr_p = &dsc_loc;
+            //dsc = (hscb_descr*)dscr_p;
+            change_descr_endianess(dsc, &dsc_loc);
         }
-        //rumboot_printf("N=%d, word1 = %x, word2 = %x, start_address = %x, length = %x, act = %x, act0 = %x, ie = %x, err = %x, valid = %x\n", i, word1, word2, dsc_table[i].start_address, dsc_table[i].length, dsc_table[i].act, dsc_table[i].act0, dsc_table[i].ie, dsc_table[i].err, dsc_table[i].valid);
-        rumboot_printf("N=%d, word1 = %x, word2 = %x, start_address = %x, length = %x, act = %x, act0 = %x, ie = %x, err = %x, valid = %x\n", i, word1, word2, dsc->start_address, dsc->length, dsc->act, dsc->act0, dsc->ie, dsc->err, dsc->valid);
+        rumboot_printf("N=%d, word1 = %x, word2 = %x, start_address = %x, length = %x, act = %x, act0 = %x, ie = %x, err = %x, valid = %x\n", i, word1, word2, dsc_loc.start_address, dsc_loc.length, dsc_loc.act, dsc_loc.act0, dsc_loc.ie, dsc_loc.err, dsc_loc.valid);
     }
     
 }
@@ -216,14 +232,16 @@ void create_and_init_dsc_table(hscb_descr **hscb_dsc_table, char *hscb_dsctbl_he
     if(DEBUG_PRINT) rumboot_printf("hscb_dsc_table = 0x%x\n", *hscb_dsc_table);
     for (i=0; i < n_of_dsc; i=i+1) {
         descr.length = SIZE_OF_PACKET; // size of packet in bytes
-        frame_buf = (uint32_t*)rumboot_malloc_from_named_heap_aligned(hscb_data_heap_name, descr.length/4 * sizeof(uint32_t), 0x8);
+        frame_buf = (uint32_t*)rumboot_malloc_from_named_heap_aligned(hscb_data_heap_name, descr.length, 0x8);
         descr.start_address = rumboot_virt_to_dma(frame_buf);
         descr.act    =   2;      
         descr.act0   =   1;      
         if(i == n_of_dsc-1) descr.ie = 1; else descr.ie = 0;          
         descr.valid  =   1;
         init_descr(dsc_table, i, &descr);
-        rumboot_memfill32(frame_buf, descr.length, descr.start_address, 0xF);
+        rumboot_memfill32(frame_buf, descr.length/4, descr.start_address, 0x1);
+        if(DEBUG_PRINT) rumboot_printf("First word = %x, Last word = %x \n", *(frame_buf), *(frame_buf+descr.length/4-1));
+        
     }
 }
 
@@ -396,6 +414,33 @@ void wait_of_end(){
     rumboot_printf("Reach end of test: hscb0_rx_irq_cnt = %d, hscb1_rx_irq_cnt = %d, hscb2_rx_irq_cnt = %d, hscb3_rx_irq_cnt = %d\n", hscb0_rx_irq_cnt, hscb1_rx_irq_cnt, hscb2_rx_irq_cnt, hscb3_rx_irq_cnt);
 }
 
+
+int check_results(hscb_descr *tx_dsc_table, hscb_descr *rx_dsc_table) {
+    uint32_t i, result, *tx_word, *rx_word;
+    hscb_descr tx_dsc, rx_dsc;
+    result = 0;
+    rumboot_printf("Start checks of results\n");
+    for (i=0; i < N_OF_PACKETS; i=i+1) {
+        change_descr_endianess(&tx_dsc_table[i], &tx_dsc);
+        change_descr_endianess(&rx_dsc_table[i], &rx_dsc);
+        //tx_dsc = &tx_dsc_table[i];
+        //rx_dsc = &rx_dsc_table[i];
+        rumboot_printf("TX_DSC: address = %x, N=%d, start_address = %x, length = %x, act = %x, act0 = %x, ie = %x, err = %x, valid = %x\n", &tx_dsc_table[i], i, tx_dsc.start_address, tx_dsc.length, tx_dsc.act, tx_dsc.act0, tx_dsc.ie, tx_dsc.err, tx_dsc.valid);
+        rumboot_printf("RX_DSC: address = %x, N=%d, start_address = %x, length = %x, act = %x, act0 = %x, ie = %x, err = %x, valid = %x\n", &rx_dsc_table[i], i, rx_dsc.start_address, rx_dsc.length, rx_dsc.act, rx_dsc.act0, rx_dsc.ie, rx_dsc.err, rx_dsc.valid);
+        if(rumboot_memcheck32(tx_dsc.start_address, rx_dsc.start_address, tx_dsc.length/4)==1) return 1;
+        //for(i=0; i < tx_dsc.length/4; i=i+4) {
+        //    tx_word = (tx_dsc.start_address + i);
+        //    rx_word = (rx_dsc.start_address + i);
+        //   //rumboot_printf("CMP: TX - %x at addr %x, RX - %x at addr %x\n", *tx_word, tx_word, *rx_word, rx_word);
+        //    if(*tx_word !=*rx_word) { 
+        //        rumboot_printf("CMP_ERROR\n"); 
+        //        return 1;
+        //    }
+        //}
+    }
+    return 0; 
+}
+
 int main() {
 // -----------------------------------------------------------
     uint32_t result = 0;
@@ -429,39 +474,56 @@ int main() {
     if(DEBUG_PRINT) rumboot_printf("----Config of HSCB3----\n");
     config_hscb(HSCB3_BASE, &hscb3_tx_dsc_table, HSCB3_TX_DSCTBL_BASE, HSCB3_TX_DATA_BASE, &hscb3_rx_dsc_table, HSCB3_RX_DSCTBL_BASE, HSCB3_RX_DATA_BASE, &rdma_ctrl_word[3]);
     //---------------- 
-    rumboot_printf("HSCB0 descriptor tables\n");
-    rumboot_printf("--- TX descriptors table\n");
-    if(DEBUG_PRINT) print_dscr_table(hscb0_tx_dsc_table, false);
-    print_dscr_table(hscb0_tx_dsc_table, CHANGE_ENDIANN);
-    rumboot_printf("--- RX descriptors table\n");
-    if(DEBUG_PRINT) print_dscr_table(hscb0_rx_dsc_table, false);
-    print_dscr_table(hscb0_rx_dsc_table, CHANGE_ENDIANN);
-    rumboot_printf("HSCB1 descriptor tables\n");
-    rumboot_printf("--- TX descriptors table\n");
-    if(DEBUG_PRINT) print_dscr_table(hscb1_tx_dsc_table, false);
-    print_dscr_table(hscb1_tx_dsc_table, CHANGE_ENDIANN);
-    rumboot_printf("--- RX descriptors table\n");
-    if(DEBUG_PRINT) print_dscr_table(hscb1_rx_dsc_table, false);
-    print_dscr_table(hscb1_rx_dsc_table, CHANGE_ENDIANN);
-    rumboot_printf("HSCB2 descriptor tables\n");
-    rumboot_printf("--- TX descriptors table\n");
-    if(DEBUG_PRINT) print_dscr_table(hscb2_tx_dsc_table, false);
-    print_dscr_table(hscb2_tx_dsc_table, CHANGE_ENDIANN);
-    rumboot_printf("--- RX descriptors table\n");
-    if(DEBUG_PRINT) print_dscr_table(hscb2_rx_dsc_table, false);
-    print_dscr_table(hscb2_rx_dsc_table, CHANGE_ENDIANN);
-    rumboot_printf("HSCB3 descriptor tables\n");
-    rumboot_printf("--- TX descriptors table\n");
-    if(DEBUG_PRINT) print_dscr_table(hscb3_tx_dsc_table, false);
-    print_dscr_table(hscb3_tx_dsc_table, CHANGE_ENDIANN);
-    rumboot_printf("--- RX descriptors table\n");
-    if(DEBUG_PRINT) print_dscr_table(hscb3_rx_dsc_table, false);
-    print_dscr_table(hscb3_rx_dsc_table, CHANGE_ENDIANN);
+    //if(DEBUG_PRINT) {
+        //rumboot_printf("HSCB0 descriptor tables\n");
+        //rumboot_printf("--- TX descriptors table\n");
+        //print_dscr_table(hscb0_tx_dsc_table, CHANGE_ENDIANN);
+        //rumboot_printf("--- RX descriptors table\n");
+        //print_dscr_table(hscb0_rx_dsc_table, CHANGE_ENDIANN);
+        //rumboot_printf("HSCB1 descriptor tables\n");
+        //rumboot_printf("--- TX descriptors table\n");
+        //print_dscr_table(hscb1_tx_dsc_table, CHANGE_ENDIANN);
+        //rumboot_printf("--- RX descriptors table\n");
+        //print_dscr_table(hscb1_rx_dsc_table, CHANGE_ENDIANN);
+        //rumboot_printf("HSCB2 descriptor tables\n");
+        //rumboot_printf("--- TX descriptors table\n");
+        //print_dscr_table(hscb2_tx_dsc_table, CHANGE_ENDIANN);
+        //rumboot_printf("--- RX descriptors table\n");
+        //print_dscr_table(hscb2_rx_dsc_table, CHANGE_ENDIANN);
+        //rumboot_printf("HSCB3 descriptor tables\n");
+        //rumboot_printf("--- TX descriptors table\n");
+        //print_dscr_table(hscb3_tx_dsc_table, CHANGE_ENDIANN);
+        //rumboot_printf("--- RX descriptors table\n");
+        //print_dscr_table(hscb3_rx_dsc_table, CHANGE_ENDIANN);
+    //}
     //---------------- 
     establish_link(HSCB0_BASE, HSCB1_BASE);
     establish_link(HSCB2_BASE, HSCB3_BASE);
     simult_run_of_hscbs_transfers(rdma_ctrl_word);
     wait_of_end();
+    rumboot_printf("HSCB0 descriptor tables\n");
+        rumboot_printf("--- TX descriptors table\n");
+        print_dscr_table(hscb0_tx_dsc_table, CHANGE_ENDIANN);
+        rumboot_printf("--- RX descriptors table\n");
+        print_dscr_table(hscb0_rx_dsc_table, CHANGE_ENDIANN);
+        rumboot_printf("HSCB1 descriptor tables\n");
+        rumboot_printf("--- TX descriptors table\n");
+        print_dscr_table(hscb1_tx_dsc_table, CHANGE_ENDIANN);
+        rumboot_printf("--- RX descriptors table\n");
+        print_dscr_table(hscb1_rx_dsc_table, CHANGE_ENDIANN);
+        rumboot_printf("HSCB2 descriptor tables\n");
+        rumboot_printf("--- TX descriptors table\n");
+        print_dscr_table(hscb2_tx_dsc_table, CHANGE_ENDIANN);
+        rumboot_printf("--- RX descriptors table\n");
+        print_dscr_table(hscb2_rx_dsc_table, CHANGE_ENDIANN);
+        rumboot_printf("HSCB3 descriptor tables\n");
+        rumboot_printf("--- TX descriptors table\n");
+        print_dscr_table(hscb3_tx_dsc_table, CHANGE_ENDIANN);
+        rumboot_printf("--- RX descriptors table\n");
+        print_dscr_table(hscb3_rx_dsc_table, CHANGE_ENDIANN);
+      result = result + check_results(hscb0_tx_dsc_table, hscb1_rx_dsc_table) + check_results(hscb1_tx_dsc_table, hscb0_rx_dsc_table) + check_results(hscb2_tx_dsc_table, hscb3_rx_dsc_table) + check_results(hscb3_tx_dsc_table, hscb2_rx_dsc_table);
+     // result = result + check_results(hscb0_tx_dsc_table, hscb0_rx_dsc_table);
+
     //---------------- 
     delete_irq_handlers(tbl);
     return result;
