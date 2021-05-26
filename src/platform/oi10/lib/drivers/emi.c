@@ -509,12 +509,12 @@ void prepare_default_emi_cfg(emi_bank_cfg* cfg)
     (cfg + 0)->ssx_cfg.T_DEL  = TDEL_0;
 
     (cfg + 0)->sdx_cfg.CSP    = CSP_256;
-    (cfg + 0)->sdx_cfg.CSP    = SDS_2M;
-    (cfg + 0)->sdx_cfg.CSP    = CL_3;
-    (cfg + 0)->sdx_cfg.CSP    = TRDL_1;
-    (cfg + 0)->sdx_cfg.CSP    = SI_EXT_INIT;
-    (cfg + 0)->sdx_cfg.CSP    = TRCD_5;
-    (cfg + 0)->sdx_cfg.CSP    = TRAS_9;
+    (cfg + 0)->sdx_cfg.SDS    = SDS_2M;
+    (cfg + 0)->sdx_cfg.CL     = CL_3;
+    (cfg + 0)->sdx_cfg.T_RDL  = TRDL_1;
+    (cfg + 0)->sdx_cfg.SI     = SI_EXT_INIT;
+    (cfg + 0)->sdx_cfg.T_RCD  = TRCD_5;
+    (cfg + 0)->sdx_cfg.T_RAS  = TRAS_9;
 
     //bank1 - SDRAM
    (cfg + 1)->ssx_cfg.BTYP   = BTYP_SDRAM;
@@ -529,12 +529,12 @@ void prepare_default_emi_cfg(emi_bank_cfg* cfg)
    (cfg + 1)->ssx_cfg.T_DEL  = TDEL_0;
 
    (cfg + 1)->sdx_cfg.CSP    = CSP_2048;
-   (cfg + 1)->sdx_cfg.CSP    = SDS_64M;
-   (cfg + 1)->sdx_cfg.CSP    = CL_3;
-   (cfg + 1)->sdx_cfg.CSP    = TRDL_2;
-   (cfg + 1)->sdx_cfg.CSP    = SI_CPU_INIT;
-   (cfg + 1)->sdx_cfg.CSP    = TRCD_2;
-   (cfg + 1)->sdx_cfg.CSP    = TRAS_5;
+   (cfg + 1)->sdx_cfg.SDS    = SDS_64M;
+   (cfg + 1)->sdx_cfg.CL     = CL_3;
+   (cfg + 1)->sdx_cfg.T_RDL  = TRDL_2;
+   (cfg + 1)->sdx_cfg.SI     = SI_CPU_INIT;
+   (cfg + 1)->sdx_cfg.T_RCD  = TRCD_2;
+   (cfg + 1)->sdx_cfg.T_RAS  = TRAS_5;
 
     //bank2 - SSRAM
     (cfg + 2)->ssx_cfg.BTYP   = BTYP_SSRAM;
@@ -549,12 +549,12 @@ void prepare_default_emi_cfg(emi_bank_cfg* cfg)
     (cfg + 2)->ssx_cfg.T_DEL  = TDEL_0;
 
     (cfg + 2)->sdx_cfg.CSP    = CSP_256;
-    (cfg + 2)->sdx_cfg.CSP    = SDS_2M;
-    (cfg + 2)->sdx_cfg.CSP    = CL_3;
-    (cfg + 2)->sdx_cfg.CSP    = TRDL_1;
-    (cfg + 2)->sdx_cfg.CSP    = SI_EXT_INIT;
-    (cfg + 2)->sdx_cfg.CSP    = TRCD_5;
-    (cfg + 2)->sdx_cfg.CSP    = TRAS_9;
+    (cfg + 2)->sdx_cfg.SDS    = SDS_2M;
+    (cfg + 2)->sdx_cfg.CL     = CL_3;
+    (cfg + 2)->sdx_cfg.T_RDL  = TRDL_1;
+    (cfg + 2)->sdx_cfg.SI     = SI_EXT_INIT;
+    (cfg + 2)->sdx_cfg.T_RCD  = TRCD_5;
+    (cfg + 2)->sdx_cfg.T_RAS  = TRAS_9;
 
     //bank3 - PIPELINED
     (cfg + 3)->ssx_cfg.BTYP   = BTYP_PIPERDY;
@@ -569,12 +569,12 @@ void prepare_default_emi_cfg(emi_bank_cfg* cfg)
     (cfg + 3)->ssx_cfg.T_DEL  = TDEL_0;
 
     (cfg + 3)->sdx_cfg.CSP    = CSP_256;
-    (cfg + 3)->sdx_cfg.CSP    = SDS_2M;
-    (cfg + 3)->sdx_cfg.CSP    = CL_3;
-    (cfg + 3)->sdx_cfg.CSP    = TRDL_1;
-    (cfg + 3)->sdx_cfg.CSP    = SI_EXT_INIT;
-    (cfg + 3)->sdx_cfg.CSP    = TRCD_5;
-    (cfg + 3)->sdx_cfg.CSP    = TRAS_9;
+    (cfg + 3)->sdx_cfg.SDS    = SDS_2M;
+    (cfg + 3)->sdx_cfg.CL     = CL_3;
+    (cfg + 3)->sdx_cfg.T_RDL  = TRDL_1;
+    (cfg + 3)->sdx_cfg.SI     = SI_EXT_INIT;
+    (cfg + 3)->sdx_cfg.T_RCD  = TRCD_5;
+    (cfg + 3)->sdx_cfg.T_RAS  = TRAS_9;
 
     //bank4 - SRAM1
     (cfg + 4)->ssx_cfg.BTYP   = BTYP_SRAM;
@@ -589,12 +589,12 @@ void prepare_default_emi_cfg(emi_bank_cfg* cfg)
     (cfg + 4)->ssx_cfg.T_DEL  = TDEL_0;
 
     (cfg + 4)->sdx_cfg.CSP    = CSP_256;
-    (cfg + 4)->sdx_cfg.CSP    = SDS_2M;
-    (cfg + 4)->sdx_cfg.CSP    = CL_3;
-    (cfg + 4)->sdx_cfg.CSP    = TRDL_1;
-    (cfg + 4)->sdx_cfg.CSP    = SI_EXT_INIT;
-    (cfg + 4)->sdx_cfg.CSP    = TRCD_5;
-    (cfg + 4)->sdx_cfg.CSP    = TRAS_9;
+    (cfg + 4)->sdx_cfg.SDS    = SDS_2M;
+    (cfg + 4)->sdx_cfg.CL     = CL_3;
+    (cfg + 4)->sdx_cfg.T_RDL  = TRDL_1;
+    (cfg + 4)->sdx_cfg.SI     = SI_EXT_INIT;
+    (cfg + 4)->sdx_cfg.T_RCD  = TRCD_5;
+    (cfg + 4)->sdx_cfg.T_RAS  = TRAS_9;
 
     //bank5 - NOR
     (cfg + 5)->ssx_cfg.BTYP   = BTYP_NOR;
@@ -609,12 +609,12 @@ void prepare_default_emi_cfg(emi_bank_cfg* cfg)
     (cfg + 5)->ssx_cfg.T_DEL  = TDEL_0;
 
     (cfg + 5)->sdx_cfg.CSP    =  CSP_256;
-    (cfg + 5)->sdx_cfg.CSP    =  SDS_2M;
-    (cfg + 5)->sdx_cfg.CSP    =  CL_3;
-    (cfg + 5)->sdx_cfg.CSP    =  TRDL_1;
-    (cfg + 5)->sdx_cfg.CSP    =  SI_EXT_INIT;
-    (cfg + 5)->sdx_cfg.CSP    =  TRCD_5;
-    (cfg + 5)->sdx_cfg.CSP    =  TRAS_9;
+    (cfg + 5)->sdx_cfg.SDS    =  SDS_2M;
+    (cfg + 5)->sdx_cfg.CL     =  CL_3;
+    (cfg + 5)->sdx_cfg.T_RDL  =  TRDL_1;
+    (cfg + 5)->sdx_cfg.SI     =  SI_EXT_INIT;
+    (cfg + 5)->sdx_cfg.T_RCD  =  TRCD_5;
+    (cfg + 5)->sdx_cfg.T_RAS  =  TRAS_9;
 }
 
 
