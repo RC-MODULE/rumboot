@@ -163,6 +163,11 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     PREFIX "iram-irqlo"
   )
 
+  add_rumboot_target(
+    CONFIGURATION IRAM
+    FILES common/tools/print-heaps.c
+  )
+
 add_rumboot_target(
     CONFIGURATION IRAM
     CFLAGS -DUSE_SWINT=30

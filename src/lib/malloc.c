@@ -8,6 +8,9 @@
 
 void *rumboot_malloc_from_heap_misaligned(int heap_id, size_t length, int align, int misalign)
 {
+	#ifdef __NM__
+		length = length >> 2;
+	#endif
 	struct rumboot_heap *hp = &rumboot_platform_runtime_info->heaps[heap_id];
 	void *ret;
 
