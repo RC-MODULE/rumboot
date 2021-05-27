@@ -117,7 +117,7 @@ int main(void)
     }
 
     if (!test_result)
-        rumboot_putstring("Test has been finished successfully.");
+        rumboot_putstring("Test has been finished successfully. \n");
 
     return test_result;
 }
