@@ -17,6 +17,7 @@ if (WIN32)
     set(missing_sources asprintf.c)
 endif()
 add_executable(romgen romgen.c ${missing_sources})
+add_executable(shmtest shmtest.c ${missing_sources})
 find_package(Git)
 
 if (NOT WIN32)
