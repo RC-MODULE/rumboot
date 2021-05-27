@@ -57,6 +57,9 @@
 #ifndef SIMPLE_CRC
     #define SIMPLE_CRC 1
 #endif
+#ifndef NUM_OF_ITERATION
+    #define NUM_OF_ITERATION 1
+#endif
 
 
 bool __attribute__((section(".text.test"))) cache_testing_function( void ) {
@@ -108,13 +111,13 @@ bool __attribute__((section(".text.test"))) cache_testing_function( void ) {
             dcr_write(DCR_EM2_EMI_BASE+0x20, tmp);
         #else
             #ifdef IM0_CACHE
-                rumboot_printf( "Init CACHEABLE_IM0: addr = %x, size = %d\n", CACHEABLE_IM0, check_words_num);
+                k = 3;
+                rumboot_printf( "Init CACHEABLE_IM0: k =%d,  addr = %x, size = %d\n", k, CACHEABLE_IM0, check_words_num);
                 if(check_words_num > (48*1024/4)) {
                     rumboot_printf( "ERROR: size of initialized IM0 exceeds safe value\n" );
                     return false;
                 }
                 rumboot_memfill32( (void*)CACHEABLE_IM0, check_words_num, 0x01010101, 0);
-                k = 3;
             #else    
                 #ifdef IM1_CACHE
                     rumboot_printf( "Init CACHEABLE_IM1: addr = %x, size = %d\n", CACHEABLE_IM1, check_words_num);
@@ -238,62 +241,69 @@ bool __attribute__((section(".text.test"))) cache_testing_function( void ) {
 // ----- EMI CACHED MEM TESTS    
 //***********************************************************************************************************************************************************************************************************
     /// -------- !!!!!!!!!!!
-    uint32_t const msr_old_value = msr_read();
-    //rumboot_printf("msr_old_value = %x\n", msr_old_value);
-    //rumboot_printf("msr_new_value = %x\n", msr_old_value & ~(0b1 << ITRPT_XSR_ME_i));
-    //msr_write( msr_old_value & ~(0b1 << ITRPT_XSR_ME_i));   // disable machine check
-
-    crc = 0;
+    #ifdef MC_DISABLE
+        uint32_t const msr_old_value = msr_read();
+        rumboot_printf("msr_old_value = %x\n", msr_old_value);
+        rumboot_printf("msr_new_value = %x\n", msr_old_value & ~(0b1 << ITRPT_XSR_ME_i));
+        msr_write( msr_old_value & ~(0b1 << ITRPT_XSR_ME_i));   // disable machine check
+    #endif
+    
+        
     //time = (uint64_t)spr_read(SPR_TBL_R) + (uint64_t)spr_read(SPR_TBU_R);
-
-        rumboot_printf("*************************************************************************\n");
-        //--------
-        src = mem_base[k];
-        src_p = rumboot_virt_to_phys(src);
-        src_prnt_l = src_p;
-        src_prnt_b = src_p >> 32;
-        //-------------
-        *start_signal = 0xBABA0000;
-        msync();
-        stime[k] = (uint64_t)spr_read(SPR_TBL_R) + (uint64_t)spr_read(SPR_TBU_R);
-        rumboot_printf("%s: read data from RX-buffers (size = %d) by word_size = %d located at address 0x%x (0x%x%x) and pseudo-calculate CRC  \n", mem_name[k], SIZE_OF_BUFS, READ_SIZE, src, src_prnt_b, src_prnt_l);
-        for (int i=0; i < NUM_OF_BUFS; i++)  {
-            //rumboot_printf("%s: read data from %d-s RX-buffer (size = %d) by word_size = %d located at address 0x%x (0x%x%x) and pseudo-calculate CRC  \n", mem_name[k], i, SIZE_OF_BUFS, READ_SIZE, src, src_prnt_b, src_prnt_l);
-            *start_signal = *start_signal + i;
-        // --- invalidate L2-cache data blocks cpntains RX-buffer
-            msync(); 
-            start_addr = (unsigned long)src;
-            end_addr = start_addr + (SIZE_OF_BUFS-1);
-            // Устанавливаем адрес на первое слово в строке (это необязательно делать)
-            mask_line_base = (~(PPC476FP_L2_CACHELINE_SIZE - 1));
-            range_start = start_addr & mask_line_base;
-            range_end = (end_addr & mask_line_base) + PPC476FP_L2_CACHELINE_SIZE;
-            for (addr = range_start; addr < range_end; addr += PPC476FP_L2_CACHELINE_SIZE)
-            {
-                dcbi((void *)addr);
-            }
-        // --- read RX-buffer and calculate CRC
+        for (it=0; it < NUM_OF_ITERATION; it++)  {
+            crc = 0;
+            rumboot_printf("****** Start iteration N = %d************\n", it);
+            //--------
+            src = mem_base[k];
+            src_p = rumboot_virt_to_phys(src);
+            src_prnt_l = src_p;
+            src_prnt_b = src_p >> 32;
+            //-------------
+            //*start_signal = 0xBABA0000;
             msync();
-            for(int j=0;j < SIZE_OF_BUFS/READ_SIZE; j++) {
-                for(int l=0; l < READ_SIZE; l++) {
-                    #if SIMPLE_CRC==0
-                        crc = crc + (src[j]>>(8*l) & 0x0000000F);// pseudo-calculation 
-                    #else
-                        crc = crc + src[j];
-                    #endif
+            //stime[k] = (uint64_t)spr_read(SPR_TBL_R) + (uint64_t)spr_read(SPR_TBU_R);
+            rumboot_printf("%s: read data from RX-buffers (size = %d) by word_size = %d located at address 0x%x (0x%x%x) and pseudo-calculate CRC  \n", mem_name[k], SIZE_OF_BUFS, READ_SIZE, src, src_prnt_b, src_prnt_l);
+            for (int i=0; i < NUM_OF_BUFS; i++)  {
+                //rumboot_printf("%s: read data from %d-s RX-buffer (size = %d) by word_size = %d located at address 0x%x (0x%x%x) and pseudo-calculate CRC  \n", mem_name[k], i, SIZE_OF_BUFS, READ_SIZE, src, src_prnt_b, src_prnt_l);
+            // *start_signal = *start_signal + i;
+            // --- invalidate L2-cache data blocks cpntains RX-buffer
+                msync(); 
+                start_addr = (unsigned long)src;
+                end_addr = start_addr + (SIZE_OF_BUFS-1);
+                // Устанавливаем адрес на первое слово в строке (это необязательно делать)
+                mask_line_base = (~(PPC476FP_L2_CACHELINE_SIZE - 1));
+                range_start = start_addr & mask_line_base;
+                range_end = (end_addr & mask_line_base) + PPC476FP_L2_CACHELINE_SIZE;
+                for (addr = range_start; addr < range_end; addr += PPC476FP_L2_CACHELINE_SIZE)
+                {
+                    dcbi((void *)addr);
                 }
+            // --- read RX-buffer and calculate CRC
+                msync();
+                for(int j=0;j < SIZE_OF_BUFS/READ_SIZE; j++) {
+                    for(int l=0; l < READ_SIZE; l++) {
+                        #if SIMPLE_CRC==0
+                            crc = crc + (src[j]>>(8*l) & 0x0000000F);// pseudo-calculation 
+                        #else
+                            if(src[j] != 0x01010101) {
+                                rumboot_printf("DATA_MISSMATCH: src[j] =0x%x , ref_value = 0x01010101\n", src[j]);
+                                return false;
+                            }
+                            crc = crc + src[j];
+                        #endif
+                    }
+                }
+                src+=SIZE_OF_BUFS/READ_SIZE;
             }
-            src+=SIZE_OF_BUFS/READ_SIZE;
+            //ftime[k] = (uint64_t)spr_read(SPR_TBL_R) + (uint64_t)spr_read(SPR_TBU_R);
+            rumboot_printf("CRC of all buffer: %x\n", crc);
         }
-        ftime[k] = (uint64_t)spr_read(SPR_TBL_R) + (uint64_t)spr_read(SPR_TBU_R);
-
-
-   rumboot_printf("CRC of all buffer: %d\n", crc);
    //for (int k=0; k<2; k++){
    //     time_diff = ftime[0] - stime[0];
    //     src_prnt_l = time_diff;
    //     src_prnt_b = time_diff >> 32;
    //     rumboot_printf("%s: spent time is %d%d\n", mem_name[k], src_prnt_b, src_prnt_l);
    //}
+   
    return true;
 }

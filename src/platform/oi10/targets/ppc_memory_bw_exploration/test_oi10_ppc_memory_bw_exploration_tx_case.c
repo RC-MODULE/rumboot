@@ -235,10 +235,12 @@ bool __attribute__((section(".text.test"))) cache_testing_function( void ) {
 // ----- EMI CACHED MEM TESTS    
 //***********************************************************************************************************************************************************************************************************
     /// -------- !!!!!!!!!!!
-    uint32_t const msr_old_value = msr_read();
-    //rumboot_printf("msr_old_value = %x\n", msr_old_value);
-    //rumboot_printf("msr_new_value = %x\n", msr_old_value & ~(0b1 << ITRPT_XSR_ME_i));
-    //msr_write( msr_old_value & ~(0b1 << ITRPT_XSR_ME_i));   // disable machine check
+    #ifdef MC_DISABLE
+        uint32_t const msr_old_value = msr_read();
+        rumboot_printf("msr_old_value = %x\n", msr_old_value);
+        rumboot_printf("msr_new_value = %x\n", msr_old_value & ~(0b1 << ITRPT_XSR_ME_i));
+        msr_write( msr_old_value & ~(0b1 << ITRPT_XSR_ME_i));   // disable machine check
+    #endif
     crc = 0;
     //time = (uint64_t)spr_read(SPR_TBL_R) + (uint64_t)spr_read(SPR_TBU_R);
 
@@ -249,13 +251,13 @@ bool __attribute__((section(".text.test"))) cache_testing_function( void ) {
         src_prnt_l = src_p;
         src_prnt_b = src_p >> 32;
         //-------------
-        *start_signal = 0xBABA0000;
+        //*start_signal = 0xBABA0000;
         msync();
-        stime[k] = (uint64_t)spr_read(SPR_TBL_R) + (uint64_t)spr_read(SPR_TBU_R);
+        //stime[k] = (uint64_t)spr_read(SPR_TBL_R) + (uint64_t)spr_read(SPR_TBU_R);
         rumboot_printf("%s: write data to %d TX-buffers (size = %d) by word_size = %d started at address 0x%x (0x%x%x)\n", mem_name[k], NUM_OF_BUFS, SIZE_OF_BUFS, READ_SIZE, src, src_prnt_b, src_prnt_l);
         for (int i=0; i < NUM_OF_BUFS; i++)  {
             //rumboot_printf("%s: read data from %d-s RX-buffer (size = %d) by word_size = %d located at address 0x%x (0x%x%x) and pseudo-calculate CRC  \n", mem_name[k], i, SIZE_OF_BUFS, READ_SIZE, src, src_prnt_b, src_prnt_l);
-            *start_signal = *start_signal + i;
+            //*start_signal = *start_signal + i;
         // --- read RX-buffer and calculate CRC
             msync();
             for(int j=0;j < SIZE_OF_BUFS/READ_SIZE; j++) {
@@ -272,17 +274,13 @@ bool __attribute__((section(".text.test"))) cache_testing_function( void ) {
             //rumboot_printf("%s: flush data from 0x%x to 0x%x \n", mem_name[k], range_start, range_end);
             for (addr = range_start; addr < range_end; addr += PPC476FP_L2_CACHELINE_SIZE)
             {
-                //rumboot_printf(" --- flush data from 0x%x \n", addr);
+                rumboot_printf(" --- flush data from 0x%x \n", addr);
                 dcbf((void *)addr);
             }
         // ---            
             src+=SIZE_OF_BUFS/READ_SIZE;
         }
         //---------------
-        
-        
-        
-        
         
         // --- check of flushed data
         rumboot_printf("Make self-checks of flushed data \n", addr);
@@ -306,9 +304,9 @@ bool __attribute__((section(".text.test"))) cache_testing_function( void ) {
             //-----------
             for(int j=0;j < SIZE_OF_BUFS/READ_SIZE; j++) {
                 crc = crc + src[j] - j;
-                //if (src[j] != j) {
-                //    rumboot_printf("%s: ERROR - mismatch of flused data at address 0x%x: src[j]((0x%x)) != j(0x%x) \n", mem_name[k], &src[j], src[j], j);
-                //}
+                if (src[j] != j) {
+                    rumboot_printf("%s: ERROR - mismatch of flused data at address 0x%x: src[j]((0x%x)) != j(0x%x) \n", mem_name[k], &src[j], src[j], j);
+                }
             }
             src+=SIZE_OF_BUFS/READ_SIZE;
         }
@@ -316,6 +314,6 @@ bool __attribute__((section(".text.test"))) cache_testing_function( void ) {
             rumboot_printf("%s: ERROR - mismatch of flused data, crc = %d\n", mem_name[k], crc);
             return false;
         } 
-    rumboot_printf("%s: test ok, crc = %d\n", mem_name[k], crc);
+    rumboot_printf("%s: test ok, crc = %x\n", mem_name[k], crc);
     return true;
 }
