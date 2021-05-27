@@ -116,9 +116,10 @@ macro(rumboot_bootrom_add_components romconf spl_conf spl_reverse_conf spl_reloc
     )
   endif()
 
-  if (spl_reloc_conf)
+  if (NOT spl_reloc_conf STREQUAL "")
     add_rumboot_target(
       CONFIGURATION ${spl_reloc_conf}
+      PREFIX spl
       NAME relocation-ok
       FILES common/bootrom/spl.c
       CFLAGS -DTERMINATE_SIMULATION -DEXITCODE=0
@@ -126,11 +127,25 @@ macro(rumboot_bootrom_add_components romconf spl_conf spl_reverse_conf spl_reloc
       PACKIMAGE_FLAGS -a 512 -z 512 -c
       VARIABLE SPL_REVERSE_ENDIAN_OK
     )
-  endif()
+
+    add_rumboot_target(
+      CONFIGURATION ${spl_reloc_conf}
+      PREFIX spl
+      NAME reloc-compressed-ok
+      FILES common/bootrom/spl.c
+      CFLAGS -DTERMINATE_SIMULATION -DEXITCODE=0
+      FEATURES STUB PACKIMAGE
+      PACKIMAGE_FLAGS -a 512 -z 512 -c -Z
+      VARIABLE RELOC_COMPRESSED_OK
+    )
+
+
+    endif()
 
   if (RUMBOOT_HAS_V3_BOOTROM)
     add_rumboot_target(
       CONFIGURATION ${spl_conf}
+      PREFIX spl
       NAME compressed-ok
       FILES common/bootrom/spl.c
       CFLAGS -DTERMINATE_SIMULATION -DEXITCODE=0

@@ -226,7 +226,14 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     NAME "host-mockup-relocation"
     IRUN_FLAGS +BOOT_HOST=1 ${ROM_6500K_OPTS}
     LOAD
-    HOSTMOCK  spl-relocation-ok
+      HOSTMOCK  spl-relocation-ok
+  )
+
+  rumboot_bootrom_integration_test(BROM
+    NAME "host-mockup-relocation-and-compression"
+    IRUN_FLAGS +BOOT_HOST=1 ${ROM_6500K_OPTS}
+    LOAD
+      HOSTMOCK  spl-reloc-compressed-ok
   )
 
   rumboot_bootrom_integration_test(BROM
