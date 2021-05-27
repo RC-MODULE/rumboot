@@ -94,6 +94,9 @@ int main ()
     uint32_t    i_wr;
     uint32_t    i_rd;
 
+    s_Errors = 0;
+    s_Result = 0;
+
     // Инициализация первого теста на выполнение
     status = 0x00;
     step = STEP_NUM_WALK;

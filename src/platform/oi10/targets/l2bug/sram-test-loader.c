@@ -265,7 +265,7 @@ int main( void )
         add_tlb_entry( 0x200000, 0x200000, 0x0, MMU_TLBE_DSIZ_1MB, 2, 0, 1, 0xE0000000, 0x3f, 0x0 );
         add_tlb_entry( 0x300000, 0x300000, 0x0, MMU_TLBE_DSIZ_1MB, 2, 0, 1, 0xE0000000, 0x3f, 0x0 );
     */
-    add_tlb_entry( 0x0, 0x0, 0x0, MMU_TLBE_DSIZ_1MB, 0, 0, 1, 0x00000000, 0x3f, 0x0 );
+    add_tlb_entry( 0x0, 0x0, 0x0, MMU_TLBE_DSIZ_1MB, 2, 0, 1, 0x00000000, 0x3f, 0x0 );
     add_tlb_entry( 0x100000, 0x100000, 0x0, MMU_TLBE_DSIZ_1MB, 2, 0, 1, 0x00000000, 0x3f, 0x0 );
     add_tlb_entry( 0x200000, 0x200000, 0x0, MMU_TLBE_DSIZ_1MB, 2, 0, 1, 0x00000000, 0x3f, 0x0 );
     add_tlb_entry( 0x300000, 0x300000, 0x0, MMU_TLBE_DSIZ_1MB, 2, 0, 1, 0x00000000, 0x3f, 0x0 );
@@ -330,8 +330,8 @@ int main( void )
     memcpy( ( void * )M_BASE, ( void * )( NOR_BASE + 8192 ), gdbmon_hdr.datalen );
 #endif
 
-    // printf( "Drop l2\n" );
-    // flush_L2C( M_BASE );
+    printf( "Drop l2\n" );
+    flush_L2C( M_BASE );
 
     printf( "Read header from SRAM:\n" );
     memcpy( ( void * )&gdbmon_hdr, ( void * )M_BASE, sizeof( gdbmon_hdr ) );
