@@ -47,9 +47,9 @@ SECTIONS
 
   .stack (NOLOAD) : {
     _rumboot_platform_stack_start = .;
-    . = . + 0x4000;
+    . = . + 0x8000;
     _rumboot_platform_stack_end = .;    
-  } > IM3
+  } > IM1
 
   .im2_heap (NOLOAD) : {
     _rumboot_IM2_heap_start = .;
@@ -72,6 +72,6 @@ SECTIONS
   .runtime 0x5A000 (NOLOAD) : {
     rumboot_platform_runtime_info = .;
     *(.rumboot_platform_runtime_info);
-  }
+  } > IM3
 
 }

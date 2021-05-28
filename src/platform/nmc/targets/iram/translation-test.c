@@ -7,6 +7,7 @@
 #include <devices/greth_edcl.h>
 #include <rumboot/boot.h>
 #include <rumboot/platform.h>
+#include <rumboot/rumboot.h>
 #include <rumboot/printf.h>
 
 
@@ -23,14 +24,20 @@ int main(int argc, char** argv)
         rumboot_printf("Checking address translation\n");
         uint32_t tmp;
         void *theptr = rumboot_malloc_from_named_heap("IM2", 10);
+        rumboot_printf("1. %x\n", (uint32_t) theptr);
+        theptr = rumboot_malloc_from_named_heap("IM2", 10);
+        rumboot_printf("2. %x\n", (uint32_t) theptr);
+        theptr = rumboot_malloc_from_named_heap("IM2", 10);
+        rumboot_printf("3. %x\n", (uint32_t) theptr);
+
         if (!theptr) {
                 rumboot_platform_panic("Compiler bug spotted. This won't work");
         }
 
-        check_addr(rumboot_malloc_from_named_heap("IM1", 10));
-        check_addr(rumboot_malloc_from_named_heap("IM2", 10));
-        check_addr(rumboot_malloc_from_named_heap("IM3", 10));
-        check_addr(rumboot_malloc_from_named_heap("SRAM", 10));
+        check_addr(rumboot_malloc_from_heap(0, 10));
+        check_addr(rumboot_malloc_from_heap(1, 10));
+        check_addr(rumboot_malloc_from_heap(2, 10));
+        check_addr(rumboot_malloc_from_heap(3, 10));
 
         check_addr(rumboot_malloc_from_named_heap("IM1", 10));
         check_addr(rumboot_malloc_from_named_heap("IM2", 10));
