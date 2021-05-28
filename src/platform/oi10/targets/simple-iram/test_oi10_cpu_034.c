@@ -28,7 +28,7 @@
 #include <regs/fields/emi.h>
 #include <platform/interrupts.h>
 
-#define PERMISSIBLE_DIFS 0x200
+#define PERMISSIBLE_DIFS 0x250
 
 volatile uint32_t DEC_CONTROL_VALUE = 0;
 volatile uint32_t INT_FLAG = 0;
