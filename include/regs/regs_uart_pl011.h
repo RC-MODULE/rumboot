@@ -84,9 +84,70 @@
  * @{
  */
 #define UART_SYS_FREQ_HZ 100000000
-#define UART_DEFAULT_BAUDRATE 38400
+#define UART_default_BAUDRATE 38400
 #define UART_TIMEOUT 1500 //>8-bit at 1200 baudrate @ 500MHz sys clock
 /**
  * @}
  */
+
+
+//default values
+#define     UARTRSR_default         0x0
+#define     UARTECR_default         0x0
+#define     UARTFR_default          0x090
+#define     UARTILPR_default        0x0
+#define     UARTIBRD_default        0x0
+#define     UARTFBRD_default        0x0
+#define     UARTLCR_H_default       0x0
+#define     UARTCR_default          0x0300
+#define     UARTIFLS_default        0x12
+#define     UARTIMSC_default        0x0
+#define     UARTRIS_default         0x0
+#define     UARTMIS_default         0x0
+#define     UARTDMACR_default       0x0
+#define     UARTPeriphID0_default   0x11
+#define     UARTPeriphID1_default   0x10
+#define     UARTPeriphID2_default   0x4
+#define     UARTPeriphID3_default   0x0
+#define     UARTPCellID0_default    0x0D
+#define     UARTPCellID1_default    0xF0
+#define     UARTPCellID2_default    0x05
+#define     UARTPCellID3_default    0xB1
+
+//Mask
+#define     UARTDR_mask          0x000
+#define     UARTRSR_mask         0xF
+#define     UARTECR_mask         0xF
+#define     UARTFR_mask          0b011111000
+#define     UARTILPR_mask        0xFF
+#define     UARTIBRD_mask        0xFFFF
+#define     UARTFBRD_mask        0x3F
+#define     UARTLCR_H_mask       0xFF
+#define     UARTCR_mask          0xFF87
+#define     UARTIFLS_mask        0x3F
+#define     UARTIMSC_mask        0x7FF
+#define     UARTRIS_mask         0x7F0
+#define     UARTMIS_mask         0x7F0
+#define     UARTICR_mask         0x7FF
+#define     UARTDMACR_mask       0x7
+#define     UARTPeriphID0_mask   0xFF
+#define     UARTPeriphID1_mask   0xFF
+#define     UARTPeriphID2_mask   0x0F
+#define     UARTPeriphID3_mask   0xFF
+#define     UARTPCellID0_mask    0xFF
+#define     UARTPCellID1_mask    0xFF
+#define     UARTPCellID2_mask    0xFF
+#define     UARTPCellID3_mask    0xFF
+
+
+
+
+
+
+
+
+
+
+
+
 #endif
