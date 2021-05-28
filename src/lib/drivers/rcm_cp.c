@@ -154,6 +154,92 @@ enum cp_status cp_rx_status(struct rcm_cp_instance *inst)
     return status;
 }
 
+
+ // r = -2 .. -32768 - Timeout Occurs, (0-r+1) - Is The Number of Missing Data Words
+ // r = -1 - Timeout Occurs, But Accurately At The Timeout Time The Last Word Was Attempted To Write
+ //          (It Could Catch The Exception But We Cannot Distinguish if It Had Been Written OK Or Not)
+ // r = 0 - All The Data Received OK
+ // r = 1 - Last Received Word Was Tried To Write But Exception Occurs
+ //         (For This Last Word Or Some Words Previously)
+ // r = 2 .. 32767 - Write Exception Occurs, (r-1) - Is The Number Of Words Waiting To Be 
+ //  Written Into The Memory. They Are Expected To Be:
+ //    - Blocked Inside The Receive Pipe
+ //    - Hasn't Come Yet (Maybe Still Not Sent By The Sender) But Excpected To Come
+int cp_wait_rx(uintptr_t base, uint32_t timeout_us) {
+    uint32_t status;
+    int r=-1;
+    uint32_t start = rumboot_platform_get_uptime();
+    do {
+        status = ioread32(base + RCM_CP_CSR_RCV);
+        if(status & (1<<2) /* ES */) {
+            // Wait For FSM == Complete
+          while( (ioread32(base + RCM_CP_INTERNALSTATE_RCV) & (0x1F << 24)) != (0x2 << 24) ) {
+            // This Should Not Take A Long Time - But Depends On Memory Latency
+          }
+          
+          r = ioread32(base + RCM_CP_MAINCOUNTER_RCV);
+          r = r + 1; // When r=0 We Should Signal The Exception Anyway, So We Make +1 And 
+                     //   Caller Can Distinguish Between OK And Last Word Exception
+          break;
+        }
+        else if(status & (1<<1) /* Cpl */) {
+          iowrite32(0,base + RCM_CP_CSR_RCV); // Reset Cpl
+          r = 0;
+          break;
+        }
+          
+    } while (rumboot_platform_get_uptime() - start < timeout_us);
+    
+    if(r<0) { // Timeout
+      iowrite32(6, base + RCM_CP_CSR_RCV);// Set The ES - Shut It Off! (And Do Not Reset Cpl)
+      
+      r = ioread32(base + RCM_CP_MAINCOUNTER_RCV); // The Number Of Data Words Remaining
+      r = 0 - (r + 1);
+    }
+    
+    return r;
+}
+
+  // r - Is A Value Returned By cp_wait_rx
+  // timeout_us - What Time We Will Wait For Incoming Data To Ivalidate Them When r>0
+int cp_elaborate_rx_exception(uintptr_t base, int r, uint32_t timeout_us) {
+  uint32_t status;
+  uint32_t start;
+  
+  if(r<0) r = -r; // The Same Algotythm For Timeout
+  
+  if(r>0){  // CP Is Stalled Because Of Write Exception
+    if(r==1) {
+      iowrite32(0,base + RCM_CP_CSR_RCV);  // Just Reset Them As Usual
+      return 0;
+    }
+    else {
+      iowrite32(r-1,base + RCM_CP_MAINCOUNTER_RCV); // Invalidate The Given Number Of Words
+      status = ioread32(base + RCM_CP_CSR_RCV);
+      status = status | 8; // Set Clr
+      iowrite32(status, base + RCM_CP_CSR_RCV);
+      
+      start = rumboot_platform_get_uptime();
+      do {
+        if( (ioread32(base + RCM_CP_CSR_RCV) & 8) == 0) { // Clr = 0
+          iowrite32(0,base + RCM_CP_CSR_RCV);
+          return 0;
+        }
+      }while(rumboot_platform_get_uptime() - start < timeout_us);
+      
+      iowrite32(0,base + RCM_CP_MAINCOUNTER_RCV);
+      iowrite32(0,base + RCM_CP_CSR_RCV);
+      
+      return -1; // Timeout Of Expecting Data That Should Be Invalidated - Nothing To Do, 
+    }
+  }
+  else {
+    iowrite32(0,base + RCM_CP_MAINCOUNTER_RCV);
+    iowrite32(0,base + RCM_CP_CSR_RCV);
+    return 0;
+  }
+}
+
 int cp_wait(struct rcm_cp_instance *inst, bool rx, bool tx, uint32_t timeout_us)
 {
     uint32_t start = rumboot_platform_get_uptime();
