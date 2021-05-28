@@ -309,12 +309,17 @@ add_rumboot_target(
   FILES common/bootrom/timer.c
 )
 
+add_rumboot_target(
+  CONFIGURATION IRAM
+  FILES iram/periph_regs_check.c
+)
   dap_integration_test(dap/nmc_dbg_brp.S)
   dap_integration_test(dap/nmc_dbg_dap_integration.S)
   dap_integration_test(dap/nmc_dbg_drar_dsar.S)
   dap_integration_test(dap/nmc_dbg_dscr.S)
   dap_integration_test(dap/nmc_dbg_modes.S)
   dap_integration_test(dap/nmc_dbg_sftrst.S)
+
 
 endmacro()
 

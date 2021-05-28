@@ -28,13 +28,10 @@ uint32_t rumboot_virt_to_dma(volatile const void *addr)
             return (IM1_BASE << 2) + (addr_v << 2);
     }
     if ((addr_v >= 0x8000) && (addr_v < 0x10000)) {
-            return (IM2_BASE << 2) + (addr_v << 2);
+            return (IM2_BASE << 2) + (addr_v-0x8000 << 2);
     }
     if ((addr_v >= 0x10000) && (addr_v < 0x18000)) {
-            return (IM3_BASE << 2) + (addr_v << 2);
-    }
-    if ((addr_v >= 0x10000) && (addr_v < 0x18000)) {
-            return (IM3_BASE << 2) + (addr_v << 2);
+            return (IM3_BASE << 2) + (addr_v-0x10000 << 2);
     }
     if ((addr_v >= 0x40000000) && (addr_v < 0x5FFFFFFF)) {
             return (addr_v - 0x40000000) << 2;
