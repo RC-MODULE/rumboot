@@ -506,8 +506,8 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     endmacro()
 
     # works after rm CMakeCache.txt
-    if(NOT DEFINED PPE_SEED)
-      set(PPE_SEED 0)
+    if(NOT DEFINED NU_SEED)
+      set(NU_SEED 1)
     endif()
 
     macro(ADD_PPE_COUPLED_TEST_LOOP name rm_bin_name ShowPerf)
@@ -516,12 +516,34 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         NAME ${name}
         FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_ppe.c
         PREPCMD
-          ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${PPE_SEED} > ${RM_LOGFILE} &&
-          cp ${RM_LOGFILE} ../npe_rm_${PPE_SEED}.log ||
+          ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${NU_SEED} > ${RM_LOGFILE} &&
+          cp ${RM_LOGFILE} ../npe_rm_${NU_SEED}.log ||
           exit 1
         CFLAGS -D${ShowPerf}
         IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
       )
+    endmacro()
+
+    # works after rm CMakeCache.txt
+    if(NOT DEFINED NU_TESTS_NMB)
+      set(NU_TESTS_NMB 0)
+    endif()
+
+    macro (ADD_PPE_MANY_TESTS name rm_bin_name ShowPerf OpMode)
+      foreach(i RANGE ${NU_TESTS_NMB})
+        add_rumboot_target(
+          CONFIGURATION ROM
+          NAME ${name}_${i}
+          FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_ppe_new.c
+
+          PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${NU_SEED} > ${RM_LOGFILE} || exit 1
+
+          CFLAGS -D${ShowPerf} -D${OpMode}
+          IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+        )
+
+        math (EXPR NU_SEED "${NU_SEED} + 1")
+      endforeach()
     endmacro()
 
     macro(ADD_PPE_V_EXPER_TEST name rm_bin_name ShowPerf OpMode)
@@ -529,7 +551,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         CONFIGURATION ROM
         NAME ${name}
         FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_ppe_new.c
-        PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${PPE_SEED} > ${RM_LOGFILE} || exit 1
+        PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${NU_SEED} > ${RM_LOGFILE} || exit 1
         CFLAGS -D${ShowPerf} -D${OpMode}
         IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
       )
@@ -696,14 +718,25 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     ADD_PPE_COUPLED_TEST_LOOP(ppe_7_fp16_avg  main_ppe_7_fp16_avg NotShowPerf )
     ADD_PPE_COUPLED_TEST_LOOP(ppe_11_i16_max  main_ppe_3_i16_max  ShowPerf    )
 
-#    ADD_PPE_V_EXPER_TEST(ppe_8v_i16_max   main_ppe_3_i16_max  NotShowPerf VPEtoPPE)
-    ADD_PPE_V_EXPER_TEST(ppe_8v_i16_max   main_ppe_3_i16_max  ShowPerf    VPEtoPPE)
-#    ADD_PPE_V_EXPER_TEST(ppe_2v_i8_max    main_ppe_2_i8_max   NotShowPerf MEMtoMEM)
-    ADD_PPE_V_EXPER_TEST(ppe_2v_i8_max    main_ppe_2_i8_max   ShowPerf MEMtoMEM)
+    ADD_PPE_V_EXPER_TEST(ppe_8v_i16_max   main_ppe_3_i16_max  NotShowPerf VPEtoPPE)
+    ADD_PPE_V_EXPER_TEST(ppe_8v_i16_max_p main_ppe_3_i16_max  ShowPerf    VPEtoPPE)
+    ADD_PPE_V_EXPER_TEST(ppe_2v_i8_max    main_ppe_2_i8_max   NotShowPerf MEMtoMEM)
+    ADD_PPE_V_EXPER_TEST(ppe_2v_i8_max_p  main_ppe_2_i8_max   ShowPerf MEMtoMEM)
 
     ADD_PPE_V_EXPER_TEST(ppe_5v_i8_min    main_ppe_2_i8_min   NotShowPerf MEMtoMEM)
     ADD_PPE_V_EXPER_TEST(ppe_6v_i16_min   main_ppe_3_i16_min  NotShowPerf MEMtoMEM)
     ADD_PPE_V_EXPER_TEST(ppe_7v_fp16_min  main_ppe_4_fp16_min NotShowPerf MEMtoMEM)
+
+    ADD_PPE_MANY_TESTS(ppe_many_i8_max    main_ppe_2_i8_max   NotShowPerf MEMtoMEM)
+    ADD_PPE_MANY_TESTS(ppe_many_i16_max   main_ppe_3_i16_max  NotShowPerf MEMtoMEM)
+    ADD_PPE_MANY_TESTS(ppe_many_fp16_max  main_ppe_4_fp16_max NotShowPerf MEMtoMEM)
+    ADD_PPE_MANY_TESTS(ppe_many_i8_avg    main_ppe_5_i8_avg   NotShowPerf MEMtoMEM)
+    ADD_PPE_MANY_TESTS(ppe_many_i16_avg   main_ppe_6_i16_avg  NotShowPerf MEMtoMEM)
+    ADD_PPE_MANY_TESTS(ppe_many_fp16_avg  main_ppe_7_fp16_avg NotShowPerf MEMtoMEM)
+
+    ADD_PPE_MANY_TESTS(ppe_many_i8_min    main_ppe_2_i8_min   NotShowPerf MEMtoMEM)
+    ADD_PPE_MANY_TESTS(ppe_many_i16_min   main_ppe_3_i16_min  NotShowPerf MEMtoMEM)
+    ADD_PPE_MANY_TESTS(ppe_many_fp16_min  main_ppe_4_fp16_min NotShowPerf MEMtoMEM)
 
     ADD_PPE_EXPER_TEST(PPE_2  NotShowPerf)
     ADD_PPE_EXPER_TEST(PPE_3  NotShowPerf)
