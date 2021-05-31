@@ -585,13 +585,30 @@ void nu_ppe_print_config_reg(ConfigREGPPE* cfg_reg){
 #endif // NU_NO_PRINT
 }
 
-uint32_t nu_lut_log2(uint32_t a) {  // log2(0)=0; log2(1)=0; log2(2)=1; log2(8)=3; ...
+uint32_t nu_lut_log2_i(uint32_t a) {  // log2(0)=0; log2(1)=0; log2(2)=1; log2(8)=3; ...
   uint32_t t;
   uint32_t r;
   
   t=a;r=0;
   while((t!=0) && (t!=1)) { t>>=1; r++; }
   return r;
+}
+
+int32_t nu_lut_log2_f(float a) {
+  uint32_t temp_ui;
+  uint32_t mant;
+  int32_t temp_i;
+  
+  temp_ui = *((uint32_t*) &a); // Take A Bit Couple
+  
+  temp_ui = temp_ui & 0x7FFFFFFF; // Take Sign Out
+  mant = temp_ui & ((1<<23)-1);  // Mantissa
+  temp_ui = temp_ui >> 23;  // Exponent
+  temp_i = temp_ui;
+  temp_i = temp_i - 127;
+  if(mant & (1<<22))     // Round To Nearest
+    temp_i = temp_i + 1;
+  return temp_i;
 }
 
 void nu_vpe_load_lut(uintptr_t base, void* lut1, void* lut2) {
@@ -742,24 +759,21 @@ void nu_vpe_setup(uintptr_t base, ConfigVPE* cfg, ConfigDMAVPE* cfg_dma) {
       float start_f;
       float end_f;
       float diff_f;
-      uint32_t diff_i;
       uint32_t temp_ui;
       
       temp_ui = cfg->op2_config.lut_tab1_x_end  ;end_f   = *((float*) &(temp_ui));// Read The Couple Of Bits 
       temp_ui = cfg->op2_config.lut_tab1_x_start;start_f = *((float*) &(temp_ui));//  And Store It In A float Variable
       diff_f = end_f  - start_f;
-      diff_i = (uint32_t) diff_f; // Just Round
-      shift_i1 = nu_lut_log2(diff_i) - 8;
+      shift_i1 = nu_lut_log2_f(diff_f) - 8;
       
       temp_ui = cfg->op2_config.lut_tab2_x_end  ;end_f   = *((float*) &(temp_ui));// Read The Couple Of Bits 
       temp_ui = cfg->op2_config.lut_tab2_x_start;start_f = *((float*) &(temp_ui));//  And Store It In A float Variable
       diff_f = end_f  - start_f;
-      diff_i = (uint32_t) diff_f; // Just Round
-      shift_i2 = nu_lut_log2(diff_i) - 6;
+      shift_i2 = nu_lut_log2_f(diff_f) - 6;
     }
     else { // Integer LUT
-      shift_i1 = nu_lut_log2(cfg->op2_config.lut_tab1_x_end - cfg->op2_config.lut_tab1_x_start) - 8;
-      shift_i2 = nu_lut_log2(cfg->op2_config.lut_tab2_x_end - cfg->op2_config.lut_tab2_x_start) - 6;
+      shift_i1 = nu_lut_log2_i(cfg->op2_config.lut_tab1_x_end - cfg->op2_config.lut_tab1_x_start) - 8;
+      shift_i2 = nu_lut_log2_i(cfg->op2_config.lut_tab2_x_end - cfg->op2_config.lut_tab2_x_start) - 6;
     }
     
     rumboot_printf("LUTs: shift_i1 = %x, shift_i2 = %x\n",shift_i1,shift_i2);
