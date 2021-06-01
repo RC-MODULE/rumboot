@@ -50,7 +50,7 @@ rumboot_add_configuration(
   CORE
   PREFIX core
   FILES ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c
-  LDS nmc/generic.lds
+  LDS nmc/unified.lds
   LDFLAGS "-Wl,\"-ecorestart\""
   CFLAGS -fnmc-compatible-if-packed -mmas -DRUMBOOT_NOENTRY 
   IRUN_FLAGS ${BOOTROM_IFLAGS} +RUMBOOT_RUNTIME_ADDR=5A000
