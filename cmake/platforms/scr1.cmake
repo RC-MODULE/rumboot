@@ -530,7 +530,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     endif()
 
     macro (ADD_PPE_MANY_TESTS name rm_bin_name ShowPerf OpMode)
-      foreach(i RANGE ${NU_TESTS_NMB})
+      foreach(i RANGE 3)
         add_rumboot_target(
           CONFIGURATION ROM
           NAME ${name}_${i}
