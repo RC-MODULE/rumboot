@@ -3640,10 +3640,10 @@ endif()
     add_rumboot_target(
       CONFIGURATION SUPPLEMENTARY
       PREFIX l2bug
-      LDS oi10/l2bug_supp.lds
+      LDS oi10/l2bug_sram_test.lds
       CFLAGS -DRUMBOOT_NOINIT
       LDFLAGS -Wl,-emain
-      FILES l2bug/sram-test.c l2bug/crypto.c ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c
+      FILES l2bug/sram-test.c l2bug/crypto.c ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c l2bug/memcpy_copyed.S
       NAME "sram-test"
     )
 

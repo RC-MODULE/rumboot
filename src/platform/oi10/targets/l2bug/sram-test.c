@@ -1,19 +1,3 @@
-/*
-********************************************************************************
-*                               ЗАО НТЦ "Модуль"
-*
-* Описание    : Тестирование внешней SRAM
-*
-* Программисты: Манвелян А.А. (12.02.2018)
-*               Леонтьев С.Н. (19.06.2018)
-*
-* Изменения   :
-*               Леонтьев С.Н. (13.01.2021)
-*                   Портирование теста на ОИ-10
-*
-********************************************************************************
-*/
-
 
 /*
 ********************************************************************************
@@ -24,6 +8,7 @@
 // #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <string.h>
 
 // #include  <1888TX018/clock.h>
 // #include  <1888TX018/gpio.h>
@@ -31,6 +16,7 @@
 
 #include "crypto.h"
 
+extern void memcpy_copyed ( void *d, void *s, size_t n );
 
 /*
 ********************************************************************************
@@ -68,16 +54,16 @@ static  int32_t     s_Result = 0;
 ********************************************************************************
 */
 
-static  void  checkValueInMem   ( uint32_t status, uint32_t step, uint32_t i_rd );
+void  checkValueInMem   ( uint32_t status, uint32_t step, uint32_t i_rd );
 
-static  void  initNewTestType   ( uint32_t *p_status, uint32_t *p_step );
+void  initNewTestType   ( uint32_t *p_status, uint32_t *p_step );
 
-// static  void  printStepInfo     ( uint32_t status, uint32_t step, uint64_t time1 );
-static  void  printStepInfo     ( uint32_t status, uint32_t step );
+// void  printStepInfo     ( uint32_t status, uint32_t step, uint64_t time1 );
+void  printStepInfo     ( uint32_t status, uint32_t step );
 
-static  void  printTestName     ( uint32_t status );
+void  printTestName     ( uint32_t status );
 
-static  void  writeValueToMem   ( uint32_t status, uint32_t step, uint32_t i_wr );
+void  writeValueToMem   ( uint32_t status, uint32_t step, uint32_t i_wr );
 
 
 /*
@@ -86,6 +72,32 @@ static  void  writeValueToMem   ( uint32_t status, uint32_t step, uint32_t i_wr 
 ********************************************************************************
 */
 
+volatile char __attribute__( ( section( ".testdata.monitor_version" ) ) ) monitor_version[153] = {   0x33, 0x30, 0x32, 0x65, 0x33, 0x33, 0x32, 0x65, 0x33, 0x30, 0x32, 0x30, 0x34, 0x64, 0x35, 0x34,
+                                                                                                     0x33, 0x31, 0x33, 0x35, 0x33, 0x30, 0x33, 0x30, 0x33, 0x32, 0x32, 0x30, 0x36, 0x33, 0x36, 0x36,
+                                                                                                     0x33, 0x35, 0x36, 0x32, 0x36, 0x35, 0x33, 0x32, 0x33, 0x30, 0x32, 0x30, 0x33, 0x32, 0x33, 0x30,
+                                                                                                     0x33, 0x32, 0x33, 0x31, 0x32, 0x64, 0x33, 0x30, 0x33, 0x35, 0x32, 0x64, 0x33, 0x33, 0x33, 0x31,
+                                                                                                     0x30, 0x61, 0x30, 0x39, 0x36, 0x37, 0x36, 0x34, 0x36, 0x32, 0x36, 0x64, 0x36, 0x66, 0x36, 0x65,
+                                                                                                     0x30, 0x39, 0x30, 0x39, 0x33, 0x30, 0x32, 0x65, 0x33, 0x34, 0x33, 0x30, 0x32, 0x65, 0x33, 0x30,
+                                                                                                     0x30, 0x39, 0x33, 0x37, 0x33, 0x36, 0x33, 0x38, 0x36, 0x35, 0x33, 0x33, 0x33, 0x37, 0x33, 0x30,
+                                                                                                     0x30, 0x61, 0x30, 0x39, 0x37, 0x33, 0x37, 0x34, 0x36, 0x34, 0x36, 0x63, 0x36, 0x39, 0x36, 0x32,
+                                                                                                     0x30, 0x39, 0x30, 0x39, 0x33, 0x30, 0x32, 0x65, 0x33, 0x33, 0x32, 0x65, 0x33, 0x32, 0x32, 0x64,
+                                                                                                     0x36, 0x34, 0x36, 0x35, 0x37, 0x36, 0x30, 0x61, 0x00
+                                                                                                 };
+volatile char __attribute__( ( section( ".testdata.tx_buf" ) ) ) tx_buf[1024] = "hi";
+
+int main ( void )
+{
+    int i;
+
+    for ( i = 0; i < 10; i++ )
+    {
+        memcpy_copyed( ( void * )tx_buf, ( void * )monitor_version, 153 );
+    }
+
+    return 0;
+}
+
+#if 0
 int main ()
 {
     // uint64_t    time1 = 0;
@@ -149,7 +161,7 @@ int main ()
     rumboot_printf( "Exit test with %ld errors\n", s_Result );
     return s_Result ? 1 : 0;
 }
-
+#endif /* 0 */
 
 /*
 ********************************************************************************
@@ -157,7 +169,7 @@ int main ()
 ********************************************************************************
 */
 
-static  void  checkValueInMem ( uint32_t status, uint32_t step, uint32_t i_rd )
+void  checkValueInMem ( uint32_t status, uint32_t step, uint32_t i_rd )
 {
     uint32_t    value;
     uint32_t    y;
@@ -224,7 +236,7 @@ static  void  checkValueInMem ( uint32_t status, uint32_t step, uint32_t i_rd )
 }
 
 
-static  void  initNewTestType   ( uint32_t *p_status, uint32_t *p_step )
+void  initNewTestType   ( uint32_t *p_status, uint32_t *p_step )
 {
     switch ( *p_status )
     {
@@ -287,8 +299,8 @@ static  void  initNewTestType   ( uint32_t *p_status, uint32_t *p_step )
 }
 
 
-// static  void  printStepInfo ( uint32_t status, uint32_t step, uint64_t time1 )
-static  void  printStepInfo ( uint32_t status, uint32_t step )
+// void  printStepInfo ( uint32_t status, uint32_t step, uint64_t time1 )
+void  printStepInfo ( uint32_t status, uint32_t step )
 {
     // uint32_t    executed_time;
 
@@ -321,7 +333,7 @@ static  void  printStepInfo ( uint32_t status, uint32_t step )
 }
 
 
-static  void  printTestName ( uint32_t status )
+void  printTestName ( uint32_t status )
 {
     switch ( status )
     {
@@ -377,7 +389,7 @@ static  void  printTestName ( uint32_t status )
 }
 
 
-static  void  writeValueToMem ( uint32_t status, uint32_t step, uint32_t i_wr )
+void  writeValueToMem ( uint32_t status, uint32_t step, uint32_t i_wr )
 {
     uint32_t    offset_wr;
     uint32_t    value;

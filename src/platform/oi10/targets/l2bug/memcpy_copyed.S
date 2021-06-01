@@ -1,0 +1,87 @@
+#include <ppc-asm.h>
+
+#define r1  1   //same as sp in ppc-asm.h
+
+.section .memcpy_copyed
+
+.p2align 2
+.globl memcpy_copyed
+memcpy_copyed:
+stwu    r1,-16(r1)
+mflr    r0
+cmplwi  cr7,r5,15
+stw     r0,20(r1)
+stw     r30,8(r1)
+ble     cr7,memcpy_copyed+0xe0
+or      r9,r4,r3
+andi.   r9,r9,3
+bne     memcpy_copyed+0x120
+addi    r9,r5,-16
+mr      r10,r4
+rlwinm  r8,r9,28,4,31
+mr      r9,r3
+addi    r8,r8,1
+mtctr   r8
+lwz     r11,0(r10)
+addi    r10,r10,16
+lwz     r6,-12(r10)
+addi    r9,r9,16
+lwz     r7,-8(r10)
+stw     r11,-16(r9)
+stw     r6,-12(r9)
+lwz     r8,-4(r10)
+stw     r7,-8(r9)
+stw     r8,-4(r9)
+bdnz    memcpy_copyed+0x3c
+addi    r9,r5,-16
+clrlwi  r8,r5,28
+rlwinm  r9,r9,0,0,27
+cmplwi  cr7,r8,3
+addi    r9,r9,16
+add     r4,r4,r9
+add     r9,r3,r9
+ble     cr7,memcpy_copyed+0x12c
+addi    r6,r4,-4
+addi    r7,r9,-4
+mr      r10,r8
+lwzu    r11,4(r6)
+addi    r10,r10,-4
+cmplwi  cr7,r10,3
+stwu    r11,4(r7)
+bgt     cr7,memcpy_copyed+0x94
+addi    r10,r8,-4
+clrlwi  r5,r5,30
+rlwinm  r10,r10,0,0,29
+cmpwi   cr7,r5,0
+addi    r10,r10,4
+addi    r5,r5,-1
+add     r9,r9,r10
+add     r4,r4,r10
+bne     cr7,memcpy_copyed+0xf0
+lwz     r0,20(r1)
+lwz     r30,8(r1)
+addi    r1,r1,16
+mtlr    r0
+blr
+mr      r9,r3
+cmpwi   cr7,r5,0
+addi    r5,r5,-1
+beq     cr7,memcpy_copyed+0xcc
+addi    r10,r5,1
+addi    r9,r9,-1
+addi    r4,r4,-1
+mtctr   r10
+lbzu    r10,1(r4)
+stbu    r10,1(r9)
+bdnz    memcpy_copyed+0x100
+lwz     r0,20(r1)
+lwz     r30,8(r1)
+addi    r1,r1,16
+mtlr    r0
+blr
+addi    r5,r5,-1
+mr      r9,r3
+b       memcpy_copyed+0xf0
+mr      r5,r8
+b       memcpy_copyed+0xe4
+.long 0x21c44
