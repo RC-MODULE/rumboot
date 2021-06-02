@@ -33,8 +33,11 @@ void cp_start_tx(struct rcm_cp_instance *inst, const void *buf, size_t len);
 enum cp_status cp_tx_status(struct rcm_cp_instance *inst);
 void cp_start_rx(struct rcm_cp_instance *inst, void *buf, size_t len);
 enum cp_status cp_rx_status(struct rcm_cp_instance *inst);
+int cp_wait_tx(uintptr_t base, uint32_t timeout_us) ;
+void cp_elaborate_tx_exception(uintptr_t base);
 int cp_wait_rx(uintptr_t base, uint32_t timeout_us);
 int cp_elaborate_rx_exception(uintptr_t base, int r, uint32_t timeout_us);
+void cp_abort_rx(uintptr_t base);
 int cp_wait(struct rcm_cp_instance *inst, bool rx, bool tx, uint32_t timeout_us);
 
 #endif // !RCM_CP

@@ -154,6 +154,63 @@ enum cp_status cp_rx_status(struct rcm_cp_instance *inst)
     return status;
 }
 
+  // r = 1 .. 32767 - Number Of Words That Failed To Send
+  // r = 0 - All The Words Were Sent OK
+  // r = -1 .. -32768 - Timeout Occurs, (0-r) - Is The Number of Data Words Not Sent
+  // timeout_us == 0 Means No Timeout
+int cp_wait_tx(uintptr_t base, uint32_t timeout_us) {
+  uint32_t status;
+  int r=-1;
+  uint32_t ctime;
+  uint32_t start;
+  
+  if(timeout_us != 0)
+    start = rumboot_platform_get_uptime();
+  
+  do {
+    status = ioread32(base + RCM_CP_CSR_TR);
+    if(status & (1<<2)) /* ES */ {
+      r = ioread32(base + RCM_CP_MAINCOUNTER_TR);           // MainCounter
+      r+= ioread32(base + RCM_CP_INTERNALSTATE_TR) &  0xFF; // + ARC
+      break;
+    }
+    else if(status & (1<<1) /* Cpl */) {
+      iowrite32(0,base + RCM_CP_CSR_TR); // Reset Cpl
+      r = 0;
+      break;
+    }
+    if(timeout_us != 0)
+      ctime = rumboot_platform_get_uptime() - start;
+  } while (timeout_us==0 || ctime < timeout_us);
+  
+  if(r<0) { // Timeout
+    iowrite32(6, base + RCM_CP_CSR_TR); // ES = 1 // Shut It Off
+    r = ioread32(base + RCM_CP_MAINCOUNTER_TR);
+    r+= ioread32(base + RCM_CP_INTERNALSTATE_TR) &  0xFF;
+    if(r==0) {  // Last Word Was Sent Between Timeout Fix And ES=1 Write
+      iowrite32(0,base + RCM_CP_CSR_TR);
+    }
+    else
+      r = 0 - r;
+  }
+  
+  return r;
+}
+
+void cp_elaborate_tx_exception(uintptr_t base) {
+  uint32_t status;
+  
+  status = ioread32(base + RCM_CP_CSR_TR);
+  status = status | 8;  // Clr = 1
+  iowrite32(status, base + RCM_CP_CSR_TR);
+  
+  while (ioread32(base + RCM_CP_CSR_TR) & 8) // Wait For Clr To Reset
+  {
+    // This Should Not Take A Long Time
+  }
+  
+  iowrite32(0,base + RCM_CP_CSR_TR);
+}
 
  // r = -2 .. -32768 - Timeout Occurs, (0-r+1) - Is The Number of Missing Data Words
  // r = -1 - Timeout Occurs, But Accurately At The Timeout Time The Last Word Was Attempted To Write
@@ -165,10 +222,16 @@ enum cp_status cp_rx_status(struct rcm_cp_instance *inst)
  //  Written Into The Memory. They Are Expected To Be:
  //    - Blocked Inside The Receive Pipe
  //    - Hasn't Come Yet (Maybe Still Not Sent By The Sender) But Excpected To Come
+ // timeout_us == 0 Means No Timeout
 int cp_wait_rx(uintptr_t base, uint32_t timeout_us) {
     uint32_t status;
     int r=-1;
-    uint32_t start = rumboot_platform_get_uptime();
+    uint32_t ctime;
+    uint32_t start;
+    
+    if(timeout_us!=0)
+      start = rumboot_platform_get_uptime();
+    
     do {
         status = ioread32(base + RCM_CP_CSR_RCV);
         if(status & (1<<2) /* ES */) {
@@ -187,8 +250,11 @@ int cp_wait_rx(uintptr_t base, uint32_t timeout_us) {
           r = 0;
           break;
         }
-          
-    } while (rumboot_platform_get_uptime() - start < timeout_us);
+        
+        if(timeout_us != 0)
+          ctime = rumboot_platform_get_uptime() - start;
+        
+    } while (timeout_us==0 || ctime < timeout_us);
     
     if(r<0) { // Timeout
       iowrite32(6, base + RCM_CP_CSR_RCV);// Set The ES - Shut It Off! (And Do Not Reset Cpl)
@@ -202,11 +268,13 @@ int cp_wait_rx(uintptr_t base, uint32_t timeout_us) {
 
   // r - Is A Value Returned By cp_wait_rx
   // timeout_us - What Time We Will Wait For Incoming Data To Ivalidate Them When r>0
+  // timeout_us==0 Means No Timeout
 int cp_elaborate_rx_exception(uintptr_t base, int r, uint32_t timeout_us) {
   uint32_t status;
   uint32_t start;
+  uint32_t ctime;
   
-  if(r<0) r = -r; // The Same Algotythm For Timeout
+  if(r<0) r = -r; // The Same Algorythm For Timeout
   
   if(r>0){  // CP Is Stalled Because Of Write Exception
     if(r==1) {
@@ -219,13 +287,18 @@ int cp_elaborate_rx_exception(uintptr_t base, int r, uint32_t timeout_us) {
       status = status | 8; // Set Clr
       iowrite32(status, base + RCM_CP_CSR_RCV);
       
-      start = rumboot_platform_get_uptime();
+      if(timeout_us!=0)
+        start = rumboot_platform_get_uptime();
+      
       do {
         if( (ioread32(base + RCM_CP_CSR_RCV) & 8) == 0) { // Clr = 0
           iowrite32(0,base + RCM_CP_CSR_RCV);
           return 0;
         }
-      }while(rumboot_platform_get_uptime() - start < timeout_us);
+        if(timeout_us!=0)
+          ctime = rumboot_platform_get_uptime() - start ;
+        
+      }while(timeout_us==0 || ctime < timeout_us);
       
       iowrite32(0,base + RCM_CP_MAINCOUNTER_RCV);
       iowrite32(0,base + RCM_CP_CSR_RCV);
@@ -238,6 +311,31 @@ int cp_elaborate_rx_exception(uintptr_t base, int r, uint32_t timeout_us) {
     iowrite32(0,base + RCM_CP_CSR_RCV);
     return 0;
   }
+}
+
+void cp_abort_rx(uintptr_t base) {
+  uint32_t status;
+  int r;
+  
+  iowrite32(6,base + RCM_CP_CSR_RCV); // ES = 1
+  
+    // Wait for UTC=0
+  while( (ioread32(base + RCM_CP_INTERNALSTATE_RCV) & (0xFF << 16)) != 0 ) {
+    // This Should Not Take A Long Time - But Depends On Memory Latency
+  }
+  
+  r = ioread32(base + RCM_CP_INTERNALSTATE_RCV) & 0xFF; // ADC
+  iowrite32(r,base + RCM_CP_MAINCOUNTER_RCV); // We'll Invalidate All The Data In The Buffer
+  
+  status = ioread32(base + RCM_CP_CSR_RCV);
+  status = status | 8; // Set Clr
+  iowrite32(status, base + RCM_CP_CSR_RCV);
+  
+    // Wait for ADC=0
+  while( (ioread32(base + RCM_CP_INTERNALSTATE_RCV) & 0xFF) != 0 ) {
+  }
+  
+  iowrite32(0,base + RCM_CP_CSR_RCV);
 }
 
 int cp_wait(struct rcm_cp_instance *inst, bool rx, bool tx, uint32_t timeout_us)
