@@ -129,6 +129,97 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         LOAD IM0BIN ${SOC_EMI_INITIALIZER},sram-hello,sram-hello,sram-hello
       NAME isolation-cells
     )
+	add_rumboot_target(
+		CONFIGURATION IRAM
+		FILES o32t/targets/axi-com/test_com_simple.c
+		CFLAGS -DCOM_SRC_HEAP="IM1" -DCOM_DST_HEAP="IM1"
+		PREFIX com-simple-nmc-im1-im1
+	)
+	
+	add_rumboot_target(
+		CONFIGURATION IRAM
+		FILES  o32t/targets/axi-com/test_com_irq.c
+		PREFIX com-irq-nmc
+	)	
+	
+	add_rumboot_target(
+		CONFIGURATION IRAM
+		FILES o32t/targets/axi-com/test_com_regs.c
+		PREFIX com-regs-nmc
+	)
+	add_rumboot_target(
+		CONFIGURATION IRAM
+		FILES o32t/targets/axi-com/test_com_irq_es.c
+		CFLAGS -DCOM_SRC_HEAP="IM1" -DCOM_DST_HEAP="IM1"
+		PREFIX com-irq_es-nmc-im1-im1
+	)
+	add_rumboot_target(
+		CONFIGURATION IRAM
+		FILES o32t/targets/axi-com/test_com_irq_es.c
+		CFLAGS -DCOM_SRC_HEAP="IM2" -DCOM_DST_HEAP="IM2"
+		PREFIX com-irq_es-nmc-im2-im2
+	)	
+	add_rumboot_target(
+		CONFIGURATION IRAM
+		FILES o32t/targets/axi-com/test_com_irq_es.c
+		CFLAGS -DCOM_SRC_HEAP="IM3" -DCOM_DST_HEAP="IM3"
+		PREFIX com-irq_es-nmc-im3-im3
+	)
+	add_rumboot_target(
+		CONFIGURATION IRAM
+		FILES o32t/targets/axi-com/test_com_simple_msbf.c
+		CFLAGS -DCOM_SRC_HEAP="IM1" -DCOM_DST_HEAP="IM1"
+		PREFIX com-msbf-nmc-im1-im1
+	)
+	add_rumboot_target(
+		CONFIGURATION IRAM
+		FILES o32t/targets/axi-com/test_com_simple_msbf.c
+		CFLAGS -DCOM_SRC_HEAP="IM2" -DCOM_DST_HEAP="IM2"
+		PREFIX com-msbf-nmc-im2-im2
+	)	
+	add_rumboot_target(
+		CONFIGURATION IRAM
+		FILES o32t/targets/axi-com/test_com_simple_msbf.c
+		CFLAGS -DCOM_SRC_HEAP="IM3" -DCOM_DST_HEAP="IM3"
+		PREFIX com-msbf-nmc-im3-im3
+	)
+	add_rumboot_target(
+		CONFIGURATION IRAM
+		FILES o32t/targets/axi-com/test_com_xrdy.c
+		CFLAGS -DCOM_SRC_HEAP="IM1" -DCOM_DST_HEAP="IM1"
+		PREFIX com-xrdy-nmc-im1-im1
+	)
+	add_rumboot_target(
+		CONFIGURATION IRAM
+		FILES o32t/targets/axi-com/test_com_xrdy.c
+		CFLAGS -DCOM_SRC_HEAP="IM2" -DCOM_DST_HEAP="IM2"
+		PREFIX com-xrdy-nmc-im2-im2
+	)	
+	add_rumboot_target(
+		CONFIGURATION IRAM
+		FILES o32t/targets/axi-com/test_com_xrdy.c
+		CFLAGS -DCOM_SRC_HEAP="IM3" -DCOM_DST_HEAP="IM3"
+		PREFIX com-xrdy-nmc-im3-im3
+	)
+	add_rumboot_target(
+		CONFIGURATION IRAM
+		FILES o32t/targets/axi-com/test_com_throughput.c
+		CFLAGS -DCOM_SRC_HEAP="IM1" -DCOM_DST_HEAP="IM1"
+		PREFIX com-thru-nmc-im1-im1
+	)
+	add_rumboot_target(
+		CONFIGURATION IRAM
+		FILES o32t/targets/axi-com/test_com_throughput.c
+		CFLAGS -DCOM_SRC_HEAP="IM2" -DCOM_DST_HEAP="IM2"
+		PREFIX com-thru-nmc-im2-im2
+	)	
+	add_rumboot_target(
+		CONFIGURATION IRAM
+		FILES o32t/targets/axi-com/test_com_throughput.c
+		CFLAGS -DCOM_SRC_HEAP="IM3" -DCOM_DST_HEAP="IM3"
+		PREFIX com-thru-nmc-im3-im3
+	)					
+	
     endif()
 
   #Clang doesn't support legacy stuff
@@ -212,6 +303,7 @@ file(GLOB PLATFORM_SOURCES
   ${CMAKE_SOURCE_DIR}/src/platform/nmc/bootglue.c
   ${CMAKE_SOURCE_DIR}/src/arch/nmc/exception.c
   ${CMAKE_SOURCE_DIR}/src/lib/drivers/irq-nmc.c
+  ${CMAKE_SOURCE_DIR}/src/lib/drivers/com_simple.c
   )
 
 macro(RUMBOOT_PLATFORM_SET_COMPILER_FLAGS)
