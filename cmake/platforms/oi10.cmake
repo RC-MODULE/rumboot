@@ -3629,22 +3629,26 @@ endif()
     )
 
     add_rumboot_target(
-      CONFIGURATION IRAM_SPL
-      PREFIX l2bug
-      FILES l2bug/sram-test-loader.c
-      NAME "sram-test-loader"
-      PREFIX l2bug
-      CFLAGS -DEMI_INIT -DADD_TLB -DM_BASE=SRAM0_BASE
-    )
-
-    add_rumboot_target(
       CONFIGURATION SUPPLEMENTARY
       PREFIX l2bug
       LDS oi10/l2bug_sram_test.lds
       CFLAGS -DRUMBOOT_NOINIT
       LDFLAGS -Wl,-emain
-      FILES l2bug/sram-test.c l2bug/crypto.c ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c l2bug/memcpy_copyed.S
+      FILES l2bug/sram-test.c ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c l2bug/memcpy_copyed.S
       NAME "sram-test"
+    )
+
+    add_rumboot_target(
+      CONFIGURATION IRAM_SPL
+      PREFIX l2bug
+      # LDS oi10/iram_legacy.lds
+      FILES l2bug/sram-test-loader.c
+      NAME "sram-test-loader"
+      PREFIX l2bug
+      CFLAGS -DEMI_INIT -DADD_TLB -DM_BASE=SRAM0_BASE
+      IRUN_FLAGS ${ROM_6500K_OPTS}
+      LOAD IM0BIN SELF
+          MBIN l2bug-sram-test
     )
 
 endmacro()

@@ -1,11 +1,8 @@
-_INTERRUPT_STACK_SIZE = 0x400;
-_STACK_SIZE = 16384;
-_HEAP_SIZE  = 16384;
-MAIN_SIZE = 256K;
+_STACK_SIZE = 0x400;
 
 MEMORY
 {
-    sram_wb            (rwx) : ORIGIN = (0x0), LENGTH = MAIN_SIZE
+    sram_wb            (rwx) : ORIGIN = (0x0), LENGTH = 256K
 }
 
 ENTRY(_boot_entry)
@@ -123,9 +120,6 @@ SECTIONS
         __stack = .;
         _stack_base = .;
         _stack_end = _stack_base;
-        _stack_interrupt_begin = .;
-        . = . + _INTERRUPT_STACK_SIZE;
-        _stack_interrupt_end = .;
     }  > sram_wb = 0xff
 /*
     .heap  : ALIGN(16)
@@ -136,5 +130,4 @@ SECTIONS
         _heap_end = .;
     } > SRAM_EXT
 */
-    _stack_saved_end = 0x0 + MAIN_SIZE - 0x10;
 }
