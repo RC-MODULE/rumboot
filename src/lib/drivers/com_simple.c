@@ -93,7 +93,7 @@ int comp_dma_irq_run( uint32_t src_addr, uint32_t dst_addr,uint32_t base0, uint3
 	uint32_t result;
 	
 	result = comp_dma_run_tr(src_addr,base0,0x0,count_num);	
-	result = comp_dma_run_rcv(dst_addr,base1,0x2,count_num);
+	result = comp_dma_run_rcv(dst_addr,base1,0x0,count_num);
 	//result = comp_dma_run_rcv(dst_addr,base1,0x0,count_num);
 	
 	iowrite32(COM_CONTROL_EN,base0 + CSR_tr);
