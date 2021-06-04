@@ -135,13 +135,36 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 		CFLAGS -DCOM_SRC_HEAP="IM1" -DCOM_DST_HEAP="IM1"
 		PREFIX com-simple-nmc-im1-im1
 	)
-	
+	add_rumboot_target(
+		CONFIGURATION IRAM
+		FILES o32t/targets/axi-com/test_com_simple.c
+		CFLAGS -DCOM_SRC_HEAP="IM2" -DCOM_DST_HEAP="IM2"
+		PREFIX com-simple-nmc-im2-im2
+	)
+	add_rumboot_target(
+		CONFIGURATION IRAM
+		FILES o32t/targets/axi-com/test_com_simple.c
+		CFLAGS -DCOM_SRC_HEAP="IM3" -DCOM_DST_HEAP="IM3"
+		PREFIX com-simple-nmc-im3-im3
+	)	
 	add_rumboot_target(
 		CONFIGURATION IRAM
 		FILES  o32t/targets/axi-com/test_com_irq.c
-		PREFIX com-irq-nmc
-	)	
-	
+		CFLAGS -DCOM_SRC_HEAP="IM1" -DCOM_DST_HEAP="IM1"
+		PREFIX com-irq-nmc-nmc-im1-im1
+	)			
+	add_rumboot_target(
+		CONFIGURATION IRAM
+		FILES  o32t/targets/axi-com/test_com_irq.c
+		CFLAGS -DCOM_SRC_HEAP="IM2" -DCOM_DST_HEAP="IM2"
+		PREFIX com-irq-nmc-nmc-im2-im2
+	)
+	add_rumboot_target(
+		CONFIGURATION IRAM
+		FILES  o32t/targets/axi-com/test_com_irq.c
+		CFLAGS -DCOM_SRC_HEAP="IM3" -DCOM_DST_HEAP="IM3"
+		PREFIX com-irq-nmc-nmc-im3-im3
+	)			
 	add_rumboot_target(
 		CONFIGURATION IRAM
 		FILES o32t/targets/axi-com/test_com_regs.c
