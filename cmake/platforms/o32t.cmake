@@ -17,7 +17,7 @@ file(GLOB PLATFORM_SOURCES
   ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/*.c
   ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/*.S
   ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/lib/drivers/ndma_simple.c
-  ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/lib/drivers/com_simple.c
+  ${CMAKE_SOURCE_DIR}/src/lib/drivers/com_simple.c
   ${CMAKE_SOURCE_DIR}/src/lib/drivers/irq-mpic128.c)
 
 #Flags for Power PC
