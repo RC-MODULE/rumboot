@@ -3654,6 +3654,27 @@ endif()
     add_rumboot_target(
       CONFIGURATION SUPPLEMENTARY
       PREFIX oi10new
+      LDS oi10/oi10new_memcopy_write-through.lds
+      CFLAGS -DRUMBOOT_NOINIT
+      LDFLAGS -Wl,-emain
+      FILES oi10new/memcopy.c ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c oi10new/memcpy_copyed.S
+      NAME "memcopy"
+    )
+
+    add_rumboot_target(
+      CONFIGURATION IRAM_SPL
+      PREFIX oi10new
+      FILES oi10new/memcopy-spl.c
+      NAME "memcopy-spl"
+      CFLAGS -DEMI_INIT -DADD_TLB -DM_BASE=SRAM0_BASE
+      IRUN_FLAGS ${ROM_6500K_OPTS}
+      LOAD IM0BIN SELF
+          MBIN oi10new-memcopy
+    )
+
+    add_rumboot_target(
+      CONFIGURATION SUPPLEMENTARY
+      PREFIX oi10new
       LDS oi10/oi10new_dcache.lds
       CFLAGS -DRUMBOOT_NOINIT
       LDFLAGS -Wl,-emain
