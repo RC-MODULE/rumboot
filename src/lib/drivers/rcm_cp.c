@@ -154,15 +154,20 @@ enum cp_status cp_rx_status(struct rcm_cp_instance *inst)
     return status;
 }
 
-  // r = 1 .. 32767 - Number Of Words That Failed To Send
+  // r = 2 .. 32767 - Not Enough Words Sent Due To Read Error, (r-1) - Number Of Words Missing
+  // t = 1 - The Last Word Was Incorrect (Failed To Read From Memory) But Was Sent
   // r = 0 - All The Words Were Sent OK
-  // r = -1 .. -32768 - Timeout Occurs, (0-r) - Is The Number of Data Words Not Sent
-  // timeout_us == 0 Means No Timeout
+  // r = -1 - Timeout Occurs, We've Shut The Transmitter Off, 
+  //          But While We Were Doing That - It Has Sent The Last Word
+  //          (It Is Not Guaranteed That This Word Was Read Without Exception)
+  // r = -2 .. -32768 - Timeout Occurs, (1-r) - Is The Number of Data Words Not Sent
+  // timeout_us == 0 Means No Timeout (It Will Wait Infinitely)
 int cp_wait_tx(uintptr_t base, uint32_t timeout_us) {
   uint32_t status;
   int r=-1;
   uint32_t ctime;
   uint32_t start;
+  uint32_t irq_mask_saved;
   
   if(timeout_us != 0)
     start = rumboot_platform_get_uptime();
@@ -172,6 +177,7 @@ int cp_wait_tx(uintptr_t base, uint32_t timeout_us) {
     if(status & (1<<2)) /* ES */ {
       r = ioread32(base + RCM_CP_MAINCOUNTER_TR);           // MainCounter
       r+= ioread32(base + RCM_CP_INTERNALSTATE_TR) &  0xFF; // + ARC
+      r = r + 1; // Indicate The Exception If r==0
       break;
     }
     else if(status & (1<<1) /* Cpl */) {
@@ -184,14 +190,13 @@ int cp_wait_tx(uintptr_t base, uint32_t timeout_us) {
   } while (timeout_us==0 || ctime < timeout_us);
   
   if(r<0) { // Timeout
+    irq_mask_saved = ioread32(base + RCM_CP_INTERRUPTMASK_TR);
+    iowrite32(3, base + RCM_CP_INTERRUPTMASK_TR);
     iowrite32(6, base + RCM_CP_CSR_TR); // ES = 1 // Shut It Off
     r = ioread32(base + RCM_CP_MAINCOUNTER_TR);
     r+= ioread32(base + RCM_CP_INTERNALSTATE_TR) &  0xFF;
-    if(r==0) {  // Last Word Was Sent Between Timeout Fix And ES=1 Write
-      iowrite32(0,base + RCM_CP_CSR_TR);
-    }
-    else
-      r = 0 - r;
+    r = 1 - r;
+    iowrite32(irq_mask_saved, base + RCM_CP_INTERRUPTMASK_TR);
   }
   
   return r;
@@ -228,6 +233,7 @@ int cp_wait_rx(uintptr_t base, uint32_t timeout_us) {
     int r=-1;
     uint32_t ctime;
     uint32_t start;
+    uint32_t irq_mask_saved;
     
     if(timeout_us!=0)
       start = rumboot_platform_get_uptime();
@@ -257,10 +263,13 @@ int cp_wait_rx(uintptr_t base, uint32_t timeout_us) {
     } while (timeout_us==0 || ctime < timeout_us);
     
     if(r<0) { // Timeout
+      irq_mask_saved = ioread32(base + RCM_CP_INTERRUPTMASK_RCV);
+      iowrite32(3, base + RCM_CP_INTERRUPTMASK_RCV); // Disable Interrupt
       iowrite32(6, base + RCM_CP_CSR_RCV);// Set The ES - Shut It Off! (And Do Not Reset Cpl)
       
       r = ioread32(base + RCM_CP_MAINCOUNTER_RCV); // The Number Of Data Words Remaining
       r = 0 - (r + 1);
+      iowrite32(irq_mask_saved, base + RCM_CP_INTERRUPTMASK_RCV);
     }
     
     return r;
@@ -315,7 +324,11 @@ int cp_elaborate_rx_exception(uintptr_t base, int r, uint32_t timeout_us) {
 
 void cp_abort_rx(uintptr_t base) {
   uint32_t status;
+  uint32_t irq_mask_saved;
   int r;
+  
+  irq_mask_saved = ioread32(base + RCM_CP_INTERRUPTMASK_RCV);
+  iowrite32(3,base + RCM_CP_INTERRUPTMASK_RCV); // Disable Interrupt
   
   iowrite32(6,base + RCM_CP_CSR_RCV); // ES = 1
   
@@ -336,6 +349,7 @@ void cp_abort_rx(uintptr_t base) {
   }
   
   iowrite32(0,base + RCM_CP_CSR_RCV);
+  iowrite32(irq_mask_saved,base + RCM_CP_INTERRUPTMASK_RCV);
 }
 
 int cp_wait(struct rcm_cp_instance *inst, bool rx, bool tx, uint32_t timeout_us)
