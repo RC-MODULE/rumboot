@@ -94,16 +94,7 @@ static struct rumboot_irq_entry * init_irq() {
     rumboot_irq_set_handler( tbl, COMMP0_COMMP1_IRQ, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler1, NULL );
 	COMMP0_COMMP1_IRQ = CP1_RCV_INT;
     rumboot_irq_set_handler( tbl, COMMP0_COMMP1_IRQ, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler1, NULL );
-	//-----------------
-	COMMP0_COMMP1_IRQ = CP1_RCV_INT;
-    rumboot_irq_set_handler( tbl, COMMP0_COMMP1_IRQ, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler1, NULL );
-	//----------------------
-	COMMP0_COMMP1_IRQ = CP1_RCV_INT;
-    rumboot_irq_set_handler( tbl, COMMP0_COMMP1_IRQ, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler1, NULL );
-	//----------------------
-	COMMP0_COMMP1_IRQ = CP1_RCV_INT;
-    rumboot_irq_set_handler( tbl, COMMP0_COMMP1_IRQ, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler1, NULL );
-	//----------------------
+
 	COMMP0_COMMP1_IRQ = CP1_TRM_INT;   
 	rumboot_irq_set_handler( tbl,COMMP0_COMMP1_IRQ, RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH, handler1, NULL );
 	COMMP0_COMMP1_IRQ = CP0_TRM_INT;
@@ -168,7 +159,7 @@ uint32_t	dst_1= 0x80003da8;
 	uintptr_t dsrc0 = rumboot_virt_to_dma(src0);
 	//uintptr_t ddst0 = rumboot_virt_to_dma(dst0);
 	uintptr_t dsrc1 = rumboot_virt_to_dma(src1);
-	uintptr_t ddst1 = rumboot_virt_to_dma(dst1);
+	//uintptr_t ddst1 = rumboot_virt_to_dma(dst1);
 
 
 if( (comp_dma_irq_run(dsrc0, (dst_0),COM0_BASE,COM1_BASE,&COM0_Cpl_tr,&COM1_Cpl_rcv,(ARR_SIZE>>1)) != 0)
