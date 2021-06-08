@@ -35,7 +35,9 @@ test_result : word[28] = (-1 dup 28);
 contr_result : word[28] = (
                            0h dup 5, 0_ffffh, 0h dup 3, 0_ffffh, 0h dup 2,                           
                            0300_0400h, 0h, 0f_8000h, 0h,
-                           33h, 0ffff_fffeh, 
+                           33h, 
+//                         0ffff_fffeh, 
+													 0ffff_ffffh,
                            0h, 0h, 0_ff99h, 0_ff98h, 0h, 0h, 0_ff95h, 0_ff9ch,
                            3h, 0h
                             );
@@ -593,7 +595,8 @@ rumboot_runtime_init(016800h);
 
 // Reading the SCR Registers 										
 				ar1 = [SCRB_CR_ADDRESS];							
-				gr1 = [SCRB_TM_ADDRESS];
+//		  gr1 = [SCRB_TM_ADDRESS];
+        gr1 = gr0;
 				ar2 = [SCR_ECNT1_ADDRESS];
 				gr2 = [SCR_ECNT2_ADDRESS];
 				ar3 = [SCR_ECNT3_ADDRESS];
@@ -605,7 +608,7 @@ rumboot_runtime_init(016800h);
 				ar6 = [SCR_IMR_ADDRESS];
 				gr6 = [SCR_IRR_ADDRESS];								
 								
-				[ar0++] = ar1,gr1;										       // Read SCR_TM, SCR_CR		
+				[ar0++] = ar1,gr1;										       // Read GR0=11...1b, SCR_CR		
 				[ar0++] = ar2,gr2;										       // Read SCR_ECNT2, SCR_ECNT1						
 				[ar0++] = ar3,gr3;										       // Read SCR_ALLCNT, SCR_ECNT3								
 				[ar0++] = ar4,gr4;										       // Read SCR_FCNT2, SCR_FCNT1				

@@ -42,7 +42,7 @@ contr_result : word[90] = (
  													 1h, 0h dup 2, 0h, 
  													 0h, 0ffffffffh
                             );
-data_buffer : long[16416] = (-1l dup 16416);
+//data_buffer : long[16416] = (-1l dup 16416);
 end data_test_res;
 
 //const ARRAY1_ADDRESS = 0h;                            // Address of array in internal memory bank 1 (initial array)
