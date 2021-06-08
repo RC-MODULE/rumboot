@@ -30,11 +30,12 @@
 #endif
 
 
- uint32_t COM0_Cpl_tr;
- uint32_t COM0_Cpl_rcv;
- uint32_t COM1_Cpl_tr;
- uint32_t COM1_Cpl_rcv;
- uint32_t COMMP0_COMMP1_IRQ = CP0_TRM_INT;
+static volatile uint32_t COM0_Cpl_tr;
+static volatile uint32_t COM0_Cpl_rcv;
+static volatile uint32_t COM1_Cpl_tr;
+static volatile uint32_t COM1_Cpl_rcv;
+static volatile uint32_t COMMP0_COMMP1_IRQ = CP0_TRM_INT;
+
 
 
 static void handler1() {
@@ -143,8 +144,8 @@ int main()
 	rumboot_printf("CP1_RCV_INT=%d\n",CP1_RCV_INT);
   struct rumboot_irq_entry * tbl = init_irq(); 
 
-uint32_t	dst_0= 0x80003da0;
-uint32_t	dst_1= 0x80003da8;	
+//uint32_t	dst_0= 0x80003da0;
+//uint32_t	dst_1= 0x80003da8;	
 
 	src0 = (uint32_t*)rumboot_malloc_from_named_heap(COM_SRC_HEAP, sizeof(uint32_t)*ARR_SIZE) ;
 	//dst0 = (uint32_t*)rumboot_malloc_from_named_heap(COM_DST_HEAP, sizeof(uint32_t)*ARR_SIZE );
@@ -157,32 +158,31 @@ uint32_t	dst_1= 0x80003da8;
 		src1[ i ] =  i << 1;
 	}
 	uintptr_t dsrc0 = rumboot_virt_to_dma(src0);
-	//uintptr_t ddst0 = rumboot_virt_to_dma(dst0);
 	uintptr_t dsrc1 = rumboot_virt_to_dma(src1);
-	//uintptr_t ddst1 = rumboot_virt_to_dma(dst1);
 
 
-if( (comp_dma_irq_run(dsrc0, (dst_0),COM0_BASE,COM1_BASE,&COM0_Cpl_tr,&COM1_Cpl_rcv,(ARR_SIZE>>1)) != 0)
+
+if( (comp_dma_irq_run(dsrc0, (0x80003da0),COM0_BASE,COM1_BASE,&COM0_Cpl_tr,&COM1_Cpl_rcv,(ARR_SIZE>>1)) != 0)
  )
  {
         result = 1;  //check from BRESP[1]=1  ES interrupt COMMMPORT 1
 	 } 
 	 rumboot_printf("COMMPORT0 to COMMPORT1 direction checked for BRESP COMMPORT1\n"); 
 	COMMP0_COMMP1_IRQ = CP1_TRM_INT;
-if( (comp_dma_irq_run(dsrc1, (dst_1),COM1_BASE,COM0_BASE, &COM1_Cpl_tr,&COM0_Cpl_rcv,(ARR_SIZE>>1)) != 0)
+if( (comp_dma_irq_run(dsrc1, (0x80003da0),COM1_BASE,COM0_BASE, &COM1_Cpl_tr,&COM0_Cpl_rcv,(ARR_SIZE>>1)) != 0)
 	) {
        result = 1;  //check from BRESP[1]=1  ES interrupt COMMMPORT 0
 	 }
 rumboot_printf("COMMPORT1 to COMMPORT0 direction checked for BRESP COMMPORT0\n"); 	 
 COMMP0_COMMP1_IRQ = CP0_TRM_INT; 
-if( (comp_dma_irq_run((dst_0), rumboot_virt_to_dma(dst0),COM0_BASE,COM1_BASE,&COM0_Cpl_tr,&COM1_Cpl_rcv,(ARR_SIZE>>1)) != 0)
+if( (comp_dma_irq_run((0x80003da0), rumboot_virt_to_dma(dst0),COM0_BASE,COM1_BASE,&COM0_Cpl_tr,&COM1_Cpl_rcv,(ARR_SIZE>>1)) != 0)
  )
  {
         result = 1; //check from RRESP[1]=1   ES interrupt COMMMPORT 0 
 	 } 
 	 rumboot_printf("COMMPORT0 to COMMPORT1 direction checked RRESP COMMPORT0\n"); 
 	COMMP0_COMMP1_IRQ = CP1_TRM_INT;
-if( (comp_dma_irq_run( (dst_1),rumboot_virt_to_dma(dst1),COM1_BASE,COM0_BASE, &COM1_Cpl_tr,&COM0_Cpl_rcv,(ARR_SIZE>>1)) != 0)
+if( (comp_dma_irq_run((0x80003da0),rumboot_virt_to_dma(dst1),COM1_BASE,COM0_BASE, &COM1_Cpl_tr,&COM0_Cpl_rcv,(ARR_SIZE>>1)) != 0)
 	) {
        result = 1; //check from RRESP[1]=1  ES interrupt COMMMPORT 1 
 	 }
