@@ -179,6 +179,7 @@ class RumBootProject {
                     }
                 }
         }
+        println("-- stages")
         println(stages)
         println(magicks)
         magicks[platform] = steps.stage(platform) {
