@@ -248,7 +248,8 @@ int nu_ppe_reg_load_config (ConfigREGPPE* cfg_reg, void* cfg_reg_bin) {
     static char* AluOperationSwitchNames[]= {
       "Max",
       "Min",
-      "Sum"
+      "Sum",
+      "Sub"
     };
 
     rumboot_printf("  %s = %s \n", name, AluOperationSwitchNames[(int) operation] );
@@ -260,6 +261,7 @@ int nu_ppe_reg_load_config (ConfigREGPPE* cfg_reg, void* cfg_reg_bin) {
       "Max",
       "Min",
       "Sum",
+      "Sub",
       "Eql"
     };
 

@@ -45,7 +45,8 @@
   typedef enum AluOperationSwitch {
     AluOperationSwitch_Max,
     AluOperationSwitch_Min,
-    AluOperationSwitch_Sum
+    AluOperationSwitch_Sum,
+    AluOperationSwitch_Sub
   }AluOperationSwitch;
 
   /**
@@ -55,6 +56,7 @@
     AluOperationExtSwitch_Max,
     AluOperationExtSwitch_Min,
     AluOperationExtSwitch_Sum,
+    AluOperationExtSwitch_Sub,
     AluOperationExtSwitch_Eql
   }AluOperationExtSwitch;
 
