@@ -106,14 +106,13 @@ class RumBootProject {
         this.steps = steps
         build_types.each {
             tp ->
-                //tag(tp) gives: expected to call RumBootProject.<init> but wound up catching RumBootProject.tag
                 def tg = tag(tp)
                 builds[tp] = new CMakeProject(steps, srcdir + '/' + tg, srcdir)
                 steps.updateGitlabCommitStatus name: tg, state: 'pending'
         }
     }
 
-    def tag(type) {
+    @NonCPS def tag(type) {
         return platform + '-' + type
     }
 
