@@ -340,6 +340,13 @@ endif()
 
 if (NOT RUMBOOT_BUILD_NPE_RM)
   set(RUMBOOT_BUILD_NPE_RM No)
+  set(NPE_RM_OPTS "")
+else()
+  if(DEFINED DUT)
+    set(NPE_RM_OPTS "-DDUT=${DUT}")
+  else()
+    set(NPE_RM_OPTS "")
+  endif()
 endif()
 
 include(ProcessorCount)
@@ -348,7 +355,7 @@ include(ExternalProject)
 ExternalProject_Add(utils
     SOURCE_DIR        "${CMAKE_SOURCE_DIR}/utils"
     BINARY_DIR        "${CMAKE_BINARY_DIR}/utils"
-    CONFIGURE_COMMAND ${CMAKE_COMMAND} ${CMAKE_SOURCE_DIR}/utils -G ${CMAKE_GENERATOR} -DRUMBOOT_BUILD_NPE_RM=${RUMBOOT_BUILD_NPE_RM}
+    CONFIGURE_COMMAND ${CMAKE_COMMAND} ${CMAKE_SOURCE_DIR}/utils -G ${CMAKE_GENERATOR} -DRUMBOOT_BUILD_NPE_RM=${RUMBOOT_BUILD_NPE_RM} ${NPE_RM_OPTS}
 #    BUILD_COMMAND     ${CMAKE_COMMAND} --build "${CMAKE_BINARY_DIR}/utils" -- -j ${NUM_THREADS}
     BUILD_COMMAND     "$(MAKE)" -C "${CMAKE_BINARY_DIR}/utils"
     INSTALL_COMMAND   ""

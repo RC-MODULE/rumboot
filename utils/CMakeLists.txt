@@ -27,6 +27,7 @@ if (NOT WIN32)
     set(RM_CORE_DIR npe_rm/rm_core)
     if(RUMBOOT_BUILD_NPE_RM)
       message("=== Compilation of NPE Refefence model enabled ===")
+      message( "DUT = ${DUT}")
       if(NOT EXISTS ${PROJECT_SOURCE_DIR}/${RM_CORE_DIR}/CMakeLists.txt)
       # checkout it first time. Then
       #  I Want To git pull the npe_rm, then complie and run and then - commit (update the npe_rm)
