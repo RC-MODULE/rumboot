@@ -40,8 +40,9 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         FILES common/bootrom/timer.c
     )
 
+    ########################################################
     # quad_spi tests
-    # if(DUT STREQUAL "QUAD_SPI_SIMPLE")
+    if(DUT STREQUAL "QUAD_SPI_SIMPLE")
     add_rumboot_target(
       CONFIGURATION ROM
       FILES 
@@ -56,16 +57,17 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       IRUN_FLAGS
         +TESTNAME=loopback
     )
-    # endif()
+    endif()
 
+    ######################################################################
     # mdma tests
-    # if(DUT STREQUAL "MDMA_SIMPLE")
+    if(DUT STREQUAL "MDMA_SIMPLE")
     add_rumboot_target(
       CONFIGURATION ROM
       FILES scr1/targets/simple-rom/mdma_simple_test/mdma_simple_test.c 
       IRUN_FLAGS +myfile=${CMAKE_SOURCE_DIR}/src/platform/scr1/targets/simple-rom/mdma_simple_test/data
     )
-    # endif()
+    endif()
 
     add_rumboot_target(
       CONFIGURATION ROM
@@ -73,8 +75,10 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       IRUN_FLAGS +myfile=${CMAKE_SOURCE_DIR}/src/platform/scr1/targets/load_bin_example/data
     )
 
-    # VPE example 
-    # if(DUT STREQUAL "VPE")
+    ################################################################
+    # common for tests with npe_rm
+    if(DUT STREQUAL "MPE" OR DUT STREQUAL "VPE" OR DUT STREQUAL "PPE")
+
     set(VPE_SIMPLE_PATH src/platform/scr1/targets/simple-rom/nu/vpe_simple)
     add_rumboot_target(
       CONFIGURATION ROM
@@ -83,7 +87,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
                  +etalon_file_tag=${CMAKE_SOURCE_DIR}/${VPE_SIMPLE_PATH}/etalon.bin
                  +cfg_file_tag=${CMAKE_SOURCE_DIR}/${VPE_SIMPLE_PATH}/Config_vpe1.bin
     )
-    # endif()
+
 	add_rumboot_target(
       CONFIGURATION ROM
       NAME PPE_1
@@ -95,7 +99,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       NAME VPE_1
       FILES scr1/targets/simple-rom/nu/vpe_regs/regs_vpe.c
 	)
-	
+
     # files transfered from RM to simulation environment
     set(NA_TEST_num_iterations_file num_iterations.bin)
     set(NA_TEST_in_file cube.bin)
@@ -401,6 +405,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     ADD_PPE_NEXT_COUPLED_TEST(ppe_one_coupled main_i8_ppe_coupled)
     ADD_PPE_NEXT_COUPLED_TEST(ppe_probe_coupled main_probe_ppe_coupled)
 
+if(DEFINED EXPERIMENT_STAGE_2_SUB_1) ####
     if(NOT DEFINED EXPERIMENT_STAGE_2_DIR)
       set(EXPERIMENT_STAGE_2_DIR /opt/lib_h31/LAVA_lib/experiment_stage_2)
     endif()
@@ -417,6 +422,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       endif()
     endif()
     message("VPE_BINARIES_ROOT = ${VPE_BINARIES_ROOT}")
+endif() #### EXPERIMENT_STAGE_2_SUB_1
 
     
     macro(ADD_VPE_COUPLED_TEST_LOOP name rm_bin_name)
@@ -451,6 +457,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       )
     endmacro()
     
+if(DEFINED EXPERIMENT_STAGE_2_SUB_1) ####
     macro(ADD_VPE_FROM_BINARY_TEST_CONTROL_CONS name bin_dir)
       add_rumboot_target(
         CONFIGURATION ROM
@@ -461,6 +468,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
       )
     endmacro()
+endif() #### EXPERIMENT_STAGE_2_SUB_1
     
     macro(ADD_VPE_COUPLED_TEST_CONTROL_PARALLEL name rm_bin_name)
       add_rumboot_target(
@@ -473,6 +481,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       )
     endmacro()
 
+if(DEFINED EXPERIMENT_STAGE_2_SUB_1) ####
     macro(ADD_VPE_FROM_BINARY_TEST_CONTROL_PARALLEL name bin_dir)
       add_rumboot_target(
         CONFIGURATION ROM
@@ -504,6 +513,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
       )
     endmacro()
+endif() #### EXPERIMENT_STAGE_2_SUB_1
 
     # works after rm CMakeCache.txt
     if(NOT DEFINED NU_SEED)
@@ -557,6 +567,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       )
     endmacro()
 
+if(DEFINED EXPERIMENT_STAGE_2_SUB_1)
     if(NOT DEFINED PPE_EXPER_DIR)
       if(EXISTS ${CMAKE_SOURCE_DIR}/../../PPE)
         set(PPE_EXPER_DIR ${CMAKE_SOURCE_DIR}/../../PPE)
@@ -578,6 +589,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
       )
     endmacro()
+endif()  ### EXPERIMENT_STAGE_2_SUB_1
 
     ADD_VPE_COUPLED_TEST_LOOP(vpe_try_loop main_nothing_to_do_x4)
     ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_2_dma_int16 main_vpe_2_dma_int16)
@@ -645,6 +657,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
     ###############
 
+if(DEFINED EXPERIMENT_STAGE_2_SUB_1) ####
     ADD_VPE_FROM_BINARY_TEST_LOOP_FORCE_WDMA(VPE_2_0 VPE_2/0)
     ADD_VPE_FROM_BINARY_TEST_LOOP_FORCE_WDMA(VPE_2_1 VPE_2/1)
     ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_9_0 VPE_9/0)
@@ -706,6 +719,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_26 VPE_26)
     ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_28 VPE_28)
 
+endif() #### EXPERIMENT_STAGE_2_SUB_1
     ###############
 
     ADD_PPE_COUPLED_TEST_LOOP(ppe_loop_coupled main_loop_ppe_coupled NotShowPerf)
@@ -738,6 +752,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     ADD_PPE_MANY_TESTS(ppe_many_i16_min   main_ppe_3_i16_min  NotShowPerf MEMtoMEM)
     ADD_PPE_MANY_TESTS(ppe_many_fp16_min  main_ppe_4_fp16_min NotShowPerf MEMtoMEM)
 
+if(DEFINED EXPERIMENT_STAGE_2_SUB_1) ###
     ADD_PPE_EXPER_TEST(PPE_2  NotShowPerf)
     ADD_PPE_EXPER_TEST(PPE_3  NotShowPerf)
     ADD_PPE_EXPER_TEST(PPE_4  NotShowPerf)
@@ -751,6 +766,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     ADD_PPE_EXPER_TEST(PPE_12 NotShowPerf)
     ADD_PPE_EXPER_TEST(PPE_13 ShowPerf)
     ADD_PPE_EXPER_TEST(PPE_14 NotShowPerf)
+endif() ### EXPERIMENT_STAGE_2_SUB_1
 
     # MPE example 
     # if(DUT STREQUAL "MPE")
@@ -840,11 +856,12 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
                  +etalon_file_tag=${CMAKE_SOURCE_DIR}/${PPE_SIMPLE_PATH}/etalon.bin
                  +cfg_file_tag=${CMAKE_SOURCE_DIR}/${PPE_SIMPLE_PATH}/Config_ppe1.bin
     )
-    # endif()
+    endif()  # if(DUT STREQUAL MPE,VPE,PPE)
 
+    ###########################################################
     # demonstrator tests
 
-    # if(DUT STREQUAL "DEMONSTRATOR_SIMPLE")
+    if(DUT STREQUAL "DEMONSTRATOR_SIMPLE")
     set(DEMONSTRATOR_TESTS_DIR ${CMAKE_SOURCE_DIR}/src/platform/scr1/targets/simple-rom/demonstrator)
       # Script That  Generate config.ini 
     set(CREATE_INI ${DEMONSTRATOR_TESTS_DIR}/input/create_configini.pl)
@@ -913,8 +930,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         +input_data=${DEMONSTRATOR_TESTS_DIR}/input/data.bin
         +etalon_data=${DEMONSTRATOR_TESTS_DIR}/input/etalon_data.bin
     )
-	
-    # endif()
+    endif() # DEMONSTRATOR_SIMPLE
 endmacro()
 
 if (CMAKE_VERILOG_RULES_LOADED)
