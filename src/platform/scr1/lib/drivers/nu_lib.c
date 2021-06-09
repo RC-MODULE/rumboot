@@ -30,7 +30,8 @@ void nu_vpe_load_config(ConfigVPE* cfg, void* cfg_bin) {
   cfg->c3_trunc=*ptr;ptr++;
   cfg->c3_satur_en=*ptr;ptr++;
   cfg->c3_round_mode=*ptr;ptr++;
-  cfg->nan_to_zero=*ptr;ptr++;
+  cfg->nan_to_zero_input=*ptr;ptr++;
+  cfg->nan_to_zero_output=*ptr;ptr++;
   cfg->op0_config.coef_type=*ptr;ptr++;
   cfg->op0_config.alu_en=*ptr;ptr++;
   cfg->op0_config.mux_en=*ptr;ptr++;
@@ -344,7 +345,8 @@ void nu_vpe_print_config(ConfigVPE* cfg){
   rumboot_printf("  c3_satur_en = %d\n" , cfg->c3_satur_en  );
   nu_vpe_print_RoundMode( cfg->c3_round_mode, "c3_round_mode");
   
-  nu_vpe_print_Enable(cfg->nan_to_zero,"nan_to_zero");
+  nu_vpe_print_Enable(cfg->nan_to_zero_input,"nan_to_zero_input");
+  nu_vpe_print_Enable(cfg->nan_to_zero_output,"nan_to_zero_output");
 
   rumboot_printf("ConfigOp01 (0):\n");
 
@@ -676,7 +678,7 @@ void nu_vpe_setup(uintptr_t base, ConfigVPE* cfg, ConfigDMAVPE* cfg_dma) {
   if      (cfg->in_data_type == DataTypeExt_Int32) tmp_type = DataTypeExt_Int16 ;
   else if (cfg->in_data_type == DataTypeExt_Fp32)  tmp_type = DataTypeExt_Fp16  ;
   else                                             tmp_type = cfg->in_data_type ;
-  tmp_data = (cfg->out_data_type << 16) | (cfg->op2_config.coef_type << 14) | (cfg->op1_config.coef_type << 12) | (cfg->op0_config.coef_type << 10) | (tmp_type << 8) | (cfg->nan_to_zero << 4) | (cfg->dst_flying << 1) | (cfg->src_flying << 0) ;
+  tmp_data = (cfg->out_data_type << 16) | (cfg->op2_config.coef_type << 14) | (cfg->op1_config.coef_type << 12) | (cfg->op0_config.coef_type << 10) | (tmp_type << 8) | (cfg->nan_to_zero_input << 4) | (cfg->dst_flying << 1) | (cfg->src_flying << 0) ;
   iowrite32(tmp_data, base + NU_VPE + NU_VPE_OP_MODE);
   
   // Configuration OUT --------------------------------------------------

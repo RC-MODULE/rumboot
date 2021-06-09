@@ -5,7 +5,7 @@
 
 #include <stdint.h>
 
-#define NU_VPE_CFG_PARAMS_NUM 67
+#define NU_VPE_CFG_PARAMS_NUM 68
 #define NU_MPE_CFG_PARAMS_NUM 18
 #define NU_PPE_CFG_PARAMS_NUM 22
 #define NU_PPE_REG_CFG_PARAMS_NUM 50
@@ -228,7 +228,8 @@
     uint8_t     c3_trunc        ; // !!!! вообще он uint6
     Enable      c3_satur_en     ;
     RoundMode   c3_round_mode   ;
-    Enable      nan_to_zero     ;
+    Enable      nan_to_zero_input;
+    Enable      nan_to_zero_output;
     ConfigOp01  op0_config      ;
     ConfigOp01  op1_config      ;
     ConfigOp2   op2_config      ;
