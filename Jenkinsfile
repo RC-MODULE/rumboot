@@ -107,7 +107,7 @@ class RumBootProject {
         build_types.each {
             tp ->
                 //tag(tp) gives: expected to call RumBootProject.<init> but wound up catching RumBootProject.tag
-                def tg = platform + '-' + tp
+                def tg = tag(tp)
                 builds[tp] = new CMakeProject(steps, srcdir + '/' + tg, srcdir)
                 steps.updateGitlabCommitStatus name: tg, state: 'pending'
         }
@@ -231,23 +231,23 @@ properties([
 
 //TODO: Fill in per-platform options
 //
-//config["basis"] = [
-//    RUMBOOT_TESTING_PORT: "/dev/serial/by-path/pci-0000:00:1d.2-usb-0:2:1.0-port0",
-//    RUMBOOT_TESTING_RESETPORT: "2",
-//    RUMBOOT_DISABLE_TESTING: "No",
-//    RUMBOOT_COVERAGE: "No"
-//]
-//
-//config["mm7705"] = [
-//    RUMBOOT_TESTING_PORT: "/dev/serial/by-path/pci-0000:00:1d.2-usb-0:1:1.0-port0",
-//    RUMBOOT_TESTING_RESETPORT: "1",
-//    RUMBOOT_DISABLE_TESTING: "No",
-//    RUMBOOT_COVERAGE: "No"
-//]
-//
-//config["oi10"] = [
-//    RUMBOOT_COVERAGE: "No"
-//]
+config["basis"] = [
+    RUMBOOT_TESTING_PORT: "/dev/serial/by-path/pci-0000:00:1d.2-usb-0:2:1.0-port0",
+    RUMBOOT_TESTING_RESETPORT: "2",
+    RUMBOOT_DISABLE_TESTING: "No",
+    RUMBOOT_COVERAGE: "No"
+]
+
+config["mm7705"] = [
+    RUMBOOT_TESTING_PORT: "/dev/serial/by-path/pci-0000:00:1d.2-usb-0:1:1.0-port0",
+    RUMBOOT_TESTING_RESETPORT: "1",
+    RUMBOOT_DISABLE_TESTING: "No",
+    RUMBOOT_COVERAGE: "No"
+]
+
+config["oi10"] = [
+    RUMBOOT_COVERAGE: "No"
+]
 
 /////////////////////////////////////////////////////////////////////
 
