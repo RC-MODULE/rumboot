@@ -292,8 +292,9 @@ config.each {
 }
 
 stage('Touchstone build (Native)') {
-    println(builds['native'].tasks(cluster_node, optane_node))
-    builds['native'].tasks(cluster_node, optane_node)
+    //tasks = builds['native'].tasks(cluster_node, optane_node)
+    //println(tasks)
+    //tasks
 }
 
 def tasks = [:]
