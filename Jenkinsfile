@@ -291,10 +291,20 @@ config.each {
         builds[key].addOptions(value)
 }
 
-stage('Touchstone build (Native)') {
-    //tasks = builds['native'].tasks(cluster_node, optane_node)
-    //println(tasks)
-    //tasks
+def touchstones = [:]
+builds.each {
+    plat,build ->
+        if (plat == 'native') {
+            touchstones += build.tasks(cluster_node, optane_node)
+        }
+}
+
+println('-------------------')
+println(tasks)
+println('-------------------')
+
+stage('Touchstone builds (Native)') {
+    parallel touchstones
 }
 
 def tasks = [:]
@@ -304,6 +314,7 @@ builds.each {
             tasks += build.tasks(cluster_node, optane_node)
         }
 }
+
 println('-------------------')
 println(tasks)
 println('-------------------')
