@@ -155,6 +155,8 @@ int main( void )
     printf( "datalen:        %d\n", test_hdr.datalen );
     printf( "entry_point[0]: 0x%x\n", test_hdr.entry_point[0] );
 
+    printf( "spr_read(SPR_DCESR) = 0x%x\n", spr_read( SPR_DCESR ) );
+
     printf( "Starting test code from another memory\n" );
     return rumboot_bootimage_execute_ep( ( void * ) test_hdr.entry_point[0] );
 }
