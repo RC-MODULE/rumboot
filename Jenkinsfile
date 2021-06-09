@@ -299,6 +299,10 @@ builds.each {
         }
 }
 
+println('-------------------')
+println(tasks)
+println('-------------------')
+
 stage('Touchstone builds (Native)') {
     parallel touchstones
 }
@@ -310,6 +314,7 @@ builds.each {
             tasks += build.tasks(cluster_node, optane_node)
         }
 }
+
 println('-------------------')
 println(tasks)
 println('-------------------')
