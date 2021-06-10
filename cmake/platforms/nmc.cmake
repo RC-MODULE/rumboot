@@ -260,16 +260,17 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
   endif()
 
-
-  add_rumboot_target(
-    CONFIGURATION SRAM
-    FILES stubs/cp_boot_stub.c
-    PREFIX "stub"
-    CFLAGS -DCOM_BASE=COM1_BASE
-    FEATURES STUB
-    NAME cp1-booter
-  )
-
+  if (RUMBOOT_SOC)
+    add_rumboot_target(
+      CONFIGURATION SRAM
+      FILES stubs/cp_boot_stub.c
+      PREFIX "stub"
+      CFLAGS -DCOM_BASE=COM1_BASE
+      FEATURES STUB
+      NAME cp1-booter
+    )
+  endif()
+  
   add_rumboot_target(
     CONFIGURATION IRAM
     CFLAGS -DUSE_SWINT=30
