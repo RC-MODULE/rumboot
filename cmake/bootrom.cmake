@@ -104,7 +104,7 @@ macro(rumboot_bootrom_add_components romconf spl_conf spl_reverse_conf spl_reloc
     VARIABLE SPL_OK
   )
 
-  if ( NOT spl_reverse_conf STREQUAL "" )
+  if (spl_reverse_conf STREQUAL "FALSE" )
     add_rumboot_target(
       CONFIGURATION ${spl_reverse_conf}
       NAME reverse-endian-ok
@@ -116,7 +116,7 @@ macro(rumboot_bootrom_add_components romconf spl_conf spl_reverse_conf spl_reloc
     )
   endif()
 
-  if (NOT spl_reloc_conf STREQUAL "")
+  if (NOT spl_reloc_conf STREQUAL "FALSE")
     add_rumboot_target(
       CONFIGURATION ${spl_reloc_conf}
       PREFIX spl
