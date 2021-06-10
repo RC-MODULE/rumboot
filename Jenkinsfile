@@ -3,19 +3,28 @@ class CMakeProject {
     def steps
     int tries = 0
     boolean configured = false
+    String suffix = ""
     String setupscript
     String sourcedir = ''
     String workdir
+    String workdir_base
+
     String environment = '''#!/bin/bash -x
     pwd
     '''
 
     CMakeProject(steps, wdir, srcdir) {
         this.workdir = wdir
+        this.workdir_base = wdir
         this.setupscript = setupscript
         this.steps = steps
         this.sourcedir = srcdir
         println('Will configure project in: ' + wdir)
+    }
+
+    def setSuffix(suf) {
+        this.suffix = "-" + suf
+        this.workdir = this.workdir_base + suffix
     }
 
     static def getParams(context) {
@@ -100,6 +109,7 @@ class RumBootProject {
     def options = [ RUMBOOT_DISABLE_TESTING: 'Yes', RUMBOOT_COVERAGE: 'No' ]
     def steps
     def label = 'full'
+    def variant = ""
 
     RumBootProject(steps, platform, srcdir) {
         this.platform = platform
@@ -112,8 +122,13 @@ class RumBootProject {
         }
     }
 
-    @NonCPS def tag(type) {
-        return platform + '-' + type
+    @NonCPS def tag(type, variant = "") {
+        if (variant == "")
+        {
+            return platform + '-' + type
+        } else {
+            return platform + variant + '-' + type                        
+        }
     }
 
     def dropBuild(type) {
@@ -122,6 +137,14 @@ class RumBootProject {
 
     def addOptions(opts) {
         this.options += opts
+    }
+
+    @NonCPS def setVariant(v) {
+        variant = "-" + v
+        builds.each { 
+            type, build -> 
+                build.setSuffix(v)
+        }
     }
 
     def enableCoverage() {
@@ -153,7 +176,7 @@ class RumBootProject {
                 if (platform != 'native' && type == 'PostProduction') {
                     node = optane_node
                 }
-                def tg = tag(type)
+                def tg = tag(type, variant)
                 stgs[tg] = {
                     steps.stage(tg) {
                         steps.node(node) {
@@ -181,8 +204,8 @@ class RumBootProject {
                     }
                 }
         }
-        magicks[platform] = { 
-            steps.stage(platform) {
+        magicks[platform + variant] = { 
+            steps.stage(platform + variant) {
                 steps.parallel(stgs)
             }
         }
@@ -218,7 +241,6 @@ class CheckoutHelper {
 def config = [:]
 def cluster_node = 'sim'
 def optane_node = 'yacc'
-def platforms = ['native', 'basis', 'bbp3', 'oi10', 'mm7705', 'zed', 'nmc', 'scr1']
 def coverage = false
 def local = false
 
@@ -276,12 +298,23 @@ stage('Checkout') {
     }
 }
 
+def platforms = ['native', 'basis', 'bbp3', 'oi10', 'mm7705', 'zed', 'nm6408', 'scr1', 'nmc']
 platforms.each {
     plat ->
-        builds[plat] = new RumBootProject(this, plat, srcdir)
+        if (plat != "nmc") {
+            builds[plat] = new RumBootProject(this, plat, srcdir)
+        } else {
+            builds["nmc-standalone"] = new RumBootProject(this, plat, srcdir)   
+            builds["nmc-standalone"].setVariant('standalone')         
+            builds["nmc-o32t"] = new RumBootProject(this, plat, srcdir)
+            builds["nmc-o32t"].addOptions([
+                RUMBOOT_SOC : "o32t"]
+                )
+            builds["nmc-o32t"].setVariant('o32t')         
+        }
         if (coverage) {
-        print('Enabling coverage for ' + plat)
-        builds[plat].enableCoverage()
+            println('Enabling coverage for ' + plat)
+            builds[plat].enableCoverage()
         }
 }
 
