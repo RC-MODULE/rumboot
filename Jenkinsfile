@@ -144,7 +144,7 @@ class RumBootProject {
 
     def tasks(cluster_node, optane_node) {
         def magicks = [:]
-        def stages = [:]
+        def stgs = [:]
         builds.each {
             type,build ->
                 def node = cluster_node
@@ -154,41 +154,41 @@ class RumBootProject {
                     node = optane_node
                 }
                 def tg = tag(type)
-                stages[tg] = steps.stage(tg) {
-                    steps.node(node) {
-                        steps.updateGitlabCommitStatus name: tg, state: 'running'
-                        try {
-                            def tmp = this.options
-                            tmp['CMAKE_BUILD_TYPE'] = type
-                            tmp['RUMBOOT_PLATFORM'] = platform
-                            build.configure(tmp)
-                            build.build()
+                stgs[tg] = {
+                    steps.stage(tg) {
+                        steps.node(node) {
+                            steps.updateGitlabCommitStatus name: tg, state: 'running'
+                            try {
+                                def tmp = this.options
+                                tmp['CMAKE_BUILD_TYPE'] = type
+                                tmp['RUMBOOT_PLATFORM'] = platform
+                                build.configure(tmp)
+                                build.build()
 
-                            if (platform == 'native' || type == 'PostProduction') {
-                                build.test(label)
-                            }
+                                if (platform == 'native' || type == 'PostProduction') {
+                                    build.test(label)
+                                }
 
-                            if (this.options['RUMBOOT_COVERAGE'] == 'Yes') {
-                                build.coverage()
+                                if (this.options['RUMBOOT_COVERAGE'] == 'Yes') {
+                                    build.coverage()
+                                }
+                                steps.updateGitlabCommitStatus name: tg, state: 'success'
+                                } catch (Exception e) {
+                                    steps.updateGitlabCommitStatus name: tg, state: 'failed'
+                                    steps.error('Exception while building project: ' + e.toString())
                             }
-                            steps.updateGitlabCommitStatus name: tg, state: 'success'
-                            } catch (Exception e) {
-                                steps.updateGitlabCommitStatus name: tg, state: 'failed'
-                                steps.error('Exception while building project: ' + e.toString())
                         }
                     }
                 }
         }
-        println("-- stages")
-        println(stages)
-        println(magicks)
-        magicks[platform] = steps.stage(platform) {
-                    steps.parallel(stages)
+        magicks[platform] = { 
+            steps.stage(platform) {
+                steps.parallel(stgs)
+            }
         }
 
         return magicks
         }
-
     }
 
 class CheckoutHelper {
@@ -231,23 +231,23 @@ properties([
 
 //TODO: Fill in per-platform options
 //
-config["basis"] = [
-    RUMBOOT_TESTING_PORT: "/dev/serial/by-path/pci-0000:00:1d.2-usb-0:2:1.0-port0",
-    RUMBOOT_TESTING_RESETPORT: "2",
-    RUMBOOT_DISABLE_TESTING: "No",
-    RUMBOOT_COVERAGE: "No"
-]
-
-config["mm7705"] = [
-    RUMBOOT_TESTING_PORT: "/dev/serial/by-path/pci-0000:00:1d.2-usb-0:1:1.0-port0",
-    RUMBOOT_TESTING_RESETPORT: "1",
-    RUMBOOT_DISABLE_TESTING: "No",
-    RUMBOOT_COVERAGE: "No"
-]
-
-config["oi10"] = [
-    RUMBOOT_COVERAGE: "No"
-]
+//config["basis"] = [
+//    RUMBOOT_TESTING_PORT: "/dev/serial/by-path/pci-0000:00:1d.2-usb-0:2:1.0-port0",
+//    RUMBOOT_TESTING_RESETPORT: "2",
+//    RUMBOOT_DISABLE_TESTING: "No",
+//    RUMBOOT_COVERAGE: "No"
+//]
+//
+//config["mm7705"] = [
+//    RUMBOOT_TESTING_PORT: "/dev/serial/by-path/pci-0000:00:1d.2-usb-0:1:1.0-port0",
+//    RUMBOOT_TESTING_RESETPORT: "1",
+//    RUMBOOT_DISABLE_TESTING: "No",
+//    RUMBOOT_COVERAGE: "No"
+//]
+//
+//config["oi10"] = [
+//    RUMBOOT_COVERAGE: "No"
+//]
 
 /////////////////////////////////////////////////////////////////////
 
@@ -299,10 +299,6 @@ builds.each {
         }
 }
 
-println('-------------------')
-println(tasks)
-println('-------------------')
-
 stage('Touchstone builds (Native)') {
     parallel touchstones
 }
@@ -315,12 +311,8 @@ builds.each {
         }
 }
 
-println('-------------------')
-println(tasks)
-println('-------------------')
-
 stage('Build all platforms') {
-        parallel tasks
+    parallel tasks
 }
 
 stage('Analysis') {
