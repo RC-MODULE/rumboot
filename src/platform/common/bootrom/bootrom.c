@@ -52,7 +52,6 @@ static void hostmode_loop(struct rumboot_config *conf, void *pdata)
                 int c = rumboot_getchar(100);
                 if (c == 'X') {
                         int ret = xmodem_get((void *) hdr, maxsize);
-                        mdelay(250);
                         rumboot_printf("\n\n\n");
                         if (ret > 0) {
                                 dbg_boot(NULL, "Received %d bytes, executing in 100ms", ret);
