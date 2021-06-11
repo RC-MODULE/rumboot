@@ -9,6 +9,7 @@ SECTIONS
 {
 
  .header : {
+   rumboot_self = .;
    KEEP(*(.header))
  } > IRAM
 
