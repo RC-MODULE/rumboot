@@ -775,16 +775,16 @@ void nu_vpe_setup(uintptr_t base, ConfigVPE* cfg, ConfigDMAVPE* cfg_dma) {
     iowrite32(cfg->op2_config.lut_tab2_x_start, base + NU_VPE + NU_VPE_LUT_TAB2_X_START);
     iowrite32(cfg->op2_config.lut_tab2_x_end  , base + NU_VPE + NU_VPE_LUT_TAB2_X_END  );
     
-    tmp_data = 0x000000000 | ((cfg->op2_config.lut_tab1_slope_ovrf_scale) << 16) |
-                             ((cfg->op2_config.lut_tab1_slope_undf_scale)      );
+    tmp_data = 0x000000000 | ((cfg->op2_config.lut_tab1_slope_ovrf_scale & 0x0000FFFF) << 16) |
+                             ((cfg->op2_config.lut_tab1_slope_undf_scale & 0x0000FFFF)      );
     iowrite32(tmp_data, base + NU_VPE + NU_VPE_LUT_TAB1_SLOPE_SCALE);
     
     tmp_data = 0x000000000 | ((cfg->op2_config.lut_tab1_slope_ovrf_shift & 0x1F) << 5) |
                              ((cfg->op2_config.lut_tab1_slope_undf_shift & 0x1F)     );
     iowrite32(tmp_data, base + NU_VPE + NU_VPE_LUT_TAB1_SLOPE_SHIFT);
     
-    tmp_data = 0x000000000 | ((cfg->op2_config.lut_tab2_slope_ovrf_scale) << 16) |
-                             ((cfg->op2_config.lut_tab2_slope_undf_scale)      );
+    tmp_data = 0x000000000 | ((cfg->op2_config.lut_tab2_slope_ovrf_scale & 0x0000FFFF) << 16) |
+                             ((cfg->op2_config.lut_tab2_slope_undf_scale & 0x0000FFFF)      );
     iowrite32(tmp_data, base + NU_VPE + NU_VPE_LUT_TAB2_SLOPE_SCALE);
     
     tmp_data = 0x000000000 | ((cfg->op2_config.lut_tab2_slope_ovrf_shift & 0x1F) << 5) |
