@@ -119,7 +119,6 @@ class RumBootProject {
             tp ->
                 def tg = tag(tp)
                 builds[tp] = new CMakeProject(steps, srcdir + '/' + tg, srcdir)
-                steps.updateGitlabCommitStatus name: tg, state: 'pending'
         }
     }
 
@@ -178,6 +177,7 @@ class RumBootProject {
                     node = optane_node
                 }
                 def tg = tag(type, variant)
+                steps.updateGitlabCommitStatus name: tg, state: 'pending'
                 stgs[tg] = {
                     steps.stage(tg) {
                         steps.node(node) {
