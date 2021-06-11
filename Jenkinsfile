@@ -22,9 +22,10 @@ class CMakeProject {
         println('Will configure project in: ' + wdir)
     }
 
-    def setSuffix(suf) {
+    @NonCPS def setSuffix(suf) {
         this.suffix = "-" + suf
-        this.workdir = this.workdir_base + suffix
+        this.workdir = this.workdir_base + this.suffix
+        println("Adjusting suffix: " + suffix + "wdir: " + this.workdir)
     }
 
     static def getParams(context) {
