@@ -666,6 +666,8 @@ endif()  ### EXPERIMENT_STAGE_2_SUB_1
     ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(npe_vpe_op2_c1 main_npe_vpe_op2_c1)
     ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(npe_vpe_op2_c2 main_npe_vpe_op2_c2)
 
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(npe_vpe_c3 main_npe_vpe_c3)
+
     ###############
 
 if(DEFINED EXPERIMENT_STAGE_2_SUB_1) ####
