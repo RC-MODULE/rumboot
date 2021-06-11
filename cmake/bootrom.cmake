@@ -116,7 +116,7 @@ macro(rumboot_bootrom_add_components romconf spl_conf spl_reverse_conf spl_reloc
     )
   endif()
 
-  if (NOT spl_reloc_conf STREQUAL "FALSE")
+  if (NOT spl_reloc_conf STREQUAL "FALSE" AND RUMBOOT_HAS_V3_BOOTROM)
     add_rumboot_target(
       CONFIGURATION ${spl_reloc_conf}
       PREFIX spl
@@ -138,8 +138,6 @@ macro(rumboot_bootrom_add_components romconf spl_conf spl_reverse_conf spl_reloc
       PACKIMAGE_FLAGS -a 512 -z 512 -c -Z
       VARIABLE RELOC_COMPRESSED_OK
     )
-
-
     endif()
 
   if (RUMBOOT_HAS_V3_BOOTROM)
@@ -156,7 +154,6 @@ macro(rumboot_bootrom_add_components romconf spl_conf spl_reverse_conf spl_reloc
   endif()
 
   if (RUMBOOT_ARCH STREQUAL "native")
-
     if (RUMBOOT_HAS_V3_BOOTROM)
       add_rumboot_target(
         CONFIGURATION ${spl_conf}
