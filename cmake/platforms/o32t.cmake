@@ -8,6 +8,7 @@ else()
   set(IRUN_BOOTM_EXTRA_ARGS )
 endif()
 
+set(RUMBOOT_HAS_V3_BOOTROM yes)
 
 file(GLOB PLATFORM_SOURCES
   ${CMAKE_SOURCE_DIR}/src/arch/ppc/exception.c
