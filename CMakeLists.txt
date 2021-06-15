@@ -324,7 +324,13 @@ foreach(c ${RUMBOOT_CONFIGURATIONS})
   list (FIND CONFIGURATION_${c}_FEATURES "NOLIBS" _index)
   if (NOT ${_index} GREATER -1)
     ADD_LIBRARY(rumboot-${c} OBJECT ${PLATFORM_SOURCES})
-    target_compile_options(rumboot-${c} PUBLIC ${CONFIGURATION_${c}_CFLAGS} ${CONFIGURATION_${c}_OPTIMIZE})
+
+    target_compile_options(rumboot-${c} PUBLIC
+      $<$<COMPILE_LANGUAGE:C>:${CONFIGURATION_${c}_CFLAGS} ${CONFIGURATION_${c}_CCFLAGS} ${CONFIGURATION_${c}_OPTIMIZE}>
+      $<$<COMPILE_LANGUAGE:CXX>:${CONFIGURATION_${c}_CFLAGS} ${CONFIGURATION_${c}_CXXFLAGS} ${CONFIGURATION_${c}_OPTIMIZE}>
+      $<$<COMPILE_LANGUAGE:ASM>:-x assembler-with-cpp ${CONFIGURATION_${c}_CFLAGS} ${CONFIGURATION_${c}_ASFLAGS} ${CONFIGURATION_${c}_OPTIMIZE}>
+    )
+
   endif()
 endforeach()
 

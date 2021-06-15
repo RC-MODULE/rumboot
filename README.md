@@ -263,7 +263,8 @@ add_rumboot_target(
     PREFIX mytestprefix
     LDS basis/rom.lds
     FILES mytest/main.c mytest/lib.c
-    CFLAGS -DMACRO=value
+    FLAGS -DMACRO=value
+    CFLAGS -Wall
     ASFLAGS -xassembler-with-cpp
     CXXFLAGS -DA=B
     IRUN_FLAGS +VAR=value
@@ -310,7 +311,9 @@ add_rumboot_target(
 
 - SNAPSHOT - имя снэпшота, используемого для запуска данного теста. При отсутствии используется значение по умолчанию для платформы. Для базиса -  default
 
-- CFLAGS - Дополнительные флаги компилятору С
+- CFLAGS  - Дополнительные флаги для всех инструментов компилятора (C, C++, ASM)
+
+- CCFLAGS - Дополнительные флаги компилятору С
 
 - ASFLAGS - Дополнительные флаги компилятору ASM
 
