@@ -668,6 +668,11 @@ endif()  ### EXPERIMENT_STAGE_2_SUB_1
 
     ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(npe_vpe_c3 main_npe_vpe_c3)
 
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(npe_vpe_op0_relu_int main_npe_vpe_op0_relu_int)
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(npe_vpe_op0_relu_fp  main_npe_vpe_op0_relu_fp)
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(npe_vpe_op1_relu_int main_npe_vpe_op1_relu_int)
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(npe_vpe_op1_relu_fp  main_npe_vpe_op1_relu_fp)
+
     ###############
 
 if(DEFINED EXPERIMENT_STAGE_2_SUB_1) ####
