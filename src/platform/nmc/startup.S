@@ -1,5 +1,6 @@
 #include <rumboot/irq.h>
 .extern _rumboot_main
+.extern __main
 .extern _rumboot_platform_stack_start
 
 .global _start
@@ -159,7 +160,11 @@ the_start:
     gr6=0;
     gr7=0;
     /* Fire up our main code loop */
+#if defined(RUMBOOT_NOINIT)
+	call __main;
+#else
 	call _rumboot_main;
+#endif
     /* Should never get here */
 
 //#define NMC_SUPPORTS_HALT
