@@ -7,6 +7,9 @@
 #undef AXI64HSIFS_CTRL_BASE
 #undef SCRB_BASE
 
+#define IM3_BASE                0xC0060000
+#define IM3_SIZE                (128 * 1024 * 1024)
+
 #define MKIO2_BASE              0xC0021000
 #define MKIO3_BASE              0xC0031000
 #define AXI32_LEFT_CTRL_BASE    0xC0100000

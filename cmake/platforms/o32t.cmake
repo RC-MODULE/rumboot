@@ -241,7 +241,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     NAME "host-mockup-compressed"
     IRUN_FLAGS +BOOT_HOST=1 ${ROM_6500K_OPTS}
     LOAD
-    HOSTMOCK  spl-compressed-ok
+      HOSTMOCK  spl-compressed-ok
   )
 
   rumboot_bootrom_integration_test(BROM
@@ -433,7 +433,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     NAME "nmc-extboot-cp01"
     IRUN_FLAGS ${ROM_6500K_OPTS} +BOOT_HOST=1
     LOAD
-      HOSTMOCK  stub-emi_initializer_notlb_unload,nmc:stub-cp1-booter
+      HOSTMOCK  stub-emi_initializer_notlb_unload,nmc:stub-cp1-booter,nmc:spl-cp_spl
   )
 
   rumboot_bootrom_integration_test(BROM
