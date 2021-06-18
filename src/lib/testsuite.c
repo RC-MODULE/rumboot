@@ -17,6 +17,7 @@ int test_suite_run_single(struct rumboot_testsuite_results *out, const struct ru
 		const char *subsystem, int subsysnamelen)
 {
 	uint32_t tstart;
+	uint32_t tend;
 
     rumboot_printf("--- Executing test: %s - %s --- \n", subsystem, test->name);
 
@@ -33,7 +34,10 @@ int test_suite_run_single(struct rumboot_testsuite_results *out, const struct ru
 
 	rumboot_malloc_update_heaps(false);
 
-    rumboot_printf("--- %s ---\n", result ? "PASSED" : "FAILED");
+	tend = rumboot_platform_get_uptime();
+
+    rumboot_printf("--- %s. Took %d us to complete ---\n", 
+		result ? "PASSED" : "FAILED", (tend - tstart));
 
 	if (out) {
 		/* Log results to our structure */
