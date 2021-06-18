@@ -21,9 +21,6 @@ SECTIONS
   } > IM1
 
   .rwx : {
-    _rumboot_IM1_heap_start = .;
-    . = . + 0x1000;
-    _rumboot_IM1_heap_end = .;
    *(.text)
    *(.text.*)
    *(.rodata)
@@ -31,7 +28,6 @@ SECTIONS
    *(.data)
    *(.data.*)
   } > IM1
-
 
   .bss : {
     rumboot_platform_spl_start = .;
@@ -43,6 +39,12 @@ SECTIONS
     *(.bsst.*)
     *(COMMON)
     _rumboot_platform_bss_end = .;
+  } > IM1
+
+  .im1_heap (NOLOAD) : {
+    _rumboot_IM1_heap_start = .;
+    . = . + 0x4000;
+    _rumboot_IM1_heap_end = .;    
   } > IM1
 
   .stack (NOLOAD) : {
