@@ -20,8 +20,8 @@ else()
   set(SOC_OBJCOPY_FLAGS )
   set(SOC_BOOTROM ${RUMBOOT_SOC}:bootrom-stub)
   set(SOC_EMI_INITIALIZER ${RUMBOOT_SOC}:stub-emi_initializer_notlb_unload)
-  set(SOC_PACKIMAGE_FLAGS -CiR 0x80020000 -F SYNC True -F KILL True)
-  set(SOC_PACKIMAGE_FLAGS_EMI -CiR 0x0 -F SYNC True -F KILL True)
+  set(SOC_PACKIMAGE_FLAGS -CiR 0x80020000 -F KILL True)
+  set(SOC_PACKIMAGE_FLAGS_EMI -CiR 0x0 -F KILL True)
   set(SOC_FEATURES PACKIMAGE)
 endif()
 
@@ -44,7 +44,7 @@ rumboot_add_configuration(
   PACKIMAGE_FLAGS ${SOC_PACKIMAGE_FLAGS}
   #External bootrom-stub dependency
   BOOTROM ${SOC_BOOTROM}
-  )
+)
 
 rumboot_add_configuration(
   CORE
@@ -53,16 +53,18 @@ rumboot_add_configuration(
   LDS nmc/unified.lds
   LDFLAGS "-Wl,\"-ecorestart\""
   CFLAGS -fnmc-compatible-if-packed -mmas -DRUMBOOT_NOENTRY 
+  ASFLAGS -fnmc-compatible-if-packed -mmas -DRUMBOOT_NOENTRY
   IRUN_FLAGS ${BOOTROM_IFLAGS} +RUMBOOT_RUNTIME_ADDR=5A000
   LOAD 
     IM1_IMAGE SELF
     IM0BIN SELF
   FEATURES NOLIBS ${SOC_FEATURES}
   OBJCOPY_FLAGS ${SOC_OBJCOPY_FLAGS}
-  PACKIMAGE_FLAGS ${SOC_PACKIMAGE_FLAGS} -s target_cpu 1
+  PACKIMAGE_FLAGS ${SOC_PACKIMAGE_FLAGS}
   #External bootrom-stub dependency
   BOOTROM ${SOC_BOOTROM}
   )
+
 
 if(RUMBOOT_SOC)
   rumboot_add_configuration(
@@ -83,7 +85,17 @@ if(RUMBOOT_SOC)
       BOOTROM ${SOC_BOOTROM}
       )
 endif()
-  
+
+
+rumboot_add_configuration(
+  SPL
+  CONFIGURATION IRAM
+  FILES ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/spl-micro-startup.S
+  LDS nmc/micro.lds
+  PREFIX spl
+  CFLAGS -fnmc-compatible-if-packed -DRUMBOOT_NOINIT
+  PACKIMAGE_FLAGS -a 2048
+)
 
 macro(dap_integration_test sourcefile)
   GET_FILENAME_COMPONENT(__NAME ${sourcefile} NAME_WE)
@@ -111,6 +123,13 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
   )
 
   if (RUMBOOT_SOC)
+    add_rumboot_target(
+      CONFIGURATION SPL
+      FILES stubs/cp_spl.c ${}
+#      CFLAGS  -DRUMBOOT_TARGET_CPU_CLUSTER=2
+      PACKIMAGE_FLAGS -F sync True -F kill True -s target_cpu 2 -C
+    )
+
     add_rumboot_target(
       CONFIGURATION SRAM
       FILES iram/hello.c
@@ -267,9 +286,11 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       PREFIX "stub"
       CFLAGS -DCOM_BASE=COM1_BASE
       FEATURES STUB
+      PACKIMAGE_FLAGS -F SYNC False
       NAME cp1-booter
     )
-  endif()
+
+    endif()
   
   add_rumboot_target(
     CONFIGURATION IRAM
