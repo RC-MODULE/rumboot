@@ -129,7 +129,7 @@ ssize_t rumboot_bootimage_check_header(const struct rumboot_bootsource *src, str
 		return -EBADMAGIC;
 
     dbg_boot(src, "--- Boot Image Header ---");
-    dbg_boot(src, "Magic:            0x%x", rumboot_bootimage_header_item32(hdr->magic, swap));
+    dbg_boot(src, "Magic:            0x%x", rumboot_bootimage_header_item8(hdr->magic, swap));
 
 #ifdef RUMBOOT_SUPPORTS_SPL_ENDIAN_SWAP
 	#if (__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__)
@@ -169,10 +169,10 @@ ssize_t rumboot_bootimage_check_header(const struct rumboot_bootsource *src, str
 			hdr->flags & RUMBOOT_FLAG_SYNC     ? " SYNC"    : "",
 			hdr->flags & RUMBOOT_FLAG_KILL     ? " KILL"    : ""
 			);
-		uint32_t cluster_id = rumboot_bootimage_header_item32(hdr->target_cpu_cluster, swap);
+		uint32_t cluster_id = rumboot_bootimage_header_item8(hdr->target_cpu_cluster, swap);
 		const struct rumboot_cpu_cluster *cpu = get_cpu(cluster_id);
 		if (!cpu) {
-			dbg_boot(src, "ERR: Invalid target cluster_id specified: %d\n", cluster_id);
+			dbg_boot(src, "ERR: Invalid target cluster_id specified: %d", cluster_id);
 			return -EBADCLUSTERID;
 		}
     	dbg_boot(src, "Target CPU:       %d (%s)", cluster_id, cpu->name);	
@@ -235,7 +235,7 @@ int rumboot_bootimage_execute(struct rumboot_bootheader *hdr, const struct rumbo
 	hdr->device = (uint32_t) src; /* Set the legacy src pointer */
 
 	rumboot_platform_get_spl_area(&spl_size);
-	int cluster = (hdr->version == 3) ? hdr->target_cpu_cluster : 0;
+	int cluster = (hdr->version == 3) ? rumboot_bootimage_header_item8(hdr->target_cpu_cluster, swap) : 0;
 
 	const struct rumboot_cpu_cluster * cpu = get_cpu(cluster); 
 	if (!cpu) {
@@ -252,9 +252,9 @@ int rumboot_bootimage_execute(struct rumboot_bootheader *hdr, const struct rumbo
 	int certificate_slot = rumboot_bootimage_header_item32(hdr->certificate_slot, swap);
 
 	if ((encryption_slot > 0) && (certificate_slot > 0)) {
-		dbg_boot(src, "Decrypting image, key slot %d...\n", encryption_slot);
+		dbg_boot(src, "Decrypting image, key slot %d...", encryption_slot);
 		rumboot_platform_decrypt_buffer(src, encryption_slot, hdr->data, datasize);
-		dbg_boot(src, "Verifying signature, certificate slot %d...\n", encryption_slot);
+		dbg_boot(src, "Verifying signature, certificate slot %d...", encryption_slot);
 		int ret = rumboot_platform_verify_signature(src, certificate_slot, hdr->data, datasize);
 		if (ret != 0) {
 			return ret;
@@ -367,12 +367,12 @@ int rumboot_bootimage_execute(struct rumboot_bootheader *hdr, const struct rumbo
 	}
 
 	int ret = 0; 
-#ifndef CMAKE_BUILD_TYPE_DEBUG
+//#ifndef CMAKE_BUILD_TYPE_DEBUG
 	dbg_boot(src, "Starting %ssynchronous code execution on cluster %d (%s)", 
 		(flags & RUMBOOT_FLAG_SYNC) ? "" : "a", 
 		cluster,
 		cpu->name);
-#endif
+//#endif
 	if (cpu->start) {
 		ret = cpu->start(cpu, hdr, image_final_data_location, swap);
 		if (ret) /* If start didn't succeed */

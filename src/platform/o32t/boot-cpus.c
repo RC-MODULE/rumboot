@@ -13,9 +13,9 @@
 #include <arch/ppc_476fp_config.h>
 #include <arch/ppc_476fp_lib_c.h>
 #include <arch/mmu.h>
+#include <rumboot/timer.h>
 
-
-#define CP_STRB_RATE 25000
+#define CP_STRB_RATE 10000
 
 static int nmc_poll(const struct rumboot_cpu_cluster *cpu)
 {
@@ -87,16 +87,25 @@ static void ext_kill(const struct rumboot_cpu_cluster *cpu)
         uint32_t v = ioread32(GPIO_1_BASE + GPIO_DIR);
         iowrite32(v | 1<<0, GPIO_1_BASE + GPIO_DIR);
         iowrite32(1<<0, GPIO_1_BASE + GPIO_DATA + ((1<<0) << 2));
+        udelay(100);
+        iowrite32(0<<0, GPIO_1_BASE + GPIO_DATA + ((1<<0) << 2));
+        udelay(100);
+        iowrite32(1<<0, GPIO_1_BASE + GPIO_DATA + ((1<<0) << 2));
     }
  
     if (cpu->base == COM1_BASE) {
         uint32_t v = ioread32(GPIO_1_BASE + GPIO_DIR);
         iowrite32(v | 1<<1, GPIO_1_BASE + GPIO_DIR);
         iowrite32(1<<1, GPIO_1_BASE + GPIO_DATA + ((1<<1) << 2));
+        udelay(100);
+        iowrite32(0<<1, GPIO_1_BASE + GPIO_DATA + ((1<<1) << 2));
+        udelay(100);
+        iowrite32(1<<1, GPIO_1_BASE + GPIO_DATA + ((1<<1) << 2));
     }
 }
 
-static int ext_start(const struct rumboot_cpu_cluster *cpu,  struct rumboot_bootheader *hdr, int swap)
+
+static int ext_start(const struct rumboot_cpu_cluster *cpu, struct rumboot_bootheader *hdr, void *data, int swap)
 {
     struct rcm_cp_instance cp; 
     cp_instance_init(&cp, cpu->base, 100000);
@@ -105,10 +114,9 @@ static int ext_start(const struct rumboot_cpu_cluster *cpu,  struct rumboot_boot
     if (len % 8) {
         return -EBADDATACRC;
     }
-    cp_start_tx(&cp, hdr->data, len);
+    cp_start_tx(&cp, data, len);
     return cp_wait(&cp, 1, 1, len * 50);
 }
-
 
 static int ext_poll(const struct rumboot_cpu_cluster *cpu,  struct rumboot_bootheader *hdr, int swap)
 {

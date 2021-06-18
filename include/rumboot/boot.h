@@ -198,6 +198,8 @@ void dbg_boot(const struct rumboot_bootsource * src, const char *fmt, ...);
  void rumboot_platform_enter_host_mode(struct rumboot_config *conf);
  void rumboot_platform_init_loader(struct rumboot_config *conf);
 
+
+#define rumboot_bootimage_header_item8(v,s) v
 #ifdef RUMBOOT_SUPPORTS_SPL_ENDIAN_SWAP
 static inline uint32_t rumboot_bootimage_header_item32(uint32_t v, int swap)
 {
