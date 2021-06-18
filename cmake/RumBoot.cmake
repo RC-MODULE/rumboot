@@ -461,11 +461,13 @@ function(add_rumboot_target)
     add_executable(${product} ${trg} $<TARGET_OBJECTS:rumboot-${TARGET_CONFIGURATION}>)
   endif()
 
-  target_compile_options(${product} PUBLIC
-    $<$<COMPILE_LANGUAGE:C>:${TARGET_CFLAGS} ${TARGET_CCFLAGS} ${TARGET_OPTIMIZE} -DRUMBOOT_PRODUCT_NAME=\"${product}\">
-    $<$<COMPILE_LANGUAGE:CXX>:${TARGET_CFLAGS} ${TARGET_CXXFLAGS} ${TARGET_OPTIMIZE} -DRUMBOOT_PRODUCT_NAME=\"${product}\">
-    $<$<COMPILE_LANGUAGE:ASM>:-x assembler-with-cpp ${TARGET_CFLAGS} ${TARGET_ASFLAGS} ${TARGET_OPTIMIZE} -DRUMBOOT_PRODUCT_NAME=\"${product}\">
-  )
+  target_compile_options(${product} PUBLIC ${TARGET_CFLAGS} ${TARGET_OPTIMIZE} -DRUMBOOT_PRODUCT_NAME=\"${product}\")
+  # Old cmake doesn't handle these well
+  #target_compile_options(${product} PUBLIC
+  #  $<$<COMPILE_LANGUAGE:C>:${TARGET_CFLAGS} ${TARGET_CCFLAGS} ${TARGET_OPTIMIZE} -DRUMBOOT_PRODUCT_NAME=\"${product}\">
+  #  $<$<COMPILE_LANGUAGE:CXX>:${TARGET_CFLAGS} ${TARGET_CXXFLAGS} ${TARGET_OPTIMIZE} -DRUMBOOT_PRODUCT_NAME=\"${product}\">
+  #  $<$<COMPILE_LANGUAGE:ASM>:-x assembler-with-cpp ${TARGET_CFLAGS} ${TARGET_ASFLAGS} ${TARGET_OPTIMIZE} -DRUMBOOT_PRODUCT_NAME=\"${product}\">
+  #)
 
   list (FIND CONFIGURATION_${TARGET_CONFIGURATION}_FEATURES "LUA" _index)
   if (${_index} GREATER -1)
