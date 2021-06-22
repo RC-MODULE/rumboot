@@ -3627,6 +3627,95 @@ endif()
       IRUN_FLAGS +insert_error_in_im1_im2_mem
       TESTGROUP oi10only
     )
+#*****************************************************************
+    add_rumboot_target(
+      CONFIGURATION SUPPLEMENTARY
+      PREFIX l2bug
+      LDS oi10/l2bug_sram_test.lds
+      CFLAGS -DRUMBOOT_NOINIT
+      LDFLAGS -Wl,-emain
+      FILES l2bug/sram-test.c ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c l2bug/memcpy_copyed.S
+      NAME "sram-test"
+    )
+
+    add_rumboot_target(
+      CONFIGURATION IRAM_SPL
+      PREFIX l2bug
+      LDS oi10/iram_legacy.lds
+      FILES l2bug/sram-test-loader.c
+      NAME "sram-test-loader"
+      PREFIX l2bug
+      CFLAGS -DEMI_INIT -DADD_TLB -DM_BASE=SRAM0_BASE
+      IRUN_FLAGS ${ROM_6500K_OPTS}
+      LOAD IM0BIN SELF
+          MBIN l2bug-sram-test
+    )
+
+ add_rumboot_target(
+      CONFIGURATION SUPPLEMENTARY
+      PREFIX oi10new
+      LDS oi10/oi10new_memcopy_write-through.lds
+      CFLAGS -DRUMBOOT_NOINIT
+      LDFLAGS -Wl,-emain
+      FILES oi10new/memcopy.c ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c oi10new/memcpy_copyed.S
+      NAME "memcopy"
+    )
+
+    add_rumboot_target(
+      CONFIGURATION IRAM_SPL
+      PREFIX oi10new
+      LDS oi10/iram_legacy.lds
+      FILES oi10new/memcopy-spl.c
+      NAME "memcopy-spl"
+      CFLAGS -DEMI_INIT -DADD_TLB -DM_BASE=SRAM0_BASE
+      IRUN_FLAGS ${ROM_6500K_OPTS}
+      LOAD IM0BIN SELF
+          MBIN oi10new-memcopy
+    )    
+
+    add_rumboot_target(
+      CONFIGURATION SUPPLEMENTARY
+      PREFIX oi10new
+      LDS oi10/oi10new_dcache.lds
+      CFLAGS -DRUMBOOT_NOINIT
+      LDFLAGS -Wl,-emain
+      FILES oi10new/dcache.c ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c oi10new/memcpy_copyed.S
+      NAME "dcache"
+    )
+
+    add_rumboot_target(
+      CONFIGURATION IRAM_SPL
+      PREFIX oi10new
+      LDS oi10/iram_legacy.lds
+      FILES oi10new/dcache-spl.c
+      NAME "dcache-spl"
+      CFLAGS -DEMI_INIT -DADD_TLB -DM_BASE=SRAM0_BASE
+      IRUN_FLAGS ${ROM_6500K_OPTS}
+      LOAD IM0BIN SELF
+          MBIN oi10new-dcache
+    )
+
+    add_rumboot_target(
+      CONFIGURATION SUPPLEMENTARY
+      PREFIX oi10new
+      LDS oi10/oi10new_memcopy_write-back.lds
+      CFLAGS -DRUMBOOT_NOINIT
+      LDFLAGS -Wl,-emain
+      FILES oi10new/memcopy-wb.c ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c oi10new/memcpy_copyed.S oi10new/crc.c
+      NAME "memcopy-wb"
+    )
+
+    add_rumboot_target(
+    CONFIGURATION IRAM_SPL
+    PREFIX oi10new
+    LDS oi10/iram_legacy.lds
+    FILES oi10new/memcopy-spl.c
+    NAME "memcopy-wb-spl"
+    CFLAGS -DEMI_INIT -DADD_TLB -DM_BASE=SRAM0_BASE
+    IRUN_FLAGS ${ROM_6500K_OPTS}
+    LOAD IM0BIN SELF
+        MBIN oi10new-memcopy-wb
+    )    
 #***********************************************************************************************************************************************************************************************************
     add_rumboot_target(
       CONFIGURATION SUPPLEMENTARY
@@ -3696,28 +3785,7 @@ endif()
       LOAD IM0BIN SELF
           MBIN l2bug-sram-test-msync-gc
     )
-#***********************************************************************************************************************************************************************************************************
-    add_rumboot_target(
-      CONFIGURATION SUPPLEMENTARY
-      PREFIX oi10new
-      LDS oi10/oi10new_memcopy_write-through.lds
-      CFLAGS -DRUMBOOT_NOINIT
-      LDFLAGS -Wl,-emain
-      FILES oi10new/memcopy.c ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c oi10new/memcpy_copyed.S
-      NAME "memcopy"
-    )
-
-    add_rumboot_target(
-      CONFIGURATION IRAM_SPL
-      PREFIX oi10new
-      LDS oi10/iram_legacy.lds
-      FILES oi10new/memcopy-spl.c
-      NAME "memcopy-spl"
-      CFLAGS -DEMI_INIT -DADD_TLB -DM_BASE=SRAM0_BASE
-      IRUN_FLAGS ${ROM_6500K_OPTS}
-      LOAD IM0BIN SELF
-          MBIN oi10new-memcopy
-    )
+  
     
     add_rumboot_target(
       CONFIGURATION SUPPLEMENTARY
@@ -3739,27 +3807,6 @@ endif()
       IRUN_FLAGS ${ROM_6500K_OPTS}
       LOAD IM0BIN SELF
           MBIN oi10new-dcache-gc
-    )
-
-    add_rumboot_target(
-      CONFIGURATION SUPPLEMENTARY
-      PREFIX oi10new
-      LDS oi10/oi10new_memcopy_write-back.lds
-      CFLAGS -DRUMBOOT_NOINIT
-      LDFLAGS -Wl,-emain
-      FILES oi10new/memcopy-wb.c ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c oi10new/memcpy_copyed.S oi10new/crc.c
-      NAME "memcopy-wb"
-    )
-
-    add_rumboot_target(
-    CONFIGURATION IRAM_SPL
-    PREFIX oi10new
-    FILES oi10new/memcopy-spl.c
-    NAME "memcopy-wb-spl"
-    CFLAGS -DEMI_INIT -DADD_TLB -DM_BASE=SRAM0_BASE
-    IRUN_FLAGS ${ROM_6500K_OPTS}
-    LOAD IM0BIN SELF
-        MBIN oi10new-memcopy-wb
     )
 
 endmacro()
