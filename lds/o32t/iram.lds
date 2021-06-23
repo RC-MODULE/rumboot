@@ -42,7 +42,7 @@ SECTIONS {
         rumboot_im1_heap_start = .;
         . = . + 0x7000; /* 28k heap */
         rumboot_im1_heap_end = .;
-    } > IM1
+    } > IM2
 
     INCLUDE o32t/stacks_section.lds.h
     INCLUDE o32t/runtime_section.lds.h

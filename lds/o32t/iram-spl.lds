@@ -40,7 +40,7 @@ SECTIONS {
 
         rumboot_im0_heap_start = .;
         rumboot_im0_heap_end = .;
-    } > IM1
+    } > IM2
 
     INCLUDE o32t/stacks_section.lds.h
 
