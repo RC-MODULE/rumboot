@@ -21,6 +21,7 @@ file(GLOB PLATFORM_SOURCES
   ${CMAKE_SOURCE_DIR}/src/lib/drivers/com_simple.c
   ${CMAKE_SOURCE_DIR}/src/lib/drivers/irq-mpic128.c
   ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/lib/drivers/scrb_lib.c
+  ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/lib/drivers/interprocessor_irq_lib.c
 )
 #Flags for Power PC
 macro(RUMBOOT_PLATFORM_SET_COMPILER_FLAGS)
@@ -1015,6 +1016,16 @@ add_rumboot_target(
   FILES scrb.c
   IRUN_FLAGS +insert_error_in_im1_im2_mem
 )
+
+add_rumboot_target(
+  CONFIGURATION IRAM_IM0  
+  FILES interprocessor_irq_integration.c
+  TIMEOUT 10 ms
+  #Сначала стартуем код на nmc, потом себя
+  LOAD IM0BIN nmc:iram-nmc_nterprocessor_irq_integration,SELF
+
+)
+
 endmacro()
 
 

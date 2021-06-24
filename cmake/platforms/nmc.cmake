@@ -380,6 +380,15 @@ add_rumboot_target(
   dap_integration_test(dap/nmc_dbg_modes.S)
   dap_integration_test(dap/nmc_dbg_sftrst.S)
 
+  add_rumboot_target(
+    CONFIGURATION IRAM  
+    NAME nmc_nterprocessor_irq_integration
+    FILES stubs/nmc_interprocessor_irq_integration.c
+    FEATURES STUB #Не создавать runner'а
+    #Устанавливаем флаги. Работать асинхронно, останавливать NMC перед запуском
+    PACKIMAGE_FLAGS -F SYNC False -F kill True
+
+  )
 
 endmacro()
 
@@ -393,6 +402,7 @@ file(GLOB PLATFORM_SOURCES
   ${CMAKE_SOURCE_DIR}/src/arch/nmc/exception.c
   ${CMAKE_SOURCE_DIR}/src/lib/drivers/irq-nmc.c
   ${CMAKE_SOURCE_DIR}/src/lib/drivers/com_simple.c
+  ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/lib/drivers/nmc_interprocessor_irq_lib.c
   )
 
 macro(RUMBOOT_PLATFORM_SET_COMPILER_FLAGS)
