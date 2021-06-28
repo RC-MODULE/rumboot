@@ -39,9 +39,9 @@ SECTIONS {
 
         . = ALIGN(8);
 
-        rumboot_im1_heap_start = .;
+        rumboot_im2_heap_start = .;
         . = . + 0x7000; /* 28k heap */
-        rumboot_im1_heap_end = .;
+        rumboot_im2_heap_end = .;
     } > IM2
 
     INCLUDE o32t/stacks_section.lds.h
@@ -50,8 +50,8 @@ SECTIONS {
     rumboot_im0_heap_start      = IM0_MEMORY_BASE;
     rumboot_im0_heap_end        = IM0_MEMORY_BASE + (IM0_MEMORY_SIZE / 2);
 
-    rumboot_im2_heap_start      = IM2_MEMORY_BASE;
-    rumboot_im2_heap_end        = IM2_MEMORY_BASE + IM2_MEMORY_SIZE;
+    rumboot_im1_heap_start      = IM1_MEMORY_BASE;
+    rumboot_im1_heap_end        = IM1_MEMORY_BASE + IM1_MEMORY_SIZE;
 
     rumboot_sram0_heap_start    = SRAM0_MEMORY_BASE + 4;
     rumboot_sram0_heap_end      = SRAM0_MEMORY_BASE + SRAM0_MEMORY_SIZE;
