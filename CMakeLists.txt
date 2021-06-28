@@ -25,7 +25,7 @@ endif()
 set(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "")
 set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "")
 
-PROJECT(rumboot C ASM)
+PROJECT(rumboot C ASM CXX)
 SET(PROJECT_VERSION   0.3)
 enable_testing()
 
