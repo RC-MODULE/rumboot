@@ -11,26 +11,26 @@ extern void memcpy_copyed ( void *d, void *s, size_t n );
 #define BASE_ADDR   0x800000
 
 // gdbmon buffers' addr:
-#define TX_BUF_ADDR     (BASE_ADDR + 0x225fc)   // size = 0x400
-#define RX_BUF_ADDR     (BASE_ADDR + 0x229fc)   // size = 0x400
-#define TMP_BUF_ADDR    (BASE_ADDR + 0x22dfc)   // size = 0x200
+#define TX_BUF_ADDR     (BASE_ADDR + 0x025fc)   // size = 0x400
+#define RX_BUF_ADDR     (BASE_ADDR + 0x029fc)   // size = 0x400
+#define TMP_BUF_ADDR    (BASE_ADDR + 0x02dfc)   // size = 0x200
 #define TX_BUF_SIZE     (0x400)
 #define RX_BUF_SIZE     (0x400)
 #define TMP_BUF_SIZE    (0x200)
 
 // test.elf structure:
-#define SECTION_TEXT_ADDR   (BASE_ADDR + 0x200000)
-#define SECTION_RODATA_ADDR (BASE_ADDR + 0x209e30)
-#define SECTION_DATA_ADDR   (BASE_ADDR + 0x20a2d0)
+#define SECTION_TEXT_ADDR   (BASE_ADDR + 0x080000)
+#define SECTION_RODATA_ADDR (BASE_ADDR + 0x089e30)
+#define SECTION_DATA_ADDR   (BASE_ADDR + 0x08a2d0)
 #define SECTION_TEXT_SIZE   (0x9e30)
 #define SECTION_RODATA_SIZE (0x4a0)
 #define SECTION_DATA_SIZE   (0x18cb0)
-#define SECTION_TEXT_CRC    0x0e22fc28
-#define SECTION_RODATA_CRC  0xf9e95611
-#define SECTION_DATA_CRC    0xace5a7e8
+#define SECTION_TEXT_CRC    0x8a903e60
+#define SECTION_RODATA_CRC  0xcb5e8fe6
+#define SECTION_DATA_CRC    0x02e52c2f
 
 #define L2C_LINE_SIZE   128u
-
+#define L2C_MASK        ( ~( L2C_LINE_SIZE - 1 ) )
 
 uint32_t gdbmon_crc32 ( unsigned char *addr, unsigned len )
 {
@@ -92,12 +92,12 @@ int main ( void )
     int     isError = 0;
 
     // На случай X в модели
-    memset( ( void * )( TX_BUF_ADDR & ( ~( L2C_LINE_SIZE - 1 ) ) ), 0, TX_BUF_SIZE + L2C_LINE_SIZE );
-    memset( ( void * )( RX_BUF_ADDR & ( ~( L2C_LINE_SIZE - 1 ) ) ), 0, RX_BUF_SIZE + L2C_LINE_SIZE );
-    memset( ( void * )( TMP_BUF_ADDR & ( ~( L2C_LINE_SIZE - 1 ) ) ), 0, TMP_BUF_SIZE + L2C_LINE_SIZE );
-    memset( ( void * )( SECTION_TEXT_ADDR & ( ~( L2C_LINE_SIZE - 1 ) ) ), 0, SECTION_TEXT_SIZE + L2C_LINE_SIZE );
-    memset( ( void * )( SECTION_RODATA_ADDR & ( ~( L2C_LINE_SIZE - 1 ) ) ), 0, SECTION_RODATA_SIZE + L2C_LINE_SIZE );
-    memset( ( void * )( SECTION_DATA_ADDR & ( ~( L2C_LINE_SIZE - 1 ) ) ), 0, SECTION_DATA_SIZE + L2C_LINE_SIZE );
+    memset( ( void * )( ( TX_BUF_ADDR - BASE_ADDR ) & L2C_MASK ),         0, TX_BUF_SIZE + L2C_LINE_SIZE );
+    memset( ( void * )( ( RX_BUF_ADDR - BASE_ADDR ) & L2C_MASK ),         0, RX_BUF_SIZE + L2C_LINE_SIZE );
+    memset( ( void * )( ( TMP_BUF_ADDR - BASE_ADDR ) & L2C_MASK ),        0, TMP_BUF_SIZE + L2C_LINE_SIZE );
+    memset( ( void * )( ( SECTION_TEXT_ADDR - BASE_ADDR ) & L2C_MASK ),   0, SECTION_TEXT_SIZE + L2C_LINE_SIZE );
+    memset( ( void * )( ( SECTION_RODATA_ADDR - BASE_ADDR ) & L2C_MASK ), 0, SECTION_RODATA_SIZE + L2C_LINE_SIZE );
+    memset( ( void * )( ( SECTION_DATA_ADDR - BASE_ADDR ) & L2C_MASK ),   0, SECTION_DATA_SIZE + L2C_LINE_SIZE );
 
     // Load test to memory
     load_test( SECTION_TEXT_ADDR, SECTION_TEXT_SIZE );
