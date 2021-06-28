@@ -52,8 +52,8 @@ rumboot_add_configuration(
   FILES ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c
   LDS nmc/unified.lds
   LDFLAGS "-Wl,\"-ecorestart\""
-  CFLAGS -fnmc-compatible-if-packed -mmas -DRUMBOOT_NOENTRY 
-  ASFLAGS -fnmc-compatible-if-packed -mmas -DRUMBOOT_NOENTRY
+  CCFLAGS -fnmc-compatible-if-packed -DRUMBOOT_NOENTRY 
+  ASFLAGS -mmas -DRUMBOOT_NOENTRY
   IRUN_FLAGS ${BOOTROM_IFLAGS} +RUMBOOT_RUNTIME_ADDR=5A000
   LOAD 
     IM1_IMAGE SELF
