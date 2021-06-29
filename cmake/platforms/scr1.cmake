@@ -988,7 +988,7 @@ if (NOT CROSS_COMPILE)
   SET(CROSS_COMPILE riscv32-rcm-elf)
   message(STATUS "No -DCROSS_COMPILE passed to cmake, attempting to detect ${CROSS_COMPILE}")
   if (EXISTS /opt/r42/toolchains/riscv32-ncrmnt-elf/bin/riscv32-ncrmnt-elf-gcc)
-      set(CROSS_COMPILE "/opt/r42/toolchains/riscv32-ncrmnt-elf/bin/${CROSS_COMPILE}")
+      set(CROSS_COMPILE "/opt/r42/toolchains/riscv32-rcm-elf/bin/${CROSS_COMPILE}")
   endif()
 endif()
 
