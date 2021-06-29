@@ -67,13 +67,13 @@ static bool check_kmbist_im0(uint32_t arg)
 {
     uint32_t oldstack;
     uint32_t tempstack;
-    bool result = false;
+    bool result;
     uint32_t stacksize = ((&rumboot_platform_stack_area_end) - (&rumboot_platform_stack_area_start));
     asm("msync");
     asm("mr %0, %%r1" : "=r" (oldstack));
     tempstack = IM1_BASE + (oldstack - IM0_BASE);
     rumboot_printf("Relocating stack: 0x%x -> 0x%x\n", oldstack, tempstack);
-    memcpy(IM1_BASE, &rumboot_platform_stack_area_start, stacksize);
+    memcpy((void *) IM1_BASE, &rumboot_platform_stack_area_start, stacksize);
     asm("mr %%r1, %0" :: "r" (tempstack));
     #ifdef CMAKE_BUILD_TYPE_DEBUG
         rumboot_printf("Debug: wiping old stack to simulate KMBIST effects\n");    
@@ -83,7 +83,7 @@ static bool check_kmbist_im0(uint32_t arg)
     asm("msync");
     asm("mr %0, %%r1" :: "r" (tempstack));
     rumboot_printf("Restoring stack: 0x%x -> 0x%x\n", tempstack, oldstack);
-    memcpy(&rumboot_platform_stack_area_start, IM1_BASE, stacksize);
+    memcpy(&rumboot_platform_stack_area_start, (void *) IM1_BASE, stacksize);
     asm("mr %0, %%r1" : "=r" (oldstack));    
     return true;
 }
