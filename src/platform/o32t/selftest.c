@@ -84,7 +84,7 @@ static bool check_kmbist_im0(uint32_t arg)
     asm("mr %0, %%r1" :: "r" (tempstack));
     rumboot_printf("Restoring stack: 0x%x -> 0x%x\n", tempstack, oldstack);
     memcpy(&rumboot_platform_stack_area_start, (void *) IM1_BASE, stacksize);
-    asm("mr %0, %%r1" : "=r" (oldstack));    
+    asm("mr %0, %%r1" : "=r" (oldstack));
     return true;
 }
 
