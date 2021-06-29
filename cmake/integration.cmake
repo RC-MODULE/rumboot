@@ -268,11 +268,13 @@ function(rumboot_load_build platform buildtype)
     set(RUMBOOT_UTILS_DIR  ${CMAKE_BINARY_DIR}/${rumboot_dirname}/utils PARENT_SCOPE)
     set(RUMBOOT_BINARY_DIR ${CMAKE_BINARY_DIR}/${rumboot_dirname} PARENT_SCOPE)
 
-    add_custom_command(
-        TARGET tarball
-        COMMAND cd ${CMAKE_BINARY_DIR}/${rumboot_dirname} && $(MAKE) package
-      )
-
+    if (${platform} STREQUAL ${PROJECT_NAME})
+      add_custom_command(
+          TARGET tarball
+          COMMAND cd ${CMAKE_BINARY_DIR}/${rumboot_dirname} && $(MAKE) package
+        )
+    endif()
+    
     add_dependencies(rumboot ${rumboot_dirname})
     #Suck in target information from rumboot, and play a little with SRC_DIR
     set(CMAKE_SOURCE_DIR_REAL ${CMAKE_SOURCE_DIR})
