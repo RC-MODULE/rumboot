@@ -79,27 +79,6 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     # common for tests with npe_rm
     if(DUT STREQUAL "MPE" OR DUT STREQUAL "VPE" OR DUT STREQUAL "PPE")
 
-    set(VPE_SIMPLE_PATH src/platform/scr1/targets/simple-rom/nu/vpe_simple)
-    add_rumboot_target(
-      CONFIGURATION ROM
-      FILES scr1/targets/simple-rom/nu/vpe_simple/hello_vpe.c
-      IRUN_FLAGS +in_file_tag=${CMAKE_SOURCE_DIR}/${VPE_SIMPLE_PATH}/in_data.bin 
-                 +etalon_file_tag=${CMAKE_SOURCE_DIR}/${VPE_SIMPLE_PATH}/etalon.bin
-                 +cfg_file_tag=${CMAKE_SOURCE_DIR}/${VPE_SIMPLE_PATH}/Config_vpe1.bin
-    )
-
-	add_rumboot_target(
-      CONFIGURATION ROM
-      NAME PPE_1
-      FILES scr1/targets/simple-rom/nu/ppe_regs/regs_ppe.c
-	)
-	
-	add_rumboot_target(
-	  CONFIGURATION ROM
-      NAME VPE_1
-      FILES scr1/targets/simple-rom/nu/vpe_regs/regs_vpe.c
-	)
-
     # files transfered from RM to simulation environment
     set(NA_TEST_num_iterations_file num_iterations.bin)
     set(NA_TEST_in_file cube.bin)
@@ -352,58 +331,15 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     endforeach()
     set(RM_LOGFILE npe_rm.log)
 
-    macro(ADD_VPE_COUPLED_TEST name rm_bin_name)
-      add_rumboot_target(
-        CONFIGURATION ROM
-        NAME ${name}
-        FILES scr1/targets/simple-rom/nu/coupled_with_rm/first_coupled_vpe.c
-        PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
-        IRUN_FLAGS ${NA_RM_PLUSARGS}
-      )
-    endmacro()
+    ###################################
+    if(DUT STREQUAL "VPE")
+      
+    add_rumboot_target(
+      CONFIGURATION ROM
+        NAME VPE_1
+        FILES scr1/targets/simple-rom/nu/vpe_regs/regs_vpe.c
+    )
 
-    macro(ADD_MPE_COUPLED_TEST name rm_bin_name) # name - символическое имя теста, rm_bin_name - имя executable и3 npe_rm/rtl-tests/CMakeLists.txt
-      add_rumboot_target(
-        CONFIGURATION ROM
-        NAME ${name}
-        FILES scr1/targets/simple-rom/nu/coupled_with_rm/first_coupled_mpe.c
-        PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
-        IRUN_FLAGS ${NA_RM_PLUSARGS}
-      )
-    endmacro()
-
-    macro(ADD_PPE_FIRST_COUPLED_TEST name rm_bin_name)
-      add_rumboot_target(
-        CONFIGURATION ROM
-        NAME ${name}
-        FILES scr1/targets/simple-rom/nu/coupled_with_rm/first_coupled_ppe.c
-        PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
-        IRUN_FLAGS ${NA_RM_PLUSARGS}
-      )
-    endmacro()
-
-    macro(ADD_PPE_NEXT_COUPLED_TEST name rm_bin_name)
-      add_rumboot_target(
-        CONFIGURATION ROM
-        NAME ${name}
-        FILES scr1/targets/simple-rom/nu/coupled_with_rm/one_coupled_ppe.c
-        PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
-        IRUN_FLAGS ${NA_RM_PLUSARGS}
-      )
-    endmacro()
-
-    # Add new tests here
-    ADD_VPE_COUPLED_TEST(vpe_first_coupled main_sqared_try_all_ops)
-    ADD_VPE_COUPLED_TEST(vpe_first_coupled_float main_sqared_try_all_ops_float)
-    ADD_VPE_COUPLED_TEST(vpe_nothing_to_do main_nothing_to_do)
-
-    ADD_MPE_COUPLED_TEST(mpe_first_coupled main_sqared_simple_mpe)
-
-    ADD_PPE_FIRST_COUPLED_TEST(ppe_first_coupled main_simple_ppe_coupled)
-    ADD_PPE_FIRST_COUPLED_TEST(ppe_first_coupled_float main_simple_ppe_coupled_float)
-
-    ADD_PPE_NEXT_COUPLED_TEST(ppe_one_coupled main_i8_ppe_coupled)
-    ADD_PPE_NEXT_COUPLED_TEST(ppe_probe_coupled main_probe_ppe_coupled)
 
 if(DEFINED EXPERIMENT_STAGE_2_SUB_1) ####
     if(NOT DEFINED EXPERIMENT_STAGE_2_DIR)
@@ -514,82 +450,6 @@ if(DEFINED EXPERIMENT_STAGE_2_SUB_1) ####
       )
     endmacro()
 endif() #### EXPERIMENT_STAGE_2_SUB_1
-
-    # works after rm CMakeCache.txt
-    if(NOT DEFINED NU_SEED)
-      set(NU_SEED 1)
-    endif()
-
-    macro(ADD_PPE_COUPLED_TEST_LOOP name rm_bin_name ShowPerf)
-      add_rumboot_target(
-        CONFIGURATION ROM
-        NAME ${name}
-        FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_ppe.c
-        PREPCMD
-          ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${NU_SEED} > ${RM_LOGFILE} &&
-          cp ${RM_LOGFILE} ../npe_rm_${NU_SEED}.log ||
-          exit 1
-        CFLAGS -D${ShowPerf}
-        IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
-      )
-    endmacro()
-
-    # works after rm CMakeCache.txt
-    if(NOT DEFINED NU_TESTS_NMB)
-      set(NU_TESTS_NMB 0)
-    endif()
-
-    macro (ADD_PPE_MANY_TESTS name rm_bin_name ShowPerf OpMode)
-      foreach(i RANGE 3)
-        add_rumboot_target(
-          CONFIGURATION ROM
-          NAME ${name}_${i}
-          FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_ppe_new.c
-
-          PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${NU_SEED} > ${RM_LOGFILE} || exit 1
-
-          CFLAGS -D${ShowPerf} -D${OpMode}
-          IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
-        )
-
-        math (EXPR NU_SEED "${NU_SEED} + 1")
-      endforeach()
-    endmacro()
-
-    macro(ADD_PPE_V_EXPER_TEST name rm_bin_name ShowPerf OpMode)
-      add_rumboot_target(
-        CONFIGURATION ROM
-        NAME ${name}
-        FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_ppe_new.c
-        PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${NU_SEED} > ${RM_LOGFILE} || exit 1
-        CFLAGS -D${ShowPerf} -D${OpMode}
-        IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
-      )
-    endmacro()
-
-if(DEFINED EXPERIMENT_STAGE_2_SUB_1)
-    if(NOT DEFINED PPE_EXPER_DIR)
-      if(EXISTS ${CMAKE_SOURCE_DIR}/../../PPE)
-        set(PPE_EXPER_DIR ${CMAKE_SOURCE_DIR}/../../PPE)
-      elseif(EXISTS ${EXPERIMENT_STAGE_2_DIR}/PPE)
-        set(PPE_EXPER_DIR ${EXPERIMENT_STAGE_2_DIR}/PPE/)
-      else()
-        message(FATAL_ERROR "PPE_EXPER_DIR test binaries Directory not found")
-      endif()
-    endif()
-    message("PPE_EXPER_DIR = ${PPE_EXPER_DIR}")
-
-    macro(ADD_PPE_EXPER_TEST name ShowPerf)
-      add_rumboot_target(
-        CONFIGURATION ROM
-        NAME ${name}
-        FILES scr1/targets/simple-rom/nu/coupled_with_rm/experiment_ppe.c
-        PREPCMD cp ${PPE_EXPER_DIR}/${name}/*bin* .
-        CFLAGS -D${ShowPerf}
-        IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
-      )
-    endmacro()
-endif()  ### EXPERIMENT_STAGE_2_SUB_1
 
     ADD_VPE_COUPLED_TEST_LOOP(vpe_try_loop main_nothing_to_do_x4)
     ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_2_dma_int16 main_vpe_2_dma_int16)
@@ -738,7 +598,109 @@ if(DEFINED EXPERIMENT_STAGE_2_SUB_1) ####
     ADD_VPE_FROM_BINARY_TEST_LOOP(VPE_28 VPE_28)
 
 endif() #### EXPERIMENT_STAGE_2_SUB_1
+
+    endif()  # if(DUT STREQUAL "VPE")
+
     ###############
+    if(DUT STREQUAL "PPE")
+
+    add_rumboot_target(
+        CONFIGURATION ROM
+        NAME PPE_1
+        FILES scr1/targets/simple-rom/nu/ppe_regs/regs_ppe.c
+    )
+    
+
+    macro(ADD_PPE_NEXT_COUPLED_TEST name rm_bin_name)
+      add_rumboot_target(
+        CONFIGURATION ROM
+        NAME ${name}
+        FILES scr1/targets/simple-rom/nu/coupled_with_rm/one_coupled_ppe.c
+        PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
+        IRUN_FLAGS ${NA_RM_PLUSARGS}
+      )
+    endmacro()
+
+
+    ADD_PPE_NEXT_COUPLED_TEST(ppe_one_coupled main_i8_ppe_coupled)
+    ADD_PPE_NEXT_COUPLED_TEST(ppe_probe_coupled main_probe_ppe_coupled)
+
+    # works after rm CMakeCache.txt
+    if(NOT DEFINED NU_SEED)
+      set(NU_SEED 1)
+    endif()
+
+    macro(ADD_PPE_COUPLED_TEST_LOOP name rm_bin_name ShowPerf)
+      add_rumboot_target(
+        CONFIGURATION ROM
+        NAME ${name}
+        FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_ppe.c
+        PREPCMD
+          ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${NU_SEED} > ${RM_LOGFILE} &&
+          cp ${RM_LOGFILE} ../npe_rm_${NU_SEED}.log ||
+          exit 1
+        CFLAGS -D${ShowPerf}
+        IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+      )
+    endmacro()
+
+    # works after rm CMakeCache.txt
+    if(NOT DEFINED NU_TESTS_NMB)
+      set(NU_TESTS_NMB 0)
+    endif()
+
+    macro (ADD_PPE_MANY_TESTS name rm_bin_name ShowPerf OpMode)
+      foreach(i RANGE 3)
+        add_rumboot_target(
+          CONFIGURATION ROM
+          NAME ${name}_${i}
+          FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_ppe_new.c
+
+          PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${NU_SEED} > ${RM_LOGFILE} || exit 1
+
+          CFLAGS -D${ShowPerf} -D${OpMode}
+          IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+        )
+
+        math (EXPR NU_SEED "${NU_SEED} + 1")
+      endforeach()
+    endmacro()
+
+    macro(ADD_PPE_V_EXPER_TEST name rm_bin_name ShowPerf OpMode)
+      add_rumboot_target(
+        CONFIGURATION ROM
+        NAME ${name}
+        FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_ppe_new.c
+        PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${NU_SEED} > ${RM_LOGFILE} || exit 1
+        CFLAGS -D${ShowPerf} -D${OpMode}
+        IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+      )
+    endmacro()
+
+if(DEFINED EXPERIMENT_STAGE_2_SUB_1)
+    if(NOT DEFINED PPE_EXPER_DIR)
+      if(EXISTS ${CMAKE_SOURCE_DIR}/../../PPE)
+        set(PPE_EXPER_DIR ${CMAKE_SOURCE_DIR}/../../PPE)
+      elseif(EXISTS ${EXPERIMENT_STAGE_2_DIR}/PPE)
+        set(PPE_EXPER_DIR ${EXPERIMENT_STAGE_2_DIR}/PPE/)
+      else()
+        message(FATAL_ERROR "PPE_EXPER_DIR test binaries Directory not found")
+      endif()
+    endif()
+    message("PPE_EXPER_DIR = ${PPE_EXPER_DIR}")
+
+    macro(ADD_PPE_EXPER_TEST name ShowPerf)
+      add_rumboot_target(
+        CONFIGURATION ROM
+        NAME ${name}
+        FILES scr1/targets/simple-rom/nu/coupled_with_rm/experiment_ppe.c
+        PREPCMD cp ${PPE_EXPER_DIR}/${name}/*bin* .
+        CFLAGS -D${ShowPerf}
+        IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+      )
+    endmacro()
+endif()  ### EXPERIMENT_STAGE_2_SUB_1
+
 
     ADD_PPE_COUPLED_TEST_LOOP(ppe_loop_coupled main_loop_ppe_coupled NotShowPerf)
 
@@ -786,16 +748,11 @@ if(DEFINED EXPERIMENT_STAGE_2_SUB_1) ###
     ADD_PPE_EXPER_TEST(PPE_14 NotShowPerf)
 endif() ### EXPERIMENT_STAGE_2_SUB_1
 
-    # MPE example 
-    # if(DUT STREQUAL "MPE")
-    set(MPE_SIMPLE_PATH src/platform/scr1/targets/simple-rom/nu/mpe_simple)
-    add_rumboot_target(
-      CONFIGURATION ROM
-      FILES scr1/targets/simple-rom/nu/mpe_simple/hello_mpe.c
-      IRUN_FLAGS +in_file_tag=${CMAKE_SOURCE_DIR}/${MPE_SIMPLE_PATH}/in_data.bin 
-                 +etalon_file_tag=${CMAKE_SOURCE_DIR}/${MPE_SIMPLE_PATH}/etalon.bin
-                 +cfg_file_tag=${CMAKE_SOURCE_DIR}/${MPE_SIMPLE_PATH}/Config_mpe1.bin
-    )
+    endif() # if(DUT STREQUAL "PPE")
+
+    ###################################################
+    # MPE 
+    if(DUT STREQUAL "MPE")
 
     set(MPE_DEMO_PATH src/platform/scr1/targets/simple-rom/nu/mpe_demo)
     set(MPE_PARSE_TEST ${CMAKE_SOURCE_DIR}/${MPE_DEMO_PATH}/parse_mpe_arrays.pl)
@@ -862,18 +819,9 @@ endif() ### EXPERIMENT_STAGE_2_SUB_1
     ADD_MPE_COUPLED_TEST_LOOP(MPE_13 test) # mu+acc int16 test
     ADD_MPE_COUPLED_TEST_LOOP(MPE_15 test) # mu+acc fp16 test
 
-    # endif()
+    endif()  # if(DUT STREQUAL "MPE")
+    ########################################
 
-    # PPE example 
-    # if(DUT STREQUAL "PPE")
-    set(PPE_SIMPLE_PATH src/platform/scr1/targets/simple-rom/nu/ppe_simple)
-    add_rumboot_target(
-      CONFIGURATION ROM
-      FILES scr1/targets/simple-rom/nu/ppe_simple/hello_ppe.c
-      IRUN_FLAGS +in_file_tag=${CMAKE_SOURCE_DIR}/${PPE_SIMPLE_PATH}/in_data.bin 
-                 +etalon_file_tag=${CMAKE_SOURCE_DIR}/${PPE_SIMPLE_PATH}/etalon.bin
-                 +cfg_file_tag=${CMAKE_SOURCE_DIR}/${PPE_SIMPLE_PATH}/Config_ppe1.bin
-    )
     endif()  # if(DUT STREQUAL MPE,VPE,PPE)
 
     ###########################################################
