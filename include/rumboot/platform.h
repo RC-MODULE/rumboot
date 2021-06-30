@@ -5,6 +5,7 @@
 #include <stddef.h>
 #include <setjmp.h>
 #include <unistd.h>
+
 /**
  *
  * \defgroup platform_glue Platform bindings
@@ -73,6 +74,7 @@ enum rumboot_simulation_event {
  *
  * @param fmt format for description message. Can be NULL
  */
+#ifndef RUMBOOT_SILENT_PANICS
 #define rumboot_platform_panic(fmt, ...) \
     { \
         if (fmt) { \
@@ -81,7 +83,12 @@ enum rumboot_simulation_event {
         exit(13); /* Trigger an exit */ \
         while(1);; /* And loop if the above didn't work */ \
     }
-
+#else
+#define rumboot_platform_panic(fmt, ...) \
+    { \
+        while(1);; /* And loop if the above didn't work */ \
+    }
+#endif
 /**
  * This function will be called before main(). This function should contains
  * platform-specific initialization. This should initilize at lest:
