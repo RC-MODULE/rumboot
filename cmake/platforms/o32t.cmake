@@ -432,9 +432,16 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
   rumboot_bootrom_integration_test(BROM
     NAME "nmc-extboot-cp01"
-    IRUN_FLAGS ${ROM_6500K_OPTS} +BOOT_HOST=1
+    IRUN_FLAGS ${ROM_6500K_OPTS} +BOOT_HOST=1 +nmc_ext_poll_test
     LOAD
-      HOSTMOCK  stub-emi_initializer_notlb_unload,nmc:stub-cp1-booter,nmc:spl-cp_spl
+      HOSTMOCK  nmc:stub-cp1-booter,nmc:spl-cp-com1
+  )
+
+  rumboot_bootrom_integration_test(BROM
+    NAME "nmc-extboot-cp10"
+    IRUN_FLAGS ${ROM_6500K_OPTS} +BOOT_HOST=1 +nmc_ext_poll_test
+    LOAD
+      HOSTMOCK  nmc:stub-cp0-booter,nmc:spl-cp-com0
   )
 
   rumboot_bootrom_integration_test(BROM
