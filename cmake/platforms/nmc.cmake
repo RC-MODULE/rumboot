@@ -88,13 +88,24 @@ endif()
 
 
 rumboot_add_configuration(
-  SPL
+  IM3
   CONFIGURATION IRAM
   FILES ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/spl-micro-startup.S
+  LDS nmc/im3.lds
+  PREFIX im3
+  CFLAGS -fnmc-compatible-if-packed -DRUMBOOT_ENTRY=start
+  PACKIMAGE_FLAGS -CiR 0x80060000
+)
+
+rumboot_add_configuration(
+  SPL
+  CONFIGURATION IRAM
+  FILES ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c
   LDS nmc/micro.lds
   PREFIX spl
-  CFLAGS -fnmc-compatible-if-packed -DRUMBOOT_NOINIT
-  PACKIMAGE_FLAGS -a 2048
+  LDFLAGS -Wl,-e__main -nostartfiles -Wl,--gc-sections
+  CFLAGS -fnmc-compatible-if-packed -DRUMBOOT_NOINIT -DRUMBOOT_SILENT_PANICS -DRUMBOOT_ENTRY=main 
+  PACKIMAGE_FLAGS -a 16384
 )
 
 macro(dap_integration_test sourcefile)
@@ -125,9 +136,18 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
   if (RUMBOOT_SOC)
     add_rumboot_target(
       CONFIGURATION SPL
-      FILES stubs/cp_spl.c ${}
-#      CFLAGS  -DRUMBOOT_TARGET_CPU_CLUSTER=2
+      NAME cp-com1
+      FILES stubs/cp_spl.c
+      CFLAGS -DCOM_BASE=COM1_BASE
       PACKIMAGE_FLAGS -F sync True -F kill True -s target_cpu 2 -C
+    )
+
+    add_rumboot_target(
+      CONFIGURATION SPL
+      NAME cp-com0
+      FILES stubs/cp_spl.c
+      CFLAGS -DCOM_BASE=COM0_BASE
+      PACKIMAGE_FLAGS -F sync True -F kill True -s target_cpu 3 -C
     )
 
     add_rumboot_target(
@@ -281,7 +301,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
   if (RUMBOOT_SOC)
     add_rumboot_target(
-      CONFIGURATION SRAM
+      CONFIGURATION IM3
       FILES stubs/cp_boot_stub.c
       PREFIX "stub"
       CFLAGS -DCOM_BASE=COM1_BASE
@@ -290,6 +310,15 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       NAME cp1-booter
     )
 
+    add_rumboot_target(
+      CONFIGURATION IM3
+      FILES stubs/cp_boot_stub.c
+      PREFIX "stub"
+      CFLAGS -DCOM_BASE=COM0_BASE
+      FEATURES STUB
+      PACKIMAGE_FLAGS -F SYNC False
+      NAME cp0-booter
+    )
     endif()
   
   add_rumboot_target(
