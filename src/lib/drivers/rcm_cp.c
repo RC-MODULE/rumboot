@@ -9,16 +9,23 @@
 #include <assert.h>
 #include <rumboot/rumboot.h>
 
-#define DEBUG
+//  #define DEBUG
+
+#ifdef __NM__
+//  #define DEBUG
+  #define MUST_ALIGN 2
+#else
+  #define MUST_ALIGN 8
+#endif
 
 static void cp_check_buffer(const void *bufptr, size_t len)
 {
     uintptr_t buf = (uintptr_t) bufptr;
-    if (buf % 8 != 0) {
+    if (buf % MUST_ALIGN != 0) {
         rumboot_platform_panic("FATAL: cp buffer is not aligned");
     }
 
-    if (len % 8 != 0) {
+    if (len % MUST_ALIGN != 0) {
         rumboot_platform_panic("FATAL: cp buffer size is not aligned");
     }
 }
@@ -117,7 +124,10 @@ enum cp_status cp_tx_status(struct rcm_cp_instance *inst)
 
 void cp_start_rx(struct rcm_cp_instance *inst, void *buf, size_t len)
 {
-    assert((len % 8) == 0);
+    if ((len % 8) == 0) {
+      rumboot_platform_panic("BUG: len % 8 != 0");      
+    }
+    
     if (inst->rxbuf) {
         if (inst->buflen < len) {
             rumboot_platform_panic("BUG: Please increase cp dma buffer");
@@ -173,6 +183,7 @@ int cp_wait_tx(uintptr_t base, uint32_t timeout_us) {
     start = rumboot_platform_get_uptime();
   
   do {
+
     status = ioread32(base + RCM_CP_CSR_TR);
     if(status & (1<<2)) /* ES */ {
       r = ioread32(base + RCM_CP_MAINCOUNTER_TR);           // MainCounter
@@ -181,10 +192,11 @@ int cp_wait_tx(uintptr_t base, uint32_t timeout_us) {
       break;
     }
     else if(status & (1<<1) /* Cpl */) {
-      iowrite32(0,base + RCM_CP_CSR_TR); // Reset Cpl
+      iowrite32(0, base + RCM_CP_CSR_TR); // Reset Cpl
       r = 0;
       break;
     }
+
     if(timeout_us != 0)
       ctime = rumboot_platform_get_uptime() - start;
   } while (timeout_us==0 || ctime < timeout_us);
