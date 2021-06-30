@@ -115,7 +115,9 @@ static int ext_start(const struct rumboot_cpu_cluster *cpu, struct rumboot_booth
         return -EBADDATACRC;
     }
     cp_start_tx(&cp, data, len);
-    return cp_wait(&cp, 1, 1, len * 50);
+    int ret = cp_wait(&cp, 1, 1, len * 50);
+    rumboot_printf("cp wait: %d\n", ret);
+    return 0;
 }
 
 static int ext_poll(const struct rumboot_cpu_cluster *cpu,  struct rumboot_bootheader *hdr, int swap)
@@ -125,10 +127,18 @@ static int ext_poll(const struct rumboot_cpu_cluster *cpu,  struct rumboot_booth
     cp_instance_init(&cp, cpu->base, 100000);
     cp_set_speed(&cp, CP_STRB_RATE);
     uint64_t *buf = (uint64_t *) hdr; /* Use hdr as buf. It should be aligned */
+    uint8_t *charbuf = (uint8_t *) buf;
+    rumboot_printf("Starting polling\n");
     cp_start_rx(&cp, &buf[0], 8);
+    //rumboot_platform_sv_event("EXT_NMC_POLL");
+    rumboot_printf("Starting polling\n");
     while(true) {
+            rumboot_printf("RX %d TX %d\n", cp_rx_status(&cp), cp_tx_status(&cp));
             if (cp_rx_status(&cp) == CP_IDLE) {
                     uint64_t word = buf[0];
+                    rumboot_printf("got: %x %x %x %x %x %x %x %x\n", 
+                    charbuf[0], charbuf[1], charbuf[2], charbuf[3], charbuf[4], charbuf[5], charbuf[6], charbuf[7]);
+
                     if (word & (1UL<<63)) { /* exit code */
                             ret = word & 0xff;
                             break;
@@ -136,6 +146,8 @@ static int ext_poll(const struct rumboot_cpu_cluster *cpu,  struct rumboot_booth
                             uint8_t ch = (uint8_t) word & 0xff;
                             rumboot_platform_putchar(ch);
                     }
+                /* Go on for next word */
+                cp_start_rx(&cp, &buf[0], 8);
             }
             if (cp_tx_status(&cp) == CP_IDLE) {
                 int c = rumboot_platform_getchar(0);
@@ -145,6 +157,7 @@ static int ext_poll(const struct rumboot_cpu_cluster *cpu,  struct rumboot_booth
                 }
             }
     }
+    rumboot_printf("POLL DONE, CODE %d\n", ret);
     return ret;
 }
 
@@ -212,14 +225,14 @@ static const struct rumboot_cpu_cluster cpus[] = {
     },
     {
         .base = COM0_BASE,
-        .name = "External NMC (COM0)",
+        .name = "External NMC @ CP0",
         .kill = ext_kill,
         .poll = ext_poll,
         .start = ext_start,        
     },
     {
         .base = COM1_BASE,
-        .name = "External NMC (COM1)",
+        .name = "External NMC @ CP1",
         .kill = ext_kill,
         .poll = ext_poll,
         .start = ext_start,        
