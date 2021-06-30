@@ -3,8 +3,8 @@ OUTPUT_ARCH(nmc)
 
 MEMORY
 {
-  BOOTRAM(rwx):       ORIGIN =  0x00000, LENGTH = 0x800
-  IM3(rwx):       ORIGIN =  0x40000, LENGTH = 0x20000
+  BOOTRAM(rwx):       ORIGIN =  0x00000, LENGTH = 0x4000
+  IM3(rwx):           ORIGIN =  0x40000, LENGTH = 0x20000
 }
 
 SECTIONS
@@ -20,7 +20,6 @@ SECTIONS
 
   .rwx : {
     _rumboot_IM1_heap_start = .;
-    . = . + 0x10;
     _rumboot_IM1_heap_end = .;
    *(.text)
    *(.text.*)
@@ -37,9 +36,6 @@ SECTIONS
    *(.bsst.*)
    *(COMMON)
    _rumboot_platform_bss_end = .;
-   _rumboot_platform_stack_start = .;
-   . = . + 0x80;
-   _rumboot_platform_stack_end = .;    
   } > BOOTRAM
 
   .runtime 0x5A000 (NOLOAD) : {
@@ -47,4 +43,7 @@ SECTIONS
     *(.rumboot_platform_runtime_info);
   } > IM3
 
+    /DISCARD/ : {
+      *(*)
+    }
 }
