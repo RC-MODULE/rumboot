@@ -40,7 +40,7 @@ file(GLOB PLATFORM_SOURCES
 macro(RUMBOOT_PLATFORM_SET_COMPILER_FLAGS)
 
 
-    set(RUMBOOT_COMMON_FLAGS "-DRUMBOOT_HEADER_VERSION=2 -mcpu=476fp -fno-plt -fno-pic -m32 -ffreestanding -std=gnu99 -DRUMBOOT_PLATFORM_NUM_HEAPS=9 ")
+    set(RUMBOOT_COMMON_FLAGS "-DRUMBOOT_HEADER_VERSION=2 -mcpu=476fp -fno-plt -fno-pic -m32 -ffreestanding -std=gnu99 -DRUMBOOT_PLATFORM_NUM_HEAPS=10 ")
 
     if ( "${CMAKE_GENERATOR}" STREQUAL "Unix Makefiles")
       set(RUMBOOT_COMMON_FLAGS "${RUMBOOT_COMMON_FLAGS} -D__FILENAME__='\"$(subst ${CMAKE_SOURCE_DIR}/,,$(abspath $<))\"'")
@@ -2317,7 +2317,33 @@ endif()
         PREFIX "hscb_desc_im1_data_ssram"
         NAME test_hscb_big
         )
-        
+
+        add_rumboot_target(
+        CONFIGURATION IRAM
+        #CFLAGS -DHSCB_UNDER_TEST_BASE=HSCB0_BASE
+        CFLAGS -DHSCB0_TX_DSCTBL_BASE="IM1"
+               -DHSCB0_TX_DATA_BASE="IM1"
+               -DHSCB0_RX_DSCTBL_BASE="IM1"
+               -DHSCB0_RX_DATA_BASE="SSRAM"
+               -DHSCB1_TX_DSCTBL_BASE="IM2"
+               -DHSCB1_TX_DATA_BASE="IM2"
+               -DHSCB1_RX_DSCTBL_BASE="IM2"
+               -DHSCB1_RX_DATA_BASE="SSRAM"
+               -DHSCB2_TX_DSCTBL_BASE="IM3"
+               -DHSCB2_TX_DATA_BASE="IM3"
+               -DHSCB2_RX_DSCTBL_BASE="IM3"
+               -DHSCB2_RX_DATA_BASE="SSRAM"
+               -DHSCB3_TX_DSCTBL_BASE="IM1"
+               -DHSCB3_TX_DATA_BASE="SSRAM"
+               -DHSCB3_RX_DSCTBL_BASE="IM1"
+               -DHSCB3_RX_DATA_BASE="SSRAM"
+               -DSIZE_OF_PACKET=1024
+               -DN_OF_PACKETS=2
+               #-DDEBUG_PRINT=1
+        FILES test_oi10_hscb_simult_big.c
+        PREFIX "hscb_desc_tx_data_im1_rx_data_ssram"
+        NAME test_hscb_big
+        )        
         
         add_rumboot_target(
         CONFIGURATION IRAM

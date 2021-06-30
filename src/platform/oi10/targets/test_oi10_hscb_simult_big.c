@@ -302,6 +302,10 @@ uint32_t establish_link(uint32_t hscb_base_addr_0, uint32_t hscb_base_addr_1){
 }
 
 void simult_run_of_hscbs_transfers(uint32_t *rdma_ctrl_word){
+    //iowrite32(3, HSCB0_BASE + HSCB_AWLEN);
+    //iowrite32(3, HSCB1_BASE + HSCB_AWLEN);
+    //iowrite32(3, HSCB2_BASE + HSCB_AWLEN);
+    //iowrite32(3, HSCB3_BASE + HSCB_AWLEN);
     hscb_run_wdma(HSCB0_BASE);
     hscb_run_wdma(HSCB1_BASE);
     hscb_run_wdma(HSCB2_BASE);

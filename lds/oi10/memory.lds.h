@@ -8,6 +8,7 @@ MEMORY {
     IM0         (rwx):  ORIGIN = 0x80000000,    LENGTH = 0x20000
     IM1         (rwx):  ORIGIN = 0x80020000,    LENGTH = 0x20000
     IM2         (rwx):  ORIGIN = 0x80040000,    LENGTH = 0x20000
+    IM3         (rwx):  ORIGIN = 0x80060000,    LENGTH = 0x20000
     /* Cached IM0 not directly supported by bootrom. Only for hackish power tests */
     IM0_CACHE   (rwx):  ORIGIN = 0x80060000,    LENGTH = 0x20000
     ROM          (rx):  ORIGIN = 0xFFFF0000,    LENGTH = 0x10000
@@ -40,6 +41,9 @@ IM1_MEMORY_SIZE     = LENGTH(IM1);
 
 IM2_MEMORY_BASE     = ORIGIN(IM2);
 IM2_MEMORY_SIZE     = LENGTH(IM2);
+
+IM3_MEMORY_BASE     = ORIGIN(IM3);
+IM3_MEMORY_SIZE     = LENGTH(IM3);
 
 ROM_MEMORY_BASE     = ORIGIN(ROM);
 ROM_MEMORY_SIZE     = LENGTH(ROM);
