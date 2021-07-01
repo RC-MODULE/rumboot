@@ -66,7 +66,9 @@ void _exit(int status)
 			longjmp(rumboot_platform_runtime.exit_trampoline, 256 + status);
 		#endif
 
+		#ifndef __NM__
 		rumboot_printf("\n_exit: System halted, code %d\n", status);
+		#endif
 		while(1);;
 }
 
@@ -131,7 +133,7 @@ int _lseek(int file, int ptr, int dir)
 
 int _open( const char *name, int flags, int mode)
 {
-    rumboot_printf("OPEN: %s\n", name);
+    //rumboot_printf("OPEN: %s\n", name);
     return -1;
 }
 
