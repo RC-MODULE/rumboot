@@ -119,7 +119,7 @@ static int ext_start(const struct rumboot_cpu_cluster *cpu, struct rumboot_booth
 
     cp_start_tx(&cp, data, len);
     int ret = cp_wait(&cp, 1, 1, len * 50);
-    rumboot_printf("boot: cp transfer completed with code %d (%s) \n", ret, ret ? "success" : "failure");
+    rumboot_printf("boot: cp transfer completed with code %d (%s) \n", ret, ret ? "failure" : "success");
     return 0;
 }
 
