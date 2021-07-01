@@ -161,68 +161,73 @@
   }ConfigOp01;
 
   typedef struct ConfigOp2 {
-    DataType coef_type;
-    Enable alu_en;
-    Enable mux_en;
-    Enable lut_en;
-    Enable prelu_en;
+    DataType  coef_type;
+    Enable    alu_en;
+    Enable    mux_en;
+    Enable    lut_en;
+    Enable    prelu_en;
     AluOperationExtSwitch alu_operation;
-    Enable c1_en;
-    Enable c2_en;
-    Mode alu_mode;
-    uint32_t alu_value; //!!!! Тут может бытb другои тип
-    Mode mux_mode;
-    uint32_t mux_value; //!!!! Тут может бытb другои тип
+    Enable    c1_en;
+    Enable    c2_en;
+    Mode      alu_mode;
+    uint32_t  alu_value; //!!!! Тут может бытb другои тип
+    Mode      mux_mode;
+    uint32_t  mux_value; //!!!! Тут может бытb другои тип
     // T prelu_value;
     RoundMode norm_round_mode;
-    Enable norm_saturation_en;
-    uint8_t norm_round_size;
-    int16_t c1_offset;
-    int16_t c1_scale;
-    uint8_t c1_trunc; // !!!! вообще он uint6
-    int16_t c2_offset;
-    int16_t c2_scale;
-    uint8_t c2_trunc; // !!!! вообще он uint6
-    uint8_t lut_sel;  // !!! bit
-    uint8_t lut_right_priority;
-    uint8_t lut_left_priority;
-    uint32_t lut_tab1_x_start; //!!!! Тут может бытb другои тип
-    uint32_t lut_tab1_x_end;
-    uint32_t lut_tab2_x_start;
-    uint32_t lut_tab2_x_end;
-    uint32_t lut_tab1_slope_ovrf_scale;//!!!! Тут может бытb другои тип
-    uint32_t lut_tab1_slope_undf_scale;
-    uint32_t lut_tab2_slope_ovrf_scale;
-    uint32_t lut_tab2_slope_undf_scale;
-    int8_t lut_tab1_slope_ovrf_shift;
-    int8_t lut_tab1_slope_undf_shift;
-    int8_t lut_tab2_slope_ovrf_shift;
-    int8_t lut_tab2_slope_undf_shift;
+    Enable    norm_saturation_en;
+    uint8_t   norm_round_size;
+    int16_t   c1_offset;
+    int16_t   c1_scale;
+    uint8_t   c1_trunc; // !!!! вообще он uint6
+    int16_t   c2_offset;
+    int16_t   c2_scale;
+    uint8_t   c2_trunc; // !!!! вообще он uint6
+    uint8_t   lut_sel;  // !!! bit
+    uint8_t   lut_right_priority;
+    uint8_t   lut_left_priority;
+    uint32_t  lut_tab1_x_start; //!!!! Тут может бытb другои тип
+    uint32_t  lut_tab1_x_end;
+    uint32_t  lut_tab2_x_start;
+    uint32_t  lut_tab2_x_end;
+    uint32_t  lut_tab1_slope_ovrf_scale;//!!!! Тут может бытb другои тип
+    uint32_t  lut_tab1_slope_undf_scale;
+    uint32_t  lut_tab2_slope_ovrf_scale;
+    uint32_t  lut_tab2_slope_undf_scale;
+    int8_t    lut_tab1_slope_ovrf_shift;
+    int8_t    lut_tab1_slope_undf_shift;
+    int8_t    lut_tab2_slope_ovrf_shift;
+    int8_t    lut_tab2_slope_undf_shift;
   }ConfigOp2;
 
   typedef struct ConfigDMA {
-    Enable       dma_op_en           ;
-    uint32_t     dma_H               ;
-    uint32_t     dma_W               ;
-    uint32_t     dma_C               ;
+    Enable       dma_en              ;
     DmaRamType   dma_ram_type        ;
     Mode         dma_data_mode       ; // convert ????
     DmaDSizeType dma_data_size       ;
     DmaDUseType  dma_data_use        ;
     uint32_t     dma_baddr           ;
-    uint32_t     dma_line_stride     ;
-    uint32_t     dma_vector_stride   ;
-    uint32_t     dma_elem_stride     ;
-    uint32_t     dma_lst_elem_stride ;
-    uint32_t     dma_box_st_size_x   ;
-    uint32_t     dma_box_st_size_y   ;
-    uint32_t     dma_box_st_size_z   ;
-    uint32_t     dma_box_size_x      ;
-    uint32_t     dma_box_size_y      ;
-    uint32_t     dma_box_size_z      ;
-    uint32_t     dma_box_offset_x    ;
-    uint32_t     dma_box_offset_y    ;
-    uint32_t     dma_box_offset_z    ;
+    uint16_t     dma_cube_size_h     ;
+    uint16_t     dma_cube_size_w     ;
+    uint16_t     dma_cube_size_c     ;
+    uint32_t     dma_border_x        ;
+    uint32_t     dma_border_y        ;
+    uint32_t     dma_border_z        ;
+    uint32_t     dma_stride_x        ;
+    uint32_t     dma_stride_y        ;
+    uint32_t     dma_stride_z        ;
+    uint32_t     dma_frag_size       ;
+    uint32_t     dma_frag_last_size  ;
+    uint8_t      dma_xyz_drct        ;
+    uint16_t     dma_box_st_size_x   ;
+    uint16_t     dma_box_st_size_y   ;
+    uint16_t     dma_box_st_size_z   ;
+    uint16_t     dma_box_size_x      ;
+    uint16_t     dma_box_size_y      ;
+    uint16_t     dma_box_size_z      ;
+    uint16_t     dma_box_offset_x    ;
+    uint16_t     dma_box_offset_y    ;
+    uint16_t     dma_box_offset_z    ;
   }ConfigDMA;
 
   typedef struct ConfigVPE {
