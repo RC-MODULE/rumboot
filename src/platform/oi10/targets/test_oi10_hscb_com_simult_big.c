@@ -29,7 +29,7 @@
 #include <devices/rcm_cp.h>
 
 #ifndef N_OF_PACKETS
-#define N_OF_PACKETS 5
+#define N_OF_PACKETS 2
 #endif
 
 #ifndef SIZE_OF_PACKET
@@ -89,7 +89,7 @@
 #define HSCB3_RX_DATA_BASE "SRAM0"
 #endif
 #ifndef DEBUG_PRINT
-#define DEBUG_PRINT 1
+#define DEBUG_PRINT 0
 #endif
 #ifndef CHANGE_ENDIANN
 #define CHANGE_ENDIANN true
@@ -322,10 +322,18 @@ uint32_t establish_link(uint32_t hscb_base_addr_0, uint32_t hscb_base_addr_1){
 }
 
 void simult_run_of_hscbs_transfers(uint32_t *rdma_ctrl_word){
+    iowrite32(1, HSCB0_BASE + HSCB_AWLEN);
+    iowrite32(1, HSCB1_BASE + HSCB_AWLEN);
+    iowrite32(1, HSCB2_BASE + HSCB_AWLEN);
+    iowrite32(1, HSCB3_BASE + HSCB_AWLEN);
+    iowrite32(1, HSCB0_BASE + HSCB_ARLEN);
+    iowrite32(1, HSCB1_BASE + HSCB_ARLEN);
+    iowrite32(1, HSCB2_BASE + HSCB_ARLEN);
+    iowrite32(1, HSCB3_BASE + HSCB_ARLEN);
     hscb_run_wdma(HSCB0_BASE);
-    /*hscb_run_wdma(HSCB1_BASE);
+    hscb_run_wdma(HSCB1_BASE);
     hscb_run_wdma(HSCB2_BASE);
-    hscb_run_wdma(HSCB3_BASE);*/
+    hscb_run_wdma(HSCB3_BASE);
     //hscb_run_rdma(HSCB0_BASE);
     //hscb_run_rdma(HSCB1_BASE);
     //hscb_run_rdma(HSCB2_BASE);
@@ -505,15 +513,12 @@ int main() {
     // ---- Config of HSCB     
     if(DEBUG_PRINT) rumboot_printf("----Config of HSCB0----\n");
     config_hscb(HSCB0_BASE, &hscb0_tx_dsc_table, HSCB0_TX_DSCTBL_BASE, HSCB0_TX_DATA_BASE, &hscb0_rx_dsc_table, HSCB0_RX_DSCTBL_BASE, HSCB0_RX_DATA_BASE, &rdma_ctrl_word[0]);
-    
-    /*
     if(DEBUG_PRINT) rumboot_printf("----Config of HSCB1----\n");
     config_hscb(HSCB1_BASE, &hscb1_tx_dsc_table, HSCB1_TX_DSCTBL_BASE, HSCB1_TX_DATA_BASE, &hscb1_rx_dsc_table, HSCB1_RX_DSCTBL_BASE, HSCB1_RX_DATA_BASE, &rdma_ctrl_word[1]);
     if(DEBUG_PRINT) rumboot_printf("----Config of HSCB2----\n");
     config_hscb(HSCB2_BASE, &hscb2_tx_dsc_table, HSCB2_TX_DSCTBL_BASE, HSCB2_TX_DATA_BASE, &hscb2_rx_dsc_table, HSCB2_RX_DSCTBL_BASE, HSCB2_RX_DATA_BASE, &rdma_ctrl_word[2]);
     if(DEBUG_PRINT) rumboot_printf("----Config of HSCB3----\n");
     config_hscb(HSCB3_BASE, &hscb3_tx_dsc_table, HSCB3_TX_DSCTBL_BASE, HSCB3_TX_DATA_BASE, &hscb3_rx_dsc_table, HSCB3_RX_DSCTBL_BASE, HSCB3_RX_DATA_BASE, &rdma_ctrl_word[3]);
-    */
     //---------------- 
     //if(DEBUG_PRINT) {
         //rumboot_printf("HSCB0 descriptor tables\n");
@@ -546,6 +551,7 @@ int main() {
     cp_instance_init(&c0, COM0_BASE, BASE_FREQ);
     cp_instance_init(&c1, COM1_BASE, BASE_FREQ);
     
+    rumboot_printf("----\n");
     
     r = cp_set_speed(&c0,BASE_FREQ); // WE GOT AN EXCEPTION: 15: Data TLB Error
     r = cp_set_speed(&c1,BASE_FREQ);
@@ -553,11 +559,11 @@ int main() {
     rumboot_printf("Initialized instances 0x%x 0x%x\n",c0.base,c1.base);
     ////    
     
-    /*
+    
     //////////////////////////////////////////
     // Test 1 - Simple Transmit And Receive
-    tx_buf = rumboot_malloc_from_named_heap_aligned("IM1", size, 8);
-    rx_buf = rumboot_malloc_from_named_heap_aligned("IM1", size, 8);
+    tx_buf = rumboot_malloc_from_named_heap_aligned(COM_SRC_HEAP, size, 8);
+    rx_buf = rumboot_malloc_from_named_heap_aligned(COM_DST_HEAP, size, 8);
     
     if(tx_buf==NULL || rx_buf==NULL) return -1;
     
@@ -565,16 +571,17 @@ int main() {
     
     memset(rx_buf,0xA5,size);
     rumboot_memfill32(tx_buf,size/4,0x00010203,0x04040404);
-    
-    cp_start_tx(&c0, tx_buf, size);
-    cp_start_rx(&c1, rx_buf, size);
-    
-    r = cp_wait_rx(c1.base,timeout_us);
+     
+    //r = cp_wait_rx(c1.base,timeout_us);
     /////
-    */
+    
     
     //
     simult_run_of_hscbs_transfers(rdma_ctrl_word);
+    cp_start_tx(&c0, tx_buf, size);
+    cp_start_rx(&c1, rx_buf, size);
+    cp_start_tx(&c0, tx_buf, size);
+    cp_start_rx(&c1, rx_buf, size);
     //comp_dma_run( dsrc0, ddst0,COM0_BASE,COM1_BASE,(ARR_SIZE>>	1));
     wait_of_end();
     rumboot_printf("HSCB0 descriptor tables\n");
@@ -598,6 +605,8 @@ int main() {
         rumboot_printf("--- RX descriptors table\n");
         print_dscr_table(hscb3_rx_dsc_table, CHANGE_ENDIANN);
       result = result + check_results(hscb0_tx_dsc_table, hscb1_rx_dsc_table) + check_results(hscb1_tx_dsc_table, hscb0_rx_dsc_table) + check_results(hscb2_tx_dsc_table, hscb3_rx_dsc_table) + check_results(hscb3_tx_dsc_table, hscb2_rx_dsc_table);
+      if(rumboot_memcheck32(tx_buf, rx_buf, size/4)==1) return 1;
+      
      // result = result + check_results(hscb0_tx_dsc_table, hscb0_rx_dsc_table);
 
     //---------------- 

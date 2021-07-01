@@ -2312,6 +2312,8 @@ endif()
                -DHSCB3_TX_DATA_BASE="SSRAM"
                -DHSCB3_RX_DSCTBL_BASE="IM1"
                -DHSCB3_RX_DATA_BASE="SSRAM"
+               -DSIZE_OF_PACKET=1024
+               -DN_OF_PACKETS=2
                #-DDEBUG_PRINT=1
         FILES test_oi10_hscb_simult_big.c
         PREFIX "hscb_desc_im1_data_ssram"
@@ -2364,8 +2366,10 @@ endif()
                -DHSCB3_TX_DATA_BASE="SSRAM"
                -DHSCB3_RX_DSCTBL_BASE="IM1"
                -DHSCB3_RX_DATA_BASE="SSRAM"
-               -DCOM_SRC_HEAP="IM1"
-               -DCOM_DST_HEAP="IM1"
+               -DCOM_SRC_HEAP="SSRAM"
+               -DCOM_DST_HEAP="SSRAM"
+               -DSIZE_OF_PACKET=4096
+               -DN_OF_PACKETS=2               
                #-DDEBUG_PRINT=1
         FILES test_oi10_hscb_com_simult_big.c
         PREFIX "hscb_com_desc_im1_data_ssram"

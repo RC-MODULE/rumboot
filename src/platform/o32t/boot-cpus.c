@@ -45,7 +45,7 @@ static int nmc_poll(const struct rumboot_cpu_cluster *cpu)
 static void nmc_generate_trampoline(void *at, uint32_t ep)
 {
         uint8_t *nmc_memory = (void *) at; /* The trampoline is always there */
-        uint32_t *nmc_goto = &nmc_memory[4];
+        uint32_t *nmc_goto = (uint32_t *) &nmc_memory[4];
         nmc_memory[0] = 0x0;
         nmc_memory[1] = 0x0;
         nmc_memory[2] = 0x27; /* delayed goto */ 
@@ -108,15 +108,18 @@ static void ext_kill(const struct rumboot_cpu_cluster *cpu)
 static int ext_start(const struct rumboot_cpu_cluster *cpu, struct rumboot_bootheader *hdr, void *data, int swap)
 {
     struct rcm_cp_instance cp; 
+    uint32_t len = rumboot_bootimage_header_item32(hdr->datalen, swap);
+    rumboot_printf("boot: Using cp @ 0x%x to transfer %d bytes\n", cpu->base, len);
     cp_instance_init(&cp, cpu->base, 100000);
     cp_set_speed(&cp, CP_STRB_RATE);
-    uint32_t len = rumboot_bootimage_header_item32(hdr->datalen, swap);
+
     if (len % 8) {
         return -EBADDATACRC;
     }
+
     cp_start_tx(&cp, data, len);
     int ret = cp_wait(&cp, 1, 1, len * 50);
-    rumboot_printf("cp wait: %d\n", ret);
+    rumboot_printf("boot: cp transfer completed with code %d (%s) \n", ret, ret ? "failure" : "success");
     return 0;
 }
 
@@ -126,56 +129,72 @@ static int ext_poll(const struct rumboot_cpu_cluster *cpu,  struct rumboot_booth
     int ret;
     cp_instance_init(&cp, cpu->base, 100000);
     cp_set_speed(&cp, CP_STRB_RATE);
-    uint64_t *buf = (uint64_t *) hdr; /* Use hdr as buf. It should be aligned */
+    /* HACK: This is a hard-coded per-chip address of RX/TX buffers */
+    uint64_t *buf = (uint64_t *) (IM3_BASE + IM3_SIZE - 16);
     uint8_t *charbuf = (uint8_t *) buf;
-    rumboot_printf("Starting polling\n");
     cp_start_rx(&cp, &buf[0], 8);
-    //rumboot_platform_sv_event("EXT_NMC_POLL");
-    rumboot_printf("Starting polling\n");
+    rumboot_platform_sv_event("EXT_NMC_POLL");
+    rumboot_printf("boot: Using cp scratch buffers: rx:0x%x tx:0x%x\n", &buf[0], &buf[1]);
     while(true) {
-            rumboot_printf("RX %d TX %d\n", cp_rx_status(&cp), cp_tx_status(&cp));
-            if (cp_rx_status(&cp) == CP_IDLE) {
+            enum cp_status status = cp_rx_status(&cp);
+            if ((status == CP_DONE) | (status == CP_IDLE)) {
                     uint64_t word = buf[0];
-                    rumboot_printf("got: %x %x %x %x %x %x %x %x\n", 
-                    charbuf[0], charbuf[1], charbuf[2], charbuf[3], charbuf[4], charbuf[5], charbuf[6], charbuf[7]);
 
-                    if (word & (1UL<<63)) { /* exit code */
-                            ret = word & 0xff;
+                    if (charbuf[7] & (1<<7)) { /* exit code */
+                            ret = word & 0x7F;
                             break;
                     } else { /* stdio */
-                            uint8_t ch = (uint8_t) word & 0xff;
-                            rumboot_platform_putchar(ch);
+                            rumboot_platform_putchar(charbuf[0]);
                     }
                 /* Go on for next word */
                 cp_start_rx(&cp, &buf[0], 8);
             }
-            if (cp_tx_status(&cp) == CP_IDLE) {
+            status = cp_tx_status(&cp);
+            if ((status == CP_DONE) | (status == CP_IDLE)) {
                 int c = rumboot_platform_getchar(0);
                 if (c != -1) {
-                    buf[1] = c;
+                    buf[1] = 0x0;
+                    charbuf[8] = c;
+                    asm("msync");
                     cp_start_tx(&cp, &buf[1], 8);
                 }
             }
     }
-    rumboot_printf("POLL DONE, CODE %d\n", ret);
     return ret;
 }
 
+
 static const tlb_entry little_endian_tlb[] =
 {
- { MMU_TLB_ENTRY(  0x020,  0xC0000,    0x80020,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_LITTLE_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_3,     0b1 )},
- { MMU_TLB_ENTRY(  0x020,  0xC0010,    0x80030,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_LITTLE_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_4,     0b1 )},
+  /* IM0 */
  { MMU_TLB_ENTRY(  0x010,  0x80000,    0x80000,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_LITTLE_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_1,     0b1 )},
  { MMU_TLB_ENTRY(  0x010,  0x80010,    0x80010,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_LITTLE_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_2,     0b1 )},
+  /* IM1 */
+ { MMU_TLB_ENTRY(  0x020,  0xC0000,    0x80020,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_LITTLE_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_3,     0b1 )},
+ { MMU_TLB_ENTRY(  0x020,  0xC0010,    0x80030,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_LITTLE_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_4,     0b1 )},
+  /* IM2 */
+ { MMU_TLB_ENTRY(  0x020,  0xC0040,    0x80040,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_LITTLE_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_5,     0b1 )},
+ { MMU_TLB_ENTRY(  0x020,  0xC0050,    0x80050,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_LITTLE_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )},
+  /* IM3 */
+ { MMU_TLB_ENTRY(  0x020,  0xC0060,    0x80060,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_LITTLE_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )},
+ { MMU_TLB_ENTRY(  0x020,  0xC0070,    0x80070,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_LITTLE_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )} 
 };
 
 
 static const tlb_entry big_endian_tlb[] =
 {
- { MMU_TLB_ENTRY(  0x020,  0xC0000,    0x80020,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_3,     0b1 )},
- { MMU_TLB_ENTRY(  0x020,  0xC0010,    0x80030,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_4,     0b1 )},
+  /* IM0 */
  { MMU_TLB_ENTRY(  0x010,  0x80000,    0x80000,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_1,     0b1 )},
  { MMU_TLB_ENTRY(  0x010,  0x80010,    0x80010,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_2,     0b1 )},
+  /* IM1 */
+ { MMU_TLB_ENTRY(  0x020,  0xC0000,    0x80020,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_3,     0b1 )},
+ { MMU_TLB_ENTRY(  0x020,  0xC0010,    0x80030,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_4,     0b1 )},
+  /* IM2 */
+ { MMU_TLB_ENTRY(  0x020,  0xC0040,    0x80040,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_5,     0b1 )},
+ { MMU_TLB_ENTRY(  0x020,  0xC0050,    0x80050,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )},
+  /* IM3 */
+ { MMU_TLB_ENTRY(  0x020,  0xC0060,    0x80060,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )},
+ { MMU_TLB_ENTRY(  0x020,  0xC0070,    0x80070,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b1 )} 
 };
 
 

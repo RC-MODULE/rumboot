@@ -43,8 +43,9 @@ int main()
     cp_set_speed(&cp, TARGET_FREQ);
     rumboot_printf("nmstub: Initialized cp at 0x%x, receiving to virt: 0x%x (dma: 0x%x) total len: %d bytes\n", 
         COM_BASE, staging_buffer, rumboot_virt_to_dma(staging_buffer), XFER_SIZE_WORDS * 8);
-    udelay(10);
+    //udelay(10);
     cp_start_rx(&cp, staging_buffer, XFER_SIZE_WORDS * 8);
+    rumboot_printf("Waiting for data...\n");
     cp_wait(&cp, 1, 1, XFER_SIZE_WORDS * 8 * 50);
     rumboot_printf("nmstub: Payload received, moving it to the start\n");
     rumboot_printf("staging: %x %x %x\n", staging_buffer[0], staging_buffer[1], staging_buffer[2]);

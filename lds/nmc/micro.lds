@@ -19,8 +19,6 @@ SECTIONS
   } > BOOTRAM
 
   .rwx : {
-    _rumboot_IM1_heap_start = .;
-    _rumboot_IM1_heap_end = .;
    *(.text)
    *(.text.*)
    *(.rodata)
@@ -36,6 +34,8 @@ SECTIONS
    *(.bsst.*)
    *(COMMON)
    _rumboot_platform_bss_end = .;
+    _rumboot_IM1_heap_start = .;
+    _rumboot_IM1_heap_end = .;
   } > BOOTRAM
 
   .runtime 0x5A000 (NOLOAD) : {
@@ -43,7 +43,13 @@ SECTIONS
     *(.rumboot_platform_runtime_info);
   } > IM3
 
-    /DISCARD/ : {
-      *(*)
-    }
+  .stack (NOLOAD) : {
+    _rumboot_platform_stack_start = .;
+    . = . + 0x4000;
+    _rumboot_platform_stack_end = .;
+  } > IM3
+
+  /DISCARD/ : {
+    *(*)
+  }
 }

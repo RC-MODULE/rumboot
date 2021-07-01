@@ -367,12 +367,12 @@ int rumboot_bootimage_execute(struct rumboot_bootheader *hdr, const struct rumbo
 	}
 
 	int ret = 0; 
-//#ifndef CMAKE_BUILD_TYPE_DEBUG
+#ifndef CMAKE_BUILD_TYPE_DEBUG
 	dbg_boot(src, "Starting %ssynchronous code execution on cluster %d (%s)", 
 		(flags & RUMBOOT_FLAG_SYNC) ? "" : "a", 
 		cluster,
 		cpu->name);
-//#endif
+#endif
 	if (cpu->start) {
 		ret = cpu->start(cpu, hdr, image_final_data_location, swap);
 		if (ret) /* If start didn't succeed */
@@ -381,7 +381,9 @@ int rumboot_bootimage_execute(struct rumboot_bootheader *hdr, const struct rumbo
 
 	if (flags & RUMBOOT_FLAG_SYNC) {
 		if (cpu->poll) {
+			dbg_boot(src, "--- Started console output from core: %s --- \n", cpu->name);
 			ret = cpu->poll(cpu);
+			dbg_boot(src, "--- Finished console output from core: %s, exit code %d --- \n", cpu->name, ret);
 		} else if (cluster > 0) { /* Only warn about non-boot clusters */
 			dbg_boot(src, "WARN: Cluster %d (%s) doesn't support synchronous mode", 
 				cluster, cpu->name);
