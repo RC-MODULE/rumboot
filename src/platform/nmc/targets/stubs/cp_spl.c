@@ -52,16 +52,17 @@ int main()
     cp_set_speed(&cp, TARGET_FREQ);
     debug_printf("SPL: Sending message\n");
     cp_start_tx(&cp, txbuf, 8 * 8);
+    cp_start_rx(&cp, rxbuf, 3 * 8); /* Fire up rx */
     debug_printf("SPL: Sending message\n");
     cp_wait_tx(&cp, ARRAY_SIZE(txbuf) * 8 * 50);
 
     #ifndef CMAKE_BUILD_TYPE_DEBUG
-    debug_printf("SPL: Message sent, receiving\n");
-    cp_start_rx(&cp, rxbuf, 3 * 8);
-    cp_wait_rx(&cp, 3 * 8 * 50);
-    debug_printf("SPL: Done, sending back\n");
-    cp_start_tx(&cp, rxbuf, 3 * 8);
-    cp_wait_tx(&cp, 3 * 8 * 50);
+        /* Actually do something with RX */ 
+        debug_printf("SPL: Message sent, receiving\n");        
+        cp_wait_rx(&cp, 3 * 8 * 50);
+        debug_printf("SPL: Done, sending back\n");
+        cp_start_tx(&cp, rxbuf, 3 * 8);
+        cp_wait_tx(&cp, 3 * 8 * 50);
     #endif // !CMAKE_BUILD_TYPE_DEBUG
 
     debug_printf("SPL: Done, requesting termination\n");
