@@ -24,7 +24,7 @@
 
 
 #ifndef XFER_SIZE_WORDS
-#define XFER_SIZE_WORDS 2048
+#define XFER_SIZE_WORDS 2560
 #endif
 
 /* No printf's in production, since bootrom won't be listening to the fifo */
@@ -32,7 +32,7 @@
 #define rumboot_printf(fmt, ...)
 #endif
 
-/* This shit receives data at the start of nmc memory and jumps there after getting 256 words */
+/* This shit receives data at the start of nmc memory and jumps there after getting X words */
 static void (*spl_main)() = 0; 
 char staging_buffer[XFER_SIZE_WORDS * 8] __attribute__ ((aligned (16)));
 

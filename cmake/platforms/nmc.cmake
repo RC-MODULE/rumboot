@@ -105,7 +105,7 @@ rumboot_add_configuration(
   PREFIX spl
   LDFLAGS -Wl,-e_start -nostartfiles -Wl,--gc-sections
   CFLAGS -fnmc-compatible-if-packed -DRUMBOOT_NOINIT -DRUMBOOT_SILENT_PANICS -DRUMBOOT_ENTRY=start 
-  PACKIMAGE_FLAGS -a 16384
+  PACKIMAGE_FLAGS -a 20480
 )
 
 macro(dap_integration_test sourcefile)

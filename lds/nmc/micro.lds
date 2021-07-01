@@ -3,7 +3,7 @@ OUTPUT_ARCH(nmc)
 
 MEMORY
 {
-  BOOTRAM(rwx):       ORIGIN =  0x00000, LENGTH = 0x4000
+  BOOTRAM(rwx):       ORIGIN =  0x00000, LENGTH = 0x5000
   IM3(rwx):           ORIGIN =  0x40000, LENGTH = 0x20000
 }
 
