@@ -24,7 +24,9 @@ int main()
 								rumboot_platform_read_config(&conf);
 								rumboot_platform_init_loader(&conf);
 								rumboot_platform_sv_event("HOST");
-								rumboot_putchar('X');
+
+								//rumboot_putchar('X');
+
 								while (rumboot_platform_getchar(1000) != 'X');;
 								int ret = xmodem_get((void *) hdr, maxsize);
 
