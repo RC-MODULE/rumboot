@@ -102,7 +102,9 @@ TEST_ENTRY("KMBIST #7:  IM1 Memory", check_kmbist, DCR_SCTL_BASE + 0x20),
 TEST_ENTRY("KMBIST #8:  IM2 Memory", check_kmbist, DCR_SCTL_BASE + 0x24),
 TEST_ENTRY("KMBIST #9:  IM3 Memory", check_kmbist, DCR_SCTL_BASE + 0x48),
 TEST_ENTRY("KMBIST #10: NMPU", check_kmbist, DCR_SCTL_BASE + 0x4C),
-TEST_ENTRY("KMBIST #11: AXI2MCIF Bridge", check_kmbist, DCR_SCTL_BASE + 0x50),
+/* Removed just before sign-off */
+//TEST_ENTRY("KMBIST #11: AXI2MCIF Bridge", check_kmbist, DCR_SCTL_BASE + 0x50),
+
 TEST_SUITE_END();
 
 int rumboot_platform_selftest(struct rumboot_config *conf)
