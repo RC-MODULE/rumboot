@@ -124,7 +124,7 @@ enum cp_status cp_tx_status(struct rcm_cp_instance *inst)
 
 void cp_start_rx(struct rcm_cp_instance *inst, void *buf, size_t len)
 {
-    if ((len % 8) == 0) {
+    if ((len % 8) != 0) {
       rumboot_platform_panic("BUG: len % 8 != 0");      
     }
     
@@ -137,12 +137,12 @@ void cp_start_rx(struct rcm_cp_instance *inst, void *buf, size_t len)
     } else {
         cp_check_buffer(buf, len);
     }
-
-	iowrite32( len >> 3,  inst->base + RCM_CP_MAINCOUNTER_RCV ); //set dma total data 512 byte
-	iowrite32( rumboot_virt_to_dma(buf), inst->base +  RCM_CP_ADDRESS_RCV ); //dma destination atart address
-	iowrite32( 0x0,  inst->base + RCM_CP_BIAS_RCV );
-	iowrite32( 0x0,  inst->base + RCM_CP_ROWCOUNTER_RCV );
-	iowrite32( 0x0,  inst->base + RCM_CP_ADDRESSMODE_RCV );	
+    
+	  iowrite32( len >> 3,  inst->base + RCM_CP_MAINCOUNTER_RCV ); //set dma total data 512 byte
+	  iowrite32( rumboot_virt_to_dma(buf), inst->base +  RCM_CP_ADDRESS_RCV ); //dma destination atart address
+	  iowrite32( 0x0,  inst->base + RCM_CP_BIAS_RCV );
+	  iowrite32( 0x0,  inst->base + RCM_CP_ROWCOUNTER_RCV );
+	  iowrite32( 0x0,  inst->base + RCM_CP_ADDRESSMODE_RCV );	
     iowrite32(inst->two_dimentional, inst->base + RCM_CP_ADDRESSMODE_RCV);
 
     /* Go! */
