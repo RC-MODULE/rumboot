@@ -91,7 +91,7 @@ void rumboot_platform_print_summary(struct rumboot_config *conf)
         rumboot_printf("SD Card:         %s\n",
                        (bootm & BOOTM_SDIO_CD) ? "Not inserted" : "Inserted");
 
-        rumboot_printf("CPU ECC:         %s\n",
+        rumboot_printf("IM0 Scrubber:    %s\n",
                        (bootm & BOOTM_CPU_ECC) ? "enabled" : "disabled");
 
         rumboot_printf("NOR/SRAM ECC:    %s\n",
