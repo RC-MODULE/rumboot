@@ -47,13 +47,13 @@ SECTIONS
   } > IM3
 
 
-  .heap : {
+  .heap (NOLOAD) : {
     _rumboot_IM1_heap_start = .;
     . = . + 0x1000;
     _rumboot_IM1_heap_end = .;
-  } > SRAM
+  } > IM3
 
-  .stack : {
+  .stack (NOLOAD) : {
     _rumboot_platform_stack_start = .;
     . = . + 0x4000;
     _rumboot_platform_stack_end = .;
