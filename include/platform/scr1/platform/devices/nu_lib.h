@@ -14,9 +14,9 @@
   Режим работы блока
   */
   typedef enum Mode {
-    Mode_Unitary,
-    Mode_Channel,
-    Mode_Element
+    Mode_Unitary = 0,
+    Mode_Channel = 2,
+    Mode_Element = 3
   } Mode;
 
   /**
