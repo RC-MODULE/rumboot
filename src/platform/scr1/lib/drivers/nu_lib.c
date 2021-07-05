@@ -675,8 +675,8 @@ void nu_vpe_setup(uintptr_t base, ConfigVPE* cfg, ConfigDMAVPE* cfg_dma) {
   iowrite32(cfg->wdma_config.dma_cube_size_w,           base + NU_VPE + NU_VPE_CUBE_SIZE_W );                             // TAKES IT FROM DMA struct!!!! NOT GOOD!!!
   iowrite32(cfg->wdma_config.dma_cube_size_h,           base + NU_VPE + NU_VPE_CUBE_SIZE_H );                             // TAKES IT FROM DMA struct!!!! NOT GOOD!!!
   
-  if      (cfg->in_data_type == DataTypeExt_Int32 | cfg->in_data_type == DataTypeExt_Int16) tmp_type = DataType_Int16 ;
-  else if (cfg->in_data_type == DataTypeExt_Fp32  | cfg->in_data_type == DataTypeExt_Fp16)  tmp_type = DataType_Fp16  ;
+  if      (cfg->in_data_type == DataTypeExt_Int32 || cfg->in_data_type == DataTypeExt_Int16) tmp_type = DataType_Int16 ;
+  else if (cfg->in_data_type == DataTypeExt_Fp32  || cfg->in_data_type == DataTypeExt_Fp16)  tmp_type = DataType_Fp16  ;
   else                                                                                      tmp_type = DataType_Int8  ;
   tmp_data = (cfg->out_data_type << 16) | 
              ((cfg->op2_config.coef_type>>1) << 15) | ((cfg->op2_rdma_config.dma_data_mode&0x1)<<14) |   // TAKES IT FROM DMA struct!!!! NOT GOOD!!!
@@ -1037,7 +1037,7 @@ void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics, Conf
   }
 
   cfg->src_rdma_config.dma_ram_type       = 0; // ?????????????????????????????????
-  cfg->src_rdma_config.dma_data_mode      = 1;
+  cfg->src_rdma_config.dma_data_mode      = Mode_Element;
   
   if (cfg->in_data_type == DataTypeExt_Int8) cfg->src_rdma_config.dma_data_size = DmaDSize_One_Byte;
   else                                       cfg->src_rdma_config.dma_data_size = DmaDSize_Two_Byte;
