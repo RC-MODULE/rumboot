@@ -222,6 +222,7 @@ int nu_ppe_reg_load_config (ConfigREGPPE* cfg_reg, void* cfg_reg_bin) {
   void nu_vpe_print_Mode(Mode mode, char* name) {
     static char* ModeNames[]= {
       "Unitary",
+      "X",   // Because Of Mode Coding (0, 2, 3)
       "Channel",
       "Element"
     };
