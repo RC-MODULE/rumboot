@@ -1745,12 +1745,12 @@ void nu_vpe_wait(uintptr_t vpe_base, ConfigVPE* cfg){
   if(! cfg->dst_flying) {
     rumboot_printf("Wait VPE WDMA...\n");
     while(( (ioread32(vpe_base + NU_VPE + NU_VPE_INT_STATUS) >> 8) & 1) !=1) {}
-    iowrite32(2,vpe_base + NU_VPE + NU_VPE_INT_RESET);
+    iowrite32((1<<8),vpe_base + NU_VPE + NU_VPE_INT_RESET);
   }
   else {
     rumboot_printf("Wait VPE complete...\n");
     while(( (ioread32(vpe_base + NU_VPE + NU_VPE_INT_STATUS) >> 12) & 1) !=1) {}
-    iowrite32(2,vpe_base + NU_VPE + NU_VPE_INT_RESET);
+    iowrite32((1<<12),vpe_base + NU_VPE + NU_VPE_INT_RESET);
   }
   // rumboot_printf("Done VPE wait.\n");
 }
@@ -1758,7 +1758,7 @@ void nu_vpe_wait(uintptr_t vpe_base, ConfigVPE* cfg){
 void nu_vpe_wait_cntx_appl(uintptr_t vpe_base, ConfigVPE* cfg){
     rumboot_printf("Wait VPE context got...\n");
     while(( (ioread32(vpe_base + NU_VPE + NU_VPE_INT_STATUS) >> 0) & 1) !=1) {}
-    iowrite32(2,vpe_base + NU_VPE + NU_VPE_INT_RESET);
+    iowrite32((1<<0),vpe_base + NU_VPE + NU_VPE_INT_RESET);
   rumboot_printf("Done VPE context got.\n");
 }
 
