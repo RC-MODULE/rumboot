@@ -1005,6 +1005,13 @@ add_rumboot_target(
 
 add_rumboot_target(
   CONFIGURATION IRAM_IM0
+  FILES async-demo-ppc.c
+  #Сначала стартуем код на nmc, потом себя
+  LOAD IM0BIN nmc:iram-async-demo,SELF
+)
+
+add_rumboot_target(
+  CONFIGURATION IRAM_IM0
   FILES scrb.c
   IRUN_FLAGS +insert_error_in_im1_im2_mem
 )

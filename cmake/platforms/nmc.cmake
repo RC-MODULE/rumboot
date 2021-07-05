@@ -103,6 +103,7 @@ rumboot_add_configuration(
   FILES ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/spl-micro-startup.S
   LDS nmc/micro.lds
   PREFIX spl
+  FEATURES STUB
   LDFLAGS -Wl,-e_start -nostartfiles -Wl,--gc-sections
   CFLAGS -fnmc-compatible-if-packed -DRUMBOOT_NOINIT -DRUMBOOT_SILENT_PANICS -DRUMBOOT_ENTRY=start 
   PACKIMAGE_FLAGS -a 20480
@@ -134,6 +135,15 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
   )
 
   if (RUMBOOT_SOC)
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      NAME async-demo
+      FILES stubs/async-demo.c
+      FEATURES STUB #Не создавать runner'а
+      #Устанавливаем флаги. Работать асинхронно, останавливать NMC перед запуском
+      PACKIMAGE_FLAGS -F SYNC False -F kill True
+    )
+
     add_rumboot_target(
       CONFIGURATION SPL
       NAME cp-com1
