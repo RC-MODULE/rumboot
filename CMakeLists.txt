@@ -190,6 +190,13 @@ else()
   message("GCC LTO:            disabled")
 endif()
 
+if (RUMBOOT_USE_STRICT_DWARF)
+  set(EXTRA_COMMON_FLAGS "${EXTRA_COMMON_FLAGS} -g -gdwarf-2 -gstrict-dwarf")
+  message("Strict Dwarf:       enabled")
+else()
+  message("Strict Dwarf:       disabled")
+endif()
+
 if (RUMBOOT_TRACE)
   SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DRUMBOOT_TRACE=y")
   set(instrument_functions yes)
