@@ -7,11 +7,11 @@
 #define NU_VPE          (0x0 << 9)
 
 // OFFSET DMA CHANNEL ----------------------------
-#define NU_VPE_DST_WDMA ((0x1 << 9) + (0x0 << 7))
-#define NU_VPE_SRC_RDMA ((0x2 << 9) + (0x0 << 7))
-#define NU_VPE_OP0_RDMA ((0x2 << 9) + (0x1 << 7))
-#define NU_VPE_OP1_RDMA ((0x2 << 9) + (0x2 << 7))
-#define NU_VPE_OP2_RDMA ((0x2 << 9) + (0x3 << 7))
+#define NU_VPE_DST_WDMA ((0x1 << 9) + (0x0 << 8))
+#define NU_VPE_SRC_RDMA ((0x2 << 9) + (0x0 << 8))
+#define NU_VPE_OP0_RDMA ((0x2 << 9) + (0x1 << 8))
+#define NU_VPE_OP1_RDMA ((0x2 << 9) + (0x2 << 8))
+#define NU_VPE_OP2_RDMA ((0x2 << 9) + (0x3 << 8))
 
 // VPE Registers address -------------------------
 #define NU_VPE_DEV_ID                  0x000
