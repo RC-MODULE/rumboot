@@ -2964,6 +2964,7 @@ endif()
         CONFIGURATION IRAM
         FILES test_im0_double_error.c
         IRUN_FLAGS +enable_IM0_de_insertion
+                +set_IM0_to_zero
         NAME "test_im0_double_error"
     )
 
