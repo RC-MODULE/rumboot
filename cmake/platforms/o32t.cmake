@@ -218,13 +218,6 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
   )
 
   rumboot_bootrom_integration_test(BROM
-    NAME "host-xmodem"
-    IRUN_FLAGS +BOOT_HOST=1 ${ROM_6500K_OPTS}
-    LOAD
-      XMODEM0  spl-ok
-  )
-
-  rumboot_bootrom_integration_test(BROM
     NAME "host-mockup-little-endian"
     IRUN_FLAGS +BOOT_HOST=1 ${ROM_6500K_OPTS}
     LOAD
@@ -332,6 +325,13 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
   )
 
   if (NOT RUMBOOT_BUILD_TYPE STREQUAL "Debug")
+    rumboot_bootrom_integration_test(BROM
+      NAME "host-xmodem"
+      IRUN_FLAGS +BOOT_HOST=1 ${ROM_6500K_OPTS}
+      LOAD
+        XMODEM0  spl-ok
+    )
+
     rumboot_bootrom_integration_test(BROM
       NAME "host-easter-egg"
       IRUN_FLAGS +BOOT_HOST=1 ${ROM_6500K_OPTS} +uart_easter_egg
