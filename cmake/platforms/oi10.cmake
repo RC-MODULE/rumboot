@@ -1281,46 +1281,48 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         FEATURES EXTRACT_LABELS
     )
 
-if (RUMBOOT_SOC_BUILD_TYPE MATCHES "RTL")
-    if (OI10_IRAM_IM0)
-        add_rumboot_target(
-            CONFIGURATION IRAM
-            FILES test_oi10_ctrl_000.c
-            CFLAGS -DMBIST_RELOCATE=KMBIST_CHAIN_SF_8_IM0 -DRELOCATE_FROM=IM0_BASE -DRELOCATE_TO=IM2_BASE
-        )
-    else()
-        add_rumboot_target(
-            CONFIGURATION IRAM
-            FILES test_oi10_ctrl_000.c
-            CFLAGS -DMBIST_RELOCATE=KMBIST_CHAIN_SF_6_IM1 -DRELOCATE_FROM=IM1_BASE -DRELOCATE_TO=IM2_BASE
-        )
-    endif()
-else()
-    if (OI10_IRAM_IM0)
-        add_rumboot_target(
-            CONFIGURATION IRAM
-            FILES test_oi10_ctrl_000.c
-            CFLAGS -DMBIST_RELOCATE=KMBIST_CHAIN_SF_8_IM0 -DRELOCATE_FROM=IM0_BASE -DRELOCATE_TO=IM2_BASE
-        )
-        add_rumboot_target(
-            CONFIGURATION IRAM
-            FILES test_oi10_ctrl_000.c
-            CFLAGS -DMBIST_RELOCATE=KMBIST_CHAIN_SF_8_IM0 -DRELOCATE_FROM=IM0_BASE -DRELOCATE_TO=IM2_BASE -DERR_INJ_ENABLED
-            NAME "test_oi10_ctrl_000_inj"
-        )
-    else()
-        add_rumboot_target(
-            CONFIGURATION IRAM
-            FILES test_oi10_ctrl_000.c
-            CFLAGS -DMBIST_RELOCATE=KMBIST_CHAIN_SF_6_IM1 -DRELOCATE_FROM=IM1_BASE -DRELOCATE_TO=IM2_BASE
-        )
-        add_rumboot_target(
-            CONFIGURATION IRAM
-            FILES test_oi10_ctrl_000.c
-            CFLAGS -DMBIST_RELOCATE=KMBIST_CHAIN_SF_6_IM1 -DRELOCATE_FROM=IM1_BASE -DRELOCATE_TO=IM2_BASE -DERR_INJ_ENABLED
-        NAME "test_oi10_ctrl_000_inj"
-        )
-    endif()
+if(RUMBOOT_SOC_O32T)
+  if (RUMBOOT_SOC_BUILD_TYPE MATCHES "RTL")
+      if (OI10_IRAM_IM0)
+          add_rumboot_target(
+              CONFIGURATION IRAM
+              FILES test_oi10_ctrl_000.c
+              CFLAGS -DMBIST_RELOCATE=KMBIST_CHAIN_SF_8_IM0 -DRELOCATE_FROM=IM0_BASE -DRELOCATE_TO=IM2_BASE
+          )
+      else()
+          add_rumboot_target(
+              CONFIGURATION IRAM
+              FILES test_oi10_ctrl_000.c
+              CFLAGS -DMBIST_RELOCATE=KMBIST_CHAIN_SF_6_IM1 -DRELOCATE_FROM=IM1_BASE -DRELOCATE_TO=IM2_BASE
+          )
+      endif()
+  else()
+      if (OI10_IRAM_IM0)
+          add_rumboot_target(
+              CONFIGURATION IRAM
+              FILES test_oi10_ctrl_000.c
+              CFLAGS -DMBIST_RELOCATE=KMBIST_CHAIN_SF_8_IM0 -DRELOCATE_FROM=IM0_BASE -DRELOCATE_TO=IM2_BASE
+          )
+          add_rumboot_target(
+              CONFIGURATION IRAM
+              FILES test_oi10_ctrl_000.c
+              CFLAGS -DMBIST_RELOCATE=KMBIST_CHAIN_SF_8_IM0 -DRELOCATE_FROM=IM0_BASE -DRELOCATE_TO=IM2_BASE -DERR_INJ_ENABLED
+              NAME "test_oi10_ctrl_000_inj"
+          )
+      else()
+          add_rumboot_target(
+              CONFIGURATION IRAM
+              FILES test_oi10_ctrl_000.c
+              CFLAGS -DMBIST_RELOCATE=KMBIST_CHAIN_SF_6_IM1 -DRELOCATE_FROM=IM1_BASE -DRELOCATE_TO=IM2_BASE
+          )
+          add_rumboot_target(
+              CONFIGURATION IRAM
+              FILES test_oi10_ctrl_000.c
+              CFLAGS -DMBIST_RELOCATE=KMBIST_CHAIN_SF_6_IM1 -DRELOCATE_FROM=IM1_BASE -DRELOCATE_TO=IM2_BASE -DERR_INJ_ENABLED
+          NAME "test_oi10_ctrl_000_inj"
+          )
+      endif()
+  endif()
 endif()
 
     add_rumboot_target(
@@ -3133,11 +3135,10 @@ endif()
 
     add_rumboot_target(
       CONFIGURATION IRAM
-      FILES simple-iram/test_oi10_cpu_028.c
+      FILES test_oi10_cpu_028.c
       IRUN_FLAGS +set_IM0_to_zero 
                  +disable_L2C_se_insertion
                  +disable_IM0_se_insertion
-#      PREFIX "simple-iram"
       NAME "test_oi10_cpu_028"
     )
     
