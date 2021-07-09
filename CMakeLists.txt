@@ -282,6 +282,7 @@ ADD_SOURCE("src/lib/drivers/nfifo.c")
 ADD_SOURCE("src/lib/weaklings.c")
 ADD_SOURCE("src/lib/drivers/gpio_pl061.c")
 ADD_SOURCE("src/lib/drivers/rcm_cp.c")
+#ADD_SOURCE("src/lib/drivers/interprocessor_irq_lib.c")
 
 if (RUMBOOT_ARCH MATCHES ppc)
   ADD_SOURCE("src/lib/drivers/ugly/plb6mcif2.c")

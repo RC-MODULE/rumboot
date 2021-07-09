@@ -15,5 +15,9 @@
 #define MKIO2_INT                   (54)
 #define MKIO3_INT                   (55)
 
+#define NMC4_INT_0                  (84)
+#define NMC4_INT_1                  (85)
+
+
 #endif // !O32T_INTERRUPTS_H
 

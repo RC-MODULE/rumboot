@@ -3663,7 +3663,7 @@ endif()
 #    CFLAGS -DSDRAM_INIT -DADD_TLB -DM_BASE=SRAM0_BASE
     IRUN_FLAGS ${ROM_6500K_OPTS}
     LOAD IM0BIN SELF
-        MBIN multistore-msync-supp-3
+        MBIN l2bug-multistore-msync-supp-3
   )
 
    add_rumboot_target(
