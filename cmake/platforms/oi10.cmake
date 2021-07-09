@@ -71,10 +71,12 @@ if (OI10_IRAM_IM0)
   set(BOOTROM_IFLAGS +GTUBE_ONLY_PRODUCTION_OPCODES +OI10_IRAM_IM0)
   set(IRAM_LDS_FILE oi10/iram_legacy.lds)
   set(STUB_LDS_FILE oi10/bootrom_legacy.lds)
+  set(IRAM_SPL_LDS_FILE oi10/iram-spl-im0.lds)
   message(WARNING "Tests will run from IM0. This configuration is legacy and will be removed in future")
 else()
   set(IRAM_LDS_FILE oi10/iram.lds)
   set(STUB_LDS_FILE oi10/bootrom.lds )
+  set(IRAM_SPL_LDS_FILE oi10/iram-spl.lds)
 endif()
 
 rumboot_add_configuration(
@@ -151,7 +153,7 @@ rumboot_add_configuration(IRAM_LE
 rumboot_add_configuration (
     IRAM_SPL
     CONFIGURATION IRAM
-    LDS oi10/iram-spl.lds
+    LDS ${IRAM_SPL_LDS_FILE}
     PREFIX spl
     LDFLAGS -Wl,-emain
     CFLAGS -DRUMBOOT_NOINIT
