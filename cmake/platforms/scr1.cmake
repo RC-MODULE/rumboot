@@ -514,6 +514,7 @@ endif() #### EXPERIMENT_STAGE_2_SUB_1
     ADD_VPE_COUPLED_TEST_LOOP(vpe_26_autonom_nowdma main_vpe_26_autonom)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_28_perf main_28_perf) # VPE_28
 
+
     ###############
     # VPE Tests adapted for NPE assembly
     ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(npe_vpe_op0_f_int main_npe_vpe_op0_f_int)
@@ -532,6 +533,11 @@ endif() #### EXPERIMENT_STAGE_2_SUB_1
     ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(npe_vpe_op0_relu_fp  main_npe_vpe_op0_relu_fp)
     ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(npe_vpe_op1_relu_int main_npe_vpe_op1_relu_int)
     ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(npe_vpe_op1_relu_fp  main_npe_vpe_op1_relu_fp)
+
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_op0_vec_ex_int main_vpe_op0_vec_ex_int)
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_op1_vec_ex_int main_vpe_op1_vec_ex_int)
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_op0_vec_ex_fp main_vpe_op0_vec_ex_fp)
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_op1_vec_ex_fp main_vpe_op1_vec_ex_fp)
 
     ###############
 
