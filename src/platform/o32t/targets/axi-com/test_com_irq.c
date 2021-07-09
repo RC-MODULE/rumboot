@@ -147,13 +147,13 @@ int main()
 	uintptr_t dsrc1 = rumboot_virt_to_dma(src1);
 	uintptr_t ddst1 = rumboot_virt_to_dma(dst1);
 
-   if( (comp_dma_run( /*rumboot_virt_to_dma(src0)*/dsrc0, /*rumboot_virt_to_dma(dst0)*/ddst0,COM0_BASE,COM1_BASE,(ARR_SIZE>>	1)) != 0)
+   if( (comp_dma_irq_run( /*rumboot_virt_to_dma(src0)*/dsrc0, /*rumboot_virt_to_dma(dst0)*/ddst0,COM0_BASE,COM1_BASE,&COM0_Cpl_tr,&COM1_Cpl_rcv,(ARR_SIZE>>1)) != 0)
 	||	memcmp( src0, dst0, sizeof(uint32_t)*ARR_SIZE  ) != 0){
 	  return 1;
 	 } 
 	 	
-	if( (comp_dma_run( /*rumboot_virt_to_dma(src1))*/dsrc1, /*rumboot_virt_to_dma(dst1)*/ddst1,COM1_BASE,COM0_BASE,(ARR_SIZE>>	1)) != 0)
-	||	(memcmp( src1, dst1, sizeof(uint32_t)*ARR_SIZE  ) != 0)){
+	if( (comp_dma_irq_run( /*rumboot_virt_to_dma(src1))*/dsrc1, /*rumboot_virt_to_dma(dst1)*/ddst1,COM1_BASE,COM0_BASE,&COM1_Cpl_tr,&COM0_Cpl_rcv,(ARR_SIZE>>1)) != 0)
+	||	memcmp( src1, dst1, sizeof(uint32_t)*ARR_SIZE  ) != 0){
         return 1;
 	}
  	rumboot_printf( "COM0_Cpl_tr= %d\n",COM0_Cpl_tr );
