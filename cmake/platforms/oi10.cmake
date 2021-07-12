@@ -1242,6 +1242,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       FILES test_oi10_spi.c
       CFLAGS -DGSPI_BASE=GSPI_0_BASE -DGSPI_INT=GSPI0_INT -DGSPI_CHECK_REGS -DGPIO1_X=0x1
       IRUN_FLAGS +spi_irq_test
+                 +BOOTMGR_PULLDOWN
       PREFIX gspi0
     )
     add_rumboot_target(
@@ -1249,6 +1250,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       FILES test_oi10_spi.c
       CFLAGS -DGSPI_BASE=GSPI_1_BASE -DGSPI_INT=GSPI1_INT -DGSPI_CHECK_REGS -DGPIO1_X=0x2
       IRUN_FLAGS +spi_irq_test
+                 +BOOTMGR_PULLDOWN
       PREFIX gspi1
     )
 
