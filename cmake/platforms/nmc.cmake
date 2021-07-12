@@ -329,7 +329,23 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       PACKIMAGE_FLAGS -F SYNC False
       NAME cp0-booter
     )
-    endif()
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      IRUN_FLAGS +BOOTMGR_PULLDOWN
+      FILES o32t_tests/periph_regs_check.c
+    )
+
+    add_rumboot_target(
+      CONFIGURATION IRAM  
+      NAME nmc_nterprocessor_irq_integration
+      FILES o32t_tests/nmc_interprocessor_irq_integration.c
+      FEATURES STUB #Не создавать runner'а
+      #Устанавливаем флаги. Работать асинхронно, останавливать NMC перед запуском
+      PACKIMAGE_FLAGS -F SYNC False -F kill True
+  
+    )
+
+  endif()
   
   add_rumboot_target(
     CONFIGURATION IRAM
@@ -369,10 +385,7 @@ add_rumboot_target(
   FILES common/bootrom/timer.c
 )
 
-add_rumboot_target(
-  CONFIGURATION IRAM
-  FILES iram/periph_regs_check.c
-)
+
   dap_integration_test(dap/nmc_dbg_brp.S)
   dap_integration_test(dap/nmc_dbg_dap_integration.S)
   dap_integration_test(dap/nmc_dbg_drar_dsar.S)
@@ -380,15 +393,7 @@ add_rumboot_target(
   dap_integration_test(dap/nmc_dbg_modes.S)
   dap_integration_test(dap/nmc_dbg_sftrst.S)
 
-  add_rumboot_target(
-    CONFIGURATION IRAM  
-    NAME nmc_nterprocessor_irq_integration
-    FILES stubs/nmc_interprocessor_irq_integration.c
-    FEATURES STUB #Не создавать runner'а
-    #Устанавливаем флаги. Работать асинхронно, останавливать NMC перед запуском
-    PACKIMAGE_FLAGS -F SYNC False -F kill True
 
-  )
 
 endmacro()
 
