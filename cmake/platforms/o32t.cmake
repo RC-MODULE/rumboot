@@ -211,49 +211,49 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
 
 
-  rumboot_bootrom_integration_test(BROM
+  rumboot_bootrom_integration_test(ROM
     NAME "host-mockup"
     IRUN_FLAGS +BOOT_HOST=1 ${ROM_6500K_OPTS}
     LOAD
     HOSTMOCK  spl-ok
   )
 
-  rumboot_bootrom_integration_test(BROM
+  rumboot_bootrom_integration_test(ROM
     NAME "host-mockup-little-endian"
     IRUN_FLAGS +BOOT_HOST=1 ${ROM_6500K_OPTS}
     LOAD
     HOSTMOCK  spl-reverse-endian-ok
   )
 
-  rumboot_bootrom_integration_test(BROM
+  rumboot_bootrom_integration_test(ROM
     NAME "host-mockup-relocation"
     IRUN_FLAGS +BOOT_HOST=1 ${ROM_6500K_OPTS}
     LOAD
       HOSTMOCK  spl-relocation-ok
   )
 
-  rumboot_bootrom_integration_test(BROM
+  rumboot_bootrom_integration_test(ROM
     NAME "host-mockup-relocation-and-compression"
     IRUN_FLAGS +BOOT_HOST=1 ${ROM_6500K_OPTS}
     LOAD
       HOSTMOCK  spl-reloc-compressed-ok
   )
 
-  rumboot_bootrom_integration_test(BROM
+  rumboot_bootrom_integration_test(ROM
     NAME "host-mockup-compressed"
     IRUN_FLAGS +BOOT_HOST=1 ${ROM_6500K_OPTS}
     LOAD
       HOSTMOCK  spl-compressed-ok
   )
 
-  rumboot_bootrom_integration_test(BROM
+  rumboot_bootrom_integration_test(ROM
     NAME "host-mockup-v2"
     IRUN_FLAGS +BOOT_HOST=1 ${ROM_6500K_OPTS}
     LOAD
     HOSTMOCK  spl-v2-ok
   )
 
-  rumboot_bootrom_integration_test(BROM
+  rumboot_bootrom_integration_test(ROM
     NAME "host-mockup-fallthough"
     IRUN_FLAGS ${ROM_6500K_OPTS}
     LOAD
@@ -263,7 +263,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     HOSTMOCK  spl-ok
   )
 
-  rumboot_bootrom_integration_test(BROM
+  rumboot_bootrom_integration_test(ROM
     NAME "host-fallthough-edcl"
     IRUN_FLAGS ${ROM_6500K_OPTS} +edcl_loader0
     LOAD
@@ -273,7 +273,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     edcl_image  spl-ok
   )
 
-  rumboot_bootrom_integration_test(BROM
+  rumboot_bootrom_integration_test(ROM
     NAME "host-fallthough-rmap"
     IRUN_FLAGS ${ROM_6500K_OPTS} +rmap_master=0
     LOAD
@@ -283,42 +283,42 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     rmap_file spl-ok
   )
 
-  rumboot_bootrom_integration_test(BROM
+  rumboot_bootrom_integration_test(ROM
     NAME "host-edcl-0"
     IRUN_FLAGS +BOOT_HOST=1 ${ROM_6500K_OPTS} +edcl_loader0
     LOAD
     edcl_image  spl-ok
   )
 
-  rumboot_bootrom_integration_test(BROM
+  rumboot_bootrom_integration_test(ROM
     NAME "host-edcl-1"
     IRUN_FLAGS +BOOT_HOST=1 ${ROM_6500K_OPTS} +edcl_loader1
     LOAD
     edcl_image spl-ok
   )
 
-  rumboot_bootrom_integration_test(BROM
+  rumboot_bootrom_integration_test(ROM
     NAME "host-rmap-0"
     IRUN_FLAGS +BOOT_HOST=1 ${ROM_6500K_OPTS} +rmap_master=0
     LOAD
     rmap_file spl-ok
   )
 
-  rumboot_bootrom_integration_test(BROM
+  rumboot_bootrom_integration_test(ROM
     NAME "host-rmap-1"
     IRUN_FLAGS +BOOT_HOST=1 ${ROM_6500K_OPTS} +rmap_master=1
     LOAD
     rmap_file spl-ok
   )
 
-  rumboot_bootrom_integration_test(BROM
+  rumboot_bootrom_integration_test(ROM
     NAME "host-rmap-2"
     IRUN_FLAGS +BOOT_HOST=1 ${ROM_6500K_OPTS} +rmap_master=2
     LOAD
     rmap_file spl-ok
   )
 
-  rumboot_bootrom_integration_test(BROM
+  rumboot_bootrom_integration_test(ROM
     NAME "host-rmap-3"
     IRUN_FLAGS +BOOT_HOST=1 ${ROM_6500K_OPTS} +rmap_master=3
     LOAD
@@ -326,19 +326,27 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
   )
 
   if (NOT RUMBOOT_BUILD_TYPE STREQUAL "Debug")
-    rumboot_bootrom_integration_test(BROM
+
+    rumboot_bootrom_integration_test(ROM
       NAME "host-xmodem"
       IRUN_FLAGS +BOOT_HOST=1 ${ROM_6500K_OPTS}
       LOAD
         XMODEM0  spl-ok
     )
 
-    rumboot_bootrom_integration_test(BROM
+    rumboot_bootrom_integration_test(ROM
+      NAME "host-xmodem"
+      IRUN_FLAGS +BOOT_HOST=1 ${ROM_6500K_OPTS}
+      LOAD
+        XMODEM0  spl-ok
+    )
+
+    rumboot_bootrom_integration_test(ROM
       NAME "host-easter-egg"
       IRUN_FLAGS +BOOT_HOST=1 ${ROM_6500K_OPTS} +uart_easter_egg
     )
 
-    rumboot_bootrom_integration_test(BROM
+    rumboot_bootrom_integration_test(ROM
       NAME "host-fallthough-easter-egg"
       IRUN_FLAGS ${ROM_6500K_OPTS} +uart_easter_egg
       LOAD
@@ -348,7 +356,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     )
   endif()
 
-  rumboot_bootrom_integration_test(BROM
+  rumboot_bootrom_integration_test(ROM
     NAME "sdio-ok"
     IRUN_FLAGS +BOOT_SD_CD=0 +select_sdio0 ${ROM_6500K_OPTS}
     LOAD
@@ -358,7 +366,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     HOSTMOCK  spl-fail
   )
 
-  rumboot_bootrom_integration_test(BROM
+  rumboot_bootrom_integration_test(ROM
     NAME "nor-with-ecc-ok-bypass"
     IRUN_FLAGS ${ROM_6500K_OPTS} +BOOT_EMI_ECC=1 +BOOT_PLL_BYP=1
     LOAD
@@ -368,7 +376,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     HOSTMOCK  spl-fail
   )
 
-  rumboot_bootrom_integration_test(BROM
+  rumboot_bootrom_integration_test(ROM
     NAME "nor-with-ecc-ok"
     IRUN_FLAGS ${ROM_6500K_OPTS} +BOOT_EMI_ECC=1
     LOAD
@@ -378,7 +386,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     HOSTMOCK  spl-fail
   )
 
-  rumboot_bootrom_integration_test(BROM
+  rumboot_bootrom_integration_test(ROM
     NAME "nor-with-ecc-with-cpu-ecc-ok"
     IRUN_FLAGS ${ROM_6500K_OPTS} +BOOT_EMI_ECC=1 +BOOT_CPU_ECC=1
     LOAD
@@ -389,7 +397,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
   )
 
 
-  rumboot_bootrom_integration_test(BROM
+  rumboot_bootrom_integration_test(ROM
     NAME "nor-no-ecc-ok"
     IRUN_FLAGS +BOOT_EMI_ECC=0 ${ROM_6500K_OPTS}
     LOAD
@@ -399,7 +407,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     HOSTMOCK  spl-fail
   )
 
-  rumboot_bootrom_integration_test(BROM
+  rumboot_bootrom_integration_test(ROM
     NAME "nor-with-ecc-ok-direct"
     IRUN_FLAGS +BOOT_EMI_ECC=1 ${ROM_6500K_OPTS} +BOOT_NOR=0
     LOAD
@@ -410,7 +418,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     BOOTROM_NOR bootrom-loader
   )
 
-  rumboot_bootrom_integration_test(BROM
+  rumboot_bootrom_integration_test(ROM
     NAME "nor-no-ecc-ok-direct"
     IRUN_FLAGS +BOOT_EMI_ECC=0 ${ROM_6500K_OPTS} +BOOT_NOR=0
     LOAD
@@ -421,7 +429,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     BOOTROM_NOR bootrom-loader
   )
 
-  rumboot_bootrom_integration_test(BROM
+  rumboot_bootrom_integration_test(ROM
     NAME "spi-cs0-ok"
     IRUN_FLAGS ${ROM_6500K_OPTS}
     LOAD
@@ -438,36 +446,36 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     FEATURES STUB
   )
 
-  rumboot_bootrom_integration_test(BROM
+  rumboot_bootrom_integration_test(ROM
     NAME "nmc-extboot-cp01"
     IRUN_FLAGS ${ROM_6500K_OPTS} +BOOT_HOST=1 +nmc_ext_poll_test
     LOAD
       HOSTMOCK  nmc:stub-cp1-booter,nmc:spl-cp-com1,spl-ok
   )
 
-  rumboot_bootrom_integration_test(BROM
+  rumboot_bootrom_integration_test(ROM
     NAME "nmc-extboot-cp10"
     IRUN_FLAGS ${ROM_6500K_OPTS} +BOOT_HOST=1 +nmc_ext_poll_test
     LOAD
       HOSTMOCK  nmc:stub-cp0-booter,nmc:spl-cp-com0,spl-ok
   )
 
-  rumboot_bootrom_integration_test(BROM
+  rumboot_bootrom_integration_test(ROM
     NAME "serial-9600"
     IRUN_FLAGS ${ROM_9600_OPTS} +UART0_STOP_ON_MATCH +UART0_STOP_ON_MISMATCH
     TIMEOUT 10 ms
   )
-  rumboot_bootrom_integration_test(BROM
+  rumboot_bootrom_integration_test(ROM
     NAME "serial-19200"
     IRUN_FLAGS ${ROM_19200_OPTS} +UART0_STOP_ON_MATCH +UART0_STOP_ON_MISMATCH
     TIMEOUT 10 ms
   )
-  rumboot_bootrom_integration_test(BROM
+  rumboot_bootrom_integration_test(ROM
     NAME "serial-115200"
     IRUN_FLAGS ${ROM_115200_OPTS} +UART0_STOP_ON_MATCH +UART0_STOP_ON_MISMATCH
     TIMEOUT 10 ms
   )
-  rumboot_bootrom_integration_test(BROM
+  rumboot_bootrom_integration_test(ROM
     NAME "serial-6500000"
     IRUN_FLAGS ${ROM_6500K_OPTS} +UART0_STOP_ON_MATCH +UART0_STOP_ON_MISMATCH
     TIMEOUT 10 ms
