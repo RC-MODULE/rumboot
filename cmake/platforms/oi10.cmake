@@ -2382,6 +2382,7 @@ endif()
         FILES test_oi10_hscb_com_simult_big.c
         PREFIX "hscb_com_desc_im1_data_ssram"
         NAME test_hscb_com_big
+        TESTGROUP o32tonly
     )    
 #-------------------------------------------------------    
     
@@ -2964,6 +2965,7 @@ endif()
         CONFIGURATION IRAM
         FILES test_l2c_im0_scrubber_apb.c
         NAME "test_o32t_l2cache_and_im0_scrubbers_apb"
+        TESTGROUP o32tonly
     )
 
     add_rumboot_target(
@@ -2972,6 +2974,7 @@ endif()
         IRUN_FLAGS +enable_IM0_de_insertion
                 +set_IM0_to_zero
         NAME "test_im0_double_error"
+        TESTGROUP o32tonly
     )
 
 #********** NACHINE_CHECK disable versions *****************************************************************************************************************************************************    
