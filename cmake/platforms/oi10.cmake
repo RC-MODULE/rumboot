@@ -3365,6 +3365,16 @@ endif()
     add_rumboot_target(
         CONFIGURATION IRAM
         CFLAGS
+            -DINTERNAL_LOOP_TEST_ALL
+        FILES hscb_loop.c
+        PREFIX "hscb_0123"
+        NAME "internal_loop_test_all"
+        TESTGROUP hwonly
+    )
+    
+    add_rumboot_target(
+        CONFIGURATION IRAM
+        CFLAGS
             -DHSCB_BASE=HSCB0_BASE
             -DBOARD_TEST
 #            -DON_BOARD
@@ -3392,7 +3402,13 @@ endif()
       NAME functional-test-chain
     )
 
-
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES hscb_pad_test.c
+      TESTGROUP hwonly
+      NAME hscb_pad_test
+    )
+    
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES test_oi10_plb6_axi.c
