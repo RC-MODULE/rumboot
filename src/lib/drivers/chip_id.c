@@ -30,12 +30,14 @@
  *!   'if' statements order matters!
  */
 enum chip_ip get_chip_id() {
-    enum chip_ip id_marker = UNKNOWN;
+    enum chip_ip id_marker = CHIP_UNKNOWN;
+#ifdef __PPC__
     if (dcr_read(0x800E0000) == 0x0){ // Check L2Cach scrubber is absent
-        id_marker = OI10v3;
+        id_marker = CHIP_OI10V3;
     }
     if (dcr_read(0x800E0000) == 0x62726353){ // Check L2Cach scrubber identifier
-        id_marker = O32T;
+        id_marker = CHIP_O32T;
     }
+#endif
     return id_marker;
 }

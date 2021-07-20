@@ -772,9 +772,9 @@ struct regpoker_checker greth_check_array_o32t[] =
 void regs_check(uint32_t base_addr)
 {
     struct regpoker_checker* greth_check_array;
-    if (get_chip_id() == OI10v3)
+    if (get_chip_id() == CHIP_OI10V3)
         greth_check_array = greth_check_array_oi10;
-    else if (get_chip_id() == O32T)
+    else if (get_chip_id() == CHIP_O32T)
         greth_check_array = greth_check_array_oi10;
 //    else
 //        return 0;

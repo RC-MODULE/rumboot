@@ -3,11 +3,11 @@
  */
 
 enum chip_ip {
-    OI10v1,
-    OI10v2,
-    OI10v3,
-    O32T,
-    UNKNOWN
+    CHIP_OI10V1,
+    CHIP_OI10V2,
+    CHIP_OI10V3,
+    CHIP_O32T,
+    CHIP_UNKNOWN
 };
 
 enum chip_ip get_chip_id();
