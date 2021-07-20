@@ -14,6 +14,7 @@ file(GLOB PLATFORM_SOURCES
     ${CMAKE_SOURCE_DIR}/src/arch/ppc/p64.S
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/*.c
     ${CMAKE_SOURCE_DIR}/src/lib/drivers/irq-mpic128.c
+    ${CMAKE_SOURCE_DIR}/src/lib/drivers/chip_id.c
     ${CMAKE_SOURCE_DIR}/src/arch/ppc/ppc_mmu_impl.S
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/lib/drivers/mpic128-timers.c
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/lib/drivers/p64.c
