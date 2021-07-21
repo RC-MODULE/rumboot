@@ -28,8 +28,6 @@
 #include <platform/devices/nor_1636RR4.h>
 #include <platform/devices/hscb.h>
 
-#include <devices/chip_id.h>
-
 #ifndef DCR_EM2_AXIMCIF2_BASE
 #define DCR_EM2_AXIMCIF2_BASE           0x800D0000
 #endif
@@ -741,21 +739,7 @@ void test_oi10_greth(void)
 
 
 #ifdef CHECK_PLB6_AXI_SINGLE
-struct regpoker_checker greth_check_array_oi10[] =
-{
-    {"CTRL              ", REGPOKER_READ32,  CTRL              , 0x9A000090,  0xFE007CFF},
-    {"MDIO_CTRL         ", REGPOKER_READ32,  MDIO_CTRL         , 0x01E10140,  0xFFFFFFCF},
-    {"TRANSMIT_DESCR_PTR", REGPOKER_READ8,   TRANSMIT_DESCR_PTR, 0x00000000,  0x3F8},
-    {"RECEIVER_DESCR_PTR", REGPOKER_READ8,   RECEIVER_DESCR_PTR, 0x00000000,  0x3F8},
-    {"EDCL_IP           ", REGPOKER_READ32,  EDCL_IP           , EDCLIP,      ~0},
-    {"EDCL_MAC_MSB      ", REGPOKER_READ32,  EDCL_MAC_MSB      , EDCLMAC_MSB, 0xFFFF},
-    {"EDCL_MAC_LSB      ", REGPOKER_READ32,  EDCL_MAC_LSB      , EDCLMAC_LSB, ~0},
-    {"EDCL_IP           ", REGPOKER_WRITE32, EDCL_IP           , 0x00000000,  ~0},
-    {"EDCL_MAC_MSB      ", REGPOKER_WRITE32, EDCL_MAC_MSB      , 0x00000000,  0xFFFF},
-    {"EDCL_MAC_LSB      ", REGPOKER_WRITE32, EDCL_MAC_LSB      , 0x00000000,  ~0}
-};
-
-struct regpoker_checker greth_check_array_o32t[] =
+struct regpoker_checker greth_check_array[] =
 {
     {"CTRL              ", REGPOKER_READ32,  CTRL              , 0x9A000090,  0xFE007CFF},
     {"MDIO_CTRL         ", REGPOKER_READ32,  MDIO_CTRL         , 0x01E10140,  0xFFFFFFCF},
@@ -771,15 +755,7 @@ struct regpoker_checker greth_check_array_o32t[] =
 
 void regs_check(uint32_t base_addr)
 {
-    struct regpoker_checker* greth_check_array;
-    if (get_chip_id() == CHIP_OI10V3)
-        greth_check_array = greth_check_array_oi10;
-    else if (get_chip_id() == CHIP_O32T)
-        greth_check_array = greth_check_array_oi10;
-//    else
-//        return 0;
-    
-    
+
     if (base_addr == GRETH_1_BASE)
     {
         rumboot_printf("Checking access to GRETH%d(0x%x) registers\n",
@@ -790,6 +766,8 @@ void regs_check(uint32_t base_addr)
     {
         rumboot_printf("Checking access to GRETH%d(0x%x) registers\n",
                 0, base_addr);
+        greth_check_array[4].expected  = EDCLIP0;
+        greth_check_array[6].expected |= EDCLADDRL0;
     }
 
     TEST_ASSERT(!(rumboot_regpoker_check_array(
