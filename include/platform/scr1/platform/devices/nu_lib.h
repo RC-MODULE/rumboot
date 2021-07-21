@@ -29,6 +29,13 @@
     RoundMode_Up
   }RoundMode;
 
+  /**
+  Режим обхода при чтении данных из DMA
+  */
+  typedef enum TraceMode {
+    TraceMode_PPE,
+    TraceMode_MPE
+  }TraceMode;
 
   /**
   Активация элемента
@@ -245,6 +252,7 @@
     RoundMode   c3_round_mode   ;
     Enable      nan_to_zero_input;
     Enable      nan_to_zero_output;
+    TraceMode   trace_mode      ;
     ConfigOp01  op0_config      ;
     ConfigOp01  op1_config      ;
     ConfigOp2   op2_config      ;

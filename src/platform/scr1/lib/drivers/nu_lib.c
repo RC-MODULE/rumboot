@@ -13,8 +13,6 @@
 #include <platform/devices/nu_cpdmac_lib.h>
 #include <platform/devices/nu_lib.h>
 
-#define MPE_MEM_PATH
-
 void nu_vpe_load_config(ConfigVPE* cfg, void* cfg_bin) {
   int32_t* ptr;
 
@@ -241,6 +239,15 @@ int nu_ppe_reg_load_config (ConfigREGPPE* cfg_reg, void* cfg_reg_bin) {
 
     rumboot_printf("  %s = %s \n", name, RoundModeNames[(int) mode] );
   }
+  
+  void nu_vpe_print_TraceMode(TraceMode mode, char* name) {
+    static char* TraceModeNames[]= {
+      "TraceMode_PPE",
+      "TraceMode_MPE"
+    };
+  
+    rumboot_printf("  %s = %s \n", name, TraceModeNames[(int) mode] );
+  }
 
 
   void nu_vpe_print_Enable(Enable enable, char* name) {
@@ -358,6 +365,8 @@ void nu_vpe_print_config(ConfigVPE* cfg){
   
   nu_vpe_print_Enable(cfg->nan_to_zero_input,"nan_to_zero_input");
   nu_vpe_print_Enable(cfg->nan_to_zero_output,"nan_to_zero_output");
+  
+  nu_vpe_print_TraceMode(cfg->trace_mode,"trace_mode");
 
   rumboot_printf("ConfigOp01 (0):\n");
 
@@ -682,7 +691,7 @@ void nu_vpe_setup(uintptr_t base, ConfigVPE* cfg, ConfigDMAVPE* cfg_dma) {
              ((cfg->op2_config.coef_type>>1) << 15) | ((cfg->op2_rdma_config.dma_data_mode&0x1)<<14) |   // TAKES IT FROM DMA struct!!!! NOT GOOD!!!
              ((cfg->op1_config.coef_type>>1) << 13) | ((cfg->op1_rdma_config.dma_data_mode&0x1)<<12) |   // TAKES IT FROM DMA struct!!!! NOT GOOD!!!
              ((cfg->op0_config.coef_type>>1) << 11) | ((cfg->op0_rdma_config.dma_data_mode&0x1)<<10) |   // TAKES IT FROM DMA struct!!!! NOT GOOD!!!
-             (                 (tmp_type>>1) <<  9) | ((cfg->dst_flying == Enable_NotEn)<<8) |           // that 8bit definition is RIGHT only here !!!!!!!!!!!
+             (                 (tmp_type>>1) <<  9) | (/*(cfg->dst_flying == Enable_NotEn)*/cfg->trace_mode<<8) |           // that 8bit definition is RIGHT only here !!!!!!!!!!!
              (cfg->nan_to_zero_input << 4) | (cfg->dst_flying << 1) | (cfg->src_flying << 0) ;
   iowrite32(tmp_data, base + NU_VPE + NU_VPE_OP_MODE);
   
@@ -1018,14 +1027,47 @@ void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics, Conf
   elem_size = tmp_data_size; 
 
   cfg->wdma_config.dma_frag_size       = 16 * elem_size ;                                          
-  cfg->wdma_config.dma_frag_last_size  = ((metrics->C % 16) + ((metrics->C%16) == 0)*16) * elem_size ;
-  cfg->wdma_config.dma_stride_z        = 16                      * elem_size                         ; //coef_z == vector_size * elem_size
-  cfg->wdma_config.dma_stride_x        = metrics->C              * elem_size                         ; //coef_x == full_line_z             = full_line_C*elem_size
-  cfg->wdma_config.dma_stride_y        = metrics->C * metrics->W * elem_size                         ; //coef_y == full_line_z*full_line_x = full_line_C*full_line_W*elem_size
-  cfg->wdma_config.dma_border_z        = (metrics->C/16 - ((metrics->C%16) == 0)) * 16 * elem_size          ; //line_size (bytes)               = (Z-1)*elem_size
-  cfg->wdma_config.dma_border_x        = (metrics->W - 1) * cfg->wdma_config.dma_stride_x                    ; //plane_size - last line (bytes)  = (X-1)*full_line_z*elem_size
-  cfg->wdma_config.dma_border_y        = (metrics->H - 1) * cfg->wdma_config.dma_stride_y                    ; //cube_size  - last plane (bytes) = (Y-1)*full_line_z*full_line_x*elem_size
-   
+  
+  if (cfg->trace_mode == TraceMode_MPE) { // MPE read mode
+     cfg->wdma_config.dma_frag_last_size  = ((metrics->C % 16) + ((metrics->C%16) == 0)*16) * elem_size ;
+     cfg->wdma_config.dma_stride_z        = 16                      * elem_size                         ; //coef_z == vector_size * elem_size
+     cfg->wdma_config.dma_stride_x        = metrics->C              * elem_size                         ; //coef_x == full_line_z             = full_line_C*elem_size
+     cfg->wdma_config.dma_stride_y        = metrics->C * metrics->W * elem_size                         ; //coef_y == full_line_z*full_line_x = full_line_C*full_line_W*elem_size 
+     cfg->wdma_config.dma_border_z        = (metrics->C/16 - ((metrics->C%16) == 0)) * 16 * elem_size   ; //line_size (bytes)               = (Z-1)*elem_size
+     cfg->wdma_config.dma_border_x        = (metrics->W - 1) * cfg->wdma_config.dma_stride_x            ; //plane_size - last line (bytes)  = (X-1)*full_line_z*elem_size
+     cfg->wdma_config.dma_border_y        = (metrics->H - 1) * cfg->wdma_config.dma_stride_y            ; //cube_size  - last plane (bytes) = (Y-1)*full_line_z*full_line_x*elem_size
+    
+     cfg->wdma_config.dma_box_st_size_x  = 128    - 1 ;
+     cfg->wdma_config.dma_box_st_size_y  = 1      - 1 ;
+     cfg->wdma_config.dma_box_st_size_z  = 128/16 - 1 ;
+     cfg->wdma_config.dma_box_size_x     = 128    - 1 ;
+     cfg->wdma_config.dma_box_size_y     = 1      - 1 ;
+     cfg->wdma_config.dma_box_size_z     = 128/16 - 1 ;
+     cfg->wdma_config.dma_box_offset_x   = 0 ;
+     cfg->wdma_config.dma_box_offset_y   = 0 ;
+     cfg->wdma_config.dma_box_offset_z   = 0 ;  
+  }
+  else {  // PPE read mode
+     cfg->wdma_config.dma_frag_last_size  = ((metrics->C % 16) + ((metrics->C%16) == 0)*16) * elem_size ;
+     cfg->wdma_config.dma_stride_z        = 16                      * elem_size                         ; //coef_z == vector_size * elem_size
+     cfg->wdma_config.dma_stride_x        = metrics->C              * elem_size                         ; //coef_x == full_line_z             = full_line_C*elem_size
+     cfg->wdma_config.dma_stride_y        = metrics->C * metrics->W * elem_size                         ; //coef_y == full_line_z*full_line_x = full_line_C*full_line_W*elem_size 
+     cfg->wdma_config.dma_border_z        = (metrics->C/16 - ((metrics->C%16) == 0)) * 16 * elem_size   ; //line_size (bytes)               = (Z-1)*elem_size
+     cfg->wdma_config.dma_border_x        = (metrics->W - 1) * cfg->wdma_config.dma_stride_x        ; //plane_size - last line (bytes)  = (X-1)*full_line_z*elem_size
+     cfg->wdma_config.dma_border_y        = (metrics->H - 1) * cfg->wdma_config.dma_stride_y        ; //cube_size  - last plane (bytes) = (Y-1)*full_line_z*full_line_x*elem_size
+    
+     cfg->wdma_config.dma_box_st_size_x  = metrics->W - 1 ;
+     cfg->wdma_config.dma_box_st_size_y  = metrics->H - 1 ;
+     cfg->wdma_config.dma_box_st_size_z  = 1 - 1 ;
+     cfg->wdma_config.dma_box_size_x     = metrics->W - 1 ;
+     cfg->wdma_config.dma_box_size_y     = metrics->H - 1 ;
+     cfg->wdma_config.dma_box_size_z     = 1 - 1 ;
+     cfg->wdma_config.dma_box_offset_x   = 0 ;
+     cfg->wdma_config.dma_box_offset_y   = 0 ;
+     cfg->wdma_config.dma_box_offset_z   = 0 ;    
+  }
+
+
   // SRC_DMA --------------------------------------------------------------------------------------------
   if(cfg->in_data_type == DataTypeExt_Int32 || cfg->in_data_type == DataTypeExt_Fp32) {
     // if 32bit Input Data then Main Channel Works
@@ -1066,13 +1108,44 @@ void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics, Conf
     cfg->src_rdma_config.dma_border_y        = (metrics->H - 1) * cfg->src_rdma_config.dma_stride_y ; //cube_size  - last plane (bytes) = (Y-1)*full_line_z*full_line_x*elem_size
   }
   else {  // MPE read mode
-    cfg->src_rdma_config.dma_frag_last_size = ((metrics->C % 16) + ((metrics->C%16) == 0)*16) * elem_size ;
-    cfg->src_rdma_config.dma_stride_z        = 16                      * elem_size                         ; //coef_z == vector_size * elem_size
-    cfg->src_rdma_config.dma_stride_x        = metrics->C              * elem_size                         ; //coef_x == full_line_z             = full_line_C*elem_size
-    cfg->src_rdma_config.dma_stride_y        = metrics->C * metrics->W * elem_size                         ; //coef_y == full_line_z*full_line_x = full_line_C*full_line_W*elem_size
-    cfg->src_rdma_config.dma_border_z        = (metrics->C/16 - ((metrics->C%16) == 0)) * 16 * elem_size   ; //line_size (bytes)               = (Z-1)*elem_size
-    cfg->src_rdma_config.dma_border_x        = (metrics->W - 1) * cfg->src_rdma_config.dma_stride_x         ; //plane_size - last line (bytes)  = (X-1)*full_line_z*elem_size
-    cfg->src_rdma_config.dma_border_y        = (metrics->H - 1) * cfg->src_rdma_config.dma_stride_y         ; //cube_size  - last plane (bytes) = (Y-1)*full_line_z*full_line_x*elem_size
+     if (cfg->trace_mode == TraceMode_MPE) { // MPE read mode
+       cfg->src_rdma_config.dma_frag_last_size  = ((metrics->C % 16) + ((metrics->C%16) == 0)*16) * elem_size ;
+       cfg->src_rdma_config.dma_stride_z        = 16                      * elem_size                         ; //coef_z == vector_size * elem_size
+       cfg->src_rdma_config.dma_stride_x        = metrics->C              * elem_size                         ; //coef_x == full_line_z             = full_line_C*elem_size
+       cfg->src_rdma_config.dma_stride_y        = metrics->C * metrics->W * elem_size                         ; //coef_y == full_line_z*full_line_x = full_line_C*full_line_W*elem_size 
+       cfg->src_rdma_config.dma_border_z        = (metrics->C/16 - ((metrics->C%16) == 0)) * 16 * elem_size   ; //line_size (bytes)               = (Z-1)*elem_size
+       cfg->src_rdma_config.dma_border_x        = (metrics->W - 1) * cfg->src_rdma_config.dma_stride_x         ; //plane_size - last line (bytes)  = (X-1)*full_line_z*elem_size
+       cfg->src_rdma_config.dma_border_y        = (metrics->H - 1) * cfg->src_rdma_config.dma_stride_y         ; //cube_size  - last plane (bytes) = (Y-1)*full_line_z*full_line_x*elem_size
+      
+       cfg->src_rdma_config.dma_box_st_size_x  = 128    - 1 ;
+       cfg->src_rdma_config.dma_box_st_size_y  = 1      - 1 ;
+       cfg->src_rdma_config.dma_box_st_size_z  = 128/16 - 1 ;
+       cfg->src_rdma_config.dma_box_size_x     = 128    - 1 ;
+       cfg->src_rdma_config.dma_box_size_y     = 1      - 1 ;
+       cfg->src_rdma_config.dma_box_size_z     = 128/16 - 1 ;
+       cfg->src_rdma_config.dma_box_offset_x   = 0 ;
+       cfg->src_rdma_config.dma_box_offset_y   = 0 ;
+       cfg->src_rdma_config.dma_box_offset_z   = 0 ;  
+    }
+    else {  // PPE read mode
+       cfg->src_rdma_config.dma_frag_last_size  = ((metrics->C % 16) + ((metrics->C%16) == 0)*16) * elem_size ;
+       cfg->src_rdma_config.dma_stride_z        = 16                      * elem_size                         ; //coef_z == vector_size * elem_size
+       cfg->src_rdma_config.dma_stride_x        = metrics->C              * elem_size                         ; //coef_x == full_line_z             = full_line_C*elem_size
+       cfg->src_rdma_config.dma_stride_y        = metrics->C * metrics->W * elem_size                         ; //coef_y == full_line_z*full_line_x = full_line_C*full_line_W*elem_size 
+       cfg->src_rdma_config.dma_border_z        = (metrics->C/16 - ((metrics->C%16) == 0)) * 16 * elem_size   ; //line_size (bytes)               = (Z-1)*elem_size
+       cfg->src_rdma_config.dma_border_x        = (metrics->W - 1) * cfg->src_rdma_config.dma_stride_x         ; //plane_size - last line (bytes)  = (X-1)*full_line_z*elem_size
+       cfg->src_rdma_config.dma_border_y        = (metrics->H - 1) * cfg->src_rdma_config.dma_stride_y         ; //cube_size  - last plane (bytes) = (Y-1)*full_line_z*full_line_x*elem_size
+      
+       cfg->src_rdma_config.dma_box_st_size_x  = metrics->W - 1 ;
+       cfg->src_rdma_config.dma_box_st_size_y  = metrics->H - 1 ;
+       cfg->src_rdma_config.dma_box_st_size_z  = 1 - 1 ;
+       cfg->src_rdma_config.dma_box_size_x     = metrics->W - 1 ;
+       cfg->src_rdma_config.dma_box_size_y     = metrics->H - 1 ;
+       cfg->src_rdma_config.dma_box_size_z     = 1 - 1 ;
+       cfg->src_rdma_config.dma_box_offset_x   = 0 ;
+       cfg->src_rdma_config.dma_box_offset_y   = 0 ;
+       cfg->src_rdma_config.dma_box_offset_z   = 0 ;    
+    }
   }
   
   // OP0_RDMA -------------------------------------------------------------------------------------------- 
@@ -1091,6 +1164,7 @@ void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics, Conf
   // dma_data_mode parameter definition ----
   if      (cfg->op0_config.alu_en == Enable_En && cfg->op0_config.alu_mode != Mode_Unitary) cfg->op0_rdma_config.dma_data_mode = cfg->op0_config.alu_mode;
   else if (cfg->op0_config.mux_en == Enable_En && cfg->op0_config.mux_mode != Mode_Unitary) cfg->op0_rdma_config.dma_data_mode = cfg->op0_config.mux_mode;    
+  else                                                                                      cfg->op0_rdma_config.dma_data_mode = Mode_Unitary;
   
   if ((cfg->op0_config.alu_en == Enable_En && cfg->op0_config.alu_mode != Mode_Unitary) &&    // checking mode differences ????????????????????????????????????????
       (cfg->op0_config.mux_en == Enable_En && cfg->op0_config.mux_mode != Mode_Unitary) &&
@@ -1141,26 +1215,100 @@ void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics, Conf
     cfg->op0_rdma_config.dma_border_z        = 0                                                   ; //line_size (bytes)               = (Z-1)*elem_size
     cfg->op0_rdma_config.dma_border_x        = (metrics->W - 1) * cfg->op0_rdma_config.dma_stride_x ; //plane_size - last line (bytes)  = (X-1)*full_line_z*elem_size
     cfg->op0_rdma_config.dma_border_y        = (metrics->H - 1) * cfg->op0_rdma_config.dma_stride_y ; //cube_size  - last plane (bytes) = (Y-1)*full_line_z*full_line_x*elem_size
+    
+    cfg->op0_rdma_config.dma_box_st_size_x   = metrics->W - 1 ;
+    cfg->op0_rdma_config.dma_box_st_size_y   = metrics->H - 1 ;
+    cfg->op0_rdma_config.dma_box_st_size_z   = 1 - 1 ;
+    cfg->op0_rdma_config.dma_box_size_x      = metrics->W - 1 ;
+    cfg->op0_rdma_config.dma_box_size_y      = metrics->H - 1 ;
+    cfg->op0_rdma_config.dma_box_size_z      = 1 - 1 ;
+    cfg->op0_rdma_config.dma_box_offset_x    = 0 ;
+    cfg->op0_rdma_config.dma_box_offset_y    = 0 ;
+    cfg->op0_rdma_config.dma_box_offset_z    = 0 ;  
   }
-  else {  // MPE read mode
-    if (cfg->op0_rdma_config.dma_data_mode == Mode_Channel) {
-       cfg->op0_rdma_config.dma_xyz_drct = 0;
-       cfg->op0_rdma_config.dma_frag_last_size  = metrics->C * elem_size ; 
-       cfg->op0_rdma_config.dma_stride_z        = 0                      ; //coef_z == vector_size * elem_size
-       cfg->op0_rdma_config.dma_stride_x        = 0                      ; //coef_x == full_line_z             = full_line_C*elem_size
-       cfg->op0_rdma_config.dma_stride_y        = 0                      ; //coef_y == full_line_z*full_line_x = full_line_C*full_line_W*elem_size   
-       cfg->op0_rdma_config.dma_border_z        = 0                      ; //line_size (bytes)               = (Z-1)*elem_size
-       cfg->op0_rdma_config.dma_border_x        = 0                      ; //plane_size - last line (bytes)  = (X-1)*full_line_z*elem_size
-       cfg->op0_rdma_config.dma_border_y        = 0                      ; //cube_size  - last plane (bytes) = (Y-1)*full_line_z*full_line_x*elem_size
+  else {  
+    if (cfg->trace_mode == TraceMode_MPE) { // MPE read mode
+      if (cfg->op0_rdma_config.dma_data_mode == Mode_Channel) {
+         cfg->op0_rdma_config.dma_xyz_drct = 0;
+         cfg->op0_rdma_config.dma_frag_last_size  = metrics->C * elem_size ; 
+         cfg->op0_rdma_config.dma_stride_z        = 0                      ; //coef_z == vector_size * elem_size
+         cfg->op0_rdma_config.dma_stride_x        = 0                      ; //coef_x == full_line_z             = full_line_C*elem_size
+         cfg->op0_rdma_config.dma_stride_y        = 0                      ; //coef_y == full_line_z*full_line_x = full_line_C*full_line_W*elem_size   
+         cfg->op0_rdma_config.dma_border_z        = 0                      ; //line_size (bytes)               = (Z-1)*elem_size
+         cfg->op0_rdma_config.dma_border_x        = 0                      ; //plane_size - last line (bytes)  = (X-1)*full_line_z*elem_size
+         cfg->op0_rdma_config.dma_border_y        = 0                      ; //cube_size  - last plane (bytes) = (Y-1)*full_line_z*full_line_x*elem_size
+         
+         cfg->op0_rdma_config.dma_box_st_size_x   = 0 ;
+         cfg->op0_rdma_config.dma_box_st_size_y   = 0 ;
+         cfg->op0_rdma_config.dma_box_st_size_z   = 0 ;
+         cfg->op0_rdma_config.dma_box_size_x      = 0 ;
+         cfg->op0_rdma_config.dma_box_size_y      = 0 ;
+         cfg->op0_rdma_config.dma_box_size_z      = 0 ;
+         cfg->op0_rdma_config.dma_box_offset_x    = 0 ;
+         cfg->op0_rdma_config.dma_box_offset_y    = 0 ;
+         cfg->op0_rdma_config.dma_box_offset_z    = 0 ; 
+      
+      }
+      else {
+         cfg->op0_rdma_config.dma_frag_last_size  = ((metrics->C % 16) + ((metrics->C%16) == 0)*16) * elem_size ;
+         cfg->op0_rdma_config.dma_stride_z        = 16                      * elem_size                         ; //coef_z == vector_size * elem_size
+         cfg->op0_rdma_config.dma_stride_x        = metrics->C              * elem_size                         ; //coef_x == full_line_z             = full_line_C*elem_size
+         cfg->op0_rdma_config.dma_stride_y        = metrics->C * metrics->W * elem_size                         ; //coef_y == full_line_z*full_line_x = full_line_C*full_line_W*elem_size 
+         cfg->op0_rdma_config.dma_border_z        = (metrics->C/16 - ((metrics->C%16) == 0)) * 16 * elem_size   ; //line_size (bytes)               = (Z-1)*elem_size
+         cfg->op0_rdma_config.dma_border_x        = (metrics->W - 1) * cfg->op0_rdma_config.dma_stride_x         ; //plane_size - last line (bytes)  = (X-1)*full_line_z*elem_size
+         cfg->op0_rdma_config.dma_border_y        = (metrics->H - 1) * cfg->op0_rdma_config.dma_stride_y         ; //cube_size  - last plane (bytes) = (Y-1)*full_line_z*full_line_x*elem_size
+      
+         cfg->op0_rdma_config.dma_box_st_size_x  = 128    - 1 ;
+         cfg->op0_rdma_config.dma_box_st_size_y  = 1      - 1 ;
+         cfg->op0_rdma_config.dma_box_st_size_z  = 128/16 - 1 ;
+         cfg->op0_rdma_config.dma_box_size_x     = 128    - 1 ;
+         cfg->op0_rdma_config.dma_box_size_y     = 1      - 1 ;
+         cfg->op0_rdma_config.dma_box_size_z     = 128/16 - 1 ;
+         cfg->op0_rdma_config.dma_box_offset_x   = 0 ;
+         cfg->op0_rdma_config.dma_box_offset_y   = 0 ;
+         cfg->op0_rdma_config.dma_box_offset_z   = 0 ;   
+      }     
     }
-    else {
-       cfg->op0_rdma_config.dma_frag_last_size  = ((metrics->C % 16) + ((metrics->C%16) == 0)*16) * elem_size ;
-       cfg->op0_rdma_config.dma_stride_z        = 16                      * elem_size                         ; //coef_z == vector_size * elem_size
-       cfg->op0_rdma_config.dma_stride_x        = metrics->C              * elem_size                         ; //coef_x == full_line_z             = full_line_C*elem_size
-       cfg->op0_rdma_config.dma_stride_y        = metrics->C * metrics->W * elem_size                         ; //coef_y == full_line_z*full_line_x = full_line_C*full_line_W*elem_size 
-       cfg->op0_rdma_config.dma_border_z        = (metrics->C/16 - ((metrics->C%16) == 0)) * 16 * elem_size   ; //line_size (bytes)               = (Z-1)*elem_size
-       cfg->op0_rdma_config.dma_border_x        = (metrics->W - 1) * cfg->op0_rdma_config.dma_stride_x         ; //plane_size - last line (bytes)  = (X-1)*full_line_z*elem_size
-       cfg->op0_rdma_config.dma_border_y        = (metrics->H - 1) * cfg->op0_rdma_config.dma_stride_y         ; //cube_size  - last plane (bytes) = (Y-1)*full_line_z*full_line_x*elem_size
+    else { // PPE read mode
+      if (cfg->op0_rdma_config.dma_data_mode == Mode_Channel) {
+         cfg->op0_rdma_config.dma_xyz_drct = 0;
+         cfg->op0_rdma_config.dma_frag_last_size  = metrics->C * elem_size ; 
+         cfg->op0_rdma_config.dma_stride_z        = 0                      ; //coef_z == vector_size * elem_size
+         cfg->op0_rdma_config.dma_stride_x        = 0                      ; //coef_x == full_line_z             = full_line_C*elem_size
+         cfg->op0_rdma_config.dma_stride_y        = 0                      ; //coef_y == full_line_z*full_line_x = full_line_C*full_line_W*elem_size   
+         cfg->op0_rdma_config.dma_border_z        = 0                      ; //line_size (bytes)               = (Z-1)*elem_size
+         cfg->op0_rdma_config.dma_border_x        = 0                      ; //plane_size - last line (bytes)  = (X-1)*full_line_z*elem_size
+         cfg->op0_rdma_config.dma_border_y        = 0                      ; //cube_size  - last plane (bytes) = (Y-1)*full_line_z*full_line_x*elem_size
+         
+         cfg->op0_rdma_config.dma_box_st_size_x   = 0 ;
+         cfg->op0_rdma_config.dma_box_st_size_y   = 0 ;
+         cfg->op0_rdma_config.dma_box_st_size_z   = 0 ;
+         cfg->op0_rdma_config.dma_box_size_x      = 0 ;
+         cfg->op0_rdma_config.dma_box_size_y      = 0 ;
+         cfg->op0_rdma_config.dma_box_size_z      = 0 ;
+         cfg->op0_rdma_config.dma_box_offset_x    = 0 ;
+         cfg->op0_rdma_config.dma_box_offset_y    = 0 ;
+         cfg->op0_rdma_config.dma_box_offset_z    = 0 ; 
+      }
+      else {
+         cfg->op0_rdma_config.dma_frag_last_size  = ((metrics->C % 16) + ((metrics->C%16) == 0)*16) * elem_size ;
+         cfg->op0_rdma_config.dma_stride_z        = 16                      * elem_size                         ; //coef_z == vector_size * elem_size
+         cfg->op0_rdma_config.dma_stride_x        = metrics->C              * elem_size                         ; //coef_x == full_line_z             = full_line_C*elem_size
+         cfg->op0_rdma_config.dma_stride_y        = metrics->C * metrics->W * elem_size                         ; //coef_y == full_line_z*full_line_x = full_line_C*full_line_W*elem_size 
+         cfg->op0_rdma_config.dma_border_z        = (metrics->C/16 - ((metrics->C%16) == 0)) * 16 * elem_size   ; //line_size (bytes)               = (Z-1)*elem_size
+         cfg->op0_rdma_config.dma_border_x        = (metrics->W - 1) * cfg->op0_rdma_config.dma_stride_x         ; //plane_size - last line (bytes)  = (X-1)*full_line_z*elem_size
+         cfg->op0_rdma_config.dma_border_y        = (metrics->H - 1) * cfg->op0_rdma_config.dma_stride_y         ; //cube_size  - last plane (bytes) = (Y-1)*full_line_z*full_line_x*elem_size
+      
+         cfg->op0_rdma_config.dma_box_st_size_x  = metrics->W - 1 ;
+         cfg->op0_rdma_config.dma_box_st_size_y  = metrics->H - 1 ;
+         cfg->op0_rdma_config.dma_box_st_size_z  = 1 - 1 ;
+         cfg->op0_rdma_config.dma_box_size_x     = metrics->W - 1 ;
+         cfg->op0_rdma_config.dma_box_size_y     = metrics->H - 1 ;
+         cfg->op0_rdma_config.dma_box_size_z     = 1 - 1 ;
+         cfg->op0_rdma_config.dma_box_offset_x   = 0 ;
+         cfg->op0_rdma_config.dma_box_offset_y   = 0 ;
+         cfg->op0_rdma_config.dma_box_offset_z   = 0 ;
+      }        
     }
   }
 
@@ -1179,7 +1327,8 @@ void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics, Conf
  
   // dma_data_mode parameter definition ----
   if      (cfg->op1_config.alu_en == Enable_En && cfg->op1_config.alu_mode != Mode_Unitary) cfg->op1_rdma_config.dma_data_mode = cfg->op1_config.alu_mode;
-  else if (cfg->op1_config.mux_en == Enable_En && cfg->op1_config.mux_mode != Mode_Unitary) cfg->op1_rdma_config.dma_data_mode = cfg->op1_config.mux_mode;    
+  else if (cfg->op1_config.mux_en == Enable_En && cfg->op1_config.mux_mode != Mode_Unitary) cfg->op1_rdma_config.dma_data_mode = cfg->op1_config.mux_mode; 
+  else                                                                                      cfg->op1_rdma_config.dma_data_mode = Mode_Unitary;
   
   if ((cfg->op1_config.alu_en == Enable_En && cfg->op1_config.alu_mode != Mode_Unitary) &&    // checking mode differences ????????????????????????????????????????
       (cfg->op1_config.mux_en == Enable_En && cfg->op1_config.mux_mode != Mode_Unitary) &&
@@ -1230,25 +1379,89 @@ void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics, Conf
     cfg->op1_rdma_config.dma_border_x        = (metrics->W - 1) * cfg->op1_rdma_config.dma_stride_x ; //plane_size - last line (bytes)  = (X-1)*full_line_z*elem_size
     cfg->op1_rdma_config.dma_border_y        = (metrics->H - 1) * cfg->op1_rdma_config.dma_stride_y ; //cube_size  - last plane (bytes) = (Y-1)*full_line_z*full_line_x*elem_size
   }
-  else {  // MPE read mode
-    if (cfg->op1_rdma_config.dma_data_mode == Mode_Channel) {
-       cfg->op1_rdma_config.dma_xyz_drct = 0;
-       cfg->op1_rdma_config.dma_frag_last_size  = metrics->C * elem_size ; 
-       cfg->op1_rdma_config.dma_stride_z        = 0                      ; //coef_z == vector_size * elem_size
-       cfg->op1_rdma_config.dma_stride_x        = 0                      ; //coef_x == full_line_z             = full_line_C*elem_size
-       cfg->op1_rdma_config.dma_stride_y        = 0                      ; //coef_y == full_line_z*full_line_x = full_line_C*full_line_W*elem_size   
-       cfg->op1_rdma_config.dma_border_z        = 0                      ; //line_size (bytes)               = (Z-1)*elem_size
-       cfg->op1_rdma_config.dma_border_x        = 0                      ; //plane_size - last line (bytes)  = (X-1)*full_line_z*elem_size
-       cfg->op1_rdma_config.dma_border_y        = 0                      ; //cube_size  - last plane (bytes) = (Y-1)*full_line_z*full_line_x*elem_size
+  else {  
+    if (cfg->trace_mode == TraceMode_MPE) { // MPE read mode
+      if (cfg->op1_rdma_config.dma_data_mode == Mode_Channel) {
+         cfg->op1_rdma_config.dma_xyz_drct = 0;
+         cfg->op1_rdma_config.dma_frag_last_size  = metrics->C * elem_size ; 
+         cfg->op1_rdma_config.dma_stride_z        = 0                      ; //coef_z == vector_size * elem_size
+         cfg->op1_rdma_config.dma_stride_x        = 0                      ; //coef_x == full_line_z             = full_line_C*elem_size
+         cfg->op1_rdma_config.dma_stride_y        = 0                      ; //coef_y == full_line_z*full_line_x = full_line_C*full_line_W*elem_size   
+         cfg->op1_rdma_config.dma_border_z        = 0                      ; //line_size (bytes)               = (Z-1)*elem_size
+         cfg->op1_rdma_config.dma_border_x        = 0                      ; //plane_size - last line (bytes)  = (X-1)*full_line_z*elem_size
+         cfg->op1_rdma_config.dma_border_y        = 0                      ; //cube_size  - last plane (bytes) = (Y-1)*full_line_z*full_line_x*elem_size
+         
+         cfg->op1_rdma_config.dma_box_st_size_x   = 0 ;
+         cfg->op1_rdma_config.dma_box_st_size_y   = 0 ;
+         cfg->op1_rdma_config.dma_box_st_size_z   = 0 ;
+         cfg->op1_rdma_config.dma_box_size_x      = 0 ;
+         cfg->op1_rdma_config.dma_box_size_y      = 0 ;
+         cfg->op1_rdma_config.dma_box_size_z      = 0 ;
+         cfg->op1_rdma_config.dma_box_offset_x    = 0 ;
+         cfg->op1_rdma_config.dma_box_offset_y    = 0 ;
+         cfg->op1_rdma_config.dma_box_offset_z    = 0 ; 
+      
+      }
+      else {
+         cfg->op1_rdma_config.dma_frag_last_size  = ((metrics->C % 16) + ((metrics->C%16) == 0)*16) * elem_size ;
+         cfg->op1_rdma_config.dma_stride_z        = 16                      * elem_size                         ; //coef_z == vector_size * elem_size
+         cfg->op1_rdma_config.dma_stride_x        = metrics->C              * elem_size                         ; //coef_x == full_line_z             = full_line_C*elem_size
+         cfg->op1_rdma_config.dma_stride_y        = metrics->C * metrics->W * elem_size                         ; //coef_y == full_line_z*full_line_x = full_line_C*full_line_W*elem_size 
+         cfg->op1_rdma_config.dma_border_z        = (metrics->C/16 - ((metrics->C%16) == 0)) * 16 * elem_size   ; //line_size (bytes)               = (Z-1)*elem_size
+         cfg->op1_rdma_config.dma_border_x        = (metrics->W - 1) * cfg->op1_rdma_config.dma_stride_x         ; //plane_size - last line (bytes)  = (X-1)*full_line_z*elem_size
+         cfg->op1_rdma_config.dma_border_y        = (metrics->H - 1) * cfg->op1_rdma_config.dma_stride_y         ; //cube_size  - last plane (bytes) = (Y-1)*full_line_z*full_line_x*elem_size
+      
+         cfg->op1_rdma_config.dma_box_st_size_x  = 128    - 1 ;
+         cfg->op1_rdma_config.dma_box_st_size_y  = 1      - 1 ;
+         cfg->op1_rdma_config.dma_box_st_size_z  = 128/16 - 1 ;
+         cfg->op1_rdma_config.dma_box_size_x     = 128    - 1 ;
+         cfg->op1_rdma_config.dma_box_size_y     = 1      - 1 ;
+         cfg->op1_rdma_config.dma_box_size_z     = 128/16 - 1 ;
+         cfg->op1_rdma_config.dma_box_offset_x   = 0 ;
+         cfg->op1_rdma_config.dma_box_offset_y   = 0 ;
+         cfg->op1_rdma_config.dma_box_offset_z   = 0 ;   
+      }     
     }
-    else {
-       cfg->op1_rdma_config.dma_frag_last_size  = ((metrics->C % 16) + ((metrics->C%16) == 0)*16) * elem_size ;
-       cfg->op1_rdma_config.dma_stride_z        = 16                      * elem_size                         ; //coef_z == vector_size * elem_size
-       cfg->op1_rdma_config.dma_stride_x        = metrics->C              * elem_size                         ; //coef_x == full_line_z             = full_line_C*elem_size
-       cfg->op1_rdma_config.dma_stride_y        = metrics->C * metrics->W * elem_size                         ; //coef_y == full_line_z*full_line_x = full_line_C*full_line_W*elem_size 
-       cfg->op1_rdma_config.dma_border_z        = (metrics->C/16 - ((metrics->C%16) == 0)) * 16 * elem_size   ; //line_size (bytes)               = (Z-1)*elem_size
-       cfg->op1_rdma_config.dma_border_x        = (metrics->W - 1) * cfg->op1_rdma_config.dma_stride_x         ; //plane_size - last line (bytes)  = (X-1)*full_line_z*elem_size
-       cfg->op1_rdma_config.dma_border_y        = (metrics->H - 1) * cfg->op1_rdma_config.dma_stride_y         ; //cube_size  - last plane (bytes) = (Y-1)*full_line_z*full_line_x*elem_size
+    else { // PPE read mode
+      if (cfg->op1_rdma_config.dma_data_mode == Mode_Channel) {
+         cfg->op1_rdma_config.dma_xyz_drct = 0;
+         cfg->op1_rdma_config.dma_frag_last_size  = metrics->C * elem_size ; 
+         cfg->op1_rdma_config.dma_stride_z        = 0                      ; //coef_z == vector_size * elem_size
+         cfg->op1_rdma_config.dma_stride_x        = 0                      ; //coef_x == full_line_z             = full_line_C*elem_size
+         cfg->op1_rdma_config.dma_stride_y        = 0                      ; //coef_y == full_line_z*full_line_x = full_line_C*full_line_W*elem_size   
+         cfg->op1_rdma_config.dma_border_z        = 0                      ; //line_size (bytes)               = (Z-1)*elem_size
+         cfg->op1_rdma_config.dma_border_x        = 0                      ; //plane_size - last line (bytes)  = (X-1)*full_line_z*elem_size
+         cfg->op1_rdma_config.dma_border_y        = 0                      ; //cube_size  - last plane (bytes) = (Y-1)*full_line_z*full_line_x*elem_size
+         
+         cfg->op1_rdma_config.dma_box_st_size_x   = 0 ;
+         cfg->op1_rdma_config.dma_box_st_size_y   = 0 ;
+         cfg->op1_rdma_config.dma_box_st_size_z   = 0 ;
+         cfg->op1_rdma_config.dma_box_size_x      = 0 ;
+         cfg->op1_rdma_config.dma_box_size_y      = 0 ;
+         cfg->op1_rdma_config.dma_box_size_z      = 0 ;
+         cfg->op1_rdma_config.dma_box_offset_x    = 0 ;
+         cfg->op1_rdma_config.dma_box_offset_y    = 0 ;
+         cfg->op1_rdma_config.dma_box_offset_z    = 0 ; 
+      }
+      else {
+         cfg->op1_rdma_config.dma_frag_last_size  = ((metrics->C % 16) + ((metrics->C%16) == 0)*16) * elem_size ;
+         cfg->op1_rdma_config.dma_stride_z        = 16                      * elem_size                         ; //coef_z == vector_size * elem_size
+         cfg->op1_rdma_config.dma_stride_x        = metrics->C              * elem_size                         ; //coef_x == full_line_z             = full_line_C*elem_size
+         cfg->op1_rdma_config.dma_stride_y        = metrics->C * metrics->W * elem_size                         ; //coef_y == full_line_z*full_line_x = full_line_C*full_line_W*elem_size 
+         cfg->op1_rdma_config.dma_border_z        = (metrics->C/16 - ((metrics->C%16) == 0)) * 16 * elem_size   ; //line_size (bytes)               = (Z-1)*elem_size
+         cfg->op1_rdma_config.dma_border_x        = (metrics->W - 1) * cfg->op1_rdma_config.dma_stride_x         ; //plane_size - last line (bytes)  = (X-1)*full_line_z*elem_size
+         cfg->op1_rdma_config.dma_border_y        = (metrics->H - 1) * cfg->op1_rdma_config.dma_stride_y         ; //cube_size  - last plane (bytes) = (Y-1)*full_line_z*full_line_x*elem_size
+      
+         cfg->op1_rdma_config.dma_box_st_size_x  = metrics->W - 1 ;
+         cfg->op1_rdma_config.dma_box_st_size_y  = metrics->H - 1 ;
+         cfg->op1_rdma_config.dma_box_st_size_z  = 1 - 1 ;
+         cfg->op1_rdma_config.dma_box_size_x     = metrics->W - 1 ;
+         cfg->op1_rdma_config.dma_box_size_y     = metrics->H - 1 ;
+         cfg->op1_rdma_config.dma_box_size_z     = 1 - 1 ;
+         cfg->op1_rdma_config.dma_box_offset_x   = 0 ;
+         cfg->op1_rdma_config.dma_box_offset_y   = 0 ;
+         cfg->op1_rdma_config.dma_box_offset_z   = 0 ;
+      }        
     }
   }
 
@@ -1268,6 +1481,7 @@ void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics, Conf
   // dma_data_mode parameter definition ----
   if      (cfg->op2_config.alu_en == Enable_En && cfg->op2_config.alu_mode != Mode_Unitary) cfg->op2_rdma_config.dma_data_mode = cfg->op2_config.alu_mode;
   else if (cfg->op2_config.mux_en == Enable_En && cfg->op2_config.mux_mode != Mode_Unitary) cfg->op2_rdma_config.dma_data_mode = cfg->op2_config.mux_mode;    
+  else                                                                                      cfg->op2_rdma_config.dma_data_mode = Mode_Unitary;
   
   if ((cfg->op2_config.alu_en == Enable_En && cfg->op2_config.alu_mode != Mode_Unitary) &&    // checking mode differences ????????????????????????????????????????
       (cfg->op2_config.mux_en == Enable_En && cfg->op2_config.mux_mode != Mode_Unitary) &&
@@ -1318,105 +1532,91 @@ void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics, Conf
     cfg->op2_rdma_config.dma_border_x        = (metrics->W - 1) * cfg->op2_rdma_config.dma_stride_x ; //plane_size - last line (bytes)  = (X-1)*full_line_z*elem_size
     cfg->op2_rdma_config.dma_border_y        = (metrics->H - 1) * cfg->op2_rdma_config.dma_stride_y ; //cube_size  - last plane (bytes) = (Y-1)*full_line_z*full_line_x*elem_size
   }
-  else {  // MPE read mode
-    if (cfg->op2_rdma_config.dma_data_mode == Mode_Channel) {
-       cfg->op2_rdma_config.dma_xyz_drct = 0;
-       cfg->op2_rdma_config.dma_frag_last_size  = metrics->C * elem_size ; 
-       cfg->op2_rdma_config.dma_stride_z        = 0                      ; //coef_z == vector_size * elem_size
-       cfg->op2_rdma_config.dma_stride_x        = 0                      ; //coef_x == full_line_z             = full_line_C*elem_size
-       cfg->op2_rdma_config.dma_stride_y        = 0                      ; //coef_y == full_line_z*full_line_x = full_line_C*full_line_W*elem_size   
-       cfg->op2_rdma_config.dma_border_z        = 0                      ; //line_size (bytes)               = (Z-1)*elem_size
-       cfg->op2_rdma_config.dma_border_x        = 0                      ; //plane_size - last line (bytes)  = (X-1)*full_line_z*elem_size
-       cfg->op2_rdma_config.dma_border_y        = 0                      ; //cube_size  - last plane (bytes) = (Y-1)*full_line_z*full_line_x*elem_size
+  else {  
+    if (cfg->trace_mode == TraceMode_MPE) { // MPE read mode
+      if (cfg->op2_rdma_config.dma_data_mode == Mode_Channel) {
+         cfg->op2_rdma_config.dma_xyz_drct = 0;
+         cfg->op2_rdma_config.dma_frag_last_size  = metrics->C * elem_size ; 
+         cfg->op2_rdma_config.dma_stride_z        = 0                      ; //coef_z == vector_size * elem_size
+         cfg->op2_rdma_config.dma_stride_x        = 0                      ; //coef_x == full_line_z             = full_line_C*elem_size
+         cfg->op2_rdma_config.dma_stride_y        = 0                      ; //coef_y == full_line_z*full_line_x = full_line_C*full_line_W*elem_size   
+         cfg->op2_rdma_config.dma_border_z        = 0                      ; //line_size (bytes)               = (Z-1)*elem_size
+         cfg->op2_rdma_config.dma_border_x        = 0                      ; //plane_size - last line (bytes)  = (X-1)*full_line_z*elem_size
+         cfg->op2_rdma_config.dma_border_y        = 0                      ; //cube_size  - last plane (bytes) = (Y-1)*full_line_z*full_line_x*elem_size
+         
+         cfg->op2_rdma_config.dma_box_st_size_x   = 0 ;
+         cfg->op2_rdma_config.dma_box_st_size_y   = 0 ;
+         cfg->op2_rdma_config.dma_box_st_size_z   = 0 ;
+         cfg->op2_rdma_config.dma_box_size_x      = 0 ;
+         cfg->op2_rdma_config.dma_box_size_y      = 0 ;
+         cfg->op2_rdma_config.dma_box_size_z      = 0 ;
+         cfg->op2_rdma_config.dma_box_offset_x    = 0 ;
+         cfg->op2_rdma_config.dma_box_offset_y    = 0 ;
+         cfg->op2_rdma_config.dma_box_offset_z    = 0 ; 
+      
+      }
+      else {
+         cfg->op2_rdma_config.dma_frag_last_size  = ((metrics->C % 16) + ((metrics->C%16) == 0)*16) * elem_size ;
+         cfg->op2_rdma_config.dma_stride_z        = 16                      * elem_size                         ; //coef_z == vector_size * elem_size
+         cfg->op2_rdma_config.dma_stride_x        = metrics->C              * elem_size                         ; //coef_x == full_line_z             = full_line_C*elem_size
+         cfg->op2_rdma_config.dma_stride_y        = metrics->C * metrics->W * elem_size                         ; //coef_y == full_line_z*full_line_x = full_line_C*full_line_W*elem_size 
+         cfg->op2_rdma_config.dma_border_z        = (metrics->C/16 - ((metrics->C%16) == 0)) * 16 * elem_size   ; //line_size (bytes)               = (Z-1)*elem_size
+         cfg->op2_rdma_config.dma_border_x        = (metrics->W - 1) * cfg->op2_rdma_config.dma_stride_x         ; //plane_size - last line (bytes)  = (X-1)*full_line_z*elem_size
+         cfg->op2_rdma_config.dma_border_y        = (metrics->H - 1) * cfg->op2_rdma_config.dma_stride_y         ; //cube_size  - last plane (bytes) = (Y-1)*full_line_z*full_line_x*elem_size
+      
+         cfg->op2_rdma_config.dma_box_st_size_x  = 128    - 1 ;
+         cfg->op2_rdma_config.dma_box_st_size_y  = 1      - 1 ;
+         cfg->op2_rdma_config.dma_box_st_size_z  = 128/16 - 1 ;
+         cfg->op2_rdma_config.dma_box_size_x     = 128    - 1 ;
+         cfg->op2_rdma_config.dma_box_size_y     = 1      - 1 ;
+         cfg->op2_rdma_config.dma_box_size_z     = 128/16 - 1 ;
+         cfg->op2_rdma_config.dma_box_offset_x   = 0 ;
+         cfg->op2_rdma_config.dma_box_offset_y   = 0 ;
+         cfg->op2_rdma_config.dma_box_offset_z   = 0 ;   
+      }     
     }
-    else {
-       cfg->op2_rdma_config.dma_frag_last_size  = ((metrics->C % 16) + ((metrics->C%16) == 0)*16) * elem_size ;
-       cfg->op2_rdma_config.dma_stride_z        = 16                      * elem_size                         ; //coef_z == vector_size * elem_size
-       cfg->op2_rdma_config.dma_stride_x        = metrics->C              * elem_size                         ; //coef_x == full_line_z             = full_line_C*elem_size
-       cfg->op2_rdma_config.dma_stride_y        = metrics->C * metrics->W * elem_size                         ; //coef_y == full_line_z*full_line_x = full_line_C*full_line_W*elem_size 
-       cfg->op2_rdma_config.dma_border_z        = (metrics->C/16 - ((metrics->C%16) == 0)) * 16 * elem_size   ; //line_size (bytes)               = (Z-1)*elem_size
-       cfg->op2_rdma_config.dma_border_x        = (metrics->W - 1) * cfg->op2_rdma_config.dma_stride_x         ; //plane_size - last line (bytes)  = (X-1)*full_line_z*elem_size
-       cfg->op2_rdma_config.dma_border_y        = (metrics->H - 1) * cfg->op2_rdma_config.dma_stride_y         ; //cube_size  - last plane (bytes) = (Y-1)*full_line_z*full_line_x*elem_size
+    else { // PPE read mode
+      if (cfg->op2_rdma_config.dma_data_mode == Mode_Channel) {
+         cfg->op2_rdma_config.dma_xyz_drct = 0;
+         cfg->op2_rdma_config.dma_frag_last_size  = metrics->C * elem_size ; 
+         cfg->op2_rdma_config.dma_stride_z        = 0                      ; //coef_z == vector_size * elem_size
+         cfg->op2_rdma_config.dma_stride_x        = 0                      ; //coef_x == full_line_z             = full_line_C*elem_size
+         cfg->op2_rdma_config.dma_stride_y        = 0                      ; //coef_y == full_line_z*full_line_x = full_line_C*full_line_W*elem_size   
+         cfg->op2_rdma_config.dma_border_z        = 0                      ; //line_size (bytes)               = (Z-1)*elem_size
+         cfg->op2_rdma_config.dma_border_x        = 0                      ; //plane_size - last line (bytes)  = (X-1)*full_line_z*elem_size
+         cfg->op2_rdma_config.dma_border_y        = 0                      ; //cube_size  - last plane (bytes) = (Y-1)*full_line_z*full_line_x*elem_size
+         
+         cfg->op2_rdma_config.dma_box_st_size_x   = 0 ;
+         cfg->op2_rdma_config.dma_box_st_size_y   = 0 ;
+         cfg->op2_rdma_config.dma_box_st_size_z   = 0 ;
+         cfg->op2_rdma_config.dma_box_size_x      = 0 ;
+         cfg->op2_rdma_config.dma_box_size_y      = 0 ;
+         cfg->op2_rdma_config.dma_box_size_z      = 0 ;
+         cfg->op2_rdma_config.dma_box_offset_x    = 0 ;
+         cfg->op2_rdma_config.dma_box_offset_y    = 0 ;
+         cfg->op2_rdma_config.dma_box_offset_z    = 0 ; 
+      }
+      else {
+         cfg->op2_rdma_config.dma_frag_last_size  = ((metrics->C % 16) + ((metrics->C%16) == 0)*16) * elem_size ;
+         cfg->op2_rdma_config.dma_stride_z        = 16                      * elem_size                         ; //coef_z == vector_size * elem_size
+         cfg->op2_rdma_config.dma_stride_x        = metrics->C              * elem_size                         ; //coef_x == full_line_z             = full_line_C*elem_size
+         cfg->op2_rdma_config.dma_stride_y        = metrics->C * metrics->W * elem_size                         ; //coef_y == full_line_z*full_line_x = full_line_C*full_line_W*elem_size 
+         cfg->op2_rdma_config.dma_border_z        = (metrics->C/16 - ((metrics->C%16) == 0)) * 16 * elem_size   ; //line_size (bytes)               = (Z-1)*elem_size
+         cfg->op2_rdma_config.dma_border_x        = (metrics->W - 1) * cfg->op2_rdma_config.dma_stride_x         ; //plane_size - last line (bytes)  = (X-1)*full_line_z*elem_size
+         cfg->op2_rdma_config.dma_border_y        = (metrics->H - 1) * cfg->op2_rdma_config.dma_stride_y         ; //cube_size  - last plane (bytes) = (Y-1)*full_line_z*full_line_x*elem_size
+      
+         cfg->op2_rdma_config.dma_box_st_size_x  = metrics->W - 1 ;
+         cfg->op2_rdma_config.dma_box_st_size_y  = metrics->H - 1 ;
+         cfg->op2_rdma_config.dma_box_st_size_z  = 1 - 1 ;
+         cfg->op2_rdma_config.dma_box_size_x     = metrics->W - 1 ;
+         cfg->op2_rdma_config.dma_box_size_y     = metrics->H - 1 ;
+         cfg->op2_rdma_config.dma_box_size_z     = 1 - 1 ;
+         cfg->op2_rdma_config.dma_box_offset_x   = 0 ;
+         cfg->op2_rdma_config.dma_box_offset_y   = 0 ;
+         cfg->op2_rdma_config.dma_box_offset_z   = 0 ;
+      }        
     }
- }
-  //*******************  
-  
-#ifdef MPE_MEM_PATH
-  
-  // SRC_RDMA --------------------------------------------------------------------------------------------
-  cfg->src_rdma_config.dma_box_st_size_x  = 128    - 1 ;
-  cfg->src_rdma_config.dma_box_st_size_y  = 1      - 1 ;
-  cfg->src_rdma_config.dma_box_st_size_z  = 128/16 - 1 ;
-  cfg->src_rdma_config.dma_box_size_x     = 128    - 1 ;
-  cfg->src_rdma_config.dma_box_size_y     = 1      - 1 ;
-  cfg->src_rdma_config.dma_box_size_z     = 128/16 - 1 ;
-  cfg->src_rdma_config.dma_box_offset_x   = 0 ;
-  cfg->src_rdma_config.dma_box_offset_y   = 0 ;
-  cfg->src_rdma_config.dma_box_offset_z   = 0 ; 
-  
-  // OP0_RDMA --------------------------------------------------------------------------------------------
-  cfg->op0_rdma_config.dma_box_st_size_x  = 128    - 1 ;
-  cfg->op0_rdma_config.dma_box_st_size_y  = 1      - 1 ;
-  cfg->op0_rdma_config.dma_box_st_size_z  = 128/16 - 1 ;
-  cfg->op0_rdma_config.dma_box_size_x     = 128    - 1 ;
-  cfg->op0_rdma_config.dma_box_size_y     = 1      - 1 ;
-  cfg->op0_rdma_config.dma_box_size_z     = 128/16 - 1 ;
-  cfg->op0_rdma_config.dma_box_offset_x   = 0 ;
-  cfg->op0_rdma_config.dma_box_offset_y   = 0 ;
-  cfg->op0_rdma_config.dma_box_offset_z   = 0 ;    
-  
-  // OP1_RDMA --------------------------------------------------------------------------------------------
-  cfg->op1_rdma_config.dma_box_st_size_x  = 128    - 1 ;
-  cfg->op1_rdma_config.dma_box_st_size_y  = 1      - 1 ;
-  cfg->op1_rdma_config.dma_box_st_size_z  = 128/16 - 1 ;
-  cfg->op1_rdma_config.dma_box_size_x     = 128    - 1 ;
-  cfg->op1_rdma_config.dma_box_size_y     = 1      - 1 ;
-  cfg->op1_rdma_config.dma_box_size_z     = 128/16 - 1 ;
-  cfg->op1_rdma_config.dma_box_offset_x   = 0 ;
-  cfg->op1_rdma_config.dma_box_offset_y   = 0 ;
-  cfg->op1_rdma_config.dma_box_offset_z   = 0 ;    
-  
-  // OP2_RDMA --------------------------------------------------------------------------------------------
-  cfg->op2_rdma_config.dma_box_st_size_x  = 128    - 1 ;
-  cfg->op2_rdma_config.dma_box_st_size_y  = 1      - 1 ;
-  cfg->op2_rdma_config.dma_box_st_size_z  = 128/16 - 1 ;
-  cfg->op2_rdma_config.dma_box_size_x     = 128    - 1 ;
-  cfg->op2_rdma_config.dma_box_size_y     = 1      - 1 ;
-  cfg->op2_rdma_config.dma_box_size_z     = 128/16 - 1 ;
-  cfg->op2_rdma_config.dma_box_offset_x   = 0 ;
-  cfg->op2_rdma_config.dma_box_offset_y   = 0 ;
-  cfg->op2_rdma_config.dma_box_offset_z   = 0 ;      
-  
-  // WRDMA --------------------------------------------------------------------------------------------
-  cfg->wdma_config.dma_box_st_size_x  = 128    - 1 ;
-  cfg->wdma_config.dma_box_st_size_y  = 1      - 1 ;
-  cfg->wdma_config.dma_box_st_size_z  = 128/16 - 1 ;
-  cfg->wdma_config.dma_box_size_x     = 128    - 1 ;
-  cfg->wdma_config.dma_box_size_y     = 1      - 1 ;
-  cfg->wdma_config.dma_box_size_z     = 128/16 - 1 ;
-  cfg->wdma_config.dma_box_offset_x   = 0 ;
-  cfg->wdma_config.dma_box_offset_y   = 0 ;
-  cfg->wdma_config.dma_box_offset_z   = 0 ;         
-  
-  
-  
-#else  // PPE_MEM_PATH
-  // SRC_RDMA --------------------------------------------------------------------------------------------
-  cfg->src_rdma_config.dma_box_st_size_x  = metrics->W - 1 ;
-  cfg->src_rdma_config.dma_box_st_size_y  = metrics->H - 1 ;
-  cfg->src_rdma_config.dma_box_st_size_z  = 1 - 1 ;
-  cfg->src_rdma_config.dma_box_size_x     = metrics->W - 1 ;
-  cfg->src_rdma_config.dma_box_size_y     = metrics->H - 1 ;
-  cfg->src_rdma_config.dma_box_size_z     = 1 - 1 ;
-  cfg->src_rdma_config.dma_box_offset_x   = 0 ;
-  cfg->src_rdma_config.dma_box_offset_y   = 0 ;
-  cfg->src_rdma_config.dma_box_offset_z   = 0 ;
-  
-  
-  
-#endif    
-
-
+  } 
 
   // We Have No Setting That Define If We Run WDMA Or Main Wr Channel
 }
