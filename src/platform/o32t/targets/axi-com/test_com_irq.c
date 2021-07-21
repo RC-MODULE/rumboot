@@ -156,13 +156,14 @@ int main()
 	||	memcmp( src1, dst1, sizeof(uint32_t)*ARR_SIZE  ) != 0){
         return 1;
 	}
+	rumboot_printf("sizeof=%x\n", sizeof(uint32_t)*ARR_SIZE);
+	rumboot_printf("ARR_SIZE=%x\n", ARR_SIZE);
  	rumboot_printf( "COM0_Cpl_tr= %d\n",COM0_Cpl_tr );
 	rumboot_printf( "COM1_Cpl_rcv= %d\n",COM1_Cpl_rcv ); 
 	rumboot_printf( "COM1_Cpl_tr= %d\n",COM1_Cpl_tr );
 	rumboot_printf( "COM0_Cpl_rcv= %d\n",COM0_Cpl_rcv ); 
-		
+
 	deinit_irq(tbl);
 	
     return result;
 }
-
