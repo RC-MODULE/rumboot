@@ -91,7 +91,7 @@ check_ppc_sys_conf_reg_rw(uint32_t base_addr)
     int fails = 0;
     int i; 
     uint32_t const address = base_addr + SCTL_PPC_SYS_CONF; 
-    uint32_t mask = 0x19;
+    uint32_t mask = 0x39;
     if( mask != 0 ) { 
 
         uint32_t v, readback; 
@@ -105,6 +105,28 @@ check_ppc_sys_conf_reg_rw(uint32_t base_addr)
         } 
         
         v = 0x18;
+        dcr_write(address, v ); 
+        readback = dcr_read( address ); 
+        if( ( readback & mask ) != v ) { 
+            fails++; 
+            rumboot_printf( "Write register %s (0x%x): wrote: 0x%x got: 0x%x mask: 0x%xn", "PPC_SYS_CONF", address, v, readback, mask ); 
+        } 
+
+        v = 0x19;
+        dcr_write(address, v ); 
+        readback = dcr_read( address ); 
+        if( ( readback & mask ) != v ) { 
+            fails++; 
+            rumboot_printf( "Write register %s (0x%x): wrote: 0x%x got: 0x%x mask: 0x%xn", "PPC_SYS_CONF", address, v, readback, mask ); 
+        } 
+        v = 0x38;
+        dcr_write(address, v ); 
+        readback = dcr_read( address ); 
+        if( ( readback & mask ) != v ) { 
+            fails++; 
+            rumboot_printf( "Write register %s (0x%x): wrote: 0x%x got: 0x%x mask: 0x%xn", "PPC_SYS_CONF", address, v, readback, mask ); 
+        } 
+        v = 0x39;
         dcr_write(address, v ); 
         readback = dcr_read( address ); 
         if( ( readback & mask ) != v ) { 
