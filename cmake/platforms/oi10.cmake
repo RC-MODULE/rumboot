@@ -1407,6 +1407,7 @@ endif()
         LDS oi10/test_oi10_cpu_039_sram0.lds
         FILES test_oi10_cpu_039_00_helper.c
         CFLAGS -DTEST_OI10_CPU_039_MEM_SIZE=0x80000
+        IRUN_FLAGS +RANDOMIZE_SRAM
         NAME "test_oi10_cpu_039_helper_em2"
     )
     add_rumboot_target(
@@ -1414,6 +1415,7 @@ endif()
         LDS oi10/test_oi10_cpu_039_sram0.lds
         FILES test_oi10_cpu_039_00_helper.c
         CFLAGS -DTEST_OI10_CPU_039_MEM_SIZE=0x100
+        IRUN_FLAGS +RANDOMIZE_SRAM
         NAME "test_oi10_cpu_039_helper_em2_short"
     )
     add_rumboot_target(
@@ -1421,6 +1423,7 @@ endif()
         LDS oi10/test_oi10_cpu_039_sram0.lds
         FILES test_oi10_cpu_040_00_helper.c
         CFLAGS -DTEST_OI10_CPU_039_MEM_SIZE=0x80000
+        IRUN_FLAGS +RANDOMIZE_SRAM
         NAME "test_oi10_cpu_040_helper_em2"
     )
     add_rumboot_target(
@@ -1428,6 +1431,7 @@ endif()
         LDS oi10/test_oi10_cpu_039_sram0.lds
         FILES test_oi10_cpu_040_00_helper.c
         CFLAGS -DTEST_OI10_CPU_039_MEM_SIZE=0x100
+        IRUN_FLAGS +RANDOMIZE_SRAM
         NAME "test_oi10_cpu_040_helper_em2_short"
     )
 
@@ -1436,6 +1440,7 @@ endif()
         LDS oi10/test_oi10_cpu_039_sram0.lds
         FILES test_oi10_cpu_039_00_helper_im.c
         CFLAGS -DTEST_OI10_CPU_039_MEM_SIZE=0x80000
+        IRUN_FLAGS +RANDOMIZE_SRAM
         NAME "test_oi10_cpu_039_helper_im_em2"
     )
     add_rumboot_target(
@@ -1443,6 +1448,7 @@ endif()
         LDS oi10/test_oi10_cpu_039_sram0.lds
         FILES test_oi10_cpu_039_00_helper_im.c
         CFLAGS -DTEST_OI10_CPU_039_MEM_SIZE=0x100
+        IRUN_FLAGS +RANDOMIZE_SRAM
         NAME "test_oi10_cpu_039_helper_im_em2_short"
     )
     add_rumboot_target(
@@ -1450,6 +1456,7 @@ endif()
         LDS oi10/test_oi10_cpu_039_sram0.lds
         FILES test_oi10_cpu_040_00_helper_im.c
         CFLAGS -DTEST_OI10_CPU_039_MEM_SIZE=0x80000
+        IRUN_FLAGS +RANDOMIZE_SRAM
         NAME "test_oi10_cpu_040_helper_im_em2"
     )
     add_rumboot_target(
@@ -1457,6 +1464,7 @@ endif()
         LDS oi10/test_oi10_cpu_039_sram0.lds
         FILES test_oi10_cpu_040_00_helper_im.c
         CFLAGS -DTEST_OI10_CPU_039_MEM_SIZE=0x100
+        IRUN_FLAGS +RANDOMIZE_SRAM
         NAME "test_oi10_cpu_040_helper_im_em2_short"
     )
 
@@ -1465,6 +1473,7 @@ endif()
         FILES test_oi10_cpu_039_00.c
         PREFIX simple-iram
         CFLAGS -DM_BASE=SRAM0_BASE -DL2C_IL1I_BIT=1 -DL2C_IL1D_BIT=1 -DL2C_W_BIT=1
+        IRUN_FLAGS +RANDOMIZE_SRAM
         NAME "test_oi10_cpu_039_00"
         LOAD IM0BIN SELF
              MBIN supplementary-test_oi10_cpu_039_helper_em2
@@ -1474,6 +1483,7 @@ endif()
         FILES test_oi10_cpu_039_00.c
         PREFIX simple-iram
         CFLAGS -DM_BASE=SRAM0_BASE -DL2C_IL1I_BIT=0 -DL2C_IL1D_BIT=1 -DL2C_W_BIT=1
+        IRUN_FLAGS +RANDOMIZE_SRAM
         NAME "test_oi10_cpu_039_01"
         LOAD IM0BIN SELF
              MBIN supplementary-test_oi10_cpu_039_helper_em2
@@ -1492,6 +1502,7 @@ endif()
         FILES test_oi10_cpu_039_00.c
         PREFIX simple-iram
         CFLAGS -DM_BASE=SRAM0_BASE -DL2C_IL1I_BIT=0 -DL2C_IL1D_BIT=0 -DL2C_W_BIT=1
+        IRUN_FLAGS +RANDOMIZE_SRAM
         NAME "test_oi10_cpu_039_11"
         LOAD IM0BIN SELF
              MBIN supplementary-test_oi10_cpu_039_helper_em2
@@ -1501,6 +1512,7 @@ endif()
         FILES test_oi10_cpu_039_00_im.c
         PREFIX simple-iram
         CFLAGS -DM_BASE=SRAM0_BASE -DL2C_IL1I_BIT=0 -DL2C_IL1D_BIT=0 -DL2C_W_BIT=1
+        IRUN_FLAGS +RANDOMIZE_SRAM
         NAME "test_oi10_cpu_039_11_im"
         LOAD IM0BIN SELF
              MBIN supplementary-test_oi10_cpu_039_helper_im_em2
@@ -1519,6 +1531,7 @@ endif()
         FILES test_oi10_cpu_039_00.c
         PREFIX simple-iram
         CFLAGS -DM_BASE=SRAM0_BASE -DL2C_IL1I_BIT=0 -DL2C_IL1D_BIT=1 -DL2C_W_BIT=0
+        IRUN_FLAGS +RANDOMIZE_SRAM
         NAME "test_oi10_cpu_040_01"
         LOAD IM0BIN SELF
              MBIN supplementary-test_oi10_cpu_040_helper_em2
@@ -1528,6 +1541,7 @@ endif()
         FILES test_oi10_cpu_039_00.c
         PREFIX simple-iram
         CFLAGS -DM_BASE=SRAM0_BASE -DL2C_IL1I_BIT=1 -DL2C_IL1D_BIT=0 -DL2C_W_BIT=0
+        IRUN_FLAGS +RANDOMIZE_SRAM
         NAME "test_oi10_cpu_040_10"
         LOAD IM0BIN SELF
              MBIN supplementary-test_oi10_cpu_040_helper_em2
@@ -1537,6 +1551,7 @@ endif()
         FILES test_oi10_cpu_039_00.c
         PREFIX simple-iram
         CFLAGS -DM_BASE=SRAM0_BASE -DL2C_IL1I_BIT=0 -DL2C_IL1D_BIT=0 -DL2C_W_BIT=0
+        IRUN_FLAGS +RANDOMIZE_SRAM
         NAME "test_oi10_cpu_040_11"
         LOAD IM0BIN SELF
              MBIN supplementary-test_oi10_cpu_040_helper_em2
@@ -1546,6 +1561,7 @@ endif()
         FILES test_oi10_cpu_039_00_im.c
         PREFIX simple-iram
         CFLAGS -DM_BASE=SRAM0_BASE -DL2C_IL1I_BIT=0 -DL2C_IL1D_BIT=0 -DL2C_W_BIT=0
+        IRUN_FLAGS +RANDOMIZE_SRAM
         NAME "test_oi10_cpu_040_11_im"
         LOAD IM0BIN SELF
              MBIN supplementary-test_oi10_cpu_040_helper_im_em2
@@ -1555,6 +1571,7 @@ endif()
         FILES test_oi10_cpu_039_00.c
         PREFIX simple-iram
         CFLAGS -DM_BASE=SRAM0_BASE -DL2C_IL1I_BIT=0 -DL2C_IL1D_BIT=0 -DL2C_W_BIT=1
+        IRUN_FLAGS +RANDOMIZE_SRAM
         NAME "test_oi10_cpu_039_11_short"
         LOAD IM0BIN SELF
              MBIN supplementary-test_oi10_cpu_039_helper_em2_short
@@ -1564,6 +1581,7 @@ endif()
         FILES test_oi10_cpu_039_00.c
         PREFIX simple-iram
         CFLAGS -DM_BASE=SRAM0_BASE -DL2C_IL1I_BIT=0 -DL2C_IL1D_BIT=0 -DL2C_W_BIT=0
+        IRUN_FLAGS +RANDOMIZE_SRAM
         NAME "test_oi10_cpu_040_11_short"
         LOAD IM0BIN SELF
              MBIN supplementary-test_oi10_cpu_040_helper_em2_short
@@ -1573,6 +1591,7 @@ endif()
         FILES test_oi10_cpu_039_00_im.c
         PREFIX simple-iram
         CFLAGS -DM_BASE=SRAM0_BASE -DL2C_IL1I_BIT=0 -DL2C_IL1D_BIT=0 -DL2C_W_BIT=1
+        IRUN_FLAGS +RANDOMIZE_SRAM
         NAME "test_oi10_cpu_039_11_im_short"
         LOAD IM0BIN SELF
              MBIN supplementary-test_oi10_cpu_039_helper_im_em2_short
@@ -1582,6 +1601,7 @@ endif()
         FILES test_oi10_cpu_039_00_im.c
         PREFIX simple-iram
         CFLAGS -DM_BASE=SRAM0_BASE -DL2C_IL1I_BIT=0 -DL2C_IL1D_BIT=0 -DL2C_W_BIT=0
+        IRUN_FLAGS +RANDOMIZE_SRAM
         NAME "test_oi10_cpu_040_11_im_short"
         LOAD IM0BIN SELF
              MBIN supplementary-test_oi10_cpu_040_helper_im_em2_short
