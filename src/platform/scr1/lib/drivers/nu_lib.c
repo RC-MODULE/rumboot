@@ -1106,6 +1106,17 @@ void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics, Conf
     cfg->src_rdma_config.dma_border_z        = 0                                                   ; //line_size (bytes)               = (Z-1)*elem_size
     cfg->src_rdma_config.dma_border_x        = (metrics->W - 1) * cfg->src_rdma_config.dma_stride_x ; //plane_size - last line (bytes)  = (X-1)*full_line_z*elem_size
     cfg->src_rdma_config.dma_border_y        = (metrics->H - 1) * cfg->src_rdma_config.dma_stride_y ; //cube_size  - last plane (bytes) = (Y-1)*full_line_z*full_line_x*elem_size
+  
+    cfg->src_rdma_config.dma_box_st_size_x   = metrics->W - 1 ;
+    cfg->src_rdma_config.dma_box_st_size_y   = metrics->H - 1 ;
+    cfg->src_rdma_config.dma_box_st_size_z   = 1 - 1 ;
+    cfg->src_rdma_config.dma_box_size_x      = metrics->W - 1 ;
+    cfg->src_rdma_config.dma_box_size_y      = metrics->H - 1 ;
+    cfg->src_rdma_config.dma_box_size_z      = 1 - 1 ;
+    cfg->src_rdma_config.dma_box_offset_x    = 0 ;
+    cfg->src_rdma_config.dma_box_offset_y    = 0 ;
+    cfg->src_rdma_config.dma_box_offset_z    = 0 ;
+  
   }
   else {  // MPE read mode
      if (cfg->trace_mode == TraceMode_MPE) { // MPE read mode
@@ -1378,6 +1389,17 @@ void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics, Conf
     cfg->op1_rdma_config.dma_border_z        = 0                                                   ; //line_size (bytes)               = (Z-1)*elem_size
     cfg->op1_rdma_config.dma_border_x        = (metrics->W - 1) * cfg->op1_rdma_config.dma_stride_x ; //plane_size - last line (bytes)  = (X-1)*full_line_z*elem_size
     cfg->op1_rdma_config.dma_border_y        = (metrics->H - 1) * cfg->op1_rdma_config.dma_stride_y ; //cube_size  - last plane (bytes) = (Y-1)*full_line_z*full_line_x*elem_size
+    
+    cfg->op1_rdma_config.dma_box_st_size_x   = metrics->W - 1 ;
+    cfg->op1_rdma_config.dma_box_st_size_y   = metrics->H - 1 ;
+    cfg->op1_rdma_config.dma_box_st_size_z   = 1 - 1 ;
+    cfg->op1_rdma_config.dma_box_size_x      = metrics->W - 1 ;
+    cfg->op1_rdma_config.dma_box_size_y      = metrics->H - 1 ;
+    cfg->op1_rdma_config.dma_box_size_z      = 1 - 1 ;
+    cfg->op1_rdma_config.dma_box_offset_x    = 0 ;
+    cfg->op1_rdma_config.dma_box_offset_y    = 0 ;
+    cfg->op1_rdma_config.dma_box_offset_z    = 0 ;
+  
   }
   else {  
     if (cfg->trace_mode == TraceMode_MPE) { // MPE read mode
@@ -1531,6 +1553,17 @@ void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics, Conf
     cfg->op2_rdma_config.dma_border_z        = 0                                                   ; //line_size (bytes)               = (Z-1)*elem_size
     cfg->op2_rdma_config.dma_border_x        = (metrics->W - 1) * cfg->op2_rdma_config.dma_stride_x ; //plane_size - last line (bytes)  = (X-1)*full_line_z*elem_size
     cfg->op2_rdma_config.dma_border_y        = (metrics->H - 1) * cfg->op2_rdma_config.dma_stride_y ; //cube_size  - last plane (bytes) = (Y-1)*full_line_z*full_line_x*elem_size
+  
+    cfg->op2_rdma_config.dma_box_st_size_x   = metrics->W - 1 ;
+    cfg->op2_rdma_config.dma_box_st_size_y   = metrics->H - 1 ;
+    cfg->op2_rdma_config.dma_box_st_size_z   = 1 - 1 ;
+    cfg->op2_rdma_config.dma_box_size_x      = metrics->W - 1 ;
+    cfg->op2_rdma_config.dma_box_size_y      = metrics->H - 1 ;
+    cfg->op2_rdma_config.dma_box_size_z      = 1 - 1 ;
+    cfg->op2_rdma_config.dma_box_offset_x    = 0 ;
+    cfg->op2_rdma_config.dma_box_offset_y    = 0 ;
+    cfg->op2_rdma_config.dma_box_offset_z    = 0 ;
+  
   }
   else {  
     if (cfg->trace_mode == TraceMode_MPE) { // MPE read mode

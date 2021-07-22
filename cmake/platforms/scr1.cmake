@@ -370,18 +370,7 @@ endif() #### EXPERIMENT_STAGE_2_SUB_1
         IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
       )
     endmacro()
-    
-    macro(ADD_VPE_MPE_COUPLED_TEST_LOOP_FORCE_WDMA name rm_bin_name)
-      add_rumboot_target(
-        CONFIGURATION ROM
-        NAME ${name}
-        FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_mpe.c
-        CFLAGS -DFORCE_VPE_WDMA_EN=1
-        PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
-        IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
-      )
-    endmacro()
-    
+
     macro(ADD_VPE_PPE_COUPLED_TEST_LOOP_FORCE_WDMA name rm_bin_name)
       add_rumboot_target(
         CONFIGURATION ROM
@@ -560,11 +549,6 @@ endif() #### EXPERIMENT_STAGE_2_SUB_1
     ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_op1_vec_ex_int main_vpe_op1_vec_ex_int)
     ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_op0_vec_ex_fp main_vpe_op0_vec_ex_fp)
     ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_op1_vec_ex_fp main_vpe_op1_vec_ex_fp)
-
-    ADD_VPE_MPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_mpe_op0_vec_ex_int main_vpe_op0_vec_ex_int)
-    ADD_VPE_MPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_mpe_op1_vec_ex_int main_vpe_op1_vec_ex_int)
-    ADD_VPE_MPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_mpe_op0_vec_ex_fp main_vpe_op0_vec_ex_fp)
-    ADD_VPE_MPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_mpe_op1_vec_ex_fp main_vpe_op1_vec_ex_fp)
     
     ADD_VPE_PPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_ppe_op0_vec_ex_int main_vpe_op0_vec_ex_int)
     ADD_VPE_PPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_ppe_op1_vec_ex_int main_vpe_op1_vec_ex_int)

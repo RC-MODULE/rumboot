@@ -132,6 +132,8 @@ int main() {
     
     //print_in_data(in_data,in_size);
     
+    cfg.trace_mode = TraceMode_MPE;
+    
     nu_vpe_print_config(&cfg);
     nu_vpe_decide_dma_config(&cfg,in_metrics,in_data,op0,op1,op2,res_metrics,res_data,&cfg_dma);
     nu_print_config_dma(&cfg.src_rdma_config,"src_rdma_config");
