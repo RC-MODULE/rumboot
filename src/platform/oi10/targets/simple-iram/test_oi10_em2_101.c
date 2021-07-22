@@ -290,6 +290,17 @@ void check_emi(const uint32_t base_address)
 
 int main()
 {
+// did, 21.07.21, OI10-489
+    rumboot_printf("Remove O32T IM3 TLB entries\n");
+    static const tlb_entry sram0_tlb_entry[] = {
+//       MMU_TLB_ENTRY(  ERPN,   RPN,        EPN,        DSIZ,                   IL1I,   IL1D,   W,      I,      M,      G,      E,                      UX, UW, UR,     SX, SW, SR      DULXE,  IULXE,      TS,     TID,                WAY,                BID,                V   )
+       {MMU_TLB_ENTRY(  0x020,  0xC0070,    0x80070,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,  MMU_TLBWE_BE_UND,   0b0 )},
+       {MMU_TLB_ENTRY(  0x020,  0xC0070,    0xC0070,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b0 )},
+       {MMU_TLB_ENTRY(  0x020,  0xC0060,    0x80060,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_5,     0b0 )},
+        {MMU_TLB_ENTRY(  0x020,  0xC0060,    0xC0060,    MMU_TLBE_DSIZ_64KB,     0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_UND,  MMU_TLBWE_BE_UND,   0b0 )}
+    };
+    write_tlb_entries(sram0_tlb_entry, ARRAY_SIZE(sram0_tlb_entry));
+
     rumboot_printf("\nCHECK PLB6MCIF2\n\n");
     check_plb6mcif2 (DCR_EM2_PLB6MCIF2_BASE);
 
