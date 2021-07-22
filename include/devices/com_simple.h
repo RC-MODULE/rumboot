@@ -38,3 +38,4 @@ int com_status(uint32_t base, uint32_t direct );
 int com_simple_write(uintptr_t base, com_cfg_t * cfg);
 int com_apb_check(uintptr_t base, com_cfg_t * cfg);
 int com_apb_running_one(uintptr_t base, uint32_t COM_Address, uint32_t mask, int end_number );
+void clear_com_status(uint32_t base, uint32_t direct );
