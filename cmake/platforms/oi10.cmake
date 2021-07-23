@@ -791,7 +791,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       FILES test_oi10_ppc_regs_im1.c
       PREFIX ppc_bw
     )
-    
+
     #---GRETH tests start---
     add_rumboot_target(
       CONFIGURATION IRAM
@@ -854,7 +854,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       FILES test_oi10_greth.c
       CFLAGS -DGRETH_BASE=GRETH_0_BASE  -DEDCL_TEST_BANK=SRAM0
       PREFIX greth0-edcl-em2
-      TESTGROUP broken      
+      TESTGROUP broken
     )
 
     add_rumboot_target(
@@ -885,7 +885,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       CFLAGS -DGRETH_BASE=GRETH_0_BASE -DSRC_HEAP_NAME="IM1" -DDST_HEAP_NAME="IM1"
       PREFIX greth0-im1-im1
     )
-    
+
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES test_oi10_greth.c
@@ -906,29 +906,29 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       CFLAGS -DGRETH_BASE=GRETH_1_BASE -DSRC_HEAP_NAME="IM1" -DDST_HEAP_NAME="IM1"
       PREFIX greth1-im1-im1
     )
-    
+
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES test_oi10_greth.c
       CFLAGS -DGRETH_BASE=GRETH_1_BASE -DSRC_HEAP_NAME="IM2" -DDST_HEAP_NAME="IM2"
       PREFIX greth1-im2-im2
     )
-    
+
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES test_oi10_greth.c
       CFLAGS -DGRETH_BASE=GRETH_1_BASE -DSRC_HEAP_NAME="SRAM0" -DDST_HEAP_NAME="SRAM0" -DINIT_EMI
       PREFIX greth1-sram0-sram0
     )
-    
-#----- TX-RX --- IM2 --- 
+
+#----- TX-RX --- IM2 ---
     add_rumboot_target(
       CONFIGURATION IRAM
       TESTGROUP test_greth_system
       FILES test_o32t_greth_system.c
       IRUN_FLAGS +enable_IPG_checker
-      CFLAGS -DTX_GRETH_BASE=GRETH_0_BASE 
-             -DRX_GRETH_BASE=GRETH_1_BASE 
+      CFLAGS -DTX_GRETH_BASE=GRETH_0_BASE
+             -DRX_GRETH_BASE=GRETH_1_BASE
              #-DINIT_EMI
              -DDESC_HEAP_NAME="IM2"
              -DSRC_HEAP_NAME="IM2"
@@ -937,14 +937,14 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
              -DGRETH_TEST_DATA_LEN_BYTES=60
       PREFIX tx0-rx1-im2-im2_n8_60B
     )
-    
+
     add_rumboot_target(
       CONFIGURATION IRAM
       TESTGROUP test_greth_system
       FILES test_o32t_greth_system.c
       IRUN_FLAGS +enable_IPG_checker
-      CFLAGS -DTX_GRETH_BASE=GRETH_0_BASE 
-             -DRX_GRETH_BASE=GRETH_1_BASE 
+      CFLAGS -DTX_GRETH_BASE=GRETH_0_BASE
+             -DRX_GRETH_BASE=GRETH_1_BASE
              #-DINIT_EMI
              -DDESC_HEAP_NAME="IM2"
              -DSRC_HEAP_NAME="IM2"
@@ -953,14 +953,14 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
              -DGRETH_TEST_DATA_LEN_BYTES=65
       PREFIX tx0-rx1-im2-im2_n8_65B
     )
-    
+
     add_rumboot_target(
       CONFIGURATION IRAM
       TESTGROUP test_greth_system
       FILES test_o32t_greth_system.c
       IRUN_FLAGS +enable_IPG_checker
-      CFLAGS -DTX_GRETH_BASE=GRETH_0_BASE 
-             -DRX_GRETH_BASE=GRETH_1_BASE 
+      CFLAGS -DTX_GRETH_BASE=GRETH_0_BASE
+             -DRX_GRETH_BASE=GRETH_1_BASE
              #-DINIT_EMI
              -DDESC_HEAP_NAME="IM2"
              -DSRC_HEAP_NAME="IM2"
@@ -976,8 +976,8 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       TESTGROUP test_greth_system
       FILES test_o32t_greth_system.c
       IRUN_FLAGS +enable_IPG_checker
-      CFLAGS -DTX_GRETH_BASE=GRETH_0_BASE 
-             -DRX_GRETH_BASE=GRETH_1_BASE 
+      CFLAGS -DTX_GRETH_BASE=GRETH_0_BASE
+             -DRX_GRETH_BASE=GRETH_1_BASE
              -DINIT_EMI
              -DDESC_HEAP_NAME="SRAM0"
              -DSRC_HEAP_NAME="SRAM0"
@@ -986,14 +986,14 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
              -DGRETH_TEST_DATA_LEN_BYTES=60
       PREFIX tx0-rx1-sram0-sram0_n8_60B
     )
-    
+
     add_rumboot_target(
       CONFIGURATION IRAM
       TESTGROUP test_greth_system
       FILES test_o32t_greth_system.c
       IRUN_FLAGS +enable_IPG_checker
-      CFLAGS -DTX_GRETH_BASE=GRETH_0_BASE 
-             -DRX_GRETH_BASE=GRETH_1_BASE 
+      CFLAGS -DTX_GRETH_BASE=GRETH_0_BASE
+             -DRX_GRETH_BASE=GRETH_1_BASE
              -DINIT_EMI
              -DDESC_HEAP_NAME="SRAM0"
              -DSRC_HEAP_NAME="SRAM0"
@@ -1002,14 +1002,14 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
              -DGRETH_TEST_DATA_LEN_BYTES=65
       PREFIX tx0-rx1-sram0-sram0_n8_65B
     )
-    
+
     add_rumboot_target(
       CONFIGURATION IRAM
       TESTGROUP test_greth_system
       FILES test_o32t_greth_system.c
       IRUN_FLAGS +enable_IPG_checker
-      CFLAGS -DTX_GRETH_BASE=GRETH_0_BASE 
-             -DRX_GRETH_BASE=GRETH_1_BASE 
+      CFLAGS -DTX_GRETH_BASE=GRETH_0_BASE
+             -DRX_GRETH_BASE=GRETH_1_BASE
              -DINIT_EMI
              -DDESC_HEAP_NAME="SRAM0"
              -DSRC_HEAP_NAME="SRAM0"
@@ -1024,8 +1024,8 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       TESTGROUP test_greth_system
       FILES test_o32t_greth_system.c
       IRUN_FLAGS +enable_IPG_checker
-      CFLAGS -DTX_GRETH_BASE=GRETH_0_BASE 
-             -DRX_GRETH_BASE=GRETH_1_BASE 
+      CFLAGS -DTX_GRETH_BASE=GRETH_0_BASE
+             -DRX_GRETH_BASE=GRETH_1_BASE
              -DINIT_EMI
              -DDESC_HEAP_NAME="SRAM0"
              -DSRC_HEAP_NAME="IM2"
@@ -1034,14 +1034,14 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
              -DGRETH_TEST_DATA_LEN_BYTES=60
       PREFIX tx0-rx1-im2-sram0_n8_60B
     )
-    
+
     add_rumboot_target(
       CONFIGURATION IRAM
       TESTGROUP test_greth_system
       FILES test_o32t_greth_system.c
       IRUN_FLAGS +enable_IPG_checker
-      CFLAGS -DTX_GRETH_BASE=GRETH_0_BASE 
-             -DRX_GRETH_BASE=GRETH_1_BASE 
+      CFLAGS -DTX_GRETH_BASE=GRETH_0_BASE
+             -DRX_GRETH_BASE=GRETH_1_BASE
              -DINIT_EMI
              -DDESC_HEAP_NAME="SRAM0"
              -DSRC_HEAP_NAME="IM2"
@@ -1050,14 +1050,14 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
              -DGRETH_TEST_DATA_LEN_BYTES=65
       PREFIX tx0-rx1-im2-sram0_n8_65B
     )
-    
+
     add_rumboot_target(
       CONFIGURATION IRAM
       TESTGROUP test_greth_system
       FILES test_o32t_greth_system.c
       IRUN_FLAGS +enable_IPG_checker
-      CFLAGS -DTX_GRETH_BASE=GRETH_0_BASE 
-             -DRX_GRETH_BASE=GRETH_1_BASE 
+      CFLAGS -DTX_GRETH_BASE=GRETH_0_BASE
+             -DRX_GRETH_BASE=GRETH_1_BASE
              -DINIT_EMI
              -DDESC_HEAP_NAME="SRAM0"
              -DSRC_HEAP_NAME="IM2"
@@ -1066,7 +1066,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
              -DGRETH_TEST_DATA_LEN_BYTES=1500
       PREFIX tx0-rx1-im2-sram0_n8_1500B
     )
-#----- 2 ETH --- IM2 ---   
+#----- 2 ETH --- IM2 ---
     add_rumboot_target(
       CONFIGURATION IRAM
       TESTGROUP test_greth_system
@@ -1080,7 +1080,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
              -DINIT_EMI
       PREFIX 2_greth_system-im2-im2_n8_60B
     )
-    
+
     add_rumboot_target(
       CONFIGURATION IRAM
       TESTGROUP test_greth_system
@@ -1094,7 +1094,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
              -DINIT_EMI
       PREFIX 2_greth_system-im2-im2_n8_65B
     )
-         
+
     add_rumboot_target(
       CONFIGURATION IRAM
       TESTGROUP test_greth_system
@@ -1108,8 +1108,8 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
              -DINIT_EMI
       PREFIX 2_greth_system-im2-im2_n8_1500B
     )
-    
-#----- 2 ETH --- SRAM0 --- 
+
+#----- 2 ETH --- SRAM0 ---
     add_rumboot_target(
       CONFIGURATION IRAM
       TESTGROUP test_greth_system
@@ -1123,7 +1123,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
              -DINIT_EMI
       PREFIX 2_greth_system-sram0-sram0_n8_60B
     )
-    
+
     add_rumboot_target(
       CONFIGURATION IRAM
       TESTGROUP test_greth_system
@@ -1137,7 +1137,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
              -DINIT_EMI
       PREFIX 2_greth_system-sram0-sram0_n8_65B
     )
-         
+
     add_rumboot_target(
       CONFIGURATION IRAM
       TESTGROUP test_greth_system
@@ -1151,8 +1151,8 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
              -DINIT_EMI
       PREFIX 2_greth_system-sram0-sram0_n8_1500B
     )
-        
-#----- 2 ETH --- IM2 - SRAM0 --- 
+
+#----- 2 ETH --- IM2 - SRAM0 ---
     add_rumboot_target(
       CONFIGURATION IRAM
       TESTGROUP test_greth_system
@@ -1166,7 +1166,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
              -DINIT_EMI
       PREFIX 2_greth_system-desc_sram0-im2-sram0_n8_60B
     )
-    
+
     add_rumboot_target(
       CONFIGURATION IRAM
       TESTGROUP test_greth_system
@@ -1180,7 +1180,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
              -DINIT_EMI
       PREFIX 2_greth_system-desc_sram0-im2-sram0_n8_65B
     )
-         
+
     add_rumboot_target(
       CONFIGURATION IRAM
       TESTGROUP test_greth_system
@@ -1194,7 +1194,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
              -DINIT_EMI
       PREFIX 2_greth_system-desc_sram0-im2-sram0_n8_1500B
     )
-         
+
     add_rumboot_target(
       CONFIGURATION IRAM
       TESTGROUP test_greth_system
@@ -1208,7 +1208,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
              -DINIT_EMI
       PREFIX 2_greth_system-desc_im2-im2-sram0_n8_60B
     )
-    
+
     add_rumboot_target(
       CONFIGURATION IRAM
       TESTGROUP test_greth_system
@@ -1222,7 +1222,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
              -DINIT_EMI
       PREFIX 2_greth_system-desc_im2-im2-sram0_n8_65B
     )
-         
+
     add_rumboot_target(
       CONFIGURATION IRAM
       TESTGROUP test_greth_system
@@ -1286,7 +1286,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         FEATURES EXTRACT_LABELS
     )
 
-if(RUMBOOT_SOC_O32T)
+#if(RUMBOOT_SOC_O32T)
   if (RUMBOOT_SOC_BUILD_TYPE MATCHES "RTL")
       if (OI10_IRAM_IM0)
           add_rumboot_target(
@@ -1328,7 +1328,7 @@ if(RUMBOOT_SOC_O32T)
           )
       endif()
   endif()
-endif()
+#endif()
 
     add_rumboot_target(
         CONFIGURATION SUPPLEMENTARY
@@ -2244,7 +2244,7 @@ endif()
         NAME test_oi10_hscb_rmap
     )
 
-#---------------------------- HSCB_NEW    
+#---------------------------- HSCB_NEW
      add_rumboot_target(
         CONFIGURATION IRAM
         #CFLAGS -DHSCB_UNDER_TEST_BASE=HSCB0_BASE
@@ -2252,7 +2252,7 @@ endif()
         PREFIX "hscb_simult"
         NAME test_hscb_big
     )
-    
+
     add_rumboot_target(
         CONFIGURATION IRAM
         #CFLAGS -DHSCB_UNDER_TEST_BASE=HSCB0_BASE
@@ -2272,7 +2272,7 @@ endif()
         PREFIX "hscb0_emi_others_im1"
         NAME test_hscb_big
     )
-    
+
         add_rumboot_target(
         CONFIGURATION IRAM
         #CFLAGS -DHSCB_UNDER_TEST_BASE=HSCB0_BASE
@@ -2320,7 +2320,7 @@ endif()
         FILES test_oi10_hscb_simult_big.c
         PREFIX "hscb0_ssram_others_im1"
         NAME test_hscb_big
-    )  
+    )
 
         add_rumboot_target(
         CONFIGURATION IRAM
@@ -2374,8 +2374,8 @@ endif()
         FILES test_oi10_hscb_simult_big.c
         PREFIX "hscb_desc_tx_data_im1_rx_data_ssram"
         NAME test_hscb_big
-        )        
-        
+        )
+
         add_rumboot_target(
         CONFIGURATION IRAM
         #CFLAGS -DHSCB_UNDER_TEST_BASE=HSCB0_BASE
@@ -2398,15 +2398,15 @@ endif()
                -DCOM_SRC_HEAP="SSRAM"
                -DCOM_DST_HEAP="SSRAM"
                -DSIZE_OF_PACKET=4096
-               -DN_OF_PACKETS=2               
+               -DN_OF_PACKETS=2
                #-DDEBUG_PRINT=1
         FILES test_oi10_hscb_com_simult_big.c
         PREFIX "hscb_com_desc_im1_data_ssram"
         NAME test_hscb_com_big
         TESTGROUP o32tonly
-    )    
-#-------------------------------------------------------    
-    
+    )
+#-------------------------------------------------------
+
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES test_oi10_lscb.c
@@ -2535,8 +2535,8 @@ endif()
       IRUN_FLAGS +mkio_signal_test
       PREFIX mkio1-em2-func-b
     )
-    
-    
+
+
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES test_oi10_lscb.c
@@ -2544,8 +2544,8 @@ endif()
       IRUN_FLAGS +mkio_signal_test
       PREFIX mkio0-em2-func-a-read
     )
-    
-    
+
+
 #    add_rumboot_target(
 #        CONFIGURATION IRAM
 #        FILES common/mkio/mkio0_events_timestamps_test.c
@@ -2747,7 +2747,7 @@ endif()
         TESTGROUP broken hwonly
         LOAD IM0BIN SELF
              MBIN supplementary-test_oi10_ppc_memory_bw_exploration_dcbt_dcbf
-    )    
+    )
 #****PPC_MEMORY_BW_EXPLORATION_RX_CASE*******************************************************************************************************************************************************************************************************
     # -------
     add_rumboot_target(
@@ -2769,7 +2769,7 @@ endif()
         TESTGROUP broken hwonly
         LOAD IM0BIN SELF
              MBIN supplementary-test_oi10_ppc_memory_bw_exploration_rx_case_10_4096_4_simple_crc_sram0
-    )   
+    )
     # -------
     add_rumboot_target(
         CONFIGURATION SUPPLEMENTARY
@@ -2811,7 +2811,7 @@ endif()
         TESTGROUP broken hwonly
         LOAD IM0BIN SELF
              MBIN supplementary-test_oi10_ppc_memory_bw_exploration_rx_case_10_4096_4_simple_crc_ssram
-    )    
+    )
     # -------
     add_rumboot_target(
         CONFIGURATION SUPPLEMENTARY
@@ -2832,7 +2832,7 @@ endif()
         TESTGROUP broken hwonly
         LOAD IM0BIN SELF
              MBIN supplementary-test_oi10_ppc_memory_bw_exploration_rx_case_10_4096_4_simple_crc_im0
-    )  
+    )
     # -------
     add_rumboot_target(
         CONFIGURATION SUPPLEMENTARY
@@ -2853,7 +2853,7 @@ endif()
         TESTGROUP broken hwonly
         LOAD IM0BIN SELF
              MBIN supplementary-test_oi10_ppc_memory_bw_exploration_rx_case_10_4096_4_simple_crc_im1
-    )       
+    )
 #****PPC_MEMORY_BW_EXPLORATION_TX_CASE*******************************************************************************************************************************************************************************************************
     # -------
     add_rumboot_target(
@@ -2875,7 +2875,7 @@ endif()
         TESTGROUP broken hwonly
         LOAD IM0BIN SELF
              MBIN supplementary-test_oi10_ppc_memory_bw_exploration_tx_case_10_4096_4_simple_crc_sram0
-    )   
+    )
     # -------
     add_rumboot_target(
         CONFIGURATION SUPPLEMENTARY
@@ -2917,7 +2917,7 @@ endif()
         TESTGROUP broken hwonly
         LOAD IM0BIN SELF
              MBIN supplementary-test_oi10_ppc_memory_bw_exploration_tx_case_10_4096_4_simple_crc_ssram
-    )  
+    )
     # -------
     add_rumboot_target(
         CONFIGURATION SUPPLEMENTARY
@@ -2938,7 +2938,7 @@ endif()
         TESTGROUP broken hwonly
         LOAD IM0BIN SELF
              MBIN supplementary-test_oi10_ppc_memory_bw_exploration_tx_case_10_4096_4_simple_crc_im0
-    )  
+    )
     # -------
     add_rumboot_target(
         CONFIGURATION SUPPLEMENTARY
@@ -2959,7 +2959,7 @@ endif()
         TESTGROUP broken hwonly
         LOAD IM0BIN SELF
              MBIN supplementary-test_oi10_ppc_memory_bw_exploration_tx_case_10_4096_4_simple_crc_im1
-    )      
+    )
     # -------
     add_rumboot_target(
         CONFIGURATION SUPPLEMENTARY
@@ -2980,8 +2980,8 @@ endif()
         TESTGROUP broken hwonly
         LOAD IM0BIN SELF
              MBIN supplementary-test_oi10_ppc_memory_bw_exploration_tx_case_full_l2c_simple_crc_ssram
-    )  
-    
+    )
+
     add_rumboot_target(
         CONFIGURATION IRAM
         FILES test_l2c_im0_scrubber_apb.c
@@ -2998,7 +2998,7 @@ endif()
         TESTGROUP o32tonly
     )
 
-#********** NACHINE_CHECK disable versions *****************************************************************************************************************************************************    
+#********** NACHINE_CHECK disable versions *****************************************************************************************************************************************************
     add_rumboot_target(
         CONFIGURATION SUPPLEMENTARY
         LDS oi10/sram0.lds
@@ -3020,7 +3020,7 @@ endif()
         TESTGROUP broken hwonly
         LOAD IM0BIN SELF
              MBIN supplementary-test_oi10_ppc_memory_bw_exploration_rx_case_10_4096_4_simple_crc_im0_mc_disable
-    )  
+    )
     # -------
     add_rumboot_target(
         CONFIGURATION SUPPLEMENTARY
@@ -3089,10 +3089,10 @@ endif()
         TESTGROUP broken hwonly
         LOAD IM0BIN SELF
              MBIN supplementary-test_oi10_ppc_memory_bw_exploration_tx_case_10_4096_4_simple_crc_im0_mc_disable
-    )  
+    )
     # -------
 #***********************************************************************************************************************************************************************************************************
-    
+
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES test_oi10_uart_000.c
@@ -3164,12 +3164,12 @@ endif()
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES test_oi10_cpu_028.c
-      IRUN_FLAGS +set_IM0_to_zero 
+      IRUN_FLAGS +set_IM0_to_zero
                  +disable_L2C_se_insertion
                  +disable_IM0_se_insertion
       NAME "test_oi10_cpu_028"
     )
-    
+
     add_rumboot_target(
         CONFIGURATION IRAM
         FILES test_oi10_sdio.c
@@ -3395,7 +3395,7 @@ endif()
         NAME "internal_loop_test_all"
         TESTGROUP hwonly
     )
-    
+
     add_rumboot_target(
         CONFIGURATION IRAM
         CFLAGS
@@ -3432,7 +3432,7 @@ endif()
       TESTGROUP hwonly
       NAME hscb_pad_test
     )
-    
+
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES test_oi10_plb6_axi.c
@@ -3540,7 +3540,7 @@ endif()
       TESTGROUP chains hwonly
       NAME fk-test-chain_without_mkio
     )
-        
+
     add_rumboot_target(
       FEATURES NOCODE
       COMBOIMAGE IM0BIN
@@ -3548,7 +3548,7 @@ endif()
       TESTGROUP chains hwonly
       NAME fk-test-chain_tmp
     )
-    
+
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES power/loader.c
@@ -3727,7 +3727,7 @@ endif()
       PREFIX chain
     )
 
-    
+
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES simple_scrb.c
@@ -3778,7 +3778,7 @@ endif()
       IRUN_FLAGS ${ROM_6500K_OPTS}
       LOAD IM0BIN SELF
           MBIN oi10new-memcopy
-    )    
+    )
 
     add_rumboot_target(
       CONFIGURATION SUPPLEMENTARY
@@ -3822,7 +3822,7 @@ endif()
     IRUN_FLAGS ${ROM_6500K_OPTS}
     LOAD IM0BIN SELF
         MBIN oi10new-memcopy-wb
-    )    
+    )
 #***********************************************************************************************************************************************************************************************************
     add_rumboot_target(
       CONFIGURATION SUPPLEMENTARY
@@ -3892,8 +3892,8 @@ endif()
       LOAD IM0BIN SELF
           MBIN l2bug-sram-test-msync-gc
     )
-  
-    
+
+
     add_rumboot_target(
       CONFIGURATION SUPPLEMENTARY
       PREFIX oi10new
