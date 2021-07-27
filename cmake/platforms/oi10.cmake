@@ -2405,6 +2405,36 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         NAME test_hscb_com_big
         TESTGROUP o32tonly
     )
+
+        add_rumboot_target(
+        CONFIGURATION IRAM
+        #CFLAGS -DHSCB_UNDER_TEST_BASE=HSCB0_BASE
+        CFLAGS -DHSCB0_TX_DSCTBL_BASE="IM1"
+               -DHSCB0_TX_DATA_BASE="SSRAM"
+               -DHSCB0_RX_DSCTBL_BASE="IM1"
+               -DHSCB0_RX_DATA_BASE="SSRAM"
+               -DHSCB1_TX_DSCTBL_BASE="IM1"
+               -DHSCB1_TX_DATA_BASE="SSRAM"
+               -DHSCB1_RX_DSCTBL_BASE="IM1"
+               -DHSCB1_RX_DATA_BASE="SSRAM"
+               -DHSCB2_TX_DSCTBL_BASE="IM1"
+               -DHSCB2_TX_DATA_BASE="SSRAM"
+               -DHSCB2_RX_DSCTBL_BASE="IM1"
+               -DHSCB2_RX_DATA_BASE="SSRAM"
+               -DHSCB3_TX_DSCTBL_BASE="IM1"
+               -DHSCB3_TX_DATA_BASE="SSRAM"
+               -DHSCB3_RX_DSCTBL_BASE="IM1"
+               -DHSCB3_RX_DATA_BASE="SSRAM"
+               -DCOM_SRC_HEAP="SSRAM"
+               -DCOM_DST_HEAP="SSRAM"
+               -DSIZE_OF_PACKET=4096
+               -DN_OF_PACKETS=2               
+               #-DDEBUG_PRINT=1
+        FILES power/test_oi10_power_1_6_1.S test_oi10_hscb_com_fpu_simult_big.c
+        PREFIX "hscb_com_fpu_desc_im1_data_ssram"
+        NAME test_hscb_com_fpu_big
+        TESTGROUP o32tonly
+    )   
 #-------------------------------------------------------
 
     add_rumboot_target(
