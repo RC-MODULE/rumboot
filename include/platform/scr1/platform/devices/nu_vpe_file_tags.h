@@ -723,6 +723,39 @@ char* etalon_file_tag[] = {
   "etalon_file_tag_31_"
 };
 
-
+char* status_regs_file_tag[] = {
+  "status_regs_file_tag_0_",
+  "status_regs_file_tag_1_",
+  "status_regs_file_tag_2_",
+  "status_regs_file_tag_3_",
+  "status_regs_file_tag_4_",
+  "status_regs_file_tag_5_",
+  "status_regs_file_tag_6_",
+  "status_regs_file_tag_7_",
+  "status_regs_file_tag_8_",
+  "status_regs_file_tag_9_",
+  "status_regs_file_tag_10_",
+  "status_regs_file_tag_11_",
+  "status_regs_file_tag_12_",
+  "status_regs_file_tag_13_",
+  "status_regs_file_tag_14_",
+  "status_regs_file_tag_15_",
+  "status_regs_file_tag_16_",
+  "status_regs_file_tag_17_",
+  "status_regs_file_tag_18_",
+  "status_regs_file_tag_19_",
+  "status_regs_file_tag_20_",
+  "status_regs_file_tag_21_",
+  "status_regs_file_tag_22_",
+  "status_regs_file_tag_23_",
+  "status_regs_file_tag_24_",
+  "status_regs_file_tag_25_",
+  "status_regs_file_tag_26_",
+  "status_regs_file_tag_27_",
+  "status_regs_file_tag_28_",
+  "status_regs_file_tag_29_",
+  "status_regs_file_tag_30_",
+  "status_regs_file_tag_31_"
+};
 
 #endif

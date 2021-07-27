@@ -402,6 +402,20 @@ void* nu_vpe_load_op2_by_tags(int heap_id, ConfigOp2* cfg, char* metrics_cube_ta
   return NULL;
 }
 
+int nu_vpe_load_status_regs_by_tag(int heap_id, VPEStatusRegs* status_regs, char* status_regs_tag){
+  uint32_t* r_bin;
+  
+  r_bin = rumboot_malloc_from_heap_aligned(heap_id,SIZEOF_VPEStatusRegs_BIN,sizeof(int32_t));
+  if(r_bin == NULL)
+    return 1;
+  
+  rumboot_platform_request_file(status_regs_tag,(uintptr_t)r_bin);
+  
+  nu_vpe_load_status_regs(status_regs, r_bin);
+  rumboot_free((void*)r_bin);
+  return 0;
+}
+
 int nu_bitwise_compare(void* res_data, void* etalon, int size) {
   return memcmp((char*)res_data,(char*)etalon,size)  ;
 }

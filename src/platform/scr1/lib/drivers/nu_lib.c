@@ -96,6 +96,25 @@ void nu_vpe_load_config(ConfigVPE* cfg, void* cfg_bin) {
   cfg->op2_config.lut_tab2_slope_undf_shift=*ptr;ptr++;
 
 }
+
+void nu_vpe_load_status_regs(VPEStatusRegs* status_regs, void* status_regs_bin) {
+  uint32_t* ptr;
+  
+  ptr = (uint32_t*) status_regs_bin;
+  
+  status_regs->cmp_result=*ptr;ptr++;
+  status_regs->inf_num_in=*ptr;ptr++;
+  status_regs->nan_num_in=*ptr;ptr++;
+  status_regs->nan_num_out=*ptr;ptr++;
+  status_regs->satur_num_out=*ptr;ptr++;
+  status_regs->lut_cnt_ovrf=*ptr;ptr++;
+  status_regs->lut_cnt_undf=*ptr;ptr++;
+  status_regs->lut_cnt_hit_tab0=*ptr;ptr++;
+  status_regs->lut_cnt_hit_tab1=*ptr;ptr++;
+  status_regs->lut_cnt_hit_hybr=*ptr;ptr++;
+  
+}
+
 void nu_mpe_load_config(ConfigMPE* cfg, void* cfg_bin) {
   int32_t* ptr;
 
@@ -481,6 +500,24 @@ void nu_print_config_dma(ConfigDMA * cfg_dma,char* name) {
 #endif // NU_NO_PRINT
   
 }
+
+void nu_vpe_print_status_regs_etalon(VPEStatusRegs* status_regs) {
+#ifndef NU_NO_PRINT
+  rumboot_printf("VPEStatusRegs:\n");
+  rumboot_printf("  cmp_result = %d\n",status_regs->cmp_result);
+  rumboot_printf("  inf_num_in = %d\n",status_regs->inf_num_in);
+  rumboot_printf("  nan_num_in = %d\n",status_regs->nan_num_in);
+  rumboot_printf("  nan_num_out = %d\n",status_regs->nan_num_out);
+  rumboot_printf("  satur_num_out = %d\n",status_regs->satur_num_out);
+  rumboot_printf("  lut_cnt_ovrf = %d\n",status_regs->lut_cnt_ovrf);
+  rumboot_printf("  lut_cnt_undf = %d\n",status_regs->lut_cnt_undf);
+  rumboot_printf("  lut_cnt_hit_tab0 = %d\n",status_regs->lut_cnt_hit_tab0);
+  rumboot_printf("  lut_cnt_hit_tab1 = %d\n",status_regs->lut_cnt_hit_tab1);
+  rumboot_printf("  lut_cnt_hit_hybr = %d\n",status_regs->lut_cnt_hit_hybr);
+#endif // NU_NO_PRINT
+}
+
+
 
 void nu_mpe_print_config(ConfigMPE* cfg){
 #ifndef NU_NO_PRINT
@@ -1654,6 +1691,40 @@ void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics, Conf
 
   // We Have No Setting That Define If We Run WDMA Or Main Wr Channel
 }
+
+int nu_vpe_check_reg(uintptr_t addr, char* name, int shift, uint32_t mask, uint32_t etalon) {
+  uint32_t temp;
+  temp = ioread32(addr);
+  // rumboot_printf("Checking %s 0x%x vs 0x%x, shift=%d, mask=0x%x\n",name,temp,etalon,shift,mask);
+  temp = (temp>>shift) & mask;
+  if( temp != etalon) {
+    rumboot_printf("Mismatch %s: Read %d, Expected %d\n",temp, etalon);
+    return 1;
+  }
+  return 0;
+}
+
+int nu_vpe_check_status_regs(uintptr_t base, VPEStatusRegs* status_regs) {
+  rumboot_printf("Checking Status Regs\n");
+  
+  if(
+    nu_vpe_check_reg(base + NU_VPE_OP2_ALU_CMP_RESULT,"CMP_RESULT"      ,0,1         ,status_regs->cmp_result      ) +
+    nu_vpe_check_reg(base + NU_VPE_INF_NUM_IN        ,"INF_NUM_IN"      ,0,0xFFFFFFFF,status_regs->inf_num_in      ) +
+    nu_vpe_check_reg(base + NU_VPE_NAN_NUM_IN        ,"NAN_NUM_IN"      ,0,0xFFFFFFFF,status_regs->nan_num_in      ) +
+    nu_vpe_check_reg(base + NU_VPE_NAN_NUM_OUT       ,"NAN_NUM_OUT"     ,0,0xFFFFFFFF,status_regs->nan_num_out     ) +
+    nu_vpe_check_reg(base + NU_VPE_SATUR_NUM_OUT     ,"SATUR_NUM_OUT"   ,0,0xFFFFFFFF,status_regs->satur_num_out   ) +
+    nu_vpe_check_reg(base + LUT_CNT_OVRF             ,"LUT_CNT_OVRF"    ,0,0xFFFFFFFF,status_regs->lut_cnt_ovrf    ) +
+    nu_vpe_check_reg(base + LUT_CNT_UNDF             ,"LUT_CNT_UNDF"    ,0,0xFFFFFFFF,status_regs->lut_cnt_undf    ) +
+    nu_vpe_check_reg(base + LUT_CNT_HIT_TAB0         ,"LUT_CNT_HIT_TAB0",0,0xFFFFFFFF,status_regs->lut_cnt_hit_tab0) +
+    nu_vpe_check_reg(base + LUT_CNT_HIT_TAB1         ,"LUT_CNT_HIT_TAB1",0,0xFFFFFFFF,status_regs->lut_cnt_hit_tab1) +
+    nu_vpe_check_reg(base + LUT_CNT_HIT_HYBR         ,"LUT_CNT_HIT_HYBR",0,0xFFFFFFFF,status_regs->lut_cnt_hit_hybr) 
+    != 0
+  )
+    return 1;
+  
+  return 0;
+}
+
 
 int nu_mpe_get_size_in_partitions(int size_in_bytes) {
   int res;
