@@ -648,17 +648,18 @@ void nu_vpe_load_lut(uintptr_t base, void* lut1, void* lut2) {
   uint32_t lut2_size = 65;
   
   command = (1<<17)|(0<<16);// NU_VPE_LUT_ACCESS_CFG - Write LUT1 From Begining
+  iowrite32(command, base + NU_VPE + NU_VPE_LUT_ACCESS_CFG);           // Write Command + Cell Address
   ptr = (uint16_t*) lut1;
+  
   for(uint32_t i=0;i<lut1_size;i++) {
-    iowrite32(command + i,base + NU_VPE + NU_VPE_LUT_ACCESS_CFG);           // Write Command + Cell Address
     iowrite32((uint32_t) *ptr++, base + NU_VPE + NU_VPE_LUT_ACCESS_DATA);  // Write Data
   }
   
   command = (1<<17)|(1<<16); // Write LUT2
+  iowrite32(command,base + NU_VPE + NU_VPE_LUT_ACCESS_CFG);
   
   ptr = (uint16_t*) lut2;
   for(uint32_t i=0;i<lut2_size;i++) {
-    iowrite32(command + i,base + NU_VPE + NU_VPE_LUT_ACCESS_CFG);
     iowrite32((uint32_t) *ptr++, base + NU_VPE + NU_VPE_LUT_ACCESS_DATA);
   }
   
