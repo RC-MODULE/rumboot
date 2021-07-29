@@ -7,7 +7,8 @@ int main()
 {
     rumboot_printf("Hello, printing something every 100 us\n");
     int i = 0 ;
-    while (1) {
+    int k = 5
+    while (k--) {
         rumboot_printf("Hello, my uptime is %d\n", rumboot_platform_get_uptime());
         udelay(300);
     }    
