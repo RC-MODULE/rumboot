@@ -725,7 +725,8 @@ void nu_vpe_setup(uintptr_t base, ConfigVPE* cfg, ConfigDMAVPE* cfg_dma) {
   if      (cfg->in_data_type == DataTypeExt_Int32 || cfg->in_data_type == DataTypeExt_Int16) tmp_type = DataType_Int16 ;
   else if (cfg->in_data_type == DataTypeExt_Fp32  || cfg->in_data_type == DataTypeExt_Fp16)  tmp_type = DataType_Fp16  ;
   else                                                                                      tmp_type = DataType_Int8  ;
-  tmp_data = (cfg->out_data_type << 16) | 
+  tmp_data = (1<<30) | (1<<29) | (1<<28) |   // All Counters On
+             (cfg->out_data_type << 16) | 
              ((cfg->op2_config.coef_type>>1) << 15) | ((cfg->op2_rdma_config.dma_data_mode&0x1)<<14) |   // TAKES IT FROM DMA struct!!!! NOT GOOD!!!
              ((cfg->op1_config.coef_type>>1) << 13) | ((cfg->op1_rdma_config.dma_data_mode&0x1)<<12) |   // TAKES IT FROM DMA struct!!!! NOT GOOD!!!
              ((cfg->op0_config.coef_type>>1) << 11) | ((cfg->op0_rdma_config.dma_data_mode&0x1)<<10) |   // TAKES IT FROM DMA struct!!!! NOT GOOD!!!
