@@ -200,9 +200,9 @@ void rumboot_platform_setup() {
 
     enable_fpu();
 
-#if !defined(RUMBOOT_ONLY_STACK)
+//#if !defined(RUMBOOT_ONLY_STACK)
     /* No-op on real OI10, enables l2 scrubbing on 32t */ 
     dcr_write(0x800E0010, 0x101);
-#endif
+//#endif
 
 }
