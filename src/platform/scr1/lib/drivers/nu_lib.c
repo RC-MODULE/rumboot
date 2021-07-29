@@ -1698,7 +1698,7 @@ int nu_vpe_check_reg(uintptr_t addr, char* name, int shift, uint32_t mask, uint3
   // rumboot_printf("Checking %s 0x%x vs 0x%x, shift=%d, mask=0x%x\n",name,temp,etalon,shift,mask);
   temp = (temp>>shift) & mask;
   if( temp != etalon) {
-    rumboot_printf("Mismatch %s: Read %d, Expected %d\n",temp, etalon);
+    rumboot_printf("Mismatch %s: Read %d, Expected %d\n",name,temp, etalon);
     return 1;
   }
   return 0;
