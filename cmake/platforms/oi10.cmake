@@ -940,7 +940,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
     add_rumboot_target(
       CONFIGURATION IRAM
-      TESTGROUP test_greth_system
+      TESTGROUP test_greth_system 
       FILES test_o32t_greth_system.c
       IRUN_FLAGS +enable_IPG_checker
       CFLAGS -DTX_GRETH_BASE=GRETH_0_BASE
@@ -956,7 +956,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
     add_rumboot_target(
       CONFIGURATION IRAM
-      TESTGROUP test_greth_system
+      TESTGROUP test_greth_system 
       FILES test_o32t_greth_system.c
       IRUN_FLAGS +enable_IPG_checker
       CFLAGS -DTX_GRETH_BASE=GRETH_0_BASE
@@ -1069,7 +1069,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 #----- 2 ETH --- IM2 ---
     add_rumboot_target(
       CONFIGURATION IRAM
-      TESTGROUP test_greth_system
+      TESTGROUP test_greth_system 
       FILES test_o32t_2_greth_system.c
       IRUN_FLAGS +enable_IPG_checker
       CFLAGS -DDESC_HEAP_NAME="IM2"
@@ -1083,7 +1083,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
     add_rumboot_target(
       CONFIGURATION IRAM
-      TESTGROUP test_greth_system
+      TESTGROUP test_greth_system 
       FILES test_o32t_2_greth_system.c
       IRUN_FLAGS +enable_IPG_checker
       CFLAGS -DDESC_HEAP_NAME="IM2"
@@ -1097,7 +1097,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
     add_rumboot_target(
       CONFIGURATION IRAM
-      TESTGROUP test_greth_system
+      TESTGROUP test_greth_system 
       FILES test_o32t_2_greth_system.c
       IRUN_FLAGS +enable_IPG_checker
       CFLAGS -DDESC_HEAP_NAME="IM2"
@@ -1197,7 +1197,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
     add_rumboot_target(
       CONFIGURATION IRAM
-      TESTGROUP test_greth_system
+      TESTGROUP test_greth_system 
       FILES test_o32t_2_greth_system.c
       IRUN_FLAGS +enable_IPG_checker
       CFLAGS -DDESC_HEAP_NAME="IM2"
@@ -1211,7 +1211,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
     add_rumboot_target(
       CONFIGURATION IRAM
-      TESTGROUP test_greth_system
+      TESTGROUP test_greth_system 
       FILES test_o32t_2_greth_system.c
       IRUN_FLAGS +enable_IPG_checker
       CFLAGS -DDESC_HEAP_NAME="IM2"
@@ -1225,7 +1225,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
     add_rumboot_target(
       CONFIGURATION IRAM
-      TESTGROUP test_greth_system
+      TESTGROUP test_greth_system 
       FILES test_o32t_2_greth_system.c
       IRUN_FLAGS +enable_IPG_checker
       CFLAGS -DDESC_HEAP_NAME="IM2"
@@ -3902,7 +3902,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     #----------
     add_rumboot_target(
       CONFIGURATION SUPPLEMENTARY
-      PREFIX l2bug
+      PREFIX l2bug1
       LDS oi10/l2bug_sram_test.lds
       CFLAGS -DRUMBOOT_NOINIT -DMSYNC1
       LDFLAGS -Wl,-emain
@@ -3945,6 +3945,22 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       LOAD IM0BIN SELF
           MBIN oi10new-dcache-gc
     )
+
+if(RUMBOOT_SOC_O32T)
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES test_oi10_cpu_029.S
+      CFLAGS -DPVR_O32T
+      NAME "test_oi10_cpu_029"
+    )
+else()
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES test_oi10_cpu_029.S
+      CFLAGS -DPVR_OI10
+      NAME "test_oi10_cpu_029"
+    )
+endif()
 
 endmacro()
 

@@ -979,6 +979,7 @@ add_rumboot_target(
       PREFIX tx0-rx1-im3-im3_n8_60B
     )
     
+    
     add_rumboot_target(
       CONFIGURATION IRAM_IM1
       TESTGROUP test_greth_system
