@@ -5,7 +5,14 @@
 
 /* as defined in units/cpu/units/ppc_chip/verilog/rtl/PPC470S_TOP111323221111.v */
 #define PIR_VALUE	0x00000000 /* Single CPU */
-#define PVR_VALUE	0x7FF520C2 /* owner=0x7FF, proc ver=0x520C2 */
+
+#ifdef PVR_OI10
+    #define PVR_VALUE	0x7FF520C1 /* owner=0x7FF, proc ver=0x520C2 */
+#endif
+
+#ifdef PVR_O32T
+    #define PVR_VALUE	0x7FF520C2 /* owner=0x7FF, proc ver=0x520C2 */
+#endif
 
 .section ".text","ax",@progbits
 
