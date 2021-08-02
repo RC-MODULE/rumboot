@@ -3902,7 +3902,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     #----------
     add_rumboot_target(
       CONFIGURATION SUPPLEMENTARY
-      PREFIX l2bug1
+      PREFIX l2bug
       LDS oi10/l2bug_sram_test.lds
       CFLAGS -DRUMBOOT_NOINIT -DMSYNC1
       LDFLAGS -Wl,-emain
