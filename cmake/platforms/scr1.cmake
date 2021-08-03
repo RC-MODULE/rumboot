@@ -494,14 +494,23 @@ endif() #### EXPERIMENT_STAGE_2_SUB_1
     ADD_VPE_COUPLED_TEST_LOOP(vpe_17_3_op2_alu_int16_high main_vpe_17_3_op2_alu_int16_high)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_17_4_op2_alu_fp32 main_vpe_17_4_op2_alu_fp32)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_7_0_op0_mul_int16 main_vpe_7_0_op0_mul_int16)
+    ADD_VPE_COUPLED_TEST_LOOP(vpe_7_0_op0_mul_int16_dma main_vpe_7_0_op0_mul_int16_dma)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_7_1_op0_mul_int8 main_vpe_7_1_op0_mul_int8)
+    ADD_VPE_COUPLED_TEST_LOOP(vpe_7_1_op0_mul_int8_dma main_vpe_7_1_op0_mul_int8_dma)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_7_2_op0_mul_fp32 main_vpe_7_2_op0_mul_fp32)
+    ADD_VPE_COUPLED_TEST_LOOP(vpe_7_2_op0_mul_fp32_dma main_vpe_7_2_op0_mul_fp32_dma)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_13_0_op1_mul_int16 main_vpe_13_0_op1_mul_int16)
+    ADD_VPE_COUPLED_TEST_LOOP(vpe_13_0_op1_mul_int16_dma main_vpe_13_0_op1_mul_int16_dma)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_13_1_op1_mul_int8 main_vpe_13_1_op1_mul_int8)
+    ADD_VPE_COUPLED_TEST_LOOP(vpe_13_1_op1_mul_int8_dma main_vpe_13_1_op1_mul_int8_dma)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_13_2_op1_mul_fp32 main_vpe_13_2_op1_mul_fp32)
+    ADD_VPE_COUPLED_TEST_LOOP(vpe_13_2_op1_mul_fp32_dma main_vpe_13_2_op1_mul_fp32_dma)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_19_0_op2_mul_int16 main_vpe_19_0_op2_mul_int16)
+    ADD_VPE_COUPLED_TEST_LOOP(vpe_19_0_op2_mul_int16_dma main_vpe_19_0_op2_mul_int16_dma)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_19_1_op2_mul_int8 main_vpe_19_1_op2_mul_int8)
+    ADD_VPE_COUPLED_TEST_LOOP(vpe_19_1_op2_mul_int8_dma main_vpe_19_1_op2_mul_int8_dma)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_19_2_op2_mul_fp32 main_vpe_19_2_op2_mul_fp32)
+    ADD_VPE_COUPLED_TEST_LOOP(vpe_19_2_op2_mul_fp32_dma main_vpe_19_2_op2_mul_fp32_dma)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_21_0_lut main_vpe_21_0_lut) # VPE_21
     ADD_VPE_COUPLED_TEST_LOOP(vpe_21_1_lut_addition main_vpe_21_1_lut_addition) # VPE_21_addition
     ADD_VPE_COUPLED_TEST_LOOP(vpe_22_op0_together main_vpe_22_op0_together) # VPE_22
