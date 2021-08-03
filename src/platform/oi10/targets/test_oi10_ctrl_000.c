@@ -1,5 +1,5 @@
 /* -*- rumboot-test-labels: oi10only -*- */
- 
+
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
@@ -281,6 +281,74 @@ check_sctl_kmbist_chains_inject(const uint32_t base_addr)
 }
 #endif
 
+
+
+
+
+// This is a sepparate check, because reg PPC_SYS_CONF
+// cant be checked with rumboot_regpoker_check_array
+// because there are forbidden values of bits [4:3]
+static bool
+check_ppc_sys_conf_reg_rw(uint32_t base_addr)
+{
+    int fails = 0;
+    int i;
+    uint32_t const address = base_addr + SCTL_PPC_SYS_CONF;
+    uint32_t mask = 0x39;
+    if( mask != 0 ) {
+
+        uint32_t v, readback;
+
+        v = 0x9;
+        dcr_write(address, v );
+        readback = dcr_read( address );
+        if( ( readback & mask ) != v ) {
+            fails++;
+            rumboot_printf( "Write register %s (0x%x): wrote: 0x%x got: 0x%x mask: 0x%xn", "PPC_SYS_CONF", address, v, readback, mask );
+        }
+
+        v = 0x18;
+        dcr_write(address, v );
+        readback = dcr_read( address );
+        if( ( readback & mask ) != v ) {
+            fails++;
+            rumboot_printf( "Write register %s (0x%x): wrote: 0x%x got: 0x%x mask: 0x%xn", "PPC_SYS_CONF", address, v, readback, mask );
+        }
+
+        v = 0x19;
+        dcr_write(address, v );
+        readback = dcr_read( address );
+        if( ( readback & mask ) != v ) {
+            fails++;
+            rumboot_printf( "Write register %s (0x%x): wrote: 0x%x got: 0x%x mask: 0x%xn", "PPC_SYS_CONF", address, v, readback, mask );
+        }
+        v = 0x38;
+        dcr_write(address, v );
+        readback = dcr_read( address );
+        if( ( readback & mask ) != v ) {
+            fails++;
+            rumboot_printf( "Write register %s (0x%x): wrote: 0x%x got: 0x%x mask: 0x%xn", "PPC_SYS_CONF", address, v, readback, mask );
+        }
+        v = 0x39;
+        dcr_write(address, v );
+        readback = dcr_read( address );
+        if( ( readback & mask ) != v ) {
+            fails++;
+            rumboot_printf( "Write register %s (0x%x): wrote: 0x%x got: 0x%x mask: 0x%xn", "PPC_SYS_CONF", address, v, readback, mask );
+        }
+    }
+    dcr_write( address , (uint32_t)SCTL_PPC_SYS_CONF_dflt);
+
+    if( fails == 0 ) {
+           rumboot_printf( "OK\n" );
+           return true;
+       }
+    rumboot_printf( "ERROR\n" );
+    return false;
+}
+
+
+
 TEST_SUITE_BEGIN(sctl_testlist, "SCTL TEST")
 #ifndef ERR_INJ_ENABLED
 TEST_ENTRY("SCTL reg read default", check_sctl_regs_ro, DCR_SCTL_BASE),
@@ -290,6 +358,9 @@ TEST_ENTRY("SCTL run KMBIST chains as is", check_sctl_kmbist_chains_default, DCR
 #else
 TEST_ENTRY("SCTL run KMBIST chains with injections", check_sctl_kmbist_chains_inject, DCR_SCTL_BASE),
 #endif
+
+TEST_ENTRY("SCTL ppc_sys_conf reg rw check", check_ppc_sys_conf_reg_rw, DCR_SCTL_BASE),
+
 TEST_SUITE_END();
 
 int main(void)

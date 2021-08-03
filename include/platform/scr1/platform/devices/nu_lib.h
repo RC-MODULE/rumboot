@@ -29,6 +29,13 @@
     RoundMode_Up
   }RoundMode;
 
+  /**
+  Режим обхода при чтении данных из DMA
+  */
+  typedef enum TraceMode {
+    TraceMode_PPE,
+    TraceMode_MPE
+  }TraceMode;
 
   /**
   Активация элемента
@@ -245,6 +252,7 @@
     RoundMode   c3_round_mode   ;
     Enable      nan_to_zero_input;
     Enable      nan_to_zero_output;
+    TraceMode   trace_mode      ;
     ConfigOp01  op0_config      ;
     ConfigOp01  op1_config      ;
     ConfigOp2   op2_config      ;
@@ -392,7 +400,30 @@
     int32_t s; // Size Of Command Blob In Bytes
   }MPECmdMetrics;
 
-
+  typedef struct VPEStatusRegs {
+    /** Статус операции сравнения кубов данных. eq==0, neq==1 */
+    int32_t cmp_result;
+    /** Число входных элементов со значением бесконечность. */
+    uint32_t inf_num_in;
+    /** Число входных элементов nan. */
+    uint32_t nan_num_in;
+    /** Число выходных элементов nan. */
+    uint32_t nan_num_out;
+    /** Число элементов с возникшим переполнением при выходном преобразовании данных. */
+    uint32_t satur_num_out;
+    /** Кол-во совместных промахов отн-но верхних границ TAB0 и TAB1. */
+    uint32_t lut_cnt_ovrf;
+    /** Кол-во совместных промахов отн-но нижних границ TAB0 и TAB1. */
+    uint32_t lut_cnt_undf;
+    /** Кол-во исключительных попаданий в TAB0. */
+    uint32_t lut_cnt_hit_tab0;
+    /** Кол-во исключительных попаданий в TAB1. */
+    uint32_t lut_cnt_hit_tab1;
+    /** Кол-во совместных попаданий в TAB0 и TAB1. */
+    uint32_t lut_cnt_hit_hybr;
+  } VPEStatusRegs;
+#define SIZEOF_VPEStatusRegs_BIN sizeof(VPEStatusRegs)
+  
 void nu_vpe_load_config(ConfigVPE* cfg, void* cfg_bin);
 void nu_vpe_print_config(ConfigVPE* cfg);
 void nu_vpe_print_config_dma(ConfigDMAVPE* cfg);
@@ -404,6 +435,10 @@ void nu_vpe_setup(uintptr_t base, ConfigVPE* cfg, ConfigDMAVPE* cfg_dma);
 void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics, ConfigDMAVPE* cfg_dma);
 
 bool nu_vpe_mode_to_bool (Mode in_mode);
+
+void nu_vpe_load_status_regs(VPEStatusRegs* status_regs, void* status_regs_bin);
+void nu_vpe_print_status_regs_etalon(VPEStatusRegs* status_regs);
+int nu_vpe_check_status_regs(uintptr_t base, VPEStatusRegs* status_regs);// 0 - Ok
 
 void nu_mpe_load_config(ConfigMPE* cfg, void* cfg_bin);
 void nu_mpe_print_config(ConfigMPE* cfg);

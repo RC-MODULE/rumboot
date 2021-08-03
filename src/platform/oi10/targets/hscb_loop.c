@@ -13,6 +13,7 @@
 #include <rumboot/irq.h>
 #include <rumboot/rumboot.h>
 #include <platform/devices/hscb.h>
+#include <rumboot/timer.h>
 
 
 #define TRAN_FLAG       0x00000020
@@ -608,5 +609,73 @@ int main() {
     iowrite32((EN_HSCB | DISCARD_RMAP | LOOP_BACK), HSCB_BASE + SETTINGS );
     
     return hscb_internal_loop_iteration(HSCB_BASE, "IM2", "IM2", internal_page_size, internal_speed);
+#endif
+
+#ifdef INTERNAL_LOOP_TEST_ALL
+    uint32_t internal_speed = 1;
+    uint32_t internal_page_size = 128;
+    uint32_t result = 0;
+
+    uint32_t wait_gpio_1_6  = 0;
+    uint32_t value_gpio_1_7 = 0;
+    uint32_t past_state_gpio_1_7 = 0;
+    
+    uint32_t hscb_base;
+    
+    uint32_t i;
+    
+    value_gpio_1_7 =  ioread32(GPIO_1_BASE+0x3fc) & 0x80;
+    rumboot_printf("value_gpio_1_7 = 0x%x \n",value_gpio_1_7);
+    past_state_gpio_1_7 = value_gpio_1_7;
+    rumboot_printf("wait GPIO1[6] = 1 \n");
+    rumboot_printf("gpio_1_6 = 0x%x \n",wait_gpio_1_6);
+    while (wait_gpio_1_6 == 0) {
+        wait_gpio_1_6 = ioread32(GPIO_1_BASE+0x3fc) & 0x40;
+    }
+    rumboot_printf("gpio_1_6 = 0x%x \n\n",wait_gpio_1_6);
+    for (i=0; i<4; i++){
+        switch (i)
+        {
+            case 0: 
+                rumboot_printf("\nHSCB0\n\n");
+                hscb_base = HSCB0_BASE;
+                break;
+    
+            case 1:
+                rumboot_printf("\nHSCB1\n\n");
+                hscb_base = HSCB1_BASE;
+                break;
+    
+            case 2:
+                rumboot_printf("\nHSCB2\n\n");
+                hscb_base = HSCB2_BASE;
+                break;
+    
+            case 3:
+                rumboot_printf("\nHSCB3\n\n");
+                hscb_base = HSCB3_BASE;
+                break;
+        }
+        rumboot_printf("Reset HSCB\n");
+        iowrite32(1, hscb_base + SW_RESET );
+        iowrite32(1, hscb_base + ADMA_SW_RST );
+        
+        rumboot_printf("Enable HSCB\n");
+        iowrite32((EN_HSCB | DISCARD_RMAP | LOOP_BACK), hscb_base + SETTINGS );
+    
+        result = hscb_internal_loop_iteration(hscb_base, "IM2", "IM2", internal_page_size, internal_speed);
+        if (result==1) {
+            break;
+        }   
+        rumboot_printf("Finish HSCB\n");
+        rumboot_printf("value_gpio_1_7 = 0x%x \n",value_gpio_1_7);
+        rumboot_printf("wait change gpio_1_7 \n"); 
+        while (value_gpio_1_7 == past_state_gpio_1_7) { 
+            value_gpio_1_7 =  ioread32(GPIO_1_BASE+0x3fc) & 0x80;
+        }
+        rumboot_printf("value_gpio_1_7 = 0x%x \n\n",value_gpio_1_7);
+        past_state_gpio_1_7 = value_gpio_1_7;
+    }
+    return result;
 #endif
 }

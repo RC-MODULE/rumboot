@@ -132,6 +132,8 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     set(NA_TEST_metrics_lut1 ${NA_TEST_lut1_file}.metrics)
     set(NA_TEST_metrics_lut2 ${NA_TEST_lut2_file}.metrics)
     set(NA_TEST_metrics_mpe_cmd ${NA_TEST_mpe_cmd_file}.metrics)
+
+    set(NA_TEST_status_regs_file status_regs.bin)
     ###################
 
     set(NA_RM_KEYS
@@ -161,6 +163,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       --cfg_file                 ${NA_TEST_cfg_file}
       --cfg_mpe_file             ${NA_TEST_cfg_mpe_file}
       --cfg_ppe_file             ${NA_TEST_cfg_ppe_file}
+      --status_regs_file         ${NA_TEST_status_regs_file}
       # '.metrics' added by RM itself
      )
 
@@ -217,6 +220,8 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     set(PLUSARG_metrics_lut2_tag metrics_lut2_tag)
     set(PLUSARG_metrics_mpe_cmd_tag metrics_mpe_cmd_tag)
 
+    set(PLUSARG_status_regs_file_tag status_regs_file_tag)
+
 
     set(NA_RM_BIN_PATH ${CMAKE_BINARY_DIR}/${rumboot_dirname}/utils/npe_rm/rm_core/rtl-tests)
     set(NA_RM_PLUSARGS +${PLUSARG_in_file_tag}=${NA_TEST_in_file}
@@ -270,6 +275,8 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
                        +${PLUSARG_metrics_lut1_tag}=${NA_TEST_metrics_lut1}
                        +${PLUSARG_metrics_lut2_tag}=${NA_TEST_metrics_lut2}
                        +${PLUSARG_metrics_mpe_cmd_tag}=${NA_TEST_metrics_mpe_cmd}
+
+                       +${PLUSARG_status_regs_file_tag}=${NA_TEST_status_regs_file}
     )
     set(NA_RM_PLUSARGS_LOOP +${PLUSARG_num_iterations_file_tag}=${NA_TEST_num_iterations_file})
     foreach(i RANGE 0 31)
@@ -327,6 +334,8 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         +${PLUSARG_metrics_lut1_tag}_${i}_=${NA_TEST_lut1_file}.${i}.metrics
         +${PLUSARG_metrics_lut2_tag}_${i}_=${NA_TEST_lut2_file}.${i}.metrics
         +${PLUSARG_metrics_mpe_cmd_tag}_${i}_=${NA_TEST_mpe_cmd_file}.${i}.metrics
+
+        +${PLUSARG_status_regs_file_tag}_${i}_=${NA_TEST_status_regs_file}.${i}
       )
     endforeach()
     set(RM_LOGFILE npe_rm.log)
@@ -366,6 +375,17 @@ endif() #### EXPERIMENT_STAGE_2_SUB_1
         CONFIGURATION ROM
         NAME ${name}
         FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe.c
+        PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
+        IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+      )
+    endmacro()
+
+    macro(ADD_VPE_PPE_COUPLED_TEST_LOOP_FORCE_WDMA name rm_bin_name)
+      add_rumboot_target(
+        CONFIGURATION ROM
+        NAME ${name}
+        FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_ppe.c
+        CFLAGS -DFORCE_VPE_WDMA_EN=1
         PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
         IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
       )
@@ -523,6 +543,7 @@ endif() #### EXPERIMENT_STAGE_2_SUB_1
     ADD_VPE_COUPLED_TEST_LOOP(vpe_26_autonom_nowdma main_vpe_26_autonom)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_28_perf main_28_perf) # VPE_28
 
+
     ###############
     # VPE Tests adapted for NPE assembly
     ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(npe_vpe_op0_f_int main_npe_vpe_op0_f_int)
@@ -541,6 +562,16 @@ endif() #### EXPERIMENT_STAGE_2_SUB_1
     ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(npe_vpe_op0_relu_fp  main_npe_vpe_op0_relu_fp)
     ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(npe_vpe_op1_relu_int main_npe_vpe_op1_relu_int)
     ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(npe_vpe_op1_relu_fp  main_npe_vpe_op1_relu_fp)
+
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_op0_vec_ex_int main_vpe_op0_vec_ex_int)
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_op1_vec_ex_int main_vpe_op1_vec_ex_int)
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_op0_vec_ex_fp main_vpe_op0_vec_ex_fp)
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_op1_vec_ex_fp main_vpe_op1_vec_ex_fp)
+    
+    ADD_VPE_PPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_ppe_op0_vec_ex_int main_vpe_op0_vec_ex_int)
+    ADD_VPE_PPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_ppe_op1_vec_ex_int main_vpe_op1_vec_ex_int)
+    ADD_VPE_PPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_ppe_op0_vec_ex_fp main_vpe_op0_vec_ex_fp)
+    ADD_VPE_PPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_ppe_op1_vec_ex_fp main_vpe_op1_vec_ex_fp)
 
     ###############
 

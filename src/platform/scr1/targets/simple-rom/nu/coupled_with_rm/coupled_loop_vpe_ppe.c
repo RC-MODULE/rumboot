@@ -67,8 +67,6 @@ CubeMetrics* res_metrics;
 VectorMetrics* lut1_metrics;
 VectorMetrics* lut2_metrics;
 
-VPEStatusRegs status_regs_etalon;
-
 int main() {
   int heap_id;
   int i;
@@ -133,11 +131,9 @@ int main() {
     if(etalon == NULL) return -1;
     
     //print_in_data(in_data,in_size);
-    
-    if(nu_vpe_load_status_regs_by_tag(heap_id,&status_regs_etalon,status_regs_file_tag[i]) != 0) return -1;
-    
-    cfg.trace_mode = TraceMode_MPE;
-    
+
+    cfg.trace_mode = TraceMode_PPE;
+
     nu_vpe_print_config(&cfg);
     nu_vpe_decide_dma_config(&cfg,in_metrics,in_data,op0,op1,op2,res_metrics,res_data,&cfg_dma);
     nu_print_config_dma(&cfg.src_rdma_config,"src_rdma_config");
@@ -145,7 +141,6 @@ int main() {
     nu_print_config_dma(&cfg.op1_rdma_config,"op1_rdma_config");
     nu_print_config_dma(&cfg.op2_rdma_config,"op2_rdma_config");
     nu_print_config_dma(&cfg.wdma_config,"wdma_config");
-    nu_vpe_print_status_regs_etalon(&status_regs_etalon);
     
     nu_vpe_setup(NU_VPE_STANDALONE_BASE, &cfg, &cfg_dma);
     
@@ -195,11 +190,6 @@ int main() {
 //                    productivity_x100,productivity_frac,num_vectors,start,end,delta,num_cycles);
     rumboot_printf("Performance: 0.%d vectors/cycle num_vectors = %d, num_cycles = %d \n",
                    productivity_x1000,num_vectors,num_cycles);
-    
-    if(nu_vpe_check_status_regs(NU_VPE_STANDALONE_BASE, &status_regs_etalon) != 0) {
-      rumboot_printf("Test FAILED Due to Status Reg Check at iteration %d\n",i);
-      return -1;
-    }
   }
   
   return 0;

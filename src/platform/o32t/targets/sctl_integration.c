@@ -30,7 +30,6 @@ check_sctl_regs_ro(uint32_t base_addr)
      { "KMBIST_CHAIN_SF_8",     REGPOKER_READ_DCR, KMBIST_CHAIN_SF_8,       0,                          SCTL_KMBIST_CHAIN_SF_mask },
      { "KMBIST_CHAIN_SF_9",     REGPOKER_READ_DCR, KMBIST_CHAIN_SF_9,       0,                          SCTL_KMBIST_CHAIN_SF_mask },
      { "KMBIST_CHAIN_SF_10",    REGPOKER_READ_DCR, KMBIST_CHAIN_SF_10,      0,                          SCTL_KMBIST_CHAIN_SF_mask },
-     { "KMBIST_CHAIN_SF_11",    REGPOKER_READ_DCR, KMBIST_CHAIN_SF_11,      0,                          SCTL_KMBIST_CHAIN_SF_mask },
 
      { "PPC_SYS_CONF",          REGPOKER_READ_DCR, SCTL_PPC_SYS_CONF,       SCTL_PPC_SYS_CONF_dflt,     SCTL_PPC_SYS_CONF_mask },
      { "SCTL_PPC_SLP_CTRL",     REGPOKER_READ_DCR, SCTL_PPC_SLP_CTRL,       0,                          SCTL_PPC_SLP_CTRL_mask },
@@ -65,7 +64,6 @@ check_sctl_regs_rw(uint32_t base_addr)
     { "KMBIST_CHAIN_SF_8",  REGPOKER_WRITE_DCR, KMBIST_CHAIN_SF_8,      0,  SCTL_KMBIST_CHAIN_SF_TM_mask },
     { "KMBIST_CHAIN_SF_9",  REGPOKER_WRITE_DCR, KMBIST_CHAIN_SF_9,      0,  SCTL_KMBIST_CHAIN_SF_TM_mask },
     { "KMBIST_CHAIN_SF_10",  REGPOKER_WRITE_DCR, KMBIST_CHAIN_SF_10,      0,  SCTL_KMBIST_CHAIN_SF_TM_mask },
-    { "KMBIST_CHAIN_SF_11",  REGPOKER_WRITE_DCR, KMBIST_CHAIN_SF_11,      0,  SCTL_KMBIST_CHAIN_SF_TM_mask },
     { "PPC_SLP_CTRL",       REGPOKER_WRITE_DCR, SCTL_PPC_SLP_CTRL,      0,  SCTL_SLP_CTRL_TYPE_mask },
     { "PPC_PMU_CTRL",       REGPOKER_WRITE_DCR, SCTL_PPC_PMU_CTRL,      0,  SCTL_PPC_PMU_CTRL_mask },
     
@@ -93,7 +91,7 @@ check_ppc_sys_conf_reg_rw(uint32_t base_addr)
     int fails = 0;
     int i; 
     uint32_t const address = base_addr + SCTL_PPC_SYS_CONF; 
-    uint32_t mask = 0x19;
+    uint32_t mask = 0x39;
     if( mask != 0 ) { 
 
         uint32_t v, readback; 
@@ -107,6 +105,28 @@ check_ppc_sys_conf_reg_rw(uint32_t base_addr)
         } 
         
         v = 0x18;
+        dcr_write(address, v ); 
+        readback = dcr_read( address ); 
+        if( ( readback & mask ) != v ) { 
+            fails++; 
+            rumboot_printf( "Write register %s (0x%x): wrote: 0x%x got: 0x%x mask: 0x%xn", "PPC_SYS_CONF", address, v, readback, mask ); 
+        } 
+
+        v = 0x19;
+        dcr_write(address, v ); 
+        readback = dcr_read( address ); 
+        if( ( readback & mask ) != v ) { 
+            fails++; 
+            rumboot_printf( "Write register %s (0x%x): wrote: 0x%x got: 0x%x mask: 0x%xn", "PPC_SYS_CONF", address, v, readback, mask ); 
+        } 
+        v = 0x38;
+        dcr_write(address, v ); 
+        readback = dcr_read( address ); 
+        if( ( readback & mask ) != v ) { 
+            fails++; 
+            rumboot_printf( "Write register %s (0x%x): wrote: 0x%x got: 0x%x mask: 0x%xn", "PPC_SYS_CONF", address, v, readback, mask ); 
+        } 
+        v = 0x39;
         dcr_write(address, v ); 
         readback = dcr_read( address ); 
         if( ( readback & mask ) != v ) { 

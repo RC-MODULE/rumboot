@@ -123,7 +123,7 @@ static int ext_start(const struct rumboot_cpu_cluster *cpu, struct rumboot_booth
     return 0;
 }
 
-static int ext_poll(const struct rumboot_cpu_cluster *cpu,  struct rumboot_bootheader *hdr, int swap)
+static int ext_poll(const struct rumboot_cpu_cluster *cpu)
 {
     struct rcm_cp_instance cp; 
     int ret;

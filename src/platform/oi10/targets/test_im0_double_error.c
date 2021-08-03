@@ -33,19 +33,15 @@
 #include <platform/regs/regs_srammc2plb4.h>
 #include <regs/regs_gpio_pl061.h>
 
-static uint32_t im0_ded_accepted = 0;
+volatile static bool im0_ded_accepted;
 
 static void im0_ded_irq_handler() { 
-    iowrite32(0xA0,GPIO_0_BASE + 0x3fc);
-    iowrite32(0x20,GPIO_0_BASE + 0x3fc);
     rumboot_printf( "\n im0_ded_irq_handler!\n");
-    im0_ded_accepted++;
-    rumboot_printf( "  im0_ded_accepted = %x\n",im0_ded_accepted);
-    ioread32(IM0_BASE + 0x10000);
-    l2c_l2_write( DCR_L2C_BASE, L2C_L2CPUSTAT, ( 0b1 << IBM_BIT_INDEX( 32, 28 ) )
-                                             | ( 0b1 << IBM_BIT_INDEX( 32, 29 ) )
-                                             | ( 0b1 << IBM_BIT_INDEX( 32, 30 ) )
-                                             | ( 0b1 << IBM_BIT_INDEX( 32, 31 ) ) );    
+    im0_ded_accepted = 1;
+    // Clear C470S_DBGMACHINECHECK
+    spr_write( SPR_MCSR_C, spr_read(SPR_MCSR_RW) );
+    // Clear L2C interrupt???
+    l2c_l2_write( DCR_L2C_BASE, L2C_L2PLBSTAT1, 0xFFFFFFFF );
 }
 
 struct rumboot_irq_entry* create_im0_ded_interrupt_handler() {
@@ -69,28 +65,37 @@ struct rumboot_irq_entry* create_im0_ded_interrupt_handler() {
     return tbl;
 }
 
+void wait_irq_or_pass_through(uint32_t timeout) {
+    uint32_t i = 0;
+    for (i=0; i<timeout; i++) {
+        if (im0_ded_accepted) break;
+    }
+//    rumboot_printf("       end of wait_irq_or_pass_through\n");
+}
 
 int main() {
     rumboot_printf("\nStart of IM0 double errors handling test\n");
-    int max_iterations = 1;
-    int data_size = 1024;
+    int max_iterations = 16;
+    int data_size = 4096;
+    int i = 0;
     
     rumboot_printf("\nAllocate memory\n");
-    int heap_id = rumboot_malloc_heap_by_name("IM0");
-    uint32_t data_addr = rumboot_malloc_from_heap_aligned(heap_id, data_size, 8);
-    rumboot_memfill32((void*)data_addr, data_size/4, 0x02030405, 0x04040404);
-    
-    // Add zero cells for reset error state at SRAM IM0 controller
-    iowrite32(0xa5a5a5a5, IM0_BASE + 0x10000);
-    iowrite32(0xa5a5a5a5, IM0_BASE + 0x10004);
-    iowrite32(0xa5a5a5a5, IM0_BASE + 0x10008);
-    iowrite32(0xa5a5a5a5, IM0_BASE + 0x1000c);
-    
-    
+    uint32_t data_addr = IM0_BASE + 0x10000 - data_size;
+
+    uint32_t tmp_data = 0x00010203;
+    for (i=0; i<data_size/4; i+=4) {
+        iowrite32(tmp_data, data_addr + i);
+        tmp_data = tmp_data + 0x04040404;
+    }
+
     // Registered Interrupt handler
-    im0_ded_accepted = 0;
+    uint32_t im0_ded_cnt = 0;
     struct rumboot_irq_entry *tbl;
     tbl = create_im0_ded_interrupt_handler();
+
+    // Disable machinecheck for IM0 parity error
+    uint32_t const msr_old_value = msr_read();
+    msr_write( msr_old_value & ~(0b1 << ITRPT_XSR_ME_i));   // disable machine check
     
     // Enable parity IM0 check
     rumboot_printf( "Enable parity IM0 check\n" );
@@ -98,44 +103,41 @@ int main() {
     tmp = tmp | 0x80000000;
     dcr_write( DCR_SRAMMC2PLB4_1_BASE + SRAMMC2PLB4_DPC, tmp);
 
-    // Disable machinecheck for IM0 parity error
-    uint32_t const msr_old_value = msr_read();
-    msr_write( msr_old_value & ~(0b1 << ITRPT_XSR_ME_i));   // disable machine check
-    
     // Enable double errors insertion
     rumboot_printf( "Enable double errors insertion\n");
-//    iowrite32(0x20,GPIO_0_BASE + GPIO_DIR); // GPIO0_5 switch to write
-    iowrite32(0xff,GPIO_0_BASE + GPIO_DIR); // GPIO0_5 switch to write
+    iowrite32(0x20,GPIO_0_BASE + GPIO_DIR); // GPIO0_5 switch to write
     iowrite32(0x20,GPIO_0_BASE + 0x3fc);    // GPIO0_5 set to 1
     
-    int i;
-    
-    while (im0_ded_accepted < max_iterations){
-        ioread32(data_addr+i);
-        iowrite32(0x60,GPIO_0_BASE + 0x3fc);
-        iowrite32(0x20,GPIO_0_BASE + 0x3fc);
+    i = 0;
+    im0_ded_accepted = 0;
+    rumboot_printf("Start of cycle\n");
+    while (im0_ded_cnt < max_iterations){
+        tmp = ioread32(data_addr+i);
+        wait_irq_or_pass_through(10);
+//        rumboot_printf("  %x: %x\n",data_addr+i, tmp);
+        if (im0_ded_accepted) {
+            im0_ded_accepted = 0;
+            im0_ded_cnt++;
+            rumboot_printf("     im0_ded_cnt = %d\n", im0_ded_cnt);
+        }
         
-//        rumboot_printf("%x: %x\n", data_addr+i, ioread32(data_addr+i));
         if (i == data_size/4) {
             rumboot_printf("\nIM0 double errors handling test FAILD!\n");
             rumboot_printf("    No one double event detected!\n");
             // Disable double errors insertion
             iowrite32(0x00,GPIO_0_BASE + 0x3fc);    // GPIO0_5 set to 0
             iowrite32(0x00,GPIO_0_BASE + GPIO_DIR); // GPIO0_5 switch to read            
+//            delete_irq_handlers(tbl);
             return 1;
         }
+        i+=4;
     }
-    
-//    for (i=0; i<data_size/4; i+=4) {
-////        ioread32(data_addr+i);
-//        rumboot_printf("%x: %x\n", data_addr+i, ioread32(data_addr+i));
-//    }
     
     // Disable double errors insertion
     iowrite32(0x00,GPIO_0_BASE + 0x3fc);    // GPIO0_5 set to 0
     iowrite32(0x00,GPIO_0_BASE + GPIO_DIR); // GPIO0_5 switch to read
-
-
+    
+//    delete_irq_handlers(tbl);
     
     rumboot_printf("\nIM0 double errors handling test OK!\n");
     

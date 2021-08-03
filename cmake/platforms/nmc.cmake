@@ -103,6 +103,7 @@ rumboot_add_configuration(
   FILES ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/spl-micro-startup.S
   LDS nmc/micro.lds
   PREFIX spl
+  FEATURES STUB
   LDFLAGS -Wl,-e_start -nostartfiles -Wl,--gc-sections
   CFLAGS -fnmc-compatible-if-packed -DRUMBOOT_NOINIT -DRUMBOOT_SILENT_PANICS -DRUMBOOT_ENTRY=start 
   PACKIMAGE_FLAGS -a 20480
@@ -134,6 +135,15 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
   )
 
   if (RUMBOOT_SOC)
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      NAME async-demo
+      FILES stubs/async-demo.c
+      FEATURES STUB #Не создавать runner'а
+      #Устанавливаем флаги. Работать асинхронно, останавливать NMC перед запуском
+      PACKIMAGE_FLAGS -F SYNC False -F kill True
+    )
+
     add_rumboot_target(
       CONFIGURATION SPL
       NAME cp-com1
@@ -319,7 +329,23 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       PACKIMAGE_FLAGS -F SYNC False
       NAME cp0-booter
     )
-    endif()
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      IRUN_FLAGS +BOOTMGR_PULLDOWN
+      FILES o32t_tests/periph_regs_check.c
+    )
+
+    add_rumboot_target(
+      CONFIGURATION IRAM  
+      NAME nmc_nterprocessor_irq_integration
+      FILES o32t_tests/nmc_interprocessor_irq_integration.c
+      FEATURES STUB #Не создавать runner'а
+      #Устанавливаем флаги. Работать асинхронно, останавливать NMC перед запуском
+      PACKIMAGE_FLAGS -F SYNC False -F kill True
+  
+    )
+
+  endif()
   
   add_rumboot_target(
     CONFIGURATION IRAM
@@ -359,16 +385,14 @@ add_rumboot_target(
   FILES common/bootrom/timer.c
 )
 
-add_rumboot_target(
-  CONFIGURATION IRAM
-  FILES iram/periph_regs_check.c
-)
+
   dap_integration_test(dap/nmc_dbg_brp.S)
   dap_integration_test(dap/nmc_dbg_dap_integration.S)
   dap_integration_test(dap/nmc_dbg_drar_dsar.S)
   dap_integration_test(dap/nmc_dbg_dscr.S)
   dap_integration_test(dap/nmc_dbg_modes.S)
   dap_integration_test(dap/nmc_dbg_sftrst.S)
+
 
 
 endmacro()
@@ -383,6 +407,7 @@ file(GLOB PLATFORM_SOURCES
   ${CMAKE_SOURCE_DIR}/src/arch/nmc/exception.c
   ${CMAKE_SOURCE_DIR}/src/lib/drivers/irq-nmc.c
   ${CMAKE_SOURCE_DIR}/src/lib/drivers/com_simple.c
+  ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/lib/drivers/nmc_interprocessor_irq_lib.c
   )
 
 macro(RUMBOOT_PLATFORM_SET_COMPILER_FLAGS)

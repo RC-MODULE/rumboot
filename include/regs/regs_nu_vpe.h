@@ -7,15 +7,15 @@
 #define NU_VPE          (0x0 << 9)
 
 // OFFSET DMA CHANNEL ----------------------------
-#define NU_VPE_DST_WDMA ((0x1 << 9) + (0x0 << 7))
-#define NU_VPE_SRC_RDMA ((0x2 << 9) + (0x0 << 7))
-#define NU_VPE_OP0_RDMA ((0x2 << 9) + (0x1 << 7))
-#define NU_VPE_OP1_RDMA ((0x2 << 9) + (0x2 << 7))
-#define NU_VPE_OP2_RDMA ((0x2 << 9) + (0x3 << 7))
+#define NU_VPE_DST_WDMA ((0x1 << 9) + (0x0 << 8))
+#define NU_VPE_SRC_RDMA ((0x2 << 9) + (0x0 << 8))
+#define NU_VPE_OP0_RDMA ((0x2 << 9) + (0x1 << 8))
+#define NU_VPE_OP1_RDMA ((0x2 << 9) + (0x2 << 8))
+#define NU_VPE_OP2_RDMA ((0x2 << 9) + (0x3 << 8))
 
 // VPE Registers address -------------------------
-#define NU_VPE_DEV_ID                  0x000
-#define NU_VPE_NEXT_CNTX               0x004
+#define NU_VPE_NEXT_CNTX               0x000
+#define NU_VPE_DEV_ID                  0x004
 #define NU_VPE_AXI_PARAM               0x008
 #define NU_VPE_CUBE_SIZE               0x00C
 #define NU_VPE_INT_STATUS              0x010
@@ -77,6 +77,7 @@
 #define LUT_CNT_HIT_TAB0               0x0F0
 #define LUT_CNT_HIT_TAB1               0x0F4
 #define LUT_CNT_HIT_HYBR               0x0F8
+#define NU_VPE_SOFT_RESET              0x0FC
 
 // VPE RDMA Registers address --------------------
 #define NU_VPE_DMA_CFG                 0x000
@@ -95,8 +96,8 @@
 #define NU_VPE_DMA_STRIDE_X            0x03C
 #define NU_VPE_DMA_STRIDE_Y            0x040
 #define NU_VPE_DMA_STRIDE_Z            0x044
-#define NU_VPE_DMA_FRAG_LAST_SIZE_ADDR 0x048
-#define NU_VPE_DMA_FRAG_SIZE_ADDR      0x04C
+#define NU_VPE_DMA_FRAG_SIZE_ADDR      0x048
+#define NU_VPE_DMA_FRAG_LAST_SIZE_ADDR 0x04C
 #define NU_VPE_DMA_XYZ_DRCT_ADDR       0x050
 #define NU_VPE_DMA_BOX_ST_SIZE_X       0x054
 #define NU_VPE_DMA_BOX_ST_SIZE_Y       0x058

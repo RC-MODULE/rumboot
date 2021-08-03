@@ -27,3 +27,4 @@ build/
 .clang_complete
 .tag
 *~
+.vscode/

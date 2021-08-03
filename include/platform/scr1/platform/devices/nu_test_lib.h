@@ -45,6 +45,7 @@ void* nu_vpe_load_op01(int heap_id, ConfigOp01* cfg, int index) ;
 void* nu_vpe_load_op01_by_tags(int heap_id, ConfigOp01* cfg, char* metrics_cube_tag,char* metrics_vec_tag,char* cube_file_tag,char* vec_file_tag);
 void* nu_vpe_load_op2(int heap_id, ConfigOp2* cfg);
 void* nu_vpe_load_op2_by_tags(int heap_id, ConfigOp2* cfg, char* metrics_cube_tag,char* metrics_vec_tag,char* cube_file_tag,char* vec_file_tag);
+int nu_vpe_load_status_regs_by_tag(int heap_id, VPEStatusRegs* status_regs, char* status_regs_tag);
 int nu_bitwise_compare(void* res_data, void* etalon, int size);
 
 #endif

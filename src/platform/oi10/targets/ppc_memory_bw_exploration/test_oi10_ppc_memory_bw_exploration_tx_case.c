@@ -274,8 +274,9 @@ bool __attribute__((section(".text.test"))) cache_testing_function( void ) {
             //rumboot_printf("%s: flush data from 0x%x to 0x%x \n", mem_name[k], range_start, range_end);
             for (addr = range_start; addr < range_end; addr += PPC476FP_L2_CACHELINE_SIZE)
             {
-                rumboot_printf(" --- flush data from 0x%x \n", addr);
+                //rumboot_printf(" --- flush data from 0x%x \n", addr);
                 dcbf((void *)addr);
+                msync();
             }
         // ---            
             src+=SIZE_OF_BUFS/READ_SIZE;

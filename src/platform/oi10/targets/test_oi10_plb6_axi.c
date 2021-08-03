@@ -736,6 +736,8 @@ void test_oi10_greth(void)
 
 //---------------------------------------------------------------------------
 
+
+
 #ifdef CHECK_PLB6_AXI_SINGLE
 struct regpoker_checker greth_check_array[] =
 {
@@ -753,6 +755,7 @@ struct regpoker_checker greth_check_array[] =
 
 void regs_check(uint32_t base_addr)
 {
+
     if (base_addr == GRETH_1_BASE)
     {
         rumboot_printf("Checking access to GRETH%d(0x%x) registers\n",
@@ -763,10 +766,12 @@ void regs_check(uint32_t base_addr)
     {
         rumboot_printf("Checking access to GRETH%d(0x%x) registers\n",
                 0, base_addr);
+        greth_check_array[4].expected  = EDCLIP0;
+        greth_check_array[6].expected |= EDCLADDRL0;
     }
 
-    TEST_ASSERT(rumboot_regpoker_check_array(
-            greth_check_array, base_addr),
+    TEST_ASSERT(!(rumboot_regpoker_check_array(
+            greth_check_array, base_addr)),
             "Failed to check GRETH registers\n");
 }
 #endif

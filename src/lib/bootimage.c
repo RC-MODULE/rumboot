@@ -129,7 +129,7 @@ ssize_t rumboot_bootimage_check_header(const struct rumboot_bootsource *src, str
 		return -EBADMAGIC;
 
     dbg_boot(src, "--- Boot Image Header ---");
-    dbg_boot(src, "Magic:            0x%x", rumboot_bootimage_header_item8(hdr->magic, swap));
+    dbg_boot(src, "Magic:            0x%x", rumboot_bootimage_header_item32(hdr->magic, swap));
 
 #ifdef RUMBOOT_SUPPORTS_SPL_ENDIAN_SWAP
 	#if (__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__)
@@ -248,8 +248,8 @@ int rumboot_bootimage_execute(struct rumboot_bootheader *hdr, const struct rumbo
 	}
 
 	/* At this point we have to handle data decryption, if needed */
-	int encryption_slot  = rumboot_bootimage_header_item32(hdr->encryption_slot,  swap);
-	int certificate_slot = rumboot_bootimage_header_item32(hdr->certificate_slot, swap);
+	int encryption_slot  = rumboot_bootimage_header_item8(hdr->encryption_slot,  swap);
+	int certificate_slot = rumboot_bootimage_header_item8(hdr->certificate_slot, swap);
 
 	if ((encryption_slot > 0) && (certificate_slot > 0)) {
 		dbg_boot(src, "Decrypting image, key slot %d...", encryption_slot);
@@ -327,7 +327,7 @@ int rumboot_bootimage_execute(struct rumboot_bootheader *hdr, const struct rumbo
 					/* Actual decompression. */
 					new_data_length = rumboot_decompress_buffer(src, temp_buf, 
                             image_destination_base + image_destination_offset, effective_size, 
-						spl_size - ((flags & RUMBOOT_FLAG_DECAPS) ? sizeof(*hdr) : 0));
+						spl_size - ((flags & RUMBOOT_FLAG_DECAPS) ? 0 : sizeof(*hdr)));
 			}
 			if (new_data_length < 0) {
 				return new_data_length;
