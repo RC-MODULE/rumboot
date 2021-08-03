@@ -117,6 +117,7 @@ static volatile uint32_t hscb0_status;
 static volatile uint32_t hscb1_status;
 static volatile uint32_t hscb0_dma_status;
 static volatile uint32_t hscb1_dma_status;
+static volatile uint32_t cmc4p;
 static volatile bool hscb0_link_established;
 static volatile bool hscb1_link_established;
 volatile uint32_t hscb0_rx_irq_cnt, hscb1_rx_irq_cnt, hscb2_rx_irq_cnt, hscb3_rx_irq_cnt;
@@ -124,6 +125,11 @@ volatile uint32_t hscb0_rx_irq_cnt, hscb1_rx_irq_cnt, hscb2_rx_irq_cnt, hscb3_rx
 //extern void test_oi10_power();
 //extern void test_oi10_power_endless();
 extern void test_oi10_power_new();
+extern void check_multiple_channels_4_power();
+extern void dma2plb6_4ch_init();
+extern void dma2plb6_4ch_start();
+extern void dma2plb6_4ch_finish();
+
 
 
 void create_dsc_table(uint32_t quantity_of_descr, hscb_descr **dsc_table, char *hscb_dsctbl_heap_name){
@@ -342,11 +348,14 @@ void simult_run_of_hscbs_transfers(uint32_t *rdma_ctrl_word){
     //hscb_run_rdma(HSCB1_BASE);
     //hscb_run_rdma(HSCB2_BASE);
     //hscb_run_rdma(HSCB3_BASE);
+    
+    
     if(DEBUG_PRINT) rumboot_printf("Run all RDMAs: %x, %x, %x, %x\n", rdma_ctrl_word[0], rdma_ctrl_word[1], rdma_ctrl_word[2], rdma_ctrl_word[3]);
     iowrite32(rdma_ctrl_word[0], HSCB0_BASE + HSCB_RDMA_SETTINGS);
     iowrite32(rdma_ctrl_word[1], HSCB1_BASE + HSCB_RDMA_SETTINGS);
     iowrite32(rdma_ctrl_word[2], HSCB2_BASE + HSCB_RDMA_SETTINGS);
     iowrite32(rdma_ctrl_word[3], HSCB3_BASE + HSCB_RDMA_SETTINGS);
+    
 }
 
 // SW0 connected to SW1
@@ -504,15 +513,17 @@ int main() {
     static struct tlb_entry const em2_nospeculative_tlb_entries[] =
     {
     /*   MMU_TLB_ENTRY(  ERPN,   RPN,        EPN,        DSIZ,                   IL1I,   IL1D,   W,      I,      M,      G,      E,                      UX, UW, UR,     SX, SW, SR      DULXE,  IULXE,      TS,     TID,                WAY,                BID,                V   )*/
-        {MMU_TLB_ENTRY(  0x000,  0x00000,    0x00000,    MMU_TLBE_DSIZ_1GB,      0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b0,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )},
-        {MMU_TLB_ENTRY(  0x000,  0x40000,    0x40000,    MMU_TLBE_DSIZ_1GB,      0b1,    0b1,    0b0,    0b1,    0b0,    0b1,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b0,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )}
+        {MMU_TLB_ENTRY(  0x000,  0x00000,    0x00000,    MMU_TLBE_DSIZ_1GB,      0b0,    0b0,    0b0,    0b0,    0b1,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b0,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )},
+        {MMU_TLB_ENTRY(  0x000,  0x40000,    0x40000,    MMU_TLBE_DSIZ_1GB,      0b0,    0b0,    0b0,    0b0,    0b1,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b0,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )}
     };
     
     
     write_tlb_entries(em2_nospeculative_tlb_entries, ARRAY_SIZE(em2_nospeculative_tlb_entries));
     // --- init EMI
     emi_init(DCR_EM2_EMI_BASE);
-    tbl = create_irq_handlers();   
+    tbl = create_irq_handlers();  
+
+    rumboot_printf("Running power test\n");    
     
     // ---- Config of HSCB     
     if(DEBUG_PRINT) rumboot_printf("----Config of HSCB0----\n");
@@ -581,18 +592,40 @@ int main() {
     
     
     //
+    dma2plb6_4ch_init();
+    
+        
+        
+    // COM-port start
+    /*
+    rumboot_printf("COM-port start\n");
+    cp_start_tx(&c0, tx_buf, size);
+    cp_start_rx(&c1, rx_buf, size);
+    cp_start_tx(&c0, tx_buf, size);
+    cp_start_rx(&c1, rx_buf, size);
+    */
+    
     simult_run_of_hscbs_transfers(rdma_ctrl_word);
+    dma2plb6_4ch_start();
     
-    test_oi10_power_new();
-    
+    rumboot_printf("COM-port start\n");
     cp_start_tx(&c0, tx_buf, size);
     cp_start_rx(&c1, rx_buf, size);
-    cp_start_tx(&c0, tx_buf, size);
-    cp_start_rx(&c1, rx_buf, size);
     
-    rumboot_printf("Running power test\n");
+    test_oi10_power_new();    
+    
+   
+
+    
+    //check_multiple_channels_4_power();
+    
+    
+    
+    
+    dma2plb6_4ch_finish();
     
     wait_of_end();
+    /*
     rumboot_printf("HSCB0 descriptor tables\n");
         rumboot_printf("--- TX descriptors table\n");
         print_dscr_table(hscb0_tx_dsc_table, CHANGE_ENDIANN);
@@ -615,11 +648,12 @@ int main() {
         print_dscr_table(hscb3_rx_dsc_table, CHANGE_ENDIANN);
       result = result + check_results(hscb0_tx_dsc_table, hscb1_rx_dsc_table) + check_results(hscb1_tx_dsc_table, hscb0_rx_dsc_table) + check_results(hscb2_tx_dsc_table, hscb3_rx_dsc_table) + check_results(hscb3_tx_dsc_table, hscb2_rx_dsc_table);
       if(rumboot_memcheck32(tx_buf, rx_buf, size/4)==1) return 1;
-      
+      */
      // result = result + check_results(hscb0_tx_dsc_table, hscb0_rx_dsc_table);
 
     //---------------- 
     delete_irq_handlers(tbl);
+    result = 0;
     return result;
 }
 
