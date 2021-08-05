@@ -23,6 +23,7 @@
 #include <arch/ppc_476fp_itrpt_fields.h>
 #include <devices/ugly/emi.h>
 #include <platform/devices/l2c.h>
+#include <platform/regs/sctl.h>
 #include <platform/devices/dma2plb6.h>
 #include <rumboot/memfill.h>
 
@@ -40,6 +41,7 @@
 #define CACHEABLE_SSRAM     (SSRAM_BASE + PAGE_SIZE)
 #define CACHEABLE_SRAM1     (SRAM1_BASE)
 #define CACHEABLE_IM0       (IM0_BASE + 64*1024)
+#define UNCACHEABLE_IM0     (CACHEABLE_IM0 + 64*1024)
 #define CACHEABLE_IM1       (IM1_BASE + 64*1024)
 #define PPC476FP_L2_CACHELINE_SIZE 128u 
 //0x60000000
@@ -147,6 +149,10 @@ bool __attribute__((section(".text.test"))) cache_testing_function( void ) {
         {MMU_TLB_ENTRY(  0x010,  0x80010,    0x80010,    MMU_TLBE_DSIZ_16KB,     0b1,   0b0,    0b0,    0b0,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_2,     0b1 )},
         {MMU_TLB_ENTRY(  0x010,  0x80014,    0x80014,    MMU_TLBE_DSIZ_16KB,     0b1,   0b0,    0b0,    0b0,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_2,     0b1 )},
         {MMU_TLB_ENTRY(  0x010,  0x80018,    0x80018,    MMU_TLBE_DSIZ_16KB,     0b1,   0b0,    0b0,    0b0,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_2,     0b1 )},
+        //// --- uncached mirror IM0
+        //{MMU_TLB_ENTRY(  0x010,  0x80010,    0x8001C,    MMU_TLBE_DSIZ_16KB,     0b1,   0b0,    0b0,    0b0,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_2,     0b1 )},
+        //{MMU_TLB_ENTRY(  0x010,  0x80014,    0x80020,    MMU_TLBE_DSIZ_16KB,     0b1,   0b0,    0b0,    0b0,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_2,     0b1 )},
+        //{MMU_TLB_ENTRY(  0x010,  0x80018,    0x80024,    MMU_TLBE_DSIZ_16KB,     0b1,   0b0,    0b0,    0b0,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_2,     0b1 )},            
     // ------ re-define for IM1
         {MMU_TLB_ENTRY(  0x020,  0xC0010,    0x80030,    MMU_TLBE_DSIZ_64KB,     0b1,   0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_4,     0b0 )}, // remove old 
         {MMU_TLB_ENTRY(  0x020,  0xC001C,    0x8003C,    MMU_TLBE_DSIZ_16KB,     0b1,   0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_SHARED,  MMU_TLBWE_WAY_0,    MMU_TLBWE_BE_2,     0b1 )},
@@ -240,6 +246,12 @@ bool __attribute__((section(".text.test"))) cache_testing_function( void ) {
         rumboot_printf("msr_old_value = %x\n", msr_old_value);
         rumboot_printf("msr_new_value = %x\n", msr_old_value & ~(0b1 << ITRPT_XSR_ME_i));
         msr_write( msr_old_value & ~(0b1 << ITRPT_XSR_ME_i));   // disable machine check
+    #endif
+    #ifdef PLB6MCIF_ADDR_CHOP_DISABLE
+        uint32_t const sctl_old_value = dcr_read(DCR_SCTL_BASE + SCTL_PPC_SYS_CONF);
+        rumboot_printf("sctl_old_value = %x\n", sctl_old_value);
+        rumboot_printf("sctl_new_value = %x\n", sctl_old_value & ~(0b1 << 5));
+        dcr_write(DCR_SCTL_BASE + SCTL_PPC_SYS_CONF, sctl_old_value & ~(0b1 << 5));   
     #endif
     crc = 0;
     //time = (uint64_t)spr_read(SPR_TBL_R) + (uint64_t)spr_read(SPR_TBU_R);

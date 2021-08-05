@@ -3030,6 +3030,29 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         TESTGROUP o32tonly
     )
 
+#***********************************************************************************************************************************************************************************************************    
+    add_rumboot_target(
+        CONFIGURATION SUPPLEMENTARY
+        LDS oi10/sram0.lds
+        FILES ppc_memory_bw_exploration/test_oi10_ppc_memory_bw_exploration_tx_case.c
+        CFLAGS  -DNUM_OF_BUFS=10
+                -DSIZE_OF_BUFS=4096
+                -DREAD_SIZE=4
+                -DSIMPLE_CRC=1
+                -DIM0_CACHE=1
+                -DPLB6MCIF_ADDR_CHOP_DISABLE=1
+        NAME "test_oi10_ppc_memory_bw_exploration_tx_case_10_4096_4_simple_crc_im0_plb6mcif_addr_chop_disable"
+        OPTIMIZE -O3
+    )
+    add_rumboot_target(
+        CONFIGURATION IRAM
+        FILES ppc_memory_bw_exploration/test_oi10_ppc_memory_bw_exploration_loader.c
+        NAME "test_oi10_ppc_memory_bw_exploration_tx_case_10_4096_4_simple_crc_im0_plb6mcif_addr_chop_disable"
+        TESTGROUP broken hwonly
+        LOAD IM0BIN SELF
+             MBIN supplementary-test_oi10_ppc_memory_bw_exploration_tx_case_10_4096_4_simple_crc_im0_plb6mcif_addr_chop_disable
+    )
+    
 #********** NACHINE_CHECK disable versions *****************************************************************************************************************************************************
     add_rumboot_target(
         CONFIGURATION SUPPLEMENTARY
@@ -3122,7 +3145,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         LOAD IM0BIN SELF
              MBIN supplementary-test_oi10_ppc_memory_bw_exploration_tx_case_10_4096_4_simple_crc_im0_mc_disable
     )
-    # -------
+    # -------    
 #***********************************************************************************************************************************************************************************************************
 
     add_rumboot_target(
