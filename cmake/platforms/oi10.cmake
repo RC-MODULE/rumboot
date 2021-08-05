@@ -1291,12 +1291,14 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       if (OI10_IRAM_IM0)
           add_rumboot_target(
               CONFIGURATION IRAM
+              TESTGROUP oi10only
               FILES test_oi10_ctrl_000.c
               CFLAGS -DMBIST_RELOCATE=KMBIST_CHAIN_SF_8_IM0 -DRELOCATE_FROM=IM0_BASE -DRELOCATE_TO=IM2_BASE
           )
       else()
           add_rumboot_target(
               CONFIGURATION IRAM
+              TESTGROUP oi10only
               FILES test_oi10_ctrl_000.c
               CFLAGS -DMBIST_RELOCATE=KMBIST_CHAIN_SF_6_IM1 -DRELOCATE_FROM=IM1_BASE -DRELOCATE_TO=IM2_BASE
           )
@@ -1305,11 +1307,13 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       if (OI10_IRAM_IM0)
           add_rumboot_target(
               CONFIGURATION IRAM
+              TESTGROUP oi10only
               FILES test_oi10_ctrl_000.c
               CFLAGS -DMBIST_RELOCATE=KMBIST_CHAIN_SF_8_IM0 -DRELOCATE_FROM=IM0_BASE -DRELOCATE_TO=IM2_BASE
           )
           add_rumboot_target(
               CONFIGURATION IRAM
+              TESTGROUP oi10only
               FILES test_oi10_ctrl_000.c
               CFLAGS -DMBIST_RELOCATE=KMBIST_CHAIN_SF_8_IM0 -DRELOCATE_FROM=IM0_BASE -DRELOCATE_TO=IM2_BASE -DERR_INJ_ENABLED
               NAME "test_oi10_ctrl_000_inj"
@@ -1317,11 +1321,13 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       else()
           add_rumboot_target(
               CONFIGURATION IRAM
+              TESTGROUP oi10only
               FILES test_oi10_ctrl_000.c
               CFLAGS -DMBIST_RELOCATE=KMBIST_CHAIN_SF_6_IM1 -DRELOCATE_FROM=IM1_BASE -DRELOCATE_TO=IM2_BASE
           )
           add_rumboot_target(
               CONFIGURATION IRAM
+              TESTGROUP oi10only
               FILES test_oi10_ctrl_000.c
               CFLAGS -DMBIST_RELOCATE=KMBIST_CHAIN_SF_6_IM1 -DRELOCATE_FROM=IM1_BASE -DRELOCATE_TO=IM2_BASE -DERR_INJ_ENABLED
           NAME "test_oi10_ctrl_000_inj"
