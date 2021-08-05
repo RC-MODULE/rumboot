@@ -397,62 +397,62 @@
 //		rumboot_printf("resw40_tmp =%d\n",tmp);}
 
 		
-	if ((0x00000000) != (ioread32(base + NU_VPE + NU_VPE_LUT_TAB0_X_SHIFT)& 0x000000FF))
+	if ((0x00000000) != (ioread32(base + NU_VPE + NU_VPE_LUT_TAB0_XSHIFT)& 0x000000FF))
 		{resw41 =1;
-		tmp= ioread32(base + NU_VPE +  NU_VPE_LUT_TAB0_X_SHIFT);
+		tmp= ioread32(base + NU_VPE +  NU_VPE_LUT_TAB0_XSHIFT);
 		rumboot_printf("resw41_tmp =%d\n",tmp);
 		rumboot_printf("resw41 error\n");}
 		else 
 		{resw41=0;
-		tmp= ioread32(base + NU_VPE +  NU_VPE_LUT_TAB0_X_SHIFT);
+		tmp= ioread32(base + NU_VPE +  NU_VPE_LUT_TAB0_XSHIFT);
 		rumboot_printf("resw41_tmp =%d\n",tmp);	
 		}
-	if ((0x00000000) !=  (ioread32(base + NU_VPE + NU_VPE_LUT_TAB1_X_SHIFT)& 0x000000FF))
+	if ((0x00000000) !=  (ioread32(base + NU_VPE + NU_VPE_LUT_TAB1_XSHIFT)& 0x000000FF))
 		{resw42 =1;
-		tmp= ioread32(base + NU_VPE +  NU_VPE_LUT_TAB1_X_SHIFT);
+		tmp= ioread32(base + NU_VPE +  NU_VPE_LUT_TAB1_XSHIFT);
 		rumboot_printf("resw42_tmp =%d\n",tmp);	
 		rumboot_printf("resw42 error\n");}
 		else 
 		{resw42=0;
-		tmp= ioread32(base + NU_VPE +  NU_VPE_LUT_TAB1_X_SHIFT);
+		tmp= ioread32(base + NU_VPE +  NU_VPE_LUT_TAB1_XSHIFT);
 		rumboot_printf("resw42_tmp =%d\n",tmp);
 		}
-		tmp = ioread32(base + NU_VPE +  NU_VPE_LUT_TAB0_X_MIN);
-	if ((0x00000000 ) != (ioread32(base + NU_VPE +  NU_VPE_LUT_TAB0_X_MIN)))
+		tmp = ioread32(base + NU_VPE +  NU_VPE_LUT_TAB0_XMIN);
+	if ((0x00000000 ) != (ioread32(base + NU_VPE +  NU_VPE_LUT_TAB0_XMIN)))
 		{resw43 =1;
-		tmp= ioread32(base + NU_VPE +  NU_VPE_LUT_TAB0_X_MIN);
+		tmp= ioread32(base + NU_VPE +  NU_VPE_LUT_TAB0_XMIN);
 		rumboot_printf("resw43_tmp =%d\n",tmp);	
 		rumboot_printf("resw48 error\n");}
 		else 
 		{resw43=0;	
-		tmp= ioread32(base + NU_VPE +  NU_VPE_LUT_TAB0_X_MIN);
+		tmp= ioread32(base + NU_VPE +  NU_VPE_LUT_TAB0_XMIN);
 		rumboot_printf("resw43_tmp =%d\n",tmp);	
 		}
 		
-	if ((0x00000000)!= (ioread32(base + NU_VPE + NU_VPE_LUT_TAB0_X_MAX)))
+	if ((0x00000000)!= (ioread32(base + NU_VPE + NU_VPE_LUT_TAB0_XMAX)))
 		{resw44 =1;
-		tmp= ioread32(base + NU_VPE +  NU_VPE_LUT_TAB0_X_MAX);
+		tmp= ioread32(base + NU_VPE +  NU_VPE_LUT_TAB0_XMAX);
 		rumboot_printf("resw44_tmp =%d\n",tmp);	
 		rumboot_printf("resw44 error\n");}
 		else 
 		{resw44=0;	
-        tmp= ioread32(base + NU_VPE +  NU_VPE_LUT_TAB0_X_MAX);
+        tmp= ioread32(base + NU_VPE +  NU_VPE_LUT_TAB0_XMAX);
 		rumboot_printf("resw44_tmp =%d\n",tmp);
 		}
 	
-	if ((0x00000000)!=(ioread32(base + NU_VPE +  NU_VPE_LUT_TAB1_X_MIN) )) 		
+	if ((0x00000000)!=(ioread32(base + NU_VPE +  NU_VPE_LUT_TAB1_XMIN) )) 		
 		{resw45 =1;
-		tmp= ioread32(base + NU_VPE +   NU_VPE_LUT_TAB1_X_MIN);
+		tmp= ioread32(base + NU_VPE +   NU_VPE_LUT_TAB1_XMIN);
 		rumboot_printf("resw45_tmp =%x\n",tmp);
 		rumboot_printf("resw45 error\n");}	
 		else 
 		{resw45=0;		
-		tmp= ioread32(base + NU_VPE +   NU_VPE_LUT_TAB1_X_MIN);
+		tmp= ioread32(base + NU_VPE +   NU_VPE_LUT_TAB1_XMIN);
 		rumboot_printf("resw45_tmp =%x\n",tmp);}
 		
-if ((0x00000000)!=(ioread32(base + NU_VPE + NU_VPE_LUT_TAB1_X_MAX) ))		
+if ((0x00000000)!=(ioread32(base + NU_VPE + NU_VPE_LUT_TAB1_XMAX) ))		
 		{resw46 =1;
-		tmp= ioread32(base + NU_VPE + NU_VPE_LUT_TAB1_X_MAX);
+		tmp= ioread32(base + NU_VPE + NU_VPE_LUT_TAB1_XMAX);
 		rumboot_printf("resw46_tmp =%d\n",tmp);
 		rumboot_printf("resw46 error\n");}	
 		else 
@@ -1311,57 +1311,57 @@ int nu_vpe_wr_regs(uintptr_t base, int32_t data) {
 		else 
 		{resw40=0;}
 	*/
-	    iowrite32(tmpr, base + NU_VPE + NU_VPE_LUT_TAB0_X_SHIFT);		
-	if ((tmpr & 0x000000FF) != (ioread32(base + NU_VPE + NU_VPE_LUT_TAB0_X_SHIFT)& 0x000000FF))		
+	    iowrite32(tmpr, base + NU_VPE + NU_VPE_LUT_TAB0_XSHIFT);		
+	if ((tmpr & 0x000000FF) != (ioread32(base + NU_VPE + NU_VPE_LUT_TAB0_XSHIFT)& 0x000000FF))		
 		{resw41 =1;
-		tmp= ioread32(base + NU_VPE +  NU_VPE_LUT_TAB0_X_SHIFT)& 0x000000FF;
+		tmp= ioread32(base + NU_VPE +  NU_VPE_LUT_TAB0_XSHIFT)& 0x000000FF;
 		rumboot_printf("resw41_tmp =%x\n",tmp);
 		rumboot_printf("resw41 error\n");}
 		else 
 		{resw41=0;}	
 
 	
-	    iowrite32(tmpr, base + NU_VPE + NU_VPE_LUT_TAB1_X_SHIFT);	
-	if ((tmpr & 0x000000FF ) != (ioread32(base + NU_VPE + NU_VPE_LUT_TAB1_X_SHIFT)& 0x000000FF))		
+	    iowrite32(tmpr, base + NU_VPE + NU_VPE_LUT_TAB1_XSHIFT);	
+	if ((tmpr & 0x000000FF ) != (ioread32(base + NU_VPE + NU_VPE_LUT_TAB1_XSHIFT)& 0x000000FF))		
 		{resw42 =1;
-		tmp= ioread32(base + NU_VPE +  NU_VPE_LUT_TAB1_X_SHIFT);
+		tmp= ioread32(base + NU_VPE +  NU_VPE_LUT_TAB1_XSHIFT);
 		rumboot_printf("resw42_tmp =%x\n",tmp);
 		rumboot_printf("resw42 error\n");}
 		else 
 		{resw42=0;}
 	
-		iowrite32(tmpr, base + NU_VPE + NU_VPE_LUT_TAB0_X_MIN);
-	if ((tmpr) != ioread32(base + NU_VPE + NU_VPE_LUT_TAB0_X_MIN))		
+		iowrite32(tmpr, base + NU_VPE + NU_VPE_LUT_TAB0_XMIN);
+	if ((tmpr) != ioread32(base + NU_VPE + NU_VPE_LUT_TAB0_XMIN))		
 		{resw43 =1;
-	    tmp= ioread32(base + NU_VPE +  NU_VPE_LUT_TAB0_X_MIN);
+	    tmp= ioread32(base + NU_VPE +  NU_VPE_LUT_TAB0_XMIN);
 		rumboot_printf("resw43_tmp =%x\n",tmp);	
 		rumboot_printf("resw43 error\n");}
 		else 
 		{resw43=0;}
 	
-	    iowrite32(tmpr, base + NU_VPE + NU_VPE_LUT_TAB0_X_MAX);
-	if ((tmpr ) != (ioread32(base + NU_VPE + NU_VPE_LUT_TAB0_X_MAX)))	
+	    iowrite32(tmpr, base + NU_VPE + NU_VPE_LUT_TAB0_XMAX);
+	if ((tmpr ) != (ioread32(base + NU_VPE + NU_VPE_LUT_TAB0_XMAX)))	
 		{resw44 =1;
-		tmp= ioread32(base + NU_VPE + NU_VPE_LUT_TAB0_X_MAX);
+		tmp= ioread32(base + NU_VPE + NU_VPE_LUT_TAB0_XMAX);
 		rumboot_printf("resw44_tmp =%x\n",tmp);
 		rumboot_printf("resw44 error\n");}
 		else 
         {resw44=0;}
 	
-	    iowrite32(tmpr, base + NU_VPE + NU_VPE_LUT_TAB1_X_MIN);	
-	if ((tmpr) != (ioread32(base + NU_VPE +NU_VPE_LUT_TAB1_X_MIN)))	
+	    iowrite32(tmpr, base + NU_VPE + NU_VPE_LUT_TAB1_XMIN);	
+	if ((tmpr) != (ioread32(base + NU_VPE +NU_VPE_LUT_TAB1_XMIN)))	
 		{resw45 =1;
-		tmp= ioread32(base + NU_VPE + NU_VPE_LUT_TAB1_X_MIN);
+		tmp= ioread32(base + NU_VPE + NU_VPE_LUT_TAB1_XMIN);
 		rumboot_printf("resw45 =%x\n",tmp);	
 		rumboot_printf("resw45 error\n");}
 		else 
 		{resw45=0;}
 	
 
-		iowrite32(tmpr, base + NU_VPE + NU_VPE_LUT_TAB1_X_MAX);
-	if ((tmpr ) != (ioread32(base + NU_VPE + NU_VPE_LUT_TAB1_X_MAX)))		
+		iowrite32(tmpr, base + NU_VPE + NU_VPE_LUT_TAB1_XMAX);
+	if ((tmpr ) != (ioread32(base + NU_VPE + NU_VPE_LUT_TAB1_XMAX)))		
 		{resw46 =1;
-		tmp= ioread32(base + NU_VPE +  NU_VPE_LUT_TAB1_X_MAX);
+		tmp= ioread32(base + NU_VPE +  NU_VPE_LUT_TAB1_XMAX);
 		rumboot_printf("resw46_tmp =%x\n",tmp);	
 		rumboot_printf("resw46 error\n");}
 		else 
