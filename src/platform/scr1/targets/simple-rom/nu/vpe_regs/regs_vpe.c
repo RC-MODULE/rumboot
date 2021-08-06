@@ -1971,7 +1971,7 @@ int main() {
 	{rumboot_printf( "\n" );}
 	rumboot_printf("Write-READ begin\n");	
 			
-//-----------------	 
+//-------------------	 
 	res16 = nu_vpe_wr_regs(NU_VPE_STANDALONE_BASE,0x00000000);
 	if (res16 !=0)
 	{rumboot_printf( "Check vpe regs after ZEROs write FAILED\n" );}
