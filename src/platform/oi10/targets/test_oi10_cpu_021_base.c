@@ -14,11 +14,11 @@
 #include <arch/common_macros.h>
 #include <platform/devices.h>
 #include <devices/ugly/emi.h>
-#include <platform/devices/dma2plb6.h>
+#include <arch/dma2plb6.h>
 #include <platform/test_assert.h>
 #include <platform/test_event_codes.h>
 #include <platform/regs/regs_l2c_l2.h>
-#include <platform/devices/dma2plb6.h>
+#include <arch/dma2plb6.h>
 
 typedef uint8_t func();
 #define NUM_BYTE      (1024 * 8)

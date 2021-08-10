@@ -1358,7 +1358,7 @@ static const struct regpoker_checker plb6bc_regs_default[] = {
     
     {/* Sentinel */}};  
     
-#include <platform/regs/regs_dma2plb6.h>
+#include <arch/regs/dma2plb6.h>
 
 #define PLB6_DMA_DSTRx_MSK  0xffffffff
 #define PLB6_DMA_SAHx_MSK   0xffffffff

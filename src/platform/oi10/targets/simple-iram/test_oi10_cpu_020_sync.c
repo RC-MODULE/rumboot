@@ -27,7 +27,7 @@
 #include <devices/mpic128.h>
 #include <regs/fields/emi.h>
 #include <platform/interrupts.h>
-#include <platform/devices/dma2plb6.h>
+#include <arch/dma2plb6.h>
 
 #define TEC_START_CHECK_LWARX_L1_MISS_L2_MISS   TEST_EVENT_CODE_MIN
 #define TEC_START_CHECK_LWARX_L1_MISS_L2_HIT    (TEST_EVENT_CODE_MIN + 0x1)
