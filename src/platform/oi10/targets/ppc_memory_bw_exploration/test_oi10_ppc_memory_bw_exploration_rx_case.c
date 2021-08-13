@@ -78,29 +78,35 @@ bool __attribute__((section(".text.test"))) cache_testing_function( void ) {
 //#endif
     
     uint32_t const l2c_check_size = NUM_OF_BUFS*SIZE_OF_BUFS;
-    uint32_t const check_words_num  = l2c_check_size / READ_SIZE;
+    //uint32_t const check_words_num  = l2c_check_size / sizeof(uint32_t);
+    uint32_t init_words_num;
     uint32_t const line_words_num = L2C_LINE_SIZE / sizeof(uint32_t);
     uint32_t k = -1;
     uint32_t stack_h;
-
+   
     rumboot_printf( "Start testing function\n" );
 
     stack_h = __builtin_frame_address(0);
     rumboot_printf( "Stack = %x\n", stack_h );
-    
+
+    init_words_num = l2c_check_size / sizeof(uint32_t);
+    if (l2c_check_size % sizeof(uint32_t) > 0) {init_words_num++;}
+    if (init_words_num % line_words_num > 0) {init_words_num = init_words_num + init_words_num % line_words_num;}
+    init_words_num = init_words_num + 5*line_words_num;
+        
 #ifdef SRAM0_CACHE
-    rumboot_printf( "Init CACHEABLE_SRAM0: addr = %x, size = %d\n", CACHEABLE_SRAM0, check_words_num);
-    rumboot_memfill32( (void*)CACHEABLE_SRAM0, check_words_num, 0x01010101, 0);
+    rumboot_printf( "Init CACHEABLE_SRAM0: addr = %x, number of init words = %d\n", CACHEABLE_SRAM0, init_words_num);
+    rumboot_memfill32( (void*)CACHEABLE_SRAM0, init_words_num, 0x01010101, 0);
     k = 0;
 #else    
     #ifdef SSRAM_CACHE
-        rumboot_printf( "Init CACHEABLE_SSRAM: addr = %x, size = %d\n", CACHEABLE_SSRAM, check_words_num);
-        rumboot_memfill32( (void*)CACHEABLE_SSRAM, check_words_num, 0x01010101, 0);
+        rumboot_printf( "Init CACHEABLE_SSRAM: addr = %x, size = %d\n", CACHEABLE_SSRAM, init_words_num);
+        rumboot_memfill32( (void*)CACHEABLE_SSRAM, init_words_num, 0x01010101, 0);
         k = 1;
     #else
         #ifdef SRAM1_CACHE
-            rumboot_printf( "Init CACHEABLE_SRAM1: addr = %x, size = %d\n", CACHEABLE_SRAM1, check_words_num);
-            rumboot_memfill32( (void*)CACHEABLE_SRAM1, check_words_num, 0x01010101, 0);
+            rumboot_printf( "Init CACHEABLE_SRAM1: addr = %x, size = %d\n", CACHEABLE_SRAM1, init_words_num);
+            rumboot_memfill32( (void*)CACHEABLE_SRAM1, init_words_num, 0x01010101, 0);
             k = 2;
             uint32_t tmp = dcr_read(DCR_EM2_EMI_BASE+0x20);
             rumboot_printf( "Read SSi: tmp = %x\n", tmp);
@@ -112,20 +118,20 @@ bool __attribute__((section(".text.test"))) cache_testing_function( void ) {
         #else
             #ifdef IM0_CACHE
                 k = 3;
-                rumboot_printf( "Init CACHEABLE_IM0: k =%d,  addr = %x, size = %d\n", k, CACHEABLE_IM0, check_words_num);
-                if(check_words_num > (48*1024/4)) {
+                rumboot_printf( "Init CACHEABLE_IM0: k =%d,  addr = %x, size = %d\n", k, CACHEABLE_IM0, init_words_num);
+                if(init_words_num > (48*1024/4)) {
                     rumboot_printf( "ERROR: size of initialized IM0 exceeds safe value\n" );
                     return false;
                 }
-                rumboot_memfill32( (void*)CACHEABLE_IM0, check_words_num, 0x01010101, 0);
+                rumboot_memfill32( (void*)CACHEABLE_IM0, init_words_num, 0x01010101, 0);
             #else    
                 #ifdef IM1_CACHE
-                    rumboot_printf( "Init CACHEABLE_IM1: addr = %x, size = %d\n", CACHEABLE_IM1, check_words_num);
-                    if(check_words_num > (48*1024/4)) {
+                    rumboot_printf( "Init CACHEABLE_IM1: addr = %x, size = %d\n", CACHEABLE_IM1, init_words_num);
+                    if(init_words_num > (48*1024/4)) {
                         rumboot_printf( "ERROR: size of initialized IM1 exceeds safe value\n" );
                         return false;
                     }
-                    rumboot_memfill32( (void*)CACHEABLE_IM1, check_words_num, 0x01010101, 0);
+                    rumboot_memfill32( (void*)CACHEABLE_IM1, init_words_num, 0x01010101, 0);
                     k = 4;
                 #else
                     rumboot_printf( "Unknown type of memory\n" );
@@ -281,7 +287,7 @@ bool __attribute__((section(".text.test"))) cache_testing_function( void ) {
             // --- read RX-buffer and calculate CRC
                 msync();
                 for(int j=0;j < SIZE_OF_BUFS/READ_SIZE; j++) {
-                    for(int l=0; l < READ_SIZE; l++) {
+                    //for(int l=0; l < READ_SIZE; l++) {
                         #if SIMPLE_CRC==0
                             crc = crc + (src[j]>>(8*l) & 0x0000000F);// pseudo-calculation 
                         #else
@@ -291,7 +297,7 @@ bool __attribute__((section(".text.test"))) cache_testing_function( void ) {
                             }
                             crc = crc + src[j];
                         #endif
-                    }
+                    //}
                 }
                 src+=SIZE_OF_BUFS/READ_SIZE;
             }
