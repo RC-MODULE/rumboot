@@ -8,15 +8,9 @@
 #ifndef DEVICES_HSCB_H
 #define DEVICES_HSCB_H
 
-#include <stdio.h>
 #include <stdint.h>
-#include <string.h>
-
 #include <platform/arch/ppc/test_macro.h>
 #include <rumboot/platform.h>
-#include <rumboot/io.h>
-#include <rumboot/printf.h>
-#include <rumboot/rumboot.h>
 #include <platform/devices.h>
 #include <platform/trace.h>
 #include <platform/regs/regs_hscb.h>
@@ -353,16 +347,7 @@ uint8_t hscb_rmap_get_reply_byte(   hscb_uint8_array_with_length_t  rmap_reply,
 uint32_t hscb_rmap_reply_get_data_len(   hscb_uint8_array_with_length_t  rmap_reply,
                                                 uint32_t                        start_index);
 uint8_t hscb_rmap_make_reply_instruction(uint8_t instruction);
-/*
-  Name  : CRC-8
-  Poly  : 0x07    x^8 + x^2 + x^1 + x^0
-  Init  : 0x00
-  Revert: false
-  XorOut: 0x00
-  Check : 0xF7 ("123456789")
-*/
-uint8_t hscb_crc8(uint8_t prev_crc, uint8_t byte);
-uint8_t hscb_calculate_crc8( uint32_t start_addr, uint32_t length);
+
 /**
  * The first parameter contains fields for filling an RMAP packet,
  * the second one contains preallocated memory areas for fixed length fields and pointers to be set

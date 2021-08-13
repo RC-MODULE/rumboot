@@ -134,6 +134,21 @@ uint32_t crc32(uint32_t crc, const void *buf, size_t size)
     return data[0];
 }
 
+__attribute__((no_instrument_function)) __attribute__((optimize("-O0"))) void do_crc8(uint32_t start_addr, ...)
+{
+    deliver(EVENT_CRC8, (uint32_t) __builtin_frame_address(0));
+}
+uint8_t crc8(uint32_t start_addr, uint32_t len)
+{
+    do_crc8(start_addr, len);
+    volatile uint32_t *data;
+    int opcode = rumboot_platform_event_get(&data);
+    if (opcode != EVENT_CRC8) {
+        rumboot_platform_panic("SW<->TB Synchronization failed!\n");
+    }
+    return data[0];
+}
+
 #else
 
 __attribute__((no_instrument_function)) void rumboot_sim_get_realtime(uint32_t *rt)

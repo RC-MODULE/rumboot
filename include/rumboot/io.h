@@ -1,6 +1,7 @@
 #ifndef RUMBOOT_IO_H
 #define RUMBOOT_IO_H
 
+#include <stdint.h>
 
 /**
  *
