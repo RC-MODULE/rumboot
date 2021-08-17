@@ -7,16 +7,16 @@
 #define NU_VPE          (0x0 << 9)
 
 // OFFSET DMA CHANNEL ----------------------------
-#define NU_VPE_DST_WDMA ((0x1 << 9) + (0x0 << 8))
-#define NU_VPE_SRC_RDMA ((0x2 << 9) + (0x0 << 8))
-#define NU_VPE_OP0_RDMA ((0x2 << 9) + (0x1 << 8))
-#define NU_VPE_OP1_RDMA ((0x2 << 9) + (0x2 << 8))
-#define NU_VPE_OP2_RDMA ((0x2 << 9) + (0x3 << 8))
+#define NU_VPE_DST_WDMA  0x300
+#define NU_VPE_SRC_RDMA  0x400
+#define NU_VPE_OP0_RDMA  0x500
+#define NU_VPE_OP1_RDMA  0x600
+#define NU_VPE_OP2_RDMA  0x700
 
 // VPE Registers address -------------------------
 #define NU_VPE_NEXT_CNTX               0x000
 #define NU_VPE_DEV_ID                  0x004
-#define NU_VPE_AXI_PARAM               0x008
+#define NU_VPE_SOFT_RESET              0x008
 #define NU_VPE_CUBE_SIZE               0x00C
 #define NU_VPE_INT_STATUS              0x010
 #define NU_VPE_INT_RESET               0x014
@@ -54,30 +54,31 @@
 #define NU_VPE_LUT_ACCESS_CFG          0x094
 #define NU_VPE_LUT_ACCESS_DATA         0x098
 #define NU_VPE_LUT_CFG                 0x09C
-#define NU_VPE_LUT_SYM_POINT           0x0A0
-#define NU_VPE_LUT_TAB0_XSHIFT         0x0A4
-#define NU_VPE_LUT_TAB1_XSHIFT         0x0A8
-#define NU_VPE_LUT_TAB0_XMIN           0x0AC
-#define NU_VPE_LUT_TAB0_XMAX           0x0B0
-#define NU_VPE_LUT_TAB1_XMIN           0x0B4
-#define NU_VPE_LUT_TAB1_XMAX           0x0B8
-#define NU_VPE_LUT_TAB0_SLOPE_SCALE    0x0BC
-#define NU_VPE_LUT_TAB0_SLOPE_SHIFT    0x0C0
-#define NU_VPE_LUT_TAB1_SLOPE_SCALE    0x0C4
-#define NU_VPE_LUT_TAB1_SLOPE_SHIFT    0x0C8
-#define NU_VPE_OUT_CVT_OFFSET_VAL      0x0CC
-#define NU_VPE_OUT_CVT_SCALE_VAL       0x0D0
-#define NU_VPE_OUT_CVT_TRUNC_VAL       0x0D4
-#define NU_VPE_INF_NUM_IN              0x0D8
-#define NU_VPE_NAN_NUM_IN              0x0DC
-#define NU_VPE_NAN_NUM_OUT             0x0E0
-#define NU_VPE_SATUR_NUM_OUT           0x0E4
-#define LUT_CNT_OVRF                   0x0E8
-#define LUT_CNT_UNDF                   0x0EC
-#define LUT_CNT_HIT_TAB0               0x0F0
-#define LUT_CNT_HIT_TAB1               0x0F4
-#define LUT_CNT_HIT_HYBR               0x0F8
-#define NU_VPE_SOFT_RESET              0x0FC
+#define NU_VPE_LUT_XOFFSET             0x0A0
+#define NU_VPE_LUT_YOFFSET             0x0A4
+#define NU_VPE_LUT_TAB0_XSHIFT         0x0A8
+#define NU_VPE_LUT_TAB1_XSHIFT         0x0AC
+#define NU_VPE_LUT_TAB0_XMIN           0x0B0
+#define NU_VPE_LUT_TAB0_XMAX           0x0B4
+#define NU_VPE_LUT_TAB1_XMIN           0x0B8
+#define NU_VPE_LUT_TAB1_XMAX           0x0BC
+#define NU_VPE_LUT_TAB0_SLOPE_SCALE    0x0C0
+#define NU_VPE_LUT_TAB0_SLOPE_SHIFT    0x0C4
+#define NU_VPE_LUT_TAB1_SLOPE_SCALE    0x0C8
+#define NU_VPE_LUT_TAB1_SLOPE_SHIFT    0x0CC
+#define NU_VPE_OUT_CVT_OFFSET_VAL      0x0D0
+#define NU_VPE_OUT_CVT_SCALE_VAL       0x0D4
+#define NU_VPE_OUT_CVT_TRUNC_VAL       0x0D8
+#define NU_VPE_INF_NUM_IN              0x0DC
+#define NU_VPE_NAN_NUM_IN              0x0E0
+#define NU_VPE_NAN_NUM_OUT             0x0E4
+#define NU_VPE_SATUR_NUM_OUT           0x0E8
+#define LUT_CNT_OVRF                   0x0EC
+#define LUT_CNT_UNDF                   0x0F0
+#define LUT_CNT_HIT_TAB0               0x0F4
+#define LUT_CNT_HIT_TAB1               0x0F8
+#define LUT_CNT_HIT_HYBR               0x0FC
+
 
 // VPE RDMA Registers address --------------------
 #define NU_VPE_DMA_CFG                 0x000
