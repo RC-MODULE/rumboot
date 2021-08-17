@@ -714,7 +714,7 @@ void nu_vpe_setup(uintptr_t base, ConfigVPE* cfg, ConfigDMAVPE* cfg_dma) {
   // Configuration of VPE -------------------------------------------------------------------------
   
   // AXI_PARAM
-  iowrite32(0x00020000, base + NU_VPE + NU_VPE_AXI_PARAM );
+  //iowrite32(0x00020000, base + NU_VPE + NU_VPE_AXI_PARAM );
   
   // CUBE_SIZE 
   iowrite32(cfg->cube_size, base + NU_VPE + NU_VPE_CUBE_SIZE );
