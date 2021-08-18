@@ -10,12 +10,9 @@ endif()
 
 
 file(GLOB PLATFORM_SOURCES
-    ${CMAKE_SOURCE_DIR}/src/arch/ppc/exception.c
-    ${CMAKE_SOURCE_DIR}/src/arch/ppc/p64.S
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/*.c
     ${CMAKE_SOURCE_DIR}/src/lib/drivers/irq-mpic128.c
     ${CMAKE_SOURCE_DIR}/src/lib/drivers/chip_id.c
-    ${CMAKE_SOURCE_DIR}/src/arch/ppc/ppc_mmu_impl.S
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/lib/drivers/mpic128-timers.c
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/lib/drivers/p64.c
     ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/lib/drivers/plb6mcif2.c
@@ -1499,6 +1496,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         FILES test_oi10_cpu_039_00.c
         PREFIX simple-iram
         CFLAGS -DM_BASE=SRAM0_BASE -DL2C_IL1I_BIT=1 -DL2C_IL1D_BIT=0 -DL2C_W_BIT=1
+        IRUN_FLAGS +RANDOMIZE_SRAM
         NAME "test_oi10_cpu_039_10"
         LOAD IM0BIN SELF
              MBIN supplementary-test_oi10_cpu_039_helper_em2
@@ -1528,6 +1526,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         FILES test_oi10_cpu_039_00.c
         PREFIX simple-iram
         CFLAGS -DM_BASE=SRAM0_BASE -DL2C_IL1I_BIT=1 -DL2C_IL1D_BIT=1 -DL2C_W_BIT=0
+        IRUN_FLAGS +RANDOMIZE_SRAM
         NAME "test_oi10_cpu_040_00"
         LOAD IM0BIN SELF
              MBIN supplementary-test_oi10_cpu_040_helper_em2

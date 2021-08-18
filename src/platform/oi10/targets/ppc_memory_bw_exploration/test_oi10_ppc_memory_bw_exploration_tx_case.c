@@ -24,7 +24,7 @@
 #include <devices/ugly/emi.h>
 #include <platform/devices/l2c.h>
 #include <platform/regs/sctl.h>
-#include <platform/devices/dma2plb6.h>
+#include <arch/dma2plb6.h>
 #include <rumboot/memfill.h>
 
 

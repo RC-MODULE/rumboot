@@ -3,7 +3,7 @@
 
 #include <arch/common_macros.h>
 #include <arch/ibm_bit_ordering_macros.h>
-#include <platform/regs/fields/dma2plb6.h>
+#include <arch/regs/fields/dma2plb6.h>
 
 
 #define CHANNEL_ADDR_OFF    0x10

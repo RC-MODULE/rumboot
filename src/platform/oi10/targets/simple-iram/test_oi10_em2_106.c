@@ -12,7 +12,7 @@
 #include <devices/ugly/emi.h>
 #include <arch/mmu.h>
 #include <arch/mem_window.h>
-#include <platform/devices/dma2plb6.h>
+#include <arch/dma2plb6.h>
 
 
 

@@ -15,7 +15,7 @@
 #include <platform/test_event_c.h>
 #include <devices/ugly/emi.h>
 #include <platform/devices/nor_1636RR4.h>
-#include <platform/devices/dma2plb6.h>
+#include <arch/dma2plb6.h>
 #include <regs/regs_emi.h>
 
 #include <arch/ppc_476fp_mmu_fields.h>

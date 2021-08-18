@@ -23,7 +23,7 @@
 #include <platform/ppc470s/mmu/mem_window.h>
 #include <devices/ugly/emi.h>
 #include <platform/devices/l2c.h>
-#include <platform/devices/dma2plb6.h>
+#include <arch/dma2plb6.h>
 #include <rumboot/memfill.h>
 
 
