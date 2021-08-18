@@ -2083,9 +2083,9 @@ void nu_vpe_wait_rd_main_channel_complete(uintptr_t dma_base){
 //void nu_vpe_run(uintptr_t vpe_base, ConfigDMAVPE* cfg) {
 void nu_vpe_run(uintptr_t vpe_base, ConfigVPE* cfg){ // ?????????   ConfigVPE* cfg  
   // Напиши сюда 3апуск DMA
-  while(ioread32(vpe_base + NU_VPE + NU_VPE_NEXT_CNTX) !=0) {}
+  while((ioread32(vpe_base + NU_VPE + NU_VPE_NEXT_CNTX) & 1) !=0) {}
   rumboot_printf("Start VPE...\n");
-  iowrite32 (1, vpe_base + NU_VPE + NU_VPE_NEXT_CNTX);
+  iowrite32 (1<<0, vpe_base + NU_VPE + NU_VPE_NEXT_CNTX);
 }
 
 void nu_vpe_wait(uintptr_t vpe_base, ConfigVPE* cfg){
