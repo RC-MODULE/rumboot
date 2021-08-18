@@ -209,7 +209,7 @@ static uint32_t gspi_dma_axi_mem( uint32_t const base_addr, uint32_t const r_mem
 
     uint32_t result = 0;
 
-    memset( ( void* )( r_mem_addr + 4 ), test_data, BYTE_NUMBER );
+    memset( ( void* )( r_mem_addr + 4 ), test_data, (BYTE_NUMBER + 8) );
     //r_mem_addr - IM2
     iowrite32( PAGE_PROGRAM_COMMAND, r_mem_addr );
     msync();

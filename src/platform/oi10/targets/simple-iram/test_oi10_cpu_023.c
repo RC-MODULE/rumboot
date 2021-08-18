@@ -9,16 +9,16 @@
 #include <arch/common_macros.h>
 #include <platform/devices.h>
 #include <devices/ugly/emi.h>
-#include <platform/devices/dma2plb6.h>
+#include <arch/dma2plb6.h>
 #include <platform/devices/nor_1636RR4.h>
 #include <platform/test_assert.h>
 #include <platform/test_event_codes.h>
 
 
-
 //size in bytes
+#ifndef TEST_DATA_SIZE
 #define TEST_DATA_SIZE 128
-
+#endif
 //test data content
 #define TEST_DATA_CONTENT 0x0123456789ABCDEF
 
@@ -401,7 +401,127 @@ static uint32_t check_multiple_channels_2()
     return 0;
 }
 
+//////
+// Functions for o32t power test (test_oi10_hscb_com_fpu_simult_big.c)
 
+uint32_t* ch0_src_p;
+uint32_t* ch0_dst_p;
+uint32_t* ch1_src_p;
+uint32_t* ch1_dst_p;
+uint32_t* ch2_src_p;
+uint32_t* ch2_dst_p;
+uint32_t* ch3_src_p;
+uint32_t* ch3_dst_p;
+
+struct channel_status ch0_status_p = {};
+struct channel_status ch1_status_p = {};
+struct channel_status ch2_status_p = {};
+struct channel_status ch3_status_p = {};
+
+struct dma2plb6_setup_info ch0_dma_info_p;
+struct dma2plb6_setup_info ch1_dma_info_p;
+struct dma2plb6_setup_info ch2_dma_info_p;
+struct dma2plb6_setup_info ch3_dma_info_p;
+
+void dma2plb6_4ch_init()
+{
+       
+    uint32_t* ch0_src_p = (uint32_t*)(IM0_BASE + 0x10000); // 64KB
+    uint32_t* ch0_dst_p = (uint32_t*)(IM0_BASE + 0x10000 + 0x2000); // (64 + 8)KB
+    uint32_t* ch1_src_p = (uint32_t*)(IM0_BASE + 0x10000 + 0x4000); // (64 + 16)KB
+    uint32_t* ch1_dst_p = (uint32_t*)(IM0_BASE + 0x10000 + 0x6000); // (64 + 24)KB
+    uint32_t* ch2_src_p = (uint32_t*)(IM0_BASE + 0x10000 + 0x8000); // (64 + 32)KB
+    uint32_t* ch2_dst_p = (uint32_t*)(IM0_BASE + 0x10000 + 0xa000); // (64 + 40)KB
+    uint32_t* ch3_src_p = (uint32_t*)(IM0_BASE + 0x10000 + 0xc000); // (64 + 48)KB
+    uint32_t* ch3_dst_p = (uint32_t*)(IM0_BASE + 0x10000 + 0xe000); // (64 + 56)KB
+
+    rumboot_putstring("DMA2PLB6: Initializing memory ...\n");
+    fill((uint64_t*)ch0_src_p, fill_word, TEST_DATA_SIZE);
+    fill((uint64_t*)ch0_dst_p, 0x00, TEST_DATA_SIZE);
+    fill((uint64_t*)ch1_src_p, fill_word, TEST_DATA_SIZE);
+    fill((uint64_t*)ch1_dst_p, 0x00, TEST_DATA_SIZE);
+    fill((uint64_t*)ch2_src_p, fill_word, TEST_DATA_SIZE);
+    fill((uint64_t*)ch2_dst_p, 0x00, TEST_DATA_SIZE);
+    fill((uint64_t*)ch3_src_p, fill_word, TEST_DATA_SIZE);
+    fill((uint64_t*)ch3_dst_p, 0x00, TEST_DATA_SIZE);  
+    
+}
+
+void dma2plb6_4ch_start()
+{
+
+    /*struct channel_status ch0_status_p = {};
+    struct channel_status ch1_status_p = {};
+    struct channel_status ch2_status_p = {};
+    struct channel_status ch3_status_p = {};
+    */
+    
+    struct dma2plb6_setup_info ch0_dma_info_p = get_default_dma_info(channel0, ch0_src_p, ch0_dst_p);
+    struct dma2plb6_setup_info ch1_dma_info_p = get_default_dma_info(channel1, ch1_src_p, ch1_dst_p);
+    struct dma2plb6_setup_info ch2_dma_info_p = get_default_dma_info(channel2, ch2_src_p, ch2_dst_p);
+    struct dma2plb6_setup_info ch3_dma_info_p = get_default_dma_info(channel3, ch3_src_p, ch3_dst_p);
+
+    rumboot_putstring("DMA2PLB6: Initializing DMA channels ...\n");
+    dma2plb6_mcpy(&ch0_dma_info_p);
+    dma2plb6_mcpy(&ch1_dma_info_p);
+    dma2plb6_mcpy(&ch2_dma_info_p);
+    dma2plb6_mcpy(&ch3_dma_info_p);
+}
+
+void dma2plb6_4ch_finish()
+{
+
+
+    rumboot_putstring("DMA2PLB6: Waiting for DMA transfer complete ...\n");
+    if (wait_dma2plb6_mcpy(&ch0_dma_info_p, &ch0_status_p))
+    {
+        rumboot_putstring("DMA2PLB6: Channel 0 transfer succeeded.\n");
+        if (wait_dma2plb6_mcpy(&ch1_dma_info_p, &ch1_status_p))
+        {
+            rumboot_putstring("DMA2PLB6: Channel 1 transfer succeeded.\n");
+            if (wait_dma2plb6_mcpy(&ch2_dma_info_p, &ch2_status_p))
+            {
+                rumboot_putstring("DMA2PLB6: Channel 2 transfer succeeded.\n");
+                if (wait_dma2plb6_mcpy(&ch3_dma_info_p, &ch3_status_p))
+                {
+                    rumboot_putstring("DMA2PLB6: Channel 3 transfer succeeded.\n");
+                }
+                else
+                {
+                    rumboot_putstring("DMA2PLB6: Channel 3 transfer error.\n");
+                    //return 1;
+                }
+            }
+            else
+            {
+                rumboot_putstring("DMA2PLB6: Channel 2 transfer error.\n");
+                //return 1;
+            }
+        }
+        else
+        {
+            rumboot_putstring("DMA2PLB6: Channel 1 transfer error.\n");
+            //return 1;
+        }
+    }
+    else
+    {
+        rumboot_putstring("DMA2PLB6: Channel 0 transfer error.\n");
+        //return 1;
+    }
+
+    /*
+    rumboot_putstring("DMA2PLB6: Memory check ...\n");
+    TEST_ASSERT(compare((uint32_t)ch0_src, (uint32_t)ch0_dst, TEST_DATA_SIZE) == true, "Channel0: memory comparison failed");
+    TEST_ASSERT(compare((uint32_t)ch1_src, (uint32_t)ch1_dst, TEST_DATA_SIZE) == true, "Channel1: memory comparison failed");
+    TEST_ASSERT(compare((uint32_t)ch2_src, (uint32_t)ch2_dst, TEST_DATA_SIZE) == true, "Channel2: memory comparison failed");
+    TEST_ASSERT(compare((uint32_t)ch3_src, (uint32_t)ch3_dst, TEST_DATA_SIZE) == true, "Channel3: memory comparison failed");
+    */
+
+    //return 0;
+}
+
+#ifndef POWER_TEST
 int main(void)
 {
     uint32_t result = 0;
@@ -421,3 +541,4 @@ int main(void)
 
     return result;
 }
+#endif

@@ -31,14 +31,14 @@
 #include <devices/mpic128.h>
 #include <regs/fields/emi.h>
 #include <platform/interrupts.h>
-#include <platform/devices/dma2plb6.h>
+#include <arch/dma2plb6.h>
 
 #include <platform/regs/regs_ltrace.h>
 #include <platform/devices/ltrace.h>
 #include <platform/regs/regs_itrace.h>
 #include <platform/devices/itrace.h>
 
-#include <platform/regs/regs_dma2plb6.h>
+#include <arch/regs/dma2plb6.h>
 #include <platform/regs/regs_plb4plb6.h>
 #include <platform/regs/regs_plb4ahb.h>
 #include <arch/regs/fields/plb6bc.h>

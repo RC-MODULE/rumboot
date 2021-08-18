@@ -14,7 +14,7 @@
 #include <arch/ppc_476fp_mmu.h>
 #include <arch/mem_window.h>
 #include <devices/ugly/emi.h>
-#include <platform/devices/dma2plb6.h>
+#include <arch/dma2plb6.h>
 
 
 #define TLB_ENTRY_CACHE_ON    MMU_TLB_ENTRY(  0x000,  0x00000,    0x00000,    MMU_TLBE_DSIZ_1GB,      0b0,    0b0,    0b0,    0b0,    0b1,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,  MMU_TLBWE_BE_UND,   0b1 )

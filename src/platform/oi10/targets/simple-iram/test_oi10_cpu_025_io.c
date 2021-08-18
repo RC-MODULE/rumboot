@@ -30,9 +30,9 @@
 
 #include <devices/ugly/emi.h>
 #include <platform/devices/l2c.h>
-#include <platform/devices/dma2plb6.h>
+#include <arch/dma2plb6.h>
 
-#include <platform/regs/regs_dma2plb6.h>
+#include <arch/regs/dma2plb6.h>
 #include <platform/regs/regs_plb4plb6.h>
 #include <platform/regs/regs_plb4ahb.h>
 #include <arch/regs/fields/plb6bc.h>

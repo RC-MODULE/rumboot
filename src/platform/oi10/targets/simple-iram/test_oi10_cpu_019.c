@@ -25,7 +25,7 @@
 
 #include <platform/devices.h>
 #include <platform/devices/l2c.h>
-#include <platform/devices/dma2plb6.h>
+#include <arch/dma2plb6.h>
 #include <devices/mpic128.h>
 
 #include <platform/regs/regs_dcrarb.h>

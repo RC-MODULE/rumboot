@@ -714,7 +714,7 @@ void nu_vpe_setup(uintptr_t base, ConfigVPE* cfg, ConfigDMAVPE* cfg_dma) {
   // Configuration of VPE -------------------------------------------------------------------------
   
   // AXI_PARAM
-  iowrite32(0x00020000, base + NU_VPE + NU_VPE_AXI_PARAM );
+  //iowrite32(0x00020000, base + NU_VPE + NU_VPE_AXI_PARAM );
   
   // CUBE_SIZE 
   iowrite32(cfg->cube_size, base + NU_VPE + NU_VPE_CUBE_SIZE );
@@ -809,26 +809,26 @@ void nu_vpe_setup(uintptr_t base, ConfigVPE* cfg, ConfigDMAVPE* cfg_dma) {
     tmp_data = 0x000000000 | (cfg->op2_config.lut_sel << 2) | (cfg->op2_config.lut_right_priority << 1) | (cfg->op2_config.lut_left_priority << 0);
     iowrite32(tmp_data, base + NU_VPE + NU_VPE_LUT_CFG);
     
-    iowrite32(cfg->op2_config.lut_tab1_x_start, base + NU_VPE + NU_VPE_LUT_TAB1_X_START);
-    iowrite32(cfg->op2_config.lut_tab1_x_end  , base + NU_VPE + NU_VPE_LUT_TAB1_X_END  );
-    iowrite32(cfg->op2_config.lut_tab2_x_start, base + NU_VPE + NU_VPE_LUT_TAB2_X_START);
-    iowrite32(cfg->op2_config.lut_tab2_x_end  , base + NU_VPE + NU_VPE_LUT_TAB2_X_END  );
+    iowrite32(cfg->op2_config.lut_tab1_x_start, base + NU_VPE + NU_VPE_LUT_TAB0_XMIN);
+    iowrite32(cfg->op2_config.lut_tab1_x_end  , base + NU_VPE + NU_VPE_LUT_TAB0_XMAX  );
+    iowrite32(cfg->op2_config.lut_tab2_x_start, base + NU_VPE + NU_VPE_LUT_TAB1_XMIN);
+    iowrite32(cfg->op2_config.lut_tab2_x_end  , base + NU_VPE + NU_VPE_LUT_TAB1_XMAX  );
     
     tmp_data = 0x000000000 | ((cfg->op2_config.lut_tab1_slope_ovrf_scale & 0x0000FFFF) << 16) |
                              ((cfg->op2_config.lut_tab1_slope_undf_scale & 0x0000FFFF)      );
-    iowrite32(tmp_data, base + NU_VPE + NU_VPE_LUT_TAB1_SLOPE_SCALE);
+    iowrite32(tmp_data, base + NU_VPE + NU_VPE_LUT_TAB0_SLOPE_SCALE);
     
     tmp_data = 0x000000000 | ((cfg->op2_config.lut_tab1_slope_ovrf_shift & 0x1F) << 5) |
                              ((cfg->op2_config.lut_tab1_slope_undf_shift & 0x1F)     );
-    iowrite32(tmp_data, base + NU_VPE + NU_VPE_LUT_TAB1_SLOPE_SHIFT);
+    iowrite32(tmp_data, base + NU_VPE + NU_VPE_LUT_TAB0_SLOPE_SHIFT);
     
     tmp_data = 0x000000000 | ((cfg->op2_config.lut_tab2_slope_ovrf_scale & 0x0000FFFF) << 16) |
                              ((cfg->op2_config.lut_tab2_slope_undf_scale & 0x0000FFFF)      );
-    iowrite32(tmp_data, base + NU_VPE + NU_VPE_LUT_TAB2_SLOPE_SCALE);
+    iowrite32(tmp_data, base + NU_VPE + NU_VPE_LUT_TAB1_SLOPE_SCALE);
     
     tmp_data = 0x000000000 | ((cfg->op2_config.lut_tab2_slope_ovrf_shift & 0x1F) << 5) |
                              ((cfg->op2_config.lut_tab2_slope_undf_shift & 0x1F)     );
-    iowrite32(tmp_data, base + NU_VPE + NU_VPE_LUT_TAB2_SLOPE_SHIFT);
+    iowrite32(tmp_data, base + NU_VPE + NU_VPE_LUT_TAB1_SLOPE_SHIFT);
     
     
     if(cfg->in_data_type == DataTypeExt_Fp16 || cfg->in_data_type == DataTypeExt_Fp32) { // Floating Point LUT
@@ -853,8 +853,8 @@ void nu_vpe_setup(uintptr_t base, ConfigVPE* cfg, ConfigDMAVPE* cfg_dma) {
     }
     
     rumboot_printf("LUTs: shift_i1 = %x, shift_i2 = %x\n",shift_i1,shift_i2);
-    iowrite32(shift_i1,base + NU_VPE + NU_VPE_LUT_TAB1_X_SHIFT);
-    iowrite32(shift_i2,base + NU_VPE + NU_VPE_LUT_TAB2_X_SHIFT);
+    iowrite32(shift_i1,base + NU_VPE + NU_VPE_LUT_TAB0_XSHIFT);
+    iowrite32(shift_i2,base + NU_VPE + NU_VPE_LUT_TAB1_XSHIFT);
   }
 
   // Configuration of WDMA -------------------------------------------------------------------------
