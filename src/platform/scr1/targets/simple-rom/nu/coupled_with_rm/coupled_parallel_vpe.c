@@ -100,7 +100,7 @@ int main() {
     res_metrics[i]= nu_load_cube_metrics(heap_id,metrics_etalon_tag[i]);
     if(res_metrics[i] == NULL) return -1;
     
-    in_data[i] = nu_load_cube_misaligned(heap_id,in_file_tag[i],in_metrics,IntMisalign);
+    in_data[i] = nu_load_cube_misaligned(heap_id,in_file_tag[i],in_metrics[i],IntMisalign);
     if(in_data[i] == NULL) return -1;
     
     res_data[i] = nu_vpe_malloc_res(heap_id, res_metrics[i]);
