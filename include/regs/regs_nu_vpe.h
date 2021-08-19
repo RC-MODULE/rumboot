@@ -83,6 +83,7 @@
 // VPE RDMA Registers address --------------------
 #define NU_VPE_DMA_CFG                 0x000
 #define NU_VPE_DMA_POINTER             0x004
+#define NU_VPE_DMA_AXI_PARAM           0x00C
 #define NU_VPE_INT_STATUS              0x010     
 #define NU_VPE_INT_RESET               0x014     
 #define NU_VPE_INT_SET                 0x018  
