@@ -1,6 +1,7 @@
 #ifndef CRC8_H
 #define CRC8_H
 
+#include <stddef.h>
 #include <stdint.h>
 
 /*
@@ -11,6 +12,7 @@
   XorOut: 0x00
   Check : 0xF7 ("123456789")
 */
-uint8_t crc8(uint32_t start_addr, uint32_t len);
+
+uint8_t crc8(uint32_t crc, const void *buf, size_t size);
 
 #endif

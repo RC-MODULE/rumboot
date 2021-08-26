@@ -134,19 +134,24 @@ uint32_t crc32(uint32_t crc, const void *buf, size_t size)
     return data[0];
 }
 
-__attribute__((no_instrument_function)) __attribute__((optimize("-O0"))) void do_crc8(uint32_t start_addr, ...)
+
+__attribute__((no_instrument_function)) __attribute__((optimize("-O0"))) void do_crc8(uint32_t crc, ...)
 {
     deliver(EVENT_CRC8, (uint32_t) __builtin_frame_address(0));
 }
-uint8_t crc8(uint32_t start_addr, uint32_t len)
+
+uint8_t crc8(uint8_t crc, const void *buf, size_t size)
 {
-    do_crc8(start_addr, len);
+    rumboot_printf("offload: deliver: crc = 0x%X, buf = 0x%X, size = 0x%X\n", crc, buf, size);
+    do_crc8(crc, buf, size);
     volatile uint32_t *data;
     int opcode = rumboot_platform_event_get(&data);
+    rumboot_printf("offload: recieve = 0x%X\n", data[0]);
+    rumboot_printf("offload: ------------------------------------------\n");
     if (opcode != EVENT_CRC8) {
         rumboot_platform_panic("SW<->TB Synchronization failed!\n");
     }
-    return data[0];
+    return data[0] & 0xff;
 }
 
 #else

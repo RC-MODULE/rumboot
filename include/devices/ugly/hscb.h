@@ -9,6 +9,7 @@
 #define DEVICES_HSCB_H
 
 #include <stdint.h>
+#include <stdbool.h>
 #include <platform/arch/ppc/test_macro.h>
 #include <rumboot/platform.h>
 #include <platform/devices.h>

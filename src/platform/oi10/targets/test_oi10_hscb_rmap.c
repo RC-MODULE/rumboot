@@ -10,6 +10,7 @@
 #include <stddef.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <string.h>
 #include <rumboot/io.h>
 #include <rumboot/printf.h>
 #include <platform/devices.h>
@@ -19,7 +20,7 @@
 #include <platform/regs/regs_hscb.h>
 #include <rumboot/irq.h>
 #include <rumboot/rumboot.h>
-#include <rumboot/memfill.h>
+#include <rumboot/platform.h>
 #include <devices/ugly/hscb.h>
 #include <devices/ugly/emi.h>
 #include <platform/devices/nor_1636RR4.h>
@@ -1317,15 +1318,15 @@ static uint32_t check_results(
             if(instruction & HSCB_RMAP_PACKET_INSTRUCTION_FIELD_WRITE_mask)
             {
                 rumboot_printf("header crc8\n");
-                header_crc8 = crc8((uint32_t)(current_reply.array + reply_addr_actual_length), HSCB_RMAP_REPLY_RESERVED_R_HEADER_CRC8_W_i);
+                header_crc8 = crc8(0, current_reply.array + reply_addr_actual_length, HSCB_RMAP_REPLY_RESERVED_R_HEADER_CRC8_W_i);
                 result |= (hscb_rmap_get_reply_byte(current_reply,reply_addr_actual_length,HSCB_RMAP_REPLY_RESERVED_R_HEADER_CRC8_W_i) == header_crc8)
                         ? OK : HEADER_CRC_MISMATCH;
             }else{
                 uint8_t data_crc8 = 0;
                 rumboot_printf("header crc8\n");
-                header_crc8 = crc8((uint32_t)(current_reply.array + reply_addr_actual_length), HSCB_RMAP_REPLY_HEADER_CRC8_R_i);
+                header_crc8 = crc8(0, current_reply.array + reply_addr_actual_length, HSCB_RMAP_REPLY_HEADER_CRC8_R_i);
                 rumboot_printf("data crc8\n");
-                data_crc8 = crc8((uint32_t)(current_reply.array + reply_addr_actual_length + HSCB_RMAP_REPLY_DATA_START_i),
+                data_crc8 = crc8(0, current_reply.array + reply_addr_actual_length + HSCB_RMAP_REPLY_DATA_START_i,
                         hscb_rmap_reply_get_data_len(current_reply,reply_addr_actual_length));
                 result |=   ((hscb_rmap_get_reply_byte(current_reply,reply_addr_actual_length,HSCB_RMAP_REPLY_RESERVED_R_HEADER_CRC8_W_i) == 0)
                               ? OK : RESERVED_FIELD_MISMATCH)
