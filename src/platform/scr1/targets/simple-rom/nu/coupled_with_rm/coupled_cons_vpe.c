@@ -36,7 +36,7 @@ void nu_vpe_decide_dma_config (
   cfg->op0_rdma_config.dma_data_mode = cfg->op0_config.mux_mode; // Init Them
   cfg->op1_rdma_config.dma_data_mode = cfg->op1_config.mux_mode;
   cfg->op2_rdma_config.dma_data_mode = cfg->op2_config.mux_mode;
-  cfg->wdma_config.dma_data_mode      = 1; // Copypaste From src_rdma_config in nu_vpe_decide_dma_config_trivial
+  cfg->wdma_config.dma_data_mode     = Mode_Element; // Copypaste From src_rdma_config in nu_vpe_decide_dma_config_trivial
   cfg->wdma_config.dma_data_use=DmaDUse_Off;
   
   cfg->src_flying = cfg->in_data_type == DataTypeExt_Int32 || cfg->in_data_type == DataTypeExt_Fp32 ? Enable_En : Enable_NotEn;
@@ -100,7 +100,7 @@ int main() {
     res_metrics= nu_load_cube_metrics(heap_id,metrics_etalon_tag[i]);
     if(res_metrics == NULL) return -1;
     
-    in_data = nu_load_cube(heap_id,in_file_tag[i],in_metrics);
+    in_data = nu_load_cube_misaligned(heap_id,in_file_tag[i],in_metrics,IntMisalign);
     if(in_data == NULL) return -1;
     
     res_data = nu_vpe_malloc_res(heap_id, res_metrics);
@@ -108,15 +108,15 @@ int main() {
     
       // Load OP0-OP2 Operands If Needed
     if(cfg.op0_en==Enable_En) {
-      op0 = nu_vpe_load_op01_by_tags(heap_id,&cfg.op0_config,metrics_op0_cube_tag[i],metrics_op0_vec_tag[i],op0_cube_file_tag[i],op0_vec_file_tag[i]);
+      op0 = nu_vpe_load_op01_misaligned_by_tags(heap_id,&cfg.op0_config,metrics_op0_cube_tag[i],metrics_op0_vec_tag[i],op0_cube_file_tag[i],op0_vec_file_tag[i],IntMisalign);
     }
     else op0 = NULL;
     if(cfg.op1_en==Enable_En) {
-      op1 = nu_vpe_load_op01_by_tags(heap_id,&cfg.op1_config,metrics_op1_cube_tag[i],metrics_op1_vec_tag[i],op1_cube_file_tag[i],op1_vec_file_tag[i]);
+      op1 = nu_vpe_load_op01_misaligned_by_tags(heap_id,&cfg.op1_config,metrics_op1_cube_tag[i],metrics_op1_vec_tag[i],op1_cube_file_tag[i],op1_vec_file_tag[i],IntMisalign);
     }
     else op1 = NULL;
     if(cfg.op2_en==Enable_En) {
-      op2 = nu_vpe_load_op2_by_tags(heap_id,&cfg.op2_config,metrics_op2_cube_tag[i],metrics_op2_vec_tag[i],op2_cube_file_tag[i],op2_vec_file_tag[i]);
+      op2 = nu_vpe_load_op2_misaligned_by_tags(heap_id,&cfg.op2_config,metrics_op2_cube_tag[i],metrics_op2_vec_tag[i],op2_cube_file_tag[i],op2_vec_file_tag[i],IntMisalign);
     }
     else op2 = NULL;
     
@@ -133,7 +133,9 @@ int main() {
     if(etalon == NULL) return -1;
     
     //print_in_data(in_data,in_size);
-    
+
+    cfg.trace_mode = TraceMode_MPE;
+
     //nu_vpe_print_config(&cfg);
     nu_vpe_decide_dma_config(&cfg,in_metrics,in_data,op0,op1,op2,res_metrics,res_data,&cfg_dma);
     //nu_print_config_dma(&cfg.src_rdma_config,"src_rdma_config");

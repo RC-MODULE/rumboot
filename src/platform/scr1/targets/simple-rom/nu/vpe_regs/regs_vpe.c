@@ -40,6 +40,7 @@
 		else 
 		{resw1=0;}
 	
+	/*
 		tmp = ioread32(base + NU_VPE +NU_VPE_AXI_PARAM) & 0x0F07030F;
 		//rumboot_printf("resw2_tmp =%x\n",tmp);
 		if (tmp != 0x00020000)       //error in doc  !!!!
@@ -49,6 +50,7 @@
 		else
 		{resw2 =0;
 	    rumboot_printf("resw2_tmp =%d\n",tmp);} 
+	*/
 	 	
 		if ((0x00000000) !=(ioread32(base + NU_VPE +NU_VPE_CUBE_SIZE))) 	
 		{resw3 =1;
@@ -952,6 +954,7 @@ int nu_vpe_wr_regs(uintptr_t base, int32_t data) {
 	  tmpr =data;
 	//----------------------VPE & DMA---------------------------------------	  
 
+    /*
         iowrite32(tmpr, base + NU_VPE + NU_VPE_AXI_PARAM);
 	if ((tmpr & 0x00000001 ) !=(ioread32(base + NU_VPE + NU_VPE_AXI_PARAM) & 0x00000001))	
 		{resw2 =1;
@@ -960,6 +963,7 @@ int nu_vpe_wr_regs(uintptr_t base, int32_t data) {
 		rumboot_printf("resw2 error\n");}
 		else 
 		{resw2=0;}
+	*/
 	
         iowrite32(tmpr, base + NU_VPE + NU_VPE_CUBE_SIZE);
 	if ((tmpr & 0x00001FFF ) !=(ioread32(base + NU_VPE + NU_VPE_CUBE_SIZE) & 0x00001FFF))	

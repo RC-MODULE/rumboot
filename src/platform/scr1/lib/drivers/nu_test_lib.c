@@ -185,6 +185,16 @@ void* nu_load_cube(int heap_id,char* file_tag,CubeMetrics* metrics) {
   return c;
 }
 
+void* nu_load_cube_misaligned(int heap_id,char* file_tag,CubeMetrics* metrics, int misalign) {
+  void* c;
+  c = rumboot_malloc_from_heap_misaligned(heap_id,metrics->s,64,misalign);
+  if(c==NULL) 
+    return NULL;
+  
+  rumboot_platform_request_file(file_tag, (uintptr_t)c);
+  return c;
+}
+
 void* nu_load_warr(int heap_id,char* file_tag,WarrMetrics* metrics) {
   void* w;
   w = rumboot_malloc_from_heap_aligned(heap_id,metrics->s,64); // CHECK
@@ -198,6 +208,16 @@ void* nu_load_warr(int heap_id,char* file_tag,WarrMetrics* metrics) {
 void* nu_load_vec(int heap_id,char* file_tag,VectorMetrics* metrics) {
   void* v;
   v = rumboot_malloc_from_heap_aligned(heap_id,metrics->s,64); // CHECK
+  if(v==NULL)
+    return NULL;
+  
+  rumboot_platform_request_file(file_tag,(uintptr_t)v);
+  return v;
+}
+
+void* nu_load_vec_misaligned(int heap_id,char* file_tag,VectorMetrics* metrics, int misalign) {
+  void* v;
+  v = rumboot_malloc_from_heap_misaligned(heap_id,metrics->s,64,misalign); // CHECK
   if(v==NULL)
     return NULL;
   
@@ -342,6 +362,35 @@ void* nu_vpe_load_op01_by_tags(int heap_id, ConfigOp01* cfg, char* metrics_cube_
   
   return NULL;
 }
+void* nu_vpe_load_op01_misaligned_by_tags(int heap_id, ConfigOp01* cfg, char* metrics_cube_tag,char* metrics_vec_tag,char* cube_file_tag,char* vec_file_tag, int misalign) {
+  void* op;
+  CubeMetrics* cube_metrics;
+  VectorMetrics* vec_metrics;
+  
+    // Try If OP0 Is A Cube
+  if((cfg->alu_en==Enable_En && cfg->alu_mode==Mode_Element) || 
+     (cfg->mux_en==Enable_En && cfg->mux_mode==Mode_Element) ) {
+    cube_metrics = rumboot_malloc_from_heap_aligned(heap_id,sizeof(CubeMetrics),sizeof(int32_t));
+    rumboot_platform_request_file(metrics_cube_tag,(uintptr_t)cube_metrics);
+    op = rumboot_malloc_from_heap_misaligned(heap_id,cube_metrics->s,64,misalign);
+    rumboot_platform_request_file(cube_file_tag,(uintptr_t)op);
+    rumboot_free((void*) cube_metrics);
+    return op;
+  } 
+    
+    // Try If Op0 Is A Vector
+  if((cfg->alu_en==Enable_En && cfg->alu_mode==Mode_Channel) || 
+     (cfg->mux_en==Enable_En && cfg->mux_mode==Mode_Channel) ) {
+    vec_metrics = rumboot_malloc_from_heap_aligned(heap_id,sizeof(VectorMetrics),sizeof(int32_t));
+    rumboot_platform_request_file(metrics_vec_tag,(uintptr_t)vec_metrics);
+    op = rumboot_malloc_from_heap_misaligned(heap_id,vec_metrics->s,64,misalign);
+    rumboot_platform_request_file(vec_file_tag,(uintptr_t)op);
+    rumboot_free((void*) vec_metrics);
+    return op;
+  } 
+  
+  return NULL;
+}
 void* nu_vpe_load_op2(int heap_id, ConfigOp2* cfg) {
   void* op;
   CubeMetrics* cube_metrics;
@@ -394,6 +443,36 @@ void* nu_vpe_load_op2_by_tags(int heap_id, ConfigOp2* cfg, char* metrics_cube_ta
     vec_metrics = rumboot_malloc_from_heap_aligned(heap_id,sizeof(VectorMetrics),sizeof(int32_t));
     rumboot_platform_request_file(metrics_vec_tag,(uintptr_t)vec_metrics);
     op = rumboot_malloc_from_heap_aligned(heap_id,vec_metrics->s,64);
+    rumboot_platform_request_file(vec_file_tag,(uintptr_t)op);
+    rumboot_free((void*) vec_metrics);
+    return op;
+  } 
+  
+  return NULL;
+}
+
+void* nu_vpe_load_op2_misaligned_by_tags(int heap_id, ConfigOp2* cfg, char* metrics_cube_tag,char* metrics_vec_tag,char* cube_file_tag,char* vec_file_tag, int misalign) {
+  void* op;
+  CubeMetrics* cube_metrics;
+  VectorMetrics* vec_metrics;
+  
+    // Try If OP2 Is A Cube
+  if((cfg->alu_en==Enable_En && cfg->alu_mode==Mode_Element) || 
+     (cfg->mux_en==Enable_En && cfg->mux_mode==Mode_Element) ) {
+    cube_metrics = rumboot_malloc_from_heap_aligned(heap_id,sizeof(CubeMetrics),sizeof(int32_t));
+    rumboot_platform_request_file(metrics_cube_tag,(uintptr_t)cube_metrics);
+    op = rumboot_malloc_from_heap_misaligned(heap_id,cube_metrics->s,64,misalign);
+    rumboot_platform_request_file(cube_file_tag,(uintptr_t)op);
+    rumboot_free((void*) cube_metrics);
+    return op;
+  } 
+    
+    // Try If Op2 Is A Vector
+  if((cfg->alu_en==Enable_En && cfg->alu_mode==Mode_Channel) || 
+     (cfg->mux_en==Enable_En && cfg->mux_mode==Mode_Channel) ) {
+    vec_metrics = rumboot_malloc_from_heap_aligned(heap_id,sizeof(VectorMetrics),sizeof(int32_t));
+    rumboot_platform_request_file(metrics_vec_tag,(uintptr_t)vec_metrics);
+    op = rumboot_malloc_from_heap_misaligned(heap_id,vec_metrics->s,64,misalign);
     rumboot_platform_request_file(vec_file_tag,(uintptr_t)op);
     rumboot_free((void*) vec_metrics);
     return op;

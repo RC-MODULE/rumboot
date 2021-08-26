@@ -712,10 +712,6 @@ void nu_vpe_setup(uintptr_t base, ConfigVPE* cfg, ConfigDMAVPE* cfg_dma) {
 
 
   // Configuration of VPE -------------------------------------------------------------------------
-  
-  // AXI_PARAM
-  iowrite32(0x00020000, base + NU_VPE + NU_VPE_AXI_PARAM );
-  
   // CUBE_SIZE 
   iowrite32(cfg->cube_size, base + NU_VPE + NU_VPE_CUBE_SIZE );
   iowrite32((cfg->wdma_config.dma_cube_size_c-1)/16 +1, base + NU_VPE + NU_VPE_CUBE_SIZE_C );  // size in vectors!!!!!!!  // TAKES IT FROM DMA struct!!!! NOT GOOD!!!
@@ -863,6 +859,8 @@ void nu_vpe_setup(uintptr_t base, ConfigVPE* cfg, ConfigDMAVPE* cfg_dma) {
   tmp_data = (cfg->wdma_config.dma_ram_type << 8) | (cfg->wdma_config.dma_data_size << 6) | (cfg->wdma_config.dma_en << 0);
   iowrite32(tmp_data, base + NU_VPE_DST_WDMA + NU_VPE_DMA_CFG);
 
+  iowrite32(0x00020000, base + NU_VPE_DST_WDMA + NU_VPE_DMA_AXI_PARAM );
+
   iowrite32(cfg->wdma_config.dma_baddr           , base + NU_VPE_DST_WDMA + NU_VPE_DMA_BASE                ) ;
   iowrite32(cfg->wdma_config.dma_cube_size_c     , base + NU_VPE_DST_WDMA + NU_VPE_DMA_CUBE_SIZE_C         ) ;  // ?????
   iowrite32(cfg->wdma_config.dma_cube_size_w     , base + NU_VPE_DST_WDMA + NU_VPE_DMA_CUBE_SIZE_W         ) ;  // ?????
@@ -893,6 +891,8 @@ void nu_vpe_setup(uintptr_t base, ConfigVPE* cfg, ConfigDMAVPE* cfg_dma) {
   tmp_data = (cfg->src_rdma_config.dma_ram_type << 8) | ((cfg->src_rdma_config.dma_data_mode >> 1) << 7) | (cfg->src_rdma_config.dma_data_size << 6) | (cfg->src_rdma_config.dma_data_use << 4) | (cfg->src_rdma_config.dma_en << 0);
   iowrite32(tmp_data, base + NU_VPE_SRC_RDMA + NU_VPE_DMA_CFG );
 
+  iowrite32(0x00020000, base + NU_VPE_SRC_RDMA + NU_VPE_DMA_AXI_PARAM );
+
   iowrite32(cfg->src_rdma_config.dma_baddr           , base + NU_VPE_SRC_RDMA + NU_VPE_DMA_BASE                ) ;
   iowrite32(cfg->src_rdma_config.dma_cube_size_c     , base + NU_VPE_SRC_RDMA + NU_VPE_DMA_CUBE_SIZE_C         ) ;  // ?????
   iowrite32(cfg->src_rdma_config.dma_cube_size_w     , base + NU_VPE_SRC_RDMA + NU_VPE_DMA_CUBE_SIZE_W         ) ;  // ?????
@@ -917,12 +917,13 @@ void nu_vpe_setup(uintptr_t base, ConfigVPE* cfg, ConfigDMAVPE* cfg_dma) {
   iowrite32(cfg->src_rdma_config.dma_box_offset_z    , base + NU_VPE_SRC_RDMA + NU_VPE_DMA_BOX_OFFSET_SIZE_Z   ) ;
   
 
-  
   // Configuration OP0_RDMA ------------------------------------------------------
   //iowrite32(cfg->op0_rdma_config.dma_en , base + NU_VPE_OP0_RDMA + NU_VPE_DMA_CFG );
 
   tmp_data = (cfg->op0_rdma_config.dma_ram_type << 8) | ((cfg->op0_rdma_config.dma_data_mode >> 1) << 7) | (cfg->op0_rdma_config.dma_data_size << 6) | (cfg->op0_rdma_config.dma_data_use << 4) | (cfg->op0_rdma_config.dma_en << 0);
   iowrite32(tmp_data, base + NU_VPE_OP0_RDMA + NU_VPE_DMA_CFG );
+  
+  iowrite32(0x00020000, base + NU_VPE_OP0_RDMA + NU_VPE_DMA_AXI_PARAM );
   
   iowrite32(cfg->op0_rdma_config.dma_baddr           , base + NU_VPE_OP0_RDMA + NU_VPE_DMA_BASE                ) ;
   iowrite32(cfg->op0_rdma_config.dma_cube_size_c     , base + NU_VPE_OP0_RDMA + NU_VPE_DMA_CUBE_SIZE_C         ) ;  // ?????
@@ -954,6 +955,8 @@ void nu_vpe_setup(uintptr_t base, ConfigVPE* cfg, ConfigDMAVPE* cfg_dma) {
   tmp_data = (cfg->op1_rdma_config.dma_ram_type << 8) | ((cfg->op1_rdma_config.dma_data_mode >> 1) << 7) | (cfg->op1_rdma_config.dma_data_size << 6) | (cfg->op1_rdma_config.dma_data_use << 4) | (cfg->op1_rdma_config.dma_en << 0);
   iowrite32(tmp_data, base + NU_VPE_OP1_RDMA + NU_VPE_DMA_CFG );
   
+  iowrite32(0x00020000, base + NU_VPE_OP1_RDMA + NU_VPE_DMA_AXI_PARAM );
+  
   iowrite32(cfg->op1_rdma_config.dma_baddr           , base + NU_VPE_OP1_RDMA + NU_VPE_DMA_BASE                ) ;
   iowrite32(cfg->op1_rdma_config.dma_cube_size_c     , base + NU_VPE_OP1_RDMA + NU_VPE_DMA_CUBE_SIZE_C         ) ;  // ?????
   iowrite32(cfg->op1_rdma_config.dma_cube_size_w     , base + NU_VPE_OP1_RDMA + NU_VPE_DMA_CUBE_SIZE_W         ) ;  // ?????
@@ -982,6 +985,8 @@ void nu_vpe_setup(uintptr_t base, ConfigVPE* cfg, ConfigDMAVPE* cfg_dma) {
   
   tmp_data = (cfg->op2_rdma_config.dma_ram_type << 8) | ((cfg->op2_rdma_config.dma_data_mode >> 1) << 7) | (cfg->op2_rdma_config.dma_data_size << 6) | (cfg->op2_rdma_config.dma_data_use << 4) | (cfg->op2_rdma_config.dma_en << 0);
   iowrite32(tmp_data, base + NU_VPE_OP2_RDMA + NU_VPE_DMA_CFG );
+
+  iowrite32(0x00020000, base + NU_VPE_OP2_RDMA + NU_VPE_DMA_AXI_PARAM );
 
   iowrite32(cfg->op2_rdma_config.dma_baddr           , base + NU_VPE_OP2_RDMA + NU_VPE_DMA_BASE                ) ;
   iowrite32(cfg->op2_rdma_config.dma_cube_size_c     , base + NU_VPE_OP2_RDMA + NU_VPE_DMA_CUBE_SIZE_C         ) ;  // ?????
@@ -2083,9 +2088,9 @@ void nu_vpe_wait_rd_main_channel_complete(uintptr_t dma_base){
 //void nu_vpe_run(uintptr_t vpe_base, ConfigDMAVPE* cfg) {
 void nu_vpe_run(uintptr_t vpe_base, ConfigVPE* cfg){ // ?????????   ConfigVPE* cfg  
   // Напиши сюда 3апуск DMA
-  while(ioread32(vpe_base + NU_VPE + NU_VPE_NEXT_CNTX) !=0) {}
+  while((ioread32(vpe_base + NU_VPE + NU_VPE_NEXT_CNTX) & 1) !=0) {}
   rumboot_printf("Start VPE...\n");
-  iowrite32 (1, vpe_base + NU_VPE + NU_VPE_NEXT_CNTX);
+  iowrite32 (1<<0, vpe_base + NU_VPE + NU_VPE_NEXT_CNTX);
 }
 
 void nu_vpe_wait(uintptr_t vpe_base, ConfigVPE* cfg){

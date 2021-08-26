@@ -90,22 +90,27 @@ int main ( void )
     uint32_t crc_result;
     uint32_t i;
     int     isError = 0;
-
+    rumboot_printf("Start of test\n");
     // На случай X в модели
-    memset( ( void * )( ( TX_BUF_ADDR - BASE_ADDR ) & L2C_MASK ),         0, TX_BUF_SIZE + L2C_LINE_SIZE );
-    memset( ( void * )( ( RX_BUF_ADDR - BASE_ADDR ) & L2C_MASK ),         0, RX_BUF_SIZE + L2C_LINE_SIZE );
-    memset( ( void * )( ( TMP_BUF_ADDR - BASE_ADDR ) & L2C_MASK ),        0, TMP_BUF_SIZE + L2C_LINE_SIZE );
-    memset( ( void * )( ( SECTION_TEXT_ADDR - BASE_ADDR ) & L2C_MASK ),   0, SECTION_TEXT_SIZE + L2C_LINE_SIZE );
-    memset( ( void * )( ( SECTION_RODATA_ADDR - BASE_ADDR ) & L2C_MASK ), 0, SECTION_RODATA_SIZE + L2C_LINE_SIZE );
-    memset( ( void * )( ( SECTION_DATA_ADDR - BASE_ADDR ) & L2C_MASK ),   0, SECTION_DATA_SIZE + L2C_LINE_SIZE );
+    memset( ( void * )( ( TX_BUF_ADDR - BASE_ADDR ) & L2C_MASK ),         0, TX_BUF_SIZE + 8*L2C_LINE_SIZE );
+    memset( ( void * )( ( RX_BUF_ADDR - BASE_ADDR ) & L2C_MASK ),         0, RX_BUF_SIZE + 8*L2C_LINE_SIZE );
+    memset( ( void * )( ( TMP_BUF_ADDR - BASE_ADDR ) & L2C_MASK ),        0, TMP_BUF_SIZE + 8*L2C_LINE_SIZE );
+    memset( ( void * )( ( SECTION_TEXT_ADDR - BASE_ADDR ) & L2C_MASK ),   0, SECTION_TEXT_SIZE + 8*L2C_LINE_SIZE );
+    memset( ( void * )( ( SECTION_RODATA_ADDR - BASE_ADDR ) & L2C_MASK ), 0, SECTION_RODATA_SIZE + 8*L2C_LINE_SIZE );
+    rumboot_printf( "memset of SECTION_DATA: start_address = 0x%x, end_address = 0x%x\n",( SECTION_DATA_ADDR - BASE_ADDR ) & L2C_MASK, SECTION_DATA_SIZE + 8*L2C_LINE_SIZE);
+    memset( ( void * )( ( SECTION_DATA_ADDR - BASE_ADDR ) & L2C_MASK ),   0, SECTION_DATA_SIZE + 8*L2C_LINE_SIZE );
 
     // Load test to memory
+    rumboot_printf("Load test to memory\n");
     load_test( SECTION_TEXT_ADDR, SECTION_TEXT_SIZE );
     load_test( SECTION_RODATA_ADDR, SECTION_RODATA_SIZE );
     load_test( SECTION_DATA_ADDR, SECTION_DATA_SIZE );
 
+    rumboot_printf("Start check part\n");
+    
     for ( i = 0; i < 16; i++ )
     {
+        rumboot_printf("SECTION_TEXT_CRC check");
         crc_result = gdbmon_crc32( ( void * )SECTION_TEXT_ADDR, SECTION_TEXT_SIZE );
 
         if ( crc_result != SECTION_TEXT_CRC )
@@ -115,6 +120,7 @@ int main ( void )
             break;
         }
 
+        rumboot_printf("SECTION_RODATA_CRC check");
         crc_result = gdbmon_crc32( ( void * )SECTION_RODATA_ADDR, SECTION_RODATA_SIZE );
 
         if ( crc_result != SECTION_RODATA_CRC )
@@ -124,6 +130,7 @@ int main ( void )
             break;
         }
 
+        rumboot_printf("SECTION_DATA_CRC");
         crc_result = gdbmon_crc32( ( void * )SECTION_DATA_ADDR, SECTION_DATA_SIZE );
 
         if ( crc_result != SECTION_DATA_CRC )

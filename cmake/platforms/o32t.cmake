@@ -3,7 +3,7 @@ set(RUMBOOT_SUPPORTS_SPL_ENDIAN_SWAP Yes)
 set(RUMBOOT_PLATFORM_DEFAULT_SNAPSHOT default)
 
 if (NOT RUMBOOT_SOC_BUILD_TYPE STREQUAL "RTL")
-  set(IRUN_BOOTM_EXTRA_ARGS +BOOT_NOR=0)
+  set(IRUN_BOOTM_EXTRA_ARGS +BOOTMGR_PULLDOWN +BOOT_NOR=0)
 else()
   set(IRUN_BOOTM_EXTRA_ARGS +BOOTMGR_PULLDOWN)
 endif()
@@ -323,13 +323,6 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
   )
 
   if (NOT RUMBOOT_BUILD_TYPE STREQUAL "Debug")
-
-    rumboot_bootrom_integration_test(ROM
-      NAME "host-xmodem"
-      IRUN_FLAGS +BOOT_HOST=1 ${ROM_6500K_OPTS}
-      LOAD
-        XMODEM0  spl-ok
-    )
 
     rumboot_bootrom_integration_test(ROM
       NAME "host-xmodem"
