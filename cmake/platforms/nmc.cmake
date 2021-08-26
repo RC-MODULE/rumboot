@@ -51,6 +51,7 @@ rumboot_add_configuration(
   PACKIMAGE_FLAGS ${SOC_PACKIMAGE_FLAGS}
   #External bootrom-stub dependency
   BOOTROM ${SOC_BOOTROM}
+  LOAD BOOTROM_NOR ${SOC_BOOTROM}
 )
 
 rumboot_add_configuration(
@@ -70,7 +71,8 @@ rumboot_add_configuration(
   PACKIMAGE_FLAGS ${SOC_PACKIMAGE_FLAGS}
   #External bootrom-stub dependency
   BOOTROM ${SOC_BOOTROM}
-  )
+  LOAD BOOTROM_NOR ${SOC_BOOTROM}
+)
 
 
 if(RUMBOOT_SOC)
@@ -90,6 +92,7 @@ if(RUMBOOT_SOC)
       PACKIMAGE_FLAGS ${SOC_PACKIMAGE_FLAGS_EMI}
       #External bootrom-stub dependency
       BOOTROM ${SOC_BOOTROM}
+      LOAD BOOTROM_NOR ${SOC_BOOTROM}
       )
 endif()
 
@@ -102,7 +105,8 @@ rumboot_add_configuration(
   PREFIX im3
   CFLAGS -fnmc-compatible-if-packed -DRUMBOOT_ENTRY=start
   PACKIMAGE_FLAGS -CiR 0x80060000
-)
+  LOAD BOOTROM_NOR ${SOC_BOOTROM}
+  )
 
 rumboot_add_configuration(
   SPL
@@ -114,6 +118,7 @@ rumboot_add_configuration(
   LDFLAGS -Wl,-e_start -nostartfiles -Wl,--gc-sections
   CFLAGS -fnmc-compatible-if-packed -DRUMBOOT_NOINIT -DRUMBOOT_SILENT_PANICS -DRUMBOOT_ENTRY=start 
   PACKIMAGE_FLAGS -a 20480
+  LOAD BOOTROM_NOR ${SOC_BOOTROM}
 )
 
 macro(dap_integration_test sourcefile)
