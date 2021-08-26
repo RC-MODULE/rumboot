@@ -1,11 +1,14 @@
+#include <stdio.h>
+#include <stdint.h>
+#include <string.h>
 #include <rumboot/printf.h>
-#include <algo/crc8.h>
+#include <rumboot/platform.h>
+#include <rumboot/macros.h>
+#include <rumboot/io.h>
+#include <platform/devices.h>
 
 int main()
 {
     rumboot_printf("Hello world from IRAM!\n");
-    int a = 123456789;
-    int my_crc = crc8(0, &a, sizeof(a));
-    rumboot_printf("hello: CRC = 0x%X\n", my_crc);
     return 0;
 }
