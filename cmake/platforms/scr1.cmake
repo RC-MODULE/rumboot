@@ -372,27 +372,23 @@ endif() #### EXPERIMENT_STAGE_2_SUB_1
 
     
     macro(ADD_VPE_COUPLED_TEST_LOOP name rm_bin_name)
-      set(MISALIGN RANGE 0 7)
-      foreach(IntMisalign ${MISALIGN})
         add_rumboot_target(
             CONFIGURATION ROM
-            NAME ${name}_${IntMisalign}
+            NAME ${name}
             FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe.c
             PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
-            CFLAGS -DIntMisalign=${IntMisalign}
             IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
         )
-      endforeach()
     endmacro()
 
     macro(ADD_VPE_PPE_COUPLED_TEST_LOOP_FORCE_WDMA name rm_bin_name)
-      set(MISALIGN RANGE 0 7)
+      set(MISALIGN RANGE 0 15)
       foreach(IntMisalign ${MISALIGN})
         add_rumboot_target(
             CONFIGURATION ROM
             NAME ${name}_${IntMisalign}
             FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_ppe.c
-            CFLAGS -DFORCE_VPE_WDMA_EN=1 -DIntMisalign=${IntMisalign}
+            CFLAGS -DFORCE_VPE_WDMA_EN=1 -DMISALIGN_EN=1 -DIntMisalign=${IntMisalign}
             PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
             IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
         )
@@ -400,110 +396,100 @@ endif() #### EXPERIMENT_STAGE_2_SUB_1
     endmacro()
 
     macro(ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA name rm_bin_name)
-      set(MISALIGN RANGE 0 7)
+      set(MISALIGN RANGE 0 15)
       foreach(IntMisalign ${MISALIGN})
         add_rumboot_target(
             CONFIGURATION ROM
             NAME ${name}_${IntMisalign}
             FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe.c
-            CFLAGS -DFORCE_VPE_WDMA_EN=1 -DIntMisalign=${IntMisalign}
+            CFLAGS -DFORCE_VPE_WDMA_EN=1 -DMISALIGN_EN=1 -DIntMisalign=${IntMisalign}
             PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
             IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
         )
       endforeach()
     endmacro()
     
-    macro(ADD_VPE_COUPLED_TEST_CONTROL_CONS name rm_bin_name)
-      set(MISALIGN RANGE 0 7)
-      foreach(IntMisalign ${MISALIGN})
+    macro(ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_AXI_LEN name rm_bin_name axi_len)
         add_rumboot_target(
             CONFIGURATION ROM
-            NAME ${name}_${IntMisalign}
-            FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_cons_vpe.c
-            CFLAGS -DFORCE_VPE_WDMA_EN=1 -DIntMisalign=${IntMisalign}
+            NAME ${name}
+            FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe.c
+            CFLAGS -DFORCE_VPE_WDMA_EN=1 -DAXI_LEN=1 -DAxiLen=${axi_len}
             PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
             IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
         )
-      endforeach()
+    endmacro()
+    
+    macro(ADD_VPE_COUPLED_TEST_CONTROL_CONS name rm_bin_name)
+        add_rumboot_target(
+            CONFIGURATION ROM
+            NAME ${name}
+            FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_cons_vpe.c
+            CFLAGS -DFORCE_VPE_WDMA_EN=1
+            PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
+            IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+        )
     endmacro()
     
 if(DEFINED EXPERIMENT_STAGE_2_SUB_1) ####
     macro(ADD_VPE_FROM_BINARY_TEST_CONTROL_CONS name bin_dir)
-      set(MISALIGN 0)
-      foreach(IntMisalign ${MISALIGN})
         add_rumboot_target(
             CONFIGURATION ROM
-            NAME ${name}_${IntMisalign}
+            NAME ${name}
             FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_cons_vpe.c
-            CFLAGS -DFORCE_VPE_WDMA_EN=1 -DIntMisalign=${IntMisalign}
+            CFLAGS -DFORCE_VPE_WDMA_EN=1
             PREPCMD cp ${VPE_BINARIES_ROOT}/${bin_dir}/* . || exit 1
             IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
         )
-      endforeach()
     endmacro()
 endif() #### EXPERIMENT_STAGE_2_SUB_1
     
     macro(ADD_VPE_COUPLED_TEST_CONTROL_PARALLEL name rm_bin_name)
-      set(MISALIGN RANGE 0 7)
-      foreach(IntMisalign ${MISALIGN})
         add_rumboot_target(
             CONFIGURATION ROM
-            NAME ${name}_${IntMisalign}
+            NAME ${name}
             FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_parallel_vpe.c
-            CFLAGS -DFORCE_VPE_WDMA_EN=1 -DIntMisalign=${IntMisalign}
+            CFLAGS -DFORCE_VPE_WDMA_EN=1
             PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
             IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
         )
-      endforeach()
     endmacro()
 
 if(DEFINED EXPERIMENT_STAGE_2_SUB_1) ####
     macro(ADD_VPE_FROM_BINARY_TEST_CONTROL_PARALLEL name bin_dir)
-      set(MISALIGN 0)
-      foreach(IntMisalign ${MISALIGN})
         add_rumboot_target(
             CONFIGURATION ROM
-            NAME ${name}_${IntMisalign}
+            NAME ${name}
             FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_parallel_vpe.c
-            CFLAGS -DFORCE_VPE_WDMA_EN=1 -DIntMisalign=${IntMisalign}
+            CFLAGS -DFORCE_VPE_WDMA_EN=1
             PREPCMD cp ${VPE_BINARIES_ROOT}/${bin_dir}/* . || exit 1
             IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
         )
-      endforeach()
     endmacro()
 
     macro(ADD_VPE_FROM_BINARY_TEST_LOOP name bin_dir)
-      set(MISALIGN 0)
-      foreach(IntMisalign ${MISALIGN})
         add_rumboot_target(
             CONFIGURATION ROM
-            NAME ${name}_${IntMisalign}
+            NAME ${name}
             FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe.c
-            CFLAGS -DIntMisalign=${IntMisalign}
             PREPCMD cp ${VPE_BINARIES_ROOT}/${bin_dir}/* . || exit 1
             IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
         )
-      endforeach()
     endmacro()
 
     macro(ADD_VPE_FROM_BINARY_TEST_LOOP_FORCE_WDMA name bin_dir)
-      set(MISALIGN 0)
-      foreach(IntMisalign ${MISALIGN})
         add_rumboot_target(
             CONFIGURATION ROM
-            NAME ${name}_${IntMisalign}
-            CFLAGS -DFORCE_VPE_WDMA_EN=1 -DIntMisalign=${IntMisalign}
+            NAME ${name}
+            CFLAGS -DFORCE_VPE_WDMA_EN=1
             FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe.c
             PREPCMD cp ${VPE_BINARIES_ROOT}/${bin_dir}/* . || exit 1
             IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
         )
-      endforeach()
     endmacro()
 endif() #### EXPERIMENT_STAGE_2_SUB_1
 
     ADD_VPE_COUPLED_TEST_LOOP(vpe_try_loop main_nothing_to_do_x4)
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_2_dma_int16 main_vpe_2_dma_int16)
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_2_dma_int8 main_vpe_2_dma_int8)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_9_0_op0_relu_int32 main_vpe_9_0_op0_relu_int32)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_15_0_op1_relu_int32 main_vpe_15_0_op1_relu_int32) 
     ADD_VPE_COUPLED_TEST_LOOP(vpe_9_1_op0_relu_fp32  main_vpe_9_1_op0_relu_fp32)
@@ -525,61 +511,33 @@ endif() #### EXPERIMENT_STAGE_2_SUB_1
     ADD_VPE_COUPLED_TEST_LOOP(vpe_12_1_op1_f_fp main_vpe_12_1_op1_f_fp)
     
     ADD_VPE_COUPLED_TEST_LOOP(vpe_5_0_op0_alu_int8_low main_vpe_5_0_op0_alu_int8_low)
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_5_0_op0_alu_int8_low_dma main_vpe_5_0_op0_alu_int8_low_dma)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_5_1_op0_alu_int8_middle main_vpe_5_1_op0_alu_int8_middle)
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_5_1_op0_alu_int8_middle_dma main_vpe_5_1_op0_alu_int8_middle_dma)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_5_2_op0_alu_int8_high main_vpe_5_2_op0_alu_int8_high)
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_5_2_op0_alu_int8_high_dma main_vpe_5_2_op0_alu_int8_high_dma)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_5_3_op0_alu_int16_low main_vpe_5_3_op0_alu_int16_low)
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_5_3_op0_alu_int16_low_dma main_vpe_5_3_op0_alu_int16_low_dma)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_5_4_op0_alu_int16_middle main_vpe_5_4_op0_alu_int16_middle)
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_5_4_op0_alu_int16_middle_dma main_vpe_5_4_op0_alu_int16_middle_dma)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_5_5_op0_alu_int16_high main_vpe_5_5_op0_alu_int16_high)
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_5_5_op0_alu_int16_high_dma main_vpe_5_5_op0_alu_int16_high_dma)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_5_6_op0_alu_fp32 main_vpe_5_6_op0_alu_fp32)
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_5_6_op0_alu_fp32_dma main_vpe_5_6_op0_alu_fp32_dma)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_11_0_op1_alu_int8_low main_vpe_11_0_op1_alu_int8_low)
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_11_0_op1_alu_int8_low_dma main_vpe_11_0_op1_alu_int8_low_dma)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_11_1_op1_alu_int8_middle main_vpe_11_1_op1_alu_int8_middle)
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_11_1_op1_alu_int8_middle_dma main_vpe_11_1_op1_alu_int8_middle_dma)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_11_2_op1_alu_int8_high main_vpe_11_2_op1_alu_int8_high)
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_11_2_op1_alu_int8_high_dma main_vpe_11_2_op1_alu_int8_high_dma)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_11_3_op1_alu_int16_low main_vpe_11_3_op1_alu_int16_low)
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_11_3_op1_alu_int16_low_dma main_vpe_11_3_op1_alu_int16_low_dma)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_11_4_op1_alu_int16_middle main_vpe_11_4_op1_alu_int16_middle)
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_11_4_op1_alu_int16_middle_dma main_vpe_11_4_op1_alu_int16_middle_dma)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_11_5_op1_alu_int16_high main_vpe_11_5_op1_alu_int16_high)
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_11_5_op1_alu_int16_high_dma main_vpe_11_5_op1_alu_int16_high_dma)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_11_6_op1_alu_fp32 main_vpe_11_6_op1_alu_fp32)
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_11_6_op1_alu_fp32_dma main_vpe_11_6_op1_alu_fp32_dma)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_17_0_op2_alu_int8_low main_vpe_17_0_op2_alu_int8_low)
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_17_0_op2_alu_int8_low_dma main_vpe_17_0_op2_alu_int8_low_dma)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_17_1_op2_alu_int8_high main_vpe_17_1_op2_alu_int8_high)
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_17_1_op2_alu_int8_high_dma main_vpe_17_1_op2_alu_int8_high_dma)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_17_2_op2_alu_int16_low main_vpe_17_2_op2_alu_int16_low)
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_17_2_op2_alu_int16_low_dma main_vpe_17_2_op2_alu_int16_low_dma)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_17_3_op2_alu_int16_high main_vpe_17_3_op2_alu_int16_high)
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_17_3_op2_alu_int16_high_dma main_vpe_17_3_op2_alu_int16_high_dma)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_17_4_op2_alu_fp32 main_vpe_17_4_op2_alu_fp32)
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_17_4_op2_alu_fp32_dma main_vpe_17_4_op2_alu_fp32_dma)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_7_0_op0_mul_int16 main_vpe_7_0_op0_mul_int16)
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_7_0_op0_mul_int16_dma main_vpe_7_0_op0_mul_int16_dma)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_7_1_op0_mul_int8 main_vpe_7_1_op0_mul_int8)
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_7_1_op0_mul_int8_dma main_vpe_7_1_op0_mul_int8_dma)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_7_2_op0_mul_fp32 main_vpe_7_2_op0_mul_fp32)
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_7_2_op0_mul_fp32_dma main_vpe_7_2_op0_mul_fp32_dma)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_13_0_op1_mul_int16 main_vpe_13_0_op1_mul_int16)
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_13_0_op1_mul_int16_dma main_vpe_13_0_op1_mul_int16_dma)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_13_1_op1_mul_int8 main_vpe_13_1_op1_mul_int8)
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_13_1_op1_mul_int8_dma main_vpe_13_1_op1_mul_int8_dma)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_13_2_op1_mul_fp32 main_vpe_13_2_op1_mul_fp32)
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_13_2_op1_mul_fp32_dma main_vpe_13_2_op1_mul_fp32_dma)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_19_0_op2_mul_int16 main_vpe_19_0_op2_mul_int16)
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_19_0_op2_mul_int16_dma main_vpe_19_0_op2_mul_int16_dma)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_19_1_op2_mul_int8 main_vpe_19_1_op2_mul_int8)
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_19_1_op2_mul_int8_dma main_vpe_19_1_op2_mul_int8_dma)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_19_2_op2_mul_fp32 main_vpe_19_2_op2_mul_fp32)
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_19_2_op2_mul_fp32_dma main_vpe_19_2_op2_mul_fp32_dma)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_21_0_lut main_vpe_21_0_lut) # VPE_21
     ADD_VPE_COUPLED_TEST_LOOP(vpe_21_1_lut_addition main_vpe_21_1_lut_addition) # VPE_21_addition
     ADD_VPE_COUPLED_TEST_LOOP(vpe_22_op0_together main_vpe_22_op0_together) # VPE_22
@@ -588,7 +546,6 @@ endif() #### EXPERIMENT_STAGE_2_SUB_1
     ADD_VPE_COUPLED_TEST_LOOP(vpe_25_op012_together main_vpe_25_op012_together) # VPE_25
     ADD_VPE_COUPLED_TEST_CONTROL_CONS(vpe_27_0_control_cons main_vpe_27_0_control_cons) # VPE_27
     ADD_VPE_COUPLED_TEST_CONTROL_PARALLEL(vpe_27_1_control_par main_vpe_27_1_control_par) # VPE_27
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_26_autonom main_vpe_26_autonom)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_26_autonom_nowdma main_vpe_26_autonom)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_28_perf main_28_perf) # VPE_28
     
@@ -621,6 +578,47 @@ endif() #### EXPERIMENT_STAGE_2_SUB_1
     ADD_VPE_PPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_ppe_op1_vec_ex_int main_vpe_op1_vec_ex_int)
     ADD_VPE_PPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_ppe_op0_vec_ex_fp main_vpe_op0_vec_ex_fp)
     ADD_VPE_PPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_ppe_op1_vec_ex_fp main_vpe_op1_vec_ex_fp)
+
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_2_dma_int16 main_vpe_2_dma_int16)
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_2_dma_int8 main_vpe_2_dma_int8)
+
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_5_0_op0_alu_int8_low_dma main_vpe_5_0_op0_alu_int8_low_dma)
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_5_1_op0_alu_int8_middle_dma main_vpe_5_1_op0_alu_int8_middle_dma)
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_5_2_op0_alu_int8_high_dma main_vpe_5_2_op0_alu_int8_high_dma)
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_5_3_op0_alu_int16_low_dma main_vpe_5_3_op0_alu_int16_low_dma)
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_5_4_op0_alu_int16_middle_dma main_vpe_5_4_op0_alu_int16_middle_dma)
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_5_5_op0_alu_int16_high_dma main_vpe_5_5_op0_alu_int16_high_dma)
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_5_6_op0_alu_fp32_dma main_vpe_5_6_op0_alu_fp32_dma)
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_11_0_op1_alu_int8_low_dma main_vpe_11_0_op1_alu_int8_low_dma)
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_11_1_op1_alu_int8_middle_dma main_vpe_11_1_op1_alu_int8_middle_dma)
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_11_2_op1_alu_int8_high_dma main_vpe_11_2_op1_alu_int8_high_dma)
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_11_3_op1_alu_int16_low_dma main_vpe_11_3_op1_alu_int16_low_dma)
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_11_4_op1_alu_int16_middle_dma main_vpe_11_4_op1_alu_int16_middle_dma)
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_11_5_op1_alu_int16_high_dma main_vpe_11_5_op1_alu_int16_high_dma)
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_11_6_op1_alu_fp32_dma main_vpe_11_6_op1_alu_fp32_dma)
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_17_0_op2_alu_int8_low_dma main_vpe_17_0_op2_alu_int8_low_dma)
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_17_1_op2_alu_int8_high_dma main_vpe_17_1_op2_alu_int8_high_dma)
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_17_2_op2_alu_int16_low_dma main_vpe_17_2_op2_alu_int16_low_dma)
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_17_3_op2_alu_int16_high_dma main_vpe_17_3_op2_alu_int16_high_dma)
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_17_4_op2_alu_fp32_dma main_vpe_17_4_op2_alu_fp32_dma)
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_7_0_op0_mul_int16_dma main_vpe_7_0_op0_mul_int16_dma)
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_7_1_op0_mul_int8_dma main_vpe_7_1_op0_mul_int8_dma)
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_7_2_op0_mul_fp32_dma main_vpe_7_2_op0_mul_fp32_dma)
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_13_0_op1_mul_int16_dma main_vpe_13_0_op1_mul_int16_dma)
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_13_1_op1_mul_int8_dma main_vpe_13_1_op1_mul_int8_dma)
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_13_2_op1_mul_fp32_dma main_vpe_13_2_op1_mul_fp32_dma)
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_19_0_op2_mul_int16_dma main_vpe_19_0_op2_mul_int16_dma)
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_19_1_op2_mul_int8_dma main_vpe_19_1_op2_mul_int8_dma)
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_19_2_op2_mul_fp32_dma main_vpe_19_2_op2_mul_fp32_dma)
+
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_26_autonom main_vpe_26_autonom)
+
+    ###############
+
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_AXI_LEN(vpe_2_dma_int16_axi_len_0 main_vpe_2_dma_int16 0)
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_AXI_LEN(vpe_2_dma_int8_axi_len_1 main_vpe_2_dma_int8 1)
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_AXI_LEN(vpe_2_dma_int16_axi_len_3 main_vpe_2_dma_int16 3)
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_AXI_LEN(vpe_2_dma_int8_axi_len_7 main_vpe_2_dma_int8 7)
 
     ###############
 

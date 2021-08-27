@@ -54,8 +54,8 @@ void nu_vpe_decide_dma_config (
   cfg->op1_rdma_config.dma_baddr = (uint32_t) op1;
   cfg->op2_rdma_config.dma_baddr = (uint32_t) op2;
   cfg->wdma_config.dma_baddr = (uint32_t) res_data;
-  
-  
+
+
 }
 
 ConfigVPE cfg;
@@ -79,6 +79,13 @@ int main() {
   uint32_t num_cycles;
   uint32_t num_vectors;
   uint32_t productivity_x1000;
+  uint32_t misalign;
+  
+#ifdef MISALIGN_EN
+    misalign = IntMisalign;
+#else
+    misalign = 0;
+#endif
   
   rumboot_printf("Hello\n");
   
@@ -98,7 +105,7 @@ int main() {
     res_metrics= nu_load_cube_metrics(heap_id,metrics_etalon_tag[i]);
     if(res_metrics == NULL) return -1;
     
-    in_data = nu_load_cube_misaligned(heap_id,in_file_tag[i],in_metrics,IntMisalign);
+    in_data = nu_load_cube_misaligned(heap_id,in_file_tag[i],in_metrics,misalign);
     if(in_data == NULL) return -1;
     
     res_data = nu_vpe_malloc_res(heap_id, res_metrics);
@@ -106,15 +113,15 @@ int main() {
     
       // Load OP0-OP2 Operands If Needed
     if(cfg.op0_en==Enable_En) {
-      op0 = nu_vpe_load_op01_misaligned_by_tags(heap_id,&cfg.op0_config,metrics_op0_cube_tag[i],metrics_op0_vec_tag[i],op0_cube_file_tag[i],op0_vec_file_tag[i],IntMisalign);
+      op0 = nu_vpe_load_op01_misaligned_by_tags(heap_id,&cfg.op0_config,metrics_op0_cube_tag[i],metrics_op0_vec_tag[i],op0_cube_file_tag[i],op0_vec_file_tag[i],misalign);
     }
     else op0 = NULL;
     if(cfg.op1_en==Enable_En) {
-      op1 = nu_vpe_load_op01_misaligned_by_tags(heap_id,&cfg.op1_config,metrics_op1_cube_tag[i],metrics_op1_vec_tag[i],op1_cube_file_tag[i],op1_vec_file_tag[i],IntMisalign);
+      op1 = nu_vpe_load_op01_misaligned_by_tags(heap_id,&cfg.op1_config,metrics_op1_cube_tag[i],metrics_op1_vec_tag[i],op1_cube_file_tag[i],op1_vec_file_tag[i],misalign);
     }
     else op1 = NULL;
     if(cfg.op2_en==Enable_En) {
-      op2 = nu_vpe_load_op2_misaligned_by_tags(heap_id,&cfg.op2_config,metrics_op2_cube_tag[i],metrics_op2_vec_tag[i],op2_cube_file_tag[i],op2_vec_file_tag[i],IntMisalign);
+      op2 = nu_vpe_load_op2_misaligned_by_tags(heap_id,&cfg.op2_config,metrics_op2_cube_tag[i],metrics_op2_vec_tag[i],op2_cube_file_tag[i],op2_vec_file_tag[i],misalign);
     }
     else op2 = NULL;
     
