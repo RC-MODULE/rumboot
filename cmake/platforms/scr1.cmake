@@ -381,6 +381,20 @@ endif() #### EXPERIMENT_STAGE_2_SUB_1
         )
     endmacro()
 
+    macro(ADD_VPE_COUPLED_TEST_LOOP_TIGHT_FORCE_WDMA name rm_bin_name)
+      set(MISALIGN RANGE 0 7)
+      foreach(IntMisalign ${MISALIGN})
+        add_rumboot_target(
+            CONFIGURATION ROM
+            NAME ${name}_tight_${IntMisalign}
+            FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_tight_vpe.c
+            PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
+            CFLAGS -DIntMisalign=${IntMisalign} -DFORCE_VPE_WDMA_EN=1
+            IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+        )
+      endforeach()
+    endmacro()
+
     macro(ADD_VPE_PPE_COUPLED_TEST_LOOP_FORCE_WDMA name rm_bin_name)
       set(MISALIGN RANGE 0 15)
       foreach(IntMisalign ${MISALIGN})
@@ -549,7 +563,6 @@ endif() #### EXPERIMENT_STAGE_2_SUB_1
     ADD_VPE_COUPLED_TEST_LOOP(vpe_26_autonom_nowdma main_vpe_26_autonom)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_28_perf main_28_perf) # VPE_28
     
-    
     ################
     # VPE Tests adapted for NPE assembly
     ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(npe_vpe_op0_f_int main_npe_vpe_op0_f_int)
@@ -568,6 +581,7 @@ endif() #### EXPERIMENT_STAGE_2_SUB_1
     ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(npe_vpe_op0_relu_fp  main_npe_vpe_op0_relu_fp)
     ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(npe_vpe_op1_relu_int main_npe_vpe_op1_relu_int)
     ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(npe_vpe_op1_relu_fp  main_npe_vpe_op1_relu_fp)
+    ADD_VPE_COUPLED_TEST_LOOP_TIGHT_FORCE_WDMA(npe_vpe_op0_relu_int main_npe_vpe_op0_relu_int)
     
     ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_op0_vec_ex_int main_vpe_op0_vec_ex_int)
     ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_op1_vec_ex_int main_vpe_op1_vec_ex_int)
