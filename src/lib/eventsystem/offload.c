@@ -142,12 +142,9 @@ __attribute__((no_instrument_function)) __attribute__((optimize("-O0"))) void do
 
 uint8_t crc8(uint8_t crc, const void *buf, size_t size)
 {
-    rumboot_printf("offload: deliver: crc = 0x%X, buf = 0x%X, size = 0x%X\n", crc, buf, size);
     do_crc8(crc, buf, size);
     volatile uint32_t *data;
     int opcode = rumboot_platform_event_get(&data);
-    rumboot_printf("offload: recieve = 0x%X\n", data[0]);
-    rumboot_printf("offload: ------------------------------------------\n");
     if (opcode != EVENT_CRC8) {
         rumboot_platform_panic("SW<->TB Synchronization failed!\n");
     }

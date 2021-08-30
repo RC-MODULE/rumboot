@@ -13,6 +13,10 @@
   Check : 0xF7 ("123456789")
 */
 
+uint8_t crc8_hw(uint32_t crc, const void *buf, size_t size);
+
 uint8_t crc8(uint32_t crc, const void *buf, size_t size);
+
+calc_rmap_crc(uint32_t crc, uint8_t byte);
 
 #endif

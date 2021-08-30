@@ -1,7 +1,6 @@
 #include <algo/crc8.h>
-#include <rumboot/io.h>
 
-static const uint8_t CRC_table[] = {
+static const uint8_t rmap_crc[] = {
     0x00, 0x07, 0x0e, 0x09, 0x1c, 0x1b, 0x12, 0x15,
     0x38, 0x3f, 0x36, 0x31, 0x24, 0x23, 0x2a, 0x2d,
     0x70, 0x77, 0x7e, 0x79, 0x6c, 0x6b, 0x62, 0x65,
@@ -36,12 +35,17 @@ static const uint8_t CRC_table[] = {
     0xe6, 0xe1, 0xe8, 0xef, 0xfa, 0xfd, 0xf4, 0xf3
 };
 
+uint8_t calc_rmap_crc(uint8_t crc, uint8_t byte)
+{
+    return rmap_crc[crc ^ byte];
+}
+
 #ifndef RUMBOOT_PRINTF_ACCEL
 
 uint8_t crc8(uint32_t crc, const void *buf, size_t size)
 {
     const uint8_t *p = buf;
-    while (size--) crc = CRC_table[crc ^ *p++];
+    while (size--) crc = calc_rmap_crc(crc, *p++);
     return crc;
 }
 

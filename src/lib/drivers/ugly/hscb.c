@@ -709,36 +709,29 @@ uint32_t hscb_prepare_rmap_packet(hscb_rmap_packet_raw_configuration_t rmap_pack
     rmap_packet_ready->data_areas[rmap_packet_ready->count_areas][HSCB_RMAP_DATA_LEN_0_i]
                                                                   =  (uint8_t)((rmap_packet_raw.data_chain.length >>  0) & 0xFF);
 
-    // uint8_t data;
     /*We skip a chain of Target SW addresses if it is supplied*/
     index_for_header_CRC = (is_target_sw_addr_chain_supplied) ? initial_data_area_index + 1 : initial_data_area_index;
     /*We calculate CRC starting with Target Logical Address*/
-    temporary_CRC = crc8(temporary_CRC, rmap_packet_ready->data_areas[index_for_header_CRC],
-        rmap_packet_ready->data_area_sizes[index_for_header_CRC]);
-    // for (int i = 0; i < rmap_packet_ready->data_area_sizes[index_for_header_CRC]; i++) {
-    //     data = rmap_packet_ready->data_areas[index_for_header_CRC][i];
-    //     temporary_CRC = crc8(temporary_CRC, &data, sizeof(data));
-    // }
+    for (int i = 0; i < rmap_packet_ready->data_area_sizes[index_for_header_CRC]; ++i)
+        temporary_CRC = calc_rmap_crc(temporary_CRC,
+            rmap_packet_ready->data_areas[index_for_header_CRC][i]);
+    rumboot_printf("hscb: CRC = 0x%X\n", temporary_CRC);
 
     /*CRC-8 from Reply Address*/
     if (is_reply_sw_addr_chain_supplied) {
         index_for_header_CRC++;
-        temporary_CRC = crc8(temporary_CRC, rmap_packet_ready->data_areas[index_for_header_CRC],
-            rmap_packet_ready->data_area_sizes[index_for_header_CRC]);
-        // for( int i = 0; i < rmap_packet_ready->data_area_sizes[index_for_header_CRC]; i++) {
-        //     data = rmap_packet_ready->data_areas[index_for_header_CRC][i];
-        //     temporary_CRC = crc8(temporary_CRC, &data, sizeof(data));
-        // }
+        for(int i = 0; i < rmap_packet_ready->data_area_sizes[index_for_header_CRC]; ++i)
+            temporary_CRC = calc_rmap_crc(temporary_CRC,
+                rmap_packet_ready->data_areas[index_for_header_CRC][i]);
+        rumboot_printf("hscb: CRC = 0x%X\n", temporary_CRC);
     }
 
     /*CRC-8 from Initiator Logical Address up to the Header CRC (not including, so up to (size - 1))*/
     index_for_header_CRC++;
-    temporary_CRC = crc8(temporary_CRC, rmap_packet_ready->data_areas[index_for_header_CRC],
-        rmap_packet_ready->data_area_sizes[index_for_header_CRC]);
-    // for (int i = 0; i < (rmap_packet_ready->data_area_sizes[index_for_header_CRC] - 1); i++) {
-    //     data = rmap_packet_ready->data_areas[index_for_header_CRC][i];
-    //     temporary_CRC = crc8(temporary_CRC, &data, sizeof(data));
-    // }
+    for(int i = 0; i < rmap_packet_ready->data_area_sizes[index_for_header_CRC] - 1; ++i)
+        temporary_CRC = calc_rmap_crc(temporary_CRC,
+            rmap_packet_ready->data_areas[index_for_header_CRC][i]);
+    rumboot_printf("hscb: CRC = 0x%X\n", temporary_CRC);
 
     rmap_packet_ready->data_areas[rmap_packet_ready->count_areas][HSCB_RMAP_HEADER_CRC8_i] = temporary_CRC;
 
