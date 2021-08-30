@@ -582,6 +582,13 @@ endif() #### EXPERIMENT_STAGE_2_SUB_1
     ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(npe_vpe_op1_relu_int main_npe_vpe_op1_relu_int)
     ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(npe_vpe_op1_relu_fp  main_npe_vpe_op1_relu_fp)
     ADD_VPE_COUPLED_TEST_LOOP_TIGHT_FORCE_WDMA(npe_vpe_op0_relu_int main_npe_vpe_op0_relu_int)
+
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(npe_vpe_op0_norm     main_npe_vpe_norm_op0)
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(npe_vpe_op1_norm     main_npe_vpe_norm_op1)
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(npe_vpe_op2_norm     main_npe_vpe_norm_op2)
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(npe_vpe_op0_norm_rnd main_npe_vpe_norm_rnd_op0)
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(npe_vpe_op1_norm_rnd main_npe_vpe_norm_rnd_op1)
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(npe_vpe_op2_norm_rnd main_npe_vpe_norm_rnd_op2)
     
     ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_op0_vec_ex_int main_vpe_op0_vec_ex_int)
     ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_op1_vec_ex_int main_vpe_op1_vec_ex_int)
