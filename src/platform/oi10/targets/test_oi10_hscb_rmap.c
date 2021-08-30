@@ -10,6 +10,7 @@
 #include <stddef.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <string.h>
 #include <rumboot/io.h>
 #include <rumboot/printf.h>
 #include <platform/devices.h>
@@ -19,13 +20,14 @@
 #include <platform/regs/regs_hscb.h>
 #include <rumboot/irq.h>
 #include <rumboot/rumboot.h>
-#include <rumboot/memfill.h>
-#include <platform/devices/hscb.h>
+#include <rumboot/platform.h>
+#include <devices/ugly/hscb.h>
 #include <devices/ugly/emi.h>
 #include <platform/devices/nor_1636RR4.h>
 #include <arch/common_macros.h>
 #include <platform/test_event_c.h>
 #include <arch/ppc_476fp_mmu.h>
+#include <algo/crc8.h>
 
                           //          MMU_TLB_ENTRY(  ERPN,   RPN,        EPN,        DSIZ,                   IL1I,   IL1D,   W,      I,      M,      G,      E,                      UX, UW, UR,     SX, SW, SR      DULXE,  IULXE,      TS,     TID,                WAY,                BID,                V   )
 #define TLB_ENTRY_EM_1stGB_NO_EXEC   {MMU_TLB_ENTRY(  0x000,  0x00000,    0x00000,    MMU_TLBE_DSIZ_1GB,      0b1,    0b1,    0b0,    0b1,    0b0,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b0,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )}
@@ -1316,15 +1318,15 @@ static uint32_t check_results(
             if(instruction & HSCB_RMAP_PACKET_INSTRUCTION_FIELD_WRITE_mask)
             {
                 rumboot_printf("header crc8\n");
-                header_crc8 = hscb_calculate_crc8((uint32_t)(current_reply.array + reply_addr_actual_length), HSCB_RMAP_REPLY_RESERVED_R_HEADER_CRC8_W_i);
+                header_crc8 = crc8(0, current_reply.array + reply_addr_actual_length, HSCB_RMAP_REPLY_RESERVED_R_HEADER_CRC8_W_i);
                 result |= (hscb_rmap_get_reply_byte(current_reply,reply_addr_actual_length,HSCB_RMAP_REPLY_RESERVED_R_HEADER_CRC8_W_i) == header_crc8)
                         ? OK : HEADER_CRC_MISMATCH;
             }else{
                 uint8_t data_crc8 = 0;
                 rumboot_printf("header crc8\n");
-                header_crc8 = hscb_calculate_crc8((uint32_t)(current_reply.array + reply_addr_actual_length), HSCB_RMAP_REPLY_HEADER_CRC8_R_i);
+                header_crc8 = crc8(0, current_reply.array + reply_addr_actual_length, HSCB_RMAP_REPLY_HEADER_CRC8_R_i);
                 rumboot_printf("data crc8\n");
-                data_crc8 = hscb_calculate_crc8((uint32_t)(current_reply.array + reply_addr_actual_length + HSCB_RMAP_REPLY_DATA_START_i),
+                data_crc8 = crc8(0, current_reply.array + reply_addr_actual_length + HSCB_RMAP_REPLY_DATA_START_i,
                         hscb_rmap_reply_get_data_len(current_reply,reply_addr_actual_length));
                 result |=   ((hscb_rmap_get_reply_byte(current_reply,reply_addr_actual_length,HSCB_RMAP_REPLY_RESERVED_R_HEADER_CRC8_W_i) == 0)
                               ? OK : RESERVED_FIELD_MISMATCH)
