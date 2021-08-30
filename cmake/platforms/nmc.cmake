@@ -23,6 +23,13 @@ else()
   set(SOC_PACKIMAGE_FLAGS -CiR 0x80020000 -F KILL True)
   set(SOC_PACKIMAGE_FLAGS_EMI -CiR 0x0 -F KILL True)
   set(SOC_FEATURES PACKIMAGE)
+  #FixMe: This is o32t-only. If we have more chips with NMC
+  #FixMe: This part just begs for a different approach
+  if (NOT RUMBOOT_SOC_BUILD_TYPE STREQUAL "RTL")
+    set(IRUN_EXTRA_FLAGS +BOOTMGR_PULLDOWN +BOOT_NOR=0)
+  else()
+    set(IRUN_EXTRA_FLAGS +BOOTMGR_PULLDOWN)
+  endif()
 endif()
 
 #These are configurations for our binaries
@@ -33,7 +40,7 @@ rumboot_add_configuration(
   LDS nmc/generic.lds
   FILES ${CMAKE_SOURCE_DIR}/src/platform/nmc/startup.S ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c
   LDFLAGS "-Wl,\"-e_start\""
-  IRUN_FLAGS ${BOOTROM_IFLAGS} +RUMBOOT_RUNTIME_ADDR=5A000 
+  IRUN_FLAGS ${IRUN_EXTRA_FLAGS} +RUMBOOT_RUNTIME_ADDR=5A000 
   LOAD 
     IM1_IMAGE SELF
     IM0BIN SELF
@@ -44,6 +51,7 @@ rumboot_add_configuration(
   PACKIMAGE_FLAGS ${SOC_PACKIMAGE_FLAGS}
   #External bootrom-stub dependency
   BOOTROM ${SOC_BOOTROM}
+  LOAD BOOTROM_NOR ${SOC_BOOTROM}
 )
 
 rumboot_add_configuration(
@@ -54,7 +62,7 @@ rumboot_add_configuration(
   LDFLAGS "-Wl,\"-ecorestart\""
   CCFLAGS -fnmc-compatible-if-packed -DRUMBOOT_NOENTRY 
   ASFLAGS -mmas -DRUMBOOT_NOENTRY
-  IRUN_FLAGS ${BOOTROM_IFLAGS} +RUMBOOT_RUNTIME_ADDR=5A000
+  IRUN_FLAGS ${IRUN_EXTRA_FLAGS} +RUMBOOT_RUNTIME_ADDR=5A000
   LOAD 
     IM1_IMAGE SELF
     IM0BIN SELF
@@ -63,7 +71,8 @@ rumboot_add_configuration(
   PACKIMAGE_FLAGS ${SOC_PACKIMAGE_FLAGS}
   #External bootrom-stub dependency
   BOOTROM ${SOC_BOOTROM}
-  )
+  LOAD BOOTROM_NOR ${SOC_BOOTROM}
+)
 
 
 if(RUMBOOT_SOC)
@@ -74,7 +83,7 @@ if(RUMBOOT_SOC)
       LDS nmc/emi.lds
       FILES ${CMAKE_SOURCE_DIR}/src/platform/nmc/startup.S ${CMAKE_SOURCE_DIR}/src/lib/bootheader.c
       LDFLAGS "-Wl,\"-estart\""
-      IRUN_FLAGS ${BOOTROM_IFLAGS} +RUMBOOT_RUNTIME_ADDR=5A000 
+      IRUN_FLAGS ${IRUN_EXTRA_FLAGS} +RUMBOOT_RUNTIME_ADDR=5A000 
       LOAD 
         IM0BIN ${SOC_EMI_INITIALIZER},SELF
       CFLAGS -fnmc-compatible-if-packed -DRUMBOOT_ENTRY=start  
@@ -83,6 +92,7 @@ if(RUMBOOT_SOC)
       PACKIMAGE_FLAGS ${SOC_PACKIMAGE_FLAGS_EMI}
       #External bootrom-stub dependency
       BOOTROM ${SOC_BOOTROM}
+      LOAD BOOTROM_NOR ${SOC_BOOTROM}
       )
 endif()
 
@@ -95,7 +105,8 @@ rumboot_add_configuration(
   PREFIX im3
   CFLAGS -fnmc-compatible-if-packed -DRUMBOOT_ENTRY=start
   PACKIMAGE_FLAGS -CiR 0x80060000
-)
+  LOAD BOOTROM_NOR ${SOC_BOOTROM}
+  )
 
 rumboot_add_configuration(
   SPL
@@ -107,6 +118,7 @@ rumboot_add_configuration(
   LDFLAGS -Wl,-e_start -nostartfiles -Wl,--gc-sections
   CFLAGS -fnmc-compatible-if-packed -DRUMBOOT_NOINIT -DRUMBOOT_SILENT_PANICS -DRUMBOOT_ENTRY=start 
   PACKIMAGE_FLAGS -a 20480
+  LOAD BOOTROM_NOR ${SOC_BOOTROM}
 )
 
 macro(dap_integration_test sourcefile)

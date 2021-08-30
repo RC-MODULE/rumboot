@@ -235,6 +235,7 @@
     uint16_t     dma_box_offset_x    ;
     uint16_t     dma_box_offset_y    ;
     uint16_t     dma_box_offset_z    ;
+    uint8_t      dma_axi_len         ;
   }ConfigDMA;
 
   typedef struct ConfigVPE {
