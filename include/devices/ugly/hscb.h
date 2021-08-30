@@ -10,8 +10,6 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include <rumboot/platform.h>
-#include <platform/devices.h>
 #include <platform/oi10/platform/regs/regs_hscb.h>
 
 /**

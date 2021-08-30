@@ -5,9 +5,11 @@
  *      Author: r.galiulin
  */
 #include <algo/crc8.h>
-#include <devices/ugly/hscb.h>
 #include <rumboot/io.h>
 #include <rumboot/printf.h>
+#include <rumboot/platform.h>
+#include <platform/devices.h>
+#include <devices/ugly/hscb.h>
 
 uint32_t hscb_change_endian (uint32_t data_in, bool change_endian){
     uint32_t data_out = 0;
