@@ -100,7 +100,7 @@ int main() {
     res_metrics[i]= nu_load_cube_metrics(heap_id,metrics_etalon_tag[i]);
     if(res_metrics[i] == NULL) return -1;
     
-    in_data[i] = nu_load_cube_misaligned(heap_id,in_file_tag[i],in_metrics[i],IntMisalign);
+    in_data[i] = nu_load_cube(heap_id,in_file_tag[i],in_metrics[i]);
     if(in_data[i] == NULL) return -1;
     
     res_data[i] = nu_vpe_malloc_res(heap_id, res_metrics[i]);
@@ -108,15 +108,15 @@ int main() {
     
       // Load OP0-OP2 Operands If Needed
     if(cfg.op0_en==Enable_En) {
-      op0[i] = nu_vpe_load_op01_misaligned_by_tags(heap_id,&cfg.op0_config,metrics_op0_cube_tag[i],metrics_op0_vec_tag[i],op0_cube_file_tag[i],op0_vec_file_tag[i],IntMisalign);
+      op0[i] = nu_vpe_load_op01_by_tags(heap_id,&cfg.op0_config,metrics_op0_cube_tag[i],metrics_op0_vec_tag[i],op0_cube_file_tag[i],op0_vec_file_tag[i]);
     }
     else op0[i] = NULL;
     if(cfg.op1_en==Enable_En) {
-      op1[i] = nu_vpe_load_op01_misaligned_by_tags(heap_id,&cfg.op1_config,metrics_op1_cube_tag[i],metrics_op1_vec_tag[i],op1_cube_file_tag[i],op1_vec_file_tag[i],IntMisalign);
+      op1[i] = nu_vpe_load_op01_by_tags(heap_id,&cfg.op1_config,metrics_op1_cube_tag[i],metrics_op1_vec_tag[i],op1_cube_file_tag[i],op1_vec_file_tag[i]);
     }
     else op1[i] = NULL;
     if(cfg.op2_en==Enable_En) {
-      op2[i] = nu_vpe_load_op2_misaligned_by_tags(heap_id,&cfg.op2_config,metrics_op2_cube_tag[i],metrics_op2_vec_tag[i],op2_cube_file_tag[i],op2_vec_file_tag[i],IntMisalign);
+      op2[i] = nu_vpe_load_op2_by_tags(heap_id,&cfg.op2_config,metrics_op2_cube_tag[i],metrics_op2_vec_tag[i],op2_cube_file_tag[i],op2_vec_file_tag[i]);
     }
     else op2[i] = NULL;
     

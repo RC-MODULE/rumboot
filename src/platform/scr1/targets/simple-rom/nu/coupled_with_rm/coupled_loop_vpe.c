@@ -24,6 +24,7 @@ void *lut2;
 void nu_vpe_decide_dma_config (
   ConfigVPE* cfg,
   CubeMetrics* in_metrics,
+  void*axi_len,
   void*in_data,
   void*op0,
   void*op1,
@@ -53,8 +54,13 @@ void nu_vpe_decide_dma_config (
   cfg->op0_rdma_config.dma_baddr = (uint32_t) op0;
   cfg->op1_rdma_config.dma_baddr = (uint32_t) op1;
   cfg->op2_rdma_config.dma_baddr = (uint32_t) op2;
-  cfg->wdma_config.dma_baddr = (uint32_t) res_data;
-  
+  cfg->wdma_config.dma_baddr     = (uint32_t) res_data;
+
+  cfg->src_rdma_config.dma_axi_len = (uint8_t) axi_len;
+  cfg->op0_rdma_config.dma_axi_len = (uint8_t) axi_len;
+  cfg->op1_rdma_config.dma_axi_len = (uint8_t) axi_len;
+  cfg->op2_rdma_config.dma_axi_len = (uint8_t) axi_len;
+  cfg->wdma_config.dma_axi_len     = (uint8_t) axi_len;
   
 }
 
@@ -81,7 +87,22 @@ int main() {
   uint32_t num_cycles;
   uint32_t num_vectors;
   uint32_t productivity_x1000;
+  uint32_t misalign;
+  uint8_t  axi_len;
   
+#ifdef MISALIGN_EN
+    misalign = IntMisalign;
+#else
+    misalign = 0;
+#endif
+
+#ifdef AXI_LEN
+    axi_len = AxiLen;
+#else 
+    axi_len = 15;
+#endif
+
+ 
   rumboot_printf("Hello\n");
 
   heap_id = nu_get_heap_id();
@@ -100,7 +121,7 @@ int main() {
     res_metrics= nu_load_cube_metrics(heap_id,metrics_etalon_tag[i]);
     if(res_metrics == NULL) return -1;
 
-    in_data = nu_load_cube_misaligned(heap_id,in_file_tag[i],in_metrics,IntMisalign);
+    in_data = nu_load_cube_misaligned(heap_id,in_file_tag[i],in_metrics,misalign);
     if(in_data == NULL) return -1;
     
     res_data = nu_vpe_malloc_res(heap_id, res_metrics);
@@ -108,15 +129,15 @@ int main() {
     
       // Load OP0-OP2 Operands If Needed
     if(cfg.op0_en==Enable_En) {
-      op0 = nu_vpe_load_op01_misaligned_by_tags(heap_id,&cfg.op0_config,metrics_op0_cube_tag[i],metrics_op0_vec_tag[i],op0_cube_file_tag[i],op0_vec_file_tag[i],IntMisalign);
+      op0 = nu_vpe_load_op01_misaligned_by_tags(heap_id,&cfg.op0_config,metrics_op0_cube_tag[i],metrics_op0_vec_tag[i],op0_cube_file_tag[i],op0_vec_file_tag[i],misalign);
     }
     else op0 = NULL;
     if(cfg.op1_en==Enable_En) {
-      op1 = nu_vpe_load_op01_misaligned_by_tags(heap_id,&cfg.op1_config,metrics_op1_cube_tag[i],metrics_op1_vec_tag[i],op1_cube_file_tag[i],op1_vec_file_tag[i],IntMisalign);
+      op1 = nu_vpe_load_op01_misaligned_by_tags(heap_id,&cfg.op1_config,metrics_op1_cube_tag[i],metrics_op1_vec_tag[i],op1_cube_file_tag[i],op1_vec_file_tag[i],misalign);
     }
     else op1 = NULL;
     if(cfg.op2_en==Enable_En) {
-      op2 = nu_vpe_load_op2_misaligned_by_tags(heap_id,&cfg.op2_config,metrics_op2_cube_tag[i],metrics_op2_vec_tag[i],op2_cube_file_tag[i],op2_vec_file_tag[i],IntMisalign);
+      op2 = nu_vpe_load_op2_misaligned_by_tags(heap_id,&cfg.op2_config,metrics_op2_cube_tag[i],metrics_op2_vec_tag[i],op2_cube_file_tag[i],op2_vec_file_tag[i],misalign);
     }
     else op2 = NULL;
     
@@ -139,7 +160,7 @@ int main() {
     cfg.trace_mode = TraceMode_MPE;
 
     nu_vpe_print_config(&cfg);
-    nu_vpe_decide_dma_config(&cfg,in_metrics,in_data,op0,op1,op2,res_metrics,res_data,&cfg_dma);
+    nu_vpe_decide_dma_config(&cfg,in_metrics,axi_len,in_data,op0,op1,op2,res_metrics,res_data,&cfg_dma);
     nu_print_config_dma(&cfg.src_rdma_config,"src_rdma_config");
     nu_print_config_dma(&cfg.op0_rdma_config,"op0_rdma_config");
     nu_print_config_dma(&cfg.op1_rdma_config,"op1_rdma_config");
@@ -197,10 +218,10 @@ int main() {
                    productivity_x1000,num_vectors,num_cycles);
     
     //if(cfg.src_rdma_config.dma_cube_size_c%16 == 0) {
-    //    if(nu_vpe_check_status_regs(NU_VPE_STANDALONE_BASE, &status_regs_etalon) != 0) {
-    //    rumboot_printf("Test FAILED Due to Status Reg Check at iteration %d\n",i);
-    //    return -1;
-    //    }
+        if(nu_vpe_check_status_regs(NU_VPE_STANDALONE_BASE, &status_regs_etalon) != 0) {
+        rumboot_printf("Test FAILED Due to Status Reg Check at iteration %d\n",i);
+        return -1;
+        }
     //}
   }
   
