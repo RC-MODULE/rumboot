@@ -95,15 +95,18 @@
 #define CHANGE_ENDIANN true
 #endif
 
+#ifndef POWER_FOR_OI10V3
 #define ARR_SIZE 128
 #define COM0_BASE           	0xC0304000
 #define COM1_BASE               0xC0305000
+
 
 #ifndef COM_SRC_HEAP
 #define COM_SRC_HEAP "IM1"
 #endif
 #ifndef COM_DST_HEAP
 #define COM_DST_HEAP "IM1"
+#endif
 #endif
 
 #define BUF_SIZE 1024
@@ -492,7 +495,9 @@ int main() {
     hscb_descr *hscb2_tx_dsc_table, *hscb2_rx_dsc_table; 
     hscb_descr *hscb3_tx_dsc_table, *hscb3_rx_dsc_table;
     hscb_descr **tx_dsc_tables, **rx_dsc_tables;
-// -----------------------------------------------------------    
+// -----------------------------------------------------------   
+
+#ifndef POWER_FOR_OI10V3 
 // for com port (from test_com_es_elaborate)
     uint32_t* tx_buf;
     uint32_t* rx_buf;
@@ -505,7 +510,7 @@ int main() {
     size = BUF_SIZE;
     timeout_us = TIMEOUT;
     ////
-
+#endif
 
     if(DEBUG_PRINT) rumboot_printf("Start of test\n");
    
@@ -523,7 +528,11 @@ int main() {
     emi_init(DCR_EM2_EMI_BASE);
     tbl = create_irq_handlers();  
 
-    rumboot_printf("Running power test\n");    
+    #ifndef POWER_FOR_OI10V3
+    rumboot_printf("Running power test\n");   
+    #else
+    rumboot_printf("Power test for OI10_V3\n");
+    #endif
     
     // ---- Config of HSCB     
     if(DEBUG_PRINT) rumboot_printf("----Config of HSCB0----\n");
@@ -561,6 +570,8 @@ int main() {
     
     establish_link(HSCB0_BASE, HSCB1_BASE);
     establish_link(HSCB2_BASE, HSCB3_BASE);
+    
+    #ifndef POWER_FOR_OI10V3
     // -- Config COM port
     
     cp_instance_init(&c0, COM0_BASE, BASE_FREQ);
@@ -589,28 +600,21 @@ int main() {
      
     //r = cp_wait_rx(c1.base,timeout_us);
     /////
+    #endif
     
     
     //
     dma2plb6_4ch_init();
     
         
-        
-    // COM-port start
-    /*
-    rumboot_printf("COM-port start\n");
-    cp_start_tx(&c0, tx_buf, size);
-    cp_start_rx(&c1, rx_buf, size);
-    cp_start_tx(&c0, tx_buf, size);
-    cp_start_rx(&c1, rx_buf, size);
-    */
-    
     simult_run_of_hscbs_transfers(rdma_ctrl_word);
     dma2plb6_4ch_start();
     
+    #ifndef POWER_FOR_OI10V3
     rumboot_printf("COM-port start\n");
     cp_start_tx(&c0, tx_buf, size);
     cp_start_rx(&c1, rx_buf, size);
+    #endif
     
     test_oi10_power_new();    
     
