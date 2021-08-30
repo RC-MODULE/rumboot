@@ -10,11 +10,9 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include <platform/arch/ppc/test_macro.h>
 #include <rumboot/platform.h>
 #include <platform/devices.h>
-#include <platform/trace.h>
-#include <platform/regs/regs_hscb.h>
+#include <platform/oi10/platform/regs/regs_hscb.h>
 
 /**
  * \defgroup devices_hscb HSCB
