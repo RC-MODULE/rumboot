@@ -12,7 +12,7 @@
 #include <platform/regs/regs_hscb.h>
 #include <rumboot/irq.h>
 #include <rumboot/rumboot.h>
-#include <platform/devices/hscb.h>
+#include <devices/ugly/hscb.h>
 #include <rumboot/timer.h>
 
 

@@ -21,7 +21,7 @@
 #include <rumboot/irq.h>
 #include <rumboot/rumboot.h>
 #include <rumboot/memfill.h>
-#include <platform/devices/hscb.h>
+#include <devices/ugly/hscb.h>
 #include <devices/ugly/emi.h>
 #include <platform/devices/nor_1636RR4.h>
 #include <arch/ppc_476fp_mmu.h>

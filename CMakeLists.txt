@@ -237,6 +237,7 @@ message(" ==== ==== ==== ==== ==== ==== ==== ====\n\n")
 
 
 ADD_SOURCE("src/lib/algo/crc32.c")
+ADD_SOURCE("src/lib/algo/crc8.c")
 ADD_SOURCE("src/lib/algo/aes.c")
 ADD_SOURCE("src/lib/logo.c")
 ADD_SOURCE("src/lib/stdio.c")
@@ -291,6 +292,7 @@ if (RUMBOOT_ARCH MATCHES ppc)
   ADD_SOURCE("src/lib/drivers/ugly/plb6mcif2.c")
   ADD_SOURCE("src/lib/drivers/ugly/emi.c")
   ADD_SOURCE("src/lib/drivers/ugly/greth.c")
+  ADD_SOURCE("src/lib/drivers/ugly/hscb.c")
   ADD_SOURCE("src/arch/ppc/dma2plb6.c")
 endif()
 

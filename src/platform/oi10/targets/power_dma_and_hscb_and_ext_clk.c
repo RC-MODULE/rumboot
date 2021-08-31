@@ -29,7 +29,7 @@
 //#include <platform/regs/fields/mpic128.h>
 #include <arch/regs/fields/dma2plb6.h>
 #include <arch/regs/dma2plb6.h>
-#include <platform/devices/hscb.h>
+#include <devices/ugly/hscb.h>
 #include <arch/dma2plb6.h>
 #include <devices/ugly/emi.h>
 #include <platform/test_assert.h>

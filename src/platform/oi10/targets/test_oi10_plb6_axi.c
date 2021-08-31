@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
@@ -17,16 +16,16 @@
 #include <regs/fields/mpic128.h>
 #include <platform/regs/sctl.h>
 #include <devices/ugly/emi.h>
+#include <devices/ugly/hscb.h>
 #include <platform/test_assert.h>
 
 #include <devices/ugly/greth.h>
 #include <arch/common_macros.h>
 #include <arch/ppc_476fp_mmu.h>
-#include <devices/ugly/emi.h>
+
 #include <arch/dma2plb6.h>
 #include <devices/ugly/plb6mcif2.h>
 #include <platform/devices/nor_1636RR4.h>
-#include <platform/devices/hscb.h>
 
 #ifndef DCR_EM2_AXIMCIF2_BASE
 #define DCR_EM2_AXIMCIF2_BASE           0x800D0000
