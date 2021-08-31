@@ -522,7 +522,16 @@ endif() #### EXPERIMENT_STAGE_2_SUB_1
     ADD_VPE_COUPLED_TEST_LOOP(vpe_15_0_op1_relu_int32 main_vpe_15_0_op1_relu_int32) 
     ADD_VPE_COUPLED_TEST_LOOP(vpe_9_1_op0_relu_fp32  main_vpe_9_1_op0_relu_fp32)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_15_1_op1_relu_fp32  main_vpe_15_1_op1_relu_fp32)
-    ADD_VPE_COUPLED_TEST_LOOP(vpe_3_c3 main_vpe_3_c3)
+    
+    # VPE::DEMUX::C3 TESTS PIPELINE MODE-FLOW
+    foreach(out_macro IN ITEMS OUT_INT8 OUT_INT16 OUT_FP16)
+      ADD_VPE_COUPLED_TEST_LOOP(  vpe_3_c3_IN_INT32_${out_macro}  main_vpe_3_c3_IN_INT32_${out_macro} )
+    endforeach()
+    foreach(out_macro IN ITEMS OUT_INT16 OUT_FP16)
+      ADD_VPE_COUPLED_TEST_LOOP(  vpe_3_c3_IN_FP32_${out_macro}   main_vpe_3_c3_IN_FP32_${out_macro}  )
+    endforeach()
+    
+    # 
     ADD_VPE_COUPLED_TEST_LOOP(vpe_18_op2_c1 main_vpe_18_op2_c1)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_16_op2_c2 main_vpe_16_op2_c2)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_8_0_op0_norm main_vpe_8_0_op0_norm)
@@ -618,8 +627,16 @@ endif() #### EXPERIMENT_STAGE_2_SUB_1
     ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(npe_vpe_op2_c1 main_npe_vpe_op2_c1)
     ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(npe_vpe_op2_c2 main_npe_vpe_op2_c2)
     
-    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(npe_vpe_c3 main_npe_vpe_c3)
+    # VPE::DEMUX::C3 TESTS MEM MODE
+    foreach(in_macro IN ITEMS IN_INT8 IN_INT16)
+      foreach(out_macro IN ITEMS OUT_INT8 OUT_INT16 OUT_FP16)
+        ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA( npe_vpe_c3_${in_macro}_${out_macro}       main_npe_vpe_c3_${in_macro}_${out_macro}  )
+      endforeach()
+    endforeach()
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA( npe_vpe_c3_IN_FP16_OUT_INT16        main_npe_vpe_c3_IN_FP16_OUT_INT16   )
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA( npe_vpe_c3_IN_FP16_OUT_FP16         main_npe_vpe_c3_IN_FP16_OUT_FP16    )
     
+    # 
     ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(npe_vpe_op0_relu_int main_npe_vpe_op0_relu_int)
     ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(npe_vpe_op0_relu_fp  main_npe_vpe_op0_relu_fp)
     ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(npe_vpe_op1_relu_int main_npe_vpe_op1_relu_int)
