@@ -382,14 +382,14 @@ endif() #### EXPERIMENT_STAGE_2_SUB_1
     endmacro()
 
     macro(ADD_VPE_COUPLED_TEST_LOOP_TIGHT_FORCE_WDMA name rm_bin_name)
-      set(MISALIGN RANGE 0 7)
+      set(MISALIGN RANGE 0 15)
       foreach(IntMisalign ${MISALIGN})
         add_rumboot_target(
             CONFIGURATION ROM
             NAME ${name}_tight_${IntMisalign}
             FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_tight_vpe.c
             PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
-            CFLAGS -DIntMisalign=${IntMisalign} -DFORCE_VPE_WDMA_EN=1
+            CFLAGS -DMISALIGN_EN=1 -DIntMisalign=${IntMisalign} -DFORCE_VPE_WDMA_EN=1
             IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
         )
       endforeach()
@@ -401,8 +401,8 @@ endif() #### EXPERIMENT_STAGE_2_SUB_1
         add_rumboot_target(
             CONFIGURATION ROM
             NAME ${name}_${IntMisalign}
-            FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_ppe.c
-            CFLAGS -DFORCE_VPE_WDMA_EN=1 -DMISALIGN_EN=1 -DIntMisalign=${IntMisalign}
+            FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe.c
+            CFLAGS -DFORCE_VPE_WDMA_EN=1 -DMISALIGN_EN=1 -DIntMisalign=${IntMisalign} -DVPE_TraceMode_PPE=1
             PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
             IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
         )

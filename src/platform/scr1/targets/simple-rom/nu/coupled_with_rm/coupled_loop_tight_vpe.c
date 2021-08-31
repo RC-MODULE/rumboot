@@ -32,6 +32,8 @@ void nu_vpe_decide_dma_config (
   void*res_data, 
   ConfigDMAVPE* cfg_dma
 ) {
+  uint8_t axi_len;
+  
   rumboot_printf("nu_vpe_decide_dma_config \n");
   cfg->op0_rdma_config.dma_data_mode = cfg->op0_config.mux_mode; // Init Them
   cfg->op1_rdma_config.dma_data_mode = cfg->op1_config.mux_mode;
@@ -45,6 +47,12 @@ void nu_vpe_decide_dma_config (
 #else
   cfg->dst_flying = cfg->out_data_type == DataType_Int8 ? Enable_NotEn : Enable_En;
 #endif
+#ifdef AXI_LEN
+    axi_len = AxiLen;
+#else 
+    axi_len = 15;
+#endif
+
   
   nu_vpe_decide_dma_config_trivial(cfg,in_metrics,cfg_dma);
   cfg_dma->dma_dst_en = cfg->dst_flying ? Enable_NotEn : Enable_NotEn;
@@ -55,6 +63,11 @@ void nu_vpe_decide_dma_config (
   cfg->op2_rdma_config.dma_baddr = (uint32_t) op2;
   cfg->wdma_config.dma_baddr = (uint32_t) res_data;
   
+  cfg->src_rdma_config.dma_axi_len = axi_len;
+  cfg->op0_rdma_config.dma_axi_len = axi_len;
+  cfg->op1_rdma_config.dma_axi_len = axi_len;
+  cfg->op2_rdma_config.dma_axi_len = axi_len;
+  cfg->wdma_config.dma_axi_len     = axi_len;
   
 }
 
@@ -80,7 +93,7 @@ int main() {
   int iterations;
   
   rumboot_printf("Hello\n");
-
+  
   heap_id = nu_get_heap_id();
   
   rumboot_platform_request_file("num_iterations_file_tag",(uintptr_t) &iterations);

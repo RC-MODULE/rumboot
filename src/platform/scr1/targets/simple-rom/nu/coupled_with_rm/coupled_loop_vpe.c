@@ -157,7 +157,11 @@ int main() {
     
     if(nu_vpe_load_status_regs_by_tag(heap_id,&status_regs_etalon,status_regs_file_tag[i]) != 0) return -1;
 
+#ifdef VPE_TraceMode_PPE
+    cfg.trace_mode = TraceMode_PPE;
+#else
     cfg.trace_mode = TraceMode_MPE;
+#endif
 
     nu_vpe_print_config(&cfg);
     nu_vpe_decide_dma_config(&cfg,in_metrics,axi_len,in_data,op0,op1,op2,res_metrics,res_data,&cfg_dma);
