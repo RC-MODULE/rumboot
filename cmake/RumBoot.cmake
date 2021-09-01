@@ -169,7 +169,7 @@ endif()
 
 function(rumboot_add_external_project directory)
     execute_process(
-      COMMAND ${GIT_EXECUTABLE} submodule init ${directory}
+      COMMAND ${GIT_EXECUTABLE} submodule update --init ${directory}
       WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
     )
 
