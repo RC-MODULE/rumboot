@@ -1,7 +1,7 @@
-#include <platform/test_event_asm.h>
-#include <platform/test_assert.S.h>
-#include <platform/arch/ppc/test_macro_asm.S.h>
-#include <arch/ppc/arch/mmu.S.h>
+#include <arch/ppc/arch/ppc_476fp_asm.h>
+//#include <platform/test_assert.S.h>
+//#include <platform/arch/ppc/test_macro_asm.S.h>
+//#include <arch/ppc/arch/mmu.S.h>
 #include <platform/devices.h>
 
 
@@ -46,10 +46,10 @@
 .endm
 
 
-tlb_entries:
+//tlb_entries:
 /*          MMU_TLB_ENTRY(  ERPN,   RPN,        EPN,        DSIZ,                     IL1I,   IL1D,   W,      I,      M,      G,      E,                      UX, UW, UR,     SX, SW, SR      DULXE,  IULXE,      TS,     TID,                WAY,                BID,                V   )*/
 /*    .long   MMU_TLB_ENTRY(  0x000,  0x40000,    0x40000,    MMU_TLBE_DSIZ_1GB,       0b1,    0b0,    0b0,    0b0,    0b1,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )*/
-      .long   MMU_TLB_ENTRY(  0x010,  0x80010,    0x80010,    MMU_TLBE_DSIZ_64KB,      0b1,    0b0,    0b0,    0b0,    0b1,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
+//      .long   MMU_TLB_ENTRY(  0x010,  0x80010,    0x80010,    MMU_TLBE_DSIZ_64KB,      0b1,    0b0,    0b0,    0b0,    0b1,    0b0,    MMU_TLBE_E_BIG_END,     0b0,0b0,0b0,    0b1,0b1,0b1,    0b0,    0b0,        0b0,    MEM_WINDOW_0,       MMU_TLBWE_WAY_3,    MMU_TLBWE_BE_UND,   0b1 )
 
 .global test_oi10_power_new
 
@@ -67,15 +67,15 @@ test_oi10_power_new:
     mfxer   r28
     stmw    r28,20(r1)
     
-    rumboot_putstring "test_oi10_power_1_6: turn on cache\n"
-    load_addr   r3, tlb_entries
+    //rumboot_putstring "test_oi10_power_1_6: turn on cache\n"
+    //load_addr   r3, tlb_entries
     load_size   r4, 1
-    bl          ppc470s_write_tlb_entries /*(r3, r4) - are parameters*/
+    //bl          ppc470s_write_tlb_entries /*(r3, r4) - are parameters*/
 
 
 #define L1C_LINE_BYTES_N    0x20
 test_oi10_power_1_6:
-    rumboot_putstring "test_oi10_power_1_6 started\n"
+    //rumboot_putstring "test_oi10_power_1_6 started\n"
 
 fpu_enable:
     mfmsr r0
@@ -83,7 +83,7 @@ fpu_enable:
     mtmsr r0
 
 begin:
-    rumboot_putstring "Caching begin\n"
+//    rumboot_putstring "Caching begin\n"
 //  Caching code: 32+5 words = 148 bytes = 5 lines +1
 //  Caching code: 64+5 words = 276 bytes = 9 lines +1
     load_addr  r4, loop
@@ -105,7 +105,7 @@ begin:
 .endr
     msync
     isync
-    rumboot_putstring "Caching done\n"
+//    rumboot_putstring "Caching done\n"
 
     init_fpr r30
 

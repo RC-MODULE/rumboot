@@ -14,16 +14,12 @@
 #include <rumboot/printf.h>
 #include <rumboot/regpoker.h>
 #include <platform/devices.h>
-#include <platform/trace.h>
-#include <platform/test_assert.h>
 #include <platform/interrupts.h>
-#include <platform/regs/regs_hscb.h>
 #include <rumboot/irq.h>
 #include <rumboot/rumboot.h>
 #include <rumboot/memfill.h>
 #include <devices/ugly/hscb.h>
 #include <devices/ugly/emi.h>
-#include <platform/devices/nor_1636RR4.h>
 #include <arch/ppc_476fp_mmu.h>
 #include <devices/com_simple.h>
 #include <devices/rcm_cp.h>
@@ -97,10 +93,8 @@
 
 #ifndef POWER_FOR_OI10V3
 #define ARR_SIZE 128
-#define COM0_BASE           	0xC0304000
-#define COM1_BASE               0xC0305000
-
-
+#define COM0_BASE 0xC0304000
+#define COM1_BASE 0xC0305000
 #ifndef COM_SRC_HEAP
 #define COM_SRC_HEAP "IM1"
 #endif
@@ -600,12 +594,10 @@ int main() {
      
     //r = cp_wait_rx(c1.base,timeout_us);
     /////
-    #endif
-    
+    #endif    
     
     //
-    dma2plb6_4ch_init();
-    
+    dma2plb6_4ch_init();    
         
     simult_run_of_hscbs_transfers(rdma_ctrl_word);
     dma2plb6_4ch_start();
@@ -617,14 +609,6 @@ int main() {
     #endif
     
     test_oi10_power_new();    
-    
-   
-
-    
-    //check_multiple_channels_4_power();
-    
-    
-    
     
     dma2plb6_4ch_finish();
     

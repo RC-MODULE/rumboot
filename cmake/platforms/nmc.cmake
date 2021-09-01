@@ -157,6 +157,15 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     )
 
     add_rumboot_target(
+      CONFIGURATION CORE
+      NAME power-consumption
+      FILES coretests/Power_Consumption.S
+      FEATURES STUB #Не создавать runner'а
+      #Устанавливаем флаги. Работать асинхронно, останавливать NMC перед запуском
+      PACKIMAGE_FLAGS -F SYNC False -F kill True
+    )
+
+    add_rumboot_target(
       CONFIGURATION SPL
       NAME cp-com1
       FILES stubs/cp_spl.c

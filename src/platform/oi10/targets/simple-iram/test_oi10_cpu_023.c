@@ -10,9 +10,13 @@
 #include <platform/devices.h>
 #include <devices/ugly/emi.h>
 #include <arch/dma2plb6.h>
+
+#ifndef POWER_TEST
 #include <platform/devices/nor_1636RR4.h>
 #include <platform/test_assert.h>
 #include <platform/test_event_codes.h>
+#endif
+
 
 
 //size in bytes
@@ -97,18 +101,6 @@ static void fill(uint64_t *s, uint64_t pattern, uint32_t size_in_bytes)
 //    }
 //}
 
-static void nor_fill(uint32_t* mem, uint64_t pattern, size_t size)
-{
-    size_t index = 0;
-
-    while(index < size)
-    {
-        nor_write32((pattern >> 32), (uint32_t)(mem + index));
-        nor_write32((pattern & 0xffffffff), (uint32_t)(mem + index + 4));
-        index += 8;
-    }
-}
-
 static uint32_t compare(uint32_t s_addr, uint32_t d_addr,uint32_t size_in_bytes)
 {
     uint32_t i;
@@ -126,9 +118,22 @@ static uint32_t compare(uint32_t s_addr, uint32_t d_addr,uint32_t size_in_bytes)
             return false;
         }
     }
-    return true;
-}
+    return true;}
 
+
+#ifndef POWER_TEST
+
+static void nor_fill(uint32_t* mem, uint64_t pattern, size_t size)
+{
+    size_t index = 0;
+
+    while(index < size)
+    {
+        nor_write32((pattern >> 32), (uint32_t)(mem + index));
+        nor_write32((pattern & 0xffffffff), (uint32_t)(mem + index + 4));
+        index += 8;
+    }
+}
 
 static uint32_t check_dma2plb6_0_mem_to_mem(uint32_t source_ea, uint32_t dest_ea, uint64_t source_phys, uint64_t dest_phys)
 {
@@ -400,6 +405,7 @@ static uint32_t check_multiple_channels_2()
 
     return 0;
 }
+#endif
 
 //////
 // Functions for o32t power test (test_oi10_hscb_com_fpu_simult_big.c)

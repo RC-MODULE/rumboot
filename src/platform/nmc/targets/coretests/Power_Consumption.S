@@ -81,6 +81,7 @@ rumboot_runtime_init(016800h);
 				[--ar2] = ar1,gr1 with gr5 = gr1 + gr0 noflags; 		// Delayed instruction 2 (Memory_cell[i] <- FFF...F)				
 				        			
 <Normal>   
+                goto mytest;
 				rumboot_exit(0_16800h, 0);
 	      skip START_PROGRAM;
 

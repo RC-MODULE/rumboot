@@ -18,7 +18,9 @@ file(GLOB PLATFORM_SOURCES
   ${CMAKE_SOURCE_DIR}/src/lib/drivers/com_simple.c
   ${CMAKE_SOURCE_DIR}/src/lib/drivers/irq-mpic128.c
   ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/lib/drivers/scrb_lib.c
+  ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/lib/drivers/hscb.c
   ${CMAKE_SOURCE_DIR}/src/platform/${RUMBOOT_PLATFORM}/lib/drivers/interprocessor_irq_lib.c
+  ${CMAKE_SOURCE_DIR}/src/platform/oi10/lib/drivers/emi.c
 )
 #Flags for Power PC
 macro(RUMBOOT_PLATFORM_SET_COMPILER_FLAGS)
@@ -1024,6 +1026,71 @@ add_rumboot_target(
   LOAD IM0BIN nmc:iram-nmc_nterprocessor_irq_integration,SELF
 
 )
+
+add_rumboot_target(
+        CONFIGURATION IRAM_IM0
+        IRUN_FLAGS +RANDOMIZE_SDRAM
+        #CFLAGS -DHSCB_UNDER_TEST_BASE=HSCB0_BASE
+        CFLAGS -DHSCB0_TX_DSCTBL_BASE="IM1"
+               -DHSCB0_TX_DATA_BASE="SSRAM"
+               -DHSCB0_RX_DSCTBL_BASE="IM1"
+               -DHSCB0_RX_DATA_BASE="SSRAM"
+               -DHSCB1_TX_DSCTBL_BASE="IM1"
+               -DHSCB1_TX_DATA_BASE="SSRAM"
+               -DHSCB1_RX_DSCTBL_BASE="IM1"
+               -DHSCB1_RX_DATA_BASE="SSRAM"
+               -DHSCB2_TX_DSCTBL_BASE="IM2"
+               -DHSCB2_TX_DATA_BASE="SSRAM"
+               -DHSCB2_RX_DSCTBL_BASE="IM2"
+               -DHSCB2_RX_DATA_BASE="SSRAM"
+               -DHSCB3_TX_DSCTBL_BASE="IM3"
+               -DHSCB3_TX_DATA_BASE="SSRAM"
+               -DHSCB3_RX_DSCTBL_BASE="IM3"
+               -DHSCB3_RX_DATA_BASE="SSRAM"
+               -DCOM_SRC_HEAP="SSRAM"
+               -DCOM_DST_HEAP="SSRAM"
+               -DSIZE_OF_PACKET=4096
+               -DN_OF_PACKETS=2   
+               -DTEST_DATA_SIZE=4096   
+               -DPOWER_TEST=1
+               #-DDEBUG_PRINT=1
+        FILES oi10/targets/simple-iram/test_oi10_cpu_023.c oi10/targets/power/test_oi10_power_1_6_1.S oi10/targets/test_oi10_hscb_com_fpu_simult_big.c
+        PREFIX "hscb_com_fpu_desc_im1_data_ssram"
+        NAME test_hscb_com_fpu_big
+        
+    )
+    
+add_rumboot_target(
+  CONFIGURATION IRAM_IM0
+  CFLAGS -DHSCB0_TX_DSCTBL_BASE="IM1"
+         -DHSCB0_TX_DATA_BASE="SSRAM"
+         -DHSCB0_RX_DSCTBL_BASE="IM1"
+         -DHSCB0_RX_DATA_BASE="SSRAM"
+         -DHSCB1_TX_DSCTBL_BASE="IM1"
+         -DHSCB1_TX_DATA_BASE="SSRAM"
+         -DHSCB1_RX_DSCTBL_BASE="IM1"
+         -DHSCB1_RX_DATA_BASE="SSRAM"
+         -DHSCB2_TX_DSCTBL_BASE="IM2"
+         -DHSCB2_TX_DATA_BASE="SSRAM"
+         -DHSCB2_RX_DSCTBL_BASE="IM2"
+         -DHSCB2_RX_DATA_BASE="SSRAM"
+         -DHSCB3_TX_DSCTBL_BASE="IM3"
+         -DHSCB3_TX_DATA_BASE="SSRAM"
+         -DHSCB3_RX_DSCTBL_BASE="IM3"
+         -DHSCB3_RX_DATA_BASE="SSRAM"
+         -DCOM_SRC_HEAP="SSRAM"
+         -DCOM_DST_HEAP="SSRAM"
+         -DSIZE_OF_PACKET=4096
+         -DN_OF_PACKETS=2   
+         -DTEST_DATA_SIZE=4096   
+         -DPOWER_TEST=1
+         #-DDEBUG_PRINT=1
+  FILES oi10/targets/simple-iram/test_oi10_cpu_023.c oi10/targets/power/test_oi10_power_1_6_1.S oi10/targets/test_oi10_hscb_com_fpu_simult_big.c
+  #FILES oi10/targets/power/test_oi10_power_1_6_1.S oi10/targets/test_oi10_hscb_com_fpu_simult_big.c
+  PREFIX "hscb_com_fpu_nmc_desc_im1_data_ssram"
+  NAME test_hscb_com_fpu_nmc_big
+  LOAD IM0BIN nmc:core-power-consumption,SELF
+)  
 
 endmacro()
 
