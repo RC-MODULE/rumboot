@@ -380,6 +380,7 @@ endif() #### EXPERIMENT_STAGE_2_SUB_1
             FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe.c
             PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
             IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+            SUBPROJECT_DEPS npe_rm:${rm_bin_name}
         )
     endmacro()
 
@@ -393,6 +394,7 @@ endif() #### EXPERIMENT_STAGE_2_SUB_1
             CFLAGS -DFORCE_VPE_WDMA_EN=1 -DMISALIGN_EN=1 -DIntMisalign=${IntMisalign} -DVPE_TraceMode_PPE=1
             PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
             IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+            SUBPROJECT_DEPS npe_rm:${rm_bin_name}
         )
       endforeach()
     endmacro()
@@ -407,6 +409,7 @@ endif() #### EXPERIMENT_STAGE_2_SUB_1
             CFLAGS -DFORCE_VPE_WDMA_EN=1 -DMISALIGN_EN=1 -DIntMisalign=${IntMisalign}
             PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
             IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+            SUBPROJECT_DEPS npe_rm:${rm_bin_name}
         )
         add_rumboot_target(
             CONFIGURATION ROM
@@ -415,6 +418,7 @@ endif() #### EXPERIMENT_STAGE_2_SUB_1
             PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
             CFLAGS -DMISALIGN_EN=1 -DIntMisalign=${IntMisalign} -DFORCE_VPE_WDMA_EN=1
             IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+            SUBPROJECT_DEPS npe_rm:${rm_bin_name}
         )
       endforeach()
     endmacro()
@@ -439,6 +443,7 @@ endif() #### EXPERIMENT_STAGE_2_SUB_1
             CFLAGS -DFORCE_VPE_WDMA_EN=1
             PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
             IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+            SUBPROJECT_DEPS npe_rm:${rm_bin_name}
         )
     endmacro()
     
@@ -463,6 +468,7 @@ endif() #### EXPERIMENT_STAGE_2_SUB_1
             CFLAGS -DFORCE_VPE_WDMA_EN=1
             PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
             IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+            SUBPROJECT_DEPS npe_rm:${rm_bin_name}
         )
     endmacro()
 
@@ -739,6 +745,7 @@ endif() #### EXPERIMENT_STAGE_2_SUB_1
         FILES scr1/targets/simple-rom/nu/coupled_with_rm/one_coupled_ppe.c
         PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
         IRUN_FLAGS ${NA_RM_PLUSARGS}
+        SUBPROJECT_DEPS npe_rm:${rm_bin_name}
       )
     endmacro()
 
@@ -762,6 +769,7 @@ endif() #### EXPERIMENT_STAGE_2_SUB_1
           exit 1
         CFLAGS -D${ShowPerf}
         IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+        SUBPROJECT_DEPS npe_rm:${rm_bin_name}
       )
     endmacro()
 
@@ -781,6 +789,7 @@ endif() #### EXPERIMENT_STAGE_2_SUB_1
 
           CFLAGS -D${ShowPerf} -D${OpMode}
           IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+          SUBPROJECT_DEPS npe_rm:${rm_bin_name}
         )
 
         math (EXPR NU_SEED "${NU_SEED} + 1")
@@ -795,6 +804,7 @@ endif() #### EXPERIMENT_STAGE_2_SUB_1
         PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${NU_SEED} > ${RM_LOGFILE} || exit 1
         CFLAGS -D${ShowPerf} -D${OpMode}
         IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+        SUBPROJECT_DEPS npe_rm:${rm_bin_name}
       )
     endmacro()
 
