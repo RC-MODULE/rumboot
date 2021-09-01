@@ -28,4 +28,6 @@
 #define NU_PPE_RDMA_BASE        DUT_PORT2_BASE
 #define NU_MPE_BUFFER_BASE      DUT_PORT2_BASE
 
+#define NPE_BASE                DUT_BASE
+
 #endif /* end of include guard: DEVICES_H */

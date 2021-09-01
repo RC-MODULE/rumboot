@@ -77,7 +77,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
     ################################################################
     # common for tests with npe_rm
-    if(DUT STREQUAL "MPE" OR DUT STREQUAL "VPE" OR DUT STREQUAL "PPE")
+    if(DUT STREQUAL "MPE" OR DUT STREQUAL "VPE" OR DUT STREQUAL "PPE" OR DUT STREQUAL "NPE")
 
     # files transfered from RM to simulation environment
     set(NA_TEST_num_iterations_file num_iterations.bin)
@@ -940,7 +940,19 @@ endif() ### EXPERIMENT_STAGE_2_SUB_1
     endif()  # if(DUT STREQUAL "MPE")
     ########################################
 
-    endif()  # if(DUT STREQUAL MPE,VPE,PPE)
+    if(DUT STREQUAL "NPE")
+      macro(ADD_NPE_SIMPLE_TEST name filename)
+        add_rumboot_target(
+          CONFIGURATION ROM
+          NAME ${name}
+          FILES ${filename}
+        )
+      endmacro()
+
+      ADD_NPE_SIMPLE_TEST(npe_regs scr1/targets/simple-rom/nu/npe_regs/npe_regs.c)
+    endif()
+
+    endif()  # if(DUT STREQUAL MPE,VPE,PPE,NPE)
 
     ###########################################################
     # demonstrator tests
