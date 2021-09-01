@@ -31,6 +31,8 @@ rumboot_add_configuration(
 
 macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
+    rumboot_add_external_project(externals/npe_rm -DCOMPILE_FROM_ROMBOOT="YES")
+
     add_rumboot_target(
         CONFIGURATION ROM
         FILES common/tools/print-heaps.c
@@ -224,7 +226,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     set(PLUSARG_status_regs_file_tag status_regs_file_tag)
 
 
-    set(NA_RM_BIN_PATH ${CMAKE_BINARY_DIR}/${rumboot_dirname}/utils/npe_rm/rm_core/rtl-tests)
+    set(NA_RM_BIN_PATH ${CMAKE_BINARY_DIR}/${rumboot_dirname}/npe_rm/rm_core/rtl-tests)
     set(NA_RM_PLUSARGS +${PLUSARG_in_file_tag}=${NA_TEST_in_file}
                        +${PLUSARG_in_ameba_file_tag}=${NA_TEST_in_ameba_file}
                        +${PLUSARG_in_with_unused_file_tag}=${NA_TEST_in_with_unused_file}
@@ -425,6 +427,7 @@ endif() #### EXPERIMENT_STAGE_2_SUB_1
             CFLAGS -DFORCE_VPE_WDMA_EN=1 -DAXI_LEN=1 -DAxiLen=${axi_len}
             PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
             IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+            SUBPROJECT_DEPS npe_rm:${rm_bin_name}
         )
     endmacro()
     
