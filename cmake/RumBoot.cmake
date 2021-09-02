@@ -1,5 +1,5 @@
 set(RUMBOOT_ONEVALUE_ARGS SNAPSHOT LDS PREFIX NAME BOOTROM CHECKPOINTS RESTORE TIMEOUT_CTEST VARIABLE CONFIGURATION APPEND COMBOIMAGE OPTIMIZE)
-set(RUMBOOT_MULVALUE_ARGS OBJCOPY_FLAGS FILES IRUN_FLAGS CCFLAGS CFLAGS ASFLAGS CXXFLAGS TESTGROUP LDFLAGS PREPCMD CHECKCMD FEATURES TIMEOUT LOAD DEPENDS PACKIMAGE_FLAGS DUMPFLAGS)
+set(RUMBOOT_MULVALUE_ARGS OBJCOPY_FLAGS FILES IRUN_FLAGS CCFLAGS CFLAGS ASFLAGS CXXFLAGS TESTGROUP LDFLAGS PREPCMD CHECKCMD FEATURES TIMEOUT LOAD DEPENDS PACKIMAGE_FLAGS DUMPFLAGS SUBPROJECT_DEPS)
 
 find_program(PYTHON_EXECUTABLE
   NAMES python3.7 python3.6 python3 python
@@ -155,6 +155,10 @@ function(expand_external_dependency var outvar)
 endfunction()
 
 
+function(rumboot_add_external_project directory)
+#Dummy
+endfunction()
+
 if (CMAKE_VERILOG_RULES_DIR)
   get_filename_component(_dir ${CMAKE_CURRENT_LIST_FILE} DIRECTORY)
   include(${_dir}/integration.cmake)
@@ -162,6 +166,25 @@ if (CMAKE_VERILOG_RULES_DIR)
 endif()
 
 ##############################################################################
+
+function(rumboot_add_external_project directory)
+    execute_process(
+      COMMAND ${GIT_EXECUTABLE} submodule update --init ${directory}
+      WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+    )
+
+    get_filename_component(_name ${directory} NAME_WE)
+
+    ExternalProject_Add(${_name}
+      STEP_TARGETS      configure
+      SOURCE_DIR        "${CMAKE_SOURCE_DIR}/${directory}"
+      BINARY_DIR        "${CMAKE_BINARY_DIR}/${_name}"
+      CONFIGURE_COMMAND  ${CMAKE_COMMAND} "${PROJECT_SOURCE_DIR}/${directory}" -G ${CMAKE_GENERATOR} ${ARGN}
+      #-DRUMBOOT_BUILD_NPE_RM=${RUMBOOT_BUILD_NPE_RM} ${NPE_RM_OPTS}
+      BUILD_COMMAND     "$(MAKE)" -C "${UTILS_BIN_DIR}"
+      INSTALL_COMMAND   ""
+    )
+endfunction()
 
 
 function(add_source SRC)
@@ -514,6 +537,19 @@ function(add_rumboot_target)
   generate_stuff_for_target(${product})
   rumboot_platform_generate_stuff_for_taget(${product})
 
+  foreach(dep ${TARGET_SUBPROJECT_DEPS})
+    string(REPLACE ":" ";" dep ${dep})
+    list(GET dep 0 _project)
+    list(GET dep 1 _target)
+    ExternalProject_Get_Property(${_project} BINARY_DIR)
+    add_custom_command(
+      TARGET ${product}.all
+      COMMAND $(MAKE) ${_target}
+      WORKING_DIRECTORY ${BINARY_DIR}
+      COMMENT "(Re)building sub-project dependency ${_target}"
+    )
+    add_dependencies(${product}.all ${_project}-configure)
+  endforeach()
 
 
   list (FIND TARGET_FEATURES "STUB" _index)

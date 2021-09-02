@@ -1,6 +1,10 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.5.0)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
 
+include(ProcessorCount)
+ProcessorCount(NUM_THREADS)
+include(ExternalProject)
+
 INCLUDE(cmake/RumBoot.cmake)
 find_package(Doxygen)
 find_package(Git)
@@ -391,25 +395,19 @@ else()
   endif()
 endif()
 
-include(ProcessorCount)
-ProcessorCount(NUM_THREADS)
-include(ExternalProject)
-ExternalProject_Add(utils
-    SOURCE_DIR        "${CMAKE_SOURCE_DIR}/utils"
-    BINARY_DIR        "${CMAKE_BINARY_DIR}/utils"
-    CONFIGURE_COMMAND ${CMAKE_COMMAND} ${CMAKE_SOURCE_DIR}/utils -G ${CMAKE_GENERATOR} -DRUMBOOT_BUILD_NPE_RM=${RUMBOOT_BUILD_NPE_RM} ${NPE_RM_OPTS}
-#    BUILD_COMMAND     ${CMAKE_COMMAND} --build "${CMAKE_BINARY_DIR}/utils" -- -j ${NUM_THREADS}
-    BUILD_COMMAND     "$(MAKE)" -C "${CMAKE_BINARY_DIR}/utils"
-    INSTALL_COMMAND   ""
-#    Not supported by cmake 2.8.x
-#    BUILD_ALWAYS Yes
-    )
+file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/utils)
+set(UTILS_CONF_CMD ${CMAKE_COMMAND} ${CMAKE_SOURCE_DIR}/utils -G ${CMAKE_GENERATOR} -DRUMBOOT_BUILD_NPE_RM=${RUMBOOT_BUILD_NPE_RM} ${NPE_RM_OPTS})
+set(UTILS_SRC_DIR ${CMAKE_SOURCE_DIR}/utils)
+set(UTILS_BIN_DIR ${CMAKE_BINARY_DIR}/utils)
+
+
+rumboot_add_external_project(utils)
 
 add_custom_target(utils-check-rebuild
   ALL
   DEPENDS utils
-  WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/utils"
-  COMMAND     "$(MAKE)" -C "${CMAKE_BINARY_DIR}/utils"  
+  WORKING_DIRECTORY "${UTILS_BIN_DIR}"
+  COMMAND     "$(MAKE)" -C "${UTILS_BIN_DIR}"  
 )
 
 SET(CPACK_GENERATOR "TGZ")

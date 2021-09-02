@@ -31,6 +31,8 @@ rumboot_add_configuration(
 
 macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
+    rumboot_add_external_project(externals/npe_rm -DCOMPILE_FROM_ROMBOOT="YES")
+
     add_rumboot_target(
         CONFIGURATION ROM
         FILES common/tools/print-heaps.c
@@ -224,7 +226,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     set(PLUSARG_status_regs_file_tag status_regs_file_tag)
 
 
-    set(NA_RM_BIN_PATH ${CMAKE_BINARY_DIR}/${rumboot_dirname}/utils/npe_rm/rm_core/rtl-tests)
+    set(NA_RM_BIN_PATH ${CMAKE_BINARY_DIR}/${rumboot_dirname}/npe_rm/rm_core/rtl-tests)
     set(NA_RM_PLUSARGS +${PLUSARG_in_file_tag}=${NA_TEST_in_file}
                        +${PLUSARG_in_ameba_file_tag}=${NA_TEST_in_ameba_file}
                        +${PLUSARG_in_with_unused_file_tag}=${NA_TEST_in_with_unused_file}
@@ -378,6 +380,7 @@ endif() #### EXPERIMENT_STAGE_2_SUB_1
             FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe.c
             PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
             IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+            SUBPROJECT_DEPS npe_rm:${rm_bin_name}
         )
     endmacro()
 
@@ -391,6 +394,7 @@ endif() #### EXPERIMENT_STAGE_2_SUB_1
             CFLAGS -DFORCE_VPE_WDMA_EN=1 -DMISALIGN_EN=1 -DIntMisalign=${IntMisalign} -DVPE_TraceMode_PPE=1
             PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
             IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+            SUBPROJECT_DEPS npe_rm:${rm_bin_name}
         )
       endforeach()
     endmacro()
@@ -405,6 +409,7 @@ endif() #### EXPERIMENT_STAGE_2_SUB_1
             CFLAGS -DFORCE_VPE_WDMA_EN=1 -DMISALIGN_EN=1 -DIntMisalign=${IntMisalign}
             PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
             IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+            SUBPROJECT_DEPS npe_rm:${rm_bin_name}
         )
         add_rumboot_target(
             CONFIGURATION ROM
@@ -413,6 +418,7 @@ endif() #### EXPERIMENT_STAGE_2_SUB_1
             PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
             CFLAGS -DMISALIGN_EN=1 -DIntMisalign=${IntMisalign} -DFORCE_VPE_WDMA_EN=1
             IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+            SUBPROJECT_DEPS npe_rm:${rm_bin_name}
         )
       endforeach()
     endmacro()
@@ -425,6 +431,7 @@ endif() #### EXPERIMENT_STAGE_2_SUB_1
             CFLAGS -DFORCE_VPE_WDMA_EN=1 -DAXI_LEN=1 -DAxiLen=${axi_len}
             PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
             IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+            SUBPROJECT_DEPS npe_rm:${rm_bin_name}
         )
     endmacro()
     
@@ -436,6 +443,7 @@ endif() #### EXPERIMENT_STAGE_2_SUB_1
             CFLAGS -DFORCE_VPE_WDMA_EN=1
             PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
             IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+            SUBPROJECT_DEPS npe_rm:${rm_bin_name}
         )
     endmacro()
     
@@ -460,6 +468,7 @@ endif() #### EXPERIMENT_STAGE_2_SUB_1
             CFLAGS -DFORCE_VPE_WDMA_EN=1
             PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
             IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+            SUBPROJECT_DEPS npe_rm:${rm_bin_name}
         )
     endmacro()
 
@@ -736,6 +745,7 @@ endif() #### EXPERIMENT_STAGE_2_SUB_1
         FILES scr1/targets/simple-rom/nu/coupled_with_rm/one_coupled_ppe.c
         PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
         IRUN_FLAGS ${NA_RM_PLUSARGS}
+        SUBPROJECT_DEPS npe_rm:${rm_bin_name}
       )
     endmacro()
 
@@ -759,6 +769,7 @@ endif() #### EXPERIMENT_STAGE_2_SUB_1
           exit 1
         CFLAGS -D${ShowPerf}
         IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+        SUBPROJECT_DEPS npe_rm:${rm_bin_name}
       )
     endmacro()
 
@@ -778,6 +789,7 @@ endif() #### EXPERIMENT_STAGE_2_SUB_1
 
           CFLAGS -D${ShowPerf} -D${OpMode}
           IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+          SUBPROJECT_DEPS npe_rm:${rm_bin_name}
         )
 
         math (EXPR NU_SEED "${NU_SEED} + 1")
@@ -792,6 +804,7 @@ endif() #### EXPERIMENT_STAGE_2_SUB_1
         PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${NU_SEED} > ${RM_LOGFILE} || exit 1
         CFLAGS -D${ShowPerf} -D${OpMode}
         IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+        SUBPROJECT_DEPS npe_rm:${rm_bin_name}
       )
     endmacro()
 
@@ -954,79 +967,6 @@ endif() ### EXPERIMENT_STAGE_2_SUB_1
 
     endif()  # if(DUT STREQUAL MPE,VPE,PPE,NPE)
 
-    ###########################################################
-    # demonstrator tests
-
-    if(DUT STREQUAL "DEMONSTRATOR_SIMPLE")
-    set(DEMONSTRATOR_TESTS_DIR ${CMAKE_SOURCE_DIR}/src/platform/scr1/targets/simple-rom/demonstrator)
-      # Script That  Generate config.ini 
-    set(CREATE_INI ${DEMONSTRATOR_TESTS_DIR}/input/create_configini.pl)
-
-    add_rumboot_target(
-      CONFIGURATION ROM
-      FILES
-        ${DEMONSTRATOR_TESTS_DIR}/first_test.c
-      IRUN_FLAGS
-        +input_file=${DEMONSTRATOR_TESTS_DIR}/input/input_rtl_data_X.bin
-      PREPCMD
-        ${CMAKE_BINARY_DIR}/${rumboot_dirname}/utils/matrix_rm/matrix_rm 
-          --config=${DEMONSTRATOR_TESTS_DIR}/input/config.ini
-          --input_dir=${DEMONSTRATOR_TESTS_DIR}/input/
-    )
-
-    add_rumboot_target(
-      CONFIGURATION ROM
-      FILES
-        ${DEMONSTRATOR_TESTS_DIR}/demonstrator_simple_test.c
-      IRUN_FLAGS
-        +input_data=HoWoRdSdC.bin
-        +input_weigth=KRdSdC.bin
-        +etalon=HoWoK.bin
-      PREPCMD
-        cp ${DEMONSTRATOR_TESTS_DIR}/input/config_base.ini . &&
-        # perl ${CREATE_INI} 15 32 64 16 all_ones &&
-        perl ${CREATE_INI} 15 32 64 16 &&
-        ${CMAKE_BINARY_DIR}/${rumboot_dirname}/utils/matrix_rm/matrix_rm 
-          --config=config.ini
-          --input_dir=./
-    )
-
-    add_rumboot_target(
-      CONFIGURATION ROM
-      FILES
-        ${DEMONSTRATOR_TESTS_DIR}/test_on_vec_op.c
-      IRUN_FLAGS
-         +input_coef=coef.bin
-         +input_data=data.bin
-         # +etalon_data=${DEMONSTRATOR_TESTS_DIR}/input/etalon_data.bin
-      PREPCMD
-        cp ${DEMONSTRATOR_TESTS_DIR}/input/vec_data_template.ini . 
-        && ${CMAKE_BINARY_DIR}/${rumboot_dirname}/utils/bin_generator/bin_generator
-            --ini=vec_data_template.ini
-            --length=16
-            --seed=0
-        && cp ${DEMONSTRATOR_TESTS_DIR}/input/vec_coef_template.ini . 
-        && ${CMAKE_BINARY_DIR}/${rumboot_dirname}/utils/bin_generator/bin_generator
-            --ini=vec_coef_template.ini
-            --length=16
-            --seed=0
-    )
-
-    add_rumboot_target(
-      CONFIGURATION ROM
-      FILES
-        ${DEMONSTRATOR_TESTS_DIR}/test_on_vec_op_cycle.c
-    )
-
-		add_rumboot_target(
-      CONFIGURATION ROM
-      FILES
-        ${DEMONSTRATOR_TESTS_DIR}/demonstrator_pooling_test.c
-      IRUN_FLAGS
-        +input_data=${DEMONSTRATOR_TESTS_DIR}/input/data.bin
-        +etalon_data=${DEMONSTRATOR_TESTS_DIR}/input/etalon_data.bin
-    )
-    endif() # DEMONSTRATOR_SIMPLE
 endmacro()
 
 if (CMAKE_VERILOG_RULES_LOADED)
