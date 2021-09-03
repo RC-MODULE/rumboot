@@ -415,6 +415,9 @@ struct rumboot_syncbuffer {
 #define RUMBOOT_PLATFORM_NUM_IRQ_CONTROLLERS 4
 #endif
 
+#ifndef RUMBOOT_PLATFORM_NUM_GPIO_CONTROLLERS
+#define RUMBOOT_PLATFORM_NUM_GPIO_CONTROLLERS 4
+#endif
 
 /**
  * This represents a memory heap that can be used to
@@ -433,6 +436,9 @@ struct rumboot_heap {
 
 
 struct rumboot_irq_controller;
+
+struct rumboot_gpio_controller;
+
 /**
  * This global structure stores internal romboot state and some useful variables
  * It stores selftest results for further inspection by secondary
@@ -466,9 +472,13 @@ struct rumboot_runtime_info {
     /** Pointer to exception handler */
     void (*irq_exception_hndlr)(int id, const char *name);
     /** IRQ Context counter. Increments every time we start servicing interrupt, decrements when we exit from isr */
-    int irq_context_counter;  
+    int irq_context_counter;
     /** Type of current IRQ */
     int irq_type;
+    /** An array of available GPIO controllers */
+    struct rumboot_gpio_controller *gpio_ctrl_dev[RUMBOOT_PLATFORM_NUM_GPIO_CONTROLLERS];
+    /** How many GPIO controllers are registered */
+    int num_gpio_controllers;
     /** Level of function nesting (used by function tracing code) */
     int nestlevel;
     /** If non-zero, all serial debug output will be suspended */

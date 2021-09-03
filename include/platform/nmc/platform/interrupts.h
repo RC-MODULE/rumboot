@@ -11,6 +11,7 @@
 #define CP1_RCV_INT  18
 #define CP1_TRM_INT  19
 
-#define PPC_LOW_LEVEL_INT (49)
+#define GPIO0_INT    34
+#define GPIO1_INT    35
 
 #endif
