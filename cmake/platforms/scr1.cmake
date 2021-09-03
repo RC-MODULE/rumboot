@@ -519,6 +519,24 @@ endif() #### EXPERIMENT_STAGE_2_SUB_1
     foreach(out_macro IN ITEMS OUT_INT16 OUT_FP16)
       ADD_VPE_COUPLED_TEST_LOOP(  vpe_3_c3_IN_FP32_${out_macro}   main_vpe_3_c3_IN_FP32_${out_macro}  )
     endforeach()
+
+    # VPE::DEMUX OVERFLOW COUNTERS TESTS PIPELINE MODE-FLOW
+    foreach(out_macro IN ITEMS OUT_INT8 OUT_INT16 OUT_FP16)
+      ADD_VPE_COUPLED_TEST_LOOP(  vpe_overflow_counters_IN_INT32_${out_macro}  main_overflow_counters_IN_INT32_${out_macro} )
+    endforeach()
+    foreach(out_macro IN ITEMS OUT_INT16 OUT_FP16)
+      ADD_VPE_COUPLED_TEST_LOOP(  vpe_overflow_counters_IN_FP32_${out_macro}   main_overflow_counters_IN_FP32_${out_macro}  )
+    endforeach()
+    # не получилос(((
+    # add_rumboot_target(
+    #   CONFIGURATION ROM
+    #   FEATURES NOCODE
+    #   TESTGROUP vpe_overflow_counters-group
+    #   LOAD vpe_overflow_counters_IN_INT32_OUT_INT8,vpe_overflow_counters_IN_INT32_OUT_INT16
+    #   # LOAD rumboot-top-rumboot-scr1-Debug-ROM-vpe_overflow_counters_IN_INT32_OUT_INT8,rumboot-top-rumboot-scr1-Debug-ROM-vpe_overflow_counters_IN_INT32_OUT_INT16
+    #   NAME vpe_overflow_counters
+    # )
+
     
     # 
     ADD_VPE_COUPLED_TEST_LOOP(vpe_18_op2_c1 main_vpe_18_op2_c1)
