@@ -28,6 +28,7 @@ endif()
 if (NOT CMAKE_CXX_COMPILER)
     SET(CMAKE_CXX_COMPILER   "${CROSS_COMPILE}-g++${TOOL_SUFFIX}")
 endif()
+set(CMAKE_CXX_COMPILER_WORKS 1)
 
 # where is the target environment
 # This macro should be called once AFTER PROJECT() directive
