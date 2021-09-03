@@ -7,9 +7,9 @@
 #define RUMBOOT_IRQ_EDGE    (1 << 1)
 #define RUMBOOT_IRQ_LEVEL   (0 << 1)
 #define RUMBOOT_IRQ_POS     (0)
-#define RUMBOOT_IRQ_NEG     (0)
+#define RUMBOOT_IRQ_NEG     (1)
 #define RUMBOOT_IRQ_HIGH    (0)
-#define RUMBOOT_IRQ_LOW     (0)
+#define RUMBOOT_IRQ_LOW     (1)
 
 /*
  * General notes on NMC interrupt handling

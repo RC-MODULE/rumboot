@@ -4012,7 +4012,17 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       LOAD IM0BIN SELF
           MBIN oi10new-dcache-gc
     )
-    
+
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES common/gpio/base_functions.c
+    )
+
+    add_rumboot_target(
+      CONFIGURATION IRAM
+      FILES common/gpio/IRQ.c
+    )
+
 if(RUMBOOT_SOC_O32T)
     add_rumboot_target(
       CONFIGURATION IRAM

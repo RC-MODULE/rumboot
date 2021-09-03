@@ -406,6 +406,15 @@ add_rumboot_target(
   FILES common/bootrom/timer.c
 )
 
+  add_rumboot_target(
+    CONFIGURATION IRAM
+    FILES common/gpio/IRQ.c
+  )
+
+  add_rumboot_target(
+    CONFIGURATION IRAM
+    FILES common/gpio/base_functions.c
+  )
 
   dap_integration_test(dap/nmc_dbg_brp.S)
   dap_integration_test(dap/nmc_dbg_dap_integration.S)

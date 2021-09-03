@@ -1887,6 +1887,12 @@ add_rumboot_target(
 #     LOAD IM0BIN simple-iram-chain-start-dummy,iram-ddr_initializer,iram-ddr0_addr_test
     NAME chain-test_mt14305
   )
+
+  add_rumboot_target(
+    CONFIGURATION IRAM
+    FILES gpio/IRQ.c
+    PREFIX "gpio"
+  )
   
 endmacro()
 

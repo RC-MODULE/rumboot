@@ -1024,7 +1024,6 @@ add_rumboot_target(
   TIMEOUT 10 ms
   #Сначала стартуем код на nmc, потом себя
   LOAD IM0BIN nmc:iram-nmc_nterprocessor_irq_integration,SELF
-
 )
 
 add_rumboot_target(
@@ -1091,6 +1090,16 @@ add_rumboot_target(
   NAME test_hscb_com_fpu_nmc_big
   LOAD IM0BIN nmc:core-power-consumption,SELF
 )  
+
+    add_rumboot_target(
+        CONFIGURATION IRAM_IM0
+        FILES common/gpio/base_functions.c
+    )
+
+    add_rumboot_target(
+        CONFIGURATION IRAM_IM0
+        FILES common/gpio/IRQ.c
+    )
 
 endmacro()
 
