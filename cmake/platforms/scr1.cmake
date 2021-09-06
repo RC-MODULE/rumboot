@@ -384,8 +384,19 @@ endif() #### EXPERIMENT_STAGE_2_SUB_1
         )
     endmacro()
 
+      # For The Misaligned Malloc In VPE DMA Tests
+    set(MISALIGN_COUNT 0)
+    macro(misalign_increment)
+      if(MISALIGN_COUNT STREQUAL 15)
+        set(MISALIGN_COUNT 1)
+      else()
+        MATH(EXPR MISALIGN_COUNT "${MISALIGN_COUNT} + 1")
+      endif()
+    endmacro()
+
     macro(ADD_VPE_PPE_COUPLED_TEST_LOOP_FORCE_WDMA name rm_bin_name)
-      set(MISALIGN RANGE 0 15)
+      misalign_increment()
+      set(MISALIGN RANGE 0 ${MISALIGN_COUNT})
       foreach(IntMisalign ${MISALIGN})
         add_rumboot_target(
             CONFIGURATION ROM
@@ -400,7 +411,8 @@ endif() #### EXPERIMENT_STAGE_2_SUB_1
     endmacro()
 
     macro(ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA name rm_bin_name)
-      set(MISALIGN RANGE 0 15)
+      misalign_increment()
+      set(MISALIGN 0 ${MISALIGN_COUNT})
       foreach(IntMisalign ${MISALIGN})
         add_rumboot_target(
             CONFIGURATION ROM
