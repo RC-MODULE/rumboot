@@ -1977,20 +1977,22 @@ void nu_ppe_setup_reg(uintptr_t rbase, uintptr_t wbase, ConfigREGPPE* cfg) {
   // rdma
   // iowrite32(cfg->rSt,      rbase + NU_PPE_RDMA_STATUS);
   iowrite32(0X00000000,   rbase + NU_PPE_RDMA_OP_ENABLE);
-  iowrite32(cfg->rPWi,    rbase + NU_PPE_RDMA_PLANE_W_IN);
-  iowrite32(cfg->rPHi,    rbase + NU_PPE_RDMA_PLANE_H_IN);
-  iowrite32(cfg->rPCi,    rbase + NU_PPE_RDMA_PLANE_C_IN);
-  iowrite32(cfg->rBALs,   rbase + NU_PPE_RDMA_SRC_BASE_ADDR_L);
-  // iowrite32(cfg->rBAHs,    rbase + NU_PPE_RDMA_SRC_BASE_ADDR_H);
-  iowrite32(cfg->rVSs,    rbase + NU_PPE_RDMA_SRC_VECTOR_STRIDE);
-  iowrite32(cfg->rLSs,    rbase + NU_PPE_RDMA_SRC_LINE_STRIDE);
-  iowrite32(cfg->rESs,    rbase + NU_PPE_RDMA_SRC_ELEMENT_STRIDE);
-  iowrite32(cfg->rOpM,    rbase + NU_PPE_RDMA_OP_MODE);
-  iowrite32(cfg->rBSWi,   rbase + NU_PPE_RDMA_BOX_SIZE_W_IN);
-  iowrite32(cfg->rBSHi,   rbase + NU_PPE_RDMA_BOX_SIZE_H_IN);
-  iowrite32(cfg->rBSCi,   rbase + NU_PPE_RDMA_BOX_SIZE_C_IN);
-  iowrite32(cfg->rStWi,   rbase + NU_PPE_RDMA_BOX_START_W_IN);
-  iowrite32(cfg->rOfWi,   rbase + NU_PPE_RDMA_BOX_OFFSET_W_IN);
+  //iowrite32(cfg->rPWi,    rbase + NU_PPE_RDMA_PLANE_W_IN);
+ //iowrite32(cfg->rPHi,    rbase + NU_PPE_RDMA_PLANE_H_IN);
+ // iowrite32(cfg->rPCi,    rbase + NU_PPE_RDMA_PLANE_C_IN);
+  iowrite32(cfg->rBALs,   rbase + NU_PPE_RDMA_BASE_ADDR);
+
+  iowrite32(cfg->rVSs,    rbase + NU_PPE_RDMA_STRIDE_X); //???????????
+  iowrite32(cfg->rLSs,    rbase + NU_PPE_RDMA_STRIDE_Y);
+  iowrite32(cfg->rESs,    rbase + NU_PPE_RDMA_STRIDE_Z);
+ // iowrite32(cfg->rOpM,    rbase + NU_PPE_RDMA_OP_MODE);
+ iowrite32(cfg->rBSWi,   rbase + NU_PPE_RDMA_BOX_SIZE_X); //?
+  iowrite32(cfg->rBSHi,   rbase + NU_PPE_RDMA_BOX_SIZE_Y); //?
+  iowrite32(cfg->rBSCi,   rbase + NU_PPE_RDMA_BOX_SIZE_Z); //?
+  iowrite32(cfg->rOfWi,   rbase + NU_PPE_RDMA_BOX_OFFSET_X); //NU_PPE_RDMA_BOX_OFFSET_W_IN
+  // iowrite32(cfg->rOfHi,   rbase + NU_PPE_RDMA_BOX_OFFSET_Y); //???
+ // iowrite32(cfg->rOfCi,   rbase + NU_PPE_RDMA_BOX_OFFSET_Z); //???
+ 
   // iowrite32(cfg->rK,      rbase + NU_PPE_RDMA_KERNEL);
   // ppe + wdma
   // iowrite32(cfg->wSt,      wbase + NU_PPE_STATUS);
@@ -2001,25 +2003,27 @@ void nu_ppe_setup_reg(uintptr_t rbase, uintptr_t wbase, ConfigREGPPE* cfg) {
   iowrite32(cfg->wWo,     wbase + NU_PPE_DATA_W_OUT);
   iowrite32(cfg->wHo,     wbase + NU_PPE_DATA_H_OUT);
   iowrite32(cfg->wCo,     wbase + NU_PPE_DATA_C_OUT);
-  iowrite32(cfg->wPWo,    wbase + NU_PPE_PLANE_W_OUT);
-  iowrite32(cfg->wPHo,    wbase + NU_PPE_PLANE_H_OUT);
-  iowrite32(cfg->wPCo,    wbase + NU_PPE_PLANE_C_OUT);
-  iowrite32(cfg->wBALd,   wbase + NU_PPE_DST_BASE_ADDR_L);
+ // iowrite32(cfg->wPWo,    wbase + NU_PPE_PLANE_W_OUT);
+//  iowrite32(cfg->wPHo,    wbase + NU_PPE_PLANE_H_OUT);
+//  iowrite32(cfg->wPCo,    wbase + NU_PPE_PLANE_C_OUT);
+ iowrite32(cfg->wBALd,   wbase + NU_PPE_WDMA_BASE_ADDR); //???;
   // iowrite32(cfg->wBAHd,    wbase + NU_PPE_DST_BASE_ADDR_H);
-  iowrite32(cfg->wVSd,    wbase + NU_PPE_DST_VECTOR_STRIDE);
-  iowrite32(cfg->wLSd,    wbase + NU_PPE_DST_LINE_STRIDE);
-  iowrite32(cfg->wESd,    wbase + NU_PPE_DST_ELEMENT_STRIDE);
+  iowrite32(cfg->wVSd,    wbase + NU_PPE_WDMA_STRIDE_X);
+  iowrite32(cfg->wLSd,    wbase + NU_PPE_WDMA_STRIDE_Y);
+  iowrite32(cfg->wESd,    wbase + NU_PPE_WDMA_STRIDE_Z);
   iowrite32(cfg->wOpM,    wbase + NU_PPE_OP_MODE);
-  iowrite32(cfg->wBSWi,   wbase + NU_PPE_BOX_SIZE_W_IN);
-  iowrite32(cfg->wBSHi,   wbase + NU_PPE_BOX_SIZE_H_IN);
-  iowrite32(cfg->wBSCi,   wbase + NU_PPE_BOX_SIZE_C_IN);
-  iowrite32(cfg->wStWi,   wbase + NU_PPE_BOX_START_W_IN);
-  iowrite32(cfg->wOfWi,   wbase + NU_PPE_BOX_OFFSET_W_IN);
-  iowrite32(cfg->wBSWo,   wbase + NU_PPE_BOX_SIZE_W_OUT);
-  iowrite32(cfg->wBSHo,   wbase + NU_PPE_BOX_SIZE_H_OUT);
-  iowrite32(cfg->wBSCo,   wbase + NU_PPE_BOX_SIZE_C_OUT);
-  iowrite32(cfg->wStWo,   wbase + NU_PPE_BOX_START_W_OUT);
-  iowrite32(cfg->wOfWo,   wbase + NU_PPE_BOX_OFFSET_W_OUT);
+  iowrite32(cfg->wBSWi,   wbase + NU_PPE_WDMA_BOX_SIZE_X);
+  iowrite32(cfg->wBSHi,   wbase + NU_PPE_WDMA_BOX_SIZE_Y);
+  iowrite32(cfg->wBSCi,   wbase + NU_PPE_WDMA_BOX_SIZE_Z);
+  iowrite32(cfg->wStWi,   wbase + NU_PPE_WDMA_BOX_ST_SIZE_X);
+  iowrite32(cfg->wOfWi,   wbase + NU_PPE_WDMA_BOX_OFFSET_X);
+  //iowrite32(cfg->wBSWo,   wbase + NU_PPE_BOX_SIZE_W_OUT);
+  //iowrite32(cfg->wBSHo,   wbase + NU_PPE_BOX_SIZE_H_OUT);
+  //iowrite32(cfg->wBSCo,   wbase + NU_PPE_BOX_SIZE_C_OUT);
+ // iowrite32(cfg->wStWo,   wbase + NU_PPE_BOX_START_W_OUT);
+  iowrite32(cfg->wOfWo,   wbase + NU_PPE_WDMA_BOX_OFFSET_X);
+ // iowrite32(cfg->wOfHo,   wbase + NU_PPE_BOX_OFFSET_Y); //????
+ // iowrite32(cfg->wOfCo,   wbase + NU_PPE_BOX_OFFSET_Z); //????
   iowrite32(cfg->wK,      wbase + NU_PPE_KERNEL);
   iowrite32(cfg->wKWr,    wbase + NU_PPE_RECIP_KERNEL_W);
   iowrite32(cfg->wKHr,    wbase + NU_PPE_RECIP_KERNEL_H);
