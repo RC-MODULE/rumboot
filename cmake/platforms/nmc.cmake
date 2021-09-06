@@ -409,11 +409,13 @@ add_rumboot_target(
   add_rumboot_target(
     CONFIGURATION IRAM
     FILES common/gpio/IRQ.c
+    PREFIX "gpio"
   )
 
   add_rumboot_target(
     CONFIGURATION IRAM
     FILES common/gpio/base_functions.c
+    PREFIX "gpio"
   )
 
   dap_integration_test(dap/nmc_dbg_brp.S)

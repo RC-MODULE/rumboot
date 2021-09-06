@@ -4,7 +4,7 @@
 #include <rumboot/io.h>
 #include <rumboot/regpoker.h>
 #include <regs/regs_gpio_rcm.h>
-#include <arch/irq_macros.h>
+#include <rumboot/irq.h>
 
 #define EVENT_OFFSET 2  // (some hack)
 /* GPIO_IRQ_MASK
@@ -73,17 +73,12 @@ int rcm_IRQ_configure(struct rumboot_gpio_controller *self, int gpio, int enable
     }
 
     int new_event = 0;
-    switch (flags) {
-        case RUMBOOT_IRQ_EDGE | RUMBOOT_IRQ_POS:
-            new_event = 0;
-            break;
-        case RUMBOOT_IRQ_EDGE | RUMBOOT_IRQ_NEG:
-            new_event = 1;
-            break;
-        default:
-            return -1;
-    }
+    if (flags == RUMBOOT_IRQ_EDGE | RUMBOOT_IRQ_POS) new_event = 0;
+    else if (flags == RUMBOOT_IRQ_EDGE | RUMBOOT_IRQ_NEG) new_event = 1;
+    else return -1;
+
     if (new_event == event) return 0;
+
     if ((mask >> mask_bit) & 1) {
         int new_mask_bit = sector + (1 - event);
         mask &= ~(1 << mask_bit); // clear current MASK BIT

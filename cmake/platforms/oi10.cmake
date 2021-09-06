@@ -4016,11 +4016,13 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES common/gpio/base_functions.c
+      PREFIX "gpio"
     )
 
     add_rumboot_target(
       CONFIGURATION IRAM
       FILES common/gpio/IRQ.c
+      PREFIX "gpio"
     )
 
 if(RUMBOOT_SOC_O32T)

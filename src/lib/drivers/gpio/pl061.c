@@ -5,7 +5,7 @@
 #include <rumboot/regpoker.h>
 #include <platform/devices.h>
 #include <regs/regs_gpio_pl061.h>
-#include <arch/irq_macros.h>
+#include <rumboot/irq.h>
 
 static struct regpoker_checker default_array[] = {
     {"GPIO_PeriphID0", REGPOKER_READ32, GPIO_PeriphID0, GPIO_PeriphID0_DEFAULT, GPIO_REG_MASK},
@@ -29,26 +29,19 @@ static void reg_write(uintptr_t address, int gpio, int value)
 
 static int get_IRQ_sense_and_event(int flags, int *sense, int *event)
 {
-    switch (flags) {
-        case RUMBOOT_IRQ_EDGE | RUMBOOT_IRQ_POS:
-            *sense = 0;
-            *event = 1;
-            break;
-        case RUMBOOT_IRQ_EDGE | RUMBOOT_IRQ_NEG:
-            *sense = 0;
-            *event = 0;
-            break;
-        case RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH:
-            *sense = 1;
-            *event = 1;
-            break;
-        case RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_LOW:
-            *sense = 1;
-            *event = 0;
-            break;
-        default:
-            return -1;
-    }
+    if (flags == RUMBOOT_IRQ_EDGE | RUMBOOT_IRQ_POS) {
+        *sense = 0;
+        *event = 1;
+    } else if (flags == RUMBOOT_IRQ_EDGE | RUMBOOT_IRQ_NEG) {
+        *sense = 0;
+        *event = 0;
+    } else if (flags == RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_HIGH) {
+        *sense = 1;
+        *event = 1;
+    } else if (flags == RUMBOOT_IRQ_LEVEL | RUMBOOT_IRQ_LOW) {
+        *sense = 1;
+        *event = 0;
+    } else return -1;
     return 0;
 }
 
@@ -76,7 +69,7 @@ int pl061_IRQ_configure(struct rumboot_gpio_controller *self, int gpio, int enab
 
     int sense, event;
     int error = get_IRQ_sense_and_event(flags, &sense, &event);
-    if (error != 0) return error;
+    if (error) return error;
     reg_write(self->base + GPIO_IS, gpio, sense);
     reg_write(self->base + GPIO_IEV, gpio, event);
     return 0;

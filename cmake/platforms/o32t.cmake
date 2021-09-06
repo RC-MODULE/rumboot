@@ -1094,11 +1094,13 @@ add_rumboot_target(
     add_rumboot_target(
         CONFIGURATION IRAM_IM0
         FILES common/gpio/base_functions.c
+        PREFIX "gpio"
     )
 
     add_rumboot_target(
         CONFIGURATION IRAM_IM0
         FILES common/gpio/IRQ.c
+        PREFIX "gpio"
     )
 
 endmacro()
