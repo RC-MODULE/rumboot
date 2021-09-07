@@ -291,6 +291,15 @@ void hscb_rdma_prepare(uint32_t base_addr, uint32_t *rdma_ctrl_word)
                ( rdma_settings.cancel_rwdma      << HSCB_XDMA_SETTINGS_CANCEL_XDMA_i );
 }
 
+// Add by M.Chelyshev as glitch-protect
+uint32_t disable_hscb (uint32_t hscb_base){
+    uint32_t tmp = 0;
+    tmp = ioread32(hscb_base + HSCB_SETTINGS);
+    tmp = tmp & 0xfffffffe;
+    iowrite32(tmp, hscb_base + HSCB_SETTINGS);
+}
+// ------------------------------------
+
 void config_hscb(uint32_t hscb_base_addr, hscb_descr **hscb_tx_dsc_table, char *hscb_tx_dsctbl_heap_name, char *hscb_tx_data_heap_name, hscb_descr **hscb_rx_dsc_table, char *hscb_rx_dsctbl_heap_name, char *hscb_rx_data_heap_name, uint32_t *rdma_ctrl_word) {
     hscb_descr *dsc_table;
     uint32_t rdma_ctrl_word_loc;
@@ -529,6 +538,13 @@ int main() {
     #endif
     
     // ---- Config of HSCB     
+// Add by M.Chelyshev as glitch-protect
+    if(DEBUG_PRINT) rumboot_printf( "Disable all HSCB controllers\n");
+    disable_hscb(HSCB0_BASE);    
+    disable_hscb(HSCB1_BASE);    
+    disable_hscb(HSCB2_BASE);    
+    disable_hscb(HSCB3_BASE);
+// ------------------------------------
     if(DEBUG_PRINT) rumboot_printf("----Config of HSCB0----\n");
     config_hscb(HSCB0_BASE, &hscb0_tx_dsc_table, HSCB0_TX_DSCTBL_BASE, HSCB0_TX_DATA_BASE, &hscb0_rx_dsc_table, HSCB0_RX_DSCTBL_BASE, HSCB0_RX_DATA_BASE, &rdma_ctrl_word[0]);
     if(DEBUG_PRINT) rumboot_printf("----Config of HSCB1----\n");
