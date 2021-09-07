@@ -168,12 +168,19 @@ endif()
 ##############################################################################
 
 function(rumboot_add_external_project directory)
-    message("DEBUG>>>>>>> ${GIT_EXECUTABLE} submodule status ${directory}| grep -P '^-' && ${GIT_EXECUTABLE} submodule update --init ${directory}")
       ## Download The External If it is not inited
     execute_process(
-      COMMAND "${GIT_EXECUTABLE} submodule status ${directory} | grep -P '^-' && ${GIT_EXECUTABLE} submodule update --init ${directory}"
+      COMMAND ${GIT_EXECUTABLE} submodule status ${directory}
       WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+      OUTPUT_VARIABLE GIT_SUBMOD_STATUS_OUTPUT
     )
+    if(GIT_SUBMOD_STATUS_OUTPUT MATCHES "^-")
+      execute_process(
+        COMMAND ${GIT_EXECUTABLE} submodule update --init ${directory}
+        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+      )
+    endif()
+      ##
 
     get_filename_component(_name ${directory} NAME_WE)
 
