@@ -1,6 +1,11 @@
   // Macros To Distinguish DUTs In SCR1 Environment
   // The DUT Macro Is Set From scr1.cmake
 #include <regs/regs_na.h>
+
+#ifndef DUT
+  #define DUT 'N'
+#endif
+
 #define DUT_IS_NPE ( DUT == 'N' )
 #define DUT_IS_MPE ( DUT == 'M' )
 #define DUT_IS_VPE ( DUT == 'V' )

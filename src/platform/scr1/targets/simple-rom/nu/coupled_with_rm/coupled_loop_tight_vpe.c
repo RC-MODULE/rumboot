@@ -100,6 +100,10 @@ int main() {
   rumboot_platform_request_file("num_iterations_file_tag",(uintptr_t) &iterations);
   rumboot_printf("Number of iterations %d\n",iterations);
   
+#if DUT_IS_NPE
+  na_cu_set_units_direct_mode(NPE_BASE+NA_CU_REGS_BASE, NA_CU_VPE_UNIT_MODE);
+#endif
+  
   for(i=0;i<=iterations;i++) {
     if(i!=iterations) {
       rumboot_printf("Starting iteration %d\n",i);

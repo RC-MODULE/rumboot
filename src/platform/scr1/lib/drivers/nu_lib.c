@@ -2134,3 +2134,12 @@ bool nu_vpe_mode_to_bool (Mode in_mode){
   else                         res = 1;
   return res;
 }
+
+
+void na_cu_set_units_direct_mode(uintptr_t base, uint32_t mask) {
+  uint32_t temp;
+  temp = ioread32(base + NA_CU_UNITS_MODE);
+  temp = temp | mask;
+  rumboot_printf("Writing [0x%x]=0x%x\n",base + NA_CU_UNITS_MODE,temp);
+  iowrite32(temp,base + NA_CU_UNITS_MODE);
+}

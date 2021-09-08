@@ -482,6 +482,9 @@ void nu_vpe_wait_cntx_appl(uintptr_t vpe_base, ConfigVPE* cfg);
 void nu_mpe_run(uintptr_t mpe_base, ConfigDMAMPE* cfg_dma);
 void nu_mpe_wait(uintptr_t mpe_base, ConfigDMAMPE* cfg_dma);
 
+void na_cu_set_units_direct_mode(uintptr_t base, uint32_t mask);
+
+
 void nu_vpe_config_wr_main_channel(uintptr_t dma_base, void *addr, int size);
 void nu_vpe_run_wr_main_channel(uintptr_t dma_base);
 void nu_vpe_wait_wr_main_channel_complete(uintptr_t dma_base);

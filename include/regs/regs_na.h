@@ -2,6 +2,7 @@
 #include "regs_nu_mpe.h"
 #include "regs_nu_vpe.h"
 #include "regs_nu_ppe.h"
+#include "regs_na_cu.h"
 
 #define NA_CU_REGS_BASE (1<<13)
 #define NA_MPE_BASE 0x0000
