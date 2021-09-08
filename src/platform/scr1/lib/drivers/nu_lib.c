@@ -5,9 +5,7 @@
 #include <rumboot/rumboot.h>
 #include <rumboot/io.h>
 
-#include <regs/regs_nu_mpe.h>
-#include <regs/regs_nu_vpe.h>
-#include <regs/regs_nu_ppe.h>
+#include <regs/regs_na.h>
 
 //#include <platform/devices.h> 
 #include <platform/devices/nu_cpdmac_lib.h>

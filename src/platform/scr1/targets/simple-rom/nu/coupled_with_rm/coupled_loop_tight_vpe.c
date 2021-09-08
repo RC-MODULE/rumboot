@@ -8,6 +8,7 @@
 
 #include <platform/devices/nu_lib.h> 
 #include <platform/devices/nu_test_lib.h> 
+#include <platform/devices/nu_test_macro.h> 
 
 #include "platform/devices/nu_vpe_file_tags.h"
 
@@ -137,7 +138,7 @@ int main() {
         lut2_metrics = nu_load_vec_metrics(heap_id,metrics_lut2_file_tag[i]);
         lut1 = nu_load_vec(heap_id,lut1_file_tag[i],lut1_metrics);
         lut2 = nu_load_vec(heap_id,lut2_file_tag[i],lut2_metrics);
-        nu_vpe_load_lut(NU_VPE_STANDALONE_BASE,lut1,lut2);
+        nu_vpe_load_lut(MY_VPE_REGS_BASE,lut1,lut2);
       }
       
       etalon = nu_load_cube(heap_id,etalon_file_tag[i],res_metrics);
@@ -158,7 +159,7 @@ int main() {
       // nu_print_config_dma(&cfg.wdma_config,"wdma_config");
       // nu_vpe_print_status_regs_etalon(&status_regs_etalon);
       
-      nu_vpe_setup(NU_VPE_STANDALONE_BASE, &cfg, &cfg_dma);
+      nu_vpe_setup(MY_VPE_REGS_BASE, &cfg, &cfg_dma);
       
         // Setup Main Channel DMAs if Required
       if(cfg.src_rdma_config.dma_en == Enable_NotEn)
@@ -175,13 +176,13 @@ int main() {
         nu_vpe_run_wr_main_channel(NU_CPDMAC_ASM_BASE);
       
       
-      nu_vpe_run(NU_VPE_STANDALONE_BASE, &cfg);     // To Invoke Or Not To Invoke Internal DMA Channel - Decide inside nu_vpe_run
-      nu_vpe_wait_cntx_appl(NU_VPE_STANDALONE_BASE, &cfg);
+      nu_vpe_run(MY_VPE_REGS_BASE, &cfg);     // To Invoke Or Not To Invoke Internal DMA Channel - Decide inside nu_vpe_run
+      nu_vpe_wait_cntx_appl(MY_VPE_REGS_BASE, &cfg);
     }
     
     if(i!=0) {
         
-      nu_vpe_wait(NU_VPE_STANDALONE_BASE, &tail_cfg);
+      nu_vpe_wait(MY_VPE_REGS_BASE, &tail_cfg);
       
         // Finalize Required DMA Channels
       if(tail_cfg.src_rdma_config.dma_en == Enable_NotEn)

@@ -30,6 +30,9 @@ rumboot_add_configuration(
 
 
 macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
+      # Extract The First Letter Of The DUT (We Pass It As A Define Into c-code)
+    string(SUBSTRING "${DUT}" 0 1 DUT_LETTER)
+    set(DUT_LETTER_QUOTED '${DUT_LETTER}')
 
     rumboot_add_external_project(externals/npe_rm -DCOMPILE_FROM_ROMBOOT="YES")
 
@@ -344,6 +347,71 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
     set(RM_LOGFILE npe_rm.log)
 
     ###################################
+    if(DUT STREQUAL "VPE" OR DUT STREQUAL "NPE")
+        # For The Misaligned Malloc In VPE DMA Tests
+      set(MISALIGN_COUNT 0)
+      macro(misalign_increment)
+        if(MISALIGN_COUNT STREQUAL 15)
+          set(MISALIGN_COUNT 1)
+        else()
+          MATH(EXPR MISALIGN_COUNT "${MISALIGN_COUNT} + 1")
+        endif()
+      endmacro()
+
+      macro(ADD_VPE_PPE_COUPLED_TEST_LOOP_FORCE_WDMA name rm_bin_name)
+        misalign_increment()
+        set(MISALIGN RANGE 0 ${MISALIGN_COUNT})
+        foreach(IntMisalign ${MISALIGN})
+          add_rumboot_target(
+              CONFIGURATION ROM
+              NAME ${name}_${IntMisalign}
+              FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe.c
+              CFLAGS -DFORCE_VPE_WDMA_EN=1 -DMISALIGN_EN=1 -DIntMisalign=${IntMisalign} -DVPE_TraceMode_PPE=1 -DDUT=${DUT_LETTER_QUOTED}
+              PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
+              IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+              SUBPROJECT_DEPS npe_rm:${rm_bin_name}
+          )
+        endforeach()
+      endmacro()
+
+      macro(ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA name rm_bin_name)
+        misalign_increment()
+        set(MISALIGN 0 ${MISALIGN_COUNT})
+        foreach(IntMisalign ${MISALIGN})
+          add_rumboot_target(
+              CONFIGURATION ROM
+              NAME ${name}_${IntMisalign}
+              FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe.c
+              CFLAGS -DFORCE_VPE_WDMA_EN=1 -DMISALIGN_EN=1 -DIntMisalign=${IntMisalign} -DDUT=${DUT_LETTER_QUOTED}
+              PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
+              IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+              SUBPROJECT_DEPS npe_rm:${rm_bin_name}
+          )
+          add_rumboot_target(
+              CONFIGURATION ROM
+              NAME ${name}_tight_${IntMisalign}
+              FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_tight_vpe.c
+              PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
+              CFLAGS -DMISALIGN_EN=1 -DIntMisalign=${IntMisalign} -DFORCE_VPE_WDMA_EN=1 -DDUT=${DUT_LETTER_QUOTED}
+              IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+              SUBPROJECT_DEPS npe_rm:${rm_bin_name}
+          )
+        endforeach()
+      endmacro()
+      
+      macro(ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_AXI_LEN name rm_bin_name axi_len)
+          add_rumboot_target(
+              CONFIGURATION ROM
+              NAME ${name}
+              FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe.c
+              CFLAGS -DFORCE_VPE_WDMA_EN=1 -DAXI_LEN=1 -DAxiLen=${axi_len} -DDUT=${DUT_LETTER_QUOTED}
+              PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
+              IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+              SUBPROJECT_DEPS npe_rm:${rm_bin_name}
+          )
+      endmacro()
+    endif() # DUT STREQUAL VPE OR NPE
+    ############
     if(DUT STREQUAL "VPE")
       
     add_rumboot_target(
@@ -384,69 +452,6 @@ endif() #### EXPERIMENT_STAGE_2_SUB_1
         )
     endmacro()
 
-      # For The Misaligned Malloc In VPE DMA Tests
-    set(MISALIGN_COUNT 0)
-    macro(misalign_increment)
-      if(MISALIGN_COUNT STREQUAL 15)
-        set(MISALIGN_COUNT 1)
-      else()
-        MATH(EXPR MISALIGN_COUNT "${MISALIGN_COUNT} + 1")
-      endif()
-    endmacro()
-
-    macro(ADD_VPE_PPE_COUPLED_TEST_LOOP_FORCE_WDMA name rm_bin_name)
-      misalign_increment()
-      set(MISALIGN RANGE 0 ${MISALIGN_COUNT})
-      foreach(IntMisalign ${MISALIGN})
-        add_rumboot_target(
-            CONFIGURATION ROM
-            NAME ${name}_${IntMisalign}
-            FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe.c
-            CFLAGS -DFORCE_VPE_WDMA_EN=1 -DMISALIGN_EN=1 -DIntMisalign=${IntMisalign} -DVPE_TraceMode_PPE=1
-            PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
-            IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
-            SUBPROJECT_DEPS npe_rm:${rm_bin_name}
-        )
-      endforeach()
-    endmacro()
-
-    macro(ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA name rm_bin_name)
-      misalign_increment()
-      set(MISALIGN 0 ${MISALIGN_COUNT})
-      foreach(IntMisalign ${MISALIGN})
-        add_rumboot_target(
-            CONFIGURATION ROM
-            NAME ${name}_${IntMisalign}
-            FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe.c
-            CFLAGS -DFORCE_VPE_WDMA_EN=1 -DMISALIGN_EN=1 -DIntMisalign=${IntMisalign}
-            PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
-            IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
-            SUBPROJECT_DEPS npe_rm:${rm_bin_name}
-        )
-        add_rumboot_target(
-            CONFIGURATION ROM
-            NAME ${name}_tight_${IntMisalign}
-            FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_tight_vpe.c
-            PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
-            CFLAGS -DMISALIGN_EN=1 -DIntMisalign=${IntMisalign} -DFORCE_VPE_WDMA_EN=1
-            IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
-            SUBPROJECT_DEPS npe_rm:${rm_bin_name}
-        )
-      endforeach()
-    endmacro()
-    
-    macro(ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA_AXI_LEN name rm_bin_name axi_len)
-        add_rumboot_target(
-            CONFIGURATION ROM
-            NAME ${name}
-            FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe.c
-            CFLAGS -DFORCE_VPE_WDMA_EN=1 -DAXI_LEN=1 -DAxiLen=${axi_len}
-            PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
-            IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
-            SUBPROJECT_DEPS npe_rm:${rm_bin_name}
-        )
-    endmacro()
-    
     macro(ADD_VPE_COUPLED_TEST_CONTROL_CONS name rm_bin_name)
         add_rumboot_target(
             CONFIGURATION ROM
@@ -605,6 +610,9 @@ endif() #### EXPERIMENT_STAGE_2_SUB_1
     ADD_VPE_COUPLED_TEST_LOOP(vpe_26_autonom_nowdma main_vpe_26_autonom)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_28_perf main_28_perf) # VPE_28
     
+    endif()  # if(DUT STREQUAL "VPE")
+
+    if(DUT STREQUAL "VPE" OR DUT STREQUAL "NPE")
     ################
     # VPE Tests adapted for NPE assembly
     ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(npe_vpe_op0_f_int main_npe_vpe_op0_f_int)
@@ -756,7 +764,7 @@ if(DEFINED EXPERIMENT_STAGE_2_SUB_1) ####
 
 endif() #### EXPERIMENT_STAGE_2_SUB_1
 
-    endif()  # if(DUT STREQUAL "VPE")
+    endif()  # if(DUT STREQUAL "VPE" OR "NPE")
 
     ###############
     if(DUT STREQUAL "PPE")
