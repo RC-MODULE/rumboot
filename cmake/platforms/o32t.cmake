@@ -1027,7 +1027,7 @@ add_rumboot_target(
 )
 
 add_rumboot_target(
-        CONFIGURATION IRAM_IM0
+        CONFIGURATION IRAM_IM0_WITH_EMI
         IRUN_FLAGS +RANDOMIZE_SDRAM
         #CFLAGS -DHSCB_UNDER_TEST_BASE=HSCB0_BASE
         CFLAGS -DHSCB0_TX_DSCTBL_BASE="IM1"
@@ -1052,6 +1052,7 @@ add_rumboot_target(
                -DN_OF_PACKETS=2   
                -DTEST_DATA_SIZE=4096   
                -DPOWER_TEST=1
+               -DCOMP_FOR_POWER=1
                #-DDEBUG_PRINT=1
         FILES oi10/targets/simple-iram/test_oi10_cpu_023.c oi10/targets/power/test_oi10_power_1_6_1.S oi10/targets/test_oi10_hscb_com_fpu_simult_big.c
         PREFIX "hscb_com_fpu_desc_im1_data_ssram"
@@ -1060,7 +1061,7 @@ add_rumboot_target(
     )
     
 add_rumboot_target(
-  CONFIGURATION IRAM_IM0
+  CONFIGURATION IRAM_IM0_WITH_EMI
   CFLAGS -DHSCB0_TX_DSCTBL_BASE="IM1"
          -DHSCB0_TX_DATA_BASE="SSRAM"
          -DHSCB0_RX_DSCTBL_BASE="IM1"
@@ -1083,11 +1084,13 @@ add_rumboot_target(
          -DN_OF_PACKETS=2   
          -DTEST_DATA_SIZE=4096   
          -DPOWER_TEST=1
+         -DCOMP_FOR_POWER=1
          #-DDEBUG_PRINT=1
   FILES oi10/targets/simple-iram/test_oi10_cpu_023.c oi10/targets/power/test_oi10_power_1_6_1.S oi10/targets/test_oi10_hscb_com_fpu_simult_big.c
   #FILES oi10/targets/power/test_oi10_power_1_6_1.S oi10/targets/test_oi10_hscb_com_fpu_simult_big.c
   PREFIX "hscb_com_fpu_nmc_desc_im1_data_ssram"
   NAME test_hscb_com_fpu_nmc_big
+  TIMEOUT 15 ms
   LOAD IM0BIN nmc:core-power-consumption,SELF
 )  
 

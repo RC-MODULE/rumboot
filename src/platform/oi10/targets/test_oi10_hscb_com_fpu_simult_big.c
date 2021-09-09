@@ -91,7 +91,7 @@
 #define CHANGE_ENDIANN true
 #endif
 
-#ifndef POWER_FOR_OI10V3
+#ifdef COMP_FOR_POWER
 #define ARR_SIZE 128
 #define COM0_BASE 0xC0304000
 #define COM1_BASE 0xC0305000
@@ -104,7 +104,7 @@
 #endif
 
 #define BUF_SIZE 1024
-#define TIMEOUT (BUF_SIZE*50)
+//#define TIMEOUT (BUF_SIZE*50)
 #define WORD_SIZE 8
 #ifndef BASE_FREQ
     #define BASE_FREQ 50000
@@ -500,7 +500,7 @@ int main() {
     hscb_descr **tx_dsc_tables, **rx_dsc_tables;
 // -----------------------------------------------------------   
 
-#ifndef POWER_FOR_OI10V3 
+#ifdef COMP_FOR_POWER 
 // for com port (from test_com_es_elaborate)
     uint32_t* tx_buf;
     uint32_t* rx_buf;
@@ -508,10 +508,10 @@ int main() {
     struct rcm_cp_instance c1; 
     int r;
     int size;
-    int timeout_us;  
+    //int timeout_us;  
   
     size = BUF_SIZE;
-    timeout_us = TIMEOUT;
+    //timeout_us = TIMEOUT;
     ////
 #endif
 
@@ -528,13 +528,19 @@ int main() {
     
     write_tlb_entries(em2_nospeculative_tlb_entries, ARRAY_SIZE(em2_nospeculative_tlb_entries));
     // --- init EMI
+    
+    #ifndef EMI_INIT_FOR_POWER
+    //emi_init(DCR_EM2_EMI_BASE);
+    #else
     emi_init(DCR_EM2_EMI_BASE);
+    #endif
+        
     tbl = create_irq_handlers();  
 
-    #ifndef POWER_FOR_OI10V3
-    rumboot_printf("Running power test\n");   
+    #ifdef COMP_FOR_POWER
+    rumboot_printf("Running power test for O32T project\n");   
     #else
-    rumboot_printf("Power test for OI10_V3\n");
+    rumboot_printf("Power test for OI10 project\n");
     #endif
     
     // ---- Config of HSCB     
@@ -581,7 +587,7 @@ int main() {
     establish_link(HSCB0_BASE, HSCB1_BASE);
     establish_link(HSCB2_BASE, HSCB3_BASE);
     
-    #ifndef POWER_FOR_OI10V3
+    #ifdef COMP_FOR_POWER
     // -- Config COM port
     
     cp_instance_init(&c0, COM0_BASE, BASE_FREQ);
@@ -618,7 +624,7 @@ int main() {
     simult_run_of_hscbs_transfers(rdma_ctrl_word);
     dma2plb6_4ch_start();
     
-    #ifndef POWER_FOR_OI10V3
+    #ifdef COMP_FOR_POWER
     rumboot_printf("COM-port start\n");
     cp_start_tx(&c0, tx_buf, size);
     cp_start_rx(&c1, rx_buf, size);

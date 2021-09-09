@@ -2410,7 +2410,6 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         NAME test_hscb_com_big
         TESTGROUP o32tonly
     )
-
         add_rumboot_target(
         CONFIGURATION IRAM
         IRUN_FLAGS +RANDOMIZE_SDRAM
@@ -2437,12 +2436,15 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
                -DN_OF_PACKETS=2   
                -DTEST_DATA_SIZE=4096   
                -DPOWER_TEST=1
+               -DEMI_INIT_FOR_POWER=1
+               -DCOMP_FOR_POWER=1
                #-DDEBUG_PRINT=1
         FILES simple-iram/test_oi10_cpu_023.c power/test_oi10_power_1_6_1.S test_oi10_hscb_com_fpu_simult_big.c
         PREFIX "hscb_com_fpu_desc_im1_data_ssram"
         NAME test_hscb_com_fpu_big
         TESTGROUP o32tonly
     )   
+      
     
         add_rumboot_target(
         CONFIGURATION IRAM
@@ -2467,7 +2469,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
                -DN_OF_PACKETS=2   
                -DTEST_DATA_SIZE=4096   
                -DPOWER_TEST=1
-               -DPOWER_FOR_OI10V3=1
+               -DEMI_INIT_FOR_POWER=1
                #-DDEBUG_PRINT=1
         FILES simple-iram/test_oi10_cpu_023.c power/test_oi10_power_1_6_1.S test_oi10_hscb_com_fpu_simult_big.c
         PREFIX "hscb_dma_fpu_desc_im1_data_ssram"
