@@ -2,13 +2,14 @@
 #define REGS_NU_PPE_H
 
 // RDMA registers
-#define NU_PPE_RDMA_STATUS              0X000
-#define NU_PPE_RDMA_POINTER             0X004
-#define NU_PPE_RDMA_OP_ENABLE           0X008
+#define NU_PPE_OP_ENABLE           		0X000
+#define NU_PPE_POINTER             		0X004
+#define NU_PPE_STATUS		        	0X008
+#define NU_PPE_RDMA_AXI_PARAM		    0X00C
 #define NU_PPE_RDMA_INT_STATUS          0X010
 #define NU_PPE_RDMA_INT_RESET           0X014
 #define NU_PPE_RDMA_INT_SET     		0X018
-#define NU_PPE_RDMA_INT_MASK		    0X018
+#define NU_PPE_RDMA_INT_MASK		    0X01C
 #define NU_PPE_RDMA_BASE_ADDR 			0X020
 #define NU_PPE_RDMA_BORDER_X     		0X030
 #define NU_PPE_RDMA_BORDER_Y  			0X034
@@ -30,9 +31,10 @@
 #define NU_PPE_RDMA_BOX_OFFSET_Z       	0X074
 
 // PPE+WDMA registers
-#define NU_PPE_STATUS                   0X000
+#define NU_PPE_OP_ENABLE                0X000
 #define NU_PPE_POINTER                  0X004
-#define NU_PPE_OP_ENABLE                0X008
+#define NU_PPE_STATUS                	0X008
+#define NU_PPE_WDMA_AXI_PARAM		    0X00C
 #define NU_PPE_WDMA_INT_STATUS          0X010
 #define NU_PPE_WDMA_INT_RESET           0X014
 #define NU_PPE_WDMA_INT_SET           	0X018
