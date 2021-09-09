@@ -6,6 +6,9 @@
 #include <rumboot/io.h>
 
 #include <regs/regs_na.h>
+//#include <regs/regs_nu_mpe.h>
+//#include <regs/regs_nu_vpe.h>
+//#include <regs/regs_nu_ppe.h>
 
 //#include <platform/devices.h> 
 #include <platform/devices/nu_cpdmac_lib.h>
@@ -1974,7 +1977,7 @@ void nu_ppe_setup_reg(uintptr_t rbase, uintptr_t wbase, ConfigREGPPE* cfg) {
   rumboot_printf("Configuring PPE regs..\n");
   // rdma
   // iowrite32(cfg->rSt,      rbase + NU_PPE_RDMA_STATUS);
-  iowrite32(0X00000000,   rbase + NU_PPE_RDMA_OP_ENABLE);
+  iowrite32(0X00000000,   rbase + NU_PPE_OP_ENABLE);
   //iowrite32(cfg->rPWi,    rbase + NU_PPE_RDMA_PLANE_W_IN);
  //iowrite32(cfg->rPHi,    rbase + NU_PPE_RDMA_PLANE_H_IN);
  // iowrite32(cfg->rPCi,    rbase + NU_PPE_RDMA_PLANE_C_IN);
@@ -2045,11 +2048,11 @@ uint32_t nu_ppe_status_done_rd (uintptr_t wbase) {
 // rdma
 void nu_ppe_rdma_run(uintptr_t rbase, ConfigREGPPE* cfg) {
   rumboot_printf("Start PPE RDMA...\n");
-  iowrite32(cfg->rOpEn,   rbase + NU_PPE_RDMA_OP_ENABLE);
+  iowrite32(cfg->rOpEn,   rbase + NU_PPE_OP_ENABLE);
 }
 void nu_ppe_rdma_wait_complete(uintptr_t rbase){
   rumboot_printf("Wait PPE RDMA...\n");
-  while(ioread32(rbase + NU_PPE_RDMA_STATUS) !=0) {}
+  while(ioread32(rbase + NU_PPE_STATUS) !=0) {}
   rumboot_printf("Done PPE RDMA...\n");
 }
 
@@ -2135,7 +2138,6 @@ bool nu_vpe_mode_to_bool (Mode in_mode){
   return res;
 }
 
-
 void na_cu_set_units_direct_mode(uintptr_t base, uint32_t mask) {
   uint32_t temp;
   temp = ioread32(base + NA_CU_UNITS_MODE);
@@ -2143,3 +2145,4 @@ void na_cu_set_units_direct_mode(uintptr_t base, uint32_t mask) {
   rumboot_printf("Writing [0x%x]=0x%x\n",base + NA_CU_UNITS_MODE,temp);
   iowrite32(temp,base + NA_CU_UNITS_MODE);
 }
+
