@@ -190,7 +190,7 @@ function(rumboot_add_external_project directory)
       BINARY_DIR        "${CMAKE_BINARY_DIR}/${_name}"
       CONFIGURE_COMMAND  ${CMAKE_COMMAND} "${PROJECT_SOURCE_DIR}/${directory}" -G ${CMAKE_GENERATOR} ${ARGN}
       #-DRUMBOOT_BUILD_NPE_RM=${RUMBOOT_BUILD_NPE_RM} ${NPE_RM_OPTS}
-      BUILD_COMMAND     "$(MAKE)" -C "${UTILS_BIN_DIR}"
+      BUILD_COMMAND     "$(MAKE)" -C "${CMAKE_BINARY_DIR}/${_name}"
       INSTALL_COMMAND   ""
     )
 endfunction()
