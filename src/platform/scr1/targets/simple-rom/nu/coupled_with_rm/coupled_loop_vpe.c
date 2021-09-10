@@ -25,7 +25,7 @@ void *lut2;
 void nu_vpe_decide_dma_config (
   ConfigVPE* cfg,
   CubeMetrics* in_metrics,
-  void*axi_len,
+  uint8_t axi_len,
   void*in_data,
   void*op0,
   void*op1,
@@ -57,11 +57,11 @@ void nu_vpe_decide_dma_config (
   cfg->op2_rdma_config.dma_baddr = (uint32_t) op2;
   cfg->wdma_config.dma_baddr     = (uint32_t) res_data;
 
-  cfg->src_rdma_config.dma_axi_len = (uint8_t) axi_len;
-  cfg->op0_rdma_config.dma_axi_len = (uint8_t) axi_len;
-  cfg->op1_rdma_config.dma_axi_len = (uint8_t) axi_len;
-  cfg->op2_rdma_config.dma_axi_len = (uint8_t) axi_len;
-  cfg->wdma_config.dma_axi_len     = (uint8_t) axi_len;
+  cfg->src_rdma_config.dma_axi_len = axi_len;
+  cfg->op0_rdma_config.dma_axi_len = axi_len;
+  cfg->op1_rdma_config.dma_axi_len = axi_len;
+  cfg->op2_rdma_config.dma_axi_len = axi_len;
+  cfg->wdma_config.dma_axi_len     = axi_len;
   
 }
 
