@@ -1,6 +1,9 @@
+#ifndef NU_TEST_MACRO_H_
+#define NU_TEST_MACRO_H_
   // Macros To Distinguish DUTs In SCR1 Environment
   // The DUT Macro Is Set From scr1.cmake
 #include <regs/regs_na.h>
+#include <platform/devices.h>
 
 #ifndef DUT
   #define DUT 'N'
@@ -21,3 +24,4 @@
 #endif
 
 
+#endif
