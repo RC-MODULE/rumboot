@@ -12,4 +12,8 @@
 #define NA_VPE_BASE 0x1000
 #define NA_PPE_BASE 0x1800
 
+#define MPE_RDMA_D_BASE 0x0000
+#define MPE_RDMA_W_BASE 0x0400
+#define MPE_MA_BASE     0x0800
+
 #endif
