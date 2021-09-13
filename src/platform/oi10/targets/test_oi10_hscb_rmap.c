@@ -1572,6 +1572,14 @@ static uint32_t check_rmap_func(
 
     return result;
 }
+// Add by M.Chelyshev as glitch-protect
+uint32_t disable_hscb (uint32_t hscb_base){
+    uint32_t tmp = 0;
+    tmp = ioread32(hscb_base + HSCB_SETTINGS);
+    tmp = tmp & 0xfffffffe;
+    iowrite32(tmp, hscb_base + HSCB_SETTINGS);
+}
+// ------------------------------------
 
 int main() {
     uint32_t result = 0x0;
@@ -1585,6 +1593,11 @@ int main() {
     write_tlb_entries(em_anti_x_tlb_entries,2);
 
     tbl = create_irq_handlers();
+  
+    disable_hscb(HSCB0_BASE);    
+    disable_hscb(HSCB1_BASE);    
+    disable_hscb(HSCB2_BASE);    
+    disable_hscb(HSCB3_BASE);
 
 
     result += check_rmap_func(HSCB_UNDER_TEST_BASE, HSCB_SUPPLEMENTARY_BASE);
