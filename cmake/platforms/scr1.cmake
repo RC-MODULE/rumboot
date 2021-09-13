@@ -690,6 +690,16 @@ endif() #### EXPERIMENT_STAGE_2_SUB_1
     ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_19_2_op2_mul_fp32_dma main_vpe_19_2_op2_mul_fp32_dma)
 
     ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_26_autonom main_vpe_26_autonom)
+    
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_op0_ch_mode_int main_vpe_op0_ch_mode_int)
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_op1_ch_mode_int main_vpe_op1_ch_mode_int)
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_op0_ch_mode_fp main_vpe_op0_ch_mode_fp)
+    ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_op1_ch_mode_fp main_vpe_op1_ch_mode_fp)
+    
+    ADD_VPE_PPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_ppe_op0_ch_mode_int main_vpe_op0_ch_mode_int)
+    ADD_VPE_PPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_ppe_op1_ch_mode_int main_vpe_op1_ch_mode_int)
+    ADD_VPE_PPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_ppe_op0_ch_mode_fp main_vpe_op0_ch_mode_fp)
+    ADD_VPE_PPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_ppe_op1_ch_mode_fp main_vpe_op1_ch_mode_fp)
 
     ###############
 
