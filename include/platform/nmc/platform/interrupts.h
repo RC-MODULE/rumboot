@@ -5,6 +5,7 @@
 #define IRQ_ITIMER0  0
 #define IRQ_ITIMER1  1
 #define PPC_HIGH_LEVEL_INT (12)
+#define PPC_LOW_LEVEL_INT (49)
 
 #define CP0_RCV_INT  16
 #define CP0_TRM_INT  17
