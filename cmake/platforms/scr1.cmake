@@ -410,17 +410,23 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
               SUBPROJECT_DEPS npe_rm:${rm_bin_name}
           )
       endmacro()
+	  add_rumboot_target(
+     CONFIGURATION ROM
+        NAME VPE_1
+        FILES scr1/targets/simple-rom/nu/vpe_regs/regs_vpe.c
+    )  
+	  
     endif() # DUT STREQUAL VPE OR NPE
     ############
-    if(DUT STREQUAL "VPE")
-      
-    add_rumboot_target(
+  if(DUT STREQUAL "VPE")
+ 
+   add_rumboot_target(
       CONFIGURATION ROM
         NAME VPE_1
         FILES scr1/targets/simple-rom/nu/vpe_regs/regs_vpe.c
     )
 
-
+   
 if(DEFINED EXPERIMENT_STAGE_2_SUB_1) ####
     if(NOT DEFINED EXPERIMENT_STAGE_2_DIR)
       set(EXPERIMENT_STAGE_2_DIR /opt/lib_h31/LAVA_lib/experiment_stage_2)
