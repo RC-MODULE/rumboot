@@ -34,7 +34,10 @@ void print_in_data(int32_t * in_data, int in_size){
 }
 
 void nu_vpe_decide_dma_config (ConfigVPE* cfg, CubeMetrics* metrics, ConfigDMAVPE* cfg_dma) {
-  nu_vpe_decide_dma_config_trivial(cfg,metrics,cfg_dma);
+  nu_vpe_decide_dma_config_trivial(cfg,metrics);
+  cfg_dma->H = metrics->H;
+  cfg_dma->W = metrics->W;
+  cfg_dma->C = metrics->C;
   cfg_dma->dma_dst_en = Enable_NotEn; // Волюнтари3м
 }
 
@@ -98,7 +101,7 @@ int main() {
   nu_vpe_decide_dma_config(&cfg,in_metrics,&cfg_dma);
   nu_vpe_print_config_dma(&cfg_dma);
   
-  nu_vpe_setup(NU_VPE_STANDALONE_BASE, &cfg, &cfg_dma);
+  nu_vpe_setup(NU_VPE_STANDALONE_BASE, &cfg);
   
     // Setup Main Channel DMAs if Required
   if(cfg_dma.dma_src_en == Enable_NotEn)

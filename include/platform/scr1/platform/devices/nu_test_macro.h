@@ -21,6 +21,7 @@
 #else // DUT_IS_NPE By Default
   #define MY_VPE_REGS_BASE (NPE_BASE + NA_VPE_BASE)
   #define MY_PPE_REGS_BASE (NPE_BASE + NA_PPE_BASE)
+  #define MY_MPE_REGS_BASE (NPE_BASE + NA_MPE_BASE)
 #endif
 
 

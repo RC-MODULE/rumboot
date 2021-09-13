@@ -53,7 +53,10 @@ void nu_vpe_decide_dma_config (
     axi_len = 15;
 #endif
   
-  nu_vpe_decide_dma_config_trivial(cfg,in_metrics,cfg_dma);
+  nu_vpe_decide_dma_config_trivial(cfg,in_metrics);
+  cfg_dma->H = in_metrics->H;
+  cfg_dma->W = in_metrics->W;
+  cfg_dma->C = in_metrics->C;
   cfg_dma->dma_dst_en = cfg->dst_flying ? Enable_NotEn : Enable_NotEn;
   
   cfg->src_rdma_config.dma_baddr = (uint32_t) in_data;
@@ -159,7 +162,7 @@ int main() {
     
     start[i] = rumboot_platform_get_uptime();
     
-    nu_vpe_setup(NU_VPE_STANDALONE_BASE, &cfg, &cfg_dma);
+    nu_vpe_setup(NU_VPE_STANDALONE_BASE, &cfg);
     
     
     rumboot_printf("Running DMA..\n");

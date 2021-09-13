@@ -55,7 +55,10 @@ void nu_vpe_decide_dma_config (
 #endif
 
   
-  nu_vpe_decide_dma_config_trivial(cfg,in_metrics,cfg_dma);
+  nu_vpe_decide_dma_config_trivial(cfg,in_metrics);
+  cfg_dma->H = in_metrics->H;
+  cfg_dma->W = in_metrics->W;
+  cfg_dma->C = in_metrics->C;
   cfg_dma->dma_dst_en = cfg->dst_flying ? Enable_NotEn : Enable_NotEn;
   
   cfg->src_rdma_config.dma_baddr = (uint32_t) in_data;
@@ -163,7 +166,7 @@ int main() {
       // nu_print_config_dma(&cfg.wdma_config,"wdma_config");
       // nu_vpe_print_status_regs_etalon(&status_regs_etalon);
       
-      nu_vpe_setup(MY_VPE_REGS_BASE, &cfg, &cfg_dma);
+      nu_vpe_setup(MY_VPE_REGS_BASE, &cfg);
       
         // Setup Main Channel DMAs if Required
       if(cfg.src_rdma_config.dma_en == Enable_NotEn)

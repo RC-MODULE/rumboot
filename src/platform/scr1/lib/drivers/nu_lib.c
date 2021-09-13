@@ -117,9 +117,9 @@ void nu_vpe_load_status_regs(VPEStatusRegs* status_regs, void* status_regs_bin) 
 }
 
 void nu_mpe_load_config(ConfigMPE* cfg, void* cfg_bin) {
-  int32_t* ptr;
+  uint32_t* ptr;
 
-  ptr = (int32_t*) cfg_bin;
+  ptr = (uint32_t*) cfg_bin;
 
   cfg-> H        =*ptr;ptr++;
   cfg-> W        =*ptr;ptr++;
@@ -136,9 +136,9 @@ void nu_mpe_load_config(ConfigMPE* cfg, void* cfg_bin) {
   cfg-> Sh       =*ptr;ptr++;
   cfg-> K        =*ptr;ptr++;
   cfg-> dt       =*ptr;ptr++;
-  cfg-> RND_MODE =*ptr;ptr++;
-  cfg-> SAT      =*ptr;ptr++;
-  cfg-> RND_SIZE =*ptr;ptr++;
+  cfg-> rnd_mode =*ptr;ptr++;
+  cfg-> sat_en   =*ptr;ptr++;
+  cfg-> rnd_size =*ptr;ptr++;
 }
 
 void nu_ppe_load_config(ConfigPPE* cfg, void* cfg_bin) {
@@ -539,9 +539,9 @@ void nu_mpe_print_config(ConfigMPE* cfg){
     rumboot_printf("  Sh       = %d \n" , cfg->Sh);
     rumboot_printf("  K        = %d \n" , cfg->K);
     nu_vpe_print_DataType(cfg->dt,"dt      ");
-    rumboot_printf("  RND_MODE = %d \n" , cfg->RND_MODE);
-    rumboot_printf("  SAT      = %d \n" , cfg->SAT);
-    rumboot_printf("  RND_SIZE = %d \n" , cfg->RND_SIZE);
+    nu_vpe_print_RoundMode(cfg->rnd_mode,"rnd_mode");
+    nu_vpe_print_Enable(cfg->sat_en, "sat_en  ");
+    rumboot_printf("  rnd_size = %d \n" , cfg->rnd_size);
 
 #endif // NU_NO_PRINT
 }
@@ -703,7 +703,7 @@ void nu_vpe_load_lut(uintptr_t base, void* lut1, void* lut2) {
   
 }
 
-void nu_vpe_setup(uintptr_t base, ConfigVPE* cfg, ConfigDMAVPE* cfg_dma) {
+void nu_vpe_setup(uintptr_t base, ConfigVPE* cfg) {
   rumboot_printf("Configuring VPE..\n");
 
   // iowrite32(cfg->MYFIELD, base + NU_VPE_MYREG);
@@ -1014,11 +1014,7 @@ void nu_vpe_setup(uintptr_t base, ConfigVPE* cfg, ConfigDMAVPE* cfg_dma) {
 
 }
 
-void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics, ConfigDMAVPE* cfg_dma) {
-  cfg_dma->H = metrics->H;
-  cfg_dma->W = metrics->W;
-  cfg_dma->C = metrics->C;
-
+void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics) {
   // New structur
   cfg->src_rdma_config.dma_cube_size_w = metrics->W;
   cfg->src_rdma_config.dma_cube_size_h = metrics->H;
@@ -1207,11 +1203,9 @@ void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics, Conf
   // OP0_RDMA -------------------------------------------------------------------------------------------- 
   if((cfg->op0_config.alu_en == Enable_En && cfg->op0_config.alu_mode != Mode_Unitary) ||
      (cfg->op0_config.mux_en == Enable_En && cfg->op0_config.mux_mode != Mode_Unitary)  ) { // if Some Of Operands Enabled And Not A Single Value
-    cfg_dma->dma_op0_en = Enable_En;
     cfg->op0_rdma_config.dma_en = Enable_En; // new struct ============
   }
   else {
-    cfg_dma->dma_op0_en = Enable_NotEn;
     cfg->op0_rdma_config.dma_en = Enable_NotEn; // new struct ============
   }
   
@@ -1371,11 +1365,9 @@ void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics, Conf
   // OP1_RDMA -------------------------------------------------------------------------------------------- 
   if((cfg->op1_config.alu_en == Enable_En && cfg->op1_config.alu_mode != Mode_Unitary) ||
      (cfg->op1_config.mux_en == Enable_En && cfg->op1_config.mux_mode != Mode_Unitary)  ) { // if Some Of Operands Enabled And Not A Single Value
-    cfg_dma->dma_op1_en = Enable_En;
     cfg->op1_rdma_config.dma_en = Enable_En; // new struct ============
   }
   else {
-    cfg_dma->dma_op1_en = Enable_NotEn;
     cfg->op1_rdma_config.dma_en = Enable_NotEn; // new struct ============
   }
   
@@ -1535,11 +1527,9 @@ void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics, Conf
   // OP2_RDMA -------------------------------------------------------------------------------------------- 
   if((cfg->op2_config.alu_en == Enable_En && cfg->op2_config.alu_mode != Mode_Unitary) ||
      (cfg->op2_config.mux_en == Enable_En && cfg->op2_config.mux_mode != Mode_Unitary)  ) { // if Some Of Operands Enabled And Not A Single Value
-    cfg_dma->dma_op2_en = Enable_En;
     cfg->op2_rdma_config.dma_en = Enable_En; // new struct ============
   }
   else {
-    cfg_dma->dma_op2_en = Enable_NotEn;
     cfg->op2_rdma_config.dma_en = Enable_NotEn; // new struct ============
   }
   
@@ -1699,6 +1689,10 @@ void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics, Conf
   // We Have No Setting That Define If We Run WDMA Or Main Wr Channel
 }
 
+// void nu_calc_mpe2vpe_cube_metrics(CubeMetrics* mpe2vpe_metrics,CubeMetrics* cube_metrics,WarrMetrics* warr_metrics) {
+//   mpe2vpe_metrics->H = ...;
+// }
+
 int nu_vpe_check_reg(uintptr_t addr, char* name, int shift, uint32_t mask, uint32_t etalon) {
   uint32_t temp;
   temp = ioread32(addr);
@@ -1742,20 +1736,8 @@ int nu_mpe_get_size_in_partitions(int size_in_bytes) {
   return res;
 }
 
-int nu_mpe_decide_dma_config_trivial(ConfigMPE* cfg, CubeMetrics* cube_metrics, WarrMetrics* warr_metrics, ConfigDMAMPE* cfg_dma) {
-  int warr_size_in_partitions;
-
-  cfg_dma->H = cube_metrics->H;
-  cfg_dma->W = cube_metrics->W;
-  cfg_dma->C = cube_metrics->C;
-
-  cfg_dma->R = warr_metrics->H;
-  cfg_dma->S = warr_metrics->W; // CHECK The Accurate WarrMetrics Field Meanings
-
-  cfg_dma->in_data_partition=0; // Data Is Always In 0th Partition
-  cfg_dma->warr_partition = nu_mpe_get_size_in_partitions(cube_metrics->s); // Warr - In Next Partition After Data
-  warr_size_in_partitions = nu_mpe_get_size_in_partitions(warr_metrics->s);
-  if(cfg_dma->warr_partition+warr_size_in_partitions >16) return -1;
+int nu_mpe_decide_dma_config_trivial(ConfigMPE* cfg, CubeMetrics* cube_metrics, WarrMetrics* warr_metrics) {
+  // Write Here How To Fill cfg->dma_config. =
   return 0;
 }
 
@@ -1781,13 +1763,13 @@ uint32_t nu_mpe_get_warr_offset(void* cmd, MPECmdMetrics* metrics) {
   return 0;
 }
 
-void nu_mpe_setup(uintptr_t base, ConfigMPE* cfg, ConfigDMAMPE* cfg_dma) {
+void nu_mpe_setup(uintptr_t base, ConfigMPE* cfg) {
   rumboot_printf("Configuring MPE..\n");
 
   // iowrite32(cfg->MYFIELD, base + NU_MPE_MYREG);
 }
 
-void nu_mpe_run(uintptr_t mpe_base, ConfigDMAMPE* cfg_dma) {
+void nu_mpe_run(uintptr_t mpe_base, ConfigMPE* cfg) {
 
   // iowrite32(cfg->MYFIELD, mpe_base + NU_MPE_MYREG);
 }
