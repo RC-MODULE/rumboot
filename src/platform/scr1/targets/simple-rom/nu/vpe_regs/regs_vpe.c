@@ -9,7 +9,7 @@
 #include <platform/devices/nu_lib.h>
 #include <regs/regs_nu_vpe.h>
 #include <platform/devices.h>
-
+#include <platform/devices/nu_test_macro.h>
 
  int nu_vpe_rd_regs(uintptr_t base) {
 	
@@ -1515,7 +1515,7 @@ int nu_vpe_wr_regs(uintptr_t base, int32_t data) {
 		rumboot_printf("resw63 error\n");}
 		else 
 		{resw63=0;}
-	  resw = 	/*resw0 || resw1|| */resw2 || resw3 ||  resw5 || resw6 || resw7 || resw8 || resw9 ||
+	  resw = 	/*resw0 || resw1|| resw2 ||*/ resw3 ||  resw5 || resw6 || resw7 || resw8 || resw9 ||
 				resw10 || resw11 || resw12 || resw13 || resw14 || resw15 || resw16 || resw17 ||
 				resw18 || resw19  || resw20 || resw21 || resw22 || resw23 || resw24 || resw25 || resw26 || resw27 || resw28 ||
 				resw29 ||resw30 || resw31 ||resw32 || resw33 ||resw34 ||resw35 || resw36 || resw37 /*|| resw38 */|| resw39 /*||resw40*/
@@ -1862,38 +1862,38 @@ int main() {
   
    // READ VPE  and DMA REG's initial state 
 
-	res0 = nu_vpe_rd_regs(NU_VPE_STANDALONE_BASE);
+	res0 = nu_vpe_rd_regs(MY_VPE_REGS_BASE);
 	if (res0 !=0)
 	{rumboot_printf( "check VPE regs read after reset  FAILED\n ");}
 	 else
 	{rumboot_printf("Check  VPE regs read after reset PASSED\n");} 
 	{rumboot_printf( "\n" );}
-	res1 = nu_vpe_rd_src_regs(NU_VPE_STANDALONE_BASE, NU_VPE_DST_WDMA);
+	res1 = nu_vpe_rd_src_regs(MY_VPE_REGS_BASE, NU_VPE_DST_WDMA);
 	if (res1 !=0)
 	{rumboot_printf( "check DST  DMA regs read after reset  FAILED\n ");}
 	 else
 	{rumboot_printf("Check  DST DMA regs read after reset PASSED\n");} 
 	{rumboot_printf( "\n" );}
 	
-	res2 = nu_vpe_rd_src_regs(NU_VPE_STANDALONE_BASE,NU_VPE_SRC_RDMA);
+	res2 = nu_vpe_rd_src_regs(MY_VPE_REGS_BASE,NU_VPE_SRC_RDMA);
 	if (res2 !=0)
 	{rumboot_printf( "check read SRC RDMA regs after reset  FAILED\n ");}
 	 else
 	{rumboot_printf("Check read SRC RDMA regs after reset PASSED\n");} 
 	{rumboot_printf( "\n" );}
-	res3 = nu_vpe_rd_src_regs(NU_VPE_STANDALONE_BASE,NU_VPE_OP0_RDMA);
+	res3 = nu_vpe_rd_src_regs(MY_VPE_REGS_BASE,NU_VPE_OP0_RDMA);
 	if (res3 !=0)
 	{rumboot_printf( "check read OP0 RDMA regs after reset  FAILED\n ");}
 	 else
 	{rumboot_printf("Check read OP0 RDMA regs after reset PASSED\n");} 
 	{rumboot_printf( "\n" );}
-	res4 = nu_vpe_rd_src_regs(NU_VPE_STANDALONE_BASE,NU_VPE_OP1_RDMA);
+	res4 = nu_vpe_rd_src_regs(MY_VPE_REGS_BASE,NU_VPE_OP1_RDMA);
     if (res4 !=0)
 	{rumboot_printf( "check read OP1 RDMA regs after reset  FAILED\n ");}
 	 else
 	{rumboot_printf("Check read OP1 RDMA regs after reset PASSED\n");} 
 	{rumboot_printf( "\n" );}
-	res5 = nu_vpe_rd_src_regs(NU_VPE_STANDALONE_BASE,NU_VPE_OP2_RDMA);
+	res5 = nu_vpe_rd_src_regs(MY_VPE_REGS_BASE,NU_VPE_OP2_RDMA);
 	if (res5 !=0)
 	{rumboot_printf( "check read OP2 RDMA regs after reset  FAILED\n ");}
 	 else
@@ -1902,35 +1902,35 @@ int main() {
 	rumboot_printf("Write-READ begin\n");
 	
 	//------------------READ & WRITE DMA OFFSET registers---------------------	
-	res6 = nu_vpe_wr_rd_dma_regs(NU_VPE_STANDALONE_BASE,NU_VPE_DST_WDMA,0xffffffff);
+	res6 = nu_vpe_wr_rd_dma_regs(MY_VPE_REGS_BASE,NU_VPE_DST_WDMA,0xffffffff);
 	if (res6 !=0)
 	{rumboot_printf( "check read DST RDMA regs after write ONEs  FAILED\n ");}
 	 else
 	{rumboot_printf("Check read DST RDMA regs after write ONEs PASSED\n");}
 	{rumboot_printf( "\n" );}
 	
-	res7 = nu_vpe_wr_rd_dma_regs(NU_VPE_STANDALONE_BASE,NU_VPE_SRC_RDMA,0xffffffff);
+	res7 = nu_vpe_wr_rd_dma_regs(MY_VPE_REGS_BASE,NU_VPE_SRC_RDMA,0xffffffff);
 	if (res7 !=0)
 	{rumboot_printf( "check read SRC RDMA regs after write ONEs  FAILED\n ");}
 	 else
 	{rumboot_printf("Check read SRC RDMA regs after write ONEs PASSED\n");}
 	{rumboot_printf( "\n" );}
 	
-	res8 = nu_vpe_wr_rd_dma_regs(NU_VPE_STANDALONE_BASE,NU_VPE_OP0_RDMA,0xffffffff);
+	res8 = nu_vpe_wr_rd_dma_regs(MY_VPE_REGS_BASE,NU_VPE_OP0_RDMA,0xffffffff);
 	if (res8 !=0)
 	{rumboot_printf( "check read OP0 RDMA regs after write ONEs  FAILED\n ");}
 	 else
 	{rumboot_printf("Check read OP0 RDMA regs after write ONEs PASSED\n");} 
 	{rumboot_printf( "\n" );}
 	
-	res9 = nu_vpe_wr_rd_dma_regs(NU_VPE_STANDALONE_BASE,NU_VPE_OP1_RDMA,0xffffffff);
+	res9 = nu_vpe_wr_rd_dma_regs(MY_VPE_REGS_BASE,NU_VPE_OP1_RDMA,0xffffffff);
     if (res9 !=0)
 	{rumboot_printf( "check read OP1 RDMA regs after write ONEs  FAILED\n ");}
 	 else
 	{rumboot_printf("Check read OP1 RDMA regs after write ONEs PASSED\n");} 
 	{rumboot_printf( "\n" );}
 	
-	res10 = nu_vpe_wr_rd_dma_regs(NU_VPE_STANDALONE_BASE,NU_VPE_OP2_RDMA,0xffffffff);
+	res10 = nu_vpe_wr_rd_dma_regs(MY_VPE_REGS_BASE,NU_VPE_OP2_RDMA,0xffffffff);
 	if (res10 !=0)
 	{rumboot_printf( "check read OP2 RDMA regs after write ONEs  FAILED\n ");}
 	 else
@@ -1939,35 +1939,35 @@ int main() {
 	rumboot_printf("Write-READ begin\n");	
 	
 //----------
-	res11 = nu_vpe_wr_rd_dma_regs(NU_VPE_STANDALONE_BASE,NU_VPE_DST_WDMA,0x00000000);
+	res11 = nu_vpe_wr_rd_dma_regs(MY_VPE_REGS_BASE,NU_VPE_DST_WDMA,0x00000000);
 	if (res11 !=0)
 	{rumboot_printf( "check read DST RDMA regs after write ZEROs  FAILED\n ");}
 	 else
 	{rumboot_printf("Check read DST RDMA regs after write ZEROs PASSED\n");}
 	{rumboot_printf( "\n" );}
 	
-	res12 = nu_vpe_wr_rd_dma_regs(NU_VPE_STANDALONE_BASE,NU_VPE_SRC_RDMA,0x00000000);
+	res12 = nu_vpe_wr_rd_dma_regs(MY_VPE_REGS_BASE,NU_VPE_SRC_RDMA,0x00000000);
 	if (res12 !=0)
 	{rumboot_printf( "check read SRC RDMA regs after write ZEROs  FAILED\n ");}
 	 else
 	{rumboot_printf("Check read SRC RDMA regs after write ZEROs PASSED\n");}
 	{rumboot_printf( "\n" );}
 	
-	res13 = nu_vpe_wr_rd_dma_regs(NU_VPE_STANDALONE_BASE,NU_VPE_OP0_RDMA,0x00000000);
+	res13 = nu_vpe_wr_rd_dma_regs(MY_VPE_REGS_BASE,NU_VPE_OP0_RDMA,0x00000000);
 	if (res13 !=0)
 	{rumboot_printf( "check read OP0 RDMA regs after write ZEROs  FAILED\n ");}
 	 else
 	{rumboot_printf("Check read OP0 RDMA regs after write ZEROs PASSED\n");} 
 	{rumboot_printf( "\n" );}
 	
-	res14 = nu_vpe_wr_rd_dma_regs(NU_VPE_STANDALONE_BASE,NU_VPE_OP1_RDMA,0x00000000);
+	res14 = nu_vpe_wr_rd_dma_regs(MY_VPE_REGS_BASE,NU_VPE_OP1_RDMA,0x00000000);
     if (res14 !=0)
 	{rumboot_printf( "check read OP1 RDMA regs after write ZEROs  FAILED\n ");}
 	 else
 	{rumboot_printf("Check read OP1 RDMA regs after write ZEROs PASSED\n");} 
 	{rumboot_printf( "\n" );}
 	
-	res15 = nu_vpe_wr_rd_dma_regs(NU_VPE_STANDALONE_BASE,NU_VPE_OP2_RDMA,0x00000000);
+	res15 = nu_vpe_wr_rd_dma_regs(MY_VPE_REGS_BASE,NU_VPE_OP2_RDMA,0x00000000);
 	if (res15 !=0)
 	{rumboot_printf( "check read OP2 RDMA regs after write ZEROs  FAILED\n ");}
 	 else
@@ -1976,7 +1976,7 @@ int main() {
 	rumboot_printf("Write-READ begin\n");	
 			
 //-------------------	 
-	res16 = nu_vpe_wr_regs(NU_VPE_STANDALONE_BASE,0x00000000);
+	res16 = nu_vpe_wr_regs(MY_VPE_REGS_BASE,0x00000000);
 	if (res16 !=0)
 	{rumboot_printf( "Check vpe regs after ZEROs write FAILED\n" );}
     else
@@ -1985,7 +1985,7 @@ int main() {
 	
 	rumboot_printf("Write-READ zero's begin\n"); 
 	
-	res17 = nu_vpe_wr_regs(NU_VPE_STANDALONE_BASE,0xffffffff );
+	res17 = nu_vpe_wr_regs(MY_VPE_REGS_BASE,0xffffffff );
 	if (res17 !=0)
 	{rumboot_printf( "Check vpe  regs after  ONEs write  FAILED\n" );}
     else
@@ -1994,7 +1994,7 @@ int main() {
 	
 	
 	vpe_rdma_offset =  NU_VPE_OP2_RDMA + NU_VPE_DMA_BASE; // NU_VPE_RDMA_BASE_L;
-	res18 = nu_apb_running_one( NU_VPE_STANDALONE_BASE, vpe_rdma_offset,0xffffffff,32);	
+	res18 = nu_apb_running_one( MY_VPE_REGS_BASE, vpe_rdma_offset,0xffffffff,32);	
 	if  (res18 !=0)
 	{rumboot_printf( "Check running ONE FAILED\n");	}
 	 else 
