@@ -1043,7 +1043,10 @@ endif() ### EXPERIMENT_STAGE_2_SUB_1
 
       ADD_NPE_SIMPLE_TEST(npe_regs scr1/targets/simple-rom/nu/npe_regs/npe_regs.c)
 
-      ADD_NPE_MPE_ONLY_TEST(mpe_only_int16_rnd main_mpe_IN_INT16)
+      foreach(in_macro IN ITEMS IN_INT8 IN_INT16 IN_FP16)
+        ADD_NPE_MPE_ONLY_TEST(npe_mpe_only_rnd_${in_macro} main_mpe_rnd_${in_macro})
+        ADD_NPE_MPE_ONLY_TEST(npe_mpe_direct_ex_${in_macro} main_mpe_direct_ex_${in_macro})
+      endforeach()
     endif()
 
     endif()  # if(DUT STREQUAL MPE,VPE,PPE,NPE)
