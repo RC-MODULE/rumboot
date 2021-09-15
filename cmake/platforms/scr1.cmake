@@ -790,22 +790,6 @@ endif() #### EXPERIMENT_STAGE_2_SUB_1
         NAME PPE_1
         FILES scr1/targets/simple-rom/nu/ppe_regs/regs_ppe.c
     )
-    
-
-    macro(ADD_PPE_NEXT_COUPLED_TEST name rm_bin_name)
-      add_rumboot_target(
-        CONFIGURATION ROM
-        NAME ${name}
-        FILES scr1/targets/simple-rom/nu/coupled_with_rm/one_coupled_ppe.c
-        PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
-        IRUN_FLAGS ${NA_RM_PLUSARGS}
-        SUBPROJECT_DEPS npe_rm:${rm_bin_name}
-      )
-    endmacro()
-
-
-    ADD_PPE_NEXT_COUPLED_TEST(ppe_one_coupled main_i8_ppe_coupled)
-    ADD_PPE_NEXT_COUPLED_TEST(ppe_probe_coupled main_probe_ppe_coupled)
 
     # works after rm CMakeCache.txt
     if(NOT DEFINED NU_SEED)
@@ -841,8 +825,10 @@ endif() #### EXPERIMENT_STAGE_2_SUB_1
 
           PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${NU_SEED} > ${RM_LOGFILE} || exit 1
 
-          CFLAGS -D${ShowPerf} -D${OpMode}
+          CFLAGS -D${ShowPerf} -D${OpMode} -DDUT=${DUT_LETTER_QUOTED}
+
           IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+
           SUBPROJECT_DEPS npe_rm:${rm_bin_name}
         )
 
@@ -885,9 +871,6 @@ if(DEFINED EXPERIMENT_STAGE_2_SUB_1)
       )
     endmacro()
 endif()  ### EXPERIMENT_STAGE_2_SUB_1
-
-
-    ADD_PPE_COUPLED_TEST_LOOP(ppe_loop_coupled main_loop_ppe_coupled NotShowPerf)
 
     ADD_PPE_COUPLED_TEST_LOOP(ppe_2_i8_max    main_ppe_2_i8_max   NotShowPerf )
     ADD_PPE_COUPLED_TEST_LOOP(ppe_3_i16_max   main_ppe_3_i16_max  NotShowPerf )
