@@ -1020,6 +1020,7 @@ add_rumboot_target(
 
 add_rumboot_target(
   CONFIGURATION IRAM_IM0  
+  IRUN_FLAGS +RANDOMIZE_SRAM
   FILES interprocessor_irq_integration.c
   TIMEOUT 10 ms
   #Сначала стартуем код на nmc, потом себя
