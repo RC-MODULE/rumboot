@@ -9,6 +9,8 @@
 #include <platform/devices/nu_lib.h>
 #include <regs/regs_nu_ppe.h>
 
+#include <platform/devices/nu_test_macro.h> 
+
 //ConfigPPE cfg;
 
  int nu_ppe_rd_regs(uintptr_t rbase,uintptr_t wbase) {
@@ -329,142 +331,142 @@
 		else 
 		{resw26=0;}
 	
-	if ((0x00000000) != (ioread32(rbase + NU_PPE_INP_BOX_ST_SIZE_X)& 0x000001FFF))
+	if ((0x00000000) != (ioread32(wbase + NU_PPE_INP_BOX_ST_SIZE_X)& 0x000001FFF))
 		{resw27 =1;
 		rumboot_printf("resw27 error\n");}
 		else 
 		{resw27=0;}
 	
-	if ((0x00000000) != (ioread32(rbase + NU_PPE_INP_BOX_SIZE_X)& 0x000001FFF))
+	if ((0x00000000) != (ioread32(wbase + NU_PPE_INP_BOX_SIZE_X)& 0x000001FFF))
 		{resw28 =1;
 		rumboot_printf("resw28 error\n");}
 		else 
 		{resw28=0;}
 
 
-		if ((0x00000000) != (ioread32(rbase + NU_PPE_INP_BOX_OFFSET_X)& 0x000001FFF))
+		if ((0x00000000) != (ioread32(wbase + NU_PPE_INP_BOX_OFFSET_X)& 0x000001FFF))
 		{resw29 =1;
 		rumboot_printf("resw29 error\n");}
 		else 
 		{resw29=0;}
 	
-	if ((0x00000000) != (ioread32(rbase + NU_PPE_DATA_W_IN)&0x000001FFF))
+	if ((0x00000000) != (ioread32(wbase + NU_PPE_DATA_W_IN)&0x000001FFF))
 		{resw30 =1;
 		rumboot_printf("resw30 error\n");}
 		else 
 		{resw30=0;}	
-	if ((0x00000000) != (ioread32(rbase + NU_PPE_DATA_H_IN)& 0x000001FFF))
+	if ((0x00000000) != (ioread32(wbase + NU_PPE_DATA_H_IN)& 0x000001FFF))
 		{resw31 =1;
 		rumboot_printf("resw31 error\n");}
 		else 
 		{resw31=0;}
-	if ((0x00000000) != (ioread32(rbase + NU_PPE_DATA_C_IN) & 0x000001FFF))
+	if ((0x00000000) != (ioread32(wbase + NU_PPE_DATA_C_IN) & 0x000001FFF))
 		{resw32 =1;
 		rumboot_printf("resw32 error\n");}
 		else 
 		{resw32=0;}
-	if ((0x00000000) != (ioread32(rbase + NU_PPE_DATA_W_OUT )& 0x000001FFF))
+	if ((0x00000000) != (ioread32(wbase + NU_PPE_DATA_W_OUT )& 0x000001FFF))
 		{resw33 =1;
 		rumboot_printf("resw33 error\n");}
 		else 
 		{resw33=0;}
 
-	if ((0x00000000) != (ioread32(rbase + NU_PPE_DATA_H_OUT)& 0x000001FFF))
+	if ((0x00000000) != (ioread32(wbase + NU_PPE_DATA_H_OUT)& 0x000001FFF))
 		{resw34 =1;
 		rumboot_printf("resw34 error\n");}
 		else 
 		{resw34=0;}
 	
-	if ((0x00000000) != (ioread32(rbase + NU_PPE_DATA_C_OUT)&  0x000001FFF))
+	if ((0x00000000) != (ioread32(wbase + NU_PPE_DATA_C_OUT)&  0x000001FFF))
 		{resw35 =1;
 		rumboot_printf("resw35 error\n");}
 		else 
 		{resw35=0;}
 	
-	if ((0x00000000) != (ioread32(rbase + NU_PPE_OP_MODE)& 0x01030703))
+	if ((0x00000000) != (ioread32(wbase + NU_PPE_OP_MODE)& 0x01030703))
 		{resw36 =1;
 		rumboot_printf("resw36error\n");}
 		else 
 		{resw36=0;}
-	if ((0x00000000) != (ioread32(rbase + NU_PPE_KERNEL)& 0x0007FFFF))
+	if ((0x00000000) != (ioread32(wbase + NU_PPE_KERNEL)& 0x0007FFFF))
 
 		{resw37 =1;
 		rumboot_printf("resw37 error\n");}
 		else 
 		{resw37=0;}
 	
-	if ((0x00000000) != (ioread32(rbase + NU_PPE_RECIP_KERNEL_W)& 0x00FF0707))
+	if ((0x00000000) != (ioread32(wbase + NU_PPE_RECIP_KERNEL_W)& 0x00FF0707))
 		{resw38 =1;
 		rumboot_printf("resw38 error\n");}
 		else 
 		{resw38=0;}
 	
-	if ((0x00000000) != (ioread32(rbase + NU_PPE_RECIP_KERNEL_H)& 0x00FFFFFF))
+	if ((0x00000000) != (ioread32(wbase + NU_PPE_RECIP_KERNEL_H)& 0x00FFFFFF))
 		{resw39 =1;
 		rumboot_printf("resw39 error\n");}
 		else 
 		{resw39=0;}
 	
-	if ((0x00000000) != (ioread32(rbase +NU_PPE_PADDING)& 0x00077777)) 	
+	if ((0x00000000) != (ioread32(wbase +NU_PPE_PADDING)& 0x00077777)) 	
 	{resw40 =1;
 	rumboot_printf("resw40 error\n");}	
 		else 
 		{resw40=0;}	
-	if ((0x00000000) !=(ioread32(rbase +NU_PPE_PADDING_VALUE_1)& 0x0007FFFF)) 	
+	if ((0x00000000) !=(ioread32(wbase +NU_PPE_PADDING_VALUE_1)& 0x0007FFFF)) 	
 	{resw41 =1;
 	rumboot_printf("resw41 error\n");}	
 	else 
 	{resw41=0;}
 
-	if ((0x00000000) !=(ioread32(rbase +NU_PPE_PADDING_VALUE_2)& 0x0007FFFF)) 	
+	if ((0x00000000) !=(ioread32(wbase +NU_PPE_PADDING_VALUE_2)& 0x0007FFFF)) 	
 	{resw42 =1;
 	rumboot_printf("resw42 error\n");}	
 	else 
 	{resw42=0;}
-	if ((0x00000000) !=(ioread32(rbase +NU_PPE_PADDING_VALUE_3)& 0x0007FFFF)) 	
+	if ((0x00000000) !=(ioread32(wbase +NU_PPE_PADDING_VALUE_3)& 0x0007FFFF)) 	
 	{resw43 =1;
 	rumboot_printf("resw43 error\n");}	
 		else 
 		{resw43=0;}
-	if ((0x00000000) !=(ioread32(rbase +NU_PPE_PADDING_VALUE_4)& 0x0007FFFF)) 	
+	if ((0x00000000) !=(ioread32(wbase +NU_PPE_PADDING_VALUE_4)& 0x0007FFFF)) 	
 	{resw44 =1;
 	rumboot_printf("resw44 error\n");}	
 		else 
 		{resw44=0;}
-	if ((0x00000000) !=(ioread32(rbase +NU_PPE_PADDING_VALUE_5)& 0x0007FFFF)) 	
+	if ((0x00000000) !=(ioread32(wbase +NU_PPE_PADDING_VALUE_5)& 0x0007FFFF)) 	
 	{resw45 =1;
 	rumboot_printf("resw45 error\n");}	
 		else 
 		{resw45=0;}
-	if ((0x00000000) !=(ioread32(rbase +NU_PPE_PADDING_VALUE_6)& 0x0007FFFF)) 	
+	if ((0x00000000) !=(ioread32(wbase +NU_PPE_PADDING_VALUE_6)& 0x0007FFFF)) 	
 	{resw46 =1;
 	rumboot_printf("resw46 error\n");}	
 		else 
 		{resw46=0;}
-	if ((0x00000000) !=(ioread32(rbase +NU_PPE_PADDING_VALUE_7)& 0x0007FFFF)) 	
+	if ((0x00000000) !=(ioread32(wbase +NU_PPE_PADDING_VALUE_7)& 0x0007FFFF)) 	
 	{resw47 =1;
 	rumboot_printf("resw47 error\n");}	
 		else 
 		{resw47=0;}
 	
-	if ((0x00000000) !=ioread32(rbase +NU_PPE_INF_NUM_IN)) 	
+	if ((0x00000000) !=ioread32(wbase +NU_PPE_INF_NUM_IN)) 	
 	{resw48 =1;
 	rumboot_printf("resw48 error\n");}	
 		else 
 		{resw48=0;}
 	
-	if ((0x00000000) !=ioread32(rbase +NU_PPE_NAN_NUM_IN)) 	
+	if ((0x00000000) !=ioread32(wbase +NU_PPE_NAN_NUM_IN)) 	
 	{resw49 =1;
 	rumboot_printf("resw49 error\n");}	
 		else 
 		{resw49=0;}	
 	
-	if ((0x00000000) !=ioread32(rbase + NU_PPE_NAN_NUM_OUT)) 	
+	if ((0x00000000) !=ioread32(wbase + NU_PPE_NAN_NUM_OUT)) 	
 	{resw50 =1;
 	rumboot_printf("resw50 error\n");}	
 		else 
 		{resw50=0;}		
-	if ((0x00000000) !=(ioread32(rbase + NU_PPE_STATUS_DONE) & 0x00000001)) 	
+	if ((0x00000000) !=(ioread32(wbase + NU_PPE_STATUS_DONE) & 0x00000001)) 	
 	{resw51 =1;
 	rumboot_printf("resw51 error\n");}	
 		else 
@@ -848,148 +850,148 @@ int nu_ppe_wr_rd_regs(uintptr_t rbase,uintptr_t wbase, int32_t data) {
 		else 
 		{resw26=0;}
 	
-		iowrite32(tmpr,rbase +  NU_PPE_INP_BOX_ST_SIZE_X);
-	if ((tmpr & 0x000001FFF) != (ioread32(rbase + NU_PPE_INP_BOX_ST_SIZE_X)& 0x000001FFF))
+		iowrite32(tmpr,wbase +  NU_PPE_INP_BOX_ST_SIZE_X);
+	if ((tmpr & 0x000001FFF) != (ioread32(wbase + NU_PPE_INP_BOX_ST_SIZE_X)& 0x000001FFF))
 		{resw27 =1;
 		rumboot_printf("resw27 error\n");}
 		else 
 		{resw27=0;}
 	
-		iowrite32(tmpr,rbase +  NU_PPE_INP_BOX_SIZE_X);	
-	if ((tmpr & 0x000001FFF) != (ioread32(rbase + NU_PPE_INP_BOX_SIZE_X)& 0x000001FFF))
+		iowrite32(tmpr,wbase +  NU_PPE_INP_BOX_SIZE_X);	
+	if ((tmpr & 0x000001FFF) != (ioread32(wbase + NU_PPE_INP_BOX_SIZE_X)& 0x000001FFF))
 		{resw28 =1;
 		rumboot_printf("resw28 error\n");}
 		else 
 		{resw28=0;}
 
-		iowrite32(tmpr,rbase +  NU_PPE_INP_BOX_OFFSET_X);
-		if ((tmpr & 0x000001FFF) != (ioread32(rbase + NU_PPE_INP_BOX_OFFSET_X)& 0x000001FFF))
+		iowrite32(tmpr,wbase +  NU_PPE_INP_BOX_OFFSET_X);
+		if ((tmpr & 0x000001FFF) != (ioread32(wbase + NU_PPE_INP_BOX_OFFSET_X)& 0x000001FFF))
 		{resw29 =1;
 		rumboot_printf("resw29 error\n");}
 		else 
 		{resw29=0;}
 	
-		iowrite32(tmpr,rbase +  NU_PPE_DATA_W_IN);
-	if ((tmpr & 0x000001FFF) != (ioread32(rbase + NU_PPE_DATA_W_IN)& 0x000001FFF))
+		iowrite32(tmpr,wbase +  NU_PPE_DATA_W_IN);
+	if ((tmpr & 0x000001FFF) != (ioread32(wbase + NU_PPE_DATA_W_IN)& 0x000001FFF))
 		{resw30 =1;
 		rumboot_printf("resw30 error\n");}
 		else 
 		{resw30=0;}
 	
-		iowrite32(tmpr,rbase +  NU_PPE_DATA_H_IN);	
-	if ((tmpr & 0x000001FFF) != (ioread32(rbase + NU_PPE_DATA_H_IN)& 0x000001FFF))
+		iowrite32(tmpr,wbase +  NU_PPE_DATA_H_IN);	
+	if ((tmpr & 0x000001FFF) != (ioread32(wbase + NU_PPE_DATA_H_IN)& 0x000001FFF))
 		{resw31 =1;
 		rumboot_printf("resw31 error\n");}
 		else 
 		{resw31=0;}
 	
-		iowrite32(tmpr,rbase +  NU_PPE_DATA_C_IN);
-	if ((tmpr & 0x000001FFF) != (ioread32(rbase + NU_PPE_DATA_C_IN) & 0x000001FFF))
+		iowrite32(tmpr,wbase +  NU_PPE_DATA_C_IN);
+	if ((tmpr & 0x000001FFF) != (ioread32(wbase + NU_PPE_DATA_C_IN) & 0x000001FFF))
 		{resw32 =1;
 		rumboot_printf("resw32 error\n");}
 		else 
 		{resw32=0;}
 	
-		iowrite32(tmpr,rbase +  NU_PPE_DATA_W_OUT);
-	if ((tmpr & 0x000001FFF) != (ioread32(rbase + NU_PPE_DATA_W_OUT )& 0x000001FFF))
+		iowrite32(tmpr,wbase +  NU_PPE_DATA_W_OUT);
+	if ((tmpr & 0x000001FFF) != (ioread32(wbase + NU_PPE_DATA_W_OUT )& 0x000001FFF))
 		{resw33 =1;
 		rumboot_printf("resw33 error\n");}
 		else 
 		{resw33=0;}
 	
-		iowrite32(tmpr,rbase +  NU_PPE_DATA_H_OUT);
-	if ((tmpr & 0x000001FFF) != (ioread32(rbase + NU_PPE_DATA_H_OUT)& 0x000001FFF))
+		iowrite32(tmpr,wbase +  NU_PPE_DATA_H_OUT);
+	if ((tmpr & 0x000001FFF) != (ioread32(wbase + NU_PPE_DATA_H_OUT)& 0x000001FFF))
 		{resw34 =1;
 		rumboot_printf("resw34 error\n");}
 		else 
 		{resw34=0;}
 	
-		iowrite32(tmpr,rbase +  NU_PPE_DATA_C_OUT);
-	if ((tmpr & 0x000001FFF) != (ioread32(rbase + NU_PPE_DATA_C_OUT)&  0x000001FFF))
+		iowrite32(tmpr,wbase +  NU_PPE_DATA_C_OUT);
+	if ((tmpr & 0x000001FFF) != (ioread32(wbase + NU_PPE_DATA_C_OUT)&  0x000001FFF))
 		{resw35 =1;
 		rumboot_printf("resw35 error\n");}
 		else 
 		{resw35=0;}
 	
-		iowrite32(tmpr,rbase +  NU_PPE_OP_MODE);
-	if ((tmpr & 0x01030703) != (ioread32(rbase + NU_PPE_OP_MODE)& 0x01030703))
+		iowrite32(tmpr,wbase +  NU_PPE_OP_MODE);
+	if ((tmpr & 0x01030703) != (ioread32(wbase + NU_PPE_OP_MODE)& 0x01030703))
 		{resw36 =1;
 		rumboot_printf("resw36 error\n");}
 		else 
 		{resw36=0;}
 	
-		iowrite32(tmpr,rbase + NU_PPE_KERNEL);
-	if ((tmpr & 0x00FF0707) != (ioread32(rbase + NU_PPE_KERNEL)& 0x00FF0707))
+		iowrite32(tmpr,wbase + NU_PPE_KERNEL);
+	if ((tmpr & 0x00FF0707) != (ioread32(wbase + NU_PPE_KERNEL)& 0x00FF0707))
 		{resw37 =1;
 		rumboot_printf("resw37 error\n");}
 		else 
 		{resw37=0;}
 	
-		iowrite32(tmpr,rbase + NU_PPE_RECIP_KERNEL_W);
-	if ((tmpr & 0x00FF0707) != (ioread32(rbase + NU_PPE_RECIP_KERNEL_W)& 0x00FF0707))
+		iowrite32(tmpr,wbase + NU_PPE_RECIP_KERNEL_W);
+	if ((tmpr & 0x00FF0707) != (ioread32(wbase + NU_PPE_RECIP_KERNEL_W)& 0x00FF0707))
 		{resw38 =1;
 		rumboot_printf("resw38 error\n");}
 		else 
 		{resw38=0;}
 	
-		iowrite32(tmpr,rbase + NU_PPE_RECIP_KERNEL_H);
-	if ((tmpr & 0x00FFFFFF) != (ioread32(rbase + NU_PPE_RECIP_KERNEL_H)& 0x00FFFFFF))
+		iowrite32(tmpr,wbase + NU_PPE_RECIP_KERNEL_H);
+	if ((tmpr & 0x00FFFFFF) != (ioread32(wbase + NU_PPE_RECIP_KERNEL_H)& 0x00FFFFFF))
 		{resw39 =1;
 		rumboot_printf("resw39 error\n");}
 		else 
 		{resw39=0;}
 	
-		iowrite32(tmpr,rbase + NU_PPE_PADDING);
-	if ((tmpr & 0x00007777) != (ioread32(rbase + NU_PPE_PADDING)& 0x00007777)) 	
+		iowrite32(tmpr,wbase + NU_PPE_PADDING);
+	if ((tmpr & 0x00007777) != (ioread32(wbase + NU_PPE_PADDING)& 0x00007777)) 	
 		{resw40 =1;
 		rumboot_printf("resw40 error\n");}	
 		else 
 		{resw40=0;}
 	
-		iowrite32(tmpr,rbase + NU_PPE_PADDING_VALUE_1);	
-	if ((tmpr & 0x0007FFFF) !=(ioread32(rbase + NU_PPE_PADDING_VALUE_1)& 0x0007FFFF)) 	
+		iowrite32(tmpr,wbase + NU_PPE_PADDING_VALUE_1);	
+	if ((tmpr & 0x0007FFFF) !=(ioread32(wbase + NU_PPE_PADDING_VALUE_1)& 0x0007FFFF)) 	
 		{resw41 =1;
 		rumboot_printf("resw41 error\n");}	
 		else 
 		{resw41=0;}
 	
-		iowrite32(tmpr,rbase +  NU_PPE_PADDING_VALUE_2);	
-	if ((tmpr & 0x0007FFFF) !=(ioread32(rbase +NU_PPE_PADDING_VALUE_2)& 0x0007FFFF)) 	
+		iowrite32(tmpr,wbase +  NU_PPE_PADDING_VALUE_2);	
+	if ((tmpr & 0x0007FFFF) !=(ioread32(wbase +NU_PPE_PADDING_VALUE_2)& 0x0007FFFF)) 	
 		{resw42 =1;
 		rumboot_printf("resw42 error\n");}	
 		else 
 		{resw42=0;}
 	
-		iowrite32(tmpr,rbase +  NU_PPE_PADDING_VALUE_3);	
-	if ((tmpr & 0x0007FFFF) !=(ioread32(rbase +NU_PPE_PADDING_VALUE_3)& 0x0007FFFF)) 	
+		iowrite32(tmpr,wbase +  NU_PPE_PADDING_VALUE_3);	
+	if ((tmpr & 0x0007FFFF) !=(ioread32(wbase +NU_PPE_PADDING_VALUE_3)& 0x0007FFFF)) 	
 		{resw43 =1;
 		rumboot_printf("resw43 error\n");}	
 		else 
 		{resw43=0;}
 	
-		iowrite32(tmpr,rbase +  NU_PPE_PADDING_VALUE_4);	
-	if ((tmpr & 0x0007FFFF) !=(ioread32(rbase +NU_PPE_PADDING_VALUE_4)& 0x0007FFFF)) 	
+		iowrite32(tmpr,wbase +  NU_PPE_PADDING_VALUE_4);	
+	if ((tmpr & 0x0007FFFF) !=(ioread32(wbase +NU_PPE_PADDING_VALUE_4)& 0x0007FFFF)) 	
 		{resw44 =1;
 		rumboot_printf("resw44 error\n");}	
 		else 
 		{resw44=0;}
 	
-		iowrite32(tmpr,rbase +  NU_PPE_PADDING_VALUE_5);	
-	if ((tmpr & 0x0007FFFF) !=(ioread32(rbase +NU_PPE_PADDING_VALUE_5)& 0x0007FFFF)) 	
+		iowrite32(tmpr,wbase +  NU_PPE_PADDING_VALUE_5);	
+	if ((tmpr & 0x0007FFFF) !=(ioread32(wbase +NU_PPE_PADDING_VALUE_5)& 0x0007FFFF)) 	
 		{resw45 =1;
 		rumboot_printf("resw45 error\n");}	
 		else 
 		{resw45=0;}
 	
-		iowrite32(tmpr,rbase +  NU_PPE_PADDING_VALUE_6);	
-	if ((tmpr & 0x0007FFFF) !=(ioread32(rbase +NU_PPE_PADDING_VALUE_6)& 0x0007FFFF)) 	
+		iowrite32(tmpr,wbase +  NU_PPE_PADDING_VALUE_6);	
+	if ((tmpr & 0x0007FFFF) !=(ioread32(wbase +NU_PPE_PADDING_VALUE_6)& 0x0007FFFF)) 	
 		{resw46 =1;
 		rumboot_printf("resw46 error\n");}	
 		else 
 		{resw46=0;}
 	
-		iowrite32(tmpr,rbase + NU_PPE_PADDING_VALUE_7);	
-	if ((tmpr & 0x0007FFFF) !=(ioread32(rbase +NU_PPE_PADDING_VALUE_7)& 0x0007FFFF)) 	
+		iowrite32(tmpr,wbase + NU_PPE_PADDING_VALUE_7);	
+	if ((tmpr & 0x0007FFFF) !=(ioread32(wbase +NU_PPE_PADDING_VALUE_7)& 0x0007FFFF)) 	
 		{resw47 =1;
 		rumboot_printf("resw47 error\n");}	
 		else 
@@ -1003,7 +1005,7 @@ int nu_ppe_wr_rd_regs(uintptr_t rbase,uintptr_t wbase, int32_t data) {
 				resw18 || resw19 || /*resw20 || */ resw21 || resw22 || resw23 || resw24 || resw25 ||
 				resw26 || resw27 || resw28 || resw29 || resw30 || resw31 || resw32 || resw33 ||
 				resw34 ||resw35 || resw36 ||resw37 ||resw38 || resw39 || resw40 || resw41 ||
-				resw42 || resw43  || resw44 ||resw45 ||resw46 || resw47 ;//||resw48 || resw49 || resw50; 
+				resw42 || resw43  || resw44 ||resw45 ||resw46 || resw47 ; 
 	   		
 	res = resr  || resw;
 
@@ -1042,7 +1044,7 @@ int main() {
   rumboot_printf("Read REGS after reset\n");
 
    // Configure RDMA initial state
-   res1 = nu_ppe_rd_regs(NU_PPE_RDMA_BASE, NU_PPE_STANDALONE_BASE);
+   res1 = nu_ppe_rd_regs(MY_PPE_RDMA_BASE, MY_PPE_REGS_BASE);
 
   if ( res1 !=0)
   {rumboot_printf("Test FAILED\n");
@@ -1051,7 +1053,7 @@ int main() {
    rumboot_printf("Check READs after reset PASSED \n");
    //write zero's 
    {rumboot_printf("Read REGS after  WRITE REGs ZERO's\n");}
-   res2 = nu_ppe_wr_rd_regs(NU_PPE_RDMA_BASE, NU_PPE_STANDALONE_BASE, 0x00000000);
+   res2 = nu_ppe_wr_rd_regs(MY_PPE_RDMA_BASE, MY_PPE_REGS_BASE, 0x00000000);
    
   if ( res2 !=0)
   {rumboot_printf("Test FAILED\n");
@@ -1060,7 +1062,7 @@ int main() {
   { rumboot_printf("Check READs after write ZERO's PASSED \n");}
     {rumboot_printf("Read REGS after  WRITE REGs ONE's\n");} 
 	  //write one's 
-    res3 =  nu_ppe_wr_rd_regs(NU_PPE_RDMA_BASE, NU_PPE_STANDALONE_BASE, 0xFFFFFFFF);
+    res3 =  nu_ppe_wr_rd_regs(MY_PPE_RDMA_BASE, MY_PPE_REGS_BASE, 0xFFFFFFFF);
 
  if ( res3 !=0)
   {rumboot_printf("Test FAILED\n");
@@ -1069,7 +1071,7 @@ int main() {
   { rumboot_printf("Read REGS after  WRITE REGs ONE's PASSED\n");};
 
   { rumboot_printf("Read REGS running ONE\n");}
-  res4 = nu_running_one(  NU_PPE_RDMA_BASE,NU_PPE_RDMA_BASE_ADDR,0xFFFFFFFF,32);	
+  res4 = nu_running_one(  MY_PPE_RDMA_BASE,NU_PPE_RDMA_BASE_ADDR,0xFFFFFFFF,32);	
 	if  (res4 !=0)
 	{rumboot_printf( "Check running ONE FAILED\n");
 	return 1;
