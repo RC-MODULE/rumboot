@@ -783,13 +783,13 @@ endif() #### EXPERIMENT_STAGE_2_SUB_1
     endif()  # if(DUT STREQUAL "VPE" OR "NPE")
 
     ###############
-    if(DUT STREQUAL "PPE")
-
+    if(DUT STREQUAL "PPE" OR DUT STREQUAL "NPE")
     add_rumboot_target(
         CONFIGURATION ROM
         NAME PPE_1
         FILES scr1/targets/simple-rom/nu/ppe_regs/regs_ppe.c
     )
+    endif()
 
     # works after rm CMakeCache.txt
     if(NOT DEFINED NU_SEED)
@@ -872,22 +872,22 @@ if(DEFINED EXPERIMENT_STAGE_2_SUB_1)
     endmacro()
 endif()  ### EXPERIMENT_STAGE_2_SUB_1
 
-    ADD_PPE_COUPLED_TEST_LOOP(ppe_2_i8_max    main_ppe_2_i8_max   NotShowPerf )
-    ADD_PPE_COUPLED_TEST_LOOP(ppe_3_i16_max   main_ppe_3_i16_max  NotShowPerf )
-    ADD_PPE_COUPLED_TEST_LOOP(ppe_4_fp16_max  main_ppe_4_fp16_max NotShowPerf )
-    ADD_PPE_COUPLED_TEST_LOOP(ppe_5_i8_avg    main_ppe_5_i8_avg   NotShowPerf )
-    ADD_PPE_COUPLED_TEST_LOOP(ppe_6_i16_avg   main_ppe_6_i16_avg  NotShowPerf )
-    ADD_PPE_COUPLED_TEST_LOOP(ppe_7_fp16_avg  main_ppe_7_fp16_avg NotShowPerf )
-    ADD_PPE_COUPLED_TEST_LOOP(ppe_11_i16_max  main_ppe_3_i16_max  ShowPerf    )
+    if(DUT STREQUAL "PPE" OR DUT STREQUAL "NPE")
+    #ADD_PPE_COUPLED_TEST_LOOP(ppe_2_i8_max    main_ppe_2_i8_max   NotShowPerf )
+    #ADD_PPE_COUPLED_TEST_LOOP(ppe_3_i16_max   main_ppe_3_i16_max  NotShowPerf )
+    #ADD_PPE_COUPLED_TEST_LOOP(ppe_4_fp16_max  main_ppe_4_fp16_max NotShowPerf )
+    #ADD_PPE_COUPLED_TEST_LOOP(ppe_5_i8_avg    main_ppe_5_i8_avg   NotShowPerf )
+    #ADD_PPE_COUPLED_TEST_LOOP(ppe_6_i16_avg   main_ppe_6_i16_avg  NotShowPerf )
+    #ADD_PPE_COUPLED_TEST_LOOP(ppe_7_fp16_avg  main_ppe_7_fp16_avg NotShowPerf )
+    #ADD_PPE_COUPLED_TEST_LOOP(ppe_11_i16_max  main_ppe_3_i16_max  ShowPerf    )
 
-    ADD_PPE_V_EXPER_TEST(ppe_8v_i16_max   main_ppe_3_i16_max  NotShowPerf VPEtoPPE)
-    ADD_PPE_V_EXPER_TEST(ppe_8v_i16_max_p main_ppe_3_i16_max  ShowPerf    VPEtoPPE)
-    ADD_PPE_V_EXPER_TEST(ppe_2v_i8_max    main_ppe_2_i8_max   NotShowPerf MEMtoMEM)
-    ADD_PPE_V_EXPER_TEST(ppe_2v_i8_max_p  main_ppe_2_i8_max   ShowPerf MEMtoMEM)
-
-    ADD_PPE_V_EXPER_TEST(ppe_5v_i8_min    main_ppe_2_i8_min   NotShowPerf MEMtoMEM)
-    ADD_PPE_V_EXPER_TEST(ppe_6v_i16_min   main_ppe_3_i16_min  NotShowPerf MEMtoMEM)
-    ADD_PPE_V_EXPER_TEST(ppe_7v_fp16_min  main_ppe_4_fp16_min NotShowPerf MEMtoMEM)
+    #ADD_PPE_V_EXPER_TEST(ppe_8v_i16_max   main_ppe_3_i16_max  NotShowPerf VPEtoPPE)
+    #ADD_PPE_V_EXPER_TEST(ppe_8v_i16_max_p main_ppe_3_i16_max  ShowPerf    VPEtoPPE)
+    #ADD_PPE_V_EXPER_TEST(ppe_2v_i8_max    main_ppe_2_i8_max   NotShowPerf MEMtoMEM)
+    #ADD_PPE_V_EXPER_TEST(ppe_2v_i8_max_p  main_ppe_2_i8_max   ShowPerf MEMtoMEM)
+    #ADD_PPE_V_EXPER_TEST(ppe_5v_i8_min    main_ppe_2_i8_min   NotShowPerf MEMtoMEM)
+    #ADD_PPE_V_EXPER_TEST(ppe_6v_i16_min   main_ppe_3_i16_min  NotShowPerf MEMtoMEM)
+    #ADD_PPE_V_EXPER_TEST(ppe_7v_fp16_min  main_ppe_4_fp16_min NotShowPerf MEMtoMEM)
 
     ADD_PPE_MANY_TESTS(ppe_many_i8_max    main_ppe_2_i8_max   NotShowPerf MEMtoMEM)
     ADD_PPE_MANY_TESTS(ppe_many_i16_max   main_ppe_3_i16_max  NotShowPerf MEMtoMEM)
@@ -899,6 +899,9 @@ endif()  ### EXPERIMENT_STAGE_2_SUB_1
     ADD_PPE_MANY_TESTS(ppe_many_i8_min    main_ppe_2_i8_min   NotShowPerf MEMtoMEM)
     ADD_PPE_MANY_TESTS(ppe_many_i16_min   main_ppe_3_i16_min  NotShowPerf MEMtoMEM)
     ADD_PPE_MANY_TESTS(ppe_many_fp16_min  main_ppe_4_fp16_min NotShowPerf MEMtoMEM)
+    endif()
+
+    if(DUT STREQUAL "PPE")
 
 if(DEFINED EXPERIMENT_STAGE_2_SUB_1) ###
     ADD_PPE_EXPER_TEST(PPE_2  NotShowPerf)
