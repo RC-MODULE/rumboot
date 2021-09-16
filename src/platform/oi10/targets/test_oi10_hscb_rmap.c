@@ -1594,11 +1594,7 @@ int main() {
 
     tbl = create_irq_handlers();
   
-    disable_hscb(HSCB0_BASE);    
-    disable_hscb(HSCB1_BASE);    
-    disable_hscb(HSCB2_BASE);    
-    disable_hscb(HSCB3_BASE);
-
+    disable_hscb(HSCB_SUPPLEMENTARY_BASE);    
 
     result += check_rmap_func(HSCB_UNDER_TEST_BASE, HSCB_SUPPLEMENTARY_BASE);
     delete_irq_handlers(tbl);
