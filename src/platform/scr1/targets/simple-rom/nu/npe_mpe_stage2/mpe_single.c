@@ -82,6 +82,8 @@ void mpe_dma_config_and_start(uintptr_t base, uint32_t* source_ptr, uint32_t buf
 void vpe_config_and_start(uint32_t* vpe_ptr, DataTypeExt in_data_type, DataType out_data_type) {
   ConfigVPE* cfg;
   CubeMetrics* metrics;
+  
+  cfg = rumboot_malloc_from_heap(0,sizeof(ConfigVPE));
 
   cfg->in_data_type                         = in_data_type                  ; // DataTypeExt_Int32 or DataTypeExt_Fp32
   cfg->out_data_type                        = out_data_type                 ; // DataType_Int8 or DataType_Int16 or DataType_Fp16
