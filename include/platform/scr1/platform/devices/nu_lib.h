@@ -380,6 +380,74 @@
     // uint32_t wNNo     ; // NAN_NUM_OUT
   }ConfigREGPPE;
 
+  typedef struct ConfigREGPPE_new{
+    // MY_PPE_RDMA_BASE
+    uint32_t rOpEn;
+    uint32_t rAXIp;
+    uint32_t rBALi;
+    uint32_t rBrdX;
+    uint32_t rBrdY;
+    uint32_t rBrdZ;
+    uint32_t rStrX;
+    uint32_t rStrY;
+    uint32_t rStrZ;
+    uint32_t rFrgs;
+    uint32_t rFrgl;
+    uint32_t rXYZd;
+    uint32_t rBstX;
+    uint32_t rBstY;
+    uint32_t rBstZ;
+    uint32_t rBxtX;
+    uint32_t rBxtY;
+    uint32_t rBxtZ;
+    uint32_t rBffX;
+    uint32_t rBffY;
+    uint32_t rBffZ;
+    // MY_PPE_REGS_BASE
+    uint32_t wOpEn;
+    uint32_t wAXIp;
+    uint32_t wBALo;
+    uint32_t wBrdX;
+    uint32_t wBrdY;
+    uint32_t wBrdZ;
+    uint32_t wStrX;
+    uint32_t wStrY;
+    uint32_t wStrZ;
+    uint32_t wFrgs;
+    uint32_t wFrgl;
+    uint32_t wXYZd;
+    uint32_t wBstX;
+    uint32_t wBstY;
+    uint32_t wBstZ;
+    uint32_t wBxtX;
+    uint32_t wBxtY;
+    uint32_t wBxtZ;
+    uint32_t wBffX;
+    uint32_t wBffY;
+    uint32_t wBffZ;
+    uint32_t wIstX;
+    uint32_t wIxtX;     
+    uint32_t wIffX;   
+    uint32_t wWi;
+    uint32_t wHi;
+    uint32_t wCi;
+    uint32_t wWo;
+    uint32_t wHo;
+    uint32_t wCo;
+    uint32_t wOpM;
+    uint32_t wK;
+    uint32_t wKWr;
+    uint32_t wKHr;
+    uint32_t wP;
+    uint32_t wPV1;
+    uint32_t wPV2;
+    uint32_t wPV3;
+    uint32_t wPV4;
+    uint32_t wPV5;
+    uint32_t wPV6;
+    uint32_t wPV7;
+  } ConfigREGPPE_new;
+
   typedef struct CubeMetrics{
     int32_t s;   // Size That Cube Occupies (in bytes)
     int32_t H;

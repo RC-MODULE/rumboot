@@ -8,8 +8,10 @@
 
 #include <platform/devices/nu_lib.h> 
 #include <platform/devices/nu_test_lib.h> 
+#include <platform/devices/nu_test_macro.h> 
 
 #include "platform/devices/nu_ppe_file_tags.h"
+
 
 ConfigPPE     cfg;
 ConfigREGPPE  cfg_reg = {0};
@@ -69,7 +71,7 @@ int main() {
 //    }
 //
 //    if(!res){
-//      nu_ppe_setup_reg(NU_PPE_RDMA_BASE, NU_PPE_STANDALONE_BASE, &cfg_reg);
+//      nu_ppe_setup_reg(MY_PPE_RDMA_BASE, MY_PPE_REGS_BASE, &cfg_reg);
 //
 //      cfg_reg.rOpEn  = 0x1; // Set start of PPE RDMA field to active value
 //      cfg_reg.wOpEn  = 0x1; // Set start of PPE+WDMA field to active value
@@ -77,15 +79,15 @@ int main() {
 //      clk_cnt = rumboot_platform_get_uptime();
 //
 //      // Start RDMA then PPE+WDMA
-//      nu_ppe_rdma_run(NU_PPE_RDMA_BASE, &cfg_reg);
-//      nu_ppe_run(NU_PPE_STANDALONE_BASE, &cfg_reg);
+//      nu_ppe_rdma_run(MY_PPE_RDMA_BASE, &cfg_reg);
+//      nu_ppe_run(MY_PPE_REGS_BASE, &cfg_reg);
 //
-//      while (nu_ppe_status_done_rd(NU_PPE_STANDALONE_BASE) == 0x0) {} // set timeout
+//      while (nu_ppe_status_done_rd(MY_PPE_REGS_BASE) == 0x0) {} // set timeout
 //      clk_cnt = rumboot_platform_get_uptime() - clk_cnt;
 //
 //      // Wait RDMA then PPE+WDMA
-//      nu_ppe_rdma_wait_complete(NU_PPE_RDMA_BASE);
-//      nu_ppe_wait_complete(NU_PPE_STANDALONE_BASE);
+//      nu_ppe_rdma_wait_complete(MY_PPE_RDMA_BASE);
+//      nu_ppe_wait_complete(MY_PPE_REGS_BASE);
 //
 //      // Sizeof(DataCube)/(time*frequency); time measure is us, frequency measure is MHz
 //      // clk_cnt will be devided by frequency later
@@ -119,20 +121,20 @@ int main() {
 
     if(!res){
       cfg_reg.wOpEn  = 0x1; // Set start of PPE+WDMA field to active value
-      nu_ppe_setup_reg(NU_PPE_RDMA_BASE, NU_PPE_STANDALONE_BASE, &cfg_reg);
+      nu_ppe_setup_reg(MY_PPE_RDMA_BASE, MY_PPE_REGS_BASE, &cfg_reg);
 
       nu_cpdmac_trn256_config(NU_CPDMAC_ASM_BASE,in_data,in_metrics->s);
 
-      nu_ppe_run(NU_PPE_STANDALONE_BASE, &cfg_reg); 
+      nu_ppe_run(MY_PPE_REGS_BASE, &cfg_reg); 
       clk_cnt = rumboot_platform_get_uptime();
 
       nu_cpdmac_trn256_run(NU_CPDMAC_ASM_BASE);
 
-      while (nu_ppe_status_done_rd(NU_PPE_STANDALONE_BASE) == 0x0) {} // set timeout
+      while (nu_ppe_status_done_rd(MY_PPE_REGS_BASE) == 0x0) {} // set timeout
       clk_cnt = rumboot_platform_get_uptime() - clk_cnt;
 
       nu_cpdmac_trn256_wait_complete(NU_CPDMAC_ASM_BASE);
-      nu_ppe_wait_complete(NU_PPE_STANDALONE_BASE);
+      nu_ppe_wait_complete(MY_PPE_REGS_BASE);
 
       // Sizeof(DataCube)/(time*frequency); time measure is us, frequency measure is MHz
       // clk_cnt will be devided by frequency later
