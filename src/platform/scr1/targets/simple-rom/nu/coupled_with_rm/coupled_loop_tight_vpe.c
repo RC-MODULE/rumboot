@@ -86,9 +86,9 @@ VectorMetrics* lut2_metrics;
 
   // Iteration Tail Vars
 ConfigVPE tail_cfg;
-void* tail_etalon;
-void* tail_res;
-int tail_size;
+void* etalon_ptr[32];
+void* res_ptr[32];
+int res_size[32];
   //
 
 int main() {
@@ -107,8 +107,7 @@ int main() {
   na_cu_set_units_direct_mode(NPE_BASE+NA_CU_REGS_BASE, NA_CU_VPE_UNIT_MODE);
 #endif
   
-  for(i=0;i<=iterations;i++) {
-    if(i!=iterations) {
+  for(i=0;i<iterations;i++) {
       rumboot_printf("Starting iteration %d\n",i);
       
       if(nu_vpe_load_cfg_by_tag(heap_id, &cfg, cfg_file_tag[i]) != 0) return -1;
@@ -159,6 +158,11 @@ int main() {
 
       // nu_vpe_print_config(&cfg);
       nu_vpe_decide_dma_config(&cfg,in_metrics,in_data,op0,op1,op2,res_metrics,res_data,&cfg_dma);
+      if(i==iterations-1) 
+        cfg.mark = Enable_En;
+      else
+        cfg.mark = Enable_NotEn;
+      
       // nu_print_config_dma(&cfg.src_rdma_config,"src_rdma_config");
       // nu_print_config_dma(&cfg.op0_rdma_config,"op0_rdma_config");
       // nu_print_config_dma(&cfg.op1_rdma_config,"op1_rdma_config");
@@ -168,49 +172,29 @@ int main() {
       
       nu_vpe_setup(MY_VPE_REGS_BASE, &cfg);
       
-        // Setup Main Channel DMAs if Required
-      if(cfg.src_rdma_config.dma_en == Enable_NotEn)
-        nu_vpe_config_rd_main_channel(NU_CPDMAC_ASM_BASE,in_data,in_metrics->s);
-      if(cfg.wdma_config.dma_en == Enable_NotEn)
-        nu_vpe_config_wr_main_channel(NU_CPDMAC_ASM_BASE,res_data,res_metrics->s);
-      
       rumboot_printf("Running DMA..\n");
-      
-        // Invoke Required DMA Channels
-      if(cfg.src_rdma_config.dma_en == Enable_NotEn)
-        nu_vpe_run_rd_main_channel(NU_CPDMAC_ASM_BASE);
-      if(cfg.wdma_config.dma_en == Enable_NotEn)
-        nu_vpe_run_wr_main_channel(NU_CPDMAC_ASM_BASE);
-      
       
       nu_vpe_run(MY_VPE_REGS_BASE, &cfg);     // To Invoke Or Not To Invoke Internal DMA Channel - Decide inside nu_vpe_run
       nu_vpe_wait_cntx_appl(MY_VPE_REGS_BASE, &cfg);
-    }
     
-    if(i!=0) {
-        
-      nu_vpe_wait(MY_VPE_REGS_BASE, &tail_cfg);
-      
-        // Finalize Required DMA Channels
-      if(tail_cfg.src_rdma_config.dma_en == Enable_NotEn)
-        nu_vpe_wait_rd_main_channel_complete(NU_CPDMAC_ASM_BASE);
-      if(tail_cfg.wdma_config.dma_en == Enable_NotEn)
-        nu_vpe_wait_wr_main_channel_complete(NU_CPDMAC_ASM_BASE);
-      
-      rumboot_printf("Comparing..\n");
-      
-      if(nu_bitwise_compare(tail_res,tail_etalon,tail_size) == 0)
-        rumboot_printf("Iteration %d PASSED\n",i-1);
-      else {
-        rumboot_printf("Test FAILED at iteration %d\n",i-1);
-        return 1;
-      }
-    }
+      res_ptr[i] = res_data;
+      etalon_ptr[i]=etalon;
+      res_size[i]=res_metrics->s;
+  }
     
-    tail_cfg = cfg;
-    tail_etalon = etalon;
-    tail_res = res_data;
-    tail_size = res_metrics->s;
+    
+  nu_vpe_wait(MY_VPE_REGS_BASE, &cfg); // Wait For The Last Iteration
+  
+  rumboot_printf("Comparing..\n");
+  
+  
+  for(i=0;i<iterations;i++) {
+    if(nu_bitwise_compare(res_ptr[i],etalon_ptr[i],res_size[i]) == 0)
+      rumboot_printf("Iteration %d PASSED\n",i);
+    else {
+      rumboot_printf("Test FAILED at iteration %d\n",i);
+      return 1;
+    }
     
   }
   

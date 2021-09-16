@@ -1035,6 +1035,8 @@ void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics) {
   cfg->wdma_config.dma_cube_size_w     = metrics->W;
   cfg->wdma_config.dma_cube_size_h     = metrics->H;
   cfg->wdma_config.dma_cube_size_c     = metrics->C;  
+  
+  cfg->mark = Enable_NotEn;
     
    
   uint32_t elem_size;
@@ -2075,13 +2077,23 @@ void nu_vpe_wait_rd_main_channel_complete(uintptr_t dma_base){
 //void nu_vpe_run(uintptr_t vpe_base, ConfigDMAVPE* cfg) {
 void nu_vpe_run(uintptr_t vpe_base, ConfigVPE* cfg){ // ?????????   ConfigVPE* cfg  
   // Напиши сюда 3апуск DMA
-  while((ioread32(vpe_base + NU_VPE + NU_VPE_NEXT_CNTX) & 1) !=0) {}
+  uint32_t temp;
+  do {
+    temp = ioread32(vpe_base + NU_VPE + NU_VPE_NEXT_CNTX);
+  }while((temp & 1) !=0);
+  
   rumboot_printf("Start VPE...\n");
-  iowrite32 (1<<0, vpe_base + NU_VPE + NU_VPE_NEXT_CNTX);
+  
+  if(cfg->mark)
+    temp = temp | (1<<1) | (1<<0);  //MARKED_CNTX=1 | NEXT_CNTX=1
+  else 
+    temp = (temp & (~(1<<1)) ) | (1<<0);  //MARKED_CNTX=0 | NEXT_CNTX=1
+  
+  iowrite32 (temp, vpe_base + NU_VPE + NU_VPE_NEXT_CNTX);
 }
 
 void nu_vpe_wait(uintptr_t vpe_base, ConfigVPE* cfg){
-  if(! cfg->dst_flying) {
+  if(! cfg->mark) {
     rumboot_printf("Wait VPE WDMA...\n");
     while(( (ioread32(vpe_base + NU_VPE + NU_VPE_INT_STATUS) >> 8) & 1) !=1) {}
     iowrite32((1<<8),vpe_base + NU_VPE + NU_VPE_INT_RESET);

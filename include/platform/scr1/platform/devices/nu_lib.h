@@ -277,6 +277,7 @@
     ConfigDMA   op2_rdma_config ;
     ConfigDMA   wdma_config     ;
     int32_t     cube_size       ;
+    Enable      mark            ;
   }ConfigVPE;
 
   typedef struct ConfigDMAVPE {
