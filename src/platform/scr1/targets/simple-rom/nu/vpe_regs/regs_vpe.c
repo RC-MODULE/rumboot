@@ -1860,8 +1860,11 @@ int main() {
   rumboot_printf("Test VPE regs run\n");
   rumboot_printf("Read REGS after reset begin\n");
   
-   // READ VPE  and DMA REG's initial state 
-
+  //  READ VPE  and DMA REG's initial state 
+	#if DUT_IS_NPE
+		na_cu_set_units_direct_mode(NPE_BASE+NA_CU_REGS_BASE, NA_CU_VPE_UNIT_MODE);
+	#endif
+	
 	res0 = nu_vpe_rd_regs(MY_VPE_REGS_BASE);
 	if (res0 !=0)
 	{rumboot_printf( "check VPE regs read after reset  FAILED\n ");}
