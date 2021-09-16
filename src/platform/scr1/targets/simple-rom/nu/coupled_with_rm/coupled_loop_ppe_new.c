@@ -33,14 +33,24 @@ int main() {
 
   int heap_id = nu_get_heap_id();
 
-  rumboot_printf("coupled_loop_ppe\n");
+  rumboot_printf("coupled_loop_ppe_new\n");
 
   rumboot_platform_request_file("num_iterations_file_tag", (uintptr_t) &it_nmb);
   rumboot_printf("it_nmb is %d\n", it_nmb);
 
-  #if DUT_IS_NPE
-    na_cu_set_units_direct_mode(NPE_BASE+NA_CU_REGS_BASE, NA_CU_PPE_UNIT_MODE);
-  #endif
+  //#if DUT_IS_NPE
+  //  na_cu_set_units_direct_mode(NPE_BASE+NA_CU_REGS_BASE, NA_CU_PPE_UNIT_MODE);
+  //#endif
+
+  iowrite32(0xFACE2021, MY_PPE_REGS_BASE + NU_PPE_WDMA_BASE_ADDR);
+
+  //uint32_t tmp;
+  //tmp = ioread32(MY_PPE_REGS_BASE + NU_PPE_WDMA_BASE_ADDR);
+  //rumboot_printf("%x\n", tmp);
+  //
+  //iowrite32(0xFACE2022, MY_PPE_REGS_BASE + NU_PPE_WDMA_BASE_ADDR);
+  //tmp = ioread32(MY_PPE_REGS_BASE + NU_PPE_WDMA_BASE_ADDR);
+  //rumboot_printf("%x\n", tmp);
 
   perf_avg = 0;
   for (i=0; i<it_nmb && !res; i++) {
@@ -67,7 +77,8 @@ int main() {
 //      cfg_reg.wBALd = (uintptr_t)res_data;
 //
 //      cfg_reg.rOpEn = 0x1;  // is needed to set memory linear all-in-one
-//      res = nu_ppe_decide_dma_config_trivial(&cfg, in_metrics, res_metrics, &cfg_reg);
+//      cfg_reg.wOpM = max_red << 28 | flying_mode << 8;
+//      res = nu_ppe_decide_dma_config_trivial(&cfg, res_metrics, &cfg_reg);
 //    }
 //
 //    if(!res){
@@ -116,7 +127,7 @@ int main() {
       cfg_reg.wBALd = (uintptr_t)res_data;
     
       cfg_reg.rOpEn = 0x0; // to set wOpM to VPE Linear mode
-      res = nu_ppe_decide_dma_config_trivial(&cfg, in_metrics, res_metrics, &cfg_reg);
+      res = nu_ppe_decide_dma_config_trivial(&cfg, res_metrics, &cfg_reg);
     }
 
     if(!res){

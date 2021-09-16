@@ -318,7 +318,7 @@
 //     Enable dma_src_en;
 //   }ConfigDMAPPE;
 
-  typedef struct ConfigREGPPE{
+/*  typedef struct ConfigREGPPE{
     // rdma
     // uint32_t rSt      ; // STATUS
     uint32_t rOpEn    ; // OP_ENABLE          / Start
@@ -379,75 +379,76 @@
     // uint32_t wINi     ; // INF_NUM_IN
     // uint32_t wNNi     ; // NAN_NUM_IN
     // uint32_t wNNo     ; // NAN_NUM_OUT
-  }ConfigREGPPE;
+  }ConfigREGPPE;*/
 
-  typedef struct ConfigREGPPE_new{
+  typedef struct ConfigREGPPE{
     // MY_PPE_RDMA_BASE
     uint32_t rOpEn;
     uint32_t rAXIp;
-    uint32_t rBALi;
-    uint32_t rBrdX;
-    uint32_t rBrdY;
-    uint32_t rBrdZ;
-    uint32_t rStrX;
-    uint32_t rStrY;
-    uint32_t rStrZ;
-    uint32_t rFrgs;
-    uint32_t rFrgl;
-    uint32_t rXYZd;
-    uint32_t rBstX;
-    uint32_t rBstY;
-    uint32_t rBstZ;
-    uint32_t rBxtX;
-    uint32_t rBxtY;
-    uint32_t rBxtZ;
-    uint32_t rBffX;
-    uint32_t rBffY;
-    uint32_t rBffZ;
+    uint32_t rBALi; // PPE_RDMA_BASE_ADDR
+    uint32_t rBrdX; // PPE_RDMA_BORDER_X
+    uint32_t rBrdY; // PPE_RDMA_BORDER_Y
+    uint32_t rBrdZ; // PPE_RDMA_BORDER_Z
+    uint32_t rStrX; // PPE_RDMA_STRIDE_X
+    uint32_t rStrY; // PPE_RDMA_STRIDE_Y
+    uint32_t rStrZ; // PPE_RDMA_STRIDE_Z
+    uint32_t rFrgs; // PPE_RDMA_FRAG_SIZE
+    uint32_t rFrgl; // PPE_RDMA_FRAG_LAST_SIZE
+    uint32_t rXYZd; // PPE_RDMA_XYZ_DRCT
+    uint32_t rBstX; // PPE_RDMA_BOX_ST_SIZE_X
+    uint32_t rBstY; // PPE_RDMA_BOX_ST_SIZE_Y
+    uint32_t rBstZ; // PPE_RDMA_BOX_ST_SIZE_Z
+    uint32_t rBxtX; // PPE_RDMA_BOX_SIZE_X
+    uint32_t rBxtY; // PPE_RDMA_BOX_SIZE_Y
+    uint32_t rBxtZ; // PPE_RDMA_BOX_SIZE_Z
+    uint32_t rBffX; // PPE_RDMA_BOX_OFFSET_X
+    uint32_t rBffY; // PPE_RDMA_BOX_OFFSET_Y
+    uint32_t rBffZ; // PPE_RDMA_BOX_OFFSET_Z
+
     // MY_PPE_REGS_BASE
     uint32_t wOpEn;
     uint32_t wAXIp;
-    uint32_t wBALo;
-    uint32_t wBrdX;
-    uint32_t wBrdY;
-    uint32_t wBrdZ;
-    uint32_t wStrX;
-    uint32_t wStrY;
-    uint32_t wStrZ;
-    uint32_t wFrgs;
-    uint32_t wFrgl;
-    uint32_t wXYZd;
-    uint32_t wBstX;
-    uint32_t wBstY;
-    uint32_t wBstZ;
-    uint32_t wBxtX;
-    uint32_t wBxtY;
-    uint32_t wBxtZ;
-    uint32_t wBffX;
-    uint32_t wBffY;
-    uint32_t wBffZ;
-    uint32_t wIstX;
-    uint32_t wIxtX;     
-    uint32_t wIffX;   
-    uint32_t wWi;
-    uint32_t wHi;
-    uint32_t wCi;
-    uint32_t wWo;
-    uint32_t wHo;
-    uint32_t wCo;
-    uint32_t wOpM;
-    uint32_t wK;
-    uint32_t wKWr;
-    uint32_t wKHr;
-    uint32_t wP;
-    uint32_t wPV1;
-    uint32_t wPV2;
-    uint32_t wPV3;
-    uint32_t wPV4;
-    uint32_t wPV5;
-    uint32_t wPV6;
-    uint32_t wPV7;
-  } ConfigREGPPE_new;
+    uint32_t wBALo; // PPE_WDMA_BASE_ADDR
+    uint32_t wBrdX; // PPE_WDMA_BORDER_X
+    uint32_t wBrdY; // PPE_WDMA_BORDER_Y
+    uint32_t wBrdZ; // PPE_WDMA_BORDER_Z
+    uint32_t wStrX; // PPE_WDMA_STRIDE_X
+    uint32_t wStrY; // PPE_WDMA_STRIDE_Y
+    uint32_t wStrZ; // PPE_WDMA_STRIDE_Z
+    uint32_t wFrgs; // PPE_WDMA_FRAG_SIZE
+    uint32_t wFrgl; // PPE_WDMA_FRAG_LAST_SIZE
+    uint32_t wXYZd; // PPE_WDMA_XYZ_DRCT
+    uint32_t wBstX; // PPE_WDMA_BOX_ST_SIZE_X
+    uint32_t wBstY; // PPE_WDMA_BOX_ST_SIZE_Y
+    uint32_t wBstZ; // PPE_WDMA_BOX_ST_SIZE_Z
+    uint32_t wBxtX; // PPE_WDMA_BOX_SIZE_X
+    uint32_t wBxtY; // PPE_WDMA_BOX_SIZE_Y
+    uint32_t wBxtZ; // PPE_WDMA_BOX_SIZE_Z
+    uint32_t wBffX; // PPE_WDMA_BOX_OFFSET_X
+    uint32_t wBffY; // PPE_WDMA_BOX_OFFSET_Y
+    uint32_t wBffZ; // PPE_WDMA_BOX_OFFSET_Z
+    uint32_t wIstX; // PPE_INP_BOX_ST_SIZE_X
+    uint32_t wIxtX; // PPE_INP_BOX_SIZE_X
+    uint32_t wIffX; // PPE_INP_BOX_OFFSET_X
+    uint32_t wWi  ; // PPE_DATA_W_IN
+    uint32_t wHi  ; // PPE_DATA_H_IN
+    uint32_t wCi  ; // PPE_DATA_C_IN
+    uint32_t wWo  ; // PPE_DATA_W_OUT
+    uint32_t wHo  ; // PPE_DATA_H_OUT
+    uint32_t wCo  ; // PPE_DATA_C_OUT
+    uint32_t wOpM ; // PPE_OP_MODE
+    uint32_t wK   ; // PPE_KERNEL
+    uint32_t wKWr ; // PPE_RECIP_KERNEL_W
+    uint32_t wKHr ; // PPE_RECIP_KERNEL_H
+    uint32_t wP   ; // PPE_PADDING
+    uint32_t wPV1 ; // PPE_PADDING_VALUE_1
+    uint32_t wPV2 ; // PPE_PADDING_VALUE_2
+    uint32_t wPV3 ; // PPE_PADDING_VALUE_3
+    uint32_t wPV4 ; // PPE_PADDING_VALUE_4
+    uint32_t wPV5 ; // PPE_PADDING_VALUE_5
+    uint32_t wPV6 ; // PPE_PADDING_VALUE_6
+    uint32_t wPV7 ; // PPE_PADDING_VALUE_7
+  } ConfigREGPPE;
 
   typedef struct CubeMetrics{
     int32_t s;   // Size That Cube Occupies (in bytes)
@@ -531,10 +532,9 @@ int nu_ppe_reg_load_config (ConfigREGPPE* cfg_reg, void* cfg_reg_bin);
 
 void nu_ppe_print_config(ConfigPPE* cfg);
 
-void nu_ppe_setup(uintptr_t base, ConfigPPE* cfg, ConfigREGPPE* cfg_reg);
 void nu_ppe_setup_reg(uintptr_t rbase, uintptr_t wbase, ConfigREGPPE* cfg);
 void nu_ppe_print_config_reg(ConfigREGPPE* cfg_reg);
-int  nu_ppe_decide_dma_config_trivial(ConfigPPE* cfg, CubeMetrics* in_cube_metrics, CubeMetrics* out_cube_metrics, ConfigREGPPE* cfg_reg);
+int  nu_ppe_decide_dma_config_trivial(ConfigPPE* cfg, CubeMetrics* out_cube_metrics, ConfigREGPPE* cfg_reg);
 
 uint32_t nu_ppe_status_done_rd (uintptr_t wbase);
 

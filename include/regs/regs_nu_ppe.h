@@ -40,9 +40,6 @@
 #define NU_PPE_WDMA_INT_SET         0x018
 #define NU_PPE_WDMA_INT_MASK        0x01C
 #define NU_PPE_WDMA_BASE_ADDR       0x020
-#define NU_PPE_RESERVED             0x024
-#define NU_PPE_RESERVED             0x028
-#define NU_PPE_RESERVED             0x02C
 #define NU_PPE_WDMA_BORDER_X        0x030
 #define NU_PPE_WDMA_BORDER_Y        0x034
 #define NU_PPE_WDMA_BORDER_Z        0x038
