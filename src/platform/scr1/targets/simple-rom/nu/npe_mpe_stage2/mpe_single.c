@@ -16,12 +16,11 @@ int nu_run_mpe_cmd(uintptr_t base, void* cmd, MPECmdMetrics* cmd_metrics) {
   uint32_t data;
   int num_cmds;
   uint32_t* ptr;
-  uint32_t start_time;
+  uint32_t start_time = 0xFFFFFFFF;
   uint32_t inst_masked = 0x141 & 0xffffffc1 ;
   uint32_t result;
   ptr = (uint32_t*) cmd;
   num_cmds = (cmd_metrics->s / 8);
-  rumboot_printf("num_cmds=%x addr = %x\n", num_cmds, offset);
   for(int i=0;i<num_cmds;i++) {
     data = *ptr;
     ptr++;
@@ -46,7 +45,7 @@ void mpe_dma_config_and_start(uintptr_t base, uint32_t* source_ptr, uint32_t buf
   iowrite32(0x0003FFFF,base+RD_THRECtrl_MSha);
   iowrite32(0x0000FFFF,base+RD_DECCtrl_MSha);
   iowrite32(0x00000000,base+PADCtrl_MSha);
-  iowrite32(source_ptr,base+BFCA_MSha);
+  iowrite32((uint32_t)source_ptr,base+BFCA_MSha);
   iowrite32(0x00000000,base+AOffset_MSha);
   iowrite32(0x0000007F,base+CntThresholdSha_MSha);
   iowrite32(0x00000000,base+CntSha_MSha);
@@ -60,10 +59,21 @@ void mpe_dma_config_and_start(uintptr_t base, uint32_t* source_ptr, uint32_t buf
   iowrite32(0x00000011,base+X_Cfg_MSha);
   iowrite32(0x0000000D,base+CHCfg_MSha);
   iowrite32(base_in_buf,base+BADR_MSha);
-  iowrite32(0x00000100,base+LADR_MSha);
-  iowrite32(buf_vecs-1,base+PLC_CntSha_MSha);
+  iowrite32(base_in_buf+buf_vecs,base+LADR_MSha);
+
+  if (buf_vecs > 256) {
+    iowrite32(0x0000007F,base+PLC_CntSha_MSha);
+    iowrite32(0x00000001,base+WR_THRECtrl_MSha);
+    iowrite32(buf_vecs-1,base+PLC_ThreSha_MSha);
+    int div = buf_vecs/128;
+    int mod = buf_vecs%128;
+    iowrite32(div+(mod>0)-1,base+WR_Bias1CntSha_MSha);
+  }
+  else {
+    iowrite32(buf_vecs-1,base+PLC_CntSha_MSha);
+    iowrite32(0x00000000,base+WR_Bias1CntSha_MSha);
+  }
   iowrite32(0x00000000,base+VLC_CntSha_MSha);
-  iowrite32(0x00000000,base+WR_Bias1CntSha_MSha);
   iowrite32(0x00000000,base+WR_Bias1CntCmp_MSha);
   iowrite32(0x00000000,base+WR_Bias2CntSha_MSha);
   iowrite32(0x00000000,base+WR_Bias2CntCmp_MSha);
@@ -79,11 +89,12 @@ void mpe_dma_config_and_start(uintptr_t base, uint32_t* source_ptr, uint32_t buf
   iowrite32(0x00000001,base+DMA_START);
 }
 
-void vpe_config_and_start(uint32_t* vpe_ptr, DataTypeExt in_data_type, DataType out_data_type) {
+void vpe_config_and_start(uint16_t* vpe_ptr, DataTypeExt in_data_type, DataType out_data_type, uint32_t res_size) {
   ConfigVPE* cfg;
   CubeMetrics* metrics;
-  
+
   cfg = rumboot_malloc_from_heap(0,sizeof(ConfigVPE));
+  metrics = rumboot_malloc_from_heap(0,sizeof(CubeMetrics));
 
   cfg->in_data_type                         = in_data_type                  ; // DataTypeExt_Int32 or DataTypeExt_Fp32
   cfg->out_data_type                        = out_data_type                 ; // DataType_Int8 or DataType_Int16 or DataType_Fp16
@@ -94,9 +105,13 @@ void vpe_config_and_start(uint32_t* vpe_ptr, DataTypeExt in_data_type, DataType 
   cfg->op2_en                               = Enable_NotEn                  ;
   cfg->c3_offset                            = 0                             ; // set it as you wish
   cfg->c3_scale                             = 1                             ; // set it as you wish
-  cfg->c3_trunc                             = 0                             ; // set it as you wish
-  cfg->c3_satur_en                          = Enable_En                     ; // set it as you wish
-  cfg->c3_round_mode                        = RoundMode_HalfAwayFromZero    ; // set it as you wish
+#ifdef TRUNC16
+  cfg->c3_trunc                             = 16                            ; // High 16 bits
+#else
+  cfg->c3_trunc                             = 0                             ; // Low 16 bits
+#endif
+  cfg->c3_satur_en                          = Enable_NotEn                  ; // set it as you wish
+  cfg->c3_round_mode                        = RoundMode_Down                ; // set it as you wish
   cfg->nan_to_zero_input                    = Enable_NotEn                  ; // set it as you wish
   cfg->nan_to_zero_output                   = Enable_NotEn                  ; // set it as you wish
   cfg->op0_config.coef_type                 = DataType_Int8                 ;
@@ -282,10 +297,7 @@ void vpe_config_and_start(uint32_t* vpe_ptr, DataTypeExt in_data_type, DataType 
 
   //-----------------------------------------------------------------------------------------------------
   uint32_t elem_size;
-  
-  // CUBE_SIZE in vectors
-  cfg->cube_size = (metrics->C/16 + ((metrics->C%16) != 0 ? 1 : 0)) * metrics->W * metrics->H - 1;
-  
+
   if   (cfg->dst_flying == Enable_En) cfg->wdma_config.dma_en = Enable_NotEn;
   else                                cfg->wdma_config.dma_en = Enable_En   ;
 
@@ -296,6 +308,14 @@ void vpe_config_and_start(uint32_t* vpe_ptr, DataTypeExt in_data_type, DataType 
   // elem_size definition-------------------
   if   (cfg->wdma_config.dma_data_size == DmaDSize_Two_Byte) elem_size = 2;
   else                                                       elem_size = 1;
+
+  metrics->C = res_size/elem_size;
+  metrics->W = 1;
+  metrics->H = 1;
+  
+  // CUBE_SIZE in vectors
+  cfg->cube_size = (metrics->C/16 + ((metrics->C%16) != 0 ? 1 : 0)) * metrics->W * metrics->H - 1;
+  rumboot_printf("cfg->cube_size = %d\n\n",cfg->cube_size);
   
   cfg->wdma_config.dma_en                   = Enable_En                                                    ;
   cfg->wdma_config.dma_ram_type             = DmaRamType_CV                                                ;
@@ -303,25 +323,25 @@ void vpe_config_and_start(uint32_t* vpe_ptr, DataTypeExt in_data_type, DataType 
 //cfg->wdma_config.dma_data_size            = DmaDSize_Two_Byte                                            ; // or DmaDSize_One_Byte. It depends from cfg->out_data_type value.
   cfg->wdma_config.dma_data_use             = DmaDUse_Mux                                                  ;
   cfg->wdma_config.dma_axi_len              = 3                                                            ; // or 0 or 1 or 2
-  cfg->wdma_config.dma_baddr                = vpe_ptr                                                      ; // set it according with malloc address
+  cfg->wdma_config.dma_baddr                = (uint32_t)vpe_ptr                                            ; // set it according with malloc address
   cfg->wdma_config.dma_cube_size_c          = metrics->C                                                   ;
   cfg->wdma_config.dma_cube_size_w          = metrics->W                                                   ;
   cfg->wdma_config.dma_cube_size_h          = metrics->H                                                   ;
-  cfg->wdma_config.dma_border_x             = (metrics->W - 1) * cfg->wdma_config.dma_stride_x             ;
-  cfg->wdma_config.dma_border_y             = (metrics->H - 1) * cfg->wdma_config.dma_stride_y             ;
-  cfg->wdma_config.dma_border_z             = (metrics->C/16 - ((metrics->C%16) == 0)) * 16 * elem_size    ;
-  cfg->wdma_config.dma_stride_x             = metrics->C              * elem_size                          ;
-  cfg->wdma_config.dma_stride_y             = metrics->C * metrics->W * elem_size                          ;
-  cfg->wdma_config.dma_stride_z             = 16                      * elem_size                          ;
-  cfg->wdma_config.dma_frag_last_size       = ((metrics->C % 16) + ((metrics->C%16) == 0)*16) * elem_size  ;
-  cfg->wdma_config.dma_frag_size            = 16 * elem_size                                               ;
-  cfg->wdma_config.dma_xyz_drct             = 2                                                            ;
-  cfg->wdma_config.dma_box_st_size_x        = 128    - 1                                                   ;
-  cfg->wdma_config.dma_box_st_size_y        = 1      - 1                                                   ;
-  cfg->wdma_config.dma_box_st_size_z        = 128/16 - 1                                                   ;
-  cfg->wdma_config.dma_box_size_x           = 128    - 1                                                   ;
-  cfg->wdma_config.dma_box_size_y           = 1      - 1                                                   ;
-  cfg->wdma_config.dma_box_size_z           = 128/16 - 1                                                   ;
+  cfg->wdma_config.dma_border_x             = (metrics->C/4096 + ((metrics->C%4096) != 0 ? 1 : 0) - 1)*(4096*elem_size);                                                     ;
+  cfg->wdma_config.dma_border_y             = 0                                                            ;
+  cfg->wdma_config.dma_border_z             = 0                                                            ;
+  cfg->wdma_config.dma_stride_x             = 4096*elem_size                                               ;
+  cfg->wdma_config.dma_stride_y             = 0                                                            ;
+  cfg->wdma_config.dma_stride_z             = 0                                                            ;
+  cfg->wdma_config.dma_frag_last_size       = (metrics->C%4096 + ((metrics->C%4096) == 0)*4096) * elem_size;
+  cfg->wdma_config.dma_frag_size            = 4096*elem_size                                               ;
+  cfg->wdma_config.dma_xyz_drct             = 0                                                            ;
+  cfg->wdma_config.dma_box_st_size_x        = 0                                                            ;
+  cfg->wdma_config.dma_box_st_size_y        = 0                                                            ;
+  cfg->wdma_config.dma_box_st_size_z        = 0                                                            ;
+  cfg->wdma_config.dma_box_size_x           = 0                                                            ;
+  cfg->wdma_config.dma_box_size_y           = 0                                                            ;
+  cfg->wdma_config.dma_box_size_z           = 0                                                            ;
   cfg->wdma_config.dma_box_offset_x         = 0                                                            ;
   cfg->wdma_config.dma_box_offset_y         = 0                                                            ;
   cfg->wdma_config.dma_box_offset_z         = 0                                                            ;
@@ -347,9 +367,15 @@ int main()
 {
   int heap_id;
 
-  rumboot_printf("HELLO\n");
+  rumboot_printf("START MPE SIGNLE TEST\n");
 
   heap_id = nu_get_heap_id();
+
+  cmd_metrics = nu_mpe_load_cmd_metrics(heap_id);
+  if(cmd_metrics == NULL) return -1;
+  
+  cmd = nu_mpe_load_cmd(heap_id,cmd_metrics);
+  if(cmd == NULL) return -1;
 
   in_metrics = nu_mpe_load_in_metrics(heap_id);
   if(in_metrics == NULL) return -1;
@@ -363,38 +389,34 @@ int main()
   warr = nu_mpe_load_warr(heap_id,warr_metrics);
   if(warr == NULL) return -1;
 
-  // MPE DMA
-  mpe_dma_config_and_start(NPE_BASE+NA_MPE_BASE+MPE_RDMA_D_BASE,in_data,(in_metrics->s)/128 /* in vectors */, 0);
-  mpe_dma_config_and_start(NPE_BASE+NA_MPE_BASE+MPE_RDMA_W_BASE,warr,(warr_metrics->s)/128 /* in vectors */, (in_metrics->s)/128);
-
-  // MPE MA
-  cmd_metrics = nu_mpe_load_cmd_metrics(heap_id);
-  if(cmd_metrics == NULL) return -1;
-  
-  cmd = nu_mpe_load_cmd(heap_id,cmd_metrics);
-  if(cmd == NULL) return -1;
-
-  nu_run_mpe_cmd(NPE_BASE+NA_MPE_BASE+MPE_MA_BASE,cmd,cmd_metrics);
-
-  // Results
   res_metrics= nu_mpe_load_res_metrics(heap_id);
   if(res_metrics == NULL) return -1;
 
   res_data = nu_mpe_malloc_res(heap_id,res_metrics);
   if(res_data == NULL) return -1;
 
+  // MPE DMA
+  uint32_t in_buffer_warr_offset = nu_mpe_get_warr_offset(cmd,cmd_metrics);
+  mpe_dma_config_and_start(NPE_BASE+NA_MPE_BASE+MPE_RDMA_D_BASE,in_data,(in_metrics->s)/128 /* in vectors */, 0);
+  mpe_dma_config_and_start(NPE_BASE+NA_MPE_BASE+MPE_RDMA_W_BASE,warr,(warr_metrics->s)/128 /* in vectors */, in_buffer_warr_offset/128);//(in_metrics->s)/128);
+  
+  // MPE MA
+  nu_run_mpe_cmd(NPE_BASE+NA_MPE_BASE+MPE_MA_BASE,cmd,cmd_metrics);
+  
+  // VPE
   DataTypeExt in_data_type = DataTypeExt_Int32; // TO DO
   DataType out_data_type = DataType_Int16; // TO DO
 
-  vpe_config_and_start(res_data,in_data_type,out_data_type);
+  vpe_config_and_start(res_data,in_data_type,out_data_type,res_metrics->s);
 
   etalon = nu_mpe_load_etalon(heap_id,res_metrics);
   if(etalon == NULL) return -1;
 
   // Wait DMA ends
-  while (!((ioread32(NPE_BASE+NA_VPE_BASE+NU_VPE_NEXT_CNTX)>>12)&0x1)) {};
+  while (((ioread32(NPE_BASE+NA_VPE_BASE+NU_VPE_NEXT_CNTX)>>12)&0x1)) {};
 
   // Compare arrays
+  rumboot_printf("Comparing...\n");
   if(nu_bitwise_compare(res_data,etalon,res_metrics->s) == 0)
     rumboot_printf("Test PASSED\n");
   else {

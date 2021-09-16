@@ -15,12 +15,13 @@ sub parse_and_write_hex_word {
   
   $word_len = length($word_hex);
   $enable = 1;
-  $cnt = 0;
+  if ("$ARGV[4]" eq "TRUNC16") { $cnt = 0; }
+  else                       { $cnt = 2; }
   for($pos=$word_len-2;$pos>=0;$pos=$pos-2) {  # From The Last Byte Of String To The First Byte
     $byte_hex = substr($word_hex,$pos,2);      # Select Each Two Digits (Byte)
     $byte = hex($byte_hex);                    # Interpret It As A Byte In Hex
     # Write The Byte To File
-    if ($skip_odd_hwords) { if ($enable) { print $fh pack("C", $byte); } $enable=0x1&($cnt>>1); $cnt=0x3&($cnt+1); }
+    if ($skip_odd_hwords) { $enable=0x1&($cnt>>1); $cnt=0x3&($cnt+1); if ($enable) { print $fh pack("C", $byte); } }
     else { print $fh pack("C", $byte); }
   }
   
@@ -60,9 +61,9 @@ sub write_metrics_file {
 
   
 
-if (scalar(@ARGV)!= 4) {
+if (scalar(@ARGV)!= 5) {
   print "Usage:\n";
-  print "  $0 <cmd_file> <ft_binary_file> <wt_binary_file> <etalon_file>\n";
+  print "  $0 <cmd_file> <ft_binary_file> <wt_binary_file> <etalon_file> <TRUNC_MODE\n";
   die();
 }
 

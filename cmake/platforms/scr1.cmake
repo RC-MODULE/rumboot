@@ -1003,7 +1003,7 @@ endif() ### EXPERIMENT_STAGE_2_SUB_1
         CONFIGURATION ROM
         NAME "mpe_single_test"
         FILES scr1/targets/simple-rom/nu/npe_mpe_stage2/mpe_single.c
-        #PREPCMD ${MPE_PARSE_TEST_STAGE2} ${NA_TEST_mpe_cmd_file} ${NA_TEST_in_file} ${NA_TEST_warr_file} ${NA_TEST_etalon_file} < ${CMAKE_SOURCE_DIR}/${MPE_DEMO_PATH}/mpe_arrays.txt
+        #PREPCMD ${MPE_PARSE_TEST_STAGE2} ${NA_TEST_mpe_cmd_file} ${NA_TEST_in_file} ${NA_TEST_warr_file} ${NA_TEST_etalon_file} < ${CMAKE_SOURCE_DIR}/${MPE_DEMO_PATH}/mpe_arrays.txt TRUNC0
         PREPCMD cp ${BINDIR}/cube.bin ${BINDIR}/cube.bin.metrics ${BINDIR}/cmd.bin ${BINDIR}/cmd.bin.metrics ${BINDIR}/warr.bin ${BINDIR}/warr.bin.metrics ${BINDIR}/etalon.bin ${BINDIR}/etalon.bin.metrics -t .
         IRUN_FLAGS ${NA_RM_PLUSARGS}
       )
