@@ -7,6 +7,7 @@
 #include <string.h>
 
 #include <platform/devices/nu_lib.h>
+#include <platform/devices/nu_test_lib.h>
 #include <regs/regs_na.h>
 #include <platform/devices.h>
 
@@ -80,7 +81,6 @@ void mpe_dma_config_and_start(uintptr_t base, uint32_t* source_ptr, uint32_t buf
 
 void vpe_config_and_start(uint32_t* vpe_ptr, DataTypeExt in_data_type, DataType out_data_type) {
   ConfigVPE* cfg;
-  ConfigDMAVPE* cfg_vpe_dma;
   CubeMetrics* metrics;
 
   cfg->in_data_type                         = in_data_type                  ; // DataTypeExt_Int32 or DataTypeExt_Fp32
@@ -324,7 +324,7 @@ void vpe_config_and_start(uint32_t* vpe_ptr, DataTypeExt in_data_type, DataType 
   cfg->wdma_config.dma_box_offset_y         = 0                                                            ;
   cfg->wdma_config.dma_box_offset_z         = 0                                                            ;
 
-  nu_vpe_setup(NPE_BASE+NA_VPE_BASE,cfg,cfg_vpe_dma);
+  nu_vpe_setup(NPE_BASE+NA_VPE_BASE,cfg);
   nu_vpe_run(NPE_BASE+NA_VPE_BASE,cfg);
 }
 
