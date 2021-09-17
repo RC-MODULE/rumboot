@@ -996,17 +996,27 @@ endif() ### EXPERIMENT_STAGE_2_SUB_1
     if(DUT STREQUAL "NPE")
       set(MPE_DEMO_PATH src/platform/scr1/targets/simple-rom/nu/npe_mpe_stage2)
       set(MPE_PARSE_TEST_STAGE2 ${CMAKE_SOURCE_DIR}/${MPE_DEMO_PATH}/parse_mpe_arrays_stage2.pl)
-
-      set(BINDIR ${CMAKE_SOURCE_DIR}/${MPE_DEMO_PATH})
       
-      add_rumboot_target(
-        CONFIGURATION ROM
-        NAME "mpe_single_test"
-        FILES scr1/targets/simple-rom/nu/npe_mpe_stage2/mpe_single.c
-        #PREPCMD ${MPE_PARSE_TEST_STAGE2} ${NA_TEST_mpe_cmd_file} ${NA_TEST_in_file} ${NA_TEST_warr_file} ${NA_TEST_etalon_file} < ${CMAKE_SOURCE_DIR}/${MPE_DEMO_PATH}/mpe_arrays.txt TRUNC0
-        PREPCMD cp ${BINDIR}/cube.bin ${BINDIR}/cube.bin.metrics ${BINDIR}/cmd.bin ${BINDIR}/cmd.bin.metrics ${BINDIR}/warr.bin ${BINDIR}/warr.bin.metrics ${BINDIR}/etalon.bin ${BINDIR}/etalon.bin.metrics -t .
-        IRUN_FLAGS ${NA_RM_PLUSARGS}
-      )
+      macro (ADD_MPE_SINGLE_TEST name trunc) # trunc=TRUNC0/TRUNC16
+        set(MPE_TEST_SHEET ${CMAKE_SOURCE_DIR}/../units/rcm_lava_mpe/tests/experiment2/${name}/mpe_arrays.txt)
+        add_rumboot_target(
+          CONFIGURATION ROM
+          NAME ${name}
+          FILES scr1/targets/simple-rom/nu/npe_mpe_stage2/mpe_single.c
+          CFLAGS -D${trunc}
+          PREPCMD ${MPE_PARSE_TEST_STAGE2} ${NA_TEST_mpe_cmd_file} ${NA_TEST_in_file} ${NA_TEST_warr_file} ${NA_TEST_etalon_file} ${trunc} < ${MPE_TEST_SHEET}
+          IRUN_FLAGS ${NA_RM_PLUSARGS}
+        )
+      endmacro()
+      ADD_MPE_SINGLE_TEST(MPE_1 TRUNC0)
+      ADD_MPE_SINGLE_TEST(MPE_2 TRUNC0)
+      ADD_MPE_SINGLE_TEST(MPE_3 TRUNC0)
+      ADD_MPE_SINGLE_TEST(MPE_4 TRUNC0)
+      ADD_MPE_SINGLE_TEST(MPE_5 TRUNC0)
+      ADD_MPE_SINGLE_TEST(MPE_6 TRUNC0)
+
+      ADD_MPE_SINGLE_TEST(MPE_7 TRUNC0) # mu int8 test
+      ADD_MPE_SINGLE_TEST(MPE_8 TRUNC0) # mu int16 test
 
       macro(ADD_NPE_SIMPLE_TEST name filename)
         add_rumboot_target(

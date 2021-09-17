@@ -10,7 +10,6 @@
 #include <platform/devices/nu_test_lib.h>
 #include <regs/regs_na.h>
 #include <platform/devices.h>
-
 int nu_run_mpe_cmd(uintptr_t base, void* cmd, MPECmdMetrics* cmd_metrics) {
   uint32_t offset;
   uint32_t data;
@@ -59,7 +58,7 @@ void mpe_dma_config_and_start(uintptr_t base, uint32_t* source_ptr, uint32_t buf
   iowrite32(0x00000011,base+X_Cfg_MSha);
   iowrite32(0x0000000D,base+CHCfg_MSha);
   iowrite32(base_in_buf,base+BADR_MSha);
-  iowrite32(base_in_buf+buf_vecs,base+LADR_MSha);
+  iowrite32(base_in_buf+(buf_vecs/16+((buf_vecs%16)>0))*16,base+LADR_MSha);
 
   if (buf_vecs > 256) {
     iowrite32(0x0000007F,base+PLC_CntSha_MSha);
@@ -315,7 +314,6 @@ void vpe_config_and_start(uint16_t* vpe_ptr, DataTypeExt in_data_type, DataType 
   
   // CUBE_SIZE in vectors
   cfg->cube_size = (metrics->C/16 + ((metrics->C%16) != 0 ? 1 : 0)) * metrics->W * metrics->H - 1;
-  rumboot_printf("cfg->cube_size = %d\n\n",cfg->cube_size);
   
   cfg->wdma_config.dma_en                   = Enable_En                                                    ;
   cfg->wdma_config.dma_ram_type             = DmaRamType_CV                                                ;
@@ -395,34 +393,47 @@ int main()
   res_data = nu_mpe_malloc_res(heap_id,res_metrics);
   if(res_data == NULL) return -1;
 
+  etalon = nu_mpe_load_etalon(heap_id,res_metrics);
+  if(etalon == NULL) return -1;
+
   // MPE DMA
   uint32_t in_buffer_warr_offset = nu_mpe_get_warr_offset(cmd,cmd_metrics);
   mpe_dma_config_and_start(NPE_BASE+NA_MPE_BASE+MPE_RDMA_D_BASE,in_data,(in_metrics->s)/128 /* in vectors */, 0);
   mpe_dma_config_and_start(NPE_BASE+NA_MPE_BASE+MPE_RDMA_W_BASE,warr,(warr_metrics->s)/128 /* in vectors */, in_buffer_warr_offset/128);//(in_metrics->s)/128);
   
   // MPE MA
+#define NA_MPE_BUF_FULL_SET 0x024
   nu_run_mpe_cmd(NPE_BASE+NA_MPE_BASE+MPE_MA_BASE,cmd,cmd_metrics);
   
   // VPE
-  DataTypeExt in_data_type = DataTypeExt_Int32; // TO DO
-  DataType out_data_type = DataType_Int16; // TO DO
+  DataTypeExt in_data_type = DataTypeExt_Int32;
+  DataType out_data_type = DataType_Int16;
 
   vpe_config_and_start(res_data,in_data_type,out_data_type,res_metrics->s);
 
-  etalon = nu_mpe_load_etalon(heap_id,res_metrics);
-  if(etalon == NULL) return -1;
-
-  // Wait DMA ends
+  // Wait VPE DMA ends
   while (((ioread32(NPE_BASE+NA_VPE_BASE+NU_VPE_NEXT_CNTX)>>12)&0x1)) {};
+  rumboot_printf("End VPE\n");
 
-  // Compare arrays
   rumboot_printf("Comparing...\n");
+#ifdef TRUNC16
+  // Compare arrays
   if(nu_bitwise_compare(res_data,etalon,res_metrics->s) == 0)
     rumboot_printf("Test PASSED\n");
   else {
     rumboot_printf("Test FAILED\n");
     return 1;
   }
+#else
+  for(int i=0;i<res_metrics->s/2;i++) {
+    if ((res_data[i] & 0x7FFF) != (etalon[i] & 0x7FFF)) {
+      rumboot_printf("res_data[%d] = 0x%x, etalon[%d] = 0x%x\n",i,res_data[i],i,etalon[i]);
+      rumboot_printf("Test FAILED\n");
+      return 1;
+    };
+  }
+  rumboot_printf("Test PASSED\n");
+#endif
 
   return 0;
 }

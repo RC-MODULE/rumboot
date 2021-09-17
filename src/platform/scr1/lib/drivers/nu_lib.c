@@ -893,7 +893,7 @@ void nu_vpe_setup(uintptr_t base, ConfigVPE* cfg) {
   iowrite32(cfg->wdma_config.dma_stride_z        , base + NU_VPE_DST_WDMA + NU_VPE_DMA_STRIDE_Z            ) ; 
   iowrite32(cfg->wdma_config.dma_frag_last_size  , base + NU_VPE_DST_WDMA + NU_VPE_DMA_FRAG_LAST_SIZE_ADDR ) ;
   iowrite32(cfg->wdma_config.dma_frag_size       , base + NU_VPE_DST_WDMA + NU_VPE_DMA_FRAG_SIZE_ADDR      ) ;
-  iowrite32(2                                    , base + NU_VPE_DST_WDMA + NU_VPE_DMA_XYZ_DRCT_ADDR       ) ;  // 0 = x; 1 = y; 2 = z
+  iowrite32(cfg->wdma_config.dma_xyz_drct        , base + NU_VPE_DST_WDMA + NU_VPE_DMA_XYZ_DRCT_ADDR       ) ;  // 0 = x; 1 = y; 2 = z
   iowrite32(cfg->wdma_config.dma_box_st_size_x   , base + NU_VPE_DST_WDMA + NU_VPE_DMA_BOX_ST_SIZE_X       ) ;
   iowrite32(cfg->wdma_config.dma_box_st_size_y   , base + NU_VPE_DST_WDMA + NU_VPE_DMA_BOX_ST_SIZE_Y       ) ;
   iowrite32(cfg->wdma_config.dma_box_st_size_z   , base + NU_VPE_DST_WDMA + NU_VPE_DMA_BOX_ST_SIZE_Z       ) ;
