@@ -8,7 +8,7 @@
 #define NU_VPE_CFG_PARAMS_NUM 76
 #define NU_MPE_CFG_PARAMS_NUM 18
 #define NU_PPE_CFG_PARAMS_NUM 22
-#define NU_PPE_REG_CFG_PARAMS_NUM 50
+#define NU_PPE_REG_CFG_PARAMS_NUM 63
 
   /**
   Режим работы блока

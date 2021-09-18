@@ -1863,6 +1863,22 @@ void nu_mpe_wait_wr_main_channel_complete(uintptr_t dma_base) {
 
 int  nu_ppe_decide_dma_config_trivial(ConfigPPE* cfg, CubeMetrics* out_cube_metrics, ConfigREGPPE* cfg_reg) {
 
+  uint32_t dt   = cfg->dt   ;
+  uint32_t meth = cfg->meth ;
+
+  uint32_t H  = cfg->H;
+  uint32_t W  = cfg->W;
+  uint32_t C  = cfg->C;
+
+  uint32_t Ho = out_cube_metrics->H;
+  uint32_t Wo = out_cube_metrics->W;
+  uint32_t Co = out_cube_metrics->C;
+
+  uint32_t fm = cfg_reg->wOpM >> 8;
+
+  uint32_t mr = dt && fm&0x1 || ~(fm&0x1) && (dt&&(C>8) || C>16);
+
+////    cfg_reg->rAXIp  =
 //    cfg_reg->rBrdX  = 
 //    cfg_reg->rBrdY  = 
 //    cfg_reg->rBrdZ  = 
@@ -1881,7 +1897,8 @@ int  nu_ppe_decide_dma_config_trivial(ConfigPPE* cfg, CubeMetrics* out_cube_metr
 //    cfg_reg->rBffX  = 
 //    cfg_reg->rBffY  = 
 //    cfg_reg->rBffZ  = 
-//    
+//
+////    cfg_reg->wAXIp  =
 //    cfg_reg->wBrdX  = 
 //    cfg_reg->wBrdY  = 
 //    cfg_reg->wBrdZ  = 
@@ -1903,13 +1920,13 @@ int  nu_ppe_decide_dma_config_trivial(ConfigPPE* cfg, CubeMetrics* out_cube_metr
 //    cfg_reg->wIstX  = 
 //    cfg_reg->wIxtX  = 
 //    cfg_reg->wIffX  = 
-    cfg_reg->wWi    = cfg->W - 1;
-    cfg_reg->wHi    = cfg->H - 1;
-    cfg_reg->wCi    = cfg->C - 1;
-    cfg_reg->wWo    = out_cube_metrics->W - 1;
-    cfg_reg->wHo    = out_cube_metrics->H - 1;
-    cfg_reg->wCo    = out_cube_metrics->C - 1;
-    cfg_reg->wOpM   = cfg_reg->wOpM | cfg->dt << 16 | cfg->meth;
+    cfg_reg->wWi    = W - 1;
+    cfg_reg->wHi    = H - 1;
+    cfg_reg->wCi    = C - 1;
+    cfg_reg->wWo    = Wo - 1;
+    cfg_reg->wHo    = Ho - 1;
+    cfg_reg->wCo    = Co - 1;
+    cfg_reg->wOpM   = mr<<28 | dt<<16 | fm<<8 | meth;
     cfg_reg->wK     = (cfg->Sh-1)<<20 | (cfg->Sw-1)<<16 | (cfg->Kh-1)<<8 | cfg->Kw-1;
     cfg_reg->wKWr   = cfg->Kw_r;
     cfg_reg->wKHr   = cfg->Kh_r;
@@ -2032,8 +2049,8 @@ void nu_ppe_setup_reg(uintptr_t rbase, uintptr_t wbase, ConfigREGPPE* cfg) {
 
   rumboot_printf("nu_ppe_setup_reg\n");
 
-  iowrite32(0x0       , rbase + NU_PPE_OP_ENABLE          );
-  iowrite32(cfg->rAXIp, rbase + NU_PPE_RDMA_AXI_PARAM     );
+//  iowrite32(0x0       , rbase + NU_PPE_OP_ENABLE          );
+//  iowrite32(cfg->rAXIp, rbase + NU_PPE_RDMA_AXI_PARAM     );
   iowrite32(cfg->rBALi, rbase + NU_PPE_RDMA_BASE_ADDR     );
   iowrite32(cfg->rBrdX, rbase + NU_PPE_RDMA_BORDER_X      );
   iowrite32(cfg->rBrdY, rbase + NU_PPE_RDMA_BORDER_Y      );
@@ -2054,8 +2071,8 @@ void nu_ppe_setup_reg(uintptr_t rbase, uintptr_t wbase, ConfigREGPPE* cfg) {
   iowrite32(cfg->rBffY, rbase + NU_PPE_RDMA_BOX_OFFSET_Y  );
   iowrite32(cfg->rBffZ, rbase + NU_PPE_RDMA_BOX_OFFSET_Z  );
 
-  iowrite32(0x0       , wbase + NU_PPE_OP_ENABLE          );
-  iowrite32(cfg->wAXIp, wbase + NU_PPE_RDMA_AXI_PARAM     );
+//  iowrite32(0x0       , wbase + NU_PPE_OP_ENABLE          );
+//  iowrite32(cfg->wAXIp, wbase + NU_PPE_RDMA_AXI_PARAM     );
   iowrite32(cfg->wBALo, wbase + NU_PPE_WDMA_BASE_ADDR     );
   iowrite32(cfg->wBrdX, wbase + NU_PPE_WDMA_BORDER_X      );
   iowrite32(cfg->wBrdY, wbase + NU_PPE_WDMA_BORDER_Y      );
@@ -2109,7 +2126,7 @@ void nu_ppe_rdma_run(uintptr_t rbase, ConfigREGPPE* cfg) {
 }
 void nu_ppe_rdma_wait_complete(uintptr_t rbase){
   rumboot_printf("Wait PPE RDMA...\n");
-  while(ioread32(rbase + NU_PPE_STATUS) !=0) {}
+  while(ioread32(rbase + NU_PPE_STATUS)) {}
   rumboot_printf("Done PPE RDMA...\n");
 }
 
@@ -2120,9 +2137,9 @@ void nu_ppe_run(uintptr_t wbase, ConfigREGPPE* cfg) {
 }
 
 void nu_ppe_wait_complete(uintptr_t wbase){
-  rumboot_printf("Wait PPE + WDMA...\n");
-  while(ioread32(wbase + NU_PPE_STATUS) !=0) {}
-  rumboot_printf("Done PPE + WDMA...\n");
+  rumboot_printf("Wait PPE WDMA...\n");
+  while(ioread32(wbase + NU_PPE_STATUS)) {}
+  rumboot_printf("Done PPE WDMA...\n");
 }
 
 void nu_ppe_config_rd_main_channel(uintptr_t dma_base, void *addr, int size) {

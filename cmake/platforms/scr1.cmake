@@ -816,8 +816,8 @@ endif() #### EXPERIMENT_STAGE_2_SUB_1
       set(NU_TESTS_NMB 0)
     endif()
 
-    macro (ADD_PPE_MANY_TESTS name rm_bin_name ShowPerf OpMode)
-      foreach(i RANGE 3)
+    macro (ADD_PPE_MANY_TESTS name rm_bin_name ShowPerf DataSrc LBS)
+      foreach(i RANGE 0)
         add_rumboot_target(
           CONFIGURATION ROM
           NAME ${name}_${i}
@@ -825,7 +825,7 @@ endif() #### EXPERIMENT_STAGE_2_SUB_1
 
           PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${NU_SEED} > ${RM_LOGFILE} || exit 1
 
-          CFLAGS -D${ShowPerf} -D${OpMode} -DDUT=${DUT_LETTER_QUOTED}
+          CFLAGS -D${ShowPerf} -D${DataSrc} -D${LBS} -DDUT=${DUT_LETTER_QUOTED}
 
           IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
 
@@ -883,22 +883,28 @@ endif()  ### EXPERIMENT_STAGE_2_SUB_1
 
     #ADD_PPE_V_EXPER_TEST(ppe_8v_i16_max   main_ppe_3_i16_max  NotShowPerf VPEtoPPE)
     #ADD_PPE_V_EXPER_TEST(ppe_8v_i16_max_p main_ppe_3_i16_max  ShowPerf    VPEtoPPE)
-    #ADD_PPE_V_EXPER_TEST(ppe_2v_i8_max    main_ppe_2_i8_max   NotShowPerf MEMtoMEM)
-    #ADD_PPE_V_EXPER_TEST(ppe_2v_i8_max_p  main_ppe_2_i8_max   ShowPerf MEMtoMEM)
-    #ADD_PPE_V_EXPER_TEST(ppe_5v_i8_min    main_ppe_2_i8_min   NotShowPerf MEMtoMEM)
-    #ADD_PPE_V_EXPER_TEST(ppe_6v_i16_min   main_ppe_3_i16_min  NotShowPerf MEMtoMEM)
-    #ADD_PPE_V_EXPER_TEST(ppe_7v_fp16_min  main_ppe_4_fp16_min NotShowPerf MEMtoMEM)
+    #ADD_PPE_V_EXPER_TEST(ppe_2v_i8_max    main_ppe_2_i8_max   NotShowPerf MEMtoPPE)
+    #ADD_PPE_V_EXPER_TEST(ppe_2v_i8_max_p  main_ppe_2_i8_max   ShowPerf MEMtoPPE)
+    #ADD_PPE_V_EXPER_TEST(ppe_5v_i8_min    main_ppe_2_i8_min   NotShowPerf MEMtoPPE)
+    #ADD_PPE_V_EXPER_TEST(ppe_6v_i16_min   main_ppe_3_i16_min  NotShowPerf MEMtoPPE)
+    #ADD_PPE_V_EXPER_TEST(ppe_7v_fp16_min  main_ppe_4_fp16_min NotShowPerf MEMtoPPE)
 
-    ADD_PPE_MANY_TESTS(ppe_many_i8_max    main_ppe_2_i8_max   NotShowPerf MEMtoMEM)
-    ADD_PPE_MANY_TESTS(ppe_many_i16_max   main_ppe_3_i16_max  NotShowPerf MEMtoMEM)
-    ADD_PPE_MANY_TESTS(ppe_many_fp16_max  main_ppe_4_fp16_max NotShowPerf MEMtoMEM)
-    ADD_PPE_MANY_TESTS(ppe_many_i8_avg    main_ppe_5_i8_avg   NotShowPerf MEMtoMEM)
-    ADD_PPE_MANY_TESTS(ppe_many_i16_avg   main_ppe_6_i16_avg  NotShowPerf MEMtoMEM)
-    ADD_PPE_MANY_TESTS(ppe_many_fp16_avg  main_ppe_7_fp16_avg NotShowPerf MEMtoMEM)
+    #ADD_PPE_MANY_TESTS(ppe_i8_max    main_ppe_2_i8_max   NotShowPerf MEMtoPPE)
 
-    ADD_PPE_MANY_TESTS(ppe_many_i8_min    main_ppe_2_i8_min   NotShowPerf MEMtoMEM)
-    ADD_PPE_MANY_TESTS(ppe_many_i16_min   main_ppe_3_i16_min  NotShowPerf MEMtoMEM)
-    ADD_PPE_MANY_TESTS(ppe_many_fp16_min  main_ppe_4_fp16_min NotShowPerf MEMtoMEM)
+    ADD_PPE_MANY_TESTS(ppe_i16_max_ml main_ppe_3_i16_max  NotShowPerf MEMtoPPE LIN)
+    ADD_PPE_MANY_TESTS(ppe_i16_max_mb main_ppe_3_i16_max  NotShowPerf MEMtoPPE BOX)
+    ADD_PPE_MANY_TESTS(ppe_i16_max_vl main_ppe_3_i16_max  NotShowPerf VPEtoPPE LIN)
+    ADD_PPE_MANY_TESTS(ppe_i16_max_vb main_ppe_3_i16_max  NotShowPerf VPEtoPPE BOX)
+    ADD_PPE_MANY_TESTS(ppe_i16_max_ms main_ppe_3_i16_max  NotShowPerf MEMtoPPE SPL)
+
+    #ADD_PPE_MANY_TESTS(ppe_fp16_max  main_ppe_4_fp16_max NotShowPerf MEMtoPPE)
+    #ADD_PPE_MANY_TESTS(ppe_i8_avg    main_ppe_5_i8_avg   NotShowPerf MEMtoPPE)
+    #ADD_PPE_MANY_TESTS(ppe_i16_avg   main_ppe_6_i16_avg  NotShowPerf MEMtoPPE)
+    #ADD_PPE_MANY_TESTS(ppe_fp16_avg  main_ppe_7_fp16_avg NotShowPerf MEMtoPPE)
+    #
+    #ADD_PPE_MANY_TESTS(ppe_i8_min    main_ppe_2_i8_min   NotShowPerf MEMtoPPE)
+    #ADD_PPE_MANY_TESTS(ppe_i16_min   main_ppe_3_i16_min  NotShowPerf MEMtoPPE)
+    #ADD_PPE_MANY_TESTS(ppe_fp16_min  main_ppe_4_fp16_min NotShowPerf MEMtoPPE)
     endif()
 
     if(DUT STREQUAL "PPE")
