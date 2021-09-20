@@ -381,6 +381,15 @@ int nu_ppe_reg_load_config (ConfigREGPPE* cfg_reg, void* cfg_reg_bin) {
     
     rumboot_printf("  %s = %s \n", name, DmaDUseTypeNames[(int) ut]);
   }
+  void nu_vpe_print_DmaXYZDirectionType(DmaXYZDirectionType ut, char* name) {
+    static char* DmaXYZDirectionTypeNames[] = {
+      "DmaXYZDirection_X",
+      "DmaXYZDirection_Y",
+      "DmaXYZDirection_Z"
+    };
+    
+    rumboot_printf("  %s = %s \n",name,DmaXYZDirectionTypeNames[(int) ut]);
+  }
 
 
 void nu_vpe_print_config(ConfigVPE* cfg){
@@ -500,6 +509,7 @@ void nu_print_config_dma(ConfigDMA * cfg_dma,char* name) {
   nu_vpe_print_DmaDSizeType(cfg_dma->dma_data_size,"dma_data_size");
   nu_vpe_print_DmaDUseType(cfg_dma->dma_data_use,"dma_data_use");
   rumboot_printf("  dma_baddr = 0x%x\n",cfg_dma->dma_baddr);
+  nu_vpe_print_DmaXYZDirectionType(cfg_dma->dma_xyz_drct,"dma_xyz_drct");
   rumboot_printf("  dma_stride_y = %d\n",cfg_dma->dma_stride_y);
   rumboot_printf("  dma_stride_x = %d\n",cfg_dma->dma_stride_x);
   rumboot_printf("  dma_stride_z = %d\n",cfg_dma->dma_stride_z);
@@ -730,7 +740,6 @@ void nu_vpe_setup(uintptr_t base, ConfigVPE* cfg) {
   int32_t     tmp_data;
   DataType    tmp_type;
 
-
   // Configuration of VPE -------------------------------------------------------------------------
   // CUBE_SIZE 
   iowrite32(cfg->cube_size, base + NU_VPE + NU_VPE_CUBE_SIZE );
@@ -925,7 +934,7 @@ void nu_vpe_setup(uintptr_t base, ConfigVPE* cfg) {
   iowrite32(cfg->src_rdma_config.dma_stride_z        , base + NU_VPE_SRC_RDMA + NU_VPE_DMA_STRIDE_Z            ) ;
   iowrite32(cfg->src_rdma_config.dma_frag_last_size  , base + NU_VPE_SRC_RDMA + NU_VPE_DMA_FRAG_LAST_SIZE_ADDR ) ;
   iowrite32(cfg->src_rdma_config.dma_frag_size       , base + NU_VPE_SRC_RDMA + NU_VPE_DMA_FRAG_SIZE_ADDR      ) ;
-  iowrite32(2                                        , base + NU_VPE_SRC_RDMA + NU_VPE_DMA_XYZ_DRCT_ADDR       ) ;  // 0 = x; 1 = y; 2 = z
+  iowrite32(cfg->src_rdma_config.dma_xyz_drct        , base + NU_VPE_SRC_RDMA + NU_VPE_DMA_XYZ_DRCT_ADDR       ) ;  // 0 = x; 1 = y; 2 = z
   iowrite32(cfg->src_rdma_config.dma_box_st_size_x   , base + NU_VPE_SRC_RDMA + NU_VPE_DMA_BOX_ST_SIZE_X       ) ;
   iowrite32(cfg->src_rdma_config.dma_box_st_size_y   , base + NU_VPE_SRC_RDMA + NU_VPE_DMA_BOX_ST_SIZE_Y       ) ;
   iowrite32(cfg->src_rdma_config.dma_box_st_size_z   , base + NU_VPE_SRC_RDMA + NU_VPE_DMA_BOX_ST_SIZE_Z       ) ;
@@ -1088,7 +1097,8 @@ void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics) {
   
   elem_size = tmp_data_size; 
 
-  cfg->wdma_config.dma_frag_size       = 16 * elem_size ;                                          
+  cfg->wdma_config.dma_frag_size       = 16 * elem_size ;
+  cfg->wdma_config.dma_xyz_drct        = DmaXYZDirection_Z;
   
   if (cfg->trace_mode == TraceMode_MPE) { // MPE read mode
      cfg->wdma_config.dma_frag_last_size  = ((metrics->C % 16) + ((metrics->C%16) == 0)*16) * elem_size ;
@@ -1158,6 +1168,7 @@ void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics) {
   elem_size = tmp_data_use * tmp_data_size; 
   
   cfg->src_rdma_config.dma_frag_size       = 16 * elem_size ;
+  cfg->src_rdma_config.dma_xyz_drct        = DmaXYZDirection_Z;
   // ----------------
   if (cfg->dst_flying == Enable_En) {
     // for flying testcases only. Linear data read mode. NOT MPE read mode !!!!!!!!!!!! correct only for Cube sizes < 128
@@ -1276,7 +1287,7 @@ void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics) {
   
   cfg->op0_rdma_config.dma_frag_size = 16 * elem_size ;
   //------------
-  cfg->op0_rdma_config.dma_xyz_drct = 2;
+  cfg->op0_rdma_config.dma_xyz_drct = DmaXYZDirection_Z;
   if (cfg->dst_flying == Enable_En) {
     // for flying testcases only. Linear data read mode. NOT MPE read mode !!!!!!!!!!!! correct only for Cube sizes < 128
     cfg->op0_rdma_config.dma_frag_last_size  = metrics->C              * elem_size                 ;
@@ -1300,7 +1311,7 @@ void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics) {
   else {  
     if (cfg->trace_mode == TraceMode_MPE) { // MPE read mode
       if (cfg->op0_rdma_config.dma_data_mode == Mode_Channel) {
-         cfg->op0_rdma_config.dma_xyz_drct = 0;
+         cfg->op0_rdma_config.dma_xyz_drct = DmaXYZDirection_X;
          cfg->op0_rdma_config.dma_frag_last_size  = metrics->C * elem_size ; 
          cfg->op0_rdma_config.dma_stride_z        = 0                      ; //coef_z == vector_size * elem_size
          cfg->op0_rdma_config.dma_stride_x        = 0                      ; //coef_x == full_line_z             = full_line_C*elem_size
@@ -1342,7 +1353,7 @@ void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics) {
     }
     else { // PPE read mode
       if (cfg->op0_rdma_config.dma_data_mode == Mode_Channel) {
-         cfg->op0_rdma_config.dma_xyz_drct = 0;
+         cfg->op0_rdma_config.dma_xyz_drct = DmaXYZDirection_X;
          cfg->op0_rdma_config.dma_frag_last_size  = metrics->C * elem_size ; 
          cfg->op0_rdma_config.dma_stride_z        = 0                      ; //coef_z == vector_size * elem_size
          cfg->op0_rdma_config.dma_stride_x        = 0                      ; //coef_x == full_line_z             = full_line_C*elem_size
@@ -1437,7 +1448,7 @@ void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics) {
 
   cfg->op1_rdma_config.dma_frag_size = 16 * elem_size ;
   //------------
-  cfg->op1_rdma_config.dma_xyz_drct = 2;
+  cfg->op1_rdma_config.dma_xyz_drct = DmaXYZDirection_Z;
   if (cfg->dst_flying == Enable_En) {
     // for flying testcases only. Linear data read mode. NOT MPE read mode !!!!!!!!!!!! correct only for Cube sizes < 128
     cfg->op1_rdma_config.dma_frag_last_size  = metrics->C              * elem_size                 ;
@@ -1462,7 +1473,7 @@ void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics) {
   else {  
     if (cfg->trace_mode == TraceMode_MPE) { // MPE read mode
       if (cfg->op1_rdma_config.dma_data_mode == Mode_Channel) {
-         cfg->op1_rdma_config.dma_xyz_drct = 0;
+         cfg->op1_rdma_config.dma_xyz_drct = DmaXYZDirection_X;
          cfg->op1_rdma_config.dma_frag_last_size  = metrics->C * elem_size ; 
          cfg->op1_rdma_config.dma_stride_z        = 0                      ; //coef_z == vector_size * elem_size
          cfg->op1_rdma_config.dma_stride_x        = 0                      ; //coef_x == full_line_z             = full_line_C*elem_size
@@ -1504,7 +1515,7 @@ void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics) {
     }
     else { // PPE read mode
       if (cfg->op1_rdma_config.dma_data_mode == Mode_Channel) {
-         cfg->op1_rdma_config.dma_xyz_drct = 0;
+         cfg->op1_rdma_config.dma_xyz_drct = DmaXYZDirection_X;
          cfg->op1_rdma_config.dma_frag_last_size  = metrics->C * elem_size ; 
          cfg->op1_rdma_config.dma_stride_z        = 0                      ; //coef_z == vector_size * elem_size
          cfg->op1_rdma_config.dma_stride_x        = 0                      ; //coef_x == full_line_z             = full_line_C*elem_size
@@ -1599,7 +1610,7 @@ void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics) {
   
   cfg->op2_rdma_config.dma_frag_size = 16 * elem_size ;
   //------------
-  cfg->op2_rdma_config.dma_xyz_drct = 2;
+  cfg->op2_rdma_config.dma_xyz_drct = DmaXYZDirection_Z;
   if (cfg->dst_flying == Enable_En) {
     // for flying testcases only. Linear data read mode. NOT MPE read mode !!!!!!!!!!!! correct only for Cube sizes < 128
     cfg->op2_rdma_config.dma_frag_last_size  = metrics->C              * elem_size                 ;
@@ -1624,7 +1635,7 @@ void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics) {
   else {  
     if (cfg->trace_mode == TraceMode_MPE) { // MPE read mode
       if (cfg->op2_rdma_config.dma_data_mode == Mode_Channel) {
-         cfg->op2_rdma_config.dma_xyz_drct = 0;
+         cfg->op2_rdma_config.dma_xyz_drct = DmaXYZDirection_X;
          cfg->op2_rdma_config.dma_frag_last_size  = metrics->C * elem_size ; 
          cfg->op2_rdma_config.dma_stride_z        = 0                      ; //coef_z == vector_size * elem_size
          cfg->op2_rdma_config.dma_stride_x        = 0                      ; //coef_x == full_line_z             = full_line_C*elem_size
@@ -1666,7 +1677,7 @@ void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics) {
     }
     else { // PPE read mode
       if (cfg->op2_rdma_config.dma_data_mode == Mode_Channel) {
-         cfg->op2_rdma_config.dma_xyz_drct = 0;
+         cfg->op2_rdma_config.dma_xyz_drct = DmaXYZDirection_X;
          cfg->op2_rdma_config.dma_frag_last_size  = metrics->C * elem_size ; 
          cfg->op2_rdma_config.dma_stride_z        = 0                      ; //coef_z == vector_size * elem_size
          cfg->op2_rdma_config.dma_stride_x        = 0                      ; //coef_x == full_line_z             = full_line_C*elem_size

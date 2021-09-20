@@ -125,6 +125,13 @@
     DmaDUse_Alu,
     DmaDUse_Both
   }DmaDUseType;
+  
+  
+  typedef enum DmaXYZDirectionType {
+    DmaXYZDirection_X,
+    DmaXYZDirection_Y,
+    DmaXYZDirection_Z
+  }DmaXYZDirectionType;
 
   typedef struct ConfigDMAMPE {
     int32_t H;
@@ -239,7 +246,7 @@
     uint32_t     dma_stride_z        ;
     uint32_t     dma_frag_size       ;
     uint32_t     dma_frag_last_size  ;
-    uint8_t      dma_xyz_drct        ;
+    DmaXYZDirectionType  dma_xyz_drct;
     uint16_t     dma_box_st_size_x   ;
     uint16_t     dma_box_st_size_y   ;
     uint16_t     dma_box_st_size_z   ;
