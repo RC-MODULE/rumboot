@@ -5,6 +5,7 @@
 #include <rumboot/io.h>
 #include <string.h>
 
+#include <platform/devices/nu_cpdmac_lib.h>
 #include <platform/devices.h>
 #include <platform/devices/nu_lib.h>
 #include <regs/regs_nu_ppe.h>
@@ -508,10 +509,13 @@ int nu_ppe_wr_rd_regs(uintptr_t rbase,uintptr_t wbase, int32_t data) {
 	  int32_t tmpr;
 	  tmpr = data;
 	  
-	    iowrite32(tmpr, rbase + NU_PPE_OP_ENABLE);
-		if ((tmpr &  0x00000001)  !=(ioread32(rbase +NU_PPE_OP_ENABLE)& 0x00000001)) 	
+	    iowrite32((0x00000000), rbase + NU_PPE_OP_ENABLE);
+		if ((0x00000000)  !=(ioread32(rbase +NU_PPE_OP_ENABLE)& 0x00000001)) 	
 		{res0 =1;
-		rumboot_printf("res0 error\n");}
+		rumboot_printf("res0wr error\n");
+		rumboot_printf("res0wr_tmp =%x\n",(ioread32(rbase +NU_PPE_OP_ENABLE)));
+		rumboot_printf("tmpr_=%x\n",(tmpr &  0x00000001));
+		}
 		else 
 		{res0=0;}	
 
@@ -679,8 +683,8 @@ int nu_ppe_wr_rd_regs(uintptr_t rbase,uintptr_t wbase, int32_t data) {
 		{res25=0;} 
 	
 //------------------PPE+WDMA-------------------------------------------
-		iowrite32(tmpr, wbase + NU_PPE_OP_ENABLE);	
-		if ((tmpr & 0x000000001) !=(ioread32(wbase + NU_PPE_OP_ENABLE)& 0x00000001)) 	
+		iowrite32((0x00000000), wbase + NU_PPE_OP_ENABLE);	
+		if (( 0x000000000) !=(ioread32(wbase + NU_PPE_OP_ENABLE)& 0x00000001)) 	
 		{resw0 =1;
 	    rumboot_printf("data_resw0 = %x\n",ioread32(wbase + NU_PPE_OP_ENABLE));
 		rumboot_printf("resw0 error\n");}	
@@ -1042,7 +1046,16 @@ int main() {
   int res,res1,res2,res3,res4;
   rumboot_printf("Test PPE regs run\n");
   rumboot_printf("Read REGS after reset\n");
+    rumboot_printf("NA_CU_PPE_UNIT_MODE = %x\n",NA_CU_PPE_UNIT_MODE);
+	rumboot_printf("NA_CU_PPE_UNIT_MODE = %x\n",NPE_BASE);
+	rumboot_printf("NA_CU_REGS_BASE = %x\n",NA_CU_REGS_BASE);
 
+	rumboot_printf("MY_PPE_RDMA_BASE = %x\n",MY_PPE_RDMA_BASE);
+	rumboot_printf("MY_PPE_REGS_BASE = %x\n",MY_PPE_REGS_BASE);
+	
+	#if DUT_IS_NPE
+	 na_cu_set_units_direct_mode(NPE_BASE+NA_CU_REGS_BASE, NA_CU_PPE_UNIT_MODE);
+	#endif
    // Configure RDMA initial state
    res1 = nu_ppe_rd_regs(MY_PPE_RDMA_BASE, MY_PPE_REGS_BASE);
 
@@ -1062,7 +1075,7 @@ int main() {
   { rumboot_printf("Check READs after write ZERO's PASSED \n");}
     {rumboot_printf("Read REGS after  WRITE REGs ONE's\n");} 
 	  //write one's 
-    res3 =  nu_ppe_wr_rd_regs(MY_PPE_RDMA_BASE, MY_PPE_REGS_BASE, 0xFFFFFFFF);
+    res3 =  nu_ppe_wr_rd_regs(MY_PPE_RDMA_BASE, MY_PPE_REGS_BASE,  0xFFFFFFFF);
 
  if ( res3 !=0)
   {rumboot_printf("Test FAILED\n");
