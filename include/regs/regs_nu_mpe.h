@@ -55,6 +55,9 @@
 #define WR_Bias5CntSha_MSha       0x016C
 #define WR_Bias5CntCmp_MSha       0x0170
 #define Bias5_Cnt                 0x0174
+#define WR_Bias6CntSha_MSha       0x0178
+#define WR_Bias6CntCmp_MSha       0x017C
+#define Bias6_Cnt                 0x0180
 // MPE_DMA Rd Channel
 #define BIASCtrl_MSha             0x0204
 #define RD_THRECtrl_MSha          0x0208
@@ -119,17 +122,24 @@
 #define Bias5BCnt                 0x02F4
 #define Bias5BThre                0x02F8
 #define Bias6Sha_MSha             0x02FC
-#define Bias6AOffset_MSha         0x0200
-#define Bias6Adr                  0x0204
-#define Bias6CntSha_MSha          0x0208
-#define Bias6CntOffset_MSha       0x020C
-#define Bias6CntCmp_MSha          0x0210
-#define Bias6BCnt                 0x0214
-#define LPXDR_MSha                0x0218
-#define RPXDR_MSha                0x021C
-#define TPYDR_MSha                0x0220
-#define BPYDR_MSha                0x0224
+#define Bias6AOffset_MSha         0x0300
+#define Bias6Adr                  0x0304
+#define Bias6CntSha_MSha          0x0308
+#define Bias6CntOffset_MSha       0x030C
+#define Bias6CntThresholdSha_MSha 0x0310
+#define Bias6CntCmp_MSha          0x0314
+#define Bias6BCnt                 0x0318
+#define Bias6BThre                0x031С
+#define Bias7Sha_MSha             0x0320
+#define Bias7AOffset_MSha         0x0324
+#define Bias7Adr                  0x0328
+#define Bias7CntSha_MSha          0x032С
+#define Bias7CntOffset_MSha       0x0330
+#define Bias7CntCmp_MSha          0x0334
+#define Bias7BCnt                 0x0338
+#define LPXDR_MSha                0x033C
+#define RPXDR_MSha                0x0340
+#define TPYDR_MSha                0x0344
+#define BPYDR_MSha                0x0348
 
 #endif
-
-

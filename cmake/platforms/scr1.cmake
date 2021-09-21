@@ -1023,6 +1023,14 @@ endif() ### EXPERIMENT_STAGE_2_SUB_1
 
       ADD_MPE_SINGLE_TEST(MPE_7 TRUNC0) # mu int8 test
       ADD_MPE_SINGLE_TEST(MPE_8 TRUNC0) # mu int16 test
+      ADD_MPE_SINGLE_TEST(MPE_9 TRUNC0) # mu fp16 test
+      ADD_MPE_SINGLE_TEST(MPE_10 TRUNC0) # mu fp16 NaN test
+      ADD_MPE_SINGLE_TEST(MPE_11 TRUNC16) # mu fp16 inf test
+      ADD_MPE_SINGLE_TEST(MPE_12 TRUNC0) # mu+acc int8 test
+      ADD_MPE_SINGLE_TEST(MPE_13 TRUNC0) # mu+acc int16 test
+      ADD_MPE_SINGLE_TEST(MPE_14 TRUNC0) # mu int norm test
+      ADD_MPE_SINGLE_TEST(MPE_15 TRUNC16) # mu+acc fp16 test
+      ADD_MPE_SINGLE_TEST(MPE_16 TRUNC16) # fp16 max perf test
 
       macro(ADD_NPE_SIMPLE_TEST name filename)
         add_rumboot_target(

@@ -41,8 +41,8 @@ void mpe_dma_config_and_start(uintptr_t base, uint32_t* source_ptr, uint32_t buf
   rumboot_printf("Configuring MPE_DMA\n");
   // Read Channel
   iowrite32(0x00000001,base+BIASCtrl_MSha);
-  iowrite32(0x0003FFFF,base+RD_THRECtrl_MSha);
-  iowrite32(0x0000FFFF,base+RD_DECCtrl_MSha);
+  iowrite32(0x00000000,base+RD_THRECtrl_MSha);
+  iowrite32(0x00000000,base+RD_DECCtrl_MSha);
   iowrite32(0x00000000,base+PADCtrl_MSha);
   iowrite32((uint32_t)source_ptr,base+BFCA_MSha);
   iowrite32(0x00000000,base+AOffset_MSha);
@@ -82,6 +82,8 @@ void mpe_dma_config_and_start(uintptr_t base, uint32_t* source_ptr, uint32_t buf
   iowrite32(0x00000000,base+WR_Bias4CntCmp_MSha);
   iowrite32(0x00000000,base+WR_Bias5CntSha_MSha);
   iowrite32(0x00000000,base+WR_Bias5CntCmp_MSha);
+  iowrite32(0x00000000,base+WR_Bias6CntSha_MSha);
+  iowrite32(0x00000000,base+WR_Bias6CntCmp_MSha);
   // Start
   rumboot_printf("Starting MPE_DMA\n");
   iowrite32(0x00000000,base+MAINCNT_Sha);
