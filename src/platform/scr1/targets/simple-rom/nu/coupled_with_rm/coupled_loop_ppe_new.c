@@ -43,6 +43,12 @@ int main() {
 
   #if DUT_IS_NPE
     na_cu_set_units_direct_mode(NPE_BASE+NA_CU_REGS_BASE, NA_CU_PPE_UNIT_MODE);
+
+    in_tag_pt = &in_file_tag;
+  #endif
+
+  #ifdef DUT_IS_PPE
+    in_tag_pt = &in_ameba_file_tag;
   #endif
 
   #ifdef LIN
@@ -56,24 +62,26 @@ int main() {
   #endif
 
   #ifdef MEMtoPPE
-    in_tag_pt = &in_file_tag;
     mv = 0x0;
   #endif
   #ifdef VPEtoPPE
-    in_tag_pt = &in_ameba_file_tag;
     mv = 0x1;
   #endif
 
   flying_mode = (lbs&0x3)<<1 | mv&0x1;
 
-  //iowrite32(0xFACE2021, MY_PPE_REGS_BASE + NU_PPE_WDMA_BASE_ADDR);
-  //uint32_t tmp;
-  //tmp = ioread32(MY_PPE_REGS_BASE + NU_PPE_WDMA_BASE_ADDR);
-  //rumboot_printf("%x\n", tmp);
-  //
-  //iowrite32(0xFACE2022, MY_PPE_REGS_BASE + NU_PPE_WDMA_BASE_ADDR);
-  //tmp = ioread32(MY_PPE_REGS_BASE + NU_PPE_WDMA_BASE_ADDR);
-  //rumboot_printf("%x\n", tmp);
+  iowrite32(0xFACE2021, MY_PPE_REGS_BASE + NU_PPE_WDMA_BASE_ADDR);
+  uint32_t tmp;
+  tmp = ioread32(MY_PPE_REGS_BASE + NU_PPE_WDMA_BASE_ADDR);
+  rumboot_printf("%x\n", tmp);
+  
+  iowrite32(0xFACE2022, MY_PPE_REGS_BASE + NU_PPE_WDMA_BASE_ADDR);
+  tmp = ioread32(MY_PPE_REGS_BASE + NU_PPE_WDMA_BASE_ADDR);
+  rumboot_printf("%x\n", tmp);
+
+  iowrite32(0xFACE2023, MY_PPE_RDMA_BASE + NU_PPE_RDMA_BASE_ADDR);
+  tmp = ioread32(MY_PPE_RDMA_BASE + NU_PPE_RDMA_BASE_ADDR);
+  rumboot_printf("%x\n", tmp);
 
   perf_avg = 0;
   for (i=0; i<it_nmb && !res; i++) {
@@ -99,70 +107,68 @@ int main() {
       cfg_reg.wBALo = (uintptr_t)res_data;
     
       cfg_reg.wOpM = flying_mode << 8;
-      //res = nu_ppe_decide_dma_config_trivial(&cfg, res_metrics, &cfg_reg);
+      nu_ppe_decide_dma_config_trivial(&cfg, res_metrics, &cfg_reg);
     }
 
-    //if(!res){
-    //  nu_ppe_setup_reg(MY_PPE_RDMA_BASE, MY_PPE_REGS_BASE, &cfg_reg);
-    //
-    //  cfg_reg.wOpEn  = 0x1;
-    //  nu_ppe_run(MY_PPE_REGS_BASE, &cfg_reg); // wdma start
-    //
-    //  #ifdef MEMtoPPE
-    //  cfg_reg.rOpEn  = 0x1;
-    //
-    //  clk_cnt = rumboot_platform_get_uptime();
-    //  nu_ppe_rdma_run(MY_PPE_RDMA_BASE, &cfg_reg); // rdma start
-    //
-    //  while (nu_ppe_status_done_rd(MY_PPE_REGS_BASE) == 0x0) {} // set timeout
-    //  clk_cnt = rumboot_platform_get_uptime() - clk_cnt;
-    //
-    //  nu_ppe_rdma_wait_complete(MY_PPE_RDMA_BASE);  // wait rdma complete
-    //  #endif
-    //
-    //  #if DUT_IS_PPE
-    //  #ifdef VPEtoPPE
-    //  nu_cpdmac_trn256_config(NU_CPDMAC_ASM_BASE,in_data,in_metrics->s);
-    //
-    //  clk_cnt = rumboot_platform_get_uptime();
-    //  nu_cpdmac_trn256_run(NU_CPDMAC_ASM_BASE);
-    //
-    //  while (nu_ppe_status_done_rd(MY_PPE_REGS_BASE) == 0x0) {} // set timeout
-    //  clk_cnt = rumboot_platform_get_uptime() - clk_cnt;
-    //
-    //  nu_cpdmac_trn256_wait_complete(NU_CPDMAC_ASM_BASE);
-    //  #endif
-    //  #endif
-    //
-    //  nu_ppe_wait_complete(MY_PPE_REGS_BASE);
-    //
-    //  // Sizeof(DataCube)/(time*frequency); time measure is us, frequency measure is MHz
-    //  // clk_cnt will be devided by frequency later
-    //  dtB = (cfg_reg.wOpM >> 16 & 0x3) ? 2 : 1;
-    //  clk_cnt = (in_metrics->H * in_metrics->W * in_metrics->C * dtB)/clk_cnt;
-    //
-    //  rumboot_printf("Comparing...\n");
-    //
-    //  res = nu_bitwise_compare(res_data,etalon,res_metrics->s);
-    //
-    //  if (res) {
-    //    nu_ppe_print_config(&cfg);
-    //    nu_ppe_print_config_reg(&cfg_reg);
-    //
-    //    rumboot_platform_dump_region("res_data.bin",(uint32_t)res_data,res_metrics->s);
-    //    rumboot_platform_dump_region("cfg_reg.bin", &cfg_reg, NU_PPE_REG_CFG_PARAMS_NUM*sizeof(uint32_t));
-    //  }
-    //}
+    if(!res){
+      nu_ppe_setup_reg(MY_PPE_RDMA_BASE, MY_PPE_REGS_BASE, &cfg_reg);
+    
+      cfg_reg.wOpEn  = 0x1;
+      nu_ppe_wdma_run(MY_PPE_REGS_BASE, &cfg_reg); // wdma start
+    
+      #ifdef MEMtoPPE
+      cfg_reg.rOpEn  = 0x1;
+      nu_ppe_rdma_run(MY_PPE_RDMA_BASE, &cfg_reg); // rdma start
+      #endif
+    
+      #ifdef VPEtoPPE
+      #if DUT_IS_PPE
+      nu_cpdmac_trn256_config(NU_CPDMAC_ASM_BASE,in_data,in_metrics->s);
+      nu_cpdmac_trn256_run(NU_CPDMAC_ASM_BASE);
+      #endif
+      #endif
+    
+      clk_cnt = rumboot_platform_get_uptime();
+    
+      while (nu_ppe_status_done(MY_PPE_REGS_BASE) == 0x0) {} // set timeout
+      clk_cnt = rumboot_platform_get_uptime() - clk_cnt;
+    
+      #ifdef MEMtoPPE
+      nu_ppe_rdma_wait_complete(MY_PPE_RDMA_BASE);  // wait rdma complete
+      #endif
+    
+      #ifdef VPEtoPPE
+      #if DUT_IS_PPE
+      nu_cpdmac_trn256_wait_complete(NU_CPDMAC_ASM_BASE);
+      #endif
+      #endif
+    
+      nu_ppe_wait_complete(MY_PPE_REGS_BASE);
+    
+      // Sizeof(DataCube)/(times*frequency); time measure is us, frequency measure is MHz
+      // clk_cnt will be devided by frequency later
+      dtB = (cfg_reg.wOpM >> 16 & 0x3) ? 0x2 : 0x1;
+      clk_cnt = (in_metrics->H * in_metrics->W * in_metrics->C * dtB)/clk_cnt;
+    
+      rumboot_printf("Comparing...\n");
+    
+      res = nu_bitwise_compare(res_data,etalon,res_metrics->s);
+    
+      if (res) {
+        nu_ppe_print_config(&cfg);
+        nu_ppe_print_config_reg(&cfg_reg);
+    
+        rumboot_platform_dump_region("res_data.bin",(uint32_t)res_data,res_metrics->s);
+        rumboot_platform_dump_region("cfg_reg.bin", &cfg_reg, NU_PPE_REG_CFG_PARAMS_NUM*sizeof(uint32_t));
+      }
+    }
 
     if (!res) {
       rumboot_printf("Iteration %d PASSED\n", i);
 
       #ifdef ShowPerf
-      perf_avg += clk_cnt;
-
-      //rumboot_printf("clk_cnt is %d\n", clk_cnt);
-
       clk_cnt = (clk_cnt*100)/ppe_clk_f;
+      perf_avg += clk_cnt;
 
       rumboot_printf("PPE perfomance of iteration # %d is %d.%d bytes per cycle\n", i, clk_cnt/100, clk_cnt-(clk_cnt/100)*100);
       #endif
@@ -175,7 +181,7 @@ int main() {
   #ifdef ShowPerf
   if (it_nmb == 0) rumboot_printf("ShowPerf failed\n");
   else {
-    perf_avg = (perf_avg*100)/it_nmb;
+    perf_avg = perf_avg/it_nmb;
 
     rumboot_printf("PPE average perfomance of %d iterations is %d.%d bytes per cycle\n", it_nmb, perf_avg/100, perf_avg-(perf_avg/100)*100);
   }

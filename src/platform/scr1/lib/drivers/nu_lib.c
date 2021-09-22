@@ -1872,188 +1872,129 @@ void nu_mpe_wait_wr_main_channel_complete(uintptr_t dma_base) {
   nu_cpdmac_rcv512_wait_complete(dma_base);
 }
 
-int  nu_ppe_decide_dma_config_trivial(ConfigPPE* cfg, CubeMetrics* out_cube_metrics, ConfigREGPPE* cfg_reg) {
+void  nu_ppe_decide_dma_config_trivial(ConfigPPE* cfg, CubeMetrics* out_cube_metrics, ConfigREGPPE* cfg_reg) {
 
   uint32_t dt   = cfg->dt   ;
   uint32_t meth = cfg->meth ;
 
-  uint32_t H  = cfg->H;
-  uint32_t W  = cfg->W;
-  uint32_t C  = cfg->C;
+  int32_t Hi  = cfg->H;
+  int32_t Wi  = cfg->W;
+  int32_t Ci  = cfg->C;
 
-  uint32_t Ho = out_cube_metrics->H;
-  uint32_t Wo = out_cube_metrics->W;
-  uint32_t Co = out_cube_metrics->C;
+  int32_t Ho  = out_cube_metrics->H;
+  int32_t Wo  = out_cube_metrics->W;
+  int32_t Co  = out_cube_metrics->C;
 
   uint32_t fm = cfg_reg->wOpM >> 8;
 
-  uint32_t mr = dt && fm&0x1 || ~(fm&0x1) && (dt&&(C>8) || C>16);
+  uint32_t mr = fm&0x1 && dt || ~(fm&0x1) && (dt&&(Ci>8) || Ci>16) ? 0x1 : 0x0;
 
-////    cfg_reg->rAXIp  =
-//    cfg_reg->rBrdX  = 
-//    cfg_reg->rBrdY  = 
-//    cfg_reg->rBrdZ  = 
-//    cfg_reg->rStrX  = 
-//    cfg_reg->rStrY  = 
-//    cfg_reg->rStrZ  = 
-//    cfg_reg->rFrgs  = 
-//    cfg_reg->rFrgl  = 
-//    cfg_reg->rXYZd  = 
-//    cfg_reg->rBstX  = 
-//    cfg_reg->rBstY  = 
-//    cfg_reg->rBstZ  = 
-//    cfg_reg->rBxtX  = 
-//    cfg_reg->rBxtY  = 
-//    cfg_reg->rBxtZ  = 
-//    cfg_reg->rBffX  = 
-//    cfg_reg->rBffY  = 
-//    cfg_reg->rBffZ  = 
-//
-////    cfg_reg->wAXIp  =
-//    cfg_reg->wBrdX  = 
-//    cfg_reg->wBrdY  = 
-//    cfg_reg->wBrdZ  = 
-//    cfg_reg->wStrX  = 
-//    cfg_reg->wStrY  = 
-//    cfg_reg->wStrZ  = 
-//    cfg_reg->wFrgs  = 
-//    cfg_reg->wFrgl  = 
-//    cfg_reg->wXYZd  = 
-//    cfg_reg->wBstX  = 
-//    cfg_reg->wBstY  = 
-//    cfg_reg->wBstZ  = 
-//    cfg_reg->wBxtX  = 
-//    cfg_reg->wBxtY  = 
-//    cfg_reg->wBxtZ  = 
-//    cfg_reg->wBffX  = 
-//    cfg_reg->wBffY  = 
-//    cfg_reg->wBffZ  = 
-//    cfg_reg->wIstX  = 
-//    cfg_reg->wIxtX  = 
-//    cfg_reg->wIffX  = 
-    cfg_reg->wWi    = W - 1;
-    cfg_reg->wHi    = H - 1;
-    cfg_reg->wCi    = C - 1;
-    cfg_reg->wWo    = Wo - 1;
-    cfg_reg->wHo    = Ho - 1;
-    cfg_reg->wCo    = Co - 1;
-    cfg_reg->wOpM   = mr<<28 | dt<<16 | fm<<8 | meth;
-    cfg_reg->wK     = (cfg->Sh-1)<<20 | (cfg->Sw-1)<<16 | (cfg->Kh-1)<<8 | cfg->Kw-1;
-    cfg_reg->wKWr   = cfg->Kw_r;
-    cfg_reg->wKHr   = cfg->Kh_r;
-    cfg_reg->wP     = cfg->Bp<<12 | cfg->Rp<<8 | cfg->Tp<<4 | cfg->Lp;
-    cfg_reg->wPV1   = cfg->pv[0];
-    cfg_reg->wPV2   = cfg->pv[1];
-    cfg_reg->wPV3   = cfg->pv[2];
-    cfg_reg->wPV4   = cfg->pv[3];
-    cfg_reg->wPV5   = cfg->pv[4];
-    cfg_reg->wPV6   = cfg->pv[5];
-    cfg_reg->wPV7   = cfg->pv[6];
+  int el_s    = dt ? 0x2 : 0x1; // element size in bytes
+  int rdma_thr= 0x10;   // rdma throughput in bytes; wdma_thr is the same to do
+  int rdctn   = mr + 1; // reduction
 
-//  uint32_t Celem;
-//  uint32_t Cbyte;
-//
-//  // rdma
-//  // cfg_reg->rOpEn  = 0;
-//  // cfg_reg->rBALs  = 0;
-//  // cfg_reg->rK     = 0;
-//
-//  if(cfg->dt == DataType_Int8) {
-//    cfg_reg->rOpM = 0X00000000;
-//    Cbyte = 1*cfg->C;
-//  } else if(cfg->dt == DataType_Int16) {
-//    cfg_reg->rOpM = 0X00200000;
-//    Cbyte = 2*cfg->C;
-//  } else if(cfg->dt == DataType_Fp16) {
-//    cfg_reg->rOpM = 0X00400000;
-//    Cbyte = 2*cfg->C;
-//  } else {
-//    rumboot_printf("ERROR: Unsupported data type for PPE!\n");
-//    return -1;
-//  }
-//
-//  Celem = Cbyte/32 - (Cbyte%32 == 0);
-//  cfg_reg->rESs   = 0X00000020; // 32 bytes, always 16x16 or 32x8
-//  cfg_reg->rVSs   = Cbyte;                        // bytes of full C (now defined for BOX=CUBE)
-//  cfg_reg->rLSs   = (cfg_reg->rVSs)*(cfg->W);     // bytes of full C*W (now defined for BOX=CUBE)
-//  cfg_reg->rPCi   = Celem*32;                     // bytes for Celem - 1
-//  cfg_reg->rPWi   = (cfg_reg->rVSs)*(cfg->W - 1); // bytes for C*(W-1)
-//  cfg_reg->rPHi   = (cfg_reg->rLSs)*(cfg->H - 1); // bytes for C*W*(H-1)
-//  cfg_reg->rBSWi  = 0X00001FFF & (cfg->W - 1);    // W elements -1
-//  cfg_reg->rBSHi  = 0X00001FFF & (cfg->H - 1);    // H elements -1
-//  cfg_reg->rBSCi  = 0X00000000; // Celem;         // C elements -1 for FLYING_MODE = FLYING_BOXED (not supported yet), else 0
-//  cfg_reg->rStWi  = 0X00001FFF & (cfg->W - 1);    // W elements -1 in first box
-//  cfg_reg->rOfWi  = 0X00000000;                   // W elements addon between boxes
-//
-//  // ppe+wdma
-//  if(cfg_reg->rOpEn == 0){
-//    cfg_reg->wOpM = 0X00000010; // vpe (main channel) linear
-//  } else {
-//    cfg_reg->wOpM = 0X00000020; // memory linear all-in-one
-//  }
-//
-//  // cfg_reg->wOpEn  = 0;
-//  // cfg_reg->wBALd  = 0;
-//  if(cfg->dt == DataType_Int8) {
-//    cfg_reg->wOpM = (0x00000030 & cfg_reg->wOpM) | 0X00000000;
-//    Cbyte = 1*out_cube_metrics->C;
-//  } else if(cfg->dt == DataType_Int16) {
-//    cfg_reg->wOpM = (0x00000030 & cfg_reg->wOpM) | 0X00200000;
-//    Cbyte = 2*out_cube_metrics->C;
-//  } else if(cfg->dt == DataType_Fp16) {
-//    cfg_reg->wOpM = (0x00000030 & cfg_reg->wOpM) | 0X00400000;
-//    Cbyte = 2*out_cube_metrics->C;
-//  } else {
-//    rumboot_printf("ERROR: Unsupported data type for PPE!\n");
-//    return -1;
-//  }
-//
-//  Celem = Cbyte/32 - (Cbyte%32 == 0);
-//  if(cfg->meth == PoolingOperationSwitch_Avg) {
-//    cfg_reg->wOpM = (0x00600030 & cfg_reg->wOpM) | 0X00000000;
-//  } else if(cfg->meth == PoolingOperationSwitch_Max) {
-//    cfg_reg->wOpM = (0x00600030 & cfg_reg->wOpM) | 0X00000001;
-//  } else if(cfg->meth == PoolingOperationSwitch_Min) {
-//    cfg_reg->wOpM = (0x00600030 & cfg_reg->wOpM) | 0X00000002;
-//  } else {
-//    rumboot_printf("ERROR: Unsupported pooling method type for PPE!\n");
-//    return -1;
-//  }
-//
-//  cfg_reg->wWi    = 0X00001FFF & (cfg->W - 1);
-//  cfg_reg->wHi    = 0X00001FFF & (cfg->H - 1);
-//  cfg_reg->wCi    = 0X00001FFF & (cfg->C - 1);
-//  cfg_reg->wWo    = 0X00001FFF & (out_cube_metrics->W - 1);
-//  cfg_reg->wHo    = 0X00001FFF & (out_cube_metrics->H - 1);
-//  cfg_reg->wCo    = 0X00001FFF & (out_cube_metrics->C - 1);
-//  cfg_reg->wESd   = 0X00000020;                                 // 32 bytes, always 16x16 or 32x8
-//  cfg_reg->wVSd   = Cbyte;                                      // bytes of full C (now defined for BOX=CUBE)
-//  cfg_reg->wLSd   = (cfg_reg->wVSd)*(out_cube_metrics->W);      // bytes of full C*W (now defined for BOX=CUBE)
-//  cfg_reg->wPCo   = Celem*32;                                   // bytes for Celem - 1
-//  cfg_reg->wPWo   = (cfg_reg->wVSd)*(out_cube_metrics->W - 1);  // bytes for C*(W-1)
-//  cfg_reg->wPHo   = (cfg_reg->wLSd)*(out_cube_metrics->H - 1);  // bytes for C*W*(H-1)
-//  cfg_reg->wBSWi  = cfg_reg->rBSWi;
-//  cfg_reg->wBSHi  = cfg_reg->rBSHi;
-//  cfg_reg->wBSCi  = cfg_reg->rBSCi;
-//  cfg_reg->wStWi  = cfg_reg->rStWi;
-//  cfg_reg->wOfWi  = cfg_reg->rOfWi;
-//  cfg_reg->wBSWo  = 0X00001FFF & (out_cube_metrics->W - 1);     // W elements -1
-//  cfg_reg->wBSHo  = 0X00001FFF & (out_cube_metrics->H - 1);     // H elements -1
-//  cfg_reg->wBSCo  = 0X00000000; // Celem;                       // C elements -1 for FLYING_MODE = FLYING_BOXED (not supported yet), else 0
-//  cfg_reg->wStWo  = 0X00001FFF & (out_cube_metrics->W - 1);     // W elements -1 in first box
-//  cfg_reg->wOfWo  = 0X00000000;                                 // W elements addon between boxes
-//  cfg_reg->wK     = (0X00F00000 & (cfg->Sh-1 << 20)) | (0X000F0000 & (cfg->Sw-1 << 16)) | (0X00000700 & (cfg->Kh-1 << 8)) | (0X00000007 & cfg->Kw-1);
-//  cfg_reg->wKWr   = 0X01FFFFFF & cfg->Kw_r;
-//  cfg_reg->wKHr   = 0X01FFFFFF & cfg->Kh_r;
-//  cfg_reg->wP     = (0X00007000 & (cfg->Bp << 12)) | (0X00000700 & (cfg->Rp << 8)) | (0X00000070 & (cfg->Tp << 4)) | (0X00000007 & cfg->Lp);
-//  cfg_reg->wPV1   = 0X0007FFFF & cfg->pv[0];
-//  cfg_reg->wPV2   = 0X0007FFFF & cfg->pv[1];
-//  cfg_reg->wPV3   = 0X0007FFFF & cfg->pv[2];
-//  cfg_reg->wPV4   = 0X0007FFFF & cfg->pv[3];
-//  cfg_reg->wPV5   = 0X0007FFFF & cfg->pv[4];
-//  cfg_reg->wPV6   = 0X0007FFFF & cfg->pv[5];
-//  cfg_reg->wPV7   = 0X0007FFFF & cfg->pv[6];
-//  return 0;
+  int frgs  = rdma_thr * rdctn; // dma transfer quantum in bytes; fragment size
+
+  int Ci_s  = Ci * el_s;
+  int Co_s  = Co * el_s;
+
+  int frgli = Ci_s % frgs; // fragment last size if frgl>0
+  int frglo = Co_s % frgs; // fragment last size if frgl>0
+
+  if (~(fm&0x1)) {  // MEMtoPPE
+    //cfg_reg->rAXIp  =
+    cfg_reg->rBrdX  = (Wi-1) * Ci_s;
+    cfg_reg->rBrdY  = (Hi-1) * Wi * Ci_s;
+    cfg_reg->rBrdZ  = frgli>0 ? (int)(Ci_s/frgs)*frgs : (int)(Ci_s/frgs) - 1;
+
+    cfg_reg->rStrX  = Ci_s;
+    cfg_reg->rStrY  = Wi * Ci_s;
+    cfg_reg->rStrZ  = frgs;
+
+    cfg_reg->rFrgs  = frgs;
+    cfg_reg->rFrgl  = frgli>0 ? frgli : frgs;
+    cfg_reg->rXYZd  = 0x2;
+
+    if (!(fm&0x2)) {  // linear
+      cfg_reg->rBstX  = Wi-1;
+      cfg_reg->rBstY  = Hi-1;
+      cfg_reg->rBstZ  = 0x0;
+    }
+    else if (fm&0x2) {  // boxed
+      cfg_reg->rBstX  = 0x80 - 1; // 128 element box
+      cfg_reg->rBstY  = 0x0;      // 1 element
+      cfg_reg->rBstZ  = 0x8 - 1;  // 128 channels/frgs = 128*(1B|2B)/(16B|32B)
+    }
+    //else if (fm&0x4) {} // split
+
+    cfg_reg->rBxtY  = cfg_reg->rBstY;
+    cfg_reg->rBxtZ  = cfg_reg->rBstZ;
+
+    cfg_reg->rBffX  = 0x0;
+    cfg_reg->rBffY  = 0x0;
+    cfg_reg->rBffZ  = 0x0;
+  }
+
+//  cfg_reg->wAXIp  =
+  cfg_reg->wBrdX  = (Wo-1) * Co_s;
+  cfg_reg->wBrdY  = (Ho-1) * Wo * Co_s;
+  cfg_reg->wBrdZ  = frglo>0 ? (int)(Co_s/frgs)*frgs : (int)(Co_s/frgs) - 1;
+
+  cfg_reg->wStrX  = Co_s;
+  cfg_reg->wStrY  = Wo * Co_s;
+  cfg_reg->wStrZ  = frgs;
+
+  cfg_reg->wFrgs  = frgs;
+  cfg_reg->wFrgl  = frglo>0 ? frglo : frgs;
+  cfg_reg->wXYZd  = 0x2;
+
+  if (!(fm&0x2)) {  // linear
+    cfg_reg->wBstX  = Wo-1;
+    cfg_reg->wBstY  = Ho-1;
+    cfg_reg->wBstZ  = 0x0;
+
+    cfg_reg->wIstX  = 0x0;
+    cfg_reg->wIxtX  = 0x0;
+    cfg_reg->wIffX  = 0x0;
+  }
+  else if (fm&0x2) {  // boxed
+    //cfg_reg->wBstX  = ; // excel
+    //cfg_reg->wBxtX  = ; // excel
+
+    cfg_reg->wBstY  = 0x0;
+    cfg_reg->wBstZ  = 0x8 - 1;
+
+    cfg_reg->wIstX  = Wi-1; // the same as rBstX
+    cfg_reg->wIxtX  = Wi-1; // the same as rBxtX
+    cfg_reg->wIffX  = 0x0;  // the same as rBffX
+  }
+  //else if (fm&0x4) {} // split
+
+  cfg_reg->wBxtY  = cfg_reg->wBstY;
+  cfg_reg->wBxtZ  = cfg_reg->wBstZ;
+
+  cfg_reg->wBffX  = 0x0;
+  cfg_reg->wBffY  = 0x0;
+  cfg_reg->wBffZ  = 0x0;
+
+  cfg_reg->wWi  = Wi - 1;
+  cfg_reg->wHi  = Hi - 1;
+  cfg_reg->wCi  = Ci - 1;
+  cfg_reg->wWo  = Wo - 1;
+  cfg_reg->wHo  = Ho - 1;
+  cfg_reg->wCo  = Co - 1;
+  cfg_reg->wOpM = mr<<28 | dt<<16 | fm<<8 | meth;
+  cfg_reg->wK   = (cfg->Sh-1)<<20 | (cfg->Sw-1)<<16 | (cfg->Kh-1)<<8 | (cfg->Kw-1);
+  cfg_reg->wKWr = cfg->Kw_r;
+  cfg_reg->wKHr = cfg->Kh_r;
+  cfg_reg->wP   = cfg->Bp<<12 | cfg->Rp<<8 | cfg->Tp<<4 | cfg->Lp;
+  cfg_reg->wPV1 = cfg->pv[0];
+  cfg_reg->wPV2 = cfg->pv[1];
+  cfg_reg->wPV3 = cfg->pv[2];
+  cfg_reg->wPV4 = cfg->pv[3];
+  cfg_reg->wPV5 = cfg->pv[4];
+  cfg_reg->wPV6 = cfg->pv[5];
+  cfg_reg->wPV7 = cfg->pv[6];
 }
 
 void nu_ppe_setup_reg(uintptr_t rbase, uintptr_t wbase, ConfigREGPPE* cfg) {
@@ -2126,10 +2067,6 @@ void nu_ppe_setup_reg(uintptr_t rbase, uintptr_t wbase, ConfigREGPPE* cfg) {
   iowrite32(cfg->wPV7 , wbase + NU_PPE_PADDING_VALUE_7    );
 }
 
-uint32_t nu_ppe_status_done_rd (uintptr_t wbase) {
-  return ioread32(wbase + NU_PPE_STATUS_DONE);
-}
-
 // rdma
 void nu_ppe_rdma_run(uintptr_t rbase, ConfigREGPPE* cfg) {
   rumboot_printf("Start PPE RDMA...\n");
@@ -2140,13 +2077,15 @@ void nu_ppe_rdma_wait_complete(uintptr_t rbase){
   while(ioread32(rbase + NU_PPE_STATUS)) {}
   rumboot_printf("Done PPE RDMA...\n");
 }
-
-// ppe + wdma
-void nu_ppe_run(uintptr_t wbase, ConfigREGPPE* cfg) {
-  rumboot_printf("Start PPE + WDMA...\n");
-  iowrite32(cfg->wOpEn,   wbase + NU_PPE_OP_ENABLE);
+uint32_t nu_ppe_status_done (uintptr_t wbase) {
+  return ioread32(wbase + NU_PPE_STATUS_DONE);
 }
 
+// ppe wdma run
+void nu_ppe_wdma_run(uintptr_t wbase, ConfigREGPPE* cfg) {
+  rumboot_printf("Start PPE WDMA...\n");
+  iowrite32(cfg->wOpEn,   wbase + NU_PPE_OP_ENABLE);
+}
 void nu_ppe_wait_complete(uintptr_t wbase){
   rumboot_printf("Wait PPE WDMA...\n");
   while(ioread32(wbase + NU_PPE_STATUS)) {}
