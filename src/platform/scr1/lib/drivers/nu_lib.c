@@ -1922,11 +1922,12 @@ void  nu_ppe_decide_dma_config_trivial(ConfigPPE* cfg, CubeMetrics* out_cube_met
     }
     else if (fm&0x2) {  // boxed
       cfg_reg->rBstX  = 0x80 - 1; // 128 element box
-      cfg_reg->rBstY  = 0x0;      // 1 element
-      cfg_reg->rBstZ  = 0x8 - 1;  // 128 channels/frgs = 128*(1B|2B)/(16B|32B)
+      cfg_reg->rBstY  = 0x0     ; // 1 element
+      cfg_reg->rBstZ  = 0x8 - 1 ; // 128 channels/frgs = 128*(1B|2B)/(16B|32B)
     }
     //else if (fm&0x4) {} // split
 
+    cfg_reg->rBxtX  = cfg_reg->rBstX;
     cfg_reg->rBxtY  = cfg_reg->rBstY;
     cfg_reg->rBxtZ  = cfg_reg->rBstZ;
 
@@ -1935,7 +1936,7 @@ void  nu_ppe_decide_dma_config_trivial(ConfigPPE* cfg, CubeMetrics* out_cube_met
     cfg_reg->rBffZ  = 0x0;
   }
 
-//  cfg_reg->wAXIp  =
+  //cfg_reg->wAXIp  =
   cfg_reg->wBrdX  = (Wo-1) * Co_s;
   cfg_reg->wBrdY  = (Ho-1) * Wo * Co_s;
   cfg_reg->wBrdZ  = frglo>0 ? (int)(Co_s/frgs)*frgs : (int)(Co_s/frgs) - 1;
@@ -1950,6 +1951,8 @@ void  nu_ppe_decide_dma_config_trivial(ConfigPPE* cfg, CubeMetrics* out_cube_met
 
   if (!(fm&0x2)) {  // linear
     cfg_reg->wBstX  = Wo-1;
+    cfg_reg->wBxtX  = Wo-1;
+
     cfg_reg->wBstY  = Ho-1;
     cfg_reg->wBstZ  = 0x0;
 
@@ -1961,8 +1964,8 @@ void  nu_ppe_decide_dma_config_trivial(ConfigPPE* cfg, CubeMetrics* out_cube_met
     //cfg_reg->wBstX  = ; // excel
     //cfg_reg->wBxtX  = ; // excel
 
-    cfg_reg->wBstY  = 0x0;
-    cfg_reg->wBstZ  = 0x8 - 1;
+    cfg_reg->wBstY  = 0x0     ;
+    cfg_reg->wBstZ  = 0x8 - 1 ;
 
     cfg_reg->wIstX  = Wi-1; // the same as rBstX
     cfg_reg->wIxtX  = Wi-1; // the same as rBxtX
@@ -2001,8 +2004,8 @@ void nu_ppe_setup_reg(uintptr_t rbase, uintptr_t wbase, ConfigREGPPE* cfg) {
 
   rumboot_printf("nu_ppe_setup_reg\n");
 
-//  iowrite32(0x0       , rbase + NU_PPE_OP_ENABLE          );
-//  iowrite32(cfg->rAXIp, rbase + NU_PPE_RDMA_AXI_PARAM     );
+  ////iowrite32(0x0       , rbase + NU_PPE_OP_ENABLE          );
+  //iowrite32(cfg->rAXIp, rbase + NU_PPE_RDMA_AXI_PARAM     );
   iowrite32(cfg->rBALi, rbase + NU_PPE_RDMA_BASE_ADDR     );
   iowrite32(cfg->rBrdX, rbase + NU_PPE_RDMA_BORDER_X      );
   iowrite32(cfg->rBrdY, rbase + NU_PPE_RDMA_BORDER_Y      );
@@ -2022,9 +2025,9 @@ void nu_ppe_setup_reg(uintptr_t rbase, uintptr_t wbase, ConfigREGPPE* cfg) {
   iowrite32(cfg->rBffX, rbase + NU_PPE_RDMA_BOX_OFFSET_X  );
   iowrite32(cfg->rBffY, rbase + NU_PPE_RDMA_BOX_OFFSET_Y  );
   iowrite32(cfg->rBffZ, rbase + NU_PPE_RDMA_BOX_OFFSET_Z  );
-
-//  iowrite32(0x0       , wbase + NU_PPE_OP_ENABLE          );
-//  iowrite32(cfg->wAXIp, wbase + NU_PPE_RDMA_AXI_PARAM     );
+  
+  ////iowrite32(0x0       , wbase + NU_PPE_OP_ENABLE          );
+  ////iowrite32(cfg->wAXIp, wbase + NU_PPE_RDMA_AXI_PARAM     );
   iowrite32(cfg->wBALo, wbase + NU_PPE_WDMA_BASE_ADDR     );
   iowrite32(cfg->wBrdX, wbase + NU_PPE_WDMA_BORDER_X      );
   iowrite32(cfg->wBrdY, wbase + NU_PPE_WDMA_BORDER_Y      );

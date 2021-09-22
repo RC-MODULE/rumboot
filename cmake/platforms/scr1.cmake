@@ -894,10 +894,10 @@ endif()  ### EXPERIMENT_STAGE_2_SUB_1
     #ADD_PPE_MANY_TESTS(ppe_i8_max    main_ppe_2_i8_max   NotShowPerf MEMtoPPE)
 
     ADD_PPE_MANY_TESTS(ppe_i16_max_ml main_ppe_3_i16_max  NotShowPerf MEMtoPPE LIN)
-    ADD_PPE_MANY_TESTS(ppe_i16_max_mb main_ppe_3_i16_max  NotShowPerf MEMtoPPE BOX)
-    ADD_PPE_MANY_TESTS(ppe_i16_max_vl main_ppe_3_i16_max  NotShowPerf VPEtoPPE LIN)
-    ADD_PPE_MANY_TESTS(ppe_i16_max_vb main_ppe_3_i16_max  NotShowPerf VPEtoPPE BOX)
-    ADD_PPE_MANY_TESTS(ppe_i16_max_ms main_ppe_3_i16_max  NotShowPerf MEMtoPPE SPL)
+    #ADD_PPE_MANY_TESTS(ppe_i16_max_mb main_ppe_3_i16_max  NotShowPerf MEMtoPPE BOX)
+    #ADD_PPE_MANY_TESTS(ppe_i16_max_vl main_ppe_3_i16_max  NotShowPerf VPEtoPPE LIN)
+    #ADD_PPE_MANY_TESTS(ppe_i16_max_vb main_ppe_3_i16_max  NotShowPerf VPEtoPPE BOX)
+    #ADD_PPE_MANY_TESTS(ppe_i16_max_ms main_ppe_3_i16_max  NotShowPerf MEMtoPPE SPL)
 
     #ADD_PPE_MANY_TESTS(ppe_fp16_max  main_ppe_4_fp16_max NotShowPerf MEMtoPPE)
     #ADD_PPE_MANY_TESTS(ppe_i8_avg    main_ppe_5_i8_avg   NotShowPerf MEMtoPPE)

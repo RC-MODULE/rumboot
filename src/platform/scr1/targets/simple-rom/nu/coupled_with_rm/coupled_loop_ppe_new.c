@@ -47,7 +47,7 @@ int main() {
     in_tag_pt = &in_file_tag;
   #endif
 
-  #ifdef DUT_IS_PPE
+  #if DUT_IS_PPE
     in_tag_pt = &in_ameba_file_tag;
   #endif
 
@@ -70,18 +70,18 @@ int main() {
 
   flying_mode = (lbs&0x3)<<1 | mv&0x1;
 
-  iowrite32(0xFACE2021, MY_PPE_REGS_BASE + NU_PPE_WDMA_BASE_ADDR);
-  uint32_t tmp;
-  tmp = ioread32(MY_PPE_REGS_BASE + NU_PPE_WDMA_BASE_ADDR);
-  rumboot_printf("%x\n", tmp);
-  
-  iowrite32(0xFACE2022, MY_PPE_REGS_BASE + NU_PPE_WDMA_BASE_ADDR);
-  tmp = ioread32(MY_PPE_REGS_BASE + NU_PPE_WDMA_BASE_ADDR);
-  rumboot_printf("%x\n", tmp);
-
-  iowrite32(0xFACE2023, MY_PPE_RDMA_BASE + NU_PPE_RDMA_BASE_ADDR);
-  tmp = ioread32(MY_PPE_RDMA_BASE + NU_PPE_RDMA_BASE_ADDR);
-  rumboot_printf("%x\n", tmp);
+  //iowrite32(0xFACE2021, MY_PPE_REGS_BASE + NU_PPE_WDMA_BASE_ADDR);
+  //uint32_t tmp;
+  //tmp = ioread32(MY_PPE_REGS_BASE + NU_PPE_WDMA_BASE_ADDR);
+  //rumboot_printf("%x\n", tmp);
+  //
+  //iowrite32(0xFACE2022, MY_PPE_REGS_BASE + NU_PPE_WDMA_BASE_ADDR);
+  //tmp = ioread32(MY_PPE_REGS_BASE + NU_PPE_WDMA_BASE_ADDR);
+  //rumboot_printf("%x\n", tmp);
+  //
+  //iowrite32(0xFACE2023, MY_PPE_RDMA_BASE + NU_PPE_RDMA_BASE_ADDR);
+  //tmp = ioread32(MY_PPE_RDMA_BASE + NU_PPE_RDMA_BASE_ADDR);
+  //rumboot_printf("%x\n", tmp);
 
   perf_avg = 0;
   for (i=0; i<it_nmb && !res; i++) {
@@ -157,7 +157,7 @@ int main() {
       if (res) {
         nu_ppe_print_config(&cfg);
         nu_ppe_print_config_reg(&cfg_reg);
-    
+      
         rumboot_platform_dump_region("res_data.bin",(uint32_t)res_data,res_metrics->s);
         rumboot_platform_dump_region("cfg_reg.bin", &cfg_reg, NU_PPE_REG_CFG_PARAMS_NUM*sizeof(uint32_t));
       }
