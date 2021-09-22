@@ -226,6 +226,10 @@
     int8_t    lut_tab1_slope_undf_shift;
     int8_t    lut_tab2_slope_ovrf_shift;
     int8_t    lut_tab2_slope_undf_shift;
+    Enable lut_mrr_en;
+    int8_t lut_mrr_type;
+    uint32_t lut_xoffset; //  T_OP2 
+    uint16_t lut_yoffset; //  T_OP2 Encoded Into int16_t Or half
   }ConfigOp2;
 
   typedef struct ConfigDMA {

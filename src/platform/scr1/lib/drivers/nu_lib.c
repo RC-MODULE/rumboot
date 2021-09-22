@@ -95,6 +95,10 @@ void nu_vpe_load_config(ConfigVPE* cfg, void* cfg_bin) {
   cfg->op2_config.lut_tab1_slope_undf_shift=*ptr;ptr++;
   cfg->op2_config.lut_tab2_slope_ovrf_shift=*ptr;ptr++;
   cfg->op2_config.lut_tab2_slope_undf_shift=*ptr;ptr++;
+  cfg->op2_config.lut_mrr_en=*ptr;ptr++;
+  cfg->op2_config.lut_mrr_type=*ptr;ptr++;
+  cfg->op2_config.lut_xoffset=*ptr;ptr++;
+  cfg->op2_config.lut_yoffset=*ptr;ptr++;
 
 }
 
@@ -482,6 +486,10 @@ void nu_vpe_print_config(ConfigVPE* cfg){
   rumboot_printf("  lut_tab1_slope_undf_shift = %d \n" , cfg->op2_config.lut_tab1_slope_undf_shift);
   rumboot_printf("  lut_tab2_slope_ovrf_shift = %d \n" , cfg->op2_config.lut_tab2_slope_ovrf_shift);
   rumboot_printf("  lut_tab2_slope_undf_shift = %d \n" , cfg->op2_config.lut_tab2_slope_undf_shift);
+  nu_vpe_print_Enable(cfg->op2_config.lut_mrr_en,"lut_mrr_en");
+  rumboot_printf("  lut_mrr_type = %d \n", cfg->op2_config.lut_mrr_type);
+  rumboot_printf("  lut_xoffset = %x \n", cfg->op2_config.lut_xoffset);
+  rumboot_printf("  lut_yoffset = %x \n", cfg->op2_config.lut_yoffset);
 
 #endif // NU_NO_PRINT
 }
@@ -831,7 +839,8 @@ void nu_vpe_setup(uintptr_t base, ConfigVPE* cfg) {
     int32_t shift_i1;
     int32_t shift_i2;
     
-    tmp_data = 0x000000000 | (cfg->op2_config.lut_sel << 2) | (cfg->op2_config.lut_right_priority << 1) | (cfg->op2_config.lut_left_priority << 0);
+    tmp_data = 0x000000000 | (cfg->op2_config.lut_sel << 2) | (cfg->op2_config.lut_right_priority << 1) | (cfg->op2_config.lut_left_priority << 0) |
+                             (cfg->op2_config.lut_mrr_type << 4) | (cfg->op2_config.lut_mrr_en << 3);
     iowrite32(tmp_data, base + NU_VPE + NU_VPE_LUT_CFG);
     
     iowrite32(cfg->op2_config.lut_tab1_x_start, base + NU_VPE + NU_VPE_LUT_TAB0_XMIN);
@@ -854,6 +863,10 @@ void nu_vpe_setup(uintptr_t base, ConfigVPE* cfg) {
     tmp_data = 0x000000000 | ((cfg->op2_config.lut_tab2_slope_ovrf_shift & 0x1F) << 5) |
                              ((cfg->op2_config.lut_tab2_slope_undf_shift & 0x1F)     );
     iowrite32(tmp_data, base + NU_VPE + NU_VPE_LUT_TAB1_SLOPE_SHIFT);
+    
+    iowrite32(cfg->op2_config.lut_xoffset, base + NU_VPE + NU_VPE_LUT_XOFFSET);
+    tmp_data = 0x000000000 | cfg->op2_config.lut_yoffset;
+    iowrite32(tmp_data, base + NU_VPE + NU_VPE_LUT_YOFFSET);
     
     
     if(cfg->in_data_type == DataTypeExt_Fp16 || cfg->in_data_type == DataTypeExt_Fp32) { // Floating Point LUT
