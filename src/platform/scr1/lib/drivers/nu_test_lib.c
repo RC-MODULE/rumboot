@@ -511,3 +511,129 @@ int nu_vpe_load_status_regs_by_tag(int heap_id, VPEStatusRegs* status_regs, char
 int nu_bitwise_compare(void* res_data, void* etalon, int size) {
   return memcmp((char*)res_data,(char*)etalon,size)  ;
 }
+
+
+void nu_vpe_interpret_mismatch_print_op01(ConfigOp01 *op_config,void* op,uint32_t offset_out,int C) {
+  uint32_t offset_op;
+  if(op_config->alu_mode == Mode_Channel && op_config->alu_en ||
+     op_config->mux_mode == Mode_Channel && op_config->mux_en )
+    offset_op = offset_out % C;
+  else 
+    offset_op = offset_out;
+  
+  if(op_config->alu_mode == Mode_Channel && op_config->alu_en &&
+     op_config->mux_mode == Mode_Channel && op_config->mux_en ) { // sengvitch :)
+    offset_op = offset_op << 1; 
+    if(op_config->coef_type == DataType_Int8) {
+      uint8_t* op8 = (uint8_t*) op;
+      rumboot_printf("Op: 0x%x 0x%x\n",op8[offset_op],op8[offset_op+1]);
+    } else { // 16bit
+      uint16_t* op16 = (uint16_t*) op;
+      rumboot_printf("Op: 0x%x 0x%x\n",op16[offset_op],op16[offset_op+1]);
+    }
+  } 
+  else {
+    if(op_config->coef_type == DataType_Int8) {
+      uint8_t* op8 = (uint8_t*) op;
+      rumboot_printf("Op: 0x%x\n",op8[offset_op]);
+    } else { // 16bit
+      uint16_t* op16 = (uint16_t*) op;
+      rumboot_printf("Op: 0x%x\n",op16[offset_op]);
+    }
+  }
+}
+
+void nu_vpe_interpret_mismatch_print_op2(ConfigOp2 *op_config,void* op,uint32_t offset_out,int C) {
+  uint32_t offset_op;
+  if(op_config->alu_mode == Mode_Channel && op_config->alu_en ||
+     op_config->mux_mode == Mode_Channel && op_config->mux_en )
+    offset_op = offset_out % C;
+  else 
+    offset_op = offset_out;
+  
+  if(op_config->alu_mode == Mode_Channel && op_config->alu_en &&
+     op_config->mux_mode == Mode_Channel && op_config->mux_en ) { // sengvitch :)
+    offset_op = offset_op << 1; 
+    if(op_config->coef_type == DataType_Int8) {
+      uint8_t* op8 = (uint8_t*) op;
+      rumboot_printf("Op: 0x%x 0x%x\n",op8[offset_op],op8[offset_op+1]);
+    } else { // 16bit
+      uint16_t* op16 = (uint16_t*) op;
+      rumboot_printf("Op: 0x%x 0x%x\n",op16[offset_op],op16[offset_op+1]);
+    }
+  } 
+  else {
+    if(op_config->coef_type == DataType_Int8) {
+      uint8_t* op8 = (uint8_t*) op;
+      rumboot_printf("Op: 0x%x\n",op8[offset_op]);
+    } else { // 16bit
+      uint16_t* op16 = (uint16_t*) op;
+      rumboot_printf("Op: 0x%x\n",op16[offset_op]);
+    }
+  }
+}
+
+void nu_vpe_interpret_mismatch(ConfigVPE *cfg,void* res_data,void* etalon,void* in_data,void* op0,void* op1,void* op2,int s,int C) {
+  uint32_t mismatch_offset;
+  uint8_t* r;uint8_t* e;
+  int myexit;
+  
+  mismatch_offset=0; r=(uint8_t*)res_data; e=(uint8_t*)etalon; myexit=0;
+  while(mismatch_offset<s && myexit==0) {
+    if(*r != *e)
+      myexit=1;
+    if(myexit==0) {
+      r++;e++;
+      mismatch_offset++;
+    }
+  }
+  
+  if(myexit!=0) {
+    uint32_t offset_out;
+    if(cfg->out_data_type == DataType_Int8)
+      offset_out = mismatch_offset;
+    else  // 16bit
+      offset_out = mismatch_offset >> 1;
+    rumboot_printf("Mismatched Data Index: %d\n",offset_out);
+    
+    if(cfg->in_data_type == DataTypeExt_Int32 || cfg->in_data_type == DataTypeExt_Fp32) {
+      uint32_t* in32;
+      in32 = (uint32_t*) in_data;
+      rumboot_printf("In Data Item: 0x%x\n",in32[offset_out]);
+    } else if(cfg->in_data_type == DataTypeExt_Int16 || cfg->in_data_type == DataTypeExt_Fp16) {
+      uint16_t* in16;
+      in16 = (uint16_t*) in_data;
+      rumboot_printf("In Data Item: 0x%x\n",in16[offset_out]);
+    } else {
+      uint8_t* in8;
+      in8 = (uint8_t*) in_data;
+      rumboot_printf("In Data Item: 0x%x\n",in8[offset_out]);
+    }
+    
+    if(op0 != NULL){
+      rumboot_printf("Op0: ");
+      nu_vpe_interpret_mismatch_print_op01(&(cfg->op0_config),op0,offset_out,C);
+    }
+    if(op1 != NULL){
+      rumboot_printf("Op1: ");
+      nu_vpe_interpret_mismatch_print_op01(&(cfg->op1_config),op1,offset_out,C);
+    }
+    if(op2 != NULL){
+      rumboot_printf("Op2: ");
+      nu_vpe_interpret_mismatch_print_op2(&(cfg->op2_config),op2,offset_out,C);
+    }
+    
+    if(cfg->out_data_type == DataType_Int8) {
+      uint8_t* out8 = (uint8_t*) res_data;
+      uint8_t* et8  = (uint8_t*) etalon;
+      rumboot_printf("Result Data Item: 0x%x\n", out8[offset_out]);
+      rumboot_printf("Etalon Data Item: 0x%x\n",  et8[offset_out]);
+    } else { // 16bit
+      uint16_t* out16 = (uint16_t*) res_data;
+      uint16_t* et16  = (uint16_t*) etalon;
+      rumboot_printf("Result Data Item: 0x%x\n", out16[offset_out]);
+      rumboot_printf("Etalon Data Item: 0x%x\n",  et16[offset_out]);
+    }
+      
+  }
+}

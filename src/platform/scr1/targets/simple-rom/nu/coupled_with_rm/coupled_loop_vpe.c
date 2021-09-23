@@ -221,6 +221,7 @@ int main() {
       rumboot_printf("Iteration %d PASSED\n",i);
     else {
       rumboot_printf("Test FAILED at iteration %d\n",i);
+      nu_vpe_interpret_mismatch(&cfg,res_data,etalon,in_data,op0,op1,op2,res_metrics->s,res_metrics->C);
       return 1;
     }
     
