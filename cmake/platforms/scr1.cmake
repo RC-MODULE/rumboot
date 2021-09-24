@@ -607,7 +607,8 @@ endif() #### EXPERIMENT_STAGE_2_SUB_1
     ADD_VPE_COUPLED_TEST_LOOP(vpe_21_0_lut main_vpe_21_0_lut) # VPE_21
     ADD_VPE_COUPLED_TEST_LOOP(vpe_21_1_lut_addition main_vpe_21_1_lut_addition) # VPE_21_addition
     ADD_VPE_COUPLED_TEST_LOOP(vpe_21_2_lut_out_of_range main_vpe_21_2_lut_out_of_range) # VPE_21_out_of_range
-    ADD_VPE_COUPLED_TEST_LOOP(vpe_21_3_lut_offset main_vpe_21_3_lut_offset) # VPE_21_offset
+    ADD_VPE_COUPLED_TEST_LOOP(vpe_21_3_lut_offset_IN_INT32 main_vpe_21_3_lut_offset_IN_INT32) # VPE_21_offset_IN_INT32
+    ADD_VPE_COUPLED_TEST_LOOP(vpe_21_3_lut_offset_IN_FP32 main_vpe_21_3_lut_offset_IN_FP32) # VPE_21_offset_IN_FP32
     ADD_VPE_COUPLED_TEST_LOOP(vpe_22_op0_together main_vpe_22_op0_together) # VPE_22
     ADD_VPE_COUPLED_TEST_LOOP(vpe_23_op1_together main_vpe_23_op1_together) # VPE_23
     ADD_VPE_COUPLED_TEST_LOOP(vpe_24_op2_together main_vpe_24_op2_together) # VPE_24
