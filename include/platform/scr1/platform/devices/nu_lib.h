@@ -134,11 +134,32 @@
   }DmaXYZDirectionType;
 
   typedef struct ConfigDMAMPE {
-    int32_t H;
-    int32_t W;
-    int32_t C;
-    int32_t R;
-    int32_t S;
+    uint32_t ADD_CountI0;
+    uint32_t CMP_CountI0;
+    uint32_t ADD_CountI1;
+    uint32_t CMP_CountI1;
+    uint32_t ADD_CountJ;
+    uint32_t CMP_CountJ;
+    uint32_t ADD_CountPPS;
+    uint32_t CMP_CountPPS;
+    uint32_t ADD_CountLCZ;
+    uint32_t CMP_CountLCZ;
+    uint32_t ADD_CountPLC;
+    uint32_t CMP_CountPLC;
+    uint32_t ADD_CountX;
+    uint32_t CMP_CountX;
+    uint32_t ADD_CountY;
+    uint32_t CMP_CountY;
+    uint32_t ADD_CountM;
+    uint32_t CMP_CountM;
+    
+    uint32_t BRDR;
+    uint32_t WA;
+    uint32_t DA;
+    uint32_t VRA  ;
+    uint32_t NR   ;
+    uint32_t D_BIAS;
+    
     int in_data_partition;
     int warr_partition;
     uint32_t cube_baddr;

@@ -19,6 +19,43 @@
 #define NU_MPE_BUF14 (14<<11)
 #define NU_MPE_BUF15 (15<<11)
 
+// MPE_MA
+#define MPE_CMD_IRC   0x400
+#define MPE_CMD_IRCW  0x500
+#define MPE_CMD_ICM   0x600
+#define MPE_CMD_ICMW  0x700
+#define MPE_COMMON_WA               0x000
+#define MPE_COMMON_DA               0x004
+#define MPE_COMMON_VRA              0x008
+#define MPE_COMMON_NR               0x00C
+#define MPE_COMMON_IN_FORMAT        0x010
+#define MPE_COMMON_NORM_PARAM       0x014
+#define MPE_COMMON_OUT_SATURATION   0x074
+#define MPE_COMMON_IN_BUF_CFG       0x018
+#define MPE_COMMON_D_BIAS           0x01C
+#define MPE_COMMON_BUF_FULL_SET     0x020
+#define MPE_COMMON_BUF_FULL_RST     0x024
+#define MPE_ADD_CountM      0x028 
+#define MPE_CMP_CountM      0x02C 
+#define MPE_ADD_CountY      0x030 
+#define MPE_CMP_CountY      0x034 
+#define MPE_ADD_CountX      0x038 
+#define MPE_CMP_CountX      0x03C 
+#define MPE_ADD_CountPLC    0x040 
+#define MPE_CMP_CountPLC    0x044 
+#define MPE_ADD_CountLCZ    0x048 
+#define MPE_CMP_CountLCZ    0x04C 
+#define MPE_ADD_CountPPS    0x050 
+#define MPE_CMP_CountPPS    0x054 
+#define MPE_ADD_CountJ      0x058
+#define MPE_CMP_CountJ      0x05C 
+#define MPE_ADD_CountI1     0x060 
+#define MPE_CMP_CountI1     0x064 
+#define MPE_ADD_CountI0     0x068 
+#define MPE_CMP_CountI0     0x06C 
+#define MPE_NULL            0x070 
+#define MPE_STATUS          0x080 
+
 // MPE_DMA Comtrol
 #define DMA_START                 0x0000
 #define DMA_STS                   0x0004

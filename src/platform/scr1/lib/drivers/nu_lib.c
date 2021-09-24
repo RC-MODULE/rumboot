@@ -575,17 +575,39 @@ void nu_mpe_print_config(ConfigMPE* cfg){
     nu_vpe_print_Enable(cfg->sat_en, "sat_en  ");
     rumboot_printf("  rnd_size = %d \n" , cfg->rnd_size);
 
+  rumboot_printf("ConfigDMAMPE:\n");
+  
+    rumboot_printf("  ADD_CountI0  = %d \n",cfg->dma_config.ADD_CountI0);
+    rumboot_printf("  CMP_CountI0  = %d \n",cfg->dma_config.CMP_CountI0);
+    rumboot_printf("  ADD_CountI1  = %d \n",cfg->dma_config.ADD_CountI1);
+    rumboot_printf("  CMP_CountI1  = %d \n",cfg->dma_config.CMP_CountI1);
+    rumboot_printf("  ADD_CountJ   = %d \n",cfg->dma_config.ADD_CountJ);
+    rumboot_printf("  CMP_CountJ   = %d \n",cfg->dma_config.CMP_CountJ);
+    rumboot_printf("  ADD_CountPPS = %d \n",cfg->dma_config.ADD_CountPPS);
+    rumboot_printf("  CMP_CountPPS = %d \n",cfg->dma_config.CMP_CountPPS);
+    rumboot_printf("  ADD_CountLCZ = %d \n",cfg->dma_config.ADD_CountLCZ);
+    rumboot_printf("  CMP_CountLCZ = %d \n",cfg->dma_config.CMP_CountLCZ);
+    rumboot_printf("  ADD_CountPLC = %d \n",cfg->dma_config.ADD_CountPLC);
+    rumboot_printf("  CMP_CountPLC = %d \n",cfg->dma_config.CMP_CountPLC);
+    rumboot_printf("  ADD_CountX   = %d \n",cfg->dma_config.ADD_CountX);
+    rumboot_printf("  CMP_CountX   = %d \n",cfg->dma_config.CMP_CountX);
+    rumboot_printf("  ADD_CountY   = %d \n",cfg->dma_config.ADD_CountY);
+    rumboot_printf("  CMP_CountY   = %d \n",cfg->dma_config.CMP_CountY);
+    rumboot_printf("  ADD_CountM   = %d \n",cfg->dma_config.ADD_CountM);
+    rumboot_printf("  CMP_CountM   = %d \n",cfg->dma_config.CMP_CountM);
+    
+    rumboot_printf("  BRDR   = %d \n",cfg->dma_config.BRDR);
+    rumboot_printf("  WA     = %d \n",cfg->dma_config.WA);
+    rumboot_printf("  DA     = %d \n",cfg->dma_config.DA);
+    rumboot_printf("  VRA    = %d \n",cfg->dma_config.VRA)  ;
+    rumboot_printf("  NR     = %d \n",cfg->dma_config.NR)   ;
+    rumboot_printf("  D_BIAS = %d \n",cfg->dma_config.D_BIAS);
 #endif // NU_NO_PRINT
 }
 
 void nu_mpe_print_config_dma(ConfigDMAMPE* cfg) {
 #ifndef NU_NO_PRINT
   rumboot_printf("ConfigDMAMPE:\n");
-    rumboot_printf("  H        = %d \n" , cfg-> H);
-    rumboot_printf("  W        = %d \n" , cfg-> W);
-    rumboot_printf("  C        = %d \n" , cfg-> C);
-    rumboot_printf("  R        = %d \n" , cfg-> R);
-    rumboot_printf("  S        = %d \n" , cfg-> S);
     rumboot_printf("  data_buf#= %d \n" , cfg-> in_data_partition);
     rumboot_printf("  warr_buf#= %d \n" , cfg-> warr_partition);
 #endif //NU_NO_PRINT
@@ -1782,7 +1804,65 @@ int nu_mpe_get_size_in_partitions(int size_in_bytes) {
 }
 
 int nu_mpe_decide_dma_config_trivial(ConfigMPE* cfg, CubeMetrics* cube_metrics, WarrMetrics* warr_metrics) {
-  // Write Here How To Fill cfg->dma_config. =
+  
+  uint32_t sizeof_C;
+  uint32_t sizeof_C_div128;
+  
+  uint32_t Hp;
+  uint32_t Wp;
+  uint32_t Rd;
+  uint32_t Sd;
+  uint32_t Ho;
+  uint32_t Wo;
+  
+  Hp  = cfg->H+cfg->Tp+cfg->Bp; // H after null padding
+  Wp  = cfg->W+cfg->Lp+cfg->Rp; // W after null padding
+
+  Rd  = (cfg->R-1)*cfg->Dr + 1; // R kernel size after dilation
+  Sd  = (cfg->S-1)*cfg->Ds + 1; // S kernel size after dilation
+
+  Ho  = (Hp-Rd)/cfg->Sh + 1; // Hout with respect to striding, dilation, null padding, conv
+  Wo  = (Wp-Sd)/cfg->Sw + 1; // Wout with respect to striding, dilation, null padding, conv
+
+  
+  
+    // [C/128] - it is a size in bytes, division with rounding up
+  sizeof_C = cfg->C << (cfg->dt == DataType_Int16 || cfg->dt == DataType_Fp16 ? 1 : 0);
+
+  if (sizeof_C > 127) {
+    if ((sizeof_C & 0x7F) > 0)  sizeof_C_div128 = (sizeof_C >> 7) + 1;
+    else                        sizeof_C_div128 = sizeof_C >> 7;
+  }
+  else sizeof_C_div128 = 1;
+
+
+  cfg->dma_config. ADD_CountI0 = 16;
+  cfg->dma_config. CMP_CountI0 = cfg->K;
+  cfg->dma_config. ADD_CountI1 = cfg->Sw;
+  cfg->dma_config. CMP_CountI1 = cfg->S;
+  cfg->dma_config. ADD_CountJ  = cfg->Sw;
+  cfg->dma_config. CMP_CountJ  = cfg->S;
+  cfg->dma_config. ADD_CountPPS= 1;
+  cfg->dma_config. CMP_CountPPS= (cfg->S < cfg->Sw) ? cfg->S : cfg->Sw;
+  cfg->dma_config. ADD_CountLCZ= 1;
+  cfg->dma_config. CMP_CountLCZ= sizeof_C_div128;
+  cfg->dma_config. ADD_CountPLC= 1;
+  cfg->dma_config. CMP_CountPLC= cfg->R;
+  cfg->dma_config. ADD_CountX  = 128;
+  cfg->dma_config. CMP_CountX  = Wo;
+  cfg->dma_config. ADD_CountY  = 1;
+  cfg->dma_config. CMP_CountY  = Ho;
+  cfg->dma_config. ADD_CountM  = 128;
+  cfg->dma_config. CMP_CountM  = cfg->K;
+  
+  cfg->dma_config. BRDR  = 32*16 >> 1;
+  cfg->dma_config. WA    = 32*16 >> 1;
+  cfg->dma_config. DA    = 0;
+  cfg->dma_config. VRA   = 0;
+  cfg->dma_config. NR    = 0x7F;
+  cfg->dma_config. D_BIAS= 1;
+  
+  
   return 0;
 }
 
@@ -1809,14 +1889,45 @@ uint32_t nu_mpe_get_warr_offset(void* cmd, MPECmdMetrics* metrics) {
 }
 
 void nu_mpe_setup(uintptr_t base, ConfigMPE* cfg) {
+  uint32_t temp;
+  
   rumboot_printf("Configuring MPE..\n");
 
-  // iowrite32(cfg->MYFIELD, base + NU_MPE_MYREG);
+  iowrite32(cfg->dma_config. ADD_CountI0 ,base + MPE_MA_BASE + MPE_ADD_CountI0);
+  iowrite32(cfg->dma_config. CMP_CountI0 ,base + MPE_MA_BASE + MPE_CMP_CountI0);
+  iowrite32(cfg->dma_config. ADD_CountI1 ,base + MPE_MA_BASE + MPE_ADD_CountI1);
+  iowrite32(cfg->dma_config. CMP_CountI1 ,base + MPE_MA_BASE + MPE_CMP_CountI1);
+  iowrite32(cfg->dma_config. ADD_CountJ  ,base + MPE_MA_BASE + MPE_ADD_CountJ);
+  iowrite32(cfg->dma_config. CMP_CountJ  ,base + MPE_MA_BASE + MPE_CMP_CountJ);
+  iowrite32(cfg->dma_config. ADD_CountPPS,base + MPE_MA_BASE + MPE_ADD_CountPPS);
+  iowrite32(cfg->dma_config. CMP_CountPPS,base + MPE_MA_BASE + MPE_CMP_CountPPS);
+  iowrite32(cfg->dma_config. ADD_CountLCZ,base + MPE_MA_BASE + MPE_ADD_CountLCZ);
+  iowrite32(cfg->dma_config. CMP_CountLCZ,base + MPE_MA_BASE + MPE_CMP_CountLCZ);
+  iowrite32(cfg->dma_config. ADD_CountPLC,base + MPE_MA_BASE + MPE_ADD_CountPLC);
+  iowrite32(cfg->dma_config. CMP_CountPLC,base + MPE_MA_BASE + MPE_CMP_CountPLC);
+  iowrite32(cfg->dma_config. ADD_CountX  ,base + MPE_MA_BASE + MPE_ADD_CountX);
+  iowrite32(cfg->dma_config. CMP_CountX  ,base + MPE_MA_BASE + MPE_CMP_CountX);
+  iowrite32(cfg->dma_config. ADD_CountY  ,base + MPE_MA_BASE + MPE_ADD_CountY);
+  iowrite32(cfg->dma_config. CMP_CountY  ,base + MPE_MA_BASE + MPE_CMP_CountY);
+  iowrite32(cfg->dma_config. ADD_CountM  ,base + MPE_MA_BASE + MPE_ADD_CountM);
+  iowrite32(cfg->dma_config. CMP_CountM  ,base + MPE_MA_BASE + MPE_CMP_CountM);
+  iowrite32(cfg->dma_config. BRDR        ,base + MPE_MA_BASE + MPE_COMMON_IN_BUF_CFG);
+  iowrite32(cfg->dma_config. WA          ,base + MPE_MA_BASE + MPE_COMMON_WA);
+  iowrite32(cfg->dma_config. DA          ,base + MPE_MA_BASE + MPE_COMMON_DA);
+  iowrite32(cfg->dma_config. VRA         ,base + MPE_MA_BASE + MPE_COMMON_VRA);
+  iowrite32(cfg->dma_config. NR          ,base + MPE_MA_BASE + MPE_COMMON_NR);
+  iowrite32(cfg->dma_config. D_BIAS      ,base + MPE_MA_BASE + MPE_COMMON_D_BIAS);
+  
+  iowrite32(cfg->dt ,base + MPE_MA_BASE + MPE_COMMON_IN_FORMAT);
+  
+  temp = (cfg->rnd_size << 0) | (cfg->sat_en << 8) | (cfg->rnd_mode << 16);
+  iowrite32(temp, base + MPE_MA_BASE + MPE_COMMON_NORM_PARAM);
+  // iowrite32(0xFF, base + MPE_MA_BASE + MPE_NULL);
 }
 
 void nu_mpe_run(uintptr_t mpe_base, ConfigMPE* cfg) {
-
-  // iowrite32(cfg->MYFIELD, mpe_base + NU_MPE_MYREG);
+  rumboot_printf("Start MPE...\n");
+  iowrite32(0,mpe_base + MPE_MA_BASE + MPE_CMD_ICM);
 }
 
 int  nu_mpe_run_cmd(uintptr_t base, void* cmd, MPECmdMetrics* cmd_metrics) {
