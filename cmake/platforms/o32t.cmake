@@ -1091,8 +1091,7 @@ add_rumboot_target(
   #FILES oi10/targets/power/test_oi10_power_1_6_1.S oi10/targets/test_oi10_hscb_com_fpu_simult_big.c
   PREFIX "hscb_com_fpu_nmc_desc_im1_data_ssram"
   NAME test_hscb_com_fpu_nmc_big
-  TIMEOUT 15 ms
-  LOAD IM0BIN nmc:core-power-consumption,SELF
+  LOAD IM0BIN stub-emi_initializer,nmc:core-power-consumption,SELF
 )  
 
     add_rumboot_target(
