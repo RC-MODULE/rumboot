@@ -157,12 +157,13 @@ void nu_ppe_load_config(ConfigPPE* cfg, void* cfg_bin) {
     cfg-> Kw    =*ptr;ptr++;
     cfg-> Sh    =*ptr;ptr++;
     cfg-> Sw    =*ptr;ptr++;
-    cfg-> Kh_r  =*ptr;ptr++;
-    cfg-> Kw_r  =*ptr;ptr++;
     cfg-> Tp    =*ptr;ptr++;
     cfg-> Bp    =*ptr;ptr++;
     cfg-> Lp    =*ptr;ptr++;
     cfg-> Rp    =*ptr;ptr++;
+
+    cfg-> Kh_r  =*ptr;ptr++;
+    cfg-> Kw_r  =*ptr;ptr++;
 
     cfg-> pv[0] =*ptr;ptr++;
     cfg-> pv[1] =*ptr;ptr++;
