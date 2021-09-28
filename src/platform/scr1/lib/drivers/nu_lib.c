@@ -1927,7 +1927,7 @@ void nu_mpe_setup(uintptr_t base, ConfigMPE* cfg) {
 
 void nu_mpe_run(uintptr_t mpe_base, ConfigMPE* cfg) {
   rumboot_printf("Start MPE...\n");
-  iowrite32(0,mpe_base + MPE_MA_BASE + MPE_CMD_ICM);
+  iowrite32(0,mpe_base + MPE_MA_BASE + MPE_CMD_ICMW);
 }
 
 int  nu_mpe_run_cmd(uintptr_t base, void* cmd, MPECmdMetrics* cmd_metrics) {
