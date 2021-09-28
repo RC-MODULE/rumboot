@@ -109,8 +109,8 @@
 #define RPadXTreshold             0x022C
 #define TPadYThreshold_MSha       0x0230
 #define BPadYThreshold_MSha       0x0234
-#define CntThresholdSha_MSha      0x0238
-#define CntSha_MSha               0x023C
+#define CntSha_MSha               0x0238
+#define CntThresholdSha_MSha      0x023C
 #define SecThre                   0x0240
 #define SecCnt                    0x0244
 #define Bias1Sha_MSha             0x0248
