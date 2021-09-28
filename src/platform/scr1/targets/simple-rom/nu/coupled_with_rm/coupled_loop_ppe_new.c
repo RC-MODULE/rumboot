@@ -111,6 +111,8 @@ int main() {
     }
 
     if(!res){
+      nu_ppe_print_config_reg(&cfg_reg);
+
       nu_ppe_setup_reg(MY_PPE_RDMA_BASE, MY_PPE_REGS_BASE, &cfg_reg);
     
       cfg_reg.wOpEn  = 0x1;

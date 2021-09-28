@@ -645,8 +645,8 @@ void nu_ppe_print_config_reg(ConfigREGPPE* cfg_reg){
 #ifndef NU_NO_PRINT
   rumboot_printf("ConfigREGPPE:\n");
 
-  rumboot_printf ("rOpEn = %x\n", cfg_reg->rOpEn);
-  rumboot_printf ("rAXIp = %x\n", cfg_reg->rAXIp);
+  //rumboot_printf ("rOpEn = %x\n", cfg_reg->rOpEn);
+  //rumboot_printf ("rAXIp = %x\n", cfg_reg->rAXIp);
   rumboot_printf ("rBALi = %x\n", cfg_reg->rBALi);
   rumboot_printf ("rBrdX = %x\n", cfg_reg->rBrdX);
   rumboot_printf ("rBrdY = %x\n", cfg_reg->rBrdY);
@@ -667,8 +667,8 @@ void nu_ppe_print_config_reg(ConfigREGPPE* cfg_reg){
   rumboot_printf ("rBffY = %x\n", cfg_reg->rBffY);
   rumboot_printf ("rBffZ = %x\n", cfg_reg->rBffZ);
   
-  rumboot_printf ("wOpEn = %x\n", cfg_reg->wOpEn);
-  rumboot_printf ("wAXIp = %x\n", cfg_reg->wAXIp);
+  //rumboot_printf ("wOpEn = %x\n", cfg_reg->wOpEn);
+  //rumboot_printf ("wAXIp = %x\n", cfg_reg->wAXIp);
   rumboot_printf ("wBALo = %x\n", cfg_reg->wBALo);
   rumboot_printf ("wBrdX = %x\n", cfg_reg->wBrdX);
   rumboot_printf ("wBrdY = %x\n", cfg_reg->wBrdY);
@@ -2014,7 +2014,7 @@ void  nu_ppe_decide_dma_config_trivial(ConfigPPE* cfg, CubeMetrics* out_cube_met
   uint32_t mr = fm&0x1 && dt || ~(fm&0x1) && (dt&&(Ci>8) || Ci>16) ? 0x1 : 0x0;
 
   int el_s    = dt ? 0x2 : 0x1; // element size in bytes
-  int rdma_thr= 0x10;   // rdma throughput in bytes; wdma_thr is the same to do
+  int rdma_thr= 0x10;   // rdma throughput in bytes; wdma_thr is the same
   int rdctn   = mr + 1; // reduction
 
   int frgs  = rdma_thr * rdctn; // dma transfer quantum in bytes; fragment size
@@ -2029,7 +2029,7 @@ void  nu_ppe_decide_dma_config_trivial(ConfigPPE* cfg, CubeMetrics* out_cube_met
     //cfg_reg->rAXIp  =
     cfg_reg->rBrdX  = (Wi-1) * Ci_s;
     cfg_reg->rBrdY  = (Hi-1) * Wi * Ci_s;
-    cfg_reg->rBrdZ  = frgli>0 ? (int)(Ci_s/frgs)*frgs : (int)(Ci_s/frgs) - 1;
+    cfg_reg->rBrdZ  = frgli>0 ? (int)(Ci_s/frgs)*frgs : ((int)(Ci_s/frgs) - 1)*frgs;
 
     cfg_reg->rStrX  = Ci_s;
     cfg_reg->rStrY  = Wi * Ci_s;
@@ -2063,7 +2063,7 @@ void  nu_ppe_decide_dma_config_trivial(ConfigPPE* cfg, CubeMetrics* out_cube_met
   //cfg_reg->wAXIp  =
   cfg_reg->wBrdX  = (Wo-1) * Co_s;
   cfg_reg->wBrdY  = (Ho-1) * Wo * Co_s;
-  cfg_reg->wBrdZ  = frglo>0 ? (int)(Co_s/frgs)*frgs : (int)(Co_s/frgs) - 1;
+  cfg_reg->wBrdZ  = frglo>0 ? (int)(Co_s/frgs)*frgs : ((int)(Co_s/frgs) - 1)*frgs;
 
   cfg_reg->wStrX  = Co_s;
   cfg_reg->wStrY  = Wo * Co_s;
