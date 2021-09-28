@@ -38,9 +38,9 @@ int nu_mpe_decide_dma_config(
   void* warr
 ) {
   
+  cfg->dma_d_config.rdma.BFCA  = (uint32_t) cube;
+  cfg->dma_w_config.rdma.BFCA  = (uint32_t) warr;
   if(nu_mpe_decide_dma_config_trivial(cfg, cube_metrics, warr_metrics)!=0) return -1;
-  cfg->dma_config. cube_baddr = (uint32_t) cube;
-  cfg->dma_config. warr_baddr = (uint32_t) warr;
   
   return 0;
 }

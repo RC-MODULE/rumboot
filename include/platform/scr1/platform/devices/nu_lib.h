@@ -133,38 +133,97 @@
     DmaXYZDirection_Z
   }DmaXYZDirectionType;
 
+  typedef struct ConfigMAMPE {
+    uint16_t ADD_CountI0;
+    uint16_t CMP_CountI0;
+    uint16_t ADD_CountI1;
+    uint16_t CMP_CountI1;
+    uint16_t ADD_CountJ;
+    uint16_t CMP_CountJ;
+    uint16_t ADD_CountPPS;
+    uint16_t CMP_CountPPS;
+    uint8_t ADD_CountLCZ;
+    uint8_t CMP_CountLCZ;
+    uint16_t ADD_CountPLC;
+    uint16_t CMP_CountPLC;
+    uint16_t ADD_CountX;
+    uint16_t CMP_CountX;
+    uint16_t ADD_CountY;
+    uint16_t CMP_CountY;
+    uint16_t ADD_CountM;
+    uint16_t CMP_CountM;
+    
+    uint16_t BRDR;  // IN_BUF_CFG
+    uint16_t WA;
+    uint16_t DA;
+    uint16_t VRA  ;
+    uint8_t NR   ;
+    uint8_t D_BIAS;
+  }ConfigMAMPE;
+  
+  typedef struct ConfigRDDMAMPEBias {
+    Enable   BiasEn;
+    uint8_t  ThreCtrl;
+    uint8_t  DecCtrl;
+    Enable   PBSEn;
+    uint32_t Bias ;
+    uint32_t AOffset ;
+    uint16_t CntSha ;
+    Enable   CntOffsetEn ;
+    uint8_t  CntOffset ;
+    uint16_t CntThresholdSha ;
+    uint16_t CntCmp ;
+  }ConfigRDDMAMPEBias;
+  
+  typedef struct ConfigWRDMAMPEBias {
+    uint16_t CntSha;
+    uint16_t CntCmp;
+  }ConfigWRDMAMPEBias;
+  
+  typedef struct ConfigRDDMAMPE {
+    ConfigRDDMAMPEBias Bias[7];
+    uint32_t BFCA;
+    uint32_t AOffset;
+    uint32_t LPXOffset;
+    uint32_t RPXOffset;
+    uint32_t TPYThreshold;
+    uint32_t BPYThreshold;
+    uint16_t CntSha;
+    uint16_t CntThresholdSha;
+    Enable LPXEn ;
+    Enable RPXEn ;
+    Enable TPYEn ;
+    Enable BPYEn ;
+    uint16_t LPXData;
+    uint16_t RPXData;
+    uint16_t TPYData;
+    uint16_t BPYData;
+  }ConfigRDDMAMPE;
+  
+  typedef struct ConfigWRDMAMPE {
+    ConfigWRDMAMPEBias Bias[6];
+    uint16_t BADR;
+    uint16_t LADR;
+    Enable  USED ;
+    Enable  ADR_PROL ;
+    Enable  C_BND ;  // C > 8bytes -> Enable_En, C <= 8bytes -> Enable_NotEn
+    Enable  GLUE_EN ;
+    uint8_t BStrideX ;
+    uint8_t BConvX ;
+    uint8_t Thre_PLC ;
+    uint8_t Thre_VLC ;
+    uint8_t Thre_CXC ;
+    uint8_t Dec_PLC;
+    uint8_t PLC_CntSha;
+    uint8_t VLC_CntSha;
+    uint16_t PLC_ThreSha;
+    uint16_t VLC_ThreSha;
+  }ConfigWRDMAMPE;
+  
   typedef struct ConfigDMAMPE {
-    uint32_t ADD_CountI0;
-    uint32_t CMP_CountI0;
-    uint32_t ADD_CountI1;
-    uint32_t CMP_CountI1;
-    uint32_t ADD_CountJ;
-    uint32_t CMP_CountJ;
-    uint32_t ADD_CountPPS;
-    uint32_t CMP_CountPPS;
-    uint32_t ADD_CountLCZ;
-    uint32_t CMP_CountLCZ;
-    uint32_t ADD_CountPLC;
-    uint32_t CMP_CountPLC;
-    uint32_t ADD_CountX;
-    uint32_t CMP_CountX;
-    uint32_t ADD_CountY;
-    uint32_t CMP_CountY;
-    uint32_t ADD_CountM;
-    uint32_t CMP_CountM;
-    
-    uint32_t BRDR;
-    uint32_t WA;
-    uint32_t DA;
-    uint32_t VRA  ;
-    uint32_t NR   ;
-    uint32_t D_BIAS;
-    
-    int in_data_partition;
-    int warr_partition;
-    uint32_t cube_baddr;
-    uint32_t warr_baddr;
-    // Add Here DMA Parameter Fields
+    ConfigRDDMAMPE rdma;
+    ConfigWRDMAMPE wdma;
+    uint16_t MAINCNT;
   }ConfigDMAMPE;
 
   typedef struct ConfigMPE {
@@ -186,7 +245,9 @@
     RoundMode rnd_mode;
     Enable   sat_en   ;
     uint32_t rnd_size ;
-    ConfigDMAMPE dma_config;
+    ConfigDMAMPE dma_d_config;
+    ConfigDMAMPE dma_w_config;
+    ConfigMAMPE ma_config;
   }ConfigMPE;
 
 
