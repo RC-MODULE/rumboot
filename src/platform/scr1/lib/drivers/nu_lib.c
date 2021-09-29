@@ -1940,6 +1940,59 @@ int nu_mpe_decide_dma_config_trivial(ConfigMPE* cfg, CubeMetrics* cube_metrics, 
   cfg->ma_config. NR    = 0x7F;
   cfg->ma_config. D_BIAS= 1;
   
+  //////////////////////////////
+  cfg->dma_d_config.rdma.LPXEn = (cfg->Lp) ? Enable_En : Enable_NotEn;
+  cfg->dma_d_config.rdma.RPXEn = (cfg->Rp) ? Enable_En : Enable_NotEn;
+  cfg->dma_d_config.rdma.TPYEn = (cfg->Tp) ? Enable_En : Enable_NotEn;
+  cfg->dma_d_config.rdma.BPYEn = (cfg->Bp) ? Enable_En : Enable_NotEn;
+  
+  cfg->dma_d_config.rdma.AOffset = -(cfg->W * sizeof_C * cfg->Tp + sizeof_C * cfg->Lp);
+  cfg->dma_d_config.rdma.LPXOffset=-(cfg->W * sizeof_C * cfg->Tp);
+  cfg->dma_d_config.rdma.RPXOffset=-(cfg->W * sizeof_C * (cfg->Tp-1));
+  cfg->dma_d_config.rdma.TPYThreshold = cfg->dma_d_config.rdma.BFCA ;          // Shoule Be Allready Set!!!
+  cfg->dma_d_config.rdma.BPYThreshold = cfg->dma_d_config.rdma.BFCA + cfg->H * cfg->W * sizeof_C;
+  cfg->dma_d_config.rdma.CntThresholdSha = sizeof_C>128 ? sizeof_C : 0;
+  
+  for(int i=0;i<7;i++)
+    cfg->dma_d_config.rdma.Bias[i].AOffset = 0;
+  
+  cfg->dma_d_config.rdma.LPXData=0;
+  cfg->dma_d_config.rdma.RPXData=0;
+  cfg->dma_d_config.rdma.TPYData=0;
+  cfg->dma_d_config.rdma.BPYData=0;
+  
+  cfg->dma_d_config.rdma.Bias[6].BiasEn = Enable_NotEn;
+  cfg->dma_d_config.rdma.Bias[6].ThreCtrl = 0;
+  cfg->dma_d_config.rdma.Bias[6].DecCtrl = 0;
+  cfg->dma_d_config.rdma.Bias[6].PBSEn = Enable_En;
+  cfg->dma_d_config.rdma.Bias[6].Bias = 0;
+  cfg->dma_d_config.rdma.Bias[6].CntSha = 0;
+  cfg->dma_d_config.rdma.Bias[6].CntOffsetEn = 0;
+  cfg->dma_d_config.rdma.Bias[6].CntOffset = 0;
+  cfg->dma_d_config.rdma.Bias[6].CntThresholdSha = 0;
+  cfg->dma_d_config.rdma.Bias[6].CntCmp = 0;
+  
+  ////////////////////////////
+  cfg->dma_w_config.rdma.LPXEn = Enable_NotEn;
+  cfg->dma_w_config.rdma.RPXEn = Enable_NotEn;
+  cfg->dma_w_config.rdma.TPYEn = Enable_NotEn;
+  cfg->dma_w_config.rdma.BPYEn = Enable_NotEn;
+  
+  cfg->dma_w_config.rdma.AOffset =0;
+  cfg->dma_w_config.rdma.LPXOffset=0;
+  cfg->dma_w_config.rdma.RPXOffset=0;
+  cfg->dma_w_config.rdma.TPYThreshold = 0;
+  cfg->dma_w_config.rdma.BPYThreshold = 0;
+  cfg->dma_w_config.rdma.CntThresholdSha = sizeof_C>128 ? sizeof_C : 0;
+  
+  for(int i=0;i<7;i++)
+    cfg->dma_w_config.rdma.Bias[i].AOffset = 0;
+  
+  cfg->dma_w_config.rdma.LPXData=0;
+  cfg->dma_w_config.rdma.RPXData=0;
+  cfg->dma_w_config.rdma.TPYData=0;
+  cfg->dma_w_config.rdma.BPYData=0;
+  
   
   return 0;
 }
