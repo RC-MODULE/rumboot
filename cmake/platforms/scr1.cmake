@@ -793,6 +793,13 @@ endif() #### EXPERIMENT_STAGE_2_SUB_1
         NAME PPE_1
         FILES scr1/targets/simple-rom/nu/ppe_regs/regs_ppe.c
     )
+	
+	 add_rumboot_target(
+        CONFIGURATION ROM
+        NAME NPE_1
+        FILES scr1/targets/simple-rom/nu/npe_regs/npe_regs.c
+    )
+	
     endif()
 
     if(NOT DEFINED NU_SEED)
