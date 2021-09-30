@@ -46,8 +46,8 @@ void mpe_dma_config_and_start(uintptr_t base, uint32_t* source_ptr, uint32_t buf
   iowrite32(0x00000000,base+PADCtrl_MSha);
   iowrite32((uint32_t)source_ptr,base+BFCA_MSha);
   iowrite32(0x00000000,base+AOffset_MSha);
-  iowrite32(0x0000007F,base+CntThresholdSha_MSha);
-  iowrite32(0x00000000,base+CntSha_MSha);
+  iowrite32(0x0000007F,base+CntSha_MSha);
+  iowrite32(0x00000000,base+CntThresholdSha_MSha);
   iowrite32(0x00000080,base+Bias1Sha_MSha);
   iowrite32(0x00000000,base+Bias1AOffset_MSha);
   iowrite32(buf_vecs-1,base+RD_Bias1CntSha_MSha);
@@ -404,7 +404,6 @@ int main()
   mpe_dma_config_and_start(NPE_BASE+NA_MPE_BASE+MPE_RDMA_W_BASE,warr,(warr_metrics->s)/128 /* in vectors */, in_buffer_warr_offset/128);//(in_metrics->s)/128);
   
   // MPE MA
-#define NA_MPE_BUF_FULL_SET 0x024
   nu_run_mpe_cmd(NPE_BASE+NA_MPE_BASE+MPE_MA_BASE,cmd,cmd_metrics);
   
   // VPE
