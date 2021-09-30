@@ -102,7 +102,7 @@ int main() {
   mpe_cfg_lut = nu_mpe_load_cfg_lut(heap_id);
   if(mpe_cfg_lut == NULL) return -1;
   
-  na_cu_set_units_direct_mode(NPE_BASE+NA_CU_REGS_BASE+NA_CU_UNITS_MODE, NA_CU_MPE_UNIT_MODE|NA_CU_VPE_UNIT_MODE);
+  na_cu_set_units_direct_mode(NPE_BASE+NA_CU_REGS_BASE+NA_UNITS_MODE, NA_CU_MPE_UNIT_MODE|NA_CU_VPE_UNIT_MODE);
   
   for(i=0;i<iterations;i++) {
     rumboot_printf("Starting iteration %d\n",i);
