@@ -1882,22 +1882,75 @@ int nu_mpe_get_size_in_partitions(int size_in_bytes) {
 }
 
 
+
+
+
+void nu_mpe_load_ma_config_from_table_row(ConfigMAMPE* cfg, uint32_t** ptr_) {
+  uint32_t* ptr;
+  
+  ptr = *ptr_;
+  
+  cfg->ADD_CountI0=(uint16_t) *ptr;ptr++;
+  cfg->CMP_CountI0=(uint16_t) *ptr;ptr++;
+  cfg->ADD_CountI1=(uint16_t) *ptr;ptr++;
+  cfg->CMP_CountI1=(uint16_t) *ptr;ptr++;
+  cfg->ADD_CountJ=(uint16_t) *ptr;ptr++;
+  cfg->CMP_CountJ=(uint16_t) *ptr;ptr++;
+  cfg->ADD_CountPPS=(uint16_t) *ptr;ptr++;
+  cfg->CMP_CountPPS=(uint16_t) *ptr;ptr++;
+  cfg->ADD_CountLCZ=(uint8_t) *ptr;ptr++;
+  cfg->CMP_CountLCZ=(uint8_t) *ptr;ptr++;
+  cfg->ADD_CountPLC=(uint16_t) *ptr;ptr++;
+  cfg->CMP_CountPLC=(uint16_t) *ptr;ptr++;
+  cfg->ADD_CountX=(uint16_t) *ptr;ptr++;
+  cfg->CMP_CountX=(uint16_t) *ptr;ptr++;
+  cfg->ADD_CountY=(uint16_t) *ptr;ptr++;
+  cfg->CMP_CountY=(uint16_t) *ptr;ptr++;
+  cfg->ADD_CountM=(uint16_t) *ptr;ptr++;
+  cfg->CMP_CountM=(uint16_t) *ptr;ptr++;
+  
+  cfg->BRDR=(uint16_t) *ptr;ptr++;
+  cfg->WA=(uint16_t) *ptr;ptr++;
+  cfg->DA=(uint16_t) *ptr;ptr++;
+  cfg->VRA=(uint16_t) *ptr;ptr++;
+  cfg->NR=(uint8_t) *ptr;ptr++;
+  cfg->D_BIAS=(uint8_t) *ptr;ptr++;
+  
+  *ptr_=ptr;
+}
+
+
 void nu_mpe_load_dma_config_from_table_row(ConfigDMAMPE* cfg, uint32_t** ptr_) {
   uint32_t* ptr;
   
   ptr = *ptr_;
   
   cfg->MAINCNT=(uint16_t)        *ptr;ptr++;
-                                  ptr+=5; //Skipped 
+  
+//                                  ptr+=5; //Skipped 
+  cfg->rdma.AOffset=             *ptr;ptr++;
+  cfg->rdma.LPXOffset=           *ptr;ptr++;
+  cfg->rdma.RPXOffset=           *ptr;ptr++;
+  cfg->rdma.TPYThreshold=        *ptr;ptr++;
+  cfg->rdma.BPYThreshold=        *ptr;ptr++;
+  
   cfg->rdma.CntSha=(uint16_t)    *ptr;ptr++;
-                                  ptr+=5;
+  
+//                                  ptr+=5;
+  cfg->rdma.CntThresholdSha=(uint16_t)*ptr;ptr++;
+  cfg->rdma.LPXEn=               *ptr;ptr++;
+  cfg->rdma.RPXEn=               *ptr;ptr++;
+  cfg->rdma.TPYEn=               *ptr;ptr++;
+  cfg->rdma.BPYEn=               *ptr;ptr++;
+//
   for(int i=0;i<7;i++){
     cfg->rdma.Bias[i].BiasEn=                    *ptr;ptr++;
     cfg->rdma.Bias[i].ThreCtrl=(uint8_t)         *ptr;ptr++;
     cfg->rdma.Bias[i].DecCtrl=(uint8_t)          *ptr;ptr++;
     cfg->rdma.Bias[i].PBSEn=                     *ptr;ptr++;
     cfg->rdma.Bias[i].Bias=                      *ptr;ptr++;
-                                                      ptr++; // Skipped AOffset
+//                                                      ptr++; // Skipped AOffset
+    cfg->rdma.Bias[i].AOffset=                   *ptr;ptr++;
     cfg->rdma.Bias[i].CntSha=(uint16_t)          *ptr;ptr++;
     cfg->rdma.Bias[i].CntOffsetEn=               *ptr;ptr++;
     cfg->rdma.Bias[i].CntOffset=(uint8_t)        *ptr;ptr++;
@@ -1963,6 +2016,7 @@ int nu_mpe_look_up_dma_config(ConfigMPE* cfg, void* table) {
   }
   
   if(in_param_match) {
+    nu_mpe_load_ma_config_from_table_row(& (cfg->ma_config),&tab_ptr);
     nu_mpe_load_dma_config_from_table_row(& (cfg->dma_d_config),&tab_ptr);
     nu_mpe_load_dma_config_from_table_row(& (cfg->dma_w_config),&tab_ptr);
     res=0;
@@ -2004,6 +2058,7 @@ int nu_mpe_decide_dma_config_trivial(ConfigMPE* cfg, CubeMetrics* cube_metrics, 
   else sizeof_C_div128 = 1;
 
 
+  /*
   cfg->ma_config. ADD_CountI0 = 16;
   cfg->ma_config. CMP_CountI0 = cfg->K;
   cfg->ma_config. ADD_CountI1 = cfg->Sw;
@@ -2045,12 +2100,14 @@ int nu_mpe_decide_dma_config_trivial(ConfigMPE* cfg, CubeMetrics* cube_metrics, 
   
   for(int i=0;i<7;i++)
     cfg->dma_d_config.rdma.Bias[i].AOffset = 0;
+  */
   
   cfg->dma_d_config.rdma.LPXData=0;
   cfg->dma_d_config.rdma.RPXData=0;
   cfg->dma_d_config.rdma.TPYData=0;
   cfg->dma_d_config.rdma.BPYData=0;
   
+  /*
   cfg->dma_d_config.rdma.Bias[6].BiasEn = Enable_NotEn;
   cfg->dma_d_config.rdma.Bias[6].ThreCtrl = 0;
   cfg->dma_d_config.rdma.Bias[6].DecCtrl = 0;
@@ -2077,6 +2134,7 @@ int nu_mpe_decide_dma_config_trivial(ConfigMPE* cfg, CubeMetrics* cube_metrics, 
   
   for(int i=0;i<7;i++)
     cfg->dma_w_config.rdma.Bias[i].AOffset = 0;
+  */
   
   cfg->dma_w_config.rdma.LPXData=0;
   cfg->dma_w_config.rdma.RPXData=0;
@@ -2246,6 +2304,8 @@ void nu_mpe_setup(uintptr_t base, ConfigMPE* cfg) {
 
 void nu_mpe_run(uintptr_t mpe_base, ConfigMPE* cfg) {
   rumboot_printf("Start MPE...\n");
+  iowrite32(0,mpe_base + MPE_RDMA_D_BASE + DMA_START);
+  iowrite32(0,mpe_base + MPE_RDMA_W_BASE + DMA_START);
   iowrite32(0,mpe_base + MPE_MA_BASE + MPE_CMD_ICMW);
 }
 
