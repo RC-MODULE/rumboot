@@ -10,6 +10,7 @@ int nu_vpe_load_cfg(int heap_id, ConfigVPE* cfg);
 int nu_vpe_load_cfg_by_tag(int heap_id, ConfigVPE* cfg, char* cfg_file_tag);
 int nu_mpe_load_cfg(int heap_id, ConfigMPE* cfg);
 int nu_mpe_load_cfg_by_tag(int heap_id, ConfigMPE* cfg, char* cfg_file_tag);
+void* nu_mpe_load_cfg_lut(int heap_id);
 
 int nu_ppe_load_cfg(int heap_id, ConfigPPE* cfg);
 int nu_ppe_load_cfg_by_tag(int heap_id, ConfigPPE* cfg, char* cfg_file_tag);

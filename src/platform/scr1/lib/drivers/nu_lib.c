@@ -576,10 +576,6 @@ void nu_mpe_print_ConfigWRDMAMPEBias(ConfigWRDMAMPEBias* bias,int index) {
 
 void nu_mpe_print_ConfigRDDMAMPE(ConfigRDDMAMPE* cfg,char* name) {
   rumboot_printf("ConfigRDDMAMPE(%s):\n",name);
-  for(int i=0;i<7;i++) {
-    nu_mpe_print_ConfigRDDMAMPEBias(& (cfg->Bias[i]),i);
-  }
-  
     rumboot_printf("  BFCA = 0x%x\n",cfg->BFCA);
     rumboot_printf("  AOffset = 0x%x\n",cfg->AOffset);
     rumboot_printf("  LPXOffset = %d \n",cfg->LPXOffset);
@@ -597,37 +593,41 @@ void nu_mpe_print_ConfigRDDMAMPE(ConfigRDDMAMPE* cfg,char* name) {
     rumboot_printf("  TPYData = 0x%x\n",cfg->TPYData);
     rumboot_printf("  BPYData = 0x%x\n",cfg->BPYData);
   
+  for(int i=0;i<7;i++) {
+    nu_mpe_print_ConfigRDDMAMPEBias(& (cfg->Bias[i]),i);
+  }
+  
 }
 
 void nu_mpe_print_ConfigWRDMAMPE(ConfigWRDMAMPE* cfg, char* name) {
   rumboot_printf("ConfigWRDMAMPE(%s):\n",name);
-  for(int i=0;i<7;i++) {
-    nu_mpe_print_ConfigWRDMAMPEBias(& (cfg->Bias[i]), i);
-  }
-  
-    rumboot_printf("  BADR = %d",cfg->BADR);
-    rumboot_printf("  LADR = %d",cfg->LADR);
+    rumboot_printf("  BADR = %d\n",cfg->BADR);
+    rumboot_printf("  LADR = %d\n",cfg->LADR);
     nu_vpe_print_Enable(cfg->USED,"USED" );
     nu_vpe_print_Enable(cfg->ADR_PROL,"ADR_PROL" );
     nu_vpe_print_Enable(cfg->C_BND,"C_BND" );
     nu_vpe_print_Enable(cfg->GLUE_EN,"GLUE_EN" );
-    rumboot_printf("  BStrideX = %d",cfg->BStrideX) ;
-    rumboot_printf("  BConvX = %d",cfg->BConvX) ;
-    rumboot_printf("  Thre_PLC = %d",cfg->Thre_PLC);
-    rumboot_printf("  Thre_VLC = %d",cfg->Thre_VLC) ;
-    rumboot_printf("  Thre_CXC = %d",cfg->Thre_CXC) ;
-    rumboot_printf("  Dec_PLC = %d",cfg->Dec_PLC);
-    rumboot_printf("  PLC_CntSha = %d",cfg->PLC_CntSha);
-    rumboot_printf("  VLC_CntSha = %d",cfg->VLC_CntSha);
-    rumboot_printf("  PLC_ThreSha = %d",cfg->PLC_ThreSha);
-    rumboot_printf("  VLC_ThreSha = %d",cfg->VLC_ThreSha);
+    rumboot_printf("  BStrideX = %d\n",cfg->BStrideX) ;
+    rumboot_printf("  BConvX = %d\n",cfg->BConvX) ;
+    rumboot_printf("  Thre_PLC = %d\n",cfg->Thre_PLC);
+    rumboot_printf("  Thre_VLC = %d\n",cfg->Thre_VLC) ;
+    rumboot_printf("  Thre_CXC = %d\n",cfg->Thre_CXC) ;
+    rumboot_printf("  Dec_PLC = %d\n",cfg->Dec_PLC);
+    rumboot_printf("  PLC_CntSha = %d\n",cfg->PLC_CntSha);
+    rumboot_printf("  VLC_CntSha = %d\n",cfg->VLC_CntSha);
+    rumboot_printf("  PLC_ThreSha = %d\n",cfg->PLC_ThreSha);
+    rumboot_printf("  VLC_ThreSha = %d\n",cfg->VLC_ThreSha);
+  for(int i=0;i<6;i++) {
+    nu_mpe_print_ConfigWRDMAMPEBias(& (cfg->Bias[i]), i);
+  }
+  
 }
 
 void nu_mpe_print_ConfigDMAMPE(ConfigDMAMPE* cfg,char* name) {
-  // rumboot_printf("ConfigDMAMPE(%s):\n",name);
+  rumboot_printf("ConfigDMAMPE(%s):\n",name);
+  rumboot_printf("  MAINCNT = %d\n",cfg->MAINCNT);
   nu_mpe_print_ConfigRDDMAMPE(& cfg->rdma, name);
   nu_mpe_print_ConfigWRDMAMPE(& cfg->wdma, name);
-  rumboot_printf("  MAINCNT = %d\n",cfg->MAINCNT);
 }
 
 void nu_mpe_print_config(ConfigMPE* cfg){
@@ -681,8 +681,8 @@ void nu_mpe_print_config(ConfigMPE* cfg){
     rumboot_printf("  NR     = %d \n",cfg->ma_config.NR)   ;
     rumboot_printf("  D_BIAS = %d \n",cfg->ma_config.D_BIAS);
     
-  nu_mpe_print_ConfigDMAMPE(& cfg->dma_d_config, "D");
-  nu_mpe_print_ConfigDMAMPE(& cfg->dma_w_config, "W");
+  nu_mpe_print_ConfigDMAMPE(& (cfg->dma_d_config), "D");
+  nu_mpe_print_ConfigDMAMPE(& (cfg->dma_w_config), "W");
 #endif // NU_NO_PRINT
 }
 
@@ -1878,6 +1878,96 @@ int nu_mpe_get_size_in_partitions(int size_in_bytes) {
   if( (size_in_bytes % (NU_MPE_BUF01 - NU_MPE_BUF00)) != 0 )
     res++;
 
+  return res;
+}
+
+
+void nu_mpe_load_dma_config_from_table_row(ConfigDMAMPE* cfg, uint32_t** ptr_) {
+  uint32_t* ptr;
+  
+  ptr = *ptr_;
+  
+  cfg->MAINCNT=(uint16_t)        *ptr;ptr++;
+                                  ptr+=5; //Skipped 
+  cfg->rdma.CntSha=(uint16_t)    *ptr;ptr++;
+                                  ptr+=5;
+  for(int i=0;i<7;i++){
+    cfg->rdma.Bias[i].BiasEn=                    *ptr;ptr++;
+    cfg->rdma.Bias[i].ThreCtrl=(uint8_t)         *ptr;ptr++;
+    cfg->rdma.Bias[i].DecCtrl=(uint8_t)          *ptr;ptr++;
+    cfg->rdma.Bias[i].PBSEn=                     *ptr;ptr++;
+    cfg->rdma.Bias[i].Bias=                      *ptr;ptr++;
+                                                      ptr++; // Skipped AOffset
+    cfg->rdma.Bias[i].CntSha=(uint16_t)          *ptr;ptr++;
+    cfg->rdma.Bias[i].CntOffsetEn=               *ptr;ptr++;
+    cfg->rdma.Bias[i].CntOffset=(uint8_t)        *ptr;ptr++;
+    cfg->rdma.Bias[i].CntThresholdSha=(uint16_t) *ptr;ptr++;
+    cfg->rdma.Bias[i].CntCmp=(uint16_t)          *ptr;ptr++;
+  }
+  
+  
+  cfg->wdma.BADR=(uint16_t)            *ptr;ptr++;
+  cfg->wdma.LADR=(uint16_t)            *ptr;ptr++;
+  cfg->wdma.USED=                      *ptr;ptr++;
+  cfg->wdma.ADR_PROL=                  *ptr;ptr++;
+  cfg->wdma.C_BND=                     *ptr;ptr++;
+  cfg->wdma.GLUE_EN=                   *ptr;ptr++;
+  cfg->wdma.BStrideX=(uint8_t)         *ptr;ptr++;
+  cfg->wdma.BConvX=(uint8_t)           *ptr;ptr++;
+  cfg->wdma.Thre_PLC=(uint8_t)         *ptr;ptr++;
+  cfg->wdma.Thre_VLC=(uint8_t)         *ptr;ptr++;
+  cfg->wdma.Thre_CXC=(uint8_t)         *ptr;ptr++;
+  cfg->wdma.Dec_PLC=(uint8_t)          *ptr;ptr++;
+  cfg->wdma.PLC_CntSha=(uint8_t)       *ptr;ptr++;
+  cfg->wdma.VLC_CntSha=(uint8_t)       *ptr;ptr++;
+  cfg->wdma.PLC_ThreSha=(uint16_t)     *ptr;ptr++;
+  cfg->wdma.VLC_ThreSha=(uint16_t)     *ptr;ptr++;
+  
+  for(int i=0;i<6;i++) {
+    cfg->wdma.Bias[i].CntSha=(uint16_t)        *ptr;ptr++;
+    cfg->wdma.Bias[i].CntCmp=(uint16_t)        *ptr;ptr++;
+  }
+  
+  *ptr_=ptr;
+}
+
+int nu_mpe_look_up_dma_config(ConfigMPE* cfg, void* table) {
+  uint32_t* tab_ptr;
+  uint32_t* cfg_ptr;
+  uint32_t* row_ptr;
+  int res;
+  int in_param_match;
+  int cnt;
+  
+    // Search The Corresponding Row Of The Table
+  row_ptr = (uint32_t*) table;
+  res =  -1;
+  in_param_match=0;
+  
+  while(*row_ptr !=0 && !in_param_match) { // Til We Find A Match Or Reach An Empty Row
+    cfg_ptr = (uint32_t*) cfg;  // First Element Of ConfigMPE
+    tab_ptr = row_ptr;          // First Element Of A Row
+    
+      // First 15 Elements Of The Row - Is A Row Header
+      //  We Search Where It Matches The First 15 Elements Of ConfigMPE struct
+    cnt=0;
+    do {
+      if(cnt==14) // dt - Special Parameter Which Is Compared Zero Or Not Zero
+        in_param_match = *tab_ptr == *cfg_ptr || (*tab_ptr !=0 && *cfg_ptr !=0);
+      else
+        in_param_match = *tab_ptr == *cfg_ptr;
+      cnt++;tab_ptr++;cfg_ptr++;
+    } while(in_param_match && cnt<15);
+    
+    row_ptr = row_ptr + NU_MPE_DMA_PARAM_TABLE_ROW_SIZE;
+  }
+  
+  if(in_param_match) {
+    nu_mpe_load_dma_config_from_table_row(& (cfg->dma_d_config),&tab_ptr);
+    nu_mpe_load_dma_config_from_table_row(& (cfg->dma_w_config),&tab_ptr);
+    res=0;
+  }
+  
   return res;
 }
 

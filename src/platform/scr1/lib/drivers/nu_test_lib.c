@@ -63,6 +63,19 @@ int nu_mpe_load_cfg_by_tag(int heap_id, ConfigMPE* cfg, char* cfg_file_tag) {
   return 0;
 }
 
+void* nu_mpe_load_cfg_lut(int heap_id) { // :-( Returns A Pointer - Bahaves Not Like Other *_load_cfg*
+  void* lut;
+  
+  lut = rumboot_malloc_from_heap_aligned(heap_id,NU_MPE_DMA_PARAM_TABLE_SIZE,sizeof(uint32_t));
+  if(lut ==NULL)
+    return NULL;
+  
+  memset(lut,0,NU_MPE_DMA_PARAM_TABLE_SIZE); // Init - Because The Table Seeker Searches For Zero As The End Of A Table
+  rumboot_platform_request_file("mpe_cfg_lut_file_tag",(uintptr_t)lut);
+  
+  return lut;
+}
+
 int nu_ppe_load_cfg(int heap_id, ConfigPPE* cfg) {
   uint32_t* cfg_bin;
   

@@ -19,6 +19,8 @@ void *warr;
 void *res_data;
 void *etalon;
 
+void *mpe_cfg_lut;
+
 ConfigVPE cfg_vpe;
 ConfigMPE cfg_mpe;
 
@@ -35,13 +37,13 @@ int nu_mpe_decide_dma_config(
   CubeMetrics* cube_metrics, 
   WarrMetrics* warr_metrics,
   void* cube,
-  void* warr
+  void* warr,
+  void* cfg_lut
 ) {
-  
   cfg->dma_d_config.rdma.BFCA  = (uint32_t) cube;
   cfg->dma_w_config.rdma.BFCA  = (uint32_t) warr;
+  if(nu_mpe_look_up_dma_config(cfg,cfg_lut)!=0) return -1;
   if(nu_mpe_decide_dma_config_trivial(cfg, cube_metrics, warr_metrics)!=0) return -1;
-  
   return 0;
 }
 
@@ -97,6 +99,9 @@ int main() {
   rumboot_platform_request_file("num_iterations_file_tag",(uintptr_t) &iterations);
   rumboot_printf("Number of iterations %d\n",iterations);
   
+  mpe_cfg_lut = nu_mpe_load_cfg_lut(heap_id);
+  if(mpe_cfg_lut == NULL) return -1;
+  
   na_cu_set_units_direct_mode(NPE_BASE+NA_CU_REGS_BASE+NA_CU_UNITS_MODE, NA_CU_MPE_UNIT_MODE|NA_CU_VPE_UNIT_MODE);
   
   for(i=0;i<iterations;i++) {
@@ -135,7 +140,7 @@ int main() {
     
       // Fill The Remaining Configuration Fields
     // nu_calc_mpe2vpe_cube_metrics(&mpe2vpe_cube_metrics,in_metrics,warr_metrics); // Not Needed Because We Have res_metrics
-    if(nu_mpe_decide_dma_config(&cfg_mpe,in_metrics,warr_metrics,in_data,warr)!=0) return -1;
+    if(nu_mpe_decide_dma_config(&cfg_mpe,in_metrics,warr_metrics,in_data,warr,mpe_cfg_lut)!=0) return -1;
     nu_vpe_decide_dma_config (&cfg_vpe,res_metrics,/*uint8_t axi_len*/15,NULL,NULL,NULL,NULL,res_metrics,res_data);
     
     nu_mpe_print_config(&cfg_mpe);

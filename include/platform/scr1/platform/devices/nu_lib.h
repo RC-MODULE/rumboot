@@ -10,6 +10,10 @@
 #define NU_PPE_CFG_PARAMS_NUM 22
 #define NU_PPE_REG_CFG_PARAMS_NUM 63
 
+#define NU_MPE_DMA_PARAM_TABLE_ROW_SIZE (4*249)
+#define NU_MPE_DMA_PARAM_TABLE_NUM_ROWS 10
+#define NU_MPE_DMA_PARAM_TABLE_SIZE (NU_MPE_DMA_PARAM_TABLE_ROW_SIZE*4*NU_MPE_DMA_PARAM_TABLE_NUM_ROWS + 4)
+
   /**
   Режим работы блока
   */
@@ -615,6 +619,7 @@ void nu_mpe_print_config_dma(ConfigDMAMPE* cfg);
 
 int  nu_mpe_get_size_in_partitions(int size_in_bytes);
 void nu_mpe_setup(uintptr_t base, ConfigMPE* cfg);
+int nu_mpe_look_up_dma_config(ConfigMPE* cfg, void* table);
 int  nu_mpe_decide_dma_config_trivial(ConfigMPE* cfg, CubeMetrics* cube_metrics, WarrMetrics* warr_metrics);
 uint32_t nu_mpe_get_warr_offset(void* cmd, MPECmdMetrics* metrics);
 
