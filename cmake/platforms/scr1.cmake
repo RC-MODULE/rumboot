@@ -799,6 +799,13 @@ endif() #### EXPERIMENT_STAGE_2_SUB_1
         NAME PPE_1
         FILES scr1/targets/simple-rom/nu/ppe_regs/regs_ppe.c
     )
+	
+	 add_rumboot_target(
+        CONFIGURATION ROM
+        NAME NPE_1
+        FILES scr1/targets/simple-rom/nu/npe_regs/npe_regs.c
+    )
+	
     endif()
 
     if(NOT DEFINED NU_SEED)
@@ -1045,6 +1052,19 @@ endif() ### EXPERIMENT_STAGE_2_SUB_1
       ADD_MPE_SINGLE_TEST(MPE_14 TRUNC0) # mu int norm test
       ADD_MPE_SINGLE_TEST(MPE_15 TRUNC16) # mu+acc fp16 test
       ADD_MPE_SINGLE_TEST(MPE_16 TRUNC16) # fp16 max perf test
+
+      macro (ADD_MPE_CONV_TEST name trunc) # trunc=TRUNC0/TRUNC16
+        set(MPE_TEST_SHEET ${CMAKE_SOURCE_DIR}/../units/rcm_lava_mpe/tests/experiment2/${name}_CONV/mpe_arrays.txt)
+        add_rumboot_target(
+          CONFIGURATION ROM
+          NAME ${name}_CONV
+          FILES scr1/targets/simple-rom/nu/npe_mpe_stage2/mpe_conv.c
+          CFLAGS -D${trunc}
+          PREPCMD ${MPE_PARSE_TEST_STAGE2} ${NA_TEST_mpe_cmd_file} ${NA_TEST_in_file} ${NA_TEST_warr_file} ${NA_TEST_etalon_file} ${trunc} < ${MPE_TEST_SHEET}
+          IRUN_FLAGS ${NA_RM_PLUSARGS}
+        )
+      endmacro()
+      ADD_MPE_CONV_TEST(MPE_2 TRUNC16)
 
       macro(ADD_NPE_SIMPLE_TEST name filename)
         add_rumboot_target(

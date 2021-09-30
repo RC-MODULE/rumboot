@@ -2356,7 +2356,8 @@ void  nu_ppe_decide_dma_config_trivial(ConfigPPE* cfg, CubeMetrics* out_cube_met
 
     cfg_reg->rFrgs  = frgs;
     cfg_reg->rFrgl  = frgli>0 ? frgli : frgs;
-    cfg_reg->rXYZd  = 0x2;
+    //cfg_reg->rXYZd  = 0x2;
+    cfg_reg->rXYZd  = DmaXYZDirection_Z;
 
     if (!(fm&0x2)) {  // linear
       cfg_reg->rBstX  = Wi-1;
@@ -2447,7 +2448,7 @@ void nu_ppe_setup_reg(uintptr_t rbase, uintptr_t wbase, ConfigREGPPE* cfg) {
 
   rumboot_printf("nu_ppe_setup_reg\n");
 
-  ////iowrite32(0x0       , rbase + NU_PPE_OP_ENABLE          );
+  //iowrite32(0x0       , rbase + NU_PPE_OP_ENABLE          );
   //iowrite32(cfg->rAXIp, rbase + NU_PPE_RDMA_AXI_PARAM     );
   iowrite32(cfg->rBALi, rbase + NU_PPE_RDMA_BASE_ADDR     );
   iowrite32(cfg->rBrdX, rbase + NU_PPE_RDMA_BORDER_X      );
@@ -2469,8 +2470,8 @@ void nu_ppe_setup_reg(uintptr_t rbase, uintptr_t wbase, ConfigREGPPE* cfg) {
   iowrite32(cfg->rBffY, rbase + NU_PPE_RDMA_BOX_OFFSET_Y  );
   iowrite32(cfg->rBffZ, rbase + NU_PPE_RDMA_BOX_OFFSET_Z  );
   
-  ////iowrite32(0x0       , wbase + NU_PPE_OP_ENABLE          );
-  ////iowrite32(cfg->wAXIp, wbase + NU_PPE_RDMA_AXI_PARAM     );
+  //iowrite32(0x0       , wbase + NU_PPE_OP_ENABLE          );
+  //iowrite32(cfg->wAXIp, wbase + NU_PPE_RDMA_AXI_PARAM     );
   iowrite32(cfg->wBALo, wbase + NU_PPE_WDMA_BASE_ADDR     );
   iowrite32(cfg->wBrdX, wbase + NU_PPE_WDMA_BORDER_X      );
   iowrite32(cfg->wBrdY, wbase + NU_PPE_WDMA_BORDER_Y      );
@@ -2620,9 +2621,9 @@ bool nu_vpe_mode_to_bool (Mode in_mode){
 
 void na_cu_set_units_direct_mode(uintptr_t base, uint32_t mask) {
   uint32_t temp;
-  temp = ioread32(base + NA_CU_UNITS_MODE);
+  temp = ioread32(base + NA_UNITS_MODE);
   temp = temp | mask;
-  rumboot_printf("Writing [0x%x]=0x%x\n",base + NA_CU_UNITS_MODE,temp);
-  iowrite32(temp,base + NA_CU_UNITS_MODE);
+  rumboot_printf("Writing [0x%x]=0x%x\n",base + NA_UNITS_MODE,temp);
+  iowrite32(temp,base + NA_UNITS_MODE);
 }
 
