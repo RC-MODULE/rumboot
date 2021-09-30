@@ -2254,7 +2254,7 @@ void nu_mpe_wdma_setup(uintptr_t base, ConfigWRDMAMPE* cfg) {
 void nu_mpe_dma_setup(uintptr_t base, ConfigDMAMPE* cfg) {
   nu_mpe_rdma_setup(base /*Left Unchanged*/, & cfg->rdma);
   nu_mpe_wdma_setup(base /*Left Unchanged*/, & cfg->wdma);
-  iowrite32(cfg->MAINCNT,base + MAINCNT_WR);
+  iowrite32(cfg->MAINCNT,base + MAINCNT_Sha);
 }
 
 void nu_mpe_ma_setup(uintptr_t base, ConfigMPE* cfg) {
