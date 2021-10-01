@@ -558,7 +558,8 @@ void nu_mpe_print_ConfigRDDMAMPEBias(ConfigRDDMAMPEBias* bias,int index) {
     nu_vpe_print_Enable(bias->BiasEn,"BiasEn");
     rumboot_printf("  ThreCtrl = %d \n", bias->ThreCtrl);
     rumboot_printf("  DecCtrl = %d \n", bias->DecCtrl);
-    nu_vpe_print_Enable(bias->PBSEn,"PBSEn");
+    nu_vpe_print_Enable(bias->PXBSEn,"PXBSEn");
+    nu_vpe_print_Enable(bias->PYBSEn,"PYBSEn");
     rumboot_printf("  Bias = 0x%x \n",bias->Bias);
     rumboot_printf("  AOffset = 0x%x \n",bias->AOffset );
     rumboot_printf("  CntSha = %d \n",bias->CntSha);
@@ -1947,7 +1948,8 @@ void nu_mpe_load_dma_config_from_table_row(ConfigDMAMPE* cfg, uint32_t** ptr_) {
     cfg->rdma.Bias[i].BiasEn=                    *ptr;ptr++;
     cfg->rdma.Bias[i].ThreCtrl=(uint8_t)         *ptr;ptr++;
     cfg->rdma.Bias[i].DecCtrl=(uint8_t)          *ptr;ptr++;
-    cfg->rdma.Bias[i].PBSEn=                     *ptr;ptr++;
+    cfg->rdma.Bias[i].PXBSEn=                    *ptr;ptr++;
+    cfg->rdma.Bias[i].PYBSEn=                    *ptr;ptr++;
     cfg->rdma.Bias[i].Bias=                      *ptr;ptr++;
 //                                                      ptr++; // Skipped AOffset
     cfg->rdma.Bias[i].AOffset=                   *ptr;ptr++;
@@ -2084,6 +2086,7 @@ int nu_mpe_decide_dma_config_trivial(ConfigMPE* cfg, CubeMetrics* cube_metrics, 
   cfg->ma_config. VRA   = 0;
   cfg->ma_config. NR    = 0x7F;
   cfg->ma_config. D_BIAS= 1;
+  */
   
   //////////////////////////////
   cfg->dma_d_config.rdma.LPXEn = (cfg->Lp) ? Enable_En : Enable_NotEn;
@@ -2100,7 +2103,6 @@ int nu_mpe_decide_dma_config_trivial(ConfigMPE* cfg, CubeMetrics* cube_metrics, 
   
   for(int i=0;i<7;i++)
     cfg->dma_d_config.rdma.Bias[i].AOffset = 0;
-  */
   
   cfg->dma_d_config.rdma.LPXData=0;
   cfg->dma_d_config.rdma.RPXData=0;
@@ -2111,7 +2113,8 @@ int nu_mpe_decide_dma_config_trivial(ConfigMPE* cfg, CubeMetrics* cube_metrics, 
   cfg->dma_d_config.rdma.Bias[6].BiasEn = Enable_NotEn;
   cfg->dma_d_config.rdma.Bias[6].ThreCtrl = 0;
   cfg->dma_d_config.rdma.Bias[6].DecCtrl = 0;
-  cfg->dma_d_config.rdma.Bias[6].PBSEn = Enable_En;
+  cfg->dma_d_config.rdma.Bias[6].PXBSEn = Enable_NotEn;
+  cfg->dma_d_config.rdma.Bias[6].PYBSEn = Enable_NotEn;
   cfg->dma_d_config.rdma.Bias[6].Bias = 0;
   cfg->dma_d_config.rdma.Bias[6].CntSha = 0;
   cfg->dma_d_config.rdma.Bias[6].CntOffsetEn = 0;
@@ -2194,7 +2197,7 @@ void nu_mpe_rdma_setup(uintptr_t base, ConfigRDDMAMPE* cfg) {
     temp_BiasCtrl = temp_BiasCtrl | (cfg->Bias[i].BiasEn << i);
     temp_ThreCtrl = temp_ThreCtrl | (cfg->Bias[i].ThreCtrl << (i*3)); // *3 :-( May Be Done By Looped+
     temp_DecCtrl  = temp_DecCtrl  | (cfg->Bias[i].DecCtrl << (i*3));
-    temp_PadCtrl  = temp_PadCtrl  | (cfg->Bias[i].PBSEn << (i+4));
+    temp_PadCtrl  = temp_PadCtrl  | (cfg->Bias[i].PXBSEn << (i+4)) | (cfg->Bias[i].PYBSEn << (i+12));
     
       // Point At The Next Bias Couple
     temp_BiasBase += Bias2Sha_MSha-Bias1Sha_MSha; 

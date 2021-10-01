@@ -10,7 +10,7 @@
 #define NU_PPE_CFG_PARAMS_NUM 22
 #define NU_PPE_REG_CFG_PARAMS_NUM 63
 
-#define NU_MPE_DMA_PARAM_TABLE_ROW_SIZE (4*(249+24))
+#define NU_MPE_DMA_PARAM_TABLE_ROW_SIZE (4*287)
 #define NU_MPE_DMA_PARAM_TABLE_NUM_ROWS 10
 #define NU_MPE_DMA_PARAM_TABLE_SIZE (NU_MPE_DMA_PARAM_TABLE_ROW_SIZE*4*NU_MPE_DMA_PARAM_TABLE_NUM_ROWS + 4)
 
@@ -169,7 +169,8 @@
     Enable   BiasEn;
     uint8_t  ThreCtrl;
     uint8_t  DecCtrl;
-    Enable   PBSEn;
+    Enable   PXBSEn;
+    Enable   PYBSEn;
     uint32_t Bias ;
     uint32_t AOffset ;
     uint16_t CntSha ;
