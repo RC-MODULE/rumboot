@@ -107,8 +107,8 @@
 #define RPXOffset_MSha            0x0224
 #define LPadXTreshold             0x0228
 #define RPadXTreshold             0x022C
-#define TPadYThreshold_MSha       0x0230
-#define BPadYThreshold_MSha       0x0234
+#define TPadYOffset_MSha          0x0230
+#define BPadYOffset_MSha          0x0234
 #define CntSha_MSha               0x0238
 #define CntThresholdSha_MSha      0x023C
 #define SecThre                   0x0240

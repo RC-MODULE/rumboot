@@ -580,8 +580,8 @@ void nu_mpe_print_ConfigRDDMAMPE(ConfigRDDMAMPE* cfg,char* name) {
     rumboot_printf("  AOffset = 0x%x\n",cfg->AOffset);
     rumboot_printf("  LPXOffset = %d \n",cfg->LPXOffset);
     rumboot_printf("  RPXOffset = %d \n",cfg->RPXOffset);
-    rumboot_printf("  TPYThreshold = %d \n",cfg->TPYThreshold);
-    rumboot_printf("  BPYThreshold = %d \n",cfg->BPYThreshold);
+    rumboot_printf("  TPYOffset = %d \n",cfg->TPYOffset);
+    rumboot_printf("  BPYOffset = %d \n",cfg->BPYOffset);
     rumboot_printf("  CntSha = %d \n",cfg->CntSha);
     rumboot_printf("  CntThresholdSha = %d \n",cfg->CntThresholdSha);
     nu_vpe_print_Enable(cfg->LPXEn,"LPXEn");
@@ -1931,8 +1931,8 @@ void nu_mpe_load_dma_config_from_table_row(ConfigDMAMPE* cfg, uint32_t** ptr_) {
   cfg->rdma.AOffset=             *ptr;ptr++;
   cfg->rdma.LPXOffset=           *ptr;ptr++;
   cfg->rdma.RPXOffset=           *ptr;ptr++;
-  cfg->rdma.TPYThreshold=        *ptr;ptr++;
-  cfg->rdma.BPYThreshold=        *ptr;ptr++;
+  cfg->rdma.TPYOffset=           *ptr;ptr++;
+  cfg->rdma.BPYOffset=           *ptr;ptr++;
   
   cfg->rdma.CntSha=(uint16_t)    *ptr;ptr++;
   
@@ -2094,8 +2094,8 @@ int nu_mpe_decide_dma_config_trivial(ConfigMPE* cfg, CubeMetrics* cube_metrics, 
   cfg->dma_d_config.rdma.AOffset = -(cfg->W * sizeof_C * cfg->Tp + sizeof_C * cfg->Lp);
   cfg->dma_d_config.rdma.LPXOffset=-(cfg->W * sizeof_C * cfg->Tp);
   cfg->dma_d_config.rdma.RPXOffset=-(cfg->W * sizeof_C * (cfg->Tp-1));
-  cfg->dma_d_config.rdma.TPYThreshold = cfg->dma_d_config.rdma.BFCA ;          // Shoule Be Allready Set!!!
-  cfg->dma_d_config.rdma.BPYThreshold = cfg->dma_d_config.rdma.BFCA + cfg->H * cfg->W * sizeof_C;
+  cfg->dma_d_config.rdma.TPYOffset= 0 ;
+  cfg->dma_d_config.rdma.BPYOffset = cfg->H * cfg->W * sizeof_C;
   cfg->dma_d_config.rdma.CntThresholdSha = sizeof_C>128 ? sizeof_C : 0;
   
   for(int i=0;i<7;i++)
@@ -2128,8 +2128,8 @@ int nu_mpe_decide_dma_config_trivial(ConfigMPE* cfg, CubeMetrics* cube_metrics, 
   cfg->dma_w_config.rdma.AOffset =0;
   cfg->dma_w_config.rdma.LPXOffset=0;
   cfg->dma_w_config.rdma.RPXOffset=0;
-  cfg->dma_w_config.rdma.TPYThreshold = 0;
-  cfg->dma_w_config.rdma.BPYThreshold = 0;
+  cfg->dma_w_config.rdma.TPYOffset= 0;
+  cfg->dma_w_config.rdma.BPYOffset= 0;
   cfg->dma_w_config.rdma.CntThresholdSha = sizeof_C>128 ? sizeof_C : 0;
   
   for(int i=0;i<7;i++)
@@ -2211,8 +2211,8 @@ void nu_mpe_rdma_setup(uintptr_t base, ConfigRDDMAMPE* cfg) {
   iowrite32(cfg->AOffset        ,base + AOffset_MSha);
   iowrite32(cfg->LPXOffset      ,base + LPXOffset_MSha);
   iowrite32(cfg->RPXOffset      ,base + RPXOffset_MSha);
-  iowrite32(cfg->TPYThreshold   ,base + TPadYThreshold_MSha);
-  iowrite32(cfg->BPYThreshold   ,base + BPadYThreshold_MSha);
+  iowrite32(cfg->TPYOffset      ,base + TPadYOffset_MSha);
+  iowrite32(cfg->BPYOffset      ,base + BPadYOffset_MSha);
   iowrite32(cfg->CntSha         ,base + CntSha_MSha);
   iowrite32(cfg->CntThresholdSha,base + CntThresholdSha_MSha);
   iowrite32(cfg->LPXData        ,base + LPXDR_MSha);

@@ -190,8 +190,8 @@
     uint32_t AOffset;
     uint32_t LPXOffset;
     uint32_t RPXOffset;
-    uint32_t TPYThreshold;
-    uint32_t BPYThreshold;
+    uint32_t TPYOffset;
+    uint32_t BPYOffset;
     uint16_t CntSha;
     uint16_t CntThresholdSha;
     Enable LPXEn ;
