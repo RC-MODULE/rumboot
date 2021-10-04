@@ -26,12 +26,12 @@
 #include <devices/com_simple.h>
 #include <devices/rcm_cp.h>
 
-extern void test_oi10_power_new();
+extern void test_oi10_power_1_7();
 
 int __attribute__((section(".text.test"))) check_cpu_power(void)
 {
     
-    test_oi10_power_new();       
+    test_oi10_power_1_7();       
 
     return 0;
 }

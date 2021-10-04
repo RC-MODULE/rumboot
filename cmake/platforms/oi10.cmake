@@ -1409,7 +1409,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         CONFIGURATION SUPPLEMENTARY
         LDS oi10/test_oi10_cpu_039_sram0.lds
         IRUN_FLAGS +RANDOMIZE_SRAM        
-        FILES power/test_oi10_power_1_6_1.S test_oi10_cpu_power_helper.c
+        FILES power/test_oi10_power_1_7.S test_oi10_cpu_power_helper.c
         NAME "test_oi10_cpu_power_helper"
     )
 
