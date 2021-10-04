@@ -2288,7 +2288,10 @@ void nu_mpe_ma_setup(uintptr_t base, ConfigMPE* cfg) {
   iowrite32(cfg->ma_config. NR          ,base + MPE_COMMON_NR);
   iowrite32(cfg->ma_config. D_BIAS      ,base + MPE_COMMON_D_BIAS);
   
-  iowrite32(cfg->dt ,base + MPE_COMMON_IN_FORMAT);
+  temp = cfg->dt == DataType_Fp16 ? 3 :
+         cfg->dt == DataType_Int16? 2 :
+       /*cfg->dt == DataType_Int8*/  0 ;
+  iowrite32(temp ,base + MPE_COMMON_IN_FORMAT);
   
   temp = (cfg->rnd_size << 0) | (cfg->sat_en << 8) | (cfg->rnd_mode << 16);
   iowrite32(temp, base + MPE_COMMON_NORM_PARAM);
