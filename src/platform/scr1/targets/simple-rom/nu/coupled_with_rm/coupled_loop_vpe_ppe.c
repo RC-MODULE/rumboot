@@ -126,9 +126,6 @@ int main() {
       cfg_vpe.src_rdma_config.dma_baddr = (uint32_t)in_data;
       cfg_vpe.src_rdma_config.dma_axi_len = 0xF; // axi_len
 
-      nu_vpe_print_config(&cfg_vpe);
-      nu_vpe_print_config_dma(&(cfg_vpe.src_rdma_config));
-
       nu_vpe_setup(MY_VPE_REGS_BASE, &cfg_vpe);
 
       nu_vpe_run(MY_VPE_REGS_BASE, &cfg_vpe);
@@ -161,6 +158,9 @@ int main() {
       if (res) {
         nu_ppe_print_config(&cfg_ppe);
         nu_ppe_print_config_reg(&cfg_ppe_reg);
+
+        nu_vpe_print_config(&cfg_vpe);
+        nu_vpe_print_config_dma(&(cfg_vpe.src_rdma_config));
       
         rumboot_platform_dump_region("res_data.bin",(uint32_t)res_data,res_metrics->s);
         rumboot_platform_dump_region("cfg_ppe_reg.bin", &cfg_ppe_reg, NU_PPE_REG_CFG_PARAMS_NUM*sizeof(uint32_t));

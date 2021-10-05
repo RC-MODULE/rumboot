@@ -829,26 +829,6 @@ endif() #### EXPERIMENT_STAGE_2_SUB_1
       set(NU_TESTS_NMB 0)
     endif()
 
-    #macro (ADD_PPE_MANY_TESTS name rm_bin_name ShowPerf DataSrc LBS)
-    #  foreach(i RANGE 0)
-    #    add_rumboot_target(
-    #      CONFIGURATION ROM
-    #      NAME ${name}_${i}
-    #      FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_ppe_new.c
-    #
-    #      PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${NU_SEED} > ${RM_LOGFILE} || exit 1
-    #
-    #      CFLAGS -D${ShowPerf} -D${DataSrc} -D${LBS} -DDUT=${DUT_LETTER_QUOTED}
-    #
-    #      IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
-    #
-    #      SUBPROJECT_DEPS npe_rm:${rm_bin_name}
-    #    )
-    #
-    #    math (EXPR NU_SEED "${NU_SEED} + 1")
-    #  endforeach()
-    #endmacro()
-
     set (i8_max   "--pool_meth 1 --data_type 0")
     set (i16_max  "--pool_meth 1 --data_type 1")
     set (fp16_max "--pool_meth 1 --data_type 2")
@@ -871,6 +851,28 @@ endif() #### EXPERIMENT_STAGE_2_SUB_1
           PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${NU_SEED} --it_nmb ${NU_IT_NMB} ${RM_CFG_PARAM} > ${RM_LOGFILE} || exit 1
 
           CFLAGS -D${ShowPerf} -D${DataSrc} -D${LBS} -DDUT=${DUT_LETTER_QUOTED}
+
+          IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+
+          SUBPROJECT_DEPS npe_rm:${rm_bin_name}
+        )
+
+        math (EXPR NU_SEED "${NU_SEED} + 1")
+      endforeach()
+    endmacro()
+
+    set (wl128_ke32_hb2 "--pool_meth 1 --data_type 1 --h_min 1 --h_max 32 --w_min 1 --w_max 128 --c_min 32 --c_max 32")
+
+    macro (ADD_VPE_PPE_TESTS name rm_bin_name ShowPerf LBS RM_CFG_PARAM)
+      foreach(i RANGE 0)
+        add_rumboot_target(
+          CONFIGURATION ROM
+          NAME ${name}_${i}
+          FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_ppe.c
+
+          PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${NU_SEED} --it_nmb ${NU_IT_NMB} ${RM_CFG_PARAM} > ${RM_LOGFILE} || exit 1
+
+          CFLAGS -D${ShowPerf} -D${LBS} -DDUT=${DUT_LETTER_QUOTED}
 
           IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
 
@@ -925,6 +927,8 @@ endif()  ### EXPERIMENT_STAGE_2_SUB_1
     ADD_PPE_TESTS(ppe_i8_avg_ml main_ppe NotShowPerf MEMtoPPE LIN ${i8_avg})
     ADD_PPE_TESTS(ppe_i16_avg_ml main_ppe NotShowPerf MEMtoPPE LIN ${i16_avg})
     ADD_PPE_TESTS(ppe_fp16_avg_ml main_ppe NotShowPerf MEMtoPPE LIN ${fp16_avg})
+
+    ADD_VPE_PPE_TESTS(vpe_ppe_wl128_ke32_hb2 main_vpe_ppe NotShowPerf LIN ${wl128_ke32_hb2})
 
     endif()
 
