@@ -10,11 +10,12 @@
 #include <platform/devices/nu_test_lib.h> 
 #include <platform/devices/nu_test_macro.h> 
 
-#include "platform/devices/nu_ppe_file_tags.h"
+#include "platform/devices/nu_vpe_ppe_file_tags.h"
 
+ConfigVPE     cfg_vpe;
+ConfigPPE     cfg_ppe;
 
-ConfigPPE     cfg;
-ConfigREGPPE  cfg_reg = {0};
+ConfigREGPPE  cfg_ppe_reg = {0};
 
 CubeMetrics*  in_metrics  = NULL;
 CubeMetrics*  res_metrics = NULL;
@@ -42,13 +43,10 @@ int main() {
   rumboot_printf("it_nmb is %d\n", it_nmb);
 
   #if DUT_IS_NPE
+    na_cu_set_units_direct_mode(NPE_BASE+NA_CU_REGS_BASE, NA_CU_VPE_UNIT_MODE);
     na_cu_set_units_direct_mode(NPE_BASE+NA_CU_REGS_BASE, NA_CU_PPE_UNIT_MODE);
 
     in_tag_pt = &in_file_tag;
-  #endif
-
-  #if DUT_IS_PPE
-    in_tag_pt = &in_ameba_file_tag;
   #endif
 
   #ifdef LIN
@@ -57,37 +55,17 @@ int main() {
   #ifdef BOX
     lbs = 0x1;
   #endif
-  #ifdef SPL
-    lbs = 0x2;
-  #endif
 
-  #ifdef MEMtoPPE
-    mv = 0x0;
-  #endif
-  #ifdef VPEtoPPE
-    mv = 0x1;
-  #endif
+  mv = 0x1;
 
   flying_mode = (lbs&0x3)<<1 | mv&0x1;
-
-  //iowrite32(0xFACE2021, MY_PPE_REGS_BASE + NU_PPE_WDMA_BASE_ADDR);
-  //uint32_t tmp;
-  //tmp = ioread32(MY_PPE_REGS_BASE + NU_PPE_WDMA_BASE_ADDR);
-  //rumboot_printf("%x\n", tmp);
-  //
-  //iowrite32(0xFACE2022, MY_PPE_REGS_BASE + NU_PPE_WDMA_BASE_ADDR);
-  //tmp = ioread32(MY_PPE_REGS_BASE + NU_PPE_WDMA_BASE_ADDR);
-  //rumboot_printf("%x\n", tmp);
-  //
-  //iowrite32(0xFACE2023, MY_PPE_RDMA_BASE + NU_PPE_RDMA_BASE_ADDR);
-  //tmp = ioread32(MY_PPE_RDMA_BASE + NU_PPE_RDMA_BASE_ADDR);
-  //rumboot_printf("%x\n", tmp);
 
   perf_avg = 0;
   for (i=0; i<it_nmb && !res; i++) {
     rumboot_malloc_update_heaps(1);
 
-    nu_ppe_load_cfg_by_tag(heap_id, &cfg, cfg_file_tag[i]);
+    nu_vpe_load_cfg_by_tag(heap_id, &cfg_vpe, cfg_vpe_file_tag[i]);
+    nu_ppe_load_cfg_by_tag(heap_id, &cfg_ppe, cfg_ppe_file_tag[i]);
 
     in_metrics  = nu_load_cube_metrics(heap_id, metrics_in_tag[i]);
     res_metrics = nu_load_cube_metrics (heap_id, metrics_etalon_tag[i]);
@@ -103,53 +81,77 @@ int main() {
     if (in_data == NULL || etalon == NULL || res_data == NULL) res = 1;
 
     if (!res) {
-      cfg_reg.rBALi = (uintptr_t)in_data;
-      cfg_reg.wBALo = (uintptr_t)res_data;
+      cfg_ppe_reg.wBALo = (uintptr_t)res_data;
     
-      cfg_reg.wOpM = flying_mode << 8;
-      nu_ppe_decide_dma_config_trivial(&cfg, res_metrics, &cfg_reg);
+      cfg_ppe_reg.wOpM = flying_mode << 8;
+      nu_ppe_decide_dma_config_trivial(&cfg_ppe, res_metrics, &cfg_ppe_reg);
     }
 
     if(!res){
-      //nu_ppe_print_config_reg(&cfg_reg);
+      //nu_ppe_print_config_reg(&cfg_ppe_reg);
 
-      nu_ppe_setup_reg(MY_PPE_RDMA_BASE, MY_PPE_REGS_BASE, &cfg_reg);
+      nu_ppe_setup_reg(MY_PPE_RDMA_BASE, MY_PPE_REGS_BASE, &cfg_ppe_reg);
     
-      cfg_reg.wOpEn  = 0x1;
-      nu_ppe_wdma_run(MY_PPE_REGS_BASE, &cfg_reg); // wdma start
-    
-      #ifdef MEMtoPPE
-      cfg_reg.rOpEn  = 0x1;
-      nu_ppe_rdma_run(MY_PPE_RDMA_BASE, &cfg_reg); // rdma start
-      #endif
-    
-      #ifdef VPEtoPPE
+      cfg_ppe_reg.wOpEn  = 0x1;
+      nu_ppe_wdma_run(MY_PPE_REGS_BASE, &cfg_ppe_reg); // wdma start
+
       #if DUT_IS_PPE
       nu_cpdmac_trn256_config(NU_CPDMAC_ASM_BASE,in_data,in_metrics->s);
       nu_cpdmac_trn256_run(NU_CPDMAC_ASM_BASE);
       #endif
+
+      #if DUT_IS_NPE
+
+  cfg_vpe.op0_rdma_config.dma_data_mode = cfg_vpe.op0_config.mux_mode; // Init Them
+  cfg_vpe.op1_rdma_config.dma_data_mode = cfg_vpe.op1_config.mux_mode;
+  cfg_vpe.op2_rdma_config.dma_data_mode = cfg_vpe.op2_config.mux_mode;
+  cfg_vpe.wdma_config.dma_data_mode     = 0x0;
+  cfg_vpe.wdma_config.dma_data_use      = 0x0;
+  cfg_vpe.op0_rdma_config.dma_baddr     = 0x0;
+  cfg_vpe.op1_rdma_config.dma_baddr     = 0x0;
+  cfg_vpe.op2_rdma_config.dma_baddr     = 0x0;
+  cfg_vpe.wdma_config.dma_baddr         = 0x0;
+  cfg_vpe.op0_rdma_config.dma_axi_len   = 0x0;
+  cfg_vpe.op1_rdma_config.dma_axi_len   = 0x0;
+  cfg_vpe.op2_rdma_config.dma_axi_len   = 0x0;
+  cfg_vpe.wdma_config.dma_axi_len       = 0x0;
+
+      cfg_vpe.trace_mode = TraceMode_PPE;
+
+      cfg_vpe.src_flying = Enable_NotEn;
+      cfg_vpe.dst_flying = Enable_En;
+
+      nu_vpe_decide_dma_config_trivial(&cfg_vpe,in_metrics);
+
+      cfg_vpe.src_rdma_config.dma_baddr = (uint32_t)in_data;
+      cfg_vpe.src_rdma_config.dma_axi_len = 0xF; // axi_len
+
+      nu_vpe_print_config(&cfg_vpe);
+      nu_vpe_print_config_dma(&(cfg_vpe.src_rdma_config));
+
+      nu_vpe_setup(MY_VPE_REGS_BASE, &cfg_vpe);
+
+      nu_vpe_run(MY_VPE_REGS_BASE, &cfg_vpe);
       #endif
-    
+
       clk_cnt = rumboot_platform_get_uptime();
     
       while (nu_ppe_status_done(MY_PPE_REGS_BASE) == 0x0) {} // set timeout
       clk_cnt = rumboot_platform_get_uptime() - clk_cnt;
-    
-      #ifdef MEMtoPPE
-      nu_ppe_rdma_wait_complete(MY_PPE_RDMA_BASE);  // wait rdma complete
+
+      #if DUT_IS_NPE
+      nu_vpe_wait(MY_VPE_REGS_BASE, &cfg_vpe);
       #endif
-    
-      #ifdef VPEtoPPE
+
       #if DUT_IS_PPE
       nu_cpdmac_trn256_wait_complete(NU_CPDMAC_ASM_BASE);
       #endif
-      #endif
-    
+
       nu_ppe_wait_complete(MY_PPE_REGS_BASE);
     
       // Sizeof(DataCube)/(times*frequency); time measure is us, frequency measure is MHz
       // clk_cnt will be devided by frequency later
-      dtB = (cfg_reg.wOpM >> 16 & 0x3) ? 0x2 : 0x1;
+      dtB = (cfg_ppe_reg.wOpM >> 16 & 0x3) ? 0x2 : 0x1;
       clk_cnt = (in_metrics->H * in_metrics->W * in_metrics->C * dtB)/clk_cnt;
     
       rumboot_printf("Comparing...\n");
@@ -157,11 +159,11 @@ int main() {
       res = nu_bitwise_compare(res_data,etalon,res_metrics->s);
     
       if (res) {
-        nu_ppe_print_config(&cfg);
-        nu_ppe_print_config_reg(&cfg_reg);
+        nu_ppe_print_config(&cfg_ppe);
+        nu_ppe_print_config_reg(&cfg_ppe_reg);
       
         rumboot_platform_dump_region("res_data.bin",(uint32_t)res_data,res_metrics->s);
-        rumboot_platform_dump_region("cfg_reg.bin", &cfg_reg, NU_PPE_REG_CFG_PARAMS_NUM*sizeof(uint32_t));
+        rumboot_platform_dump_region("cfg_ppe_reg.bin", &cfg_ppe_reg, NU_PPE_REG_CFG_PARAMS_NUM*sizeof(uint32_t));
       }
     }
 

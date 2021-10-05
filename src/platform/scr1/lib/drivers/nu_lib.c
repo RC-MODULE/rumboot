@@ -1284,7 +1284,7 @@ void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics) {
   cfg->src_rdma_config.dma_frag_size       = 16 * elem_size ;
   cfg->src_rdma_config.dma_xyz_drct        = DmaXYZDirection_Z;
   // ----------------
-  if (cfg->dst_flying == Enable_En) {
+  if (cfg->dst_flying == Enable_NotEn) {
     // for flying testcases only. Linear data read mode. NOT MPE read mode !!!!!!!!!!!! correct only for Cube sizes < 128
     cfg->src_rdma_config.dma_frag_last_size  = metrics->C              * elem_size                 ;
     cfg->src_rdma_config.dma_stride_z        = metrics->C              * elem_size                 ; //coef_z == vector_size * elem_size
@@ -2410,7 +2410,7 @@ void  nu_ppe_decide_dma_config_trivial(ConfigPPE* cfg, CubeMetrics* out_cube_met
   int frgli = Ci_s % frgs; // fragment last size if frgl>0
   int frglo = Co_s % frgs; // fragment last size if frgl>0
 
-  if (~(fm&0x1)) {  // MEMtoPPE
+  if (!(fm&0x1)) {  // MEMtoPPE
     //cfg_reg->rAXIp  =
     cfg_reg->rBrdX  = (Wi-1) * Ci_s;
     cfg_reg->rBrdY  = (Hi-1) * Wi * Ci_s;
@@ -2422,7 +2422,6 @@ void  nu_ppe_decide_dma_config_trivial(ConfigPPE* cfg, CubeMetrics* out_cube_met
 
     cfg_reg->rFrgs  = frgs;
     cfg_reg->rFrgl  = frgli>0 ? frgli : frgs;
-    //cfg_reg->rXYZd  = 0x2;
     cfg_reg->rXYZd  = DmaXYZDirection_Z;
 
     if (!(fm&0x2)) {  // linear
@@ -2444,6 +2443,27 @@ void  nu_ppe_decide_dma_config_trivial(ConfigPPE* cfg, CubeMetrics* out_cube_met
     cfg_reg->rBffX  = 0x0;
     cfg_reg->rBffY  = 0x0;
     cfg_reg->rBffZ  = 0x0;
+  }
+  else {
+    cfg_reg->rBALi = 0x0;
+    cfg_reg->rBrdX = 0x0;
+    cfg_reg->rBrdY = 0x0;
+    cfg_reg->rBrdZ = 0x0;
+    cfg_reg->rStrX = 0x0;
+    cfg_reg->rStrY = 0x0;
+    cfg_reg->rStrZ = 0x0;
+    cfg_reg->rFrgs = 0x0;
+    cfg_reg->rFrgl = 0x0;
+    cfg_reg->rXYZd = 0x0;
+    cfg_reg->rBstX = 0x0;
+    cfg_reg->rBstY = 0x0;
+    cfg_reg->rBstZ = 0x0;
+    cfg_reg->rBxtX = 0x0;
+    cfg_reg->rBxtY = 0x0;
+    cfg_reg->rBxtZ = 0x0;
+    cfg_reg->rBffX = 0x0;
+    cfg_reg->rBffY = 0x0;
+    cfg_reg->rBffZ = 0x0;
   }
 
   //cfg_reg->wAXIp  =
