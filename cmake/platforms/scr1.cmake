@@ -866,7 +866,7 @@ endif() #### EXPERIMENT_STAGE_2_SUB_1
         add_rumboot_target(
           CONFIGURATION ROM
           NAME ${name}_${i}
-          FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_ppe_new.c
+          FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop.c
 
           PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${NU_SEED} --it_nmb ${NU_IT_NMB} ${RM_CFG_PARAM} > ${RM_LOGFILE} || exit 1
 
