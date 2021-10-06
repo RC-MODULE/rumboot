@@ -41,7 +41,7 @@ int na_cu_rd_regs() {
 		rumboot_printf("Unexpected NA_PAUSE=0x%x\n",res4);}
 		else 
 		{res4=0;}
-	*/
+*/
 	///////////////////////////////////////////////////////////////////////////////////////
 	//
 	// Register NA_PAUSE is not ended in RTL. The bits 16,18 19 are BROKEN as INPUTs     //
@@ -206,6 +206,7 @@ int na_cu_rd_regs() {
 	//
 	//////////////////////////////////////////////////////////////////////////////////////
 		iowrite32(data,NPE_BASE + NA_CU_REGS_BASE + NA_SOFT_RESET);
+		iowrite32(data,NPE_BASE + NA_CU_REGS_BASE + NA_MPE_SOFT_RESET);
 	if ((0x00000000) != (ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_SOFT_RESET)& 0x00000001))
 		{rumboot_printf("Unexpected NA_SOFT_RESET =0x%x\n",ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_SOFT_RESET));
 		return 1;}
@@ -220,9 +221,9 @@ int na_cu_rd_regs() {
 		{rumboot_printf("Unexpected NA_VPE_SOFT_RESET =0x%x\n",ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_VPE_SOFT_RESET));
 		return 1;}
 		
-	iowrite32(data,NPE_BASE + NA_CU_REGS_BASE + NA_MPE_SOFT_RESET);
+	//iowrite32(data,NPE_BASE + NA_CU_REGS_BASE + NA_MPE_SOFT_RESET);
 	if((0x00000000)  !=(ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_MPE_SOFT_RESET)& 0x00000001)) 	
-		{rumboot_printf("Unexpected NA_MPE_SOFT_RESET =0x%x\n",ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_MPE_SOFT_RESET));
+		{rumboot_printf("Unexpected NA_MPE_SOFT_RESE=0x%x\n",ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_MPE_SOFT_RESET));
 		return 1;}
 	
 	
