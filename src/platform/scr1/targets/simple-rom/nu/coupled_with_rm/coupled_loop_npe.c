@@ -12,6 +12,8 @@
 
 #include "platform/devices/nu_npe_file_tags.h"
 
+int PPE_ENABLED;
+
 void *in_data;
 void *warr;
 void *etalon;
@@ -62,9 +64,9 @@ void nu_vpe_decide_dma_config (
   void*op1,
   void*op2,
   CubeMetrics*res_metrics,
-  void*res_data
+  void*res_data,
+  int PPE_ENABLED
 ) {
-  rumboot_printf("nu_vpe_decide_dma_config \n");
   cfg->trace_mode = TraceMode_MPE;  // FIRST!!!! Because nu_vpe_decide_dma_config_trivial depends On It
   
   cfg->op0_rdma_config.dma_data_mode = cfg->op0_config.mux_mode; // Init Them
@@ -74,7 +76,10 @@ void nu_vpe_decide_dma_config (
   cfg->wdma_config.dma_data_use=DmaDUse_Off;
   
   cfg->src_flying = Enable_En;
-  cfg->dst_flying = Enable_En;
+  if(PPE_ENABLED)
+    cfg->dst_flying = Enable_En;
+  else
+    cfg->dst_flying = Enable_NotEn;
   
   nu_vpe_decide_dma_config_trivial(cfg,in_metrics);
   
@@ -82,7 +87,7 @@ void nu_vpe_decide_dma_config (
   cfg->op0_rdma_config.dma_baddr = (uint32_t) op0;
   cfg->op1_rdma_config.dma_baddr = (uint32_t) op1;
   cfg->op2_rdma_config.dma_baddr = (uint32_t) op2;
-  cfg->wdma_config.dma_baddr     = (uint32_t) 0xDEADBEEF;  //
+  cfg->wdma_config.dma_baddr     = (uint32_t) res_data;
 
   cfg->src_rdma_config.dma_axi_len = axi_len;
   cfg->op0_rdma_config.dma_axi_len = axi_len;
@@ -114,7 +119,12 @@ int main() {
   uint8_t  axi_len;
   
   axi_len = 15;
-  
+#ifdef DONT_USE_PPE
+  PPE_ENABLED=0;
+#else
+  PPE_ENABLED=1;
+#endif
+
   rumboot_printf("Hello\n");
 
   heap_id = nu_get_heap_id();
@@ -132,7 +142,9 @@ int main() {
     
     if(nu_mpe_load_cfg_by_tag(heap_id, &cfg_mpe, cfg_mpe_file_tag[i]) != 0) return -1;
     if(nu_vpe_load_cfg_by_tag(heap_id, &cfg_vpe, cfg_vpe_file_tag[i]) != 0) return -1;
-    if(nu_ppe_load_cfg_by_tag(heap_id, &cfg_ppe, cfg_ppe_file_tag[i]) != 0) return -1;
+    if(PPE_ENABLED) {
+      if(nu_ppe_load_cfg_by_tag(heap_id, &cfg_ppe, cfg_ppe_file_tag[i]) != 0) return -1;
+    }
     
       // Load Metrics Files
     in_metrics = nu_load_cube_metrics(heap_id,metrics_in_tag[i]);
@@ -186,26 +198,32 @@ int main() {
     // if(nu_vpe_load_status_regs_by_tag(heap_id,&status_regs_etalon,status_regs_file_tag[i]) != 0) return -1;
     
     if(nu_mpe_decide_dma_config(&cfg_mpe,in_metrics,warr_metrics,in_data,warr,mpe_cfg_lut)!=0) return -1;
-    nu_vpe_decide_dma_config (&cfg_vpe,res_metrics,axi_len,NULL,op0,op1,op2,res_metrics,res_data);
-    nu_ppe_decide_dma_config (&cfg_ppe,&cfg_reg_ppe,res_metrics,NULL,res_data);
+    nu_vpe_decide_dma_config (&cfg_vpe,res_metrics,axi_len,NULL,op0,op1,op2,res_metrics,res_data,PPE_ENABLED);
+    if(PPE_ENABLED)nu_ppe_decide_dma_config (&cfg_ppe,&cfg_reg_ppe,res_metrics,NULL,res_data);
     
     nu_mpe_print_config(&cfg_mpe);
     nu_vpe_print_config(&cfg_vpe);
     // nu_vpe_print_status_regs_etalon(&status_regs_etalon);
-    nu_ppe_print_config(&cfg_ppe);
-    nu_ppe_print_config_reg(&cfg_reg_ppe);
+    if(PPE_ENABLED) {
+      nu_ppe_print_config(&cfg_ppe);
+      nu_ppe_print_config_reg(&cfg_reg_ppe);
+    }
     
     nu_vpe_setup(MY_VPE_REGS_BASE, &cfg_vpe);
     nu_mpe_setup(MY_MPE_REGS_BASE, &cfg_mpe);
-    nu_ppe_setup_reg(MY_PPE_RDMA_BASE, MY_PPE_REGS_BASE, &cfg_reg_ppe);
+    if(PPE_ENABLED) {
+      nu_ppe_setup_reg(MY_PPE_RDMA_BASE, MY_PPE_REGS_BASE, &cfg_reg_ppe);
     
-    
-    cfg_reg_ppe.wOpEn  = 0x1;
-    nu_ppe_wdma_run(MY_PPE_REGS_BASE, &cfg_reg_ppe);
+      cfg_reg_ppe.wOpEn  = 0x1;
+      nu_ppe_wdma_run(MY_PPE_REGS_BASE, &cfg_reg_ppe);
+    }
     nu_vpe_run(MY_VPE_REGS_BASE, &cfg_vpe);
     nu_mpe_run(MY_MPE_REGS_BASE, &cfg_mpe);
     
-    nu_ppe_wait_complete(MY_PPE_REGS_BASE);
+    if(PPE_ENABLED)
+      nu_ppe_wait_complete(MY_PPE_REGS_BASE);
+    else
+      nu_vpe_wait(MY_VPE_REGS_BASE, &cfg_vpe);
     
     rumboot_printf("Comparing..\n");
     

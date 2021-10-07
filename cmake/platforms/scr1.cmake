@@ -1095,7 +1095,8 @@ endif() ### EXPERIMENT_STAGE_2_SUB_1
         add_rumboot_target(
           CONFIGURATION ROM
           NAME ${name}
-          FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_npe_mpe_only.c
+          FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_npe.c
+          CFLAGS -DDONT_USE_PPE=1
           PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
           IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
           SUBPROJECT_DEPS npe_rm:${rm_bin_name}
