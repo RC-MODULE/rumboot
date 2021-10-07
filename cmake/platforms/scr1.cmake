@@ -627,8 +627,8 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         foreach(in_macro IN ITEMS IN_INT32 IN_FP32)
           ADD_VPE_COUPLED_TEST_LOOP(vpe_21_0_lut_${in_macro} main_vpe_21_0_lut_${in_macro}) # VPE_21
           ADD_VPE_COUPLED_TEST_LOOP(vpe_21_1_lut_addition_${in_macro} main_vpe_21_1_lut_addition_${in_macro}) # VPE_21_addition
+          ADD_VPE_COUPLED_TEST_LOOP(vpe_21_2_lut_out_of_range_${in_macro} main_vpe_21_2_lut_out_of_range_${in_macro}) # VPE_21_out_of_range
         endforeach()
-        ADD_VPE_COUPLED_TEST_LOOP(vpe_21_2_lut_out_of_range main_vpe_21_2_lut_out_of_range) # VPE_21_out_of_range
         ADD_VPE_COUPLED_TEST_LOOP(vpe_21_3_lut_offset_IN_INT32 main_vpe_21_3_lut_offset_IN_INT32) # VPE_21_offset_IN_INT32
         ADD_VPE_COUPLED_TEST_LOOP(vpe_21_3_lut_offset_IN_FP32 main_vpe_21_3_lut_offset_IN_FP32) # VPE_21_offset_IN_FP32
         ADD_VPE_COUPLED_TEST_LOOP(vpe_21_4_lut_mirror_type0_IN_INT32 main_vpe_21_4_lut_mirror_type0_IN_INT32) # VPE_21_mirror_type0_IN_INT32
@@ -752,6 +752,8 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         #Tests on VPE::LUT in context NPE
         foreach(in_macro IN ITEMS IN_INT16 IN_INT8 IN_FP16)
           ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(npe_vpe_lut_${in_macro} main_npe_vpe_lut_${in_macro})
+          ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(npe_vpe_lut_addition_${in_macro} main_npe_vpe_lut_addition_${in_macro})
+          ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(npe_vpe_lut_out_of_range_${in_macro} main_npe_vpe_lut_out_of_range_${in_macro})
         endforeach()
 
         # Tests on VPE+PPE channel mode ???
