@@ -2491,8 +2491,8 @@ void  nu_ppe_decide_dma_config_trivial(ConfigPPE* cfg, CubeMetrics* out_cube_met
     cfg_reg->wIffX  = 0x0;
   }
   else if (fm&0x2) {  // boxed
-    //cfg_reg->wBstX  = ; // excel
-    //cfg_reg->wBxtX  = ; // excel
+    cfg_reg->wBstX  = 128-1;
+    cfg_reg->wBxtX  = 128-1;
 
     cfg_reg->wBstY  = 0x0     ;
     cfg_reg->wBstZ  = 0x8 - 1 ;

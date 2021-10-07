@@ -1098,6 +1098,20 @@ endif() ### EXPERIMENT_STAGE_2_SUB_1
       ADD_NPE_MPE_ONLY_TEST(npe_mpe_direct_ex_MPE_CFG_4 main_mpe_direct_ex_MPE_CFG_4)
       ADD_NPE_MPE_ONLY_TEST(npe_mpe_direct_ex_MPE_CFG_7 main_mpe_direct_ex_MPE_CFG_7)
       ADD_NPE_MPE_ONLY_TEST(npe_mpe_direct_ex_MPE_CFG_8 main_mpe_direct_ex_MPE_CFG_8)
+
+      macro(ADD_NPE_COMPLEX_TEST name rm_bin_name)
+        add_rumboot_target(
+          CONFIGURATION ROM
+          NAME ${name}
+          FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_npe.c
+          PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
+          IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+          SUBPROJECT_DEPS npe_rm:${rm_bin_name}
+        )
+      endmacro()
+
+      ADD_NPE_COMPLEX_TEST(npe_all_ex_IN_INT16 main_npe_all_ex_IN_INT16)
+
     endif()
 
     endif()  # if(DUT STREQUAL MPE,VPE,PPE,NPE)
