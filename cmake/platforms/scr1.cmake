@@ -610,11 +610,18 @@ endif() #### EXPERIMENT_STAGE_2_SUB_1
     ADD_VPE_COUPLED_TEST_LOOP(vpe_19_0_op2_mul_int16 main_vpe_19_0_op2_mul_int16)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_19_1_op2_mul_int8 main_vpe_19_1_op2_mul_int8)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_19_2_op2_mul_fp32 main_vpe_19_2_op2_mul_fp32)
-    ADD_VPE_COUPLED_TEST_LOOP(vpe_21_0_lut main_vpe_21_0_lut) # VPE_21
+    foreach(in_macro IN ITEMS IN_INT32 IN_FP32)
+      ADD_VPE_COUPLED_TEST_LOOP(vpe_21_0_lut main_vpe_21_0_lut_${in_macro}) # VPE_21
+    endforeach()
     ADD_VPE_COUPLED_TEST_LOOP(vpe_21_1_lut_addition main_vpe_21_1_lut_addition) # VPE_21_addition
     ADD_VPE_COUPLED_TEST_LOOP(vpe_21_2_lut_out_of_range main_vpe_21_2_lut_out_of_range) # VPE_21_out_of_range
     ADD_VPE_COUPLED_TEST_LOOP(vpe_21_3_lut_offset_IN_INT32 main_vpe_21_3_lut_offset_IN_INT32) # VPE_21_offset_IN_INT32
     ADD_VPE_COUPLED_TEST_LOOP(vpe_21_3_lut_offset_IN_FP32 main_vpe_21_3_lut_offset_IN_FP32) # VPE_21_offset_IN_FP32
+    ADD_VPE_COUPLED_TEST_LOOP(vpe_21_4_lut_mirror_type0_IN_INT32 main_vpe_21_4_lut_mirror_type0_IN_INT32) # VPE_21_mirror_type0_IN_INT32
+    ADD_VPE_COUPLED_TEST_LOOP(vpe_21_4_lut_mirror_type0_IN_FP32 main_vpe_21_4_lut_mirror_type0_IN_FP32) # VPE_21_mirror_type0_IN_FP32
+    ADD_VPE_COUPLED_TEST_LOOP(vpe_21_4_lut_mirror_type1_IN_INT32 main_vpe_21_4_lut_mirror_type1_IN_INT32) # VPE_21_mirror_type1_IN_INT32
+    ADD_VPE_COUPLED_TEST_LOOP(vpe_21_4_lut_mirror_type1_IN_FP32 main_vpe_21_4_lut_mirror_type1_IN_FP32) # VPE_21_mirror_type1_IN_FP32
+
     ADD_VPE_COUPLED_TEST_LOOP(vpe_22_op0_together main_vpe_22_op0_together) # VPE_22
     ADD_VPE_COUPLED_TEST_LOOP(vpe_23_op1_together main_vpe_23_op1_together) # VPE_23
     ADD_VPE_COUPLED_TEST_LOOP(vpe_24_op2_together main_vpe_24_op2_together) # VPE_24
@@ -711,6 +718,12 @@ endif() #### EXPERIMENT_STAGE_2_SUB_1
     ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_op1_ch_mode_int main_vpe_op1_ch_mode_int)
     ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_op0_ch_mode_fp main_vpe_op0_ch_mode_fp)
     ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_op1_ch_mode_fp main_vpe_op1_ch_mode_fp)
+
+    #Tests on VPE::LUT in context NPE
+    foreach(in_macro IN ITEMS IN_INT16 IN_INT8 IN_FP16)
+      ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(npe_vpe_lut_${in_macro} main_npe_vpe_lut_${in_macro})
+    endforeach()
+
     
     ADD_VPE_PPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_ppe_op0_ch_mode_int main_vpe_op0_ch_mode_int)
     ADD_VPE_PPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_ppe_op1_ch_mode_int main_vpe_op1_ch_mode_int)
