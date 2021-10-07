@@ -611,7 +611,7 @@ endif() #### EXPERIMENT_STAGE_2_SUB_1
     ADD_VPE_COUPLED_TEST_LOOP(vpe_19_1_op2_mul_int8 main_vpe_19_1_op2_mul_int8)
     ADD_VPE_COUPLED_TEST_LOOP(vpe_19_2_op2_mul_fp32 main_vpe_19_2_op2_mul_fp32)
     foreach(in_macro IN ITEMS IN_INT32 IN_FP32)
-      ADD_VPE_COUPLED_TEST_LOOP(vpe_21_0_lut main_vpe_21_0_lut_${in_macro}) # VPE_21
+      ADD_VPE_COUPLED_TEST_LOOP(vpe_21_0_lut_${in_macro} main_vpe_21_0_lut_${in_macro}) # VPE_21
     endforeach()
     ADD_VPE_COUPLED_TEST_LOOP(vpe_21_1_lut_addition main_vpe_21_1_lut_addition) # VPE_21_addition
     ADD_VPE_COUPLED_TEST_LOOP(vpe_21_2_lut_out_of_range main_vpe_21_2_lut_out_of_range) # VPE_21_out_of_range
