@@ -1145,10 +1145,10 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         foreach(in_macro IN ITEMS IN_INT8 IN_INT16 IN_FP16)
           ADD_NPE_MPE_ONLY_TEST(npe_mpe_only_rnd_${in_macro} main_mpe_rnd_${in_macro})
         endforeach()
-        ADD_NPE_MPE_ONLY_TEST(npe_mpe_direct_ex_MPE_CFG_3 main_mpe_direct_ex_MPE_CFG_3)
-        ADD_NPE_MPE_ONLY_TEST(npe_mpe_direct_ex_MPE_CFG_4 main_mpe_direct_ex_MPE_CFG_4)
-        ADD_NPE_MPE_ONLY_TEST(npe_mpe_direct_ex_MPE_CFG_7 main_mpe_direct_ex_MPE_CFG_7)
-        ADD_NPE_MPE_ONLY_TEST(npe_mpe_direct_ex_MPE_CFG_8 main_mpe_direct_ex_MPE_CFG_8)
+
+        foreach(label RANGE 1 24)
+          ADD_NPE_MPE_ONLY_TEST(npe_mpe_direct_ex_MPE_CFG_${label} main_mpe_direct_ex_${label})
+        endforeach()
 
         macro(ADD_NPE_COMPLEX_TEST name rm_bin_name)
           add_rumboot_target(
