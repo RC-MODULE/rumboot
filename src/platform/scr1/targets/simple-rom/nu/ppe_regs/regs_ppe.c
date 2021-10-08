@@ -125,8 +125,9 @@
 		else 
 		{res16=0;}
 
-	if ((0x00000000) != (ioread32(rbase + NU_PPE_RDMA_XYZ_DRCT)& 0x00000003))
+	if ((0x00000002) != (ioread32(rbase + NU_PPE_RDMA_XYZ_DRCT)& 0x00000003))
 		{res17 =1;
+		rumboot_printf("NU_PPE_RDMA_XYZ_DRCT =%d\n",ioread32(rbase + NU_PPE_RDMA_XYZ_DRCT));	
 		rumboot_printf("res17 error\n");}
 		else 
 		{res17=0;}
@@ -269,13 +270,13 @@
 		rumboot_printf("resw15 error\n");}	
 		else 
 		{resw15=0;}
-   	
+	
 	if ((0x00000000) != (ioread32(wbase + NU_PPE_WDMA_FRAG_LAST_SIZE)& 0x00FFFFFF))
 		{resw16 =1;
 		rumboot_printf("resw16 error\n");}
 		else 
 		{resw16=0;}	
-	if ((0x00000000) != (ioread32(wbase + NU_PPE_WDMA_XYZ_DRCT)& 0x00000003))
+	if ((0x00000002) != (ioread32(wbase + NU_PPE_WDMA_XYZ_DRCT)& 0x00000003))
 		{resw17 =1;
 		rumboot_printf("resw17 error\n");}
 		else 
@@ -1047,7 +1048,7 @@ int main() {
   rumboot_printf("Test PPE regs run\n");
   rumboot_printf("Read REGS after reset\n");
     rumboot_printf("NA_CU_PPE_UNIT_MODE = %x\n",NA_CU_PPE_UNIT_MODE);
-	rumboot_printf("NA_CU_PPE_UNIT_MODE = %x\n",NPE_BASE);
+	rumboot_printf("NPE_BASE = %x\n",NPE_BASE);
 	rumboot_printf("NA_CU_REGS_BASE = %x\n",NA_CU_REGS_BASE);
 
 	rumboot_printf("MY_PPE_RDMA_BASE = %x\n",MY_PPE_RDMA_BASE);
