@@ -1147,7 +1147,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         endforeach()
 
         foreach(label RANGE 1 24)
-          ADD_NPE_MPE_ONLY_TEST(npe_mpe_direct_ex_MPE_CFG_${label} main_mpe_direct_ex_${label})
+          ADD_NPE_MPE_ONLY_TEST(npe_mpe_direct_ex_MPE_CFG_${label} main_mpe_direct_ex_MPE_CFG_${label})
         endforeach()
 
         macro(ADD_NPE_COMPLEX_TEST name rm_bin_name)
