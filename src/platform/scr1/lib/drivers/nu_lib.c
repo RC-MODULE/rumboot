@@ -1157,7 +1157,7 @@ void nu_vpe_setup(uintptr_t base, ConfigVPE* cfg) {
 }
 
 
-void nu_vpe_decide_dma_cube_config(ConfigDMA* dma_cfg, Enable trace_mode, CubeMetrics* metrics) {
+void nu_vpe_decide_dma_cube_config(ConfigDMA* dma_cfg, TraceMode trace_mode, CubeMetrics* metrics) {
   uint32_t elem_size     ;
   uint32_t tmp_data_use  ;
   uint32_t tmp_data_size ;
