@@ -40,7 +40,7 @@ void nu_vpe_decide_dma_config (
   cfg->op1_rdma_config.dma_data_mode = cfg->op1_config.mux_mode;
   cfg->op2_rdma_config.dma_data_mode = cfg->op2_config.mux_mode;
   cfg->wdma_config.dma_data_mode     = Mode_Element; // Copypaste From src_rdma_config in nu_vpe_decide_dma_config_trivial
-  cfg->wdma_config.dma_data_use=DmaDUse_Off;
+  cfg->wdma_config.dma_data_use      = DmaDUse_Off;
   
   cfg->src_flying = cfg->in_data_type == DataTypeExt_Int32 || cfg->in_data_type == DataTypeExt_Fp32 ? Enable_En : Enable_NotEn;
 #ifdef FORCE_VPE_WDMA_EN
@@ -61,11 +61,11 @@ void nu_vpe_decide_dma_config (
   cfg_dma->C = in_metrics->C;
   cfg_dma->dma_dst_en = cfg->dst_flying ? Enable_NotEn : Enable_NotEn;
   
-  cfg->src_rdma_config.dma_baddr = (uint32_t) in_data;
-  cfg->op0_rdma_config.dma_baddr = (uint32_t) op0;
-  cfg->op1_rdma_config.dma_baddr = (uint32_t) op1;
-  cfg->op2_rdma_config.dma_baddr = (uint32_t) op2;
-  cfg->wdma_config.dma_baddr = (uint32_t) res_data;
+  cfg->src_rdma_config.dma_baddr = (uint32_t) in_data ;
+  cfg->op0_rdma_config.dma_baddr = (uint32_t) op0     ;
+  cfg->op1_rdma_config.dma_baddr = (uint32_t) op1     ;
+  cfg->op2_rdma_config.dma_baddr = (uint32_t) op2     ;
+  cfg->wdma_config.dma_baddr     = (uint32_t) res_data;
   
   cfg->src_rdma_config.dma_axi_len = axi_len;
   cfg->op0_rdma_config.dma_axi_len = axi_len;
