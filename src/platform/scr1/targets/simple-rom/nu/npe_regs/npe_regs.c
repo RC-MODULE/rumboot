@@ -12,7 +12,8 @@
 int na_cu_rd_regs() {
 
      int res;	 
-	 int res1,res2,/*res3,res4,*/res5,res6,res7,res8,/*res9,*/res10,res11,res12,
+	 int res1,res2, res3,/*res4,*/res5,res6,res7,res8,res9,res91,res92,
+		 res93,res94,res95,res96,res10,res11,res12,
 		 res13,res14,res15,res16,res17,res18,res19,res20,res21,res22;	 
   
 		res1 = ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_UNITS_MODE) & 0x00000007;
@@ -28,13 +29,13 @@ int na_cu_rd_regs() {
 		rumboot_printf("Unexpected NA_ID =0x%x\n",res2);}
 		{res2 =0;} 
  	
-	/*	res3 = ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_STAT);
-		if ((0x00000000) !=(ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_STAT))) 	
+		res3 = ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_STAT);
+		if ((0x00000000) !=(ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_STAT))& 0x000F0000) 	
 		{res3 =1;
 		rumboot_printf("Unexpected NA_STAT=0x%x\n",res3);}
 		else 
 		{res3=0;}
-	
+	/*
 		res4 = ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_PAUSE);
 		if ((0x00000000) != (ioread32(NPE_BASE + NA_CU_REGS_BASE +NA_PAUSE)& 0x0000000F))
 		{res4 =1;
@@ -74,14 +75,55 @@ int na_cu_rd_regs() {
 		else 
 		{res8=0;}
 	
-	/*
+	
 	res9 = ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_CMD_FIFO_STAT);
-	if ((0x00000000)  != (ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_CMD_FIFO_STAT)& 0x00FF00FF))
+	if ((0x00000000)  != (ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_CMD_FIFO_STAT)& 0x000000FF))
 		{res9 =1;
 		rumboot_printf("Unexpected NA_CMD_FIFO_STAT =0x%x\n",res9);}	
 		else 
 		{res9=0;}
-	*/
+	
+	res91 = ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_MPE_D_CMD_FIFO_STAT);
+	if ((0x00000000)  != (ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_MPE_D_CMD_FIFO_STAT)& 0x000F00FF))
+		{res91 =1;
+		rumboot_printf("Unexpected NA_MPE_D_CMD_FIFO_STAT =0x%x\n",res91);}	
+		else 
+		{res91=0;}
+	res92 = ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_MPE_W_CMD_FIFO_STAT);
+	if ((0x00000000)  != (ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_MPE_W_CMD_FIFO_STAT)& 0x000F00FF))
+		{res92 =1;
+		rumboot_printf("Unexpected NA_MPE_W_CMD_FIFO_STAT =0x%x\n",res92);}	
+		else 
+		{res92=0;}
+	
+		res93 = ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_MPE_MA_CMD_FIFO_STAT);
+	if ((0x00000000)  != (ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_MPE_MA_CMD_FIFO_STAT)& 0x000000FF))
+		{res93 =1;
+		rumboot_printf("Unexpected NA_MPE_MA_CMD_FIFO_STAT =0x%x\n",res93);}	
+		else 
+		{res93=0;}
+	
+		res94 = ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_VPE_CMD_FIFO_STAT);
+	if ((0x00000000)  != (ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_VPE_CMD_FIFO_STAT)& 0x000F00FF))
+		{res94 =1;
+		rumboot_printf("Unexpected NA_VPE_CMD_FIFO_STAT =0x%x\n",res94);}	
+		else 
+		{res94=0;}
+	
+		res95 = ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_PPE_R_CMD_FIFO_STAT);
+	if ((0x00000000)  != (ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_PPE_R_CMD_FIFO_STAT)& 0x000F00FF))
+		{res95 =1;
+		rumboot_printf("Unexpected NA_PPE_R_CMD_FIFO_STAT =0x%x\n",res95);}	
+		else 
+		{res95=0;}
+	
+		res95 = ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_PPE_W_CMD_FIFO_STAT);
+	if ((0x00000000)  != (ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_PPE_W_CMD_FIFO_STAT)& 0x000F00FF))
+		{res96 =1;
+		rumboot_printf("Unexpected NA_PPE_W_CMD_FIFO_STAT =0x%x\n",res96);}	
+		else 
+		{res96=0;}
+	
 	//////////////////////////////////////////////////////////////////////////////////////////////
 	//
 	// Register NA_CMD_FIFO_STAT is not ended in RTL. The bits 32-16; 7-0  are BROKEN as INPUTs //
@@ -89,14 +131,15 @@ int na_cu_rd_regs() {
 	//////////////////////////////////////////////////////////////////////////////////////////////
 	
 	res10 = ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_CMD_FIFO_LEVEL);
-	if ((0x00000000)  !=(ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_CMD_FIFO_LEVEL) & 0x00FF00FF)) 	
+	if ((0x000000FF)  !=(ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_CMD_FIFO_LEVEL) & 0x000000FF)) 	
 		{res10 =1;
-		rumboot_printf("Unexpected NA_CMD_FIFO_LEVEL =0x%x\n",res10);}	
+		rumboot_printf("NA_CMD_FIFO_LEVEL =0x%x\n",(ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_CMD_FIFO_LEVEL) & 0x000000FF));
+		rumboot_printf("Unexpectedd NA_CMD_FIFO_LEVEL =0x%x\n",((ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_CMD_FIFO_LEVEL)) & 0x000000FF));}	
 		else 
 		{res10=0;}
 	
 	res11 = ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_INT_UNITS_STATUS);		
-	if ((0x00000000)  != (ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_INT_UNITS_STATUS) &  0x00FF00FF))
+	if ((0x00000000)  != (ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_INT_UNITS_STATUS) &  0xFFEFFFFF))
 		{res11 =1;
 		rumboot_printf("Unexpected NA_INT_UNITS_STATUS =0x%x\n",res11);}	
 		else 
@@ -131,14 +174,15 @@ int na_cu_rd_regs() {
 		{res15=0;}
 	
 	res16 = ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_INT_RESET);
-	if ((0x00000000) != (ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_INT_RESET)&  0x0000007F))
+	//rumboot_printf("Unexpected NA_INT_RESET =0x%x\n",res16);
+	if ((0x00000000) != (ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_INT_RESET)&  0xFFEFFFFF))//!!!!
 		{res16 =1;
-		rumboot_printf("Unexpected NA_INT_RESET =0x%x\n",res16);}
+		rumboot_printf("Unexpected NA_INT_RESET =0x%x\n",ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_INT_RESET));}
 		else 
 		{res16=0;}
 		
 	res17 = ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_INT_SET);
-	if ((0x00000000) != (ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_INT_SET)&  0x0000007F))
+	if ((0x00000000) != (ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_INT_SET)&  0xFFEFFFFF))
 		{res17 =1;
 		rumboot_printf("Unexpected NA_INT_SET =0x%x\n",res17);}
 		else 
@@ -151,35 +195,36 @@ int na_cu_rd_regs() {
 		else 
 		{res18=0;}
 	
-	res19 = ioread32(NPE_BASE + NA_CU_REGS_BASE + AXI_INT_STATUS);
-	if ((0x00000000) != (ioread32(NPE_BASE + NA_CU_REGS_BASE + AXI_INT_STATUS)& 0x07FFFFFF))
+	res19 = ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_INT_AXI_STATUS);
+	if ((0x00000000) != (ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_INT_AXI_STATUS)& 0x07FFFFFF))
 		{res19 =1;
-		rumboot_printf("Unexpected AXI_INT_STATUS =0x%x\n",res19);}
+		rumboot_printf("Unexpected NQA_INT_AXI_STATUS =0x%x\n",res19);}
 		else 
 		{res19=0;}
 	
-	res20 = ioread32(NPE_BASE + NA_CU_REGS_BASE + AXI_INT_RESET);
-	if ((0x00000000) != (ioread32(NPE_BASE + NA_CU_REGS_BASE + AXI_INT_RESET)& 0x07FFFFFF))
+	res20 = ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_INT_AXI_RESET);
+	if ((0x00000000) != (ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_INT_AXI_RESET)& 0x07FFFFFF))
 		{res20 =1;
-		rumboot_printf("Unexpected AXI_INT_RESET =0x%x\n",res20);}
+		rumboot_printf("Unexpected NA_INT_AXI_RESET =0x%x\n",res20);}
 		else 
 		{res20=0;}
 	
-	res21 = ioread32(NPE_BASE + NA_CU_REGS_BASE + AXI_INT_SET);
-	if ((0x00000000) != (ioread32(NPE_BASE + NA_CU_REGS_BASE + AXI_INT_SET)& 0x07FFFFFF))
+	res21 = ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_INT_AXI_SET);
+	if ((0x00000000) != (ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_INT_AXI_SET)& 0x07FFFFFF))
 		{res21 =1;
-		rumboot_printf("Unexpected AXI_INT_SET =0x%x\n",res21);}
+		rumboot_printf("Unexpected NA_INT_AXI_SET =0x%x\n",res21);}
 		else 
 		{res21=0;}
 
-		res22 = ioread32(NPE_BASE + NA_CU_REGS_BASE + AXI_INT_MASK);
-  if ((0x00000000) != (ioread32(NPE_BASE + NA_CU_REGS_BASE + AXI_INT_MASK)& 0x07FFFFFF))
+		res22 = ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_INT_AXI_MASK);
+  if ((0x00000000) != (ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_INT_AXI_MASK)& 0x07FFFFFF))
 		{res22 =1;
-		rumboot_printf("Unexpected AXI_INT_MASK =0x%x\n",res22);}
+		rumboot_printf("Unexpected NA_INT_AXI_MASK =0x%x\n",res22);}
 		else 
 		{res22=0;}
 	
-		res = res1  || res2 /*|| res4 */ ||res5  || res6  || res7  || res8 /* || res9 */|| res10 ||
+		res = res1  || res2 || res3 /*|| res4 */ ||res5  || res6  || res7  || res8  || res9 ||
+			res91 || res92 || res93 || res94 || res95 || res96 || res10 ||
 			res11 || res12 ||res13 || res14 ||res15 || res16 || res17  || res18 || res19 ||
 			 res20 ||res21 || res22;
 	
@@ -199,6 +244,7 @@ int na_cu_rd_regs() {
 		{rumboot_printf("Unexpected NA_UNITS_MODE =0x%x\n",ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_ID));	
 		return 1;} 
   	
+	iowrite32(data,NPE_BASE + NA_CU_REGS_BASE + NA_PPE_SOFT_RESET); // THERE INSERT  DELAY BEFORE READ SOFT RESET
 	iowrite32(data,NPE_BASE + NA_CU_REGS_BASE + NA_VPE_SOFT_RESET);  // THERE INSERT  DELAY BEFORE READ SOFT RESET
 	///////////////////////////////////////////////////////////////////////////////////////
 	//
@@ -211,7 +257,7 @@ int na_cu_rd_regs() {
 		{rumboot_printf("Unexpected NA_SOFT_RESET =0x%x\n",ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_SOFT_RESET));
 		return 1;}
 	
-		iowrite32(data,NPE_BASE + NA_CU_REGS_BASE + NA_PPE_SOFT_RESET);
+	//	iowrite32(data,NPE_BASE + NA_CU_REGS_BASE + NA_PPE_SOFT_RESET);
 	if ((0x00000000) != (ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_PPE_SOFT_RESET)& 0x00000001))
 		{rumboot_printf("Unexpected NA_PPE_SOFT_RESET =0x%x\n",ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_PPE_SOFT_RESET));
 		return 1;}
@@ -234,8 +280,8 @@ int na_cu_rd_regs() {
 	//////////////////////////////////////////////////////////////////////////////////////////////
 	
 		iowrite32(data,NPE_BASE + NA_CU_REGS_BASE + NA_CMD_FIFO_LEVEL);
-	if ((data & 0x007F007F)  !=(ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_CMD_FIFO_LEVEL) & 0x007F007F))  // why 7F	?????
-		{rumboot_printf("Unexpected NA_CMD_FIFO_LEVEL =0x%x\n",ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_CMD_FIFO_LEVEL));
+	if ((data & 0x0000007F)  !=(ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_CMD_FIFO_LEVEL) & 0x0000007F))  // why 7F	?????
+		{rumboot_printf("Unexpectedd NA_CMD_FIFO_LEVEL =0x%x\n",ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_CMD_FIFO_LEVEL));
 		return 1;}
 	
 
@@ -256,12 +302,12 @@ int na_cu_rd_regs() {
 		return 1;}
 	
 	iowrite32(data,NPE_BASE + NA_CU_REGS_BASE + NA_INT_RESET);
-	if ((0x00000000) != (ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_INT_RESET)&  0x07FFFFFF))
+	if ((0x00000000) != (ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_INT_RESET)&  0x0000007F))
 		{rumboot_printf("Unexpected NA_INT_RESET =0x%x\n",ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_INT_RESET));
 		return 1;}
 		
 	iowrite32(data,NPE_BASE + NA_CU_REGS_BASE + NA_INT_SET);
-	if ((/*data & 0x0000007F*/0x00000000) != (ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_INT_SET)&  0x07FFFFFF))
+	if ((/*data & 0x0000007F*/0x00000000) != (ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_INT_SET)&  0x0000007F))
 		{rumboot_printf("Unexpected NA_INT_SET =0x%x\n",ioread32(NPE_BASE + NA_CU_REGS_BASE + NA_INT_SET));
 		return 1;}
 	
