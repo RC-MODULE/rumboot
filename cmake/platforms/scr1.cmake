@@ -628,14 +628,12 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
           ADD_VPE_COUPLED_TEST_LOOP(vpe_21_0_lut_${in_macro} main_vpe_21_0_lut_${in_macro}) # VPE_21
           ADD_VPE_COUPLED_TEST_LOOP(vpe_21_1_lut_addition_${in_macro} main_vpe_21_1_lut_addition_${in_macro}) # VPE_21_addition
           ADD_VPE_COUPLED_TEST_LOOP(vpe_21_2_lut_out_of_range_${in_macro} main_vpe_21_2_lut_out_of_range_${in_macro}) # VPE_21_out_of_range
+          ADD_VPE_COUPLED_TEST_LOOP(vpe_21_3_lut_offset_${in_macro} main_vpe_21_3_lut_offset_${in_macro}) # VPE_21_offset
+          foreach(mirror_type IN ITEMS 0 1)
+            ADD_VPE_COUPLED_TEST_LOOP(vpe_21_3_lut_offset_mirror_${mirror_type}_${in_macro} main_vpe_21_3_lut_offset_mirror_${mirror_type}_${in_macro}) # VPE_21_offset. mirror mode
+          endforeach()
         endforeach()
-        ADD_VPE_COUPLED_TEST_LOOP(vpe_21_3_lut_offset_IN_INT32 main_vpe_21_3_lut_offset_IN_INT32) # VPE_21_offset_IN_INT32
-        ADD_VPE_COUPLED_TEST_LOOP(vpe_21_3_lut_offset_IN_FP32 main_vpe_21_3_lut_offset_IN_FP32) # VPE_21_offset_IN_FP32
-        ADD_VPE_COUPLED_TEST_LOOP(vpe_21_4_lut_mirror_type0_IN_INT32 main_vpe_21_4_lut_mirror_type0_IN_INT32) # VPE_21_mirror_type0_IN_INT32
-        ADD_VPE_COUPLED_TEST_LOOP(vpe_21_4_lut_mirror_type0_IN_FP32 main_vpe_21_4_lut_mirror_type0_IN_FP32) # VPE_21_mirror_type0_IN_FP32
-        ADD_VPE_COUPLED_TEST_LOOP(vpe_21_4_lut_mirror_type1_IN_INT32 main_vpe_21_4_lut_mirror_type1_IN_INT32) # VPE_21_mirror_type1_IN_INT32
-        ADD_VPE_COUPLED_TEST_LOOP(vpe_21_4_lut_mirror_type1_IN_FP32 main_vpe_21_4_lut_mirror_type1_IN_FP32) # VPE_21_mirror_type1_IN_FP32
-
+  
         # Test on VPE block's together work 
         ADD_VPE_COUPLED_TEST_LOOP(vpe_22_op0_together main_vpe_22_op0_together) # VPE_22
         ADD_VPE_COUPLED_TEST_LOOP(vpe_23_op1_together main_vpe_23_op1_together) # VPE_23
@@ -749,11 +747,15 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_op0_ch_mode_fp main_vpe_op0_ch_mode_fp)
         ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_op1_ch_mode_fp main_vpe_op1_ch_mode_fp)
 
-        #Tests on VPE::LUT in context NPE
+        #Tests on VPE::OP2::LUT in context NPE
         foreach(in_macro IN ITEMS IN_INT16 IN_INT8 IN_FP16)
           ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(npe_vpe_lut_${in_macro} main_npe_vpe_lut_${in_macro})
           ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(npe_vpe_lut_addition_${in_macro} main_npe_vpe_lut_addition_${in_macro})
           ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(npe_vpe_lut_out_of_range_${in_macro} main_npe_vpe_lut_out_of_range_${in_macro})
+          ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(npe_vpe_lut_offset_${in_macro} main_npe_vpe_lut_offset_${in_macro})
+          foreach(mirror_type IN ITEMS 0 1)
+            ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(npe_vpe_lut_offset_mirror_${mirror_type}_${in_macro} main_npe_vpe_lut_offset_mirror_${mirror_type}_${in_macro}) # VPE_21_offset. mirror mode
+          endforeach()
         endforeach()
 
         # Tests on VPE+PPE channel mode ???
