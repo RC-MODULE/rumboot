@@ -1354,6 +1354,8 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
           ADD_NPE_MPE_ONLY_TEST(npe_mpe_direct_ex_MPE_CFG_${label} main_mpe_direct_ex_MPE_CFG_${label})
         endforeach()
 
+        ADD_NPE_MPE_ONLY_TEST(npe_mpe_direct_ex_MPE_CFG_2_FP main_mpe_direct_ex_MPE_CFG_2_FP)
+
         macro(ADD_NPE_COMPLEX_TEST name rm_bin_name)
           add_rumboot_target(
             CONFIGURATION ROM
