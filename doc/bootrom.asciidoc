@@ -24,7 +24,7 @@ ifndef::soc[]
 :soc: o32t
 :boot_version: 300
 :boot_has_v3_support: yes
-//:boot_has_v2_support: yes
+:boot_has_v2_support: yes
 //:boot_has_v1_support: yes
 endif::[]
 
