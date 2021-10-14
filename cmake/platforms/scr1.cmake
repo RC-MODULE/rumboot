@@ -1346,11 +1346,12 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
           )
         endmacro()
 
-        macro(ADD_NPE_MPE_ONLY_TEST name rm_bin_name)
+        macro(ADD_NPE_MPE_VPE_TEST name rm_bin_name)
           add_rumboot_target(
             CONFIGURATION ROM
             NAME ${name}
-            FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_npe_mpe_only.c
+            FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_npe.c
+            CFLAGS -DDONT_USE_PPE=1
             PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
             IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
             SUBPROJECT_DEPS npe_rm:${rm_bin_name}
@@ -1360,14 +1361,15 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         ADD_NPE_SIMPLE_TEST(npe_regs scr1/targets/simple-rom/nu/npe_regs/npe_regs.c)
 
         # foreach(in_macro IN ITEMS IN_INT8 IN_INT16 IN_FP16)
-        #   ADD_NPE_MPE_ONLY_TEST(npe_mpe_only_rnd_${in_macro} main_mpe_rnd_${in_macro})
+        #   ADD_NPE_MPE_VPE_TEST(npe_mpe_only_rnd_${in_macro} main_mpe_rnd_${in_macro})
         # endforeach()
 
         foreach(label RANGE 1 24)
-          ADD_NPE_MPE_ONLY_TEST(npe_mpe_direct_ex_MPE_CFG_${label} main_mpe_direct_ex_MPE_CFG_${label})
+          ADD_NPE_MPE_VPE_TEST(npe_mpe_direct_ex_MPE_CFG_${label} main_mpe_direct_ex_MPE_CFG_${label})
+          ADD_NPE_MPE_VPE_TEST(npe_mpe_direct_ex_MPE_CFG_${label}_FP main_mpe_direct_ex_MPE_CFG_${label}_FP)
+          ADD_NPE_MPE_VPE_TEST(npe_mpe_direct_ex_MPE_CFG_${label}_WITH_VPE main_mpe_direct_ex_MPE_CFG_${label}_WITH_VPE)
+          ADD_NPE_MPE_VPE_TEST(npe_mpe_direct_ex_MPE_CFG_${label}_FP_WITH_VPE main_mpe_direct_ex_MPE_CFG_${label}_FP_WITH_VPE)
         endforeach()
-
-        ADD_NPE_MPE_ONLY_TEST(npe_mpe_direct_ex_MPE_CFG_2_FP main_mpe_direct_ex_MPE_CFG_2_FP)
 
         macro(ADD_NPE_COMPLEX_TEST name rm_bin_name)
           add_rumboot_target(
