@@ -852,6 +852,11 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
             NAME NPE_1
             FILES scr1/targets/simple-rom/nu/npe_regs/npe_regs.c
         )
+		add_rumboot_target(
+            CONFIGURATION ROM
+            NAME MPE_1
+            FILES scr1/targets/simple-rom/nu/mpe_regs/regs_mpe.c
+        )
       endif()
 
       if(NOT DEFINED NU_SEED)
