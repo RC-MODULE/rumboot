@@ -2120,16 +2120,20 @@ void  nu_ppe_decide_dma_config_trivial(ConfigPPE* cfg, CubeMetrics* out_cube_met
     cfg_reg->wIxtX  = 0x0;
     cfg_reg->wIffX  = 0x0;
   }
-  else if (fm&0x2) {  // boxed
-    cfg_reg->wBstX  = 128-1;
-    cfg_reg->wBxtX  = 128-1;
+  else if (fm&0x2) {  // boxed limitated
+    cfg_reg->wBstY  = 0x0   ;
+    cfg_reg->wBstZ  = 0x8-1 ;
 
-    cfg_reg->wBstY  = 0x0     ;
-    cfg_reg->wBstZ  = 0x8 - 1 ;
+    //cfg_reg->wIstX  = Wi-1; // the same as rBstX
+    //cfg_reg->wIxtX  = Wi-1; // the same as rBxtX
+    //cfg_reg->wIffX  = 0x0;  // the same as rBffX
 
-    cfg_reg->wIstX  = Wi-1; // the same as rBstX
-    cfg_reg->wIxtX  = Wi-1; // the same as rBxtX
-    cfg_reg->wIffX  = 0x0;  // the same as rBffX
+    cfg_reg->wIstX  = 0x80-1;
+    cfg_reg->wIxtX  = 0x80-1;
+    cfg_reg->wIffX  = 0x0   ; 
+
+    cfg_reg->wBstX  = (cfg_reg->wIstX + 1)/cfg->Kw - 1;
+    cfg_reg->wBxtX  = cfg_reg->wBstX;
   }
   //else if (fm&0x4) {} // split
 

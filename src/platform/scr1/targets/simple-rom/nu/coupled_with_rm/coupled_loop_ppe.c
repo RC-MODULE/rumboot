@@ -35,7 +35,7 @@ int main() {
 
   int heap_id = nu_get_heap_id();
 
-  rumboot_printf("coupled_loop_ppe_new\n");
+  rumboot_printf("coupled_loop_ppe\n");
 
   rumboot_platform_request_file("num_iterations_file_tag", (uintptr_t) &it_nmb);
   rumboot_printf("it_nmb is %d\n", it_nmb);
