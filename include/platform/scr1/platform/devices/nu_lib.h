@@ -138,6 +138,15 @@
     DmaXYZDirection_Z
   }DmaXYZDirectionType;
 
+  /**
+  VPE modes for ResNet50
+  */
+  typedef enum VPE_Mode {
+    VPE_MODE_BN,
+    VPE_MODE_BN_RELU,
+    VPE_MODE_BN_RELU_ADD
+  }VPE_Mode;
+
   typedef struct ConfigMAMPE {
     uint16_t ADD_CountI0;
     uint16_t CMP_CountI0;

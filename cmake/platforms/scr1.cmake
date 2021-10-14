@@ -1281,6 +1281,13 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       ############# NPE_TESTS general settings and macros ###############
       ###################################################################
       if(DUT STREQUAL "NPE")
+        add_rumboot_target(
+            CONFIGURATION ROM
+            NAME RESNET
+            FILES scr1/targets/simple-rom/nu/npe/npe_resnet.c
+            IRUN_FLAGS ${NA_RM_PLUSARGS}
+         )
+      
         set(MPE_DEMO_PATH src/platform/scr1/targets/simple-rom/nu/npe_mpe_stage2)
         set(MPE_PARSE_TEST_STAGE2 ${CMAKE_SOURCE_DIR}/${MPE_DEMO_PATH}/parse_mpe_arrays_stage2.pl)
         
@@ -1299,6 +1306,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         ###################################################################
         ########################### NPE_TESTS #############################
         ###################################################################
+
         ADD_MPE_SINGLE_TEST(MPE_1 TRUNC0)
         ADD_MPE_SINGLE_TEST(MPE_2 TRUNC0)
         ADD_MPE_SINGLE_TEST(MPE_3 TRUNC0)
