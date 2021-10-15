@@ -20,6 +20,9 @@ void *in_data;
 WarrMetrics* warr_metrics;
 void *warr;
 
+CubeMetrics* op0_metrics;
+void *op0_data;
+
 MPECmdMetrics* cmd_metrics;
 void *cmd;
 
@@ -390,7 +393,7 @@ int main()
 {
   int heap_id;
 
-  rumboot_printf("START MPE CONV TEST\n");
+  rumboot_printf("START RESNET TEST\n");
 
   heap_id = nu_get_heap_id();
 
@@ -412,6 +415,12 @@ int main()
   warr = nu_mpe_load_warr(heap_id,warr_metrics);
   if(warr == NULL) return -1;
 
+  op0_metrics = rumboot_malloc_from_heap_aligned(heap_id,sizeof(op0_metrics),128);
+  rumboot_platform_request_file("metrics_op0_cube_tag",(uintptr_t)op0_metrics);
+
+  op0_data = rumboot_malloc_from_heap_aligned(heap_id,op0_metrics->s,128);
+  rumboot_platform_request_file("op0_cube_file_tag", (uintptr_t)op0_data);
+
   res_metrics= nu_mpe_load_res_metrics(heap_id);
   if(res_metrics == NULL) return -1;
 
@@ -426,19 +435,20 @@ int main()
   DataType    coef_data_type = DataType_Fp16;
   DataType    out_data_type  = DataType_Fp16;
   
-  vpe_config_reset(&(cfg_vpe), in_data_type, coef_data_type, out_data_type);
+  cfg_vpe = rumboot_malloc_from_heap(0,sizeof(ConfigVPE));
+  metrics_vpe = rumboot_malloc_from_heap(0,sizeof(CubeMetrics));
+  vpe_config_reset(cfg_vpe, in_data_type, coef_data_type, out_data_type);
 
   // MPE 1st
+  rumboot_printf("Configuring MPE..\n");
   nu_run_mpe_cmd(NPE_BASE+NA_MPE_BASE,cmd,cmd_metrics,(uint32_t)in_data,(uint32_t)warr);
   
   // VPE 1st
-  //cfg = rumboot_malloc_from_heap(0,sizeof(ConfigVPE));
-  //metrics = rumboot_malloc_from_heap(0,sizeof(CubeMetrics));
-
-  uint16_t* bn_data  = 0 ;
-  uint16_t* add_data = 0 ;
-
-  vpe_reconfig_and_start(&(cfg_vpe), metrics_vpe, VPE_MODE_BN, 1, (uint32_t)bn_data, (uint32_t)add_data, (uint32_t)res_data);
+  metrics_vpe->C = 64;
+  metrics_vpe->W = 112;
+  metrics_vpe->H = 112;
+  vpe_reconfig_and_start(cfg_vpe, metrics_vpe, VPE_MODE_BN_RELU, 1, (uint16_t*)op0_data, 0, (uint16_t*)res_data);
+  
   // PPE 1st
 
   // Wait VPE DMA ends

@@ -1968,10 +1968,12 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       ############# NPE_TESTS general settings and macros ###############
       ###################################################################
       if(DUT STREQUAL "NPE")
+        set(NPE_BINS ${CMAKE_SOURCE_DIR}/src/platform/scr1/targets/simple-rom/nu/npe)
         add_rumboot_target(
             CONFIGURATION ROM
             NAME RESNET
             FILES scr1/targets/simple-rom/nu/npe/npe_resnet.c
+            PREPCMD cp ${NPE_BINS}/resnet_bins/cmd.bin ${NPE_BINS}/resnet_bins/cmd.bin.metrics ${NPE_BINS}/resnet_bins/cube.bin ${NPE_BINS}/resnet_bins/cube.bin.metrics ${NPE_BINS}/resnet_bins/etalon.bin ${NPE_BINS}/resnet_bins/etalon.bin.metrics ${NPE_BINS}/resnet_bins/op0.bin ${NPE_BINS}/resnet_bins/op0.bin.metrics ${NPE_BINS}/resnet_bins/warr.bin ${NPE_BINS}/resnet_bins/warr.bin.metrics -t .
             IRUN_FLAGS ${NA_RM_PLUSARGS}
          )
       
