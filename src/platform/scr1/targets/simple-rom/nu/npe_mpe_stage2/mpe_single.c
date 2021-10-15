@@ -49,7 +49,6 @@ void mpe_dma_config_and_start(uintptr_t base, uint32_t* source_ptr, uint32_t buf
   iowrite32(0x0000007F,base+CntSha_MSha);
   iowrite32(0x00000000,base+CntThresholdSha_MSha);
   iowrite32(0x00000080,base+Bias1Sha_MSha);
-  iowrite32(0x00000000,base+Bias1AOffset_MSha);
   iowrite32(buf_vecs-1,base+RD_Bias1CntSha_MSha);
   iowrite32(0x00000000,base+Bias1CntOffset_MSha);
   iowrite32(0x00000000,base+Bias1CntThresholdSha_MSha);

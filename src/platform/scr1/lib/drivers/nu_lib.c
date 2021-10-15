@@ -1814,7 +1814,6 @@ void nu_mpe_rdma_setup(uintptr_t base, ConfigRDDMAMPE* cfg) {
   for(int i=0;i<7;i++) {
       // Separate Regs
     iowrite32(cfg->Bias[i].Bias   , base + temp_BiasBase + Bias1Sha_MSha);
-    iowrite32(cfg->Bias[i].AOffset, base + temp_BiasBase + Bias1AOffset_MSha);
     iowrite32(cfg->Bias[i].CntSha , base + temp_BiasBase + RD_Bias1CntSha_MSha);
     iowrite32( 
              (cfg->Bias[i].CntOffsetEn<<8) | (cfg->Bias[i].CntOffset<<0),
