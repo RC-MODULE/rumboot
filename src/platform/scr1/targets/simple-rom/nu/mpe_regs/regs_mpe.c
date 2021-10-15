@@ -91,7 +91,7 @@
 
 int nu_mpe_wr_rd_regs(uintptr_t rbase, int32_t data) {
  	  int res;
-	  int /*res0,res1,res2,res3,res4,res5,res6,res7,*//*res8,res9,res10,*/res11,res12,
+	  int /*res8,res9,res10,*/res11,res12,
 		  res13,res14;
 		
 	  int resr;
@@ -120,7 +120,7 @@ int nu_mpe_wr_rd_regs(uintptr_t rbase, int32_t data) {
 	//	else 
 	//	{res10=0;}
 			
-	//if ((0x00000000)  != (ioread32(rbase + MPE_MA_BASE + MPE_COMMON_IN_BUF_CFG) & 0x000001FF))
+	//if ((0x00000000)  != (ioread32(rbase + MPE_MA_BASE + MPE_COMMON_IN_BUF_CFG) & 0x000001FF)) //NOT WORKS !!!!
 	//	{res11 =1;
 	//	rumboot_printf("res11 error\n");}	
 	//	else 
@@ -144,7 +144,7 @@ int nu_mpe_wr_rd_regs(uintptr_t rbase, int32_t data) {
 		
 	
 		iowrite32(data, rbase + MPE_MA_BASE + MPE_COMMON_BUF_FULL_RST);
-	if ((data)  !=ioread32(rbase + MPE_MA_BASE + MPE_COMMON_BUF_FULL_RST))	
+	if ((0x00000000)  !=ioread32(rbase + MPE_MA_BASE + MPE_COMMON_BUF_FULL_RST))	
 		{res14 =1;
 		rumboot_printf("MPE_COMMON_BUF_FULL_RST = %x\n",ioread32(rbase + MPE_MA_BASE + MPE_COMMON_BUF_FULL_RST)); 
 		rumboot_printf("Unexpected MPE_COMMON_BUF_FULL_RST error\n");}	
