@@ -854,7 +854,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         )
 		add_rumboot_target(
             CONFIGURATION ROM
-            NAME MPE_1
+            NAME MPE_REG_1
             FILES scr1/targets/simple-rom/nu/mpe_regs/regs_mpe.c
         )
       endif()
