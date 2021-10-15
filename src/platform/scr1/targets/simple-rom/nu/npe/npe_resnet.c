@@ -70,6 +70,7 @@ void vpe_config_reset(ConfigVPE* cfg, DataTypeExt in_data_type, DataType coef_da
   cfg->c3_round_mode                        = RoundMode_Down                ; // set it as you wish
   cfg->nan_to_zero_input                    = Enable_NotEn                  ; // set it as you wish
   cfg->nan_to_zero_output                   = Enable_NotEn                  ; // set it as you wish
+  cfg->trace_mode                           = TraceMode_MPE                 ;
   
   cfg->op0_config.coef_type                 = coef_data_type                ;
   cfg->op0_config.alu_en                    = Enable_En                     ;
@@ -283,17 +284,34 @@ void vpe_config_reset(ConfigVPE* cfg, DataTypeExt in_data_type, DataType coef_da
   cfg->wdma_config.dma_box_offset_y         = 0                             ;
   cfg->wdma_config.dma_box_offset_z         = 0                             ;
   
+  cfg->cube_size                            = 0                             ;
+  cfg->mark                                 = Enable_NotEn                  ;
+  
   nu_vpe_setup(NPE_BASE+NA_VPE_BASE,cfg);
 }
 
 
-void vpe_reconfig_and_start(ConfigVPE* cfg, CubeMetrics* metrics, VPE_Mode vpe_mode, bool ppe_on, uint16_t* bn_ptr, uint16_t* add_ptr, uint16_t* vpe_ptr ) {
+void vpe_reconfig_and_start(ConfigVPE* cfg, CubeMetrics* metrics, VPE_Mode vpe_mode, Enable ppe_on, uint16_t* bn_ptr, uint16_t* add_ptr, uint16_t* vpe_ptr ) {
   uint32_t elem_size;
   int32_t  tmp_data;
   uint32_t base = NPE_BASE+NA_VPE_BASE;
+  DataType    tmp_type;
   
   //-----------------------------------------------------------------------------------------------------
-  cfg->dst_flying = (ppe_on) ? Enable_En : Enable_NotEn ;  // PPE ON or OFF
+  cfg->dst_flying = (ppe_on == Enable_En) ? Enable_En : Enable_NotEn ;  // PPE ON or OFF
+  //tmp_data = ioread32(base + NU_VPE + NU_VPE_OP_MODE);
+  //iowrite32((tmp_data&0xFFFD) | (cfg->dst_flying << 1), base + NU_VPE + NU_VPE_OP_MODE);
+  if      (cfg->in_data_type == DataTypeExt_Int32 || cfg->in_data_type == DataTypeExt_Int16) tmp_type = DataType_Int16 ;
+  else if (cfg->in_data_type == DataTypeExt_Fp32  || cfg->in_data_type == DataTypeExt_Fp16)  tmp_type = DataType_Fp16  ;
+  else                                                                                      tmp_type = DataType_Int8  ;
+  tmp_data = (1<<30) | (1<<29) | (1<<28) |   // All Counters On
+             (cfg->out_data_type << 16) | 
+             ((cfg->op2_config.coef_type>>1) << 15) | ((cfg->op2_rdma_config.dma_data_mode&0x1)<<14) |   // TAKES IT FROM DMA struct!!!! NOT GOOD!!!
+             ((cfg->op1_config.coef_type>>1) << 13) | ((cfg->op1_rdma_config.dma_data_mode&0x1)<<12) |   // TAKES IT FROM DMA struct!!!! NOT GOOD!!!
+             ((cfg->op0_config.coef_type>>1) << 11) | ((cfg->op0_rdma_config.dma_data_mode&0x1)<<10) |   // TAKES IT FROM DMA struct!!!! NOT GOOD!!!
+             (                 (tmp_type>>1) <<  9) | (/*(cfg->dst_flying == Enable_NotEn)*/cfg->trace_mode<<8) |           // that 8bit definition is RIGHT only here !!!!!!!!!!!
+             (cfg->nan_to_zero_input << 4) | (cfg->dst_flying << 1) | (cfg->src_flying << 0) ;
+  iowrite32(tmp_data, base + NU_VPE + NU_VPE_OP_MODE);
 
   // OP1 config
   if (vpe_mode == VPE_MODE_BN) {
@@ -311,18 +329,27 @@ void vpe_reconfig_and_start(ConfigVPE* cfg, CubeMetrics* metrics, VPE_Mode vpe_m
     cfg->op1_config.alu_en  = Enable_En     ;
     cfg->op1_config.relu_en = Enable_En     ;
   }
-
+  tmp_data = (!cfg->op1_config.relu_en << 6) | (cfg->op1_config.prelu_en << 5) | (!cfg->op1_config.mux_en << 4) | (cfg->op1_config.alu_operation << 2) | (!cfg->op1_config.alu_en << 1) | (!cfg->op1_en << 0);
+  iowrite32(tmp_data, base + NU_VPE + NU_VPE_OP1_CFG);
+  
   // CUBE_SIZE in vectors
   cfg->cube_size = (metrics->C/16 + ((metrics->C%16) != 0 ? 1 : 0)) * metrics->W * metrics->H - 1;
-
+  iowrite32(cfg->cube_size, base + NU_VPE + NU_VPE_CUBE_SIZE );
+  
   // OP0_RDMA CONFIG
-   if   (cfg->op0_rdma_config.dma_data_size == DmaDSize_Two_Byte) elem_size = 2;
-   else                                                           elem_size = 1;
-   cfg->op0_rdma_config.dma_baddr          = (uint32_t)bn_ptr           ;
-   cfg->op0_rdma_config.dma_frag_last_size = metrics->C * 2 * elem_size ;
-   
-   // OP1_RDMA_CONFIG
+  if   (cfg->op0_rdma_config.dma_data_size == DmaDSize_Two_Byte) elem_size = 2;
+  else                                                           elem_size = 1;
+  cfg->op0_rdma_config.dma_baddr          = (uint32_t)bn_ptr           ;
+  cfg->op0_rdma_config.dma_frag_last_size = metrics->C * 2 * elem_size ;
+  iowrite32(cfg->op0_rdma_config.dma_baddr         , base + NU_VPE_OP0_RDMA + NU_VPE_DMA_BASE               ) ;
+  iowrite32(cfg->op0_rdma_config.dma_frag_last_size, base + NU_VPE_OP0_RDMA + NU_VPE_DMA_FRAG_LAST_SIZE_ADDR) ;
+  
+  // OP1_RDMA_CONFIG
   cfg->op1_rdma_config.dma_en = cfg->op1_config.alu_en ;
+  
+  tmp_data = (cfg->op1_rdma_config.dma_ram_type << 8) | ((cfg->op1_rdma_config.dma_data_mode >> 1) << 7) | (cfg->op1_rdma_config.dma_data_size << 6) | (cfg->op1_rdma_config.dma_data_use << 4) | (cfg->op1_rdma_config.dma_en << 0);
+  iowrite32(tmp_data                                 , base + NU_VPE_OP1_RDMA + NU_VPE_DMA_CFG) ;
+  
   if (cfg->op1_rdma_config.dma_en == Enable_En) {
     if   (cfg->op1_rdma_config.dma_data_size == DmaDSize_Two_Byte) elem_size = 2;
     else                                                           elem_size = 1;
@@ -347,7 +374,10 @@ void vpe_reconfig_and_start(ConfigVPE* cfg, CubeMetrics* metrics, VPE_Mode vpe_m
   }
   
   // WDMA_CONFIG
-  cfg->wdma_config.dma_en = (ppe_on) ? Enable_NotEn : Enable_En ;
+  cfg->wdma_config.dma_en = (ppe_on == Enable_En) ? Enable_NotEn : Enable_En ;
+  
+  tmp_data = (cfg->wdma_config.dma_ram_type << 8) | (cfg->wdma_config.dma_data_size << 6) | (cfg->wdma_config.dma_en << 0);
+  iowrite32(tmp_data, base + NU_VPE_DST_WDMA + NU_VPE_DMA_CFG);
   
   if (cfg->wdma_config.dma_en == Enable_En) {
     if   (cfg->wdma_config.dma_data_size == DmaDSize_Two_Byte) elem_size = 2;
@@ -371,24 +401,17 @@ void vpe_reconfig_and_start(ConfigVPE* cfg, CubeMetrics* metrics, VPE_Mode vpe_m
     iowrite32(cfg->wdma_config.dma_stride_z        , base + NU_VPE_DST_WDMA + NU_VPE_DMA_STRIDE_Z            ) ;
     iowrite32(cfg->wdma_config.dma_frag_last_size  , base + NU_VPE_DST_WDMA + NU_VPE_DMA_FRAG_LAST_SIZE_ADDR ) ;
     iowrite32(cfg->wdma_config.dma_frag_size       , base + NU_VPE_DST_WDMA + NU_VPE_DMA_FRAG_SIZE_ADDR      ) ;
-  
   }
 
-  //VPE regs config
-  tmp_data = (!cfg->op1_config.relu_en << 6) | (cfg->op1_config.prelu_en << 5) | (!cfg->op1_config.mux_en << 4) | (cfg->op1_config.alu_operation << 2) | (!cfg->op1_config.alu_en << 1) | (!cfg->op1_en << 0);
-  iowrite32(tmp_data, base + NU_VPE + NU_VPE_OP1_CFG);
-  
-  iowrite32(cfg->op0_rdma_config.dma_baddr         , base + NU_VPE_OP0_RDMA + NU_VPE_DMA_BASE               ) ;
-  iowrite32(cfg->op0_rdma_config.dma_frag_last_size, base + NU_VPE_OP0_RDMA + NU_VPE_DMA_FRAG_LAST_SIZE_ADDR) ;
-
-  tmp_data = (cfg->op1_rdma_config.dma_ram_type << 8) | ((cfg->op1_rdma_config.dma_data_mode >> 1) << 7) | (cfg->op1_rdma_config.dma_data_size << 6) | (cfg->op1_rdma_config.dma_data_use << 4) | (cfg->op1_rdma_config.dma_en << 0);
-  iowrite32(tmp_data                                 , base + NU_VPE_OP1_RDMA + NU_VPE_DMA_CFG) ;
-
-  tmp_data = (cfg->wdma_config.dma_ram_type << 8) | (cfg->wdma_config.dma_data_size << 6) | (cfg->wdma_config.dma_en << 0);
-  iowrite32(tmp_data, base + NU_VPE_DST_WDMA + NU_VPE_DMA_CFG);
-
 //nu_vpe_setup(NPE_BASE+NA_VPE_BASE,cfg);
-  nu_vpe_run(NPE_BASE+NA_VPE_BASE,cfg);
+//nu_vpe_run(NPE_BASE+NA_VPE_BASE,cfg);
+  
+  if(cfg->mark)
+    tmp_data = tmp_data | (1<<1) | (1<<0);  //MARKED_CNTX=1 | NEXT_CNTX=1
+  else 
+    tmp_data = (tmp_data & (~(1<<1)) ) | (1<<0);  //MARKED_CNTX=0 | NEXT_CNTX=1
+  
+  iowrite32 (tmp_data, base + NU_VPE + NU_VPE_NEXT_CNTX);
 }
 
 
@@ -452,10 +475,10 @@ int main()
   nu_run_mpe_cmd(NPE_BASE+NA_MPE_BASE,cmd,cmd_metrics,(uint32_t)in_data,(uint32_t)warr);
   
   // VPE 1st
-  metrics_vpe->C = 64;
-  metrics_vpe->W = 112;
-  metrics_vpe->H = 112;
-  vpe_reconfig_and_start(cfg_vpe, metrics_vpe, VPE_MODE_BN_RELU, 1, (uint16_t*)op0_data, 0, (uint16_t*)res_data);
+  metrics_vpe->C = 64  ;
+  metrics_vpe->W = 112 ;
+  metrics_vpe->H = 112 ;
+  vpe_reconfig_and_start(cfg_vpe, metrics_vpe, VPE_MODE_BN_RELU, Enable_NotEn, (uint16_t*)op0_data, 0, (uint16_t*)res_data);
   
   // PPE 1st
 
