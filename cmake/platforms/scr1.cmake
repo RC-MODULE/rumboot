@@ -1208,13 +1208,306 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       set (w256_288_k256_288_h2_2 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 256 --c_max 288 --h_min 2 --h_max 2")
       set (w256_288_k256_288_h2_16 "--pool_meth 1 --w_min 256 --w_max 288 --c_min 256 --c_max 288 --h_min 2 --h_max 16")
 
-      macro (ADD_VPE_PPE_TESTS name rm_bin_name ShowPerf LBS RM_CFG_PARAM)
+      set (vpe_ppe_wkh_comb
+        w1_128_k1_16_h1_1
+        w1_128_k1_16_h2_2
+        w1_128_k1_16_h2_16
+        w1_128_k1_1_h1_1
+        w1_128_k1_1_h2_2
+        w1_128_k1_1_h2_16
+        w1_128_k15_15_h1_1
+        w1_128_k15_15_h2_2
+        w1_128_k15_15_h2_16
+        w1_128_k16_16_h1_1
+        w1_128_k16_16_h2_2
+        w1_128_k16_16_h2_16
+        w1_128_k16_32_h1_1
+        w1_128_k16_32_h2_2
+        w1_128_k16_32_h2_16
+        w1_128_k32_48_h1_1
+        w1_128_k32_48_h2_2
+        w1_128_k32_48_h2_16
+        w1_128_k48_64_h1_1
+        w1_128_k48_64_h2_2
+        w1_128_k48_64_h2_16
+        w1_128_k64_80_h1_1
+        w1_128_k64_80_h2_2
+        w1_128_k64_80_h2_16
+        w1_128_k80_96_h1_1
+        w1_128_k80_96_h2_2
+        w1_128_k80_96_h2_16
+        w1_128_k96_112_h1_1
+        w1_128_k96_112_h2_2
+        w1_128_k96_112_h2_16
+        w1_128_k112_128_h1_1
+        w1_128_k112_128_h2_2
+        w1_128_k112_128_h2_16
+        w1_128_k128_128_h1_1
+        w1_128_k128_128_h2_2
+        w1_128_k128_128_h2_16
+        w1_128_k128_256_h1_1
+        w1_128_k128_256_h2_2
+        w1_128_k128_256_h2_16
+        w1_128_k256_288_h1_1
+        w1_128_k256_288_h2_2
+        w1_128_k256_288_h2_16
+        w128_128_k1_16_h1_1
+        w128_128_k1_16_h2_2
+        w128_128_k1_16_h2_16
+        w128_128_k1_1_h1_1
+        w128_128_k1_1_h2_2
+        w128_128_k1_1_h2_16
+        w128_128_k15_15_h1_1
+        w128_128_k15_15_h2_2
+        w128_128_k15_15_h2_16
+        w128_128_k16_16_h1_1
+        w128_128_k16_16_h2_2
+        w128_128_k16_16_h2_16
+        w128_128_k16_32_h1_1
+        w128_128_k16_32_h2_2
+        w128_128_k16_32_h2_16
+        w128_128_k32_48_h1_1
+        w128_128_k32_48_h2_2
+        w128_128_k32_48_h2_16
+        w128_128_k48_64_h1_1
+        w128_128_k48_64_h2_2
+        w128_128_k48_64_h2_16
+        w128_128_k64_80_h1_1
+        w128_128_k64_80_h2_2
+        w128_128_k64_80_h2_16
+        w128_128_k80_96_h1_1
+        w128_128_k80_96_h2_2
+        w128_128_k80_96_h2_16
+        w128_128_k96_112_h1_1
+        w128_128_k96_112_h2_2
+        w128_128_k96_112_h2_16
+        w128_128_k112_128_h1_1
+        w128_128_k112_128_h2_2
+        w128_128_k112_128_h2_16
+        w128_128_k128_128_h1_1
+        w128_128_k128_128_h2_2
+        w128_128_k128_128_h2_16
+        w128_128_k128_256_h1_1
+        w128_128_k128_256_h2_2
+        w128_128_k128_256_h2_16
+        w128_128_k256_288_h1_1
+        w128_128_k256_288_h2_2
+        w128_128_k256_288_h2_16
+        w129_129_k1_16_h1_1
+        w129_129_k1_16_h2_2
+        w129_129_k1_16_h2_16
+        w129_129_k1_1_h1_1
+        w129_129_k1_1_h2_2
+        w129_129_k1_1_h2_16
+        w129_129_k15_15_h1_1
+        w129_129_k15_15_h2_2
+        w129_129_k15_15_h2_16
+        w129_129_k16_16_h1_1
+        w129_129_k16_16_h2_2
+        w129_129_k16_16_h2_16
+        w129_129_k16_32_h1_1
+        w129_129_k16_32_h2_2
+        w129_129_k16_32_h2_16
+        w129_129_k32_48_h1_1
+        w129_129_k32_48_h2_2
+        w129_129_k32_48_h2_16
+        w129_129_k48_64_h1_1
+        w129_129_k48_64_h2_2
+        w129_129_k48_64_h2_16
+        w129_129_k64_80_h1_1
+        w129_129_k64_80_h2_2
+        w129_129_k64_80_h2_16
+        w129_129_k80_96_h1_1
+        w129_129_k80_96_h2_2
+        w129_129_k80_96_h2_16
+        w129_129_k96_112_h1_1
+        w129_129_k96_112_h2_2
+        w129_129_k96_112_h2_16
+        w129_129_k112_128_h1_1
+        w129_129_k112_128_h2_2
+        w129_129_k112_128_h2_16
+        w129_129_k128_128_h1_1
+        w129_129_k128_128_h2_2
+        w129_129_k128_128_h2_16
+        w129_129_k128_256_h1_1
+        w129_129_k128_256_h2_2
+        w129_129_k128_256_h2_16
+        w129_129_k256_288_h1_1
+        w129_129_k256_288_h2_2
+        w129_129_k256_288_h2_16
+        w128_256_k1_16_h1_1
+        w128_256_k1_16_h2_2
+        w128_256_k1_16_h2_16
+        w128_256_k1_1_h1_1
+        w128_256_k1_1_h2_2
+        w128_256_k1_1_h2_16
+        w128_256_k15_15_h1_1
+        w128_256_k15_15_h2_2
+        w128_256_k15_15_h2_16
+        w128_256_k16_16_h1_1
+        w128_256_k16_16_h2_2
+        w128_256_k16_16_h2_16
+        w128_256_k16_32_h1_1
+        w128_256_k16_32_h2_2
+        w128_256_k16_32_h2_16
+        w128_256_k32_48_h1_1
+        w128_256_k32_48_h2_2
+        w128_256_k32_48_h2_16
+        w128_256_k48_64_h1_1
+        w128_256_k48_64_h2_2
+        w128_256_k48_64_h2_16
+        w128_256_k64_80_h1_1
+        w128_256_k64_80_h2_2
+        w128_256_k64_80_h2_16
+        w128_256_k80_96_h1_1
+        w128_256_k80_96_h2_2
+        w128_256_k80_96_h2_16
+        w128_256_k96_112_h1_1
+        w128_256_k96_112_h2_2
+        w128_256_k96_112_h2_16
+        w128_256_k112_128_h1_1
+        w128_256_k112_128_h2_2
+        w128_256_k112_128_h2_16
+        w128_256_k128_128_h1_1
+        w128_256_k128_128_h2_2
+        w128_256_k128_128_h2_16
+        w128_256_k128_256_h1_1
+        w128_256_k128_256_h2_2
+        w128_256_k128_256_h2_16
+        w128_256_k256_288_h1_1
+        w128_256_k256_288_h2_2
+        w128_256_k256_288_h2_16
+        w255_255_k1_16_h1_1
+        w255_255_k1_16_h2_2
+        w255_255_k1_16_h2_16
+        w255_255_k1_1_h1_1
+        w255_255_k1_1_h2_2
+        w255_255_k1_1_h2_16
+        w255_255_k15_15_h1_1
+        w255_255_k15_15_h2_2
+        w255_255_k15_15_h2_16
+        w255_255_k16_16_h1_1
+        w255_255_k16_16_h2_2
+        w255_255_k16_16_h2_16
+        w255_255_k16_32_h1_1
+        w255_255_k16_32_h2_2
+        w255_255_k16_32_h2_16
+        w255_255_k32_48_h1_1
+        w255_255_k32_48_h2_2
+        w255_255_k32_48_h2_16
+        w255_255_k48_64_h1_1
+        w255_255_k48_64_h2_2
+        w255_255_k48_64_h2_16
+        w255_255_k64_80_h1_1
+        w255_255_k64_80_h2_2
+        w255_255_k64_80_h2_16
+        w255_255_k80_96_h1_1
+        w255_255_k80_96_h2_2
+        w255_255_k80_96_h2_16
+        w255_255_k96_112_h1_1
+        w255_255_k96_112_h2_2
+        w255_255_k96_112_h2_16
+        w255_255_k112_128_h1_1
+        w255_255_k112_128_h2_2
+        w255_255_k112_128_h2_16
+        w255_255_k128_128_h1_1
+        w255_255_k128_128_h2_2
+        w255_255_k128_128_h2_16
+        w255_255_k128_256_h1_1
+        w255_255_k128_256_h2_2
+        w255_255_k128_256_h2_16
+        w255_255_k256_288_h1_1
+        w255_255_k256_288_h2_2
+        w255_255_k256_288_h2_16
+        w256_256_k1_16_h1_1
+        w256_256_k1_16_h2_2
+        w256_256_k1_16_h2_16
+        w256_256_k1_1_h1_1
+        w256_256_k1_1_h2_2
+        w256_256_k1_1_h2_16
+        w256_256_k15_15_h1_1
+        w256_256_k15_15_h2_2
+        w256_256_k15_15_h2_16
+        w256_256_k16_16_h1_1
+        w256_256_k16_16_h2_2
+        w256_256_k16_16_h2_16
+        w256_256_k16_32_h1_1
+        w256_256_k16_32_h2_2
+        w256_256_k16_32_h2_16
+        w256_256_k32_48_h1_1
+        w256_256_k32_48_h2_2
+        w256_256_k32_48_h2_16
+        w256_256_k48_64_h1_1
+        w256_256_k48_64_h2_2
+        w256_256_k48_64_h2_16
+        w256_256_k64_80_h1_1
+        w256_256_k64_80_h2_2
+        w256_256_k64_80_h2_16
+        w256_256_k80_96_h1_1
+        w256_256_k80_96_h2_2
+        w256_256_k80_96_h2_16
+        w256_256_k96_112_h1_1
+        w256_256_k96_112_h2_2
+        w256_256_k96_112_h2_16
+        w256_256_k112_128_h1_1
+        w256_256_k112_128_h2_2
+        w256_256_k112_128_h2_16
+        w256_256_k128_128_h1_1
+        w256_256_k128_128_h2_2
+        w256_256_k128_128_h2_16
+        w256_256_k128_256_h1_1
+        w256_256_k128_256_h2_2
+        w256_256_k128_256_h2_16
+        w256_256_k256_288_h1_1
+        w256_256_k256_288_h2_2
+        w256_256_k256_288_h2_16
+        w256_288_k1_16_h1_1
+        w256_288_k1_16_h2_2
+        w256_288_k1_16_h2_16
+        w256_288_k1_1_h1_1
+        w256_288_k1_1_h2_2
+        w256_288_k1_1_h2_16
+        w256_288_k15_15_h1_1
+        w256_288_k15_15_h2_2
+        w256_288_k15_15_h2_16
+        w256_288_k16_16_h1_1
+        w256_288_k16_16_h2_2
+        w256_288_k16_16_h2_16
+        w256_288_k16_32_h1_1
+        w256_288_k16_32_h2_2
+        w256_288_k16_32_h2_16
+        w256_288_k32_48_h1_1
+        w256_288_k32_48_h2_2
+        w256_288_k32_48_h2_16
+        w256_288_k48_64_h1_1
+        w256_288_k48_64_h2_2
+        w256_288_k48_64_h2_16
+        w256_288_k64_80_h1_1
+        w256_288_k64_80_h2_2
+        w256_288_k64_80_h2_16
+        w256_288_k80_96_h1_1
+        w256_288_k80_96_h2_2
+        w256_288_k80_96_h2_16
+        w256_288_k96_112_h1_1
+        w256_288_k96_112_h2_2
+        w256_288_k96_112_h2_16
+        w256_288_k112_128_h1_1
+        w256_288_k112_128_h2_2
+        w256_288_k112_128_h2_16
+        w256_288_k128_128_h1_1
+        w256_288_k128_128_h2_2
+        w256_288_k128_128_h2_16
+        w256_288_k128_256_h1_1
+        w256_288_k128_256_h2_2
+        w256_288_k128_256_h2_16
+        w256_288_k256_288_h1_1
+        w256_288_k256_288_h2_2
+        w256_288_k256_288_h2_16
+      )
+
+      macro (ADD_VPE_PPE_TESTS_OLD name rm_bin_name ShowPerf LBS RM_CFG_PARAM)
 
         set(TST_NMB 1)
-
-        #if (${LBS} EQUAL "BOX")
-        #  set (${rm_bin_name} "${rm_bin_name}_box")
-        #endif()
 
         foreach(i RANGE ${TST_NMB})
 
@@ -1237,6 +1530,111 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
           if (i EQUAL TST_NMB)
             math (EXPR NU_SEED "${NU_SEED} + 1")
           endif()
+        endforeach()
+      endmacro()
+
+      macro (ADD_VPE_PPE_TESTS name_in RM_CFG_PARAM)
+
+        set (ShowPerf "NotShowPerf")
+        set (TST_NMB 3)
+
+        foreach(i RANGE ${TST_NMB})
+
+          if (i EQUAL 0)
+            set (name "${name_in}_LIN_8b")
+            set (rm_bin_name "main_vpe_ppe")
+            set (LBS "LIN")
+            set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} --data_type 0")
+          elseif (i EQUAL 1)
+            set (name "${name_in}_LIN_16b")
+            set (rm_bin_name "main_vpe_ppe")
+            set (LBS "LIN")
+            set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} --data_type 1")
+          elseif (i EQUAL 2)
+            set (name "${name_in}_BOX_8b")
+            set (rm_bin_name "main_vpe_ppe_box")
+            set (LBS "BOX")
+            set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} --data_type 0")
+          elseif (i EQUAL 3)
+            set (name "${name_in}_BOX_16b")
+            set (rm_bin_name "main_vpe_ppe_box")
+            set (LBS "BOX")
+            set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} --data_type 1")
+          endif()
+
+          add_rumboot_target(
+            CONFIGURATION ROM
+            NAME ${name}
+            FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_ppe.c
+
+            PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${NU_SEED} --it_nmb ${NU_IT_NMB} ${RM_CFG_PARAM_MACRO} > ${RM_LOGFILE} || exit 1
+
+            CFLAGS -D${ShowPerf} -D${LBS} -DDUT=${DUT_LETTER_QUOTED}
+
+            IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+
+            SUBPROJECT_DEPS npe_rm:${rm_bin_name}
+          )
+
+          if (i EQUAL TST_NMB)
+            math (EXPR NU_SEED "${NU_SEED} + 1")
+          endif()
+
+        endforeach()
+      endmacro()
+
+      macro (ADD_VPE_PPE_WKH_COMB test_list_name)
+
+        set (ShowPerf "NotShowPerf")
+        set (i 0)
+
+        foreach(name_in ${${test_list_name}})
+
+          math (EXPR j "${i} % 4")
+          math (EXPR i "${i} + 1")
+
+          set (RM_CFG_PARAM ${${name_in}})
+
+          if (j EQUAL 0)
+            set (name "vpe_ppe_${name_in}_LIN_8b")
+            set (rm_bin_name "main_vpe_ppe")
+            set (LBS "LIN")
+            set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} --data_type 0")
+          elseif (j EQUAL 1)
+            set (name "vpe_ppe_${name_in}_LIN_16b")
+            set (rm_bin_name "main_vpe_ppe")
+            set (LBS "LIN")
+            set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} --data_type 1")
+          elseif (j EQUAL 2)
+            set (name "vpe_ppe_${name_in}_BOX_8b")
+            set (rm_bin_name "main_vpe_ppe_box")
+            set (LBS "BOX")
+            set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} --data_type 0")
+          elseif (j EQUAL 3)
+            set (name "vpe_ppe_${name_in}_BOX_16b")
+            set (rm_bin_name "main_vpe_ppe_box")
+            set (LBS "BOX")
+            set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} --data_type 1")
+          endif()
+        
+          add_rumboot_target(
+            CONFIGURATION ROM
+            NAME ${name}
+            FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_ppe.c
+        
+            PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${NU_SEED} --it_nmb ${NU_IT_NMB} ${RM_CFG_PARAM_MACRO} > ${RM_LOGFILE} || exit 1
+        
+            CFLAGS -D${ShowPerf} -D${LBS} -DDUT=${DUT_LETTER_QUOTED}
+        
+            IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+        
+            SUBPROJECT_DEPS npe_rm:${rm_bin_name}
+          )
+        
+          if (j EQUAL 3)
+            math (EXPR NU_SEED "${NU_SEED} + 1")
+          endif()
+        
         endforeach()
       endmacro()
 
@@ -1281,595 +1679,11 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         ADD_PPE_TESTS(ppe_i16_avg_ml main_ppe NotShowPerf MEMtoPPE LIN ${i16_avg})
         ADD_PPE_TESTS(ppe_fp16_avg_ml main_ppe NotShowPerf MEMtoPPE LIN ${fp16_avg})
 
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k1_16_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w1_128_k1_16_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k1_16_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w1_128_k1_16_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k1_16_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w1_128_k1_16_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k1_1_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w1_128_k1_1_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k1_1_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w1_128_k1_1_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k1_1_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w1_128_k1_1_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k15_15_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w1_128_k15_15_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k15_15_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w1_128_k15_15_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k15_15_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w1_128_k15_15_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k16_16_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w1_128_k16_16_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k16_16_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w1_128_k16_16_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k16_16_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w1_128_k16_16_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k16_32_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w1_128_k16_32_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k16_32_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w1_128_k16_32_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k16_32_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w1_128_k16_32_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k32_48_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w1_128_k32_48_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k32_48_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w1_128_k32_48_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k32_48_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w1_128_k32_48_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k48_64_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w1_128_k48_64_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k48_64_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w1_128_k48_64_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k48_64_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w1_128_k48_64_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k64_80_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w1_128_k64_80_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k64_80_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w1_128_k64_80_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k64_80_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w1_128_k64_80_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k80_96_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w1_128_k80_96_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k80_96_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w1_128_k80_96_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k80_96_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w1_128_k80_96_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k96_112_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w1_128_k96_112_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k96_112_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w1_128_k96_112_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k96_112_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w1_128_k96_112_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k112_128_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w1_128_k112_128_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k112_128_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w1_128_k112_128_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k112_128_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w1_128_k112_128_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k128_128_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w1_128_k128_128_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k128_128_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w1_128_k128_128_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k128_128_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w1_128_k128_128_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k128_256_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w1_128_k128_256_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k128_256_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w1_128_k128_256_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k128_256_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w1_128_k128_256_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k256_288_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w1_128_k256_288_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k256_288_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w1_128_k256_288_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k256_288_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w1_128_k256_288_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k1_16_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w128_128_k1_16_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k1_16_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w128_128_k1_16_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k1_16_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w128_128_k1_16_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k1_1_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w128_128_k1_1_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k1_1_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w128_128_k1_1_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k1_1_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w128_128_k1_1_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k15_15_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w128_128_k15_15_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k15_15_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w128_128_k15_15_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k15_15_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w128_128_k15_15_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k16_16_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w128_128_k16_16_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k16_16_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w128_128_k16_16_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k16_16_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w128_128_k16_16_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k16_32_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w128_128_k16_32_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k16_32_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w128_128_k16_32_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k16_32_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w128_128_k16_32_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k32_48_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w128_128_k32_48_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k32_48_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w128_128_k32_48_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k32_48_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w128_128_k32_48_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k48_64_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w128_128_k48_64_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k48_64_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w128_128_k48_64_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k48_64_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w128_128_k48_64_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k64_80_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w128_128_k64_80_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k64_80_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w128_128_k64_80_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k64_80_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w128_128_k64_80_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k80_96_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w128_128_k80_96_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k80_96_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w128_128_k80_96_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k80_96_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w128_128_k80_96_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k96_112_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w128_128_k96_112_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k96_112_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w128_128_k96_112_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k96_112_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w128_128_k96_112_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k112_128_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w128_128_k112_128_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k112_128_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w128_128_k112_128_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k112_128_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w128_128_k112_128_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k128_128_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w128_128_k128_128_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k128_128_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w128_128_k128_128_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k128_128_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w128_128_k128_128_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k128_256_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w128_128_k128_256_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k128_256_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w128_128_k128_256_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k128_256_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w128_128_k128_256_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k256_288_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w128_128_k256_288_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k256_288_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w128_128_k256_288_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k256_288_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w128_128_k256_288_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k1_16_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w129_129_k1_16_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k1_16_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w129_129_k1_16_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k1_16_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w129_129_k1_16_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k1_1_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w129_129_k1_1_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k1_1_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w129_129_k1_1_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k1_1_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w129_129_k1_1_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k15_15_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w129_129_k15_15_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k15_15_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w129_129_k15_15_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k15_15_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w129_129_k15_15_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k16_16_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w129_129_k16_16_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k16_16_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w129_129_k16_16_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k16_16_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w129_129_k16_16_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k16_32_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w129_129_k16_32_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k16_32_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w129_129_k16_32_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k16_32_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w129_129_k16_32_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k32_48_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w129_129_k32_48_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k32_48_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w129_129_k32_48_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k32_48_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w129_129_k32_48_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k48_64_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w129_129_k48_64_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k48_64_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w129_129_k48_64_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k48_64_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w129_129_k48_64_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k64_80_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w129_129_k64_80_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k64_80_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w129_129_k64_80_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k64_80_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w129_129_k64_80_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k80_96_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w129_129_k80_96_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k80_96_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w129_129_k80_96_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k80_96_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w129_129_k80_96_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k96_112_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w129_129_k96_112_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k96_112_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w129_129_k96_112_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k96_112_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w129_129_k96_112_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k112_128_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w129_129_k112_128_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k112_128_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w129_129_k112_128_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k112_128_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w129_129_k112_128_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k128_128_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w129_129_k128_128_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k128_128_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w129_129_k128_128_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k128_128_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w129_129_k128_128_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k128_256_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w129_129_k128_256_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k128_256_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w129_129_k128_256_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k128_256_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w129_129_k128_256_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k256_288_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w129_129_k256_288_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k256_288_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w129_129_k256_288_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k256_288_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w129_129_k256_288_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k1_16_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w128_256_k1_16_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k1_16_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w128_256_k1_16_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k1_16_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w128_256_k1_16_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k1_1_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w128_256_k1_1_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k1_1_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w128_256_k1_1_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k1_1_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w128_256_k1_1_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k15_15_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w128_256_k15_15_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k15_15_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w128_256_k15_15_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k15_15_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w128_256_k15_15_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k16_16_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w128_256_k16_16_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k16_16_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w128_256_k16_16_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k16_16_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w128_256_k16_16_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k16_32_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w128_256_k16_32_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k16_32_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w128_256_k16_32_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k16_32_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w128_256_k16_32_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k32_48_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w128_256_k32_48_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k32_48_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w128_256_k32_48_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k32_48_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w128_256_k32_48_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k48_64_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w128_256_k48_64_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k48_64_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w128_256_k48_64_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k48_64_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w128_256_k48_64_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k64_80_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w128_256_k64_80_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k64_80_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w128_256_k64_80_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k64_80_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w128_256_k64_80_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k80_96_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w128_256_k80_96_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k80_96_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w128_256_k80_96_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k80_96_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w128_256_k80_96_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k96_112_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w128_256_k96_112_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k96_112_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w128_256_k96_112_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k96_112_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w128_256_k96_112_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k112_128_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w128_256_k112_128_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k112_128_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w128_256_k112_128_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k112_128_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w128_256_k112_128_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k128_128_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w128_256_k128_128_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k128_128_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w128_256_k128_128_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k128_128_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w128_256_k128_128_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k128_256_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w128_256_k128_256_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k128_256_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w128_256_k128_256_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k128_256_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w128_256_k128_256_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k256_288_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w128_256_k256_288_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k256_288_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w128_256_k256_288_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k256_288_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w128_256_k256_288_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k1_16_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w255_255_k1_16_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k1_16_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w255_255_k1_16_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k1_16_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w255_255_k1_16_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k1_1_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w255_255_k1_1_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k1_1_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w255_255_k1_1_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k1_1_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w255_255_k1_1_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k15_15_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w255_255_k15_15_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k15_15_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w255_255_k15_15_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k15_15_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w255_255_k15_15_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k16_16_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w255_255_k16_16_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k16_16_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w255_255_k16_16_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k16_16_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w255_255_k16_16_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k16_32_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w255_255_k16_32_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k16_32_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w255_255_k16_32_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k16_32_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w255_255_k16_32_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k32_48_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w255_255_k32_48_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k32_48_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w255_255_k32_48_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k32_48_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w255_255_k32_48_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k48_64_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w255_255_k48_64_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k48_64_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w255_255_k48_64_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k48_64_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w255_255_k48_64_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k64_80_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w255_255_k64_80_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k64_80_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w255_255_k64_80_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k64_80_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w255_255_k64_80_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k80_96_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w255_255_k80_96_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k80_96_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w255_255_k80_96_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k80_96_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w255_255_k80_96_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k96_112_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w255_255_k96_112_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k96_112_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w255_255_k96_112_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k96_112_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w255_255_k96_112_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k112_128_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w255_255_k112_128_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k112_128_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w255_255_k112_128_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k112_128_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w255_255_k112_128_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k128_128_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w255_255_k128_128_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k128_128_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w255_255_k128_128_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k128_128_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w255_255_k128_128_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k128_256_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w255_255_k128_256_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k128_256_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w255_255_k128_256_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k128_256_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w255_255_k128_256_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k256_288_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w255_255_k256_288_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k256_288_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w255_255_k256_288_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k256_288_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w255_255_k256_288_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k1_16_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w256_256_k1_16_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k1_16_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w256_256_k1_16_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k1_16_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w256_256_k1_16_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k1_1_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w256_256_k1_1_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k1_1_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w256_256_k1_1_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k1_1_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w256_256_k1_1_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k15_15_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w256_256_k15_15_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k15_15_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w256_256_k15_15_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k15_15_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w256_256_k15_15_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k16_16_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w256_256_k16_16_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k16_16_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w256_256_k16_16_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k16_16_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w256_256_k16_16_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k16_32_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w256_256_k16_32_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k16_32_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w256_256_k16_32_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k16_32_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w256_256_k16_32_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k32_48_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w256_256_k32_48_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k32_48_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w256_256_k32_48_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k32_48_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w256_256_k32_48_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k48_64_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w256_256_k48_64_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k48_64_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w256_256_k48_64_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k48_64_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w256_256_k48_64_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k64_80_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w256_256_k64_80_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k64_80_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w256_256_k64_80_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k64_80_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w256_256_k64_80_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k80_96_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w256_256_k80_96_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k80_96_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w256_256_k80_96_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k80_96_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w256_256_k80_96_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k96_112_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w256_256_k96_112_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k96_112_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w256_256_k96_112_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k96_112_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w256_256_k96_112_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k112_128_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w256_256_k112_128_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k112_128_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w256_256_k112_128_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k112_128_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w256_256_k112_128_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k128_128_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w256_256_k128_128_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k128_128_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w256_256_k128_128_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k128_128_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w256_256_k128_128_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k128_256_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w256_256_k128_256_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k128_256_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w256_256_k128_256_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k128_256_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w256_256_k128_256_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k256_288_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w256_256_k256_288_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k256_288_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w256_256_k256_288_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k256_288_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w256_256_k256_288_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k1_16_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w256_288_k1_16_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k1_16_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w256_288_k1_16_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k1_16_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w256_288_k1_16_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k1_1_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w256_288_k1_1_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k1_1_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w256_288_k1_1_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k1_1_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w256_288_k1_1_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k15_15_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w256_288_k15_15_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k15_15_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w256_288_k15_15_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k15_15_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w256_288_k15_15_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k16_16_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w256_288_k16_16_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k16_16_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w256_288_k16_16_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k16_16_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w256_288_k16_16_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k16_32_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w256_288_k16_32_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k16_32_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w256_288_k16_32_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k16_32_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w256_288_k16_32_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k32_48_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w256_288_k32_48_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k32_48_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w256_288_k32_48_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k32_48_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w256_288_k32_48_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k48_64_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w256_288_k48_64_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k48_64_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w256_288_k48_64_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k48_64_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w256_288_k48_64_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k64_80_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w256_288_k64_80_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k64_80_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w256_288_k64_80_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k64_80_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w256_288_k64_80_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k80_96_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w256_288_k80_96_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k80_96_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w256_288_k80_96_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k80_96_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w256_288_k80_96_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k96_112_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w256_288_k96_112_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k96_112_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w256_288_k96_112_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k96_112_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w256_288_k96_112_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k112_128_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w256_288_k112_128_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k112_128_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w256_288_k112_128_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k112_128_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w256_288_k112_128_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k128_128_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w256_288_k128_128_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k128_128_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w256_288_k128_128_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k128_128_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w256_288_k128_128_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k128_256_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w256_288_k128_256_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k128_256_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w256_288_k128_256_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k128_256_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w256_288_k128_256_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k256_288_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w256_288_k256_288_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k256_288_h2_2_b main_vpe_ppe_box NotShowPerf BOX ${w256_288_k256_288_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k256_288_h2_16_b main_vpe_ppe_box NotShowPerf BOX ${w256_288_k256_288_h2_16})
+        #ADD_VPE_PPE_TESTS_OLD(vpe_ppe_w1_128_k1_16_h1_1_l main_vpe_ppe NotShowPerf LIN ${w1_128_k1_16_h1_1})
+        #ADD_VPE_PPE_TESTS_OLD(vpe_ppe_w1_128_k1_16_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w1_128_k1_16_h1_1})
+        #ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k1_16_h1_1 ${w1_128_k1_16_h1_1})
 
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k1_16_h1_1 main_vpe_ppe NotShowPerf LIN ${w1_128_k1_16_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k1_16_h2_2 main_vpe_ppe NotShowPerf LIN ${w1_128_k1_16_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k1_16_h2_16 main_vpe_ppe NotShowPerf LIN ${w1_128_k1_16_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k1_1_h1_1 main_vpe_ppe NotShowPerf LIN ${w1_128_k1_1_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k1_1_h2_2 main_vpe_ppe NotShowPerf LIN ${w1_128_k1_1_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k1_1_h2_16 main_vpe_ppe NotShowPerf LIN ${w1_128_k1_1_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k15_15_h1_1 main_vpe_ppe NotShowPerf LIN ${w1_128_k15_15_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k15_15_h2_2 main_vpe_ppe NotShowPerf LIN ${w1_128_k15_15_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k15_15_h2_16 main_vpe_ppe NotShowPerf LIN ${w1_128_k15_15_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k16_16_h1_1 main_vpe_ppe NotShowPerf LIN ${w1_128_k16_16_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k16_16_h2_2 main_vpe_ppe NotShowPerf LIN ${w1_128_k16_16_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k16_16_h2_16 main_vpe_ppe NotShowPerf LIN ${w1_128_k16_16_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k16_32_h1_1 main_vpe_ppe NotShowPerf LIN ${w1_128_k16_32_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k16_32_h2_2 main_vpe_ppe NotShowPerf LIN ${w1_128_k16_32_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k16_32_h2_16 main_vpe_ppe NotShowPerf LIN ${w1_128_k16_32_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k32_48_h1_1 main_vpe_ppe NotShowPerf LIN ${w1_128_k32_48_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k32_48_h2_2 main_vpe_ppe NotShowPerf LIN ${w1_128_k32_48_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k32_48_h2_16 main_vpe_ppe NotShowPerf LIN ${w1_128_k32_48_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k48_64_h1_1 main_vpe_ppe NotShowPerf LIN ${w1_128_k48_64_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k48_64_h2_2 main_vpe_ppe NotShowPerf LIN ${w1_128_k48_64_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k48_64_h2_16 main_vpe_ppe NotShowPerf LIN ${w1_128_k48_64_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k64_80_h1_1 main_vpe_ppe NotShowPerf LIN ${w1_128_k64_80_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k64_80_h2_2 main_vpe_ppe NotShowPerf LIN ${w1_128_k64_80_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k64_80_h2_16 main_vpe_ppe NotShowPerf LIN ${w1_128_k64_80_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k80_96_h1_1 main_vpe_ppe NotShowPerf LIN ${w1_128_k80_96_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k80_96_h2_2 main_vpe_ppe NotShowPerf LIN ${w1_128_k80_96_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k80_96_h2_16 main_vpe_ppe NotShowPerf LIN ${w1_128_k80_96_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k96_112_h1_1 main_vpe_ppe NotShowPerf LIN ${w1_128_k96_112_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k96_112_h2_2 main_vpe_ppe NotShowPerf LIN ${w1_128_k96_112_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k96_112_h2_16 main_vpe_ppe NotShowPerf LIN ${w1_128_k96_112_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k112_128_h1_1 main_vpe_ppe NotShowPerf LIN ${w1_128_k112_128_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k112_128_h2_2 main_vpe_ppe NotShowPerf LIN ${w1_128_k112_128_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k112_128_h2_16 main_vpe_ppe NotShowPerf LIN ${w1_128_k112_128_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k128_128_h1_1 main_vpe_ppe NotShowPerf LIN ${w1_128_k128_128_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k128_128_h2_2 main_vpe_ppe NotShowPerf LIN ${w1_128_k128_128_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k128_128_h2_16 main_vpe_ppe NotShowPerf LIN ${w1_128_k128_128_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k128_256_h1_1 main_vpe_ppe NotShowPerf LIN ${w1_128_k128_256_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k128_256_h2_2 main_vpe_ppe NotShowPerf LIN ${w1_128_k128_256_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k128_256_h2_16 main_vpe_ppe NotShowPerf LIN ${w1_128_k128_256_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k256_288_h1_1 main_vpe_ppe NotShowPerf LIN ${w1_128_k256_288_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k256_288_h2_2 main_vpe_ppe NotShowPerf LIN ${w1_128_k256_288_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k256_288_h2_16 main_vpe_ppe NotShowPerf LIN ${w1_128_k256_288_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k1_16_h1_1 main_vpe_ppe NotShowPerf LIN ${w128_128_k1_16_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k1_16_h2_2 main_vpe_ppe NotShowPerf LIN ${w128_128_k1_16_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k1_16_h2_16 main_vpe_ppe NotShowPerf LIN ${w128_128_k1_16_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k1_1_h1_1 main_vpe_ppe NotShowPerf LIN ${w128_128_k1_1_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k1_1_h2_2 main_vpe_ppe NotShowPerf LIN ${w128_128_k1_1_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k1_1_h2_16 main_vpe_ppe NotShowPerf LIN ${w128_128_k1_1_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k15_15_h1_1 main_vpe_ppe NotShowPerf LIN ${w128_128_k15_15_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k15_15_h2_2 main_vpe_ppe NotShowPerf LIN ${w128_128_k15_15_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k15_15_h2_16 main_vpe_ppe NotShowPerf LIN ${w128_128_k15_15_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k16_16_h1_1 main_vpe_ppe NotShowPerf LIN ${w128_128_k16_16_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k16_16_h2_2 main_vpe_ppe NotShowPerf LIN ${w128_128_k16_16_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k16_16_h2_16 main_vpe_ppe NotShowPerf LIN ${w128_128_k16_16_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k16_32_h1_1 main_vpe_ppe NotShowPerf LIN ${w128_128_k16_32_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k16_32_h2_2 main_vpe_ppe NotShowPerf LIN ${w128_128_k16_32_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k16_32_h2_16 main_vpe_ppe NotShowPerf LIN ${w128_128_k16_32_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k32_48_h1_1 main_vpe_ppe NotShowPerf LIN ${w128_128_k32_48_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k32_48_h2_2 main_vpe_ppe NotShowPerf LIN ${w128_128_k32_48_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k32_48_h2_16 main_vpe_ppe NotShowPerf LIN ${w128_128_k32_48_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k48_64_h1_1 main_vpe_ppe NotShowPerf LIN ${w128_128_k48_64_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k48_64_h2_2 main_vpe_ppe NotShowPerf LIN ${w128_128_k48_64_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k48_64_h2_16 main_vpe_ppe NotShowPerf LIN ${w128_128_k48_64_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k64_80_h1_1 main_vpe_ppe NotShowPerf LIN ${w128_128_k64_80_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k64_80_h2_2 main_vpe_ppe NotShowPerf LIN ${w128_128_k64_80_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k64_80_h2_16 main_vpe_ppe NotShowPerf LIN ${w128_128_k64_80_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k80_96_h1_1 main_vpe_ppe NotShowPerf LIN ${w128_128_k80_96_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k80_96_h2_2 main_vpe_ppe NotShowPerf LIN ${w128_128_k80_96_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k80_96_h2_16 main_vpe_ppe NotShowPerf LIN ${w128_128_k80_96_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k96_112_h1_1 main_vpe_ppe NotShowPerf LIN ${w128_128_k96_112_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k96_112_h2_2 main_vpe_ppe NotShowPerf LIN ${w128_128_k96_112_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k96_112_h2_16 main_vpe_ppe NotShowPerf LIN ${w128_128_k96_112_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k112_128_h1_1 main_vpe_ppe NotShowPerf LIN ${w128_128_k112_128_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k112_128_h2_2 main_vpe_ppe NotShowPerf LIN ${w128_128_k112_128_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k112_128_h2_16 main_vpe_ppe NotShowPerf LIN ${w128_128_k112_128_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k128_128_h1_1 main_vpe_ppe NotShowPerf LIN ${w128_128_k128_128_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k128_128_h2_2 main_vpe_ppe NotShowPerf LIN ${w128_128_k128_128_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k128_128_h2_16 main_vpe_ppe NotShowPerf LIN ${w128_128_k128_128_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k128_256_h1_1 main_vpe_ppe NotShowPerf LIN ${w128_128_k128_256_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k128_256_h2_2 main_vpe_ppe NotShowPerf LIN ${w128_128_k128_256_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k128_256_h2_16 main_vpe_ppe NotShowPerf LIN ${w128_128_k128_256_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k256_288_h1_1 main_vpe_ppe NotShowPerf LIN ${w128_128_k256_288_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k256_288_h2_2 main_vpe_ppe NotShowPerf LIN ${w128_128_k256_288_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_128_k256_288_h2_16 main_vpe_ppe NotShowPerf LIN ${w128_128_k256_288_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k1_16_h1_1 main_vpe_ppe NotShowPerf LIN ${w129_129_k1_16_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k1_16_h2_2 main_vpe_ppe NotShowPerf LIN ${w129_129_k1_16_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k1_16_h2_16 main_vpe_ppe NotShowPerf LIN ${w129_129_k1_16_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k1_1_h1_1 main_vpe_ppe NotShowPerf LIN ${w129_129_k1_1_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k1_1_h2_2 main_vpe_ppe NotShowPerf LIN ${w129_129_k1_1_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k1_1_h2_16 main_vpe_ppe NotShowPerf LIN ${w129_129_k1_1_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k15_15_h1_1 main_vpe_ppe NotShowPerf LIN ${w129_129_k15_15_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k15_15_h2_2 main_vpe_ppe NotShowPerf LIN ${w129_129_k15_15_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k15_15_h2_16 main_vpe_ppe NotShowPerf LIN ${w129_129_k15_15_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k16_16_h1_1 main_vpe_ppe NotShowPerf LIN ${w129_129_k16_16_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k16_16_h2_2 main_vpe_ppe NotShowPerf LIN ${w129_129_k16_16_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k16_16_h2_16 main_vpe_ppe NotShowPerf LIN ${w129_129_k16_16_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k16_32_h1_1 main_vpe_ppe NotShowPerf LIN ${w129_129_k16_32_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k16_32_h2_2 main_vpe_ppe NotShowPerf LIN ${w129_129_k16_32_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k16_32_h2_16 main_vpe_ppe NotShowPerf LIN ${w129_129_k16_32_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k32_48_h1_1 main_vpe_ppe NotShowPerf LIN ${w129_129_k32_48_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k32_48_h2_2 main_vpe_ppe NotShowPerf LIN ${w129_129_k32_48_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k32_48_h2_16 main_vpe_ppe NotShowPerf LIN ${w129_129_k32_48_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k48_64_h1_1 main_vpe_ppe NotShowPerf LIN ${w129_129_k48_64_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k48_64_h2_2 main_vpe_ppe NotShowPerf LIN ${w129_129_k48_64_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k48_64_h2_16 main_vpe_ppe NotShowPerf LIN ${w129_129_k48_64_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k64_80_h1_1 main_vpe_ppe NotShowPerf LIN ${w129_129_k64_80_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k64_80_h2_2 main_vpe_ppe NotShowPerf LIN ${w129_129_k64_80_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k64_80_h2_16 main_vpe_ppe NotShowPerf LIN ${w129_129_k64_80_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k80_96_h1_1 main_vpe_ppe NotShowPerf LIN ${w129_129_k80_96_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k80_96_h2_2 main_vpe_ppe NotShowPerf LIN ${w129_129_k80_96_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k80_96_h2_16 main_vpe_ppe NotShowPerf LIN ${w129_129_k80_96_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k96_112_h1_1 main_vpe_ppe NotShowPerf LIN ${w129_129_k96_112_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k96_112_h2_2 main_vpe_ppe NotShowPerf LIN ${w129_129_k96_112_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k96_112_h2_16 main_vpe_ppe NotShowPerf LIN ${w129_129_k96_112_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k112_128_h1_1 main_vpe_ppe NotShowPerf LIN ${w129_129_k112_128_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k112_128_h2_2 main_vpe_ppe NotShowPerf LIN ${w129_129_k112_128_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k112_128_h2_16 main_vpe_ppe NotShowPerf LIN ${w129_129_k112_128_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k128_128_h1_1 main_vpe_ppe NotShowPerf LIN ${w129_129_k128_128_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k128_128_h2_2 main_vpe_ppe NotShowPerf LIN ${w129_129_k128_128_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k128_128_h2_16 main_vpe_ppe NotShowPerf LIN ${w129_129_k128_128_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k128_256_h1_1 main_vpe_ppe NotShowPerf LIN ${w129_129_k128_256_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k128_256_h2_2 main_vpe_ppe NotShowPerf LIN ${w129_129_k128_256_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k128_256_h2_16 main_vpe_ppe NotShowPerf LIN ${w129_129_k128_256_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k256_288_h1_1 main_vpe_ppe NotShowPerf LIN ${w129_129_k256_288_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k256_288_h2_2 main_vpe_ppe NotShowPerf LIN ${w129_129_k256_288_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w129_129_k256_288_h2_16 main_vpe_ppe NotShowPerf LIN ${w129_129_k256_288_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k1_16_h1_1 main_vpe_ppe NotShowPerf LIN ${w128_256_k1_16_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k1_16_h2_2 main_vpe_ppe NotShowPerf LIN ${w128_256_k1_16_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k1_16_h2_16 main_vpe_ppe NotShowPerf LIN ${w128_256_k1_16_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k1_1_h1_1 main_vpe_ppe NotShowPerf LIN ${w128_256_k1_1_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k1_1_h2_2 main_vpe_ppe NotShowPerf LIN ${w128_256_k1_1_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k1_1_h2_16 main_vpe_ppe NotShowPerf LIN ${w128_256_k1_1_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k15_15_h1_1 main_vpe_ppe NotShowPerf LIN ${w128_256_k15_15_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k15_15_h2_2 main_vpe_ppe NotShowPerf LIN ${w128_256_k15_15_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k15_15_h2_16 main_vpe_ppe NotShowPerf LIN ${w128_256_k15_15_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k16_16_h1_1 main_vpe_ppe NotShowPerf LIN ${w128_256_k16_16_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k16_16_h2_2 main_vpe_ppe NotShowPerf LIN ${w128_256_k16_16_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k16_16_h2_16 main_vpe_ppe NotShowPerf LIN ${w128_256_k16_16_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k16_32_h1_1 main_vpe_ppe NotShowPerf LIN ${w128_256_k16_32_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k16_32_h2_2 main_vpe_ppe NotShowPerf LIN ${w128_256_k16_32_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k16_32_h2_16 main_vpe_ppe NotShowPerf LIN ${w128_256_k16_32_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k32_48_h1_1 main_vpe_ppe NotShowPerf LIN ${w128_256_k32_48_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k32_48_h2_2 main_vpe_ppe NotShowPerf LIN ${w128_256_k32_48_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k32_48_h2_16 main_vpe_ppe NotShowPerf LIN ${w128_256_k32_48_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k48_64_h1_1 main_vpe_ppe NotShowPerf LIN ${w128_256_k48_64_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k48_64_h2_2 main_vpe_ppe NotShowPerf LIN ${w128_256_k48_64_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k48_64_h2_16 main_vpe_ppe NotShowPerf LIN ${w128_256_k48_64_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k64_80_h1_1 main_vpe_ppe NotShowPerf LIN ${w128_256_k64_80_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k64_80_h2_2 main_vpe_ppe NotShowPerf LIN ${w128_256_k64_80_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k64_80_h2_16 main_vpe_ppe NotShowPerf LIN ${w128_256_k64_80_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k80_96_h1_1 main_vpe_ppe NotShowPerf LIN ${w128_256_k80_96_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k80_96_h2_2 main_vpe_ppe NotShowPerf LIN ${w128_256_k80_96_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k80_96_h2_16 main_vpe_ppe NotShowPerf LIN ${w128_256_k80_96_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k96_112_h1_1 main_vpe_ppe NotShowPerf LIN ${w128_256_k96_112_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k96_112_h2_2 main_vpe_ppe NotShowPerf LIN ${w128_256_k96_112_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k96_112_h2_16 main_vpe_ppe NotShowPerf LIN ${w128_256_k96_112_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k112_128_h1_1 main_vpe_ppe NotShowPerf LIN ${w128_256_k112_128_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k112_128_h2_2 main_vpe_ppe NotShowPerf LIN ${w128_256_k112_128_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k112_128_h2_16 main_vpe_ppe NotShowPerf LIN ${w128_256_k112_128_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k128_128_h1_1 main_vpe_ppe NotShowPerf LIN ${w128_256_k128_128_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k128_128_h2_2 main_vpe_ppe NotShowPerf LIN ${w128_256_k128_128_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k128_128_h2_16 main_vpe_ppe NotShowPerf LIN ${w128_256_k128_128_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k128_256_h1_1 main_vpe_ppe NotShowPerf LIN ${w128_256_k128_256_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k128_256_h2_2 main_vpe_ppe NotShowPerf LIN ${w128_256_k128_256_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k128_256_h2_16 main_vpe_ppe NotShowPerf LIN ${w128_256_k128_256_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k256_288_h1_1 main_vpe_ppe NotShowPerf LIN ${w128_256_k256_288_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k256_288_h2_2 main_vpe_ppe NotShowPerf LIN ${w128_256_k256_288_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w128_256_k256_288_h2_16 main_vpe_ppe NotShowPerf LIN ${w128_256_k256_288_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k1_16_h1_1 main_vpe_ppe NotShowPerf LIN ${w255_255_k1_16_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k1_16_h2_2 main_vpe_ppe NotShowPerf LIN ${w255_255_k1_16_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k1_16_h2_16 main_vpe_ppe NotShowPerf LIN ${w255_255_k1_16_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k1_1_h1_1 main_vpe_ppe NotShowPerf LIN ${w255_255_k1_1_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k1_1_h2_2 main_vpe_ppe NotShowPerf LIN ${w255_255_k1_1_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k1_1_h2_16 main_vpe_ppe NotShowPerf LIN ${w255_255_k1_1_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k15_15_h1_1 main_vpe_ppe NotShowPerf LIN ${w255_255_k15_15_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k15_15_h2_2 main_vpe_ppe NotShowPerf LIN ${w255_255_k15_15_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k15_15_h2_16 main_vpe_ppe NotShowPerf LIN ${w255_255_k15_15_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k16_16_h1_1 main_vpe_ppe NotShowPerf LIN ${w255_255_k16_16_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k16_16_h2_2 main_vpe_ppe NotShowPerf LIN ${w255_255_k16_16_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k16_16_h2_16 main_vpe_ppe NotShowPerf LIN ${w255_255_k16_16_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k16_32_h1_1 main_vpe_ppe NotShowPerf LIN ${w255_255_k16_32_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k16_32_h2_2 main_vpe_ppe NotShowPerf LIN ${w255_255_k16_32_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k16_32_h2_16 main_vpe_ppe NotShowPerf LIN ${w255_255_k16_32_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k32_48_h1_1 main_vpe_ppe NotShowPerf LIN ${w255_255_k32_48_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k32_48_h2_2 main_vpe_ppe NotShowPerf LIN ${w255_255_k32_48_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k32_48_h2_16 main_vpe_ppe NotShowPerf LIN ${w255_255_k32_48_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k48_64_h1_1 main_vpe_ppe NotShowPerf LIN ${w255_255_k48_64_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k48_64_h2_2 main_vpe_ppe NotShowPerf LIN ${w255_255_k48_64_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k48_64_h2_16 main_vpe_ppe NotShowPerf LIN ${w255_255_k48_64_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k64_80_h1_1 main_vpe_ppe NotShowPerf LIN ${w255_255_k64_80_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k64_80_h2_2 main_vpe_ppe NotShowPerf LIN ${w255_255_k64_80_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k64_80_h2_16 main_vpe_ppe NotShowPerf LIN ${w255_255_k64_80_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k80_96_h1_1 main_vpe_ppe NotShowPerf LIN ${w255_255_k80_96_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k80_96_h2_2 main_vpe_ppe NotShowPerf LIN ${w255_255_k80_96_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k80_96_h2_16 main_vpe_ppe NotShowPerf LIN ${w255_255_k80_96_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k96_112_h1_1 main_vpe_ppe NotShowPerf LIN ${w255_255_k96_112_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k96_112_h2_2 main_vpe_ppe NotShowPerf LIN ${w255_255_k96_112_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k96_112_h2_16 main_vpe_ppe NotShowPerf LIN ${w255_255_k96_112_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k112_128_h1_1 main_vpe_ppe NotShowPerf LIN ${w255_255_k112_128_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k112_128_h2_2 main_vpe_ppe NotShowPerf LIN ${w255_255_k112_128_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k112_128_h2_16 main_vpe_ppe NotShowPerf LIN ${w255_255_k112_128_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k128_128_h1_1 main_vpe_ppe NotShowPerf LIN ${w255_255_k128_128_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k128_128_h2_2 main_vpe_ppe NotShowPerf LIN ${w255_255_k128_128_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k128_128_h2_16 main_vpe_ppe NotShowPerf LIN ${w255_255_k128_128_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k128_256_h1_1 main_vpe_ppe NotShowPerf LIN ${w255_255_k128_256_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k128_256_h2_2 main_vpe_ppe NotShowPerf LIN ${w255_255_k128_256_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k128_256_h2_16 main_vpe_ppe NotShowPerf LIN ${w255_255_k128_256_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k256_288_h1_1 main_vpe_ppe NotShowPerf LIN ${w255_255_k256_288_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k256_288_h2_2 main_vpe_ppe NotShowPerf LIN ${w255_255_k256_288_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w255_255_k256_288_h2_16 main_vpe_ppe NotShowPerf LIN ${w255_255_k256_288_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k1_16_h1_1 main_vpe_ppe NotShowPerf LIN ${w256_256_k1_16_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k1_16_h2_2 main_vpe_ppe NotShowPerf LIN ${w256_256_k1_16_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k1_16_h2_16 main_vpe_ppe NotShowPerf LIN ${w256_256_k1_16_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k1_1_h1_1 main_vpe_ppe NotShowPerf LIN ${w256_256_k1_1_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k1_1_h2_2 main_vpe_ppe NotShowPerf LIN ${w256_256_k1_1_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k1_1_h2_16 main_vpe_ppe NotShowPerf LIN ${w256_256_k1_1_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k15_15_h1_1 main_vpe_ppe NotShowPerf LIN ${w256_256_k15_15_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k15_15_h2_2 main_vpe_ppe NotShowPerf LIN ${w256_256_k15_15_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k15_15_h2_16 main_vpe_ppe NotShowPerf LIN ${w256_256_k15_15_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k16_16_h1_1 main_vpe_ppe NotShowPerf LIN ${w256_256_k16_16_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k16_16_h2_2 main_vpe_ppe NotShowPerf LIN ${w256_256_k16_16_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k16_16_h2_16 main_vpe_ppe NotShowPerf LIN ${w256_256_k16_16_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k16_32_h1_1 main_vpe_ppe NotShowPerf LIN ${w256_256_k16_32_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k16_32_h2_2 main_vpe_ppe NotShowPerf LIN ${w256_256_k16_32_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k16_32_h2_16 main_vpe_ppe NotShowPerf LIN ${w256_256_k16_32_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k32_48_h1_1 main_vpe_ppe NotShowPerf LIN ${w256_256_k32_48_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k32_48_h2_2 main_vpe_ppe NotShowPerf LIN ${w256_256_k32_48_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k32_48_h2_16 main_vpe_ppe NotShowPerf LIN ${w256_256_k32_48_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k48_64_h1_1 main_vpe_ppe NotShowPerf LIN ${w256_256_k48_64_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k48_64_h2_2 main_vpe_ppe NotShowPerf LIN ${w256_256_k48_64_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k48_64_h2_16 main_vpe_ppe NotShowPerf LIN ${w256_256_k48_64_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k64_80_h1_1 main_vpe_ppe NotShowPerf LIN ${w256_256_k64_80_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k64_80_h2_2 main_vpe_ppe NotShowPerf LIN ${w256_256_k64_80_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k64_80_h2_16 main_vpe_ppe NotShowPerf LIN ${w256_256_k64_80_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k80_96_h1_1 main_vpe_ppe NotShowPerf LIN ${w256_256_k80_96_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k80_96_h2_2 main_vpe_ppe NotShowPerf LIN ${w256_256_k80_96_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k80_96_h2_16 main_vpe_ppe NotShowPerf LIN ${w256_256_k80_96_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k96_112_h1_1 main_vpe_ppe NotShowPerf LIN ${w256_256_k96_112_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k96_112_h2_2 main_vpe_ppe NotShowPerf LIN ${w256_256_k96_112_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k96_112_h2_16 main_vpe_ppe NotShowPerf LIN ${w256_256_k96_112_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k112_128_h1_1 main_vpe_ppe NotShowPerf LIN ${w256_256_k112_128_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k112_128_h2_2 main_vpe_ppe NotShowPerf LIN ${w256_256_k112_128_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k112_128_h2_16 main_vpe_ppe NotShowPerf LIN ${w256_256_k112_128_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k128_128_h1_1 main_vpe_ppe NotShowPerf LIN ${w256_256_k128_128_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k128_128_h2_2 main_vpe_ppe NotShowPerf LIN ${w256_256_k128_128_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k128_128_h2_16 main_vpe_ppe NotShowPerf LIN ${w256_256_k128_128_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k128_256_h1_1 main_vpe_ppe NotShowPerf LIN ${w256_256_k128_256_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k128_256_h2_2 main_vpe_ppe NotShowPerf LIN ${w256_256_k128_256_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k128_256_h2_16 main_vpe_ppe NotShowPerf LIN ${w256_256_k128_256_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k256_288_h1_1 main_vpe_ppe NotShowPerf LIN ${w256_256_k256_288_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k256_288_h2_2 main_vpe_ppe NotShowPerf LIN ${w256_256_k256_288_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_256_k256_288_h2_16 main_vpe_ppe NotShowPerf LIN ${w256_256_k256_288_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k1_16_h1_1 main_vpe_ppe NotShowPerf LIN ${w256_288_k1_16_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k1_16_h2_2 main_vpe_ppe NotShowPerf LIN ${w256_288_k1_16_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k1_16_h2_16 main_vpe_ppe NotShowPerf LIN ${w256_288_k1_16_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k1_1_h1_1 main_vpe_ppe NotShowPerf LIN ${w256_288_k1_1_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k1_1_h2_2 main_vpe_ppe NotShowPerf LIN ${w256_288_k1_1_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k1_1_h2_16 main_vpe_ppe NotShowPerf LIN ${w256_288_k1_1_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k15_15_h1_1 main_vpe_ppe NotShowPerf LIN ${w256_288_k15_15_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k15_15_h2_2 main_vpe_ppe NotShowPerf LIN ${w256_288_k15_15_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k15_15_h2_16 main_vpe_ppe NotShowPerf LIN ${w256_288_k15_15_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k16_16_h1_1 main_vpe_ppe NotShowPerf LIN ${w256_288_k16_16_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k16_16_h2_2 main_vpe_ppe NotShowPerf LIN ${w256_288_k16_16_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k16_16_h2_16 main_vpe_ppe NotShowPerf LIN ${w256_288_k16_16_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k16_32_h1_1 main_vpe_ppe NotShowPerf LIN ${w256_288_k16_32_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k16_32_h2_2 main_vpe_ppe NotShowPerf LIN ${w256_288_k16_32_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k16_32_h2_16 main_vpe_ppe NotShowPerf LIN ${w256_288_k16_32_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k32_48_h1_1 main_vpe_ppe NotShowPerf LIN ${w256_288_k32_48_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k32_48_h2_2 main_vpe_ppe NotShowPerf LIN ${w256_288_k32_48_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k32_48_h2_16 main_vpe_ppe NotShowPerf LIN ${w256_288_k32_48_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k48_64_h1_1 main_vpe_ppe NotShowPerf LIN ${w256_288_k48_64_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k48_64_h2_2 main_vpe_ppe NotShowPerf LIN ${w256_288_k48_64_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k48_64_h2_16 main_vpe_ppe NotShowPerf LIN ${w256_288_k48_64_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k64_80_h1_1 main_vpe_ppe NotShowPerf LIN ${w256_288_k64_80_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k64_80_h2_2 main_vpe_ppe NotShowPerf LIN ${w256_288_k64_80_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k64_80_h2_16 main_vpe_ppe NotShowPerf LIN ${w256_288_k64_80_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k80_96_h1_1 main_vpe_ppe NotShowPerf LIN ${w256_288_k80_96_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k80_96_h2_2 main_vpe_ppe NotShowPerf LIN ${w256_288_k80_96_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k80_96_h2_16 main_vpe_ppe NotShowPerf LIN ${w256_288_k80_96_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k96_112_h1_1 main_vpe_ppe NotShowPerf LIN ${w256_288_k96_112_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k96_112_h2_2 main_vpe_ppe NotShowPerf LIN ${w256_288_k96_112_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k96_112_h2_16 main_vpe_ppe NotShowPerf LIN ${w256_288_k96_112_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k112_128_h1_1 main_vpe_ppe NotShowPerf LIN ${w256_288_k112_128_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k112_128_h2_2 main_vpe_ppe NotShowPerf LIN ${w256_288_k112_128_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k112_128_h2_16 main_vpe_ppe NotShowPerf LIN ${w256_288_k112_128_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k128_128_h1_1 main_vpe_ppe NotShowPerf LIN ${w256_288_k128_128_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k128_128_h2_2 main_vpe_ppe NotShowPerf LIN ${w256_288_k128_128_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k128_128_h2_16 main_vpe_ppe NotShowPerf LIN ${w256_288_k128_128_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k128_256_h1_1 main_vpe_ppe NotShowPerf LIN ${w256_288_k128_256_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k128_256_h2_2 main_vpe_ppe NotShowPerf LIN ${w256_288_k128_256_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k128_256_h2_16 main_vpe_ppe NotShowPerf LIN ${w256_288_k128_256_h2_16})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k256_288_h1_1 main_vpe_ppe NotShowPerf LIN ${w256_288_k256_288_h1_1})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k256_288_h2_2 main_vpe_ppe NotShowPerf LIN ${w256_288_k256_288_h2_2})
-        ADD_VPE_PPE_TESTS(vpe_ppe_w256_288_k256_288_h2_16 main_vpe_ppe NotShowPerf LIN ${w256_288_k256_288_h2_16})
+        ADD_VPE_PPE_WKH_COMB(vpe_ppe_wkh_comb)
 
       endif()
 
@@ -2130,3 +1944,4 @@ if (NOT CROSS_COMPILE)
 endif()
 
 set(CMAKE_C_COMPILER_WORKS 1)
+
