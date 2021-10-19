@@ -1886,6 +1886,13 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
           ADD_NPE_MPE_VPE_TEST(npe_mpe_direct_ex_MPE_CFG_${label}_WITH_VPE main_mpe_direct_ex_MPE_CFG_${label}_WITH_VPE)
           ADD_NPE_MPE_VPE_TEST(npe_mpe_direct_ex_MPE_CFG_${label}_FP_WITH_VPE main_mpe_direct_ex_MPE_CFG_${label}_FP_WITH_VPE)
         endforeach()
+        foreach(label 25 26 27 28 31 35 36 37 39 40 41 44)
+          ADD_NPE_MPE_VPE_TEST(npe_mpe_direct_ex_MPE_CFG_${label} main_mpe_direct_ex_MPE_CFG_${label})
+          ADD_NPE_MPE_VPE_TEST(npe_mpe_direct_ex_MPE_CFG_${label}_FP main_mpe_direct_ex_MPE_CFG_${label}_FP)
+          ADD_NPE_MPE_VPE_TEST(npe_mpe_direct_ex_MPE_CFG_${label}_WITH_VPE main_mpe_direct_ex_MPE_CFG_${label}_WITH_VPE)
+          ADD_NPE_MPE_VPE_TEST(npe_mpe_direct_ex_MPE_CFG_${label}_FP_WITH_VPE main_mpe_direct_ex_MPE_CFG_${label}_FP_WITH_VPE)
+        endforeach()
+
 
         macro(ADD_NPE_COMPLEX_TEST name rm_bin_name)
           add_rumboot_target(
