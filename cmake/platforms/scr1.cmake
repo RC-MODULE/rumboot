@@ -352,7 +352,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
           +${PLUSARG_status_regs_file_tag}_${i}_=${NA_TEST_status_regs_file}.${i}
         )
       endforeach()
-      set(RM_LOGFILE npe_rm.log)
+      set(RM_LOGFILE /dev/null)
 
       ##################################################################
       ############# VPE_TESTS general settings and macros ##############
