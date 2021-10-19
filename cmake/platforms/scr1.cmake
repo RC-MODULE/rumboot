@@ -648,6 +648,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
         # Test on VPE special cases
         ADD_VPE_COUPLED_TEST_LOOP(vpe_special_cases_IN_FP32_OUT_FP16 main_vpe_special_cases_IN_FP32_OUT_FP16) # Test on special cases
+        ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_bn_add_relu main_vpe_bn_add_relu_IN_FP16)
       endif()  # if(DUT STREQUAL "VPE")
 
       ###################################################################
