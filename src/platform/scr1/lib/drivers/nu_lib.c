@@ -1729,7 +1729,7 @@ int nu_mpe_decide_dma_config_trivial(ConfigMPE* cfg, CubeMetrics* cube_metrics, 
   cfg->dma_d_config.rdma.RPXOffset=-(cfg->W * sizeof_C * (cfg->Tp-1));
   cfg->dma_d_config.rdma.TPYOffset= 0 ;
   cfg->dma_d_config.rdma.BPYOffset = cfg->H * cfg->W * sizeof_C;
-  cfg->dma_d_config.rdma.CntThresholdSha = sizeof_C>128 ? sizeof_C : 0;
+  cfg->dma_d_config.rdma.CntThresholdSha = sizeof_C>128 ? sizeof_C-1 : 0;  // -1 - Accordind To CntThresholdSha Encoding
   
   for(int i=0;i<7;i++)
     cfg->dma_d_config.rdma.Bias[i].AOffset = 0;
@@ -1751,6 +1751,7 @@ int nu_mpe_decide_dma_config_trivial(ConfigMPE* cfg, CubeMetrics* cube_metrics, 
   cfg->dma_d_config.rdma.Bias[6].CntOffset = 0;
   cfg->dma_d_config.rdma.Bias[6].CntThresholdSha = 0;
   cfg->dma_d_config.rdma.Bias[6].CntCmp = 0;
+  */
   
   ////////////////////////////
   cfg->dma_w_config.rdma.LPXEn = Enable_NotEn;
@@ -1763,11 +1764,10 @@ int nu_mpe_decide_dma_config_trivial(ConfigMPE* cfg, CubeMetrics* cube_metrics, 
   cfg->dma_w_config.rdma.RPXOffset=0;
   cfg->dma_w_config.rdma.TPYOffset= 0;
   cfg->dma_w_config.rdma.BPYOffset= 0;
-  cfg->dma_w_config.rdma.CntThresholdSha = sizeof_C>128 ? sizeof_C : 0;
+  cfg->dma_w_config.rdma.CntThresholdSha = sizeof_C>128 ? sizeof_C-1 : 0;
   
   for(int i=0;i<7;i++)
     cfg->dma_w_config.rdma.Bias[i].AOffset = 0;
-  */
   
   cfg->dma_w_config.rdma.LPXData=0;
   cfg->dma_w_config.rdma.RPXData=0;
