@@ -1639,6 +1639,60 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         endforeach()
       endmacro()
 
+      macro (ADD_VPE_PPE_WKH_COMB_ALL test_list_name)
+
+        set (ShowPerf "NotShowPerf")
+        set (TST_NMB 3)
+        set (i 0)
+
+        foreach(name_in ${${test_list_name}})
+          foreach(i RANGE ${TST_NMB})
+
+            if (i EQUAL 0)
+              set (name "vpe_ppe_${name_in}_LIN_8b")
+              set (rm_bin_name "main_vpe_ppe")
+              set (LBS "LIN")
+              set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} --data_type 0")
+            elseif (i EQUAL 1)
+              set (name "vpe_ppe_${name_in}_LIN_16b")
+              set (rm_bin_name "main_vpe_ppe")
+              set (LBS "LIN")
+              set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} --data_type 1")
+            elseif (i EQUAL 2)
+              set (name "vpe_ppe_${name_in}_BOX_8b")
+              set (rm_bin_name "main_vpe_ppe_box")
+              set (LBS "BOX")
+              set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} --data_type 0")
+            elseif (i EQUAL 3)
+              set (name "vpe_ppe_${name_in}_BOX_16b")
+              set (rm_bin_name "main_vpe_ppe_box")
+              set (LBS "BOX")
+              set (RM_CFG_PARAM_MACRO "${RM_CFG_PARAM} --data_type 1")
+            endif()
+
+            add_rumboot_target(
+              CONFIGURATION ROM
+              NAME ${name}
+              FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_vpe_ppe.c
+
+              PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} --seed ${NU_SEED} --it_nmb ${NU_IT_NMB} ${RM_CFG_PARAM_MACRO} > ${RM_LOGFILE} || exit 1
+
+              CFLAGS -D${ShowPerf} -D${LBS} -DDUT=${DUT_LETTER_QUOTED}
+
+              IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
+
+              SUBPROJECT_DEPS npe_rm:${rm_bin_name}
+            )
+
+            if (i EQUAL TST_NMB)
+              math (EXPR NU_SEED "${NU_SEED} + 1")
+              set (i 0)
+            endif()
+
+          endforeach()
+        endforeach()
+      endmacro()
+
       if(DEFINED EXPERIMENT_STAGE_2_SUB_1)
         if(NOT DEFINED PPE_EXPER_DIR)
           if(EXISTS ${CMAKE_SOURCE_DIR}/../../PPE)
@@ -1680,11 +1734,12 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         ADD_PPE_TESTS(ppe_i16_avg_ml main_ppe NotShowPerf MEMtoPPE LIN ${i16_avg})
         ADD_PPE_TESTS(ppe_fp16_avg_ml main_ppe NotShowPerf MEMtoPPE LIN ${fp16_avg})
 
-        #ADD_VPE_PPE_TESTS_OLD(vpe_ppe_w1_128_k1_16_h1_1_l main_vpe_ppe NotShowPerf LIN ${w1_128_k1_16_h1_1})
-        #ADD_VPE_PPE_TESTS_OLD(vpe_ppe_w1_128_k1_16_h1_1_b main_vpe_ppe_box NotShowPerf BOX ${w1_128_k1_16_h1_1})
+        #ADD_VPE_PPE_TESTS_OLD(vpe_ppe_w129_129_k32_48_h2_2_l  main_vpe_ppe      NotShowPerf LIN ${w129_129_k32_48_h2_2} )
+        #ADD_VPE_PPE_TESTS_OLD(vpe_ppe_w129_129_k32_48_h2_2_b  main_vpe_ppe_box  NotShowPerf BOX ${w129_129_k32_48_h2_2} )
         #ADD_VPE_PPE_TESTS(vpe_ppe_w1_128_k1_16_h1_1 ${w1_128_k1_16_h1_1})
 
         ADD_VPE_PPE_WKH_COMB(vpe_ppe_wkh_comb)
+        #ADD_VPE_PPE_WKH_COMB_ALL(vpe_ppe_wkh_comb)
 
       endif()
 
