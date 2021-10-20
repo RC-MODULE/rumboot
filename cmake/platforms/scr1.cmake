@@ -1946,6 +1946,8 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
           ADD_NPE_MPE_VPE_TEST(npe_mpe_direct_ex_MPE_CFG_${label}_FP main_mpe_direct_ex_MPE_CFG_${label}_FP)
           ADD_NPE_MPE_VPE_TEST(npe_mpe_direct_ex_MPE_CFG_${label}_WITH_VPE main_mpe_direct_ex_MPE_CFG_${label}_WITH_VPE)
           ADD_NPE_MPE_VPE_TEST(npe_mpe_direct_ex_MPE_CFG_${label}_FP_WITH_VPE main_mpe_direct_ex_MPE_CFG_${label}_FP_WITH_VPE)
+          ADD_NPE_MPE_VPE_TEST(npe_mpe_direct_ex_MPE_CFG_${label}_WITH_PPE main_mpe_direct_ex_MPE_CFG_${label}_WITH_PPE)
+          ADD_NPE_MPE_VPE_TEST(npe_mpe_direct_ex_MPE_CFG_${label}_FP_WITH_PPE main_mpe_direct_ex_MPE_CFG_${label}_FP_WITH_PPE)
         endforeach()
 
 
