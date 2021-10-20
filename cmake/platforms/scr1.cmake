@@ -352,7 +352,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
           +${PLUSARG_status_regs_file_tag}_${i}_=${NA_TEST_status_regs_file}.${i}
         )
       endforeach()
-      set(RM_LOGFILE /dev/null)
+      set(RM_LOGFILE npe_rm.log)
 
       ##################################################################
       ############# VPE_TESTS general settings and macros ##############
@@ -1923,7 +1923,13 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
             NAME ${name}
             FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_npe.c
             CFLAGS -DDONT_USE_PPE=1
-            PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
+            PREPCMD 
+              ${NA_RM_BIN_PATH}/${rm_bin_name} 
+              ${NA_RM_KEYS} 
+              --cube_TF_file=${NPE_BINS}/resnet_bins/${name}/cube.bin.0
+              --warr_TF_file=${NPE_BINS}/resnet_bins/${name}/warr.bin.0
+              --op0_TF_file=${NPE_BINS}/resnet_bins/${name}/op0.bin.0
+              > ${RM_LOGFILE} || exit 1
             IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
             SUBPROJECT_DEPS npe_rm:${rm_bin_name}
           )
@@ -1948,13 +1954,27 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
             CONFIGURATION ROM
             NAME ${name}
             FILES scr1/targets/simple-rom/nu/coupled_with_rm/coupled_loop_npe.c
-            PREPCMD ${NA_RM_BIN_PATH}/${rm_bin_name} ${NA_RM_KEYS} > ${RM_LOGFILE} || exit 1
+            PREPCMD 
+              ${NA_RM_BIN_PATH}/${rm_bin_name} 
+              ${NA_RM_KEYS} 
+              --cube_TF_file=${NPE_BINS}/resnet_bins/${name}/cube.bin.0
+              --warr_TF_file=${NPE_BINS}/resnet_bins/${name}/warr.bin.0
+              --op0_TF_file=${NPE_BINS}/resnet_bins/${name}/op0.bin.0
+              > ${RM_LOGFILE} || exit 1
             IRUN_FLAGS ${NA_RM_PLUSARGS_LOOP}
             SUBPROJECT_DEPS npe_rm:${rm_bin_name}
           )
         endmacro()
 
         ADD_NPE_COMPLEX_TEST(npe_all_ex_IN_INT16 main_npe_all_ex_IN_INT16)
+        
+        ###################################################################
+        # Resnet-test 
+        ADD_NPE_MPE_VPE_TEST(resnet_IN_FP16_LAYER0_MPE main_resnet_IN_FP16_LAYER0_MPE) # LAYER0_MPE
+        ADD_NPE_MPE_VPE_TEST(resnet_IN_FP16_LAYER0_MPE_BN main_resnet_IN_FP16_LAYER0_MPE_BN) # LAYER0_MPE_BN
+        ADD_NPE_MPE_VPE_TEST(resnet_IN_FP16_LAYER0_MPE_BN_RELU main_resnet_IN_FP16_LAYER0_MPE_BN_RELU) # LAYER0_MPE_BN_RELU
+        ADD_NPE_COMPLEX_TEST(resnet_IN_FP16_LAYER0_MPE_BN_RELU_PPE main_resnet_IN_FP16_LAYER0_MPE_BN_RELU_PPE) # LAYER0_MPE_BN_RELU_PPE
+        ###################################################################
       endif() # if(DUT STREQUAL "NPE")
     endif()  # if(DUT STREQUAL MPE,VPE,PPE,NPE)
 endmacro()
