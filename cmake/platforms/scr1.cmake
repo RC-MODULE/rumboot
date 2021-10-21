@@ -860,7 +860,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         )
 		add_rumboot_target(
             CONFIGURATION ROM
-            NAME MPE_REG_1
+            NAME MPE_1
             FILES scr1/targets/simple-rom/nu/mpe_regs/regs_mpe.c
         )
       endif()
@@ -1871,23 +1871,22 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         ########################### NPE_TESTS #############################
         ###################################################################
 
-        ADD_MPE_SINGLE_TEST(MPE_1 TRUNC0)
         ADD_MPE_SINGLE_TEST(MPE_2 TRUNC0)
         ADD_MPE_SINGLE_TEST(MPE_3 TRUNC0)
         ADD_MPE_SINGLE_TEST(MPE_4 TRUNC0)
         ADD_MPE_SINGLE_TEST(MPE_5 TRUNC0)
         ADD_MPE_SINGLE_TEST(MPE_6 TRUNC0)
+        ADD_MPE_SINGLE_TEST(MPE_7 TRUNC0)
 
-        ADD_MPE_SINGLE_TEST(MPE_7 TRUNC0) # mu int8 test
-        ADD_MPE_SINGLE_TEST(MPE_8 TRUNC0) # mu int16 test
-        ADD_MPE_SINGLE_TEST(MPE_9 TRUNC0) # mu fp16 test
-        ADD_MPE_SINGLE_TEST(MPE_10 TRUNC0) # mu fp16 NaN test
-        ADD_MPE_SINGLE_TEST(MPE_11 TRUNC16) # mu fp16 inf test
-        ADD_MPE_SINGLE_TEST(MPE_12 TRUNC0) # mu+acc int8 test
-        ADD_MPE_SINGLE_TEST(MPE_13 TRUNC0) # mu+acc int16 test
-        ADD_MPE_SINGLE_TEST(MPE_14 TRUNC0) # mu int norm test
-        ADD_MPE_SINGLE_TEST(MPE_15 TRUNC16) # mu+acc fp16 test
-        ADD_MPE_SINGLE_TEST(MPE_16 TRUNC16) # fp16 max perf test
+        ADD_MPE_SINGLE_TEST(MPE_8 TRUNC0) # mu int8 test
+        ADD_MPE_SINGLE_TEST(MPE_9 TRUNC0) # mu int16 test
+        ADD_MPE_SINGLE_TEST(MPE_10 TRUNC0) # mu fp16 test
+        ADD_MPE_SINGLE_TEST(MPE_11 TRUNC0) # mu fp16 NaN test
+        ADD_MPE_SINGLE_TEST(MPE_12 TRUNC16) # mu fp16 inf test
+        ADD_MPE_SINGLE_TEST(MPE_13 TRUNC0) # mu+acc int8 test
+        ADD_MPE_SINGLE_TEST(MPE_14 TRUNC0) # mu+acc int16 test
+        ADD_MPE_SINGLE_TEST(MPE_15 TRUNC0) # mu int norm test
+        ADD_MPE_SINGLE_TEST(MPE_16 TRUNC16) # mu+acc fp16 test
 
         macro (ADD_MPE_CONV_TEST name trunc) # trunc=TRUNC0/TRUNC16
           set(MPE_TEST_SHEET ${CMAKE_SOURCE_DIR}/../units/rcm_lava_mpe/tests/experiment2/${name}_CONV/mpe_arrays.txt)
