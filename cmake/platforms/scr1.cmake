@@ -1948,13 +1948,21 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         set(CU_TEST_DIR ${CMAKE_SOURCE_DIR}/src/platform/scr1/targets/simple-rom/nu/na_cu)
         add_rumboot_target(
           CONFIGURATION ROM
-          NAME na_cu_mpe_vpe
+          NAME NA_7 #na_cu_mpe_vpe
           FILES scr1/targets/simple-rom/nu/na_cu/cu_dpnd_mpe_vpe.c
           PREPCMD cp ${CU_TEST_DIR}/in_arr.bin ${CU_TEST_DIR}/in_arr.bin.metrics ${CU_TEST_DIR}/etalon.bin ${CU_TEST_DIR}/etalon.bin.metrics -t .
           IRUN_FLAGS +in_arr=in_arr.bin
                      +metrics_in_arr=in_arr.bin.metrics
                      +etalon_arr=etalon.bin
                      +metrics_etalon_arr=etalon.bin.metrics
+        )
+        add_rumboot_target(
+          CONFIGURATION ROM
+          NAME NA_8 #na_cu_buffers
+          FILES scr1/targets/simple-rom/nu/na_cu/cu_buffers.c
+          PREPCMD cp ${CU_TEST_DIR}/in_arr.bin ${CU_TEST_DIR}/in_arr.bin.metrics -t .
+          IRUN_FLAGS +in_arr=in_arr.bin
+                     +metrics_in_arr=in_arr.bin.metrics
         )
 
         macro(ADD_NPE_SIMPLE_TEST name filename)

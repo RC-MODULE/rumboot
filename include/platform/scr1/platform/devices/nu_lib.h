@@ -614,7 +614,7 @@ void nu_ppe_config_rd_main_channel(uintptr_t dma_base, void *addr, int size);
 void nu_ppe_run_rd_main_channel(uintptr_t dma_base);
 void nu_ppe_wait_rd_main_channel_complete(uintptr_t dma_base);
 
-
-
+int out_dim_comp(int in_dim, int k_dim, int k_str);
+void nu_calc_mpe_cube_out_metrics(ConfigMPE* cfg, CubeMetrics* out_m);
 
 #endif

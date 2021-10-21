@@ -525,6 +525,29 @@ int nu_bitwise_compare(void* res_data, void* etalon, int size) {
   return memcmp((char*)res_data,(char*)etalon,size)  ;
 }
 
+int nu_half_compare_eps(void* res_data, void* etalon, int size, int eps) {
+  int res = 0;
+
+  int i, ri, ei, eps_cmp;
+
+  for (i=0; i < size>>1 && !res; i=i+2) {
+  //for (i=0; i < 4 && !res; i=i+2) {
+
+    ri = (*((int*)res_data + i + 1)&0xF) << 8 | *((int*)res_data + i)&0xF;
+    ei = (*((int*)etalon + i + 1)&0xF) << 8 | *((int*)etalon + i)&0xF;
+
+    if (ri > ei)  eps_cmp = ri - ei;
+    else          eps_cmp = ei - ri;
+
+    if (eps_cmp > eps) {
+      res = 1;
+
+      rumboot_printf("ERROR: Data Mismatch Address: %08x, Read Data: %08x, Address: %08x, Read Data: %08x\n", *((int*)res_data+i), ri, *((int*)etalon+i), ei);
+    }
+  }
+
+  return res;
+}
 
 void nu_vpe_interpret_mismatch_print_op01(ConfigOp01 *op_config,void* op,uint32_t offset_out,int C) {
   uint32_t offset_op;
