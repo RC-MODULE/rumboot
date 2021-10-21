@@ -723,11 +723,11 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
         # Tests on VPE::NORM
         ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_8_0_op0_norm_dma       main_vpe_8_0_op0_norm_dma      )
-        ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_14_op1_norm_dma        main_vpe_14_op1_norm_dma       )
-        ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_20_0_op2_norm_dma      main_vpe_20_0_op2_norm_dma     )
-        ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_8_1_op0_norm_rnd_dma   main_vpe_8_1_op0_norm_rnd_dma  )
-        ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_14_1_op1_norm_rnd_dma  main_vpe_14_1_op1_norm_rnd_dma )
-        ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_20_1_op2_norm_rnd_dma  main_vpe_20_1_op2_norm_rnd_dma )
+        ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_14_op1_norm_dma        main_vpe_14_0_op1_norm_dma     )
+        ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_20_0_op2_norm_dma      main_vpe_20_0_norm_op2_dma     )
+        ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_8_1_op0_norm_rnd_dma   main_vpe_8_1_norm_rnd_op0_dma  )
+        ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_14_1_op1_norm_rnd_dma  main_vpe_14_1_norm_rnd_op1_dma )
+        ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_20_1_op2_norm_rnd_dma  main_vpe_20_1_norm_rnd_op2_dma )
       
         # Tests on VPE channel mode
         ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_op0_vec_ex_int_dma     main_vpe_op0_vec_ex_int )
