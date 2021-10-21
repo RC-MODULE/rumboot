@@ -712,8 +712,8 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
             ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_3_c3_${in_macro}_${out_macro}_dma       main_vpe_3_c3_${in_macro}_${out_macro}  )
           endforeach()
         endforeach()
-        ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_3_c3_IN_FP16_OUT_INT16_dma  main_vpe_3_c3_IN_FP16_OUT_INT16 )
-        ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_3_c3_IN_FP16_OUT_FP16_dma   main_vpe_3_c3_IN_FP16_OUT_FP16  )
+        ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_3_c3_IN_FP16_OUT_INT16_dma  main_vpe_3_c3_IN_FP16_OUT_INT16_dma )
+        ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_3_c3_IN_FP16_OUT_FP16_dma   main_vpe_3_c3_IN_FP16_OUT_FP16_dma  )
       
         # Tests on VPE::RELU
         ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_9_0_op0_relu_int_dma   main_vpe_9_0_op0_relu_int_dma  )
