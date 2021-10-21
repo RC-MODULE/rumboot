@@ -14,7 +14,7 @@
 
  int nu_mpe_rd_regs(uintptr_t rbase) {
 	  int res;
-	  int /*res8,res9,*/res10,/*res11,*/res12,
+	  int /*res8,res9,*/res10,/*res11,res12,*/
 		  res13,res14,res34;
 
 	  int resr;
@@ -48,12 +48,12 @@
 	//	else 
 	//	{res11=0;}
 	
-	if ((0x00000001)  != (ioread32(rbase + MPE_MA_BASE + MPE_COMMON_D_BIAS)& 0x0000000F))
-		{res12 =1;
-		rumboot_printf("MPE_COMMON_D_BIAS = %x\n",ioread32(rbase + MPE_MA_BASE + MPE_COMMON_D_BIAS)); 
-		rumboot_printf("Unexpected MPE_COMMON_D_BIAS error\n");}	
-		else 
-		{res12=0;}
+//	if ((0x00000001)  != (ioread32(rbase + MPE_MA_BASE + MPE_COMMON_D_BIAS)& 0x0000000F))
+//		{res12 =1;
+//		rumboot_printf("MPE_COMMON_D_BIAS = %x\n",ioread32(rbase + MPE_MA_BASE + MPE_COMMON_D_BIAS)); 
+//		rumboot_printf("Unexpected MPE_COMMON_D_BIAS error\n");}	
+//		else 
+//		{res12=0;}
 	if ((0x00000000)  != ioread32(rbase + MPE_MA_BASE + MPE_COMMON_BUF_FULL_SET))
 		{res13 =1;
 		rumboot_printf("MPE_COMMON_BUF_FULL_SET = %x\n",ioread32(rbase + MPE_MA_BASE + MPE_COMMON_BUF_FULL_SET)); 
@@ -79,7 +79,7 @@
 		else 
 		{res34=0;}
 	
-	  resr = 	/* res8 || res9 ||*/ res10 ||/* res11 || */ res12 || res13 || res14  || res34 ;	
+	  resr = 	/* res8 || res9 ||*/ res10 ||/* res11 || res12 ||*/ res13 || res14  || res34 ;	
 	  res = resr ;
   
 	if( res ==1) {
@@ -91,7 +91,7 @@
 
 int nu_mpe_wr_rd_regs(uintptr_t rbase, int32_t data) {
  	  int res;
-	  int /*res8,res9,res10,*/res11,res12,
+	  int /*res8,res9,res10,res11,res12, */
 		  res13,res14;
 		
 	  int resr;
@@ -125,15 +125,15 @@ int nu_mpe_wr_rd_regs(uintptr_t rbase, int32_t data) {
 	//	rumboot_printf("res11 error\n");}	
 	//	else 
 	//	{res11=0;}
-		iowrite32(data, rbase + MPE_MA_BASE + MPE_COMMON_D_BIAS);
-	if ((data & 0x0000000F)  != (ioread32(rbase + MPE_MA_BASE + MPE_COMMON_D_BIAS)& 0x0000000F))
-		{res12 =1;
-		rumboot_printf("MPE_COMMON_D_BIAS = %x\n",ioread32(rbase + MPE_MA_BASE + MPE_COMMON_D_BIAS)); 
-		rumboot_printf("Unexpected MPE_COMMON_D_BIAS error\n");}	
-		else 
-		{res12=0;}
+//		iowrite32(data, rbase + MPE_MA_BASE + MPE_COMMON_D_BIAS);
+//	if ((data & 0x0000000F)  != (ioread32(rbase + MPE_MA_BASE + MPE_COMMON_D_BIAS)& 0x0000000F))
+//		{res12 =1;
+//		rumboot_printf("MPE_COMMON_D_BIAS = %x\n",ioread32(rbase + MPE_MA_BASE + MPE_COMMON_D_BIAS)); 
+//		rumboot_printf("Unexpected MPE_COMMON_D_BIAS error\n");}	
+//		else 
+//		{res12=0;}
 	
-      
+     
 		iowrite32(data, rbase + MPE_MA_BASE + MPE_COMMON_BUF_FULL_SET);	
 		if ((data) !=((ioread32(rbase + MPE_MA_BASE + MPE_COMMON_BUF_FULL_SET))))
 		{res13 =1;
@@ -152,13 +152,9 @@ int nu_mpe_wr_rd_regs(uintptr_t rbase, int32_t data) {
 		{res14=0;}
 
 
-	
-//------------------MPE_DMA Control  	-------------------------------------------
-	
-//------------------MPE_DMA wr Channel  -------------------------------------------
 
 	  resr = 	/*res0 || res1|| res2 || res3 ||  res4 || res5 || res6 || res7 || res8 ||
-				res9 ||  res10 ||*/ res11 || res12 || res13 || res14;
+				res9 ||  res10 || res11 || res12 ||*/ res13 || res14;
 	
 	res = resr ;
   
@@ -177,17 +173,12 @@ int nu_running_one(uintptr_t base, uint32_t mpe_offset,uint32_t mpe_offset_reset
 	
     for ( int i = 0; i< end_number; i++)
     {
-       // rumboot_printf("MPE data_mask=%x\n", (data & mask));
+
 		iowrite32((data & mask)    ,(base + mpe_offset));
-		//rumboot_printf("MPE data_read=%x\n", (ioread32(base + mpe_offset)));
         if ((ioread32(base + mpe_offset) )!= (data & mask))
         {
             rumboot_printf("MPE running one ERROR data=%x\n", data);
-			//rumboot_printf("MPE read data  =%x\n", ioread32(base + mpe_offset));
-			//rumboot_printf("MPE read etalon  =%x\n", (data & mask));
-			//rumboot_printf("MPE read address  =%x\n", (base + mpe_offset));
-			
-			//rumboot_printf("MPE read reset  =%x\n", (base + mpe_offset_reset));
+		
            return 1;
         }
 		 //rumboot_printf("MPE data_before=%x\n", data);
@@ -197,10 +188,166 @@ int nu_running_one(uintptr_t base, uint32_t mpe_offset,uint32_t mpe_offset_reset
     }
     return 0;
 }
+int nu_mpe_dma_rd_regs(uintptr_t rbase) {
+	  int res;
+	  int res0,res1, res2,res3;
+	 int res20,res21, res22,res23;
+	  int resr;
+	  int resw;
+
+	 
+	//--------------------------MPE_RDMA D channel--------------------------------------
+	
+	if((0x00000000)  !=(ioread32(rbase + MPE_RDMA_D_BASE + BIASCtrl_MSha)& 0x0000003F))
+		{res0 =1;
+		rumboot_printf("BIASCtrl_MSha = %x\n",ioread32(rbase + MPE_RDMA_D_BASE + BIASCtrl_MSha));
+		rumboot_printf("Unexpected BIASCtrl_MSha error\n");}
+		else 
+		{res0=0;}
+
+	if ((0x00000000)  != (ioread32(rbase + MPE_RDMA_D_BASE + RD_THRECtrl_MSha)&  0x001FFFFF))
+		{res1 =1;
+		rumboot_printf("RD_THRECtrl_MSha = %x\n",ioread32(rbase + MPE_RDMA_D_BASE + RD_THRECtrl_MSha));
+		rumboot_printf("Unexpected RD_THRECtrl_MSha error\n");}	
+		else 
+		{res1=0;}
+	if((0x00000000)  !=(ioread32(rbase + MPE_RDMA_D_BASE + RD_DECCtrl_MSha)& 0x0003FFFF))
+		{res2 =1;
+		rumboot_printf("RD_DECCtrl_MSha = %x\n",ioread32(rbase + MPE_RDMA_D_BASE + RD_DECCtrl_MSha));
+		rumboot_printf("Unexpected  RD_DECCtrl_MSha error\n");}
+		else 
+		{res2=0;}
+	
+	if ((0x00000000)  != (ioread32(rbase + MPE_RDMA_D_BASE + PADCtrl_MSha)& 0x0007FFFF))
+		{res3 =1;
+		rumboot_printf("PADCtrl_MSha = %x\n",ioread32(rbase + MPE_RDMA_D_BASE + PADCtrl_MSha)); 
+		rumboot_printf("Unexpected PADCtrl_MSha error\n");}	
+		else 
+		{res3=0;}
+
+//---------------------------------MPE_RDMA W Channel----------------------------
+	if((0x00000011)  !=(ioread32(rbase + MPE_RDMA_W_BASE + X_Cfg_MSha)& 0x00030011))
+		{res20 =1;
+		rumboot_printf("X_Cfg_MSha = %x\n",ioread32(rbase + MPE_RDMA_W_BASE + X_Cfg_MSha));
+		rumboot_printf("Unexpected X_Cfg_MSha error\n");}
+		else 
+		{res20=0;}
+
+	if ((0x00000040)  != (ioread32(rbase + MPE_RDMA_W_BASE + WR_THRECtrl_MSha)& 0x000001FF))
+		{res21 =1;
+		rumboot_printf("WR_THRECtrl_MSha = %x\n",ioread32(rbase + MPE_RDMA_W_BASE + WR_THRECtrl_MSha));
+		rumboot_printf("Unexpected MPE_RDMA_W_POINTER error\n");}	
+		else 
+		{res21=0;}
+	if((0x00000000)  !=(ioread32(rbase + MPE_RDMA_W_BASE + WR_DECCtrl_MSha)& 0x00000007))
+		{res22 =1;
+		rumboot_printf("WR_DECCtrl_MSha = %x\n",ioread32(rbase + MPE_RDMA_W_BASE + WR_DECCtrl_MSha));
+		rumboot_printf("Unexpected  WR_DECCtrl_MSha error\n");}
+		else 
+		{res22=0;}
+	
+	if ((0x00000005)  != (ioread32(rbase + MPE_RDMA_W_BASE + CHCfg_MSha)& 0x0000000F))
+		{res23 =1;
+		rumboot_printf("CHCfg_MSha = %x\n",ioread32(rbase + MPE_RDMA_W_BASE + CHCfg_MSha)); 
+		rumboot_printf("Unexpected CHCfg_MSha error\n");}	
+		else 
+		{res23=0;}
+
+	  resr = 	res0 || res1 || res2 || res3  ;	
+	  resw = 	res20 || res21 || res22 || res23  ;
+	  res = resr || resw ;
+  
+	if( res ==1) {
+	 rumboot_printf("READ_REGS ERROR\n");
+    return -1;}
+			
+ return 0; 
+ } 
+
+int nu_mpe_dma_wr_rd_regs(uintptr_t rbase, int32_t data) {
+ 	   int res;
+	    int res0,res1, res2,res3;
+		int res20,res21, res22,res23;
+	  int resr;
+	  int resw;
+	 
+//--------------------------MPE_RDMA D channel--------------------------------------
+				
+   		iowrite32(data, rbase + MPE_RDMA_D_BASE + BIASCtrl_MSha); 	
+  	if((data & 0x0000003F)  !=(ioread32(rbase + MPE_RDMA_D_BASE + BIASCtrl_MSha)& 0x0000003F))
+		{res0 =1;
+		rumboot_printf("BIASCtrl_MSha = %x\n",ioread32(rbase + MPE_RDMA_D_BASE + BIASCtrl_MSha));
+		rumboot_printf("Unexpected BIASCtrl_MSha error\n");}
+		else 
+		{res0=0;}
+	
+   		iowrite32(data, rbase + MPE_RDMA_D_BASE + BIASCtrl_MSha); 
+	if ((data & 0x001FFFFF)  != (ioread32(rbase + MPE_RDMA_D_BASE + RD_THRECtrl_MSha)&  0x001FFFFF))
+		{res1 =1;
+		rumboot_printf("RD_THRECtrl_MSha = %x\n",ioread32(rbase + MPE_RDMA_D_BASE + RD_THRECtrl_MSha));
+		rumboot_printf("Unexpected RD_THRECtrl_MSha error\n");}	
+		else 
+		{res1=0;}
+	
+   		iowrite32(data, rbase + MPE_RDMA_D_BASE + BIASCtrl_MSha); 	
+	if((data & 0x0003FFFF)  !=(ioread32(rbase + MPE_RDMA_D_BASE + RD_DECCtrl_MSha)& 0x0003FFFF))
+		{res2 =1;
+		rumboot_printf("RD_DECCtrl_MSha = %x\n",ioread32(rbase + MPE_RDMA_D_BASE + RD_DECCtrl_MSha));
+		rumboot_printf("Unexpected  RD_DECCtrl_MSha error\n");}
+		else 
+		{res2=0;}
+	
+   		iowrite32(data, rbase + MPE_RDMA_D_BASE + BIASCtrl_MSha); 	
+	if ((data & 0x0007FFFF)  != (ioread32(rbase + MPE_RDMA_D_BASE + PADCtrl_MSha)& 0x0007FFFF))
+		{res3 =1;
+		rumboot_printf("PADCtrl_MSha = %x\n",ioread32(rbase + MPE_RDMA_D_BASE + PADCtrl_MSha)); 
+		rumboot_printf("Unexpected PADCtrl_MSha error\n");}	
+		else 
+		{res3=0;}
+
+//---------------------------------MPE_RDMA W Channel----------------------------
+	   	iowrite32(data, rbase + MPE_RDMA_D_BASE + BIASCtrl_MSha); 
+	if((data & 0x00030011)  !=(ioread32(rbase + MPE_RDMA_W_BASE + X_Cfg_MSha)& 0x00030011))
+		{res20 =1;
+		rumboot_printf("X_Cfg_MSha = %x\n",ioread32(rbase + MPE_RDMA_W_BASE + X_Cfg_MSha));
+		rumboot_printf("Unexpected X_Cfg_MSha error\n");}
+		else 
+		{res20=0;}
+
+	if ((data & 0x000001FF)  != (ioread32(rbase + MPE_RDMA_W_BASE + WR_THRECtrl_MSha)& 0x000001FF))
+		{res21 =1;
+		rumboot_printf("WR_THRECtrl_MSha = %x\n",ioread32(rbase + MPE_RDMA_W_BASE + WR_THRECtrl_MSha));
+		rumboot_printf("Unexpected MPE_RDMA_W_POINTER error\n");}	
+		else 
+		{res21=0;}
+	if((data & 0x00000007)  !=(ioread32(rbase + MPE_RDMA_W_BASE + WR_DECCtrl_MSha)& 0x00000007))
+		{res22 =1;
+		rumboot_printf("WR_DECCtrl_MSha = %x\n",ioread32(rbase + MPE_RDMA_W_BASE + WR_DECCtrl_MSha));
+		rumboot_printf("Unexpected  WR_DECCtrl_MSha error\n");}
+		else 
+		{res22=0;}
+	
+	if ((data & 0x0000000F)  != (ioread32(rbase + MPE_RDMA_W_BASE + CHCfg_MSha)& 0x0000000F))
+		{res23 =1;
+		rumboot_printf("CHCfg_MSha = %x\n",ioread32(rbase + MPE_RDMA_W_BASE + CHCfg_MSha)); 
+		rumboot_printf("Unexpected CHCfg_MSha error\n");}	
+		else 
+		{res23=0;}
+
+	  resr = 	res0 || res1 || res2 || res3  ;	
+	  resw = 	res20 || res21 || res22 || res23  ;
+	  res = resr || resw ;
+  
+	if( res ==1) {
+	 rumboot_printf("READ_REGS ERROR\n");
+    return -1;}
+			
+ return 0; 
+ } 
 
 int main() {
  
-  int res,res1,res2,res3,res4;
+  int res,res1,res2,res3,res4,res5;
   rumboot_printf("Test MPE regs run\n");
   rumboot_printf("Read REGS after reset\n");
   
@@ -216,45 +363,56 @@ int main() {
 	#endif
    // Configure RDMA initial state
 	res1 = nu_mpe_rd_regs((MY_MPE_REGS_BASE));
-	// if ( res1 !=0)
- // {rumboot_printf("Test FAILED\n");
-//	return 1;
-//  }
- // else
- // {rumboot_printf("Check READs after reset PASSED \n");}
+	 if ( res1 !=0)
+  {rumboot_printf("Test FAILED\n");
+	return 1;
+  }
+ else
+ {rumboot_printf("Check READs after reset PASSED \n");}
 	rumboot_printf(" \n");
    //write zero's 
    {rumboot_printf("Read REGS after  WRITE REGs ZERO's\n");}
    res2 = nu_mpe_wr_rd_regs(MY_MPE_REGS_BASE, 0x00000000);
    
-//  if ( res2 !=0)
- // {rumboot_printf("Test FAILED\n");
-//	return 1;
- // }
-//  else
-// { rumboot_printf("Check READs after write ZERO's PASSED \n");}
+  if ( res2 !=0)
+ {rumboot_printf("Test FAILED\n");
+	return 1;
+  }
+ else
+ { rumboot_printf("Check READs after write ZERO's PASSED \n");}
 	rumboot_printf(" \n");
    {rumboot_printf("Read REGS after  WRITE REGs ONE's\n");} 
 	  //write one's 
     res3 =  nu_mpe_wr_rd_regs(MY_MPE_REGS_BASE,  0xFFFFFFFF);
 
-// if ( res3 !=0)
- // {rumboot_printf("Test FAILED\n");
-//	return 1;
- // }
- // else
-//  { rumboot_printf("Read REGS after  WRITE REGs ONE's PASSED\n");};
+ if ( res3 !=0)
+  {rumboot_printf("Test FAILED\n");
+	return 1;
+ }
+  else
+  { rumboot_printf("Read REGS after  WRITE REGs ONE's PASSED\n");};
 
   { rumboot_printf("Read REGS running ONE\n");}
  res4 = nu_running_one( (MY_MPE_REGS_BASE + MPE_MA_BASE),MPE_COMMON_BUF_FULL_SET,MPE_COMMON_BUF_FULL_RST,0xFFFFFFFF,32);	
-//	if  (res4 !=0)
-//	{rumboot_printf( "Check running ONE FAILED\n");
-//	return 1;
-//	}
-//	 else 
-//	{rumboot_printf( "Check 'running ONE' PASSED\n");	}
+	if  (res4 !=0)
+	{rumboot_printf( "Check running ONE FAILED\n");
+	return 1;
+	}
+	 else 
+	{rumboot_printf( "Check 'running ONE' PASSED\n");	}
  
-  res = res1 || res2 ||res3 ||res4;
+  {rumboot_printf("READs DMA after reset\n");} 
+	res5 = nu_mpe_dma_rd_regs((MY_MPE_REGS_BASE));
+	 if ( res5 !=0)
+  {rumboot_printf("Test FAILED\n");
+	return 1;
+  }
+  else
+  {rumboot_printf("Check READs DMA after reset PASSED \n");}
+	rumboot_printf(" \n");
+ 
+ 
+  res = res1 || res2 ||res3 ||res4 || res5;
 
   if ( res !=0)
   {rumboot_printf("Test FAILED\n");
