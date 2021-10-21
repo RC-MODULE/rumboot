@@ -787,10 +787,10 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
 
         #Tests on VPE::OP2::LUT in context NPE
         foreach(in_macro IN ITEMS IN_INT16 IN_INT8 IN_FP16)
-          ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_21_0_lut_${in_macro}_dma               main_vpe_21_0_lut_${in_macro}              )
-          ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_21_1_lut_addition_${in_macro}_dma      main_vpe_21_1_lut_addition_${in_macro}     )
-          ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_21_2_lut_out_of_range_${in_macro}_dma  main_vpe_21_2_lut_out_of_range_${in_macro} )
-          ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_21_3_lut_offset_${in_macro}_dma        main_vpe_21_3_lut_offset_${in_macro}       )
+          ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_21_0_lut_${in_macro}_dma               main_vpe_21_0_lut_${in_macro}_dma              )
+          ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_21_1_lut_addition_${in_macro}_dma      main_vpe_21_1_lut_addition_${in_macro}_dma     )
+          ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_21_2_lut_out_of_range_${in_macro}_dma  main_vpe_21_2_lut_out_of_range_${in_macro}_dma )
+          ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_21_3_lut_offset_${in_macro}_dma        main_vpe_21_3_lut_offset_${in_macro}_dma       )
           foreach(mirror_type IN ITEMS 0 1)
             ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_21_3_lut_offset_mirror_${mirror_type}_${in_macro}_dma main_vpe_21_3_lut_offset_mirror_${mirror_type}_${in_macro}_dma) # VPE_21_offset. mirror mode
           endforeach()
