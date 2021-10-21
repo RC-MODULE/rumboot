@@ -709,7 +709,7 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         # Tests on VPE::DEMUX::C3 TESTS MEM MODE
         foreach(in_macro IN ITEMS IN_INT8 IN_INT16)
           foreach(out_macro IN ITEMS OUT_INT8 OUT_INT16 OUT_FP16)
-            ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_3_c3_${in_macro}_${out_macro}_dma       main_vpe_3_c3_${in_macro}_${out_macro}  )
+            ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_3_c3_${in_macro}_${out_macro}_dma       main_vpe_3_c3_${in_macro}_${out_macro}_dma  )
           endforeach()
         endforeach()
         ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_3_c3_IN_FP16_OUT_INT16_dma  main_vpe_3_c3_IN_FP16_OUT_INT16_dma )
