@@ -1465,9 +1465,80 @@ void nu_vpe_decide_dma_config_trivial(ConfigVPE* cfg, CubeMetrics* metrics) {
   // We Have No Setting That Define If We Run WDMA Or Main Wr Channel
 }
 
-// void nu_calc_mpe2vpe_cube_metrics(CubeMetrics* mpe2vpe_metrics,CubeMetrics* cube_metrics,WarrMetrics* warr_metrics) {
-//   mpe2vpe_metrics->H = ...;
-// }
+int out_dim_comp(int in_dim, int k_dim, int k_str) {
+  int out_dim;
+
+  out_dim = (in_dim-k_dim)/k_str + 1;
+
+  if (k_str>k_dim) {
+    if ((in_dim%k_str != 0) && (in_dim%k_str < k_dim)) rumboot_printf("k_str>k_dim && out_dim is not integer");
+  }
+  else {
+    if ((in_dim-k_dim)%k_str != 0) rumboot_printf("k_str<=k_dim && out_dim is not integer");
+  }
+
+  return out_dim;
+}
+
+void nu_calc_mpe_cube_out_metrics(ConfigMPE* cfg, CubeMetrics* out_m) {
+
+  int H ;
+  int W ;
+  int Tp;
+  int Bp;
+  int Lp;
+  int Rp;
+  int R ;
+  int S ;
+  int Dr;
+  int Ds;
+  int Sw;
+  int Sh;
+  int K ;
+
+  int Rd, Sd, Hp, Wp, Ho, Wo, dt_b, so;
+
+  if (cfg == NULL || out_m == NULL) {
+    rumboot_printf("ConfigMPE ptr or OutCubeMetrics ptr is NULL ptr");
+  }
+  else {
+    H   = cfg->H  ;
+    W   = cfg->W  ;
+    Tp  = cfg->Tp ;
+    Bp  = cfg->Bp ;
+    Lp  = cfg->Lp ;
+    Rp  = cfg->Rp ;
+    R   = cfg->R  ;
+    S   = cfg->S  ;
+    Dr  = cfg->Dr ;
+    Ds  = cfg->Ds ;
+    Sw  = cfg->Sw ;
+    Sh  = cfg->Sh ;
+    K   = cfg->K  ;
+
+    DataType dt = cfg->dt ;
+
+    dt_b =  dt == DataType_Int8 ? 0x1 :
+            dt == DataType_Int16 || dt == DataType_Fp16 ? 0x2 : 0x0
+    ;
+
+    Hp  = H+Tp+Bp;
+    Wp  = W+Lp+Rp;
+
+    Rd  = (R-1)*Dr + 1;
+    Sd  = (S-1)*Ds + 1;
+
+    Ho  = out_dim_comp(Hp, Rd, Sh);
+    Wo  = out_dim_comp(Wp, Sd, Sw);
+
+    so  = Ho*Wo*K*dt_b;
+
+    out_m->s = so ;
+    out_m->H = Ho ;
+    out_m->W = Wo ;
+    out_m->C = K  ;
+  }
+}
 
 int nu_vpe_check_reg(uintptr_t addr, char* name, int shift, uint32_t mask, uint32_t etalon) {
   uint32_t temp;

@@ -32,7 +32,9 @@ ConfigPPE cfg_ppe;
 ConfigREGPPE  cfg_reg_ppe = {0};
 
 CubeMetrics* in_metrics;
+CubeMetrics* mpe_out_metrics;
 WarrMetrics* warr_metrics;
+
 CubeMetrics* res_metrics;
 
 VectorMetrics* lut1_metrics;
@@ -153,9 +155,11 @@ int main() {
     warr_metrics = nu_load_warr_metrics(heap_id, metrics_warr_tag[i]);
     if(warr_metrics == NULL) return -1;
 
+    mpe_out_metrics = rumboot_malloc_from_heap_aligned(heap_id,sizeof(CubeMetrics),64);
+
     res_metrics= nu_load_cube_metrics(heap_id,metrics_etalon_tag[i]);
     if(res_metrics == NULL) return -1;
-    
+
       // Load Input Data
     in_data = nu_load_cube(heap_id, in_file_tag[i],in_metrics);
     if(in_data == NULL) return -1;
@@ -198,11 +202,16 @@ int main() {
     // if(nu_vpe_load_status_regs_by_tag(heap_id,&status_regs_etalon,status_regs_file_tag[i]) != 0) return -1;
     
     if(nu_mpe_decide_dma_config(&cfg_mpe,in_metrics,warr_metrics,in_data,warr,mpe_cfg_lut)!=0) return -1;
-    nu_vpe_decide_dma_config (&cfg_vpe,res_metrics,axi_len,NULL,op0,op1,op2,res_metrics,res_data,PPE_ENABLED);
+
+    nu_calc_mpe_cube_out_metrics(&cfg_mpe, mpe_out_metrics);
+
+    nu_vpe_decide_dma_config (&cfg_vpe,mpe_out_metrics,axi_len,NULL,op0,op1,op2,res_metrics,res_data,PPE_ENABLED);
+
     if(PPE_ENABLED)nu_ppe_decide_dma_config (&cfg_ppe,&cfg_reg_ppe,res_metrics,NULL,res_data);
     
     nu_mpe_print_config(&cfg_mpe);
     nu_vpe_print_config(&cfg_vpe);
+
     // nu_vpe_print_status_regs_etalon(&status_regs_etalon);
     if(PPE_ENABLED) {
       nu_ppe_print_config(&cfg_ppe);
@@ -226,11 +235,26 @@ int main() {
       nu_vpe_wait(MY_VPE_REGS_BASE, &cfg_vpe);
     
     rumboot_printf("Comparing..\n");
-    
+
+    //if (cfg_mpe.dt==DataType_Fp16 && nu_bitwise_compare(res_data,etalon,res_metrics->s)) {
+    //    rumboot_printf("Comparing half..\n");
+    //  if (!nu_half_compare_eps(res_data,etalon,res_metrics->s,99)) {
+    //    rumboot_printf("Iteration %d PASSED\n",i);
+    //  }
+    //}
+    //if (cfg_mpe.dt==DataType_Fp16 && !nu_half_compare_eps(res_data,etalon,res_metrics->s,99)) {
+    //  rumboot_printf("Comparing half..\n");
+    //  rumboot_printf("Iteration %d PASSED\n",i);
+    //}
+    //else if(nu_bitwise_compare(res_data,etalon,res_metrics->s) == 0)
     if(nu_bitwise_compare(res_data,etalon,res_metrics->s) == 0)
       rumboot_printf("Iteration %d PASSED\n",i);
     else {
       rumboot_printf("Test FAILED at iteration %d\n",i);
+
+      nu_mpe_print_config(&cfg_mpe);
+      nu_vpe_print_config(&cfg_vpe);
+
       return 1;
     }
   }
