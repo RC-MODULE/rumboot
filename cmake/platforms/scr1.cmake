@@ -736,6 +736,9 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_20_0_op2_norm_dma      main_vpe_20_0_op2_norm_dma     )
         ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_20_1_op2_norm_rnd_dma  main_vpe_20_1_op2_norm_rnd_dma )
       
+
+            if(NOT EXPERIMENT_STAGE_2_SUB_2)
+              ##
         # Tests on VPE channel mode
         ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_op0_vec_ex_int_dma     main_vpe_op0_vec_ex_int )
         ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_op1_vec_ex_int_dma     main_vpe_op1_vec_ex_int )
@@ -746,6 +749,8 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         ADD_VPE_PPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_ppe_op1_vec_ex_int main_vpe_op1_vec_ex_int )
         ADD_VPE_PPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_ppe_op0_vec_ex_fp  main_vpe_op0_vec_ex_fp  )
         ADD_VPE_PPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_ppe_op1_vec_ex_fp  main_vpe_op1_vec_ex_fp  )
+              ## NOT EXPERIMENT_STAGE_2_SUB_2
+            endif()
 
         # Tests on VPE dma
         ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_2_dma_int16_dma main_vpe_2_dma_int16 )
@@ -783,11 +788,16 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_19_1_op2_mul_int8_dma  main_vpe_19_1_op2_mul_int8_dma  )
         ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_19_2_op2_mul_fp32_dma  main_vpe_19_2_op2_mul_fp32_dma  )
       
+
+            if(NOT EXPERIMENT_STAGE_2_SUB_2)
+              ##
         # Tests on VPE channel mode
         ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_op0_ch_mode_int_dma  main_vpe_op0_ch_mode_int )
         ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_op1_ch_mode_int_dma  main_vpe_op1_ch_mode_int )
         ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_op0_ch_mode_fp_dma   main_vpe_op0_ch_mode_fp  )
         ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_op1_ch_mode_fp_dma   main_vpe_op1_ch_mode_fp  )
+              ## NOT EXPERIMENT_STAGE_2_SUB_2
+            endif()
 
         #Tests on VPE::OP2::LUT in context NPE
         foreach(in_macro IN ITEMS IN_INT16 IN_INT8 IN_FP16)
@@ -800,11 +810,15 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
           endforeach()
         endforeach()
 
+            if(NOT EXPERIMENT_STAGE_2_SUB_2)
+              ##
         # Tests on VPE+PPE channel mode ???
         ADD_VPE_PPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_ppe_op0_ch_mode_int_dma  main_vpe_op0_ch_mode_int )
         ADD_VPE_PPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_ppe_op1_ch_mode_int_dma  main_vpe_op1_ch_mode_int )
         ADD_VPE_PPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_ppe_op0_ch_mode_fp_dma   main_vpe_op0_ch_mode_fp  )
         ADD_VPE_PPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_ppe_op1_ch_mode_fp_dma   main_vpe_op1_ch_mode_fp  )
+              ## NOT EXPERIMENT_STAGE_2_SUB_2
+            endif()
 
         # Test on VPE block's together work 
         ADD_VPE_COUPLED_TEST_LOOP_FORCE_WDMA(vpe_22_op0_together_dma   main_vpe_22_op0_together_dma   ) # VPE_22
@@ -1889,6 +1903,9 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
       ###################################################################
       if(DUT STREQUAL "NPE")
         set(NPE_BINS ${CMAKE_SOURCE_DIR}/src/platform/scr1/targets/simple-rom/nu/npe)
+
+            if(NOT EXPERIMENT_STAGE_2_SUB_2)
+              ###
         add_rumboot_target(
             CONFIGURATION ROM
             NAME RESNET
@@ -1896,6 +1913,8 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
             PREPCMD cp ${NPE_BINS}/resnet_bins/cmd.bin ${NPE_BINS}/resnet_bins/cmd.bin.metrics ${NPE_BINS}/resnet_bins/cube.bin ${NPE_BINS}/resnet_bins/cube.bin.metrics ${NPE_BINS}/resnet_bins/etalon.bin ${NPE_BINS}/resnet_bins/etalon.bin.metrics ${NPE_BINS}/resnet_bins/op0.bin ${NPE_BINS}/resnet_bins/op0.bin.metrics ${NPE_BINS}/resnet_bins/warr.bin ${NPE_BINS}/resnet_bins/warr.bin.metrics -t .
             IRUN_FLAGS ${NA_RM_PLUSARGS}
          )
+              ## NOT EXPERIMENT_STAGE_2_SUB_2
+            endif() 
       
         set(MPE_DEMO_PATH src/platform/scr1/targets/simple-rom/nu/npe_mpe_stage2)
         set(MPE_PARSE_TEST_STAGE2 ${CMAKE_SOURCE_DIR}/${MPE_DEMO_PATH}/parse_mpe_arrays_stage2.pl)
@@ -1933,6 +1952,8 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         ADD_MPE_SINGLE_TEST(MPE_15 TRUNC0) # mu int norm test
         ADD_MPE_SINGLE_TEST(MPE_16 TRUNC16) # mu+acc fp16 test
 
+            if(NOT EXPERIMENT_STAGE_2_SUB_2)
+              ##
         macro (ADD_MPE_CONV_TEST name trunc) # trunc=TRUNC0/TRUNC16
           set(MPE_TEST_SHEET ${CMAKE_SOURCE_DIR}/../units/rcm_lava_mpe/tests/experiment2/${name}_CONV/mpe_arrays.txt)
           add_rumboot_target(
@@ -1945,6 +1966,8 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
           )
         endmacro()
         ADD_MPE_CONV_TEST(MPE_2 TRUNC16)
+              ## NOT EXPERIMENT_STAGE_2_SUB_2
+            endif()
 
         set(CU_TEST_DIR ${CMAKE_SOURCE_DIR}/src/platform/scr1/targets/simple-rom/nu/na_cu)
         add_rumboot_target(
@@ -1998,14 +2021,28 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         #   ADD_NPE_MPE_VPE_TEST(npe_mpe_only_rnd_${in_macro} main_mpe_rnd_${in_macro})
         # endforeach()
 
-        foreach(label RANGE 1 72)
+        foreach(label RANGE 25 48)  # Int16
+          ADD_NPE_MPE_VPE_TEST(NA_2_npe_mpe_direct_ex_MPE_CFG_${label}_WITH_VPE main_mpe_direct_ex_MPE_CFG_${label}_WITH_VPE)
+        endforeach()
+        foreach(label RANGE 49 72)  # Int8
+          ADD_NPE_MPE_VPE_TEST(NA_1_npe_mpe_direct_ex_MPE_CFG_${label}_WITH_VPE main_mpe_direct_ex_MPE_CFG_${label}_WITH_VPE)
+        endforeach()
+
+          if(NOT EXPERIMENT_STAGE_2_SUB_2)
+            ##
+        foreach(label RANGE 1 24)
           ADD_NPE_MPE_VPE_TEST(npe_mpe_direct_ex_MPE_CFG_${label} main_mpe_direct_ex_MPE_CFG_${label})
           ADD_NPE_MPE_VPE_TEST(npe_mpe_direct_ex_MPE_CFG_${label}_WITH_VPE main_mpe_direct_ex_MPE_CFG_${label}_WITH_VPE)
+        endforeach()
+        foreach(label RANGE 25 72)
+          ADD_NPE_MPE_VPE_TEST(npe_mpe_direct_ex_MPE_CFG_${label} main_mpe_direct_ex_MPE_CFG_${label})
         endforeach()
         foreach(label RANGE 1 48)
           ADD_NPE_MPE_VPE_TEST(npe_mpe_direct_ex_MPE_CFG_${label}_FP main_mpe_direct_ex_MPE_CFG_${label}_FP)
           ADD_NPE_MPE_VPE_TEST(npe_mpe_direct_ex_MPE_CFG_${label}_FP_WITH_VPE main_mpe_direct_ex_MPE_CFG_${label}_FP_WITH_VPE)
         endforeach()
+            ## NOT EXPERIMENT_STAGE_2_SUB_2
+          endif()
 
 
         macro(ADD_NPE_COMPLEX_TEST name rm_bin_name)
@@ -2025,7 +2062,16 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
           )
         endmacro()
 
-        foreach(label RANGE 1 72)
+        foreach(label RANGE 49 72)
+          ADD_NPE_COMPLEX_TEST(NA_5_npe_mpe_direct_ex_MPE_CFG_${label}_WITH_PPE main_mpe_direct_ex_MPE_CFG_${label}_WITH_PPE)
+        endforeach()
+        foreach(label RANGE 25 48)
+          ADD_NPE_COMPLEX_TEST(NA_6_npe_mpe_direct_ex_MPE_CFG_${label}_WITH_PPE main_mpe_direct_ex_MPE_CFG_${label}_WITH_PPE)
+        endforeach()
+
+            if(NOT EXPERIMENT_STAGE_2_SUB_2)
+              ##
+        foreach(label RANGE 1 24)
           ADD_NPE_COMPLEX_TEST(npe_mpe_direct_ex_MPE_CFG_${label}_WITH_PPE main_mpe_direct_ex_MPE_CFG_${label}_WITH_PPE)
         endforeach()
         foreach(label RANGE 1 48)
@@ -2041,6 +2087,9 @@ macro(RUMBOOT_PLATFORM_ADD_COMPONENTS)
         ADD_NPE_MPE_VPE_TEST(resnet_IN_FP16_LAYER0_MPE_BN_RELU main_resnet_IN_FP16_LAYER0_MPE_BN_RELU) # LAYER0_MPE_BN_RELU
         ADD_NPE_COMPLEX_TEST(resnet_IN_FP16_LAYER0_MPE_BN_RELU_PPE main_resnet_IN_FP16_LAYER0_MPE_BN_RELU_PPE) # LAYER0_MPE_BN_RELU_PPE
         ###################################################################
+
+             ## EXPERIMENT_STAGE_2_SUB_2
+            endif()
       endif() # if(DUT STREQUAL "NPE")
     endif()  # if(DUT STREQUAL MPE,VPE,PPE,NPE)
 endmacro()
